@@ -7,7 +7,7 @@
 ## 2. CONSTANTS & DATA
 
 ### 2.1 Global constants
-- party has one diety. The diety has its own level, HP, and unique divine abilities. 
+- One diety represents on one party. The diety has its own level, HP, and unique divine abilities. 
 const PARTY_SCHEMA = ['number', 'diety', 'level', 'experience', 'HP', 'physical_ defense', 'magical_ defense' ]
 
 Initial_party = [1, 'God of Restoration', 1, 0, 100, 1, 1 ]
@@ -15,10 +15,9 @@ Initial_party = [1, 'God of Restoration', 1, 0, 100, 1, 1 ]
 - 'God of Restoration' // Revives character at the base automatically, no death penalty 
 
 ### 2.2 Play characters
-- The diety creates character and assigns them to its parties. The characters can change its race, role and name at will. 
+- The diety creates character and assigns 6 Characters to its party. The characters can change its race, role and name at will. 
 
 const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magical_attack', 'melee_attack, 'ranged_NoA', 'magical_NoA', 'melee_NoA', 'equipped_item' ]
-
 
 - id: int
 - role
@@ -41,9 +40,11 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 
 |Roles |name |abilities |note |
 |-----|-----------|-----------|-----------|
-|Tank |戦士 |cut physical damages by 1/3|Melee fighter |
+|Tank |戦士 |cut physical damage by 1/3, +1 item slot |Melee fighter |
 |Swordsman |剣士|counter an opponent melee attack||
-|Ninja|忍者|reattack||
+|Ninja|忍者|reattack. +2 item slots||
+|Samurai|侍|double physical damage, halve number of attacks. ||
+
 
 #### 2.2.2 Party structure 
 
