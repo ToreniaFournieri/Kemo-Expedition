@@ -57,7 +57,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 |侍(Samurai) |double physical damage, halve number of attacks. | katana x1.5 |
 |君主(Lord) |deals physical damage multiplied by x1.4 | heavy armor x1.3 |
 |狩人(Marksman) | (none) | archer x1.5 |
-|魔法使い(Wizard) | | wand x1.5 |
+|魔法使い(Wizard) | (none) | wand x1.5 |
 |賢者(Sage) | reduces incoming magical damage multiplied by x2/3 | rod x1.5|
 |盗賊(rouge) |moves twice | (none) |
 
