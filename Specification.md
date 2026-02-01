@@ -49,14 +49,14 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 
 - roles:
 
-|roles |abilities |
-|-----|-----------|
-|戦士(Tank) |intakes physical damage multiplied by x2/3, +1 item slot |
-|剣士(Swordsman) |counter an opponent melee attack|
-|忍者(Ninja) |reattack. +2 item slots|
-|侍(Samurai) |double physical damage, halve number of attacks. |
-|君主(Lord) |deals physical damage multiplied by x1.4 |
-|狩人(Marksman) |archer x1.5 |
+|roles |abilities | equipment bonuses |
+|-----|-----------|---------|
+|戦士(Tank) |intakes physical damage multiplied by x2/3, +1 item slot | armor x1.3 |
+|剣士(Swordsman) |counter an opponent melee attack| sword x1.3 |
+|忍者(Ninja) |reattack. +2 item slots| (none) |
+|侍(Samurai) |double physical damage, halve number of attacks. | katana x1.5 |
+|君主(Lord) |deals physical damage multiplied by x1.4 | heavy armor x1.3 |
+|狩人(Marksman) | (none) | archer x1.5 |
 
 #### 2.2.2 Party structure 
 
