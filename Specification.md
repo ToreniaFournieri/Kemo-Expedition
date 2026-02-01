@@ -29,8 +29,8 @@
 - equipped_item: []
 
 *Note:*
-    - Individual character has no level, hp, nor defensive parameters. 
-    - NoA: number of attacks
+- Individual character has no level, hp, nor defensive parameters
+- NoA: number of attacks
 
 #### 2.2.1 Character 
 
