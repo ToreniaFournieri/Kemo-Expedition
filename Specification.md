@@ -8,7 +8,7 @@
 
 ### 2.1 Global constants
 
-const PARTY_SCHEMA = ['number', 'diety', 'level', experience, HP, physical_ defense, magical_ defense ]
+const PARTY_SCHEMA = ['number', 'diety', 'level', 'experience', 'HP', 'physical_ defense', 'magical_ defense' ]
 
 Initial_party = [1, 'God of Restoration', 1, 0, 100, 1, 1 ]
 
