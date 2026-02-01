@@ -8,6 +8,12 @@
 
 ### 2.1 Global constants
 
+- level: int
+- experience: int
+- party_HP
+- party_physical_defense
+- party_magical_defense
+
 ### 2.2 Play characters
 
 - id: int
@@ -21,6 +27,8 @@
 - magical_NoA
 - melee_NoA
 - equipped_item: []
+
+Note: Individual character has no level or hp. 
 
 #### 2.2.1 Character 
 
