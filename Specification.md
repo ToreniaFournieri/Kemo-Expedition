@@ -10,6 +10,18 @@
 
 ### 2.2 Play characters
 
+- id: int
+- rarlity: int
+- role
+- name: string
+- ranged_attack
+- magical_attack
+- melee_attack
+- ranged_NoA
+- magical_NoA
+- melee_NoA
+- equipped_item: []
+
 #### 2.2.1 Character 
 
 - roles:
