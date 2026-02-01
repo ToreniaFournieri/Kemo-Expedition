@@ -28,7 +28,7 @@
 - melee_NoA
 - equipped_item: []
 
-Note: Individual character has no level or hp. 
+Note: Individual character has no level, hp, nor defensive parameters. 
 
 #### 2.2.1 Character 
 
