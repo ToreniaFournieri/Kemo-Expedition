@@ -51,7 +51,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 
 |roles |abilities | equipment bonuses |
 |-----|-----------|---------|
-|戦士(Tank) |intakes physical damage multiplied by x2/3 | +1 item slot, armor x1.3 |
+|戦士(Tank) |reduce incoming physical damage multiplied by x2/3 | +1 item slot, armor x1.3 |
 |剣士(Swordsman) |counter an opponent melee attack| sword x1.3 |
 |忍者(Ninja) |reattack. | +2 item slots |
 |侍(Samurai) |double physical damage, halve number of attacks. | katana x1.5 |
