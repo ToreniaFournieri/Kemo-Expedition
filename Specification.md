@@ -76,6 +76,9 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 |賢者(Sage) | Incoming magical damage to party × 2/3 | rod x1.5|
 |盗賊(rouge) |Acts twice per phase | (none) |
 
+- mutiplied reductions do not stack multiplicatively.
+
+
 #### 2.2.2 Party structure 
 
 1. Party Properties
