@@ -22,6 +22,10 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 - id: int
 - role
 - name: string
+- vitality 
+- strength 
+- intelligence 
+- mind
 - ranged_attack
 - magical_attack
 - melee_attack
@@ -37,10 +41,10 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 #### 2.2.1 Character 
 
 - races:
-
-|races |name |abilities |
+ base status: v:vitality, s:strength i:intelligence, m:mind
+|races |abilities | base status|
 |-----|-----------|-----------|
-|Caninian |ケイナイアン |(no special ability) |
+|ケイナイアン(Caninian) |(no special ability) |v:10, s:10, i:10, m:10|
 
 - roles:
 
