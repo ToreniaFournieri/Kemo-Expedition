@@ -1,6 +1,8 @@
 # KEMO EXPEDITION v0.0.1 - SPECIFICATION
 
 ## 1. OVERVIEW
+- Text-based, deterministic fantasy RPG
+
 
 ## 2. CONSTANTS & DATA
 
@@ -19,6 +21,28 @@
 ## 5. EXPEDITION 
 
 ## 6. COMBAT
+
+### 6.1 Encounter Rules
+- Each encounter consists of one battle
+    - Each battle always has exactly three phases, executed in fixed order:
+        - LONG range
+        - MID range
+        - CLOSE range
+	- If the enemy is not defeated by the end of the CLOSE phase:
+    	- Result = Draw
+        - Player receives no rewards
+        -Party survives but gains nothing
+
+### 6.2 TURN ORDER
+- For each phase, actions are resolved in the following order:
+    - Enemy attacks
+    - Player party attacks
+
+```
+LONG   : Enemy → Player
+MID    : Enemy → Player
+CLOSE  : Enemy → Player
+```
 
 ## 7. REWARD 
 
