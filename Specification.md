@@ -56,11 +56,11 @@
     - Enemy attacks
     - Player party attacks
 
-|Phase |Order |Damage type |
-|-----|-----------|-----------|
-|LONG |Enemy → Player |Ranged weapon |
-|MID |Enemy → Player |Magic |
-|CLOSE |Enemy → Player |Melee weapon |
+|Phase |Order |Damage type |Defense type|
+|-----|-----------|-----------|-----------|
+|LONG |Enemy → Player |Ranged Phisical attack |Physical defense |
+|MID |Enemy → Player |Magic |Magical defense|
+|CLOSE |Enemy → Player |Melee weapon |Physical defense |
 
 
 ### 6.3 Itialization of battle
