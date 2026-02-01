@@ -7,7 +7,7 @@
 ## 2. CONSTANTS & DATA
 
 ### 2.1 Global constants
-
+- party has one diety. The diety has its own level, HP, and unique divine abilities. 
 const PARTY_SCHEMA = ['number', 'diety', 'level', 'experience', 'HP', 'physical_ defense', 'magical_ defense' ]
 
 Initial_party = [1, 'God of Restoration', 1, 0, 100, 1, 1 ]
@@ -15,12 +15,11 @@ Initial_party = [1, 'God of Restoration', 1, 0, 100, 1, 1 ]
 - 'God of Restoration' // Revives character at the base automatically, no death penalty 
 
 ### 2.2 Play characters
-const CHARACTER_SCHEMA = ['id', 'role', 'name', 'ranged_attack', 'magical_attack', 'melee_attack, 'ranged_NoA', 'magical_NoA', 'melee_NoA', 'equipped_item' ]
-
+- The diety creates character and assigns them to its parties. The characters can be change its race, role and name at his will. 
+const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magical_attack', 'melee_attack, 'ranged_NoA', 'magical_NoA', 'melee_NoA', 'equipped_item' ]
 
 
 - id: int
-- rarity: int
 - role
 - name: string
 - ranged_attack
