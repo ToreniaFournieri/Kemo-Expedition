@@ -37,6 +37,23 @@
 
 ### 2.3 Enemy
 
+- id: int
+- rarlity: int
+- name: string
+- hp
+- ranged_attack
+- magical_attack
+- melee_attack
+- ranged_NoA
+- magical_NoA
+- melee_NoA
+- physical_defense
+- magical_defense
+- experience
+- drop_item: []
+
+NoA: number of attacks
+
 ### 2.4 Items
 
 ## 3. INITIALIZATION 
