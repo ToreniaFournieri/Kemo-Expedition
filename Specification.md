@@ -164,7 +164,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 **Enemy action**
 - Enemy always moves first. 
 
-- Damage: (Enemy damage - Party defense) x Enemy's damage amplifier
+- Damage: (Enemy damage - Party defense) x Enemy's damage amplifier x Party abilities amplifier 
     - following matched ranged type. 
 
 - Current Party HP -= Calculated damage
@@ -174,7 +174,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 **Player action**
 - Each party menber act if he has corresponding damage source in the phase. 
 
-- Damage: (Character damage - Enemy defense) x Character damage amplifier
+- Damage: (Character damage - Enemy defense) x Party abilities amplifier 
     - following matched ranged type. 
 
 - Current enemy HP -= Calculated damage
