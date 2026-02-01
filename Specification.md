@@ -46,20 +46,12 @@
 
 ## 5. EXPEDITION 
 
-## 6. COMBAT
+## 6. BATTLE
 
 ### 6.1 Encounter Rules
 - Each encounter consists of one battle
-    - Each battle always has exactly three phases, executed in fixed order:
-        - LONG range
-        - MID range
-        - CLOSE range
-	- If the enemy is not defeated by the end of the CLOSE phase:
-    	- Result = Draw
-        - Player receives no rewards
-        -Party survives but gains nothing
 
-### 6.2 TURN ORDER
+### 6.2 Turn order
 - For each phase, actions are resolved in the following order:
     - Enemy attacks
     - Player party attacks
@@ -69,6 +61,18 @@ LONG   : Enemy → Player
 MID    : Enemy → Player
 CLOSE  : Enemy → Player
 ```
+
+### 6.3 Itialization of battle
+
+### 6.4 Enemy action
+- Enemy always moves first. 
+
+- Dealt enemy's damage to player. 
+
+    - Damage: Enemy's damage - Party physical  
+
+
+
 
 ## 7. REWARD 
 
