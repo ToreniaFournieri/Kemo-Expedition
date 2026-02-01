@@ -57,9 +57,10 @@
     - Player party attacks
 
 ```
-LONG   : Enemy → Player
-MID    : Enemy → Player
-CLOSE  : Enemy → Player
+|Phase |Order|Damage type|
+|LONG |Enemy → Player |Ranged weapon|
+|MID |Enemy → Player |Magic |
+|CLOSE |Enemy → Player |Melee weapon|
 ```
 
 ### 6.3 Itialization of battle
@@ -67,9 +68,7 @@ CLOSE  : Enemy → Player
 ### 6.4 Enemy action
 - Enemy always moves first. 
 
-- Dealt enemy's damage to player. 
-
-    - Damage: Enemy's damage - Party physical  
+- Phisical damage: (Enemy's damage - Party physical defense) x Enemy's phisical damage amplifier
 
 
 
