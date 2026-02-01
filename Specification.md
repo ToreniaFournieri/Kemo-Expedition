@@ -56,8 +56,8 @@
     - Enemy attacks
     - Player party attacks
 
-
 |Phase |Order |Damage type |
+|-----|-----------|-----------|
 |LONG |Enemy → Player |Ranged weapon |
 |MID |Enemy → Player |Magic |
 |CLOSE |Enemy → Player |Melee weapon |
