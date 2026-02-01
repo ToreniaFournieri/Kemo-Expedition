@@ -28,7 +28,7 @@
 - melee_NoA
 - equipped_item: []
 
-- Note:
+*Note:*
     - Individual character has no level, hp, nor defensive parameters. 
     - NoA: number of attacks
 
