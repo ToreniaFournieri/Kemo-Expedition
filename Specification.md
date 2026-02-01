@@ -68,9 +68,14 @@
 ### 6.4 Enemy action
 - Enemy always moves first. 
 
-- Phisical damage: (Enemy's damage - Party physical defense) x Enemy's phisical damage amplifier
+- Damage: (Enemy damage - Party defense) x Enemy's damage amplifier
+    - following matched ranged type. 
 
+### 6.5 Player action
+- Each party menber act if he has corresponding damage source in the phase. 
 
+- Damage: (Character damage - Enemy defense) x Character damage amplifier
+    - following matched ranged type. 
 
 
 ## 7. REWARD 
