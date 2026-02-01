@@ -37,6 +37,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 #### 2.2.1 Character 
 
 - races:
+
 |races |name |abilities |note |
 |-----|-----------|-----------|-----------|
 |Caninian |イッヌ |(no special ability) | |
