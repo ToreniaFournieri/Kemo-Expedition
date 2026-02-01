@@ -63,7 +63,7 @@
 |CLOSE |Melee attack |Melee NoA|Physical defense |
 
 
-### 6.3 Itialization of battle
+### 6.3 Initialization of battle
 
 ### 6.4 Enemy action
 - Enemy always moves first. 
