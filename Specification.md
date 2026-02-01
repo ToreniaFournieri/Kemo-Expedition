@@ -43,7 +43,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 - races:
  base status: v:vitality, s:strength i:intelligence, m:mind
 
-|races |abilities | v,s,i,m |
+|races |abilities | base status |
 |-----|-----------|-----------|
 |ケイナイアン(Caninian) |(no special ability) |v:10, s:10, i:10, m:10|
 
@@ -51,10 +51,11 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 
 |roles |name |abilities |
 |-----|-----------|-----------|
-|Tank |戦士 |cut physical damage by 1/3, +1 item slot |
+|Tank |戦士 |intakes physical damage multiplied by x2/3, +1 item slot |
 |Swordsman |剣士|counter an opponent melee attack|
 |Ninja|忍者|reattack. +2 item slots|
 |Samurai|侍|double physical damage, halve number of attacks. |
+|Lord |君主|deals physical damage multiplied by x1.4 |
 
 
 #### 2.2.2 Party structure 
