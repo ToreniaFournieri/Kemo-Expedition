@@ -8,10 +8,10 @@
 
 ### 2.1 Global constants
 
+- paety_number: 1
+- party_deity: 'God of Restoration' // Revives character at the base automatically, no death penalty 
 - level: int
 - experience: int
-
-- party_deity: 'God of Restoration' // Revives character at the base automatically, no death penalty 
 - party_HP
 - party_physical_defense
 - party_magical_defense
