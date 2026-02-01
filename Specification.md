@@ -58,9 +58,9 @@
 
 |Phase |Order |Damage type |Defense type|
 |-----|-----------|-----------|-----------|
-|LONG |Enemy → Player |Ranged Phisical attack |Physical defense |
+|LONG |Enemy → Player |Ranged attack |Physical defense |
 |MID |Enemy → Player |Magic |Magical defense|
-|CLOSE |Enemy → Player |Melee weapon |Physical defense |
+|CLOSE |Enemy → Player |Melee attack |Physical defense |
 
 
 ### 6.3 Itialization of battle
