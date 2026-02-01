@@ -17,7 +17,7 @@ Initial_party = [1, 'God of Restoration', 1, 0, 100, 1, 1 ]
 ### 2.2 Play characters
 - The diety creates character and assigns 6 Characters to its party. The characters can change its race, role and name at will. 
 
-const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magical_attack', 'melee_attack, 'ranged_NoA', 'magical_NoA', 'melee_NoA', 'equipped_item' ]
+const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magical_attack', 'melee_attack, 'ranged_NoA', 'magical_NoA', 'melee_NoA', 'maximum_equipped_item' ]
 
 - id: int
 - role
@@ -32,7 +32,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 - ranged_NoA
 - magical_NoA
 - melee_NoA
-- equipped_item: []
+- maximum_equipped_item:
 
 *Note:*
 - Individual character has no level, hp, nor defensive parameters
@@ -122,6 +122,23 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 ## 3. INITIALIZATION 
 
 ## 4. HOME
+
+### 4.X Level up
+- Beats enemies, gains experience, then level up. 
+- max_level: 29. (current version restriction)
+
+- Party HP: 100 + 10*`level`
+- Equipment slots for individual character
+
+|level | base slots |
+|-----|-----------|
+|1 |1 |
+|3 |2 |
+|6 |3 |
+|12|4 |
+|16|5 |
+|20|6 |
+|25|7 |
 
 
 ## 5. EXPEDITION 
