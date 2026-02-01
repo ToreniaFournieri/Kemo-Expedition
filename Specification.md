@@ -35,6 +35,11 @@
 #### 2.2.1 Character 
 
 - roles:
+|Roles |name |abilities |note |
+|-----|-----------|-----------|-----------|
+|Tank |戦士 |cut physical damages by 1/3|Melee fighter |
+|Swordsman |剣士|counter an opponent melee attack||
+|Ninja|忍者|reattack||
 
 #### 2.2.2 Party structure 
 
