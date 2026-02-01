@@ -40,26 +40,41 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 
 #### 2.2.1 Character 
 
+-A character is defined by Race and Role
+    - Race defines base status
+	- Role defines combat behavior modifiers and equipment bonuses
+	- Characters have no individual HP
+	- All defensive effects ultimately modify party-wide parameters
+
+**Base Status Parameters**
+- Each character has the following base status values:
+	- V (Vitality): contributes to Party HP
+	- S (Strength): contributes to physical attack
+	- I (Intelligence): contributes to magical attack
+	- M (Mind): contributes to magical defense or resistance effects
+
+- Base status values are summed across the party and converted into party-wide or individual values according to system rules.
+
 - races:
  base status: v:vitality, s:strength i:intelligence, m:mind
 
 |races |abilities | base status |
 |-----|-----------|-----------|
-|ケイナイアン(Caninian) |(no special ability) |v:10, s:10, i:10, m:10|
+|ケイナイアン(Caninian) |(no special ability) |V:10 / S:10 / I:10 / M:10|
 
 - roles:
 
 |roles |abilities | equipment bonuses |
 |-----|-----------|---------|
-|戦士(Tank) |reduces incoming physical damage multiplied by x2/3 | +1 item slot, armor x1.3 |
-|剣士(Swordsman) |counter an opponent melee attack| sword x1.3 |
-|忍者(Ninja) |reattack. | +2 item slots |
-|侍(Samurai) |double physical damage, halve number of attacks. | katana x1.5 |
-|君主(Lord) |deals physical damage multiplied by x1.4 | heavy armor x1.3 |
+|戦士(Tank) |Incoming physical damage to party × 2/3 | +1 equipment slot, armor x1.3 |
+|剣士(Swordsman) |Counter enemy CLOSE-range attack | sword x1.3 |
+|忍者(Ninja) |Re-attack once when attacking | +2 equipment slots |
+|侍(Samurai) |Physical damage ×2, number of attacks ÷2 | katana x1.5 |
+|君主(Lord) |Physical damage x1.4 | heavy armor x1.3 |
 |狩人(Marksman) | (none) | archer x1.5 |
 |魔法使い(Wizard) | (none) | wand x1.5 |
-|賢者(Sage) | reduces incoming magical damage multiplied by x2/3 | rod x1.5|
-|盗賊(rouge) |moves twice | (none) |
+|賢者(Sage) | Incoming magical damage to party × 2/3 | rod x1.5|
+|盗賊(rouge) |Acts twice per phase | (none) |
 
 #### 2.2.2 Party structure 
 
