@@ -36,9 +36,14 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 
 #### 2.2.1 Character 
 
+- races:
+|races |name |abilities |note |
+|-----|-----------|-----------|-----------|
+|Caninian |イッヌ |(no special ability) | |
+
 - roles:
 
-|Roles |name |abilities |note |
+|roles |name |abilities |note |
 |-----|-----------|-----------|-----------|
 |Tank |戦士 |cut physical damage by 1/3, +1 item slot |Melee fighter |
 |Swordsman |剣士|counter an opponent melee attack||
