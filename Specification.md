@@ -18,6 +18,28 @@
 
 ## 4. HOME
 
+
+### Party structure 
+
+1. Party Properties
+- Player party consists of up to 6 characters
+- All characters participate simultaneously
+- Party has its:
+    - Total HP
+    - Total physical defense
+    - Total magical defense
+
+2. Character Properties
+- Each character has:
+	- Ranged attack, number of attacks
+    - Magical attack, number of attacks
+    - Melee attack, number of attacks
+
+    - Equipment slots
+
+- Characters do not have individual HP.
+    - but each character contrivutes total HP, physical defense and magical defense. 
+
 ## 5. EXPEDITION 
 
 ## 6. COMBAT
