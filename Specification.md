@@ -70,11 +70,18 @@
 - Damage: (Enemy damage - Party defense) x Enemy's damage amplifier
     - following matched ranged type. 
 
+- Current Party HP -= Calculated damage
+- If currenr party HP =< 0, Defeat. 
+
+
 **Player action**
 - Each party menber act if he has corresponding damage source in the phase. 
 
 - Damage: (Character damage - Enemy defense) x Character damage amplifier
     - following matched ranged type. 
+
+- Current enemy HP -= Calculated damage
+- If enemy HP =< 0, Victory. 
 
 ### 6.4 Post battle
 
