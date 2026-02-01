@@ -51,7 +51,9 @@
 ### 6.1 Encounter Rules
 - Each encounter consists of one battle
 
-### 6.2 Turn order
+### 6.2 Initialization of battle
+
+### 6.3 Turn resolution 
 - For each phase, actions are resolved in the following order:
     - Enemy attacks
     - Player party attacks
@@ -62,20 +64,22 @@
 |MID |Magical attack |Magical NoA|Magical defense|
 |CLOSE |Melee attack |Melee NoA|Physical defense |
 
-
-### 6.3 Initialization of battle
-
-### 6.4 Enemy action
+**Enemy action**
 - Enemy always moves first. 
 
 - Damage: (Enemy damage - Party defense) x Enemy's damage amplifier
     - following matched ranged type. 
 
-### 6.5 Player action
+**Player action**
 - Each party menber act if he has corresponding damage source in the phase. 
 
 - Damage: (Character damage - Enemy defense) x Character damage amplifier
     - following matched ranged type. 
+
+### 6.4 Post battle
+
+
+### 6.5 Outcome 
 
 
 ## 7. REWARD 
