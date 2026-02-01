@@ -28,7 +28,9 @@
 - melee_NoA
 - equipped_item: []
 
-Note: Individual character has no level, hp, nor defensive parameters. 
+- Note:
+    - Individual character has no level, hp, nor defensive parameters. 
+    - NoA: number of attacks
 
 #### 2.2.1 Character 
 
@@ -71,8 +73,6 @@ Note: Individual character has no level, hp, nor defensive parameters.
 - magical_defense
 - experience
 - drop_item: []
-
-NoA: number of attacks
 
 ### 2.4 Items
 
