@@ -38,18 +38,18 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 
 - races:
 
-|races |name |abilities |note |
-|-----|-----------|-----------|-----------|
-|Caninian |ケイナイアン |(no special ability) | |
+|races |name |abilities |
+|-----|-----------|-----------|
+|Caninian |ケイナイアン |(no special ability) |
 
 - roles:
 
-|roles |name |abilities |note |
-|-----|-----------|-----------|-----------|
-|Tank |戦士 |cut physical damage by 1/3, +1 item slot |Melee fighter |
-|Swordsman |剣士|counter an opponent melee attack||
-|Ninja|忍者|reattack. +2 item slots||
-|Samurai|侍|double physical damage, halve number of attacks. ||
+|roles |name |abilities |
+|-----|-----------|-----------|
+|Tank |戦士 |cut physical damage by 1/3, +1 item slot |
+|Swordsman |剣士|counter an opponent melee attack|
+|Ninja|忍者|reattack. +2 item slots|
+|Samurai|侍|double physical damage, halve number of attacks. |
 
 
 #### 2.2.2 Party structure 
