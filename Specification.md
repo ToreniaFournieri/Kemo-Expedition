@@ -35,6 +35,7 @@
 #### 2.2.1 Character 
 
 - roles:
+
 |Roles |name |abilities |note |
 |-----|-----------|-----------|-----------|
 |Tank |戦士 |cut physical damages by 1/3|Melee fighter |
