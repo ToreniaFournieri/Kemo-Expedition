@@ -123,7 +123,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 
 ## 4. HOME
 
-### 4.X Level up
+### 4.1 Level up
 - Beats enemies, gains experience, then level up. 
 - max_level: 29. (current version restriction)
 
@@ -139,6 +139,10 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 |16|5 |
 |20|6 |
 |25|7 |
+
+
+### 4.2 Equipment
+
 
 
 ## 5. EXPEDITION 
