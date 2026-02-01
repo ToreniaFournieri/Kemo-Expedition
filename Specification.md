@@ -42,7 +42,8 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 
 - races:
  base status: v:vitality, s:strength i:intelligence, m:mind
-|races |abilities | base status|
+
+|races |abilities | v,s,i,m |
 |-----|-----------|-----------|
 |ケイナイアン(Caninian) |(no special ability) |v:10, s:10, i:10, m:10|
 
