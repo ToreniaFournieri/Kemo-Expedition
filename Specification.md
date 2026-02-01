@@ -10,24 +10,19 @@
 
 ### 2.2 Play characters
 
-### 2.3 Enemy
+#### 2.2.1 Character 
 
-### 2.4 Items
+- roles:
 
-## 3. INITIALIZATION 
-
-## 4. HOME
-
-
-### Party structure 
+#### 2.2.2 Party structure 
 
 1. Party Properties
 - Player party consists of up to 6 characters
 - All characters participate simultaneously
 - Party has its:
-    - Total HP
-    - Total physical defense
-    - Total magical defense
+    - Party HP
+    - Party physical defense
+    - Party magical defense
 
 2. Character Properties
 - Each character has:
@@ -39,6 +34,15 @@
 
 - Characters do not have individual HP.
     - but each character contrivutes total HP, physical defense and magical defense. 
+
+### 2.3 Enemy
+
+### 2.4 Items
+
+## 3. INITIALIZATION 
+
+## 4. HOME
+
 
 ## 5. EXPEDITION 
 
