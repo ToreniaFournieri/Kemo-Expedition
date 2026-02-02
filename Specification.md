@@ -86,7 +86,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 - Base status values are summed across the party and converted into party-wide or individual values according to system rules.
 
-- **races:**
+- **races(種族):**
 
 |races | bonus | base status | memo |
 |-----|-----------|-----------|------|
@@ -103,7 +103,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
  *base status: v:vitality(体力), s:strength(力) i:intelligence(知性), m:mind(精神)
 
-- **predisposition:**
+- **predisposition(性格):**
 
 |predisposition | bonus |
 |-----|-----------|
@@ -117,7 +117,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |商才 (Canny)|`c.equip_slot+1`|
 |忍耐(Persistent)|`b.mind`+2, `c.robe_x1.1`|
 
-- **lineage:**
+- **lineage(家系):**
 
 |lineage | bonus |
 |-----|-----------|
