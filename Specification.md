@@ -46,10 +46,11 @@ Initial_party = [1, 'God of Restoration', 1, 0, 100, 1, 1 ]
 ### 2.2 Play characters
 - The diety creates character and assigns 6 Characters to its party. The characters can change its race, role and name at will. 
 
-const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magical_attack', 'melee_attack, 'ranged_NoA', 'magical_NoA', 'melee_NoA', 'maximum_equipped_item' ]
+const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'ranged_attack', 'magical_attack', 'melee_attack, 'ranged_NoA', 'magical_NoA', 'melee_NoA', 'maximum_equipped_item' ]
 
 - id: int
-- role
+- main_class
+- sub_class
 - name: string
 - vitality 
 - strength 
@@ -91,9 +92,9 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 |-----|-----------|-----------|
 |ケイナイアン(Caninian) |(no special ability) |V:10 / S:10 / I:10 / M:10|
 
-- roles:
+- classes:
 
-|roles |abilities | equipment bonuses |
+|class |abilities | bonuses |
 |-----|-----------|---------|
 |戦士(Tank) |Incoming physical damage to party × 2/3 | +1 equipment slot, `e.armor` x1.3 |
 |剣士(Swordsman) |Counter enemy CLOSE-range attack | `e.sword` x1.3 |
@@ -105,6 +106,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 |賢者(Sage) | Incoming magical damage to party × 2/3 | `e.robe` x1.3, +3 equipment slots|
 |盗賊(rouge) |Acts twice per phase | `e.amulet` x1.3, +1 equipment slot |
 
+- `main_class` applies abilitiies and bonuses. `sub_class` applies only bonuses.
 - mutiplied reductions do not stack multiplicatively.
 
 
