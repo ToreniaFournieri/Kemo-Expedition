@@ -21,26 +21,27 @@ Initial_party = [1, 'God of Restoration', 1, 0, 100, 1, 1 ]
 
 - enhancement title
  
-|enhance value |title |
-|-----|---------|
-|0 |(none) |
-|1 |名工の |
-|2 |魔性の |
-|3 |宿った |
-|4 |伝説の |
-|5 |恐ろしい |
-|6 |究極の |
+|value |title | tickets | multiplier |
+|-----|---------|------|------|
+|0 |(none) |1390 | x1.00 |
+|1 |名工の |350 | x1.33 |
+|2 |魔性の |180 | x1.58 |
+|3 |宿った |60 | x2.10 |
+|4 |伝説の |15 | x2.75 |
+|5 |恐ろしい |4 | x3.50 |
+|6 |究極の |1 | x5.00 |
+
 
 - superRare title
 
-|superRare value |title |
-|-----|---------|
-|0 |(none) |
-|1 |世界を征する |
-|2 |天に与えられし |
-|3 |混沌の |
-|4 |知られざる |
-|5 |血に飢えし |
+|value |title | tickets |
+|-----|---------|------|
+|0 |(none) | 24999 |
+|1 |世界を征する |1 |
+|2 |天に与えられし |1 |
+|3 |混沌の |1 |
+|4 |知られざる |1 |
+|5 |血に飢えし |1 |
 
 ### 2.2 Play characters
 - The diety creates character and assigns 6 Characters to its party. The characters can change its race, role and name at will. 
@@ -149,28 +150,10 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 
 ## 3. INITIALIZATION 
 - **Reward:** Put 1 win ticket(1) and 99 lose tickets(0) into 'reward_bag'. 
-- **Enhancement:** Put them into 'enhancement_bag'.
+- **Enhancement:** Put tickets into 'enhancement_bag'.
+- **Super Rare:** Put tickets into 'superRare_bag' .
 
-|enhance value |number of tickets |
-|-----|---------|
-|0 |1390 |
-|1 |350 |
-|2 |180 |
-|3 |60 |
-|4 |15 |
-|5 |4 |
-|6 |1 |
 
-- **Super Rare:** Put them into 'superRare_bag' .
-
-|superRare value |number of tickets |
-|-----|---------|
-|0 |24999 |
-|1 |1 |
-|2 |1 |
-|3 |1 |
-|4 |1 |
-|5 |1 |
 
 - If a bag is empty or explicitly reset the bag, initialize it.
 
