@@ -101,7 +101,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |セルヴィン(Cervin) |`c.wand_x1.3` |V:6 / S:7 / I:13 / M:10| Deer |
 |ミュリッド(Murid) |`c.penetration_x0.15`, `a.caster`: +1  |V:9 / S:8 / I:10 / M:10| Mouse |
 
- *base status: v:vitality, s:strength i:intelligence, m:mind
+ *base status: v:vitality(体力), s:strength(力) i:intelligence(知性), m:mind(精神)
 
 - **predisposition:**
 
