@@ -199,7 +199,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 - melee_NoA
 - physical_defense
 - magical_defense
-- experience
+- experience // Enemy experience is added directly to party experience.
 - drop_item
 
 - (Temporary test purpose) make 5 dungeons and 5 enemies per dungeon. 
