@@ -238,8 +238,8 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 - Attack damage:
   - ranged_attack: Item Bonuses(round up)
-  - melee_Attack: `b.strength` x (1 + 0.1 x `level`) + Item Bonuses(round up)
-  - magical_Attack: `b.intelligence` x (1 + 0.1 x `level`) + Item Bonuses(round up)
+  - melee_Attack: Item Bonuses(round up) x `b.strength` / 10
+  - magical_Attack: Item Bonuses(round up) x `b.intelligence` / 10
 
 - Number of attacks:
   - ranged_NoA: 0 + Item Bonuses(round up) // no arrows, no shoot.
@@ -251,7 +251,8 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 ### 3.4 Party initialization
 
 - Class bonuses like `c.amulet_x1.3` applies only for individual character's equipments.
-- Party HP: 100 + (Total sum of `b.vitality`)*`level` + Item Bonuses
+- individual HP: Item Bonuses x `b.vitality` /10
+- Party HP: 95 + (level x 5) + (Total sum of indivisual HP)
 - Party defense:
   - Physical defense: (Total sum of) Item Bonuses
   - Magical defense: (Total sum of) Item Bonuses
