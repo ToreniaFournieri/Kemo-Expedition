@@ -17,6 +17,31 @@ Initial_party = [1, 'God of Restoration', 1, 0, 100, 1, 1 ]
 
 - 'God of Restoration' // Revives character at the base automatically, no death penalty 
 
+- **Bag Randomization** It has 'reward_bag', 'enhancement_bag', 'superRare_bag' witch controls reward randomness and contains tickets. (0:lose ticket, 1:win ticket)
+
+- enhancement title
+ 
+|enhance value |title |
+|-----|---------|
+|0 |(none) |
+|1 |名工の |
+|2 |魔性の |
+|3 |宿った |
+|4 |伝説の |
+|5 |恐ろしい |
+|6 |究極の |
+
+- superRare title
+
+|superRare value |title |
+|-----|---------|
+|0 |(none) |
+|1 |世界を征する |
+|2 |天に与えられし |
+|3 |混沌の |
+|4 |知られざる |
+|5 |血に飢えし |
+
 ### 2.2 Play characters
 - The diety creates character and assigns 6 Characters to its party. The characters can change its race, role and name at will. 
 
@@ -123,6 +148,31 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 ### 2.4 Items
 
 ## 3. INITIALIZATION 
+- **Reward:** Put 1 win ticket(1) and 99 lose tickets(0) into 'reward_bag'. 
+- **Enhancement:** Put them into 'enhancement_bag'.
+
+|enhance value |number of tickets |
+|-----|---------|
+|0 |1390 |
+|1 |350 |
+|2 |180 |
+|3 |60 |
+|4 |15 |
+|5 |4 |
+|6 |1 |
+
+- **Super Rare:** Put them into 'superRare_bag' .
+- 
+|superRare value |number of tickets |
+|-----|---------|
+|0 |24999 |
+|1 |1 |
+|2 |1 |
+|3 |1 |
+|4 |1 |
+|5 |1 |
+
+- If a bag is empty or explicitly reset the bag, initialize it.
 
 ## 4. HOME
 
@@ -199,9 +249,15 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 
 ## 7. REWARD 
 
-- Item reward.
-- It is a 1/100 chance to obtain item from one enemy.
-- Get one 
+- Gets one ticket from 'reward_bag'.
+  - If it is '1', then get one ticket from each of 'enhancement_bag', and 'superRare_bag'.
+    
+  - Combines them into one item.
+    (ex.
+    
+     enhancement:1, superRare:0 -> 名工のロングソード
+     enhancement:3, superRare:1 -> 世界を征する宿ったロングソード)
+
 
 ## 8. UI
 
