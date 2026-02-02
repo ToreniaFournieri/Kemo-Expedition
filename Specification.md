@@ -94,18 +94,19 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 - classes:
 
-|class |abilities (main) | class bonuses(main, sub) |
-|-----|-----------|---------|
-|戦士(Fighter) |`a.defender` Incoming physical damage to party × 2/3 | `c.equipment_slot+1` , `c.armor_x1.3` |
-|剣士(Swordsman) |`a.counter` enemy CLOSE-range attack | `c.sword_x1.3` |
-|忍者(Ninja) |`a.re-attack` once when attacking | `c.equipment_slot+1` |
-|侍(Samurai) |`a.iaigiri` Physical damage ×2,  number of attacks ÷2 | `c.katanax1.5` |
-|君主(Lord) |`a.leading` Physical damage x1.4 | `c.gauntlet_x1.3`, `c.equipment_slot+2` |
-|狩人(Marksman) | (none) | `c.archery_x1.5` |
-|魔法使い(Wizard) | (none) | `c.wand_x1.5` |
-|賢者(Sage) |`a.m-barrier` Incoming magical damage to party × 2/3 | `c.robe_x1.3`, `c.equipment_slot+3`|
-|盗賊(rouge) |`a.first-strike` Acts faster than enemy | `c.amulet_x1.3`, `c.equipment_slot+1` |
+|class |abilities (main) |abilities (master) | class bonuses(main, sub) |
+|-----|-----------|---------|---------|
+|戦士(Fighter) |`a.defender` Incoming physical damage to party × 2/3 |`a.defender` Incoming physical damage to party × 3/5 |  `c.equipment_slot+1` , `c.armor_x1.3` |
+|剣士(Swordsman) |`a.counter` enemy CLOSE-range attack |`a.counter` enemy CLOSE-range attack twice | `c.sword_x1.3` |
+|忍者(Ninja) |`a.re-attack` once when attacking |`a.re-attack` once when attacking twice | `c.equipment_slot+1` |
+|侍(Samurai) |`a.iaigiri` Physical damage ×2,  number of attacks ÷2 | `a.iaigiri` Physical damage ×2.5,  number of attacks ÷2 |`c.katanax1.5` |
+|君主(Lord) |`a.leading` Physical damage x1.4 |`a.leading` Physical damage x1.6 | `c.gauntlet_x1.3`, `c.equipment_slot+2` |
+|狩人(Marksman) | (none) |(none) | `c.archery_x1.5` |
+|魔法使い(Wizard) | (none) |(none) | `c.wand_x1.5` |
+|賢者(Sage) |`a.m-barrier` Incoming magical damage to party × 2/3 | `a.m-barrier` Incoming magical damage to party × 3/5 | `c.robe_x1.3`, `c.equipment_slot+3`|
+|盗賊(rouge) |`a.first-strike` Acts faster than enemy at CLOSE phase |`a.first-strike` Acts faster than enemy at All ohases | `c.amulet_x1.3`, `c.equipment_slot+1` |
 
+- If `main_class` and  `sub_class` are same class, then it turns into master class.
 - `main_class` applies abilitiies and class bonuses. `sub_class` applies only class bonuses.
 - Only the strongest single ability(a.) of the same name applies.
 - Only one single bonuses(c.) of the same name applies. (two `c.equipment_slot+2`, but only one `c.equipment_slot+2` works)
