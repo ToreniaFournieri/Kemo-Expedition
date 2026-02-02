@@ -11,7 +11,7 @@
 
 ### 2.1 Global constants
 - One diety represents on one party. The diety has its own level, HP, and unique divine abilities. 
-const PARTY_SCHEMA = ['number', 'diety', 'level', 'experience', 'Party_HP', 'physical_ defense', 'magical_ defense' ]
+const PARTY_SCHEMA = ['number', 'diety', 'level', 'experience', 'Party_HP', 'Party_physical_ defense', 'Party_magical_defense' ]
 
 Initial_party = [1, 'God of Restoration', 1, 0, 100, 1, 1 ]
 
@@ -156,9 +156,10 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 |`e.katana` | + `melee_attack`, - `melee_NoA` |
 |`e.archery` | bow: + `ranged_attack`, arrows:  + `ranged_NoA` |
 |`e.wand` | + `magical_attack` |
-|`e.armor` | + `Party_HP` |
-|`e.wand` | + `magical_attack` |
-|`e.wand` | + `magical_attack` |
+|`e.armor` | + `Party_physical_ defense` |
+|`e.robe` | + `Party_magical_defense` |
+|`e.gauntlet` | + `melee_NoA` |
+|`e.amulet` | + `Party_HP` |
 
 
 
