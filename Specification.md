@@ -237,7 +237,8 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 - Manage party setting. character build (can also change its class, race!). change their equipment.
 - set the destination of dungeon.
-- sell items and gain gold. (gold is corrective resouce for this version)
+- sell items and gain gold.
+- buy items like arrows with gold. ( `auto_refill` is on, done automatically)
 
 ### 4.2 Equipment
 
