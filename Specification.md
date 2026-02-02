@@ -107,16 +107,29 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 |predisposition | bonus |
 |-----|-----------|
-|頑強 (Sturdy)|`c.armor_x1.2`|
+|頑強 (Sturdy)|`b.vitality`+2,  `c.armor_x1.1`|
 |俊敏 (Agile)|`c.gauntlet_x1.2`|
-|頑強 (Sturdy)|`c.armor_x1.2`|
 |聡明 (Brilliant)|`c.wand_x1.2`|
 |器用 (Dexterous)|`c.archery_x1.2`|
 |騎士道 (Chivalric)|`c.sword_x1.2`|
-|士魂 (Shikon)|`c.katana_x1.2`|
-|追求 (Pursuing)|`c.robe_x1.2`|
+|士魂 (Shikon)|`b.strength`+2, `c.katana_x1.1`|
+|追求 (Pursuing)|`b.intelligence`+2, `c.robe_x1.1`|
 |商才 (Canny)|`c.equip_slot+1`|
+|忍耐(Persistent)|`b.mind`+2, `c.robe_x1.1`|
 
+- **lineage:**
+
+|lineage | bonus |
+|-----|-----------|
+|1|`c.wand_x1.2` |
+|2|`c.sword_x1.2` |
+||`c.katana_x1.2`|
+||`c.archery_x1.2`|
+||`c.armor_x1.2` |
+||`c.gauntlet_x1.2`|
+||`c.wand_x1.2`|
+||`c.robe_x1.2`|
+||`c.amulet_x1.2`|
 
 - **classes:**
 
@@ -263,7 +276,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 ## 4. HOME
 
-- Manage party setting. character build (can also change its class, race!). change their equipment.
+- Manage party setting. character build (can also change its class, race, predisposition, lineage!). change their equipment.
 - set the destination of dungeon.
 - sell items and gain gold.
 - buy items like arrows with gold. ( `auto_refill` is on, done automatically)
