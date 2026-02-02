@@ -369,7 +369,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 
 **Consequence**
 - Defeat: no penalties (current version). no experience points nor item reward. Back to home.
-- Victory: gains experience points to a party. has a chance of gaining reward from enemies drop item. Proceeds to the next room.
+- Victory: gains experience points to a party. has a chance of gaining reward from enemies drop item. Proceeds to the next room. If it was the last room of dungeon, back to home with trophies!
 - Draw:no penalties (current version). no experience points nor item reward. Proceeds to the next room.
 
 ## 7. REWARD 
