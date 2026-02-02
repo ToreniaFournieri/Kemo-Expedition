@@ -99,11 +99,11 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 |剣士(Swordsman) |Counter enemy CLOSE-range attack | `e.sword` x1.3 |
 |忍者(Ninja) |Re-attack once when attacking | +2 equipment slots |
 |侍(Samurai) |Physical damage ×2, number of attacks ÷2 | `e.katana` x1.5 |
-|君主(Lord) |Physical damage x1.4 | `e.gauntlet` x1.3 |
+|君主(Lord) |Physical damage x1.4 | `e.gauntlet` x1.3, +2 equipment slots |
 |狩人(Marksman) | (none) | `e.archery` x1.5 |
 |魔法使い(Wizard) | (none) | `e.wand` x1.5 |
-|賢者(Sage) | Incoming magical damage to party × 2/3 | `e.robe` x1.3|
-|盗賊(rouge) |Acts twice per phase | `e.amulet` x1.3 |
+|賢者(Sage) | Incoming magical damage to party × 2/3 | `e.robe` x1.3, +3 equipment slots|
+|盗賊(rouge) |Acts twice per phase | `e.amulet` x1.3, +1 equipment slot |
 
 - mutiplied reductions do not stack multiplicatively.
 
