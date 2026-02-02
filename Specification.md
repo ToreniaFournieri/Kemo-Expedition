@@ -204,8 +204,9 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |25|7 |
 
 - Attack damage:
-  - Melee_Attack: `b.strength` x (10 + `level`) + Item Bonuses
-  - Magical_Attack: `b.intelligence` x (10 + `level`) + Item Bonuses
+  - ranged_attack: Item Bonuses
+  - melee_Attack: `b.strength` x (10 + `level`) + Item Bonuses
+  - magical_Attack: `b.intelligence` x (10 + `level`) + Item Bonuses
 
 - Number of attacks:
   - ranged_NoA: 0 + Item Bonuses
