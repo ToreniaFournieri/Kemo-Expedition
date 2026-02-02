@@ -101,10 +101,10 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |忍者(Ninja) |`a.re-attack` once when attacking |`a.re-attack` twice when attacking | `c.equipment_slot+1` |
 |侍(Samurai) |`a.iaigiri` Physical damage ×2,  number of attacks ÷2 | `a.iaigiri` Physical damage ×2.5,  number of attacks ÷2 |`c.katanax1.5` |
 |君主(Lord) |`a.leading` Physical damage x1.4 |`a.leading` Physical damage x1.6 | `c.gauntlet_x1.3`, `c.equipment_slot+2` |
-|狩人(Marksman) | (none) |(none) | `c.archery_x1.5` |
-|魔法使い(Wizard) | (none) |(none) | `c.wand_x1.5` |
-|賢者(Sage) |`a.m-barrier` Incoming magical damage to party × 2/3 | `a.m-barrier` Incoming magical damage to party × 3/5 | `c.robe_x1.3`, `c.equipment_slot+3`|
-|盗賊(rouge) |`a.first-strike` Acts faster than enemy at CLOSE phase |`a.first-strike` Acts faster than enemy at All ohases | `c.amulet_x1.3`, `c.equipment_slot+1` |
+|狩人(Marksman) | `a.hunter` Retrieve 30% p the arrows at the end of battle  |`a.hunter` Retrieve 36% p the arrows at the end of battle | `c.archery_x1.5` |
+|魔法使い(Wizard) | `a.caster` +2 `magical_NoA`  | `a.caster` +3 `magical_NoA`  | `c.wand_x1.3` |
+|賢者(Sage) |`a.caster` +1 `magical_NoA`. `a.m-barrier` Incoming magical damage to party × 2/3 | `a.caster` +1 `magical_NoA`, `a.m-barrier` Incoming magical damage to party × 3/5 | `c.robe_x1.3`, `c.equipment_slot+3`|
+|盗賊(rouge) |`a.first-strike` Acts faster than enemy at CLOSE phase |`a.first-strike` Acts faster than enemy at All phases | `c.amulet_x1.3`, `c.equipment_slot+1` |
 
 - If `main_class` and  `sub_class` are same class, then it turns into master class.
 - `main_class` applies abilitiies and class bonuses. `sub_class` applies only class bonuses.
@@ -173,7 +173,6 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |`c.armor` | 鎧 | + `Party_physical_defense` |
 |`c.gauntlet` | 籠手 | + `melee_NoA` |
 |`c.wand` | ワンド | + `magical_attack` |
-|`c.book` | 魔導書 | + `magical_NoA` |
 |`c.robe` | 法衣 | + `Party_magical_defense` |
 |`c.amulet` | 護符 | + `Party_HP` |
 
@@ -212,7 +211,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 - Number of attacks:
   - ranged_NoA: 0 + Item Bonuses(round up) // no arrows, no shoot.
-  - magical_NoA: IF class is `Wizard` or `Sage`, 1. Else 0.
+  - magical_NoA: 0 + `a.caster` bonuses // only strongest single ability applies.
   - melee_NoA: 0 + Item Bonuses(round up) //no gauntlet, no melee combat.
  
   - IF the character has `a.iaigiri`, halve these number of attacks.
