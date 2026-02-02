@@ -88,24 +88,33 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 - races:
  base status: v:vitality, s:strength i:intelligence, m:mind
 
-|races |abilities | base status |
-|-----|-----------|-----------|
-|ケイナイアン(Caninian) |(no special ability) |V:10 / S:10 / I:10 / M:10|
+|races |abilities | base status | memo |
+|-----|-----------|-----------|------|
+|ケイナイアン(Caninian) | `c.amulet_x1.3` |V:10 / S:10 / I:10 / M:10| Dog |
+|ルピニアン(Lupinian) | `c.equipment_slot+1`, `c.katana_x1.3`  |V:9 / S:13 / I:8 / M:7| Wolf |
+|ヴァルピニアン(Vulpinian) |`c.equipment_slot+1`, `c.sword_x1.3` |V:10 / S:10 / I:12 / M:8| Fox |
+|ウルサン(Ursan) |`c.equipment_slot+2` |V:14 / S:9 / I:7 / M:8| Bear |
+|フェリディアン(Felidian) |`c.robe_x1.3` |V:10 / S:10 / I:10 / M:12| Cat |
+|マステリド(Mustelid) | `c.gauntlet_x1.3` |V:10 / S:10 / I:9 / M:11| Ferret |
+|レポリアン(Leporian) | `c.archery_x1.3`, `a.caster`: +1`  |V:9 / S:8 / I:11 / M:10| Rabbit |
+|タルピッド(Talpid) |`c.armor_x1.3` |V:12 / S:12 / I:7 / M:7| Mole |
+|セルヴィン(Cervin) |`c.wand_x1.3` |V:6 / S:7 / I:13 / M:10| Deer |
+|ミュリッド(Murid) |`c.penetration_x0.15`  |V:9 / S:8 / I:10 / M:10| Mouse |
 
 - classes:
 
 |class |abilities (main) |abilities (master) | class bonuses(main, sub) |
 |-----|-----------|---------|---------|
-|戦士(Fighter) |`a.defender`: Incoming physical damage to party × 2/3 |`a.defender`: Incoming physical damage to party × 3/5 | `c.equipment_slot+1`,  `c.armor_x1.3` |
-|剣士(Swordsman) |`a.counter`: enemy CLOSE-range attack |`a.counter`: enemy CLOSE-range attack and MID-range | `c.sword_x1.3` |
+|戦士(Fighter) |`a.defender`: Incoming physical damage to party × 2/3 |`a.defender`: Incoming physical damage to party × 3/5 | `c.equipment_slot+1`,  `c.armor_x1.4` |
+|剣士(Swordsman) |`a.counter`: enemy CLOSE-range attack |`a.counter`: enemy CLOSE-range attack and MID-range | `c.sword_x1.4` |
 |忍者(Ninja) |`a.re-attack`: once when attacking |`a.re-attack`: twice when attacking | `c.penetration_x0.1`  |
-|侍(Samurai) |`a.iaigiri`: Physical damage ×2,  number of attacks ÷2 | `a.iaigiri`: Physical damage ×2.5,  number of attacks ÷2 |`c.katanax1.3` |
-|君主(Lord) |`a.leading`: Physical damage x1.3 |`a.leading`: Physical damage x1.6 | `c.gauntlet_x1.3`, `c.equipment_slot+1` |
-|狩人(Marksman) | `a.hunter`: Retrieve 30% of the arrows at the end of battle  |`a.hunter`: Retrieve 36% of the arrows at the end of battle | `c.archery_x1.3` |
-|魔法使い(Wizard) | `a.caster`: +2 `magical_NoA`  | `a.caster`: +3 `magical_NoA`  | `c.wand_x1.3` |
-|賢者(Sage) |`a.caster`: +1 `magical_NoA`. `a.m-barrier`: Incoming magical damage to party × 2/3 | `a.caster`: +1 `magical_NoA`. `a.m-barrier`: Incoming magical damage to party × 3/5 | `c.robe_x1.3`, `c.equipment_slot+2`|
+|侍(Samurai) |`a.iaigiri`: Physical damage ×2,  number of attacks ÷2 | `a.iaigiri`: Physical damage ×2.5,  number of attacks ÷2 |`c.katana_x1.4` |
+|君主(Lord) |`a.leading`: Physical damage x1.3 |`a.leading`: Physical damage x1.6 | `c.gauntlet_x1.4`, `c.equipment_slot+1` |
+|狩人(Marksman) | `a.hunter`: Retrieve 30% of the arrows at the end of battle  |`a.hunter`: Retrieve 36% of the arrows at the end of battle | `c.archery_x1.4` |
+|魔法使い(Wizard) | `a.caster`: +2 `magical_NoA`  | `a.caster`: +3 `magical_NoA`  | `c.wand_x1.4` |
+|賢者(Sage) |`a.caster`: +1 `magical_NoA`. `a.m-barrier`: Incoming magical damage to party × 2/3 | `a.caster`: +1 `magical_NoA`. `a.m-barrier`: Incoming magical damage to party × 3/5 | `c.robe_x1.4`, `c.equipment_slot+2`|
 |盗賊(Rouge) |`a.first-strike`: Acts faster than enemy at CLOSE phase |`a.first-strike`: Acts faster than enemy at All phases | `c.unlock` additional reward chance |
-|巡礼者(Pilgrim) |`a.null-counter`: Negate counter attack |`a.null-counter`: Negate counter attack | `c.amulet_x1.3`, `c.equipment_slot+1` |
+|巡礼者(Pilgrim) |`a.null-counter`: Negate counter attack |`a.null-counter`: Negate counter attack | `c.amulet_x1.4`, `c.equipment_slot+1` |
 
 - If `main_class` and  `sub_class` are same class, then it turns into master class.
 - `main_class` applies abilitiies and class bonuses. `sub_class` applies only class bonuses.
