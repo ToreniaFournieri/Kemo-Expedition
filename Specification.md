@@ -11,7 +11,7 @@
 
 ### 2.1 Global constants
 - One diety represents on one party. The diety has its own level, HP, and unique divine abilities. 
-const PARTY_SCHEMA = ['number', 'diety', 'level', 'experience', 'Party_HP', 'Party_physical_ defense', 'Party_magical_defense' ]
+const PARTY_SCHEMA = ['number', 'diety', 'level', 'experience', 'Party_HP', 'Party_physical_defense', 'Party_magical_defense' ]
 
 Initial_party = [1, 'God of Restoration', 1, 0, 100, 1, 1 ]
 
@@ -155,20 +155,17 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 |`e.sword` | 剣 | + `melee_attack` |
 |`e.katana` | 刀 | + `melee_attack`, - `melee_NoA` |
 |`e.archery` | 弓具 | bow: + `ranged_attack`, arrows:  + `ranged_NoA` |
-|`e.armor` | 鎧 | + `Party_physical_ defense` |
+|`e.armor` | 鎧 | + `Party_physical_defense` |
 |`e.gauntlet` | 籠手 | + `melee_NoA` |
 |`e.wand` | ワンド | + `magical_attack` |
 |`e.robe` | 法衣 | + `Party_magical_defense` |
 |`e.amulet` | 護符 | + `Party_HP` |
 
 
-
 ## 3. INITIALIZATION 
 - **Reward:** Put 1 win ticket(1) and 99 lose tickets(0) into 'reward_bag'. 
 - **Enhancement:** Put tickets into 'enhancement_bag'.
 - **Super Rare:** Put tickets into 'superRare_bag' .
-
-
 
 - If a bag is empty or explicitly reset the bag, initialize it.
 
