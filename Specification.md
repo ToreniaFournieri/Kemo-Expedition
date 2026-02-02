@@ -36,7 +36,7 @@ Initial_party = [1, 'God of Restoration', 1, 0, 100, 1, 1 ]
 
 |value |title | tickets |multiplier |
 |-----|---------|------|-----|
-|0 |(none) | 24999 | x1.0 |
+|0 |(none) | 24995 | x1.0 |
 |1 |世界を征する |1 | x2.0 |
 |2 |天に与えられし |1 | x2.0 |
 |3 |混沌の |1 | x2.0 |
