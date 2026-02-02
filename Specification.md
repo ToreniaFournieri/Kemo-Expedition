@@ -233,15 +233,15 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 - set the destination of dungeon.
 - sell items and gain gold. (gold is corrective resouce for this version)
 
-
-
-
 ### 4.2 Equipment
 
 - Each character has its own equipment slots.
 - Assigns items to a character from inventory. 
 
 ## 5. EXPEDITION 
+
+- Persistence through an expedition:'Party_HP'.
+
 
 ## 6. BATTLE
 
