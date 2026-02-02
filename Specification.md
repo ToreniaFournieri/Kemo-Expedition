@@ -96,7 +96,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 |class |abilities (main) |abilities (master) | class bonuses(main, sub) |
 |-----|-----------|---------|---------|
-|戦士(Fighter) |`a.defender`: Incoming physical damage to party × 2/3 |`a.defender`: Incoming physical damage to party × 3/5 |  `c.armor_x1.3` |
+|戦士(Fighter) |`a.defender`: Incoming physical damage to party × 2/3 |`a.defender`: Incoming physical damage to party × 3/5 | `c.equipment_slot+1`,  `c.armor_x1.3` |
 |剣士(Swordsman) |`a.counter`: enemy CLOSE-range attack |`a.counter`: enemy CLOSE-range attack and MID-range | `c.sword_x1.3` |
 |忍者(Ninja) |`a.re-attack`: once when attacking |`a.re-attack`: twice when attacking | (none) |
 |侍(Samurai) |`a.iaigiri`: Physical damage ×2,  number of attacks ÷2 | `a.iaigiri`: Physical damage ×2.5,  number of attacks ÷2 |`c.katanax1.5` |
