@@ -131,10 +131,21 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'ran
 - Characters do not have individual HP.
     - but each character contrivutes total HP, physical defense and magical defense. 
 
-### 2.3 Enemy
+### 2.3 Dungeons & Enemies
 
+- Each dungeon has multiple rooms. each room has one enemy. At the end of room, formitive boss enemy is waiting for victims.
+
+**Dungeon**
+- id:int
+- name
+- number_of_rooms
+- pool_of_enemies
+- Boss_enemy
+
+**Enemy**
 - id: int
-- rarlity: int
+- type: string.  Normal/Elite/Boss
+- pools
 - name: string
 - hp
 - ranged_attack
@@ -146,7 +157,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'ran
 - physical_defense
 - magical_defense
 - experience
-- drop_item: []
+- drop_item
 
 ### 2.4 Items
 
@@ -172,6 +183,10 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'ran
 - If a bag is empty or explicitly reset the bag, initialize it.
 
 ## 4. HOME
+
+- Manage party setting. character build (can also change its class, race!). change their equipment.
+- set the destination of dungeon.
+- sell items and gain gold. (gold is corrective resouce for this version)
 
 ### 4.1 Level up
 - Beats enemies, gains experience, then level up. 
