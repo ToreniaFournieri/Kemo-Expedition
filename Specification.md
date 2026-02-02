@@ -2,6 +2,8 @@
 
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
+- Support Japanese language. 
+- no randomness in battle. randomness of enemies spawns, reward items. 
 
 
 ## 2. CONSTANTS & DATA
