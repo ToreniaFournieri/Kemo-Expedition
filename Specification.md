@@ -251,7 +251,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 ### 3.4 Party initialization
 
 - Class bonuses like `c.amulet_x1.3` applies only for individual character's equipments.
-- Party HP: 95 + (level x 5) + (Total sum of individual (Item Bonuses x (`b.vitality` '+ `b.mind`) / 20))
+- Party HP: 950 + (level x 50) + (Total sum of individual (Item Bonuses x (`b.vitality` '+ `b.mind`) / 20))
 - Party defense:
   - Physical defense: (Total sum ofindividual (Item Bonuses x `b.vitality` / 10))
   - Magical defense: (Total sum ofindividual (Item Bonuses x `b.mind` / 10))
