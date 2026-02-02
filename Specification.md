@@ -95,14 +95,14 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 
 |roles |abilities | equipment bonuses |
 |-----|-----------|---------|
-|戦士(Tank) |Incoming physical damage to party × 2/3 | +1 equipment slot, armor x1.3 |
-|剣士(Swordsman) |Counter enemy CLOSE-range attack | sword x1.3 |
+|戦士(Tank) |Incoming physical damage to party × 2/3 | +1 equipment slot, `e.armor` x1.3 |
+|剣士(Swordsman) |Counter enemy CLOSE-range attack | `e.sword` x1.3 |
 |忍者(Ninja) |Re-attack once when attacking | +2 equipment slots |
-|侍(Samurai) |Physical damage ×2, number of attacks ÷2 | katana x1.5 |
-|君主(Lord) |Physical damage x1.4 | heavy armor x1.3 |
-|狩人(Marksman) | (none) | archer x1.5 |
-|魔法使い(Wizard) | (none) | wand x1.5 |
-|賢者(Sage) | Incoming magical damage to party × 2/3 | rod x1.5|
+|侍(Samurai) |Physical damage ×2, number of attacks ÷2 | `e.katana` x1.5 |
+|君主(Lord) |Physical damage x1.4 | `e.heavyArmor` x1.3 |
+|狩人(Marksman) | (none) | `e.archery` x1.5 |
+|魔法使い(Wizard) | (none) | `e.wand` x1.5 |
+|賢者(Sage) | Incoming magical damage to party × 2/3 | `e.rod` x1.5|
 |盗賊(rouge) |Acts twice per phase | (none) |
 
 - mutiplied reductions do not stack multiplicatively.
