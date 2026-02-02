@@ -121,15 +121,14 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 |lineage | bonus |
 |-----|-----------|
-|1|`c.wand_x1.2` |
-|2|`c.sword_x1.2` |
-||`c.katana_x1.2`|
-||`c.archery_x1.2`|
-||`c.armor_x1.2` |
-||`c.gauntlet_x1.2`|
-||`c.wand_x1.2`|
-||`c.robe_x1.2`|
-||`c.amulet_x1.2`|
+|2|`c.sword_x1.3` |
+||`c.katana_x1.2`, `b.mind`+1|
+||`c.archery_x1.3`|
+||`c.armor_x1.2`, `b.vitality`+1 |
+||`c.gauntlet_x1.2`, `b.strength`+1|
+||`c.wand_x1.3`|
+||`c.robe_x1.2`, `b.intelligence`+1|
+||`c.amulet_x1.2`, `b.vitality`+1|
 
 - **classes:**
 
