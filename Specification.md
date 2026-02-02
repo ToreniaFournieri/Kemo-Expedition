@@ -192,7 +192,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 **Item Category**
 
-|category | name | concept |
+|category | name | core concept |
 |-----|----|-----------|
 |`c.sword` | 剣 | + `melee_attack` |
 |`c.katana` | 刀 | + `melee_attack`, - `melee_NoA` |
@@ -202,6 +202,8 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |`c.wand` | ワンド | + `magical_attack` |
 |`c.robe` | 法衣 | + `Party_magical_defense` |
 |`c.amulet` | 護符 | + `Party_HP` |
+
+- *note:* item might have multiple bonus. sword may have `Party_HP` but subtle value. 
 
 **consumpstion of arrows**
 - Arrow Stacks: * Arrow-type items have a quantity property.
