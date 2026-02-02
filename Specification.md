@@ -103,6 +103,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |ミュリッド(Murid) |`c.penetration_x0.15`, `a.caster`: +1  |V:9 / S:8 / I:10 / M:10| Mouse |
 
 - predisposition:
+
 |predisposition | bonus |
 |-----|-----------|
 |頑強 (Sturdy)|`c.armor_x1.2`|
