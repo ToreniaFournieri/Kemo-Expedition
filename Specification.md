@@ -13,9 +13,7 @@
 - One diety represents on one party. The diety has its own level, HP, and unique divine abilities. 
 const PARTY_SCHEMA = ['number', 'diety', 'level', 'experience', 'Party_HP', 'Party_physical_defense', 'Party_magical_defense' ]
 
-Initial_party = [1, 'God of Restoration', 1, 0, 100, 1, 1 ]
-
-- 'God of Restoration' // Revives character at the base automatically, no death penalty 
+- Initial Diety: 'God of Restoration' // Revives character at the base automatically, no death penalty 
 
 - **Bag Randomization** It has 'reward_bag', 'enhancement_bag', 'superRare_bag' witch controls reward randomness and contains tickets. (0:lose ticket, 1:win ticket)
 
@@ -189,7 +187,6 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 - Beats enemies, gains experience, then level up. 
 - max_level: 29. (current version restriction)
 
-- Party HP: 100 + (Total sum of `b.vitality`)*`level`
 - Equipment slots for individual character
 	-`maximum_equipped_item`= base slots + class bonuses (`+v equipment slot(s)`)
 
@@ -204,16 +201,19 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |25|7 |
 
 - Attack damage:
-  - ranged_attack: Item Bonuses
-  - melee_Attack: `b.strength` x (10 + `level`) + Item Bonuses
-  - magical_Attack: `b.intelligence` x (10 + `level`) + Item Bonuses
+  - ranged_attack: Item Bonuses1
+  - melee_Attack: `b.strength` x (1 + 0.1 x `level`) + Item Bonuses
+  - magical_Attack: `b.intelligence` x (1 + 0.1 x `level`) + Item Bonuses
 
 - Number of attacks:
-  - ranged_NoA: 0 + Item Bonuses
+  - ranged_NoA: 0 + Item Bonuses // no arrows, no shoot.
   - magical_NoA: IF class is `Wizard` or `Sage`, 1. Else 0.
-  - melee_NoA: 0 + Item Bonuses
+  - melee_NoA: 0 + Item Bonuses //no gauntlet, no melee combat.
  
 ### 3.4 Party initialization
+
+- Party HP: 100 + (Total sum of `b.vitality`)*`level`
+
 
 - Party defense:
   - Physical defense: (Total sum of) Item Bonuses
