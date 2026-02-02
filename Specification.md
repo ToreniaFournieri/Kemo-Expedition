@@ -328,6 +328,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 - If currenr party HP =< 0, Defeat. 
 
 - **Counter:** IF character has `a.counter` ability and take damage in CLOSE phase. The character attacks to enemy.
+    - Counter triggers immediately after damage resolution, regardless of turn order modifiers.
 
 **Player action**
 - Each party menber act if he has corresponding damage source in the phase. 
