@@ -99,7 +99,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |レポリアン(Leporian) | `c.archery_x1.3` |V:9 / S:8 / I:11 / M:10| Rabbit |
 |タルピッド(Talpid) |`c.armor_x1.3` |V:12 / S:12 / I:7 / M:7| Mole |
 |セルヴィン(Cervin) |`c.wand_x1.3` |V:6 / S:7 / I:13 / M:10| Deer |
-|ミュリッド(Murid) |`c.penetration_x0.15`, `a.caster`: +1`  |V:9 / S:8 / I:10 / M:10| Mouse |
+|ミュリッド(Murid) |`c.penetration_x0.15`, `a.caster`: +1  |V:9 / S:8 / I:10 / M:10| Mouse |
 
 - classes:
 
