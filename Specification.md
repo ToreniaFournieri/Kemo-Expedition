@@ -94,19 +94,19 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 |class |abilities (main) | class bonuses(main, sub) |
 |-----|-----------|---------|
-|戦士(Fighter) |`a.defender` Incoming physical damage to party × 2/3 | `c.equipment-slot+1` , `c.armor_x1.3` |
+|戦士(Fighter) |`a.defender` Incoming physical damage to party × 2/3 | `c.equipment_slot+1` , `c.armor_x1.3` |
 |剣士(Swordsman) |`a.counter` enemy CLOSE-range attack | `c.sword_x1.3` |
-|忍者(Ninja) |`a.re-attack` once when attacking | `c.equipment-slot+1` |
+|忍者(Ninja) |`a.re-attack` once when attacking | `c.equipment_slot+1` |
 |侍(Samurai) |`a.iaigiri` Physical damage ×2,  number of attacks ÷2 | `c.katanax1.5` |
-|君主(Lord) |`a.leading` Physical damage x1.4 | `c.gauntlet_x1.3`, `c.equipment-slot+2` |
+|君主(Lord) |`a.leading` Physical damage x1.4 | `c.gauntlet_x1.3`, `c.equipment_slot+2` |
 |狩人(Marksman) | (none) | `c.archery_x1.5` |
 |魔法使い(Wizard) | (none) | `c.wand_x1.5` |
-|賢者(Sage) |`a.m-barrier` Incoming magical damage to party × 2/3 | `c.robe_x1.3`, `c.equipment-slot+3`|
-|盗賊(rouge) |`a.first-strike` Acts faster than enemy | `c.amulet_x1.3`, `c.equipment-slot+1` |
+|賢者(Sage) |`a.m-barrier` Incoming magical damage to party × 2/3 | `c.robe_x1.3`, `c.equipment_slot+3`|
+|盗賊(rouge) |`a.first-strike` Acts faster than enemy | `c.amulet_x1.3`, `c.equipment_slot+1` |
 
 - `main_class` applies abilitiies and class bonuses. `sub_class` applies only class bonuses.
 - Only the strongest single ability(a.) of the same name applies.
-- Only one single bonuses(c.) of the same name applies. (two `c.equipment-slot+2`, but only one `c.equipment-slot+2` works)
+- Only one single bonuses(c.) of the same name applies. (two `c.equipment_slot+2`, but only one `c.equipment_slot+2` works)
 
 
 #### 2.2.2 Party structure 
@@ -189,7 +189,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 - max_level: 29. (current version restriction)
 
 - Equipment slots for individual character
-	-`maximum_equipped_item`= base slots + class bonuses (`c.equipment-slot+1`, `c.equipment-slot+2`, `c.equipment-slot+3`)
+	-`maximum_equipped_item`= base slots + class bonuses (`c.equipment_slot+1`, `c.equipment_slot+2`, `c.equipment_slot+3`)
 
 |level | base slots |
 |-----|-----------|
