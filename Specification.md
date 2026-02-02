@@ -191,6 +191,9 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 - ranged_attack
 - magical_attack
 - melee_attack
+- ranged_attack_amplifier // 1.0 as default 
+- magical_attack_amplifier // 1.0 as default 
+- melee_attack_amplifier // 1.0 as default 
 - ranged_NoA
 - magical_NoA
 - melee_NoA
