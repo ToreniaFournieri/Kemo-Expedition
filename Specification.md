@@ -6,6 +6,8 @@
 - no randomness in battle.
 - Tetris like randomness for enemies spawns, reward items. (a bag contians all potential rewards. 
 
+### 1.1 World setting
+-
 
 ## 2. CONSTANTS & DATA
 
