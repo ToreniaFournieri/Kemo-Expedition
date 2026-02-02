@@ -101,6 +101,20 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |セルヴィン(Cervin) |`c.wand_x1.3` |V:6 / S:7 / I:13 / M:10| Deer |
 |ミュリッド(Murid) |`c.penetration_x0.15`, `a.caster`: +1  |V:9 / S:8 / I:10 / M:10| Mouse |
 
+- predisposition:
+|predisposition | bonus |
+|-----|-----------|
+|頑強 (Sturdy)|`c.armor_x1.2`|
+|俊敏 (Agile)|`c.gauntlet_x1.2`|
+|頑強 (Sturdy)|`c.armor_x1.2`|
+|聡明 (Brilliant)|`c.wand_x1.2`|
+|器用 (Dexterous)|`c.archery_x1.2`|
+|騎士道 (Chivalry)|`c.sword_x1.2`|
+|士魂 (Shikon)|`c.katana_x1.2`|
+|追求 (Pursuit)|`c.robe_x1.2`|
+|商才 (IDcumen)|`c.equipment_slot+1`|
+
+
 - classes:
 
 |class |abilities (main) |abilities (master) | class bonuses(main, sub) |
