@@ -150,16 +150,16 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 
 **Item Category**
 
-|category | concept |
-|-----|-----------|
-|`e.sword` | + `melee_attack` |
-|`e.katana` | + `melee_attack`, - `melee_NoA` |
-|`e.archery` | bow: + `ranged_attack`, arrows:  + `ranged_NoA` |
-|`e.armor` | + `Party_physical_ defense` |
-|`e.gauntlet` | + `melee_NoA` |
-|`e.wand` | + `magical_attack` |
-|`e.robe` | + `Party_magical_defense` |
-|`e.amulet` | + `Party_HP` |
+|category | name | concept |
+|-----|----|-----------|
+|`e.sword` | 剣 | + `melee_attack` |
+|`e.katana` | 刀 | + `melee_attack`, - `melee_NoA` |
+|`e.archery` | 弓術用具 | bow: + `ranged_attack`, arrows:  + `ranged_NoA` |
+|`e.armor` | 鎧 | + `Party_physical_ defense` |
+|`e.gauntlet` | 籠手 | + `melee_NoA` |
+|`e.wand` | ワンド | + `magical_attack` |
+|`e.robe` | 法衣 | + `Party_magical_defense` |
+|`e.amulet` | 護符 | + `Party_HP` |
 
 
 
