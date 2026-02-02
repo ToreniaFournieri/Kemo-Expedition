@@ -328,7 +328,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 ### 6.4 Post battle
 
--`a.hunter` Retrieve 30% of the arrows
+-`a.hunter` Retrieve v% of the arrows which the character consumed in the battle. 
 
 
 ### 6.5 Outcome 
