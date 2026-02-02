@@ -155,10 +155,10 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 |`e.sword` | + `melee_attack` |
 |`e.katana` | + `melee_attack`, - `melee_NoA` |
 |`e.archery` | bow: + `ranged_attack`, arrows:  + `ranged_NoA` |
-|`e.wand` | + `magical_attack` |
 |`e.armor` | + `Party_physical_ defense` |
-|`e.robe` | + `Party_magical_defense` |
 |`e.gauntlet` | + `melee_NoA` |
+|`e.wand` | + `magical_attack` |
+|`e.robe` | + `Party_magical_defense` |
 |`e.amulet` | + `Party_HP` |
 
 
