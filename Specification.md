@@ -92,20 +92,21 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 - classes:
 
-|class |abilities | bonuses |
+|class |abilities | class bonuses |
 |-----|-----------|---------|
-|戦士(Fighter) |`a.defender` Incoming physical damage to party × 2/3 | +1 equipment slot, `e.armor` x1.3 |
-|剣士(Swordsman) |`a.counter` enemy CLOSE-range attack | `e.sword` x1.3 |
-|忍者(Ninja) |`a.re-attack` once when attacking | +2 equipment slots |
-|侍(Samurai) |`a.iaigiri` Physical damage ×2,  number of attacks ÷2 | `e.katana` x1.5 |
-|君主(Lord) |`a.leading` Physical damage x1.4 | `e.gauntlet` x1.3, +2 equipment slots |
-|狩人(Marksman) | (none) | `e.archery` x1.5 |
-|魔法使い(Wizard) | (none) | `e.wand` x1.5 |
-|賢者(Sage) |`a.m-barrier` Incoming magical damage to party × 2/3 | `e.robe` x1.3, +3 equipment slots|
-|盗賊(rouge) |`a.first-strike` Acts faster than enemy | `e.amulet` x1.3, +1 equipment slot |
+|戦士(Fighter) |`a.defender` Incoming physical damage to party × 2/3 | `c.equipment-slot+1` , `c.armor_x1.3` |
+|剣士(Swordsman) |`a.counter` enemy CLOSE-range attack | `c.sword_x1.3` |
+|忍者(Ninja) |`a.re-attack` once when attacking | `c.equipment-slot+1` |
+|侍(Samurai) |`a.iaigiri` Physical damage ×2,  number of attacks ÷2 | `c.katanax1.5` |
+|君主(Lord) |`a.leading` Physical damage x1.4 | `c.gauntlet_x1.3`, `c.equipment-slot+2` |
+|狩人(Marksman) | (none) | `c.archery_x1.5` |
+|魔法使い(Wizard) | (none) | `c.wand_x1.5` |
+|賢者(Sage) |`a.m-barrier` Incoming magical damage to party × 2/3 | `c.robe_x1.3`, `c.equipment-slot+3`|
+|盗賊(rouge) |`a.first-strike` Acts faster than enemy | `c.amulet_x1.3`, `c.equipment-slot+1` |
 
 - `main_class` applies abilitiies and bonuses. `sub_class` applies only bonuses.
-- Only the strongest single ability of the same name applies.
+- Only the strongest single ability(a.) of the same name applies.
+- Only one single bonuses(c.) of the same name applies. (two `c.equipment-slot+2`, but only one `c.equipment-slot+2` works)
 
 
 #### 2.2.2 Party structure 
@@ -163,15 +164,15 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 |category | name | concept |
 |-----|----|-----------|
-|`e.sword` | 剣 | + `melee_attack` |
-|`e.katana` | 刀 | + `melee_attack`, - `melee_NoA` |
-|`e.archery` | 弓具 | bow: + `ranged_attack`, arrows:  + `ranged_NoA` |
-|`e.armor` | 鎧 | + `Party_physical_defense` |
-|`e.gauntlet` | 籠手 | + `melee_NoA` |
-|`e.wand` | ワンド | + `magical_attack` |
-|`e.book` | 魔導書 | + `magical_NoA` |
-|`e.robe` | 法衣 | + `Party_magical_defense` |
-|`e.amulet` | 護符 | + `Party_HP` |
+|`c.sword` | 剣 | + `melee_attack` |
+|`c.katana` | 刀 | + `melee_attack`, - `melee_NoA` |
+|`c.archery` | 弓具 | bow: + `ranged_attack`, arrows:  + `ranged_NoA` |
+|`c.armor` | 鎧 | + `Party_physical_defense` |
+|`c.gauntlet` | 籠手 | + `melee_NoA` |
+|`c.wand` | ワンド | + `magical_attack` |
+|`c.book` | 魔導書 | + `magical_NoA` |
+|`c.robe` | 法衣 | + `Party_magical_defense` |
+|`c.amulet` | 護符 | + `Party_HP` |
 
 
 ## 3. INITIALIZATION 
@@ -188,7 +189,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 - max_level: 29. (current version restriction)
 
 - Equipment slots for individual character
-	-`maximum_equipped_item`= base slots + class bonuses (`+v equipment slot(s)`)
+	-`maximum_equipped_item`= base slots + class bonuses (`c.equipment-slot+1`, `c.equipment-slot+2`, `c.equipment-slot+3`)
 
 |level | base slots |
 |-----|-----------|
