@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.0.1 - SPECIFICATION
+# KEMO EXPEDITION v0.0.2 - SPECIFICATION
 
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
@@ -95,9 +95,9 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |class |abilities | bonuses |
 |-----|-----------|---------|
 |戦士(Fighter) |Incoming physical damage to party × 2/3 | +1 equipment slot, `e.armor` x1.3 |
-|剣士(Swordsman) |Counter enemy CLOSE-range attack | `e.sword` x1.3 |
-|忍者(Ninja) |Re-attack once when attacking | +2 equipment slots |
-|侍(Samurai) |Physical damage ×2, number of attacks ÷2 | `e.katana` x1.5 |
+|剣士(Swordsman) |`a.counter` enemy CLOSE-range attack | `e.sword` x1.3 |
+|忍者(Ninja) |`a.re-attack` once when attacking | +2 equipment slots |
+|侍(Samurai) |Physical damage ×2, `a.iaigiri` number of attacks ÷2 | `e.katana` x1.5 |
 |君主(Lord) |Physical damage x1.4 | `e.gauntlet` x1.3, +2 equipment slots |
 |狩人(Marksman) | (none) | `e.archery` x1.5 |
 |魔法使い(Wizard) | (none) | `e.wand` x1.5 |
@@ -210,11 +210,10 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
   - magical_NoA: IF class is `Wizard` or `Sage`, 1. Else 0.
   - melee_NoA: 0 + Item Bonuses //no gauntlet, no melee combat.
  
+  - IF the character has `a.iaigiri`, halve these number of attacks.
+ 
 ### 3.4 Party initialization
-
 - Party HP: 100 + (Total sum of `b.vitality`)*`level`
-
-
 - Party defense:
   - Physical defense: (Total sum of) Item Bonuses
   - Magical defense: (Total sum of) Item Bonuses
@@ -260,23 +259,23 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 - Enemy always moves first.
 
 
-- Damage: max(1 ,(Enemy damage - Party defense) x Enemy's damage amplifier x Party abilities amplifier) 
+- Damage: max(1 ,(Enemy damage - Party defense) x Enemy's damage amplifier x Party abilities amplifier) x number of attacks
     - following matched ranged type. 
-
 - Current Party HP -= Calculated damage
 - If currenr party HP =< 0, Defeat. 
 
+- **Counter:** IF character has `a.counter` ability and take damage in CLOSE phase. The character attacks to enemy.
 
 **Player action**
 - Each party menber act if he has corresponding damage source in the phase. 
-
-
 
 - Calculated damage: max(1, (Attack damage - Enemy defense) x Party abilities amplifier )
     - following matched ranged type. 
 
 - Current enemy HP -= Calculated damage
-- If enemy HP =< 0, Victory. 
+- If enemy HP =< 0, Victory.
+
+- **Re-attack:** IF character has `a.re-attack` ability. The character attacks to enemy.
 
 ### 6.4 Post battle
 
