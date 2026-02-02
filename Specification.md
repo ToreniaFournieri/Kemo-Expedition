@@ -91,10 +91,10 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |races | bonus | base status | memo |
 |-----|-----------|-----------|------|
 |ケイナイアン(Caninian) | `c.amulet_x1.3` |V:10 / S:10 / I:10 / M:10| Dog |
-|ルピニアン(Lupinian) | `c.equipment_slot+1`, `c.katana_x1.3`  |V:9 / S:13 / I:8 / M:7| Wolf |
+|ルピニアン(Lupinian) | `c.equipment_slot+1`, `c.katana_x1.3`  |V:9 / S:12 / I:8 / M:7| Wolf |
 |ヴァルピニアン(Vulpinian) |`c.equipment_slot+1`, `c.sword_x1.3` |V:10 / S:10 / I:12 / M:8| Fox |
-|ウルサン(Ursan) |`c.equipment_slot+2` |V:14 / S:9 / I:7 / M:8| Bear |
-|フェリディアン(Felidian) |`c.robe_x1.3` |V:10 / S:10 / I:10 / M:12| Cat |
+|ウルサン(Ursan) |`c.equipment_slot+2` |V:13 / S:12 / I:5 / M:7| Bear |
+|フェリディアン(Felidian) |`c.robe_x1.3` |V:9 / S:9 / I:10 / M:12| Cat |
 |マステリド(Mustelid) | `c.gauntlet_x1.3` |V:10 / S:10 / I:9 / M:11| Ferret |
 |レポリアン(Leporian) | `c.archery_x1.3` |V:9 / S:8 / I:11 / M:10| Rabbit |
 |タルピッド(Talpid) |`c.armor_x1.3` |V:12 / S:12 / I:7 / M:7| Mole |
