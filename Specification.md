@@ -77,7 +77,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 **Base Status Parameters**
 - Each character has the following base status values:
 	- V (`b.vitality`): contributes to Party HP
-	- S (`b.Strength`): contributes to physical attack
+	- S (`b.strength`): contributes to physical attack
 	- I (`b.intelligence`): contributes to magical attack
 	- M (`b.mind`): contributes to magical resistance effects (not used in this version)
 
