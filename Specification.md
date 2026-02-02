@@ -189,7 +189,8 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 - max_level: 29. (current version restriction)
 
 - Equipment slots for individual character
-	-`maximum_equipped_item`= base slots + class bonuses (`c.equipment_slot+1`, `c.equipment_slot+2`, `c.equipment_slot+3`)
+	-`maximum_equipped_item`= base slots + class_bonuses (`c.equipment_slot+1`, `c.equipment_slot+2`, `c.equipment_slot+3`)
+  	- Where class_bonuses is the sum of unique values from Main and Sub class. Example: If Main Class provides `c.equipment_slot+2` and Sub Class provides `c.equipment_slot+3`, class_bonuses is 5. If both provide `c.equipment_slot+2`, bonus_sum is 2.
 
 |level | base slots |
 |-----|-----------|
@@ -214,7 +215,9 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
   - IF the character has `a.iaigiri`, halve these number of attacks.
  
 ### 3.4 Party initialization
-- Party HP: 100 + (Total sum of `b.vitality`)*`level`
+
+- Class bonuses like `c.amulet_x1.3` applies only for individual character's equipments.
+- Party HP: 100 + (Total sum of `b.vitality`)*`level` + Item Bonuses
 - Party defense:
   - Physical defense: (Total sum of) Item Bonuses
   - Magical defense: (Total sum of) Item Bonuses
