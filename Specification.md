@@ -127,7 +127,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |忍者(Ninja) |`c.penet_x0.15` |`a.re-attack`: once when attacking |`a.re-attack`: twice when attacking | 
 |侍(Samurai) |`c.katana_x1.4` |`a.iaigiri`: Physical damage ×2,  number of attacks ÷2 | `a.iaigiri`: Physical damage ×2.5,  number of attacks ÷2 |
 |君主(Lord) |`c.gauntlet_x1.4`, `c.equip_slot+1` |`a.leading`: Physical damage x1.3 |`a.leading`: Physical damage x1.6 | 
-|狩人(Marksman) | `a.hunter`: Retrieve 30% of the arrows at the end of battle  |`c.archery_x1.4` |`a.hunter`: Retrieve 36% of the arrows at the end of battle | 
+|狩人(Marksman) |`c.archery_x1.4` | `a.hunter`: Retrieve 30% of the arrows at the end of battle  |`a.hunter`: Retrieve 36% of the arrows at the end of battle | 
 |魔法使い(Wizard) |`c.wand_x1.4` | `a.caster`: +2 `magical_NoA`  | `a.caster`: +3 `magical_NoA`  | 
 |賢者(Sage) |`c.robe_x1.4`, `c.equip_slot+2` |`a.caster`: +1 `magical_NoA`. `a.m-barrier`: Incoming magical damage to party × 2/3 | `a.caster`: +1 `magical_NoA`. `a.m-barrier`: Incoming magical damage to party × 3/5 | 
 |盗賊(Rouge) |`c.unlock` additional reward chance |`a.first-strike`: Acts faster than enemy at CLOSE phase |`a.first-strike`: Acts faster than enemy at All phases | 
