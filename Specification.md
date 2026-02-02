@@ -34,14 +34,14 @@ Initial_party = [1, 'God of Restoration', 1, 0, 100, 1, 1 ]
 
 - superRare title
 
-|value |title | tickets |
-|-----|---------|------|
-|0 |(none) | 24999 |
-|1 |世界を征する |1 |
-|2 |天に与えられし |1 |
-|3 |混沌の |1 |
-|4 |知られざる |1 |
-|5 |血に飢えし |1 |
+|value |title | tickets |multiplier |
+|-----|---------|------|-----|
+|0 |(none) | 24999 | x1.0 |
+|1 |世界を征する |1 | x2.0 |
+|2 |天に与えられし |1 | x2.0 |
+|3 |混沌の |1 | x2.0 |
+|4 |知られざる |1 | x2.0 |
+|5 |血に飢えし |1 | x2.0 |
 
 ### 2.2 Play characters
 - The diety creates character and assigns 6 Characters to its party. The characters can change its race, role and name at will. 
