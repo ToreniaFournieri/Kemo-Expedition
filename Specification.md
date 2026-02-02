@@ -121,14 +121,14 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 |lineage | bonus |
 |-----|-----------|
-|2|`c.sword_x1.3` |
-||`c.katana_x1.2`, `b.mind`+1|
-||`c.archery_x1.3`|
-||`c.armor_x1.2`, `b.vitality`+1 |
-||`c.gauntlet_x1.2`, `b.strength`+1|
-||`c.wand_x1.3`|
-||`c.robe_x1.2`, `b.intelligence`+1|
-||`c.amulet_x1.2`, `b.vitality`+1|
+|鋼誓の家（House of Steel Oath）|`c.sword_x1.3` |
+|戦魂の家（House of War Spirit）|`c.katana_x1.2`, `b.mind`+1|
+|遠眼の家（House of Far Sight）|`c.archery_x1.3`|
+|不動の家（House of the Unmoving）|`c.armor_x1.2`, `b.vitality`+1 |
+|砕手の家（House of the Breaking Hand）|`c.gauntlet_x1.2`, `b.strength`+1|
+|導智の家（House of Guiding Thought）|`c.wand_x1.3`|
+|秘理の家（House of Hidden Principles）|`c.robe_x1.2`, `b.intelligence`+1|
+|継誓の家（House of Inherited Oaths）|`c.amulet_x1.2`, `b.vitality`+1|
 
 - **classes:**
 
