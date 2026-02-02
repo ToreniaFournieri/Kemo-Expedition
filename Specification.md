@@ -342,6 +342,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
   - Party abilities: `a.leading`
   - penet multiplier: like `c.penet_x0.1` & `c.penet_x0.15` -> 0.25
   - following matched ranged type. 
+  - Party damage reduction abilities apply after defense subtraction.
 
 - Current enemy HP -= Calculated damage
 - If enemy HP =< 0, Victory.
