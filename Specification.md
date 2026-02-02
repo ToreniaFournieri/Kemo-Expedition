@@ -145,7 +145,8 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 
 ### 4.2 Equipment
 
-
+- Each character has its own equipment slots.
+- Assigns items to a character from inventory. 
 
 ## 5. EXPEDITION 
 
@@ -191,8 +192,15 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 
 ### 6.5 Outcome 
 
+- Victory: gains experience points to a party. has a chance of gaining reward from enemies drop item. Proceeds to the next room.
+- Defeat: no penalties (current version). no experience points nor item reward. Back to the base.
+- Draw:no penalties (current version). no experience points nor item reward. Proceeds to the next room.
 
 ## 7. REWARD 
+
+- Item reward.
+- It is a 1/100 chance to obtain item from one enemy.
+- Get one 
 
 ## 8. UI
 
