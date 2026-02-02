@@ -236,25 +236,27 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |20|6 |
 |25|7 |
 
+- c.multiplier like `c.sword_x1.3` applies only for sword item type. other item types like amulet may have +10 melee_attack bonus, but amulet's melee_attack bonus is not multiplied by `c.sword_x1.3` effect. 
+
 - Attack damage:
-  - ranged_attack: Item Bonuses(round up)
-  - melee_Attack: Item Bonuses(round up) x `b.strength` / 10
-  - magical_Attack: Item Bonuses(round up) x `b.intelligence` / 10
+  - ranged_attack: Item Bonuses x its c.multiplier
+  - melee_attack: Item Bonuses x its c.multiplier x `b.strength` / 10
+  - magical_attack: Item Bonuses x its c.multiplier x `b.intelligence` / 10
 
 - Number of attacks:
-  - ranged_NoA: 0 + Item Bonuses(round up) // no arrows, no shoot.
+  - ranged_NoA: 0 + Item Bonuses x its c.multiplier (round up) // no arrows, no shoot.
   - magical_NoA: 0 + `a.caster` bonuses // only strongest single ability applies.
-  - melee_NoA: 0 + Item Bonuses(round up) //no gauntlet, no melee combat.
+  - melee_NoA: 0 + Item Bonuses x x its c.multiplier (round up) //no gauntlet, no melee combat.
  
-  - IF the character has `a.iaigiri`, halve these number of attacks.
+  - IF the character has `a.iaigiri`, halve these number of attacks, round up. 
  
 ### 3.4 Party initialization
 
-- Class bonuses like `c.amulet_x1.3` applies only for individual character's equipments.
-- Party HP: 950 + (level x 50) + (Total sum of individual (Item Bonuses x (`b.vitality` '+ `b.mind`) / 20))
+- c.multiplier like `c.amulet_x1.3` applies only for individual character's equipments. 
+- Party HP: 950 + (level x 50) + (Total sum of individual (Item Bonuses of HP x its c.multiplier x (`b.vitality`  + `b.mind`) / 20))
 - Party defense:
-  - Physical defense: (Total sum ofindividual (Item Bonuses x `b.vitality` / 10))
-  - Magical defense: (Total sum ofindividual (Item Bonuses x `b.mind` / 10))
+  - Physical defense: (Total sum of individual (Item Bonuses of Physical defense x its c.multiplier x `b.vitality` / 10))
+  - Magical defense: (Total sum of individual (Item Bonuses of Magical defense x its c.multiplier x `b.mind` / 10))
 
 
 ## 4. HOME
