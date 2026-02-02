@@ -7,7 +7,8 @@
 - Tetris like randomness for enemies spawns, reward items. (a bag contians all potential rewards. 
 
 ### 1.1 World setting
--
+- The world is fragmented into unexplored regions filled with ancient creatures and forgotten relics.
+- Each expedition is guided by a single deity, who manifests power through a chosen party to restore balance and reclaim lost knowledge. 
 
 ## 2. CONSTANTS & DATA
 
