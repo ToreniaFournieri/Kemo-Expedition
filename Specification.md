@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.0.3 - SPECIFICATION
+# KEMO EXPEDITION v0.0.4 - SPECIFICATION
 
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
@@ -106,28 +106,28 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 |predisposition | bonus |
 |-----|-----------|
-|頑強 (Sturdy)|`b.vitality`+2,  `c.armor_x1.1`|
+|頑強 (Sturdy)|`b.vitality+2`,  `c.armor_x1.1`|
 |俊敏 (Agile)|`c.gauntlet_x1.2`|
 |聡明 (Brilliant)|`c.wand_x1.2`|
 |器用 (Dexterous)|`c.archery_x1.2`|
 |騎士道 (Chivalric)|`c.sword_x1.2`|
-|士魂 (Shikon)|`b.strength`+2, `c.katana_x1.1`|
-|追求 (Pursuing)|`b.intelligence`+2, `c.robe_x1.1`|
+|士魂 (Shikon)|`b.strength+2`, `c.katana_x1.1`|
+|追求 (Pursuing)|`b.intelligence+2`, `c.robe_x1.1`|
 |商才 (Canny)|`c.equip_slot+1`|
-|忍耐(Persistent)|`b.mind`+2, `c.robe_x1.1`|
+|忍耐(Persistent)|`b.mind+2`, `c.robe_x1.1`|
 
 - **lineage(家系):**
 
 |lineage | bonus |
 |-----|-----------|
 |鋼誓の家（House of Steel Oath）|`c.sword_x1.3` |
-|戦魂の家（House of War Spirit）|`c.katana_x1.2`, `b.mind`+1|
+|戦魂の家（House of War Spirit）|`c.katana_x1.2`, `b.mind+1`|
 |遠眼の家（House of Far Sight）|`c.archery_x1.3`|
-|不動の家（House of the Unmoving）|`c.armor_x1.2`, `b.vitality`+1 |
-|砕手の家（House of the Breaking Hand）|`c.gauntlet_x1.2`, `b.strength`+1|
+|不動の家（House of the Unmoving）|`c.armor_x1.2`, `b.vitality+1` |
+|砕手の家（House of the Breaking Hand）|`c.gauntlet_x1.2`, `b.strength+1`|
 |導智の家（House of Guiding Thought）|`c.wand_x1.3`|
-|秘理の家（House of Hidden Principles）|`c.robe_x1.2`, `b.intelligence`+1|
-|継誓の家（House of Inherited Oaths）|`c.amulet_x1.2`, `b.vitality`+1|
+|秘理の家（House of Hidden Principles）|`c.robe_x1.2`, `b.intelligence+1`|
+|継誓の家（House of Inherited Oaths）|`c.amulet_x1.2`, `b.vitality+1`|
 
 - **classes:**
 
@@ -235,7 +235,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 - If a bag is empty or explicitly reset the bag, initialize it.
 
 ### 3.3 Character initialization
-- Beats enemies, gains experience, then level up. 
+- Experience and level are party-wide. Characters do not have individual levels; all level-based effects reference Party level.
 - max_level: 29. (current version restriction)
 
 - Equipment slots for individual character
@@ -251,6 +251,9 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |16|5 |
 |20|6 |
 |25|7 |
+
+
+- Base status update: add (b.) modifiers. (ex. b.vitality = 10(from race) + `b.vitality+2` -> 12
 
 - c.multiplier like `c.sword_x1.3` applies only for sword item type. other item types like amulet may have +10 melee_attack bonus, but amulet's melee_attack bonus is not multiplied by `c.sword_x1.3` effect. 
 
