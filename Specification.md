@@ -11,7 +11,7 @@
 
 ### 2.1 Global constants
 - One diety represents on one party. The diety has its own level, HP, and unique divine abilities. 
-const PARTY_SCHEMA = ['number', 'diety', 'level', 'experience', 'HP', 'physical_ defense', 'magical_ defense' ]
+const PARTY_SCHEMA = ['number', 'diety', 'level', 'experience', 'Party_HP', 'physical_ defense', 'magical_ defense' ]
 
 Initial_party = [1, 'God of Restoration', 1, 0, 100, 1, 1 ]
 
@@ -99,10 +99,10 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 |剣士(Swordsman) |Counter enemy CLOSE-range attack | `e.sword` x1.3 |
 |忍者(Ninja) |Re-attack once when attacking | +2 equipment slots |
 |侍(Samurai) |Physical damage ×2, number of attacks ÷2 | `e.katana` x1.5 |
-|君主(Lord) |Physical damage x1.4 | `e.heavyArmor` x1.3 |
+|君主(Lord) |Physical damage x1.4 | `e.gauntlet` x1.3 |
 |狩人(Marksman) | (none) | `e.archery` x1.5 |
 |魔法使い(Wizard) | (none) | `e.wand` x1.5 |
-|賢者(Sage) | Incoming magical damage to party × 2/3 | `e.rod` x1.5|
+|賢者(Sage) | Incoming magical damage to party × 2/3 | `e.robe` x1.3|
 |盗賊(rouge) |Acts twice per phase | (none) |
 
 - mutiplied reductions do not stack multiplicatively.
@@ -147,6 +147,20 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 - drop_item: []
 
 ### 2.4 Items
+
+**Item Category**
+
+|category | concept |
+|-----|-----------|
+|`e.sword` | + `melee_attack` |
+|`e.katana` | + `melee_attack`, - `melee_NoA` |
+|`e.archery` | bow: + `ranged_attack`, arrows:  + `ranged_NoA` |
+|`e.wand` | + `magical_attack` |
+|`e.armor` | + `Party_HP` |
+|`e.wand` | + `magical_attack` |
+|`e.wand` | + `magical_attack` |
+
+
 
 ## 3. INITIALIZATION 
 - **Reward:** Put 1 win ticket(1) and 99 lose tickets(0) into 'reward_bag'. 
