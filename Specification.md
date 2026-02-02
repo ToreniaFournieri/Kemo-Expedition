@@ -99,7 +99,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |レポリアン(Leporian) | `c.archery_x1.3` |9,8,11,10| Rabbit |
 |タルピッド(Talpid) |`c.armor_x1.3` |12,12,7,7| Mole |
 |セルヴィン(Cervin) |`c.wand_x1.3` |6,7,13,10| Deer |
-|ミュリッド(Murid) |`c.penet_x0.10`, `a.caster`: +1  |9,8,10,10| Mouse |
+|ミュリッド(Murid) |`c.penet_x0.10`, `c.caster+1`  |9,8,10,10| Mouse |
 
 
 - **predisposition(性格):**
@@ -139,8 +139,8 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |侍(Samurai) |`c.katana_x1.4` |`a.iaigiri`: Physical damage ×2,  number of attacks ÷2 | `a.iaigiri`: Physical damage ×2.5,  number of attacks ÷2 |
 |君主(Lord) |`c.gauntlet_x1.4`, `c.equip_slot+1` |`a.leading`: Physical damage x1.3 |`a.leading`: Physical damage x1.6 | 
 |狩人(Ranger) |`c.archery_x1.4` | `a.hunter`: Retrieve 30% of the arrows at the end of battle  |`a.hunter`: Retrieve 36% of the arrows at the end of battle | 
-|魔法使い(Wizard) |`c.wand_x1.4` | `a.caster`: +2 `magical_NoA`  | `a.caster`: +3 `magical_NoA`  | 
-|賢者(Sage) |`c.robe_x1.4`, `c.equip_slot+2` |`a.caster`: +1 `magical_NoA`. `a.m-barrier`: Incoming magical damage to party × 2/3 | `a.caster`: +1 `magical_NoA`. `a.m-barrier`: Incoming magical damage to party × 3/5 | 
+|魔法使い(Wizard) |`c.wand_x1.4` | `c.caster+2` | `c.caster+3` | 
+|賢者(Sage) |`c.robe_x1.4`, `c.equip_slot+2` |`c.caster+1`. `a.m-barrier`: Incoming magical damage to party × 2/3 | `c.caster+1`. `a.m-barrier`: Incoming magical damage to party × 3/5 | 
 |盗賊(Rouge) |`c.unlock` additional reward chance |`a.first-strike`: Acts faster than enemy at CLOSE phase |`a.first-strike`: Acts faster than enemy at All phases | 
 |巡礼者(Pilgrim) |`c.amulet_x1.4`, `c.equip_slot+1` |`a.null-counter`: Negate counter attack |`a.null-counter`: Negate counter attack | 
 
@@ -264,7 +264,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 - Number of attacks:
   - ranged_NoA: 0 + Item Bonuses x its c.multiplier (round up) // no arrows, no shoot.
-  - magical_NoA: 0 + `a.caster` bonuses // only strongest single ability applies.
+  - magical_NoA: 0 + `c.caster` bonuses // Only one single bonuses of the same name applies. 
   - melee_NoA: 0 + Item Bonuses x its c.multiplier (round up) //no gauntlet, no melee combat.
  
   - IF the character has `a.iaigiri`, halve these number of attacks, round up. 
