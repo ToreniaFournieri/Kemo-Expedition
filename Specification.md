@@ -46,16 +46,16 @@ Initial_party = [1, 'God of Restoration', 1, 0, 100, 1, 1 ]
 ### 2.2 Play characters
 - The diety creates character and assigns 6 Characters to its party. The characters can change its race, role and name at will. 
 
-const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'ranged_attack', 'magical_attack', 'melee_attack, 'ranged_NoA', 'magical_NoA', 'melee_NoA', 'maximum_equipped_item' ]
+const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.vitality', 'b.strength', 'b.intelligence', 'b.mind' , 'ranged_attack', 'magical_attack', 'melee_attack', 'ranged_NoA', 'magical_NoA', 'melee_NoA', 'maximum_equipped_item' ]
 
 - id: int
 - main_class
 - sub_class
 - name: string
-- vitality 
-- strength 
-- intelligence 
-- mind
+- b.vitality 
+- b.strength 
+- b.intelligence 
+- b.mind
 - ranged_attack
 - magical_attack
 - melee_attack
@@ -78,10 +78,10 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'ran
 
 **Base Status Parameters**
 - Each character has the following base status values:
-	- V (Vitality): contributes to Party HP
-	- S (Strength): contributes to physical attack
-	- I (Intelligence): contributes to magical attack
-	- M (Mind): contributes to magical defense or resistance effects
+	- V (`b.vitality`): contributes to Party HP
+	- S (`b.Strength`): contributes to physical attack
+	- I (`b.intelligence`): contributes to magical attack
+	- M (`b.mind`): contributes to magical resistance effects (not used in this version)
 
 - Base status values are summed across the party and converted into party-wide or individual values according to system rules.
 
@@ -171,29 +171,27 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'ran
 |`e.armor` | 鎧 | + `Party_physical_defense` |
 |`e.gauntlet` | 籠手 | + `melee_NoA` |
 |`e.wand` | ワンド | + `magical_attack` |
+|`e.book` | 魔導書 | + `magical_NoA` |
 |`e.robe` | 法衣 | + `Party_magical_defense` |
 |`e.amulet` | 護符 | + `Party_HP` |
 
 
 ## 3. INITIALIZATION 
+
+### 3.1 Randomness initialization
 - **Reward:** Put 1 win ticket(1) and 99 lose tickets(0) into 'reward_bag'. 
 - **Enhancement:** Put tickets into 'enhancement_bag'.
 - **Super Rare:** Put tickets into 'superRare_bag' .
 
 - If a bag is empty or explicitly reset the bag, initialize it.
 
-## 4. HOME
-
-- Manage party setting. character build (can also change its class, race!). change their equipment.
-- set the destination of dungeon.
-- sell items and gain gold. (gold is corrective resouce for this version)
-
-### 4.1 Level up
+### 3.3 Character initialization
 - Beats enemies, gains experience, then level up. 
 - max_level: 29. (current version restriction)
 
-- Party HP: 100 + 10*`level`
+- Party HP: 100 + (Total sum of `b.vitality`)*`level`
 - Equipment slots for individual character
+	-`maximum_equipped_item`= base slots + class bonuses (`+v equipment slot(s)`)
 
 |level | base slots |
 |-----|-----------|
@@ -204,6 +202,32 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'ran
 |16|5 |
 |20|6 |
 |25|7 |
+
+- Attack damage:
+  - Melee_Attack: `b.strength` x (10 + `level`) + Item Bonuses
+  - Magical_Attack: `b.intelligence` x (10 + `level`) + Item Bonuses
+
+- Number of attacks:
+  - ranged_NoA: 0 + Item Bonuses
+  - magical_NoA: IF class is `Wizard` or `Sage`, 1. Else 0.
+  - melee_NoA: 0 + Item Bonuses
+ 
+### 3.4 Party initialization
+
+- Party defense:
+  - Physical defense: (Total sum of) Item Bonuses
+  - Magical defense: (Total sum of) Item Bonuses
+ 
+  
+
+
+## 4. HOME
+
+- Manage party setting. character build (can also change its class, race!). change their equipment.
+- set the destination of dungeon.
+- sell items and gain gold. (gold is corrective resouce for this version)
+
+
 
 
 ### 4.2 Equipment
@@ -232,9 +256,10 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'ran
 |CLOSE |Melee attack |Melee NoA|Physical defense |
 
 **Enemy action**
-- Enemy always moves first. 
+- Enemy always moves first.
 
-- Damage: (Enemy damage - Party defense) x Enemy's damage amplifier x Party abilities amplifier 
+
+- Damage: max(1 ,(Enemy damage - Party defense) x Enemy's damage amplifier x Party abilities amplifier) 
     - following matched ranged type. 
 
 - Current Party HP -= Calculated damage
@@ -244,7 +269,9 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'ran
 **Player action**
 - Each party menber act if he has corresponding damage source in the phase. 
 
-- Damage: (Character damage - Enemy defense) x Party abilities amplifier 
+
+
+- Calculated damage: max(1, (Attack damage - Enemy defense) x Party abilities amplifier )
     - following matched ranged type. 
 
 - Current enemy HP -= Calculated damage
