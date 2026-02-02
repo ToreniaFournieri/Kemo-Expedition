@@ -199,6 +199,8 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 - experience
 - drop_item
 
+- (Temporary test purpose) make 5 dungeons and 5 enemies per dungeon. 
+
 ### 2.4 Items
 
 **Item Category**
@@ -215,6 +217,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |`c.amulet` | 護符 | + `Party_HP` |
 
 - *note:* item might have multiple bonus. sword may have `Party_HP` but subtle value. 
+- (Temporary test purspose) Make 5 itmes for each item type. 
 
 **consumpstion of arrows**
 - Arrow Stacks: * Arrow-type items have a quantity property.
