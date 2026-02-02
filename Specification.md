@@ -95,7 +95,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |ヴァルピニアン(Vulpinian) |`c.equip_slot+1`, `c.sword_x1.3` |10,10,12,8| Fox |
 |ウルサン(Ursan) |`c.equip_slot+2` |13,12,5,7| Bear |
 |フェリディアン(Felidian) |`c.robe_x1.3` |9,9,10,12| Cat |
-|マステリド(Mustelid) | `c.gauntlet_x1.3` |10,10,9,11| Ferret |
+|マステリド(Mustelid) | `c.gauntlet_x1.3`, `a.hunter`: Retrieve 20% of the arrows at the end of battle |10,10,9,11| Ferret |
 |レポリアン(Leporian) | `c.archery_x1.3` |9,8,11,10| Rabbit |
 |タルピッド(Talpid) |`c.armor_x1.3` |12,12,7,7| Mole |
 |セルヴィン(Cervin) |`c.wand_x1.3` |6,7,13,10| Deer |
