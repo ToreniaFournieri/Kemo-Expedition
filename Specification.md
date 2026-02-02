@@ -112,10 +112,10 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |頑強 (Sturdy)|`c.armor_x1.2`|
 |聡明 (Brilliant)|`c.wand_x1.2`|
 |器用 (Dexterous)|`c.archery_x1.2`|
-|騎士道 (Chivalry)|`c.sword_x1.2`|
+|騎士道 (Chivalric)|`c.sword_x1.2`|
 |士魂 (Shikon)|`c.katana_x1.2`|
-|追求 (Pursuit)|`c.robe_x1.2`|
-|商才 (IDcumen)|`c.equipment_slot+1`|
+|追求 (Pursuing)|`c.robe_x1.2`|
+|商才 (Canny)|`c.equipment_slot+1`|
 
 
 - **classes:**
