@@ -86,8 +86,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 - Base status values are summed across the party and converted into party-wide or individual values according to system rules.
 
-- races:
- base status: v:vitality, s:strength i:intelligence, m:mind
+- **races:**
 
 |races | bonus | base status | memo |
 |-----|-----------|-----------|------|
@@ -102,7 +101,9 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |セルヴィン(Cervin) |`c.wand_x1.3` |V:6 / S:7 / I:13 / M:10| Deer |
 |ミュリッド(Murid) |`c.penetration_x0.15`, `a.caster`: +1  |V:9 / S:8 / I:10 / M:10| Mouse |
 
-- predisposition:
+ *base status: v:vitality, s:strength i:intelligence, m:mind
+
+- **predisposition:**
 
 |predisposition | bonus |
 |-----|-----------|
@@ -117,7 +118,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |商才 (IDcumen)|`c.equipment_slot+1`|
 
 
-- classes:
+- **classes:**
 
 |class |abilities (main) |abilities (master) | class bonuses(main, sub) |
 |-----|-----------|---------|---------|
