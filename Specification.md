@@ -100,9 +100,9 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |剣士(Swordsman) |`a.counter` enemy CLOSE-range attack |`a.counter` enemy CLOSE-range attack and MID-range | `c.sword_x1.3` |
 |忍者(Ninja) |`a.re-attack` once when attacking |`a.re-attack` twice when attacking | `c.equipment_slot+1` |
 |侍(Samurai) |`a.iaigiri` Physical damage ×2,  number of attacks ÷2 | `a.iaigiri` Physical damage ×2.5,  number of attacks ÷2 |`c.katanax1.5` |
-|君主(Lord) |`a.leading` Physical damage x1.4 |`a.leading` Physical damage x1.6 | `c.gauntlet_x1.3`, `c.equipment_slot+2` |
+|君主(Lord) |`a.leading` Physical damage x1.3 |`a.leading` Physical damage x1.6 | `c.gauntlet_x1.3`, `c.equipment_slot+2` |
 |狩人(Marksman) | `a.hunter` Retrieve 30% of the arrows at the end of battle  |`a.hunter` Retrieve 36% of the arrows at the end of battle | `c.archery_x1.5` |
-|魔法使い(Wizard) | `a.caster` +2 `magical_NoA`  | `a.caster` +3 `magical_NoA`  | `c.wand_x1.3` |
+|魔法使い(Wizard) | `a.caster` +2. `magical_NoA`  | `a.caster` +3. `magical_NoA`  | `c.wand_x1.3` |
 |賢者(Sage) |`a.caster` +1 `magical_NoA`. `a.m-barrier` Incoming magical damage to party × 2/3 | `a.caster` +1 `magical_NoA`. `a.m-barrier` Incoming magical damage to party × 3/5 | `c.robe_x1.3`, `c.equipment_slot+3`|
 |盗賊(rouge) |`a.first-strike` Acts faster than enemy at CLOSE phase |`a.first-strike` Acts faster than enemy at All phases | `c.amulet_x1.3`, `c.equipment_slot+1` |
 
