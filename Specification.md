@@ -92,7 +92,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 - classes:
 
-|class |abilities | class bonuses |
+|class |abilities (main) | class bonuses(main, sub) |
 |-----|-----------|---------|
 |戦士(Fighter) |`a.defender` Incoming physical damage to party × 2/3 | `c.equipment-slot+1` , `c.armor_x1.3` |
 |剣士(Swordsman) |`a.counter` enemy CLOSE-range attack | `c.sword_x1.3` |
@@ -104,7 +104,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |賢者(Sage) |`a.m-barrier` Incoming magical damage to party × 2/3 | `c.robe_x1.3`, `c.equipment-slot+3`|
 |盗賊(rouge) |`a.first-strike` Acts faster than enemy | `c.amulet_x1.3`, `c.equipment-slot+1` |
 
-- `main_class` applies abilitiies and bonuses. `sub_class` applies only bonuses.
+- `main_class` applies abilitiies and class bonuses. `sub_class` applies only class bonuses.
 - Only the strongest single ability(a.) of the same name applies.
 - Only one single bonuses(c.) of the same name applies. (two `c.equipment-slot+2`, but only one `c.equipment-slot+2` works)
 
