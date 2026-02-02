@@ -78,20 +78,20 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 	- All defensive effects ultimately modify party-wide parameters
 
 **Base Status Parameters**
-- Each character has the following base status values:
-	- V (`b.vitality`): contributes to Party HP
-	- S (`b.strength`): contributes to physical attack
-	- I (`b.intelligence`): contributes to magical attack
-	- M (`b.mind`): contributes to magical resistance effects (not used in this version)
+- Each character has the following base status values: 
+    - `b.vitality`: 体, 体力. contributes to Party HP
+    - `b.strength`: 力. contributes to physical attack
+    - `b.intelligence`: 知, 知性. contributes to magical attack
+    - `b.mind`: 精, 精神. contributes to magical resistance effects (not used in this version)
 
 - Base status values are summed across the party and converted into party-wide or individual values according to system rules.
 
 - **races(種族):**
 
-|races | bonus | base status | memo |
+|races | bonus | base status(体,力,知,精) | memo |
 |-----|-----------|-----------|------|
-|ケイナイアン(Caninian) | `c.amulet_x1.3` |V:10 / S:10 / I:10 / M:10| Dog |
-|ルピニアン(Lupinian) | `c.equip_slot+1`, `c.katana_x1.3`  |V:9 / S:12 / I:8 / M:7| Wolf |
+|ケイナイアン(Caninian) | `c.amulet_x1.3` |10,10,10,10| Dog |
+|ルピニアン(Lupinian) | `c.equip_slot+1`, `c.katana_x1.3`  |9,12,8,7| Wolf |
 |ヴァルピニアン(Vulpinian) |`c.equip_slot+1`, `c.sword_x1.3` |V:10 / S:10 / I:12 / M:8| Fox |
 |ウルサン(Ursan) |`c.equip_slot+2` |V:13 / S:12 / I:5 / M:7| Bear |
 |フェリディアン(Felidian) |`c.robe_x1.3` |V:9 / S:9 / I:10 / M:12| Cat |
@@ -101,7 +101,6 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |セルヴィン(Cervin) |`c.wand_x1.3` |V:6 / S:7 / I:13 / M:10| Deer |
 |ミュリッド(Murid) |`c.penet_x0.10`, `a.caster`: +1  |V:9 / S:8 / I:10 / M:10| Mouse |
 
- *base status: v:vitality(体力), s:strength(力) i:intelligence(知性), m:mind(精神)
 
 - **predisposition(性格):**
 
