@@ -101,7 +101,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |忍者(Ninja) |`a.re-attack` once when attacking |`a.re-attack` twice when attacking | `c.equipment_slot+1` |
 |侍(Samurai) |`a.iaigiri` Physical damage ×2,  number of attacks ÷2 | `a.iaigiri` Physical damage ×2.5,  number of attacks ÷2 |`c.katanax1.5` |
 |君主(Lord) |`a.leading` Physical damage x1.4 |`a.leading` Physical damage x1.6 | `c.gauntlet_x1.3`, `c.equipment_slot+2` |
-|狩人(Marksman) | `a.hunter` Retrieve 30% p the arrows at the end of battle  |`a.hunter` Retrieve 36% p the arrows at the end of battle | `c.archery_x1.5` |
+|狩人(Marksman) | `a.hunter` Retrieve 30% of the arrows at the end of battle  |`a.hunter` Retrieve 36% of the arrows at the end of battle | `c.archery_x1.5` |
 |魔法使い(Wizard) | `a.caster` +2 `magical_NoA`  | `a.caster` +3 `magical_NoA`  | `c.wand_x1.3` |
 |賢者(Sage) |`a.caster` +1 `magical_NoA`. `a.m-barrier` Incoming magical damage to party × 2/3 | `a.caster` +1 `magical_NoA`. `a.m-barrier` Incoming magical damage to party × 3/5 | `c.robe_x1.3`, `c.equipment_slot+3`|
 |盗賊(rouge) |`a.first-strike` Acts faster than enemy at CLOSE phase |`a.first-strike` Acts faster than enemy at All phases | `c.amulet_x1.3`, `c.equipment_slot+1` |
@@ -176,6 +176,11 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |`c.robe` | 法衣 | + `Party_magical_defense` |
 |`c.amulet` | 護符 | + `Party_HP` |
 
+**consumpstion of arrows**
+- Arrow Stacks: * Arrow-type items have a quantity property.
+- Multiple items of the exact same Arrow ID can occupy one single equipment slot.
+- Consumption: Current_Quantity -= ranged_NoA per attack.
+- Persistence: Quantity does not reset between rooms. It only resets at HOME.
 
 ## 3. INITIALIZATION 
 
@@ -240,7 +245,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 ## 5. EXPEDITION 
 
-- Persistence through an expedition:'Party_HP'.
+- Persistence through an expedition:'Party_HP', remaining of arrows.
 
 
 ## 6. BATTLE
@@ -277,6 +282,11 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 **Player action**
 - Each party menber act if he has corresponding damage source in the phase. 
 
+- If it is LONG phase and going to use arrow:
+	- Check if Character has e.archery (Arrow) with quantity > 0.
+	- If quantity < ranged_NoA, the character attacks with a reduced NoA equal to the remaining quantity.
+   	- Subtract quantity.
+
 - Calculated damage: max(1, (Attack damage - Enemy defense) x Party abilities amplifier )
     - following matched ranged type. 
 
@@ -286,6 +296,8 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 - **Re-attack:** IF character has `a.re-attack` ability. The character attacks to enemy.
 
 ### 6.4 Post battle
+
+-`a.hunter` Retrieve 30% of the arrows
 
 
 ### 6.5 Outcome 
