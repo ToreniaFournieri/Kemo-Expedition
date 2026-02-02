@@ -103,7 +103,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 |狩人(Marksman) | (none) | `e.archery` x1.5 |
 |魔法使い(Wizard) | (none) | `e.wand` x1.5 |
 |賢者(Sage) | Incoming magical damage to party × 2/3 | `e.robe` x1.3|
-|盗賊(rouge) |Acts twice per phase | (none) |
+|盗賊(rouge) |Acts twice per phase | `e.amulet` x1.3 |
 
 - mutiplied reductions do not stack multiplicatively.
 
