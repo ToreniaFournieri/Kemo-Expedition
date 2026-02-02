@@ -104,7 +104,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |狩人(Marksman) | `a.hunter`: Retrieve 30% of the arrows at the end of battle  |`a.hunter`: Retrieve 36% of the arrows at the end of battle | `c.archery_x1.3` |
 |魔法使い(Wizard) | `a.caster`: +2 `magical_NoA`  | `a.caster`: +3 `magical_NoA`  | `c.wand_x1.3` |
 |賢者(Sage) |`a.caster`: +1 `magical_NoA`. `a.m-barrier`: Incoming magical damage to party × 2/3 | `a.caster`: +1 `magical_NoA`. `a.m-barrier`: Incoming magical damage to party × 3/5 | `c.robe_x1.3`, `c.equipment_slot+2`|
-|盗賊(Rouge) |`a.first-strike`: Acts faster than enemy at CLOSE phase |`a.first-strike`: Acts faster than enemy at All phases | (none) |
+|盗賊(Rouge) |`a.first-strike`: Acts faster than enemy at CLOSE phase |`a.first-strike`: Acts faster than enemy at All phases | `c.unlock` additional reward chance |
 |巡礼者(Pilgrim) |`a.null-counter`: Negate counter attack |`a.null-counter`: Negate counter attack | `c.amulet_x1.3`, `c.equipment_slot+1` |
 
 - If `main_class` and  `sub_class` are same class, then it turns into master class.
@@ -313,7 +313,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 ## 7. REWARD 
 
-- Gets one ticket from 'reward_bag'.
+- Gets one ticket from 'reward_bag'. Two with `c.unlock`.
   - If it is '1', then get one ticket from each of 'enhancement_bag', and 'superRare_bag'.
     
   - Combines them into one item.
