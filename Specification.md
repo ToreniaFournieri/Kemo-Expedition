@@ -70,9 +70,10 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 #### 2.2.1 Character 
 
--A character is defined by Race and Role
+-A character is defined by Race, Class and Predisposition
     - Race defines base status
-	- Role defines combat behavior modifiers and equipment bonuses
+	- Class defines combat behavior modifiers and equipment bonuses
+	- Predisposition defines additional modifiers
 	- Characters have no individual HP
 	- All defensive effects ultimately modify party-wide parameters
 
