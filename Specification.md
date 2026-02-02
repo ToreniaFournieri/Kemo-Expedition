@@ -94,18 +94,18 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 |class |abilities | bonuses |
 |-----|-----------|---------|
-|戦士(Fighter) |Incoming physical damage to party × 2/3 | +1 equipment slot, `e.armor` x1.3 |
+|戦士(Fighter) |`a.defender` Incoming physical damage to party × 2/3 | +1 equipment slot, `e.armor` x1.3 |
 |剣士(Swordsman) |`a.counter` enemy CLOSE-range attack | `e.sword` x1.3 |
 |忍者(Ninja) |`a.re-attack` once when attacking | +2 equipment slots |
-|侍(Samurai) |Physical damage ×2, `a.iaigiri` number of attacks ÷2 | `e.katana` x1.5 |
-|君主(Lord) |Physical damage x1.4 | `e.gauntlet` x1.3, +2 equipment slots |
+|侍(Samurai) |`a.iaigiri` Physical damage ×2,  number of attacks ÷2 | `e.katana` x1.5 |
+|君主(Lord) |`a.leading` Physical damage x1.4 | `e.gauntlet` x1.3, +2 equipment slots |
 |狩人(Marksman) | (none) | `e.archery` x1.5 |
 |魔法使い(Wizard) | (none) | `e.wand` x1.5 |
-|賢者(Sage) | Incoming magical damage to party × 2/3 | `e.robe` x1.3, +3 equipment slots|
-|盗賊(rouge) |Acts twice per phase | `e.amulet` x1.3, +1 equipment slot |
+|賢者(Sage) |`a.m-barrier` Incoming magical damage to party × 2/3 | `e.robe` x1.3, +3 equipment slots|
+|盗賊(rouge) |`a.first-strike` Acts faster than enemy | `e.amulet` x1.3, +1 equipment slot |
 
 - `main_class` applies abilitiies and bonuses. `sub_class` applies only bonuses.
-- mutiplied reductions do not stack multiplicatively.
+- Only the strongest single ability of the same name applies.
 
 
 #### 2.2.2 Party structure 
@@ -201,14 +201,14 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |25|7 |
 
 - Attack damage:
-  - ranged_attack: Item Bonuses1
-  - melee_Attack: `b.strength` x (1 + 0.1 x `level`) + Item Bonuses
-  - magical_Attack: `b.intelligence` x (1 + 0.1 x `level`) + Item Bonuses
+  - ranged_attack: Item Bonuses(round up)
+  - melee_Attack: `b.strength` x (1 + 0.1 x `level`) + Item Bonuses(round up)
+  - magical_Attack: `b.intelligence` x (1 + 0.1 x `level`) + Item Bonuses(round up)
 
 - Number of attacks:
-  - ranged_NoA: 0 + Item Bonuses // no arrows, no shoot.
+  - ranged_NoA: 0 + Item Bonuses(round up) // no arrows, no shoot.
   - magical_NoA: IF class is `Wizard` or `Sage`, 1. Else 0.
-  - melee_NoA: 0 + Item Bonuses //no gauntlet, no melee combat.
+  - melee_NoA: 0 + Item Bonuses(round up) //no gauntlet, no melee combat.
  
   - IF the character has `a.iaigiri`, halve these number of attacks.
  
@@ -255,9 +255,11 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |MID |Magical attack |Magical NoA|Magical defense|
 |CLOSE |Melee attack |Melee NoA|Physical defense |
 
+**First strike**
+- IF a caracter has `a.first-strike`, acts before enemy action. (see Player action)
+
 **Enemy action**
 - Enemy always moves first.
-
 
 - Damage: max(1 ,(Enemy damage - Party defense) x Enemy's damage amplifier x Party abilities amplifier) x number of attacks
     - following matched ranged type. 
