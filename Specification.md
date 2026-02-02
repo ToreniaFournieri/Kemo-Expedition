@@ -357,8 +357,19 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 
 ### 6.5 Outcome 
 
+**Resolution**
+- Defeat (Player loses)
+    - If Party_HP <= 0
+	- This overrides all other outcomes
+	- Even if Enemy HP is also <= 0
+- Victory
+	- If Enemy_HP <= 0 and Party_HP > 0
+- Draw
+	- If Enemy_HP > 0 and Party_HP > 0
+
+**Consequence**
+- Defeat: no penalties (current version). no experience points nor item reward. Back to home.
 - Victory: gains experience points to a party. has a chance of gaining reward from enemies drop item. Proceeds to the next room.
-- Defeat: no penalties (current version). no experience points nor item reward. Back to the base.
 - Draw:no penalties (current version). no experience points nor item reward. Proceeds to the next room.
 
 ## 7. REWARD 
