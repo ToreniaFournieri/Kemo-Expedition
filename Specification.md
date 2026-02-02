@@ -99,7 +99,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |レポリアン(Leporian) | `c.archery_x1.3` |V:9 / S:8 / I:11 / M:10| Rabbit |
 |タルピッド(Talpid) |`c.armor_x1.3` |V:12 / S:12 / I:7 / M:7| Mole |
 |セルヴィン(Cervin) |`c.wand_x1.3` |V:6 / S:7 / I:13 / M:10| Deer |
-|ミュリッド(Murid) |`c.penetration_x0.15`, `a.caster`: +1  |V:9 / S:8 / I:10 / M:10| Mouse |
+|ミュリッド(Murid) |`c.penet_x0.10`, `a.caster`: +1  |V:9 / S:8 / I:10 / M:10| Mouse |
 
  *base status: v:vitality(体力), s:strength(力) i:intelligence(知性), m:mind(精神)
 
@@ -124,7 +124,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |-----|-----------|---------|---------|
 |戦士(Fighter) |`a.defender`: Incoming physical damage to party × 2/3 |`a.defender`: Incoming physical damage to party × 3/5 | `c.equip_slot+1`,  `c.armor_x1.4` |
 |剣士(Swordsman) |`a.counter`: enemy CLOSE-range attack |`a.counter`: enemy CLOSE-range attack and MID-range | `c.sword_x1.4` |
-|忍者(Ninja) |`a.re-attack`: once when attacking |`a.re-attack`: twice when attacking | `c.penetration_x0.1`  |
+|忍者(Ninja) |`a.re-attack`: once when attacking |`a.re-attack`: twice when attacking | `c.penet_x0.15`  |
 |侍(Samurai) |`a.iaigiri`: Physical damage ×2,  number of attacks ÷2 | `a.iaigiri`: Physical damage ×2.5,  number of attacks ÷2 |`c.katana_x1.4` |
 |君主(Lord) |`a.leading`: Physical damage x1.3 |`a.leading`: Physical damage x1.6 | `c.gauntlet_x1.4`, `c.equip_slot+1` |
 |狩人(Marksman) | `a.hunter`: Retrieve 30% of the arrows at the end of battle  |`a.hunter`: Retrieve 36% of the arrows at the end of battle | `c.archery_x1.4` |
@@ -315,10 +315,10 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
   - If quantity < ranged_NoA, the character attacks with a reduced NoA equal to the remaining quantity.
   - Subtract quantity.
 
-- Calculated damage: max(1, (Attack damage - Enemy defense x (1 - penetration multiplier) ))  x Indivisual abilities amplifier x Party abilities amplifier
+- Calculated damage: max(1, (Attack damage - Enemy defense x (1 - sum of (penet multiplier)) ))  x Indivisual abilities amplifier x Party abilities amplifier
   - Indivisual abilities:`a.iaigiri`
   - Party abilities: `a.leading`
-  - penetration multiplier: like `c.penetration_x0.1` -> 0.1
+  - penet multiplier: like `c.penet_x0.1` & `c.penet_x0.15` -> 0.25
   - following matched ranged type. 
 
 - Current enemy HP -= Calculated damage
