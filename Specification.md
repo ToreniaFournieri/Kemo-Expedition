@@ -96,16 +96,16 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 |class |abilities (main) |abilities (master) | class bonuses(main, sub) |
 |-----|-----------|---------|---------|
-|戦士(Fighter) |`a.defender`: Incoming physical damage to party × 2/3 |`a.defender`: Incoming physical damage to party × 3/5 |  `c.equipment_slot+1` , `c.armor_x1.3` |
+|戦士(Fighter) |`a.defender`: Incoming physical damage to party × 2/3 |`a.defender`: Incoming physical damage to party × 3/5 |  `c.armor_x1.3` |
 |剣士(Swordsman) |`a.counter`: enemy CLOSE-range attack |`a.counter`: enemy CLOSE-range attack and MID-range | `c.sword_x1.3` |
-|忍者(Ninja) |`a.re-attack`: once when attacking |`a.re-attack`: twice when attacking | `c.equipment_slot+1` |
+|忍者(Ninja) |`a.re-attack`: once when attacking |`a.re-attack`: twice when attacking | (none) |
 |侍(Samurai) |`a.iaigiri`: Physical damage ×2,  number of attacks ÷2 | `a.iaigiri`: Physical damage ×2.5,  number of attacks ÷2 |`c.katanax1.5` |
-|君主(Lord) |`a.leading`: Physical damage x1.3 |`a.leading`: Physical damage x1.6 | `c.gauntlet_x1.3`, `c.equipment_slot+2` |
+|君主(Lord) |`a.leading`: Physical damage x1.3 |`a.leading`: Physical damage x1.6 | `c.gauntlet_x1.3`, `c.equipment_slot+1` |
 |狩人(Marksman) | `a.hunter`: Retrieve 30% of the arrows at the end of battle  |`a.hunter`: Retrieve 36% of the arrows at the end of battle | `c.archery_x1.5` |
 |魔法使い(Wizard) | `a.caster`: +2 `magical_NoA`  | `a.caster`: +3 `magical_NoA`  | `c.wand_x1.3` |
-|賢者(Sage) |`a.caster`: +1 `magical_NoA`. `a.m-barrier`: Incoming magical damage to party × 2/3 | `a.caster`: +1 `magical_NoA`. `a.m-barrier`: Incoming magical damage to party × 3/5 | `c.robe_x1.3`, `c.equipment_slot+3`|
-|盗賊(Rouge) |`a.first-strike`: Acts faster than enemy at CLOSE phase |`a.first-strike`: Acts faster than enemy at All phases | `c.equipment_slot+1` |
-|巡礼者(Pilgrim) |`a.null-counter`: Negate counter attack |`a.null-counter`: Negate counter attack | `c.amulet_x1.3`, `c.equipment_slot+2` |
+|賢者(Sage) |`a.caster`: +1 `magical_NoA`. `a.m-barrier`: Incoming magical damage to party × 2/3 | `a.caster`: +1 `magical_NoA`. `a.m-barrier`: Incoming magical damage to party × 3/5 | `c.robe_x1.3`, `c.equipment_slot+2`|
+|盗賊(Rouge) |`a.first-strike`: Acts faster than enemy at CLOSE phase |`a.first-strike`: Acts faster than enemy at All phases | (none) |
+|巡礼者(Pilgrim) |`a.null-counter`: Negate counter attack |`a.null-counter`: Negate counter attack | `c.amulet_x1.3`, `c.equipment_slot+1` |
 
 - If `main_class` and  `sub_class` are same class, then it turns into master class.
 - `main_class` applies abilitiies and class bonuses. `sub_class` applies only class bonuses.
@@ -197,8 +197,8 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 - max_level: 29. (current version restriction)
 
 - Equipment slots for individual character
-	-`maximum_equipped_item`= base slots + class_bonuses (`c.equipment_slot+1`, `c.equipment_slot+2`, `c.equipment_slot+3`)
-  	- Where class_bonuses is the sum of unique values from Main and Sub class. Example: If Main Class provides `c.equipment_slot+2` and Sub Class provides `c.equipment_slot+3`, class_bonuses is 5. If both provide `c.equipment_slot+2`, bonus_sum is 2.
+	-`maximum_equipped_item`= base slots + class_bonuses (`c.equipment_slot+1`, `c.equipment_slot+2` )
+  	- Where class_bonuses is the sum of unique values from Main and Sub class. Example: If Main Class provides `c.equipment_slot+2` and Sub Class provides `c.equipment_slot+1`, class_bonuses is 3. If both provide `c.equipment_slot+2`, bonus_sum is 2.
 
 |level | base slots |
 |-----|-----------|
