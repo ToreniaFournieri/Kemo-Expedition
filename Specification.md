@@ -246,7 +246,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 - Number of attacks:
   - ranged_NoA: 0 + Item Bonuses x its c.multiplier (round up) // no arrows, no shoot.
   - magical_NoA: 0 + `a.caster` bonuses // only strongest single ability applies.
-  - melee_NoA: 0 + Item Bonuses x x its c.multiplier (round up) //no gauntlet, no melee combat.
+  - melee_NoA: 0 + Item Bonuses x its c.multiplier (round up) //no gauntlet, no melee combat.
  
   - IF the character has `a.iaigiri`, halve these number of attacks, round up. 
  
