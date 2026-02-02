@@ -88,7 +88,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 - races:
  base status: v:vitality, s:strength i:intelligence, m:mind
 
-|races |abilities | base status | memo |
+|races | bonus | base status | memo |
 |-----|-----------|-----------|------|
 |ケイナイアン(Caninian) | `c.amulet_x1.3` |V:10 / S:10 / I:10 / M:10| Dog |
 |ルピニアン(Lupinian) | `c.equipment_slot+1`, `c.katana_x1.3`  |V:9 / S:13 / I:8 / M:7| Wolf |
