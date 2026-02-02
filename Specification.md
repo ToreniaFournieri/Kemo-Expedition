@@ -162,7 +162,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'role', 'name', 'ranged_attack', 'magica
 |6 |1 |
 
 - **Super Rare:** Put them into 'superRare_bag' .
-- 
+
 |superRare value |number of tickets |
 |-----|---------|
 |0 |24999 |
