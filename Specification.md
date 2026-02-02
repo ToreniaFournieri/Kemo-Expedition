@@ -139,13 +139,13 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'ran
 - id:int
 - name
 - number_of_rooms
-- pool_of_enemies
+- pools_of_enemies
 - Boss_enemy
 
 **Enemy**
 - id: int
-- type: string.  Normal/Elite/Boss
-- pools
+- type: string.  Normal/Boss
+- pool_id //only for Normal enemy. Boss is always set 0.
 - name: string
 - hp
 - ranged_attack
