@@ -46,7 +46,7 @@ const PARTY_SCHEMA = ['number', 'diety', 'level', 'experience', 'Party_HP', 'Par
 ### 2.2 Play characters
 - The diety creates character and assigns 6 Characters to its party. The characters can change its race, role and name at will. 
 
-const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.vitality', 'b.strength', 'b.intelligence', 'b.mind' , 'ranged_attack', 'magical_attack', 'melee_attack', 'ranged_NoA', 'magical_NoA', 'melee_NoA', 'maximum_equipped_item' ]
+const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposition', 'lineage' , 'name', 'b.vitality', 'b.strength', 'b.intelligence', 'b.mind' , 'ranged_attack', 'magical_attack', 'melee_attack', 'ranged_NoA', 'magical_NoA', 'melee_NoA', 'maximum_equipped_item' ]
 
 - id: int
 - main_class
