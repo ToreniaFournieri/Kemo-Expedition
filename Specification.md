@@ -12,10 +12,10 @@
 ## 2. CONSTANTS & DATA
 
 ### 2.1 Global constants
-- One diety represents on one party. The diety has its own level, HP, and unique divine abilities. 
-const PARTY_SCHEMA = ['number', 'diety', 'level', 'experience', 'Party_HP', 'Party_physical_defense', 'Party_magical_defense' ]
+- One deity represents on one party. The deity has its own level, HP, and unique divine abilities. 
+const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'Party_HP', 'Party_physical_defense', 'Party_magical_defense' ]
 
-- Initial Diety: 'God of Restoration' // Revives character at the base automatically, no death penalty 
+- Initial deity: 'God of Restoration' // Revives character at the base automatically, no death penalty 
 
 - **Bag Randomization** It has 'reward_bag', 'enhancement_bag', 'superRare_bag' witch controls reward randomness and contains tickets. (0:lose ticket, 1:win ticket)
 
@@ -44,7 +44,7 @@ const PARTY_SCHEMA = ['number', 'diety', 'level', 'experience', 'Party_HP', 'Par
 |5 |血に飢えし |1 | x2.0 |
 
 ### 2.2 Play characters
-- The diety creates character and assigns 6 Characters to its party. The characters can change its race, role and name at will. 
+- The deity creates character and assigns 6 Characters to its party. The characters can change its race, role and name at will. 
 
 const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposition', 'lineage' , 'name', 'b.vitality', 'b.strength', 'b.intelligence', 'b.mind' , 'ranged_attack', 'magical_attack', 'melee_attack', 'ranged_NoA', 'magical_NoA', 'melee_NoA', 'maximum_equipped_item' ]
 
@@ -141,7 +141,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 |狩人(Ranger) |`c.archery_x1.4` | `a.hunter`: Retrieve 30% of the arrows at the end of battle  |`a.hunter`: Retrieve 36% of the arrows at the end of battle | 
 |魔法使い(Wizard) |`c.wand_x1.4` | `c.caster+2` | `c.caster+3` | 
 |賢者(Sage) |`c.robe_x1.4`, `c.equip_slot+2` |`c.caster+1`. `a.m-barrier`: Incoming magical damage to party × 2/3 | `c.caster+1`. `a.m-barrier`: Incoming magical damage to party × 3/5 | 
-|盗賊(Rouge) |`c.unlock` additional reward chance |`a.first-strike`: Acts faster than enemy at CLOSE phase |`a.first-strike`: Acts faster than enemy at All phases | 
+|盗賊(Rogue) |`c.unlock` additional reward chance |`a.first-strike`: Acts faster than enemy at CLOSE phase |`a.first-strike`: Acts faster than enemy at All phases | 
 |巡礼者(Pilgrim) |`c.amulet_x1.4`, `c.equip_slot+1` |`a.null-counter`: Negate counter attack |`a.null-counter`: Negate counter attack | 
 
 - If `main_class` and  `sub_class` are same class, then it turns into master class.
@@ -173,7 +173,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 
 ### 2.3 Dungeons & Enemies
 
-- Each dungeon has multiple rooms. each room has one enemy. At the end of room, formitive boss enemy is waiting for victims.
+- Each dungeon has multiple rooms. each room has one enemy. At the end of room, formidable boss enemy is waiting for victims.
 
 **Dungeon**
 - id:int
@@ -222,7 +222,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 - *note:* item might have multiple bonus. sword may have `Party_HP` but subtle value. 
 - (Temporary test purspose) Make 5 itmes for each item type. 
 
-**consumpstion of arrows**
+**consumption of arrows**
 - Arrow Stacks: * Arrow-type items have a quantity property.
 - Multiple items of the exact same Arrow ID can occupy one single equipment slot.
 - Consumption: Current_Quantity -= ranged_NoA per attack.
@@ -317,7 +317,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 |CLOSE |Melee attack |Melee NoA|Physical defense |
 
 **First strike**
-- IF a caracter has `a.first-strike`, acts before enemy action. (see Player action)
+- IF a character has `a.first-strike`, acts before enemy action. (see Player action)
 
 **Enemy action**
 - Enemy always moves first.
@@ -338,8 +338,8 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
   - If quantity < ranged_NoA, the character attacks with a reduced NoA equal to the remaining quantity.
   - Subtract quantity.
 
-- Calculated damage: max(1, (Attack damage - Enemy defense x (1 - sum of (penet multiplier)) ))  x Indivisual abilities amplifier x Party abilities amplifier
-  - Indivisual abilities:`a.iaigiri`
+- Calculated damage: max(1, (Attack damage - Enemy defense x (1 - sum of (penet multiplier)) ))  x Individual abilities amplifier x Party abilities amplifier
+  - Individual abilities:`a.iaigiri`
   - Party abilities: `a.leading`
   - penet multiplier: like `c.penet_x0.1` & `c.penet_x0.15` -> 0.25
   - following matched ranged type. 
