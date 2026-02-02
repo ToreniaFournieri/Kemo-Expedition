@@ -89,7 +89,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 - **races(種族):**
 
 |races | bonus | 体,力,知,精 | memo |
-|-----|-----------|-----------|------|
+|-----|-------|-----------|------|
 |ケイナイアン(Caninian) | `c.amulet_x1.3` |10,10,10,10| Dog |
 |ルピニアン(Lupinian) | `c.equip_slot+1`, `c.katana_x1.3`  |9,12,8,7| Wolf |
 |ヴァルピニアン(Vulpinian) |`c.equip_slot+1`, `c.sword_x1.3` |10,10,12,8| Fox |
