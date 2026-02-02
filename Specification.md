@@ -88,18 +88,18 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 
 - **races(種族):**
 
-|races | bonus | base status(体,力,知,精) | memo |
+|races | bonus | (体,力,知,精) | memo |
 |-----|-----------|-----------|------|
 |ケイナイアン(Caninian) | `c.amulet_x1.3` |10,10,10,10| Dog |
 |ルピニアン(Lupinian) | `c.equip_slot+1`, `c.katana_x1.3`  |9,12,8,7| Wolf |
-|ヴァルピニアン(Vulpinian) |`c.equip_slot+1`, `c.sword_x1.3` |V:10 / S:10 / I:12 / M:8| Fox |
-|ウルサン(Ursan) |`c.equip_slot+2` |V:13 / S:12 / I:5 / M:7| Bear |
-|フェリディアン(Felidian) |`c.robe_x1.3` |V:9 / S:9 / I:10 / M:12| Cat |
-|マステリド(Mustelid) | `c.gauntlet_x1.3` |V:10 / S:10 / I:9 / M:11| Ferret |
-|レポリアン(Leporian) | `c.archery_x1.3` |V:9 / S:8 / I:11 / M:10| Rabbit |
-|タルピッド(Talpid) |`c.armor_x1.3` |V:12 / S:12 / I:7 / M:7| Mole |
-|セルヴィン(Cervin) |`c.wand_x1.3` |V:6 / S:7 / I:13 / M:10| Deer |
-|ミュリッド(Murid) |`c.penet_x0.10`, `a.caster`: +1  |V:9 / S:8 / I:10 / M:10| Mouse |
+|ヴァルピニアン(Vulpinian) |`c.equip_slot+1`, `c.sword_x1.3` |10,10,12,8| Fox |
+|ウルサン(Ursan) |`c.equip_slot+2` |13,12,5,7| Bear |
+|フェリディアン(Felidian) |`c.robe_x1.3` |9,9,10,12| Cat |
+|マステリド(Mustelid) | `c.gauntlet_x1.3` |10,10,9,11| Ferret |
+|レポリアン(Leporian) | `c.archery_x1.3` |9,8,11,10| Rabbit |
+|タルピッド(Talpid) |`c.armor_x1.3` |12,12,7,7| Mole |
+|セルヴィン(Cervin) |`c.wand_x1.3` |6,7,13,10| Deer |
+|ミュリッド(Murid) |`c.penet_x0.10`, `a.caster`: +1  |9,8,10,10| Mouse |
 
 
 - **predisposition(性格):**
