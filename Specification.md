@@ -96,7 +96,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'ran
 
 |class |abilities | bonuses |
 |-----|-----------|---------|
-|戦士(Tank) |Incoming physical damage to party × 2/3 | +1 equipment slot, `e.armor` x1.3 |
+|戦士(Fighter) |Incoming physical damage to party × 2/3 | +1 equipment slot, `e.armor` x1.3 |
 |剣士(Swordsman) |Counter enemy CLOSE-range attack | `e.sword` x1.3 |
 |忍者(Ninja) |Re-attack once when attacking | +2 equipment slots |
 |侍(Samurai) |Physical damage ×2, number of attacks ÷2 | `e.katana` x1.5 |
