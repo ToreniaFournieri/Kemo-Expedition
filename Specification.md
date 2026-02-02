@@ -96,10 +96,10 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'name', 'b.v
 |ウルサン(Ursan) |`c.equipment_slot+2` |V:14 / S:9 / I:7 / M:8| Bear |
 |フェリディアン(Felidian) |`c.robe_x1.3` |V:10 / S:10 / I:10 / M:12| Cat |
 |マステリド(Mustelid) | `c.gauntlet_x1.3` |V:10 / S:10 / I:9 / M:11| Ferret |
-|レポリアン(Leporian) | `c.archery_x1.3`, `a.caster`: +1`  |V:9 / S:8 / I:11 / M:10| Rabbit |
+|レポリアン(Leporian) | `c.archery_x1.3` |V:9 / S:8 / I:11 / M:10| Rabbit |
 |タルピッド(Talpid) |`c.armor_x1.3` |V:12 / S:12 / I:7 / M:7| Mole |
 |セルヴィン(Cervin) |`c.wand_x1.3` |V:6 / S:7 / I:13 / M:10| Deer |
-|ミュリッド(Murid) |`c.penetration_x0.15`  |V:9 / S:8 / I:10 / M:10| Mouse |
+|ミュリッド(Murid) |`c.penetration_x0.15`, `a.caster`: +1`  |V:9 / S:8 / I:10 / M:10| Mouse |
 
 - classes:
 
