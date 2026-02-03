@@ -444,14 +444,14 @@ multiplier them. (ex. Enemy attack is `e.fire`, then applies enemy's `r.fire` va
 ## 8. UI
 
 - Web-based (React + TypeScript + Tailwind)
+- Compact, simple iOS like UI
+- Fewer scenes transaction.
   
 - **Color**
-	- Base Color: Black for letter, Gray for pane, White for background
+	- Base Color: Black for letters, Gray for pane, White for background
 	- Sub color (~30%): Blue  
 	- Accent color (~5%): Dark orange
 
-- Compact, simple iOS like UI
-- Fewer scenes transaction. Home scene handles the whole game progress.
 
 ### 8.1 Header
   - Always stick to the head.
