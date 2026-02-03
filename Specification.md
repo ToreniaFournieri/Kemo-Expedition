@@ -442,10 +442,14 @@ multiplier them. (ex. Enemy attack is `e.fire`, then applies enemy's `r.fire` va
 
 
 ## 8. UI
+
 - Web-based (React + TypeScript + Tailwind)
-- Theme color: White background, Black letters, Blue accent color.
-  - Gray and Light blue are acceptable.
-  - No other colors, like Red or Green.
+- 
+**Color**
+- Base Color: Black for letter, Gray for pane, White for background
+- Sub color (~30%): Blue  
+- Accent color (~5%): Dark orange
+
 - Compact, simple iOS like UI
 - Fewer scenes transaction. Home scene handles the whole game progress.
 
