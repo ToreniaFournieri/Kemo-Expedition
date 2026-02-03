@@ -21,7 +21,7 @@
 |`c.` | **c**lass bonus |
 |`d.` | **d**uel status |
 |`e.` | **e**lemental attack attribute |
-|`f.` | **f**unctions of logic |
+|`f.` | **f**unction of logic |
 |`i.` | **i**tem category |
 |`r.` | elemental_**r**esistance_attribute |
 
