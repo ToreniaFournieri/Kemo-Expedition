@@ -565,7 +565,7 @@ inventory = {
     	2.	Enhancement
     	3.	SuperRare
     - Shows count and status
-    - Inventory pane is long. 
+    - Inventory pane shows at least 10 items
   - Status updates in real time
 
 #### 8.3.2 Expedition
@@ -597,7 +597,7 @@ inventory = {
   	2.	Enhancement
   	3.	SuperRare
   - Shows count and status
-  - is long pane. 
+  - Inventory pane shows at least 10 items
 - Actions:
   - Sell item stacks
   - Sold items disappear immediately
