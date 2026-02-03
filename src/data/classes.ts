@@ -1,0 +1,151 @@
+import { ClassDef } from '../types';
+
+export const CLASSES: ClassDef[] = [
+  {
+    id: 'fighter',
+    name: '戦士',
+    mainSubBonuses: [
+      { type: 'equip_slot', value: 1 },
+      { type: 'armor_multiplier', value: 1.4 },
+    ],
+    mainBonuses: [
+      { type: 'grit', value: 1 },
+      { type: 'ability', value: 1, abilityId: 'defender', abilityLevel: 1 },
+    ],
+    masterBonuses: [
+      { type: 'grit', value: 1 },
+      { type: 'ability', value: 1, abilityId: 'defender', abilityLevel: 2 },
+    ],
+  },
+  {
+    id: 'duelist',
+    name: '剣士',
+    mainSubBonuses: [
+      { type: 'sword_multiplier', value: 1.4 },
+    ],
+    mainBonuses: [
+      { type: 'grit', value: 1 },
+      { type: 'ability', value: 1, abilityId: 'counter', abilityLevel: 1 },
+    ],
+    masterBonuses: [
+      { type: 'grit', value: 1 },
+      { type: 'ability', value: 1, abilityId: 'counter', abilityLevel: 2 },
+    ],
+  },
+  {
+    id: 'ninja',
+    name: '忍者',
+    mainSubBonuses: [
+      { type: 'penet', value: 0.15 },
+    ],
+    mainBonuses: [
+      { type: 'grit', value: 1 },
+      { type: 'ability', value: 1, abilityId: 're_attack', abilityLevel: 1 },
+    ],
+    masterBonuses: [
+      { type: 'grit', value: 1 },
+      { type: 'ability', value: 1, abilityId: 're_attack', abilityLevel: 2 },
+    ],
+  },
+  {
+    id: 'samurai',
+    name: '侍',
+    mainSubBonuses: [
+      { type: 'katana_multiplier', value: 1.4 },
+    ],
+    mainBonuses: [
+      { type: 'grit', value: 1 },
+      { type: 'ability', value: 1, abilityId: 'iaigiri', abilityLevel: 1 },
+    ],
+    masterBonuses: [
+      { type: 'grit', value: 1 },
+      { type: 'ability', value: 1, abilityId: 'iaigiri', abilityLevel: 2 },
+    ],
+  },
+  {
+    id: 'lord',
+    name: '君主',
+    mainSubBonuses: [
+      { type: 'gauntlet_multiplier', value: 1.4 },
+      { type: 'equip_slot', value: 1 },
+    ],
+    mainBonuses: [
+      { type: 'ability', value: 1, abilityId: 'leading', abilityLevel: 1 },
+    ],
+    masterBonuses: [
+      { type: 'ability', value: 1, abilityId: 'leading', abilityLevel: 2 },
+    ],
+  },
+  {
+    id: 'ranger',
+    name: '狩人',
+    mainSubBonuses: [
+      { type: 'archery_multiplier', value: 1.4 },
+    ],
+    mainBonuses: [
+      { type: 'ability', value: 1, abilityId: 'hunter', abilityLevel: 2 },
+    ],
+    masterBonuses: [
+      { type: 'ability', value: 1, abilityId: 'hunter', abilityLevel: 3 },
+    ],
+  },
+  {
+    id: 'wizard',
+    name: '魔法使い',
+    mainSubBonuses: [
+      { type: 'wand_multiplier', value: 1.4 },
+    ],
+    mainBonuses: [
+      { type: 'caster', value: 2 },
+    ],
+    masterBonuses: [
+      { type: 'caster', value: 3 },
+    ],
+  },
+  {
+    id: 'sage',
+    name: '賢者',
+    mainSubBonuses: [
+      { type: 'robe_multiplier', value: 1.4 },
+      { type: 'equip_slot', value: 2 },
+    ],
+    mainBonuses: [
+      { type: 'caster', value: 1 },
+      { type: 'ability', value: 1, abilityId: 'm_barrier', abilityLevel: 1 },
+    ],
+    masterBonuses: [
+      { type: 'caster', value: 1 },
+      { type: 'ability', value: 1, abilityId: 'm_barrier', abilityLevel: 2 },
+    ],
+  },
+  {
+    id: 'rogue',
+    name: '盗賊',
+    mainSubBonuses: [
+      { type: 'ability', value: 1, abilityId: 'unlock', abilityLevel: 1 },
+    ],
+    mainBonuses: [
+      { type: 'ability', value: 1, abilityId: 'first_strike', abilityLevel: 1 },
+    ],
+    masterBonuses: [
+      { type: 'ability', value: 1, abilityId: 'first_strike', abilityLevel: 2 },
+    ],
+  },
+  {
+    id: 'pilgrim',
+    name: '巡礼者',
+    mainSubBonuses: [
+      { type: 'amulet_multiplier', value: 1.4 },
+      { type: 'equip_slot', value: 1 },
+    ],
+    mainBonuses: [
+      { type: 'ability', value: 1, abilityId: 'null_counter', abilityLevel: 1 },
+    ],
+    masterBonuses: [
+      { type: 'ability', value: 1, abilityId: 'null_counter', abilityLevel: 1 },
+    ],
+  },
+];
+
+export const getClassById = (id: string): ClassDef | undefined =>
+  CLASSES.find(c => c.id === id);
