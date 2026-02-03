@@ -425,9 +425,9 @@ multiplier them. (ex. Enemy attack is `e.fire`, then applies enemy's `r.fire` va
 	- If enemy.`d.HP` > 0 and party.`d.HP` > 0
 
 **Consequence**
-- Defeat: no penalties (current version). no experience points nor item reward. Back to home.
-- Victory: gains experience points to a party. has a chance of gaining reward from enemies drop item. Proceeds to the next room. If it was the last room of dungeon, back to home with trophies!
-- Draw:no penalties (current version). no experience points nor item reward at this room. Retrea to home with trohies of previous rooms.
+- *Defeat*: no penalties (current version). no experience points nor item reward. Back to home without trophies.
+- *Victory*: gains experience points to a party. has a chance of gaining reward from enemies drop item. Proceeds to the next room. If it was the last room of dungeon, back to home with trophies!
+- *Draw*:no penalties (current version). no experience points nor item reward at this room. Retreat to home with trophies of previous rooms.
 
 ## 7. REWARD 
 
