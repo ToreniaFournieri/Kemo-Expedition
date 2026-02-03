@@ -618,7 +618,7 @@ inventory = {
 - Debug section: Displays belows 
   - reward_bag:  
     - 報酬抽選: remaining / total counts 
-    - 当たり残り(value=1) counts
+    - 当たり残り counts
   -	enhancement_bag: 
     - 通常称号抽選: remaining / total counts
     - 宿った残り counts
