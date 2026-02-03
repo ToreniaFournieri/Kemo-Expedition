@@ -166,7 +166,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 - If `main_class` and  `sub_class` are same class, then it turns into master class, applies master bonus.
 - `main_class` applies main/sub bonuses and main bonus. `sub_class` applies only main/sub bonuses.
 - Only the strongest single ability(a.) of the same name applies.
-- Only one single bonuses(c.) of the same name applies. (two `c.equip_slot+2`, but only one `c.equip_slot+2` works)
+- Only one single bonuses(c.) of the **exact** same name applies. (`c.equip_slot+2` and `c.equip_slot+1` then +3 slots. two `c.equip_slot+2`, but only one `c.equip_slot+2` works)
 
 
 #### 2.2.2 Party structure 
@@ -305,7 +305,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
   - `d.melee_attack`: Item Bonuses x its c.multiplier x `b.strength` / 10
   - `d.magical_attack`: Item Bonuses x its c.multiplier x `b.intelligence` / 10
 
-- character.`f.NoA`:
+- character.`f.NoA`: // NoA 0 = No Action.
   - `d.ranged_NoA`: 0 + Item Bonuses x its c.multiplier (round up) 
   - `d.magical_NoA`: 0 + `c.caster+v` bonuses // Only one single bonuses of the same name applies. 
   - `d.melee_NoA`: 0 + `c.grit+v` bonuses + Item Bonuses x its c.multiplier (round up) //no NoA, no melee combat.
@@ -394,7 +394,7 @@ multiplier them. (ex. Enemy attack is `e.fire`, then applies enemy's `r.fire` va
 
 - If it is LONG phase and going to use arrow:
   - Check: Is Quiver_Total_Qty >= Archer_A.ranged_NoA?
-  - Execution: * Subtract ranged_NoA from the Quiver (following Slot 1 -> Slot 6 order).
+  - Execution: * Subtract ranged_NoA from the Quiver (following Slot 1 -> Slot 2 order).
     - If quantity < ranged_NoA, the character attacks with a reduced NoA equal to the remaining quantity.
 
 - Calculates damage: max(1, (character.`f.attack` - enemy.`f.defense` x (1 - character.`f.penet_multiplier`) ))  x character.`f.NoA` x character.`f.abilities_offense_amplifier` x character.`f.elemental_offense_attribute` x enemy.`f.elemental_resistance_attribute` x party.`f.abilities_offense_amplifier`
@@ -426,7 +426,7 @@ multiplier them. (ex. Enemy attack is `e.fire`, then applies enemy's `r.fire` va
 **Consequence**
 - Defeat: no penalties (current version). no experience points nor item reward. Back to home.
 - Victory: gains experience points to a party. has a chance of gaining reward from enemies drop item. Proceeds to the next room. If it was the last room of dungeon, back to home with trophies!
-- Draw:no penalties (current version). no experience points nor item reward. Proceeds to the next room.
+- Draw:no penalties (current version). no experience points nor item reward at this room. Retrea to home with trohies of previous rooms.
 
 ## 7. REWARD 
 
