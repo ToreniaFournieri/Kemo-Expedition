@@ -267,17 +267,23 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 - (Temporary test purspose) Make 5 itmes for each item type. 
 
 #### 2.4.2 Item stacking
-- Items are stacked by (base item + suffix/modifiers)
-  - Inventory shows counts only, not individual instances
-  - Selling is all-or-nothing per stack.
-  - Once a stack is sold, that item variant is permanently obsolete
-  - Any future drops of that exact variant are auto-sold
-  - **Auto-sold maintenance:** Player can change item status from `sold` to `notown`.  
+- Items are stacked by (superRare, enhancement, and base item)
+  - Inventory tracks item variants, not individual instances.
+  - Inventory displays stack count per variant.
+  - Selling is all-or-nothing per stack. 
+  - Once a stack is sold, that item variant becomes obsolete:
+    It is removed from the inventory display.
+    - Any future drops of the exact same variant are automatically sold.
+  - **Auto-sold maintenance:**
+    - The player may change an item’s status from sold to notown.
+    - Sold items cannot be restored or refunded.
+    - After reset, the item variant may be acquired again through normal gameplay.
+
 ```
 inventory = {
   "ショートソード": { count: 0, status: "sold" },
   "名工のショートソード": { count: 40, status: "owned" },
-  "魔性のショートソード": { count: 6, status: "owned" }
+  "世界を征する名工のショートソード": { count: 6, status: "owned" }
   "ロングソード": { count: 0, status: "notown" }
 }
 ```
