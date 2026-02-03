@@ -274,10 +274,20 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
   - Once a stack is sold, that item variant becomes obsolete:
     It is removed from the inventory display.
     - Any future drops of the exact same variant are automatically sold.
-  - **Auto-sold maintenance:**
-    - The player may change an item’s status from sold to notown.
-    - Sold items cannot be restored or refunded.
-    - After reset, the item variant may be acquired again through normal gameplay.
+- **Auto-sold maintenance:**
+  - The player may change an item’s status from sold to notown.
+  - Sold items cannot be restored or refunded.
+  - After reset, the item variant may be acquired again through normal gameplay.
+
+- **Status definitions**
+
+| State | meaning|
+|-------|---------|
+|(no record) |Variant never encountered|
+|owned |Item variant exists in inventory (count > 0)|
+|sold |Item variant is obsolete and auto-sold on pickup|
+|notown |Item variant is not owned and may drop normally|
+
 
 ```
 inventory = {
@@ -287,6 +297,7 @@ inventory = {
   "ロングソード": { count: 0, status: "notown" }
 }
 ```
+
   - 
 
 #### 2.4.3 Consumption of arrow
