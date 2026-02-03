@@ -538,8 +538,9 @@ inventory = {
 
 - Header is always visible; tabs never cause full page reload.
 
-### 8.2 Tabs
-  1. Party:
+### 8.3 Tabs
+
+#### 8.3.1 Party
 - Displays:
   - List of party members
   - Current status, abilities, bonuses
@@ -554,7 +555,7 @@ inventory = {
   - Equip / remove from inventory
   - Status updates in real time
 
-  2. Expedition:
+#### 8.3.2 Expedition
 - Top section:
   - Currently selected dungeon
   - Expedition behavior:
@@ -567,7 +568,7 @@ inventory = {
 - Bottom section:
   - List of available dungeons
 
-  3. Inventory:
+#### 8.3.3 Inventory
 - Behavior:
   - Notification pops up when acquiring a new item
   - Newly acquired items are shown in bold
@@ -579,7 +580,7 @@ inventory = {
   - Sell item stacks
   - Sold items disappear immediately
 
-  4. Shop:
+#### 8.3.4 Shop
 - Purchase basic items:
   - Arrows
   - Other consumables
@@ -591,8 +592,14 @@ inventory = {
   - When Slot 1 arrows are removed:
   - Slot 2 arrows automatically move to Slot 1
 
-  5. Setting:
-    - Debug : Display win / total of 'reward_bag', 'enhancement_bag', 'superRare_bag'
-    - Reset (with warning)
+#### 8.3.5 Setting
+- Debug section:
+  - Display win / remaining / total counts for:
+    - reward_bag
+  	-	enhancement_bag
+  	-	superRare_bag
+- Reset:
+  - Full reset option
+  - Warning required before execution
     
 **END OF SPECIFICATION**
