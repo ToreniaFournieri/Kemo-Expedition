@@ -12,6 +12,19 @@
 
 ## 2. CONSTANTS & DATA
 
+**Naming Rule**
+
+|prefixes | means|
+|-----|---------|
+|`a.` | **a**bility |
+|`b.` | **b**ase status |
+|`c.` | **c**lass bonus |
+|`d.` | **d**uel status |
+|`e.` | **e**lemental attack attribute |
+|`i.` | **i**tem category |
+|`r.` | elemental_**r**esistance_attribute |
+
+
 ### 2.1 Global constants
 - One deity represents on one party. The deity has its own level, HP, and unique divine abilities. 
 const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'Party_HP', 'Party_physical_defense', 'Party_magical_defense' , 'quiver_slots' ]
@@ -62,12 +75,12 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 - b.strength 
 - b.intelligence 
 - b.mind
-- ranged_attack
-- magical_attack
-- melee_attack
-- ranged_NoA
-- magical_NoA
-- melee_NoA
+- d.ranged_attack
+- d.magical_attack
+- d.melee_attack
+- d.ranged_NoA
+- d.magical_NoA
+- d.melee_NoA
 - maximum_equipped_item:
 
 *Note:*
@@ -162,9 +175,10 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 - All characters participate simultaneously
 - Party has its:
     - Party HP
-    - Party physical defense
-    - Party magical defense
-  	- `elemental_defense_attribute` // 1.0 as default. 0.5 is strong, 2.0 is weak
+    - `d.X_defense`
+	    - `d.physical_defense`
+	    - `d.magical_defense`
+  	- `elemental_resistance_attribute` // 1.0 as default. 0.5 is strong, 2.0 is weak
 		- `r.fire`
 		- `r.ice`
 		- `r.thunder`
@@ -177,9 +191,10 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 
 2. Character Properties
 - Each character has:
-	- Ranged attack, number of attacks
-    - Magical attack, number of attacks
-    - Melee attack, number of attacks
+  	- `d.X_attack`, `d.X_NoA`
+		- `d.ranged_attack`, `d.ranged_NoA`
+	    - `d.magical_attack`, `d.magical_NoA`
+	    - `d.melee_attack`, `d.melee_NoA`
     - `elemental_attack_attribute`  // 1.0 as default. 0.5 is weak, 2.0 is strong
 		- Has only one type of `none`, `e.fire`, `e.ice`, or `e.thunder`
       		- Priority: `e.thunder` > `e.ice` > `e.fire` > `none` (if it has multiple attribute)
@@ -205,20 +220,19 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 - pool_id //only for Normal enemy. Boss is always set 0.
 - name: string
 - hp
-- ranged_attack
-- magical_attack
-- melee_attack
-- ranged_attack_amplifier // 1.0 as default 
-- magical_attack_amplifier // 1.0 as default 
-- melee_attack_amplifier // 1.0 as default 
-- ranged_NoA
-- magical_NoA
-- melee_NoA
-- physical_defense
-- magical_defense
+- `d.X_attack`, `d.X_NoA`
+	- `d.ranged_attack`, `d.ranged_NoA`
+	- `d.magical_attack`, `d.magical_NoA`
+	- `d.melee_attack`, `d.melee_NoA`- ranged_attack
+- `d.ranged_attack_amplifier` // 1.0 as default 
+- `d.magical_attack_amplifier` // 1.0 as default 
+- `d.melee_attack_amplifier` // 1.0 as default 
+- `d.X_defense`
+	- `d.physical_defense`
+	- `d.magical_defense`
 - `elemental_attack_attribute`  // 1.0 as default. 0.5 is weak, 2.0 is strong
 	- Has only one type of `none`, `e.fire`, `e.ice`, or `e.thunder`
-- `elemental_defense_attribute` // 1.0 as default. 0.5 is strong, 2.0 is weak
+- `elemental_resistance_attribute` // 1.0 as default. 0.5 is strong, 2.0 is weak
 	- `r.fire`
 	- `r.ice`
 	- `r.thunder`
@@ -280,19 +294,19 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 |25|7 |
 
 
-- Base status update: add (b.) modifiers. (ex. b.vitality = 10(from race) + `b.vitality+2` -> 12
+- Base status update: add (b.) modifiers. (ex. `b.vitality` = 10(from race) + `b.vitality+2` -> 12
 
 - c.multiplier like `c.sword_x1.3` applies only for sword item type. other item types like amulet may have +10 melee_attack bonus, but amulet's melee_attack bonus is not multiplied by `c.sword_x1.3` effect. 
 
 - Attack damage:
-  - ranged_attack: Item Bonuses x its c.multiplier
-  - melee_attack: Item Bonuses x its c.multiplier x `b.strength` / 10
-  - magical_attack: Item Bonuses x its c.multiplier x `b.intelligence` / 10
+  - `d.ranged_attack`: Item Bonuses x its c.multiplier
+  - `d.melee_attack`: Item Bonuses x its c.multiplier x `b.strength` / 10
+  - `d.magical_attack`: Item Bonuses x its c.multiplier x `b.intelligence` / 10
 
 - Number of attacks:
-  - ranged_NoA: 0 + Item Bonuses x its c.multiplier (round up) 
-  - magical_NoA: 0 + `c.caster+v` bonuses // Only one single bonuses of the same name applies. 
-  - melee_NoA: 0 + `c.grit+v` bonuses + Item Bonuses x its c.multiplier (round up) //no NoA, no melee combat.
+  - `d.ranged_NoA`: 0 + Item Bonuses x its c.multiplier (round up) 
+  - `d.magical_NoA`: 0 + `c.caster+v` bonuses // Only one single bonuses of the same name applies. 
+  - `d.melee_NoA`: 0 + `c.grit+v` bonuses + Item Bonuses x its c.multiplier (round up) //no NoA, no melee combat.
  
   - IF the character has `a.iaigiri`, halve these number of attacks, round up. 
  
@@ -301,8 +315,8 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 - c.multiplier like `c.amulet_x1.3` applies only for individual character's equipments. 
 - Party HP: 950 + (level x 50) + (Total sum of individual (Item Bonuses of HP x its c.multiplier x (`b.vitality`  + `b.mind`) / 20))
 - Party defense:
-  - Physical defense: (Total sum of individual (Item Bonuses of Physical defense x its c.multiplier x `b.vitality` / 10))
-  - Magical defense: (Total sum of individual (Item Bonuses of Magical defense x its c.multiplier x `b.mind` / 10))
+  - `d.physical_defense`: (Total sum of individual (Item Bonuses of Physical defense x its c.multiplier x `b.vitality` / 10))
+  - `d.magical_defense`: (Total sum of individual (Item Bonuses of Magical defense x its c.multiplier x `b.mind` / 10))
 
 
 ## 4. HOME
@@ -348,7 +362,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 **Enemy action**
 - Enemy always moves first.
 
-- Damage: max(1 ,(Enemy damage - Party defense)) x Enemy's damage amplifier x  x enemy.`elemental_attack_attribute` x party.`elemental_defense_attribute` x Party abilities amplifier  x number of attacks
+- Damage: max(1 ,(enemy.`d.X_attack` -party.`d.X_defense`)) x Enemy's damage amplifier x enemy.`elemental_attack_attribute` x party.`elemental_resistance_attribute` x Party abilities amplifier  x number of attacks
     - following matched ranged type.
     - elemental multiplier: Default is 1. If the damage type has `elemental_attack_attribute`, multiplier them. (ex. Enemy attack is `e.fire`, then applies enemy's `r.fire` value. )
 - Current Party HP -= Calculated damage
@@ -366,7 +380,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
     - If quantity < ranged_NoA, the character attacks with a reduced NoA equal to the remaining quantity.
 
 
-- Calculated damage: max(1, (Attack damage - Enemy defense x (1 - sum of (penet multiplier)) ))  x Individual abilities amplifier x character.`elemental_attack_attribute` x enemy.`elemental_defense_attribute` x Party abilities amplifier
+- Calculated damage: max(1, (Attack damage - Enemy defense x (1 - sum of (penet multiplier)) ))  x Individual abilities amplifier x character.`elemental_attack_attribute` x enemy.`elemental_resistance_attribute` x Party abilities amplifier
   - Individual abilities:`a.iaigiri`
   - Party abilities: `a.leading`
   - penet multiplier: like `c.penet_x0.1` & `c.penet_x0.15` -> 0.25
