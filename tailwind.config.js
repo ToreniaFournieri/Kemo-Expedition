@@ -7,7 +7,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        accent: '#3B82F6',
+        sub: '#3B82F6',      // Blue (~30%)
+        accent: '#EA580C',   // Dark orange (~5%)
+        pane: '#F3F4F6',     // Gray for panes
       },
     },
   },
