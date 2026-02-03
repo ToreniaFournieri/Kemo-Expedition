@@ -174,7 +174,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 - Player party consists of up to 6 characters
 - All characters participate simultaneously
 - Party has its:
-    - Party HP
+    - Party `d.HP`
     - `d.X_defense`
 	    - `d.physical_defense`
 	    - `d.magical_defense`
@@ -219,14 +219,15 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 - type: string.  Normal/Boss
 - pool_id //only for Normal enemy. Boss is always set 0.
 - name: string
-- hp
+- `d.HP`
 - `d.X_attack`, `d.X_NoA`
 	- `d.ranged_attack`, `d.ranged_NoA`
 	- `d.magical_attack`, `d.magical_NoA`
 	- `d.melee_attack`, `d.melee_NoA`- ranged_attack
-- `d.ranged_attack_amplifier` // 1.0 as default 
-- `d.magical_attack_amplifier` // 1.0 as default 
-- `d.melee_attack_amplifier` // 1.0 as default 
+- `d.X_attack_amplifier` 
+	- `d.ranged_attack_amplifier` // 1.0 as default 
+	- `d.magical_attack_amplifier` // 1.0 as default 
+	- `d.melee_attack_amplifier` // 1.0 as default 
 - `d.X_defense`
 	- `d.physical_defense`
 	- `d.magical_defense`
@@ -298,12 +299,12 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 
 - c.multiplier like `c.sword_x1.3` applies only for sword item type. other item types like amulet may have +10 melee_attack bonus, but amulet's melee_attack bonus is not multiplied by `c.sword_x1.3` effect. 
 
-- Attack damage:
+- `d.X_attack` damage :
   - `d.ranged_attack`: Item Bonuses x its c.multiplier
   - `d.melee_attack`: Item Bonuses x its c.multiplier x `b.strength` / 10
   - `d.magical_attack`: Item Bonuses x its c.multiplier x `b.intelligence` / 10
 
-- Number of attacks:
+- `d.X_NoA` Number of attacks:
   - `d.ranged_NoA`: 0 + Item Bonuses x its c.multiplier (round up) 
   - `d.magical_NoA`: 0 + `c.caster+v` bonuses // Only one single bonuses of the same name applies. 
   - `d.melee_NoA`: 0 + `c.grit+v` bonuses + Item Bonuses x its c.multiplier (round up) //no NoA, no melee combat.
@@ -362,11 +363,11 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 **Enemy action**
 - Enemy always moves first.
 
-- Damage: max(1 ,(enemy.`d.X_attack` -party.`d.X_defense`)) x Enemy's damage amplifier x enemy.`elemental_attack_attribute` x party.`elemental_resistance_attribute` x Party abilities amplifier  x number of attacks
+- Damage: max(1 ,(enemy.`d.X_attack` - party.`d.X_defense`)) x enemy.`d.X_attack_amplifier` x enemy.`elemental_attack_attribute` x party.`elemental_resistance_attribute` x Party abilities amplifier  x number of attacks
     - following matched ranged type.
     - elemental multiplier: Default is 1. If the damage type has `elemental_attack_attribute`, multiplier them. (ex. Enemy attack is `e.fire`, then applies enemy's `r.fire` value. )
-- Current Party HP -= Calculated damage
-- If currenr party HP =< 0, Defeat. 
+- Current party.`d.HP` -= Calculated damage
+- If currenr party.`d.HP` =< 0, Defeat. 
 
 - **Counter:** IF character has `a.counter` ability and take damage in CLOSE phase. The character attacks to enemy.
     - Counter triggers immediately after damage resolution, regardless of turn order modifiers.
@@ -380,14 +381,14 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
     - If quantity < ranged_NoA, the character attacks with a reduced NoA equal to the remaining quantity.
 
 
-- Calculated damage: max(1, (Attack damage - Enemy defense x (1 - sum of (penet multiplier)) ))  x Individual abilities amplifier x character.`elemental_attack_attribute` x enemy.`elemental_resistance_attribute` x Party abilities amplifier
+- Calculated damage: max(1, (character.`d.X_attack` - enemy.`d.X_defense` x (1 - sum of (penet multiplier)) ))  x character.abilities amplifier x character.`elemental_attack_attribute` x enemy.`elemental_resistance_attribute` x Party abilities amplifier
   - Individual abilities:`a.iaigiri`
   - Party abilities: `a.leading`
   - penet multiplier: like `c.penet_x0.1` & `c.penet_x0.15` -> 0.25
   - following matched ranged type. 
-  - elemental multiplier: Default is 1. If the damage type has `elemental_attack_attribute`, multiplier them. (ex. fire arrow has `e.fire`, then applies enemy's `r.fire` value. )
-- Current enemy HP -= Calculated damage
-- If enemy HP =< 0, Victory.
+  - elemental_attack_attribute: Default is 1. If the damage type has `elemental_attack_attribute`, multiplier them. (ex. fire arrow has `e.fire`, then applies enemy's `r.fire` value. )
+- Current enemy.`d.HP` -= Calculated damage
+- If enemy.`d.HP` =< 0, Victory.
   - Party damage reduction abilities apply after defense subtraction.
 
 - **Re-attack:** IF character has `a.re-attack` ability. The character attacks to enemy.
@@ -401,13 +402,13 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 
 **Resolution**
 - Defeat (Player loses)
-    - If Party_HP <= 0
+    - If party.`d.HP` <= 0
 	- This overrides all other outcomes
-	- Even if Enemy HP is also <= 0
+	- Even if enemy.`d.HP` is also <= 0
 - Victory
-	- If Enemy_HP <= 0 and Party_HP > 0
+	- If enemy.`d.HP` <= 0 and party.`d.HP` > 0
 - Draw
-	- If Enemy_HP > 0 and Party_HP > 0
+	- If enemy.`d.HP` > 0 and party.`d.HP` > 0
 
 **Consequence**
 - Defeat: no penalties (current version). no experience points nor item reward. Back to home.
