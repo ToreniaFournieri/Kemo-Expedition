@@ -514,8 +514,9 @@ function ExpeditionTab({
 
       {/* Last Expedition Log */}
       {state.lastExpeditionLog && (
-        <div className="bg-pane rounded-lg p-4">
-          <button
+        <div className="mt-8 pt-4 border-t-2 border-gray-200">
+          <div className="bg-pane rounded-lg p-4">
+            <button
             onClick={() => setShowLog(!showLog)}
             className="w-full flex justify-between items-center text-sm font-medium"
           >
@@ -570,6 +571,7 @@ function ExpeditionTab({
               </div>
             </div>
           )}
+          </div>
         </div>
       )}
     </div>

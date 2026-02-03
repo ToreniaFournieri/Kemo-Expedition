@@ -1,4 +1,4 @@
-import { useReducer, useCallback } from 'react';
+import { useReducer, useCallback, useEffect } from 'react';
 import {
   GameState,
   Item,
@@ -18,7 +18,32 @@ import { drawFromBag, refillBagIfEmpty, createRewardBag, createEnhancementBag, c
 import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 
-const BUILD_NUMBER = 1;
+const BUILD_NUMBER = 2;
+const STORAGE_KEY = 'kemo-expedition-save';
+
+function loadSavedState(): GameState | null {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Validate it has required properties
+      if (parsed.party && parsed.bags && parsed.buildNumber) {
+        return parsed as GameState;
+      }
+    }
+  } catch (e) {
+    console.error('Failed to load saved state:', e);
+  }
+  return null;
+}
+
+function saveState(state: GameState): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    console.error('Failed to save state:', e);
+  }
+}
 
 const LEVEL_EXP: number[] = [
   0, 100, 250, 450, 700, 1000, 1400, 1900, 2500, 3200,
@@ -73,6 +98,13 @@ function createInitialParty() {
 }
 
 function createInitialState(): GameState {
+  // Try to load saved state first
+  const savedState = loadSavedState();
+  if (savedState) {
+    // Update build number in case it changed
+    return { ...savedState, buildNumber: BUILD_NUMBER };
+  }
+
   return {
     scene: 'home',
     party: createInitialParty(),
@@ -389,8 +421,27 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
-    case 'RESET_GAME':
-      return createInitialState();
+    case 'RESET_GAME': {
+      // Clear localStorage
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (e) {
+        console.error('Failed to clear saved state:', e);
+      }
+      // Return fresh state (not from localStorage)
+      return {
+        scene: 'home' as const,
+        party: createInitialParty(),
+        bags: {
+          rewardBag: createRewardBag(),
+          enhancementBag: createEnhancementBag(),
+          superRareBag: createSuperRareBag(),
+        },
+        selectedDungeonId: 1,
+        lastExpeditionLog: null,
+        buildNumber: BUILD_NUMBER,
+      };
+    }
 
     default:
       return state;
@@ -399,6 +450,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
 export function useGameState() {
   const [state, dispatch] = useReducer(gameReducer, null, createInitialState);
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    saveState(state);
+  }, [state]);
 
   const actions = {
     selectDungeon: useCallback((dungeonId: number) => {
