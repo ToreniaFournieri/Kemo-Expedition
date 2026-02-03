@@ -823,7 +823,7 @@ function SettingTab({
               <span>{rewardRemaining} / {rewardTotal}</span>
             </div>
             <div className="flex justify-between text-sub">
-              <span>当たり残り (value=1)</span>
+              <span>当たり残り</span>
               <span>{rewardWins}</span>
             </div>
           </div>
@@ -838,19 +838,19 @@ function SettingTab({
               <span>{enhancementRemaining} / {enhancementTotal}</span>
             </div>
             <div className="flex justify-between text-sub">
-              <span>宿った残り (value=3)</span>
+              <span>宿った残り</span>
               <span>{dwellingRemaining}</span>
             </div>
             <div className="flex justify-between text-sub">
-              <span>伝説の残り (value=4)</span>
+              <span>伝説の残り</span>
               <span>{legendaryRemaining}</span>
             </div>
             <div className="flex justify-between text-sub">
-              <span>恐ろしい残り (value=5)</span>
+              <span>恐ろしい残り</span>
               <span>{terribleRemaining}</span>
             </div>
             <div className="flex justify-between text-sub">
-              <span>究極の残り (value=6)</span>
+              <span>究極の残り</span>
               <span>{ultimateRemaining}</span>
             </div>
           </div>
@@ -865,7 +865,7 @@ function SettingTab({
               <span>{superRareRemaining} / {superRareTotal}</span>
             </div>
             <div className="flex justify-between text-accent">
-              <span>超レア残り (value&gt;0)</span>
+              <span>超レア残り</span>
               <span>{superRareHits}</span>
             </div>
           </div>
