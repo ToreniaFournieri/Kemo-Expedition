@@ -592,6 +592,7 @@ inventory = {
   - Remove arrows
 - Item list:
   - Stacked by item variant
+  - Shows `owned` items
   - Inventory includes item category tabs:
     - 剣,刀,弓,鎧,手,杖,衣,護,矢.
     - Default: 剣
@@ -606,7 +607,9 @@ inventory = {
   - Sell item stacks
   - Sold items disappear immediately
 - Auto-sold list (closed as default)
+  - Sort and filter is affected in this list too. (but shows `sold` item)
   - Item 解除: `sold` status to `notown`
+
 
 #### 8.3.4 Shop
 - Purchase basic items:
