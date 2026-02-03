@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.0.5 - SPECIFICATION
+# KEMO EXPEDITION v0.0.6 - SPECIFICATION
 
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
@@ -179,7 +179,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
     - Party `f.defense`
 	    - `d.physical_defense`
 	    - `d.magical_defense`
-  	- `elemental_resistance_attribute` // 1.0 as default. 0.5 is strong, 2.0 is weak
+  	- `f.elemental_resistance_attribute` // 1.0 as default. 0.5 is strong, 2.0 is weak
 		- `r.fire`
 		- `r.ice`
 		- `r.thunder`
@@ -196,7 +196,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 		- `d.ranged_attack`, `d.ranged_NoA`
 	    - `d.magical_attack`, `d.magical_NoA`
 	    - `d.melee_attack`, `d.melee_NoA`
-    - `elemental_attribute`  // 1.0 as default. 0.5 is weak, 2.0 is strong
+    - `f.elemental_offense_attribute`  // 1.0 as default. 0.5 is weak, 2.0 is strong
 		- Has only one type of `none`, `e.fire`, `e.ice`, or `e.thunder`
       		- Priority: `e.thunder` > `e.ice` > `e.fire` > `none` (if it has multiple attribute)
 		- Equipment slots
@@ -232,7 +232,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 - `f.defense`
 	- `d.physical_defense`
 	- `d.magical_defense`
-- `f.elemental_offenseattribute`  // 1.0 as default. 0.5 is weak, 2.0 is strong
+- `f.elemental_offense_attribute`  // 1.0 as default. 0.5 is weak, 2.0 is strong
 	- Has only one type of `none`, `e.fire`, `e.ice`, or `e.thunder`
 - `f.elemental_resistance_attribute` // 1.0 as default. 0.5 is strong, 2.0 is weak
 	- `r.fire`
@@ -311,7 +311,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
   - `d.melee_NoA`: 0 + `c.grit+v` bonuses + Item Bonuses x its c.multiplier (round up) //no NoA, no melee combat.
     - IF the character has `a.iaigiri`, halve these number of attacks, round up. 
 
-- character.`f.abilities_offenseamplifier`
+- character.`f.abilities_offense_amplifier`
   - If character.`a.iaigiri`, multiply 2.0.
 
 - character.`f.elemental_offense_attribute`
