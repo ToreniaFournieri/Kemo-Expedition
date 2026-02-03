@@ -182,7 +182,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
     - Melee attack, number of attacks
     - `elemental_attack_attribute`  // 1.0 as default. 0.5 is weak, 2.0 is strong
 		- Has only one type of `none`, `e.fire`, `e.ice`, or `e.thunder`
-      		- Priority: Thunder > ice > fire > none (if it has multiple attribute)
+      		- Priority: `e.thunder` > `e.ice` > `e.fire` > `none` (if it has multiple attribute)
 		- Equipment slots
 
 - Characters do not have individual HP.
