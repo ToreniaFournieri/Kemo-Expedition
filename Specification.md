@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.0.4 - SPECIFICATION
+# KEMO EXPEDITION v0.0.5 - SPECIFICATION
 
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
@@ -316,6 +316,8 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 |LONG |Ranged attack |Ranged NoA|Physical defense |
 |MID |Magical attack |Magical NoA|Magical defense|
 |CLOSE |Melee attack |Melee NoA|Physical defense |
+
+- After the CLOSE phase, the battle is over. Party needs to beat enemy within these three phases.
 
 **First strike**
 - IF a character has `a.first-strike`, acts before enemy action. (see Player action)
