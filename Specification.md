@@ -5,6 +5,7 @@
 - Support Japanese language. 
 - no randomness in battle.
 - Tetris like randomness for enemies spawns, reward items. (a bag contians all potential rewards. 
+- data persistence 
 
 ### 1.1 World setting
 - The world is fragmented into unexplored regions filled with ancient creatures and forgotten relics.
