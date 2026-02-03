@@ -12,8 +12,8 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 export function createRewardBag(): RandomBag {
-  // 1 win ticket (1) and 99 lose tickets (0)
-  const tickets = [1, ...Array(99).fill(0)];
+  // 1 win ticket (1) and 9 lose tickets (0) = 10% chance
+  const tickets = [1, ...Array(9).fill(0)];
   return { tickets: shuffleArray(tickets) };
 }
 
