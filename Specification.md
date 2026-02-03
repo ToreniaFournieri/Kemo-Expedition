@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.0.7 - SPECIFICATION
+# KEMO EXPEDITION v0.0.8 - SPECIFICATION
 
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
@@ -239,6 +239,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 	- `r.ice`
 	- `r.thunder`
 - experience // Enemy experience is added directly to party experience.
+- gold
 - drop_item
 
 - (Temporary test purpose) make 5 dungeons and 5 enemies per dungeon. 
@@ -271,7 +272,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 ## 3. INITIALIZATION 
 
 ### 3.1 Randomness initialization
-- **Reward:** Put 1 win ticket(1) and 99 lose tickets(0) into 'reward_bag'. 
+- **Reward:** Put 1 win ticket(1) and 9 lose tickets(0) into 'reward_bag'. 
 - **Enhancement:** Put tickets into 'enhancement_bag'.
 - **Super Rare:** Put tickets into 'superRare_bag' .
 
@@ -443,7 +444,28 @@ multiplier them. (ex. Enemy attack is `e.fire`, then applies enemy's `r.fire` va
 ## 8. UI
 - Web-based (React + TypeScript + Tailwind)
 - Theme color: White background , Black letters, Blue accent color.
+  - No other color, like Red or Green. Gray and Light blue are acceptable.
 - Compact, simple iOS like UI
 - Fewer scenes transaction. Home scene handles the whole game progress.
 
+- Header
+  - Always stick to the head.
+  - Party info: Party status, number of arrow (simplified)
+  - Tab header' Party, Expedition, Inventory, Shop
+
+- Tabs
+  - Party:
+    - list of party member, status, abilities and bonuses.
+    - Equipment list, remove and equip them. Simultaneously updates its status.
+  - Expedition:
+    - Current selected dungeon is on the top. List of dungeons.
+    - Dungeon resolved immediately and show the log at Expedition tab.
+    - If player tap, shows detail logs.
+  - Inventory:
+    - List of items. Newly aquired item is **bold**. once shown, then back to normal.
+    - can sell them.
+  - Shop:
+ 	- can buy items like arrows and other basic items. 
+    - manage quiver, aquire, refill, remove. When removes Slot1 arrows, Slot2 arrows move to Slot1.
+    
 **END OF SPECIFICATION**
