@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.0.8 - SPECIFICATION
+# KEMO EXPEDITION v0.0.9 - SPECIFICATION
 
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
@@ -554,6 +554,8 @@ inventory = {
   - Character status updates immediately
 - Equipment management:
   - Equip / remove from inventory
+    - Inventory has item category tabs: 剣,刀,弓,鎧,籠手,ワンド,法衣,護符,矢.  Default: 剣
+    - Sorted by item ID, enhancement, superRare. 
   - Status updates in real time
 
 #### 8.3.2 Expedition
@@ -576,6 +578,8 @@ inventory = {
   - Once displayed, text returns to normal
 - Item list:
   - Stacked by item variant
+  - Item category tabs: 剣,刀,弓,鎧,籠手,ワンド,法衣,護符,矢.  Default: 剣
+  - Sorted by item ID, enhancement, superRare. 
   - Shows count and status
 - Actions:
   - Sell item stacks
