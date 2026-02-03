@@ -1,0 +1,92 @@
+import { ItemDef, EnhancementTitle, SuperRareTitle } from '../types';
+
+export const ENHANCEMENT_TITLES: EnhancementTitle[] = [
+  { value: 0, title: '', tickets: 1390, multiplier: 1.0 },
+  { value: 1, title: '名工の', tickets: 350, multiplier: 1.33 },
+  { value: 2, title: '魔性の', tickets: 180, multiplier: 1.58 },
+  { value: 3, title: '宿った', tickets: 60, multiplier: 2.1 },
+  { value: 4, title: '伝説の', tickets: 15, multiplier: 2.75 },
+  { value: 5, title: '恐ろしい', tickets: 4, multiplier: 3.5 },
+  { value: 6, title: '究極の', tickets: 1, multiplier: 5.0 },
+];
+
+export const SUPER_RARE_TITLES: SuperRareTitle[] = [
+  { value: 0, title: '', tickets: 24995, multiplier: 1.0 },
+  { value: 1, title: '世界を征する', tickets: 1, multiplier: 2.0 },
+  { value: 2, title: '天に与えられし', tickets: 1, multiplier: 2.0 },
+  { value: 3, title: '混沌の', tickets: 1, multiplier: 2.0 },
+  { value: 4, title: '知られざる', tickets: 1, multiplier: 2.0 },
+  { value: 5, title: '血に飢えし', tickets: 1, multiplier: 2.0 },
+];
+
+// 5 items per category as specified
+export const ITEMS: ItemDef[] = [
+  // Swords (剣) - +melee_attack
+  { id: 1, category: 'sword', name: 'ショートソード', meleeAttack: 8 },
+  { id: 2, category: 'sword', name: 'ロングソード', meleeAttack: 15 },
+  { id: 3, category: 'sword', name: 'ブロードソード', meleeAttack: 22 },
+  { id: 4, category: 'sword', name: 'バスタードソード', meleeAttack: 30 },
+  { id: 5, category: 'sword', name: 'クレイモア', meleeAttack: 40, partyHP: 10 },
+
+  // Katana (刀) - +melee_attack, -melee_NoA
+  { id: 10, category: 'katana', name: '打刀', meleeAttack: 12, meleeNoA: -1 },
+  { id: 11, category: 'katana', name: '太刀', meleeAttack: 20, meleeNoA: -1 },
+  { id: 12, category: 'katana', name: '野太刀', meleeAttack: 30, meleeNoA: -1 },
+  { id: 13, category: 'katana', name: '大太刀', meleeAttack: 42, meleeNoA: -2 },
+  { id: 14, category: 'katana', name: '妖刀', meleeAttack: 55, meleeNoA: -2 },
+
+  // Archery (弓) - +ranged_attack, +ranged_NoA
+  { id: 20, category: 'archery', name: 'ショートボウ', rangedAttack: 5, rangedNoA: 2 },
+  { id: 21, category: 'archery', name: 'ロングボウ', rangedAttack: 10, rangedNoA: 2 },
+  { id: 22, category: 'archery', name: 'コンポジットボウ', rangedAttack: 15, rangedNoA: 3 },
+  { id: 23, category: 'archery', name: 'グレートボウ', rangedAttack: 22, rangedNoA: 3 },
+  { id: 24, category: 'archery', name: '精霊弓', rangedAttack: 30, rangedNoA: 4 },
+
+  // Armor (鎧) - +Party_physical_defense
+  { id: 30, category: 'armor', name: 'レザーアーマー', physicalDefense: 5 },
+  { id: 31, category: 'armor', name: 'チェインメイル', physicalDefense: 10 },
+  { id: 32, category: 'armor', name: 'スケイルメイル', physicalDefense: 16 },
+  { id: 33, category: 'armor', name: 'プレートメイル', physicalDefense: 24 },
+  { id: 34, category: 'armor', name: '騎士の鎧', physicalDefense: 35, partyHP: 20 },
+
+  // Gauntlet (籠手) - +melee_NoA
+  { id: 40, category: 'gauntlet', name: '革の籠手', meleeNoA: 1 },
+  { id: 41, category: 'gauntlet', name: '鋼の籠手', meleeNoA: 1, meleeAttack: 3 },
+  { id: 42, category: 'gauntlet', name: '戦士の籠手', meleeNoA: 2 },
+  { id: 43, category: 'gauntlet', name: '英雄の籠手', meleeNoA: 2, meleeAttack: 5 },
+  { id: 44, category: 'gauntlet', name: '伝説の籠手', meleeNoA: 3, meleeAttack: 8 },
+
+  // Wand (ワンド) - +magical_attack
+  { id: 50, category: 'wand', name: '木のワンド', magicalAttack: 8 },
+  { id: 51, category: 'wand', name: '魔法のワンド', magicalAttack: 15 },
+  { id: 52, category: 'wand', name: 'ルーンワンド', magicalAttack: 24 },
+  { id: 53, category: 'wand', name: '賢者の杖', magicalAttack: 35 },
+  { id: 54, category: 'wand', name: '大魔導師の杖', magicalAttack: 50, magicalNoA: 1 },
+
+  // Robe (法衣) - +Party_magical_defense
+  { id: 60, category: 'robe', name: '見習いのローブ', magicalDefense: 5 },
+  { id: 61, category: 'robe', name: '魔法使いのローブ', magicalDefense: 10 },
+  { id: 62, category: 'robe', name: '賢者のローブ', magicalDefense: 18 },
+  { id: 63, category: 'robe', name: '大魔導師のローブ', magicalDefense: 28 },
+  { id: 64, category: 'robe', name: '聖なるローブ', magicalDefense: 40, partyHP: 15 },
+
+  // Amulet (護符) - +Party_HP
+  { id: 70, category: 'amulet', name: '護りの護符', partyHP: 30 },
+  { id: 71, category: 'amulet', name: '銀の護符', partyHP: 60 },
+  { id: 72, category: 'amulet', name: '守護の護符', partyHP: 100 },
+  { id: 73, category: 'amulet', name: '聖なる護符', partyHP: 150 },
+  { id: 74, category: 'amulet', name: '神の護符', partyHP: 220, physicalDefense: 5 },
+
+  // Arrows (矢) - Consumable, Stackable
+  { id: 80, category: 'arrow', name: '木の矢', rangedAttack: 2, maxStack: 99, elementalOffense: 'none' },
+  { id: 81, category: 'arrow', name: '鉄の矢', rangedAttack: 5, maxStack: 99, elementalOffense: 'none' },
+  { id: 82, category: 'arrow', name: '炎の矢', rangedAttack: 8, maxStack: 50, elementalOffense: 'fire' },
+  { id: 83, category: 'arrow', name: '氷の矢', rangedAttack: 8, maxStack: 50, elementalOffense: 'ice' },
+  { id: 84, category: 'arrow', name: '雷の矢', rangedAttack: 8, maxStack: 50, elementalOffense: 'thunder' },
+];
+
+export const getItemById = (id: number): ItemDef | undefined =>
+  ITEMS.find(i => i.id === id);
+
+export const getItemsByCategory = (category: string): ItemDef[] =>
+  ITEMS.filter(i => i.category === category);
