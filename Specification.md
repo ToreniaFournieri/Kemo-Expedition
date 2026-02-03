@@ -14,7 +14,7 @@
 
 ### 2.1 Global constants
 - One deity represents on one party. The deity has its own level, HP, and unique divine abilities. 
-const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'Party_HP', 'Party_physical_defense', 'Party_magical_defense' ]
+const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'Party_HP', 'Party_physical_defense', 'Party_magical_defense' , 'quiver_slots' ]
 
 - Initial deity: 'God of Restoration' // Revives character at the base automatically, no death penalty 
 
@@ -159,6 +159,12 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
     - Party HP
     - Party physical defense
     - Party magical defense
+    - quiver slots
+ 
+- **Quariver system**
+  - Definition: A shared party resource that houses all `e.arrow` items.
+  - Quiver Slots: The party has **Two** slots specifically for arrow types.
+  - Stacking: Each arrow type has a `max_stack` property. Multiple stacks of the same arrow ID can occupy different quiver slots.
 
 2. Character Properties
 - Each character has:
@@ -212,12 +218,13 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 |-----|----|-----------|
 |`c.sword` | 剣 | + `melee_attack` |
 |`c.katana` | 刀 | + `melee_attack`, - `melee_NoA` |
-|`c.archery` | 弓具 | bow: + `ranged_attack`, arrows:  + `ranged_NoA` |
+|`c.archery` | 弓 | + `ranged_attack`, + `ranged_NoA` |
 |`c.armor` | 鎧 | + `Party_physical_defense` |
 |`c.gauntlet` | 籠手 | + `melee_NoA` |
 |`c.wand` | ワンド | + `magical_attack` |
 |`c.robe` | 法衣 | + `Party_magical_defense` |
 |`c.amulet` | 護符 | + `Party_HP` |
+|`c.arrow` | 矢 | consumable |
 
 - *note:* item might have multiple bonus. sword may have `Party_HP` but subtle value. 
 - (Temporary test purspose) Make 5 itmes for each item type. 
@@ -336,9 +343,10 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 - Each party menber act if he has corresponding damage source in the phase. 
 
 - If it is LONG phase and going to use arrow:
-  - Check if Character has e.archery (Arrow) with quantity > 0.
-  - If quantity < ranged_NoA, the character attacks with a reduced NoA equal to the remaining quantity.
-  - Subtract quantity.
+  - Check: Is Quiver_Total_Qty >= Archer_A.ranged_NoA?
+  - Execution: * Subtract ranged_NoA from the Quiver (following Slot 1 -> Slot 6 order).
+    - If quantity < ranged_NoA, the character attacks with a reduced NoA equal to the remaining quantity.
+
 
 - Calculated damage: max(1, (Attack damage - Enemy defense x (1 - sum of (penet multiplier)) ))  x Individual abilities amplifier x Party abilities amplifier
   - Individual abilities:`a.iaigiri`
