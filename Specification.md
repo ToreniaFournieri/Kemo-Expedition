@@ -291,10 +291,18 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 
 ```
 inventory = {
-  "ショートソード": { count: 0, status: "sold" },
-  "名工のショートソード": { count: 40, status: "owned" },
-  "世界を征する名工のショートソード": { count: 6, status: "owned" }
-  "ロングソード": { count: 0, status: "notown" }
+  "ショートソード": {
+    "count": 0,
+    "status": "sold"
+  },
+  "名工のショートソード": {
+    "count": 40,
+    "status": "owned"
+  },
+  "世界を征する名工のショートソード": {
+    "count": 6,
+    "status": "owned"
+  }
 }
 ```
 
