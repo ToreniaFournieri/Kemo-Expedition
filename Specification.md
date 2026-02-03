@@ -181,10 +181,9 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
     - Magical attack, number of attacks
     - Melee attack, number of attacks
     - `elemental_attack_attribute`  // 1.0 as default. 0.5 is weak, 2.0 is strong
-		- `e.fire`
-		- `e.ice` 
-		- `e.thunder`
-    - Equipment slots
+		- Has only one type of `none`, `e.fire`, `e.ice`, or `e.thunder`
+      		- Priority: Thunder > ice > fire > none (if it has multiple attribute)
+		- Equipment slots
 
 - Characters do not have individual HP.
     - but each character contrivutes total HP, physical defense and magical defense. 
@@ -218,9 +217,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 - physical_defense
 - magical_defense
 - `elemental_attack_attribute`  // 1.0 as default. 0.5 is weak, 2.0 is strong
-	- `e.fire` 
-	- `e.ice`
-	- `e.thunder`
+	- Has only one type of `none`, `e.fire`, `e.ice`, or `e.thunder`
 - `elemental_defense_attribute` // 1.0 as default. 0.5 is strong, 2.0 is weak
 	- `r.fire`
 	- `r.ice`
@@ -353,6 +350,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 
 - Damage: max(1 ,(Enemy damage - Party defense)) x Enemy's damage amplifier x  x enemy.`elemental_attack_attribute` x party.`elemental_defense_attribute` x Party abilities amplifier  x number of attacks
     - following matched ranged type.
+    - elemental multiplier: Default is 1. If the damage type has `elemental_attack_attribute`, multiplier them. (ex. Enemy attack is `e.fire`, then applies enemy's `r.fire` value. )
 - Current Party HP -= Calculated damage
 - If currenr party HP =< 0, Defeat. 
 
@@ -373,7 +371,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
   - Party abilities: `a.leading`
   - penet multiplier: like `c.penet_x0.1` & `c.penet_x0.15` -> 0.25
   - following matched ranged type. 
-  - elemental multiplier: Default is 1. If the damage type has `elemental_attack_attribute`, multiplier them. (ex. fire arrow has `e.fire`, then check enemy's resistance_fire value. )
+  - elemental multiplier: Default is 1. If the damage type has `elemental_attack_attribute`, multiplier them. (ex. fire arrow has `e.fire`, then applies enemy's `r.fire` value. )
 - Current enemy HP -= Calculated damage
 - If enemy HP =< 0, Victory.
   - Party damage reduction abilities apply after defense subtraction.
