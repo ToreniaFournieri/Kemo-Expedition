@@ -1,55 +1,27 @@
 import React from 'react';
-import { useGame } from '../context/GameContext';
-import Modal from './Modal';
 
 interface InventoryPaneProps {
   onClose: () => void;
 }
 
-const InventoryPane: React.FC<InventoryPaneProps> = ({ onClose }) => {
-  const { inventory } = useGame();
-
-  const categories = ['sword', 'katana', 'armor', 'amulet', 'wand', 'arrow'] as const;
-
+export default function InventoryPane({ onClose }: InventoryPaneProps) {
   return (
-    <Modal onClose={onClose}>
-      <div className="max-h-96 overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">INVENTORY</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end z-50" onClick={onClose}>
+      <div className="w-full bg-white rounded-t-2xl p-6 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">INVENTORY</h2>
+          <button onClick={onClose} className="text-2xl font-bold text-gray-400">×</button>
+        </div>
 
-        {categories.map((category) => {
-          const items = inventory.filter((item) => item.category === category);
-          if (items.length === 0) return null;
+        <p className="text-center text-gray-500 py-8">Inventory is empty</p>
 
-          return (
-            <div key={category} className="mb-4">
-              <h3 className="font-semibold text-ios-blue capitalize mb-2">{category}</h3>
-              {items.map((item) => (
-                <div key={item.id} className="bg-white border rounded p-3 mb-2 text-sm">
-                  <div className="flex justify-between">
-                    <div>
-                      <p className="font-semibold">{item.name}</p>
-                      <p className="text-xs text-gray-600">Enhancement: {item.enhancement}</p>
-                    </div>
-                    {item.category === 'arrow' && item.quantity && (
-                      <p className="font-bold">{item.quantity}x</p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          );
-        })}
-
-        {inventory.length === 0 && (
-          <p className="text-gray-500 text-center py-8">Inventory is empty</p>
-        )}
+        <button
+          onClick={onClose}
+          className="w-full bg-blue-500 text-white rounded-lg p-3 font-semibold hover:bg-blue-600 mt-4"
+        >
+          CLOSE
+        </button>
       </div>
-
-      <button onClick={onClose} className="w-full btn-primary mt-4">
-        CLOSE
-      </button>
-    </Modal>
+    </div>
   );
-};
-
-export default InventoryPane;
+}
