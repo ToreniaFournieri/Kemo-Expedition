@@ -1,10 +1,12 @@
-import { GameProvider } from './GameContext';
-import { HomeScreen } from './HomeScreen';
+import { GameProvider } from './context/GameContext';
+import HomeScreen from './screens/HomeScreen';
 
 function App() {
   return (
     <GameProvider>
-      <HomeScreen />
+      <div className="min-h-screen bg-white">
+        <HomeScreen />
+      </div>
     </GameProvider>
   );
 }
