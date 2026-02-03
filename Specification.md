@@ -586,6 +586,10 @@ inventory = {
   - Notification pops up when acquiring a new item
   - Newly acquired items are shown in bold
   - Once displayed, text returns to normal
+- Quiver management:
+  - Acquire arrows
+  - Refill arrows
+  - Remove arrows
 - Item list:
   - Stacked by item variant
   - Inventory includes item category tabs:
@@ -606,10 +610,6 @@ inventory = {
 - Purchase basic items:
   - Arrows
   - Other consumables
-- Quiver management:
-  - Acquire arrows
-  - Refill arrows
-  - Remove arrows
 - Slot behavior:
   - When Slot 1 arrows are removed:
   - Slot 2 arrows automatically move to Slot 1
