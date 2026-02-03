@@ -132,12 +132,12 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 
 - **classes:**
 
-|class |class bonuses(main, sub) | abilities (main) |abilities (master) | 
+|class | main/sub bonuses | main bonus | master bonus | 
 |-----|-----------|---------|---------|
-|戦士(Fighter) |`c.equip_slot+1`,  `c.armor_x1.4` |`a.defender`: Incoming physical damage to party × 2/3 |`a.defender`: Incoming physical damage to party × 3/5 | 
-|剣士(Duelist) |`c.sword_x1.4` |`a.counter`: enemy CLOSE-range attack |`a.counter`: enemy CLOSE-range attack and MID-range | 
-|忍者(Ninja) |`c.penet_x0.15` |`a.re-attack`: once when attacking |`a.re-attack`: twice when attacking | 
-|侍(Samurai) |`c.katana_x1.4` |`a.iaigiri`: Physical damage ×2,  number of attacks ÷2 | `a.iaigiri`: Physical damage ×2.5,  number of attacks ÷2 |
+|戦士(Fighter) |`c.equip_slot+1`,  `c.armor_x1.4` |`c.grit+1`. `a.defender`: Incoming physical damage to party × 2/3 |`c.grit+1`. `a.defender`: Incoming physical damage to party × 3/5 | 
+|剣士(Duelist) |`c.sword_x1.4` |`c.grit+1`. `a.counter`: enemy CLOSE-range attack |`c.grit+1`. `a.counter`: enemy CLOSE-range attack and MID-range | 
+|忍者(Ninja) |`c.penet_x0.15` |`c.grit+1`. `a.re-attack`: once when attacking |`c.grit+1`. `a.re-attack`: twice when attacking | 
+|侍(Samurai) |`c.katana_x1.4` |`c.grit+1`. `a.iaigiri`: Physical damage ×2,  number of attacks ÷2 | `c.grit+1`. `a.iaigiri`: Physical damage ×2.5,  number of attacks ÷2 |
 |君主(Lord) |`c.gauntlet_x1.4`, `c.equip_slot+1` |`a.leading`: Physical damage x1.3 |`a.leading`: Physical damage x1.6 | 
 |狩人(Ranger) |`c.archery_x1.4` | `a.hunter`: Retrieve 30% of the arrows at the end of battle  |`a.hunter`: Retrieve 36% of the arrows at the end of battle | 
 |魔法使い(Wizard) |`c.wand_x1.4` | `c.caster+2` | `c.caster+3` | 
@@ -145,8 +145,8 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 |盗賊(Rogue) |`c.unlock` additional reward chance |`a.first-strike`: Acts faster than enemy at CLOSE phase |`a.first-strike`: Acts faster than enemy at All phases | 
 |巡礼者(Pilgrim) |`c.amulet_x1.4`, `c.equip_slot+1` |`a.null-counter`: Negate counter attack |`a.null-counter`: Negate counter attack | 
 
-- If `main_class` and  `sub_class` are same class, then it turns into master class.
-- `main_class` applies abilitiies and class bonuses. `sub_class` applies only class bonuses.
+- If `main_class` and  `sub_class` are same class, then it turns into master class, applies master bonus.
+- `main_class` applies main/sub bonuses and main bonus. `sub_class` applies only main/sub bonuses.
 - Only the strongest single ability(a.) of the same name applies.
 - Only one single bonuses(c.) of the same name applies. (two `c.equip_slot+2`, but only one `c.equip_slot+2` works)
 
@@ -268,8 +268,8 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 
 - Number of attacks:
   - ranged_NoA: 0 + Item Bonuses x its c.multiplier (round up) // no arrows, no shoot.
-  - magical_NoA: 0 + `c.caster` bonuses // Only one single bonuses of the same name applies. 
-  - melee_NoA: 0 + Item Bonuses x its c.multiplier (round up) //no gauntlet, no melee combat.
+  - magical_NoA: 0 + `c.caster+v` bonuses // Only one single bonuses of the same name applies. 
+  - melee_NoA: 0 + `c.grit+v` bonuses + Item Bonuses x its c.multiplier (round up) //no NoA, no melee combat.
  
   - IF the character has `a.iaigiri`, halve these number of attacks, round up. 
  
