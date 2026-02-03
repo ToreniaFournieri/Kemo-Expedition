@@ -444,38 +444,38 @@ multiplier them. (ex. Enemy attack is `e.fire`, then applies enemy's `r.fire` va
 ## 8. UI
 
 - Web-based (React + TypeScript + Tailwind)
-- 
-**Color**
-- Base Color: Black for letter, Gray for pane, White for background
-- Sub color (~30%): Blue  
-- Accent color (~5%): Dark orange
+  
+- **Color**
+	- Base Color: Black for letter, Gray for pane, White for background
+	- Sub color (~30%): Blue  
+	- Accent color (~5%): Dark orange
 
 - Compact, simple iOS like UI
 - Fewer scenes transaction. Home scene handles the whole game progress.
 
-- Header
+### 8.1 Header
   - Always stick to the head.
   - Title with version info and its build number. (ex. **ケモの冒険** v0.0.8 (2) )
   - Party info: Party status, number of arrow (simplified)
   - Tab header' Party, Expedition, Inventory, Shop, Setting
 
-- Tabs
-  - Party:
-    - list of party member, status, abilities and bonuses.
+### 8.2 Tabs
+  1. Party:
+      - list of party member, status, abilities and bonuses.
       - Party member, character can be edited. It displays name of race, class etc with bonuses.
       - Once edited the character, removes all of equipment.
     - Equipment list, remove and equip them. Simultaneously updates its status.
-  - Expedition:
+  2. Expedition:
     - Current selected dungeon is on the top. List of dungeons.
     - Dungeon resolved immediately and show the log at Expedition tab.
     - If player tap, shows detail logs.
-  - Inventory:
+  3. Inventory:
     - List of items. Newly aquired item is **bold**. once shown, then back to normal.
     - can sell them.
-  - Shop:
+  4. Shop:
  	- can buy items like arrows and other basic items. 
     - manage quiver, aquire, refill, remove. When removes Slot1 arrows, Slot2 arrows move to Slot1.
-  - Setting:
+  5. Setting:
     - Debug : Display win / total of 'reward_bag', 'enhancement_bag', 'superRare_bag'
     - Reset (with warning)
     
