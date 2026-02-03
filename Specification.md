@@ -238,6 +238,8 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 	- `r.fire`
 	- `r.ice`
 	- `r.thunder`
+- f.penet_multiplier
+  	- always 0 // (in this version)
 - experience // Enemy experience is added directly to party experience.
 - gold
 - drop_item
@@ -326,15 +328,24 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 
 - c.multiplier like `c.amulet_x1.3` applies only for individual character's equipments. 
 - Party.`d.HP`: 950 + (level x 50) + (Total sum of individual (Item Bonuses of HP x its c.multiplier x (`b.vitality`  + `b.mind`) / 20))
-- Party.`f.defense`:
-  - `d.physical_defense`: (Total sum of individual (Item Bonuses of Physical defense x its c.multiplier x `b.vitality` / 10))
-  - `d.magical_defense`: (Total sum of individual (Item Bonuses of Magical defense x its c.multiplier x `b.mind` / 10))
+- Party.`f.defense` (phase: phase):
+  - If phase is LONG or CLOSE:
+  	- `d.physical_defense`: (Total sum of individual (Item Bonuses of Physical defense x its c.multiplier x `b.vitality` / 10))
+  - If phase is MID:
+  	- `d.magical_defense`: (Total sum of individual (Item Bonuses of Magical defense x its c.multiplier x `b.mind` / 10))
 
-- party.`f.abilities_offense_amplifier`:
-	- If party.`a.leading`, multiply x1.3 or x1.6
-- party.`f.abilities_defense_amplifier`:
-	- If defense type is `d.physical_defense` and party.`a.defender`, multiply x 2/3 or x3/5
-   	- IF defense type is `d.magical_defense` and party.`a.m-barrier`, multiply x 2/3 or x3/5
+- party.`f.abilities_offense_amplifier`(phase: phase):
+  - If phase is LONG or CLOSE:
+	- If party.`a.leading`1, multiply x1.3
+    - If party.`a.leading`2, multiply x1.6
+- party.`f.abilities_defense_amplifier`(phase: phase):
+  - If phase is LONG or CLOSE:
+	- If party.`a.defender`1, multiply x3/5
+  	- If party.`a.defender`2, multiply x3/5
+  - If phase is MID:
+    - If party.`a.m-barrier`1, multiply x2/3
+    - If party.`a.m-barrier`2, multiply x3/5
+
 - party.`elemental_resistance_attribute`:
   	- Always set 1. (not for this version)
 
@@ -362,6 +373,8 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 
 ### 6.2 Initialization of battle
 
+
+  
 ### 6.3 Turn resolution 
 - For each phase, actions are resolved in the following order:
     - Enemy attacks
@@ -373,18 +386,18 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 |MID |`d.magical_attack` |`d.magical_NoA` | `d.magical_defense` |
 |CLOSE |`d.melee_attack` |`d.melee_NoA` | `d.physical_defense` |
 
+- `f.damage_calculation`: (actor: , opponent: , phase: )
+	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) ))  x actor.`f.NoA` x actor.`f.abilities_offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x actor.`f.abilities_offense_amplifier`
+  - following matched phase.
+
 - After the CLOSE phase, the battle is over. Party needs to beat enemy within these three phases.
 
 **First strike**
-- IF a character has `a.first-strike`, acts before enemy action. (see Player action)
+- IF a character has `a.first-strike`, acts before enemy action. (see `f.damage_calculation`)
 
 **Enemy action**
 - Enemy always moves first.
-
-- Calculates Damage: max(1 ,(enemy.`f.attack` - party.`f.defense`)) x enemy.`f.offense_amplifier` x enemy.`f.elemental_offense_attribute` x party.`f.elemental_resistance_attribute` x party.`f.abilities_defense_amplifier` x enemy.`f.NoA`
-    - following matched ranged type.
-multiplier them. (ex. Enemy attack is `e.fire`, then applies enemy's `r.fire` value. )
-- Current party.`d.HP` -= Calculated damage
+- Current party.`d.HP` -= `f.damage_calculation` (actor: enemy , opponent: party , phase: Phase )
 - If currenr party.`d.HP` =< 0, Defeat. 
 
 - **Counter:** IF character has `a.counter` ability and take damage in CLOSE phase. The character attacks to enemy.
@@ -398,10 +411,7 @@ multiplier them. (ex. Enemy attack is `e.fire`, then applies enemy's `r.fire` va
   - Execution: * Subtract ranged_NoA from the Quiver (following Slot 1 -> Slot 2 order).
     - If quantity < ranged_NoA, the character attacks with a reduced NoA equal to the remaining quantity.
 
-- Calculates damage: max(1, (character.`f.attack` - enemy.`f.defense` x (1 - character.`f.penet_multiplier`) ))  x character.`f.NoA` x character.`f.abilities_offense_amplifier` x character.`f.elemental_offense_attribute` x enemy.`f.elemental_resistance_attribute` x party.`f.abilities_offense_amplifier`
-  - following matched ranged type. 
-
-- Current enemy.`d.HP` -= Calculated damage
+- Current enemy.`d.HP` -= `f.damage_calculation` (actor: character, opponent: enemy, phase: Phase )
 - If enemy.`d.HP` =< 0, Victory.
   - Party damage reduction abilities apply after defense subtraction.
 
