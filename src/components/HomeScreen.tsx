@@ -20,7 +20,41 @@ interface HomeScreenProps {
   };
 }
 
-type Tab = 'party' | 'equipment' | 'inventory' | 'shop' | 'expedition';
+type Tab = 'party' | 'inventory' | 'shop' | 'expedition';
+
+// Helper to format item stats
+function getItemStats(item: Item): string {
+  const multiplier = (ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1) *
+    (SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1);
+
+  const stats: string[] = [];
+  if (item.meleeAttack) stats.push(`近攻+${Math.floor(item.meleeAttack * multiplier)}`);
+  if (item.meleeNoA) stats.push(`近回数${item.meleeNoA > 0 ? '+' : ''}${item.meleeNoA}`);
+  if (item.rangedAttack) stats.push(`遠攻+${Math.floor(item.rangedAttack * multiplier)}`);
+  if (item.rangedNoA) stats.push(`遠回数+${item.rangedNoA}`);
+  if (item.magicalAttack) stats.push(`魔攻+${Math.floor(item.magicalAttack * multiplier)}`);
+  if (item.physicalDefense) stats.push(`物防+${Math.floor(item.physicalDefense * multiplier)}`);
+  if (item.magicalDefense) stats.push(`魔防+${Math.floor(item.magicalDefense * multiplier)}`);
+  if (item.partyHP) stats.push(`HP+${Math.floor(item.partyHP * multiplier)}`);
+  if (item.elementalOffense && item.elementalOffense !== 'none') {
+    const elem = { fire: '炎', ice: '氷', thunder: '雷' }[item.elementalOffense];
+    stats.push(`${elem}属性`);
+  }
+  return stats.join(' ');
+}
+
+// Category name mapping
+const CATEGORY_NAMES: Record<string, string> = {
+  sword: '剣',
+  katana: '刀',
+  archery: '弓',
+  armor: '鎧',
+  gauntlet: '籠手',
+  wand: 'ワンド',
+  robe: '法衣',
+  amulet: '護符',
+  arrow: '矢',
+};
 
 export function HomeScreen({ state, actions }: HomeScreenProps) {
   const [activeTab, setActiveTab] = useState<Tab>('party');
@@ -37,7 +71,6 @@ export function HomeScreen({ state, actions }: HomeScreenProps) {
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'party', label: 'パーティ' },
-    { id: 'equipment', label: '装備' },
     { id: 'inventory', label: '所持品' },
     { id: 'shop', label: '店' },
     { id: 'expedition', label: '探検' },
@@ -88,15 +121,6 @@ export function HomeScreen({ state, actions }: HomeScreenProps) {
           editingCharacter={editingCharacter}
           setEditingCharacter={setEditingCharacter}
           onUpdateCharacter={actions.updateCharacter}
-        />
-      )}
-
-      {activeTab === 'equipment' && (
-        <EquipmentTab
-          party={state.party}
-          characterStats={characterStats}
-          selectedCharacter={selectedCharacter}
-          setSelectedCharacter={setSelectedCharacter}
           onEquipItem={actions.equipItem}
         />
       )}
@@ -134,6 +158,7 @@ function PartyTab({
   editingCharacter,
   setEditingCharacter,
   onUpdateCharacter,
+  onEquipItem,
 }: {
   party: GameState['party'];
   characterStats: ReturnType<typeof computePartyStats>['characterStats'];
@@ -142,7 +167,10 @@ function PartyTab({
   editingCharacter: number | null;
   setEditingCharacter: (i: number | null) => void;
   onUpdateCharacter: (id: number, updates: Partial<Character>) => void;
+  onEquipItem: (characterId: number, slotIndex: number, item: Item | null) => void;
 }) {
+  const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
+
   const char = party.characters[selectedCharacter];
   const stats = characterStats[selectedCharacter];
   const race = RACES.find(r => r.id === char.raceId)!;
@@ -157,23 +185,27 @@ function PartyTab({
       <div className="flex gap-2 mb-4 overflow-x-auto">
         {party.characters.map((c, i) => {
           const r = RACES.find(r => r.id === c.raceId)!;
+          const cs = characterStats[i];
           return (
             <button
               key={c.id}
-              onClick={() => setSelectedCharacter(i)}
+              onClick={() => { setSelectedCharacter(i); setSelectingSlot(null); }}
               className={`flex-shrink-0 p-2 rounded-lg border ${
                 i === selectedCharacter ? 'border-accent bg-blue-50' : 'border-gray-200'
               }`}
             >
-              <div className="text-2xl">{r.emoji}</div>
-              <div className="text-xs truncate w-12">{c.name}</div>
+              <div className="text-2xl text-center">{r.emoji}</div>
+              <div className="text-xs truncate w-14 text-center">{c.name}</div>
+              <div className="text-xs text-gray-400 text-center">
+                {Math.floor(cs.meleeAttack)}|{Math.floor(cs.magicalAttack)}|{Math.floor(cs.rangedAttack)}
+              </div>
             </button>
           );
         })}
       </div>
 
       {/* Character details */}
-      <div className="border border-gray-200 rounded-lg p-4">
+      <div className="border border-gray-200 rounded-lg p-4 mb-4">
         <div className="flex justify-between items-center mb-2">
           <input
             type="text"
@@ -261,107 +293,95 @@ function PartyTab({
             <div className="text-gray-500">
               {predisposition.name} / {lineage.name}
             </div>
-            <div className="grid grid-cols-2 gap-2 mt-2">
-              <div>体力: {stats.baseStats.vitality}</div>
-              <div>力: {stats.baseStats.strength}</div>
-              <div>知性: {stats.baseStats.intelligence}</div>
-              <div>精神: {stats.baseStats.mind}</div>
+            <div className="grid grid-cols-4 gap-1 mt-2 text-xs">
+              <div className="bg-gray-100 rounded p-1 text-center">体{stats.baseStats.vitality}</div>
+              <div className="bg-gray-100 rounded p-1 text-center">力{stats.baseStats.strength}</div>
+              <div className="bg-gray-100 rounded p-1 text-center">知{stats.baseStats.intelligence}</div>
+              <div className="bg-gray-100 rounded p-1 text-center">精{stats.baseStats.mind}</div>
             </div>
-            <div className="border-t mt-2 pt-2">
-              <div>遠距離攻撃: {Math.floor(stats.rangedAttack)} x{stats.rangedNoA}</div>
-              <div>魔法攻撃: {Math.floor(stats.magicalAttack)} x{stats.magicalNoA}</div>
-              <div>近接攻撃: {Math.floor(stats.meleeAttack)} x{stats.meleeNoA}</div>
+            <div className="border-t mt-2 pt-2 space-y-1">
+              <div className="flex justify-between">
+                <span>遠距離攻撃:</span>
+                <span className="font-medium">{Math.floor(stats.rangedAttack)} x {stats.rangedNoA}回</span>
+              </div>
+              <div className="flex justify-between">
+                <span>魔法攻撃:</span>
+                <span className="font-medium">{Math.floor(stats.magicalAttack)} x {stats.magicalNoA}回</span>
+              </div>
+              <div className="flex justify-between">
+                <span>近接攻撃:</span>
+                <span className="font-medium">{Math.floor(stats.meleeAttack)} x {stats.meleeNoA}回</span>
+              </div>
             </div>
             {stats.abilities.length > 0 && (
               <div className="border-t mt-2 pt-2">
-                <div className="text-gray-500">特殊能力:</div>
+                <div className="text-gray-500 text-xs">特殊能力:</div>
                 {stats.abilities.map(a => (
-                  <div key={a.id} className="text-xs">{a.name}: {a.description}</div>
+                  <div key={a.id} className="text-xs text-accent">{a.name}: {a.description}</div>
                 ))}
               </div>
             )}
           </div>
         )}
       </div>
-    </div>
-  );
-}
 
-function EquipmentTab({
-  party,
-  characterStats,
-  selectedCharacter,
-  setSelectedCharacter,
-  onEquipItem,
-}: {
-  party: GameState['party'];
-  characterStats: ReturnType<typeof computePartyStats>['characterStats'];
-  selectedCharacter: number;
-  setSelectedCharacter: (i: number) => void;
-  onEquipItem: (characterId: number, slotIndex: number, item: Item | null) => void;
-}) {
-  const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
-  const char = party.characters[selectedCharacter];
-  const stats = characterStats[selectedCharacter];
-
-  return (
-    <div>
-      {/* Character selector */}
-      <div className="flex gap-2 mb-4 overflow-x-auto">
-        {party.characters.map((c, i) => {
-          const r = RACES.find(r => r.id === c.raceId)!;
-          return (
-            <button
-              key={c.id}
-              onClick={() => { setSelectedCharacter(i); setSelectingSlot(null); }}
-              className={`flex-shrink-0 p-2 rounded-lg border ${
-                i === selectedCharacter ? 'border-accent bg-blue-50' : 'border-gray-200'
-              }`}
-            >
-              <div className="text-2xl">{r.emoji}</div>
-              <div className="text-xs truncate w-12">{c.name}</div>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Equipment slots */}
+      {/* Equipment section */}
       <div className="border border-gray-200 rounded-lg p-4">
-        <div className="text-sm text-gray-500 mb-2">
-          装備スロット: {char.equipment.filter(e => e).length} / {stats.maxEquipSlots}
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-sm font-medium">装備</span>
+          <span className="text-xs text-gray-500">
+            {char.equipment.filter(e => e).length} / {stats.maxEquipSlots} スロット
+          </span>
         </div>
         <div className="space-y-2">
-          {Array.from({ length: stats.maxEquipSlots }).map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setSelectingSlot(selectingSlot === i ? null : i)}
-              className={`w-full p-2 text-left border rounded ${
-                selectingSlot === i ? 'border-accent bg-blue-50' : 'border-gray-200'
-              }`}
-            >
-              {char.equipment[i] ? (
-                <span>{getItemDisplayName(char.equipment[i]!)}</span>
-              ) : (
-                <span className="text-gray-400">空きスロット</span>
-              )}
-            </button>
-          ))}
+          {Array.from({ length: stats.maxEquipSlots }).map((_, i) => {
+            const item = char.equipment[i];
+            return (
+              <button
+                key={i}
+                onClick={() => setSelectingSlot(selectingSlot === i ? null : i)}
+                className={`w-full p-2 text-left border rounded text-sm ${
+                  selectingSlot === i ? 'border-accent bg-blue-50' : 'border-gray-200'
+                }`}
+              >
+                {item ? (
+                  <div>
+                    <div className="flex justify-between">
+                      <span className="font-medium">{getItemDisplayName(item)}</span>
+                      <span className="text-xs text-gray-400">[{CATEGORY_NAMES[item.category]}]</span>
+                    </div>
+                    <div className="text-xs text-gray-500">{getItemStats(item)}</div>
+                  </div>
+                ) : (
+                  <span className="text-gray-400">空きスロット {i + 1}</span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Item selection */}
+      {/* Item selection popup */}
       {selectingSlot !== null && (
-        <div className="mt-4 border border-gray-200 rounded-lg p-4">
+        <div className="mt-4 border border-accent rounded-lg p-4 bg-blue-50">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium">アイテムを選択</span>
-            {char.equipment[selectingSlot] && (
+            <span className="text-sm font-medium">スロット {selectingSlot + 1} に装備</span>
+            <div className="flex gap-2">
+              {char.equipment[selectingSlot] && (
+                <button
+                  onClick={() => { onEquipItem(char.id, selectingSlot, null); setSelectingSlot(null); }}
+                  className="text-xs text-red-500 px-2 py-1 border border-red-300 rounded bg-white"
+                >
+                  外す
+                </button>
+              )}
               <button
-                onClick={() => { onEquipItem(char.id, selectingSlot, null); setSelectingSlot(null); }}
-                className="text-sm text-red-500"
+                onClick={() => setSelectingSlot(null)}
+                className="text-xs text-gray-500 px-2 py-1 border border-gray-300 rounded bg-white"
               >
-                外す
+                閉じる
               </button>
-            )}
+            </div>
           </div>
           <div className="space-y-1 max-h-48 overflow-y-auto">
             {party.inventory
@@ -370,13 +390,17 @@ function EquipmentTab({
                 <button
                   key={i}
                   onClick={() => { onEquipItem(char.id, selectingSlot, item); setSelectingSlot(null); }}
-                  className="w-full p-2 text-left text-sm border border-gray-100 rounded hover:bg-gray-50"
+                  className="w-full p-2 text-left text-sm border border-gray-200 rounded bg-white hover:bg-gray-50"
                 >
-                  {getItemDisplayName(item)}
+                  <div className="flex justify-between">
+                    <span className="font-medium">{getItemDisplayName(item)}</span>
+                    <span className="text-xs text-gray-400">[{CATEGORY_NAMES[item.category]}]</span>
+                  </div>
+                  <div className="text-xs text-gray-500">{getItemStats(item)}</div>
                 </button>
               ))}
             {party.inventory.filter(item => item.category !== 'arrow').length === 0 && (
-              <div className="text-gray-400 text-sm">装備可能なアイテムがありません</div>
+              <div className="text-gray-400 text-sm text-center py-2">装備可能なアイテムがありません</div>
             )}
           </div>
         </div>
@@ -404,15 +428,23 @@ function InventoryTab({
           return (
             <div
               key={i}
-              className="flex justify-between items-center p-2 border border-gray-100 rounded"
+              className="p-2 border border-gray-100 rounded"
             >
-              <span className="text-sm">{getItemDisplayName(item)}</span>
-              <button
-                onClick={() => onSellItem(item)}
-                className="text-xs text-accent px-2 py-1 border border-accent rounded"
-              >
-                売却 ({sellPrice}G)
-              </button>
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="flex gap-2 items-center">
+                    <span className="text-sm font-medium">{getItemDisplayName(item)}</span>
+                    <span className="text-xs text-gray-400">[{CATEGORY_NAMES[item.category]}]</span>
+                  </div>
+                  <div className="text-xs text-gray-500">{getItemStats(item)}</div>
+                </div>
+                <button
+                  onClick={() => onSellItem(item)}
+                  className="text-xs text-accent px-2 py-1 border border-accent rounded flex-shrink-0"
+                >
+                  売却 {sellPrice}G
+                </button>
+              </div>
             </div>
           );
         })}
@@ -445,7 +477,11 @@ function ShopTab({
           {quiverSlots.map((slot, i) => (
             <div key={i} className="p-2 border border-gray-200 rounded">
               {slot ? (
-                <span className="text-sm">{slot.item.name}: {slot.quantity}本</span>
+                <div>
+                  <span className="text-sm font-medium">{slot.item.name}</span>
+                  <span className="text-sm text-gray-500"> : {slot.quantity}本</span>
+                  <div className="text-xs text-gray-400">{getItemStats(slot.item)}</div>
+                </div>
               ) : (
                 <span className="text-sm text-gray-400">空きスロット</span>
               )}
@@ -458,23 +494,33 @@ function ShopTab({
         <div className="text-sm font-medium mb-2">矢を購入 (1本 = 2G)</div>
         <div className="space-y-2">
           {arrows.map(arrow => (
-            <div key={arrow.id} className="flex justify-between items-center p-2 border border-gray-100 rounded">
-              <span className="text-sm">{arrow.name}</span>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => onBuyArrows(arrow.id, 10)}
-                  disabled={gold < 20}
-                  className="text-xs text-accent px-2 py-1 border border-accent rounded disabled:opacity-50"
-                >
-                  10本 (20G)
-                </button>
-                <button
-                  onClick={() => onBuyArrows(arrow.id, 50)}
-                  disabled={gold < 100}
-                  className="text-xs text-accent px-2 py-1 border border-accent rounded disabled:opacity-50"
-                >
-                  50本 (100G)
-                </button>
+            <div key={arrow.id} className="p-2 border border-gray-100 rounded">
+              <div className="flex justify-between items-center">
+                <div>
+                  <span className="text-sm font-medium">{arrow.name}</span>
+                  <div className="text-xs text-gray-500">
+                    遠攻+{arrow.rangedAttack}
+                    {arrow.elementalOffense && arrow.elementalOffense !== 'none' &&
+                      ` ${({ fire: '炎', ice: '氷', thunder: '雷' })[arrow.elementalOffense]}属性`
+                    }
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => onBuyArrows(arrow.id, 10)}
+                    disabled={gold < 20}
+                    className="text-xs text-accent px-2 py-1 border border-accent rounded disabled:opacity-50"
+                  >
+                    10本
+                  </button>
+                  <button
+                    onClick={() => onBuyArrows(arrow.id, 50)}
+                    disabled={gold < 100}
+                    className="text-xs text-accent px-2 py-1 border border-accent rounded disabled:opacity-50"
+                  >
+                    50本
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -493,10 +539,22 @@ function ExpeditionTab({
 }) {
   return (
     <div>
-      <div className="mb-4 text-sm">
-        <div>パーティHP: {partyStats.hp}</div>
-        <div>物理防御: {partyStats.physicalDefense}</div>
-        <div>魔法防御: {partyStats.magicalDefense}</div>
+      <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm">
+        <div className="font-medium mb-1">パーティステータス</div>
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <div>
+            <div className="text-xs text-gray-500">HP</div>
+            <div className="font-medium">{partyStats.hp}</div>
+          </div>
+          <div>
+            <div className="text-xs text-gray-500">物理防御</div>
+            <div className="font-medium">{partyStats.physicalDefense}</div>
+          </div>
+          <div>
+            <div className="text-xs text-gray-500">魔法防御</div>
+            <div className="font-medium">{partyStats.magicalDefense}</div>
+          </div>
+        </div>
       </div>
 
       <div className="text-sm font-medium mb-2">ダンジョン選択</div>
