@@ -451,11 +451,13 @@ multiplier them. (ex. Enemy attack is `e.fire`, then applies enemy's `r.fire` va
 - Header
   - Always stick to the head.
   - Party info: Party status, number of arrow (simplified)
-  - Tab header' Party, Expedition, Inventory, Shop
+  - Tab header' Party, Expedition, Inventory, Shop, Setting
 
 - Tabs
   - Party:
     - list of party member, status, abilities and bonuses.
+      - Party member, character can be edited. It displays name of race, class etc with bonuses.
+      - Once edited the character, removes all of equipment.
     - Equipment list, remove and equip them. Simultaneously updates its status.
   - Expedition:
     - Current selected dungeon is on the top. List of dungeons.
@@ -467,5 +469,8 @@ multiplier them. (ex. Enemy attack is `e.fire`, then applies enemy's `r.fire` va
   - Shop:
  	- can buy items like arrows and other basic items. 
     - manage quiver, aquire, refill, remove. When removes Slot1 arrows, Slot2 arrows move to Slot1.
+  - Setting:
+    - Debug : Display win / total of 'reward_bag', 'enhancement_bag', 'superRare_bag'
+    - Reset (with warning)
     
 **END OF SPECIFICATION**
