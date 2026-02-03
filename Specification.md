@@ -605,6 +605,8 @@ inventory = {
 - Actions:
   - Sell item stacks
   - Sold items disappear immediately
+- Auto-sold list (closed as default)
+  - Item 解除: `sold` status to `notown`
 
 #### 8.3.4 Shop
 - Purchase basic items:
