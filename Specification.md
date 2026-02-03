@@ -540,15 +540,33 @@ inventory = {
 
 ### 8.2 Tabs
   1. Party:
-      - list of party member, status, abilities and bonuses.
-      - Party member, character can be edited. It displays name of race, class etc with bonuses.
-      - Once edited the character, removes all of equipment.
-    - Equipment list, remove and equip them. Simultaneously updates its status.
+- Displays:
+  - List of party members
+  - Current status, abilities, bonuses
+- Party member details:
+  - Name, race, class, traits, bonuses
+  - Editable parameters
+- Edit rule:
+  - Editing a character unequips all equipment
+  - Equipment returns to Inventory
+  - Character status updates immediately
+- Equipment management:
+  - Equip / remove from inventory
+  - Status updates in real time
+
   2. Expedition:
-    - Current selected dungeon is on the top. Expedition resolves immediately. 
-    - Next, show the log at Expedition tab.
-    - If player tap, shows detail logs. and tap a room, then open combat log secne. 
-    - Last, List of dungeons. 
+- Top section:
+  - Currently selected dungeon
+  - Expedition behavior:
+    - Expedition resolves immediately
+    - No loading scenes
+- Middle section:
+  - Show latest expedition log
+    - Tapping the log shows a list of rooms with quick summaries
+    - Tapping a room opens the combat log view
+- Bottom section:
+  - List of available dungeons
+
   3. Inventory:
 - Behavior:
   - Notification pops up when acquiring a new item
