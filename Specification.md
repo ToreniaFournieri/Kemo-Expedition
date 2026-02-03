@@ -175,7 +175,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 - All characters participate simultaneously
 - Party has its:
     - Party `d.HP`
-    - `d.X_defense`
+    - Party `d.X_defense`
 	    - `d.physical_defense`
 	    - `d.magical_defense`
   	- `elemental_resistance_attribute` // 1.0 as default. 0.5 is strong, 2.0 is weak
@@ -351,9 +351,9 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 
 |Phase |Damage type |number of attacks|Defense type|
 |-----|-----------|-----------|-----------|
-|LONG |Ranged attack |Ranged NoA|Physical defense |
-|MID |Magical attack |Magical NoA|Magical defense|
-|CLOSE |Melee attack |Melee NoA|Physical defense |
+|LONG |`d.ranged_attack` |`d.ranged_NoA` | `d.physical_defense` |
+|MID |`d.magical_attack` |`d.magical_NoA` | `d.magical_defense` |
+|CLOSE |`d.melee_attack` |`d.melee_NoA` | `d.physical_defense` |
 
 - After the CLOSE phase, the battle is over. Party needs to beat enemy within these three phases.
 
