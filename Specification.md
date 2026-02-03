@@ -501,21 +501,42 @@ inventory = {
 
 ## 8. UI
 
-- Web-based (React + TypeScript + Tailwind)
-- Compact, simple iOS like UI
-- Fewer scenes transaction.
+- Platform: Web-based (React + TypeScript + Tailwind)
+  - Style: Compact, simple, iOS-like
+  - Navigation: Minimal scene transitions, tab-centered
+- Interaction philosophy:
+  - Fast feedback
+  - No modal spam
+  - Most actions resolve immediately
   
-- **Color**
-	- Base Color: Black for letters, Gray for pane, White for background
-	- Sub color (~30%): Blue  
-	- Accent color (~5%): Dark orange
+### 8.1 Color Scheme
+- Base colors
+  - Text: Black
+  - Pane / card background: Gray
+  - Page background: White
+- Sub color (~30%)
+  - Blue (information, selection, links)
+- Accent color (~5%)
+  - Dark Orange (important actions, warnings, highlights)
 
 
-### 8.1 Header
-  - Always stick to the head.
-  - Title with version info and its build number. (ex. **ケモの冒険** v0.0.8 (2) )
-  - Party info: Party status, number of arrow (simplified)
-  - Tab header' Party, Expedition, Inventory, Shop, Setting
+### 8.2 Header
+- Always fixed at the top.
+- Displays:
+  - Game title + version + build number
+  - Example: ケモの冒険 v0.0.8 (2)
+  - Use this specification's version
+- Party info (simplified):
+  - Party status summary
+  - Arrow count (icon + number)
+- Tab header (primary navigation):
+  - Party
+  - Expedition
+  - Inventory
+  - Shop
+  - Setting
+
+- Header is always visible; tabs never cause full page reload.
 
 ### 8.2 Tabs
   1. Party:
@@ -529,12 +550,29 @@ inventory = {
     - If player tap, shows detail logs. and tap a room, then open combat log secne. 
     - Last, List of dungeons. 
   3. Inventory:
-    - Notifications pop up once aquired new item. 
-    - List of items. Newly aquired item is **bold**. once shown, then back to normal.
-    - can sell them.
+- Behavior:
+  - Notification pops up when acquiring a new item
+  - Newly acquired items are shown in bold
+  - Once displayed, text returns to normal
+- Item list:
+  - Stacked by item variant
+  - Shows count and status
+- Actions:
+  - Sell item stacks
+  - Sold items disappear immediately
+
   4. Shop:
- 	- can buy items like arrows and other basic items. 
-    - manage quiver, aquire, refill, remove. When removes Slot1 arrows, Slot2 arrows move to Slot1.
+- Purchase basic items:
+  - Arrows
+  - Other consumables
+- Quiver management:
+  - Acquire arrows
+  - Refill arrows
+  - Remove arrows
+- Slot behavior:
+  - When Slot 1 arrows are removed:
+  - Slot 2 arrows automatically move to Slot 1
+
   5. Setting:
     - Debug : Display win / total of 'reward_bag', 'enhancement_bag', 'superRare_bag'
     - Reset (with warning)
