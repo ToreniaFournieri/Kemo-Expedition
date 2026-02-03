@@ -477,9 +477,10 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
       - Once edited the character, removes all of equipment.
     - Equipment list, remove and equip them. Simultaneously updates its status.
   2. Expedition:
-    - Current selected dungeon is on the top. List of dungeons.
+    - Current selected dungeon is on the top. 
     - Dungeon resolved immediately and show the log at Expedition tab.
     - If player tap, shows detail logs.
+    - List of dungeons.
   3. Inventory:
     - List of items. Newly aquired item is **bold**. once shown, then back to normal.
     - can sell them.
