@@ -386,18 +386,19 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 |MID |`d.magical_attack` |`d.magical_NoA` | `d.magical_defense` |
 |CLOSE |`d.melee_attack` |`d.melee_NoA` | `d.physical_defense` |
 
-- `f.damage_calculation`: (actor: , opponent: , phase: )
-	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) ))  x actor.`f.NoA` x actor.`f.abilities_offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x actor.`f.abilities_offense_amplifier`
-  - following matched phase.
-
 - After the CLOSE phase, the battle is over. Party needs to beat enemy within these three phases.
 
+**functions for battle**
+- `f.damage_calculation`: (actor: , opponent: , phase: )
+	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) ))  x actor.`f.NoA` x actor.`f.abilities_offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x actor.`f.abilities_offense_amplifier`
+
+
 **First strike**
-- IF a character has `a.first-strike`, acts before enemy action. (see `f.damage_calculation`)
+- IF a character has `a.first-strike`, acts before enemy action. (using `f.damage_calculation`)
 
 **Enemy action**
 - Enemy always moves first.
-- Current party.`d.HP` -= `f.damage_calculation` (actor: enemy , opponent: party , phase: Phase )
+- Current party.`d.HP` -= `f.damage_calculation` (actor: enemy , opponent: party, phase: phase )
 - If currenr party.`d.HP` =< 0, Defeat. 
 
 - **Counter:** IF character has `a.counter` ability and take damage in CLOSE phase. The character attacks to enemy.
@@ -411,11 +412,11 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
   - Execution: * Subtract ranged_NoA from the Quiver (following Slot 1 -> Slot 2 order).
     - If quantity < ranged_NoA, the character attacks with a reduced NoA equal to the remaining quantity.
 
-- Current enemy.`d.HP` -= `f.damage_calculation` (actor: character, opponent: enemy, phase: Phase )
+- Current enemy.`d.HP` -= `f.damage_calculation` (actor: character, opponent: enemy, phase: phase )
 - If enemy.`d.HP` =< 0, Victory.
   - Party damage reduction abilities apply after defense subtraction.
 
-- **Re-attack:** IF character has `a.re-attack` ability. The character attacks to enemy.
+- **Re-attack:** IF character has `a.re-attack` ability. The character attacks to enemy.  (using `f.damage_calculation`)
 
 ### 6.4 Post battle
 
