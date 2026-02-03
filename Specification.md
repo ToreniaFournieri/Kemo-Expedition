@@ -443,13 +443,15 @@ multiplier them. (ex. Enemy attack is `e.fire`, then applies enemy's `r.fire` va
 
 ## 8. UI
 - Web-based (React + TypeScript + Tailwind)
-- Theme color: White background , Black letters, Blue accent color.
-  - No other color, like Red or Green. Gray and Light blue are acceptable.
+- Theme color: White background, Black letters, Blue accent color.
+  - Gray and Light blue are acceptable.
+  - No other colors, like Red or Green.
 - Compact, simple iOS like UI
 - Fewer scenes transaction. Home scene handles the whole game progress.
 
 - Header
   - Always stick to the head.
+  - Title with version info and its build number. (ex. **ケモの冒険** v0.0.8 (2) )
   - Party info: Party status, number of arrow (simplified)
   - Tab header' Party, Expedition, Inventory, Shop, Setting
 
