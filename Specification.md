@@ -44,6 +44,11 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'Party_HP', 'Par
 |4 |知られざる |1 | x2.0 |
 |5 |血に飢えし |1 | x2.0 |
 
+- **Elemental attribute**
+  - `elemental_attack_attribute` : `e.none`, `e.fire`, `e.thunder`, `e.ice` // Offensive
+  - `elemental_resistance_attribute` : `r.none`, `r.fire`, `r.thunder`, `r.ice` // Defensive
+
+
 ### 2.2 Play characters
 - The deity creates character and assigns 6 Characters to its party. The characters can change its race, role and name at will. 
 
@@ -159,6 +164,10 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
     - Party HP
     - Party physical defense
     - Party magical defense
+  	- `elemental_defense_attribute` // 1.0 as default. 0.5 is strong, 2.0 is weak
+		- `r.fire`
+		- `r.ice`
+		- `r.thunder`
     - quiver slots
  
 - **Quariver system**
@@ -171,7 +180,10 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 	- Ranged attack, number of attacks
     - Magical attack, number of attacks
     - Melee attack, number of attacks
-
+    - `elemental_attack_attribute`  // 1.0 as default. 0.5 is weak, 2.0 is strong
+		- `e.fire`
+		- `e.ice` 
+		- `e.thunder`
     - Equipment slots
 
 - Characters do not have individual HP.
@@ -205,8 +217,14 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 - melee_NoA
 - physical_defense
 - magical_defense
-- resistance_fire // 1.0 as default. 0.5 is strong, 2.0 is weak
-- resistance_thunder // 1.0 as default. 0.5 is strong, 2.0 is weak
+- `elemental_attack_attribute`  // 1.0 as default. 0.5 is weak, 2.0 is strong
+	- `e.fire` 
+	- `e.ice`
+	- `e.thunder`
+- `elemental_defense_attribute` // 1.0 as default. 0.5 is strong, 2.0 is weak
+	- `r.fire`
+	- `r.ice`
+	- `r.thunder`
 - experience // Enemy experience is added directly to party experience.
 - drop_item
 
@@ -229,7 +247,6 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 |`i.arrow` | 矢 | Consumable, Stackable. Has `max_stack`, `elemental_attribute` |
 
 - *note:* item might have multiple bonus. sword may have `Party_HP` but subtle value.
--  `elemental_attribute` : `e.none`, `e.fire`, `e.thunder`, `e.ice`
 - (Temporary test purspose) Make 5 itmes for each item type. 
 
 **consumption of arrows**
@@ -334,9 +351,8 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 **Enemy action**
 - Enemy always moves first.
 
-- Damage: max(1 ,(Enemy damage - Party defense) x Enemy's damage amplifier x Party abilities amplifier x elemental multiplier  ) x number of attacks
+- Damage: max(1 ,(Enemy damage - Party defense)) x Enemy's damage amplifier x  x enemy.`elemental_attack_attribute` x party.`elemental_defense_attribute` x Party abilities amplifier  x number of attacks
     - following matched ranged type.
-    - elemental multiplier: Default: 1. If the damage type has elemental attribute, multiplier resistance_x. (ex. fire arrow has `e.fire`, check enemy's resistance_fire value. )
 - Current Party HP -= Calculated damage
 - If currenr party HP =< 0, Defeat. 
 
@@ -352,15 +368,15 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
     - If quantity < ranged_NoA, the character attacks with a reduced NoA equal to the remaining quantity.
 
 
-- Calculated damage: max(1, (Attack damage - Enemy defense x (1 - sum of (penet multiplier)) ))  x Individual abilities amplifier x Party abilities amplifier
+- Calculated damage: max(1, (Attack damage - Enemy defense x (1 - sum of (penet multiplier)) ))  x Individual abilities amplifier x character.`elemental_attack_attribute` x enemy.`elemental_defense_attribute` x Party abilities amplifier
   - Individual abilities:`a.iaigiri`
   - Party abilities: `a.leading`
   - penet multiplier: like `c.penet_x0.1` & `c.penet_x0.15` -> 0.25
   - following matched ranged type. 
-  - Party damage reduction abilities apply after defense subtraction.
-
+  - elemental multiplier: Default is 1. If the damage type has `elemental_attack_attribute`, multiplier them. (ex. fire arrow has `e.fire`, then check enemy's resistance_fire value. )
 - Current enemy HP -= Calculated damage
 - If enemy HP =< 0, Victory.
+  - Party damage reduction abilities apply after defense subtraction.
 
 - **Re-attack:** IF character has `a.re-attack` ability. The character attacks to enemy.
 
