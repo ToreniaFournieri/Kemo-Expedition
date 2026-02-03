@@ -554,8 +554,17 @@ inventory = {
   - Character status updates immediately
 - Equipment management:
   - Equip / remove from inventory
-    - Inventory has item category tabs: 剣,刀,弓,鎧,手,杖,衣,護,矢.  Default: 剣
-    - Sorted by item ID, enhancement, superRare. 
+  - Item list:
+    - Stacked by item variant
+    - Inventory includes item category tabs:
+      - 剣,刀,弓,鎧,手,杖,衣,護,矢.
+      - Default: 剣
+      - Only items matching the selected category are shown (filter)
+    -	Sorting order (within category):
+    	1.	Item ID
+    	2.	Enhancement
+    	3.	SuperRare
+    - Shows count and status
     - Inventory pane is long. 
   - Status updates in real time
 
@@ -579,8 +588,14 @@ inventory = {
   - Once displayed, text returns to normal
 - Item list:
   - Stacked by item variant
-  - Inventory has item category tabs: 剣,刀,弓,鎧,手,杖,衣,護,矢.  Default: 剣
-  - Sorted by item ID, enhancement, superRare. 
+  - Inventory includes item category tabs:
+    - 剣,刀,弓,鎧,手,杖,衣,護,矢.
+    - Default: 剣
+    - Only items matching the selected category are shown (filter)
+  -	Sorting order (within category):
+  	1.	Item ID
+  	2.	Enhancement
+  	3.	SuperRare
   - Shows count and status
   - is long pane. 
 - Actions:
