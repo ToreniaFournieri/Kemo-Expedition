@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { GameState, Item, Character } from '../types';
+import { GameState, GameBags, Item, Character } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { DUNGEONS } from '../data/dungeons';
 import { RACES } from '../data/races';
@@ -11,16 +11,21 @@ import { getItemDisplayName } from '../game/gameState';
 
 interface HomeScreenProps {
   state: GameState;
+  bags: GameBags;
   actions: {
-    startExpedition: (dungeonId: number) => void;
+    selectDungeon: (dungeonId: number) => void;
+    runExpedition: () => void;
     equipItem: (characterId: number, slotIndex: number, item: Item | null) => void;
     updateCharacter: (characterId: number, updates: Partial<Character>) => void;
-    sellItem: (item: Item) => void;
+    sellItem: (itemIndex: number) => void;
     buyArrows: (arrowId: number, quantity: number) => void;
+    removeQuiverSlot: (slotIndex: number) => void;
+    markItemsSeen: () => void;
+    resetGame: () => void;
   };
 }
 
-type Tab = 'party' | 'inventory' | 'shop' | 'expedition';
+type Tab = 'party' | 'expedition' | 'inventory' | 'shop' | 'setting';
 
 // Helper to format item stats
 function getItemStats(item: Item): string {
@@ -56,7 +61,7 @@ const CATEGORY_NAMES: Record<string, string> = {
   arrow: '矢',
 };
 
-export function HomeScreen({ state, actions }: HomeScreenProps) {
+export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const [activeTab, setActiveTab] = useState<Tab>('party');
   const [selectedCharacter, setSelectedCharacter] = useState<number>(0);
   const [editingCharacter, setEditingCharacter] = useState<number | null>(null);
@@ -71,81 +76,108 @@ export function HomeScreen({ state, actions }: HomeScreenProps) {
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'party', label: 'パーティ' },
+    { id: 'expedition', label: '探検' },
     { id: 'inventory', label: '所持品' },
     { id: 'shop', label: '店' },
-    { id: 'expedition', label: '探検' },
+    { id: 'setting', label: '設定' },
   ];
 
-  return (
-    <div className="p-4">
-      {/* Header */}
-      <div className="mb-4 pb-4 border-b border-gray-200">
-        <h1 className="text-xl font-bold text-center">KEMO EXPEDITION</h1>
-        <div className="mt-2 flex justify-between text-sm">
-          <span>守護神: {state.party.deityName}</span>
-          <span>Gold: {state.party.gold}</span>
-        </div>
-        <div className="mt-1 flex justify-between text-sm">
-          <span>Lv.{state.party.level}</span>
-          <span>EXP: {state.party.experience} / {nextLevelExp}</span>
-        </div>
-        <div className="mt-1 text-sm">
-          HP: {partyStats.hp} | 物防: {partyStats.physicalDefense} | 魔防: {partyStats.magicalDefense}
-        </div>
-      </div>
+  // Check for new items
+  const hasNewItems = state.party.inventory.some(item => item.isNew);
 
-      {/* Tabs */}
-      <div className="flex border-b border-gray-200 mb-4">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 py-2 text-sm font-medium ${
-              activeTab === tab.id
-                ? 'text-accent border-b-2 border-accent'
-                : 'text-gray-500'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+  return (
+    <div className="flex flex-col h-screen">
+      {/* Sticky Header */}
+      <div className="sticky top-0 bg-white border-b border-gray-300 p-3 z-10">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-lg font-bold">KEMO EXPEDITION</h1>
+            <div className="text-xs text-gray-500">v1.0.0 / Build {state.buildNumber}</div>
+          </div>
+          <div className="text-right text-sm">
+            <div className="font-medium">{state.party.deityName}</div>
+            <div className="text-xs text-gray-500">Lv.{state.party.level} | {state.party.gold}G</div>
+          </div>
+        </div>
+        <div className="mt-2 flex justify-between text-xs text-gray-600">
+          <span>EXP: {state.party.experience} / {nextLevelExp}</span>
+          <span>HP: {partyStats.hp} | 物防: {partyStats.physicalDefense} | 魔防: {partyStats.magicalDefense}</span>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex mt-3 -mb-3 border-b border-gray-200">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => {
+                setActiveTab(tab.id);
+                // Mark items as seen when going to inventory
+                if (tab.id === 'inventory' && hasNewItems) {
+                  actions.markItemsSeen();
+                }
+              }}
+              className={`flex-1 py-2 text-sm font-medium relative ${
+                activeTab === tab.id
+                  ? 'text-sub border-b-2 border-sub'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              {tab.label}
+              {tab.id === 'inventory' && hasNewItems && (
+                <span className="absolute top-1 right-2 w-2 h-2 bg-accent rounded-full"></span>
+              )}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Tab Content */}
-      {activeTab === 'party' && (
-        <PartyTab
-          party={state.party}
-          characterStats={characterStats}
-          selectedCharacter={selectedCharacter}
-          setSelectedCharacter={setSelectedCharacter}
-          editingCharacter={editingCharacter}
-          setEditingCharacter={setEditingCharacter}
-          onUpdateCharacter={actions.updateCharacter}
-          onEquipItem={actions.equipItem}
-        />
-      )}
+      <div className="flex-1 overflow-y-auto p-4">
+        {activeTab === 'party' && (
+          <PartyTab
+            party={state.party}
+            characterStats={characterStats}
+            selectedCharacter={selectedCharacter}
+            setSelectedCharacter={setSelectedCharacter}
+            editingCharacter={editingCharacter}
+            setEditingCharacter={setEditingCharacter}
+            onUpdateCharacter={actions.updateCharacter}
+            onEquipItem={actions.equipItem}
+          />
+        )}
 
-      {activeTab === 'inventory' && (
-        <InventoryTab
-          inventory={state.party.inventory}
-          onSellItem={actions.sellItem}
-        />
-      )}
+        {activeTab === 'expedition' && (
+          <ExpeditionTab
+            state={state}
+            partyStats={partyStats}
+            onSelectDungeon={actions.selectDungeon}
+            onRunExpedition={actions.runExpedition}
+          />
+        )}
 
-      {activeTab === 'shop' && (
-        <ShopTab
-          gold={state.party.gold}
-          quiverSlots={state.party.quiverSlots}
-          onBuyArrows={actions.buyArrows}
-        />
-      )}
+        {activeTab === 'inventory' && (
+          <InventoryTab
+            inventory={state.party.inventory}
+            onSellItem={actions.sellItem}
+          />
+        )}
 
-      {activeTab === 'expedition' && (
-        <ExpeditionTab
-          partyStats={partyStats}
-          onStartExpedition={actions.startExpedition}
-        />
-      )}
+        {activeTab === 'shop' && (
+          <ShopTab
+            gold={state.party.gold}
+            quiverSlots={state.party.quiverSlots}
+            onBuyArrows={actions.buyArrows}
+            onRemoveQuiverSlot={actions.removeQuiverSlot}
+          />
+        )}
+
+        {activeTab === 'setting' && (
+          <SettingTab
+            bags={bags}
+            onResetGame={actions.resetGame}
+          />
+        )}
+      </div>
     </div>
   );
 }
@@ -182,7 +214,7 @@ function PartyTab({
   return (
     <div>
       {/* Character selector */}
-      <div className="flex gap-2 mb-4 overflow-x-auto">
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
         {party.characters.map((c, i) => {
           const r = RACES.find(r => r.id === c.raceId)!;
           const cs = characterStats[i];
@@ -191,7 +223,7 @@ function PartyTab({
               key={c.id}
               onClick={() => { setSelectedCharacter(i); setSelectingSlot(null); }}
               className={`flex-shrink-0 p-2 rounded-lg border ${
-                i === selectedCharacter ? 'border-accent bg-blue-50' : 'border-gray-200'
+                i === selectedCharacter ? 'border-sub bg-blue-50' : 'border-gray-200'
               }`}
             >
               <div className="text-2xl text-center">{r.emoji}</div>
@@ -205,17 +237,17 @@ function PartyTab({
       </div>
 
       {/* Character details */}
-      <div className="border border-gray-200 rounded-lg p-4 mb-4">
+      <div className="bg-pane rounded-lg p-4 mb-4">
         <div className="flex justify-between items-center mb-2">
           <input
             type="text"
             value={char.name}
             onChange={(e) => onUpdateCharacter(char.id, { name: e.target.value })}
-            className="text-lg font-bold bg-transparent border-b border-transparent hover:border-gray-300 focus:border-accent focus:outline-none"
+            className="text-lg font-bold bg-transparent border-b border-transparent hover:border-gray-300 focus:border-sub focus:outline-none"
           />
           <button
             onClick={() => setEditingCharacter(editingCharacter === selectedCharacter ? null : selectedCharacter)}
-            className="text-sm text-accent"
+            className="text-sm text-sub"
           >
             {editingCharacter === selectedCharacter ? '完了' : '編集'}
           </button>
@@ -223,6 +255,7 @@ function PartyTab({
 
         {editingCharacter === selectedCharacter ? (
           <div className="space-y-2 text-sm">
+            <div className="text-xs text-accent mb-2">※編集すると装備が外れます</div>
             <div>
               <label className="block text-gray-500">種族</label>
               <select
@@ -294,12 +327,12 @@ function PartyTab({
               {predisposition.name} / {lineage.name}
             </div>
             <div className="grid grid-cols-4 gap-1 mt-2 text-xs">
-              <div className="bg-gray-100 rounded p-1 text-center">体{stats.baseStats.vitality}</div>
-              <div className="bg-gray-100 rounded p-1 text-center">力{stats.baseStats.strength}</div>
-              <div className="bg-gray-100 rounded p-1 text-center">知{stats.baseStats.intelligence}</div>
-              <div className="bg-gray-100 rounded p-1 text-center">精{stats.baseStats.mind}</div>
+              <div className="bg-white rounded p-1 text-center">体{stats.baseStats.vitality}</div>
+              <div className="bg-white rounded p-1 text-center">力{stats.baseStats.strength}</div>
+              <div className="bg-white rounded p-1 text-center">知{stats.baseStats.intelligence}</div>
+              <div className="bg-white rounded p-1 text-center">精{stats.baseStats.mind}</div>
             </div>
-            <div className="border-t mt-2 pt-2 space-y-1">
+            <div className="border-t border-gray-200 mt-2 pt-2 space-y-1">
               <div className="flex justify-between">
                 <span>遠距離攻撃:</span>
                 <span className="font-medium">{Math.floor(stats.rangedAttack)} x {stats.rangedNoA}回</span>
@@ -314,10 +347,10 @@ function PartyTab({
               </div>
             </div>
             {stats.abilities.length > 0 && (
-              <div className="border-t mt-2 pt-2">
+              <div className="border-t border-gray-200 mt-2 pt-2">
                 <div className="text-gray-500 text-xs">特殊能力:</div>
                 {stats.abilities.map(a => (
-                  <div key={a.id} className="text-xs text-accent">{a.name}: {a.description}</div>
+                  <div key={a.id} className="text-xs text-sub">{a.name}: {a.description}</div>
                 ))}
               </div>
             )}
@@ -326,7 +359,7 @@ function PartyTab({
       </div>
 
       {/* Equipment section */}
-      <div className="border border-gray-200 rounded-lg p-4">
+      <div className="bg-pane rounded-lg p-4">
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm font-medium">装備</span>
           <span className="text-xs text-gray-500">
@@ -340,8 +373,8 @@ function PartyTab({
               <button
                 key={i}
                 onClick={() => setSelectingSlot(selectingSlot === i ? null : i)}
-                className={`w-full p-2 text-left border rounded text-sm ${
-                  selectingSlot === i ? 'border-accent bg-blue-50' : 'border-gray-200'
+                className={`w-full p-2 text-left border rounded text-sm bg-white ${
+                  selectingSlot === i ? 'border-sub' : 'border-gray-200'
                 }`}
               >
                 {item ? (
@@ -363,7 +396,7 @@ function PartyTab({
 
       {/* Item selection popup */}
       {selectingSlot !== null && (
-        <div className="mt-4 border border-accent rounded-lg p-4 bg-blue-50">
+        <div className="mt-4 border border-sub rounded-lg p-4 bg-blue-50">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm font-medium">スロット {selectingSlot + 1} に装備</span>
             <div className="flex gap-2">
@@ -409,12 +442,146 @@ function PartyTab({
   );
 }
 
+function ExpeditionTab({
+  state,
+  partyStats,
+  onSelectDungeon,
+  onRunExpedition,
+}: {
+  state: GameState;
+  partyStats: ReturnType<typeof computePartyStats>['partyStats'];
+  onSelectDungeon: (dungeonId: number) => void;
+  onRunExpedition: () => void;
+}) {
+  const [showLog, setShowLog] = useState(false);
+  const selectedDungeon = DUNGEONS.find(d => d.id === state.selectedDungeonId);
+
+  return (
+    <div>
+      {/* Selected Dungeon */}
+      <div className="bg-pane rounded-lg p-4 mb-4">
+        <div className="text-sm text-gray-500 mb-1">選択中のダンジョン</div>
+        <div className="flex justify-between items-center">
+          <div>
+            <div className="font-medium">{selectedDungeon?.name}</div>
+            <div className="text-xs text-gray-500">部屋数: {selectedDungeon?.numberOfRooms} + ボス</div>
+          </div>
+          <button
+            onClick={onRunExpedition}
+            className="px-4 py-2 bg-sub text-white rounded-lg font-medium hover:bg-blue-600"
+          >
+            出発
+          </button>
+        </div>
+      </div>
+
+      {/* Party Stats Summary */}
+      <div className="bg-pane rounded-lg p-3 mb-4">
+        <div className="grid grid-cols-3 gap-2 text-center text-sm">
+          <div>
+            <div className="text-xs text-gray-500">HP</div>
+            <div className="font-medium">{partyStats.hp}</div>
+          </div>
+          <div>
+            <div className="text-xs text-gray-500">物理防御</div>
+            <div className="font-medium">{partyStats.physicalDefense}</div>
+          </div>
+          <div>
+            <div className="text-xs text-gray-500">魔法防御</div>
+            <div className="font-medium">{partyStats.magicalDefense}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Dungeon Selection */}
+      <div className="text-sm font-medium mb-2">ダンジョン選択</div>
+      <div className="space-y-2 mb-4">
+        {DUNGEONS.map(dungeon => (
+          <button
+            key={dungeon.id}
+            onClick={() => onSelectDungeon(dungeon.id)}
+            className={`w-full p-3 text-left border rounded-lg ${
+              dungeon.id === state.selectedDungeonId
+                ? 'border-sub bg-blue-50'
+                : 'border-gray-200 hover:border-sub'
+            }`}
+          >
+            <div className="font-medium">{dungeon.name}</div>
+            <div className="text-xs text-gray-500">部屋数: {dungeon.numberOfRooms} + ボス</div>
+          </button>
+        ))}
+      </div>
+
+      {/* Last Expedition Log */}
+      {state.lastExpeditionLog && (
+        <div className="bg-pane rounded-lg p-4">
+          <button
+            onClick={() => setShowLog(!showLog)}
+            className="w-full flex justify-between items-center text-sm font-medium"
+          >
+            <span>前回の探検結果: {state.lastExpeditionLog.dungeonName}</span>
+            <span className={`transform transition-transform ${showLog ? 'rotate-180' : ''}`}>▼</span>
+          </button>
+
+          {showLog && (
+            <div className="mt-3 space-y-2">
+              <div className="text-sm">
+                <span className={`font-medium ${
+                  state.lastExpeditionLog.finalOutcome === 'victory' ? 'text-green-600' :
+                  state.lastExpeditionLog.finalOutcome === 'defeat' ? 'text-red-600' : 'text-yellow-600'
+                }`}>
+                  {state.lastExpeditionLog.finalOutcome === 'victory' ? '勝利' :
+                   state.lastExpeditionLog.finalOutcome === 'defeat' ? '敗北' : '撤退'}
+                </span>
+                <span className="text-gray-500">
+                  {' '}| {state.lastExpeditionLog.completedRooms}/{state.lastExpeditionLog.totalRooms}部屋
+                  {' '}| EXP: +{state.lastExpeditionLog.totalExperience}
+                </span>
+              </div>
+
+              {state.lastExpeditionLog.rewards.length > 0 && (
+                <div className="text-sm">
+                  <div className="text-gray-500">獲得アイテム:</div>
+                  {state.lastExpeditionLog.rewards.map((item, i) => (
+                    <div key={i} className="text-accent font-medium">{getItemDisplayName(item)}</div>
+                  ))}
+                </div>
+              )}
+
+              <div className="border-t border-gray-200 pt-2 space-y-2">
+                {state.lastExpeditionLog.entries.map((entry, i) => (
+                  <div key={i} className="text-xs bg-white rounded p-2">
+                    <div className="flex justify-between">
+                      <span className="font-medium">Room {entry.room}: {entry.enemyName}</span>
+                      <span className={
+                        entry.outcome === 'victory' ? 'text-green-600' :
+                        entry.outcome === 'defeat' ? 'text-red-600' : 'text-yellow-600'
+                      }>
+                        {entry.outcome === 'victory' ? '勝利' :
+                         entry.outcome === 'defeat' ? '敗北' : '引分'}
+                      </span>
+                    </div>
+                    <div className="text-gray-500">
+                      与ダメ: {entry.damageDealt} | 被ダメ: {entry.damageTaken}
+                      {entry.reward && <span className="text-accent"> | 獲得: {entry.reward}</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function InventoryTab({
   inventory,
   onSellItem,
 }: {
   inventory: Item[];
-  onSellItem: (item: Item) => void;
+  onSellItem: (itemIndex: number) => void;
 }) {
   return (
     <div>
@@ -428,18 +595,21 @@ function InventoryTab({
           return (
             <div
               key={i}
-              className="p-2 border border-gray-100 rounded"
+              className={`p-2 rounded bg-pane ${item.isNew ? 'border-2 border-accent' : ''}`}
             >
               <div className="flex justify-between items-start">
                 <div>
                   <div className="flex gap-2 items-center">
-                    <span className="text-sm font-medium">{getItemDisplayName(item)}</span>
+                    <span className={`text-sm ${item.isNew ? 'font-bold' : 'font-medium'}`}>
+                      {getItemDisplayName(item)}
+                    </span>
                     <span className="text-xs text-gray-400">[{CATEGORY_NAMES[item.category]}]</span>
+                    {item.isNew && <span className="text-xs text-accent font-bold">NEW</span>}
                   </div>
                   <div className="text-xs text-gray-500">{getItemStats(item)}</div>
                 </div>
                 <button
-                  onClick={() => onSellItem(item)}
+                  onClick={() => onSellItem(i)}
                   className="text-xs text-accent px-2 py-1 border border-accent rounded flex-shrink-0"
                 >
                   売却 {sellPrice}G
@@ -460,10 +630,12 @@ function ShopTab({
   gold,
   quiverSlots,
   onBuyArrows,
+  onRemoveQuiverSlot,
 }: {
   gold: number;
   quiverSlots: GameState['party']['quiverSlots'];
   onBuyArrows: (arrowId: number, quantity: number) => void;
+  onRemoveQuiverSlot: (slotIndex: number) => void;
 }) {
   const arrows = ITEMS.filter(i => i.category === 'arrow');
 
@@ -475,15 +647,23 @@ function ShopTab({
         <div className="text-sm font-medium mb-2">矢筒</div>
         <div className="space-y-2">
           {quiverSlots.map((slot, i) => (
-            <div key={i} className="p-2 border border-gray-200 rounded">
+            <div key={i} className="p-2 bg-pane rounded flex justify-between items-center">
               {slot ? (
-                <div>
-                  <span className="text-sm font-medium">{slot.item.name}</span>
-                  <span className="text-sm text-gray-500"> : {slot.quantity}本</span>
-                  <div className="text-xs text-gray-400">{getItemStats(slot.item)}</div>
-                </div>
+                <>
+                  <div>
+                    <span className="text-sm font-medium">{slot.item.name}</span>
+                    <span className="text-sm text-gray-500"> : {slot.quantity}本</span>
+                    <div className="text-xs text-gray-400">{getItemStats(slot.item)}</div>
+                  </div>
+                  <button
+                    onClick={() => onRemoveQuiverSlot(i)}
+                    className="text-xs text-red-500 px-2 py-1 border border-red-300 rounded"
+                  >
+                    破棄
+                  </button>
+                </>
               ) : (
-                <span className="text-sm text-gray-400">空きスロット</span>
+                <span className="text-sm text-gray-400">空きスロット {i + 1}</span>
               )}
             </div>
           ))}
@@ -494,7 +674,7 @@ function ShopTab({
         <div className="text-sm font-medium mb-2">矢を購入 (1本 = 2G)</div>
         <div className="space-y-2">
           {arrows.map(arrow => (
-            <div key={arrow.id} className="p-2 border border-gray-100 rounded">
+            <div key={arrow.id} className="p-2 bg-pane rounded">
               <div className="flex justify-between items-center">
                 <div>
                   <span className="text-sm font-medium">{arrow.name}</span>
@@ -509,14 +689,14 @@ function ShopTab({
                   <button
                     onClick={() => onBuyArrows(arrow.id, 10)}
                     disabled={gold < 20}
-                    className="text-xs text-accent px-2 py-1 border border-accent rounded disabled:opacity-50"
+                    className="text-xs text-sub px-2 py-1 border border-sub rounded disabled:opacity-50"
                   >
                     10本
                   </button>
                   <button
                     onClick={() => onBuyArrows(arrow.id, 50)}
                     disabled={gold < 100}
-                    className="text-xs text-accent px-2 py-1 border border-accent rounded disabled:opacity-50"
+                    className="text-xs text-sub px-2 py-1 border border-sub rounded disabled:opacity-50"
                   >
                     50本
                   </button>
@@ -530,45 +710,74 @@ function ShopTab({
   );
 }
 
-function ExpeditionTab({
-  partyStats,
-  onStartExpedition,
+function SettingTab({
+  bags,
+  onResetGame,
 }: {
-  partyStats: ReturnType<typeof computePartyStats>['partyStats'];
-  onStartExpedition: (dungeonId: number) => void;
+  bags: GameBags;
+  onResetGame: () => void;
 }) {
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  const rewardTotal = 10;
+  const rewardWins = bags.rewardBag.tickets.filter(t => t === 1).length;
+
+  const enhancementTotal = ENHANCEMENT_TITLES.reduce((sum, t) => sum + t.tickets, 0);
+  const enhancementRemaining = bags.enhancementBag.tickets.length;
+
+  const superRareTotal = SUPER_RARE_TITLES.reduce((sum, t) => sum + t.tickets, 0);
+  const superRareRemaining = bags.superRareBag.tickets.length;
+
   return (
     <div>
-      <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm">
-        <div className="font-medium mb-1">パーティステータス</div>
-        <div className="grid grid-cols-3 gap-2 text-center">
-          <div>
-            <div className="text-xs text-gray-500">HP</div>
-            <div className="font-medium">{partyStats.hp}</div>
+      <div className="bg-pane rounded-lg p-4 mb-4">
+        <div className="text-sm font-medium mb-2">Debug: バッグ状態</div>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span>報酬バッグ</span>
+            <span>残り {bags.rewardBag.tickets.length}/{rewardTotal} (勝ち: {rewardWins})</span>
           </div>
-          <div>
-            <div className="text-xs text-gray-500">物理防御</div>
-            <div className="font-medium">{partyStats.physicalDefense}</div>
+          <div className="flex justify-between">
+            <span>強化バッグ</span>
+            <span>残り {enhancementRemaining}/{enhancementTotal}</span>
           </div>
-          <div>
-            <div className="text-xs text-gray-500">魔法防御</div>
-            <div className="font-medium">{partyStats.magicalDefense}</div>
+          <div className="flex justify-between">
+            <span>超レアバッグ</span>
+            <span>残り {superRareRemaining}/{superRareTotal}</span>
           </div>
         </div>
       </div>
 
-      <div className="text-sm font-medium mb-2">ダンジョン選択</div>
-      <div className="space-y-2">
-        {DUNGEONS.map(dungeon => (
+      <div className="bg-pane rounded-lg p-4">
+        <div className="text-sm font-medium mb-2">データ管理</div>
+        {!showResetConfirm ? (
           <button
-            key={dungeon.id}
-            onClick={() => onStartExpedition(dungeon.id)}
-            className="w-full p-3 text-left border border-gray-200 rounded-lg hover:border-accent"
+            onClick={() => setShowResetConfirm(true)}
+            className="w-full py-2 bg-red-500 text-white rounded font-medium"
           >
-            <div className="font-medium">{dungeon.name}</div>
-            <div className="text-xs text-gray-500">部屋数: {dungeon.numberOfRooms} + ボス</div>
+            ゲームをリセット
           </button>
-        ))}
+        ) : (
+          <div>
+            <div className="text-sm text-red-600 mb-2">
+              本当にリセットしますか？全てのデータが失われます。
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => { onResetGame(); setShowResetConfirm(false); }}
+                className="flex-1 py-2 bg-red-500 text-white rounded font-medium"
+              >
+                リセット実行
+              </button>
+              <button
+                onClick={() => setShowResetConfirm(false)}
+                className="flex-1 py-2 bg-gray-300 rounded font-medium"
+              >
+                キャンセル
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

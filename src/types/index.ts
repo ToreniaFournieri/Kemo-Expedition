@@ -118,6 +118,7 @@ export interface Item extends ItemDef {
   enhancement: number; // 0-6
   superRare: number; // 0-5
   quantity?: number; // For arrows
+  isNew?: boolean; // For highlighting newly acquired items
 }
 
 // Character Types
@@ -274,15 +275,38 @@ export interface SuperRareTitle {
   multiplier: number;
 }
 
+// Expedition Log Types
+export interface ExpeditionLogEntry {
+  room: number;
+  enemyName: string;
+  outcome: BattleOutcome;
+  damageDealt: number;
+  damageTaken: number;
+  reward?: string;
+  details: BattleLogEntry[];
+}
+
+export interface ExpeditionLog {
+  dungeonId: number;
+  dungeonName: string;
+  totalExperience: number;
+  totalRooms: number;
+  completedRooms: number;
+  finalOutcome: 'victory' | 'defeat' | 'retreat';
+  entries: ExpeditionLogEntry[];
+  rewards: Item[];
+}
+
 // Game State
-export type GameScene = 'home' | 'expedition' | 'battle' | 'result';
+export type GameScene = 'home';
 
 export interface GameState {
   scene: GameScene;
   party: Party;
   bags: GameBags;
-  expedition: ExpeditionState | null;
-  battle: BattleState | null;
+  selectedDungeonId: number;
+  lastExpeditionLog: ExpeditionLog | null;
+  buildNumber: number;
 }
 
 // Level-based equipment slots
