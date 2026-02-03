@@ -249,7 +249,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 
 ### 2.4 Items
 
-**Item Category**
+### 2.4.1 Item category 
 
 |category | name | core concept |
 |-----|----|-----------|
@@ -266,8 +266,25 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 - *note:* item might have multiple bonus. sword may have `Party_HP` but subtle value.
 - (Temporary test purspose) Make 5 itmes for each item type. 
 
-**consumption of arrows**
-- Arrow Stacks: * `i.arrow` items have a quantity property.
+#### 2.4.2 Item stacking
+- Items are stacked by (base item + suffix/modifiers)
+  - Inventory shows counts only, not individual instances
+  - Selling is all-or-nothing per stack.
+  - Once a stack is sold, that item variant is permanently obsolete
+  - Any future drops of that exact variant are auto-sold
+  - **Auto-sold maintenance:** Player can change item status from `sold` to `notown`.  
+```
+inventory = {
+  "ショートソード": { count: 0, status: "sold" },
+  "名工のショートソード": { count: 40, status: "owned" },
+  "魔性のショートソード": { count: 6, status: "owned" }
+  "ロングソード": { count: 0, status: "notown" }
+}
+```
+  - 
+
+#### 2.4.3 Consumption of arrow
+- Arrow Stacks: * `i.arrow` items have a quantity property. ( this is different from item stacking)
 - Multiple items of the exact same Arrow ID can occupy one single equipment slot.
 - Consumption: Current_Quantity -= ranged_NoA per attack.
 - Persistence: Quantity does not reset between rooms. It only resets at HOME.
@@ -483,6 +500,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
     - If player tap, shows detail logs. and tap a room, then open combat log secne. 
     - Last, List of dungeons. 
   3. Inventory:
+    - Notifications pop up once aquired new item. 
     - List of items. Newly aquired item is **bold**. once shown, then back to normal.
     - can sell them.
   4. Shop:
