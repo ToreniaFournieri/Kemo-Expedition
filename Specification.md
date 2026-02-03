@@ -480,7 +480,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
   2. Expedition:
     - Current selected dungeon is on the top. 
     - Dungeon resolved immediately and show the log at Expedition tab.
-    - If player tap, shows detail logs.
+    - If player tap, shows detail logs. and tap a room, then open combat log secne. 
     - List of dungeons.
   3. Inventory:
     - List of items. Newly aquired item is **bold**. once shown, then back to normal.
