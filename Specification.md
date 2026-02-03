@@ -162,7 +162,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
     - quiver slots
  
 - **Quariver system**
-  - Definition: A shared party resource that houses all `e.arrow` items.
+  - Definition: A shared party resource that houses all `i.arrow` items.
   - Quiver Slots: The party has **Two** slots specifically for arrow types.
   - Stacking: Each arrow type has a `max_stack` property. Multiple stacks of the same arrow ID can occupy different quiver slots.
 
@@ -205,6 +205,8 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 - melee_NoA
 - physical_defense
 - magical_defense
+- resistance_fire // 1.0 as default. 0.5 is strong, 2.0 is weak
+- resistance_thunder // 1.0 as default. 0.5 is strong, 2.0 is weak
 - experience // Enemy experience is added directly to party experience.
 - drop_item
 
@@ -216,21 +218,22 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 
 |category | name | core concept |
 |-----|----|-----------|
-|`c.sword` | 剣 | + `melee_attack` |
-|`c.katana` | 刀 | + `melee_attack`, - `melee_NoA` |
-|`c.archery` | 弓 | + `ranged_attack`, + `ranged_NoA` |
-|`c.armor` | 鎧 | + `Party_physical_defense` |
-|`c.gauntlet` | 籠手 | + `melee_NoA` |
-|`c.wand` | ワンド | + `magical_attack` |
-|`c.robe` | 法衣 | + `Party_magical_defense` |
-|`c.amulet` | 護符 | + `Party_HP` |
-|`c.arrow` | 矢 | consumable |
+|`i.sword` | 剣 | + `melee_attack` |
+|`i.katana` | 刀 | + `melee_attack`, - `melee_NoA` |
+|`i.archery` | 弓 | + `ranged_attack`, + `ranged_NoA` |
+|`i.armor` | 鎧 | + `Party_physical_defense` |
+|`i.gauntlet` | 籠手 | + `melee_NoA` |
+|`i.wand` | ワンド | + `magical_attack` |
+|`i.robe` | 法衣 | + `Party_magical_defense` |
+|`i.amulet` | 護符 | + `Party_HP` |
+|`i.arrow` | 矢 | Consumable, Stackable. Has `max_stack`, `elemental_attribute` |
 
-- *note:* item might have multiple bonus. sword may have `Party_HP` but subtle value. 
+- *note:* item might have multiple bonus. sword may have `Party_HP` but subtle value.
+-  `elemental_attribute` : `e.none`, `e.fire`, `e.thunder`, `e.ice`
 - (Temporary test purspose) Make 5 itmes for each item type. 
 
 **consumption of arrows**
-- Arrow Stacks: * Arrow-type items have a quantity property.
+- Arrow Stacks: * `i.arrow` items have a quantity property.
 - Multiple items of the exact same Arrow ID can occupy one single equipment slot.
 - Consumption: Current_Quantity -= ranged_NoA per attack.
 - Persistence: Quantity does not reset between rooms. It only resets at HOME.
@@ -273,7 +276,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
   - magical_attack: Item Bonuses x its c.multiplier x `b.intelligence` / 10
 
 - Number of attacks:
-  - ranged_NoA: 0 + Item Bonuses x its c.multiplier (round up) // no arrows, no shoot.
+  - ranged_NoA: 0 + Item Bonuses x its c.multiplier (round up) 
   - magical_NoA: 0 + `c.caster+v` bonuses // Only one single bonuses of the same name applies. 
   - melee_NoA: 0 + `c.grit+v` bonuses + Item Bonuses x its c.multiplier (round up) //no NoA, no melee combat.
  
@@ -331,8 +334,9 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 **Enemy action**
 - Enemy always moves first.
 
-- Damage: max(1 ,(Enemy damage - Party defense) x Enemy's damage amplifier x Party abilities amplifier) x number of attacks
-    - following matched ranged type. 
+- Damage: max(1 ,(Enemy damage - Party defense) x Enemy's damage amplifier x Party abilities amplifier x elemental multiplier  ) x number of attacks
+    - following matched ranged type.
+    - elemental multiplier: Default: 1. If the damage type has elemental attribute, multiplier resistance_x. (ex. fire arrow has `e.fire`, check enemy's resistance_fire value. )
 - Current Party HP -= Calculated damage
 - If currenr party HP =< 0, Defeat. 
 
