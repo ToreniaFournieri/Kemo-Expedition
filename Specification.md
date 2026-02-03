@@ -20,7 +20,7 @@
 |`b.` | **b**ase status |
 |`c.` | **c**lass and other bonus |
 |`d.` | **d**uel status |
-|`e.` | **e**lemental attack attribute |
+|`e.` | **e**lemental_offense_attribute |
 |`f.` | **f**unction of logic |
 |`i.` | **i**tem category |
 |`r.` | elemental_**r**esistance_attribute |
