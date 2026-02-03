@@ -394,14 +394,14 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 
 
 **First strike**
-- IF a character has `a.first-strike`, acts before enemy action. (using `f.damage_calculation`)
+- IF character.`a.first-strike`, the character acts before enemy action. (using `f.damage_calculation`)
 
 **Enemy action**
 - Enemy always moves first.
 - Current party.`d.HP` -= `f.damage_calculation` (actor: enemy , opponent: party, phase: phase )
 - If currenr party.`d.HP` =< 0, Defeat. 
 
-- **Counter:** IF character has `a.counter` ability and take damage in CLOSE phase. The character attacks to enemy.
+- **Counter:** IF character.`a.counter` and take damage in CLOSE phase, the character attacks to enemy. (using `f.damage_calculation`)
     - Counter triggers immediately after damage resolution, regardless of turn order modifiers.
 
 **Player action**
@@ -416,7 +416,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 - If enemy.`d.HP` =< 0, Victory.
   - Party damage reduction abilities apply after defense subtraction.
 
-- **Re-attack:** IF character has `a.re-attack` ability. The character attacks to enemy.  (using `f.damage_calculation`)
+- **Re-attack:** IF character.`a.re-attack`, the character attacks to enemy.  (using `f.damage_calculation`)
 
 ### 6.4 Post battle
 
