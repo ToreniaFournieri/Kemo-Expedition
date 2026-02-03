@@ -18,7 +18,7 @@
 |-----|---------|
 |`a.` | **a**bility |
 |`b.` | **b**ase status |
-|`c.` | **c**lass bonus |
+|`c.` | **c**lass and other bonus |
 |`d.` | **d**uel status |
 |`e.` | **e**lemental attack attribute |
 |`f.` | **f**unction of logic |
