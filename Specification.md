@@ -95,8 +95,8 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 |ルピニアン(Lupinian) | `c.equip_slot+1`, `c.katana_x1.3`  |9,12,8,7| Wolf |
 |ヴァルピニアン(Vulpinian) |`c.equip_slot+1`, `c.sword_x1.3` |10,10,12,8| Fox |
 |ウルサン(Ursan) |`c.equip_slot+2` |13,12,5,7| Bear |
-|フェリディアン(Felidian) |`c.robe_x1.3` |9,9,10,12| Cat |
-|マステリド(Mustelid) | `c.gauntlet_x1.3`, `a.hunter`: Retrieve 20% of the arrows at the end of battle |10,10,9,11| Ferret |
+|フェリディアン(Felidian) |`c.robe_x1.3`, `a.first-strike`1: Acts faster than enemy at CLOSE phase |9,9,10,12| Cat |
+|マステリド(Mustelid) | `c.gauntlet_x1.3`, `a.hunter`1: Retrieve 20% of the arrows at the end of battle |10,10,9,11| Ferret |
 |レポリアン(Leporian) | `c.archery_x1.3`,  `c.armor_x1.3` |9,8,11,10| Rabbit |
 |セルヴィン(Cervin) |`c.wand_x1.3`, `c.amulet_x1.2` |6,7,13,10| Deer |
 |ミュリッド(Murid) |`c.penet_x0.10`, `c.caster+1`  |9,8,10,10| Mouse |
@@ -133,15 +133,15 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 
 |class | main/sub bonuses | main bonus | master bonus | 
 |-----|-----------|---------|---------|
-|戦士(Fighter) |`c.equip_slot+1`,  `c.armor_x1.4` |`c.grit+1`. `a.defender`: Incoming physical damage to party × 2/3 |`c.grit+1`. `a.defender`: Incoming physical damage to party × 3/5 | 
-|剣士(Duelist) |`c.sword_x1.4` |`c.grit+1`. `a.counter`: enemy CLOSE-range attack |`c.grit+1`. `a.counter`: enemy CLOSE-range attack and MID-range | 
-|忍者(Ninja) |`c.penet_x0.15` |`c.grit+1`. `a.re-attack`: once when attacking |`c.grit+1`. `a.re-attack`: twice when attacking | 
+|戦士(Fighter) |`c.equip_slot+1`,  `c.armor_x1.4` |`c.grit+1`. `a.defender`1: Incoming physical damage to party × 2/3 |`c.grit+1`. `a.defender`2: Incoming physical damage to party × 3/5 | 
+|剣士(Duelist) |`c.sword_x1.4` |`c.grit+1`. `a.counter`1: enemy CLOSE-range attack |`c.grit+1`. `a.counter`2: enemy CLOSE-range attack and MID-range | 
+|忍者(Ninja) |`c.penet_x0.15` |`c.grit+1`. `a.re-attack`1: once when attacking |`c.grit+1`. `a.re-attack`2: twice when attacking | 
 |侍(Samurai) |`c.katana_x1.4` |`c.grit+1`. `a.iaigiri`: Physical damage ×2,  number of attacks ÷2 | `c.grit+1`. `a.iaigiri`: Physical damage ×2.5,  number of attacks ÷2 |
-|君主(Lord) |`c.gauntlet_x1.4`, `c.equip_slot+1` |`a.leading`: Physical damage x1.3 |`a.leading`: Physical damage x1.6 | 
-|狩人(Ranger) |`c.archery_x1.4` | `a.hunter`: Retrieve 30% of the arrows at the end of battle  |`a.hunter`: Retrieve 36% of the arrows at the end of battle | 
+|君主(Lord) |`c.gauntlet_x1.4`, `c.equip_slot+1` |`a.leading`1: Physical damage x1.3 |`a.leading`2: Physical damage x1.6 | 
+|狩人(Ranger) |`c.archery_x1.4` | `a.hunter`2: Retrieve 30% of the arrows at the end of battle  |`a.hunter`3: Retrieve 36% of the arrows at the end of battle | 
 |魔法使い(Wizard) |`c.wand_x1.4` | `c.caster+2` | `c.caster+3` | 
-|賢者(Sage) |`c.robe_x1.4`, `c.equip_slot+2` |`c.caster+1`. `a.m-barrier`: Incoming magical damage to party × 2/3 | `c.caster+1`. `a.m-barrier`: Incoming magical damage to party × 3/5 | 
-|盗賊(Rogue) |`c.unlock` additional reward chance |`a.first-strike`: Acts faster than enemy at CLOSE phase |`a.first-strike`: Acts faster than enemy at All phases | 
+|賢者(Sage) |`c.robe_x1.4`, `c.equip_slot+2` |`c.caster+1`. `a.m-barrier`1: Incoming magical damage to party × 2/3 | `c.caster+1`. `a.m-barrier`2: Incoming magical damage to party × 3/5 | 
+|盗賊(Rogue) |`c.unlock` additional reward chance |`a.first-strike`1: Acts faster than enemy at CLOSE phase |`a.first-strike`2: Acts faster than enemy at All phases | 
 |巡礼者(Pilgrim) |`c.amulet_x1.4`, `c.equip_slot+1` |`a.null-counter`: Negate counter attack |`a.null-counter`: Negate counter attack | 
 
 - If `main_class` and  `sub_class` are same class, then it turns into master class, applies master bonus.
