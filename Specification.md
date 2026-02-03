@@ -251,17 +251,17 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 
 ### 2.4.1 Item category 
 
-|category | name | core concept |
-|-----|----|-----------|
-|`i.sword` | 剣 | + `melee_attack` |
-|`i.katana` | 刀 | + `melee_attack`, - `melee_NoA` |
-|`i.archery` | 弓 | + `ranged_attack`, + `ranged_NoA` |
-|`i.armor` | 鎧 | + `Party_physical_defense` |
-|`i.gauntlet` | 籠手 | + `melee_NoA` |
-|`i.wand` | ワンド | + `magical_attack` |
-|`i.robe` | 法衣 | + `Party_magical_defense` |
-|`i.amulet` | 護符 | + `Party_HP` |
-|`i.arrow` | 矢 | Consumable, Stackable. Has `max_stack`, `elemental_attribute` |
+|category | name | short name| core concept |
+|-----|----|----|-----------|
+|`i.sword` | 剣 | 剣 | + `melee_attack` |
+|`i.katana` | 刀 | 刀 | + `melee_attack`, - `melee_NoA` |
+|`i.archery` | 弓 | 弓 | + `ranged_attack`, + `ranged_NoA` |
+|`i.armor` | 鎧 | 鎧 | + `Party_physical_defense` |
+|`i.gauntlet` | 籠手 | 手 | + `melee_NoA` |
+|`i.wand` | ワンド | 杖 | + `magical_attack` |
+|`i.robe` | 法衣 | 衣 | + `Party_magical_defense` |
+|`i.amulet` | 護符 | 護 | + `Party_HP` |
+|`i.arrow` | 矢 | 矢 | Consumable, Stackable. Has `max_stack`, `elemental_attribute` |
 
 - *note:* item might have multiple bonus. sword may have `Party_HP` but subtle value.
 - (Temporary test purspose) Make 5 itmes for each item type. 
@@ -554,7 +554,7 @@ inventory = {
   - Character status updates immediately
 - Equipment management:
   - Equip / remove from inventory
-    - Inventory has item category tabs: 剣,刀,弓,鎧,籠手,ワンド,法衣,護符,矢.  Default: 剣
+    - Inventory has item category tabs: 剣,刀,弓,鎧,手,杖,衣,護,矢.  Default: 剣
     - Sorted by item ID, enhancement, superRare. 
   - Status updates in real time
 
@@ -578,7 +578,7 @@ inventory = {
   - Once displayed, text returns to normal
 - Item list:
   - Stacked by item variant
-  - Item category tabs: 剣,刀,弓,鎧,籠手,ワンド,法衣,護符,矢.  Default: 剣
+  - Inventory has item category tabs: 剣,刀,弓,鎧,手,杖,衣,護,矢.  Default: 剣
   - Sorted by item ID, enhancement, superRare. 
   - Shows count and status
 - Actions:
