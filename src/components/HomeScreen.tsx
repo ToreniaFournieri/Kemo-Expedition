@@ -721,37 +721,84 @@ function SettingTab({
 }) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
+  // Reward bag stats
   const rewardTotal = 10;
+  const rewardRemaining = bags.rewardBag.tickets.length;
   const rewardWins = bags.rewardBag.tickets.filter(t => t === 1).length;
 
+  // Enhancement bag stats
   const enhancementTotal = ENHANCEMENT_TITLES.reduce((sum, t) => sum + t.tickets, 0);
   const enhancementRemaining = bags.enhancementBag.tickets.length;
+  const legendaryRemaining = bags.enhancementBag.tickets.filter(t => t === 4).length; // 伝説の
+  const terribleRemaining = bags.enhancementBag.tickets.filter(t => t === 5).length;  // 恐ろしい
+  const ultimateRemaining = bags.enhancementBag.tickets.filter(t => t === 6).length;  // 究極の
 
+  // Super rare bag stats
   const superRareTotal = SUPER_RARE_TITLES.reduce((sum, t) => sum + t.tickets, 0);
   const superRareRemaining = bags.superRareBag.tickets.length;
+  const superRareHits = bags.superRareBag.tickets.filter(t => t > 0).length; // 超レア (value > 0)
 
   return (
     <div>
       <div className="bg-pane rounded-lg p-4 mb-4">
-        <div className="text-sm font-medium mb-2">Debug: バッグ状態</div>
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span>報酬バッグ</span>
-            <span>残り {bags.rewardBag.tickets.length}/{rewardTotal} (勝ち: {rewardWins})</span>
+        <div className="text-sm font-medium mb-3">Debug: バッグ状態</div>
+
+        {/* Reward Bag */}
+        <div className="mb-4">
+          <div className="text-xs text-gray-500 mb-1">報酬抽選 (reward_bag)</div>
+          <div className="bg-white rounded p-2 text-sm space-y-1">
+            <div className="flex justify-between">
+              <span>残り</span>
+              <span>{rewardRemaining} / {rewardTotal}</span>
+            </div>
+            <div className="flex justify-between text-sub">
+              <span>当たり残り (value=1)</span>
+              <span>{rewardWins}</span>
+            </div>
           </div>
-          <div className="flex justify-between">
-            <span>強化バッグ</span>
-            <span>残り {enhancementRemaining}/{enhancementTotal}</span>
+        </div>
+
+        {/* Enhancement Bag */}
+        <div className="mb-4">
+          <div className="text-xs text-gray-500 mb-1">通常称号抽選 (enhancement_bag)</div>
+          <div className="bg-white rounded p-2 text-sm space-y-1">
+            <div className="flex justify-between">
+              <span>残り</span>
+              <span>{enhancementRemaining} / {enhancementTotal}</span>
+            </div>
+            <div className="flex justify-between text-sub">
+              <span>伝説の残り (value=4)</span>
+              <span>{legendaryRemaining}</span>
+            </div>
+            <div className="flex justify-between text-sub">
+              <span>恐ろしい残り (value=5)</span>
+              <span>{terribleRemaining}</span>
+            </div>
+            <div className="flex justify-between text-sub">
+              <span>究極の残り (value=6)</span>
+              <span>{ultimateRemaining}</span>
+            </div>
           </div>
-          <div className="flex justify-between">
-            <span>超レアバッグ</span>
-            <span>残り {superRareRemaining}/{superRareTotal}</span>
+        </div>
+
+        {/* Super Rare Bag */}
+        <div>
+          <div className="text-xs text-gray-500 mb-1">超レア称号抽選 (superRare_bag)</div>
+          <div className="bg-white rounded p-2 text-sm space-y-1">
+            <div className="flex justify-between">
+              <span>残り</span>
+              <span>{superRareRemaining} / {superRareTotal}</span>
+            </div>
+            <div className="flex justify-between text-accent">
+              <span>超レア残り (value&gt;0)</span>
+              <span>{superRareHits}</span>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="bg-pane rounded-lg p-4">
-        <div className="text-sm font-medium mb-2">データ管理</div>
+        <div className="text-sm font-medium mb-2">Reset</div>
         {!showResetConfirm ? (
           <button
             onClick={() => setShowResetConfirm(true)}
@@ -761,8 +808,8 @@ function SettingTab({
           </button>
         ) : (
           <div>
-            <div className="text-sm text-red-600 mb-2">
-              本当にリセットしますか？全てのデータが失われます。
+            <div className="text-sm text-red-600 mb-2 p-2 bg-red-50 rounded border border-red-200">
+              ⚠️ 本当にリセットしますか？全てのデータが失われます。この操作は取り消せません。
             </div>
             <div className="flex gap-2">
               <button
