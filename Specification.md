@@ -526,6 +526,7 @@ inventory = {
   - Game title + version + build number
   - Example: ケモの冒険 v0.0.8 (2)
   - Use this specification's version
+  - increment the build number each time you edited the code. 
 - Party info (simplified):
   - Party status summary
   - Arrow count (icon + number)
