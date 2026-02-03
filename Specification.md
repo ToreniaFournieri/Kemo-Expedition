@@ -596,15 +596,15 @@ inventory = {
 - Debug section:
   - Display
     - reward_bag:  
-      remaining / total counts 
+      報酬抽選: remaining / total counts 
       当たり残り(value=1) counts
   	-	enhancement_bag: 
-      remainjng / total counts
+      通常称号抽選: remainjng / total counts
       伝説の残り(value=4) counts
       恐ろしい残り(value=5) counts
       究極の残り(value=6) counts
   	-	superRare_bag:
-      remainjng / total counts
+      超レア称号抽選: remainjng / total counts
       超レア残り(value>0) counts
 
 - Reset:
