@@ -600,13 +600,14 @@ inventory = {
       報酬抽選: remaining / total counts 
       当たり残り(value=1) counts
   	-	enhancement_bag: 
-      通常称号抽選: remainjng / total counts
-      伝説の残り(value=4) counts
-      恐ろしい残り(value=5) counts
-      究極の残り(value=6) counts
+      通常称号抽選: remaining / total counts
+      宿った残り counts
+      伝説の残り counts
+      恐ろしい残り counts
+      究極の残り counts
   	-	superRare_bag:
-      超レア称号抽選: remainjng / total counts
-      超レア残り(value>0) counts
+      超レア称号抽選: remaining / total counts
+      超レア残り counts
 
 - Reset:
   - Full reset option
