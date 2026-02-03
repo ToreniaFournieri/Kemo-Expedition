@@ -18,7 +18,7 @@ import { drawFromBag, refillBagIfEmpty, createRewardBag, createEnhancementBag, c
 import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 
-const BUILD_NUMBER = 2;
+const BUILD_NUMBER = 3;
 const STORAGE_KEY = 'kemo-expedition-save';
 
 function loadSavedState(): GameState | null {

@@ -85,18 +85,21 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   // Check for new items
   const hasNewItems = state.party.inventory.some(item => item.isNew);
 
+  // Arrow count for header
+  const totalArrows = (state.party.quiverSlots[0]?.quantity ?? 0) + (state.party.quiverSlots[1]?.quantity ?? 0);
+
   return (
     <div className="flex flex-col h-screen">
       {/* Sticky Header */}
       <div className="sticky top-0 bg-white border-b border-gray-300 p-3 z-10">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-lg font-bold">KEMO EXPEDITION</h1>
-            <div className="text-xs text-gray-500">v1.0.0 / Build {state.buildNumber}</div>
+            <h1 className="text-lg font-bold">ケモの冒険</h1>
+            <div className="text-xs text-gray-500">v0.0.8 ({state.buildNumber})</div>
           </div>
           <div className="text-right text-sm">
             <div className="font-medium">{state.party.deityName}</div>
-            <div className="text-xs text-gray-500">Lv.{state.party.level} | {state.party.gold}G</div>
+            <div className="text-xs text-gray-500">Lv.{state.party.level} | {state.party.gold}G | 🏹{totalArrows}</div>
           </div>
         </div>
         <div className="mt-2 flex justify-between text-xs text-gray-600">
@@ -454,6 +457,7 @@ function ExpeditionTab({
   onRunExpedition: () => void;
 }) {
   const [showLog, setShowLog] = useState(false);
+  const [expandedRoom, setExpandedRoom] = useState<number | null>(null);
   const selectedDungeon = DUNGEONS.find(d => d.id === state.selectedDungeonId);
 
   return (
@@ -551,21 +555,40 @@ function ExpeditionTab({
 
               <div className="border-t border-gray-200 pt-2 space-y-2">
                 {state.lastExpeditionLog.entries.map((entry, i) => (
-                  <div key={i} className="text-xs bg-white rounded p-2">
-                    <div className="flex justify-between">
-                      <span className="font-medium">Room {entry.room}: {entry.enemyName}</span>
-                      <span className={
-                        entry.outcome === 'victory' ? 'text-green-600' :
-                        entry.outcome === 'defeat' ? 'text-red-600' : 'text-yellow-600'
-                      }>
-                        {entry.outcome === 'victory' ? '勝利' :
-                         entry.outcome === 'defeat' ? '敗北' : '引分'}
-                      </span>
-                    </div>
-                    <div className="text-gray-500">
-                      与ダメ: {entry.damageDealt} | 被ダメ: {entry.damageTaken}
-                      {entry.reward && <span className="text-accent"> | 獲得: {entry.reward}</span>}
-                    </div>
+                  <div key={i} className="bg-white rounded overflow-hidden">
+                    <button
+                      onClick={() => setExpandedRoom(expandedRoom === i ? null : i)}
+                      className="w-full text-left p-2 text-xs"
+                    >
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">Room {entry.room}: {entry.enemyName}</span>
+                        <div className="flex items-center gap-2">
+                          <span className={
+                            entry.outcome === 'victory' ? 'text-green-600' :
+                            entry.outcome === 'defeat' ? 'text-red-600' : 'text-yellow-600'
+                          }>
+                            {entry.outcome === 'victory' ? '勝利' :
+                             entry.outcome === 'defeat' ? '敗北' : '引分'}
+                          </span>
+                          <span className={`transform transition-transform ${expandedRoom === i ? 'rotate-180' : ''}`}>▼</span>
+                        </div>
+                      </div>
+                      <div className="text-gray-500">
+                        与ダメ: {entry.damageDealt} | 被ダメ: {entry.damageTaken}
+                        {entry.reward && <span className="text-accent"> | 獲得: {entry.reward}</span>}
+                      </div>
+                    </button>
+                    {expandedRoom === i && entry.details && (
+                      <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
+                        <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
+                        {entry.details.map((log, j) => (
+                          <div key={j} className="text-gray-600">
+                            <span className="text-gray-400">[{log.phase}]</span> {log.actor}: {log.action}
+                            {log.damage !== undefined && <span className="text-accent"> ({log.damage}ダメージ)</span>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -729,6 +752,7 @@ function SettingTab({
   // Enhancement bag stats
   const enhancementTotal = ENHANCEMENT_TITLES.reduce((sum, t) => sum + t.tickets, 0);
   const enhancementRemaining = bags.enhancementBag.tickets.length;
+  const dwellingRemaining = bags.enhancementBag.tickets.filter(t => t === 3).length;  // 宿った
   const legendaryRemaining = bags.enhancementBag.tickets.filter(t => t === 4).length; // 伝説の
   const terribleRemaining = bags.enhancementBag.tickets.filter(t => t === 5).length;  // 恐ろしい
   const ultimateRemaining = bags.enhancementBag.tickets.filter(t => t === 6).length;  // 究極の
@@ -765,6 +789,10 @@ function SettingTab({
             <div className="flex justify-between">
               <span>残り</span>
               <span>{enhancementRemaining} / {enhancementTotal}</span>
+            </div>
+            <div className="flex justify-between text-sub">
+              <span>宿った残り (value=3)</span>
+              <span>{dwellingRemaining}</span>
             </div>
             <div className="flex justify-between text-sub">
               <span>伝説の残り (value=4)</span>
