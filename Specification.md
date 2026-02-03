@@ -303,6 +303,10 @@ inventory = {
     "count": 6,
     "status": "owned"
   }
+  "ロングソード": {
+    "count": 0,
+    "status": "notown"
+  }
 }
 ```
 
