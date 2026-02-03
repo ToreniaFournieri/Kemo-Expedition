@@ -556,6 +556,7 @@ inventory = {
   - Equip / remove from inventory
     - Inventory has item category tabs: 剣,刀,弓,鎧,手,杖,衣,護,矢.  Default: 剣
     - Sorted by item ID, enhancement, superRare. 
+    - Inventory pane is long. 
   - Status updates in real time
 
 #### 8.3.2 Expedition
@@ -581,6 +582,7 @@ inventory = {
   - Inventory has item category tabs: 剣,刀,弓,鎧,手,杖,衣,護,矢.  Default: 剣
   - Sorted by item ID, enhancement, superRare. 
   - Shows count and status
+  - is long pane. 
 - Actions:
   - Sell item stacks
   - Sold items disappear immediately
