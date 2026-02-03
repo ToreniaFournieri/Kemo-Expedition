@@ -313,10 +313,10 @@ inventory = {
   - 
 
 #### 2.4.3 Consumption of arrow
-- Arrow Stacks: * `i.arrow` items have a quantity property. ( this is different from item stacking)
-- Multiple items of the exact same Arrow ID can occupy one single equipment slot.
+- Arrow Stacks. 
+- Multiple items of the exact same Arrow ID (superRare, enhancement, and base item) can occupy one single quiver slot.
 - Consumption: Current_Quantity -= ranged_NoA per attack.
-- Persistence: Quantity does not reset between rooms. It only resets at HOME.
+- Persistence: Quantity does not reset between rooms. Player has to purchase or refill them at HOME.
 
 ## 3. INITIALIZATION 
 
