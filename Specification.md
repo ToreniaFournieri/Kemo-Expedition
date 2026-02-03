@@ -594,10 +594,19 @@ inventory = {
 
 #### 8.3.5 Setting
 - Debug section:
-  - Display win / remaining / total counts for:
-    - reward_bag
-  	-	enhancement_bag
-  	-	superRare_bag
+  - Display
+    - reward_bag:  
+      remaining / total counts 
+      当たり残り(value=1) counts
+  	-	enhancement_bag: 
+      remainjng / total counts
+      伝説の残り(value=4) counts
+      恐ろしい残り(value=5) counts
+      究極の残り(value=6) counts
+  	-	superRare_bag:
+      remainjng / total counts
+      超レア残り(value>0) counts
+
 - Reset:
   - Full reset option
   - Warning required before execution
