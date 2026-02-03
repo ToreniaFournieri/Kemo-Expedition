@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { GameState, GameBags, Item, Character } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { DUNGEONS } from '../data/dungeons';
 import { RACES } from '../data/races';
@@ -15,9 +15,10 @@ interface HomeScreenProps {
   actions: {
     selectDungeon: (dungeonId: number) => void;
     runExpedition: () => void;
-    equipItem: (characterId: number, slotIndex: number, item: Item | null) => void;
+    equipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
     updateCharacter: (characterId: number, updates: Partial<Character>) => void;
-    sellItem: (itemIndex: number) => void;
+    sellStack: (variantKey: string) => void;
+    setVariantStatus: (variantKey: string, status: 'notown') => void;
     buyArrows: (arrowId: number, quantity: number) => void;
     removeQuiverSlot: (slotIndex: number) => void;
     markItemsSeen: () => void;
@@ -83,7 +84,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   ];
 
   // Check for new items
-  const hasNewItems = state.party.inventory.some(item => item.isNew);
+  const hasNewItems = Object.values(state.party.inventory).some(variant => variant.isNew);
 
   // Arrow count for header
   const totalArrows = (state.party.quiverSlots[0]?.quantity ?? 0) + (state.party.quiverSlots[1]?.quantity ?? 0);
@@ -161,7 +162,8 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         {activeTab === 'inventory' && (
           <InventoryTab
             inventory={state.party.inventory}
-            onSellItem={actions.sellItem}
+            onSellStack={actions.sellStack}
+            onSetVariantStatus={actions.setVariantStatus}
           />
         )}
 
@@ -202,7 +204,7 @@ function PartyTab({
   editingCharacter: number | null;
   setEditingCharacter: (i: number | null) => void;
   onUpdateCharacter: (id: number, updates: Partial<Character>) => void;
-  onEquipItem: (characterId: number, slotIndex: number, item: Item | null) => void;
+  onEquipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
 }) {
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
 
@@ -420,22 +422,23 @@ function PartyTab({
             </div>
           </div>
           <div className="space-y-1 max-h-48 overflow-y-auto">
-            {party.inventory
-              .filter(item => item.category !== 'arrow')
-              .map((item, i) => (
+            {Object.entries(party.inventory)
+              .filter(([, v]) => v.status === 'owned' && v.count > 0 && v.item.category !== 'arrow')
+              .map(([key, variant]) => (
                 <button
-                  key={i}
-                  onClick={() => { onEquipItem(char.id, selectingSlot, item); setSelectingSlot(null); }}
+                  key={key}
+                  onClick={() => { onEquipItem(char.id, selectingSlot, key); setSelectingSlot(null); }}
                   className="w-full p-2 text-left text-sm border border-gray-200 rounded bg-white hover:bg-gray-50"
                 >
                   <div className="flex justify-between">
-                    <span className="font-medium">{getItemDisplayName(item)}</span>
-                    <span className="text-xs text-gray-400">[{CATEGORY_NAMES[item.category]}]</span>
+                    <span className="font-medium">{getItemDisplayName(variant.item)}</span>
+                    <span className="text-xs text-gray-400">[{CATEGORY_NAMES[variant.item.category]}]</span>
                   </div>
-                  <div className="text-xs text-gray-500">{getItemStats(item)}</div>
+                  <div className="text-xs text-gray-500">{getItemStats(variant.item)}</div>
+                  {variant.count > 1 && <span className="text-xs text-sub">x{variant.count}</span>}
                 </button>
               ))}
-            {party.inventory.filter(item => item.category !== 'arrow').length === 0 && (
+            {Object.values(party.inventory).filter(v => v.status === 'owned' && v.count > 0 && v.item.category !== 'arrow').length === 0 && (
               <div className="text-gray-400 text-sm text-center py-2">装備可能なアイテムがありません</div>
             )}
           </div>
@@ -603,50 +606,94 @@ function ExpeditionTab({
 
 function InventoryTab({
   inventory,
-  onSellItem,
+  onSellStack,
+  onSetVariantStatus,
 }: {
-  inventory: Item[];
-  onSellItem: (itemIndex: number) => void;
+  inventory: InventoryRecord;
+  onSellStack: (variantKey: string) => void;
+  onSetVariantStatus: (variantKey: string, status: 'notown') => void;
 }) {
+  const [showSold, setShowSold] = useState(false);
+
+  // Separate owned and sold/notown items
+  const ownedItems = Object.entries(inventory).filter(([, v]) => v.status === 'owned' && v.count > 0);
+  const soldItems = Object.entries(inventory).filter(([, v]) => v.status === 'sold');
+  const totalCount = ownedItems.reduce((sum, [, v]) => sum + v.count, 0);
+
   return (
     <div>
-      <div className="text-sm text-gray-500 mb-2">所持品: {inventory.length}個</div>
-      <div className="space-y-1 max-h-96 overflow-y-auto">
-        {inventory.map((item, i) => {
+      <div className="text-sm text-gray-500 mb-2">
+        所持品: {ownedItems.length}種類 ({totalCount}個)
+      </div>
+      <div className="space-y-1 max-h-80 overflow-y-auto mb-4">
+        {ownedItems.map(([key, variant]) => {
+          const { item, count, isNew } = variant;
           const enhMult = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
           const srMult = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
-          const sellPrice = Math.floor(10 * enhMult * srMult);
+          const sellPrice = Math.floor(10 * enhMult * srMult) * count;
 
           return (
             <div
-              key={i}
-              className={`p-2 rounded bg-pane ${item.isNew ? 'border-2 border-accent' : ''}`}
+              key={key}
+              className={`p-2 rounded bg-pane ${isNew ? 'border-2 border-accent' : ''}`}
             >
               <div className="flex justify-between items-start">
                 <div>
                   <div className="flex gap-2 items-center">
-                    <span className={`text-sm ${item.isNew ? 'font-bold' : 'font-medium'}`}>
+                    <span className={`text-sm ${isNew ? 'font-bold' : 'font-medium'}`}>
                       {getItemDisplayName(item)}
                     </span>
+                    <span className="text-xs bg-sub text-white px-1 rounded">x{count}</span>
                     <span className="text-xs text-gray-400">[{CATEGORY_NAMES[item.category]}]</span>
-                    {item.isNew && <span className="text-xs text-accent font-bold">NEW</span>}
+                    {isNew && <span className="text-xs text-accent font-bold">NEW</span>}
                   </div>
                   <div className="text-xs text-gray-500">{getItemStats(item)}</div>
                 </div>
                 <button
-                  onClick={() => onSellItem(i)}
+                  onClick={() => onSellStack(key)}
                   className="text-xs text-accent px-2 py-1 border border-accent rounded flex-shrink-0"
                 >
-                  売却 {sellPrice}G
+                  全売却 {sellPrice}G
                 </button>
               </div>
             </div>
           );
         })}
-        {inventory.length === 0 && (
+        {ownedItems.length === 0 && (
           <div className="text-gray-400 text-sm text-center py-4">アイテムがありません</div>
         )}
       </div>
+
+      {/* Sold items management */}
+      {soldItems.length > 0 && (
+        <div className="border-t border-gray-200 pt-3">
+          <button
+            onClick={() => setShowSold(!showSold)}
+            className="text-xs text-gray-500 flex items-center gap-1"
+          >
+            <span className={`transform transition-transform ${showSold ? 'rotate-180' : ''}`}>▼</span>
+            自動売却設定 ({soldItems.length}種類)
+          </button>
+          {showSold && (
+            <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
+              {soldItems.map(([key, variant]) => (
+                <div key={key} className="p-2 rounded bg-gray-100 flex justify-between items-center">
+                  <div>
+                    <span className="text-sm text-gray-500">{getItemDisplayName(variant.item)}</span>
+                    <span className="text-xs text-red-500 ml-2">自動売却</span>
+                  </div>
+                  <button
+                    onClick={() => onSetVariantStatus(key, 'notown')}
+                    className="text-xs text-sub px-2 py-1 border border-sub rounded"
+                  >
+                    解除
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

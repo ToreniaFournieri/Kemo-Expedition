@@ -9,6 +9,8 @@ import {
   LineageId,
   ExpeditionLog,
   ExpeditionLogEntry,
+  InventoryRecord,
+  getVariantKey,
 } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { executeBattle } from '../game/battle';
@@ -18,8 +20,94 @@ import { drawFromBag, refillBagIfEmpty, createRewardBag, createEnhancementBag, c
 import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 
-const BUILD_NUMBER = 3;
+const BUILD_NUMBER = 4;
 const STORAGE_KEY = 'kemo-expedition-save';
+
+// Helper to calculate sell price for an item
+function calculateSellPrice(item: Item): number {
+  const enhMult = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
+  const srMult = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
+  return Math.floor(10 * enhMult * srMult);
+}
+
+// Helper to add item to inventory (handles stacking and auto-sell)
+function addItemToInventory(
+  inventory: InventoryRecord,
+  item: Item,
+  currentGold: number
+): { inventory: InventoryRecord; gold: number; wasAutoSold: boolean } {
+  const key = getVariantKey(item);
+  const existing = inventory[key];
+
+  // If this variant is marked as sold, auto-sell it
+  if (existing?.status === 'sold') {
+    const sellPrice = calculateSellPrice(item);
+    return {
+      inventory,
+      gold: currentGold + sellPrice,
+      wasAutoSold: true,
+    };
+  }
+
+  // Otherwise add to inventory
+  const newInventory = { ...inventory };
+  if (existing) {
+    newInventory[key] = {
+      ...existing,
+      count: existing.count + 1,
+      isNew: true,
+    };
+  } else {
+    newInventory[key] = {
+      item: { ...item, isNew: undefined },
+      count: 1,
+      status: 'owned',
+      isNew: true,
+    };
+  }
+
+  return { inventory: newInventory, gold: currentGold, wasAutoSold: false };
+}
+
+// Helper to remove one item from inventory
+function removeItemFromInventory(inventory: InventoryRecord, key: string): InventoryRecord {
+  const existing = inventory[key];
+  if (!existing || existing.count <= 0) return inventory;
+
+  const newInventory = { ...inventory };
+  if (existing.count === 1) {
+    // Last item - mark as notown instead of deleting
+    newInventory[key] = { ...existing, count: 0, status: 'notown' };
+  } else {
+    newInventory[key] = { ...existing, count: existing.count - 1 };
+  }
+  return newInventory;
+}
+
+// Helper to convert old inventory format to new format
+function migrateOldInventory(oldInventory: Item[] | InventoryRecord): InventoryRecord {
+  // Check if already in new format
+  if (!Array.isArray(oldInventory)) {
+    return oldInventory;
+  }
+
+  // Convert array to record
+  const newInventory: InventoryRecord = {};
+  for (const item of oldInventory) {
+    const key = getVariantKey(item);
+    if (newInventory[key]) {
+      newInventory[key].count++;
+    } else {
+      newInventory[key] = {
+        item: { ...item, isNew: undefined },
+        count: 1,
+        status: 'owned',
+        isNew: item.isNew,
+      };
+    }
+  }
+  return newInventory;
+}
 
 function loadSavedState(): GameState | null {
   try {
@@ -28,6 +116,10 @@ function loadSavedState(): GameState | null {
       const parsed = JSON.parse(saved);
       // Validate it has required properties
       if (parsed.party && parsed.bags && parsed.buildNumber) {
+        // Migrate old inventory format if needed
+        if (Array.isArray(parsed.party.inventory)) {
+          parsed.party.inventory = migrateOldInventory(parsed.party.inventory);
+        }
         return parsed as GameState;
       }
     }
@@ -72,6 +164,7 @@ function createInitialParty() {
     equipment: [],
   }));
 
+  // Create starter items as inventory record
   const starterItems: Item[] = [
     { ...getItemById(1)!, enhancement: 0, superRare: 0 },
     { ...getItemById(1)!, enhancement: 0, superRare: 0 },
@@ -83,6 +176,20 @@ function createInitialParty() {
     { ...getItemById(40)!, enhancement: 0, superRare: 0 },
   ];
 
+  const inventory: InventoryRecord = {};
+  for (const item of starterItems) {
+    const key = getVariantKey(item);
+    if (inventory[key]) {
+      inventory[key].count++;
+    } else {
+      inventory[key] = {
+        item,
+        count: 1,
+        status: 'owned',
+      };
+    }
+  }
+
   return {
     deityName: '再生の神',
     level: 1,
@@ -92,7 +199,7 @@ function createInitialParty() {
       { item: { ...getItemById(80)!, enhancement: 0, superRare: 0 }, quantity: 50 },
       null,
     ] as [{ item: Item; quantity: number } | null, { item: Item; quantity: number } | null],
-    inventory: starterItems,
+    inventory,
     gold: 100,
   };
 }
@@ -122,9 +229,10 @@ function createInitialState(): GameState {
 type GameAction =
   | { type: 'SELECT_DUNGEON'; dungeonId: number }
   | { type: 'RUN_EXPEDITION' }
-  | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; item: Item | null }
+  | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; itemKey: string | null }
   | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character> }
-  | { type: 'SELL_ITEM'; itemIndex: number }
+  | { type: 'SELL_STACK'; variantKey: string }
+  | { type: 'SET_VARIANT_STATUS'; variantKey: string; status: 'notown' }
   | { type: 'BUY_ARROWS'; arrowId: number; quantity: number }
   | { type: 'REMOVE_QUIVER_SLOT'; slotIndex: number }
   | { type: 'MARK_ITEMS_SEEN' }
@@ -166,6 +274,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let bags = state.bags;
       let finalOutcome: 'victory' | 'defeat' | 'retreat' = 'victory';
       const totalRooms = dungeon.numberOfRooms;
+      let currentInventory = state.party.inventory;
+      let currentGold = state.party.gold;
 
       // Run through all rooms + boss
       for (let room = 1; room <= totalRooms + 1; room++) {
@@ -215,9 +325,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
             const baseItem = getItemById(enemy.dropItemId);
             if (baseItem) {
-              const newItem: Item = { ...baseItem, enhancement: enhVal, superRare: srVal, isNew: true };
+              const newItem: Item = { ...baseItem, enhancement: enhVal, superRare: srVal };
               rewards.push(newItem);
               entry.reward = getItemDisplayName(newItem);
+
+              // Add to inventory (handles auto-sell)
+              const result = addItemToInventory(currentInventory, newItem, currentGold);
+              currentInventory = result.inventory;
+              currentGold = result.gold;
             }
           }
 
@@ -260,7 +375,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...state.party,
           level: newLevel,
           experience: newExp,
-          inventory: [...state.party.inventory, ...rewards],
+          inventory: currentInventory,
+          gold: currentGold,
         },
         lastExpeditionLog: log,
       };
@@ -272,25 +388,32 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const character = state.party.characters[charIndex];
       const newEquipment = [...character.equipment];
-      let newInventory = [...state.party.inventory];
+      let newInventory = { ...state.party.inventory };
 
       // Add old item back to inventory
       const oldItem = newEquipment[action.slotIndex];
       if (oldItem) {
-        newInventory.push(oldItem);
-      }
-
-      // Remove new item from inventory and equip
-      if (action.item) {
-        const invIndex = newInventory.findIndex(
-          i => i.id === action.item!.id && i.enhancement === action.item!.enhancement && i.superRare === action.item!.superRare
-        );
-        if (invIndex !== -1) {
-          newInventory.splice(invIndex, 1);
+        const oldKey = getVariantKey(oldItem);
+        const existing = newInventory[oldKey];
+        if (existing) {
+          newInventory[oldKey] = { ...existing, count: existing.count + 1, status: 'owned' };
+        } else {
+          newInventory[oldKey] = { item: oldItem, count: 1, status: 'owned' };
         }
       }
 
-      newEquipment[action.slotIndex] = action.item;
+      // Remove new item from inventory and equip
+      if (action.itemKey) {
+        const variant = newInventory[action.itemKey];
+        if (variant && variant.count > 0) {
+          newInventory = removeItemFromInventory(newInventory, action.itemKey);
+          newEquipment[action.slotIndex] = { ...variant.item };
+        } else {
+          newEquipment[action.slotIndex] = null;
+        }
+      } else {
+        newEquipment[action.slotIndex] = null;
+      }
 
       const newCharacters = [...state.party.characters];
       newCharacters[charIndex] = { ...character, equipment: newEquipment };
@@ -321,7 +444,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       if (isCharacterChanged) {
         // Return equipment to inventory
-        newInventory = [...state.party.inventory, ...oldChar.equipment.filter((e): e is Item => e !== null)];
+        newInventory = { ...state.party.inventory };
+        for (const item of oldChar.equipment.filter((e): e is Item => e !== null)) {
+          const key = getVariantKey(item);
+          const existing = newInventory[key];
+          if (existing) {
+            newInventory[key] = { ...existing, count: existing.count + 1, status: 'owned' };
+          } else {
+            newInventory[key] = { item, count: 1, status: 'owned' };
+          }
+        }
         newEquipment = [];
       }
 
@@ -333,20 +465,38 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
-    case 'SELL_ITEM': {
-      const item = state.party.inventory[action.itemIndex];
-      if (!item) return state;
+    case 'SELL_STACK': {
+      const variant = state.party.inventory[action.variantKey];
+      if (!variant || variant.count <= 0) return state;
 
-      const enhMult = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
-      const srMult = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
-      const sellPrice = Math.floor(10 * enhMult * srMult);
+      const sellPrice = calculateSellPrice(variant.item) * variant.count;
 
-      const newInventory = [...state.party.inventory];
-      newInventory.splice(action.itemIndex, 1);
+      const newInventory = { ...state.party.inventory };
+      newInventory[action.variantKey] = {
+        ...variant,
+        count: 0,
+        status: 'sold',
+      };
 
       return {
         ...state,
         party: { ...state.party, inventory: newInventory, gold: state.party.gold + sellPrice },
+      };
+    }
+
+    case 'SET_VARIANT_STATUS': {
+      const variant = state.party.inventory[action.variantKey];
+      if (!variant) return state;
+
+      const newInventory = { ...state.party.inventory };
+      newInventory[action.variantKey] = {
+        ...variant,
+        status: action.status,
+      };
+
+      return {
+        ...state,
+        party: { ...state.party, inventory: newInventory },
       };
     }
 
@@ -414,7 +564,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'MARK_ITEMS_SEEN': {
-      const newInventory = state.party.inventory.map(item => ({ ...item, isNew: false }));
+      const newInventory: InventoryRecord = {};
+      for (const [key, variant] of Object.entries(state.party.inventory)) {
+        newInventory[key] = { ...variant, isNew: false };
+      }
       return {
         ...state,
         party: { ...state.party, inventory: newInventory },
@@ -465,16 +618,20 @@ export function useGameState() {
       dispatch({ type: 'RUN_EXPEDITION' });
     }, []),
 
-    equipItem: useCallback((characterId: number, slotIndex: number, item: Item | null) => {
-      dispatch({ type: 'EQUIP_ITEM', characterId, slotIndex, item });
+    equipItem: useCallback((characterId: number, slotIndex: number, itemKey: string | null) => {
+      dispatch({ type: 'EQUIP_ITEM', characterId, slotIndex, itemKey });
     }, []),
 
     updateCharacter: useCallback((characterId: number, updates: Partial<Character>) => {
       dispatch({ type: 'UPDATE_CHARACTER', characterId, updates });
     }, []),
 
-    sellItem: useCallback((itemIndex: number) => {
-      dispatch({ type: 'SELL_ITEM', itemIndex });
+    sellStack: useCallback((variantKey: string) => {
+      dispatch({ type: 'SELL_STACK', variantKey });
+    }, []),
+
+    setVariantStatus: useCallback((variantKey: string, status: 'notown') => {
+      dispatch({ type: 'SET_VARIANT_STATUS', variantKey, status });
     }, []),
 
     buyArrows: useCallback((arrowId: number, quantity: number) => {

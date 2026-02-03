@@ -121,6 +121,24 @@ export interface Item extends ItemDef {
   isNew?: boolean; // For highlighting newly acquired items
 }
 
+// Item Stacking System
+export type ItemVariantStatus = 'owned' | 'sold' | 'notown';
+
+export interface InventoryVariant {
+  item: Item;
+  count: number;
+  status: ItemVariantStatus;
+  isNew?: boolean;
+}
+
+// Helper to create variant key
+export function getVariantKey(item: { id: number; enhancement: number; superRare: number }): string {
+  return `${item.id}-${item.enhancement}-${item.superRare}`;
+}
+
+// Inventory as a record of variants
+export type InventoryRecord = Record<string, InventoryVariant>;
+
 // Character Types
 export interface Character {
   id: number;
@@ -157,7 +175,7 @@ export interface Party {
   experience: number;
   characters: Character[];
   quiverSlots: [QuiverSlot | null, QuiverSlot | null];
-  inventory: Item[];
+  inventory: InventoryRecord;
   gold: number;
 }
 
