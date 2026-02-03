@@ -442,5 +442,6 @@ multiplier them. (ex. Enemy attack is `e.fire`, then applies enemy's `r.fire` va
 
 ## 8. UI
 
+- Theme color: White background , Black letters, Blue accent color.
 
 **END OF SPECIFICATION**
