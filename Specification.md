@@ -652,8 +652,8 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | `p.enemy_attack_values` |
   - Sold items disappear immediately
 - Auto-sold list (folded as default)
   - Sort and filter is affected in this list too. (but shows state:`sold` item)
-  - Item 解除: `sold` status to `notown`
-
+  - Item: The name, count, and status are left-aligned, while the unlock button is right-aligned on the same line. Unlock (解除): state `sold` -> state`notown` 
+    - ex. 名工のロングソード x3 | 近攻+19     [解除]
 
 #### 8.3.4 Shop
 - Purchase basic items:
