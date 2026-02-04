@@ -413,10 +413,10 @@ inventory = {
 
 - Persistence through an expedition:'Party_HP', remaining of arrows.
 
-## 5.1 Logs
+### 5.1 Logs
 - `f.quick_summary`:
   - `p.outcome_of_expedition`: 勝利/敗北/引分
-  - `p.remaining_HP`: 340/1000 -> 34 (percentage)
+  - `p.remaining_HP`: remaining party HP/ max party HP : 340/1000
   - `p.reached_room` / `p.number_of_rooms` : 4/6
   - `p.gained _experience`: ex. +234
   - `p.retrieving_trophies`: Shows items. if party is defeated, no trophies are shown.
@@ -424,7 +424,7 @@ inventory = {
 ```
 前回の探検結果: `p.dungeon_name`
 ▼
-`p.outcome_of_expedition` | 残HP: `p.remaining_HP` % | `p.reached_room` / `p.number_of_rooms` 部屋 | EXP: `p.gained _experience`
+`p.outcome_of_expedition` | 残HP: `p.remaining_HP` | `p.reached_room` / `p.number_of_rooms` 部屋 | EXP: `p.gained _experience`
 獲得アイテム: `p.retrieving_trophies`
 ```
 
@@ -436,10 +436,11 @@ inventory = {
   - `p.total_damage_dealt`: Shows total damage dealt
   - `p.total_damage_taken`: Shows total damage taken
   - `p.reward_from_room`: Shows item.
+  - `p.remaining_HP_of_room`: Party HP of remaining: like 430/ 1000
 
 ```
-Room X: `p.enemy_name` | HP:`p.enemy_HP` | `p.enemy_attack_values` |
-`p.outcome_of_room`
+Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | `p.enemy_attack_values` |
+`p.outcome_of_room` | 残HP:`p.remaining_HP_of_room`
 ▼
 与ダメ: `p.total_damage_dealt` | 被ダメ: `p.total_damage_taken`  | 獲得: `p.reward_from_room`. 
 ```
