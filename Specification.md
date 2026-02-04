@@ -432,7 +432,7 @@ inventory = {
   - `p.enemy_name`: Name of enemy. if it is a Boss, add (BOSS).
   - `p.enemy_HP`: Shows enemy's `d.HP` (max HP)
   - `p.enemy_attack_values`: Shows `f.damage_calculation` for each range. (this function considers Party defense and buffs)  ex. 300/0/340
-  - `p.outcome_of_room`: 勝利/敗北/引分
+  - `p.outcome_of_room`: Victory/Defeat/Draw -> 勝利/敗北/引分
   - `p.total_damage_dealt`: Shows total damage dealt
   - `p.total_damage_taken`: Shows total damage taken
   - `p.reward_from_room`: Shows item.
