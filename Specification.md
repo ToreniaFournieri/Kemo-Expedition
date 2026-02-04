@@ -483,18 +483,25 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 
 **functions of attack**
 - `f.damage_calculation`: (actor: , opponent: , phase: )
-	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) ))  x actor.`f.NoA` x actor.`f.abilities_offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x actor.`f.abilities_offense_amplifier`
+	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) )) x actor.`f.abilities_offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x actor.`f.abilities_offense_amplifier`
 
-**Targeting system** for ranged and close phase. 
+**Row-based modifier** 
+- for LONG and CLOSE phase.
 
-|row| Thread weight | Attack potency  |
-|——|————-|
+|row| Thread weight | `d.attack_potency` |
+|——|————-|-------|
 |1|16| 1.00 |
 |2|8| 0.85 |
 |3|4| 0.72 |
 |4|2| 0.61 |
 |5|1| 0.52 |
 |6|1| 0.44 |
+
+- `g.threat_weight_bag` Threat Weight (Passive Targeting) 
+  - A numerical value assigned to a unit based on their row position that determines the size of their "slice" in the enemy's targeting pool.
+
+- `d.attack_potency` (Offensive Multiplier)
+  - A global damage modifier applied to a unit’s final output based on their current row position.
 
 `f.targeting`:
  Gets one ticket from `g.threat_weight_bag`. (Contains 1 to 6 number ticket)
@@ -510,7 +517,8 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 
 **Enemy action**
 - Enemy always moves first.
-- Current party.`d.HP` -= `f.damage_calculation` (actor: enemy , opponent: party, phase: phase )
+- get `f.targeting` `f.NoA` times -> target character 
+- Current party.`d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase )
 - If currenr party.`d.HP` =< 0, Defeat. 
 
 - **Counter:** IF character.`a.counter` and take damage in CLOSE phase, the character attacks to enemy. (using `f.damage_calculation`)
@@ -524,7 +532,7 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
   - Execution: * Subtract ranged_NoA from the Quiver (following Slot 1 -> Slot 2 order).
     - If quantity < ranged_NoA, the character attacks with a reduced NoA equal to the remaining quantity.
 
-- Current enemy.`d.HP` -= `f.damage_calculation` (actor: character, opponent: enemy, phase: phase )
+- Current enemy.`d.HP` -= `f.damage_calculation` (actor: character, opponent: enemy, phase: phase ) x `f.NoA` x `d.attack_potency`
 - If enemy.`d.HP` =< 0, Victory.
   - Party damage reduction abilities apply after defense subtraction.
 
