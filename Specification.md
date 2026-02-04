@@ -27,7 +27,7 @@
 | `i.`   | **I**tem Category |
 | `p.`   | **P**arty/Expedition Instance Data |
 | `r.`   | Elemental **R**esistance Attribute |
-| `s.`   | Item **S**tate (Inventory status) |
+| `s.`   | Item **S**tate |
 
 
 ### 2.1 Global constants
