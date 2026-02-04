@@ -609,17 +609,17 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
     - Each entry shows its unique bonus (ex. 🐶ケイナイアン | 護符 x1.3, 弓 x1.1)
   - Main Class selection:
     - Displays a list of available Classes.
-    - Each entry shows its unique bonus (main bonus, main/sub bonuses)
+    - Each entry shows its name and unique bonus (main bonus and main/sub bonuses)
       - If Main Class == Sub Class, then show master bonus instead of main bonus.
   - Sub Class selection:
     - Displays a list of available Classes.
-    - Each entry shows its unique bonus (main/sub bonuses)
+    - Each entry shows its name and unique bonus (only main/sub bonuses)
   - Predisposition selection:
     - Displays a list of available Predispositions.
-    - Each entry shows its unique bonus.
+    - Each entry shows its name and unique bonus.
   - Lineage selection:
     - Displays a list of available Lineage.
-    - Each entry shows its unique bonus.
+    - Each entry shows its name and unique bonus.
 - **Edit Confirmation Rules:**
   - **Done (完了):**
     - Saves all changes to Race, Class, and Name.
