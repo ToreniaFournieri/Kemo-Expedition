@@ -645,15 +645,15 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
     	2.	Enhancement
     	3.	SuperRare
     - Item Row: The name, count, and status are left-aligned on **the same line**.
-     - ex. 名工のロングソード x3 | 近攻+19
+    	- ex. 名工のロングソード x3 | 近攻+19
     - Inventory pane shows at least 10 items
+  - Equipped item: The name and status are left-aligned, item type is right-aligned on **the same line**.
   - **Inventory Sort Logic (within category):**
-	- **Order:** Descending order by Priority.
-	- **Priority:**
-   1. **Base Item ID:** Higher-tier base items (e.g., Mythril Sword > Iron Sword) appear first.
-   2.  **Super Rare Title:** Items with Super Rare titles are prioritized within their base item ID.
-   3.  **Enhancement Tier:** Among the same Item ID, higher enhancements (e.g., 究極の > 伝説の) appear higher.
- - Equipped item: The name and status are left-aligned, item type is right-aligned on **the same line**.
+	- Order: Descending order by Priority.
+	- Priority:
+	   1. Base Item ID: Higher-tier base items (e.g., Mythril Sword > Iron Sword) appear first.
+	   2. Super Rare Title: Items with Super Rare titles are prioritized within their base item ID.
+	   3. Enhancement Tier: Among the same Item ID, higher enhancements (e.g., 究極の > 伝説の) appear higher.
 
 
 #### 8.3.2 Expedition
@@ -684,9 +684,9 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
   - **Inventory Sort Logic (within category):**
 	- **Order:** Descending order by Priority.
 	- **Priority:**
-   1. **Base Item ID:** Higher-tier base items (e.g., Mythril Sword > Iron Sword) appear first.
-   2.  **Super Rare Title:** Items with Super Rare titles are prioritized within their base item ID.
-   3.  **Enhancement Tier:** Among the same Item ID, higher enhancements (e.g., 究極の > 伝説の) appear higher.
+	   1. Base Item ID: Higher-tier base items (e.g., Mythril Sword > Iron Sword) appear first.
+	   2. Super Rare Title: Items with Super Rare titles are prioritized within their base item ID.
+	   3. Enhancement Tier: Among the same Item ID, higher enhancements (e.g., 究極の > 伝説の) appear higher.
   - Item Row: The name, count, and status are left-aligned, while the sell all button is right-aligned on the same line 
     - ex. 名工のロングソード x3 | 近攻+19     [全売却 39G]
   - Sell all button(全売却): Sells all item, and Changes item state from `s.owned` to `s.sold`
@@ -694,7 +694,8 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 - Actions:
   - Sell item stacks
   - Sold items disappear immediately
-- Auto-sold list (Collapsed by default; tap to expand)
+
+- **Auto-sold list** (Collapsed by default; tap to expand)
   - Sort and filter settings also apply to this list (displaying items with the state:`s.sold`)
   - Item Row: The name, count, and status are left-aligned, while the Unlock button is right-aligned on the same line
     - ex. 名工のロングソード x3 | 近攻+19     [解除]
