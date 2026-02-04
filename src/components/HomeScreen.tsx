@@ -191,17 +191,18 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         {activeTab === 'inventory' && (
           <InventoryTab
             inventory={state.party.inventory}
+            gold={state.party.gold}
+            quiverSlots={state.party.quiverSlots}
             onSellStack={actions.sellStack}
             onSetVariantStatus={actions.setVariantStatus}
+            onBuyArrows={actions.buyArrows}
+            onRemoveQuiverSlot={actions.removeQuiverSlot}
           />
         )}
 
         {activeTab === 'shop' && (
           <ShopTab
             gold={state.party.gold}
-            quiverSlots={state.party.quiverSlots}
-            onBuyArrows={actions.buyArrows}
-            onRemoveQuiverSlot={actions.removeQuiverSlot}
           />
         )}
 
@@ -413,12 +414,12 @@ function PartyTab({
                 }`}
               >
                 {item ? (
-                  <div>
-                    <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
+                    <span>
                       <span className="font-medium">{getItemDisplayName(item)}</span>
-                      <span className="text-xs text-gray-400">[{CATEGORY_NAMES[item.category]}]</span>
-                    </div>
-                    <div className="text-xs text-gray-500">{getItemStats(item)}</div>
+                      <span className="text-xs text-gray-500"> | {getItemStats(item)}</span>
+                    </span>
+                    <span className="text-xs text-gray-400">[{CATEGORY_NAMES[item.category]}]</span>
                   </div>
                 ) : (
                   <span className="text-gray-400">空きスロット {i + 1}</span>
@@ -472,7 +473,7 @@ function PartyTab({
                 </button>
               ))}
             </div>
-            <div className="space-y-1 min-h-[200px] max-h-48 overflow-y-auto">
+            <div className="space-y-1 min-h-[320px] max-h-96 overflow-y-auto">
               {filteredItems.map(([key, variant]) => (
                 <button
                   key={key}
@@ -647,12 +648,20 @@ function ExpeditionTab({
 
 function InventoryTab({
   inventory,
+  gold,
+  quiverSlots,
   onSellStack,
   onSetVariantStatus,
+  onBuyArrows,
+  onRemoveQuiverSlot,
 }: {
   inventory: InventoryRecord;
+  gold: number;
+  quiverSlots: GameState['party']['quiverSlots'];
   onSellStack: (variantKey: string) => void;
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
+  onBuyArrows: (arrowId: number, quantity: number) => void;
+  onRemoveQuiverSlot: (slotIndex: number) => void;
 }) {
   const [showSold, setShowSold] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('sword');
@@ -668,10 +677,12 @@ function InventoryTab({
   );
   const totalCount = allOwnedItems.reduce((sum, [, v]) => sum + v.count, 0);
 
+  const arrows = ITEMS.filter(i => i.category === 'arrow');
+
   return (
     <div>
       <div className="text-sm text-gray-500 mb-2">
-        所持品: {allOwnedItems.length}種類 ({totalCount}個)
+        所持品: {allOwnedItems.length}種類 ({totalCount}個) | {gold}G
       </div>
 
       {/* Category tabs */}
@@ -691,39 +702,107 @@ function InventoryTab({
         ))}
       </div>
 
-      <div className="space-y-1 min-h-[280px] max-h-80 overflow-y-auto mb-4">
-        {filteredOwnedItems.map(([key, variant]) => {
-          const { item, count, isNew } = variant;
-          const enhMult = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
-          const srMult = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
-          const sellPrice = Math.floor(10 * enhMult * srMult) * count;
-
-          return (
-            <div
-              key={key}
-              className={`p-2 rounded bg-pane flex justify-between items-center ${isNew ? 'border-2 border-accent' : ''}`}
-            >
-              <div className="flex items-center gap-2">
-                <span className={`text-sm ${isNew ? 'font-bold' : 'font-medium'}`}>
-                  {getItemDisplayName(item)}
-                </span>
-                <span className="text-xs text-gray-500">x{count}</span>
-                <span className="text-xs text-gray-400">| {getItemStats(item)}</span>
-                {isNew && <span className="text-xs text-accent font-bold">NEW</span>}
+      {/* Arrow category: Show quiver management */}
+      {selectedCategory === 'arrow' && (
+        <div className="mb-4">
+          <div className="text-sm font-medium mb-2">矢筒</div>
+          <div className="space-y-2 mb-4">
+            {quiverSlots.map((slot, i) => (
+              <div key={i} className="p-2 bg-pane rounded flex justify-between items-center">
+                {slot ? (
+                  <>
+                    <div>
+                      <span className="text-sm font-medium">{slot.item.name}</span>
+                      <span className="text-sm text-gray-500"> : {slot.quantity}本</span>
+                      <span className="text-xs text-gray-400 ml-2">| {getItemStats(slot.item)}</span>
+                    </div>
+                    <button
+                      onClick={() => onRemoveQuiverSlot(i)}
+                      className="text-xs text-red-500 px-2 py-1 border border-red-300 rounded"
+                    >
+                      破棄
+                    </button>
+                  </>
+                ) : (
+                  <span className="text-sm text-gray-400">空きスロット {i + 1}</span>
+                )}
               </div>
-              <button
-                onClick={() => onSellStack(key)}
-                className="text-xs text-accent px-2 py-1 border border-accent rounded flex-shrink-0"
+            ))}
+          </div>
+
+          <div className="text-sm font-medium mb-2">矢を購入 (1本 = 2G)</div>
+          <div className="space-y-2">
+            {arrows.map(arrow => (
+              <div key={arrow.id} className="p-2 bg-pane rounded">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <span className="text-sm font-medium">{arrow.name}</span>
+                    <span className="text-xs text-gray-500 ml-2">
+                      | 遠攻+{arrow.rangedAttack}
+                      {arrow.elementalOffense && arrow.elementalOffense !== 'none' &&
+                        ` ${({ fire: '炎', ice: '氷', thunder: '雷' })[arrow.elementalOffense]}属性`
+                      }
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => onBuyArrows(arrow.id, 10)}
+                      disabled={gold < 20}
+                      className="text-xs text-sub px-2 py-1 border border-sub rounded disabled:opacity-50"
+                    >
+                      10本
+                    </button>
+                    <button
+                      onClick={() => onBuyArrows(arrow.id, 50)}
+                      disabled={gold < 100}
+                      className="text-xs text-sub px-2 py-1 border border-sub rounded disabled:opacity-50"
+                    >
+                      50本
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Regular item list (non-arrow categories) */}
+      {selectedCategory !== 'arrow' && (
+        <div className="space-y-1 min-h-[280px] max-h-80 overflow-y-auto mb-4">
+          {filteredOwnedItems.map(([key, variant]) => {
+            const { item, count, isNew } = variant;
+            const enhMult = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
+            const srMult = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
+            const sellPrice = Math.floor(10 * enhMult * srMult) * count;
+
+            return (
+              <div
+                key={key}
+                className={`p-2 rounded bg-pane flex justify-between items-center ${isNew ? 'border-2 border-accent' : ''}`}
               >
-                全売却 {sellPrice}G
-              </button>
-            </div>
-          );
-        })}
-        {filteredOwnedItems.length === 0 && (
-          <div className="text-gray-400 text-sm text-center py-4">このカテゴリにアイテムがありません</div>
-        )}
-      </div>
+                <div className="flex items-center gap-2">
+                  <span className={`text-sm ${isNew ? 'font-bold' : 'font-medium'}`}>
+                    {getItemDisplayName(item)}
+                  </span>
+                  <span className="text-xs text-gray-500">x{count}</span>
+                  <span className="text-xs text-gray-400">| {getItemStats(item)}</span>
+                  {isNew && <span className="text-xs text-accent font-bold">NEW</span>}
+                </div>
+                <button
+                  onClick={() => onSellStack(key)}
+                  className="text-xs text-accent px-2 py-1 border border-accent rounded flex-shrink-0"
+                >
+                  全売却 {sellPrice}G
+                </button>
+              </div>
+            );
+          })}
+          {filteredOwnedItems.length === 0 && (
+            <div className="text-gray-400 text-sm text-center py-4">このカテゴリにアイテムがありません</div>
+          )}
+        </div>
+      )}
 
       {/* Sold items management */}
       {allSoldItems.length > 0 && (
@@ -764,82 +843,16 @@ function InventoryTab({
 
 function ShopTab({
   gold,
-  quiverSlots,
-  onBuyArrows,
-  onRemoveQuiverSlot,
 }: {
   gold: number;
-  quiverSlots: GameState['party']['quiverSlots'];
-  onBuyArrows: (arrowId: number, quantity: number) => void;
-  onRemoveQuiverSlot: (slotIndex: number) => void;
 }) {
-  const arrows = ITEMS.filter(i => i.category === 'arrow');
-
   return (
     <div>
       <div className="text-sm text-gray-500 mb-4">所持金: {gold}G</div>
 
-      <div className="mb-4">
-        <div className="text-sm font-medium mb-2">矢筒</div>
-        <div className="space-y-2">
-          {quiverSlots.map((slot, i) => (
-            <div key={i} className="p-2 bg-pane rounded flex justify-between items-center">
-              {slot ? (
-                <>
-                  <div>
-                    <span className="text-sm font-medium">{slot.item.name}</span>
-                    <span className="text-sm text-gray-500"> : {slot.quantity}本</span>
-                    <div className="text-xs text-gray-400">{getItemStats(slot.item)}</div>
-                  </div>
-                  <button
-                    onClick={() => onRemoveQuiverSlot(i)}
-                    className="text-xs text-red-500 px-2 py-1 border border-red-300 rounded"
-                  >
-                    破棄
-                  </button>
-                </>
-              ) : (
-                <span className="text-sm text-gray-400">空きスロット {i + 1}</span>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <div className="text-sm font-medium mb-2">矢を購入 (1本 = 2G)</div>
-        <div className="space-y-2">
-          {arrows.map(arrow => (
-            <div key={arrow.id} className="p-2 bg-pane rounded">
-              <div className="flex justify-between items-center">
-                <div>
-                  <span className="text-sm font-medium">{arrow.name}</span>
-                  <div className="text-xs text-gray-500">
-                    遠攻+{arrow.rangedAttack}
-                    {arrow.elementalOffense && arrow.elementalOffense !== 'none' &&
-                      ` ${({ fire: '炎', ice: '氷', thunder: '雷' })[arrow.elementalOffense]}属性`
-                    }
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => onBuyArrows(arrow.id, 10)}
-                    disabled={gold < 20}
-                    className="text-xs text-sub px-2 py-1 border border-sub rounded disabled:opacity-50"
-                  >
-                    10本
-                  </button>
-                  <button
-                    onClick={() => onBuyArrows(arrow.id, 50)}
-                    disabled={gold < 100}
-                    className="text-xs text-sub px-2 py-1 border border-sub rounded disabled:opacity-50"
-                  >
-                    50本
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+      <div className="bg-pane rounded-lg p-4">
+        <div className="text-sm text-gray-500 text-center py-8">
+          矢の購入は「所持品」タブの「矢」カテゴリから行えます。
         </div>
       </div>
     </div>
