@@ -81,12 +81,12 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'Party_HP', 'Par
 
 #### 2.2.1 Character 
 
--A character is defined by Race, Class and Predisposition
+- A character is defined by Race, Class and Predisposition
   - Race defines base status
-	- Class defines combat behavior modifiers and equipment bonuses
-	- Predisposition defines additional modifiers
-	- Characters have no individual HP
-	- All defensive effects ultimately modify party-wide parameters
+  - Class defines combat behavior modifiers and equipment bonuses
+  - Predisposition defines additional modifiers
+  - Characters have no individual HP
+  - All defensive effects ultimately modify party-wide parameters
 
 **Base Status Parameters**
 - Each character has the following base status values: 
