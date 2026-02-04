@@ -570,47 +570,53 @@ function ExpeditionTab({
               )}
 
               <div className="border-t border-gray-200 pt-2 space-y-2">
-                {state.lastExpeditionLog.entries.map((entry, i) => (
-                  <div key={i} className="bg-white rounded overflow-hidden">
-                    <button
-                      onClick={() => setExpandedRoom(expandedRoom === i ? null : i)}
-                      className="w-full text-left p-2 text-xs"
-                    >
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium">Room {entry.room}: {entry.enemyName}</span>
-                        <span className={`transform transition-transform ${expandedRoom === i ? 'rotate-180' : ''}`}>▼</span>
-                      </div>
-                      <div className="text-gray-500 mt-1">
-                        敵HP:{entry.enemyHP} | 敵攻撃:{entry.enemyAttackValues}
-                      </div>
-                      <div className="flex justify-between items-center mt-1">
-                        <span className={
-                          entry.outcome === 'victory' ? 'text-green-600 font-medium' :
-                          entry.outcome === 'defeat' ? 'text-red-600 font-medium' : 'text-yellow-600 font-medium'
-                        }>
-                          {entry.outcome === 'victory' ? '勝利' :
-                           entry.outcome === 'defeat' ? '敗北' : '引分'}
-                        </span>
-                        <span className="text-gray-500">残HP: {entry.remainingPartyHP}/{entry.maxPartyHP}</span>
-                      </div>
-                      <div className="text-gray-500 mt-1">
-                        与ダメ: {entry.damageDealt} | 被ダメ: {entry.damageTaken}
-                        {entry.reward && <span className="text-accent"> | 獲得: {entry.reward}</span>}
-                      </div>
-                    </button>
-                    {expandedRoom === i && entry.details && (
-                      <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
-                        <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
-                        {entry.details.map((log, j) => (
-                          <div key={j} className="text-gray-600">
-                            <span className="text-gray-400">[{log.phase}]</span> {log.actor}: {log.action}
-                            {log.damage !== undefined && <span className="text-accent"> ({log.damage}ダメージ)</span>}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                {[...state.lastExpeditionLog.entries].reverse().map((entry, i, arr) => {
+                  const originalIndex = arr.length - 1 - i;
+                  return (
+                    <div key={originalIndex} className="bg-white rounded overflow-hidden">
+                      <button
+                        onClick={() => setExpandedRoom(expandedRoom === originalIndex ? null : originalIndex)}
+                        className="w-full text-left p-2 text-xs"
+                      >
+                        <div className="flex justify-between items-center">
+                          <span>
+                            <span className="font-medium">Room {entry.room}: {entry.enemyName}</span>
+                            <span className="text-gray-500"> | 敵HP:{entry.enemyHP} | 残HP:{entry.remainingPartyHP}/{entry.maxPartyHP}</span>
+                          </span>
+                          <span className="flex items-center gap-2">
+                            <span className={
+                              entry.outcome === 'victory' ? 'text-green-600 font-medium' :
+                              entry.outcome === 'defeat' ? 'text-red-600 font-medium' : 'text-yellow-600 font-medium'
+                            }>
+                              {entry.outcome === 'victory' ? '勝利' :
+                               entry.outcome === 'defeat' ? '敗北' : '引分'}
+                            </span>
+                            <span className={`transform transition-transform ${expandedRoom === originalIndex ? 'rotate-180' : ''}`}>▼</span>
+                          </span>
+                        </div>
+                        <div className="text-gray-500 mt-1">
+                          敵攻撃:{entry.enemyAttackValues} | 与ダメ:{entry.damageDealt} | 被ダメ:{entry.damageTaken}
+                          {entry.reward && <span className="text-accent"> | 獲得:{entry.reward}</span>}
+                        </div>
+                      </button>
+                      {expandedRoom === originalIndex && entry.details && (
+                        <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
+                          <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
+                          {entry.details.map((log, j) => {
+                            const phaseLabel = log.phase === 'long' ? '遠' : log.phase === 'mid' ? '魔' : '近';
+                            const actorLabel = log.actor === 'enemy' ? '敵' : '味方';
+                            return (
+                              <div key={j} className="text-gray-600">
+                                <span className="text-gray-400">[{phaseLabel}]</span> {actorLabel}: {log.action}
+                                {log.damage !== undefined && <span className="text-accent"> ({log.damage}ダメージ)</span>}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
