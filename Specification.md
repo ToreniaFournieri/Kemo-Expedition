@@ -416,15 +416,16 @@ inventory = {
 ### 5.1 Logs
 - `f.quick_summary`:
   - `p.outcome_of_expedition`: 勝利/敗北/引分
-  - `p.remaining_HP`: remaining party HP/ max party HP : 340/1000
+  - `p.remaining_HP`: remaining party HP/ max party HP : `340/ 1000`
   - `p.reached_room` / `p.number_of_rooms` : 4/6
-  - `p.gained _experience`: ex. +234
-  - `p.retrieving_trophies`: Shows items. if party is defeated, no trophies are shown.
+  - `p.gained_experience`: ex. +234
+  - `p.auto-sell_profit`: Amount of Auto-sell items. ex. 1,224G
+  - `p.retrieving_trophies`: Shows items by comma-separated.
 
 ```
 前回の探検結果: `p.dungeon_name`
 ▼
-`p.outcome_of_expedition` | 残HP: `p.remaining_HP` | `p.reached_room` / `p.number_of_rooms` 部屋 | EXP: `p.gained _experience`
+`p.outcome_of_expedition` | 残HP: `p.remaining_HP` | `p.reached_room` / `p.number_of_rooms` 部屋 | EXP: `p.gained_experience` | 自動売却額: `p.auto-sell_profit`
 獲得アイテム: `p.retrieving_trophies`
 ```
 
@@ -531,7 +532,7 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | `p.enemy_attack_values` |
 
 - **Item Retrieval Logic:**
   - Items are stacked by (superRare, enhancement, and base item) and has state
-  - *State:`sold` Auto-Sell:* If a dropped item matches a rule with state:`sold`, it is sold immediately (not added to inventory)
+  - *State:`sold` Auto-Sell:* If a dropped item matches a rule with state:`sold`, it is sold immediately (not added to inventory, gain Gold)
   - *State:`owned` Existing Items:* If the item is already in the inventory, increment the item count
   - *State:(no record) New Items:* If no record for the item exists, the system generates the item and sets it to state:`owned`
 
