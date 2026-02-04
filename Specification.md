@@ -488,8 +488,8 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 **Row-based modifier** 
 - for LONG and CLOSE phase.
 
-|row| Thread weight | `d.attack_potency` |
-|——|————-|-------|
+|row | Thread weight | `d.attack_potency` |
+|---|---|-----|
 |1|16| 1.00 |
 |2|8| 0.85 |
 |3|4| 0.72 |
