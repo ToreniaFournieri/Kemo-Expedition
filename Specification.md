@@ -72,20 +72,12 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'Party_HP', 'Par
 - Characters can change their race, class, and name at any time while at HOME.
 
 - id: int
+- name: string
+- races
 - main_class
 - sub_class
-- name: string
-- b.vitality 
-- b.strength 
-- b.intelligence 
-- b.mind
-- d.ranged_attack
-- d.magical_attack
-- d.melee_attack
-- d.ranged_NoA
-- d.magical_NoA
-- d.melee_NoA
-- maximum_equipped_item:
+- predisposition
+- lineage
 
 *Note:*
 - Individual character has no level, hp, nor defensive parameters
