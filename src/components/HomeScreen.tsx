@@ -79,17 +79,17 @@ const CATEGORY_SHORT_NAMES: Record<string, string> = {
 const CATEGORY_ORDER = ['sword', 'katana', 'archery', 'armor', 'gauntlet', 'wand', 'robe', 'amulet', 'arrow'];
 const EQUIP_CATEGORY_ORDER = ['sword', 'katana', 'archery', 'armor', 'gauntlet', 'wand', 'robe', 'amulet']; // Excluding arrow
 
-// Sort items by Item ID, then Enhancement, then SuperRare
+// Sort items by descending priority: Item ID (higher first), SuperRare (higher first), Enhancement (higher first)
 function sortInventoryItems(items: [string, InventoryVariant][]): [string, InventoryVariant][] {
   return [...items].sort((a, b) => {
     const itemA = a[1].item;
     const itemB = b[1].item;
-    // Sort by Item ID first
-    if (itemA.id !== itemB.id) return itemA.id - itemB.id;
-    // Then by Enhancement
-    if (itemA.enhancement !== itemB.enhancement) return itemA.enhancement - itemB.enhancement;
-    // Then by SuperRare
-    return itemA.superRare - itemB.superRare;
+    // 1. Higher-tier base items first (descending by ID)
+    if (itemA.id !== itemB.id) return itemB.id - itemA.id;
+    // 2. SuperRare titles prioritized within same ID (descending)
+    if (itemA.superRare !== itemB.superRare) return itemB.superRare - itemA.superRare;
+    // 3. Higher enhancement tiers first (descending)
+    return itemB.enhancement - itemA.enhancement;
   });
 }
 
@@ -240,6 +240,8 @@ function PartyTab({
 }) {
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
   const [equipCategory, setEquipCategory] = useState('sword');
+  const [pendingEdits, setPendingEdits] = useState<Partial<Character> | null>(null);
+  const [showEditConfirm, setShowEditConfirm] = useState(false);
 
   const char = party.characters[selectedCharacter];
   const stats = characterStats[selectedCharacter];
@@ -277,28 +279,91 @@ function PartyTab({
       {/* Character details */}
       <div className="bg-pane rounded-lg p-4 mb-4">
         <div className="flex justify-between items-center mb-2">
-          <input
-            type="text"
-            value={char.name}
-            onChange={(e) => onUpdateCharacter(char.id, { name: e.target.value })}
-            className="text-lg font-bold bg-transparent border-b border-transparent hover:border-gray-300 focus:border-sub focus:outline-none"
-          />
-          <button
-            onClick={() => setEditingCharacter(editingCharacter === selectedCharacter ? null : selectedCharacter)}
-            className="text-sm text-sub"
-          >
-            {editingCharacter === selectedCharacter ? '完了' : '編集'}
-          </button>
+          {editingCharacter === selectedCharacter ? (
+            <input
+              type="text"
+              value={pendingEdits?.name ?? char.name}
+              onChange={(e) => setPendingEdits({ ...pendingEdits, name: e.target.value })}
+              className="text-lg font-bold bg-transparent border-b border-sub focus:outline-none"
+            />
+          ) : (
+            <span className="text-lg font-bold">{char.name}</span>
+          )}
+          {editingCharacter === selectedCharacter ? (
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowEditConfirm(true)}
+                className="text-sm text-white bg-sub px-3 py-1 rounded"
+              >
+                完了
+              </button>
+              <button
+                onClick={() => {
+                  setPendingEdits(null);
+                  setEditingCharacter(null);
+                }}
+                className="text-sm text-gray-600 bg-gray-200 px-3 py-1 rounded"
+              >
+                取消
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                setPendingEdits({});
+                setEditingCharacter(selectedCharacter);
+              }}
+              className="text-sm text-sub"
+            >
+              編集
+            </button>
+          )}
         </div>
 
-        {editingCharacter === selectedCharacter ? (
+        {/* Edit confirmation dialog */}
+        {showEditConfirm && (
+          <div className="mb-3 p-3 bg-orange-50 border border-orange-200 rounded">
+            <div className="text-sm text-accent mb-2">
+              ⚠️ 変更を保存すると装備が全て外れます。よろしいですか？
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  // Apply pending edits
+                  if (pendingEdits && Object.keys(pendingEdits).length > 0) {
+                    onUpdateCharacter(char.id, pendingEdits);
+                  }
+                  // Unequip all items
+                  for (let i = 0; i < 4; i++) {
+                    if (char.equipment[i]) {
+                      onEquipItem(char.id, i, null);
+                    }
+                  }
+                  setPendingEdits(null);
+                  setEditingCharacter(null);
+                  setShowEditConfirm(false);
+                }}
+                className="flex-1 py-1 bg-accent text-white rounded text-sm font-medium"
+              >
+                保存する
+              </button>
+              <button
+                onClick={() => setShowEditConfirm(false)}
+                className="flex-1 py-1 bg-gray-300 rounded text-sm font-medium"
+              >
+                戻る
+              </button>
+            </div>
+          </div>
+        )}
+
+        {editingCharacter === selectedCharacter && !showEditConfirm ? (
           <div className="space-y-2 text-sm">
-            <div className="text-xs text-accent mb-2">※編集すると装備が外れます</div>
             <div>
               <label className="block text-gray-500">種族</label>
               <select
-                value={char.raceId}
-                onChange={(e) => onUpdateCharacter(char.id, { raceId: e.target.value as Character['raceId'] })}
+                value={pendingEdits?.raceId ?? char.raceId}
+                onChange={(e) => setPendingEdits({ ...pendingEdits, raceId: e.target.value as Character['raceId'] })}
                 className="w-full p-1 border rounded"
               >
                 {RACES.map(r => (
@@ -309,8 +374,8 @@ function PartyTab({
             <div>
               <label className="block text-gray-500">メインクラス</label>
               <select
-                value={char.mainClassId}
-                onChange={(e) => onUpdateCharacter(char.id, { mainClassId: e.target.value as Character['mainClassId'] })}
+                value={pendingEdits?.mainClassId ?? char.mainClassId}
+                onChange={(e) => setPendingEdits({ ...pendingEdits, mainClassId: e.target.value as Character['mainClassId'] })}
                 className="w-full p-1 border rounded"
               >
                 {CLASSES.map(c => (
@@ -321,8 +386,8 @@ function PartyTab({
             <div>
               <label className="block text-gray-500">サブクラス</label>
               <select
-                value={char.subClassId}
-                onChange={(e) => onUpdateCharacter(char.id, { subClassId: e.target.value as Character['subClassId'] })}
+                value={pendingEdits?.subClassId ?? char.subClassId}
+                onChange={(e) => setPendingEdits({ ...pendingEdits, subClassId: e.target.value as Character['subClassId'] })}
                 className="w-full p-1 border rounded"
               >
                 {CLASSES.map(c => (
@@ -333,8 +398,8 @@ function PartyTab({
             <div>
               <label className="block text-gray-500">性格</label>
               <select
-                value={char.predispositionId}
-                onChange={(e) => onUpdateCharacter(char.id, { predispositionId: e.target.value as Character['predispositionId'] })}
+                value={pendingEdits?.predispositionId ?? char.predispositionId}
+                onChange={(e) => setPendingEdits({ ...pendingEdits, predispositionId: e.target.value as Character['predispositionId'] })}
                 className="w-full p-1 border rounded"
               >
                 {PREDISPOSITIONS.map(p => (
@@ -345,8 +410,8 @@ function PartyTab({
             <div>
               <label className="block text-gray-500">家系</label>
               <select
-                value={char.lineageId}
-                onChange={(e) => onUpdateCharacter(char.id, { lineageId: e.target.value as Character['lineageId'] })}
+                value={pendingEdits?.lineageId ?? char.lineageId}
+                onChange={(e) => setPendingEdits({ ...pendingEdits, lineageId: e.target.value as Character['lineageId'] })}
                 className="w-full p-1 border rounded"
               >
                 {LINEAGES.map(l => (
@@ -547,7 +612,7 @@ function ExpeditionTab({
             <div className="mt-3 space-y-2">
               <div className="text-sm">
                 <span className={`font-medium ${
-                  state.lastExpeditionLog.finalOutcome === 'victory' ? 'text-green-600' :
+                  state.lastExpeditionLog.finalOutcome === 'victory' ? 'text-sub' :
                   state.lastExpeditionLog.finalOutcome === 'defeat' ? 'text-red-600' : 'text-yellow-600'
                 }`}>
                   {state.lastExpeditionLog.finalOutcome === 'victory' ? '勝利' :
@@ -588,7 +653,7 @@ function ExpeditionTab({
                           </span>
                           <span className="flex items-center gap-2">
                             <span className={
-                              entry.outcome === 'victory' ? 'text-green-600 font-medium' :
+                              entry.outcome === 'victory' ? 'text-sub font-medium' :
                               entry.outcome === 'defeat' ? 'text-red-600 font-medium' : 'text-yellow-600 font-medium'
                             }>
                               {entry.outcome === 'victory' ? '勝利' :
@@ -1000,19 +1065,19 @@ function SettingTab({
         {!showResetConfirm ? (
           <button
             onClick={() => setShowResetConfirm(true)}
-            className="w-full py-2 bg-red-500 text-white rounded font-medium"
+            className="w-full py-2 bg-accent text-white rounded font-medium"
           >
             ゲームをリセット
           </button>
         ) : (
           <div>
-            <div className="text-sm text-red-600 mb-2 p-2 bg-red-50 rounded border border-red-200">
+            <div className="text-sm text-accent mb-2 p-2 bg-orange-50 rounded border border-orange-200">
               ⚠️ 本当にリセットしますか？全てのデータが失われます。この操作は取り消せません。
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => { onResetGame(); setShowResetConfirm(false); }}
-                className="flex-1 py-2 bg-red-500 text-white rounded font-medium"
+                className="flex-1 py-2 bg-accent text-white rounded font-medium"
               >
                 リセット実行
               </button>
