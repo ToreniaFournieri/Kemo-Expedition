@@ -521,27 +521,31 @@ function PartyTab({
               <div className="bg-white rounded p-1 text-center">知{stats.baseStats.intelligence}</div>
               <div className="bg-white rounded p-1 text-center">精{stats.baseStats.mind}</div>
             </div>
-            <div className="border-t border-gray-200 mt-2 pt-2 space-y-1">
-              <div className="flex justify-between">
-                <span>遠距離攻撃:</span>
-                <span className="font-medium">{Math.floor(stats.rangedAttack)} x {stats.rangedNoA}回</span>
-              </div>
-              <div className="flex justify-between">
-                <span>魔法攻撃:</span>
-                <span className="font-medium">{Math.floor(stats.magicalAttack)} x {stats.magicalNoA}回</span>
-              </div>
-              <div className="flex justify-between">
-                <span>近接攻撃:</span>
-                <span className="font-medium">{Math.floor(stats.meleeAttack)} x {stats.meleeNoA}回</span>
-              </div>
-              <div className="flex justify-between text-gray-500">
-                <span>物理防御:</span>
-                <span>{stats.physicalDefense}</span>
-              </div>
-              <div className="flex justify-between text-gray-500">
-                <span>魔法防御:</span>
-                <span>{stats.magicalDefense}</span>
-              </div>
+            <div className="border-t border-gray-200 mt-2 pt-2 space-y-1 text-sm">
+              {(() => {
+                // Calculate ability amplifiers
+                const iaigiri = stats.abilities.find(a => a.id === 'iaigiri');
+                const meleeAmp = iaigiri ? (iaigiri.level === 2 ? 2.5 : 2.0) : 1.0;
+                const elementName = stats.elementalOffense === 'fire' ? '火' :
+                  stats.elementalOffense === 'thunder' ? '雷' :
+                  stats.elementalOffense === 'ice' ? '氷' : '無';
+                return (
+                  <>
+                    <div className="flex justify-between">
+                      <span>遠距離攻撃:{Math.floor(stats.rangedAttack)} x {stats.rangedNoA}回(x1.0)</span>
+                      <span className="text-gray-500">属性攻撃:{elementName}(x{stats.elementalOffenseValue.toFixed(1)})</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>魔法攻撃:{Math.floor(stats.magicalAttack)} x {stats.magicalNoA}回(x1.0)</span>
+                      <span className="text-gray-500">魔法防御:{stats.magicalDefense}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>近接攻撃:{Math.floor(stats.meleeAttack)} x {stats.meleeNoA}回(x{meleeAmp.toFixed(1)})</span>
+                      <span className="text-gray-500">物理防御:{stats.physicalDefense}</span>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
             {stats.abilities.length > 0 && (
               <div className="border-t border-gray-200 mt-2 pt-2">
