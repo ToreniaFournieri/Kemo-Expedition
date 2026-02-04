@@ -364,16 +364,16 @@ inventory = {
 - character.`f.penet_multiplier`
   -If character.`c.penet`, add them. (ex. `c.penet_x0.1` & `c.penet_x0.15` -> 0.25)
 
+- character .`f.defense` (phase: phase):
+  - If phase is LONG or CLOSE:
+  	- `d.physical_defense`: Item Bonuses of Physical defense x its c.multiplier x `b.vitality` / 10
+  - If phase is MID:
+  	- `d.magical_defense`: Item Bonuses of Magical defense x its c.multiplier x `b.mind` / 10
+
  
 ### 3.4 Party initialization
-
 - c.multiplier like `c.amulet_x1.3` applies only for individual character's equipments. 
 - Party.`d.HP`: 100 + (Total sum of individual ((Item Bonuses of HP x its c.multiplier + level x `b.vitality` ) x (`b.vitality`  + `b.mind`) / 20))
-- Party.`f.defense` (phase: phase):
-  - If phase is LONG or CLOSE:
-  	- `d.physical_defense`: (Total sum of individual (Item Bonuses of Physical defense x its c.multiplier x `b.vitality` / 10))
-  - If phase is MID:
-  	- `d.magical_defense`: (Total sum of individual (Item Bonuses of Magical defense x its c.multiplier x `b.mind` / 10))
 
 - party.`f.abilities_offense_amplifier`(phase: phase):
   - If phase is LONG or CLOSE:
@@ -445,9 +445,10 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 
 ```
 戦闘ログ:
-[距離] 行動者: 対象 の 行動名！ (数値)
+[距離] 敵: 行動主 が　対象　に行動名！ (数値)
+[距離] 味方: 行動主 の 行動名！ (数値)
 
-[近] 敵: 森の女王 の攻撃！ (36ダメージ)
+[近] 敵: 森の女王 が　キツネ丸 に攻撃！ (36ダメージ)
 [近] 味方: キツネ丸 のカウンター！ (367ダメージ)
 ```
 
@@ -457,7 +458,6 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 - Each encounter consists of one battle
 
 ### 6.2 Function of battle
-
 
 **Battle Phase**
 
