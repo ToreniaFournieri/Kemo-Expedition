@@ -530,10 +530,10 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | `p.enemy_attack_values` |
 - *Draw*:no penalties (current version). no experience points nor item reward at this room. Back to home with trophies of previous rooms.
 
 - **Item Retrieval Logic:**
-  - Items are stacked by (superRare, enhancement, and base item) and has state.
+  - Items are stacked by (superRare, enhancement, and base item) and has state
   - *State:`sold` Auto-Sell:* If a dropped item matches a rule with state:`sold`, it is sold immediately (not added to inventory)
-  - *State:`owned` Existing Items:* If the item is already in the inventory, increment the item count (state should be `owned`)
-  - *State:(no record) New Items:* If no record for the item exists, the system generates the item and sets it to state:`owned`.
+  - *State:`owned` Existing Items:* If the item is already in the inventory, increment the item count
+  - *State:(no record) New Items:* If no record for the item exists, the system generates the item and sets it to state:`owned`
 
 ## 7. REWARD 
 
