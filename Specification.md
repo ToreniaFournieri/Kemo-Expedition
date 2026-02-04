@@ -475,8 +475,7 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 
 **Row-based modifier** 
 - for LONG and CLOSE phase.
-- Targeting selects a character only to determine defense, row potency, abilities (counter).
-- All damage is always applied to party.d.HP.
+- Targeting selects a character only to determine defense, row potency, abilities (counter). All damage is always applied to party.d.HP.
 
 |row | Thread weight | `d.attack_potency` |
 |---|---|-----|
@@ -492,6 +491,7 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 
 - `d.attack_potency` (Offensive Multiplier)
   - A global damage modifier applied to a unit’s final output based on their current row position.
+  - Row-based modifiers apply only to player characters. Enemies are treated as having fixed potency (1.0).
 
 `f.targeting`:
  Gets one ticket from `g.threat_weight_bag`. (Contains 1 to 6 number ticket)
