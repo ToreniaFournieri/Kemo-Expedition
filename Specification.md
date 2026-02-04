@@ -79,10 +79,6 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'Party_HP', 'Par
 - predisposition
 - lineage
 
-*Note:*
-- Individual character has no level, hp, nor defensive parameters
-- NoA: number of attacks
-
 #### 2.2.1 Character 
 
 -A character is defined by Race, Class and Predisposition
