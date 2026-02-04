@@ -217,7 +217,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'Party_HP' , 'qu
 - `f.attack`, `f.NoA`
 	- `d.ranged_attack`, `d.ranged_NoA`
 	- `d.magical_attack`, `d.magical_NoA`
-	- `d.melee_attack`, `d.melee_NoA`- ranged_attack
+	- `d.melee_attack`, `d.melee_NoA`
 - `f.abilities_offense_amplifier` 
 	- `d.ranged_attack_amplifier` // 1.0 as default 
 	- `d.magical_attack_amplifier` // 1.0 as default 
@@ -431,7 +431,7 @@ inventory = {
 	- `p.remaining_HP_of_room`: Party HP of remaining: like 430/ 1000
     - `p.outcome_of_room`: Victory/Defeat/Draw/No Visit -> 勝利/敗北/引分/未到達
 　- Line 2:
-  	- `p.enemy_attack_values`: Shows `f.damage_calculation` for each range. (this function considers Party defense and buffs)  ex. 300/0/340    
+  	- `p.enemy_attack_values`: Using `f.damage_calculation` for each range. (this function considers Party defense and buffs)  ex. 300/0/340    
 	- `p.total_damage_dealt`: Shows total damage dealt
 	- `p.total_damage_taken`: Shows total damage taken
 	- `p.reward_from_room`: Shows item.
