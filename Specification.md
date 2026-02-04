@@ -510,6 +510,8 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 - `d.attack_potency` (Offensive Multiplier)
   - A global damage modifier applied to a unit’s final output based on their current row position.
   - Row-based modifiers apply only to player characters. Enemies are treated as having fixed potency (1.0).
+  - Row-based `d.attack_potency` is applied only during LONG and CLOSE phases.
+  - MID phase ignores row-based attack potency, so has fixed potency (1.0).
 
 |row | `d.attack_potency` |
 |---|---|
