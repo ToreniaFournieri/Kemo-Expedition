@@ -329,6 +329,8 @@ inventory = {
 - **Enhancement:** Populate `g.enhancement_bag` with tickets according to the enhancement table.
 - **Super Rare:** Populate `g.superRare_bag` with tickets according to the superRare table.
 
+- **Threat weight:** Populate `g.threat_weight_bag` with tickets: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 2,2,2,2,2,2,2,2, 3,3,3,3, 4,4, 5, 6]. 
+
 - If a bag is empty or explicitly reset the bag, initialize it.
 
 ### 3.3 Character initialization
@@ -466,14 +468,10 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 ### 6.1 Encounter Rules
 - Each encounter consists of one battle
 
-### 6.2 Initialization of battle
+### 6.2 Function of battle
 
 
-  
-### 6.3 Turn resolution 
-- For each phase, actions are resolved in the following order:
-    - Enemy attacks
-    - Player party attacks
+**Battle Phase**
 
 |Phase |Damage type |number of attacks|Defense type|
 |-----|-----------|-----------|-----------|
@@ -483,9 +481,28 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 
 - After the CLOSE phase, the battle is over. Party needs to beat enemy within these three phases.
 
-**functions for battle**
+**functions of attack**
 - `f.damage_calculation`: (actor: , opponent: , phase: )
 	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) ))  x actor.`f.NoA` x actor.`f.abilities_offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x actor.`f.abilities_offense_amplifier`
+
+**Targeting system** for ranged and close phase. 
+
+|row| Thread weight | Attack potency  |
+|——|————-|
+|1|16| 1.00 |
+|2|8| 0.85 |
+|3|4| 0.72 |
+|4|2| 0.61 |
+|5|1| 0.52 |
+|6|1| 0.44 |
+
+`f.targeting`:
+ Gets one ticket from `g.threat_weight_bag`. (Contains 1 to 6 number ticket)
+  
+### 6.3 Turn resolution 
+- For each phase, actions are resolved in the following order:
+    - Enemy attacks
+    - Player party attacks
 
 
 **First strike**
