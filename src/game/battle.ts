@@ -66,14 +66,14 @@ function getTargetRow(ctx: BattleContext, phase: BattlePhase): { row: number; ne
   return { row: ticket, newCtx };
 }
 
-function calculateEnemyDamage(
+// Calculate single attack damage (without NoA multiplier)
+function calculateSingleEnemyAttackDamage(
   phase: BattlePhase,
   enemy: EnemyDef,
   partyStats: ComputedPartyStats,
-  targetCharStats?: ComputedCharacterStats
+  targetCharStats: ComputedCharacterStats
 ): number {
   let attack = 0;
-  let noA = 0;
   let amplifier = 1.0;
   let defense = 0;
   let defenseAmplifier = 1.0;
@@ -81,29 +81,25 @@ function calculateEnemyDamage(
   switch (phase) {
     case 'long':
       attack = enemy.rangedAttack;
-      noA = enemy.rangedNoA;
       amplifier = enemy.rangedAttackAmplifier;
-      // Use targeted character's defense if available, otherwise party average
-      defense = targetCharStats ? targetCharStats.physicalDefense : partyStats.physicalDefense;
+      defense = targetCharStats.physicalDefense;
       defenseAmplifier = partyStats.defenseAmplifiers.physical;
       break;
     case 'mid':
       attack = enemy.magicalAttack;
-      noA = enemy.magicalNoA;
       amplifier = enemy.magicalAttackAmplifier;
-      defense = targetCharStats ? targetCharStats.magicalDefense : partyStats.magicalDefense;
+      defense = targetCharStats.magicalDefense;
       defenseAmplifier = partyStats.defenseAmplifiers.magical;
       break;
     case 'close':
       attack = enemy.meleeAttack;
-      noA = enemy.meleeNoA;
       amplifier = enemy.meleeAttackAmplifier;
-      defense = targetCharStats ? targetCharStats.physicalDefense : partyStats.physicalDefense;
+      defense = targetCharStats.physicalDefense;
       defenseAmplifier = partyStats.defenseAmplifiers.physical;
       break;
   }
 
-  if (noA === 0) return 0;
+  if (attack === 0) return 0;
 
   const elementalMultiplier = getElementalMultiplier(
     enemy.elementalOffense,
@@ -111,9 +107,18 @@ function calculateEnemyDamage(
   );
 
   const baseDamage = Math.max(1, attack - defense);
-  const totalDamage = baseDamage * amplifier * elementalMultiplier * defenseAmplifier * noA;
+  const totalDamage = baseDamage * amplifier * elementalMultiplier * defenseAmplifier;
 
   return Math.floor(totalDamage);
+}
+
+// Get number of attacks for enemy in a phase
+function getEnemyNoA(phase: BattlePhase, enemy: EnemyDef): number {
+  switch (phase) {
+    case 'long': return enemy.rangedNoA;
+    case 'mid': return enemy.magicalNoA;
+    case 'close': return enemy.meleeNoA;
+  }
 }
 
 function calculateCharacterDamage(
@@ -283,23 +288,47 @@ export function executeBattle(
       };
     }
 
-    // Enemy attacks with targeting
-    const { row: targetRow, newCtx } = getTargetRow(ctx, phase);
-    ctx = newCtx;
-    const targetCharStats = characterStats.find(cs => cs.row === targetRow);
-    const targetChar = targetCharStats
-      ? party.characters.find(c => c.id === targetCharStats.characterId)
-      : undefined;
+    // Enemy attacks with targeting (each attack draws a new target)
+    const noA = getEnemyNoA(phase, enemy);
 
-    const enemyDamage = calculateEnemyDamage(phase, enemy, partyStats, targetCharStats);
-    if (enemyDamage > 0) {
-      partyHp -= enemyDamage;
-      log.push({
-        phase,
-        actor: 'enemy',
-        action: `${enemy.name} が ${targetChar?.name ?? `Row${targetRow}`} に攻撃！`,
-        damage: enemyDamage,
-      });
+    // Track attacks grouped by target: Map<characterId, { damage: number, count: number, charStats: ComputedCharacterStats }>
+    const attacksByTarget = new Map<number, { damage: number; count: number; charStats: ComputedCharacterStats }>();
+
+    for (let i = 0; i < noA; i++) {
+      const { row: targetRow, newCtx } = getTargetRow(ctx, phase);
+      ctx = newCtx;
+      const targetCharStats = characterStats.find(cs => cs.row === targetRow);
+
+      if (targetCharStats) {
+        const singleDamage = calculateSingleEnemyAttackDamage(phase, enemy, partyStats, targetCharStats);
+        const existing = attacksByTarget.get(targetCharStats.characterId);
+        if (existing) {
+          existing.damage += singleDamage;
+          existing.count += 1;
+        } else {
+          attacksByTarget.set(targetCharStats.characterId, {
+            damage: singleDamage,
+            count: 1,
+            charStats: targetCharStats,
+          });
+        }
+      }
+    }
+
+    // Apply damage and generate logs grouped by target
+    let totalEnemyDamage = 0;
+    for (const [charId, attack] of attacksByTarget) {
+      if (attack.damage > 0) {
+        partyHp -= attack.damage;
+        totalEnemyDamage += attack.damage;
+        const targetChar = party.characters.find(c => c.id === charId);
+        log.push({
+          phase,
+          actor: 'enemy',
+          action: `${enemy.name} が ${targetChar?.name ?? '???'} に攻撃(${attack.count}回)！`,
+          damage: attack.damage,
+        });
+      }
     }
 
     // Check for defeat
@@ -317,19 +346,22 @@ export function executeBattle(
       };
     }
 
-    // Counter attacks (only if targeted character has counter ability)
-    if (enemyDamage > 0 && targetCharStats && hasCounter(targetCharStats, phase)) {
-      const { damage } = calculateCharacterDamage(phase, targetCharStats, enemy, partyStats, ctx);
-      if (damage > 0) {
-        enemyHp -= damage;
-        log.push({
-          phase,
-          actor: 'character',
-          characterId: targetCharStats.characterId,
-          action: `${targetChar?.name ?? '???'} のカウンター！`,
-          damage,
-          isCounter: true,
-        });
+    // Counter attacks (for each targeted character with counter ability)
+    for (const [charId, attack] of attacksByTarget) {
+      if (attack.damage > 0 && hasCounter(attack.charStats, phase)) {
+        const { damage } = calculateCharacterDamage(phase, attack.charStats, enemy, partyStats, ctx);
+        if (damage > 0) {
+          enemyHp -= damage;
+          const targetChar = party.characters.find(c => c.id === charId);
+          log.push({
+            phase,
+            actor: 'character',
+            characterId: charId,
+            action: `${targetChar?.name ?? '???'} のカウンター！`,
+            damage,
+            isCounter: true,
+          });
+        }
       }
     }
 
@@ -445,11 +477,15 @@ export function calculateArrowRecovery(
 }
 
 // Calculate enemy attack values for all phases (for display)
+// Shows raw attack values: rangedAttack/magicalAttack/meleeAttack
 export function calculateEnemyAttackValues(
   enemy: EnemyDef,
-  partyStats: ComputedPartyStats
+  _partyStats: ComputedPartyStats
 ): string {
-  const phases: BattlePhase[] = ['long', 'mid', 'close'];
-  const damages = phases.map(phase => calculateEnemyDamage(phase, enemy, partyStats));
-  return damages.join('/');
+  const attacks = [
+    enemy.rangedAttack,
+    enemy.magicalAttack,
+    enemy.meleeAttack,
+  ];
+  return attacks.join('/');
 }

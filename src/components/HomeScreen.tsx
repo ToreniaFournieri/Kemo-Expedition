@@ -192,7 +192,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         </div>
         <div className="mt-2 flex justify-between text-xs text-gray-600">
           <span>EXP: {state.party.experience} / {nextLevelExp}</span>
-          <span>HP: {partyStats.hp} | 物防: {partyStats.physicalDefense} | 魔防: {partyStats.magicalDefense}</span>
+          <span>HP: {partyStats.hp}</span>
         </div>
 
         {/* Tabs */}
@@ -533,6 +533,14 @@ function PartyTab({
               <div className="flex justify-between">
                 <span>近接攻撃:</span>
                 <span className="font-medium">{Math.floor(stats.meleeAttack)} x {stats.meleeNoA}回</span>
+              </div>
+              <div className="flex justify-between text-gray-500">
+                <span>物理防御:</span>
+                <span>{stats.physicalDefense}</span>
+              </div>
+              <div className="flex justify-between text-gray-500">
+                <span>魔法防御:</span>
+                <span>{stats.magicalDefense}</span>
               </div>
             </div>
             {stats.abilities.length > 0 && (
