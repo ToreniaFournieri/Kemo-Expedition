@@ -607,7 +607,7 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
   - Character status updates immediately
 - Equipment management:
   - Equip / remove from inventory
-    - Equipped item: The name and status are left-aligned on **the same line**.
+    - Equipped item: The name and status are left-aligned, item type is right-aligned on **the same line**.
   - Item list:
     - Stacked by item variant
     - Inventory includes item category tabs:
