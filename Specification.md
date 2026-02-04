@@ -316,8 +316,8 @@ inventory = {
 - **Super Rare:** Populate `g.superRare_bag` with tickets according to the superRare table.
 
 - **Threat weight:** 
-  - Populate `g.physical _threat_weight_bag` with tickets: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 2,2,2,2,2,2,2,2, 3,3,3,3, 4,4, 5, 6]. 
-  - Populate `g.magical _threat_weight_bag` with tickets: [1,2,3,4,5.6]. 
+  - Populate `g.physical_threat_weight_bag` with tickets: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 2,2,2,2,2,2,2,2, 3,3,3,3, 4,4, 5, 6]. 
+  - Populate `g.magical_threat_weight_bag` with tickets: [1,2,3,4,5.6]. 
 
 - If a bag is empty or explicitly reset the bag, initialize it.
 
