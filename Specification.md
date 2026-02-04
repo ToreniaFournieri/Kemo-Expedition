@@ -3,8 +3,7 @@
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
 - Support Japanese language. 
-- no randomness in battle.
-- Tetris like randomness for enemies spawns, reward items. (a bag contains all potential rewards. 
+- Tetris like randomness. (Bag Randomization)
 - data persistence 
 
 ### 1.1 World setting
