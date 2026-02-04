@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.0.9 - SPECIFICATION
+# KEMO EXPEDITION v0.1.0 - SPECIFICATION
 
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
@@ -377,7 +377,7 @@ inventory = {
 ### 3.4 Party initialization
 
 - c.multiplier like `c.amulet_x1.3` applies only for individual character's equipments. 
-- Party.`d.HP`: 950 + (level x 50) + (Total sum of individual (Item Bonuses of HP x its c.multiplier x (`b.vitality`  + `b.mind`) / 20))
+- Party.`d.HP`: 100 + (Total sum of individual ((Item Bonuses of HP x its c.multiplier + level x `b.vitality` ) x (`b.vitality`  + `b.mind`) / 20))
 - Party.`f.defense` (phase: phase):
   - If phase is LONG or CLOSE:
   	- `d.physical_defense`: (Total sum of individual (Item Bonuses of Physical defense x its c.multiplier x `b.vitality` / 10))
