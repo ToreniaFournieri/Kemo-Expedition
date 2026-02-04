@@ -419,7 +419,7 @@ inventory = {
   - `p.remaining_HP`: 340/1000 -> 34 (percentage)
   - `p.reached_room` / `p.number_of_rooms` : 4/6
   - `p.gained _experience`: ex. +234
-  - `p.retrieving_trophies`: Shows items. if party is defeated, no trohies shown.
+  - `p.retrieving_trophies`: Shows items. if party is defeated, no trophies are shown.
 
 ```
 前回の探検結果: `p.dungeon_name`
@@ -429,19 +429,19 @@ inventory = {
 ```
 
 - `f.list_of_rooms`
-  - `p.enemy_name`: Name of enemy. if he is Boss, add (BOSS).
+  - `p.enemy_name`: Name of enemy. if it is a Boss, add (BOSS).
   - `p.enemy_HP`: Shows enemy's `d.HP` (max HP)
-  - `p.enemy_attack_values`: Shows `f.damage_calculation` per each range. (this function considers Party defense and buffs)  ex. 300/0/340
+  - `p.enemy_attack_values`: Shows `f.damage_calculation` for each range. (this function considers Party defense and buffs)  ex. 300/0/340
   - `p.outcome_of_room`: 勝利/敗北/引分
-  - `p.total_dealt_damage`: Shows total dealt damage
-  - `p.total_taken_damage`: Shows total taken damage
+  - `p.total_damage_dealt`: Shows total damage dealt
+  - `p.total_damage_taken`: Shows total damage taken
   - `p.reward_from_room`: Shows item.
 
 ```
 Room X: `p.enemy_name` | HP:`p.enemy_HP` | `p.enemy_attack_values` |
 `p.outcome_of_room`
 ▼
-与ダメ: `p.total_dealt_damage` | 被ダメ: `p.total_taken_damage`  | 獲得: `p.reward_from_room`. 
+与ダメ: `p.total_damage_dealt` | 被ダメ: `p.total_damage_taken`  | 獲得: `p.reward_from_room`. 
 ```
 
 - `f.battle_logs`
