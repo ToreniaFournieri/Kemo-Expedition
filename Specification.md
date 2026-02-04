@@ -23,6 +23,7 @@
 | `d.`   | **D**uel Status (Current combat values) |
 | `e.`   | **E**lemental Offense Attribute |
 | `f.`   | **F**unction (Logic/Calculated value) |
+| `g.` | Ba**g** Randomization |
 | `i.`   | **I**tem Category |
 | `p.`   | **P**arty/Expedition Instance Data |
 | `r.`   | Elemental **R**esistance Attribute |
@@ -35,7 +36,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'Party_HP', 'Par
 
 - Initial deity: 'God of Restoration' // Revives character at the base automatically, no death penalty 
 
-- **Bag Randomization** It has 'reward_bag', 'enhancement_bag', 'superRare_bag' which controls reward randomness and contains tickets. (0:lose ticket, 1:win ticket)
+- **Bag Randomization** There are `g.reward_bag`, `g.enhancement_bag`, `g.superRare_bag`, and `g.threat_weight_bag` which control probable randomness.
 
 - enhancement title
  
@@ -324,9 +325,9 @@ inventory = {
 ## 3. INITIALIZATION 
 
 ### 3.1 Randomness initialization
-- **Reward:** Populate 'reward_bag' with 1 winning ticket (1) and 9 losing tickets (0).
-- **Enhancement:** Populate 'enhancement_bag' with tickets according to the enhancement table.
-- **Super Rare:** Populate 'superRare_bag' with tickets according to the superRare table.
+- **Reward:** Populate `g.reward_bag` with 1 winning ticket (1) and 9 losing tickets (0).
+- **Enhancement:** Populate `g.enhancement_bag` with tickets according to the enhancement table.
+- **Super Rare:** Populate `g.superRare_bag` with tickets according to the superRare table.
 
 - If a bag is empty or explicitly reset the bag, initialize it.
 
@@ -542,8 +543,8 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 
 ## 7. REWARD 
 
-- Gets one ticket from 'reward_bag'. Two with `c.unlock`.
-  - If it is '1', then get one ticket from each of 'enhancement_bag', and 'superRare_bag'.
+- Gets one ticket from `g.reward_bag`. Two with `c.unlock`.
+  - If it is '1', then get one ticket from each of `g.enhancement_bag`, and `g.superRare_bag`.
     
   - Combines them into one item.
     (ex.
