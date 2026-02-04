@@ -746,7 +746,7 @@ function InventoryTab({
                   <div key={key} className="p-2 bg-pane rounded">
                     <div className="flex justify-between items-center">
                       <div>
-                        <span className="text-sm font-medium">{item.name}</span>
+                        <span className="text-sm font-medium">{getItemDisplayName(item)}</span>
                         <span className="text-sm text-gray-500"> x{count}</span>
                         <span className="text-xs text-gray-400 ml-2">| {getItemStats(item)}</span>
                       </div>
