@@ -280,7 +280,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
   - Sold items cannot be restored or refunded.
   - After reset, the item variant may be acquired again through normal gameplay.
 
-- **Status definitions**
+- **State definitions**
 
 | State | meaning|
 |-------|---------|
@@ -294,19 +294,19 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 inventory = {
   "ショートソード": {
     "count": 0,
-    "status": "sold"
+    "state": "sold"
   },
   "名工のショートソード": {
     "count": 40,
-    "status": "owned"
+    "state": "owned"
   },
   "世界を征する名工のショートソード": {
     "count": 6,
-    "status": "owned"
+    "state": "owned"
   }
   "ロングソード": {
     "count": 0,
-    "status": "notown"
+    "state": "notown"
   }
 }
 ```
@@ -634,7 +634,7 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | `p.enemy_attack_values` |
   - Remove arrows
 - Item list:
   - Stacked by item variant
-  - Shows `owned` items
+  - Shows state:`owned` items
   - Inventory includes item category tabs:
     - 剣,刀,弓,鎧,手,杖,衣,護,矢.
     - Default: 剣
@@ -648,8 +648,8 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | `p.enemy_attack_values` |
 - Actions:
   - Sell item stacks
   - Sold items disappear immediately
-- Auto-sold list (closed as default)
-  - Sort and filter is affected in this list too. (but shows `sold` item)
+- Auto-sold list (folded as default)
+  - Sort and filter is affected in this list too. (but shows state:`sold` item)
   - Item 解除: `sold` status to `notown`
 
 
