@@ -317,7 +317,9 @@ inventory = {
 - **Enhancement:** Populate `g.enhancement_bag` with tickets according to the enhancement table.
 - **Super Rare:** Populate `g.superRare_bag` with tickets according to the superRare table.
 
-- **Threat weight:** Populate `g.threat_weight_bag` with tickets: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 2,2,2,2,2,2,2,2, 3,3,3,3, 4,4, 5, 6]. 
+- **Threat weight:** 
+  - Populate `g.physical _threat_weight_bag` with tickets: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 2,2,2,2,2,2,2,2, 3,3,3,3, 4,4, 5, 6]. 
+  - Populate `g.magical _threat_weight_bag` with tickets: [1,2,3,4,5.6]. 
 
 - If a bag is empty or explicitly reset the bag, initialize it.
 
@@ -474,11 +476,10 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) )) x actor.`f.abilities_offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x party.`f.abilities_offense_amplifier`
 
 **Row-based modifier** 
-- for LONG and CLOSE phase.
 - Targeting selects a character only to determine defense, row potency, abilities (counter). All damage to character is always applied to `party.d.HP`.
   - The threat weight table defines how many tickets of each row index are placed into `g.threat_weight_bag`.
 
-|row | Threat weight |
+|row | Physical Threat weight |
 |---|---|
 |1|16|
 |2|8|
@@ -487,11 +488,22 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 |5|1|
 |6|1|
 
-- `g.threat_weight_bag` Threat Weight (Passive Targeting) 
+|row | Magical Threat weight |
+|---|---|
+|1|1|
+|2|1|
+|3|1|
+|4|1|
+|5|1|
+|6|1|
+
+
+- `g.physical_threat_weight_bag` and `g.magical_threat_weight_bag`  Threat Weight (Passive Targeting) 
   - A numerical value assigned to a unit based on their row position that determines the size of their "slice" in the enemy's targeting pool.
 
 - `f.targeting`:
-  - Gets one ticket from g.threat_weight_bag.
+  - If phase is LONG or CLOSE, Gets one ticket from `g.physical_threat_weight_bag`.
+  - If phase is MID, Gets one ticket from `g.magical_threat_weight_bag`. 
     - Bag contains numbers [1,2,3,4,5,6]
     - The drawn number corresponds to row index (1–6).
     - The character currently occupying that row is selected as the target.
