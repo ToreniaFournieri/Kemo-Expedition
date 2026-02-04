@@ -471,7 +471,7 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 
 **functions of attack**
 - `f.damage_calculation`: (actor: , opponent: , phase: )
-	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) )) x actor.`f.abilities_offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x actor.`f.abilities_offense_amplifier`
+	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) )) x actor.`f.abilities_offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x party.`f.abilities_offense_amplifier`
 
 **Row-based modifier** 
 - for LONG and CLOSE phase.
