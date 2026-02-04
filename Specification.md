@@ -4,7 +4,7 @@
 - Text-based, deterministic fantasy RPG
 - Support Japanese language. 
 - no randomness in battle.
-- Tetris like randomness for enemies spawns, reward items. (a bag contians all potential rewards. 
+- Tetris like randomness for enemies spawns, reward items. (a bag contains all potential rewards. 
 - data persistence 
 
 ### 1.1 World setting
@@ -195,7 +195,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP' , '
 		- Equipment slots
 
 - Characters do not have individual HP.
-    - but each character contrivutes total HP. 
+    - but each character contributes total HP. 
 
 ### 2.3 Dungeons & Enemies
 
@@ -475,7 +475,8 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 
 **Row-based modifier** 
 - for LONG and CLOSE phase.
-- Targeting selects a character only to determine defense, row potency, abilities (counter). All damage is always applied to party.d.HP.
+- Targeting selects a character only to determine defense, row potency, abilities (counter). All damage to character is always applied to `party.d.HP`.
+  - The threat weight table defines how many tickets of each row index are placed into `g.threat_weight_bag`.
 
 |row | Threat weight |
 |---|---|
@@ -529,7 +530,7 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
     - Counter triggers immediately after damage resolution, regardless of turn order modifiers.
 
 **Player action**
-- Each party menber act if he has corresponding damage source in the phase. 
+- Each party member act if he has corresponding damage source in the phase. 
 
 - If it is LONG phase and going to use arrow:
   - Check: Is Quiver_Total_Qty >= Archer_A.ranged_NoA?
