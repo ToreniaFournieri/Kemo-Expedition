@@ -644,16 +644,18 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | `p.enemy_attack_values` |
   	1.	Item ID
   	2.	Enhancement
   	3.	SuperRare
-  - Item: The name, count, and status are left-aligned, while the sell all button is right-aligned on the same line. sell all button(全売却): sell all item, and state:`own` -> state:`sold`
+  - Item: The name, count, and status are left-aligned, while the sell all button is right-aligned on the same line. 
     - ex. 名工のロングソード x3 | 近攻+19     [全売却 39G]
+  - Sell all button(全売却): sell all item, and state:`own` -> state:`sold`
   - Inventory pane shows at least 10 items
 - Actions:
   - Sell item stacks
   - Sold items disappear immediately
 - Auto-sold list (folded as default)
   - Sort and filter is affected in this list too. (but shows state:`sold` item)
-  - Item: The name, count, and status are left-aligned, while the unlock button is right-aligned on the same line. Unlock button(解除): state:`sold` -> state:`notown` 
+  - Item: The name, count, and status are left-aligned, while the unlock button is right-aligned on the same line. 
     - ex. 名工のロングソード x3 | 近攻+19     [解除]
+  - Unlock button(解除): state:`sold` -> state:`notown` 
 
 #### 8.3.4 Shop
 - Purchase basic items:
