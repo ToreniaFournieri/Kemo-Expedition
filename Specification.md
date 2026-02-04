@@ -477,14 +477,14 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 - for LONG and CLOSE phase.
 - Targeting selects a character only to determine defense, row potency, abilities (counter). All damage is always applied to party.d.HP.
 
-|row | Thread weight | `d.attack_potency` |
-|---|---|-----|
-|1|16| 1.00 |
-|2|8| 0.85 |
-|3|4| 0.72 |
-|4|2| 0.61 |
-|5|1| 0.52 |
-|6|1| 0.44 |
+|row | Thread weight |
+|---|---|
+|1|16|
+|2|8|
+|3|4|
+|4|2|
+|5|1|
+|6|1|
 
 - `g.threat_weight_bag` Threat Weight (Passive Targeting) 
   - A numerical value assigned to a unit based on their row position that determines the size of their "slice" in the enemy's targeting pool.
@@ -492,6 +492,15 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 - `d.attack_potency` (Offensive Multiplier)
   - A global damage modifier applied to a unit’s final output based on their current row position.
   - Row-based modifiers apply only to player characters. Enemies are treated as having fixed potency (1.0).
+
+|row | `d.attack_potency` |
+|---|---|
+|1| 1.00 |
+|2| 0.85 |
+|3| 0.72 |
+|4| 0.61 |
+|5| 0.52 |
+|6| 0.44 |
 
 `f.targeting`:
   - Gets one ticket from g.threat_weight_bag.
@@ -527,7 +536,6 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 
 - Current enemy.`d.HP` -= `f.damage_calculation` (actor: character, opponent: enemy, phase: phase ) x `f.NoA` x `d.attack_potency`
 - If enemy.`d.HP` =< 0, Victory.
-  - Party damage reduction abilities apply after defense subtraction.
 
 - **Re-attack:** IF character.`a.re-attack`, the character attacks to enemy.  (using `f.damage_calculation`)
 
