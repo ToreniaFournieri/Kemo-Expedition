@@ -606,7 +606,8 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | `p.enemy_attack_values` |
     	1.	Item ID
     	2.	Enhancement
     	3.	SuperRare
-    - Shows count and status
+  	- Item: The name, count, and status are left-aligned on **the same line**."
+     - ex. 名工のロングソード x3 | 近攻+19
     - Inventory pane shows at least 10 items
   - Status updates in real time
 
@@ -643,7 +644,8 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | `p.enemy_attack_values` |
   	1.	Item ID
   	2.	Enhancement
   	3.	SuperRare
-  - Shows count and status
+  - Item: The name, count, and status are left-aligned, while the sell button is right-aligned on the same line.
+    - ex. 名工のロングソード x3 | 近攻+19     [全売却 39G]
   - Inventory pane shows at least 10 items
 - Actions:
   - Sell item stacks
