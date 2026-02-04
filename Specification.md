@@ -637,8 +637,8 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
    		- **Order:** Descending order by Priority.
     	- **Priority:**
        1. **Base Item ID:** Higher-tier base items (e.g., Mythril Sword > Iron Sword) appear first.
-       2.  **Enhancement Tier:** Among the same Item ID, higher enhancements (e.g., 究極の > 伝説の) appear higher.
-       3.  **Super Rare Title:** Items with Super Rare titles are prioritized within their enhancement tier.
+       2.  **Super Rare Title:** Items with Super Rare titles are prioritized within their base item ID.
+       3.  **Enhancement Tier:** Among the same Item ID, higher enhancements (e.g., 究極の > 伝説の) appear higher.
     - Equipped item: The name and status are left-aligned, item type is right-aligned on **the same line**.
   - Item list:
     - Stacked by item variant
