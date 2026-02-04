@@ -494,7 +494,10 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
   - Row-based modifiers apply only to player characters. Enemies are treated as having fixed potency (1.0).
 
 `f.targeting`:
- Gets one ticket from `g.threat_weight_bag`. (Contains 1 to 6 number ticket)
+  - Gets one ticket from g.threat_weight_bag.
+    - Bag contains numbers [1,2,3,4,5,6]
+    - The drawn number corresponds to row index (1–6).
+    - The character currently occupying that row is selected as the target.
   
 ### 6.3 Turn resolution 
 - For each phase, actions are resolved in the following order:
