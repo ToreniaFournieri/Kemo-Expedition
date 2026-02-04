@@ -21,6 +21,7 @@ interface HomeScreenProps {
     setVariantStatus: (variantKey: string, status: 'notown') => void;
     buyArrows: (arrowId: number, quantity: number) => void;
     removeQuiverSlot: (slotIndex: number) => void;
+    assignArrowToQuiver: (variantKey: string, quantity: number) => void;
     markItemsSeen: () => void;
     resetGame: () => void;
   };
@@ -195,14 +196,15 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             quiverSlots={state.party.quiverSlots}
             onSellStack={actions.sellStack}
             onSetVariantStatus={actions.setVariantStatus}
-            onBuyArrows={actions.buyArrows}
             onRemoveQuiverSlot={actions.removeQuiverSlot}
+            onAssignArrowToQuiver={actions.assignArrowToQuiver}
           />
         )}
 
         {activeTab === 'shop' && (
           <ShopTab
             gold={state.party.gold}
+            onBuyArrows={actions.buyArrows}
           />
         )}
 
@@ -652,16 +654,16 @@ function InventoryTab({
   quiverSlots,
   onSellStack,
   onSetVariantStatus,
-  onBuyArrows,
   onRemoveQuiverSlot,
+  onAssignArrowToQuiver,
 }: {
   inventory: InventoryRecord;
   gold: number;
   quiverSlots: GameState['party']['quiverSlots'];
   onSellStack: (variantKey: string) => void;
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
-  onBuyArrows: (arrowId: number, quantity: number) => void;
   onRemoveQuiverSlot: (slotIndex: number) => void;
+  onAssignArrowToQuiver: (variantKey: string, quantity: number) => void;
 }) {
   const [showSold, setShowSold] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('sword');
@@ -676,8 +678,6 @@ function InventoryTab({
     allSoldItems.filter(([, v]) => v.item.category === selectedCategory)
   );
   const totalCount = allOwnedItems.reduce((sum, [, v]) => sum + v.count, 0);
-
-  const arrows = ITEMS.filter(i => i.category === 'arrow');
 
   return (
     <div>
@@ -702,10 +702,10 @@ function InventoryTab({
         ))}
       </div>
 
-      {/* Arrow category: Show quiver management */}
+      {/* Arrow category: Show quiver management and owned arrows */}
       {selectedCategory === 'arrow' && (
         <div className="mb-4">
-          <div className="text-sm font-medium mb-2">矢筒</div>
+          <div className="text-sm font-medium mb-2">矢筒 (2スロット)</div>
           <div className="space-y-2 mb-4">
             {quiverSlots.map((slot, i) => (
               <div key={i} className="p-2 bg-pane rounded flex justify-between items-center">
@@ -730,39 +730,47 @@ function InventoryTab({
             ))}
           </div>
 
-          <div className="text-sm font-medium mb-2">矢を購入 (1本 = 2G)</div>
-          <div className="space-y-2">
-            {arrows.map(arrow => (
-              <div key={arrow.id} className="p-2 bg-pane rounded">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <span className="text-sm font-medium">{arrow.name}</span>
-                    <span className="text-xs text-gray-500 ml-2">
-                      | 遠攻+{arrow.rangedAttack}
-                      {arrow.elementalOffense && arrow.elementalOffense !== 'none' &&
-                        ` ${({ fire: '炎', ice: '氷', thunder: '雷' })[arrow.elementalOffense]}属性`
-                      }
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => onBuyArrows(arrow.id, 10)}
-                      disabled={gold < 20}
-                      className="text-xs text-sub px-2 py-1 border border-sub rounded disabled:opacity-50"
-                    >
-                      10本
-                    </button>
-                    <button
-                      onClick={() => onBuyArrows(arrow.id, 50)}
-                      disabled={gold < 100}
-                      className="text-xs text-sub px-2 py-1 border border-sub rounded disabled:opacity-50"
-                    >
-                      50本
-                    </button>
-                  </div>
-                </div>
+          <div className="text-sm font-medium mb-2">所持している矢</div>
+          <div className="text-xs text-gray-500 mb-2">矢は店で購入できます。</div>
+          <div className="space-y-2 min-h-[150px] max-h-60 overflow-y-auto">
+            {filteredOwnedItems.length === 0 ? (
+              <div className="text-sm text-gray-400 text-center py-4">
+                矢を所持していません
               </div>
-            ))}
+            ) : (
+              filteredOwnedItems.map(([key, variant]) => {
+                const { item, count } = variant;
+                const hasEmptySlot = quiverSlots.some(s => s === null);
+                const maxAssign = Math.min(count, item.maxStack || 99);
+                return (
+                  <div key={key} className="p-2 bg-pane rounded">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="text-sm font-medium">{item.name}</span>
+                        <span className="text-sm text-gray-500"> x{count}</span>
+                        <span className="text-xs text-gray-400 ml-2">| {getItemStats(item)}</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => onAssignArrowToQuiver(key, Math.min(10, maxAssign))}
+                          disabled={!hasEmptySlot || count < 1}
+                          className="text-xs text-sub px-2 py-1 border border-sub rounded disabled:opacity-50"
+                        >
+                          装備(10)
+                        </button>
+                        <button
+                          onClick={() => onAssignArrowToQuiver(key, Math.min(50, maxAssign))}
+                          disabled={!hasEmptySlot || count < 1}
+                          className="text-xs text-sub px-2 py-1 border border-sub rounded disabled:opacity-50"
+                        >
+                          装備(50)
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
       )}
@@ -843,16 +851,54 @@ function InventoryTab({
 
 function ShopTab({
   gold,
+  onBuyArrows,
 }: {
   gold: number;
+  onBuyArrows: (arrowId: number, quantity: number) => void;
 }) {
+  const arrows = ITEMS.filter(i => i.category === 'arrow');
+
   return (
     <div>
       <div className="text-sm text-gray-500 mb-4">所持金: {gold}G</div>
 
       <div className="bg-pane rounded-lg p-4">
-        <div className="text-sm text-gray-500 text-center py-8">
-          矢の購入は「所持品」タブの「矢」カテゴリから行えます。
+        <div className="text-sm font-medium mb-3">矢を購入 (1本 = 2G)</div>
+        <div className="text-xs text-gray-500 mb-3">
+          購入した矢は所持品に追加されます。所持品タブで矢筒に装備できます。
+        </div>
+        <div className="space-y-2">
+          {arrows.map(arrow => (
+            <div key={arrow.id} className="p-2 bg-white rounded">
+              <div className="flex justify-between items-center">
+                <div>
+                  <span className="text-sm font-medium">{arrow.name}</span>
+                  <span className="text-xs text-gray-500 ml-2">
+                    | 遠攻+{arrow.rangedAttack}
+                    {arrow.elementalOffense && arrow.elementalOffense !== 'none' &&
+                      ` ${({ fire: '炎', ice: '氷', thunder: '雷' })[arrow.elementalOffense]}属性`
+                    }
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => onBuyArrows(arrow.id, 10)}
+                    disabled={gold < 20}
+                    className="text-xs text-sub px-2 py-1 border border-sub rounded disabled:opacity-50"
+                  >
+                    10本 (20G)
+                  </button>
+                  <button
+                    onClick={() => onBuyArrows(arrow.id, 50)}
+                    disabled={gold < 100}
+                    className="text-xs text-sub px-2 py-1 border border-sub rounded disabled:opacity-50"
+                  >
+                    50本 (100G)
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

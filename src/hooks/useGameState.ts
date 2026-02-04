@@ -20,7 +20,7 @@ import { drawFromBag, refillBagIfEmpty, createRewardBag, createEnhancementBag, c
 import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 
-const BUILD_NUMBER = 8;
+const BUILD_NUMBER = 9;
 const STORAGE_KEY = 'kemo-expedition-save';
 
 // Helper to calculate sell price for an item
@@ -235,6 +235,7 @@ type GameAction =
   | { type: 'SELL_STACK'; variantKey: string }
   | { type: 'SET_VARIANT_STATUS'; variantKey: string; status: 'notown' }
   | { type: 'BUY_ARROWS'; arrowId: number; quantity: number }
+  | { type: 'ASSIGN_ARROW_TO_QUIVER'; variantKey: string; quantity: number }
   | { type: 'REMOVE_QUIVER_SLOT'; slotIndex: number }
   | { type: 'MARK_ITEMS_SEEN' }
   | { type: 'RESET_GAME' };
@@ -514,18 +515,49 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'BUY_ARROWS': {
+      // Buy arrows and add to inventory
       const arrowDef = getItemById(action.arrowId);
       if (!arrowDef || arrowDef.category !== 'arrow') return state;
 
       const cost = action.quantity * 2;
       if (state.party.gold < cost) return state;
 
+      const arrowItem: Item = { ...arrowDef, enhancement: 0, superRare: 0 };
+      const key = getVariantKey(arrowItem);
+      const newInventory = { ...state.party.inventory };
+      const existing = newInventory[key];
+
+      if (existing) {
+        newInventory[key] = {
+          ...existing,
+          count: existing.count + action.quantity,
+          status: 'owned',
+        };
+      } else {
+        newInventory[key] = {
+          item: arrowItem,
+          count: action.quantity,
+          status: 'owned',
+        };
+      }
+
+      return {
+        ...state,
+        party: { ...state.party, inventory: newInventory, gold: state.party.gold - cost },
+      };
+    }
+
+    case 'ASSIGN_ARROW_TO_QUIVER': {
+      // Move arrows from inventory to quiver slot
+      const variant = state.party.inventory[action.variantKey];
+      if (!variant || variant.count < action.quantity || variant.item.category !== 'arrow') return state;
+
       const newQuiverSlots = [...state.party.quiverSlots] as typeof state.party.quiverSlots;
 
-      // Find matching or empty slot
+      // Find matching slot or empty slot
       let targetSlot = -1;
       for (let i = 0; i < 2; i++) {
-        if (newQuiverSlots[i]?.item.id === action.arrowId) {
+        if (newQuiverSlots[i]?.item.id === variant.item.id) {
           targetSlot = i;
           break;
         }
@@ -539,24 +571,39 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         }
       }
 
-      if (targetSlot === -1) return state;
+      if (targetSlot === -1) return state; // No available slot
 
-      const maxStack = arrowDef.maxStack ?? 99;
+      const maxStack = variant.item.maxStack ?? 99;
+      const currentQty = newQuiverSlots[targetSlot]?.quantity ?? 0;
+      const canAdd = Math.min(action.quantity, maxStack - currentQty);
+
+      if (canAdd <= 0) return state; // Slot is full
+
+      // Update quiver slot
       if (newQuiverSlots[targetSlot]) {
         newQuiverSlots[targetSlot] = {
           ...newQuiverSlots[targetSlot]!,
-          quantity: Math.min(newQuiverSlots[targetSlot]!.quantity + action.quantity, maxStack),
+          quantity: currentQty + canAdd,
         };
       } else {
         newQuiverSlots[targetSlot] = {
-          item: { ...arrowDef, enhancement: 0, superRare: 0 },
-          quantity: action.quantity,
+          item: { ...variant.item },
+          quantity: canAdd,
         };
+      }
+
+      // Remove from inventory
+      const newInventory = { ...state.party.inventory };
+      const newCount = variant.count - canAdd;
+      if (newCount <= 0) {
+        newInventory[action.variantKey] = { ...variant, count: 0, status: 'notown' };
+      } else {
+        newInventory[action.variantKey] = { ...variant, count: newCount };
       }
 
       return {
         ...state,
-        party: { ...state.party, quiverSlots: newQuiverSlots, gold: state.party.gold - cost },
+        party: { ...state.party, quiverSlots: newQuiverSlots, inventory: newInventory },
       };
     }
 
@@ -653,6 +700,10 @@ export function useGameState() {
 
     removeQuiverSlot: useCallback((slotIndex: number) => {
       dispatch({ type: 'REMOVE_QUIVER_SLOT', slotIndex });
+    }, []),
+
+    assignArrowToQuiver: useCallback((variantKey: string, quantity: number) => {
+      dispatch({ type: 'ASSIGN_ARROW_TO_QUIVER', variantKey, quantity });
     }, []),
 
     markItemsSeen: useCallback(() => {
