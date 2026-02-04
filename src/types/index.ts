@@ -297,9 +297,13 @@ export interface SuperRareTitle {
 export interface ExpeditionLogEntry {
   room: number;
   enemyName: string;
+  enemyHP: number;
+  enemyAttackValues: string; // format: "LONG/MID/CLOSE" e.g. "300/0/340"
   outcome: BattleOutcome;
   damageDealt: number;
   damageTaken: number;
+  remainingPartyHP: number;
+  maxPartyHP: number;
   reward?: string;
   details: BattleLogEntry[];
 }
@@ -313,6 +317,9 @@ export interface ExpeditionLog {
   finalOutcome: 'victory' | 'defeat' | 'retreat';
   entries: ExpeditionLogEntry[];
   rewards: Item[];
+  autoSellProfit: number;
+  remainingPartyHP: number;
+  maxPartyHP: number;
 }
 
 // Game State
