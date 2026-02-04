@@ -381,13 +381,13 @@ inventory = {
     - If party.`a.command`2, multiply x1.6
 - party.`f.abilities_defense_amplifier`(phase: phase):
   - If phase is LONG or CLOSE:
-	- If party.`a.defender`1, multiply x3/5
+	- If party.`a.defender`1, multiply x2/3
   	- If party.`a.defender`2, multiply x3/5
   - If phase is MID:
     - If party.`a.m-barrier`1, multiply x2/3
     - If party.`a.m-barrier`2, multiply x3/5
 
-- party.`elemental_resistance_attribute`:
+- party.`f.elemental_resistance_attribute`:
   	- Always set 1. (not for this version)
 
 ## 4. HOME
