@@ -154,6 +154,7 @@ export interface Character {
 // Computed character stats for battle
 export interface ComputedCharacterStats {
   characterId: number;
+  row: number; // 1-6, position in party (for targeting)
   baseStats: BaseStats;
   rangedAttack: number;
   magicalAttack: number;
@@ -161,6 +162,8 @@ export interface ComputedCharacterStats {
   rangedNoA: number;
   magicalNoA: number;
   meleeNoA: number;
+  physicalDefense: number; // Individual defense for targeting
+  magicalDefense: number; // Individual defense for targeting
   maxEquipSlots: number;
   abilities: Ability[];
   penetMultiplier: number;
@@ -276,6 +279,8 @@ export interface GameBags {
   rewardBag: RandomBag;
   enhancementBag: RandomBag;
   superRareBag: RandomBag;
+  physicalThreatBag: RandomBag;
+  magicalThreatBag: RandomBag;
 }
 
 // Enhancement/SuperRare Title

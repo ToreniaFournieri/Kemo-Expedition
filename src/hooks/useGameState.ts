@@ -16,11 +16,11 @@ import { computePartyStats } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
 import { getDungeonById } from '../data/dungeons';
 import { getEnemiesByPool, getBossEnemy } from '../data/enemies';
-import { drawFromBag, refillBagIfEmpty, createRewardBag, createEnhancementBag, createSuperRareBag } from '../game/bags';
+import { drawFromBag, refillBagIfEmpty, createRewardBag, createEnhancementBag, createSuperRareBag, createPhysicalThreatBag, createMagicalThreatBag } from '../game/bags';
 import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 
-const BUILD_NUMBER = 11;
+const BUILD_NUMBER = 12;
 const STORAGE_KEY = 'kemo-expedition-save';
 
 // Helper to calculate sell price for an item
@@ -220,6 +220,8 @@ function createInitialState(): GameState {
       rewardBag: createRewardBag(),
       enhancementBag: createEnhancementBag(),
       superRareBag: createSuperRareBag(),
+      physicalThreatBag: createPhysicalThreatBag(),
+      magicalThreatBag: createMagicalThreatBag(),
     },
     selectedDungeonId: 1,
     lastExpeditionLog: null,
@@ -285,7 +287,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         const enemy = selectEnemy(dungeon.id, room, totalRooms);
         if (!enemy) break;
 
-        const battleResult = executeBattle(state.party, enemy, quiverQty);
+        const battleResult = executeBattle(state.party, enemy, quiverQty, bags);
+        // Update threat bags from battle result
+        bags = {
+          ...bags,
+          physicalThreatBag: battleResult.updatedBags.physicalThreatBag,
+          magicalThreatBag: battleResult.updatedBags.magicalThreatBag,
+        };
         const damageDealt = enemy.hp - Math.max(0, battleResult.enemyHp);
         const damageTaken = currentHp - battleResult.partyHp;
 
@@ -649,6 +657,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           rewardBag: createRewardBag(),
           enhancementBag: createEnhancementBag(),
           superRareBag: createSuperRareBag(),
+          physicalThreatBag: createPhysicalThreatBag(),
+          magicalThreatBag: createMagicalThreatBag(),
         },
         selectedDungeonId: 1,
         lastExpeditionLog: null,
