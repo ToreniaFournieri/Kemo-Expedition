@@ -474,7 +474,7 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) )) x actor.`f.abilities_offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x party.`f.abilities_offense_amplifier`
 
 **Row-based modifier** 
-- Targeting selects a character only to determine defense, row potency, abilities (counter). All damage to character is always applied to `party.d.HP`.
+- Targeting selects a character only to determine defense, row potency, abilities (counter). All damage resolved against a character is applied to `party.d.HP`.
   - The threat weight table defines how many tickets of each row index are placed into `g.threat_weight_bag`.
 
 |row | Physical Threat weight |
