@@ -32,7 +32,7 @@
 
 ### 2.1 Global constants
 - One deity represents on one party. The deity has its own level, HP, and unique divine abilities. 
-const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'Party_HP' , 'quiver_slots' ]
+const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP' , 'quiver_slots' ]
 
 - Initial deity: 'God of Restoration' // Revives character at the base automatically, no death penalty 
 
@@ -252,10 +252,10 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'Party_HP' , 'qu
 |`i.gauntlet` | 籠手 | 手 | + `melee_NoA` |
 |`i.wand` | ワンド | 杖 | + `magical_attack` |
 |`i.robe` | 法衣 | 衣 | + `Party_magical_defense` |
-|`i.amulet` | 護符 | 護 | + `Party_HP` |
+|`i.amulet` | 護符 | 護 | + `party.d.HP` |
 |`i.arrow` | 矢 | 矢 | Consumable, Lower `max_stack` than default (e.g., x20 instead of x99),, `elemental_attribute` |
 
-- *note:* item might have multiple bonus. sword may have `Party_HP` but subtle value.
+- *note:* item might have multiple bonus. sword may have `party.d.HP` but subtle value.
 - (Temporary test purpose) Make 5 itmes for each item type. 
 
 #### 2.4.2 Item stacking
@@ -404,7 +404,7 @@ inventory = {
 
 ## 5. EXPEDITION 
 
-- Persistence through an expedition:'Party_HP', remaining of arrows.
+- Persistence through an expedition:'party.d.HP', remaining of arrows.
 
 ### 5.1 Logs
 - `f.quick_summary`:
