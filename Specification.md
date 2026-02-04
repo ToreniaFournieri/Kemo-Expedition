@@ -606,7 +606,7 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
   - Editable `name` field.
   - Race selection:
     - Displays a list of available Races.
-    - Each entry shows its unique bonus (ex. 🐶ケイナイアン | 護符 x1.3, 弓 x1.1)
+    - Each entry shows its name, base status, and unique bonus (ex. 🐶ケイナイアン |体10,力10,知10,精10 | 護符 x1.3, 弓 x1.1)
   - Main Class selection:
     - Displays a list of available Classes.
     - Each entry shows its name and unique bonus (main bonus and main/sub bonuses)
