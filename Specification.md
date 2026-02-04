@@ -641,10 +641,6 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
   - Notification pops up when acquiring a new item
   - Newly acquired items are shown in bold
   - Once displayed, text returns to normal
-- Quiver management:
-  - Acquire arrows
-  - Refill arrows
-  - Remove arrows
 - Item list:
   - Stacked by item variant
   - Shows state:`s.owned` items
@@ -668,6 +664,11 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
   - Item Row: The name, count, and status are left-aligned, while the Unlock button is right-aligned on the same line
     - ex. 名工のロングソード x3 | 近攻+19     [解除]
   - Unlock button(解除): Changes item state from `s.sold` to `s.notown`
+
+- Quiver management: at item category tab of "矢"
+  - Acquire arrows
+  - Refill arrows
+  - Remove arrows
 
 #### 8.3.4 Shop
 - Purchase basic items:
