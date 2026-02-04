@@ -209,7 +209,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 		- Equipment slots
 
 - Characters do not have individual HP.
-    - but each character contrivutes total HP, physical defense and magical defense. 
+    - but each character contrivutes total HP. 
 
 ### 2.3 Dungeons & Enemies
 
