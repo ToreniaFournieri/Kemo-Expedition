@@ -477,7 +477,7 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 - for LONG and CLOSE phase.
 - Targeting selects a character only to determine defense, row potency, abilities (counter). All damage is always applied to party.d.HP.
 
-|row | Thread weight |
+|row | Threat weight |
 |---|---|
 |1|16|
 |2|8|
