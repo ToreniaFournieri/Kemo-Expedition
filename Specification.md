@@ -623,7 +623,7 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 - **Edit Confirmation Rules:**
   - **Done (完了):**
     - Saves all changes to Race, Class, and Name.
-    - **Automatic Unequip:** All currently equipped items on this character are removed and returned to the inventory (`s.inventory`).
+    - **Automatic Unequip:** All currently equipped items on this character are removed and returned to the inventory.
 	- Character status updates immediately.
     - *Reason:* To prevent invalid stat states and ensure new class bonuses are calculated correctly from base values.
   - **Cancel (取消):**
