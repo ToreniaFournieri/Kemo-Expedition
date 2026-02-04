@@ -188,7 +188,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 		- `r.thunder`
     - quiver slots
  
-- **Quariver system**
+- **Quiver system**
   - Definition: A shared party resource that houses all `i.arrow` items.
   - Quiver Slots: The party has **Two** slots specifically for arrow types.
   - Stacking: Each arrow type has a `max_stack` property. Multiple stacks of the same arrow ID can occupy different quiver slots.
