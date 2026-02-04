@@ -153,7 +153,6 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         {activeTab === 'expedition' && (
           <ExpeditionTab
             state={state}
-            partyStats={partyStats}
             onSelectDungeon={actions.selectDungeon}
             onRunExpedition={actions.runExpedition}
           />
@@ -450,12 +449,10 @@ function PartyTab({
 
 function ExpeditionTab({
   state,
-  partyStats,
   onSelectDungeon,
   onRunExpedition,
 }: {
   state: GameState;
-  partyStats: ReturnType<typeof computePartyStats>['partyStats'];
   onSelectDungeon: (dungeonId: number) => void;
   onRunExpedition: () => void;
 }) {
@@ -482,48 +479,10 @@ function ExpeditionTab({
         </div>
       </div>
 
-      {/* Party Stats Summary */}
-      <div className="bg-pane rounded-lg p-3 mb-4">
-        <div className="grid grid-cols-3 gap-2 text-center text-sm">
-          <div>
-            <div className="text-xs text-gray-500">HP</div>
-            <div className="font-medium">{partyStats.hp}</div>
-          </div>
-          <div>
-            <div className="text-xs text-gray-500">物理防御</div>
-            <div className="font-medium">{partyStats.physicalDefense}</div>
-          </div>
-          <div>
-            <div className="text-xs text-gray-500">魔法防御</div>
-            <div className="font-medium">{partyStats.magicalDefense}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Dungeon Selection */}
-      <div className="text-sm font-medium mb-2">ダンジョン選択</div>
-      <div className="space-y-2 mb-4">
-        {DUNGEONS.map(dungeon => (
-          <button
-            key={dungeon.id}
-            onClick={() => onSelectDungeon(dungeon.id)}
-            className={`w-full p-3 text-left border rounded-lg ${
-              dungeon.id === state.selectedDungeonId
-                ? 'border-sub bg-blue-50'
-                : 'border-gray-200 hover:border-sub'
-            }`}
-          >
-            <div className="font-medium">{dungeon.name}</div>
-            <div className="text-xs text-gray-500">部屋数: {dungeon.numberOfRooms} + ボス</div>
-          </button>
-        ))}
-      </div>
-
       {/* Last Expedition Log */}
       {state.lastExpeditionLog && (
-        <div className="mt-8 pt-4 border-t-2 border-gray-200">
-          <div className="bg-pane rounded-lg p-4">
-            <button
+        <div className="bg-pane rounded-lg p-4 mb-4">
+          <button
             onClick={() => setShowLog(!showLog)}
             className="w-full flex justify-between items-center text-sm font-medium"
           >
@@ -597,9 +556,27 @@ function ExpeditionTab({
               </div>
             </div>
           )}
-          </div>
         </div>
       )}
+
+      {/* Dungeon Selection */}
+      <div className="text-sm font-medium mb-2">ダンジョン選択</div>
+      <div className="space-y-2">
+        {DUNGEONS.map(dungeon => (
+          <button
+            key={dungeon.id}
+            onClick={() => onSelectDungeon(dungeon.id)}
+            className={`w-full p-3 text-left border rounded-lg ${
+              dungeon.id === state.selectedDungeonId
+                ? 'border-sub bg-blue-50'
+                : 'border-gray-200 hover:border-sub'
+            }`}
+          >
+            <div className="font-medium">{dungeon.name}</div>
+            <div className="text-xs text-gray-500">部屋数: {dungeon.numberOfRooms} + ボス</div>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
