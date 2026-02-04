@@ -489,6 +489,13 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 - `g.threat_weight_bag` Threat Weight (Passive Targeting) 
   - A numerical value assigned to a unit based on their row position that determines the size of their "slice" in the enemy's targeting pool.
 
+- `f.targeting`:
+  - Gets one ticket from g.threat_weight_bag.
+    - Bag contains numbers [1,2,3,4,5,6]
+    - The drawn number corresponds to row index (1–6).
+    - The character currently occupying that row is selected as the target.
+  
+
 - `d.attack_potency` (Offensive Multiplier)
   - A global damage modifier applied to a unit’s final output based on their current row position.
   - Row-based modifiers apply only to player characters. Enemies are treated as having fixed potency (1.0).
@@ -502,12 +509,7 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 |5| 0.52 |
 |6| 0.44 |
 
-`f.targeting`:
-  - Gets one ticket from g.threat_weight_bag.
-    - Bag contains numbers [1,2,3,4,5,6]
-    - The drawn number corresponds to row index (1–6).
-    - The character currently occupying that row is selected as the target.
-  
+
 ### 6.3 Turn resolution 
 - For each phase, actions are resolved in the following order:
     - Enemy attacks
