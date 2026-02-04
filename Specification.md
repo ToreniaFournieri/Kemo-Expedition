@@ -107,7 +107,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
     - `b.vitality`: 体, 体力. contributes to Party HP
     - `b.strength`: 力. contributes to physical attack
     - `b.intelligence`: 知, 知性. contributes to magical attack
-    - `b.mind`: 精, 精神. contributes to magical resistance effects (not used in this version)
+    - `b.mind`: 精, 精神. contributes to magical resistance effects
 
 - Base status values are summed across the party and converted into party-wide or individual values according to system rules.
 
@@ -177,17 +177,12 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 #### 2.2.2 Party structure 
 
 1. Party Properties
-- Player party consists of up to 6 characters
+- Player party consists of 6 characters. 
+- Row Assignment: Party members occupy positions 1 through 6. Row 1 represents the front-most position (highest threat), while Row 6 represents the back-most position (lowest threat).
+
 - All characters participate simultaneously
 - Party has its:
     - Party `d.HP`
-    - Party `f.defense`
-	    - `d.physical_defense`
-	    - `d.magical_defense`
-  	- `f.elemental_resistance_attribute` // 1.0 as default. 0.5 is strong, 2.0 is weak
-		- `r.fire`
-		- `r.ice`
-		- `r.thunder`
     - quiver slots
  
 - **Quiver system**
@@ -204,6 +199,13 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
     - `f.elemental_offense_attribute`  // 1.0 as default. 0.5 is weak, 2.0 is strong
 		- Has only one type of `none`, `e.fire`, `e.ice`, or `e.thunder`
       		- Priority: `e.thunder` > `e.ice` > `e.fire` > `none` (if it has multiple attribute)
+    - `f.defense`
+	    - `d.physical_defense`
+	    - `d.magical_defense`
+  	- `f.elemental_resistance_attribute` // 1.0 as default. 0.5 is strong, 2.0 is weak
+		- `r.fire`
+		- `r.ice`
+		- `r.thunder`
 		- Equipment slots
 
 - Characters do not have individual HP.
