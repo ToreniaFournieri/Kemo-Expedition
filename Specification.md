@@ -601,10 +601,36 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 - Party member details:
   - Name, race, class, traits, bonuses
   - Editable parameters
-- Edit rule:
-  - Editing a character unequips all equipment
-  - Equipment returns to Inventory
-  - Character status updates immediately
+- **Character Edit Mode** (selected member):
+  - Name edit:
+  - Editable `name` field.
+  - Race selection:
+    - Displays a list of available Races.
+    - Each entry shows its unique bonus (ex. 🐶ケイナイアン | 護符 x1.3, 弓 x1.1)
+  - Main Class selection:
+    - Displays a list of available Classes.
+    - Each entry shows its unique bonus (main bonus, main/sub bonuses)
+      - If Main Class == Sub Class, then show master bonus instead of main bonus.
+  - Sub Class selection:
+    - Displays a list of available Classes.
+    - Each entry shows its unique bonus (main/sub bonuses)
+  - Predisposition selection:
+    - Displays a list of available Predispositions.
+    - Each entry shows its unique bonus.
+  - Lineage selection:
+    - Displays a list of available Lineage.
+    - Each entry shows its unique bonus.
+- **Edit Confirmation Rules:**
+  - **Done (完了):**
+    - Saves all changes to Race, Class, and Name.
+    - **Automatic Unequip:** All currently equipped items on this character are removed and returned to the inventory (`s.inventory`).
+	- Character status updates immediately.
+    - *Reason:* To prevent invalid stat states and ensure new class bonuses are calculated correctly from base values.
+  - **Cancel (取消):**
+    - Discards all pending changes.
+    - Character remains exactly as they were (Race, Class, and Equipment are untouched).
+  - **UI Requirement:** Display a confirmation warning when pressing "Done": *"Saving changes will unequip all items. Proceed?"*
+
 - Equipment management:
   - Equip / remove from inventory
     - Equipped item: The name and status are left-aligned, item type is right-aligned on **the same line**.
