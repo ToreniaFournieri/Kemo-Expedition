@@ -26,6 +26,7 @@
 |`i.` | **i**tem category |
 |`p.` | ex**p**edition |
 |`r.` | elemental_**r**esistance_attribute |
+|`s.`| item **s**tate |
 
 
 ### 2.1 Global constants
@@ -276,7 +277,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
   - Once a stack is sold, that specific variant is removed from the inventory.
   - Future drops of the exact same variant are automatically sold.
 - **Auto-sell maintenance:**
-  - Players can change an item’s status from `sold` to `notown`.
+  - Players can change an item’s status from `s.sold` to `s.notown`.
   - Sold items cannot be restored or refunded.
   - After a status reset, the variant can be collected in the inventory again.
 
@@ -285,9 +286,9 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 | State | meaning|
 |-------|---------|
 |(no record) |Variant never encountered|
-|owned |Item variant exists in inventory (count > 0)|
-|sold |Item variant is obsolete and auto-sold on pickup|
-|notown |Item variant is not owned and may drop normally|
+|`s.owned` |Item variant exists in inventory (count > 0)|
+|`s.sold` |Item variant is obsolete and auto-sold on pickup|
+|`s.notown` |Item variant is not owned and may drop normally|
 
 
 ```
@@ -532,9 +533,9 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | `p.enemy_attack_values` |
 
 - **Item Retrieval Logic:**
   - Items are stacked by (superRare, enhancement, and base item) and has state
-  - *State:`sold` Auto-Sell:* If a dropped item matches a rule with state:`sold`, it is sold immediately (not added to inventory, gain Gold)
-  - *State:`owned` Existing Items:* If the item is already in the inventory, increment the item count
-  - *State:(no record) New Items:* If no record for the item exists, the system generates the item and sets it to state:`owned`
+  - *State:`s.sold` Auto-Sell:* If a dropped item matches a rule with state:`s.sold`, it is sold immediately (not added to inventory, gain Gold)
+  - *State:`s.owned` Existing Items:* If the item is already in the inventory, increment the item count
+  - *State:(no record) New Items:* If no record for the item exists, the system generates the item and sets it to state:`s.owned`
 
 ## 7. REWARD 
 
@@ -642,7 +643,7 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | `p.enemy_attack_values` |
   - Remove arrows
 - Item list:
   - Stacked by item variant
-  - Shows state:`owned` items
+  - Shows state:`s.owned` items
   - Inventory includes item category tabs:
     - 剣,刀,弓,鎧,手,杖,衣,護,矢.
     - Default: 剣
@@ -653,16 +654,16 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | `p.enemy_attack_values` |
   	3.	SuperRare
   - Item Row: The name, count, and status are left-aligned, while the sell all button is right-aligned on the same line 
     - ex. 名工のロングソード x3 | 近攻+19     [全売却 39G]
-  - Sell all button(全売却): Sells all item, and Changes item state from `owned` to `sold`
+  - Sell all button(全売却): Sells all item, and Changes item state from `s.owned` to `s.sold`
   - Inventory pane shows at least 10 items
 - Actions:
   - Sell item stacks
   - Sold items disappear immediately
 - Auto-sold list (Collapsed by default; tap to expand)
-  - Sort and filter settings also apply to this list (displaying items with the state:`sold`)
+  - Sort and filter settings also apply to this list (displaying items with the state:`s.sold`)
   - Item Row: The name, count, and status are left-aligned, while the Unlock button is right-aligned on the same line
     - ex. 名工のロングソード x3 | 近攻+19     [解除]
-  - Unlock button(解除): Changes item state from `sold` to `notown`
+  - Unlock button(解除): Changes item state from `s.sold` to `s.notown`
 
 #### 8.3.4 Shop
 - Purchase basic items:
