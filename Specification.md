@@ -218,7 +218,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'Party_HP' , 'qu
 	- `d.ranged_attack`, `d.ranged_NoA`
 	- `d.magical_attack`, `d.magical_NoA`
 	- `d.melee_attack`, `d.melee_NoA`- ranged_attack
-- `f.attack_amplifier` 
+- `f.abilities_offense_amplifier` 
 	- `d.ranged_attack_amplifier` // 1.0 as default 
 	- `d.magical_attack_amplifier` // 1.0 as default 
 	- `d.melee_attack_amplifier` // 1.0 as default 
