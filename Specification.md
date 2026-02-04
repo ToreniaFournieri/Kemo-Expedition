@@ -262,23 +262,23 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 |`i.wand` | ワンド | 杖 | + `magical_attack` |
 |`i.robe` | 法衣 | 衣 | + `Party_magical_defense` |
 |`i.amulet` | 護符 | 護 | + `Party_HP` |
-|`i.arrow` | 矢 | 矢 | Consumable, Stackable. Has `max_stack`, `elemental_attribute` |
+|`i.arrow` | 矢 | 矢 | Consumable, Lower `max_stack` than default (e.g., x20 instead of x99),, `elemental_attribute` |
 
 - *note:* item might have multiple bonus. sword may have `Party_HP` but subtle value.
-- (Temporary test purspose) Make 5 itmes for each item type. 
+- (Temporary test purpose) Make 5 itmes for each item type. 
 
 #### 2.4.2 Item stacking
-- Items are stacked by (superRare, enhancement, and base item)
-  - Inventory tracks item variants, not individual instances.
-  - Inventory displays stack count per variant.
+- Items are stacked by (superRare, enhancement, and base item). The default `max_stack` is 99, except for `i.arrow`.
+  - Inventory Tracking: The inventory tracks item variants rather than individual instances.
+  - Display: Shows the total stack count per variant.
   - Selling is all-or-nothing per stack. 
-  - Once a stack is sold, that item variant becomes obsolete:
-    It is removed from the inventory display.
-    - Any future drops of the exact same variant are automatically sold.
-- **Auto-sold maintenance:**
-  - The player may change an item’s status from sold to notown.
+- **Obsolete Variants (Auto-sell Logic):**
+  - Once a stack is sold, that specific variant is removed from the inventory.
+  - Future drops of the exact same variant are automatically sold.
+- **Auto-sell maintenance:**
+  - Players can change an item’s status from `sold` to `notown`.
   - Sold items cannot be restored or refunded.
-  - After reset, the item variant may be acquired again through normal gameplay.
+  - After a status reset, the variant can be collected in the inventory again.
 
 - **State definitions**
 
