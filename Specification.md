@@ -32,7 +32,7 @@
 
 ### 2.1 Global constants
 - One deity represents on one party. The deity has its own level, HP, and unique divine abilities. 
-const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'Party_HP', 'Party_physical_defense', 'Party_magical_defense' , 'quiver_slots' ]
+const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'Party_HP' , 'quiver_slots' ]
 
 - Initial deity: 'God of Restoration' // Revives character at the base automatically, no death penalty 
 
