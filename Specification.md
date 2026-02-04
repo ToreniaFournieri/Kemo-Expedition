@@ -415,11 +415,11 @@ inventory = {
 
 ## 5.1 Logs
 - `f.quick_summary`:
-`p.outcome_of_expedition`: 勝利/敗北/引分
-`p.remaining_HP`: 340/1000 -> 34 (percentage)
-`p.reached_room` / `p.number_of_rooms` : 4/6
-`p.gained _experience`: ex. +234
-`p.retrieving_trophies`: Shows items. if party is defeated, no trohies shown.
+  - `p.outcome_of_expedition`: 勝利/敗北/引分
+  - `p.remaining_HP`: 340/1000 -> 34 (percentage)
+  - `p.reached_room` / `p.number_of_rooms` : 4/6
+  - `p.gained _experience`: ex. +234
+  - `p.retrieving_trophies`: Shows items. if party is defeated, no trohies shown.
 
 ```
 前回の探検結果: `p.dungeon_name`
@@ -429,13 +429,14 @@ inventory = {
 ```
 
 - `f.list_of_rooms`
-`p.enemy_name`: Name of enemy. if he is Boss, add (BOSS).
-`p.enemy_HP`: Shows enemy's `d.HP` (max HP)
-`p.enemy_attack_values`: Shows `f.damage_calculation` per each range. (this function considers Party defense and buffs)  ex. 300/0/340
-`p.outcome_of_room`: 勝利/敗北/引分
-`p.total_dealt_damage`: Shows total dealt damage
-`p.total_taken_damage`: Shows total taken damage
-`p.reward_from_room`: Shows item.
+  - `p.enemy_name`: Name of enemy. if he is Boss, add (BOSS).
+  - `p.enemy_HP`: Shows enemy's `d.HP` (max HP)
+  - `p.enemy_attack_values`: Shows `f.damage_calculation` per each range. (this function considers Party defense and buffs)  ex. 300/0/340
+  - `p.outcome_of_room`: 勝利/敗北/引分
+  - `p.total_dealt_damage`: Shows total dealt damage
+  - `p.total_taken_damage`: Shows total taken damage
+  - `p.reward_from_room`: Shows item.
+
 ```
 Room X: `p.enemy_name` | HP:`p.enemy_HP` | `p.enemy_attack_values` |
 `p.outcome_of_room`
@@ -443,7 +444,7 @@ Room X: `p.enemy_name` | HP:`p.enemy_HP` | `p.enemy_attack_values` |
 与ダメ: `p.total_dealt_damage` | 被ダメ: `p.total_taken_damage`  | 獲得: `p.reward_from_room`. 
 ```
 
--  `f.battle_logs`
+- `f.battle_logs`
 
 ```
 戦闘ログ:
