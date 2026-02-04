@@ -13,14 +13,14 @@ import {
   getVariantKey,
 } from '../types';
 import { computePartyStats } from '../game/partyComputation';
-import { executeBattle } from '../game/battle';
+import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
 import { getDungeonById } from '../data/dungeons';
 import { getEnemiesByPool, getBossEnemy } from '../data/enemies';
 import { drawFromBag, refillBagIfEmpty, createRewardBag, createEnhancementBag, createSuperRareBag } from '../game/bags';
 import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 
-const BUILD_NUMBER = 4;
+const BUILD_NUMBER = 6;
 const STORAGE_KEY = 'kemo-expedition-save';
 
 // Helper to calculate sell price for an item
@@ -35,7 +35,7 @@ function addItemToInventory(
   inventory: InventoryRecord,
   item: Item,
   currentGold: number
-): { inventory: InventoryRecord; gold: number; wasAutoSold: boolean } {
+): { inventory: InventoryRecord; gold: number; wasAutoSold: boolean; autoSellProfit: number } {
   const key = getVariantKey(item);
   const existing = inventory[key];
 
@@ -46,6 +46,7 @@ function addItemToInventory(
       inventory,
       gold: currentGold + sellPrice,
       wasAutoSold: true,
+      autoSellProfit: sellPrice,
     };
   }
 
@@ -66,7 +67,7 @@ function addItemToInventory(
     };
   }
 
-  return { inventory: newInventory, gold: currentGold, wasAutoSold: false };
+  return { inventory: newInventory, gold: currentGold, wasAutoSold: false, autoSellProfit: 0 };
 }
 
 // Helper to remove one item from inventory
@@ -276,6 +277,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const totalRooms = dungeon.numberOfRooms;
       let currentInventory = state.party.inventory;
       let currentGold = state.party.gold;
+      let totalAutoSellProfit = 0;
 
       // Run through all rooms + boss
       for (let room = 1; room <= totalRooms + 1; room++) {
@@ -286,12 +288,19 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         const damageDealt = enemy.hp - Math.max(0, battleResult.enemyHp);
         const damageTaken = currentHp - battleResult.partyHp;
 
+        // Calculate enemy attack values for display
+        const enemyAttackValues = calculateEnemyAttackValues(enemy, partyStats);
+
         const entry: ExpeditionLogEntry = {
           room,
           enemyName: enemy.name + (room > totalRooms ? ' (BOSS)' : ''),
+          enemyHP: enemy.hp,
+          enemyAttackValues,
           outcome: battleResult.outcome!,
           damageDealt,
           damageTaken,
+          remainingPartyHP: battleResult.partyHp,
+          maxPartyHP: partyStats.hp,
           details: battleResult.log,
         };
 
@@ -333,6 +342,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               const result = addItemToInventory(currentInventory, newItem, currentGold);
               currentInventory = result.inventory;
               currentGold = result.gold;
+              totalAutoSellProfit += result.autoSellProfit;
             }
           }
 
@@ -366,6 +376,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         finalOutcome,
         entries,
         rewards,
+        autoSellProfit: totalAutoSellProfit,
+        remainingPartyHP: currentHp,
+        maxPartyHP: partyStats.hp,
       };
 
       return {

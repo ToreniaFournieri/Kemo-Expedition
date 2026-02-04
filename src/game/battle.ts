@@ -366,3 +366,13 @@ export function calculateArrowRecovery(
   const recoveryRate = maxHunterLevel === 3 ? 0.36 : maxHunterLevel === 2 ? 0.30 : maxHunterLevel === 1 ? 0.20 : 0;
   return Math.floor(arrowsConsumed * recoveryRate);
 }
+
+// Calculate enemy attack values for all phases (for display)
+export function calculateEnemyAttackValues(
+  enemy: EnemyDef,
+  partyStats: ComputedPartyStats
+): string {
+  const phases: BattlePhase[] = ['long', 'mid', 'close'];
+  const damages = phases.map(phase => calculateEnemyDamage(phase, enemy, partyStats));
+  return damages.join('/');
+}

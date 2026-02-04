@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { DUNGEONS } from '../data/dungeons';
 import { RACES } from '../data/races';
@@ -62,6 +62,36 @@ const CATEGORY_NAMES: Record<string, string> = {
   arrow: '矢',
 };
 
+// Category short names for tabs (spec: 剣,刀,弓,鎧,手,杖,衣,護,矢)
+const CATEGORY_SHORT_NAMES: Record<string, string> = {
+  sword: '剣',
+  katana: '刀',
+  archery: '弓',
+  armor: '鎧',
+  gauntlet: '手',
+  wand: '杖',
+  robe: '衣',
+  amulet: '護',
+  arrow: '矢',
+};
+
+const CATEGORY_ORDER = ['sword', 'katana', 'archery', 'armor', 'gauntlet', 'wand', 'robe', 'amulet', 'arrow'];
+const EQUIP_CATEGORY_ORDER = ['sword', 'katana', 'archery', 'armor', 'gauntlet', 'wand', 'robe', 'amulet']; // Excluding arrow
+
+// Sort items by Item ID, then Enhancement, then SuperRare
+function sortInventoryItems(items: [string, InventoryVariant][]): [string, InventoryVariant][] {
+  return [...items].sort((a, b) => {
+    const itemA = a[1].item;
+    const itemB = b[1].item;
+    // Sort by Item ID first
+    if (itemA.id !== itemB.id) return itemA.id - itemB.id;
+    // Then by Enhancement
+    if (itemA.enhancement !== itemB.enhancement) return itemA.enhancement - itemB.enhancement;
+    // Then by SuperRare
+    return itemA.superRare - itemB.superRare;
+  });
+}
+
 export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const [activeTab, setActiveTab] = useState<Tab>('party');
   const [selectedCharacter, setSelectedCharacter] = useState<number>(0);
@@ -96,7 +126,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-lg font-bold">ケモの冒険</h1>
-            <div className="text-xs text-gray-500">v0.0.8 ({state.buildNumber})</div>
+            <div className="text-xs text-gray-500">v0.0.9 ({state.buildNumber})</div>
           </div>
           <div className="text-right text-sm">
             <div className="font-medium">{state.party.deityName}</div>
@@ -206,6 +236,7 @@ function PartyTab({
   onEquipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
 }) {
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
+  const [equipCategory, setEquipCategory] = useState('sword');
 
   const char = party.characters[selectedCharacter];
   const stats = characterStats[selectedCharacter];
@@ -399,50 +430,69 @@ function PartyTab({
       </div>
 
       {/* Item selection popup */}
-      {selectingSlot !== null && (
-        <div className="mt-4 border border-sub rounded-lg p-4 bg-blue-50">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium">スロット {selectingSlot + 1} に装備</span>
-            <div className="flex gap-2">
-              {char.equipment[selectingSlot] && (
+      {selectingSlot !== null && (() => {
+        const filteredItems = sortInventoryItems(
+          Object.entries(party.inventory)
+            .filter(([, v]) => v.status === 'owned' && v.count > 0 && v.item.category === equipCategory)
+        );
+        return (
+          <div className="mt-4 border border-sub rounded-lg p-4 bg-blue-50">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium">スロット {selectingSlot + 1} に装備</span>
+              <div className="flex gap-2">
+                {char.equipment[selectingSlot] && (
+                  <button
+                    onClick={() => { onEquipItem(char.id, selectingSlot, null); setSelectingSlot(null); }}
+                    className="text-xs text-red-500 px-2 py-1 border border-red-300 rounded bg-white"
+                  >
+                    外す
+                  </button>
+                )}
                 <button
-                  onClick={() => { onEquipItem(char.id, selectingSlot, null); setSelectingSlot(null); }}
-                  className="text-xs text-red-500 px-2 py-1 border border-red-300 rounded bg-white"
+                  onClick={() => setSelectingSlot(null)}
+                  className="text-xs text-gray-500 px-2 py-1 border border-gray-300 rounded bg-white"
                 >
-                  外す
+                  閉じる
                 </button>
-              )}
-              <button
-                onClick={() => setSelectingSlot(null)}
-                className="text-xs text-gray-500 px-2 py-1 border border-gray-300 rounded bg-white"
-              >
-                閉じる
-              </button>
+              </div>
             </div>
-          </div>
-          <div className="space-y-1 max-h-48 overflow-y-auto">
-            {Object.entries(party.inventory)
-              .filter(([, v]) => v.status === 'owned' && v.count > 0 && v.item.category !== 'arrow')
-              .map(([key, variant]) => (
+            {/* Category tabs */}
+            <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
+              {EQUIP_CATEGORY_ORDER.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setEquipCategory(cat)}
+                  className={`px-2 py-1 text-xs rounded ${
+                    equipCategory === cat
+                      ? 'bg-sub text-white'
+                      : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                  }`}
+                >
+                  {CATEGORY_SHORT_NAMES[cat]}
+                </button>
+              ))}
+            </div>
+            <div className="space-y-1 min-h-[200px] max-h-48 overflow-y-auto">
+              {filteredItems.map(([key, variant]) => (
                 <button
                   key={key}
                   onClick={() => { onEquipItem(char.id, selectingSlot, key); setSelectingSlot(null); }}
                   className="w-full p-2 text-left text-sm border border-gray-200 rounded bg-white hover:bg-gray-50"
                 >
-                  <div className="flex justify-between">
+                  <div className="flex items-center gap-2">
                     <span className="font-medium">{getItemDisplayName(variant.item)}</span>
-                    <span className="text-xs text-gray-400">[{CATEGORY_NAMES[variant.item.category]}]</span>
+                    <span className="text-xs text-gray-500">x{variant.count}</span>
+                    <span className="text-xs text-gray-400">| {getItemStats(variant.item)}</span>
                   </div>
-                  <div className="text-xs text-gray-500">{getItemStats(variant.item)}</div>
-                  {variant.count > 1 && <span className="text-xs text-sub">x{variant.count}</span>}
                 </button>
               ))}
-            {Object.values(party.inventory).filter(v => v.status === 'owned' && v.count > 0 && v.item.category !== 'arrow').length === 0 && (
-              <div className="text-gray-400 text-sm text-center py-2">装備可能なアイテムがありません</div>
-            )}
+              {filteredItems.length === 0 && (
+                <div className="text-gray-400 text-sm text-center py-2">このカテゴリに装備可能なアイテムがありません</div>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
@@ -501,8 +551,12 @@ function ExpeditionTab({
                    state.lastExpeditionLog.finalOutcome === 'defeat' ? '敗北' : '撤退'}
                 </span>
                 <span className="text-gray-500">
+                  {' '}| 残HP: {state.lastExpeditionLog.remainingPartyHP}/{state.lastExpeditionLog.maxPartyHP}
                   {' '}| {state.lastExpeditionLog.completedRooms}/{state.lastExpeditionLog.totalRooms}部屋
                   {' '}| EXP: +{state.lastExpeditionLog.totalExperience}
+                  {state.lastExpeditionLog.autoSellProfit > 0 && (
+                    <span> | 自動売却額: {state.lastExpeditionLog.autoSellProfit}G</span>
+                  )}
                 </span>
               </div>
 
@@ -524,18 +578,22 @@ function ExpeditionTab({
                     >
                       <div className="flex justify-between items-center">
                         <span className="font-medium">Room {entry.room}: {entry.enemyName}</span>
-                        <div className="flex items-center gap-2">
-                          <span className={
-                            entry.outcome === 'victory' ? 'text-green-600' :
-                            entry.outcome === 'defeat' ? 'text-red-600' : 'text-yellow-600'
-                          }>
-                            {entry.outcome === 'victory' ? '勝利' :
-                             entry.outcome === 'defeat' ? '敗北' : '引分'}
-                          </span>
-                          <span className={`transform transition-transform ${expandedRoom === i ? 'rotate-180' : ''}`}>▼</span>
-                        </div>
+                        <span className={`transform transition-transform ${expandedRoom === i ? 'rotate-180' : ''}`}>▼</span>
                       </div>
-                      <div className="text-gray-500">
+                      <div className="text-gray-500 mt-1">
+                        敵HP:{entry.enemyHP} | 敵攻撃:{entry.enemyAttackValues}
+                      </div>
+                      <div className="flex justify-between items-center mt-1">
+                        <span className={
+                          entry.outcome === 'victory' ? 'text-green-600 font-medium' :
+                          entry.outcome === 'defeat' ? 'text-red-600 font-medium' : 'text-yellow-600 font-medium'
+                        }>
+                          {entry.outcome === 'victory' ? '勝利' :
+                           entry.outcome === 'defeat' ? '敗北' : '引分'}
+                        </span>
+                        <span className="text-gray-500">残HP: {entry.remainingPartyHP}/{entry.maxPartyHP}</span>
+                      </div>
+                      <div className="text-gray-500 mt-1">
                         与ダメ: {entry.damageDealt} | 被ダメ: {entry.damageTaken}
                         {entry.reward && <span className="text-accent"> | 獲得: {entry.reward}</span>}
                       </div>
@@ -591,19 +649,44 @@ function InventoryTab({
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
 }) {
   const [showSold, setShowSold] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('sword');
 
-  // Separate owned and sold/notown items
-  const ownedItems = Object.entries(inventory).filter(([, v]) => v.status === 'owned' && v.count > 0);
-  const soldItems = Object.entries(inventory).filter(([, v]) => v.status === 'sold');
-  const totalCount = ownedItems.reduce((sum, [, v]) => sum + v.count, 0);
+  // Separate owned and sold/notown items, filtered by category
+  const allOwnedItems = Object.entries(inventory).filter(([, v]) => v.status === 'owned' && v.count > 0);
+  const filteredOwnedItems = sortInventoryItems(
+    allOwnedItems.filter(([, v]) => v.item.category === selectedCategory)
+  );
+  const allSoldItems = Object.entries(inventory).filter(([, v]) => v.status === 'sold');
+  const filteredSoldItems = sortInventoryItems(
+    allSoldItems.filter(([, v]) => v.item.category === selectedCategory)
+  );
+  const totalCount = allOwnedItems.reduce((sum, [, v]) => sum + v.count, 0);
 
   return (
     <div>
       <div className="text-sm text-gray-500 mb-2">
-        所持品: {ownedItems.length}種類 ({totalCount}個)
+        所持品: {allOwnedItems.length}種類 ({totalCount}個)
       </div>
-      <div className="space-y-1 max-h-80 overflow-y-auto mb-4">
-        {ownedItems.map(([key, variant]) => {
+
+      {/* Category tabs */}
+      <div className="flex gap-1 mb-3 overflow-x-auto pb-1">
+        {CATEGORY_ORDER.map(cat => (
+          <button
+            key={cat}
+            onClick={() => setSelectedCategory(cat)}
+            className={`px-2 py-1 text-sm rounded ${
+              selectedCategory === cat
+                ? 'bg-sub text-white'
+                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+            }`}
+          >
+            {CATEGORY_SHORT_NAMES[cat]}
+          </button>
+        ))}
+      </div>
+
+      <div className="space-y-1 min-h-[280px] max-h-80 overflow-y-auto mb-4">
+        {filteredOwnedItems.map(([key, variant]) => {
           const { item, count, isNew } = variant;
           const enhMult = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
           const srMult = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
@@ -612,52 +695,47 @@ function InventoryTab({
           return (
             <div
               key={key}
-              className={`p-2 rounded bg-pane ${isNew ? 'border-2 border-accent' : ''}`}
+              className={`p-2 rounded bg-pane flex justify-between items-center ${isNew ? 'border-2 border-accent' : ''}`}
             >
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className="flex gap-2 items-center">
-                    <span className={`text-sm ${isNew ? 'font-bold' : 'font-medium'}`}>
-                      {getItemDisplayName(item)}
-                    </span>
-                    <span className="text-xs bg-sub text-white px-1 rounded">x{count}</span>
-                    <span className="text-xs text-gray-400">[{CATEGORY_NAMES[item.category]}]</span>
-                    {isNew && <span className="text-xs text-accent font-bold">NEW</span>}
-                  </div>
-                  <div className="text-xs text-gray-500">{getItemStats(item)}</div>
-                </div>
-                <button
-                  onClick={() => onSellStack(key)}
-                  className="text-xs text-accent px-2 py-1 border border-accent rounded flex-shrink-0"
-                >
-                  全売却 {sellPrice}G
-                </button>
+              <div className="flex items-center gap-2">
+                <span className={`text-sm ${isNew ? 'font-bold' : 'font-medium'}`}>
+                  {getItemDisplayName(item)}
+                </span>
+                <span className="text-xs text-gray-500">x{count}</span>
+                <span className="text-xs text-gray-400">| {getItemStats(item)}</span>
+                {isNew && <span className="text-xs text-accent font-bold">NEW</span>}
               </div>
+              <button
+                onClick={() => onSellStack(key)}
+                className="text-xs text-accent px-2 py-1 border border-accent rounded flex-shrink-0"
+              >
+                全売却 {sellPrice}G
+              </button>
             </div>
           );
         })}
-        {ownedItems.length === 0 && (
-          <div className="text-gray-400 text-sm text-center py-4">アイテムがありません</div>
+        {filteredOwnedItems.length === 0 && (
+          <div className="text-gray-400 text-sm text-center py-4">このカテゴリにアイテムがありません</div>
         )}
       </div>
 
       {/* Sold items management */}
-      {soldItems.length > 0 && (
+      {allSoldItems.length > 0 && (
         <div className="border-t border-gray-200 pt-3">
           <button
             onClick={() => setShowSold(!showSold)}
             className="text-xs text-gray-500 flex items-center gap-1"
           >
             <span className={`transform transition-transform ${showSold ? 'rotate-180' : ''}`}>▼</span>
-            自動売却設定 ({soldItems.length}種類)
+            自動売却設定 ({allSoldItems.length}種類)
           </button>
           {showSold && (
             <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
-              {soldItems.map(([key, variant]) => (
+              {filteredSoldItems.map(([key, variant]) => (
                 <div key={key} className="p-2 rounded bg-gray-100 flex justify-between items-center">
-                  <div>
+                  <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-500">{getItemDisplayName(variant.item)}</span>
-                    <span className="text-xs text-red-500 ml-2">自動売却</span>
+                    <span className="text-xs text-gray-400">| {getItemStats(variant.item)}</span>
                   </div>
                   <button
                     onClick={() => onSetVariantStatus(key, 'notown')}
@@ -667,6 +745,9 @@ function InventoryTab({
                   </button>
                 </div>
               ))}
+              {filteredSoldItems.length === 0 && (
+                <div className="text-gray-400 text-xs text-center py-2">このカテゴリに自動売却設定はありません</div>
+              )}
             </div>
           )}
         </div>
