@@ -74,10 +74,10 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'Party_HP', 'Par
 - id: int
 - name: string
 - races
-- main_class
-- sub_class
 - predisposition
 - lineage
+- main_class
+- sub_class
 
 #### 2.2.1 Character 
 
