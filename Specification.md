@@ -302,8 +302,6 @@ inventory = {
 }
 ```
 
-  - 
-
 #### 2.4.3 Consumption of arrow
 - Arrow Stacks. 
 - Multiple items of the exact same Arrow ID (superRare, enhancement, and base item) can occupy one single quiver slot.
