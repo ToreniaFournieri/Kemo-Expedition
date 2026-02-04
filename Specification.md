@@ -245,15 +245,15 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP' , '
 
 |category | name | short name| core concept |
 |-----|----|----|-----------|
-|`i.sword` | 剣 | 剣 | + `melee_attack` |
-|`i.katana` | 刀 | 刀 | + `melee_attack`, - `melee_NoA` |
-|`i.archery` | 弓 | 弓 | + `ranged_attack`, + `ranged_NoA` |
-|`i.armor` | 鎧 | 鎧 | + `Party_physical_defense` |
-|`i.gauntlet` | 籠手 | 手 | + `melee_NoA` |
-|`i.wand` | ワンド | 杖 | + `magical_attack` |
-|`i.robe` | 法衣 | 衣 | + `Party_magical_defense` |
+|`i.sword` | 剣 | 剣 | + `d.melee_attack` |
+|`i.katana` | 刀 | 刀 | + `d.melee_attack`, - `melee_NoA` |
+|`i.archery` | 弓 | 弓 | + `d.ranged_attack`, + `d.ranged_NoA` |
+|`i.armor` | 鎧 | 鎧 | + `d.physical_defense` |
+|`i.gauntlet` | 籠手 | 手 | + `d.melee_NoA` |
+|`i.wand` | ワンド | 杖 | + `d.magical_attack` |
+|`i.robe` | 法衣 | 衣 | + `d.magical_defense` |
 |`i.amulet` | 護符 | 護 | + `party.d.HP` |
-|`i.arrow` | 矢 | 矢 | Consumable, Lower `max_stack` than default (e.g., x20 instead of x99),, `elemental_attribute` |
+|`i.arrow` | 矢 | 矢 | Consumable, Lower `max_stack` than default (e.g., x20 instead of x99), `elemental_offense_attribute` |
 
 - *note:* item might have multiple bonus. sword may have `party.d.HP` but subtle value.
 - (Temporary test purpose) Make 5 itmes for each item type. 
