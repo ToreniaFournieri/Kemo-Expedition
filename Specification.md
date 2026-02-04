@@ -675,8 +675,8 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
   - Stacked by item variant
   - Shows state:`s.owned` items
   - Inventory includes item category tabs:
-    - 剣,刀,弓,鎧,手,杖,衣,護,矢.
-    - Default: 剣
+    - 矢,剣,刀,弓,鎧,手,杖,衣,護. 
+    - Default: 矢
     - Only items matching the selected category are shown (filter)
   - **Inventory Sort Logic (within category):**
 	- **Order:** Descending order by Priority.
