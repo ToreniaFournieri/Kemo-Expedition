@@ -71,8 +71,6 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'Party_HP', 'Par
 - The deity creates character and assigns 6 Characters to its party. 
 - Characters can change their race, class, and name at any time while at HOME.
 
-const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposition', 'lineage' , 'name', 'b.vitality', 'b.strength', 'b.intelligence', 'b.mind' , 'd.ranged_attack', 'd.magical_attack', 'd.melee_attack', 'd.ranged_NoA', 'd.magical_NoA', 'd.melee_NoA', 'maximum_equipped_item' ]
-
 - id: int
 - main_class
 - sub_class
