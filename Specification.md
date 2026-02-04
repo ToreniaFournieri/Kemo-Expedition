@@ -404,7 +404,7 @@ inventory = {
 - Manage party setting. character build (can also change its class, race, predisposition, lineage!). change their equipment.
 - set the destination of dungeon.
 - sell items and gain gold.
-- buy items like arrows with gold. ( `auto_refill` is on, done automatically)
+- buy items like arrows with gold.
 
 ### 4.2 Equipment
 
