@@ -607,6 +607,7 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
   - Character status updates immediately
 - Equipment management:
   - Equip / remove from inventory
+    - Equipped item: The name and status are left-aligned on **the same line**.
   - Item list:
     - Stacked by item variant
     - Inventory includes item category tabs:
@@ -617,7 +618,7 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
     	1.	Item ID
     	2.	Enhancement
     	3.	SuperRare
-  	- Item Row: The name, count, and status are left-aligned on **the same line**."
+    - Item Row: The name, count, and status are left-aligned on **the same line**.
      - ex. 名工のロングソード x3 | 近攻+19
     - Inventory pane shows at least 10 items
   - Status updates in real time
