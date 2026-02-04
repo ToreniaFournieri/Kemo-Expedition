@@ -50,6 +50,62 @@ function getItemStats(item: Item): string {
   return stats.join(' ');
 }
 
+// Helper to format bonus descriptions
+type Bonus = { type: string; value: number; abilityId?: string; abilityLevel?: number };
+
+const MULTIPLIER_LABELS: Record<string, string> = {
+  sword_multiplier: '剣',
+  katana_multiplier: '刀',
+  archery_multiplier: '弓',
+  armor_multiplier: '鎧',
+  gauntlet_multiplier: '籠手',
+  wand_multiplier: '杖',
+  robe_multiplier: '衣',
+  amulet_multiplier: '護符',
+};
+
+const ABILITY_NAMES: Record<string, string> = {
+  first_strike: '先手',
+  hunter: '狩人',
+  defender: '防御者',
+  counter: 'カウンター',
+  re_attack: '再攻撃',
+  iaigiri: '居合斬り',
+  leading: '統率',
+  m_barrier: '魔法障壁',
+  unlock: '解錠',
+  null_counter: '無効化',
+};
+
+function formatBonuses(bonuses: Bonus[]): string {
+  const parts: string[] = [];
+  for (const b of bonuses) {
+    if (b.type.endsWith('_multiplier') && MULTIPLIER_LABELS[b.type]) {
+      parts.push(`${MULTIPLIER_LABELS[b.type]}x${b.value}`);
+    } else if (b.type === 'equip_slot') {
+      parts.push(`装備+${b.value}`);
+    } else if (b.type === 'vitality') {
+      parts.push(`体+${b.value}`);
+    } else if (b.type === 'strength') {
+      parts.push(`力+${b.value}`);
+    } else if (b.type === 'intelligence') {
+      parts.push(`知+${b.value}`);
+    } else if (b.type === 'mind') {
+      parts.push(`精+${b.value}`);
+    } else if (b.type === 'grit') {
+      parts.push(`根性+${b.value}`);
+    } else if (b.type === 'caster') {
+      parts.push(`詠唱+${b.value}`);
+    } else if (b.type === 'penet') {
+      parts.push(`貫通${Math.round(b.value * 100)}%`);
+    } else if (b.type === 'ability' && b.abilityId) {
+      const name = ABILITY_NAMES[b.abilityId] || b.abilityId;
+      parts.push(`${name}Lv${b.abilityLevel || 1}`);
+    }
+  }
+  return parts.join(', ');
+}
+
 // Category name mapping
 const CATEGORY_NAMES: Record<string, string> = {
   sword: '剣',
@@ -364,11 +420,17 @@ function PartyTab({
               <select
                 value={pendingEdits?.raceId ?? char.raceId}
                 onChange={(e) => setPendingEdits({ ...pendingEdits, raceId: e.target.value as Character['raceId'] })}
-                className="w-full p-1 border rounded"
+                className="w-full p-1 border rounded text-xs"
               >
-                {RACES.map(r => (
-                  <option key={r.id} value={r.id}>{r.emoji} {r.name}</option>
-                ))}
+                {RACES.map(r => {
+                  const s = r.stats;
+                  const bonusText = formatBonuses(r.bonuses as Bonus[]);
+                  return (
+                    <option key={r.id} value={r.id}>
+                      {r.emoji}{r.name} | 体{s.vitality},力{s.strength},知{s.intelligence},精{s.mind} | {bonusText}
+                    </option>
+                  );
+                })}
               </select>
             </div>
             <div>
@@ -376,11 +438,20 @@ function PartyTab({
               <select
                 value={pendingEdits?.mainClassId ?? char.mainClassId}
                 onChange={(e) => setPendingEdits({ ...pendingEdits, mainClassId: e.target.value as Character['mainClassId'] })}
-                className="w-full p-1 border rounded"
+                className="w-full p-1 border rounded text-xs"
               >
-                {CLASSES.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
+                {CLASSES.map(c => {
+                  const currentSubId = pendingEdits?.subClassId ?? char.subClassId;
+                  const isMaster = c.id === currentSubId;
+                  const mainBonus = isMaster ? formatBonuses(c.masterBonuses as Bonus[]) : formatBonuses(c.mainBonuses as Bonus[]);
+                  const mainSubBonus = formatBonuses(c.mainSubBonuses as Bonus[]);
+                  const bonusText = [mainSubBonus, mainBonus].filter(Boolean).join(', ');
+                  return (
+                    <option key={c.id} value={c.id}>
+                      {c.name}{isMaster ? '(師範)' : ''} | {bonusText}
+                    </option>
+                  );
+                })}
               </select>
             </div>
             <div>
@@ -388,11 +459,16 @@ function PartyTab({
               <select
                 value={pendingEdits?.subClassId ?? char.subClassId}
                 onChange={(e) => setPendingEdits({ ...pendingEdits, subClassId: e.target.value as Character['subClassId'] })}
-                className="w-full p-1 border rounded"
+                className="w-full p-1 border rounded text-xs"
               >
-                {CLASSES.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
+                {CLASSES.map(c => {
+                  const mainSubBonus = formatBonuses(c.mainSubBonuses as Bonus[]);
+                  return (
+                    <option key={c.id} value={c.id}>
+                      {c.name} | {mainSubBonus}
+                    </option>
+                  );
+                })}
               </select>
             </div>
             <div>
@@ -400,11 +476,16 @@ function PartyTab({
               <select
                 value={pendingEdits?.predispositionId ?? char.predispositionId}
                 onChange={(e) => setPendingEdits({ ...pendingEdits, predispositionId: e.target.value as Character['predispositionId'] })}
-                className="w-full p-1 border rounded"
+                className="w-full p-1 border rounded text-xs"
               >
-                {PREDISPOSITIONS.map(p => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
+                {PREDISPOSITIONS.map(p => {
+                  const bonusText = formatBonuses(p.bonuses as Bonus[]);
+                  return (
+                    <option key={p.id} value={p.id}>
+                      {p.name} | {bonusText}
+                    </option>
+                  );
+                })}
               </select>
             </div>
             <div>
@@ -412,11 +493,16 @@ function PartyTab({
               <select
                 value={pendingEdits?.lineageId ?? char.lineageId}
                 onChange={(e) => setPendingEdits({ ...pendingEdits, lineageId: e.target.value as Character['lineageId'] })}
-                className="w-full p-1 border rounded"
+                className="w-full p-1 border rounded text-xs"
               >
-                {LINEAGES.map(l => (
-                  <option key={l.id} value={l.id}>{l.name}</option>
-                ))}
+                {LINEAGES.map(l => {
+                  const bonusText = formatBonuses(l.bonuses as Bonus[]);
+                  return (
+                    <option key={l.id} value={l.id}>
+                      {l.name} | {bonusText}
+                    </option>
+                  );
+                })}
               </select>
             </div>
           </div>
