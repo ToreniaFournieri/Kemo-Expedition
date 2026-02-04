@@ -525,9 +525,15 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | `p.enemy_attack_values` |
 	- If enemy.`d.HP` > 0 and party.`d.HP` > 0
 
 **Consequence**
-- *Defeat*: no penalties (current version). no experience points nor item reward. Back to home without trophies.
-- *Victory*: gains experience points to a party. has a chance of gaining reward from enemies drop item. Proceeds to the next room. If it was the last room of dungeon, back to home with trophies!
-- *Draw*:no penalties (current version). no experience points nor item reward at this room. Retreat to home with trophies of previous rooms.
+- *Defeat*: no penalties (current version). no experience points nor item reward. Back to home without trophies. 
+- *Victory*: gains experience points to a party. has a chance of gaining reward from enemies drop item. Proceeds to the next room. If it was the Boss room, back to home with trophies!
+- *Draw*:no penalties (current version). no experience points nor item reward at this room. Back to home with trophies of previous rooms.
+
+- **Item Retrieval Logic:**
+  - Items are stacked by (superRare, enhancement, and base item)
+  - *Auto-Sell:* If a dropped item matches a rule with state:`sold`, it is sold immediately (not added to inventory)
+  - New Items: If no record for the item exists, the system generates the item and sets it to state:`owned`.
+  - Existing Items: If the item is already in the inventory, increment the item count (state should be `owned`)
 
 ## 7. REWARD 
 
@@ -606,7 +612,7 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | `p.enemy_attack_values` |
     	1.	Item ID
     	2.	Enhancement
     	3.	SuperRare
-  	- Item: The name, count, and status are left-aligned on **the same line**."
+  	- Item Row: The name, count, and status are left-aligned on **the same line**."
      - ex. 名工のロングソード x3 | 近攻+19
     - Inventory pane shows at least 10 items
   - Status updates in real time
@@ -644,18 +650,18 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | `p.enemy_attack_values` |
   	1.	Item ID
   	2.	Enhancement
   	3.	SuperRare
-  - Item: The name, count, and status are left-aligned, while the sell all button is right-aligned on the same line. 
+  - Item Row: The name, count, and status are left-aligned, while the sell all button is right-aligned on the same line 
     - ex. 名工のロングソード x3 | 近攻+19     [全売却 39G]
-  - Sell all button(全売却): sell all item, and state:`own` -> state:`sold`
+  - Sell all button(全売却): Sells all item, and Changes item state from `own` to `sold`
   - Inventory pane shows at least 10 items
 - Actions:
   - Sell item stacks
   - Sold items disappear immediately
-- Auto-sold list (folded as default)
-  - Sort and filter is affected in this list too. (but shows state:`sold` item)
-  - Item: The name, count, and status are left-aligned, while the unlock button is right-aligned on the same line. 
+- Auto-sold list (Collapsed by default; tap to expand)
+  - Sort and filter settings also apply to this list (displaying items with the state:`sold`)
+  - Item Row: The name, count, and status are left-aligned, while the Unlock button is right-aligned on the same line
     - ex. 名工のロングソード x3 | 近攻+19     [解除]
-  - Unlock button(解除): state:`sold` -> state:`notown` 
+  - Unlock button(解除): Changes item state from `sold` to `notown`
 
 #### 8.3.4 Shop
 - Purchase basic items:
