@@ -132,7 +132,7 @@ const CATEGORY_SHORT_NAMES: Record<string, string> = {
   arrow: '矢',
 };
 
-const CATEGORY_ORDER = ['sword', 'katana', 'archery', 'armor', 'gauntlet', 'wand', 'robe', 'amulet', 'arrow'];
+const CATEGORY_ORDER = ['arrow', 'sword', 'katana', 'archery', 'armor', 'gauntlet', 'wand', 'robe', 'amulet'];
 const EQUIP_CATEGORY_ORDER = ['sword', 'katana', 'archery', 'armor', 'gauntlet', 'wand', 'robe', 'amulet']; // Excluding arrow
 
 // Sort items by descending priority: Item ID (higher first), SuperRare (higher first), Enhancement (higher first)
@@ -817,7 +817,7 @@ function InventoryTab({
   onAssignArrowToQuiver: (variantKey: string, quantity: number) => void;
 }) {
   const [showSold, setShowSold] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('sword');
+  const [selectedCategory, setSelectedCategory] = useState('arrow');
 
   // Separate owned and sold/notown items, filtered by category
   const allOwnedItems = Object.entries(inventory).filter(([, v]) => v.status === 'owned' && v.count > 0);
