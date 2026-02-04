@@ -430,7 +430,7 @@ inventory = {
 	- `p.remaining_HP_of_room`: Party HP of remaining: like 430/ 1000
     - `p.outcome_of_room`: Victory/Defeat/Draw/No Visit -> 勝利/敗北/引分/未到達
 　- Line 2:
-  	- `p.enemy_attack_values`: Using `f.damage_calculation` for each range. (this function considers Party defense and buffs)  ex. 300/0/340    
+  	- `p.enemy_attack_values`: Using `f.attack` for each range.  ex. 300/0/340    
 	- `p.total_damage_dealt`: Shows total damage dealt
 	- `p.total_damage_taken`: Shows total damage taken
 	- `p.reward_from_room`: Shows item.
@@ -448,7 +448,7 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 [距離] 味方: 行動主 の行動名！ (数値)
 
 [近] 敵: 森の女王 が　キツネ丸 に攻撃(2回)！ (36ダメージ)
-[近] 敵: 森の女王 が　ミミ に攻撃(1回)！ (36ダメージ)
+[近] 敵: 森の女王 が　ミミ に攻撃(1回)！ (20ダメージ)
 [近] 味方: キツネ丸 のカウンター！ (367ダメージ)
 ```
 
