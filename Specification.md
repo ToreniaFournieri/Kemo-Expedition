@@ -633,13 +633,7 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 
 - Equipment management:
   - Equip / remove from inventory
-	- **Inventory Sort Logic:**
-   		- **Order:** Descending order by Priority.
-    	- **Priority:**
-       1. **Base Item ID:** Higher-tier base items (e.g., Mythril Sword > Iron Sword) appear first.
-       2.  **Super Rare Title:** Items with Super Rare titles are prioritized within their base item ID.
-       3.  **Enhancement Tier:** Among the same Item ID, higher enhancements (e.g., 究極の > 伝説の) appear higher.
-    - Equipped item: The name and status are left-aligned, item type is right-aligned on **the same line**.
+  - Status updates in real time
   - Item list:
     - Stacked by item variant
     - Inventory includes item category tabs:
@@ -653,7 +647,14 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
     - Item Row: The name, count, and status are left-aligned on **the same line**.
      - ex. 名工のロングソード x3 | 近攻+19
     - Inventory pane shows at least 10 items
-  - Status updates in real time
+  - **Inventory Sort Logic (within category):**
+	- **Order:** Descending order by Priority.
+	- **Priority:**
+   1. **Base Item ID:** Higher-tier base items (e.g., Mythril Sword > Iron Sword) appear first.
+   2.  **Super Rare Title:** Items with Super Rare titles are prioritized within their base item ID.
+   3.  **Enhancement Tier:** Among the same Item ID, higher enhancements (e.g., 究極の > 伝説の) appear higher.
+ - Equipped item: The name and status are left-aligned, item type is right-aligned on **the same line**.
+
 
 #### 8.3.2 Expedition
 - Top section:
@@ -680,10 +681,12 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
     - 剣,刀,弓,鎧,手,杖,衣,護,矢.
     - Default: 剣
     - Only items matching the selected category are shown (filter)
-  -	Sorting order (within category):
-  	1.	Item ID
-  	2.	Enhancement
-  	3.	SuperRare
+  - **Inventory Sort Logic (within category):**
+	- **Order:** Descending order by Priority.
+	- **Priority:**
+   1. **Base Item ID:** Higher-tier base items (e.g., Mythril Sword > Iron Sword) appear first.
+   2.  **Super Rare Title:** Items with Super Rare titles are prioritized within their base item ID.
+   3.  **Enhancement Tier:** Among the same Item ID, higher enhancements (e.g., 究極の > 伝説の) appear higher.
   - Item Row: The name, count, and status are left-aligned, while the sell all button is right-aligned on the same line 
     - ex. 名工のロングソード x3 | 近攻+19     [全売却 39G]
   - Sell all button(全売却): Sells all item, and Changes item state from `s.owned` to `s.sold`
