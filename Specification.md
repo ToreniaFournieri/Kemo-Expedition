@@ -643,7 +643,13 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
   - List of party members
   - Current status, abilities, bonuses
 - Party member details:
-  - Name, race, class, traits, bonuses
+  - Name, race, class, predisposition, lineage, bonuses
+  - Status:
+```
+遠距離攻撃:0 x 0回(x1.0)    属性攻撃:無(x1.0)
+魔法攻撃:0 x 0回(x1.0)      魔法防御:0
+近接攻撃:39 x 2回(x2.0)     物理防御:24
+```
   - Editable parameters
 - **Character Edit Mode** (selected member):
   - Name edit:
