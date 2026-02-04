@@ -91,7 +91,8 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
 
 export function computeCharacterStats(
   character: Character,
-  partyLevel: number
+  partyLevel: number,
+  row: number = 1 // Position 1-6 in party
 ): ComputedCharacterStats {
   const race = getRaceById(character.raceId);
   const mainClass = getClassById(character.mainClassId);
@@ -213,6 +214,25 @@ export function computeCharacterStats(
     // meleeAttack will be amplified during battle
   }
 
+  // Calculate individual defense stats
+  // d.physical_defense = Item Bonuses of Physical defense x its c.multiplier x b.vitality / 10
+  // d.magical_defense = Item Bonuses of Magical defense x its c.multiplier x b.mind / 10
+  let physicalDefense = 0;
+  let magicalDefense = 0;
+
+  for (const item of equippedItems) {
+    const multiplier = getMultiplier(item.category);
+    if (item.physicalDefense) {
+      physicalDefense += item.physicalDefense * multiplier;
+    }
+    if (item.magicalDefense) {
+      magicalDefense += item.magicalDefense * multiplier;
+    }
+  }
+
+  physicalDefense = physicalDefense * (baseStats.vitality / 10);
+  magicalDefense = magicalDefense * (baseStats.mind / 10);
+
   // Build abilities list
   const abilities: Ability[] = [];
   for (const [id, level] of collection.abilities) {
@@ -226,6 +246,7 @@ export function computeCharacterStats(
 
   return {
     characterId: character.id,
+    row,
     baseStats,
     rangedAttack,
     magicalAttack,
@@ -233,6 +254,8 @@ export function computeCharacterStats(
     rangedNoA,
     magicalNoA,
     meleeNoA,
+    physicalDefense: Math.floor(physicalDefense),
+    magicalDefense: Math.floor(magicalDefense),
     maxEquipSlots,
     abilities,
     penetMultiplier: collection.penet,

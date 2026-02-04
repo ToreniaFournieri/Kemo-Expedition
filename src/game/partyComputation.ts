@@ -88,8 +88,8 @@ export function computePartyStats(party: Party): {
   partyStats: ComputedPartyStats;
   characterStats: ComputedCharacterStats[];
 } {
-  const characterStats: ComputedCharacterStats[] = party.characters.map(c =>
-    computeCharacterStats(c, party.level)
+  const characterStats: ComputedCharacterStats[] = party.characters.map((c, index) =>
+    computeCharacterStats(c, party.level, index + 1) // Row is 1-6
   );
 
   // Calculate party HP

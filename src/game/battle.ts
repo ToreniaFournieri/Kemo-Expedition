@@ -8,8 +8,21 @@ import {
   EnemyDef,
   Party,
   ElementalOffense,
+  GameBags,
+  RandomBag,
 } from '../types';
 import { computePartyStats } from './partyComputation';
+import { drawFromBag, createPhysicalThreatBag, createMagicalThreatBag } from './bags';
+
+// Attack potency based on row position (1-6)
+const ATTACK_POTENCY: Record<number, number> = {
+  1: 1.00,
+  2: 0.85,
+  3: 0.72,
+  4: 0.61,
+  5: 0.52,
+  6: 0.44,
+};
 
 interface BattleContext {
   partyStats: ComputedPartyStats;
@@ -18,6 +31,8 @@ interface BattleContext {
   party: Party;
   arrowsConsumed: number;
   quiverQuantities: [number, number];
+  physicalThreatBag: RandomBag;
+  magicalThreatBag: RandomBag;
 }
 
 function getElementalMultiplier(
@@ -28,10 +43,34 @@ function getElementalMultiplier(
   return resistance[offense] ?? 1.0;
 }
 
+// Get target row index (1-6) using threat bag
+function getTargetRow(ctx: BattleContext, phase: BattlePhase): { row: number; newCtx: BattleContext } {
+  const isPhysical = phase === 'long' || phase === 'close';
+
+  // Refill bag if empty
+  let bag = isPhysical ? ctx.physicalThreatBag : ctx.magicalThreatBag;
+  if (bag.tickets.length === 0) {
+    bag = isPhysical ? createPhysicalThreatBag() : createMagicalThreatBag();
+  }
+
+  const { ticket, newBag } = drawFromBag(bag);
+
+  const newCtx = {
+    ...ctx,
+    ...(isPhysical
+      ? { physicalThreatBag: newBag }
+      : { magicalThreatBag: newBag }
+    ),
+  };
+
+  return { row: ticket, newCtx };
+}
+
 function calculateEnemyDamage(
   phase: BattlePhase,
   enemy: EnemyDef,
-  partyStats: ComputedPartyStats
+  partyStats: ComputedPartyStats,
+  targetCharStats?: ComputedCharacterStats
 ): number {
   let attack = 0;
   let noA = 0;
@@ -44,21 +83,22 @@ function calculateEnemyDamage(
       attack = enemy.rangedAttack;
       noA = enemy.rangedNoA;
       amplifier = enemy.rangedAttackAmplifier;
-      defense = partyStats.physicalDefense;
+      // Use targeted character's defense if available, otherwise party average
+      defense = targetCharStats ? targetCharStats.physicalDefense : partyStats.physicalDefense;
       defenseAmplifier = partyStats.defenseAmplifiers.physical;
       break;
     case 'mid':
       attack = enemy.magicalAttack;
       noA = enemy.magicalNoA;
       amplifier = enemy.magicalAttackAmplifier;
-      defense = partyStats.magicalDefense;
+      defense = targetCharStats ? targetCharStats.magicalDefense : partyStats.magicalDefense;
       defenseAmplifier = partyStats.defenseAmplifiers.magical;
       break;
     case 'close':
       attack = enemy.meleeAttack;
       noA = enemy.meleeNoA;
       amplifier = enemy.meleeAttackAmplifier;
-      defense = partyStats.physicalDefense;
+      defense = targetCharStats ? targetCharStats.physicalDefense : partyStats.physicalDefense;
       defenseAmplifier = partyStats.defenseAmplifiers.physical;
       break;
   }
@@ -126,6 +166,11 @@ function calculateCharacterDamage(
     abilityAmplifier = iaigiri.level === 2 ? 2.5 : 2.0;
   }
 
+  // Attack potency based on row position (only for LONG and CLOSE phases)
+  const attackPotency = (phase === 'long' || phase === 'close')
+    ? (ATTACK_POTENCY[charStats.row] ?? 1.0)
+    : 1.0;
+
   const elementalMultiplier = getElementalMultiplier(
     charStats.elementalOffense,
     enemy.elementalResistance
@@ -133,7 +178,7 @@ function calculateCharacterDamage(
 
   const baseDamage = Math.max(1, attack - effectiveDefense);
   const totalDamage = baseDamage * noA * abilityAmplifier * charStats.elementalOffenseValue *
-    elementalMultiplier * partyStats.offenseAmplifier;
+    elementalMultiplier * partyStats.offenseAmplifier * attackPotency;
 
   return { damage: Math.floor(totalDamage), arrowsUsed };
 }
@@ -170,20 +215,30 @@ function consumeArrows(ctx: BattleContext, amount: number): void {
   ctx.arrowsConsumed += amount;
 }
 
+export interface BattleResult extends BattleState {
+  updatedBags: {
+    physicalThreatBag: RandomBag;
+    magicalThreatBag: RandomBag;
+  };
+}
+
 export function executeBattle(
   party: Party,
   enemy: EnemyDef,
-  initialQuiverQuantities: [number, number]
-): BattleState {
+  initialQuiverQuantities: [number, number],
+  bags: GameBags
+): BattleResult {
   const { partyStats, characterStats } = computePartyStats(party);
 
-  const ctx: BattleContext = {
+  let ctx: BattleContext = {
     partyStats,
     characterStats,
     enemy,
     party,
     arrowsConsumed: 0,
     quiverQuantities: [...initialQuiverQuantities],
+    physicalThreatBag: { ...bags.physicalThreatBag },
+    magicalThreatBag: { ...bags.magicalThreatBag },
   };
 
   let partyHp = partyStats.hp;
@@ -221,17 +276,28 @@ export function executeBattle(
         enemyHp: 0,
         log,
         outcome: 'victory',
+        updatedBags: {
+          physicalThreatBag: ctx.physicalThreatBag,
+          magicalThreatBag: ctx.magicalThreatBag,
+        },
       };
     }
 
-    // Enemy attacks
-    const enemyDamage = calculateEnemyDamage(phase, enemy, partyStats);
+    // Enemy attacks with targeting
+    const { row: targetRow, newCtx } = getTargetRow(ctx, phase);
+    ctx = newCtx;
+    const targetCharStats = characterStats.find(cs => cs.row === targetRow);
+    const targetChar = targetCharStats
+      ? party.characters.find(c => c.id === targetCharStats.characterId)
+      : undefined;
+
+    const enemyDamage = calculateEnemyDamage(phase, enemy, partyStats, targetCharStats);
     if (enemyDamage > 0) {
       partyHp -= enemyDamage;
       log.push({
         phase,
         actor: 'enemy',
-        action: `${enemy.name} の攻撃！`,
+        action: `${enemy.name} が ${targetChar?.name ?? `Row${targetRow}`} に攻撃！`,
         damage: enemyDamage,
       });
     }
@@ -244,27 +310,26 @@ export function executeBattle(
         enemyHp,
         log,
         outcome: 'defeat',
+        updatedBags: {
+          physicalThreatBag: ctx.physicalThreatBag,
+          magicalThreatBag: ctx.magicalThreatBag,
+        },
       };
     }
 
-    // Counter attacks (if enemy dealt damage in CLOSE or MID phase)
-    if (enemyDamage > 0) {
-      for (const cs of characterStats) {
-        if (hasCounter(cs, phase)) {
-          const { damage } = calculateCharacterDamage(phase, cs, enemy, partyStats, ctx);
-          if (damage > 0) {
-            enemyHp -= damage;
-            const char = party.characters.find(c => c.id === cs.characterId);
-            log.push({
-              phase,
-              actor: 'character',
-              characterId: cs.characterId,
-              action: `${char?.name ?? '???'} のカウンター！`,
-              damage,
-              isCounter: true,
-            });
-          }
-        }
+    // Counter attacks (only if targeted character has counter ability)
+    if (enemyDamage > 0 && targetCharStats && hasCounter(targetCharStats, phase)) {
+      const { damage } = calculateCharacterDamage(phase, targetCharStats, enemy, partyStats, ctx);
+      if (damage > 0) {
+        enemyHp -= damage;
+        log.push({
+          phase,
+          actor: 'character',
+          characterId: targetCharStats.characterId,
+          action: `${targetChar?.name ?? '???'} のカウンター！`,
+          damage,
+          isCounter: true,
+        });
       }
     }
 
@@ -276,6 +341,10 @@ export function executeBattle(
         enemyHp: 0,
         log,
         outcome: 'victory',
+        updatedBags: {
+          physicalThreatBag: ctx.physicalThreatBag,
+          magicalThreatBag: ctx.magicalThreatBag,
+        },
       };
     }
 
@@ -327,6 +396,10 @@ export function executeBattle(
         enemyHp: 0,
         log,
         outcome: 'victory',
+        updatedBags: {
+          physicalThreatBag: ctx.physicalThreatBag,
+          magicalThreatBag: ctx.magicalThreatBag,
+        },
       };
     }
   }
@@ -347,6 +420,10 @@ export function executeBattle(
     enemyHp: Math.max(0, enemyHp),
     log,
     outcome,
+    updatedBags: {
+      physicalThreatBag: ctx.physicalThreatBag,
+      magicalThreatBag: ctx.magicalThreatBag,
+    },
   };
 }
 
