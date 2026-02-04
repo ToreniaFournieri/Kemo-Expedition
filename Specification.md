@@ -15,18 +15,18 @@
 
 **Naming Rule**
 
-|prefixes | means|
-|-----|---------|
-|`a.` | **a**bility |
-|`b.` | **b**ase status |
-|`c.` | **c**lass and other bonus |
-|`d.` | **d**uel status |
-|`e.` | **e**lemental_offense_attribute |
-|`f.` | **f**unction of logic |
-|`i.` | **i**tem category |
-|`p.` | ex**p**edition |
-|`r.` | elemental_**r**esistance_attribute |
-|`s.`| item **s**tate |
+| Prefix | Description / Definition |
+|-------|-------------------------|
+| `a.`   | **A**bility (Passive/Active) |
+| `b.`   | **B**ase Status (Core attributes) |
+| `c.`   | **C**lass/Character Bonus (Modifiers) |
+| `d.`   | **D**uel Status (Current combat values) |
+| `e.`   | **E**lemental Offense Attribute |
+| `f.`   | **F**unction (Logic/Calculated value) |
+| `i.`   | **I**tem Category |
+| `p.`   | **P**arty/Expedition Instance Data |
+| `r.`   | Elemental **R**esistance Attribute |
+| `s.`   | Item **S**tate (Inventory status) |
 
 
 ### 2.1 Global constants
@@ -35,7 +35,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'Party_HP', 'Par
 
 - Initial deity: 'God of Restoration' // Revives character at the base automatically, no death penalty 
 
-- **Bag Randomization** It has 'reward_bag', 'enhancement_bag', 'superRare_bag' witch controls reward randomness and contains tickets. (0:lose ticket, 1:win ticket)
+- **Bag Randomization** It has 'reward_bag', 'enhancement_bag', 'superRare_bag' which controls reward randomness and contains tickets. (0:lose ticket, 1:win ticket)
 
 - enhancement title
  
@@ -67,7 +67,8 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'Party_HP', 'Par
 
 
 ### 2.2 Play characters
-- The deity creates character and assigns 6 Characters to its party. The characters can change its race, role and name at will. 
+- The deity creates character and assigns 6 Characters to its party. 
+- Characters can change their race, class, and name at any time while at HOME.
 
 const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposition', 'lineage' , 'name', 'b.vitality', 'b.strength', 'b.intelligence', 'b.mind' , 'd.ranged_attack', 'd.magical_attack', 'd.melee_attack', 'd.ranged_NoA', 'd.magical_NoA', 'd.melee_NoA', 'maximum_equipped_item' ]
 
@@ -159,7 +160,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 |剣士(Duelist) |`c.sword_x1.4` |`c.grit+1`. `a.counter`1: enemy CLOSE-range attack |`c.grit+1`. `a.counter`2: enemy CLOSE-range attack and MID-range | 
 |忍者(Ninja) |`c.penet_x0.15` |`c.grit+1`. `a.re-attack`1: once when attacking |`c.grit+1`. `a.re-attack`2: twice when attacking | 
 |侍(Samurai) |`c.katana_x1.4` |`c.grit+1`. `a.iaigiri`: Physical damage ×2,  number of attacks ÷2 | `c.grit+1`. `a.iaigiri`: Physical damage ×2.5,  number of attacks ÷2 |
-|君主(Lord) |`c.gauntlet_x1.4`, `c.equip_slot+1` |`a.leading`1: Physical damage x1.3 |`a.leading`2: Physical damage x1.6 | 
+|君主(Lord) |`c.gauntlet_x1.4`, `c.equip_slot+1` |`a.command`1: Physical damage x1.3 |`a.command`2: Physical damage x1.6 | 
 |狩人(Ranger) |`c.archery_x1.4` | `a.hunter`2: Retrieve 30% of the arrows at the end of battle  |`a.hunter`3: Retrieve 36% of the arrows at the end of battle | 
 |魔法使い(Wizard) |`c.wand_x1.4` | `c.caster+2` | `c.caster+3` | 
 |賢者(Sage) |`c.robe_x1.4`, `c.equip_slot+2` |`c.caster+1`. `a.m-barrier`1: Incoming magical damage to party × 2/3 | `c.caster+1`. `a.m-barrier`2: Incoming magical damage to party × 3/5 | 
@@ -209,7 +210,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 
 ### 2.3 Dungeons & Enemies
 
-- Each dungeon has multiple rooms. each room has one enemy. At the end of room, formidable boss enemy is waiting for victims.
+- Each dungeon has multiple rooms. each room has one enemy. At the end of room, formidable boss enemy is waiting for the party.
 
 **Dungeon**
 - id:int
@@ -269,7 +270,7 @@ const CHARACTER_SCHEMA = ['id', 'race', 'main_class', 'sub_class' , 'predisposit
 - (Temporary test purpose) Make 5 itmes for each item type. 
 
 #### 2.4.2 Item stacking
-- Items are stacked by (superRare, enhancement, and base item). The default `max_stack` is 99, except for `i.arrow`.
+- Items are stacked based on their unique combination of (superRare title, enhancement title, and base item ID). The default `max_stack` is 99, except for `i.arrow`.
   - Inventory Tracking: The inventory tracks item variants rather than individual instances.
   - Display: Shows the total stack count per variant.
   - Selling is all-or-nothing per stack. 
@@ -323,9 +324,9 @@ inventory = {
 ## 3. INITIALIZATION 
 
 ### 3.1 Randomness initialization
-- **Reward:** Put 1 win ticket(1) and 9 lose tickets(0) into 'reward_bag'. 
-- **Enhancement:** Put tickets into 'enhancement_bag'.
-- **Super Rare:** Put tickets into 'superRare_bag' .
+- **Reward:** Populate 'reward_bag' with 1 winning ticket (1) and 9 losing tickets (0).
+- **Enhancement:** Populate 'enhancement_bag' with tickets according to the enhancement table.
+- **Super Rare:** Populate 'superRare_bag' with tickets according to the superRare table.
 
 - If a bag is empty or explicitly reset the bag, initialize it.
 
@@ -353,14 +354,14 @@ inventory = {
 - c.multiplier like `c.sword_x1.3` applies only for sword item type. other item types like amulet may have +10 melee_attack bonus, but amulet's melee_attack bonus is not multiplied by `c.sword_x1.3` effect. 
 
 - character.`f.attack`:
-  - `d.ranged_attack`: Item Bonuses x its c.multiplier
-  - `d.melee_attack`: Item Bonuses x its c.multiplier x `b.strength` / 10
-  - `d.magical_attack`: Item Bonuses x its c.multiplier x `b.intelligence` / 10
+  - `d.ranged_attack`= Item Bonuses x its c.multiplier
+  - `d.melee_attack`= Item Bonuses x its c.multiplier x `b.strength` / 10
+  - `d.magical_attack`= Item Bonuses x its c.multiplier x `b.intelligence` / 10
 
 - character.`f.NoA`: // NoA 0 = No Action.
-  - `d.ranged_NoA`: 0 + Item Bonuses x its c.multiplier (round up) 
-  - `d.magical_NoA`: 0 + `c.caster+v` bonuses // Only one single bonuses of the same name applies. 
-  - `d.melee_NoA`: 0 + `c.grit+v` bonuses + Item Bonuses x its c.multiplier (round up) //no NoA, no melee combat.
+  - `d.ranged_NoA` = 0 + Item Bonuses x its c.multiplier (round up) 
+  - `d.magical_NoA`= 0 + `c.caster+v` bonuses // Only one single bonuses of the same name applies. 
+  - `d.melee_NoA`= 0 + `c.grit+v` bonuses + Item Bonuses x its c.multiplier (round up) //no NoA, no melee combat.
     - IF the character has `a.iaigiri`, halve these number of attacks, round up. 
 
 - character.`f.abilities_offense_amplifier`
@@ -385,8 +386,8 @@ inventory = {
 
 - party.`f.abilities_offense_amplifier`(phase: phase):
   - If phase is LONG or CLOSE:
-	- If party.`a.leading`1, multiply x1.3
-    - If party.`a.leading`2, multiply x1.6
+	- If party.`a.command`1, multiply x1.3
+    - If party.`a.command`2, multiply x1.6
 - party.`f.abilities_defense_amplifier`(phase: phase):
   - If phase is LONG or CLOSE:
 	- If party.`a.defender`1, multiply x3/5
