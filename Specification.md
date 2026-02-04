@@ -634,7 +634,7 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 - Equipment management:
   - Equip / remove from inventory
 	- **Inventory Sort Logic:**
-   		- **Order:** Descending order by Item ID / Priority.
+   		- **Order:** Descending order by Priority.
     	- **Priority:**
        1. **Base Item ID:** Higher-tier base items (e.g., Mythril Sword > Iron Sword) appear first.
        2.  **Enhancement Tier:** Among the same Item ID, higher enhancements (e.g., 究極の > 伝説の) appear higher.
