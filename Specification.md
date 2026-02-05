@@ -738,6 +738,15 @@ Name      [編集]
 - Equipped item: The name and status are left-aligned, item type is right-aligned on **the same line**.
 
 **4. Image of inventory pane transaction at equipment management**
+
+```
+宿ったロングソード x2 |近攻+31
+伝説のショートソード　x2 |近攻+22
+名工のショートソード x4 |近攻+10
+```
+
+↓(Taps "名工のショートソード" to equip it)
+
 ```
 宿ったロングソード x2 |近攻+31
 伝説のショートソード　x2 |近攻+22
