@@ -352,7 +352,9 @@ function PartyTab({
       <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
         {party.characters.map((c, i) => {
           const r = RACES.find(r => r.id === c.raceId)!;
-          const cs = characterStats[i];
+          const mc = CLASSES.find(cl => cl.id === c.mainClassId)!;
+          const sc = CLASSES.find(cl => cl.id === c.subClassId)!;
+          const isMaster = c.mainClassId === c.subClassId;
           return (
             <button
               key={c.id}
@@ -364,7 +366,7 @@ function PartyTab({
               <div className="text-2xl text-center">{r.emoji}</div>
               <div className="text-xs truncate w-14 text-center">{c.name}</div>
               <div className="text-xs text-gray-400 text-center">
-                {Math.floor(cs.meleeAttack)}|{Math.floor(cs.magicalAttack)}|{Math.floor(cs.rangedAttack)}
+                {mc.name}({isMaster ? '師範' : sc.name})
               </div>
             </button>
           );
@@ -551,10 +553,10 @@ function PartyTab({
               {race.emoji} {race.name} / {mainClass.name}({char.mainClassId === char.subClassId ? '師範' : subClass.name}) / {predisposition.name} / {lineage.name}
             </div>
             <div className="grid grid-cols-4 gap-1 mt-1 text-xs">
-              <div className="bg-white rounded p-1 text-center">体{stats.baseStats.vitality}</div>
-              <div className="bg-white rounded p-1 text-center">力{stats.baseStats.strength}</div>
-              <div className="bg-white rounded p-1 text-center">知{stats.baseStats.intelligence}</div>
-              <div className="bg-white rounded p-1 text-center">精{stats.baseStats.mind}</div>
+              <div className="bg-white rounded p-1 text-center">体力:{stats.baseStats.vitality}</div>
+              <div className="bg-white rounded p-1 text-center">力:{stats.baseStats.strength}</div>
+              <div className="bg-white rounded p-1 text-center">知性:{stats.baseStats.intelligence}</div>
+              <div className="bg-white rounded p-1 text-center">精神:{stats.baseStats.mind}</div>
             </div>
             <div className="border-t border-gray-200 mt-2 pt-2 space-y-1 text-sm">
               {(() => {
@@ -570,20 +572,38 @@ function PartyTab({
                 const elementName = stats.elementalOffense === 'fire' ? '火' :
                   stats.elementalOffense === 'thunder' ? '雷' :
                   stats.elementalOffense === 'ice' ? '氷' : '無';
+
+                const hasRanged = stats.rangedAttack > 0 || stats.rangedNoA > 0;
+                const hasMagical = stats.magicalAttack > 0 || stats.magicalNoA > 0;
+                const hasMelee = stats.meleeAttack > 0 || stats.meleeNoA > 0;
+
                 return (
                   <>
-                    <div className="flex justify-between text-xs">
-                      <span>遠距離攻撃:{Math.floor(stats.rangedAttack)} x {stats.rangedNoA}回(x{longAmp.toFixed(2)})</span>
-                      <span className="text-gray-500">属性攻撃:{elementName}(x{stats.elementalOffenseValue.toFixed(1)})</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span>魔法攻撃:{Math.floor(stats.magicalAttack)} x {stats.magicalNoA}回(x{midAmp.toFixed(2)})</span>
-                      <span className="text-gray-500">魔法防御:{stats.magicalDefense}</span>
-                    </div>
-                    <div className="flex justify-between text-xs">
-                      <span>近接攻撃:{Math.floor(stats.meleeAttack)} x {stats.meleeNoA}回(x{closeAmp.toFixed(2)})</span>
-                      <span className="text-gray-500">物理防御:{stats.physicalDefense}</span>
-                    </div>
+                    {hasRanged && (
+                      <div className="flex justify-between text-xs">
+                        <span>遠距離攻撃:{Math.floor(stats.rangedAttack)} x {stats.rangedNoA}回(x{longAmp.toFixed(2)})</span>
+                        <span className="text-gray-500">属性攻撃:{elementName}(x{stats.elementalOffenseValue.toFixed(1)})</span>
+                      </div>
+                    )}
+                    {hasMagical && (
+                      <div className="flex justify-between text-xs">
+                        <span>魔法攻撃:{Math.floor(stats.magicalAttack)} x {stats.magicalNoA}回(x{midAmp.toFixed(2)})</span>
+                        <span className="text-gray-500">魔法防御:{stats.magicalDefense}</span>
+                      </div>
+                    )}
+                    {hasMelee && (
+                      <div className="flex justify-between text-xs">
+                        <span>近接攻撃:{Math.floor(stats.meleeAttack)} x {stats.meleeNoA}回(x{closeAmp.toFixed(2)})</span>
+                        <span className="text-gray-500">物理防御:{stats.physicalDefense}</span>
+                      </div>
+                    )}
+                    {/* Always show defense if no offense lines are shown */}
+                    {!hasRanged && !hasMagical && !hasMelee && (
+                      <div className="flex justify-between text-xs">
+                        <span className="text-gray-500">物理防御:{stats.physicalDefense}</span>
+                        <span className="text-gray-500">魔法防御:{stats.magicalDefense}</span>
+                      </div>
+                    )}
                   </>
                 );
               })()}
@@ -599,19 +619,26 @@ function PartyTab({
                 ...lineage.bonuses,
               ];
 
-              // Aggregate bonuses
-              const multipliers: Record<string, number> = {};
+              // Aggregate bonuses - deduplicate multipliers by value before multiplying
+              const multiplierValues: Record<string, Set<number>> = {};
               const additive: Record<string, number> = {};
 
               for (const b of allBonuses) {
                 if (b.type.endsWith('_multiplier')) {
                   const key = b.type.replace('_multiplier', '');
-                  multipliers[key] = (multipliers[key] ?? 1) * b.value;
+                  if (!multiplierValues[key]) multiplierValues[key] = new Set();
+                  multiplierValues[key].add(b.value);
                 } else if (['vitality', 'strength', 'intelligence', 'mind', 'equip_slot', 'grit', 'caster'].includes(b.type)) {
                   additive[b.type] = (additive[b.type] ?? 0) + b.value;
                 } else if (b.type === 'penet') {
                   additive['penet'] = (additive['penet'] ?? 0) + b.value;
                 }
+              }
+
+              // Calculate multipliers from unique values
+              const multipliers: Record<string, number> = {};
+              for (const [key, values] of Object.entries(multiplierValues)) {
+                multipliers[key] = Array.from(values).reduce((prod, v) => prod * v, 1);
               }
 
               // Format display
@@ -899,10 +926,10 @@ function ExpeditionTab({
                             };
                             const emoji = getPhaseEmoji();
                             const isEnemy = log.actor === 'enemy';
-                            const actorLabel = isEnemy ? '敵' : '味方';
                             return (
                               <div key={j} className="text-gray-600">
-                                <span className="text-gray-400">[{phaseLabel}]</span> {actorLabel}: {log.action}
+                                <span className="text-gray-400">[{phaseLabel}]</span>{' '}
+                                {isEnemy ? `敵が${log.action}` : log.action}
                                 {log.damage !== undefined && (
                                   <span className={isEnemy ? 'text-accent' : 'text-sub'}>
                                     {' '}({emoji} {log.damage})

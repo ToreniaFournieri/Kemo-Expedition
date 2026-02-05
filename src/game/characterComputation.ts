@@ -56,7 +56,10 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
         if (!collection.multipliers.has(bonus.type)) {
           collection.multipliers.set(bonus.type, []);
         }
-        collection.multipliers.get(bonus.type)!.push(bonus.value);
+        // Only add if this value is not already present (deduplicate)
+        if (!collection.multipliers.get(bonus.type)!.includes(bonus.value)) {
+          collection.multipliers.get(bonus.type)!.push(bonus.value);
+        }
         break;
       case 'vitality':
         collection.statBonuses.vitality += bonus.value;

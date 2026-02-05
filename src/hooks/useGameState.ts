@@ -20,7 +20,7 @@ import { drawFromBag, refillBagIfEmpty, createRewardBag, createEnhancementBag, c
 import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 
-const BUILD_NUMBER = 17;
+const BUILD_NUMBER = 18;
 const STORAGE_KEY = 'kemo-expedition-save';
 
 // Helper to calculate sell price for an item
@@ -287,7 +287,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         const enemy = selectEnemy(dungeon.id, room, totalRooms);
         if (!enemy) break;
 
-        const battleResult = executeBattle(state.party, enemy, quiverQty, bags);
+        // Pass currentHp to maintain HP persistence during expedition
+        const battleResult = executeBattle(state.party, enemy, quiverQty, bags, currentHp);
         // Update threat bags from battle result
         bags = {
           ...bags,
