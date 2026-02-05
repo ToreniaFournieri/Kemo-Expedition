@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.1.1 - SPECIFICATION
+# KEMO EXPEDITION v0.1.2 - SPECIFICATION
 
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
@@ -719,7 +719,25 @@ Name      [編集]
     - Inventory includes item category tabs:
       - 剣,刀,弓,鎧,手,杖,衣,護,矢.
       - Default: 剣
-      - Only items matching the selected category are shown (filter)
+      - items in inventory matching the selected category are shown (filter)
+      - add equipped items with icon in the list.
+```
+宿ったロングソード x2 |近攻+31
+伝説のショートソード　x2 |近攻+22
+🐶名工のショートソード x1 |近攻+10
+名工のショートソード x3 |近攻+10
+↓(If tap "🐶名工のショートソード" )
+宿ったロングソード x2 |近攻+31
+伝説のショートソード　x2 |近攻+22
+名工のショートソード x4 |近攻+10
+↓(If tap "伝説のショートソード" )
+宿ったロングソード x2 |近攻+31
+🐶伝説のショートソード　x1 |近攻+22
+伝説のショートソード　x1 |近攻+22
+名工のショートソード x4 |近攻+10
+
+```   
+  
     - **Inventory Sort Logic (within category):**
       - Order: Descending order by Priority.
       - Priority:
