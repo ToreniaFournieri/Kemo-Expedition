@@ -661,13 +661,16 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 - Party member details:
   - Name, race, main class (sub class), predisposition, lineage, status, bonuses (c., aggregated), ability (a. )
   - Status:
+    -`f.display_ranged_offense` = If `d.ranged_attack` or `d.ranged_NoA` > 0, displays 遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(phase: LONG)). Else (none).
+    -`f.display_magical_offense` = If `d.magical_attack` or `d.magical_NoA` > 0, displays 魔法攻撃:`d.magical_attack` x `d.magical_NoA`回(x`f.offense_amplifier`(phase: MID)). Else (none).
+    -`f.display_melee_offense` = If `d.melee_attack` or `d.melee_NoA` > 0, displays 近接攻撃:`d.melee_attack` x `d.melee_NoA`回(x`f.offense_amplifier`(phase: CLOSE)). Else (none).	
 ```
 Name      [編集]
 🐶 ケイナイアン / 戦士(剣士) / 頑強 / 不動の家
 [体:`b.vitality`] [力:`b.strength`] [知:`b.intelligence`] [精:`b.mind`]
-遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(phase: LONG))    属性攻撃:`f.elemental_offense_attribute`.name (x `f.elemental_offense_attribute`.value )
-魔法攻撃:`d.magical_attack` x `d.magical_NoA`回(x`f.offense_amplifier`(phase: MID))      魔法防御:`d.magical_defense`
-近接攻撃:`d.melee_attack` x `d.melee_NoA`回(x`f.offense_amplifier`(phase: CLOSE))     物理防御:`d.physical_defense`
+`f.display_ranged_offense`    属性攻撃:`f.elemental_offense_attribute`.name (x `f.elemental_offense_attribute`.value )
+`f.display_magical_offense`      魔法防御:`d.magical_defense`
+`f.display_melee_offense`     物理防御:`d.physical_defense`
 ボーナス: `c.` (ex. 護符x1.3, 弓x1.1 鎧x2.4, 剣x1.4, 根性+1, 装備+1, 体+3)
 特殊能力:
 `a.` (ex. 守護者: パーティへの物理ダメージ × 3/5 )
