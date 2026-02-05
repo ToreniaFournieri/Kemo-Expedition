@@ -318,10 +318,11 @@ export function executeBattle(
         partyHp -= attack.damage;
         totalEnemyDamage += attack.damage;
         const targetChar = party.characters.find(c => c.id === charId);
+        const attackName = phase === 'mid' ? '魔法攻撃' : '攻撃';
         log.push({
           phase,
           actor: 'enemy',
-          action: `${targetChar?.name ?? '???'} に攻撃(${attack.count}回)！`,
+          action: `${targetChar?.name ?? '???'} に${attackName}(${attack.count}回)！`,
           damage: attack.damage,
           elementalOffense: enemy.elementalOffense,
         });
