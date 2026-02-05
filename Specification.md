@@ -102,7 +102,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 |マステリド(Mustelid) | `c.gauntlet_x1.3`, `c.arrow_x1.3` |10,10,9,11| 🦡Ferret |
 |レポリアン(Leporian) | `c.archery_x1.3`,  `c.armor_x1.3` |9,8,11,10| 🐰Rabbit |
 |セルヴィン(Cervin) |`c.wand_x1.3`, `c.shield_x1.2` |6,7,13,10| 🦌Deer |
-|ミュリッド(Murid) |`c.penet_x0.10`, `c.bolt_x1.3`  |9,8,10,10| 🐭Mouse |
+|ミュリッド(Murid) |`c.penet_+0.10`, `c.bolt_x1.3`  |9,8,10,10| 🐭Mouse |
 
 
 - **predisposition(性格):**
@@ -138,7 +138,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 |-----|-----------|---------|---------|
 |戦士(Fighter) |`c.equip_slot+1`,  `c.armor_x1.4` |`c.grit+1`. `a.defender`1: Incoming physical damage to party × 2/3 |`c.grit+1`. `a.defender`2: Incoming physical damage to party × 3/5 | 
 |剣士(Duelist) |`c.sword_x1.4` |`c.grit+1`. `a.counter`1: enemy CLOSE-range attack |`c.grit+1`. `a.counter`2: enemy CLOSE-range attack and MID-range | 
-|忍者(Ninja) |`c.penet_x0.15` |`c.grit+1`. `a.re-attack`1: once when attacking |`c.grit+1`. `a.re-attack`2: twice when attacking | 
+|忍者(Ninja) |`c.penet_+0.15` |`c.grit+1`. `a.re-attack`1: once when attacking |`c.grit+1`. `a.re-attack`2: twice when attacking | 
 |侍(Samurai) |`c.katana_x1.4` |`c.grit+1`. `a.iaigiri`: Physical damage ×2,  number of attacks ÷2 | `c.grit+1`. `a.iaigiri`: Physical damage ×2.5,  number of attacks ÷2 |
 |君主(Lord) |`c.gauntlet_x1.4`, `c.equip_slot+1` |`a.command`1: Physical damage x1.3 |`a.command`2: Physical damage x1.6 | 
 |狩人(Ranger) |`c.arrow_x1.4` | `c.pursuit+1`, `a.hunter`1: Reduces row-based damage decay from 15% to 10% per step. |`c.pursuit+2`, `a.hunter`2: Reduces row-based damage decay from 15% to 7% per step. | 
@@ -151,7 +151,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 - `main_class` applies main/sub bonuses and main bonus. `sub_class` applies only main/sub bonuses.
 - Only the strongest single ability(a.) of the same name applies.
 - Only one single bonuses(c.) of the **exact** same name applies. (`c.equip_slot+2` and `c.equip_slot+1` then +3 slots. two `c.equip_slot+2`, but only one `c.equip_slot+2` works)
- (`c.armor_x1.4`, `c.armor_x1.3`, `c.armor_x1.3`, and `c.armor_x1.1` =>1.4 x 1.3 x 1.1 = x 2.0)
+ (`c.armor_x1.4`, `c.armor_x1.3`, `c.armor_x1.3` =>1.4 x 1.3 = x 1.82)
 
 #### 2.2.2 Party structure 
 1. Party Properties
@@ -280,7 +280,7 @@ inventory = {
   "世界を征する名工のショートソード": {
     "count": 6,
     "state": "owned"
-  }
+  },
   "ロングソード": {
     "count": 0,
     "state": "notown"
@@ -297,7 +297,7 @@ inventory = {
 
 - **Threat weight:** 
   - Populate `g.physical_threat_weight_bag` with tickets: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 2,2,2,2,2,2,2,2, 3,3,3,3, 4,4, 5, 6]. 
-  - Populate `g.magical_threat_weight_bag` with tickets: [1,2,3,4,5.6]. 
+  - Populate `g.magical_threat_weight_bag` with tickets: [1,2,3,4,5,6]. 
 
 - If a bag is empty or explicitly reset the bag, initialize it.
 
@@ -346,7 +346,7 @@ inventory = {
   - Default is 1. If the damage type has `elemental_offense_attribute`, multiply x V. (ex. fire arrow has `e.fire` and its value is 1.2, multiply 1.2 )
  
 - character.`f.penet_multiplier`
-  -If character.`c.penet`, add them. (ex. `c.penet_x0.1` & `c.penet_x0.15` -> 0.25)
+  -If character.`c.penet`, add them. (ex. `c.penet_+0.10` & `c.penet_+0.15` -> 0.25)
 
 - character .`f.defense` (phase: phase):
   - If phase is LONG or CLOSE:
