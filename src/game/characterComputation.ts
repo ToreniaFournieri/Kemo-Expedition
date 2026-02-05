@@ -244,6 +244,12 @@ export function computeCharacterStats(
     });
   }
 
+  // Calculate attack potency based on row position
+  const ATTACK_POTENCY: Record<number, number> = {
+    1: 1.00, 2: 0.85, 3: 0.72, 4: 0.61, 5: 0.52, 6: 0.44,
+  };
+  const attackPotency = ATTACK_POTENCY[row] ?? 1.0;
+
   return {
     characterId: character.id,
     row,
@@ -261,6 +267,7 @@ export function computeCharacterStats(
     penetMultiplier: collection.penet,
     elementalOffense,
     elementalOffenseValue,
+    attackPotency,
   };
 }
 
