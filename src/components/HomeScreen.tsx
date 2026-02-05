@@ -509,17 +509,10 @@ function PartyTab({
         ) : (
           <div className="space-y-1 text-sm">
             <div className="text-gray-500">
-              {race.emoji} {race.name} / {mainClass.name}
-              {char.mainClassId === char.subClassId ? '(師範)' : ` + ${subClass.name}`}
+              {race.emoji} {race.name} / {mainClass.name}({char.mainClassId === char.subClassId ? '師範' : subClass.name}) / {predisposition.name} / {lineage.name}
             </div>
-            <div className="text-gray-500">
-              {predisposition.name} / {lineage.name}
-            </div>
-            <div className="grid grid-cols-4 gap-1 mt-2 text-xs">
-              <div className="bg-white rounded p-1 text-center">体{stats.baseStats.vitality}</div>
-              <div className="bg-white rounded p-1 text-center">力{stats.baseStats.strength}</div>
-              <div className="bg-white rounded p-1 text-center">知{stats.baseStats.intelligence}</div>
-              <div className="bg-white rounded p-1 text-center">精{stats.baseStats.mind}</div>
+            <div className="text-xs">
+              体{stats.baseStats.vitality} 力{stats.baseStats.strength} 知{stats.baseStats.intelligence} 精{stats.baseStats.mind}
             </div>
             <div className="border-t border-gray-200 mt-2 pt-2 space-y-1 text-sm">
               {(() => {
@@ -531,15 +524,15 @@ function PartyTab({
                   stats.elementalOffense === 'ice' ? '氷' : '無';
                 return (
                   <>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between text-xs">
                       <span>遠距離攻撃:{Math.floor(stats.rangedAttack)} x {stats.rangedNoA}回(x1.0)</span>
                       <span className="text-gray-500">属性攻撃:{elementName}(x{stats.elementalOffenseValue.toFixed(1)})</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between text-xs">
                       <span>魔法攻撃:{Math.floor(stats.magicalAttack)} x {stats.magicalNoA}回(x1.0)</span>
                       <span className="text-gray-500">魔法防御:{stats.magicalDefense}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between text-xs">
                       <span>近接攻撃:{Math.floor(stats.meleeAttack)} x {stats.meleeNoA}回(x{meleeAmp.toFixed(1)})</span>
                       <span className="text-gray-500">物理防御:{stats.physicalDefense}</span>
                     </div>
@@ -547,6 +540,63 @@ function PartyTab({
                 );
               })()}
             </div>
+            {/* Bonuses */}
+            {(() => {
+              const isMasterClass = char.mainClassId === char.subClassId;
+              const allBonuses = [
+                ...race.bonuses,
+                ...mainClass.mainSubBonuses,
+                ...(isMasterClass ? mainClass.masterBonuses : [...mainClass.mainBonuses, ...subClass.mainSubBonuses]),
+                ...predisposition.bonuses,
+                ...lineage.bonuses,
+              ];
+
+              // Aggregate bonuses
+              const multipliers: Record<string, number> = {};
+              const additive: Record<string, number> = {};
+
+              for (const b of allBonuses) {
+                if (b.type.endsWith('_multiplier')) {
+                  const key = b.type.replace('_multiplier', '');
+                  multipliers[key] = (multipliers[key] ?? 1) * b.value;
+                } else if (['vitality', 'strength', 'intelligence', 'mind', 'equip_slot', 'grit', 'caster'].includes(b.type)) {
+                  additive[b.type] = (additive[b.type] ?? 0) + b.value;
+                } else if (b.type === 'penet') {
+                  additive['penet'] = (additive['penet'] ?? 0) + b.value;
+                }
+              }
+
+              // Format display
+              const parts: string[] = [];
+              const mulNames: Record<string, string> = {
+                sword: '剣', katana: '刀', archery: '弓', armor: '鎧',
+                gauntlet: '手', wand: '杖', robe: '衣', amulet: '護'
+              };
+              const addNames: Record<string, string> = {
+                vitality: '体', strength: '力', intelligence: '知', mind: '精',
+                equip_slot: '装備', grit: '根性', caster: '術者', penet: '貫通'
+              };
+
+              for (const [key, val] of Object.entries(multipliers)) {
+                if (val !== 1) parts.push(`${mulNames[key] ?? key}x${val.toFixed(1)}`);
+              }
+              for (const [key, val] of Object.entries(additive)) {
+                if (val !== 0) {
+                  if (key === 'penet') {
+                    parts.push(`${addNames[key]}+${Math.round(val * 100)}%`);
+                  } else {
+                    parts.push(`${addNames[key] ?? key}+${val}`);
+                  }
+                }
+              }
+
+              if (parts.length === 0) return null;
+              return (
+                <div className="text-xs text-gray-600 mt-1">
+                  ボーナス: {parts.join(', ')}
+                </div>
+              );
+            })()}
             {stats.abilities.length > 0 && (
               <div className="border-t border-gray-200 mt-2 pt-2">
                 <div className="text-gray-500 text-xs">特殊能力:</div>
