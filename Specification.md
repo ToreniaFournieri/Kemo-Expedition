@@ -1,10 +1,10 @@
-# KEMO EXPEDITION v0.1.2 - SPECIFICATION
+# KEMO EXPEDITION v0.1.3 - SPECIFICATION
 
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
 - Support Japanese language. 
 - Tetris like randomness. (Bag Randomization)
-- data persistence 
+- Data persistence 
 
 ### 1.1 World setting
 - The world is fragmented into unexplored regions filled with ancient creatures and forgotten relics.
@@ -31,7 +31,7 @@
 
 ### 2.1 Global constants
 - One deity represents on one party. The deity has its own level, HP, and unique divine abilities. 
-const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP' , 'quiver_slots' ]
+const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP']
 
 - Initial deity: 'God of Restoration' // Revives character at the base automatically, no death penalty 
 
@@ -79,13 +79,11 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP' , '
 - sub_class
 
 #### 2.2.1 Character 
-
 - A character is defined by Race, Class and Predisposition
   - Race defines base status
   - Class defines combat behavior modifiers and equipment bonuses
   - Predisposition defines additional modifiers
   - Characters have no individual HP
-  - All defensive effects ultimately modify party-wide parameters
 
 **Base Status Parameters**
 - Each character has the following base status values: 
@@ -105,7 +103,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP' , '
 |ヴァルピニアン(Vulpinian) |`c.equip_slot+1`, `c.sword_x1.3` |10,10,12,8| 🦊Fox |
 |ウルサン(Ursan) |`c.equip_slot+2` |13,12,5,7| 🐻Bear |
 |フェリディアン(Felidian) |`c.robe_x1.3`, `a.first-strike`1: Acts faster than enemy at CLOSE phase |9,9,10,12| 😺Cat |
-|マステリド(Mustelid) | `c.gauntlet_x1.3`, `a.hunter`1: Retrieve 20% of the arrows at the end of battle |10,10,9,11| 🦡Ferret |
+|マステリド(Mustelid) | `c.gauntlet_x1.3`, `a.hunter`1: <Need to define effect.> |10,10,9,11| 🦡Ferret |
 |レポリアン(Leporian) | `c.archery_x1.3`,  `c.armor_x1.3` |9,8,11,10| 🐰Rabbit |
 |セルヴィン(Cervin) |`c.wand_x1.3`, `c.amulet_x1.2` |6,7,13,10| 🦌Deer |
 |ミュリッド(Murid) |`c.penet_x0.10`, `c.caster+1`  |9,8,10,10| 🐭Mouse |
@@ -147,7 +145,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP' , '
 |忍者(Ninja) |`c.penet_x0.15` |`c.grit+1`. `a.re-attack`1: once when attacking |`c.grit+1`. `a.re-attack`2: twice when attacking | 
 |侍(Samurai) |`c.katana_x1.4` |`c.grit+1`. `a.iaigiri`: Physical damage ×2,  number of attacks ÷2 | `c.grit+1`. `a.iaigiri`: Physical damage ×2.5,  number of attacks ÷2 |
 |君主(Lord) |`c.gauntlet_x1.4`, `c.equip_slot+1` |`a.command`1: Physical damage x1.3 |`a.command`2: Physical damage x1.6 | 
-|狩人(Ranger) |`c.archery_x1.4` | `a.hunter`2: Retrieve 30% of the arrows at the end of battle  |`a.hunter`3: Retrieve 36% of the arrows at the end of battle | 
+|狩人(Ranger) |`c.archery_x1.4` | `a.hunter`2: <Need to define effect.>  |`a.hunter`3: <Need to define effect.> | 
 |魔法使い(Wizard) |`c.wand_x1.4` | `c.caster+2` | `c.caster+3` | 
 |賢者(Sage) |`c.robe_x1.4`, `c.equip_slot+2` |`c.caster+1`. `a.m-barrier`1: Incoming magical damage to party × 2/3 | `c.caster+1`. `a.m-barrier`2: Incoming magical damage to party × 3/5 | 
 |盗賊(Rogue) |`c.unlock` additional reward chance |`a.first-strike`1: Acts faster than enemy at CLOSE phase |`a.first-strike`2: Acts faster than enemy at All phases | 
@@ -157,7 +155,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP' , '
 - `main_class` applies main/sub bonuses and main bonus. `sub_class` applies only main/sub bonuses.
 - Only the strongest single ability(a.) of the same name applies.
 - Only one single bonuses(c.) of the **exact** same name applies. (`c.equip_slot+2` and `c.equip_slot+1` then +3 slots. two `c.equip_slot+2`, but only one `c.equip_slot+2` works)
-
+ (`c.armor_x1.4`, `c.armor_x1.3`, `c.armor_x1.3`, and `c.armor_x1.1` =>1.4 x 1.3 x 1.1 = x 2.0)
 
 #### 2.2.2 Party structure 
 
@@ -168,12 +166,6 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP' , '
 - All characters participate simultaneously
 - Party has its:
     - Party `d.HP`
-    - quiver slots
- 
-- **Quiver system**
-  - Definition: A shared party resource that houses all `i.arrow` items.
-  - Quiver Slots: The party has **Two** slots specifically for arrow types.
-  - Stacking: Each arrow type has a `max_stack` property. Multiple stacks of the same arrow ID can occupy different quiver slots.
 
 2. Character Properties
 - Each character has:
@@ -193,8 +185,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP' , '
 		- `r.thunder`
 		- Equipment slots
 
-- Characters do not have individual HP.
-    - but each character contributes total HP. 
+- Characters do not have individual HP. However each character contributes total HP. 
 
 ### 2.3 Dungeons & Enemies
 
@@ -833,19 +824,10 @@ Name      [編集]
     - ex. 名工のロングソード x3 | 近攻+19     [解除]
   - Unlock button(解除): Changes item state from `s.sold` to `s.notown`
 
-- Quiver management: at item category tab of "矢"
-  - Acquire arrows
-  - Refill arrows
-  - Remove arrows
 
 #### 8.3.4 Shop
-- Purchase basic items:
-  - Arrows
-  - Other consumables
-- Slot behavior:
-  - When Slot 1 arrows are removed:
-  - Slot 2 arrows automatically move to Slot 1
-
+- Only tabs. not opended. (in this version)
+  
 #### 8.3.5 Setting
 - Debug section: Displays belows 
   - reward_bag:  
