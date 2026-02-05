@@ -511,8 +511,11 @@ function PartyTab({
             <div className="text-gray-500">
               {race.emoji} {race.name} / {mainClass.name}({char.mainClassId === char.subClassId ? '師範' : subClass.name}) / {predisposition.name} / {lineage.name}
             </div>
-            <div className="text-xs">
-              体{stats.baseStats.vitality} 力{stats.baseStats.strength} 知{stats.baseStats.intelligence} 精{stats.baseStats.mind}
+            <div className="grid grid-cols-4 gap-1 mt-1 text-xs">
+              <div className="bg-white rounded p-1 text-center">体{stats.baseStats.vitality}</div>
+              <div className="bg-white rounded p-1 text-center">力{stats.baseStats.strength}</div>
+              <div className="bg-white rounded p-1 text-center">知{stats.baseStats.intelligence}</div>
+              <div className="bg-white rounded p-1 text-center">精{stats.baseStats.mind}</div>
             </div>
             <div className="border-t border-gray-200 mt-2 pt-2 space-y-1 text-sm">
               {(() => {
