@@ -643,12 +643,18 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
   - List of party members
   - Current status, abilities, bonuses
 - Party member details:
-  - Name, race, class, predisposition, lineage, bonuses
+  - Name, race, main class (sub class), predisposition, lineage, status, bonuses (c., aggregated), ability (a. )
   - Status:
 ```
+Name      [編集]
+🐶 ケイナイアン / 戦士(剣士) / 頑強 / 不動の家
+体13 力10 知10 精10
 遠距離攻撃:0 x 0回(x1.0)    属性攻撃:無(x1.0)
 魔法攻撃:0 x 0回(x1.0)      魔法防御:0
 近接攻撃:39 x 2回(x2.0)     物理防御:24
+ボーナス: 鎧x2.4, 剣x1.4, 根性+1, 装備+1, 体+3
+特殊能力:
+守護者: パーティへの物理ダメージ × 3/5
 ```
   - Editable parameters
 - **Character Edit Mode** (selected member):
