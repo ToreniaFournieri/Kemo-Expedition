@@ -431,7 +431,7 @@ inventory = {
     - X (Displays number of room. If it is the last room, displays BOSS.)
 	- `p.enemy_name`: Name of enemy.
 	- `p.enemy_HP`: Shows enemy's `d.HP` (max HP)
-	- `p.remaining_HP_of_room`: Party HP of remaining: like 430/ 1000
+	- `p.remaining_HP_of_room`: Party HP and percentage. like: 430(59%)
     - `p.outcome_of_room`: Victory/Defeat/Draw/No Visit -> 勝利/敗北/引分/未到達
 　- Line 2:
   	- `p.enemy_attack_values`: Using `f.attack` for each range.  ex. 300/0/340    
