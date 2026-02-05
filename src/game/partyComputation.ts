@@ -93,20 +93,28 @@ export function computePartyStats(party: Party): {
   );
 
   // Calculate party HP
-  // Party.d.HP = 950 + (level x 50) + (Total sum of individual (Item Bonuses of HP x its c.multiplier x (b.vitality + b.mind) / 20))
-  let baseHp = 950 + party.level * 50;
+  // Party.d.HP = 100 + (Total sum of individual ((Item Bonuses of HP x its c.multiplier + level x b.vitality) x (b.vitality + b.mind) / 20))
+  let baseHp = 100;
   let bonusHp = 0;
 
   for (const character of party.characters) {
     const stats = getCharacterBaseStats(character);
     const statMultiplier = (stats.vitality + stats.mind) / 20;
 
+    // Sum item HP bonuses with multipliers
+    let itemHpBonus = 0;
     for (const item of character.equipment) {
       if (item && item.partyHP) {
         const multiplier = getCharacterMultiplier(character, item.category);
-        bonusHp += item.partyHP * multiplier * statMultiplier;
+        itemHpBonus += item.partyHP * multiplier;
       }
     }
+
+    // Add level x vitality
+    const levelBonus = party.level * stats.vitality;
+
+    // Character's HP contribution
+    bonusHp += (itemHpBonus + levelBonus) * statMultiplier;
   }
 
   // Calculate party physical defense
