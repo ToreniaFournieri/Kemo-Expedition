@@ -648,7 +648,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 ### 8.3 Tabs
 
 #### 8.3.1 Party
-**Displays:**
+##### 8.3.1.1 Displays
   - List of party members
     	For each character: Icon, name, main Class (Sub calass).
 ```
@@ -659,7 +659,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 
   - Current status, abilities, bonuses
 
-**Party member details:**
+##### 8.3.1.2 Party member details
   - Name, race, main class (sub class), predisposition, lineage, status, bonuses (c., aggregated), ability (a. )
   - Status:
     - `f.display_ranged_offense` = If `d.ranged_attack` or `d.ranged_NoA` > 0, displays 遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(phase: LONG)). Else (none).
@@ -678,27 +678,28 @@ Name      [編集]
 ```
   - Editable parameters
 
-**Character Edit Mode** (selected member):
-  - Name edit:
-  - Editable `name` field.
-  - Race selection:
-    - Displays a list of available Races.
-    - Each entry shows its name, base status, and unique bonus (ex. 🐶ケイナイアン |体10,力10,知10,精10 | 護符 x1.3, 弓 x1.1)
-  - Main Class selection:
-    - Displays a list of available Classes.
-    - Each entry shows its name and unique bonus (main bonus and main/sub bonuses)
-      - If Main Class == Sub Class, then show master bonus instead of main bonus.
-  - Sub Class selection:
-    - Displays a list of available Classes.
-    - Each entry shows its name and unique bonus (only main/sub bonuses)
-  - Predisposition selection:
-    - Displays a list of available Predispositions.
-    - Each entry shows its name and unique bonus.
-  - Lineage selection:
-    - Displays a list of available Lineage.
-    - Each entry shows its name and unique bonus.
+##### 8.3.1.3 Character Edit Mode (selected member):
+**1. Contents**
+- Name [edit]
+- Editable `name` field.
+- Race selection:
+  - Displays a list of available Races.
+  - Each entry shows its name, base status, and unique bonus (ex. 🐶ケイナイアン |体10,力10,知10,精10 | 護符 x1.3, 弓 x1.1)
+- Main Class selection:
+  - Displays a list of available Classes.
+  - Each entry shows its name and unique bonus (main bonus and main/sub bonuses)
+    - If Main Class == Sub Class, then show master bonus instead of main bonus.
+- Sub Class selection:
+  - Displays a list of available Classes.
+  - Each entry shows its name and unique bonus (only main/sub bonuses)
+- Predisposition selection:
+  - Displays a list of available Predispositions.
+  - Each entry shows its name and unique bonus.
+- Lineage selection:
+  - Displays a list of available Lineage.
+  - Each entry shows its name and unique bonus.
 
-**Edit Confirmation Rules:**
+**2. Edit Confirmation Rules:**
 - **Done (完了):**
   - Saves all changes to Race, Class, and Name.
   - **Automatic Unequip:** All currently equipped items on this character are removed and returned to the inventory.
@@ -709,14 +710,14 @@ Name      [編集]
   -  Character remains exactly as they were (Race, Class, and Equipment are untouched).
 - **UI Requirement:** Display a confirmation warning when pressing "Done": *"Saving changes will unequip all items. Proceed?"*
 
-**Equipment management:**
-- **Interaction Rules:**
+##### 8.3.1.4 Equipment management
+**1. Interaction Rules:**
   - **Auto-Equip:** - If there is an empty slot and the player taps an item in the inventory, that item is automatically equipped to the first available slot.
   - **Replace (Single-Tap):** - Tapping an item already in a Character Slot "selects" it. Tapping an item in the inventory while a slot is selected replaces the current item with the new one.
   - **Remove (Double-Tap):** - Double-tapping an item in a Character Slot removes it and returns it to the inventory.
   - Status updates in real time
 
-- **inventory Pane:**
+**2. Inventory Pane:**
   - Always visible on the same screen at the bottom.
   - Stacked by item variant
   - Inventory includes item category tabs:
@@ -725,7 +726,7 @@ Name      [編集]
     - Items in inventory matching the selected category are shown (filter)
     - Adds equipped items with icon in the list.
 
-**Inventory Sort Logic (within category):**
+**3. Inventory Sort Logic (within category):**
 - Order: Descending order by Priority.
 - Priority:
   1. Base Item ID: Higher-tier base items (e.g., Mythril Sword > Iron Sword) appear first.
@@ -736,7 +737,7 @@ Name      [編集]
 - Inventory pane shows at least 10 items
 - Equipped item: The name and status are left-aligned, item type is right-aligned on **the same line**.
 
-*Image of inventory pane transaction at equipment management*
+**4. Image of inventory pane transaction at equipment management**
 ```
 宿ったロングソード x2 |近攻+31
 伝説のショートソード　x2 |近攻+22
