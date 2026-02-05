@@ -151,7 +151,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 - `main_class` applies main/sub bonuses and main bonus. `sub_class` applies only main/sub bonuses.
 - Only the strongest single ability(a.) of the same name applies.
 - Only one single bonuses(c.) of the **exact** same name applies. (`c.equip_slot+2` and `c.equip_slot+1` then +3 slots. two `c.equip_slot+2`, but only one `c.equip_slot+2` works)
- (`c.armor_x1.4`, `c.armor_x1.3`, `c.armor_x1.3` =>1.4 x 1.3 = x 1.82)
+ (`c.armor_x1.4`, `c.armor_x1.3`, `c.armor_x1.3` =>1.4 x 1.3 = x 1.82 -> 1.8 (for display))
 
 #### 2.2.2 Party structure 
 1. Party Properties
@@ -302,6 +302,8 @@ inventory = {
 - If a bag is empty or explicitly reset the bag, initialize it.
 
 ### 3.3 Character initialization
+
+#### 3.3.1 Level and slots
 - Experience and level are party-wide. Characters do not have individual levels; all level-based effects reference Party level.
 - max_level: 29. (current version restriction)
 
@@ -321,6 +323,8 @@ inventory = {
 
 
 - Base status update: add (b.) modifiers. (ex. `b.vitality` = 10(from race) + `b.vitality+2` -> 12
+
+#### 3.3.2 Multiplier and Functions
 
 - c.multiplier like `c.sword_x1.3` applies only for sword item type. other item types like shield may have +10 melee_attack bonus, but shield's melee_attack bonus is not multiplied by `c.sword_x1.3` effect. 
 
@@ -354,6 +358,10 @@ inventory = {
   - If phase is MID:
   	- `d.magical_defense`: Item Bonuses of Magical defense x its c.multiplier x `b.mind` / 10
 
+#### 3.3.3 Mathematical Precision & Display Rules
+- Internal Calculation: All multipliers and final status values are calculated using floating-point precision (e.g., 1.4 * 1.3 = 1.82) to ensure accuracy across multiple stacked bonuses.
+- Display Rule (Rounding): For UI and logs, values are rounded to one decimal place (e.g., 1.82 → 1.8).
+- Integer Rule: Final damage values and HP values are always floored to the nearest integer for display, though internal logic may retain decimals until the final step.
  
 ### 3.4 Party initialization
 - c.multiplier like `c.amulet_x1.3` applies only for individual character's equipments. 
