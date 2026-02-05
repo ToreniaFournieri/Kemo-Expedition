@@ -354,8 +354,12 @@ inventory = {
   - `d.melee_NoA`= 0 + `c.grit+v` bonuses + Item Bonuses x its c.multiplier (round up) //no NoA, no melee combat.
     - IF the character has `a.iaigiri`, halve these number of attacks, round up. 
 
-- character.`f.abilities_offense_amplifier`
-  - If character.`a.iaigiri`, multiply 2.0.
+- character.`f.abilities_offense_amplifier` (phase: )
+  - If phase is LONG,  return: `d.attack_potency`.
+  - If phase is MID, return: 1.0 (Fixed value)
+  - If phase is CLOSE,
+    - If character.`a.iaigiri`, return  `d.attack_potency` x 2.0.
+    - Else, return `d.attack_potency`.
 
 - character.`f.elemental_offense_attribute`
   - Default is 1. If the damage type has `elemental_offense_attribute`, multiply x V. (ex. fire arrow has `e.fire` and its value is 1.2, multiply 1.2 )
@@ -551,7 +555,7 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
   - Execution: * Subtract ranged_NoA from the Quiver (following Slot 1 -> Slot 2 order).
     - If quantity < ranged_NoA, the character attacks with a reduced NoA equal to the remaining quantity.
 
-- Current enemy.`d.HP` -= `f.damage_calculation` (actor: character, opponent: enemy, phase: phase ) x `f.NoA` x `d.attack_potency`
+- Current enemy.`d.HP` -= `f.damage_calculation` (actor: character, opponent: enemy, phase: phase ) x `f.NoA`
 - If enemy.`d.HP` =< 0, Victory.
 
 - **Re-attack:** IF character.`a.re-attack`, the character attacks to enemy.  (using `f.damage_calculation`)
@@ -649,9 +653,9 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 Name      [編集]
 🐶 ケイナイアン / 戦士(剣士) / 頑強 / 不動の家
 [体:``] 力10 知10 精10
-遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.abilities_offense_amplifier`(range: LONG))    属性攻撃:`f.elemental_offense_attribute`.name (x `f.elemental_offense_attribute`.value )
+遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.abilities_offense_amplifier`(phase: LONG))    属性攻撃:`f.elemental_offense_attribute`.name (x `f.elemental_offense_attribute`.value )
 魔法攻撃:`d.magical_attack` x `d.magical_NoA`回(x`d.magical_attack_amplifier`)      魔法防御:`d.magical_defense`
-近接攻撃:`d.melee_attack` x `d.melee_NoA`回(x`f.abilities_offense_amplifier`(range: CLOSE))     物理防御:`d.physical_defense`
+近接攻撃:`d.melee_attack` x `d.melee_NoA`回(x`f.abilities_offense_amplifier`(phase: CLOSE))     物理防御:`d.physical_defense`
 ボーナス: `c.` (ex. 護符x1.3, 弓x1.1 鎧x2.4, 剣x1.4, 根性+1, 装備+1, 体+3)
 特殊能力:
 `a.` (ex. 守護者: パーティへの物理ダメージ × 3/5 )
