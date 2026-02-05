@@ -141,7 +141,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 |忍者(Ninja) |`c.penet_x0.15` |`c.grit+1`. `a.re-attack`1: once when attacking |`c.grit+1`. `a.re-attack`2: twice when attacking | 
 |侍(Samurai) |`c.katana_x1.4` |`c.grit+1`. `a.iaigiri`: Physical damage ×2,  number of attacks ÷2 | `c.grit+1`. `a.iaigiri`: Physical damage ×2.5,  number of attacks ÷2 |
 |君主(Lord) |`c.gauntlet_x1.4`, `c.equip_slot+1` |`a.command`1: Physical damage x1.3 |`a.command`2: Physical damage x1.6 | 
-|狩人(Ranger) |`c.arrow_x1.4` | `a.hunter`2: <Need to define effect.>  |`a.hunter`3: <Need to define effect.> | 
+|狩人(Ranger) |`c.arrow_x1.4` | `c.pursuit+1`, `a.hunter`2: <Need to define effect.>  |`c.pursuit+2`, `a.hunter`3: <Need to define effect.> | 
 |魔法使い(Wizard) |`c.wand_x1.4` | `c.caster+2` | `c.caster+3` | 
 |賢者(Sage) |`c.robe_x1.4`, `c.grimoire_x1.2`, `c.equip_slot+2` |`c.caster+1`. `a.m-barrier`1: Incoming magical damage to party × 2/3 | `c.caster+1`. `a.m-barrier`2: Incoming magical damage to party × 3/5 | 
 |盗賊(Rogue) |`c.unlock` additional reward chance |`a.first-strike`1: Acts faster than enemy at CLOSE phase |`a.first-strike`2: Acts faster than enemy at All phases | 
@@ -330,7 +330,7 @@ inventory = {
   - `d.magical_attack`= Item Bonuses x its c.multiplier x `b.intelligence` / 10
 
 - character.`f.NoA`: // NoA 0 = No Action.
-  - `d.ranged_NoA` = 0 + Item Bonuses x its c.multiplier (round up) 
+  - `d.ranged_NoA` = 0 + `c.pursuit+v` + Item Bonuses x its c.multiplier (round up) 
   - `d.magical_NoA`= 0 + `c.caster+v` bonuses // Only one single bonuses of the same name applies. 
   - `d.melee_NoA`= 0 + `c.grit+v` bonuses + Item Bonuses x its c.multiplier (round up) //no NoA, no melee combat.
     - IF the character has `a.iaigiri`, halve these number of attacks, round up. 
