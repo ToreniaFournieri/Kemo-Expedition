@@ -169,6 +169,7 @@ export interface ComputedCharacterStats {
   penetMultiplier: number;
   elementalOffense: ElementalOffense;
   elementalOffenseValue: number;
+  attackPotency: number; // Row-based attack potency multiplier
 }
 
 // Party Types
@@ -258,6 +259,7 @@ export interface BattleLogEntry {
   isFirstStrike?: boolean;
   isCounter?: boolean;
   isReAttack?: boolean;
+  elementalOffense?: ElementalOffense;
 }
 
 // Expedition Types

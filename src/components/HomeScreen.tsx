@@ -298,6 +298,45 @@ function PartyTab({
   const [equipCategory, setEquipCategory] = useState('sword');
   const [pendingEdits, setPendingEdits] = useState<Partial<Character> | null>(null);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
+  const [lastSlotTap, setLastSlotTap] = useState<{ slot: number; time: number } | null>(null);
+
+  // Handle equipment slot tap with double-tap detection for removal
+  const handleSlotTap = (slotIndex: number) => {
+    const now = Date.now();
+    const item = char.equipment[slotIndex];
+
+    // Check for double-tap on same slot with item
+    if (item && lastSlotTap && lastSlotTap.slot === slotIndex && now - lastSlotTap.time < 400) {
+      // Double-tap: remove item
+      onEquipItem(char.id, slotIndex, null);
+      setLastSlotTap(null);
+      setSelectingSlot(null);
+      return;
+    }
+
+    setLastSlotTap({ slot: slotIndex, time: now });
+
+    // Single tap: toggle selection
+    setSelectingSlot(selectingSlot === slotIndex ? null : slotIndex);
+  };
+
+  // Handle inventory item tap with auto-equip support
+  const handleInventoryItemTap = (itemKey: string) => {
+    // If a slot is selected, equip to that slot
+    if (selectingSlot !== null) {
+      onEquipItem(char.id, selectingSlot, itemKey);
+      setSelectingSlot(null);
+      return;
+    }
+
+    // Auto-equip: find first empty slot
+    const emptySlotIndex = Array.from({ length: stats.maxEquipSlots })
+      .findIndex((_, i) => !char.equipment[i]);
+
+    if (emptySlotIndex !== -1) {
+      onEquipItem(char.id, emptySlotIndex, itemKey);
+    }
+  };
 
   const char = party.characters[selectedCharacter];
   const stats = characterStats[selectedCharacter];
@@ -519,24 +558,30 @@ function PartyTab({
             </div>
             <div className="border-t border-gray-200 mt-2 pt-2 space-y-1 text-sm">
               {(() => {
-                // Calculate ability amplifiers
+                // Calculate offense amplifiers per phase
                 const iaigiri = stats.abilities.find(a => a.id === 'iaigiri');
-                const meleeAmp = iaigiri ? (iaigiri.level === 2 ? 2.5 : 2.0) : 1.0;
+                const iaigiriAmp = iaigiri ? (iaigiri.level === 2 ? 2.5 : 2.0) : 1.0;
+                // LONG phase: attack potency only
+                const longAmp = stats.attackPotency;
+                // MID phase: always 1.0
+                const midAmp = 1.0;
+                // CLOSE phase: attack potency x iaigiri multiplier
+                const closeAmp = stats.attackPotency * iaigiriAmp;
                 const elementName = stats.elementalOffense === 'fire' ? '火' :
                   stats.elementalOffense === 'thunder' ? '雷' :
                   stats.elementalOffense === 'ice' ? '氷' : '無';
                 return (
                   <>
                     <div className="flex justify-between text-xs">
-                      <span>遠距離攻撃:{Math.floor(stats.rangedAttack)} x {stats.rangedNoA}回(x1.0)</span>
+                      <span>遠距離攻撃:{Math.floor(stats.rangedAttack)} x {stats.rangedNoA}回(x{longAmp.toFixed(2)})</span>
                       <span className="text-gray-500">属性攻撃:{elementName}(x{stats.elementalOffenseValue.toFixed(1)})</span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span>魔法攻撃:{Math.floor(stats.magicalAttack)} x {stats.magicalNoA}回(x1.0)</span>
+                      <span>魔法攻撃:{Math.floor(stats.magicalAttack)} x {stats.magicalNoA}回(x{midAmp.toFixed(2)})</span>
                       <span className="text-gray-500">魔法防御:{stats.magicalDefense}</span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span>近接攻撃:{Math.floor(stats.meleeAttack)} x {stats.meleeNoA}回(x{meleeAmp.toFixed(1)})</span>
+                      <span>近接攻撃:{Math.floor(stats.meleeAttack)} x {stats.meleeNoA}回(x{closeAmp.toFixed(2)})</span>
                       <span className="text-gray-500">物理防御:{stats.physicalDefense}</span>
                     </div>
                   </>
@@ -626,7 +671,7 @@ function PartyTab({
             return (
               <button
                 key={i}
-                onClick={() => setSelectingSlot(selectingSlot === i ? null : i)}
+                onClick={() => handleSlotTap(i)}
                 className={`w-full p-2 text-left border rounded text-sm bg-white ${
                   selectingSlot === i ? 'border-sub' : 'border-gray-200'
                 }`}
@@ -648,32 +693,44 @@ function PartyTab({
         </div>
       </div>
 
-      {/* Item selection popup */}
-      {selectingSlot !== null && (() => {
+      {/* Inventory Pane - Always visible */}
+      {(() => {
         const filteredItems = sortInventoryItems(
           Object.entries(party.inventory)
             .filter(([, v]) => v.status === 'owned' && v.count > 0 && v.item.category === equipCategory)
         );
+        const hasEmptySlot = Array.from({ length: stats.maxEquipSlots }).some((_, i) => !char.equipment[i]);
         return (
-          <div className="mt-4 border border-sub rounded-lg p-4 bg-blue-50">
+          <div className={`mt-4 border rounded-lg p-4 ${selectingSlot !== null ? 'border-sub bg-blue-50' : 'border-gray-200 bg-gray-50'}`}>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium">スロット {selectingSlot + 1} に装備</span>
-              <div className="flex gap-2">
-                {char.equipment[selectingSlot] && (
+              <span className="text-sm font-medium">
+                {selectingSlot !== null
+                  ? `スロット ${selectingSlot + 1} に装備`
+                  : hasEmptySlot
+                    ? 'タップで自動装備'
+                    : 'スロットを選択してください'}
+              </span>
+              {selectingSlot !== null && (
+                <div className="flex gap-2">
+                  {char.equipment[selectingSlot] && (
+                    <button
+                      onClick={() => { onEquipItem(char.id, selectingSlot, null); setSelectingSlot(null); }}
+                      className="text-xs text-accent px-2 py-1 border border-orange-300 rounded bg-white"
+                    >
+                      外す
+                    </button>
+                  )}
                   <button
-                    onClick={() => { onEquipItem(char.id, selectingSlot, null); setSelectingSlot(null); }}
-                    className="text-xs text-red-500 px-2 py-1 border border-red-300 rounded bg-white"
+                    onClick={() => setSelectingSlot(null)}
+                    className="text-xs text-gray-500 px-2 py-1 border border-gray-300 rounded bg-white"
                   >
-                    外す
+                    解除
                   </button>
-                )}
-                <button
-                  onClick={() => setSelectingSlot(null)}
-                  className="text-xs text-gray-500 px-2 py-1 border border-gray-300 rounded bg-white"
-                >
-                  閉じる
-                </button>
-              </div>
+                </div>
+              )}
+            </div>
+            <div className="text-xs text-gray-500 mb-2">
+              ヒント: スロットをダブルタップで装備を外す
             </div>
             {/* Category tabs */}
             <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
@@ -695,8 +752,11 @@ function PartyTab({
               {filteredItems.map(([key, variant]) => (
                 <button
                   key={key}
-                  onClick={() => { onEquipItem(char.id, selectingSlot, key); setSelectingSlot(null); }}
-                  className="w-full p-2 text-left text-sm border border-gray-200 rounded bg-white hover:bg-gray-50"
+                  onClick={() => handleInventoryItemTap(key)}
+                  disabled={selectingSlot === null && !hasEmptySlot}
+                  className={`w-full p-2 text-left text-sm border border-gray-200 rounded bg-white ${
+                    selectingSlot !== null || hasEmptySlot ? 'hover:bg-gray-50' : 'opacity-50 cursor-not-allowed'
+                  }`}
                 >
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{getItemDisplayName(variant.item)}</span>
@@ -753,37 +813,39 @@ function ExpeditionTab({
         <div className="bg-pane rounded-lg p-4 mb-4">
           <button
             onClick={() => setShowLog(!showLog)}
-            className="w-full flex justify-between items-center text-sm font-medium"
+            className="w-full flex justify-between items-center text-sm"
           >
-            <span>前回の探検結果: {state.lastExpeditionLog.dungeonName}</span>
+            <span>
+              <span className="font-medium">前回の探検結果: {state.lastExpeditionLog.dungeonName}</span>
+              <span className={`ml-2 font-medium ${
+                state.lastExpeditionLog.finalOutcome === 'victory' ? 'text-sub' :
+                state.lastExpeditionLog.finalOutcome === 'defeat' ? 'text-red-600' : 'text-yellow-600'
+              }`}>
+                {state.lastExpeditionLog.finalOutcome === 'victory' ? '勝利' :
+                 state.lastExpeditionLog.finalOutcome === 'defeat' ? '敗北' : '撤退'}
+              </span>
+            </span>
             <span className={`transform transition-transform ${showLog ? 'rotate-180' : ''}`}>▼</span>
           </button>
 
           {showLog && (
             <div className="mt-3 space-y-2">
-              <div className="text-sm">
-                <span className={`font-medium ${
-                  state.lastExpeditionLog.finalOutcome === 'victory' ? 'text-sub' :
-                  state.lastExpeditionLog.finalOutcome === 'defeat' ? 'text-red-600' : 'text-yellow-600'
-                }`}>
-                  {state.lastExpeditionLog.finalOutcome === 'victory' ? '勝利' :
-                   state.lastExpeditionLog.finalOutcome === 'defeat' ? '敗北' : '撤退'}
-                </span>
-                <span className="text-gray-500">
-                  {' '}| 残HP: {state.lastExpeditionLog.remainingPartyHP}/{state.lastExpeditionLog.maxPartyHP}
-                  {' '}| {state.lastExpeditionLog.completedRooms}/{state.lastExpeditionLog.totalRooms}部屋
-                  {' '}| EXP: +{state.lastExpeditionLog.totalExperience}
-                  {state.lastExpeditionLog.autoSellProfit > 0 && (
-                    <span> | 自動売却額: {state.lastExpeditionLog.autoSellProfit}G</span>
-                  )}
-                </span>
+              <div className="text-sm text-gray-500">
+                残HP: {state.lastExpeditionLog.remainingPartyHP}/{state.lastExpeditionLog.maxPartyHP}
+                {' '}| {state.lastExpeditionLog.completedRooms}/{state.lastExpeditionLog.totalRooms}部屋
+                {' '}| EXP: +{state.lastExpeditionLog.totalExperience}
+                {state.lastExpeditionLog.autoSellProfit > 0 && (
+                  <span> | 自動売却額: {state.lastExpeditionLog.autoSellProfit}G</span>
+                )}
               </div>
 
               {state.lastExpeditionLog.rewards.length > 0 && (
                 <div className="text-sm">
-                  <div className="text-gray-500">獲得アイテム:</div>
+                  <span className="text-gray-500">獲得アイテム: </span>
                   {state.lastExpeditionLog.rewards.map((item, i) => (
-                    <div key={i} className="text-accent font-medium">{getItemDisplayName(item)}</div>
+                    <span key={i} className="text-accent font-medium">
+                      {i > 0 && ', '}{getItemDisplayName(item)}
+                    </span>
                   ))}
                 </div>
               )}
@@ -791,6 +853,9 @@ function ExpeditionTab({
               <div className="border-t border-gray-200 pt-2 space-y-2">
                 {[...state.lastExpeditionLog.entries].reverse().map((entry, i, arr) => {
                   const originalIndex = arr.length - 1 - i;
+                  const isBoss = entry.room === state.lastExpeditionLog!.totalRooms + 1;
+                  const roomLabel = isBoss ? 'BOSS' : entry.room.toString();
+                  const hpPercent = Math.round((entry.remainingPartyHP / entry.maxPartyHP) * 100);
                   return (
                     <div key={originalIndex} className="bg-white rounded overflow-hidden">
                       <button
@@ -799,8 +864,8 @@ function ExpeditionTab({
                       >
                         <div className="flex justify-between items-center">
                           <span>
-                            <span className="font-medium">Room {entry.room}: {entry.enemyName}</span>
-                            <span className="text-gray-500"> | 敵HP:{entry.enemyHP} | 残HP:{entry.remainingPartyHP}/{entry.maxPartyHP}</span>
+                            <span className="font-medium">{roomLabel}: {entry.enemyName}</span>
+                            <span className="text-gray-500"> | 敵HP:{entry.enemyHP} | 残HP:{entry.remainingPartyHP}({hpPercent}%)</span>
                           </span>
                           <span className="flex items-center gap-2">
                             <span className={
@@ -823,11 +888,26 @@ function ExpeditionTab({
                           <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
                           {entry.details.map((log, j) => {
                             const phaseLabel = log.phase === 'long' ? '遠' : log.phase === 'mid' ? '魔' : '近';
-                            const actorLabel = log.actor === 'enemy' ? '敵' : '味方';
+                            // Get emoji based on phase and elemental attribute
+                            const getPhaseEmoji = () => {
+                              if (log.elementalOffense === 'fire') return '🔥';
+                              if (log.elementalOffense === 'thunder') return '⚡';
+                              if (log.elementalOffense === 'ice') return '❄️';
+                              if (log.phase === 'long') return '🏹';
+                              if (log.phase === 'mid') return '🪄';
+                              return '⚔';
+                            };
+                            const emoji = getPhaseEmoji();
+                            const isEnemy = log.actor === 'enemy';
+                            const actorLabel = isEnemy ? '敵' : '味方';
                             return (
                               <div key={j} className="text-gray-600">
                                 <span className="text-gray-400">[{phaseLabel}]</span> {actorLabel}: {log.action}
-                                {log.damage !== undefined && <span className="text-accent"> ({log.damage}ダメージ)</span>}
+                                {log.damage !== undefined && (
+                                  <span className={isEnemy ? 'text-accent' : 'text-sub'}>
+                                    {' '}({emoji} {log.damage})
+                                  </span>
+                                )}
                               </div>
                             );
                           })}

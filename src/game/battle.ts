@@ -14,16 +14,6 @@ import {
 import { computePartyStats } from './partyComputation';
 import { drawFromBag, createPhysicalThreatBag, createMagicalThreatBag } from './bags';
 
-// Attack potency based on row position (1-6)
-const ATTACK_POTENCY: Record<number, number> = {
-  1: 1.00,
-  2: 0.85,
-  3: 0.72,
-  4: 0.61,
-  5: 0.52,
-  6: 0.44,
-};
-
 interface BattleContext {
   partyStats: ComputedPartyStats;
   characterStats: ComputedCharacterStats[];
@@ -172,8 +162,9 @@ function calculateCharacterDamage(
   }
 
   // Attack potency based on row position (only for LONG and CLOSE phases)
+  // Use pre-computed attackPotency from character stats
   const attackPotency = (phase === 'long' || phase === 'close')
-    ? (ATTACK_POTENCY[charStats.row] ?? 1.0)
+    ? charStats.attackPotency
     : 1.0;
 
   const elementalMultiplier = getElementalMultiplier(
@@ -269,6 +260,7 @@ export function executeBattle(
           action: `${char?.name ?? '???'} の先制攻撃！`,
           damage,
           isFirstStrike: true,
+          elementalOffense: cs.elementalOffense,
         });
       }
     }
@@ -327,6 +319,7 @@ export function executeBattle(
           actor: 'enemy',
           action: `${enemy.name} が ${targetChar?.name ?? '???'} に攻撃(${attack.count}回)！`,
           damage: attack.damage,
+          elementalOffense: enemy.elementalOffense,
         });
       }
     }
@@ -360,6 +353,7 @@ export function executeBattle(
             action: `${targetChar?.name ?? '???'} のカウンター！`,
             damage,
             isCounter: true,
+            elementalOffense: attack.charStats.elementalOffense,
           });
         }
       }
@@ -395,6 +389,7 @@ export function executeBattle(
           characterId: cs.characterId,
           action: `${char?.name ?? '???'} の攻撃！`,
           damage,
+          elementalOffense: cs.elementalOffense,
         });
       }
     }
@@ -415,6 +410,7 @@ export function executeBattle(
             action: `${char?.name ?? '???'} の連撃！`,
             damage,
             isReAttack: true,
+            elementalOffense: cs.elementalOffense,
           });
         }
       }
