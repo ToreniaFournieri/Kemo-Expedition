@@ -158,14 +158,13 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP']
  (`c.armor_x1.4`, `c.armor_x1.3`, `c.armor_x1.3`, and `c.armor_x1.1` =>1.4 x 1.3 x 1.1 = x 2.0)
 
 #### 2.2.2 Party structure 
-
 1. Party Properties
 - Player party consists of 6 characters. 
 - Row Assignment: Party members occupy positions 1 through 6. Row 1 represents the front-most position (highest threat), while Row 6 represents the back-most position (lowest threat).
 
 - All characters participate simultaneously
 - Party has its:
-    - Party `d.HP`
+    - `d.HP`
 
 2. Character Properties
 - Each character has:
@@ -183,12 +182,11 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP']
 		- `r.fire`
 		- `r.ice`
 		- `r.thunder`
-		- Equipment slots
+  	- Equipment slots
 
-- Characters do not have individual HP. However each character contributes total HP. 
+- Characters do not have individual HP. Each character contributes total HP. 
 
 ### 2.3 Dungeons & Enemies
-
 - Each dungeon has multiple rooms. each room has one enemy. At the end of room, formidable boss enemy is waiting for the party.
 
 **Dungeon**
@@ -196,7 +194,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP']
 - name
 - number_of_rooms
 - pools_of_enemies
-- Boss_enemy
+- boss_enemy
 
 **Enemy**
 - id: int
@@ -235,21 +233,24 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP']
 
 |category | name | short name| core concept |
 |-----|----|----|-----------|
+|`i.armor` | 鎧 | 鎧 | + `d.physical_defense` |
+|`i.robe` | 法衣 | 衣 | + `d.magical_defense` |
+|`i.shield ` | 盾 | 盾 | + `d.HP` |
 |`i.sword` | 剣 | 剣 | + `d.melee_attack` |
 |`i.katana` | 刀 | 刀 | + `d.melee_attack`, - `melee_NoA` |
-|`i.archery` | 弓 | 弓 | + `d.ranged_attack`, + `d.ranged_NoA` |
-|`i.armor` | 鎧 | 鎧 | + `d.physical_defense` |
 |`i.gauntlet` | 籠手 | 手 | + `d.melee_NoA` |
+|`i.arrow` | 矢 | 矢 | + `d.ranged_attack` |
+|`i.bolt` | ボルト | 太矢 | + `d.ranged_attack`, - `d.ranged_NoA`  |
+|`i.archery` | 弓 | 弓 | + `d.ranged_NoA` |
 |`i.wand` | ワンド | 杖 | + `d.magical_attack` |
-|`i.robe` | 法衣 | 衣 | + `d.magical_defense` |
-|`i.amulet` | 護符 | 護 | + `party.d.HP` |
-|`i.arrow` | 矢 | 矢 | Consumable, Lower `max_stack` than default (e.g., x20 instead of x99), `elemental_offense_attribute` |
+|`i.grimoire` | 魔導書 | 書 | + `d.magical_attack`, - `d.magical_NoA`  |
+|`i.catalyst` | 触媒 | 媒 | + `d.magical_NoA`  |
 
-- *note:* item might have multiple bonus. sword may have `party.d.HP` but subtle value.
+- *note:* item might have multiple bonus. sword may have `d.HP` but subtle value.
 - (Temporary test purpose) Make 5 itmes for each item type. 
 
 #### 2.4.2 Item stacking
-- Items are stacked based on their unique combination of (superRare title, enhancement title, and base item ID). The default `max_stack` is 99, except for `i.arrow`.
+- Items are stacked based on their unique combination of (superRare title, enhancement title, and base item ID). The default `max_stack` is 99.
   - Inventory Tracking: The inventory tracks item variants rather than individual instances.
   - Display: Shows the total stack count per variant.
   - Selling is all-or-nothing per stack. 
@@ -269,7 +270,6 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP']
 |`s.owned` |Item variant exists in inventory (count > 0)|
 |`s.sold` |Item variant is obsolete and auto-sold on pickup|
 |`s.notown` |Item variant is not owned and may drop normally|
-
 
 ```
 inventory = {
@@ -291,12 +291,6 @@ inventory = {
   }
 }
 ```
-
-#### 2.4.3 Consumption of arrow
-- Arrow Stacks. 
-- Multiple items of the exact same Arrow ID (superRare, enhancement, and base item) can occupy one single quiver slot.
-- Consumption: Current_Quantity -= ranged_NoA per attack.
-- Persistence: Quantity does not reset between rooms. Player has to purchase or refill them at HOME.
 
 ## 3. INITIALIZATION 
 
@@ -332,7 +326,7 @@ inventory = {
 
 - Base status update: add (b.) modifiers. (ex. `b.vitality` = 10(from race) + `b.vitality+2` -> 12
 
-- c.multiplier like `c.sword_x1.3` applies only for sword item type. other item types like amulet may have +10 melee_attack bonus, but amulet's melee_attack bonus is not multiplied by `c.sword_x1.3` effect. 
+- c.multiplier like `c.sword_x1.3` applies only for sword item type. other item types like shield may have +10 melee_attack bonus, but shield's melee_attack bonus is not multiplied by `c.sword_x1.3` effect. 
 
 - character.`f.attack`:
   - `d.ranged_attack`= Item Bonuses x its c.multiplier
@@ -385,20 +379,16 @@ inventory = {
   	- Always set 1. (not for this version)
 
 ## 4. HOME
-
 - Manage party setting. character build (can also change its class, race, predisposition, lineage!). change their equipment.
 - set the destination of dungeon.
 - sell items and gain gold.
-- buy items like arrows with gold.
 
-### 4.2 Equipment
-
+### 4.1 Equipment
 - Each character has its own equipment slots.
 - Assigns items to a character from inventory. 
 
 ## 5. EXPEDITION 
-
-- Persistence through an expedition:'party.d.HP', remaining of arrows.
+- Persistence through an expedition:`d.HP`.
 
 ### 5.1 Logs
 - `f.quick_summary`:
@@ -476,7 +466,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
   - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
 
 **Row-based modifier** 
-- Targeting selects a character only to determine defense, row potency, abilities (counter). All damage resolved against a character is applied to `party.d.HP`.
+- Targeting selects a character only to determine defense, row potency, abilities (counter). All damage resolved against a character is applied to `d.HP`.
   - The threat weight table defines how many tickets of each row index are placed into `g.threat_weight_bag`.
 
 |row | Physical Threat weight |
@@ -507,7 +497,6 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
     - Bag contains numbers [1,2,3,4,5,6]
     - The drawn number corresponds to row index (1–6).
     - The character currently occupying that row is selected as the target.
-  
 
 - `d.attack_potency` (Offensive Multiplier)
   - A global damage modifier applied to a unit’s final output based on their current row position.
@@ -524,12 +513,10 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 |5| 0.52 |
 |6| 0.44 |
 
-
 ### 6.3 Turn resolution 
 - For each phase, actions are resolved in the following order:
     - Enemy attacks
     - Player party attacks
-
 
 **First strike**
 - IF character.`a.first-strike`, the character acts before enemy action. (using `f.damage_calculation`)
@@ -546,19 +533,12 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 **Player action**
 - Each party member act if he has corresponding damage source in the phase. 
 
-- If it is LONG phase and going to use arrow:
-  - Check: Is Quiver_Total_Qty >= Archer_A.ranged_NoA?
-  - Execution: * Subtract ranged_NoA from the Quiver (following Slot 1 -> Slot 2 order).
-    - If quantity < ranged_NoA, the character attacks with a reduced NoA equal to the remaining quantity.
-
 - Current enemy.`d.HP` -= `f.damage_calculation` (actor: character, opponent: enemy, phase: phase ) x `f.NoA`
 - If enemy.`d.HP` =< 0, Victory.
 
 - **Re-attack:** IF character.`a.re-attack`, the character attacks to enemy.  (using `f.damage_calculation`)
 
 ### 6.4 Post battle
-
--`a.hunter` Retrieve v% of the arrows which the character consumed in the battle. 
 
 
 ### 6.5 Outcome 
@@ -585,14 +565,12 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
   - *State:(no record) New Items:* If no record for the item exists, the system generates the item and sets it to state:`s.owned`
 
 ## 7. REWARD 
-
 - Gets one ticket from `g.reward_bag`. Two with `c.unlock`.
   - If it is '1', then get one ticket from each of `g.enhancement_bag`, and `g.superRare_bag`.
     
   - Combines them into one item.
     (ex.
-    
-     enhancement:1, superRare:0 -> 名工のロングソード
+     enhancement:1, superRare:0 -> 名工のロングソード,
      enhancement:3, superRare:1 -> 世界を征する宿ったロングソード)
 
 
@@ -616,7 +594,6 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 - Accent color (~5%)
   - Dark Orange (important actions, warnings, highlights)
 
-
 ### 8.2 Header
 - Always fixed at the top.
 - Displays:
@@ -636,11 +613,9 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 
 - Header is always visible; tabs never cause full page reload.
 
-### 8.3 Tabs
-
-#### 8.3.1 Party
-##### 8.3.1.1 Displays
-  - List of party members
+### 8.3 Party tab
+#### 8.3.1 Displays
+- List of party members
     	For each character: Icon, name, main Class (Sub calass).
 ```
 🐶
@@ -648,14 +623,14 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 戦士(剣士)
 ```
 
-  - Current status, abilities, bonuses
+- Current status, abilities, bonuses
 
-##### 8.3.1.2 Party member details
-  - Name, race, main class (sub class), predisposition, lineage, status, bonuses (c., aggregated), ability (a. )
-  - Status:
-    - `f.display_ranged_offense` = If `d.ranged_attack` or `d.ranged_NoA` > 0, displays 遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(phase: LONG)). Else (none).
-    - `f.display_magical_offense` = If `d.magical_attack` or `d.magical_NoA` > 0, displays 魔法攻撃:`d.magical_attack` x `d.magical_NoA`回(x`f.offense_amplifier`(phase: MID)). Else (none).
-    - `f.display_melee_offense` = If `d.melee_attack` or `d.melee_NoA` > 0, displays 近接攻撃:`d.melee_attack` x `d.melee_NoA`回(x`f.offense_amplifier`(phase: CLOSE)). Else (none).	
+#### 8.3.2 Party member details
+- Name, race, main class (sub class), predisposition, lineage, status, bonuses (c., aggregated), ability (a. )
+- Status:
+  - `f.display_ranged_offense` = If `d.ranged_attack` or `d.ranged_NoA` > 0, displays 遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(phase: LONG)). Else (none).
+  - `f.display_magical_offense` = If `d.magical_attack` or `d.magical_NoA` > 0, displays 魔法攻撃:`d.magical_attack` x `d.magical_NoA`回(x`f.offense_amplifier`(phase: MID)). Else (none).
+  - `f.display_melee_offense` = If `d.melee_attack` or `d.melee_NoA` > 0, displays 近接攻撃:`d.melee_attack` x `d.melee_NoA`回(x`f.offense_amplifier`(phase: CLOSE)). Else (none).	
 ```
 Name      [編集]
 🐶 ケイナイアン / 戦士(剣士) / 頑強 / 不動の家
@@ -669,7 +644,7 @@ Name      [編集]
 ```
   - Editable parameters
 
-##### 8.3.1.3 Character Edit Mode (selected member):
+#### 8.3.3 Character Edit Mode (selected member):
 **1. Contents**
 - Name [edit]
 - Editable `name` field.
@@ -701,12 +676,13 @@ Name      [編集]
   -  Character remains exactly as they were (Race, Class, and Equipment are untouched).
 - **UI Requirement:** Display a confirmation warning when pressing "Done": *"Saving changes will unequip all items. Proceed?"*
 
-##### 8.3.1.4 Equipment management
+#### 8.3.4 Equipment management
 **1. Interaction Rules:**
-  - **Auto-Equip:** - If there is an empty slot and the player taps an item in the inventory, that item is automatically equipped to the first available slot.
-  - **Replace (Single-Tap):** - Tapping an item already in a Character Slot "selects" it. Tapping an item in the inventory while a slot is selected replaces the current item with the new one.
-  - **Remove (Double-Tap):** - Double-tapping an item in a Character Slot removes it and returns it to the inventory.
-  - Status updates in real time
+- **Auto-Equip:** - If there is an empty slot and the player taps an item in the inventory, that item is automatically equipped to the first available slot.
+- **Replace (Single-Tap):** - Tapping an item already in a Character Slot "selects" it. Tapping an item in the inventory while a slot is selected replaces the current item with the new one.
+- **Remove (Double-Tap):** - Double-tapping an item in a Character Slot removes it and returns it to the inventory.
+- **Remove (Single-tap):** - Single-tap an **equipped item in inventory** and returns it to be unequipped item in inventory.
+- Status updates in real time
 
 **2. Inventory Pane:**
   - Always visible on the same screen at the bottom.
