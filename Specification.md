@@ -645,6 +645,13 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 #### 8.3.1 Party
 - Displays:
   - List of party members
+    	For each character: Icon, name, main Class (Sub calass).
+```
+🐶
+レオン
+戦士(剣士)
+```
+
   - Current status, abilities, bonuses
 - Party member details:
   - Name, race, main class (sub class), predisposition, lineage, status, bonuses (c., aggregated), ability (a. )
