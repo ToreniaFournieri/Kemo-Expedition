@@ -580,30 +580,24 @@ function PartyTab({
                 return (
                   <>
                     {hasRanged && (
-                      <div className="flex justify-between text-xs">
-                        <span>遠距離攻撃:{Math.floor(stats.rangedAttack)} x {stats.rangedNoA}回(x{longAmp.toFixed(2)})</span>
-                        <span className="text-gray-500">属性攻撃:{elementName}(x{stats.elementalOffenseValue.toFixed(1)})</span>
+                      <div className="text-xs">
+                        遠距離攻撃:{Math.floor(stats.rangedAttack)} x {stats.rangedNoA}回(x{longAmp.toFixed(2)})
                       </div>
                     )}
                     {hasMagical && (
-                      <div className="flex justify-between text-xs">
-                        <span>魔法攻撃:{Math.floor(stats.magicalAttack)} x {stats.magicalNoA}回(x{midAmp.toFixed(2)})</span>
-                        <span className="text-gray-500">魔法防御:{stats.magicalDefense}</span>
+                      <div className="text-xs">
+                        魔法攻撃:{Math.floor(stats.magicalAttack)} x {stats.magicalNoA}回(x{midAmp.toFixed(2)})
                       </div>
                     )}
                     {hasMelee && (
-                      <div className="flex justify-between text-xs">
-                        <span>近接攻撃:{Math.floor(stats.meleeAttack)} x {stats.meleeNoA}回(x{closeAmp.toFixed(2)})</span>
-                        <span className="text-gray-500">物理防御:{stats.physicalDefense}</span>
+                      <div className="text-xs">
+                        近接攻撃:{Math.floor(stats.meleeAttack)} x {stats.meleeNoA}回(x{closeAmp.toFixed(2)})
                       </div>
                     )}
-                    {/* Always show defense if no offense lines are shown */}
-                    {!hasRanged && !hasMagical && !hasMelee && (
-                      <div className="flex justify-between text-xs">
-                        <span className="text-gray-500">物理防御:{stats.physicalDefense}</span>
-                        <span className="text-gray-500">魔法防御:{stats.magicalDefense}</span>
-                      </div>
-                    )}
+                    {/* Always show elemental offense and defenses */}
+                    <div className="text-xs text-gray-500">
+                      属性攻撃:{elementName}(x{stats.elementalOffenseValue.toFixed(1)}) | 物理防御:{stats.physicalDefense} | 魔法防御:{stats.magicalDefense}
+                    </div>
                   </>
                 );
               })()}
