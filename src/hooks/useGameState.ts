@@ -20,7 +20,7 @@ import { drawFromBag, refillBagIfEmpty, createRewardBag, createEnhancementBag, c
 import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 
-const BUILD_NUMBER = 16;
+const BUILD_NUMBER = 17;
 const STORAGE_KEY = 'kemo-expedition-save';
 
 // Helper to calculate sell price for an item
@@ -295,7 +295,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           magicalThreatBag: battleResult.updatedBags.magicalThreatBag,
         };
         const damageDealt = enemy.hp - Math.max(0, battleResult.enemyHp);
-        const damageTaken = currentHp - battleResult.partyHp;
+        // Calculate damage taken from battle log (sum of all enemy attack damage)
+        const damageTaken = battleResult.log
+          .filter(entry => entry.actor === 'enemy' && entry.damage !== undefined)
+          .reduce((sum, entry) => sum + (entry.damage ?? 0), 0);
 
         // Calculate enemy attack values for display
         const enemyAttackValues = calculateEnemyAttackValues(enemy, partyStats);
