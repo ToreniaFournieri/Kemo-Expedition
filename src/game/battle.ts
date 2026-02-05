@@ -96,8 +96,9 @@ function calculateSingleEnemyAttackDamage(
     partyStats.elementalResistance
   );
 
-  const baseDamage = Math.max(1, attack - defense);
-  const totalDamage = baseDamage * amplifier * elementalMultiplier * defenseAmplifier;
+  // Apply min(1) AFTER all multipliers per spec
+  const rawDamage = (attack - defense) * amplifier * elementalMultiplier * defenseAmplifier;
+  const totalDamage = Math.max(1, rawDamage);
 
   return Math.floor(totalDamage);
 }
@@ -172,9 +173,10 @@ function calculateCharacterDamage(
     enemy.elementalResistance
   );
 
-  const baseDamage = Math.max(1, attack - effectiveDefense);
-  const totalDamage = baseDamage * noA * abilityAmplifier * charStats.elementalOffenseValue *
+  // Apply min(1) AFTER all multipliers per spec
+  const rawDamage = (attack - effectiveDefense) * noA * abilityAmplifier * charStats.elementalOffenseValue *
     elementalMultiplier * partyStats.offenseAmplifier * attackPotency;
+  const totalDamage = Math.max(1, rawDamage);
 
   return { damage: Math.floor(totalDamage), arrowsUsed };
 }
@@ -222,7 +224,8 @@ export function executeBattle(
   party: Party,
   enemy: EnemyDef,
   initialQuiverQuantities: [number, number],
-  bags: GameBags
+  bags: GameBags,
+  initialPartyHp?: number // Optional: for HP persistence during expedition
 ): BattleResult {
   const { partyStats, characterStats } = computePartyStats(party);
 
@@ -237,7 +240,8 @@ export function executeBattle(
     magicalThreatBag: { ...bags.magicalThreatBag },
   };
 
-  let partyHp = partyStats.hp;
+  // Use provided HP if available (for HP persistence), otherwise use max HP
+  let partyHp = initialPartyHp !== undefined ? initialPartyHp : partyStats.hp;
   let enemyHp = enemy.hp;
   const log: BattleLogEntry[] = [];
 
@@ -317,7 +321,7 @@ export function executeBattle(
         log.push({
           phase,
           actor: 'enemy',
-          action: `${enemy.name} が ${targetChar?.name ?? '???'} に攻撃(${attack.count}回)！`,
+          action: `${targetChar?.name ?? '???'} に攻撃(${attack.count}回)！`,
           damage: attack.damage,
           elementalOffense: enemy.elementalOffense,
         });
