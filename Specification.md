@@ -240,7 +240,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP']
 |`i.katana` | 刀 | 刀 | + `d.melee_attack`, - `melee_NoA` |
 |`i.gauntlet` | 籠手 | 手 | + `d.melee_NoA` |
 |`i.arrow` | 矢 | 矢 | + `d.ranged_attack` |
-|`i.bolt` | ボルト | 太矢 | + `d.ranged_attack`, - `d.ranged_NoA`  |
+|`i.bolt` | ボルト | ボ | + `d.ranged_attack`, - `d.ranged_NoA`  |
 |`i.archery` | 弓 | 弓 | + `d.ranged_NoA` |
 |`i.wand` | ワンド | 杖 | + `d.magical_attack` |
 |`i.grimoire` | 魔導書 | 書 | + `d.magical_attack`, - `d.magical_NoA`  |
@@ -688,8 +688,8 @@ Name      [編集]
   - Always visible on the same screen at the bottom.
   - Stacked by item variant
   - Inventory includes item category tabs:
-    - 剣,刀,弓,鎧,手,杖,衣,護,矢.
-    - Default: 剣
+    - 鎧,衣,盾,剣,刀,手,矢,ボ,弓,杖,書,媒.
+    - Default: 鎧
     - Items in inventory matching the selected category are shown (filter)
     - Adds equipped items with icon in the list.
 
@@ -755,7 +755,7 @@ Name      [編集]
 名工のショートソード x4 |近攻+10
 ```   
 
-#### 8.3.2 Expedition
+#### 8.4 Expedition
 - Top section:
   - Currently selected dungeon
   - Expedition behavior:
@@ -768,7 +768,7 @@ Name      [編集]
 - Bottom section:
   - List of available dungeons
 
-#### 8.3.3 Inventory
+#### 8.5 Inventory
 - Behavior:
   - Notification pops up when acquiring a new item
   - Newly acquired items are shown in bold
@@ -777,8 +777,8 @@ Name      [編集]
   - Stacked by item variant
   - Shows state:`s.owned` items
   - Inventory includes item category tabs:
-    - 矢,剣,刀,弓,鎧,手,杖,衣,護. 
-    - Default: 矢
+    - 鎧,衣,盾,剣,刀,手,矢,ボ,弓,杖,書,媒.
+    - Default: 鎧
     - Only items matching the selected category are shown (filter)
   - **Inventory Sort Logic (within category):**
 	- **Order:** Descending order by Priority.
@@ -800,11 +800,10 @@ Name      [編集]
     - ex. 名工のロングソード x3 | 近攻+19     [解除]
   - Unlock button(解除): Changes item state from `s.sold` to `s.notown`
 
-
-#### 8.3.4 Shop
+#### 8.6 Shop
 - Only tabs. not opended. (in this version)
   
-#### 8.3.5 Setting
+#### 8.7 Setting
 - Debug section: Displays belows 
   - reward_bag:  
     - 報酬抽選: remaining / total counts 
