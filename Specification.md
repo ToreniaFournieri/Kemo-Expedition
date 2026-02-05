@@ -428,8 +428,8 @@ inventory = {
 - `f.list_of_rooms`
   - **Display Order:** Descending order (Boss room at the top, then Room N... down to Room 1). 
   - Line 1:
-    - Room X
-	- `p.enemy_name`: Name of enemy. if it is a Boss, add (BOSS).
+    - X (Displays number of room. If it is the last room, displays BOSS.)
+	- `p.enemy_name`: Name of enemy.
 	- `p.enemy_HP`: Shows enemy's `d.HP` (max HP)
 	- `p.remaining_HP_of_room`: Party HP of remaining: like 430/ 1000
     - `p.outcome_of_room`: Victory/Defeat/Draw/No Visit -> 勝利/敗北/引分/未到達
@@ -440,7 +440,7 @@ inventory = {
 	- `p.reward_from_room`: Shows item.
 
 ```
-Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outcome_of_room` |  ▼
+X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outcome_of_room` |  ▼
 敵攻撃: `p.enemy_attack_values` | 与ダメ: `p.total_damage_dealt` | 被ダメ: `p.total_damage_taken`  | 獲得: `p.reward_from_room`. 
 ```
 
