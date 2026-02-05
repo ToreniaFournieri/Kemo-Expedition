@@ -648,7 +648,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 ### 8.3 Tabs
 
 #### 8.3.1 Party
-- Displays:
+**Displays:**
   - List of party members
     	For each character: Icon, name, main Class (Sub calass).
 ```
@@ -658,7 +658,8 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 ```
 
   - Current status, abilities, bonuses
-- Party member details:
+
+**Party member details:**
   - Name, race, main class (sub class), predisposition, lineage, status, bonuses (c., aggregated), ability (a. )
   - Status:
     - `f.display_ranged_offense` = If `d.ranged_attack` or `d.ranged_NoA` > 0, displays 遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(phase: LONG)). Else (none).
@@ -676,7 +677,8 @@ Name      [編集]
 `a.` (ex. 守護者: パーティへの物理ダメージ × 3/5 )
 ```
   - Editable parameters
-- **Character Edit Mode** (selected member):
+
+**Character Edit Mode** (selected member):
   - Name edit:
   - Editable `name` field.
   - Race selection:
@@ -695,86 +697,86 @@ Name      [編集]
   - Lineage selection:
     - Displays a list of available Lineage.
     - Each entry shows its name and unique bonus.
-- **Edit Confirmation Rules:**
-  - **Done (完了):**
-    - Saves all changes to Race, Class, and Name.
-    - **Automatic Unequip:** All currently equipped items on this character are removed and returned to the inventory.
-	- Character status updates immediately.
-    - *Reason:* To prevent invalid stat states and ensure new class bonuses are calculated correctly from base values.
-  - **Cancel (取消):**
-    - Discards all pending changes.
-    - Character remains exactly as they were (Race, Class, and Equipment are untouched).
-  - **UI Requirement:** Display a confirmation warning when pressing "Done": *"Saving changes will unequip all items. Proceed?"*
 
-- Equipment management:
-  - **Interaction Rules:**
-	- **Auto-Equip:** - If there is an empty slot and the player taps an item in the inventory, that item is automatically equipped to the first available slot.
-	- **Replace (Single-Tap):** - Tapping an item already in a Character Slot "selects" it. Tapping an item in the inventory while a slot is selected replaces the current item with the new one.
-	- **Remove (Double-Tap):** - Double-tapping an item in a Character Slot removes it and returns it to the inventory.
-  
+**Edit Confirmation Rules:**
+- **Done (完了):**
+  - Saves all changes to Race, Class, and Name.
+  - **Automatic Unequip:** All currently equipped items on this character are removed and returned to the inventory.
+  - Character status updates immediately.
+  - *Reason:* To prevent invalid stat states and ensure new class bonuses are calculated correctly from base values.
+- **Cancel (取消):**
+  - Discards all pending changes.
+  -  Character remains exactly as they were (Race, Class, and Equipment are untouched).
+- **UI Requirement:** Display a confirmation warning when pressing "Done": *"Saving changes will unequip all items. Proceed?"*
+
+**Equipment management:**
+- **Interaction Rules:**
+  - **Auto-Equip:** - If there is an empty slot and the player taps an item in the inventory, that item is automatically equipped to the first available slot.
+  - **Replace (Single-Tap):** - Tapping an item already in a Character Slot "selects" it. Tapping an item in the inventory while a slot is selected replaces the current item with the new one.
+  - **Remove (Double-Tap):** - Double-tapping an item in a Character Slot removes it and returns it to the inventory.
   - Status updates in real time
-  - **inventory Pane:**
-    - Always visible on the same screen at the bottom.
-    - Stacked by item variant
-    - Inventory includes item category tabs:
-      - 剣,刀,弓,鎧,手,杖,衣,護,矢.
-      - Default: 剣
-      - items in inventory matching the selected category are shown (filter)
-      - add equipped items with icon in the list.
 
-		```
-		宿ったロングソード x2 |近攻+31
-		伝説のショートソード　x2 |近攻+22
-		🐶名工のショートソード x1 |近攻+10
-		名工のショートソード x3 |近攻+10
-		```
-		
-		↓(Taps "🐶名工のショートソード" to unequip it)
-		
-		```
-		宿ったロングソード x2 |近攻+31
-		伝説のショートソード　x2 |近攻+22
-		名工のショートソード x4 |近攻+10
-		```
-		
-		↓(Taps "伝説のショートソード" to equip it)
-		
-		```
-		宿ったロングソード x2 |近攻+31
-		🐶伝説のショートソード　x1 |近攻+22
-		伝説のショートソード　x1 |近攻+22
-		名工のショートソード x4 |近攻+10
-		```
-		
-		↓(Taps "伝説のショートソード" again to equip it)
-		
-		```
-		宿ったロングソード x2 |近攻+31
-		🐶伝説のショートソード　x2 |近攻+22
-		名工のショートソード x4 |近攻+10
-		```
-		
-		↓(Taps "🐶伝説のショートソード" to unequip it)
-		
-		```
-		宿ったロングソード x2 |近攻+31
-		🐶伝説のショートソード　x1 |近攻+22
-		伝説のショートソード　x1 |近攻+22
-		名工のショートソード x4 |近攻+10
-		```   
-  
-    - **Inventory Sort Logic (within category):**
-      - Order: Descending order by Priority.
-      - Priority:
-        1. Base Item ID: Higher-tier base items (e.g., Mythril Sword > Iron Sword) appear first.
-        2. Super Rare Title: Items with Super Rare titles are prioritized within their base item ID.
-        3. Enhancement Tier: Among the same Item ID, higher enhancements (e.g., 究極の > 伝説の) appear higher.
-    - Item Row: The name, count, and status are left-aligned on **the same line**.
-    	- ex. 名工のロングソード x3 | 近攻+19
-    - Inventory pane shows at least 10 items
-  - Equipped item: The name and status are left-aligned, item type is right-aligned on **the same line**.
+- **inventory Pane:**
+  - Always visible on the same screen at the bottom.
+  - Stacked by item variant
+  - Inventory includes item category tabs:
+    - 剣,刀,弓,鎧,手,杖,衣,護,矢.
+    - Default: 剣
+    - Items in inventory matching the selected category are shown (filter)
+    - Adds equipped items with icon in the list.
 
+**Inventory Sort Logic (within category):**
+- Order: Descending order by Priority.
+- Priority:
+  1. Base Item ID: Higher-tier base items (e.g., Mythril Sword > Iron Sword) appear first.
+  2. Super Rare Title: Items with Super Rare titles are prioritized within their base item ID.
+  3. Enhancement Tier: Among the same Item ID, higher enhancements (e.g., 究極の > 伝説の) appear higher.
+- Item Row: The name, count, and status are left-aligned on **the same line**.
+	- ex. 名工のロングソード x3 | 近攻+19
+- Inventory pane shows at least 10 items
+- Equipped item: The name and status are left-aligned, item type is right-aligned on **the same line**.
 
+*Image of inventory pane transaction at equipment management*
+```
+宿ったロングソード x2 |近攻+31
+伝説のショートソード　x2 |近攻+22
+🐶名工のショートソード x1 |近攻+10
+名工のショートソード x3 |近攻+10
+```
+
+↓(Taps "🐶名工のショートソード" to unequip it)
+
+```
+宿ったロングソード x2 |近攻+31
+伝説のショートソード　x2 |近攻+22
+名工のショートソード x4 |近攻+10
+```
+
+↓(Taps "伝説のショートソード" to equip it)
+
+```
+宿ったロングソード x2 |近攻+31
+🐶伝説のショートソード　x1 |近攻+22
+伝説のショートソード　x1 |近攻+22
+名工のショートソード x4 |近攻+10
+```
+
+↓(Taps "伝説のショートソード" again to equip it)
+
+```
+宿ったロングソード x2 |近攻+31
+🐶伝説のショートソード　x2 |近攻+22
+名工のショートソード x4 |近攻+10
+```
+
+↓(Taps "🐶伝説のショートソード" to unequip it)
+
+```
+宿ったロングソード x2 |近攻+31
+🐶伝説のショートソード　x1 |近攻+22
+伝説のショートソード　x1 |近攻+22
+名工のショートソード x4 |近攻+10
+```   
 
 #### 8.3.2 Expedition
 - Top section:
