@@ -141,7 +141,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 |忍者(Ninja) |`c.penet_x0.15` |`c.grit+1`. `a.re-attack`1: once when attacking |`c.grit+1`. `a.re-attack`2: twice when attacking | 
 |侍(Samurai) |`c.katana_x1.4` |`c.grit+1`. `a.iaigiri`: Physical damage ×2,  number of attacks ÷2 | `c.grit+1`. `a.iaigiri`: Physical damage ×2.5,  number of attacks ÷2 |
 |君主(Lord) |`c.gauntlet_x1.4`, `c.equip_slot+1` |`a.command`1: Physical damage x1.3 |`a.command`2: Physical damage x1.6 | 
-|狩人(Ranger) |`c.arrow_x1.4` | `c.pursuit+1`, `a.hunter`2: <Need to define effect.>  |`c.pursuit+2`, `a.hunter`3: <Need to define effect.> | 
+|狩人(Ranger) |`c.arrow_x1.4` | `c.pursuit+1`, `a.hunter`1: Reduces row-based damage decay from 15% to 10% per step. |`c.pursuit+2`, `a.hunter`2: Reduces row-based damage decay from 15% to 7% per step. | 
 |魔法使い(Wizard) |`c.wand_x1.4` | `c.caster+2` | `c.caster+3` | 
 |賢者(Sage) |`c.robe_x1.4`, `c.grimoire_x1.2`, `c.equip_slot+2` |`c.caster+1`. `a.m-barrier`1: Incoming magical damage to party × 2/3 | `c.caster+1`. `a.m-barrier`2: Incoming magical damage to party × 3/5 | 
 |盗賊(Rogue) |`c.unlock` additional reward chance |`a.first-strike`1: Acts faster than enemy at CLOSE phase |`a.first-strike`2: Acts faster than enemy at All phases | 
@@ -500,14 +500,17 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
   - Row-based `d.attack_potency` is applied only during LONG and CLOSE phases.
   - MID phase ignores row-based attack potency, so has fixed potency (1.0).
 
-|row | `d.attack_potency` |
-|---|---|
-|1| 1.00 |
-|2| 0.85 |
-|3| 0.72 |
-|4| 0.61 |
-|5| 0.52 |
-|6| 0.44 |
+- **`d.attack_potency`**
+
+|row | normal | `a.hunter`1 | `a.hunter`2 |
+|---|---|---|---|
+|1| 1.00 | 1.00 | 1.00 |
+|2| 0.85 | 0.90 | 0.93 |
+|3| 0.72 | 0.81 | 8.86 |
+|4| 0.61 | 0.73 | 0.80 |
+|5| 0.52 | 0.66 | 0.75 |
+|6| 0.44 | 0.59 | 0.70 |
+
 
 ### 6.3 Turn resolution 
 - For each phase, actions are resolved in the following order:
