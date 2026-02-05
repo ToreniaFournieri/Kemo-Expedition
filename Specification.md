@@ -652,7 +652,7 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 ```
 Name      [編集]
 🐶 ケイナイアン / 戦士(剣士) / 頑強 / 不動の家
-[体:``] 力10 知10 精10
+[体:`b.vitality`] [力:`b.strength`] [知:`b.intelligence`] [精:`b.mind`]
 遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(phase: LONG))    属性攻撃:`f.elemental_offense_attribute`.name (x `f.elemental_offense_attribute`.value )
 魔法攻撃:`d.magical_attack` x `d.magical_NoA`回(x`f.offense_amplifier`(phase: MID))      魔法防御:`d.magical_defense`
 近接攻撃:`d.melee_attack` x `d.melee_NoA`回(x`f.offense_amplifier`(phase: CLOSE))     物理防御:`d.physical_defense`
