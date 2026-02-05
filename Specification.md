@@ -419,9 +419,9 @@ inventory = {
   - `p.retrieving_trophies`: Shows items by comma-separated.
 
 ```
-前回の探検結果: `p.dungeon_name`
+前回の探検結果: `p.dungeon_name`    `p.outcome_of_expedition`
 ▼
-`p.outcome_of_expedition` | 残HP: `p.remaining_HP` | `p.reached_room` / `p.number_of_rooms` 部屋 | EXP: `p.gained_experience` | 自動売却額: `p.auto-sell_profit`
+残HP: `p.remaining_HP` | `p.reached_room` / `p.number_of_rooms` 部屋 | EXP: `p.gained_experience` | 自動売却額: `p.auto-sell_profit`
 獲得アイテム: `p.retrieving_trophies`
 ```
 
