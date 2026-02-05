@@ -451,7 +451,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 
 ```
 戦闘ログ:
-[距離] 敵: 行動主 が　対象　に行動名(N回)！ (icon 数値 in dark orange)
+[距離] 敵が　対象　に行動名(N回)！ (icon 数値 in dark orange)
 [距離] 味方: 行動主 の行動名(N回)！ (icon 数値　in Blue)
 
 [遠] 味方: ミミ の攻撃(4回)！(🏹 120)
