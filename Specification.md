@@ -643,7 +643,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 - 
 ```
 Name      [編集]
-🐶 ケイナイアン / 戦士(剣士) / 頑強 / 不動の家
+🐶 race / main class(sub class) / predisposition / lineage 
 [体力:`b.vitality`] [力:`b.strength`] [知性:`b.intelligence`] [精神:`b.mind`]
 `f.display_ranged_offense`    属性攻撃:`f.elemental_offense_attribute`.name (x `f.elemental_offense_attribute`.value )
 `f.display_magical_offense`      魔法防御:`d.magical_defense`
