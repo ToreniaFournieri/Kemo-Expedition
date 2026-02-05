@@ -645,16 +645,19 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 - Party member details:
   - Name, race, main class (sub class), predisposition, lineage, status, bonuses (c., aggregated), ability (a. )
   - Status:
+	  - `f.ranged_attack_amplifier` = `d.ranged_attack_amplifier` x `d.attack_potency` 
+	  - `f.melee_attack_amplifier` = `d.melee_attack_amplifier` x `d.attack_potency` 
+
 ```
 Name      [編集]
 🐶 ケイナイアン / 戦士(剣士) / 頑強 / 不動の家
 体13 力10 知10 精10
-遠距離攻撃:0 x 0回(x1.0)    属性攻撃:無(x1.0)
-魔法攻撃:0 x 0回(x1.0)      魔法防御:0
-近接攻撃:39 x 2回(x2.0)     物理防御:24
-ボーナス: 鎧x2.4, 剣x1.4, 根性+1, 装備+1, 体+3
+遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.ranged_attack_amplifier`)    属性攻撃:`f.elemental_offense_attribute`.name (x `f.elemental_offense_attribute`.value )
+魔法攻撃:`d.magical_attack` x `d.magical_NoA`回(x`d.magical_attack_amplifier`)      魔法防御:`d.magical_defense`
+近接攻撃:`d.melee_attack` x `d.melee_NoA`回(x`f.melee_attack_amplifier`)     物理防御:`d.physical_defense`
+ボーナス: `c.` (ex. 護符x1.3, 弓x1.1 鎧x2.4, 剣x1.4, 根性+1, 装備+1, 体+3)
 特殊能力:
-守護者: パーティへの物理ダメージ × 3/5
+`a.` (ex. 守護者: パーティへの物理ダメージ × 3/5 )
 ```
   - Editable parameters
 - **Character Edit Mode** (selected member):
