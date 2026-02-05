@@ -217,7 +217,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP' , '
 	- `d.ranged_attack`, `d.ranged_NoA`
 	- `d.magical_attack`, `d.magical_NoA`
 	- `d.melee_attack`, `d.melee_NoA`
-- `f.abilities_offense_amplifier` 
+- `f.offense_amplifier` 
 	- `d.ranged_attack_amplifier` // 1.0 as default 
 	- `d.magical_attack_amplifier` // 1.0 as default 
 	- `d.melee_attack_amplifier` // 1.0 as default 
@@ -354,7 +354,7 @@ inventory = {
   - `d.melee_NoA`= 0 + `c.grit+v` bonuses + Item Bonuses x its c.multiplier (round up) //no NoA, no melee combat.
     - IF the character has `a.iaigiri`, halve these number of attacks, round up. 
 
-- character.`f.abilities_offense_amplifier` (phase: )
+- character.`f.offense_amplifier` (phase: )
   - If phase is LONG,  return: `d.attack_potency`.
   - If phase is MID, return: 1.0 (Fixed value)
   - If phase is CLOSE,
@@ -378,7 +378,7 @@ inventory = {
 - c.multiplier like `c.amulet_x1.3` applies only for individual character's equipments. 
 - Party.`d.HP`: 100 + (Total sum of individual ((Item Bonuses of HP x its c.multiplier + level x `b.vitality` ) x (`b.vitality`  + `b.mind`) / 20))
 
-- party.`f.abilities_offense_amplifier`(phase: phase):
+- party.`f.party.offense_amplifier`(phase: phase):
   - If phase is LONG or CLOSE:
 	- If party.`a.command`1, multiply x1.3
     - If party.`a.command`2, multiply x1.6
@@ -475,9 +475,9 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 
 **functions of attack**
 - `f.damage_calculation`: (actor: , opponent: , phase: )
-	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) )) x actor.`f.abilities_offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x party.`f.abilities_offense_amplifier`
+	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) )) x actor.`f.offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x party.`f.party.offense_amplifier`
 
-  - note: If actor: enemy, party.`f.abilities_offense_amplifier` = 1.0
+  - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
 
 **Row-based modifier** 
 - Targeting selects a character only to determine defense, row potency, abilities (counter). All damage resolved against a character is applied to `party.d.HP`.
@@ -653,9 +653,9 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 Name      [編集]
 🐶 ケイナイアン / 戦士(剣士) / 頑強 / 不動の家
 [体:``] 力10 知10 精10
-遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.abilities_offense_amplifier`(phase: LONG))    属性攻撃:`f.elemental_offense_attribute`.name (x `f.elemental_offense_attribute`.value )
-魔法攻撃:`d.magical_attack` x `d.magical_NoA`回(x`f.abilities_offense_amplifier`(phase: MID))      魔法防御:`d.magical_defense`
-近接攻撃:`d.melee_attack` x `d.melee_NoA`回(x`f.abilities_offense_amplifier`(phase: CLOSE))     物理防御:`d.physical_defense`
+遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(phase: LONG))    属性攻撃:`f.elemental_offense_attribute`.name (x `f.elemental_offense_attribute`.value )
+魔法攻撃:`d.magical_attack` x `d.magical_NoA`回(x`f.offense_amplifier`(phase: MID))      魔法防御:`d.magical_defense`
+近接攻撃:`d.melee_attack` x `d.melee_NoA`回(x`f.offense_amplifier`(phase: CLOSE))     物理防御:`d.physical_defense`
 ボーナス: `c.` (ex. 護符x1.3, 弓x1.1 鎧x2.4, 剣x1.4, 根性+1, 装備+1, 体+3)
 特殊能力:
 `a.` (ex. 守護者: パーティへの物理ダメージ × 3/5 )
