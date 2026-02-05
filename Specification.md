@@ -627,7 +627,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 ```
 🐶
 レオン
-戦士(剣士)
+戦(剣)
 ```
 
 - Current status, abilities, bonuses
