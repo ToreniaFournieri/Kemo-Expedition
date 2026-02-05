@@ -31,13 +31,12 @@
 
 ### 2.1 Global constants
 - One deity represents on one party. The deity has its own level, HP, and unique divine abilities. 
-const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP']
+const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 - Initial deity: 'God of Restoration' // Revives character at the base automatically, no death penalty 
-
 - **Bag Randomization** There are `g.reward_bag`, `g.enhancement_bag`, `g.superRare_bag`, and `g.threat_weight_bag` which control probable randomness.
 
-- enhancement title
+- **enhancement title**
  
 |value |title | tickets | multiplier |
 |-----|---------|------|------|
@@ -49,8 +48,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP']
 |5 |恐ろしい |4 | x3.50 |
 |6 |究極の |1 | x5.00 |
 
-
-- superRare title
+- **superRare title**
 
 |value |title | tickets |multiplier |
 |-----|---------|------|-----|
@@ -87,12 +85,10 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP']
 
 **Base Status Parameters**
 - Each character has the following base status values: 
-    - `b.vitality`: 体, 体力. contributes to Party HP
-    - `b.strength`: 力. contributes to physical attack
+    - `b.vitality`: 体, 体力. contributes to physical defense and `d.HP`
+    - `b.strength`: 力, 力. contributes to physical attack
     - `b.intelligence`: 知, 知性. contributes to magical attack
-    - `b.mind`: 精, 精神. contributes to magical resistance effects
-
-- Base status values are summed across the party and converted into party-wide or individual values according to system rules.
+    - `b.mind`: 精, 精神. contributes to magical defense and `d.HP`
 
 - **races(種族):**
 
@@ -101,12 +97,12 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP']
 |ケイナイアン(Caninian) | `c.shield_x1.3`, `c.archery_x1.1` |10,10,10,10| 🐶Dog |
 |ルピニアン(Lupinian) | `c.equip_slot+1`, `c.katana_x1.3`  |9,12,8,7| 🐺Wolf |
 |ヴァルピニアン(Vulpinian) |`c.equip_slot+1`, `c.sword_x1.3`, `c.grimoire_x1.2` |10,10,12,8| 🦊Fox |
-|ウルサン(Ursan) |`c.equip_slot+2`, `c.catalyst_x1.3` |13,11,6,7| 🐻Bear |
+|ウルサン(Ursan) |`c.equip_slot+2`, `c.catalyst_x1.2` |13,11,6,7| 🐻Bear |
 |フェリディアン(Felidian) |`c.robe_x1.3`, `a.first-strike`1: Acts faster than enemy at CLOSE phase |9,9,10,12| 😺Cat |
 |マステリド(Mustelid) | `c.gauntlet_x1.3`, `c.arrow_x1.3` |10,10,9,11| 🦡Ferret |
 |レポリアン(Leporian) | `c.archery_x1.3`,  `c.armor_x1.3` |9,8,11,10| 🐰Rabbit |
-|セルヴィン(Cervin) |`c.wand_x1.3`, `c.amulet_x1.2` |6,7,13,10| 🦌Deer |
-|ミュリッド(Murid) |`c.penet_x0.10`, `c.caster+1`  |9,8,10,10| 🐭Mouse |
+|セルヴィン(Cervin) |`c.wand_x1.3`, `c.shield_x1.2` |6,7,13,10| 🦌Deer |
+|ミュリッド(Murid) |`c.penet_x0.10`, `c.bolt_x1.3`  |9,8,10,10| 🐭Mouse |
 
 
 - **predisposition(性格):**
@@ -145,9 +141,9 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP']
 |忍者(Ninja) |`c.penet_x0.15` |`c.grit+1`. `a.re-attack`1: once when attacking |`c.grit+1`. `a.re-attack`2: twice when attacking | 
 |侍(Samurai) |`c.katana_x1.4` |`c.grit+1`. `a.iaigiri`: Physical damage ×2,  number of attacks ÷2 | `c.grit+1`. `a.iaigiri`: Physical damage ×2.5,  number of attacks ÷2 |
 |君主(Lord) |`c.gauntlet_x1.4`, `c.equip_slot+1` |`a.command`1: Physical damage x1.3 |`a.command`2: Physical damage x1.6 | 
-|狩人(Ranger) |`c.archery_x1.4` | `a.hunter`2: <Need to define effect.>  |`a.hunter`3: <Need to define effect.> | 
+|狩人(Ranger) |`c.arrow_x1.4` | `a.hunter`2: <Need to define effect.>  |`a.hunter`3: <Need to define effect.> | 
 |魔法使い(Wizard) |`c.wand_x1.4` | `c.caster+2` | `c.caster+3` | 
-|賢者(Sage) |`c.robe_x1.4`, `c.equip_slot+2` |`c.caster+1`. `a.m-barrier`1: Incoming magical damage to party × 2/3 | `c.caster+1`. `a.m-barrier`2: Incoming magical damage to party × 3/5 | 
+|賢者(Sage) |`c.robe_x1.4`, `c.grimoire_x1.2`, `c.equip_slot+2` |`c.caster+1`. `a.m-barrier`1: Incoming magical damage to party × 2/3 | `c.caster+1`. `a.m-barrier`2: Incoming magical damage to party × 3/5 | 
 |盗賊(Rogue) |`c.unlock` additional reward chance |`a.first-strike`1: Acts faster than enemy at CLOSE phase |`a.first-strike`2: Acts faster than enemy at All phases | 
 |巡礼者(Pilgrim) |`c.amulet_x1.4`, `c.equip_slot+1` |`a.null-counter`: Negate counter attack |`a.null-counter`: Negate counter attack | 
 
