@@ -704,7 +704,12 @@ Name      [編集]
   - **UI Requirement:** Display a confirmation warning when pressing "Done": *"Saving changes will unequip all items. Proceed?"*
 
 - Equipment management:
-  - Equip / remove from inventory
+  - **Global Inventory Pane:** Always visible on the same screen at the bottom.
+  - **Interaction Rules:**
+	- **Auto-Equip:** - If there is an empty slot and the player taps an item in the inventory, that item is automatically equipped to the first available slot.
+	- **Replace (Single-Tap):** - Tapping an item already in a Character Slot "selects" it. Tapping an item in the inventory while a slot is selected replaces the current item with the new one.
+	- **Remove (Double-Tap):** - Double-tapping an item in a Character Slot removes it and returns it to the inventory.
+  
   - Status updates in real time
   - Item list:
     - Stacked by item variant
