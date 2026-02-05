@@ -447,7 +447,7 @@ Room X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p
 - `f.battle_logs`
   - icon: 
   - `elemental_offense_attribute` -> `e.fire`:🔥, `e.thunder`:⚡, `e.ice`:❄️
-  - `e.none`, LONG phase:🏹, MID phase:🪄 ,CLOSE phase:⚔
+  - If there is no elemental attribute (`e.none`), LONG phase:🏹, MID phase:🪄 ,CLOSE phase:⚔
 
 ```
 戦闘ログ:
