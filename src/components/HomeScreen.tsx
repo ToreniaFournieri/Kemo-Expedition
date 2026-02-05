@@ -595,8 +595,10 @@ function PartyTab({
                       </div>
                     )}
                     {/* Always show elemental offense and defenses */}
-                    <div className="text-xs text-gray-500">
-                      属性攻撃:{elementName}(x{stats.elementalOffenseValue.toFixed(1)}) | 物理防御:{stats.physicalDefense} | 魔法防御:{stats.magicalDefense}
+                    <div className="grid grid-cols-3 gap-1 mt-1 text-xs">
+                      <div className="bg-white rounded p-1 text-center text-gray-500">属性:{elementName}(x{stats.elementalOffenseValue.toFixed(1)})</div>
+                      <div className="bg-white rounded p-1 text-center text-gray-500">物防:{stats.physicalDefense}</div>
+                      <div className="bg-white rounded p-1 text-center text-gray-500">魔防:{stats.magicalDefense}</div>
                     </div>
                   </>
                 );
@@ -921,12 +923,14 @@ function ExpeditionTab({
                             const emoji = getPhaseEmoji();
                             const isEnemy = log.actor === 'enemy';
                             return (
-                              <div key={j} className="text-gray-600">
-                                <span className="text-gray-400">[{phaseLabel}]</span>{' '}
-                                {isEnemy ? `敵が${log.action}` : log.action}
+                              <div key={j} className="flex justify-between text-gray-600">
+                                <span>
+                                  <span className="text-gray-400">[{phaseLabel}]</span>{' '}
+                                  {isEnemy ? `敵が${log.action}` : log.action}
+                                </span>
                                 {log.damage !== undefined && (
                                   <span className={isEnemy ? 'text-accent' : 'text-sub'}>
-                                    {' '}({emoji} {log.damage})
+                                    ({emoji} {log.damage})
                                   </span>
                                 )}
                               </div>
