@@ -654,7 +654,7 @@ Name      [編集]
 🐶 ケイナイアン / 戦士(剣士) / 頑強 / 不動の家
 [体:``] 力10 知10 精10
 遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.abilities_offense_amplifier`(phase: LONG))    属性攻撃:`f.elemental_offense_attribute`.name (x `f.elemental_offense_attribute`.value )
-魔法攻撃:`d.magical_attack` x `d.magical_NoA`回(x`d.magical_attack_amplifier`)      魔法防御:`d.magical_defense`
+魔法攻撃:`d.magical_attack` x `d.magical_NoA`回(x`f.abilities_offense_amplifier`(phase: MID))      魔法防御:`d.magical_defense`
 近接攻撃:`d.melee_attack` x `d.melee_NoA`回(x`f.abilities_offense_amplifier`(phase: CLOSE))     物理防御:`d.physical_defense`
 ボーナス: `c.` (ex. 護符x1.3, 弓x1.1 鎧x2.4, 剣x1.4, 根性+1, 装備+1, 体+3)
 特殊能力:
