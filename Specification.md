@@ -98,12 +98,12 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP']
 
 |races | bonus | 体,力,知,精 | memo |
 |-----|-------|-----------|------|
-|ケイナイアン(Caninian) | `c.amulet_x1.3`, `c.archery_x1.1` |10,10,10,10| 🐶Dog |
+|ケイナイアン(Caninian) | `c.shield_x1.3`, `c.archery_x1.1` |10,10,10,10| 🐶Dog |
 |ルピニアン(Lupinian) | `c.equip_slot+1`, `c.katana_x1.3`  |9,12,8,7| 🐺Wolf |
-|ヴァルピニアン(Vulpinian) |`c.equip_slot+1`, `c.sword_x1.3` |10,10,12,8| 🦊Fox |
-|ウルサン(Ursan) |`c.equip_slot+2` |13,12,5,7| 🐻Bear |
+|ヴァルピニアン(Vulpinian) |`c.equip_slot+1`, `c.sword_x1.3`, `c.grimoire_x1.2` |10,10,12,8| 🦊Fox |
+|ウルサン(Ursan) |`c.equip_slot+2`, `c.catalyst_x1.3` |13,11,6,7| 🐻Bear |
 |フェリディアン(Felidian) |`c.robe_x1.3`, `a.first-strike`1: Acts faster than enemy at CLOSE phase |9,9,10,12| 😺Cat |
-|マステリド(Mustelid) | `c.gauntlet_x1.3`, `a.hunter`1: <Need to define effect.> |10,10,9,11| 🦡Ferret |
+|マステリド(Mustelid) | `c.gauntlet_x1.3`, `c.arrow_x1.3` |10,10,9,11| 🦡Ferret |
 |レポリアン(Leporian) | `c.archery_x1.3`,  `c.armor_x1.3` |9,8,11,10| 🐰Rabbit |
 |セルヴィン(Cervin) |`c.wand_x1.3`, `c.amulet_x1.2` |6,7,13,10| 🦌Deer |
 |ミュリッド(Murid) |`c.penet_x0.10`, `c.caster+1`  |9,8,10,10| 🐭Mouse |
@@ -114,11 +114,11 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP']
 |predisposition | bonus |
 |-----|-----------|
 |頑強 (Sturdy)|`b.vitality+2`,  `c.armor_x1.1`|
-|俊敏 (Agile)|`c.gauntlet_x1.2`|
+|俊敏 (Agile)|`c.gauntlet_x1.2`, `c.archery_x1.2` |
 |聡明 (Brilliant)|`c.wand_x1.2`|
-|器用 (Dexterous)|`c.archery_x1.2`|
-|騎士道 (Chivalric)|`c.sword_x1.2`|
-|士魂 (Shikon)|`b.strength+2`, `c.katana_x1.1`|
+|器用 (Dexterous)|`c.arrow_x1.2`, `c.catalyst_x1.2`|
+|騎士道 (Chivalric)|`c.sword_x1.2`, `c.bolt_x1.1`|
+|士魂 (Shikon)|`b.strength+1`, `c.katana_x1.1`, `c.arrow_x1.2`|
 |追求 (Pursuing)|`b.intelligence+2`, `c.robe_x1.1`|
 |商才 (Canny)|`c.equip_slot+1`|
 |忍耐(Persistent)|`b.mind+2`, `c.robe_x1.1`|
@@ -129,12 +129,12 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'party.d.HP']
 |-----|-----------|
 |鋼誓の家（House of Steel Oath）|`c.sword_x1.3` |
 |戦魂の家（House of War Spirit）|`c.katana_x1.2`, `b.mind+1`|
-|遠眼の家（House of Far Sight）|`c.archery_x1.3`|
+|遠眼の家（House of Far Sight）|`c.arrow_x1.3`|
 |不動の家（House of the Unmoving）|`c.armor_x1.2`, `b.vitality+1` |
 |砕手の家（House of the Breaking Hand）|`c.gauntlet_x1.2`, `b.strength+1`|
 |導智の家（House of Guiding Thought）|`c.wand_x1.3`|
 |秘理の家（House of Hidden Principles）|`c.robe_x1.2`, `b.intelligence+1`|
-|継誓の家（House of Inherited Oaths）|`c.amulet_x1.2`, `b.vitality+1`|
+|継誓の家（House of Inherited Oaths）|`c.shield_x1.2`, `b.vitality+1`|
 
 - **classes:**
 
