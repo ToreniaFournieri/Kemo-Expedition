@@ -25,7 +25,6 @@ const CATEGORY_TO_MULTIPLIER: Record<ItemCategory, BonusType | null> = {
   gauntlet: 'gauntlet_multiplier',
   wand: 'wand_multiplier',
   robe: 'robe_multiplier',
-  amulet: 'amulet_multiplier',
   shield: 'shield_multiplier',
   bolt: 'bolt_multiplier',
   grimoire: 'grimoire_multiplier',
@@ -57,7 +56,6 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
       case 'gauntlet_multiplier':
       case 'wand_multiplier':
       case 'robe_multiplier':
-      case 'amulet_multiplier':
       case 'shield_multiplier':
       case 'bolt_multiplier':
       case 'grimoire_multiplier':

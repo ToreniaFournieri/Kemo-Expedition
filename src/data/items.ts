@@ -70,13 +70,6 @@ export const ITEMS: ItemDef[] = [
   { id: 63, category: 'robe', name: '大魔導師のローブ', magicalDefense: 28 },
   { id: 64, category: 'robe', name: '聖なるローブ', magicalDefense: 40, partyHP: 15 },
 
-  // Amulet (護符) - +Party_HP
-  { id: 70, category: 'amulet', name: '護りの護符', partyHP: 30 },
-  { id: 71, category: 'amulet', name: '銀の護符', partyHP: 60 },
-  { id: 72, category: 'amulet', name: '守護の護符', partyHP: 100 },
-  { id: 73, category: 'amulet', name: '聖なる護符', partyHP: 150 },
-  { id: 74, category: 'amulet', name: '神の護符', partyHP: 220, physicalDefense: 5 },
-
   // Shield (盾) - +physicalDefense, +HP
   { id: 80, category: 'shield', name: '木盾', physicalDefense: 3, partyHP: 10 },
   { id: 81, category: 'shield', name: '鉄盾', physicalDefense: 6, partyHP: 20 },

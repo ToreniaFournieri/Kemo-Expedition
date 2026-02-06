@@ -55,14 +55,13 @@ const MULTIPLIER_LABELS: Record<string, string> = {
   katana_multiplier: '刀',
   archery_multiplier: '弓',
   armor_multiplier: '鎧',
-  gauntlet_multiplier: '籠手',
+  gauntlet_multiplier: '手',
   wand_multiplier: '杖',
   robe_multiplier: '衣',
-  amulet_multiplier: '護符',
   shield_multiplier: '盾',
-  bolt_multiplier: 'ボルト',
-  grimoire_multiplier: '魔道書',
-  catalyst_multiplier: '霊媒',
+  bolt_multiplier: 'ボ',
+  grimoire_multiplier: '書',
+  catalyst_multiplier: '媒',
   arrow_multiplier: '矢',
 };
 
@@ -134,7 +133,6 @@ const CATEGORY_NAMES: Record<string, string> = {
   gauntlet: '籠手',
   wand: 'ワンド',
   robe: '法衣',
-  amulet: '護符',
   shield: '盾',
   bolt: 'ボルト',
   grimoire: '魔道書',
@@ -142,7 +140,7 @@ const CATEGORY_NAMES: Record<string, string> = {
   arrow: '矢',
 };
 
-// Category short names for tabs (spec: 剣,刀,弓,鎧,手,杖,衣,護,盾,ボ,書,媒,矢)
+// Category short names for tabs
 const CATEGORY_SHORT_NAMES: Record<string, string> = {
   sword: '剣',
   katana: '刀',
@@ -151,7 +149,6 @@ const CATEGORY_SHORT_NAMES: Record<string, string> = {
   gauntlet: '手',
   wand: '杖',
   robe: '衣',
-  amulet: '護',
   shield: '盾',
   bolt: 'ボ',
   grimoire: '書',
@@ -159,14 +156,19 @@ const CATEGORY_SHORT_NAMES: Record<string, string> = {
   arrow: '矢',
 };
 
-const CATEGORY_ORDER = ['sword', 'katana', 'archery', 'armor', 'gauntlet', 'wand', 'robe', 'amulet', 'shield', 'bolt', 'grimoire', 'catalyst', 'arrow'];
-const EQUIP_CATEGORY_ORDER = ['sword', 'katana', 'archery', 'armor', 'gauntlet', 'wand', 'robe', 'amulet', 'shield', 'bolt', 'grimoire', 'catalyst', 'arrow'];
+// Category groups for tabs
+const CATEGORY_GROUPS = [
+  { id: 'durability', label: '耐久', categories: ['armor', 'robe', 'shield'] },
+  { id: 'melee', label: '近距離攻撃', categories: ['sword', 'katana', 'gauntlet'] },
+  { id: 'ranged', label: '遠距離攻撃', categories: ['arrow', 'bolt', 'archery'] },
+  { id: 'magic', label: '魔法攻撃', categories: ['wand', 'grimoire', 'catalyst'] },
+];
 
 // Category priority for equipment slot sorting (lower index = higher priority)
 const CATEGORY_PRIORITY: Record<string, number> = {
   armor: 0, robe: 1, shield: 2, sword: 3, katana: 4,
   gauntlet: 5, arrow: 6, bolt: 7, archery: 8, wand: 9,
-  grimoire: 10, catalyst: 11, amulet: 12,
+  grimoire: 10, catalyst: 11,
 };
 
 // Sort items by descending priority: Item ID (higher first), SuperRare (higher first), Enhancement (higher first)
@@ -322,7 +324,7 @@ function PartyTab({
   onEquipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
 }) {
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
-  const [equipCategory, setEquipCategory] = useState('sword');
+  const [equipCategory, setEquipCategory] = useState('armor');
   const [pendingEdits, setPendingEdits] = useState<Partial<Character> | null>(null);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
   const [lastSlotTap, setLastSlotTap] = useState<{ slot: number; time: number } | null>(null);
@@ -393,7 +395,6 @@ function PartyTab({
               }`}
             >
               <div className="text-2xl text-center">{r.emoji}</div>
-              <div className="text-xs truncate w-14 text-center">{c.name}</div>
               <div className="text-xs text-gray-400 text-center">
                 {mcShort}({isMaster ? '師' : scShort})
               </div>
@@ -673,7 +674,8 @@ function PartyTab({
               const parts: string[] = [];
               const mulNames: Record<string, string> = {
                 sword: '剣', katana: '刀', archery: '弓', armor: '鎧',
-                gauntlet: '手', wand: '杖', robe: '衣', amulet: '護'
+                gauntlet: '手', wand: '杖', robe: '衣', shield: '盾',
+                bolt: 'ボ', grimoire: '書', catalyst: '媒', arrow: '矢'
               };
               const addNames: Record<string, string> = {
                 vitality: '体', strength: '力', intelligence: '知', mind: '精',
@@ -804,13 +806,13 @@ function PartyTab({
             });
           });
 
-        // Sort by priority: Item ID (desc), SuperRare (desc), Enhancement (desc), equipped first within same priority
+        // Sort by priority: Item ID (desc), SuperRare (desc), Enhancement (desc), equipped items BELOW normal items
         displayItems.sort((a, b) => {
           if (a.item.id !== b.item.id) return b.item.id - a.item.id;
           if (a.item.superRare !== b.item.superRare) return b.item.superRare - a.item.superRare;
           if (a.item.enhancement !== b.item.enhancement) return b.item.enhancement - a.item.enhancement;
-          // Equipped items first within same variant
-          if (a.isEquipped !== b.isEquipped) return a.isEquipped ? -1 : 1;
+          // Normal inventory items first, equipped items below
+          if (a.isEquipped !== b.isEquipped) return a.isEquipped ? 1 : -1;
           return 0;
         });
 
@@ -853,20 +855,29 @@ function PartyTab({
                 </div>
               )}
             </div>
-            {/* Category tabs */}
+            {/* Category group tabs */}
             <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
-              {EQUIP_CATEGORY_ORDER.map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => setEquipCategory(cat)}
-                  className={`px-2 py-1 text-xs rounded ${
-                    equipCategory === cat
-                      ? 'bg-sub text-white'
-                      : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                  }`}
-                >
-                  {CATEGORY_SHORT_NAMES[cat]}
-                </button>
+              {CATEGORY_GROUPS.map(group => (
+                <div key={group.id} className="flex flex-col">
+                  <div className="text-xs text-gray-400 text-center mb-0.5">{group.label}</div>
+                  <div className="flex">
+                    {group.categories.map((cat, i) => (
+                      <button
+                        key={cat}
+                        onClick={() => setEquipCategory(cat)}
+                        className={`px-2 py-1 text-xs ${
+                          i === 0 ? 'rounded-l' : i === group.categories.length - 1 ? 'rounded-r' : ''
+                        } ${
+                          equipCategory === cat
+                            ? 'bg-sub text-white'
+                            : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                        }`}
+                      >
+                        {CATEGORY_SHORT_NAMES[cat]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
             <div className="space-y-1 min-h-[320px] max-h-96 overflow-y-auto">
@@ -1086,7 +1097,7 @@ function InventoryTab({
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
 }) {
   const [showSold, setShowSold] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('sword');
+  const [selectedCategory, setSelectedCategory] = useState('armor');
 
   // Separate owned and sold/notown items, filtered by category
   const allOwnedItems = Object.entries(inventory).filter(([, v]) => v.status === 'owned' && v.count > 0);
@@ -1105,20 +1116,29 @@ function InventoryTab({
         所持品: {allOwnedItems.length}種類 ({totalCount}個) | {gold}G
       </div>
 
-      {/* Category tabs */}
+      {/* Category group tabs */}
       <div className="flex gap-1 mb-3 overflow-x-auto pb-1">
-        {CATEGORY_ORDER.map(cat => (
-          <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
-            className={`px-2 py-1 text-sm rounded ${
-              selectedCategory === cat
-                ? 'bg-sub text-white'
-                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-            }`}
-          >
-            {CATEGORY_SHORT_NAMES[cat]}
-          </button>
+        {CATEGORY_GROUPS.map(group => (
+          <div key={group.id} className="flex flex-col">
+            <div className="text-xs text-gray-400 text-center mb-0.5">{group.label}</div>
+            <div className="flex">
+              {group.categories.map((cat, i) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-2 py-1 text-sm ${
+                    i === 0 ? 'rounded-l' : i === group.categories.length - 1 ? 'rounded-r' : ''
+                  } ${
+                    selectedCategory === cat
+                      ? 'bg-sub text-white'
+                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  }`}
+                >
+                  {CATEGORY_SHORT_NAMES[cat]}
+                </button>
+              ))}
+            </div>
+          </div>
         ))}
       </div>
 
