@@ -142,7 +142,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 |侍(侍,Samurai) |`c.katana_x1.4` |`c.grit+1`. `a.iaigiri`: Physical damage ×2,  number of attacks ÷2 | `c.grit+1`. `a.iaigiri`: Physical damage ×2.5,  number of attacks ÷2 |
 |君主(君,Lord) |`c.gauntlet_x1.4`, `c.equip_slot+1` |`a.command`1: Physical damage x1.3 |`a.command`2: Physical damage x1.6 | 
 |狩人(狩,Ranger) |`c.arrow_x1.4` | `c.pursuit+1`, `a.hunter`1: Reduces row-based damage decay from 15% to 10% per step. |`c.pursuit+2`, `a.hunter`2: Reduces row-based damage decay from 15% to 7% per step. | 
-|魔法使い(魔,Wizard) |`c.wand_x1.4` | `c.caster+1`, `a.resonance`1:Each hit increases the damage by +10%. | `c.caster+1`, `a.resonance`2:Each hit increases the damage by +15% | 
+|魔法使い(魔,Wizard) |`c.wand_x1.4` | `c.caster+1`, `a.resonance`1:Each hit increases the damage by +5%. | `c.caster+1`, `a.resonance`2:Each hit increases the damage by +8% | 
 |賢者(賢,Sage) |`c.robe_x1.4`, `c.grimoire_x1.2`, `c.equip_slot+2` |`c.caster+2`. `a.m-barrier`1: Incoming magical damage to party × 2/3 | `c.caster+3`. `a.m-barrier`2: Incoming magical damage to party × 3/5 | 
 |盗賊(盗,Rogue) |`c.unlock` additional reward chance |`a.first-strike`1: Acts faster than enemy at CLOSE phase |`a.first-strike`2: Acts faster than enemy at All phases | 
 |巡礼者(巡,Pilgrim) |`c.amulet_x1.4`, `c.equip_slot+1` |`a.null-counter`: Negate counter attack |`a.null-counter`: Negate counter attack | 
@@ -467,8 +467,8 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 **functions of attack**
 
 - `f.resonance_amplifier`(actor: ,hit: )
-  	If actor.`a.resonance`1, return 1.0 + (0.10 x (n - 1))   
-  	If actor.`a.resonance`2, return 1.0 + (0.15 x (n - 1))
+  	If actor.`a.resonance`1, return 1.0 + (0.05 x (n - 1))   
+  	If actor.`a.resonance`2, return 1.0 + (0.08 x (n - 1))
     Else, return 1.0.
 
 - `f.damage_calculation`: (actor: , opponent: , phase: , hit: )
