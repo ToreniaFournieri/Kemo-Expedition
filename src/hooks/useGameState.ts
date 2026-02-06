@@ -20,7 +20,7 @@ import { drawFromBag, refillBagIfEmpty, createRewardBag, createEnhancementBag, c
 import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 
-const BUILD_NUMBER = 21;
+const BUILD_NUMBER = 22;
 const STORAGE_KEY = 'kemo-expedition-save';
 
 // Helper to calculate sell price for an item
@@ -196,10 +196,6 @@ function createInitialParty() {
     level: 1,
     experience: 0,
     characters,
-    quiverSlots: [
-      { item: { ...getItemById(80)!, enhancement: 0, superRare: 0 }, quantity: 50 },
-      null,
-    ] as [{ item: Item; quantity: number } | null, { item: Item; quantity: number } | null],
     inventory,
     gold: 100,
   };
@@ -236,9 +232,6 @@ type GameAction =
   | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character> }
   | { type: 'SELL_STACK'; variantKey: string }
   | { type: 'SET_VARIANT_STATUS'; variantKey: string; status: 'notown' }
-  | { type: 'BUY_ARROWS'; arrowId: number; quantity: number }
-  | { type: 'ASSIGN_ARROW_TO_QUIVER'; variantKey: string; quantity: number }
-  | { type: 'REMOVE_QUIVER_SLOT'; slotIndex: number }
   | { type: 'MARK_ITEMS_SEEN' }
   | { type: 'RESET_GAME' };
 
@@ -267,10 +260,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const { partyStats } = computePartyStats(state.party);
       let currentHp = partyStats.hp;
-      const quiverQty: [number, number] = [
-        state.party.quiverSlots[0]?.quantity ?? 0,
-        state.party.quiverSlots[1]?.quantity ?? 0,
-      ];
 
       const entries: ExpeditionLogEntry[] = [];
       const rewards: Item[] = [];
@@ -288,7 +277,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         if (!enemy) break;
 
         // Pass currentHp to maintain HP persistence during expedition
-        const battleResult = executeBattle(state.party, enemy, quiverQty, bags, currentHp);
+        const battleResult = executeBattle(state.party, enemy, bags, currentHp);
         // Update threat bags from battle result
         bags = {
           ...bags,
@@ -526,115 +515,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
-    case 'BUY_ARROWS': {
-      // Buy arrows and add to inventory
-      const arrowDef = getItemById(action.arrowId);
-      if (!arrowDef || arrowDef.category !== 'arrow') return state;
-
-      const cost = action.quantity * 2;
-      if (state.party.gold < cost) return state;
-
-      const arrowItem: Item = { ...arrowDef, enhancement: 0, superRare: 0 };
-      const key = getVariantKey(arrowItem);
-      const newInventory = { ...state.party.inventory };
-      const existing = newInventory[key];
-
-      if (existing) {
-        newInventory[key] = {
-          ...existing,
-          count: existing.count + action.quantity,
-          status: 'owned',
-        };
-      } else {
-        newInventory[key] = {
-          item: arrowItem,
-          count: action.quantity,
-          status: 'owned',
-        };
-      }
-
-      return {
-        ...state,
-        party: { ...state.party, inventory: newInventory, gold: state.party.gold - cost },
-      };
-    }
-
-    case 'ASSIGN_ARROW_TO_QUIVER': {
-      // Move arrows from inventory to quiver slot
-      const variant = state.party.inventory[action.variantKey];
-      if (!variant || variant.count < action.quantity || variant.item.category !== 'arrow') return state;
-
-      const newQuiverSlots = [...state.party.quiverSlots] as typeof state.party.quiverSlots;
-
-      // Find matching slot or empty slot
-      let targetSlot = -1;
-      for (let i = 0; i < 2; i++) {
-        if (newQuiverSlots[i]?.item.id === variant.item.id) {
-          targetSlot = i;
-          break;
-        }
-      }
-      if (targetSlot === -1) {
-        for (let i = 0; i < 2; i++) {
-          if (!newQuiverSlots[i]) {
-            targetSlot = i;
-            break;
-          }
-        }
-      }
-
-      if (targetSlot === -1) return state; // No available slot
-
-      const maxStack = variant.item.maxStack ?? 99;
-      const currentQty = newQuiverSlots[targetSlot]?.quantity ?? 0;
-      const canAdd = Math.min(action.quantity, maxStack - currentQty);
-
-      if (canAdd <= 0) return state; // Slot is full
-
-      // Update quiver slot
-      if (newQuiverSlots[targetSlot]) {
-        newQuiverSlots[targetSlot] = {
-          ...newQuiverSlots[targetSlot]!,
-          quantity: currentQty + canAdd,
-        };
-      } else {
-        newQuiverSlots[targetSlot] = {
-          item: { ...variant.item },
-          quantity: canAdd,
-        };
-      }
-
-      // Remove from inventory
-      const newInventory = { ...state.party.inventory };
-      const newCount = variant.count - canAdd;
-      if (newCount <= 0) {
-        newInventory[action.variantKey] = { ...variant, count: 0, status: 'notown' };
-      } else {
-        newInventory[action.variantKey] = { ...variant, count: newCount };
-      }
-
-      return {
-        ...state,
-        party: { ...state.party, quiverSlots: newQuiverSlots, inventory: newInventory },
-      };
-    }
-
-    case 'REMOVE_QUIVER_SLOT': {
-      const newQuiverSlots = [...state.party.quiverSlots] as typeof state.party.quiverSlots;
-      newQuiverSlots[action.slotIndex] = null;
-
-      // Move slot 2 to slot 1 if slot 1 is removed
-      if (action.slotIndex === 0 && newQuiverSlots[1]) {
-        newQuiverSlots[0] = newQuiverSlots[1];
-        newQuiverSlots[1] = null;
-      }
-
-      return {
-        ...state,
-        party: { ...state.party, quiverSlots: newQuiverSlots },
-      };
-    }
-
     case 'MARK_ITEMS_SEEN': {
       const newInventory: InventoryRecord = {};
       for (const [key, variant] of Object.entries(state.party.inventory)) {
@@ -706,18 +586,6 @@ export function useGameState() {
 
     setVariantStatus: useCallback((variantKey: string, status: 'notown') => {
       dispatch({ type: 'SET_VARIANT_STATUS', variantKey, status });
-    }, []),
-
-    buyArrows: useCallback((arrowId: number, quantity: number) => {
-      dispatch({ type: 'BUY_ARROWS', arrowId, quantity });
-    }, []),
-
-    removeQuiverSlot: useCallback((slotIndex: number) => {
-      dispatch({ type: 'REMOVE_QUIVER_SLOT', slotIndex });
-    }, []),
-
-    assignArrowToQuiver: useCallback((variantKey: string, quantity: number) => {
-      dispatch({ type: 'ASSIGN_ARROW_TO_QUIVER', variantKey, quantity });
     }, []),
 
     markItemsSeen: useCallback(() => {

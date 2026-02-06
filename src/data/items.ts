@@ -77,12 +77,40 @@ export const ITEMS: ItemDef[] = [
   { id: 73, category: 'amulet', name: '聖なる護符', partyHP: 150 },
   { id: 74, category: 'amulet', name: '神の護符', partyHP: 220, physicalDefense: 5 },
 
-  // Arrows (矢) - Consumable, Stackable
-  { id: 80, category: 'arrow', name: '木の矢', rangedAttack: 2, maxStack: 99, elementalOffense: 'none' },
-  { id: 81, category: 'arrow', name: '鉄の矢', rangedAttack: 5, maxStack: 99, elementalOffense: 'none' },
-  { id: 82, category: 'arrow', name: '炎の矢', rangedAttack: 8, maxStack: 50, elementalOffense: 'fire' },
-  { id: 83, category: 'arrow', name: '氷の矢', rangedAttack: 8, maxStack: 50, elementalOffense: 'ice' },
-  { id: 84, category: 'arrow', name: '雷の矢', rangedAttack: 8, maxStack: 50, elementalOffense: 'thunder' },
+  // Shield (盾) - +physicalDefense, +HP
+  { id: 80, category: 'shield', name: '木盾', physicalDefense: 3, partyHP: 10 },
+  { id: 81, category: 'shield', name: '鉄盾', physicalDefense: 6, partyHP: 20 },
+  { id: 82, category: 'shield', name: '騎士盾', physicalDefense: 10, partyHP: 35 },
+  { id: 83, category: 'shield', name: '守護盾', physicalDefense: 15, partyHP: 55 },
+  { id: 84, category: 'shield', name: '聖盾', physicalDefense: 22, partyHP: 80 },
+
+  // Bolt (ボルト) - +rangedAttack with elemental offense
+  { id: 90, category: 'bolt', name: '木ボルト', rangedAttack: 3 },
+  { id: 91, category: 'bolt', name: '鉄ボルト', rangedAttack: 6 },
+  { id: 92, category: 'bolt', name: '炎ボルト', rangedAttack: 10, elementalOffense: 'fire' },
+  { id: 93, category: 'bolt', name: '氷ボルト', rangedAttack: 10, elementalOffense: 'ice' },
+  { id: 94, category: 'bolt', name: '雷ボルト', rangedAttack: 10, elementalOffense: 'thunder' },
+
+  // Grimoire (魔道書) - +magicalAttack
+  { id: 100, category: 'grimoire', name: '初級魔道書', magicalAttack: 10 },
+  { id: 101, category: 'grimoire', name: '中級魔道書', magicalAttack: 18 },
+  { id: 102, category: 'grimoire', name: '上級魔道書', magicalAttack: 28 },
+  { id: 103, category: 'grimoire', name: '禁断魔道書', magicalAttack: 40 },
+  { id: 104, category: 'grimoire', name: '神代魔道書', magicalAttack: 55 },
+
+  // Catalyst (霊媒) - +magicalNoA
+  { id: 110, category: 'catalyst', name: '水晶球', magicalNoA: 1 },
+  { id: 111, category: 'catalyst', name: '精霊石', magicalNoA: 1, magicalAttack: 5 },
+  { id: 112, category: 'catalyst', name: '賢者の石', magicalNoA: 2 },
+  { id: 113, category: 'catalyst', name: '精霊核', magicalNoA: 2, magicalAttack: 8 },
+  { id: 114, category: 'catalyst', name: '神核', magicalNoA: 3, magicalAttack: 12 },
+
+  // Arrow (矢) - +rangedAttack with elemental offense
+  { id: 120, category: 'arrow', name: '木の矢', rangedAttack: 2 },
+  { id: 121, category: 'arrow', name: '鉄の矢', rangedAttack: 5 },
+  { id: 122, category: 'arrow', name: '炎の矢', rangedAttack: 8, elementalOffense: 'fire' },
+  { id: 123, category: 'arrow', name: '氷の矢', rangedAttack: 8, elementalOffense: 'ice' },
+  { id: 124, category: 'arrow', name: '雷の矢', rangedAttack: 8, elementalOffense: 'thunder' },
 ];
 
 export const getItemById = (id: number): ItemDef | undefined =>

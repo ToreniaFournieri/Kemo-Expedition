@@ -26,7 +26,11 @@ const CATEGORY_TO_MULTIPLIER: Record<ItemCategory, BonusType | null> = {
   wand: 'wand_multiplier',
   robe: 'robe_multiplier',
   amulet: 'amulet_multiplier',
-  arrow: null,
+  shield: 'shield_multiplier',
+  bolt: 'bolt_multiplier',
+  grimoire: 'grimoire_multiplier',
+  catalyst: 'catalyst_multiplier',
+  arrow: 'arrow_multiplier',
 };
 
 interface BonusCollection {
@@ -36,6 +40,7 @@ interface BonusCollection {
   grit: number;
   caster: number;
   penet: number;
+  pursuit: number;
   abilities: Map<AbilityId, number>;
 }
 
@@ -53,6 +58,11 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
       case 'wand_multiplier':
       case 'robe_multiplier':
       case 'amulet_multiplier':
+      case 'shield_multiplier':
+      case 'bolt_multiplier':
+      case 'grimoire_multiplier':
+      case 'catalyst_multiplier':
+      case 'arrow_multiplier':
         if (!collection.multipliers.has(bonus.type)) {
           collection.multipliers.set(bonus.type, []);
         }
@@ -81,6 +91,9 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
         break;
       case 'penet':
         collection.penet += bonus.value;
+        break;
+      case 'pursuit':
+        collection.pursuit += bonus.value;
         break;
       case 'ability':
         if (bonus.abilityId) {
@@ -117,6 +130,7 @@ export function computeCharacterStats(
     grit: 0,
     caster: 0,
     penet: 0,
+    pursuit: 0,
     abilities: new Map(),
   };
 
@@ -251,7 +265,19 @@ export function computeCharacterStats(
   const ATTACK_POTENCY: Record<number, number> = {
     1: 1.00, 2: 0.85, 3: 0.72, 4: 0.61, 5: 0.52, 6: 0.44,
   };
-  const attackPotency = ATTACK_POTENCY[row] ?? 1.0;
+  let attackPotency = ATTACK_POTENCY[row] ?? 1.0;
+
+  // Hunter ability increases attack potency
+  const hunterLevel = collection.abilities.get('hunter');
+  if (hunterLevel) {
+    const hunterBonus = hunterLevel === 3 ? 0.15 : hunterLevel === 2 ? 0.10 : 0.05;
+    attackPotency = Math.min(1.0, attackPotency + hunterBonus);
+  }
+
+  // Apply pursuit bonus to attack potency
+  if (collection.pursuit > 0) {
+    attackPotency = Math.min(1.0, attackPotency + collection.pursuit);
+  }
 
   return {
     characterId: character.id,
@@ -282,7 +308,8 @@ function getAbilityName(id: AbilityId): string {
     counter: 'カウンター',
     re_attack: '連撃',
     iaigiri: '居合斬り',
-    leading: '指揮',
+    resonance: '共鳴',
+    command: '指揮',
     m_barrier: '魔法障壁',
     null_counter: 'カウンター無効',
     unlock: '解錠',
@@ -293,12 +320,13 @@ function getAbilityName(id: AbilityId): string {
 function getAbilityDescription(id: AbilityId, level: number): string {
   const descriptions: Record<AbilityId, (level: number) => string> = {
     first_strike: (l) => l === 2 ? '全フェーズで敵より先に行動' : 'CLOSEフェーズで敵より先に行動',
-    hunter: (l) => `戦闘終了時に矢を${l === 3 ? 36 : l === 2 ? 30 : 20}%回収`,
+    hunter: (l) => `攻撃効力 +${l === 3 ? 15 : l === 2 ? 10 : 5}%`,
     defender: (l) => `パーティへの物理ダメージ × ${l === 2 ? '3/5' : '2/3'}`,
     counter: (l) => l === 2 ? 'CLOSE/MIDフェーズで反撃' : 'CLOSEフェーズで反撃',
     re_attack: (l) => `攻撃時に${l === 2 ? '2回' : '1回'}追加攻撃`,
     iaigiri: (l) => `物理ダメージ × ${l === 2 ? 2.5 : 2}、攻撃回数 ÷ 2`,
-    leading: (l) => `物理ダメージ × ${l === 2 ? 1.6 : 1.3}`,
+    resonance: (l) => `魔法ダメージ × ${l === 2 ? 1.5 : 1.25}`,
+    command: (l) => `パーティ攻撃力 × ${l === 2 ? 1.3 : 1.15}`,
     m_barrier: (l) => `パーティへの魔法ダメージ × ${l === 2 ? '3/5' : '2/3'}`,
     null_counter: () => '反撃を無効化',
     unlock: () => '追加報酬チャンス',

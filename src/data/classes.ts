@@ -70,10 +70,10 @@ export const CLASSES: ClassDef[] = [
       { type: 'equip_slot', value: 1 },
     ],
     mainBonuses: [
-      { type: 'ability', value: 1, abilityId: 'leading', abilityLevel: 1 },
+      { type: 'ability', value: 1, abilityId: 'command', abilityLevel: 1 },
     ],
     masterBonuses: [
-      { type: 'ability', value: 1, abilityId: 'leading', abilityLevel: 2 },
+      { type: 'ability', value: 1, abilityId: 'command', abilityLevel: 2 },
     ],
   },
   {
@@ -97,9 +97,11 @@ export const CLASSES: ClassDef[] = [
     ],
     mainBonuses: [
       { type: 'caster', value: 2 },
+      { type: 'ability', value: 1, abilityId: 'resonance', abilityLevel: 1 },
     ],
     masterBonuses: [
       { type: 'caster', value: 3 },
+      { type: 'ability', value: 1, abilityId: 'resonance', abilityLevel: 2 },
     ],
   },
   {

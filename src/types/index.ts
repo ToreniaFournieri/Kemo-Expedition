@@ -56,12 +56,14 @@ export type BonusType =
   | 'sword_multiplier' | 'katana_multiplier' | 'archery_multiplier'
   | 'armor_multiplier' | 'gauntlet_multiplier' | 'wand_multiplier'
   | 'robe_multiplier' | 'amulet_multiplier'
+  | 'shield_multiplier' | 'bolt_multiplier' | 'grimoire_multiplier'
+  | 'catalyst_multiplier' | 'arrow_multiplier'
   // Slot bonuses
   | 'equip_slot'
   // Stat bonuses
   | 'vitality' | 'strength' | 'intelligence' | 'mind'
   // Combat bonuses
-  | 'grit' | 'caster' | 'penet'
+  | 'grit' | 'caster' | 'penet' | 'pursuit'
   // Abilities
   | 'ability';
 
@@ -75,7 +77,7 @@ export interface Bonus {
 // Ability Types
 export type AbilityId =
   | 'first_strike' | 'hunter' | 'defender' | 'counter' | 're_attack'
-  | 'iaigiri' | 'leading' | 'm_barrier' | 'null_counter' | 'unlock';
+  | 'iaigiri' | 'resonance' | 'command' | 'm_barrier' | 'null_counter' | 'unlock';
 
 export interface Ability {
   id: AbilityId;
@@ -95,7 +97,8 @@ export interface BaseStats {
 // Item Types
 export type ItemCategory =
   | 'sword' | 'katana' | 'archery' | 'armor'
-  | 'gauntlet' | 'wand' | 'robe' | 'amulet' | 'arrow';
+  | 'gauntlet' | 'wand' | 'robe' | 'amulet'
+  | 'shield' | 'bolt' | 'grimoire' | 'catalyst' | 'arrow';
 
 export interface ItemDef {
   id: number;
@@ -111,13 +114,11 @@ export interface ItemDef {
   physicalDefense?: number;
   magicalDefense?: number;
   elementalOffense?: ElementalOffense;
-  maxStack?: number; // For arrows
 }
 
 export interface Item extends ItemDef {
   enhancement: number; // 0-6
   superRare: number; // 0-5
-  quantity?: number; // For arrows
   isNew?: boolean; // For highlighting newly acquired items
 }
 
@@ -178,14 +179,8 @@ export interface Party {
   level: number;
   experience: number;
   characters: Character[];
-  quiverSlots: [QuiverSlot | null, QuiverSlot | null];
   inventory: InventoryRecord;
   gold: number;
-}
-
-export interface QuiverSlot {
-  item: Item;
-  quantity: number;
 }
 
 // Computed party stats for battle
@@ -267,7 +262,6 @@ export interface ExpeditionState {
   dungeonId: number;
   currentRoom: number;
   partyHp: number;
-  quiverQuantities: [number, number];
   rewards: Item[];
   experienceGained: number;
 }

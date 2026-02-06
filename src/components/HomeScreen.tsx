@@ -6,7 +6,7 @@ import { RACES } from '../data/races';
 import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
 import { LINEAGES } from '../data/lineages';
-import { ITEMS, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
+import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 
 interface HomeScreenProps {
@@ -19,9 +19,6 @@ interface HomeScreenProps {
     updateCharacter: (characterId: number, updates: Partial<Character>) => void;
     sellStack: (variantKey: string) => void;
     setVariantStatus: (variantKey: string, status: 'notown') => void;
-    buyArrows: (arrowId: number, quantity: number) => void;
-    removeQuiverSlot: (slotIndex: number) => void;
-    assignArrowToQuiver: (variantKey: string, quantity: number) => void;
     markItemsSeen: () => void;
     resetGame: () => void;
   };
@@ -62,6 +59,11 @@ const MULTIPLIER_LABELS: Record<string, string> = {
   wand_multiplier: '杖',
   robe_multiplier: '衣',
   amulet_multiplier: '護符',
+  shield_multiplier: '盾',
+  bolt_multiplier: 'ボルト',
+  grimoire_multiplier: '魔道書',
+  catalyst_multiplier: '霊媒',
+  arrow_multiplier: '矢',
 };
 
 const ABILITY_NAMES: Record<string, string> = {
@@ -71,7 +73,8 @@ const ABILITY_NAMES: Record<string, string> = {
   counter: 'カウンター',
   re_attack: '再攻撃',
   iaigiri: '居合斬り',
-  leading: '統率',
+  resonance: '共鳴',
+  command: '指揮',
   m_barrier: '魔法障壁',
   unlock: '解錠',
   null_counter: '無効化',
@@ -98,6 +101,8 @@ function formatBonuses(bonuses: Bonus[]): string {
       parts.push(`詠唱+${b.value}`);
     } else if (b.type === 'penet') {
       parts.push(`貫通${Math.round(b.value * 100)}%`);
+    } else if (b.type === 'pursuit') {
+      parts.push(`追撃${Math.round(b.value * 100)}%`);
     } else if (b.type === 'ability' && b.abilityId) {
       const name = ABILITY_NAMES[b.abilityId] || b.abilityId;
       parts.push(`${name}Lv${b.abilityLevel || 1}`);
@@ -130,10 +135,14 @@ const CATEGORY_NAMES: Record<string, string> = {
   wand: 'ワンド',
   robe: '法衣',
   amulet: '護符',
+  shield: '盾',
+  bolt: 'ボルト',
+  grimoire: '魔道書',
+  catalyst: '霊媒',
   arrow: '矢',
 };
 
-// Category short names for tabs (spec: 剣,刀,弓,鎧,手,杖,衣,護,矢)
+// Category short names for tabs (spec: 剣,刀,弓,鎧,手,杖,衣,護,盾,ボ,書,媒,矢)
 const CATEGORY_SHORT_NAMES: Record<string, string> = {
   sword: '剣',
   katana: '刀',
@@ -143,17 +152,21 @@ const CATEGORY_SHORT_NAMES: Record<string, string> = {
   wand: '杖',
   robe: '衣',
   amulet: '護',
+  shield: '盾',
+  bolt: 'ボ',
+  grimoire: '書',
+  catalyst: '媒',
   arrow: '矢',
 };
 
-const CATEGORY_ORDER = ['arrow', 'sword', 'katana', 'archery', 'armor', 'gauntlet', 'wand', 'robe', 'amulet'];
-const EQUIP_CATEGORY_ORDER = ['sword', 'katana', 'archery', 'armor', 'gauntlet', 'wand', 'robe', 'amulet']; // Excluding arrow
+const CATEGORY_ORDER = ['sword', 'katana', 'archery', 'armor', 'gauntlet', 'wand', 'robe', 'amulet', 'shield', 'bolt', 'grimoire', 'catalyst', 'arrow'];
+const EQUIP_CATEGORY_ORDER = ['sword', 'katana', 'archery', 'armor', 'gauntlet', 'wand', 'robe', 'amulet', 'shield', 'bolt', 'grimoire', 'catalyst', 'arrow'];
 
 // Category priority for equipment slot sorting (lower index = higher priority)
 const CATEGORY_PRIORITY: Record<string, number> = {
   armor: 0, robe: 1, shield: 2, sword: 3, katana: 4,
-  gauntlet: 5, arrow: 6, bowgun: 7, archery: 8, wand: 9,
-  book: 10, medium: 11, amulet: 12,
+  gauntlet: 5, arrow: 6, bolt: 7, archery: 8, wand: 9,
+  grimoire: 10, catalyst: 11, amulet: 12,
 };
 
 // Sort items by descending priority: Item ID (higher first), SuperRare (higher first), Enhancement (higher first)
@@ -194,9 +207,6 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   // Check for new items
   const hasNewItems = Object.values(state.party.inventory).some(variant => variant.isNew);
 
-  // Arrow count for header
-  const totalArrows = (state.party.quiverSlots[0]?.quantity ?? 0) + (state.party.quiverSlots[1]?.quantity ?? 0);
-
   return (
     <div className="flex flex-col h-screen">
       {/* Sticky Header */}
@@ -208,7 +218,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
           </div>
           <div className="text-right text-sm">
             <div className="font-medium">{state.party.deityName}</div>
-            <div className="text-xs text-gray-500">Lv.{state.party.level} | {state.party.gold}G | 🏹{totalArrows}</div>
+            <div className="text-xs text-gray-500">Lv.{state.party.level} | {state.party.gold}G</div>
           </div>
         </div>
         <div className="mt-2 flex justify-between text-xs text-gray-600">
@@ -270,18 +280,14 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
           <InventoryTab
             inventory={state.party.inventory}
             gold={state.party.gold}
-            quiverSlots={state.party.quiverSlots}
             onSellStack={actions.sellStack}
             onSetVariantStatus={actions.setVariantStatus}
-            onRemoveQuiverSlot={actions.removeQuiverSlot}
-            onAssignArrowToQuiver={actions.assignArrowToQuiver}
           />
         )}
 
         {activeTab === 'shop' && (
           <ShopTab
             gold={state.party.gold}
-            onBuyArrows={actions.buyArrows}
           />
         )}
 
@@ -1071,22 +1077,16 @@ function ExpeditionTab({
 function InventoryTab({
   inventory,
   gold,
-  quiverSlots,
   onSellStack,
   onSetVariantStatus,
-  onRemoveQuiverSlot,
-  onAssignArrowToQuiver,
 }: {
   inventory: InventoryRecord;
   gold: number;
-  quiverSlots: GameState['party']['quiverSlots'];
   onSellStack: (variantKey: string) => void;
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
-  onRemoveQuiverSlot: (slotIndex: number) => void;
-  onAssignArrowToQuiver: (variantKey: string, quantity: number) => void;
 }) {
   const [showSold, setShowSold] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('arrow');
+  const [selectedCategory, setSelectedCategory] = useState('sword');
 
   // Separate owned and sold/notown items, filtered by category
   const allOwnedItems = Object.entries(inventory).filter(([, v]) => v.status === 'owned' && v.count > 0);
@@ -1122,82 +1122,8 @@ function InventoryTab({
         ))}
       </div>
 
-      {/* Arrow category: Show quiver management and owned arrows */}
-      {selectedCategory === 'arrow' && (
-        <div className="mb-4">
-          <div className="text-sm font-medium mb-2">矢筒 (2スロット)</div>
-          <div className="space-y-2 mb-4">
-            {quiverSlots.map((slot, i) => (
-              <div key={i} className="p-2 bg-pane rounded flex justify-between items-center">
-                {slot ? (
-                  <>
-                    <div>
-                      <span className="text-sm font-medium">{slot.item.name}</span>
-                      <span className="text-sm text-gray-500"> : {slot.quantity}本</span>
-                      <span className="text-xs text-gray-400 ml-2">| {getItemStats(slot.item)}</span>
-                    </div>
-                    <button
-                      onClick={() => onRemoveQuiverSlot(i)}
-                      className="text-xs text-red-500 px-2 py-1 border border-red-300 rounded"
-                    >
-                      破棄
-                    </button>
-                  </>
-                ) : (
-                  <span className="text-sm text-gray-400">空きスロット {i + 1}</span>
-                )}
-              </div>
-            ))}
-          </div>
-
-          <div className="text-sm font-medium mb-2">所持している矢</div>
-          <div className="text-xs text-gray-500 mb-2">矢は店で購入できます。</div>
-          <div className="space-y-2 min-h-[150px] max-h-60 overflow-y-auto">
-            {filteredOwnedItems.length === 0 ? (
-              <div className="text-sm text-gray-400 text-center py-4">
-                矢を所持していません
-              </div>
-            ) : (
-              filteredOwnedItems.map(([key, variant]) => {
-                const { item, count } = variant;
-                const hasEmptySlot = quiverSlots.some(s => s === null);
-                const maxAssign = Math.min(count, item.maxStack || 99);
-                return (
-                  <div key={key} className="p-2 bg-pane rounded">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <span className="text-sm font-medium">{getItemDisplayName(item)}</span>
-                        <span className="text-sm text-gray-500"> x{count}</span>
-                        <span className="text-xs text-gray-400 ml-2">| {getItemStats(item)}</span>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => onAssignArrowToQuiver(key, Math.min(10, maxAssign))}
-                          disabled={!hasEmptySlot || count < 1}
-                          className="text-xs text-sub px-2 py-1 border border-sub rounded disabled:opacity-50"
-                        >
-                          装備(10)
-                        </button>
-                        <button
-                          onClick={() => onAssignArrowToQuiver(key, Math.min(50, maxAssign))}
-                          disabled={!hasEmptySlot || count < 1}
-                          className="text-xs text-sub px-2 py-1 border border-sub rounded disabled:opacity-50"
-                        >
-                          装備(50)
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Regular item list (non-arrow categories) */}
-      {selectedCategory !== 'arrow' && (
-        <div className="space-y-1 min-h-[280px] max-h-80 overflow-y-auto mb-4">
+      {/* Item list */}
+      <div className="space-y-1 min-h-[280px] max-h-80 overflow-y-auto mb-4">
           {filteredOwnedItems.map(([key, variant]) => {
             const { item, count, isNew } = variant;
             const enhMult = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
@@ -1229,8 +1155,7 @@ function InventoryTab({
           {filteredOwnedItems.length === 0 && (
             <div className="text-gray-400 text-sm text-center py-4">このカテゴリにアイテムがありません</div>
           )}
-        </div>
-      )}
+      </div>
 
       {/* Sold items management */}
       {allSoldItems.length > 0 && (
@@ -1271,54 +1196,16 @@ function InventoryTab({
 
 function ShopTab({
   gold,
-  onBuyArrows,
 }: {
   gold: number;
-  onBuyArrows: (arrowId: number, quantity: number) => void;
 }) {
-  const arrows = ITEMS.filter(i => i.category === 'arrow');
-
   return (
     <div>
       <div className="text-sm text-gray-500 mb-4">所持金: {gold}G</div>
 
       <div className="bg-pane rounded-lg p-4">
-        <div className="text-sm font-medium mb-3">矢を購入 (1本 = 2G)</div>
-        <div className="text-xs text-gray-500 mb-3">
-          購入した矢は所持品に追加されます。所持品タブで矢筒に装備できます。
-        </div>
-        <div className="space-y-2">
-          {arrows.map(arrow => (
-            <div key={arrow.id} className="p-2 bg-white rounded">
-              <div className="flex justify-between items-center">
-                <div>
-                  <span className="text-sm font-medium">{arrow.name}</span>
-                  <span className="text-xs text-gray-500 ml-2">
-                    | 遠攻+{arrow.rangedAttack}
-                    {arrow.elementalOffense && arrow.elementalOffense !== 'none' &&
-                      ` ${({ fire: '炎', ice: '氷', thunder: '雷' })[arrow.elementalOffense]}属性`
-                    }
-                  </span>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => onBuyArrows(arrow.id, 10)}
-                    disabled={gold < 20}
-                    className="text-xs text-sub px-2 py-1 border border-sub rounded disabled:opacity-50"
-                  >
-                    10本 (20G)
-                  </button>
-                  <button
-                    onClick={() => onBuyArrows(arrow.id, 50)}
-                    disabled={gold < 100}
-                    className="text-xs text-sub px-2 py-1 border border-sub rounded disabled:opacity-50"
-                  >
-                    50本 (100G)
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+        <div className="text-sm text-gray-500 text-center py-8">
+          現在販売しているアイテムはありません
         </div>
       </div>
     </div>

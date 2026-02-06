@@ -23,7 +23,11 @@ const CATEGORY_TO_MULTIPLIER: Record<ItemCategory, BonusType | null> = {
   wand: 'wand_multiplier',
   robe: 'robe_multiplier',
   amulet: 'amulet_multiplier',
-  arrow: null,
+  shield: 'shield_multiplier',
+  bolt: 'bolt_multiplier',
+  grimoire: 'grimoire_multiplier',
+  catalyst: 'catalyst_multiplier',
+  arrow: 'arrow_multiplier',
 };
 
 function getCharacterMultiplier(
@@ -166,11 +170,11 @@ export function computePartyStats(party: Party): {
     });
   }
 
-  // Calculate offense amplifier from leading ability
+  // Calculate offense amplifier from command ability
   let offenseAmplifier = 1.0;
-  const leadingAbility = abilities.find(a => a.id === 'leading');
-  if (leadingAbility) {
-    offenseAmplifier = leadingAbility.level === 2 ? 1.6 : 1.3;
+  const commandAbility = abilities.find(a => a.id === 'command');
+  if (commandAbility) {
+    offenseAmplifier = commandAbility.level === 2 ? 1.3 : 1.15;
   }
 
   // Calculate defense amplifiers
@@ -222,7 +226,8 @@ function getAbilityName(id: AbilityId): string {
     counter: 'カウンター',
     re_attack: '連撃',
     iaigiri: '居合斬り',
-    leading: '指揮',
+    resonance: '共鳴',
+    command: '指揮',
     m_barrier: '魔法障壁',
     null_counter: 'カウンター無効',
     unlock: '解錠',
