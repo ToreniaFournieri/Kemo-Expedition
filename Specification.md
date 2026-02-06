@@ -473,7 +473,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
   	If actor.`a.resonance`2, return 1.0 + (0.08 x (n - 1))
     Else, return 1.0.
 
-- `f.damage_calculation`: (actor: , opponent: , phase: , hit: )
+- `f.damage_calculation`: (actor: , opponent: , phase: )
 	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) ) x actor.`f.offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x party.`f.party.offense_amplifier` x `f.resonance_amplifier`)
 
   - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
@@ -545,7 +545,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 **Enemy action**
 - Enemy always moves first.
 - get `f.targeting` `f.NoA` times -> target character
-  	- If `f.hit_detection`(actor: , opponent: ,Nth_hit: the current hit index) is true, Current party.`d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase, hit: `f.NoA` )
+  	- If `f.hit_detection`(actor: , opponent: ,Nth_hit: the current hit index) is true, current party.`d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
 - If currenr party.`d.HP` =< 0, Defeat. 
 
 - **Counter:** IF character.`a.counter` and take damage in CLOSE phase, the character attacks to enemy. (using `f.hit_detection` and `f.damage_calculation`)
@@ -554,7 +554,8 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 **Player action**
 - Each party member act if he has corresponding damage source in the phase. 
 
-- Current enemy.`d.HP` -= `f.damage_calculation` (actor: character, opponent: enemy, phase: phase, hit:`f.NoA` ) x `f.NoA`
+- `f.NoA` times -> enemy
+	- If `f.hit_detection`(actor: , opponent: ,Nth_hit: the current hit index) is true, current enemy.`d.HP` -= `f.damage_calculation` (actor: character, opponent: enemy, phase: phase)
 - If enemy.`d.HP` =< 0, Victory.
 
 - **Re-attack:** IF character.`a.re-attack`, the character attacks to enemy.  (using `f.hit_detection` and `f.damage_calculation`)
