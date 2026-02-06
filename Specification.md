@@ -530,8 +530,12 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 |6| 0.44 | 0.59 | 0.70 |
 
 - `f.decay_of_accuracy`(actor: , opponent: )
-  	clamp(0.86, 0.92 + actor.'a.accuracy+v` - opponent.`a.avoidance+v`, 0.98)
+  	
 
+- `f.hit_detection`(actor: , opponent: ,Nth_hit: )
+    decay_of_accuracy = clamp(0.86, 0.90 + actor.`a.accuracy+v` - opponent.`a.avoidance+v`, 0.98)
+    effective_hit_chance = `d.accuracy_potency` x (decay_of_accuracy) ^ Nth_hit
+    If Random(0, 1) <= effective_hit_chance, result true (HIT). Else, result false (MISS).
 
 ### 6.3 Turn resolution 
 - For each phase, actions are resolved in the following order:
@@ -543,8 +547,8 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 
 **Enemy action**
 - Enemy always moves first.
-- get `f.targeting` `f.NoA` times -> target character 
-- Current party.`d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase, hit: `f.NoA` )
+- get `f.targeting` `f.NoA` times -> target character
+  	- If `f.hit_detection`(actor: , opponent: ,Nth_hit: the current hit index) is true, Current party.`d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase, hit: `f.NoA` )
 - If currenr party.`d.HP` =< 0, Defeat. 
 
 - **Counter:** IF character.`a.counter` and take damage in CLOSE phase, the character attacks to enemy. (using `f.damage_calculation`)
