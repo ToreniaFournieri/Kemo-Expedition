@@ -598,7 +598,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
   - No modal spam
   - Most actions resolve immediately
   
-### 8.1 Color Scheme
+- **Color Scheme**
 - Base colors
   - Text: Black
   - Pane / card background: Gray
@@ -607,6 +607,27 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
   - Blue (information, selection, links)
 - Accent color (~5%)
   - Dark Orange (important actions, warnings, highlights)
+
+### 8.1 Notification Logic & Display
+**Visual & Overlay (Toast)**
+- Position: bottom and left side
+- Layout: Flex-col-reverse (Newest notifications appear at the bottom, pushing older ones up).
+- Text and color:
+	- Normal: Blue/White translucent
+	- Super Rare: Dark Orange/White translucent
+- Behavior: Auto-dismiss after 5000ms. Manual dismiss on onClick.
+
+**Notification Logic**
+- Item Drops
+	- When an item drops (exclude auto-sell items), it triggers the notification. If the item is Super Rare, it switchs to the Orange/Pulse style.
+	- Logic: 伝説のショートソード triggers the rareStyle.
+  	- Animation: animate-bounce (once) + animate-pulse (continuous).
+
+- Status Changes
+	- When equipping/unequipping, it compares the old value to the new value.
+		- Positive Change: 物防↑ 24 → 52 (Blue Text)
+		- Negative Change: 近攻↓ 120 → 84 (Blue Text)
+
 
 ### 8.2 Header
 - Always fixed at the top.
