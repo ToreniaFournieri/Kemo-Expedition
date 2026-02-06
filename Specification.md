@@ -613,9 +613,9 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 - Position: bottom and left side
 - Layout: Flex-col-reverse (Newest notifications appear at the bottom, pushing older ones up).
 - Text and color:
-	- Normal style: Blue/White translucent
-	- Rare style: Dark Orange/White translucent
-- Behavior: Auto-dismiss after 5000ms. Manual dismiss on onClick.
+	- Normal style: small font size, Blue/White translucent, no border color
+	- Rare style: small font size, Dark Orange/White translucent, no border color
+- Behavior: Auto-dismiss after 5000ms. Manual dismiss on onClick. Status update dismisses previous status changes notification. (display only latest status changes)
 
 **Notification Logic**
 - Item Drops
@@ -625,9 +625,9 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 
 - Status Changes
 	- When equipping/unequipping, it compares the old value to the new value.
-		- Positive Change: 物防↑ 24 → 52 (Normal style)
-		- Negative Change: 近攻↓ 120 → 84 (Normal style)
-
+		- Positive Change: 物防↑ 24 → 52 (Normal style, rounded)
+		- Negative Change: 近攻↓ 120 → 84 (Normal style, rounded)
+	- 
 
 ### 8.2 Header
 - Always fixed at the top.
