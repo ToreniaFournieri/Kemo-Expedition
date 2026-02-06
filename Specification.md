@@ -625,9 +625,10 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 
 - Status Changes
 	- When equipping/unequipping, it compares the old value to the new value.
-		- Positive Change: ↗物防 24 → 52 (Normal style, Bold, rounded)
-		- Negative Change: ↘近攻 120 → 84 (Normal style, not Bold, rounded)
-	- 
+    - Multi-line Trigger: If an equipment change affects multiple stats, each stat change generates its own notification block.
+		- Positive Change: 物防 24 → 52 (Normal style, Bold text, rounded)
+		- Negative Change: 近攻 120 → 84 (Normal style, Normal weight text, rounded)
+
 
 ### 8.2 Header
 - Always fixed at the top.
