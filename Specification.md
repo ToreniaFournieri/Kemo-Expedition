@@ -630,10 +630,9 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 ### 8.3 Party tab
 #### 8.3.1 Displays
 - List of party members
-    	For each character: Icon, name, main Class (Sub calass).
+    	For each character: Icon, main Class (Sub calass).
 ```
 🐶
-レオン
 戦(剣)
 ```
 
@@ -727,8 +726,11 @@ Left-aligned            Right-aligned
   - Always visible on the same screen at the bottom.
   - Stacked by item variant
   - Inventory includes item category tabs:
-    - 鎧,衣,盾,剣,刀,手,矢,ボ,弓,杖,書,媒.
-    - Default: 鎧
+    - [耐久:鎧,衣,盾],[近距離攻撃:剣,刀,手],[遠距離攻撃:矢,ボ,弓],[魔法攻撃:杖,書,媒].
+    - Default: 鎧 or previously selected category of each character 
+    - Each box has two lines:
+      - First line, small and gray letters: 耐久
+      - Second line, current design: 鎧,衣,盾
     - Items in inventory matching the selected category are shown (filter)
     - Adds equipped items with icon in the list.
 
@@ -756,8 +758,8 @@ Left-aligned            Right-aligned
 ```
 宿ったロングソード x2 |近攻+31
 伝説のショートソード　x2 |近攻+22
-🐶名工のショートソード x1 |近攻+10
 名工のショートソード x3 |近攻+10
+🐶名工のショートソード x1 |近攻+10
 ```
 
 ↓(Taps "🐶名工のショートソード" to unequip it)
@@ -772,8 +774,8 @@ Left-aligned            Right-aligned
 
 ```
 宿ったロングソード x2 |近攻+31
-🐶伝説のショートソード　x1 |近攻+22
 伝説のショートソード　x1 |近攻+22
+🐶伝説のショートソード　x1 |近攻+22
 名工のショートソード x4 |近攻+10
 ```
 
@@ -789,8 +791,8 @@ Left-aligned            Right-aligned
 
 ```
 宿ったロングソード x2 |近攻+31
-🐶伝説のショートソード　x1 |近攻+22
 伝説のショートソード　x1 |近攻+22
+🐶伝説のショートソード　x1 |近攻+22
 名工のショートソード x4 |近攻+10
 ```   
 
