@@ -56,6 +56,7 @@ function addItemToInventory(
     newInventory[key] = {
       ...existing,
       count: existing.count + 1,
+      status: 'owned',
       isNew: true,
     };
   } else {
