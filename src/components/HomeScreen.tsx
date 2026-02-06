@@ -21,7 +21,8 @@ interface HomeScreenProps {
     setVariantStatus: (variantKey: string, status: 'notown') => void;
     markItemsSeen: () => void;
     resetGame: () => void;
-    addNotification: (message: string, style?: NotificationStyle, category?: NotificationCategory) => void;
+    addNotification: (message: string, style?: NotificationStyle, category?: NotificationCategory, isPositive?: boolean) => void;
+    addStatNotifications: (changes: Array<{ message: string; isPositive: boolean }>) => void;
   };
 }
 
@@ -286,7 +287,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             setEditingCharacter={setEditingCharacter}
             onUpdateCharacter={actions.updateCharacter}
             onEquipItem={actions.equipItem}
-            onAddNotification={actions.addNotification}
+            onAddStatNotifications={actions.addStatNotifications}
           />
         )}
 
@@ -334,7 +335,7 @@ function PartyTab({
   setEditingCharacter,
   onUpdateCharacter,
   onEquipItem,
-  onAddNotification,
+  onAddStatNotifications,
 }: {
   party: GameState['party'];
   partyStats: ReturnType<typeof computePartyStats>['partyStats'];
@@ -345,7 +346,7 @@ function PartyTab({
   setEditingCharacter: (i: number | null) => void;
   onUpdateCharacter: (id: number, updates: Partial<Character>) => void;
   onEquipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
-  onAddNotification: (message: string, style?: NotificationStyle, category?: NotificationCategory) => void;
+  onAddStatNotifications: (changes: Array<{ message: string; isPositive: boolean }>) => void;
 }) {
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
   const [equipCategory, setEquipCategory] = useState('armor');
@@ -365,60 +366,60 @@ function PartyTab({
 
   const prevStatsRef = useRef<typeof combatTotals | null>(null);
 
-  // Watch for stat changes after equipment - collect all changes and show as single notification
+  // Watch for stat changes after equipment - send individual notification per stat change
   useEffect(() => {
     if (prevStatsRef.current) {
       const prev = prevStatsRef.current;
-      const changes: string[] = [];
+      const changes: { message: string; isPositive: boolean }[] = [];
 
-      // Check all stat changes
+      // Check all stat changes and collect them
       if (combatTotals.physDef !== prev.physDef) {
-        const arrow = combatTotals.physDef > prev.physDef ? '↑' : '↓';
-        changes.push(`物防${arrow}${prev.physDef}→${combatTotals.physDef}`);
+        const isPositive = combatTotals.physDef > prev.physDef;
+        changes.push({ message: `物防 ${prev.physDef} → ${combatTotals.physDef}`, isPositive });
       }
       if (combatTotals.magDef !== prev.magDef) {
-        const arrow = combatTotals.magDef > prev.magDef ? '↑' : '↓';
-        changes.push(`魔防${arrow}${prev.magDef}→${combatTotals.magDef}`);
+        const isPositive = combatTotals.magDef > prev.magDef;
+        changes.push({ message: `魔防 ${prev.magDef} → ${combatTotals.magDef}`, isPositive });
       }
       if (combatTotals.hp !== prev.hp) {
-        const arrow = combatTotals.hp > prev.hp ? '↑' : '↓';
-        changes.push(`HP${arrow}${prev.hp}→${combatTotals.hp}`);
+        const isPositive = combatTotals.hp > prev.hp;
+        changes.push({ message: `HP ${prev.hp} → ${combatTotals.hp}`, isPositive });
       }
       if (combatTotals.meleeAtk !== prev.meleeAtk) {
-        const arrow = combatTotals.meleeAtk > prev.meleeAtk ? '↑' : '↓';
-        changes.push(`近攻${arrow}${prev.meleeAtk}→${combatTotals.meleeAtk}`);
+        const isPositive = combatTotals.meleeAtk > prev.meleeAtk;
+        changes.push({ message: `近攻 ${prev.meleeAtk} → ${combatTotals.meleeAtk}`, isPositive });
       }
       if (combatTotals.meleeNoA !== prev.meleeNoA) {
-        const arrow = combatTotals.meleeNoA > prev.meleeNoA ? '↑' : '↓';
-        changes.push(`近回数${arrow}${prev.meleeNoA}→${combatTotals.meleeNoA}`);
+        const isPositive = combatTotals.meleeNoA > prev.meleeNoA;
+        changes.push({ message: `近回数 ${prev.meleeNoA} → ${combatTotals.meleeNoA}`, isPositive });
       }
       if (combatTotals.rangedAtk !== prev.rangedAtk) {
-        const arrow = combatTotals.rangedAtk > prev.rangedAtk ? '↑' : '↓';
-        changes.push(`遠攻${arrow}${prev.rangedAtk}→${combatTotals.rangedAtk}`);
+        const isPositive = combatTotals.rangedAtk > prev.rangedAtk;
+        changes.push({ message: `遠攻 ${prev.rangedAtk} → ${combatTotals.rangedAtk}`, isPositive });
       }
       if (combatTotals.rangedNoA !== prev.rangedNoA) {
-        const arrow = combatTotals.rangedNoA > prev.rangedNoA ? '↑' : '↓';
-        changes.push(`遠回数${arrow}${prev.rangedNoA}→${combatTotals.rangedNoA}`);
+        const isPositive = combatTotals.rangedNoA > prev.rangedNoA;
+        changes.push({ message: `遠回数 ${prev.rangedNoA} → ${combatTotals.rangedNoA}`, isPositive });
       }
       if (combatTotals.magicalAtk !== prev.magicalAtk) {
-        const arrow = combatTotals.magicalAtk > prev.magicalAtk ? '↑' : '↓';
-        changes.push(`魔攻${arrow}${prev.magicalAtk}→${combatTotals.magicalAtk}`);
+        const isPositive = combatTotals.magicalAtk > prev.magicalAtk;
+        changes.push({ message: `魔攻 ${prev.magicalAtk} → ${combatTotals.magicalAtk}`, isPositive });
       }
       if (combatTotals.magicalNoA !== prev.magicalNoA) {
-        const arrow = combatTotals.magicalNoA > prev.magicalNoA ? '↑' : '↓';
-        changes.push(`魔回数${arrow}${prev.magicalNoA}→${combatTotals.magicalNoA}`);
+        const isPositive = combatTotals.magicalNoA > prev.magicalNoA;
+        changes.push({ message: `魔回数 ${prev.magicalNoA} → ${combatTotals.magicalNoA}`, isPositive });
       }
 
-      // Send single notification with all changes (dismisses previous stat notifications)
+      // Send all stat notifications at once (clears previous stat notifications)
       if (changes.length > 0) {
-        onAddNotification(changes.join(' '), 'normal', 'stat');
+        onAddStatNotifications(changes);
       }
     }
     prevStatsRef.current = combatTotals;
   }, [combatTotals.physDef, combatTotals.magDef, combatTotals.hp,
       combatTotals.meleeAtk, combatTotals.meleeNoA,
       combatTotals.rangedAtk, combatTotals.rangedNoA,
-      combatTotals.magicalAtk, combatTotals.magicalNoA, onAddNotification]);
+      combatTotals.magicalAtk, combatTotals.magicalNoA, onAddStatNotifications]);
   const [pendingEdits, setPendingEdits] = useState<Partial<Character> | null>(null);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
   const [lastSlotTap, setLastSlotTap] = useState<{ slot: number; time: number } | null>(null);

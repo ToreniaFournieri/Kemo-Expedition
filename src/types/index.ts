@@ -357,5 +357,6 @@ export interface GameNotification {
   message: string;
   style: NotificationStyle;
   category: NotificationCategory;
+  isPositive?: boolean; // For stat notifications: true = positive change (bold), false = negative (normal)
   createdAt: number;
 }

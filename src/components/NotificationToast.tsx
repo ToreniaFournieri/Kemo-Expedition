@@ -38,13 +38,15 @@ function NotificationItem({ notification, onDismiss }: NotificationItemProps) {
   }, [notification.id, onDismiss]);
 
   const isRare = notification.style === 'rare';
+  // Use bold for positive stat changes, normal weight for negative
+  const fontWeight = notification.isPositive === true ? 'font-bold' : notification.isPositive === false ? 'font-normal' : 'font-medium';
 
   return (
     <button
       onClick={() => onDismiss(notification.id)}
       className={`
         px-3 py-1.5 rounded-lg shadow-md cursor-pointer
-        text-xs font-medium
+        text-xs ${fontWeight}
         transition-opacity duration-300
         ${isRare
           ? 'bg-white/95 text-orange-600'
