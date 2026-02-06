@@ -528,8 +528,6 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 |5| 0.52 | 0.66 | 0.75 |
 |6| 0.44 | 0.59 | 0.70 |
 
-- `f.decay_of_accuracy`(actor: , opponent: )
-  	
 
 - `f.hit_detection`(actor: , opponent: ,Nth_hit: )
     decay_of_accuracy = clamp(0.86, 0.90 + actor.`c.accuracy+v` - opponent.`c.evasion+v`, 0.98)
@@ -550,7 +548,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
   	- If `f.hit_detection`(actor: , opponent: ,Nth_hit: the current hit index) is true, Current party.`d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase, hit: `f.NoA` )
 - If currenr party.`d.HP` =< 0, Defeat. 
 
-- **Counter:** IF character.`a.counter` and take damage in CLOSE phase, the character attacks to enemy. (using `f.damage_calculation`)
+- **Counter:** IF character.`a.counter` and take damage in CLOSE phase, the character attacks to enemy. (using `f.hit_detection` and `f.damage_calculation`)
     - Counter triggers immediately after damage resolution, regardless of turn order modifiers.
 
 **Player action**
@@ -559,7 +557,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 - Current enemy.`d.HP` -= `f.damage_calculation` (actor: character, opponent: enemy, phase: phase, hit:`f.NoA` ) x `f.NoA`
 - If enemy.`d.HP` =< 0, Victory.
 
-- **Re-attack:** IF character.`a.re-attack`, the character attacks to enemy.  (using `f.damage_calculation`)
+- **Re-attack:** IF character.`a.re-attack`, the character attacks to enemy.  (using `f.hit_detection` and `f.damage_calculation`)
 
 ### 6.4 Post battle
 
