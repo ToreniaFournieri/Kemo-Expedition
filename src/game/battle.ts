@@ -257,11 +257,12 @@ export function executeBattle(
       if (damage > 0) {
         enemyHp -= damage;
         const char = party.characters.find(c => c.id === cs.characterId);
+        const attackType = phase === 'mid' ? '魔法先制攻撃' : '先制攻撃';
         log.push({
           phase,
           actor: 'character',
           characterId: cs.characterId,
-          action: `${char?.name ?? '???'} の先制攻撃！`,
+          action: `${char?.name ?? '???'} の${attackType}！`,
           damage,
           isFirstStrike: true,
           elementalOffense: cs.elementalOffense,
@@ -351,11 +352,12 @@ export function executeBattle(
         if (damage > 0) {
           enemyHp -= damage;
           const targetChar = party.characters.find(c => c.id === charId);
+          const counterType = phase === 'mid' ? '魔法カウンター' : 'カウンター';
           log.push({
             phase,
             actor: 'character',
             characterId: charId,
-            action: `${targetChar?.name ?? '???'} のカウンター！`,
+            action: `${targetChar?.name ?? '???'} の${counterType}！`,
             damage,
             isCounter: true,
             elementalOffense: attack.charStats.elementalOffense,
@@ -388,11 +390,12 @@ export function executeBattle(
       if (damage > 0) {
         enemyHp -= damage;
         const char = party.characters.find(c => c.id === cs.characterId);
+        const attackType = phase === 'mid' ? '魔法攻撃' : '攻撃';
         log.push({
           phase,
           actor: 'character',
           characterId: cs.characterId,
-          action: `${char?.name ?? '???'} の攻撃！`,
+          action: `${char?.name ?? '???'} の${attackType}！`,
           damage,
           elementalOffense: cs.elementalOffense,
         });
@@ -408,11 +411,12 @@ export function executeBattle(
         if (damage > 0) {
           enemyHp -= damage;
           const char = party.characters.find(c => c.id === cs.characterId);
+          const reAttackType = phase === 'mid' ? '魔法連撃' : '連撃';
           log.push({
             phase,
             actor: 'character',
             characterId: cs.characterId,
-            action: `${char?.name ?? '???'} の連撃！`,
+            action: `${char?.name ?? '???'} の${reAttackType}！`,
             damage,
             isReAttack: true,
             elementalOffense: cs.elementalOffense,
