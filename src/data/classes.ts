@@ -137,7 +137,7 @@ export const CLASSES: ClassDef[] = [
     id: 'pilgrim',
     name: '巡礼者',
     mainSubBonuses: [
-      { type: 'amulet_multiplier', value: 1.4 },
+      { type: 'shield_multiplier', value: 1.4 },
       { type: 'equip_slot', value: 1 },
     ],
     mainBonuses: [

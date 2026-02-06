@@ -7,7 +7,6 @@ export const RACES: Race[] = [
     emoji: '🐶',
     stats: { vitality: 10, strength: 10, intelligence: 10, mind: 10 },
     bonuses: [
-      { type: 'amulet_multiplier', value: 1.3 },
       { type: 'shield_multiplier', value: 1.3 },
     ],
   },

@@ -55,7 +55,7 @@ export type BonusType =
   // Equipment multipliers
   | 'sword_multiplier' | 'katana_multiplier' | 'archery_multiplier'
   | 'armor_multiplier' | 'gauntlet_multiplier' | 'wand_multiplier'
-  | 'robe_multiplier' | 'amulet_multiplier'
+  | 'robe_multiplier'
   | 'shield_multiplier' | 'bolt_multiplier' | 'grimoire_multiplier'
   | 'catalyst_multiplier' | 'arrow_multiplier'
   // Slot bonuses
@@ -97,7 +97,7 @@ export interface BaseStats {
 // Item Types
 export type ItemCategory =
   | 'sword' | 'katana' | 'archery' | 'armor'
-  | 'gauntlet' | 'wand' | 'robe' | 'amulet'
+  | 'gauntlet' | 'wand' | 'robe'
   | 'shield' | 'bolt' | 'grimoire' | 'catalyst' | 'arrow';
 
 export interface ItemDef {

@@ -58,7 +58,7 @@ export const LINEAGES: Lineage[] = [
     id: 'inherited_oaths',
     name: '継誓の家',
     bonuses: [
-      { type: 'amulet_multiplier', value: 1.2 },
+      { type: 'shield_multiplier', value: 1.2 },
       { type: 'vitality', value: 1 },
     ],
   },

@@ -22,7 +22,6 @@ const CATEGORY_TO_MULTIPLIER: Record<ItemCategory, BonusType | null> = {
   gauntlet: 'gauntlet_multiplier',
   wand: 'wand_multiplier',
   robe: 'robe_multiplier',
-  amulet: 'amulet_multiplier',
   shield: 'shield_multiplier',
   bolt: 'bolt_multiplier',
   grimoire: 'grimoire_multiplier',
