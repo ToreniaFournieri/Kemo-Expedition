@@ -149,6 +149,13 @@ const CATEGORY_SHORT_NAMES: Record<string, string> = {
 const CATEGORY_ORDER = ['arrow', 'sword', 'katana', 'archery', 'armor', 'gauntlet', 'wand', 'robe', 'amulet'];
 const EQUIP_CATEGORY_ORDER = ['sword', 'katana', 'archery', 'armor', 'gauntlet', 'wand', 'robe', 'amulet']; // Excluding arrow
 
+// Category priority for equipment slot sorting (lower index = higher priority)
+const CATEGORY_PRIORITY: Record<string, number> = {
+  armor: 0, robe: 1, shield: 2, sword: 3, katana: 4,
+  gauntlet: 5, arrow: 6, bowgun: 7, archery: 8, wand: 9,
+  book: 10, medium: 11, amulet: 12,
+};
+
 // Sort items by descending priority: Item ID (higher first), SuperRare (higher first), Enhancement (higher first)
 function sortInventoryItems(items: [string, InventoryVariant][]): [string, InventoryVariant][] {
   return [...items].sort((a, b) => {
@@ -391,22 +398,22 @@ function PartyTab({
 
       {/* Character details */}
       <div className="bg-pane rounded-lg p-4 mb-4">
-        <div className="flex justify-between items-center mb-2">
+        <div className="flex justify-between items-center mb-2 gap-2">
           {editingCharacter === selectedCharacter ? (
             <input
               type="text"
               value={pendingEdits?.name ?? char.name}
               onChange={(e) => setPendingEdits({ ...pendingEdits, name: e.target.value })}
-              className="text-lg font-bold bg-transparent border-b border-sub focus:outline-none"
+              className="text-lg font-bold bg-transparent border-b border-sub focus:outline-none flex-1 min-w-0"
             />
           ) : (
             <span className="text-lg font-bold">{char.name}</span>
           )}
           {editingCharacter === selectedCharacter ? (
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-shrink-0">
               <button
                 onClick={() => setShowEditConfirm(true)}
-                className="text-sm text-white bg-sub px-4 py-1 rounded min-w-[60px]"
+                className="text-sm text-white bg-sub px-3 py-1 rounded whitespace-nowrap"
               >
                 完了
               </button>
@@ -415,7 +422,7 @@ function PartyTab({
                   setPendingEdits(null);
                   setEditingCharacter(null);
                 }}
-                className="text-sm text-gray-600 bg-gray-200 px-4 py-1 rounded min-w-[60px]"
+                className="text-sm text-gray-600 bg-gray-200 px-3 py-1 rounded whitespace-nowrap"
               >
                 取消
               </button>
@@ -708,14 +715,30 @@ function PartyTab({
           </span>
         </div>
         <div className="space-y-2">
-          {Array.from({ length: stats.maxEquipSlots }).map((_, i) => {
-            const item = char.equipment[i];
-            return (
+          {(() => {
+            // Build sorted list of equipment slots
+            const slots = Array.from({ length: stats.maxEquipSlots }).map((_, i) => ({
+              slotIndex: i,
+              item: char.equipment[i],
+            }));
+            // Sort by category priority, then item ID, super rare, enhancement
+            slots.sort((a, b) => {
+              if (!a.item && !b.item) return a.slotIndex - b.slotIndex;
+              if (!a.item) return 1;
+              if (!b.item) return -1;
+              const catA = CATEGORY_PRIORITY[a.item.category] ?? 99;
+              const catB = CATEGORY_PRIORITY[b.item.category] ?? 99;
+              if (catA !== catB) return catA - catB;
+              if (a.item.id !== b.item.id) return b.item.id - a.item.id;
+              if (a.item.superRare !== b.item.superRare) return b.item.superRare - a.item.superRare;
+              return b.item.enhancement - a.item.enhancement;
+            });
+            return slots.map(({ slotIndex, item }) => (
               <button
-                key={i}
-                onClick={() => handleSlotTap(i)}
+                key={slotIndex}
+                onClick={() => handleSlotTap(slotIndex)}
                 className={`w-full p-2 text-left border rounded text-sm bg-white ${
-                  selectingSlot === i ? 'border-sub' : 'border-gray-200'
+                  selectingSlot === slotIndex ? 'border-sub' : 'border-gray-200'
                 }`}
               >
                 {item ? (
@@ -727,11 +750,11 @@ function PartyTab({
                     <span className="text-xs text-gray-400">[{CATEGORY_NAMES[item.category]}]</span>
                   </div>
                 ) : (
-                  <span className="text-gray-400">空きスロット {i + 1}</span>
+                  <span className="text-gray-400">空きスロット</span>
                 )}
               </button>
-            );
-          })}
+            ));
+          })()}
         </div>
       </div>
 
