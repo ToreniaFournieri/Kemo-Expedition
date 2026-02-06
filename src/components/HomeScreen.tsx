@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant } from '../types';
+import { useState, useEffect, useRef } from 'react';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { DUNGEONS } from '../data/dungeons';
 import { RACES } from '../data/races';
@@ -21,6 +21,7 @@ interface HomeScreenProps {
     setVariantStatus: (variantKey: string, status: 'notown') => void;
     markItemsSeen: () => void;
     resetGame: () => void;
+    addNotification: (message: string, style?: NotificationStyle) => void;
   };
 }
 
@@ -189,8 +190,25 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const [activeTab, setActiveTab] = useState<Tab>('party');
   const [selectedCharacter, setSelectedCharacter] = useState<number>(0);
   const [editingCharacter, setEditingCharacter] = useState<number | null>(null);
+  const prevLogRef = useRef<typeof state.lastExpeditionLog>(null);
 
   const { partyStats, characterStats } = computePartyStats(state.party);
+
+  // Item drop notifications after expedition
+  useEffect(() => {
+    if (state.lastExpeditionLog && state.lastExpeditionLog !== prevLogRef.current) {
+      // Show notification for each reward (non-auto-sold items)
+      for (const item of state.lastExpeditionLog.rewards) {
+        const isSuperRare = item.superRare > 0;
+        const itemName = getItemDisplayName(item);
+        actions.addNotification(
+          `${itemName} を入手!`,
+          isSuperRare ? 'rare' : 'normal'
+        );
+      }
+    }
+    prevLogRef.current = state.lastExpeditionLog;
+  }, [state.lastExpeditionLog, actions]);
   const LEVEL_EXP = [
     0, 100, 250, 450, 700, 1000, 1400, 1900, 2500, 3200,
     4000, 5000, 6200, 7600, 9200, 11000, 13000, 15500, 18500, 22000,
@@ -260,6 +278,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         {activeTab === 'party' && (
           <PartyTab
             party={state.party}
+            partyStats={partyStats}
             characterStats={characterStats}
             selectedCharacter={selectedCharacter}
             setSelectedCharacter={setSelectedCharacter}
@@ -267,6 +286,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             setEditingCharacter={setEditingCharacter}
             onUpdateCharacter={actions.updateCharacter}
             onEquipItem={actions.equipItem}
+            onAddNotification={actions.addNotification}
           />
         )}
 
@@ -306,6 +326,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
 
 function PartyTab({
   party,
+  partyStats,
   characterStats,
   selectedCharacter,
   setSelectedCharacter,
@@ -313,8 +334,10 @@ function PartyTab({
   setEditingCharacter,
   onUpdateCharacter,
   onEquipItem,
+  onAddNotification,
 }: {
   party: GameState['party'];
+  partyStats: ReturnType<typeof computePartyStats>['partyStats'];
   characterStats: ReturnType<typeof computePartyStats>['characterStats'];
   selectedCharacter: number;
   setSelectedCharacter: (i: number) => void;
@@ -322,9 +345,63 @@ function PartyTab({
   setEditingCharacter: (i: number | null) => void;
   onUpdateCharacter: (id: number, updates: Partial<Character>) => void;
   onEquipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
+  onAddNotification: (message: string, style?: NotificationStyle) => void;
 }) {
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
   const [equipCategory, setEquipCategory] = useState('armor');
+
+  // Calculate current attack totals
+  const attackTotals = {
+    melee: characterStats.reduce((sum, c) => sum + c.meleeAttack, 0),
+    ranged: characterStats.reduce((sum, c) => sum + c.rangedAttack, 0),
+    magical: characterStats.reduce((sum, c) => sum + c.magicalAttack, 0),
+  };
+
+  const prevStatsRef = useRef<{ partyStats: typeof partyStats; attacks: typeof attackTotals } | null>(null);
+
+  // Watch for stat changes after equipment
+  useEffect(() => {
+    if (prevStatsRef.current) {
+      const prev = prevStatsRef.current;
+
+      // Check physical defense changes
+      if (partyStats.physicalDefense !== prev.partyStats.physicalDefense) {
+        const arrow = partyStats.physicalDefense > prev.partyStats.physicalDefense ? '↑' : '↓';
+        onAddNotification(`物防${arrow} ${prev.partyStats.physicalDefense} → ${partyStats.physicalDefense}`);
+      }
+
+      // Check magical defense changes
+      if (partyStats.magicalDefense !== prev.partyStats.magicalDefense) {
+        const arrow = partyStats.magicalDefense > prev.partyStats.magicalDefense ? '↑' : '↓';
+        onAddNotification(`魔防${arrow} ${prev.partyStats.magicalDefense} → ${partyStats.magicalDefense}`);
+      }
+
+      // Check HP changes
+      if (partyStats.hp !== prev.partyStats.hp) {
+        const arrow = partyStats.hp > prev.partyStats.hp ? '↑' : '↓';
+        onAddNotification(`HP${arrow} ${prev.partyStats.hp} → ${partyStats.hp}`);
+      }
+
+      // Check melee attack changes
+      if (attackTotals.melee !== prev.attacks.melee) {
+        const arrow = attackTotals.melee > prev.attacks.melee ? '↑' : '↓';
+        onAddNotification(`近攻${arrow} ${prev.attacks.melee} → ${attackTotals.melee}`);
+      }
+
+      // Check ranged attack changes
+      if (attackTotals.ranged !== prev.attacks.ranged) {
+        const arrow = attackTotals.ranged > prev.attacks.ranged ? '↑' : '↓';
+        onAddNotification(`遠攻${arrow} ${prev.attacks.ranged} → ${attackTotals.ranged}`);
+      }
+
+      // Check magical attack changes
+      if (attackTotals.magical !== prev.attacks.magical) {
+        const arrow = attackTotals.magical > prev.attacks.magical ? '↑' : '↓';
+        onAddNotification(`魔攻${arrow} ${prev.attacks.magical} → ${attackTotals.magical}`);
+      }
+    }
+    prevStatsRef.current = { partyStats, attacks: attackTotals };
+  }, [partyStats, attackTotals.melee, attackTotals.ranged, attackTotals.magical, onAddNotification]);
   const [pendingEdits, setPendingEdits] = useState<Partial<Character> | null>(null);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
   const [lastSlotTap, setLastSlotTap] = useState<{ slot: number; time: number } | null>(null);

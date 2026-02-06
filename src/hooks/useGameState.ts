@@ -1,4 +1,4 @@
-import { useReducer, useCallback, useEffect } from 'react';
+import { useReducer, useCallback, useEffect, useState } from 'react';
 import {
   GameState,
   Item,
@@ -11,6 +11,8 @@ import {
   ExpeditionLogEntry,
   InventoryRecord,
   getVariantKey,
+  GameNotification,
+  NotificationStyle,
 } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
@@ -20,7 +22,7 @@ import { drawFromBag, refillBagIfEmpty, createRewardBag, createEnhancementBag, c
 import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 
-const BUILD_NUMBER = 24;
+const BUILD_NUMBER = 25;
 const STORAGE_KEY = 'kemo-expedition-save';
 
 // Helper to calculate sell price for an item
@@ -560,11 +562,28 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
 export function useGameState() {
   const [state, dispatch] = useReducer(gameReducer, null, createInitialState);
+  const [notifications, setNotifications] = useState<GameNotification[]>([]);
 
   // Save state to localStorage whenever it changes
   useEffect(() => {
     saveState(state);
   }, [state]);
+
+  // Add notification helper
+  const addNotification = useCallback((message: string, style: NotificationStyle = 'normal') => {
+    const notification: GameNotification = {
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      message,
+      style,
+      createdAt: Date.now(),
+    };
+    setNotifications(prev => [...prev, notification]);
+  }, []);
+
+  // Dismiss notification helper
+  const dismissNotification = useCallback((id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  }, []);
 
   const actions = {
     selectDungeon: useCallback((dungeonId: number) => {
@@ -598,7 +617,10 @@ export function useGameState() {
     resetGame: useCallback(() => {
       dispatch({ type: 'RESET_GAME' });
     }, []),
+
+    addNotification,
+    dismissNotification,
   };
 
-  return { state, actions, bags: state.bags };
+  return { state, actions, bags: state.bags, notifications };
 }
