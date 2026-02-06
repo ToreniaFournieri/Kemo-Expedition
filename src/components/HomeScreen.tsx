@@ -235,7 +235,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-lg font-bold">ケモの冒険</h1>
-            <div className="text-xs text-gray-500">v0.1.0 ({state.buildNumber})</div>
+            <div className="text-xs text-gray-500">v0.1.4 ({state.buildNumber})</div>
           </div>
           <div className="text-right text-sm">
             <div className="font-medium">{state.party.deityName}</div>

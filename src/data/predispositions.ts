@@ -7,15 +7,13 @@ export const PREDISPOSITIONS: Predisposition[] = [
     bonuses: [
       { type: 'vitality', value: 2 },
       { type: 'armor_multiplier', value: 1.1 },
-      { type: 'shield_multiplier', value: 1.1 },
     ],
   },
   {
     id: 'agile',
     name: '俊敏',
     bonuses: [
-      { type: 'gauntlet_multiplier', value: 1.2 },
-      { type: 'pursuit', value: 0.1 },
+      { type: 'evasion', value: 0.01 },
     ],
   },
   {
@@ -23,16 +21,14 @@ export const PREDISPOSITIONS: Predisposition[] = [
     name: '聡明',
     bonuses: [
       { type: 'wand_multiplier', value: 1.2 },
-      { type: 'catalyst_multiplier', value: 1.1 },
     ],
   },
   {
     id: 'dexterous',
     name: '器用',
     bonuses: [
-      { type: 'archery_multiplier', value: 1.2 },
-      { type: 'arrow_multiplier', value: 1.1 },
-      { type: 'bolt_multiplier', value: 1.1 },
+      { type: 'accuracy', value: 0.01 },
+      { type: 'catalyst_multiplier', value: 1.2 },
     ],
   },
   {
@@ -40,15 +36,16 @@ export const PREDISPOSITIONS: Predisposition[] = [
     name: '騎士道',
     bonuses: [
       { type: 'sword_multiplier', value: 1.2 },
-      { type: 'shield_multiplier', value: 1.1 },
+      { type: 'bolt_multiplier', value: 1.1 },
     ],
   },
   {
     id: 'shikon',
     name: '士魂',
     bonuses: [
-      { type: 'strength', value: 2 },
+      { type: 'strength', value: 1 },
       { type: 'katana_multiplier', value: 1.1 },
+      { type: 'arrow_multiplier', value: 1.2 },
     ],
   },
   {
@@ -56,7 +53,7 @@ export const PREDISPOSITIONS: Predisposition[] = [
     name: '追求',
     bonuses: [
       { type: 'intelligence', value: 2 },
-      { type: 'grimoire_multiplier', value: 1.1 },
+      { type: 'robe_multiplier', value: 1.1 },
     ],
   },
   {
@@ -70,7 +67,7 @@ export const PREDISPOSITIONS: Predisposition[] = [
     id: 'persistent',
     name: '忍耐',
     bonuses: [
-      { type: 'mind', value: 2 },
+      { type: 'mind', value: 1 },
       { type: 'robe_multiplier', value: 1.1 },
     ],
   },

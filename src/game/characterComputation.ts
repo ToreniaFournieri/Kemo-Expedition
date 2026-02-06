@@ -40,6 +40,8 @@ interface BonusCollection {
   caster: number;
   penet: number;
   pursuit: number;
+  accuracy: number;
+  evasion: number;
   abilities: Map<AbilityId, number>;
 }
 
@@ -93,6 +95,12 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
       case 'pursuit':
         collection.pursuit += bonus.value;
         break;
+      case 'accuracy':
+        collection.accuracy += bonus.value;
+        break;
+      case 'evasion':
+        collection.evasion += bonus.value;
+        break;
       case 'ability':
         if (bonus.abilityId) {
           const currentLevel = collection.abilities.get(bonus.abilityId) ?? 0;
@@ -129,6 +137,8 @@ export function computeCharacterStats(
     caster: 0,
     penet: 0,
     pursuit: 0,
+    accuracy: 0,
+    evasion: 0,
     abilities: new Map(),
   };
 
@@ -216,6 +226,10 @@ export function computeCharacterStats(
   meleeAttack = meleeAttack * (baseStats.strength / 10);
   magicalAttack = magicalAttack * (baseStats.intelligence / 10);
 
+  // Add pursuit bonus to ranged NoA
+  // d.ranged_NoA = 0 + c.pursuit+v bonuses + Item Bonuses x its c.multiplier
+  rangedNoA += collection.pursuit;
+
   // Add caster bonus to magical NoA
   const magicalNoA = collection.caster;
 
@@ -260,22 +274,17 @@ export function computeCharacterStats(
   }
 
   // Calculate attack potency based on row position
-  const ATTACK_POTENCY: Record<number, number> = {
-    1: 1.00, 2: 0.85, 3: 0.72, 4: 0.61, 5: 0.52, 6: 0.44,
-  };
-  let attackPotency = ATTACK_POTENCY[row] ?? 1.0;
-
-  // Hunter ability increases attack potency
+  // Normal decay: 15% per step (1.0 * 0.85^(row-1))
+  // Hunter1 decay: 10% per step (1.0 * 0.90^(row-1))
+  // Hunter2 decay: 7% per step (1.0 * 0.93^(row-1))
   const hunterLevel = collection.abilities.get('hunter');
-  if (hunterLevel) {
-    const hunterBonus = hunterLevel === 3 ? 0.15 : hunterLevel === 2 ? 0.10 : 0.05;
-    attackPotency = Math.min(1.0, attackPotency + hunterBonus);
+  let decayRate = 0.85; // Normal: 15% decay
+  if (hunterLevel === 2) {
+    decayRate = 0.93; // Hunter2: 7% decay
+  } else if (hunterLevel === 1) {
+    decayRate = 0.90; // Hunter1: 10% decay
   }
-
-  // Apply pursuit bonus to attack potency
-  if (collection.pursuit > 0) {
-    attackPotency = Math.min(1.0, attackPotency + collection.pursuit);
-  }
+  const attackPotency = Math.pow(decayRate, row - 1);
 
   return {
     characterId: character.id,
@@ -295,6 +304,8 @@ export function computeCharacterStats(
     elementalOffense,
     elementalOffenseValue,
     attackPotency,
+    accuracyBonus: collection.accuracy,
+    evasionBonus: collection.evasion,
   };
 }
 

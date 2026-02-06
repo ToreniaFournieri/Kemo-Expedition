@@ -3,17 +3,17 @@ import { GameNotification } from '../types';
 
 interface NotificationToastProps {
   notifications: GameNotification[];
-  onDismiss: (id: string) => void;
+  onDismissAll: () => void;
 }
 
-export function NotificationToast({ notifications, onDismiss }: NotificationToastProps) {
+export function NotificationToast({ notifications, onDismissAll }: NotificationToastProps) {
   return (
-    <div className="fixed bottom-4 left-4 flex flex-col-reverse gap-1 z-50 max-w-xs">
+    <div className="fixed bottom-4 left-4 flex flex-col-reverse gap-1 z-50">
       {notifications.map((notification) => (
         <NotificationItem
           key={notification.id}
           notification={notification}
-          onDismiss={onDismiss}
+          onDismissAll={onDismissAll}
         />
       ))}
     </div>
@@ -22,20 +22,20 @@ export function NotificationToast({ notifications, onDismiss }: NotificationToas
 
 interface NotificationItemProps {
   notification: GameNotification;
-  onDismiss: (id: string) => void;
+  onDismissAll: () => void;
 }
 
-function NotificationItem({ notification, onDismiss }: NotificationItemProps) {
+function NotificationItem({ notification, onDismissAll }: NotificationItemProps) {
   useEffect(() => {
     // Auto-dismiss after 5000ms
     const dismissTimer = setTimeout(() => {
-      onDismiss(notification.id);
+      onDismissAll();
     }, 5000);
 
     return () => {
       clearTimeout(dismissTimer);
     };
-  }, [notification.id, onDismiss]);
+  }, [notification.id, onDismissAll]);
 
   const isRare = notification.style === 'rare';
   // Use bold for positive stat changes, normal weight for negative
@@ -43,10 +43,10 @@ function NotificationItem({ notification, onDismiss }: NotificationItemProps) {
 
   return (
     <button
-      onClick={() => onDismiss(notification.id)}
+      onClick={onDismissAll}
       className={`
         px-3 py-1.5 rounded-lg shadow-md cursor-pointer
-        text-xs ${fontWeight}
+        text-xs ${fontWeight} w-fit
         transition-opacity duration-300
         ${isRare
           ? 'bg-white/95 text-orange-600'
