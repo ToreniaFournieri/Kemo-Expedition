@@ -347,3 +347,13 @@ export const LEVEL_EQUIP_SLOTS: Record<number, number> = {
 };
 
 export const MAX_LEVEL = 29;
+
+// Notification Types
+export type NotificationStyle = 'normal' | 'rare';
+
+export interface GameNotification {
+  id: string;
+  message: string;
+  style: NotificationStyle;
+  createdAt: number;
+}
