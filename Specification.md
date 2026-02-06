@@ -613,20 +613,20 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 - Position: bottom and left side
 - Layout: Flex-col-reverse (Newest notifications appear at the bottom, pushing older ones up).
 - Text and color:
-	- Normal: Blue/White translucent
-	- Super Rare: Dark Orange/White translucent
+	- Normal style: Blue/White translucent
+	- Rare style: Dark Orange/White translucent
 - Behavior: Auto-dismiss after 5000ms. Manual dismiss on onClick.
 
 **Notification Logic**
 - Item Drops
-	- When an item drops (exclude auto-sell items), it triggers the notification. If the item is Super Rare, it switchs to the Orange/Pulse style.
+	- When an item drops (exclude auto-sell items), it triggers the notification with Normal style. If the item is Super Rare, The style switchs to Rare style.
 	- Logic: 伝説のショートソード triggers the rareStyle.
   	- Animation: animate-bounce (once) + animate-pulse (continuous).
 
 - Status Changes
 	- When equipping/unequipping, it compares the old value to the new value.
-		- Positive Change: 物防↑ 24 → 52 (Blue Text)
-		- Negative Change: 近攻↓ 120 → 84 (Blue Text)
+		- Positive Change: 物防↑ 24 → 52 (Normal style)
+		- Negative Change: 近攻↓ 120 → 84 (Normal style)
 
 
 ### 8.2 Header
