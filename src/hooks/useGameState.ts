@@ -23,7 +23,7 @@ import { drawFromBag, refillBagIfEmpty, createRewardBag, createEnhancementBag, c
 import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 
-const BUILD_NUMBER = 27;
+const BUILD_NUMBER = 28;
 const STORAGE_KEY = 'kemo-expedition-save';
 
 // Helper to calculate sell price for an item
@@ -575,13 +575,15 @@ export function useGameState() {
   const addNotification = useCallback((
     message: string,
     style: NotificationStyle = 'normal',
-    category: NotificationCategory = 'item'
+    category: NotificationCategory = 'item',
+    isPositive?: boolean
   ) => {
     const notification: GameNotification = {
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       message,
       style,
       category,
+      isPositive,
       createdAt: Date.now(),
     };
     setNotifications(prev => {
@@ -590,6 +592,26 @@ export function useGameState() {
         ? prev.filter(n => n.category !== 'stat')
         : prev;
       return [...filtered, notification];
+    });
+  }, []);
+
+  // Add multiple stat notifications at once (clears previous stat notifications)
+  const addStatNotifications = useCallback((
+    changes: Array<{ message: string; isPositive: boolean }>
+  ) => {
+    const now = Date.now();
+    const newNotifications: GameNotification[] = changes.map((change, index) => ({
+      id: `${now}-${index}-${Math.random().toString(36).substr(2, 9)}`,
+      message: change.message,
+      style: 'normal' as NotificationStyle,
+      category: 'stat' as NotificationCategory,
+      isPositive: change.isPositive,
+      createdAt: now,
+    }));
+    setNotifications(prev => {
+      // Clear all previous stat notifications
+      const filtered = prev.filter(n => n.category !== 'stat');
+      return [...filtered, ...newNotifications];
     });
   }, []);
 
@@ -632,6 +654,7 @@ export function useGameState() {
     }, []),
 
     addNotification,
+    addStatNotifications,
     dismissNotification,
   };
 
