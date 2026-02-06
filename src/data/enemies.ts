@@ -418,9 +418,9 @@ export const ENEMIES: EnemyDef[] = [
     id: 45, type: 'boss', poolId: 0,
     name: '雷神ラミエル',
     hp: 1200,
-    rangedAttack: 70, rangedNoA: 4,
-    magicalAttack: 110, magicalNoA: 5,
-    meleeAttack: 105, meleeNoA: 3,
+    rangedAttack: 120, rangedNoA: 10,
+    magicalAttack: 200, magicalNoA: 7,
+    meleeAttack: 280, meleeNoA: 16,
     rangedAttackAmplifier: 1.3, magicalAttackAmplifier: 1.5, meleeAttackAmplifier: 1.2,
     physicalDefense: 39, magicalDefense: 49,  // Tier 5 weapons needed (sword 40, wand 50)
     elementalOffense: 'thunder',
