@@ -24,7 +24,6 @@
 | `f.`  | **F**unction (Logic/Calculated value) |
 | `g.`  | Ba**g** Randomization |
 | `i.`  | **I**tem Category |
-| `h.`  | **H**it (Accuracy and Evasion)|
 | `p.`  | **P**arty/Expedition Instance Data |
 | `r.`  | Elemental **R**esistance Attribute |
 | `s.`  | Item **S**tate |
@@ -111,14 +110,14 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 |predisposition | bonus |
 |-----|-----------|
 |頑強 (Sturdy)|`b.vitality+2`,  `c.armor_x1.1`|
-|俊敏 (Agile)|`c.gauntlet_x1.2`, `c.archery_x1.2` |
+|俊敏 (Agile)| `c.evasion+0.01` |
 |聡明 (Brilliant)|`c.wand_x1.2`|
-|器用 (Dexterous)|`c.arrow_x1.2`, `c.catalyst_x1.2`|
+|器用 (Dexterous)|`c.accuracy+0.01`, `c.catalyst_x1.2`|
 |騎士道 (Chivalric)|`c.sword_x1.2`, `c.bolt_x1.1`|
 |士魂 (Shikon)|`b.strength+1`, `c.katana_x1.1`, `c.arrow_x1.2`|
 |追求 (Pursuing)|`b.intelligence+2`, `c.robe_x1.1`|
 |商才 (Canny)|`c.equip_slot+1`|
-|忍耐(Persistent)|`b.mind+2`, `c.robe_x1.1`|
+|忍耐(Persistent)|`b.mind+1`, `c.robe_x1.1`|
 
 - **lineage(家系):**
 
@@ -533,7 +532,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
   	
 
 - `f.hit_detection`(actor: , opponent: ,Nth_hit: )
-    decay_of_accuracy = clamp(0.86, 0.90 + actor.`a.accuracy+v` - opponent.`a.avoidance+v`, 0.98)
+    decay_of_accuracy = clamp(0.86, 0.90 + actor.`c.accuracy+v` - opponent.`c.evasion+v`, 0.98)
     effective_hit_chance = `d.accuracy_potency` x (decay_of_accuracy) ^ Nth_hit
     If Random(0, 1) <= effective_hit_chance, result true (HIT). Else, result false (MISS).
 
@@ -678,7 +677,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
   - `f.display_ranged_offense` = If `d.ranged_attack` or `d.ranged_NoA` > 0, displays 遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(phase: LONG)). Else (none).
   - `f.display_magical_offense` = If `d.magical_attack` or `d.magical_NoA` > 0, displays 魔法攻撃:`d.magical_attack` x `d.magical_NoA`回(x`f.offense_amplifier`(phase: MID)). Else (none).
   - `f.display_melee_offense` = If `d.melee_attack` or `d.melee_NoA` > 0, displays 近接攻撃:`d.melee_attack` x `d.melee_NoA`回(x`f.offense_amplifier`(phase: CLOSE)). Else (none).	
-  - `f.display_accuracy` = If `d.ranged_NoA` or `d.melee_NoA` > 0, displays 命中率: `d.accuracy_potency`　x 100 % (減衰: x (0.90 + `h.accuracy+v`)).  (ex. has `h.accuracy+0.02` and `h.accuracy+0.01`, then 0.90 + 0.02 + 0.01 -> 0.93 )
+  - `f.display_accuracy` = If `d.ranged_NoA` or `d.melee_NoA` > 0, displays 命中率: `d.accuracy_potency`　x 100 % (減衰: x (0.90 + `c.accuracy+v`)).  (ex. has `c.accuracy+0.02` and `c.accuracy+0.01`, then 0.90 + 0.02 + 0.01 -> 0.93 )
 
 - *UI Formatting Note:* When displaying aggregated c.multipliers (e.g., 鎧 x1.8), always round the internal product to the first decimal place for a cleaner interface.
 - 
