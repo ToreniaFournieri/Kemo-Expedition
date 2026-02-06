@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.1.3 - SPECIFICATION
+# KEMO EXPEDITION v0.1.4 - SPECIFICATION
 
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
@@ -16,17 +16,18 @@
 
 | Prefix | Description / Definition |
 |-------|-------------------------|
-| `a.`   | **A**bility (Passive/Active) |
-| `b.`   | **B**ase Status (Core attributes) |
-| `c.`   | **C**lass/Character Bonus (Modifiers) |
-| `d.`   | **D**uel Status (Current combat values) |
-| `e.`   | **E**lemental Offense Attribute |
-| `f.`   | **F**unction (Logic/Calculated value) |
-| `g.` | Ba**g** Randomization |
-| `i.`   | **I**tem Category |
-| `p.`   | **P**arty/Expedition Instance Data |
-| `r.`   | Elemental **R**esistance Attribute |
-| `s.`   | Item **S**tate |
+| `a.`  | **A**bility (Passive/Active) |
+| `b.`  | **B**ase Status (Core attributes) |
+| `c.`  | **C**lass/Character Bonus (Modifiers) |
+| `d.`  | **D**uel Status (Current combat values) |
+| `e.`  | **E**lemental Offense Attribute |
+| `f.`  | **F**unction (Logic/Calculated value) |
+| `g.`  | Ba**g** Randomization |
+| `i.`  | **I**tem Category |
+| `h.`  | **H**it (Accuracy and Evasion)|
+| `p.`  | **P**arty/Expedition Instance Data |
+| `r.`  | Elemental **R**esistance Attribute |
+| `s.`  | Item **S**tate |
 
 
 ### 2.1 Global constants
@@ -340,11 +341,13 @@ inventory = {
     - IF the character has `a.iaigiri`, halve these number of attacks, round up. 
 
 - character.`f.offense_amplifier` (phase: )
-  - If phase is LONG,  return: `d.attack_potency`.
-  - If phase is MID, return: 1.0 (Fixed value)
   - If phase is CLOSE,
-    - If character.`a.iaigiri`, return  `d.attack_potency` x 2.0.
-    - Else, return `d.attack_potency`.
+    - If character.`a.iaigiri`, return 2.0.
+
+- character.`f.accuracy_amplifier` (phase: )
+  - If phase is LONG,  return: `d.accuracy_potency`.
+  - If phase is MID, return: 1.0 (Fixed value)
+  - If phase is CLOSE, return `d.accuracy_potency`.
 
 - character.`f.elemental_offense_attribute`
   - Default is 1. If the damage type has `elemental_offense_attribute`, multiply x V. (ex. fire arrow has `e.fire` and its value is 1.2, multiply 1.2 )
@@ -436,14 +439,14 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 
 ```
 戦闘ログ:
-[距離] 敵が　対象　に行動名(N回)！ (icon 数値 in dark orange)
-[距離] 味方:行動主 の行動名(N回)！ (icon 数値　in Blue)
+[距離] 敵が　対象　に行動名(N回中M回ヒット)！ (icon 数値 in dark orange)
+[距離] 味方:行動主 の行動名(N回M回ヒット)！ (icon 数値　in Blue)
 
-[遠] ミミ の攻撃(4回)！              (🏹 120)
-[魔] セルヴァ の攻撃(2回)！            (🪄 100)
-[近] 敵: 森の女王 が　キツネ丸 に攻撃(2回)！ (⚔ 36)
-[近] 敵: 森の女王 が　ミミ に攻撃(1回)！   (⚔ 20)
-[近] キツネ丸 のカウンター(8回)！        (⚔ 367)
+[遠] ミミ の攻撃(4回中3回命中)！              (🏹 120)
+[魔] セルヴァ の攻撃(2回中2回命中)！            (🪄 100)
+[近] 敵: 森の女王 が　キツネ丸 に攻撃(2回中2回ヒット)！ (⚔ 36)
+[近] 敵: 森の女王 が　ミミ に攻撃(2回中1回ヒット)！   (⚔ 20)
+[近] キツネ丸 のカウンター(8回中5回ヒット)！        (⚔ 367)
 ```
 
 ## 6. BATTLE
@@ -509,13 +512,13 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
     - The drawn number corresponds to row index (1–6).
     - The character currently occupying that row is selected as the target.
 
-- `d.attack_potency` (Offensive Multiplier)
-  - A global damage modifier applied to a unit’s final output based on their current row position.
+- `d.accuracy_potency` 
+  - A global accuracy modifier applied to a unit’s final output based on their current row position.
   - Row-based modifiers apply only to player characters. Enemies are treated as having fixed potency (1.0).
-  - Row-based `d.attack_potency` is applied only during LONG and CLOSE phases.
-  - MID phase ignores row-based attack potency, so has fixed potency (1.0).
+  - Row-based `d.accuracy_potency` is applied only during LONG and CLOSE phases.
+  - MID phase ignores row-based accuracy potency, so has fixed potency (1.0).
 
-- **`d.attack_potency`**
+- **`d.accuracy_potency`**
 
 |row | normal | `a.hunter`1 | `a.hunter`2 |
 |---|---|---|---|
@@ -525,6 +528,9 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 |4| 0.61 | 0.73 | 0.80 |
 |5| 0.52 | 0.66 | 0.75 |
 |6| 0.44 | 0.59 | 0.70 |
+
+- `f.decay_of_accuracy`(actor: , opponent: )
+  	clamp(0.86, 0.92 + actor.'a.accuracy+v` - opponent.`a.avoidance+v`, 0.98)
 
 
 ### 6.3 Turn resolution 
@@ -668,6 +674,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
   - `f.display_ranged_offense` = If `d.ranged_attack` or `d.ranged_NoA` > 0, displays 遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(phase: LONG)). Else (none).
   - `f.display_magical_offense` = If `d.magical_attack` or `d.magical_NoA` > 0, displays 魔法攻撃:`d.magical_attack` x `d.magical_NoA`回(x`f.offense_amplifier`(phase: MID)). Else (none).
   - `f.display_melee_offense` = If `d.melee_attack` or `d.melee_NoA` > 0, displays 近接攻撃:`d.melee_attack` x `d.melee_NoA`回(x`f.offense_amplifier`(phase: CLOSE)). Else (none).	
+  - `f.display_accuracy` = If `d.ranged_NoA` or `d.melee_NoA` > 0, displays 命中率: `d.accuracy_potency`　x 100 % (減衰: x (0.90 + `h.accuracy+v`)).  (ex. has `h.accuracy+0.02` and `h.accuracy+0.01`, then 0.90 + 0.02 + 0.01 -> 0.93 )
 
 - *UI Formatting Note:* When displaying aggregated c.multipliers (e.g., 鎧 x1.8), always round the internal product to the first decimal place for a cleaner interface.
 - 
@@ -678,6 +685,7 @@ Name      [編集]
 `f.display_ranged_offense`    属性攻撃:`f.elemental_offense_attribute`.name (x `f.elemental_offense_attribute`.value )
 `f.display_magical_offense`      魔法防御:`d.magical_defense`
 `f.display_melee_offense`     物理防御:`d.physical_defense`
+`f.display_accuracy` 
 ボーナス: `c.` (ex. 護符x1.3, 弓x1.1 鎧x2.4, 剣x1.4, 根性+1, 装備+1, 体+3)
 特殊能力:
 `a.` (ex. 守護者: パーティへの物理ダメージ × 3/5 )
@@ -690,7 +698,7 @@ Name      [編集]
 —————
 Left-aligned            Right-aligned
 近接攻撃:98 x 4回(x1.00)     属性:無(x1.0)
-                             物防:108
+命中率: 85% (減衰: x0.90)     物防:108
                               魔防:56
 —————
 ボーナス: 護x1.3, 弓x1.1, 鎧x1.8, 装備+1, 根性+1, 体+3
