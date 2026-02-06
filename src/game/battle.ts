@@ -19,8 +19,6 @@ interface BattleContext {
   characterStats: ComputedCharacterStats[];
   enemy: EnemyDef;
   party: Party;
-  arrowsConsumed: number;
-  quiverQuantities: [number, number];
   physicalThreatBag: RandomBag;
   magicalThreatBag: RandomBag;
 }
@@ -116,27 +114,17 @@ function calculateCharacterDamage(
   phase: BattlePhase,
   charStats: ComputedCharacterStats,
   enemy: EnemyDef,
-  partyStats: ComputedPartyStats,
-  ctx: BattleContext
-): { damage: number; arrowsUsed: number } {
+  partyStats: ComputedPartyStats
+): number {
   let attack = 0;
   let noA = 0;
   let defense = 0;
-  let arrowsUsed = 0;
 
   switch (phase) {
     case 'long':
       attack = charStats.rangedAttack;
       noA = charStats.rangedNoA;
       defense = enemy.physicalDefense;
-      // Arrow consumption
-      if (noA > 0) {
-        const availableArrows = ctx.quiverQuantities[0] + ctx.quiverQuantities[1];
-        arrowsUsed = Math.min(noA, availableArrows);
-        if (arrowsUsed < noA) {
-          noA = arrowsUsed; // Reduced NoA due to insufficient arrows
-        }
-      }
       break;
     case 'mid':
       attack = charStats.magicalAttack;
@@ -150,16 +138,22 @@ function calculateCharacterDamage(
       break;
   }
 
-  if (noA === 0) return { damage: 0, arrowsUsed: 0 };
+  if (noA === 0) return 0;
 
   // Apply penetration
   const effectiveDefense = defense * (1 - charStats.penetMultiplier);
 
-  // Check for iaigiri ability (damage amplifier)
+  // Check for iaigiri ability (damage amplifier for close phase)
   let abilityAmplifier = 1.0;
   const iaigiri = charStats.abilities.find(a => a.id === 'iaigiri');
   if (iaigiri && phase === 'close') {
     abilityAmplifier = iaigiri.level === 2 ? 2.5 : 2.0;
+  }
+
+  // Check for resonance ability (damage amplifier for mid phase)
+  const resonance = charStats.abilities.find(a => a.id === 'resonance');
+  if (resonance && phase === 'mid') {
+    abilityAmplifier = resonance.level === 2 ? 1.5 : 1.25;
   }
 
   // Attack potency based on row position (only for LONG and CLOSE phases)
@@ -178,7 +172,7 @@ function calculateCharacterDamage(
     elementalMultiplier * partyStats.offenseAmplifier * attackPotency;
   const totalDamage = Math.max(1, rawDamage);
 
-  return { damage: Math.floor(totalDamage), arrowsUsed };
+  return Math.floor(totalDamage);
 }
 
 function hasFirstStrike(charStats: ComputedCharacterStats, phase: BattlePhase): boolean {
@@ -201,18 +195,6 @@ function hasReAttack(charStats: ComputedCharacterStats): number {
   return ability.level === 2 ? 2 : 1;
 }
 
-function consumeArrows(ctx: BattleContext, amount: number): void {
-  let remaining = amount;
-  if (ctx.quiverQuantities[0] >= remaining) {
-    ctx.quiverQuantities[0] -= remaining;
-  } else {
-    remaining -= ctx.quiverQuantities[0];
-    ctx.quiverQuantities[0] = 0;
-    ctx.quiverQuantities[1] = Math.max(0, ctx.quiverQuantities[1] - remaining);
-  }
-  ctx.arrowsConsumed += amount;
-}
-
 export interface BattleResult extends BattleState {
   updatedBags: {
     physicalThreatBag: RandomBag;
@@ -223,7 +205,6 @@ export interface BattleResult extends BattleState {
 export function executeBattle(
   party: Party,
   enemy: EnemyDef,
-  initialQuiverQuantities: [number, number],
   bags: GameBags,
   initialPartyHp?: number // Optional: for HP persistence during expedition
 ): BattleResult {
@@ -234,8 +215,6 @@ export function executeBattle(
     characterStats,
     enemy,
     party,
-    arrowsConsumed: 0,
-    quiverQuantities: [...initialQuiverQuantities],
     physicalThreatBag: { ...bags.physicalThreatBag },
     magicalThreatBag: { ...bags.magicalThreatBag },
   };
@@ -252,8 +231,7 @@ export function executeBattle(
     const firstStrikeChars = characterStats.filter(cs => hasFirstStrike(cs, phase));
     for (const cs of firstStrikeChars) {
       if (enemyHp <= 0) break;
-      const { damage, arrowsUsed } = calculateCharacterDamage(phase, cs, enemy, partyStats, ctx);
-      if (arrowsUsed > 0) consumeArrows(ctx, arrowsUsed);
+      const damage = calculateCharacterDamage(phase, cs, enemy, partyStats);
       if (damage > 0) {
         enemyHp -= damage;
         const char = party.characters.find(c => c.id === cs.characterId);
@@ -348,7 +326,7 @@ export function executeBattle(
     // Counter attacks (for each targeted character with counter ability)
     for (const [charId, attack] of attacksByTarget) {
       if (attack.damage > 0 && hasCounter(attack.charStats, phase)) {
-        const { damage } = calculateCharacterDamage(phase, attack.charStats, enemy, partyStats, ctx);
+        const damage = calculateCharacterDamage(phase, attack.charStats, enemy, partyStats);
         if (damage > 0) {
           enemyHp -= damage;
           const targetChar = party.characters.find(c => c.id === charId);
@@ -385,8 +363,7 @@ export function executeBattle(
     const regularChars = characterStats.filter(cs => !hasFirstStrike(cs, phase));
     for (const cs of regularChars) {
       if (enemyHp <= 0) break;
-      const { damage, arrowsUsed } = calculateCharacterDamage(phase, cs, enemy, partyStats, ctx);
-      if (arrowsUsed > 0) consumeArrows(ctx, arrowsUsed);
+      const damage = calculateCharacterDamage(phase, cs, enemy, partyStats);
       if (damage > 0) {
         enemyHp -= damage;
         const char = party.characters.find(c => c.id === cs.characterId);
@@ -406,8 +383,7 @@ export function executeBattle(
     for (const cs of characterStats) {
       const reAttackCount = hasReAttack(cs);
       for (let i = 0; i < reAttackCount && enemyHp > 0; i++) {
-        const { damage, arrowsUsed } = calculateCharacterDamage(phase, cs, enemy, partyStats, ctx);
-        if (arrowsUsed > 0) consumeArrows(ctx, arrowsUsed);
+        const damage = calculateCharacterDamage(phase, cs, enemy, partyStats);
         if (damage > 0) {
           enemyHp -= damage;
           const char = party.characters.find(c => c.id === cs.characterId);
@@ -462,23 +438,6 @@ export function executeBattle(
       magicalThreatBag: ctx.magicalThreatBag,
     },
   };
-}
-
-export function calculateArrowRecovery(
-  arrowsConsumed: number,
-  characterStats: ComputedCharacterStats[]
-): number {
-  // Find the highest hunter ability level
-  let maxHunterLevel = 0;
-  for (const cs of characterStats) {
-    const hunter = cs.abilities.find(a => a.id === 'hunter');
-    if (hunter && hunter.level > maxHunterLevel) {
-      maxHunterLevel = hunter.level;
-    }
-  }
-
-  const recoveryRate = maxHunterLevel === 3 ? 0.36 : maxHunterLevel === 2 ? 0.30 : maxHunterLevel === 1 ? 0.20 : 0;
-  return Math.floor(arrowsConsumed * recoveryRate);
 }
 
 // Calculate enemy attack values for all phases (for display)

@@ -8,7 +8,7 @@ export const RACES: Race[] = [
     stats: { vitality: 10, strength: 10, intelligence: 10, mind: 10 },
     bonuses: [
       { type: 'amulet_multiplier', value: 1.3 },
-      { type: 'archery_multiplier', value: 1.1 },
+      { type: 'shield_multiplier', value: 1.3 },
     ],
   },
   {
@@ -38,6 +38,7 @@ export const RACES: Race[] = [
     stats: { vitality: 13, strength: 12, intelligence: 5, mind: 7 },
     bonuses: [
       { type: 'equip_slot', value: 2 },
+      { type: 'shield_multiplier', value: 1.3 },
     ],
   },
   {
@@ -47,7 +48,7 @@ export const RACES: Race[] = [
     stats: { vitality: 9, strength: 9, intelligence: 10, mind: 12 },
     bonuses: [
       { type: 'robe_multiplier', value: 1.3 },
-      { type: 'ability', value: 1, abilityId: 'first_strike', abilityLevel: 1 },
+      { type: 'catalyst_multiplier', value: 1.2 },
     ],
   },
   {
@@ -67,7 +68,7 @@ export const RACES: Race[] = [
     stats: { vitality: 9, strength: 8, intelligence: 11, mind: 10 },
     bonuses: [
       { type: 'archery_multiplier', value: 1.3 },
-      { type: 'armor_multiplier', value: 1.3 },
+      { type: 'bolt_multiplier', value: 1.3 },
     ],
   },
   {
@@ -77,7 +78,7 @@ export const RACES: Race[] = [
     stats: { vitality: 6, strength: 7, intelligence: 13, mind: 10 },
     bonuses: [
       { type: 'wand_multiplier', value: 1.3 },
-      { type: 'amulet_multiplier', value: 1.2 },
+      { type: 'grimoire_multiplier', value: 1.2 },
     ],
   },
   {
@@ -87,7 +88,7 @@ export const RACES: Race[] = [
     stats: { vitality: 9, strength: 8, intelligence: 10, mind: 10 },
     bonuses: [
       { type: 'penet', value: 0.10 },
-      { type: 'caster', value: 1 },
+      { type: 'catalyst_multiplier', value: 1.2 },
     ],
   },
 ];

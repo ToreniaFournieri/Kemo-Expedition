@@ -7,6 +7,7 @@ export const PREDISPOSITIONS: Predisposition[] = [
     bonuses: [
       { type: 'vitality', value: 2 },
       { type: 'armor_multiplier', value: 1.1 },
+      { type: 'shield_multiplier', value: 1.1 },
     ],
   },
   {
@@ -14,6 +15,7 @@ export const PREDISPOSITIONS: Predisposition[] = [
     name: '俊敏',
     bonuses: [
       { type: 'gauntlet_multiplier', value: 1.2 },
+      { type: 'pursuit', value: 0.1 },
     ],
   },
   {
@@ -21,6 +23,7 @@ export const PREDISPOSITIONS: Predisposition[] = [
     name: '聡明',
     bonuses: [
       { type: 'wand_multiplier', value: 1.2 },
+      { type: 'catalyst_multiplier', value: 1.1 },
     ],
   },
   {
@@ -28,6 +31,8 @@ export const PREDISPOSITIONS: Predisposition[] = [
     name: '器用',
     bonuses: [
       { type: 'archery_multiplier', value: 1.2 },
+      { type: 'arrow_multiplier', value: 1.1 },
+      { type: 'bolt_multiplier', value: 1.1 },
     ],
   },
   {
@@ -35,6 +40,7 @@ export const PREDISPOSITIONS: Predisposition[] = [
     name: '騎士道',
     bonuses: [
       { type: 'sword_multiplier', value: 1.2 },
+      { type: 'shield_multiplier', value: 1.1 },
     ],
   },
   {
@@ -50,7 +56,7 @@ export const PREDISPOSITIONS: Predisposition[] = [
     name: '追求',
     bonuses: [
       { type: 'intelligence', value: 2 },
-      { type: 'robe_multiplier', value: 1.1 },
+      { type: 'grimoire_multiplier', value: 1.1 },
     ],
   },
   {
