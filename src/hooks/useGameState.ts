@@ -20,7 +20,7 @@ import { drawFromBag, refillBagIfEmpty, createRewardBag, createEnhancementBag, c
 import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 
-const BUILD_NUMBER = 23;
+const BUILD_NUMBER = 24;
 const STORAGE_KEY = 'kemo-expedition-save';
 
 // Helper to calculate sell price for an item
@@ -167,15 +167,17 @@ function createInitialParty() {
   }));
 
   // Create starter items as inventory record
+  // Balanced for stage 1: 2 armor = full protection, tier 1 weapons work on boss
   const starterItems: Item[] = [
-    { ...getItemById(1)!, enhancement: 0, superRare: 0 },
-    { ...getItemById(1)!, enhancement: 0, superRare: 0 },
-    { ...getItemById(20)!, enhancement: 0, superRare: 0 },
-    { ...getItemById(50)!, enhancement: 0, superRare: 0 },
-    { ...getItemById(30)!, enhancement: 0, superRare: 0 },
-    { ...getItemById(60)!, enhancement: 0, superRare: 0 },
-    { ...getItemById(70)!, enhancement: 0, superRare: 0 },
-    { ...getItemById(40)!, enhancement: 0, superRare: 0 },
+    { ...getItemById(1)!, enhancement: 0, superRare: 0 },   // ショートソード (melee attack)
+    { ...getItemById(1)!, enhancement: 0, superRare: 0 },   // ショートソード x2
+    { ...getItemById(20)!, enhancement: 0, superRare: 0 },  // ショートボウ (ranged NoA)
+    { ...getItemById(120)!, enhancement: 0, superRare: 0 }, // 木の矢 (ranged attack)
+    { ...getItemById(50)!, enhancement: 0, superRare: 0 },  // 木のワンド (magical attack)
+    { ...getItemById(30)!, enhancement: 0, superRare: 0 },  // レザーアーマー (physical defense)
+    { ...getItemById(30)!, enhancement: 0, superRare: 0 },  // レザーアーマー x2 (2 armor = protection)
+    { ...getItemById(60)!, enhancement: 0, superRare: 0 },  // 見習いのローブ (magical defense)
+    { ...getItemById(40)!, enhancement: 0, superRare: 0 },  // 革の籠手 (melee NoA)
   ];
 
   const inventory: InventoryRecord = {};

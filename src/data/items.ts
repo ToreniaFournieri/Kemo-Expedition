@@ -35,19 +35,19 @@ export const ITEMS: ItemDef[] = [
   { id: 13, category: 'katana', name: '大太刀', meleeAttack: 42, meleeNoA: -2 },
   { id: 14, category: 'katana', name: '妖刀', meleeAttack: 55, meleeNoA: -2 },
 
-  // Archery (弓) - +ranged_attack, +ranged_NoA
-  { id: 20, category: 'archery', name: 'ショートボウ', rangedAttack: 5, rangedNoA: 2 },
-  { id: 21, category: 'archery', name: 'ロングボウ', rangedAttack: 10, rangedNoA: 2 },
-  { id: 22, category: 'archery', name: 'コンポジットボウ', rangedAttack: 15, rangedNoA: 3 },
-  { id: 23, category: 'archery', name: 'グレートボウ', rangedAttack: 22, rangedNoA: 3 },
-  { id: 24, category: 'archery', name: '精霊弓', rangedAttack: 30, rangedNoA: 4 },
+  // Archery (弓) - +ranged_NoA only (bow determines number of attacks)
+  { id: 20, category: 'archery', name: 'ショートボウ', rangedNoA: 2 },
+  { id: 21, category: 'archery', name: 'ロングボウ', rangedNoA: 3 },
+  { id: 22, category: 'archery', name: 'コンポジットボウ', rangedNoA: 4 },
+  { id: 23, category: 'archery', name: 'グレートボウ', rangedNoA: 5 },
+  { id: 24, category: 'archery', name: '精霊弓', rangedNoA: 6 },
 
-  // Armor (鎧) - +Party_physical_defense
-  { id: 30, category: 'armor', name: 'レザーアーマー', physicalDefense: 5 },
-  { id: 31, category: 'armor', name: 'チェインメイル', physicalDefense: 10 },
-  { id: 32, category: 'armor', name: 'スケイルメイル', physicalDefense: 16 },
-  { id: 33, category: 'armor', name: 'プレートメイル', physicalDefense: 24 },
-  { id: 34, category: 'armor', name: '騎士の鎧', physicalDefense: 35, partyHP: 20 },
+  // Armor (鎧) - +Party_physical_defense (2 armor = full protection at tier)
+  { id: 30, category: 'armor', name: 'レザーアーマー', physicalDefense: 8 },
+  { id: 31, category: 'armor', name: 'チェインメイル', physicalDefense: 16 },
+  { id: 32, category: 'armor', name: 'スケイルメイル', physicalDefense: 26 },
+  { id: 33, category: 'armor', name: 'プレートメイル', physicalDefense: 38 },
+  { id: 34, category: 'armor', name: '騎士の鎧', physicalDefense: 52, partyHP: 20 },
 
   // Gauntlet (籠手) - +melee_NoA
   { id: 40, category: 'gauntlet', name: '革の籠手', meleeNoA: 1 },
@@ -63,12 +63,12 @@ export const ITEMS: ItemDef[] = [
   { id: 53, category: 'wand', name: '賢者の杖', magicalAttack: 35 },
   { id: 54, category: 'wand', name: '大魔導師の杖', magicalAttack: 50, magicalNoA: 1 },
 
-  // Robe (法衣) - +Party_magical_defense
-  { id: 60, category: 'robe', name: '見習いのローブ', magicalDefense: 5 },
-  { id: 61, category: 'robe', name: '魔法使いのローブ', magicalDefense: 10 },
-  { id: 62, category: 'robe', name: '賢者のローブ', magicalDefense: 18 },
-  { id: 63, category: 'robe', name: '大魔導師のローブ', magicalDefense: 28 },
-  { id: 64, category: 'robe', name: '聖なるローブ', magicalDefense: 40, partyHP: 15 },
+  // Robe (法衣) - +Party_magical_defense (2 robe = full protection at tier)
+  { id: 60, category: 'robe', name: '見習いのローブ', magicalDefense: 8 },
+  { id: 61, category: 'robe', name: '魔法使いのローブ', magicalDefense: 16 },
+  { id: 62, category: 'robe', name: '賢者のローブ', magicalDefense: 26 },
+  { id: 63, category: 'robe', name: '大魔導師のローブ', magicalDefense: 38 },
+  { id: 64, category: 'robe', name: '聖なるローブ', magicalDefense: 52, partyHP: 15 },
 
   // Shield (盾) - +physicalDefense, +HP
   { id: 80, category: 'shield', name: '木盾', physicalDefense: 3, partyHP: 10 },
@@ -77,12 +77,12 @@ export const ITEMS: ItemDef[] = [
   { id: 83, category: 'shield', name: '守護盾', physicalDefense: 15, partyHP: 55 },
   { id: 84, category: 'shield', name: '聖盾', physicalDefense: 22, partyHP: 80 },
 
-  // Bolt (ボルト) - +rangedAttack with elemental offense
-  { id: 90, category: 'bolt', name: '木ボルト', rangedAttack: 3 },
-  { id: 91, category: 'bolt', name: '鉄ボルト', rangedAttack: 6 },
-  { id: 92, category: 'bolt', name: '炎ボルト', rangedAttack: 10, elementalOffense: 'fire' },
-  { id: 93, category: 'bolt', name: '氷ボルト', rangedAttack: 10, elementalOffense: 'ice' },
-  { id: 94, category: 'bolt', name: '雷ボルト', rangedAttack: 10, elementalOffense: 'thunder' },
+  // Bolt (ボルト) - +rangedAttack (main ranged damage source)
+  { id: 90, category: 'bolt', name: '木ボルト', rangedAttack: 8 },
+  { id: 91, category: 'bolt', name: '鉄ボルト', rangedAttack: 15 },
+  { id: 92, category: 'bolt', name: '炎ボルト', rangedAttack: 22, elementalOffense: 'fire' },
+  { id: 93, category: 'bolt', name: '氷ボルト', rangedAttack: 22, elementalOffense: 'ice' },
+  { id: 94, category: 'bolt', name: '雷ボルト', rangedAttack: 22, elementalOffense: 'thunder' },
 
   // Grimoire (魔道書) - +magicalAttack
   { id: 100, category: 'grimoire', name: '初級魔道書', magicalAttack: 10 },
@@ -98,12 +98,12 @@ export const ITEMS: ItemDef[] = [
   { id: 113, category: 'catalyst', name: '精霊核', magicalNoA: 2, magicalAttack: 8 },
   { id: 114, category: 'catalyst', name: '神核', magicalNoA: 3, magicalAttack: 12 },
 
-  // Arrow (矢) - +rangedAttack with elemental offense
-  { id: 120, category: 'arrow', name: '木の矢', rangedAttack: 2 },
-  { id: 121, category: 'arrow', name: '鉄の矢', rangedAttack: 5 },
-  { id: 122, category: 'arrow', name: '炎の矢', rangedAttack: 8, elementalOffense: 'fire' },
-  { id: 123, category: 'arrow', name: '氷の矢', rangedAttack: 8, elementalOffense: 'ice' },
-  { id: 124, category: 'arrow', name: '雷の矢', rangedAttack: 8, elementalOffense: 'thunder' },
+  // Arrow (矢) - +rangedAttack (main ranged damage source for bow)
+  { id: 120, category: 'arrow', name: '木の矢', rangedAttack: 6 },
+  { id: 121, category: 'arrow', name: '鉄の矢', rangedAttack: 12 },
+  { id: 122, category: 'arrow', name: '炎の矢', rangedAttack: 18, elementalOffense: 'fire' },
+  { id: 123, category: 'arrow', name: '氷の矢', rangedAttack: 18, elementalOffense: 'ice' },
+  { id: 124, category: 'arrow', name: '雷の矢', rangedAttack: 18, elementalOffense: 'thunder' },
 ];
 
 export const getItemById = (id: number): ItemDef | undefined =>
