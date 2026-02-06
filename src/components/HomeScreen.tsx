@@ -106,6 +106,20 @@ function formatBonuses(bonuses: Bonus[]): string {
   return parts.join(', ');
 }
 
+// Short class names for party list
+const CLASS_SHORT_NAMES: Record<string, string> = {
+  fighter: '戦',
+  duelist: '剣',
+  ninja: '忍',
+  samurai: '侍',
+  lord: '君',
+  ranger: '狩',
+  wizard: '魔',
+  sage: '賢',
+  rogue: '盗',
+  pilgrim: '巡',
+};
+
 // Category name mapping
 const CATEGORY_NAMES: Record<string, string> = {
   sword: '剣',
@@ -355,6 +369,8 @@ function PartyTab({
           const mc = CLASSES.find(cl => cl.id === c.mainClassId)!;
           const sc = CLASSES.find(cl => cl.id === c.subClassId)!;
           const isMaster = c.mainClassId === c.subClassId;
+          const mcShort = CLASS_SHORT_NAMES[mc.id] ?? mc.name;
+          const scShort = CLASS_SHORT_NAMES[sc.id] ?? sc.name;
           return (
             <button
               key={c.id}
@@ -366,7 +382,7 @@ function PartyTab({
               <div className="text-2xl text-center">{r.emoji}</div>
               <div className="text-xs truncate w-14 text-center">{c.name}</div>
               <div className="text-xs text-gray-400 text-center">
-                {mc.name}({isMaster ? '師範' : sc.name})
+                {mcShort}({isMaster ? '師' : scShort})
               </div>
             </button>
           );
@@ -390,7 +406,7 @@ function PartyTab({
             <div className="flex gap-2">
               <button
                 onClick={() => setShowEditConfirm(true)}
-                className="text-sm text-white bg-sub px-3 py-1 rounded"
+                className="text-sm text-white bg-sub px-4 py-1 rounded min-w-[60px]"
               >
                 完了
               </button>
@@ -399,7 +415,7 @@ function PartyTab({
                   setPendingEdits(null);
                   setEditingCharacter(null);
                 }}
-                className="text-sm text-gray-600 bg-gray-200 px-3 py-1 rounded"
+                className="text-sm text-gray-600 bg-gray-200 px-4 py-1 rounded min-w-[60px]"
               >
                 取消
               </button>
@@ -558,7 +574,7 @@ function PartyTab({
               <div className="bg-white rounded p-1 text-center">知性:{stats.baseStats.intelligence}</div>
               <div className="bg-white rounded p-1 text-center">精神:{stats.baseStats.mind}</div>
             </div>
-            <div className="border-t border-gray-200 mt-2 pt-2 space-y-1 text-sm">
+            <div className="border-t border-gray-200 mt-2 pt-2 text-sm">
               {(() => {
                 // Calculate offense amplifiers per phase
                 const iaigiri = stats.abilities.find(a => a.id === 'iaigiri');
@@ -577,30 +593,33 @@ function PartyTab({
                 const hasMagical = stats.magicalAttack > 0 || stats.magicalNoA > 0;
                 const hasMelee = stats.meleeAttack > 0 || stats.meleeNoA > 0;
 
+                // Build offense lines
+                const offenseLines: string[] = [];
+                if (hasRanged) offenseLines.push(`遠距離攻撃:${Math.floor(stats.rangedAttack)} x ${stats.rangedNoA}回(x${longAmp.toFixed(2)})`);
+                if (hasMagical) offenseLines.push(`魔法攻撃:${Math.floor(stats.magicalAttack)} x ${stats.magicalNoA}回(x${midAmp.toFixed(2)})`);
+                if (hasMelee) offenseLines.push(`近接攻撃:${Math.floor(stats.meleeAttack)} x ${stats.meleeNoA}回(x${closeAmp.toFixed(2)})`);
+
+                // Defense lines (always 3)
+                const defenseLines = [
+                  `属性:${elementName}(x${stats.elementalOffenseValue.toFixed(1)})`,
+                  `物防:${stats.physicalDefense}`,
+                  `魔防:${stats.magicalDefense}`,
+                ];
+
+                // Pad offense lines to match defense lines count
+                while (offenseLines.length < defenseLines.length) {
+                  offenseLines.push('');
+                }
+
                 return (
-                  <>
-                    {hasRanged && (
-                      <div className="text-xs">
-                        遠距離攻撃:{Math.floor(stats.rangedAttack)} x {stats.rangedNoA}回(x{longAmp.toFixed(2)})
+                  <div className="text-xs space-y-1">
+                    {offenseLines.map((offense, i) => (
+                      <div key={i} className="flex justify-between">
+                        <span>{offense}</span>
+                        <span className="text-gray-500">{defenseLines[i]}</span>
                       </div>
-                    )}
-                    {hasMagical && (
-                      <div className="text-xs">
-                        魔法攻撃:{Math.floor(stats.magicalAttack)} x {stats.magicalNoA}回(x{midAmp.toFixed(2)})
-                      </div>
-                    )}
-                    {hasMelee && (
-                      <div className="text-xs">
-                        近接攻撃:{Math.floor(stats.meleeAttack)} x {stats.meleeNoA}回(x{closeAmp.toFixed(2)})
-                      </div>
-                    )}
-                    {/* Always show elemental offense and defenses */}
-                    <div className="grid grid-cols-3 gap-1 mt-1 text-xs">
-                      <div className="bg-white rounded p-1 text-center text-gray-500">属性:{elementName}(x{stats.elementalOffenseValue.toFixed(1)})</div>
-                      <div className="bg-white rounded p-1 text-center text-gray-500">物防:{stats.physicalDefense}</div>
-                      <div className="bg-white rounded p-1 text-center text-gray-500">魔防:{stats.magicalDefense}</div>
-                    </div>
-                  </>
+                    ))}
+                  </div>
                 );
               })()}
             </div>
@@ -718,11 +737,64 @@ function PartyTab({
 
       {/* Inventory Pane - Always visible */}
       {(() => {
-        const filteredItems = sortInventoryItems(
-          Object.entries(party.inventory)
-            .filter(([, v]) => v.status === 'owned' && v.count > 0 && v.item.category === equipCategory)
-        );
         const hasEmptySlot = Array.from({ length: stats.maxEquipSlots }).some((_, i) => !char.equipment[i]);
+
+        // Build combined list: inventory items + equipped items on current character
+        type DisplayItem = {
+          key: string;
+          item: Item;
+          count: number;
+          isEquipped: boolean;
+          slotIndex?: number;
+        };
+
+        const displayItems: DisplayItem[] = [];
+
+        // Add equipped items for current character
+        char.equipment.forEach((item, slotIndex) => {
+          if (item && item.category === equipCategory) {
+            displayItems.push({
+              key: `equipped-${slotIndex}`,
+              item,
+              count: 1,
+              isEquipped: true,
+              slotIndex,
+            });
+          }
+        });
+
+        // Add inventory items (subtract equipped count for display)
+        Object.entries(party.inventory)
+          .filter(([, v]) => v.status === 'owned' && v.count > 0 && v.item.category === equipCategory)
+          .forEach(([key, variant]) => {
+            displayItems.push({
+              key,
+              item: variant.item,
+              count: variant.count,
+              isEquipped: false,
+            });
+          });
+
+        // Sort by priority: Item ID (desc), SuperRare (desc), Enhancement (desc), equipped first within same priority
+        displayItems.sort((a, b) => {
+          if (a.item.id !== b.item.id) return b.item.id - a.item.id;
+          if (a.item.superRare !== b.item.superRare) return b.item.superRare - a.item.superRare;
+          if (a.item.enhancement !== b.item.enhancement) return b.item.enhancement - a.item.enhancement;
+          // Equipped items first within same variant
+          if (a.isEquipped !== b.isEquipped) return a.isEquipped ? -1 : 1;
+          return 0;
+        });
+
+        const handleItemTap = (displayItem: DisplayItem) => {
+          if (displayItem.isEquipped && displayItem.slotIndex !== undefined) {
+            // Unequip: single tap on equipped item
+            onEquipItem(char.id, displayItem.slotIndex, null);
+          } else {
+            // Equip: use existing logic
+            handleInventoryItemTap(displayItem.key);
+          }
+        };
+
         return (
           <div className={`mt-4 border rounded-lg p-4 ${selectingSlot !== null ? 'border-sub bg-blue-50' : 'border-gray-200 bg-gray-50'}`}>
             <div className="flex justify-between items-center mb-2">
@@ -730,7 +802,7 @@ function PartyTab({
                 {selectingSlot !== null
                   ? `スロット ${selectingSlot + 1} に装備`
                   : hasEmptySlot
-                    ? 'タップで自動装備'
+                    ? 'タップで装備/解除'
                     : 'スロットを選択してください'}
               </span>
               {selectingSlot !== null && (
@@ -752,9 +824,6 @@ function PartyTab({
                 </div>
               )}
             </div>
-            <div className="text-xs text-gray-500 mb-2">
-              ヒント: スロットをダブルタップで装備を外す
-            </div>
             {/* Category tabs */}
             <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
               {EQUIP_CATEGORY_ORDER.map(cat => (
@@ -772,23 +841,30 @@ function PartyTab({
               ))}
             </div>
             <div className="space-y-1 min-h-[320px] max-h-96 overflow-y-auto">
-              {filteredItems.map(([key, variant]) => (
+              {displayItems.map((displayItem) => (
                 <button
-                  key={key}
-                  onClick={() => handleInventoryItemTap(key)}
-                  disabled={selectingSlot === null && !hasEmptySlot}
-                  className={`w-full p-2 text-left text-sm border border-gray-200 rounded bg-white ${
-                    selectingSlot !== null || hasEmptySlot ? 'hover:bg-gray-50' : 'opacity-50 cursor-not-allowed'
+                  key={displayItem.key}
+                  onClick={() => handleItemTap(displayItem)}
+                  disabled={!displayItem.isEquipped && selectingSlot === null && !hasEmptySlot}
+                  className={`w-full p-2 text-left text-sm border rounded bg-white ${
+                    displayItem.isEquipped
+                      ? 'border-sub bg-blue-50'
+                      : selectingSlot !== null || hasEmptySlot
+                        ? 'border-gray-200 hover:bg-gray-50'
+                        : 'border-gray-200 opacity-50 cursor-not-allowed'
                   }`}
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{getItemDisplayName(variant.item)}</span>
-                    <span className="text-xs text-gray-500">x{variant.count}</span>
-                    <span className="text-xs text-gray-400">| {getItemStats(variant.item)}</span>
+                  <div className="flex justify-between items-center">
+                    <span>
+                      {displayItem.isEquipped && <span>{race.emoji}</span>}
+                      <span className="font-medium">{getItemDisplayName(displayItem.item)}</span>
+                      {!displayItem.isEquipped && <span className="text-xs text-gray-500"> x{displayItem.count}</span>}
+                      <span className="text-xs text-gray-400"> | {getItemStats(displayItem.item)}</span>
+                    </span>
                   </div>
                 </button>
               ))}
-              {filteredItems.length === 0 && (
+              {displayItems.length === 0 && (
                 <div className="text-gray-400 text-sm text-center py-2">このカテゴリに装備可能なアイテムがありません</div>
               )}
             </div>
