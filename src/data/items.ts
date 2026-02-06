@@ -36,11 +36,11 @@ export const ITEMS: ItemDef[] = [
   { id: 14, category: 'katana', name: '妖刀', meleeAttack: 55, meleeNoA: -2 },
 
   // Archery (弓) - +ranged_NoA only (bow determines number of attacks)
-  { id: 20, category: 'archery', name: 'ショートボウ', rangedNoA: 2 },
-  { id: 21, category: 'archery', name: 'ロングボウ', rangedNoA: 3 },
-  { id: 22, category: 'archery', name: 'コンポジットボウ', rangedNoA: 4 },
-  { id: 23, category: 'archery', name: 'グレートボウ', rangedNoA: 5 },
-  { id: 24, category: 'archery', name: '精霊弓', rangedNoA: 6 },
+  { id: 20, category: 'archery', name: 'ショートボウ', rangedNoA: 0.5 },
+  { id: 21, category: 'archery', name: 'ロングボウ', rangedNoA: 0.8 },
+  { id: 22, category: 'archery', name: 'コンポジットボウ', rangedNoA: 1.2 },
+  { id: 23, category: 'archery', name: 'グレートボウ', rangedNoA: 1.5 },
+  { id: 24, category: 'archery', name: '精霊弓', rangedNoA: 1.8 },
 
   // Armor (鎧) - +Party_physical_defense (2 armor = full protection at tier)
   { id: 30, category: 'armor', name: 'レザーアーマー', physicalDefense: 8 },
@@ -50,18 +50,18 @@ export const ITEMS: ItemDef[] = [
   { id: 34, category: 'armor', name: '騎士の鎧', physicalDefense: 52, partyHP: 20 },
 
   // Gauntlet (籠手) - +melee_NoA
-  { id: 40, category: 'gauntlet', name: '革の籠手', meleeNoA: 1 },
-  { id: 41, category: 'gauntlet', name: '鋼の籠手', meleeNoA: 1, meleeAttack: 3 },
-  { id: 42, category: 'gauntlet', name: '戦士の籠手', meleeNoA: 2 },
-  { id: 43, category: 'gauntlet', name: '英雄の籠手', meleeNoA: 2, meleeAttack: 5 },
-  { id: 44, category: 'gauntlet', name: '伝説の籠手', meleeNoA: 3, meleeAttack: 8 },
+  { id: 40, category: 'gauntlet', name: '革の籠手', meleeNoA: 0.5 },
+  { id: 41, category: 'gauntlet', name: '鋼の籠手', meleeNoA: 0.8 },
+  { id: 42, category: 'gauntlet', name: '戦士の籠手', meleeNoA: 1.2 },
+  { id: 43, category: 'gauntlet', name: '英雄の籠手', meleeNoA: 1.5 },
+  { id: 44, category: 'gauntlet', name: '伝説の籠手', meleeNoA: 1.8 },
 
   // Wand (ワンド) - +magical_attack
   { id: 50, category: 'wand', name: '木のワンド', magicalAttack: 8 },
   { id: 51, category: 'wand', name: '魔法のワンド', magicalAttack: 15 },
   { id: 52, category: 'wand', name: 'ルーンワンド', magicalAttack: 24 },
   { id: 53, category: 'wand', name: '賢者の杖', magicalAttack: 35 },
-  { id: 54, category: 'wand', name: '大魔導師の杖', magicalAttack: 50, magicalNoA: 1 },
+  { id: 54, category: 'wand', name: '大魔導師の杖', magicalAttack: 50},
 
   // Robe (法衣) - +Party_magical_defense (2 robe = full protection at tier)
   { id: 60, category: 'robe', name: '見習いのローブ', magicalDefense: 8 },
@@ -71,11 +71,11 @@ export const ITEMS: ItemDef[] = [
   { id: 64, category: 'robe', name: '聖なるローブ', magicalDefense: 52, partyHP: 15 },
 
   // Shield (盾) - +physicalDefense, +HP
-  { id: 80, category: 'shield', name: '木盾', physicalDefense: 3, partyHP: 10 },
-  { id: 81, category: 'shield', name: '鉄盾', physicalDefense: 6, partyHP: 20 },
-  { id: 82, category: 'shield', name: '騎士盾', physicalDefense: 10, partyHP: 35 },
-  { id: 83, category: 'shield', name: '守護盾', physicalDefense: 15, partyHP: 55 },
-  { id: 84, category: 'shield', name: '聖盾', physicalDefense: 22, partyHP: 80 },
+  { id: 80, category: 'shield', name: '木盾', physicalDefense: 1, partyHP: 10 },
+  { id: 81, category: 'shield', name: '鉄盾', physicalDefense: 2, partyHP: 20 },
+  { id: 82, category: 'shield', name: '騎士盾', physicalDefense: 3, partyHP: 35 },
+  { id: 83, category: 'shield', name: '守護盾', physicalDefense: 4, partyHP: 55 },
+  { id: 84, category: 'shield', name: '聖盾', physicalDefense: 5, partyHP: 80 },
 
   // Bolt (ボルト) - +rangedAttack (main ranged damage source)
   { id: 90, category: 'bolt', name: '木ボルト', rangedAttack: 8 },
@@ -92,11 +92,11 @@ export const ITEMS: ItemDef[] = [
   { id: 104, category: 'grimoire', name: '神代魔道書', magicalAttack: 55 },
 
   // Catalyst (霊媒) - +magicalNoA
-  { id: 110, category: 'catalyst', name: '水晶球', magicalNoA: 1 },
-  { id: 111, category: 'catalyst', name: '精霊石', magicalNoA: 1, magicalAttack: 5 },
-  { id: 112, category: 'catalyst', name: '賢者の石', magicalNoA: 2 },
-  { id: 113, category: 'catalyst', name: '精霊核', magicalNoA: 2, magicalAttack: 8 },
-  { id: 114, category: 'catalyst', name: '神核', magicalNoA: 3, magicalAttack: 12 },
+  { id: 110, category: 'catalyst', name: '水晶球', magicalNoA: 0.5 },
+  { id: 111, category: 'catalyst', name: '精霊石', magicalNoA: 0.8, magicalAttack: 5 },
+  { id: 112, category: 'catalyst', name: '賢者の石', magicalNoA: 1.2 },
+  { id: 113, category: 'catalyst', name: '精霊核', magicalNoA: 1.5, magicalAttack: 8 },
+  { id: 114, category: 'catalyst', name: '神核', magicalNoA: 1.8, magicalAttack: 12 },
 
   // Arrow (矢) - +rangedAttack (main ranged damage source for bow)
   { id: 120, category: 'arrow', name: '木の矢', rangedAttack: 6 },
