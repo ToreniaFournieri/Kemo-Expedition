@@ -530,9 +530,10 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 
 
 - `f.hit_detection`(actor: , opponent: ,Nth_hit: )
-    decay_of_accuracy = clamp(0.86, 0.90 + actor.`c.accuracy+v` - opponent.`c.evasion+v`, 0.98)
-    effective_hit_chance = `d.accuracy_potency` x (decay_of_accuracy) ^ Nth_hit
-    If Random(0, 1) <= effective_hit_chance, result true (HIT). Else, result false (MISS).
+  - decay_of_accuracy: clamp(0.86, 0.90 + actor.`c.accuracy+v` - opponent.`c.evasion+v`, 0.98)
+  - chance = d.accuracy_potency x (decay_of_accuracy)^(Nth_hit)
+    - Note: Nth_hit starts at 1 for the first strike.
+  - Roll: Return Random(0, 1.0) <= chance
 
 ### 6.3 Turn resolution 
 - For each phase, actions are resolved in the following order:
