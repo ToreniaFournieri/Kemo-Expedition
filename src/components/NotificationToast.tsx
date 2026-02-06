@@ -8,7 +8,7 @@ interface NotificationToastProps {
 
 export function NotificationToast({ notifications, onDismiss }: NotificationToastProps) {
   return (
-    <div className="fixed bottom-4 left-4 flex flex-col-reverse gap-2 z-50 max-w-xs">
+    <div className="fixed bottom-4 left-4 flex flex-col-reverse gap-1 z-50 max-w-xs">
       {notifications.map((notification) => (
         <NotificationItem
           key={notification.id}
@@ -47,8 +47,8 @@ function NotificationItem({ notification, onDismiss }: NotificationItemProps) {
         text-xs font-medium
         transition-opacity duration-300
         ${isRare
-          ? 'bg-white/95 text-orange-600 border border-orange-300'
-          : 'bg-white/95 text-blue-600 border border-blue-300'
+          ? 'bg-white/95 text-orange-600'
+          : 'bg-white/95 text-blue-600'
         }
       `}
     >

@@ -350,10 +350,12 @@ export const MAX_LEVEL = 29;
 
 // Notification Types
 export type NotificationStyle = 'normal' | 'rare';
+export type NotificationCategory = 'item' | 'stat';
 
 export interface GameNotification {
   id: string;
   message: string;
   style: NotificationStyle;
+  category: NotificationCategory;
   createdAt: number;
 }

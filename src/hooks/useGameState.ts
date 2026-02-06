@@ -13,6 +13,7 @@ import {
   getVariantKey,
   GameNotification,
   NotificationStyle,
+  NotificationCategory,
 } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
@@ -22,7 +23,7 @@ import { drawFromBag, refillBagIfEmpty, createRewardBag, createEnhancementBag, c
 import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 
-const BUILD_NUMBER = 26;
+const BUILD_NUMBER = 27;
 const STORAGE_KEY = 'kemo-expedition-save';
 
 // Helper to calculate sell price for an item
@@ -570,14 +571,26 @@ export function useGameState() {
   }, [state]);
 
   // Add notification helper
-  const addNotification = useCallback((message: string, style: NotificationStyle = 'normal') => {
+  // For 'stat' category, dismiss previous stat notifications first
+  const addNotification = useCallback((
+    message: string,
+    style: NotificationStyle = 'normal',
+    category: NotificationCategory = 'item'
+  ) => {
     const notification: GameNotification = {
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       message,
       style,
+      category,
       createdAt: Date.now(),
     };
-    setNotifications(prev => [...prev, notification]);
+    setNotifications(prev => {
+      // For stat notifications, dismiss previous stat notifications
+      const filtered = category === 'stat'
+        ? prev.filter(n => n.category !== 'stat')
+        : prev;
+      return [...filtered, notification];
+    });
   }, []);
 
   // Dismiss notification helper
