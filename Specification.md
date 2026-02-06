@@ -715,6 +715,14 @@ Left-aligned            Right-aligned
 - **Remove (Single-tap):** - Single-tap an **equipped item in inventory** and returns it to be unequipped item in inventory.
 - Status updates in real time
 
+**2. Equipment Sort logic:**
+- Order: Descending order by Priority.
+- Priority:
+    1. Item category: 鎧>衣>盾>剣>刀>手>矢>ボ>弓>杖>書>媒 
+    2. Base Item ID: Higher-tier base items (e.g., Mythril Sword > Iron Sword) appear first.
+    3. Super Rare Title: Items with Super Rare titles are prioritized within their base item ID.
+    4. Enhancement Tier: Among the same Item ID, higher enhancements (e.g., 究極の > 伝説の) appear higher.
+
 **2. Inventory Pane:**
   - Always visible on the same screen at the bottom.
   - Stacked by item variant
