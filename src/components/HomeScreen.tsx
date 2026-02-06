@@ -350,14 +350,20 @@ function PartyTab({
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
   const [equipCategory, setEquipCategory] = useState('armor');
 
-  // Calculate current attack totals
-  const attackTotals = {
-    melee: characterStats.reduce((sum, c) => sum + c.meleeAttack, 0),
-    ranged: characterStats.reduce((sum, c) => sum + c.rangedAttack, 0),
-    magical: characterStats.reduce((sum, c) => sum + c.magicalAttack, 0),
+  // Calculate current attack/NoA totals (rounded)
+  const combatTotals = {
+    meleeAtk: Math.round(characterStats.reduce((sum, c) => sum + c.meleeAttack, 0)),
+    rangedAtk: Math.round(characterStats.reduce((sum, c) => sum + c.rangedAttack, 0)),
+    magicalAtk: Math.round(characterStats.reduce((sum, c) => sum + c.magicalAttack, 0)),
+    meleeNoA: characterStats.reduce((sum, c) => sum + c.meleeNoA, 0),
+    rangedNoA: characterStats.reduce((sum, c) => sum + c.rangedNoA, 0),
+    magicalNoA: characterStats.reduce((sum, c) => sum + c.magicalNoA, 0),
+    physDef: Math.round(partyStats.physicalDefense),
+    magDef: Math.round(partyStats.magicalDefense),
+    hp: Math.round(partyStats.hp),
   };
 
-  const prevStatsRef = useRef<{ partyStats: typeof partyStats; attacks: typeof attackTotals } | null>(null);
+  const prevStatsRef = useRef<typeof combatTotals | null>(null);
 
   // Watch for stat changes after equipment
   useEffect(() => {
@@ -365,43 +371,64 @@ function PartyTab({
       const prev = prevStatsRef.current;
 
       // Check physical defense changes
-      if (partyStats.physicalDefense !== prev.partyStats.physicalDefense) {
-        const arrow = partyStats.physicalDefense > prev.partyStats.physicalDefense ? '↑' : '↓';
-        onAddNotification(`物防${arrow} ${prev.partyStats.physicalDefense} → ${partyStats.physicalDefense}`);
+      if (combatTotals.physDef !== prev.physDef) {
+        const arrow = combatTotals.physDef > prev.physDef ? '↑' : '↓';
+        onAddNotification(`物防${arrow} ${prev.physDef} → ${combatTotals.physDef}`);
       }
 
       // Check magical defense changes
-      if (partyStats.magicalDefense !== prev.partyStats.magicalDefense) {
-        const arrow = partyStats.magicalDefense > prev.partyStats.magicalDefense ? '↑' : '↓';
-        onAddNotification(`魔防${arrow} ${prev.partyStats.magicalDefense} → ${partyStats.magicalDefense}`);
+      if (combatTotals.magDef !== prev.magDef) {
+        const arrow = combatTotals.magDef > prev.magDef ? '↑' : '↓';
+        onAddNotification(`魔防${arrow} ${prev.magDef} → ${combatTotals.magDef}`);
       }
 
       // Check HP changes
-      if (partyStats.hp !== prev.partyStats.hp) {
-        const arrow = partyStats.hp > prev.partyStats.hp ? '↑' : '↓';
-        onAddNotification(`HP${arrow} ${prev.partyStats.hp} → ${partyStats.hp}`);
+      if (combatTotals.hp !== prev.hp) {
+        const arrow = combatTotals.hp > prev.hp ? '↑' : '↓';
+        onAddNotification(`HP${arrow} ${prev.hp} → ${combatTotals.hp}`);
       }
 
       // Check melee attack changes
-      if (attackTotals.melee !== prev.attacks.melee) {
-        const arrow = attackTotals.melee > prev.attacks.melee ? '↑' : '↓';
-        onAddNotification(`近攻${arrow} ${prev.attacks.melee} → ${attackTotals.melee}`);
+      if (combatTotals.meleeAtk !== prev.meleeAtk) {
+        const arrow = combatTotals.meleeAtk > prev.meleeAtk ? '↑' : '↓';
+        onAddNotification(`近攻${arrow} ${prev.meleeAtk} → ${combatTotals.meleeAtk}`);
+      }
+
+      // Check melee NoA changes
+      if (combatTotals.meleeNoA !== prev.meleeNoA) {
+        const arrow = combatTotals.meleeNoA > prev.meleeNoA ? '↑' : '↓';
+        onAddNotification(`近回数${arrow} ${prev.meleeNoA} → ${combatTotals.meleeNoA}`);
       }
 
       // Check ranged attack changes
-      if (attackTotals.ranged !== prev.attacks.ranged) {
-        const arrow = attackTotals.ranged > prev.attacks.ranged ? '↑' : '↓';
-        onAddNotification(`遠攻${arrow} ${prev.attacks.ranged} → ${attackTotals.ranged}`);
+      if (combatTotals.rangedAtk !== prev.rangedAtk) {
+        const arrow = combatTotals.rangedAtk > prev.rangedAtk ? '↑' : '↓';
+        onAddNotification(`遠攻${arrow} ${prev.rangedAtk} → ${combatTotals.rangedAtk}`);
+      }
+
+      // Check ranged NoA changes
+      if (combatTotals.rangedNoA !== prev.rangedNoA) {
+        const arrow = combatTotals.rangedNoA > prev.rangedNoA ? '↑' : '↓';
+        onAddNotification(`遠回数${arrow} ${prev.rangedNoA} → ${combatTotals.rangedNoA}`);
       }
 
       // Check magical attack changes
-      if (attackTotals.magical !== prev.attacks.magical) {
-        const arrow = attackTotals.magical > prev.attacks.magical ? '↑' : '↓';
-        onAddNotification(`魔攻${arrow} ${prev.attacks.magical} → ${attackTotals.magical}`);
+      if (combatTotals.magicalAtk !== prev.magicalAtk) {
+        const arrow = combatTotals.magicalAtk > prev.magicalAtk ? '↑' : '↓';
+        onAddNotification(`魔攻${arrow} ${prev.magicalAtk} → ${combatTotals.magicalAtk}`);
+      }
+
+      // Check magical NoA changes
+      if (combatTotals.magicalNoA !== prev.magicalNoA) {
+        const arrow = combatTotals.magicalNoA > prev.magicalNoA ? '↑' : '↓';
+        onAddNotification(`魔回数${arrow} ${prev.magicalNoA} → ${combatTotals.magicalNoA}`);
       }
     }
-    prevStatsRef.current = { partyStats, attacks: attackTotals };
-  }, [partyStats, attackTotals.melee, attackTotals.ranged, attackTotals.magical, onAddNotification]);
+    prevStatsRef.current = combatTotals;
+  }, [combatTotals.physDef, combatTotals.magDef, combatTotals.hp,
+      combatTotals.meleeAtk, combatTotals.meleeNoA,
+      combatTotals.rangedAtk, combatTotals.rangedNoA,
+      combatTotals.magicalAtk, combatTotals.magicalNoA, onAddNotification]);
   const [pendingEdits, setPendingEdits] = useState<Partial<Character> | null>(null);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
   const [lastSlotTap, setLastSlotTap] = useState<{ slot: number; time: number } | null>(null);
