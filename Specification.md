@@ -611,11 +611,13 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 ### 8.1 Notification Logic & Display
 **Visual & Overlay (Toast)**
 - Position: bottom and left side
-- Layout: Flex-col-reverse (Newest notifications appear at the bottom, pushing older ones up).
+- Layout:
+  	- Flex-col-reverse (Newest notifications appear at the bottom, pushing older ones up).
+  	- Dynamic Width: The box size must shrink or grow to fit the length of the text precisely (with padding).
 - Text and color:
 	- Normal style: small font size, Blue/White translucent, no border color
 	- Rare style: small font size, Dark Orange/White translucent, no border color
-- Behavior: Auto-dismiss after 5000ms. Manual dismiss on onClick. Status update dismisses previous status changes notification. (display only latest status changes)
+- Behavior: Auto-dismiss after 5000ms. Manual dismiss **all of notification** on onClick. Status update dismisses previous status changes notification. (display only latest status changes)
 
 **Notification Logic**
 - Item Drops
