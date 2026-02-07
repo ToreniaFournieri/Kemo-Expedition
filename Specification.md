@@ -342,6 +342,7 @@ inventory = {
 - character.`f.offense_amplifier` (phase: )
   - If phase is CLOSE,
     - If character.`a.iaigiri`, return 2.0.
+  - Else return 1.0. 
 
 - character.`f.accuracy_amplifier` (phase: )
   - If phase is LONG,  return: `d.accuracy_potency`.
