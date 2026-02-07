@@ -1148,18 +1148,41 @@ function ExpeditionTab({
                             };
                             const emoji = getPhaseEmoji();
                             const isEnemy = log.actor === 'enemy';
-                            // Format hit count display
-                            const hitDisplay = log.totalAttempts !== undefined && log.totalAttempts > 0
-                              ? `(${log.totalAttempts}回中${log.hits ?? log.totalAttempts}回ヒット)`
-                              : '';
+                            const hits = log.hits ?? 0;
+                            const totalAttempts = log.totalAttempts ?? 0;
+                            const allMissed = totalAttempts > 0 && hits === 0;
+
+                            // Format hit count display: (N/M回)
+                            const hitDisplay = totalAttempts > 0 ? `(${hits}/${totalAttempts}回)` : '';
+
+                            // Build action text with miss handling
+                            let actionText: string;
+                            if (isEnemy) {
+                              if (allMissed) {
+                                // Enemy missed: 敵がXXに攻撃したが外れた！
+                                actionText = `敵が${log.action.replace('！', 'したが外れた！')}`;
+                              } else {
+                                actionText = `敵が${log.action}`;
+                              }
+                            } else {
+                              if (allMissed) {
+                                // Character missed: XXの攻撃は外れた！
+                                // Extract character name from action like "キツネ丸 の攻撃！"
+                                const charName = log.action.split(' の')[0];
+                                actionText = `${charName} の攻撃は外れた！`;
+                              } else {
+                                actionText = log.action;
+                              }
+                            }
+
                             return (
                               <div key={j} className="flex justify-between text-gray-600">
                                 <span>
                                   <span className="text-gray-400">[{phaseLabel}]</span>{' '}
-                                  {isEnemy ? `敵が${log.action}` : log.action}
+                                  {actionText}
                                   {hitDisplay && <span className="text-gray-400">{hitDisplay}</span>}
                                 </span>
-                                {log.damage !== undefined && (
+                                {log.damage !== undefined && log.damage > 0 && (
                                   <span className={isEnemy ? 'text-accent' : 'text-sub'}>
                                     ({emoji} {log.damage})
                                   </span>

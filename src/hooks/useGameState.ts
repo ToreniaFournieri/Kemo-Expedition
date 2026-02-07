@@ -343,7 +343,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             const baseItem = getItemById(enemy.dropItemId);
             if (baseItem) {
               const newItem: Item = { ...baseItem, enhancement: enhVal, superRare: srVal };
-              rewards.push(newItem);
               entry.reward = getItemDisplayName(newItem);
 
               // Add to inventory (handles auto-sell)
@@ -351,6 +350,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               currentInventory = result.inventory;
               currentGold = result.gold;
               totalAutoSellProfit += result.autoSellProfit;
+
+              // Only add to rewards if not auto-sold (for notification purposes)
+              if (!result.wasAutoSold) {
+                rewards.push(newItem);
+              }
             }
           }
 
