@@ -708,6 +708,14 @@ function PartyTab({
                 if (hasMagical) offenseLines.push(`魔法攻撃:${Math.floor(stats.magicalAttack)} x ${stats.magicalNoA}回(x${midAmp.toFixed(2)})`);
                 if (hasMelee) offenseLines.push(`近接攻撃:${Math.floor(stats.meleeAttack)} x ${stats.meleeNoA}回(x${closeAmp.toFixed(2)})`);
 
+                // Add accuracy display if character has ranged or melee NoA
+                // 命中率: d.accuracy_potency x 100 % (減衰: x (0.90 + c.accuracy+v))
+                const hasPhysicalAttacks = stats.rangedNoA > 0 || stats.meleeNoA > 0;
+                if (hasPhysicalAttacks) {
+                  const baseDecay = 0.90 + stats.accuracyBonus;
+                  offenseLines.push(`命中率: ${Math.round(stats.attackPotency * 100)}% (減衰: x${baseDecay.toFixed(2)})`);
+                }
+
                 // Defense lines (always 3)
                 const defenseLines = [
                   `属性:${elementName}(x${stats.elementalOffenseValue.toFixed(1)})`,
@@ -752,10 +760,10 @@ function PartyTab({
                   const key = b.type.replace('_multiplier', '');
                   if (!multiplierValues[key]) multiplierValues[key] = new Set();
                   multiplierValues[key].add(b.value);
-                } else if (['vitality', 'strength', 'intelligence', 'mind', 'equip_slot', 'grit', 'caster'].includes(b.type)) {
+                } else if (['vitality', 'strength', 'intelligence', 'mind', 'equip_slot', 'grit', 'caster', 'pursuit'].includes(b.type)) {
                   additive[b.type] = (additive[b.type] ?? 0) + b.value;
-                } else if (b.type === 'penet') {
-                  additive['penet'] = (additive['penet'] ?? 0) + b.value;
+                } else if (b.type === 'penet' || b.type === 'accuracy' || b.type === 'evasion') {
+                  additive[b.type] = (additive[b.type] ?? 0) + b.value;
                 }
               }
 
@@ -774,7 +782,8 @@ function PartyTab({
               };
               const addNames: Record<string, string> = {
                 vitality: '体', strength: '力', intelligence: '知', mind: '精',
-                equip_slot: '装備', grit: '根性', caster: '術者', penet: '貫通'
+                equip_slot: '装備', grit: '根性', caster: '術者', penet: '貫通',
+                pursuit: '追撃', accuracy: '命中', evasion: '回避'
               };
 
               for (const [key, val] of Object.entries(multipliers)) {
@@ -784,6 +793,9 @@ function PartyTab({
                 if (val !== 0) {
                   if (key === 'penet') {
                     parts.push(`${addNames[key]}+${Math.round(val * 100)}%`);
+                  } else if (key === 'accuracy' || key === 'evasion') {
+                    // Show as decimal like +0.01
+                    parts.push(`${addNames[key]}+${val.toFixed(2)}`);
                   } else {
                     parts.push(`${addNames[key] ?? key}+${val}`);
                   }
@@ -1133,11 +1145,16 @@ function ExpeditionTab({
                             };
                             const emoji = getPhaseEmoji();
                             const isEnemy = log.actor === 'enemy';
+                            // Format hit count display
+                            const hitDisplay = log.totalAttempts !== undefined && log.totalAttempts > 0
+                              ? `(${log.totalAttempts}回中${log.hits ?? log.totalAttempts}回ヒット)`
+                              : '';
                             return (
                               <div key={j} className="flex justify-between text-gray-600">
                                 <span>
                                   <span className="text-gray-400">[{phaseLabel}]</span>{' '}
                                   {isEnemy ? `敵が${log.action}` : log.action}
+                                  {hitDisplay && <span className="text-gray-400">{hitDisplay}</span>}
                                 </span>
                                 {log.damage !== undefined && (
                                   <span className={isEnemy ? 'text-accent' : 'text-sub'}>
