@@ -244,7 +244,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 - *note:* item might have multiple bonus. sword may have `d.HP` but subtle value.
 
-#### 2.4.2 Base Item list
+#### 2.4.2 Item list
 
 |Tier| base_power | multiplier for　鎧, 衣, 剣, 矢, 杖 | plus for 盾 | base_power (NoA) for 手, 弓, 媒 | fixed NoA for 手, 弓, 媒 |penalty for 刀, ボ, 書| 
 |----|------------|--------|-----------|--------|--------|-------|
@@ -314,8 +314,26 @@ Tier 4 common `i.katana`: `d.melee_attack` +82, `c.evasion-0.004`, `c_melee_NoA-
 Tier 5 common `i.arrow`: `d.ranged_attack` +41, `c.ranged_attack+0.08`
 
 ```
+#### 2.4.3 Item variation 
 
-#### 2.4.3 Item stacking
+**Item Variation Hierarchy**
+- Common (12 variations per tier): 1 standard version of every item type.
+- Uncommon (24 variations per tier): 2 specialized versions of every item type.
+- Rare ( 9~10 variations per tier): Any of the 12 types can be Rare, unless that type is the designated Mythic for that Tier. 
+- Mythic (2~3 variations per tier): defines bellows:
+
+| Tier | Mythic item types |
+|---|---------|
+| 1 | `i.sword` , `i.grimoire` |
+| 2 | `i.armor` , `i.arrow` |
+| 3 | `i.wand`,`i.robe` |
+| 4 | `i.katana` , `i.shield `| 
+| 5 | `i.bolt`,  `i.archery` |
+| 6 | `i.armor`, `i.catalyst` |
+| 7 | `i.sword` , `i.wand` |
+| 8 | `i.katana`, `i.bolt`, `i.grimoire`  |
+
+#### 2.4.4 Item stacking
 - Items are stacked based on their unique combination of (superRare title, enhancement title, and base item ID). The default `max_stack` is 99.
   - Inventory Tracking: The inventory tracks item variants rather than individual instances.
   - Display: Shows the total stack count per variant.
