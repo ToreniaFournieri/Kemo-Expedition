@@ -15,6 +15,14 @@ import { getRaceById } from '../data/races';
 import { getClassById } from '../data/classes';
 import { getPredispositionById } from '../data/predispositions';
 import { getLineageById } from '../data/lineages';
+import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
+
+// Get enhancement and super rare multiplier for an item
+function getItemEnhancementMultiplier(item: Item): number {
+  const enhMult = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
+  const srMult = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
+  return enhMult * srMult;
+}
 
 // Map item category to multiplier bonus type
 const CATEGORY_TO_MULTIPLIER: Record<ItemCategory, BonusType | null> = {
@@ -194,13 +202,15 @@ export function computeCharacterStats(
   const equippedItems = character.equipment.slice(0, maxEquipSlots).filter((item): item is Item => item !== null);
 
   for (const item of equippedItems) {
-    const multiplier = getMultiplier(item.category);
+    const categoryMult = getMultiplier(item.category);
+    const enhanceMult = getItemEnhancementMultiplier(item);
+    const multiplier = categoryMult * enhanceMult;
 
     if (item.rangedAttack) {
       rangedAttack += item.rangedAttack * multiplier;
     }
     if (item.rangedNoA) {
-      rangedNoA += item.rangedNoA * multiplier; // Sum decimals, round at end
+      rangedNoA += item.rangedNoA * categoryMult; // NoA uses category multiplier only
     }
     if (item.magicalAttack) {
       magicalAttack += item.magicalAttack * multiplier;
@@ -209,7 +219,7 @@ export function computeCharacterStats(
       meleeAttack += item.meleeAttack * multiplier;
     }
     if (item.meleeNoA) {
-      meleeNoA += item.meleeNoA * multiplier; // Sum decimals, round at end
+      meleeNoA += item.meleeNoA * categoryMult; // NoA uses category multiplier only
     }
 
     // Elemental offense from equipment (priority: thunder > ice > fire > none)
@@ -248,13 +258,15 @@ export function computeCharacterStats(
   meleeNoA = Math.floor(meleeNoA);
 
   // Calculate individual defense stats
-  // d.physical_defense = Item Bonuses of Physical defense x its c.multiplier x b.vitality / 10
-  // d.magical_defense = Item Bonuses of Magical defense x its c.multiplier x b.mind / 10
+  // d.physical_defense = Item Bonuses of Physical defense x its c.multiplier x enhancement x b.vitality / 10
+  // d.magical_defense = Item Bonuses of Magical defense x its c.multiplier x enhancement x b.mind / 10
   let physicalDefense = 0;
   let magicalDefense = 0;
 
   for (const item of equippedItems) {
-    const multiplier = getMultiplier(item.category);
+    const categoryMult = getMultiplier(item.category);
+    const enhanceMult = getItemEnhancementMultiplier(item);
+    const multiplier = categoryMult * enhanceMult;
     if (item.physicalDefense) {
       physicalDefense += item.physicalDefense * multiplier;
     }

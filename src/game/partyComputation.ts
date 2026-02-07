@@ -7,12 +7,21 @@ import {
   ElementalResistance,
   ItemCategory,
   BonusType,
+  Item,
 } from '../types';
 import { computeCharacterStats } from './characterComputation';
 import { getRaceById } from '../data/races';
 import { getClassById } from '../data/classes';
 import { getPredispositionById } from '../data/predispositions';
 import { getLineageById } from '../data/lineages';
+import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
+
+// Get enhancement and super rare multiplier for an item
+function getItemEnhancementMultiplier(item: Item): number {
+  const enhMult = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
+  const srMult = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
+  return enhMult * srMult;
+}
 
 const CATEGORY_TO_MULTIPLIER: Record<ItemCategory, BonusType | null> = {
   sword: 'sword_multiplier',
@@ -96,7 +105,7 @@ export function computePartyStats(party: Party): {
   );
 
   // Calculate party HP
-  // Party.d.HP = 100 + (Total sum of individual ((Item Bonuses of HP x its c.multiplier + level x b.vitality) x (b.vitality + b.mind) / 20))
+  // Party.d.HP = 100 + (Total sum of individual ((Item Bonuses of HP x its c.multiplier x enhancement + level x b.vitality) x (b.vitality + b.mind) / 20))
   let baseHp = 100;
   let bonusHp = 0;
 
@@ -104,12 +113,13 @@ export function computePartyStats(party: Party): {
     const stats = getCharacterBaseStats(character);
     const statMultiplier = (stats.vitality + stats.mind) / 20;
 
-    // Sum item HP bonuses with multipliers
+    // Sum item HP bonuses with multipliers (category + enhancement)
     let itemHpBonus = 0;
     for (const item of character.equipment) {
       if (item && item.partyHP) {
-        const multiplier = getCharacterMultiplier(character, item.category);
-        itemHpBonus += item.partyHP * multiplier;
+        const categoryMult = getCharacterMultiplier(character, item.category);
+        const enhanceMult = getItemEnhancementMultiplier(item);
+        itemHpBonus += item.partyHP * categoryMult * enhanceMult;
       }
     }
 
@@ -121,7 +131,7 @@ export function computePartyStats(party: Party): {
   }
 
   // Calculate party physical defense
-  // d.physical_defense = (Total sum of individual (Item Bonuses of Physical defense x its c.multiplier x b.vitality / 10))
+  // d.physical_defense = (Total sum of individual (Item Bonuses of Physical defense x its c.multiplier x enhancement x b.vitality / 10))
   let physicalDefense = 0;
   for (const character of party.characters) {
     const stats = getCharacterBaseStats(character);
@@ -129,14 +139,15 @@ export function computePartyStats(party: Party): {
 
     for (const item of character.equipment) {
       if (item && item.physicalDefense) {
-        const multiplier = getCharacterMultiplier(character, item.category);
-        physicalDefense += item.physicalDefense * multiplier * statMultiplier;
+        const categoryMult = getCharacterMultiplier(character, item.category);
+        const enhanceMult = getItemEnhancementMultiplier(item);
+        physicalDefense += item.physicalDefense * categoryMult * enhanceMult * statMultiplier;
       }
     }
   }
 
   // Calculate party magical defense
-  // d.magical_defense = (Total sum of individual (Item Bonuses of Magical defense x its c.multiplier x b.mind / 10))
+  // d.magical_defense = (Total sum of individual (Item Bonuses of Magical defense x its c.multiplier x enhancement x b.mind / 10))
   let magicalDefense = 0;
   for (const character of party.characters) {
     const stats = getCharacterBaseStats(character);
@@ -144,8 +155,9 @@ export function computePartyStats(party: Party): {
 
     for (const item of character.equipment) {
       if (item && item.magicalDefense) {
-        const multiplier = getCharacterMultiplier(character, item.category);
-        magicalDefense += item.magicalDefense * multiplier * statMultiplier;
+        const categoryMult = getCharacterMultiplier(character, item.category);
+        const enhanceMult = getItemEnhancementMultiplier(item);
+        magicalDefense += item.magicalDefense * categoryMult * enhanceMult * statMultiplier;
       }
     }
   }
