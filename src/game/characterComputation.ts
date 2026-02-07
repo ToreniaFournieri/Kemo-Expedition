@@ -273,6 +273,19 @@ export function computeCharacterStats(
     });
   }
 
+  // Calculate accuracy potency based on row position (for accuracy_amplifier)
+  // Normal decay: 15% per step (1.0 * 0.85^(row-1))
+  // Hunter1 decay: 10% per step (1.0 * 0.90^(row-1))
+  // Hunter2 decay: 7% per step (1.0 * 0.93^(row-1))
+  const hunterLevel = collection.abilities.get('hunter');
+  let decayRate = 0.85; // Normal: 15% decay
+  if (hunterLevel === 2) {
+    decayRate = 0.93; // Hunter2: 7% decay
+  } else if (hunterLevel === 1) {
+    decayRate = 0.90; // Hunter1: 10% decay
+  }
+  const accuracyPotency = Math.pow(decayRate, row - 1);
+
   return {
     characterId: character.id,
     row,
@@ -290,6 +303,7 @@ export function computeCharacterStats(
     penetMultiplier: collection.penet,
     elementalOffense,
     elementalOffenseValue,
+    accuracyPotency,
     accuracyBonus: collection.accuracy,
     evasionBonus: collection.evasion,
   };
