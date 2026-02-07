@@ -255,6 +255,8 @@ export interface BattleLogEntry {
   characterId?: number;
   action: string;
   damage?: number;
+  hits?: number; // Number of successful hits
+  totalAttempts?: number; // Total number of attack attempts
   isFirstStrike?: boolean;
   isCounter?: boolean;
   isReAttack?: boolean;

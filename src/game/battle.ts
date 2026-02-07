@@ -110,13 +110,19 @@ function getEnemyNoA(phase: BattlePhase, enemy: EnemyDef): number {
   }
 }
 
+interface CharacterAttackResult {
+  damage: number;
+  totalAttempts: number;
+  hits: number;
+}
+
 function calculateCharacterDamage(
   phase: BattlePhase,
   charStats: ComputedCharacterStats,
   enemy: EnemyDef,
   partyStats: ComputedPartyStats,
   noAMultiplier: number = 1.0 // For counter/re-attack, use 0.5
-): number {
+): CharacterAttackResult {
   let attack = 0;
   let noA = 0;
   let defense = 0;
@@ -142,7 +148,7 @@ function calculateCharacterDamage(
   // Apply NoA multiplier and round up
   noA = Math.ceil(noA * noAMultiplier);
 
-  if (noA === 0) return 0;
+  if (noA === 0) return { damage: 0, totalAttempts: 0, hits: 0 };
 
   // Apply penetration
   const effectiveDefense = defense * (1 - charStats.penetMultiplier);
@@ -176,7 +182,8 @@ function calculateCharacterDamage(
     elementalMultiplier * partyStats.offenseAmplifier * attackPotency;
   const totalDamage = Math.max(1, rawDamage);
 
-  return Math.floor(totalDamage);
+  // Currently all attacks hit (no accuracy roll implemented yet)
+  return { damage: Math.floor(totalDamage), totalAttempts: noA, hits: noA };
 }
 
 function hasFirstStrike(charStats: ComputedCharacterStats, phase: BattlePhase): boolean {
@@ -238,9 +245,9 @@ export function executeBattle(
     const firstStrikeChars = characterStats.filter(cs => hasFirstStrike(cs, phase));
     for (const cs of firstStrikeChars) {
       if (enemyHp <= 0) break;
-      const damage = calculateCharacterDamage(phase, cs, enemy, partyStats);
-      if (damage > 0) {
-        enemyHp -= damage;
+      const result = calculateCharacterDamage(phase, cs, enemy, partyStats);
+      if (result.damage > 0) {
+        enemyHp -= result.damage;
         const char = party.characters.find(c => c.id === cs.characterId);
         const attackType = phase === 'mid' ? '魔法先制攻撃' : '先制攻撃';
         log.push({
@@ -248,7 +255,9 @@ export function executeBattle(
           actor: 'character',
           characterId: cs.characterId,
           action: `${char?.name ?? '???'} の${attackType}！`,
-          damage,
+          damage: result.damage,
+          hits: result.hits,
+          totalAttempts: result.totalAttempts,
           isFirstStrike: true,
           elementalOffense: cs.elementalOffense,
         });
@@ -308,8 +317,10 @@ export function executeBattle(
         log.push({
           phase,
           actor: 'enemy',
-          action: `${targetChar?.name ?? '???'} に${attackName}(${attack.count}回)！`,
+          action: `${targetChar?.name ?? '???'} に${attackName}！`,
           damage: attack.damage,
+          hits: attack.count, // Currently all attacks hit (no accuracy roll)
+          totalAttempts: attack.count,
           elementalOffense: enemy.elementalOffense,
         });
       }
@@ -334,9 +345,9 @@ export function executeBattle(
     // Counter uses NoA x 0.5 (rounded up)
     for (const [charId, attack] of attacksByTarget) {
       if (attack.damage > 0 && hasCounter(attack.charStats, phase)) {
-        const damage = calculateCharacterDamage(phase, attack.charStats, enemy, partyStats, 0.5);
-        if (damage > 0) {
-          enemyHp -= damage;
+        const result = calculateCharacterDamage(phase, attack.charStats, enemy, partyStats, 0.5);
+        if (result.damage > 0) {
+          enemyHp -= result.damage;
           const targetChar = party.characters.find(c => c.id === charId);
           const counterType = phase === 'mid' ? '魔法カウンター' : 'カウンター';
           log.push({
@@ -344,7 +355,9 @@ export function executeBattle(
             actor: 'character',
             characterId: charId,
             action: `${targetChar?.name ?? '???'} の${counterType}！`,
-            damage,
+            damage: result.damage,
+            hits: result.hits,
+            totalAttempts: result.totalAttempts,
             isCounter: true,
             elementalOffense: attack.charStats.elementalOffense,
           });
@@ -371,9 +384,9 @@ export function executeBattle(
     const regularChars = characterStats.filter(cs => !hasFirstStrike(cs, phase));
     for (const cs of regularChars) {
       if (enemyHp <= 0) break;
-      const damage = calculateCharacterDamage(phase, cs, enemy, partyStats);
-      if (damage > 0) {
-        enemyHp -= damage;
+      const result = calculateCharacterDamage(phase, cs, enemy, partyStats);
+      if (result.damage > 0) {
+        enemyHp -= result.damage;
         const char = party.characters.find(c => c.id === cs.characterId);
         const attackType = phase === 'mid' ? '魔法攻撃' : '攻撃';
         log.push({
@@ -381,7 +394,9 @@ export function executeBattle(
           actor: 'character',
           characterId: cs.characterId,
           action: `${char?.name ?? '???'} の${attackType}！`,
-          damage,
+          damage: result.damage,
+          hits: result.hits,
+          totalAttempts: result.totalAttempts,
           elementalOffense: cs.elementalOffense,
         });
       }
@@ -392,9 +407,9 @@ export function executeBattle(
     for (const cs of characterStats) {
       const reAttackCount = hasReAttack(cs);
       for (let i = 0; i < reAttackCount && enemyHp > 0; i++) {
-        const damage = calculateCharacterDamage(phase, cs, enemy, partyStats, 0.5);
-        if (damage > 0) {
-          enemyHp -= damage;
+        const result = calculateCharacterDamage(phase, cs, enemy, partyStats, 0.5);
+        if (result.damage > 0) {
+          enemyHp -= result.damage;
           const char = party.characters.find(c => c.id === cs.characterId);
           const reAttackType = phase === 'mid' ? '魔法連撃' : '連撃';
           log.push({
@@ -402,7 +417,9 @@ export function executeBattle(
             actor: 'character',
             characterId: cs.characterId,
             action: `${char?.name ?? '???'} の${reAttackType}！`,
-            damage,
+            damage: result.damage,
+            hits: result.hits,
+            totalAttempts: result.totalAttempts,
             isReAttack: true,
             elementalOffense: cs.elementalOffense,
           });

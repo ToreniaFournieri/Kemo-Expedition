@@ -12,6 +12,7 @@ export default function App() {
       </div>
       <NotificationToast
         notifications={notifications}
+        onDismiss={actions.dismissNotification}
         onDismissAll={actions.dismissAllNotifications}
       />
     </div>

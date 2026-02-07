@@ -3,16 +3,18 @@ import { GameNotification } from '../types';
 
 interface NotificationToastProps {
   notifications: GameNotification[];
+  onDismiss: (id: string) => void;
   onDismissAll: () => void;
 }
 
-export function NotificationToast({ notifications, onDismissAll }: NotificationToastProps) {
+export function NotificationToast({ notifications, onDismiss, onDismissAll }: NotificationToastProps) {
   return (
     <div className="fixed bottom-4 left-4 flex flex-col-reverse gap-1 z-50">
       {notifications.map((notification) => (
         <NotificationItem
           key={notification.id}
           notification={notification}
+          onDismiss={onDismiss}
           onDismissAll={onDismissAll}
         />
       ))}
@@ -22,20 +24,21 @@ export function NotificationToast({ notifications, onDismissAll }: NotificationT
 
 interface NotificationItemProps {
   notification: GameNotification;
+  onDismiss: (id: string) => void;
   onDismissAll: () => void;
 }
 
-function NotificationItem({ notification, onDismissAll }: NotificationItemProps) {
+function NotificationItem({ notification, onDismiss, onDismissAll }: NotificationItemProps) {
   useEffect(() => {
-    // Auto-dismiss after 5000ms
+    // Auto-dismiss individual notification after 5000ms
     const dismissTimer = setTimeout(() => {
-      onDismissAll();
+      onDismiss(notification.id);
     }, 5000);
 
     return () => {
       clearTimeout(dismissTimer);
     };
-  }, [notification.id, onDismissAll]);
+  }, [notification.id, onDismiss]);
 
   const isRare = notification.style === 'rare';
   // Use bold for positive stat changes, normal weight for negative
