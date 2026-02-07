@@ -298,10 +298,16 @@ export function executeBattle(
     }
 
     // Enemy attacks with targeting (each attack draws a new target)
+    // Nth_hit is global for all enemy attacks in this phase
     const noA = getEnemyNoA(phase, enemy);
 
-    // Track attacks grouped by target: Map<characterId, { damage: number, count: number, charStats: ComputedCharacterStats }>
-    const attacksByTarget = new Map<number, { damage: number; count: number; charStats: ComputedCharacterStats }>();
+    // Track attacks grouped by target: Map<characterId, { damage, hits, totalAttempts, charStats }>
+    const attacksByTarget = new Map<number, { damage: number; hits: number; totalAttempts: number; charStats: ComputedCharacterStats }>();
+
+    // Enemy accuracy potency (enemies are always at row 1, so potency = 1.0)
+    const enemyAccuracyPotency = 1.0;
+    // Enemy accuracy bonus (enemies don't have accuracy stat yet, default to 0)
+    const enemyAccuracyBonus = 0;
 
     for (let i = 0; i < noA; i++) {
       const { row: targetRow, newCtx } = getTargetRow(ctx, phase);
@@ -311,13 +317,23 @@ export function executeBattle(
       if (targetCharStats) {
         const singleDamage = calculateSingleEnemyAttackDamage(phase, enemy, partyStats, targetCharStats);
         const existing = attacksByTarget.get(targetCharStats.characterId);
+
+        // For MID phase (magical), always hit; for LONG/CLOSE, use hit detection
+        // Nth_hit is (i + 1) - global across all enemy attacks
+        const didHit = phase === 'mid' ||
+          hitDetection(enemyAccuracyPotency, enemyAccuracyBonus, targetCharStats.evasionBonus, i + 1);
+
         if (existing) {
-          existing.damage += singleDamage;
-          existing.count += 1;
+          existing.totalAttempts += 1;
+          if (didHit) {
+            existing.damage += singleDamage;
+            existing.hits += 1;
+          }
         } else {
           attacksByTarget.set(targetCharStats.characterId, {
-            damage: singleDamage,
-            count: 1,
+            damage: didHit ? singleDamage : 0,
+            hits: didHit ? 1 : 0,
+            totalAttempts: 1,
             charStats: targetCharStats,
           });
         }
@@ -327,21 +343,24 @@ export function executeBattle(
     // Apply damage and generate logs grouped by target
     let totalEnemyDamage = 0;
     for (const [charId, attack] of attacksByTarget) {
+      const targetChar = party.characters.find(c => c.id === charId);
+      const attackName = phase === 'mid' ? '魔法攻撃' : '攻撃';
+
       if (attack.damage > 0) {
         partyHp -= attack.damage;
         totalEnemyDamage += attack.damage;
-        const targetChar = party.characters.find(c => c.id === charId);
-        const attackName = phase === 'mid' ? '魔法攻撃' : '攻撃';
-        log.push({
-          phase,
-          actor: 'enemy',
-          action: `${targetChar?.name ?? '???'} に${attackName}！`,
-          damage: attack.damage,
-          hits: attack.count, // Currently all attacks hit (no accuracy roll)
-          totalAttempts: attack.count,
-          elementalOffense: enemy.elementalOffense,
-        });
       }
+
+      // Always log the attack attempt (even if all missed)
+      log.push({
+        phase,
+        actor: 'enemy',
+        action: `${targetChar?.name ?? '???'} に${attackName}！`,
+        damage: attack.damage > 0 ? attack.damage : undefined,
+        hits: attack.hits,
+        totalAttempts: attack.totalAttempts,
+        elementalOffense: enemy.elementalOffense,
+      });
     }
 
     // Check for defeat
