@@ -261,7 +261,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 |------|--------|------|------|
 |`i.armor` | `d.physical_defense` | `c.physical_defense+v` | additional `d.physical_defense`, `d.HP`, `d.magical_defense`, `b.vitality+1`  |
 |`i.robe` |  `d.magical_defense`  | `c.magical_defense+v` | `b.mind+1`, `d.HP`, `c.evasion+0.01` |
-|`i.shield ` | `d.HP` | `c.evasion+v` | `d.HP`, `d.physical_defense`, `d.melee_attack`, `b.vitality+1` |
+|`i.shield ` | `d.HP` | `c.evasion+v` | `d.physical_defense`, `d.melee_attack`, `b.vitality+1` |
 |`i.sword` | `d.melee_attack` | `c.melee_attack+v` | `c.accuracy+0.01`, `b.strength+1`, `e.fire`, `d.physical_defense` ,`d.HP` |
 |`i.katana` | `d.melee_attack` | `c.melee_attack+V`, `c.evasion-v`, `c.melee_NoA-v` | additional `d.melee_attack`, `c.penet_+0.01`, `c.penet_+0.02`, `b.mind+1` |
 |`i.gauntlet` | `d.melee_NoA` | `c.melee_NoA+v` | `d.melee_attack` | additional `d.melee_NoA`, `d.physical_defense`, `b.strength+1` |
@@ -295,8 +295,8 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 |------|--------|-------|
 | common | base_power x rarelity.amplifier, and base c.multiplier | every enemy |
 | uncommon | base_power x rarelity.amplifier + **one subtle_power`d.` or `c.` bonus**, base c.multiplier | Normal enemy |
-| rare | base_power x rarelity.amplifier + **two** subtle_power`d.` or `c.` bonus, base c.multiplier | Elite enemy |
-| mythic | base_power x rarelity.amplifier + two subtle_power`d.` or `c.` bonus,  base c.multipliers and one **`b.` bonus** | Boss enemey |
+| rare | base_power x rarelity.amplifier + **two** subtle_power`d.`, **`e.`**, or `c.` bonus, base c.multiplier | Elite enemy |
+| mythic | base_power x rarelity.amplifier + two subtle_power`d.`, `e.`, or `c.` bonus, base c.multipliers and one **`b.` bonus** | Boss enemey |
 
 - Normal enemy has two drop items. common and uncommon.
 - Elite enemy has 2 ~ 4 drop items. common ~ rare. (must have at least one rare)
