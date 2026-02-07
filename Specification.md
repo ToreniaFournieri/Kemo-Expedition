@@ -261,15 +261,15 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 |------|--------|------|
 |`i.armor` | `d.physical_defense` | `c.physical_defense+v` |
 |`i.robe` |  `d.magical_defense`  | `c.magical_defense+v` |
-|`i.shield ` | `d.HP` | (none) |
+|`i.shield ` | `d.HP` | `c.evation+v` |
 |`i.sword` | `d.melee_attack` | `c.melee_attack+v` |
-|`i.katana` | `d.melee_attack` | `c.melee_attack+V` |
+|`i.katana` | `d.melee_attack` | `c.melee_attack+V`, `c.evation-v`, `c.melee_NoA-1.0` |
 |`i.gauntlet` | `d.melee_NoA` | `c.melee_NoA+v` |
 |`i.arrow` | `d.ranged_attack` | `c.ranged_attack+v` |
-|`i.bolt` | `d.ranged_attack` | `c.ranged_attack+v` |
+|`i.bolt` | `d.ranged_attack` | `c.ranged_attack+v`, `c.evation-v`, `c.ranged_NoA-1.0` |
 |`i.archery` | `d.ranged_NoA` | `c.ranged_NoA+v` |
 |`i.wand` | `d.magical_attack` | `c.magical_attack+v` |
-|`i.grimoire` | `d.magical_attack` | `c.magical_attack+v` |
+|`i.grimoire` | `d.magical_attack` | `c.magical_attack+v`, `c.evation-v`, `c.magical_NoA-1.0` |
 |`i.catalyst` | `d.magical_NoA` | `c.magical_NoA+v` |
 
 **Amplifier of base power**
