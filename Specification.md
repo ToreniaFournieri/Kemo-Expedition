@@ -248,28 +248,28 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 |Tier| base power | multiplier for　鎧, 衣, 剣, 矢, 杖 | plus for 盾 | Scale NoA for 手, 弓, 媒 | fixed NoA for 手, 弓, 媒 |penalty for 刀, ボ, 書| 
 |----|------------|--------|-----------|--------|--------|-------|
-| 1 | 12 | `c.target_status+0.13` | `c.evation+0.013` | 0.8 | `c_N_NoA+1` | `c.evation-0.001`, `c.N_NoA-1.0` |
-| 2 | 18 | `c.target_status+0.12` | `c.evation+0.012` | 0.7 | `c_N_NoA+2` | `c.evation-0.002`, `c.N_NoA-1.2` |
-| 3 | 27 | `c.target_status+0.11` | `c.evation+0.011` | 0.6 | `c_N_NoA+3` | `c.evation-0.003`, `c.N_NoA-1.4` |
-| 4 | 41 | `c.target_status+0.09` | `c.evation+0.009` | 0.5 | `c_N_NoA+4` | `c.evation-0.004`, `c.N_NoA-1.6` |
-| 5 | 61 | `c.target_status+0.08` | `c.evation+0.008` | 0.4 | `c_N_NoA+5` | `c.evation-0.005`, `c.N_NoA-1.8` |
-| 6 | 91 | `c.target_status+0.07` | `c.evation+0.007` | 0.3 | `c_N_NoA+6` | `c.evation-0.006`, `c.N_NoA-2.0` |
-| 7 | 137 | `c.target_status+0.06` | `c.evation+0.006` | 0.2 | `c_N_NoA+7` | `c.evation-0.007`, `c.N_NoA-2.2` |
-| 8 | 205 | `c.target_status+0.05` | `c.evation+0.005` | 0.1 | `c_N_NoA+8` | `c.evation-0.008`, `c.N_NoA-2.4` |
+| 1 | 12 | `c.target_status+0.13` | `c.evasion+0.013` | 0.8 | `c_N_NoA+1` | `c.evasion-0.001`, `c.N_NoA-1.0` |
+| 2 | 18 | `c.target_status+0.12` | `c.evasion+0.012` | 0.7 | `c_N_NoA+2` | `c.evasion-0.002`, `c.N_NoA-1.2` |
+| 3 | 27 | `c.target_status+0.11` | `c.evasion+0.011` | 0.6 | `c_N_NoA+3` | `c.evasion-0.003`, `c.N_NoA-1.4` |
+| 4 | 41 | `c.target_status+0.09` | `c.evasion+0.009` | 0.5 | `c_N_NoA+4` | `c.evasion-0.004`, `c.N_NoA-1.6` |
+| 5 | 61 | `c.target_status+0.08` | `c.evasion+0.008` | 0.4 | `c_N_NoA+5` | `c.evasion-0.005`, `c.N_NoA-1.8` |
+| 6 | 91 | `c.target_status+0.07` | `c.evasion+0.007` | 0.3 | `c_N_NoA+6` | `c.evasion-0.006`, `c.N_NoA-2.0` |
+| 7 | 137 | `c.target_status+0.06` | `c.evasion+0.006` | 0.2 | `c_N_NoA+7` | `c.evasion-0.007`, `c.N_NoA-2.2` |
+| 8 | 205 | `c.target_status+0.05` | `c.evasion+0.005` | 0.1 | `c_N_NoA+8` | `c.evasion-0.008`, `c.N_NoA-2.4` |
 
 | Item type | base power/Scale for | multiplier for |
 |------|--------|------|
 |`i.armor` | `d.physical_defense` | `c.physical_defense+v` |
 |`i.robe` |  `d.magical_defense`  | `c.magical_defense+v` |
-|`i.shield ` | `d.HP` | `c.evation+v` |
+|`i.shield ` | `d.HP` | `c.evasion+v` |
 |`i.sword` | `d.melee_attack` | `c.melee_attack+v` |
-|`i.katana` | `d.melee_attack` | `c.melee_attack+V`, `c.evation-v`, `c.melee_NoA-1.0` |
+|`i.katana` | `d.melee_attack` | `c.melee_attack+V`, `c.evasion-v`, `c.melee_NoA-1.0` |
 |`i.gauntlet` | `d.melee_NoA` | `c.melee_NoA+v` |
 |`i.arrow` | `d.ranged_attack` | `c.ranged_attack+v` |
-|`i.bolt` | `d.ranged_attack` | `c.ranged_attack+v`, `c.evation-v`, `c.ranged_NoA-1.0` |
+|`i.bolt` | `d.ranged_attack` | `c.ranged_attack+v`, `c.evasion-v`, `c.ranged_NoA-1.0` |
 |`i.archery` | `d.ranged_NoA` | `c.ranged_NoA+v` |
 |`i.wand` | `d.magical_attack` | `c.magical_attack+v` |
-|`i.grimoire` | `d.magical_attack` | `c.magical_attack+v`, `c.evation-v`, `c.magical_NoA-1.0` |
+|`i.grimoire` | `d.magical_attack` | `c.magical_attack+v`, `c.evasion-v`, `c.magical_NoA-1.0` |
 |`i.catalyst` | `d.magical_NoA` | `c.magical_NoA+v` |
 
 **Amplifier of base power**
@@ -292,9 +292,9 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 - example of basic item:
 ```
 Tier 1 `i.sword`: `d.melee_attack` +12, `c.physical_attack+0.13`
-Tier 2 `i.shield`: `d.HP` +18, `c.evation+0.012`
+Tier 2 `i.shield`: `d.HP` +18, `c.evasion+0.012`
 Tier 3 `i.gauntlet`: `d.melee_NoA` +0.6, `c_N_NoA+3`
-Tier 4 `i.katana`: `d.melee_attack` +82, `c.evation-0.004`, `c_melee_NoA-1.6`
+Tier 4 `i.katana`: `d.melee_attack` +82, `c.evasion-0.004`, `c_melee_NoA-1.6`
 Tier 5 `i.arrow`: `d.ranged_attack` +41, `c.ranged_attack+0.08`
 
 ```
