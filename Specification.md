@@ -257,20 +257,20 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | 7 | 137 | `c.target_status+0.06` | `c.evasion+0.006` | 0.2 | `c.N_NoA+7` | `c.evasion-0.007`, `c.N_NoA-2.2` |
 | 8 | 205 | `c.target_status+0.05` | `c.evasion+0.005` | 0.1 | `c.N_NoA+8` | `c.evasion-0.008`, `c.N_NoA-2.4` |
 
-| Item type | base_power/Scale for | base c.multiplier for |
-|------|--------|------|
-|`i.armor` | `d.physical_defense` | `c.physical_defense+v` |
-|`i.robe` |  `d.magical_defense`  | `c.magical_defense+v` |
-|`i.shield ` | `d.HP` | `c.evasion+v` |
-|`i.sword` | `d.melee_attack` | `c.melee_attack+v` |
-|`i.katana` | `d.melee_attack` | `c.melee_attack+V`, `c.evasion-v`, `c.melee_NoA-v` |
-|`i.gauntlet` | `d.melee_NoA` | `c.melee_NoA+v` |
-|`i.arrow` | `d.ranged_attack` | `c.ranged_attack+v` |
-|`i.bolt` | `d.ranged_attack` | `c.ranged_attack+v`, `c.evasion-v`, `c.ranged_NoA-v` |
-|`i.archery` | `d.ranged_NoA` | `c.ranged_NoA+v` |
-|`i.wand` | `d.magical_attack` | `c.magical_attack+v` |
-|`i.grimoire` | `d.magical_attack` | `c.magical_attack+v`, `c.evasion-v`, `c.magical_NoA-v` |
-|`i.catalyst` | `d.magical_NoA` | `c.magical_NoA+v` |
+| Item type | base_power/Scale for | base c.multiplier for | subtle_pool 1 | subtle_pool 2 |
+|------|--------|------|------|------|
+|`i.armor` | `d.physical_defense` | `c.physical_defense+v` | `d.HP` | (none)  |
+|`i.robe` |  `d.magical_defense`  | `c.magical_defense+v` | `b.mind+1`, `d.HP` | `c.evasion+0.01` |
+|`i.shield ` | `d.HP` | `c.evasion+v` | `d.HP`, `d.physical_defense` | `d.melee_attack` |
+|`i.sword` | `d.melee_attack` | `c.melee_attack+v` | `c.accuracy+0.01`, `b.strength+1`, `e.fire` | `d.physical_defense` , `d.HP` |
+|`i.katana` | `d.melee_attack` | `c.melee_attack+V`, `c.evasion-v`, `c.melee_NoA-v` | `c.penet_+0.01`, `c.penet_+0.02` | `b.mind+1` |
+|`i.gauntlet` | `d.melee_NoA` | `c.melee_NoA+v` | `d.melee_attack` | `d.physical_defense`, |
+|`i.arrow` | `d.ranged_attack` | `c.ranged_attack+v` | `e.fire`, `e.ice`  | (none) |
+|`i.bolt` | `d.ranged_attack` | `c.ranged_attack+v`, `c.evasion-v`, `c.ranged_NoA-v` | `e.thunder`,`b.strength+1` | (none) |
+|`i.archery` | `d.ranged_NoA` | `c.ranged_NoA+v` | `c.accuracy+0.01`, `c.accuracy+0.02` | `d.evasion`, `d.HP`|
+|`i.wand` | `d.magical_attack` | `c.magical_attack+v` | additional `d.magical_attack` | `d.magical_defense` |
+|`i.grimoire` | `d.magical_attack` | `c.magical_attack+v`, `c.evasion-v`, `c.magical_NoA-v` | `b.mind+1` | `d.magical_defense` |
+|`i.catalyst` | `d.magical_NoA` | `c.magical_NoA+v` | (none) | (none) |
 
 
 **rarelity.amplifier of base_power**
