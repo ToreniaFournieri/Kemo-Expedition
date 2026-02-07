@@ -298,6 +298,10 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | rare | base_power x rarelity.amplifier + **two** subtle_power, base c.multiplier | Elite enemy |
 | mythic | base_power x rarelity.amplifier + two subtle_power, **two c.multipliers** | Boss enemey |
 
+- Normal enemy has two drop items. common and uncommon.
+- Elite enemy has 2 ~ 4 drop items. common ~ rare. (must have at least one rare)
+- Boss enemy has  2 ~ 4 drop items. common ~ mythic. (must have at least one mythic)
+
 *Note:* subtle_power: x0.20 ~ x0.34 of base_power value.
 
 - example of basic item:
