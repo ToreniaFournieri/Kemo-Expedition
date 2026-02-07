@@ -225,7 +225,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 ### 2.4 Items
 
-### 2.4.1 Item category 
+#### 2.4.1 Item category 
 
 |category | name | short name| core concept |
 |-----|----|----|-----------|
@@ -244,7 +244,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 - *note:* item might have multiple bonus. sword may have `d.HP` but subtle value.
 
-### 2.4.2 Base Item list
+#### 2.4.2 Base Item list
 
 |Tier| base power | multiplier for　鎧, 衣, 剣, 矢, 杖 | plus for 盾 | Scale NoA for 手, 弓, 媒 | fixed NoA for 手, 弓, 媒 |penalty for 刀, ボ, 書| 
 |----|------------|--------|-----------|--------|--------|-------|
@@ -299,7 +299,7 @@ Tier 5 `i.arrow`: `d.ranged_attack` +41, `c.ranged_attack+0.08`
 
 ```
 
-#### 2.4.2 Item stacking
+#### 2.4.3 Item stacking
 - Items are stacked based on their unique combination of (superRare title, enhancement title, and base item ID). The default `max_stack` is 99.
   - Inventory Tracking: The inventory tracks item variants rather than individual instances.
   - Display: Shows the total stack count per variant.
