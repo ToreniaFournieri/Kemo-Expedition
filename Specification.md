@@ -296,7 +296,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | common | base_power x rarelity.amplifier, and base c.multiplier | every enemy |
 | uncommon | base_power x rarelity.amplifier + **one subtle_power`d.` or `c.` bonus**, base c.multiplier | Normal enemy |
 | rare | base_power x rarelity.amplifier + **two** subtle_power`d.`, **`e.`**, or `c.` bonus, base c.multiplier | Elite enemy |
-| mythic | base_power x rarelity.amplifier + two subtle_power`d.`, `e.`, or `c.` bonus, base c.multipliers and one **`b.` bonus** | Boss enemey |
+| mythic | base_power x rarelity.amplifier + two subtle_power`d.`, `e.`, or `c.` bonus, one **`b.` bonus** | Boss enemey |
 
 - Normal enemy has two drop items. common and uncommon.
 - Elite enemy has 2 ~ 4 drop items. common ~ rare. (must have at least one rare)
