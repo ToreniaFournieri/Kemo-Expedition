@@ -329,14 +329,14 @@ inventory = {
 - c.multiplier like `c.sword_x1.3` applies only for sword item type. other item types like shield may have +10 melee_attack bonus, but shield's melee_attack bonus is not multiplied by `c.sword_x1.3` effect. 
 
 - character.`f.attack`:
-  - `d.ranged_attack`= Item Bonuses x its c.multiplier
-  - `d.melee_attack`= Item Bonuses x its c.multiplier x `b.strength` / 10
-  - `d.magical_attack`= Item Bonuses x its c.multiplier x `b.intelligence` / 10
+  - `d.ranged_attack`= Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier
+  - `d.melee_attack`= Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier x `b.strength` / 10
+  - `d.magical_attack`= Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier x `b.intelligence` / 10
 
 - character.`f.NoA`: // NoA 0 = No Action.
-  - `d.ranged_NoA` = 0 + `c.pursuit+v` bonuses + Item Bonuses x its c.multiplier (round up) 
-  - `d.magical_NoA`= 0 + `c.caster+v` bonuses + Item Bonuses x its c.multiplier (round up) 
-  - `d.melee_NoA`= 0 + `c.grit+v` bonuses + Item Bonuses x its c.multiplier (round up) 
+  - `d.ranged_NoA` = 0 + `c.pursuit+v` bonuses + Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier (round up) 
+  - `d.magical_NoA`= 0 + `c.caster+v` bonuses + Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier (round up) 
+  - `d.melee_NoA`= 0 + `c.grit+v` bonuses + Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier (round up) 
     - IF the character has `a.iaigiri`, halve these number of attacks, round up. 
 
 - character.`f.offense_amplifier` (phase: )
@@ -357,9 +357,9 @@ inventory = {
 
 - character .`f.defense` (phase: phase):
   - If phase is LONG or CLOSE:
-  	- `d.physical_defense`: Item Bonuses of Physical defense x its c.multiplier x `b.vitality` / 10
+  	- `d.physical_defense`: Item Bonuses of Physical defense x enhancement multiplier x super rare multiplier x its c.multiplier x `b.vitality` / 10
   - If phase is MID:
-  	- `d.magical_defense`: Item Bonuses of Magical defense x its c.multiplier x `b.mind` / 10
+  	- `d.magical_defense`: Item Bonuses of Magical defense x enhancement multiplier x super rare multiplier x its c.multiplier x `b.mind` / 10
 
 #### 3.3.3 Mathematical Precision & Display Rules
 - Internal Calculation: All multipliers and final status values are calculated using floating-point precision (e.g., 1.4 * 1.3 = 1.82) to ensure accuracy across multiple stacked bonuses.
@@ -368,7 +368,7 @@ inventory = {
  
 ### 3.4 Party initialization
 - c.multiplier like `c.amulet_x1.3` applies only for individual character's equipments. 
-- Party.`d.HP`: 100 + (Total sum of individual ((Item Bonuses of HP x its c.multiplier + level x `b.vitality` ) x (`b.vitality`  + `b.mind`) / 20))
+- Party.`d.HP`: 100 + (Total sum of individual ((Item Bonuses of HP x enhancement multiplier x super rare multiplier x its c.multiplier + level x `b.vitality` ) x (`b.vitality`  + `b.mind`) / 20))
 
 - party.`f.party.offense_amplifier`(phase: phase):
   - If phase is LONG or CLOSE:
