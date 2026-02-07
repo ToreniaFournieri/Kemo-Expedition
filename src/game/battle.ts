@@ -116,6 +116,20 @@ interface CharacterAttackResult {
   hits: number;
 }
 
+// Hit detection for physical attacks (LONG and CLOSE phases)
+// decay_of_accuracy = clamp(0.86, 0.90 + actor.accuracy - opponent.evasion, 0.98)
+// chance = d.accuracy_potency * (decay_of_accuracy)^(Nth_hit)
+function hitDetection(
+  actorAccuracyPotency: number,
+  actorAccuracyBonus: number,
+  opponentEvasionBonus: number,
+  nthHit: number // 1-indexed
+): boolean {
+  const decayOfAccuracy = Math.max(0.86, Math.min(0.98, 0.90 + actorAccuracyBonus - opponentEvasionBonus));
+  const chance = actorAccuracyPotency * Math.pow(decayOfAccuracy, nthHit);
+  return Math.random() <= chance;
+}
+
 function calculateCharacterDamage(
   phase: BattlePhase,
   charStats: ComputedCharacterStats,
@@ -165,13 +179,29 @@ function calculateCharacterDamage(
     enemy.elementalResistance
   );
 
-  // Apply min(1) AFTER all multipliers per spec
-  const rawDamage = (attack - effectiveDefense) * noA * offenseAmplifier * charStats.elementalOffenseValue *
-    elementalMultiplier * partyStats.offenseAmplifier;
-  const totalDamage = Math.max(1, rawDamage);
+  // Calculate per-hit damage (without NoA multiplier)
+  const perHitDamage = Math.max(1, Math.floor(
+    (attack - effectiveDefense) * offenseAmplifier * charStats.elementalOffenseValue *
+    elementalMultiplier * partyStats.offenseAmplifier
+  ));
 
-  // Currently all attacks hit (no accuracy roll implemented yet)
-  return { damage: Math.floor(totalDamage), totalAttempts: noA, hits: noA };
+  // For MID phase (magical), all attacks always hit (accuracy_amplifier = 1.0 fixed)
+  if (phase === 'mid') {
+    return { damage: perHitDamage * noA, totalAttempts: noA, hits: noA };
+  }
+
+  // For LONG and CLOSE phases, roll for each hit
+  // Enemy evasion bonus (enemies don't have evasion stat yet, default to 0)
+  const enemyEvasion = 0;
+
+  let hits = 0;
+  for (let i = 1; i <= noA; i++) {
+    if (hitDetection(charStats.accuracyPotency, charStats.accuracyBonus, enemyEvasion, i)) {
+      hits++;
+    }
+  }
+
+  return { damage: perHitDamage * hits, totalAttempts: noA, hits };
 }
 
 function hasFirstStrike(charStats: ComputedCharacterStats, phase: BattlePhase): boolean {
