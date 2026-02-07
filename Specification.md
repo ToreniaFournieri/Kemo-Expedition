@@ -274,20 +274,20 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 **Amplifier of base power**
 
-| Item type | amplifier |
-|------|--------|
-|`i.armor` | x1.0 |
-|`i.robe` | x1.0 |
-|`i.shield ` | x1.0 |
-|`i.sword` | x1.0 |
-|`i.katana` | x2.0 |
-|`i.gauntlet` | x1.0 |
-|`i.arrow` | x0.67 |
-|`i.bolt` | x1.33  |
-|`i.archery` | x1.0 |
-|`i.wand` | x0.5 |
-|`i.grimoire` | x1.0 |
-|`i.catalyst` | x1.0  |
+| Item type | common | uncommon | rare | mythic |
+|------|--------|--------|--------|--------|
+|`i.armor` | x1.0 | x1.2 | x1.44 | x1.73 |
+|`i.robe` | x1.0 | x1.2 | x1.44 | x1.73 |
+|`i.shield ` | x1.0 | x1.2 | x1.44 | x1.73 |
+|`i.sword` | x1.0 | x1.2 | x1.44 | x1.73 |
+|`i.katana` | x2.0 | x2.4 | x2.9 | x3.46 |
+|`i.gauntlet` | x1.0 | x1.2 | x1.44 | x1.73 |
+|`i.arrow` | x0.67 | x0.80 | x0.95 | x1.16 |
+|`i.bolt` | x1.33  | x1.60 | x1.92 | x2.30 |
+|`i.archery` | x1.0 | x1.2 | x1.44 | x1.73 |
+|`i.wand` | x0.5 | x0.6 | x0.72 | x0.86 |
+|`i.grimoire` | x1.0 | x1.2 | x1.44 | x1.73 |
+|`i.catalyst` | x1.0 | x1.2 | x1.44 | x1.73 |
 
 - example of basic item:
 ```
