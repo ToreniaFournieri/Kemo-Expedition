@@ -246,36 +246,33 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 ### 2.4.2 Base Item list
 
-|Tier| base power | positive multiplier | plus for 手, 弓, 媒 |penalty for 刀, ボ, 書| 
-|----|------------|----------------|--------|--------|
-| 1 | 12 | `c.target_status+0.13` | `c_N_NoA+1` | `c.evation-0.001`, `c_N_NoA-1.0` |
-| 2 | 18 | `c.target_status+0.12` | `c_N_NoA+2` | `c.evation-0.002`, `c_N_NoA-1.2` |
-| 3 | 27 | `c.target_status+0.11` | `c_N_NoA+3` | `c.evation-0.003`, `c_N_NoA-1.4` |
-| 4 | 41 | `c.target_status+0.09` | `c_N_NoA+4` | `c.evation-0.004`, `c_N_NoA-1.6` |
-| 5 | 61 | `c.target_status+0.08` | `c_N_NoA+5` | `c.evation-0.005`, `c_N_NoA-1.8` |
-| 6 | 91 | `c.target_status+0.07` | `c_N_NoA+6` | `c.evation-0.006`, `c_N_NoA-2.0` |
-| 7 | 137 | `c.target_status+0.06` | `c_N_NoA+7` | `c.evation-0.007`, `c_N_NoA-2.2` |
-| 8 | 205 | `c.target_status+0.05` | `c_N_NoA+8` | `c.evation-0.008`, `c_N_NoA-2.4` |
+|Tier| base power | multiplier for　鎧, 衣, 剣, 矢, 杖 | plus for 盾 | Scale NoA for 手, 弓, 媒 | fixed NoA for 手, 弓, 媒 |penalty for 刀, ボ, 書| 
+|----|------------|--------|-----------|--------|--------|-------|
+| 1 | 12 | `c.target_status+0.13` | `c.evation+0.013` | 0.8 | `c_N_NoA+1` | `c.evation-0.001`, `c_N_NoA-1.0` |
+| 2 | 18 | `c.target_status+0.12` | `c.evation+0.012` | 0.7 | `c_N_NoA+2` | `c.evation-0.002`, `c_N_NoA-1.2` |
+| 3 | 27 | `c.target_status+0.11` | `c.evation+0.011` | 0.6 | `c_N_NoA+3` | `c.evation-0.003`, `c_N_NoA-1.4` |
+| 4 | 41 | `c.target_status+0.09` | `c.evation+0.009` | 0.5 | `c_N_NoA+4` | `c.evation-0.004`, `c_N_NoA-1.6` |
+| 5 | 61 | `c.target_status+0.08` | `c.evation+0.008` | 0.4 | `c_N_NoA+5` | `c.evation-0.005`, `c_N_NoA-1.8` |
+| 6 | 91 | `c.target_status+0.07` | `c.evation+0.007` | 0.3 | `c_N_NoA+6` | `c.evation-0.006`, `c_N_NoA-2.0` |
+| 7 | 137 | `c.target_status+0.06` | `c.evation+0.006` | 0.2 | `c_N_NoA+7` | `c.evation-0.007`, `c_N_NoA-2.2` |
+| 8 | 205 | `c.target_status+0.05` | `c.evation+0.005` | 0.1 | `c_N_NoA+8` | `c.evation-0.008`, `c_N_NoA-2.4` |
 
-| Item type | target_status multipiler|
+| Item type | base power/Scale for |
 |------|--------|
-|`i.armor` | `c.physical_defense+v` |
-|`i.robe` |  `c.magical_defense+v`  |
-|`i.shield ` | (none) |
-|`i.sword` | `c.physical_attack+v` |
-|`i.katana` | `c.evation-v`, `c_melee_NoA-1.0` |
-|`i.gauntlet` | `c.melee_NoA+v` |
-|`i.arrow` | |
-|`i.bolt` |   |
-|`i.archery` | |
-|`i.wand` | |
-|`i.grimoire` | |
-|`i.catalyst` |   |
-- *example:* `i.sword` of `c.itemType_+0.13` -> `c.de`
+|`i.armor` | `d.physical_defense` |
+|`i.robe` |  `d.magical_defense`  |
+|`i.shield ` | `d.HP` |
+|`i.sword` | `d.melee_attack` |
+|`i.katana` | `d.melee_attack` |
+|`i.gauntlet` | `d.melee_NoA` |
+|`i.arrow` |　`d.ranged_attack` |
+|`i.bolt` | `d.ranged_attack`  |
+|`i.archery` | `d.ranged_NoA` |
+|`i.wand` | `d.magical_attack` |
+|`i.grimoire` | `d.magical_attack` |
+|`i.catalyst` | `d.magical_NoA` |
 
 **Amplifier of base power**
-
-
 
 | Item type | amplifier |
 |------|--------|
@@ -292,22 +289,15 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 |`i.grimoire` | x1.0 |
 |`i.catalyst` | x1.0  |
 
+- example of basic item:
+```
+Tier 1 `i.sword`: `d.melee_attack` +12, `c.physical_attack+0.13`
+Tier 2 `i.shield`: `d.HP` +18, `c.evation+0.012`
+Tier 3 `i.gauntlet`: `d.melee_NoA` +0.6, `c_N_NoA+3`
+Tier 4 `i.katana`: `d.melee_attack` +82, `c.evation-0.004`, `c_melee_NoA-1.6`
+Tier 5 `i.arrow`: `d.ranged_attack` +41, `c.ranged_attack+0.08`
 
-|`i.armor` | |
-|`i.robe` | |
-|`i.shield ` |  |
-|`i.sword` | |
-|`i.katana` |  |
-|`i.gauntlet` | |
-|`i.arrow` | |
-|`i.bolt` |   |
-|`i.archery` | |
-|`i.wand` | |
-|`i.grimoire` | |
-|`i.catalyst` |   |
-
-
-
+```
 
 #### 2.4.2 Item stacking
 - Items are stacked based on their unique combination of (superRare title, enhancement title, and base item ID). The default `max_stack` is 99.
