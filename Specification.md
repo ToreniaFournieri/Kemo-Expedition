@@ -257,20 +257,20 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | 7 | 137 | `c.target_status+0.06` | `c.evation+0.006` | 0.2 | `c_N_NoA+7` | `c.evation-0.007`, `c_N_NoA-2.2` |
 | 8 | 205 | `c.target_status+0.05` | `c.evation+0.005` | 0.1 | `c_N_NoA+8` | `c.evation-0.008`, `c_N_NoA-2.4` |
 
-| Item type | base power/Scale for |
-|------|--------|
-|`i.armor` | `d.physical_defense` |
-|`i.robe` |  `d.magical_defense`  |
-|`i.shield ` | `d.HP` |
-|`i.sword` | `d.melee_attack` |
-|`i.katana` | `d.melee_attack` |
-|`i.gauntlet` | `d.melee_NoA` |
-|`i.arrow` |　`d.ranged_attack` |
-|`i.bolt` | `d.ranged_attack`  |
-|`i.archery` | `d.ranged_NoA` |
-|`i.wand` | `d.magical_attack` |
-|`i.grimoire` | `d.magical_attack` |
-|`i.catalyst` | `d.magical_NoA` |
+| Item type | base power/Scale for | multiplier for |
+|------|--------|------|
+|`i.armor` | `d.physical_defense` | `c.physical_defense+v` |
+|`i.robe` |  `d.magical_defense`  | |
+|`i.shield ` | `d.HP` | |
+|`i.sword` | `d.melee_attack` | |
+|`i.katana` | `d.melee_attack` | |
+|`i.gauntlet` | `d.melee_NoA` | |
+|`i.arrow` |　`d.ranged_attack` | |
+|`i.bolt` | `d.ranged_attack`  | |
+|`i.archery` | `d.ranged_NoA` | |
+|`i.wand` | `d.magical_attack` | |
+|`i.grimoire` | `d.magical_attack` | |
+|`i.catalyst` | `d.magical_NoA` | |
 
 **Amplifier of base power**
 
