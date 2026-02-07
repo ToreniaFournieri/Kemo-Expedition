@@ -23,7 +23,7 @@ import { drawFromBag, refillBagIfEmpty, createRewardBag, createEnhancementBag, c
 import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 
-const BUILD_NUMBER = 28;
+const BUILD_NUMBER = 29;
 const STORAGE_KEY = 'kemo-expedition-save';
 
 // Helper to calculate sell price for an item
@@ -620,6 +620,11 @@ export function useGameState() {
     setNotifications(prev => prev.filter(n => n.id !== id));
   }, []);
 
+  // Dismiss all notifications
+  const dismissAllNotifications = useCallback(() => {
+    setNotifications([]);
+  }, []);
+
   const actions = {
     selectDungeon: useCallback((dungeonId: number) => {
       dispatch({ type: 'SELECT_DUNGEON', dungeonId });
@@ -656,6 +661,7 @@ export function useGameState() {
     addNotification,
     addStatNotifications,
     dismissNotification,
+    dismissAllNotifications,
   };
 
   return { state, actions, bags: state.bags, notifications };

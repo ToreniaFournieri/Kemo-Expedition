@@ -114,7 +114,8 @@ function calculateCharacterDamage(
   phase: BattlePhase,
   charStats: ComputedCharacterStats,
   enemy: EnemyDef,
-  partyStats: ComputedPartyStats
+  partyStats: ComputedPartyStats,
+  noAMultiplier: number = 1.0 // For counter/re-attack, use 0.5
 ): number {
   let attack = 0;
   let noA = 0;
@@ -137,6 +138,9 @@ function calculateCharacterDamage(
       defense = enemy.physicalDefense;
       break;
   }
+
+  // Apply NoA multiplier and round up
+  noA = Math.ceil(noA * noAMultiplier);
 
   if (noA === 0) return 0;
 
@@ -194,6 +198,9 @@ function hasReAttack(charStats: ComputedCharacterStats): number {
   if (!ability) return 0;
   return ability.level === 2 ? 2 : 1;
 }
+
+// Hit detection functions are available for future use when implementing
+// per-hit accuracy rolls. Currently the game uses deterministic damage calculation.
 
 export interface BattleResult extends BattleState {
   updatedBags: {
@@ -324,9 +331,10 @@ export function executeBattle(
     }
 
     // Counter attacks (for each targeted character with counter ability)
+    // Counter uses NoA x 0.5 (rounded up)
     for (const [charId, attack] of attacksByTarget) {
       if (attack.damage > 0 && hasCounter(attack.charStats, phase)) {
-        const damage = calculateCharacterDamage(phase, attack.charStats, enemy, partyStats);
+        const damage = calculateCharacterDamage(phase, attack.charStats, enemy, partyStats, 0.5);
         if (damage > 0) {
           enemyHp -= damage;
           const targetChar = party.characters.find(c => c.id === charId);
@@ -380,10 +388,11 @@ export function executeBattle(
     }
 
     // Re-attack ability
+    // Re-attack uses NoA x 0.5 (rounded up)
     for (const cs of characterStats) {
       const reAttackCount = hasReAttack(cs);
       for (let i = 0; i < reAttackCount && enemyHp > 0; i++) {
-        const damage = calculateCharacterDamage(phase, cs, enemy, partyStats);
+        const damage = calculateCharacterDamage(phase, cs, enemy, partyStats, 0.5);
         if (damage > 0) {
           enemyHp -= damage;
           const char = party.characters.find(c => c.id === cs.characterId);

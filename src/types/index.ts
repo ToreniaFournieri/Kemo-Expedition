@@ -64,6 +64,8 @@ export type BonusType =
   | 'vitality' | 'strength' | 'intelligence' | 'mind'
   // Combat bonuses
   | 'grit' | 'caster' | 'penet' | 'pursuit'
+  // Accuracy/Evasion bonuses
+  | 'accuracy' | 'evasion'
   // Abilities
   | 'ability';
 
@@ -170,7 +172,9 @@ export interface ComputedCharacterStats {
   penetMultiplier: number;
   elementalOffense: ElementalOffense;
   elementalOffenseValue: number;
-  attackPotency: number; // Row-based attack potency multiplier
+  attackPotency: number; // Row-based attack potency multiplier (d.accuracy_potency)
+  accuracyBonus: number; // c.accuracy+v sum
+  evasionBonus: number; // c.evasion+v sum
 }
 
 // Party Types

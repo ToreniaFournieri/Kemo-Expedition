@@ -80,13 +80,15 @@ export const CLASSES: ClassDef[] = [
     id: 'ranger',
     name: '狩人',
     mainSubBonuses: [
-      { type: 'archery_multiplier', value: 1.4 },
+      { type: 'arrow_multiplier', value: 1.4 },
     ],
     mainBonuses: [
-      { type: 'ability', value: 1, abilityId: 'hunter', abilityLevel: 2 },
+      { type: 'pursuit', value: 1 },
+      { type: 'ability', value: 1, abilityId: 'hunter', abilityLevel: 1 },
     ],
     masterBonuses: [
-      { type: 'ability', value: 1, abilityId: 'hunter', abilityLevel: 3 },
+      { type: 'pursuit', value: 2 },
+      { type: 'ability', value: 1, abilityId: 'hunter', abilityLevel: 2 },
     ],
   },
   {
@@ -96,11 +98,11 @@ export const CLASSES: ClassDef[] = [
       { type: 'wand_multiplier', value: 1.4 },
     ],
     mainBonuses: [
-      { type: 'caster', value: 2 },
+      { type: 'caster', value: 1 },
       { type: 'ability', value: 1, abilityId: 'resonance', abilityLevel: 1 },
     ],
     masterBonuses: [
-      { type: 'caster', value: 3 },
+      { type: 'caster', value: 1 },
       { type: 'ability', value: 1, abilityId: 'resonance', abilityLevel: 2 },
     ],
   },
@@ -109,14 +111,15 @@ export const CLASSES: ClassDef[] = [
     name: '賢者',
     mainSubBonuses: [
       { type: 'robe_multiplier', value: 1.4 },
+      { type: 'grimoire_multiplier', value: 1.2 },
       { type: 'equip_slot', value: 2 },
     ],
     mainBonuses: [
-      { type: 'caster', value: 1 },
+      { type: 'caster', value: 2 },
       { type: 'ability', value: 1, abilityId: 'm_barrier', abilityLevel: 1 },
     ],
     masterBonuses: [
-      { type: 'caster', value: 1 },
+      { type: 'caster', value: 3 },
       { type: 'ability', value: 1, abilityId: 'm_barrier', abilityLevel: 2 },
     ],
   },
@@ -137,7 +140,7 @@ export const CLASSES: ClassDef[] = [
     id: 'pilgrim',
     name: '巡礼者',
     mainSubBonuses: [
-      { type: 'shield_multiplier', value: 1.4 },
+      { type: 'evasion', value: 0.02 },
       { type: 'equip_slot', value: 1 },
     ],
     mainBonuses: [
