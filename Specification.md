@@ -257,20 +257,20 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | 7 | 137 | `c.target_status+0.06` | `c.evasion+0.006` | 0.2 | `c.N_NoA+7` | `c.evasion-0.007`, `c.N_NoA-2.2` |
 | 8 | 205 | `c.target_status+0.05` | `c.evasion+0.005` | 0.1 | `c.N_NoA+8` | `c.evasion-0.008`, `c.N_NoA-2.4` |
 
-| Item type | base_power/Scale for | base c.multiplier for | subtle_power and +c.multiplier|
+| Item type | base_power/Scale for | base c.multiplier for | subtle_power`d.`, `e.`, and `c.` bonus|
 |------|--------|------|------|
-|`i.armor` | `d.physical_defense` | `c.physical_defense+v` | `d.HP`  |
+|`i.armor` | `d.physical_defense` | `c.physical_defense+v` | additional `d.physical_defense`, `d.HP`, `d.magical_defense`, `b.vitality+1`  |
 |`i.robe` |  `d.magical_defense`  | `c.magical_defense+v` | `b.mind+1`, `d.HP`, `c.evasion+0.01` |
-|`i.shield ` | `d.HP` | `c.evasion+v` | `d.HP`, `d.physical_defense`, `d.melee_attack` |
+|`i.shield ` | `d.HP` | `c.evasion+v` | `d.HP`, `d.physical_defense`, `d.melee_attack`, `b.vitality+1` |
 |`i.sword` | `d.melee_attack` | `c.melee_attack+v` | `c.accuracy+0.01`, `b.strength+1`, `e.fire`, `d.physical_defense` ,`d.HP` |
 |`i.katana` | `d.melee_attack` | `c.melee_attack+V`, `c.evasion-v`, `c.melee_NoA-v` | additional `d.melee_attack`, `c.penet_+0.01`, `c.penet_+0.02`, `b.mind+1` |
-|`i.gauntlet` | `d.melee_NoA` | `c.melee_NoA+v` | `d.melee_attack` | `d.physical_defense`, |
-|`i.arrow` | `d.ranged_attack` | `c.ranged_attack+v` | `e.fire`, `e.ice` |
-|`i.bolt` | `d.ranged_attack` | `c.ranged_attack+v`, `c.evasion-v`, `c.ranged_NoA-v` | `e.thunder`,`b.strength+1` |
-|`i.archery` | `d.ranged_NoA` | `c.ranged_NoA+v` | `c.accuracy+0.01`, `c.accuracy+0.02`, `d.evasion`, `d.HP`|
-|`i.wand` | `d.magical_attack` | `c.magical_attack+v` | additional `d.magical_attack`, `d.magical_defense` |
-|`i.grimoire` | `d.magical_attack` | `c.magical_attack+v`, `c.evasion-v`, `c.magical_NoA-v` | `b.mind+1`, `d.magical_defense` |
-|`i.catalyst` | `d.magical_NoA` | `c.magical_NoA+v` | (none) |
+|`i.gauntlet` | `d.melee_NoA` | `c.melee_NoA+v` | `d.melee_attack` | additional `d.melee_NoA`, `d.physical_defense`, `b.strength+1` |
+|`i.arrow` | `d.ranged_attack` | `c.ranged_attack+v` | additional `d.ranged_attack`, `e.fire`, `e.ice` |
+|`i.bolt` | `d.ranged_attack` | `c.ranged_attack+v`, `c.evasion-v`, `c.ranged_NoA-v` | additional `d.ranged_attack`, `e.thunder`,`b.strength+1` |
+|`i.archery` | `d.ranged_NoA` | `c.ranged_NoA+v` | `c.accuracy+0.01`, `c.accuracy+0.02`, `d.evasion`, `d.HP`, `b.strength+1`|
+|`i.wand` | `d.magical_attack` | `c.magical_attack+v` | additional `d.magical_attack`, `d.magical_defense`, `b.intelligence+1` |
+|`i.grimoire` | `d.magical_attack` | `c.magical_attack+v`, `c.evasion-v`, `c.magical_NoA-v` | additional `d.magical_attack`, `b.mind+1`, `d.magical_defense` |
+|`i.catalyst` | `d.magical_NoA` | `c.magical_NoA+v` | additional `d.magical_NoA`, `e.fire`, `e.ice`, `e.thunder`, `b.intelligence+1` |
 
 
 **rarelity.amplifier of base_power**
@@ -294,9 +294,9 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | Rarelity | Features | dropped by |
 |------|--------|-------|
 | common | base_power x rarelity.amplifier, and base c.multiplier | every enemy |
-| uncommon | base_power x rarelity.amplifier + **one subtle_power**, base c.multiplier | Normal enemy |
-| rare | base_power x rarelity.amplifier + **two** subtle_power, base c.multiplier | Elite enemy |
-| mythic | base_power x rarelity.amplifier + two subtle_power, **two c.multipliers** | Boss enemey |
+| uncommon | base_power x rarelity.amplifier + **one subtle_power`d.` or `c.` bonus**, base c.multiplier | Normal enemy |
+| rare | base_power x rarelity.amplifier + **two** subtle_power`d.` or `c.` bonus, base c.multiplier | Elite enemy |
+| mythic | base_power x rarelity.amplifier + two subtle_power`d.` or `c.` bonus,  base c.multipliers and at most one **`b.` bonus** | Boss enemey |
 
 - Normal enemy has two drop items. common and uncommon.
 - Elite enemy has 2 ~ 4 drop items. common ~ rare. (must have at least one rare)
