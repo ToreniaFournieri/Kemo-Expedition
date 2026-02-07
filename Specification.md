@@ -264,7 +264,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 |`i.shield ` | `d.HP` | `c.evasion+v` | `d.physical_defense`, `d.melee_attack`, `b.vitality+1` |
 |`i.sword` | `d.melee_attack` | `c.melee_attack+v` | `c.accuracy+0.01`, `b.strength+1`, `e.fire`, `d.physical_defense` ,`d.HP` |
 |`i.katana` | `d.melee_attack` | `c.melee_attack+V`, `c.evasion-v`, `c.melee_NoA-v` | additional `d.melee_attack`, `c.penet_+0.01`, `c.penet_+0.02`, `b.mind+1` |
-|`i.gauntlet` | `d.melee_NoA` | `c.melee_NoA+v` | `d.melee_attack` | additional `d.melee_NoA`, `d.physical_defense`, `b.strength+1` |
+|`i.gauntlet` | `d.melee_NoA` | `c.melee_NoA+v` | additional `d.melee_NoA`, `d.physical_defense`, `b.strength+1` |
 |`i.arrow` | `d.ranged_attack` | `c.ranged_attack+v` | additional `d.ranged_attack`, `e.fire`, `e.ice` |
 |`i.bolt` | `d.ranged_attack` | `c.ranged_attack+v`, `c.evasion-v`, `c.ranged_NoA-v` | additional `d.ranged_attack`, `e.thunder`,`b.strength+1` |
 |`i.archery` | `d.ranged_NoA` | `c.ranged_NoA+v` | `c.accuracy+0.01`, `c.accuracy+0.02`, `d.evasion`, `d.HP`, `b.strength+1`|
