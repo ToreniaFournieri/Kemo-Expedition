@@ -552,6 +552,8 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
   	- If `f.hit_detection`(actor: , opponent: ,Nth_hit: the current hit index), current party.`d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
 - If currenr party.`d.HP` =< 0, Defeat. 
 
+- *Note:* This current hit index is the Nth number of enemy’s attacks, not each character’s hit count. 
+
 - **Counter:** IF character.`a.counter` and take damage in CLOSE phase, the character attacks to enemy. (using `f.hit_detection` and `f.damage_calculation`, and character.`f.NoA` x 0.5, round up)
     - Counter triggers immediately after damage resolution, regardless of turn order modifiers.
 
