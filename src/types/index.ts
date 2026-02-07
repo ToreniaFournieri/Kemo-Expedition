@@ -172,6 +172,7 @@ export interface ComputedCharacterStats {
   penetMultiplier: number;
   elementalOffense: ElementalOffense;
   elementalOffenseValue: number;
+  accuracyPotency: number; // Row-based accuracy potency (d.accuracy_potency)
   accuracyBonus: number; // c.accuracy+v sum
   evasionBonus: number; // c.evasion+v sum
 }

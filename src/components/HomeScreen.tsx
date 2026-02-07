@@ -711,6 +711,14 @@ function PartyTab({
                 if (hasMagical) offenseLines.push(`魔法攻撃:${Math.floor(stats.magicalAttack)} x ${stats.magicalNoA}回(x${midAmp.toFixed(2)})`);
                 if (hasMelee) offenseLines.push(`近接攻撃:${Math.floor(stats.meleeAttack)} x ${stats.meleeNoA}回(x${closeAmp.toFixed(2)})`);
 
+                // Add accuracy display if character has ranged or melee NoA (physical attacks)
+                // 命中率: d.accuracy_potency x 100 % (減衰: x (0.90 + c.accuracy+v))
+                const hasPhysicalAttacks = stats.rangedNoA > 0 || stats.meleeNoA > 0;
+                if (hasPhysicalAttacks) {
+                  const baseDecay = 0.90 + stats.accuracyBonus;
+                  offenseLines.push(`命中率: ${Math.round(stats.accuracyPotency * 100)}% (減衰: x${baseDecay.toFixed(2)})`);
+                }
+
                 // Defense lines (always 3)
                 const defenseLines = [
                   `属性:${elementName}(x${stats.elementalOffenseValue.toFixed(1)})`,
