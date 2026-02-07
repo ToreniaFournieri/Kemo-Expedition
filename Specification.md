@@ -243,7 +243,70 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 |`i.catalyst` | 触媒 | 媒 | + `d.magical_NoA`  |
 
 - *note:* item might have multiple bonus. sword may have `d.HP` but subtle value.
-- (Temporary test purpose) Make 5 itmes for each item type. 
+
+### 2.4.2 Base Item list
+
+|Tier| base power | positive multiplier | plus for 手, 弓, 媒 |penalty for 刀, ボ, 書| 
+|----|------------|----------------|--------|
+| 1 | 12 | `c.target_status+0.13` | `c_N_NoA+1` | `c.evation-0.001`, `c_N_NoA-1.0` |
+| 2 | 18 | `c.target_status+0.12` | `c_N_NoA+2` | `c.evation-0.002`, `c_N_NoA-1.2` |
+| 3 | 27 | `c.target_status+0.11` | `c_N_NoA+3` | `c.evation-0.003`, `c_N_NoA-1.4` |
+| 4 | 41 | `c.target_status+0.09` | `c_N_NoA+4` | `c.evation-0.004`, `c_N_NoA-1.6` |
+| 5 | 61 | `c.target_status+0.08` | `c_N_NoA+5` | `c.evation-0.005`, `c_N_NoA-1.8` |
+| 6 | 91 | `c.target_status+0.07` | `c_N_NoA+6` | `c.evation-0.006`, `c_N_NoA-2.0` |
+| 7 | 137 | `c.target_status+0.06` | `c_N_NoA+7` | `c.evation-0.007`, `c_N_NoA-2.2` |
+| 8 | 205 | `c.target_status+0.05` | `c_N_NoA+8` | `c.evation-0.008`, `c_N_NoA-2.4` |
+
+| Item type | target_status multipiler|
+|------|--------|
+|`i.armor` | `c.physical_defense+v` |
+|`i.robe` |  `c.magical_defense+v`  |
+|`i.shield ` | (none) |
+|`i.sword` | `c.physical_attack+v` |
+|`i.katana` | `c.evation-v`, `c_melee_NoA-1.0` |
+|`i.gauntlet` | `c.melee_NoA+v` |
+|`i.arrow` | |
+|`i.bolt` |   |
+|`i.archery` | |
+|`i.wand` | |
+|`i.grimoire` | |
+|`i.catalyst` |   |
+- *example:* `i.sword` of `c.itemType_+0.13` -> `c.de`
+
+**Amplifier of base power**
+
+
+
+| Item type | amplifier |
+|------|--------|
+|`i.armor` | x1.0 |
+|`i.robe` | x1.0 |
+|`i.shield ` | x1.0 |
+|`i.sword` | x1.0 |
+|`i.katana` | x2.0 |
+|`i.gauntlet` | x1.0 |
+|`i.arrow` | x0.67 |
+|`i.bolt` | x1.33  |
+|`i.archery` | x1.0 |
+|`i.wand` | x0.5 |
+|`i.grimoire` | x1.0 |
+|`i.catalyst` | x1.0  |
+
+
+|`i.armor` | |
+|`i.robe` | |
+|`i.shield ` |  |
+|`i.sword` | |
+|`i.katana` |  |
+|`i.gauntlet` | |
+|`i.arrow` | |
+|`i.bolt` |   |
+|`i.archery` | |
+|`i.wand` | |
+|`i.grimoire` | |
+|`i.catalyst` |   |
+
+
 
 
 #### 2.4.2 Item stacking
