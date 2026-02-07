@@ -260,17 +260,17 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | Item type | base power/Scale for | multiplier for |
 |------|--------|------|
 |`i.armor` | `d.physical_defense` | `c.physical_defense+v` |
-|`i.robe` |  `d.magical_defense`  | |
-|`i.shield ` | `d.HP` | |
-|`i.sword` | `d.melee_attack` | |
-|`i.katana` | `d.melee_attack` | |
-|`i.gauntlet` | `d.melee_NoA` | |
-|`i.arrow` |　`d.ranged_attack` | |
-|`i.bolt` | `d.ranged_attack`  | |
-|`i.archery` | `d.ranged_NoA` | |
-|`i.wand` | `d.magical_attack` | |
-|`i.grimoire` | `d.magical_attack` | |
-|`i.catalyst` | `d.magical_NoA` | |
+|`i.robe` |  `d.magical_defense`  | `c.magical_defense+v` |
+|`i.shield ` | `d.HP` | (none) |
+|`i.sword` | `d.melee_attack` | `c.melee_attack+v` |
+|`i.katana` | `d.melee_attack` | `c.melee_attack+V` |
+|`i.gauntlet` | `d.melee_NoA` | `c.melee_NoA+v` |
+|`i.arrow` | `d.ranged_attack` | `c.ranged_attack+v` |
+|`i.bolt` | `d.ranged_attack` | `c.ranged_attack+v` |
+|`i.archery` | `d.ranged_NoA` | `c.ranged_NoA+v` |
+|`i.wand` | `d.magical_attack` | `c.magical_attack+v` |
+|`i.grimoire` | `d.magical_attack` | `c.magical_attack+v` |
+|`i.catalyst` | `d.magical_NoA` | `c.magical_NoA+v` |
 
 **Amplifier of base power**
 
