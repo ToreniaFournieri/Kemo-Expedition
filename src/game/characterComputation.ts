@@ -273,19 +273,6 @@ export function computeCharacterStats(
     });
   }
 
-  // Calculate attack potency based on row position
-  // Normal decay: 15% per step (1.0 * 0.85^(row-1))
-  // Hunter1 decay: 10% per step (1.0 * 0.90^(row-1))
-  // Hunter2 decay: 7% per step (1.0 * 0.93^(row-1))
-  const hunterLevel = collection.abilities.get('hunter');
-  let decayRate = 0.85; // Normal: 15% decay
-  if (hunterLevel === 2) {
-    decayRate = 0.93; // Hunter2: 7% decay
-  } else if (hunterLevel === 1) {
-    decayRate = 0.90; // Hunter1: 10% decay
-  }
-  const attackPotency = Math.pow(decayRate, row - 1);
-
   return {
     characterId: character.id,
     row,
@@ -303,7 +290,6 @@ export function computeCharacterStats(
     penetMultiplier: collection.penet,
     elementalOffense,
     elementalOffenseValue,
-    attackPotency,
     accuracyBonus: collection.accuracy,
     evasionBonus: collection.evasion,
   };
@@ -333,7 +319,7 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     defender: (l) => `パーティへの物理ダメージ × ${l === 2 ? '3/5' : '2/3'}`,
     counter: (l) => l === 2 ? 'CLOSE/MIDフェーズで反撃' : 'CLOSEフェーズで反撃',
     re_attack: (l) => `攻撃時に${l === 2 ? '2回' : '1回'}追加攻撃`,
-    iaigiri: (l) => `物理ダメージ × ${l === 2 ? 2.5 : 2}、攻撃回数 ÷ 2`,
+    iaigiri: () => `CLOSEフェーズでダメージ × 2.0、攻撃回数 ÷ 2`,
     resonance: (l) => `魔法ダメージ × ${l === 2 ? 1.5 : 1.25}`,
     command: (l) => `パーティ攻撃力 × ${l === 2 ? 1.3 : 1.15}`,
     m_barrier: (l) => `パーティへの魔法ダメージ × ${l === 2 ? '3/5' : '2/3'}`,

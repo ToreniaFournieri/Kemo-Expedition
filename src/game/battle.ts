@@ -153,24 +153,12 @@ function calculateCharacterDamage(
   // Apply penetration
   const effectiveDefense = defense * (1 - charStats.penetMultiplier);
 
-  // Check for iaigiri ability (damage amplifier for close phase)
-  let abilityAmplifier = 1.0;
+  // Offense amplifier: iaigiri ability gives 2.0x for CLOSE phase only
+  let offenseAmplifier = 1.0;
   const iaigiri = charStats.abilities.find(a => a.id === 'iaigiri');
   if (iaigiri && phase === 'close') {
-    abilityAmplifier = iaigiri.level === 2 ? 2.5 : 2.0;
+    offenseAmplifier = 2.0;
   }
-
-  // Check for resonance ability (damage amplifier for mid phase)
-  const resonance = charStats.abilities.find(a => a.id === 'resonance');
-  if (resonance && phase === 'mid') {
-    abilityAmplifier = resonance.level === 2 ? 1.5 : 1.25;
-  }
-
-  // Attack potency based on row position (only for LONG and CLOSE phases)
-  // Use pre-computed attackPotency from character stats
-  const attackPotency = (phase === 'long' || phase === 'close')
-    ? charStats.attackPotency
-    : 1.0;
 
   const elementalMultiplier = getElementalMultiplier(
     charStats.elementalOffense,
@@ -178,8 +166,8 @@ function calculateCharacterDamage(
   );
 
   // Apply min(1) AFTER all multipliers per spec
-  const rawDamage = (attack - effectiveDefense) * noA * abilityAmplifier * charStats.elementalOffenseValue *
-    elementalMultiplier * partyStats.offenseAmplifier * attackPotency;
+  const rawDamage = (attack - effectiveDefense) * noA * offenseAmplifier * charStats.elementalOffenseValue *
+    elementalMultiplier * partyStats.offenseAmplifier;
   const totalDamage = Math.max(1, rawDamage);
 
   // Currently all attacks hit (no accuracy roll implemented yet)

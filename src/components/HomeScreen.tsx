@@ -104,6 +104,10 @@ function formatBonuses(bonuses: Bonus[]): string {
       parts.push(`貫通${Math.round(b.value * 100)}%`);
     } else if (b.type === 'pursuit') {
       parts.push(`追撃${Math.round(b.value * 100)}%`);
+    } else if (b.type === 'accuracy') {
+      parts.push(`命中+${b.value}`);
+    } else if (b.type === 'evasion') {
+      parts.push(`回避+${b.value}`);
     } else if (b.type === 'ability' && b.abilityId) {
       const name = ABILITY_NAMES[b.abilityId] || b.abilityId;
       parts.push(`${name}Lv${b.abilityLevel || 1}`);
@@ -687,13 +691,12 @@ function PartyTab({
               {(() => {
                 // Calculate offense amplifiers per phase
                 const iaigiri = stats.abilities.find(a => a.id === 'iaigiri');
-                const iaigiriAmp = iaigiri ? (iaigiri.level === 2 ? 2.5 : 2.0) : 1.0;
-                // LONG phase: attack potency only
-                const longAmp = stats.attackPotency;
-                // MID phase: always 1.0
+                // LONG phase: 1.0
+                const longAmp = 1.0;
+                // MID phase: 1.0
                 const midAmp = 1.0;
-                // CLOSE phase: attack potency x iaigiri multiplier
-                const closeAmp = stats.attackPotency * iaigiriAmp;
+                // CLOSE phase: 2.0 if iaigiri, otherwise 1.0
+                const closeAmp = iaigiri ? 2.0 : 1.0;
                 const elementName = stats.elementalOffense === 'fire' ? '火' :
                   stats.elementalOffense === 'thunder' ? '雷' :
                   stats.elementalOffense === 'ice' ? '氷' : '無';
@@ -707,14 +710,6 @@ function PartyTab({
                 if (hasRanged) offenseLines.push(`遠距離攻撃:${Math.floor(stats.rangedAttack)} x ${stats.rangedNoA}回(x${longAmp.toFixed(2)})`);
                 if (hasMagical) offenseLines.push(`魔法攻撃:${Math.floor(stats.magicalAttack)} x ${stats.magicalNoA}回(x${midAmp.toFixed(2)})`);
                 if (hasMelee) offenseLines.push(`近接攻撃:${Math.floor(stats.meleeAttack)} x ${stats.meleeNoA}回(x${closeAmp.toFixed(2)})`);
-
-                // Add accuracy display if character has ranged or melee NoA
-                // 命中率: d.accuracy_potency x 100 % (減衰: x (0.90 + c.accuracy+v))
-                const hasPhysicalAttacks = stats.rangedNoA > 0 || stats.meleeNoA > 0;
-                if (hasPhysicalAttacks) {
-                  const baseDecay = 0.90 + stats.accuracyBonus;
-                  offenseLines.push(`命中率: ${Math.round(stats.attackPotency * 100)}% (減衰: x${baseDecay.toFixed(2)})`);
-                }
 
                 // Defense lines (always 3)
                 const defenseLines = [
