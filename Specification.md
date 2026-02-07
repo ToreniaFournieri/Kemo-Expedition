@@ -194,7 +194,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 **Enemy**
 - id: int
-- type: string.  Normal/Boss
+- type: string.  Normal/Elite/Boss
 - pool_id //only for Normal enemy. Boss is always set 0.
 - name: string
 - `d.HP`
@@ -246,7 +246,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 #### 2.4.2 Base Item list
 
-|Tier| base power | multiplier for　鎧, 衣, 剣, 矢, 杖 | plus for 盾 | Scale NoA for 手, 弓, 媒 | fixed NoA for 手, 弓, 媒 |penalty for 刀, ボ, 書| 
+|Tier| base_power | multiplier for　鎧, 衣, 剣, 矢, 杖 | plus for 盾 | base_power (NoA) for 手, 弓, 媒 | fixed NoA for 手, 弓, 媒 |penalty for 刀, ボ, 書| 
 |----|------------|--------|-----------|--------|--------|-------|
 | 1 | 12 | `c.target_status+0.13` | `c.evasion+0.013` | 0.8 | `c.N_NoA+1` | `c.evasion-0.001`, `c.N_NoA-1.0` |
 | 2 | 18 | `c.target_status+0.12` | `c.evasion+0.012` | 0.7 | `c.N_NoA+2` | `c.evasion-0.002`, `c.N_NoA-1.2` |
@@ -257,7 +257,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | 7 | 137 | `c.target_status+0.06` | `c.evasion+0.006` | 0.2 | `c.N_NoA+7` | `c.evasion-0.007`, `c.N_NoA-2.2` |
 | 8 | 205 | `c.target_status+0.05` | `c.evasion+0.005` | 0.1 | `c.N_NoA+8` | `c.evasion-0.008`, `c.N_NoA-2.4` |
 
-| Item type | base power/Scale for | multiplier for |
+| Item type | base_power/Scale for | base c.multiplier for |
 |------|--------|------|
 |`i.armor` | `d.physical_defense` | `c.physical_defense+v` |
 |`i.robe` |  `d.magical_defense`  | `c.magical_defense+v` |
@@ -272,7 +272,8 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 |`i.grimoire` | `d.magical_attack` | `c.magical_attack+v`, `c.evasion-v`, `c.magical_NoA-v` |
 |`i.catalyst` | `d.magical_NoA` | `c.magical_NoA+v` |
 
-**Amplifier of base power**
+
+**rarelity.amplifier of base_power**
 
 | Item type | common | uncommon | rare | mythic |
 |------|--------|--------|--------|--------|
@@ -289,13 +290,24 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 |`i.grimoire` | x1.0 | x1.2 | x1.44 | x1.73 |
 |`i.catalyst` | x1.0 | x1.2 | x1.44 | x1.73 |
 
+**Rarelity base**
+| Rarelity | Features | dropped by |
+|------|--------|-------|
+| common | base_power x rarelity.amplifier, and base c.multiplier | every enemy |
+| uncommon | base_power x rarelity.amplifier + **one subtle_power**, base c.multiplier | Normal enemy |
+| rare | base_power x rarelity.amplifier + **two** subtle_power, base c.multiplier | Elite enemy |
+| mythic | base_power x rarelity.amplifier + two subtle_power, **two c.multipliers** | Boss enemey |
+
+*Note:* subtle_power: x0.20 ~ x0.34 of base_power value.
+
 - example of basic item:
 ```
-Tier 1 `i.sword`: `d.melee_attack` +12, `c.physical_attack+0.13`
-Tier 2 `i.shield`: `d.HP` +18, `c.evasion+0.012`
-Tier 3 `i.gauntlet`: `d.melee_NoA` +0.6, `c.N_NoA+3`
-Tier 4 `i.katana`: `d.melee_attack` +82, `c.evasion-0.004`, `c_melee_NoA-1.6`
-Tier 5 `i.arrow`: `d.ranged_attack` +41, `c.ranged_attack+0.08`
+Tier 1 common `i.sword`: `d.melee_attack` +12, `c.physical_attack+0.13`
+Tier 1 rare `i.sword`: `d.melee_attack` +17, `d.melee_defense` + 5, `d.HP` +4 , `c.physical_attack+0.13`
+Tier 2 common `i.shield`: `d.HP` +18, `c.evasion+0.012`
+Tier 3 common `i.gauntlet`: `d.melee_NoA` +0.6, `c.N_NoA+3`
+Tier 4 common `i.katana`: `d.melee_attack` +82, `c.evasion-0.004`, `c_melee_NoA-1.6`
+Tier 5 common `i.arrow`: `d.ranged_attack` +41, `c.ranged_attack+0.08`
 
 ```
 
