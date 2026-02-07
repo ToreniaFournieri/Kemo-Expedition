@@ -248,14 +248,14 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 |Tier| base power | multiplier for　鎧, 衣, 剣, 矢, 杖 | plus for 盾 | Scale NoA for 手, 弓, 媒 | fixed NoA for 手, 弓, 媒 |penalty for 刀, ボ, 書| 
 |----|------------|--------|-----------|--------|--------|-------|
-| 1 | 12 | `c.target_status+0.13` | `c.evation+0.013` | 0.8 | `c_N_NoA+1` | `c.evation-0.001`, `c_N_NoA-1.0` |
-| 2 | 18 | `c.target_status+0.12` | `c.evation+0.012` | 0.7 | `c_N_NoA+2` | `c.evation-0.002`, `c_N_NoA-1.2` |
-| 3 | 27 | `c.target_status+0.11` | `c.evation+0.011` | 0.6 | `c_N_NoA+3` | `c.evation-0.003`, `c_N_NoA-1.4` |
-| 4 | 41 | `c.target_status+0.09` | `c.evation+0.009` | 0.5 | `c_N_NoA+4` | `c.evation-0.004`, `c_N_NoA-1.6` |
-| 5 | 61 | `c.target_status+0.08` | `c.evation+0.008` | 0.4 | `c_N_NoA+5` | `c.evation-0.005`, `c_N_NoA-1.8` |
-| 6 | 91 | `c.target_status+0.07` | `c.evation+0.007` | 0.3 | `c_N_NoA+6` | `c.evation-0.006`, `c_N_NoA-2.0` |
-| 7 | 137 | `c.target_status+0.06` | `c.evation+0.006` | 0.2 | `c_N_NoA+7` | `c.evation-0.007`, `c_N_NoA-2.2` |
-| 8 | 205 | `c.target_status+0.05` | `c.evation+0.005` | 0.1 | `c_N_NoA+8` | `c.evation-0.008`, `c_N_NoA-2.4` |
+| 1 | 12 | `c.target_status+0.13` | `c.evation+0.013` | 0.8 | `c_N_NoA+1` | `c.evation-0.001`, `c.N_NoA-1.0` |
+| 2 | 18 | `c.target_status+0.12` | `c.evation+0.012` | 0.7 | `c_N_NoA+2` | `c.evation-0.002`, `c.N_NoA-1.2` |
+| 3 | 27 | `c.target_status+0.11` | `c.evation+0.011` | 0.6 | `c_N_NoA+3` | `c.evation-0.003`, `c.N_NoA-1.4` |
+| 4 | 41 | `c.target_status+0.09` | `c.evation+0.009` | 0.5 | `c_N_NoA+4` | `c.evation-0.004`, `c.N_NoA-1.6` |
+| 5 | 61 | `c.target_status+0.08` | `c.evation+0.008` | 0.4 | `c_N_NoA+5` | `c.evation-0.005`, `c.N_NoA-1.8` |
+| 6 | 91 | `c.target_status+0.07` | `c.evation+0.007` | 0.3 | `c_N_NoA+6` | `c.evation-0.006`, `c.N_NoA-2.0` |
+| 7 | 137 | `c.target_status+0.06` | `c.evation+0.006` | 0.2 | `c_N_NoA+7` | `c.evation-0.007`, `c.N_NoA-2.2` |
+| 8 | 205 | `c.target_status+0.05` | `c.evation+0.005` | 0.1 | `c_N_NoA+8` | `c.evation-0.008`, `c.N_NoA-2.4` |
 
 | Item type | base power/Scale for | multiplier for |
 |------|--------|------|
