@@ -247,7 +247,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 ### 2.4.2 Base Item list
 
 |Tier| base power | positive multiplier | plus for 手, 弓, 媒 |penalty for 刀, ボ, 書| 
-|----|------------|----------------|--------|
+|----|------------|----------------|--------|--------|
 | 1 | 12 | `c.target_status+0.13` | `c_N_NoA+1` | `c.evation-0.001`, `c_N_NoA-1.0` |
 | 2 | 18 | `c.target_status+0.12` | `c_N_NoA+2` | `c.evation-0.002`, `c_N_NoA-1.2` |
 | 3 | 27 | `c.target_status+0.11` | `c_N_NoA+3` | `c.evation-0.003`, `c_N_NoA-1.4` |
