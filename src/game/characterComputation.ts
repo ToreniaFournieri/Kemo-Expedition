@@ -200,7 +200,7 @@ export function computeCharacterStats(
       rangedAttack += item.rangedAttack * multiplier;
     }
     if (item.rangedNoA) {
-      rangedNoA += Math.ceil(item.rangedNoA * multiplier);
+      rangedNoA += item.rangedNoA * multiplier; // Sum decimals, round at end
     }
     if (item.magicalAttack) {
       magicalAttack += item.magicalAttack * multiplier;
@@ -209,7 +209,7 @@ export function computeCharacterStats(
       meleeAttack += item.meleeAttack * multiplier;
     }
     if (item.meleeNoA) {
-      meleeNoA += Math.ceil(item.meleeNoA * multiplier);
+      meleeNoA += item.meleeNoA * multiplier; // Sum decimals, round at end
     }
 
     // Elemental offense from equipment (priority: thunder > ice > fire > none)
@@ -239,9 +239,13 @@ export function computeCharacterStats(
   // Check for iaigiri ability
   const hasIaigiri = collection.abilities.has('iaigiri');
   if (hasIaigiri) {
-    meleeNoA = Math.ceil(meleeNoA / 2);
+    meleeNoA = meleeNoA / 2;
     // meleeAttack will be amplified during battle
   }
+
+  // Round NoA values at the end (floor for final values)
+  rangedNoA = Math.floor(rangedNoA);
+  meleeNoA = Math.floor(meleeNoA);
 
   // Calculate individual defense stats
   // d.physical_defense = Item Bonuses of Physical defense x its c.multiplier x b.vitality / 10
