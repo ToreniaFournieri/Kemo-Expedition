@@ -16,9 +16,9 @@
 
 | Prefix | Description / Definition |
 |-------|-------------------------|
-| `a.`  | **A**bility (Passive/Active) |
+| `a.`  | **A**bility. Unique/Strongest. If multiple abilities share the same name, only the one with the highest value (or the highest priority) is active. |
 | `b.`  | **B**ase Status (Core attributes) |
-| `c.`  | **C**lass/Character Bonus (Modifiers) |
+| `c.`  | **C**ategory Bonus. Different named modifiers combine. Identical named modifiers follow the "Unique" rule. |
 | `d.`  | **D**uel Status (Current combat values) |
 | `e.`  | **E**lemental Offense Attribute |
 | `f.`  | **F**unction (Logic/Calculated value) |
