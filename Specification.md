@@ -202,7 +202,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 - **Enemy entity distribution** for each `x.expediton`
 
-| Entity Type | Unique Count | Mapping | Drop Quality | Lore |
+| Entity Type | Unique Count | Mapping | Drop Quality | Memo |
 |-----|-----|-----|-----|----|
 | Normal |30 | 5 per Floor Pool (Pools 1–6) | 3 Common, 2 Uncommon |  They provide consistent Uncommon drops and thematic flavor.|
 | Elite | 5 | 1 per Floor ( `x.floor` 1–5, `x.room` 4) | 2 Rare, 1 Uncommon, 2 Common | Floor-end guardians serving as "Mechanical Gates." They drop Rare items and test specific build capabilities. |
