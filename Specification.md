@@ -291,7 +291,6 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 - f.penet_multiplier
   	- always 0 // (in this version)
 - experience // Enemy experience is added directly to party experience.
-- gold
 - drop_item
 
 **Enemy Master Specification**
@@ -300,7 +299,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 1. The Core Principle: "Static Master, Dynamic Reality"
 All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their actual threat level is calculated only upon spawning by applying the environmental pressure of the current Expedition and Floor.
 
-2. Status Scaling FormulasThe final combat value ($V_{final}$) is derived from the Master Value ($V_{base}$) using the following multipliers:
+2. Status Scaling FormulasThe final combat value final is derived from the Master Value base using the following multipliers:
 
 **Enemy status mutipliers**
 - `d.HP` : master value x `x.exp_mult` x `x.floor_multiplier` 
@@ -312,6 +311,18 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 - `f.elemental_resistance_attribute` : not scale
 - `f.penet_multiplier`: not scale
 - experience: master value x `x.exp_mult` x `x.floor_multiplier`
+
+#### 2.3.3 Base data structure
+
+| Role | `d.HP` | `d.ranged_attack` | `d.ranged_NoA` | `d.magical_attack` | `d.magical_NoA` | `d.melee_attack` | `d.melee_NoA` | `d.ranged_attack_amplifier` | `d.magical_attack_amplifier` | `d.melee_attack_amplifier` | `d.physical_defense` | `d.magical_defense` | `e.fire` | `e.ice` | `e.thunder` | `r.fire` | `r.ice` |`r.thunder` | experience |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Melee | 50 | 0 | 0 | 0 | 0 | 20 | 2 | x1.0 | x1.0 | x1.2 | 10 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
+| Ranged | 38 | 14 | 2 | 0 | 0 | 0 | 0 | x1.2 | x1.0 | x1.0 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
+| Magic | 32 | 0 | 0 | 10 | 2 | 0 | 0 | x1.0 | x1.2 | x1.0 | 6 | 14 | (none) | (none) | (none) | x0.9 | x0.9 | x0.9 | 10 |
+| Tank | 75 | 0 | 0 | 0 | 0 | 16 | 1 | x1.0 | x1.0 | x1.0 | 16 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
+| Hybird | 47 | 10 | 1 | 0 | 0 | 14 | 1 | x1.1 | x1.0 | x1.1 | 10 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
+
+
 
 ### 2.4 Items
 
