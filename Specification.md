@@ -232,7 +232,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | 6 | 4 | `x.battle_Boss` | x5.00 | fixed Boss. mythic (see bellows) | Checks if you have enough tital power. |
 
 
-- each pool has enemies with unique item drops 
+- each pool has enemies with unique item drops. (*note:* common items are not specifically mentioned but are dropped.)
   
 | Pool | enemy drop 1 | enemy drop 2 | enemy drop 3 | enemy drop 4 | enemy drop 5 |
 |---|---|---|---|---|---|
