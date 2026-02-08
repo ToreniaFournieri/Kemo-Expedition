@@ -188,16 +188,16 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 - `x.expedition` layout overview:
 
-| `x.floor` | `x.room` | `x.room_type` | `x.floor_multiplier` | `x.key_concept` |
-|----|----|----|-----|-----|
-| 1 | 1 | `x.battle_Normal` | x1.0 | drops uncommon `i.sword`, `i.gauntlet`  |
-| 1 | 2 | `x.battle_Normal` | x1.0 |drops uncommon `i.arrow`, `i.archery` |
-| 1 | 3 | `x.battle_Normal` | x1.0 | drops uncommon `i.wand`, `i.catalyst` |
-| 1 | 4 | `x.battle_Elite` | x1.0 | Checks if you have equipped items properly |
-| 2 | 1 | `x.battle_Normal` | x1.2 | drops |
-| 2 | 2 | `x.battle_Normal` | x1.2 | drops `i.sword`, `i.armor` |
-| 2 | 3 | `x.battle_Normal` | x1.2 | drops `i.katana`, `i.bolt` |
-| 2 | 4 | `x.battle_Elite` | x1.2 | Checks if you have enough firepower. |
+| `x.floor` | `x.room` | `x.room_type` | `x.floor_multiplier` | drop |`x.key_concept` |
+|----|----|----|-----|-----|-----|
+| 1 | 1 | `x.battle_Normal` | x1.0 | uncommon `i.sword`, `i.gauntlet`  | easy farming |
+| 1 | 2 | `x.battle_Normal` | x1.0 | uncommon `i.arrow`, `i.archery` | easy farming |
+| 1 | 3 | `x.battle_Normal` | x1.0 | uncommon `i.wand`, `i.catalyst` | easy farming |
+| 1 | 4 | `x.battle_Elite` | x1.0 | rare  `i.sword`, `i.arrow` | Checks if you have equipped items properly |
+| 2 | 1 | `x.battle_Normal` | x1.2 | uncommon `i.katana`, `i.armor` | |
+| 2 | 2 | `x.battle_Normal` | x1.2 | uncommon `i.bolt`, `i.shield ` |  |
+| 2 | 3 | `x.battle_Normal` | x1.2 | uncommon `i.grimoire`, `i.robe` | |
+| 2 | 4 | `x.battle_Elite` | x1.2 | rare  `i.armor`, `i.robe` | Checks if you have enough firepower. |
 
 
 **Dungeon**
