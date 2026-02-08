@@ -211,7 +211,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 - `x.expedition` layout overview:
 
-| `x.floor` | `x.room` | `x.room_type` | `x.floor_multiplier` | enemy_pool, drops | `x.key_concept` |
+| `x.floor` | `x.room` | `x.room_type` | `x.floor_multiplier` | `x.Spawn_pool`, drops | `x.key_concept` |
 |----|----|----|-----|-----|-----|
 | 1 | 1-3 | `x.battle_Normal` | x1.0 | pool_1 | easy farming |
 | 1 | 4 | `x.battle_Elite` | x1.3 | fixed Elite. rare  `i.sword`, `i.armor` | Class:Rogue. Checks if you have equipped items properly. |
@@ -229,7 +229,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 - each pool has enemies with unique item drops. (*note:* common items are not specifically mentioned but are dropped.)
   
-| Pool | enemy class/drop 1 | enemy class/drop 2 | enemy class/drop 3 | enemy class/drop 4 | enemy class/drop 5 |
+| `x.Spawn_pool` | enemy class/drop 1 | enemy class/drop 2 | enemy class/drop 3 | enemy class/drop 4 | enemy class/drop 5 |
 |---|---|---|---|---|---|
 | pool_1 | E01:Fighter/ uncommon `i.sword`, `i.gauntlet` | E02:Ranger/ uncommon `i.arrow`, `i.archery` | E03:Wizard/ uncommon `i.wand`, `i.catalyst` | E04:Pilgrim/ uncommon `i.sword`, `i.wand` | E05:Rogue/ uncommon `i.bolt`, `i.shield ` |
 | pool_2 | E06:Ninja/ uncommon `i.katana`, `i.armor` | E07:Samurai/ uncommon `i.katana`, `i.bolt` | E08:Sage/ uncommon `i.grimoire`, `i.robe` | E09:Duelist/ uncommon `i.sword`, `i.arrow` | E10:Lord/ uncommon `i.shield `, `i.robe` |
@@ -253,12 +253,13 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 
 
-#### 2.3.2 Enemy structure
+#### 2.3.2 Enemy structure (in battle)
 - id: int
 - type: string.  Normal/Elite/Boss
-- expedition
-- floor 
+- x.Spawn_tier
+- x.Spawn_pool //only for type.Normal. others (Elite/Boss) set 0.
 - name: string
+- class
 - `d.HP`
 - `a.ability`
 - `f.attack`, `f.NoA`
@@ -280,16 +281,29 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 	- `r.thunder`
 - f.penet_multiplier
   	- always 0 // (in this version)
-- experience // Enemy experience is added directly to party experience.
+- `d.experience` // Enemy experience is added directly to party experience.
 - drop_item
 
 **Enemy Master Specification**
+
+
 - This document defines the base data structure and dynamic scaling laws for all entities encountered during an expedition.
 
 1. The Core Principle: "Static Master, Dynamic Reality"
 All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their actual threat level is calculated only upon spawning by applying the environmental pressure of the current Expedition and Floor.
 
-2. Status Scaling FormulasThe final combat value final is derived from the Master Value base using the following multipliers:
+2. Status Scaling FormulasThe final combat value final is derived from the Master Value base using the following multipliers.
+
+**Enemy master data structure**
+- id: int
+- type: string.  Normal/Elite/Boss
+- x.Spawn_tier
+- x.Spawn_pool //only for type.Normal. others (Elite/Boss) set 0.
+- name: string
+- class
+- drop_item
+
+*note:* There are no duel(`d.`, `f.`, `e`, or `r`) related status in the master data. because these data is calculated by the formula.
 
 **Enemy status mutipliers**
 - `d.HP` : master value x `x.exp_mult` x `x.floor_multiplier` 
@@ -300,11 +314,11 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 - `f.elemental_offense_attribute` :  not scale
 - `f.elemental_resistance_attribute` : not scale
 - `f.penet_multiplier`: not scale
-- experience: master value x `x.exp_mult` x `x.floor_multiplier`
+- `d.experience`: master value x `x.exp_mult` x `x.floor_multiplier` x (If Elite, 2.0. Else if Boss, 5.0. Else 1.0)
 
 #### 2.3.3 Base data structure
 
-| Role | `d.HP` | `a.ability` | `c.accuracy` | `c.evasion` | `d.ranged_attack` | `d.ranged_NoA` | `d.magical_attack` | `d.magical_NoA` | `d.melee_attack` | `d.melee_NoA` | `d.ranged_attack_amplifier` | `d.magical_attack_amplifier` | `d.melee_attack_amplifier` | `d.physical_defense` | `d.magical_defense` | `e.fire` | `e.ice` | `e.thunder` | `r.fire` | `r.ice` |`r.thunder` | experience |
+| Role | `d.HP` | `a.ability` | `c.accuracy` | `c.evasion` | `d.ranged_attack` | `d.ranged_NoA` | `d.magical_attack` | `d.magical_NoA` | `d.melee_attack` | `d.melee_NoA` | `d.ranged_attack_amplifier` | `d.magical_attack_amplifier` | `d.melee_attack_amplifier` | `d.physical_defense` | `d.magical_defense` | `e.fire` | `e.ice` | `e.thunder` | `r.fire` | `r.ice` |`r.thunder` | `d.experience` |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Fighter | 75 | (none) | 0.00| 0.02 | 0 | 0 | 0 | 0 | 16 | 1 | x1.0 | x1.0 | x1.0 | 16 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
 | Duelist | 50 | `a.counter`1 | 0.01 | 0.01 | 0 | 0 | 0 | 0 | 20 | 2 | x1.0 | x1.0 | x1.2 | 10 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
@@ -316,7 +330,6 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | Sage | 38 | (none) | 0.00 | 0.00 |0 | 0 | 10 | 2 | 0 | 0 | x1.0 | x1.2 | x1.0 | 8 | 20 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
 | Rogue | 30 | (none) | 0.06 | 0.06 | 10 | 2 | 0 | 0 | 10 | 2 | x1.0 | x1.2 | x1.0 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 8 |
 | Pilgrim | 66 | `a.null-counter` | 0.00 | 0.02 | 0 | 0 | 10 | 1 | 16 | 1 | x1.0 | x1.2 | x1.2 | 12 | 12 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 16 |
-
 
 
 ### 2.4 Items
@@ -755,9 +768,9 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 	- If enemy.`d.HP` > 0 and party.`d.HP` > 0
 
 **Consequence**
-- *Defeat*: no penalties (current version). no experience points nor item reward. Back to home without trophies. 
-- *Victory*: gains experience points to a party. has a chance of gaining reward from enemies drop item. Proceeds to the next room. If it was the Boss room, back to home with trophies!
-- *Draw*:no penalties (current version). no experience points nor item reward at this room. Back to home with trophies of previous rooms.
+- *Defeat*: no penalties (current version). no `d.experience` points nor item reward. Back to home without trophies. 
+- *Victory*: gains `d.experience` points to a party. has a chance of gaining reward from enemies drop item. Proceeds to the next room. If it was the Boss room, back to home with trophies!
+- *Draw*:no penalties (current version). no `d.experience` points nor item reward at this room. Back to home with trophies of previous rooms.
 
 - **Item Retrieval Logic:**
   - Items are stacked by (superRare, enhancement, and base item) and has state
