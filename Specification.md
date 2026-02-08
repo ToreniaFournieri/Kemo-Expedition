@@ -298,7 +298,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | Rarelity | Features |
 |------|--------|
 | common | base_power x rarelity.amplifier, and base c.multiplier |
-| uncommon | base_power x rarelity.amplifier + **one subtle_power`d.` or `c.` bonus**, base c.multiplier +2 tier upgrade(ecept penalty) |
+| uncommon | base_power x rarelity.amplifier + **one subtle_power`d.` or `c.` bonus**, base c.multiplier +1 tier upgrade(ecept penalty) |
 | rare | base_power x rarelity.amplifier + **two** subtle_power`d.`, **`e.`**, or `c.` bonus, base c.multiplier +2 tier upgrade(ecept penalty) |
 | mythic | base_power x rarelity.amplifier + **three** subtle_power`d.`, `e.`, or `c.` bonus, one **`b.` bonus**, but **no base c.multiplier** |
 
