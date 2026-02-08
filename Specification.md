@@ -928,7 +928,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
   - Expedition
   - Inventory
   - Shop
-  - Setting
+  - Celestial Bureau
 
 - Header is always visible; tabs never cause full page reload.
 
@@ -1154,8 +1154,8 @@ Left-aligned            Right-aligned
 #### 8.6 Shop
 - Only tabs. not opended. (in this version)
   
-#### 8.7 Setting
-- Debug section: Displays belows 
+#### 8.7 Celestial Bureau (神事務局)
+- Clairvoyance (未来視): Displays belows 
 
 **Normal reward(通常報酬)**
   - common_reward_bag:  
@@ -1173,22 +1173,26 @@ Left-aligned            Right-aligned
 **Unieque reward(固有報酬)**
   - reward_bag:  
     - 報酬抽選: remaining / total counts 
-    - 当たり残り counts
+    - 当たり残り remaining
   -	enhancement_bag: 
     - 通常称号抽選: remaining / total counts
-    - 名工の残り counts
-    - 魔性の残り counts
-   	- 宿った残り counts
-    - 伝説の残り counts
-    - 恐ろしい残り counts
-    - 究極の残り counts
+    - 名工の残り remaining / initial counts
+    - 魔性の残り remaining / initial counts
+   	- 宿った残り remaining / initial counts
+    - 伝説の残り remaining / initial counts
+    - 恐ろしい残り remaining / initial counts
+    - 究極の残り remaining / initial counts
+- Button: Initialize `g.enhancement_bag`
 
 **Super rare reward(超レア称号付与抽選)**
   - superRare_bag:
     - 超レア称号抽選: remaining / total counts
-    - 超レア残り counts
+    - 超レア残り remaining / initial counts
+- Button: Initialize `g.superRare_bag`
 
-- Reset:
+- (long space here)
+
+- Game Reset:
   - Full reset option
   - Warning required before execution
 
