@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.1.5 - SPECIFICATION
+# KEMO EXPEDITION v0.2.0 - SPECIFICATION
 
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
@@ -444,7 +444,17 @@ Tier 5 common `i.arrow`: `d.ranged_attack` +41, `c.ranged_attack+0.08`
   - Sold items cannot be restored or refunded.
   - After a status reset, the variant can be collected in the inventory again.
 
-- **State definitions**
+#### 2.4.4 Item master definitions
+
+- id
+- item_category
+- tier
+- rarelity
+- addtional (`d.`)
+- bonus (`c.`)
+
+
+
 
 | State | meaning|
 |-------|---------|
@@ -473,6 +483,8 @@ inventory = {
   }
 }
 ```
+
+**Item master data structure**
 
 ## 3. INITIALIZATION 
 
@@ -1122,7 +1134,7 @@ Left-aligned            Right-aligned
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
-|**0.1.5**| Update:2.3 Expedition & Enemies, 2.4 Itemsm, 3.2 Initial setup, 7. REWARD (change the logic).  |
+|**0.2.0**| Update:2.3 Expedition & Enemies, 2.4 Itemsm, 3.2 Initial setup, 7. REWARD (change the logic).  |
 |0.1.4 |                                                                |
 
     
