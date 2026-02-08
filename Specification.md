@@ -39,14 +39,14 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 **reward list**
 
-- `g.common_reward_bag`
+- `g.common_reward_bag` table
 
 | value | title | tickets |
 |-----|---------|------|
 | 0 | no item | 9 |
 | 1 | win | 1 |
 
-- `g.reward_bag`
+- `g.reward_bag` table
  
 | value | title | tickets |
 |-----|---------|------|
@@ -56,7 +56,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 **enhancement title**
 
-- `g.common_enhancement_bag`
+- `g.common_enhancement_bag` table
 
 | value | title | tickets | multiplier |
 |-----|---------|------|------|
@@ -68,7 +68,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | 5 | 恐ろしい | 4 | x3.50 |
 | 6 | 究極の | 1 | x5.00 |
 
-- `g.enhancement_bag`
+- `g.enhancement_bag` table
  
 | value | title | tickets | multiplier |
 |-----|---------|------|------|
@@ -80,7 +80,9 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | 5 | 恐ろしい | 4 | x3.50 |
 | 6 | 究極の | 1 | x5.00 |
 
-**superRare title** `g.superRare_bag`
+**superRare title** 
+
+- `g.superRare_bag` table
 
 | value | title | tickets | multiplier |
 |-----|---------|------|-----|
@@ -523,7 +525,7 @@ inventory = {
 ## 3. INITIALIZATION 
 
 ### 3.1 Randomness initialization
-- **Reward:** Populate `g.reward_bag` with 1 winning ticket (1) and 9 losing tickets (0).
+- **Reward:** Populate `g.reward_bag` with tickets according to the enhancement table.
 - **Enhancement:** Populate `g.enhancement_bag` with tickets according to the enhancement table.
 - **Super Rare:** Populate `g.superRare_bag` with tickets according to the superRare table.
 
@@ -1168,8 +1170,8 @@ Left-aligned            Right-aligned
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
-|**0.2.0**| Update:2.1 Global constants (change enhancement title tickets), 2.3 Expedition & Enemies, 2.4 Itemsm, 3.2 Initial setup, 7. REWARD (change the logic).  |
-|0.1.4 |                                                                |
+| **0.2.0** | Update:2.1 Global constants (change randamness upgrade), 2.3 Expedition & Enemies, 2.4 Itemsm, 3. INITIALIZATION, 7. REWARD (change the logic).  |
+| 0.1.4 |                                                                |
 
     
 **END OF SPECIFICATION**
