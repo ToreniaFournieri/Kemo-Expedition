@@ -43,8 +43,8 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 | value | title | tickets |
 |-----|---------|------|
-| 0 | no item | 9 |
-| 1 | win | 1 |
+| 0 | no item | 90 |
+| 1 | win | 10 |
 
 - `g.reward_bag` table
  
@@ -525,9 +525,16 @@ inventory = {
 ## 3. INITIALIZATION 
 
 ### 3.1 Randomness initialization
-- **Reward:** Populate `g.reward_bag` with tickets according to the enhancement table.
-- **Enhancement:** Populate `g.enhancement_bag` with tickets according to the enhancement table.
-- **Super Rare:** Populate `g.superRare_bag` with tickets according to the superRare table.
+- **Reward:**
+  - Populate `g.common_reward_bag` with tickets according to the `g.common_reward_bag` table.
+  - Populate `g.reward_bag` with tickets according to the `g.reward_bag` table.
+
+- **Enhancement:**
+  - Populate `g.common_enhancement_bag` with tickets according to the `g.common_enhancement_bag` table.
+  - Populate `g.enhancement_bag` with tickets according to the `g.enhancement_bag` table.
+
+- **Super Rare:**
+  - Populate `g.superRare_bag` with tickets according to the `g.superRare_bag` table.
 
 - **Threat weight:** 
   - Populate `g.physical_threat_weight_bag` with tickets: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 2,2,2,2,2,2,2,2, 3,3,3,3, 4,4, 5, 6]. 
