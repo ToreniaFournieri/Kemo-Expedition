@@ -202,11 +202,11 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 - **Enemy entity distribution** for each `x.expediton`
 
-| Entity Type | Unique Count | Mapping | Drop Quality |
-|-----|-----|-----|-----|
-| Normal |30 | 5 per Floor Pool (Pools 1–6) | 3 Common, 2 Uncommon |
-| Elite | 5 | 1 per Floor ( `x.floor` 1–5, `x.room` 4) | 2 Rare, 1 Uncommon, 2 Common |
-| Boss | 1 | `x.floor` 6, `x.room` 4 (Final) | 2 ~ 3 Mythic , 1 ~ 2 Rare, 1 Common (5 in total) |
+| Entity Type | Unique Count | Mapping | Drop Quality | Lore |
+|-----|-----|-----|-----|----|
+| Normal |30 | 5 per Floor Pool (Pools 1–6) | 3 Common, 2 Uncommon |  They provide consistent Uncommon drops and thematic flavor.|
+| Elite | 5 | 1 per Floor ( `x.floor` 1–5, `x.room` 4) | 2 Rare, 1 Uncommon, 2 Common | Floor-end guardians serving as "Mechanical Gates." They drop Rare items and test specific build capabilities. |
+| Boss | 1 | `x.floor` 6, `x.room` 4 (Final) | 2 ~ 3 Mythic , 1 ~ 2 Rare, 1 Common (5 in total) | A "Total Power" check and the exclusive source of Mythic rewards. |
 
 
 - `x.expedition` layout overview:
@@ -312,12 +312,6 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 - `f.elemental_resistance_attribute` : not scale
 - `f.penet_multiplier`: not scale
 - experience: master value x `x.exp_mult` x `x.floor_multiplier`
-
-**Enemy Variety & Lore**  
-- Each `x.expedition` features 36 unique entities tailored to the habitat's lore:
-	- 30 Normal Enemies: Organized into 6 pools (5 per pool). They provide consistent Uncommon drops and thematic flavor.
-	- 5 Elite Enemies: Floor-end guardians serving as "Mechanical Gates." They drop Rare items and test specific build capabilities.
-	- 1 Boss Enemy: The final Room 24 encounter. A "Total Power" check and the exclusive source of Mythic rewards.
 
 ### 2.4 Items
 
