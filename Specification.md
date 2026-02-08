@@ -241,14 +241,14 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 - each pool has enemies with unique item drops. (*note:* common items are not specifically mentioned but are dropped.)
   
-| Pool | enemy drop 1 | enemy drop 2 | enemy drop 3 | enemy drop 4 | enemy drop 5 |
+| Pool | enemy role/drop 1 | enemy role/drop 2 | enemy role/drop 3 | enemy role/drop 4 | enemy role/drop 5 |
 |---|---|---|---|---|---|
-| pool_1 | E01:uncommon `i.sword`, `i.gauntlet` | E02:uncommon `i.arrow`, `i.archery` | E03:uncommon `i.wand`, `i.catalyst` | E04:uncommon `i.shield `, `i.robe` | E05:uncommon `i.katana`, `i.bolt` |
-| pool_2 | E06:uncommon `i.katana`, `i.armor` | E07:uncommon `i.bolt`, `i.shield `| E08:uncommon `i.grimoire`, `i.robe` | E09:uncommon `i.sword`, `i.arrow` | E10:uncommon `i.sword`, `i.wand` |
-| pool_3 | E11:uncommon `i.sword`, `i.gauntlet` | E12:uncommon `i.arrow`, `i.archery` | E13:uncommon `i.wand`, `i.catalyst` | E14:uncommon `i.shield `, `i.robe` | E15:uncommon `i.katana`, `i.bolt` |
-| pool_4 | E16:uncommon `i.katana`, `i.armor` | E17:uncommon `i.bolt`, `i.shield `| E18:uncommon `i.grimoire`, `i.robe` | E19:uncommon `i.sword`, `i.arrow` | E20:uncommon `i.sword`, `i.wand` |
-| pool_5 | E21:uncommon `i.sword`, `i.gauntlet` | E22:uncommon `i.arrow`, `i.archery` | E23:uncommon `i.wand`, `i.catalyst` | E24:uncommon `i.shield `, `i.robe` | E25:uncommon `i.katana`, `i.bolt` |
-| pool_6 | E26:uncommon `i.katana`, `i.armor` | E27:uncommon `i.bolt`, `i.shield `| E28:uncommon `i.grimoire`, `i.robe` | E29:uncommon `i.sword`, `i.arrow` | E30:uncommon `i.sword`, `i.wand` |
+| pool_1 | E01:Fighter/ uncommon `i.sword`, `i.gauntlet` | E02:Ranger/ uncommon `i.arrow`, `i.archery` | E03:Wizard/ uncommon `i.wand`, `i.catalyst` | E04:Lord/ uncommon `i.shield `, `i.robe` | E05:Samurai/ uncommon `i.katana`, `i.bolt` |
+| pool_2 | E06:Ninja/ uncommon `i.katana`, `i.armor` | E07:Rogue/ uncommon `i.bolt`, `i.shield `| E08:Sage/ uncommon `i.grimoire`, `i.robe` | E09:Duelist/ uncommon `i.sword`, `i.arrow` | E10:Pilgrim/ uncommon `i.sword`, `i.wand` |
+| pool_3 | E11:Fighter/ uncommon `i.sword`, `i.gauntlet` | E12:Ranger/ uncommon `i.arrow`, `i.archery` | E13:Wizard/ uncommon `i.wand`, `i.catalyst` | E04:Lord/ uncommon `i.shield `, `i.robe` | E15:Samurai/ uncommon `i.katana`, `i.bolt` |
+| pool_4 | E16:Ninja/ uncommon `i.katana`, `i.armor` | E17:Rogue/ uncommon `i.bolt`, `i.shield `| E18:Sage/ uncommon `i.grimoire`, `i.robe` | E19:Duelist/ uncommon `i.sword`, `i.arrow` | E20:Pilgrim/ uncommon `i.sword`, `i.wand` |
+| pool_5 | E21:Fighter/ uncommon `i.sword`, `i.gauntlet` | E22:Ranger/ uncommon `i.arrow`, `i.archery` | E23:Wizard/ uncommon `i.wand`, `i.catalyst` | E24:Lord/ uncommon `i.shield `, `i.robe` | E25:Samurai/ uncommon `i.katana`, `i.bolt` |
+| pool_6 | E26:Ninja/ uncommon `i.katana`, `i.armor` | E27:Rogue/ uncommon `i.bolt`, `i.shield `| E28:Sage/ uncommon `i.grimoire`, `i.robe` | E29:Duelist/ uncommon `i.sword`, `i.arrow` | E30:Pilgrim/ uncommon `i.sword`, `i.wand` |
 
 
 | `x.expedition` Tier | Boss concept | Boss drop mythic item types |
@@ -320,7 +320,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | Fighter | 75 | (none) | 0.00| 0.02 | 0 | 0 | 0 | 0 | 16 | 1 | x1.0 | x1.0 | x1.0 | 16 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
 | Duelist | 50 | `a.counter`1 | 0.01 | 0.01 | 0 | 0 | 0 | 0 | 20 | 2 | x1.0 | x1.0 | x1.2 | 10 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
 | Ninja | 47 | `a.re-attack`1 | 0.00 | 0.04 | 10 | 1 | 0 | 0 | 14 | 1 | x1.1 | x1.0 | x1.1 | 10 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 14 |
-| Samurai | 40 | (none) | 0.00 | 0.00 | 0 | 0 | 0 | 0 | 40 | 1 | x1.0 | x1.0 | x1.3 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 12 |
+| Samurai | 40 | (none) | -0.05 | -0.01 | 0 | 0 | 0 | 0 | 40 | 1 | x1.0 | x1.0 | x1.3 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 12 |
 | Lord | 60 | (none) | 0.00 | 0.00 | 0 | 0 | 0 | 0 | 18 | 2 | x1.0 | x1.0 | x1.1 | 14 | 14 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 20 |
 | Ranger | 38 | (none) | 0.03 | 0.01 | 14 | 2 | 0 | 0 | 0 | 0 | x1.2 | x1.0 | x1.0 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 12 |
 | Wizard | 32 | (none) | 0.00 | 0.00 |0 | 0 | 20 | 1 | 0 | 0 | x1.0 | x1.2 | x1.0 | 6 | 14 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
