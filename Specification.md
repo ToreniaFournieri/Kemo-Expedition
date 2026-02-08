@@ -487,6 +487,26 @@ inventory = {
 
 - If a bag is empty or explicitly reset the bag, initialize it.
 
+### 3.2 Initial setup
+- Initial setup (or reset condition)
+
+- Party initial condition.
+  1. "ケモ", Caninian, 戦(君), Sturdy, House of the Unmoving
+  2. "ゴン", Vulpinian, 剣(侍), Chivalric, House of War Spirit
+  3. "イタチ", Murid, 忍(盗), Persistent, House of the Breaking Hand
+  4. "ロップ", Leporian, 狩(賢), Dexterous, House of Far Sight
+  5. "ラス", Felidian, 賢(巡), Pursuing, House of Hidden Principles
+  6. "セルヴァ", Cervin, 魔(師範), Canny, House of Guiding Thought
+
+- Party initial inventory.
+  - four Tier-1 common items of each item type.
+
+- Party initial state.
+  - level: 1
+  - experience: 0
+  - Gold: 200G
+  - Auto-sell: none
+
 ### 3.3 Character initialization
 
 #### 3.3.1 Level and slots
@@ -1102,7 +1122,7 @@ Left-aligned            Right-aligned
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
-|**0.1.5**| Update:2.3 Expedition & Enemies, 2.4 Itemsm, 7. REWARD (change the logic).  |
+|**0.1.5**| Update:2.3 Expedition & Enemies, 2.4 Itemsm, 3.2 Initial setup, 7. REWARD (change the logic).  |
 |0.1.4 |                                                                |
 
     
