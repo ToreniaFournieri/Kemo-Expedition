@@ -285,8 +285,6 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 - drop_item
 
 **Enemy Master Specification**
-
-
 - This document defines the base data structure and dynamic scaling laws for all entities encountered during an expedition.
 
 1. The Core Principle: "Static Master, Dynamic Reality"
@@ -445,19 +443,20 @@ Tier 5 common `i.arrow`: `d.ranged_attack` +41, `c.ranged_attack+0.08`
   - After a status reset, the variant can be collected in the inventory again.
 
 #### 2.4.4 Item master definitions
-
 - id
 - item_category
 - tier
 - rarelity
-- addtional (`d.`)
+- subtle_power (`d.`)
 - bonus (`c.`)
 - elemental offensive bonus (`e.`)
 - elemental resistance bonus (`r.`)
 - base status bonus (`d.`)
 
-
-
+*note:*
+- There are no base duel(`d.`) related status in the master data. because these data is calculated by the formula. Only subtle_power is defined in this master.
+- If an item's base_power is `d.HP` = 12 and subtle_power is `d.HP` = 10, then, this item has one `d.HP` = 22 status.
+  
 
 | State | meaning|
 |-------|---------|
