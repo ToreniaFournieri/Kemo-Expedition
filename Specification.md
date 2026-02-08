@@ -189,7 +189,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 - `x.expedition` list
 
 | `x.expediton` | `x.expedition_multiplier` | drop item tier | concept |
-|------|-----|-----|
+|------|-----|-----|----|
 | | x1 | 1 | |
 | | x2 | 2 | |
 | | x4 | 3 | |
