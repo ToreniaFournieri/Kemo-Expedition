@@ -34,9 +34,41 @@
 const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 - Initial deity: 'God of Restoration' // Revives character at the base automatically, no death penalty 
-- **Bag Randomization** There are `g.reward_bag`, `g.enhancement_bag`, `g.superRare_bag`, and `g.threat_weight_bag` which control probable randomness.
+- **Bag Randomization** There are `g.common_reward_bag`, `g.common_enhancement_bag`, `g.reward_bag`, `g.enhancement_bag`, `g.superRare_bag`, and `g.threat_weight_bag` which control probable randomness.
 
-- **enhancement title**
+
+**reward list**
+
+- `g.common_reward_bag`
+
+| value | title | tickets |
+|-----|---------|------|
+| 0 | no item | 9 |
+| 1 | win | 1 |
+
+- `g.reward_bag`
+ 
+| value | title | tickets |
+|-----|---------|------|
+| 0 | no item | 99 |
+| 1 | win | 1 |
+
+
+**enhancement title**
+
+- `g.common_enhancement_bag`
+
+| value | title | tickets | multiplier |
+|-----|---------|------|------|
+| 0 | (none) | 1390 | x1.00 |
+| 1 | 名工の | 350 | x1.33 |
+| 2 | 魔性の | 180 | x1.58 |
+| 3 | 宿った | 60 | x2.10 |
+| 4 | 伝説の | 15 | x2.75 |
+| 5 | 恐ろしい | 4 | x3.50 |
+| 6 | 究極の | 1 | x5.00 |
+
+- `g.enhancement_bag`
  
 | value | title | tickets | multiplier |
 |-----|---------|------|------|
@@ -48,7 +80,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | 5 | 恐ろしい | 4 | x3.50 |
 | 6 | 究極の | 1 | x5.00 |
 
-- **superRare title**
+**superRare title** `g.superRare_bag`
 
 | value | title | tickets | multiplier |
 |-----|---------|------|-----|
@@ -59,7 +91,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | 4 | 知られざる | 1 | x2.0 |
 | 5 | 血に飢えし | 1 | x2.0 |
 
-- **Elemental attribute**
+**Elemental attribute**
   - `elemental_offense_attribute` : `e.none`, `e.fire`, `e.thunder`, `e.ice` // Offensive
   - `elemental_resistance_attribute` : `r.none`, `r.fire`, `r.thunder`, `r.ice` // Defensive
 
@@ -513,7 +545,7 @@ inventory = {
   6. "セルヴァ", Cervin, 魔(師範), Canny, House of Guiding Thought
 
 - Party initial inventory.
-  - four Tier-1 common items of each item type.
+  - 1 Tier-1 common items of each item type.
 
 - Party initial state.
   - level: 1
