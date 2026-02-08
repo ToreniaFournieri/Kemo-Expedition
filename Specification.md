@@ -1156,15 +1156,34 @@ Left-aligned            Right-aligned
   
 #### 8.7 Setting
 - Debug section: Displays belows 
+
+**Normal reward(通常報酬)**
+  - common_reward_bag:  
+    - 報酬抽選: remaining / total counts 
+    - 当たり残り counts
+  -	common_enhancement_bag: 
+    - 通常称号抽選: remaining / total counts
+    - 名工の残り counts
+    - 魔性の残り counts
+   	- 宿った残り counts
+    - 伝説の残り counts
+    - 恐ろしい残り counts
+    - 究極の残り counts
+
+**Unieque reward(固有報酬)**
   - reward_bag:  
     - 報酬抽選: remaining / total counts 
     - 当たり残り counts
   -	enhancement_bag: 
     - 通常称号抽選: remaining / total counts
-    - 宿った残り counts
+    - 名工の残り counts
+    - 魔性の残り counts
+   	- 宿った残り counts
     - 伝説の残り counts
     - 恐ろしい残り counts
     - 究極の残り counts
+
+**Super rare reward(超レア称号付与抽選)**
   - superRare_bag:
     - 超レア称号抽選: remaining / total counts
     - 超レア残り counts
@@ -1177,7 +1196,7 @@ Left-aligned            Right-aligned
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
-| **0.2.0** | Update:2.1 Global constants (change randamness upgrade), 2.3 Expedition & Enemies, 2.4 Itemsm, 3. INITIALIZATION, 7. REWARD (change the logic).  |
+| **0.2.0** | Update:2.1 Global constants (change randamness upgrade), 2.3 Expedition & Enemies, 2.4 Itemsm, 3. INITIALIZATION, 7. REWARD (change the logic), 8.7 Setting.  |
 | 0.1.4 |                                                                |
 
     
