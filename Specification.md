@@ -206,7 +206,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 |-----|-----|-----|-----|
 | Normal |30 | 5 per Floor Pool (Pools 1–6) | 3 Common, 2 Uncommon |
 | Elite | 5 | 1 per Floor (Floors 1–5, Room 4) | 2 Rare, 1 Uncommon, 2 Common |
-| Boss | 1 | Floor 6, Room 4 (Final) | 2~3 Mythic, 1~2 Rare, 1 Common (5 in total) |
+| Boss | 1 | Floor 6, Room 4 (Final) | 2 ~ 3 Mythic , 1 ~ 2 Rare, 1 Common (5 in total) |
 
 
 - `x.expedition` layout overview:
