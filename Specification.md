@@ -251,16 +251,16 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | pool_6 | E26:Ninja/ uncommon `i.katana`, `i.armor` | E27:Rogue/ uncommon `i.bolt`, `i.shield `| E28:Sage/ uncommon `i.grimoire`, `i.robe` | E29:Duelist/ uncommon `i.sword`, `i.arrow` | E30:Pilgrim/ uncommon `i.sword`, `i.wand` |
 
 
-| `x.expedition` Tier | Boss concept | Boss drop mythic item types |
-|---|---------|------|
-| 1 | Fighter | `i.sword` , `i.grimoire` |
-| 2 | Ranger  | `i.armor` , `i.arrow` |
-| 3 | Wizard | `i.wand`,`i.robe` |
-| 4 | Samurai | `i.katana` , `i.shield `| 
-| 5 | Ranger (Archer) | `i.bolt`,  `i.archery` |
-| 6 | Sage (Alchemist) | `i.armor`, `i.catalyst` |
-| 7 | Lord | `i.sword` , `i.wand` |
-| 8 | Superior existence | `i.katana`, `i.bolt`, `i.grimoire`  |
+| `x.expedition` Tier | Boss concept | Class| Boss drop mythic item types |
+|---|---------|------|---|
+| 1 | | Fighter | `i.sword` , `i.grimoire` |
+| 2 | | Ranger  | `i.armor` , `i.arrow` |
+| 3 | | Wizard | `i.wand`,`i.robe` |
+| 4 | | Samurai | `i.katana` , `i.shield `| 
+| 5 | | Ranger | `i.bolt`,  `i.archery` |
+| 6 | | Sage | `i.armor`, `i.catalyst` |
+| 7 | | Lord | `i.sword` , `i.wand` |
+| 8 | Superior existence | Ninjya | `i.katana`, `i.bolt`, `i.grimoire`  |
 
 
 
