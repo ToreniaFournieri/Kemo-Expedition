@@ -188,16 +188,16 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 - `x.expedition` list
 
-| `x.expediton` | `x.expedition_multiplier` | drop item tier | concept |
+| `x.expediton` | `x.expedition_multiplier` | drop item tier | lore |
 |------|-----|-----|----|
-| | x1 | 1 | |
-| | x2 | 2 | |
-| | x4 | 3 | |
-| | x8 | 4 | |
-| | x16 | 5 | |
-| | x32 | 6 | |
-| | x64 | 7 | |
-| | x128 | 8 | |
+| Caninian Plains | x1 | 1 | The Fields of First Vows. A sun-drenched grassland dotted with wooden watchtowers. This is the training ground for all new expeditions. The atmosphere is stable, making it the perfect place to master the basics of the Sword and Grimoire under the watchful eyes of the loyal Caninian sentries. |
+| Lupinian Crag | x2 | 2 | The Razor-Wind Peaks. Sharp obsidian cliffs where the wind howls like a hungry wolf. The Lupinian tribes test their endurance here. The spatial thinness at this altitude doubles the pressure on the soul, forcing explorers to upgrade their Armor and Bows to survive the biting cold and vertical hunts. |
+| Vulpinian Taiga | x4 | 3 | The Forest of Veils. A dense, autumnal woodland where the trees seem to move when you blink. The Vulpinian mages use the natural spiritual mist to weave illusions. Magic is x4 more potent here, requiring explorers to seek the protection of high-tier Robes and Wands to see through the deception. |
+| Ursan Peaks | x8 | 4 | The Thunder-Forge Mountains. A volcanic range where the ground shakes with the rhythmic pounding of Ursan blacksmiths. The heat and gravity are x8 higher than the plains. Deep in these magma-lit halls, the lost art of the Katana is guarded by those whose bodies are as hard as the stone itself. |
+| Felidian Grove | x16 | 5 | The Moonlit Sanctuary. An ancient, overgrown jungle where ruins of a pre-shattering civilization glow with bioluminescence. The Felidians move through the shadows with x16 speed and grace. To clear this grove, one must master the Bolt—the only weapon fast enough to strike before the forest strikes back. |
+| Mustelid Burrow | x32 | 6 | The Copper Labyrinth. A massive subterranean industrial hive. The air is thick with chemical steam and the clank of gears. The Mustelids have turned these tunnels into a x32 difficulty death-trap of alchemy. Only those with high-tier Catalysts can neutralize the toxins found in the deepest vents. |
+| Leporian Garden | x64 | 7 | The High-Heaven Isles. A cluster of floating islands suspended miles above the clouds. The Leporians navigate these heights using wind currents. The thin air and sheer vertigo create a x64 multiplier on every step. Only those with the "Lord's" resolve can stabilize their spirit enough to claim the Mythic Sword. |
+| Cervin Vale | x128 | 8 | The Glass Horizon. A dimension where space and time have crystallized. The Cervin Sages reside here in total silence. The x128 multiplier represents the "Superior Existence" of this realm—where the logic of the world ends. Here, the final Grimoire and Katana await the one who can transcend mortality. |
 
 - `x.expedition` layout overview:
 
@@ -241,7 +241,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 - Normal enemy has 2 uncommon items, 3 common items.
 - Elite enemy has 2 rare items, 1 uncommon item, 2 common items.
-- Boss enemy has 2 mythic items and 2 rare items, 1 common item.
+- Boss enemy has 2~3 mythic items and 2 rare items, 1 common item.
 
 
 **Dungeon**
