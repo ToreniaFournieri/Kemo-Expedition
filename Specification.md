@@ -234,10 +234,15 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 - each pool has enemies with unique item drops 
   
-| Pool | enemy drop 1 | enemy drop 2 | enemy drop 3 |
-|---|---|---|---|
-| pool_1 | uncommon `i.sword`, `i.gauntlet` | uncommon `i.arrow`, `i.archery` | uncommon `i.wand`, `i.catalyst` |
-| pool_2 | uncommon `i.katana`, `i.armor` |uncommon `i.bolt`, `i.shield `| uncommon `i.grimoire`, `i.robe` |
+| Pool | enemy drop 1 | enemy drop 2 | enemy drop 3 | enemy drop 4 | enemy drop 5 |
+|---|---|---|---|---|---|
+| pool_1 | E01:uncommon `i.sword`, `i.gauntlet` | E02:uncommon `i.arrow`, `i.archery` | E03:uncommon `i.wand`, `i.catalyst` | E04:uncommon `i.shield `, `i.robe` | E05:uncommon `i.katana`, `i.bolt` |
+| pool_2 | E06:uncommon `i.katana`, `i.armor` | E07:uncommon `i.bolt`, `i.shield `| E08:uncommon `i.grimoire`, `i.robe` | E09:uncommon `i.sword`, `i.arrow` | E10:uncommon `i.sword`, `i.wand` |
+| pool_3 | E11:uncommon `i.sword`, `i.gauntlet` | E12:uncommon `i.arrow`, `i.archery` | E13:uncommon `i.wand`, `i.catalyst` | E14:uncommon `i.shield `, `i.robe` | E15:uncommon `i.katana`, `i.bolt` |
+| pool_4 | E16:uncommon `i.katana`, `i.armor` | E17:uncommon `i.bolt`, `i.shield `| E18:uncommon `i.grimoire`, `i.robe` | E19:uncommon `i.sword`, `i.arrow` | E20:uncommon `i.sword`, `i.wand` |
+| pool_5 | E21:uncommon `i.sword`, `i.gauntlet` | E22:uncommon `i.arrow`, `i.archery` | E23:uncommon `i.wand`, `i.catalyst` | E24:uncommon `i.shield `, `i.robe` | E25:uncommon `i.katana`, `i.bolt` |
+| pool_6 | E26:uncommon `i.katana`, `i.armor` | E27:uncommon `i.bolt`, `i.shield `| E28:uncommon `i.grimoire`, `i.robe` | E29:uncommon `i.sword`, `i.arrow` | E30:uncommon `i.sword`, `i.wand` |
+
 
 | `x.expedition` Tier | Boss concept | Boss drop mythic item types |
 |---|---------|------|
@@ -303,7 +308,12 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 - `f.elemental_resistance_attribute` : not scale
 - `f.penet_multiplier`: not scale
 - experience: master value x `x.exp_mult` x `x.floor_multiplier`
-  
+
+**Enemy Variety & Lore**  
+- Each `x.expedition` features 36 unique entities tailored to the habitat's lore:
+	- 30 Normal Enemies: Organized into 6 pools (5 per pool). They provide consistent Uncommon drops and thematic flavor.
+	- 5 Elite Enemies: Floor-end guardians serving as "Mechanical Gates." They drop Rare items and test specific build capabilities.
+	- 1 Boss Enemy: The final Room 24 encounter. A "Total Power" check and the exclusive source of Mythic rewards.
 
 ### 2.4 Items
 
