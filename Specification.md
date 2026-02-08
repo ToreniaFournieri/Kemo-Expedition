@@ -204,31 +204,31 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 - `x.expedition` layout overview:
 
-| `x.floor` | `x.room` | `x.room_type` | `x.floor_multiplier` | drop item_type | `x.key_concept` |
+| `x.floor` | `x.room` | `x.room_type` | `x.floor_multiplier` | enemy_pool | `x.key_concept` |
 |----|----|----|-----|-----|-----|
-| 1 | 1 | `x.battle_Normal` | x1.0 | pool_A | easy farming |
-| 1 | 2 | `x.battle_Normal` | x1.0 | pool_B  | easy farming |
-| 1 | 3 | `x.battle_Normal` | x1.0 | pool_C | easy farming |
+| 1 | 1 | `x.battle_Normal` | x1.0 | pool_1 | easy farming |
+| 1 | 2 | `x.battle_Normal` | x1.0 | pool_1 | easy farming |
+| 1 | 3 | `x.battle_Normal` | x1.0 | pool_1 | easy farming |
 | 1 | 4 | `x.battle_Elite` | x1.3 | rare  `i.sword`, `i.armor` | Rogue (weak): Checks if you have equipped items properly. |
-| 2 | 1 | `x.battle_Normal` | x1.2 | pool_D | |
-| 2 | 2 | `x.battle_Normal` | x1.2 |  |  |
-| 2 | 3 | `x.battle_Normal` | x1.2 || |
+| 2 | 1 | `x.battle_Normal` | x1.2 | pool_2 | |
+| 2 | 2 | `x.battle_Normal` | x1.2 | pool_2 |  |
+| 2 | 3 | `x.battle_Normal` | x1.2 | pool_2 |  |
 | 2 | 4 | `x.battle_Elite` | x1.56 | rare  `i.shield`, `i.robe` | Tank (melee tank): Checks if you have equipped enough offensive items. |
-| 3 | 1 | `x.battle_Normal` | x1.44 | uncommon `i.sword`, `i.gauntlet`  |  |
-| 3 | 2 | `x.battle_Normal` | x1.44 | uncommon `i.arrow`, `i.archery` |  |
-| 3 | 3 | `x.battle_Normal` | x1.44 | uncommon `i.wand`, `i.catalyst` |  |
+| 3 | 1 | `x.battle_Normal` | x1.44 | pool_3  |  |
+| 3 | 2 | `x.battle_Normal` | x1.44 | pool_3 |  |
+| 3 | 3 | `x.battle_Normal` | x1.44 | pool_3 |  |
 | 3 | 4 | `x.battle_Elite` | x1.82 | rare  `i.arrow`, `i.bolt`, `i.archery` | Archer (ranged attacker): Check if you have enough physical defensive items. |
-| 4 | 1 | `x.battle_Normal` | x1.73 | uncommon `i.katana`, `i.armor` | |
-| 4 | 2 | `x.battle_Normal` | x1.73 | uncommon `i.bolt`, `i.shield ` |  |
-| 4 | 3 | `x.battle_Normal` | x1.73 | uncommon `i.grimoire`, `i.robe` | |
+| 4 | 1 | `x.battle_Normal` | x1.73 | pool_4 | |
+| 4 | 2 | `x.battle_Normal` | x1.73 | pool_4 |  |
+| 4 | 3 | `x.battle_Normal` | x1.73 | pool_4 | |
 | 4 | 4 | `x.battle_Elite` | x2.25 | rare  `i.armor`, `i.katana` | Swordman (formitive melee attacker): Checks if you have archery or magic items. (kill it before his melee attacks) |
-| 5 | 1 | `x.battle_Normal` | x2.07 | uncommon `i.sword`, `i.gauntlet`  | |
-| 5 | 2 | `x.battle_Normal` | x2.07 | uncommon `i.arrow`, `i.archery` | |
-| 5 | 3 | `x.battle_Normal` | x2.07 | uncommon `i.wand`, `i.catalyst` | |
+| 5 | 1 | `x.battle_Normal` | x2.07 | pool_5  | |
+| 5 | 2 | `x.battle_Normal` | x2.07 | pool_5 | |
+| 5 | 3 | `x.battle_Normal` | x2.07 | pool_5 | |
 | 5 | 4 | `x.battle_Elite` | x2.69 | rare  `i.wand`, `i.grimoire`, `i.catalyst` | Mage (formitive magical attacker): Checks if you have equipped enough magical defensive items.  |
-| 6 | 1 | `x.battle_Normal` | x2.49 | uncommon `i.katana`, `i.armor` | |
-| 6 | 2 | `x.battle_Normal` | x2.49 | uncommon `i.bolt`, `i.shield ` |  |
-| 6 | 3 | `x.battle_Normal` | x2.49 | uncommon `i.grimoire`, `i.robe` | |
+| 6 | 1 | `x.battle_Normal` | x2.49 | pool_6 | |
+| 6 | 2 | `x.battle_Normal` | x2.49 | pool_6 |  |
+| 6 | 3 | `x.battle_Normal` | x2.49 |pool_6 | |
 | 6 | 4 | `x.battle_Boss` | x5.00 | mythic (see bellows) | Checks if you have enough tital power. |
 
 
@@ -236,8 +236,8 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
   
 | Pool | enemy drop 1 | enemy drop 2 | enemy drop 3 |
 |---|---|---|---|
-| pool_A | uncommon `i.sword`, `i.gauntlet` | uncommon `i.arrow`, `i.archery` | uncommon `i.wand`, `i.catalyst` |
-| pool_B | uncommon `i.katana`, `i.armor` |uncommon `i.bolt`, `i.shield `| uncommon `i.grimoire`, `i.robe` |
+| pool_1 | uncommon `i.sword`, `i.gauntlet` | uncommon `i.arrow`, `i.archery` | uncommon `i.wand`, `i.catalyst` |
+| pool_2 | uncommon `i.katana`, `i.armor` |uncommon `i.bolt`, `i.shield `| uncommon `i.grimoire`, `i.robe` |
 
 | `x.expedition` Tier | Boss concept | Boss drop mythic item types |
 |---|---------|------|
