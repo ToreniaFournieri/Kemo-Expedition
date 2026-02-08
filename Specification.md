@@ -256,6 +256,10 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | 6 | 91 | `c.target_status+0.07` | `c.evasion+0.007` | 0.3 | `c.N_NoA+6` | `c.evasion-0.006`, `c.N_NoA-2.0` |
 | 7 | 137 | `c.target_status+0.06` | `c.evasion+0.006` | 0.2 | `c.N_NoA+7` | `c.evasion-0.007`, `c.N_NoA-2.2` |
 | 8 | 205 | `c.target_status+0.05` | `c.evasion+0.005` | 0.1 | `c.N_NoA+8` | `c.evasion-0.008`, `c.N_NoA-2.4` |
+| 9 | - | `c.target_status+0.04` | `c.evasion+0.004` | - | `c.N_NoA+9` | - |
+| 10 | - | `c.target_status+0.03` | `c.evasion+0.003` | - | `c.N_NoA+10` | - |
+
+-　Tier 9 and 10 are Multiplier-Only Tiers. They represent the peak of efficiency where raw power is so high that the multiplier must be perfectly "lean" to maintain balance.
 
 | Item type | base_power/Scale for | base c.multiplier for | subtle_power`d.`, `e.`, and `c.` bonus|
 |------|--------|------|------|
@@ -294,9 +298,9 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | Rarelity | Features | dropped by |
 |------|--------|-------|
 | common | base_power x rarelity.amplifier, and base c.multiplier | every enemy |
-| uncommon | base_power x rarelity.amplifier + **one subtle_power`d.` or `c.` bonus**, base c.multiplier | Normal enemy |
-| rare | base_power x rarelity.amplifier + **two** subtle_power`d.`, **`e.`**, or `c.` bonus, base c.multiplier | Elite enemy |
-| mythic | base_power x rarelity.amplifier + two subtle_power`d.`, `e.`, or `c.` bonus, one **`b.` bonus** | Boss enemey |
+| uncommon | base_power x rarelity.amplifier + **one subtle_power`d.` or `c.` bonus**, base c.multiplier +2 tier upgrade(ecept penalty) | Normal enemy |
+| rare | base_power x rarelity.amplifier + **two** subtle_power`d.`, **`e.`**, or `c.` bonus, base c.multiplier +2 tier upgrade(ecept penalty) | Elite enemy |
+| mythic | base_power x rarelity.amplifier + **three** subtle_power`d.`, `e.`, or `c.` bonus, one **`b.` bonus**, **no base c.multiplier** | Boss enemey |
 
 - Normal enemy has two drop items. common and uncommon.
 - Elite enemy has 2 ~ 4 drop items. common ~ rare. (must have at least one rare)
