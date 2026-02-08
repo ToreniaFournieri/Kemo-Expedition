@@ -193,38 +193,38 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | 1 | 1 | `x.battle_Normal` | x1.0 | uncommon `i.sword`, `i.gauntlet`  | easy farming |
 | 1 | 2 | `x.battle_Normal` | x1.0 | uncommon `i.arrow`, `i.archery` | easy farming |
 | 1 | 3 | `x.battle_Normal` | x1.0 | uncommon `i.wand`, `i.catalyst` | easy farming |
-| 1 | 4 | `x.battle_Elite` | x1.3 | rare  `i.sword`, `i.armor` | Checks if you have equipped items properly. |
+| 1 | 4 | `x.battle_Elite` | x1.3 | rare  `i.sword`, `i.armor` | Rogue (weak): Checks if you have equipped items properly. |
 | 2 | 1 | `x.battle_Normal` | x1.2 | uncommon `i.katana`, `i.armor` | |
 | 2 | 2 | `x.battle_Normal` | x1.2 | uncommon `i.bolt`, `i.shield ` |  |
 | 2 | 3 | `x.battle_Normal` | x1.2 | uncommon `i.grimoire`, `i.robe` | |
-| 2 | 4 | `x.battle_Elite` | x1.56 | rare  `i.shield`, `i.robe` | Tank: Checks if you have equipped enough offensive items. |
+| 2 | 4 | `x.battle_Elite` | x1.56 | rare  `i.shield`, `i.robe` | Tank (melee tank): Checks if you have equipped enough offensive items. |
 | 3 | 1 | `x.battle_Normal` | x1.44 | uncommon `i.sword`, `i.gauntlet`  |  |
 | 3 | 2 | `x.battle_Normal` | x1.44 | uncommon `i.arrow`, `i.archery` |  |
 | 3 | 3 | `x.battle_Normal` | x1.44 | uncommon `i.wand`, `i.catalyst` |  |
-| 3 | 4 | `x.battle_Elite` | x1.82 | rare  `i.arrow`, `i.bolt`, `i.archery` | Archer: Check if you have enough physical defensive items. |
+| 3 | 4 | `x.battle_Elite` | x1.82 | rare  `i.arrow`, `i.bolt`, `i.archery` | Archer (ranged attacker): Check if you have enough physical defensive items. |
 | 4 | 1 | `x.battle_Normal` | x1.73 | uncommon `i.katana`, `i.armor` | |
 | 4 | 2 | `x.battle_Normal` | x1.73 | uncommon `i.bolt`, `i.shield ` |  |
 | 4 | 3 | `x.battle_Normal` | x1.73 | uncommon `i.grimoire`, `i.robe` | |
-| 4 | 4 | `x.battle_Elite` | x2.25 | rare  `i.armor`, `i.katana` | Swordman: Checks if you have archery or magic items. (kill it before his melee attacks) |
+| 4 | 4 | `x.battle_Elite` | x2.25 | rare  `i.armor`, `i.katana` | Swordman (formitive melee attacker): Checks if you have archery or magic items. (kill it before his melee attacks) |
 | 5 | 1 | `x.battle_Normal` | x2.07 | uncommon `i.sword`, `i.gauntlet`  | |
 | 5 | 2 | `x.battle_Normal` | x2.07 | uncommon `i.arrow`, `i.archery` | |
 | 5 | 3 | `x.battle_Normal` | x2.07 | uncommon `i.wand`, `i.catalyst` | |
-| 5 | 4 | `x.battle_Elite` | x2.69 | rare  `i.wand`, `i.grimoire`, `i.catalyst` | Mage: Checks if you have equipped enough magical defensive items.  |
+| 5 | 4 | `x.battle_Elite` | x2.69 | rare  `i.wand`, `i.grimoire`, `i.catalyst` | Mage (formitive magical attacker): Checks if you have equipped enough magical defensive items.  |
 | 6 | 1 | `x.battle_Normal` | x2.49 | uncommon `i.katana`, `i.armor` | |
 | 6 | 2 | `x.battle_Normal` | x2.49 | uncommon `i.bolt`, `i.shield ` |  |
 | 6 | 3 | `x.battle_Normal` | x2.49 | uncommon `i.grimoire`, `i.robe` | |
 | 6 | 4 | `x.battle_Boss` | x3.24 | mythic (see bellows) | Checks if you have enough tital power. |
 
-| `x.expedition` Tier | Boss drop mythic item types |
-|---|---------|
-| 1 | `i.sword` , `i.grimoire` |
-| 2 | `i.armor` , `i.arrow` |
-| 3 | `i.wand`,`i.robe` |
-| 4 | `i.katana` , `i.shield `| 
-| 5 | `i.bolt`,  `i.archery` |
-| 6 | `i.armor`, `i.catalyst` |
-| 7 | `i.sword` , `i.wand` |
-| 8 | `i.katana`, `i.bolt`, `i.grimoire`  |
+| `x.expedition` Tier | Boss concept | Boss drop mythic item types |
+|---|---------|------|
+| 1 | Fighter | `i.sword` , `i.grimoire` |
+| 2 | Ranger | `i.armor` , `i.arrow` |
+| 3 | Wizard | `i.wand`,`i.robe` |
+| 4 | Samurai | `i.katana` , `i.shield `| 
+| 5 | Archer | `i.bolt`,  `i.archery` |
+| 6 | Alchemist | `i.armor`, `i.catalyst` |
+| 7 | Lord | `i.sword` , `i.wand` |
+| 8 | Superior existence | `i.katana`, `i.bolt`, `i.grimoire`  |
 
 - Normal enemy has 2 uncommon items, 3 common items.
 - Elite enemy has 2 rare items, 1 uncommon item, 2 common items.
