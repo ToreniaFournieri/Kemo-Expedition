@@ -183,12 +183,21 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 - Characters do not have individual HP. Each character contributes total HP. 
 
 ### 2.3 Expedition & Enemies
-- Dungeon layout: The 6 floor spire. Each floor consists of 4 rooms. the last room of the floor is Elite/Boss enemy battle, other rooms are Normal enemy battles.
-- There are 8 dungeons in total. every dungeon represents each tier. (1st dungeon drops tier-1 items. 2nd dungeon drops tier-2 items)
+- Expedition layout: The 6 `x.floor` spire. Each floor consists of 4 `x.room`s. the last room of the floor is Elite/Boss enemy battle, other rooms are Normal enemy battles.
+- There are 8 `x.expedition` destinations in total. every `x.expedition` has its own tier. (1st `x.expedition` drops tier-1 items. 2nd `x.expedition` drops tier-2 items)
 
-| Floor | room | Floor multiplier | Key concept |
-|----|----|----|-----|
-| F1 | R1
+- `x.expedition` layout overview:
+
+| `x.floor` | `x.room` | `x.room_type` | `x.floor_multiplier` | `x.key_concept` |
+|----|----|----|-----|-----|
+| 1 | 1 | `x.battle_Normal` | x1.0 | drops uncommon `i.sword`, `i.gauntlet`  |
+| 1 | 2 | `x.battle_Normal` | x1.0 |drops uncommon `i.arrow`, `i.archery` |
+| 1 | 3 | `x.battle_Normal` | x1.0 | drops uncommon `i.wand`, `i.catalyst` |
+| 1 | 4 | `x.battle_Elite` | x1.0 | Checks if you have equipped items properly |
+| 2 | 1 | `x.battle_Normal` | x1.2 | drops |
+| 2 | 2 | `x.battle_Normal` | x1.2 | drops `i.sword`, `i.armor` |
+| 2 | 3 | `x.battle_Normal` | x1.2 | drops `i.katana`, `i.bolt` |
+| 2 | 4 | `x.battle_Elite` | x1.2 | Checks if you have enough firepower. |
 
 
 **Dungeon**
