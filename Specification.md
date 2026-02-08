@@ -772,21 +772,27 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 - *Victory*: gains `d.experience` points to a party. has a chance of gaining reward from enemies drop item. Proceeds to the next room. If it was the Boss room, back to home with trophies!
 - *Draw*:no penalties (current version). no `d.experience` points nor item reward at this room. Back to home with trophies of previous rooms.
 
+
+## 7. REWARD 
+
+- For every item listed in the drop_item,
+  - Gets one ticket from `g.reward_bag`. Two with `c.unlock`.
+  - If `g.reward_bag`.value = '1', then get one ticket from `g.enhancement_bag`.
+  - If `g.enhancement_bag`.value >= 1, then get one ticket from `g.superRare_bag`.
+
+  - Combines them into one item.
+
+```
+ enhancement:0 -> ロングソード
+ enhancement:1, superRare:0 -> 名工のロングソード,
+ enhancement:3, superRare:1 -> 世界を征する宿ったロングソード)
+```
+
 - **Item Retrieval Logic:**
   - Items are stacked by (superRare, enhancement, and base item) and has state
   - *State:`s.sold` Auto-Sell:* If a dropped item matches a rule with state:`s.sold`, it is sold immediately (not added to inventory, gain Gold)
   - *State:`s.owned` Existing Items:* If the item is already in the inventory, increment the item count
   - *State:(no record) New Items:* If no record for the item exists, the system generates the item and sets it to state:`s.owned`
-
-## 7. REWARD 
-- Gets one ticket from `g.reward_bag`. Two with `c.unlock`.
-  - If it is '1', then get one ticket from each of `g.enhancement_bag`, and `g.superRare_bag`.
-    
-  - Combines them into one item.
-    (ex.
-     enhancement:1, superRare:0 -> 名工のロングソード,
-     enhancement:3, superRare:1 -> 世界を征する宿ったロングソード)
-
 
 ## 8. UI
 
