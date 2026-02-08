@@ -259,7 +259,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | 9 | - | `c.target_status+0.04` | `c.evasion+0.004` | - | `c.N_NoA+9` | - |
 | 10 | - | `c.target_status+0.03` | `c.evasion+0.003` | - | `c.N_NoA+10` | - |
 
--　Tier 9 and 10 are Multiplier-Only Tiers. They represent the peak of efficiency where raw power is so high that the multiplier must be perfectly "lean" to maintain balance.
+-　Tier 9 and 10 are Multiplier-Only Tiers. (Unccommon/Rare item upgared reference)
 
 | Item type | base_power/Scale for | base c.multiplier for | subtle_power`d.`, `e.`, and `c.` bonus|
 |------|--------|------|------|
@@ -295,16 +295,16 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 |`i.catalyst` | x1.0 | x1.2 | x1.44 | x1.73 |
 
 **Rarelity base**
-| Rarelity | Features | dropped by |
-|------|--------|-------|
-| common | base_power x rarelity.amplifier, and base c.multiplier | every enemy |
-| uncommon | base_power x rarelity.amplifier + **one subtle_power`d.` or `c.` bonus**, base c.multiplier +2 tier upgrade(ecept penalty) | Normal enemy |
-| rare | base_power x rarelity.amplifier + **two** subtle_power`d.`, **`e.`**, or `c.` bonus, base c.multiplier +2 tier upgrade(ecept penalty) | Elite enemy |
-| mythic | base_power x rarelity.amplifier + **three** subtle_power`d.`, `e.`, or `c.` bonus, one **`b.` bonus**, **no base c.multiplier** | Boss enemey |
+| Rarelity | Features |
+|------|--------|
+| common | base_power x rarelity.amplifier, and base c.multiplier |
+| uncommon | base_power x rarelity.amplifier + **one subtle_power`d.` or `c.` bonus**, base c.multiplier +2 tier upgrade(ecept penalty) |
+| rare | base_power x rarelity.amplifier + **two** subtle_power`d.`, **`e.`**, or `c.` bonus, base c.multiplier +2 tier upgrade(ecept penalty) |
+| mythic | base_power x rarelity.amplifier + **three** subtle_power`d.`, `e.`, or `c.` bonus, one **`b.` bonus**, but **no base c.multiplier** |
 
-- Normal enemy has two drop items. common and uncommon.
-- Elite enemy has 2 ~ 4 drop items. common ~ rare. (must have at least one rare)
-- Boss enemy has  2 ~ 4 drop items. common ~ mythic. (must have at least one mythic)
+- Normal enemy has 2 uncommon items, 3 common items.
+- Elite enemy has 2 rare items, 1 uncommon item, 2 common items.
+- Boss enemy has 2 mythic items and 2 rare items, 1 common item.
 
 *Note:* subtle_power: x0.20 ~ x0.34 of base_power value.
 
