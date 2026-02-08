@@ -200,7 +200,14 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | Leporian Garden | x64 | 7 | The High-Heaven Isles. A cluster of floating islands suspended miles above the clouds. The Leporians navigate these heights using wind currents. The thin air and sheer vertigo create a x64 multiplier on every step. Only those with the "Lord's" resolve can stabilize their spirit enough to claim the Mythic Sword. |
 | Cervin Vale | x128 | 8 | The Glass Horizon. A dimension where space and time have crystallized. The Cervin Sages reside here in total silence. The x128 multiplier represents the "Superior Existence" of this realm—where the logic of the world ends. Here, the final Grimoire and Katana await the one who can transcend mortality. |
 
-- Each `x.expediton` has 
+- **Enemy entity distribution** for each `x.expediton`
+
+| Entity Type | Unique Count | Mapping | Drop Quality |
+|-----|-----|-----|-----|
+| Normal |30 | 5 per Floor Pool (Pools 1–6) | 3 Common, 2 Uncommon |
+| Elite | 5 | 1 per Floor (Floors 1–5, Room 4) | 2 Rare, 1 Uncommon, 2 Common |
+| Boss | 1 | Floor 6, Room 4 (Final) | 2~3 Mythic, 1~2 Rare, 1 Common (5 in total) |
+
 
 - `x.expedition` layout overview:
 
@@ -255,9 +262,6 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | 7 | Lord | `i.sword` , `i.wand` |
 | 8 | Superior existence | `i.katana`, `i.bolt`, `i.grimoire`  |
 
-- Normal enemy has 2 uncommon items, 3 common items.
-- Elite enemy has 2 rare items, 1 uncommon item, 2 common items.
-- Boss enemy has 2~3 mythic items and 2 rare items, 1 common item.
 
 
 #### 2.3.2 Enemy structure
