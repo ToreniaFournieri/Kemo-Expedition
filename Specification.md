@@ -186,9 +186,10 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 - Expedition layout: The 6 `x.floor` spire. Each floor consists of 4 `x.room`s. the last room of the floor is Elite/Boss enemy battle, other rooms are Normal enemy battles.
 - There are 8 `x.expedition` destinations in total. every `x.expedition` has its own tier. (1st `x.expedition` drops tier-1 items. 2nd `x.expedition` drops tier-2 items)
 
+#### 2.3.1 Expedition
 - `x.expedition` list
 
-| `x.expediton` | `x.expedition_multiplier` | drop item tier | lore |
+| `x.expediton` | `x.exp_mult` | drop item tier | lore |
 |------|-----|-----|----|
 | Caninian Plains | x1 | 1 | The Fields of First Vows. A sun-drenched grassland dotted with wooden watchtowers. This is the training ground for all new expeditions. The atmosphere is stable, making it the perfect place to master the basics of the Sword and Grimoire under the watchful eyes of the loyal Caninian sentries. |
 | Lupinian Crag | x2 | 2 | The Razor-Wind Peaks. Sharp obsidian cliffs where the wind howls like a hungry wolf. The Lupinian tribes test their endurance here. The spatial thinness at this altitude doubles the pressure on the soul, forcing explorers to upgrade their Armor and Bows to survive the biting cold and vertical hunts. |
@@ -199,17 +200,19 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | Leporian Garden | x64 | 7 | The High-Heaven Isles. A cluster of floating islands suspended miles above the clouds. The Leporians navigate these heights using wind currents. The thin air and sheer vertigo create a x64 multiplier on every step. Only those with the "Lord's" resolve can stabilize their spirit enough to claim the Mythic Sword. |
 | Cervin Vale | x128 | 8 | The Glass Horizon. A dimension where space and time have crystallized. The Cervin Sages reside here in total silence. The x128 multiplier represents the "Superior Existence" of this realm—where the logic of the world ends. Here, the final Grimoire and Katana await the one who can transcend mortality. |
 
+- Each `x.expediton` has 
+
 - `x.expedition` layout overview:
 
 | `x.floor` | `x.room` | `x.room_type` | `x.floor_multiplier` | drop item_type | `x.key_concept` |
 |----|----|----|-----|-----|-----|
-| 1 | 1 | `x.battle_Normal` | x1.0 | uncommon `i.sword`, `i.gauntlet`  | easy farming |
-| 1 | 2 | `x.battle_Normal` | x1.0 | uncommon `i.arrow`, `i.archery` | easy farming |
-| 1 | 3 | `x.battle_Normal` | x1.0 | uncommon `i.wand`, `i.catalyst` | easy farming |
+| 1 | 1 | `x.battle_Normal` | x1.0 | pool_A | easy farming |
+| 1 | 2 | `x.battle_Normal` | x1.0 | pool_B  | easy farming |
+| 1 | 3 | `x.battle_Normal` | x1.0 | pool_C | easy farming |
 | 1 | 4 | `x.battle_Elite` | x1.3 | rare  `i.sword`, `i.armor` | Rogue (weak): Checks if you have equipped items properly. |
-| 2 | 1 | `x.battle_Normal` | x1.2 | uncommon `i.katana`, `i.armor` | |
-| 2 | 2 | `x.battle_Normal` | x1.2 | uncommon `i.bolt`, `i.shield ` |  |
-| 2 | 3 | `x.battle_Normal` | x1.2 | uncommon `i.grimoire`, `i.robe` | |
+| 2 | 1 | `x.battle_Normal` | x1.2 | pool_D | |
+| 2 | 2 | `x.battle_Normal` | x1.2 |  |  |
+| 2 | 3 | `x.battle_Normal` | x1.2 || |
 | 2 | 4 | `x.battle_Elite` | x1.56 | rare  `i.shield`, `i.robe` | Tank (melee tank): Checks if you have equipped enough offensive items. |
 | 3 | 1 | `x.battle_Normal` | x1.44 | uncommon `i.sword`, `i.gauntlet`  |  |
 | 3 | 2 | `x.battle_Normal` | x1.44 | uncommon `i.arrow`, `i.archery` |  |
@@ -228,6 +231,14 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | 6 | 3 | `x.battle_Normal` | x2.49 | uncommon `i.grimoire`, `i.robe` | |
 | 6 | 4 | `x.battle_Boss` | x5.00 | mythic (see bellows) | Checks if you have enough tital power. |
 
+
+- each pool has enemies with unique item drops 
+  
+| Pool | enemy drop 1 | enemy drop 2 | enemy drop 3 |
+|---|---|---|---|
+| pool_A | uncommon `i.sword`, `i.gauntlet` | uncommon `i.arrow`, `i.archery` | uncommon `i.wand`, `i.catalyst` |
+| pool_B | uncommon `i.katana`, `i.armor` |uncommon `i.bolt`, `i.shield `| uncommon `i.grimoire`, `i.robe` |
+
 | `x.expedition` Tier | Boss concept | Boss drop mythic item types |
 |---|---------|------|
 | 1 | Fighter | `i.sword` , `i.grimoire` |
@@ -244,17 +255,11 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 - Boss enemy has 2~3 mythic items and 2 rare items, 1 common item.
 
 
-**Dungeon**
-- id:int
-- name
-- number_of_rooms
-- pools_of_enemies
-- boss_enemy
-
-**Enemy**
+#### 2.3.2 Enemy structure
 - id: int
 - type: string.  Normal/Elite/Boss
-- pool_id //only for Normal enemy. Boss is always set 0.
+- expedition
+- floor 
 - name: string
 - `d.HP`
 - `f.attack`, `f.NoA`
@@ -280,7 +285,25 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 - gold
 - drop_item
 
-- (Temporary test purpose) make 5 dungeons and 5 enemies per dungeon. 
+**Enemy Master Specification**
+- This document defines the base data structure and dynamic scaling laws for all entities encountered during an expedition.
+
+1. The Core Principle: "Static Master, Dynamic Reality"
+All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their actual threat level is calculated only upon spawning by applying the environmental pressure of the current Expedition and Floor.
+
+2. Status Scaling FormulasThe final combat value ($V_{final}$) is derived from the Master Value ($V_{base}$) using the following multipliers:
+
+**Enemy status mutipliers**
+- `d.HP` : master value x `x.exp_mult` x `x.floor_multiplier` 
+- `f.attack` :  master value x `x.exp_mult` x `x.floor_multiplier` 
+- `f.NoA` :  master value x `x.exp_mult` x `x.floor_multiplier` 
+- `f.offense_amplifier` :  master value x `x.exp_mult` x `x.floor_multiplier` 
+- `f.defense` :  master value x `x.exp_mult` x `x.floor_multiplier` 
+- `f.elemental_offense_attribute` :  not scale
+- `f.elemental_resistance_attribute` : not scale
+- `f.penet_multiplier`: not scale
+- experience: master value x `x.exp_mult` x `x.floor_multiplier`
+  
 
 ### 2.4 Items
 
