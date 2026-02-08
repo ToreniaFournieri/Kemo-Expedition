@@ -204,7 +204,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 - `x.expedition` layout overview:
 
-| `x.floor` | `x.room` | `x.room_type` | `x.floor_multiplier` | enemy_pool | `x.key_concept` |
+| `x.floor` | `x.room` | `x.room_type` | `x.floor_multiplier` | enemy_pool, drops | `x.key_concept` |
 |----|----|----|-----|-----|-----|
 | 1 | 1 | `x.battle_Normal` | x1.0 | pool_1 | easy farming |
 | 1 | 2 | `x.battle_Normal` | x1.0 | pool_1 | easy farming |
