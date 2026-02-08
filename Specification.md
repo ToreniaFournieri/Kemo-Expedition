@@ -16,18 +16,18 @@
 
 | Prefix | Description / Definition |
 |-------|-------------------------|
-| `a.`  | **A**bility. Unique/Strongest. If multiple abilities share the same name, only the one with the highest value (or the highest priority) is active. |
-| `b.`  | **B**ase Status (Core attributes) |
-| `c.`  | **C**ategory Bonus. Different named modifiers combine. Identical named modifiers follow the "Unique" rule. |
-| `d.`  | **D**uel Status (Current combat values) |
-| `e.`  | **E**lemental Offense Attribute |
-| `f.`  | **F**unction (Logic/Calculated value) |
-| `g.`  | Ba**g** Randomization |
-| `i.`  | **I**tem Category |
-| `p.`  | **P**arty/Expedition Instance Data |
-| `r.`  | Elemental **R**esistance Attribute |
-| `s.`  | Item **S**tate |
-
+| `a.` | **A**bility. Unique/Strongest. If multiple abilities share the same name, only the one with the highest value (or the highest priority) is active. |
+| `b.` | **B**ase Status (Core attributes) |
+| `c.` | **C**ategory Bonus. Different named modifiers combine. Identical named modifiers follow the "Unique" rule. |
+| `d.` | **D**uel Status (Current combat values) |
+| `e.` | **E**lemental Offense Attribute |
+| `f.` | **F**unction (Logic/Calculated value) |
+| `g.` | Ba**g** Randomization |
+| `i.` | **I**tem Category |
+| `p.` | **P**arty/Expedition Instance Data |
+| `r.` | Elemental **R**esistance Attribute |
+| `s.` | Item **S**tate |
+| `x.` | E**x**pedition |
 
 ### 2.1 Global constants
 - One deity represents on one party. The deity has its own level, HP, and unique divine abilities. 
@@ -182,8 +182,14 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 - Characters do not have individual HP. Each character contributes total HP. 
 
-### 2.3 Dungeons & Enemies
-- Each dungeon has multiple rooms. each room has one enemy. At the end of room, formidable boss enemy is waiting for the party.
+### 2.3 Expedition & Enemies
+- Dungeon layout: The 6 floor spire. Each floor consists of 4 rooms. the last room of the floor is Elite/Boss enemy battle, other rooms are Normal enemy battles.
+- There are 8 dungeons in total. every dungeon represents each tier. (1st dungeon drops tier-1 items. 2nd dungeon drops tier-2 items)
+
+| Floor | room | Floor multiplier | Key concept |
+|----|----|----|-----|
+| F1 | R1
+
 
 **Dungeon**
 - id:int
