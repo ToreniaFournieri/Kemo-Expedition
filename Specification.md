@@ -213,29 +213,17 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 | `x.floor` | `x.room` | `x.room_type` | `x.floor_multiplier` | enemy_pool, drops | `x.key_concept` |
 |----|----|----|-----|-----|-----|
-| 1 | 1 | `x.battle_Normal` | x1.0 | pool_1 | easy farming |
-| 1 | 2 | `x.battle_Normal` | x1.0 | pool_1 | easy farming |
-| 1 | 3 | `x.battle_Normal` | x1.0 | pool_1 | easy farming |
+| 1 | 1-3 | `x.battle_Normal` | x1.0 | pool_1 | easy farming |
 | 1 | 4 | `x.battle_Elite` | x1.3 | fixed Elite. rare  `i.sword`, `i.armor` | Class:Rogue. Checks if you have equipped items properly. |
-| 2 | 1 | `x.battle_Normal` | x1.2 | pool_2 | |
-| 2 | 2 | `x.battle_Normal` | x1.2 | pool_2 |  |
-| 2 | 3 | `x.battle_Normal` | x1.2 | pool_2 |  |
+| 2 | 1-3 | `x.battle_Normal` | x1.2 | pool_2 | |
 | 2 | 4 | `x.battle_Elite` | x1.56 | fixed Elite. rare  `i.shield`, `i.robe` | Class:Fighter. Checks if you have equipped enough offensive items. |
-| 3 | 1 | `x.battle_Normal` | x1.44 | pool_3  |  |
-| 3 | 2 | `x.battle_Normal` | x1.44 | pool_3 |  |
-| 3 | 3 | `x.battle_Normal` | x1.44 | pool_3 |  |
+| 3 | 1-3 | `x.battle_Normal` | x1.44 | pool_3  |  |
 | 3 | 4 | `x.battle_Elite` | x1.82 | fixed Elite. rare  `i.arrow`, `i.bolt`, `i.archery` | Class:Ranger. Check if you have enough physical defensive items. |
-| 4 | 1 | `x.battle_Normal` | x1.73 | pool_4 | |
-| 4 | 2 | `x.battle_Normal` | x1.73 | pool_4 |  |
-| 4 | 3 | `x.battle_Normal` | x1.73 | pool_4 | |
+| 4 | 1-3 | `x.battle_Normal` | x1.73 | pool_4 | |
 | 4 | 4 | `x.battle_Elite` | x2.25 | fixed Elite. rare  `i.armor`, `i.katana` | Class:Duelist. Checks if you have archery or magic items. (kill it before his melee attacks) |
-| 5 | 1 | `x.battle_Normal` | x2.07 | pool_5  | |
-| 5 | 2 | `x.battle_Normal` | x2.07 | pool_5 | |
-| 5 | 3 | `x.battle_Normal` | x2.07 | pool_5 | |
+| 5 | 1-3 | `x.battle_Normal` | x2.07 | pool_5  | |
 | 5 | 4 | `x.battle_Elite` | x2.69 | fixed Elite. rare  `i.wand`, `i.grimoire`, `i.catalyst` | Class:Mage. Checks if you have equipped enough magical defensive items.  |
-| 6 | 1 | `x.battle_Normal` | x2.49 | pool_6 | |
-| 6 | 2 | `x.battle_Normal` | x2.49 | pool_6 |  |
-| 6 | 3 | `x.battle_Normal` | x2.49 |pool_6 | |
+| 6 | 1-3 | `x.battle_Normal` | x2.49 | pool_6 | |
 | 6 | 4 | `x.battle_Boss` | x5.00 | fixed Boss. mythic (see bellows) | Checks if you have enough tital power. |
 
 
