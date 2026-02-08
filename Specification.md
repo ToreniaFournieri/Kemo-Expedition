@@ -1169,7 +1169,7 @@ Left-aligned            Right-aligned
     - 伝説の残り counts
     - 恐ろしい残り counts
     - 究極の残り counts
-- Button: Initialize `g.common_reward_bag` and `g.common_enhancement_bag` (通常報酬初期化)
+- Button (通常報酬初期化): Initialize `g.common_reward_bag` and `g.common_enhancement_bag` 
 
 **Unieque reward (固有報酬)**
   - reward_bag (固有報酬 抽選確率):  
@@ -1183,13 +1183,13 @@ Left-aligned            Right-aligned
     - 伝説の残り remaining / initial counts
     - 恐ろしい残り remaining / initial counts
     - 究極の残り remaining / initial counts
-- Button: Initialize `g.reward_bag` and `g.enhancement_bag` (固有報酬初期化)
+- Button (固有報酬初期化): Initialize `g.reward_bag` and `g.enhancement_bag` 
 
 **Super rare reward (超レア報酬)**
   - superRare_bag (称号超レア称号付与 抽選確率):
     - 超レア称号抽選: remaining / total counts
     - 超レア残り remaining / initial counts
-- Button: Initialize `g.superRare_bag` (超レア報酬初期化)
+- Button (超レア報酬初期化): Initialize `g.superRare_bag` 
 
 - (long space here)
 
