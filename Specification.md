@@ -38,26 +38,26 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 - **enhancement title**
  
-|value |title | tickets | multiplier |
+| value | title | tickets | multiplier |
 |-----|---------|------|------|
-|0 |(none) |1390 | x1.00 |
-|1 |名工の |350 | x1.33 |
-|2 |魔性の |180 | x1.58 |
-|3 |宿った |60 | x2.10 |
-|4 |伝説の |15 | x2.75 |
-|5 |恐ろしい |4 | x3.50 |
-|6 |究極の |1 | x5.00 |
+| 0 | (none) | 5490 | x1.00 |
+| 1 | 名工の | 350 | x1.33 |
+| 2 | 魔性の | 180 | x1.58 |
+| 3 | 宿った | 60 | x2.10 |
+| 4 | 伝説の | 15 | x2.75 |
+| 5 | 恐ろしい | 4 | x3.50 |
+| 6 | 究極の | 1 | x5.00 |
 
 - **superRare title**
 
-|value |title | tickets |multiplier |
+| value | title | tickets | multiplier |
 |-----|---------|------|-----|
-|0 |(none) | 24995 | x1.0 |
-|1 |世界を征する |1 | x2.0 |
-|2 |天に与えられし |1 | x2.0 |
-|3 |混沌の |1 | x2.0 |
-|4 |知られざる |1 | x2.0 |
-|5 |血に飢えし |1 | x2.0 |
+| 0  |(none) | 24995 | x1.0 |
+| 1 | 世界を征する | 1 | x2.0 |
+| 2 | 天に与えられし | 1 | x2.0 |
+| 3 | 混沌の | 1 | x2.0 |
+| 4 | 知られざる | 1 | x2.0 |
+| 5 | 血に飢えし | 1 | x2.0 |
 
 - **Elemental attribute**
   - `elemental_offense_attribute` : `e.none`, `e.fire`, `e.thunder`, `e.ice` // Offensive
@@ -1136,7 +1136,7 @@ Left-aligned            Right-aligned
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
-|**0.2.0**| Update:2.3 Expedition & Enemies, 2.4 Itemsm, 3.2 Initial setup, 7. REWARD (change the logic).  |
+|**0.2.0**| Update:2.1 Global constants (change enhancement title tickets), 2.3 Expedition & Enemies, 2.4 Itemsm, 3.2 Initial setup, 7. REWARD (change the logic).  |
 |0.1.4 |                                                                |
 
     
