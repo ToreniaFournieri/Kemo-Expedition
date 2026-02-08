@@ -238,6 +238,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | pool_5 | E21:Fighter/ uncommon `i.sword`, `i.gauntlet` | E22:Ranger/ uncommon `i.arrow`, `i.archery` | E23:Wizard/ uncommon `i.wand`, `i.catalyst` | E24:Lord/ uncommon `i.shield `, `i.robe` | E25:Samurai/ uncommon `i.katana`, `i.bolt` |
 | pool_6 | E26:Ninja/ uncommon `i.katana`, `i.armor` | E27:Rogue/ uncommon `i.bolt`, `i.shield `| E28:Sage/ uncommon `i.grimoire`, `i.robe` | E29:Duelist/ uncommon `i.sword`, `i.arrow` | E30:Pilgrim/ uncommon `i.sword`, `i.wand` |
 
+- Boss:
 
 | `x.expedition` Tier | Boss concept | Class | Boss drop mythic item types |
 |---|---------|------|---|
