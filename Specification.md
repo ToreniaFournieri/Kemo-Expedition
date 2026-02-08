@@ -254,11 +254,11 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | `x.expedition` Tier | Boss concept | Boss drop mythic item types |
 |---|---------|------|
 | 1 | Fighter | `i.sword` , `i.grimoire` |
-| 2 | Ranger | `i.armor` , `i.arrow` |
+| 2 | Ranger  | `i.armor` , `i.arrow` |
 | 3 | Wizard | `i.wand`,`i.robe` |
 | 4 | Samurai | `i.katana` , `i.shield `| 
-| 5 | Archer | `i.bolt`,  `i.archery` |
-| 6 | Alchemist | `i.armor`, `i.catalyst` |
+| 5 | Ranger (Archer) | `i.bolt`,  `i.archery` |
+| 6 | Sage (Alchemist) | `i.armor`, `i.catalyst` |
 | 7 | Lord | `i.sword` , `i.wand` |
 | 8 | Superior existence | `i.katana`, `i.bolt`, `i.grimoire`  |
 
@@ -271,6 +271,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 - floor 
 - name: string
 - `d.HP`
+- `a.ability`
 - `f.attack`, `f.NoA`
 	- `d.ranged_attack`, `d.ranged_NoA`
 	- `d.magical_attack`, `d.magical_NoA`
@@ -314,13 +315,17 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 #### 2.3.3 Base data structure
 
-| Role | `d.HP` | `d.ranged_attack` | `d.ranged_NoA` | `d.magical_attack` | `d.magical_NoA` | `d.melee_attack` | `d.melee_NoA` | `d.ranged_attack_amplifier` | `d.magical_attack_amplifier` | `d.melee_attack_amplifier` | `d.physical_defense` | `d.magical_defense` | `e.fire` | `e.ice` | `e.thunder` | `r.fire` | `r.ice` |`r.thunder` | experience |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Melee | 50 | 0 | 0 | 0 | 0 | 20 | 2 | x1.0 | x1.0 | x1.2 | 10 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
-| Ranged | 38 | 14 | 2 | 0 | 0 | 0 | 0 | x1.2 | x1.0 | x1.0 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
-| Magic | 32 | 0 | 0 | 10 | 2 | 0 | 0 | x1.0 | x1.2 | x1.0 | 6 | 14 | (none) | (none) | (none) | x0.9 | x0.9 | x0.9 | 10 |
-| Tank | 75 | 0 | 0 | 0 | 0 | 16 | 1 | x1.0 | x1.0 | x1.0 | 16 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
-| Hybird | 47 | 10 | 1 | 0 | 0 | 14 | 1 | x1.1 | x1.0 | x1.1 | 10 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
+| Role | `d.HP` | `a.ability` | `d.ranged_attack` | `d.ranged_NoA` | `d.magical_attack` | `d.magical_NoA` | `d.melee_attack` | `d.melee_NoA` | `d.ranged_attack_amplifier` | `d.magical_attack_amplifier` | `d.melee_attack_amplifier` | `d.physical_defense` | `d.magical_defense` | `e.fire` | `e.ice` | `e.thunder` | `r.fire` | `r.ice` |`r.thunder` | experience |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Fighter | 75 | (none) | 0 | 0 | 0 | 0 | 16 | 1 | x1.0 | x1.0 | x1.0 | 16 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
+| Duelist | 50 | `a.counter`1 | 0 | 0 | 0 | 0 | 20 | 2 | x1.0 | x1.0 | x1.2 | 10 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
+| Ninja | 47 | `a.re-attack`1 | 10 | 1 | 0 | 0 | 14 | 1 | x1.1 | x1.0 | x1.1 | 10 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
+| Samurai | 40 | (none) | 0 | 0 | 0 | 0 | 40 | 1 | x1.0 | x1.0 | x1.3 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
+| Lord | 60 | (none) | 0 | 0 | 0 | 0 | 18 | 2 | x1.0 | x1.0 | x1.1 | 14 | 14 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
+| Ranger | 38 | (none) | 14 | 2 | 0 | 0 | 0 | 0 | x1.2 | x1.0 | x1.0 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
+| Wizard | 32 | (none) |0 | 0 | 20 | 1 | 0 | 0 | x1.0 | x1.2 | x1.0 | 6 | 14 | (none) | (none) | (none) | x0.9 | x0.9 | x0.9 | 10 |
+| Sage | 38 | (none) |0 | 0 | 10 | 2 | 0 | 0 | x1.0 | x1.2 | x1.0 | 8 | 20 | (none) | (none) | (none) | x0.8 | x0.8 | x0.8 | 10 |
+| Rogue | 30 | (none) | 10 | 2 | 0 | 0 | 10 | 2 | x1.0 | x1.2 | x1.0 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
 
 
 
