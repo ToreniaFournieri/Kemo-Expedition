@@ -188,20 +188,20 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 - `x.expedition` list
 
-| `x.expediton` | tier | concept |
+| `x.expediton` | `x.expedition_multiplier` | drop item tier | concept |
 |------|-----|-----|
-|| 1 | |
-|| 2 | |
-|| 3 | |
-|| 4 | |
-|| 5 | |
-|| 6 | |
-|| 7 | |
-|| 8 | |
+| | x1 | 1 | |
+| | x2 | 2 | |
+| | x4 | 3 | |
+| | x8 | 4 | |
+| | x16 | 5 | |
+| | x32 | 6 | |
+| | x64 | 7 | |
+| | x128 | 8 | |
 
 - `x.expedition` layout overview:
 
-| `x.floor` | `x.room` | `x.room_type` | `x.multiplier` | drop item_type | `x.key_concept` |
+| `x.floor` | `x.room` | `x.room_type` | `x.floor_multiplier` | drop item_type | `x.key_concept` |
 |----|----|----|-----|-----|-----|
 | 1 | 1 | `x.battle_Normal` | x1.0 | uncommon `i.sword`, `i.gauntlet`  | easy farming |
 | 1 | 2 | `x.battle_Normal` | x1.0 | uncommon `i.arrow`, `i.archery` | easy farming |
@@ -226,7 +226,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | 6 | 1 | `x.battle_Normal` | x2.49 | uncommon `i.katana`, `i.armor` | |
 | 6 | 2 | `x.battle_Normal` | x2.49 | uncommon `i.bolt`, `i.shield ` |  |
 | 6 | 3 | `x.battle_Normal` | x2.49 | uncommon `i.grimoire`, `i.robe` | |
-| 6 | 4 | `x.battle_Boss` | x3.24 | mythic (see bellows) | Checks if you have enough tital power. |
+| 6 | 4 | `x.battle_Boss` | x5.00 | mythic (see bellows) | Checks if you have enough tital power. |
 
 | `x.expedition` Tier | Boss concept | Boss drop mythic item types |
 |---|---------|------|
