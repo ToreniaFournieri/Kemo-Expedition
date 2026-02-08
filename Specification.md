@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.1.4 - SPECIFICATION
+# KEMO EXPEDITION v0.1.5 - SPECIFICATION
 
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
@@ -1097,5 +1097,13 @@ Left-aligned            Right-aligned
 - Reset:
   - Full reset option
   - Warning required before execution
+
+## 9. CHANGELOG
+
+|Version  |Changes                                                                               |
+|---------|--------------------------------------------------------------------------------------|
+|**0.1.5**| Update:2.3 Expedition & Enemies, 2.4 Itemsm, 7. REWARD (change the logic).  |
+|0.1.4 |                                                                |
+
     
 **END OF SPECIFICATION**
