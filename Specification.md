@@ -1157,11 +1157,11 @@ Left-aligned            Right-aligned
 #### 8.7 Celestial Bureau (神事務局)
 - Clairvoyance (未来視): Displays belows 
 
-**Normal reward(通常報酬)**
-  - common_reward_bag:  
+**Normal reward (通常報酬)**
+  - common_reward_bag (通常報酬 抽選確率):  
     - 報酬抽選: remaining / total counts 
     - 当たり残り counts
-  -	common_enhancement_bag: 
+  -	common_enhancement_bag (称号付与 抽選確率): 
     - 通常称号抽選: remaining / total counts
     - 名工の残り counts
     - 魔性の残り counts
@@ -1169,12 +1169,13 @@ Left-aligned            Right-aligned
     - 伝説の残り counts
     - 恐ろしい残り counts
     - 究極の残り counts
+- Button: Initialize `g.common_reward_bag` and `g.common_enhancement_bag` (通常報酬初期化)
 
-**Unieque reward(固有報酬)**
-  - reward_bag:  
+**Unieque reward (固有報酬)**
+  - reward_bag (固有報酬 抽選確率):  
     - 報酬抽選: remaining / total counts 
     - 当たり残り remaining
-  -	enhancement_bag: 
+  -	enhancement_bag (称号付与 抽選確率): 
     - 通常称号抽選: remaining / total counts
     - 名工の残り remaining / initial counts
     - 魔性の残り remaining / initial counts
@@ -1182,13 +1183,13 @@ Left-aligned            Right-aligned
     - 伝説の残り remaining / initial counts
     - 恐ろしい残り remaining / initial counts
     - 究極の残り remaining / initial counts
-- Button: Initialize `g.enhancement_bag`
+- Button: Initialize `g.reward_bag` and `g.enhancement_bag` (固有報酬初期化)
 
-**Super rare reward(超レア称号付与抽選)**
-  - superRare_bag:
+**Super rare reward (超レア報酬)**
+  - superRare_bag (称号超レア称号付与 抽選確率):
     - 超レア称号抽選: remaining / total counts
     - 超レア残り remaining / initial counts
-- Button: Initialize `g.superRare_bag`
+- Button: Initialize `g.superRare_bag` (超レア報酬初期化)
 
 - (long space here)
 
