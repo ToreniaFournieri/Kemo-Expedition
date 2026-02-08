@@ -216,23 +216,23 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | 1 | 1 | `x.battle_Normal` | x1.0 | pool_1 | easy farming |
 | 1 | 2 | `x.battle_Normal` | x1.0 | pool_1 | easy farming |
 | 1 | 3 | `x.battle_Normal` | x1.0 | pool_1 | easy farming |
-| 1 | 4 | `x.battle_Elite` | x1.3 | fixed Elite. rare  `i.sword`, `i.armor` | Rogue (weak): Checks if you have equipped items properly. |
+| 1 | 4 | `x.battle_Elite` | x1.3 | fixed Elite. rare  `i.sword`, `i.armor` | Class:Rogue. Checks if you have equipped items properly. |
 | 2 | 1 | `x.battle_Normal` | x1.2 | pool_2 | |
 | 2 | 2 | `x.battle_Normal` | x1.2 | pool_2 |  |
 | 2 | 3 | `x.battle_Normal` | x1.2 | pool_2 |  |
-| 2 | 4 | `x.battle_Elite` | x1.56 | fixed Elite. rare  `i.shield`, `i.robe` | Tank (melee tank): Checks if you have equipped enough offensive items. |
+| 2 | 4 | `x.battle_Elite` | x1.56 | fixed Elite. rare  `i.shield`, `i.robe` | Class:Fighter. Checks if you have equipped enough offensive items. |
 | 3 | 1 | `x.battle_Normal` | x1.44 | pool_3  |  |
 | 3 | 2 | `x.battle_Normal` | x1.44 | pool_3 |  |
 | 3 | 3 | `x.battle_Normal` | x1.44 | pool_3 |  |
-| 3 | 4 | `x.battle_Elite` | x1.82 | fixed Elite. rare  `i.arrow`, `i.bolt`, `i.archery` | Archer (ranged attacker): Check if you have enough physical defensive items. |
+| 3 | 4 | `x.battle_Elite` | x1.82 | fixed Elite. rare  `i.arrow`, `i.bolt`, `i.archery` | Class:Ranger. Check if you have enough physical defensive items. |
 | 4 | 1 | `x.battle_Normal` | x1.73 | pool_4 | |
 | 4 | 2 | `x.battle_Normal` | x1.73 | pool_4 |  |
 | 4 | 3 | `x.battle_Normal` | x1.73 | pool_4 | |
-| 4 | 4 | `x.battle_Elite` | x2.25 | fixed Elite. rare  `i.armor`, `i.katana` | Swordman (formitive melee attacker): Checks if you have archery or magic items. (kill it before his melee attacks) |
+| 4 | 4 | `x.battle_Elite` | x2.25 | fixed Elite. rare  `i.armor`, `i.katana` | Class:Duelist. Checks if you have archery or magic items. (kill it before his melee attacks) |
 | 5 | 1 | `x.battle_Normal` | x2.07 | pool_5  | |
 | 5 | 2 | `x.battle_Normal` | x2.07 | pool_5 | |
 | 5 | 3 | `x.battle_Normal` | x2.07 | pool_5 | |
-| 5 | 4 | `x.battle_Elite` | x2.69 | fixed Elite. rare  `i.wand`, `i.grimoire`, `i.catalyst` | Mage (formitive magical attacker): Checks if you have equipped enough magical defensive items.  |
+| 5 | 4 | `x.battle_Elite` | x2.69 | fixed Elite. rare  `i.wand`, `i.grimoire`, `i.catalyst` | Class:Mage. Checks if you have equipped enough magical defensive items.  |
 | 6 | 1 | `x.battle_Normal` | x2.49 | pool_6 | |
 | 6 | 2 | `x.battle_Normal` | x2.49 | pool_6 |  |
 | 6 | 3 | `x.battle_Normal` | x2.49 |pool_6 | |
@@ -241,7 +241,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 - each pool has enemies with unique item drops. (*note:* common items are not specifically mentioned but are dropped.)
   
-| Pool | enemy role/drop 1 | enemy role/drop 2 | enemy role/drop 3 | enemy role/drop 4 | enemy role/drop 5 |
+| Pool | enemy class/drop 1 | enemy class/drop 2 | enemy class/drop 3 | enemy class/drop 4 | enemy class/drop 5 |
 |---|---|---|---|---|---|
 | pool_1 | E01:Fighter/ uncommon `i.sword`, `i.gauntlet` | E02:Ranger/ uncommon `i.arrow`, `i.archery` | E03:Wizard/ uncommon `i.wand`, `i.catalyst` | E04:Pilgrim/ uncommon `i.sword`, `i.wand` | E05:Rogue/ uncommon `i.bolt`, `i.shield ` |
 | pool_2 | E06:Ninja/ uncommon `i.katana`, `i.armor` | E07:Samurai/ uncommon `i.katana`, `i.bolt` | E08:Sage/ uncommon `i.grimoire`, `i.robe` | E09:Duelist/ uncommon `i.sword`, `i.arrow` | E10:Lord/ uncommon `i.shield `, `i.robe` |
@@ -251,7 +251,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | pool_6 | E26:Ninja/ uncommon `i.katana`, `i.armor` | E27:Rogue/ uncommon `i.bolt`, `i.shield `| E28:Sage/ uncommon `i.grimoire`, `i.robe` | E29:Duelist/ uncommon `i.sword`, `i.arrow` | E30:Pilgrim/ uncommon `i.sword`, `i.wand` |
 
 
-| `x.expedition` Tier | Boss concept | Class| Boss drop mythic item types |
+| `x.expedition` Tier | Boss concept | Class | Boss drop mythic item types |
 |---|---------|------|---|
 | 1 | | Fighter | `i.sword` , `i.grimoire` |
 | 2 | | Ranger  | `i.armor` , `i.arrow` |
