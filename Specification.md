@@ -452,6 +452,9 @@ Tier 5 common `i.arrow`: `d.ranged_attack` +41, `c.ranged_attack+0.08`
 - rarelity
 - addtional (`d.`)
 - bonus (`c.`)
+- elemental offensive bonus (`e.`)
+- elemental resistance bonus (`r.`)
+- base status bonus (`d.`)
 
 
 
