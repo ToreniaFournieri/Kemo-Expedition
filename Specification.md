@@ -233,7 +233,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 |---|---|---|---|---|---|
 | pool_1 | E01:Fighter/ uncommon `i.sword`, `i.gauntlet` | E02:Ranger/ uncommon `i.arrow`, `i.archery` | E03:Wizard/ uncommon `i.wand`, `i.catalyst` | E04:Pilgrim/ uncommon `i.sword`, `i.wand` | E05:Rogue/ uncommon `i.bolt`, `i.shield ` |
 | pool_2 | E06:Ninja/ uncommon `i.katana`, `i.armor` | E07:Samurai/ uncommon `i.katana`, `i.bolt` | E08:Sage/ uncommon `i.grimoire`, `i.robe` | E09:Duelist/ uncommon `i.sword`, `i.arrow` | E10:Lord/ uncommon `i.shield `, `i.robe` |
-| pool_3 | E11:Fighter/ uncommon `i.sword`, `i.gauntlet` | E12:Ranger/ uncommon `i.arrow`, `i.archery` | E13:Wizard/ uncommon `i.wand`, `i.catalyst` | E04:Lord/ uncommon `i.shield `, `i.robe` | E15:Samurai/ uncommon `i.katana`, `i.bolt` |
+| pool_3 | E11:Fighter/ uncommon `i.sword`, `i.gauntlet` | E12:Ranger/ uncommon `i.arrow`, `i.archery` | E13:Wizard/ uncommon `i.wand`, `i.catalyst` | E14:Lord/ uncommon `i.shield `, `i.robe` | E15:Samurai/ uncommon `i.katana`, `i.bolt` |
 | pool_4 | E16:Ninja/ uncommon `i.katana`, `i.armor` | E17:Rogue/ uncommon `i.bolt`, `i.shield `| E18:Sage/ uncommon `i.grimoire`, `i.robe` | E19:Duelist/ uncommon `i.sword`, `i.arrow` | E20:Pilgrim/ uncommon `i.sword`, `i.wand` |
 | pool_5 | E21:Fighter/ uncommon `i.sword`, `i.gauntlet` | E22:Ranger/ uncommon `i.arrow`, `i.archery` | E23:Wizard/ uncommon `i.wand`, `i.catalyst` | E24:Lord/ uncommon `i.shield `, `i.robe` | E25:Samurai/ uncommon `i.katana`, `i.bolt` |
 | pool_6 | E26:Ninja/ uncommon `i.katana`, `i.armor` | E27:Rogue/ uncommon `i.bolt`, `i.shield `| E28:Sage/ uncommon `i.grimoire`, `i.robe` | E29:Duelist/ uncommon `i.sword`, `i.arrow` | E30:Pilgrim/ uncommon `i.sword`, `i.wand` |
