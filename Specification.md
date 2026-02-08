@@ -193,11 +193,42 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | 1 | 1 | `x.battle_Normal` | x1.0 | uncommon `i.sword`, `i.gauntlet`  | easy farming |
 | 1 | 2 | `x.battle_Normal` | x1.0 | uncommon `i.arrow`, `i.archery` | easy farming |
 | 1 | 3 | `x.battle_Normal` | x1.0 | uncommon `i.wand`, `i.catalyst` | easy farming |
-| 1 | 4 | `x.battle_Elite` | x1.0 | rare  `i.sword`, `i.arrow` | Checks if you have equipped items properly |
+| 1 | 4 | `x.battle_Elite` | x1.0 | rare  `i.sword`, `i.armor` | Checks if you have equipped items properly. |
 | 2 | 1 | `x.battle_Normal` | x1.2 | uncommon `i.katana`, `i.armor` | |
 | 2 | 2 | `x.battle_Normal` | x1.2 | uncommon `i.bolt`, `i.shield ` |  |
 | 2 | 3 | `x.battle_Normal` | x1.2 | uncommon `i.grimoire`, `i.robe` | |
-| 2 | 4 | `x.battle_Elite` | x1.2 | rare  `i.armor`, `i.robe` | Checks if you have enough firepower. |
+| 2 | 4 | `x.battle_Elite` | x1.2 | rare  `i.shield`, `i.robe` | Tank: Checks if you have equipped enough offensive items. |
+| 3 | 1 | `x.battle_Normal` | x1.44 | uncommon `i.sword`, `i.gauntlet`  |  |
+| 3 | 2 | `x.battle_Normal` | x1.44 | uncommon `i.arrow`, `i.archery` |  |
+| 3 | 3 | `x.battle_Normal` | x1.44 | uncommon `i.wand`, `i.catalyst` |  |
+| 3 | 4 | `x.battle_Elite` | x1.44 | rare  `i.arrow`, `i.bolt`, `i.archery` | Archer: Check if you have enough physical defensive items. |
+| 4 | 1 | `x.battle_Normal` | x1.73 | uncommon `i.katana`, `i.armor` | |
+| 4 | 2 | `x.battle_Normal` | x1.73 | uncommon `i.bolt`, `i.shield ` |  |
+| 4 | 3 | `x.battle_Normal` | x1.73 | uncommon `i.grimoire`, `i.robe` | |
+| 4 | 4 | `x.battle_Elite` | x1.73 | rare  `i.armor`, `i.katana` | Swordman: Checks if you have archery or magic items. (kill it before his melee attacks) |
+| 5 | 1 | `x.battle_Normal` | x2.07 | uncommon `i.sword`, `i.gauntlet`  | |
+| 5 | 2 | `x.battle_Normal` | x2.07 | uncommon `i.arrow`, `i.archery` | |
+| 5 | 3 | `x.battle_Normal` | x2.07 | uncommon `i.wand`, `i.catalyst` | |
+| 5 | 4 | `x.battle_Elite` | x2.07 | rare  `i.wand`, `i.grimoire`, `i.catalyst` | Mage: Checks if you have equipped enough magical defensive items.  |
+| 6 | 1 | `x.battle_Normal` | x2.49 | uncommon `i.katana`, `i.armor` | |
+| 6 | 2 | `x.battle_Normal` | x2.49 | uncommon `i.bolt`, `i.shield ` |  |
+| 6 | 3 | `x.battle_Normal` | x2.49 | uncommon `i.grimoire`, `i.robe` | |
+| 6 | 4 | `x.battle_Boss` | x2.49 | mythic (see bellows) | Checks if you have enough tital power. |
+
+| `x.expedition` Tier | Boss drop mythic item types |
+|---|---------|
+| 1 | `i.sword` , `i.grimoire` |
+| 2 | `i.armor` , `i.arrow` |
+| 3 | `i.wand`,`i.robe` |
+| 4 | `i.katana` , `i.shield `| 
+| 5 | `i.bolt`,  `i.archery` |
+| 6 | `i.armor`, `i.catalyst` |
+| 7 | `i.sword` , `i.wand` |
+| 8 | `i.katana`, `i.bolt`, `i.grimoire`  |
+
+- Normal enemy has 2 uncommon items, 3 common items.
+- Elite enemy has 2 rare items, 1 uncommon item, 2 common items.
+- Boss enemy has 2 mythic items and 2 rare items, 1 common item.
 
 
 **Dungeon**
@@ -317,10 +348,6 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | rare | base_power x rarelity.amplifier + **two** subtle_power`d.`, **`e.`**, or `c.` bonus, base c.multiplier +2 tier upgrade(ecept penalty) |
 | mythic | base_power x rarelity.amplifier + **three** subtle_power`d.`, `e.`, or `c.` bonus, one **`b.` bonus**, but **no base c.multiplier** |
 
-- Normal enemy has 2 uncommon items, 3 common items.
-- Elite enemy has 2 rare items, 1 uncommon item, 2 common items.
-- Boss enemy has 2 mythic items and 2 rare items, 1 common item.
-
 *Note:* subtle_power: x0.20 ~ x0.34 of base_power value.
 
 - example of basic item:
@@ -338,19 +365,8 @@ Tier 5 common `i.arrow`: `d.ranged_attack` +41, `c.ranged_attack+0.08`
 **Item Variation Hierarchy**
 - Common (12 variations per tier): 1 standard version of every item type.
 - Uncommon (24 variations per tier): 2 specialized versions of every item type.
-- Rare ( 9~10 variations per tier): Any of the 12 types can be Rare, unless that type is the designated Mythic for that Tier. 
-- Mythic (2~3 variations per tier): defines bellows:
-
-| Tier | Mythic item types |
-|---|---------|
-| 1 | `i.sword` , `i.grimoire` |
-| 2 | `i.armor` , `i.arrow` |
-| 3 | `i.wand`,`i.robe` |
-| 4 | `i.katana` , `i.shield `| 
-| 5 | `i.bolt`,  `i.archery` |
-| 6 | `i.armor`, `i.catalyst` |
-| 7 | `i.sword` , `i.wand` |
-| 8 | `i.katana`, `i.bolt`, `i.grimoire`  |
+- Rare ( 12 variations per tier): 1 version of every item type. 
+- Mythic (2~3 variations per tier)
 
 #### 2.4.4 Item stacking
 - Items are stacked based on their unique combination of (superRare title, enhancement title, and base item ID). The default `max_stack` is 99.
