@@ -676,10 +676,10 @@ inventory = {
 | title | Gate `x.floor`,`x.room` | uncommon items from `x.room` |
 |----|----|----|
 | 1st Elite gate | 1,4 | correct 6 uncommon items from this `x.expedition` |
-| 2nd Elite gate | 2,4 | correct 12 uncommon items from this `x.expedition`  |
-| 3rd Elite gate | 3,4 | correct 18 uncommon items from this `x.expedition` |
-| 4th Elite gate | 4,4 | correct 24 uncommon items from this `x.expedition`  |
-| 5th Elite gate | 5,4 | correct 30 uncommon items from this `x.expedition`  |
+| 2nd Elite gate | 2,4 | correct 18 uncommon items from this `x.expedition`  |
+| 3rd Elite gate | 3,4 | correct 36 uncommon items from this `x.expedition` |
+| 4th Elite gate | 4,4 | correct 60 uncommon items from this `x.expedition`  |
+| 5th Elite gate | 5,4 | correct 90 uncommon items from this `x.expedition`  |
 | Boss gate | 6,4 | correct 5 rare items from `x.floor` = 1, `x.room`= 1-3  |
 
 
