@@ -196,6 +196,8 @@ export function computeCharacterStats(
   let rangedNoA = 0;
   let magicalNoA = 0;
   let meleeNoA = 0;
+  let accuracyBonus = collection.accuracy;
+  let evasionBonus = collection.evasion;
   let elementalOffense: ElementalOffense = 'none';
   let elementalOffenseValue = 1.0;
 
@@ -205,7 +207,8 @@ export function computeCharacterStats(
   for (const item of equippedItems) {
     const categoryMult = getMultiplier(item.category);
     const enhanceMult = getItemEnhancementMultiplier(item);
-    const multiplier = categoryMult * enhanceMult;
+    const baseMult = item.baseMultiplier ?? 1;
+    const multiplier = categoryMult * enhanceMult * baseMult;
 
     if (item.rangedAttack) {
       rangedAttack += item.rangedAttack * multiplier;
@@ -240,6 +243,11 @@ export function computeCharacterStats(
         meleeNoA += item.meleeNoA;
       }
     }
+    if (item.meleeNoABonus) meleeNoA += item.meleeNoABonus;
+    if (item.rangedNoABonus) rangedNoA += item.rangedNoABonus;
+    if (item.magicalNoABonus) magicalNoA += item.magicalNoABonus;
+    if (item.accuracyBonus) accuracyBonus += item.accuracyBonus;
+    if (item.evasionBonus) evasionBonus += item.evasionBonus;
 
     // Elemental offense from equipment (priority: thunder > ice > fire > none)
     if (item.elementalOffense && item.elementalOffense !== 'none') {
@@ -281,21 +289,30 @@ export function computeCharacterStats(
   // d.magical_defense = Item Bonuses of Magical defense x its c.multiplier x enhancement x b.mind / 10
   let physicalDefense = 0;
   let magicalDefense = 0;
+  let physicalDefenseAmplifier = 1.0;
+  let magicalDefenseAmplifier = 1.0;
+  let physicalDefenseBonus = 0;
+  let magicalDefenseBonus = 0;
 
   for (const item of equippedItems) {
     const categoryMult = getMultiplier(item.category);
     const enhanceMult = getItemEnhancementMultiplier(item);
-    const multiplier = categoryMult * enhanceMult;
+    const baseMult = item.baseMultiplier ?? 1;
+    const multiplier = categoryMult * enhanceMult * baseMult;
     if (item.physicalDefense) {
       physicalDefense += item.physicalDefense * multiplier;
+      if (item.baseMultiplier) physicalDefenseBonus += item.baseMultiplier - 1;
     }
     if (item.magicalDefense) {
       magicalDefense += item.magicalDefense * multiplier;
+      if (item.baseMultiplier) magicalDefenseBonus += item.baseMultiplier - 1;
     }
   }
 
   physicalDefense = physicalDefense * (baseStats.vitality / 10);
   magicalDefense = magicalDefense * (baseStats.mind / 10);
+  physicalDefenseAmplifier = Math.max(0.01, 1 - physicalDefenseBonus);
+  magicalDefenseAmplifier = Math.max(0.01, 1 - magicalDefenseBonus);
 
   // Build abilities list
   const abilities: Ability[] = [];
@@ -333,14 +350,16 @@ export function computeCharacterStats(
     meleeNoA,
     physicalDefense: Math.floor(physicalDefense),
     magicalDefense: Math.floor(magicalDefense),
+    physicalDefenseAmplifier,
+    magicalDefenseAmplifier,
     maxEquipSlots,
     abilities,
     penetMultiplier: collection.penet,
     elementalOffense,
     elementalOffenseValue,
     accuracyPotency,
-    accuracyBonus: collection.accuracy,
-    evasionBonus: collection.evasion,
+    accuracyBonus,
+    evasionBonus,
   };
 }
 
