@@ -106,16 +106,22 @@ export interface ItemDef {
   id: number;
   category: ItemCategory;
   name: string;
+  baseMultiplier?: number;
   meleeAttack?: number;
   meleeNoA?: number;
+  meleeNoABonus?: number;
   rangedAttack?: number;
   rangedNoA?: number;
+  rangedNoABonus?: number;
   magicalAttack?: number;
   magicalNoA?: number;
+  magicalNoABonus?: number;
   partyHP?: number;
   physicalDefense?: number;
   magicalDefense?: number;
   elementalOffense?: ElementalOffense;
+  accuracyBonus?: number;
+  evasionBonus?: number;
 }
 
 export interface Item extends ItemDef {
