@@ -351,7 +351,8 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 - `d.HP` : master value x `x.exp_mult` x `x.floor_multiplier` 
 - `f.attack` :  master value x `x.exp_mult` x `x.floor_multiplier` 
 - `f.NoA` :  master value x `x.exp_mult` x `x.floor_multiplier` 
-- `f.offense_amplifier` :  master value x `x.exp_mult` x `x.floor_multiplier` 
+- `f.offense_amplifier` :  master value x `x.exp_mult` x `x.floor_multiplier`
+- `f.defense_amplifier` : set 1.0 (for this version)
 - `f.defense` :  master value x `x.exp_mult` x `x.floor_multiplier` 
 - `f.elemental_offense_attribute` :  not scale
 - `f.elemental_resistance_attribute` : not scale
@@ -616,7 +617,7 @@ inventory = {
   - Else return 1.0 x  sum of (`c.melee_attack+v` or `c.ranged_attack+v` or `c.magical_attack+v` )
 
 - character.`f.defense_amplifier` (phase: )
-  - return 1.0 x  sum of (`c.physical_defense+v` or `c.magical_defense+v` )
+  - return max(0.01, 1.00 - sum of (`c.physical_defense+v` or `c.magical_defense+v` ))
 
 
 - character.`f.accuracy_amplifier` (phase: )
@@ -767,7 +768,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
     Else, return 1.0.
 
 - `f.damage_calculation`: (actor: , opponent: , phase: )
-	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) ) x actor.`f.offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x party.`f.party.offense_amplifier` x `f.resonance_amplifier`)
+	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) ) x actor.`f.offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x opponent.`f.defense_amplifier` x party.`f.party.offense_amplifier` x `f.resonance_amplifier`)
 
   - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
 
