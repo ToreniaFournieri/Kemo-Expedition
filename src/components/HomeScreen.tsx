@@ -91,6 +91,15 @@ function getOffenseMultiplierSum(items: Item[], kind: 'melee' | 'ranged' | 'magi
   return 1 + bonusSum;
 }
 
+function getDefenseMultiplierSum(items: Item[], kind: 'physical' | 'magical'): number {
+  const relevant = items.filter(item => {
+    if (kind === 'physical') return item.physicalDefense;
+    return item.magicalDefense;
+  });
+  const bonusSum = relevant.reduce((sum, item) => sum + ((item.baseMultiplier ?? 1) - 1), 0);
+  return 1 + bonusSum;
+}
+
 // Helper to format bonus descriptions
 type Bonus = { type: string; value: number; abilityId?: string; abilityLevel?: number };
 
@@ -770,6 +779,14 @@ function PartyTab({
                   equippedItems,
                   'magical'
                 );
+                const defenseMultPhysical = getDefenseMultiplierSum(
+                  equippedItems,
+                  'physical'
+                );
+                const defenseMultMagical = getDefenseMultiplierSum(
+                  equippedItems,
+                  'magical'
+                );
 
                 // Build offense lines
                 const offenseLines: string[] = [];
@@ -794,12 +811,13 @@ function PartyTab({
                   offenseLines.push(`命中率: ${Math.round(stats.accuracyPotency * 100)}% (減衰: x${baseDecay.toFixed(2)})`);
                 }
 
-                // Defense lines (always 3)
+                // Defense lines
                 const defenseLines = [
                   `属性:${elementName}(x${stats.elementalOffenseValue.toFixed(1)})`,
-                  `物防:${stats.physicalDefense}`,
-                  `魔防:${stats.magicalDefense}`,
+                  `物防:${stats.physicalDefense} (x${defenseMultPhysical.toFixed(2)})`,
+                  `魔防:${stats.magicalDefense} (x${defenseMultMagical.toFixed(2)})`,
                 ];
+                defenseLines.push(`回避:${stats.evasionBonus >= 0 ? '+' : ''}${stats.evasionBonus.toFixed(3)}`);
 
                 // Pad offense lines to match defense lines count
                 while (offenseLines.length < defenseLines.length) {
