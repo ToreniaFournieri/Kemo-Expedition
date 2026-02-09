@@ -29,6 +29,16 @@
 | `s.` | Item **S**tate |
 | `x.` | E**x**pedition |
 
+
+| `c.` | Display | Example |
+|---|----|----|
+| `c.ranged_NoA+v`| [遠回数+v] | `c.ranged_NoA+2` -> [遠回数+2] |
+| `c.magical_NoA+v`| [魔回数+v] | `c.magical_NoA+3` -> [魔回数+3] |
+| `c.melee_NoA+v`| [近回数+v] | `c.melee_NoA-1` -> [近回数-1] |
+| `c.accuracy+v`| [命中+(v*1000)] | `c.accuracy+0.001` -> [命中+1] |
+| `c.evasion+v`| [回避+(v*1000)] | `c.evasion-3` [回避-3]  |
+
+
 ### 2.1 Global constants
 - One deity represents on one party. The deity has its own level, HP, and unique divine abilities. 
 const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
