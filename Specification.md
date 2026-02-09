@@ -859,9 +859,10 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 **Consequence**
 - *Defeat*: no penalties (current version). gains `d.experience` points, but no item reward. Back to home without trophies. 
 - *Victory*: gains `d.experience` points to a party. has a chance of gaining reward from enemies drop item. Check the conditions bellow.
-  - Normal Rooms (1–3): Proceed to the next room.
-  - Gate Rooms (Room 3 check): At the end of Room 3, the "Loot-Gate" check occurs. If passed, proceed to Room 4 (Elite/Boss).
-  - Final Boss Room (6, 4): Expedition Clear! Return Home with all trophies.
+  - Normal Rooms (`x.room`:1–2): Proceed to the next `x.room`.
+  - Gate Rooms (`x.room`: 3 check): At the end of Room 3, the "Loot-Gate" check occurs. If passed, proceed to `x.room`:4 (Elite/Boss).
+  - Elite Rooms (`x.floor`:1-5, `x.room`:4): Proceed to the next floor: `x.floor` +1 , `x.room`:1.
+  - Final Boss Room (`x.floor`:6, `x.room`:4): Expedition Clear! Return Home with all trophies.
 
 - *Draw*:no penalties (current version). no `d.experience` points nor item reward at this room. Back to home with trophies of previous rooms.
 
