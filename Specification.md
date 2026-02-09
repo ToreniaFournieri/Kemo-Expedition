@@ -1246,7 +1246,7 @@ Left-aligned            Right-aligned
 - UI Behavior:
   - Interaction:
     - Tap Expedition name, Opens list of enemies in that area.
-    - Tap Enemy name, Opens detailed enemy status. Including drop items.
+    - Tap Enemy name, Opens detailed enemy status (same logic as battle). Including drop items.
 
 **4. Game Reset**
   - Full reset option
