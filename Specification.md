@@ -17,7 +17,7 @@
 | Prefix | Description / Definition |
 |-------|-------------------------|
 | `a.` | **A**bility. Unique/Strongest. If multiple abilities share the same name, only the one with the highest value (or the highest priority) is active. |
-| `b.` | **B**ase Status (Core attributes) |
+| `b.` | **B**ase Status (Core attributes) and Base status bonus |
 | `c.` | **C**ategory Bonus. Different named modifiers combine. Identical named modifiers follow the "Unique" rule. |
 | `d.` | **D**uel Status (Current combat values) |
 | `e.` | **E**lemental Offense Attribute |
@@ -549,7 +549,7 @@ inventory = {
   3. "イタチ", Murid, 忍(盗), Persistent, House of the Breaking Hand
   4. "ロップ", Leporian, 狩(賢), Dexterous, House of Far Sight
   5. "ラス", Felidian, 賢(巡), Pursuing, House of Hidden Principles
-  6. "セルヴァ", Cervin, 魔(師範), Canny, House of Guiding Thought
+  6. "セルヴァ", Cervin, 魔(魔), Canny, House of Guiding Thought
 
 - Party initial inventory.
   - 1 Tier-1 common items of each item type.
@@ -734,7 +734,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 
 **Battle Phase**
 
-|Phase |Damage type |number of attacks|Defense type|
+|Phase |Damage type |number of attacks type |Defense type|
 |-----|-----------|-----------|-----------|
 |LONG |`d.ranged_attack` |`d.ranged_NoA` | `d.physical_defense` |
 |MID |`d.magical_attack` |`d.magical_NoA` | `d.magical_defense` |
@@ -855,9 +855,14 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 - Draw
 	- If enemy.`d.HP` > 0 and party.`d.HP` > 0
 
+
 **Consequence**
-- *Defeat*: no penalties (current version). no `d.experience` points nor item reward. Back to home without trophies. 
-- *Victory*: gains `d.experience` points to a party. has a chance of gaining reward from enemies drop item. Proceeds to the next room. If it was the Boss room, back to home with trophies!
+- *Defeat*: no penalties (current version). gains `d.experience` points, but no item reward. Back to home without trophies. 
+- *Victory*: gains `d.experience` points to a party. has a chance of gaining reward from enemies drop item. Check the conditions bellow.
+  - Normal Rooms (1–3): Proceed to the next room.
+	- Gate Rooms (Room 3 check): At the end of Room 3, the "Loot-Gate" check occurs. If passed, proceed to Room 4 (Elite/Boss).
+	- Final Boss Room (6, 4): Expedition Clear! Return Home with all trophies.
+
 - *Draw*:no penalties (current version). no `d.experience` points nor item reward at this room. Back to home with trophies of previous rooms.
 
 
@@ -1217,7 +1222,7 @@ Left-aligned            Right-aligned
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
-| **0.2.0** | Big update: 2.1 Global constants (change randamness upgrade), 2.3 Expedition & Enemies, 2.4 Itemsm, 3. INITIALIZATION, 5.1 "Loot-Gate" progression system, 7. REWARD (change the logic), 8.4 Expedition, 8.7 Divine Bureau (setting)  |
+| **0.2.0** | Big update: 2.1 Global constants (change randamness upgrade), 2.3 Expedition & Enemies, 2.4 Itemsm, 3. INITIALIZATION, 5.1 "Loot-Gate" progression system, 6.5 Outcome  7. REWARD (change the logic), 8.4 Expedition, 8.7 Divine Bureau (setting)  |
 | 0.1.4 |                                                                |
 
     
