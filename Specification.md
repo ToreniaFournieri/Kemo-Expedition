@@ -657,6 +657,8 @@ inventory = {
 - Persistence through an expedition:`d.HP`.
 
 ### 5.1 "Loot-Gate" progression system
+- If party doesn't match this table conditions, their expedition stop before the gate room and back to home.
+	-Ex. "2nd Elite gate closed: Requires 2/6 uncommons from 2nd floor"
 
 | title | Gate `x.floor`,`x.room` | uncommon items from `x.room` |
 |----|----|----|
@@ -1115,7 +1117,7 @@ Left-aligned            Right-aligned
 
 #### 8.4 Expedition
 - Top section:
-  - Currently selected dungeon with Loot-Gate conditions (ex. 2nd Elite gate: Requires 2/6 uncommons from 2nd floor)
+  - Currently selected dungeon with Loot-Gate conditions (ex. 2nd Elite gate closed: Requires 2/6 uncommons from 2nd floor)
   - Expedition behavior:
     - Expedition resolves immediately
     - No loading scenes
