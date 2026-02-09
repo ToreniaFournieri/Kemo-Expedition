@@ -19,179 +19,91 @@ export const SUPER_RARE_TITLES: SuperRareTitle[] = [
   { value: 5, title: '血に飢えし', tickets: 1, multiplier: 2.0 },
 ];
 
-// Base power per tier (8 tiers)
-const TIER_BASE_POWER = [8, 20, 38, 62, 92, 128, 170, 218];
+// 5 items per category as specified
+export const ITEMS: ItemDef[] = [
+  // Swords (剣) - +melee_attack
+  { id: 1, category: 'sword', name: 'ショートソード', meleeAttack: 8 },
+  { id: 2, category: 'sword', name: 'ロングソード', meleeAttack: 15 },
+  { id: 3, category: 'sword', name: 'ブロードソード', meleeAttack: 22 },
+  { id: 4, category: 'sword', name: 'バスタードソード', meleeAttack: 30 },
+  { id: 5, category: 'sword', name: 'クレイモア', meleeAttack: 40, partyHP: 10 },
 
-// Rarity amplifiers per item type
-// Format: [common, uncommon, rare, mythic]
-const RARITY_AMPLIFIERS: Record<ItemCategory, [number, number, number, number]> = {
-  armor:    [1.0, 1.2, 1.5, 2.0],
-  robe:     [1.0, 1.2, 1.5, 2.0],
-  shield:   [0.5, 0.6, 0.75, 1.0], // HP focused, lower defense
-  sword:    [1.0, 1.2, 1.5, 2.0],
-  katana:   [1.3, 1.56, 1.95, 2.6], // Higher attack, fewer hits
-  gauntlet: [0.3, 0.4, 0.5, 0.6],  // NoA items have different scaling
-  arrow:    [0.8, 1.0, 1.2, 1.6],
-  bolt:     [1.0, 1.2, 1.5, 2.0],
-  archery:  [0.3, 0.4, 0.5, 0.6],  // NoA items
-  wand:     [1.0, 1.2, 1.5, 2.0],
-  grimoire: [1.2, 1.44, 1.8, 2.4],
-  catalyst: [0.3, 0.4, 0.5, 0.6],  // NoA items
-};
+  // Katana (刀) - +melee_attack, -melee_NoA
+  { id: 10, category: 'katana', name: '打刀', meleeAttack: 12, meleeNoA: -1 },
+  { id: 11, category: 'katana', name: '太刀', meleeAttack: 20, meleeNoA: -1 },
+  { id: 12, category: 'katana', name: '野太刀', meleeAttack: 30, meleeNoA: -1 },
+  { id: 13, category: 'katana', name: '大太刀', meleeAttack: 42, meleeNoA: -2 },
+  { id: 14, category: 'katana', name: '妖刀', meleeAttack: 55, meleeNoA: -2 },
 
-// HP multiplier for shields (per tier)
-const SHIELD_HP_MULTIPLIERS = [10, 25, 50, 80, 120, 165, 220, 280];
+  // Archery (弓) - +ranged_NoA only (bow determines number of attacks)
+  { id: 20, category: 'archery', name: 'ショートボウ', rangedNoA: 0.5 },
+  { id: 21, category: 'archery', name: 'ロングボウ', rangedNoA: 0.8 },
+  { id: 22, category: 'archery', name: 'コンポジットボウ', rangedNoA: 1.2 },
+  { id: 23, category: 'archery', name: 'グレートボウ', rangedNoA: 1.5 },
+  { id: 24, category: 'archery', name: '精霊弓', rangedNoA: 1.8 },
 
-// ID scheme: TRCC where T=tier(1-8), R=rarity(1-4), CC=item number(01-24)
-// Common: 01-12, Uncommon: 01-24, Rare: 01-12, Mythic: 01-03
+  // Armor (鎧) - +Party_physical_defense (2 armor = full protection at tier)
+  { id: 30, category: 'armor', name: 'レザーアーマー', physicalDefense: 8 },
+  { id: 31, category: 'armor', name: 'チェインメイル', physicalDefense: 16 },
+  { id: 32, category: 'armor', name: 'スケイルメイル', physicalDefense: 26 },
+  { id: 33, category: 'armor', name: 'プレートメイル', physicalDefense: 38 },
+  { id: 34, category: 'armor', name: '騎士の鎧', physicalDefense: 52, partyHP: 20 },
 
-type Rarity = 'common' | 'uncommon' | 'rare' | 'mythic';
+  // Gauntlet (籠手) - +melee_NoA
+  { id: 40, category: 'gauntlet', name: '革の籠手', meleeNoA: 0.5 },
+  { id: 41, category: 'gauntlet', name: '鋼の籠手', meleeNoA: 0.8 },
+  { id: 42, category: 'gauntlet', name: '戦士の籠手', meleeNoA: 1.2 },
+  { id: 43, category: 'gauntlet', name: '英雄の籠手', meleeNoA: 1.5 },
+  { id: 44, category: 'gauntlet', name: '伝説の籠手', meleeNoA: 1.8 },
 
-interface ItemTemplate {
-  category: ItemCategory;
-  baseName: string;
-  variants?: string[]; // For uncommon (2 variants)
-  rareName?: string;
-  mythicName?: string;
-  // Special modifiers for uncommon variants
-  variant1Mod?: Partial<ItemDef>;
-  variant2Mod?: Partial<ItemDef>;
-}
+  // Wand (ワンド) - +magical_attack
+  { id: 50, category: 'wand', name: '木のワンド', magicalAttack: 8 },
+  { id: 51, category: 'wand', name: '魔法のワンド', magicalAttack: 15 },
+  { id: 52, category: 'wand', name: 'ルーンワンド', magicalAttack: 24 },
+  { id: 53, category: 'wand', name: '賢者の杖', magicalAttack: 35 },
+  { id: 54, category: 'wand', name: '大魔導師の杖', magicalAttack: 50},
 
-// Tier name prefixes
-const TIER_PREFIXES = [
-  '',           // Tier 1: no prefix (basic)
-  '鍛えた',      // Tier 2: Forged
-  '上質な',      // Tier 3: Fine
-  '精巧な',      // Tier 4: Elaborate
-  '高貴な',      // Tier 5: Noble
-  '英雄の',      // Tier 6: Hero's
-  '伝説の',      // Tier 7: Legendary
-  '神話級',      // Tier 8: Mythical
-];
+  // Robe (法衣) - +Party_magical_defense (2 robe = full protection at tier)
+  { id: 60, category: 'robe', name: '見習いのローブ', magicalDefense: 8 },
+  { id: 61, category: 'robe', name: '魔法使いのローブ', magicalDefense: 16 },
+  { id: 62, category: 'robe', name: '賢者のローブ', magicalDefense: 26 },
+  { id: 63, category: 'robe', name: '大魔導師のローブ', magicalDefense: 38 },
+  { id: 64, category: 'robe', name: '聖なるローブ', magicalDefense: 52, partyHP: 15 },
 
-// Item templates for each category
-const ITEM_TEMPLATES: ItemTemplate[] = [
-  // Armor (鎧) - physical defense
-  {
-    category: 'armor',
-    baseName: '鎧',
-    variants: ['重装鎧', '軽装鎧'],
-    rareName: '騎士の鎧',
-    mythicName: '竜鱗の鎧',
-    variant1Mod: { partyHP: 5 }, // Heavy: +HP
-    variant2Mod: {}, // Light: standard
-  },
-  // Robe (法衣) - magical defense
-  {
-    category: 'robe',
-    baseName: 'ローブ',
-    variants: ['魔導ローブ', '祈りのローブ'],
-    rareName: '大魔導師のローブ',
-    mythicName: '星詠みのローブ',
-    variant1Mod: { magicalAttack: 3 }, // Magic: +minor magic attack
-    variant2Mod: { partyHP: 3 }, // Prayer: +minor HP
-  },
-  // Shield (盾) - HP + physical defense
-  {
-    category: 'shield',
-    baseName: '盾',
-    variants: ['大盾', '円盾'],
-    rareName: '守護盾',
-    mythicName: '神盾アイギス',
-    variant1Mod: {}, // Tower: more HP focus (default)
-    variant2Mod: { physicalDefense: 2 }, // Round: more defense
-  },
-  // Sword (剣) - melee attack
-  {
-    category: 'sword',
-    baseName: '剣',
-    variants: ['長剣', '闘剣'],
-    rareName: 'ブレイドソード',
-    mythicName: '聖剣エクスカリバー',
-    variant1Mod: {}, // Long: standard
-    variant2Mod: { meleeNoA: 0.5 }, // Battle: minor NoA boost
-  },
-  // Katana (刀) - high melee attack, -NoA
-  {
-    category: 'katana',
-    baseName: '刀',
-    variants: ['太刀', '野太刀'],
-    rareName: '妖刀',
-    mythicName: '天叢雲剣',
-    variant1Mod: { meleeNoA: -1 }, // Tachi: -1 NoA
-    variant2Mod: { meleeNoA: -2 }, // Nodachi: -2 NoA, higher damage implied
-  },
-  // Gauntlet (籠手) - melee NoA
-  {
-    category: 'gauntlet',
-    baseName: '籠手',
-    variants: ['戦士の籠手', '闘士の籠手'],
-    rareName: '英雄の籠手',
-    mythicName: '無双の籠手',
-    variant1Mod: { meleeAttack: 2 }, // Warrior: +minor attack
-    variant2Mod: {}, // Fighter: standard
-  },
-  // Arrow (矢) - ranged attack
-  {
-    category: 'arrow',
-    baseName: '矢',
-    variants: ['炎矢', '氷矢'],
-    rareName: '雷矢',
-    mythicName: '流星矢',
-    variant1Mod: { elementalOffense: 'fire' },
-    variant2Mod: { elementalOffense: 'ice' },
-  },
-  // Bolt (ボルト) - ranged attack
-  {
-    category: 'bolt',
-    baseName: 'ボルト',
-    variants: ['炎ボルト', '氷ボルト'],
-    rareName: '雷ボルト',
-    mythicName: '神雷ボルト',
-    variant1Mod: { elementalOffense: 'fire' },
-    variant2Mod: { elementalOffense: 'ice' },
-  },
-  // Archery (弓) - ranged NoA
-  {
-    category: 'archery',
-    baseName: '弓',
-    variants: ['長弓', '複合弓'],
-    rareName: '精霊弓',
-    mythicName: '神弓アルテミス',
-    variant1Mod: {}, // Long: standard
-    variant2Mod: { rangedAttack: 2 }, // Composite: +minor attack
-  },
-  // Wand (ワンド) - magical attack
-  {
-    category: 'wand',
-    baseName: 'ワンド',
-    variants: ['魔杖', '賢者の杖'],
-    rareName: '大魔導の杖',
-    mythicName: '神杖カドゥケウス',
-    variant1Mod: {}, // Magic wand: standard
-    variant2Mod: { magicalNoA: 0.3 }, // Sage staff: minor NoA
-  },
-  // Grimoire (魔道書) - magical attack
-  {
-    category: 'grimoire',
-    baseName: '魔道書',
-    variants: ['炎の魔道書', '氷の魔道書'],
-    rareName: '雷の魔道書',
-    mythicName: '禁断の魔道書',
-    variant1Mod: { elementalOffense: 'fire' },
-    variant2Mod: { elementalOffense: 'ice' },
-  },
-  // Catalyst (霊媒) - magical NoA
-  {
-    category: 'catalyst',
-    baseName: '霊媒',
-    variants: ['精霊石', '魔晶石'],
-    rareName: '賢者の石',
-    mythicName: '神核オリハルコン',
-    variant1Mod: {}, // Spirit stone: standard
-    variant2Mod: { magicalAttack: 3 }, // Magic crystal: +minor attack
-  },
+  // Shield (盾) - +physicalDefense, +HP
+  { id: 80, category: 'shield', name: '木盾', physicalDefense: 1, partyHP: 10 },
+  { id: 81, category: 'shield', name: '鉄盾', physicalDefense: 2, partyHP: 20 },
+  { id: 82, category: 'shield', name: '騎士盾', physicalDefense: 3, partyHP: 35 },
+  { id: 83, category: 'shield', name: '守護盾', physicalDefense: 4, partyHP: 55 },
+  { id: 84, category: 'shield', name: '聖盾', physicalDefense: 5, partyHP: 80 },
+
+  // Bolt (ボルト) - +rangedAttack (main ranged damage source)
+  { id: 90, category: 'bolt', name: '木ボルト', rangedAttack: 8 },
+  { id: 91, category: 'bolt', name: '鉄ボルト', rangedAttack: 15 },
+  { id: 92, category: 'bolt', name: '炎ボルト', rangedAttack: 22, elementalOffense: 'fire' },
+  { id: 93, category: 'bolt', name: '氷ボルト', rangedAttack: 22, elementalOffense: 'ice' },
+  { id: 94, category: 'bolt', name: '雷ボルト', rangedAttack: 22, elementalOffense: 'thunder' },
+
+  // Grimoire (魔道書) - +magicalAttack
+  { id: 100, category: 'grimoire', name: '初級魔道書', magicalAttack: 10 },
+  { id: 101, category: 'grimoire', name: '中級魔道書', magicalAttack: 18 },
+  { id: 102, category: 'grimoire', name: '上級魔道書', magicalAttack: 28 },
+  { id: 103, category: 'grimoire', name: '禁断魔道書', magicalAttack: 40 },
+  { id: 104, category: 'grimoire', name: '神代魔道書', magicalAttack: 55 },
+
+  // Catalyst (霊媒) - +magicalNoA
+  { id: 110, category: 'catalyst', name: '水晶球', magicalNoA: 0.5 },
+  { id: 111, category: 'catalyst', name: '精霊石', magicalNoA: 0.8, magicalAttack: 5 },
+  { id: 112, category: 'catalyst', name: '賢者の石', magicalNoA: 1.2 },
+  { id: 113, category: 'catalyst', name: '精霊核', magicalNoA: 1.5, magicalAttack: 8 },
+  { id: 114, category: 'catalyst', name: '神核', magicalNoA: 1.8, magicalAttack: 12 },
+
+  // Arrow (矢) - +rangedAttack (main ranged damage source for bow)
+  { id: 120, category: 'arrow', name: '木の矢', rangedAttack: 6 },
+  { id: 121, category: 'arrow', name: '鉄の矢', rangedAttack: 12 },
+  { id: 122, category: 'arrow', name: '炎の矢', rangedAttack: 18, elementalOffense: 'fire' },
+  { id: 123, category: 'arrow', name: '氷の矢', rangedAttack: 18, elementalOffense: 'ice' },
+  { id: 124, category: 'arrow', name: '雷の矢', rangedAttack: 18, elementalOffense: 'thunder' },
 ];
 
 function calculateStat(basePower: number, amplifier: number): number {
