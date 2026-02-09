@@ -1258,7 +1258,13 @@ Left-aligned            Right-aligned
 - Button (通常報酬初期化): Initialize `g.common_reward_bag` and `g.common_enhancement_bag` 
 
 **Unieque reward (固有報酬)**
-  - reward_bag (固有報酬 抽選確率):  
+  - uncommon reward_bag (アンコモン抽選確率):  
+    - 報酬抽選: remaining / total counts 
+    - 当たり残り remaining
+  - rare reward_bag (レア抽選確率):  
+    - 報酬抽選: remaining / total counts 
+    - 当たり残り remaining
+  - mythic reward_bag (神魔レア抽選抽選確率):  
     - 報酬抽選: remaining / total counts 
     - 当たり残り remaining
   -	enhancement_bag (称号付与 抽選確率): 
