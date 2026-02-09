@@ -43,6 +43,15 @@
 | `c.accuracy+v` | [命中+(v*1000)] | `c.accuracy+0.001` -> [命中+1] |
 | `c.evasion+v` | [回避+(v*1000)] | `c.evasion-3` [回避-3]  |
 
+- Translation
+
+| name | Japanese |
+|----|-----|
+| common | 通常 |
+| uncommon | アンコモン |
+| rare | レア |
+| mythic | 神魔レア |
+
 
 ### 2.1 Global constants
 - One deity represents on one party. The deity has its own level, HP, and unique divine abilities. 
