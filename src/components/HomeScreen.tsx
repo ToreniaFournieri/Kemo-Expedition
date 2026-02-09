@@ -816,10 +816,10 @@ function PartyTab({
                 // Defense lines
                 const defenseLines = [
                   `属性:${elementName}(x${stats.elementalOffenseValue.toFixed(1)})`,
-                  `物防:${stats.physicalDefense} (x${defenseMultPhysical.toFixed(2)})`,
-                  `魔防:${stats.magicalDefense} (x${defenseMultMagical.toFixed(2)})`,
+                  `物防:${stats.physicalDefense} (${Math.round(defenseMultPhysical * 100)}%)`,
+                  `魔防:${stats.magicalDefense} (${Math.round(defenseMultMagical * 100)}%)`,
                 ];
-                defenseLines.push(`回避:${stats.evasionBonus >= 0 ? '+' : ''}${stats.evasionBonus.toFixed(3)}`);
+                defenseLines.push(`回避:${stats.evasionBonus >= 0 ? '+' : ''}${Math.round(stats.evasionBonus * 1000)}`);
 
                 // Pad offense lines to match defense lines count
                 while (offenseLines.length < defenseLines.length) {

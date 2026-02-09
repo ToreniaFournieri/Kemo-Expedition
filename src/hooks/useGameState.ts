@@ -312,7 +312,7 @@ function selectEnemyForRoom(
 function countItemsOfRarity(
   inventory: InventoryRecord,
   tier: number,
-  rarity: 'uncommon' | 'rare'
+  rarity: 'uncommon' | 'rare' | 'mythic'
 ): number {
   const rarityItems = getItemsByTierAndRarity(tier, rarity);
   const rarityIds = new Set(rarityItems.map(i => i.id));
@@ -406,9 +406,39 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             const roomDef = floor.rooms[roomIndex];
             roomCounter++;
 
+            const tier = dungeon.enemyPoolIds[0]; // dungeon tier
+            // Loot-Gate check before entering (floor 1, room 1)
+            if (floor.floorNumber === 1 && roomIndex === 0 && tier > 1) {
+              const prevTier = tier - 1;
+              const gateRequired = 1;
+              const collected = countItemsOfRarity(currentInventory, prevTier, 'mythic');
+              if (collected < gateRequired) {
+                const gateEntry: ExpeditionLogEntry = {
+                  room: roomCounter,
+                  floor: floor.floorNumber,
+                  roomInFloor: roomIndex + 1,
+                  roomType: roomDef.type,
+                  floorMultiplier: floor.multiplier,
+                  enemyName: '[扉が封印されている]',
+                  enemyHP: 0,
+                  enemyAttackValues: '',
+                  outcome: 'draw', // Not a battle - displayed as 未到達
+                  damageDealt: 0,
+                  damageTaken: 0,
+                  remainingPartyHP: currentHp,
+                  maxPartyHP: partyStats.hp,
+                  details: [],
+                  gateInfo: `ミシックアイテム ${collected}/${gateRequired} 収集`,
+                };
+                entries.push(gateEntry);
+                finalOutcome = 'retreat';
+                expeditionEnded = true;
+                break;
+              }
+            }
+
             // Loot-Gate check before Elite/Boss rooms (room 4 of each floor)
             if (roomDef.type === 'battle_Elite' || roomDef.type === 'battle_Boss') {
-              const tier = dungeon.enemyPoolIds[0]; // dungeon tier
               let gateRequired: number;
               let gateRarity: 'uncommon' | 'rare';
               if (roomDef.type === 'battle_Boss') {
