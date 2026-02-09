@@ -1115,7 +1115,7 @@ Left-aligned            Right-aligned
 
 #### 8.4 Expedition
 - Top section:
-  - Currently selected dungeon
+  - Currently selected dungeon with Loot-Gate conditions (ex. 2nd Elite gate: Requires 2/6 uncommons from 2nd floor)
   - Expedition behavior:
     - Expedition resolves immediately
     - No loading scenes
@@ -1124,7 +1124,7 @@ Left-aligned            Right-aligned
     - Tapping the quick summary shows a `f.list_of_rooms`.
     - Tapping a room opens the `f.battle_logs`.
 - Bottom section:
-  - List of available dungeons
+  - List of available dungeons with Loot-Gate conditions
 
 #### 8.5 Inventory
 - Behavior:
