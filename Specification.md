@@ -697,7 +697,7 @@ inventory = {
 
 | title | Gate `x.floor`,`x.room` | uncommon items from `x.room` |
 |----|----|----|
-| Entering | 1,1 | correct 1 mythic item from previous expedition ( `x.expedition` -1 ) |
+| Entering | 1,1 | correct 1 mythic item from previous expedition ( `x.expedition` -1 ), expect for the first expedition. |
 | 1st Elite gate | 1,4 | correct 6 uncommon items from this `x.expedition` |
 | 2nd Elite gate | 2,4 | correct 18 uncommon items from this `x.expedition`  |
 | 3rd Elite gate | 3,4 | correct 36 uncommon items from this `x.expedition` |
