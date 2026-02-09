@@ -351,7 +351,8 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 - `d.HP` : master value x `x.exp_mult` x `x.floor_multiplier` 
 - `f.attack` :  master value x `x.exp_mult` x `x.floor_multiplier` 
 - `f.NoA` :  master value x `x.exp_mult` x `x.floor_multiplier` 
-- `f.offense_amplifier` :  master value x `x.exp_mult` x `x.floor_multiplier` 
+- `f.offense_amplifier` :  master value x `x.exp_mult` x `x.floor_multiplier`
+- `f.defense_amplifier` : set 1.0 (for this version)
 - `f.defense` :  master value x `x.exp_mult` x `x.floor_multiplier` 
 - `f.elemental_offense_attribute` :  not scale
 - `f.elemental_resistance_attribute` : not scale
@@ -612,8 +613,12 @@ inventory = {
 
 - character.`f.offense_amplifier` (phase: )
   - If phase is CLOSE,
-    - If character.`a.iaigiri`, return 2.0.
-  - Else return 1.0. 
+    - If character.`a.iaigiri`, return 2.0 x sum of ( `c.melee_attack+v` )
+  - Else return 1.0 x  sum of (`c.melee_attack+v` or `c.ranged_attack+v` or `c.magical_attack+v` )
+
+- character.`f.defense_amplifier` (phase: )
+  - return max(0.01, 1.00 - sum of (`c.physical_defense+v` or `c.magical_defense+v` ))
+
 
 - character.`f.accuracy_amplifier` (phase: )
   - If phase is LONG,  return: `d.accuracy_potency`.
@@ -763,7 +768,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
     Else, return 1.0.
 
 - `f.damage_calculation`: (actor: , opponent: , phase: )
-	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) ) x actor.`f.offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x party.`f.party.offense_amplifier` x `f.resonance_amplifier`)
+	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) ) x actor.`f.offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x opponent.`f.defense_amplifier` x party.`f.party.offense_amplifier` x `f.resonance_amplifier`)
 
   - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
 
@@ -989,9 +994,9 @@ Name      [編集]
 🐶 race / main class(sub class) / predisposition / lineage 
 [体力:`b.vitality`] [力:`b.strength`] [知性:`b.intelligence`] [精神:`b.mind`]
 `f.display_ranged_offense`    属性攻撃:`f.elemental_offense_attribute`.name (x `f.elemental_offense_attribute`.value )
-`f.display_magical_offense`      魔法防御:`d.magical_defense`
-`f.display_melee_offense`     物理防御:`d.physical_defense`
-`f.display_accuracy` 
+`f.display_magical_offense`      魔法防御:`d.magical_defense` (x `f.defense_amplifier`(phase: MID) )
+`f.display_melee_offense`     物理防御:`d.physical_defense`(x `f.defense_amplifier`(phase: CLOSE) )
+`f.display_accuracy`           回避: sum of ``c.evasion+v``
 ボーナス: `c.` (ex. 護符x1.3, 弓x1.1 鎧x2.4, 剣x1.4, 根性+1, 装備+1, 体+3)
 特殊能力:
 `a.` (ex. 守護者: パーティへの物理ダメージ × 3/5 )
@@ -1004,8 +1009,9 @@ Name      [編集]
 —————
 Left-aligned            Right-aligned
 近接攻撃:98 x 4回(x1.00)     属性:無(x1.0)
-命中率: 85% (減衰: x0.90)     物防:108
-                              魔防:56
+命中率: 85% (減衰: x0.90)     物防:108 (x1.00)
+                              魔防:56 (x1.00)
+                              回避:+0.004
 —————
 ボーナス: 護x1.3, 弓x1.1, 鎧x1.8, 装備+1, 根性+1, 体+3
 特殊能力:
