@@ -61,7 +61,21 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | 0 | no item | 90 |
 | 1 | win | 10 |
 
-- `g.reward_bag` table
+- `g.uncommon_reward_bag` table
+ 
+| value | title | tickets |
+|-----|---------|------|
+| 0 | no item | 99 |
+| 1 | win | 1 |
+
+- `g.rare_reward_bag` table
+ 
+| value | title | tickets |
+|-----|---------|------|
+| 0 | no item | 99 |
+| 1 | win | 1 |
+
+- `g.mythic_reward_bag` table
  
 | value | title | tickets |
 |-----|---------|------|
