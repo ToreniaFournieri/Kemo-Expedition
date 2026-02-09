@@ -196,6 +196,9 @@ export function computeCharacterStats(
   let rangedNoA = 0;
   let magicalNoA = 0;
   let meleeNoA = 0;
+  let rangedNoAFixedBonus = 0;
+  let magicalNoAFixedBonus = 0;
+  let meleeNoAFixedBonus = 0;
   let accuracyBonus = collection.accuracy;
   let evasionBonus = collection.evasion;
   let elementalOffense: ElementalOffense = 'none';
@@ -243,9 +246,9 @@ export function computeCharacterStats(
         meleeNoA += item.meleeNoA;
       }
     }
-    if (item.meleeNoABonus) meleeNoA += item.meleeNoABonus;
-    if (item.rangedNoABonus) rangedNoA += item.rangedNoABonus;
-    if (item.magicalNoABonus) magicalNoA += item.magicalNoABonus;
+    if (item.meleeNoABonus) meleeNoAFixedBonus = Math.max(meleeNoAFixedBonus, item.meleeNoABonus);
+    if (item.rangedNoABonus) rangedNoAFixedBonus = Math.max(rangedNoAFixedBonus, item.rangedNoABonus);
+    if (item.magicalNoABonus) magicalNoAFixedBonus = Math.max(magicalNoAFixedBonus, item.magicalNoABonus);
     if (item.accuracyBonus) accuracyBonus += item.accuracyBonus;
     if (item.evasionBonus) evasionBonus += item.evasionBonus;
 
@@ -264,13 +267,13 @@ export function computeCharacterStats(
   magicalAttack = magicalAttack * (baseStats.intelligence / 10);
 
   // Add pursuit bonus to ranged NoA
-  rangedNoA += collection.pursuit;
+  rangedNoA += collection.pursuit + rangedNoAFixedBonus;
 
   // Add caster bonus to magical NoA
-  magicalNoA += collection.caster;
+  magicalNoA += collection.caster + magicalNoAFixedBonus;
 
   // Add grit bonus to melee NoA
-  meleeNoA += collection.grit;
+  meleeNoA += collection.grit + meleeNoAFixedBonus;
 
   // Check for iaigiri ability
   const hasIaigiri = collection.abilities.has('iaigiri');
