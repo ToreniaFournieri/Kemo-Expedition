@@ -680,7 +680,7 @@ inventory = {
 | 3rd Elite gate | 3,4 | correct 36 uncommon items from this `x.expedition` |
 | 4th Elite gate | 4,4 | correct 60 uncommon items from this `x.expedition`  |
 | 5th Elite gate | 5,4 | correct 90 uncommon items from this `x.expedition`  |
-| Boss gate | 6,4 | correct 5 rare items from `x.floor` = 1, `x.room`= 1-3  |
+| Boss gate | 6,4 | correct 5 rare items from this `x.expedition` |
 
 
 ### 5.2 Logs
