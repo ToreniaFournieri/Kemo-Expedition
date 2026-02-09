@@ -1204,7 +1204,7 @@ Left-aligned            Right-aligned
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
-| **0.2.0** | Update:2.1 Global constants (change randamness upgrade), 2.3 Expedition & Enemies, 2.4 Itemsm, 3. INITIALIZATION, 7. REWARD (change the logic), 8.7 Setting.  |
+| **0.2.0** | Update:2.1 Global constants (change randamness upgrade), 2.3 Expedition & Enemies, 2.4 Itemsm, 3. INITIALIZATION, 7. REWARD (change the logic), 8.7 Divine Bureau.  |
 | 0.1.4 |                                                                |
 
     
