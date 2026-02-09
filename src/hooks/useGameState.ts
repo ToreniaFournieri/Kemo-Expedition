@@ -152,12 +152,12 @@ const LEVEL_EXP: number[] = [
 
 function createInitialParty() {
   const defaultSetup = [
-    { race: 'caninian', main: 'fighter', sub: 'fighter', pred: 'sturdy', lineage: 'unmoving', name: 'レオン' },
-    { race: 'vulpinian', main: 'duelist', sub: 'ninja', pred: 'chivalric', lineage: 'steel_oath', name: 'キツネ丸' },
-    { race: 'leporian', main: 'ranger', sub: 'rogue', pred: 'dexterous', lineage: 'far_sight', name: 'ミミ' },
-    { race: 'cervin', main: 'wizard', sub: 'sage', pred: 'brilliant', lineage: 'guiding_thought', name: 'セルヴァ' },
-    { race: 'felidian', main: 'sage', sub: 'wizard', pred: 'pursuing', lineage: 'hidden_principles', name: 'ニャンコ' },
-    { race: 'mustelid', main: 'pilgrim', sub: 'lord', pred: 'persistent', lineage: 'inherited_oaths', name: 'イタチ' },
+    { race: 'caninian', main: 'fighter', sub: 'lord', pred: 'sturdy', lineage: 'unmoving', name: 'ケモ' },
+    { race: 'vulpinian', main: 'duelist', sub: 'samurai', pred: 'chivalric', lineage: 'war_spirit', name: 'ゴン' },
+    { race: 'murid', main: 'ninja', sub: 'rogue', pred: 'persistent', lineage: 'breaking_hand', name: 'イタチ' },
+    { race: 'leporian', main: 'ranger', sub: 'sage', pred: 'dexterous', lineage: 'far_sight', name: 'ロップ' },
+    { race: 'felidian', main: 'sage', sub: 'pilgrim', pred: 'pursuing', lineage: 'hidden_principles', name: 'ラス' },
+    { race: 'cervin', main: 'wizard', sub: 'wizard', pred: 'canny', lineage: 'guiding_thought', name: 'セルヴァ' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
@@ -172,20 +172,24 @@ function createInitialParty() {
   }));
 
   // Create starter items as inventory record
-  // Tier 1 Common items - balanced for stage 1
-  // New ID format: 1101=armor, 1102=robe, 1103=shield, 1104=sword, 1105=katana,
-  // 1106=gauntlet, 1107=arrow, 1108=bolt, 1109=archery, 1110=wand, 1111=grimoire, 1112=catalyst
-  const starterItems: Item[] = [
-    { ...getItemById(1104)!, enhancement: 0, superRare: 0 },  // 剣 (sword - melee attack)
-    { ...getItemById(1104)!, enhancement: 0, superRare: 0 },  // 剣 x2
-    { ...getItemById(1109)!, enhancement: 0, superRare: 0 },  // 弓 (archery - ranged NoA)
-    { ...getItemById(1107)!, enhancement: 0, superRare: 0 },  // 矢 (arrow - ranged attack)
-    { ...getItemById(1110)!, enhancement: 0, superRare: 0 },  // ワンド (wand - magical attack)
-    { ...getItemById(1101)!, enhancement: 0, superRare: 0 },  // 鎧 (armor - physical defense)
-    { ...getItemById(1101)!, enhancement: 0, superRare: 0 },  // 鎧 x2
-    { ...getItemById(1102)!, enhancement: 0, superRare: 0 },  // ローブ (robe - magical defense)
-    { ...getItemById(1106)!, enhancement: 0, superRare: 0 },  // 籠手 (gauntlet - melee NoA)
+  // 3 Tier-1 common items of each item type (IDs 1101-1112)
+  const starterItemIds = [
+    1101, // 鎧 (armor)
+    1102, // ローブ (robe)
+    1103, // 盾 (shield)
+    1104, // 剣 (sword)
+    1105, // 刀 (katana)
+    1106, // 籠手 (gauntlet)
+    1107, // 矢 (arrow)
+    1108, // ボルト (bolt)
+    1109, // 弓 (archery)
+    1110, // ワンド (wand)
+    1111, // 魔導書 (grimoire)
+    1112, // 触媒 (catalyst)
   ];
+  const starterItems: Item[] = starterItemIds.flatMap(id =>
+    Array.from({ length: 3 }, () => ({ ...getItemById(id)!, enhancement: 0, superRare: 0 }))
+  );
 
   const inventory: InventoryRecord = {};
   for (const item of starterItems) {
@@ -207,7 +211,7 @@ function createInitialParty() {
     experience: 0,
     characters,
     inventory,
-    gold: 100,
+    gold: 200,
   };
 }
 
