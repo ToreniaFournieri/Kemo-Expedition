@@ -993,9 +993,9 @@ Name      [編集]
 🐶 race / main class(sub class) / predisposition / lineage 
 [体力:`b.vitality`] [力:`b.strength`] [知性:`b.intelligence`] [精神:`b.mind`]
 `f.display_ranged_offense`    属性攻撃:`f.elemental_offense_attribute`.name (x `f.elemental_offense_attribute`.value )
-`f.display_magical_offense`      魔法防御:`d.magical_defense` (x )
-`f.display_melee_offense`     物理防御:`d.physical_defense`
-`f.display_accuracy` 
+`f.display_magical_offense`      魔法防御:`d.magical_defense` (x `f.defense_amplifier`(phase: MID) )
+`f.display_melee_offense`     物理防御:`d.physical_defense`(x `f.defense_amplifier`(phase: CLOSE) )
+`f.display_accuracy`           回避: sum of ``c.evasion+v``
 ボーナス: `c.` (ex. 護符x1.3, 弓x1.1 鎧x2.4, 剣x1.4, 根性+1, 装備+1, 体+3)
 特殊能力:
 `a.` (ex. 守護者: パーティへの物理ダメージ × 3/5 )
