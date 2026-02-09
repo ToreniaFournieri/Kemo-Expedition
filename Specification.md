@@ -1196,12 +1196,12 @@ Left-aligned            Right-aligned
     - 当たり残り counts
   -	common_enhancement_bag (称号付与 抽選確率): 
     - 通常称号抽選: remaining / total counts
-    - 名工の残り counts
-    - 魔性の残り counts
-   	- 宿った残り counts
-    - 伝説の残り counts
-    - 恐ろしい残り counts
-    - 究極の残り counts
+    - 名工の残り counts / total counts
+    - 魔性の残り counts / total counts
+   	- 宿った残り counts / total counts
+    - 伝説の残り counts / total counts
+    - 恐ろしい残り counts / total counts
+    - 究極の残り counts / total counts
 - Button (通常報酬初期化): Initialize `g.common_reward_bag` and `g.common_enhancement_bag` 
 
 **Unieque reward (固有報酬)**
