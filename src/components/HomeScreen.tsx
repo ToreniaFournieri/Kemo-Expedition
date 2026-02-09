@@ -38,10 +38,21 @@ function getItemStats(item: Item): string {
 
   const stats: string[] = [];
   if (item.meleeAttack) stats.push(`近攻+${Math.floor(item.meleeAttack * multiplier)}`);
-  if (item.meleeNoA) stats.push(`近回数${item.meleeNoA > 0 ? '+' : ''}${item.meleeNoA}`);
+  if (item.meleeNoA) {
+    // Positive NoA scales with enhancement; negative (katana penalty) stays fixed
+    const noaVal = item.meleeNoA > 0 ? Math.ceil(item.meleeNoA * multiplier) : item.meleeNoA;
+    stats.push(`近回数${noaVal > 0 ? '+' : ''}${noaVal}`);
+  }
   if (item.rangedAttack) stats.push(`遠攻+${Math.floor(item.rangedAttack * multiplier)}`);
-  if (item.rangedNoA) stats.push(`遠回数+${item.rangedNoA}`);
+  if (item.rangedNoA) {
+    const noaVal = item.rangedNoA > 0 ? Math.ceil(item.rangedNoA * multiplier) : item.rangedNoA;
+    stats.push(`遠回数+${noaVal}`);
+  }
   if (item.magicalAttack) stats.push(`魔攻+${Math.floor(item.magicalAttack * multiplier)}`);
+  if (item.magicalNoA) {
+    const noaVal = item.magicalNoA > 0 ? Math.ceil(item.magicalNoA * multiplier) : item.magicalNoA;
+    stats.push(`魔回数+${noaVal}`);
+  }
   if (item.physicalDefense) stats.push(`物防+${Math.floor(item.physicalDefense * multiplier)}`);
   if (item.magicalDefense) stats.push(`魔防+${Math.floor(item.magicalDefense * multiplier)}`);
   if (item.partyHP) stats.push(`HP+${Math.floor(item.partyHP * multiplier)}`);
@@ -229,7 +240,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     { id: 'expedition', label: '探検' },
     { id: 'inventory', label: '所持品' },
     { id: 'shop', label: '店' },
-    { id: 'setting', label: '執務室' },
+    { id: 'setting', label: '神の執務室' },
   ];
 
   // Check for new items
@@ -361,17 +372,17 @@ function PartyTab({
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
   const [equipCategory, setEquipCategory] = useState('armor');
 
-  // Calculate current attack/NoA totals (rounded)
+  // Calculate current attack/NoA totals (floor to match character display)
   const combatTotals = {
-    meleeAtk: Math.round(characterStats.reduce((sum, c) => sum + c.meleeAttack, 0)),
-    rangedAtk: Math.round(characterStats.reduce((sum, c) => sum + c.rangedAttack, 0)),
-    magicalAtk: Math.round(characterStats.reduce((sum, c) => sum + c.magicalAttack, 0)),
+    meleeAtk: characterStats.reduce((sum, c) => sum + Math.floor(c.meleeAttack), 0),
+    rangedAtk: characterStats.reduce((sum, c) => sum + Math.floor(c.rangedAttack), 0),
+    magicalAtk: characterStats.reduce((sum, c) => sum + Math.floor(c.magicalAttack), 0),
     meleeNoA: characterStats.reduce((sum, c) => sum + c.meleeNoA, 0),
     rangedNoA: characterStats.reduce((sum, c) => sum + c.rangedNoA, 0),
     magicalNoA: characterStats.reduce((sum, c) => sum + c.magicalNoA, 0),
-    physDef: Math.round(partyStats.physicalDefense),
-    magDef: Math.round(partyStats.magicalDefense),
-    hp: Math.round(partyStats.hp),
+    physDef: Math.floor(partyStats.physicalDefense),
+    magDef: Math.floor(partyStats.magicalDefense),
+    hp: Math.floor(partyStats.hp),
   };
 
   const prevStatsRef = useRef<typeof combatTotals | null>(null);
@@ -1156,6 +1167,8 @@ function ExpeditionTab({
                         </div>
                         <div className="text-gray-500 mt-1">
                           敵攻撃:{entry.enemyAttackValues} | 与ダメ:{entry.damageDealt} | 被ダメ:{entry.damageTaken}
+                          {entry.healAmount && entry.healAmount > 0 && <span className="text-green-600"> | 回復:+{entry.healAmount}HP</span>}
+                          {entry.gateInfo && <span className="text-red-600"> | Gate: {entry.gateInfo}</span>}
                           {entry.reward && <span className="text-accent"> | 獲得:{entry.reward}</span>}
                         </div>
                       </button>
@@ -1497,27 +1510,27 @@ function SettingTab({
                 <span>通常称号抽選</span>
                 <span>{commonEnhancementRemaining} / {commonEnhancementTotal}</span>
               </div>
-              <div className="flex justify-between text-gray-600">
+              <div className="flex justify-between text-green-600">
                 <span>名工の残り</span>
                 <span>{commonCraftsmanRemaining}</span>
               </div>
-              <div className="flex justify-between text-gray-600">
+              <div className="flex justify-between text-green-600">
                 <span>魔性の残り</span>
                 <span>{commonDemonicRemaining}</span>
               </div>
-              <div className="flex justify-between text-sub">
+              <div className="flex justify-between text-green-600">
                 <span>宿った残り</span>
                 <span>{commonDwellingRemaining}</span>
               </div>
-              <div className="flex justify-between text-sub">
+              <div className="flex justify-between text-green-600">
                 <span>伝説の残り</span>
                 <span>{commonLegendaryRemaining}</span>
               </div>
-              <div className="flex justify-between text-sub">
+              <div className="flex justify-between text-green-600">
                 <span>恐ろしい残り</span>
                 <span>{commonTerribleRemaining}</span>
               </div>
-              <div className="flex justify-between text-sub">
+              <div className="flex justify-between text-green-600">
                 <span>究極の残り</span>
                 <span>{commonUltimateRemaining}</span>
               </div>
@@ -1559,11 +1572,11 @@ function SettingTab({
                 <span>レア称号抽選</span>
                 <span>{enhancementRemaining} / {enhancementTotal}</span>
               </div>
-              <div className="flex justify-between text-gray-600">
+              <div className="flex justify-between text-sub">
                 <span>名工の残り</span>
                 <span>{craftsmanRemaining} / {craftsmanInitial}</span>
               </div>
-              <div className="flex justify-between text-gray-600">
+              <div className="flex justify-between text-sub">
                 <span>魔性の残り</span>
                 <span>{demonicRemaining} / {demonicInitial}</span>
               </div>

@@ -577,9 +577,19 @@ function createEnemyFromTemplate(
 
   const attackStats = createAttackStats(template.attackType, attack, tier);
 
-  // Calculate drop item ID (tier-based common items)
-  // Drop items from this tier's common pool
-  const dropItemId = tier * 1000 + 100 + (id % 12) + 1;
+  // Calculate drop item ID based on enemy type
+  // Normal enemies drop uncommon items, elite drop rare, boss drop rare
+  let dropItemId: number;
+  if (type === 'normal') {
+    // Uncommon items: tier*1000 + 200 + (1..24), 24 per tier
+    dropItemId = tier * 1000 + 200 + (id % 24) + 1;
+  } else if (type === 'elite') {
+    // Rare items: tier*1000 + 300 + (1..12), 12 per tier
+    dropItemId = tier * 1000 + 300 + (id % 12) + 1;
+  } else {
+    // Boss: rare items
+    dropItemId = tier * 1000 + 300 + (id % 12) + 1;
+  }
 
   return {
     id,
