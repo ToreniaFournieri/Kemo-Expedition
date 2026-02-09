@@ -605,9 +605,9 @@ inventory = {
   - `d.magical_attack`= Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier x `b.intelligence` / 10
 
 - character.`f.NoA`: // NoA 0 = No Action.
-  - `d.ranged_NoA` = 0 + `c.pursuit+v` bonuses + Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier (round up) 
-  - `d.magical_NoA`= 0 + `c.caster+v` bonuses + Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier (round up) 
-  - `d.melee_NoA`= 0 + `c.grit+v` bonuses + Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier (round up) 
+  - `d.ranged_NoA` = 0 + `c.pursuit+v` bonuses + Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier + `c.ranged_NoA+v` (round up) 
+  - `d.magical_NoA`= 0 + `c.caster+v` bonuses + Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier + `c.magical_NoA+v` (round up) 
+  - `d.melee_NoA`= 0 + `c.grit+v` bonuses + Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier + `c.melee_NoA+v` (round up) 
     - IF the character has `a.iaigiri`, halve these number of attacks, round up. 
 
 - character.`f.offense_amplifier` (phase: )
