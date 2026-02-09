@@ -97,7 +97,7 @@ function getDefenseMultiplierSum(items: Item[], kind: 'physical' | 'magical'): n
     return item.magicalDefense;
   });
   const bonusSum = relevant.reduce((sum, item) => sum + ((item.baseMultiplier ?? 1) - 1), 0);
-  return 1 + bonusSum;
+  return Math.max(0.01, 1 - bonusSum);
 }
 
 // Helper to format bonus descriptions

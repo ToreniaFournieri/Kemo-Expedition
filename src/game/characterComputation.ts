@@ -289,6 +289,10 @@ export function computeCharacterStats(
   // d.magical_defense = Item Bonuses of Magical defense x its c.multiplier x enhancement x b.mind / 10
   let physicalDefense = 0;
   let magicalDefense = 0;
+  let physicalDefenseAmplifier = 1.0;
+  let magicalDefenseAmplifier = 1.0;
+  let physicalDefenseBonus = 0;
+  let magicalDefenseBonus = 0;
 
   for (const item of equippedItems) {
     const categoryMult = getMultiplier(item.category);
@@ -297,14 +301,18 @@ export function computeCharacterStats(
     const multiplier = categoryMult * enhanceMult * baseMult;
     if (item.physicalDefense) {
       physicalDefense += item.physicalDefense * multiplier;
+      if (item.baseMultiplier) physicalDefenseBonus += item.baseMultiplier - 1;
     }
     if (item.magicalDefense) {
       magicalDefense += item.magicalDefense * multiplier;
+      if (item.baseMultiplier) magicalDefenseBonus += item.baseMultiplier - 1;
     }
   }
 
   physicalDefense = physicalDefense * (baseStats.vitality / 10);
   magicalDefense = magicalDefense * (baseStats.mind / 10);
+  physicalDefenseAmplifier = Math.max(0.01, 1 - physicalDefenseBonus);
+  magicalDefenseAmplifier = Math.max(0.01, 1 - magicalDefenseBonus);
 
   // Build abilities list
   const abilities: Ability[] = [];
@@ -342,6 +350,8 @@ export function computeCharacterStats(
     meleeNoA,
     physicalDefense: Math.floor(physicalDefense),
     magicalDefense: Math.floor(magicalDefense),
+    physicalDefenseAmplifier,
+    magicalDefenseAmplifier,
     maxEquipSlots,
     abilities,
     penetMultiplier: collection.penet,

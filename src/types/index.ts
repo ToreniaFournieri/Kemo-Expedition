@@ -173,6 +173,8 @@ export interface ComputedCharacterStats {
   meleeNoA: number;
   physicalDefense: number; // Individual defense for targeting
   magicalDefense: number; // Individual defense for targeting
+  physicalDefenseAmplifier: number;
+  magicalDefenseAmplifier: number;
   maxEquipSlots: number;
   abilities: Ability[];
   penetMultiplier: number;
