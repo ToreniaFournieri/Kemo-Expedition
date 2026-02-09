@@ -242,7 +242,6 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | Elite | 5 | 1 per Floor ( `x.floor` 1–5, `x.room` 4) | 2 Rare, 1 Uncommon, 2 Common | Floor-end guardians serving as "Mechanical Gates." They drop Rare items and test specific build capabilities. |
 | Boss | 1 | `x.floor` 6, `x.room` 4 (Final) | 2 ~ 3 Mythic , 1 ~ 2 Rare, 1 Common (5 in total) | A "Total Power" check and the exclusive source of Mythic rewards. |
 
-
 - `x.expedition` layout overview:
 
 | `x.floor` | `x.room` | `x.room_type` | `x.floor_multiplier` | `x.Spawn_pool`, drops | `x.key_concept` |
@@ -259,7 +258,6 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | 5 | 4 | `x.battle_Elite` | x2.69 | fixed Elite. rare  `i.wand`, `i.grimoire`, `i.catalyst` | Class:Mage. Checks if you have equipped enough magical defensive items.  |
 | 6 | 1-3 | `x.battle_Normal` | x2.49 | pool_6 | |
 | 6 | 4 | `x.battle_Boss` | x5.00 | fixed Boss. mythic (see bellows) | Checks if you have enough tital power. |
-
 
 - each pool has enemies with unique item drops. (*note:* common items are not specifically mentioned but are dropped.)
   
@@ -658,7 +656,19 @@ inventory = {
 ## 5. EXPEDITION 
 - Persistence through an expedition:`d.HP`.
 
-### 5.1 Logs
+### 5.1 "Loot-Gate" progression system
+
+| title | Gate `x.floor`,`x.room` | uncommon items from `x.room` | conditions | 
+|----|----|----|----|
+| 1st Elite gate | 1,4 | correct 10 uncommon items from `x.floor` = 1, `x.room`= 1-3 |
+| 2nd Elite gate | 2,4 | correct 10 uncommon items from `x.floor` = 2, `x.room`= 1-3  |
+| 3rd Elite gate | 3,4 | correct 10 uncommon items from `x.floor` = 3, `x.room`= 1-3 |
+| 4th Elite gate | 4,4 | correct 10 uncommon items from `x.floor` = 4, `x.room`= 1-3  |
+| 5th Elite gate | 5,4 | correct 10 uncommon items from `x.floor` = 5, `x.room`= 1-3  |
+| Boss gate | 6,4 | correct 10 rare items from `x.floor` = 1, `x.room`= 1-3  |
+
+
+### 5.2 Logs
 - `f.quick_summary`:
   - `p.outcome_of_expedition`: 勝利/敗北/引分
   - `p.remaining_HP`: remaining party HP/ max party HP : `340/ 1000`
