@@ -1,432 +1,355 @@
-import { EnemyDef } from '../types';
+import { EnemyDef, EnemyType, ElementalOffense, ElementalResistance } from '../types';
 
-// Enemy balance design:
-// - 2x tier-N armor/robe = full protection from stage N enemies
-// - Boss defense requires same-tier weapons to deal significant damage
-// - Stage 1 is easier for farming starter items
+// ============================================================
+// EnemyTemplate type - compact format for defining enemies
+// ============================================================
+type EnemyTemplate = {
+  name: string;
+  hpMod: number;
+  attackType: 'melee' | 'ranged' | 'magical' | 'mixed';
+  attackMod: number;
+  defenseMod: number;
+  element?: ElementalOffense;
+  resistances?: Partial<Record<ElementalResistance, number>>;
+};
 
-// Tier defense targets (2x armor):
-// Tier 1: 16, Tier 2: 32, Tier 3: 52, Tier 4: 76, Tier 5: 104
+// ============================================================
+// Tier scaling constants
+// ============================================================
 
-// Weapon attack values:
-// Sword: 8/15/22/30/40, Wand: 8/15/24/35/50
+// Stat multiplier per tier (applied to base stats)
+const TIER_STAT_MULTIPLIERS = [1.0, 2.0, 3.0, 4.5, 6.5, 9.0, 12.0, 16.0];
 
-export const ENEMIES: EnemyDef[] = [
-  // ==========================================
-  // Dungeon 1 - 草原の遺跡 (Grassland Ruins) - Pool 1
-  // Easy stage for farming tier 1 items
-  // Enemy attack ~10-14 (beatable with 1-2 tier 1 armor)
-  // ==========================================
-  {
-    id: 1, type: 'normal', poolId: 1,
-    name: 'ゴブリン',
-    hp: 60,
-    rangedAttack: 0, rangedNoA: 0,
-    magicalAttack: 0, magicalNoA: 0,
-    meleeAttack: 10, meleeNoA: 1,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0,
-    physicalDefense: 2, magicalDefense: 1,
-    elementalOffense: 'none',
-    elementalResistance: { fire: 1.0, thunder: 1.0, ice: 1.0 },
-    experience: 10, dropItemId: 1,  // ショートソード
-  },
-  {
-    id: 2, type: 'normal', poolId: 1,
-    name: 'スライム',
-    hp: 40,
-    rangedAttack: 0, rangedNoA: 0,
-    magicalAttack: 8, magicalNoA: 1,
-    meleeAttack: 6, meleeNoA: 1,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0,
-    physicalDefense: 3, magicalDefense: 0,
-    elementalOffense: 'none',
-    elementalResistance: { fire: 1.5, thunder: 1.0, ice: 0.5 },
-    experience: 8, dropItemId: 60,  // 見習いのローブ
-  },
-  {
-    id: 3, type: 'normal', poolId: 1,
-    name: '野犬',
-    hp: 50,
-    rangedAttack: 0, rangedNoA: 0,
-    magicalAttack: 0, magicalNoA: 0,
-    meleeAttack: 12, meleeNoA: 2,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0,
-    physicalDefense: 1, magicalDefense: 1,
-    elementalOffense: 'none',
-    elementalResistance: { fire: 1.0, thunder: 1.0, ice: 1.0 },
-    experience: 12, dropItemId: 40,  // 革の籠手
-  },
-  {
-    id: 4, type: 'normal', poolId: 1,
-    name: '大蛇',
-    hp: 55,
-    rangedAttack: 8, rangedNoA: 1,
-    magicalAttack: 0, magicalNoA: 0,
-    meleeAttack: 10, meleeNoA: 1,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0,
-    physicalDefense: 2, magicalDefense: 2,
-    elementalOffense: 'none',
-    elementalResistance: { fire: 1.0, thunder: 1.0, ice: 1.5 },
-    experience: 14, dropItemId: 80,  // 木盾
-  },
-  {
-    id: 5, type: 'normal', poolId: 1,
-    name: 'コボルト',
-    hp: 70,
-    rangedAttack: 6, rangedNoA: 1,
-    magicalAttack: 0, magicalNoA: 0,
-    meleeAttack: 14, meleeNoA: 1,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0,
-    physicalDefense: 3, magicalDefense: 2,
-    elementalOffense: 'none',
-    elementalResistance: { fire: 1.0, thunder: 1.0, ice: 1.0 },
-    experience: 16, dropItemId: 30,  // レザーアーマー
-  },
-  {
-    id: 6, type: 'boss', poolId: 0,
-    name: 'ゴブリンキング',
-    hp: 200,
-    rangedAttack: 12, rangedNoA: 2,
-    magicalAttack: 0, magicalNoA: 0,
-    meleeAttack: 18, meleeNoA: 2,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.2,
-    physicalDefense: 7, magicalDefense: 7,  // Tier 1 weapons needed (sword 8, wand 8)
-    elementalOffense: 'none',
-    elementalResistance: { fire: 1.0, thunder: 1.0, ice: 1.0 },
-    experience: 50, dropItemId: 2,  // ロングソード
-  },
+// Base stats before tier multiplier and template modifiers
+const TIER_BASE_STATS = {
+  normalHP: 60,
+  normalAttack: 12,
+  normalDefense: 4,
+  eliteHP: 120,
+  eliteAttack: 16,
+  eliteDefense: 6,
+  bossHP: 200,
+  bossAttack: 20,
+  bossDefense: 7,
+};
 
-  // ==========================================
-  // Dungeon 2 - 古代の洞窟 (Ancient Cave) - Pool 2
-  // Enemy attack ~28-32 (need 2x tier 2 armor = 32 defense)
-  // ==========================================
-  {
-    id: 10, type: 'normal', poolId: 2,
-    name: 'オーク',
-    hp: 120,
-    rangedAttack: 0, rangedNoA: 0,
-    magicalAttack: 0, magicalNoA: 0,
-    meleeAttack: 28, meleeNoA: 1,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0,
-    physicalDefense: 10, magicalDefense: 4,
-    elementalOffense: 'none',
-    elementalResistance: { fire: 1.0, thunder: 1.0, ice: 1.0 },
-    experience: 25, dropItemId: 31,  // チェインメイル
-  },
-  {
-    id: 11, type: 'normal', poolId: 2,
-    name: 'コウモリの群れ',
-    hp: 80,
-    rangedAttack: 15, rangedNoA: 2,
-    magicalAttack: 0, magicalNoA: 0,
-    meleeAttack: 10, meleeNoA: 3,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0,
-    physicalDefense: 5, magicalDefense: 6,
-    elementalOffense: 'none',
-    elementalResistance: { fire: 1.5, thunder: 1.0, ice: 1.0 },
-    experience: 22, dropItemId: 81,  // 鉄盾
-  },
-  {
-    id: 12, type: 'normal', poolId: 2,
-    name: '洞窟トロール',
-    hp: 150,
-    rangedAttack: 0, rangedNoA: 0,
-    magicalAttack: 0, magicalNoA: 0,
-    meleeAttack: 32, meleeNoA: 1,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0,
-    physicalDefense: 14, magicalDefense: 5,
-    elementalOffense: 'none',
-    elementalResistance: { fire: 1.5, thunder: 1.0, ice: 1.0 },
-    experience: 30, dropItemId: 41,  // 鋼の籠手
-  },
-  {
-    id: 13, type: 'normal', poolId: 2,
-    name: '岩石魔人',
-    hp: 180,
-    rangedAttack: 0, rangedNoA: 0,
-    magicalAttack: 25, magicalNoA: 1,
-    meleeAttack: 28, meleeNoA: 1,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0,
-    physicalDefense: 18, magicalDefense: 8,
-    elementalOffense: 'none',
-    elementalResistance: { fire: 0.5, thunder: 1.0, ice: 1.0 },
-    experience: 35, dropItemId: 61,  // 魔法使いのローブ
-  },
-  {
-    id: 14, type: 'normal', poolId: 2,
-    name: 'ダークエルフ',
-    hp: 100,
-    rangedAttack: 20, rangedNoA: 2,
-    magicalAttack: 26, magicalNoA: 1,
-    meleeAttack: 15, meleeNoA: 1,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0,
-    physicalDefense: 8, magicalDefense: 12,
-    elementalOffense: 'none',
-    elementalResistance: { fire: 1.0, thunder: 1.0, ice: 0.7 },
-    experience: 32, dropItemId: 21,  // ロングボウ
-  },
-  {
-    id: 15, type: 'boss', poolId: 0,
-    name: '洞窟の主ドラゴン',
-    hp: 400,
-    rangedAttack: 0, rangedNoA: 0,
-    magicalAttack: 40, magicalNoA: 2,
-    meleeAttack: 45, meleeNoA: 2,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.0,
-    physicalDefense: 14, magicalDefense: 14,  // Tier 2 weapons needed (sword 15, wand 15)
-    elementalOffense: 'fire',
-    elementalResistance: { fire: 0.3, thunder: 1.0, ice: 1.5 },
-    experience: 120, dropItemId: 11,  // 太刀
-  },
+// Base experience per tier
+const TIER_EXP_BASE = [12, 28, 50, 80, 110, 150, 200, 280];
 
-  // ==========================================
-  // Dungeon 3 - 呪われた森 (Cursed Forest) - Pool 3
-  // Enemy attack ~48-52 (need 2x tier 3 armor = 52 defense)
-  // ==========================================
-  {
-    id: 20, type: 'normal', poolId: 3,
-    name: 'トレント',
-    hp: 200,
-    rangedAttack: 0, rangedNoA: 0,
-    magicalAttack: 0, magicalNoA: 0,
-    meleeAttack: 48, meleeNoA: 1,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0,
-    physicalDefense: 18, magicalDefense: 10,
-    elementalOffense: 'none',
-    elementalResistance: { fire: 2.0, thunder: 1.0, ice: 0.7 },
-    experience: 45, dropItemId: 32,  // スケイルメイル
-  },
-  {
-    id: 21, type: 'normal', poolId: 3,
-    name: '森の精霊',
-    hp: 120,
-    rangedAttack: 25, rangedNoA: 2,
-    magicalAttack: 45, magicalNoA: 2,
-    meleeAttack: 0, meleeNoA: 0,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0,
-    physicalDefense: 8, magicalDefense: 22,
-    elementalOffense: 'none',
-    elementalResistance: { fire: 1.5, thunder: 1.0, ice: 0.5 },
-    experience: 50, dropItemId: 51,  // 魔法のワンド
-  },
-  {
-    id: 22, type: 'normal', poolId: 3,
-    name: 'ワーウルフ',
-    hp: 160,
-    rangedAttack: 0, rangedNoA: 0,
-    magicalAttack: 0, magicalNoA: 0,
-    meleeAttack: 35, meleeNoA: 3,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0,
-    physicalDefense: 15, magicalDefense: 12,
-    elementalOffense: 'none',
-    elementalResistance: { fire: 1.2, thunder: 1.0, ice: 1.0 },
-    experience: 55, dropItemId: 42,  // 戦士の籠手
-  },
-  {
-    id: 23, type: 'normal', poolId: 3,
-    name: '毒蜘蛛',
-    hp: 100,
-    rangedAttack: 30, rangedNoA: 3,
-    magicalAttack: 0, magicalNoA: 0,
-    meleeAttack: 25, meleeNoA: 2,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0,
-    physicalDefense: 10, magicalDefense: 8,
-    elementalOffense: 'none',
-    elementalResistance: { fire: 1.5, thunder: 1.0, ice: 1.0 },
-    experience: 52, dropItemId: 82,  // 騎士盾
-  },
-  {
-    id: 24, type: 'normal', poolId: 3,
-    name: '呪われた騎士',
-    hp: 180,
-    rangedAttack: 0, rangedNoA: 0,
-    magicalAttack: 30, magicalNoA: 1,
-    meleeAttack: 50, meleeNoA: 2,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0,
-    physicalDefense: 22, magicalDefense: 18,
-    elementalOffense: 'none',
-    elementalResistance: { fire: 1.0, thunder: 1.0, ice: 1.0 },
-    experience: 58, dropItemId: 3,  // ブロードソード
-  },
-  {
-    id: 25, type: 'boss', poolId: 0,
-    name: '森の女王',
-    hp: 600,
-    rangedAttack: 35, rangedNoA: 3,
-    magicalAttack: 60, magicalNoA: 3,
-    meleeAttack: 50, meleeNoA: 2,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.3, meleeAttackAmplifier: 1.0,
-    physicalDefense: 21, magicalDefense: 23,  // Tier 3 weapons needed (sword 22, wand 24)
-    elementalOffense: 'ice',
-    elementalResistance: { fire: 1.5, thunder: 1.0, ice: 0.3 },
-    experience: 200, dropItemId: 52,  // ルーンワンド
-  },
+// Experience multipliers for elite/boss
+const ELITE_EXP_MULTIPLIER = 2.5;
+const BOSS_EXP_MULTIPLIER = 5.0;
 
-  // ==========================================
-  // Dungeon 4 - 炎の火山 (Volcano of Fire) - Pool 4
-  // Enemy attack ~70-76 (need 2x tier 4 armor = 76 defense)
-  // ==========================================
-  {
-    id: 30, type: 'normal', poolId: 4,
-    name: 'ファイアサラマンダー',
-    hp: 200,
-    rangedAttack: 35, rangedNoA: 2,
-    magicalAttack: 0, magicalNoA: 0,
-    meleeAttack: 40, meleeNoA: 2,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0,
-    physicalDefense: 20, magicalDefense: 22,
-    elementalOffense: 'fire',
-    elementalResistance: { fire: 0.2, thunder: 1.0, ice: 2.0 },
-    experience: 70, dropItemId: 122,  // 炎の矢
-  },
-  {
-    id: 31, type: 'normal', poolId: 4,
-    name: '溶岩ゴーレム',
-    hp: 300,
-    rangedAttack: 0, rangedNoA: 0,
-    magicalAttack: 50, magicalNoA: 1,
-    meleeAttack: 70, meleeNoA: 1,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0,
-    physicalDefense: 28, magicalDefense: 18,
-    elementalOffense: 'fire',
-    elementalResistance: { fire: 0.1, thunder: 1.0, ice: 2.0 },
-    experience: 80, dropItemId: 33,  // プレートメイル
-  },
-  {
-    id: 32, type: 'normal', poolId: 4,
-    name: '炎の精霊',
-    hp: 150,
-    rangedAttack: 0, rangedNoA: 0,
-    magicalAttack: 65, magicalNoA: 3,
-    meleeAttack: 0, meleeNoA: 0,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.0,
-    physicalDefense: 10, magicalDefense: 30,
-    elementalOffense: 'fire',
-    elementalResistance: { fire: 0.0, thunder: 1.0, ice: 2.0 },
-    experience: 85, dropItemId: 53,  // 賢者の杖
-  },
-  {
-    id: 33, type: 'normal', poolId: 4,
-    name: '火山蟻',
-    hp: 140,
-    rangedAttack: 30, rangedNoA: 4,
-    magicalAttack: 0, magicalNoA: 0,
-    meleeAttack: 35, meleeNoA: 4,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0,
-    physicalDefense: 16, magicalDefense: 12,
-    elementalOffense: 'fire',
-    elementalResistance: { fire: 0.3, thunder: 1.0, ice: 1.5 },
-    experience: 75, dropItemId: 43,  // 英雄の籠手
-  },
-  {
-    id: 34, type: 'normal', poolId: 4,
-    name: '炎の騎士',
-    hp: 250,
-    rangedAttack: 0, rangedNoA: 0,
-    magicalAttack: 45, magicalNoA: 2,
-    meleeAttack: 75, meleeNoA: 2,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0,
-    physicalDefense: 25, magicalDefense: 22,
-    elementalOffense: 'fire',
-    elementalResistance: { fire: 0.2, thunder: 1.0, ice: 1.8 },
-    experience: 90, dropItemId: 4,  // バスタードソード
-  },
-  {
-    id: 35, type: 'boss', poolId: 0,
-    name: '炎帝イフリート',
-    hp: 800,
-    rangedAttack: 50, rangedNoA: 3,
-    magicalAttack: 85, magicalNoA: 4,
-    meleeAttack: 80, meleeNoA: 3,
-    rangedAttackAmplifier: 1.2, magicalAttackAmplifier: 1.4, meleeAttackAmplifier: 1.2,
-    physicalDefense: 29, magicalDefense: 34,  // Tier 4 weapons needed (sword 30, wand 35)
-    elementalOffense: 'fire',
-    elementalResistance: { fire: 0.0, thunder: 1.0, ice: 2.0 },
-    experience: 350, dropItemId: 13,  // 大太刀
-  },
+// ============================================================
+// Expedition 1: 草原の遺跡 (Grassland Ruins) - Beasts/Goblins
+// ============================================================
+const EXPEDITION_1_NORMALS: EnemyTemplate[] = [
+  { name: 'ゴブリン', hpMod: 1.0, attackType: 'melee', attackMod: 0.8, defenseMod: 0.5 },
+  { name: 'スライム', hpMod: 0.7, attackType: 'magical', attackMod: 0.7, defenseMod: 0.8 },
+  { name: '野犬', hpMod: 0.8, attackType: 'melee', attackMod: 1.0, defenseMod: 0.3 },
+  { name: '大蛇', hpMod: 0.9, attackType: 'ranged', attackMod: 0.8, defenseMod: 0.5 },
+  { name: 'コボルト', hpMod: 1.2, attackType: 'melee', attackMod: 1.1, defenseMod: 0.7 },
+  { name: '草原ネズミ', hpMod: 0.6, attackType: 'melee', attackMod: 0.7, defenseMod: 0.3 },
+  { name: 'ゴブリン弓兵', hpMod: 0.8, attackType: 'ranged', attackMod: 0.9, defenseMod: 0.4 },
+  { name: '毒キノコ', hpMod: 0.5, attackType: 'magical', attackMod: 0.9, defenseMod: 0.6 },
+  { name: '草原の狼', hpMod: 0.9, attackType: 'melee', attackMod: 1.0, defenseMod: 0.4 },
+  { name: 'ゴブリン呪術師', hpMod: 0.7, attackType: 'magical', attackMod: 1.0, defenseMod: 0.3 },
+  { name: '野生イノシシ', hpMod: 1.3, attackType: 'melee', attackMod: 0.9, defenseMod: 0.6 },
+  { name: '遺跡コウモリ', hpMod: 0.5, attackType: 'ranged', attackMod: 0.8, defenseMod: 0.3 },
+  { name: 'ゴブリン戦士', hpMod: 1.1, attackType: 'melee', attackMod: 1.0, defenseMod: 0.6 },
+  { name: '草原スライム', hpMod: 0.6, attackType: 'magical', attackMod: 0.7, defenseMod: 0.7 },
+  { name: '野良犬の群れ', hpMod: 1.0, attackType: 'melee', attackMod: 0.9, defenseMod: 0.3 },
+  { name: '遺跡の蜥蜴', hpMod: 0.8, attackType: 'melee', attackMod: 0.8, defenseMod: 0.5 },
+  { name: 'ゴブリン盗賊', hpMod: 0.9, attackType: 'mixed', attackMod: 0.9, defenseMod: 0.4 },
+  { name: '草原の鷹', hpMod: 0.6, attackType: 'ranged', attackMod: 1.0, defenseMod: 0.3 },
+  { name: '遺跡の亡霊', hpMod: 0.7, attackType: 'magical', attackMod: 1.0, defenseMod: 0.4 },
+  { name: 'ゴブリン偵察兵', hpMod: 0.8, attackType: 'ranged', attackMod: 0.8, defenseMod: 0.4 },
+  { name: '草原のサソリ', hpMod: 0.7, attackType: 'melee', attackMod: 0.9, defenseMod: 0.6 },
+  { name: '遺跡の石像', hpMod: 1.4, attackType: 'melee', attackMod: 0.7, defenseMod: 1.0 },
+  { name: 'コボルト弓兵', hpMod: 0.9, attackType: 'ranged', attackMod: 0.9, defenseMod: 0.5 },
+  { name: '草原の蜂群', hpMod: 0.5, attackType: 'ranged', attackMod: 1.0, defenseMod: 0.2 },
+  { name: '泥スライム', hpMod: 0.8, attackType: 'magical', attackMod: 0.6, defenseMod: 0.9 },
+  { name: 'ゴブリン見張り', hpMod: 1.0, attackType: 'melee', attackMod: 0.8, defenseMod: 0.5 },
+  { name: '遺跡の蛇', hpMod: 0.7, attackType: 'melee', attackMod: 0.9, defenseMod: 0.3 },
+  { name: '草原ガエル', hpMod: 0.6, attackType: 'magical', attackMod: 0.7, defenseMod: 0.4 },
+  { name: 'コボルト戦士', hpMod: 1.1, attackType: 'melee', attackMod: 1.0, defenseMod: 0.6 },
+  { name: '遺跡のガーゴイル', hpMod: 1.3, attackType: 'mixed', attackMod: 0.9, defenseMod: 0.8 },
+];
 
-  // ==========================================
-  // Dungeon 5 - 雷鳴の塔 (Tower of Thunder) - Pool 5
-  // Enemy attack ~95-104 (need 2x tier 5 armor = 104 defense)
-  // ==========================================
-  {
-    id: 40, type: 'normal', poolId: 5,
-    name: 'サンダーバード',
-    hp: 220,
-    rangedAttack: 55, rangedNoA: 3,
-    magicalAttack: 60, magicalNoA: 2,
-    meleeAttack: 0, meleeNoA: 0,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0,
-    physicalDefense: 18, magicalDefense: 30,
-    elementalOffense: 'thunder',
-    elementalResistance: { fire: 1.0, thunder: 0.1, ice: 1.0 },
-    experience: 100, dropItemId: 84,  // 聖盾
-  },
-  {
-    id: 41, type: 'normal', poolId: 5,
-    name: '雷のゴーレム',
-    hp: 350,
-    rangedAttack: 0, rangedNoA: 0,
-    magicalAttack: 75, magicalNoA: 2,
-    meleeAttack: 95, meleeNoA: 1,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0,
-    physicalDefense: 35, magicalDefense: 28,
-    elementalOffense: 'thunder',
-    elementalResistance: { fire: 1.0, thunder: 0.0, ice: 1.0 },
-    experience: 110, dropItemId: 34,  // 騎士の鎧
-  },
-  {
-    id: 42, type: 'normal', poolId: 5,
-    name: '嵐の精霊',
-    hp: 180,
-    rangedAttack: 45, rangedNoA: 2,
-    magicalAttack: 90, magicalNoA: 3,
-    meleeAttack: 0, meleeNoA: 0,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.3, meleeAttackAmplifier: 1.0,
-    physicalDefense: 12, magicalDefense: 38,
-    elementalOffense: 'thunder',
-    elementalResistance: { fire: 1.0, thunder: 0.0, ice: 1.0 },
-    experience: 115, dropItemId: 63,  // 大魔導師のローブ
-  },
-  {
-    id: 43, type: 'normal', poolId: 5,
-    name: '電撃蛇',
-    hp: 180,
-    rangedAttack: 50, rangedNoA: 4,
-    magicalAttack: 0, magicalNoA: 0,
-    meleeAttack: 60, meleeNoA: 3,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0,
-    physicalDefense: 22, magicalDefense: 20,
-    elementalOffense: 'thunder',
-    elementalResistance: { fire: 1.0, thunder: 0.2, ice: 1.0 },
-    experience: 105, dropItemId: 44,  // 伝説の籠手
-  },
-  {
-    id: 44, type: 'normal', poolId: 5,
-    name: '雷鳴の騎士',
-    hp: 300,
-    rangedAttack: 40, rangedNoA: 2,
-    magicalAttack: 65, magicalNoA: 2,
-    meleeAttack: 100, meleeNoA: 2,
-    rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0,
-    physicalDefense: 32, magicalDefense: 28,
-    elementalOffense: 'thunder',
-    elementalResistance: { fire: 1.0, thunder: 0.3, ice: 1.0 },
-    experience: 120, dropItemId: 5,  // クレイモア
-  },
-  {
-    id: 45, type: 'boss', poolId: 0,
-    name: '雷神ラミエル',
-    hp: 1200,
-    rangedAttack: 120, rangedNoA: 10,
-    magicalAttack: 200, magicalNoA: 7,
-    meleeAttack: 280, meleeNoA: 16,
-    rangedAttackAmplifier: 1.3, magicalAttackAmplifier: 1.5, meleeAttackAmplifier: 1.2,
-    physicalDefense: 39, magicalDefense: 49,  // Tier 5 weapons needed (sword 40, wand 50)
-    elementalOffense: 'thunder',
-    elementalResistance: { fire: 1.0, thunder: 0.0, ice: 1.0 },
-    experience: 500, dropItemId: 14,  // 妖刀
-  },
+const EXPEDITION_1_ELITES: EnemyTemplate[] = [
+  { name: 'ゴブリンリーダー', hpMod: 1.4, attackType: 'melee', attackMod: 1.2, defenseMod: 0.9 },
+  { name: 'キングスライム', hpMod: 1.2, attackType: 'magical', attackMod: 1.1, defenseMod: 1.0 },
+  { name: 'オオカミのボス', hpMod: 1.3, attackType: 'melee', attackMod: 1.3, defenseMod: 0.7 },
+  { name: '遺跡の守護者', hpMod: 1.5, attackType: 'mixed', attackMod: 1.1, defenseMod: 1.1 },
+  { name: 'コボルトの長', hpMod: 1.4, attackType: 'melee', attackMod: 1.2, defenseMod: 0.8 },
+];
+
+const EXPEDITION_1_BOSS: EnemyTemplate = {
+  name: 'ゴブリンキング',
+  hpMod: 1.0,
+  attackType: 'melee',
+  attackMod: 1.0,
+  defenseMod: 1.0,
+};
+
+// ============================================================
+// Expedition 2: 古代の洞窟 (Ancient Cave) - Cave creatures
+// ============================================================
+const EXPEDITION_2_NORMALS: EnemyTemplate[] = [
+  { name: 'オーク', hpMod: 1.2, attackType: 'melee', attackMod: 1.2, defenseMod: 0.8 },
+  { name: 'コウモリの群れ', hpMod: 0.7, attackType: 'ranged', attackMod: 1.0, defenseMod: 0.5 },
+  { name: '洞窟トロール', hpMod: 1.5, attackType: 'melee', attackMod: 1.3, defenseMod: 1.0 },
+  { name: '岩石魔人', hpMod: 1.4, attackType: 'magical', attackMod: 1.1, defenseMod: 0.9 },
+  { name: 'ダークエルフ', hpMod: 0.8, attackType: 'mixed', attackMod: 1.2, defenseMod: 0.7 },
+  { name: '洞窟蜘蛛', hpMod: 0.9, attackType: 'ranged', attackMod: 1.0, defenseMod: 0.5 },
+  { name: 'オーク戦士', hpMod: 1.3, attackType: 'melee', attackMod: 1.2, defenseMod: 0.9 },
+  { name: '鍾乳石の精霊', hpMod: 0.8, attackType: 'magical', attackMod: 1.2, defenseMod: 0.6 },
+  { name: '洞窟ネズミ', hpMod: 0.6, attackType: 'melee', attackMod: 0.9, defenseMod: 0.3 },
+  { name: '地底ワーム', hpMod: 1.1, attackType: 'melee', attackMod: 1.1, defenseMod: 0.7 },
+  { name: 'ダークエルフ弓兵', hpMod: 0.8, attackType: 'ranged', attackMod: 1.2, defenseMod: 0.5 },
+  { name: '洞窟の亡者', hpMod: 0.9, attackType: 'magical', attackMod: 1.1, defenseMod: 0.6 },
+  { name: 'オーク呪術師', hpMod: 0.9, attackType: 'magical', attackMod: 1.3, defenseMod: 0.5 },
+  { name: '岩石蟹', hpMod: 1.3, attackType: 'melee', attackMod: 0.9, defenseMod: 1.2 },
+  { name: '洞窟の蝙蝠王', hpMod: 0.8, attackType: 'ranged', attackMod: 1.1, defenseMod: 0.4 },
+  { name: '地底のサソリ', hpMod: 1.0, attackType: 'melee', attackMod: 1.1, defenseMod: 0.6 },
+  { name: 'オーク狂戦士', hpMod: 1.2, attackType: 'melee', attackMod: 1.4, defenseMod: 0.5 },
+  { name: '洞窟の精霊', hpMod: 0.7, attackType: 'magical', attackMod: 1.2, defenseMod: 0.4 },
+  { name: '石のゴーレム', hpMod: 1.6, attackType: 'melee', attackMod: 1.0, defenseMod: 1.3 },
+  { name: 'ダークエルフ魔術師', hpMod: 0.7, attackType: 'magical', attackMod: 1.3, defenseMod: 0.4 },
+  { name: '地底蛇', hpMod: 0.9, attackType: 'melee', attackMod: 1.0, defenseMod: 0.5 },
+  { name: '洞窟のキノコ怪', hpMod: 0.8, attackType: 'magical', attackMod: 1.0, defenseMod: 0.7 },
+  { name: 'オーク弓兵', hpMod: 1.0, attackType: 'ranged', attackMod: 1.1, defenseMod: 0.6 },
+  { name: '暗闇の蜥蜴', hpMod: 0.9, attackType: 'melee', attackMod: 1.0, defenseMod: 0.6 },
+  { name: '洞窟の骸骨', hpMod: 0.8, attackType: 'melee', attackMod: 1.0, defenseMod: 0.7 },
+  { name: '地底ムカデ', hpMod: 1.1, attackType: 'melee', attackMod: 1.1, defenseMod: 0.6 },
+  { name: 'オーク番兵', hpMod: 1.2, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '暗闇のスライム', hpMod: 0.7, attackType: 'magical', attackMod: 0.9, defenseMod: 0.8 },
+  { name: '洞窟コウモリ大', hpMod: 0.9, attackType: 'ranged', attackMod: 1.1, defenseMod: 0.4 },
+  { name: '地底の石像', hpMod: 1.5, attackType: 'mixed', attackMod: 0.9, defenseMod: 1.1 },
+];
+
+const EXPEDITION_2_ELITES: EnemyTemplate[] = [
+  { name: 'オークの首領', hpMod: 1.5, attackType: 'melee', attackMod: 1.4, defenseMod: 1.0 },
+  { name: 'ダークエルフの長', hpMod: 1.2, attackType: 'mixed', attackMod: 1.5, defenseMod: 0.9 },
+  { name: '洞窟の大蜘蛛', hpMod: 1.4, attackType: 'ranged', attackMod: 1.3, defenseMod: 0.8 },
+  { name: '岩石の巨人', hpMod: 1.7, attackType: 'melee', attackMod: 1.2, defenseMod: 1.3 },
+  { name: '古代の番人', hpMod: 1.5, attackType: 'mixed', attackMod: 1.3, defenseMod: 1.1 },
+];
+
+const EXPEDITION_2_BOSS: EnemyTemplate = {
+  name: '洞窟の主ドラゴン',
+  hpMod: 1.2,
+  attackType: 'mixed',
+  attackMod: 1.3,
+  defenseMod: 1.0,
+  element: 'fire',
+  resistances: { fire: 0.3, ice: 1.5 },
+};
+
+// ============================================================
+// Expedition 3: 呪われた森 (Cursed Forest) - Forest creatures
+// ============================================================
+const EXPEDITION_3_NORMALS: EnemyTemplate[] = [
+  { name: 'トレント', hpMod: 1.4, attackType: 'melee', attackMod: 1.1, defenseMod: 1.0 },
+  { name: '森の精霊', hpMod: 0.7, attackType: 'magical', attackMod: 1.4, defenseMod: 0.5 },
+  { name: 'ワーウルフ', hpMod: 1.1, attackType: 'melee', attackMod: 1.3, defenseMod: 0.7 },
+  { name: '毒蜘蛛', hpMod: 0.8, attackType: 'ranged', attackMod: 1.2, defenseMod: 0.5 },
+  { name: '呪われた騎士', hpMod: 1.3, attackType: 'melee', attackMod: 1.3, defenseMod: 1.0 },
+  { name: '森のゴブリン', hpMod: 0.9, attackType: 'melee', attackMod: 1.0, defenseMod: 0.6 },
+  { name: '毒キノコの群れ', hpMod: 0.6, attackType: 'magical', attackMod: 1.2, defenseMod: 0.4 },
+  { name: '森の狼', hpMod: 1.0, attackType: 'melee', attackMod: 1.2, defenseMod: 0.5 },
+  { name: '呪われた木人', hpMod: 1.5, attackType: 'melee', attackMod: 0.9, defenseMod: 1.2 },
+  { name: '闇の射手', hpMod: 0.8, attackType: 'ranged', attackMod: 1.3, defenseMod: 0.4 },
+  { name: '森のオーガ', hpMod: 1.4, attackType: 'melee', attackMod: 1.2, defenseMod: 0.8 },
+  { name: '呪いの蛇', hpMod: 0.9, attackType: 'magical', attackMod: 1.1, defenseMod: 0.5 },
+  { name: 'ダークフェアリー', hpMod: 0.5, attackType: 'magical', attackMod: 1.4, defenseMod: 0.3 },
+  { name: '森のトロール', hpMod: 1.4, attackType: 'melee', attackMod: 1.1, defenseMod: 0.9 },
+  { name: '呪われた鹿', hpMod: 1.0, attackType: 'melee', attackMod: 1.1, defenseMod: 0.7 },
+  { name: '毒蔦の怪物', hpMod: 1.2, attackType: 'ranged', attackMod: 1.0, defenseMod: 0.8 },
+  { name: '森の亡霊', hpMod: 0.7, attackType: 'magical', attackMod: 1.3, defenseMod: 0.4 },
+  { name: 'ワーベア', hpMod: 1.5, attackType: 'melee', attackMod: 1.2, defenseMod: 0.9 },
+  { name: '呪われた蜘蛛', hpMod: 0.9, attackType: 'ranged', attackMod: 1.1, defenseMod: 0.6 },
+  { name: '森の魔術師', hpMod: 0.7, attackType: 'magical', attackMod: 1.4, defenseMod: 0.4 },
+  { name: '闇のワーム', hpMod: 1.1, attackType: 'melee', attackMod: 1.0, defenseMod: 0.7 },
+  { name: '呪われた猿', hpMod: 0.9, attackType: 'melee', attackMod: 1.2, defenseMod: 0.5 },
+  { name: '森の巨大蟻', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 0.8 },
+  { name: '闇の精霊', hpMod: 0.6, attackType: 'magical', attackMod: 1.5, defenseMod: 0.3 },
+  { name: '呪われた騎馬兵', hpMod: 1.3, attackType: 'mixed', attackMod: 1.2, defenseMod: 0.9 },
+  { name: '森の大蜘蛛', hpMod: 1.1, attackType: 'ranged', attackMod: 1.1, defenseMod: 0.7 },
+  { name: '毒沼の怪物', hpMod: 1.2, attackType: 'magical', attackMod: 1.1, defenseMod: 0.8 },
+  { name: '闇のケンタウロス', hpMod: 1.3, attackType: 'mixed', attackMod: 1.2, defenseMod: 0.8 },
+  { name: '呪われた兵士', hpMod: 1.1, attackType: 'melee', attackMod: 1.1, defenseMod: 0.8 },
+  { name: '森の番人', hpMod: 1.4, attackType: 'mixed', attackMod: 1.1, defenseMod: 1.0 },
+];
+
+const EXPEDITION_3_ELITES: EnemyTemplate[] = [
+  { name: 'エルダートレント', hpMod: 1.6, attackType: 'melee', attackMod: 1.3, defenseMod: 1.2 },
+  { name: '森の大精霊', hpMod: 1.1, attackType: 'magical', attackMod: 1.6, defenseMod: 0.8 },
+  { name: 'ワーウルフの長', hpMod: 1.4, attackType: 'melee', attackMod: 1.5, defenseMod: 0.9 },
+  { name: '呪われた将軍', hpMod: 1.5, attackType: 'mixed', attackMod: 1.4, defenseMod: 1.1 },
+  { name: '闇の大魔術師', hpMod: 1.1, attackType: 'magical', attackMod: 1.6, defenseMod: 0.7 },
+];
+
+const EXPEDITION_3_BOSS: EnemyTemplate = {
+  name: '森の女王',
+  hpMod: 1.3,
+  attackType: 'magical',
+  attackMod: 1.4,
+  defenseMod: 1.1,
+  element: 'ice',
+  resistances: { ice: 0.3, fire: 1.5 },
+};
+
+// ============================================================
+// Expedition 4: 炎の火山 (Flame Volcano) - Fire creatures
+// ============================================================
+const EXPEDITION_4_NORMALS: EnemyTemplate[] = [
+  { name: 'ファイアサラマンダー', hpMod: 1.0, attackType: 'mixed', attackMod: 1.2, defenseMod: 0.8, element: 'fire', resistances: { fire: 0.2, ice: 2.0 } },
+  { name: '溶岩ゴーレム', hpMod: 1.6, attackType: 'melee', attackMod: 1.3, defenseMod: 1.2, element: 'fire', resistances: { fire: 0.1, ice: 2.0 } },
+  { name: '炎の精霊', hpMod: 0.7, attackType: 'magical', attackMod: 1.5, defenseMod: 0.5, element: 'fire', resistances: { fire: 0.0, ice: 2.0 } },
+  { name: '火山蟻', hpMod: 0.9, attackType: 'melee', attackMod: 1.1, defenseMod: 0.6, element: 'fire', resistances: { fire: 0.3, ice: 1.5 } },
+  { name: '炎の騎士', hpMod: 1.3, attackType: 'melee', attackMod: 1.3, defenseMod: 1.0, element: 'fire', resistances: { fire: 0.2, ice: 1.8 } },
+  { name: '溶岩蛇', hpMod: 0.9, attackType: 'melee', attackMod: 1.2, defenseMod: 0.5, element: 'fire', resistances: { fire: 0.2, ice: 1.8 } },
+  { name: '火山コウモリ', hpMod: 0.6, attackType: 'ranged', attackMod: 1.1, defenseMod: 0.3, element: 'fire', resistances: { fire: 0.3 } },
+  { name: '炎の魔術師', hpMod: 0.8, attackType: 'magical', attackMod: 1.4, defenseMod: 0.4, element: 'fire', resistances: { fire: 0.1, ice: 1.8 } },
+  { name: '溶岩の巨人', hpMod: 1.7, attackType: 'melee', attackMod: 1.1, defenseMod: 1.3, element: 'fire', resistances: { fire: 0.0, ice: 2.0 } },
+  { name: '火山蜥蜴', hpMod: 0.8, attackType: 'melee', attackMod: 1.0, defenseMod: 0.6, element: 'fire', resistances: { fire: 0.3 } },
+  { name: '炎のオーガ', hpMod: 1.4, attackType: 'melee', attackMod: 1.2, defenseMod: 0.9, element: 'fire', resistances: { fire: 0.2 } },
+  { name: '火炎スライム', hpMod: 0.6, attackType: 'magical', attackMod: 1.1, defenseMod: 0.7, element: 'fire', resistances: { fire: 0.0, ice: 2.0 } },
+  { name: '溶岩の番人', hpMod: 1.4, attackType: 'mixed', attackMod: 1.1, defenseMod: 1.1, element: 'fire', resistances: { fire: 0.1 } },
+  { name: '火山の鬼', hpMod: 1.3, attackType: 'melee', attackMod: 1.3, defenseMod: 0.8, element: 'fire', resistances: { fire: 0.2 } },
+  { name: '炎の射手', hpMod: 0.8, attackType: 'ranged', attackMod: 1.3, defenseMod: 0.4, element: 'fire', resistances: { fire: 0.2 } },
+  { name: '溶岩ワーム', hpMod: 1.2, attackType: 'melee', attackMod: 1.1, defenseMod: 0.8, element: 'fire', resistances: { fire: 0.1, ice: 1.8 } },
+  { name: '火の鳥', hpMod: 0.7, attackType: 'ranged', attackMod: 1.3, defenseMod: 0.3, element: 'fire', resistances: { fire: 0.0 } },
+  { name: '炎の狼', hpMod: 1.0, attackType: 'melee', attackMod: 1.3, defenseMod: 0.5, element: 'fire', resistances: { fire: 0.2 } },
+  { name: '火山の骸骨', hpMod: 0.9, attackType: 'melee', attackMod: 1.0, defenseMod: 0.7, element: 'fire', resistances: { fire: 0.3 } },
+  { name: '溶岩の魔人', hpMod: 1.1, attackType: 'magical', attackMod: 1.3, defenseMod: 0.7, element: 'fire', resistances: { fire: 0.1, ice: 1.8 } },
+  { name: '炎の蛇', hpMod: 0.8, attackType: 'mixed', attackMod: 1.1, defenseMod: 0.5, element: 'fire', resistances: { fire: 0.2 } },
+  { name: '火山の戦士', hpMod: 1.2, attackType: 'melee', attackMod: 1.2, defenseMod: 0.9, element: 'fire', resistances: { fire: 0.2 } },
+  { name: '溶岩のトカゲ', hpMod: 0.9, attackType: 'melee', attackMod: 1.0, defenseMod: 0.7, element: 'fire', resistances: { fire: 0.2 } },
+  { name: '炎の使い魔', hpMod: 0.6, attackType: 'magical', attackMod: 1.3, defenseMod: 0.3, element: 'fire', resistances: { fire: 0.0 } },
+  { name: '火山ガニ', hpMod: 1.3, attackType: 'melee', attackMod: 0.9, defenseMod: 1.2, element: 'fire', resistances: { fire: 0.3 } },
+  { name: '炎の亡霊', hpMod: 0.7, attackType: 'magical', attackMod: 1.4, defenseMod: 0.3, element: 'fire', resistances: { fire: 0.0 } },
+  { name: '溶岩の守護者', hpMod: 1.5, attackType: 'mixed', attackMod: 1.1, defenseMod: 1.2, element: 'fire', resistances: { fire: 0.1 } },
+  { name: '火山の魔導師', hpMod: 0.8, attackType: 'magical', attackMod: 1.4, defenseMod: 0.4, element: 'fire', resistances: { fire: 0.1 } },
+  { name: '炎の巨蟲', hpMod: 1.1, attackType: 'melee', attackMod: 1.1, defenseMod: 0.7, element: 'fire', resistances: { fire: 0.2 } },
+  { name: '溶岩のガーゴイル', hpMod: 1.3, attackType: 'mixed', attackMod: 1.2, defenseMod: 1.0, element: 'fire', resistances: { fire: 0.1, ice: 1.8 } },
+];
+
+const EXPEDITION_4_ELITES: EnemyTemplate[] = [
+  { name: '炎帝の親衛隊', hpMod: 1.5, attackType: 'melee', attackMod: 1.4, defenseMod: 1.2, element: 'fire', resistances: { fire: 0.1, ice: 2.0 } },
+  { name: '溶岩の大巨人', hpMod: 1.7, attackType: 'melee', attackMod: 1.3, defenseMod: 1.4, element: 'fire', resistances: { fire: 0.0, ice: 2.0 } },
+  { name: '炎の大精霊', hpMod: 1.1, attackType: 'magical', attackMod: 1.7, defenseMod: 0.8, element: 'fire', resistances: { fire: 0.0, ice: 2.0 } },
+  { name: '火山のドレイク', hpMod: 1.5, attackType: 'mixed', attackMod: 1.5, defenseMod: 1.1, element: 'fire', resistances: { fire: 0.1, ice: 1.8 } },
+  { name: '炎の将軍', hpMod: 1.4, attackType: 'mixed', attackMod: 1.5, defenseMod: 1.0, element: 'fire', resistances: { fire: 0.1, ice: 1.8 } },
+];
+
+const EXPEDITION_4_BOSS: EnemyTemplate = {
+  name: '炎帝イフリート',
+  hpMod: 1.3,
+  attackType: 'magical',
+  attackMod: 1.5,
+  defenseMod: 1.2,
+  element: 'fire',
+  resistances: { fire: 0.0, ice: 2.0 },
+};
+
+// ============================================================
+// Expedition 5: 氷結の峡谷 (Frozen Canyon) - Ice creatures
+// ============================================================
+const EXPEDITION_5_NORMALS: EnemyTemplate[] = [
+  { name: '氷の精霊', hpMod: 0.7, attackType: 'magical', attackMod: 1.4, defenseMod: 0.5, element: 'ice', resistances: { ice: 0.0, fire: 2.0 } },
+  { name: 'フロストゴーレム', hpMod: 1.6, attackType: 'melee', attackMod: 1.2, defenseMod: 1.3, element: 'ice', resistances: { ice: 0.1, fire: 2.0 } },
+  { name: '氷結の騎士', hpMod: 1.3, attackType: 'melee', attackMod: 1.3, defenseMod: 1.0, element: 'ice', resistances: { ice: 0.2, fire: 1.8 } },
+  { name: '雪狼', hpMod: 1.0, attackType: 'melee', attackMod: 1.3, defenseMod: 0.5, element: 'ice', resistances: { ice: 0.3 } },
+  { name: '氷の魔術師', hpMod: 0.8, attackType: 'magical', attackMod: 1.5, defenseMod: 0.4, element: 'ice', resistances: { ice: 0.1, fire: 1.8 } },
+  { name: 'フロストワーム', hpMod: 1.2, attackType: 'melee', attackMod: 1.1, defenseMod: 0.8, element: 'ice', resistances: { ice: 0.2 } },
+  { name: '氷結の番人', hpMod: 1.4, attackType: 'melee', attackMod: 1.1, defenseMod: 1.1, element: 'ice', resistances: { ice: 0.2 } },
+  { name: '雪の射手', hpMod: 0.8, attackType: 'ranged', attackMod: 1.3, defenseMod: 0.4, element: 'ice', resistances: { ice: 0.3 } },
+  { name: '氷のトロール', hpMod: 1.5, attackType: 'melee', attackMod: 1.2, defenseMod: 1.0, element: 'ice', resistances: { ice: 0.2, fire: 1.8 } },
+  { name: 'フロストバット', hpMod: 0.6, attackType: 'ranged', attackMod: 1.1, defenseMod: 0.3, element: 'ice', resistances: { ice: 0.2 } },
+  { name: '氷の戦士', hpMod: 1.2, attackType: 'melee', attackMod: 1.2, defenseMod: 0.9, element: 'ice', resistances: { ice: 0.2 } },
+  { name: '雪の亡霊', hpMod: 0.7, attackType: 'magical', attackMod: 1.3, defenseMod: 0.4, element: 'ice', resistances: { ice: 0.1 } },
+  { name: 'フロストスパイダー', hpMod: 0.9, attackType: 'ranged', attackMod: 1.1, defenseMod: 0.6, element: 'ice', resistances: { ice: 0.3 } },
+  { name: '氷結の巨人', hpMod: 1.7, attackType: 'melee', attackMod: 1.1, defenseMod: 1.3, element: 'ice', resistances: { ice: 0.1, fire: 2.0 } },
+  { name: '雪の魔人', hpMod: 1.0, attackType: 'magical', attackMod: 1.3, defenseMod: 0.7, element: 'ice', resistances: { ice: 0.1 } },
+  { name: '氷のサソリ', hpMod: 1.0, attackType: 'melee', attackMod: 1.1, defenseMod: 0.7, element: 'ice', resistances: { ice: 0.3 } },
+  { name: 'フロストエルフ', hpMod: 0.8, attackType: 'mixed', attackMod: 1.2, defenseMod: 0.6, element: 'ice', resistances: { ice: 0.2 } },
+  { name: '氷の蛇', hpMod: 0.9, attackType: 'melee', attackMod: 1.1, defenseMod: 0.5, element: 'ice', resistances: { ice: 0.2 } },
+  { name: '雪のオーガ', hpMod: 1.4, attackType: 'melee', attackMod: 1.2, defenseMod: 0.9, element: 'ice', resistances: { ice: 0.2 } },
+  { name: 'フロストウィッチ', hpMod: 0.7, attackType: 'magical', attackMod: 1.5, defenseMod: 0.3, element: 'ice', resistances: { ice: 0.0, fire: 1.8 } },
+  { name: '氷結の狼', hpMod: 1.0, attackType: 'melee', attackMod: 1.3, defenseMod: 0.5, element: 'ice', resistances: { ice: 0.2 } },
+  { name: '雪の守護者', hpMod: 1.4, attackType: 'mixed', attackMod: 1.1, defenseMod: 1.1, element: 'ice', resistances: { ice: 0.2 } },
+  { name: 'フロストドレイク', hpMod: 1.3, attackType: 'mixed', attackMod: 1.3, defenseMod: 0.9, element: 'ice', resistances: { ice: 0.1, fire: 1.8 } },
+  { name: '氷の使い魔', hpMod: 0.6, attackType: 'magical', attackMod: 1.3, defenseMod: 0.3, element: 'ice', resistances: { ice: 0.0 } },
+  { name: '雪原の熊', hpMod: 1.5, attackType: 'melee', attackMod: 1.2, defenseMod: 0.9, element: 'ice', resistances: { ice: 0.3 } },
+  { name: 'フロストリザード', hpMod: 0.9, attackType: 'melee', attackMod: 1.1, defenseMod: 0.7, element: 'ice', resistances: { ice: 0.2 } },
+  { name: '氷の鬼', hpMod: 1.3, attackType: 'melee', attackMod: 1.3, defenseMod: 0.8, element: 'ice', resistances: { ice: 0.2 } },
+  { name: '雪の魔導師', hpMod: 0.8, attackType: 'magical', attackMod: 1.4, defenseMod: 0.4, element: 'ice', resistances: { ice: 0.1 } },
+  { name: 'フロストナイト', hpMod: 1.3, attackType: 'melee', attackMod: 1.2, defenseMod: 1.0, element: 'ice', resistances: { ice: 0.2 } },
+  { name: '氷結のガーゴイル', hpMod: 1.3, attackType: 'mixed', attackMod: 1.2, defenseMod: 1.0, element: 'ice', resistances: { ice: 0.1, fire: 1.8 } },
+];
+
+const EXPEDITION_5_ELITES: EnemyTemplate[] = [
+  { name: '氷結の将軍', hpMod: 1.5, attackType: 'melee', attackMod: 1.5, defenseMod: 1.2, element: 'ice', resistances: { ice: 0.1, fire: 2.0 } },
+  { name: 'フロストドラゴン', hpMod: 1.6, attackType: 'mixed', attackMod: 1.5, defenseMod: 1.2, element: 'ice', resistances: { ice: 0.0, fire: 2.0 } },
+  { name: '氷の大精霊', hpMod: 1.1, attackType: 'magical', attackMod: 1.7, defenseMod: 0.8, element: 'ice', resistances: { ice: 0.0, fire: 2.0 } },
+  { name: '雪原の大巨人', hpMod: 1.7, attackType: 'melee', attackMod: 1.3, defenseMod: 1.4, element: 'ice', resistances: { ice: 0.1, fire: 2.0 } },
+  { name: '氷結の守護竜', hpMod: 1.5, attackType: 'mixed', attackMod: 1.5, defenseMod: 1.3, element: 'ice', resistances: { ice: 0.0, fire: 2.0 } },
+];
+
+const EXPEDITION_5_BOSS: EnemyTemplate = {
+  name: '氷帝フェンリル',
+  hpMod: 1.4,
+  attackType: 'mixed',
+  attackMod: 1.5,
+  defenseMod: 1.2,
+  element: 'ice',
+  resistances: { ice: 0.0, fire: 2.0 },
+};
+
+// ============================================================
+// Expedition 6: 雷鳴の塔 (Tower of Thunder) - Thunder creatures
+// ============================================================
+const EXPEDITION_6_NORMALS: EnemyTemplate[] = [
+  { name: 'サンダーバード', hpMod: 0.8, attackType: 'ranged', attackMod: 1.3, defenseMod: 0.5, element: 'thunder', resistances: { thunder: 0.1 } },
+  { name: '雷のゴーレム', hpMod: 1.6, attackType: 'melee', attackMod: 1.2, defenseMod: 1.2, element: 'thunder', resistances: { thunder: 0.0 } },
+  { name: '嵐の精霊', hpMod: 0.7, attackType: 'magical', attackMod: 1.5, defenseMod: 0.4, element: 'thunder', resistances: { thunder: 0.0 } },
+  { name: '電撃蛇', hpMod: 0.9, attackType: 'ranged', attackMod: 1.2, defenseMod: 0.5, element: 'thunder', resistances: { thunder: 0.2 } },
+  { name: '雷鳴の騎士', hpMod: 1.3, attackType: 'melee', attackMod: 1.3, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.3 } },
+  { name: '雷のスライム', hpMod: 0.6, attackType: 'magical', attackMod: 1.1, defenseMod: 0.7, element: 'thunder', resistances: { thunder: 0.0 } },
+  { name: '嵐の射手', hpMod: 0.8, attackType: 'ranged', attackMod: 1.3, defenseMod: 0.4, element: 'thunder', resistances: { thunder: 0.2 } },
+  { name: '雷の魔術師', hpMod: 0.8, attackType: 'magical', attackMod: 1.5, defenseMod: 0.4, element: 'thunder', resistances: { thunder: 0.1 } },
+  { name: '電撃の巨人', hpMod: 1.7, attackType: 'melee', attackMod: 1.1, defenseMod: 1.3, element: 'thunder', resistances: { thunder: 0.0 } },
+  { name: '嵐の狼', hpMod: 1.0, attackType: 'melee', attackMod: 1.3, defenseMod: 0.5, element: 'thunder', resistances: { thunder: 0.2 } },
+  { name: '雷の戦士', hpMod: 1.2, attackType: 'melee', attackMod: 1.2, defenseMod: 0.9, element: 'thunder', resistances: { thunder: 0.2 } },
+  { name: '電撃のコウモリ', hpMod: 0.6, attackType: 'ranged', attackMod: 1.1, defenseMod: 0.3, element: 'thunder', resistances: { thunder: 0.1 } },
+  { name: '嵐の鬼', hpMod: 1.3, attackType: 'melee', attackMod: 1.3, defenseMod: 0.8, element: 'thunder', resistances: { thunder: 0.2 } },
+  { name: '雷鳴の番人', hpMod: 1.4, attackType: 'mixed', attackMod: 1.1, defenseMod: 1.1, element: 'thunder', resistances: { thunder: 0.1 } },
+  { name: '電撃の精霊', hpMod: 0.7, attackType: 'magical', attackMod: 1.4, defenseMod: 0.4, element: 'thunder', resistances: { thunder: 0.0 } },
+  { name: '嵐のトロール', hpMod: 1.5, attackType: 'melee', attackMod: 1.2, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.2 } },
+  { name: '雷の亡霊', hpMod: 0.7, attackType: 'magical', attackMod: 1.3, defenseMod: 0.4, element: 'thunder', resistances: { thunder: 0.1 } },
+  { name: '電撃の騎馬兵', hpMod: 1.2, attackType: 'mixed', attackMod: 1.2, defenseMod: 0.8, element: 'thunder', resistances: { thunder: 0.2 } },
+  { name: '嵐の魔人', hpMod: 1.1, attackType: 'magical', attackMod: 1.3, defenseMod: 0.7, element: 'thunder', resistances: { thunder: 0.1 } },
+  { name: '雷鳴のドレイク', hpMod: 1.3, attackType: 'mixed', attackMod: 1.3, defenseMod: 0.9, element: 'thunder', resistances: { thunder: 0.1 } },
+  { name: '電撃の使い魔', hpMod: 0.6, attackType: 'magical', attackMod: 1.3, defenseMod: 0.3, element: 'thunder', resistances: { thunder: 0.0 } },
+  { name: '嵐の巨蟲', hpMod: 1.1, attackType: 'melee', attackMod: 1.1, defenseMod: 0.7, element: 'thunder', resistances: { thunder: 0.2 } },
+  { name: '雷の守護者', hpMod: 1.4, attackType: 'mixed', attackMod: 1.1, defenseMod: 1.2, element: 'thunder', resistances: { thunder: 0.1 } },
+  { name: '電撃のオーガ', hpMod: 1.4, attackType: 'melee', attackMod: 1.2, defenseMod: 0.9, element: 'thunder', resistances: { thunder: 0.2 } },
+  { name: '嵐のワーム', hpMod: 1.1, attackType: 'melee', attackMod: 1.0, defenseMod: 0.7, element: 'thunder', resistances: { thunder: 0.2 } },
+  { name: '雷鳴の魔導師', hpMod: 0.8, attackType: 'magical', attackMod: 1.5, defenseMod: 0.4, element: 'thunder', resistances: { thunder: 0.0 } },
+  { name: '電撃の番兵', hpMod: 1.2, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.2 } },
+  { name: '嵐のサソリ', hpMod: 1.0, attackType: 'melee', attackMod: 1.1, defenseMod: 0.7, element: 'thunder', resistances: { thunder: 0.2 } },
+  { name: '雷の鳥人', hpMod: 0.9, attackType: 'ranged', attackMod: 1.3, defenseMod: 0.5, element: 'thunder', resistances: { thunder: 0.1 } },
+  { name: '嵐のガーゴイル', hpMod: 1.3, attackType: 'mixed', attackMod: 1.2, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.1 } },
+];
+
+const EXPEDITION_6_ELITES: EnemyTemplate[] = [
+  { name: '雷鳴の将軍', hpMod: 1.5, attackType: 'melee', attackMod: 1.5, defenseMod: 1.2, element: 'thunder', resistances: { thunder: 0.0 } },
+  { name: '嵐の大精霊', hpMod: 1.1, attackType: 'magical', attackMod: 1.7, defenseMod: 0.8, element: 'thunder', resistances: { thunder: 0.0 } },
+  { name: '雷のドラゴン', hpMod: 1.6, attackType: 'mixed', attackMod: 1.5, defenseMod: 1.2, element: 'thunder', resistances: { thunder: 0.0 } },
+  { name: '電撃の大巨人', hpMod: 1.7, attackType: 'melee', attackMod: 1.3, defenseMod: 1.4, element: 'thunder', resistances: { thunder: 0.0 } },
+  { name: '雷神の親衛隊', hpMod: 1.5, attackType: 'mixed', attackMod: 1.5, defenseMod: 1.3, element: 'thunder', resistances: { thunder: 0.0 } },
 ];
 
 const EXPEDITION_6_BOSS: EnemyTemplate = {
@@ -439,7 +362,9 @@ const EXPEDITION_6_BOSS: EnemyTemplate = {
   resistances: { thunder: 0.0 },
 };
 
+// ============================================================
 // Expedition 7: 冥界の門 (Gate of the Underworld) - Undead/Demonic
+// ============================================================
 const EXPEDITION_7_NORMALS: EnemyTemplate[] = [
   { name: '死霊', hpMod: 0.8, attackType: 'magical', attackMod: 1.4, defenseMod: 0.5 },
   { name: '骸骨将軍', hpMod: 1.3, attackType: 'melee', attackMod: 1.2, defenseMod: 1.0 },
@@ -489,7 +414,9 @@ const EXPEDITION_7_BOSS: EnemyTemplate = {
   defenseMod: 1.3,
 };
 
+// ============================================================
 // Expedition 8: 天空の神殿 (Celestial Temple) - Divine beings
+// ============================================================
 const EXPEDITION_8_NORMALS: EnemyTemplate[] = [
   { name: '天使', hpMod: 1.0, attackType: 'magical', attackMod: 1.3, defenseMod: 0.8 },
   { name: '神殿の守護者', hpMod: 1.5, attackType: 'melee', attackMod: 1.2, defenseMod: 1.3 },
@@ -541,7 +468,9 @@ const EXPEDITION_8_BOSS: EnemyTemplate = {
   resistances: { thunder: 0.0 },
 };
 
+// ============================================================
 // All expedition data
+// ============================================================
 const EXPEDITION_DATA: {
   normals: EnemyTemplate[];
   elites: EnemyTemplate[];
@@ -557,7 +486,9 @@ const EXPEDITION_DATA: {
   { normals: EXPEDITION_8_NORMALS, elites: EXPEDITION_8_ELITES, boss: EXPEDITION_8_BOSS },
 ];
 
+// ============================================================
 // Helper to create attack stats based on type
+// ============================================================
 function createAttackStats(
   type: 'melee' | 'ranged' | 'magical' | 'mixed',
   baseAttack: number,
@@ -600,7 +531,9 @@ function createAttackStats(
   }
 }
 
+// ============================================================
 // Generate enemy from template
+// ============================================================
 function createEnemyFromTemplate(
   id: number,
   template: EnemyTemplate,
@@ -671,7 +604,9 @@ function createEnemyFromTemplate(
   };
 }
 
+// ============================================================
 // Generate all enemies
+// ============================================================
 function generateEnemies(): EnemyDef[] {
   const enemies: EnemyDef[] = [];
 
