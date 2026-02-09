@@ -615,6 +615,10 @@ inventory = {
     - If character.`a.iaigiri`, return 2.0 x sum of ( `c.melee_attack+v` )
   - Else return 1.0 x  sum of (`c.melee_attack+v` or `c.ranged_attack+v` or `c.magical_attack+v` )
 
+- character.`f.defense_amplifier` (phase: )
+  - return 1.0 x  sum of (`c.physical_defense+v` or `c.magical_defense+v` )
+
+
 - character.`f.accuracy_amplifier` (phase: )
   - If phase is LONG,  return: `d.accuracy_potency`.
   - If phase is MID, return: 1.0 (Fixed value)
@@ -989,7 +993,7 @@ Name      [編集]
 🐶 race / main class(sub class) / predisposition / lineage 
 [体力:`b.vitality`] [力:`b.strength`] [知性:`b.intelligence`] [精神:`b.mind`]
 `f.display_ranged_offense`    属性攻撃:`f.elemental_offense_attribute`.name (x `f.elemental_offense_attribute`.value )
-`f.display_magical_offense`      魔法防御:`d.magical_defense`
+`f.display_magical_offense`      魔法防御:`d.magical_defense` (x )
 `f.display_melee_offense`     物理防御:`d.physical_defense`
 `f.display_accuracy` 
 ボーナス: `c.` (ex. 護符x1.3, 弓x1.1 鎧x2.4, 剣x1.4, 根性+1, 装備+1, 体+3)
@@ -1004,8 +1008,9 @@ Name      [編集]
 —————
 Left-aligned            Right-aligned
 近接攻撃:98 x 4回(x1.00)     属性:無(x1.0)
-命中率: 85% (減衰: x0.90)     物防:108
-                              魔防:56
+命中率: 85% (減衰: x0.90)     物防:108 (x1.00)
+                              魔防:56 (x1.00)
+                              回避:+0.004
 —————
 ボーナス: 護x1.3, 弓x1.1, 鎧x1.8, 装備+1, 根性+1, 体+3
 特殊能力:
