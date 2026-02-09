@@ -49,7 +49,7 @@
 const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 - Initial deity: 'God of Restoration' // Revives character at the base automatically, no death penalty 
-- **Bag Randomization** There are `g.common_reward_bag`, `g.common_enhancement_bag`, `g.reward_bag`, `g.enhancement_bag`, `g.superRare_bag`, and `g.threat_weight_bag` which control probable randomness.
+- **Bag Randomization** There are `g.common_reward_bag`, `g.common_enhancement_bag`, `g.uncommon_reward_bag`, `g.rare_reward_bag`, `g.mythic_reward_bag`, `g.enhancement_bag`, `g.superRare_bag`, and `g.threat_weight_bag` which control probable randomness.
 
 
 **reward list**
@@ -567,7 +567,9 @@ inventory = {
 ### 3.1 Randomness initialization
 - **Reward:**
   - Populate `g.common_reward_bag` with tickets according to the `g.common_reward_bag` table.
-  - Populate `g.reward_bag` with tickets according to the `g.reward_bag` table.
+  - Populate `g.uncommon_reward_bag` with tickets according to the `g.uncommon_reward_bag` table.
+  - Populate `g.rare_reward_bag` with tickets according to the `g.rare_reward_bag` table.
+  - Populate `g.mythic_reward_bag` with tickets according to the `g.mythic_reward_bag` table.
 
 - **Enhancement:**
   - Populate `g.common_enhancement_bag` with tickets according to the `g.common_enhancement_bag` table.
@@ -919,9 +921,22 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 ## 7. REWARD 
 
 - For every item listed in the drop_item,
-  - Gets one ticket from `g.reward_bag`. Two with `c.unlock`.
-  - If `g.reward_bag`.value = '1', then get one ticket from `g.enhancement_bag`.
-  - If `g.enhancement_bag`.value >= 1, then get one ticket from `g.superRare_bag`.
+  - If the item is common,
+    - Get one ticket from `g.common_reward_bag`. Two with `c.unlock`.
+	- If `g.reward_bag`.value = '1', then get one ticket from `g.common_enhancement_bag`.
+    - If `g.enhancement_bag`.value >= 1, then get one ticket from `g.superRare_bag`.
+  - If the item is uncommon,
+    - Gets one ticket from `g.uncommon_reward_bag`. Two with `c.unlock`.
+    - If `g.uncommon_reward_bag`.value = '1', then get one ticket from `g.enhancement_bag`.
+    - If `g.enhancement_bag`.value >= 1, then get one ticket from `g.superRare_bag`.
+  - If the item is rare,
+    - Gets one ticket from `g.rare_reward_bag`. Two with `c.unlock`.
+    - If `g.rare_reward_bag`.value = '1', then get one ticket from `g.enhancement_bag`.
+    - If `g.enhancement_bag`.value >= 1, then get one ticket from `g.superRare_bag`.
+  - If the item is mythic,
+    - Gets one ticket from `g.mythic_reward_bag`. Two with `c.unlock`.
+    - If `g.rare_mythic_bag`.value = '1', then get one ticket from `g.enhancement_bag`.
+    - If `g.enhancement_bag`.value >= 1, then get one ticket from `g.superRare_bag`.
 
   - Combines them into one item.
 
