@@ -610,6 +610,8 @@ inventory = {
   - `d.magical_NoA`= 0 + `c.caster+v` bonuses + Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier + `c.magical_NoA+v` (round up) 
   - `d.melee_NoA`= 0 + `c.grit+v` bonuses + Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier + `c.melee_NoA+v` (round up) 
     - IF the character has `a.iaigiri`, halve these number of attacks, round up. 
+  - *note: `c.ranged_NoA+v`, `c.magical_NoA+v`, `c.melee_NoA+v`  Only one single bonuses(c.) of the **exact** same name applies.  
+
 
 - character.`f.offense_amplifier` (phase: )
   - If phase is CLOSE,
