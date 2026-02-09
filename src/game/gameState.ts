@@ -10,5 +10,6 @@ export function getItemDisplayName(item: Item): string {
 export function getItemMultiplier(item: Item): number {
   const enhMult = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
   const srMult = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
-  return enhMult * srMult;
+  const baseMult = item.baseMultiplier ?? 1;
+  return enhMult * srMult * baseMult;
 }

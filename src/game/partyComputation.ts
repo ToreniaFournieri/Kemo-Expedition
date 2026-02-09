@@ -119,7 +119,8 @@ export function computePartyStats(party: Party): {
       if (item && item.partyHP) {
         const categoryMult = getCharacterMultiplier(character, item.category);
         const enhanceMult = getItemEnhancementMultiplier(item);
-        itemHpBonus += item.partyHP * categoryMult * enhanceMult;
+        const baseMult = item.baseMultiplier ?? 1;
+        itemHpBonus += item.partyHP * categoryMult * enhanceMult * baseMult;
       }
     }
 
@@ -141,7 +142,8 @@ export function computePartyStats(party: Party): {
       if (item && item.physicalDefense) {
         const categoryMult = getCharacterMultiplier(character, item.category);
         const enhanceMult = getItemEnhancementMultiplier(item);
-        physicalDefense += item.physicalDefense * categoryMult * enhanceMult * statMultiplier;
+        const baseMult = item.baseMultiplier ?? 1;
+        physicalDefense += item.physicalDefense * categoryMult * enhanceMult * baseMult * statMultiplier;
       }
     }
   }
@@ -157,7 +159,8 @@ export function computePartyStats(party: Party): {
       if (item && item.magicalDefense) {
         const categoryMult = getCharacterMultiplier(character, item.category);
         const enhanceMult = getItemEnhancementMultiplier(item);
-        magicalDefense += item.magicalDefense * categoryMult * enhanceMult * statMultiplier;
+        const baseMult = item.baseMultiplier ?? 1;
+        magicalDefense += item.magicalDefense * categoryMult * enhanceMult * baseMult * statMultiplier;
       }
     }
   }
