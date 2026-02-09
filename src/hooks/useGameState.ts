@@ -22,7 +22,7 @@ import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
 import { getDungeonById } from '../data/dungeons';
 import { getEnemiesByPool, getElitesByPool, getBossEnemy } from '../data/enemies';
 import { drawFromBag, refillBagIfEmpty, createCommonRewardBag, createCommonEnhancementBag, createRewardBag, createEnhancementBag, createSuperRareBag, createPhysicalThreatBag, createMagicalThreatBag } from '../game/bags';
-import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
+import { getItemById, getItemsByTierAndRarity, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 
 const BUILD_NUMBER = 31;
@@ -281,6 +281,23 @@ function selectEnemyForRoom(
   return null;
 }
 
+// Loot-Gate check: count how many distinct items of a rarity the player owns for a tier
+function countDistinctItemsOfRarity(
+  inventory: InventoryRecord,
+  tier: number,
+  rarity: 'uncommon' | 'rare'
+): number {
+  const rarityItems = getItemsByTierAndRarity(tier, rarity);
+  const rarityIds = new Set(rarityItems.map(i => i.id));
+  let count = 0;
+  for (const variant of Object.values(inventory)) {
+    if (variant.status === 'owned' && variant.count > 0 && rarityIds.has(variant.item.id)) {
+      count++;
+    }
+  }
+  return count;
+}
+
 // Apply floor multiplier to enemy stats
 function applyFloorMultiplier(enemy: EnemyDef, multiplier: number): EnemyDef {
   if (multiplier === 1.0) return enemy;
@@ -346,6 +363,47 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
             const roomDef = floor.rooms[roomIndex];
             roomCounter++;
+
+            // Loot-Gate check before Elite/Boss rooms (room 4 of each floor)
+            if (roomDef.type === 'battle_Elite' || roomDef.type === 'battle_Boss') {
+              const tier = dungeon.enemyPoolIds[0]; // dungeon tier
+              let gateRequired: number;
+              let gateRarity: 'uncommon' | 'rare';
+              if (roomDef.type === 'battle_Boss') {
+                gateRequired = 5;
+                gateRarity = 'rare';
+              } else {
+                gateRequired = 6;
+                gateRarity = 'uncommon';
+              }
+              const collected = countDistinctItemsOfRarity(currentInventory, tier, gateRarity);
+              if (collected < gateRequired) {
+                // Gate locked - expedition ends
+                const gateLabel = roomDef.type === 'battle_Boss' ? 'Boss Gate' : `${floor.floorNumber}F Elite Gate`;
+                const rarityLabel = gateRarity === 'rare' ? 'Rare' : 'Uncommon';
+                const gateEntry: ExpeditionLogEntry = {
+                  room: roomCounter,
+                  floor: floor.floorNumber,
+                  roomInFloor: roomIndex + 1,
+                  roomType: roomDef.type,
+                  floorMultiplier: floor.multiplier,
+                  enemyName: `[GATE LOCKED] ${gateLabel}`,
+                  enemyHP: 0,
+                  enemyAttackValues: '',
+                  outcome: 'victory' as any, // Not a battle
+                  damageDealt: 0,
+                  damageTaken: 0,
+                  remainingPartyHP: currentHp,
+                  maxPartyHP: partyStats.hp,
+                  details: [],
+                  gateInfo: `${rarityLabel} ${collected}/${gateRequired}`,
+                };
+                entries.push(gateEntry);
+                finalOutcome = 'retreat';
+                expeditionEnded = true;
+                break;
+              }
+            }
 
             // Select enemy for this room
             const baseEnemy = selectEnemyForRoom(roomDef.type, roomDef.poolId, roomDef.bossId);
@@ -445,10 +503,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               currentHp = battleResult.partyHp;
               entries.push(entry);
 
-              // Heal 20% after Elite rooms
+              // Heal 20% of missing HP after Elite rooms
               if (roomDef.type === 'battle_Elite') {
-                const healAmount = Math.floor(partyStats.hp * 0.2);
-                currentHp = Math.min(partyStats.hp, currentHp + healAmount);
+                const missingHp = partyStats.hp - currentHp;
+                const healAmount = Math.floor(missingHp * 0.2);
+                if (healAmount > 0) {
+                  currentHp = currentHp + healAmount;
+                  entry.healAmount = healAmount;
+                }
               }
             } else if (battleResult.outcome === 'defeat') {
               entries.push(entry);

@@ -194,6 +194,7 @@ export function computeCharacterStats(
   let magicalAttack = 0;
   let meleeAttack = 0;
   let rangedNoA = 0;
+  let magicalNoA = 0;
   let meleeNoA = 0;
   let elementalOffense: ElementalOffense = 'none';
   let elementalOffenseValue = 1.0;
@@ -210,16 +211,34 @@ export function computeCharacterStats(
       rangedAttack += item.rangedAttack * multiplier;
     }
     if (item.rangedNoA) {
-      rangedNoA += item.rangedNoA * categoryMult; // NoA uses category multiplier only
+      // Positive NoA scales with enhancement; negative penalties stay fixed
+      if (item.rangedNoA > 0) {
+        rangedNoA += item.rangedNoA * multiplier;
+      } else {
+        rangedNoA += item.rangedNoA;
+      }
     }
     if (item.magicalAttack) {
       magicalAttack += item.magicalAttack * multiplier;
+    }
+    if (item.magicalNoA) {
+      // Catalyst magical_NoA scales with enhancement
+      if (item.magicalNoA > 0) {
+        magicalNoA += item.magicalNoA * multiplier;
+      } else {
+        magicalNoA += item.magicalNoA;
+      }
     }
     if (item.meleeAttack) {
       meleeAttack += item.meleeAttack * multiplier;
     }
     if (item.meleeNoA) {
-      meleeNoA += item.meleeNoA * categoryMult; // NoA uses category multiplier only
+      // Positive NoA (gauntlet) scales with enhancement; negative (katana) stays fixed
+      if (item.meleeNoA > 0) {
+        meleeNoA += item.meleeNoA * multiplier;
+      } else {
+        meleeNoA += item.meleeNoA;
+      }
     }
 
     // Elemental offense from equipment (priority: thunder > ice > fire > none)
@@ -237,11 +256,10 @@ export function computeCharacterStats(
   magicalAttack = magicalAttack * (baseStats.intelligence / 10);
 
   // Add pursuit bonus to ranged NoA
-  // d.ranged_NoA = 0 + c.pursuit+v bonuses + Item Bonuses x its c.multiplier
   rangedNoA += collection.pursuit;
 
   // Add caster bonus to magical NoA
-  const magicalNoA = collection.caster;
+  magicalNoA += collection.caster;
 
   // Add grit bonus to melee NoA
   meleeNoA += collection.grit;
@@ -253,9 +271,10 @@ export function computeCharacterStats(
     // meleeAttack will be amplified during battle
   }
 
-  // Round NoA values at the end (floor for final values)
-  rangedNoA = Math.floor(rangedNoA);
-  meleeNoA = Math.floor(meleeNoA);
+  // Round NoA values up (ceil per spec)
+  rangedNoA = Math.ceil(rangedNoA);
+  magicalNoA = Math.ceil(magicalNoA);
+  meleeNoA = Math.ceil(meleeNoA);
 
   // Calculate individual defense stats
   // d.physical_defense = Item Bonuses of Physical defense x its c.multiplier x enhancement x b.vitality / 10
