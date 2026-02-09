@@ -658,8 +658,8 @@ inventory = {
 
 ### 5.1 "Loot-Gate" progression system
 
-| title | Gate `x.floor`,`x.room` | uncommon items from `x.room` | conditions | 
-|----|----|----|----|
+| title | Gate `x.floor`,`x.room` | uncommon items from `x.room` |
+|----|----|----|
 | 1st Elite gate | 1,4 | correct 10 uncommon items from `x.floor` = 1, `x.room`= 1-3 |
 | 2nd Elite gate | 2,4 | correct 10 uncommon items from `x.floor` = 2, `x.room`= 1-3  |
 | 3rd Elite gate | 3,4 | correct 10 uncommon items from `x.floor` = 3, `x.room`= 1-3 |
