@@ -372,23 +372,31 @@ function PartyTab({
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
   const [equipCategory, setEquipCategory] = useState('armor');
 
-  // Calculate current attack/NoA totals (floor to match character display)
+  // Calculate current stats for notification: HP is party-wide, others are per selected character
+  const selectedStats = characterStats[selectedCharacter];
   const combatTotals = {
-    meleeAtk: characterStats.reduce((sum, c) => sum + Math.floor(c.meleeAttack), 0),
-    rangedAtk: characterStats.reduce((sum, c) => sum + Math.floor(c.rangedAttack), 0),
-    magicalAtk: characterStats.reduce((sum, c) => sum + Math.floor(c.magicalAttack), 0),
-    meleeNoA: characterStats.reduce((sum, c) => sum + c.meleeNoA, 0),
-    rangedNoA: characterStats.reduce((sum, c) => sum + c.rangedNoA, 0),
-    magicalNoA: characterStats.reduce((sum, c) => sum + c.magicalNoA, 0),
-    physDef: Math.floor(partyStats.physicalDefense),
-    magDef: Math.floor(partyStats.magicalDefense),
+    meleeAtk: Math.floor(selectedStats.meleeAttack),
+    rangedAtk: Math.floor(selectedStats.rangedAttack),
+    magicalAtk: Math.floor(selectedStats.magicalAttack),
+    meleeNoA: selectedStats.meleeNoA,
+    rangedNoA: selectedStats.rangedNoA,
+    magicalNoA: selectedStats.magicalNoA,
+    physDef: Math.floor(selectedStats.physicalDefense),
+    magDef: Math.floor(selectedStats.magicalDefense),
     hp: Math.floor(partyStats.hp),
   };
 
   const prevStatsRef = useRef<typeof combatTotals | null>(null);
+  const prevSelectedCharRef = useRef(selectedCharacter);
 
   // Watch for stat changes after equipment - send individual notification per stat change
   useEffect(() => {
+    // Skip notifications when switching characters (stats naturally differ)
+    if (prevSelectedCharRef.current !== selectedCharacter) {
+      prevSelectedCharRef.current = selectedCharacter;
+      prevStatsRef.current = combatTotals;
+      return;
+    }
     if (prevStatsRef.current) {
       const prev = prevStatsRef.current;
       const changes: { message: string; isPositive: boolean }[] = [];
@@ -440,7 +448,7 @@ function PartyTab({
   }, [combatTotals.physDef, combatTotals.magDef, combatTotals.hp,
       combatTotals.meleeAtk, combatTotals.meleeNoA,
       combatTotals.rangedAtk, combatTotals.rangedNoA,
-      combatTotals.magicalAtk, combatTotals.magicalNoA, onAddStatNotifications]);
+      combatTotals.magicalAtk, combatTotals.magicalNoA, onAddStatNotifications, selectedCharacter]);
   const [pendingEdits, setPendingEdits] = useState<Partial<Character> | null>(null);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
   const [lastSlotTap, setLastSlotTap] = useState<{ slot: number; time: number } | null>(null);
@@ -1063,17 +1071,6 @@ function ExpeditionTab({
         <div className="flex justify-between items-center">
           <div>
             <div className="font-medium">{selectedDungeon?.name}</div>
-            <div className="text-xs text-gray-500">
-              {selectedDungeon?.floors
-                ? `${selectedDungeon.floors.length}階層 × ${selectedDungeon.floors[0]?.rooms.length ?? 0}部屋`
-                : `部屋数: ${selectedDungeon?.numberOfRooms} + ボス`
-              }
-            </div>
-            {selectedDungeon?.floors && (
-              <div className="text-xs text-gray-400">
-                倍率: {selectedDungeon.floors.map(f => `${f.floorNumber}F:x${f.multiplier}`).join(' ')}
-              </div>
-            )}
           </div>
           <button
             onClick={onRunExpedition}
@@ -1132,12 +1129,7 @@ function ExpeditionTab({
                   // Build room label with floor info if available
                   let roomLabel: string;
                   if (entry.floor && entry.roomInFloor) {
-                    const typeLabel = entry.roomType === 'battle_Boss' ? 'BOSS' :
-                                     entry.roomType === 'battle_Elite' ? 'ELITE' : '';
-                    roomLabel = `${entry.floor}F-${entry.roomInFloor}${typeLabel ? ` ${typeLabel}` : ''}`;
-                    if (entry.floorMultiplier && entry.floorMultiplier > 1) {
-                      roomLabel += ` (x${entry.floorMultiplier})`;
-                    }
+                    roomLabel = `${entry.floor}F-${entry.roomInFloor}`;
                   } else {
                     const isBoss = entry.room === state.lastExpeditionLog!.totalRooms + 1;
                     roomLabel = isBoss ? 'BOSS' : entry.room.toString();
@@ -1156,10 +1148,12 @@ function ExpeditionTab({
                           </span>
                           <span className="flex items-center gap-2">
                             <span className={
+                              entry.gateInfo ? 'text-gray-500 font-medium' :
                               entry.outcome === 'victory' ? 'text-sub font-medium' :
                               entry.outcome === 'defeat' ? 'text-red-600 font-medium' : 'text-yellow-600 font-medium'
                             }>
-                              {entry.outcome === 'victory' ? '勝利' :
+                              {entry.gateInfo ? '未到達' :
+                               entry.outcome === 'victory' ? '勝利' :
                                entry.outcome === 'defeat' ? '敗北' : '引分'}
                             </span>
                             <span className={`transform transition-transform ${expandedRoom === originalIndex ? 'rotate-180' : ''}`}>▼</span>
@@ -1168,7 +1162,7 @@ function ExpeditionTab({
                         <div className="text-gray-500 mt-1">
                           敵攻撃:{entry.enemyAttackValues} | 与ダメ:{entry.damageDealt} | 被ダメ:{entry.damageTaken}
                           {entry.healAmount && entry.healAmount > 0 && <span className="text-green-600"> | 回復:+{entry.healAmount}HP</span>}
-                          {entry.gateInfo && <span className="text-red-600"> | Gate: {entry.gateInfo}</span>}
+                          {entry.gateInfo && <span className="text-red-600"> | 解放条件: {entry.gateInfo}</span>}
                           {entry.reward && <span className="text-accent"> | 獲得:{entry.reward}</span>}
                         </div>
                       </button>

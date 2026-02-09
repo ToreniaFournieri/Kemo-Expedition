@@ -281,8 +281,8 @@ function selectEnemyForRoom(
   return null;
 }
 
-// Loot-Gate check: count how many distinct items of a rarity the player owns for a tier
-function countDistinctItemsOfRarity(
+// Loot-Gate check: count total items of a rarity the player owns for a tier
+function countItemsOfRarity(
   inventory: InventoryRecord,
   tier: number,
   rarity: 'uncommon' | 'rare'
@@ -292,11 +292,20 @@ function countDistinctItemsOfRarity(
   let count = 0;
   for (const variant of Object.values(inventory)) {
     if (variant.status === 'owned' && variant.count > 0 && rarityIds.has(variant.item.id)) {
-      count++;
+      count += variant.count;
     }
   }
   return count;
 }
+
+// Gate requirements per floor number
+const ELITE_GATE_REQUIREMENTS: Record<number, number> = {
+  1: 6,
+  2: 18,
+  3: 36,
+  4: 60,
+  5: 90,
+};
 
 // Apply floor multiplier to enemy stats
 function applyFloorMultiplier(enemy: EnemyDef, multiplier: number): EnemyDef {
@@ -373,30 +382,29 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 gateRequired = 5;
                 gateRarity = 'rare';
               } else {
-                gateRequired = 6;
+                gateRequired = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 6;
                 gateRarity = 'uncommon';
               }
-              const collected = countDistinctItemsOfRarity(currentInventory, tier, gateRarity);
+              const collected = countItemsOfRarity(currentInventory, tier, gateRarity);
               if (collected < gateRequired) {
                 // Gate locked - expedition ends
-                const gateLabel = roomDef.type === 'battle_Boss' ? 'Boss Gate' : `${floor.floorNumber}F Elite Gate`;
-                const rarityLabel = gateRarity === 'rare' ? 'Rare' : 'Uncommon';
+                const rarityLabel = gateRarity === 'rare' ? 'レアアイテム' : 'アンコモンアイテム';
                 const gateEntry: ExpeditionLogEntry = {
                   room: roomCounter,
                   floor: floor.floorNumber,
                   roomInFloor: roomIndex + 1,
                   roomType: roomDef.type,
                   floorMultiplier: floor.multiplier,
-                  enemyName: `[GATE LOCKED] ${gateLabel}`,
+                  enemyName: '[扉が封印されている]',
                   enemyHP: 0,
                   enemyAttackValues: '',
-                  outcome: 'victory' as any, // Not a battle
+                  outcome: 'draw', // Not a battle - displayed as 未到達
                   damageDealt: 0,
                   damageTaken: 0,
                   remainingPartyHP: currentHp,
                   maxPartyHP: partyStats.hp,
                   details: [],
-                  gateInfo: `${rarityLabel} ${collected}/${gateRequired}`,
+                  gateInfo: `${rarityLabel} ${collected}/${gateRequired} 収集`,
                 };
                 entries.push(gateEntry);
                 finalOutcome = 'retreat';
@@ -616,6 +624,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         roomCounter = entries.length;
       }
 
+      // On defeat: revert inventory and gold (no item rewards), but keep experience
+      const isDefeat = finalOutcome === 'defeat';
+      const finalInventory = isDefeat ? state.party.inventory : currentInventory;
+      const finalGold = isDefeat ? state.party.gold : currentGold;
+      const finalRewards = isDefeat ? [] : rewards;
+      const finalAutoSellProfit = isDefeat ? 0 : totalAutoSellProfit;
+
       // Update level
       let newExp = state.party.experience + totalExp;
       let newLevel = state.party.level;
@@ -631,8 +646,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         completedRooms: entries.length,
         finalOutcome,
         entries,
-        rewards,
-        autoSellProfit: totalAutoSellProfit,
+        rewards: finalRewards,
+        autoSellProfit: finalAutoSellProfit,
         remainingPartyHP: currentHp,
         maxPartyHP: partyStats.hp,
       };
@@ -644,8 +659,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...state.party,
           level: newLevel,
           experience: newExp,
-          inventory: currentInventory,
-          gold: currentGold,
+          inventory: finalInventory,
+          gold: finalGold,
         },
         lastExpeditionLog: log,
       };
