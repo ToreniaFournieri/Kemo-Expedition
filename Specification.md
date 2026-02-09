@@ -1224,9 +1224,31 @@ Left-aligned            Right-aligned
     - 超レア残り remaining / initial counts
 - Button (超レア報酬初期化): Initialize `g.superRare_bag` 
 
-**2. (long space here)**
+**2. Item Comedium (アイテム図鑑)**
+- The Item Compendium acts as a global reference for all items within the game. Unlike the Inventory, it displays the base potential of every item, regardless of ownership status.
+- View Settings:
+  - Visibility: Shows all items in the database (including undiscovered items).
+  - Standardized Stats: Displays item data at base level (Enhancement = 0, SuperRare = 0).
+- Item category tabs: (same as Inventory tab's item list)
+	- [耐久:鎧,衣,盾],[近距離攻撃:剣,刀,手],[遠距離攻撃:矢,ボ,弓],[魔法攻撃:杖,書,媒].
+	- Default: 鎧 or previously selected category of each character 
+- UI Behavior:
+    - Items are listed in a Collapsed View by default.
+    - Interaction: Tap an item name to expand the detailed status panel.
 
-**3. Game Reset**
+
+**3. Bestiary (敵キャラクター図鑑)**
+- A comprehensive record of all threats encountered (or to be encountered) during expeditions.
+- Expedition name: List of `x.expedition`.
+  - Default: Collapsed.
+- Enemy name: List of specific enemies found within that expedition.
+  - Default: Collapsed.
+- UI Behavior:
+  - Interaction:
+    - Tap Expedition name, Opens list of enemies in that area.
+    - Tap Enemy name, Opens detailed enemy status. Including drop items.
+
+**4. Game Reset**
   - Full reset option
   - Warning required before execution
 
