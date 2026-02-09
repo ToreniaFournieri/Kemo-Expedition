@@ -58,7 +58,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 - enhancement multipiler
 
-| value | title | tickets | multiplier |
+| value | title | multiplier |
 |-----|------|------|
 | 0 | (none) | x1.00 |
 | 1 | 名工の | x1.33 |
