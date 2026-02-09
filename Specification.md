@@ -1167,7 +1167,7 @@ Left-aligned            Right-aligned
 #### 8.6 Shop
 - Only tabs. not opended. (in this version)
   
-#### 8.7 Divine Bureau (神授局)
+#### 8.7 Divine Bureau (神の執務室)
 
 **1. Clairvoyance (未来視)**
 - Displays belows 
