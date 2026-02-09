@@ -14,16 +14,18 @@ import {
   GameNotification,
   NotificationStyle,
   NotificationCategory,
+  RoomType,
+  EnemyDef,
 } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
 import { getDungeonById } from '../data/dungeons';
 import { getEnemiesByPool, getBossEnemy } from '../data/enemies';
-import { drawFromBag, refillBagIfEmpty, createRewardBag, createEnhancementBag, createSuperRareBag, createPhysicalThreatBag, createMagicalThreatBag } from '../game/bags';
+import { drawFromBag, refillBagIfEmpty, createCommonRewardBag, createCommonEnhancementBag, createRewardBag, createEnhancementBag, createSuperRareBag, createPhysicalThreatBag, createMagicalThreatBag } from '../game/bags';
 import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 
-const BUILD_NUMBER = 29;
+const BUILD_NUMBER = 31;
 const STORAGE_KEY = 'kemo-expedition-save';
 
 // Helper to calculate sell price for an item
@@ -219,6 +221,8 @@ function createInitialState(): GameState {
     scene: 'home',
     party: createInitialParty(),
     bags: {
+      commonRewardBag: createCommonRewardBag(),
+      commonEnhancementBag: createCommonEnhancementBag(),
       rewardBag: createRewardBag(),
       enhancementBag: createEnhancementBag(),
       superRareBag: createSuperRareBag(),
@@ -241,6 +245,43 @@ type GameAction =
   | { type: 'MARK_ITEMS_SEEN' }
   | { type: 'RESET_GAME' };
 
+// Select enemy based on room type and pool
+function selectEnemyForRoom(
+  roomType: RoomType,
+  poolId?: number,
+  bossId?: number
+): EnemyDef | null {
+  if (roomType === 'battle_Boss' && bossId) {
+    return getBossEnemy(bossId) ?? null;
+  }
+
+  if (poolId) {
+    const enemies = getEnemiesByPool(poolId);
+    if (enemies.length === 0) return null;
+    const randomIndex = Math.floor(Math.random() * enemies.length);
+    return enemies[randomIndex];
+  }
+
+  return null;
+}
+
+// Apply floor multiplier to enemy stats
+function applyFloorMultiplier(enemy: EnemyDef, multiplier: number): EnemyDef {
+  if (multiplier === 1.0) return enemy;
+
+  return {
+    ...enemy,
+    hp: Math.floor(enemy.hp * multiplier),
+    rangedAttack: Math.floor(enemy.rangedAttack * multiplier),
+    magicalAttack: Math.floor(enemy.magicalAttack * multiplier),
+    meleeAttack: Math.floor(enemy.meleeAttack * multiplier),
+    physicalDefense: Math.floor(enemy.physicalDefense * multiplier),
+    magicalDefense: Math.floor(enemy.magicalDefense * multiplier),
+    experience: Math.floor(enemy.experience * multiplier),
+  };
+}
+
+// Legacy function for backward compatibility
 function selectEnemy(dungeonId: number, room: number, totalRooms: number) {
   const dungeon = getDungeonById(dungeonId);
   if (!dungeon) return null;
@@ -272,104 +313,229 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let totalExp = 0;
       let bags = state.bags;
       let finalOutcome: 'victory' | 'defeat' | 'retreat' = 'victory';
-      const totalRooms = dungeon.numberOfRooms;
       let currentInventory = state.party.inventory;
       let currentGold = state.party.gold;
       let totalAutoSellProfit = 0;
+      let roomCounter = 0;
+      let expeditionEnded = false;
 
-      // Run through all rooms + boss
-      for (let room = 1; room <= totalRooms + 1; room++) {
-        const enemy = selectEnemy(dungeon.id, room, totalRooms);
-        if (!enemy) break;
+      // Use new floor structure if available
+      if (dungeon.floors && dungeon.floors.length > 0) {
+        // New v0.2.0 floor-based expedition
+        for (const floor of dungeon.floors) {
+          if (expeditionEnded) break;
 
-        // Pass currentHp to maintain HP persistence during expedition
-        const battleResult = executeBattle(state.party, enemy, bags, currentHp);
-        // Update threat bags from battle result
-        bags = {
-          ...bags,
-          physicalThreatBag: battleResult.updatedBags.physicalThreatBag,
-          magicalThreatBag: battleResult.updatedBags.magicalThreatBag,
-        };
-        const damageDealt = enemy.hp - Math.max(0, battleResult.enemyHp);
-        // Calculate damage taken from battle log (sum of all enemy attack damage)
-        const damageTaken = battleResult.log
-          .filter(entry => entry.actor === 'enemy' && entry.damage !== undefined)
-          .reduce((sum, entry) => sum + (entry.damage ?? 0), 0);
+          for (let roomIndex = 0; roomIndex < floor.rooms.length; roomIndex++) {
+            if (expeditionEnded) break;
 
-        // Calculate enemy attack values for display
-        const enemyAttackValues = calculateEnemyAttackValues(enemy, partyStats);
+            const roomDef = floor.rooms[roomIndex];
+            roomCounter++;
 
-        const entry: ExpeditionLogEntry = {
-          room,
-          enemyName: enemy.name + (room > totalRooms ? ' (BOSS)' : ''),
-          enemyHP: enemy.hp,
-          enemyAttackValues,
-          outcome: battleResult.outcome!,
-          damageDealt,
-          damageTaken,
-          remainingPartyHP: battleResult.partyHp,
-          maxPartyHP: partyStats.hp,
-          details: battleResult.log,
-        };
+            // Select enemy for this room
+            const baseEnemy = selectEnemyForRoom(roomDef.type, roomDef.poolId, roomDef.bossId);
+            if (!baseEnemy) continue;
 
-        if (battleResult.outcome === 'victory') {
-          totalExp += enemy.experience;
+            // Apply floor multiplier to enemy stats
+            const enemy = applyFloorMultiplier(baseEnemy, floor.multiplier);
 
-          // Check for reward
-          bags = refillBagIfEmpty(bags, 'rewardBag');
-          const { ticket: rewardTicket, newBag: newRewardBag } = drawFromBag(bags.rewardBag);
-          bags = { ...bags, rewardBag: newRewardBag };
+            // Pass currentHp to maintain HP persistence during expedition
+            const battleResult = executeBattle(state.party, enemy, bags, currentHp);
 
-          const { characterStats } = computePartyStats(state.party);
-          const hasUnlock = characterStats.some(cs => cs.abilities.some(a => a.id === 'unlock'));
+            // Update threat bags from battle result
+            bags = {
+              ...bags,
+              physicalThreatBag: battleResult.updatedBags.physicalThreatBag,
+              magicalThreatBag: battleResult.updatedBags.magicalThreatBag,
+            };
 
-          let gotReward = rewardTicket === 1;
-          if (!gotReward && hasUnlock) {
-            bags = refillBagIfEmpty(bags, 'rewardBag');
-            const { ticket: unlockTicket, newBag } = drawFromBag(bags.rewardBag);
-            bags = { ...bags, rewardBag: newBag };
-            gotReward = unlockTicket === 1;
-          }
+            const damageDealt = enemy.hp - Math.max(0, battleResult.enemyHp);
+            const damageTaken = battleResult.log
+              .filter(entry => entry.actor === 'enemy' && entry.damage !== undefined)
+              .reduce((sum, entry) => sum + (entry.damage ?? 0), 0);
 
-          if (gotReward && enemy.dropItemId) {
-            bags = refillBagIfEmpty(bags, 'enhancementBag');
-            const { ticket: enhVal, newBag: newEnhBag } = drawFromBag(bags.enhancementBag);
-            bags = { ...bags, enhancementBag: newEnhBag };
+            const enemyAttackValues = calculateEnemyAttackValues(enemy, partyStats);
 
-            bags = refillBagIfEmpty(bags, 'superRareBag');
-            const { ticket: srVal, newBag: newSRBag } = drawFromBag(bags.superRareBag);
-            bags = { ...bags, superRareBag: newSRBag };
+            // Room type suffix for display
+            let roomSuffix = '';
+            if (roomDef.type === 'battle_Elite') roomSuffix = ' (ELITE)';
+            if (roomDef.type === 'battle_Boss') roomSuffix = ' (BOSS)';
 
-            const baseItem = getItemById(enemy.dropItemId);
-            if (baseItem) {
-              const newItem: Item = { ...baseItem, enhancement: enhVal, superRare: srVal };
-              entry.reward = getItemDisplayName(newItem);
+            const entry: ExpeditionLogEntry = {
+              room: roomCounter,
+              floor: floor.floorNumber,
+              roomInFloor: roomIndex + 1,
+              roomType: roomDef.type,
+              floorMultiplier: floor.multiplier,
+              enemyName: enemy.name + roomSuffix,
+              enemyHP: enemy.hp,
+              enemyAttackValues,
+              outcome: battleResult.outcome!,
+              damageDealt,
+              damageTaken,
+              remainingPartyHP: battleResult.partyHp,
+              maxPartyHP: partyStats.hp,
+              details: battleResult.log,
+            };
 
-              // Add to inventory (handles auto-sell)
-              const result = addItemToInventory(currentInventory, newItem, currentGold);
-              currentInventory = result.inventory;
-              currentGold = result.gold;
-              totalAutoSellProfit += result.autoSellProfit;
+            if (battleResult.outcome === 'victory') {
+              totalExp += enemy.experience;
 
-              // Only add to rewards if not auto-sold (for notification purposes)
-              if (!result.wasAutoSold) {
-                rewards.push(newItem);
+              // Reward logic based on room type
+              const isNormalRoom = roomDef.type === 'battle_Normal';
+              const rewardBagType = isNormalRoom ? 'commonRewardBag' : 'rewardBag';
+              const enhancementBagType = isNormalRoom ? 'commonEnhancementBag' : 'enhancementBag';
+
+              // Check for reward
+              bags = refillBagIfEmpty(bags, rewardBagType);
+              const { ticket: rewardTicket, newBag: newRewardBag } = drawFromBag(bags[rewardBagType]);
+              bags = { ...bags, [rewardBagType]: newRewardBag };
+
+              const { characterStats } = computePartyStats(state.party);
+              const hasUnlock = characterStats.some(cs => cs.abilities.some(a => a.id === 'unlock'));
+
+              let gotReward = rewardTicket === 1;
+              if (!gotReward && hasUnlock) {
+                bags = refillBagIfEmpty(bags, rewardBagType);
+                const { ticket: unlockTicket, newBag } = drawFromBag(bags[rewardBagType]);
+                bags = { ...bags, [rewardBagType]: newBag };
+                gotReward = unlockTicket === 1;
               }
+
+              if (gotReward && enemy.dropItemId) {
+                bags = refillBagIfEmpty(bags, enhancementBagType);
+                const { ticket: enhVal, newBag: newEnhBag } = drawFromBag(bags[enhancementBagType]);
+                bags = { ...bags, [enhancementBagType]: newEnhBag };
+
+                bags = refillBagIfEmpty(bags, 'superRareBag');
+                const { ticket: srVal, newBag: newSRBag } = drawFromBag(bags.superRareBag);
+                bags = { ...bags, superRareBag: newSRBag };
+
+                const baseItem = getItemById(enemy.dropItemId);
+                if (baseItem) {
+                  const newItem: Item = { ...baseItem, enhancement: enhVal, superRare: srVal };
+                  entry.reward = getItemDisplayName(newItem);
+
+                  const result = addItemToInventory(currentInventory, newItem, currentGold);
+                  currentInventory = result.inventory;
+                  currentGold = result.gold;
+                  totalAutoSellProfit += result.autoSellProfit;
+
+                  if (!result.wasAutoSold) {
+                    rewards.push(newItem);
+                  }
+                }
+              }
+
+              currentHp = battleResult.partyHp;
+              entries.push(entry);
+
+              // Heal 20% after Elite rooms
+              if (roomDef.type === 'battle_Elite') {
+                const healAmount = Math.floor(partyStats.hp * 0.2);
+                currentHp = Math.min(partyStats.hp, currentHp + healAmount);
+              }
+            } else if (battleResult.outcome === 'defeat') {
+              entries.push(entry);
+              finalOutcome = 'defeat';
+              expeditionEnded = true;
+            } else {
+              // Draw
+              entries.push(entry);
+              finalOutcome = 'retreat';
+              expeditionEnded = true;
             }
           }
-
-          currentHp = battleResult.partyHp;
-          entries.push(entry);
-        } else if (battleResult.outcome === 'defeat') {
-          entries.push(entry);
-          finalOutcome = 'defeat';
-          break;
-        } else {
-          // Draw
-          entries.push(entry);
-          finalOutcome = 'retreat';
-          break;
         }
+      } else {
+        // Legacy expedition logic for backward compatibility
+        const totalRooms = dungeon.numberOfRooms;
+
+        for (let room = 1; room <= totalRooms + 1; room++) {
+          const enemy = selectEnemy(dungeon.id, room, totalRooms);
+          if (!enemy) break;
+
+          const battleResult = executeBattle(state.party, enemy, bags, currentHp);
+          bags = {
+            ...bags,
+            physicalThreatBag: battleResult.updatedBags.physicalThreatBag,
+            magicalThreatBag: battleResult.updatedBags.magicalThreatBag,
+          };
+          const damageDealt = enemy.hp - Math.max(0, battleResult.enemyHp);
+          const damageTaken = battleResult.log
+            .filter(entry => entry.actor === 'enemy' && entry.damage !== undefined)
+            .reduce((sum, entry) => sum + (entry.damage ?? 0), 0);
+
+          const enemyAttackValues = calculateEnemyAttackValues(enemy, partyStats);
+
+          const entry: ExpeditionLogEntry = {
+            room,
+            enemyName: enemy.name + (room > totalRooms ? ' (BOSS)' : ''),
+            enemyHP: enemy.hp,
+            enemyAttackValues,
+            outcome: battleResult.outcome!,
+            damageDealt,
+            damageTaken,
+            remainingPartyHP: battleResult.partyHp,
+            maxPartyHP: partyStats.hp,
+            details: battleResult.log,
+          };
+
+          if (battleResult.outcome === 'victory') {
+            totalExp += enemy.experience;
+
+            bags = refillBagIfEmpty(bags, 'rewardBag');
+            const { ticket: rewardTicket, newBag: newRewardBag } = drawFromBag(bags.rewardBag);
+            bags = { ...bags, rewardBag: newRewardBag };
+
+            const { characterStats } = computePartyStats(state.party);
+            const hasUnlock = characterStats.some(cs => cs.abilities.some(a => a.id === 'unlock'));
+
+            let gotReward = rewardTicket === 1;
+            if (!gotReward && hasUnlock) {
+              bags = refillBagIfEmpty(bags, 'rewardBag');
+              const { ticket: unlockTicket, newBag } = drawFromBag(bags.rewardBag);
+              bags = { ...bags, rewardBag: newBag };
+              gotReward = unlockTicket === 1;
+            }
+
+            if (gotReward && enemy.dropItemId) {
+              bags = refillBagIfEmpty(bags, 'enhancementBag');
+              const { ticket: enhVal, newBag: newEnhBag } = drawFromBag(bags.enhancementBag);
+              bags = { ...bags, enhancementBag: newEnhBag };
+
+              bags = refillBagIfEmpty(bags, 'superRareBag');
+              const { ticket: srVal, newBag: newSRBag } = drawFromBag(bags.superRareBag);
+              bags = { ...bags, superRareBag: newSRBag };
+
+              const baseItem = getItemById(enemy.dropItemId);
+              if (baseItem) {
+                const newItem: Item = { ...baseItem, enhancement: enhVal, superRare: srVal };
+                entry.reward = getItemDisplayName(newItem);
+
+                const result = addItemToInventory(currentInventory, newItem, currentGold);
+                currentInventory = result.inventory;
+                currentGold = result.gold;
+                totalAutoSellProfit += result.autoSellProfit;
+
+                if (!result.wasAutoSold) {
+                  rewards.push(newItem);
+                }
+              }
+            }
+
+            currentHp = battleResult.partyHp;
+            entries.push(entry);
+          } else if (battleResult.outcome === 'defeat') {
+            entries.push(entry);
+            finalOutcome = 'defeat';
+            break;
+          } else {
+            entries.push(entry);
+            finalOutcome = 'retreat';
+            break;
+          }
+        }
+        roomCounter = entries.length;
       }
 
       // Update level
@@ -383,7 +549,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         dungeonId: dungeon.id,
         dungeonName: dungeon.name,
         totalExperience: totalExp,
-        totalRooms: totalRooms + 1,
+        totalRooms: dungeon.floors ? dungeon.floors.reduce((sum, f) => sum + f.rooms.length, 0) : dungeon.numberOfRooms + 1,
         completedRooms: entries.length,
         finalOutcome,
         entries,
@@ -548,6 +714,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         scene: 'home' as const,
         party: createInitialParty(),
         bags: {
+          commonRewardBag: createCommonRewardBag(),
+          commonEnhancementBag: createCommonEnhancementBag(),
           rewardBag: createRewardBag(),
           enhancementBag: createEnhancementBag(),
           superRareBag: createSuperRareBag(),

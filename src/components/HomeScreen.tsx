@@ -226,7 +226,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     { id: 'expedition', label: '探検' },
     { id: 'inventory', label: '所持品' },
     { id: 'shop', label: '店' },
-    { id: 'setting', label: '設定' },
+    { id: 'setting', label: '執務室' },
   ];
 
   // Check for new items
@@ -239,7 +239,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-lg font-bold">ケモの冒険</h1>
-            <div className="text-xs text-gray-500">v0.1.4 ({state.buildNumber})</div>
+            <div className="text-xs text-gray-500">v0.2.0 ({state.buildNumber})</div>
           </div>
           <div className="text-right text-sm">
             <div className="font-medium">{state.party.deityName}</div>
@@ -1046,7 +1046,17 @@ function ExpeditionTab({
         <div className="flex justify-between items-center">
           <div>
             <div className="font-medium">{selectedDungeon?.name}</div>
-            <div className="text-xs text-gray-500">部屋数: {selectedDungeon?.numberOfRooms} + ボス</div>
+            <div className="text-xs text-gray-500">
+              {selectedDungeon?.floors
+                ? `${selectedDungeon.floors.length}階層 × ${selectedDungeon.floors[0]?.rooms.length ?? 0}部屋`
+                : `部屋数: ${selectedDungeon?.numberOfRooms} + ボス`
+              }
+            </div>
+            {selectedDungeon?.floors && (
+              <div className="text-xs text-gray-400">
+                倍率: {selectedDungeon.floors.map(f => `${f.floorNumber}F:x${f.multiplier}`).join(' ')}
+              </div>
+            )}
           </div>
           <button
             onClick={onRunExpedition}
@@ -1102,8 +1112,19 @@ function ExpeditionTab({
               <div className="border-t border-gray-200 pt-2 space-y-2">
                 {[...state.lastExpeditionLog.entries].reverse().map((entry, i, arr) => {
                   const originalIndex = arr.length - 1 - i;
-                  const isBoss = entry.room === state.lastExpeditionLog!.totalRooms + 1;
-                  const roomLabel = isBoss ? 'BOSS' : entry.room.toString();
+                  // Build room label with floor info if available
+                  let roomLabel: string;
+                  if (entry.floor && entry.roomInFloor) {
+                    const typeLabel = entry.roomType === 'battle_Boss' ? 'BOSS' :
+                                     entry.roomType === 'battle_Elite' ? 'ELITE' : '';
+                    roomLabel = `${entry.floor}F-${entry.roomInFloor}${typeLabel ? ` ${typeLabel}` : ''}`;
+                    if (entry.floorMultiplier && entry.floorMultiplier > 1) {
+                      roomLabel += ` (x${entry.floorMultiplier})`;
+                    }
+                  } else {
+                    const isBoss = entry.room === state.lastExpeditionLog!.totalRooms + 1;
+                    roomLabel = isBoss ? 'BOSS' : entry.room.toString();
+                  }
                   const hpPercent = Math.round((entry.remainingPartyHP / entry.maxPartyHP) * 100);
                   return (
                     <div key={originalIndex} className="bg-white rounded overflow-hidden">
@@ -1215,7 +1236,12 @@ function ExpeditionTab({
             }`}
           >
             <div className="font-medium">{dungeon.name}</div>
-            <div className="text-xs text-gray-500">部屋数: {dungeon.numberOfRooms} + ボス</div>
+            <div className="text-xs text-gray-500">
+              {dungeon.floors
+                ? `${dungeon.floors.length}階層 × ${dungeon.floors[0]?.rooms.length ?? 0}部屋`
+                : `部屋数: ${dungeon.numberOfRooms} + ボス`
+              }
+            </div>
           </button>
         ))}
       </div>
@@ -1379,13 +1405,22 @@ function SettingTab({
 }) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
-  // Reward bag stats
-  const rewardTotal = 10;
+  // Common Reward bag stats (Normal rooms: 10% chance)
+  const commonRewardTotal = 100;
+  const commonRewardRemaining = bags.commonRewardBag?.tickets.length ?? 0;
+  const commonRewardWins = bags.commonRewardBag?.tickets.filter(t => t === 1).length ?? 0;
+
+  // Common Enhancement bag stats (Standard enhancement for normal rooms)
+  const commonEnhancementTotal = ENHANCEMENT_TITLES.reduce((sum, t) => sum + t.tickets, 0);
+  const commonEnhancementRemaining = bags.commonEnhancementBag?.tickets.length ?? 0;
+
+  // Unique Reward bag stats (Elite/Boss rooms: 1% chance)
+  const rewardTotal = 100;
   const rewardRemaining = bags.rewardBag.tickets.length;
   const rewardWins = bags.rewardBag.tickets.filter(t => t === 1).length;
 
-  // Enhancement bag stats
-  const enhancementTotal = ENHANCEMENT_TITLES.reduce((sum, t) => sum + t.tickets, 0);
+  // Unique Enhancement bag stats (Rarer enhancement for Elite/Boss)
+  const enhancementTotal = 5490 + (ENHANCEMENT_TITLES.reduce((sum, t) => sum + (t.value === 0 ? 0 : t.tickets), 0));
   const enhancementRemaining = bags.enhancementBag.tickets.length;
   const dwellingRemaining = bags.enhancementBag.tickets.filter(t => t === 3).length;  // 宿った
   const legendaryRemaining = bags.enhancementBag.tickets.filter(t => t === 4).length; // 伝説の
@@ -1399,54 +1434,93 @@ function SettingTab({
 
   return (
     <div>
+      <div className="text-lg font-bold mb-3">神の執務室</div>
+
+      {/* Clairvoyance Section */}
       <div className="bg-pane rounded-lg p-4 mb-4">
-        <div className="text-sm font-medium mb-3">Debug: バッグ状態</div>
+        <div className="text-sm font-medium mb-3">千里眼 (Clairvoyance)</div>
 
-        {/* Reward Bag */}
+        {/* Common Bags (Normal Rooms) */}
         <div className="mb-4">
-          <div className="text-xs text-gray-500 mb-1">報酬抽選 (reward_bag)</div>
-          <div className="bg-white rounded p-2 text-sm space-y-1">
-            <div className="flex justify-between">
-              <span>残り</span>
-              <span>{rewardRemaining} / {rewardTotal}</span>
+          <div className="text-xs text-gray-600 font-medium mb-2">通常部屋の報酬 (Normal Rooms)</div>
+
+          {/* Common Reward Bag */}
+          <div className="mb-2">
+            <div className="text-xs text-gray-500 mb-1">通常報酬 (10%確率)</div>
+            <div className="bg-white rounded p-2 text-sm space-y-1">
+              <div className="flex justify-between">
+                <span>残り</span>
+                <span>{commonRewardRemaining} / {commonRewardTotal}</span>
+              </div>
+              <div className="flex justify-between text-green-600">
+                <span>当たり残り</span>
+                <span>{commonRewardWins}</span>
+              </div>
             </div>
-            <div className="flex justify-between text-sub">
-              <span>当たり残り</span>
-              <span>{rewardWins}</span>
+          </div>
+
+          {/* Common Enhancement Bag */}
+          <div>
+            <div className="text-xs text-gray-500 mb-1">通常称号</div>
+            <div className="bg-white rounded p-2 text-sm">
+              <div className="flex justify-between">
+                <span>残り</span>
+                <span>{commonEnhancementRemaining} / {commonEnhancementTotal}</span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Enhancement Bag */}
+        {/* Unique Bags (Elite/Boss Rooms) */}
         <div className="mb-4">
-          <div className="text-xs text-gray-500 mb-1">通常称号抽選 (enhancement_bag)</div>
-          <div className="bg-white rounded p-2 text-sm space-y-1">
-            <div className="flex justify-between">
-              <span>残り</span>
-              <span>{enhancementRemaining} / {enhancementTotal}</span>
+          <div className="text-xs text-gray-600 font-medium mb-2">特別部屋の報酬 (Elite/Boss Rooms)</div>
+
+          {/* Unique Reward Bag */}
+          <div className="mb-2">
+            <div className="text-xs text-gray-500 mb-1">ユニーク報酬 (1%確率)</div>
+            <div className="bg-white rounded p-2 text-sm space-y-1">
+              <div className="flex justify-between">
+                <span>残り</span>
+                <span>{rewardRemaining} / {rewardTotal}</span>
+              </div>
+              <div className="flex justify-between text-sub">
+                <span>当たり残り</span>
+                <span>{rewardWins}</span>
+              </div>
             </div>
-            <div className="flex justify-between text-sub">
-              <span>宿った残り</span>
-              <span>{dwellingRemaining}</span>
-            </div>
-            <div className="flex justify-between text-sub">
-              <span>伝説の残り</span>
-              <span>{legendaryRemaining}</span>
-            </div>
-            <div className="flex justify-between text-sub">
-              <span>恐ろしい残り</span>
-              <span>{terribleRemaining}</span>
-            </div>
-            <div className="flex justify-between text-sub">
-              <span>究極の残り</span>
-              <span>{ultimateRemaining}</span>
+          </div>
+
+          {/* Unique Enhancement Bag */}
+          <div>
+            <div className="text-xs text-gray-500 mb-1">レア称号</div>
+            <div className="bg-white rounded p-2 text-sm space-y-1">
+              <div className="flex justify-between">
+                <span>残り</span>
+                <span>{enhancementRemaining} / {enhancementTotal}</span>
+              </div>
+              <div className="flex justify-between text-sub">
+                <span>宿った残り</span>
+                <span>{dwellingRemaining}</span>
+              </div>
+              <div className="flex justify-between text-sub">
+                <span>伝説の残り</span>
+                <span>{legendaryRemaining}</span>
+              </div>
+              <div className="flex justify-between text-sub">
+                <span>恐ろしい残り</span>
+                <span>{terribleRemaining}</span>
+              </div>
+              <div className="flex justify-between text-sub">
+                <span>究極の残り</span>
+                <span>{ultimateRemaining}</span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Super Rare Bag */}
+        {/* Super Rare Bag (Shared) */}
         <div>
-          <div className="text-xs text-gray-500 mb-1">超レア称号抽選 (superRare_bag)</div>
+          <div className="text-xs text-gray-600 font-medium mb-2">超レア称号 (全部屋共通)</div>
           <div className="bg-white rounded p-2 text-sm space-y-1">
             <div className="flex justify-between">
               <span>残り</span>
@@ -1461,7 +1535,7 @@ function SettingTab({
       </div>
 
       <div className="bg-pane rounded-lg p-4">
-        <div className="text-sm font-medium mb-2">Reset</div>
+        <div className="text-sm font-medium mb-2">リセット</div>
         {!showResetConfirm ? (
           <button
             onClick={() => setShowResetConfirm(true)}
