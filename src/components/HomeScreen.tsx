@@ -68,6 +68,21 @@ function getItemStats(item: Item): string {
   return stats.join(' ');
 }
 
+function formatBaseMultiplier(item?: Item): string {
+  const baseMult = item?.baseMultiplier ?? 1;
+  return baseMult.toFixed(2);
+}
+
+function getOffenseBaseMultiplier(items: Item[], kind: 'melee' | 'ranged' | 'magical'): number {
+  const relevant = items.filter(item => {
+    if (kind === 'melee') return item.meleeAttack || item.meleeNoA || item.meleeNoABonus;
+    if (kind === 'ranged') return item.rangedAttack || item.rangedNoA || item.rangedNoABonus;
+    return item.magicalAttack || item.magicalNoA || item.magicalNoABonus;
+  });
+  if (relevant.length === 0) return 1;
+  return Math.max(...relevant.map(item => item.baseMultiplier ?? 1));
+}
+
 // Helper to format bonus descriptions
 type Bonus = { type: string; value: number; abilityId?: string; abilityLevel?: number };
 
@@ -734,12 +749,34 @@ function PartyTab({
                 const hasRanged = stats.rangedAttack > 0 || stats.rangedNoA > 0;
                 const hasMagical = stats.magicalAttack > 0 || stats.magicalNoA > 0;
                 const hasMelee = stats.meleeAttack > 0 || stats.meleeNoA > 0;
+                const equippedItems = char.equipment.filter((item): item is Item => item !== null);
+                const baseMultMelee = getOffenseBaseMultiplier(
+                  equippedItems,
+                  'melee'
+                );
+                const baseMultRanged = getOffenseBaseMultiplier(
+                  equippedItems,
+                  'ranged'
+                );
+                const baseMultMagical = getOffenseBaseMultiplier(
+                  equippedItems,
+                  'magical'
+                );
 
                 // Build offense lines
                 const offenseLines: string[] = [];
-                if (hasRanged) offenseLines.push(`遠距離攻撃:${Math.floor(stats.rangedAttack)} x ${stats.rangedNoA}回(x${longAmp.toFixed(2)})`);
-                if (hasMagical) offenseLines.push(`魔法攻撃:${Math.floor(stats.magicalAttack)} x ${stats.magicalNoA}回(x${midAmp.toFixed(2)})`);
-                if (hasMelee) offenseLines.push(`近接攻撃:${Math.floor(stats.meleeAttack)} x ${stats.meleeNoA}回(x${closeAmp.toFixed(2)})`);
+                if (hasRanged) {
+                  const amp = longAmp * baseMultRanged;
+                  offenseLines.push(`遠距離攻撃:${Math.floor(stats.rangedAttack)} x ${stats.rangedNoA}回(x${amp.toFixed(2)})`);
+                }
+                if (hasMagical) {
+                  const amp = midAmp * baseMultMagical;
+                  offenseLines.push(`魔法攻撃:${Math.floor(stats.magicalAttack)} x ${stats.magicalNoA}回(x${amp.toFixed(2)})`);
+                }
+                if (hasMelee) {
+                  const amp = closeAmp * baseMultMelee;
+                  offenseLines.push(`近接攻撃:${Math.floor(stats.meleeAttack)} x ${stats.meleeNoA}回(x${amp.toFixed(2)})`);
+                }
 
                 // Add accuracy display if character has ranged or melee NoA (physical attacks)
                 // 命中率: d.accuracy_potency x 100 % (減衰: x (0.90 + c.accuracy+v))
@@ -862,13 +899,13 @@ function PartyTab({
             {char.equipment.filter(e => e).length} / {stats.maxEquipSlots} スロット
           </span>
         </div>
-        <div className="space-y-2">
-          {(() => {
-            // Build sorted list of equipment slots
-            const slots = Array.from({ length: stats.maxEquipSlots }).map((_, i) => ({
-              slotIndex: i,
-              item: char.equipment[i],
-            }));
+      <div className="space-y-2">
+        {(() => {
+          // Build sorted list of equipment slots
+          const slots = Array.from({ length: stats.maxEquipSlots }).map((_, i) => ({
+            slotIndex: i,
+            item: char.equipment[i],
+          }));
             // Sort by category priority, then item ID, super rare, enhancement
             slots.sort((a, b) => {
               if (!a.item && !b.item) return a.slotIndex - b.slotIndex;
@@ -895,7 +932,9 @@ function PartyTab({
                       <span className="font-medium">{getItemDisplayName(item)}</span>
                       <span className="text-xs text-gray-500"> | {getItemStats(item)}</span>
                     </span>
-                    <span className="text-xs text-gray-400">[{CATEGORY_NAMES[item.category]}]</span>
+                    <span className="text-xs text-gray-400">
+                      [{CATEGORY_NAMES[item.category]} x{formatBaseMultiplier(item)}]
+                    </span>
                   </div>
                 ) : (
                   <span className="text-gray-400">空きスロット</span>
