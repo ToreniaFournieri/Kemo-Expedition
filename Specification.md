@@ -1217,7 +1217,7 @@ Left-aligned            Right-aligned
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
-| **0.2.0** | Update:2.1 Global constants (change randamness upgrade), 2.3 Expedition & Enemies, 2.4 Itemsm, 3. INITIALIZATION, 7. REWARD (change the logic), 8.7 Divine Bureau.  |
+| **0.2.0** | Big update: 2.1 Global constants (change randamness upgrade), 2.3 Expedition & Enemies, 2.4 Itemsm, 3. INITIALIZATION, 5.1 "Loot-Gate" progression system, 7. REWARD (change the logic), 8.4 Expedition, 8.7 Divine Bureau (setting)  |
 | 0.1.4 |                                                                |
 
     
