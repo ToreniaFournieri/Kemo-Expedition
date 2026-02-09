@@ -1495,7 +1495,7 @@ function SettingTab({
                 <span>報酬抽選</span>
                 <span>{commonRewardRemaining} / {commonRewardTotal}</span>
               </div>
-              <div className="flex justify-between text-green-600">
+              <div className="flex justify-between text-sub">
                 <span>当たり残り</span>
                 <span>{commonRewardWins}</span>
               </div>
@@ -1510,27 +1510,27 @@ function SettingTab({
                 <span>通常称号抽選</span>
                 <span>{commonEnhancementRemaining} / {commonEnhancementTotal}</span>
               </div>
-              <div className="flex justify-between text-green-600">
+              <div className="flex justify-between text-sub">
                 <span>名工の残り</span>
                 <span>{commonCraftsmanRemaining}</span>
               </div>
-              <div className="flex justify-between text-green-600">
+              <div className="flex justify-between text-sub">
                 <span>魔性の残り</span>
                 <span>{commonDemonicRemaining}</span>
               </div>
-              <div className="flex justify-between text-green-600">
+              <div className="flex justify-between text-sub">
                 <span>宿った残り</span>
                 <span>{commonDwellingRemaining}</span>
               </div>
-              <div className="flex justify-between text-green-600">
+              <div className="flex justify-between text-sub">
                 <span>伝説の残り</span>
                 <span>{commonLegendaryRemaining}</span>
               </div>
-              <div className="flex justify-between text-green-600">
+              <div className="flex justify-between text-sub">
                 <span>恐ろしい残り</span>
                 <span>{commonTerribleRemaining}</span>
               </div>
-              <div className="flex justify-between text-green-600">
+              <div className="flex justify-between text-sub">
                 <span>究極の残り</span>
                 <span>{commonUltimateRemaining}</span>
               </div>
@@ -1539,7 +1539,7 @@ function SettingTab({
 
           <button
             onClick={onResetCommonBags}
-            className="w-full py-2 bg-green-600 text-white rounded text-sm font-medium"
+            className="w-full py-2 bg-sub text-white rounded text-sm font-medium"
           >
             通常報酬初期化
           </button>
