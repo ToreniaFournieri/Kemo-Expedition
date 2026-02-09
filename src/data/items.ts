@@ -270,14 +270,12 @@ function createItem(
       break;
     case 'katana':
       item.meleeAttack = calculateStat(basePower, amplifier);
-      item.baseMultiplier = targetMultiplier;
       item.meleeNoABonus = noaPenalty;
       item.evasionBonus = evasionPenalty;
       break;
     case 'gauntlet':
       item.meleeNoA = calculateNoA(noaBasePower, amplifier);
       item.meleeNoABonus = fixedNoABonus;
-      item.baseMultiplier = targetMultiplier;
       break;
     case 'arrow':
       item.rangedAttack = calculateStat(basePower, amplifier);
@@ -285,14 +283,12 @@ function createItem(
       break;
     case 'bolt':
       item.rangedAttack = calculateStat(basePower, amplifier);
-      item.baseMultiplier = targetMultiplier;
       item.rangedNoABonus = noaPenalty;
       item.evasionBonus = evasionPenalty;
       break;
     case 'archery':
       item.rangedNoA = calculateNoA(noaBasePower, amplifier);
       item.rangedNoABonus = fixedNoABonus;
-      item.baseMultiplier = targetMultiplier;
       break;
     case 'wand':
       item.magicalAttack = calculateStat(basePower, amplifier);
@@ -300,14 +296,12 @@ function createItem(
       break;
     case 'grimoire':
       item.magicalAttack = calculateStat(basePower, amplifier);
-      item.baseMultiplier = targetMultiplier;
       item.magicalNoABonus = noaPenalty;
       item.evasionBonus = evasionPenalty;
       break;
     case 'catalyst':
       item.magicalNoA = calculateNoA(noaBasePower, amplifier);
       item.magicalNoABonus = fixedNoABonus;
-      item.baseMultiplier = targetMultiplier;
       break;
   }
 

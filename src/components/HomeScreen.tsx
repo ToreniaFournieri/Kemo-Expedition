@@ -37,37 +37,41 @@ function getItemStats(item: Item): string {
     (SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1);
   const baseMultiplier = item.baseMultiplier ?? 1;
   const multiplierPercent = Math.round((baseMultiplier - 1) * 100);
+  const formatSigned = (value: number, suffix: string = ''): string =>
+    `${value >= 0 ? '+' : ''}${value}${suffix}`;
 
   const stats: string[] = [];
   if (item.meleeAttack) {
     stats.push(`近攻+${Math.floor(item.meleeAttack * multiplier)}`);
-    if (multiplierPercent) stats.push(`近攻撃+${multiplierPercent}%`);
+    if (item.category === 'sword' && multiplierPercent) stats.push(`近攻撃+${multiplierPercent}%`);
   }
   if (item.rangedAttack) {
     stats.push(`遠攻+${Math.floor(item.rangedAttack * multiplier)}`);
-    if (multiplierPercent) stats.push(`遠攻撃+${multiplierPercent}%`);
+    if (item.category === 'arrow' && multiplierPercent) stats.push(`遠攻撃+${multiplierPercent}%`);
   }
   if (item.magicalAttack) {
     stats.push(`魔攻+${Math.floor(item.magicalAttack * multiplier)}`);
-    if (multiplierPercent) stats.push(`魔攻撃+${multiplierPercent}%`);
+    if (item.category === 'wand' && multiplierPercent) stats.push(`魔攻撃+${multiplierPercent}%`);
   }
   if (item.meleeNoA || item.meleeNoABonus) {
     const baseNoA = item.meleeNoA ?? 0;
-    if (baseNoA !== 0) stats.push(`近回数+${baseNoA}`);
-    if (item.meleeNoABonus) stats.push(`近回数固定+${item.meleeNoABonus}`);
+    if (baseNoA !== 0) stats.push(`近回数${formatSigned(baseNoA)}`);
+    if (item.meleeNoABonus) stats.push(`近回数固定${formatSigned(item.meleeNoABonus)}`);
   }
   if (item.rangedNoA || item.rangedNoABonus) {
     const baseNoA = item.rangedNoA ?? 0;
-    if (baseNoA !== 0) stats.push(`遠回数+${baseNoA}`);
-    if (item.rangedNoABonus) stats.push(`遠回数固定+${item.rangedNoABonus}`);
+    if (baseNoA !== 0) stats.push(`遠回数${formatSigned(baseNoA)}`);
+    if (item.rangedNoABonus) stats.push(`遠回数固定${formatSigned(item.rangedNoABonus)}`);
   }
   if (item.magicalNoA || item.magicalNoABonus) {
     const baseNoA = item.magicalNoA ?? 0;
-    if (baseNoA !== 0) stats.push(`魔回数+${baseNoA}`);
-    if (item.magicalNoABonus) stats.push(`魔回数固定+${item.magicalNoABonus}`);
+    if (baseNoA !== 0) stats.push(`魔回数${formatSigned(baseNoA)}`);
+    if (item.magicalNoABonus) stats.push(`魔回数固定${formatSigned(item.magicalNoABonus)}`);
   }
   if (item.physicalDefense) stats.push(`物防+${Math.floor(item.physicalDefense * multiplier)}`);
   if (item.magicalDefense) stats.push(`魔防+${Math.floor(item.magicalDefense * multiplier)}`);
+  if (item.category === 'armor' && multiplierPercent) stats.push(`物防+${multiplierPercent}%`);
+  if (item.category === 'robe' && multiplierPercent) stats.push(`魔防+${multiplierPercent}%`);
   if (item.partyHP) stats.push(`HP+${Math.floor(item.partyHP * multiplier)}`);
   if (item.evasionBonus) stats.push(`回避${item.evasionBonus > 0 ? '+' : ''}${item.evasionBonus.toFixed(3)}`);
   if (item.elementalOffense && item.elementalOffense !== 'none') {
