@@ -196,6 +196,11 @@ export function computeCharacterStats(
   let rangedNoA = 0;
   let magicalNoA = 0;
   let meleeNoA = 0;
+  let rangedNoAFixedBonus = 0;
+  let magicalNoAFixedBonus = 0;
+  let meleeNoAFixedBonus = 0;
+  let accuracyBonus = collection.accuracy;
+  let evasionBonus = collection.evasion;
   let elementalOffense: ElementalOffense = 'none';
   let elementalOffenseValue = 1.0;
 
@@ -205,7 +210,8 @@ export function computeCharacterStats(
   for (const item of equippedItems) {
     const categoryMult = getMultiplier(item.category);
     const enhanceMult = getItemEnhancementMultiplier(item);
-    const multiplier = categoryMult * enhanceMult;
+    const baseMult = item.baseMultiplier ?? 1;
+    const multiplier = categoryMult * enhanceMult * baseMult;
 
     if (item.rangedAttack) {
       rangedAttack += item.rangedAttack * multiplier;
@@ -240,6 +246,11 @@ export function computeCharacterStats(
         meleeNoA += item.meleeNoA;
       }
     }
+    if (item.meleeNoABonus) meleeNoAFixedBonus = Math.max(meleeNoAFixedBonus, item.meleeNoABonus);
+    if (item.rangedNoABonus) rangedNoAFixedBonus = Math.max(rangedNoAFixedBonus, item.rangedNoABonus);
+    if (item.magicalNoABonus) magicalNoAFixedBonus = Math.max(magicalNoAFixedBonus, item.magicalNoABonus);
+    if (item.accuracyBonus) accuracyBonus += item.accuracyBonus;
+    if (item.evasionBonus) evasionBonus += item.evasionBonus;
 
     // Elemental offense from equipment (priority: thunder > ice > fire > none)
     if (item.elementalOffense && item.elementalOffense !== 'none') {
@@ -256,13 +267,13 @@ export function computeCharacterStats(
   magicalAttack = magicalAttack * (baseStats.intelligence / 10);
 
   // Add pursuit bonus to ranged NoA
-  rangedNoA += collection.pursuit;
+  rangedNoA += collection.pursuit + rangedNoAFixedBonus;
 
   // Add caster bonus to magical NoA
-  magicalNoA += collection.caster;
+  magicalNoA += collection.caster + magicalNoAFixedBonus;
 
   // Add grit bonus to melee NoA
-  meleeNoA += collection.grit;
+  meleeNoA += collection.grit + meleeNoAFixedBonus;
 
   // Check for iaigiri ability
   const hasIaigiri = collection.abilities.has('iaigiri');
@@ -281,21 +292,30 @@ export function computeCharacterStats(
   // d.magical_defense = Item Bonuses of Magical defense x its c.multiplier x enhancement x b.mind / 10
   let physicalDefense = 0;
   let magicalDefense = 0;
+  let physicalDefenseAmplifier = 1.0;
+  let magicalDefenseAmplifier = 1.0;
+  let physicalDefenseBonus = 0;
+  let magicalDefenseBonus = 0;
 
   for (const item of equippedItems) {
     const categoryMult = getMultiplier(item.category);
     const enhanceMult = getItemEnhancementMultiplier(item);
-    const multiplier = categoryMult * enhanceMult;
+    const baseMult = item.baseMultiplier ?? 1;
+    const multiplier = categoryMult * enhanceMult * baseMult;
     if (item.physicalDefense) {
       physicalDefense += item.physicalDefense * multiplier;
+      if (item.baseMultiplier) physicalDefenseBonus += item.baseMultiplier - 1;
     }
     if (item.magicalDefense) {
       magicalDefense += item.magicalDefense * multiplier;
+      if (item.baseMultiplier) magicalDefenseBonus += item.baseMultiplier - 1;
     }
   }
 
   physicalDefense = physicalDefense * (baseStats.vitality / 10);
   magicalDefense = magicalDefense * (baseStats.mind / 10);
+  physicalDefenseAmplifier = Math.max(0.01, 1 - physicalDefenseBonus);
+  magicalDefenseAmplifier = Math.max(0.01, 1 - magicalDefenseBonus);
 
   // Build abilities list
   const abilities: Ability[] = [];
@@ -333,14 +353,16 @@ export function computeCharacterStats(
     meleeNoA,
     physicalDefense: Math.floor(physicalDefense),
     magicalDefense: Math.floor(magicalDefense),
+    physicalDefenseAmplifier,
+    magicalDefenseAmplifier,
     maxEquipSlots,
     abilities,
     penetMultiplier: collection.penet,
     elementalOffense,
     elementalOffenseValue,
     accuracyPotency,
-    accuracyBonus: collection.accuracy,
-    evasionBonus: collection.evasion,
+    accuracyBonus,
+    evasionBonus,
   };
 }
 
