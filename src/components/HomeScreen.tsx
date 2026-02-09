@@ -35,32 +35,71 @@ type Tab = 'party' | 'expedition' | 'inventory' | 'shop' | 'setting';
 function getItemStats(item: Item): string {
   const multiplier = (ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1) *
     (SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1);
+  const baseMultiplier = item.baseMultiplier ?? 1;
+  const multiplierPercent = Math.round((baseMultiplier - 1) * 100);
+  const formatSigned = (value: number, suffix: string = ''): string =>
+    `${value >= 0 ? '+' : ''}${value}${suffix}`;
+  const formatBracket = (label: string, value: number, suffix: string = ''): string =>
+    `[${label}${formatSigned(value, suffix)}]`;
 
   const stats: string[] = [];
-  if (item.meleeAttack) stats.push(`近攻+${Math.floor(item.meleeAttack * multiplier)}`);
-  if (item.meleeNoA) {
-    // Positive NoA scales with enhancement; negative (katana penalty) stays fixed
-    const noaVal = item.meleeNoA > 0 ? Math.ceil(item.meleeNoA * multiplier) : item.meleeNoA;
-    stats.push(`近回数${noaVal > 0 ? '+' : ''}${noaVal}`);
+  if (item.meleeAttack) {
+    stats.push(`近攻+${Math.floor(item.meleeAttack * multiplier)}`);
+    if (item.category === 'sword' && multiplierPercent) stats.push(formatBracket('近攻撃', multiplierPercent, '%'));
   }
-  if (item.rangedAttack) stats.push(`遠攻+${Math.floor(item.rangedAttack * multiplier)}`);
-  if (item.rangedNoA) {
-    const noaVal = item.rangedNoA > 0 ? Math.ceil(item.rangedNoA * multiplier) : item.rangedNoA;
-    stats.push(`遠回数+${noaVal}`);
+  if (item.rangedAttack) {
+    stats.push(`遠攻+${Math.floor(item.rangedAttack * multiplier)}`);
+    if (item.category === 'arrow' && multiplierPercent) stats.push(formatBracket('遠攻撃', multiplierPercent, '%'));
   }
-  if (item.magicalAttack) stats.push(`魔攻+${Math.floor(item.magicalAttack * multiplier)}`);
-  if (item.magicalNoA) {
-    const noaVal = item.magicalNoA > 0 ? Math.ceil(item.magicalNoA * multiplier) : item.magicalNoA;
-    stats.push(`魔回数+${noaVal}`);
+  if (item.magicalAttack) {
+    stats.push(`魔攻+${Math.floor(item.magicalAttack * multiplier)}`);
+    if (item.category === 'wand' && multiplierPercent) stats.push(formatBracket('魔攻撃', multiplierPercent, '%'));
+  }
+  if (item.meleeNoA || item.meleeNoABonus) {
+    const baseNoA = item.meleeNoA ?? 0;
+    if (baseNoA !== 0) stats.push(`近回数${formatSigned(baseNoA)}`);
+    if (item.meleeNoABonus) stats.push(formatBracket('近回数', item.meleeNoABonus));
+  }
+  if (item.rangedNoA || item.rangedNoABonus) {
+    const baseNoA = item.rangedNoA ?? 0;
+    if (baseNoA !== 0) stats.push(`遠回数${formatSigned(baseNoA)}`);
+    if (item.rangedNoABonus) stats.push(formatBracket('遠回数', item.rangedNoABonus));
+  }
+  if (item.magicalNoA || item.magicalNoABonus) {
+    const baseNoA = item.magicalNoA ?? 0;
+    if (baseNoA !== 0) stats.push(`魔回数${formatSigned(baseNoA)}`);
+    if (item.magicalNoABonus) stats.push(formatBracket('魔回数', item.magicalNoABonus));
   }
   if (item.physicalDefense) stats.push(`物防+${Math.floor(item.physicalDefense * multiplier)}`);
   if (item.magicalDefense) stats.push(`魔防+${Math.floor(item.magicalDefense * multiplier)}`);
+  if (item.category === 'armor' && multiplierPercent) stats.push(formatBracket('物防', multiplierPercent, '%'));
+  if (item.category === 'robe' && multiplierPercent) stats.push(formatBracket('魔防', multiplierPercent, '%'));
   if (item.partyHP) stats.push(`HP+${Math.floor(item.partyHP * multiplier)}`);
+  if (item.evasionBonus) stats.push(formatBracket('回避', Math.round(item.evasionBonus * 1000)));
   if (item.elementalOffense && item.elementalOffense !== 'none') {
     const elem = { fire: '炎', ice: '氷', thunder: '雷' }[item.elementalOffense];
     stats.push(`${elem}属性`);
   }
   return stats.join(' ');
+}
+
+function getOffenseMultiplierSum(items: Item[], kind: 'melee' | 'ranged' | 'magical'): number {
+  const relevant = items.filter(item => {
+    if (kind === 'melee') return item.meleeAttack || item.meleeNoA || item.meleeNoABonus;
+    if (kind === 'ranged') return item.rangedAttack || item.rangedNoA || item.rangedNoABonus;
+    return item.magicalAttack || item.magicalNoA || item.magicalNoABonus;
+  });
+  const bonusSum = relevant.reduce((sum, item) => sum + ((item.baseMultiplier ?? 1) - 1), 0);
+  return 1 + bonusSum;
+}
+
+function getDefenseMultiplierSum(items: Item[], kind: 'physical' | 'magical'): number {
+  const relevant = items.filter(item => {
+    if (kind === 'physical') return item.physicalDefense;
+    return item.magicalDefense;
+  });
+  const bonusSum = relevant.reduce((sum, item) => sum + ((item.baseMultiplier ?? 1) - 1), 0);
+  return Math.max(0.01, 1 - bonusSum);
 }
 
 // Helper to format bonus descriptions
@@ -729,12 +768,42 @@ function PartyTab({
                 const hasRanged = stats.rangedAttack > 0 || stats.rangedNoA > 0;
                 const hasMagical = stats.magicalAttack > 0 || stats.magicalNoA > 0;
                 const hasMelee = stats.meleeAttack > 0 || stats.meleeNoA > 0;
+                const equippedItems = char.equipment.filter((item): item is Item => item !== null);
+                const baseMultMelee = getOffenseMultiplierSum(
+                  equippedItems,
+                  'melee'
+                );
+                const baseMultRanged = getOffenseMultiplierSum(
+                  equippedItems,
+                  'ranged'
+                );
+                const baseMultMagical = getOffenseMultiplierSum(
+                  equippedItems,
+                  'magical'
+                );
+                const defenseMultPhysical = getDefenseMultiplierSum(
+                  equippedItems,
+                  'physical'
+                );
+                const defenseMultMagical = getDefenseMultiplierSum(
+                  equippedItems,
+                  'magical'
+                );
 
                 // Build offense lines
                 const offenseLines: string[] = [];
-                if (hasRanged) offenseLines.push(`遠距離攻撃:${Math.floor(stats.rangedAttack)} x ${stats.rangedNoA}回(x${longAmp.toFixed(2)})`);
-                if (hasMagical) offenseLines.push(`魔法攻撃:${Math.floor(stats.magicalAttack)} x ${stats.magicalNoA}回(x${midAmp.toFixed(2)})`);
-                if (hasMelee) offenseLines.push(`近接攻撃:${Math.floor(stats.meleeAttack)} x ${stats.meleeNoA}回(x${closeAmp.toFixed(2)})`);
+                if (hasRanged) {
+                  const amp = longAmp * baseMultRanged;
+                  offenseLines.push(`遠距離攻撃:${Math.floor(stats.rangedAttack)} x ${stats.rangedNoA}回(x${amp.toFixed(2)})`);
+                }
+                if (hasMagical) {
+                  const amp = midAmp * baseMultMagical;
+                  offenseLines.push(`魔法攻撃:${Math.floor(stats.magicalAttack)} x ${stats.magicalNoA}回(x${amp.toFixed(2)})`);
+                }
+                if (hasMelee) {
+                  const amp = closeAmp * baseMultMelee;
+                  offenseLines.push(`近接攻撃:${Math.floor(stats.meleeAttack)} x ${stats.meleeNoA}回(x${amp.toFixed(2)})`);
+                }
 
                 // Add accuracy display if character has ranged or melee NoA (physical attacks)
                 // 命中率: d.accuracy_potency x 100 % (減衰: x (0.90 + c.accuracy+v))
@@ -744,12 +813,13 @@ function PartyTab({
                   offenseLines.push(`命中率: ${Math.round(stats.accuracyPotency * 100)}% (減衰: x${baseDecay.toFixed(2)})`);
                 }
 
-                // Defense lines (always 3)
+                // Defense lines
                 const defenseLines = [
                   `属性:${elementName}(x${stats.elementalOffenseValue.toFixed(1)})`,
-                  `物防:${stats.physicalDefense}`,
-                  `魔防:${stats.magicalDefense}`,
+                  `物防:${stats.physicalDefense} (${Math.round(defenseMultPhysical * 100)}%)`,
+                  `魔防:${stats.magicalDefense} (${Math.round(defenseMultMagical * 100)}%)`,
                 ];
+                defenseLines.push(`回避:${stats.evasionBonus >= 0 ? '+' : ''}${Math.round(stats.evasionBonus * 1000)}`);
 
                 // Pad offense lines to match defense lines count
                 while (offenseLines.length < defenseLines.length) {
@@ -857,13 +927,13 @@ function PartyTab({
             {char.equipment.filter(e => e).length} / {stats.maxEquipSlots} スロット
           </span>
         </div>
-        <div className="space-y-2">
-          {(() => {
-            // Build sorted list of equipment slots
-            const slots = Array.from({ length: stats.maxEquipSlots }).map((_, i) => ({
-              slotIndex: i,
-              item: char.equipment[i],
-            }));
+      <div className="space-y-2">
+        {(() => {
+          // Build sorted list of equipment slots
+          const slots = Array.from({ length: stats.maxEquipSlots }).map((_, i) => ({
+            slotIndex: i,
+            item: char.equipment[i],
+          }));
             // Sort by category priority, then item ID, super rare, enhancement
             slots.sort((a, b) => {
               if (!a.item && !b.item) return a.slotIndex - b.slotIndex;
@@ -890,7 +960,9 @@ function PartyTab({
                       <span className="font-medium">{getItemDisplayName(item)}</span>
                       <span className="text-xs text-gray-500"> | {getItemStats(item)}</span>
                     </span>
-                    <span className="text-xs text-gray-400">[{CATEGORY_NAMES[item.category]}]</span>
+                    <span className="text-xs text-gray-400">
+                      [{CATEGORY_NAMES[item.category]}]
+                    </span>
                   </div>
                 ) : (
                   <span className="text-gray-400">空きスロット</span>
@@ -1325,7 +1397,8 @@ function InventoryTab({
             const { item, count, isNew } = variant;
             const enhMult = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
             const srMult = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
-            const sellPrice = Math.floor(10 * enhMult * srMult) * count;
+            const baseMult = item.baseMultiplier ?? 1;
+            const sellPrice = Math.floor(10 * enhMult * srMult * baseMult) * count;
 
             return (
               <div
@@ -1448,10 +1521,14 @@ function SettingTab({
   const commonTerribleRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 5).length ?? 0;
   const commonUltimateRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 6).length ?? 0;
 
-  // Unique Reward bag stats (Elite/Boss rooms: 1% chance)
+  // Unique Reward bag stats (1% chance)
   const rewardTotal = 100;
-  const rewardRemaining = bags.rewardBag.tickets.length;
-  const rewardWins = bags.rewardBag.tickets.filter(t => t === 1).length;
+  const uncommonRewardRemaining = bags.uncommonRewardBag.tickets.length;
+  const uncommonRewardWins = bags.uncommonRewardBag.tickets.filter(t => t === 1).length;
+  const rareRewardRemaining = bags.rareRewardBag.tickets.length;
+  const rareRewardWins = bags.rareRewardBag.tickets.filter(t => t === 1).length;
+  const mythicRewardRemaining = bags.mythicRewardBag.tickets.length;
+  const mythicRewardWins = bags.mythicRewardBag.tickets.filter(t => t === 1).length;
 
   // Unique Enhancement bag stats (Rarer enhancement for Elite/Boss)
   const enhancementTotal = 5490 + (ENHANCEMENT_TITLES.reduce((sum, t) => sum + (t.value === 0 ? 0 : t.tickets), 0));
@@ -1543,21 +1620,50 @@ function SettingTab({
         <div className="mb-4 border-b border-gray-200 pb-4">
           <div className="text-xs text-gray-600 font-medium mb-2">固有報酬 (Unique Reward)</div>
 
-          {/* Unique Reward Bag */}
+          {/* Uncommon Reward Bag */}
           <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">固有報酬 抽選確率</div>
+            <div className="text-xs text-gray-500 mb-1">アンコモン抽選確率</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
               <div className="flex justify-between">
                 <span>報酬抽選</span>
-                <span>{rewardRemaining} / {rewardTotal}</span>
+                <span>{uncommonRewardRemaining} / {rewardTotal}</span>
               </div>
               <div className="flex justify-between text-sub">
                 <span>当たり残り</span>
-                <span>{rewardWins}</span>
+                <span>{uncommonRewardWins}</span>
               </div>
             </div>
           </div>
 
+          {/* Rare Reward Bag */}
+          <div className="mb-2">
+            <div className="text-xs text-gray-500 mb-1">レア抽選確率</div>
+            <div className="bg-white rounded p-2 text-sm space-y-1">
+              <div className="flex justify-between">
+                <span>報酬抽選</span>
+                <span>{rareRewardRemaining} / {rewardTotal}</span>
+              </div>
+              <div className="flex justify-between text-sub">
+                <span>当たり残り</span>
+                <span>{rareRewardWins}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Mythic Reward Bag */}
+          <div className="mb-2">
+            <div className="text-xs text-gray-500 mb-1">神魔レア抽選確率</div>
+            <div className="bg-white rounded p-2 text-sm space-y-1">
+              <div className="flex justify-between">
+                <span>報酬抽選</span>
+                <span>{mythicRewardRemaining} / {rewardTotal}</span>
+              </div>
+              <div className="flex justify-between text-sub">
+                <span>当たり残り</span>
+                <span>{mythicRewardWins}</span>
+              </div>
+            </div>
+          </div>
           {/* Unique Enhancement Bag */}
           <div className="mb-2">
             <div className="text-xs text-gray-500 mb-1">称号付与 抽選確率</div>
