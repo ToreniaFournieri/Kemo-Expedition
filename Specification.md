@@ -29,6 +29,21 @@
 | `s.` | Item **S**tate |
 | `x.` | E**x**pedition |
 
+
+| `c.` | Display | Example |
+|---|----|----|
+| `c.ranged_attack+v` | [遠攻撃+v%] | `c.ranged_attack+13` -> [遠攻撃+13%] |
+| `c.magical_attack+v` | [魔攻撃+v%] | `c.magical_attack-4` -> [魔攻撃-4%] |
+| `c.melee_attack+v` | [近攻撃+v%] | `c.melee_attack+3` ->  [近攻撃+3%]  |
+| `c.physical_defense+v` | [物防+v%] | `c.physical_defense+5` ->  [物防+5%] |
+| `c.magical_defense+v` | [魔防+v%] | `c.magical_defense-2` -> [魔防-2%]  |
+| `c.ranged_NoA+v` | [遠回数+v] | `c.ranged_NoA+2` -> [遠回数+2] |
+| `c.magical_NoA+v` | [魔回数+v] | `c.magical_NoA+3` -> [魔回数+3] |
+| `c.melee_NoA+v` | [近回数+v] | `c.melee_NoA-1` -> [近回数-1] |
+| `c.accuracy+v` | [命中+(v*1000)] | `c.accuracy+0.001` -> [命中+1] |
+| `c.evasion+v` | [回避+(v*1000)] | `c.evasion-3` [回避-3]  |
+
+
 ### 2.1 Global constants
 - One deity represents on one party. The deity has its own level, HP, and unique divine abilities. 
 const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
@@ -351,7 +366,8 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 - `d.HP` : master value x `x.exp_mult` x `x.floor_multiplier` 
 - `f.attack` :  master value x `x.exp_mult` x `x.floor_multiplier` 
 - `f.NoA` :  master value x `x.exp_mult` x `x.floor_multiplier` 
-- `f.offense_amplifier` :  master value x `x.exp_mult` x `x.floor_multiplier` 
+- `f.offense_amplifier` :  master value x `x.exp_mult` x `x.floor_multiplier`
+- `f.defense_amplifier` : set 1.0 (for this version)
 - `f.defense` :  master value x `x.exp_mult` x `x.floor_multiplier` 
 - `f.elemental_offense_attribute` :  not scale
 - `f.elemental_resistance_attribute` : not scale
@@ -609,11 +625,17 @@ inventory = {
   - `d.magical_NoA`= 0 + `c.caster+v` bonuses + Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier + `c.magical_NoA+v` (round up) 
   - `d.melee_NoA`= 0 + `c.grit+v` bonuses + Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier + `c.melee_NoA+v` (round up) 
     - IF the character has `a.iaigiri`, halve these number of attacks, round up. 
+  - *note: `c.ranged_NoA+v`, `c.magical_NoA+v`, `c.melee_NoA+v`  Only one single bonuses(c.) of the **exact** same name applies.  
+
 
 - character.`f.offense_amplifier` (phase: )
   - If phase is CLOSE,
-    - If character.`a.iaigiri`, return 2.0.
-  - Else return 1.0. 
+    - If character.`a.iaigiri`, return 2.0 x sum of ( `c.melee_attack+v` )
+  - Else return 1.0 x  sum of (`c.melee_attack+v` or `c.ranged_attack+v` or `c.magical_attack+v` )
+
+- character.`f.defense_amplifier` (phase: )
+  - return max(0.01, 1.00 - sum of (`c.physical_defense+v` or `c.magical_defense+v` ))
+
 
 - character.`f.accuracy_amplifier` (phase: )
   - If phase is LONG,  return: `d.accuracy_potency`.
@@ -675,6 +697,7 @@ inventory = {
 
 | title | Gate `x.floor`,`x.room` | uncommon items from `x.room` |
 |----|----|----|
+| Entering | 1,1 | correct 1 mythic item from previous expedition ( `x.expedition` -1 ) |
 | 1st Elite gate | 1,4 | correct 6 uncommon items from this `x.expedition` |
 | 2nd Elite gate | 2,4 | correct 18 uncommon items from this `x.expedition`  |
 | 3rd Elite gate | 3,4 | correct 36 uncommon items from this `x.expedition` |
@@ -763,7 +786,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
     Else, return 1.0.
 
 - `f.damage_calculation`: (actor: , opponent: , phase: )
-	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) ) x actor.`f.offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x party.`f.party.offense_amplifier` x `f.resonance_amplifier`)
+	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) ) x actor.`f.offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x opponent.`f.defense_amplifier` x party.`f.party.offense_amplifier` x `f.resonance_amplifier`)
 
   - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
 
@@ -989,9 +1012,9 @@ Name      [編集]
 🐶 race / main class(sub class) / predisposition / lineage 
 [体力:`b.vitality`] [力:`b.strength`] [知性:`b.intelligence`] [精神:`b.mind`]
 `f.display_ranged_offense`    属性攻撃:`f.elemental_offense_attribute`.name (x `f.elemental_offense_attribute`.value )
-`f.display_magical_offense`      魔法防御:`d.magical_defense`
-`f.display_melee_offense`     物理防御:`d.physical_defense`
-`f.display_accuracy` 
+`f.display_magical_offense`      魔法防御:`d.magical_defense` (x `f.defense_amplifier`(phase: MID) )
+`f.display_melee_offense`     物理防御:`d.physical_defense`(x `f.defense_amplifier`(phase: CLOSE) )
+`f.display_accuracy`           回避: sum of ``c.evasion+v``
 ボーナス: `c.` (ex. 護符x1.3, 弓x1.1 鎧x2.4, 剣x1.4, 根性+1, 装備+1, 体+3)
 特殊能力:
 `a.` (ex. 守護者: パーティへの物理ダメージ × 3/5 )
@@ -1004,8 +1027,9 @@ Name      [編集]
 —————
 Left-aligned            Right-aligned
 近接攻撃:98 x 4回(x1.00)     属性:無(x1.0)
-命中率: 85% (減衰: x0.90)     物防:108
-                              魔防:56
+命中率: 85% (減衰: x0.90)     物防:108 (x1.00)
+                              魔防:56 (x1.00)
+                              回避:+0.004
 —————
 ボーナス: 護x1.3, 弓x1.1, 鎧x1.8, 装備+1, 根性+1, 体+3
 特殊能力:
