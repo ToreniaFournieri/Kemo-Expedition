@@ -34,28 +34,37 @@ type Tab = 'party' | 'expedition' | 'inventory' | 'shop' | 'setting';
 // Helper to format item stats
 function getItemStats(item: Item): string {
   const multiplier = (ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1) *
-    (SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1) *
-    (item.baseMultiplier ?? 1);
+    (SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1);
+  const baseMultiplier = item.baseMultiplier ?? 1;
+  const multiplierPercent = Math.round((baseMultiplier - 1) * 100);
 
   const stats: string[] = [];
-  if (item.meleeAttack) stats.push(`近攻+${Math.floor(item.meleeAttack * multiplier)}`);
+  if (item.meleeAttack) {
+    stats.push(`近攻+${Math.floor(item.meleeAttack * multiplier)}`);
+    if (multiplierPercent) stats.push(`近攻撃+${multiplierPercent}%`);
+  }
+  if (item.rangedAttack) {
+    stats.push(`遠攻+${Math.floor(item.rangedAttack * multiplier)}`);
+    if (multiplierPercent) stats.push(`遠攻撃+${multiplierPercent}%`);
+  }
+  if (item.magicalAttack) {
+    stats.push(`魔攻+${Math.floor(item.magicalAttack * multiplier)}`);
+    if (multiplierPercent) stats.push(`魔攻撃+${multiplierPercent}%`);
+  }
   if (item.meleeNoA || item.meleeNoABonus) {
-    // Positive NoA scales with enhancement; fixed bonuses stay constant
-    const baseNoA = item.meleeNoA ? (item.meleeNoA > 0 ? Math.ceil(item.meleeNoA * multiplier) : item.meleeNoA) : 0;
-    const noaVal = baseNoA + (item.meleeNoABonus ?? 0);
-    stats.push(`近回数${noaVal > 0 ? '+' : ''}${noaVal}`);
+    const baseNoA = item.meleeNoA ?? 0;
+    if (baseNoA !== 0) stats.push(`近回数+${baseNoA}`);
+    if (item.meleeNoABonus) stats.push(`近回数固定+${item.meleeNoABonus}`);
   }
-  if (item.rangedAttack) stats.push(`遠攻+${Math.floor(item.rangedAttack * multiplier)}`);
   if (item.rangedNoA || item.rangedNoABonus) {
-    const baseNoA = item.rangedNoA ? (item.rangedNoA > 0 ? Math.ceil(item.rangedNoA * multiplier) : item.rangedNoA) : 0;
-    const noaVal = baseNoA + (item.rangedNoABonus ?? 0);
-    stats.push(`遠回数${noaVal > 0 ? '+' : ''}${noaVal}`);
+    const baseNoA = item.rangedNoA ?? 0;
+    if (baseNoA !== 0) stats.push(`遠回数+${baseNoA}`);
+    if (item.rangedNoABonus) stats.push(`遠回数固定+${item.rangedNoABonus}`);
   }
-  if (item.magicalAttack) stats.push(`魔攻+${Math.floor(item.magicalAttack * multiplier)}`);
   if (item.magicalNoA || item.magicalNoABonus) {
-    const baseNoA = item.magicalNoA ? (item.magicalNoA > 0 ? Math.ceil(item.magicalNoA * multiplier) : item.magicalNoA) : 0;
-    const noaVal = baseNoA + (item.magicalNoABonus ?? 0);
-    stats.push(`魔回数${noaVal > 0 ? '+' : ''}${noaVal}`);
+    const baseNoA = item.magicalNoA ?? 0;
+    if (baseNoA !== 0) stats.push(`魔回数+${baseNoA}`);
+    if (item.magicalNoABonus) stats.push(`魔回数固定+${item.magicalNoABonus}`);
   }
   if (item.physicalDefense) stats.push(`物防+${Math.floor(item.physicalDefense * multiplier)}`);
   if (item.magicalDefense) stats.push(`魔防+${Math.floor(item.magicalDefense * multiplier)}`);
@@ -68,19 +77,14 @@ function getItemStats(item: Item): string {
   return stats.join(' ');
 }
 
-function formatBaseMultiplier(item?: Item): string {
-  const baseMult = item?.baseMultiplier ?? 1;
-  return baseMult.toFixed(2);
-}
-
-function getOffenseBaseMultiplier(items: Item[], kind: 'melee' | 'ranged' | 'magical'): number {
+function getOffenseMultiplierSum(items: Item[], kind: 'melee' | 'ranged' | 'magical'): number {
   const relevant = items.filter(item => {
     if (kind === 'melee') return item.meleeAttack || item.meleeNoA || item.meleeNoABonus;
     if (kind === 'ranged') return item.rangedAttack || item.rangedNoA || item.rangedNoABonus;
     return item.magicalAttack || item.magicalNoA || item.magicalNoABonus;
   });
-  if (relevant.length === 0) return 1;
-  return Math.max(...relevant.map(item => item.baseMultiplier ?? 1));
+  const bonusSum = relevant.reduce((sum, item) => sum + ((item.baseMultiplier ?? 1) - 1), 0);
+  return 1 + bonusSum;
 }
 
 // Helper to format bonus descriptions
@@ -750,15 +754,15 @@ function PartyTab({
                 const hasMagical = stats.magicalAttack > 0 || stats.magicalNoA > 0;
                 const hasMelee = stats.meleeAttack > 0 || stats.meleeNoA > 0;
                 const equippedItems = char.equipment.filter((item): item is Item => item !== null);
-                const baseMultMelee = getOffenseBaseMultiplier(
+                const baseMultMelee = getOffenseMultiplierSum(
                   equippedItems,
                   'melee'
                 );
-                const baseMultRanged = getOffenseBaseMultiplier(
+                const baseMultRanged = getOffenseMultiplierSum(
                   equippedItems,
                   'ranged'
                 );
-                const baseMultMagical = getOffenseBaseMultiplier(
+                const baseMultMagical = getOffenseMultiplierSum(
                   equippedItems,
                   'magical'
                 );
@@ -933,7 +937,7 @@ function PartyTab({
                       <span className="text-xs text-gray-500"> | {getItemStats(item)}</span>
                     </span>
                     <span className="text-xs text-gray-400">
-                      [{CATEGORY_NAMES[item.category]} x{formatBaseMultiplier(item)}]
+                      [{CATEGORY_NAMES[item.category]}]
                     </span>
                   </div>
                 ) : (
