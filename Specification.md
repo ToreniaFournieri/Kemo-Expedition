@@ -32,11 +32,16 @@
 
 | `c.` | Display | Example |
 |---|----|----|
-| `c.ranged_NoA+v`| [遠回数+v] | `c.ranged_NoA+2` -> [遠回数+2] |
-| `c.magical_NoA+v`| [魔回数+v] | `c.magical_NoA+3` -> [魔回数+3] |
-| `c.melee_NoA+v`| [近回数+v] | `c.melee_NoA-1` -> [近回数-1] |
-| `c.accuracy+v`| [命中+(v*1000)] | `c.accuracy+0.001` -> [命中+1] |
-| `c.evasion+v`| [回避+(v*1000)] | `c.evasion-3` [回避-3]  |
+| `c.ranged_attack+v` | [遠攻撃+v%] | `c.ranged_attack+13` -> [遠攻撃+13%] |
+| `c.magical_attack+v` | [魔攻撃+v%] | `c.magical_attack-4` -> [魔攻撃-4%] |
+| `c.melee_attack+v` | [近攻撃+v%] | `c.melee_attack+3` ->  [近攻撃+3%]  |
+| `c.physical_defense+v` | [物防+v%] | `c.physical_defense+5` ->  [物防+5%] |
+| `c.magical_defense+v` | [魔防+v%] | `c.magical_defense-2` -> [魔防-2%]  |
+| `c.ranged_NoA+v` | [遠回数+v] | `c.ranged_NoA+2` -> [遠回数+2] |
+| `c.magical_NoA+v` | [魔回数+v] | `c.magical_NoA+3` -> [魔回数+3] |
+| `c.melee_NoA+v` | [近回数+v] | `c.melee_NoA-1` -> [近回数-1] |
+| `c.accuracy+v` | [命中+(v*1000)] | `c.accuracy+0.001` -> [命中+1] |
+| `c.evasion+v` | [回避+(v*1000)] | `c.evasion-3` [回避-3]  |
 
 
 ### 2.1 Global constants
