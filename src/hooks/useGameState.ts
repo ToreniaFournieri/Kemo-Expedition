@@ -128,29 +128,23 @@ function loadSavedState(): GameState | null {
         if (Array.isArray(parsed.party.inventory)) {
           parsed.party.inventory = migrateOldInventory(parsed.party.inventory);
         }
-        const mergeWithBaseItem = (item: Item): Item => {
-          const baseItem = getItemById(item.id);
-          if (!baseItem) return item;
-          return {
-            ...baseItem,
-            enhancement: item.enhancement,
-            superRare: item.superRare,
-            isNew: item.isNew,
-          };
-        };
         // Merge latest item definitions onto saved items (for new fields like baseMultiplier)
         for (const character of parsed.party.characters ?? []) {
           if (Array.isArray(character.equipment)) {
             character.equipment = character.equipment.map((item: Item | null) => {
               if (!item) return null;
-              return mergeWithBaseItem(item);
+              const baseItem = getItemById(item.id);
+              return baseItem ? { ...baseItem, ...item } : item;
             });
           }
         }
         if (parsed.party.inventory) {
           for (const variant of Object.values(parsed.party.inventory) as InventoryVariant[]) {
             if (variant?.item) {
-              variant.item = mergeWithBaseItem(variant.item);
+              const baseItem = getItemById(variant.item.id);
+              if (baseItem) {
+                variant.item = { ...baseItem, ...variant.item };
+              }
             }
           }
         }
