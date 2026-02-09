@@ -20,7 +20,7 @@ import {
 import { computePartyStats } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
 import { getDungeonById } from '../data/dungeons';
-import { getEnemiesByPool, getBossEnemy } from '../data/enemies';
+import { getEnemiesByPool, getElitesByPool, getBossEnemy } from '../data/enemies';
 import { drawFromBag, refillBagIfEmpty, createCommonRewardBag, createCommonEnhancementBag, createRewardBag, createEnhancementBag, createSuperRareBag, createPhysicalThreatBag, createMagicalThreatBag } from '../game/bags';
 import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
@@ -172,17 +172,19 @@ function createInitialParty() {
   }));
 
   // Create starter items as inventory record
-  // Balanced for stage 1: 2 armor = full protection, tier 1 weapons work on boss
+  // Tier 1 Common items - balanced for stage 1
+  // New ID format: 1101=armor, 1102=robe, 1103=shield, 1104=sword, 1105=katana,
+  // 1106=gauntlet, 1107=arrow, 1108=bolt, 1109=archery, 1110=wand, 1111=grimoire, 1112=catalyst
   const starterItems: Item[] = [
-    { ...getItemById(1)!, enhancement: 0, superRare: 0 },   // ショートソード (melee attack)
-    { ...getItemById(1)!, enhancement: 0, superRare: 0 },   // ショートソード x2
-    { ...getItemById(20)!, enhancement: 0, superRare: 0 },  // ショートボウ (ranged NoA)
-    { ...getItemById(120)!, enhancement: 0, superRare: 0 }, // 木の矢 (ranged attack)
-    { ...getItemById(50)!, enhancement: 0, superRare: 0 },  // 木のワンド (magical attack)
-    { ...getItemById(30)!, enhancement: 0, superRare: 0 },  // レザーアーマー (physical defense)
-    { ...getItemById(30)!, enhancement: 0, superRare: 0 },  // レザーアーマー x2 (2 armor = protection)
-    { ...getItemById(60)!, enhancement: 0, superRare: 0 },  // 見習いのローブ (magical defense)
-    { ...getItemById(40)!, enhancement: 0, superRare: 0 },  // 革の籠手 (melee NoA)
+    { ...getItemById(1104)!, enhancement: 0, superRare: 0 },  // 剣 (sword - melee attack)
+    { ...getItemById(1104)!, enhancement: 0, superRare: 0 },  // 剣 x2
+    { ...getItemById(1109)!, enhancement: 0, superRare: 0 },  // 弓 (archery - ranged NoA)
+    { ...getItemById(1107)!, enhancement: 0, superRare: 0 },  // 矢 (arrow - ranged attack)
+    { ...getItemById(1110)!, enhancement: 0, superRare: 0 },  // ワンド (wand - magical attack)
+    { ...getItemById(1101)!, enhancement: 0, superRare: 0 },  // 鎧 (armor - physical defense)
+    { ...getItemById(1101)!, enhancement: 0, superRare: 0 },  // 鎧 x2
+    { ...getItemById(1102)!, enhancement: 0, superRare: 0 },  // ローブ (robe - magical defense)
+    { ...getItemById(1106)!, enhancement: 0, superRare: 0 },  // 籠手 (gauntlet - melee NoA)
   ];
 
   const inventory: InventoryRecord = {};
@@ -256,6 +258,13 @@ function selectEnemyForRoom(
 ): EnemyDef | null {
   if (roomType === 'battle_Boss' && bossId) {
     return getBossEnemy(bossId) ?? null;
+  }
+
+  if (roomType === 'battle_Elite' && poolId) {
+    const elites = getElitesByPool(poolId);
+    if (elites.length === 0) return null;
+    const randomIndex = Math.floor(Math.random() * elites.length);
+    return elites[randomIndex];
   }
 
   if (poolId) {

@@ -203,7 +203,7 @@ export interface ComputedPartyStats {
 }
 
 // Enemy Types
-export type EnemyType = 'normal' | 'boss';
+export type EnemyType = 'normal' | 'elite' | 'boss';
 
 export interface EnemyDef {
   id: number;
