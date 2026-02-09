@@ -196,6 +196,8 @@ export function computeCharacterStats(
   let rangedNoA = 0;
   let magicalNoA = 0;
   let meleeNoA = 0;
+  let accuracyBonus = collection.accuracy;
+  let evasionBonus = collection.evasion;
   let elementalOffense: ElementalOffense = 'none';
   let elementalOffenseValue = 1.0;
 
@@ -205,7 +207,8 @@ export function computeCharacterStats(
   for (const item of equippedItems) {
     const categoryMult = getMultiplier(item.category);
     const enhanceMult = getItemEnhancementMultiplier(item);
-    const multiplier = categoryMult * enhanceMult;
+    const baseMult = item.baseMultiplier ?? 1;
+    const multiplier = categoryMult * enhanceMult * baseMult;
 
     if (item.rangedAttack) {
       rangedAttack += item.rangedAttack * multiplier;
@@ -240,6 +243,11 @@ export function computeCharacterStats(
         meleeNoA += item.meleeNoA;
       }
     }
+    if (item.meleeNoABonus) meleeNoA += item.meleeNoABonus;
+    if (item.rangedNoABonus) rangedNoA += item.rangedNoABonus;
+    if (item.magicalNoABonus) magicalNoA += item.magicalNoABonus;
+    if (item.accuracyBonus) accuracyBonus += item.accuracyBonus;
+    if (item.evasionBonus) evasionBonus += item.evasionBonus;
 
     // Elemental offense from equipment (priority: thunder > ice > fire > none)
     if (item.elementalOffense && item.elementalOffense !== 'none') {
@@ -285,7 +293,8 @@ export function computeCharacterStats(
   for (const item of equippedItems) {
     const categoryMult = getMultiplier(item.category);
     const enhanceMult = getItemEnhancementMultiplier(item);
-    const multiplier = categoryMult * enhanceMult;
+    const baseMult = item.baseMultiplier ?? 1;
+    const multiplier = categoryMult * enhanceMult * baseMult;
     if (item.physicalDefense) {
       physicalDefense += item.physicalDefense * multiplier;
     }
@@ -339,8 +348,8 @@ export function computeCharacterStats(
     elementalOffense,
     elementalOffenseValue,
     accuracyPotency,
-    accuracyBonus: collection.accuracy,
-    evasionBonus: collection.evasion,
+    accuracyBonus,
+    evasionBonus,
   };
 }
 

@@ -34,28 +34,33 @@ type Tab = 'party' | 'expedition' | 'inventory' | 'shop' | 'setting';
 // Helper to format item stats
 function getItemStats(item: Item): string {
   const multiplier = (ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1) *
-    (SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1);
+    (SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1) *
+    (item.baseMultiplier ?? 1);
 
   const stats: string[] = [];
   if (item.meleeAttack) stats.push(`近攻+${Math.floor(item.meleeAttack * multiplier)}`);
-  if (item.meleeNoA) {
-    // Positive NoA scales with enhancement; negative (katana penalty) stays fixed
-    const noaVal = item.meleeNoA > 0 ? Math.ceil(item.meleeNoA * multiplier) : item.meleeNoA;
+  if (item.meleeNoA || item.meleeNoABonus) {
+    // Positive NoA scales with enhancement; fixed bonuses stay constant
+    const baseNoA = item.meleeNoA ? (item.meleeNoA > 0 ? Math.ceil(item.meleeNoA * multiplier) : item.meleeNoA) : 0;
+    const noaVal = baseNoA + (item.meleeNoABonus ?? 0);
     stats.push(`近回数${noaVal > 0 ? '+' : ''}${noaVal}`);
   }
   if (item.rangedAttack) stats.push(`遠攻+${Math.floor(item.rangedAttack * multiplier)}`);
-  if (item.rangedNoA) {
-    const noaVal = item.rangedNoA > 0 ? Math.ceil(item.rangedNoA * multiplier) : item.rangedNoA;
-    stats.push(`遠回数+${noaVal}`);
+  if (item.rangedNoA || item.rangedNoABonus) {
+    const baseNoA = item.rangedNoA ? (item.rangedNoA > 0 ? Math.ceil(item.rangedNoA * multiplier) : item.rangedNoA) : 0;
+    const noaVal = baseNoA + (item.rangedNoABonus ?? 0);
+    stats.push(`遠回数${noaVal > 0 ? '+' : ''}${noaVal}`);
   }
   if (item.magicalAttack) stats.push(`魔攻+${Math.floor(item.magicalAttack * multiplier)}`);
-  if (item.magicalNoA) {
-    const noaVal = item.magicalNoA > 0 ? Math.ceil(item.magicalNoA * multiplier) : item.magicalNoA;
-    stats.push(`魔回数+${noaVal}`);
+  if (item.magicalNoA || item.magicalNoABonus) {
+    const baseNoA = item.magicalNoA ? (item.magicalNoA > 0 ? Math.ceil(item.magicalNoA * multiplier) : item.magicalNoA) : 0;
+    const noaVal = baseNoA + (item.magicalNoABonus ?? 0);
+    stats.push(`魔回数${noaVal > 0 ? '+' : ''}${noaVal}`);
   }
   if (item.physicalDefense) stats.push(`物防+${Math.floor(item.physicalDefense * multiplier)}`);
   if (item.magicalDefense) stats.push(`魔防+${Math.floor(item.magicalDefense * multiplier)}`);
   if (item.partyHP) stats.push(`HP+${Math.floor(item.partyHP * multiplier)}`);
+  if (item.evasionBonus) stats.push(`回避${item.evasionBonus > 0 ? '+' : ''}${item.evasionBonus.toFixed(3)}`);
   if (item.elementalOffense && item.elementalOffense !== 'none') {
     const elem = { fire: '炎', ice: '氷', thunder: '雷' }[item.elementalOffense];
     stats.push(`${elem}属性`);
@@ -1325,7 +1330,8 @@ function InventoryTab({
             const { item, count, isNew } = variant;
             const enhMult = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
             const srMult = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
-            const sellPrice = Math.floor(10 * enhMult * srMult) * count;
+            const baseMult = item.baseMultiplier ?? 1;
+            const sellPrice = Math.floor(10 * enhMult * srMult * baseMult) * count;
 
             return (
               <div
