@@ -228,13 +228,29 @@ export interface EnemyDef {
   dropItemId: number | null;
 }
 
+// Room Types
+export type RoomType = 'battle_Normal' | 'battle_Elite' | 'battle_Boss';
+
+export interface RoomDef {
+  type: RoomType;
+  poolId?: number; // For Normal/Elite rooms
+  bossId?: number; // For Boss rooms
+}
+
+export interface FloorDef {
+  floorNumber: number;
+  multiplier: number; // Floor multiplier (x1.0 to x5.0)
+  rooms: RoomDef[];
+}
+
 // Dungeon Types
 export interface Dungeon {
   id: number;
   name: string;
-  numberOfRooms: number;
+  numberOfRooms: number; // Legacy - total rooms for backward compatibility
   enemyPoolIds: number[];
   bossId: number;
+  floors?: FloorDef[]; // New v0.2.0 floor structure
 }
 
 // Battle Types
@@ -278,8 +294,10 @@ export interface RandomBag {
 }
 
 export interface GameBags {
-  rewardBag: RandomBag;
-  enhancementBag: RandomBag;
+  commonRewardBag: RandomBag;      // For normal rooms (90 no item, 10 win)
+  commonEnhancementBag: RandomBag; // For normal rooms enhancement
+  rewardBag: RandomBag;            // For unique rewards (99 no item, 1 win)
+  enhancementBag: RandomBag;       // For unique rewards enhancement
   superRareBag: RandomBag;
   physicalThreatBag: RandomBag;
   magicalThreatBag: RandomBag;
@@ -303,6 +321,10 @@ export interface SuperRareTitle {
 // Expedition Log Types
 export interface ExpeditionLogEntry {
   room: number;
+  floor?: number; // Floor number (1-6)
+  roomInFloor?: number; // Room within floor (1-4)
+  roomType?: RoomType; // Type of room
+  floorMultiplier?: number; // Floor multiplier applied
   enemyName: string;
   enemyHP: number;
   enemyAttackValues: string; // format: "LONG/MID/CLOSE" e.g. "300/0/340"

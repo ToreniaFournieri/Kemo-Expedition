@@ -11,16 +11,37 @@ function shuffleArray<T>(array: T[]): T[] {
   return result;
 }
 
-export function createRewardBag(): RandomBag {
-  // 1 win ticket (1) and 9 lose tickets (0) = 10% chance
-  const tickets = [1, ...Array(9).fill(0)];
+// Common reward bag: 90 no item, 10 win (10% chance)
+export function createCommonRewardBag(): RandomBag {
+  const tickets = [...Array(10).fill(1), ...Array(90).fill(0)];
   return { tickets: shuffleArray(tickets) };
 }
 
-export function createEnhancementBag(): RandomBag {
+// Common enhancement bag: Uses standard ENHANCEMENT_TITLES tickets
+export function createCommonEnhancementBag(): RandomBag {
   const tickets: number[] = [];
   for (const title of ENHANCEMENT_TITLES) {
     for (let i = 0; i < title.tickets; i++) {
+      tickets.push(title.value);
+    }
+  }
+  return { tickets: shuffleArray(tickets) };
+}
+
+// Unique reward bag: 99 no item, 1 win (1% chance)
+export function createRewardBag(): RandomBag {
+  const tickets = [1, ...Array(99).fill(0)];
+  return { tickets: shuffleArray(tickets) };
+}
+
+// Unique enhancement bag: 5490 none instead of 1390
+// This makes enhancement titles rarer for unique rewards
+export function createEnhancementBag(): RandomBag {
+  const tickets: number[] = [];
+  for (const title of ENHANCEMENT_TITLES) {
+    // For value 0 (none), use 5490 tickets instead of 1390
+    const ticketCount = title.value === 0 ? 5490 : title.tickets;
+    for (let i = 0; i < ticketCount; i++) {
       tickets.push(title.value);
     }
   }
@@ -58,6 +79,8 @@ export function createMagicalThreatBag(): RandomBag {
 
 export function initializeBags(): GameBags {
   return {
+    commonRewardBag: createCommonRewardBag(),
+    commonEnhancementBag: createCommonEnhancementBag(),
     rewardBag: createRewardBag(),
     enhancementBag: createEnhancementBag(),
     superRareBag: createSuperRareBag(),
@@ -77,12 +100,25 @@ export function drawFromBag(bag: RandomBag): { ticket: number; newBag: RandomBag
   };
 }
 
+export type BagType =
+  | 'commonRewardBag'
+  | 'commonEnhancementBag'
+  | 'rewardBag'
+  | 'enhancementBag'
+  | 'superRareBag'
+  | 'physicalThreatBag'
+  | 'magicalThreatBag';
+
 export function refillBagIfEmpty(
   bags: GameBags,
-  bagType: 'rewardBag' | 'enhancementBag' | 'superRareBag' | 'physicalThreatBag' | 'magicalThreatBag'
+  bagType: BagType
 ): GameBags {
   if (bags[bagType].tickets.length === 0) {
     switch (bagType) {
+      case 'commonRewardBag':
+        return { ...bags, commonRewardBag: createCommonRewardBag() };
+      case 'commonEnhancementBag':
+        return { ...bags, commonEnhancementBag: createCommonEnhancementBag() };
       case 'rewardBag':
         return { ...bags, rewardBag: createRewardBag() };
       case 'enhancementBag':
