@@ -243,7 +243,10 @@ type GameAction =
   | { type: 'SELL_STACK'; variantKey: string }
   | { type: 'SET_VARIANT_STATUS'; variantKey: string; status: 'notown' }
   | { type: 'MARK_ITEMS_SEEN' }
-  | { type: 'RESET_GAME' };
+  | { type: 'RESET_GAME' }
+  | { type: 'RESET_COMMON_BAGS' }
+  | { type: 'RESET_UNIQUE_BAGS' }
+  | { type: 'RESET_SUPER_RARE_BAG' };
 
 // Select enemy based on room type and pool
 function selectEnemyForRoom(
@@ -728,6 +731,38 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'RESET_COMMON_BAGS': {
+      return {
+        ...state,
+        bags: {
+          ...state.bags,
+          commonRewardBag: createCommonRewardBag(),
+          commonEnhancementBag: createCommonEnhancementBag(),
+        },
+      };
+    }
+
+    case 'RESET_UNIQUE_BAGS': {
+      return {
+        ...state,
+        bags: {
+          ...state.bags,
+          rewardBag: createRewardBag(),
+          enhancementBag: createEnhancementBag(),
+        },
+      };
+    }
+
+    case 'RESET_SUPER_RARE_BAG': {
+      return {
+        ...state,
+        bags: {
+          ...state.bags,
+          superRareBag: createSuperRareBag(),
+        },
+      };
+    }
+
     default:
       return state;
   }
@@ -828,6 +863,18 @@ export function useGameState() {
 
     resetGame: useCallback(() => {
       dispatch({ type: 'RESET_GAME' });
+    }, []),
+
+    resetCommonBags: useCallback(() => {
+      dispatch({ type: 'RESET_COMMON_BAGS' });
+    }, []),
+
+    resetUniqueBags: useCallback(() => {
+      dispatch({ type: 'RESET_UNIQUE_BAGS' });
+    }, []),
+
+    resetSuperRareBag: useCallback(() => {
+      dispatch({ type: 'RESET_SUPER_RARE_BAG' });
     }, []),
 
     addNotification,

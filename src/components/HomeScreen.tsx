@@ -21,6 +21,9 @@ interface HomeScreenProps {
     setVariantStatus: (variantKey: string, status: 'notown') => void;
     markItemsSeen: () => void;
     resetGame: () => void;
+    resetCommonBags: () => void;
+    resetUniqueBags: () => void;
+    resetSuperRareBag: () => void;
     addNotification: (message: string, style?: NotificationStyle, category?: NotificationCategory, isPositive?: boolean) => void;
     addStatNotifications: (changes: Array<{ message: string; isPositive: boolean }>) => void;
   };
@@ -322,6 +325,9 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
           <SettingTab
             bags={bags}
             onResetGame={actions.resetGame}
+            onResetCommonBags={actions.resetCommonBags}
+            onResetUniqueBags={actions.resetUniqueBags}
+            onResetSuperRareBag={actions.resetSuperRareBag}
           />
         )}
       </div>
@@ -1399,11 +1405,26 @@ function ShopTab({
 function SettingTab({
   bags,
   onResetGame,
+  onResetCommonBags,
+  onResetUniqueBags,
+  onResetSuperRareBag,
 }: {
   bags: GameBags;
   onResetGame: () => void;
+  onResetCommonBags: () => void;
+  onResetUniqueBags: () => void;
+  onResetSuperRareBag: () => void;
 }) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  // Get initial counts from ENHANCEMENT_TITLES
+  const getInitialCount = (value: number) => ENHANCEMENT_TITLES.find(t => t.value === value)?.tickets ?? 0;
+  const craftsmanInitial = getInitialCount(1);  // 名工の
+  const demonicInitial = getInitialCount(2);    // 魔性の
+  const dwellingInitial = getInitialCount(3);   // 宿った
+  const legendaryInitial = getInitialCount(4);  // 伝説の
+  const terribleInitial = getInitialCount(5);   // 恐ろしい
+  const ultimateInitial = getInitialCount(6);   // 究極の
 
   // Common Reward bag stats (Normal rooms: 10% chance)
   const commonRewardTotal = 100;
@@ -1413,6 +1434,12 @@ function SettingTab({
   // Common Enhancement bag stats (Standard enhancement for normal rooms)
   const commonEnhancementTotal = ENHANCEMENT_TITLES.reduce((sum, t) => sum + t.tickets, 0);
   const commonEnhancementRemaining = bags.commonEnhancementBag?.tickets.length ?? 0;
+  const commonCraftsmanRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 1).length ?? 0;
+  const commonDemonicRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 2).length ?? 0;
+  const commonDwellingRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 3).length ?? 0;
+  const commonLegendaryRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 4).length ?? 0;
+  const commonTerribleRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 5).length ?? 0;
+  const commonUltimateRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 6).length ?? 0;
 
   // Unique Reward bag stats (Elite/Boss rooms: 1% chance)
   const rewardTotal = 100;
@@ -1422,15 +1449,18 @@ function SettingTab({
   // Unique Enhancement bag stats (Rarer enhancement for Elite/Boss)
   const enhancementTotal = 5490 + (ENHANCEMENT_TITLES.reduce((sum, t) => sum + (t.value === 0 ? 0 : t.tickets), 0));
   const enhancementRemaining = bags.enhancementBag.tickets.length;
-  const dwellingRemaining = bags.enhancementBag.tickets.filter(t => t === 3).length;  // 宿った
-  const legendaryRemaining = bags.enhancementBag.tickets.filter(t => t === 4).length; // 伝説の
-  const terribleRemaining = bags.enhancementBag.tickets.filter(t => t === 5).length;  // 恐ろしい
-  const ultimateRemaining = bags.enhancementBag.tickets.filter(t => t === 6).length;  // 究極の
+  const craftsmanRemaining = bags.enhancementBag.tickets.filter(t => t === 1).length;
+  const demonicRemaining = bags.enhancementBag.tickets.filter(t => t === 2).length;
+  const dwellingRemaining = bags.enhancementBag.tickets.filter(t => t === 3).length;
+  const legendaryRemaining = bags.enhancementBag.tickets.filter(t => t === 4).length;
+  const terribleRemaining = bags.enhancementBag.tickets.filter(t => t === 5).length;
+  const ultimateRemaining = bags.enhancementBag.tickets.filter(t => t === 6).length;
 
   // Super rare bag stats
   const superRareTotal = SUPER_RARE_TITLES.reduce((sum, t) => sum + t.tickets, 0);
   const superRareRemaining = bags.superRareBag.tickets.length;
-  const superRareHits = bags.superRareBag.tickets.filter(t => t > 0).length; // 超レア (value > 0)
+  const superRareInitial = SUPER_RARE_TITLES.filter(t => t.value > 0).reduce((sum, t) => sum + t.tickets, 0);
+  const superRareHits = bags.superRareBag.tickets.filter(t => t > 0).length;
 
   return (
     <div>
@@ -1438,18 +1468,18 @@ function SettingTab({
 
       {/* Clairvoyance Section */}
       <div className="bg-pane rounded-lg p-4 mb-4">
-        <div className="text-sm font-medium mb-3">千里眼 (Clairvoyance)</div>
+        <div className="text-sm font-medium mb-3">未来視 (Clairvoyance)</div>
 
-        {/* Common Bags (Normal Rooms) */}
-        <div className="mb-4">
-          <div className="text-xs text-gray-600 font-medium mb-2">通常部屋の報酬 (Normal Rooms)</div>
+        {/* Common Bags (Normal Reward) */}
+        <div className="mb-4 border-b border-gray-200 pb-4">
+          <div className="text-xs text-gray-600 font-medium mb-2">通常報酬 (Normal Reward)</div>
 
           {/* Common Reward Bag */}
           <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">通常報酬 (10%確率)</div>
+            <div className="text-xs text-gray-500 mb-1">通常報酬 抽選確率</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
               <div className="flex justify-between">
-                <span>残り</span>
+                <span>報酬抽選</span>
                 <span>{commonRewardRemaining} / {commonRewardTotal}</span>
               </div>
               <div className="flex justify-between text-green-600">
@@ -1460,27 +1490,58 @@ function SettingTab({
           </div>
 
           {/* Common Enhancement Bag */}
-          <div>
-            <div className="text-xs text-gray-500 mb-1">通常称号</div>
-            <div className="bg-white rounded p-2 text-sm">
+          <div className="mb-2">
+            <div className="text-xs text-gray-500 mb-1">称号付与 抽選確率</div>
+            <div className="bg-white rounded p-2 text-sm space-y-1">
               <div className="flex justify-between">
-                <span>残り</span>
+                <span>通常称号抽選</span>
                 <span>{commonEnhancementRemaining} / {commonEnhancementTotal}</span>
+              </div>
+              <div className="flex justify-between text-gray-600">
+                <span>名工の残り</span>
+                <span>{commonCraftsmanRemaining}</span>
+              </div>
+              <div className="flex justify-between text-gray-600">
+                <span>魔性の残り</span>
+                <span>{commonDemonicRemaining}</span>
+              </div>
+              <div className="flex justify-between text-sub">
+                <span>宿った残り</span>
+                <span>{commonDwellingRemaining}</span>
+              </div>
+              <div className="flex justify-between text-sub">
+                <span>伝説の残り</span>
+                <span>{commonLegendaryRemaining}</span>
+              </div>
+              <div className="flex justify-between text-sub">
+                <span>恐ろしい残り</span>
+                <span>{commonTerribleRemaining}</span>
+              </div>
+              <div className="flex justify-between text-sub">
+                <span>究極の残り</span>
+                <span>{commonUltimateRemaining}</span>
               </div>
             </div>
           </div>
+
+          <button
+            onClick={onResetCommonBags}
+            className="w-full py-2 bg-green-600 text-white rounded text-sm font-medium"
+          >
+            通常報酬初期化
+          </button>
         </div>
 
-        {/* Unique Bags (Elite/Boss Rooms) */}
-        <div className="mb-4">
-          <div className="text-xs text-gray-600 font-medium mb-2">特別部屋の報酬 (Elite/Boss Rooms)</div>
+        {/* Unique Bags (Unique Reward) */}
+        <div className="mb-4 border-b border-gray-200 pb-4">
+          <div className="text-xs text-gray-600 font-medium mb-2">固有報酬 (Unique Reward)</div>
 
           {/* Unique Reward Bag */}
           <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">ユニーク報酬 (1%確率)</div>
+            <div className="text-xs text-gray-500 mb-1">固有報酬 抽選確率</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
               <div className="flex justify-between">
-                <span>残り</span>
+                <span>報酬抽選</span>
                 <span>{rewardRemaining} / {rewardTotal}</span>
               </div>
               <div className="flex justify-between text-sub">
@@ -1491,46 +1552,72 @@ function SettingTab({
           </div>
 
           {/* Unique Enhancement Bag */}
-          <div>
-            <div className="text-xs text-gray-500 mb-1">レア称号</div>
+          <div className="mb-2">
+            <div className="text-xs text-gray-500 mb-1">称号付与 抽選確率</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
               <div className="flex justify-between">
-                <span>残り</span>
+                <span>レア称号抽選</span>
                 <span>{enhancementRemaining} / {enhancementTotal}</span>
+              </div>
+              <div className="flex justify-between text-gray-600">
+                <span>名工の残り</span>
+                <span>{craftsmanRemaining} / {craftsmanInitial}</span>
+              </div>
+              <div className="flex justify-between text-gray-600">
+                <span>魔性の残り</span>
+                <span>{demonicRemaining} / {demonicInitial}</span>
               </div>
               <div className="flex justify-between text-sub">
                 <span>宿った残り</span>
-                <span>{dwellingRemaining}</span>
+                <span>{dwellingRemaining} / {dwellingInitial}</span>
               </div>
               <div className="flex justify-between text-sub">
                 <span>伝説の残り</span>
-                <span>{legendaryRemaining}</span>
+                <span>{legendaryRemaining} / {legendaryInitial}</span>
               </div>
               <div className="flex justify-between text-sub">
                 <span>恐ろしい残り</span>
-                <span>{terribleRemaining}</span>
+                <span>{terribleRemaining} / {terribleInitial}</span>
               </div>
               <div className="flex justify-between text-sub">
                 <span>究極の残り</span>
-                <span>{ultimateRemaining}</span>
+                <span>{ultimateRemaining} / {ultimateInitial}</span>
               </div>
             </div>
           </div>
+
+          <button
+            onClick={onResetUniqueBags}
+            className="w-full py-2 bg-sub text-white rounded text-sm font-medium"
+          >
+            固有報酬初期化
+          </button>
         </div>
 
-        {/* Super Rare Bag (Shared) */}
-        <div>
-          <div className="text-xs text-gray-600 font-medium mb-2">超レア称号 (全部屋共通)</div>
-          <div className="bg-white rounded p-2 text-sm space-y-1">
-            <div className="flex justify-between">
-              <span>残り</span>
-              <span>{superRareRemaining} / {superRareTotal}</span>
-            </div>
-            <div className="flex justify-between text-accent">
-              <span>超レア残り</span>
-              <span>{superRareHits}</span>
+        {/* Super Rare Bag */}
+        <div className="mb-2">
+          <div className="text-xs text-gray-600 font-medium mb-2">超レア報酬 (Super Rare Reward)</div>
+
+          <div className="mb-2">
+            <div className="text-xs text-gray-500 mb-1">超レア称号付与 抽選確率</div>
+            <div className="bg-white rounded p-2 text-sm space-y-1">
+              <div className="flex justify-between">
+                <span>超レア称号抽選</span>
+                <span>{superRareRemaining} / {superRareTotal}</span>
+              </div>
+              <div className="flex justify-between text-accent">
+                <span>超レア残り</span>
+                <span>{superRareHits} / {superRareInitial}</span>
+              </div>
             </div>
           </div>
+
+          <button
+            onClick={onResetSuperRareBag}
+            className="w-full py-2 bg-accent text-white rounded text-sm font-medium"
+          >
+            超レア報酬初期化
+          </button>
         </div>
       </div>
 
@@ -1539,19 +1626,19 @@ function SettingTab({
         {!showResetConfirm ? (
           <button
             onClick={() => setShowResetConfirm(true)}
-            className="w-full py-2 bg-accent text-white rounded font-medium"
+            className="w-full py-2 bg-red-600 text-white rounded font-medium"
           >
             ゲームをリセット
           </button>
         ) : (
           <div>
             <div className="text-sm text-accent mb-2 p-2 bg-orange-50 rounded border border-orange-200">
-              ⚠️ 本当にリセットしますか？全てのデータが失われます。この操作は取り消せません。
+              本当にリセットしますか？全てのデータが失われます。この操作は取り消せません。
             </div>
             <div className="flex gap-2">
               <button
                 onClick={() => { onResetGame(); setShowResetConfirm(false); }}
-                className="flex-1 py-2 bg-accent text-white rounded font-medium"
+                className="flex-1 py-2 bg-red-600 text-white rounded font-medium"
               >
                 リセット実行
               </button>
