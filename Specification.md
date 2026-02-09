@@ -658,7 +658,7 @@ inventory = {
 
 ### 5.1 "Loot-Gate" progression system
 - If party doesn't match this table conditions, their expedition stop before the gate room and back to home.
-	-Ex. "2nd Elite gate closed: Requires 2/6 uncommons from 2nd floor"
+	- ex. "2nd Elite gate closed: Requires 2/6 uncommons from 2nd floor"
 
 | title | Gate `x.floor`,`x.room` | uncommon items from `x.room` |
 |----|----|----|
