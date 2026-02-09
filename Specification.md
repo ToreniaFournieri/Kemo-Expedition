@@ -928,7 +928,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
   - Expedition
   - Inventory
   - Shop
-  - Celestial Bureau
+  - Divine Bureau
 
 - Header is always visible; tabs never cause full page reload.
 
@@ -1154,8 +1154,10 @@ Left-aligned            Right-aligned
 #### 8.6 Shop
 - Only tabs. not opended. (in this version)
   
-#### 8.7 Celestial Bureau (神事務局)
-- Clairvoyance (未来視): Displays belows 
+#### 8.7 Divine Bureau (神局)
+
+**1. Clairvoyance (未来視)**
+- Displays belows 
 
 **Normal reward (通常報酬)**
   - common_reward_bag (通常報酬 抽選確率):  
@@ -1191,11 +1193,12 @@ Left-aligned            Right-aligned
     - 超レア残り remaining / initial counts
 - Button (超レア報酬初期化): Initialize `g.superRare_bag` 
 
-- (long space here)
+**2. (long space here)**
 
-- Game Reset:
+**3. Game Reset**
   - Full reset option
   - Warning required before execution
+
 
 ## 9. CHANGELOG
 
