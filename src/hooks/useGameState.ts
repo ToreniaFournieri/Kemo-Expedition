@@ -10,6 +10,7 @@ import {
   ExpeditionLog,
   ExpeditionLogEntry,
   InventoryRecord,
+  InventoryVariant,
   getVariantKey,
   GameNotification,
   NotificationStyle,
@@ -25,7 +26,7 @@ import { drawFromBag, refillBagIfEmpty, createCommonRewardBag, createCommonEnhan
 import { getItemById, getItemsByTierAndRarity, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 
-const BUILD_NUMBER = 31;
+const BUILD_NUMBER = 32;
 const STORAGE_KEY = 'kemo-expedition-save';
 
 // Helper to calculate sell price for an item
@@ -126,6 +127,32 @@ function loadSavedState(): GameState | null {
         // Migrate old inventory format if needed
         if (Array.isArray(parsed.party.inventory)) {
           parsed.party.inventory = migrateOldInventory(parsed.party.inventory);
+        }
+        const mergeWithBaseItem = (item: Item): Item => {
+          const baseItem = getItemById(item.id);
+          if (!baseItem) return item;
+          return {
+            ...baseItem,
+            enhancement: item.enhancement,
+            superRare: item.superRare,
+            isNew: item.isNew,
+          };
+        };
+        // Merge latest item definitions onto saved items (for new fields like baseMultiplier)
+        for (const character of parsed.party.characters ?? []) {
+          if (Array.isArray(character.equipment)) {
+            character.equipment = character.equipment.map((item: Item | null) => {
+              if (!item) return null;
+              return mergeWithBaseItem(item);
+            });
+          }
+        }
+        if (parsed.party.inventory) {
+          for (const variant of Object.values(parsed.party.inventory) as InventoryVariant[]) {
+            if (variant?.item) {
+              variant.item = mergeWithBaseItem(variant.item);
+            }
+          }
         }
         return parsed as GameState;
       }
