@@ -552,7 +552,7 @@ inventory = {
   6. "セルヴァ", Cervin, 魔(魔), Canny, House of Guiding Thought
 
 - Party initial inventory.
-  - 1 Tier-1 common items of each item type.
+  - 3 Tier-1 common items of each item type.
 
 - Party initial state.
   - level: 1
