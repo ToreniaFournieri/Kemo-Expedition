@@ -1305,6 +1305,8 @@ Left-aligned            Right-aligned
 - View Settings:
   - Visibility: Shows all items in the database (including undiscovered items).
   - Standardized Stats: Displays item data at base level (Enhancement = 0, SuperRare = 0).
+  - Filter button by rarelity (right-aligned): 全て表示, 通常のみ, アンコモンのみ, レアのみ, 神魔レアのみ: [ALL] [C] [U] [R] [M]
+  	- IF player selects [M],   神魔レアのみ: [ALL] [C] [U] [R] **[M]** 
 - Item category tabs: (same as Inventory tab's item list)
   - [耐久:鎧,衣,盾],[近距離攻撃:剣,刀,手],[遠距離攻撃:矢,ボ,弓],[魔法攻撃:杖,書,媒].
   - Default: 鎧 or previously selected category of each character 
