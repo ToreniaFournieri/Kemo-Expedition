@@ -385,13 +385,16 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 *note:* There are no duel(`d.`, `f.`, `e`, or `r`) related status in the master data. because these data is calculated by the formula.
 
+|  | | | 
+
+
 **Enemy status mutipliers**
-- `d.HP` : master value x `x.exp_mult` x `x.floor_multiplier` 
-- `f.attack` :  master value x `x.exp_mult` x `x.floor_multiplier` 
+- `d.HP` : master value x `x.exp_HP_mult` x `x.floor_multiplier` 
+- `f.attack` :  master value x `x.exp_atk_mult` x `x.floor_multiplier` 
 - `f.NoA` :  master value x `x.exp_mult` x `x.floor_multiplier` 
-- `f.offense_amplifier` :  master value x `x.floor_multiplier`
-- `f.defense_amplifier` : set 1.0 (for this version)
-- `f.defense` :  master value x `x.exp_mult` x `x.floor_multiplier` 
+- `f.offense_amplifier` :  master value x `x.exp_atk_amp_mult`
+- `f.defense_amplifier` : 1.0 x `x.exp_def_amp_mult`
+- `f.defense` :  master value x `x.exp_def_mult`  x `x.floor_multiplier` 
 - `f.elemental_offense_attribute` :  not scale
 - `f.elemental_resistance_attribute` : not scale
 - `f.penet_multiplier`: not scale
@@ -1349,7 +1352,7 @@ HP: 312                    経験値: 88
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
-| **0.2.2**| Game balance modified |
+| **0.2.2**| Game balance modified, Enemy status mutipliers update |
 | 0.2.1 | Update:8.7 Divine Bureau, 1. Clairvoyance (add total counts at Normal reward ), Adding 2. Item Comedium and 3. Bestiary |
 | 0.2.0 | Big update: 2.1 Global constants (change randamness upgrade), 2.3 Expedition & Enemies, 2.4 Items, 3. INITIALIZATION, 5.1 "Loot-Gate" progression system, 6.5 Outcome  7. REWARD (change the logic), 8.4 Expedition, 8.7 Divine Bureau (setting)  |
 | 0.1.4 |                                                                |
