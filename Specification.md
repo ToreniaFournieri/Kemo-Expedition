@@ -274,7 +274,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 - `x.expedition` list
 
 | `x.expediton` | short word | `x.exp_HP_mult` | `x.exp_atk_mult` | `x.exp_NoA_mult` | `x.exp_atk_amp_mult` | `x.exp_def_mult` | `x.exp_def_amp_mult` | drop item tier | lore |
-|------|-----|-----|----|----|----|----|----|----|
+|------|-----|-----|----|----|----|----|----|----|----|
 | ケイナイアン平原(Caninian Plains) | 原 | x1 | x1 | x1 | x1 | x1 | x1 | 1 | The Fields of First Vows. A sun-drenched grassland dotted with wooden watchtowers. This is the training ground for all new expeditions. The atmosphere is stable, making it the perfect place to master the basics of the Sword and Grimoire under the watchful eyes of the loyal Caninian sentries. |
 | ルピニアンの断崖(Lupinian Crag) | 崖 | x4 | x3 | x2 | x2 | x3 | x0.8 | 2 | The Razor-Wind Peaks. Sharp obsidian cliffs where the wind howls like a hungry wolf. The Lupinian tribes test their endurance here. |
 | ウルピニアの大河(Vulpinian Taiga) | 河 | x16 | x9 | x3 | x3 | x9 | x0.64 | 3 | The Forest of Veils. A dense, autumnal woodland where the trees seem to move when you blink. The Vulpinian mages use the natural spiritual mist to weave illusions. Requiring explorers to seek the protection of high-tier Robes and Wands to see through the deception. |
