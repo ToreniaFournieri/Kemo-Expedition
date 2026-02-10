@@ -1739,6 +1739,35 @@ function SettingTab({
     };
   };
 
+  const formatEnemyAttackLine = (label: string, attack: number, amplifier: number) =>
+    `${label}: ${attack} (x${amplifier.toFixed(2)})`;
+
+  const formatEnemyDefenseLine = (label: string, defense: number, percent: number) =>
+    `${label}: ${defense} (${percent.toFixed(0)}%)`;
+
+  const getDisplayEnemy = (enemy: EnemyDef, dungeon: Dungeon): EnemyDef => {
+    const bossFloorMultiplier = dungeon.floors?.[dungeon.floors.length - 1]?.multiplier ?? 1;
+    const multiplier = enemy.type === 'boss' ? bossFloorMultiplier : 1;
+    if (multiplier === 1) return enemy;
+
+    return {
+      ...enemy,
+      hp: Math.floor(enemy.hp * multiplier),
+      rangedAttack: Math.floor(enemy.rangedAttack * multiplier),
+      magicalAttack: Math.floor(enemy.magicalAttack * multiplier),
+      meleeAttack: Math.floor(enemy.meleeAttack * multiplier),
+      rangedNoA: Math.floor(enemy.rangedNoA * multiplier),
+      magicalNoA: Math.floor(enemy.magicalNoA * multiplier),
+      meleeNoA: Math.floor(enemy.meleeNoA * multiplier),
+      rangedAttackAmplifier: enemy.rangedAttackAmplifier * multiplier,
+      magicalAttackAmplifier: enemy.magicalAttackAmplifier * multiplier,
+      meleeAttackAmplifier: enemy.meleeAttackAmplifier * multiplier,
+      physicalDefense: Math.floor(enemy.physicalDefense * multiplier),
+      magicalDefense: Math.floor(enemy.magicalDefense * multiplier),
+      experience: Math.floor(enemy.experience * multiplier),
+    };
+  };
+
   return (
     <div>
       <div className="text-lg font-bold mb-3">神の執務室</div>
