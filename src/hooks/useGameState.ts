@@ -38,7 +38,7 @@ import {
 import { getItemById, getItemsByTierAndRarity, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 
-const BUILD_NUMBER = 37;
+const BUILD_NUMBER = 38;
 const STORAGE_KEY = 'kemo-expedition-save';
 
 // Helper to calculate sell price for an item
@@ -330,9 +330,9 @@ function selectEnemyForRoom(
     const poolOffset = Math.max(0, Math.min(5, floorNumber - 1)) * 5;
     const floorPool = enemies.slice(poolOffset, poolOffset + 5);
     if (floorPool.length > 0) {
-      // Rooms 1-3 select deterministic enemy within the floor pool
-      const floorRoomIndex = Math.max(0, Math.min(2, roomIndex));
-      return floorPool[floorRoomIndex % floorPool.length] ?? floorPool[0] ?? null;
+      // Normal rooms select randomly from the corresponding floor pool
+      const randomFloorIndex = Math.floor(Math.random() * floorPool.length);
+      return floorPool[randomFloorIndex] ?? floorPool[0] ?? null;
     }
   }
 
