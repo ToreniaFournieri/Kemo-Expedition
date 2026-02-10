@@ -389,7 +389,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 - `d.HP` : master value x `x.exp_mult` x `x.floor_multiplier` 
 - `f.attack` :  master value x `x.exp_mult` x `x.floor_multiplier` 
 - `f.NoA` :  master value x `x.exp_mult` x `x.floor_multiplier` 
-- `f.offense_amplifier` :  master value x `x.exp_mult` x `x.floor_multiplier`
+- `f.offense_amplifier` :  master value x `x.floor_multiplier`
 - `f.defense_amplifier` : set 1.0 (for this version)
 - `f.defense` :  master value x `x.exp_mult` x `x.floor_multiplier` 
 - `f.elemental_offense_attribute` :  not scale
