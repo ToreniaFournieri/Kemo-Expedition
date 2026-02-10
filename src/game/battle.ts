@@ -94,7 +94,8 @@ function calculateSingleEnemyAttackDamage(
     partyStats.elementalResistance
   );
 
-  const rawDamage = (attack - defense) * amplifier * elementalMultiplier * defenseAmplifier;
+  const partyDefenseAbilityAmplifier = getPartyDefenseAbilityAmplifier(phase, partyStats);
+  const rawDamage = (attack - defense) * amplifier * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier;
   const totalDamage = Math.max(1, rawDamage);
 
   return Math.floor(totalDamage);
@@ -108,6 +109,15 @@ function getEnemyNoA(phase: BattlePhase, enemy: EnemyDef): number {
     case 'close': return enemy.meleeNoA;
   }
 }
+
+
+function getPartyDefenseAbilityAmplifier(phase: BattlePhase, partyStats: ComputedPartyStats): number {
+  if (phase === 'mid') {
+    return partyStats.defenseAmplifiers.magical;
+  }
+  return partyStats.defenseAmplifiers.physical;
+}
+
 
 interface CharacterAttackResult {
   damage: number;
@@ -170,11 +180,18 @@ function calculateCharacterDamage(
   // Apply penetration
   const effectiveDefense = defense * (1 - charStats.penetMultiplier);
 
-  // Offense amplifier: iaigiri ability gives 2.0x for CLOSE phase only
+  // Offense amplifier: iaigiri scales with ability level on CLOSE phase
   let offenseAmplifier = 1.0;
   const iaigiri = charStats.abilities.find(a => a.id === 'iaigiri');
   if (iaigiri && phase === 'close') {
-    offenseAmplifier = 2.0;
+    offenseAmplifier *= iaigiri.level >= 2 ? 2.5 : 2.0;
+  }
+
+  // Resonance: all hits gain +5%/+8% per magical_NoA
+  const resonance = charStats.abilities.find(a => a.id === 'resonance');
+  if (resonance) {
+    const perNoA = resonance.level >= 2 ? 0.08 : 0.05;
+    offenseAmplifier *= 1 + (perNoA * charStats.magicalNoA);
   }
 
   const elementalMultiplier = getElementalMultiplier(
@@ -185,7 +202,7 @@ function calculateCharacterDamage(
   // Calculate per-hit damage (without NoA multiplier)
   const perHitDamage = Math.max(1, Math.floor(
     (attack - effectiveDefense) * offenseAmplifier * charStats.elementalOffenseValue *
-    elementalMultiplier * defenseAmplifier * partyStats.offenseAmplifier
+    elementalMultiplier * defenseAmplifier * (phase === 'mid' ? 1.0 : partyStats.offenseAmplifier)
   ));
 
   // For MID phase (magical), all attacks always hit (accuracy_amplifier = 1.0 fixed)
