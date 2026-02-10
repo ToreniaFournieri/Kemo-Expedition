@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { DUNGEONS } from '../data/dungeons';
 import { RACES } from '../data/races';
@@ -8,7 +8,7 @@ import { PREDISPOSITIONS } from '../data/predispositions';
 import { LINEAGES } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
-import { ENEMIES } from '../data/enemies';
+import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 
 interface HomeScreenProps {
   state: GameState;
@@ -1677,9 +1677,13 @@ function SettingTab({
   const commonTerribleRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 5).length ?? 0;
   const commonUltimateRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 6).length ?? 0;
 
-  const rewardBagTotal = 300;
-  const rewardBagRemaining = bags.uncommonRewardBag.tickets.length + bags.rareRewardBag.tickets.length + bags.mythicRewardBag.tickets.length;
-  const rewardBagWins = bags.uncommonRewardBag.tickets.filter(t => t === 1).length + bags.rareRewardBag.tickets.filter(t => t === 1).length + bags.mythicRewardBag.tickets.filter(t => t === 1).length;
+  const uniqueRewardTotal = 100;
+  const uncommonRewardRemaining = bags.uncommonRewardBag.tickets.length;
+  const uncommonRewardWins = bags.uncommonRewardBag.tickets.filter(t => t === 1).length;
+  const rareRewardRemaining = bags.rareRewardBag.tickets.length;
+  const rareRewardWins = bags.rareRewardBag.tickets.filter(t => t === 1).length;
+  const mythicRewardRemaining = bags.mythicRewardBag.tickets.length;
+  const mythicRewardWins = bags.mythicRewardBag.tickets.filter(t => t === 1).length;
 
   const enhancementTotal = 5490 + (ENHANCEMENT_TITLES.reduce((sum, t) => sum + (t.value === 0 ? 0 : t.tickets), 0));
   const enhancementRemaining = bags.enhancementBag.tickets.length;
@@ -1706,57 +1710,33 @@ function SettingTab({
     return { dungeon, enemies: bossEnemy ? [...poolEnemies, bossEnemy] : poolEnemies };
   });
 
-  const getTierFromEnemy = (enemyId: number): number => {
-    if (enemyId >= 1000) return Math.floor(enemyId / 1000);
-    return Math.floor(enemyId / 100);
-  };
+  const formatEnemyAttackLine = (label: string, attack: number, amplifier: number) =>
+    `${label}: ${attack} (x${amplifier.toFixed(2)})`;
 
-  const getTierItemsByRarity = (tier: number, rarity: ItemRarity) => {
-    const rarityRangeStart = rarity === 'common' ? 100 : rarity === 'uncommon' ? 200 : rarity === 'rare' ? 300 : 400;
-    return ITEMS.filter(item => {
-      const itemTier = Math.floor(item.id / 1000);
-      const rarityCode = item.id % 1000;
-      return itemTier === tier && rarityCode >= rarityRangeStart && rarityCode < rarityRangeStart + 100;
-    });
-  };
+  const formatEnemyDefenseLine = (label: string, defense: number, percent: number) =>
+    `${label}: ${defense} (${percent.toFixed(0)}%)`;
 
-  const pickItems = (pool: typeof ITEMS, count: number, seed: number) => {
-    if (pool.length === 0) return [] as typeof ITEMS;
-    const picked: typeof ITEMS = [];
-    for (let i = 0; i < count; i++) {
-      const index = (seed + i * 7) % pool.length;
-      picked.push(pool[index]);
-    }
-    return picked;
-  };
+  const getDisplayEnemy = (enemy: EnemyDef, dungeon: Dungeon): EnemyDef => {
+    const bossFloorMultiplier = dungeon.floors?.[dungeon.floors.length - 1]?.multiplier ?? 1;
+    const multiplier = enemy.type === 'boss' ? bossFloorMultiplier : 1;
+    if (multiplier === 1) return enemy;
 
-  const getDropCandidates = (enemy: (typeof ENEMIES)[number]) => {
-    const tier = getTierFromEnemy(enemy.id);
-    const common = getTierItemsByRarity(tier, 'common');
-    const uncommon = getTierItemsByRarity(tier, 'uncommon');
-    const rare = getTierItemsByRarity(tier, 'rare');
-    const mythic = getTierItemsByRarity(tier, 'mythic');
-
-    if (enemy.type === 'normal') {
-      return [
-        ...pickItems(common, 3, enemy.id),
-        ...pickItems(uncommon, 2, enemy.id + 3),
-      ];
-    }
-
-    if (enemy.type === 'elite') {
-      return [
-        ...pickItems(rare, 2, enemy.id),
-        ...pickItems(uncommon, 1, enemy.id + 2),
-        ...pickItems(common, 2, enemy.id + 5),
-      ];
-    }
-
-    return [
-      ...pickItems(mythic, 2, enemy.id),
-      ...pickItems(rare, 2, enemy.id + 2),
-      ...pickItems(common, 1, enemy.id + 5),
-    ];
+    return {
+      ...enemy,
+      hp: Math.floor(enemy.hp * multiplier),
+      rangedAttack: Math.floor(enemy.rangedAttack * multiplier),
+      magicalAttack: Math.floor(enemy.magicalAttack * multiplier),
+      meleeAttack: Math.floor(enemy.meleeAttack * multiplier),
+      rangedNoA: Math.floor(enemy.rangedNoA * multiplier),
+      magicalNoA: Math.floor(enemy.magicalNoA * multiplier),
+      meleeNoA: Math.floor(enemy.meleeNoA * multiplier),
+      rangedAttackAmplifier: enemy.rangedAttackAmplifier * multiplier,
+      magicalAttackAmplifier: enemy.magicalAttackAmplifier * multiplier,
+      meleeAttackAmplifier: enemy.meleeAttackAmplifier * multiplier,
+      physicalDefense: Math.floor(enemy.physicalDefense * multiplier),
+      magicalDefense: Math.floor(enemy.magicalDefense * multiplier),
+      experience: Math.floor(enemy.experience * multiplier),
+    };
   };
 
   return (
@@ -1797,10 +1777,26 @@ function SettingTab({
           <div className="text-xs text-gray-600 font-medium mb-2">固有報酬 (Unique reward)</div>
 
           <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">reward_bag (固有報酬 抽選確率)</div>
+            <div className="text-xs text-gray-500 mb-1">uncommon_reward_bag (アンコモン抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>報酬抽選</span><span>{rewardBagRemaining} / {rewardBagTotal}</span></div>
-              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{rewardBagWins}</span></div>
+              <div className="flex justify-between"><span>報酬抽選</span><span>{uncommonRewardRemaining} / {uniqueRewardTotal}</span></div>
+              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{uncommonRewardWins}</span></div>
+            </div>
+          </div>
+
+          <div className="mb-2">
+            <div className="text-xs text-gray-500 mb-1">rare_reward_bag (レア抽選確率)</div>
+            <div className="bg-white rounded p-2 text-sm space-y-1">
+              <div className="flex justify-between"><span>報酬抽選</span><span>{rareRewardRemaining} / {uniqueRewardTotal}</span></div>
+              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{rareRewardWins}</span></div>
+            </div>
+          </div>
+
+          <div className="mb-2">
+            <div className="text-xs text-gray-500 mb-1">mythic_reward_bag (神魔レア抽選確率)</div>
+            <div className="bg-white rounded p-2 text-sm space-y-1">
+              <div className="flex justify-between"><span>報酬抽選</span><span>{mythicRewardRemaining} / {uniqueRewardTotal}</span></div>
+              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{mythicRewardWins}</span></div>
             </div>
           </div>
 
@@ -1870,13 +1866,15 @@ function SettingTab({
                   onClick={() => setExpandedCompendiumItems(prev => ({ ...prev, [item.id]: !expanded }))}
                   className="w-full text-left px-3 py-2 text-sm flex justify-between items-center"
                 >
-                  <span>{getRarityShortLabel(item.id)}{item.name}</span>
+                  <span>
+                    <span className="text-black">{item.name}</span>
+                    <span className="text-gray-500"> {getRarityShortLabel(item.id)} {getItemStats(baseItem)}</span>
+                  </span>
                   <span className="text-xs text-gray-500">{expanded ? '▲' : '▼'}</span>
                 </button>
                 {expanded && (
                   <div className="px-3 pb-2 text-xs text-gray-700 space-y-1 border-t border-gray-100 pt-2">
                     <div>ID: {item.id}</div>
-                    <div>{getItemStats(baseItem)}</div>
                   </div>
                 )}
               </div>
@@ -1902,30 +1900,36 @@ function SettingTab({
                 {dungeonExpanded && (
                   <div className="px-2 pb-2">
                     {enemies.map(enemy => {
-                      const isBoss = enemy.type === 'boss';
-                      const enemyTypeLabel = enemy.type === 'elite' ? ' (ELITE)' : isBoss ? ' (BOSS)' : '';
-                      const enemyExpanded = !!expandedEnemies[enemy.id];
-                      const dropItem = enemy.dropItemId ? ITEMS.find(item => item.id === enemy.dropItemId) : undefined;
+                      const displayEnemy = getDisplayEnemy(enemy, dungeon);
+                      const isBoss = displayEnemy.type === 'boss';
+                      const enemyTypeLabel = displayEnemy.type === 'elite' ? ' (ELITE)' : isBoss ? ' (BOSS)' : '';
+                      const enemyExpanded = !!expandedEnemies[displayEnemy.id];
+                      const physicalDefensePercent = 100;
+                      const magicalDefensePercent = displayEnemy.physicalDefense > 0
+                        ? (displayEnemy.magicalDefense / displayEnemy.physicalDefense) * 100
+                        : 100;
                       return (
-                        <div key={enemy.id} className="mt-2 border border-gray-100 rounded">
+                        <div key={displayEnemy.id} className="mt-2 border border-gray-100 rounded">
                           <button
-                            onClick={() => setExpandedEnemies(prev => ({ ...prev, [enemy.id]: !enemyExpanded }))}
+                            onClick={() => setExpandedEnemies(prev => ({ ...prev, [displayEnemy.id]: !enemyExpanded }))}
                             className="w-full text-left px-2 py-1 text-sm flex justify-between items-center"
                           >
-                            <span>{enemy.name}{enemyTypeLabel}</span>
+                            <span>{displayEnemy.name}{enemyTypeLabel}</span>
                             <span className="text-xs text-gray-500">{enemyExpanded ? '▲' : '▼'}</span>
                           </button>
                           {enemyExpanded && (
-                            <div className="px-2 pb-2 text-xs text-gray-700 grid grid-cols-2 gap-1 border-t border-gray-100 pt-2">
-                              <div>HP: {enemy.hp}</div>
-                              <div>経験値: {enemy.experience}</div>
-                              <div>近攻: {enemy.meleeAttack}</div>
-                              <div>遠攻: {enemy.rangedAttack}</div>
-                              <div>魔攻: {enemy.magicalAttack}</div>
-                              <div>物防: {enemy.physicalDefense}</div>
-                              <div>魔防: {enemy.magicalDefense}</div>
-                              <div className="col-span-2">現在のドロップ: {dropItem ? `${getRarityShortLabel(dropItem.id)}${dropItem.name}` : 'なし'}</div>
-                              <div className="col-span-2">ドロップ候補(5種): {getDropCandidates(enemy).map(item => `${getRarityShortLabel(item.id)}${item.name}`).join(' / ')}</div>
+                            <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
+                              <div>ID: {displayEnemy.id}</div>
+                              <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                                <div>HP: {displayEnemy.hp}</div>
+                                <div>経験値: {displayEnemy.experience}</div>
+                                <div>{formatEnemyAttackLine('近攻', displayEnemy.meleeAttack, displayEnemy.meleeAttackAmplifier)}</div>
+                                <div>{formatEnemyDefenseLine('物防', displayEnemy.physicalDefense, physicalDefensePercent)}</div>
+                                <div>{formatEnemyAttackLine('魔攻', displayEnemy.magicalAttack, displayEnemy.magicalAttackAmplifier)}</div>
+                                <div>{formatEnemyDefenseLine('魔防', displayEnemy.magicalDefense, magicalDefensePercent)}</div>
+                                <div>{formatEnemyAttackLine('遠攻', displayEnemy.rangedAttack, displayEnemy.rangedAttackAmplifier)}</div>
+                              </div>
+                              <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id)}${item.name}`).join(' / ')}</div>
                             </div>
                           )}
                         </div>
