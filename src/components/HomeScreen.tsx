@@ -1029,7 +1029,7 @@ function PartyTab({
                   <div className="flex justify-between items-center">
                     <span>
                       <span className="font-medium">{getItemDisplayName(item)}</span>
-                      <span className="text-xs text-gray-500"> |{getRarityShortLabel(item.id)} {getItemStats(item)}</span>
+                      <span className="text-xs text-gray-500"> {getRarityShortLabel(item.id)} {getItemStats(item)}</span>
                     </span>
                     <span className="text-xs text-gray-400">
                       [{CATEGORY_NAMES[item.category]}]
@@ -1200,7 +1200,7 @@ function PartyTab({
                       {displayItem.isEquipped && <span>{race.emoji}</span>}
                       <span className="font-medium">{getItemDisplayName(displayItem.item)}</span>
                       {!displayItem.isEquipped && <span className="text-xs text-gray-500"> x{displayItem.count}</span>}
-                      <span className="text-xs text-gray-400"> |{getRarityShortLabel(displayItem.item.id)} {getItemStats(displayItem.item)}</span>
+                      <span className="text-xs text-gray-400"> {getRarityShortLabel(displayItem.item.id)} {getItemStats(displayItem.item)}</span>
                     </span>
                   </div>
                 </button>
@@ -1485,24 +1485,6 @@ function InventoryTab({
             {RARITY_FILTER_LABELS[filter]}
           </button>
         ))}
-      </div>
-
-      <div className="flex justify-end items-center gap-1 mb-2">
-        {RARITY_FILTER_OPTIONS.map(filter => (
-          <button
-            key={filter}
-            onClick={() => setInventoryRarityFilter(filter)}
-            className={`text-xs px-1.5 py-0.5 border rounded ${
-              inventoryRarityFilter === filter
-                ? 'bg-sub text-white border-sub'
-                : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
-            }`}
-            title={RARITY_FILTER_NOTES[filter]}
-          >
-            {RARITY_FILTER_LABELS[filter]}
-          </button>
-        ))}
-        <span className="text-xs text-gray-500">:{RARITY_FILTER_NOTES[inventoryRarityFilter]}</span>
       </div>
 
       {/* Category group tabs */}
