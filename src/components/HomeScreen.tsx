@@ -1155,7 +1155,7 @@ function PartyTab({
                     {RARITY_FILTER_LABELS[filter]}
                   </button>
                 ))}
-                <span className="text-xs text-gray-500">|超レア:</span>
+                <span className="text-xs text-gray-500">| 超レア:</span>
                 <button
                   onClick={() => setPartySuperRareOnly(prev => !prev)}
                   className={`text-xs px-1.5 py-0.5 border rounded ${
