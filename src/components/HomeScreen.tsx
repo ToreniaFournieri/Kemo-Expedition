@@ -56,11 +56,11 @@ const RARITY_FILTER_LABELS: Record<RarityFilter, string> = {
 };
 
 const RARITY_FILTER_NOTES: Record<RarityFilter, string> = {
-  all: '全て表示',
-  common: '通常のみ',
-  uncommon: 'アンコモンのみ',
-  rare: 'レアのみ',
-  mythic: '神魔レアのみ',
+  all: '全て',
+  common: '通常',
+  uncommon: 'アンコモン',
+  rare: 'レア',
+  mythic: '神魔レア',
 };
 
 const RARITY_FILTER_OPTIONS: RarityFilter[] = ['all', 'common', 'uncommon', 'rare', 'mythic'];
@@ -1140,7 +1140,7 @@ function PartyTab({
                 )}
               </div>
               <div className="mt-1 flex justify-end items-center gap-1">
-                <span className="text-xs text-gray-500">{RARITY_FILTER_NOTES[partyRarityFilter]}:</span>
+                <span className="text-xs text-gray-500">{RARITY_FILTER_NOTES[partyRarityFilter]}</span>
                 {RARITY_FILTER_OPTIONS.map(filter => (
                   <button
                     key={filter}
@@ -1155,7 +1155,7 @@ function PartyTab({
                     {RARITY_FILTER_LABELS[filter]}
                   </button>
                 ))}
-                <span className="text-xs text-gray-500"> 超レア:</span>
+                <span className="text-xs text-gray-500"> 超レア</span>
                 <button
                   onClick={() => setPartySuperRareOnly(prev => !prev)}
                   className={`text-xs px-1.5 py-0.5 border rounded ${
@@ -1485,7 +1485,7 @@ function InventoryTab({
           {filteredOwnedItems.reduce((sum, [, v]) => sum + v.count, 0)}個
         </div>
         <div className="flex justify-end items-center gap-1">
-          <span className="text-xs text-gray-500">{RARITY_FILTER_NOTES[inventoryRarityFilter]}:</span>
+          <span className="text-xs text-gray-500">{RARITY_FILTER_NOTES[inventoryRarityFilter]}</span>
           {RARITY_FILTER_OPTIONS.map(filter => (
             <button
               key={filter}
@@ -1500,7 +1500,7 @@ function InventoryTab({
               {RARITY_FILTER_LABELS[filter]}
             </button>
           ))}
-          <span className="text-xs text-gray-500"> 超レア:</span>
+          <span className="text-xs text-gray-500"> 超レア</span>
           <button
             onClick={() => setInventorySuperRareOnly(prev => !prev)}
             className={`text-xs px-1.5 py-0.5 border rounded ${
