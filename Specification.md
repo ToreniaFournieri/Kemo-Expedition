@@ -277,7 +277,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 |------|-----|-----|----|----|----|----|----|----|----|
 | ケイナイアン平原(Caninian Plains) | 原 | x1 | x1 | x1 | x1 | x1 | x1 | 1 | The Fields of First Vows. A sun-drenched grassland dotted with wooden watchtowers. This is the training ground for all new expeditions. The atmosphere is stable, making it the perfect place to master the basics of the Sword and Grimoire under the watchful eyes of the loyal Caninian sentries. |
 | ルピニアンの断崖(Lupinian Crag) | 崖 | x4 | x3 | x2 | x2 | x3 | x0.8 | 2 | The Razor-Wind Peaks. Sharp obsidian cliffs where the wind howls like a hungry wolf. The Lupinian tribes test their endurance here. |
-| ヴァルピニアンの大河(Vulpinian Taiga) | 河 | x16 | x9 | x3 | x3 | x9 | x0.64 | 3 | The Forest of Veils. A dense, autumnal woodland where the trees seem to move when you blink. The Vulpinian mages use the natural spiritual mist to weave illusions. Requiring explorers to seek the protection of high-tier Robes and Wands to see through the deception. |
+| ヴァルピニアンの樹林帯(Vulpinian Taiga) | 樹 | x16 | x9 | x3 | x3 | x9 | x0.64 | 3 | The Forest of Veils. A dense, autumnal woodland where the trees seem to move when you blink. The Vulpinian mages use the natural spiritual mist to weave illusions. Requiring explorers to seek the protection of high-tier Robes and Wands to see through the deception. |
 | ウルサンの霊峰(Ursan Peaks) | 峰 | x64 | x27 | x4 | x3 | x27 | x0.51 | 4 | The Thunder-Forge Mountains. A volcanic range where the ground shakes with the rhythmic pounding of Ursan blacksmiths. Deep in these magma-lit halls, the lost art of the Katana is guarded by those whose bodies are as hard as the stone itself. |
 | フェリディアンの茂み(Felidian Grove) | 茂 | x256 | x81 | x5 | x5 | x81 | x0.41 | 5 | The Moonlit Sanctuary. An ancient, overgrown jungle where ruins of a pre-shattering civilization glow with bioluminescence. To clear this grove, one must master the Bolt—the only weapon fast enough to strike before the forest strikes back. |
 | マステリドの巣穴(Mustelid Burrow) | 巣 | x1,024 | x243 | x6 | x6 | x243 | x0.33 | 6 | The Copper Labyrinth. A massive subterranean industrial hive. The air is thick with chemical steam and the clank of gears. Only those with high-tier Catalysts can neutralize the toxins found in the deepest vents. |
@@ -1318,7 +1318,7 @@ Left-aligned            Right-aligned
 
 **3. Bestiary (敵キャラクター図鑑)**
 - A comprehensive record of all threats encountered (or to be encountered) during expeditions.
-- Expedition category tabs: 原, 崖, 河, 峰, 茂, 巣, 園, 谷
+- Expedition category tabs: 原, 崖, 樹, 峰, 茂, 巣, 園, 谷
   - Each letter represents for corresponding expedition. And tap to show the enemy list of it. 
 
 - Categorize by floor (`x.Spawn_pool`) and is reverse order of rooms (Boss first, then floor6 Normal enemies, floor 5 elite and floor 5 normal enemies…
