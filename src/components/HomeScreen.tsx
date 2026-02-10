@@ -1155,7 +1155,7 @@ function PartyTab({
                     {RARITY_FILTER_LABELS[filter]}
                   </button>
                 ))}
-                <span className="text-xs text-gray-500">| 超レア:</span>
+                <span className="text-xs text-gray-500"> 超レア:</span>
                 <button
                   onClick={() => setPartySuperRareOnly(prev => !prev)}
                   className={`text-xs px-1.5 py-0.5 border rounded ${
@@ -1482,7 +1482,7 @@ function InventoryTab({
     <div>
       <div className="flex justify-between items-center mb-2 gap-2">
         <div className="text-sm text-gray-500">
-          {filteredOwnedItems.length}種類 ({filteredOwnedItems.reduce((sum, [, v]) => sum + v.count, 0)}個)
+          {filteredOwnedItems.reduce((sum, [, v]) => sum + v.count, 0)}個
         </div>
         <div className="flex justify-end items-center gap-1">
           <span className="text-xs text-gray-500">{RARITY_FILTER_NOTES[inventoryRarityFilter]}:</span>
@@ -1500,7 +1500,7 @@ function InventoryTab({
               {RARITY_FILTER_LABELS[filter]}
             </button>
           ))}
-          <span className="text-xs text-gray-500">|超レア:</span>
+          <span className="text-xs text-gray-500"> 超レア:</span>
           <button
             onClick={() => setInventorySuperRareOnly(prev => !prev)}
             className={`text-xs px-1.5 py-0.5 border rounded ${
