@@ -212,12 +212,21 @@ export interface ComputedPartyStats {
 
 // Enemy Types
 export type EnemyType = 'normal' | 'elite' | 'boss';
+export type EnemyClassId =
+  | 'fighter' | 'duelist' | 'ninja' | 'samurai' | 'lord'
+  | 'ranger' | 'wizard' | 'sage' | 'rogue' | 'pilgrim';
 
 export interface EnemyDef {
   id: number;
   type: EnemyType;
+  spawnTier: number;
+  spawnPool: number;
   poolId: number;
   name: string;
+  enemyClass: EnemyClassId;
+  abilities: AbilityId[];
+  accuracyBonus: number;
+  evasionBonus: number;
   hp: number;
   rangedAttack: number;
   rangedNoA: number;

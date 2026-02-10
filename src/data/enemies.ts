@@ -1,4 +1,4 @@
-import { EnemyDef, EnemyType, ElementalOffense, ElementalResistance, ItemDef } from '../types';
+import { EnemyDef, EnemyType, EnemyClassId, ElementalOffense, ElementalResistance, ItemDef, AbilityId } from '../types';
 import { MYTHIC_DROP_POOLS } from './dropTables';
 import { getItemsByTierAndRarity } from './items';
 
@@ -33,26 +33,6 @@ function getBossMythicDropId(tier: number, seed: number): number {
 
 // Stat multiplier per tier (applied to base stats)
 const TIER_STAT_MULTIPLIERS = [1.0, 2.0, 3.0, 4.5, 6.5, 9.0, 12.0, 16.0];
-
-// Base stats before tier multiplier and template modifiers
-const TIER_BASE_STATS = {
-  normalHP: 60,
-  normalAttack: 12,
-  normalDefense: 4,
-  eliteHP: 120,
-  eliteAttack: 16,
-  eliteDefense: 6,
-  bossHP: 200,
-  bossAttack: 20,
-  bossDefense: 7,
-};
-
-// Base experience per tier
-const TIER_EXP_BASE = [12, 28, 50, 80, 110, 150, 200, 280];
-
-// Experience multipliers for elite/boss
-const ELITE_EXP_MULTIPLIER = 2.5;
-const BOSS_EXP_MULTIPLIER = 5.0;
 
 // ============================================================
 // Expedition 1: 草原の遺跡 (Grassland Ruins) - Beasts/Goblins
@@ -501,49 +481,39 @@ const EXPEDITION_DATA: {
 ];
 
 // ============================================================
-// Helper to create attack stats based on type
+// Helper to create stats from class base structure
 // ============================================================
-function createAttackStats(
-  type: 'melee' | 'ranged' | 'magical' | 'mixed',
-  baseAttack: number,
-  tier: number
-): {
+type EnemyClassBase = {
+  hp: number;
+  abilities: AbilityId[];
+  accuracyBonus: number;
+  evasionBonus: number;
   rangedAttack: number;
   rangedNoA: number;
   magicalAttack: number;
   magicalNoA: number;
   meleeAttack: number;
   meleeNoA: number;
-} {
-  const tierNoA = Math.min(1 + Math.floor(tier / 2), 4);
+  rangedAttackAmplifier: number;
+  magicalAttackAmplifier: number;
+  meleeAttackAmplifier: number;
+  physicalDefense: number;
+  magicalDefense: number;
+  experience: number;
+};
 
-  switch (type) {
-    case 'melee':
-      return {
-        rangedAttack: 0, rangedNoA: 0,
-        magicalAttack: 0, magicalNoA: 0,
-        meleeAttack: baseAttack, meleeNoA: tierNoA,
-      };
-    case 'ranged':
-      return {
-        rangedAttack: baseAttack, rangedNoA: tierNoA,
-        magicalAttack: 0, magicalNoA: 0,
-        meleeAttack: Math.floor(baseAttack * 0.5), meleeNoA: 1,
-      };
-    case 'magical':
-      return {
-        rangedAttack: 0, rangedNoA: 0,
-        magicalAttack: baseAttack, magicalNoA: tierNoA,
-        meleeAttack: Math.floor(baseAttack * 0.3), meleeNoA: 1,
-      };
-    case 'mixed':
-      return {
-        rangedAttack: Math.floor(baseAttack * 0.6), rangedNoA: Math.max(1, tierNoA - 1),
-        magicalAttack: Math.floor(baseAttack * 0.7), magicalNoA: Math.max(1, tierNoA - 1),
-        meleeAttack: baseAttack, meleeNoA: tierNoA,
-      };
-  }
-}
+const ENEMY_CLASS_BASES: Record<EnemyClassId, EnemyClassBase> = {
+  fighter: { hp: 75, abilities: [], accuracyBonus: 0.0, evasionBonus: 0.02, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 16, meleeNoA: 1, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0, physicalDefense: 16, magicalDefense: 10, experience: 10 },
+  duelist: { hp: 50, abilities: ['counter'], accuracyBonus: 0.01, evasionBonus: 0.01, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 20, meleeNoA: 2, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.2, physicalDefense: 10, magicalDefense: 10, experience: 10 },
+  ninja: { hp: 47, abilities: ['re_attack'], accuracyBonus: 0.0, evasionBonus: 0.04, rangedAttack: 10, rangedNoA: 1, magicalAttack: 0, magicalNoA: 0, meleeAttack: 14, meleeNoA: 1, rangedAttackAmplifier: 1.1, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.1, physicalDefense: 10, magicalDefense: 10, experience: 14 },
+  samurai: { hp: 40, abilities: [], accuracyBonus: -0.05, evasionBonus: -0.01, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 40, meleeNoA: 1, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.3, physicalDefense: 8, magicalDefense: 8, experience: 12 },
+  lord: { hp: 60, abilities: [], accuracyBonus: 0.0, evasionBonus: 0.0, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 18, meleeNoA: 2, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.1, physicalDefense: 14, magicalDefense: 14, experience: 20 },
+  ranger: { hp: 38, abilities: [], accuracyBonus: 0.03, evasionBonus: 0.01, rangedAttack: 14, rangedNoA: 2, magicalAttack: 0, magicalNoA: 0, meleeAttack: 0, meleeNoA: 0, rangedAttackAmplifier: 1.2, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0, physicalDefense: 8, magicalDefense: 8, experience: 12 },
+  wizard: { hp: 32, abilities: [], accuracyBonus: 0.0, evasionBonus: 0.0, rangedAttack: 0, rangedNoA: 0, magicalAttack: 20, magicalNoA: 1, meleeAttack: 0, meleeNoA: 0, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.0, physicalDefense: 6, magicalDefense: 14, experience: 10 },
+  sage: { hp: 38, abilities: [], accuracyBonus: 0.0, evasionBonus: 0.0, rangedAttack: 0, rangedNoA: 0, magicalAttack: 10, magicalNoA: 2, meleeAttack: 0, meleeNoA: 0, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.0, physicalDefense: 8, magicalDefense: 20, experience: 10 },
+  rogue: { hp: 30, abilities: [], accuracyBonus: 0.06, evasionBonus: 0.06, rangedAttack: 10, rangedNoA: 2, magicalAttack: 0, magicalNoA: 0, meleeAttack: 10, meleeNoA: 2, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.0, physicalDefense: 8, magicalDefense: 8, experience: 8 },
+  pilgrim: { hp: 66, abilities: ['null_counter'], accuracyBonus: 0.0, evasionBonus: 0.02, rangedAttack: 0, rangedNoA: 0, magicalAttack: 10, magicalNoA: 1, meleeAttack: 16, meleeNoA: 1, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.2, physicalDefense: 12, magicalDefense: 12, experience: 16 },
+};
 
 // ============================================================
 // Generate enemy from template
@@ -553,43 +523,17 @@ function createEnemyFromTemplate(
   template: EnemyTemplate,
   tier: number,
   type: EnemyType,
-  poolId: number
+  poolId: number,
+  enemyClass: EnemyClassId,
+  spawnPool: number
 ): EnemyDef {
   const tierMult = TIER_STAT_MULTIPLIERS[tier - 1];
+  const classBase = ENEMY_CLASS_BASES[enemyClass];
 
-  // Get base stats for type
-  let baseHP: number;
-  let baseAttack: number;
-  let baseDefense: number;
-  let expBase: number;
-
-  switch (type) {
-    case 'normal':
-      baseHP = TIER_BASE_STATS.normalHP;
-      baseAttack = TIER_BASE_STATS.normalAttack;
-      baseDefense = TIER_BASE_STATS.normalDefense;
-      expBase = TIER_EXP_BASE[tier - 1];
-      break;
-    case 'elite':
-      baseHP = TIER_BASE_STATS.eliteHP;
-      baseAttack = TIER_BASE_STATS.eliteAttack;
-      baseDefense = TIER_BASE_STATS.eliteDefense;
-      expBase = TIER_EXP_BASE[tier - 1] * ELITE_EXP_MULTIPLIER;
-      break;
-    case 'boss':
-      baseHP = TIER_BASE_STATS.bossHP;
-      baseAttack = TIER_BASE_STATS.bossAttack;
-      baseDefense = TIER_BASE_STATS.bossDefense;
-      expBase = TIER_EXP_BASE[tier - 1] * BOSS_EXP_MULTIPLIER;
-      break;
-  }
-
-  // Apply tier multiplier and template modifiers
-  const hp = Math.floor(baseHP * tierMult * template.hpMod);
-  const attack = Math.floor(baseAttack * tierMult * template.attackMod);
-  const defense = Math.floor(baseDefense * tierMult * template.defenseMod);
-
-  const attackStats = createAttackStats(template.attackType, attack, tier);
+  // Apply tier multiplier and template modifiers on top of class base
+  const hp = Math.floor(classBase.hp * tierMult * template.hpMod);
+  const attackScale = tierMult * template.attackMod;
+  const defenseScale = tierMult * template.defenseMod;
 
   // Calculate drop item ID based on enemy type
   // Normal enemies drop uncommon items, elite drop rare, boss drop rare
@@ -608,22 +552,33 @@ function createEnemyFromTemplate(
   return {
     id,
     type,
+    spawnTier: tier,
+    spawnPool,
     poolId,
     name: template.name,
+    enemyClass,
+    abilities: classBase.abilities,
+    accuracyBonus: classBase.accuracyBonus,
+    evasionBonus: classBase.evasionBonus,
     hp,
-    ...attackStats,
-    rangedAttackAmplifier: 1.0,
-    magicalAttackAmplifier: type === 'boss' ? 1.3 : 1.0,
-    meleeAttackAmplifier: type === 'boss' ? 1.2 : 1.0,
-    physicalDefense: defense,
-    magicalDefense: Math.floor(defense * 0.8),
+    rangedAttack: Math.floor(classBase.rangedAttack * attackScale),
+    rangedNoA: classBase.rangedNoA,
+    magicalAttack: Math.floor(classBase.magicalAttack * attackScale),
+    magicalNoA: classBase.magicalNoA,
+    meleeAttack: Math.floor(classBase.meleeAttack * attackScale),
+    meleeNoA: classBase.meleeNoA,
+    rangedAttackAmplifier: classBase.rangedAttackAmplifier,
+    magicalAttackAmplifier: classBase.magicalAttackAmplifier,
+    meleeAttackAmplifier: classBase.meleeAttackAmplifier,
+    physicalDefense: Math.floor(classBase.physicalDefense * defenseScale),
+    magicalDefense: Math.floor(classBase.magicalDefense * defenseScale),
     elementalOffense: template.element || 'none',
     elementalResistance: {
       fire: template.resistances?.fire ?? 1.0,
       thunder: template.resistances?.thunder ?? 1.0,
       ice: template.resistances?.ice ?? 1.0,
     },
-    experience: Math.floor(expBase * template.hpMod),
+    experience: Math.floor(classBase.experience * tierMult * template.hpMod),
     dropItemId,
   };
 }
@@ -634,6 +589,16 @@ function createEnemyFromTemplate(
 function generateEnemies(): EnemyDef[] {
   const enemies: EnemyDef[] = [];
 
+  const normalClassByPool: Record<number, EnemyClassId[]> = {
+    1: ['fighter', 'ranger', 'wizard', 'pilgrim', 'rogue'],
+    2: ['ninja', 'samurai', 'sage', 'duelist', 'lord'],
+    3: ['fighter', 'ranger', 'wizard', 'lord', 'samurai'],
+    4: ['ninja', 'rogue', 'sage', 'duelist', 'pilgrim'],
+    5: ['fighter', 'ranger', 'wizard', 'lord', 'samurai'],
+    6: ['ninja', 'rogue', 'sage', 'duelist', 'pilgrim'],
+  };
+  const eliteClassByFloor: EnemyClassId[] = ['rogue', 'fighter', 'ranger', 'duelist', 'wizard'];
+
   for (let tier = 1; tier <= 8; tier++) {
     const data = EXPEDITION_DATA[tier - 1];
     const poolId = tier;
@@ -643,7 +608,10 @@ function generateEnemies(): EnemyDef[] {
     for (let i = 0; i < 30; i++) {
       const template = data.normals[i];
       const id = tier * 1000 + i + 1;
-      enemies.push(createEnemyFromTemplate(id, template, tier, 'normal', poolId));
+      const floorPool = Math.floor(i / 5) + 1;
+      const classInPool = i % 5;
+      const enemyClass = normalClassByPool[floorPool][classInPool];
+      enemies.push(createEnemyFromTemplate(id, template, tier, 'normal', poolId, enemyClass, floorPool));
     }
 
     // Elite enemies (5 per tier)
@@ -651,13 +619,14 @@ function generateEnemies(): EnemyDef[] {
     for (let i = 0; i < 5; i++) {
       const template = data.elites[i];
       const id = tier * 1000 + 50 + i + 1;
-      enemies.push(createEnemyFromTemplate(id, template, tier, 'elite', poolId));
+      const enemyClass = eliteClassByFloor[i] ?? 'fighter';
+      enemies.push(createEnemyFromTemplate(id, template, tier, 'elite', poolId, enemyClass, 0));
     }
 
     // Boss enemy (1 per tier)
     // ID format: tier * 100 + 1 (101, 201, etc. - matching dungeon bossId)
     const bossId = tier * 100 + 1;
-    enemies.push(createEnemyFromTemplate(bossId, data.boss, tier, 'boss', 0));
+    enemies.push(createEnemyFromTemplate(bossId, data.boss, tier, 'boss', 0, 'lord', 0));
   }
 
   return enemies;
