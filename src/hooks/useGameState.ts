@@ -375,6 +375,19 @@ function getItemRarityById(itemId: number): 'common' | 'uncommon' | 'rare' | 'my
   return 'common';
 }
 
+type RewardBagType = 'commonRewardBag' | 'uncommonRewardBag' | 'rareRewardBag' | 'mythicRewardBag';
+
+function getRewardBagTypeForEnemy(enemy: EnemyDef): RewardBagType {
+  // Normal rooms should always consume common_reward_bag tickets.
+  if (enemy.type === 'normal') return 'commonRewardBag';
+
+  const dropRarity = enemy.dropItemId ? getItemRarityById(enemy.dropItemId) : 'common';
+  if (dropRarity === 'uncommon') return 'uncommonRewardBag';
+  if (dropRarity === 'rare') return 'rareRewardBag';
+  if (dropRarity === 'mythic') return 'mythicRewardBag';
+  return 'commonRewardBag';
+}
+
 // Legacy function for backward compatibility
 function selectEnemy(dungeonId: number, room: number, totalRooms: number) {
   const dungeon = getDungeonById(dungeonId);
@@ -545,16 +558,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             if (battleResult.outcome === 'victory') {
               totalExp += enemy.experience;
 
-              // Reward logic based on drop item rarity
-              const dropRarity = enemy.dropItemId ? getItemRarityById(enemy.dropItemId) : 'common';
-              const rewardBagType = dropRarity === 'common'
-                ? 'commonRewardBag'
-                : dropRarity === 'uncommon'
-                  ? 'uncommonRewardBag'
-                  : dropRarity === 'rare'
-                    ? 'rareRewardBag'
-                    : 'mythicRewardBag';
-              const enhancementBagType = dropRarity === 'common' ? 'commonEnhancementBag' : 'enhancementBag';
+              // Reward logic: normal rooms use common_reward_bag; others follow their drop rarity.
+              const rewardBagType = getRewardBagTypeForEnemy(enemy);
+              const enhancementBagType = rewardBagType === 'commonRewardBag' ? 'commonEnhancementBag' : 'enhancementBag';
 
               // Check for reward
               bags = refillBagIfEmpty(bags, rewardBagType);
@@ -668,15 +674,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           if (battleResult.outcome === 'victory') {
             totalExp += enemy.experience;
 
-            const dropRarity = enemy.dropItemId ? getItemRarityById(enemy.dropItemId) : 'common';
-            const rewardBagType = dropRarity === 'common'
-              ? 'commonRewardBag'
-              : dropRarity === 'uncommon'
-                ? 'uncommonRewardBag'
-                : dropRarity === 'rare'
-                  ? 'rareRewardBag'
-                  : 'mythicRewardBag';
-            const enhancementBagType = dropRarity === 'common' ? 'commonEnhancementBag' : 'enhancementBag';
+            const rewardBagType = getRewardBagTypeForEnemy(enemy);
+            const enhancementBagType = rewardBagType === 'commonRewardBag' ? 'commonEnhancementBag' : 'enhancementBag';
 
             bags = refillBagIfEmpty(bags, rewardBagType);
             const { ticket: rewardTicket, newBag: newRewardBag } = drawFromBag(bags[rewardBagType]);
