@@ -8,7 +8,7 @@ import { PREDISPOSITIONS } from '../data/predispositions';
 import { LINEAGES } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
-import { ENEMIES } from '../data/enemies';
+import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 
 interface HomeScreenProps {
   state: GameState;
@@ -1677,9 +1677,13 @@ function SettingTab({
   const commonTerribleRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 5).length ?? 0;
   const commonUltimateRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 6).length ?? 0;
 
-  const rewardBagTotal = 300;
-  const rewardBagRemaining = bags.uncommonRewardBag.tickets.length + bags.rareRewardBag.tickets.length + bags.mythicRewardBag.tickets.length;
-  const rewardBagWins = bags.uncommonRewardBag.tickets.filter(t => t === 1).length + bags.rareRewardBag.tickets.filter(t => t === 1).length + bags.mythicRewardBag.tickets.filter(t => t === 1).length;
+  const uniqueRewardTotal = 100;
+  const uncommonRewardRemaining = bags.uncommonRewardBag.tickets.length;
+  const uncommonRewardWins = bags.uncommonRewardBag.tickets.filter(t => t === 1).length;
+  const rareRewardRemaining = bags.rareRewardBag.tickets.length;
+  const rareRewardWins = bags.rareRewardBag.tickets.filter(t => t === 1).length;
+  const mythicRewardRemaining = bags.mythicRewardBag.tickets.length;
+  const mythicRewardWins = bags.mythicRewardBag.tickets.filter(t => t === 1).length;
 
   const enhancementTotal = 5490 + (ENHANCEMENT_TITLES.reduce((sum, t) => sum + (t.value === 0 ? 0 : t.tickets), 0));
   const enhancementRemaining = bags.enhancementBag.tickets.length;
@@ -1706,57 +1710,33 @@ function SettingTab({
     return { dungeon, enemies: bossEnemy ? [...poolEnemies, bossEnemy] : poolEnemies };
   });
 
-  const getTierFromEnemy = (enemyId: number): number => {
-    if (enemyId >= 1000) return Math.floor(enemyId / 1000);
-    return Math.floor(enemyId / 100);
-  };
+  const formatEnemyAttackLine = (label: string, attack: number, amplifier: number) =>
+    `${label}: ${attack} (x${amplifier.toFixed(2)})`;
 
-  const getTierItemsByRarity = (tier: number, rarity: ItemRarity) => {
-    const rarityRangeStart = rarity === 'common' ? 100 : rarity === 'uncommon' ? 200 : rarity === 'rare' ? 300 : 400;
-    return ITEMS.filter(item => {
-      const itemTier = Math.floor(item.id / 1000);
-      const rarityCode = item.id % 1000;
-      return itemTier === tier && rarityCode >= rarityRangeStart && rarityCode < rarityRangeStart + 100;
-    });
-  };
+  const formatEnemyDefenseLine = (label: string, defense: number, percent: number) =>
+    `${label}: ${defense} (${percent.toFixed(0)}%)`;
 
-  const pickItems = (pool: typeof ITEMS, count: number, seed: number) => {
-    if (pool.length === 0) return [] as typeof ITEMS;
-    const picked: typeof ITEMS = [];
-    for (let i = 0; i < count; i++) {
-      const index = (seed + i * 7) % pool.length;
-      picked.push(pool[index]);
-    }
-    return picked;
-  };
+  const getDisplayEnemy = (enemy: EnemyDef, dungeon: Dungeon): EnemyDef => {
+    const bossFloorMultiplier = dungeon.floors?.[dungeon.floors.length - 1]?.multiplier ?? 1;
+    const multiplier = enemy.type === 'boss' ? bossFloorMultiplier : 1;
+    if (multiplier === 1) return enemy;
 
-  const getDropCandidates = (enemy: (typeof ENEMIES)[number]) => {
-    const tier = getTierFromEnemy(enemy.id);
-    const common = getTierItemsByRarity(tier, 'common');
-    const uncommon = getTierItemsByRarity(tier, 'uncommon');
-    const rare = getTierItemsByRarity(tier, 'rare');
-    const mythic = getTierItemsByRarity(tier, 'mythic');
-
-    if (enemy.type === 'normal') {
-      return [
-        ...pickItems(common, 3, enemy.id),
-        ...pickItems(uncommon, 2, enemy.id + 3),
-      ];
-    }
-
-    if (enemy.type === 'elite') {
-      return [
-        ...pickItems(rare, 2, enemy.id),
-        ...pickItems(uncommon, 1, enemy.id + 2),
-        ...pickItems(common, 2, enemy.id + 5),
-      ];
-    }
-
-    return [
-      ...pickItems(mythic, 2, enemy.id),
-      ...pickItems(rare, 2, enemy.id + 2),
-      ...pickItems(common, 1, enemy.id + 5),
-    ];
+    return {
+      ...enemy,
+      hp: Math.floor(enemy.hp * multiplier),
+      rangedAttack: Math.floor(enemy.rangedAttack * multiplier),
+      magicalAttack: Math.floor(enemy.magicalAttack * multiplier),
+      meleeAttack: Math.floor(enemy.meleeAttack * multiplier),
+      rangedNoA: Math.floor(enemy.rangedNoA * multiplier),
+      magicalNoA: Math.floor(enemy.magicalNoA * multiplier),
+      meleeNoA: Math.floor(enemy.meleeNoA * multiplier),
+      rangedAttackAmplifier: enemy.rangedAttackAmplifier * multiplier,
+      magicalAttackAmplifier: enemy.magicalAttackAmplifier * multiplier,
+      meleeAttackAmplifier: enemy.meleeAttackAmplifier * multiplier,
+      physicalDefense: Math.floor(enemy.physicalDefense * multiplier),
+      magicalDefense: Math.floor(enemy.magicalDefense * multiplier),
+      experience: Math.floor(enemy.experience * multiplier),
+    };
   };
 
   const formatEnemyAttackLine = (label: string, attack: number, amplifier: number) =>
@@ -1826,10 +1806,26 @@ function SettingTab({
           <div className="text-xs text-gray-600 font-medium mb-2">固有報酬 (Unique reward)</div>
 
           <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">reward_bag (固有報酬 抽選確率)</div>
+            <div className="text-xs text-gray-500 mb-1">uncommon_reward_bag (アンコモン抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>報酬抽選</span><span>{rewardBagRemaining} / {rewardBagTotal}</span></div>
-              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{rewardBagWins}</span></div>
+              <div className="flex justify-between"><span>報酬抽選</span><span>{uncommonRewardRemaining} / {uniqueRewardTotal}</span></div>
+              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{uncommonRewardWins}</span></div>
+            </div>
+          </div>
+
+          <div className="mb-2">
+            <div className="text-xs text-gray-500 mb-1">rare_reward_bag (レア抽選確率)</div>
+            <div className="bg-white rounded p-2 text-sm space-y-1">
+              <div className="flex justify-between"><span>報酬抽選</span><span>{rareRewardRemaining} / {uniqueRewardTotal}</span></div>
+              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{rareRewardWins}</span></div>
+            </div>
+          </div>
+
+          <div className="mb-2">
+            <div className="text-xs text-gray-500 mb-1">mythic_reward_bag (神魔レア抽選確率)</div>
+            <div className="bg-white rounded p-2 text-sm space-y-1">
+              <div className="flex justify-between"><span>報酬抽選</span><span>{mythicRewardRemaining} / {uniqueRewardTotal}</span></div>
+              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{mythicRewardWins}</span></div>
             </div>
           </div>
 
@@ -1962,7 +1958,7 @@ function SettingTab({
                                 <div>{formatEnemyDefenseLine('魔防', displayEnemy.magicalDefense, magicalDefensePercent)}</div>
                                 <div>{formatEnemyAttackLine('遠攻', displayEnemy.rangedAttack, displayEnemy.rangedAttackAmplifier)}</div>
                               </div>
-                              <div className="pt-1">ドロップ候補: {getDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id)}${item.name}`).join(' / ')}</div>
+                              <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id)}${item.name}`).join(' / ')}</div>
                             </div>
                           )}
                         </div>

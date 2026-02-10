@@ -1,4 +1,4 @@
-import { EnemyDef, EnemyType, ElementalOffense, ElementalResistance } from '../types';
+import { EnemyDef, EnemyType, ElementalOffense, ElementalResistance, ItemDef } from '../types';
 import { MYTHIC_DROP_POOLS } from './dropTables';
 import { getItemsByTierAndRarity } from './items';
 
@@ -676,6 +676,52 @@ export const getElitesByPool = (poolId: number): EnemyDef[] =>
 
 export const getBossEnemy = (id: number): EnemyDef | undefined =>
   ENEMIES.find(e => e.id === id && e.type === 'boss');
+
+function getTierFromEnemy(enemyId: number): number {
+  if (enemyId >= 1000) return Math.floor(enemyId / 1000);
+  return Math.floor(enemyId / 100);
+}
+
+function pickItems(pool: ItemDef[], count: number, seed: number): ItemDef[] {
+  if (pool.length === 0) return [];
+
+  const picked: ItemDef[] = [];
+  for (let i = 0; i < count; i++) {
+    const index = (seed + i * 7) % pool.length;
+    picked.push(pool[index]);
+  }
+
+  return picked;
+}
+
+export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
+  const tier = getTierFromEnemy(enemy.id);
+  const common = getItemsByTierAndRarity(tier, 'common');
+  const uncommon = getItemsByTierAndRarity(tier, 'uncommon');
+  const rare = getItemsByTierAndRarity(tier, 'rare');
+  const mythic = getItemsByTierAndRarity(tier, 'mythic');
+
+  if (enemy.type === 'normal') {
+    return [
+      ...pickItems(common, 3, enemy.id),
+      ...pickItems(uncommon, 2, enemy.id + 3),
+    ];
+  }
+
+  if (enemy.type === 'elite') {
+    return [
+      ...pickItems(rare, 2, enemy.id),
+      ...pickItems(uncommon, 1, enemy.id + 2),
+      ...pickItems(common, 2, enemy.id + 5),
+    ];
+  }
+
+  return [
+    ...pickItems(mythic, 2, enemy.id),
+    ...pickItems(rare, 2, enemy.id + 2),
+    ...pickItems(common, 1, enemy.id + 5),
+  ];
+}
 
 // Get random normal enemy from pool
 export function getRandomNormalEnemy(poolId: number): EnemyDef {

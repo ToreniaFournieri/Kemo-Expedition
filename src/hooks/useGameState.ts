@@ -21,7 +21,7 @@ import {
 import { computePartyStats } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
 import { getDungeonById } from '../data/dungeons';
-import { getEnemiesByPool, getElitesByPool, getBossEnemy } from '../data/enemies';
+import { getEnemiesByPool, getElitesByPool, getBossEnemy, getEnemyDropCandidates } from '../data/enemies';
 import {
   drawFromBag,
   refillBagIfEmpty,
@@ -583,7 +583,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 gotReward = gotReward || unlockTicket === 1;
               }
 
-              if (gotReward && enemy.dropItemId) {
+              if (gotReward) {
                 bags = refillBagIfEmpty(bags, enhancementBagType);
                 const { ticket: enhVal, newBag: newEnhBag } = drawFromBag(bags[enhancementBagType]);
                 bags = { ...bags, [enhancementBagType]: newEnhBag };
@@ -592,7 +592,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 const { ticket: srVal, newBag: newSRBag } = drawFromBag(bags.superRareBag);
                 bags = { ...bags, superRareBag: newSRBag };
 
-                const baseItem = getItemById(enemy.dropItemId);
+                const dropCandidates = getEnemyDropCandidates(enemy);
+                const selectedDropItem = dropCandidates.length > 0
+                  ? dropCandidates[Math.floor(Math.random() * dropCandidates.length)]
+                  : (enemy.dropItemId ? getItemById(enemy.dropItemId) : undefined);
+                const baseItem = selectedDropItem;
                 if (baseItem) {
                   const newItem: Item = { ...baseItem, enhancement: enhVal, superRare: srVal };
                   const rewardTag = getRarityTagById(newItem.id);
@@ -697,7 +701,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               gotReward = gotReward || unlockTicket === 1;
             }
 
-            if (gotReward && enemy.dropItemId) {
+            if (gotReward) {
               bags = refillBagIfEmpty(bags, enhancementBagType);
               const { ticket: enhVal, newBag: newEnhBag } = drawFromBag(bags[enhancementBagType]);
               bags = { ...bags, [enhancementBagType]: newEnhBag };
@@ -706,7 +710,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               const { ticket: srVal, newBag: newSRBag } = drawFromBag(bags.superRareBag);
               bags = { ...bags, superRareBag: newSRBag };
 
-              const baseItem = getItemById(enemy.dropItemId);
+              const dropCandidates = getEnemyDropCandidates(enemy);
+              const selectedDropItem = dropCandidates.length > 0
+                ? dropCandidates[Math.floor(Math.random() * dropCandidates.length)]
+                : (enemy.dropItemId ? getItemById(enemy.dropItemId) : undefined);
+              const baseItem = selectedDropItem;
               if (baseItem) {
                 const newItem: Item = { ...baseItem, enhancement: enhVal, superRare: srVal };
                 const rewardTag = getRarityTagById(newItem.id);
