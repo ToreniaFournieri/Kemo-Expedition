@@ -83,6 +83,21 @@ const RARITY_AMPLIFIERS: Record<ItemCategory, number[]> = {
 // Tier name prefixes for generated items
 const TIER_PREFIXES = ['銅の', '鉄の', '鋼の', 'ミスリルの', 'アダマンの', 'オリハルの', 'エーテルの', '星鉄の'];
 
+const ITEM_NAME_OVERRIDES: Record<number, string> = {
+  1401: '黎明の聖剣',
+  1402: '秘奥真理の書',
+  2401: '白銀英雄の鎧',
+  3401: '叡智神杖',
+  4401: '月影妖刀',
+  5401: '雷牙神雷ボルト',
+  6401: '暁星英雄の鎧',
+  7401: '天断の聖剣',
+  7402: '星詠神杖',
+  8401: '終焉妖刀',
+  8402: '天罰神雷ボルト',
+  8403: '根源真理の書',
+};
+
 // Shield HP values per tier
 const SHIELD_HP_MULTIPLIERS = [12, 18, 27, 41, 61, 91, 137, 205];
 
@@ -250,6 +265,8 @@ function createItem(
   } else {
     name = template.mythicName || tierPrefix + template.baseName;
   }
+
+  name = ITEM_NAME_OVERRIDES[id] ?? name;
 
   // Base item
   const item: ItemDef = {
