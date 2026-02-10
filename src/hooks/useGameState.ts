@@ -38,7 +38,7 @@ import {
 import { getItemById, getItemsByTierAndRarity, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 
-const BUILD_NUMBER = 36;
+const BUILD_NUMBER = 37;
 const STORAGE_KEY = 'kemo-expedition-save';
 
 // Helper to calculate sell price for an item
@@ -302,27 +302,42 @@ type GameAction =
 function selectEnemyForRoom(
   roomType: RoomType,
   poolId?: number,
-  bossId?: number
+  bossId?: number,
+  floorNumber?: number,
+  roomIndex?: number
 ): EnemyDef | null {
   if (roomType === 'battle_Boss' && bossId) {
     return getBossEnemy(bossId) ?? null;
   }
 
-  if (roomType === 'battle_Elite' && poolId) {
-    const elites = getElitesByPool(poolId);
+  if (!poolId) return null;
+
+  if (roomType === 'battle_Elite') {
+    const elites = getElitesByPool(poolId).sort((a, b) => a.id - b.id);
     if (elites.length === 0) return null;
+    if (floorNumber && floorNumber <= elites.length) {
+      return elites[floorNumber - 1] ?? null;
+    }
     const randomIndex = Math.floor(Math.random() * elites.length);
     return elites[randomIndex];
   }
 
-  if (poolId) {
-    const enemies = getEnemiesByPool(poolId);
-    if (enemies.length === 0) return null;
-    const randomIndex = Math.floor(Math.random() * enemies.length);
-    return enemies[randomIndex];
+  const enemies = getEnemiesByPool(poolId).sort((a, b) => a.id - b.id);
+  if (enemies.length === 0) return null;
+
+  if (floorNumber && roomIndex !== undefined) {
+    // Fixed pools: each floor uses 5 unique normal enemies (pool_1 ... pool_6)
+    const poolOffset = Math.max(0, Math.min(5, floorNumber - 1)) * 5;
+    const floorPool = enemies.slice(poolOffset, poolOffset + 5);
+    if (floorPool.length > 0) {
+      // Rooms 1-3 select deterministic enemy within the floor pool
+      const floorRoomIndex = Math.max(0, Math.min(2, roomIndex));
+      return floorPool[floorRoomIndex % floorPool.length] ?? floorPool[0] ?? null;
+    }
   }
 
-  return null;
+  const randomIndex = Math.floor(Math.random() * enemies.length);
+  return enemies[randomIndex];
 }
 
 // Loot-Gate check: count total items of a rarity the player owns for a tier
@@ -508,7 +523,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             }
 
             // Select enemy for this room
-            const baseEnemy = selectEnemyForRoom(roomDef.type, roomDef.poolId, roomDef.bossId);
+            const baseEnemy = selectEnemyForRoom(roomDef.type, roomDef.poolId, roomDef.bossId, floor.floorNumber, roomIndex);
             if (!baseEnemy) continue;
 
             // Apply floor multiplier to enemy stats
