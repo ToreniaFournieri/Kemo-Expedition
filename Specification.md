@@ -278,7 +278,7 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 | ケイナイアン平原(Caninian Plains) | 原 | x1 | x1 | x1 | x1 | x1 | x1 | 1 | The Fields of First Vows. A sun-drenched grassland dotted with wooden watchtowers. This is the training ground for all new expeditions. The atmosphere is stable, making it the perfect place to master the basics of the Sword and Grimoire under the watchful eyes of the loyal Caninian sentries. |
 | ルピニアンの断崖(Lupinian Crag) | 崖 | x4 | x3 | x2 | x2 | x3 | x0.8 | 2 | The Razor-Wind Peaks. Sharp obsidian cliffs where the wind howls like a hungry wolf. The Lupinian tribes test their endurance here. |
 | ヴァルピニアンの樹林帯(Vulpinian Taiga) | 樹 | x16 | x9 | x3 | x3 | x9 | x0.64 | 3 | The Forest of Veils. A dense, autumnal woodland where the trees seem to move when you blink. The Vulpinian mages use the natural spiritual mist to weave illusions. Requiring explorers to seek the protection of high-tier Robes and Wands to see through the deception. |
-| ウルサンの霊峰(Ursan Peaks) | 峰 | x64 | x27 | x4 | x3 | x27 | x0.51 | 4 | The Thunder-Forge Mountains. A volcanic range where the ground shakes with the rhythmic pounding of Ursan blacksmiths. Deep in these magma-lit halls, the lost art of the Katana is guarded by those whose bodies are as hard as the stone itself. |
+| ウルサンの霊峰(Ursan Peaks) | 峰 | x64 | x27 | x4 | x4 | x27 | x0.51 | 4 | The Thunder-Forge Mountains. A volcanic range where the ground shakes with the rhythmic pounding of Ursan blacksmiths. Deep in these magma-lit halls, the lost art of the Katana is guarded by those whose bodies are as hard as the stone itself. |
 | フェリディアンの茂み(Felidian Grove) | 茂 | x256 | x81 | x5 | x5 | x81 | x0.41 | 5 | The Moonlit Sanctuary. An ancient, overgrown jungle where ruins of a pre-shattering civilization glow with bioluminescence. To clear this grove, one must master the Bolt—the only weapon fast enough to strike before the forest strikes back. |
 | マステリドの巣穴(Mustelid Burrow) | 巣 | x1,024 | x243 | x6 | x6 | x243 | x0.33 | 6 | The Copper Labyrinth. A massive subterranean industrial hive. The air is thick with chemical steam and the clank of gears. Only those with high-tier Catalysts can neutralize the toxins found in the deepest vents. |
 | レポリアンの庭園(Leporian Garden) | 園 | x4,096 | x729 | x7 | x7 | x729 | x0.26 | 7 | The High-Heaven Isles. A cluster of floating islands suspended miles above the clouds. The Leporians navigate these heights using wind currents. Only those with the "Lord's" resolve can stabilize their spirit enough to claim the Mythic Sword. |
@@ -294,20 +294,20 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
 - `x.expedition` layout overview:
 
-| `x.floor` | `x.room` | `x.room_type` | `x.floor_multiplier` | `x.Spawn_pool`, drops | `x.key_concept` |
-|----|----|----|-----|-----|-----|
-| 1 | 1-3 | `x.battle_Normal` | x1.0 | pool_1 | easy farming |
-| 1 | 4 | `x.battle_Elite` | x1.3 | fixed Elite. rare  `i.sword`, `i.armor` | Class:Rogue. Checks if you have equipped items properly. |
-| 2 | 1-3 | `x.battle_Normal` | x1.2 | pool_2 | |
-| 2 | 4 | `x.battle_Elite` | x1.56 | fixed Elite. rare  `i.shield`, `i.robe` | Class:Fighter. Checks if you have equipped enough offensive items. |
-| 3 | 1-3 | `x.battle_Normal` | x1.44 | pool_3  |  |
-| 3 | 4 | `x.battle_Elite` | x1.82 | fixed Elite. rare  `i.arrow`, `i.bolt`, `i.archery` | Class:Ranger. Check if you have enough physical defensive items. |
-| 4 | 1-3 | `x.battle_Normal` | x1.73 | pool_4 | |
-| 4 | 4 | `x.battle_Elite` | x2.25 | fixed Elite. rare  `i.armor`, `i.katana` | Class:Duelist. Checks if you have archery or magic items. (kill it before his melee attacks) |
-| 5 | 1-3 | `x.battle_Normal` | x2.07 | pool_5  | |
-| 5 | 4 | `x.battle_Elite` | x2.69 | fixed Elite. rare  `i.wand`, `i.grimoire`, `i.catalyst` | Class:Mage. Checks if you have equipped enough magical defensive items.  |
-| 6 | 1-3 | `x.battle_Normal` | x2.49 | pool_6 | |
-| 6 | 4 | `x.battle_Boss` | x5.00 | fixed Boss. mythic (see bellows) | Checks if you have enough tital power. |
+| `x.floor` | `x.room` | `x.room_type` | `x.floor_HP_mult` | `x.floor_atk_mult` | `x.floor_NoA_mult` | `x.floor_atk_amp_mult` | `x.floor_def_mult` | `x.exp_def_amp_mult` | `x.Spawn_pool`, drops | `x.key_concept` |
+|----|----|----|-----|-----|-----|-----|-----|-----|-----|-----|
+| 1 | 1-3 | `x.battle_Normal` | x1.0 | x1.0 | x1.0 | x1.0 | x1.0 | x1.0 | pool_1 | easy farming |
+| 1 | 4 | `x.battle_Elite` | x1.50 | x1.50 | x1.0 | x1.0 | x1.5 | x1.0 | fixed Elite. rare  `i.sword`, `i.armor` | Class:Rogue. Checks if you have equipped items properly. |
+| 2 | 1-3 | `x.battle_Normal` | x1.25 | x1.20 | x1.0 | x1.0 | x1.20 | x0.97 | pool_2 | |
+| 2 | 4 | `x.battle_Elite` | x1.85 | x1.80 | x1.0 | x1.0 | x1.80 | x0.97 | fixed Elite. rare  `i.shield`, `i.robe` | Class:Fighter. Checks if you have equipped enough offensive items. |
+| 3 | 1-3 | `x.battle_Normal` | x1.56 | x1.44 | x1.0 | x1.0 | x1.44 | x0.94 | pool_3  |  |
+| 3 | 4 | `x.battle_Elite` | x2.34 | x2.16 | x1.0 | x1.0 | x2.16 | x0.94 | fixed Elite. rare  `i.arrow`, `i.bolt`, `i.archery` | Class:Ranger. Check if you have enough physical defensive items. |
+| 4 | 1-3 | `x.battle_Normal` | x2.95 | x1.72 | x1.0 | x1.0 | x1.72 | x0.92 | pool_4 | |
+| 4 | 4 | `x.battle_Elite` | x4.43 | x2.58 | x1.0 | x1.0 | x2.58 | x0.92 | fixed Elite. rare  `i.armor`, `i.katana` | Class:Duelist. Checks if you have archery or magic items. (kill it before his melee attacks) |
+| 5 | 1-3 | `x.battle_Normal` | x2.44 | x2.07 | x1.0 | x1.0 | x2.07 | x0.89 | pool_5  | |
+| 5 | 4 | `x.battle_Elite` | x4.04 | x3.11 | x1.0 | x1.0 | x3.11 | x0.89 | fixed Elite. rare  `i.wand`, `i.grimoire`, `i.catalyst` | Class:Mage. Checks if you have equipped enough magical defensive items.  |
+| 6 | 1-3 | `x.battle_Normal` | x3.05 | x2.49 | x1.0 | x1.0 | x2.49 | x0.86 | pool_6 | |
+| 6 | 4 | `x.battle_Boss` | x6.10 | x5.00 | x1.0 | x1.0 | x5.0 | x0.86 | fixed Boss. mythic (see bellows) | Checks if you have enough tital power. |
 
 - each pool has enemies with unique item drops. (*note:* common items are not specifically mentioned but are dropped.)
   
