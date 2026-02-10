@@ -568,9 +568,10 @@ function createEnemyFromTemplate(
     magicalNoA: Math.floor(classBase.magicalNoA * tierMult),
     meleeAttack: Math.floor(classBase.meleeAttack * attackScale),
     meleeNoA: Math.floor(classBase.meleeNoA * tierMult),
-    rangedAttackAmplifier: classBase.rangedAttackAmplifier * tierMult,
-    magicalAttackAmplifier: classBase.magicalAttackAmplifier * tierMult,
-    meleeAttackAmplifier: classBase.meleeAttackAmplifier * tierMult,
+    // f.offense_amplifier scales by floor multiplier only (no exp/tier multiplier)
+    rangedAttackAmplifier: classBase.rangedAttackAmplifier,
+    magicalAttackAmplifier: classBase.magicalAttackAmplifier,
+    meleeAttackAmplifier: classBase.meleeAttackAmplifier,
     physicalDefense: Math.floor(classBase.physicalDefense * defenseScale),
     magicalDefense: Math.floor(classBase.magicalDefense * defenseScale),
     elementalOffense: template.element || 'none',
