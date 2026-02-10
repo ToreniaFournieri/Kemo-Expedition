@@ -1706,12 +1706,65 @@ function SettingTab({
     return { dungeon, enemies: bossEnemy ? [...poolEnemies, bossEnemy] : poolEnemies };
   });
 
+  const getTierFromEnemy = (enemyId: number): number => {
+    if (enemyId >= 1000) return Math.floor(enemyId / 1000);
+    return Math.floor(enemyId / 100);
+  };
+
+  const getTierItemsByRarity = (tier: number, rarity: ItemRarity) => {
+    const rarityRangeStart = rarity === 'common' ? 100 : rarity === 'uncommon' ? 200 : rarity === 'rare' ? 300 : 400;
+    return ITEMS.filter(item => {
+      const itemTier = Math.floor(item.id / 1000);
+      const rarityCode = item.id % 1000;
+      return itemTier === tier && rarityCode >= rarityRangeStart && rarityCode < rarityRangeStart + 100;
+    });
+  };
+
+  const pickItems = (pool: typeof ITEMS, count: number, seed: number) => {
+    if (pool.length === 0) return [] as typeof ITEMS;
+    const picked: typeof ITEMS = [];
+    for (let i = 0; i < count; i++) {
+      const index = (seed + i * 7) % pool.length;
+      picked.push(pool[index]);
+    }
+    return picked;
+  };
+
+  const getDropCandidates = (enemy: (typeof ENEMIES)[number]) => {
+    const tier = getTierFromEnemy(enemy.id);
+    const common = getTierItemsByRarity(tier, 'common');
+    const uncommon = getTierItemsByRarity(tier, 'uncommon');
+    const rare = getTierItemsByRarity(tier, 'rare');
+    const mythic = getTierItemsByRarity(tier, 'mythic');
+
+    if (enemy.type === 'normal') {
+      return [
+        ...pickItems(common, 3, enemy.id),
+        ...pickItems(uncommon, 2, enemy.id + 3),
+      ];
+    }
+
+    if (enemy.type === 'elite') {
+      return [
+        ...pickItems(rare, 2, enemy.id),
+        ...pickItems(uncommon, 1, enemy.id + 2),
+        ...pickItems(common, 2, enemy.id + 5),
+      ];
+    }
+
+    return [
+      ...pickItems(mythic, 2, enemy.id),
+      ...pickItems(rare, 2, enemy.id + 2),
+      ...pickItems(common, 1, enemy.id + 5),
+    ];
+  };
+
   return (
     <div>
       <div className="text-lg font-bold mb-3">神の執務室</div>
 
       <div className="bg-pane rounded-lg p-4 mb-4">
-        <div className="text-sm font-medium mb-3">1. 未来視 (Clairvoyance)</div>
+        <div className="text-sm font-medium mb-3">1. 未来視</div>
 
         <div className="mb-4 border-b border-gray-200 pb-4">
           <div className="text-xs text-gray-600 font-medium mb-2">通常報酬 (Normal reward)</div>
@@ -1781,18 +1834,32 @@ function SettingTab({
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4">
-        <div className="text-sm font-medium mb-3">2. Item Compendium (アイテム図鑑)</div>
-        <div className="mb-3 flex flex-wrap gap-2">
+        <div className="text-sm font-medium mb-3">2. アイテム図鑑</div>
+        <div className="flex gap-1 mb-3 overflow-x-auto pb-1">
           {CATEGORY_GROUPS.map(group => (
-            <button
-              key={group.id}
-              onClick={() => setCompendiumCategory(group.categories[0])}
-              className={`px-2 py-1 rounded text-xs border ${group.categories.includes(compendiumCategory) ? 'bg-main text-white border-main' : 'bg-white border-gray-300'}`}
-            >
-              {group.label}
-            </button>
+            <div key={group.id} className="flex flex-col">
+              <div className="text-xs text-gray-400 text-center mb-0.5">{group.label}</div>
+              <div className="flex">
+                {group.categories.map((cat, i) => (
+                  <button
+                    key={cat}
+                    onClick={() => setCompendiumCategory(cat)}
+                    className={`px-2 py-1 text-sm ${
+                      i === 0 ? 'rounded-l' : i === group.categories.length - 1 ? 'rounded-r' : ''
+                    } ${
+                      compendiumCategory === cat
+                        ? 'bg-sub text-white'
+                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    }`}
+                  >
+                    {CATEGORY_SHORT_NAMES[cat]}
+                  </button>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
+      </div>
 
         <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
           {compendiumItems.map(item => {
@@ -1804,13 +1871,13 @@ function SettingTab({
                   onClick={() => setExpandedCompendiumItems(prev => ({ ...prev, [item.id]: !expanded }))}
                   className="w-full text-left px-3 py-2 text-sm flex justify-between items-center"
                 >
-                  <span>{item.name}</span>
+                  <span>{getRarityShortLabel(item.id)}{item.name}</span>
                   <span className="text-xs text-gray-500">{expanded ? '▲' : '▼'}</span>
                 </button>
                 {expanded && (
                   <div className="px-3 pb-2 text-xs text-gray-700 space-y-1 border-t border-gray-100 pt-2">
                     <div>ID: {item.id}</div>
-                    <div>{getRarityShortLabel(item.id)} {getItemStats(baseItem)}</div>
+                    <div>{getItemStats(baseItem)}</div>
                   </div>
                 )}
               </div>
@@ -1820,7 +1887,7 @@ function SettingTab({
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4">
-        <div className="text-sm font-medium mb-3">3. Bestiary (敵キャラクター図鑑)</div>
+        <div className="text-sm font-medium mb-3">3. 敵キャラクター図鑑</div>
         <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
           {bestiary.map(({ dungeon, enemies }) => {
             const dungeonExpanded = !!expandedExpeditions[dungeon.id];
@@ -1845,7 +1912,7 @@ function SettingTab({
                             onClick={() => setExpandedEnemies(prev => ({ ...prev, [enemy.id]: !enemyExpanded }))}
                             className="w-full text-left px-2 py-1 text-sm flex justify-between items-center"
                           >
-                            <span>{enemy.name}{isBoss ? ' (BOSS)' : ''}</span>
+                            <span>{enemy.name}{enemy.type === 'elite' ? '(ELITE)' : isBoss ? '(BOSS)' : ''}</span>
                             <span className="text-xs text-gray-500">{enemyExpanded ? '▲' : '▼'}</span>
                           </button>
                           {enemyExpanded && (
@@ -1857,7 +1924,8 @@ function SettingTab({
                               <div>魔攻: {enemy.magicalAttack}</div>
                               <div>物防: {enemy.physicalDefense}</div>
                               <div>魔防: {enemy.magicalDefense}</div>
-                              <div>ドロップ: {dropItem?.name ?? 'なし'}</div>
+                              <div className="col-span-2">現在のドロップ: {dropItem ? `${getRarityShortLabel(dropItem.id)}${dropItem.name}` : 'なし'}</div>
+                              <div className="col-span-2">ドロップ候補(5種): {getDropCandidates(enemy).map(item => `${getRarityShortLabel(item.id)}${item.name}`).join(' / ')}</div>
                             </div>
                           )}
                         </div>
@@ -1872,7 +1940,7 @@ function SettingTab({
       </div>
 
       <div className="bg-pane rounded-lg p-4">
-        <div className="text-sm font-medium mb-2">4. Game Reset</div>
+        <div className="text-sm font-medium mb-2">4. ゲームリセット</div>
         {!showResetConfirm ? (
           <button onClick={() => setShowResetConfirm(true)} className="w-full py-2 bg-red-600 text-white rounded font-medium">ゲームをリセット</button>
         ) : (
