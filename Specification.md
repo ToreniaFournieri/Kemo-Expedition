@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.2.1 - SPECIFICATION
+# KEMO EXPEDITION v0.2.2 - SPECIFICATION
 
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
@@ -273,16 +273,16 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 #### 2.3.1 Expedition
 - `x.expedition` list
 
-| `x.expediton` | `x.exp_mult` | drop item tier | lore |
-|------|-----|-----|----|
-| Caninian Plains | x1 | 1 | The Fields of First Vows. A sun-drenched grassland dotted with wooden watchtowers. This is the training ground for all new expeditions. The atmosphere is stable, making it the perfect place to master the basics of the Sword and Grimoire under the watchful eyes of the loyal Caninian sentries. |
-| Lupinian Crag | x2 | 2 | The Razor-Wind Peaks. Sharp obsidian cliffs where the wind howls like a hungry wolf. The Lupinian tribes test their endurance here. The spatial thinness at this altitude doubles the pressure on the soul, forcing explorers to upgrade their Armor and Bows to survive the biting cold and vertical hunts. |
-| Vulpinian Taiga | x4 | 3 | The Forest of Veils. A dense, autumnal woodland where the trees seem to move when you blink. The Vulpinian mages use the natural spiritual mist to weave illusions. Magic is x4 more potent here, requiring explorers to seek the protection of high-tier Robes and Wands to see through the deception. |
-| Ursan Peaks | x8 | 4 | The Thunder-Forge Mountains. A volcanic range where the ground shakes with the rhythmic pounding of Ursan blacksmiths. The heat and gravity are x8 higher than the plains. Deep in these magma-lit halls, the lost art of the Katana is guarded by those whose bodies are as hard as the stone itself. |
-| Felidian Grove | x16 | 5 | The Moonlit Sanctuary. An ancient, overgrown jungle where ruins of a pre-shattering civilization glow with bioluminescence. The Felidians move through the shadows with x16 speed and grace. To clear this grove, one must master the Bolt—the only weapon fast enough to strike before the forest strikes back. |
-| Mustelid Burrow | x32 | 6 | The Copper Labyrinth. A massive subterranean industrial hive. The air is thick with chemical steam and the clank of gears. The Mustelids have turned these tunnels into a x32 difficulty death-trap of alchemy. Only those with high-tier Catalysts can neutralize the toxins found in the deepest vents. |
-| Leporian Garden | x64 | 7 | The High-Heaven Isles. A cluster of floating islands suspended miles above the clouds. The Leporians navigate these heights using wind currents. The thin air and sheer vertigo create a x64 multiplier on every step. Only those with the "Lord's" resolve can stabilize their spirit enough to claim the Mythic Sword. |
-| Cervin Vale | x128 | 8 | The Glass Horizon. A dimension where space and time have crystallized. The Cervin Sages reside here in total silence. The x128 multiplier represents the "Superior Existence" of this realm—where the logic of the world ends. Here, the final Grimoire and Katana await the one who can transcend mortality. |
+| `x.expediton` | `x.exp_HP_mult` | `x.exp_atk_mult` | `x.exp_atk_amp_mult` | `x.exp_def_mult` | `x.exp_def_amp_mult` | drop item tier | lore |
+|------|-----|-----|----|----|----|----|----|
+| Caninian Plains | x1 | x1 | x1 | x1 | x1 | 1 | The Fields of First Vows. A sun-drenched grassland dotted with wooden watchtowers. This is the training ground for all new expeditions. The atmosphere is stable, making it the perfect place to master the basics of the Sword and Grimoire under the watchful eyes of the loyal Caninian sentries. |
+| Lupinian Crag | x4 | x3 | x2 | x3 | x0.8 | 2 | The Razor-Wind Peaks. Sharp obsidian cliffs where the wind howls like a hungry wolf. The Lupinian tribes test their endurance here. The spatial thinness at this altitude doubles the pressure on the soul, forcing explorers to upgrade their Armor and Bows to survive the biting cold and vertical hunts. |
+| Vulpinian Taiga | x16 | x9 | x3 | x9 | x0.64 | 3 | The Forest of Veils. A dense, autumnal woodland where the trees seem to move when you blink. The Vulpinian mages use the natural spiritual mist to weave illusions. Magic is x4 more potent here, requiring explorers to seek the protection of high-tier Robes and Wands to see through the deception. |
+| Ursan Peaks | x64 | x27 | x4 | x27 | x0.51 | 4 | The Thunder-Forge Mountains. A volcanic range where the ground shakes with the rhythmic pounding of Ursan blacksmiths. The heat and gravity are x8 higher than the plains. Deep in these magma-lit halls, the lost art of the Katana is guarded by those whose bodies are as hard as the stone itself. |
+| Felidian Grove | x256 | x81 | x5 | x81 | x0.41 | 5 | The Moonlit Sanctuary. An ancient, overgrown jungle where ruins of a pre-shattering civilization glow with bioluminescence. The Felidians move through the shadows with x16 speed and grace. To clear this grove, one must master the Bolt—the only weapon fast enough to strike before the forest strikes back. |
+| Mustelid Burrow | x1,024 | x243 | x6 | x243 | x0.33 | 6 | The Copper Labyrinth. A massive subterranean industrial hive. The air is thick with chemical steam and the clank of gears. The Mustelids have turned these tunnels into a x32 difficulty death-trap of alchemy. Only those with high-tier Catalysts can neutralize the toxins found in the deepest vents. |
+| Leporian Garden | x4,096 | x729 | x7 | x729 | x0.26 | 7 | The High-Heaven Isles. A cluster of floating islands suspended miles above the clouds. The Leporians navigate these heights using wind currents. The thin air and sheer vertigo create a x64 multiplier on every step. Only those with the "Lord's" resolve can stabilize their spirit enough to claim the Mythic Sword. |
+| Cervin Vale | x16,384 | x2,187 | x8 | x729 | x0.21 | 8 | The Glass Horizon. A dimension where space and time have crystallized. The Cervin Sages reside here in total silence. The x128 multiplier represents the "Superior Existence" of this realm—where the logic of the world ends. Here, the final Grimoire and Katana await the one who can transcend mortality. |
 
 - **Enemy entity distribution** for each `x.expediton`
 
@@ -1349,7 +1349,8 @@ HP: 312                    経験値: 88
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
-| **0.2.1 | Update:8.7 Divine Bureau, 1. Clairvoyance (add total counts at Normal reward ), Adding 2. Item Comedium and 3. Bestiary |
+| **0.2.2**| Game balance modified |
+| 0.2.1 | Update:8.7 Divine Bureau, 1. Clairvoyance (add total counts at Normal reward ), Adding 2. Item Comedium and 3. Bestiary |
 | 0.2.0 | Big update: 2.1 Global constants (change randamness upgrade), 2.3 Expedition & Enemies, 2.4 Items, 3. INITIALIZATION, 5.1 "Loot-Gate" progression system, 6.5 Outcome  7. REWARD (change the logic), 8.4 Expedition, 8.7 Divine Bureau (setting)  |
 | 0.1.4 |                                                                |
 
