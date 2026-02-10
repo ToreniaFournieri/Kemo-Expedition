@@ -1329,8 +1329,8 @@ Left-aligned            Right-aligned
     - Tap Enemy name, Opens detailed enemy status (same logic as battle). Including drop items.
 
 ```
-ID: 5005
 (column 1)                 (column 2)
+ID: 5005                   クラス: 戦士
 HP: 312                    経験値: 88
 遠攻: 0 (x1.00)            属性: 雷 (x1.2)
 魔攻: 117 (x1.00)          魔防: 8 (80%)
