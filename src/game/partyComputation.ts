@@ -188,12 +188,21 @@ export function computePartyStats(party: Party): {
   let offenseAmplifier = 1.0;
   const commandAbility = abilities.find(a => a.id === 'command');
   if (commandAbility) {
-    offenseAmplifier = commandAbility.level === 2 ? 1.3 : 1.15;
+    offenseAmplifier = commandAbility.level === 2 ? 1.6 : 1.3;
   }
 
-  // Defense amplifiers are now computed per character (phase-specific).
-  const physicalDefenseAmplifier = 1.0;
-  const magicalDefenseAmplifier = 1.0;
+  // Party-wide damage reduction abilities
+  let physicalDefenseAmplifier = 1.0;
+  const defenderAbility = abilities.find(a => a.id === 'defender');
+  if (defenderAbility) {
+    physicalDefenseAmplifier = defenderAbility.level === 2 ? 3 / 5 : 2 / 3;
+  }
+
+  let magicalDefenseAmplifier = 1.0;
+  const mBarrierAbility = abilities.find(a => a.id === 'm_barrier');
+  if (mBarrierAbility) {
+    magicalDefenseAmplifier = mBarrierAbility.level === 2 ? 3 / 5 : 2 / 3;
+  }
 
   // Elemental resistance (always 1.0 in current version)
   const elementalResistance: Record<ElementalResistance, number> = {

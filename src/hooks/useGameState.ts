@@ -388,6 +388,24 @@ function applyFloorMultiplier(enemy: EnemyDef, multiplier: number): EnemyDef {
   };
 }
 
+
+function getRoomMultiplier(floorNumber: number, roomType: RoomType, floorMultiplier: number): number {
+  if (roomType === 'battle_Elite') {
+    const eliteRoomMultipliers: Record<number, number> = {
+      1: 1.3,
+      2: 1.56,
+      3: 1.82,
+      4: 2.25,
+      5: 2.69,
+    };
+    return eliteRoomMultipliers[floorNumber] ?? floorMultiplier;
+  }
+  if (roomType === 'battle_Boss') {
+    return 5.0;
+  }
+  return floorMultiplier;
+}
+
 function getItemRarityById(itemId: number): 'common' | 'uncommon' | 'rare' | 'mythic' {
   const rarityCode = itemId % 1000;
   if (rarityCode >= 400) return 'mythic';
@@ -459,7 +477,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   floor: floor.floorNumber,
                   roomInFloor: roomIndex + 1,
                   roomType: roomDef.type,
-                  floorMultiplier: floor.multiplier,
+                  floorMultiplier: getRoomMultiplier(floor.floorNumber, roomDef.type, floor.multiplier),
                   enemyName: '[扉が封印されている]',
                   enemyHP: 0,
                   enemyAttackValues: '',
@@ -498,7 +516,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   floor: floor.floorNumber,
                   roomInFloor: roomIndex + 1,
                   roomType: roomDef.type,
-                  floorMultiplier: floor.multiplier,
+                  floorMultiplier: getRoomMultiplier(floor.floorNumber, roomDef.type, floor.multiplier),
                   enemyName: '[扉が封印されている]',
                   enemyHP: 0,
                   enemyAttackValues: '',
@@ -522,7 +540,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             if (!baseEnemy) continue;
 
             // Apply floor multiplier to enemy stats
-            const enemy = applyFloorMultiplier(baseEnemy, floor.multiplier);
+            const roomMultiplier = getRoomMultiplier(floor.floorNumber, roomDef.type, floor.multiplier);
+            const enemy = applyFloorMultiplier(baseEnemy, roomMultiplier);
 
             // Pass currentHp to maintain HP persistence during expedition
             const battleResult = executeBattle(state.party, enemy, bags, currentHp);
@@ -551,7 +570,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               floor: floor.floorNumber,
               roomInFloor: roomIndex + 1,
               roomType: roomDef.type,
-              floorMultiplier: floor.multiplier,
+              floorMultiplier: roomMultiplier,
               enemyName: enemy.name + roomSuffix,
               enemyHP: enemy.hp,
               enemyAttackValues,

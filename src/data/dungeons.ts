@@ -1,7 +1,7 @@
 import { Dungeon, FloorDef } from '../types';
 
-// Floor multipliers: x1.0, x1.5, x2.0, x3.0, x4.0, x5.0
-const FLOOR_MULTIPLIERS = [1.0, 1.5, 2.0, 3.0, 4.0, 5.0];
+// Floor multipliers for normal rooms (spec): x1.0, x1.2, x1.44, x1.73, x2.07, x2.49
+const FLOOR_MULTIPLIERS = [1.0, 1.2, 1.44, 1.73, 2.07, 2.49];
 
 // Tier multipliers for expedition difficulty scaling
 // These multiply base enemy stats for each expedition tier
