@@ -1295,12 +1295,11 @@ function ExpeditionTab({
                   <span className="text-gray-500">獲得アイテム: </span>
                   {state.lastExpeditionLog.rewards.map((item, i) => {
                     const rarity = getItemRarityById(item.id);
-                    const rarityTag = rarity === 'rare' ? '' : getRarityShortLabel(item.id);
                     const isSuperRare = item.superRare > 0;
                     const rarityClass = getRarityTextClass(rarity, isSuperRare);
                     return (
                       <span key={i} className={`${rarityClass} font-medium`}>
-                        {i > 0 && ', '}{rarityTag ? `${rarityTag} ` : ''}{getItemDisplayName(item)}
+                        {i > 0 && ', '}{getItemDisplayName(item)}
                       </span>
                     );
                   })}
@@ -1652,8 +1651,9 @@ function SettingTab({
 }) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [compendiumCategory, setCompendiumCategory] = useState<string>('armor');
+  const [compendiumRarityFilter, setCompendiumRarityFilter] = useState<RarityFilter>('all');
   const [expandedCompendiumItems, setExpandedCompendiumItems] = useState<Record<number, boolean>>({});
-  const [expandedExpeditions, setExpandedExpeditions] = useState<Record<number, boolean>>({});
+  const [selectedBestiaryDungeonId, setSelectedBestiaryDungeonId] = useState<number>(1);
   const [expandedEnemies, setExpandedEnemies] = useState<Record<number, boolean>>({});
 
   const getInitialCount = (value: number) => ENHANCEMENT_TITLES.find(t => t.value === value)?.tickets ?? 0;
@@ -1700,21 +1700,119 @@ function SettingTab({
   const superRareHits = bags.superRareBag.tickets.filter(t => t > 0).length;
 
   const compendiumItems = ITEMS
-    .filter(item => item.category === compendiumCategory)
+    .filter(item =>
+      item.category === compendiumCategory &&
+      matchesRarityFilter(item.id, compendiumRarityFilter)
+    )
     .slice()
     .sort((a, b) => b.id - a.id);
 
-  const bestiary = DUNGEONS.map(dungeon => {
-    const poolEnemies = ENEMIES.filter(enemy => enemy.poolId === dungeon.enemyPoolIds[0]).sort((a, b) => a.id - b.id);
-    const bossEnemy = ENEMIES.find(enemy => enemy.id === dungeon.bossId);
-    return { dungeon, enemies: bossEnemy ? [...poolEnemies, bossEnemy] : poolEnemies };
-  });
+  const BESTIARY_TAB_LABELS: Record<number, string> = {
+    1: '草',
+    2: '古',
+    3: '呪',
+    4: '炎',
+    5: '氷',
+    6: '雷',
+    7: '冥',
+    8: '天',
+  };
 
-  const formatEnemyAttackLine = (label: string, attack: number, amplifier: number) =>
-    `${label}: ${attack} (x${amplifier.toFixed(2)})`;
+  const selectedBestiaryDungeon = DUNGEONS.find(d => d.id === selectedBestiaryDungeonId) ?? DUNGEONS[0];
+
+  const selectedBestiaryGroups = selectedBestiaryDungeon.floors
+    ? selectedBestiaryDungeon.floors
+      .slice()
+      .sort((a, b) => b.floorNumber - a.floorNumber)
+      .flatMap(floor => {
+        const tierNormals = ENEMIES
+          .filter(enemy => enemy.poolId === selectedBestiaryDungeon.id && enemy.type === 'normal')
+          .sort((a, b) => a.id - b.id);
+        const tierElites = ENEMIES
+          .filter(enemy => enemy.poolId === selectedBestiaryDungeon.id && enemy.type === 'elite')
+          .sort((a, b) => a.id - b.id);
+
+        // pool_v has 5 enemies: pool_1 => first 5 normals ... pool_6 => last 5 normals
+        const poolIndex = Math.max(1, Math.min(6, floor.floorNumber)) - 1;
+        const normalEnemies = tierNormals.slice(poolIndex * 5, poolIndex * 5 + 5);
+
+        const groups: Array<{ key: string; label: string; enemies: EnemyDef[]; floorNumber: number; groupType: 'boss' | 'elite' | 'normal' }> = [];
+
+        if (floor.floorNumber === 6) {
+          const bossEnemy = ENEMIES.find(enemy => enemy.id === selectedBestiaryDungeon.bossId);
+          if (bossEnemy) {
+            groups.push({
+              key: 'boss',
+              label: 'BOSS',
+              enemies: [bossEnemy],
+              floorNumber: floor.floorNumber,
+              groupType: 'boss',
+            });
+          }
+          groups.push({
+            key: 'floor-6',
+            label: 'Floor 6',
+            enemies: normalEnemies,
+            floorNumber: floor.floorNumber,
+            groupType: 'normal',
+          });
+          return groups;
+        }
+
+        const fixedElite = tierElites[floor.floorNumber - 1];
+        if (fixedElite) {
+          groups.push({
+            key: `floor-${floor.floorNumber}-elite`,
+            label: `Floor ${floor.floorNumber} Elite`,
+            enemies: [fixedElite],
+            floorNumber: floor.floorNumber,
+            groupType: 'elite',
+          });
+        }
+
+        groups.push({
+          key: `floor-${floor.floorNumber}`,
+          label: `Floor ${floor.floorNumber}`,
+          enemies: normalEnemies,
+          floorNumber: floor.floorNumber,
+          groupType: 'normal',
+        });
+
+        return groups;
+      })
+    : [];
+
+  const formatEnemyAttackLine = (label: string, attack: number, noA: number, amplifier: number) =>
+    `${label}: ${attack} x ${noA}回(x${amplifier.toFixed(2)})`;
 
   const formatEnemyDefenseLine = (label: string, defense: number, percent: number) =>
     `${label}: ${defense} (${percent.toFixed(0)}%)`;
+
+  const ENEMY_ELEMENT_LABELS: Record<string, string> = {
+    none: '無',
+    fire: '炎',
+    thunder: '雷',
+    ice: '氷',
+  };
+
+  const ENEMY_ABILITY_LABELS: Record<string, string> = {
+    counter: 'カウンター:CLOSEフェーズで反撃',
+    re_attack: '連撃:攻撃時に1回追加攻撃',
+    null_counter: '無効化:カウンター攻撃を無効化',
+  };
+
+  const ENEMY_CLASS_LABELS: Record<string, string> = {
+    fighter: '戦士',
+    duelist: '剣士',
+    ninja: '忍者',
+    samurai: '侍',
+    lord: '君主',
+    ranger: '狩人',
+    wizard: '魔法使い',
+    sage: '賢者',
+    rogue: '盗賊',
+    pilgrim: '巡礼者',
+  };
 
   const getDisplayEnemy = (enemy: EnemyDef, dungeon: Dungeon): EnemyDef => {
     const bossFloorMultiplier = dungeon.floors?.[dungeon.floors.length - 1]?.multiplier ?? 1;
@@ -1831,6 +1929,25 @@ function SettingTab({
 
       <div className="bg-pane rounded-lg p-4 mb-4">
         <div className="text-sm font-medium mb-3">2. アイテム図鑑</div>
+        <div className="flex justify-end items-center gap-1 mb-3">
+          <span className="text-xs text-gray-500">
+            {compendiumRarityFilter === 'all' ? '全て表示' : `${RARITY_FILTER_NOTES[compendiumRarityFilter]}のみ`}
+          </span>
+          {RARITY_FILTER_OPTIONS.map(filter => (
+            <button
+              key={filter}
+              onClick={() => setCompendiumRarityFilter(filter)}
+              className={`text-xs px-1.5 py-0.5 border rounded ${
+                compendiumRarityFilter === filter
+                  ? 'bg-sub text-white border-sub'
+                  : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
+              }`}
+              title={RARITY_FILTER_NOTES[filter]}
+            >
+              {RARITY_FILTER_LABELS[filter]}
+            </button>
+          ))}
+        </div>
         <div className="flex gap-1 mb-3 overflow-x-auto pb-1">
           {CATEGORY_GROUPS.map(group => (
             <div key={group.id} className="flex flex-col">
@@ -1885,61 +2002,76 @@ function SettingTab({
 
       <div className="bg-pane rounded-lg p-4 mb-4">
         <div className="text-sm font-medium mb-3">3. 敵キャラクター図鑑</div>
+        <div className="flex gap-1 mb-3 overflow-x-auto pb-1">
+          {DUNGEONS.map(dungeon => (
+            <button
+              key={dungeon.id}
+              onClick={() => setSelectedBestiaryDungeonId(dungeon.id)}
+              className={`px-2 py-1 text-sm rounded ${
+                selectedBestiaryDungeonId === dungeon.id
+                  ? 'bg-sub text-white'
+                  : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+              }`}
+              title={dungeon.name}
+            >
+              {BESTIARY_TAB_LABELS[dungeon.id] ?? dungeon.id}
+            </button>
+          ))}
+        </div>
         <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
-          {bestiary.map(({ dungeon, enemies }) => {
-            const dungeonExpanded = !!expandedExpeditions[dungeon.id];
-            return (
-              <div key={dungeon.id} className="bg-white rounded border border-gray-200">
-                <button
-                  onClick={() => setExpandedExpeditions(prev => ({ ...prev, [dungeon.id]: !dungeonExpanded }))}
-                  className="w-full text-left px-3 py-2 text-sm flex justify-between items-center"
-                >
-                  <span>{dungeon.name}</span>
-                  <span className="text-xs text-gray-500">{dungeonExpanded ? '▲' : '▼'}</span>
-                </button>
-                {dungeonExpanded && (
-                  <div className="px-2 pb-2">
-                    {enemies.map(enemy => {
-                      const displayEnemy = getDisplayEnemy(enemy, dungeon);
-                      const isBoss = displayEnemy.type === 'boss';
-                      const enemyTypeLabel = displayEnemy.type === 'elite' ? ' (ELITE)' : isBoss ? ' (BOSS)' : '';
-                      const enemyExpanded = !!expandedEnemies[displayEnemy.id];
-                      const physicalDefensePercent = 100;
-                      const magicalDefensePercent = displayEnemy.physicalDefense > 0
-                        ? (displayEnemy.magicalDefense / displayEnemy.physicalDefense) * 100
-                        : 100;
-                      return (
-                        <div key={displayEnemy.id} className="mt-2 border border-gray-100 rounded">
-                          <button
-                            onClick={() => setExpandedEnemies(prev => ({ ...prev, [displayEnemy.id]: !enemyExpanded }))}
-                            className="w-full text-left px-2 py-1 text-sm flex justify-between items-center"
-                          >
-                            <span>{displayEnemy.name}{enemyTypeLabel}</span>
-                            <span className="text-xs text-gray-500">{enemyExpanded ? '▲' : '▼'}</span>
-                          </button>
-                          {enemyExpanded && (
-                            <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
-                              <div>ID: {displayEnemy.id}</div>
-                              <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                                <div>HP: {displayEnemy.hp}</div>
-                                <div>経験値: {displayEnemy.experience}</div>
-                                <div>{formatEnemyAttackLine('近攻', displayEnemy.meleeAttack, displayEnemy.meleeAttackAmplifier)}</div>
-                                <div>{formatEnemyDefenseLine('物防', displayEnemy.physicalDefense, physicalDefensePercent)}</div>
-                                <div>{formatEnemyAttackLine('魔攻', displayEnemy.magicalAttack, displayEnemy.magicalAttackAmplifier)}</div>
-                                <div>{formatEnemyDefenseLine('魔防', displayEnemy.magicalDefense, magicalDefensePercent)}</div>
-                                <div>{formatEnemyAttackLine('遠攻', displayEnemy.rangedAttack, displayEnemy.rangedAttackAmplifier)}</div>
-                              </div>
-                              <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id)}${item.name}`).join(' / ')}</div>
-                            </div>
-                          )}
+          <div className="text-xs text-gray-500">{selectedBestiaryDungeon.name}</div>
+          {selectedBestiaryGroups.map(group => (
+            <div key={group.key} className="bg-white rounded border border-gray-200 p-2">
+              <div className="text-xs text-gray-500 font-medium mb-1">{group.label}</div>
+              {group.enemies.map(enemy => {
+                const displayEnemy = getDisplayEnemy(enemy, selectedBestiaryDungeon);
+                const enemyClass = ENEMY_CLASS_LABELS[displayEnemy.enemyClass] ?? '不明';
+                const enemyExpanded = !!expandedEnemies[displayEnemy.id];
+                const physicalDefensePercent = 100;
+                const magicalDefensePercent = displayEnemy.physicalDefense > 0
+                  ? (displayEnemy.magicalDefense / displayEnemy.physicalDefense) * 100
+                  : 100;
+                return (
+                  <div key={displayEnemy.id} className="mt-2 border border-gray-100 rounded">
+                    <button
+                      onClick={() => setExpandedEnemies(prev => ({ ...prev, [displayEnemy.id]: !enemyExpanded }))}
+                      className="w-full text-left px-2 py-1 text-sm flex justify-between items-center"
+                    >
+                      <span>{displayEnemy.name}</span>
+                      <span className="text-xs text-gray-500">{enemyExpanded ? '▲' : '▼'}</span>
+                    </button>
+                    {enemyExpanded && (
+                      <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                          <div>ID: {displayEnemy.id}</div>
+                          <div>クラス: {enemyClass}</div>
                         </div>
-                      );
-                    })}
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                          <div>HP: {displayEnemy.hp}</div>
+                          <div>経験値: {displayEnemy.experience}</div>
+                          <div>{formatEnemyAttackLine('遠攻', displayEnemy.rangedAttack, displayEnemy.rangedNoA, displayEnemy.rangedAttackAmplifier)}</div>
+                          <div>
+                            属性: {ENEMY_ELEMENT_LABELS[displayEnemy.elementalOffense] ?? '無'}
+                            ({displayEnemy.elementalOffense === 'none' ? 'x1.0' : 'x1.2'})
+                          </div>
+                          <div>{formatEnemyAttackLine('魔攻', displayEnemy.magicalAttack, displayEnemy.magicalNoA, displayEnemy.magicalAttackAmplifier)}</div>
+                          <div>{formatEnemyDefenseLine('魔防', displayEnemy.magicalDefense, magicalDefensePercent)}</div>
+                          <div>{formatEnemyAttackLine('近攻', displayEnemy.meleeAttack, displayEnemy.meleeNoA, displayEnemy.meleeAttackAmplifier)}</div>
+                          <div>{formatEnemyDefenseLine('物防', displayEnemy.physicalDefense, physicalDefensePercent)}</div>
+                          <div>
+                            命中率: 100% (減衰: x{(0.90 + displayEnemy.accuracyBonus).toFixed(2)})
+                          </div>
+                          <div>回避: {Math.round(displayEnemy.evasionBonus * 1000)}</div>
+                        </div>
+                        <div>スキル: {displayEnemy.abilities.length > 0 ? displayEnemy.abilities.map(a => ENEMY_ABILITY_LABELS[a] ?? a).join('、 ') : 'なし'}</div>
+                        <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id)}${item.name}`).join(' / ')}</div>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          ))}
         </div>
       </div>
 
