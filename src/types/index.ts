@@ -260,6 +260,16 @@ export interface FloorDef {
   rooms: RoomDef[];
 }
 
+export interface ExpeditionEnemyMultipliers {
+  hp: number;
+  attack: number;
+  noa: number;
+  attackAmplifier: number;
+  defense: number;
+  defenseAmplifier: number;
+  experience: number;
+}
+
 // Dungeon Types
 export interface Dungeon {
   id: number;
@@ -267,6 +277,7 @@ export interface Dungeon {
   numberOfRooms: number; // Legacy - total rooms for backward compatibility
   enemyPoolIds: number[];
   bossId: number;
+  enemyMultipliers: ExpeditionEnemyMultipliers;
   floors?: FloorDef[]; // New v0.2.0 floor structure
 }
 

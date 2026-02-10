@@ -9,6 +9,7 @@ import { LINEAGES } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
+import { applyEnemyEncounterScaling } from '../game/enemyScaling';
 
 interface HomeScreenProps {
   state: GameState;
@@ -1814,56 +1815,14 @@ function SettingTab({
     pilgrim: '巡礼者',
   };
 
-  const getBestiaryRoomMultiplier = (
-    dungeon: Dungeon,
-    floorNumber: number,
-    groupType: 'boss' | 'elite' | 'normal'
-  ): number => {
-    const floorMultiplier = dungeon.floors?.find(floor => floor.floorNumber === floorNumber)?.multiplier ?? 1;
-
-    if (groupType === 'boss') {
-      return 5.0;
-    }
-
-    if (groupType === 'elite') {
-      const eliteRoomMultipliers: Record<number, number> = {
-        1: 1.3,
-        2: 1.56,
-        3: 1.82,
-        4: 2.25,
-        5: 2.69,
-      };
-      return eliteRoomMultipliers[floorNumber] ?? floorMultiplier;
-    }
-
-    return floorMultiplier;
-  };
-
   const getDisplayEnemy = (
     enemy: EnemyDef,
     dungeon: Dungeon,
     floorNumber: number,
     groupType: 'boss' | 'elite' | 'normal'
   ): EnemyDef => {
-    const multiplier = getBestiaryRoomMultiplier(dungeon, floorNumber, groupType);
-    if (multiplier === 1) return enemy;
-
-    return {
-      ...enemy,
-      hp: Math.floor(enemy.hp * multiplier),
-      rangedAttack: Math.floor(enemy.rangedAttack * multiplier),
-      magicalAttack: Math.floor(enemy.magicalAttack * multiplier),
-      meleeAttack: Math.floor(enemy.meleeAttack * multiplier),
-      rangedNoA: Math.floor(enemy.rangedNoA * multiplier),
-      magicalNoA: Math.floor(enemy.magicalNoA * multiplier),
-      meleeNoA: Math.floor(enemy.meleeNoA * multiplier),
-      rangedAttackAmplifier: enemy.rangedAttackAmplifier * multiplier,
-      magicalAttackAmplifier: enemy.magicalAttackAmplifier * multiplier,
-      meleeAttackAmplifier: enemy.meleeAttackAmplifier * multiplier,
-      physicalDefense: Math.floor(enemy.physicalDefense * multiplier),
-      magicalDefense: Math.floor(enemy.magicalDefense * multiplier),
-      experience: Math.floor(enemy.experience * multiplier),
-    };
+    const roomType = groupType === 'boss' ? 'battle_Boss' : groupType === 'elite' ? 'battle_Elite' : 'battle_Normal';
+    return applyEnemyEncounterScaling(enemy, dungeon, floorNumber, roomType);
   };
 
   return (
