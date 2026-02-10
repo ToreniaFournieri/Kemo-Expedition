@@ -973,7 +973,7 @@ function PartyTab({
                   <div className="flex justify-between items-center">
                     <span>
                       <span className="font-medium">{getItemDisplayName(item)}</span>
-                      <span className="text-xs text-gray-500"> | {getItemStats(item)}</span>
+                      <span className="text-xs text-gray-500"> |{getRarityShortLabel(item.id)} {getItemStats(item)}</span>
                     </span>
                     <span className="text-xs text-gray-400">
                       [{CATEGORY_NAMES[item.category]}]
@@ -1121,7 +1121,7 @@ function PartyTab({
                       {displayItem.isEquipped && <span>{race.emoji}</span>}
                       <span className="font-medium">{getItemDisplayName(displayItem.item)}</span>
                       {!displayItem.isEquipped && <span className="text-xs text-gray-500"> x{displayItem.count}</span>}
-                      <span className="text-xs text-gray-400"> | {getItemStats(displayItem.item)}</span>
+                      <span className="text-xs text-gray-400"> |{getRarityShortLabel(displayItem.item.id)} {getItemStats(displayItem.item)}</span>
                     </span>
                   </div>
                 </button>
@@ -1418,7 +1418,7 @@ function InventoryTab({
             return (
               <div
                 key={key}
-                className={`p-2 rounded bg-pane ${isNew ? 'border-2 border-accent' : ''}`}
+                className={`px-2 py-1.5 rounded bg-pane ${isNew ? 'border-2 border-accent' : ''}`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
@@ -1435,7 +1435,7 @@ function InventoryTab({
                     全売却 {sellPrice}G
                   </button>
                 </div>
-                <div className="mt-1 text-xs text-gray-400">
+                <div className="mt-0.5 text-xs leading-tight text-gray-400">
                   {getRarityShortLabel(item.id)} {getItemStats(item)}
                 </div>
               </div>
@@ -1459,7 +1459,7 @@ function InventoryTab({
           {showSold && (
             <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
               {filteredSoldItems.map(([key, variant]) => (
-                <div key={key} className="p-2 rounded bg-gray-100">
+                <div key={key} className="px-2 py-1.5 rounded bg-gray-100">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm text-gray-500">{getItemDisplayName(variant.item)}</span>
                     <button
@@ -1469,7 +1469,7 @@ function InventoryTab({
                       解除
                     </button>
                   </div>
-                  <div className="mt-1 text-xs text-gray-400">
+                  <div className="mt-0.5 text-xs leading-tight text-gray-400">
                     {getRarityShortLabel(variant.item.id)} {getItemStats(variant.item)}
                   </div>
                 </div>
