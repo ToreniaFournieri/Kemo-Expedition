@@ -429,7 +429,6 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         {activeTab === 'inventory' && (
           <InventoryTab
             inventory={state.party.inventory}
-            gold={state.party.gold}
             onSellStack={actions.sellStack}
             onSetVariantStatus={actions.setVariantStatus}
           />
@@ -481,6 +480,7 @@ function PartyTab({
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
   const [equipCategory, setEquipCategory] = useState('armor');
   const [partyRarityFilter, setPartyRarityFilter] = useState<RarityFilter>('all');
+  const [partySuperRareOnly, setPartySuperRareOnly] = useState(false);
 
   // Calculate current stats for notification: HP is party-wide, others are per selected character
   const selectedStats = characterStats[selectedCharacter];
@@ -1105,7 +1105,8 @@ function PartyTab({
         };
 
         const filteredDisplayItems = displayItems.filter(displayItem =>
-          matchesRarityFilter(displayItem.item.id, partyRarityFilter)
+          matchesRarityFilter(displayItem.item.id, partyRarityFilter) &&
+          (!partySuperRareOnly || displayItem.item.superRare >= 1)
         );
 
         return (
@@ -1154,6 +1155,17 @@ function PartyTab({
                     {RARITY_FILTER_LABELS[filter]}
                   </button>
                 ))}
+                <span className="text-xs text-gray-500">|超レア:</span>
+                <button
+                  onClick={() => setPartySuperRareOnly(prev => !prev)}
+                  className={`text-xs px-1.5 py-0.5 border rounded ${
+                    partySuperRareOnly
+                      ? 'bg-accent text-white border-accent'
+                      : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
+                  }`}
+                >
+                  {partySuperRareOnly ? 'ON' : 'OFF'}
+                </button>
               </div>
             </div>
             {/* Category group tabs */}
@@ -1436,55 +1448,70 @@ function ExpeditionTab({
 
 function InventoryTab({
   inventory,
-  gold,
   onSellStack,
   onSetVariantStatus,
 }: {
   inventory: InventoryRecord;
-  gold: number;
   onSellStack: (variantKey: string) => void;
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
 }) {
   const [showSold, setShowSold] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('armor');
   const [inventoryRarityFilter, setInventoryRarityFilter] = useState<RarityFilter>('all');
+  const [inventorySuperRareOnly, setInventorySuperRareOnly] = useState(false);
 
   // Separate owned and sold/notown items, filtered by category
   const allOwnedItems = Object.entries(inventory).filter(([, v]) => v.status === 'owned' && v.count > 0);
   const filteredOwnedItems = sortInventoryItems(
     allOwnedItems.filter(([, v]) =>
-      v.item.category === selectedCategory && matchesRarityFilter(v.item.id, inventoryRarityFilter)
+      v.item.category === selectedCategory &&
+      matchesRarityFilter(v.item.id, inventoryRarityFilter) &&
+      (!inventorySuperRareOnly || v.item.superRare >= 1)
     )
   );
   const allSoldItems = Object.entries(inventory).filter(([, v]) => v.status === 'sold');
   const filteredSoldItems = sortInventoryItems(
     allSoldItems.filter(([, v]) =>
-      v.item.category === selectedCategory && matchesRarityFilter(v.item.id, inventoryRarityFilter)
+      v.item.category === selectedCategory &&
+      matchesRarityFilter(v.item.id, inventoryRarityFilter) &&
+      (!inventorySuperRareOnly || v.item.superRare >= 1)
     )
   );
 
   return (
     <div>
-      <div className="text-sm text-gray-500 mb-2">
-        所持品: {filteredOwnedItems.length}種類 ({filteredOwnedItems.reduce((sum, [, v]) => sum + v.count, 0)}個) | {gold}G
-      </div>
-
-      <div className="flex justify-end items-center gap-1 mb-2">
-        <span className="text-xs text-gray-500">{RARITY_FILTER_NOTES[inventoryRarityFilter]}:</span>
-        {RARITY_FILTER_OPTIONS.map(filter => (
+      <div className="flex justify-between items-center mb-2 gap-2">
+        <div className="text-sm text-gray-500">
+          {filteredOwnedItems.length}種類 ({filteredOwnedItems.reduce((sum, [, v]) => sum + v.count, 0)}個)
+        </div>
+        <div className="flex justify-end items-center gap-1">
+          <span className="text-xs text-gray-500">{RARITY_FILTER_NOTES[inventoryRarityFilter]}:</span>
+          {RARITY_FILTER_OPTIONS.map(filter => (
+            <button
+              key={filter}
+              onClick={() => setInventoryRarityFilter(filter)}
+              className={`text-xs px-1.5 py-0.5 border rounded ${
+                inventoryRarityFilter === filter
+                  ? 'bg-sub text-white border-sub'
+                  : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
+              }`}
+              title={RARITY_FILTER_NOTES[filter]}
+            >
+              {RARITY_FILTER_LABELS[filter]}
+            </button>
+          ))}
+          <span className="text-xs text-gray-500">|超レア:</span>
           <button
-            key={filter}
-            onClick={() => setInventoryRarityFilter(filter)}
+            onClick={() => setInventorySuperRareOnly(prev => !prev)}
             className={`text-xs px-1.5 py-0.5 border rounded ${
-              inventoryRarityFilter === filter
-                ? 'bg-sub text-white border-sub'
+              inventorySuperRareOnly
+                ? 'bg-accent text-white border-accent'
                 : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
             }`}
-            title={RARITY_FILTER_NOTES[filter]}
           >
-            {RARITY_FILTER_LABELS[filter]}
+            {inventorySuperRareOnly ? 'ON' : 'OFF'}
           </button>
-        ))}
+        </div>
       </div>
 
       {/* Category group tabs */}
