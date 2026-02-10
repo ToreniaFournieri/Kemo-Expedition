@@ -1726,39 +1726,48 @@ function SettingTab({
       .slice()
       .sort((a, b) => b.floorNumber - a.floorNumber)
       .flatMap(floor => {
-        const poolId = selectedBestiaryDungeon.enemyPoolIds[0];
-        const normalEnemies = ENEMIES
-          .filter(enemy => enemy.poolId === poolId && enemy.type === 'normal')
+        const tierNormals = ENEMIES
+          .filter(enemy => enemy.poolId === selectedBestiaryDungeon.id && enemy.type === 'normal')
           .sort((a, b) => a.id - b.id);
+        const tierElites = ENEMIES
+          .filter(enemy => enemy.poolId === selectedBestiaryDungeon.id && enemy.type === 'elite')
+          .sort((a, b) => a.id - b.id);
+
+        // pool_v has 5 enemies: pool_1 => first 5 normals ... pool_6 => last 5 normals
+        const poolIndex = Math.max(1, Math.min(6, floor.floorNumber)) - 1;
+        const normalEnemies = tierNormals.slice(poolIndex * 5, poolIndex * 5 + 5);
 
         const groups: Array<{ key: string; label: string; enemies: EnemyDef[] }> = [];
 
-        const specialRoom = floor.rooms.find(room => room.type === 'battle_Boss' || room.type === 'battle_Elite');
-        if (specialRoom?.type === 'battle_Boss') {
+        if (floor.floorNumber === 6) {
           const bossEnemy = ENEMIES.find(enemy => enemy.id === selectedBestiaryDungeon.bossId);
           if (bossEnemy) {
             groups.push({
-              key: `${floor.floorNumber}-boss`,
-              label: `${floor.floorNumber}.Spawn_pool (Boss)`,
+              key: 'boss',
+              label: 'BOSS',
               enemies: [bossEnemy],
             });
           }
+          groups.push({
+            key: 'floor-6',
+            label: 'Floor 6',
+            enemies: normalEnemies,
+          });
+          return groups;
         }
 
-        if (specialRoom?.type === 'battle_Elite') {
-          const eliteEnemies = ENEMIES
-            .filter(enemy => enemy.poolId === poolId && enemy.type === 'elite')
-            .sort((a, b) => a.id - b.id);
+        const fixedElite = tierElites[floor.floorNumber - 1];
+        if (fixedElite) {
           groups.push({
-            key: `${floor.floorNumber}-elite`,
-            label: `${floor.floorNumber}.Spawn_pool (Elite)`,
-            enemies: eliteEnemies,
+            key: `floor-${floor.floorNumber}-elite`,
+            label: `Floor ${floor.floorNumber} Elite`,
+            enemies: [fixedElite],
           });
         }
 
         groups.push({
-          key: `${floor.floorNumber}-normal`,
-          label: `${floor.floorNumber}.Spawn_pool (Normal)`,
+          key: `floor-${floor.floorNumber}`,
+          label: `Floor ${floor.floorNumber}`,
           enemies: normalEnemies,
         });
 
@@ -1983,8 +1992,6 @@ function SettingTab({
               <div className="text-xs text-gray-500 font-medium mb-1">{group.label}</div>
               {group.enemies.map(enemy => {
                 const displayEnemy = getDisplayEnemy(enemy, selectedBestiaryDungeon);
-                const isBoss = displayEnemy.type === 'boss';
-                const enemyTypeLabel = displayEnemy.type === 'elite' ? ' (ELITE)' : isBoss ? ' (BOSS)' : '';
                 const enemyExpanded = !!expandedEnemies[displayEnemy.id];
                 const physicalDefensePercent = 100;
                 const magicalDefensePercent = displayEnemy.physicalDefense > 0
@@ -1996,7 +2003,7 @@ function SettingTab({
                       onClick={() => setExpandedEnemies(prev => ({ ...prev, [displayEnemy.id]: !enemyExpanded }))}
                       className="w-full text-left px-2 py-1 text-sm flex justify-between items-center"
                     >
-                      <span>{displayEnemy.name}{enemyTypeLabel}</span>
+                      <span>{displayEnemy.name}</span>
                       <span className="text-xs text-gray-500">{enemyExpanded ? '▲' : '▼'}</span>
                     </button>
                     {enemyExpanded && (
