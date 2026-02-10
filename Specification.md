@@ -1127,9 +1127,9 @@ Left-aligned            Right-aligned
 **2. Inventory Pane:**
   - Always visible on the same screen at the bottom.
   - Stacked by item variant
-  - Filter button by rarelity (right-aligned): 全て表示, 通常のみ, アンコモンのみ, レアのみ, 神魔レアのみ : [ALL] [C] [U] [R] [M]  :超レア[ON/OFF]
+  - Filter button by rarelity (right-aligned): 全て表示, 通常のみ, アンコモンのみ, レアのみ, 神魔レアのみ : [ALL] [C] [U] [R] [M] |超レア: ON/OFF
     - IF player selects [M],  　　神魔レアのみ: [ALL] [C] [U] [R] **[M]** 
-    - 超レア[ON/OFF] default: OFF, if ON, filter superRare = 1.
+    - 超レア[ON/OFF] default: OFF, if ON, filter superRare >= 1.
   - Inventory includes item category tabs:
     - [耐久:鎧,衣,盾],[近距離攻撃:剣,刀,手],[遠距離攻撃:矢,ボ,弓],[魔法攻撃:杖,書,媒].
     - Default: 鎧 or previously selected category of each character 
@@ -1222,9 +1222,9 @@ Left-aligned            Right-aligned
 - Item list:
   - Stacked by item variant
   - Shows state:`s.owned` items
-  - Filter button by rarelity (right-aligned): 全て表示, 通常のみ, アンコモンのみ, レアのみ, 神魔レアのみ: [ALL] [C] [U] [R] [M]  :超レア[ON/OFF]
+  - Filter button by rarelity (right-aligned): 全て表示, 通常のみ, アンコモンのみ, レアのみ, 神魔レアのみ: [ALL] [C] [U] [R] [M] |超レア: ON/OFF
     - IF player selects [M],   神魔レアのみ: [ALL] [C] [U] [R] **[M]** 
-    - 超レア[ON/OFF] default: OFF, if ON, filter superRare = 1.
+    - 超レア[ON/OFF] default: OFF, if ON, filter superRare >= 1.
   - Inventory includes item category tabs:
     - [耐久:鎧,衣,盾],[近距離攻撃:剣,刀,手],[遠距離攻撃:矢,ボ,弓],[魔法攻撃:杖,書,媒].
     - Default: 鎧 or previously selected category. 
