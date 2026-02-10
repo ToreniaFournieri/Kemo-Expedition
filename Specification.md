@@ -45,12 +45,12 @@
 
 - Translation
 
-| name | Japanese |
-|----|-----|
-| common | 通常 |
-| uncommon | アンコモン |
-| rare | レア |
-| mythic | 神魔レア |
+| name | Japanese | short word |
+|----|-----|---|
+| common | 通常 | [C] |
+| uncommon | アンコモン | [U] |
+| rare | レア | [R] |
+| mythic | 神魔レア | [M] |
 
 
 ### 2.1 Global constants
