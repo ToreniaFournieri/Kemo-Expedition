@@ -655,7 +655,7 @@ inventory = {
 
 - character.`f.offense_amplifier` (phase: )
   - If phase is CLOSE,
-    - If character.`a.iaigiri`, return 2.0 x sum of ( `c.melee_attack+v` )
+    - If character.`a.iaigiri`, return v x sum of ( `c.melee_attack+v` )
   - Else return 1.0 x  sum of (`c.melee_attack+v` or `c.ranged_attack+v` or `c.magical_attack+v` )
 
 - character.`f.defense_amplifier` (phase: )
