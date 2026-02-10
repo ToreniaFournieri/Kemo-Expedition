@@ -1904,6 +1904,7 @@ function SettingTab({
                   <div className="px-2 pb-2">
                     {enemies.map(enemy => {
                       const isBoss = enemy.type === 'boss';
+                      const enemyTypeLabel = enemy.type === 'elite' ? ' (ELITE)' : isBoss ? ' (BOSS)' : '';
                       const enemyExpanded = !!expandedEnemies[enemy.id];
                       const dropItem = enemy.dropItemId ? ITEMS.find(item => item.id === enemy.dropItemId) : undefined;
                       return (
@@ -1912,7 +1913,7 @@ function SettingTab({
                             onClick={() => setExpandedEnemies(prev => ({ ...prev, [enemy.id]: !enemyExpanded }))}
                             className="w-full text-left px-2 py-1 text-sm flex justify-between items-center"
                           >
-                            <span>{enemy.name}{enemy.type === 'elite' ? ' (ELITE)' : isBoss ? ' (BOSS)' : ''}</span>
+                            <span>{enemy.name}{enemyTypeLabel}</span>
                             <span className="text-xs text-gray-500">{enemyExpanded ? '▲' : '▼'}</span>
                           </button>
                           {enemyExpanded && (
