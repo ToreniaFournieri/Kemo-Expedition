@@ -1759,6 +1759,12 @@ function SettingTab({
     ];
   };
 
+  const formatEnemyAttackLine = (label: string, attack: number, amplifier: number) =>
+    `${label}: ${attack} (x${amplifier.toFixed(2)})`;
+
+  const formatEnemyDefenseLine = (label: string, defense: number, percent: number) =>
+    `${label}: ${defense} (${percent.toFixed(0)}%)`;
+
   return (
     <div>
       <div className="text-lg font-bold mb-3">神の執務室</div>
@@ -1870,13 +1876,12 @@ function SettingTab({
                   onClick={() => setExpandedCompendiumItems(prev => ({ ...prev, [item.id]: !expanded }))}
                   className="w-full text-left px-3 py-2 text-sm flex justify-between items-center"
                 >
-                  <span>{getRarityShortLabel(item.id)}{item.name}</span>
+                  <span>{item.name} {getRarityShortLabel(item.id)} {getItemStats(baseItem)}</span>
                   <span className="text-xs text-gray-500">{expanded ? '▲' : '▼'}</span>
                 </button>
                 {expanded && (
                   <div className="px-3 pb-2 text-xs text-gray-700 space-y-1 border-t border-gray-100 pt-2">
                     <div>ID: {item.id}</div>
-                    <div>{getItemStats(baseItem)}</div>
                   </div>
                 )}
               </div>
@@ -1905,7 +1910,10 @@ function SettingTab({
                       const isBoss = enemy.type === 'boss';
                       const enemyTypeLabel = enemy.type === 'elite' ? ' (ELITE)' : isBoss ? ' (BOSS)' : '';
                       const enemyExpanded = !!expandedEnemies[enemy.id];
-                      const dropItem = enemy.dropItemId ? ITEMS.find(item => item.id === enemy.dropItemId) : undefined;
+                      const physicalDefensePercent = 100;
+                      const magicalDefensePercent = enemy.physicalDefense > 0
+                        ? (enemy.magicalDefense / enemy.physicalDefense) * 100
+                        : 100;
                       return (
                         <div key={enemy.id} className="mt-2 border border-gray-100 rounded">
                           <button
@@ -1916,16 +1924,19 @@ function SettingTab({
                             <span className="text-xs text-gray-500">{enemyExpanded ? '▲' : '▼'}</span>
                           </button>
                           {enemyExpanded && (
-                            <div className="px-2 pb-2 text-xs text-gray-700 grid grid-cols-2 gap-1 border-t border-gray-100 pt-2">
-                              <div>HP: {enemy.hp}</div>
-                              <div>経験値: {enemy.experience}</div>
-                              <div>近攻: {enemy.meleeAttack}</div>
-                              <div>遠攻: {enemy.rangedAttack}</div>
-                              <div>魔攻: {enemy.magicalAttack}</div>
-                              <div>物防: {enemy.physicalDefense}</div>
-                              <div>魔防: {enemy.magicalDefense}</div>
-                              <div className="col-span-2">現在のドロップ: {dropItem ? `${getRarityShortLabel(dropItem.id)}${dropItem.name}` : 'なし'}</div>
-                              <div className="col-span-2">ドロップ候補(5種): {getDropCandidates(enemy).map(item => `${getRarityShortLabel(item.id)}${item.name}`).join(' / ')}</div>
+                            <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
+                              <div>ID: {enemy.id}</div>
+                              <div>HP: {enemy.hp}　　経験値: {enemy.experience}</div>
+                              <div>
+                                {formatEnemyAttackLine('近攻', enemy.meleeAttack, enemy.meleeAttackAmplifier)}　
+                                {formatEnemyDefenseLine('物防', enemy.physicalDefense, physicalDefensePercent)}
+                              </div>
+                              <div>
+                                {formatEnemyAttackLine('魔攻', enemy.magicalAttack, enemy.magicalAttackAmplifier)}　
+                                {formatEnemyDefenseLine('魔防', enemy.magicalDefense, magicalDefensePercent)}
+                              </div>
+                              <div>{formatEnemyAttackLine('遠攻', enemy.rangedAttack, enemy.rangedAttackAmplifier)}</div>
+                              <div className="pt-1">ドロップ候補: {getDropCandidates(enemy).map(item => `${getRarityShortLabel(item.id)}${item.name}`).join(' / ')}</div>
                             </div>
                           )}
                         </div>
