@@ -529,6 +529,7 @@ function createEnemyFromTemplate(
 ): EnemyDef {
   const tierMult = TIER_STAT_MULTIPLIERS[tier - 1];
   const classBase = ENEMY_CLASS_BASES[enemyClass];
+  const enemyTypeExpMult = type === 'elite' ? 2.0 : type === 'boss' ? 5.0 : 1.0;
 
   // Apply tier multiplier and template modifiers on top of class base
   const hp = Math.floor(classBase.hp * tierMult * template.hpMod);
@@ -562,14 +563,14 @@ function createEnemyFromTemplate(
     evasionBonus: classBase.evasionBonus,
     hp,
     rangedAttack: Math.floor(classBase.rangedAttack * attackScale),
-    rangedNoA: classBase.rangedNoA,
+    rangedNoA: Math.floor(classBase.rangedNoA * tierMult),
     magicalAttack: Math.floor(classBase.magicalAttack * attackScale),
-    magicalNoA: classBase.magicalNoA,
+    magicalNoA: Math.floor(classBase.magicalNoA * tierMult),
     meleeAttack: Math.floor(classBase.meleeAttack * attackScale),
-    meleeNoA: classBase.meleeNoA,
-    rangedAttackAmplifier: classBase.rangedAttackAmplifier,
-    magicalAttackAmplifier: classBase.magicalAttackAmplifier,
-    meleeAttackAmplifier: classBase.meleeAttackAmplifier,
+    meleeNoA: Math.floor(classBase.meleeNoA * tierMult),
+    rangedAttackAmplifier: classBase.rangedAttackAmplifier * tierMult,
+    magicalAttackAmplifier: classBase.magicalAttackAmplifier * tierMult,
+    meleeAttackAmplifier: classBase.meleeAttackAmplifier * tierMult,
     physicalDefense: Math.floor(classBase.physicalDefense * defenseScale),
     magicalDefense: Math.floor(classBase.magicalDefense * defenseScale),
     elementalOffense: template.element || 'none',
@@ -578,7 +579,7 @@ function createEnemyFromTemplate(
       thunder: template.resistances?.thunder ?? 1.0,
       ice: template.resistances?.ice ?? 1.0,
     },
-    experience: Math.floor(classBase.experience * tierMult * template.hpMod),
+    experience: Math.floor(classBase.experience * tierMult * template.hpMod * enemyTypeExpMult),
     dropItemId,
   };
 }
