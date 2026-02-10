@@ -387,16 +387,16 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 
 **Enemy status mutipliers**
-- `d.HP` : master value x `x.exp_HP_mult` x `x.floor_multiplier` 
-- `f.attack` :  master value x `x.exp_atk_mult` x `x.floor_multiplier` 
-- `f.NoA` :  master value x `x.exp_NoA_mult`
-- `f.offense_amplifier` :  master value x `x.exp_atk_amp_mult`
-- `f.defense_amplifier` : 1.0 x `x.exp_def_amp_mult`
-- `f.defense` :  master value x `x.exp_def_mult`  x `x.floor_multiplier` 
+- `d.HP` : master value x `x.exp_HP_mult` x `x.floor_HP_mult`
+- `f.attack` :  master value x `x.exp_atk_mult` x `x.floor_atk_mult`
+- `f.NoA` :  master value x `x.exp_NoA_mult` x `x.floor_NoA_mult`
+- `f.offense_amplifier` :  master value x `x.exp_atk_amp_mult` x `x.floor_atk_amp_mult`
+- `f.defense` :  master value x `x.exp_def_mult`  x `x.floor_def_mult` 
+- `f.defense_amplifier` : 1.0 x `x.exp_def_amp_mult` x `x.exp_def_amp_mult`
 - `f.elemental_offense_attribute` :  not scale
 - `f.elemental_resistance_attribute` : not scale
 - `f.penet_multiplier`: not scale
-- `d.experience`: master value x `x.exp_mult` x `x.floor_multiplier` x (If Elite, 2.0. Else if Boss, 5.0. Else 1.0)
+- `d.experience`: master value x `x.exp_mult` x (If Elite, 2.0. Else if Boss, 5.0. Else 1.0)
 
 #### 2.3.3 Base data structure (enemy)
 
