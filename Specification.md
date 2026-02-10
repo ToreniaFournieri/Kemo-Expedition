@@ -739,6 +739,8 @@ inventory = {
   - `p.gained_experience`: ex. +234
   - `p.auto-sell_profit`: Amount of Auto-sell items. ex. 1,224G
   - `p.retrieving_trophies`: Shows items by comma-separated.
+    - [C] [U] for Black color, [R] for Blue color, [M] for Dark Orange.
+    - With Super Rare titled item, override to BOLD Dark orenge.
 
 ```
 前回の探検結果: `p.dungeon_name`    `p.outcome_of_expedition`
@@ -988,8 +990,8 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
   	- Flex-col-reverse (Newest notifications appear at the bottom, pushing older ones up).
   	- Dynamic Width: The box size must shrink or grow to fit the length of the text precisely (with padding).
 - Text and color:
-	- Normal style: small font size, Blue/White translucent, no border color
-	- Rare style: small font size, Dark Orange/White translucent, no border color
+    - [C] [U] for Black color, [R] for Blue color, [M] for Dark Orange. White translucent background, no border color.
+    - With Super Rare titled item, override to BOLD Dark orenge. White translucent background, no border color.
 - Behavior: Auto-dismiss after 5000ms. Manual dismiss **all of notification** on onClick. Status update dismisses previous status changes notification. (display only latest status changes)
 
 **Notification Logic**
