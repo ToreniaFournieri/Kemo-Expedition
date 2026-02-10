@@ -1521,10 +1521,14 @@ function SettingTab({
   const commonTerribleRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 5).length ?? 0;
   const commonUltimateRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 6).length ?? 0;
 
-  // Unique Reward bag stats (Elite/Boss rooms: 1% chance)
+  // Unique Reward bag stats (1% chance)
   const rewardTotal = 100;
-  const rewardRemaining = bags.rewardBag.tickets.length;
-  const rewardWins = bags.rewardBag.tickets.filter(t => t === 1).length;
+  const uncommonRewardRemaining = bags.uncommonRewardBag.tickets.length;
+  const uncommonRewardWins = bags.uncommonRewardBag.tickets.filter(t => t === 1).length;
+  const rareRewardRemaining = bags.rareRewardBag.tickets.length;
+  const rareRewardWins = bags.rareRewardBag.tickets.filter(t => t === 1).length;
+  const mythicRewardRemaining = bags.mythicRewardBag.tickets.length;
+  const mythicRewardWins = bags.mythicRewardBag.tickets.filter(t => t === 1).length;
 
   // Unique Enhancement bag stats (Rarer enhancement for Elite/Boss)
   const enhancementTotal = 5490 + (ENHANCEMENT_TITLES.reduce((sum, t) => sum + (t.value === 0 ? 0 : t.tickets), 0));
@@ -1616,21 +1620,50 @@ function SettingTab({
         <div className="mb-4 border-b border-gray-200 pb-4">
           <div className="text-xs text-gray-600 font-medium mb-2">固有報酬 (Unique Reward)</div>
 
-          {/* Unique Reward Bag */}
+          {/* Uncommon Reward Bag */}
           <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">固有報酬 抽選確率</div>
+            <div className="text-xs text-gray-500 mb-1">アンコモン抽選確率</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
               <div className="flex justify-between">
                 <span>報酬抽選</span>
-                <span>{rewardRemaining} / {rewardTotal}</span>
+                <span>{uncommonRewardRemaining} / {rewardTotal}</span>
               </div>
               <div className="flex justify-between text-sub">
                 <span>当たり残り</span>
-                <span>{rewardWins}</span>
+                <span>{uncommonRewardWins}</span>
               </div>
             </div>
           </div>
 
+          {/* Rare Reward Bag */}
+          <div className="mb-2">
+            <div className="text-xs text-gray-500 mb-1">レア抽選確率</div>
+            <div className="bg-white rounded p-2 text-sm space-y-1">
+              <div className="flex justify-between">
+                <span>報酬抽選</span>
+                <span>{rareRewardRemaining} / {rewardTotal}</span>
+              </div>
+              <div className="flex justify-between text-sub">
+                <span>当たり残り</span>
+                <span>{rareRewardWins}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Mythic Reward Bag */}
+          <div className="mb-2">
+            <div className="text-xs text-gray-500 mb-1">神魔レア抽選確率</div>
+            <div className="bg-white rounded p-2 text-sm space-y-1">
+              <div className="flex justify-between">
+                <span>報酬抽選</span>
+                <span>{mythicRewardRemaining} / {rewardTotal}</span>
+              </div>
+              <div className="flex justify-between text-sub">
+                <span>当たり残り</span>
+                <span>{mythicRewardWins}</span>
+              </div>
+            </div>
+          </div>
           {/* Unique Enhancement Bag */}
           <div className="mb-2">
             <div className="text-xs text-gray-500 mb-1">称号付与 抽選確率</div>
