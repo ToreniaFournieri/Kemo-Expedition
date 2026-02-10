@@ -1709,14 +1709,14 @@ function SettingTab({
     .sort((a, b) => b.id - a.id);
 
   const BESTIARY_TAB_LABELS: Record<number, string> = {
-    1: '草',
-    2: '古',
-    3: '呪',
-    4: '炎',
-    5: '氷',
-    6: '雷',
-    7: '冥',
-    8: '天',
+    1: '原',
+    2: '崖',
+    3: '樹',
+    4: '峰',
+    5: '茂',
+    6: '巣',
+    7: '園',
+    8: '谷',
   };
 
   const selectedBestiaryDungeon = DUNGEONS.find(d => d.id === selectedBestiaryDungeonId) ?? DUNGEONS[0];
