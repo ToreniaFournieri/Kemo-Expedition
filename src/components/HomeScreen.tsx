@@ -1737,7 +1737,7 @@ function SettingTab({
         const poolIndex = Math.max(1, Math.min(6, floor.floorNumber)) - 1;
         const normalEnemies = tierNormals.slice(poolIndex * 5, poolIndex * 5 + 5);
 
-        const groups: Array<{ key: string; label: string; enemies: EnemyDef[] }> = [];
+        const groups: Array<{ key: string; label: string; enemies: EnemyDef[]; floorNumber: number; groupType: 'boss' | 'elite' | 'normal' }> = [];
 
         if (floor.floorNumber === 6) {
           const bossEnemy = ENEMIES.find(enemy => enemy.id === selectedBestiaryDungeon.bossId);
@@ -1746,12 +1746,16 @@ function SettingTab({
               key: 'boss',
               label: 'BOSS',
               enemies: [bossEnemy],
+              floorNumber: floor.floorNumber,
+              groupType: 'boss',
             });
           }
           groups.push({
             key: 'floor-6',
             label: 'Floor 6',
             enemies: normalEnemies,
+            floorNumber: floor.floorNumber,
+            groupType: 'normal',
           });
           return groups;
         }
@@ -1762,6 +1766,8 @@ function SettingTab({
             key: `floor-${floor.floorNumber}-elite`,
             label: `Floor ${floor.floorNumber} Elite`,
             enemies: [fixedElite],
+            floorNumber: floor.floorNumber,
+            groupType: 'elite',
           });
         }
 
@@ -1769,6 +1775,8 @@ function SettingTab({
           key: `floor-${floor.floorNumber}`,
           label: `Floor ${floor.floorNumber}`,
           enemies: normalEnemies,
+          floorNumber: floor.floorNumber,
+          groupType: 'normal',
         });
 
         return groups;
@@ -1780,6 +1788,42 @@ function SettingTab({
 
   const formatEnemyDefenseLine = (label: string, defense: number, percent: number) =>
     `${label}: ${defense} (${percent.toFixed(0)}%)`;
+
+  const ENEMY_ELEMENT_LABELS: Record<string, string> = {
+    none: '無',
+    fire: '炎',
+    thunder: '雷',
+    ice: '氷',
+  };
+
+  const ENEMY_SKILL_PLACEHOLDER = '（将来実装予定）';
+
+  const NORMAL_CLASS_BY_FLOOR: Record<number, string[]> = {
+    1: ['戦士', '弓使い', '魔術師', '巡礼者', '盗賊'],
+    2: ['忍者', '侍', '賢者', '剣闘士', '領主'],
+    3: ['戦士', '弓使い', '魔術師', '領主', '侍'],
+    4: ['忍者', '盗賊', '賢者', '剣闘士', '巡礼者'],
+    5: ['戦士', '弓使い', '魔術師', '領主', '侍'],
+    6: ['忍者', '盗賊', '賢者', '剣闘士', '巡礼者'],
+  };
+
+  const ELITE_CLASS_BY_FLOOR: Record<number, string> = {
+    1: '盗賊',
+    2: '戦士',
+    3: '弓使い',
+    4: '剣闘士',
+    5: '魔術師',
+  };
+
+  const getEnemyClassLabel = (
+    groupType: 'boss' | 'elite' | 'normal',
+    floorNumber: number,
+    enemyIndex: number
+  ): string => {
+    if (groupType === 'boss') return 'ボス';
+    if (groupType === 'elite') return ELITE_CLASS_BY_FLOOR[floorNumber] ?? 'エリート';
+    return NORMAL_CLASS_BY_FLOOR[floorNumber]?.[enemyIndex] ?? '通常';
+  };
 
   const getDisplayEnemy = (enemy: EnemyDef, dungeon: Dungeon): EnemyDef => {
     const bossFloorMultiplier = dungeon.floors?.[dungeon.floors.length - 1]?.multiplier ?? 1;
@@ -1990,8 +2034,9 @@ function SettingTab({
           {selectedBestiaryGroups.map(group => (
             <div key={group.key} className="bg-white rounded border border-gray-200 p-2">
               <div className="text-xs text-gray-500 font-medium mb-1">{group.label}</div>
-              {group.enemies.map(enemy => {
+              {group.enemies.map((enemy, enemyIndex) => {
                 const displayEnemy = getDisplayEnemy(enemy, selectedBestiaryDungeon);
+                const enemyClass = getEnemyClassLabel(group.groupType, group.floorNumber, enemyIndex);
                 const enemyExpanded = !!expandedEnemies[displayEnemy.id];
                 const physicalDefensePercent = 100;
                 const magicalDefensePercent = displayEnemy.physicalDefense > 0
@@ -2008,16 +2053,26 @@ function SettingTab({
                     </button>
                     {enemyExpanded && (
                       <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
-                        <div>ID: {displayEnemy.id}</div>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                          <div>ID: {displayEnemy.id}</div>
+                          <div>クラス: {enemyClass}</div>
+                        </div>
                         <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                           <div>HP: {displayEnemy.hp}</div>
                           <div>経験値: {displayEnemy.experience}</div>
-                          <div>{formatEnemyAttackLine('近攻', displayEnemy.meleeAttack, displayEnemy.meleeAttackAmplifier)}</div>
-                          <div>{formatEnemyDefenseLine('物防', displayEnemy.physicalDefense, physicalDefensePercent)}</div>
+                          <div>{formatEnemyAttackLine('遠攻', displayEnemy.rangedAttack, displayEnemy.rangedAttackAmplifier)}</div>
+                          <div>
+                            属性: {ENEMY_ELEMENT_LABELS[displayEnemy.elementalOffense] ?? '無'}
+                            ({displayEnemy.elementalOffense === 'none' ? 'x1.0' : 'x1.2'})
+                          </div>
                           <div>{formatEnemyAttackLine('魔攻', displayEnemy.magicalAttack, displayEnemy.magicalAttackAmplifier)}</div>
                           <div>{formatEnemyDefenseLine('魔防', displayEnemy.magicalDefense, magicalDefensePercent)}</div>
-                          <div>{formatEnemyAttackLine('遠攻', displayEnemy.rangedAttack, displayEnemy.rangedAttackAmplifier)}</div>
+                          <div>{formatEnemyAttackLine('近攻', displayEnemy.meleeAttack, displayEnemy.meleeAttackAmplifier)}</div>
+                          <div>{formatEnemyDefenseLine('物防', displayEnemy.physicalDefense, physicalDefensePercent)}</div>
+                          <div>命中率: 100% (減衰: x0.90)</div>
+                          <div>回避: 0</div>
                         </div>
+                        <div>スキル: {ENEMY_SKILL_PLACEHOLDER}</div>
                         <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id)}${item.name}`).join(' / ')}</div>
                       </div>
                     )}
