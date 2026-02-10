@@ -1814,9 +1814,38 @@ function SettingTab({
     pilgrim: '巡礼者',
   };
 
-  const getDisplayEnemy = (enemy: EnemyDef, dungeon: Dungeon): EnemyDef => {
-    const bossFloorMultiplier = dungeon.floors?.[dungeon.floors.length - 1]?.multiplier ?? 1;
-    const multiplier = enemy.type === 'boss' ? bossFloorMultiplier : 1;
+  const getBestiaryRoomMultiplier = (
+    dungeon: Dungeon,
+    floorNumber: number,
+    groupType: 'boss' | 'elite' | 'normal'
+  ): number => {
+    const floorMultiplier = dungeon.floors?.find(floor => floor.floorNumber === floorNumber)?.multiplier ?? 1;
+
+    if (groupType === 'boss') {
+      return 5.0;
+    }
+
+    if (groupType === 'elite') {
+      const eliteRoomMultipliers: Record<number, number> = {
+        1: 1.3,
+        2: 1.56,
+        3: 1.82,
+        4: 2.25,
+        5: 2.69,
+      };
+      return eliteRoomMultipliers[floorNumber] ?? floorMultiplier;
+    }
+
+    return floorMultiplier;
+  };
+
+  const getDisplayEnemy = (
+    enemy: EnemyDef,
+    dungeon: Dungeon,
+    floorNumber: number,
+    groupType: 'boss' | 'elite' | 'normal'
+  ): EnemyDef => {
+    const multiplier = getBestiaryRoomMultiplier(dungeon, floorNumber, groupType);
     if (multiplier === 1) return enemy;
 
     return {
@@ -2024,7 +2053,7 @@ function SettingTab({
             <div key={group.key} className="bg-white rounded border border-gray-200 p-2">
               <div className="text-xs text-gray-500 font-medium mb-1">{group.label}</div>
               {group.enemies.map(enemy => {
-                const displayEnemy = getDisplayEnemy(enemy, selectedBestiaryDungeon);
+                const displayEnemy = getDisplayEnemy(enemy, selectedBestiaryDungeon, group.floorNumber, group.groupType);
                 const enemyClass = ENEMY_CLASS_LABELS[displayEnemy.enemyClass] ?? '不明';
                 const enemyExpanded = !!expandedEnemies[displayEnemy.id];
                 const physicalDefensePercent = 100;
