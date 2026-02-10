@@ -718,8 +718,6 @@ inventory = {
 
 ### 5.1 "Loot-Gate" progression system
 - If the party fails to meet the entry requirements, the expedition ends before the Gate Room and they are returned to Home.
-  - Example: 2nd Elite Gate is locked: 2/6 Floor 2 Uncommons collected.
-
 
 | title | Gate `x.floor`,`x.room` | uncommon items from `x.room` |
 |----|----|----|
