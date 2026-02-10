@@ -6,8 +6,9 @@ import { RACES } from '../data/races';
 import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
 import { LINEAGES } from '../data/lineages';
-import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
+import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
+import { ENEMIES } from '../data/enemies';
 
 interface HomeScreenProps {
   state: GameState;
@@ -325,9 +326,8 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         const isSuperRare = item.superRare > 0;
         const itemName = getItemDisplayName(item);
         const rarity = getItemRarityById(item.id);
-        const rarityTag = rarity === 'rare' ? '' : getRarityShortLabel(item.id);
         actions.addNotification(
-          `${rarityTag ? `${rarityTag} ` : ''}${itemName} を入手!`,
+          `${itemName}を入手！`,
           rarity === 'rare' || rarity === 'mythic' || isSuperRare ? 'rare' : 'normal',
           'item',
           undefined,
@@ -1651,22 +1651,23 @@ function SettingTab({
   onResetSuperRareBag: () => void;
 }) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [compendiumCategory, setCompendiumCategory] = useState<string>('armor');
+  const [expandedCompendiumItems, setExpandedCompendiumItems] = useState<Record<number, boolean>>({});
+  const [expandedExpeditions, setExpandedExpeditions] = useState<Record<number, boolean>>({});
+  const [expandedEnemies, setExpandedEnemies] = useState<Record<number, boolean>>({});
 
-  // Get initial counts from ENHANCEMENT_TITLES
   const getInitialCount = (value: number) => ENHANCEMENT_TITLES.find(t => t.value === value)?.tickets ?? 0;
-  const craftsmanInitial = getInitialCount(1);  // 名工の
-  const demonicInitial = getInitialCount(2);    // 魔性の
-  const dwellingInitial = getInitialCount(3);   // 宿った
-  const legendaryInitial = getInitialCount(4);  // 伝説の
-  const terribleInitial = getInitialCount(5);   // 恐ろしい
-  const ultimateInitial = getInitialCount(6);   // 究極の
+  const craftsmanInitial = getInitialCount(1);
+  const demonicInitial = getInitialCount(2);
+  const dwellingInitial = getInitialCount(3);
+  const legendaryInitial = getInitialCount(4);
+  const terribleInitial = getInitialCount(5);
+  const ultimateInitial = getInitialCount(6);
 
-  // Common Reward bag stats (Normal rooms: 10% chance)
   const commonRewardTotal = 100;
   const commonRewardRemaining = bags.commonRewardBag?.tickets.length ?? 0;
   const commonRewardWins = bags.commonRewardBag?.tickets.filter(t => t === 1).length ?? 0;
 
-  // Common Enhancement bag stats (Standard enhancement for normal rooms)
   const commonEnhancementTotal = ENHANCEMENT_TITLES.reduce((sum, t) => sum + t.tickets, 0);
   const commonEnhancementRemaining = bags.commonEnhancementBag?.tickets.length ?? 0;
   const commonCraftsmanRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 1).length ?? 0;
@@ -1676,16 +1677,10 @@ function SettingTab({
   const commonTerribleRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 5).length ?? 0;
   const commonUltimateRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 6).length ?? 0;
 
-  // Unique Reward bag stats (1% chance)
-  const rewardTotal = 100;
-  const uncommonRewardRemaining = bags.uncommonRewardBag.tickets.length;
-  const uncommonRewardWins = bags.uncommonRewardBag.tickets.filter(t => t === 1).length;
-  const rareRewardRemaining = bags.rareRewardBag.tickets.length;
-  const rareRewardWins = bags.rareRewardBag.tickets.filter(t => t === 1).length;
-  const mythicRewardRemaining = bags.mythicRewardBag.tickets.length;
-  const mythicRewardWins = bags.mythicRewardBag.tickets.filter(t => t === 1).length;
+  const rewardBagTotal = 300;
+  const rewardBagRemaining = bags.uncommonRewardBag.tickets.length + bags.rareRewardBag.tickets.length + bags.mythicRewardBag.tickets.length;
+  const rewardBagWins = bags.uncommonRewardBag.tickets.filter(t => t === 1).length + bags.rareRewardBag.tickets.filter(t => t === 1).length + bags.mythicRewardBag.tickets.filter(t => t === 1).length;
 
-  // Unique Enhancement bag stats (Rarer enhancement for Elite/Boss)
   const enhancementTotal = 5490 + (ENHANCEMENT_TITLES.reduce((sum, t) => sum + (t.value === 0 ? 0 : t.tickets), 0));
   const enhancementRemaining = bags.enhancementBag.tickets.length;
   const craftsmanRemaining = bags.enhancementBag.tickets.filter(t => t === 1).length;
@@ -1695,227 +1690,264 @@ function SettingTab({
   const terribleRemaining = bags.enhancementBag.tickets.filter(t => t === 5).length;
   const ultimateRemaining = bags.enhancementBag.tickets.filter(t => t === 6).length;
 
-  // Super rare bag stats
   const superRareTotal = SUPER_RARE_TITLES.reduce((sum, t) => sum + t.tickets, 0);
   const superRareRemaining = bags.superRareBag.tickets.length;
   const superRareInitial = SUPER_RARE_TITLES.filter(t => t.value > 0).reduce((sum, t) => sum + t.tickets, 0);
   const superRareHits = bags.superRareBag.tickets.filter(t => t > 0).length;
 
+  const compendiumItems = ITEMS
+    .filter(item => item.category === compendiumCategory)
+    .slice()
+    .sort((a, b) => b.id - a.id);
+
+  const bestiary = DUNGEONS.map(dungeon => {
+    const poolEnemies = ENEMIES.filter(enemy => enemy.poolId === dungeon.enemyPoolIds[0]).sort((a, b) => a.id - b.id);
+    const bossEnemy = ENEMIES.find(enemy => enemy.id === dungeon.bossId);
+    return { dungeon, enemies: bossEnemy ? [...poolEnemies, bossEnemy] : poolEnemies };
+  });
+
+  const getTierFromEnemy = (enemyId: number): number => {
+    if (enemyId >= 1000) return Math.floor(enemyId / 1000);
+    return Math.floor(enemyId / 100);
+  };
+
+  const getTierItemsByRarity = (tier: number, rarity: ItemRarity) => {
+    const rarityRangeStart = rarity === 'common' ? 100 : rarity === 'uncommon' ? 200 : rarity === 'rare' ? 300 : 400;
+    return ITEMS.filter(item => {
+      const itemTier = Math.floor(item.id / 1000);
+      const rarityCode = item.id % 1000;
+      return itemTier === tier && rarityCode >= rarityRangeStart && rarityCode < rarityRangeStart + 100;
+    });
+  };
+
+  const pickItems = (pool: typeof ITEMS, count: number, seed: number) => {
+    if (pool.length === 0) return [] as typeof ITEMS;
+    const picked: typeof ITEMS = [];
+    for (let i = 0; i < count; i++) {
+      const index = (seed + i * 7) % pool.length;
+      picked.push(pool[index]);
+    }
+    return picked;
+  };
+
+  const getDropCandidates = (enemy: (typeof ENEMIES)[number]) => {
+    const tier = getTierFromEnemy(enemy.id);
+    const common = getTierItemsByRarity(tier, 'common');
+    const uncommon = getTierItemsByRarity(tier, 'uncommon');
+    const rare = getTierItemsByRarity(tier, 'rare');
+    const mythic = getTierItemsByRarity(tier, 'mythic');
+
+    if (enemy.type === 'normal') {
+      return [
+        ...pickItems(common, 3, enemy.id),
+        ...pickItems(uncommon, 2, enemy.id + 3),
+      ];
+    }
+
+    if (enemy.type === 'elite') {
+      return [
+        ...pickItems(rare, 2, enemy.id),
+        ...pickItems(uncommon, 1, enemy.id + 2),
+        ...pickItems(common, 2, enemy.id + 5),
+      ];
+    }
+
+    return [
+      ...pickItems(mythic, 2, enemy.id),
+      ...pickItems(rare, 2, enemy.id + 2),
+      ...pickItems(common, 1, enemy.id + 5),
+    ];
+  };
+
   return (
     <div>
       <div className="text-lg font-bold mb-3">神の執務室</div>
 
-      {/* Clairvoyance Section */}
       <div className="bg-pane rounded-lg p-4 mb-4">
-        <div className="text-sm font-medium mb-3">未来視 (Clairvoyance)</div>
+        <div className="text-sm font-medium mb-3">1. 未来視</div>
 
-        {/* Common Bags (Normal Reward) */}
         <div className="mb-4 border-b border-gray-200 pb-4">
-          <div className="text-xs text-gray-600 font-medium mb-2">通常報酬 (Normal Reward)</div>
+          <div className="text-xs text-gray-600 font-medium mb-2">通常報酬 (Normal reward)</div>
 
-          {/* Common Reward Bag */}
           <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">通常報酬 抽選確率</div>
+            <div className="text-xs text-gray-500 mb-1">common_reward_bag (通常報酬 抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between">
-                <span>報酬抽選</span>
-                <span>{commonRewardRemaining} / {commonRewardTotal}</span>
-              </div>
-              <div className="flex justify-between text-sub">
-                <span>当たり残り</span>
-                <span>{commonRewardWins}</span>
-              </div>
+              <div className="flex justify-between"><span>報酬抽選</span><span>{commonRewardRemaining} / {commonRewardTotal}</span></div>
+              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{commonRewardWins}</span></div>
             </div>
           </div>
 
-          {/* Common Enhancement Bag */}
           <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">称号付与 抽選確率</div>
+            <div className="text-xs text-gray-500 mb-1">common_enhancement_bag (称号付与 抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between">
-                <span>通常称号抽選</span>
-                <span>{commonEnhancementRemaining} / {commonEnhancementTotal}</span>
-              </div>
-              <div className="flex justify-between text-sub">
-                <span>名工の残り</span>
-                <span>{commonCraftsmanRemaining} / {craftsmanInitial}</span>
-              </div>
-              <div className="flex justify-between text-sub">
-                <span>魔性の残り</span>
-                <span>{commonDemonicRemaining} / {demonicInitial}</span>
-              </div>
-              <div className="flex justify-between text-sub">
-                <span>宿った残り</span>
-                <span>{commonDwellingRemaining} / {dwellingInitial}</span>
-              </div>
-              <div className="flex justify-between text-sub">
-                <span>伝説の残り</span>
-                <span>{commonLegendaryRemaining} / {legendaryInitial}</span>
-              </div>
-              <div className="flex justify-between text-sub">
-                <span>恐ろしい残り</span>
-                <span>{commonTerribleRemaining} / {terribleInitial}</span>
-              </div>
-              <div className="flex justify-between text-sub">
-                <span>究極の残り</span>
-                <span>{commonUltimateRemaining} / {ultimateInitial}</span>
-              </div>
+              <div className="flex justify-between"><span>通常称号抽選</span><span>{commonEnhancementRemaining} / {commonEnhancementTotal}</span></div>
+              <div className="flex justify-between text-sub"><span>名工の残り</span><span>{commonCraftsmanRemaining} / {craftsmanInitial}</span></div>
+              <div className="flex justify-between text-sub"><span>魔性の残り</span><span>{commonDemonicRemaining} / {demonicInitial}</span></div>
+              <div className="flex justify-between text-sub"><span>宿った残り</span><span>{commonDwellingRemaining} / {dwellingInitial}</span></div>
+              <div className="flex justify-between text-sub"><span>伝説の残り</span><span>{commonLegendaryRemaining} / {legendaryInitial}</span></div>
+              <div className="flex justify-between text-sub"><span>恐ろしい残り</span><span>{commonTerribleRemaining} / {terribleInitial}</span></div>
+              <div className="flex justify-between text-sub"><span>究極の残り</span><span>{commonUltimateRemaining} / {ultimateInitial}</span></div>
             </div>
           </div>
 
-          <button
-            onClick={onResetCommonBags}
-            className="w-full py-2 bg-sub text-white rounded text-sm font-medium"
-          >
-            通常報酬初期化
-          </button>
+          <button onClick={onResetCommonBags} className="w-full py-2 bg-sub text-white rounded text-sm font-medium">通常報酬初期化</button>
         </div>
 
-        {/* Unique Bags (Unique Reward) */}
         <div className="mb-4 border-b border-gray-200 pb-4">
-          <div className="text-xs text-gray-600 font-medium mb-2">固有報酬 (Unique Reward)</div>
+          <div className="text-xs text-gray-600 font-medium mb-2">固有報酬 (Unique reward)</div>
 
-          {/* Uncommon Reward Bag */}
           <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">アンコモン抽選確率</div>
+            <div className="text-xs text-gray-500 mb-1">reward_bag (固有報酬 抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between">
-                <span>報酬抽選</span>
-                <span>{uncommonRewardRemaining} / {rewardTotal}</span>
-              </div>
-              <div className="flex justify-between text-sub">
-                <span>当たり残り</span>
-                <span>{uncommonRewardWins}</span>
-              </div>
+              <div className="flex justify-between"><span>報酬抽選</span><span>{rewardBagRemaining} / {rewardBagTotal}</span></div>
+              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{rewardBagWins}</span></div>
             </div>
           </div>
 
-          {/* Rare Reward Bag */}
           <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">レア抽選確率</div>
+            <div className="text-xs text-gray-500 mb-1">enhancement_bag (称号付与 抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between">
-                <span>報酬抽選</span>
-                <span>{rareRewardRemaining} / {rewardTotal}</span>
-              </div>
-              <div className="flex justify-between text-sub">
-                <span>当たり残り</span>
-                <span>{rareRewardWins}</span>
-              </div>
+              <div className="flex justify-between"><span>通常称号抽選</span><span>{enhancementRemaining} / {enhancementTotal}</span></div>
+              <div className="flex justify-between text-sub"><span>名工の残り</span><span>{craftsmanRemaining} / {craftsmanInitial}</span></div>
+              <div className="flex justify-between text-sub"><span>魔性の残り</span><span>{demonicRemaining} / {demonicInitial}</span></div>
+              <div className="flex justify-between text-sub"><span>宿った残り</span><span>{dwellingRemaining} / {dwellingInitial}</span></div>
+              <div className="flex justify-between text-sub"><span>伝説の残り</span><span>{legendaryRemaining} / {legendaryInitial}</span></div>
+              <div className="flex justify-between text-sub"><span>恐ろしい残り</span><span>{terribleRemaining} / {terribleInitial}</span></div>
+              <div className="flex justify-between text-sub"><span>究極の残り</span><span>{ultimateRemaining} / {ultimateInitial}</span></div>
             </div>
           </div>
 
-          {/* Mythic Reward Bag */}
-          <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">神魔レア抽選確率</div>
-            <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between">
-                <span>報酬抽選</span>
-                <span>{mythicRewardRemaining} / {rewardTotal}</span>
-              </div>
-              <div className="flex justify-between text-sub">
-                <span>当たり残り</span>
-                <span>{mythicRewardWins}</span>
-              </div>
-            </div>
-          </div>
-          {/* Unique Enhancement Bag */}
-          <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">称号付与 抽選確率</div>
-            <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between">
-                <span>レア称号抽選</span>
-                <span>{enhancementRemaining} / {enhancementTotal}</span>
-              </div>
-              <div className="flex justify-between text-sub">
-                <span>名工の残り</span>
-                <span>{craftsmanRemaining} / {craftsmanInitial}</span>
-              </div>
-              <div className="flex justify-between text-sub">
-                <span>魔性の残り</span>
-                <span>{demonicRemaining} / {demonicInitial}</span>
-              </div>
-              <div className="flex justify-between text-sub">
-                <span>宿った残り</span>
-                <span>{dwellingRemaining} / {dwellingInitial}</span>
-              </div>
-              <div className="flex justify-between text-sub">
-                <span>伝説の残り</span>
-                <span>{legendaryRemaining} / {legendaryInitial}</span>
-              </div>
-              <div className="flex justify-between text-sub">
-                <span>恐ろしい残り</span>
-                <span>{terribleRemaining} / {terribleInitial}</span>
-              </div>
-              <div className="flex justify-between text-sub">
-                <span>究極の残り</span>
-                <span>{ultimateRemaining} / {ultimateInitial}</span>
-              </div>
-            </div>
-          </div>
-
-          <button
-            onClick={onResetUniqueBags}
-            className="w-full py-2 bg-sub text-white rounded text-sm font-medium"
-          >
-            固有報酬初期化
-          </button>
+          <button onClick={onResetUniqueBags} className="w-full py-2 bg-sub text-white rounded text-sm font-medium">固有報酬初期化</button>
         </div>
 
-        {/* Super Rare Bag */}
         <div className="mb-2">
-          <div className="text-xs text-gray-600 font-medium mb-2">超レア報酬 (Super Rare Reward)</div>
-
+          <div className="text-xs text-gray-600 font-medium mb-2">超レア報酬 (Super rare reward)</div>
           <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">超レア称号付与 抽選確率</div>
+            <div className="text-xs text-gray-500 mb-1">superRare_bag (称号超レア称号付与 抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between">
-                <span>超レア称号抽選</span>
-                <span>{superRareRemaining} / {superRareTotal}</span>
-              </div>
-              <div className="flex justify-between text-accent">
-                <span>超レア残り</span>
-                <span>{superRareHits} / {superRareInitial}</span>
-              </div>
+              <div className="flex justify-between"><span>超レア称号抽選</span><span>{superRareRemaining} / {superRareTotal}</span></div>
+              <div className="flex justify-between text-accent"><span>超レア残り</span><span>{superRareHits} / {superRareInitial}</span></div>
             </div>
           </div>
+          <button onClick={onResetSuperRareBag} className="w-full py-2 bg-accent text-white rounded text-sm font-medium">超レア報酬初期化</button>
+        </div>
+      </div>
 
-          <button
-            onClick={onResetSuperRareBag}
-            className="w-full py-2 bg-accent text-white rounded text-sm font-medium"
-          >
-            超レア報酬初期化
-          </button>
+      <div className="bg-pane rounded-lg p-4 mb-4">
+        <div className="text-sm font-medium mb-3">2. アイテム図鑑</div>
+        <div className="flex gap-1 mb-3 overflow-x-auto pb-1">
+          {CATEGORY_GROUPS.map(group => (
+            <div key={group.id} className="flex flex-col">
+              <div className="text-xs text-gray-400 text-center mb-0.5">{group.label}</div>
+              <div className="flex">
+                {group.categories.map((cat, i) => (
+                  <button
+                    key={cat}
+                    onClick={() => setCompendiumCategory(cat)}
+                    className={`px-2 py-1 text-sm ${
+                      i === 0 ? 'rounded-l' : i === group.categories.length - 1 ? 'rounded-r' : ''
+                    } ${
+                      compendiumCategory === cat
+                        ? 'bg-sub text-white'
+                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    }`}
+                  >
+                    {CATEGORY_SHORT_NAMES[cat]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+          {compendiumItems.map(item => {
+            const baseItem: Item = { ...item, enhancement: 0, superRare: 0 };
+            const expanded = !!expandedCompendiumItems[item.id];
+            return (
+              <div key={item.id} className="bg-white rounded border border-gray-200">
+                <button
+                  onClick={() => setExpandedCompendiumItems(prev => ({ ...prev, [item.id]: !expanded }))}
+                  className="w-full text-left px-3 py-2 text-sm flex justify-between items-center"
+                >
+                  <span>{getRarityShortLabel(item.id)}{item.name}</span>
+                  <span className="text-xs text-gray-500">{expanded ? '▲' : '▼'}</span>
+                </button>
+                {expanded && (
+                  <div className="px-3 pb-2 text-xs text-gray-700 space-y-1 border-t border-gray-100 pt-2">
+                    <div>ID: {item.id}</div>
+                    <div>{getItemStats(baseItem)}</div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="bg-pane rounded-lg p-4 mb-4">
+        <div className="text-sm font-medium mb-3">3. 敵キャラクター図鑑</div>
+        <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+          {bestiary.map(({ dungeon, enemies }) => {
+            const dungeonExpanded = !!expandedExpeditions[dungeon.id];
+            return (
+              <div key={dungeon.id} className="bg-white rounded border border-gray-200">
+                <button
+                  onClick={() => setExpandedExpeditions(prev => ({ ...prev, [dungeon.id]: !dungeonExpanded }))}
+                  className="w-full text-left px-3 py-2 text-sm flex justify-between items-center"
+                >
+                  <span>{dungeon.name}</span>
+                  <span className="text-xs text-gray-500">{dungeonExpanded ? '▲' : '▼'}</span>
+                </button>
+                {dungeonExpanded && (
+                  <div className="px-2 pb-2">
+                    {enemies.map(enemy => {
+                      const isBoss = enemy.type === 'boss';
+                      const enemyExpanded = !!expandedEnemies[enemy.id];
+                      const dropItem = enemy.dropItemId ? ITEMS.find(item => item.id === enemy.dropItemId) : undefined;
+                      return (
+                        <div key={enemy.id} className="mt-2 border border-gray-100 rounded">
+                          <button
+                            onClick={() => setExpandedEnemies(prev => ({ ...prev, [enemy.id]: !enemyExpanded }))}
+                            className="w-full text-left px-2 py-1 text-sm flex justify-between items-center"
+                          >
+                            <span>{enemy.name}{enemy.type === 'elite' ? '(ELITE)' : isBoss ? '(BOSS)' : ''}</span>
+                            <span className="text-xs text-gray-500">{enemyExpanded ? '▲' : '▼'}</span>
+                          </button>
+                          {enemyExpanded && (
+                            <div className="px-2 pb-2 text-xs text-gray-700 grid grid-cols-2 gap-1 border-t border-gray-100 pt-2">
+                              <div>HP: {enemy.hp}</div>
+                              <div>経験値: {enemy.experience}</div>
+                              <div>近攻: {enemy.meleeAttack}</div>
+                              <div>遠攻: {enemy.rangedAttack}</div>
+                              <div>魔攻: {enemy.magicalAttack}</div>
+                              <div>物防: {enemy.physicalDefense}</div>
+                              <div>魔防: {enemy.magicalDefense}</div>
+                              <div className="col-span-2">現在のドロップ: {dropItem ? `${getRarityShortLabel(dropItem.id)}${dropItem.name}` : 'なし'}</div>
+                              <div className="col-span-2">ドロップ候補(5種): {getDropCandidates(enemy).map(item => `${getRarityShortLabel(item.id)}${item.name}`).join(' / ')}</div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
       <div className="bg-pane rounded-lg p-4">
-        <div className="text-sm font-medium mb-2">リセット</div>
+        <div className="text-sm font-medium mb-2">4. ゲームリセット</div>
         {!showResetConfirm ? (
-          <button
-            onClick={() => setShowResetConfirm(true)}
-            className="w-full py-2 bg-red-600 text-white rounded font-medium"
-          >
-            ゲームをリセット
-          </button>
+          <button onClick={() => setShowResetConfirm(true)} className="w-full py-2 bg-red-600 text-white rounded font-medium">ゲームをリセット</button>
         ) : (
           <div>
-            <div className="text-sm text-accent mb-2 p-2 bg-orange-50 rounded border border-orange-200">
-              本当にリセットしますか？全てのデータが失われます。この操作は取り消せません。
-            </div>
+            <div className="text-sm text-accent mb-2 p-2 bg-orange-50 rounded border border-orange-200">本当にリセットしますか？全てのデータが失われます。この操作は取り消せません。</div>
             <div className="flex gap-2">
-              <button
-                onClick={() => { onResetGame(); setShowResetConfirm(false); }}
-                className="flex-1 py-2 bg-red-600 text-white rounded font-medium"
-              >
-                リセット実行
-              </button>
-              <button
-                onClick={() => setShowResetConfirm(false)}
-                className="flex-1 py-2 bg-gray-300 rounded font-medium"
-              >
-                キャンセル
-              </button>
+              <button onClick={() => { onResetGame(); setShowResetConfirm(false); }} className="flex-1 py-2 bg-red-600 text-white rounded font-medium">リセット実行</button>
+              <button onClick={() => setShowResetConfirm(false)} className="flex-1 py-2 bg-gray-300 rounded font-medium">キャンセル</button>
             </div>
           </div>
         )}
