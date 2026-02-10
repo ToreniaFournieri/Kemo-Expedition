@@ -40,11 +40,10 @@ function createFloors(poolId: number, bossId: number): FloorDef[] {
 // Expedition definitions with lore
 // 8 expeditions following the world progression
 export const DUNGEONS: Dungeon[] = [
-  // Tier 1: 草原の遺跡 (Grassland Ruins)
-  // The first expedition - ancient ruins where kemonomimi adventurers test their mettle
+  // Tier 1: ケイナイアン平原 (Caninian Plains)
   {
     id: 1,
-    name: '草原の遺跡',
+    name: 'ケイナイアン平原',
     numberOfRooms: 24,
     enemyPoolIds: [1],
     bossId: 101,
@@ -52,11 +51,10 @@ export const DUNGEONS: Dungeon[] = [
     floors: createFloors(1, 101),
   },
 
-  // Tier 2: 古代の洞窟 (Ancient Cave)
-  // Deep caverns where ancient creatures dwell in eternal darkness
+  // Tier 2: ルピニアンの断崖 (Lupinian Crag)
   {
     id: 2,
-    name: '古代の洞窟',
+    name: 'ルピニアンの断崖',
     numberOfRooms: 24,
     enemyPoolIds: [2],
     bossId: 201,
@@ -64,11 +62,10 @@ export const DUNGEONS: Dungeon[] = [
     floors: createFloors(2, 201),
   },
 
-  // Tier 3: 呪われた森 (Cursed Forest)
-  // A forest corrupted by dark magic, where twisted beasts roam
+  // Tier 3: ヴァルピニアンの樹林帯 (Vulpinian Taiga)
   {
     id: 3,
-    name: '呪われた森',
+    name: 'ヴァルピニアンの樹林帯',
     numberOfRooms: 24,
     enemyPoolIds: [3],
     bossId: 301,
@@ -76,11 +73,10 @@ export const DUNGEONS: Dungeon[] = [
     floors: createFloors(3, 301),
   },
 
-  // Tier 4: 炎の火山 (Flame Volcano)
-  // The volcanic mountains where fire elementals and dragons reside
+  // Tier 4: ウルサンの霊峰 (Ursan Peaks)
   {
     id: 4,
-    name: '炎の火山',
+    name: 'ウルサンの霊峰',
     numberOfRooms: 24,
     enemyPoolIds: [4],
     bossId: 401,
@@ -88,11 +84,10 @@ export const DUNGEONS: Dungeon[] = [
     floors: createFloors(4, 401),
   },
 
-  // Tier 5: 氷結の峡谷 (Frozen Canyon)
-  // The frozen wastelands where ice creatures guard ancient treasures
+  // Tier 5: フェリディアンの茂み (Felidian Grove)
   {
     id: 5,
-    name: '氷結の峡谷',
+    name: 'フェリディアンの茂み',
     numberOfRooms: 24,
     enemyPoolIds: [5],
     bossId: 501,
@@ -100,11 +95,10 @@ export const DUNGEONS: Dungeon[] = [
     floors: createFloors(5, 501),
   },
 
-  // Tier 6: 雷鳴の塔 (Tower of Thunder)
-  // A tower struck by eternal lightning, home to storm beings
+  // Tier 6: マステリドの巣穴 (Mustelid Burrow)
   {
     id: 6,
-    name: '雷鳴の塔',
+    name: 'マステリドの巣穴',
     numberOfRooms: 24,
     enemyPoolIds: [6],
     bossId: 601,
@@ -112,11 +106,10 @@ export const DUNGEONS: Dungeon[] = [
     floors: createFloors(6, 601),
   },
 
-  // Tier 7: 冥界の門 (Gate of the Underworld)
-  // The boundary between worlds, guarded by spirits and demons
+  // Tier 7: レポリアンの庭園 (Leporian Garden)
   {
     id: 7,
-    name: '冥界の門',
+    name: 'レポリアンの庭園',
     numberOfRooms: 24,
     enemyPoolIds: [7],
     bossId: 701,
@@ -124,11 +117,10 @@ export const DUNGEONS: Dungeon[] = [
     floors: createFloors(7, 701),
   },
 
-  // Tier 8: 天空の神殿 (Celestial Temple)
-  // The final expedition - a temple floating in the heavens where gods dwell
+  // Tier 8: セルヴィンの谷 (Cervin Vale)
   {
     id: 8,
-    name: '天空の神殿',
+    name: 'セルヴィンの谷',
     numberOfRooms: 24,
     enemyPoolIds: [8],
     bossId: 801,
