@@ -1859,7 +1859,6 @@ function SettingTab({
             </div>
           ))}
         </div>
-      </div>
 
         <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
           {compendiumItems.map(item => {
