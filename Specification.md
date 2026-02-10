@@ -930,7 +930,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 
 ## 7. REWARD 
 
-- For every item listed in the drop_item,
+- For every item listed in the enemy's potential drop items,
   - If the item is common,
     - Get one ticket from `g.common_reward_bag`. Two with `c.unlock`.
 	- If `g.reward_bag`.value = '1', then get one ticket from `g.common_enhancement_bag`.
