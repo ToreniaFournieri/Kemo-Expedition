@@ -20,6 +20,7 @@ import {
 } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
+import { applyEnemyEncounterScaling, getRoomMultiplier } from '../game/enemyScaling';
 import { getDungeonById } from '../data/dungeons';
 import { getEnemiesByPool, getElitesByPool, getBossEnemy, getEnemyDropCandidates } from '../data/enemies';
 import {
@@ -366,46 +367,6 @@ const ELITE_GATE_REQUIREMENTS: Record<number, number> = {
   5: 90,
 };
 
-// Apply floor multiplier to enemy stats
-function applyFloorMultiplier(enemy: EnemyDef, multiplier: number): EnemyDef {
-  if (multiplier === 1.0) return enemy;
-
-  return {
-    ...enemy,
-    hp: Math.floor(enemy.hp * multiplier),
-    rangedAttack: Math.floor(enemy.rangedAttack * multiplier),
-    magicalAttack: Math.floor(enemy.magicalAttack * multiplier),
-    meleeAttack: Math.floor(enemy.meleeAttack * multiplier),
-    rangedNoA: Math.floor(enemy.rangedNoA * multiplier),
-    magicalNoA: Math.floor(enemy.magicalNoA * multiplier),
-    meleeNoA: Math.floor(enemy.meleeNoA * multiplier),
-    rangedAttackAmplifier: enemy.rangedAttackAmplifier * multiplier,
-    magicalAttackAmplifier: enemy.magicalAttackAmplifier * multiplier,
-    meleeAttackAmplifier: enemy.meleeAttackAmplifier * multiplier,
-    physicalDefense: Math.floor(enemy.physicalDefense * multiplier),
-    magicalDefense: Math.floor(enemy.magicalDefense * multiplier),
-    experience: Math.floor(enemy.experience * multiplier),
-  };
-}
-
-
-function getRoomMultiplier(floorNumber: number, roomType: RoomType, floorMultiplier: number): number {
-  if (roomType === 'battle_Elite') {
-    const eliteRoomMultipliers: Record<number, number> = {
-      1: 1.3,
-      2: 1.56,
-      3: 1.82,
-      4: 2.25,
-      5: 2.69,
-    };
-    return eliteRoomMultipliers[floorNumber] ?? floorMultiplier;
-  }
-  if (roomType === 'battle_Boss') {
-    return 5.0;
-  }
-  return floorMultiplier;
-}
-
 function getItemRarityById(itemId: number): 'common' | 'uncommon' | 'rare' | 'mythic' {
   const rarityCode = itemId % 1000;
   if (rarityCode >= 400) return 'mythic';
@@ -539,9 +500,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             const baseEnemy = selectEnemyForRoom(roomDef.type, roomDef.poolId, roomDef.bossId, floor.floorNumber, roomIndex);
             if (!baseEnemy) continue;
 
-            // Apply floor multiplier to enemy stats
             const roomMultiplier = getRoomMultiplier(floor.floorNumber, roomDef.type, floor.multiplier);
-            const enemy = applyFloorMultiplier(baseEnemy, roomMultiplier);
+            const enemy = applyEnemyEncounterScaling(baseEnemy, dungeon, floor.floorNumber, roomDef.type);
 
             // Pass currentHp to maintain HP persistence during expedition
             const battleResult = executeBattle(state.party, enemy, bags, currentHp);

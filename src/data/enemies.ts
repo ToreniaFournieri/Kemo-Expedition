@@ -28,13 +28,6 @@ function getBossMythicDropId(tier: number, seed: number): number {
 }
 
 // ============================================================
-// Tier scaling constants
-// ============================================================
-
-// Stat multiplier per tier (applied to base stats)
-const TIER_STAT_MULTIPLIERS = [1.0, 2.0, 3.0, 4.5, 6.5, 9.0, 12.0, 16.0];
-
-// ============================================================
 // Expedition 1: 草原の遺跡 (Grassland Ruins) - Beasts/Goblins
 // ============================================================
 const EXPEDITION_1_NORMALS: EnemyTemplate[] = [
@@ -503,16 +496,16 @@ type EnemyClassBase = {
 };
 
 const ENEMY_CLASS_BASES: Record<EnemyClassId, EnemyClassBase> = {
-  fighter: { hp: 75, abilities: [], accuracyBonus: 0.0, evasionBonus: 0.02, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 16, meleeNoA: 1, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0, physicalDefense: 16, magicalDefense: 10, experience: 10 },
-  duelist: { hp: 50, abilities: ['counter'], accuracyBonus: 0.01, evasionBonus: 0.01, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 20, meleeNoA: 2, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.2, physicalDefense: 10, magicalDefense: 10, experience: 10 },
-  ninja: { hp: 47, abilities: ['re_attack'], accuracyBonus: 0.0, evasionBonus: 0.04, rangedAttack: 10, rangedNoA: 1, magicalAttack: 0, magicalNoA: 0, meleeAttack: 14, meleeNoA: 1, rangedAttackAmplifier: 1.1, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.1, physicalDefense: 10, magicalDefense: 10, experience: 14 },
-  samurai: { hp: 40, abilities: [], accuracyBonus: -0.05, evasionBonus: -0.01, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 40, meleeNoA: 1, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.3, physicalDefense: 8, magicalDefense: 8, experience: 12 },
-  lord: { hp: 60, abilities: [], accuracyBonus: 0.0, evasionBonus: 0.0, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 18, meleeNoA: 2, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.1, physicalDefense: 14, magicalDefense: 14, experience: 20 },
-  ranger: { hp: 38, abilities: [], accuracyBonus: 0.03, evasionBonus: 0.01, rangedAttack: 14, rangedNoA: 2, magicalAttack: 0, magicalNoA: 0, meleeAttack: 0, meleeNoA: 0, rangedAttackAmplifier: 1.2, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0, physicalDefense: 8, magicalDefense: 8, experience: 12 },
-  wizard: { hp: 32, abilities: [], accuracyBonus: 0.0, evasionBonus: 0.0, rangedAttack: 0, rangedNoA: 0, magicalAttack: 20, magicalNoA: 1, meleeAttack: 0, meleeNoA: 0, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.0, physicalDefense: 6, magicalDefense: 14, experience: 10 },
-  sage: { hp: 38, abilities: [], accuracyBonus: 0.0, evasionBonus: 0.0, rangedAttack: 0, rangedNoA: 0, magicalAttack: 10, magicalNoA: 2, meleeAttack: 0, meleeNoA: 0, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.0, physicalDefense: 8, magicalDefense: 20, experience: 10 },
-  rogue: { hp: 30, abilities: [], accuracyBonus: 0.06, evasionBonus: 0.06, rangedAttack: 10, rangedNoA: 2, magicalAttack: 0, magicalNoA: 0, meleeAttack: 10, meleeNoA: 2, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.0, physicalDefense: 8, magicalDefense: 8, experience: 8 },
-  pilgrim: { hp: 66, abilities: ['null_counter'], accuracyBonus: 0.0, evasionBonus: 0.02, rangedAttack: 0, rangedNoA: 0, magicalAttack: 10, magicalNoA: 1, meleeAttack: 16, meleeNoA: 1, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.2, physicalDefense: 12, magicalDefense: 12, experience: 16 },
+  fighter: { hp: 75, abilities: [], accuracyBonus: 0.0, evasionBonus: 0.02, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 16, meleeNoA: 2, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0, physicalDefense: 16, magicalDefense: 10, experience: 10 },
+  duelist: { hp: 50, abilities: ['counter'], accuracyBonus: 0.01, evasionBonus: 0.01, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 20, meleeNoA: 4, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.2, physicalDefense: 10, magicalDefense: 10, experience: 10 },
+  ninja: { hp: 47, abilities: ['re_attack'], accuracyBonus: 0.0, evasionBonus: 0.04, rangedAttack: 10, rangedNoA: 2, magicalAttack: 0, magicalNoA: 0, meleeAttack: 14, meleeNoA: 2, rangedAttackAmplifier: 1.1, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.1, physicalDefense: 10, magicalDefense: 10, experience: 14 },
+  samurai: { hp: 40, abilities: [], accuracyBonus: -0.05, evasionBonus: -0.01, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 40, meleeNoA: 2, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.3, physicalDefense: 8, magicalDefense: 8, experience: 12 },
+  lord: { hp: 60, abilities: [], accuracyBonus: 0.0, evasionBonus: 0.0, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 18, meleeNoA: 4, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.1, physicalDefense: 14, magicalDefense: 14, experience: 20 },
+  ranger: { hp: 38, abilities: [], accuracyBonus: 0.03, evasionBonus: 0.01, rangedAttack: 14, rangedNoA: 4, magicalAttack: 0, magicalNoA: 0, meleeAttack: 0, meleeNoA: 0, rangedAttackAmplifier: 1.2, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0, physicalDefense: 8, magicalDefense: 8, experience: 12 },
+  wizard: { hp: 32, abilities: [], accuracyBonus: 0.0, evasionBonus: 0.0, rangedAttack: 0, rangedNoA: 0, magicalAttack: 20, magicalNoA: 2, meleeAttack: 0, meleeNoA: 0, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.0, physicalDefense: 6, magicalDefense: 14, experience: 10 },
+  sage: { hp: 38, abilities: [], accuracyBonus: 0.0, evasionBonus: 0.0, rangedAttack: 0, rangedNoA: 0, magicalAttack: 10, magicalNoA: 4, meleeAttack: 0, meleeNoA: 0, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.0, physicalDefense: 8, magicalDefense: 20, experience: 10 },
+  rogue: { hp: 30, abilities: [], accuracyBonus: 0.06, evasionBonus: 0.06, rangedAttack: 10, rangedNoA: 4, magicalAttack: 0, magicalNoA: 0, meleeAttack: 10, meleeNoA: 4, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.0, physicalDefense: 8, magicalDefense: 8, experience: 8 },
+  pilgrim: { hp: 66, abilities: ['null_counter'], accuracyBonus: 0.0, evasionBonus: 0.02, rangedAttack: 0, rangedNoA: 0, magicalAttack: 10, magicalNoA: 2, meleeAttack: 16, meleeNoA: 2, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.2, physicalDefense: 12, magicalDefense: 12, experience: 16 },
 };
 
 // ============================================================
@@ -527,14 +520,13 @@ function createEnemyFromTemplate(
   enemyClass: EnemyClassId,
   spawnPool: number
 ): EnemyDef {
-  const tierMult = TIER_STAT_MULTIPLIERS[tier - 1];
   const classBase = ENEMY_CLASS_BASES[enemyClass];
   const enemyTypeExpMult = type === 'elite' ? 2.0 : type === 'boss' ? 5.0 : 1.0;
 
-  // Apply tier multiplier and template modifiers on top of class base
-  const hp = Math.floor(classBase.hp * tierMult * template.hpMod);
-  const attackScale = tierMult * template.attackMod;
-  const defenseScale = tierMult * template.defenseMod;
+  // Master enemy data (before expedition/floor multipliers)
+  const hp = Math.floor(classBase.hp * template.hpMod);
+  const attackScale = template.attackMod;
+  const defenseScale = template.defenseMod;
 
   // Calculate drop item ID based on enemy type
   // Normal enemies drop uncommon items, elite drop rare, boss drop rare
@@ -563,11 +555,11 @@ function createEnemyFromTemplate(
     evasionBonus: classBase.evasionBonus,
     hp,
     rangedAttack: Math.floor(classBase.rangedAttack * attackScale),
-    rangedNoA: Math.floor(classBase.rangedNoA * tierMult),
+    rangedNoA: classBase.rangedNoA,
     magicalAttack: Math.floor(classBase.magicalAttack * attackScale),
-    magicalNoA: Math.floor(classBase.magicalNoA * tierMult),
+    magicalNoA: classBase.magicalNoA,
     meleeAttack: Math.floor(classBase.meleeAttack * attackScale),
-    meleeNoA: Math.floor(classBase.meleeNoA * tierMult),
+    meleeNoA: classBase.meleeNoA,
     // f.offense_amplifier scales by floor multiplier only (no exp/tier multiplier)
     rangedAttackAmplifier: classBase.rangedAttackAmplifier,
     magicalAttackAmplifier: classBase.magicalAttackAmplifier,
@@ -580,7 +572,7 @@ function createEnemyFromTemplate(
       thunder: template.resistances?.thunder ?? 1.0,
       ice: template.resistances?.ice ?? 1.0,
     },
-    experience: Math.floor(classBase.experience * tierMult * template.hpMod * enemyTypeExpMult),
+    experience: Math.floor(classBase.experience * template.hpMod * enemyTypeExpMult),
     dropItemId,
   };
 }
