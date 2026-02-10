@@ -83,6 +83,340 @@ const RARITY_AMPLIFIERS: Record<ItemCategory, number[]> = {
 // Tier name prefixes for generated items
 const TIER_PREFIXES = ['銅の', '鉄の', '鋼の', 'ミスリルの', 'アダマンの', 'オリハルの', 'エーテルの', '星鉄の'];
 
+type MasterItemNameTable = Record<number, Partial<Record<Rarity, Partial<Record<ItemCategory, string[]>>>>>;
+
+const MASTER_ITEM_NAMES: MasterItemNameTable = {
+  1: {
+    common: {
+      archery: ['木の短弓'],
+      armor: ['木の胸当て', '獣皮の鎧'],
+      arrow: ['石の矢', '骨の矢'],
+      catalyst: ['火打ち石の触媒'],
+      grimoire: ['樹皮の符帳'],
+      robe: ['草編みの法衣', '獣毛の外套'],
+      shield: ['木の盾', '樹皮の盾'],
+      sword: ['木の棒', '尖らせた木杭', '骨のこん棒'],
+      wand: ['枝の杖', '焦げ木の杖'],
+    },
+    uncommon: {
+      archery: ['つる巻き弓'],
+      armor: ['硬革の鎧'],
+      arrow: ['黒曜石の矢'],
+      catalyst: ['琥珀粉の触媒'],
+      grimoire: ['洞窟壁画の呪頁'],
+      robe: ['苔縫いの法衣'],
+      shield: ['骨枠の盾'],
+      sword: ['黒曜石の短剣', '牙のナイフ'],
+      wand: ['精霊樹の杖'],
+    },
+    rare: {
+      archery: ['古代樹の長弓'],
+      armor: ['角骨の鎧'],
+      arrow: ['雷打ち石の矢'],
+      catalyst: ['三色灰の触媒'],
+      grimoire: ['獣血の呪典'],
+      robe: ['月苔の法衣'],
+      shield: ['巨木の円盾'],
+      sword: ['原始の石剣'],
+      wand: ['星木の杖'],
+    },
+    mythic: {
+      grimoire: ['原初契約の石板'],
+      shield: ['大地の心臓殻盾'],
+      sword: ['始まりの牙剣'],
+    },
+  },
+  2: {
+    common: {
+      archery: ['角骨の弓'],
+      armor: ['石板縫いの鎧', '骨留めの革鎧'],
+      arrow: ['剥片石の矢', '尖頭石の矢'],
+      catalyst: ['砕石粉の触媒'],
+      grimoire: ['岩壁刻文の呪頁'],
+      robe: ['石粉まみれの法衣', '風紋の獣皮衣'],
+      shield: ['石板の盾', '岩皮の円盾'],
+      sword: ['石刃の短剣', '欠け石の石剣', '削片の石斧'],
+      wand: ['刻紋石の杖', '風穴石の杖'],
+    },
+    uncommon: {
+      archery: ['岩角の長弓'],
+      armor: ['磨石板の鎧'],
+      arrow: ['黒曜尖石の矢'],
+      catalyst: ['磁石砂の触媒'],
+      grimoire: ['断崖壁画の呪典'],
+      robe: ['霧染みの法衣'],
+      shield: ['黒岩の重盾'],
+      sword: ['黒曜石の石刃', '磨石の石剣'],
+      wand: ['風刻みの石杖'],
+    },
+    rare: {
+      archery: ['断崖狩人の戦弓'],
+      armor: ['岩王の石甲'],
+      arrow: ['風哭きの石矢'],
+      catalyst: ['嵐灰の触媒'],
+      grimoire: ['風刻岩の秘呪書'],
+      robe: ['断崖司祭の法衣'],
+      shield: ['断崖守護の巨盾'],
+      sword: ['裂風の黒曜石剣'],
+      wand: ['嵐紋の霊石杖'],
+    },
+    mythic: {
+      archery: ['天裂きの断崖戦弓'],
+      armor: ['風哭きの岩王鎧'],
+      sword: ['断崖王の黒曜大剣'],
+    },
+  },
+  3: {
+    common: {
+      archery: ['青銅留めの弓'],
+      armor: ['青銅縫いの鎧', '革下地の青銅鎧'],
+      arrow: ['青銅鏃の矢', '霧研ぎの青銅矢'],
+      catalyst: ['霧結晶の触媒'],
+      grimoire: ['幻林の呪頁'],
+      robe: ['霧染みの法衣', '樹皮織りの法衣'],
+      shield: ['青銅縁の木盾', '青銅円盾'],
+      sword: ['青銅の短剣', '青銅の片刃剣', '青銅の直剣'],
+      wand: ['霧晶の青銅杖', '樹霊刻みの杖'],
+    },
+    uncommon: {
+      archery: ['狐狩人の戦弓'],
+      armor: ['狐族戦士の青銅鎧'],
+      arrow: ['幻裂きの青銅矢'],
+      catalyst: ['霧精粉の触媒'],
+      grimoire: ['幻霧の秘呪書'],
+      robe: ['幻術師の法衣'],
+      shield: ['霧払いの青銅盾'],
+      sword: ['狐紋の青銅剣', '霧鍛えの青銅剣'],
+      wand: ['幻導の青銅杖'],
+    },
+    rare: {
+      archery: ['霧裂きの戦弓'],
+      armor: ['樹霧守護の青銅鎧'],
+      arrow: ['幻貫の青銅矢'],
+      catalyst: ['幻晶核の触媒'],
+      grimoire: ['樹霧幻術大全'],
+      robe: ['霧林司祭の法衣'],
+      shield: ['幻樹の青銅大盾'],
+      sword: ['幻断の青銅剣'],
+      wand: ['幻導の青銅霊杖'],
+    },
+    mythic: {
+      grimoire: ['森幻王の禁呪書'],
+      robe: ['霧界支配の法衣'],
+      sword: ['幻樹王の青銅剣'],
+    },
+  },
+  4: {
+    common: {
+      archery: ['鉄留めの戦弓'],
+      armor: ['鉄縫いの鎧', '熔岩煤の鉄鎧'],
+      arrow: ['鉄鏃の矢', '焼入れ鉄矢'],
+      catalyst: ['炉滓結晶の触媒'],
+      grimoire: ['炉壁刻文の呪頁'],
+      robe: ['炉灰染みの法衣', '耐熱布の法衣'],
+      shield: ['鉄縁の盾', '熔岩煤の鉄盾'],
+      sword: ['鉄の短剣', '鍛鉄の片刃剣', '粗鍛えの鉄剣'],
+      wand: ['炉心鉄の杖', '熔岩核の鉄杖'],
+    },
+    uncommon: {
+      archery: ['熊狩人の戦弓'],
+      armor: ['霊峰鍛冶の鉄鎧'],
+      arrow: ['火花裂きの鉄矢'],
+      catalyst: ['熔核粉の触媒'],
+      grimoire: ['鍛炉秘伝の呪典'],
+      robe: ['炉祈司の法衣'],
+      shield: ['熔鉄守護の大盾'],
+      sword: ['鍛冶師の鉄剣', '火入れの鉄刃'],
+      wand: ['霊炉導きの鉄杖'],
+    },
+    rare: {
+      archery: ['火山連射の戦弓'],
+      armor: ['火山守護の鉄甲'],
+      arrow: ['溶鉄穿ちの矢'],
+      catalyst: ['火成核の触媒'],
+      grimoire: ['霊峰鍛呪大全'],
+      robe: ['炉霊司祭の法衣'],
+      shield: ['霊峰の溶鉄大盾'],
+      sword: ['霊峰鍛えの鉄剣'],
+      wand: ['霊炉核の鉄霊杖'],
+    },
+    mythic: {
+      armor: ['鉄王の霊峰鎧'],
+      katana: ['霊峰秘伝・溶鉄ノ太刀'],
+      shield: ['溶岩心臓の王盾'],
+    },
+  },
+  5: {
+    common: {
+      archery: ['月鋼留めの戦弓'],
+      armor: ['月鋼縫いの鎧', '古遺跡鋼の鎧'],
+      arrow: ['月鋼鏃の矢', '燐鋼の矢'],
+      catalyst: ['燐核結晶の触媒'],
+      grimoire: ['聖域遺文の呪頁'],
+      robe: ['燐布の法衣', '月苔織りの法衣'],
+      shield: ['月鋼縁の円盾', '遺跡鋼の盾'],
+      sword: ['月鋼の短剣', '燐鋼の片刃剣', '遺跡鋼の直剣'],
+      wand: ['燐晶核の杖', '月輝鋼の魔杖'],
+    },
+    uncommon: {
+      archery: ['聖茂狩人の戦弓'],
+      armor: ['聖域守護の月鋼鎧'],
+      arrow: ['閃撃の月鋼矢'],
+      catalyst: ['燐精核の触媒'],
+      grimoire: ['月影秘儀書'],
+      robe: ['燐光司祭の法衣'],
+      shield: ['月輝守護の大盾'],
+      sword: ['月鋼細工の剣', '聖域鍛えの剣'],
+      wand: ['月導の霊杖'],
+    },
+    rare: {
+      archery: ['光苔嵐の戦弓'],
+      armor: ['月庭守護の霊鎧'],
+      arrow: ['瞬撃の月鋼矢'],
+      catalyst: ['燐界核の触媒'],
+      grimoire: ['聖茂幻術大全'],
+      robe: ['燐界司祭の聖衣'],
+      shield: ['月影の聖域大盾'],
+      sword: ['聖月王の光剣'],
+      wand: ['月輝霊核の魔杖'],
+    },
+    mythic: {
+      archery: ['聖域王の光速弓'],
+      bolt: ['月光閃雷の神速弩矢'],
+      robe: ['月界支配の聖衣'],
+    },
+  },
+  6: {
+    common: {
+      archery: ['滑車式の連射弓'],
+      armor: ['銅板リベット鎧', '配管補強の軽鎧'],
+      arrow: ['鋼芯の銅矢', '貫通加工の銅矢'],
+      catalyst: ['中和触媒の核'],
+      grimoire: ['配線式呪頁'],
+      robe: ['耐毒繊維の法衣', '蒸気防護の法衣'],
+      shield: ['銅枠の機械盾', '歯車縁の小盾'],
+      sword: ['銅合金の短剣', '蒸気焼入れの短剣', '歯車刃の小剣'],
+      wand: ['触媒導管の魔杖', '蒸気核の導魔杖'],
+    },
+    uncommon: {
+      archery: ['歯車補助の戦弓'],
+      armor: ['耐圧配管の機甲'],
+      arrow: ['貫孔加工の精密矢'],
+      catalyst: ['中和強化触媒'],
+      grimoire: ['迷宮制御の秘呪書'],
+      robe: ['毒気遮断の法衣'],
+      shield: ['蒸気遮断の機械盾'],
+      sword: ['合金鍛えの小剣', '歯車刻みの短剣'],
+      wand: ['触媒増幅の魔杖'],
+    },
+    rare: {
+      archery: ['自動滑車の連射弓'],
+      armor: ['耐毒圧の迷宮機甲'],
+      arrow: ['貫壁の精密合金矢'],
+      catalyst: ['完全中和の触媒核'],
+      grimoire: ['迷宮制御中枢書'],
+      robe: ['深層制御の法衣'],
+      shield: ['迷宮中枢の機械大盾'],
+      sword: ['銅迷宮王の合金剣'],
+      wand: ['主機核導きの霊杖'],
+    },
+    mythic: {
+      armor: ['主機核装甲・アルケミトロン'],
+      catalyst: ['深層反応炉の原初触媒'],
+      grimoire: ['銅迷宮の設計原典'],
+    },
+  },
+  7: {
+    common: {
+      archery: ['風輪式の戦弓'],
+      armor: ['雲鋼縫いの鎧', '風紋刻みの軽鎧'],
+      arrow: ['風切りの鋼矢', '雲鋼鏃の矢'],
+      catalyst: ['風核結晶の触媒'],
+      grimoire: ['天庭律書の呪頁'],
+      robe: ['天布の法衣', '雲糸織りの法衣'],
+      shield: ['風鋼縁の円盾', '雲鋼の小盾'],
+      sword: ['天鋼の短剣', '風鍛えの片刃剣', '雲鋼の直剣'],
+      wand: ['天晶核の魔杖', '風導の霊杖'],
+    },
+    uncommon: {
+      archery: ['高天狩人の戦弓'],
+      armor: ['浮島守護の天鋼鎧'],
+      arrow: ['旋風穿ちの鋼矢'],
+      catalyst: ['高天触媒核'],
+      grimoire: ['風律の秘呪書'],
+      robe: ['天輝司祭の法衣'],
+      shield: ['風護りの大盾'],
+      sword: ['天鋼精鍛の剣', '風紋刻みの剣'],
+      wand: ['天導の霊杖'],
+    },
+    rare: {
+      archery: ['風輪嵐の戦弓'],
+      armor: ['天空守護の天鋼鎧'],
+      arrow: ['天裂きの鋼矢'],
+      catalyst: ['天空安定の触媒核'],
+      grimoire: ['高天律法大全'],
+      robe: ['天庭司祭の聖衣'],
+      shield: ['雲界守護の王盾'],
+      sword: ['高天王の霊剣'],
+      wand: ['天輝霊核の魔杖'],
+    },
+    mythic: {
+      armor: ['浮島王の天鋼鎧'],
+      grimoire: ['高天統治の禁呪書'],
+      sword: ['天界王剣アストレア'],
+    },
+  },
+  8: {
+    common: {
+      archery: ['層界制御の戦弓'],
+      armor: ['玻璃鋼縫いの鎧', '結晶層の軽鎧'],
+      arrow: ['時断の結晶矢', '次元鋼鏃の矢'],
+      catalyst: ['時層結晶の触媒'],
+      grimoire: ['玻璃律書の呪頁'],
+      robe: ['無音織りの法衣', '時層布の法衣'],
+      shield: ['次元縁の玻璃盾', '結晶層の小盾'],
+      sword: ['玻璃鋼の短剣', '時晶鍛えの片刃剣', '次元鋼の直剣'],
+      wand: ['時晶核の魔杖', '無音導きの霊杖'],
+    },
+    uncommon: {
+      archery: ['次元狩人の戦弓'],
+      armor: ['玻璃界守護の結晶鎧'],
+      arrow: ['層界穿ちの結晶矢'],
+      catalyst: ['次元安定の触媒核'],
+      grimoire: ['終焉律法の秘呪書'],
+      robe: ['無音司祭の法衣'],
+      shield: ['時壁守護の大盾'],
+      sword: ['時玻璃精鍛の剣', '次元紋刻みの剣'],
+      wand: ['時導の霊杖'],
+    },
+    rare: {
+      archery: ['層界嵐の戦弓'],
+      armor: ['玻璃守護の王鎧'],
+      arrow: ['終焉穿ちの結晶矢'],
+      catalyst: ['完全安定の触媒核'],
+      grimoire: ['時玻璃終章大全'],
+      robe: ['無限層司祭の聖衣'],
+      shield: ['次元守護の王盾'],
+      sword: ['時界王の霊剣'],
+      wand: ['時晶霊核の魔杖'],
+    },
+    mythic: {
+      catalyst: ['次元律動の原初触媒'],
+      grimoire: ['不死超越の最終魔導書'],
+      katana: ['終焉ノ太刀・時玻璃'],
+    },
+  },
+};
+
+function getMasterItemName(tier: number, rarity: Rarity, category: ItemCategory, variantIndex?: number): string | undefined {
+  const names = MASTER_ITEM_NAMES[tier]?.[rarity]?.[category];
+  if (!names || names.length === 0) return undefined;
+  if (rarity === 'uncommon') {
+    const index = variantIndex ?? 0;
+    return names[index] ?? names[0];
+  }
+  return names[0];
+}
 const ITEM_NAME_OVERRIDES: Record<number, string> = {
   1401: '黎明の聖剣',
   1402: '秘奥真理の書',
@@ -264,6 +598,11 @@ function createItem(
     name = tierPrefix + (template.rareName || template.baseName);
   } else {
     name = template.mythicName || tierPrefix + template.baseName;
+  }
+
+  const masterName = getMasterItemName(tier, rarity, template.category, variantIndex);
+  if (masterName) {
+    name = masterName;
   }
 
   name = ITEM_NAME_OVERRIDES[id] ?? name;
