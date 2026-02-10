@@ -31,6 +31,21 @@ interface HomeScreenProps {
 
 type Tab = 'party' | 'expedition' | 'inventory' | 'shop' | 'setting';
 
+const RARITY_SHORT_LABELS: Record<'common' | 'uncommon' | 'rare' | 'mythic', string> = {
+  common: '[C]',
+  uncommon: '[U]',
+  rare: '[R]',
+  mythic: '[M]',
+};
+
+function getRarityShortLabel(itemId: number): string {
+  const rarityCode = itemId % 1000;
+  if (rarityCode >= 400) return RARITY_SHORT_LABELS.mythic;
+  if (rarityCode >= 300) return RARITY_SHORT_LABELS.rare;
+  if (rarityCode >= 200) return RARITY_SHORT_LABELS.uncommon;
+  return RARITY_SHORT_LABELS.common;
+}
+
 // Helper to format item stats
 function getItemStats(item: Item): string {
   const multiplier = (ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1) *
@@ -1403,22 +1418,26 @@ function InventoryTab({
             return (
               <div
                 key={key}
-                className={`p-2 rounded bg-pane flex justify-between items-center ${isNew ? 'border-2 border-accent' : ''}`}
+                className={`p-2 rounded bg-pane ${isNew ? 'border-2 border-accent' : ''}`}
               >
-                <div className="flex items-center gap-2">
-                  <span className={`text-sm ${isNew ? 'font-bold' : 'font-medium'}`}>
-                    {getItemDisplayName(item)}
-                  </span>
-                  <span className="text-xs text-gray-500">x{count}</span>
-                  <span className="text-xs text-gray-400">| {getItemStats(item)}</span>
-                  {isNew && <span className="text-xs text-accent font-bold">NEW</span>}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-sm ${isNew ? 'font-bold' : 'font-medium'}`}>
+                      {getItemDisplayName(item)}
+                    </span>
+                    <span className="text-xs text-gray-500">x{count}</span>
+                    {isNew && <span className="text-xs text-accent font-bold">NEW</span>}
+                  </div>
+                  <button
+                    onClick={() => onSellStack(key)}
+                    className="text-xs text-accent px-2 py-1 border border-accent rounded flex-shrink-0"
+                  >
+                    全売却 {sellPrice}G
+                  </button>
                 </div>
-                <button
-                  onClick={() => onSellStack(key)}
-                  className="text-xs text-accent px-2 py-1 border border-accent rounded flex-shrink-0"
-                >
-                  全売却 {sellPrice}G
-                </button>
+                <div className="mt-1 text-xs text-gray-400">
+                  {getRarityShortLabel(item.id)} {getItemStats(item)}
+                </div>
               </div>
             );
           })}
@@ -1440,17 +1459,19 @@ function InventoryTab({
           {showSold && (
             <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
               {filteredSoldItems.map(([key, variant]) => (
-                <div key={key} className="p-2 rounded bg-gray-100 flex justify-between items-center">
-                  <div className="flex items-center gap-2">
+                <div key={key} className="p-2 rounded bg-gray-100">
+                  <div className="flex items-center justify-between gap-2">
                     <span className="text-sm text-gray-500">{getItemDisplayName(variant.item)}</span>
-                    <span className="text-xs text-gray-400">| {getItemStats(variant.item)}</span>
+                    <button
+                      onClick={() => onSetVariantStatus(key, 'notown')}
+                      className="text-xs text-sub px-2 py-1 border border-sub rounded"
+                    >
+                      解除
+                    </button>
                   </div>
-                  <button
-                    onClick={() => onSetVariantStatus(key, 'notown')}
-                    className="text-xs text-sub px-2 py-1 border border-sub rounded"
-                  >
-                    解除
-                  </button>
+                  <div className="mt-1 text-xs text-gray-400">
+                    {getRarityShortLabel(variant.item.id)} {getItemStats(variant.item)}
+                  </div>
                 </div>
               ))}
               {filteredSoldItems.length === 0 && (
