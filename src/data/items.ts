@@ -1,4 +1,5 @@
 import { ItemDef, EnhancementTitle, SuperRareTitle, ItemCategory, ElementalOffense } from '../types';
+import { MYTHIC_DROP_POOLS } from './dropTables';
 
 // ============================================================
 // Enhancement & Super Rare title tables
@@ -193,6 +194,14 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
   },
 ];
 
+const ITEM_TEMPLATE_BY_CATEGORY: Record<ItemCategory, ItemTemplate> = ITEM_TEMPLATES.reduce(
+  (acc, template) => {
+    acc[template.category] = template;
+    return acc;
+  },
+  {} as Record<ItemCategory, ItemTemplate>
+);
+
 // ============================================================
 // Item generation functions
 // ============================================================
@@ -364,18 +373,13 @@ function generateItems(): ItemDef[] {
       items.push(createItem(id, tier, 'rare', template));
     }
 
-    // Mythic items (3 per tier - rotating categories)
-    const mythicCategories: number[] = [
-      // Rotate through weapon types primarily
-      (tier - 1) % 12,
-      ((tier - 1) + 4) % 12,
-      ((tier - 1) + 8) % 12,
-    ];
-    for (let i = 0; i < 3; i++) {
-      const template = ITEM_TEMPLATES[mythicCategories[i]];
-      const id = tier * 1000 + 400 + i + 1; // T4CC format
+    // Mythic items (2~3 per tier based on boss drop tables)
+    const mythicCategories = MYTHIC_DROP_POOLS[tier] ?? [];
+    mythicCategories.forEach((category, index) => {
+      const template = ITEM_TEMPLATE_BY_CATEGORY[category];
+      const id = tier * 1000 + 400 + index + 1; // T4CC format
       items.push(createItem(id, tier, 'mythic', template));
-    }
+    });
   }
 
   return items;

@@ -1583,27 +1583,27 @@ function SettingTab({
               </div>
               <div className="flex justify-between text-sub">
                 <span>名工の残り</span>
-                <span>{commonCraftsmanRemaining}</span>
+                <span>{commonCraftsmanRemaining} / {craftsmanInitial}</span>
               </div>
               <div className="flex justify-between text-sub">
                 <span>魔性の残り</span>
-                <span>{commonDemonicRemaining}</span>
+                <span>{commonDemonicRemaining} / {demonicInitial}</span>
               </div>
               <div className="flex justify-between text-sub">
                 <span>宿った残り</span>
-                <span>{commonDwellingRemaining}</span>
+                <span>{commonDwellingRemaining} / {dwellingInitial}</span>
               </div>
               <div className="flex justify-between text-sub">
                 <span>伝説の残り</span>
-                <span>{commonLegendaryRemaining}</span>
+                <span>{commonLegendaryRemaining} / {legendaryInitial}</span>
               </div>
               <div className="flex justify-between text-sub">
                 <span>恐ろしい残り</span>
-                <span>{commonTerribleRemaining}</span>
+                <span>{commonTerribleRemaining} / {terribleInitial}</span>
               </div>
               <div className="flex justify-between text-sub">
                 <span>究極の残り</span>
-                <span>{commonUltimateRemaining}</span>
+                <span>{commonUltimateRemaining} / {ultimateInitial}</span>
               </div>
             </div>
           </div>
