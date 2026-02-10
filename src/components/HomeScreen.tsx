@@ -325,9 +325,8 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         const isSuperRare = item.superRare > 0;
         const itemName = getItemDisplayName(item);
         const rarity = getItemRarityById(item.id);
-        const rarityTag = rarity === 'rare' ? '' : getRarityShortLabel(item.id);
         actions.addNotification(
-          `${rarityTag ? `${rarityTag} ` : ''}${itemName} を入手!`,
+          `${itemName}を入手！`,
           rarity === 'rare' || rarity === 'mythic' || isSuperRare ? 'rare' : 'normal',
           'item',
           undefined,
