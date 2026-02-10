@@ -1318,7 +1318,7 @@ Left-aligned            Right-aligned
 
 **3. Bestiary (敵キャラクター図鑑)**
 - A comprehensive record of all threats encountered (or to be encountered) during expeditions.
-- Expedition category tabs: 草, 古, 呪, 炎, 氷, 雷, 冥, 天
+- Expedition category tabs: 原, 崖, 河, 峰, 茂, 巣, 園, 谷
   - Each letter represents for corresponding expedition. And tap to show the enemy list of it. 
 
 - Categorize by floor (`x.Spawn_pool`) and is reverse order of rooms (Boss first, then floor6 Normal enemies, floor 5 elite and floor 5 normal enemies…
