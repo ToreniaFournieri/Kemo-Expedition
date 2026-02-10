@@ -241,6 +241,7 @@ export interface EnemyDef {
   magicalDefense: number;
   elementalOffense: ElementalOffense;
   elementalResistance: Record<ElementalResistance, number>;
+  defenseAmplifier: number;
   experience: number;
   dropItemId: number | null;
 }
@@ -257,6 +258,14 @@ export interface RoomDef {
 export interface FloorDef {
   floorNumber: number;
   multiplier: number; // Floor multiplier (x1.0 to x5.0)
+  multipliers?: {
+    hp: number;
+    attack: number;
+    noa: number;
+    attackAmplifier: number;
+    defense: number;
+    defenseAmplifier: number;
+  };
   rooms: RoomDef[];
 }
 
