@@ -194,8 +194,7 @@ function calculateCharacterDamage(
   }
 
   // For LONG and CLOSE phases, roll for each hit
-  // Enemy evasion bonus (enemies don't have evasion stat yet, default to 0)
-  const enemyEvasion = 0;
+  const enemyEvasion = enemy.evasionBonus;
 
   let hits = 0;
   for (let i = 1; i <= noA; i++) {
@@ -307,10 +306,9 @@ export function executeBattle(
     // Track attacks grouped by target: Map<characterId, { damage, hits, totalAttempts, charStats }>
     const attacksByTarget = new Map<number, { damage: number; hits: number; totalAttempts: number; charStats: ComputedCharacterStats }>();
 
-    // Enemy accuracy potency (enemies are always at row 1, so potency = 1.0)
+    // Enemy accuracy potency (currently fixed row-equivalent)
     const enemyAccuracyPotency = 1.0;
-    // Enemy accuracy bonus (enemies don't have accuracy stat yet, default to 0)
-    const enemyAccuracyBonus = 0;
+    const enemyAccuracyBonus = enemy.accuracyBonus;
 
     for (let i = 0; i < noA; i++) {
       const { row: targetRow, newCtx } = getTargetRow(ctx, phase);
