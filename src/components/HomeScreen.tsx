@@ -1798,31 +1798,17 @@ function SettingTab({
 
   const ENEMY_SKILL_PLACEHOLDER = '（将来実装予定）';
 
-  const NORMAL_CLASS_BY_FLOOR: Record<number, string[]> = {
-    1: ['戦士', '弓使い', '魔術師', '巡礼者', '盗賊'],
-    2: ['忍者', '侍', '賢者', '剣闘士', '領主'],
-    3: ['戦士', '弓使い', '魔術師', '領主', '侍'],
-    4: ['忍者', '盗賊', '賢者', '剣闘士', '巡礼者'],
-    5: ['戦士', '弓使い', '魔術師', '領主', '侍'],
-    6: ['忍者', '盗賊', '賢者', '剣闘士', '巡礼者'],
-  };
-
-  const ELITE_CLASS_BY_FLOOR: Record<number, string> = {
-    1: '盗賊',
-    2: '戦士',
-    3: '弓使い',
-    4: '剣闘士',
-    5: '魔術師',
-  };
-
-  const getEnemyClassLabel = (
-    groupType: 'boss' | 'elite' | 'normal',
-    floorNumber: number,
-    enemyIndex: number
-  ): string => {
-    if (groupType === 'boss') return 'ボス';
-    if (groupType === 'elite') return ELITE_CLASS_BY_FLOOR[floorNumber] ?? 'エリート';
-    return NORMAL_CLASS_BY_FLOOR[floorNumber]?.[enemyIndex] ?? '通常';
+  const ENEMY_CLASS_LABELS: Record<string, string> = {
+    fighter: '戦士',
+    duelist: '剣士',
+    ninja: '忍者',
+    samurai: '侍',
+    lord: '君主',
+    ranger: '狩人',
+    wizard: '魔法使い',
+    sage: '賢者',
+    rogue: '盗賊',
+    pilgrim: '巡礼者',
   };
 
   const getDisplayEnemy = (enemy: EnemyDef, dungeon: Dungeon): EnemyDef => {
@@ -2034,9 +2020,9 @@ function SettingTab({
           {selectedBestiaryGroups.map(group => (
             <div key={group.key} className="bg-white rounded border border-gray-200 p-2">
               <div className="text-xs text-gray-500 font-medium mb-1">{group.label}</div>
-              {group.enemies.map((enemy, enemyIndex) => {
+              {group.enemies.map(enemy => {
                 const displayEnemy = getDisplayEnemy(enemy, selectedBestiaryDungeon);
-                const enemyClass = getEnemyClassLabel(group.groupType, group.floorNumber, enemyIndex);
+                const enemyClass = ENEMY_CLASS_LABELS[displayEnemy.enemyClass] ?? '不明';
                 const enemyExpanded = !!expandedEnemies[displayEnemy.id];
                 const physicalDefensePercent = 100;
                 const magicalDefensePercent = displayEnemy.physicalDefense > 0
@@ -2069,8 +2055,10 @@ function SettingTab({
                           <div>{formatEnemyDefenseLine('魔防', displayEnemy.magicalDefense, magicalDefensePercent)}</div>
                           <div>{formatEnemyAttackLine('近攻', displayEnemy.meleeAttack, displayEnemy.meleeAttackAmplifier)}</div>
                           <div>{formatEnemyDefenseLine('物防', displayEnemy.physicalDefense, physicalDefensePercent)}</div>
-                          <div>命中率: 100% (減衰: x0.90)</div>
-                          <div>回避: 0</div>
+                          <div>
+                            命中率: 100% (減衰: x{(0.90 + displayEnemy.accuracyBonus).toFixed(2)})
+                          </div>
+                          <div>回避: {Math.round(displayEnemy.evasionBonus * 1000)}</div>
                         </div>
                         <div>スキル: {ENEMY_SKILL_PLACEHOLDER}</div>
                         <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id)}${item.name}`).join(' / ')}</div>
