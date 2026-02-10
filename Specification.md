@@ -273,16 +273,16 @@ const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 #### 2.3.1 Expedition
 - `x.expedition` list
 
-| `x.expediton` | `x.exp_HP_mult` | `x.exp_atk_mult` | `x.exp_atk_amp_mult` | `x.exp_def_mult` | `x.exp_def_amp_mult` | drop item tier | lore |
-|------|-----|-----|----|----|----|----|----|
-| Caninian Plains | x1 | x1 | x1 | x1 | x1 | 1 | The Fields of First Vows. A sun-drenched grassland dotted with wooden watchtowers. This is the training ground for all new expeditions. The atmosphere is stable, making it the perfect place to master the basics of the Sword and Grimoire under the watchful eyes of the loyal Caninian sentries. |
-| Lupinian Crag | x4 | x3 | x2 | x3 | x0.8 | 2 | The Razor-Wind Peaks. Sharp obsidian cliffs where the wind howls like a hungry wolf. The Lupinian tribes test their endurance here. |
-| Vulpinian Taiga | x16 | x9 | x3 | x9 | x0.64 | 3 | The Forest of Veils. A dense, autumnal woodland where the trees seem to move when you blink. The Vulpinian mages use the natural spiritual mist to weave illusions. Requiring explorers to seek the protection of high-tier Robes and Wands to see through the deception. |
-| Ursan Peaks | x64 | x27 | x4 | x27 | x0.51 | 4 | The Thunder-Forge Mountains. A volcanic range where the ground shakes with the rhythmic pounding of Ursan blacksmiths. Deep in these magma-lit halls, the lost art of the Katana is guarded by those whose bodies are as hard as the stone itself. |
-| Felidian Grove | x256 | x81 | x5 | x81 | x0.41 | 5 | The Moonlit Sanctuary. An ancient, overgrown jungle where ruins of a pre-shattering civilization glow with bioluminescence. To clear this grove, one must master the Bolt—the only weapon fast enough to strike before the forest strikes back. |
-| Mustelid Burrow | x1,024 | x243 | x6 | x243 | x0.33 | 6 | The Copper Labyrinth. A massive subterranean industrial hive. The air is thick with chemical steam and the clank of gears. Only those with high-tier Catalysts can neutralize the toxins found in the deepest vents. |
-| Leporian Garden | x4,096 | x729 | x7 | x729 | x0.26 | 7 | The High-Heaven Isles. A cluster of floating islands suspended miles above the clouds. The Leporians navigate these heights using wind currents. Only those with the "Lord's" resolve can stabilize their spirit enough to claim the Mythic Sword. |
-| Cervin Vale | x16,384 | x2,187 | x8 | x729 | x0.21 | 8 | The Glass Horizon. A dimension where space and time have crystallized. The Cervin Sages reside here in total silence. Here, the final Grimoire and Katana await the one who can transcend mortality. |
+| `x.expediton` | `x.exp_HP_mult` | `x.exp_atk_mult` | `x.exp_NoA_mult` | `x.exp_atk_amp_mult` | `x.exp_def_mult` | `x.exp_def_amp_mult` | drop item tier | lore |
+|------|-----|-----|----|----|----|----|----|----|
+| Caninian Plains | x1 | x1 | x1 | x1 | x1 | x1 | 1 | The Fields of First Vows. A sun-drenched grassland dotted with wooden watchtowers. This is the training ground for all new expeditions. The atmosphere is stable, making it the perfect place to master the basics of the Sword and Grimoire under the watchful eyes of the loyal Caninian sentries. |
+| Lupinian Crag | x4 | x3 | x2 | x2 | x3 | x0.8 | 2 | The Razor-Wind Peaks. Sharp obsidian cliffs where the wind howls like a hungry wolf. The Lupinian tribes test their endurance here. |
+| Vulpinian Taiga | x16 | x9 | x3 | x3 | x9 | x0.64 | 3 | The Forest of Veils. A dense, autumnal woodland where the trees seem to move when you blink. The Vulpinian mages use the natural spiritual mist to weave illusions. Requiring explorers to seek the protection of high-tier Robes and Wands to see through the deception. |
+| Ursan Peaks | x64 | x27 | x4 | x3 | x27 | x0.51 | 4 | The Thunder-Forge Mountains. A volcanic range where the ground shakes with the rhythmic pounding of Ursan blacksmiths. Deep in these magma-lit halls, the lost art of the Katana is guarded by those whose bodies are as hard as the stone itself. |
+| Felidian Grove | x256 | x81 | x5 | x5 | x81 | x0.41 | 5 | The Moonlit Sanctuary. An ancient, overgrown jungle where ruins of a pre-shattering civilization glow with bioluminescence. To clear this grove, one must master the Bolt—the only weapon fast enough to strike before the forest strikes back. |
+| Mustelid Burrow | x1,024 | x243 | x6 | x6 | x243 | x0.33 | 6 | The Copper Labyrinth. A massive subterranean industrial hive. The air is thick with chemical steam and the clank of gears. Only those with high-tier Catalysts can neutralize the toxins found in the deepest vents. |
+| Leporian Garden | x4,096 | x729 | x7 | x7 | x729 | x0.26 | 7 | The High-Heaven Isles. A cluster of floating islands suspended miles above the clouds. The Leporians navigate these heights using wind currents. Only those with the "Lord's" resolve can stabilize their spirit enough to claim the Mythic Sword. |
+| Cervin Vale | x16,384 | x2,187 | x8 | x8 | x729 | x0.21 | 8 | The Glass Horizon. A dimension where space and time have crystallized. The Cervin Sages reside here in total silence. Here, the final Grimoire and Katana await the one who can transcend mortality. |
 
 - **Enemy entity distribution** for each `x.expediton`
 
@@ -389,7 +389,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 **Enemy status mutipliers**
 - `d.HP` : master value x `x.exp_HP_mult` x `x.floor_multiplier` 
 - `f.attack` :  master value x `x.exp_atk_mult` x `x.floor_multiplier` 
-- `f.NoA` :  master value x `x.exp_mult` x `x.floor_multiplier` 
+- `f.NoA` :  master value x `x.exp_NoA_mult` x `x.floor_multiplier` 
 - `f.offense_amplifier` :  master value x `x.exp_atk_amp_mult`
 - `f.defense_amplifier` : 1.0 x `x.exp_def_amp_mult`
 - `f.defense` :  master value x `x.exp_def_mult`  x `x.floor_multiplier` 
@@ -398,20 +398,20 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 - `f.penet_multiplier`: not scale
 - `d.experience`: master value x `x.exp_mult` x `x.floor_multiplier` x (If Elite, 2.0. Else if Boss, 5.0. Else 1.0)
 
-#### 2.3.3 Base data structure
+#### 2.3.3 Base data structure (enemy)
 
 | Role | `d.HP` | `a.ability` | `c.accuracy` | `c.evasion` | `d.ranged_attack` | `d.ranged_NoA` | `d.magical_attack` | `d.magical_NoA` | `d.melee_attack` | `d.melee_NoA` | `d.ranged_attack_amplifier` | `d.magical_attack_amplifier` | `d.melee_attack_amplifier` | `d.physical_defense` | `d.magical_defense` | `e.fire` | `e.ice` | `e.thunder` | `r.fire` | `r.ice` |`r.thunder` | `d.experience` |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Fighter | 75 | (none) | 0.00| 0.02 | 0 | 0 | 0 | 0 | 16 | 1 | x1.0 | x1.0 | x1.0 | 16 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
-| Duelist | 50 | `a.counter`1 | 0.01 | 0.01 | 0 | 0 | 0 | 0 | 20 | 2 | x1.0 | x1.0 | x1.2 | 10 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
-| Ninja | 47 | `a.re-attack`1 | 0.00 | 0.04 | 10 | 1 | 0 | 0 | 14 | 1 | x1.1 | x1.0 | x1.1 | 10 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 14 |
-| Samurai | 40 | (none) | -0.05 | -0.01 | 0 | 0 | 0 | 0 | 40 | 1 | x1.0 | x1.0 | x1.3 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 12 |
-| Lord | 60 | (none) | 0.00 | 0.00 | 0 | 0 | 0 | 0 | 18 | 2 | x1.0 | x1.0 | x1.1 | 14 | 14 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 20 |
-| Ranger | 38 | (none) | 0.03 | 0.01 | 14 | 2 | 0 | 0 | 0 | 0 | x1.2 | x1.0 | x1.0 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 12 |
-| Wizard | 32 | (none) | 0.00 | 0.00 |0 | 0 | 20 | 1 | 0 | 0 | x1.0 | x1.2 | x1.0 | 6 | 14 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
-| Sage | 38 | (none) | 0.00 | 0.00 |0 | 0 | 10 | 2 | 0 | 0 | x1.0 | x1.2 | x1.0 | 8 | 20 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
-| Rogue | 30 | (none) | 0.06 | 0.06 | 10 | 2 | 0 | 0 | 10 | 2 | x1.0 | x1.2 | x1.0 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 8 |
-| Pilgrim | 66 | `a.null-counter` | 0.00 | 0.02 | 0 | 0 | 10 | 1 | 16 | 1 | x1.0 | x1.2 | x1.2 | 12 | 12 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 16 |
+| Fighter | 75 | (none) | 0.00| 0.02 | 0 | 0 | 0 | 0 | 16 | 2 | x1.0 | x1.0 | x1.0 | 16 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
+| Duelist | 50 | `a.counter`1 | 0.01 | 0.01 | 0 | 0 | 0 | 0 | 20 | 4 | x1.0 | x1.0 | x1.2 | 10 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
+| Ninja | 47 | `a.re-attack`1 | 0.00 | 0.04 | 10 | 2 | 0 | 0 | 14 | 2 | x1.1 | x1.0 | x1.1 | 10 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 14 |
+| Samurai | 40 | (none) | -0.05 | -0.01 | 0 | 0 | 0 | 0 | 40 | 2 | x1.0 | x1.0 | x1.3 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 12 |
+| Lord | 60 | (none) | 0.00 | 0.00 | 0 | 0 | 0 | 0 | 18 | 4 | x1.0 | x1.0 | x1.1 | 14 | 14 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 20 |
+| Ranger | 38 | (none) | 0.03 | 0.01 | 14 | 4 | 0 | 0 | 0 | 0 | x1.2 | x1.0 | x1.0 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 12 |
+| Wizard | 32 | (none) | 0.00 | 0.00 |0 | 0 | 20 | 2 | 0 | 0 | x1.0 | x1.2 | x1.0 | 6 | 14 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
+| Sage | 38 | (none) | 0.00 | 0.00 |0 | 0 | 10 | 4 | 0 | 0 | x1.0 | x1.2 | x1.0 | 8 | 20 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
+| Rogue | 30 | (none) | 0.06 | 0.06 | 10 | 4 | 0 | 0 | 10 | 4 | x1.0 | x1.2 | x1.0 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 8 |
+| Pilgrim | 66 | `a.null-counter` | 0.00 | 0.02 | 0 | 0 | 10 | 2 | 16 | 2 | x1.0 | x1.2 | x1.2 | 12 | 12 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 16 |
 
 
 ### 2.4 Items
@@ -1350,7 +1350,7 @@ HP: 312                    経験値: 88
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
-| **0.2.2**| Game balance modified, Enemy status mutipliers update |
+| **0.2.2**| Game balance modified, Enemy status mutipliers update, 2.3.3 Base data structure (enemy) update |
 | 0.2.1 | Update:8.7 Divine Bureau, 1. Clairvoyance (add total counts at Normal reward ), Adding 2. Item Comedium and 3. Bestiary |
 | 0.2.0 | Big update: 2.1 Global constants (change randamness upgrade), 2.3 Expedition & Enemies, 2.4 Items, 3. INITIALIZATION, 5.1 "Loot-Gate" progression system, 6.5 Outcome  7. REWARD (change the logic), 8.4 Expedition, 8.7 Divine Bureau (setting)  |
 | 0.1.4 |                                                                |
