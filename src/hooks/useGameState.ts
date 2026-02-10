@@ -588,9 +588,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 const { ticket: enhVal, newBag: newEnhBag } = drawFromBag(bags[enhancementBagType]);
                 bags = { ...bags, [enhancementBagType]: newEnhBag };
 
-                bags = refillBagIfEmpty(bags, 'superRareBag');
-                const { ticket: srVal, newBag: newSRBag } = drawFromBag(bags.superRareBag);
-                bags = { ...bags, superRareBag: newSRBag };
+                let srVal = 0;
+                if (enhVal >= 1) {
+                  bags = refillBagIfEmpty(bags, 'superRareBag');
+                  const { ticket: drawnSrVal, newBag: newSRBag } = drawFromBag(bags.superRareBag);
+                  bags = { ...bags, superRareBag: newSRBag };
+                  srVal = drawnSrVal;
+                }
 
                 const dropCandidates = getEnemyDropCandidates(enemy);
                 const selectedDropItem = dropCandidates.length > 0
@@ -706,9 +710,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               const { ticket: enhVal, newBag: newEnhBag } = drawFromBag(bags[enhancementBagType]);
               bags = { ...bags, [enhancementBagType]: newEnhBag };
 
-              bags = refillBagIfEmpty(bags, 'superRareBag');
-              const { ticket: srVal, newBag: newSRBag } = drawFromBag(bags.superRareBag);
-              bags = { ...bags, superRareBag: newSRBag };
+              let srVal = 0;
+              if (enhVal >= 1) {
+                bags = refillBagIfEmpty(bags, 'superRareBag');
+                const { ticket: drawnSrVal, newBag: newSRBag } = drawFromBag(bags.superRareBag);
+                bags = { ...bags, superRareBag: newSRBag };
+                srVal = drawnSrVal;
+              }
 
               const dropCandidates = getEnemyDropCandidates(enemy);
               const selectedDropItem = dropCandidates.length > 0
