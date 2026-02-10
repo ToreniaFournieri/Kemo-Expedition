@@ -1,4 +1,5 @@
 import { ItemDef, EnhancementTitle, SuperRareTitle, ItemCategory, ElementalOffense } from '../types';
+import { MYTHIC_DROP_POOLS } from './dropTables';
 
 // ============================================================
 // Enhancement & Super Rare title tables
@@ -56,6 +57,12 @@ type ItemTemplate = {
 
 // Base power per tier (from spec 2.4.2)
 const TIER_BASE_POWER = [12, 18, 27, 41, 61, 91, 137, 205];
+const TIER_NOA_BASE_POWER = [0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1];
+const TIER_TARGET_MULTIPLIERS = [0.13, 0.12, 0.11, 0.09, 0.08, 0.07, 0.06, 0.05, 0.04, 0.03];
+const TIER_SHIELD_EVASION_BONUS = [0.013, 0.012, 0.011, 0.009, 0.008, 0.007, 0.006, 0.005, 0.004, 0.003];
+const TIER_NOA_FIXED_BONUS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const TIER_NOA_PENALTIES = [-1.0, -1.2, -1.4, -1.6, -1.8, -2.0, -2.2, -2.4];
+const TIER_EVASION_PENALTIES = [-0.001, -0.002, -0.003, -0.004, -0.005, -0.006, -0.007, -0.008];
 
 // Rarity amplifiers per category (from spec 2.4.2)
 const RARITY_AMPLIFIERS: Record<ItemCategory, number[]> = {
@@ -187,6 +194,14 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
   },
 ];
 
+const ITEM_TEMPLATE_BY_CATEGORY: Record<ItemCategory, ItemTemplate> = ITEM_TEMPLATES.reduce(
+  (acc, template) => {
+    acc[template.category] = template;
+    return acc;
+  },
+  {} as Record<ItemCategory, ItemTemplate>
+);
+
 // ============================================================
 // Item generation functions
 // ============================================================
@@ -196,9 +211,13 @@ function calculateStat(basePower: number, amplifier: number): number {
 }
 
 function calculateNoA(basePower: number, amplifier: number): number {
-  // NoA items: scale differently, typically 1-6 range
-  const base = basePower / 8; // Normalize to tier 1 = 1
-  return Math.max(1, Math.floor(base * amplifier + 1));
+  return Number((basePower * amplifier).toFixed(2));
+}
+
+function getMultiplierTier(tier: number, rarity: Rarity): number | null {
+  if (rarity === 'mythic') return null;
+  const bonus = rarity === 'rare' ? 2 : rarity === 'uncommon' ? 1 : 0;
+  return Math.min(tier + bonus, TIER_TARGET_MULTIPLIERS.length);
 }
 
 function createItem(
@@ -212,6 +231,13 @@ function createItem(
   const rarityIndex = { common: 0, uncommon: 1, rare: 2, mythic: 3 }[rarity];
   const amplifier = RARITY_AMPLIFIERS[template.category][rarityIndex];
   const tierPrefix = TIER_PREFIXES[tier - 1];
+  const multiplierTier = getMultiplierTier(tier, rarity);
+  const targetMultiplier = multiplierTier ? 1 + TIER_TARGET_MULTIPLIERS[multiplierTier - 1] : 1;
+  const shieldEvasionBonus = multiplierTier ? TIER_SHIELD_EVASION_BONUS[multiplierTier - 1] : 0;
+  const fixedNoABonus = multiplierTier ? TIER_NOA_FIXED_BONUS[multiplierTier - 1] : 0;
+  const noaPenalty = TIER_NOA_PENALTIES[tier - 1];
+  const evasionPenalty = TIER_EVASION_PENALTIES[tier - 1];
+  const noaBasePower = TIER_NOA_BASE_POWER[tier - 1];
 
   // Determine name
   let name: string;
@@ -236,41 +262,55 @@ function createItem(
   switch (template.category) {
     case 'armor':
       item.physicalDefense = calculateStat(basePower, amplifier);
+      item.baseMultiplier = targetMultiplier;
       break;
     case 'robe':
       item.magicalDefense = calculateStat(basePower, amplifier);
+      item.baseMultiplier = targetMultiplier;
       break;
     case 'shield':
       item.partyHP = SHIELD_HP_MULTIPLIERS[tier - 1];
       item.physicalDefense = calculateStat(basePower, amplifier);
+      if (shieldEvasionBonus) item.evasionBonus = shieldEvasionBonus;
       break;
     case 'sword':
       item.meleeAttack = calculateStat(basePower, amplifier);
+      item.baseMultiplier = targetMultiplier;
       break;
     case 'katana':
       item.meleeAttack = calculateStat(basePower, amplifier);
-      item.meleeNoA = -1; // Default katana penalty
+      item.meleeNoABonus = noaPenalty;
+      item.evasionBonus = evasionPenalty;
       break;
     case 'gauntlet':
-      item.meleeNoA = calculateNoA(basePower, amplifier);
+      item.meleeNoA = calculateNoA(noaBasePower, amplifier);
+      item.meleeNoABonus = fixedNoABonus;
       break;
     case 'arrow':
       item.rangedAttack = calculateStat(basePower, amplifier);
+      item.baseMultiplier = targetMultiplier;
       break;
     case 'bolt':
       item.rangedAttack = calculateStat(basePower, amplifier);
+      item.rangedNoABonus = noaPenalty;
+      item.evasionBonus = evasionPenalty;
       break;
     case 'archery':
-      item.rangedNoA = calculateNoA(basePower, amplifier);
+      item.rangedNoA = calculateNoA(noaBasePower, amplifier);
+      item.rangedNoABonus = fixedNoABonus;
       break;
     case 'wand':
       item.magicalAttack = calculateStat(basePower, amplifier);
+      item.baseMultiplier = targetMultiplier;
       break;
     case 'grimoire':
       item.magicalAttack = calculateStat(basePower, amplifier);
+      item.magicalNoABonus = noaPenalty;
+      item.evasionBonus = evasionPenalty;
       break;
     case 'catalyst':
-      item.magicalNoA = calculateNoA(basePower, amplifier);
+      item.magicalNoA = calculateNoA(noaBasePower, amplifier);
+      item.magicalNoABonus = fixedNoABonus;
       break;
   }
 
@@ -333,18 +373,13 @@ function generateItems(): ItemDef[] {
       items.push(createItem(id, tier, 'rare', template));
     }
 
-    // Mythic items (3 per tier - rotating categories)
-    const mythicCategories: number[] = [
-      // Rotate through weapon types primarily
-      (tier - 1) % 12,
-      ((tier - 1) + 4) % 12,
-      ((tier - 1) + 8) % 12,
-    ];
-    for (let i = 0; i < 3; i++) {
-      const template = ITEM_TEMPLATES[mythicCategories[i]];
-      const id = tier * 1000 + 400 + i + 1; // T4CC format
+    // Mythic items (2~3 per tier based on boss drop tables)
+    const mythicCategories = MYTHIC_DROP_POOLS[tier] ?? [];
+    mythicCategories.forEach((category, index) => {
+      const template = ITEM_TEMPLATE_BY_CATEGORY[category];
+      const id = tier * 1000 + 400 + index + 1; // T4CC format
       items.push(createItem(id, tier, 'mythic', template));
-    }
+    });
   }
 
   return items;
