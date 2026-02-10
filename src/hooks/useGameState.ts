@@ -344,6 +344,7 @@ function selectEnemyForRoom(
 // Loot-Gate check: count total items of a rarity the player owns for a tier
 function countItemsOfRarity(
   inventory: InventoryRecord,
+  characters: Character[],
   tier: number,
   rarity: 'uncommon' | 'rare' | 'mythic'
 ): number {
@@ -353,6 +354,13 @@ function countItemsOfRarity(
   for (const variant of Object.values(inventory)) {
     if (variant.status === 'owned' && variant.count > 0 && rarityIds.has(variant.item.id)) {
       count += variant.count;
+    }
+  }
+  for (const character of characters) {
+    for (const equippedItem of character.equipment) {
+      if (equippedItem && rarityIds.has(equippedItem.id)) {
+        count++;
+      }
     }
   }
   return count;
@@ -377,15 +385,111 @@ function getItemRarityById(itemId: number): 'common' | 'uncommon' | 'rare' | 'my
 
 type RewardBagType = 'commonRewardBag' | 'uncommonRewardBag' | 'rareRewardBag' | 'mythicRewardBag';
 
-function getRewardBagTypeForEnemy(enemy: EnemyDef): RewardBagType {
-  // Normal rooms should always consume common_reward_bag tickets.
-  if (enemy.type === 'normal') return 'commonRewardBag';
 
-  const dropRarity = enemy.dropItemId ? getItemRarityById(enemy.dropItemId) : 'common';
-  if (dropRarity === 'uncommon') return 'uncommonRewardBag';
-  if (dropRarity === 'rare') return 'rareRewardBag';
-  if (dropRarity === 'mythic') return 'mythicRewardBag';
+
+
+function getRewardBagTypeForRarity(rarity: 'common' | 'uncommon' | 'rare' | 'mythic'): RewardBagType {
+  if (rarity === 'uncommon') return 'uncommonRewardBag';
+  if (rarity === 'rare') return 'rareRewardBag';
+  if (rarity === 'mythic') return 'mythicRewardBag';
   return 'commonRewardBag';
+}
+
+function getRarityRank(rarity: 'common' | 'uncommon' | 'rare' | 'mythic'): number {
+  if (rarity === 'mythic') return 4;
+  if (rarity === 'rare') return 3;
+  if (rarity === 'uncommon') return 2;
+  return 1;
+}
+
+function resolveEnemyRewards(
+  enemy: EnemyDef,
+  currentBags: GameState['bags'],
+  currentInventory: InventoryRecord,
+  currentGold: number,
+  hasUnlock: boolean
+): {
+  bags: GameState['bags'];
+  inventory: InventoryRecord;
+  gold: number;
+  autoSellProfit: number;
+  rewards: Item[];
+  rewardNames: string[];
+  highestRewardRarity?: 'common' | 'uncommon' | 'rare' | 'mythic';
+  hasSuperRareReward: boolean;
+} {
+  let bags = currentBags;
+  let inventory = currentInventory;
+  let gold = currentGold;
+  let autoSellProfit = 0;
+  const rewards: Item[] = [];
+  const rewardNames: string[] = [];
+  let highestRewardRarity: 'common' | 'uncommon' | 'rare' | 'mythic' | undefined;
+  let hasSuperRareReward = false;
+
+  const dropCandidates = getEnemyDropCandidates(enemy);
+  const fallbackItem = enemy.dropItemId ? getItemById(enemy.dropItemId) : undefined;
+  const baseDropItems = dropCandidates.length > 0
+    ? dropCandidates
+    : (fallbackItem ? [fallbackItem] : []);
+
+  for (const baseItem of baseDropItems) {
+    const baseRarity = getItemRarityById(baseItem.id);
+    const rewardBagType = getRewardBagTypeForRarity(baseRarity);
+    const enhancementBagType = rewardBagType === 'commonRewardBag' ? 'commonEnhancementBag' : 'enhancementBag';
+
+    bags = refillBagIfEmpty(bags, rewardBagType);
+    const { ticket: rewardTicket, newBag: newRewardBag } = drawFromBag(bags[rewardBagType]);
+    bags = { ...bags, [rewardBagType]: newRewardBag };
+
+    let gotReward = rewardTicket === 1;
+    if (hasUnlock) {
+      bags = refillBagIfEmpty(bags, rewardBagType);
+      const { ticket: unlockTicket, newBag } = drawFromBag(bags[rewardBagType]);
+      bags = { ...bags, [rewardBagType]: newBag };
+      gotReward = gotReward || unlockTicket === 1;
+    }
+
+    if (!gotReward) continue;
+
+    bags = refillBagIfEmpty(bags, enhancementBagType);
+    const { ticket: enhVal, newBag: newEnhBag } = drawFromBag(bags[enhancementBagType]);
+    bags = { ...bags, [enhancementBagType]: newEnhBag };
+
+    let srVal = 0;
+    if (enhVal >= 1) {
+      bags = refillBagIfEmpty(bags, 'superRareBag');
+      const { ticket: drawnSrVal, newBag: newSRBag } = drawFromBag(bags.superRareBag);
+      bags = { ...bags, superRareBag: newSRBag };
+      srVal = drawnSrVal;
+    }
+
+    const newItem: Item = { ...baseItem, enhancement: enhVal, superRare: srVal };
+    const result = addItemToInventory(inventory, newItem, gold);
+    inventory = result.inventory;
+    gold = result.gold;
+    autoSellProfit += result.autoSellProfit;
+
+    if (!result.wasAutoSold) {
+      rewards.push(newItem);
+      rewardNames.push(getItemDisplayName(newItem));
+      if (!highestRewardRarity || getRarityRank(baseRarity) > getRarityRank(highestRewardRarity)) {
+        highestRewardRarity = baseRarity;
+      }
+      if (newItem.superRare > 0) hasSuperRareReward = true;
+    }
+  }
+
+  return {
+    bags,
+    inventory,
+    gold,
+    autoSellProfit,
+    rewards,
+    rewardNames,
+    highestRewardRarity,
+    hasSuperRareReward,
+  };
 }
 
 // Legacy function for backward compatibility
@@ -444,7 +548,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               const prevTier = tier - 1;
               const prevDungeonName = getDungeonById(prevTier)?.name ?? '前回の探検地';
               const gateRequired = 1;
-              const collected = countItemsOfRarity(currentInventory, prevTier, 'mythic');
+              const collected = countItemsOfRarity(currentInventory, state.party.characters, prevTier, 'mythic');
               if (collected < gateRequired) {
                 const gateEntry: ExpeditionLogEntry = {
                   room: roomCounter,
@@ -481,7 +585,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 gateRequired = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 3;
                 gateRarity = 'uncommon';
               }
-              const collected = countItemsOfRarity(currentInventory, tier, gateRarity);
+              const collected = countItemsOfRarity(currentInventory, state.party.characters, tier, gateRarity);
               if (collected < gateRequired) {
                 // Gate locked - expedition ends
                 const rarityLabel = gateRarity === 'rare' ? 'レアアイテム' : 'アンコモンアイテム';
@@ -558,59 +662,19 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             if (battleResult.outcome === 'victory') {
               totalExp += enemy.experience;
 
-              // Reward logic: normal rooms use common_reward_bag; others follow their drop rarity.
-              const rewardBagType = getRewardBagTypeForEnemy(enemy);
-              const enhancementBagType = rewardBagType === 'commonRewardBag' ? 'commonEnhancementBag' : 'enhancementBag';
-
-              // Check for reward
-              bags = refillBagIfEmpty(bags, rewardBagType);
-              const { ticket: rewardTicket, newBag: newRewardBag } = drawFromBag(bags[rewardBagType]);
-              bags = { ...bags, [rewardBagType]: newRewardBag };
-
               const { characterStats } = computePartyStats(state.party);
               const hasUnlock = characterStats.some(cs => cs.abilities.some(a => a.id === 'unlock'));
+              const rewardResult = resolveEnemyRewards(enemy, bags, currentInventory, currentGold, hasUnlock);
+              bags = rewardResult.bags;
+              currentInventory = rewardResult.inventory;
+              currentGold = rewardResult.gold;
+              totalAutoSellProfit += rewardResult.autoSellProfit;
+              rewards.push(...rewardResult.rewards);
 
-              let gotReward = rewardTicket === 1;
-              if (hasUnlock) {
-                bags = refillBagIfEmpty(bags, rewardBagType);
-                const { ticket: unlockTicket, newBag } = drawFromBag(bags[rewardBagType]);
-                bags = { ...bags, [rewardBagType]: newBag };
-                gotReward = gotReward || unlockTicket === 1;
-              }
-
-              if (gotReward) {
-                bags = refillBagIfEmpty(bags, enhancementBagType);
-                const { ticket: enhVal, newBag: newEnhBag } = drawFromBag(bags[enhancementBagType]);
-                bags = { ...bags, [enhancementBagType]: newEnhBag };
-
-                let srVal = 0;
-                if (enhVal >= 1) {
-                  bags = refillBagIfEmpty(bags, 'superRareBag');
-                  const { ticket: drawnSrVal, newBag: newSRBag } = drawFromBag(bags.superRareBag);
-                  bags = { ...bags, superRareBag: newSRBag };
-                  srVal = drawnSrVal;
-                }
-
-                const dropCandidates = getEnemyDropCandidates(enemy);
-                const selectedDropItem = dropCandidates.length > 0
-                  ? dropCandidates[Math.floor(Math.random() * dropCandidates.length)]
-                  : (enemy.dropItemId ? getItemById(enemy.dropItemId) : undefined);
-                const baseItem = selectedDropItem;
-                if (baseItem) {
-                  const newItem: Item = { ...baseItem, enhancement: enhVal, superRare: srVal };
-                  entry.reward = getItemDisplayName(newItem);
-                  entry.rewardRarity = getItemRarityById(newItem.id);
-                  entry.rewardIsSuperRare = newItem.superRare > 0;
-
-                  const result = addItemToInventory(currentInventory, newItem, currentGold);
-                  currentInventory = result.inventory;
-                  currentGold = result.gold;
-                  totalAutoSellProfit += result.autoSellProfit;
-
-                  if (!result.wasAutoSold) {
-                    rewards.push(newItem);
-                  }
-                }
+              if (rewardResult.rewardNames.length > 0) {
+                entry.reward = rewardResult.rewardNames.join(' / ');
+                entry.rewardRarity = rewardResult.highestRewardRarity;
+                entry.rewardIsSuperRare = rewardResult.hasSuperRareReward;
               }
 
               currentHp = battleResult.partyHp;
@@ -674,57 +738,19 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           if (battleResult.outcome === 'victory') {
             totalExp += enemy.experience;
 
-            const rewardBagType = getRewardBagTypeForEnemy(enemy);
-            const enhancementBagType = rewardBagType === 'commonRewardBag' ? 'commonEnhancementBag' : 'enhancementBag';
-
-            bags = refillBagIfEmpty(bags, rewardBagType);
-            const { ticket: rewardTicket, newBag: newRewardBag } = drawFromBag(bags[rewardBagType]);
-            bags = { ...bags, [rewardBagType]: newRewardBag };
-
             const { characterStats } = computePartyStats(state.party);
             const hasUnlock = characterStats.some(cs => cs.abilities.some(a => a.id === 'unlock'));
+            const rewardResult = resolveEnemyRewards(enemy, bags, currentInventory, currentGold, hasUnlock);
+            bags = rewardResult.bags;
+            currentInventory = rewardResult.inventory;
+            currentGold = rewardResult.gold;
+            totalAutoSellProfit += rewardResult.autoSellProfit;
+            rewards.push(...rewardResult.rewards);
 
-            let gotReward = rewardTicket === 1;
-            if (hasUnlock) {
-              bags = refillBagIfEmpty(bags, rewardBagType);
-              const { ticket: unlockTicket, newBag } = drawFromBag(bags[rewardBagType]);
-              bags = { ...bags, [rewardBagType]: newBag };
-              gotReward = gotReward || unlockTicket === 1;
-            }
-
-            if (gotReward) {
-              bags = refillBagIfEmpty(bags, enhancementBagType);
-              const { ticket: enhVal, newBag: newEnhBag } = drawFromBag(bags[enhancementBagType]);
-              bags = { ...bags, [enhancementBagType]: newEnhBag };
-
-              let srVal = 0;
-              if (enhVal >= 1) {
-                bags = refillBagIfEmpty(bags, 'superRareBag');
-                const { ticket: drawnSrVal, newBag: newSRBag } = drawFromBag(bags.superRareBag);
-                bags = { ...bags, superRareBag: newSRBag };
-                srVal = drawnSrVal;
-              }
-
-              const dropCandidates = getEnemyDropCandidates(enemy);
-              const selectedDropItem = dropCandidates.length > 0
-                ? dropCandidates[Math.floor(Math.random() * dropCandidates.length)]
-                : (enemy.dropItemId ? getItemById(enemy.dropItemId) : undefined);
-              const baseItem = selectedDropItem;
-              if (baseItem) {
-                const newItem: Item = { ...baseItem, enhancement: enhVal, superRare: srVal };
-                entry.reward = getItemDisplayName(newItem);
-                entry.rewardRarity = getItemRarityById(newItem.id);
-                entry.rewardIsSuperRare = newItem.superRare > 0;
-
-                const result = addItemToInventory(currentInventory, newItem, currentGold);
-                currentInventory = result.inventory;
-                currentGold = result.gold;
-                totalAutoSellProfit += result.autoSellProfit;
-
-                if (!result.wasAutoSold) {
-                  rewards.push(newItem);
-                }
-              }
+            if (rewardResult.rewardNames.length > 0) {
+              entry.reward = rewardResult.rewardNames.join(' / ');
+              entry.rewardRarity = rewardResult.highestRewardRarity;
+              entry.rewardIsSuperRare = rewardResult.hasSuperRareReward;
             }
 
             currentHp = battleResult.partyHp;
