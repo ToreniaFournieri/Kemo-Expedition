@@ -360,11 +360,11 @@ function countItemsOfRarity(
 
 // Gate requirements per floor number
 const ELITE_GATE_REQUIREMENTS: Record<number, number> = {
-  1: 6,
-  2: 18,
-  3: 36,
-  4: 60,
-  5: 90,
+  1: 3,
+  2: 9,
+  3: 18,
+  4: 30,
+  5: 45,
 };
 
 function getItemRarityById(itemId: number): 'common' | 'uncommon' | 'rare' | 'mythic' {
@@ -475,10 +475,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               let gateRequired: number;
               let gateRarity: 'uncommon' | 'rare';
               if (roomDef.type === 'battle_Boss') {
-                gateRequired = 5;
+                gateRequired = 3;
                 gateRarity = 'rare';
               } else {
-                gateRequired = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 6;
+                gateRequired = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 3;
                 gateRarity = 'uncommon';
               }
               const collected = countItemsOfRarity(currentInventory, tier, gateRarity);
