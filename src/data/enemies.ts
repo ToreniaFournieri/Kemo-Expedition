@@ -295,44 +295,44 @@ const EXPEDITION_5_BOSS: EnemyTemplate = {
 // Expedition 6: マステリドの巣穴(Mustelid Burrow)
 // ============================================================
 const EXPEDITION_6_NORMALS: EnemyTemplate[] = [
-  { name: '銅歯車の鼬兵', hpMod: 1.0, attackType: 'ranged', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.1 } },
-  { name: '蒸気狙いの鼬射手', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.0 } },
-  { name: '毒蒸気の鼬術師', hpMod: 1.0, attackType: 'magical', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.0 } },
-  { name: '換気祈の鼬巡礼', hpMod: 1.0, attackType: 'ranged', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.2 } },
-  { name: '歯車影の鼬奪掠者', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.3 } },
-  { name: '配管跳びの鼬影', hpMod: 1.0, attackType: 'magical', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.0 } },
-  { name: '銅刃の鼬剣士', hpMod: 1.0, attackType: 'ranged', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.2 } },
-  { name: '配線読の鼬賢者', hpMod: 1.0, attackType: 'magical', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.1 } },
-  { name: '双銅刃の鼬闘士', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.0 } },
-  { name: '迷宮工匠の鼬領主', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.2 } },
-  { name: '装甲配管の鼬守兵', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.2 } },
-  { name: '歯車連射の鼬狙撃手', hpMod: 1.0, attackType: 'ranged', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.1 } },
-  { name: '腐食霧の鼬呪術師', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.2 } },
-  { name: '銅迷宮の鼬族長', hpMod: 1.0, attackType: 'mixed', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.1 } },
-  { name: '配管斬りの鼬侍', hpMod: 1.0, attackType: 'magical', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.0 } },
-  { name: '蒸気走りの鼬忍', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.2 } },
-  { name: '毒歯の鼬盗賊', hpMod: 1.0, attackType: 'magical', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.1 } },
-  { name: '炉心配線の鼬司書', hpMod: 1.0, attackType: 'mixed', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.2 } },
-  { name: '連銅刃の鼬闘将', hpMod: 1.0, attackType: 'magical', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.1 } },
-  { name: '浄化煙の鼬巡礼', hpMod: 1.0, attackType: 'mixed', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.1 } },
-  { name: '重装配管の鼬重兵', hpMod: 1.0, attackType: 'magical', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.0 } },
-  { name: '精密照準の鼬射手長', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.2 } },
-  { name: '触媒核の鼬大術師', hpMod: 1.0, attackType: 'mixed', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.1 } },
-  { name: '銅迷宮を統べる鼬公', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.2 } },
-  { name: '合金居合の鼬剣豪', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.2 } },
-  { name: '高速配管の鼬影将', hpMod: 1.0, attackType: 'magical', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.0 } },
-  { name: '腐蝕刃の鼬暗殺者', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.2 } },
-  { name: '深層迷宮の鼬賢老', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.2 } },
-  { name: '双合金刃の鼬剣鬼', hpMod: 1.0, attackType: 'ranged', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.1 } },
-  { name: '毒気浄化の鼬祈り手', hpMod: 1.0, attackType: 'mixed', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.1 } },
+  { name: '銅歯車の鼬兵', hpMod: 1.0, attackType: 'ranged', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '蒸気狙いの鼬射手', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '毒蒸気の鼬術師', hpMod: 1.0, attackType: 'magical', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '換気祈の鼬巡礼', hpMod: 1.0, attackType: 'ranged', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '歯車影の鼬奪掠者', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '配管跳びの鼬影', hpMod: 1.0, attackType: 'magical', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '銅刃の鼬剣士', hpMod: 1.0, attackType: 'ranged', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '配線読の鼬賢者', hpMod: 1.0, attackType: 'magical', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '双銅刃の鼬闘士', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '迷宮工匠の鼬領主', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '装甲配管の鼬守兵', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '歯車連射の鼬狙撃手', hpMod: 1.0, attackType: 'ranged', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '腐食霧の鼬呪術師', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '銅迷宮の鼬族長', hpMod: 1.0, attackType: 'mixed', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '配管斬りの鼬侍', hpMod: 1.0, attackType: 'magical', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '蒸気走りの鼬忍', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '毒歯の鼬盗賊', hpMod: 1.0, attackType: 'magical', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '炉心配線の鼬司書', hpMod: 1.0, attackType: 'mixed', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '連銅刃の鼬闘将', hpMod: 1.0, attackType: 'magical', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '浄化煙の鼬巡礼', hpMod: 1.0, attackType: 'mixed', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '重装配管の鼬重兵', hpMod: 1.0, attackType: 'magical', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '精密照準の鼬射手長', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '触媒核の鼬大術師', hpMod: 1.0, attackType: 'mixed', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '銅迷宮を統べる鼬公', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '合金居合の鼬剣豪', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '高速配管の鼬影将', hpMod: 1.0, attackType: 'magical', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '腐蝕刃の鼬暗殺者', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '深層迷宮の鼬賢老', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '双合金刃の鼬剣鬼', hpMod: 1.0, attackType: 'ranged', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '毒気浄化の鼬祈り手', hpMod: 1.0, attackType: 'mixed', attackMod: 1.0, defenseMod: 1.0 },
 ];
 
 const EXPEDITION_6_ELITES: EnemyTemplate[] = [
-  { name: '通風路破りの鼬奪掠将', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.0 } },
-  { name: '銅壁の鼬守将', hpMod: 1.0, attackType: 'magical', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.0 } },
-  { name: '蒸気狙撃の鼬狙撃長', hpMod: 1.0, attackType: 'mixed', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.0 } },
-  { name: '双合金刃の鼬闘将長', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.0 } },
-  { name: '触媒結界の鼬大術師長', hpMod: 1.0, attackType: 'mixed', attackMod: 1.0, defenseMod: 1.0, element: 'thunder', resistances: { thunder: 0.0 } },
+  { name: '通風路破りの鼬奪掠将', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '銅壁の鼬守将', hpMod: 1.0, attackType: 'magical', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '蒸気狙撃の鼬狙撃長', hpMod: 1.0, attackType: 'mixed', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '双合金刃の鼬闘将長', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0 },
+  { name: '触媒結界の鼬大術師長', hpMod: 1.0, attackType: 'mixed', attackMod: 1.0, defenseMod: 1.0 },
 ];
 
 const EXPEDITION_6_BOSS: EnemyTemplate = {
@@ -341,8 +341,6 @@ const EXPEDITION_6_BOSS: EnemyTemplate = {
   attackType: 'magical',
   attackMod: 1.0,
   defenseMod: 1.0,
-  element: 'thunder',
-  resistances: { thunder: 0.0 },
 };
 
 // ============================================================
@@ -351,7 +349,7 @@ const EXPEDITION_6_BOSS: EnemyTemplate = {
 const EXPEDITION_7_NORMALS: EnemyTemplate[] = [
   { name: '風護りの兎兵', hpMod: 1.0, attackType: 'magical', attackMod: 1.0, defenseMod: 1.0 },
   { name: '雲狙いの兎射手', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0 },
-  { name: '浮雲の兎術師', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0, element: 'fire' },
+  { name: '浮雲の兎術師', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0 },
   { name: '天空祈の兎巡礼', hpMod: 1.0, attackType: 'magical', attackMod: 1.0, defenseMod: 1.0 },
   { name: '風影の兎奪掠者', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0 },
   { name: '気流跳びの兎影', hpMod: 1.0, attackType: 'magical', attackMod: 1.0, defenseMod: 1.0 },
@@ -385,7 +383,7 @@ const EXPEDITION_7_ELITES: EnemyTemplate[] = [
   { name: '天門破りの兎奪掠将', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0 },
   { name: '風壁の兎守将', hpMod: 1.0, attackType: 'mixed', attackMod: 1.0, defenseMod: 1.0 },
   { name: '旋風狙撃の兎狙撃長', hpMod: 1.0, attackType: 'magical', attackMod: 1.0, defenseMod: 1.0 },
-  { name: '双天刃の兎闘将長', hpMod: 1.0, attackType: 'mixed', attackMod: 1.0, defenseMod: 1.0, element: 'fire' },
+  { name: '双天刃の兎闘将長', hpMod: 1.0, attackType: 'mixed', attackMod: 1.0, defenseMod: 1.0 },
   { name: '天輝結界の兎大術師長', hpMod: 1.0, attackType: 'mixed', attackMod: 1.0, defenseMod: 1.0 },
 ];
 
@@ -447,8 +445,6 @@ const EXPEDITION_8_BOSS: EnemyTemplate = {
   attackType: 'magical',
   attackMod: 1.0,
   defenseMod: 1.0,
-  element: 'thunder',
-  resistances: { thunder: 0.0 },
 };
 
 // ============================================================
