@@ -1783,8 +1783,8 @@ function SettingTab({
       })
     : [];
 
-  const formatEnemyAttackLine = (label: string, attack: number, amplifier: number) =>
-    `${label}: ${attack} (x${amplifier.toFixed(2)})`;
+  const formatEnemyAttackLine = (label: string, attack: number, noA: number, amplifier: number) =>
+    `${label}: ${attack} x ${noA}回(x${amplifier.toFixed(2)})`;
 
   const formatEnemyDefenseLine = (label: string, defense: number, percent: number) =>
     `${label}: ${defense} (${percent.toFixed(0)}%)`;
@@ -1796,7 +1796,11 @@ function SettingTab({
     ice: '氷',
   };
 
-  const ENEMY_SKILL_PLACEHOLDER = '（将来実装予定）';
+  const ENEMY_ABILITY_LABELS: Record<string, string> = {
+    counter: 'カウンター:CLOSEフェーズで反撃',
+    re_attack: '連撃:攻撃時に1回追加攻撃',
+    null_counter: '無効化:カウンター攻撃を無効化',
+  };
 
   const ENEMY_CLASS_LABELS: Record<string, string> = {
     fighter: '戦士',
@@ -2046,21 +2050,21 @@ function SettingTab({
                         <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                           <div>HP: {displayEnemy.hp}</div>
                           <div>経験値: {displayEnemy.experience}</div>
-                          <div>{formatEnemyAttackLine('遠攻', displayEnemy.rangedAttack, displayEnemy.rangedAttackAmplifier)}</div>
+                          <div>{formatEnemyAttackLine('遠攻', displayEnemy.rangedAttack, displayEnemy.rangedNoA, displayEnemy.rangedAttackAmplifier)}</div>
                           <div>
                             属性: {ENEMY_ELEMENT_LABELS[displayEnemy.elementalOffense] ?? '無'}
                             ({displayEnemy.elementalOffense === 'none' ? 'x1.0' : 'x1.2'})
                           </div>
-                          <div>{formatEnemyAttackLine('魔攻', displayEnemy.magicalAttack, displayEnemy.magicalAttackAmplifier)}</div>
+                          <div>{formatEnemyAttackLine('魔攻', displayEnemy.magicalAttack, displayEnemy.magicalNoA, displayEnemy.magicalAttackAmplifier)}</div>
                           <div>{formatEnemyDefenseLine('魔防', displayEnemy.magicalDefense, magicalDefensePercent)}</div>
-                          <div>{formatEnemyAttackLine('近攻', displayEnemy.meleeAttack, displayEnemy.meleeAttackAmplifier)}</div>
+                          <div>{formatEnemyAttackLine('近攻', displayEnemy.meleeAttack, displayEnemy.meleeNoA, displayEnemy.meleeAttackAmplifier)}</div>
                           <div>{formatEnemyDefenseLine('物防', displayEnemy.physicalDefense, physicalDefensePercent)}</div>
                           <div>
                             命中率: 100% (減衰: x{(0.90 + displayEnemy.accuracyBonus).toFixed(2)})
                           </div>
                           <div>回避: {Math.round(displayEnemy.evasionBonus * 1000)}</div>
                         </div>
-                        <div>スキル: {ENEMY_SKILL_PLACEHOLDER}</div>
+                        <div>スキル: {displayEnemy.abilities.length > 0 ? displayEnemy.abilities.map(a => ENEMY_ABILITY_LABELS[a] ?? a).join('、 ') : 'なし'}</div>
                         <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id)}${item.name}`).join(' / ')}</div>
                       </div>
                     )}
