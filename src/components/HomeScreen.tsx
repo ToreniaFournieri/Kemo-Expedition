@@ -24,26 +24,75 @@ interface HomeScreenProps {
     resetCommonBags: () => void;
     resetUniqueBags: () => void;
     resetSuperRareBag: () => void;
-    addNotification: (message: string, style?: NotificationStyle, category?: NotificationCategory, isPositive?: boolean) => void;
+    addNotification: (
+      message: string,
+      style?: NotificationStyle,
+      category?: NotificationCategory,
+      isPositive?: boolean,
+      options?: { rarity?: ItemRarity; isSuperRareItem?: boolean }
+    ) => void;
     addStatNotifications: (changes: Array<{ message: string; isPositive: boolean }>) => void;
   };
 }
 
 type Tab = 'party' | 'expedition' | 'inventory' | 'shop' | 'setting';
 
-const RARITY_SHORT_LABELS: Record<'common' | 'uncommon' | 'rare' | 'mythic', string> = {
+type ItemRarity = 'common' | 'uncommon' | 'rare' | 'mythic';
+type RarityFilter = 'all' | ItemRarity;
+
+const RARITY_SHORT_LABELS: Record<ItemRarity, string> = {
   common: '[C]',
   uncommon: '[U]',
   rare: '[R]',
   mythic: '[M]',
 };
 
-function getRarityShortLabel(itemId: number): string {
+const RARITY_FILTER_LABELS: Record<RarityFilter, string> = {
+  all: '[ALL]',
+  common: '[C]',
+  uncommon: '[U]',
+  rare: '[R]',
+  mythic: '[M]',
+};
+
+const RARITY_FILTER_NOTES: Record<RarityFilter, string> = {
+  all: '全て表示',
+  common: '通常のみ',
+  uncommon: 'アンコモンのみ',
+  rare: 'レアのみ',
+  mythic: '神魔レアのみ',
+};
+
+const RARITY_FILTER_OPTIONS: RarityFilter[] = ['all', 'common', 'uncommon', 'rare', 'mythic'];
+
+function getItemRarityById(itemId: number): ItemRarity {
   const rarityCode = itemId % 1000;
-  if (rarityCode >= 400) return RARITY_SHORT_LABELS.mythic;
-  if (rarityCode >= 300) return RARITY_SHORT_LABELS.rare;
-  if (rarityCode >= 200) return RARITY_SHORT_LABELS.uncommon;
-  return RARITY_SHORT_LABELS.common;
+  if (rarityCode >= 400) return 'mythic';
+  if (rarityCode >= 300) return 'rare';
+  if (rarityCode >= 200) return 'uncommon';
+  return 'common';
+}
+
+function getRarityShortLabel(itemId: number): string {
+  return RARITY_SHORT_LABELS[getItemRarityById(itemId)];
+}
+
+function matchesRarityFilter(itemId: number, filter: RarityFilter): boolean {
+  if (filter === 'all') return true;
+  return getItemRarityById(itemId) === filter;
+}
+
+function getRarityTextClass(rarity: ItemRarity, isSuperRare: boolean): string {
+  if (isSuperRare) return 'text-orange-700 font-bold';
+  if (rarity === 'rare') return 'text-blue-600';
+  if (rarity === 'mythic') return 'text-orange-700';
+  return 'text-black';
+}
+
+function getRewardTextClassFromLabel(rewardLabel: string): string {
+  if (rewardLabel.startsWith('[M]')) return 'text-orange-700';
+  if (rewardLabel.startsWith('[R]')) return 'text-blue-600';
+  return 'text-black';
 }
 
 // Helper to format item stats
@@ -274,9 +323,14 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       for (const item of state.lastExpeditionLog.rewards) {
         const isSuperRare = item.superRare > 0;
         const itemName = getItemDisplayName(item);
+        const rarity = getItemRarityById(item.id);
+        const rarityTag = getRarityShortLabel(item.id);
         actions.addNotification(
-          `${itemName} を入手!`,
-          isSuperRare ? 'rare' : 'normal'
+          `${rarityTag} ${itemName} を入手!`,
+          rarity === 'rare' || rarity === 'mythic' || isSuperRare ? 'rare' : 'normal',
+          'item',
+          undefined,
+          { rarity, isSuperRareItem: isSuperRare }
         );
       }
     }
@@ -425,6 +479,7 @@ function PartyTab({
 }) {
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
   const [equipCategory, setEquipCategory] = useState('armor');
+  const [partyRarityFilter, setPartyRarityFilter] = useState<RarityFilter>('all');
 
   // Calculate current stats for notification: HP is party-wide, others are per selected character
   const selectedStats = characterStats[selectedCharacter];
@@ -1048,9 +1103,13 @@ function PartyTab({
           }
         };
 
+        const filteredDisplayItems = displayItems.filter(displayItem =>
+          matchesRarityFilter(displayItem.item.id, partyRarityFilter)
+        );
+
         return (
           <div className={`mt-4 border rounded-lg p-4 ${selectingSlot !== null ? 'border-sub bg-blue-50' : 'border-gray-200 bg-gray-50'}`}>
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex justify-between items-start mb-2">
               <span className="text-sm font-medium">
                 {selectingSlot !== null
                   ? `スロット ${selectingSlot + 1} に装備`
@@ -1058,24 +1117,43 @@ function PartyTab({
                     ? 'タップで装備/解除'
                     : 'スロットを選択してください'}
               </span>
-              {selectingSlot !== null && (
-                <div className="flex gap-2">
-                  {char.equipment[selectingSlot] && (
+              <div className="flex flex-col items-end gap-1">
+                {selectingSlot !== null && (
+                  <div className="flex gap-2">
+                    {char.equipment[selectingSlot] && (
+                      <button
+                        onClick={() => { onEquipItem(char.id, selectingSlot, null); setSelectingSlot(null); }}
+                        className="text-xs text-accent px-2 py-1 border border-orange-300 rounded bg-white"
+                      >
+                        外す
+                      </button>
+                    )}
                     <button
-                      onClick={() => { onEquipItem(char.id, selectingSlot, null); setSelectingSlot(null); }}
-                      className="text-xs text-accent px-2 py-1 border border-orange-300 rounded bg-white"
+                      onClick={() => setSelectingSlot(null)}
+                      className="text-xs text-gray-500 px-2 py-1 border border-gray-300 rounded bg-white"
                     >
-                      外す
+                      解除
                     </button>
-                  )}
-                  <button
-                    onClick={() => setSelectingSlot(null)}
-                    className="text-xs text-gray-500 px-2 py-1 border border-gray-300 rounded bg-white"
-                  >
-                    解除
-                  </button>
+                  </div>
+                )}
+                <div className="flex items-center gap-1">
+                  {RARITY_FILTER_OPTIONS.map(filter => (
+                    <button
+                      key={filter}
+                      onClick={() => setPartyRarityFilter(filter)}
+                      className={`text-xs px-1.5 py-0.5 border rounded ${
+                        partyRarityFilter === filter
+                          ? 'bg-sub text-white border-sub'
+                          : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
+                      }`}
+                      title={RARITY_FILTER_NOTES[filter]}
+                    >
+                      {RARITY_FILTER_LABELS[filter]}
+                    </button>
+                  ))}
+                  <span className="text-xs text-gray-500">:{RARITY_FILTER_NOTES[partyRarityFilter]}</span>
                 </div>
-              )}
+              </div>
             </div>
             {/* Category group tabs */}
             <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
@@ -1103,7 +1181,7 @@ function PartyTab({
               ))}
             </div>
             <div className="space-y-1 min-h-[320px] max-h-96 overflow-y-auto">
-              {displayItems.map((displayItem) => (
+              {filteredDisplayItems.map((displayItem) => (
                 <button
                   key={displayItem.key}
                   onClick={() => handleItemTap(displayItem)}
@@ -1126,7 +1204,7 @@ function PartyTab({
                   </div>
                 </button>
               ))}
-              {displayItems.length === 0 && (
+              {filteredDisplayItems.length === 0 && (
                 <div className="text-gray-400 text-sm text-center py-2">このカテゴリに装備可能なアイテムがありません</div>
               )}
             </div>
@@ -1202,11 +1280,17 @@ function ExpeditionTab({
               {state.lastExpeditionLog.rewards.length > 0 && (
                 <div className="text-sm">
                   <span className="text-gray-500">獲得アイテム: </span>
-                  {state.lastExpeditionLog.rewards.map((item, i) => (
-                    <span key={i} className="text-accent font-medium">
-                      {i > 0 && ', '}{getItemDisplayName(item)}
-                    </span>
-                  ))}
+                  {state.lastExpeditionLog.rewards.map((item, i) => {
+                    const rarity = getItemRarityById(item.id);
+                    const rarityTag = getRarityShortLabel(item.id);
+                    const isSuperRare = item.superRare > 0;
+                    const rarityClass = getRarityTextClass(rarity, isSuperRare);
+                    return (
+                      <span key={i} className={`${rarityClass} font-medium`}>
+                        {i > 0 && ', '}{rarityTag} {getItemDisplayName(item)}
+                      </span>
+                    );
+                  })}
                 </div>
               )}
 
@@ -1250,7 +1334,7 @@ function ExpeditionTab({
                           敵攻撃:{entry.enemyAttackValues} | 与ダメ:{entry.damageDealt} | 被ダメ:{entry.damageTaken}
                           {entry.healAmount && entry.healAmount > 0 && <span className="text-green-600"> | 回復:+{entry.healAmount}HP</span>}
                           {entry.gateInfo && <span className="text-red-600"> | 解放条件: {entry.gateInfo}</span>}
-                          {entry.reward && <span className="text-accent"> | 獲得:{entry.reward}</span>}
+                          {entry.reward && <span className={` ${getRewardTextClassFromLabel(entry.reward)} font-medium`}> | 獲得:{entry.reward}</span>}
                         </div>
                       </button>
                       {expandedRoom === originalIndex && entry.details && (
@@ -1362,15 +1446,20 @@ function InventoryTab({
 }) {
   const [showSold, setShowSold] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('armor');
+  const [inventoryRarityFilter, setInventoryRarityFilter] = useState<RarityFilter>('all');
 
   // Separate owned and sold/notown items, filtered by category
   const allOwnedItems = Object.entries(inventory).filter(([, v]) => v.status === 'owned' && v.count > 0);
   const filteredOwnedItems = sortInventoryItems(
-    allOwnedItems.filter(([, v]) => v.item.category === selectedCategory)
+    allOwnedItems.filter(([, v]) =>
+      v.item.category === selectedCategory && matchesRarityFilter(v.item.id, inventoryRarityFilter)
+    )
   );
   const allSoldItems = Object.entries(inventory).filter(([, v]) => v.status === 'sold');
   const filteredSoldItems = sortInventoryItems(
-    allSoldItems.filter(([, v]) => v.item.category === selectedCategory)
+    allSoldItems.filter(([, v]) =>
+      v.item.category === selectedCategory && matchesRarityFilter(v.item.id, inventoryRarityFilter)
+    )
   );
   const totalCount = allOwnedItems.reduce((sum, [, v]) => sum + v.count, 0);
 
@@ -1378,6 +1467,24 @@ function InventoryTab({
     <div>
       <div className="text-sm text-gray-500 mb-2">
         所持品: {allOwnedItems.length}種類 ({totalCount}個) | {gold}G
+      </div>
+
+      <div className="flex justify-end items-center gap-1 mb-2">
+        {RARITY_FILTER_OPTIONS.map(filter => (
+          <button
+            key={filter}
+            onClick={() => setInventoryRarityFilter(filter)}
+            className={`text-xs px-1.5 py-0.5 border rounded ${
+              inventoryRarityFilter === filter
+                ? 'bg-sub text-white border-sub'
+                : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
+            }`}
+            title={RARITY_FILTER_NOTES[filter]}
+          >
+            {RARITY_FILTER_LABELS[filter]}
+          </button>
+        ))}
+        <span className="text-xs text-gray-500">:{RARITY_FILTER_NOTES[inventoryRarityFilter]}</span>
       </div>
 
       {/* Category group tabs */}

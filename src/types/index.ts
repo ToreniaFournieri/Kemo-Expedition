@@ -391,6 +391,7 @@ export const MAX_LEVEL = 29;
 // Notification Types
 export type NotificationStyle = 'normal' | 'rare';
 export type NotificationCategory = 'item' | 'stat';
+export type ItemRarity = 'common' | 'uncommon' | 'rare' | 'mythic';
 
 export interface GameNotification {
   id: string;
@@ -398,5 +399,7 @@ export interface GameNotification {
   style: NotificationStyle;
   category: NotificationCategory;
   isPositive?: boolean; // For stat notifications: true = positive change (bold), false = negative (normal)
+  rarity?: ItemRarity;
+  isSuperRareItem?: boolean;
   createdAt: number;
 }

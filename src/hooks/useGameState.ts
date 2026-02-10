@@ -381,6 +381,11 @@ function getItemRarityById(itemId: number): 'common' | 'uncommon' | 'rare' | 'my
   return 'common';
 }
 
+function getRarityTagById(itemId: number): string {
+  const rarity = getItemRarityById(itemId);
+  return rarity === 'mythic' ? '[M]' : rarity === 'rare' ? '[R]' : rarity === 'uncommon' ? '[U]' : '[C]';
+}
+
 // Legacy function for backward compatibility
 function selectEnemy(dungeonId: number, room: number, totalRooms: number) {
   const dungeon = getDungeonById(dungeonId);
@@ -435,6 +440,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             // Loot-Gate check before entering (floor 1, room 1)
             if (floor.floorNumber === 1 && roomIndex === 0 && tier > 1) {
               const prevTier = tier - 1;
+              const prevDungeonName = getDungeonById(prevTier)?.name ?? '前回の探検地';
               const gateRequired = 1;
               const collected = countItemsOfRarity(currentInventory, prevTier, 'mythic');
               if (collected < gateRequired) {
@@ -453,7 +459,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   remainingPartyHP: currentHp,
                   maxPartyHP: partyStats.hp,
                   details: [],
-                  gateInfo: `神魔レアアイテム ${collected}/${gateRequired} 収集`,
+                  gateInfo: `${prevDungeonName}の神魔レアアイテム ${collected}/${gateRequired} 収集`,
                 };
                 entries.push(gateEntry);
                 finalOutcome = 'retreat';
@@ -589,7 +595,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 const baseItem = getItemById(enemy.dropItemId);
                 if (baseItem) {
                   const newItem: Item = { ...baseItem, enhancement: enhVal, superRare: srVal };
-                  entry.reward = getItemDisplayName(newItem);
+                  entry.reward = `${getRarityTagById(newItem.id)} ${getItemDisplayName(newItem)}`;
 
                   const result = addItemToInventory(currentInventory, newItem, currentGold);
                   currentInventory = result.inventory;
@@ -700,7 +706,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               const baseItem = getItemById(enemy.dropItemId);
               if (baseItem) {
                 const newItem: Item = { ...baseItem, enhancement: enhVal, superRare: srVal };
-                entry.reward = getItemDisplayName(newItem);
+                entry.reward = `${getRarityTagById(newItem.id)} ${getItemDisplayName(newItem)}`;
 
                 const result = addItemToInventory(currentInventory, newItem, currentGold);
                 currentInventory = result.inventory;
@@ -982,7 +988,8 @@ export function useGameState() {
     message: string,
     style: NotificationStyle = 'normal',
     category: NotificationCategory = 'item',
-    isPositive?: boolean
+    isPositive?: boolean,
+    options?: { rarity?: 'common' | 'uncommon' | 'rare' | 'mythic'; isSuperRareItem?: boolean }
   ) => {
     const notification: GameNotification = {
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -990,6 +997,8 @@ export function useGameState() {
       style,
       category,
       isPositive,
+      rarity: options?.rarity,
+      isSuperRareItem: options?.isSuperRareItem,
       createdAt: Date.now(),
     };
     setNotifications(prev => {
