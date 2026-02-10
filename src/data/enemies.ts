@@ -1,4 +1,6 @@
 import { EnemyDef, EnemyType, ElementalOffense, ElementalResistance } from '../types';
+import { MYTHIC_DROP_POOLS } from './dropTables';
+import { getItemsByTierAndRarity } from './items';
 
 // ============================================================
 // EnemyTemplate type - compact format for defining enemies
@@ -12,6 +14,18 @@ type EnemyTemplate = {
   element?: ElementalOffense;
   resistances?: Partial<Record<ElementalResistance, number>>;
 };
+
+function getBossMythicDropId(tier: number, seed: number): number {
+  const categories = MYTHIC_DROP_POOLS[tier] ?? [];
+  const mythicItems = getItemsByTierAndRarity(tier, 'mythic');
+  const options = categories.flatMap(category => mythicItems.filter(item => item.category === category));
+
+  if (options.length === 0) {
+    return mythicItems[seed % mythicItems.length]?.id ?? tier * 1000 + 300 + 1;
+  }
+
+  return options[seed % options.length].id;
+}
 
 // ============================================================
 // Tier scaling constants
@@ -587,8 +601,8 @@ function createEnemyFromTemplate(
     // Rare items: tier*1000 + 300 + (1..12), 12 per tier
     dropItemId = tier * 1000 + 300 + (id % 12) + 1;
   } else {
-    // Boss: rare items
-    dropItemId = tier * 1000 + 300 + (id % 12) + 1;
+    // Boss: mythic items (per boss drop tables)
+    dropItemId = getBossMythicDropId(tier, id);
   }
 
   return {
