@@ -28,8 +28,20 @@ export function createCommonEnhancementBag(): RandomBag {
   return { tickets: shuffleArray(tickets) };
 }
 
-// Unique reward bag: 99 no item, 1 win (1% chance)
-export function createRewardBag(): RandomBag {
+// Uncommon reward bag: 99 no item, 1 win (1% chance)
+export function createUncommonRewardBag(): RandomBag {
+  const tickets = [1, ...Array(99).fill(0)];
+  return { tickets: shuffleArray(tickets) };
+}
+
+// Rare reward bag: 99 no item, 1 win (1% chance)
+export function createRareRewardBag(): RandomBag {
+  const tickets = [1, ...Array(99).fill(0)];
+  return { tickets: shuffleArray(tickets) };
+}
+
+// Mythic reward bag: 99 no item, 1 win (1% chance)
+export function createMythicRewardBag(): RandomBag {
   const tickets = [1, ...Array(99).fill(0)];
   return { tickets: shuffleArray(tickets) };
 }
@@ -81,7 +93,9 @@ export function initializeBags(): GameBags {
   return {
     commonRewardBag: createCommonRewardBag(),
     commonEnhancementBag: createCommonEnhancementBag(),
-    rewardBag: createRewardBag(),
+    uncommonRewardBag: createUncommonRewardBag(),
+    rareRewardBag: createRareRewardBag(),
+    mythicRewardBag: createMythicRewardBag(),
     enhancementBag: createEnhancementBag(),
     superRareBag: createSuperRareBag(),
     physicalThreatBag: createPhysicalThreatBag(),
@@ -103,7 +117,9 @@ export function drawFromBag(bag: RandomBag): { ticket: number; newBag: RandomBag
 export type BagType =
   | 'commonRewardBag'
   | 'commonEnhancementBag'
-  | 'rewardBag'
+  | 'uncommonRewardBag'
+  | 'rareRewardBag'
+  | 'mythicRewardBag'
   | 'enhancementBag'
   | 'superRareBag'
   | 'physicalThreatBag'
@@ -119,8 +135,12 @@ export function refillBagIfEmpty(
         return { ...bags, commonRewardBag: createCommonRewardBag() };
       case 'commonEnhancementBag':
         return { ...bags, commonEnhancementBag: createCommonEnhancementBag() };
-      case 'rewardBag':
-        return { ...bags, rewardBag: createRewardBag() };
+      case 'uncommonRewardBag':
+        return { ...bags, uncommonRewardBag: createUncommonRewardBag() };
+      case 'rareRewardBag':
+        return { ...bags, rareRewardBag: createRareRewardBag() };
+      case 'mythicRewardBag':
+        return { ...bags, mythicRewardBag: createMythicRewardBag() };
       case 'enhancementBag':
         return { ...bags, enhancementBag: createEnhancementBag() };
       case 'superRareBag':

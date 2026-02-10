@@ -40,9 +40,27 @@ function NotificationItem({ notification, onDismiss, onDismissAll }: Notificatio
     };
   }, [notification.id, onDismiss]);
 
-  const isRare = notification.style === 'rare';
-  // Use bold for positive stat changes, normal weight for negative
-  const fontWeight = notification.isPositive === true ? 'font-bold' : notification.isPositive === false ? 'font-normal' : 'font-medium';
+  const isItem = notification.category === 'item';
+  const itemTextColor = notification.isSuperRareItem
+    ? 'text-orange-700'
+    : notification.rarity === 'rare'
+      ? 'text-blue-600'
+      : notification.rarity === 'mythic'
+        ? 'text-orange-700'
+        : notification.rarity === 'common' || notification.rarity === 'uncommon'
+          ? 'text-black'
+          : 'text-black';
+
+  // For drop notifications: Super Rare overrides to bold dark orange.
+  const fontWeight = isItem
+    ? (notification.isSuperRareItem ? 'font-bold' : 'font-medium')
+    : notification.isPositive === true
+      ? 'font-bold'
+      : notification.isPositive === false
+        ? 'font-normal'
+        : 'font-medium';
+
+  const nonItemColor = notification.style === 'rare' ? 'text-orange-600' : 'text-blue-600';
 
   return (
     <button
@@ -51,10 +69,7 @@ function NotificationItem({ notification, onDismiss, onDismissAll }: Notificatio
         px-3 py-1.5 rounded-lg shadow-md cursor-pointer
         text-xs ${fontWeight} w-fit
         transition-opacity duration-300
-        ${isRare
-          ? 'bg-white/95 text-orange-600'
-          : 'bg-white/95 text-blue-600'
-        }
+        bg-white/80 ${isItem ? itemTextColor : nonItemColor}
       `}
     >
       {notification.message}

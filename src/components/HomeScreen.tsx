@@ -24,43 +24,146 @@ interface HomeScreenProps {
     resetCommonBags: () => void;
     resetUniqueBags: () => void;
     resetSuperRareBag: () => void;
-    addNotification: (message: string, style?: NotificationStyle, category?: NotificationCategory, isPositive?: boolean) => void;
+    addNotification: (
+      message: string,
+      style?: NotificationStyle,
+      category?: NotificationCategory,
+      isPositive?: boolean,
+      options?: { rarity?: ItemRarity; isSuperRareItem?: boolean }
+    ) => void;
     addStatNotifications: (changes: Array<{ message: string; isPositive: boolean }>) => void;
   };
 }
 
 type Tab = 'party' | 'expedition' | 'inventory' | 'shop' | 'setting';
 
+type ItemRarity = 'common' | 'uncommon' | 'rare' | 'mythic';
+type RarityFilter = 'all' | ItemRarity;
+
+const RARITY_SHORT_LABELS: Record<ItemRarity, string> = {
+  common: '[C]',
+  uncommon: '[U]',
+  rare: '[R]',
+  mythic: '[M]',
+};
+
+const RARITY_FILTER_LABELS: Record<RarityFilter, string> = {
+  all: '[ALL]',
+  common: '[C]',
+  uncommon: '[U]',
+  rare: '[R]',
+  mythic: '[M]',
+};
+
+const RARITY_FILTER_NOTES: Record<RarityFilter, string> = {
+  all: '全て表示',
+  common: '通常のみ',
+  uncommon: 'アンコモンのみ',
+  rare: 'レアのみ',
+  mythic: '神魔レアのみ',
+};
+
+const RARITY_FILTER_OPTIONS: RarityFilter[] = ['all', 'common', 'uncommon', 'rare', 'mythic'];
+
+function getItemRarityById(itemId: number): ItemRarity {
+  const rarityCode = itemId % 1000;
+  if (rarityCode >= 400) return 'mythic';
+  if (rarityCode >= 300) return 'rare';
+  if (rarityCode >= 200) return 'uncommon';
+  return 'common';
+}
+
+function getRarityShortLabel(itemId: number): string {
+  return RARITY_SHORT_LABELS[getItemRarityById(itemId)];
+}
+
+function matchesRarityFilter(itemId: number, filter: RarityFilter): boolean {
+  if (filter === 'all') return true;
+  return getItemRarityById(itemId) === filter;
+}
+
+function getRarityTextClass(rarity: ItemRarity, isSuperRare: boolean): string {
+  if (isSuperRare) return 'text-orange-700 font-bold';
+  if (rarity === 'rare') return 'text-blue-600';
+  if (rarity === 'mythic') return 'text-orange-700';
+  return 'text-black';
+}
+
+function getRewardTextClassFromLabel(rewardLabel: string): string {
+  if (rewardLabel.startsWith('[M]')) return 'text-orange-700';
+  if (rewardLabel.startsWith('[R]')) return 'text-blue-600';
+  return 'text-black';
+}
+
 // Helper to format item stats
 function getItemStats(item: Item): string {
   const multiplier = (ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1) *
     (SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1);
+  const baseMultiplier = item.baseMultiplier ?? 1;
+  const multiplierPercent = Math.round((baseMultiplier - 1) * 100);
+  const formatSigned = (value: number, suffix: string = ''): string =>
+    `${value >= 0 ? '+' : ''}${value}${suffix}`;
+  const formatBracket = (label: string, value: number, suffix: string = ''): string =>
+    `[${label}${formatSigned(value, suffix)}]`;
 
   const stats: string[] = [];
-  if (item.meleeAttack) stats.push(`近攻+${Math.floor(item.meleeAttack * multiplier)}`);
-  if (item.meleeNoA) {
-    // Positive NoA scales with enhancement; negative (katana penalty) stays fixed
-    const noaVal = item.meleeNoA > 0 ? Math.ceil(item.meleeNoA * multiplier) : item.meleeNoA;
-    stats.push(`近回数${noaVal > 0 ? '+' : ''}${noaVal}`);
+  if (item.meleeAttack) {
+    stats.push(`近攻+${Math.floor(item.meleeAttack * multiplier)}`);
+    if (item.category === 'sword' && multiplierPercent) stats.push(formatBracket('近攻撃', multiplierPercent, '%'));
   }
-  if (item.rangedAttack) stats.push(`遠攻+${Math.floor(item.rangedAttack * multiplier)}`);
-  if (item.rangedNoA) {
-    const noaVal = item.rangedNoA > 0 ? Math.ceil(item.rangedNoA * multiplier) : item.rangedNoA;
-    stats.push(`遠回数+${noaVal}`);
+  if (item.rangedAttack) {
+    stats.push(`遠攻+${Math.floor(item.rangedAttack * multiplier)}`);
+    if (item.category === 'arrow' && multiplierPercent) stats.push(formatBracket('遠攻撃', multiplierPercent, '%'));
   }
-  if (item.magicalAttack) stats.push(`魔攻+${Math.floor(item.magicalAttack * multiplier)}`);
-  if (item.magicalNoA) {
-    const noaVal = item.magicalNoA > 0 ? Math.ceil(item.magicalNoA * multiplier) : item.magicalNoA;
-    stats.push(`魔回数+${noaVal}`);
+  if (item.magicalAttack) {
+    stats.push(`魔攻+${Math.floor(item.magicalAttack * multiplier)}`);
+    if (item.category === 'wand' && multiplierPercent) stats.push(formatBracket('魔攻撃', multiplierPercent, '%'));
+  }
+  if (item.meleeNoA || item.meleeNoABonus) {
+    const baseNoA = item.meleeNoA ?? 0;
+    if (baseNoA !== 0) stats.push(`近回数${formatSigned(baseNoA)}`);
+    if (item.meleeNoABonus) stats.push(formatBracket('近回数', item.meleeNoABonus));
+  }
+  if (item.rangedNoA || item.rangedNoABonus) {
+    const baseNoA = item.rangedNoA ?? 0;
+    if (baseNoA !== 0) stats.push(`遠回数${formatSigned(baseNoA)}`);
+    if (item.rangedNoABonus) stats.push(formatBracket('遠回数', item.rangedNoABonus));
+  }
+  if (item.magicalNoA || item.magicalNoABonus) {
+    const baseNoA = item.magicalNoA ?? 0;
+    if (baseNoA !== 0) stats.push(`魔回数${formatSigned(baseNoA)}`);
+    if (item.magicalNoABonus) stats.push(formatBracket('魔回数', item.magicalNoABonus));
   }
   if (item.physicalDefense) stats.push(`物防+${Math.floor(item.physicalDefense * multiplier)}`);
   if (item.magicalDefense) stats.push(`魔防+${Math.floor(item.magicalDefense * multiplier)}`);
+  if (item.category === 'armor' && multiplierPercent) stats.push(formatBracket('物防', multiplierPercent, '%'));
+  if (item.category === 'robe' && multiplierPercent) stats.push(formatBracket('魔防', multiplierPercent, '%'));
   if (item.partyHP) stats.push(`HP+${Math.floor(item.partyHP * multiplier)}`);
+  if (item.evasionBonus) stats.push(formatBracket('回避', Math.round(item.evasionBonus * 1000)));
   if (item.elementalOffense && item.elementalOffense !== 'none') {
     const elem = { fire: '炎', ice: '氷', thunder: '雷' }[item.elementalOffense];
     stats.push(`${elem}属性`);
   }
   return stats.join(' ');
+}
+
+function getOffenseMultiplierSum(items: Item[], kind: 'melee' | 'ranged' | 'magical'): number {
+  const relevant = items.filter(item => {
+    if (kind === 'melee') return item.meleeAttack || item.meleeNoA || item.meleeNoABonus;
+    if (kind === 'ranged') return item.rangedAttack || item.rangedNoA || item.rangedNoABonus;
+    return item.magicalAttack || item.magicalNoA || item.magicalNoABonus;
+  });
+  const bonusSum = relevant.reduce((sum, item) => sum + ((item.baseMultiplier ?? 1) - 1), 0);
+  return 1 + bonusSum;
+}
+
+function getDefenseMultiplierSum(items: Item[], kind: 'physical' | 'magical'): number {
+  const relevant = items.filter(item => {
+    if (kind === 'physical') return item.physicalDefense;
+    return item.magicalDefense;
+  });
+  const bonusSum = relevant.reduce((sum, item) => sum + ((item.baseMultiplier ?? 1) - 1), 0);
+  return Math.max(0.01, 1 - bonusSum);
 }
 
 // Helper to format bonus descriptions
@@ -220,9 +323,14 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       for (const item of state.lastExpeditionLog.rewards) {
         const isSuperRare = item.superRare > 0;
         const itemName = getItemDisplayName(item);
+        const rarity = getItemRarityById(item.id);
+        const rarityTag = getRarityShortLabel(item.id);
         actions.addNotification(
-          `${itemName} を入手!`,
-          isSuperRare ? 'rare' : 'normal'
+          `${rarityTag} ${itemName} を入手!`,
+          rarity === 'rare' || rarity === 'mythic' || isSuperRare ? 'rare' : 'normal',
+          'item',
+          undefined,
+          { rarity, isSuperRareItem: isSuperRare }
         );
       }
     }
@@ -371,6 +479,7 @@ function PartyTab({
 }) {
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
   const [equipCategory, setEquipCategory] = useState('armor');
+  const [partyRarityFilter, setPartyRarityFilter] = useState<RarityFilter>('all');
 
   // Calculate current stats for notification: HP is party-wide, others are per selected character
   const selectedStats = characterStats[selectedCharacter];
@@ -729,12 +838,42 @@ function PartyTab({
                 const hasRanged = stats.rangedAttack > 0 || stats.rangedNoA > 0;
                 const hasMagical = stats.magicalAttack > 0 || stats.magicalNoA > 0;
                 const hasMelee = stats.meleeAttack > 0 || stats.meleeNoA > 0;
+                const equippedItems = char.equipment.filter((item): item is Item => item !== null);
+                const baseMultMelee = getOffenseMultiplierSum(
+                  equippedItems,
+                  'melee'
+                );
+                const baseMultRanged = getOffenseMultiplierSum(
+                  equippedItems,
+                  'ranged'
+                );
+                const baseMultMagical = getOffenseMultiplierSum(
+                  equippedItems,
+                  'magical'
+                );
+                const defenseMultPhysical = getDefenseMultiplierSum(
+                  equippedItems,
+                  'physical'
+                );
+                const defenseMultMagical = getDefenseMultiplierSum(
+                  equippedItems,
+                  'magical'
+                );
 
                 // Build offense lines
                 const offenseLines: string[] = [];
-                if (hasRanged) offenseLines.push(`遠距離攻撃:${Math.floor(stats.rangedAttack)} x ${stats.rangedNoA}回(x${longAmp.toFixed(2)})`);
-                if (hasMagical) offenseLines.push(`魔法攻撃:${Math.floor(stats.magicalAttack)} x ${stats.magicalNoA}回(x${midAmp.toFixed(2)})`);
-                if (hasMelee) offenseLines.push(`近接攻撃:${Math.floor(stats.meleeAttack)} x ${stats.meleeNoA}回(x${closeAmp.toFixed(2)})`);
+                if (hasRanged) {
+                  const amp = longAmp * baseMultRanged;
+                  offenseLines.push(`遠距離攻撃:${Math.floor(stats.rangedAttack)} x ${stats.rangedNoA}回(x${amp.toFixed(2)})`);
+                }
+                if (hasMagical) {
+                  const amp = midAmp * baseMultMagical;
+                  offenseLines.push(`魔法攻撃:${Math.floor(stats.magicalAttack)} x ${stats.magicalNoA}回(x${amp.toFixed(2)})`);
+                }
+                if (hasMelee) {
+                  const amp = closeAmp * baseMultMelee;
+                  offenseLines.push(`近接攻撃:${Math.floor(stats.meleeAttack)} x ${stats.meleeNoA}回(x${amp.toFixed(2)})`);
+                }
 
                 // Add accuracy display if character has ranged or melee NoA (physical attacks)
                 // 命中率: d.accuracy_potency x 100 % (減衰: x (0.90 + c.accuracy+v))
@@ -744,12 +883,13 @@ function PartyTab({
                   offenseLines.push(`命中率: ${Math.round(stats.accuracyPotency * 100)}% (減衰: x${baseDecay.toFixed(2)})`);
                 }
 
-                // Defense lines (always 3)
+                // Defense lines
                 const defenseLines = [
                   `属性:${elementName}(x${stats.elementalOffenseValue.toFixed(1)})`,
-                  `物防:${stats.physicalDefense}`,
-                  `魔防:${stats.magicalDefense}`,
+                  `物防:${stats.physicalDefense} (${Math.round(defenseMultPhysical * 100)}%)`,
+                  `魔防:${stats.magicalDefense} (${Math.round(defenseMultMagical * 100)}%)`,
                 ];
+                defenseLines.push(`回避:${stats.evasionBonus >= 0 ? '+' : ''}${Math.round(stats.evasionBonus * 1000)}`);
 
                 // Pad offense lines to match defense lines count
                 while (offenseLines.length < defenseLines.length) {
@@ -857,13 +997,13 @@ function PartyTab({
             {char.equipment.filter(e => e).length} / {stats.maxEquipSlots} スロット
           </span>
         </div>
-        <div className="space-y-2">
-          {(() => {
-            // Build sorted list of equipment slots
-            const slots = Array.from({ length: stats.maxEquipSlots }).map((_, i) => ({
-              slotIndex: i,
-              item: char.equipment[i],
-            }));
+      <div className="space-y-2">
+        {(() => {
+          // Build sorted list of equipment slots
+          const slots = Array.from({ length: stats.maxEquipSlots }).map((_, i) => ({
+            slotIndex: i,
+            item: char.equipment[i],
+          }));
             // Sort by category priority, then item ID, super rare, enhancement
             slots.sort((a, b) => {
               if (!a.item && !b.item) return a.slotIndex - b.slotIndex;
@@ -888,9 +1028,11 @@ function PartyTab({
                   <div className="flex justify-between items-center">
                     <span>
                       <span className="font-medium">{getItemDisplayName(item)}</span>
-                      <span className="text-xs text-gray-500"> | {getItemStats(item)}</span>
+                      <span className="text-xs text-gray-500"> |{getRarityShortLabel(item.id)} {getItemStats(item)}</span>
                     </span>
-                    <span className="text-xs text-gray-400">[{CATEGORY_NAMES[item.category]}]</span>
+                    <span className="text-xs text-gray-400">
+                      [{CATEGORY_NAMES[item.category]}]
+                    </span>
                   </div>
                 ) : (
                   <span className="text-gray-400">空きスロット</span>
@@ -961,9 +1103,13 @@ function PartyTab({
           }
         };
 
+        const filteredDisplayItems = displayItems.filter(displayItem =>
+          matchesRarityFilter(displayItem.item.id, partyRarityFilter)
+        );
+
         return (
           <div className={`mt-4 border rounded-lg p-4 ${selectingSlot !== null ? 'border-sub bg-blue-50' : 'border-gray-200 bg-gray-50'}`}>
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex justify-between items-start mb-2">
               <span className="text-sm font-medium">
                 {selectingSlot !== null
                   ? `スロット ${selectingSlot + 1} に装備`
@@ -971,24 +1117,43 @@ function PartyTab({
                     ? 'タップで装備/解除'
                     : 'スロットを選択してください'}
               </span>
-              {selectingSlot !== null && (
-                <div className="flex gap-2">
-                  {char.equipment[selectingSlot] && (
+              <div className="flex flex-col items-end gap-1">
+                {selectingSlot !== null && (
+                  <div className="flex gap-2">
+                    {char.equipment[selectingSlot] && (
+                      <button
+                        onClick={() => { onEquipItem(char.id, selectingSlot, null); setSelectingSlot(null); }}
+                        className="text-xs text-accent px-2 py-1 border border-orange-300 rounded bg-white"
+                      >
+                        外す
+                      </button>
+                    )}
                     <button
-                      onClick={() => { onEquipItem(char.id, selectingSlot, null); setSelectingSlot(null); }}
-                      className="text-xs text-accent px-2 py-1 border border-orange-300 rounded bg-white"
+                      onClick={() => setSelectingSlot(null)}
+                      className="text-xs text-gray-500 px-2 py-1 border border-gray-300 rounded bg-white"
                     >
-                      外す
+                      解除
                     </button>
-                  )}
-                  <button
-                    onClick={() => setSelectingSlot(null)}
-                    className="text-xs text-gray-500 px-2 py-1 border border-gray-300 rounded bg-white"
-                  >
-                    解除
-                  </button>
+                  </div>
+                )}
+                <div className="flex items-center gap-1">
+                  {RARITY_FILTER_OPTIONS.map(filter => (
+                    <button
+                      key={filter}
+                      onClick={() => setPartyRarityFilter(filter)}
+                      className={`text-xs px-1.5 py-0.5 border rounded ${
+                        partyRarityFilter === filter
+                          ? 'bg-sub text-white border-sub'
+                          : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
+                      }`}
+                      title={RARITY_FILTER_NOTES[filter]}
+                    >
+                      {RARITY_FILTER_LABELS[filter]}
+                    </button>
+                  ))}
+                  <span className="text-xs text-gray-500">:{RARITY_FILTER_NOTES[partyRarityFilter]}</span>
                 </div>
-              )}
+              </div>
             </div>
             {/* Category group tabs */}
             <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
@@ -1016,7 +1181,7 @@ function PartyTab({
               ))}
             </div>
             <div className="space-y-1 min-h-[320px] max-h-96 overflow-y-auto">
-              {displayItems.map((displayItem) => (
+              {filteredDisplayItems.map((displayItem) => (
                 <button
                   key={displayItem.key}
                   onClick={() => handleItemTap(displayItem)}
@@ -1034,12 +1199,12 @@ function PartyTab({
                       {displayItem.isEquipped && <span>{race.emoji}</span>}
                       <span className="font-medium">{getItemDisplayName(displayItem.item)}</span>
                       {!displayItem.isEquipped && <span className="text-xs text-gray-500"> x{displayItem.count}</span>}
-                      <span className="text-xs text-gray-400"> | {getItemStats(displayItem.item)}</span>
+                      <span className="text-xs text-gray-400"> |{getRarityShortLabel(displayItem.item.id)} {getItemStats(displayItem.item)}</span>
                     </span>
                   </div>
                 </button>
               ))}
-              {displayItems.length === 0 && (
+              {filteredDisplayItems.length === 0 && (
                 <div className="text-gray-400 text-sm text-center py-2">このカテゴリに装備可能なアイテムがありません</div>
               )}
             </div>
@@ -1115,11 +1280,17 @@ function ExpeditionTab({
               {state.lastExpeditionLog.rewards.length > 0 && (
                 <div className="text-sm">
                   <span className="text-gray-500">獲得アイテム: </span>
-                  {state.lastExpeditionLog.rewards.map((item, i) => (
-                    <span key={i} className="text-accent font-medium">
-                      {i > 0 && ', '}{getItemDisplayName(item)}
-                    </span>
-                  ))}
+                  {state.lastExpeditionLog.rewards.map((item, i) => {
+                    const rarity = getItemRarityById(item.id);
+                    const rarityTag = getRarityShortLabel(item.id);
+                    const isSuperRare = item.superRare > 0;
+                    const rarityClass = getRarityTextClass(rarity, isSuperRare);
+                    return (
+                      <span key={i} className={`${rarityClass} font-medium`}>
+                        {i > 0 && ', '}{rarityTag} {getItemDisplayName(item)}
+                      </span>
+                    );
+                  })}
                 </div>
               )}
 
@@ -1163,7 +1334,7 @@ function ExpeditionTab({
                           敵攻撃:{entry.enemyAttackValues} | 与ダメ:{entry.damageDealt} | 被ダメ:{entry.damageTaken}
                           {entry.healAmount && entry.healAmount > 0 && <span className="text-green-600"> | 回復:+{entry.healAmount}HP</span>}
                           {entry.gateInfo && <span className="text-red-600"> | 解放条件: {entry.gateInfo}</span>}
-                          {entry.reward && <span className="text-accent"> | 獲得:{entry.reward}</span>}
+                          {entry.reward && <span className={` ${getRewardTextClassFromLabel(entry.reward)} font-medium`}> | 獲得:{entry.reward}</span>}
                         </div>
                       </button>
                       {expandedRoom === originalIndex && entry.details && (
@@ -1275,15 +1446,20 @@ function InventoryTab({
 }) {
   const [showSold, setShowSold] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('armor');
+  const [inventoryRarityFilter, setInventoryRarityFilter] = useState<RarityFilter>('all');
 
   // Separate owned and sold/notown items, filtered by category
   const allOwnedItems = Object.entries(inventory).filter(([, v]) => v.status === 'owned' && v.count > 0);
   const filteredOwnedItems = sortInventoryItems(
-    allOwnedItems.filter(([, v]) => v.item.category === selectedCategory)
+    allOwnedItems.filter(([, v]) =>
+      v.item.category === selectedCategory && matchesRarityFilter(v.item.id, inventoryRarityFilter)
+    )
   );
   const allSoldItems = Object.entries(inventory).filter(([, v]) => v.status === 'sold');
   const filteredSoldItems = sortInventoryItems(
-    allSoldItems.filter(([, v]) => v.item.category === selectedCategory)
+    allSoldItems.filter(([, v]) =>
+      v.item.category === selectedCategory && matchesRarityFilter(v.item.id, inventoryRarityFilter)
+    )
   );
   const totalCount = allOwnedItems.reduce((sum, [, v]) => sum + v.count, 0);
 
@@ -1291,6 +1467,24 @@ function InventoryTab({
     <div>
       <div className="text-sm text-gray-500 mb-2">
         所持品: {allOwnedItems.length}種類 ({totalCount}個) | {gold}G
+      </div>
+
+      <div className="flex justify-end items-center gap-1 mb-2">
+        {RARITY_FILTER_OPTIONS.map(filter => (
+          <button
+            key={filter}
+            onClick={() => setInventoryRarityFilter(filter)}
+            className={`text-xs px-1.5 py-0.5 border rounded ${
+              inventoryRarityFilter === filter
+                ? 'bg-sub text-white border-sub'
+                : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
+            }`}
+            title={RARITY_FILTER_NOTES[filter]}
+          >
+            {RARITY_FILTER_LABELS[filter]}
+          </button>
+        ))}
+        <span className="text-xs text-gray-500">:{RARITY_FILTER_NOTES[inventoryRarityFilter]}</span>
       </div>
 
       {/* Category group tabs */}
@@ -1325,27 +1519,32 @@ function InventoryTab({
             const { item, count, isNew } = variant;
             const enhMult = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
             const srMult = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
-            const sellPrice = Math.floor(10 * enhMult * srMult) * count;
+            const baseMult = item.baseMultiplier ?? 1;
+            const sellPrice = Math.floor(10 * enhMult * srMult * baseMult) * count;
 
             return (
               <div
                 key={key}
-                className={`p-2 rounded bg-pane flex justify-between items-center ${isNew ? 'border-2 border-accent' : ''}`}
+                className={`px-2 py-1.5 rounded bg-pane ${isNew ? 'border-2 border-accent' : ''}`}
               >
-                <div className="flex items-center gap-2">
-                  <span className={`text-sm ${isNew ? 'font-bold' : 'font-medium'}`}>
-                    {getItemDisplayName(item)}
-                  </span>
-                  <span className="text-xs text-gray-500">x{count}</span>
-                  <span className="text-xs text-gray-400">| {getItemStats(item)}</span>
-                  {isNew && <span className="text-xs text-accent font-bold">NEW</span>}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-sm ${isNew ? 'font-bold' : 'font-medium'}`}>
+                      {getItemDisplayName(item)}
+                    </span>
+                    <span className="text-xs text-gray-500">x{count}</span>
+                    {isNew && <span className="text-xs text-accent font-bold">NEW</span>}
+                  </div>
+                  <button
+                    onClick={() => onSellStack(key)}
+                    className="text-xs text-accent px-2 py-1 border border-accent rounded flex-shrink-0"
+                  >
+                    全売却 {sellPrice}G
+                  </button>
                 </div>
-                <button
-                  onClick={() => onSellStack(key)}
-                  className="text-xs text-accent px-2 py-1 border border-accent rounded flex-shrink-0"
-                >
-                  全売却 {sellPrice}G
-                </button>
+                <div className="mt-0.5 text-xs leading-tight text-gray-400">
+                  {getRarityShortLabel(item.id)} {getItemStats(item)}
+                </div>
               </div>
             );
           })}
@@ -1367,17 +1566,19 @@ function InventoryTab({
           {showSold && (
             <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
               {filteredSoldItems.map(([key, variant]) => (
-                <div key={key} className="p-2 rounded bg-gray-100 flex justify-between items-center">
-                  <div className="flex items-center gap-2">
+                <div key={key} className="px-2 py-1.5 rounded bg-gray-100">
+                  <div className="flex items-center justify-between gap-2">
                     <span className="text-sm text-gray-500">{getItemDisplayName(variant.item)}</span>
-                    <span className="text-xs text-gray-400">| {getItemStats(variant.item)}</span>
+                    <button
+                      onClick={() => onSetVariantStatus(key, 'notown')}
+                      className="text-xs text-sub px-2 py-1 border border-sub rounded"
+                    >
+                      解除
+                    </button>
                   </div>
-                  <button
-                    onClick={() => onSetVariantStatus(key, 'notown')}
-                    className="text-xs text-sub px-2 py-1 border border-sub rounded"
-                  >
-                    解除
-                  </button>
+                  <div className="mt-0.5 text-xs leading-tight text-gray-400">
+                    {getRarityShortLabel(variant.item.id)} {getItemStats(variant.item)}
+                  </div>
                 </div>
               ))}
               {filteredSoldItems.length === 0 && (
@@ -1448,10 +1649,14 @@ function SettingTab({
   const commonTerribleRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 5).length ?? 0;
   const commonUltimateRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 6).length ?? 0;
 
-  // Unique Reward bag stats (Elite/Boss rooms: 1% chance)
+  // Unique Reward bag stats (1% chance)
   const rewardTotal = 100;
-  const rewardRemaining = bags.rewardBag.tickets.length;
-  const rewardWins = bags.rewardBag.tickets.filter(t => t === 1).length;
+  const uncommonRewardRemaining = bags.uncommonRewardBag.tickets.length;
+  const uncommonRewardWins = bags.uncommonRewardBag.tickets.filter(t => t === 1).length;
+  const rareRewardRemaining = bags.rareRewardBag.tickets.length;
+  const rareRewardWins = bags.rareRewardBag.tickets.filter(t => t === 1).length;
+  const mythicRewardRemaining = bags.mythicRewardBag.tickets.length;
+  const mythicRewardWins = bags.mythicRewardBag.tickets.filter(t => t === 1).length;
 
   // Unique Enhancement bag stats (Rarer enhancement for Elite/Boss)
   const enhancementTotal = 5490 + (ENHANCEMENT_TITLES.reduce((sum, t) => sum + (t.value === 0 ? 0 : t.tickets), 0));
@@ -1506,27 +1711,27 @@ function SettingTab({
               </div>
               <div className="flex justify-between text-sub">
                 <span>名工の残り</span>
-                <span>{commonCraftsmanRemaining}</span>
+                <span>{commonCraftsmanRemaining} / {craftsmanInitial}</span>
               </div>
               <div className="flex justify-between text-sub">
                 <span>魔性の残り</span>
-                <span>{commonDemonicRemaining}</span>
+                <span>{commonDemonicRemaining} / {demonicInitial}</span>
               </div>
               <div className="flex justify-between text-sub">
                 <span>宿った残り</span>
-                <span>{commonDwellingRemaining}</span>
+                <span>{commonDwellingRemaining} / {dwellingInitial}</span>
               </div>
               <div className="flex justify-between text-sub">
                 <span>伝説の残り</span>
-                <span>{commonLegendaryRemaining}</span>
+                <span>{commonLegendaryRemaining} / {legendaryInitial}</span>
               </div>
               <div className="flex justify-between text-sub">
                 <span>恐ろしい残り</span>
-                <span>{commonTerribleRemaining}</span>
+                <span>{commonTerribleRemaining} / {terribleInitial}</span>
               </div>
               <div className="flex justify-between text-sub">
                 <span>究極の残り</span>
-                <span>{commonUltimateRemaining}</span>
+                <span>{commonUltimateRemaining} / {ultimateInitial}</span>
               </div>
             </div>
           </div>
@@ -1543,21 +1748,50 @@ function SettingTab({
         <div className="mb-4 border-b border-gray-200 pb-4">
           <div className="text-xs text-gray-600 font-medium mb-2">固有報酬 (Unique Reward)</div>
 
-          {/* Unique Reward Bag */}
+          {/* Uncommon Reward Bag */}
           <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">固有報酬 抽選確率</div>
+            <div className="text-xs text-gray-500 mb-1">アンコモン抽選確率</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
               <div className="flex justify-between">
                 <span>報酬抽選</span>
-                <span>{rewardRemaining} / {rewardTotal}</span>
+                <span>{uncommonRewardRemaining} / {rewardTotal}</span>
               </div>
               <div className="flex justify-between text-sub">
                 <span>当たり残り</span>
-                <span>{rewardWins}</span>
+                <span>{uncommonRewardWins}</span>
               </div>
             </div>
           </div>
 
+          {/* Rare Reward Bag */}
+          <div className="mb-2">
+            <div className="text-xs text-gray-500 mb-1">レア抽選確率</div>
+            <div className="bg-white rounded p-2 text-sm space-y-1">
+              <div className="flex justify-between">
+                <span>報酬抽選</span>
+                <span>{rareRewardRemaining} / {rewardTotal}</span>
+              </div>
+              <div className="flex justify-between text-sub">
+                <span>当たり残り</span>
+                <span>{rareRewardWins}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Mythic Reward Bag */}
+          <div className="mb-2">
+            <div className="text-xs text-gray-500 mb-1">神魔レア抽選確率</div>
+            <div className="bg-white rounded p-2 text-sm space-y-1">
+              <div className="flex justify-between">
+                <span>報酬抽選</span>
+                <span>{mythicRewardRemaining} / {rewardTotal}</span>
+              </div>
+              <div className="flex justify-between text-sub">
+                <span>当たり残り</span>
+                <span>{mythicRewardWins}</span>
+              </div>
+            </div>
+          </div>
           {/* Unique Enhancement Bag */}
           <div className="mb-2">
             <div className="text-xs text-gray-500 mb-1">称号付与 抽選確率</div>

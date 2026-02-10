@@ -106,16 +106,22 @@ export interface ItemDef {
   id: number;
   category: ItemCategory;
   name: string;
+  baseMultiplier?: number;
   meleeAttack?: number;
   meleeNoA?: number;
+  meleeNoABonus?: number;
   rangedAttack?: number;
   rangedNoA?: number;
+  rangedNoABonus?: number;
   magicalAttack?: number;
   magicalNoA?: number;
+  magicalNoABonus?: number;
   partyHP?: number;
   physicalDefense?: number;
   magicalDefense?: number;
   elementalOffense?: ElementalOffense;
+  accuracyBonus?: number;
+  evasionBonus?: number;
 }
 
 export interface Item extends ItemDef {
@@ -167,6 +173,8 @@ export interface ComputedCharacterStats {
   meleeNoA: number;
   physicalDefense: number; // Individual defense for targeting
   magicalDefense: number; // Individual defense for targeting
+  physicalDefenseAmplifier: number;
+  magicalDefenseAmplifier: number;
   maxEquipSlots: number;
   abilities: Ability[];
   penetMultiplier: number;
@@ -296,7 +304,9 @@ export interface RandomBag {
 export interface GameBags {
   commonRewardBag: RandomBag;      // For normal rooms (90 no item, 10 win)
   commonEnhancementBag: RandomBag; // For normal rooms enhancement
-  rewardBag: RandomBag;            // For unique rewards (99 no item, 1 win)
+  uncommonRewardBag: RandomBag;    // For uncommon rewards (99 no item, 1 win)
+  rareRewardBag: RandomBag;        // For rare rewards (99 no item, 1 win)
+  mythicRewardBag: RandomBag;      // For mythic rewards (99 no item, 1 win)
   enhancementBag: RandomBag;       // For unique rewards enhancement
   superRareBag: RandomBag;
   physicalThreatBag: RandomBag;
@@ -381,6 +391,7 @@ export const MAX_LEVEL = 29;
 // Notification Types
 export type NotificationStyle = 'normal' | 'rare';
 export type NotificationCategory = 'item' | 'stat';
+export type ItemRarity = 'common' | 'uncommon' | 'rare' | 'mythic';
 
 export interface GameNotification {
   id: string;
@@ -388,5 +399,7 @@ export interface GameNotification {
   style: NotificationStyle;
   category: NotificationCategory;
   isPositive?: boolean; // For stat notifications: true = positive change (bold), false = negative (normal)
+  rarity?: ItemRarity;
+  isSuperRareItem?: boolean;
   createdAt: number;
 }
