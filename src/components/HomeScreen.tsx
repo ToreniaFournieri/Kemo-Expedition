@@ -48,11 +48,11 @@ const RARITY_SHORT_LABELS: Record<ItemRarity, string> = {
 };
 
 const RARITY_FILTER_LABELS: Record<RarityFilter, string> = {
-  all: '[ALL]',
-  common: '[C]',
-  uncommon: '[U]',
-  rare: '[R]',
-  mythic: '[M]',
+  all: 'ALL',
+  common: 'C',
+  uncommon: 'U',
+  rare: 'R',
+  mythic: 'M',
 };
 
 const RARITY_FILTER_NOTES: Record<RarityFilter, string> = {
