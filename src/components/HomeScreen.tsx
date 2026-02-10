@@ -48,11 +48,11 @@ const RARITY_SHORT_LABELS: Record<ItemRarity, string> = {
 };
 
 const RARITY_FILTER_LABELS: Record<RarityFilter, string> = {
-  all: '[ALL]',
-  common: '[C]',
-  uncommon: '[U]',
-  rare: '[R]',
-  mythic: '[M]',
+  all: 'ALL',
+  common: 'C',
+  uncommon: 'U',
+  rare: 'R',
+  mythic: 'M',
 };
 
 const RARITY_FILTER_NOTES: Record<RarityFilter, string> = {
@@ -89,9 +89,10 @@ function getRarityTextClass(rarity: ItemRarity, isSuperRare: boolean): string {
   return 'text-black';
 }
 
-function getRewardTextClassFromLabel(rewardLabel: string): string {
-  if (rewardLabel.startsWith('[M]')) return 'text-orange-700';
-  if (rewardLabel.startsWith('[R]')) return 'text-blue-600';
+function getRewardTextClass(rarity?: ItemRarity, isSuperRare?: boolean): string {
+  if (isSuperRare) return 'text-orange-700';
+  if (rarity === 'mythic') return 'text-orange-700';
+  if (rarity === 'rare') return 'text-blue-600';
   return 'text-black';
 }
 
@@ -324,9 +325,9 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         const isSuperRare = item.superRare > 0;
         const itemName = getItemDisplayName(item);
         const rarity = getItemRarityById(item.id);
-        const rarityTag = getRarityShortLabel(item.id);
+        const rarityTag = rarity === 'rare' ? '' : getRarityShortLabel(item.id);
         actions.addNotification(
-          `${rarityTag} ${itemName} を入手!`,
+          `${rarityTag ? `${rarityTag} ` : ''}${itemName} を入手!`,
           rarity === 'rare' || rarity === 'mythic' || isSuperRare ? 'rare' : 'normal',
           'item',
           undefined,
@@ -1109,15 +1110,15 @@ function PartyTab({
 
         return (
           <div className={`mt-4 border rounded-lg p-4 ${selectingSlot !== null ? 'border-sub bg-blue-50' : 'border-gray-200 bg-gray-50'}`}>
-            <div className="flex justify-between items-start mb-2">
-              <span className="text-sm font-medium">
-                {selectingSlot !== null
-                  ? `スロット ${selectingSlot + 1} に装備`
-                  : hasEmptySlot
-                    ? 'タップで装備/解除'
-                    : 'スロットを選択してください'}
-              </span>
-              <div className="flex flex-col items-end gap-1">
+            <div className="mb-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">
+                  {selectingSlot !== null
+                    ? `スロット ${selectingSlot + 1} に装備`
+                    : hasEmptySlot
+                      ? 'タップで装備/解除'
+                      : 'スロットを選択してください'}
+                </span>
                 {selectingSlot !== null && (
                   <div className="flex gap-2">
                     {char.equipment[selectingSlot] && (
@@ -1136,23 +1137,23 @@ function PartyTab({
                     </button>
                   </div>
                 )}
-                <div className="flex items-center gap-1">
-                  {RARITY_FILTER_OPTIONS.map(filter => (
-                    <button
-                      key={filter}
-                      onClick={() => setPartyRarityFilter(filter)}
-                      className={`text-xs px-1.5 py-0.5 border rounded ${
-                        partyRarityFilter === filter
-                          ? 'bg-sub text-white border-sub'
-                          : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
-                      }`}
-                      title={RARITY_FILTER_NOTES[filter]}
-                    >
-                      {RARITY_FILTER_LABELS[filter]}
-                    </button>
-                  ))}
-                  <span className="text-xs text-gray-500">:{RARITY_FILTER_NOTES[partyRarityFilter]}</span>
-                </div>
+              </div>
+              <div className="mt-1 flex justify-end items-center gap-1">
+                <span className="text-xs text-gray-500">{RARITY_FILTER_NOTES[partyRarityFilter]}:</span>
+                {RARITY_FILTER_OPTIONS.map(filter => (
+                  <button
+                    key={filter}
+                    onClick={() => setPartyRarityFilter(filter)}
+                    className={`text-xs px-1.5 py-0.5 border rounded ${
+                      partyRarityFilter === filter
+                        ? 'bg-sub text-white border-sub'
+                        : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
+                    }`}
+                    title={RARITY_FILTER_NOTES[filter]}
+                  >
+                    {RARITY_FILTER_LABELS[filter]}
+                  </button>
+                ))}
               </div>
             </div>
             {/* Category group tabs */}
@@ -1282,12 +1283,12 @@ function ExpeditionTab({
                   <span className="text-gray-500">獲得アイテム: </span>
                   {state.lastExpeditionLog.rewards.map((item, i) => {
                     const rarity = getItemRarityById(item.id);
-                    const rarityTag = getRarityShortLabel(item.id);
+                    const rarityTag = rarity === 'rare' ? '' : getRarityShortLabel(item.id);
                     const isSuperRare = item.superRare > 0;
                     const rarityClass = getRarityTextClass(rarity, isSuperRare);
                     return (
                       <span key={i} className={`${rarityClass} font-medium`}>
-                        {i > 0 && ', '}{rarityTag} {getItemDisplayName(item)}
+                        {i > 0 && ', '}{rarityTag ? `${rarityTag} ` : ''}{getItemDisplayName(item)}
                       </span>
                     );
                   })}
@@ -1334,7 +1335,7 @@ function ExpeditionTab({
                           敵攻撃:{entry.enemyAttackValues} | 与ダメ:{entry.damageDealt} | 被ダメ:{entry.damageTaken}
                           {entry.healAmount && entry.healAmount > 0 && <span className="text-green-600"> | 回復:+{entry.healAmount}HP</span>}
                           {entry.gateInfo && <span className="text-red-600"> | 解放条件: {entry.gateInfo}</span>}
-                          {entry.reward && <span className={` ${getRewardTextClassFromLabel(entry.reward)} font-medium`}> | 獲得:{entry.reward}</span>}
+                          {entry.reward && <span className={` ${getRewardTextClass(entry.rewardRarity, entry.rewardIsSuperRare)} ${entry.rewardIsSuperRare ? 'font-bold' : 'font-medium'}`}> | 獲得:{entry.reward}</span>}
                         </div>
                       </button>
                       {expandedRoom === originalIndex && entry.details && (
@@ -1461,12 +1462,29 @@ function InventoryTab({
       v.item.category === selectedCategory && matchesRarityFilter(v.item.id, inventoryRarityFilter)
     )
   );
-  const totalCount = allOwnedItems.reduce((sum, [, v]) => sum + v.count, 0);
 
   return (
     <div>
       <div className="text-sm text-gray-500 mb-2">
-        所持品: {allOwnedItems.length}種類 ({totalCount}個) | {gold}G
+        所持品: {filteredOwnedItems.length}種類 ({filteredOwnedItems.reduce((sum, [, v]) => sum + v.count, 0)}個) | {gold}G
+      </div>
+
+      <div className="flex justify-end items-center gap-1 mb-2">
+        <span className="text-xs text-gray-500">{RARITY_FILTER_NOTES[inventoryRarityFilter]}:</span>
+        {RARITY_FILTER_OPTIONS.map(filter => (
+          <button
+            key={filter}
+            onClick={() => setInventoryRarityFilter(filter)}
+            className={`text-xs px-1.5 py-0.5 border rounded ${
+              inventoryRarityFilter === filter
+                ? 'bg-sub text-white border-sub'
+                : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
+            }`}
+            title={RARITY_FILTER_NOTES[filter]}
+          >
+            {RARITY_FILTER_LABELS[filter]}
+          </button>
+        ))}
       </div>
 
       <div className="flex justify-end items-center gap-1 mb-2">
@@ -1514,7 +1532,7 @@ function InventoryTab({
       </div>
 
       {/* Item list */}
-      <div className="space-y-1 min-h-[280px] max-h-80 overflow-y-auto mb-4">
+      <div className="space-y-1 min-h-[364px] max-h-[26rem] overflow-y-auto mb-4">
           {filteredOwnedItems.map(([key, variant]) => {
             const { item, count, isNew } = variant;
             const enhMult = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;

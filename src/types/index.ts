@@ -344,6 +344,8 @@ export interface ExpeditionLogEntry {
   remainingPartyHP: number;
   maxPartyHP: number;
   reward?: string;
+  rewardRarity?: ItemRarity;
+  rewardIsSuperRare?: boolean;
   healAmount?: number;
   gateInfo?: string;
   details: BattleLogEntry[];

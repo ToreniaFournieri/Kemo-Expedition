@@ -383,7 +383,7 @@ function getItemRarityById(itemId: number): 'common' | 'uncommon' | 'rare' | 'my
 
 function getRarityTagById(itemId: number): string {
   const rarity = getItemRarityById(itemId);
-  return rarity === 'mythic' ? '[M]' : rarity === 'rare' ? '[R]' : rarity === 'uncommon' ? '[U]' : '[C]';
+  return rarity === 'mythic' ? '[M]' : rarity === 'uncommon' ? '[U]' : rarity === 'common' ? '[C]' : '';
 }
 
 // Legacy function for backward compatibility
@@ -595,7 +595,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 const baseItem = getItemById(enemy.dropItemId);
                 if (baseItem) {
                   const newItem: Item = { ...baseItem, enhancement: enhVal, superRare: srVal };
-                  entry.reward = `${getRarityTagById(newItem.id)} ${getItemDisplayName(newItem)}`;
+                  const rewardTag = getRarityTagById(newItem.id);
+                  entry.reward = `${rewardTag ? `${rewardTag} ` : ''}${getItemDisplayName(newItem)}`;
+                  entry.rewardRarity = getItemRarityById(newItem.id);
+                  entry.rewardIsSuperRare = newItem.superRare > 0;
 
                   const result = addItemToInventory(currentInventory, newItem, currentGold);
                   currentInventory = result.inventory;
@@ -706,7 +709,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               const baseItem = getItemById(enemy.dropItemId);
               if (baseItem) {
                 const newItem: Item = { ...baseItem, enhancement: enhVal, superRare: srVal };
-                entry.reward = `${getRarityTagById(newItem.id)} ${getItemDisplayName(newItem)}`;
+                const rewardTag = getRarityTagById(newItem.id);
+                entry.reward = `${rewardTag ? `${rewardTag} ` : ''}${getItemDisplayName(newItem)}`;
+                entry.rewardRarity = getItemRarityById(newItem.id);
+                entry.rewardIsSuperRare = newItem.superRare > 0;
 
                 const result = addItemToInventory(currentInventory, newItem, currentGold);
                 currentInventory = result.inventory;
