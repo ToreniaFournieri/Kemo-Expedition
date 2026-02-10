@@ -1328,6 +1328,18 @@ Left-aligned            Right-aligned
   - Interaction:
     - Tap Enemy name, Opens detailed enemy status (same logic as battle). Including drop items.
 
+```
+ID: 5005
+(column 1)                 (column 2)
+HP: 312                    経験値: 88
+遠攻: 0 (x1.00)            属性: 雷 (x1.2)
+魔攻: 117 (x1.00)          魔防: 8 (80%)
+近攻: 35 (x1.00)           物防: 10 (100%)
+命中率: 100%(減衰: x0.90)   回避:-2
+スキル: カウンター:CLOSEフェーズで反撃, 連撃:攻撃時に1回追加攻撃
+ドロップ候補: [C]アダマンのローブ / [C]アダマンの弓 / [C]アダマンの剣 / [U]アダマンの狩人の弓 / [U]アダマンの炎の触媒
+```
+
 **4. Game Reset**
   - Full reset option
   - Warning required before execution
