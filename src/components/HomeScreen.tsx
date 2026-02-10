@@ -1295,12 +1295,11 @@ function ExpeditionTab({
                   <span className="text-gray-500">獲得アイテム: </span>
                   {state.lastExpeditionLog.rewards.map((item, i) => {
                     const rarity = getItemRarityById(item.id);
-                    const rarityTag = rarity === 'rare' ? '' : getRarityShortLabel(item.id);
                     const isSuperRare = item.superRare > 0;
                     const rarityClass = getRarityTextClass(rarity, isSuperRare);
                     return (
                       <span key={i} className={`${rarityClass} font-medium`}>
-                        {i > 0 && ', '}{rarityTag ? `${rarityTag} ` : ''}{getItemDisplayName(item)}
+                        {i > 0 && ', '}{getItemDisplayName(item)}
                       </span>
                     );
                   })}
