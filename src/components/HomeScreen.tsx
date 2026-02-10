@@ -1652,6 +1652,7 @@ function SettingTab({
 }) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [compendiumCategory, setCompendiumCategory] = useState<string>('armor');
+  const [compendiumRarityFilter, setCompendiumRarityFilter] = useState<RarityFilter>('all');
   const [expandedCompendiumItems, setExpandedCompendiumItems] = useState<Record<number, boolean>>({});
   const [expandedExpeditions, setExpandedExpeditions] = useState<Record<number, boolean>>({});
   const [expandedEnemies, setExpandedEnemies] = useState<Record<number, boolean>>({});
@@ -1700,7 +1701,10 @@ function SettingTab({
   const superRareHits = bags.superRareBag.tickets.filter(t => t > 0).length;
 
   const compendiumItems = ITEMS
-    .filter(item => item.category === compendiumCategory)
+    .filter(item =>
+      item.category === compendiumCategory &&
+      matchesRarityFilter(item.id, compendiumRarityFilter)
+    )
     .slice()
     .sort((a, b) => b.id - a.id);
 
@@ -1831,6 +1835,25 @@ function SettingTab({
 
       <div className="bg-pane rounded-lg p-4 mb-4">
         <div className="text-sm font-medium mb-3">2. アイテム図鑑</div>
+        <div className="flex justify-end items-center gap-1 mb-3">
+          <span className="text-xs text-gray-500">
+            {compendiumRarityFilter === 'all' ? '全て表示' : `${RARITY_FILTER_NOTES[compendiumRarityFilter]}のみ`}
+          </span>
+          {RARITY_FILTER_OPTIONS.map(filter => (
+            <button
+              key={filter}
+              onClick={() => setCompendiumRarityFilter(filter)}
+              className={`text-xs px-1.5 py-0.5 border rounded ${
+                compendiumRarityFilter === filter
+                  ? 'bg-sub text-white border-sub'
+                  : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
+              }`}
+              title={RARITY_FILTER_NOTES[filter]}
+            >
+              {RARITY_FILTER_LABELS[filter]}
+            </button>
+          ))}
+        </div>
         <div className="flex gap-1 mb-3 overflow-x-auto pb-1">
           {CATEGORY_GROUPS.map(group => (
             <div key={group.id} className="flex flex-col">
