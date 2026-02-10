@@ -1305,6 +1305,8 @@ Left-aligned            Right-aligned
 - View Settings:
   - Visibility: Shows all items in the database (including undiscovered items).
   - Standardized Stats: Displays item data at base level (Enhancement = 0, SuperRare = 0).
+  - Filter button by rarelity (right-aligned): 全て表示, 通常のみ, アンコモンのみ, レアのみ, 神魔レアのみ: [ALL] [C] [U] [R] [M]
+  	- IF player selects [M],   神魔レアのみ: [ALL] [C] [U] [R] **[M]** 
 - Item category tabs: (same as Inventory tab's item list)
   - [耐久:鎧,衣,盾],[近距離攻撃:剣,刀,手],[遠距離攻撃:矢,ボ,弓],[魔法攻撃:杖,書,媒].
   - Default: 鎧 or previously selected category of each character 
@@ -1315,14 +1317,28 @@ Left-aligned            Right-aligned
 
 **3. Bestiary (敵キャラクター図鑑)**
 - A comprehensive record of all threats encountered (or to be encountered) during expeditions.
-- Expedition name: List of `x.expedition`.
-  - Default: Collapsed.
+- Expedition category tabs: 草, 古, 呪, 炎, 氷, 雷, 冥, 天
+  - Each letter represents for corresponding expedition. And tap to show the enemy list of it. 
+
+- Categorize by floor (`x.Spawn_pool`) and is reverse order of rooms (Boss first, then floor6 Normal enemies, floor 5 elite and floor 5 normal enemies…
+
 - Enemy name: List of specific enemies found within that expedition.
   - Default: Collapsed.
 - UI Behavior:
   - Interaction:
-    - Tap Expedition name, Opens list of enemies in that area.
     - Tap Enemy name, Opens detailed enemy status (same logic as battle). Including drop items.
+
+```
+(column 1)                 (column 2)
+ID: 5005                   クラス: 戦士
+HP: 312                    経験値: 88
+遠攻: 0 x 0回(x1.00)      属性: 雷 (x1.2)
+魔攻: 117 x 4回(x1.00)    魔防: 8 (80%)
+近攻: 35 x 6回(x1.00)     物防: 10 (100%)
+命中率: 100%(減衰: x0.90)  回避:-2
+スキル: カウンター:CLOSEフェーズで反撃, 連撃:攻撃時に1回追加攻撃
+ドロップ候補: [C]アダマンのローブ / [C]アダマンの弓 / [C]アダマンの剣 / [U]アダマンの狩人の弓 / [U]アダマンの炎の触媒
+```
 
 **4. Game Reset**
   - Full reset option
