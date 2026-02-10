@@ -396,11 +396,6 @@ function getItemRarityById(itemId: number): 'common' | 'uncommon' | 'rare' | 'my
   return 'common';
 }
 
-function getRarityTagById(itemId: number): string {
-  const rarity = getItemRarityById(itemId);
-  return rarity === 'mythic' ? '[M]' : rarity === 'uncommon' ? '[U]' : rarity === 'common' ? '[C]' : '';
-}
-
 // Legacy function for backward compatibility
 function selectEnemy(dungeonId: number, room: number, totalRooms: number) {
   const dungeon = getDungeonById(dungeonId);
@@ -618,8 +613,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 const baseItem = selectedDropItem;
                 if (baseItem) {
                   const newItem: Item = { ...baseItem, enhancement: enhVal, superRare: srVal };
-                  const rewardTag = getRarityTagById(newItem.id);
-                  entry.reward = `${rewardTag ? `${rewardTag} ` : ''}${getItemDisplayName(newItem)}`;
+                  entry.reward = getItemDisplayName(newItem);
                   entry.rewardRarity = getItemRarityById(newItem.id);
                   entry.rewardIsSuperRare = newItem.superRare > 0;
 
@@ -740,8 +734,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               const baseItem = selectedDropItem;
               if (baseItem) {
                 const newItem: Item = { ...baseItem, enhancement: enhVal, superRare: srVal };
-                const rewardTag = getRarityTagById(newItem.id);
-                entry.reward = `${rewardTag ? `${rewardTag} ` : ''}${getItemDisplayName(newItem)}`;
+                entry.reward = getItemDisplayName(newItem);
                 entry.rewardRarity = getItemRarityById(newItem.id);
                 entry.rewardIsSuperRare = newItem.superRare > 0;
 
