@@ -194,6 +194,8 @@ export interface Party {
   characters: Character[];
   inventory: InventoryRecord;
   gold: number;
+  selectedDungeonId: number;
+  lastExpeditionLog: ExpeditionLog | null;
 }
 
 // Computed party stats for battle
@@ -403,8 +405,6 @@ export interface GameState {
   parties: Party[];
   selectedPartyIndex: number;
   bags: GameBags;
-  selectedDungeonId: number;
-  lastExpeditionLog: ExpeditionLog | null;
   buildNumber: number;
 }
 

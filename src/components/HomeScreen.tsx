@@ -377,16 +377,16 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const [activeTab, setActiveTab] = useState<Tab>('party');
   const [selectedCharacter, setSelectedCharacter] = useState<number>(0);
   const [editingCharacter, setEditingCharacter] = useState<number | null>(null);
-  const prevLogRef = useRef<typeof state.lastExpeditionLog>(null);
 
   const currentParty = state.parties[state.selectedPartyIndex];
+  const prevLogRef = useRef<typeof currentParty.lastExpeditionLog>(null);
   const { partyStats, characterStats } = computePartyStats(currentParty);
 
   // Item drop notifications after expedition
   useEffect(() => {
-    if (state.lastExpeditionLog && state.lastExpeditionLog !== prevLogRef.current) {
+    if (currentParty.lastExpeditionLog && currentParty.lastExpeditionLog !== prevLogRef.current) {
       // Show notification for each reward (non-auto-sold items)
-      for (const item of state.lastExpeditionLog.rewards) {
+      for (const item of currentParty.lastExpeditionLog.rewards) {
         const isSuperRare = item.superRare > 0;
         const itemName = getItemDisplayName(item);
         const rarity = getItemRarityById(item.id);
@@ -399,8 +399,8 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         );
       }
     }
-    prevLogRef.current = state.lastExpeditionLog;
-  }, [state.lastExpeditionLog, actions]);
+    prevLogRef.current = currentParty.lastExpeditionLog;
+  }, [currentParty.lastExpeditionLog, actions]);
   const LEVEL_EXP = [
     0, 100, 250, 450, 700, 1000, 1400, 1900, 2500, 3200,
     4000, 5000, 6200, 7600, 9200, 11000, 13000, 15500, 18500, 22000,
