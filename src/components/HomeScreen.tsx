@@ -444,7 +444,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         const itemName = getItemDisplayName(item);
         const rarity = getItemRarityById(item.id);
         actions.addNotification(
-          `${itemName}を入手！`,
+          `${currentParty.name}:${itemName}を入手！`,
           rarity === 'rare' || rarity === 'mythic' || isSuperRare ? 'rare' : 'normal',
           'item',
           undefined,
@@ -1086,10 +1086,12 @@ function PartyTab({
                 }
 
                 // Defense lines
+                const defenseAmpPhysical = Math.max(0.01, defenseMultPhysical + stats.deityDefenseAmplifierBonus.physical);
+                const defenseAmpMagical = Math.max(0.01, defenseMultMagical + stats.deityDefenseAmplifierBonus.magical);
                 const defenseLines = [
                   `属性:${elementName}(x${stats.elementalOffenseValue.toFixed(1)})`,
-                  `物防:${stats.physicalDefense} (${Math.round(defenseMultPhysical * 100)}%)`,
-                  `魔防:${stats.magicalDefense} (${Math.round(defenseMultMagical * 100)}%)`,
+                  `物防:${stats.physicalDefense} (${Math.round(defenseAmpPhysical * 100)}%)`,
+                  `魔防:${stats.magicalDefense} (${Math.round(defenseAmpMagical * 100)}%)`,
                 ];
                 defenseLines.push(`回避:${stats.evasionBonus >= 0 ? '+' : ''}${Math.round(stats.evasionBonus * 1000)}`);
 
@@ -1488,7 +1490,6 @@ function ExpeditionTab({
             </div>
             {/* Party Expedition Header */}
             <div className="flex items-center gap-2 mb-3">
-              <span className="font-medium">出撃先:</span>
               <select
                 value={party.selectedDungeonId}
                 onChange={(e) => onSelectDungeon(partyIndex, Number(e.target.value))}
