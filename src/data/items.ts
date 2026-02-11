@@ -604,6 +604,20 @@ function getMultiplierTier(tier: number, rarity: Rarity): number | null {
   return Math.min(tier + bonus, TIER_TARGET_MULTIPLIERS.length);
 }
 
+function getRareSubtleMods(template: ItemTemplate, tier: number): ItemVariantMod[] {
+  const subtlePool = [template.variant1Mod, template.variant2Mod, template.variant3Mod].filter(
+    (mod): mod is ItemVariantMod => mod !== undefined
+  );
+
+  if (subtlePool.length <= 2) {
+    return subtlePool;
+  }
+
+  // Rare requires two subtle bonuses; rotate the omitted one by tier for deterministic diversity.
+  const omitIndex = (tier - 1) % subtlePool.length;
+  return subtlePool.filter((_, index) => index !== omitIndex).slice(0, 2);
+}
+
 function createItem(
   id: number,
   tier: number,
@@ -735,8 +749,8 @@ function createItem(
   }
 
   if (rarity === 'rare') {
-    applyVariantMod(template.variant1Mod);
-    applyVariantMod(template.variant2Mod);
+    const rareSubtleMods = getRareSubtleMods(template, tier);
+    rareSubtleMods.forEach(applyVariantMod);
   }
 
   if (rarity === 'mythic') {
@@ -744,13 +758,6 @@ function createItem(
     applyVariantMod(template.variant2Mod);
     applyVariantMod(template.variant3Mod || template.variant1Mod);
     applyVariantMod(template.mythicBonusMod);
-  }
-
-  // Apply rare/mythic modifiers (elemental for arrows/bolts/grimoires)
-  if (rarity === 'rare') {
-    if (template.category === 'arrow' || template.category === 'bolt' || template.category === 'grimoire') {
-      item.elementalOffense = 'thunder';
-    }
   }
 
   return item;
