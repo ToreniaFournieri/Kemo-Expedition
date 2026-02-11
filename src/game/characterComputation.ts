@@ -366,6 +366,11 @@ export function computeCharacterStats(
     accuracyPotency,
     accuracyBonus,
     evasionBonus,
+    deityOffenseAmplifierBonus: {
+      long: 0,
+      mid: 0,
+      close: 0,
+    },
     deityDefenseAmplifierBonus: {
       physical: 0,
       magical: 0,

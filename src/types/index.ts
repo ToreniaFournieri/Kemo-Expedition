@@ -183,6 +183,11 @@ export interface ComputedCharacterStats {
   accuracyPotency: number; // Row-based accuracy potency (d.accuracy_potency)
   accuracyBonus: number; // c.accuracy+v sum
   evasionBonus: number; // c.evasion+v sum
+  deityOffenseAmplifierBonus: {
+    long: number;
+    mid: number;
+    close: number;
+  }; // additive bonus applied to character.f.offense_amplifier
   deityDefenseAmplifierBonus: {
     physical: number;
     magical: number;

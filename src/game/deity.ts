@@ -52,7 +52,7 @@ export function getDeityEffectDescription(name: string): string {
     case 'God of Restoration':
       return '4部屋毎に減少HPの20%を回復する';
     case 'God of Attrition':
-      return '全員の[近攻+20][遠攻+20][魔攻+20]。4部屋毎に残りHPの5%を失う';
+      return '全員の与ダメージ補正+20%。4部屋毎に残りHPの5%を失う';
     case 'God of Fortification':
       return '全員の被ダメージ補正-10%（物理/魔法）';
     case 'God of Precision':
@@ -80,9 +80,11 @@ export function applyDeityCharacterModifiers(
       case 'God of Attrition':
         return {
           ...stats,
-          meleeAttack: stats.meleeAttack + 20,
-          rangedAttack: stats.rangedAttack + 20,
-          magicalAttack: stats.magicalAttack + 20,
+          deityOffenseAmplifierBonus: {
+            long: stats.deityOffenseAmplifierBonus.long + 0.2,
+            mid: stats.deityOffenseAmplifierBonus.mid + 0.2,
+            close: stats.deityOffenseAmplifierBonus.close + 0.2,
+          },
         };
       case 'God of Fortification':
         return {
