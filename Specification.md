@@ -65,7 +65,8 @@
   - level
   - experience
   - unique abulities 
-  - loot-Gate status
+  - lootGateProgress 
+  - lootGateStatus
 
 **Party structure**
   - party id
