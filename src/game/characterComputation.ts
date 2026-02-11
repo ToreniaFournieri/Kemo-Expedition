@@ -366,6 +366,11 @@ export function computeCharacterStats(
     accuracyPotency,
     accuracyBonus,
     evasionBonus,
+    deityOffenseAmplifierBonus: 0,
+    deityDefenseAmplifierBonus: {
+      physical: 0,
+      magical: 0,
+    },
   };
 }
 
@@ -394,7 +399,7 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     counter: (l) => l === 2 ? 'CLOSE/MIDフェーズで反撃' : 'CLOSEフェーズで反撃',
     re_attack: (l) => `攻撃時に${l === 2 ? '2回' : '1回'}追加攻撃`,
     iaigiri: () => `CLOSEフェーズでダメージ × 2.0、攻撃回数 ÷ 2`,
-    resonance: (l) => `全攻撃ヒット毎に魔攻撃回数×${l === 2 ? '8' : '5'}%の追加補正`,
+    resonance: (l) => `全攻撃ヒット毎に魔攻撃回数×${l >= 3 ? '11' : l === 2 ? '8' : '5'}%の追加補正`,
     command: (l) => `パーティ攻撃力 × ${l === 2 ? 1.6 : 1.3}`,
     m_barrier: (l) => `パーティへの魔法ダメージ × ${l === 2 ? '3/5' : '2/3'}`,
     null_counter: () => '反撃を無効化',

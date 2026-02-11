@@ -71,19 +71,19 @@ function calculateSingleEnemyAttackDamage(
       attack = enemy.rangedAttack;
       amplifier = enemy.rangedAttackAmplifier;
       defense = targetCharStats.physicalDefense;
-      defenseAmplifier = targetCharStats.physicalDefenseAmplifier;
+      defenseAmplifier = Math.max(0.01, targetCharStats.physicalDefenseAmplifier + targetCharStats.deityDefenseAmplifierBonus.physical);
       break;
     case 'mid':
       attack = enemy.magicalAttack;
       amplifier = enemy.magicalAttackAmplifier;
       defense = targetCharStats.magicalDefense;
-      defenseAmplifier = targetCharStats.magicalDefenseAmplifier;
+      defenseAmplifier = Math.max(0.01, targetCharStats.magicalDefenseAmplifier + targetCharStats.deityDefenseAmplifierBonus.magical);
       break;
     case 'close':
       attack = enemy.meleeAttack;
       amplifier = enemy.meleeAttackAmplifier;
       defense = targetCharStats.physicalDefense;
-      defenseAmplifier = targetCharStats.physicalDefenseAmplifier;
+      defenseAmplifier = Math.max(0.01, targetCharStats.physicalDefenseAmplifier + targetCharStats.deityDefenseAmplifierBonus.physical);
       break;
   }
 
@@ -123,6 +123,23 @@ interface CharacterAttackResult {
   damage: number;
   totalAttempts: number;
   hits: number;
+}
+
+
+function getResonanceAmplifier(resonanceLevel: number | undefined, hitNumber: number): number {
+  if (!resonanceLevel || hitNumber <= 1) {
+    return 1.0;
+  }
+
+  if (resonanceLevel >= 3) {
+    return 1.0 + (0.11 * (hitNumber - 1));
+  }
+
+  if (resonanceLevel === 2) {
+    return 1.0 + (0.08 * (hitNumber - 1));
+  }
+
+  return 1.0 + (0.05 * (hitNumber - 1));
 }
 
 // Hit detection for physical attacks (LONG and CLOSE phases)
@@ -178,46 +195,46 @@ function calculateCharacterDamage(
   const effectiveDefense = defense * (1 - charStats.penetMultiplier);
 
   // Offense amplifier: iaigiri scales with ability level on CLOSE phase
-  let offenseAmplifier = 1.0;
+  let offenseAmplifier = 1.0 + charStats.deityOffenseAmplifierBonus;
   const iaigiri = charStats.abilities.find(a => a.id === 'iaigiri');
   if (iaigiri && phase === 'close') {
     offenseAmplifier *= iaigiri.level >= 2 ? 2.5 : 2.0;
   }
 
-  // Resonance: all hits gain +5%/+8% per magical_NoA
   const resonance = charStats.abilities.find(a => a.id === 'resonance');
-  if (resonance) {
-    const perNoA = resonance.level >= 2 ? 0.08 : 0.05;
-    offenseAmplifier *= 1 + (perNoA * charStats.magicalNoA);
-  }
 
   const elementalMultiplier = getElementalMultiplier(
     charStats.elementalOffense,
     enemy.elementalResistance
   );
 
-  // Calculate per-hit damage (without NoA multiplier)
-  const perHitDamage = Math.max(1, Math.floor(
+  const basePerHitDamage = Math.max(1, Math.floor(
     (attack - effectiveDefense) * offenseAmplifier * charStats.elementalOffenseValue *
     elementalMultiplier * defenseAmplifier * (phase === 'mid' ? 1.0 : partyStats.offenseAmplifier)
   ));
 
   // For MID phase (magical), all attacks always hit (accuracy_amplifier = 1.0 fixed)
   if (phase === 'mid') {
-    return { damage: perHitDamage * noA, totalAttempts: noA, hits: noA };
+    let damage = 0;
+    for (let i = 1; i <= noA; i++) {
+      damage += Math.max(1, Math.floor(basePerHitDamage * getResonanceAmplifier(resonance?.level, i)));
+    }
+    return { damage, totalAttempts: noA, hits: noA };
   }
 
   // For LONG and CLOSE phases, roll for each hit
   const enemyEvasion = enemy.evasionBonus;
 
   let hits = 0;
+  let damage = 0;
   for (let i = 1; i <= noA; i++) {
     if (hitDetection(charStats.accuracyPotency, charStats.accuracyBonus, enemyEvasion, i)) {
       hits++;
+      damage += Math.max(1, Math.floor(basePerHitDamage * getResonanceAmplifier(resonance?.level, i)));
     }
   }
 
-  return { damage: perHitDamage * hits, totalAttempts: noA, hits };
+  return { damage, totalAttempts: noA, hits };
 }
 
 function hasFirstStrike(charStats: ComputedCharacterStats, phase: BattlePhase): boolean {
