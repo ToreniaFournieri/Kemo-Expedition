@@ -1399,23 +1399,6 @@ function ExpeditionTab({
               </button>
             </div>
 
-            {/* Show unlock conditions for all locked dungeons */}
-            {DUNGEONS.some(d => getDungeonEntryGateState(party, state.global.inventory, d).locked) && (
-              <div className="mb-3 text-xs">
-                <div className="text-gray-600 font-medium mb-1">探検地解放条件:</div>
-                <div className="space-y-1">
-                  {DUNGEONS.filter(d => getDungeonEntryGateState(party, state.global.inventory, d).locked).map(dungeon => {
-                    const gateState = getDungeonEntryGateState(party, state.global.inventory, dungeon);
-                    return (
-                      <div key={dungeon.id} className="text-orange-700">
-                        🔒 {dungeon.name}: {gateState.gateText.replace('🔒 解放条件: ', '')}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
             <div className="mt-3 text-sm text-gray-700">{getNextGoalText(party, state.global.inventory)}</div>
 
             {/* Last Expedition Log */}
