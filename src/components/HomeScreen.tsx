@@ -10,6 +10,7 @@ import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { applyEnemyEncounterScaling } from '../game/enemyScaling';
+import { DEITY_OPTIONS, getDeityEffectDescription, normalizeDeityName } from '../game/deity';
 
 interface HomeScreenProps {
   state: GameState;
@@ -18,6 +19,7 @@ interface HomeScreenProps {
     selectParty: (partyIndex: number) => void;
     selectDungeon: (partyIndex: number, dungeonId: number) => void;
     runExpedition: (partyIndex: number) => void;
+    updatePartyDeity: (partyIndex: number, deityName: string) => void;
     equipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
     updateCharacter: (characterId: number, updates: Partial<Character>) => void;
     sellStack: (variantKey: string) => void;
@@ -442,7 +444,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         const itemName = getItemDisplayName(item);
         const rarity = getItemRarityById(item.id);
         actions.addNotification(
-          `${itemName}を入手！`,
+          `${currentParty.name}:${itemName}を入手！`,
           rarity === 'rare' || rarity === 'mythic' || isSuperRare ? 'rare' : 'normal',
           'item',
           undefined,
@@ -519,6 +521,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             onEquipItem={actions.equipItem}
             onAddStatNotifications={actions.addStatNotifications}
             onSelectParty={actions.selectParty}
+            onUpdatePartyDeity={actions.updatePartyDeity}
             inventory={state.global.inventory}
           />
         )}
@@ -573,6 +576,7 @@ function PartyTab({
   onEquipItem,
   onAddStatNotifications,
   onSelectParty,
+  onUpdatePartyDeity,
   inventory,
 }: {
   parties: Party[];
@@ -588,6 +592,7 @@ function PartyTab({
   onEquipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
   onAddStatNotifications: (changes: Array<{ message: string; isPositive: boolean }>) => void;
   onSelectParty: (partyIndex: number) => void;
+  onUpdatePartyDeity: (partyIndex: number, deityName: string) => void;
   inventory: InventoryRecord;
 }) {
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
@@ -682,6 +687,7 @@ function PartyTab({
       combatTotals.magicalAtk, combatTotals.magicalNoA, onAddStatNotifications, selectedCharacter, selectedPartyIndex]);
   const [pendingEdits, setPendingEdits] = useState<Partial<Character> | null>(null);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
+  const [editingDeity, setEditingDeity] = useState(false);
   const [lastSlotTap, setLastSlotTap] = useState<{ slot: number; time: number } | null>(null);
 
   // Handle equipment slot tap with double-tap detection for removal
@@ -740,7 +746,11 @@ function PartyTab({
           return (
             <button
               key={partyIndex}
-              onClick={() => isAvailable && onSelectParty(partyIndex)}
+              onClick={() => {
+                if (!isAvailable) return;
+                onSelectParty(partyIndex);
+                setEditingDeity(false);
+              }}
               disabled={!isAvailable}
               className={`flex-1 py-2 text-sm font-medium ${
                 isSelected
@@ -756,9 +766,50 @@ function PartyTab({
         })}
       </div>
 
-      <div className="mb-3 text-sm">
-        <span className="font-medium">{party.deity.name}</span>
-        <span className="text-gray-500"> (Level: {party.deity.level}, Experience {party.deity.experience}/{party.deity.level < 29 ? PARTY_LEVEL_EXP[party.deity.level] : party.deity.experience})</span>
+      <div className="mb-3 text-sm flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <span className="font-medium">{party.deity.name}</span>
+          <span className="text-gray-500"> (Level: {party.deity.level}, Experience {party.deity.experience}/{party.deity.level < 29 ? PARTY_LEVEL_EXP[party.deity.level] : party.deity.experience})</span>
+          <div className="text-xs text-gray-600 mt-1">効果:{getDeityEffectDescription(party.deity.name)}</div>
+        </div>
+        {editingDeity ? (
+          <div className="flex items-center gap-2">
+            <select
+              value={party.deity.name}
+              onChange={(e) => onUpdatePartyDeity(selectedPartyIndex, e.target.value)}
+              className="text-xs border rounded px-2 py-1"
+            >
+              {DEITY_OPTIONS.map((deity) => {
+                const normalizedName = normalizeDeityName(deity.name);
+                const inUseByOtherParty = parties.some((partyCandidate, index) =>
+                  index !== selectedPartyIndex && normalizeDeityName(partyCandidate.deity.name) === normalizedName
+                );
+                return (
+                  <option
+                    key={deity.key}
+                    value={deity.name}
+                    disabled={inUseByOtherParty}
+                  >
+                    {deity.name}
+                  </option>
+                );
+              })}
+            </select>
+            <button
+              onClick={() => setEditingDeity(false)}
+              className="text-xs text-sub"
+            >
+              完了
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setEditingDeity(true)}
+            className="text-sm text-sub flex-shrink-0"
+          >
+            編集
+          </button>
+        )}
       </div>
 
       {/* Character selector */}
@@ -1035,10 +1086,12 @@ function PartyTab({
                 }
 
                 // Defense lines
+                const defenseAmpPhysical = Math.max(0.01, defenseMultPhysical + stats.deityDefenseAmplifierBonus.physical);
+                const defenseAmpMagical = Math.max(0.01, defenseMultMagical + stats.deityDefenseAmplifierBonus.magical);
                 const defenseLines = [
                   `属性:${elementName}(x${stats.elementalOffenseValue.toFixed(1)})`,
-                  `物防:${stats.physicalDefense} (${Math.round(defenseMultPhysical * 100)}%)`,
-                  `魔防:${stats.magicalDefense} (${Math.round(defenseMultMagical * 100)}%)`,
+                  `物防:${stats.physicalDefense} (${Math.round(defenseAmpPhysical * 100)}%)`,
+                  `魔防:${stats.magicalDefense} (${Math.round(defenseAmpMagical * 100)}%)`,
                 ];
                 defenseLines.push(`回避:${stats.evasionBonus >= 0 ? '+' : ''}${Math.round(stats.evasionBonus * 1000)}`);
 
@@ -1437,7 +1490,6 @@ function ExpeditionTab({
             </div>
             {/* Party Expedition Header */}
             <div className="flex items-center gap-2 mb-3">
-              <span className="font-medium">出撃先:</span>
               <select
                 value={party.selectedDungeonId}
                 onChange={(e) => onSelectDungeon(partyIndex, Number(e.target.value))}
