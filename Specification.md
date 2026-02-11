@@ -278,6 +278,18 @@
 
 - Characters do not have individual HP. Each character contributes total HP. 
 
+#### 2.2.3 Deity list
+
+| Name of god | effect |
+|-----|-----|
+|`God of Restoration`| At the end of every 4th room,  Heal 20% of missing HP |
+|`God of Attrition`| Increase party all attack damage by 10%. At the end of every 4th room, reduce 5% of remaining HP.|
+|`God of Fortification`| Increase party physical and magical defense by 10%.|
+|`God of Precision`| Gain c.accuracy+0.020 (stacking) and c.evasion-0.005 (stacking) until expedition ends.|
+|`God of Evasion`| Gain c.evasion+0.015 (stacking) until expedition ends.|
+|`God of Resonance`| Upgrade all a.resonance values by +1 tier. Reduce party magical defense by 5%.|
+
+
 ### 2.3 Expedition & Enemies
 - Expedition layout: The 6 `x.floor` spire. Each floor consists of 4 `x.room`s. the last room of the floor is Elite/Boss enemy battle, other rooms are Normal enemy battles.
 - There are 8 `x.expedition` destinations in total. every `x.expedition` has its own tier. (1st `x.expedition` drops tier-1 items. 2nd `x.expedition` drops tier-2 items)
@@ -1223,12 +1235,15 @@ Left-aligned            Right-aligned
 
 
 ```
+          (Right-Aligned)
+           [一括出発]
+
 PT1 HP: 2309
 出撃先: ルピニアンの断崖 (pull down menu to select) 出発
-前回の探検結果: ルピニアンの断崖 (残HP 0%) 敗北 ▼
+結果: ルピニアンの断崖 (残HP 0%) 敗北 ▼
 次の目標: ルピニアンの断崖の神魔レアアイテム 0/1 でヴァルピニアンの樹林帯 開放
 
-PT2出撃先…
+PT2 HP:…
 ```
 - Per party:
   - Currently selected dungeon with Loot-Gate conditions (ex. 2nd Elite Gate is locked: 2/6 Floor 2 Uncommons collected.)
