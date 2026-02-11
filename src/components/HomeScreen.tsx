@@ -1387,9 +1387,20 @@ function ExpeditionTab({
               </button>
             </div>
 
-            {selectedDungeonGate?.locked && (
-              <div className="text-xs text-orange-700 mb-3">
-                解放条件: {selectedDungeonGate.gateText.replace('🔒 解放条件: ', '')}
+            {/* Show unlock conditions for all locked dungeons */}
+            {DUNGEONS.some(d => getDungeonEntryGateState(state, d).locked) && (
+              <div className="mb-3 text-xs">
+                <div className="text-gray-600 font-medium mb-1">探検地解放条件:</div>
+                <div className="space-y-1">
+                  {DUNGEONS.filter(d => getDungeonEntryGateState(state, d).locked).map(dungeon => {
+                    const gateState = getDungeonEntryGateState(state, dungeon);
+                    return (
+                      <div key={dungeon.id} className="text-orange-700">
+                        🔒 {dungeon.name}: {gateState.gateText.replace('🔒 解放条件: ', '')}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
