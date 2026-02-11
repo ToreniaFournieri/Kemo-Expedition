@@ -61,7 +61,7 @@
 
 **Deity  structure**
   - name
-    - Initial deity: 'God of Restoration' // Revives character at the base automatically, no death penalty 
+    - Initial deity: PT1:`God of Restoration` PT2: `God of Attrition`
   - level
   - experience
   - unique abulities 
@@ -1058,9 +1058,10 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 ```
   PT1    PT2    PT3    PT4    PT5     PT6
 ```
-- Name of deity.
+- Name of deity. Editable, but not duplication. If one deity already assgined to another PT, the deity is not selectable.
 ```
-再生の神 (Level: 29, Experience 123450/ 123456)
+(Left-Aligned)                         (Right-Aligned)
+再生の神 (Level: 29, Experience 123450/ 123456)    [編集]
 ````
  
 - List of party members
