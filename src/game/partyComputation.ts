@@ -15,6 +15,7 @@ import { getClassById } from '../data/classes';
 import { getPredispositionById } from '../data/predispositions';
 import { getLineageById } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
+import { applyDeityCharacterModifiers } from './deity';
 
 // Get enhancement and super rare multiplier for an item
 function getItemEnhancementMultiplier(item: Item): number {
@@ -100,9 +101,10 @@ export function computePartyStats(party: Party): {
   partyStats: ComputedPartyStats;
   characterStats: ComputedCharacterStats[];
 } {
-  const characterStats: ComputedCharacterStats[] = party.characters.map((c, index) =>
+  const baseCharacterStats: ComputedCharacterStats[] = party.characters.map((c, index) =>
     computeCharacterStats(c, party.deity.level, index + 1) // Row is 1-6
   );
+  const characterStats = applyDeityCharacterModifiers(party, baseCharacterStats);
 
   // Calculate party HP
   // Party.d.HP = 100 + (Total sum of individual ((Item Bonuses of HP x its c.multiplier x enhancement + level x b.vitality) x (b.vitality + b.mind) / 20))
