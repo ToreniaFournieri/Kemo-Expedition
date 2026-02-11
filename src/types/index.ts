@@ -187,6 +187,7 @@ export interface ComputedCharacterStats {
 
 // Party Types
 export interface Party {
+  name: string;
   deityName: string;
   level: number;
   experience: number;
