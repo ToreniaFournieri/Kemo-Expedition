@@ -168,25 +168,21 @@ function calculateCharacterDamage(
   let defense = 0;
   let defenseAmplifier = enemy.defenseAmplifier;
 
-  let deityOffenseAmplifierBonus = 0;
   switch (phase) {
     case 'long':
       attack = charStats.rangedAttack;
       noA = charStats.rangedNoA;
       defense = enemy.physicalDefense;
-      deityOffenseAmplifierBonus = charStats.deityOffenseAmplifierBonus.long;
       break;
     case 'mid':
       attack = charStats.magicalAttack;
       noA = charStats.magicalNoA;
       defense = enemy.magicalDefense;
-      deityOffenseAmplifierBonus = charStats.deityOffenseAmplifierBonus.mid;
       break;
     case 'close':
       attack = charStats.meleeAttack;
       noA = charStats.meleeNoA;
       defense = enemy.physicalDefense;
-      deityOffenseAmplifierBonus = charStats.deityOffenseAmplifierBonus.close;
       break;
   }
 
