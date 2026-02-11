@@ -1022,12 +1022,12 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 - Always fixed at the top.
 - Displays:
   - Game title + version + build number
-  - Example: ケモの冒険 v0.0.8 (2)
   - Use this specification's version
-  - increment the build number each time you edited the code. 
-- Party info (simplified):
-  - Selected Party name, deity name 
-  - Party status summary
+  - increment the build number each time you edited the code.
+```
+(Left-aligned)             (Right-aligned)
+ケモの冒険　v0.2.2 (43)        200G
+```
 - Tab header (primary navigation):
   - Party
   - Expedition
