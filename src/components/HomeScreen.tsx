@@ -1604,7 +1604,7 @@ function ExpeditionTab({
                   className="w-full flex justify-between items-center text-sm"
                 >
                   <span>
-                    <span className="font-medium">結果: {party.lastExpeditionLog.dungeonName} (残HP {party.lastExpeditionLog.finalOutcome === 'defeat' ? 0 : formatNumber(Math.round((party.lastExpeditionLog.remainingPartyHP / Math.max(1, party.lastExpeditionLog.maxPartyHP)) * 100))}%)</span>
+                    <span className="font-medium">結果: {party.lastExpeditionLog.dungeonName} (残HP {formatNumber(Math.round((party.lastExpeditionLog.remainingPartyHP / Math.max(1, party.lastExpeditionLog.maxPartyHP)) * 100))}%)</span>
                     <span className={`ml-2 font-medium ${
                       party.lastExpeditionLog.finalOutcome === 'victory' || party.lastExpeditionLog.finalOutcome === 'return' ? 'text-sub' :
                       party.lastExpeditionLog.finalOutcome === 'defeat' ? 'text-red-600' : 'text-yellow-600'
