@@ -1295,7 +1295,7 @@ PT2 HP:…
 	   3. Enhancement Tier: Among the same Item ID, higher enhancements (e.g., 究極の > 伝説の) appear higher.
   - Item Row: The name, count, and status are left-aligned, while the sell all button is right-aligned on the same line 
     - ex. 名工のロングソード x3 | 近攻+19     [全売却 39G]
-  - Sell all button(全売却): Sells all item, and Changes item state from `s.owned` to `s.sold`
+  - Sell all button(全売却): Sells all item, with a warning message, and Changes item state from `s.owned` to `s.sold`
   - Inventory pane shows at least 10 items
 - Actions:
   - Sell item stacks
