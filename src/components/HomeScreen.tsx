@@ -398,6 +398,58 @@ const CATEGORY_GROUPS = [
   { id: 'magic', label: '魔法攻撃', categories: ['wand', 'grimoire', 'catalyst'] },
 ];
 
+type CategoryGroup = typeof CATEGORY_GROUPS[number];
+
+function getCharacterCombatBonusLevels(character: Character): { grit: number; pursuit: number; caster: number } {
+  const race = RACES.find(r => r.id === character.raceId);
+  const mainClass = CLASSES.find(c => c.id === character.mainClassId);
+  const subClass = CLASSES.find(c => c.id === character.subClassId);
+  const predisposition = PREDISPOSITIONS.find(p => p.id === character.predispositionId);
+  const lineage = LINEAGES.find(l => l.id === character.lineageId);
+
+  if (!race || !mainClass || !subClass || !predisposition || !lineage) {
+    return { grit: 0, pursuit: 0, caster: 0 };
+  }
+
+  const isMasterClass = character.mainClassId === character.subClassId;
+  const bonusSources = [
+    race.bonuses,
+    mainClass.mainSubBonuses,
+    isMasterClass ? mainClass.masterBonuses : mainClass.mainBonuses,
+    ...(isMasterClass ? [] : [subClass.mainSubBonuses]),
+    predisposition.bonuses,
+    lineage.bonuses,
+  ];
+
+  let grit = 0;
+  let caster = 0;
+  let pursuit = 0;
+  for (const bonuses of bonusSources) {
+    for (const bonus of bonuses) {
+      if (bonus.type === 'grit') {
+        grit = Math.max(grit, bonus.value);
+      } else if (bonus.type === 'caster') {
+        caster = Math.max(caster, bonus.value);
+      } else if (bonus.type === 'pursuit') {
+        pursuit += bonus.value;
+      }
+    }
+  }
+
+  return { grit, pursuit, caster };
+}
+
+function getAvailableCategoryGroups(character: Character): CategoryGroup[] {
+  const { grit, pursuit, caster } = getCharacterCombatBonusLevels(character);
+  return CATEGORY_GROUPS.filter((group) => {
+    if (group.id === 'durability') return true;
+    if (group.id === 'melee') return grit > 0;
+    if (group.id === 'ranged') return pursuit > 0;
+    if (group.id === 'magic') return caster > 0;
+    return false;
+  });
+}
+
 // Category priority for equipment slot sorting (lower index = higher priority)
 const CATEGORY_PRIORITY: Record<string, number> = {
   armor: 0, robe: 1, shield: 2, sword: 3, katana: 4,
@@ -537,6 +589,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         {activeTab === 'inventory' && (
           <InventoryTab
             inventory={state.global.inventory}
+            character={currentParty.characters[selectedCharacter]}
             onSellStack={actions.sellStack}
             onSetVariantStatus={actions.setVariantStatus}
           />
@@ -599,7 +652,6 @@ function PartyTab({
   const [equipCategory, setEquipCategory] = useState('armor');
   const [partyRarityFilter, setPartyRarityFilter] = useState<RarityFilter>('all');
   const [partySuperRareOnly, setPartySuperRareOnly] = useState(false);
-
   // Calculate current stats for notification: HP is party-wide, others are per selected character
   const selectedStats = characterStats[selectedCharacter];
   const combatTotals = {
@@ -743,6 +795,16 @@ function PartyTab({
   const subClass = CLASSES.find(c => c.id === char.subClassId)!;
   const predisposition = PREDISPOSITIONS.find(p => p.id === char.predispositionId)!;
   const lineage = LINEAGES.find(l => l.id === char.lineageId)!;
+
+  const availableCategoryGroups = getAvailableCategoryGroups(char);
+  const availableCategories = availableCategoryGroups.flatMap(group => group.categories);
+
+  useEffect(() => {
+    if (!availableCategories.includes(equipCategory)) {
+      setEquipCategory(availableCategories[0] ?? 'armor');
+    }
+  }, [availableCategories, equipCategory]);
+
 
   return (
     <div>
@@ -1397,7 +1459,7 @@ function PartyTab({
             </div>
             {/* Category group tabs */}
             <div className="flex gap-1 mb-2 overflow-x-auto pb-1">
-              {CATEGORY_GROUPS.map(group => (
+              {availableCategoryGroups.map(group => (
                 <div key={group.id} className="flex flex-col">
                   <div className="text-xs text-gray-400 text-center mb-0.5">{group.label}</div>
                   <div className="flex">
@@ -1708,10 +1770,12 @@ function ExpeditionTab({
 }
 function InventoryTab({
   inventory,
+  character,
   onSellStack,
   onSetVariantStatus,
 }: {
   inventory: InventoryRecord;
+  character: Character;
   onSellStack: (variantKey: string) => void;
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
 }) {
@@ -1719,6 +1783,15 @@ function InventoryTab({
   const [selectedCategory, setSelectedCategory] = useState('armor');
   const [inventoryRarityFilter, setInventoryRarityFilter] = useState<RarityFilter>('all');
   const [inventorySuperRareOnly, setInventorySuperRareOnly] = useState(false);
+
+  const availableCategoryGroups = getAvailableCategoryGroups(character);
+  const availableCategories = availableCategoryGroups.flatMap(group => group.categories);
+
+  useEffect(() => {
+    if (!availableCategories.includes(selectedCategory)) {
+      setSelectedCategory(availableCategories[0] ?? 'armor');
+    }
+  }, [availableCategories, selectedCategory]);
 
   // Separate owned and sold/notown items, filtered by category
   const allOwnedItems = Object.entries(inventory).filter(([, v]) => v.status === 'owned' && v.count > 0);
@@ -1776,7 +1849,7 @@ function InventoryTab({
 
       {/* Category group tabs */}
       <div className="flex gap-1 mb-3 overflow-x-auto pb-1">
-        {CATEGORY_GROUPS.map(group => (
+        {availableCategoryGroups.map(group => (
           <div key={group.id} className="flex flex-col">
             <div className="text-xs text-gray-400 text-center mb-0.5">{group.label}</div>
             <div className="flex">
