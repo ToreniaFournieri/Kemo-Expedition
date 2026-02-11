@@ -16,8 +16,8 @@ interface HomeScreenProps {
   bags: GameBags;
   actions: {
     selectParty: (partyIndex: number) => void;
-    selectDungeon: (dungeonId: number) => void;
-    runExpedition: () => void;
+    selectDungeon: (partyIndex: number, dungeonId: number) => void;
+    runExpedition: (partyIndex: number) => void;
     equipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
     updateCharacter: (characterId: number, updates: Partial<Character>) => void;
     sellStack: (variantKey: string) => void;
@@ -1331,235 +1331,226 @@ function ExpeditionTab({
   onRunExpedition,
 }: {
   state: GameState;
-  onSelectDungeon: (dungeonId: number) => void;
-  onRunExpedition: () => void;
+  onSelectDungeon: (partyIndex: number, dungeonId: number) => void;
+  onRunExpedition: (partyIndex: number) => void;
 }) {
-  const [showLog, setShowLog] = useState(false);
-  const [expandedRoom, setExpandedRoom] = useState<number | null>(null);
-  const selectedDungeon = DUNGEONS.find(d => d.id === state.selectedDungeonId);
-  const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(state, selectedDungeon) : null;
+  const [expandedLogParty, setExpandedLogParty] = useState<number | null>(null);
+  const [expandedRoom, setExpandedRoom] = useState<{ partyIndex: number; roomIndex: number } | null>(null);
 
   return (
-    <div>
-      {/* Selected Dungeon */}
-      <div className="bg-pane rounded-lg p-4 mb-4">
-        <div className="text-sm text-gray-500 mb-1">選択中のダンジョン</div>
-        <div className="flex justify-between items-center">
-          <div>
-            <div className="font-medium">{selectedDungeon?.name}</div>
+    <div className="space-y-4">
+      {/* Party Expedition Slots */}
+      {[0, 1, 2, 3, 4, 5].map((partyIndex) => {
+        const party = state.parties[partyIndex];
+
+        if (!party) {
+          // Locked party slot
+          return (
+            <div key={partyIndex} className="bg-pane rounded-lg p-4">
+              <div className="text-gray-400">PT{partyIndex + 1}: (未開放)</div>
+            </div>
+          );
+        }
+
+        const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
+        const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(state, selectedDungeon) : null;
+
+        return (
+          <div key={partyIndex} className="bg-pane rounded-lg p-4">
+            {/* Party Expedition Header */}
+            <div className="flex items-center gap-2 mb-3">
+              <span className="font-medium">{party.name}出撃先:</span>
+              <select
+                value={party.selectedDungeonId}
+                onChange={(e) => onSelectDungeon(partyIndex, Number(e.target.value))}
+                className="border border-gray-300 rounded px-2 py-1 text-sm flex-1"
+              >
+                {DUNGEONS.map(dungeon => {
+                  const gateState = getDungeonEntryGateState(state, dungeon);
+                  return (
+                    <option key={dungeon.id} value={dungeon.id} disabled={gateState.locked}>
+                      {dungeon.name} {gateState.locked ? '🔒' : ''}
+                    </option>
+                  );
+                })}
+              </select>
+              <button
+                onClick={() => onRunExpedition(partyIndex)}
+                disabled={selectedDungeonGate?.locked}
+                className={`px-3 py-1 text-white rounded font-medium text-sm ${
+                  selectedDungeonGate?.locked
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-sub hover:bg-blue-600'
+                }`}
+              >
+                出発
+              </button>
+            </div>
+
             {selectedDungeonGate?.locked && (
-              <div className="text-xs mt-1 text-orange-700">
-                {selectedDungeonGate.gateText}
+              <div className="text-xs text-orange-700 mb-3">
+                解放条件: {selectedDungeonGate.gateText.replace('🔒 解放条件: ', '')}
+              </div>
+            )}
+
+            {/* Last Expedition Log */}
+            {party.lastExpeditionLog && (
+              <div className="border-t border-gray-200 pt-3">
+                <button
+                  onClick={() => setExpandedLogParty(expandedLogParty === partyIndex ? null : partyIndex)}
+                  className="w-full flex justify-between items-center text-sm"
+                >
+                  <span>
+                    <span className="font-medium">前回の探検結果: {party.lastExpeditionLog.dungeonName}</span>
+                    <span className={`ml-2 font-medium ${
+                      party.lastExpeditionLog.finalOutcome === 'victory' ? 'text-sub' :
+                      party.lastExpeditionLog.finalOutcome === 'defeat' ? 'text-red-600' : 'text-yellow-600'
+                    }`}>
+                      {party.lastExpeditionLog.finalOutcome === 'victory' ? '勝利' :
+                       party.lastExpeditionLog.finalOutcome === 'defeat' ? '敗北' : '撤退'}
+                    </span>
+                  </span>
+                  <span className={`transform transition-transform ${expandedLogParty === partyIndex ? 'rotate-180' : ''}`}>▼</span>
+                </button>
+
+                {expandedLogParty === partyIndex && (
+                  <div className="mt-3 space-y-2">
+                    <div className="text-sm text-gray-500">
+                      残HP: {party.lastExpeditionLog.remainingPartyHP}/{party.lastExpeditionLog.maxPartyHP}
+                      {' '}| {party.lastExpeditionLog.completedRooms}/{party.lastExpeditionLog.totalRooms}部屋
+                      {' '}| EXP: +{party.lastExpeditionLog.totalExperience}
+                      {party.lastExpeditionLog.autoSellProfit > 0 && (
+                        <span> | 自動売却額: {party.lastExpeditionLog.autoSellProfit}G</span>
+                      )}
+                    </div>
+
+                    {party.lastExpeditionLog.rewards.length > 0 && (
+                      <div className="text-sm">
+                        <span className="text-gray-500">獲得アイテム: </span>
+                        {party.lastExpeditionLog.rewards.map((item, i) => {
+                          const rarity = getItemRarityById(item.id);
+                          const isSuperRare = item.superRare > 0;
+                          const rarityClass = getRarityTextClass(rarity, isSuperRare);
+                          return (
+                            <span key={i} className={`${rarityClass} font-medium`}>
+                              {i > 0 && ', '}{getItemDisplayName(item)}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    <div className="border-t border-gray-200 pt-2 space-y-2">
+                      {[...party.lastExpeditionLog.entries].reverse().map((entry, i, arr) => {
+                        const originalIndex = arr.length - 1 - i;
+                        let roomLabel: string;
+                        if (entry.floor && entry.roomInFloor) {
+                          roomLabel = `${entry.floor}F-${entry.roomInFloor}`;
+                        } else {
+                          const isBoss = entry.room === party.lastExpeditionLog!.totalRooms + 1;
+                          roomLabel = isBoss ? 'BOSS' : entry.room.toString();
+                        }
+                        const hpPercent = Math.round((entry.remainingPartyHP / entry.maxPartyHP) * 100);
+                        const isRoomExpanded = expandedRoom?.partyIndex === partyIndex && expandedRoom?.roomIndex === originalIndex;
+
+                        return (
+                          <div key={originalIndex} className="bg-white rounded overflow-hidden">
+                            <button
+                              onClick={() => setExpandedRoom(isRoomExpanded ? null : { partyIndex, roomIndex: originalIndex })}
+                              className="w-full text-left p-2 text-xs"
+                            >
+                              <div className="flex justify-between items-center">
+                                <span>
+                                  <span className="font-medium">{roomLabel}: {entry.enemyName}</span>
+                                  <span className="text-gray-500"> | 敵HP:{entry.enemyHP} | 残HP:{entry.remainingPartyHP}({hpPercent}%)</span>
+                                </span>
+                                <span className="flex items-center gap-2">
+                                  <span className={
+                                    entry.gateInfo ? 'text-gray-500 font-medium' :
+                                    entry.outcome === 'victory' ? 'text-sub font-medium' :
+                                    entry.outcome === 'defeat' ? 'text-red-600 font-medium' : 'text-yellow-600 font-medium'
+                                  }>
+                                    {entry.gateInfo ? '未到達' :
+                                     entry.outcome === 'victory' ? '勝利' :
+                                     entry.outcome === 'defeat' ? '敗北' : '引分'}
+                                  </span>
+                                  <span className={`transform transition-transform ${isRoomExpanded ? 'rotate-180' : ''}`}>▼</span>
+                                </span>
+                              </div>
+                              <div className="text-gray-500 mt-1">
+                                敵攻撃:{entry.enemyAttackValues} | 与ダメ:{entry.damageDealt} | 被ダメ:{entry.damageTaken}
+                                {entry.healAmount && entry.healAmount > 0 && <span className="text-green-600"> | 回復:+{entry.healAmount}HP</span>}
+                                {entry.gateInfo && <span className="text-orange-700"> | 解放条件: {entry.gateInfo}</span>}
+                                {entry.reward && <span className={` ${getRewardTextClass(entry.rewardRarity, entry.rewardIsSuperRare)} ${entry.rewardIsSuperRare ? 'font-bold' : 'font-medium'}`}> | 獲得:{entry.reward}</span>}
+                              </div>
+                            </button>
+                            {isRoomExpanded && entry.details && (
+                              <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
+                                <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
+                                {entry.details.map((log, j) => {
+                                  const phaseLabel = log.phase === 'long' ? '遠' : log.phase === 'mid' ? '魔' : '近';
+                                  const getPhaseEmoji = () => {
+                                    if (log.elementalOffense === 'fire') return '🔥';
+                                    if (log.elementalOffense === 'thunder') return '⚡';
+                                    if (log.elementalOffense === 'ice') return '❄️';
+                                    if (log.phase === 'long') return '🏹';
+                                    if (log.phase === 'mid') return '🪄';
+                                    return '⚔';
+                                  };
+                                  const emoji = getPhaseEmoji();
+                                  const isEnemy = log.actor === 'enemy';
+                                  const hits = log.hits ?? 0;
+                                  const totalAttempts = log.totalAttempts ?? 0;
+                                  const allMissed = totalAttempts > 0 && hits === 0;
+                                  const hitDisplay = totalAttempts > 0 ? `(${hits}/${totalAttempts}回)` : '';
+
+                                  let actionText: string;
+                                  if (isEnemy) {
+                                    if (allMissed) {
+                                      actionText = `敵が${log.action.replace('！', 'したが外れた！')}`;
+                                    } else {
+                                      actionText = `敵が${log.action}`;
+                                    }
+                                  } else {
+                                    if (allMissed) {
+                                      const charName = log.action.split(' の')[0];
+                                      actionText = `${charName} の攻撃は外れた！`;
+                                    } else {
+                                      actionText = log.action;
+                                    }
+                                  }
+
+                                  return (
+                                    <div key={j} className="flex justify-between text-gray-600">
+                                      <span>
+                                        <span className="text-gray-400">[{phaseLabel}]</span>{' '}
+                                        {actionText}
+                                        {hitDisplay && <span className="text-gray-400">{hitDisplay}</span>}
+                                      </span>
+                                      {log.damage !== undefined && log.damage > 0 && (
+                                        <span className={isEnemy ? 'text-accent' : 'text-sub'}>
+                                          ({emoji} {log.damage})
+                                        </span>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
-          <button
-            onClick={onRunExpedition}
-            disabled={selectedDungeonGate?.locked}
-            className={`px-4 py-2 text-white rounded-lg font-medium ${
-              selectedDungeonGate?.locked
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-sub hover:bg-blue-600'
-            }`}
-          >
-            出発
-          </button>
-        </div>
-      </div>
-
-      {/* Last Expedition Log */}
-      {state.lastExpeditionLog && (
-        <div className="bg-pane rounded-lg p-4 mb-4">
-          <button
-            onClick={() => setShowLog(!showLog)}
-            className="w-full flex justify-between items-center text-sm"
-          >
-            <span>
-              <span className="font-medium">前回の探検結果: {state.lastExpeditionLog.dungeonName}</span>
-              <span className={`ml-2 font-medium ${
-                state.lastExpeditionLog.finalOutcome === 'victory' ? 'text-sub' :
-                state.lastExpeditionLog.finalOutcome === 'defeat' ? 'text-red-600' : 'text-yellow-600'
-              }`}>
-                {state.lastExpeditionLog.finalOutcome === 'victory' ? '勝利' :
-                 state.lastExpeditionLog.finalOutcome === 'defeat' ? '敗北' : '撤退'}
-              </span>
-            </span>
-            <span className={`transform transition-transform ${showLog ? 'rotate-180' : ''}`}>▼</span>
-          </button>
-
-          {showLog && (
-            <div className="mt-3 space-y-2">
-              <div className="text-sm text-gray-500">
-                残HP: {state.lastExpeditionLog.remainingPartyHP}/{state.lastExpeditionLog.maxPartyHP}
-                {' '}| {state.lastExpeditionLog.completedRooms}/{state.lastExpeditionLog.totalRooms}部屋
-                {' '}| EXP: +{state.lastExpeditionLog.totalExperience}
-                {state.lastExpeditionLog.autoSellProfit > 0 && (
-                  <span> | 自動売却額: {state.lastExpeditionLog.autoSellProfit}G</span>
-                )}
-              </div>
-
-              {state.lastExpeditionLog.rewards.length > 0 && (
-                <div className="text-sm">
-                  <span className="text-gray-500">獲得アイテム: </span>
-                  {state.lastExpeditionLog.rewards.map((item, i) => {
-                    const rarity = getItemRarityById(item.id);
-                    const isSuperRare = item.superRare > 0;
-                    const rarityClass = getRarityTextClass(rarity, isSuperRare);
-                    return (
-                      <span key={i} className={`${rarityClass} font-medium`}>
-                        {i > 0 && ', '}{getItemDisplayName(item)}
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
-
-              <div className="border-t border-gray-200 pt-2 space-y-2">
-                {[...state.lastExpeditionLog.entries].reverse().map((entry, i, arr) => {
-                  const originalIndex = arr.length - 1 - i;
-                  // Build room label with floor info if available
-                  let roomLabel: string;
-                  if (entry.floor && entry.roomInFloor) {
-                    roomLabel = `${entry.floor}F-${entry.roomInFloor}`;
-                  } else {
-                    const isBoss = entry.room === state.lastExpeditionLog!.totalRooms + 1;
-                    roomLabel = isBoss ? 'BOSS' : entry.room.toString();
-                  }
-                  const hpPercent = Math.round((entry.remainingPartyHP / entry.maxPartyHP) * 100);
-                  return (
-                    <div key={originalIndex} className="bg-white rounded overflow-hidden">
-                      <button
-                        onClick={() => setExpandedRoom(expandedRoom === originalIndex ? null : originalIndex)}
-                        className="w-full text-left p-2 text-xs"
-                      >
-                        <div className="flex justify-between items-center">
-                          <span>
-                            <span className="font-medium">{roomLabel}: {entry.enemyName}</span>
-                            <span className="text-gray-500"> | 敵HP:{entry.enemyHP} | 残HP:{entry.remainingPartyHP}({hpPercent}%)</span>
-                          </span>
-                          <span className="flex items-center gap-2">
-                            <span className={
-                              entry.gateInfo ? 'text-gray-500 font-medium' :
-                              entry.outcome === 'victory' ? 'text-sub font-medium' :
-                              entry.outcome === 'defeat' ? 'text-red-600 font-medium' : 'text-yellow-600 font-medium'
-                            }>
-                              {entry.gateInfo ? '未到達' :
-                               entry.outcome === 'victory' ? '勝利' :
-                               entry.outcome === 'defeat' ? '敗北' : '引分'}
-                            </span>
-                            <span className={`transform transition-transform ${expandedRoom === originalIndex ? 'rotate-180' : ''}`}>▼</span>
-                          </span>
-                        </div>
-                        <div className="text-gray-500 mt-1">
-                          敵攻撃:{entry.enemyAttackValues} | 与ダメ:{entry.damageDealt} | 被ダメ:{entry.damageTaken}
-                          {entry.healAmount && entry.healAmount > 0 && <span className="text-green-600"> | 回復:+{entry.healAmount}HP</span>}
-                          {entry.gateInfo && <span className="text-orange-700"> | 解放条件: {entry.gateInfo}</span>}
-                          {entry.reward && <span className={` ${getRewardTextClass(entry.rewardRarity, entry.rewardIsSuperRare)} ${entry.rewardIsSuperRare ? 'font-bold' : 'font-medium'}`}> | 獲得:{entry.reward}</span>}
-                        </div>
-                      </button>
-                      {expandedRoom === originalIndex && entry.details && (
-                        <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
-                          <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
-                          {entry.details.map((log, j) => {
-                            const phaseLabel = log.phase === 'long' ? '遠' : log.phase === 'mid' ? '魔' : '近';
-                            // Get emoji based on phase and elemental attribute
-                            const getPhaseEmoji = () => {
-                              if (log.elementalOffense === 'fire') return '🔥';
-                              if (log.elementalOffense === 'thunder') return '⚡';
-                              if (log.elementalOffense === 'ice') return '❄️';
-                              if (log.phase === 'long') return '🏹';
-                              if (log.phase === 'mid') return '🪄';
-                              return '⚔';
-                            };
-                            const emoji = getPhaseEmoji();
-                            const isEnemy = log.actor === 'enemy';
-                            const hits = log.hits ?? 0;
-                            const totalAttempts = log.totalAttempts ?? 0;
-                            const allMissed = totalAttempts > 0 && hits === 0;
-
-                            // Format hit count display: (N/M回)
-                            const hitDisplay = totalAttempts > 0 ? `(${hits}/${totalAttempts}回)` : '';
-
-                            // Build action text with miss handling
-                            let actionText: string;
-                            if (isEnemy) {
-                              if (allMissed) {
-                                // Enemy missed: 敵がXXに攻撃したが外れた！
-                                actionText = `敵が${log.action.replace('！', 'したが外れた！')}`;
-                              } else {
-                                actionText = `敵が${log.action}`;
-                              }
-                            } else {
-                              if (allMissed) {
-                                // Character missed: XXの攻撃は外れた！
-                                // Extract character name from action like "キツネ丸 の攻撃！"
-                                const charName = log.action.split(' の')[0];
-                                actionText = `${charName} の攻撃は外れた！`;
-                              } else {
-                                actionText = log.action;
-                              }
-                            }
-
-                            return (
-                              <div key={j} className="flex justify-between text-gray-600">
-                                <span>
-                                  <span className="text-gray-400">[{phaseLabel}]</span>{' '}
-                                  {actionText}
-                                  {hitDisplay && <span className="text-gray-400">{hitDisplay}</span>}
-                                </span>
-                                {log.damage !== undefined && log.damage > 0 && (
-                                  <span className={isEnemy ? 'text-accent' : 'text-sub'}>
-                                    ({emoji} {log.damage})
-                                  </span>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Dungeon Selection */}
-      <div className="text-sm font-medium mb-2">ダンジョン選択</div>
-      <div className="space-y-2">
-        {DUNGEONS.map(dungeon => {
-          const gateState = getDungeonEntryGateState(state, dungeon);
-          return (
-            <button
-              key={dungeon.id}
-              onClick={() => onSelectDungeon(dungeon.id)}
-              disabled={gateState.locked}
-              className={`w-full p-3 text-left border rounded-lg ${
-                dungeon.id === state.selectedDungeonId
-                  ? 'border-sub bg-blue-50'
-                  : 'border-gray-200'
-              } ${gateState.locked ? 'cursor-not-allowed opacity-90' : 'hover:border-sub'}`}
-            >
-              <div className={`font-medium ${gateState.locked ? 'text-gray-400' : 'text-gray-900'}`}>{dungeon.name}</div>
-              <div className="text-xs text-gray-500">
-                {dungeon.floors
-                  ? `${dungeon.floors.length}階層 × ${dungeon.floors[0]?.rooms.length ?? 0}部屋`
-                  : `部屋数: ${dungeon.numberOfRooms} + ボス`
-                }
-              </div>
-              {gateState.locked && (
-                <div className="text-xs mt-1 text-orange-700">{gateState.gateText}</div>
-              )}
-            </button>
-          );
-        })}
-      </div>
+        );
+      })}
     </div>
   );
 }
-
 function InventoryTab({
   inventory,
   onSellStack,
