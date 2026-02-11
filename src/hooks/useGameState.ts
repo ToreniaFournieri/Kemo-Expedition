@@ -39,7 +39,7 @@ import {
 import { getItemById, getItemsByTierAndRarity, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 
-const BUILD_NUMBER = 40;
+const BUILD_NUMBER = 41;
 const STORAGE_KEY = 'kemo-expedition-save';
 
 // Helper to calculate sell price for an item
@@ -136,14 +136,18 @@ function loadSavedState(): GameState | null {
     if (saved) {
       const parsed = JSON.parse(saved);
       // Validate it has required properties
-      if (parsed.party && parsed.bags && parsed.buildNumber) {
+      if ((parsed.party || parsed.parties) && parsed.bags && parsed.buildNumber) {
+        // Migrate old single party format to new multiple parties format
+        if (parsed.party && !parsed.parties) {
+          parsed.parties = [parsed.party, createSecondParty()];
+          parsed.selectedPartyIndex = 0;
+          delete parsed.party;
+        }
+
         if (!parsed.bags.uncommonRewardBag) parsed.bags.uncommonRewardBag = createUncommonRewardBag();
         if (!parsed.bags.rareRewardBag) parsed.bags.rareRewardBag = createRareRewardBag();
         if (!parsed.bags.mythicRewardBag) parsed.bags.mythicRewardBag = createMythicRewardBag();
-        // Migrate old inventory format if needed
-        if (Array.isArray(parsed.party.inventory)) {
-          parsed.party.inventory = migrateOldInventory(parsed.party.inventory);
-        }
+
         const mergeWithBaseItem = (item: Item): Item => {
           const baseItem = getItemById(item.id);
           if (!baseItem) return item;
@@ -154,19 +158,29 @@ function loadSavedState(): GameState | null {
             isNew: item.isNew,
           };
         };
-        // Merge latest item definitions onto saved items (for new fields like baseMultiplier)
-        for (const character of parsed.party.characters ?? []) {
-          if (Array.isArray(character.equipment)) {
-            character.equipment = character.equipment.map((item: Item | null) => {
-              if (!item) return null;
-              return mergeWithBaseItem(item);
-            });
+
+        // Process all parties (whether single or array)
+        const partiesToProcess = parsed.parties ?? [];
+        for (const party of partiesToProcess) {
+          // Migrate old inventory format if needed
+          if (Array.isArray(party.inventory)) {
+            party.inventory = migrateOldInventory(party.inventory);
           }
-        }
-        if (parsed.party.inventory) {
-          for (const variant of Object.values(parsed.party.inventory) as InventoryVariant[]) {
-            if (variant?.item) {
-              variant.item = mergeWithBaseItem(variant.item);
+
+          // Merge latest item definitions onto saved items (for new fields like baseMultiplier)
+          for (const character of party.characters ?? []) {
+            if (Array.isArray(character.equipment)) {
+              character.equipment = character.equipment.map((item: Item | null) => {
+                if (!item) return null;
+                return mergeWithBaseItem(item);
+              });
+            }
+          }
+          if (party.inventory) {
+            for (const variant of Object.values(party.inventory) as InventoryVariant[]) {
+              if (variant?.item) {
+                variant.item = mergeWithBaseItem(variant.item);
+              }
             }
           }
         }
@@ -259,6 +273,62 @@ function createInitialParty() {
   };
 }
 
+function createSecondParty() {
+  // Create a second test party with different setup
+  const defaultSetup = [
+    { race: 'lupinian', main: 'samurai', sub: 'samurai', pred: 'chivalric', lineage: 'war_spirit', name: 'ウルフ' },
+    { race: 'ursan', main: 'lord', sub: 'fighter', pred: 'sturdy', lineage: 'unmoving', name: 'ベア' },
+    { race: 'felidian', main: 'pilgrim', sub: 'sage', pred: 'pursuing', lineage: 'hidden_principles', name: 'ニャン' },
+    { race: 'leporian', main: 'sage', sub: 'wizard', pred: 'brilliant', lineage: 'guiding_thought', name: 'ウサギ' },
+    { race: 'murid', main: 'rogue', sub: 'ninja', pred: 'dexterous', lineage: 'breaking_hand', name: 'ネズミ' },
+    { race: 'cervin', main: 'wizard', sub: 'sage', pred: 'canny', lineage: 'far_sight', name: 'シカ' },
+  ];
+
+  const characters: Character[] = defaultSetup.map((setup, i) => ({
+    id: i + 101, // Different IDs for second party
+    name: setup.name,
+    raceId: setup.race as RaceId,
+    mainClassId: setup.main as ClassId,
+    subClassId: setup.sub as ClassId,
+    predispositionId: setup.pred as PredispositionId,
+    lineageId: setup.lineage as LineageId,
+    equipment: [],
+  }));
+
+  // Create starter items for second party
+  const starterItemIds = [
+    1101, 1102, 1103, 1104, 1105, 1106,
+    1107, 1108, 1109, 1110, 1111, 1112,
+  ];
+  const starterItems: Item[] = starterItemIds.flatMap(id =>
+    Array.from({ length: 3 }, () => ({ ...getItemById(id)!, enhancement: 0, superRare: 0 }))
+  );
+
+  const inventory: InventoryRecord = {};
+  for (const item of starterItems) {
+    const key = getVariantKey(item);
+    if (inventory[key]) {
+      inventory[key].count++;
+    } else {
+      inventory[key] = {
+        item,
+        count: 1,
+        status: 'owned',
+      };
+    }
+  }
+
+  return {
+    name: 'PT2',
+    deityName: '戦いの神',
+    level: 1,
+    experience: 0,
+    characters,
+    inventory,
+    gold: 200,
+  };
+}
+
 function createInitialState(): GameState {
   // Try to load saved state first
   const savedState = loadSavedState();
@@ -269,7 +339,8 @@ function createInitialState(): GameState {
 
   return {
     scene: 'home',
-    party: createInitialParty(),
+    parties: [createInitialParty(), createSecondParty()],
+    selectedPartyIndex: 0,
     bags: {
       commonRewardBag: createCommonRewardBag(),
       commonEnhancementBag: createCommonEnhancementBag(),
@@ -288,6 +359,7 @@ function createInitialState(): GameState {
 }
 
 type GameAction =
+  | { type: 'SELECT_PARTY'; partyIndex: number }
   | { type: 'SELECT_DUNGEON'; dungeonId: number }
   | { type: 'RUN_EXPEDITION' }
   | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; itemKey: string | null }
@@ -510,6 +582,9 @@ function selectEnemy(dungeonId: number, room: number, totalRooms: number) {
 
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
+    case 'SELECT_PARTY':
+      return { ...state, selectedPartyIndex: action.partyIndex };
+
     case 'SELECT_DUNGEON':
       return { ...state, selectedDungeonId: action.dungeonId };
 
@@ -517,7 +592,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const dungeon = getDungeonById(state.selectedDungeonId);
       if (!dungeon) return state;
 
-      const { partyStats } = computePartyStats(state.party);
+      const currentParty = state.parties[state.selectedPartyIndex];
+      const { partyStats } = computePartyStats(currentParty);
       let currentHp = partyStats.hp;
 
       const entries: ExpeditionLogEntry[] = [];
@@ -525,8 +601,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let totalExp = 0;
       let bags = state.bags;
       let finalOutcome: 'victory' | 'defeat' | 'retreat' = 'victory';
-      let currentInventory = state.party.inventory;
-      let currentGold = state.party.gold;
+      let currentInventory = currentParty.inventory;
+      let currentGold = currentParty.gold;
       let totalAutoSellProfit = 0;
       let roomCounter = 0;
       let expeditionEnded = false;
@@ -549,7 +625,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               const prevTier = tier - 1;
               const prevDungeonName = getDungeonById(prevTier)?.name ?? '前回の探検地';
               const gateRequired = 1;
-              const collected = countItemsOfRarity(currentInventory, state.party.characters, prevTier, 'mythic');
+              const collected = countItemsOfRarity(currentInventory, currentParty.characters, prevTier, 'mythic');
               if (collected < gateRequired) {
                 const gateEntry: ExpeditionLogEntry = {
                   room: roomCounter,
@@ -586,7 +662,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 gateRequired = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 3;
                 gateRarity = 'uncommon';
               }
-              const collected = countItemsOfRarity(currentInventory, state.party.characters, tier, gateRarity);
+              const collected = countItemsOfRarity(currentInventory, currentParty.characters, tier, gateRarity);
               if (collected < gateRequired) {
                 // Gate locked - expedition ends
                 const rarityLabel = gateRarity === 'rare' ? 'レアアイテム' : 'アンコモンアイテム';
@@ -622,7 +698,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             const enemy = applyEnemyEncounterScaling(baseEnemy, dungeon, floor.floorNumber, roomDef.type);
 
             // Pass currentHp to maintain HP persistence during expedition
-            const battleResult = executeBattle(state.party, enemy, bags, currentHp);
+            const battleResult = executeBattle(currentParty, enemy, bags, currentHp);
 
             // Update threat bags from battle result
             bags = {
@@ -663,7 +739,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             if (battleResult.outcome === 'victory') {
               totalExp += enemy.experience;
 
-              const { characterStats } = computePartyStats(state.party);
+              const { characterStats } = computePartyStats(currentParty);
               const hasUnlock = characterStats.some(cs => cs.abilities.some(a => a.id === 'unlock'));
               const rewardResult = resolveEnemyRewards(enemy, bags, currentInventory, currentGold, hasUnlock);
               bags = rewardResult.bags;
@@ -710,7 +786,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           const enemy = selectEnemy(dungeon.id, room, totalRooms);
           if (!enemy) break;
 
-          const battleResult = executeBattle(state.party, enemy, bags, currentHp);
+          const battleResult = executeBattle(currentParty, enemy, bags, currentHp);
           bags = {
             ...bags,
             physicalThreatBag: battleResult.updatedBags.physicalThreatBag,
@@ -739,7 +815,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           if (battleResult.outcome === 'victory') {
             totalExp += enemy.experience;
 
-            const { characterStats } = computePartyStats(state.party);
+            const { characterStats } = computePartyStats(currentParty);
             const hasUnlock = characterStats.some(cs => cs.abilities.some(a => a.id === 'unlock'));
             const rewardResult = resolveEnemyRewards(enemy, bags, currentInventory, currentGold, hasUnlock);
             bags = rewardResult.bags;
@@ -771,14 +847,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       // On defeat: revert inventory and gold (no item rewards), but keep experience
       const isDefeat = finalOutcome === 'defeat';
-      const finalInventory = isDefeat ? state.party.inventory : currentInventory;
-      const finalGold = isDefeat ? state.party.gold : currentGold;
+      const finalInventory = isDefeat ? currentParty.inventory : currentInventory;
+      const finalGold = isDefeat ? currentParty.gold : currentGold;
       const finalRewards = isDefeat ? [] : rewards;
       const finalAutoSellProfit = isDefeat ? 0 : totalAutoSellProfit;
 
       // Update level
-      let newExp = state.party.experience + totalExp;
-      let newLevel = state.party.level;
+      let newExp = currentParty.experience + totalExp;
+      let newLevel = currentParty.level;
       while (newLevel < 29 && newExp >= LEVEL_EXP[newLevel]) {
         newLevel++;
       }
@@ -797,27 +873,31 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         maxPartyHP: partyStats.hp,
       };
 
+      const updatedParties = [...state.parties];
+      updatedParties[state.selectedPartyIndex] = {
+        ...currentParty,
+        level: newLevel,
+        experience: newExp,
+        inventory: finalInventory,
+        gold: finalGold,
+      };
+
       return {
         ...state,
         bags,
-        party: {
-          ...state.party,
-          level: newLevel,
-          experience: newExp,
-          inventory: finalInventory,
-          gold: finalGold,
-        },
+        parties: updatedParties,
         lastExpeditionLog: log,
       };
     }
 
     case 'EQUIP_ITEM': {
-      const charIndex = state.party.characters.findIndex(c => c.id === action.characterId);
+      const currentParty = state.parties[state.selectedPartyIndex];
+      const charIndex = currentParty.characters.findIndex(c => c.id === action.characterId);
       if (charIndex === -1) return state;
 
-      const character = state.party.characters[charIndex];
+      const character = currentParty.characters[charIndex];
       const newEquipment = [...character.equipment];
-      let newInventory = { ...state.party.inventory };
+      let newInventory = { ...currentParty.inventory };
 
       // Add old item back to inventory
       const oldItem = newEquipment[action.slotIndex];
@@ -844,21 +924,29 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         newEquipment[action.slotIndex] = null;
       }
 
-      const newCharacters = [...state.party.characters];
+      const newCharacters = [...currentParty.characters];
       newCharacters[charIndex] = { ...character, equipment: newEquipment };
+
+      const updatedParties = [...state.parties];
+      updatedParties[state.selectedPartyIndex] = {
+        ...currentParty,
+        characters: newCharacters,
+        inventory: newInventory
+      };
 
       return {
         ...state,
-        party: { ...state.party, characters: newCharacters, inventory: newInventory },
+        parties: updatedParties,
       };
     }
 
     case 'UPDATE_CHARACTER': {
-      const charIndex = state.party.characters.findIndex(c => c.id === action.characterId);
+      const currentParty = state.parties[state.selectedPartyIndex];
+      const charIndex = currentParty.characters.findIndex(c => c.id === action.characterId);
       if (charIndex === -1) return state;
 
-      const oldChar = state.party.characters[charIndex];
-      const newCharacters = [...state.party.characters];
+      const oldChar = currentParty.characters[charIndex];
+      const newCharacters = [...currentParty.characters];
 
       // If race/class/etc changed, remove all equipment
       const isCharacterChanged =
@@ -868,12 +956,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         (action.updates.predispositionId && action.updates.predispositionId !== oldChar.predispositionId) ||
         (action.updates.lineageId && action.updates.lineageId !== oldChar.lineageId);
 
-      let newInventory = state.party.inventory;
+      let newInventory = currentParty.inventory;
       let newEquipment = oldChar.equipment;
 
       if (isCharacterChanged) {
         // Return equipment to inventory
-        newInventory = { ...state.party.inventory };
+        newInventory = { ...currentParty.inventory };
         for (const item of oldChar.equipment.filter((e): e is Item => e !== null)) {
           const key = getVariantKey(item);
           const existing = newInventory[key];
@@ -888,55 +976,85 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       newCharacters[charIndex] = { ...oldChar, ...action.updates, equipment: newEquipment };
 
+      const updatedParties = [...state.parties];
+      updatedParties[state.selectedPartyIndex] = {
+        ...currentParty,
+        characters: newCharacters,
+        inventory: newInventory
+      };
+
       return {
         ...state,
-        party: { ...state.party, characters: newCharacters, inventory: newInventory },
+        parties: updatedParties,
       };
     }
 
     case 'SELL_STACK': {
-      const variant = state.party.inventory[action.variantKey];
+      const currentParty = state.parties[state.selectedPartyIndex];
+      const variant = currentParty.inventory[action.variantKey];
       if (!variant || variant.count <= 0) return state;
 
       const sellPrice = calculateSellPrice(variant.item) * variant.count;
 
-      const newInventory = { ...state.party.inventory };
+      const newInventory = { ...currentParty.inventory };
       newInventory[action.variantKey] = {
         ...variant,
         count: 0,
         status: 'sold',
       };
 
+      const updatedParties = [...state.parties];
+      updatedParties[state.selectedPartyIndex] = {
+        ...currentParty,
+        inventory: newInventory,
+        gold: currentParty.gold + sellPrice
+      };
+
       return {
         ...state,
-        party: { ...state.party, inventory: newInventory, gold: state.party.gold + sellPrice },
+        parties: updatedParties,
       };
     }
 
     case 'SET_VARIANT_STATUS': {
-      const variant = state.party.inventory[action.variantKey];
+      const currentParty = state.parties[state.selectedPartyIndex];
+      const variant = currentParty.inventory[action.variantKey];
       if (!variant) return state;
 
-      const newInventory = { ...state.party.inventory };
+      const newInventory = { ...currentParty.inventory };
       newInventory[action.variantKey] = {
         ...variant,
         status: action.status,
       };
 
+      const updatedParties = [...state.parties];
+      updatedParties[state.selectedPartyIndex] = {
+        ...currentParty,
+        inventory: newInventory
+      };
+
       return {
         ...state,
-        party: { ...state.party, inventory: newInventory },
+        parties: updatedParties,
       };
     }
 
     case 'MARK_ITEMS_SEEN': {
+      const currentParty = state.parties[state.selectedPartyIndex];
       const newInventory: InventoryRecord = {};
-      for (const [key, variant] of Object.entries(state.party.inventory)) {
+      for (const [key, variant] of Object.entries(currentParty.inventory)) {
         newInventory[key] = { ...variant, isNew: false };
       }
+
+      const updatedParties = [...state.parties];
+      updatedParties[state.selectedPartyIndex] = {
+        ...currentParty,
+        inventory: newInventory
+      };
+
       return {
         ...state,
-        party: { ...state.party, inventory: newInventory },
+        parties: updatedParties,
       };
     }
 
@@ -950,7 +1068,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       // Return fresh state (not from localStorage)
       return {
         scene: 'home' as const,
-        party: createInitialParty(),
+        parties: [createInitialParty(), createSecondParty()],
+        selectedPartyIndex: 0,
         bags: {
           commonRewardBag: createCommonRewardBag(),
           commonEnhancementBag: createCommonEnhancementBag(),
@@ -1076,6 +1195,10 @@ export function useGameState() {
   }, []);
 
   const actions = {
+    selectParty: useCallback((partyIndex: number) => {
+      dispatch({ type: 'SELECT_PARTY', partyIndex });
+    }, []),
+
     selectDungeon: useCallback((dungeonId: number) => {
       dispatch({ type: 'SELECT_DUNGEON', dungeonId });
     }, []),

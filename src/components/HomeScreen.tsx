@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { DUNGEONS } from '../data/dungeons';
 import { RACES } from '../data/races';
@@ -15,6 +15,7 @@ interface HomeScreenProps {
   state: GameState;
   bags: GameBags;
   actions: {
+    selectParty: (partyIndex: number) => void;
     selectDungeon: (dungeonId: number) => void;
     runExpedition: () => void;
     equipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
@@ -144,10 +145,11 @@ function getDungeonEntryGateState(state: GameState, dungeon: Dungeon): {
 
   const previousDungeon = DUNGEONS.find(d => d.id === dungeon.id - 1);
   const previousDungeonName = previousDungeon?.name ?? '前回の探検地';
+  const currentParty = state.parties[state.selectedPartyIndex];
   const required = 1;
   const collected = countOwnedItemsOfRarityForTier(
-    state.party.inventory,
-    state.party.characters,
+    currentParty.inventory,
+    currentParty.characters,
     dungeon.id - 1,
     'mythic'
   );
@@ -377,7 +379,8 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const [editingCharacter, setEditingCharacter] = useState<number | null>(null);
   const prevLogRef = useRef<typeof state.lastExpeditionLog>(null);
 
-  const { partyStats, characterStats } = computePartyStats(state.party);
+  const currentParty = state.parties[state.selectedPartyIndex];
+  const { partyStats, characterStats } = computePartyStats(currentParty);
 
   // Item drop notifications after expedition
   useEffect(() => {
@@ -403,7 +406,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     4000, 5000, 6200, 7600, 9200, 11000, 13000, 15500, 18500, 22000,
     26000, 30500, 35500, 41000, 47000, 53500, 60500, 68000, 76000
   ];
-  const nextLevelExp = state.party.level < 29 ? LEVEL_EXP[state.party.level] : 0;
+  const nextLevelExp = currentParty.level < 29 ? LEVEL_EXP[currentParty.level] : 0;
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'party', label: 'パーティ' },
@@ -414,7 +417,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   ];
 
   // Check for new items
-  const hasNewItems = Object.values(state.party.inventory).some(variant => variant.isNew);
+  const hasNewItems = Object.values(currentParty.inventory).some(variant => variant.isNew);
 
   return (
     <div className="flex flex-col h-screen">
@@ -426,12 +429,12 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             <div className="text-xs text-gray-500">v0.2.2 ({state.buildNumber})</div>
           </div>
           <div className="text-right text-sm">
-            <div className="font-medium">{state.party.name} - {state.party.deityName}</div>
-            <div className="text-xs text-gray-500">Lv.{state.party.level} | {state.party.gold}G</div>
+            <div className="font-medium">{currentParty.name} - {currentParty.deityName}</div>
+            <div className="text-xs text-gray-500">Lv.{currentParty.level} | {currentParty.gold}G</div>
           </div>
         </div>
         <div className="mt-2 flex justify-between text-xs text-gray-600">
-          <span>EXP: {state.party.experience} / {nextLevelExp}</span>
+          <span>EXP: {currentParty.experience} / {nextLevelExp}</span>
           <span>HP: {partyStats.hp}</span>
         </div>
 
@@ -466,7 +469,9 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       <div className="flex-1 overflow-y-auto p-4">
         {activeTab === 'party' && (
           <PartyTab
-            party={state.party}
+            parties={state.parties}
+            selectedPartyIndex={state.selectedPartyIndex}
+            party={currentParty}
             partyStats={partyStats}
             characterStats={characterStats}
             selectedCharacter={selectedCharacter}
@@ -476,6 +481,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             onUpdateCharacter={actions.updateCharacter}
             onEquipItem={actions.equipItem}
             onAddStatNotifications={actions.addStatNotifications}
+            onSelectParty={actions.selectParty}
           />
         )}
 
@@ -489,7 +495,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
 
         {activeTab === 'inventory' && (
           <InventoryTab
-            inventory={state.party.inventory}
+            inventory={currentParty.inventory}
             onSellStack={actions.sellStack}
             onSetVariantStatus={actions.setVariantStatus}
           />
@@ -497,7 +503,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
 
         {activeTab === 'shop' && (
           <ShopTab
-            gold={state.party.gold}
+            gold={currentParty.gold}
           />
         )}
 
@@ -516,6 +522,8 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
 }
 
 function PartyTab({
+  parties,
+  selectedPartyIndex,
   party,
   partyStats,
   characterStats,
@@ -526,8 +534,11 @@ function PartyTab({
   onUpdateCharacter,
   onEquipItem,
   onAddStatNotifications,
+  onSelectParty,
 }: {
-  party: GameState['party'];
+  parties: Party[];
+  selectedPartyIndex: number;
+  party: Party;
   partyStats: ReturnType<typeof computePartyStats>['partyStats'];
   characterStats: ReturnType<typeof computePartyStats>['characterStats'];
   selectedCharacter: number;
@@ -537,6 +548,7 @@ function PartyTab({
   onUpdateCharacter: (id: number, updates: Partial<Character>) => void;
   onEquipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
   onAddStatNotifications: (changes: Array<{ message: string; isPositive: boolean }>) => void;
+  onSelectParty: (partyIndex: number) => void;
 }) {
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
   const [equipCategory, setEquipCategory] = useState('armor');
@@ -672,21 +684,28 @@ function PartyTab({
 
   return (
     <div>
-      {/* Party selector */}
-      <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
-        {[1, 2, 3, 4, 5, 6].map((partyNum) => (
-          <div
-            key={partyNum}
-            className={`flex-shrink-0 p-2 rounded-lg border text-center ${
-              partyNum === 1 ? 'border-sub bg-blue-50' : 'border-gray-200 bg-gray-50'
-            }`}
-          >
-            <div className="text-sm font-medium">PT{partyNum}</div>
-            <div className="text-xs text-gray-500 mt-1">
-              {partyNum === 1 ? '選択中' : '未開放'}
-            </div>
-          </div>
-        ))}
+      {/* Party selector - tab style */}
+      <div className="flex mb-4 border-b border-gray-200">
+        {[0, 1, 2, 3, 4, 5].map((partyIndex) => {
+          const isAvailable = partyIndex < parties.length;
+          const isSelected = partyIndex === selectedPartyIndex;
+          return (
+            <button
+              key={partyIndex}
+              onClick={() => isAvailable && onSelectParty(partyIndex)}
+              disabled={!isAvailable}
+              className={`flex-1 py-2 text-sm font-medium ${
+                isSelected
+                  ? 'text-sub border-b-2 border-sub'
+                  : isAvailable
+                  ? 'text-gray-700 hover:text-gray-900'
+                  : 'text-gray-300 cursor-not-allowed'
+              }`}
+            >
+              PT{partyIndex + 1}
+            </button>
+          );
+        })}
       </div>
 
       {/* Character selector */}
