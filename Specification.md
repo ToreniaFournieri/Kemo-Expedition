@@ -1225,7 +1225,7 @@ PT2出撃先…
   - Show latest `f.quick_summary`.
     - Tapping the quick summary shows a `f.list_of_rooms`.
     - Tapping a room opens the `f.battle_logs`.
-  - If the dungeon is locked, the name of dungeon is gray color and show this text: "🔒 解放条件: 〇〇の神魔レアアイテム 0/1 収集"
+  - 次の目標: show next Loot-Gate condition. 
 
 #### 8.5 Inventory
 - Behavior:
