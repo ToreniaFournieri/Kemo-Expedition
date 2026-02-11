@@ -964,6 +964,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         newLevel++;
       }
 
+      const finalRemainingPartyHP = entries.length > 0
+        ? entries[entries.length - 1].remainingPartyHP
+        : currentHp;
+
       const log: ExpeditionLog = {
         dungeonId: dungeon.id,
         dungeonName: dungeon.name,
@@ -974,7 +978,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         entries,
         rewards: finalRewards,
         autoSellProfit: finalAutoSellProfit,
-        remainingPartyHP: currentHp,
+        remainingPartyHP: finalRemainingPartyHP,
         maxPartyHP: partyStats.hp,
       };
 

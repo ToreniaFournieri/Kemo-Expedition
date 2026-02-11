@@ -311,7 +311,7 @@ function formatBonuses(bonuses: Bonus[]): string {
     } else if (b.type === 'penet') {
       parts.push(`貫通${Math.round(b.value * 100)}%`);
     } else if (b.type === 'pursuit') {
-      parts.push(`追撃${Math.round(b.value * 100)}%`);
+      parts.push(`追撃+${b.value}`);
     } else if (b.type === 'accuracy') {
       parts.push(`命中+${b.value}`);
     } else if (b.type === 'evasion') {
