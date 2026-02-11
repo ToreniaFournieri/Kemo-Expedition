@@ -1168,12 +1168,11 @@ Left-aligned            Right-aligned
     - IF player selects [M],  　　神魔レアのみ: [ALL] [C] [U] [R] **[M]** 
     - 超レア[ON/OFF] default: OFF, if ON, filter superRare >= 1.
   - Inventory includes item category tabs:
-    - [耐久:鎧,衣,盾],[近距離攻撃:剣,刀,手],[遠距離攻撃:矢,ボ,弓],[魔法攻撃:杖,書,媒].
-    - Display filter
-      - 耐久 for all character
-      - If character has `c.grit+v`, [近距離攻撃:剣,刀,手]
-      - If character has `c.pursuit+v`, [遠距離攻撃:矢,ボ,弓]
-      - If character has `c.caster+v`, display [魔法攻撃:杖,書,媒]
+    - Displays [耐久:鎧,衣,盾] for all character
+    - If character has `c.grit+v`, displays [近距離攻撃:剣,刀,手]
+    - If character has `c.pursuit+v`,
+displays [遠距離攻撃:矢,ボ,弓]
+    - If character has `c.caster+v`, displays [魔法攻撃:杖,書,媒]
 
     - Default: 鎧 or previously selected category of each character 
     - Each box has two lines:
