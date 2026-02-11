@@ -218,8 +218,13 @@ function getItemStats(item: Item): string {
     (SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1);
   const baseMultiplier = item.baseMultiplier ?? 1;
   const multiplierPercent = Math.round((baseMultiplier - 1) * 100);
+  const formatDecimal = (value: number): string => {
+    const rounded = Math.round(value * 100) / 100;
+    if (Number.isInteger(rounded)) return `${rounded}`;
+    return rounded.toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
+  };
   const formatSigned = (value: number, suffix: string = ''): string =>
-    `${value >= 0 ? '+' : ''}${value}${suffix}`;
+    `${value >= 0 ? '+' : ''}${formatDecimal(value)}${suffix}`;
   const formatBracket = (label: string, value: number, suffix: string = ''): string =>
     `[${label}${formatSigned(value, suffix)}]`;
 
