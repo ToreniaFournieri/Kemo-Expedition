@@ -1027,12 +1027,12 @@ function PartyTab({
               {(() => {
                 // Calculate offense amplifiers per phase
                 const iaigiri = stats.abilities.find(a => a.id === 'iaigiri');
-                // LONG phase: 1.0
-                const longAmp = 1.0;
-                // MID phase: 1.0
-                const midAmp = 1.0;
-                // CLOSE phase: 2.0 if iaigiri, otherwise 1.0
-                const closeAmp = iaigiri ? 2.0 : 1.0;
+                // LONG phase: 1.0 + deity bonus
+                const longAmp = 1.0 + stats.deityOffenseAmplifierBonus;
+                // MID phase: 1.0 + deity bonus
+                const midAmp = 1.0 + stats.deityOffenseAmplifierBonus;
+                // CLOSE phase: iaigiri multiplier, then deity bonus
+                const closeAmp = (iaigiri ? 2.0 : 1.0) * (1.0 + stats.deityOffenseAmplifierBonus);
                 const elementName = stats.elementalOffense === 'fire' ? '火' :
                   stats.elementalOffense === 'thunder' ? '雷' :
                   stats.elementalOffense === 'ice' ? '氷' : '無';

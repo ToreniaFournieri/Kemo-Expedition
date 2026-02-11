@@ -199,7 +199,7 @@ function calculateCharacterDamage(
   const effectiveDefense = defense * (1 - charStats.penetMultiplier);
 
   // Offense amplifier: iaigiri scales with ability level on CLOSE phase
-  let offenseAmplifier = 1.0 + deityOffenseAmplifierBonus;
+  let offenseAmplifier = 1.0 + charStats.deityOffenseAmplifierBonus;
   const iaigiri = charStats.abilities.find(a => a.id === 'iaigiri');
   if (iaigiri && phase === 'close') {
     offenseAmplifier *= iaigiri.level >= 2 ? 2.5 : 2.0;

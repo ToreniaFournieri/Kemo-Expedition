@@ -80,11 +80,7 @@ export function applyDeityCharacterModifiers(
       case 'God of Attrition':
         return {
           ...stats,
-          deityOffenseAmplifierBonus: {
-            long: stats.deityOffenseAmplifierBonus.long + 0.2,
-            mid: stats.deityOffenseAmplifierBonus.mid + 0.2,
-            close: stats.deityOffenseAmplifierBonus.close + 0.2,
-          },
+          deityOffenseAmplifierBonus: stats.deityOffenseAmplifierBonus + 0.2,
         };
       case 'God of Fortification':
         return {
