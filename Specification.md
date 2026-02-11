@@ -1212,10 +1212,9 @@ Left-aligned            Right-aligned
 ```
 PT1出撃先: ルピニアンの断崖 (pull down menu to select) 出発
 前回の探検結果: ルピニアンの断崖 敗北 ▼
+次の目標: ルピニアンの断崖の神魔レアアイテム 0/1 
 
-PT2出撃先: ヴァルピニアンの樹林帯 🔓 (pull down menu to select) 出発
-解放条件: ルピニアンの断崖の神魔レアアイテム 0/1 収集
-前回の探検結果: ケイナイアン平原 勝利 ▼
+PT2出撃先…
 ```
 - Per party:
   - Currently selected dungeon with Loot-Gate conditions (ex. 2nd Elite Gate is locked: 2/6 Floor 2 Uncommons collected.)
