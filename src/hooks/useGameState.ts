@@ -694,6 +694,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let bags = state.bags;
       let finalOutcome: 'victory' | 'return' | 'defeat' | 'retreat' = 'victory';
       let currentInventory = state.global.inventory;
+      // Loot-gates are evaluated from the inventory/equipment state at expedition start.
+      // Rewards obtained during the current expedition should not unlock deeper gates mid-run.
+      const gateCheckInventory = state.global.inventory;
       let currentGold = state.global.gold;
       let totalAutoSellProfit = 0;
       let roomCounter = 0;
@@ -717,7 +720,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               const prevTier = tier - 1;
               const prevDungeonName = getDungeonById(prevTier)?.name ?? '前回の探検地';
               const gateRequired = 1;
-              const collected = countItemsOfRarity(currentInventory, currentParty.characters, prevTier, 'mythic');
+              const collected = countItemsOfRarity(gateCheckInventory, currentParty.characters, prevTier, 'mythic');
               if (collected < gateRequired) {
                 const gateEntry: ExpeditionLogEntry = {
                   room: roomCounter,
@@ -754,7 +757,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 gateRequired = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 3;
                 gateRarity = 'uncommon';
               }
-              const collected = countItemsOfRarity(currentInventory, currentParty.characters, tier, gateRarity);
+              const collected = countItemsOfRarity(gateCheckInventory, currentParty.characters, tier, gateRarity);
               if (collected < gateRequired) {
                 // Gate locked - expedition ends
                 const rarityLabel = gateRarity === 'rare' ? 'レアアイテム' : 'アンコモンアイテム';
