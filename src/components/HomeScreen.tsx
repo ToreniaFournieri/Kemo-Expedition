@@ -589,7 +589,6 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         {activeTab === 'inventory' && (
           <InventoryTab
             inventory={state.global.inventory}
-            character={currentParty.characters[selectedCharacter]}
             onSellStack={actions.sellStack}
             onSetVariantStatus={actions.setVariantStatus}
           />
@@ -1770,12 +1769,10 @@ function ExpeditionTab({
 }
 function InventoryTab({
   inventory,
-  character,
   onSellStack,
   onSetVariantStatus,
 }: {
   inventory: InventoryRecord;
-  character: Character;
   onSellStack: (variantKey: string) => void;
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
 }) {
@@ -1783,15 +1780,6 @@ function InventoryTab({
   const [selectedCategory, setSelectedCategory] = useState('armor');
   const [inventoryRarityFilter, setInventoryRarityFilter] = useState<RarityFilter>('all');
   const [inventorySuperRareOnly, setInventorySuperRareOnly] = useState(false);
-
-  const availableCategoryGroups = getAvailableCategoryGroups(character);
-  const availableCategories = availableCategoryGroups.flatMap(group => group.categories);
-
-  useEffect(() => {
-    if (!availableCategories.includes(selectedCategory)) {
-      setSelectedCategory(availableCategories[0] ?? 'armor');
-    }
-  }, [availableCategories, selectedCategory]);
 
   // Separate owned and sold/notown items, filtered by category
   const allOwnedItems = Object.entries(inventory).filter(([, v]) => v.status === 'owned' && v.count > 0);
@@ -1849,7 +1837,7 @@ function InventoryTab({
 
       {/* Category group tabs */}
       <div className="flex gap-1 mb-3 overflow-x-auto pb-1">
-        {availableCategoryGroups.map(group => (
+        {CATEGORY_GROUPS.map(group => (
           <div key={group.id} className="flex flex-col">
             <div className="text-xs text-gray-400 text-center mb-0.5">{group.label}</div>
             <div className="flex">
