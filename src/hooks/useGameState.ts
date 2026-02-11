@@ -42,6 +42,19 @@ import { getItemDisplayName } from '../game/gameState';
 const BUILD_NUMBER = 43;
 const STORAGE_KEY = 'kemo-expedition-save';
 
+const DEITY_NAME_MAP: Record<string, string> = {
+  'God of Restoration': '再生の神',
+  'God of Attrition': '消耗の神',
+  'God of Fortification': '防備の神',
+  'God of Precision': '命中の神',
+  'God of Evasion': '回避の神',
+  'God of Resonance': '反響の神',
+};
+
+function normalizeDeityName(name: string): string {
+  return DEITY_NAME_MAP[name] ?? name;
+}
+
 // Helper to calculate sell price for an item
 function calculateSellPrice(item: Item): number {
   const enhMult = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
@@ -178,10 +191,11 @@ function loadSavedState(): GameState | null {
           }
           if (!party.deity) {
             party.deity = createInitialDeity('God of Restoration');
-            if (party.deityName) party.deity.name = party.deityName;
+            if (party.deityName) party.deity.name = normalizeDeityName(party.deityName);
             if (typeof party.level === 'number') party.deity.level = party.level;
             if (typeof party.experience === 'number') party.deity.experience = party.experience;
           }
+          party.deity.name = normalizeDeityName(party.deity.name);
 
           // Merge latest item definitions onto saved items (for new fields like baseMultiplier)
           for (const character of party.characters ?? []) {
@@ -225,7 +239,7 @@ const LEVEL_EXP: number[] = [
 
 function createInitialDeity(name: string) {
   return {
-    name,
+    name: normalizeDeityName(name),
     level: 1,
     experience: 0,
     uniqueAbilities: [],
@@ -282,7 +296,7 @@ function createInitialParty() {
   return {
     id: 1,
     name: 'PT1',
-    deity: createInitialDeity('God of Restoration'),
+    deity: createInitialDeity('再生の神'),
     characters,
     selectedDungeonId: 1,
     lastExpeditionLog: null,
@@ -314,7 +328,7 @@ function createSecondParty() {
   return {
     id: 2,
     name: 'PT2',
-    deity: createInitialDeity('God of Restoration'),
+    deity: createInitialDeity('消耗の神'),
     characters,
     selectedDungeonId: 2,
     lastExpeditionLog: null,

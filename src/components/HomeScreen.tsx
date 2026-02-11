@@ -76,6 +76,12 @@ const ELITE_GATE_REQUIREMENTS: Record<number, number> = {
   5: 45,
 };
 
+const PARTY_LEVEL_EXP = [
+  0, 100, 250, 450, 700, 1000, 1400, 1900, 2500, 3200,
+  4000, 5000, 6200, 7600, 9200, 11000, 13000, 15500, 18500, 22000,
+  26000, 30500, 35500, 41000, 47000, 53500, 60500, 68000, 76000
+];
+
 function getItemRarityById(itemId: number): ItemRarity {
   const rarityCode = itemId % 1000;
   if (rarityCode >= 400) return 'mythic';
@@ -418,10 +424,17 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
 
   const currentParty = state.parties[state.selectedPartyIndex];
   const prevLogRef = useRef<typeof currentParty.lastExpeditionLog>(null);
+  const prevSelectedPartyRef = useRef(state.selectedPartyIndex);
   const { partyStats, characterStats } = computePartyStats(currentParty);
 
   // Item drop notifications after expedition
   useEffect(() => {
+    if (prevSelectedPartyRef.current !== state.selectedPartyIndex) {
+      prevSelectedPartyRef.current = state.selectedPartyIndex;
+      prevLogRef.current = currentParty.lastExpeditionLog;
+      return;
+    }
+
     if (currentParty.lastExpeditionLog && currentParty.lastExpeditionLog !== prevLogRef.current) {
       // Show notification for each reward (non-auto-sold items)
       for (const item of currentParty.lastExpeditionLog.rewards) {
@@ -438,7 +451,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       }
     }
     prevLogRef.current = currentParty.lastExpeditionLog;
-  }, [currentParty.lastExpeditionLog, actions]);
+  }, [currentParty.lastExpeditionLog, actions, currentParty, state.selectedPartyIndex]);
   const tabs: { id: Tab; label: string }[] = [
     { id: 'party', label: 'パーティ' },
     { id: 'expedition', label: '探検' },
@@ -598,10 +611,18 @@ function PartyTab({
 
   const prevStatsRef = useRef<typeof combatTotals | null>(null);
   const prevSelectedCharRef = useRef(selectedCharacter);
+  const prevSelectedPartyRef = useRef(selectedPartyIndex);
 
   // Watch for stat changes after equipment - send individual notification per stat change
   useEffect(() => {
-    // Skip notifications when switching characters (stats naturally differ)
+    // Skip notifications when switching party/characters (stats naturally differ)
+    if (prevSelectedPartyRef.current !== selectedPartyIndex) {
+      prevSelectedPartyRef.current = selectedPartyIndex;
+      prevSelectedCharRef.current = selectedCharacter;
+      prevStatsRef.current = combatTotals;
+      return;
+    }
+
     if (prevSelectedCharRef.current !== selectedCharacter) {
       prevSelectedCharRef.current = selectedCharacter;
       prevStatsRef.current = combatTotals;
@@ -658,7 +679,7 @@ function PartyTab({
   }, [combatTotals.physDef, combatTotals.magDef, combatTotals.hp,
       combatTotals.meleeAtk, combatTotals.meleeNoA,
       combatTotals.rangedAtk, combatTotals.rangedNoA,
-      combatTotals.magicalAtk, combatTotals.magicalNoA, onAddStatNotifications, selectedCharacter]);
+      combatTotals.magicalAtk, combatTotals.magicalNoA, onAddStatNotifications, selectedCharacter, selectedPartyIndex]);
   const [pendingEdits, setPendingEdits] = useState<Partial<Character> | null>(null);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
   const [lastSlotTap, setLastSlotTap] = useState<{ slot: number; time: number } | null>(null);
@@ -733,6 +754,11 @@ function PartyTab({
             </button>
           );
         })}
+      </div>
+
+      <div className="mb-3 text-sm">
+        <span className="font-medium">{party.deity.name}</span>
+        <span className="text-gray-500"> (Level: {party.deity.level}, Experience {party.deity.experience}/{party.deity.level < 29 ? PARTY_LEVEL_EXP[party.deity.level] : party.deity.experience})</span>
       </div>
 
       {/* Character selector */}
@@ -1405,7 +1431,10 @@ function ExpeditionTab({
 
         return (
           <div key={partyIndex} className="bg-pane rounded-lg p-4">
-            <div className="text-sm mb-2"><span className="font-bold text-black">{party.name}</span> <span className="text-gray-500">HP: {partyStats.hp}</span></div>
+            <div className="text-sm mb-2 flex justify-between items-center">
+              <span className="font-bold text-black">{party.name} {party.deity.name}(Level: {party.deity.level})</span>
+              <span className="text-gray-500">HP: {partyStats.hp}</span>
+            </div>
             {/* Party Expedition Header */}
             <div className="flex items-center gap-2 mb-3">
               <span className="font-medium">出撃先:</span>
