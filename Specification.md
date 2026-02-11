@@ -1212,6 +1212,7 @@ Left-aligned            Right-aligned
     - Tapping a room opens the `f.battle_logs`.
 - Bottom section:
   - List of available dungeons with Loot-Gate conditions
+    - If the dungeon is locked, the name of dungeon is gray color and show this text: "🔒 解放条件: 〇〇の神魔レアアイテム 0/1 収集"
 
 #### 8.5 Inventory
 - Behavior:
