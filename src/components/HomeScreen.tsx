@@ -425,35 +425,35 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const [editingCharacter, setEditingCharacter] = useState<number | null>(null);
 
   const currentParty = state.parties[state.selectedPartyIndex];
-  const prevLogRef = useRef<typeof currentParty.lastExpeditionLog>(null);
-  const prevSelectedPartyRef = useRef(state.selectedPartyIndex);
+  const prevPartyLogsRef = useRef(state.parties.map((party) => party.lastExpeditionLog));
   const { partyStats, characterStats } = computePartyStats(currentParty);
 
   // Item drop notifications after expedition
   useEffect(() => {
-    if (prevSelectedPartyRef.current !== state.selectedPartyIndex) {
-      prevSelectedPartyRef.current = state.selectedPartyIndex;
-      prevLogRef.current = currentParty.lastExpeditionLog;
-      return;
-    }
+    state.parties.forEach((party, index) => {
+      const previousLog = prevPartyLogsRef.current[index] ?? null;
+      const currentLog = party.lastExpeditionLog;
+      if (!currentLog || currentLog === previousLog) {
+        return;
+      }
 
-    if (currentParty.lastExpeditionLog && currentParty.lastExpeditionLog !== prevLogRef.current) {
       // Show notification for each reward (non-auto-sold items)
-      for (const item of currentParty.lastExpeditionLog.rewards) {
+      for (const item of currentLog.rewards) {
         const isSuperRare = item.superRare > 0;
         const itemName = getItemDisplayName(item);
         const rarity = getItemRarityById(item.id);
         actions.addNotification(
-          `${currentParty.name}:${itemName}を入手！`,
+          `${party.name}:${itemName}を入手！`,
           rarity === 'rare' || rarity === 'mythic' || isSuperRare ? 'rare' : 'normal',
           'item',
           undefined,
           { rarity, isSuperRareItem: isSuperRare }
         );
       }
-    }
-    prevLogRef.current = currentParty.lastExpeditionLog;
-  }, [currentParty.lastExpeditionLog, actions, currentParty, state.selectedPartyIndex]);
+    });
+
+    prevPartyLogsRef.current = state.parties.map((party) => party.lastExpeditionLog);
+  }, [state.parties, actions]);
   const tabs: { id: Tab; label: string }[] = [
     { id: 'party', label: 'パーティ' },
     { id: 'expedition', label: '探検' },
@@ -809,7 +809,7 @@ function PartyTab({
                 onUpdatePartyDeity(selectedPartyIndex, pendingDeityName);
                 setEditingDeity(false);
               }}
-              className="text-xs text-sub"
+              className="text-xs text-sub border border-sub rounded px-3 py-1 min-w-[3.5rem]"
             >
               完了
             </button>
@@ -818,7 +818,7 @@ function PartyTab({
                 setPendingDeityName(party.deity.name);
                 setEditingDeity(false);
               }}
-              className="text-xs text-gray-600"
+              className="text-xs text-gray-600 border border-gray-300 rounded px-3 py-1 min-w-[3.5rem]"
             >
               取消
             </button>
