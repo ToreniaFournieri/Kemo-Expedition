@@ -11,6 +11,16 @@ import { getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { applyEnemyEncounterScaling } from '../game/enemyScaling';
 import { DEITY_OPTIONS, getDeityEffectDescription, normalizeDeityName } from '../game/deity';
+import {
+  ELITE_GATE_REQUIREMENTS,
+  ENTRY_GATE_REQUIRED,
+  BOSS_GATE_REQUIRED,
+  getEntryGateKey,
+  getEliteGateKey,
+  getBossGateKey,
+  getLootCollectionCount,
+  isLootGateUnlocked,
+} from '../game/lootGate';
 
 interface HomeScreenProps {
   state: GameState;
@@ -70,14 +80,6 @@ const RARITY_FILTER_NOTES: Record<RarityFilter, string> = {
 
 const RARITY_FILTER_OPTIONS: RarityFilter[] = ['all', 'common', 'uncommon', 'rare', 'mythic'];
 
-const ELITE_GATE_REQUIREMENTS: Record<number, number> = {
-  1: 3,
-  2: 9,
-  3: 18,
-  4: 30,
-  5: 45,
-};
-
 const PARTY_LEVEL_EXP = [
   0, 100, 250, 450, 700, 1000, 1400, 1900, 2500, 3200,
   4000, 5000, 6200, 7600, 9200, 11000, 13000, 15500, 18500, 22000,
@@ -121,45 +123,8 @@ function getRewardTextClass(rarity?: ItemRarity, isSuperRare?: boolean): string 
   return 'text-black';
 }
 
-function countOwnedItemsOfRarityForTier(
-  inventory: InventoryRecord,
-  characters: Character[],
-  tier: number,
-  rarity: 'uncommon' | 'rare' | 'mythic'
-): number {
-  const rarityItems = ITEMS.filter(item => {
-    const itemTier = Math.floor(item.id / 1000);
-    if (itemTier !== tier) return false;
-
-    const rarityCode = item.id % 1000;
-    if (rarity === 'mythic') return rarityCode >= 400;
-    if (rarity === 'rare') return rarityCode >= 300 && rarityCode < 400;
-    return rarityCode >= 200 && rarityCode < 300;
-  });
-
-  const rarityIds = new Set(rarityItems.map(item => item.id));
-  let count = 0;
-
-  for (const variant of Object.values(inventory)) {
-    if (variant.status === 'owned' && variant.count > 0 && rarityIds.has(variant.item.id)) {
-      count += variant.count;
-    }
-  }
-
-  for (const character of characters) {
-    for (const equippedItem of character.equipment) {
-      if (equippedItem && rarityIds.has(equippedItem.id)) {
-        count += 1;
-      }
-    }
-  }
-
-  return count;
-}
-
 function getDungeonEntryGateState(
   party: Party,
-  globalInventory: InventoryRecord,
   dungeon: Dungeon
 ): {
   locked: boolean;
@@ -171,21 +136,17 @@ function getDungeonEntryGateState(
 
   const previousDungeon = DUNGEONS.find(d => d.id === dungeon.id - 1);
   const previousDungeonName = previousDungeon?.name ?? '前回の探検地';
-  const required = 1;
-  const collected = countOwnedItemsOfRarityForTier(
-    globalInventory,
-    party.characters,
-    dungeon.id - 1,
-    'mythic'
-  );
+  const required = ENTRY_GATE_REQUIRED;
+  const collected = getLootCollectionCount(party.deity, dungeon.id - 1, 'mythic');
+  const unlocked = isLootGateUnlocked(party.deity, getEntryGateKey(dungeon.id)) || collected >= required;
 
   return {
-    locked: collected < required,
-    gateText: `🔒 解放条件: ${previousDungeonName}の神魔レアアイテム ${collected}/${required} 収集`,
+    locked: !unlocked,
+    gateText: `🔒 解放条件: ${previousDungeonName}の神魔レアアイテム(持ち帰り) ${collected}/${required}`,
   };
 }
 
-function getNextGoalText(party: Party, globalInventory: InventoryRecord): string | null {
+function getNextGoalText(party: Party): string | null {
   const currentDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
   if (!currentDungeon || !currentDungeon.floors) return null;
 
@@ -195,17 +156,19 @@ function getNextGoalText(party: Party, globalInventory: InventoryRecord): string
     const hasEliteGate = floor.floorNumber < 6;
     if (hasEliteGate) {
       const required = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 3;
-      const collected = countOwnedItemsOfRarityForTier(globalInventory, party.characters, tier, 'uncommon');
-      if (collected < required) {
-        return `次の目標: ${currentDungeon.name} ${floor.floorNumber}F-4の解放: アンコモンアイテム ${collected}/${required} 収集`;
+      const collected = getLootCollectionCount(party.deity, tier, 'uncommon');
+      const unlocked = isLootGateUnlocked(party.deity, getEliteGateKey(currentDungeon.id, floor.floorNumber)) || collected >= required;
+      if (!unlocked) {
+        return `次の目標: ${currentDungeon.name} ${floor.floorNumber}F-4の解放: アンコモンアイテム(持ち帰り) ${collected}/${required}`;
       }
     }
   }
 
-  const bossRequired = 3;
-  const rareCollected = countOwnedItemsOfRarityForTier(globalInventory, party.characters, tier, 'rare');
-  if (rareCollected < bossRequired) {
-    return `次の目標: ${currentDungeon.name} 6F-4の解放: レアアイテム ${rareCollected}/${bossRequired} 収集`;
+  const bossRequired = BOSS_GATE_REQUIRED;
+  const rareCollected = getLootCollectionCount(party.deity, tier, 'rare');
+  const bossUnlocked = isLootGateUnlocked(party.deity, getBossGateKey(currentDungeon.id)) || rareCollected >= bossRequired;
+  if (!bossUnlocked) {
+    return `次の目標: ${currentDungeon.name} 6F-4の解放: レアアイテム(持ち帰り) ${rareCollected}/${bossRequired}`;
   }
 
   return null;
@@ -1557,7 +1520,7 @@ function ExpeditionTab({
     state.parties.forEach((party, partyIndex) => {
       const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
       if (!selectedDungeon) return;
-      const gateState = getDungeonEntryGateState(party, state.global.inventory, selectedDungeon);
+      const gateState = getDungeonEntryGateState(party, selectedDungeon);
       if (!gateState.locked) {
         onRunExpedition(partyIndex);
       }
@@ -1589,7 +1552,7 @@ function ExpeditionTab({
         }
 
         const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
-        const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, state.global.inventory, selectedDungeon) : null;
+        const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
         const { partyStats } = computePartyStats(party);
 
         return (
@@ -1606,7 +1569,7 @@ function ExpeditionTab({
                 className="border border-gray-300 rounded px-2 py-1 text-sm flex-1"
               >
                 {DUNGEONS.map(dungeon => {
-                  const gateState = getDungeonEntryGateState(party, state.global.inventory, dungeon);
+                  const gateState = getDungeonEntryGateState(party, dungeon);
                   return (
                     <option key={dungeon.id} value={dungeon.id} disabled={gateState.locked}>
                       {dungeon.name} {gateState.locked ? '🔒' : ''}
@@ -1628,7 +1591,7 @@ function ExpeditionTab({
             </div>
 
             {(() => {
-              const nextGoalText = getNextGoalText(party, state.global.inventory);
+              const nextGoalText = getNextGoalText(party);
               if (!nextGoalText) return null;
               return <div className="mt-3 text-sm text-gray-700">{nextGoalText}</div>;
             })()}
