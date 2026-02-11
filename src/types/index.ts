@@ -400,7 +400,8 @@ export type GameScene = 'home';
 
 export interface GameState {
   scene: GameScene;
-  party: Party;
+  parties: Party[];
+  selectedPartyIndex: number;
   bags: GameBags;
   selectedDungeonId: number;
   lastExpeditionLog: ExpeditionLog | null;
