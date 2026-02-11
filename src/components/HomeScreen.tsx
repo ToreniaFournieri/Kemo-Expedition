@@ -68,6 +68,14 @@ const RARITY_FILTER_NOTES: Record<RarityFilter, string> = {
 
 const RARITY_FILTER_OPTIONS: RarityFilter[] = ['all', 'common', 'uncommon', 'rare', 'mythic'];
 
+const ELITE_GATE_REQUIREMENTS: Record<number, number> = {
+  1: 3,
+  2: 9,
+  3: 18,
+  4: 30,
+  5: 45,
+};
+
 function getItemRarityById(itemId: number): ItemRarity {
   const rarityCode = itemId % 1000;
   if (rarityCode >= 400) return 'mythic';
@@ -135,7 +143,11 @@ function countOwnedItemsOfRarityForTier(
   return count;
 }
 
-function getDungeonEntryGateState(state: GameState, dungeon: Dungeon): {
+function getDungeonEntryGateState(
+  party: Party,
+  globalInventory: InventoryRecord,
+  dungeon: Dungeon
+): {
   locked: boolean;
   gateText: string;
 } {
@@ -145,11 +157,10 @@ function getDungeonEntryGateState(state: GameState, dungeon: Dungeon): {
 
   const previousDungeon = DUNGEONS.find(d => d.id === dungeon.id - 1);
   const previousDungeonName = previousDungeon?.name ?? '前回の探検地';
-  const currentParty = state.parties[state.selectedPartyIndex];
   const required = 1;
   const collected = countOwnedItemsOfRarityForTier(
-    currentParty.inventory,
-    currentParty.characters,
+    globalInventory,
+    party.characters,
     dungeon.id - 1,
     'mythic'
   );
@@ -160,7 +171,34 @@ function getDungeonEntryGateState(state: GameState, dungeon: Dungeon): {
   };
 }
 
+function getNextGoalText(party: Party, globalInventory: InventoryRecord): string | null {
+  const currentDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
+  if (!currentDungeon || !currentDungeon.floors) return null;
+
+  const tier = currentDungeon.enemyPoolIds[0];
+
+  for (const floor of currentDungeon.floors) {
+    const hasEliteGate = floor.floorNumber < 6;
+    if (hasEliteGate) {
+      const required = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 3;
+      const collected = countOwnedItemsOfRarityForTier(globalInventory, party.characters, tier, 'uncommon');
+      if (collected < required) {
+        return `次の目標: ${currentDungeon.name} ${floor.floorNumber}F-4の解放: アンコモンアイテム ${collected}/${required} 収集`;
+      }
+    }
+  }
+
+  const bossRequired = 3;
+  const rareCollected = countOwnedItemsOfRarityForTier(globalInventory, party.characters, tier, 'rare');
+  if (rareCollected < bossRequired) {
+    return `次の目標: ${currentDungeon.name} 6F-4の解放: レアアイテム ${rareCollected}/${bossRequired} 収集`;
+  }
+
+  return null;
+}
+
 // Helper to format item stats
+
 function getItemStats(item: Item): string {
   const multiplier = (ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1) *
     (SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1);
@@ -401,13 +439,6 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     }
     prevLogRef.current = currentParty.lastExpeditionLog;
   }, [currentParty.lastExpeditionLog, actions]);
-  const LEVEL_EXP = [
-    0, 100, 250, 450, 700, 1000, 1400, 1900, 2500, 3200,
-    4000, 5000, 6200, 7600, 9200, 11000, 13000, 15500, 18500, 22000,
-    26000, 30500, 35500, 41000, 47000, 53500, 60500, 68000, 76000
-  ];
-  const nextLevelExp = currentParty.level < 29 ? LEVEL_EXP[currentParty.level] : 0;
-
   const tabs: { id: Tab; label: string }[] = [
     { id: 'party', label: 'パーティ' },
     { id: 'expedition', label: '探検' },
@@ -417,7 +448,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   ];
 
   // Check for new items
-  const hasNewItems = Object.values(currentParty.inventory).some(variant => variant.isNew);
+  const hasNewItems = Object.values(state.global.inventory).some(variant => variant.isNew);
 
   return (
     <div className="flex flex-col h-screen">
@@ -428,16 +459,9 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             <h1 className="text-lg font-bold">ケモの冒険</h1>
             <div className="text-xs text-gray-500">v0.2.2 ({state.buildNumber})</div>
           </div>
-          <div className="text-right text-sm">
-            <div className="font-medium">{currentParty.name} - {currentParty.deityName}</div>
-            <div className="text-xs text-gray-500">Lv.{currentParty.level} | {currentParty.gold}G</div>
-          </div>
+          <div className="text-right text-sm font-medium">{state.global.gold}G</div>
         </div>
-        <div className="mt-2 flex justify-between text-xs text-gray-600">
-          <span>EXP: {currentParty.experience} / {nextLevelExp}</span>
-          <span>HP: {partyStats.hp}</span>
-        </div>
-
+        
         {/* Tabs */}
         <div className="flex mt-3 -mb-3 border-b border-gray-200">
           {tabs.map(tab => (
@@ -482,6 +506,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             onEquipItem={actions.equipItem}
             onAddStatNotifications={actions.addStatNotifications}
             onSelectParty={actions.selectParty}
+            inventory={state.global.inventory}
           />
         )}
 
@@ -495,7 +520,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
 
         {activeTab === 'inventory' && (
           <InventoryTab
-            inventory={currentParty.inventory}
+            inventory={state.global.inventory}
             onSellStack={actions.sellStack}
             onSetVariantStatus={actions.setVariantStatus}
           />
@@ -503,7 +528,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
 
         {activeTab === 'shop' && (
           <ShopTab
-            gold={currentParty.gold}
+            gold={state.global.gold}
           />
         )}
 
@@ -535,6 +560,7 @@ function PartyTab({
   onEquipItem,
   onAddStatNotifications,
   onSelectParty,
+  inventory,
 }: {
   parties: Party[];
   selectedPartyIndex: number;
@@ -549,6 +575,7 @@ function PartyTab({
   onEquipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
   onAddStatNotifications: (changes: Array<{ message: string; isPositive: boolean }>) => void;
   onSelectParty: (partyIndex: number) => void;
+  inventory: InventoryRecord;
 }) {
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
   const [equipCategory, setEquipCategory] = useState('armor');
@@ -1170,7 +1197,7 @@ function PartyTab({
         });
 
         // Add inventory items (subtract equipped count for display)
-        Object.entries(party.inventory)
+        Object.entries(inventory)
           .filter(([, v]) => v.status === 'owned' && v.count > 0 && v.item.category === equipCategory)
           .forEach(([key, variant]) => {
             displayItems.push({
@@ -1337,8 +1364,28 @@ function ExpeditionTab({
   const [expandedLogParty, setExpandedLogParty] = useState<number | null>(null);
   const [expandedRoom, setExpandedRoom] = useState<{ partyIndex: number; roomIndex: number } | null>(null);
 
+  const handleRunAllExpeditions = () => {
+    state.parties.forEach((party, partyIndex) => {
+      const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
+      if (!selectedDungeon) return;
+      const gateState = getDungeonEntryGateState(party, state.global.inventory, selectedDungeon);
+      if (!gateState.locked) {
+        onRunExpedition(partyIndex);
+      }
+    });
+  };
+
   return (
     <div className="space-y-4">
+      <div className="flex justify-end">
+        <button
+          onClick={handleRunAllExpeditions}
+          className="px-3 py-1 text-white rounded font-medium text-sm bg-sub hover:bg-blue-600"
+        >
+          一括出撃
+        </button>
+      </div>
+
       {/* Party Expedition Slots */}
       {[0, 1, 2, 3, 4, 5].map((partyIndex) => {
         const party = state.parties[partyIndex];
@@ -1353,20 +1400,22 @@ function ExpeditionTab({
         }
 
         const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
-        const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(state, selectedDungeon) : null;
+        const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, state.global.inventory, selectedDungeon) : null;
+        const { partyStats } = computePartyStats(party);
 
         return (
           <div key={partyIndex} className="bg-pane rounded-lg p-4">
+            <div className="text-sm mb-2"><span className="font-bold text-black">{party.name}</span> <span className="text-gray-500">HP: {partyStats.hp}</span></div>
             {/* Party Expedition Header */}
             <div className="flex items-center gap-2 mb-3">
-              <span className="font-medium">{party.name}出撃先:</span>
+              <span className="font-medium">出撃先:</span>
               <select
                 value={party.selectedDungeonId}
                 onChange={(e) => onSelectDungeon(partyIndex, Number(e.target.value))}
                 className="border border-gray-300 rounded px-2 py-1 text-sm flex-1"
               >
                 {DUNGEONS.map(dungeon => {
-                  const gateState = getDungeonEntryGateState(state, dungeon);
+                  const gateState = getDungeonEntryGateState(party, state.global.inventory, dungeon);
                   return (
                     <option key={dungeon.id} value={dungeon.id} disabled={gateState.locked}>
                       {dungeon.name} {gateState.locked ? '🔒' : ''}
@@ -1383,26 +1432,15 @@ function ExpeditionTab({
                     : 'bg-sub hover:bg-blue-600'
                 }`}
               >
-                出発
+                出撃
               </button>
             </div>
 
-            {/* Show unlock conditions for all locked dungeons */}
-            {DUNGEONS.some(d => getDungeonEntryGateState(state, d).locked) && (
-              <div className="mb-3 text-xs">
-                <div className="text-gray-600 font-medium mb-1">探検地解放条件:</div>
-                <div className="space-y-1">
-                  {DUNGEONS.filter(d => getDungeonEntryGateState(state, d).locked).map(dungeon => {
-                    const gateState = getDungeonEntryGateState(state, dungeon);
-                    return (
-                      <div key={dungeon.id} className="text-orange-700">
-                        🔒 {dungeon.name}: {gateState.gateText.replace('🔒 解放条件: ', '')}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+            {(() => {
+              const nextGoalText = getNextGoalText(party, state.global.inventory);
+              if (!nextGoalText) return null;
+              return <div className="mt-3 text-sm text-gray-700">{nextGoalText}</div>;
+            })()}
 
             {/* Last Expedition Log */}
             {party.lastExpeditionLog && (
@@ -1412,7 +1450,7 @@ function ExpeditionTab({
                   className="w-full flex justify-between items-center text-sm"
                 >
                   <span>
-                    <span className="font-medium">前回の探検結果: {party.lastExpeditionLog.dungeonName}</span>
+                    <span className="font-medium">結果: {party.lastExpeditionLog.dungeonName} (残HP {Math.round((party.lastExpeditionLog.remainingPartyHP / Math.max(1, party.lastExpeditionLog.maxPartyHP)) * 100)}%)</span>
                     <span className={`ml-2 font-medium ${
                       party.lastExpeditionLog.finalOutcome === 'victory' ? 'text-sub' :
                       party.lastExpeditionLog.finalOutcome === 'defeat' ? 'text-red-600' : 'text-yellow-600'
