@@ -1014,8 +1014,8 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
   - Use this specification's version
   - increment the build number each time you edited the code. 
 - Party info (simplified):
+  - Selected Party name, deity name 
   - Party status summary
-  - Arrow count (icon + number)
 - Tab header (primary navigation):
   - Party
   - Expedition
