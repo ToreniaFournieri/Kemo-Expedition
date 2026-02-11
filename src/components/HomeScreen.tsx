@@ -410,7 +410,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     { id: 'expedition', label: '探検' },
     { id: 'inventory', label: '所持品' },
     { id: 'shop', label: '店' },
-    { id: 'setting', label: '神の執務室' },
+    { id: 'setting', label: '神聖局' },
   ];
 
   // Check for new items
@@ -426,7 +426,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             <div className="text-xs text-gray-500">v0.2.2 ({state.buildNumber})</div>
           </div>
           <div className="text-right text-sm">
-            <div className="font-medium">{state.party.deityName}</div>
+            <div className="font-medium">{state.party.name} - {state.party.deityName}</div>
             <div className="text-xs text-gray-500">Lv.{state.party.level} | {state.party.gold}G</div>
           </div>
         </div>
@@ -672,6 +672,23 @@ function PartyTab({
 
   return (
     <div>
+      {/* Party selector */}
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+        {[1, 2, 3, 4, 5, 6].map((partyNum) => (
+          <div
+            key={partyNum}
+            className={`flex-shrink-0 p-2 rounded-lg border text-center ${
+              partyNum === 1 ? 'border-sub bg-blue-50' : 'border-gray-200 bg-gray-50'
+            }`}
+          >
+            <div className="text-sm font-medium">PT{partyNum}</div>
+            <div className="text-xs text-gray-500 mt-1">
+              {partyNum === 1 ? '選択中' : '未開放'}
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* Character selector */}
       <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
         {party.characters.map((c, i) => {

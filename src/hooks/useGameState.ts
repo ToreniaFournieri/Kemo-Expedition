@@ -39,7 +39,7 @@ import {
 import { getItemById, getItemsByTierAndRarity, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 
-const BUILD_NUMBER = 39;
+const BUILD_NUMBER = 40;
 const STORAGE_KEY = 'kemo-expedition-save';
 
 // Helper to calculate sell price for an item
@@ -249,6 +249,7 @@ function createInitialParty() {
   }
 
   return {
+    name: 'PT1',
     deityName: '再生の神',
     level: 1,
     experience: 0,
