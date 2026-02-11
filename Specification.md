@@ -754,9 +754,9 @@ inventory = {
     - With Super Rare titled item, override to BOLD Dark orenge.
 
 ```
-前回の探検結果: `p.dungeon_name`    `p.outcome_of_expedition`
+前回の探検結果: `p.dungeon_name`   残HP: `p.remaining_HP`   `p.outcome_of_expedition`
 ▼
-残HP: `p.remaining_HP` | `p.reached_room` / `p.number_of_rooms` 部屋 | EXP: `p.gained_experience` | 自動売却額: `p.auto-sell_profit`
+ `p.reached_room` / `p.number_of_rooms` 部屋 | EXP: `p.gained_experience` | 自動売却額: `p.auto-sell_profit`
 獲得アイテム: `p.retrieving_trophies`
 ```
 
@@ -1222,8 +1222,9 @@ Left-aligned            Right-aligned
 
 
 ```
-PT1出撃先: ルピニアンの断崖 (pull down menu to select) 出発
-前回の探検結果: ルピニアンの断崖 敗北 ▼
+PT1 HP: 2309
+出撃先: ルピニアンの断崖 (pull down menu to select) 出発
+前回の探検結果: ルピニアンの断崖 (残HP 0%) 敗北 ▼
 次の目標: ルピニアンの断崖の神魔レアアイテム 0/1 でヴァルピニアンの樹林帯 開放
 
 PT2出撃先…
@@ -1280,7 +1281,7 @@ PT2出撃先…
 #### 8.6 Shop
 - Only tabs. not opended. (in this version)
   
-#### 8.7 Divine Bureau (神の執務室)
+#### 8.7 Divine Bureau (神聖局)
 
 **1. Clairvoyance (未来視)**
 - Displays belows 
