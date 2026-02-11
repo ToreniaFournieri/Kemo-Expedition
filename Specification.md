@@ -1057,7 +1057,12 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
   - Potentially there are 6 parties.
 ```
   PT1    PT2    PT3    PT4    PT5     PT6
-``` 
+```
+- Name of deity.
+```
+再生の神 (Level: 29, Experience 123450/ 123456)
+````
+ 
 - List of party members
     	For each character: Icon, main Class (Sub calass).
 ```
@@ -1238,7 +1243,8 @@ Left-aligned            Right-aligned
           (Right-Aligned)
            [一括出発]
 
-PT1 HP: 2309
+(Left-Aligned)   (Right-Aligned)
+PT1 再生の神(Level: 29)　　  HP: 2309
 出撃先: ルピニアンの断崖 (pull down menu to select) 出発
 結果: ルピニアンの断崖 (残HP 0%) 敗北 ▼
 次の目標: ルピニアンの断崖の神魔レアアイテム 0/1 でヴァルピニアンの樹林帯 開放
