@@ -68,6 +68,14 @@ const RARITY_FILTER_NOTES: Record<RarityFilter, string> = {
 
 const RARITY_FILTER_OPTIONS: RarityFilter[] = ['all', 'common', 'uncommon', 'rare', 'mythic'];
 
+const ELITE_GATE_REQUIREMENTS: Record<number, number> = {
+  1: 3,
+  2: 9,
+  3: 18,
+  4: 30,
+  5: 45,
+};
+
 function getItemRarityById(itemId: number): ItemRarity {
   const rarityCode = itemId % 1000;
   if (rarityCode >= 400) return 'mythic';
@@ -163,22 +171,30 @@ function getDungeonEntryGateState(
   };
 }
 
-function getNextGoalText(party: Party, globalInventory: InventoryRecord): string {
-  const nextDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId + 1);
+function getNextGoalText(party: Party, globalInventory: InventoryRecord): string | null {
   const currentDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
-  if (!nextDungeon || !currentDungeon) {
-    return '次の目標: 全探検地を解放済み';
+  if (!currentDungeon || !currentDungeon.floors) return null;
+
+  const tier = currentDungeon.enemyPoolIds[0];
+
+  for (const floor of currentDungeon.floors) {
+    const hasEliteGate = floor.floorNumber < 6;
+    if (hasEliteGate) {
+      const required = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 3;
+      const collected = countOwnedItemsOfRarityForTier(globalInventory, party.characters, tier, 'uncommon');
+      if (collected < required) {
+        return `次の目標: ${currentDungeon.name} ${floor.floorNumber}F-4の解放: アンコモンアイテム ${collected}/${required} 収集`;
+      }
+    }
   }
 
-  const required = 1;
-  const collected = countOwnedItemsOfRarityForTier(
-    globalInventory,
-    party.characters,
-    currentDungeon.id,
-    'mythic'
-  );
+  const bossRequired = 3;
+  const rareCollected = countOwnedItemsOfRarityForTier(globalInventory, party.characters, tier, 'rare');
+  if (rareCollected < bossRequired) {
+    return `次の目標: ${currentDungeon.name} 6F-4の解放: レアアイテム ${rareCollected}/${bossRequired} 収集`;
+  }
 
-  return `次の目標: ${currentDungeon.name}の神魔レアアイテム ${collected}/${required} で${nextDungeon.name} 開放`;
+  return null;
 }
 
 // Helper to format item stats
@@ -440,7 +456,8 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       <div className="sticky top-0 bg-white border-b border-gray-300 p-3 z-10">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-lg font-bold">ケモの冒険　v0.2.2 ({state.buildNumber})</h1>
+            <h1 className="text-lg font-bold">ケモの冒険</h1>
+            <div className="text-xs text-gray-500">v0.2.2 ({state.buildNumber})</div>
           </div>
           <div className="text-right text-sm font-medium">{state.global.gold}G</div>
         </div>
@@ -1347,8 +1364,28 @@ function ExpeditionTab({
   const [expandedLogParty, setExpandedLogParty] = useState<number | null>(null);
   const [expandedRoom, setExpandedRoom] = useState<{ partyIndex: number; roomIndex: number } | null>(null);
 
+  const handleRunAllExpeditions = () => {
+    state.parties.forEach((party, partyIndex) => {
+      const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
+      if (!selectedDungeon) return;
+      const gateState = getDungeonEntryGateState(party, state.global.inventory, selectedDungeon);
+      if (!gateState.locked) {
+        onRunExpedition(partyIndex);
+      }
+    });
+  };
+
   return (
     <div className="space-y-4">
+      <div className="flex justify-end">
+        <button
+          onClick={handleRunAllExpeditions}
+          className="px-3 py-1 text-white rounded font-medium text-sm bg-sub hover:bg-blue-600"
+        >
+          一括出撃
+        </button>
+      </div>
+
       {/* Party Expedition Slots */}
       {[0, 1, 2, 3, 4, 5].map((partyIndex) => {
         const party = state.parties[partyIndex];
@@ -1368,7 +1405,7 @@ function ExpeditionTab({
 
         return (
           <div key={partyIndex} className="bg-pane rounded-lg p-4">
-            <div className="text-sm font-medium mb-2">{party.name} HP: {partyStats.hp}</div>
+            <div className="text-sm mb-2"><span className="font-bold text-black">{party.name}</span> <span className="text-gray-500">HP: {partyStats.hp}</span></div>
             {/* Party Expedition Header */}
             <div className="flex items-center gap-2 mb-3">
               <span className="font-medium">出撃先:</span>
@@ -1395,11 +1432,15 @@ function ExpeditionTab({
                     : 'bg-sub hover:bg-blue-600'
                 }`}
               >
-                出発
+                出撃
               </button>
             </div>
 
-            <div className="mt-3 text-sm text-gray-700">{getNextGoalText(party, state.global.inventory)}</div>
+            {(() => {
+              const nextGoalText = getNextGoalText(party, state.global.inventory);
+              if (!nextGoalText) return null;
+              return <div className="mt-3 text-sm text-gray-700">{nextGoalText}</div>;
+            })()}
 
             {/* Last Expedition Log */}
             {party.lastExpeditionLog && (
@@ -1409,7 +1450,7 @@ function ExpeditionTab({
                   className="w-full flex justify-between items-center text-sm"
                 >
                   <span>
-                    <span className="font-medium">前回の探検結果: {party.lastExpeditionLog.dungeonName} (残HP {Math.round((party.lastExpeditionLog.remainingPartyHP / Math.max(1, party.lastExpeditionLog.maxPartyHP)) * 100)}%)</span>
+                    <span className="font-medium">結果: {party.lastExpeditionLog.dungeonName} (残HP {Math.round((party.lastExpeditionLog.remainingPartyHP / Math.max(1, party.lastExpeditionLog.maxPartyHP)) * 100)}%)</span>
                     <span className={`ml-2 font-medium ${
                       party.lastExpeditionLog.finalOutcome === 'victory' ? 'text-sub' :
                       party.lastExpeditionLog.finalOutcome === 'defeat' ? 'text-red-600' : 'text-yellow-600'
