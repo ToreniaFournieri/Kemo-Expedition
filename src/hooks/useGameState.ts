@@ -39,7 +39,7 @@ import {
 import { getItemById, getItemsByTierAndRarity, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 
-const BUILD_NUMBER = 41;
+const BUILD_NUMBER = 42;
 const STORAGE_KEY = 'kemo-expedition-save';
 
 // Helper to calculate sell price for an item
@@ -270,6 +270,8 @@ function createInitialParty() {
     characters,
     inventory,
     gold: 200,
+    selectedDungeonId: 1,
+    lastExpeditionLog: null,
   };
 }
 
@@ -326,6 +328,8 @@ function createSecondParty() {
     characters,
     inventory,
     gold: 200,
+    selectedDungeonId: 2,
+    lastExpeditionLog: null,
   };
 }
 
@@ -352,16 +356,14 @@ function createInitialState(): GameState {
       physicalThreatBag: createPhysicalThreatBag(),
       magicalThreatBag: createMagicalThreatBag(),
     },
-    selectedDungeonId: 1,
-    lastExpeditionLog: null,
     buildNumber: BUILD_NUMBER,
   };
 }
 
 type GameAction =
   | { type: 'SELECT_PARTY'; partyIndex: number }
-  | { type: 'SELECT_DUNGEON'; dungeonId: number }
-  | { type: 'RUN_EXPEDITION' }
+  | { type: 'SELECT_DUNGEON'; partyIndex: number; dungeonId: number }
+  | { type: 'RUN_EXPEDITION'; partyIndex: number }
   | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; itemKey: string | null }
   | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character> }
   | { type: 'SELL_STACK'; variantKey: string }
@@ -585,14 +587,19 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SELECT_PARTY':
       return { ...state, selectedPartyIndex: action.partyIndex };
 
-    case 'SELECT_DUNGEON':
-      return { ...state, selectedDungeonId: action.dungeonId };
+    case 'SELECT_DUNGEON': {
+      const updatedParties = [...state.parties];
+      updatedParties[action.partyIndex] = {
+        ...updatedParties[action.partyIndex],
+        selectedDungeonId: action.dungeonId
+      };
+      return { ...state, parties: updatedParties };
+    }
 
     case 'RUN_EXPEDITION': {
-      const dungeon = getDungeonById(state.selectedDungeonId);
+      const currentParty = state.parties[action.partyIndex];
+      const dungeon = getDungeonById(currentParty.selectedDungeonId);
       if (!dungeon) return state;
-
-      const currentParty = state.parties[state.selectedPartyIndex];
       const { partyStats } = computePartyStats(currentParty);
       let currentHp = partyStats.hp;
 
@@ -874,19 +881,19 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
 
       const updatedParties = [...state.parties];
-      updatedParties[state.selectedPartyIndex] = {
+      updatedParties[action.partyIndex] = {
         ...currentParty,
         level: newLevel,
         experience: newExp,
         inventory: finalInventory,
         gold: finalGold,
+        lastExpeditionLog: log,
       };
 
       return {
         ...state,
         bags,
         parties: updatedParties,
-        lastExpeditionLog: log,
       };
     }
 
@@ -1081,8 +1088,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           physicalThreatBag: createPhysicalThreatBag(),
           magicalThreatBag: createMagicalThreatBag(),
         },
-        selectedDungeonId: 1,
-        lastExpeditionLog: null,
         buildNumber: BUILD_NUMBER,
       };
     }
@@ -1199,12 +1204,12 @@ export function useGameState() {
       dispatch({ type: 'SELECT_PARTY', partyIndex });
     }, []),
 
-    selectDungeon: useCallback((dungeonId: number) => {
-      dispatch({ type: 'SELECT_DUNGEON', dungeonId });
+    selectDungeon: useCallback((partyIndex: number, dungeonId: number) => {
+      dispatch({ type: 'SELECT_DUNGEON', partyIndex, dungeonId });
     }, []),
 
-    runExpedition: useCallback(() => {
-      dispatch({ type: 'RUN_EXPEDITION' });
+    runExpedition: useCallback((partyIndex: number) => {
+      dispatch({ type: 'RUN_EXPEDITION', partyIndex });
     }, []),
 
     equipItem: useCallback((characterId: number, slotIndex: number, itemKey: string | null) => {
