@@ -821,6 +821,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 - `f.resonance_amplifier`(actor: ,hit: )
   	If actor.`a.resonance`1, return 1.0 + (0.05 x (n - 1))   
   	If actor.`a.resonance`2, return 1.0 + (0.08 x (n - 1))
+  	If actor.`a.resonance`3, return 1.0 + (0.11 x (n - 1))
     Else, return 1.0.
 
 - `f.damage_calculation`: (actor: , opponent: , phase: )
