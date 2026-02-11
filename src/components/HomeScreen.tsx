@@ -2036,6 +2036,14 @@ function SettingTab({
   const terribleRemaining = bags.enhancementBag.tickets.filter(t => t === 5).length;
   const ultimateRemaining = bags.enhancementBag.tickets.filter(t => t === 6).length;
 
+  const confirmReset = (label: string, onConfirm: () => void) => {
+    if (!window.confirm(`${label}を実行します。\n現在の抽選状況が初期化されます。\nよろしいですか？`)) {
+      return;
+    }
+
+    onConfirm();
+  };
+
   const superRareTotal = SUPER_RARE_TITLES.reduce((sum, t) => sum + t.tickets, 0);
   const superRareRemaining = bags.superRareBag.tickets.length;
   const superRareInitial = SUPER_RARE_TITLES.filter(t => t.value > 0).reduce((sum, t) => sum + t.tickets, 0);
@@ -2197,7 +2205,12 @@ function SettingTab({
             </div>
           </div>
 
-          <button onClick={onResetCommonBags} className="w-full py-2 bg-sub text-white rounded text-sm font-medium">通常報酬初期化</button>
+          <button
+            onClick={() => confirmReset('通常報酬初期化', onResetCommonBags)}
+            className="w-full py-2 bg-sub text-white rounded text-sm font-medium"
+          >
+            通常報酬初期化
+          </button>
         </div>
 
         <div className="mb-4 border-b border-gray-200 pb-4">
@@ -2240,7 +2253,12 @@ function SettingTab({
             </div>
           </div>
 
-          <button onClick={onResetUniqueBags} className="w-full py-2 bg-sub text-white rounded text-sm font-medium">固有報酬初期化</button>
+          <button
+            onClick={() => confirmReset('固有報酬初期化', onResetUniqueBags)}
+            className="w-full py-2 bg-sub text-white rounded text-sm font-medium"
+          >
+            固有報酬初期化
+          </button>
         </div>
 
         <div className="mb-2">
@@ -2252,7 +2270,12 @@ function SettingTab({
               <div className="flex justify-between text-accent"><span>超レア残り</span><span>{formatNumber(superRareHits)} / {formatNumber(superRareInitial)}</span></div>
             </div>
           </div>
-          <button onClick={onResetSuperRareBag} className="w-full py-2 bg-accent text-white rounded text-sm font-medium">超レア報酬初期化</button>
+          <button
+            onClick={() => confirmReset('超レア報酬初期化', onResetSuperRareBag)}
+            className="w-full py-2 bg-accent text-white rounded text-sm font-medium"
+          >
+            超レア報酬初期化
+          </button>
         </div>
       </div>
 
