@@ -187,15 +187,25 @@ export interface ComputedCharacterStats {
 
 // Party Types
 export interface Party {
+  id: number;
   name: string;
-  deityName: string;
-  level: number;
-  experience: number;
+  deity: Deity;
   characters: Character[];
-  inventory: InventoryRecord;
-  gold: number;
   selectedDungeonId: number;
   lastExpeditionLog: ExpeditionLog | null;
+}
+
+export interface Deity {
+  name: string;
+  level: number;
+  experience: number;
+  uniqueAbilities: string[];
+  lootGateStatus: Record<number, boolean>;
+}
+
+export interface GlobalState {
+  gold: number;
+  inventory: InventoryRecord;
 }
 
 // Computed party stats for battle
@@ -402,6 +412,7 @@ export type GameScene = 'home';
 
 export interface GameState {
   scene: GameScene;
+  global: GlobalState;
   parties: Party[];
   selectedPartyIndex: number;
   bags: GameBags;
