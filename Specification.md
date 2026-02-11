@@ -1030,10 +1030,8 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 
 - List of party
   - Potentially there are 6 parties.
-  - Only one party exist in this version. but show 6 slots of party
 ```
   PT1    PT2    PT3    PT4    PT5     PT6
- 選択中 未開放  未開放  未開放  未開放  未開放
 ``` 
 - List of party members
     	For each character: Icon, main Class (Sub calass).
