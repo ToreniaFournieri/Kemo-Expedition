@@ -618,11 +618,11 @@ function createItem(
   switch (template.category) {
     case 'armor':
       item.physicalDefense = calculateStat(basePower, amplifier);
-      item.baseMultiplier = targetMultiplier;
+      if (multiplierTier) item.baseMultiplier = targetMultiplier;
       break;
     case 'robe':
       item.magicalDefense = calculateStat(basePower, amplifier);
-      item.baseMultiplier = targetMultiplier;
+      if (multiplierTier) item.baseMultiplier = targetMultiplier;
       break;
     case 'shield':
       item.partyHP = SHIELD_HP_MULTIPLIERS[tier - 1];
@@ -631,7 +631,7 @@ function createItem(
       break;
     case 'sword':
       item.meleeAttack = calculateStat(basePower, amplifier);
-      item.baseMultiplier = targetMultiplier;
+      if (multiplierTier) item.baseMultiplier = targetMultiplier;
       break;
     case 'katana':
       item.meleeAttack = calculateStat(basePower, amplifier);
@@ -644,7 +644,7 @@ function createItem(
       break;
     case 'arrow':
       item.rangedAttack = calculateStat(basePower, amplifier);
-      item.baseMultiplier = targetMultiplier;
+      if (multiplierTier) item.baseMultiplier = targetMultiplier;
       break;
     case 'bolt':
       item.rangedAttack = calculateStat(basePower, amplifier);
@@ -657,7 +657,7 @@ function createItem(
       break;
     case 'wand':
       item.magicalAttack = calculateStat(basePower, amplifier);
-      item.baseMultiplier = targetMultiplier;
+      if (multiplierTier) item.baseMultiplier = targetMultiplier;
       break;
     case 'grimoire':
       item.magicalAttack = calculateStat(basePower, amplifier);
@@ -670,21 +670,35 @@ function createItem(
       break;
   }
 
-  // Apply variant modifiers
+  const applyVariantMod = (mod?: ItemVariantMod) => {
+    if (!mod) return;
+    if (mod.partyHP) item.partyHP = (item.partyHP || 0) + mod.partyHP * tier;
+    if (mod.physicalDefense) item.physicalDefense = (item.physicalDefense || 0) + mod.physicalDefense * tier;
+    if (mod.magicalDefense) item.magicalDefense = (item.magicalDefense || 0) + mod.magicalDefense * tier;
+    if (mod.meleeAttack) item.meleeAttack = (item.meleeAttack || 0) + mod.meleeAttack * tier;
+    if (mod.rangedAttack) item.rangedAttack = (item.rangedAttack || 0) + mod.rangedAttack * tier;
+    if (mod.magicalAttack) item.magicalAttack = (item.magicalAttack || 0) + mod.magicalAttack * tier;
+    if (mod.meleeNoA) item.meleeNoA = (item.meleeNoA || 0) + mod.meleeNoA;
+    if (mod.rangedNoA) item.rangedNoA = (item.rangedNoA || 0) + Math.floor(mod.rangedNoA);
+    if (mod.magicalNoA) item.magicalNoA = (item.magicalNoA || 0) + Math.floor(mod.magicalNoA * tier);
+    if (mod.elementalOffense) item.elementalOffense = mod.elementalOffense;
+  };
+
+  // Apply rarity subtle modifiers
   if (rarity === 'uncommon' && variantIndex !== undefined) {
-    const mod = variantIndex === 0 ? template.variant1Mod : template.variant2Mod;
-    if (mod) {
-      if (mod.partyHP) item.partyHP = (item.partyHP || 0) + mod.partyHP * tier;
-      if (mod.physicalDefense) item.physicalDefense = (item.physicalDefense || 0) + mod.physicalDefense * tier;
-      if (mod.magicalDefense) item.magicalDefense = (item.magicalDefense || 0) + mod.magicalDefense * tier;
-      if (mod.meleeAttack) item.meleeAttack = (item.meleeAttack || 0) + mod.meleeAttack * tier;
-      if (mod.rangedAttack) item.rangedAttack = (item.rangedAttack || 0) + mod.rangedAttack * tier;
-      if (mod.magicalAttack) item.magicalAttack = (item.magicalAttack || 0) + mod.magicalAttack * tier;
-      if (mod.meleeNoA) item.meleeNoA = (item.meleeNoA || 0) + mod.meleeNoA;
-      if (mod.rangedNoA) item.rangedNoA = (item.rangedNoA || 0) + Math.floor(mod.rangedNoA);
-      if (mod.magicalNoA) item.magicalNoA = (item.magicalNoA || 0) + Math.floor(mod.magicalNoA * tier);
-      if (mod.elementalOffense) item.elementalOffense = mod.elementalOffense;
-    }
+    applyVariantMod(variantIndex === 0 ? template.variant1Mod : template.variant2Mod);
+  }
+
+  if (rarity === 'rare') {
+    applyVariantMod(template.variant1Mod);
+    applyVariantMod(template.variant2Mod);
+  }
+
+  if (rarity === 'mythic') {
+    applyVariantMod(template.variant1Mod);
+    applyVariantMod(template.variant2Mod);
+    // Mythic has one extra subtle bonus compared with rare.
+    applyVariantMod(template.variant1Mod);
   }
 
   // Apply rare/mythic modifiers (elemental for arrows/bolts/grimoires)
