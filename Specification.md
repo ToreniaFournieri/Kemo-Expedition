@@ -278,6 +278,18 @@
 
 - Characters do not have individual HP. Each character contributes total HP. 
 
+#### 2.2.3 Deity list
+
+| God | Name  | effect |
+|-----|-----|----|
+|`God of Restoration`| 再生の神 | At the end of every 4th room,  Heal 20% of missing HP |
+|`God of Attrition`| 消耗の神 | Increase party all attack damage by 10%. At the end of every 4th room, reduce 5% of remaining HP.|
+|`God of Fortification` | 防備の神 | Increase party physical and magical defense by 10%.|
+|`God of Precision`| 命中の神 | Gain c.accuracy+0.020 (stacking) and c.evasion-0.005 (stacking) until expedition ends.|
+|`God of Evasion`| 回避の神 | Gain c.evasion+0.015 (stacking) until expedition ends.|
+|`God of Resonance`| 反響の神 | Upgrade all a.resonance values by +1 tier. Reduce party magical defense by 5%.|
+
+
 ### 2.3 Expedition & Enemies
 - Expedition layout: The 6 `x.floor` spire. Each floor consists of 4 `x.room`s. the last room of the floor is Elite/Boss enemy battle, other rooms are Normal enemy battles.
 - There are 8 `x.expedition` destinations in total. every `x.expedition` has its own tier. (1st `x.expedition` drops tier-1 items. 2nd `x.expedition` drops tier-2 items)
@@ -821,6 +833,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 - `f.resonance_amplifier`(actor: ,hit: )
   	If actor.`a.resonance`1, return 1.0 + (0.05 x (n - 1))   
   	If actor.`a.resonance`2, return 1.0 + (0.08 x (n - 1))
+  	If actor.`a.resonance`3, return 1.0 + (0.11 x (n - 1))
     Else, return 1.0.
 
 - `f.damage_calculation`: (actor: , opponent: , phase: )
@@ -934,7 +947,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 - *Victory*: gains `d.experience` points to a party. has a chance of gaining reward from enemies drop item. Check the conditions bellow.
   - Normal Rooms (`x.room`:1–2): Proceed to the next `x.room`.
   - Gate Rooms (`x.room`: 3 check): At the end of Room 3, the "Loot-Gate" check occurs. If passed, proceed to `x.room`:4 (Elite/Boss).
-  - Elite Rooms (`x.floor`:1-5, `x.room`:4): **Heal 20% of missing HP** (show the log). Proceed to the next floor: `x.floor` +1 , `x.room`:1.
+  - Elite Rooms (`x.floor`:1-5, `x.room`:4): If `God of Restoration`, **Heal 20% of missing HP** (show the log). IF `God of Attrition`,  **reduce 5% of remaining HP** (show the log).  Proceed to the next floor: `x.floor` +1 , `x.room`:1.
   - Final Boss Room (`x.floor`:6, `x.room`:4): Expedition Clear! Return Home with all trophies.
 
 - *Draw*:no penalties (current version). no `d.experience` points nor item reward at this room. Back to home with trophies of previous rooms.
@@ -1044,7 +1057,12 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
   - Potentially there are 6 parties.
 ```
   PT1    PT2    PT3    PT4    PT5     PT6
-``` 
+```
+- Name of deity.
+```
+再生の神 (Level: 29, Experience 123450/ 123456)
+````
+ 
 - List of party members
     	For each character: Icon, main Class (Sub calass).
 ```
@@ -1222,12 +1240,16 @@ Left-aligned            Right-aligned
 
 
 ```
-PT1 HP: 2309
+          (Right-Aligned)
+           [一括出発]
+
+(Left-Aligned)   (Right-Aligned)
+PT1 再生の神(Level: 29)　　  HP: 2309
 出撃先: ルピニアンの断崖 (pull down menu to select) 出発
-前回の探検結果: ルピニアンの断崖 (残HP 0%) 敗北 ▼
+結果: ルピニアンの断崖 (残HP 0%) 敗北 ▼
 次の目標: ルピニアンの断崖の神魔レアアイテム 0/1 でヴァルピニアンの樹林帯 開放
 
-PT2出撃先…
+PT2 HP:…
 ```
 - Per party:
   - Currently selected dungeon with Loot-Gate conditions (ex. 2nd Elite Gate is locked: 2/6 Floor 2 Uncommons collected.)
