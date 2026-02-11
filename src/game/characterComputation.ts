@@ -370,6 +370,11 @@ export function computeCharacterStats(
       physical: 0,
       magical: 0,
     },
+    deityOffenseAmplifierBonus: {
+      long: 0,
+      mid: 0,
+      close: 0,
+    },
   };
 }
 

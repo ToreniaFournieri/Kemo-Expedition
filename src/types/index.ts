@@ -187,6 +187,11 @@ export interface ComputedCharacterStats {
     physical: number;
     magical: number;
   }; // additive bonus applied to character.f.defense_amplifier
+  deityOffenseAmplifierBonus: {
+    long: number;
+    mid: number;
+    close: number;
+  }; // additive bonus applied to character offense amplifier
 }
 
 // Party Types
