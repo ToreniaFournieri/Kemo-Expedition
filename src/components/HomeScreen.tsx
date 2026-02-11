@@ -98,6 +98,66 @@ function getRewardTextClass(rarity?: ItemRarity, isSuperRare?: boolean): string 
   return 'text-black';
 }
 
+function countOwnedItemsOfRarityForTier(
+  inventory: InventoryRecord,
+  characters: Character[],
+  tier: number,
+  rarity: 'uncommon' | 'rare' | 'mythic'
+): number {
+  const rarityItems = ITEMS.filter(item => {
+    const itemTier = Math.floor(item.id / 1000);
+    if (itemTier !== tier) return false;
+
+    const rarityCode = item.id % 1000;
+    if (rarity === 'mythic') return rarityCode >= 400;
+    if (rarity === 'rare') return rarityCode >= 300 && rarityCode < 400;
+    return rarityCode >= 200 && rarityCode < 300;
+  });
+
+  const rarityIds = new Set(rarityItems.map(item => item.id));
+  let count = 0;
+
+  for (const variant of Object.values(inventory)) {
+    if (variant.status === 'owned' && variant.count > 0 && rarityIds.has(variant.item.id)) {
+      count += variant.count;
+    }
+  }
+
+  for (const character of characters) {
+    for (const equippedItem of character.equipment) {
+      if (equippedItem && rarityIds.has(equippedItem.id)) {
+        count += 1;
+      }
+    }
+  }
+
+  return count;
+}
+
+function getDungeonEntryGateState(state: GameState, dungeon: Dungeon): {
+  locked: boolean;
+  gateText: string;
+} {
+  if (dungeon.id === 1) {
+    return { locked: false, gateText: '解放条件: なし（最初の探検地）' };
+  }
+
+  const previousDungeon = DUNGEONS.find(d => d.id === dungeon.id - 1);
+  const previousDungeonName = previousDungeon?.name ?? '前回の探検地';
+  const required = 1;
+  const collected = countOwnedItemsOfRarityForTier(
+    state.party.inventory,
+    state.party.characters,
+    dungeon.id - 1,
+    'mythic'
+  );
+
+  return {
+    locked: collected < required,
+    gateText: `🔒 解放条件: ${previousDungeonName}の神魔レアアイテム ${collected}/${required} 収集`,
+  };
+}
+
 // Helper to format item stats
 function getItemStats(item: Item): string {
   const multiplier = (ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1) *
@@ -1241,6 +1301,7 @@ function ExpeditionTab({
   const [showLog, setShowLog] = useState(false);
   const [expandedRoom, setExpandedRoom] = useState<number | null>(null);
   const selectedDungeon = DUNGEONS.find(d => d.id === state.selectedDungeonId);
+  const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(state, selectedDungeon) : null;
 
   return (
     <div>
@@ -1250,10 +1311,20 @@ function ExpeditionTab({
         <div className="flex justify-between items-center">
           <div>
             <div className="font-medium">{selectedDungeon?.name}</div>
+            {selectedDungeonGate && (
+              <div className={`text-xs mt-1 ${selectedDungeonGate.locked ? 'text-red-600' : 'text-gray-500'}`}>
+                {selectedDungeonGate.gateText.replace('🔒 ', '')}
+              </div>
+            )}
           </div>
           <button
             onClick={onRunExpedition}
-            className="px-4 py-2 bg-sub text-white rounded-lg font-medium hover:bg-blue-600"
+            disabled={selectedDungeonGate?.locked}
+            className={`px-4 py-2 text-white rounded-lg font-medium ${
+              selectedDungeonGate?.locked
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-sub hover:bg-blue-600'
+            }`}
           >
             出発
           </button>
@@ -1422,25 +1493,36 @@ function ExpeditionTab({
       {/* Dungeon Selection */}
       <div className="text-sm font-medium mb-2">ダンジョン選択</div>
       <div className="space-y-2">
-        {DUNGEONS.map(dungeon => (
-          <button
-            key={dungeon.id}
-            onClick={() => onSelectDungeon(dungeon.id)}
-            className={`w-full p-3 text-left border rounded-lg ${
-              dungeon.id === state.selectedDungeonId
-                ? 'border-sub bg-blue-50'
-                : 'border-gray-200 hover:border-sub'
-            }`}
-          >
-            <div className="font-medium">{dungeon.name}</div>
-            <div className="text-xs text-gray-500">
-              {dungeon.floors
-                ? `${dungeon.floors.length}階層 × ${dungeon.floors[0]?.rooms.length ?? 0}部屋`
-                : `部屋数: ${dungeon.numberOfRooms} + ボス`
-              }
-            </div>
-          </button>
-        ))}
+        {DUNGEONS.map(dungeon => {
+          const gateState = getDungeonEntryGateState(state, dungeon);
+          return (
+            <button
+              key={dungeon.id}
+              onClick={() => onSelectDungeon(dungeon.id)}
+              disabled={gateState.locked}
+              className={`w-full p-3 text-left border rounded-lg ${
+                dungeon.id === state.selectedDungeonId
+                  ? 'border-sub bg-blue-50'
+                  : 'border-gray-200'
+              } ${gateState.locked ? 'cursor-not-allowed opacity-90' : 'hover:border-sub'}`}
+            >
+              <div className={`font-medium ${gateState.locked ? 'text-gray-400' : 'text-gray-900'}`}>{dungeon.name}</div>
+              <div className="text-xs text-gray-500">
+                {dungeon.floors
+                  ? `${dungeon.floors.length}階層 × ${dungeon.floors[0]?.rooms.length ?? 0}部屋`
+                  : `部屋数: ${dungeon.numberOfRooms} + ボス`
+                }
+              </div>
+              {dungeon.id > 1 && (
+                <div className={`text-xs mt-1 ${gateState.locked ? 'text-red-600' : 'text-green-700'}`}>
+                  {gateState.locked
+                    ? gateState.gateText
+                    : gateState.gateText.replace('🔒', '🔓')}
+                </div>
+              )}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
