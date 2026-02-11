@@ -56,27 +56,24 @@
 ### 2.1 Global constants
 
 **Global parameter**
-- gold 
-- Inventory 
+  - gold 
+  - Inventory 
 
 **Deity  parameter**
-- name
-  - Initial deity: 'God of Restoration' // Revives character at the base automatically, no death penalty 
-- level
-- Experience
-- unique abulities 
-- Loot-Gate status
+  - name
+    - Initial deity: 'God of Restoration' // Revives character at the base automatically, no death penalty 
+  - level
+  - experience
+  - unique abulities 
+  - loot-Gate status
 
 **Party parameter**
-- party id
-- Deity // replacing deity reset character equipment slots. 
-- `d.HP`
-- characters
+  - party id
+  - deity // replacing deity reset character equipment slots. 
+  - `d.HP`
+  - characters
 
-
-
-
-- **Bag Randomization** There are `g.common_reward_bag`, `g.common_enhancement_bag`, `g.uncommon_reward_bag`, `g.rare_reward_bag`, `g.mythic_reward_bag`, `g.enhancement_bag`, `g.superRare_bag`, and `g.threat_weight_bag` which control probable randomness.
+**Bag Randomization** There are `g.common_reward_bag`, `g.common_enhancement_bag`, `g.uncommon_reward_bag`, `g.rare_reward_bag`, `g.mythic_reward_bag`, `g.enhancement_bag`, `g.superRare_bag`, and `g.threat_weight_bag` which control probable randomness.
 
 
 **reward list**
