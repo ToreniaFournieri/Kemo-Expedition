@@ -208,6 +208,11 @@ export function computeCharacterStats(
   const equippedItems = character.equipment.slice(0, maxEquipSlots).filter((item): item is Item => item !== null);
 
   for (const item of equippedItems) {
+    if (item.vitalityBonus) baseStats.vitality += item.vitalityBonus;
+    if (item.strengthBonus) baseStats.strength += item.strengthBonus;
+    if (item.intelligenceBonus) baseStats.intelligence += item.intelligenceBonus;
+    if (item.mindBonus) baseStats.mind += item.mindBonus;
+
     const categoryMult = getMultiplier(item.category);
     const enhanceMult = getItemEnhancementMultiplier(item);
     const baseMult = item.baseMultiplier ?? 1;
@@ -251,6 +256,7 @@ export function computeCharacterStats(
     if (item.magicalNoABonus) magicalNoAFixedBonuses.add(item.magicalNoABonus);
     if (item.accuracyBonus) accuracyBonus += item.accuracyBonus;
     if (item.evasionBonus) evasionBonus += item.evasionBonus;
+    if (item.penetBonus) collection.penet += item.penetBonus;
 
     // Elemental offense from equipment (priority: thunder > ice > fire > none)
     if (item.elementalOffense && item.elementalOffense !== 'none') {
