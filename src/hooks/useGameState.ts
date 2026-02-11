@@ -21,7 +21,7 @@ import {
 import { computePartyStats } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
 import { applyEnemyEncounterScaling, getRoomMultiplier } from '../game/enemyScaling';
-import { getDungeonById } from '../data/dungeons';
+import { DUNGEONS, getDungeonById } from '../data/dungeons';
 import { getEnemiesByPool, getElitesByPool, getBossEnemy, getEnemyDropCandidates } from '../data/enemies';
 import {
   drawFromBag,
@@ -36,9 +36,21 @@ import {
   createPhysicalThreatBag,
   createMagicalThreatBag,
 } from '../game/bags';
-import { getItemById, getItemsByTierAndRarity, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
+import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 import { getDeityKey, normalizeDeityName } from '../game/deity';
+import {
+  ELITE_GATE_REQUIREMENTS,
+  ENTRY_GATE_REQUIRED,
+  BOSS_GATE_REQUIRED,
+  getEntryGateKey,
+  getEliteGateKey,
+  getBossGateKey,
+  getLootCollectionCount,
+  isLootGateUnlocked,
+  addRecoveredItemsToLootProgress,
+  unlockAvailableLootGates,
+} from '../game/lootGate';
 
 const BUILD_NUMBER = 43;
 const STORAGE_KEY = 'kemo-expedition-save';
@@ -184,6 +196,8 @@ function loadSavedState(): GameState | null {
             if (typeof party.experience === 'number') party.deity.experience = party.experience;
           }
           party.deity.name = normalizeDeityName(party.deity.name);
+          if (!party.deity.lootGateStatus) party.deity.lootGateStatus = {};
+          if (!party.deity.lootGateProgress) party.deity.lootGateProgress = {};
 
           // Merge latest item definitions onto saved items (for new fields like baseMultiplier)
           for (const character of party.characters ?? []) {
@@ -232,6 +246,7 @@ function createInitialDeity(name: string) {
     experience: 0,
     uniqueAbilities: [],
     lootGateStatus: {},
+    lootGateProgress: {},
   };
 }
 
@@ -411,40 +426,6 @@ function selectEnemyForRoom(
   return enemies[randomIndex];
 }
 
-// Loot-Gate check: count total items of a rarity the player owns for a tier
-function countItemsOfRarity(
-  inventory: InventoryRecord,
-  characters: Character[],
-  tier: number,
-  rarity: 'uncommon' | 'rare' | 'mythic'
-): number {
-  const rarityItems = getItemsByTierAndRarity(tier, rarity);
-  const rarityIds = new Set(rarityItems.map(i => i.id));
-  let count = 0;
-  for (const variant of Object.values(inventory)) {
-    if (variant.status === 'owned' && variant.count > 0 && rarityIds.has(variant.item.id)) {
-      count += variant.count;
-    }
-  }
-  for (const character of characters) {
-    for (const equippedItem of character.equipment) {
-      if (equippedItem && rarityIds.has(equippedItem.id)) {
-        count++;
-      }
-    }
-  }
-  return count;
-}
-
-// Gate requirements per floor number
-const ELITE_GATE_REQUIREMENTS: Record<number, number> = {
-  1: 3,
-  2: 9,
-  3: 18,
-  4: 30,
-  5: 45,
-};
-
 function getItemRarityById(itemId: number): 'common' | 'uncommon' | 'rare' | 'mythic' {
   const rarityCode = itemId % 1000;
   if (rarityCode >= 400) return 'mythic';
@@ -484,6 +465,7 @@ function resolveEnemyRewards(
   gold: number;
   autoSellProfit: number;
   rewards: Item[];
+  recoveredItems: Item[];
   rewardNames: string[];
   highestRewardRarity?: 'common' | 'uncommon' | 'rare' | 'mythic';
   hasSuperRareReward: boolean;
@@ -493,6 +475,7 @@ function resolveEnemyRewards(
   let gold = currentGold;
   let autoSellProfit = 0;
   const rewards: Item[] = [];
+  const recoveredItems: Item[] = [];
   const rewardNames: string[] = [];
   let highestRewardRarity: 'common' | 'uncommon' | 'rare' | 'mythic' | undefined;
   let hasSuperRareReward = false;
@@ -536,6 +519,7 @@ function resolveEnemyRewards(
 
     const newItem: Item = { ...baseItem, enhancement: enhVal, superRare: srVal };
     const result = addItemToInventory(inventory, newItem, gold);
+    recoveredItems.push(newItem);
     inventory = result.inventory;
     gold = result.gold;
     autoSellProfit += result.autoSellProfit;
@@ -556,6 +540,7 @@ function resolveEnemyRewards(
     gold,
     autoSellProfit,
     rewards,
+    recoveredItems,
     rewardNames,
     highestRewardRarity,
     hasSuperRareReward,
@@ -690,6 +675,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const entries: ExpeditionLogEntry[] = [];
       const rewards: Item[] = [];
+      const recoveredItems: Item[] = [];
       let totalExp = 0;
       let bags = state.bags;
       let finalOutcome: 'victory' | 'return' | 'defeat' | 'retreat' = 'victory';
@@ -716,9 +702,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             if (floor.floorNumber === 1 && roomIndex === 0 && tier > 1) {
               const prevTier = tier - 1;
               const prevDungeonName = getDungeonById(prevTier)?.name ?? '前回の探検地';
-              const gateRequired = 1;
-              const collected = countItemsOfRarity(currentInventory, currentParty.characters, prevTier, 'mythic');
-              if (collected < gateRequired) {
+              const gateRequired = ENTRY_GATE_REQUIRED;
+              const entryGateKey = getEntryGateKey(dungeon.id);
+              const collected = getLootCollectionCount(currentParty.deity, prevTier, 'mythic');
+              const gateUnlocked = isLootGateUnlocked(currentParty.deity, entryGateKey) || collected >= gateRequired;
+              if (!gateUnlocked) {
                 const gateEntry: ExpeditionLogEntry = {
                   room: roomCounter,
                   floor: floor.floorNumber,
@@ -734,7 +722,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   remainingPartyHP: currentHp,
                   maxPartyHP: partyStats.hp,
                   details: [],
-                  gateInfo: `${prevDungeonName}の神魔レアアイテム ${collected}/${gateRequired} 収集`,
+                  gateInfo: `${prevDungeonName}の神魔レアアイテム(持ち帰り) ${collected}/${gateRequired}`,
                 };
                 entries.push(gateEntry);
                 finalOutcome = 'return';
@@ -748,14 +736,18 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               let gateRequired: number;
               let gateRarity: 'uncommon' | 'rare';
               if (roomDef.type === 'battle_Boss') {
-                gateRequired = 3;
+                gateRequired = BOSS_GATE_REQUIRED;
                 gateRarity = 'rare';
               } else {
                 gateRequired = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 3;
                 gateRarity = 'uncommon';
               }
-              const collected = countItemsOfRarity(currentInventory, currentParty.characters, tier, gateRarity);
-              if (collected < gateRequired) {
+              const gateKey = roomDef.type === 'battle_Boss'
+                ? getBossGateKey(dungeon.id)
+                : getEliteGateKey(dungeon.id, floor.floorNumber);
+              const collected = getLootCollectionCount(currentParty.deity, tier, gateRarity);
+              const gateUnlocked = isLootGateUnlocked(currentParty.deity, gateKey) || collected >= gateRequired;
+              if (!gateUnlocked) {
                 // Gate locked - expedition ends
                 const rarityLabel = gateRarity === 'rare' ? 'レアアイテム' : 'アンコモンアイテム';
                 const gateEntry: ExpeditionLogEntry = {
@@ -773,7 +765,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   remainingPartyHP: currentHp,
                   maxPartyHP: partyStats.hp,
                   details: [],
-                  gateInfo: `${rarityLabel} ${collected}/${gateRequired} 収集`,
+                  gateInfo: `${rarityLabel}(持ち帰り) ${collected}/${gateRequired}`,
                 };
                 entries.push(gateEntry);
                 finalOutcome = 'return';
@@ -839,6 +831,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               currentGold = rewardResult.gold;
               totalAutoSellProfit += rewardResult.autoSellProfit;
               rewards.push(...rewardResult.rewards);
+              recoveredItems.push(...rewardResult.recoveredItems);
 
               if (rewardResult.rewardNames.length > 0) {
                 entry.reward = rewardResult.rewardNames.join(' / ');
@@ -915,6 +908,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             currentGold = rewardResult.gold;
             totalAutoSellProfit += rewardResult.autoSellProfit;
             rewards.push(...rewardResult.rewards);
+            recoveredItems.push(...rewardResult.recoveredItems);
 
             if (rewardResult.rewardNames.length > 0) {
               entry.reward = rewardResult.rewardNames.join(' / ');
@@ -954,6 +948,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const finalRewards = isDefeat ? [] : rewards;
       const finalAutoSellProfit = isDefeat ? 0 : totalAutoSellProfit;
 
+      const nextLootGateProgress = isDefeat
+        ? currentParty.deity.lootGateProgress
+        : addRecoveredItemsToLootProgress(currentParty.deity.lootGateProgress ?? {}, recoveredItems);
+      const nextLootGateStatus = unlockAvailableLootGates(
+        currentParty.deity.lootGateStatus ?? {},
+        nextLootGateProgress,
+        DUNGEONS.length
+      );
+
       // Update level
       let newExp = currentParty.deity.experience + totalExp;
       let newLevel = currentParty.deity.level;
@@ -982,6 +985,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...currentParty.deity,
           level: newLevel,
           experience: newExp,
+          lootGateProgress: nextLootGateProgress,
+          lootGateStatus: nextLootGateStatus,
         },
         lastExpeditionLog: log,
       };

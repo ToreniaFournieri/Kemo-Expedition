@@ -211,6 +211,7 @@ export interface Deity {
   experience: number;
   uniqueAbilities: string[];
   lootGateStatus: Record<number, boolean>;
+  lootGateProgress: Record<string, number>;
 }
 
 export interface GlobalState {
