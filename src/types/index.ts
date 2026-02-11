@@ -394,6 +394,7 @@ export interface ExpeditionLogEntry {
   rewardRarity?: ItemRarity;
   rewardIsSuperRare?: boolean;
   healAmount?: number;
+  attritionAmount?: number;
   gateInfo?: string;
   details: BattleLogEntry[];
 }

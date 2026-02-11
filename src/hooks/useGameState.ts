@@ -582,7 +582,7 @@ function applyPeriodicDeityHpEffect(
   roomNumber: number,
   currentHp: number,
   maxHp: number
-): { hp: number; healAmount?: number } {
+): { hp: number; healAmount?: number; attritionAmount?: number } {
   if (roomNumber % 4 !== 0) {
     return { hp: currentHp };
   }
@@ -598,7 +598,12 @@ function applyPeriodicDeityHpEffect(
   }
 
   if (deityKey === 'God of Attrition') {
-    return { hp: Math.max(1, Math.floor(currentHp * 0.95)) };
+    const nextHp = Math.max(1, Math.floor(currentHp * 0.95));
+    const attritionAmount = Math.max(0, currentHp - nextHp);
+    return {
+      hp: nextHp,
+      attritionAmount: attritionAmount > 0 ? attritionAmount : undefined,
+    };
   }
 
   return { hp: currentHp };
@@ -846,8 +851,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
               const deityHpEffect = applyPeriodicDeityHpEffect(currentParty.deity.name, roomCounter, currentHp, partyStats.hp);
               currentHp = deityHpEffect.hp;
+              entry.remainingPartyHP = currentHp;
               if (deityHpEffect.healAmount) {
                 entry.healAmount = deityHpEffect.healAmount;
+              }
+              if (deityHpEffect.attritionAmount) {
+                entry.attritionAmount = deityHpEffect.attritionAmount;
               }
             } else if (battleResult.outcome === 'defeat') {
               entries.push(entry);
@@ -918,8 +927,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
             const deityHpEffect = applyPeriodicDeityHpEffect(currentParty.deity.name, room, currentHp, partyStats.hp);
             currentHp = deityHpEffect.hp;
+            entry.remainingPartyHP = currentHp;
             if (deityHpEffect.healAmount) {
               entry.healAmount = deityHpEffect.healAmount;
+            }
+            if (deityHpEffect.attritionAmount) {
+              entry.attritionAmount = deityHpEffect.attritionAmount;
             }
           } else if (battleResult.outcome === 'defeat') {
             entries.push(entry);
