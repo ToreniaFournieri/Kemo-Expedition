@@ -475,6 +475,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const [activeTab, setActiveTab] = useState<Tab>('party');
   const [selectedCharacter, setSelectedCharacter] = useState<number>(0);
   const [editingCharacter, setEditingCharacter] = useState<number | null>(null);
+  const tabContentRef = useRef<HTMLDivElement | null>(null);
 
   const currentParty = state.parties[state.selectedPartyIndex];
   const prevPartyLogsRef = useRef(state.parties.map((party) => party.lastExpeditionLog));
@@ -506,6 +507,11 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
 
     prevPartyLogsRef.current = state.parties.map((party) => party.lastExpeditionLog);
   }, [state.parties, actions]);
+
+  useEffect(() => {
+    tabContentRef.current?.scrollTo({ top: 0, behavior: 'auto' });
+  }, [activeTab]);
+
   const tabs: { id: Tab; label: string }[] = [
     { id: 'party', label: 'パーティ' },
     { id: 'expedition', label: '探検' },
@@ -557,7 +563,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       </div>
 
       {/* Tab Content */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div ref={tabContentRef} className="flex-1 overflow-y-auto p-4">
         {activeTab === 'party' && (
           <PartyTab
             parties={state.parties}
