@@ -1192,7 +1192,7 @@ function PartyTab({
                   `物防:${formatNumber(stats.physicalDefense)} (${formatNumber(Math.round(defenseAmpPhysical * 100))}%)`,
                   `魔防:${formatNumber(stats.magicalDefense)} (${formatNumber(Math.round(defenseAmpMagical * 100))}%)`,
                 ];
-                defenseLines.push(`回避:${stats.evasionBonus >= 0 ? '+' : ''}${Math.round(stats.evasionBonus * 1000)}`);
+                defenseLines.push(`回避:${stats.evasionBonus >= 0 ? '+' : ''}${formatNumber(Math.round(stats.evasionBonus * 1000))}`);
 
                 // Pad offense lines to match defense lines count
                 while (offenseLines.length < defenseLines.length) {
@@ -2125,10 +2125,10 @@ function SettingTab({
     : [];
 
   const formatEnemyAttackLine = (label: string, attack: number, noA: number, amplifier: number) =>
-    `${label}: ${attack} x ${noA}回(x${amplifier.toFixed(2)})`;
+    `${label}: ${formatNumber(attack)} x ${formatNumber(noA)}回(x${amplifier.toFixed(2)})`;
 
   const formatEnemyDefenseLine = (label: string, defense: number, percent: number) =>
-    `${label}: ${defense} (${percent.toFixed(0)}%)`;
+    `${label}: ${formatNumber(defense)} (${percent.toFixed(0)}%)`;
 
   const ENEMY_ELEMENT_LABELS: Record<string, string> = {
     none: '無',
@@ -2179,21 +2179,21 @@ function SettingTab({
           <div className="mb-2">
             <div className="text-xs text-gray-500 mb-1">common_reward_bag (通常報酬 抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>報酬抽選</span><span>{commonRewardRemaining} / {commonRewardTotal}</span></div>
-              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{commonRewardWins}</span></div>
+              <div className="flex justify-between"><span>報酬抽選</span><span>{formatNumber(commonRewardRemaining)} / {formatNumber(commonRewardTotal)}</span></div>
+              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{formatNumber(commonRewardWins)}</span></div>
             </div>
           </div>
 
           <div className="mb-2">
             <div className="text-xs text-gray-500 mb-1">common_enhancement_bag (称号付与 抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>通常称号抽選</span><span>{commonEnhancementRemaining} / {commonEnhancementTotal}</span></div>
-              <div className="flex justify-between text-sub"><span>名工の残り</span><span>{commonCraftsmanRemaining} / {craftsmanInitial}</span></div>
-              <div className="flex justify-between text-sub"><span>魔性の残り</span><span>{commonDemonicRemaining} / {demonicInitial}</span></div>
-              <div className="flex justify-between text-sub"><span>宿った残り</span><span>{commonDwellingRemaining} / {dwellingInitial}</span></div>
-              <div className="flex justify-between text-sub"><span>伝説の残り</span><span>{commonLegendaryRemaining} / {legendaryInitial}</span></div>
-              <div className="flex justify-between text-sub"><span>恐ろしい残り</span><span>{commonTerribleRemaining} / {terribleInitial}</span></div>
-              <div className="flex justify-between text-sub"><span>究極の残り</span><span>{commonUltimateRemaining} / {ultimateInitial}</span></div>
+              <div className="flex justify-between"><span>通常称号抽選</span><span>{formatNumber(commonEnhancementRemaining)} / {formatNumber(commonEnhancementTotal)}</span></div>
+              <div className="flex justify-between text-sub"><span>名工の残り</span><span>{formatNumber(commonCraftsmanRemaining)} / {formatNumber(craftsmanInitial)}</span></div>
+              <div className="flex justify-between text-sub"><span>魔性の残り</span><span>{formatNumber(commonDemonicRemaining)} / {formatNumber(demonicInitial)}</span></div>
+              <div className="flex justify-between text-sub"><span>宿った残り</span><span>{formatNumber(commonDwellingRemaining)} / {formatNumber(dwellingInitial)}</span></div>
+              <div className="flex justify-between text-sub"><span>伝説の残り</span><span>{formatNumber(commonLegendaryRemaining)} / {formatNumber(legendaryInitial)}</span></div>
+              <div className="flex justify-between text-sub"><span>恐ろしい残り</span><span>{formatNumber(commonTerribleRemaining)} / {formatNumber(terribleInitial)}</span></div>
+              <div className="flex justify-between text-sub"><span>究極の残り</span><span>{formatNumber(commonUltimateRemaining)} / {formatNumber(ultimateInitial)}</span></div>
             </div>
           </div>
 
@@ -2206,37 +2206,37 @@ function SettingTab({
           <div className="mb-2">
             <div className="text-xs text-gray-500 mb-1">uncommon_reward_bag (アンコモン抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>報酬抽選</span><span>{uncommonRewardRemaining} / {uniqueRewardTotal}</span></div>
-              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{uncommonRewardWins}</span></div>
+              <div className="flex justify-between"><span>報酬抽選</span><span>{formatNumber(uncommonRewardRemaining)} / {formatNumber(uniqueRewardTotal)}</span></div>
+              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{formatNumber(uncommonRewardWins)}</span></div>
             </div>
           </div>
 
           <div className="mb-2">
             <div className="text-xs text-gray-500 mb-1">rare_reward_bag (レア抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>報酬抽選</span><span>{rareRewardRemaining} / {uniqueRewardTotal}</span></div>
-              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{rareRewardWins}</span></div>
+              <div className="flex justify-between"><span>報酬抽選</span><span>{formatNumber(rareRewardRemaining)} / {formatNumber(uniqueRewardTotal)}</span></div>
+              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{formatNumber(rareRewardWins)}</span></div>
             </div>
           </div>
 
           <div className="mb-2">
             <div className="text-xs text-gray-500 mb-1">mythic_reward_bag (神魔レア抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>報酬抽選</span><span>{mythicRewardRemaining} / {uniqueRewardTotal}</span></div>
-              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{mythicRewardWins}</span></div>
+              <div className="flex justify-between"><span>報酬抽選</span><span>{formatNumber(mythicRewardRemaining)} / {formatNumber(uniqueRewardTotal)}</span></div>
+              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{formatNumber(mythicRewardWins)}</span></div>
             </div>
           </div>
 
           <div className="mb-2">
             <div className="text-xs text-gray-500 mb-1">enhancement_bag (称号付与 抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>通常称号抽選</span><span>{enhancementRemaining} / {enhancementTotal}</span></div>
-              <div className="flex justify-between text-sub"><span>名工の残り</span><span>{craftsmanRemaining} / {craftsmanInitial}</span></div>
-              <div className="flex justify-between text-sub"><span>魔性の残り</span><span>{demonicRemaining} / {demonicInitial}</span></div>
-              <div className="flex justify-between text-sub"><span>宿った残り</span><span>{dwellingRemaining} / {dwellingInitial}</span></div>
-              <div className="flex justify-between text-sub"><span>伝説の残り</span><span>{legendaryRemaining} / {legendaryInitial}</span></div>
-              <div className="flex justify-between text-sub"><span>恐ろしい残り</span><span>{terribleRemaining} / {terribleInitial}</span></div>
-              <div className="flex justify-between text-sub"><span>究極の残り</span><span>{ultimateRemaining} / {ultimateInitial}</span></div>
+              <div className="flex justify-between"><span>通常称号抽選</span><span>{formatNumber(enhancementRemaining)} / {formatNumber(enhancementTotal)}</span></div>
+              <div className="flex justify-between text-sub"><span>名工の残り</span><span>{formatNumber(craftsmanRemaining)} / {formatNumber(craftsmanInitial)}</span></div>
+              <div className="flex justify-between text-sub"><span>魔性の残り</span><span>{formatNumber(demonicRemaining)} / {formatNumber(demonicInitial)}</span></div>
+              <div className="flex justify-between text-sub"><span>宿った残り</span><span>{formatNumber(dwellingRemaining)} / {formatNumber(dwellingInitial)}</span></div>
+              <div className="flex justify-between text-sub"><span>伝説の残り</span><span>{formatNumber(legendaryRemaining)} / {formatNumber(legendaryInitial)}</span></div>
+              <div className="flex justify-between text-sub"><span>恐ろしい残り</span><span>{formatNumber(terribleRemaining)} / {formatNumber(terribleInitial)}</span></div>
+              <div className="flex justify-between text-sub"><span>究極の残り</span><span>{formatNumber(ultimateRemaining)} / {formatNumber(ultimateInitial)}</span></div>
             </div>
           </div>
 
@@ -2248,8 +2248,8 @@ function SettingTab({
           <div className="mb-2">
             <div className="text-xs text-gray-500 mb-1">superRare_bag (称号超レア称号付与 抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>超レア称号抽選</span><span>{superRareRemaining} / {superRareTotal}</span></div>
-              <div className="flex justify-between text-accent"><span>超レア残り</span><span>{superRareHits} / {superRareInitial}</span></div>
+              <div className="flex justify-between"><span>超レア称号抽選</span><span>{formatNumber(superRareRemaining)} / {formatNumber(superRareTotal)}</span></div>
+              <div className="flex justify-between text-accent"><span>超レア残り</span><span>{formatNumber(superRareHits)} / {formatNumber(superRareInitial)}</span></div>
             </div>
           </div>
           <button onClick={onResetSuperRareBag} className="w-full py-2 bg-accent text-white rounded text-sm font-medium">超レア報酬初期化</button>
