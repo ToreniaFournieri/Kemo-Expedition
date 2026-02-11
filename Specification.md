@@ -234,16 +234,16 @@
 
 |class | main/sub bonuses | main bonus | master bonus | 
 |-----|-----------|---------|---------|
-|戦士(戦,Fighter) |`c.equip_slot+1`,  `c.armor_x1.4` |`c.grit+1`. `a.defender`1: Incoming physical damage to party × 2/3 |`c.grit+1`. `a.defender`2: Incoming physical damage to party × 3/5 | 
-|剣士(剣,Duelist) |`c.sword_x1.4` |`c.grit+1`. `a.counter`1: enemy CLOSE-range attack (`f.NoA` x 0.5)  |`c.grit+1`. `a.counter`2: enemy CLOSE-range attack and MID-range (`f.NoA` x 0.5)  | 
-|忍者(忍,Ninja) |`c.penet_+0.15` |`c.grit+1`. `a.re-attack`1: once when attacking (`f.NoA` x 0.5) |`c.grit+1`. `a.re-attack`2: twice when attacking (`f.NoA` x 0.5) | 
-|侍(侍,Samurai) |`c.katana_x1.4` |`c.grit+1`. `a.iaigiri`: Physical damage ×2,  number of attacks ÷2 | `c.grit+1`. `a.iaigiri`: Physical damage ×2.5,  number of attacks ÷2 |
-|君主(君,Lord) |`c.gauntlet_x1.4`, `c.equip_slot+1` |`a.command`1: Physical damage x1.3 |`a.command`2: Physical damage x1.6 | 
-|狩人(狩,Ranger) |`c.arrow_x1.4` | `c.pursuit+1`, `a.hunter`1: Reduces row-based damage decay from 15% to 10% per step. |`c.pursuit+2`, `a.hunter`2: Reduces row-based damage decay from 15% to 7% per step. | 
-|魔法使い(魔,Wizard) |`c.wand_x1.4` | `c.caster+1`, `a.resonance`1:All hits +5% damage per `d.magical_NoA`. | `c.caster+1`, `a.resonance`2:All hits +8% damage per `d.magical_NoA`. | 
-|賢者(賢,Sage) |`c.robe_x1.4`, `c.grimoire_x1.2`, `c.equip_slot+2` |`c.caster+2`. `a.m-barrier`1: Incoming magical damage to party × 2/3 | `c.caster+3`. `a.m-barrier`2: Incoming magical damage to party × 3/5 | 
+|戦士(戦,Fighter) | `c.grit+1`, `c.equip_slot+1`,  `c.armor_x1.4` |`a.defender`1: Incoming physical damage to party × 2/3 |`a.defender`2: Incoming physical damage to party × 3/5 | 
+|剣士(剣,Duelist) | `c.grit+1`, `c.sword_x1.4` | `a.counter`1: enemy CLOSE-range attack (`f.NoA` x 0.5)  | `a.counter`2: enemy CLOSE-range attack and MID-range (`f.NoA` x 0.5)  | 
+|忍者(忍,Ninja) | `c.grit+1`, `c.penet_+0.15` | `a.re-attack`1: once when attacking (`f.NoA` x 0.5) | `a.re-attack`2: twice when attacking (`f.NoA` x 0.5) | 
+|侍(侍,Samurai) | `c.grit+1`, `c.katana_x1.4` |`a.iaigiri`: Physical damage ×2,  number of attacks ÷2 | `a.iaigiri`: Physical damage ×2.5,  number of attacks ÷2 |
+|君主(君,Lord) | `c.grit+1`, `c.gauntlet_x1.4`, `c.equip_slot+1` |`a.command`1: Physical damage x1.3 |`a.command`2: Physical damage x1.6 | 
+|狩人(狩,Ranger) | `c.pursuit+2`, `c.arrow_x1.4` | `a.hunter`1: Reduces row-based damage decay from 15% to 10% per step. |`a.hunter`2: Reduces row-based damage decay from 15% to 7% per step. | 
+|魔法使い(魔,Wizard) | `c.caster+1`, `c.wand_x1.4` | `a.resonance`1:All hits +5% damage per `d.magical_NoA`. | `a.resonance`2:All hits +8% damage per `d.magical_NoA`. | 
+|賢者(賢,Sage) | `c.caster+2`, `c.robe_x1.4`, `c.grimoire_x1.2`, `c.equip_slot+2` | `a.m-barrier`1: Incoming magical damage to party × 2/3 | `a.m-barrier`2: Incoming magical damage to party × 3/5 | 
 |盗賊(盗,Rogue) |`c.unlock` additional reward chance |`a.first-strike`1: Acts faster than enemy at CLOSE phase |`a.first-strike`2: Acts faster than enemy at All phases | 
-|巡礼者(巡,Pilgrim) |`c.evasion+0.02`, `c.equip_slot+1` |`a.null-counter`: Negate counter attack |`a.null-counter`: Negate counter attack | 
+|巡礼者(巡,Pilgrim) | `c.caster+1`, `c.grit+1`, `c.evasion+0.02`, `c.equip_slot+1` |`a.null-counter`: Negate counter attack |`a.null-counter`: Negate counter attack | 
 
 - If `main_class` and  `sub_class` are same class, then it turns into master class, applies master bonus.
 - `main_class` applies main/sub bonuses and main bonus. `sub_class` applies only main/sub bonuses.
