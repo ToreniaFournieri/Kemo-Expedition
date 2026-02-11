@@ -311,7 +311,7 @@ function formatBonuses(bonuses: Bonus[]): string {
     } else if (b.type === 'penet') {
       parts.push(`貫通${Math.round(b.value * 100)}%`);
     } else if (b.type === 'pursuit') {
-      parts.push(`追撃${Math.round(b.value * 100)}%`);
+      parts.push(`追撃+${b.value}`);
     } else if (b.type === 'accuracy') {
       parts.push(`命中+${b.value}`);
     } else if (b.type === 'evasion') {
@@ -1604,7 +1604,7 @@ function ExpeditionTab({
                   className="w-full flex justify-between items-center text-sm"
                 >
                   <span>
-                    <span className="font-medium">結果: {party.lastExpeditionLog.dungeonName} (残HP {formatNumber(Math.round((party.lastExpeditionLog.remainingPartyHP / Math.max(1, party.lastExpeditionLog.maxPartyHP)) * 100))}%)</span>
+                    <span className="font-medium">結果: {party.lastExpeditionLog.dungeonName} (残HP {party.lastExpeditionLog.finalOutcome === 'defeat' ? 0 : formatNumber(Math.round((party.lastExpeditionLog.remainingPartyHP / Math.max(1, party.lastExpeditionLog.maxPartyHP)) * 100))}%)</span>
                     <span className={`ml-2 font-medium ${
                       party.lastExpeditionLog.finalOutcome === 'victory' || party.lastExpeditionLog.finalOutcome === 'return' ? 'text-sub' :
                       party.lastExpeditionLog.finalOutcome === 'defeat' ? 'text-red-600' : 'text-yellow-600'
