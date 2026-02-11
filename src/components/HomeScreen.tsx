@@ -256,7 +256,13 @@ function getItemStats(item: Item): string {
   if (item.category === 'armor' && multiplierPercent) stats.push(formatBracket('物防', multiplierPercent, '%'));
   if (item.category === 'robe' && multiplierPercent) stats.push(formatBracket('魔防', multiplierPercent, '%'));
   if (item.partyHP) stats.push(`HP+${Math.floor(item.partyHP * multiplier)}`);
-  if (item.evasionBonus) stats.push(formatBracket('回避', Math.round(item.evasionBonus * 1000)));
+  if (item.accuracyBonus) stats.push(formatBracket('命中', Math.round(item.accuracyBonus * 100)));
+  if (item.evasionBonus) stats.push(formatBracket('回避', Math.round(item.evasionBonus * 100)));
+  if (item.vitalityBonus) stats.push(`体力+${item.vitalityBonus}`);
+  if (item.strengthBonus) stats.push(`腕力+${item.strengthBonus}`);
+  if (item.intelligenceBonus) stats.push(`知力+${item.intelligenceBonus}`);
+  if (item.mindBonus) stats.push(`精神+${item.mindBonus}`);
+  if (item.penetBonus) stats.push(formatBracket('貫通', Math.round(item.penetBonus * 100)));
   if (item.elementalOffense && item.elementalOffense !== 'none') {
     const elem = { fire: '炎', ice: '氷', thunder: '雷' }[item.elementalOffense];
     stats.push(`${elem}属性`);

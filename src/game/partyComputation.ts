@@ -71,7 +71,7 @@ function getCharacterMultiplier(
   return multipliers.reduce((prod, v) => prod * v, 1);
 }
 
-function getCharacterBaseStats(character: { raceId: string; predispositionId: string; lineageId: string }) {
+function getCharacterBaseStats(character: { raceId: string; predispositionId: string; lineageId: string; equipment: (Item | null)[] }) {
   const race = getRaceById(character.raceId);
   const predisposition = getPredispositionById(character.predispositionId);
   const lineage = getLineageById(character.lineageId);
@@ -92,6 +92,14 @@ function getCharacterBaseStats(character: { raceId: string; predispositionId: st
       case 'intelligence': intelligence += bonus.value; break;
       case 'mind': mind += bonus.value; break;
     }
+  }
+
+  for (const item of character.equipment) {
+    if (!item) continue;
+    if (item.vitalityBonus) vitality += item.vitalityBonus;
+    if (item.strengthBonus) strength += item.strengthBonus;
+    if (item.intelligenceBonus) intelligence += item.intelligenceBonus;
+    if (item.mindBonus) mind += item.mindBonus;
   }
 
   return { vitality, strength, intelligence, mind };

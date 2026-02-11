@@ -39,6 +39,16 @@ type ItemVariantMod = {
   rangedNoA?: number;
   magicalNoA?: number;
   elementalOffense?: ElementalOffense;
+  meleeNoABonus?: number;
+  rangedNoABonus?: number;
+  magicalNoABonus?: number;
+  accuracyBonus?: number;
+  evasionBonus?: number;
+  vitalityBonus?: number;
+  strengthBonus?: number;
+  intelligenceBonus?: number;
+  mindBonus?: number;
+  penetBonus?: number;
 };
 
 type ItemTemplate = {
@@ -49,6 +59,8 @@ type ItemTemplate = {
   mythicName?: string;
   variant1Mod?: ItemVariantMod;
   variant2Mod?: ItemVariantMod;
+  variant3Mod?: ItemVariantMod;
+  mythicBonusMod?: ItemVariantMod;
 };
 
 // ============================================================
@@ -452,6 +464,8 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
     rareName: '騎士の鎧', mythicName: '英雄の鎧',
     variant1Mod: { physicalDefense: 2 },
     variant2Mod: { partyHP: 3 },
+    variant3Mod: { magicalDefense: 2 },
+    mythicBonusMod: { vitalityBonus: 1 },
   },
   // Index 1: robe (法衣) - +magicalDefense
   {
@@ -460,6 +474,8 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
     rareName: '大魔導のローブ', mythicName: '天衣',
     variant1Mod: { magicalDefense: 2 },
     variant2Mod: { partyHP: 3 },
+    variant3Mod: { evasionBonus: 0.01 },
+    mythicBonusMod: { mindBonus: 1 },
   },
   // Index 2: shield (盾) - +HP, +physicalDefense
   {
@@ -468,6 +484,8 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
     rareName: '守護盾', mythicName: '聖盾',
     variant1Mod: { physicalDefense: 2 },
     variant2Mod: { meleeAttack: 1 },
+    variant3Mod: { partyHP: 2 },
+    mythicBonusMod: { vitalityBonus: 1 },
   },
   // Index 3: sword (剣) - +meleeAttack
   {
@@ -476,6 +494,8 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
     rareName: '騎士剣', mythicName: '聖剣',
     variant1Mod: { meleeAttack: 1 },
     variant2Mod: { physicalDefense: 1 },
+    variant3Mod: { partyHP: 2 },
+    mythicBonusMod: { strengthBonus: 1 },
   },
   // Index 4: katana (刀) - +meleeAttack, -meleeNoA
   {
@@ -483,15 +503,19 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
     variants: ['業物の刀', '名匠の刀'],
     rareName: '銘刀', mythicName: '妖刀',
     variant1Mod: { meleeAttack: 2 },
-    variant2Mod: { meleeAttack: 1 },
+    variant2Mod: { penetBonus: 0.01 },
+    variant3Mod: { penetBonus: 0.02 },
+    mythicBonusMod: { mindBonus: 1 },
   },
   // Index 5: gauntlet (籠手) - +meleeNoA
   {
     category: 'gauntlet', baseName: '籠手',
     variants: ['戦士の籠手', '闘士の籠手'],
     rareName: '英雄の籠手', mythicName: '覇王の籠手',
-    variant1Mod: { physicalDefense: 1 },
-    variant2Mod: { meleeAttack: 1 },
+    variant1Mod: { meleeNoA: 0.1 },
+    variant2Mod: { physicalDefense: 1 },
+    variant3Mod: { meleeAttack: 1 },
+    mythicBonusMod: { strengthBonus: 1 },
   },
   // Index 6: arrow (矢) - +rangedAttack
   {
@@ -500,6 +524,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
     rareName: '雷の矢', mythicName: '神矢',
     variant1Mod: { elementalOffense: 'fire' },
     variant2Mod: { elementalOffense: 'ice' },
+    variant3Mod: { rangedAttack: 1 },
   },
   // Index 7: bolt (ボルト) - +rangedAttack, -rangedNoA
   {
@@ -508,14 +533,18 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
     rareName: '炎のボルト', mythicName: '神雷ボルト',
     variant1Mod: { rangedAttack: 1 },
     variant2Mod: { elementalOffense: 'thunder' },
+    variant3Mod: { rangedAttack: 1 },
+    mythicBonusMod: { strengthBonus: 1 },
   },
   // Index 8: archery (弓) - +rangedNoA
   {
     category: 'archery', baseName: '弓',
     variants: ['狩人の弓', '精密な弓'],
     rareName: '精霊弓', mythicName: '天弓',
-    variant1Mod: { rangedAttack: 1 },
+    variant1Mod: { accuracyBonus: 0.01 },
     variant2Mod: { partyHP: 2 },
+    variant3Mod: { accuracyBonus: 0.02 },
+    mythicBonusMod: { strengthBonus: 1 },
   },
   // Index 9: wand (ワンド) - +magicalAttack
   {
@@ -524,6 +553,8 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
     rareName: '大魔導の杖', mythicName: '神杖',
     variant1Mod: { magicalAttack: 1 },
     variant2Mod: { magicalDefense: 1 },
+    variant3Mod: { magicalAttack: 1 },
+    mythicBonusMod: { intelligenceBonus: 1 },
   },
   // Index 10: grimoire (魔導書) - +magicalAttack, -magicalNoA
   {
@@ -532,14 +563,18 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
     rareName: '神代の書', mythicName: '真理の書',
     variant1Mod: { magicalAttack: 1 },
     variant2Mod: { magicalDefense: 1 },
+    variant3Mod: { magicalAttack: 1 },
+    mythicBonusMod: { mindBonus: 1 },
   },
   // Index 11: catalyst (触媒) - +magicalNoA
   {
     category: 'catalyst', baseName: '触媒',
     variants: ['精霊の触媒', '炎の触媒'],
     rareName: '賢者の石', mythicName: '神核',
-    variant1Mod: { magicalAttack: 1 },
+    variant1Mod: { magicalNoA: 0.1 },
     variant2Mod: { elementalOffense: 'fire' },
+    variant3Mod: { elementalOffense: 'thunder' },
+    mythicBonusMod: { intelligenceBonus: 1 },
   },
 ];
 
@@ -567,6 +602,20 @@ function getMultiplierTier(tier: number, rarity: Rarity): number | null {
   if (rarity === 'mythic') return null;
   const bonus = rarity === 'rare' ? 2 : rarity === 'uncommon' ? 1 : 0;
   return Math.min(tier + bonus, TIER_TARGET_MULTIPLIERS.length);
+}
+
+function getRareSubtleMods(template: ItemTemplate, tier: number): ItemVariantMod[] {
+  const subtlePool = [template.variant1Mod, template.variant2Mod, template.variant3Mod].filter(
+    (mod): mod is ItemVariantMod => mod !== undefined
+  );
+
+  if (subtlePool.length <= 2) {
+    return subtlePool;
+  }
+
+  // Rare requires two subtle bonuses; rotate the omitted one by tier for deterministic diversity.
+  const omitIndex = (tier - 1) % subtlePool.length;
+  return subtlePool.filter((_, index) => index !== omitIndex).slice(0, 2);
 }
 
 function createItem(
@@ -682,6 +731,16 @@ function createItem(
     if (mod.rangedNoA) item.rangedNoA = (item.rangedNoA || 0) + Math.floor(mod.rangedNoA);
     if (mod.magicalNoA) item.magicalNoA = (item.magicalNoA || 0) + Math.floor(mod.magicalNoA * tier);
     if (mod.elementalOffense) item.elementalOffense = mod.elementalOffense;
+    if (mod.meleeNoABonus) item.meleeNoABonus = (item.meleeNoABonus || 0) + mod.meleeNoABonus;
+    if (mod.rangedNoABonus) item.rangedNoABonus = (item.rangedNoABonus || 0) + mod.rangedNoABonus;
+    if (mod.magicalNoABonus) item.magicalNoABonus = (item.magicalNoABonus || 0) + mod.magicalNoABonus;
+    if (mod.accuracyBonus) item.accuracyBonus = (item.accuracyBonus || 0) + mod.accuracyBonus;
+    if (mod.evasionBonus) item.evasionBonus = (item.evasionBonus || 0) + mod.evasionBonus;
+    if (mod.vitalityBonus) item.vitalityBonus = (item.vitalityBonus || 0) + mod.vitalityBonus;
+    if (mod.strengthBonus) item.strengthBonus = (item.strengthBonus || 0) + mod.strengthBonus;
+    if (mod.intelligenceBonus) item.intelligenceBonus = (item.intelligenceBonus || 0) + mod.intelligenceBonus;
+    if (mod.mindBonus) item.mindBonus = (item.mindBonus || 0) + mod.mindBonus;
+    if (mod.penetBonus) item.penetBonus = (item.penetBonus || 0) + mod.penetBonus;
   };
 
   // Apply rarity subtle modifiers
@@ -690,22 +749,15 @@ function createItem(
   }
 
   if (rarity === 'rare') {
-    applyVariantMod(template.variant1Mod);
-    applyVariantMod(template.variant2Mod);
+    const rareSubtleMods = getRareSubtleMods(template, tier);
+    rareSubtleMods.forEach(applyVariantMod);
   }
 
   if (rarity === 'mythic') {
     applyVariantMod(template.variant1Mod);
     applyVariantMod(template.variant2Mod);
-    // Mythic has one extra subtle bonus compared with rare.
-    applyVariantMod(template.variant1Mod);
-  }
-
-  // Apply rare/mythic modifiers (elemental for arrows/bolts/grimoires)
-  if (rarity === 'rare') {
-    if (template.category === 'arrow' || template.category === 'bolt' || template.category === 'grimoire') {
-      item.elementalOffense = 'thunder';
-    }
+    applyVariantMod(template.variant3Mod || template.variant1Mod);
+    applyVariantMod(template.mythicBonusMod);
   }
 
   return item;

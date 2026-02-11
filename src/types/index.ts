@@ -122,6 +122,11 @@ export interface ItemDef {
   elementalOffense?: ElementalOffense;
   accuracyBonus?: number;
   evasionBonus?: number;
+  vitalityBonus?: number;
+  strengthBonus?: number;
+  intelligenceBonus?: number;
+  mindBonus?: number;
+  penetBonus?: number;
 }
 
 export interface Item extends ItemDef {
