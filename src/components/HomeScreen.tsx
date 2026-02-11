@@ -688,6 +688,7 @@ function PartyTab({
   const [pendingEdits, setPendingEdits] = useState<Partial<Character> | null>(null);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
   const [editingDeity, setEditingDeity] = useState(false);
+  const [pendingDeityName, setPendingDeityName] = useState(party.deity.name);
   const [lastSlotTap, setLastSlotTap] = useState<{ slot: number; time: number } | null>(null);
 
   // Handle equipment slot tap with double-tap detection for removal
@@ -728,6 +729,13 @@ function PartyTab({
     }
   };
 
+
+  useEffect(() => {
+    if (!editingDeity) {
+      setPendingDeityName(party.deity.name);
+    }
+  }, [party.deity.name, editingDeity]);
+
   const char = party.characters[selectedCharacter];
   const stats = characterStats[selectedCharacter];
   const race = RACES.find(r => r.id === char.raceId)!;
@@ -750,6 +758,7 @@ function PartyTab({
                 if (!isAvailable) return;
                 onSelectParty(partyIndex);
                 setEditingDeity(false);
+                setPendingDeityName(parties[partyIndex].deity.name);
               }}
               disabled={!isAvailable}
               className={`flex-1 py-2 text-sm font-medium ${
@@ -775,8 +784,8 @@ function PartyTab({
         {editingDeity ? (
           <div className="flex items-center gap-2">
             <select
-              value={party.deity.name}
-              onChange={(e) => onUpdatePartyDeity(selectedPartyIndex, e.target.value)}
+              value={pendingDeityName}
+              onChange={(e) => setPendingDeityName(e.target.value)}
               className="text-xs border rounded px-2 py-1"
             >
               {DEITY_OPTIONS.map((deity) => {
@@ -796,15 +805,30 @@ function PartyTab({
               })}
             </select>
             <button
-              onClick={() => setEditingDeity(false)}
+              onClick={() => {
+                onUpdatePartyDeity(selectedPartyIndex, pendingDeityName);
+                setEditingDeity(false);
+              }}
               className="text-xs text-sub"
             >
               完了
             </button>
+            <button
+              onClick={() => {
+                setPendingDeityName(party.deity.name);
+                setEditingDeity(false);
+              }}
+              className="text-xs text-gray-600"
+            >
+              取消
+            </button>
           </div>
         ) : (
           <button
-            onClick={() => setEditingDeity(true)}
+            onClick={() => {
+              setPendingDeityName(party.deity.name);
+              setEditingDeity(true);
+            }}
             className="text-sm text-sub flex-shrink-0"
           >
             編集
@@ -1610,6 +1634,7 @@ function ExpeditionTab({
                               <div className="text-gray-500 mt-1">
                                 敵攻撃:{entry.enemyAttackValues} | 与ダメ:{entry.damageDealt} | 被ダメ:{entry.damageTaken}
                                 {entry.healAmount && entry.healAmount > 0 && <span className="text-green-600"> | 回復:+{entry.healAmount}HP</span>}
+                                {entry.attritionAmount && entry.attritionAmount > 0 && <span className="text-accent"> | 消耗:-{entry.attritionAmount}HP</span>}
                                 {entry.gateInfo && <span className="text-orange-700"> | 解放条件: {entry.gateInfo}</span>}
                                 {entry.reward && <span className={` ${getRewardTextClass(entry.rewardRarity, entry.rewardIsSuperRare)} ${entry.rewardIsSuperRare ? 'font-bold' : 'font-medium'}`}> | 獲得:{entry.reward}</span>}
                               </div>
