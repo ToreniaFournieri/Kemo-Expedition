@@ -1311,9 +1311,9 @@ function ExpeditionTab({
         <div className="flex justify-between items-center">
           <div>
             <div className="font-medium">{selectedDungeon?.name}</div>
-            {selectedDungeonGate && (
-              <div className={`text-xs mt-1 ${selectedDungeonGate.locked ? 'text-red-600' : 'text-gray-500'}`}>
-                {selectedDungeonGate.gateText.replace('🔒 ', '')}
+            {selectedDungeonGate?.locked && (
+              <div className="text-xs mt-1 text-orange-700">
+                {selectedDungeonGate.gateText}
               </div>
             )}
           </div>
@@ -1417,7 +1417,7 @@ function ExpeditionTab({
                         <div className="text-gray-500 mt-1">
                           敵攻撃:{entry.enemyAttackValues} | 与ダメ:{entry.damageDealt} | 被ダメ:{entry.damageTaken}
                           {entry.healAmount && entry.healAmount > 0 && <span className="text-green-600"> | 回復:+{entry.healAmount}HP</span>}
-                          {entry.gateInfo && <span className="text-red-600"> | 解放条件: {entry.gateInfo}</span>}
+                          {entry.gateInfo && <span className="text-orange-700"> | 解放条件: {entry.gateInfo}</span>}
                           {entry.reward && <span className={` ${getRewardTextClass(entry.rewardRarity, entry.rewardIsSuperRare)} ${entry.rewardIsSuperRare ? 'font-bold' : 'font-medium'}`}> | 獲得:{entry.reward}</span>}
                         </div>
                       </button>
@@ -1513,12 +1513,8 @@ function ExpeditionTab({
                   : `部屋数: ${dungeon.numberOfRooms} + ボス`
                 }
               </div>
-              {dungeon.id > 1 && (
-                <div className={`text-xs mt-1 ${gateState.locked ? 'text-red-600' : 'text-green-700'}`}>
-                  {gateState.locked
-                    ? gateState.gateText
-                    : gateState.gateText.replace('🔒', '🔓')}
-                </div>
+              {gateState.locked && (
+                <div className="text-xs mt-1 text-orange-700">{gateState.gateText}</div>
               )}
             </button>
           );
