@@ -84,6 +84,12 @@ const PARTY_LEVEL_EXP = [
   26000, 30500, 35500, 41000, 47000, 53500, 60500, 68000, 76000
 ];
 
+const numberFormatter = new Intl.NumberFormat('ja-JP');
+
+function formatNumber(value: number): string {
+  return numberFormatter.format(Math.trunc(value));
+}
+
 function getItemRarityById(itemId: number): ItemRarity {
   const rarityCode = itemId % 1000;
   if (rarityCode >= 400) return 'mythic';
@@ -532,7 +538,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             <h1 className="text-lg font-bold">ケモの冒険</h1>
             <div className="text-xs text-gray-500">v0.2.2 ({state.buildNumber})</div>
           </div>
-          <div className="text-right text-sm font-medium">{state.global.gold}G</div>
+          <div className="text-right text-sm font-medium">{formatNumber(state.global.gold)}G</div>
         </div>
         
         {/* Tabs */}
@@ -697,39 +703,39 @@ function PartyTab({
       // Check all stat changes and collect them
       if (combatTotals.physDef !== prev.physDef) {
         const isPositive = combatTotals.physDef > prev.physDef;
-        changes.push({ message: `物防 ${prev.physDef} → ${combatTotals.physDef}`, isPositive });
+        changes.push({ message: `物防 ${formatNumber(prev.physDef)} → ${formatNumber(combatTotals.physDef)}`, isPositive });
       }
       if (combatTotals.magDef !== prev.magDef) {
         const isPositive = combatTotals.magDef > prev.magDef;
-        changes.push({ message: `魔防 ${prev.magDef} → ${combatTotals.magDef}`, isPositive });
+        changes.push({ message: `魔防 ${formatNumber(prev.magDef)} → ${formatNumber(combatTotals.magDef)}`, isPositive });
       }
       if (combatTotals.hp !== prev.hp) {
         const isPositive = combatTotals.hp > prev.hp;
-        changes.push({ message: `HP ${prev.hp} → ${combatTotals.hp}`, isPositive });
+        changes.push({ message: `HP ${formatNumber(prev.hp)} → ${formatNumber(combatTotals.hp)}`, isPositive });
       }
       if (combatTotals.meleeAtk !== prev.meleeAtk) {
         const isPositive = combatTotals.meleeAtk > prev.meleeAtk;
-        changes.push({ message: `近攻 ${prev.meleeAtk} → ${combatTotals.meleeAtk}`, isPositive });
+        changes.push({ message: `近攻 ${formatNumber(prev.meleeAtk)} → ${formatNumber(combatTotals.meleeAtk)}`, isPositive });
       }
       if (combatTotals.meleeNoA !== prev.meleeNoA) {
         const isPositive = combatTotals.meleeNoA > prev.meleeNoA;
-        changes.push({ message: `近回数 ${prev.meleeNoA} → ${combatTotals.meleeNoA}`, isPositive });
+        changes.push({ message: `近回数 ${formatNumber(prev.meleeNoA)} → ${formatNumber(combatTotals.meleeNoA)}`, isPositive });
       }
       if (combatTotals.rangedAtk !== prev.rangedAtk) {
         const isPositive = combatTotals.rangedAtk > prev.rangedAtk;
-        changes.push({ message: `遠攻 ${prev.rangedAtk} → ${combatTotals.rangedAtk}`, isPositive });
+        changes.push({ message: `遠攻 ${formatNumber(prev.rangedAtk)} → ${formatNumber(combatTotals.rangedAtk)}`, isPositive });
       }
       if (combatTotals.rangedNoA !== prev.rangedNoA) {
         const isPositive = combatTotals.rangedNoA > prev.rangedNoA;
-        changes.push({ message: `遠回数 ${prev.rangedNoA} → ${combatTotals.rangedNoA}`, isPositive });
+        changes.push({ message: `遠回数 ${formatNumber(prev.rangedNoA)} → ${formatNumber(combatTotals.rangedNoA)}`, isPositive });
       }
       if (combatTotals.magicalAtk !== prev.magicalAtk) {
         const isPositive = combatTotals.magicalAtk > prev.magicalAtk;
-        changes.push({ message: `魔攻 ${prev.magicalAtk} → ${combatTotals.magicalAtk}`, isPositive });
+        changes.push({ message: `魔攻 ${formatNumber(prev.magicalAtk)} → ${formatNumber(combatTotals.magicalAtk)}`, isPositive });
       }
       if (combatTotals.magicalNoA !== prev.magicalNoA) {
         const isPositive = combatTotals.magicalNoA > prev.magicalNoA;
-        changes.push({ message: `魔回数 ${prev.magicalNoA} → ${combatTotals.magicalNoA}`, isPositive });
+        changes.push({ message: `魔回数 ${formatNumber(prev.magicalNoA)} → ${formatNumber(combatTotals.magicalNoA)}`, isPositive });
       }
 
       // Send all stat notifications at once (clears previous stat notifications)
@@ -847,7 +853,7 @@ function PartyTab({
       <div className="mb-3 text-sm flex items-center justify-between gap-2">
         <div className="min-w-0">
           <span className="font-medium">{displayedDeityName}</span>
-          <span className="text-gray-500"> (Level: {party.deity.level}, Experience {party.deity.experience}/{party.deity.level < 29 ? PARTY_LEVEL_EXP[party.deity.level] : party.deity.experience})</span>
+          <span className="text-gray-500"> (レベル: {formatNumber(party.deity.level)}, 経験値: {formatNumber(party.deity.experience)}/{formatNumber(party.deity.level < 29 ? PARTY_LEVEL_EXP[party.deity.level] : party.deity.experience)})</span>
           <div className="text-xs text-gray-600 mt-1">効果:{getDeityEffectDescription(displayedDeityName)}</div>
         </div>
         {editingDeity ? (
@@ -1159,15 +1165,15 @@ function PartyTab({
                 const offenseLines: string[] = [];
                 if (hasRanged) {
                   const amp = longAmp * baseMultRanged;
-                  offenseLines.push(`遠距離攻撃:${Math.floor(stats.rangedAttack)} x ${stats.rangedNoA}回(x${amp.toFixed(2)})`);
+                  offenseLines.push(`遠距離攻撃:${formatNumber(Math.floor(stats.rangedAttack))} x ${formatNumber(stats.rangedNoA)}回(x${amp.toFixed(2)})`);
                 }
                 if (hasMagical) {
                   const amp = midAmp * baseMultMagical;
-                  offenseLines.push(`魔法攻撃:${Math.floor(stats.magicalAttack)} x ${stats.magicalNoA}回(x${amp.toFixed(2)})`);
+                  offenseLines.push(`魔法攻撃:${formatNumber(Math.floor(stats.magicalAttack))} x ${formatNumber(stats.magicalNoA)}回(x${amp.toFixed(2)})`);
                 }
                 if (hasMelee) {
                   const amp = closeAmp * baseMultMelee;
-                  offenseLines.push(`近接攻撃:${Math.floor(stats.meleeAttack)} x ${stats.meleeNoA}回(x${amp.toFixed(2)})`);
+                  offenseLines.push(`近接攻撃:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}回(x${amp.toFixed(2)})`);
                 }
 
                 // Add accuracy display if character has ranged or melee NoA (physical attacks)
@@ -1183,10 +1189,10 @@ function PartyTab({
                 const defenseAmpMagical = Math.max(0.01, defenseMultMagical + stats.deityDefenseAmplifierBonus.magical);
                 const defenseLines = [
                   `属性:${elementName}(x${stats.elementalOffenseValue.toFixed(1)})`,
-                  `物防:${stats.physicalDefense} (${Math.round(defenseAmpPhysical * 100)}%)`,
-                  `魔防:${stats.magicalDefense} (${Math.round(defenseAmpMagical * 100)}%)`,
+                  `物防:${formatNumber(stats.physicalDefense)} (${formatNumber(Math.round(defenseAmpPhysical * 100))}%)`,
+                  `魔防:${formatNumber(stats.magicalDefense)} (${formatNumber(Math.round(defenseAmpMagical * 100))}%)`,
                 ];
-                defenseLines.push(`回避:${stats.evasionBonus >= 0 ? '+' : ''}${Math.round(stats.evasionBonus * 1000)}`);
+                defenseLines.push(`回避:${stats.evasionBonus >= 0 ? '+' : ''}${formatNumber(Math.round(stats.evasionBonus * 1000))}`);
 
                 // Pad offense lines to match defense lines count
                 while (offenseLines.length < defenseLines.length) {
@@ -1291,7 +1297,7 @@ function PartyTab({
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm font-medium">装備</span>
           <span className="text-xs text-gray-500">
-            {char.equipment.filter(e => e).length} / {stats.maxEquipSlots} スロット
+            {formatNumber(char.equipment.filter(e => e).length)} / {formatNumber(stats.maxEquipSlots)} スロット
           </span>
         </div>
       <div className="space-y-2">
@@ -1578,8 +1584,8 @@ function ExpeditionTab({
         return (
           <div key={partyIndex} className="bg-pane rounded-lg p-4">
             <div className="text-sm mb-2 flex justify-between items-center">
-              <span className="font-bold text-black">{party.name} {party.deity.name}(Level: {party.deity.level})</span>
-              <span className="text-gray-500">HP: {partyStats.hp}</span>
+              <span className="font-bold text-black">{party.name} {party.deity.name}(Level: {formatNumber(party.deity.level)})</span>
+              <span className="text-gray-500">HP: {formatNumber(partyStats.hp)}</span>
             </div>
             {/* Party Expedition Header */}
             <div className="flex items-center gap-2 mb-3">
@@ -1624,7 +1630,7 @@ function ExpeditionTab({
                   className="w-full flex justify-between items-center text-sm"
                 >
                   <span>
-                    <span className="font-medium">結果: {party.lastExpeditionLog.dungeonName} (残HP {Math.round((party.lastExpeditionLog.remainingPartyHP / Math.max(1, party.lastExpeditionLog.maxPartyHP)) * 100)}%)</span>
+                    <span className="font-medium">結果: {party.lastExpeditionLog.dungeonName} (残HP {formatNumber(Math.round((party.lastExpeditionLog.remainingPartyHP / Math.max(1, party.lastExpeditionLog.maxPartyHP)) * 100))}%)</span>
                     <span className={`ml-2 font-medium ${
                       party.lastExpeditionLog.finalOutcome === 'victory' ? 'text-sub' :
                       party.lastExpeditionLog.finalOutcome === 'defeat' ? 'text-red-600' : 'text-yellow-600'
@@ -1639,11 +1645,11 @@ function ExpeditionTab({
                 {expandedLogParty === partyIndex && (
                   <div className="mt-3 space-y-2">
                     <div className="text-sm text-gray-500">
-                      残HP: {party.lastExpeditionLog.remainingPartyHP}/{party.lastExpeditionLog.maxPartyHP}
-                      {' '}| {party.lastExpeditionLog.completedRooms}/{party.lastExpeditionLog.totalRooms}部屋
-                      {' '}| EXP: +{party.lastExpeditionLog.totalExperience}
+                      残HP: {formatNumber(party.lastExpeditionLog.remainingPartyHP)}/{formatNumber(party.lastExpeditionLog.maxPartyHP)}
+                      {' '}| {formatNumber(party.lastExpeditionLog.completedRooms)}/{formatNumber(party.lastExpeditionLog.totalRooms)}部屋
+                      {' '}| EXP: +{formatNumber(party.lastExpeditionLog.totalExperience)}
                       {party.lastExpeditionLog.autoSellProfit > 0 && (
-                        <span> | 自動売却額: {party.lastExpeditionLog.autoSellProfit}G</span>
+                        <span> | 自動売却額: {formatNumber(party.lastExpeditionLog.autoSellProfit)}G</span>
                       )}
                     </div>
 
@@ -1685,7 +1691,7 @@ function ExpeditionTab({
                               <div className="flex justify-between items-center">
                                 <span>
                                   <span className="font-medium">{roomLabel}: {entry.enemyName}</span>
-                                  <span className="text-gray-500"> | 敵HP:{entry.enemyHP} | 残HP:{entry.remainingPartyHP}({hpPercent}%)</span>
+                                  <span className="text-gray-500"> | 敵HP:{formatNumber(entry.enemyHP)} | 残HP:{formatNumber(entry.remainingPartyHP)}({formatNumber(hpPercent)}%)</span>
                                 </span>
                                 <span className="flex items-center gap-2">
                                   <span className={
@@ -1701,9 +1707,9 @@ function ExpeditionTab({
                                 </span>
                               </div>
                               <div className="text-gray-500 mt-1">
-                                敵攻撃:{entry.enemyAttackValues} | 与ダメ:{entry.damageDealt} | 被ダメ:{entry.damageTaken}
-                                {entry.healAmount && entry.healAmount > 0 && <span className="text-green-600"> | 回復:+{entry.healAmount}HP</span>}
-                                {entry.attritionAmount && entry.attritionAmount > 0 && <span className="text-accent"> | 消耗:-{entry.attritionAmount}HP</span>}
+                                敵攻撃:{entry.enemyAttackValues} | 与ダメ:{formatNumber(entry.damageDealt)} | 被ダメ:{formatNumber(entry.damageTaken)}
+                                {entry.healAmount && entry.healAmount > 0 && <span className="text-green-600"> | 回復:+{formatNumber(entry.healAmount)}HP</span>}
+                                {entry.attritionAmount && entry.attritionAmount > 0 && <span className="text-accent"> | 消耗:-{formatNumber(entry.attritionAmount)}HP</span>}
                                 {entry.gateInfo && <span className="text-orange-700"> | 解放条件: {entry.gateInfo}</span>}
                                 {entry.reward && <span className={` ${getRewardTextClass(entry.rewardRarity, entry.rewardIsSuperRare)} ${entry.rewardIsSuperRare ? 'font-bold' : 'font-medium'}`}> | 獲得:{entry.reward}</span>}
                               </div>
@@ -1753,7 +1759,7 @@ function ExpeditionTab({
                                       </span>
                                       {log.damage !== undefined && log.damage > 0 && (
                                         <span className={isEnemy ? 'text-accent' : 'text-sub'}>
-                                          ({emoji} {log.damage})
+                                          ({emoji} {formatNumber(log.damage)})
                                         </span>
                                       )}
                                     </div>
@@ -1888,20 +1894,20 @@ function InventoryTab({
                     <span className={`text-sm ${isNew ? 'font-bold' : 'font-medium'}`}>
                       {getItemDisplayName(item)}
                     </span>
-                    <span className="text-xs text-gray-500">x{count}</span>
+                    <span className="text-xs text-gray-500">x{formatNumber(count)}</span>
                     {isNew && <span className="text-xs text-accent font-bold">NEW</span>}
                   </div>
                   <button
                     onClick={() => {
                       const shouldSell = window.confirm(
-                        `「${getItemDisplayName(item)} x${count}」を全売却します。\n${sellPrice}Gを獲得します。よろしいですか？`
+                        `「${getItemDisplayName(item)} x${formatNumber(count)}」を全売却します。\n${formatNumber(sellPrice)}Gを獲得します。よろしいですか？`
                       );
                       if (!shouldSell) return;
                       onSellStack(key);
                     }}
                     className="text-xs text-accent px-2 py-1 border border-accent rounded flex-shrink-0"
                   >
-                    全売却 {sellPrice}G
+                    全売却 {formatNumber(sellPrice)}G
                   </button>
                 </div>
                 <div className="mt-0.5 text-xs leading-tight text-gray-400">
@@ -1961,7 +1967,7 @@ function ShopTab({
 }) {
   return (
     <div>
-      <div className="text-sm text-gray-500 mb-4">所持金: {gold}G</div>
+      <div className="text-sm text-gray-500 mb-4">所持金: {formatNumber(gold)}G</div>
 
       <div className="bg-pane rounded-lg p-4">
         <div className="text-sm text-gray-500 text-center py-8">
@@ -2119,10 +2125,10 @@ function SettingTab({
     : [];
 
   const formatEnemyAttackLine = (label: string, attack: number, noA: number, amplifier: number) =>
-    `${label}: ${attack} x ${noA}回(x${amplifier.toFixed(2)})`;
+    `${label}: ${formatNumber(attack)} x ${formatNumber(noA)}回(x${amplifier.toFixed(2)})`;
 
   const formatEnemyDefenseLine = (label: string, defense: number, percent: number) =>
-    `${label}: ${defense} (${percent.toFixed(0)}%)`;
+    `${label}: ${formatNumber(defense)} (${percent.toFixed(0)}%)`;
 
   const ENEMY_ELEMENT_LABELS: Record<string, string> = {
     none: '無',
@@ -2173,21 +2179,21 @@ function SettingTab({
           <div className="mb-2">
             <div className="text-xs text-gray-500 mb-1">common_reward_bag (通常報酬 抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>報酬抽選</span><span>{commonRewardRemaining} / {commonRewardTotal}</span></div>
-              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{commonRewardWins}</span></div>
+              <div className="flex justify-between"><span>報酬抽選</span><span>{formatNumber(commonRewardRemaining)} / {formatNumber(commonRewardTotal)}</span></div>
+              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{formatNumber(commonRewardWins)}</span></div>
             </div>
           </div>
 
           <div className="mb-2">
             <div className="text-xs text-gray-500 mb-1">common_enhancement_bag (称号付与 抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>通常称号抽選</span><span>{commonEnhancementRemaining} / {commonEnhancementTotal}</span></div>
-              <div className="flex justify-between text-sub"><span>名工の残り</span><span>{commonCraftsmanRemaining} / {craftsmanInitial}</span></div>
-              <div className="flex justify-between text-sub"><span>魔性の残り</span><span>{commonDemonicRemaining} / {demonicInitial}</span></div>
-              <div className="flex justify-between text-sub"><span>宿った残り</span><span>{commonDwellingRemaining} / {dwellingInitial}</span></div>
-              <div className="flex justify-between text-sub"><span>伝説の残り</span><span>{commonLegendaryRemaining} / {legendaryInitial}</span></div>
-              <div className="flex justify-between text-sub"><span>恐ろしい残り</span><span>{commonTerribleRemaining} / {terribleInitial}</span></div>
-              <div className="flex justify-between text-sub"><span>究極の残り</span><span>{commonUltimateRemaining} / {ultimateInitial}</span></div>
+              <div className="flex justify-between"><span>通常称号抽選</span><span>{formatNumber(commonEnhancementRemaining)} / {formatNumber(commonEnhancementTotal)}</span></div>
+              <div className="flex justify-between text-sub"><span>名工の残り</span><span>{formatNumber(commonCraftsmanRemaining)} / {formatNumber(craftsmanInitial)}</span></div>
+              <div className="flex justify-between text-sub"><span>魔性の残り</span><span>{formatNumber(commonDemonicRemaining)} / {formatNumber(demonicInitial)}</span></div>
+              <div className="flex justify-between text-sub"><span>宿った残り</span><span>{formatNumber(commonDwellingRemaining)} / {formatNumber(dwellingInitial)}</span></div>
+              <div className="flex justify-between text-sub"><span>伝説の残り</span><span>{formatNumber(commonLegendaryRemaining)} / {formatNumber(legendaryInitial)}</span></div>
+              <div className="flex justify-between text-sub"><span>恐ろしい残り</span><span>{formatNumber(commonTerribleRemaining)} / {formatNumber(terribleInitial)}</span></div>
+              <div className="flex justify-between text-sub"><span>究極の残り</span><span>{formatNumber(commonUltimateRemaining)} / {formatNumber(ultimateInitial)}</span></div>
             </div>
           </div>
 
@@ -2200,37 +2206,37 @@ function SettingTab({
           <div className="mb-2">
             <div className="text-xs text-gray-500 mb-1">uncommon_reward_bag (アンコモン抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>報酬抽選</span><span>{uncommonRewardRemaining} / {uniqueRewardTotal}</span></div>
-              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{uncommonRewardWins}</span></div>
+              <div className="flex justify-between"><span>報酬抽選</span><span>{formatNumber(uncommonRewardRemaining)} / {formatNumber(uniqueRewardTotal)}</span></div>
+              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{formatNumber(uncommonRewardWins)}</span></div>
             </div>
           </div>
 
           <div className="mb-2">
             <div className="text-xs text-gray-500 mb-1">rare_reward_bag (レア抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>報酬抽選</span><span>{rareRewardRemaining} / {uniqueRewardTotal}</span></div>
-              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{rareRewardWins}</span></div>
+              <div className="flex justify-between"><span>報酬抽選</span><span>{formatNumber(rareRewardRemaining)} / {formatNumber(uniqueRewardTotal)}</span></div>
+              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{formatNumber(rareRewardWins)}</span></div>
             </div>
           </div>
 
           <div className="mb-2">
             <div className="text-xs text-gray-500 mb-1">mythic_reward_bag (神魔レア抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>報酬抽選</span><span>{mythicRewardRemaining} / {uniqueRewardTotal}</span></div>
-              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{mythicRewardWins}</span></div>
+              <div className="flex justify-between"><span>報酬抽選</span><span>{formatNumber(mythicRewardRemaining)} / {formatNumber(uniqueRewardTotal)}</span></div>
+              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{formatNumber(mythicRewardWins)}</span></div>
             </div>
           </div>
 
           <div className="mb-2">
             <div className="text-xs text-gray-500 mb-1">enhancement_bag (称号付与 抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>通常称号抽選</span><span>{enhancementRemaining} / {enhancementTotal}</span></div>
-              <div className="flex justify-between text-sub"><span>名工の残り</span><span>{craftsmanRemaining} / {craftsmanInitial}</span></div>
-              <div className="flex justify-between text-sub"><span>魔性の残り</span><span>{demonicRemaining} / {demonicInitial}</span></div>
-              <div className="flex justify-between text-sub"><span>宿った残り</span><span>{dwellingRemaining} / {dwellingInitial}</span></div>
-              <div className="flex justify-between text-sub"><span>伝説の残り</span><span>{legendaryRemaining} / {legendaryInitial}</span></div>
-              <div className="flex justify-between text-sub"><span>恐ろしい残り</span><span>{terribleRemaining} / {terribleInitial}</span></div>
-              <div className="flex justify-between text-sub"><span>究極の残り</span><span>{ultimateRemaining} / {ultimateInitial}</span></div>
+              <div className="flex justify-between"><span>通常称号抽選</span><span>{formatNumber(enhancementRemaining)} / {formatNumber(enhancementTotal)}</span></div>
+              <div className="flex justify-between text-sub"><span>名工の残り</span><span>{formatNumber(craftsmanRemaining)} / {formatNumber(craftsmanInitial)}</span></div>
+              <div className="flex justify-between text-sub"><span>魔性の残り</span><span>{formatNumber(demonicRemaining)} / {formatNumber(demonicInitial)}</span></div>
+              <div className="flex justify-between text-sub"><span>宿った残り</span><span>{formatNumber(dwellingRemaining)} / {formatNumber(dwellingInitial)}</span></div>
+              <div className="flex justify-between text-sub"><span>伝説の残り</span><span>{formatNumber(legendaryRemaining)} / {formatNumber(legendaryInitial)}</span></div>
+              <div className="flex justify-between text-sub"><span>恐ろしい残り</span><span>{formatNumber(terribleRemaining)} / {formatNumber(terribleInitial)}</span></div>
+              <div className="flex justify-between text-sub"><span>究極の残り</span><span>{formatNumber(ultimateRemaining)} / {formatNumber(ultimateInitial)}</span></div>
             </div>
           </div>
 
@@ -2242,8 +2248,8 @@ function SettingTab({
           <div className="mb-2">
             <div className="text-xs text-gray-500 mb-1">superRare_bag (称号超レア称号付与 抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>超レア称号抽選</span><span>{superRareRemaining} / {superRareTotal}</span></div>
-              <div className="flex justify-between text-accent"><span>超レア残り</span><span>{superRareHits} / {superRareInitial}</span></div>
+              <div className="flex justify-between"><span>超レア称号抽選</span><span>{formatNumber(superRareRemaining)} / {formatNumber(superRareTotal)}</span></div>
+              <div className="flex justify-between text-accent"><span>超レア残り</span><span>{formatNumber(superRareHits)} / {formatNumber(superRareInitial)}</span></div>
             </div>
           </div>
           <button onClick={onResetSuperRareBag} className="w-full py-2 bg-accent text-white rounded text-sm font-medium">超レア報酬初期化</button>
@@ -2370,8 +2376,8 @@ function SettingTab({
                           <div>クラス: {enemyClass}</div>
                         </div>
                         <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                          <div>HP: {displayEnemy.hp}</div>
-                          <div>経験値: {displayEnemy.experience}</div>
+                          <div>HP: {formatNumber(displayEnemy.hp)}</div>
+                          <div>経験値: {formatNumber(displayEnemy.experience)}</div>
                           <div>{formatEnemyAttackLine('遠攻', displayEnemy.rangedAttack, displayEnemy.rangedNoA, displayEnemy.rangedAttackAmplifier)}</div>
                           <div>
                             属性: {ENEMY_ELEMENT_LABELS[displayEnemy.elementalOffense] ?? '無'}
@@ -2384,7 +2390,7 @@ function SettingTab({
                           <div>
                             命中率: 100% (減衰: x{(0.90 + displayEnemy.accuracyBonus).toFixed(2)})
                           </div>
-                          <div>回避: {Math.round(displayEnemy.evasionBonus * 1000)}</div>
+                          <div>回避: {formatNumber(Math.round(displayEnemy.evasionBonus * 1000))}</div>
                         </div>
                         <div>スキル: {displayEnemy.abilities.length > 0 ? displayEnemy.abilities.map(a => ENEMY_ABILITY_LABELS[a] ?? a).join('、 ') : 'なし'}</div>
                         <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id)}${item.name}`).join(' / ')}</div>
