@@ -1890,7 +1890,13 @@ function InventoryTab({
                     {isNew && <span className="text-xs text-accent font-bold">NEW</span>}
                   </div>
                   <button
-                    onClick={() => onSellStack(key)}
+                    onClick={() => {
+                      const shouldSell = window.confirm(
+                        `「${getItemDisplayName(item)} x${count}」を全売却します。\n${sellPrice}Gを獲得します。よろしいですか？`
+                      );
+                      if (!shouldSell) return;
+                      onSellStack(key);
+                    }}
                     className="text-xs text-accent px-2 py-1 border border-accent rounded flex-shrink-0"
                   >
                     全売却 {sellPrice}G
