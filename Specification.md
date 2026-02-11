@@ -54,10 +54,27 @@
 
 
 ### 2.1 Global constants
-- One deity represents on one party. The deity has its own level, HP, and unique divine abilities. 
-const PARTY_SCHEMA = ['number', 'deity', 'level', 'experience', 'd.HP']
 
-- Initial deity: 'God of Restoration' // Revives character at the base automatically, no death penalty 
+**Global parameter**
+- gold 
+- Inventory 
+
+**Deity  parameter**
+- name
+  - Initial deity: 'God of Restoration' // Revives character at the base automatically, no death penalty 
+- level
+- Experience
+- unique abulities 
+- Loot-Gate status
+
+**Party parameter**
+- party id
+- Deity // replacing deity reset character equipment slots. 
+- characters
+
+
+
+
 - **Bag Randomization** There are `g.common_reward_bag`, `g.common_enhancement_bag`, `g.uncommon_reward_bag`, `g.rare_reward_bag`, `g.mythic_reward_bag`, `g.enhancement_bag`, `g.superRare_bag`, and `g.threat_weight_bag` which control probable randomness.
 
 
