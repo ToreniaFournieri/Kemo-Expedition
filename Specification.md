@@ -756,7 +756,11 @@ inventory = {
 
 ### 5.2 Logs
 - `f.quick_summary`:
-  - `p.outcome_of_expedition`: 勝利/敗北/引分
+  - `p.outcome_of_expedition`: 
+    - 踏破: victory and complete the whole dungeons 
+    - 帰還: victory but not fulfill loot-gate condition 
+    - 撤退: draw 
+    - 敗北: defeat
   - `p.remaining_HP`: remaining party HP/ max party HP : `340/ 1000`
   - `p.reached_room` / `p.number_of_rooms` : 4/6
   - `p.gained_experience`: ex. +234
