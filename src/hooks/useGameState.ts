@@ -38,22 +38,10 @@ import {
 } from '../game/bags';
 import { getItemById, getItemsByTierAndRarity, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
+import { getDeityKey, normalizeDeityName } from '../game/deity';
 
 const BUILD_NUMBER = 43;
 const STORAGE_KEY = 'kemo-expedition-save';
-
-const DEITY_NAME_MAP: Record<string, string> = {
-  'God of Restoration': '再生の神',
-  'God of Attrition': '消耗の神',
-  'God of Fortification': '防備の神',
-  'God of Precision': '命中の神',
-  'God of Evasion': '回避の神',
-  'God of Resonance': '反響の神',
-};
-
-function normalizeDeityName(name: string): string {
-  return DEITY_NAME_MAP[name] ?? name;
-}
 
 // Helper to calculate sell price for an item
 function calculateSellPrice(item: Item): number {
@@ -369,6 +357,7 @@ function createInitialState(): GameState {
 type GameAction =
   | { type: 'SELECT_PARTY'; partyIndex: number }
   | { type: 'SELECT_DUNGEON'; partyIndex: number; dungeonId: number }
+  | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
   | { type: 'RUN_EXPEDITION'; partyIndex: number }
   | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; itemKey: string | null }
   | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character> }
@@ -588,6 +577,33 @@ function selectEnemy(dungeonId: number, room: number, totalRooms: number) {
   return enemies[randomIndex];
 }
 
+function applyPeriodicDeityHpEffect(
+  deityName: string,
+  roomNumber: number,
+  currentHp: number,
+  maxHp: number
+): { hp: number; healAmount?: number } {
+  if (roomNumber % 4 !== 0) {
+    return { hp: currentHp };
+  }
+
+  const deityKey = getDeityKey(deityName);
+  if (deityKey === 'God of Restoration') {
+    const missingHp = maxHp - currentHp;
+    const healAmount = Math.floor(missingHp * 0.2);
+    return {
+      hp: Math.min(maxHp, currentHp + healAmount),
+      healAmount: healAmount > 0 ? healAmount : undefined,
+    };
+  }
+
+  if (deityKey === 'God of Attrition') {
+    return { hp: Math.max(1, Math.floor(currentHp * 0.95)) };
+  }
+
+  return { hp: currentHp };
+}
+
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'SELECT_PARTY':
@@ -600,6 +616,64 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         selectedDungeonId: action.dungeonId
       };
       return { ...state, parties: updatedParties };
+    }
+
+    case 'UPDATE_PARTY_DEITY': {
+      const normalizedDeityName = normalizeDeityName(action.deityName);
+      const isUsedByOtherParty = state.parties.some((party, index) =>
+        index !== action.partyIndex && normalizeDeityName(party.deity.name) === normalizedDeityName
+      );
+      if (isUsedByOtherParty) {
+        return state;
+      }
+
+      const updatedParties = [...state.parties];
+      const targetParty = updatedParties[action.partyIndex];
+      let newInventory = { ...state.global.inventory };
+
+      const resetCharacters = targetParty.characters.map((character) => {
+        for (const equippedItem of character.equipment) {
+          if (!equippedItem) continue;
+          const key = getVariantKey(equippedItem);
+          const existing = newInventory[key];
+          if (existing) {
+            newInventory[key] = {
+              ...existing,
+              count: existing.count + 1,
+              status: 'owned',
+            };
+          } else {
+            newInventory[key] = {
+              item: { ...equippedItem, isNew: undefined },
+              count: 1,
+              status: 'owned',
+            };
+          }
+        }
+
+        return {
+          ...character,
+          equipment: [],
+        };
+      });
+
+      updatedParties[action.partyIndex] = {
+        ...targetParty,
+        deity: {
+          ...targetParty.deity,
+          name: normalizedDeityName,
+        },
+        characters: resetCharacters,
+      };
+
+      return {
+        ...state,
+        parties: updatedParties,
+        global: {
+          ...state.global,
+          inventory: newInventory,
+        },
+      };
     }
 
     case 'RUN_EXPEDITION': {
@@ -770,14 +844,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               currentHp = battleResult.partyHp;
               entries.push(entry);
 
-              // Heal 20% of missing HP after Elite rooms
-              if (roomDef.type === 'battle_Elite') {
-                const missingHp = partyStats.hp - currentHp;
-                const healAmount = Math.floor(missingHp * 0.2);
-                if (healAmount > 0) {
-                  currentHp = currentHp + healAmount;
-                  entry.healAmount = healAmount;
-                }
+              const deityHpEffect = applyPeriodicDeityHpEffect(currentParty.deity.name, roomCounter, currentHp, partyStats.hp);
+              currentHp = deityHpEffect.hp;
+              if (deityHpEffect.healAmount) {
+                entry.healAmount = deityHpEffect.healAmount;
               }
             } else if (battleResult.outcome === 'defeat') {
               entries.push(entry);
@@ -845,6 +915,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
             currentHp = battleResult.partyHp;
             entries.push(entry);
+
+            const deityHpEffect = applyPeriodicDeityHpEffect(currentParty.deity.name, room, currentHp, partyStats.hp);
+            currentHp = deityHpEffect.hp;
+            if (deityHpEffect.healAmount) {
+              entry.healAmount = deityHpEffect.healAmount;
+            }
           } else if (battleResult.outcome === 'defeat') {
             entries.push(entry);
             finalOutcome = 'defeat';
@@ -1221,6 +1297,10 @@ export function useGameState() {
 
     selectDungeon: useCallback((partyIndex: number, dungeonId: number) => {
       dispatch({ type: 'SELECT_DUNGEON', partyIndex, dungeonId });
+    }, []),
+
+    updatePartyDeity: useCallback((partyIndex: number, deityName: string) => {
+      dispatch({ type: 'UPDATE_PARTY_DEITY', partyIndex, deityName });
     }, []),
 
     runExpedition: useCallback((partyIndex: number) => {
