@@ -10,7 +10,7 @@ import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { applyEnemyEncounterScaling } from '../game/enemyScaling';
-import { DEITY_OPTIONS, normalizeDeityName } from '../game/deity';
+import { DEITY_OPTIONS, getDeityEffectDescription, normalizeDeityName } from '../game/deity';
 
 interface HomeScreenProps {
   state: GameState;
@@ -770,6 +770,7 @@ function PartyTab({
         <div className="min-w-0">
           <span className="font-medium">{party.deity.name}</span>
           <span className="text-gray-500"> (Level: {party.deity.level}, Experience {party.deity.experience}/{party.deity.level < 29 ? PARTY_LEVEL_EXP[party.deity.level] : party.deity.experience})</span>
+          <div className="text-xs text-gray-600 mt-1">効果:{getDeityEffectDescription(party.deity.name)}</div>
         </div>
         {editingDeity ? (
           <div className="flex items-center gap-2">

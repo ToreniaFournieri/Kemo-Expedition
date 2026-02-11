@@ -71,19 +71,19 @@ function calculateSingleEnemyAttackDamage(
       attack = enemy.rangedAttack;
       amplifier = enemy.rangedAttackAmplifier;
       defense = targetCharStats.physicalDefense;
-      defenseAmplifier = targetCharStats.physicalDefenseAmplifier;
+      defenseAmplifier = Math.max(0.01, targetCharStats.physicalDefenseAmplifier + targetCharStats.deityDefenseAmplifierBonus.physical);
       break;
     case 'mid':
       attack = enemy.magicalAttack;
       amplifier = enemy.magicalAttackAmplifier;
       defense = targetCharStats.magicalDefense;
-      defenseAmplifier = targetCharStats.magicalDefenseAmplifier;
+      defenseAmplifier = Math.max(0.01, targetCharStats.magicalDefenseAmplifier + targetCharStats.deityDefenseAmplifierBonus.magical);
       break;
     case 'close':
       attack = enemy.meleeAttack;
       amplifier = enemy.meleeAttackAmplifier;
       defense = targetCharStats.physicalDefense;
-      defenseAmplifier = targetCharStats.physicalDefenseAmplifier;
+      defenseAmplifier = Math.max(0.01, targetCharStats.physicalDefenseAmplifier + targetCharStats.deityDefenseAmplifierBonus.physical);
       break;
   }
 
@@ -168,21 +168,25 @@ function calculateCharacterDamage(
   let defense = 0;
   let defenseAmplifier = enemy.defenseAmplifier;
 
+  let deityOffenseAmplifierBonus = 0;
   switch (phase) {
     case 'long':
       attack = charStats.rangedAttack;
       noA = charStats.rangedNoA;
       defense = enemy.physicalDefense;
+      deityOffenseAmplifierBonus = charStats.deityOffenseAmplifierBonus.long;
       break;
     case 'mid':
       attack = charStats.magicalAttack;
       noA = charStats.magicalNoA;
       defense = enemy.magicalDefense;
+      deityOffenseAmplifierBonus = charStats.deityOffenseAmplifierBonus.mid;
       break;
     case 'close':
       attack = charStats.meleeAttack;
       noA = charStats.meleeNoA;
       defense = enemy.physicalDefense;
+      deityOffenseAmplifierBonus = charStats.deityOffenseAmplifierBonus.close;
       break;
   }
 
@@ -195,7 +199,7 @@ function calculateCharacterDamage(
   const effectiveDefense = defense * (1 - charStats.penetMultiplier);
 
   // Offense amplifier: iaigiri scales with ability level on CLOSE phase
-  let offenseAmplifier = 1.0;
+  let offenseAmplifier = 1.0 + deityOffenseAmplifierBonus;
   const iaigiri = charStats.abilities.find(a => a.id === 'iaigiri');
   if (iaigiri && phase === 'close') {
     offenseAmplifier *= iaigiri.level >= 2 ? 2.5 : 2.0;
