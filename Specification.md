@@ -70,6 +70,7 @@
 **Party parameter**
 - party id
 - Deity // replacing deity reset character equipment slots. 
+- `d.HP`
 - characters
 
 
@@ -260,8 +261,6 @@
 - Row Assignment: Party members occupy positions 1 through 6. Row 1 represents the front-most position (highest threat), while Row 6 represents the back-most position (lowest threat).
 
 - All characters participate simultaneously
-- Party has its:
-    - `d.HP`
 
 2. Character Properties
 - Each character has:
