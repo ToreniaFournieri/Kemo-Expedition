@@ -1209,18 +1209,26 @@ Left-aligned            Right-aligned
 ```   
 
 #### 8.4 Expedition
-- Top section:
+
+
+```
+PT1出撃先: ルピニアンの断崖 (pull down menu to select) 出発
+前回の探検結果: ルピニアンの断崖 敗北 ▼
+
+PT2出撃先: ヴァルピニアンの樹林帯 🔓 (pull down menu to select) 出発
+解放条件: ルピニアンの断崖の神魔レアアイテム 0/1 収集
+前回の探検結果: ケイナイアン平原 勝利 ▼
+```
+- Per party:
   - Currently selected dungeon with Loot-Gate conditions (ex. 2nd Elite Gate is locked: 2/6 Floor 2 Uncommons collected.)
+  - List of available dungeons with Loot-Gate conditions
   - Expedition behavior:
     - Expedition resolves immediately
     - No loading scenes
-- Middle section:
   - Show latest `f.quick_summary`.
     - Tapping the quick summary shows a `f.list_of_rooms`.
     - Tapping a room opens the `f.battle_logs`.
-- Bottom section:
-  - List of available dungeons with Loot-Gate conditions
-    - If the dungeon is locked, the name of dungeon is gray color and show this text: "🔒 解放条件: 〇〇の神魔レアアイテム 0/1 収集"
+  - If the dungeon is locked, the name of dungeon is gray color and show this text: "🔒 解放条件: 〇〇の神魔レアアイテム 0/1 収集"
 
 #### 8.5 Inventory
 - Behavior:
