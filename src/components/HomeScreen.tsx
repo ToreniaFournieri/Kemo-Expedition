@@ -1643,10 +1643,11 @@ function ExpeditionTab({
                   <span>
                     <span className="font-medium">結果: {party.lastExpeditionLog.dungeonName} (残HP {formatNumber(Math.round((party.lastExpeditionLog.remainingPartyHP / Math.max(1, party.lastExpeditionLog.maxPartyHP)) * 100))}%)</span>
                     <span className={`ml-2 font-medium ${
-                      party.lastExpeditionLog.finalOutcome === 'victory' ? 'text-sub' :
+                      party.lastExpeditionLog.finalOutcome === 'victory' || party.lastExpeditionLog.finalOutcome === 'return' ? 'text-sub' :
                       party.lastExpeditionLog.finalOutcome === 'defeat' ? 'text-red-600' : 'text-yellow-600'
                     }`}>
-                      {party.lastExpeditionLog.finalOutcome === 'victory' ? '勝利' :
+                      {party.lastExpeditionLog.finalOutcome === 'victory' ? '踏破' :
+                       party.lastExpeditionLog.finalOutcome === 'return' ? '帰還' :
                        party.lastExpeditionLog.finalOutcome === 'defeat' ? '敗北' : '撤退'}
                     </span>
                   </span>
