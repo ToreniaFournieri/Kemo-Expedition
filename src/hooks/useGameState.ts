@@ -692,7 +692,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const rewards: Item[] = [];
       let totalExp = 0;
       let bags = state.bags;
-      let finalOutcome: 'victory' | 'defeat' | 'retreat' = 'victory';
+      let finalOutcome: 'victory' | 'return' | 'defeat' | 'retreat' = 'victory';
       let currentInventory = state.global.inventory;
       let currentGold = state.global.gold;
       let totalAutoSellProfit = 0;
@@ -737,7 +737,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   gateInfo: `${prevDungeonName}の神魔レアアイテム ${collected}/${gateRequired} 収集`,
                 };
                 entries.push(gateEntry);
-                finalOutcome = 'retreat';
+                finalOutcome = 'return';
                 expeditionEnded = true;
                 break;
               }
@@ -776,7 +776,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   gateInfo: `${rarityLabel} ${collected}/${gateRequired} 収集`,
                 };
                 entries.push(gateEntry);
-                finalOutcome = 'retreat';
+                finalOutcome = 'return';
                 expeditionEnded = true;
                 break;
               }

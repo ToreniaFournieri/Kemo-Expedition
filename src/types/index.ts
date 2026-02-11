@@ -410,7 +410,7 @@ export interface ExpeditionLog {
   totalExperience: number;
   totalRooms: number;
   completedRooms: number;
-  finalOutcome: 'victory' | 'defeat' | 'retreat';
+  finalOutcome: 'victory' | 'return' | 'defeat' | 'retreat';
   entries: ExpeditionLogEntry[];
   rewards: Item[];
   autoSellProfit: number;
