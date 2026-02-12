@@ -1771,6 +1771,11 @@ function ExpeditionTab({
                                   <span className={`transform transition-transform ${isRoomExpanded ? 'rotate-180' : ''}`}>▼</span>
                                 </span>
                               </div>
+                              <div className="mt-1 flex h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
+                                <div className="h-full bg-blue-500" style={{ width: `${Math.min(100, remainingRatio)}%` }} />
+                                <div className="h-full bg-green-500" style={{ width: `${Math.min(100, healRatio)}%` }} />
+                                <div className="h-full bg-orange-700" style={{ width: `${Math.min(100, takenRatio)}%` }} />
+                              </div>
                               <div className="text-gray-500 mt-1">
                                 敵攻撃:{entry.enemyAttackValues}
                                 {entry.gateInfo && <span className="text-orange-700"> | 解放条件: {entry.gateInfo}</span>}
