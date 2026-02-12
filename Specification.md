@@ -1088,11 +1088,11 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 - if character has  `c.pursuit+v`, displays 遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(phase: LONG)).
   - ex. 遠距離攻撃:25 x 6回(x1.13)
 
-- if character has `c.grit+v` or `c.pursuit+v`, displays `d.物理命中率 accuracy_potency`　x 100 % (減衰: x (0.90 + `c.accuracy+v`)).  (ex. has `c.accuracy+0.02` and `c.accuracy+0.01`, then 0.90 + 0.02 + 0.01 -> 0.93 )
+- if character has `c.grit+v` or `c.pursuit+v`, displays 物理命中率: `d.accuracy_potency`　x 100 % (減衰: x (0.90 + `c.accuracy+v`)).  (ex. has `c.accuracy+0.02` and `c.accuracy+0.01`, then 0.90 + 0.02 + 0.01 -> 0.93 )
   - ex. 物理命中率: 72% (減衰: x0.90)
-- If character has `c.caster+v`, displays 魔法攻撃:`d.magical_attack` x `d.magical_NoA`回(x`f.offense_amplifier`(phase: MID)). and accuracy. 
-  - 魔法攻撃:36 x 3回(x1.26)
-  - 魔法命中率: 100% (減衰: x0.90)
+- If character has `c.caster+v`, displays 魔法攻撃:`d.magical_attack` x `d.magical_NoA`回(x`f.offense_amplifier`(phase: MID)). and 魔法命中率: 100 % (減衰: x (0.90 + `c.accuracy+v`)).  (ex. has `c.accuracy+0.02` and `c.accuracy+0.01`, then 0.90 + 0.02 + 0.01 -> 0.93 )
+  - ex. 魔法攻撃:36 x 3回(x1.26)
+  - ex. 魔法命中率: 100% (減衰: x0.90)
 
 
   - `f.display_ranged_offense` = If `d.ranged_attack` or `d.ranged_NoA` > 0, displays 遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(phase: LONG)). Else (none).
@@ -1108,9 +1108,9 @@ Name      [編集]
 🐶 race / main class(sub class) / predisposition / lineage 
 [体力:`b.vitality`] [力:`b.strength`] [知性:`b.intelligence`] [精神:`b.mind`]
 `f.display_ranged_offense`    属性攻撃:`f.elemental_offense_attribute`.name (x `f.elemental_offense_attribute`.value )
-`f.display_magical_offense`      魔法防御:`d.magical_defense` ( `f.defense_amplifier`(phase: MID) *100% )
-`f.display_melee_offense`     物理防御:`d.physical_defense`( `f.defense_amplifier`(phase: CLOSE) *100% )
-`f.display_accuracy`           回避: sum of (`c.evasion+v`)x1000
+`f.display_melee_offense`     魔法防御:`d.magical_defense` ( `f.defense_amplifier`(phase: MID) *100% )
+`f.display_accuracy`     物理防御:`d.physical_defense`( `f.defense_amplifier`(phase: CLOSE) *100% )
+`f.display_magical_offense`           回避: sum of (`c.evasion+v`)x1000
 ボーナス: `c.` (ex. 護符x1.3, 弓x1.1 鎧x2.4, 剣x1.4, 根性+1, 装備+1, 体+3)
 特殊能力:
 `a.` (ex. 守護者: パーティへの物理ダメージ × 3/5 )
@@ -1124,7 +1124,7 @@ Name      [編集]
 —————
 Left-aligned            Right-aligned
 近接攻撃:98 x 4回(x1.00)     属性:無(x1.0)
-命中率: 85% (減衰: x0.90)     物防:108 (71%)
+物理命中率: 85% (減衰: x0.90)     物防:108 (71%)
                               魔防:56 (83%)
                               回避:+4
 —————
