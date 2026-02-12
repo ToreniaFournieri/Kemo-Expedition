@@ -1730,7 +1730,7 @@ function ExpeditionTab({
                           const isBoss = entry.room === party.lastExpeditionLog!.totalRooms + 1;
                           roomLabel = isBoss ? 'BOSS' : entry.room.toString();
                         }
-                        const hpPercent = Math.round((entry.remainingPartyHP / entry.maxPartyHP) * 100);
+                        const hpPercent = Math.round((entry.remainingPartyHP / Math.max(1, entry.maxPartyHP)) * 100);
                         const healAmount = Math.max(0, entry.healAmount ?? 0);
                         const attritionAmount = Math.max(0, entry.attritionAmount ?? 0);
                         const estimatedStartHP = Math.min(
@@ -1741,6 +1741,10 @@ function ExpeditionTab({
                         const remainingRatio = entry.maxPartyHP > 0 ? (entry.remainingPartyHP / entry.maxPartyHP) * 100 : 0;
                         const healRatio = entry.maxPartyHP > 0 ? (healAmount / entry.maxPartyHP) * 100 : 0;
                         const takenRatio = entry.maxPartyHP > 0 ? (takenDamageAmount / entry.maxPartyHP) * 100 : 0;
+                        const enemyTakenAmount = Math.min(entry.enemyHP, Math.max(0, entry.damageDealt));
+                        const enemyRemainingAmount = Math.max(0, entry.enemyHP - enemyTakenAmount);
+                        const enemyRemainingRatio = entry.enemyHP > 0 ? (enemyRemainingAmount / entry.enemyHP) * 100 : 0;
+                        const enemyTakenRatio = entry.enemyHP > 0 ? (enemyTakenAmount / entry.enemyHP) * 100 : 0;
                         const isRoomExpanded = expandedRoom?.partyIndex === partyIndex && expandedRoom?.roomIndex === originalIndex;
 
                         return (
@@ -1752,7 +1756,7 @@ function ExpeditionTab({
                               <div className="flex justify-between items-center">
                                 <span>
                                   <span className="font-medium">{roomLabel}: {entry.enemyName}</span>
-                                  <span className="text-gray-500"> | 敵HP:{formatNumber(entry.enemyHP)} | 残HP:{formatNumber(entry.remainingPartyHP)}({formatNumber(hpPercent)}%)</span>
+                                  <span className="text-gray-500"> | 敵HP:{formatNumber(entry.enemyHP)}</span>
                                 </span>
                                 <span className="flex items-center gap-2">
                                   <span className={
@@ -1773,11 +1777,27 @@ function ExpeditionTab({
                                 <div className="h-full bg-orange-700" style={{ width: `${Math.min(100, takenRatio)}%` }} />
                               </div>
                               <div className="text-gray-500 mt-1">
-                                敵攻撃:{entry.enemyAttackValues} | 与ダメ:{formatNumber(entry.damageDealt)} | 被ダメ:{formatNumber(entry.damageTaken)}
-                                {entry.healAmount && entry.healAmount > 0 && <span className="text-green-600"> | 回復:+{formatNumber(entry.healAmount)}HP</span>}
-                                {entry.attritionAmount && entry.attritionAmount > 0 && <span className="text-accent"> | 消耗:-{formatNumber(entry.attritionAmount)}HP</span>}
+                                敵攻撃:{entry.enemyAttackValues}
                                 {entry.gateInfo && <span className="text-orange-700"> | 解放条件: {entry.gateInfo}</span>}
                                 {entry.reward && <span className={` ${getRewardTextClass(entry.rewardRarity, entry.rewardIsSuperRare)} ${entry.rewardIsSuperRare ? 'font-bold' : 'font-medium'}`}> | 獲得:{entry.reward}</span>}
+                              </div>
+                              <div className="mt-1 grid grid-cols-2 gap-2 text-gray-600">
+                                <div>
+                                  <div className="mb-0.5">自HP {formatNumber(entry.remainingPartyHP)} ({formatNumber(hpPercent)}%)</div>
+                                  <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+                                    <div className="h-full bg-blue-300" style={{ width: `${Math.min(100, remainingRatio)}%` }} />
+                                    <div className="h-full bg-green-300" style={{ width: `${Math.min(100, healRatio)}%` }} />
+                                    <div className="h-full bg-orange-400" style={{ width: `${Math.min(100, takenRatio)}%` }} />
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="mb-0.5">敵HP {formatNumber(enemyRemainingAmount)}</div>
+                                  <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+                                    <div className="h-full bg-blue-300" style={{ width: `${Math.min(100, enemyRemainingRatio)}%` }} />
+                                    <div className="h-full bg-green-300" style={{ width: '0%' }} />
+                                    <div className="h-full bg-orange-400" style={{ width: `${Math.min(100, enemyTakenRatio)}%` }} />
+                                  </div>
+                                </div>
                               </div>
                             </button>
                             {isRoomExpanded && entry.details && (
