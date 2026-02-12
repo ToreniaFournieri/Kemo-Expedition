@@ -1603,10 +1603,10 @@ function ExpeditionTab({
             自動周回 {isAutoRepeatEnabled ? 'ON' : 'OFF'}
           </button>
           {isAutoRepeatEnabled && (
-            <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-blue-100">
+            <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-blue-100/80">
               <div
                 key={autoRepeatCycleKey}
-                className="h-full rounded-full bg-blue-500"
+                className="h-full rounded-full bg-blue-300"
                 style={{ animation: `auto-repeat-progress ${AUTO_REPEAT_INTERVAL_MS}ms linear forwards` }}
               />
             </div>
@@ -1784,18 +1784,18 @@ function ExpeditionTab({
                               <div className="mt-1 grid grid-cols-2 gap-2 text-gray-600">
                                 <div>
                                   <div className="mb-0.5">自HP {formatNumber(entry.remainingPartyHP)} ({formatNumber(hpPercent)}%)</div>
-                                  <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
-                                    <div className="h-full bg-blue-300" style={{ width: `${Math.min(100, remainingRatio)}%` }} />
-                                    <div className="h-full bg-green-300" style={{ width: `${Math.min(100, healRatio)}%` }} />
-                                    <div className="h-full bg-orange-400" style={{ width: `${Math.min(100, takenRatio)}%` }} />
+                                  <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                                    <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: "#93c5fd" }} />
+                                    <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: "#86efac" }} />
+                                    <div className="h-full" style={{ width: `${Math.min(100, takenRatio)}%`, backgroundColor: "#fdba74" }} />
                                   </div>
                                 </div>
                                 <div>
                                   <div className="mb-0.5">敵HP {formatNumber(enemyRemainingAmount)}</div>
-                                  <div className="flex h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
-                                    <div className="h-full bg-blue-300" style={{ width: `${Math.min(100, enemyRemainingRatio)}%` }} />
-                                    <div className="h-full bg-green-300" style={{ width: '0%' }} />
-                                    <div className="h-full bg-orange-400" style={{ width: `${Math.min(100, enemyTakenRatio)}%` }} />
+                                  <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                                    <div className="h-full" style={{ width: `${Math.min(100, enemyRemainingRatio)}%`, backgroundColor: "#93c5fd" }} />
+                                    <div className="h-full" style={{ width: "0%", backgroundColor: "#86efac" }} />
+                                    <div className="h-full" style={{ width: `${Math.min(100, enemyTakenRatio)}%`, backgroundColor: "#fdba74" }} />
                                   </div>
                                 </div>
                               </div>
