@@ -7,3 +7,14 @@ body {
   background-color: white;
   color: black;
 }
+
+@keyframes auto-repeat-progress {
+  from {
+    width: 0%;
+  }
+
+  to {
+    width: 100%;
+  }
+}
+
