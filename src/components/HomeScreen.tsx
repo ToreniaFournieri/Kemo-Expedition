@@ -2099,14 +2099,17 @@ function DiaryTab({
   const getDiaryHeadline = (
     partyName: string,
     triggers: Array<'defeat' | 'rare' | 'mythic' | 'superRare'>,
-    specialRewards: Item[]
+    rewards: Item[]
   ) => {
     if (triggers.includes('defeat') && triggers.length === 1) {
       return `[${partyName}] 敗北の記録`;
     }
 
     if (triggers.includes('superRare') || triggers.includes('mythic')) {
-      const rewardNames = specialRewards.map((item) => getItemDisplayName(item)).join('、');
+      const rewardNames = rewards
+        .filter((item) => item.superRare > 0 || getItemRarityById(item.id) === 'mythic')
+        .map((item) => getItemDisplayName(item))
+        .join('、');
       const triggerPrefix = triggers.includes('superRare') ? '超レア' : '神魔レア';
       return rewardNames
         ? `[${partyName}] ${triggerPrefix}(${rewardNames}) 獲得`
@@ -2114,7 +2117,10 @@ function DiaryTab({
     }
 
     if (triggers.includes('rare')) {
-      const rewardNames = specialRewards.map((item) => getItemDisplayName(item)).join('、');
+      const rewardNames = rewards
+        .filter((item) => getItemRarityById(item.id) === 'rare')
+        .map((item) => getItemDisplayName(item))
+        .join('、');
       return rewardNames ? `[${partyName}] レア(${rewardNames}) 獲得` : `[${partyName}] レア獲得`;
     }
 
@@ -2236,7 +2242,7 @@ function DiaryTab({
             >
               <span className="flex items-start justify-between gap-2">
                 <span className="font-medium pr-2">
-                  {getDiaryHeadline(diaryLog.partyName, diaryLog.triggers, specialRewards)}
+                  {getDiaryHeadline(diaryLog.partyName, diaryLog.triggers, log.rewards)}
                 </span>
                 <span className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
               </span>
