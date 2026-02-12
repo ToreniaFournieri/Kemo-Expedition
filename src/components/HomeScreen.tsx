@@ -35,6 +35,7 @@ interface HomeScreenProps {
     sellStack: (variantKey: string) => void;
     setVariantStatus: (variantKey: string, status: 'notown') => void;
     markDiaryLogSeen: (logId: string) => void;
+    markAllDiaryLogsSeen: () => void;
     updateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
     resetGame: () => void;
     resetCommonBags: () => void;
@@ -521,6 +522,14 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     tabContentRef.current?.scrollTo({ top: 0, behavior: 'auto' });
   }, [activeTab]);
 
+  const prevActiveTabRef = useRef<Tab>(activeTab);
+  useEffect(() => {
+    if (prevActiveTabRef.current === 'diary' && activeTab !== 'diary') {
+      actions.markAllDiaryLogsSeen();
+    }
+    prevActiveTabRef.current = activeTab;
+  }, [activeTab, actions]);
+
   const tabs: { id: Tab; label: string }[] = [
     { id: 'party', label: 'パーティ' },
     { id: 'expedition', label: '探検' },
@@ -533,6 +542,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     count + party.diaryLogs.filter((log) => !log.isRead).length
   ), 0);
   const hasUnreadDiary = unreadDiaryCount > 0;
+  const unreadDiaryBadgeLabel = unreadDiaryCount >= 11 ? '10+' : `${unreadDiaryCount}`;
   return (
     <div className="flex flex-col h-screen">
       {/* Sticky Header */}
@@ -562,7 +572,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
               {tab.label}
               {tab.id === 'diary' && hasUnreadDiary && (
                 <span className="absolute -top-0.5 right-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] leading-none text-white">
-                  {unreadDiaryCount}
+                  {unreadDiaryBadgeLabel}
                 </span>
               )}
             </button>
