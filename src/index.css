@@ -18,6 +18,3 @@ body {
   }
 }
 
-.auto-repeat-progress {
-  animation: auto-repeat-progress 5s linear infinite;
-}
