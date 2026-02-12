@@ -129,8 +129,6 @@ const EXPEDITION_2_BOSS: EnemyTemplate = {
   attackType: 'mixed',
   attackMod: 1.0,
   defenseMod: 1.0,
-  element: 'fire',
-  resistances: { fire: 0.3, ice: 1.5 },
 };
 
 // ============================================================
@@ -183,8 +181,6 @@ const EXPEDITION_3_BOSS: EnemyTemplate = {
   attackType: 'magical',
   attackMod: 1.0,
   defenseMod: 1.0,
-  element: 'ice',
-  resistances: { ice: 0.3, fire: 1.5 },
 };
 
 // ============================================================
