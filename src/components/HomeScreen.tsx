@@ -1659,16 +1659,11 @@ function ExpeditionTab({
 
         const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
         const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
-        const { partyStats } = computePartyStats(party);
-
         return (
           <div key={partyIndex} className="bg-pane rounded-lg p-4">
-            <div className="text-sm mb-2 flex justify-between items-center">
-              <span className="font-bold text-black">{party.name} (レベル: {formatNumber(party.level)}) {party.deity.name}</span>
-              <span className="text-gray-500">HP: {formatNumber(partyStats.hp)}</span>
-            </div>
             {/* Party Expedition Header */}
             <div className="flex items-center gap-2 mb-3">
+              <span className="text-sm font-bold text-black whitespace-nowrap">{party.name}</span>
               <select
                 value={party.selectedDungeonId}
                 onChange={(e) => onSelectDungeon(partyIndex, Number(e.target.value))}
@@ -1726,6 +1721,7 @@ function ExpeditionTab({
                 {expandedLogParty === partyIndex && (
                   <div className="mt-3 space-y-2">
                     <div className="text-sm text-gray-500">
+                      レベル: {formatNumber(party.level)} | {party.deity.name} | 
                       EXP: +{formatNumber(party.lastExpeditionLog.totalExperience)}
                       {party.lastExpeditionLog.autoSellProfit > 0 && (
                         <span> | 自動売却額: {formatNumber(party.lastExpeditionLog.autoSellProfit)}G</span>
