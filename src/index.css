@@ -7,3 +7,17 @@ body {
   background-color: white;
   color: black;
 }
+
+@keyframes auto-repeat-progress {
+  from {
+    width: 0%;
+  }
+
+  to {
+    width: 100%;
+  }
+}
+
+.auto-repeat-progress {
+  animation: auto-repeat-progress 5s linear infinite;
+}

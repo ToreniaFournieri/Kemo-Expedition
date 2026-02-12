@@ -1555,23 +1555,30 @@ function ExpeditionTab({
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end items-center gap-3">
+      <div className="flex justify-end items-start gap-3">
         <button
           onClick={handleRunAllExpeditions}
           className="px-3 py-1 text-white rounded font-medium text-sm bg-sub hover:bg-blue-600"
         >
           一斉出撃
         </button>
-        <button
-          onClick={() => setIsAutoRepeatEnabled((prev) => !prev)}
-          className={`px-3 py-1 rounded font-medium text-sm border ${
-            isAutoRepeatEnabled
-              ? 'bg-blue-50 border-sub text-sub'
-              : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-          }`}
-        >
-          自動周回 {isAutoRepeatEnabled ? 'ON' : 'OFF'}
-        </button>
+        <div className="flex flex-col">
+          <button
+            onClick={() => setIsAutoRepeatEnabled((prev) => !prev)}
+            className={`px-3 py-1 rounded font-medium text-sm border ${
+              isAutoRepeatEnabled
+                ? 'bg-blue-50 border-sub text-sub'
+                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            自動周回 {isAutoRepeatEnabled ? 'ON' : 'OFF'}
+          </button>
+          {isAutoRepeatEnabled && (
+            <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-blue-100">
+              <div className="auto-repeat-progress h-full rounded-full bg-blue-500" />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Party Expedition Slots */}
