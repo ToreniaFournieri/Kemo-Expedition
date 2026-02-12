@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.2.2 - SPECIFICATION
+# KEMO EXPEDITION v0.2.3 - SPECIFICATION
 
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
@@ -1047,7 +1047,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
   - increment the build number each time you edited the code.
 ```
 (Left-aligned)             (Right-aligned)
-ケモの冒険　v0.2.2 (43)        200G
+ケモの冒険　v0.2.3 (43)        200G
 ```
 - Tab header (primary navigation):
   - Party
