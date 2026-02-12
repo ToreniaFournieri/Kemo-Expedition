@@ -2123,8 +2123,6 @@ function SettingTab({
 
   const hasEnemyAttack = (attack: number, noA: number) => attack > 0 && noA > 0;
 
-  const hasEnemyAttack = (attack: number, noA: number) => attack > 0 && noA > 0;
-
   const formatEnemyDefenseLine = (label: string, defense: number, percent: number) =>
     `${label}: ${formatNumber(defense)} (${percent.toFixed(0)}%)`;
 
