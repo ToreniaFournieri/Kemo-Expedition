@@ -1696,7 +1696,9 @@ function ExpeditionTab({
 
             {(!hasLastLog || isLogExpanded) && (
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-sm font-bold text-black whitespace-nowrap">{party.name}</span>
+                {!hasLastLog && (
+                  <span className="text-sm font-bold text-black whitespace-nowrap">{party.name}</span>
+                )}
                 <select
                   value={party.selectedDungeonId}
                   onChange={(e) => onSelectDungeon(partyIndex, Number(e.target.value))}
@@ -1725,7 +1727,7 @@ function ExpeditionTab({
               </div>
             )}
 
-            {(() => {
+            {(!hasLastLog || isLogExpanded) && (() => {
               const nextGoalText = getNextGoalText(party);
               if (!nextGoalText) return null;
               return <div className="mt-3 text-sm text-gray-700">{nextGoalText}</div>;
