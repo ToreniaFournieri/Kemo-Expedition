@@ -1799,9 +1799,11 @@ function ExpeditionTab({
                               <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
                                 <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
                                 {entry.details.map((log, j) => {
-                                  const phaseLabel = log.actor === 'effect'
-                                    ? '効'
-                                    : log.phase === 'long'
+                                  const phaseLabel = log.actor === 'deity'
+                                    ? '末'
+                                    : log.actor === 'effect'
+                                      ? '効'
+                                      : log.phase === 'long'
                                       ? '遠'
                                       : log.phase === 'mid'
                                         ? '魔'

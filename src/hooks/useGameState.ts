@@ -9,6 +9,7 @@ import {
   LineageId,
   ExpeditionLog,
   ExpeditionLogEntry,
+  BattleLogEntry,
   InventoryRecord,
   InventoryVariant,
   getVariantKey,
@@ -599,6 +600,33 @@ function applyPeriodicDeityHpEffect(
   return { hp: currentHp };
 }
 
+function buildDeityEffectLogEntry(
+  deityName: string,
+  healAmount?: number,
+  attritionAmount?: number
+): BattleLogEntry | null {
+  const deityKey = getDeityKey(deityName);
+  if (deityKey === 'God of Restoration' && healAmount && healAmount > 0) {
+    return {
+      phase: 'long',
+      actor: 'deity',
+      action: '再生の神の効果！',
+      note: `(HP回復+${healAmount})`,
+    };
+  }
+
+  if (deityKey === 'God of Attrition' && attritionAmount && attritionAmount > 0) {
+    return {
+      phase: 'long',
+      actor: 'deity',
+      action: '消耗の神の効果！',
+      note: `(HP消耗-${attritionAmount})`,
+    };
+  }
+
+  return null;
+}
+
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'SELECT_PARTY':
@@ -857,6 +885,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               if (deityHpEffect.attritionAmount) {
                 entry.attritionAmount = deityHpEffect.attritionAmount;
               }
+              const deityLogEntry = buildDeityEffectLogEntry(
+                currentParty.deity.name,
+                deityHpEffect.healAmount,
+                deityHpEffect.attritionAmount
+              );
+              if (deityLogEntry) {
+                entry.details.push(deityLogEntry);
+              }
             } else if (battleResult.outcome === 'defeat') {
               entries.push(entry);
               finalOutcome = 'defeat';
@@ -934,6 +970,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             }
             if (deityHpEffect.attritionAmount) {
               entry.attritionAmount = deityHpEffect.attritionAmount;
+            }
+            const deityLogEntry = buildDeityEffectLogEntry(
+              currentParty.deity.name,
+              deityHpEffect.healAmount,
+              deityHpEffect.attritionAmount
+            );
+            if (deityLogEntry) {
+              entry.details.push(deityLogEntry);
             }
           } else if (battleResult.outcome === 'defeat') {
             entries.push(entry);
