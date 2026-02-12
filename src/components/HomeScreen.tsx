@@ -1722,9 +1722,9 @@ function ExpeditionTab({
                   <div className="mt-3 space-y-2">
                     <div className="text-sm text-gray-500">
                       レベル: {formatNumber(party.level)} | {party.deity.name} | 
-                      EXP: +{formatNumber(party.lastExpeditionLog.totalExperience)}
+                      経験値: +{formatNumber(party.lastExpeditionLog.totalExperience)}
                       {party.lastExpeditionLog.autoSellProfit > 0 && (
-                        <span> | 自動売却額: {formatNumber(party.lastExpeditionLog.autoSellProfit)}G</span>
+                        <span> | +{formatNumber(party.lastExpeditionLog.autoSellProfit)}G</span>
                       )}
                     </div>
 
