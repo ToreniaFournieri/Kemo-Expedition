@@ -1756,7 +1756,6 @@ function ExpeditionTab({
                               <div className="flex justify-between items-center">
                                 <span>
                                   <span className="font-medium">{roomLabel}: {entry.enemyName}</span>
-                                  <span className="text-gray-500"> | 敵HP:{formatNumber(entry.enemyHP)}</span>
                                 </span>
                                 <span className="flex items-center gap-2">
                                   <span className={
@@ -1771,11 +1770,6 @@ function ExpeditionTab({
                                   <span className={`transform transition-transform ${isRoomExpanded ? 'rotate-180' : ''}`}>▼</span>
                                 </span>
                               </div>
-                              <div className="mt-1 flex h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
-                                <div className="h-full bg-blue-500" style={{ width: `${Math.min(100, remainingRatio)}%` }} />
-                                <div className="h-full bg-green-500" style={{ width: `${Math.min(100, healRatio)}%` }} />
-                                <div className="h-full bg-orange-700" style={{ width: `${Math.min(100, takenRatio)}%` }} />
-                              </div>
                               <div className="text-gray-500 mt-1">
                                 敵攻撃:{entry.enemyAttackValues}
                                 {entry.gateInfo && <span className="text-orange-700"> | 解放条件: {entry.gateInfo}</span>}
@@ -1783,7 +1777,7 @@ function ExpeditionTab({
                               </div>
                               <div className="mt-1 grid grid-cols-2 gap-2 text-gray-600">
                                 <div>
-                                  <div className="mb-0.5">自HP {formatNumber(entry.remainingPartyHP)} ({formatNumber(hpPercent)}%)</div>
+                                  <div className="mb-0.5">自HP {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)} ({formatNumber(hpPercent)}%)</div>
                                   <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
                                     <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: "#93c5fd" }} />
                                     <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: "#86efac" }} />
@@ -1791,11 +1785,10 @@ function ExpeditionTab({
                                   </div>
                                 </div>
                                 <div>
-                                  <div className="mb-0.5">敵HP {formatNumber(enemyRemainingAmount)}</div>
+                                  <div className="mb-0.5">敵HP {formatNumber(enemyRemainingAmount)} / {formatNumber(entry.enemyHP)}</div>
                                   <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
                                     <div className="h-full" style={{ width: `${Math.min(100, enemyRemainingRatio)}%`, backgroundColor: "#93c5fd" }} />
-                                    <div className="h-full" style={{ width: "0%", backgroundColor: "#86efac" }} />
-                                    <div className="h-full" style={{ width: `${Math.min(100, enemyTakenRatio)}%`, backgroundColor: "#fdba74" }} />
+                                    <div className="h-full" style={{ width: `${Math.min(100, enemyTakenRatio)}%`, backgroundColor: "#9ca3af" }} />
                                   </div>
                                 </div>
                               </div>
