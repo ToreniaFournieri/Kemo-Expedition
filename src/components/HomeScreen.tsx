@@ -1730,7 +1730,6 @@ function ExpeditionTab({
                           const isBoss = entry.room === party.lastExpeditionLog!.totalRooms + 1;
                           roomLabel = isBoss ? 'BOSS' : entry.room.toString();
                         }
-                        const hpPercent = Math.round((entry.remainingPartyHP / Math.max(1, entry.maxPartyHP)) * 100);
                         const healAmount = Math.max(0, entry.healAmount ?? 0);
                         const attritionAmount = Math.max(0, entry.attritionAmount ?? 0);
                         const estimatedStartHP = Math.min(
@@ -1777,7 +1776,7 @@ function ExpeditionTab({
                               </div>
                               <div className="mt-1 grid grid-cols-2 gap-2 text-gray-600">
                                 <div>
-                                  <div className="mb-0.5">自HP {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)} ({formatNumber(hpPercent)}%)</div>
+                                  <div className="mb-0.5">自HP {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
                                   <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
                                     <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: "#93c5fd" }} />
                                     <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: "#86efac" }} />
@@ -1788,7 +1787,7 @@ function ExpeditionTab({
                                   <div className="mb-0.5">敵HP {formatNumber(enemyRemainingAmount)} / {formatNumber(entry.enemyHP)}</div>
                                   <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
                                     <div className="h-full" style={{ width: `${Math.min(100, enemyRemainingRatio)}%`, backgroundColor: "#93c5fd" }} />
-                                    <div className="h-full" style={{ width: `${Math.min(100, enemyTakenRatio)}%`, backgroundColor: "#9ca3af" }} />
+                                    <div className="h-full" style={{ width: `${Math.min(100, enemyTakenRatio)}%`, backgroundColor: "#cbd5e1" }} />
                                   </div>
                                 </div>
                               </div>
