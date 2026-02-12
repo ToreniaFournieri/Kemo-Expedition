@@ -1721,8 +1721,8 @@ function ExpeditionTab({
                 {expandedLogParty === partyIndex && (
                   <div className="mt-3 space-y-2">
                     <div className="text-sm text-gray-500">
-                      レベル: {formatNumber(party.level)} | {party.deity.name} | 
-                      経験値: +{formatNumber(party.lastExpeditionLog.totalExperience)}
+                      Lv: {formatNumber(party.level)} | {party.deity.name} | 
+                      +{formatNumber(party.lastExpeditionLog.totalExperience)}経験値
                       {party.lastExpeditionLog.autoSellProfit > 0 && (
                         <span> | +{formatNumber(party.lastExpeditionLog.autoSellProfit)}G</span>
                       )}
