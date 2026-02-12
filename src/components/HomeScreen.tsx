@@ -1526,6 +1526,7 @@ function ExpeditionTab({
 }) {
   const [expandedLogParty, setExpandedLogParty] = useState<number | null>(null);
   const [expandedRoom, setExpandedRoom] = useState<{ partyIndex: number; roomIndex: number } | null>(null);
+  const [isAutoRepeatEnabled, setIsAutoRepeatEnabled] = useState(false);
 
   const handleRunAllExpeditions = () => {
     state.parties.forEach((party, partyIndex) => {
@@ -1538,14 +1539,38 @@ function ExpeditionTab({
     });
   };
 
+  useEffect(() => {
+    if (!isAutoRepeatEnabled) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      handleRunAllExpeditions();
+    }, 5000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [isAutoRepeatEnabled, state.parties]);
+
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
+      <div className="flex justify-end items-center gap-3">
         <button
           onClick={handleRunAllExpeditions}
           className="px-3 py-1 text-white rounded font-medium text-sm bg-sub hover:bg-blue-600"
         >
-          一括出撃
+          一斉出撃
+        </button>
+        <button
+          onClick={() => setIsAutoRepeatEnabled((prev) => !prev)}
+          className={`px-3 py-1 rounded font-medium text-sm border ${
+            isAutoRepeatEnabled
+              ? 'bg-blue-50 border-sub text-sub'
+              : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+          }`}
+        >
+          自動周回 {isAutoRepeatEnabled ? 'ON' : 'OFF'}
         </button>
       </div>
 
@@ -1569,7 +1594,7 @@ function ExpeditionTab({
         return (
           <div key={partyIndex} className="bg-pane rounded-lg p-4">
             <div className="text-sm mb-2 flex justify-between items-center">
-              <span className="font-bold text-black">{party.name} {party.deity.name}(Level: {formatNumber(party.level)})</span>
+              <span className="font-bold text-black">{party.name} (レベル: {formatNumber(party.level)}) {party.deity.name}</span>
               <span className="text-gray-500">HP: {formatNumber(partyStats.hp)}</span>
             </div>
             {/* Party Expedition Header */}
