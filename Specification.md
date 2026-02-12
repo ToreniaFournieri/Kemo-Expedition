@@ -898,10 +898,12 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 
 
 - `f.hit_detection`(actor: , opponent: ,Nth_hit: )
+  - For all pahse, LONG, MID, CLOSE. 
   - decay_of_accuracy: clamp(0.86, 0.90 + actor.`c.accuracy+v` - opponent.`c.evasion+v`, 0.98)
   - chance = `d.accuracy_potency` x (decay_of_accuracy)^(Nth_hit)
     - Note: Nth_hit starts at 1 for the first strike.
   - Roll: Return Random(0, 1.0) <= chance
+
 
 ### 6.3 Turn resolution 
 - For each phase, actions are resolved in the following order:
@@ -1093,6 +1095,10 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 - If character has `c.caster+v`, displays 魔法攻撃:`d.magical_attack` x `d.magical_NoA`回(x`f.offense_amplifier`(phase: MID)). and 魔法命中率: 100 % (減衰: x (0.90 + `c.accuracy+v`)).  (ex. has `c.accuracy+0.02` and `c.accuracy+0.01`, then 0.90 + 0.02 + 0.01 -> 0.93 )
   - ex. 魔法攻撃:36 x 3回(x1.26)
   - ex. 魔法命中率: 100% (減衰: x0.90)
+
+- Accuracy is internally calculated using the unified stats c.accuracy and c.evasion for all attack types.
+- Physical Accuracy and Magical Accuracy are separated for display purposes only, based on battle phase rules.
+- The MID phase ignores row-based d.accuracy_potency and is treated as fixed potency 1.00.
 
 - *UI Formatting Note:* When displaying aggregated c.multipliers (e.g., 鎧 x1.8), always round the internal product to the first decimal place for a cleaner interface. 
 
