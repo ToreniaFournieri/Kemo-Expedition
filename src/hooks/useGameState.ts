@@ -569,10 +569,11 @@ function selectEnemy(dungeonId: number, room: number, totalRooms: number) {
 function applyPeriodicDeityHpEffect(
   deityName: string,
   roomNumber: number,
+  totalRooms: number,
   currentHp: number,
   maxHp: number
 ): { hp: number; healAmount?: number; attritionAmount?: number } {
-  if (roomNumber % 4 !== 0) {
+  if (roomNumber % 4 !== 0 || roomNumber >= totalRooms) {
     return { hp: currentHp };
   }
 
@@ -691,6 +692,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       // Use new floor structure if available
       if (dungeon.floors && dungeon.floors.length > 0) {
+        const totalRooms = dungeon.floors.reduce((sum, floor) => sum + floor.rooms.length, 0);
         // New v0.2.0 floor-based expedition
         for (const floor of dungeon.floors) {
           if (expeditionEnded) break;
@@ -846,7 +848,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               currentHp = battleResult.partyHp;
               entries.push(entry);
 
-              const deityHpEffect = applyPeriodicDeityHpEffect(currentParty.deity.name, roomCounter, currentHp, partyStats.hp);
+              const deityHpEffect = applyPeriodicDeityHpEffect(currentParty.deity.name, roomCounter, totalRooms, currentHp, partyStats.hp);
               currentHp = deityHpEffect.hp;
               entry.remainingPartyHP = currentHp;
               if (deityHpEffect.healAmount) {
@@ -870,8 +872,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       } else {
         // Legacy expedition logic for backward compatibility
         const totalRooms = dungeon.numberOfRooms;
+        const totalRoomsIncludingBoss = totalRooms + 1;
 
-        for (let room = 1; room <= totalRooms + 1; room++) {
+        for (let room = 1; room <= totalRoomsIncludingBoss; room++) {
           const enemy = selectEnemy(dungeon.id, room, totalRooms);
           if (!enemy) break;
 
@@ -923,7 +926,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             currentHp = battleResult.partyHp;
             entries.push(entry);
 
-            const deityHpEffect = applyPeriodicDeityHpEffect(currentParty.deity.name, room, currentHp, partyStats.hp);
+            const deityHpEffect = applyPeriodicDeityHpEffect(currentParty.deity.name, room, totalRoomsIncludingBoss, currentHp, partyStats.hp);
             currentHp = deityHpEffect.hp;
             entry.remainingPartyHP = currentHp;
             if (deityHpEffect.healAmount) {
