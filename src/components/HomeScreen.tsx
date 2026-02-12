@@ -2114,7 +2114,8 @@ function DiaryTab({
     }
 
     if (triggers.includes('rare')) {
-      return `[${partyName}] レア獲得`;
+      const rewardNames = specialRewards.map((item) => getItemDisplayName(item)).join('、');
+      return rewardNames ? `[${partyName}] レア(${rewardNames}) 獲得` : `[${partyName}] レア獲得`;
     }
 
     return `[${partyName}] ${getDiaryTitle(triggers)}`;
