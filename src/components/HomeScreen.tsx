@@ -1718,7 +1718,7 @@ function ExpeditionTab({
                                     }
                                   } else {
                                     if (allMissed) {
-                                      const charName = log.action.split(' の')[0];
+                                      const charName = log.action.replace(/ の.*$/, '');
                                       actionText = `${charName} の攻撃は外れた！`;
                                     } else {
                                       actionText = log.action;
