@@ -1388,17 +1388,20 @@ PT2 HP:…
 - UI Behavior:
   - Interaction:
     - Tap Enemy name, Opens detailed enemy status (same logic as battle). Including drop items.
+    - If enemy has no attack values, not show the corresponding values. 
 
 ```
-(column 1)                      (column 2)
-ID: 5005                        クラス: 戦士
-HP: 312                         経験値: 88    
-遠距離攻撃: 33 x 2回 (x1.00)   属性: 雷 (x1.2)
-近接攻撃: 35 x 6回 (x1.00)      物理防御: 10 (83%)
-物理命中率: 100% (減衰: x0.90) (100%)   魔法防御: 8 (80%)
+(column 1)              (column 2)
+ID: 5005                クラス: 戦士
+HP: 312                 経験値: 88    
+遠距離攻撃: 33 x 2回 (x1.00) 属性: 雷 (x1.2)
+近接攻撃: 35 x 6回 (x1.00)  物理防御: 10 (83%)
+物理命中率: 100% (減衰: x0.90) 魔法防御: 8 (80%)
 魔法攻撃: 117 x 4回 (x1.00)
 魔法命中率: 100% (減衰: x0.90)
 ```
+
+
 
 **4. Game Reset**
   - Full reset option
