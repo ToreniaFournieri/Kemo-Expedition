@@ -1768,11 +1768,16 @@ function ExpeditionTab({
                                   <span className={`transform transition-transform ${isRoomExpanded ? 'rotate-180' : ''}`}>▼</span>
                                 </span>
                               </div>
-                              <div className="text-gray-500 mt-1">
-                                敵攻撃:{entry.enemyAttackValues}
-                                {entry.gateInfo && <span className="text-orange-700"> | 解放条件: {entry.gateInfo}</span>}
-                                {entry.reward && <span className={` ${getRewardTextClass(entry.rewardRarity, entry.rewardIsSuperRare)} ${entry.rewardIsSuperRare ? 'font-bold' : 'font-medium'}`}> | 獲得:{entry.reward}</span>}
-                              </div>
+                              {(entry.gateInfo || entry.reward) && (
+                                <div className="text-gray-500 mt-1 flex flex-wrap items-center gap-1">
+                                  {entry.gateInfo && <span className="text-orange-700">解放条件: {entry.gateInfo}</span>}
+                                  {entry.reward && (
+                                    <span className={`${getRewardTextClass(entry.rewardRarity, entry.rewardIsSuperRare)} ${entry.rewardIsSuperRare ? 'font-bold' : 'font-medium'}`}>
+                                      獲得:{entry.reward}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
                               <div className="mt-1 grid grid-cols-2 gap-2 text-gray-600">
                                 <div>
                                   <div className="mb-0.5">自HP {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
