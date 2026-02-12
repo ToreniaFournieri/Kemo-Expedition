@@ -282,6 +282,46 @@ export function executeBattle(
   let enemyHp = enemy.hp;
   const log: BattleLogEntry[] = [];
 
+  const createPartyEffectEntry = (
+    classId: 'fighter' | 'lord' | 'sage',
+    label: string,
+    noteText: (level: number) => string,
+  ): BattleLogEntry | null => {
+    let bestLevel = 0;
+    let ownerName: string | null = null;
+
+    for (const char of party.characters) {
+      if (char.mainClassId !== classId) continue;
+      const level = char.subClassId === classId ? 2 : 1;
+      if (level < bestLevel) continue;
+      if (level > bestLevel || !ownerName) {
+        bestLevel = level;
+        ownerName = char.name;
+      }
+    }
+
+    if (!ownerName || bestLevel === 0) return null;
+
+    return {
+      phase: 'long',
+      actor: 'effect',
+      action: `${ownerName}の ${label}！`,
+      note: noteText(bestLevel),
+    };
+  };
+
+  const partyEffects = [
+    createPartyEffectEntry('fighter', '守護者', level => `(パーティへの物理ダメージ × ${level === 2 ? '3/5' : '2/3'})`),
+    createPartyEffectEntry('lord', '指揮', level => `(パーティ攻撃力 × ${level === 2 ? '1.6' : '1.3'})`),
+    createPartyEffectEntry('sage', '魔法障壁', level => `(パーティへの魔法ダメージ × ${level === 2 ? '3/5' : '2/3'})`),
+  ];
+
+  for (const partyEffect of partyEffects) {
+    if (partyEffect) {
+      log.push(partyEffect);
+    }
+  }
+
   const phases: BattlePhase[] = ['long', 'mid', 'close'];
 
   for (const phase of phases) {

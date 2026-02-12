@@ -328,9 +328,10 @@ export interface BattleState {
 
 export interface BattleLogEntry {
   phase: BattlePhase;
-  actor: 'party' | 'enemy' | 'character';
+  actor: 'party' | 'enemy' | 'character' | 'effect';
   characterId?: number;
   action: string;
+  note?: string;
   damage?: number;
   hits?: number; // Number of successful hits
   totalAttempts?: number; // Total number of attack attempts
