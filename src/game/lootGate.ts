@@ -1,4 +1,4 @@
-import { Deity, Item } from '../types';
+import { Item, Party } from '../types';
 
 export type GateRarity = 'uncommon' | 'rare' | 'mythic';
 
@@ -17,9 +17,9 @@ export function getLootCollectionKey(tier: number, rarity: GateRarity): string {
   return `${tier}:${rarity}`;
 }
 
-export function getLootCollectionCount(deity: Deity, tier: number, rarity: GateRarity): number {
+export function getLootCollectionCount(party: Pick<Party, 'lootGateProgress'>, tier: number, rarity: GateRarity): number {
   const key = getLootCollectionKey(tier, rarity);
-  return deity.lootGateProgress?.[key] ?? 0;
+  return party.lootGateProgress?.[key] ?? 0;
 }
 
 export function getEntryGateKey(dungeonId: number): number {
@@ -34,8 +34,8 @@ export function getBossGateKey(dungeonId: number): number {
   return dungeonId * 1000 + 604;
 }
 
-export function isLootGateUnlocked(deity: Deity, gateKey: number): boolean {
-  return Boolean(deity.lootGateStatus?.[gateKey]);
+export function isLootGateUnlocked(party: Pick<Party, 'lootGateStatus'>, gateKey: number): boolean {
+  return Boolean(party.lootGateStatus?.[gateKey]);
 }
 
 export function getItemRarityForLootGate(itemId: number): GateRarity | null {

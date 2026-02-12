@@ -110,7 +110,7 @@ export function computePartyStats(party: Party): {
   characterStats: ComputedCharacterStats[];
 } {
   const baseCharacterStats: ComputedCharacterStats[] = party.characters.map((c, index) =>
-    computeCharacterStats(c, party.deity.level, index + 1) // Row is 1-6
+    computeCharacterStats(c, party.level, index + 1) // Row is 1-6
   );
   const characterStats = applyDeityCharacterModifiers(party, baseCharacterStats);
 
@@ -135,7 +135,7 @@ export function computePartyStats(party: Party): {
     }
 
     // Add level x vitality
-    const levelBonus = party.deity.level * stats.vitality;
+    const levelBonus = party.level * stats.vitality;
 
     // Character's HP contribution
     bonusHp += (itemHpBonus + levelBonus) * statMultiplier;
