@@ -34,7 +34,6 @@ interface HomeScreenProps {
     updateCharacter: (characterId: number, updates: Partial<Character>) => void;
     sellStack: (variantKey: string) => void;
     setVariantStatus: (variantKey: string, status: 'notown') => void;
-    markItemsSeen: () => void;
     markDiarySeen: () => void;
     resetGame: () => void;
     resetCommonBags: () => void;
@@ -511,8 +510,6 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     { id: 'setting', label: '神聖局' },
   ];
 
-  // Check for new items
-  const hasNewItems = Object.values(state.global.inventory).some(variant => variant.isNew);
   const hasUnreadDiary = state.parties.some(party => party.hasUnreadDiary);
 
   return (
@@ -534,10 +531,6 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
               key={tab.id}
               onClick={() => {
                 setActiveTab(tab.id);
-                // Mark items as seen when going to inventory
-                if (tab.id === 'inventory' && hasNewItems) {
-                  actions.markItemsSeen();
-                }
                 if (tab.id === 'diary' && hasUnreadDiary) {
                   actions.markDiarySeen();
                 }
@@ -549,9 +542,6 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
               }`}
             >
               {tab.label}
-              {tab.id === 'inventory' && hasNewItems && (
-                <span className="absolute top-1 right-2 w-2 h-2 bg-red-600 rounded-full"></span>
-              )}
               {tab.id === 'diary' && hasUnreadDiary && (
                 <span className="absolute top-1 right-2 w-2 h-2 bg-red-600 rounded-full"></span>
               )}
@@ -1976,7 +1966,7 @@ function InventoryTab({
       {/* Item list */}
       <div className="space-y-1 min-h-[364px] max-h-[26rem] overflow-y-auto mb-4">
           {filteredOwnedItems.map(([key, variant]) => {
-            const { item, count, isNew } = variant;
+            const { item, count } = variant;
             const enhMult = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
             const srMult = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
             const baseMult = item.baseMultiplier ?? 1;
@@ -1985,15 +1975,14 @@ function InventoryTab({
             return (
               <div
                 key={key}
-                className={`px-2 py-1.5 rounded bg-pane ${isNew ? 'border-2 border-accent' : ''}`}
+                className="px-2 py-1.5 rounded bg-pane"
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <span className={`text-sm ${isNew ? 'font-bold' : 'font-medium'}`}>
+                    <span className="text-sm font-medium">
                       {getItemDisplayName(item)}
                     </span>
                     <span className="text-xs text-gray-500">x{formatNumber(count)}</span>
-                    {isNew && <span className="text-xs text-accent font-bold">NEW</span>}
                   </div>
                   <button
                     onClick={() => {
