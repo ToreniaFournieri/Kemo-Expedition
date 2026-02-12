@@ -1784,7 +1784,7 @@ function ExpeditionTab({
                                   <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
                                     <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: "#93c5fd" }} />
                                     <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: "#86efac" }} />
-                                    <div className="h-full" style={{ width: `${Math.min(100, takenRatio)}%`, backgroundColor: "#f97316" }} />
+                                    <div className="h-full" style={{ width: `${Math.min(100, takenRatio)}%`, backgroundColor: "#fa9d5c" }} />
                                   </div>
                                 </div>
                                 <div>
