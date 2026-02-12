@@ -2064,6 +2064,7 @@ function DiaryTab({
   parties: Party[];
 }) {
   const [expandedLogs, setExpandedLogs] = useState<Record<string, boolean>>({});
+  const [expandedRooms, setExpandedRooms] = useState<Record<string, boolean>>({});
 
   const diaryLogs = parties
     .flatMap((party) =>
@@ -2079,6 +2080,13 @@ function DiaryTab({
     defeat: '敗北',
     mythic: '神魔レア獲得',
     superRare: '超レア獲得',
+  };
+
+  const getDiaryTitle = (triggers: Array<'defeat' | 'mythic' | 'superRare'>) => {
+    if (triggers.includes('defeat') && triggers.length === 1) return '敗北の記録';
+    if (triggers.includes('superRare')) return '超レア獲得の記録';
+    if (triggers.includes('mythic')) return '神魔レア獲得の記録';
+    return '特別記録';
   };
 
   if (diaryLogs.length === 0) {
@@ -2099,25 +2107,181 @@ function DiaryTab({
               className="w-full text-left text-sm flex justify-between items-center"
             >
               <span>
-                <span className="font-medium">[{diaryLog.partyName}] {log.dungeonName}</span>
+                <span className="font-medium">[{diaryLog.partyName}] {getDiaryTitle(diaryLog.triggers)}</span>
+                <span className="ml-2 text-gray-500">{log.dungeonName}</span>
                 <span className="ml-2 text-red-600">{diaryLog.triggers.map((trigger) => triggerLabel[trigger]).join(' / ')}</span>
               </span>
               <span className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
             </button>
 
             {isExpanded && (
-              <div className="mt-2 text-xs space-y-2">
-                <div className="text-gray-600">
-                  残HP: {formatNumber(Math.round((log.remainingPartyHP / Math.max(1, log.maxPartyHP)) * 100))}% | EXP: +{formatNumber(log.totalExperience)}
+              <div className="mt-3 space-y-2">
+                <div className="text-sm text-gray-500">
+                  EXP: +{formatNumber(log.totalExperience)}
+                  {log.autoSellProfit > 0 && (
+                    <span> | 自動売却額: {formatNumber(log.autoSellProfit)}G</span>
+                  )}
                 </div>
-                <div className="space-y-1 border-t border-gray-200 pt-2">
-                  {[...log.entries].reverse().map((entry, i) => (
-                    <div key={`${diaryLog.id}-${i}`} className="text-gray-700">
-                      <span className="font-medium">{entry.floor && entry.roomInFloor ? `${entry.floor}F-${entry.roomInFloor}` : `Room ${entry.room}`}:</span>{' '}
-                      {entry.enemyName} / {entry.outcome === 'victory' ? '勝利' : entry.outcome === 'defeat' ? '敗北' : '引分'}
-                      {entry.reward && <span className="ml-1 text-orange-700">獲得:{entry.reward}</span>}
-                    </div>
-                  ))}
+
+                {log.rewards.length > 0 && (
+                  <div className="text-sm">
+                    <span className="text-gray-500">獲得アイテム: </span>
+                    {log.rewards.map((item, i) => {
+                      const rarity = getItemRarityById(item.id);
+                      const isSuperRare = item.superRare > 0;
+                      const rarityClass = getRarityTextClass(rarity, isSuperRare);
+                      return (
+                        <span key={i} className={`${rarityClass} font-medium`}>
+                          {i > 0 && ', '}{getItemDisplayName(item)}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <div className="border-t border-gray-200 pt-2 space-y-2">
+                  {[...log.entries].reverse().map((entry, i, arr) => {
+                    const originalIndex = arr.length - 1 - i;
+                    let roomLabel: string;
+                    if (entry.floor && entry.roomInFloor) {
+                      roomLabel = `${entry.floor}F-${entry.roomInFloor}`;
+                    } else {
+                      const isBoss = entry.room === log.totalRooms + 1;
+                      roomLabel = isBoss ? 'BOSS' : entry.room.toString();
+                    }
+                    const healAmount = Math.max(0, entry.healAmount ?? 0);
+                    const attritionAmount = Math.max(0, entry.attritionAmount ?? 0);
+                    const estimatedStartHP = Math.min(
+                      entry.maxPartyHP,
+                      Math.max(0, entry.remainingPartyHP + entry.damageTaken + attritionAmount - healAmount)
+                    );
+                    const takenDamageAmount = Math.max(0, estimatedStartHP - entry.remainingPartyHP);
+                    const remainingRatio = entry.maxPartyHP > 0 ? (entry.remainingPartyHP / entry.maxPartyHP) * 100 : 0;
+                    const healRatio = entry.maxPartyHP > 0 ? (healAmount / entry.maxPartyHP) * 100 : 0;
+                    const takenRatio = entry.maxPartyHP > 0 ? (takenDamageAmount / entry.maxPartyHP) * 100 : 0;
+                    const enemyTakenAmount = Math.min(entry.enemyHP, Math.max(0, entry.damageDealt));
+                    const enemyRemainingAmount = Math.max(0, entry.enemyHP - enemyTakenAmount);
+                    const enemyRemainingRatio = entry.enemyHP > 0 ? (enemyRemainingAmount / entry.enemyHP) * 100 : 0;
+                    const roomKey = `${diaryLog.id}-${originalIndex}`;
+                    const isRoomExpanded = !!expandedRooms[roomKey];
+
+                    return (
+                      <div key={roomKey} className="bg-white rounded overflow-hidden">
+                        <button
+                          onClick={() => setExpandedRooms((prev) => ({ ...prev, [roomKey]: !isRoomExpanded }))}
+                          className="w-full text-left p-2 text-xs"
+                        >
+                          <div className="flex justify-between items-center">
+                            <span>
+                              <span className="font-medium">{roomLabel}: {entry.enemyName}</span>
+                            </span>
+                            <span className="flex items-center gap-2">
+                              <span className={
+                                entry.gateInfo ? 'text-gray-500 font-medium' :
+                                entry.outcome === 'victory' ? 'text-sub font-medium' :
+                                entry.outcome === 'defeat' ? 'text-red-600 font-medium' : 'text-yellow-600 font-medium'
+                              }>
+                                {entry.gateInfo ? '未到達' :
+                                 entry.outcome === 'victory' ? '勝利' :
+                                 entry.outcome === 'defeat' ? '敗北' : '引分'}
+                              </span>
+                              <span className={`transform transition-transform ${isRoomExpanded ? 'rotate-180' : ''}`}>▼</span>
+                            </span>
+                          </div>
+                          {(entry.gateInfo || entry.reward) && (
+                            <div className="text-gray-500 mt-1 flex flex-wrap items-center gap-1">
+                              {entry.gateInfo && <span className="text-orange-700">解放条件: {entry.gateInfo}</span>}
+                              {entry.reward && (
+                                <span className={`${getRewardTextClass(entry.rewardRarity, entry.rewardIsSuperRare)} ${entry.rewardIsSuperRare ? 'font-bold' : 'font-medium'}`}>
+                                  獲得:{entry.reward}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          <div className="mt-1 grid grid-cols-2 gap-2 text-gray-600">
+                            <div>
+                              <div className="mb-0.5">自HP {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
+                              <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                                <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: '#93c5fd' }} />
+                                <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: '#b8edb2' }} />
+                                <div className="h-full" style={{ width: `${Math.min(100, takenRatio)}%`, backgroundColor: '#fcb786' }} />
+                              </div>
+                            </div>
+                            <div>
+                              <div className="mb-0.5">敵HP {formatNumber(enemyRemainingAmount)} / {formatNumber(entry.enemyHP)}</div>
+                              <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                                <div className="h-full" style={{ width: `${Math.min(100, enemyRemainingRatio)}%`, backgroundColor: '#93c5fd' }} />
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                        {isRoomExpanded && entry.details && (
+                          <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
+                            <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
+                            {entry.details.map((battleLog, j) => {
+                              const phaseLabel = battleLog.actor === 'deity'
+                                ? '末'
+                                : battleLog.actor === 'effect'
+                                  ? '効'
+                                  : battleLog.phase === 'long'
+                                    ? '遠'
+                                    : battleLog.phase === 'mid'
+                                      ? '魔'
+                                      : '近';
+                              const getPhaseEmoji = () => {
+                                if (battleLog.elementalOffense === 'fire') return '🔥';
+                                if (battleLog.elementalOffense === 'thunder') return '⚡';
+                                if (battleLog.elementalOffense === 'ice') return '❄️';
+                                if (battleLog.phase === 'long') return '🏹';
+                                if (battleLog.phase === 'mid') return '🪄';
+                                return '⚔';
+                              };
+                              const emoji = getPhaseEmoji();
+                              const isEnemy = battleLog.actor === 'enemy';
+                              const hits = battleLog.hits ?? 0;
+                              const totalAttempts = battleLog.totalAttempts ?? 0;
+                              const allMissed = totalAttempts > 0 && hits === 0;
+                              const hitDisplay = totalAttempts > 0 ? `(${hits}/${totalAttempts}回)` : '';
+
+                              let actionText: string;
+                              if (battleLog.actor === 'effect') {
+                                actionText = battleLog.action;
+                              } else if (isEnemy) {
+                                if (allMissed) {
+                                  actionText = `敵が${battleLog.action.replace('！', 'したが外れた！')}`;
+                                } else {
+                                  actionText = `敵が${battleLog.action}`;
+                                }
+                              } else {
+                                if (allMissed) {
+                                  const charName = battleLog.action.replace(/ の.*$/, '');
+                                  actionText = `${charName} の攻撃は外れた！`;
+                                } else {
+                                  actionText = battleLog.action;
+                                }
+                              }
+
+                              return (
+                                <div key={j} className="flex justify-between text-gray-600">
+                                  <span>
+                                    <span className="text-gray-400">[{phaseLabel}]</span>{' '}
+                                    {actionText}
+                                    {battleLog.note && <span className="text-gray-400"> {battleLog.note}</span>}
+                                    {hitDisplay && <span className="text-gray-400">{hitDisplay}</span>}
+                                  </span>
+                                  {battleLog.damage !== undefined && battleLog.damage > 0 && (
+                                    <span className={isEnemy ? 'text-accent' : 'text-sub'}>
+                                      ({emoji} {formatNumber(battleLog.damage)})
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
