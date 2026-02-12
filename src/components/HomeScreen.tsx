@@ -1659,37 +1659,69 @@ function ExpeditionTab({
 
         const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
         const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
+        const lastLog = party.lastExpeditionLog;
+        const hasLastLog = !!lastLog;
+        const isLogExpanded = expandedLogParty === partyIndex;
+        const remainingHpPercent = hasLastLog
+          ? formatNumber(Math.round((lastLog!.remainingPartyHP / Math.max(1, lastLog!.maxPartyHP)) * 100))
+          : '0';
+        const outcomeLabel = hasLastLog
+          ? (lastLog!.finalOutcome === 'victory' ? '踏破' :
+             lastLog!.finalOutcome === 'return' ? '帰還' :
+             lastLog!.finalOutcome === 'defeat' ? '敗北' : '撤退')
+          : '';
+        const outcomeClass = hasLastLog
+          ? (lastLog!.finalOutcome === 'victory' || lastLog!.finalOutcome === 'return' ? 'text-sub' :
+             lastLog!.finalOutcome === 'defeat' ? 'text-red-600' : 'text-yellow-600')
+          : '';
+
         return (
           <div key={partyIndex} className="bg-pane rounded-lg p-4">
             {/* Party Expedition Header */}
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-sm font-bold text-black whitespace-nowrap">{party.name}</span>
-              <select
-                value={party.selectedDungeonId}
-                onChange={(e) => onSelectDungeon(partyIndex, Number(e.target.value))}
-                className="border border-gray-300 rounded px-2 py-1 text-sm flex-1"
-              >
-                {DUNGEONS.map(dungeon => {
-                  const gateState = getDungeonEntryGateState(party, dungeon);
-                  return (
-                    <option key={dungeon.id} value={dungeon.id} disabled={gateState.locked}>
-                      {dungeon.name} {gateState.locked ? '🔒' : ''}
-                    </option>
-                  );
-                })}
-              </select>
+            {hasLastLog && !isLogExpanded ? (
               <button
-                onClick={() => onRunExpedition(partyIndex)}
-                disabled={selectedDungeonGate?.locked}
-                className={`px-3 py-1 text-white rounded font-medium text-sm ${
-                  selectedDungeonGate?.locked
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-sub hover:bg-blue-600'
-                }`}
+                onClick={() => setExpandedLogParty(partyIndex)}
+                className="w-full flex justify-between items-center text-sm mb-3"
               >
-                出撃
+                <span>
+                  <span className="font-bold text-black">{party.name}</span>
+                  <span className="ml-2">{lastLog?.dungeonName}</span>
+                  <span className={`ml-2 font-medium ${outcomeClass}`}>
+                    {outcomeLabel}(残{remainingHpPercent}%)
+                  </span>
+                </span>
+                <span>▼</span>
               </button>
-            </div>
+            ) : (
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-sm font-bold text-black whitespace-nowrap">{party.name}</span>
+                <select
+                  value={party.selectedDungeonId}
+                  onChange={(e) => onSelectDungeon(partyIndex, Number(e.target.value))}
+                  className="border border-gray-300 rounded px-2 py-1 text-sm flex-1"
+                >
+                  {DUNGEONS.map(dungeon => {
+                    const gateState = getDungeonEntryGateState(party, dungeon);
+                    return (
+                      <option key={dungeon.id} value={dungeon.id} disabled={gateState.locked}>
+                        {dungeon.name} {gateState.locked ? '🔒' : ''}
+                      </option>
+                    );
+                  })}
+                </select>
+                <button
+                  onClick={() => onRunExpedition(partyIndex)}
+                  disabled={selectedDungeonGate?.locked}
+                  className={`px-3 py-1 text-white rounded font-medium text-sm ${
+                    selectedDungeonGate?.locked
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-sub hover:bg-blue-600'
+                  }`}
+                >
+                  出撃
+                </button>
+              </div>
+            )}
 
             {(() => {
               const nextGoalText = getNextGoalText(party);
@@ -1698,35 +1730,30 @@ function ExpeditionTab({
             })()}
 
             {/* Last Expedition Log */}
-            {party.lastExpeditionLog && (
+            {party.lastExpeditionLog && isLogExpanded && (
               <div className="border-t border-gray-200 pt-3">
                 <button
-                  onClick={() => setExpandedLogParty(expandedLogParty === partyIndex ? null : partyIndex)}
+                  onClick={() => setExpandedLogParty(null)}
                   className="w-full flex justify-between items-center text-sm"
                 >
                   <span>
-                    <span className="font-medium">結果: {party.lastExpeditionLog.dungeonName} (残HP {formatNumber(Math.round((party.lastExpeditionLog.remainingPartyHP / Math.max(1, party.lastExpeditionLog.maxPartyHP)) * 100))}%)</span>
-                    <span className={`ml-2 font-medium ${
-                      party.lastExpeditionLog.finalOutcome === 'victory' || party.lastExpeditionLog.finalOutcome === 'return' ? 'text-sub' :
-                      party.lastExpeditionLog.finalOutcome === 'defeat' ? 'text-red-600' : 'text-yellow-600'
-                    }`}>
-                      {party.lastExpeditionLog.finalOutcome === 'victory' ? '踏破' :
-                       party.lastExpeditionLog.finalOutcome === 'return' ? '帰還' :
-                       party.lastExpeditionLog.finalOutcome === 'defeat' ? '敗北' : '撤退'}
+                    <span className="font-bold text-black">{party.name}</span>
+                    <span className="ml-2">{lastLog?.dungeonName}</span>
+                    <span className={`ml-2 font-medium ${outcomeClass}`}>
+                      {outcomeLabel}(残{remainingHpPercent}%)
                     </span>
                   </span>
-                  <span className={`transform transition-transform ${expandedLogParty === partyIndex ? 'rotate-180' : ''}`}>▼</span>
+                  <span className="transform transition-transform rotate-180">▼</span>
                 </button>
 
-                {expandedLogParty === partyIndex && (
-                  <div className="mt-3 space-y-2">
-                    <div className="text-sm text-gray-500">
-                      Lv: {formatNumber(party.level)} | {party.deity.name} | 
-                      +{formatNumber(party.lastExpeditionLog.totalExperience)}EXP
-                      {party.lastExpeditionLog.autoSellProfit > 0 && (
-                        <span> | +{formatNumber(party.lastExpeditionLog.autoSellProfit)}G</span>
-                      )}
-                    </div>
+                <div className="mt-3 space-y-2">
+                  <div className="text-sm text-gray-500">
+                    Lv: {formatNumber(party.level)} | {party.deity.name} | 
+                    +{formatNumber(party.lastExpeditionLog.totalExperience)}EXP
+                    {party.lastExpeditionLog.autoSellProfit > 0 && (
+                      <span> | +{formatNumber(party.lastExpeditionLog.autoSellProfit)}G</span>
+                    )}
+                  </div>
 
                     {party.lastExpeditionLog.rewards.length > 0 && (
                       <div className="text-sm">
@@ -1744,7 +1771,7 @@ function ExpeditionTab({
                       </div>
                     )}
 
-                    <div className="border-t border-gray-200 pt-2 space-y-2">
+                  <div className="border-t border-gray-200 pt-2 space-y-2">
                       {[...party.lastExpeditionLog.entries].reverse().map((entry, i, arr) => {
                         const originalIndex = arr.length - 1 - i;
                         let roomLabel: string;
@@ -1886,9 +1913,8 @@ function ExpeditionTab({
                           </div>
                         );
                       })}
-                    </div>
                   </div>
-                )}
+                </div>
               </div>
             )}
           </div>
