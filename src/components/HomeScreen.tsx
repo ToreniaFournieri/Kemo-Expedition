@@ -1731,6 +1731,16 @@ function ExpeditionTab({
                           roomLabel = isBoss ? 'BOSS' : entry.room.toString();
                         }
                         const hpPercent = Math.round((entry.remainingPartyHP / entry.maxPartyHP) * 100);
+                        const healAmount = Math.max(0, entry.healAmount ?? 0);
+                        const attritionAmount = Math.max(0, entry.attritionAmount ?? 0);
+                        const estimatedStartHP = Math.min(
+                          entry.maxPartyHP,
+                          Math.max(0, entry.remainingPartyHP + entry.damageTaken + attritionAmount - healAmount)
+                        );
+                        const takenDamageAmount = Math.max(0, estimatedStartHP - entry.remainingPartyHP);
+                        const remainingRatio = entry.maxPartyHP > 0 ? (entry.remainingPartyHP / entry.maxPartyHP) * 100 : 0;
+                        const healRatio = entry.maxPartyHP > 0 ? (healAmount / entry.maxPartyHP) * 100 : 0;
+                        const takenRatio = entry.maxPartyHP > 0 ? (takenDamageAmount / entry.maxPartyHP) * 100 : 0;
                         const isRoomExpanded = expandedRoom?.partyIndex === partyIndex && expandedRoom?.roomIndex === originalIndex;
 
                         return (
@@ -1756,6 +1766,11 @@ function ExpeditionTab({
                                   </span>
                                   <span className={`transform transition-transform ${isRoomExpanded ? 'rotate-180' : ''}`}>▼</span>
                                 </span>
+                              </div>
+                              <div className="mt-1 flex h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
+                                <div className="h-full bg-blue-500" style={{ width: `${Math.min(100, remainingRatio)}%` }} />
+                                <div className="h-full bg-green-500" style={{ width: `${Math.min(100, healRatio)}%` }} />
+                                <div className="h-full bg-orange-700" style={{ width: `${Math.min(100, takenRatio)}%` }} />
                               </div>
                               <div className="text-gray-500 mt-1">
                                 敵攻撃:{entry.enemyAttackValues} | 与ダメ:{formatNumber(entry.damageDealt)} | 被ダメ:{formatNumber(entry.damageTaken)}
