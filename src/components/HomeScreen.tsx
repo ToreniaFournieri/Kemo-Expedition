@@ -1743,7 +1743,6 @@ function ExpeditionTab({
                         const enemyTakenAmount = Math.min(entry.enemyHP, Math.max(0, entry.damageDealt));
                         const enemyRemainingAmount = Math.max(0, entry.enemyHP - enemyTakenAmount);
                         const enemyRemainingRatio = entry.enemyHP > 0 ? (enemyRemainingAmount / entry.enemyHP) * 100 : 0;
-                        const enemyTakenRatio = entry.enemyHP > 0 ? (enemyTakenAmount / entry.enemyHP) * 100 : 0;
                         const isRoomExpanded = expandedRoom?.partyIndex === partyIndex && expandedRoom?.roomIndex === originalIndex;
 
                         return (
@@ -1780,14 +1779,13 @@ function ExpeditionTab({
                                   <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
                                     <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: "#93c5fd" }} />
                                     <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: "#86efac" }} />
-                                    <div className="h-full" style={{ width: `${Math.min(100, takenRatio)}%`, backgroundColor: "#fdba74" }} />
+                                    <div className="h-full" style={{ width: `${Math.min(100, takenRatio)}%`, backgroundColor: "#f97316" }} />
                                   </div>
                                 </div>
                                 <div>
                                   <div className="mb-0.5">敵HP {formatNumber(enemyRemainingAmount)} / {formatNumber(entry.enemyHP)}</div>
                                   <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
                                     <div className="h-full" style={{ width: `${Math.min(100, enemyRemainingRatio)}%`, backgroundColor: "#93c5fd" }} />
-                                    <div className="h-full" style={{ width: `${Math.min(100, enemyTakenRatio)}%`, backgroundColor: "#cbd5e1" }} />
                                   </div>
                                 </div>
                               </div>
