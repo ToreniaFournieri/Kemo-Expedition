@@ -1783,7 +1783,7 @@ function ExpeditionTab({
                                   <div className="mb-0.5">自HP {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
                                   <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
                                     <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: "#93c5fd" }} />
-                                    <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: "#86efac" }} />
+                                    <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: "#b8edb2" }} />
                                     <div className="h-full" style={{ width: `${Math.min(100, takenRatio)}%`, backgroundColor: "#fa9d5c" }} />
                                   </div>
                                 </div>
