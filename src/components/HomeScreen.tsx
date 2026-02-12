@@ -1696,9 +1696,7 @@ function ExpeditionTab({
                 {expandedLogParty === partyIndex && (
                   <div className="mt-3 space-y-2">
                     <div className="text-sm text-gray-500">
-                      残HP: {formatNumber(party.lastExpeditionLog.remainingPartyHP)}/{formatNumber(party.lastExpeditionLog.maxPartyHP)}
-                      {' '}| {formatNumber(party.lastExpeditionLog.completedRooms)}/{formatNumber(party.lastExpeditionLog.totalRooms)}部屋
-                      {' '}| EXP: +{formatNumber(party.lastExpeditionLog.totalExperience)}
+                      EXP: +{formatNumber(party.lastExpeditionLog.totalExperience)}
                       {party.lastExpeditionLog.autoSellProfit > 0 && (
                         <span> | 自動売却額: {formatNumber(party.lastExpeditionLog.autoSellProfit)}G</span>
                       )}
