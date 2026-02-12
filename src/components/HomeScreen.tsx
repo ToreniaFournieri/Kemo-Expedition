@@ -2065,17 +2065,31 @@ function DiaryTab({
     .sort((a, b) => b.createdAt - a.createdAt)
     .slice(0, 10);
 
-  const triggerLabel: Record<'defeat' | 'mythic' | 'superRare', string> = {
-    defeat: '敗北',
-    mythic: '神魔レア獲得',
-    superRare: '超レア獲得',
-  };
-
   const getDiaryTitle = (triggers: Array<'defeat' | 'mythic' | 'superRare'>) => {
     if (triggers.includes('defeat') && triggers.length === 1) return '敗北の記録';
     if (triggers.includes('superRare')) return '超レア獲得の記録';
     if (triggers.includes('mythic')) return '神魔レア獲得の記録';
     return '特別記録';
+  };
+
+  const getDiaryHeadline = (
+    partyName: string,
+    triggers: Array<'defeat' | 'mythic' | 'superRare'>,
+    specialRewards: Item[]
+  ) => {
+    if (triggers.includes('defeat') && triggers.length === 1) {
+      return `[${partyName}] 敗北の記録`;
+    }
+
+    if (triggers.includes('superRare') || triggers.includes('mythic')) {
+      const rewardNames = specialRewards.map((item) => getItemDisplayName(item)).join('、');
+      const triggerPrefix = triggers.includes('superRare') ? '超レア' : '神魔レア';
+      return rewardNames
+        ? `[${partyName}] ${triggerPrefix}(${rewardNames}) 獲得`
+        : `[${partyName}] ${triggerPrefix}獲得`;
+    }
+
+    return `[${partyName}] ${getDiaryTitle(triggers)}`;
   };
 
   const formatDiaryTimestamp = (timestamp: number) => {
@@ -2112,19 +2126,19 @@ function DiaryTab({
               className="w-full text-left text-sm"
             >
               <span className="flex items-start justify-between gap-2">
-                <span>
-                  <span className="font-medium">[{diaryLog.partyName}] {getDiaryTitle(diaryLog.triggers)}</span>
-                  <span className="ml-2 text-gray-500">{log.dungeonName}</span>
-                  <span className="ml-2 text-red-600">{diaryLog.triggers.map((trigger) => triggerLabel[trigger]).join(' / ')}</span>
+                <span className="font-medium pr-2">
+                  {getDiaryHeadline(diaryLog.partyName, diaryLog.triggers, specialRewards)}
                 </span>
-                <span className="text-xs text-gray-400 text-right whitespace-nowrap">{formatDiaryTimestamp(diaryLog.createdAt)}</span>
-              </span>
-              <span className="mt-1 flex justify-end">
                 <span className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
+              </span>
+
+              <span className="mt-1 flex items-center justify-between gap-2 text-xs text-gray-400">
+                <span className="truncate">{log.dungeonName}</span>
+                <span className="whitespace-nowrap text-right">{formatDiaryTimestamp(diaryLog.createdAt)}</span>
               </span>
             </button>
 
-            {specialRewards.length > 0 && (
+            {specialRewards.length > 0 && diaryLog.triggers.includes('defeat') && (
               <div className="mt-1 text-xs text-gray-500">
                 特別獲得: {specialRewards.map((item, i) => {
                   const rarity = getItemRarityById(item.id);
