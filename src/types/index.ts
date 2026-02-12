@@ -209,13 +209,23 @@ export interface Party {
   lastExpeditionLog: ExpeditionLog | null;
   diaryLogs: DiaryLog[];
   hasUnreadDiary: boolean;
+  diarySettings: DiarySettings;
 }
 
 export interface DiaryLog {
   id: string;
   expeditionLog: ExpeditionLog;
-  triggers: Array<'defeat' | 'mythic' | 'superRare'>;
+  triggers: Array<'defeat' | 'rare' | 'mythic' | 'superRare'>;
   createdAt: number;
+}
+
+export type DiaryRarityThreshold = 'all' | 1 | 2 | 3 | 4 | 5 | 6 | 'none';
+
+export interface DiarySettings {
+  superRareThreshold: DiaryRarityThreshold;
+  mythicThreshold: DiaryRarityThreshold;
+  rareThreshold: DiaryRarityThreshold;
+  notifyDefeat: boolean;
 }
 
 export interface Deity {

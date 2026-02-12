@@ -10,6 +10,7 @@ import {
   LineageId,
   ExpeditionLog,
   DiaryLog,
+  DiarySettings,
   ExpeditionLogEntry,
   BattleLogEntry,
   InventoryRecord,
@@ -57,6 +58,34 @@ import {
 
 const BUILD_NUMBER = 44;
 const STORAGE_KEY = 'kemo-expedition-save';
+
+const DEFAULT_DIARY_SETTINGS: DiarySettings = {
+  superRareThreshold: 'all',
+  mythicThreshold: 'all',
+  rareThreshold: 5,
+  notifyDefeat: true,
+};
+
+function getDiarySettingsWithDefaults(value: Partial<DiarySettings> | undefined): DiarySettings {
+  return {
+    ...DEFAULT_DIARY_SETTINGS,
+    ...(value ?? {}),
+  };
+}
+
+function matchesDiaryThreshold(item: Item, threshold: DiarySettings['superRareThreshold']): boolean {
+  if (threshold === 'none') return false;
+  if (threshold === 'all') return true;
+  return item.enhancement >= threshold;
+}
+
+function getItemRarityCode(item: Item): 'common' | 'uncommon' | 'rare' | 'mythic' {
+  const rarityCode = item.id % 1000;
+  if (rarityCode >= 400) return 'mythic';
+  if (rarityCode >= 300) return 'rare';
+  if (rarityCode >= 200) return 'uncommon';
+  return 'common';
+}
 
 // Helper to calculate sell price for an item
 function calculateSellPrice(item: Item): number {
@@ -203,6 +232,7 @@ function loadSavedState(): GameState | null {
           if (!party.lootGateProgress) party.lootGateProgress = party.deity.lootGateProgress ?? {};
           if (!Array.isArray(party.diaryLogs)) party.diaryLogs = [];
           if (typeof party.hasUnreadDiary !== 'boolean') party.hasUnreadDiary = false;
+          party.diarySettings = getDiarySettingsWithDefaults(party.diarySettings);
 
           // Merge latest item definitions onto saved items (for new fields like baseMultiplier)
           for (const character of party.characters ?? []) {
@@ -310,6 +340,7 @@ function createInitialParty() {
     lastExpeditionLog: null,
     diaryLogs: [],
     hasUnreadDiary: false,
+    diarySettings: getDiarySettingsWithDefaults(undefined),
   };
 }
 
@@ -348,6 +379,7 @@ function createSecondParty() {
     lastExpeditionLog: null,
     diaryLogs: [],
     hasUnreadDiary: false,
+    diarySettings: getDiarySettingsWithDefaults(undefined),
   };
 }
 
@@ -393,6 +425,7 @@ type GameAction =
   | { type: 'SET_VARIANT_STATUS'; variantKey: string; status: 'notown' }
   | { type: 'MARK_ITEMS_SEEN' }
   | { type: 'MARK_DIARY_SEEN' }
+  | { type: 'UPDATE_DIARY_SETTINGS'; partyIndex: number; settings: Partial<DiarySettings> }
   | { type: 'RESET_GAME' }
   | { type: 'RESET_COMMON_BAGS' }
   | { type: 'RESET_UNIQUE_BAGS' }
@@ -1096,10 +1129,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         maxPartyHP: partyStats.hp,
       };
 
+      const diarySettings = getDiarySettingsWithDefaults(currentParty.diarySettings);
+      const hasSuperRareMatch = finalRewards.some((item) => item.superRare > 0 && matchesDiaryThreshold(item, diarySettings.superRareThreshold));
+      const hasMythicMatch = finalRewards.some((item) => getItemRarityCode(item) === 'mythic' && matchesDiaryThreshold(item, diarySettings.mythicThreshold));
+      const hasRareMatch = finalRewards.some((item) => getItemRarityCode(item) === 'rare' && matchesDiaryThreshold(item, diarySettings.rareThreshold));
+
       const diaryTriggers: DiaryLog['triggers'] = [];
-      if (finalOutcome === 'defeat') diaryTriggers.push('defeat');
-      if (finalRewards.some((item) => item.id % 1000 >= 400)) diaryTriggers.push('mythic');
-      if (finalRewards.some((item) => item.superRare > 0)) diaryTriggers.push('superRare');
+      if (finalOutcome === 'defeat' && diarySettings.notifyDefeat) diaryTriggers.push('defeat');
+
+      if (hasSuperRareMatch) {
+        diaryTriggers.push('superRare');
+      } else {
+        if (hasMythicMatch) diaryTriggers.push('mythic');
+        if (hasRareMatch) diaryTriggers.push('rare');
+      }
 
       const nextDiaryLogs = diaryTriggers.length > 0
         ? ([{
@@ -1287,6 +1330,25 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...party,
         hasUnreadDiary: false,
       }));
+
+      return {
+        ...state,
+        parties: updatedParties,
+      };
+    }
+
+    case 'UPDATE_DIARY_SETTINGS': {
+      const currentParty = state.parties[action.partyIndex];
+      if (!currentParty) return state;
+
+      const updatedParties = [...state.parties];
+      updatedParties[action.partyIndex] = {
+        ...currentParty,
+        diarySettings: getDiarySettingsWithDefaults({
+          ...currentParty.diarySettings,
+          ...action.settings,
+        }),
+      };
 
       return {
         ...state,
@@ -1490,6 +1552,10 @@ export function useGameState() {
 
     markDiarySeen: useCallback(() => {
       dispatch({ type: 'MARK_DIARY_SEEN' });
+    }, []),
+
+    updateDiarySettings: useCallback((partyIndex: number, settings: Partial<DiarySettings>) => {
+      dispatch({ type: 'UPDATE_DIARY_SETTINGS', partyIndex, settings });
     }, []),
 
     resetGame: useCallback(() => {
