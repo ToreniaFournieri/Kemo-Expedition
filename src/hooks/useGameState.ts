@@ -9,6 +9,7 @@ import {
   PredispositionId,
   LineageId,
   ExpeditionLog,
+  DiaryLog,
   ExpeditionLogEntry,
   BattleLogEntry,
   InventoryRecord,
@@ -54,7 +55,7 @@ import {
   unlockAvailableLootGates,
 } from '../game/lootGate';
 
-const BUILD_NUMBER = 43;
+const BUILD_NUMBER = 44;
 const STORAGE_KEY = 'kemo-expedition-save';
 
 // Helper to calculate sell price for an item
@@ -200,6 +201,8 @@ function loadSavedState(): GameState | null {
           if (typeof party.experience !== 'number') party.experience = party.deity.experience ?? 0;
           if (!party.lootGateStatus) party.lootGateStatus = party.deity.lootGateStatus ?? {};
           if (!party.lootGateProgress) party.lootGateProgress = party.deity.lootGateProgress ?? {};
+          if (!Array.isArray(party.diaryLogs)) party.diaryLogs = [];
+          if (typeof party.hasUnreadDiary !== 'boolean') party.hasUnreadDiary = false;
 
           // Merge latest item definitions onto saved items (for new fields like baseMultiplier)
           for (const character of party.characters ?? []) {
@@ -305,6 +308,8 @@ function createInitialParty() {
     characters,
     selectedDungeonId: 1,
     lastExpeditionLog: null,
+    diaryLogs: [],
+    hasUnreadDiary: false,
   };
 }
 
@@ -341,6 +346,8 @@ function createSecondParty() {
     characters,
     selectedDungeonId: 2,
     lastExpeditionLog: null,
+    diaryLogs: [],
+    hasUnreadDiary: false,
   };
 }
 
@@ -385,6 +392,7 @@ type GameAction =
   | { type: 'SELL_STACK'; variantKey: string }
   | { type: 'SET_VARIANT_STATUS'; variantKey: string; status: 'notown' }
   | { type: 'MARK_ITEMS_SEEN' }
+  | { type: 'MARK_DIARY_SEEN' }
   | { type: 'RESET_GAME' }
   | { type: 'RESET_COMMON_BAGS' }
   | { type: 'RESET_UNIQUE_BAGS' }
@@ -1088,6 +1096,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         maxPartyHP: partyStats.hp,
       };
 
+      const diaryTriggers: DiaryLog['triggers'] = [];
+      if (finalOutcome === 'defeat') diaryTriggers.push('defeat');
+      if (finalRewards.some((item) => item.id % 1000 >= 400)) diaryTriggers.push('mythic');
+      if (finalRewards.some((item) => item.superRare > 0)) diaryTriggers.push('superRare');
+
+      const nextDiaryLogs = diaryTriggers.length > 0
+        ? ([{
+            id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            expeditionLog: log,
+            triggers: diaryTriggers,
+            createdAt: Date.now(),
+          }, ...(currentParty.diaryLogs ?? [])].slice(0, 10))
+        : (currentParty.diaryLogs ?? []);
+
       const updatedParties = [...state.parties];
       updatedParties[action.partyIndex] = {
         ...currentParty,
@@ -1096,6 +1118,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         lootGateProgress: nextLootGateProgress,
         lootGateStatus: nextLootGateStatus,
         lastExpeditionLog: log,
+        diaryLogs: nextDiaryLogs,
+        hasUnreadDiary: diaryTriggers.length > 0 ? true : currentParty.hasUnreadDiary,
       };
 
       return {
@@ -1255,6 +1279,18 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         parties: updatedParties,
         global: { ...state.global, inventory: newInventory },
+      };
+    }
+
+    case 'MARK_DIARY_SEEN': {
+      const updatedParties = state.parties.map((party) => ({
+        ...party,
+        hasUnreadDiary: false,
+      }));
+
+      return {
+        ...state,
+        parties: updatedParties,
       };
     }
 
@@ -1450,6 +1486,10 @@ export function useGameState() {
 
     markItemsSeen: useCallback(() => {
       dispatch({ type: 'MARK_ITEMS_SEEN' });
+    }, []),
+
+    markDiarySeen: useCallback(() => {
+      dispatch({ type: 'MARK_DIARY_SEEN' });
     }, []),
 
     resetGame: useCallback(() => {

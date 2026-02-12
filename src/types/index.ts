@@ -207,6 +207,15 @@ export interface Party {
   characters: Character[];
   selectedDungeonId: number;
   lastExpeditionLog: ExpeditionLog | null;
+  diaryLogs: DiaryLog[];
+  hasUnreadDiary: boolean;
+}
+
+export interface DiaryLog {
+  id: string;
+  expeditionLog: ExpeditionLog;
+  triggers: Array<'defeat' | 'mythic' | 'superRare'>;
+  createdAt: number;
 }
 
 export interface Deity {

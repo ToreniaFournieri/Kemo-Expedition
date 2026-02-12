@@ -35,6 +35,7 @@ interface HomeScreenProps {
     sellStack: (variantKey: string) => void;
     setVariantStatus: (variantKey: string, status: 'notown') => void;
     markItemsSeen: () => void;
+    markDiarySeen: () => void;
     resetGame: () => void;
     resetCommonBags: () => void;
     resetUniqueBags: () => void;
@@ -50,7 +51,7 @@ interface HomeScreenProps {
   };
 }
 
-type Tab = 'party' | 'expedition' | 'inventory' | 'shop' | 'setting';
+type Tab = 'party' | 'expedition' | 'inventory' | 'diary' | 'setting';
 
 type ItemRarity = 'common' | 'uncommon' | 'rare' | 'mythic';
 type RarityFilter = 'all' | ItemRarity;
@@ -506,12 +507,13 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     { id: 'party', label: 'パーティ' },
     { id: 'expedition', label: '探検' },
     { id: 'inventory', label: '所持品' },
-    { id: 'shop', label: '店' },
+    { id: 'diary', label: '日誌' },
     { id: 'setting', label: '神聖局' },
   ];
 
   // Check for new items
   const hasNewItems = Object.values(state.global.inventory).some(variant => variant.isNew);
+  const hasUnreadDiary = state.parties.some(party => party.hasUnreadDiary);
 
   return (
     <div className="flex flex-col h-screen">
@@ -536,6 +538,9 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
                 if (tab.id === 'inventory' && hasNewItems) {
                   actions.markItemsSeen();
                 }
+                if (tab.id === 'diary' && hasUnreadDiary) {
+                  actions.markDiarySeen();
+                }
               }}
               className={`flex-1 py-2 text-sm font-medium relative ${
                 activeTab === tab.id
@@ -546,6 +551,9 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
               {tab.label}
               {tab.id === 'inventory' && hasNewItems && (
                 <span className="absolute top-1 right-2 w-2 h-2 bg-accent rounded-full"></span>
+              )}
+              {tab.id === 'diary' && hasUnreadDiary && (
+                <span className="absolute top-1 right-2 w-2 h-2 bg-red-600 rounded-full"></span>
               )}
             </button>
           ))}
@@ -590,9 +598,9 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
           />
         )}
 
-        {activeTab === 'shop' && (
-          <ShopTab
-            gold={state.global.gold}
+        {activeTab === 'diary' && (
+          <DiaryTab
+            parties={state.parties}
           />
         )}
 
@@ -2050,20 +2058,72 @@ function InventoryTab({
   );
 }
 
-function ShopTab({
-  gold,
+function DiaryTab({
+  parties,
 }: {
-  gold: number;
+  parties: Party[];
 }) {
-  return (
-    <div>
-      <div className="text-sm text-gray-500 mb-4">所持金: {formatNumber(gold)}G</div>
+  const [expandedLogs, setExpandedLogs] = useState<Record<string, boolean>>({});
 
-      <div className="bg-pane rounded-lg p-4">
-        <div className="text-sm text-gray-500 text-center py-8">
-          現在販売しているアイテムはありません
-        </div>
-      </div>
+  const diaryLogs = parties
+    .flatMap((party) =>
+      (party.diaryLogs ?? []).map((diaryLog) => ({
+        partyName: party.name,
+        ...diaryLog,
+      }))
+    )
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .slice(0, 10);
+
+  const triggerLabel: Record<'defeat' | 'mythic' | 'superRare', string> = {
+    defeat: '敗北',
+    mythic: '神魔レア獲得',
+    superRare: '超レア獲得',
+  };
+
+  if (diaryLogs.length === 0) {
+    return (
+      <div className="bg-pane rounded-lg p-4 text-sm text-gray-500 text-center">記録された日誌はありません</div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {diaryLogs.map((diaryLog) => {
+        const isExpanded = !!expandedLogs[diaryLog.id];
+        const log = diaryLog.expeditionLog;
+        return (
+          <div key={diaryLog.id} className="bg-pane rounded-lg p-3">
+            <button
+              onClick={() => setExpandedLogs((prev) => ({ ...prev, [diaryLog.id]: !isExpanded }))}
+              className="w-full text-left text-sm flex justify-between items-center"
+            >
+              <span>
+                <span className="font-medium">[{diaryLog.partyName}] {log.dungeonName}</span>
+                <span className="ml-2 text-red-600">{diaryLog.triggers.map((trigger) => triggerLabel[trigger]).join(' / ')}</span>
+              </span>
+              <span className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
+            </button>
+
+            {isExpanded && (
+              <div className="mt-2 text-xs space-y-2">
+                <div className="text-gray-600">
+                  残HP: {formatNumber(Math.round((log.remainingPartyHP / Math.max(1, log.maxPartyHP)) * 100))}% | EXP: +{formatNumber(log.totalExperience)}
+                </div>
+                <div className="space-y-1 border-t border-gray-200 pt-2">
+                  {[...log.entries].reverse().map((entry, i) => (
+                    <div key={`${diaryLog.id}-${i}`} className="text-gray-700">
+                      <span className="font-medium">{entry.floor && entry.roomInFloor ? `${entry.floor}F-${entry.roomInFloor}` : `Room ${entry.room}`}:</span>{' '}
+                      {entry.enemyName} / {entry.outcome === 'victory' ? '勝利' : entry.outcome === 'defeat' ? '敗北' : '引分'}
+                      {entry.reward && <span className="ml-1 text-orange-700">獲得:{entry.reward}</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
