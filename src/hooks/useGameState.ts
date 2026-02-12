@@ -3,6 +3,7 @@ import {
   GameState,
   Item,
   Character,
+  Party,
   RaceId,
   ClassId,
   PredispositionId,
@@ -472,6 +473,7 @@ function resolveEnemyRewards(
   rewards: Item[];
   recoveredItems: Item[];
   rewardNames: string[];
+  rewardLogEntries: { itemName: string; autoSellProfit?: number }[];
   highestRewardRarity?: 'common' | 'uncommon' | 'rare' | 'mythic';
   hasSuperRareReward: boolean;
 } {
@@ -482,6 +484,7 @@ function resolveEnemyRewards(
   const rewards: Item[] = [];
   const recoveredItems: Item[] = [];
   const rewardNames: string[] = [];
+  const rewardLogEntries: { itemName: string; autoSellProfit?: number }[] = [];
   let highestRewardRarity: 'common' | 'uncommon' | 'rare' | 'mythic' | undefined;
   let hasSuperRareReward = false;
 
@@ -523,15 +526,21 @@ function resolveEnemyRewards(
     }
 
     const newItem: Item = { ...baseItem, enhancement: enhVal, superRare: srVal };
+    const itemName = getItemDisplayName(newItem);
     const result = addItemToInventory(inventory, newItem, gold);
     recoveredItems.push(newItem);
     inventory = result.inventory;
     gold = result.gold;
     autoSellProfit += result.autoSellProfit;
 
+    rewardLogEntries.push({
+      itemName,
+      autoSellProfit: result.wasAutoSold ? result.autoSellProfit : undefined,
+    });
+
     if (!result.wasAutoSold) {
       rewards.push(newItem);
-      rewardNames.push(getItemDisplayName(newItem));
+      rewardNames.push(itemName);
       if (!highestRewardRarity || getRarityRank(baseRarity) > getRarityRank(highestRewardRarity)) {
         highestRewardRarity = baseRarity;
       }
@@ -547,9 +556,53 @@ function resolveEnemyRewards(
     rewards,
     recoveredItems,
     rewardNames,
+    rewardLogEntries,
     highestRewardRarity,
     hasSuperRareReward,
   };
+}
+
+function getUnlockActorName(party: Party): string | undefined {
+  const { characterStats } = computePartyStats(party);
+  let bestLevel = 0;
+  let unlockActorName: string | undefined;
+
+  for (const char of party.characters) {
+    const stats = characterStats.find(cs => cs.characterId === char.id);
+    const unlockAbility = stats?.abilities.find(ability => ability.id === 'unlock');
+    if (!unlockAbility) continue;
+    if (unlockAbility.level > bestLevel) {
+      bestLevel = unlockAbility.level;
+      unlockActorName = char.name;
+    }
+  }
+
+  return unlockActorName;
+}
+
+function buildRewardLogEntries(
+  rewards: { itemName: string; autoSellProfit?: number }[],
+  unlockActorName?: string
+): BattleLogEntry[] {
+  const groupedRewards = new Map<string, { itemName: string; autoSellProfit?: number; count: number }>();
+  for (const reward of rewards) {
+    const key = `${reward.itemName}|${reward.autoSellProfit ?? 0}`;
+    const existing = groupedRewards.get(key);
+    if (existing) {
+      existing.count += 1;
+      continue;
+    }
+    groupedRewards.set(key, { ...reward, count: 1 });
+  }
+
+  return Array.from(groupedRewards.values()).map(reward => ({
+    phase: 'long',
+    actor: 'deity',
+    action: unlockActorName
+      ? `${unlockActorName}の解錠 ${reward.itemName}${reward.count > 1 ? ` x${reward.count}` : ''} を獲得した！`
+      : `${reward.itemName}${reward.count > 1 ? ` x${reward.count}` : ''} を獲得した！`,
+    note: reward.autoSellProfit ? `(自動売却対象: ${reward.autoSellProfit * reward.count}G)` : undefined,
+  }));
 }
 
 // Legacy function for backward compatibility
@@ -857,8 +910,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             if (battleResult.outcome === 'victory') {
               totalExp += enemy.experience;
 
-              const { characterStats } = computePartyStats(currentParty);
-              const hasUnlock = characterStats.some(cs => cs.abilities.some(a => a.id === 'unlock'));
+              const unlockActorName = getUnlockActorName(currentParty);
+              const hasUnlock = !!unlockActorName;
               const rewardResult = resolveEnemyRewards(enemy, bags, currentInventory, currentGold, hasUnlock);
               bags = rewardResult.bags;
               currentInventory = rewardResult.inventory;
@@ -893,6 +946,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               if (deityLogEntry) {
                 entry.details.push(deityLogEntry);
               }
+              entry.details.push(...buildRewardLogEntries(rewardResult.rewardLogEntries, unlockActorName));
             } else if (battleResult.outcome === 'defeat') {
               entries.push(entry);
               finalOutcome = 'defeat';
@@ -943,8 +997,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           if (battleResult.outcome === 'victory') {
             totalExp += enemy.experience;
 
-            const { characterStats } = computePartyStats(currentParty);
-            const hasUnlock = characterStats.some(cs => cs.abilities.some(a => a.id === 'unlock'));
+            const unlockActorName = getUnlockActorName(currentParty);
+            const hasUnlock = !!unlockActorName;
             const rewardResult = resolveEnemyRewards(enemy, bags, currentInventory, currentGold, hasUnlock);
             bags = rewardResult.bags;
             currentInventory = rewardResult.inventory;
@@ -979,6 +1033,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             if (deityLogEntry) {
               entry.details.push(deityLogEntry);
             }
+            entry.details.push(...buildRewardLogEntries(rewardResult.rewardLogEntries, unlockActorName));
           } else if (battleResult.outcome === 'defeat') {
             entries.push(entry);
             finalOutcome = 'defeat';
