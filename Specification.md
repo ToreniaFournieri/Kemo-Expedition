@@ -1068,7 +1068,7 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
   - Party
   - Expedition
   - Inventory
-  - Shop
+  - Diary
   - Divine Bureau
 
 - Header is always visible; tabs never cause full page reload.
@@ -1328,8 +1328,32 @@ PT2 HP:…
     - ex. 名工のロングソード x3 | 近攻+19     [解除]
   - Unlock button(解除): Changes item state from `s.sold` to `s.notown`
 
-#### 8.6 Shop
-- Only tabs. not opended. (in this version)
+#### 8.6 Diary
+- When a party was defeated, got mythic item, and acquiring super rare item, the diary updates. 
+- It keeps 10 battle logs. First, it is collapsed and expand to see the detail. (Same as 結果 log in expedition. )
+- Top record is latest (default position) and bottom is older logs. 
+
+- Setting. 
+```
+日誌記録設定                 ▼
+
+超レア通知 (pull down list)全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default: 全て)
+神魔レア通知  (pull down list)全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default: 全て)
+レア通知 (pull down list) 全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default:恐ろしい以上)
+敗北通知 あり/なし
+```
+
+- Title of dirary 
+```
+(Left-Aligned)         (Right-aligned)
+line1: [PT2]神魔レア(秘奥真理の書) 獲得      ▼
+line2 gray text: ケイナイアン平原      02/12 20:28
+(Left-Aligned)         (Right-aligned)
+line 1: [PT1] 敗北の記録           ▼
+line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
+```
+
+
   
 #### 8.7 Divine Bureau (神聖局)
 
