@@ -53,6 +53,17 @@ interface BonusCollection {
   abilities: Map<AbilityId, number>;
 }
 
+
+const SUBCLASS_ALLOWED_ABILITY_IDS = new Set<AbilityId>(['unlock']);
+
+function filterSubclassMainSubBonuses(bonuses: Bonus[]): Bonus[] {
+  return bonuses.filter((bonus) => {
+    if (bonus.type !== 'ability') return true;
+    if (!bonus.abilityId) return false;
+    return SUBCLASS_ALLOWED_ABILITY_IDS.has(bonus.abilityId);
+  });
+}
+
 function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
   for (const bonus of bonuses) {
     switch (bonus.type) {
@@ -157,7 +168,7 @@ export function computeCharacterStats(
     collectBonuses(mainClass.masterBonuses, collection);
   } else {
     collectBonuses(mainClass.mainBonuses, collection);
-    collectBonuses(subClass.mainSubBonuses, collection);
+    collectBonuses(filterSubclassMainSubBonuses(subClass.mainSubBonuses), collection);
   }
   collectBonuses(predisposition.bonuses, collection);
   collectBonuses(lineage.bonuses, collection);

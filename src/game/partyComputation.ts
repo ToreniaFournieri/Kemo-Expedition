@@ -194,25 +194,26 @@ export function computePartyStats(party: Party): {
     });
   }
 
-  // Calculate offense amplifier from command ability
-  let offenseAmplifier = 1.0;
-  const commandAbility = abilities.find(a => a.id === 'command');
-  if (commandAbility) {
-    offenseAmplifier = commandAbility.level === 2 ? 1.6 : 1.3;
-  }
+  const getBestMainClassAbilityLevel = (classId: 'fighter' | 'lord' | 'sage'): number => {
+    let bestLevel = 0;
+    for (const character of party.characters) {
+      if (character.mainClassId !== classId) continue;
+      const level = character.subClassId === classId ? 2 : 1;
+      bestLevel = Math.max(bestLevel, level);
+    }
+    return bestLevel;
+  };
 
-  // Party-wide damage reduction abilities
-  let physicalDefenseAmplifier = 1.0;
-  const defenderAbility = abilities.find(a => a.id === 'defender');
-  if (defenderAbility) {
-    physicalDefenseAmplifier = defenderAbility.level === 2 ? 3 / 5 : 2 / 3;
-  }
+  // Calculate offense amplifier from command ability (main class: lord)
+  const commandLevel = getBestMainClassAbilityLevel('lord');
+  const offenseAmplifier = commandLevel === 2 ? 1.6 : commandLevel === 1 ? 1.3 : 1.0;
 
-  let magicalDefenseAmplifier = 1.0;
-  const mBarrierAbility = abilities.find(a => a.id === 'm_barrier');
-  if (mBarrierAbility) {
-    magicalDefenseAmplifier = mBarrierAbility.level === 2 ? 3 / 5 : 2 / 3;
-  }
+  // Party-wide damage reduction abilities (main class: fighter/sage)
+  const defenderLevel = getBestMainClassAbilityLevel('fighter');
+  const physicalDefenseAmplifier = defenderLevel === 2 ? 3 / 5 : defenderLevel === 1 ? 2 / 3 : 1.0;
+
+  const mBarrierLevel = getBestMainClassAbilityLevel('sage');
+  const magicalDefenseAmplifier = mBarrierLevel === 2 ? 3 / 5 : mBarrierLevel === 1 ? 2 / 3 : 1.0;
 
   // Elemental resistance (always 1.0 in current version)
   const elementalResistance: Record<ElementalResistance, number> = {

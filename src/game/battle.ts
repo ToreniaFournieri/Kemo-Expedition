@@ -283,20 +283,20 @@ export function executeBattle(
   const log: BattleLogEntry[] = [];
 
   const createPartyEffectEntry = (
-    abilityId: 'defender' | 'command' | 'm_barrier',
+    classId: 'fighter' | 'lord' | 'sage',
     label: string,
     noteText: (level: number) => string,
   ): BattleLogEntry | null => {
     let bestLevel = 0;
     let ownerName: string | null = null;
 
-    for (const cs of characterStats) {
-      const ability = cs.abilities.find(a => a.id === abilityId);
-      if (!ability || ability.level < bestLevel) continue;
-      const char = party.characters.find(c => c.id === cs.characterId);
-      if (ability.level > bestLevel || !ownerName) {
-        bestLevel = ability.level;
-        ownerName = char?.name ?? '???';
+    for (const char of party.characters) {
+      if (char.mainClassId !== classId) continue;
+      const level = char.subClassId === classId ? 2 : 1;
+      if (level < bestLevel) continue;
+      if (level > bestLevel || !ownerName) {
+        bestLevel = level;
+        ownerName = char.name;
       }
     }
 
@@ -311,9 +311,9 @@ export function executeBattle(
   };
 
   const partyEffects = [
-    createPartyEffectEntry('defender', '守護者', level => `(パーティへの物理ダメージ × ${level === 2 ? '3/5' : '2/3'})`),
-    createPartyEffectEntry('command', '指揮', level => `(パーティ攻撃力 × ${level === 2 ? '1.6' : '1.3'})`),
-    createPartyEffectEntry('m_barrier', '魔法障壁', level => `(パーティへの魔法ダメージ × ${level === 2 ? '3/5' : '2/3'})`),
+    createPartyEffectEntry('fighter', '守護者', level => `(パーティへの物理ダメージ × ${level === 2 ? '3/5' : '2/3'})`),
+    createPartyEffectEntry('lord', '指揮', level => `(パーティ攻撃力 × ${level === 2 ? '1.6' : '1.3'})`),
+    createPartyEffectEntry('sage', '魔法障壁', level => `(パーティへの魔法ダメージ × ${level === 2 ? '3/5' : '2/3'})`),
   ];
 
   for (const partyEffect of partyEffects) {
