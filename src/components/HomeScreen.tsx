@@ -1729,7 +1729,13 @@ function ExpeditionTab({
                               <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
                                 <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
                                 {entry.details.map((log, j) => {
-                                  const phaseLabel = log.phase === 'long' ? '遠' : log.phase === 'mid' ? '魔' : '近';
+                                  const phaseLabel = log.actor === 'effect'
+                                    ? '効'
+                                    : log.phase === 'long'
+                                      ? '遠'
+                                      : log.phase === 'mid'
+                                        ? '魔'
+                                        : '近';
                                   const getPhaseEmoji = () => {
                                     if (log.elementalOffense === 'fire') return '🔥';
                                     if (log.elementalOffense === 'thunder') return '⚡';
@@ -1746,7 +1752,9 @@ function ExpeditionTab({
                                   const hitDisplay = totalAttempts > 0 ? `(${hits}/${totalAttempts}回)` : '';
 
                                   let actionText: string;
-                                  if (isEnemy) {
+                                  if (log.actor === 'effect') {
+                                    actionText = log.action;
+                                  } else if (isEnemy) {
                                     if (allMissed) {
                                       actionText = `敵が${log.action.replace('！', 'したが外れた！')}`;
                                     } else {
@@ -1766,6 +1774,7 @@ function ExpeditionTab({
                                       <span>
                                         <span className="text-gray-400">[{phaseLabel}]</span>{' '}
                                         {actionText}
+                                        {log.note && <span className="text-gray-400"> {log.note}</span>}
                                         {hitDisplay && <span className="text-gray-400">{hitDisplay}</span>}
                                       </span>
                                       {log.damage !== undefined && log.damage > 0 && (
