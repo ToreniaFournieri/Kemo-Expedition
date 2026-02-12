@@ -1784,7 +1784,7 @@ function ExpeditionTab({
                                 </div>
                                 <div>
                                   <div className="mb-0.5">敵HP {formatNumber(enemyRemainingAmount)} / {formatNumber(entry.enemyHP)}</div>
-                                  <div className="flex h-2 w-full overflow-hidden rounded-full">
+                                  <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
                                     <div className="h-full" style={{ width: `${Math.min(100, enemyRemainingRatio)}%`, backgroundColor: "#93c5fd" }} />
                                   </div>
                                 </div>
