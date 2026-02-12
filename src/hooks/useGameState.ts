@@ -429,7 +429,7 @@ type GameAction =
   | { type: 'SELL_STACK'; variantKey: string }
   | { type: 'SET_VARIANT_STATUS'; variantKey: string; status: 'notown' }
   | { type: 'MARK_ITEMS_SEEN' }
-  | { type: 'MARK_DIARY_SEEN' }
+  | { type: 'MARK_DIARY_LOG_SEEN'; logId: string }
   | { type: 'UPDATE_DIARY_SETTINGS'; partyIndex: number; settings: Partial<DiarySettings> }
   | { type: 'RESET_GAME' }
   | { type: 'RESET_COMMON_BAGS' }
@@ -1331,15 +1331,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
-    case 'MARK_DIARY_SEEN': {
-      const updatedParties = state.parties.map((party) => ({
-        ...party,
-        diaryLogs: party.diaryLogs.map((diaryLog) => ({
-          ...diaryLog,
-          isRead: true,
-        })),
-        hasUnreadDiary: false,
-      }));
+    case 'MARK_DIARY_LOG_SEEN': {
+      const updatedParties = state.parties.map((party) => {
+        const nextDiaryLogs = party.diaryLogs.map((diaryLog) => (
+          diaryLog.id === action.logId
+            ? { ...diaryLog, isRead: true }
+            : diaryLog
+        ));
+
+        return {
+          ...party,
+          diaryLogs: nextDiaryLogs,
+          hasUnreadDiary: nextDiaryLogs.some((diaryLog) => !diaryLog.isRead),
+        };
+      });
 
       return {
         ...state,
@@ -1560,8 +1565,8 @@ export function useGameState() {
       dispatch({ type: 'MARK_ITEMS_SEEN' });
     }, []),
 
-    markDiarySeen: useCallback(() => {
-      dispatch({ type: 'MARK_DIARY_SEEN' });
+    markDiaryLogSeen: useCallback((logId: string) => {
+      dispatch({ type: 'MARK_DIARY_LOG_SEEN', logId });
     }, []),
 
     updateDiarySettings: useCallback((partyIndex: number, settings: Partial<DiarySettings>) => {

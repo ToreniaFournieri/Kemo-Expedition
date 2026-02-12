@@ -34,7 +34,7 @@ interface HomeScreenProps {
     updateCharacter: (characterId: number, updates: Partial<Character>) => void;
     sellStack: (variantKey: string) => void;
     setVariantStatus: (variantKey: string, status: 'notown') => void;
-    markDiarySeen: () => void;
+    markDiaryLogSeen: (logId: string) => void;
     updateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
     resetGame: () => void;
     resetCommonBags: () => void;
@@ -533,12 +533,6 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     count + party.diaryLogs.filter((log) => !log.isRead).length
   ), 0);
   const hasUnreadDiary = unreadDiaryCount > 0;
-  const toCircledNumber = (value: number) => {
-    const circledNumbers = ['⓪', '①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩', '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱', '⑲', '⑳'];
-    if (value >= 0 && value < circledNumbers.length) return circledNumbers[value];
-    return value.toString();
-  };
-
   return (
     <div className="flex flex-col h-screen">
       {/* Sticky Header */}
@@ -558,9 +552,6 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
               key={tab.id}
               onClick={() => {
                 setActiveTab(tab.id);
-                if (tab.id === 'diary' && hasUnreadDiary) {
-                  actions.markDiarySeen();
-                }
               }}
               className={`flex-1 py-2 text-sm font-medium relative ${
                 activeTab === tab.id
@@ -571,7 +562,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
               {tab.label}
               {tab.id === 'diary' && hasUnreadDiary && (
                 <span className="absolute -top-0.5 right-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] leading-none text-white">
-                  {toCircledNumber(unreadDiaryCount)}
+                  {unreadDiaryCount}
                 </span>
               )}
             </button>
@@ -620,6 +611,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         {activeTab === 'diary' && (
           <DiaryTab
             parties={state.parties}
+            onOpenDiaryLog={actions.markDiaryLogSeen}
             onUpdateDiarySettings={actions.updateDiarySettings}
           />
         )}
@@ -2079,9 +2071,11 @@ function InventoryTab({
 
 function DiaryTab({
   parties,
+  onOpenDiaryLog,
   onUpdateDiarySettings,
 }: {
   parties: Party[];
+  onOpenDiaryLog: (logId: string) => void;
   onUpdateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
 }) {
   const [expandedLogs, setExpandedLogs] = useState<Record<string, boolean>>({});
@@ -2247,7 +2241,13 @@ function DiaryTab({
         return (
           <div key={diaryLog.id} className="bg-pane rounded-lg p-3">
             <button
-              onClick={() => setExpandedLogs((prev) => ({ ...prev, [diaryLog.id]: !isExpanded }))}
+              onClick={() => {
+                const nextExpanded = !isExpanded;
+                setExpandedLogs((prev) => ({ ...prev, [diaryLog.id]: nextExpanded }));
+                if (nextExpanded && !diaryLog.isRead) {
+                  onOpenDiaryLog(diaryLog.id);
+                }
+              }}
               className="w-full text-left text-sm"
             >
               <span className="flex items-start justify-between gap-2">
