@@ -550,7 +550,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             >
               {tab.label}
               {tab.id === 'inventory' && hasNewItems && (
-                <span className="absolute top-1 right-2 w-2 h-2 bg-accent rounded-full"></span>
+                <span className="absolute top-1 right-2 w-2 h-2 bg-red-600 rounded-full"></span>
               )}
               {tab.id === 'diary' && hasUnreadDiary && (
                 <span className="absolute top-1 right-2 w-2 h-2 bg-red-600 rounded-full"></span>
@@ -2089,6 +2089,18 @@ function DiaryTab({
     return '特別記録';
   };
 
+  const formatDiaryTimestamp = (timestamp: number) => {
+    const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) return '';
+    return new Intl.DateTimeFormat('ja-JP', {
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    }).format(date);
+  };
+
   if (diaryLogs.length === 0) {
     return (
       <div className="bg-pane rounded-lg p-4 text-sm text-gray-500 text-center">記録された日誌はありません</div>
@@ -2100,19 +2112,44 @@ function DiaryTab({
       {diaryLogs.map((diaryLog) => {
         const isExpanded = !!expandedLogs[diaryLog.id];
         const log = diaryLog.expeditionLog;
+        const specialRewards = log.rewards.filter((item) => {
+          const rarity = getItemRarityById(item.id);
+          return rarity === 'mythic' || item.superRare > 0;
+        });
         return (
           <div key={diaryLog.id} className="bg-pane rounded-lg p-3">
             <button
               onClick={() => setExpandedLogs((prev) => ({ ...prev, [diaryLog.id]: !isExpanded }))}
-              className="w-full text-left text-sm flex justify-between items-center"
+              className="w-full text-left text-sm"
             >
-              <span>
-                <span className="font-medium">[{diaryLog.partyName}] {getDiaryTitle(diaryLog.triggers)}</span>
-                <span className="ml-2 text-gray-500">{log.dungeonName}</span>
-                <span className="ml-2 text-red-600">{diaryLog.triggers.map((trigger) => triggerLabel[trigger]).join(' / ')}</span>
+              <span className="flex items-start justify-between gap-2">
+                <span>
+                  <span className="font-medium">[{diaryLog.partyName}] {getDiaryTitle(diaryLog.triggers)}</span>
+                  <span className="ml-2 text-gray-500">{log.dungeonName}</span>
+                  <span className="ml-2 text-red-600">{diaryLog.triggers.map((trigger) => triggerLabel[trigger]).join(' / ')}</span>
+                </span>
+                <span className="text-xs text-gray-400 text-right whitespace-nowrap">{formatDiaryTimestamp(diaryLog.createdAt)}</span>
               </span>
-              <span className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
+              <span className="mt-1 flex justify-end">
+                <span className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
+              </span>
             </button>
+
+            {specialRewards.length > 0 && (
+              <div className="mt-1 text-xs text-gray-500">
+                特別獲得: {specialRewards.map((item, i) => {
+                  const rarity = getItemRarityById(item.id);
+                  const isSuperRare = item.superRare > 0;
+                  const rarityClass = getRarityTextClass(rarity, isSuperRare);
+                  return (
+                    <span key={`${item.id}-${item.enhancement}-${item.superRare}-${i}`} className={`${rarityClass} font-medium`}>
+                      {i > 0 && ', '}
+                      {getItemDisplayName(item)}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
 
             {isExpanded && (
               <div className="mt-3 space-y-2">
