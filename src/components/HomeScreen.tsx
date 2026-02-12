@@ -1678,9 +1678,9 @@ function ExpeditionTab({
         return (
           <div key={partyIndex} className="bg-pane rounded-lg p-4">
             {/* Party Expedition Header */}
-            {hasLastLog && !isLogExpanded ? (
+            {hasLastLog ? (
               <button
-                onClick={() => setExpandedLogParty(partyIndex)}
+                onClick={() => setExpandedLogParty(isLogExpanded ? null : partyIndex)}
                 className="w-full flex justify-between items-center text-sm mb-3"
               >
                 <span>
@@ -1690,9 +1690,11 @@ function ExpeditionTab({
                     {outcomeLabel}(残{remainingHpPercent}%)
                   </span>
                 </span>
-                <span>▼</span>
+                <span className={isLogExpanded ? 'transform transition-transform rotate-180' : ''}>▼</span>
               </button>
-            ) : (
+            ) : null}
+
+            {(!hasLastLog || isLogExpanded) && (
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-sm font-bold text-black whitespace-nowrap">{party.name}</span>
                 <select
@@ -1732,21 +1734,7 @@ function ExpeditionTab({
             {/* Last Expedition Log */}
             {party.lastExpeditionLog && isLogExpanded && (
               <div className="border-t border-gray-200 pt-3">
-                <button
-                  onClick={() => setExpandedLogParty(null)}
-                  className="w-full flex justify-between items-center text-sm"
-                >
-                  <span>
-                    <span className="font-bold text-black">{party.name}</span>
-                    <span className="ml-2">{lastLog?.dungeonName}</span>
-                    <span className={`ml-2 font-medium ${outcomeClass}`}>
-                      {outcomeLabel}(残{remainingHpPercent}%)
-                    </span>
-                  </span>
-                  <span className="transform transition-transform rotate-180">▼</span>
-                </button>
-
-                <div className="mt-3 space-y-2">
+                <div className="space-y-2">
                   <div className="text-sm text-gray-500">
                     Lv: {formatNumber(party.level)} | {party.deity.name} | 
                     +{formatNumber(party.lastExpeditionLog.totalExperience)}EXP
