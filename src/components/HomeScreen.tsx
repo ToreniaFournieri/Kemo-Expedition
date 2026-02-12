@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { DUNGEONS } from '../data/dungeons';
 import { RACES } from '../data/races';
@@ -35,6 +35,7 @@ interface HomeScreenProps {
     sellStack: (variantKey: string) => void;
     setVariantStatus: (variantKey: string, status: 'notown') => void;
     markDiarySeen: () => void;
+    updateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
     resetGame: () => void;
     resetCommonBags: () => void;
     resetUniqueBags: () => void;
@@ -85,6 +86,24 @@ const PARTY_LEVEL_EXP = [
   4000, 5000, 6200, 7600, 9200, 11000, 13000, 15500, 18500, 22000,
   26000, 30500, 35500, 41000, 47000, 53500, 60500, 68000, 76000
 ];
+
+const DIARY_THRESHOLD_OPTIONS: Array<{ value: DiaryRarityThreshold; label: string }> = [
+  { value: 'all', label: '全て' },
+  { value: 1, label: '名工以上' },
+  { value: 2, label: '魔性以上' },
+  { value: 3, label: '宿った以上' },
+  { value: 4, label: '伝説以上' },
+  { value: 5, label: '恐ろしい以上' },
+  { value: 6, label: '究極' },
+  { value: 'none', label: 'なし' },
+];
+
+function parseDiaryThreshold(value: string): DiaryRarityThreshold {
+  if (value === 'all' || value === 'none') return value;
+  const numericValue = Number(value);
+  if (numericValue >= 1 && numericValue <= 6) return numericValue as 1 | 2 | 3 | 4 | 5 | 6;
+  return 'all';
+}
 
 const numberFormatter = new Intl.NumberFormat('ja-JP');
 
@@ -591,6 +610,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         {activeTab === 'diary' && (
           <DiaryTab
             parties={state.parties}
+            onUpdateDiarySettings={actions.updateDiarySettings}
           />
         )}
 
@@ -2049,11 +2069,14 @@ function InventoryTab({
 
 function DiaryTab({
   parties,
+  onUpdateDiarySettings,
 }: {
   parties: Party[];
+  onUpdateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
 }) {
   const [expandedLogs, setExpandedLogs] = useState<Record<string, boolean>>({});
   const [expandedRooms, setExpandedRooms] = useState<Record<string, boolean>>({});
+  const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
 
   const diaryLogs = parties
     .flatMap((party) =>
@@ -2065,16 +2088,17 @@ function DiaryTab({
     .sort((a, b) => b.createdAt - a.createdAt)
     .slice(0, 10);
 
-  const getDiaryTitle = (triggers: Array<'defeat' | 'mythic' | 'superRare'>) => {
+  const getDiaryTitle = (triggers: Array<'defeat' | 'rare' | 'mythic' | 'superRare'>) => {
     if (triggers.includes('defeat') && triggers.length === 1) return '敗北の記録';
     if (triggers.includes('superRare')) return '超レア獲得の記録';
     if (triggers.includes('mythic')) return '神魔レア獲得の記録';
+    if (triggers.includes('rare')) return 'レア獲得の記録';
     return '特別記録';
   };
 
   const getDiaryHeadline = (
     partyName: string,
-    triggers: Array<'defeat' | 'mythic' | 'superRare'>,
+    triggers: Array<'defeat' | 'rare' | 'mythic' | 'superRare'>,
     specialRewards: Item[]
   ) => {
     if (triggers.includes('defeat') && triggers.length === 1) {
@@ -2087,6 +2111,10 @@ function DiaryTab({
       return rewardNames
         ? `[${partyName}] ${triggerPrefix}(${rewardNames}) 獲得`
         : `[${partyName}] ${triggerPrefix}獲得`;
+    }
+
+    if (triggers.includes('rare')) {
+      return `[${partyName}] レア獲得`;
     }
 
     return `[${partyName}] ${getDiaryTitle(triggers)}`;
@@ -2104,14 +2132,94 @@ function DiaryTab({
     }).format(date);
   };
 
+  const renderDiarySettings = () => (
+    <div className="bg-pane rounded-lg p-3">
+      <button
+        onClick={() => setIsSettingsExpanded((prev) => !prev)}
+        className="w-full text-left"
+      >
+        <span className="flex items-center justify-between text-sm font-medium">
+          <span>日誌記録設定</span>
+          <span className={`transform transition-transform ${isSettingsExpanded ? 'rotate-180' : ''}`}>▼</span>
+        </span>
+      </button>
+
+      {isSettingsExpanded && (
+        <div className="mt-3 space-y-3">
+          {parties.map((party, partyIndex) => {
+            const settings = party.diarySettings;
+            return (
+              <div key={party.id} className="rounded border border-gray-200 p-2.5">
+                <div className="mb-2 text-xs text-gray-500">{party.name}</div>
+                <div className="grid gap-2 text-sm sm:grid-cols-2">
+                  <label className="flex items-center justify-between gap-2">
+                    <span>超レア通知</span>
+                    <select
+                      value={settings.superRareThreshold}
+                      onChange={(event) => onUpdateDiarySettings(partyIndex, { superRareThreshold: parseDiaryThreshold(event.target.value) })}
+                      className="rounded border border-gray-300 bg-white px-2 py-1"
+                    >
+                      {DIARY_THRESHOLD_OPTIONS.map((option) => (
+                        <option key={`sr-${option.value}`} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="flex items-center justify-between gap-2">
+                    <span>神魔レア通知</span>
+                    <select
+                      value={settings.mythicThreshold}
+                      onChange={(event) => onUpdateDiarySettings(partyIndex, { mythicThreshold: parseDiaryThreshold(event.target.value) })}
+                      className="rounded border border-gray-300 bg-white px-2 py-1"
+                    >
+                      {DIARY_THRESHOLD_OPTIONS.map((option) => (
+                        <option key={`my-${option.value}`} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="flex items-center justify-between gap-2">
+                    <span>レア通知</span>
+                    <select
+                      value={settings.rareThreshold}
+                      onChange={(event) => onUpdateDiarySettings(partyIndex, { rareThreshold: parseDiaryThreshold(event.target.value) })}
+                      className="rounded border border-gray-300 bg-white px-2 py-1"
+                    >
+                      {DIARY_THRESHOLD_OPTIONS.map((option) => (
+                        <option key={`ra-${option.value}`} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="flex items-center justify-between gap-2">
+                    <span>敗北通知</span>
+                    <select
+                      value={settings.notifyDefeat ? 'あり' : 'なし'}
+                      onChange={(event) => onUpdateDiarySettings(partyIndex, { notifyDefeat: event.target.value === 'あり' })}
+                      className="rounded border border-gray-300 bg-white px-2 py-1"
+                    >
+                      <option value="あり">あり</option>
+                      <option value="なし">なし</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+
   if (diaryLogs.length === 0) {
     return (
-      <div className="bg-pane rounded-lg p-4 text-sm text-gray-500 text-center">記録された日誌はありません</div>
+      <div className="space-y-3">
+        {renderDiarySettings()}
+        <div className="bg-pane rounded-lg p-4 text-sm text-gray-500 text-center">記録された日誌はありません</div>
+      </div>
     );
   }
 
   return (
     <div className="space-y-3">
+      {renderDiarySettings()}
       {diaryLogs.map((diaryLog) => {
         const isExpanded = !!expandedLogs[diaryLog.id];
         const log = diaryLog.expeditionLog;
