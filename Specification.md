@@ -1082,13 +1082,27 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 #### 8.3.2 Party member details
 - Name, race, main class (sub class), predisposition, lineage, status, bonuses (c., aggregated), ability (a. )
 - Status:
+
+- If character has `c.grit+v`, displays 
+近接攻撃:98 x 4回(x1.00)
+- if character has  `c.pursuit+v`, displays 遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(phase: LONG)).
+  - ex. 遠距離攻撃:25 x 6回(x1.13)
+
+- if character has `c.grit+v` or `c.pursuit+v`, displays `d.物理命中率 accuracy_potency`　x 100 % (減衰: x (0.90 + `c.accuracy+v`)).  (ex. has `c.accuracy+0.02` and `c.accuracy+0.01`, then 0.90 + 0.02 + 0.01 -> 0.93 )
+  - ex. 物理命中率: 72% (減衰: x0.90)
+- If character has `c.caster+v`, displays 魔法攻撃:`d.magical_attack` x `d.magical_NoA`回(x`f.offense_amplifier`(phase: MID)). and accuracy. 
+  - 魔法攻撃:36 x 3回(x1.26)
+  - 魔法命中率: 100% (減衰: x0.90)
+
+
   - `f.display_ranged_offense` = If `d.ranged_attack` or `d.ranged_NoA` > 0, displays 遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(phase: LONG)). Else (none).
   - `f.display_magical_offense` = If `d.magical_attack` or `d.magical_NoA` > 0, displays 魔法攻撃:`d.magical_attack` x `d.magical_NoA`回(x`f.offense_amplifier`(phase: MID)). Else (none).
   - `f.display_melee_offense` = If `d.melee_attack` or `d.melee_NoA` > 0, displays 近接攻撃:`d.melee_attack` x `d.melee_NoA`回(x`f.offense_amplifier`(phase: CLOSE)). Else (none).	
   - `f.display_accuracy` = If `d.ranged_NoA` or `d.melee_NoA` > 0, displays 命中率: `d.accuracy_potency`　x 100 % (減衰: x (0.90 + `c.accuracy+v`)).  (ex. has `c.accuracy+0.02` and `c.accuracy+0.01`, then 0.90 + 0.02 + 0.01 -> 0.93 )
 
-- *UI Formatting Note:* When displaying aggregated c.multipliers (e.g., 鎧 x1.8), always round the internal product to the first decimal place for a cleaner interface.
-- 
+- *UI Formatting Note:* When displaying aggregated c.multipliers (e.g., 鎧 x1.8), always round the internal product to the first decimal place for a cleaner interface. 
+
+
 ```
 Name      [編集]
 🐶 race / main class(sub class) / predisposition / lineage 
@@ -1101,6 +1115,7 @@ Name      [編集]
 特殊能力:
 `a.` (ex. 守護者: パーティへの物理ダメージ × 3/5 )
 ```
+
 
 ```
 レオン                      [編集]
