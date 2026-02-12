@@ -63,13 +63,13 @@
   - name
     - Initial deity: PT1:`God of Restoration` PT2: `God of Attrition`
   - unique abulities 
-  - lootGateProgress 
-  - lootGateStatus
 
 **Party structure**
   - party id
   - level
   - experience
+  - lootGateProgress 
+  - lootGateStatus
   - deity // replacing deity reset character equipment slots. 
   - characters slots
 
