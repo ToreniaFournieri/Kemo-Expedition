@@ -1069,7 +1069,7 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 ```
 (Left-Aligned)                         (Right-Aligned)
 再生の神 (Level: 29, Experience 123450/ 123456)    [編集]
-````
+```
  
 - List of party members
     	For each character: Icon, main Class (Sub calass).
