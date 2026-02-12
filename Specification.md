@@ -806,6 +806,10 @@ X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outc
 [距離] 敵が　対象　に行動名！(N/M回) (icon 数値 in dark orange)
 [距離] 味方:行動主 の行動名！(N/M回) (icon 数値　in Blue)
 
+[効] ウルフの 守護者！　(パーティへの物理ダメージ × 2/3
+[効] ベアの 指揮！ (パーティ攻撃力 × 1.3)
+[効] ラビの 魔法障壁！ (パーティへの魔法ダメージ × 2/3)
+
 [遠] ミミ の攻撃！(3/4回)              (🏹 120)
 [魔] セルヴァ の魔法攻撃！(2/2回)         (🪄 100)
 [近] 敵が キツネ丸 に攻撃！(2/2回)       (⚔ 36)
@@ -1250,15 +1254,15 @@ displays [遠距離攻撃:矢,ボ,弓]
 ```   
 
 #### 8.4 Expedition
-
+- If 自動周回 is ON, it repeats repart to the dungeon **every 5 seconds** (for this version). Default is OFF.
 
 ```
           (Right-Aligned)
-           [一括出発]
+           [一斉出撃] 自動周回 ON/OFF
 
 (Left-Aligned)   (Right-Aligned)
 PT1 (レベル: 4) 再生の神　　  HP: 2309
-出撃先: ルピニアンの断崖 (pull down menu to select) 出発
+出撃先: ルピニアンの断崖 (pull down menu to select) 出撃
 結果: ルピニアンの断崖 (残HP 0%) 敗北 ▼
 次の目標: ルピニアンの断崖の神魔レアアイテム 0/1 でヴァルピニアンの樹林帯 開放
 
