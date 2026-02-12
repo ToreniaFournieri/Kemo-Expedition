@@ -1257,7 +1257,7 @@ displays [遠距離攻撃:矢,ボ,弓]
            [一括出発]
 
 (Left-Aligned)   (Right-Aligned)
-PT1 再生の神(Level: 29)　　  HP: 2309
+PT1 (レベル: 4) 再生の神　　  HP: 2309
 出撃先: ルピニアンの断崖 (pull down menu to select) 出発
 結果: ルピニアンの断崖 (残HP 0%) 敗北 ▼
 次の目標: ルピニアンの断崖の神魔レアアイテム 0/1 でヴァルピニアンの樹林帯 開放
