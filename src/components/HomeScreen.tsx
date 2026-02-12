@@ -520,7 +520,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-lg font-bold">ケモの冒険</h1>
-            <div className="text-xs text-gray-500">v0.2.2 ({state.buildNumber})</div>
+            <div className="text-xs text-gray-500">v0.2.3 ({state.buildNumber})</div>
           </div>
           <div className="text-right text-sm font-medium">{formatNumber(state.global.gold)}G</div>
         </div>
@@ -1160,12 +1160,13 @@ function PartyTab({
                   offenseLines.push(`近接攻撃:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}回(x${amp.toFixed(2)})`);
                 }
 
-                // Add accuracy display if character has ranged or melee NoA (physical attacks)
-                // 命中率: d.accuracy_potency x 100 % (減衰: x (0.90 + c.accuracy+v))
+                const baseDecay = 0.90 + stats.accuracyBonus;
                 const hasPhysicalAttacks = stats.rangedNoA > 0 || stats.meleeNoA > 0;
                 if (hasPhysicalAttacks) {
-                  const baseDecay = 0.90 + stats.accuracyBonus;
-                  offenseLines.push(`命中率: ${Math.round(stats.accuracyPotency * 100)}% (減衰: x${baseDecay.toFixed(2)})`);
+                  offenseLines.push(`物理命中率: ${Math.round(stats.accuracyPotency * 100)}% (減衰: x${baseDecay.toFixed(2)})`);
+                }
+                if (hasMagical) {
+                  offenseLines.push(`魔法命中率: 100% (減衰: x${baseDecay.toFixed(2)})`);
                 }
 
                 // Defense lines
@@ -2120,6 +2121,8 @@ function SettingTab({
   const formatEnemyAttackLine = (label: string, attack: number, noA: number, amplifier: number) =>
     `${label}: ${formatNumber(attack)} x ${formatNumber(noA)}回(x${amplifier.toFixed(2)})`;
 
+  const hasEnemyAttack = (attack: number, noA: number) => attack > 0 && noA > 0;
+
   const formatEnemyDefenseLine = (label: string, defense: number, percent: number) =>
     `${label}: ${formatNumber(defense)} (${percent.toFixed(0)}%)`;
 
@@ -2386,18 +2389,31 @@ function SettingTab({
                         <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                           <div>HP: {formatNumber(displayEnemy.hp)}</div>
                           <div>経験値: {formatNumber(displayEnemy.experience)}</div>
-                          <div>{formatEnemyAttackLine('遠攻', displayEnemy.rangedAttack, displayEnemy.rangedNoA, displayEnemy.rangedAttackAmplifier)}</div>
+                          {hasEnemyAttack(displayEnemy.rangedAttack, displayEnemy.rangedNoA) && (
+                            <div>{formatEnemyAttackLine('遠攻', displayEnemy.rangedAttack, displayEnemy.rangedNoA, displayEnemy.rangedAttackAmplifier)}</div>
+                          )}
                           <div>
                             属性: {ENEMY_ELEMENT_LABELS[displayEnemy.elementalOffense] ?? '無'}
                             ({displayEnemy.elementalOffense === 'none' ? 'x1.0' : 'x1.2'})
                           </div>
-                          <div>{formatEnemyAttackLine('魔攻', displayEnemy.magicalAttack, displayEnemy.magicalNoA, displayEnemy.magicalAttackAmplifier)}</div>
+                          {hasEnemyAttack(displayEnemy.magicalAttack, displayEnemy.magicalNoA) && (
+                            <div>{formatEnemyAttackLine('魔攻', displayEnemy.magicalAttack, displayEnemy.magicalNoA, displayEnemy.magicalAttackAmplifier)}</div>
+                          )}
                           <div>{formatEnemyDefenseLine('魔防', displayEnemy.magicalDefense, magicalDefensePercent)}</div>
-                          <div>{formatEnemyAttackLine('近攻', displayEnemy.meleeAttack, displayEnemy.meleeNoA, displayEnemy.meleeAttackAmplifier)}</div>
+                          {hasEnemyAttack(displayEnemy.meleeAttack, displayEnemy.meleeNoA) && (
+                            <div>{formatEnemyAttackLine('近攻', displayEnemy.meleeAttack, displayEnemy.meleeNoA, displayEnemy.meleeAttackAmplifier)}</div>
+                          )}
                           <div>{formatEnemyDefenseLine('物防', displayEnemy.physicalDefense, physicalDefensePercent)}</div>
-                          <div>
-                            命中率: 100% (減衰: x{(0.90 + displayEnemy.accuracyBonus).toFixed(2)})
-                          </div>
+                          {(hasEnemyAttack(displayEnemy.rangedAttack, displayEnemy.rangedNoA) || hasEnemyAttack(displayEnemy.meleeAttack, displayEnemy.meleeNoA)) && (
+                            <div>
+                              物理命中率: 100% (減衰: x{(0.90 + displayEnemy.accuracyBonus).toFixed(2)})
+                            </div>
+                          )}
+                          {hasEnemyAttack(displayEnemy.magicalAttack, displayEnemy.magicalNoA) && (
+                            <div>
+                              魔法命中率: 100% (減衰: x{(0.90 + displayEnemy.accuracyBonus).toFixed(2)})
+                            </div>
+                          )}
                           <div>回避: {formatNumber(Math.round(displayEnemy.evasionBonus * 1000))}</div>
                         </div>
                         <div>スキル: {displayEnemy.abilities.length > 0 ? displayEnemy.abilities.map(a => ENEMY_ABILITY_LABELS[a] ?? a).join('、 ') : 'なし'}</div>

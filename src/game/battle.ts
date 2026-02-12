@@ -213,22 +213,15 @@ function calculateCharacterDamage(
     elementalMultiplier * defenseAmplifier * (phase === 'mid' ? 1.0 : partyStats.offenseAmplifier)
   ));
 
-  // For MID phase (magical), all attacks always hit (accuracy_amplifier = 1.0 fixed)
-  if (phase === 'mid') {
-    let damage = 0;
-    for (let i = 1; i <= noA; i++) {
-      damage += Math.max(1, Math.floor(basePerHitDamage * getResonanceAmplifier(resonance?.level, i)));
-    }
-    return { damage, totalAttempts: noA, hits: noA };
-  }
-
-  // For LONG and CLOSE phases, roll for each hit
+  // All phases now use hit detection.
+  // MID phase ignores row-based accuracy potency and uses fixed potency (1.0).
+  const actorAccuracyPotency = phase === 'mid' ? 1.0 : charStats.accuracyPotency;
   const enemyEvasion = enemy.evasionBonus;
 
   let hits = 0;
   let damage = 0;
   for (let i = 1; i <= noA; i++) {
-    if (hitDetection(charStats.accuracyPotency, charStats.accuracyBonus, enemyEvasion, i)) {
+    if (hitDetection(actorAccuracyPotency, charStats.accuracyBonus, enemyEvasion, i)) {
       hits++;
       damage += Math.max(1, Math.floor(basePerHitDamage * getResonanceAmplifier(resonance?.level, i)));
     }
@@ -352,10 +345,10 @@ export function executeBattle(
         const singleDamage = calculateSingleEnemyAttackDamage(phase, enemy, partyStats, targetCharStats);
         const existing = attacksByTarget.get(targetCharStats.characterId);
 
-        // For MID phase (magical), always hit; for LONG/CLOSE, use hit detection
-        // Nth_hit is (i + 1) - global across all enemy attacks
-        const didHit = phase === 'mid' ||
-          hitDetection(enemyAccuracyPotency, enemyAccuracyBonus, targetCharStats.evasionBonus, i + 1);
+        // All phases use hit detection for enemy attacks as well.
+        // Enemy d.accuracy_potency is fixed at 1.0 in all phases.
+        // Nth_hit is (i + 1) - global across all enemy attacks.
+        const didHit = hitDetection(enemyAccuracyPotency, enemyAccuracyBonus, targetCharStats.evasionBonus, i + 1);
 
         if (existing) {
           existing.totalAttempts += 1;
