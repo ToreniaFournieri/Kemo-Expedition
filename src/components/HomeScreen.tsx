@@ -1524,12 +1524,19 @@ function ExpeditionTab({
   onSelectDungeon: (partyIndex: number, dungeonId: number) => void;
   onRunExpedition: (partyIndex: number) => void;
 }) {
+  const AUTO_REPEAT_INTERVAL_MS = 5000;
   const [expandedLogParty, setExpandedLogParty] = useState<number | null>(null);
   const [expandedRoom, setExpandedRoom] = useState<{ partyIndex: number; roomIndex: number } | null>(null);
   const [isAutoRepeatEnabled, setIsAutoRepeatEnabled] = useState(false);
+  const [autoRepeatCycleKey, setAutoRepeatCycleKey] = useState(0);
+  const latestPartiesRef = useRef(state.parties);
 
-  const handleRunAllExpeditions = () => {
-    state.parties.forEach((party, partyIndex) => {
+  useEffect(() => {
+    latestPartiesRef.current = state.parties;
+  }, [state.parties]);
+
+  const runAllExpeditions = (parties: GameState['parties']) => {
+    parties.forEach((party, partyIndex) => {
       const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
       if (!selectedDungeon) return;
       const gateState = getDungeonEntryGateState(party, selectedDungeon);
@@ -1539,39 +1546,72 @@ function ExpeditionTab({
     });
   };
 
+  const handleRunAllExpeditions = () => {
+    runAllExpeditions(state.parties);
+  };
+
   useEffect(() => {
     if (!isAutoRepeatEnabled) {
       return;
     }
 
-    const intervalId = window.setInterval(() => {
-      handleRunAllExpeditions();
-    }, 5000);
+    let isCancelled = false;
+    let timeoutId: number | undefined;
+
+    setAutoRepeatCycleKey((prev) => prev + 1);
+
+    const queueNextRun = () => {
+      timeoutId = window.setTimeout(() => {
+        if (isCancelled) {
+          return;
+        }
+
+        runAllExpeditions(latestPartiesRef.current);
+        setAutoRepeatCycleKey((prev) => prev + 1);
+        queueNextRun();
+      }, AUTO_REPEAT_INTERVAL_MS);
+    };
+
+    queueNextRun();
 
     return () => {
-      window.clearInterval(intervalId);
+      isCancelled = true;
+      if (timeoutId !== undefined) {
+        window.clearTimeout(timeoutId);
+      }
     };
-  }, [isAutoRepeatEnabled, state.parties]);
+  }, [isAutoRepeatEnabled]);
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end items-center gap-3">
+      <div className="flex justify-end items-start gap-3">
         <button
           onClick={handleRunAllExpeditions}
           className="px-3 py-1 text-white rounded font-medium text-sm bg-sub hover:bg-blue-600"
         >
           一斉出撃
         </button>
-        <button
-          onClick={() => setIsAutoRepeatEnabled((prev) => !prev)}
-          className={`px-3 py-1 rounded font-medium text-sm border ${
-            isAutoRepeatEnabled
-              ? 'bg-blue-50 border-sub text-sub'
-              : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-          }`}
-        >
-          自動周回 {isAutoRepeatEnabled ? 'ON' : 'OFF'}
-        </button>
+        <div className="flex flex-col">
+          <button
+            onClick={() => setIsAutoRepeatEnabled((prev) => !prev)}
+            className={`px-3 py-1 rounded font-medium text-sm border ${
+              isAutoRepeatEnabled
+                ? 'bg-blue-50 border-sub text-sub'
+                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            自動周回 {isAutoRepeatEnabled ? 'ON' : 'OFF'}
+          </button>
+          {isAutoRepeatEnabled && (
+            <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-blue-100">
+              <div
+                key={autoRepeatCycleKey}
+                className="h-full rounded-full bg-blue-500"
+                style={{ animation: `auto-repeat-progress ${AUTO_REPEAT_INTERVAL_MS}ms linear forwards` }}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Party Expedition Slots */}
@@ -1691,6 +1731,16 @@ function ExpeditionTab({
                           roomLabel = isBoss ? 'BOSS' : entry.room.toString();
                         }
                         const hpPercent = Math.round((entry.remainingPartyHP / entry.maxPartyHP) * 100);
+                        const healAmount = Math.max(0, entry.healAmount ?? 0);
+                        const attritionAmount = Math.max(0, entry.attritionAmount ?? 0);
+                        const estimatedStartHP = Math.min(
+                          entry.maxPartyHP,
+                          Math.max(0, entry.remainingPartyHP + entry.damageTaken + attritionAmount - healAmount)
+                        );
+                        const takenDamageAmount = Math.max(0, estimatedStartHP - entry.remainingPartyHP);
+                        const remainingRatio = entry.maxPartyHP > 0 ? (entry.remainingPartyHP / entry.maxPartyHP) * 100 : 0;
+                        const healRatio = entry.maxPartyHP > 0 ? (healAmount / entry.maxPartyHP) * 100 : 0;
+                        const takenRatio = entry.maxPartyHP > 0 ? (takenDamageAmount / entry.maxPartyHP) * 100 : 0;
                         const isRoomExpanded = expandedRoom?.partyIndex === partyIndex && expandedRoom?.roomIndex === originalIndex;
 
                         return (
@@ -1716,6 +1766,11 @@ function ExpeditionTab({
                                   </span>
                                   <span className={`transform transition-transform ${isRoomExpanded ? 'rotate-180' : ''}`}>▼</span>
                                 </span>
+                              </div>
+                              <div className="mt-1 flex h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
+                                <div className="h-full bg-blue-500" style={{ width: `${Math.min(100, remainingRatio)}%` }} />
+                                <div className="h-full bg-green-500" style={{ width: `${Math.min(100, healRatio)}%` }} />
+                                <div className="h-full bg-orange-700" style={{ width: `${Math.min(100, takenRatio)}%` }} />
                               </div>
                               <div className="text-gray-500 mt-1">
                                 敵攻撃:{entry.enemyAttackValues} | 与ダメ:{formatNumber(entry.damageDealt)} | 被ダメ:{formatNumber(entry.damageTaken)}
