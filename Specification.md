@@ -773,7 +773,7 @@ inventory = {
 ```
 結果: `p.dungeon_name`   残HP: `p.remaining_HP`   `p.outcome_of_expedition`
 ▼
- `p.reached_room` / `p.number_of_rooms` 部屋 | EXP: `p.gained_experience` | 自動売却額: `p.auto-sell_profit`
+EXP: `p.gained_experience` | 自動売却額: `p.auto-sell_profit`
 獲得アイテム: `p.retrieving_trophies`
 ```
 
