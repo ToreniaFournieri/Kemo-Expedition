@@ -771,7 +771,7 @@ inventory = {
     - With Super Rare titled item, override to BOLD Dark orenge.
 
 ```
-前回の探検結果: `p.dungeon_name`   残HP: `p.remaining_HP`   `p.outcome_of_expedition`
+結果: `p.dungeon_name`   残HP: `p.remaining_HP`   `p.outcome_of_expedition`
 ▼
  `p.reached_room` / `p.number_of_rooms` 部屋 | EXP: `p.gained_experience` | 自動売却額: `p.auto-sell_profit`
 獲得アイテム: `p.retrieving_trophies`
@@ -793,7 +793,8 @@ inventory = {
 
 ```
 X: `p.enemy_name` | 敵HP:`p.enemy_HP` | 残HP:`p.remaining_HP_of_room`| `p.outcome_of_room` |  ▼
-敵攻撃: `p.enemy_attack_values` | 与ダメ: `p.total_damage_dealt` | 被ダメ: `p.total_damage_taken`  | 獲得: `p.reward_from_room`. 
+敵攻撃: `p.enemy_attack_values` | 与ダメ: `p.total_damage_dealt` | 被ダメ: `p.total_damage_taken`  | 獲得: `p.reward_from_room`.
+
 ```
 
 - `f.battle_logs`
