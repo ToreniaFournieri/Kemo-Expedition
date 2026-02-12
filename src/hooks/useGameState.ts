@@ -192,12 +192,12 @@ function loadSavedState(): GameState | null {
           if (!party.deity) {
             party.deity = createInitialDeity('God of Restoration');
             if (party.deityName) party.deity.name = normalizeDeityName(party.deityName);
-            if (typeof party.level === 'number') party.deity.level = party.level;
-            if (typeof party.experience === 'number') party.deity.experience = party.experience;
           }
           party.deity.name = normalizeDeityName(party.deity.name);
-          if (!party.deity.lootGateStatus) party.deity.lootGateStatus = {};
-          if (!party.deity.lootGateProgress) party.deity.lootGateProgress = {};
+          if (typeof party.level !== 'number') party.level = party.deity.level ?? 1;
+          if (typeof party.experience !== 'number') party.experience = party.deity.experience ?? 0;
+          if (!party.lootGateStatus) party.lootGateStatus = party.deity.lootGateStatus ?? {};
+          if (!party.lootGateProgress) party.lootGateProgress = party.deity.lootGateProgress ?? {};
 
           // Merge latest item definitions onto saved items (for new fields like baseMultiplier)
           for (const character of party.characters ?? []) {
@@ -242,11 +242,7 @@ const LEVEL_EXP: number[] = [
 function createInitialDeity(name: string) {
   return {
     name: normalizeDeityName(name),
-    level: 1,
-    experience: 0,
     uniqueAbilities: [],
-    lootGateStatus: {},
-    lootGateProgress: {},
   };
 }
 
@@ -299,7 +295,11 @@ function createInitialParty() {
   return {
     id: 1,
     name: 'PT1',
-    deity: createInitialDeity('再生の神'),
+    level: 1,
+    experience: 0,
+    lootGateProgress: {},
+    lootGateStatus: {},
+    deity: createInitialDeity('God of Restoration'),
     characters,
     selectedDungeonId: 1,
     lastExpeditionLog: null,
@@ -331,7 +331,11 @@ function createSecondParty() {
   return {
     id: 2,
     name: 'PT2',
-    deity: createInitialDeity('消耗の神'),
+    level: 1,
+    experience: 0,
+    lootGateProgress: {},
+    lootGateStatus: {},
+    deity: createInitialDeity('God of Attrition'),
     characters,
     selectedDungeonId: 2,
     lastExpeditionLog: null,
@@ -704,8 +708,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               const prevDungeonName = getDungeonById(prevTier)?.name ?? '前回の探検地';
               const gateRequired = ENTRY_GATE_REQUIRED;
               const entryGateKey = getEntryGateKey(dungeon.id);
-              const collected = getLootCollectionCount(currentParty.deity, prevTier, 'mythic');
-              const gateUnlocked = isLootGateUnlocked(currentParty.deity, entryGateKey) || collected >= gateRequired;
+              const collected = getLootCollectionCount(currentParty, prevTier, 'mythic');
+              const gateUnlocked = isLootGateUnlocked(currentParty, entryGateKey) || collected >= gateRequired;
               if (!gateUnlocked) {
                 const gateEntry: ExpeditionLogEntry = {
                   room: roomCounter,
@@ -745,8 +749,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               const gateKey = roomDef.type === 'battle_Boss'
                 ? getBossGateKey(dungeon.id)
                 : getEliteGateKey(dungeon.id, floor.floorNumber);
-              const collected = getLootCollectionCount(currentParty.deity, tier, gateRarity);
-              const gateUnlocked = isLootGateUnlocked(currentParty.deity, gateKey) || collected >= gateRequired;
+              const collected = getLootCollectionCount(currentParty, tier, gateRarity);
+              const gateUnlocked = isLootGateUnlocked(currentParty, gateKey) || collected >= gateRequired;
               if (!gateUnlocked) {
                 // Gate locked - expedition ends
                 const rarityLabel = gateRarity === 'rare' ? 'レアアイテム' : 'アンコモンアイテム';
@@ -949,17 +953,17 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const finalAutoSellProfit = isDefeat ? 0 : totalAutoSellProfit;
 
       const nextLootGateProgress = isDefeat
-        ? currentParty.deity.lootGateProgress
-        : addRecoveredItemsToLootProgress(currentParty.deity.lootGateProgress ?? {}, recoveredItems);
+        ? currentParty.lootGateProgress
+        : addRecoveredItemsToLootProgress(currentParty.lootGateProgress ?? {}, recoveredItems);
       const nextLootGateStatus = unlockAvailableLootGates(
-        currentParty.deity.lootGateStatus ?? {},
+        currentParty.lootGateStatus ?? {},
         nextLootGateProgress,
         DUNGEONS.length
       );
 
       // Update level
-      let newExp = currentParty.deity.experience + totalExp;
-      let newLevel = currentParty.deity.level;
+      let newExp = currentParty.experience + totalExp;
+      let newLevel = currentParty.level;
       while (newLevel < 29 && newExp >= LEVEL_EXP[newLevel]) {
         newLevel++;
       }
@@ -985,13 +989,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const updatedParties = [...state.parties];
       updatedParties[action.partyIndex] = {
         ...currentParty,
-        deity: {
-          ...currentParty.deity,
-          level: newLevel,
-          experience: newExp,
-          lootGateProgress: nextLootGateProgress,
-          lootGateStatus: nextLootGateStatus,
-        },
+        level: newLevel,
+        experience: newExp,
+        lootGateProgress: nextLootGateProgress,
+        lootGateStatus: nextLootGateStatus,
         lastExpeditionLog: log,
       };
 

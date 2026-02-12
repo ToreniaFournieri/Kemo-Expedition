@@ -199,6 +199,10 @@ export interface ComputedCharacterStats {
 export interface Party {
   id: number;
   name: string;
+  level: number;
+  experience: number;
+  lootGateProgress: Record<string, number>;
+  lootGateStatus: Record<number, boolean>;
   deity: Deity;
   characters: Character[];
   selectedDungeonId: number;
@@ -207,11 +211,7 @@ export interface Party {
 
 export interface Deity {
   name: string;
-  level: number;
-  experience: number;
   uniqueAbilities: string[];
-  lootGateStatus: Record<number, boolean>;
-  lootGateProgress: Record<string, number>;
 }
 
 export interface GlobalState {

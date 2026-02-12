@@ -137,8 +137,8 @@ function getDungeonEntryGateState(
   const previousDungeon = DUNGEONS.find(d => d.id === dungeon.id - 1);
   const previousDungeonName = previousDungeon?.name ?? '前回の探検地';
   const required = ENTRY_GATE_REQUIRED;
-  const collected = getLootCollectionCount(party.deity, dungeon.id - 1, 'mythic');
-  const unlocked = isLootGateUnlocked(party.deity, getEntryGateKey(dungeon.id)) || collected >= required;
+  const collected = getLootCollectionCount(party, dungeon.id - 1, 'mythic');
+  const unlocked = isLootGateUnlocked(party, getEntryGateKey(dungeon.id)) || collected >= required;
 
   return {
     locked: !unlocked,
@@ -156,8 +156,8 @@ function getNextGoalText(party: Party): string | null {
     const hasEliteGate = floor.floorNumber < 6;
     if (hasEliteGate) {
       const required = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 3;
-      const collected = getLootCollectionCount(party.deity, tier, 'uncommon');
-      const unlocked = isLootGateUnlocked(party.deity, getEliteGateKey(currentDungeon.id, floor.floorNumber)) || collected >= required;
+      const collected = getLootCollectionCount(party, tier, 'uncommon');
+      const unlocked = isLootGateUnlocked(party, getEliteGateKey(currentDungeon.id, floor.floorNumber)) || collected >= required;
       if (!unlocked) {
         return `次の目標: ${currentDungeon.name} ${floor.floorNumber}F-4の解放: アンコモンアイテム(持ち帰り) ${collected}/${required}`;
       }
@@ -165,8 +165,8 @@ function getNextGoalText(party: Party): string | null {
   }
 
   const bossRequired = BOSS_GATE_REQUIRED;
-  const rareCollected = getLootCollectionCount(party.deity, tier, 'rare');
-  const bossUnlocked = isLootGateUnlocked(party.deity, getBossGateKey(currentDungeon.id)) || rareCollected >= bossRequired;
+  const rareCollected = getLootCollectionCount(party, tier, 'rare');
+  const bossUnlocked = isLootGateUnlocked(party, getBossGateKey(currentDungeon.id)) || rareCollected >= bossRequired;
   if (!bossUnlocked) {
     return `次の目標: ${currentDungeon.name} 6F-4の解放: レアアイテム(持ち帰り) ${rareCollected}/${bossRequired}`;
   }
@@ -827,7 +827,7 @@ function PartyTab({
       <div className="mb-3 text-sm flex items-center justify-between gap-2">
         <div className="min-w-0">
           <span className="font-medium">{displayedDeityName}</span>
-          <span className="text-gray-500"> (レベル: {formatNumber(party.deity.level)}, 経験値: {formatNumber(party.deity.experience)}/{formatNumber(party.deity.level < 29 ? PARTY_LEVEL_EXP[party.deity.level] : party.deity.experience)})</span>
+          <span className="text-gray-500"> (レベル: {formatNumber(party.level)}, 経験値: {formatNumber(party.experience)}/{formatNumber(party.level < 29 ? PARTY_LEVEL_EXP[party.level] : party.experience)})</span>
           <div className="text-xs text-gray-600 mt-1">効果:{getDeityEffectDescription(displayedDeityName)}</div>
         </div>
         {editingDeity ? (
@@ -1558,7 +1558,7 @@ function ExpeditionTab({
         return (
           <div key={partyIndex} className="bg-pane rounded-lg p-4">
             <div className="text-sm mb-2 flex justify-between items-center">
-              <span className="font-bold text-black">{party.name} {party.deity.name}(Level: {formatNumber(party.deity.level)})</span>
+              <span className="font-bold text-black">{party.name} {party.deity.name}(Level: {formatNumber(party.level)})</span>
               <span className="text-gray-500">HP: {formatNumber(partyStats.hp)}</span>
             </div>
             {/* Party Expedition Header */}
