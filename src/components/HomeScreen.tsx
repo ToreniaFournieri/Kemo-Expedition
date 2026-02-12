@@ -1681,7 +1681,7 @@ function ExpeditionTab({
             {hasLastLog ? (
               <button
                 onClick={() => setExpandedLogParty(isLogExpanded ? null : partyIndex)}
-                className="w-full flex justify-between items-center text-sm mb-3"
+                className={`w-full flex justify-between items-center text-sm ${isLogExpanded ? 'mb-3' : ''}`}
               >
                 <span>
                   <span className="font-bold text-black">{party.name}</span>
