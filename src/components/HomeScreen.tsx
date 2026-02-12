@@ -529,7 +529,15 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     { id: 'setting', label: '神聖局' },
   ];
 
-  const hasUnreadDiary = state.parties.some(party => party.hasUnreadDiary);
+  const unreadDiaryCount = state.parties.reduce((count, party) => (
+    count + party.diaryLogs.filter((log) => !log.isRead).length
+  ), 0);
+  const hasUnreadDiary = unreadDiaryCount > 0;
+  const toCircledNumber = (value: number) => {
+    const circledNumbers = ['⓪', '①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩', '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱', '⑲', '⑳'];
+    if (value >= 0 && value < circledNumbers.length) return circledNumbers[value];
+    return value.toString();
+  };
 
   return (
     <div className="flex flex-col h-screen">
@@ -562,7 +570,9 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             >
               {tab.label}
               {tab.id === 'diary' && hasUnreadDiary && (
-                <span className="absolute top-1 right-2 w-2 h-2 bg-red-600 rounded-full"></span>
+                <span className="absolute -top-0.5 right-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] leading-none text-white">
+                  {toCircledNumber(unreadDiaryCount)}
+                </span>
               )}
             </button>
           ))}
@@ -2241,7 +2251,7 @@ function DiaryTab({
               className="w-full text-left text-sm"
             >
               <span className="flex items-start justify-between gap-2">
-                <span className="font-medium pr-2">
+                <span className={`pr-2 ${diaryLog.isRead ? 'font-normal text-gray-500' : 'font-medium text-gray-900'}`}>
                   {getDiaryHeadline(diaryLog.partyName, diaryLog.triggers, log.rewards)}
                 </span>
                 <span className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
