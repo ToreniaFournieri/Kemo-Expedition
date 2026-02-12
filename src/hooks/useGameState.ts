@@ -232,6 +232,11 @@ function loadSavedState(): GameState | null {
           if (!party.lootGateProgress) party.lootGateProgress = party.deity.lootGateProgress ?? {};
           if (!Array.isArray(party.diaryLogs)) party.diaryLogs = [];
           if (typeof party.hasUnreadDiary !== 'boolean') party.hasUnreadDiary = false;
+          party.diaryLogs = party.diaryLogs.map((log: DiaryLog) => ({
+            ...log,
+            isRead: typeof log.isRead === 'boolean' ? log.isRead : !party.hasUnreadDiary,
+          }));
+          party.hasUnreadDiary = party.diaryLogs.some((log: DiaryLog) => !log.isRead);
           party.diarySettings = getDiarySettingsWithDefaults(party.diarySettings);
 
           // Merge latest item definitions onto saved items (for new fields like baseMultiplier)
@@ -1150,6 +1155,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             expeditionLog: log,
             triggers: diaryTriggers,
             createdAt: Date.now(),
+            isRead: false,
           }, ...(currentParty.diaryLogs ?? [])].slice(0, 10))
         : (currentParty.diaryLogs ?? []);
 
@@ -1162,7 +1168,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         lootGateStatus: nextLootGateStatus,
         lastExpeditionLog: log,
         diaryLogs: nextDiaryLogs,
-        hasUnreadDiary: diaryTriggers.length > 0 ? true : currentParty.hasUnreadDiary,
+        hasUnreadDiary: nextDiaryLogs.some((diaryLog) => !diaryLog.isRead),
       };
 
       return {
@@ -1328,6 +1334,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'MARK_DIARY_SEEN': {
       const updatedParties = state.parties.map((party) => ({
         ...party,
+        diaryLogs: party.diaryLogs.map((diaryLog) => ({
+          ...diaryLog,
+          isRead: true,
+        })),
         hasUnreadDiary: false,
       }));
 

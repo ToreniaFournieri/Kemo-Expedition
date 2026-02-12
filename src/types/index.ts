@@ -217,6 +217,7 @@ export interface DiaryLog {
   expeditionLog: ExpeditionLog;
   triggers: Array<'defeat' | 'rare' | 'mythic' | 'superRare'>;
   createdAt: number;
+  isRead: boolean;
 }
 
 export type DiaryRarityThreshold = 'all' | 1 | 2 | 3 | 4 | 5 | 6 | 'none';
