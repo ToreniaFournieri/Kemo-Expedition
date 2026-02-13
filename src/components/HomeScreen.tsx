@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
 import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { DUNGEONS } from '../data/dungeons';
@@ -511,6 +511,9 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const [editingCharacter, setEditingCharacter] = useState<number | null>(null);
   const [isAutoRepeatEnabled, setIsAutoRepeatEnabled] = useState(false);
   const [partyCycles, setPartyCycles] = useState<Record<number, PartyCycleRuntime>>({});
+  const [expeditionExpandedLogParty, setExpeditionExpandedLogParty] = useState<number | null>(null);
+  const [expeditionExpandedRoom, setExpeditionExpandedRoom] = useState<{ partyIndex: number; roomIndex: number } | null>(null);
+  const [tabScrollPositions, setTabScrollPositions] = useState<Partial<Record<Tab, number>>>({});
   const tabContentRef = useRef<HTMLDivElement | null>(null);
 
   const currentParty = state.parties[state.selectedPartyIndex];
@@ -560,8 +563,15 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   }, []);
 
   useEffect(() => {
-    tabContentRef.current?.scrollTo({ top: 0, behavior: 'auto' });
-  }, [activeTab]);
+    const currentScrollTop = tabScrollPositions[activeTab] ?? 0;
+    tabContentRef.current?.scrollTo({ top: currentScrollTop, behavior: 'auto' });
+  }, [activeTab, tabScrollPositions]);
+
+  const switchTab = (nextTab: Tab) => {
+    const currentScrollTop = tabContentRef.current?.scrollTop ?? 0;
+    setTabScrollPositions((prev) => ({ ...prev, [activeTab]: currentScrollTop }));
+    setActiveTab(nextTab);
+  };
 
   const transitionTo = (partyIndex: number, nextState: PartyCycleState, durationMs: number) => {
     setPartyCycles((prev) => ({
@@ -705,7 +715,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             <button
               key={tab.id}
               onClick={() => {
-                setActiveTab(tab.id);
+                switchTab(tab.id);
               }}
               className={`flex-1 py-2 text-sm font-medium relative ${
                 activeTab === tab.id
@@ -725,7 +735,17 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       </div>
 
       {/* Tab Content */}
-      <div ref={tabContentRef} className="flex-1 overflow-y-auto p-4">
+      <div
+        ref={tabContentRef}
+        className="flex-1 overflow-y-auto p-4"
+        onScroll={() => {
+          const currentScrollTop = tabContentRef.current?.scrollTop ?? 0;
+          setTabScrollPositions((prev) => {
+            if (prev[activeTab] === currentScrollTop) return prev;
+            return { ...prev, [activeTab]: currentScrollTop };
+          });
+        }}
+      >
         {activeTab === 'party' && (
           <PartyTab
             parties={state.parties}
@@ -752,6 +772,10 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             onSelectDungeon={actions.selectDungeon}
             partyCycles={partyCycles}
             onTriggerSortie={triggerSortie}
+            expandedLogParty={expeditionExpandedLogParty}
+            setExpandedLogParty={setExpeditionExpandedLogParty}
+            expandedRoom={expeditionExpandedRoom}
+            setExpandedRoom={setExpeditionExpandedRoom}
           />
         )}
 
@@ -1695,15 +1719,20 @@ function ExpeditionTab({
   onSelectDungeon,
   partyCycles,
   onTriggerSortie,
+  expandedLogParty,
+  setExpandedLogParty,
+  expandedRoom,
+  setExpandedRoom,
 }: {
   state: GameState;
   onSelectDungeon: (partyIndex: number, dungeonId: number) => void;
   partyCycles: Record<number, PartyCycleRuntime>;
   onTriggerSortie: (partyIndex: number) => void;
+  expandedLogParty: number | null;
+  setExpandedLogParty: Dispatch<SetStateAction<number | null>>;
+  expandedRoom: { partyIndex: number; roomIndex: number } | null;
+  setExpandedRoom: Dispatch<SetStateAction<{ partyIndex: number; roomIndex: number } | null>>;
 }) {
-  const [expandedLogParty, setExpandedLogParty] = useState<number | null>(null);
-  const [expandedRoom, setExpandedRoom] = useState<{ partyIndex: number; roomIndex: number } | null>(null);
-
   const getEstimatedStartHp = (entry: ExpeditionLogEntry) => {
     const healAmount = Math.max(0, entry.healAmount ?? 0);
     const attritionAmount = Math.max(0, entry.attritionAmount ?? 0);
