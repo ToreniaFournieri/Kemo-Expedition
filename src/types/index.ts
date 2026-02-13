@@ -242,6 +242,7 @@ export interface Deity {
 export interface GlobalState {
   gold: number;
   inventory: InventoryRecord;
+  deityDonations: Record<string, number>;
 }
 
 // Computed party stats for battle

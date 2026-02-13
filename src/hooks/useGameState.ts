@@ -73,6 +73,14 @@ function getDiarySettingsWithDefaults(value: Partial<DiarySettings> | undefined)
   };
 }
 
+function getDeityDonationsWithDefaults(value: unknown): Record<string, number> {
+  if (!value || typeof value !== 'object') return {};
+  return Object.entries(value as Record<string, unknown>).reduce<Record<string, number>>((totals, [name, donation]) => {
+    totals[normalizeDeityName(name)] = typeof donation === 'number' ? donation : 0;
+    return totals;
+  }, {});
+}
+
 function matchesDiaryThreshold(item: Item, threshold: DiarySettings['superRareThreshold']): boolean {
   if (threshold === 'none') return false;
   if (threshold === 'all') return true;
@@ -209,11 +217,13 @@ function loadSavedState(): GameState | null {
           parsed.global = {
             gold: firstParty?.gold ?? 200,
             inventory: migrateOldInventory(firstParty?.inventory ?? []),
+            deityDonations: {},
           };
         }
         if (Array.isArray(parsed.global.inventory)) {
           parsed.global.inventory = migrateOldInventory(parsed.global.inventory);
         }
+        parsed.global.deityDonations = getDeityDonationsWithDefaults(parsed.global.deityDonations);
 
         // Process all parties (whether single or array)
         const partiesToProcess = parsed.parties ?? [];
@@ -245,6 +255,12 @@ function loadSavedState(): GameState | null {
           }
           if (typeof party.pendingProfit !== 'number') party.pendingProfit = 0;
           if (typeof party.deityGold !== 'number') party.deityGold = 0;
+
+          const normalizedDeityName = normalizeDeityName(party.deity.name);
+          if (typeof parsed.global.deityDonations[normalizedDeityName] !== 'number') {
+            parsed.global.deityDonations[normalizedDeityName] = party.deityGold;
+          }
+          party.deityGold = parsed.global.deityDonations[normalizedDeityName] ?? 0;
 
           // Merge latest item definitions onto saved items (for new fields like baseMultiplier)
           for (const character of party.characters ?? []) {
@@ -431,6 +447,7 @@ function createInitialState(): GameState {
     global: {
       gold: 200,
       inventory: createStarterInventory(),
+      deityDonations: {},
     },
     parties: [createInitialParty(), createSecondParty()],
     selectedPartyIndex: 0,
@@ -828,6 +845,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...targetParty.deity,
           name: normalizedDeityName,
         },
+        deityGold: state.global.deityDonations[normalizedDeityName] ?? 0,
         characters: resetCharacters,
       };
 
@@ -1018,7 +1036,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               currentHp = battleResult.partyHp;
               entries.push(entry);
 
-              const deityHpEffect = applyPeriodicDeityHpEffect(currentParty.deity.name, currentParty.deityGold ?? 0, roomCounter, totalRooms, currentHp, partyStats.hp);
+              const deityHpEffect = applyPeriodicDeityHpEffect(currentParty.deity.name, state.global.deityDonations[normalizeDeityName(currentParty.deity.name)] ?? currentParty.deityGold ?? 0, roomCounter, totalRooms, currentHp, partyStats.hp);
               currentHp = deityHpEffect.hp;
               entry.remainingPartyHP = currentHp;
               if (deityHpEffect.healAmount) {
@@ -1116,7 +1134,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             currentHp = battleResult.partyHp;
             entries.push(entry);
 
-            const deityHpEffect = applyPeriodicDeityHpEffect(currentParty.deity.name, currentParty.deityGold ?? 0, room, totalRoomsIncludingBoss, currentHp, partyStats.hp);
+            const deityHpEffect = applyPeriodicDeityHpEffect(currentParty.deity.name, state.global.deityDonations[normalizeDeityName(currentParty.deity.name)] ?? currentParty.deityGold ?? 0, room, totalRoomsIncludingBoss, currentHp, partyStats.hp);
             currentHp = deityHpEffect.hp;
             entry.remainingPartyHP = currentHp;
             if (deityHpEffect.healAmount) {
@@ -1320,10 +1338,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const donation = Math.max(0, Math.floor(action.donation));
       const deposit = Math.max(0, Math.floor(action.deposit));
       const updatedParties = [...state.parties];
+      const deityName = normalizeDeityName(currentParty.deity.name);
+      const deityDonations = {
+        ...state.global.deityDonations,
+        [deityName]: (state.global.deityDonations[deityName] ?? 0) + donation,
+      };
       updatedParties[action.partyIndex] = {
         ...currentParty,
         pendingProfit: 0,
-        deityGold: (currentParty.deityGold ?? 0) + donation,
+        deityGold: deityDonations[deityName],
       };
       return {
         ...state,
@@ -1331,6 +1354,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         global: {
           ...state.global,
           gold: state.global.gold + deposit,
+          deityDonations,
         },
       };
     }
@@ -1575,6 +1599,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         global: {
           gold: 200,
           inventory: createStarterInventory(),
+          deityDonations: {},
         },
         parties: [createInitialParty(), createSecondParty()],
         selectedPartyIndex: 0,
