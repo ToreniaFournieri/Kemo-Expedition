@@ -749,7 +749,7 @@ inventory = {
   - If party is already in 移動中 / 探索中 / 帰還中: ignore tap
 
 
-- *+Transition rules**
+- **Transition rules**
   - 自動周回ON: 休息中→宴会中(if possible)→睡眠中→祈り中→待機中→移動中→探索中→帰還中→休息中
   - 自動周回OFF: 移動中→探索中→帰還中→休息中 → 宴会中(条件付き) → 睡眠中 → 祈り中 → 待機中 (stop here)
 
