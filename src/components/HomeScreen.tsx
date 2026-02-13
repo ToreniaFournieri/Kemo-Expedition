@@ -1584,6 +1584,7 @@ function ExpeditionTab({
 }) {
   const AUTO_REPEAT_INTERVAL_MS = 5000;
   const [expandedLogParty, setExpandedLogParty] = useState<number | null>(null);
+  const [expandedRoom, setExpandedRoom] = useState<{ partyIndex: number; roomIndex: number } | null>(null);
   const [isAutoRepeatEnabled, setIsAutoRepeatEnabled] = useState(false);
   const [autoRepeatCycleKey, setAutoRepeatCycleKey] = useState(0);
   const [partyCycles, setPartyCycles] = useState<Record<number, PartyCycleRuntime>>({});
