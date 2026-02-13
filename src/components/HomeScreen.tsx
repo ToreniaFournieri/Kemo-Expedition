@@ -809,6 +809,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
 
         {activeTab === 'setting' && (
           <SettingTab
+            parties={state.parties}
             bags={bags}
             onResetGame={actions.resetGame}
             onResetCommonBags={actions.resetCommonBags}
@@ -2533,12 +2534,14 @@ function DiaryTab({
 }
 
 function SettingTab({
+  parties,
   bags,
   onResetGame,
   onResetCommonBags,
   onResetUniqueBags,
   onResetSuperRareBag,
 }: {
+  parties: Party[];
   bags: GameBags;
   onResetGame: () => void;
   onResetCommonBags: () => void;
@@ -2602,6 +2605,15 @@ function SettingTab({
   const superRareRemaining = bags.superRareBag.tickets.length;
   const superRareInitial = SUPER_RARE_TITLES.filter(t => t.value > 0).reduce((sum, t) => sum + t.tickets, 0);
   const superRareHits = bags.superRareBag.tickets.filter(t => t > 0).length;
+
+  const donationByDeity = parties.reduce<Record<string, number>>((totals, party) => {
+    const deityName = party.deity.name.trim() || '名称未設定の神';
+    totals[deityName] = (totals[deityName] ?? 0) + (party.deityGold ?? 0);
+    return totals;
+  }, {});
+
+  const donationRows = Object.entries(donationByDeity)
+    .sort((a, b) => b[1] - a[1]);
 
   const compendiumItems = ITEMS
     .filter(item =>
@@ -2735,7 +2747,23 @@ function SettingTab({
       <div className="text-lg font-bold mb-3">神の執務室</div>
 
       <div className="bg-pane rounded-lg p-4 mb-4">
-        <div className="text-sm font-medium mb-3">1. 未来視</div>
+        <div className="text-sm font-medium mb-3">1. 寄付箱</div>
+        <div className="bg-white rounded p-2 text-sm space-y-1">
+          {donationRows.length > 0 ? (
+            donationRows.map(([deityName, donationGold]) => (
+              <div key={deityName} className="flex items-center justify-between gap-3">
+                <span className="text-gray-700">{deityName}</span>
+                <span className="text-sub tabular-nums">{formatNumber(donationGold)}G</span>
+              </div>
+            ))
+          ) : (
+            <div className="text-gray-500">まだ寄付の記録がありません</div>
+          )}
+        </div>
+      </div>
+
+      <div className="bg-pane rounded-lg p-4 mb-4">
+        <div className="text-sm font-medium mb-3">2. 未来視</div>
 
         <div className="mb-4 border-b border-gray-200 pb-4">
           <div className="text-xs text-gray-600 font-medium mb-2">通常報酬 (Normal reward)</div>
@@ -2836,7 +2864,7 @@ function SettingTab({
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4">
-        <div className="text-sm font-medium mb-3">2. アイテム図鑑</div>
+        <div className="text-sm font-medium mb-3">3. アイテム図鑑</div>
         <div className="flex justify-end items-center gap-1 mb-3">
           <span className="text-xs text-gray-500">
             {compendiumRarityFilter === 'all' ? '全て表示' : `${RARITY_FILTER_NOTES[compendiumRarityFilter]}のみ`}
@@ -2909,7 +2937,7 @@ function SettingTab({
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4">
-        <div className="text-sm font-medium mb-3">3. 敵キャラクター図鑑</div>
+        <div className="text-sm font-medium mb-3">4. 敵キャラクター図鑑</div>
         <div className="flex gap-1 mb-3 overflow-x-auto pb-1">
           {DUNGEONS.map(dungeon => (
             <button
