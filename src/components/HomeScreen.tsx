@@ -519,7 +519,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const [partyCycles, setPartyCycles] = useState<Record<number, PartyCycleRuntime>>({});
   const [expeditionExpandedLogParty, setExpeditionExpandedLogParty] = useState<number | null>(null);
   const [expeditionExpandedRoom, setExpeditionExpandedRoom] = useState<{ partyIndex: number; roomIndex: number } | null>(null);
-  const [tabScrollPositions, setTabScrollPositions] = useState<Partial<Record<Tab, number>>>({});
+  const tabScrollPositionsRef = useRef<Partial<Record<Tab, number>>>({});
   const tabContentRef = useRef<HTMLDivElement | null>(null);
 
   const currentParty = state.parties[state.selectedPartyIndex];
@@ -569,13 +569,13 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   }, []);
 
   useEffect(() => {
-    const currentScrollTop = tabScrollPositions[activeTab] ?? 0;
+    const currentScrollTop = tabScrollPositionsRef.current[activeTab] ?? 0;
     tabContentRef.current?.scrollTo({ top: currentScrollTop, behavior: 'auto' });
-  }, [activeTab, tabScrollPositions]);
+  }, [activeTab]);
 
   const switchTab = (nextTab: Tab) => {
     const currentScrollTop = tabContentRef.current?.scrollTop ?? 0;
-    setTabScrollPositions((prev) => ({ ...prev, [activeTab]: currentScrollTop }));
+    tabScrollPositionsRef.current[activeTab] = currentScrollTop;
     setActiveTab(nextTab);
   };
 
@@ -752,10 +752,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         className="flex-1 overflow-y-auto p-4"
         onScroll={() => {
           const currentScrollTop = tabContentRef.current?.scrollTop ?? 0;
-          setTabScrollPositions((prev) => {
-            if (prev[activeTab] === currentScrollTop) return prev;
-            return { ...prev, [activeTab]: currentScrollTop };
-          });
+          tabScrollPositionsRef.current[activeTab] = currentScrollTop;
         }}
       >
         {activeTab === 'party' && (
