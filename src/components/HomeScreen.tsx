@@ -1647,13 +1647,11 @@ function ExpeditionTab({
       {/* Party Expedition Slots */}
       {[0, 1, 2, 3, 4, 5].map((partyIndex) => {
         const party = state.parties[partyIndex];
-        const collapsedRowClass = 'min-h-[72px] flex items-center';
-
         if (!party) {
           // Locked party slot
           return (
-            <div key={partyIndex} className={`bg-pane rounded-lg p-4 ${collapsedRowClass}`}>
-              <div className="text-gray-400">PT{partyIndex + 1}: (未開放)</div>
+            <div key={partyIndex} className="bg-pane rounded-lg p-4">
+              <div className="text-sm text-gray-400">PT{partyIndex + 1}: (未開放)</div>
             </div>
           );
         }
