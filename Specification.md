@@ -1384,10 +1384,10 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
 - Donation Scaling (Divine Bureau)
   - For each god g:
   - Let D_g be total donated gold to god g.
-  - Convert donation to tier T_g using thresholds. (tier, rank is start from 1: ランク1)
+  - Convert donation to tier T_g using thresholds. 
   - Use effectiveTier = min(T_g, 10).
-
-- thresholds: [0, 500, 1200, 2200, 3600, 5500, 8000, 11000, 14500, 18500, 23000]
+  - displayRank = tierIndex + 1
+  - thresholds: [0, 500, 1200, 2200, 3600, 5500, 8000, 11000, 14500, 18500, 23000]
 
 - God scaling:
   - Restoration:
