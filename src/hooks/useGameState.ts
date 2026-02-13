@@ -42,7 +42,7 @@ import {
 } from '../game/bags';
 import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
-import { getDeityKey, normalizeDeityName } from '../game/deity';
+import { getDeityKey, getEffectiveDeityTier, normalizeDeityName } from '../game/deity';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -704,6 +704,7 @@ function selectEnemy(dungeonId: number, room: number, totalRooms: number) {
 
 function applyPeriodicDeityHpEffect(
   deityName: string,
+  totalDonatedGold: number,
   roomNumber: number,
   totalRooms: number,
   currentHp: number,
@@ -714,9 +715,10 @@ function applyPeriodicDeityHpEffect(
   }
 
   const deityKey = getDeityKey(deityName);
+  const effectiveTier = getEffectiveDeityTier(totalDonatedGold);
   if (deityKey === 'God of Restoration') {
     const missingHp = maxHp - currentHp;
-    const healAmount = Math.floor(missingHp * 0.2);
+    const healAmount = Math.floor(missingHp * Math.min(0.3, Math.max(0.2, 0.2 + 0.005 * effectiveTier)));
     return {
       hp: Math.min(maxHp, currentHp + healAmount),
       healAmount: healAmount > 0 ? healAmount : undefined,
@@ -724,7 +726,8 @@ function applyPeriodicDeityHpEffect(
   }
 
   if (deityKey === 'God of Attrition') {
-    const nextHp = Math.max(1, Math.floor(currentHp * 0.95));
+    const hpLossPct = Math.max(0.03, 0.05 - 0.001 * effectiveTier);
+    const nextHp = Math.max(1, Math.floor(currentHp * (1 - hpLossPct)));
     const attritionAmount = Math.max(0, currentHp - nextHp);
     return {
       hp: nextHp,
@@ -1015,7 +1018,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               currentHp = battleResult.partyHp;
               entries.push(entry);
 
-              const deityHpEffect = applyPeriodicDeityHpEffect(currentParty.deity.name, roomCounter, totalRooms, currentHp, partyStats.hp);
+              const deityHpEffect = applyPeriodicDeityHpEffect(currentParty.deity.name, currentParty.deityGold ?? 0, roomCounter, totalRooms, currentHp, partyStats.hp);
               currentHp = deityHpEffect.hp;
               entry.remainingPartyHP = currentHp;
               if (deityHpEffect.healAmount) {
@@ -1113,7 +1116,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             currentHp = battleResult.partyHp;
             entries.push(entry);
 
-            const deityHpEffect = applyPeriodicDeityHpEffect(currentParty.deity.name, room, totalRoomsIncludingBoss, currentHp, partyStats.hp);
+            const deityHpEffect = applyPeriodicDeityHpEffect(currentParty.deity.name, currentParty.deityGold ?? 0, room, totalRoomsIncludingBoss, currentHp, partyStats.hp);
             currentHp = deityHpEffect.hp;
             entry.remainingPartyHP = currentHp;
             if (deityHpEffect.healAmount) {

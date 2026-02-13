@@ -404,6 +404,8 @@ function getAbilityName(id: AbilityId): string {
     m_barrier: '魔法障壁',
     null_counter: 'カウンター無効',
     unlock: '解錠',
+    squander: '散財',
+    tithe: '十分の一税',
   };
   return names[id];
 }
@@ -421,6 +423,8 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     m_barrier: (l) => `パーティへの魔法ダメージ × ${l === 2 ? '3/5' : '2/3'}`,
     null_counter: () => '反撃を無効化',
     unlock: () => '追加報酬チャンス',
+    squander: () => '宴会で消費するゴールドが2倍になる',
+    tithe: () => '祈り時に寄付額へ探検利益の+10%を加算',
   };
   return descriptions[id](level);
 }

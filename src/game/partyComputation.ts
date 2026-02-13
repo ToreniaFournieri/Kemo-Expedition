@@ -255,6 +255,8 @@ function getAbilityName(id: AbilityId): string {
     m_barrier: '魔法障壁',
     null_counter: 'カウンター無効',
     unlock: '解錠',
+    squander: '散財',
+    tithe: '十分の一税',
   };
   return names[id];
 }

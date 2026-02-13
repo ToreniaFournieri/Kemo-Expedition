@@ -10,7 +10,7 @@ import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { applyEnemyEncounterScaling } from '../game/enemyScaling';
-import { DEITY_OPTIONS, getDeityEffectDescription, normalizeDeityName } from '../game/deity';
+import { DEITY_OPTIONS, getDeityEffectDescription, getDeityRank, normalizeDeityName } from '../game/deity';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -347,6 +347,8 @@ const ABILITY_NAMES: Record<string, string> = {
   m_barrier: '魔法障壁',
   unlock: '解錠',
   null_counter: '無効化',
+  squander: '散財',
+  tithe: '十分の一税',
 };
 
 function formatBonuses(bonuses: Bonus[]): string {
@@ -586,6 +588,14 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     }));
   };
 
+  const getPartyAbilityOwnerName = (party: Party, abilityId: string): string | null => {
+    const { characterStats } = computePartyStats(party);
+    const owner = party.characters.find((character) =>
+      characterStats.find((stats) => stats.characterId === character.id)?.abilities.some((ability) => ability.id === abilityId)
+    );
+    return owner?.name ?? null;
+  };
+
   const triggerSortie = (partyIndex: number) => {
     const cycle = partyCycles[partyIndex];
     if (cycle && (cycle.state === '移動中' || cycle.state === '探索中' || cycle.state === '帰還中')) return;
@@ -618,8 +628,17 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             }
           } else if (updated.elapsedMs >= updated.durationMs) {
             if (updated.state === '宴会中') {
-              const spend = Math.floor((party.pendingProfit * (33 + Math.random() * 34)) / 100);
-              if (spend > 0) actions.addNotification(`${party.name}は${formatNumber(spend)}Gお金を使った`);
+              const baseSpend = Math.floor((party.pendingProfit * (33 + Math.random() * 34)) / 100);
+              const hasSquander = !!getPartyAbilityOwnerName(party, 'squander');
+              const spend = hasSquander ? baseSpend * 2 : baseSpend;
+              if (spend > 0) {
+                if (hasSquander) {
+                  const lordName = getPartyAbilityOwnerName(party, 'squander') ?? '名無し';
+                  actions.addNotification(`${party.name} 君主${lordName}は贅沢に${formatNumber(spend)}G使った`);
+                } else {
+                  actions.addNotification(`${party.name}は${formatNumber(spend)}Gお金を使った`);
+                }
+              }
               actions.spendPendingProfit(partyIndex, spend);
               updated.state = '睡眠中';
               updated.durationMs = 10000;
@@ -628,10 +647,17 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
               updated.durationMs = 5000;
             } else if (updated.state === '祈り中') {
               const donationRate = 10 + Math.random() * 23;
-              const donation = Math.floor((party.pendingProfit * donationRate) / 100);
+              const baseDonation = Math.floor((party.pendingProfit * donationRate) / 100);
+              const titheBonus = getPartyAbilityOwnerName(party, 'tithe') ? Math.floor(party.pendingProfit * 0.1) : 0;
+              const donation = Math.min(party.pendingProfit, baseDonation + titheBonus);
               const deposit = Math.max(0, party.pendingProfit - donation);
               actions.processPendingProfit(partyIndex, donation, deposit);
-              actions.addNotification(`${party.name}は${formatNumber(donation)}G神に捧げ、${formatNumber(deposit)}Gを貯金した`);
+              if (titheBonus > 0) {
+                const pilgrimName = getPartyAbilityOwnerName(party, 'tithe') ?? '名無し';
+                actions.addNotification(`${party.name} 巡礼者${pilgrimName}は祈りと共に${formatNumber(donation)}G神に捧げて、${formatNumber(deposit)}Gを貯金した`);
+              } else {
+                actions.addNotification(`${party.name}は${formatNumber(donation)}G神に捧げ、${formatNumber(deposit)}Gを貯金した`);
+              }
               updated.state = isAutoRepeatEnabled ? '移動中' : '待機中';
               updated.durationMs = updated.state === '移動中' ? 5000 : 1000;
             } else if (updated.state === '待機中') {
@@ -1047,7 +1073,7 @@ function PartyTab({
         <div className="min-w-0">
           <span className="font-medium">{displayedDeityName}</span>
           <span className="text-gray-500"> (レベル: {formatNumber(party.level)}, 経験値: {formatNumber(party.experience)}/{formatNumber(party.level < 29 ? PARTY_LEVEL_EXP[party.level] : party.experience)})</span>
-          <div className="text-xs text-gray-600 mt-1">効果:{getDeityEffectDescription(displayedDeityName)}</div>
+          <div className="text-xs text-gray-600 mt-1">効果:{getDeityEffectDescription(displayedDeityName, party.deityGold ?? 0)}</div>
         </div>
         {editingDeity ? (
           <div className="flex items-center gap-2">
@@ -2610,7 +2636,12 @@ function SettingTab({
   }, {});
 
   const donationRows = Object.entries(donationByDeity)
-    .sort((a, b) => b[1] - a[1]);
+    .sort((a, b) => b[1] - a[1])
+    .map(([deityName, donationGold]) => ({
+      deityName,
+      donationGold,
+      rank: getDeityRank(donationGold),
+    }));
 
   const compendiumItems = ITEMS
     .filter(item =>
@@ -2747,9 +2778,9 @@ function SettingTab({
         <div className="text-sm font-medium mb-3">1. 寄付箱</div>
         <div className="bg-white rounded p-2 text-sm space-y-1">
           {donationRows.length > 0 ? (
-            donationRows.map(([deityName, donationGold]) => (
+            donationRows.map(({ deityName, donationGold, rank }) => (
               <div key={deityName} className="flex items-center justify-between gap-3">
-                <span className="text-gray-700">{deityName}</span>
+                <span className="text-gray-700">{deityName} <span className="text-xs text-gray-500">Rank {rank}</span></span>
                 <span className="text-sub tabular-nums">{formatNumber(donationGold)}G</span>
               </div>
             ))
