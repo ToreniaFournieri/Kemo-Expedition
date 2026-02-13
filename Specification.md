@@ -804,7 +804,7 @@ inventory = {
 
 ### 4.1 AFK Handling
 **Simulation**
-- Store the last update timestamp and, on app launch, simulate each party’s state progression, recovery, exploration progress, and profit handling using the elapsed time.
+- Store the last update timestamp and, on the next checkpoint (e.g., page focus / reload / user action), simulate each party’s state progression, recovery, exploration progress, and profit handling using the elapsed time.
 - Limit: maximum 60 minutes. (for current version) 
 
 
