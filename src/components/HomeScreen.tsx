@@ -1661,6 +1661,7 @@ function ExpeditionTab({
         const lastLog = party.lastExpeditionLog;
         const hasLastLog = !!lastLog;
         const isLogExpanded = expandedLogParty === partyIndex;
+        const isCollapsedSummary = hasLastLog && !isLogExpanded;
         const remainingHpPercent = hasLastLog
           ? formatNumber(Math.round((lastLog!.remainingPartyHP / Math.max(1, lastLog!.maxPartyHP)) * 100))
           : '0';
@@ -1675,7 +1676,7 @@ function ExpeditionTab({
           : '';
 
         return (
-          <div key={partyIndex} className="bg-pane rounded-lg p-4">
+          <div key={partyIndex} className={`bg-pane rounded-lg p-4 ${isCollapsedSummary ? collapsedRowClass : ''}`}>
             {/* Party Expedition Header */}
             {hasLastLog ? (
               <button
