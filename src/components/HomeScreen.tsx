@@ -798,6 +798,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             onSelectParty={actions.selectParty}
             onUpdatePartyDeity={actions.updatePartyDeity}
             inventory={state.global.inventory}
+            deityDonations={state.global.deityDonations}
           />
         )}
 
@@ -832,7 +833,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
 
         {activeTab === 'setting' && (
           <SettingTab
-            parties={state.parties}
+            deityDonations={state.global.deityDonations}
             bags={bags}
             onResetGame={actions.resetGame}
             onResetCommonBags={actions.resetCommonBags}
@@ -861,6 +862,7 @@ function PartyTab({
   onSelectParty,
   onUpdatePartyDeity,
   inventory,
+  deityDonations,
 }: {
   parties: Party[];
   selectedPartyIndex: number;
@@ -877,6 +879,7 @@ function PartyTab({
   onSelectParty: (partyIndex: number) => void;
   onUpdatePartyDeity: (partyIndex: number, deityName: string) => void;
   inventory: InventoryRecord;
+  deityDonations: Record<string, number>;
 }) {
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
   const [equipCategory, setEquipCategory] = useState('armor');
@@ -1039,17 +1042,8 @@ function PartyTab({
   const normalizedCurrentDeityName = normalizeDeityName((party.deity.name ?? '').trim());
   const normalizedDisplayedDeityName = normalizeDeityName((displayedDeityName ?? '').trim());
   const displayedDeityGold = editingDeity
-    ? parties.reduce((sum, partyCandidate, index) => {
-      const candidateDeityName = normalizeDeityName((partyCandidate.deity.name ?? '').trim());
-      if (candidateDeityName !== normalizedDisplayedDeityName) {
-        return sum;
-      }
-      if (index === selectedPartyIndex && normalizedDisplayedDeityName !== normalizedCurrentDeityName) {
-        return sum;
-      }
-      return sum + (partyCandidate.deityGold ?? 0);
-    }, 0)
-    : (party.deityGold ?? 0);
+    ? (deityDonations[normalizedDisplayedDeityName] ?? 0)
+    : (deityDonations[normalizedCurrentDeityName] ?? 0);
 
 
   return (
@@ -2571,14 +2565,14 @@ function DiaryTab({
 }
 
 function SettingTab({
-  parties,
+  deityDonations,
   bags,
   onResetGame,
   onResetCommonBags,
   onResetUniqueBags,
   onResetSuperRareBag,
 }: {
-  parties: Party[];
+  deityDonations: Record<string, number>;
   bags: GameBags;
   onResetGame: () => void;
   onResetCommonBags: () => void;
@@ -2644,16 +2638,14 @@ function SettingTab({
   const superRareHits = bags.superRareBag.tickets.filter(t => t > 0).length;
 
   const donationByDeity = DEITY_OPTIONS.reduce<Record<string, number>>((totals, deity) => {
-    totals[deity.name] = 0;
+    const deityName = normalizeDeityName(deity.name);
+    totals[deityName] = deityDonations[deityName] ?? 0;
     return totals;
   }, {});
 
-  parties.forEach((party) => {
-    const deityName = normalizeDeityName(party.deity.name.trim() || '');
-    if (!donationByDeity[deityName]) {
-      donationByDeity[deityName] = 0;
-    }
-    donationByDeity[deityName] += party.deityGold ?? 0;
+  Object.entries(deityDonations).forEach(([deityName, donation]) => {
+    const normalizedDeityName = normalizeDeityName(deityName);
+    donationByDeity[normalizedDeityName] = Math.max(donationByDeity[normalizedDeityName] ?? 0, donation);
   });
 
   const donationRows = Object.entries(donationByDeity)
