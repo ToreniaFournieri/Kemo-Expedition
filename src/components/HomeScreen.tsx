@@ -351,6 +351,36 @@ const ABILITY_NAMES: Record<string, string> = {
   tithe: '十分の一税',
 };
 
+const C_BONUS_HELP_ROWS: Array<{ label: string; description: string }> = [
+  { label: '近攻+v%', description: '近接攻撃の最終ダメージを v% 乗算強化する(同一名ボーナスは重複無効)' },
+  { label: '遠攻+v%', description: '遠距離攻撃の最終ダメージを v% 乗算強化する(同一名ボーナスは重複無効)' },
+  { label: '魔攻+v%', description: '魔法攻撃の最終ダメージを v% 乗算強化する(同一名ボーナスは重複無効)' },
+  { label: '物防+v%', description: '物理防御の最終値を v% 乗算強化する(同一名ボーナスは重複無効)' },
+  { label: '魔防+v%', description: '魔法防御の最終値を v% 乗算強化する(同一名ボーナスは重複無効)' },
+  { label: '近回数+v', description: '近接攻撃回数が v 回増える(同一名ボーナスは重複無効)' },
+  { label: '遠回数+v', description: '遠距離攻撃回数が v 回増える(同一名ボーナスは重複無効)' },
+  { label: '魔回数+v', description: '魔法攻撃回数が v 回増える(同一名ボーナスは重複無効)' },
+  { label: '命中+v*1000', description: '値が多いほどより多くの攻撃が命中するようになる(同一名ボーナスは重複無効)' },
+  { label: '回避+v*1000', description: '値が多いほどより多くの攻撃を回避するようになる(同一名ボーナスは重複無効)' },
+  { label: '装備+v', description: '装備スロット数が v 増える(同一名ボーナスは重複無効)' },
+  { label: '根性+v', description: '近接攻撃の装備が出来るようになる。近接攻撃回数が v 回増える(同一名ボーナスは重複無効)' },
+  { label: '追撃+v', description: '遠距離攻撃の装備が出来るようになる。遠距離攻撃回数が v 回増える(同一名ボーナスは重複無効)' },
+  { label: '術者+v', description: '魔法攻撃の装備が出来るようになる。魔法攻撃回数が v 回増える(同一名ボーナスは重複無効)' },
+  { label: '貫通+v*100%', description: '敵の防御力を v*100% 分無視する(同一名ボーナスは重複無効)' },
+  { label: '鎧x1.x', description: '鎧カテゴリ装備の効果が 1.x 倍(同一名ボーナスは重複無効)' },
+  { label: '衣x1.x', description: '法衣カテゴリ装備の効果が 1.x 倍(同一名ボーナスは重複無効)' },
+  { label: '盾x1.x', description: '盾カテゴリ装備の効果が 1.x 倍(同一名ボーナスは重複無効)' },
+  { label: '剣x1.x', description: '剣カテゴリ装備の効果が 1.x 倍(同一名ボーナスは重複無効)' },
+  { label: '刀x1.x', description: '刀カテゴリ装備の効果が 1.x 倍(同一名ボーナスは重複無効)' },
+  { label: '手x1.x', description: '籠手カテゴリ装備の効果が 1.x 倍(同一名ボーナスは重複無効)' },
+  { label: '矢x1.x', description: '矢カテゴリ装備の効果が 1.x 倍(同一名ボーナスは重複無効)' },
+  { label: 'ボx1.x', description: 'ボルトカテゴリ装備の効果が 1.x 倍(同一名ボーナスは重複無効)' },
+  { label: '弓x1.x', description: '弓カテゴリ装備の効果が 1.x 倍(同一名ボーナスは重複無効)' },
+  { label: '杖x1.x', description: '杖カテゴリ装備の効果が 1.x 倍(同一名ボーナスは重複無効)' },
+  { label: '書x1.x', description: '魔導書カテゴリ装備の効果が 1.x 倍(同一名ボーナスは重複無効)' },
+  { label: '媒x1.x', description: '触媒カテゴリ装備の効果が 1.x 倍(同一名ボーナスは重複無効)' },
+];
+
 function formatBonuses(bonuses: Bonus[]): string {
   const parts: string[] = [];
   for (const b of bonuses) {
@@ -883,6 +913,7 @@ function PartyTab({
 }) {
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
   const [equipCategory, setEquipCategory] = useState('armor');
+  const [showBonusHelp, setShowBonusHelp] = useState(false);
   const [partyRarityFilter, setPartyRarityFilter] = useState<RarityFilter>('all');
   const [partySuperRareOnly, setPartySuperRareOnly] = useState(false);
   // Calculate current stats for notification: HP is party-wide, others are per selected character
@@ -1503,8 +1534,31 @@ function PartyTab({
 
               if (parts.length === 0) return null;
               return (
-                <div className="text-xs text-gray-600 mt-1">
-                  ボーナス: {parts.join(', ')}
+                <div className="text-xs text-gray-600 mt-1 relative">
+                  <div className="inline-flex items-center gap-1">
+                    <span>ボーナス: {parts.join(', ')}</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowBonusHelp((prev) => !prev)}
+                      className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-gray-400 text-[10px] leading-none text-gray-600 hover:bg-gray-100"
+                      aria-label="c.ボーナスの説明を表示"
+                    >
+                      ?
+                    </button>
+                  </div>
+                  {showBonusHelp && (
+                    <div className="absolute left-0 top-5 z-20 w-[min(38rem,88vw)] rounded-md border border-gray-200 bg-white p-3 shadow-lg">
+                      <div className="mb-2 text-[11px] font-semibold text-gray-700">c. ボーナス説明</div>
+                      <div className="max-h-56 space-y-1 overflow-y-auto pr-1 text-[11px] leading-4 text-gray-700">
+                        {C_BONUS_HELP_ROWS.map((row) => (
+                          <div key={row.label}>
+                            <span className="font-semibold">{row.label}</span>
+                            <span className="text-gray-500"> - {row.description}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })()}
