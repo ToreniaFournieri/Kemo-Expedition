@@ -513,6 +513,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
 
   const currentParty = state.parties[state.selectedPartyIndex];
   const prevPartyLogsRef = useRef(state.parties.map((party) => party.lastExpeditionLog));
+  const pendingNotificationTimersRef = useRef<Record<number, number>>({});
   const { partyStats, characterStats } = computePartyStats(currentParty);
 
   // Item drop notifications after expedition
@@ -524,23 +525,37 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         return;
       }
 
-      // Show notification for each reward (non-auto-sold items)
-      for (const item of currentLog.rewards) {
-        const isSuperRare = item.superRare > 0;
-        const itemName = getItemDisplayName(item);
-        const rarity = getItemRarityById(item.id);
-        actions.addNotification(
-          `${party.name}:${itemName}を入手！`,
-          rarity === 'rare' || rarity === 'mythic' || isSuperRare ? 'rare' : 'normal',
-          'item',
-          undefined,
-          { rarity, isSuperRareItem: isSuperRare }
-        );
+      const existingTimer = pendingNotificationTimersRef.current[index];
+      if (existingTimer) {
+        window.clearTimeout(existingTimer);
       }
+
+      // Delay reward notifications until exploration visually finishes.
+      pendingNotificationTimersRef.current[index] = window.setTimeout(() => {
+        for (const item of currentLog.rewards) {
+          const isSuperRare = item.superRare > 0;
+          const itemName = getItemDisplayName(item);
+          const rarity = getItemRarityById(item.id);
+          actions.addNotification(
+            `${party.name}:${itemName}を入手！`,
+            rarity === 'rare' || rarity === 'mythic' || isSuperRare ? 'rare' : 'normal',
+            'item',
+            undefined,
+            { rarity, isSuperRareItem: isSuperRare }
+          );
+        }
+        delete pendingNotificationTimersRef.current[index];
+      }, EXPLORING_PROGRESS_TOTAL_STEPS * EXPLORING_PROGRESS_STEP_MS);
     });
 
     prevPartyLogsRef.current = state.parties.map((party) => party.lastExpeditionLog);
   }, [state.parties, actions]);
+
+  useEffect(() => () => {
+    Object.values(pendingNotificationTimersRef.current).forEach((timerId) => {
+      window.clearTimeout(timerId);
+    });
+  }, []);
 
   useEffect(() => {
     tabContentRef.current?.scrollTo({ top: 0, behavior: 'auto' });
@@ -1798,12 +1813,14 @@ function ExpeditionTab({
             {currentLog && isLogExpanded && (
               <div className="border-t border-gray-200 pt-3">
                 <div className="space-y-2">
-                  <div className="text-sm text-gray-500">
-                    EXP: +{formatNumber(currentLog.totalExperience)}
-                    {currentLog.autoSellProfit > 0 && <span> | 自動売却額: {formatNumber(currentLog.autoSellProfit)}G</span>}
-                  </div>
+                  {cycle.state !== '探索中' && (
+                    <div className="text-sm text-gray-500">
+                      EXP: +{formatNumber(currentLog.totalExperience)}
+                      {currentLog.autoSellProfit > 0 && <span> | 自動売却額: {formatNumber(currentLog.autoSellProfit)}G</span>}
+                    </div>
+                  )}
 
-                  {currentLog.rewards.length > 0 && (
+                  {cycle.state !== '探索中' && currentLog.rewards.length > 0 && (
                     <div className="text-sm">
                       <span className="text-gray-500">獲得アイテム: </span>
                       {currentLog.rewards.map((item, i) => {
