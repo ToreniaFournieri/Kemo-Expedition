@@ -240,7 +240,7 @@
 |剣士(剣,Duelist) | `c.grit+1`, `c.sword_x1.4` | `a.counter`1: enemy CLOSE-range attack (`f.NoA` x 0.5)  | `a.counter`2: enemy CLOSE-range attack and MID-range (`f.NoA` x 0.5)  | 
 |忍者(忍,Ninja) | `c.grit+1`, `c.penet_+0.15` | `a.re-attack`1: once when attacking (`f.NoA` x 0.5) | `a.re-attack`2: twice when attacking (`f.NoA` x 0.5) | 
 |侍(侍,Samurai) | `c.grit+1`, `c.katana_x1.4` |`a.iaigiri`: Physical damage ×2,  number of attacks ÷2 | `a.iaigiri`: Physical damage ×2.5,  number of attacks ÷2 |
-|君主(君,Lord) | `c.grit+1`, `c.gauntlet_x1.4`, `c.equip_slot+1` |`a.command`1: Physical damage x1.3 |`a.command`2: Physical damage x1.6 | 
+|君主(君,Lord) | `c.grit+1`, `c.gauntlet_x1.4`, `c.equip_slot+1` |`a.command`1: Physical damage x1.3. `a.squander`:double the gold spent on feasting. |`a.command`2: Physical damage x1.6. `a.squander`:double the gold spent on feasting. | 
 |狩人(狩,Ranger) | `c.pursuit+2`, `c.arrow_x1.4` | `a.hunter`1: Reduces row-based damage decay from 15% to 10% per step. |`a.hunter`2: Reduces row-based damage decay from 15% to 7% per step. | 
 |魔法使い(魔,Wizard) | `c.caster+1`, `c.wand_x1.4` | `a.resonance`1:All hits +5% damage per `d.magical_NoA`. | `a.resonance`2:All hits +8% damage per `d.magical_NoA`. | 
 |賢者(賢,Sage) | `c.caster+2`, `c.robe_x1.4`, `c.grimoire_x1.2`, `c.equip_slot+2` | `a.m-barrier`1: Incoming magical damage to party × 2/3 | `a.m-barrier`2: Incoming magical damage to party × 3/5 | 
@@ -735,9 +735,9 @@ inventory = {
 
 - **State list**
   - 休息中: at home, heal +1% MaxHP / sec until full
-  - 宴会中: at home, spend 33–67% of previous expedition profit (auto-sell gold), duration 5 sec (skip if profit = 0). Notification : PT1は25Gお金を使った
+  - 宴会中: at home, spend 33–67% of previous expedition profit (auto-sell gold), duration 5 sec (skip if profit = 0). if party has `a.squander` ability, double the gold spent on feasting.  Notification : PT1は25Gお金を使った/PT1 君主トムは贅沢に50G贅沢に使った
   - 睡眠中: at home. Duration 10 sec
-  - 祈り中: at home, donate 10–33% of previous expedition profit, remaining profits to global gold wallet. duration 5 sec (if profit = 0 → donate 0G, but still pray). The deity earns that amount of gold (keep record internally, later vision it may use this gold for something). Notification: PT1は10G神に捧げ、30Gを貯金した
+  - 祈り中: at home, donate 10–33% of previous expedition profit, if party has `a.tithe`, Adds +10% of expedition profit to donation. remaining profits to global gold wallet. duration 5 sec (if profit = 0 → donate 0G, but still pray). The deity earns that amount of gold (keep record internally, later vision it may use this gold for something). Notification: PT1は10G神に捧げ、30Gを貯金した/PT1 巡礼者ブラザは祈りと共に12G神に捧げて、28Gを貯金した
   - 待機中: at home, only when 自動周回 = OFF (idle state)
   - 移動中: home → dungeon, duration 5 sec
   - 探索中: in dungeon, advance 1 room / sec, update HP per room; if HP < 30% MaxHP → retreat. At the end of this state, update this {ルピニアンの断崖踏破} part )
