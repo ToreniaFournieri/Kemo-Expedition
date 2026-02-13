@@ -282,7 +282,7 @@
 
 #### 2.2.3 Deity list
 
-| God | Name  | effect |
+| God | Name  | effect (Rank 1) |
 |-----|-----|----|
 |`God of Restoration`| 再生の神 | At the end of every 4th room,  Heal 20% of missing HP |
 |`God of Attrition`| 消耗の神 | Add `c.melee_attack+20`, `c.ranged_attack+20`, and `c.magical_attack+20` to each party member. At the end of every 4th room, reduce 5% of remaining HP.|
@@ -1391,24 +1391,24 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
 
 - God scaling:
   - Restoration:
-    heal_missing_pct = clamp(0.20 + 0.02*effectiveTier, 0.20, 0.40)
+    heal_missing_pct = clamp(0.20 + 0.005*effectiveTier, 0.20, 0.30)
     trigger_every_rooms = 4
   
   - Attrition:
-    attack_bonus = 20 + 2*effectiveTier
-    hp_loss_pct = max(0.05 - 0.002*effectiveTier, 0.03)
+    attack_bonus = 20 + 0.5*effectiveTier
+    hp_loss_pct = max(0.05 - 0.001*effectiveTier, 0.03)
     trigger_every_rooms = 4
   
   - Fortification:
-    physical_def_bonus = clamp(10 + 1*effectiveTier, 10, 20)
-    magical_def_bonus  = clamp(10 + 1*effectiveTier, 10, 20)
+    physical_def_bonus = clamp(10 + 0.2*effectiveTier, 10, 20)
+    magical_def_bonus  = clamp(10 + 0.2*effectiveTier, 10, 20)
   
   - Precision:
-    accuracy_bonus = clamp(0.020 + 0.0015*effectiveTier, 0.020, 0.035)
-    evasion_penalty = clamp(-0.005 - 0.0005*effectiveTier, -0.010, -0.005)
+    accuracy_bonus = clamp(0.020 + 0.0005*effectiveTier, 0.020, 0.035)
+    evasion_penalty = clamp(-0.005 - 0.0002*effectiveTier, -0.010, -0.005)
   
   - Evasion:
-    evasion_bonus = clamp(0.015 + 0.0015*effectiveTier, 0.015, 0.030)
+    evasion_bonus = clamp(0.015 + 0.0006*effectiveTier, 0.015, 0.030)
   
   - Resonance:
     resonance_upgrade_tiers = 1 + floor(effectiveTier/5)
