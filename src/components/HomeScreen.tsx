@@ -625,7 +625,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       setPartyCycles((prev) => {
         const next = { ...prev };
         state.parties.forEach((party, partyIndex) => {
-          const runtime = next[partyIndex] ?? { state: '休息中' as PartyCycleState, elapsedMs: 0, durationMs: 1000 };
+          const runtime = next[partyIndex] ?? { state: '待機中' as PartyCycleState, elapsedMs: 0, durationMs: 1000 };
           const updated = { ...runtime, elapsedMs: runtime.elapsedMs + PARTY_CYCLE_TICK_MS };
 
           if (updated.state === '探索中') {
@@ -645,7 +645,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             if (updated.state === '宴会中') {
               const baseSpend = Math.floor((party.pendingProfit * (33 + Math.random() * 34)) / 100);
               const hasSquander = !!getPartyAbilityOwnerName(party, 'squander');
-              const spend = hasSquander ? baseSpend * 2 : baseSpend;
+              const spend = Math.min(party.pendingProfit, hasSquander ? baseSpend * 2 : baseSpend);
               if (spend > 0) {
                 if (hasSquander) {
                   const lordName = getPartyAbilityOwnerName(party, 'squander') ?? '名無し';
@@ -667,11 +667,13 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
               const donation = Math.min(party.pendingProfit, baseDonation + titheBonus);
               const deposit = Math.max(0, party.pendingProfit - donation);
               actions.processPendingProfit(partyIndex, donation, deposit);
-              if (titheBonus > 0) {
-                const pilgrimName = getPartyAbilityOwnerName(party, 'tithe') ?? '名無し';
-                actions.addNotification(`${party.name} 巡礼者${pilgrimName}は祈りと共に${formatNumber(donation)}G神に捧げて、${formatNumber(deposit)}Gを貯金した`);
-              } else {
-                actions.addNotification(`${party.name}は${formatNumber(donation)}G神に捧げ、${formatNumber(deposit)}Gを貯金した`);
+              if (donation > 0 || deposit > 0) {
+                if (titheBonus > 0) {
+                  const pilgrimName = getPartyAbilityOwnerName(party, 'tithe') ?? '名無し';
+                  actions.addNotification(`${party.name} 巡礼者${pilgrimName}は祈りと共に${formatNumber(donation)}G神に捧げて、${formatNumber(deposit)}Gを貯金した`);
+                } else {
+                  actions.addNotification(`${party.name}は${formatNumber(donation)}G神に捧げ、${formatNumber(deposit)}Gを貯金した`);
+                }
               }
               updated.state = isAutoRepeatEnabled ? '移動中' : '待機中';
               updated.durationMs = updated.state === '移動中' ? 5000 : 1000;
@@ -740,7 +742,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
                     setPartyCycles((prevCycles) => {
                       const nextCycles = { ...prevCycles };
                       state.parties.forEach((_, partyIndex) => {
-                        const runtime = nextCycles[partyIndex] ?? { state: '休息中' as PartyCycleState, elapsedMs: 0, durationMs: 1000 };
+                        const runtime = nextCycles[partyIndex] ?? { state: '待機中' as PartyCycleState, elapsedMs: 0, durationMs: 1000 };
                         if (runtime.state === '待機中') {
                           nextCycles[partyIndex] = { state: '移動中', elapsedMs: 0, durationMs: 5000 };
                         }
@@ -1855,7 +1857,7 @@ function ExpeditionTab({
 
         const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
         const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
-        const cycle = partyCycles[partyIndex] ?? { state: '休息中', elapsedMs: 0, durationMs: 1000 };
+        const cycle = partyCycles[partyIndex] ?? { state: '待機中', elapsedMs: 0, durationMs: 1000 };
         const progressPercent = cycle.state === '待機中'
           ? 100
           : cycle.state === '探索中'
