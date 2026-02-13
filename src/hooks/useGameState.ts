@@ -190,13 +190,7 @@ function loadSavedState(): GameState | null {
     if (saved) {
       const parsed = JSON.parse(saved);
       // Validate it has required properties
-      if ((parsed.party || parsed.parties) && parsed.bags && parsed.buildNumber) {
-        // Migrate old single party format to new multiple parties format
-        if (parsed.party && !parsed.parties) {
-          parsed.parties = [parsed.party, createSecondParty()];
-          parsed.selectedPartyIndex = 0;
-          delete parsed.party;
-        }
+      if (parsed.parties && parsed.bags && parsed.buildNumber) {
 
         if (!parsed.bags.uncommonRewardBag) parsed.bags.uncommonRewardBag = createUncommonRewardBag();
         if (!parsed.bags.rareRewardBag) parsed.bags.rareRewardBag = createRareRewardBag();
@@ -234,13 +228,12 @@ function loadSavedState(): GameState | null {
           }
           if (!party.deity) {
             party.deity = createInitialDeity('God of Restoration');
-            if (party.deityName) party.deity.name = normalizeDeityName(party.deityName);
           }
           party.deity.name = normalizeDeityName(party.deity.name);
-          if (typeof party.level !== 'number') party.level = party.deity.level ?? 1;
-          if (typeof party.experience !== 'number') party.experience = party.deity.experience ?? 0;
-          if (!party.lootGateStatus) party.lootGateStatus = party.deity.lootGateStatus ?? {};
-          if (!party.lootGateProgress) party.lootGateProgress = party.deity.lootGateProgress ?? {};
+          if (typeof party.level !== 'number') party.level = 1;
+          if (typeof party.experience !== 'number') party.experience = 0;
+          if (!party.lootGateStatus) party.lootGateStatus = {};
+          if (!party.lootGateProgress) party.lootGateProgress = {};
           if (!Array.isArray(party.diaryLogs)) party.diaryLogs = [];
           if (typeof party.pendingDiaryLog === 'undefined') party.pendingDiaryLog = null;
           if (typeof party.hasUnreadDiary !== 'boolean') party.hasUnreadDiary = false;
@@ -699,21 +692,6 @@ function buildRewardLogEntries(
   }));
 }
 
-// Legacy function for backward compatibility
-function selectEnemy(dungeonId: number, room: number, totalRooms: number) {
-  const dungeon = getDungeonById(dungeonId);
-  if (!dungeon) return null;
-
-  if (room > totalRooms) {
-    return getBossEnemy(dungeon.bossId);
-  }
-
-  const poolId = dungeon.enemyPoolIds[0];
-  const enemies = getEnemiesByPool(poolId);
-  const randomIndex = Math.floor(Math.random() * enemies.length);
-  return enemies[randomIndex];
-}
-
 function applyPeriodicDeityHpEffect(
   deityName: string,
   totalDonatedGold: number,
@@ -1072,103 +1050,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             }
           }
         }
-      } else {
-        // Legacy expedition logic for backward compatibility
-        const totalRooms = dungeon.numberOfRooms;
-        const totalRoomsIncludingBoss = totalRooms + 1;
-
-        for (let room = 1; room <= totalRoomsIncludingBoss; room++) {
-          const enemy = selectEnemy(dungeon.id, room, totalRooms);
-          if (!enemy) break;
-
-          const battleResult = executeBattle(currentParty, enemy, bags, currentHp);
-          bags = {
-            ...bags,
-            physicalThreatBag: battleResult.updatedBags.physicalThreatBag,
-            magicalThreatBag: battleResult.updatedBags.magicalThreatBag,
-          };
-          const damageDealt = enemy.hp - Math.max(0, battleResult.enemyHp);
-          const damageTaken = battleResult.log
-            .filter(entry => entry.actor === 'enemy' && entry.damage !== undefined)
-            .reduce((sum, entry) => sum + (entry.damage ?? 0), 0);
-
-          const enemyAttackValues = calculateEnemyAttackValues(enemy, partyStats);
-
-          const entry: ExpeditionLogEntry = {
-            room,
-            enemyName: enemy.name + (room > totalRooms ? ' (BOSS)' : ''),
-            enemyHP: enemy.hp,
-            enemyAttackValues,
-            outcome: battleResult.outcome!,
-            damageDealt,
-            damageTaken,
-            remainingPartyHP: battleResult.partyHp,
-            maxPartyHP: partyStats.hp,
-            details: battleResult.log,
-          };
-
-          if (battleResult.outcome === 'victory') {
-            totalExp += enemy.experience;
-
-            const unlockActorName = getUnlockActorName(currentParty);
-            const hasUnlock = !!unlockActorName;
-            const rewardResult = resolveEnemyRewards(enemy, bags, currentInventory, currentGold, hasUnlock);
-            bags = rewardResult.bags;
-            currentInventory = rewardResult.inventory;
-            currentGold = rewardResult.gold;
-            totalAutoSellProfit += rewardResult.autoSellProfit;
-            rewards.push(...rewardResult.rewards);
-            recoveredItems.push(...rewardResult.recoveredItems);
-
-            if (rewardResult.rewardNames.length > 0) {
-              entry.reward = rewardResult.rewardNames.join(' / ');
-              entry.rewardRarity = rewardResult.highestRewardRarity;
-              entry.rewardIsSuperRare = rewardResult.hasSuperRareReward;
-            }
-
-            currentHp = battleResult.partyHp;
-            entries.push(entry);
-
-            const deityHpEffect = applyPeriodicDeityHpEffect(currentParty.deity.name, state.global.deityDonations[normalizeDeityName(currentParty.deity.name)] ?? currentParty.deityGold ?? 0, room, totalRoomsIncludingBoss, currentHp, partyStats.hp);
-            currentHp = deityHpEffect.hp;
-            entry.remainingPartyHP = currentHp;
-            if (deityHpEffect.healAmount) {
-              entry.healAmount = deityHpEffect.healAmount;
-            }
-            if (deityHpEffect.attritionAmount) {
-              entry.attritionAmount = deityHpEffect.attritionAmount;
-            }
-            const deityLogEntry = buildDeityEffectLogEntry(
-              currentParty.deity.name,
-              deityHpEffect.healAmount,
-              deityHpEffect.attritionAmount
-            );
-            if (deityLogEntry) {
-              entry.details.push(deityLogEntry);
-            }
-            entry.details.push(...buildRewardLogEntries(rewardResult.rewardLogEntries, unlockActorName));
-
-            if (isRetreatHpThresholdReached(currentHp, partyStats.hp)) {
-              finalOutcome = 'retreat';
-              entry.details.push({
-                phase: 'close',
-                actor: 'deity',
-                action: '撤退',
-                note: 'HPが30%以下のため、戦利品を持ち帰ります。',
-              });
-              break;
-            }
-          } else if (battleResult.outcome === 'defeat') {
-            entries.push(entry);
-            finalOutcome = 'defeat';
-            break;
-          } else {
-            entries.push(entry);
-            finalOutcome = 'retreat';
-            break;
-          }
-        }
-        roomCounter = entries.length;
       }
 
       // On defeat: revert inventory and gold (no item rewards), but keep experience
@@ -1202,7 +1083,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         dungeonId: dungeon.id,
         dungeonName: dungeon.name,
         totalExperience: totalExp,
-        totalRooms: dungeon.floors ? dungeon.floors.reduce((sum, f) => sum + f.rooms.length, 0) : dungeon.numberOfRooms + 1,
+        totalRooms: dungeon.floors.reduce((sum, f) => sum + f.rooms.length, 0),
         completedRooms: entries.length,
         finalOutcome,
         entries,

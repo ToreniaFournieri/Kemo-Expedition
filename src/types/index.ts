@@ -333,11 +333,10 @@ export interface ExpeditionEnemyMultipliers {
 export interface Dungeon {
   id: number;
   name: string;
-  numberOfRooms: number; // Legacy - total rooms for backward compatibility
   enemyPoolIds: number[];
   bossId: number;
   enemyMultipliers: ExpeditionEnemyMultipliers;
-  floors?: FloorDef[]; // New v0.2.0 floor structure
+  floors: FloorDef[];
 }
 
 // Battle Types
