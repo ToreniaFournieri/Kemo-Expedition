@@ -10,7 +10,7 @@ import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { applyEnemyEncounterScaling } from '../game/enemyScaling';
-import { DEITY_OPTIONS, getDeityEffectDescription, getDeityRank, normalizeDeityName } from '../game/deity';
+import { DEITY_OPTIONS, getDeityEffectDescription, getDeityRank, getNextDonationThreshold, normalizeDeityName } from '../game/deity';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -1071,8 +1071,8 @@ function PartyTab({
 
       <div className="mb-3 text-sm flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <span className="font-medium">{displayedDeityName}</span>
-          <span className="text-gray-500"> (レベル: {formatNumber(party.level)}, 経験値: {formatNumber(party.experience)}/{formatNumber(party.level < 29 ? PARTY_LEVEL_EXP[party.level] : party.experience)})</span>
+          <div className="text-gray-600">PTレベル: {formatNumber(party.level)}, 経験値: {formatNumber(party.experience)}/{formatNumber(party.level < 29 ? PARTY_LEVEL_EXP[party.level] : party.experience)}</div>
+          <div className="font-medium mt-1">{displayedDeityName} (ランク{getDeityRank(party.deityGold ?? 0)})</div>
           <div className="text-xs text-gray-600 mt-1">効果:{getDeityEffectDescription(displayedDeityName, party.deityGold ?? 0)}</div>
         </div>
         {editingDeity ? (
@@ -2629,18 +2629,26 @@ function SettingTab({
   const superRareInitial = SUPER_RARE_TITLES.filter(t => t.value > 0).reduce((sum, t) => sum + t.tickets, 0);
   const superRareHits = bags.superRareBag.tickets.filter(t => t > 0).length;
 
-  const donationByDeity = parties.reduce<Record<string, number>>((totals, party) => {
-    const deityName = party.deity.name.trim() || '名称未設定の神';
-    totals[deityName] = (totals[deityName] ?? 0) + (party.deityGold ?? 0);
+  const donationByDeity = DEITY_OPTIONS.reduce<Record<string, number>>((totals, deity) => {
+    totals[deity.name] = 0;
     return totals;
   }, {});
 
+  parties.forEach((party) => {
+    const deityName = normalizeDeityName(party.deity.name.trim() || '');
+    if (!donationByDeity[deityName]) {
+      donationByDeity[deityName] = 0;
+    }
+    donationByDeity[deityName] += party.deityGold ?? 0;
+  });
+
   const donationRows = Object.entries(donationByDeity)
-    .sort((a, b) => b[1] - a[1])
+    .sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0], 'ja'))
     .map(([deityName, donationGold]) => ({
       deityName,
       donationGold,
       rank: getDeityRank(donationGold),
+      nextDonationThreshold: getNextDonationThreshold(donationGold),
     }));
 
   const compendiumItems = ITEMS
@@ -2772,16 +2780,18 @@ function SettingTab({
 
   return (
     <div>
-      <div className="text-lg font-bold mb-3">神の執務室</div>
-
       <div className="bg-pane rounded-lg p-4 mb-4">
         <div className="text-sm font-medium mb-3">1. 寄付箱</div>
         <div className="bg-white rounded p-2 text-sm space-y-1">
+          <div className="flex items-center justify-between gap-3 text-xs text-gray-500 border-b border-gray-100 pb-1 mb-1">
+            <span>神格</span>
+            <span>寄付額</span>
+          </div>
           {donationRows.length > 0 ? (
-            donationRows.map(({ deityName, donationGold, rank }) => (
+            donationRows.map(({ deityName, donationGold, rank, nextDonationThreshold }) => (
               <div key={deityName} className="flex items-center justify-between gap-3">
-                <span className="text-gray-700">{deityName} <span className="text-xs text-gray-500">Rank {rank}</span></span>
-                <span className="text-sub tabular-nums">{formatNumber(donationGold)}G</span>
+                <span className="text-gray-700">{deityName}(ランク{rank})</span>
+                <span className="text-sub tabular-nums">{formatNumber(donationGold)}G <span className="text-xs text-gray-500">(次のランク {nextDonationThreshold !== null ? `${formatNumber(nextDonationThreshold)}G` : '到達済み'})</span></span>
               </div>
             ))
           ) : (
