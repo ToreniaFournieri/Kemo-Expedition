@@ -1674,6 +1674,7 @@ function ExpeditionTab({
           ? (lastLog!.finalOutcome === 'victory' || lastLog!.finalOutcome === 'return' ? 'text-sub' :
              lastLog!.finalOutcome === 'defeat' ? 'text-red-600' : 'text-yellow-600')
           : '';
+        const collapsedRowClass = 'cursor-pointer';
 
         return (
           <div key={partyIndex} className={`bg-pane rounded-lg p-4 ${isCollapsedSummary ? collapsedRowClass : ''}`}>
