@@ -1532,6 +1532,10 @@ function PartyTab({
                   } else {
                     const label = `${addNames[key] ?? key}+${val}`;
                     parts.push(label);
+                    if (key === 'vitality') helpRows.push({ label, description: `基礎体力に ${val} を加算（HP/物防に影響）` });
+                    if (key === 'strength') helpRows.push({ label, description: `基礎筋力に ${val} を加算（近接火力に影響）` });
+                    if (key === 'intelligence') helpRows.push({ label, description: `基礎知性に ${val} を加算（魔法火力に影響）` });
+                    if (key === 'mind') helpRows.push({ label, description: `基礎精神に ${val} を加算（HP/魔防に影響）` });
                     if (key === 'equip_slot') helpRows.push({ label, description: `装備スロット数が ${val} 増える` });
                     if (key === 'grit') helpRows.push({ label, description: `近接攻撃の装備が出来るようになる。近接攻撃回数が ${val} 回増える` });
                     if (key === 'pursuit') helpRows.push({ label, description: `遠距離攻撃の装備が出来るようになる。遠距離攻撃回数が ${val} 回増える` });
