@@ -11,6 +11,7 @@ import { getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { applyEnemyEncounterScaling } from '../game/enemyScaling';
 import { DEITY_OPTIONS, getDeityEffectDescription, getDeityRank, getNextDonationThreshold, normalizeDeityName } from '../game/deity';
+import { LEVEL_EXP } from '../game/partyLevel';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -111,12 +112,6 @@ const RARITY_FILTER_NOTES: Record<RarityFilter, string> = {
 };
 
 const RARITY_FILTER_OPTIONS: RarityFilter[] = ['all', 'common', 'uncommon', 'rare', 'mythic'];
-
-const PARTY_LEVEL_EXP = [
-  0, 100, 250, 450, 700, 1000, 1400, 1900, 2500, 3200,
-  4000, 5000, 6200, 7600, 9200, 11000, 13000, 15500, 18500, 22000,
-  26000, 30500, 35500, 41000, 47000, 53500, 60500, 68000, 76000
-];
 
 const DIARY_THRESHOLD_OPTIONS: Array<{ value: DiaryRarityThreshold; label: string }> = [
   { value: 'all', label: '全て' },
@@ -1097,7 +1092,7 @@ function PartyTab({
 
       <div className="mb-3 text-sm flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <div className="text-gray-600">PTレベル: {formatNumber(party.level)}, 経験値: {formatNumber(party.experience)}/{formatNumber(party.level < 29 ? PARTY_LEVEL_EXP[party.level] : party.experience)}</div>
+          <div className="text-gray-600">PTレベル: {formatNumber(party.level)}, 経験値: {formatNumber(party.experience)}/{formatNumber(party.level < 29 ? LEVEL_EXP[party.level] : party.experience)}</div>
           <div className="font-medium mt-1">{displayedDeityName} (ランク{getDeityRank(displayedDeityGold)})</div>
           <div className="text-xs text-gray-600 mt-1">効果:{getDeityEffectDescription(displayedDeityName, displayedDeityGold)}</div>
         </div>
