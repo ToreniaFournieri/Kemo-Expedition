@@ -351,6 +351,21 @@ const ABILITY_NAMES: Record<string, string> = {
   tithe: '十分の一税',
 };
 
+const C_MULTIPLIER_HELP_DESCRIPTIONS: Record<string, string> = {
+  sword: '剣カテゴリ装備の効果が {value} 倍',
+  katana: '刀カテゴリ装備の効果が {value} 倍',
+  archery: '弓カテゴリ装備の効果が {value} 倍',
+  armor: '鎧カテゴリ装備の効果が {value} 倍',
+  gauntlet: '籠手カテゴリ装備の効果が {value} 倍',
+  wand: '杖カテゴリ装備の効果が {value} 倍',
+  robe: '法衣カテゴリ装備の効果が {value} 倍',
+  shield: '盾カテゴリ装備の効果が {value} 倍',
+  bolt: 'ボルトカテゴリ装備の効果が {value} 倍',
+  grimoire: '魔導書カテゴリ装備の効果が {value} 倍',
+  catalyst: '触媒カテゴリ装備の効果が {value} 倍',
+  arrow: '矢カテゴリ装備の効果が {value} 倍',
+};
+
 function formatBonuses(bonuses: Bonus[]): string {
   const parts: string[] = [];
   for (const b of bonuses) {
@@ -883,6 +898,7 @@ function PartyTab({
 }) {
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
   const [equipCategory, setEquipCategory] = useState('armor');
+  const [showBonusHelp, setShowBonusHelp] = useState(false);
   const [partyRarityFilter, setPartyRarityFilter] = useState<RarityFilter>('all');
   const [partySuperRareOnly, setPartySuperRareOnly] = useState(false);
   // Calculate current stats for notification: HP is party-wide, others are per selected character
@@ -1474,6 +1490,7 @@ function PartyTab({
 
               // Format display
               const parts: string[] = [];
+              const helpRows: Array<{ label: string; description: string }> = [];
               const mulNames: Record<string, string> = {
                 sword: '剣', katana: '刀', archery: '弓', armor: '鎧',
                 gauntlet: '手', wand: '杖', robe: '衣', shield: '盾',
@@ -1486,25 +1503,70 @@ function PartyTab({
               };
 
               for (const [key, val] of Object.entries(multipliers)) {
-                if (val !== 1) parts.push(`${mulNames[key] ?? key}x${val.toFixed(1)}`);
+                if (val !== 1) {
+                  const label = `${mulNames[key] ?? key}x${val.toFixed(1)}`;
+                  parts.push(label);
+                  const template = C_MULTIPLIER_HELP_DESCRIPTIONS[key];
+                  if (template) {
+                    helpRows.push({
+                      label,
+                      description: template.replace('{value}', val.toFixed(1)),
+                    });
+                  }
+                }
               }
               for (const [key, val] of Object.entries(additive)) {
                 if (val !== 0) {
                   if (key === 'penet') {
-                    parts.push(`${addNames[key]}+${Math.round(val * 100)}%`);
-                  } else if (key === 'accuracy' || key === 'evasion') {
-                    // Show as decimal like +0.01
-                    parts.push(`${addNames[key]}+${val.toFixed(2)}`);
+                    const label = `${addNames[key]}+${Math.round(val * 100)}%`;
+                    parts.push(label);
+                    helpRows.push({ label, description: `敵の防御力を ${Math.round(val * 100)}% 分無視する` });
+                  } else if (key === 'accuracy') {
+                    const label = `${addNames[key]}+${val.toFixed(2)}`;
+                    parts.push(label);
+                    helpRows.push({ label, description: '値が多いほどより多くの攻撃が命中するようになる' });
+                  } else if (key === 'evasion') {
+                    const label = `${addNames[key]}+${val.toFixed(2)}`;
+                    parts.push(label);
+                    helpRows.push({ label, description: '値が多いほどより多くの攻撃を回避するようになる' });
                   } else {
-                    parts.push(`${addNames[key] ?? key}+${val}`);
+                    const label = `${addNames[key] ?? key}+${val}`;
+                    parts.push(label);
+                    if (key === 'equip_slot') helpRows.push({ label, description: `装備スロット数が ${val} 増える` });
+                    if (key === 'grit') helpRows.push({ label, description: `近接攻撃の装備が出来るようになる。近接攻撃回数が ${val} 回増える` });
+                    if (key === 'pursuit') helpRows.push({ label, description: `遠距離攻撃の装備が出来るようになる。遠距離攻撃回数が ${val} 回増える` });
+                    if (key === 'caster') helpRows.push({ label, description: `魔法攻撃の装備が出来るようになる。魔法攻撃回数が ${val} 回増える` });
                   }
                 }
               }
 
               if (parts.length === 0) return null;
               return (
-                <div className="text-xs text-gray-600 mt-1">
-                  ボーナス: {parts.join(', ')}
+                <div className="text-xs text-gray-600 mt-1 relative">
+                  <div className="inline-flex items-center gap-1">
+                    <span>ボーナス: {parts.join(', ')}</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowBonusHelp((prev) => !prev)}
+                      className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-gray-400 text-[10px] leading-none text-gray-600 hover:bg-gray-100"
+                      aria-label="c.ボーナスの説明を表示"
+                    >
+                      ?
+                    </button>
+                  </div>
+                  {showBonusHelp && (
+                    <div className="absolute left-0 top-5 z-20 w-[min(38rem,88vw)] rounded-md border border-gray-200 bg-white p-3 shadow-lg">
+                      <div className="mb-2 text-[11px] font-semibold text-gray-700">c. ボーナス説明 (同一名ボーナスは重複無効)</div>
+                      <div className="max-h-56 space-y-1 overflow-y-auto pr-1 text-[11px] leading-4 text-gray-700">
+                        {helpRows.map((row) => (
+                          <div key={row.label}>
+                            <span className="font-semibold">{row.label}</span>
+                            <span className="text-gray-500"> - {row.description}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })()}
