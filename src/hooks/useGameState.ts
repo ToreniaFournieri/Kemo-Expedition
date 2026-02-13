@@ -57,7 +57,7 @@ import {
 } from '../game/lootGate';
 import { LEVEL_EXP } from '../game/partyLevel';
 
-const BUILD_NUMBER = 44;
+const BUILD_NUMBER = 1;
 const STORAGE_KEY = 'kemo-expedition-save';
 
 const DEFAULT_DIARY_SETTINGS: DiarySettings = {
@@ -80,6 +80,20 @@ function getDeityDonationsWithDefaults(value: unknown): Record<string, number> {
     totals[normalizeDeityName(name)] = typeof donation === 'number' ? donation : 0;
     return totals;
   }, {});
+}
+
+function getExpeditionStatsWithDefaults(value: unknown) {
+  if (!value || typeof value !== 'object') {
+    return { victories: 0, retreats: 0, defeats: 0, donatedGold: 0, savedGold: 0 };
+  }
+  const raw = value as Record<string, unknown>;
+  return {
+    victories: typeof raw.victories === 'number' ? raw.victories : 0,
+    retreats: typeof raw.retreats === 'number' ? raw.retreats : 0,
+    defeats: typeof raw.defeats === 'number' ? raw.defeats : 0,
+    donatedGold: typeof raw.donatedGold === 'number' ? raw.donatedGold : 0,
+    savedGold: typeof raw.savedGold === 'number' ? raw.savedGold : 0,
+  };
 }
 
 function matchesDiaryThreshold(item: Item, threshold: DiarySettings['superRareThreshold']): boolean {
@@ -249,6 +263,7 @@ function loadSavedState(): GameState | null {
           }
           if (typeof party.pendingProfit !== 'number') party.pendingProfit = 0;
           if (typeof party.deityGold !== 'number') party.deityGold = 0;
+          party.expeditionStats = getExpeditionStatsWithDefaults(party.expeditionStats);
 
           const normalizedDeityName = normalizeDeityName(party.deity.name);
           if (typeof parsed.global.deityDonations[normalizedDeityName] !== 'number') {
@@ -330,6 +345,7 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
     currentHp: partyStats.hp,
     pendingProfit: 0,
     deityGold: 0,
+    expeditionStats: getExpeditionStatsWithDefaults(party.expeditionStats),
   };
 }
 
@@ -372,6 +388,7 @@ function createInitialParty() {
     diaryLogs: [],
     hasUnreadDiary: false,
     diarySettings: getDiarySettingsWithDefaults(undefined),
+    expeditionStats: getExpeditionStatsWithDefaults(null),
   };
 
   return initializePartyRuntimeState(party);
@@ -417,6 +434,7 @@ function createSecondParty() {
     diaryLogs: [],
     hasUnreadDiary: false,
     diarySettings: getDiarySettingsWithDefaults(undefined),
+    expeditionStats: getExpeditionStatsWithDefaults(null),
   };
 
   return initializePartyRuntimeState(party);
@@ -1132,6 +1150,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         // Party-cycle spending/donation is defined from the *latest* expedition's
         // auto-sell profit, so this should not accumulate across expeditions.
         pendingProfit: finalAutoSellProfit,
+        expeditionStats: {
+          ...currentParty.expeditionStats,
+          victories: currentParty.expeditionStats.victories + (finalOutcome === 'victory' ? 1 : 0),
+          retreats: currentParty.expeditionStats.retreats + ((finalOutcome === 'retreat' || finalOutcome === 'return') ? 1 : 0),
+          defeats: currentParty.expeditionStats.defeats + (finalOutcome === 'defeat' ? 1 : 0),
+        },
       };
 
       return {
@@ -1226,6 +1250,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...currentParty,
         pendingProfit: 0,
         deityGold: deityDonations[deityName],
+        expeditionStats: {
+          ...currentParty.expeditionStats,
+          donatedGold: currentParty.expeditionStats.donatedGold + donation,
+          savedGold: currentParty.expeditionStats.savedGold + deposit,
+        },
       };
       return {
         ...state,
