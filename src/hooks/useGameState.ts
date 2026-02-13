@@ -238,6 +238,12 @@ function loadSavedState(): GameState | null {
           }));
           party.hasUnreadDiary = party.diaryLogs.some((log: DiaryLog) => !log.isRead);
           party.diarySettings = getDiarySettingsWithDefaults(party.diarySettings);
+          if (typeof party.currentHp !== 'number') {
+            const computed = computePartyStats(party).partyStats;
+            party.currentHp = computed.hp;
+          }
+          if (typeof party.pendingProfit !== 'number') party.pendingProfit = 0;
+          if (typeof party.deityGold !== 'number') party.deityGold = 0;
 
           // Merge latest item definitions onto saved items (for new fields like baseMultiplier)
           for (const character of party.characters ?? []) {
@@ -311,6 +317,17 @@ function createStarterInventory(): InventoryRecord {
   return inventory;
 }
 
+
+function initializePartyRuntimeState<T extends Party>(party: T): T {
+  const { partyStats } = computePartyStats(party);
+  return {
+    ...party,
+    currentHp: partyStats.hp,
+    pendingProfit: 0,
+    deityGold: 0,
+  };
+}
+
 function createInitialParty() {
   const defaultSetup = [
     { race: 'caninian', main: 'fighter', sub: 'lord', pred: 'sturdy', lineage: 'unmoving', name: 'ケモ' },
@@ -332,7 +349,7 @@ function createInitialParty() {
     equipment: [],
   }));
 
-  return {
+  const party: Party = {
     id: 1,
     name: 'PT1',
     level: 1,
@@ -342,11 +359,16 @@ function createInitialParty() {
     deity: createInitialDeity('God of Restoration'),
     characters,
     selectedDungeonId: 1,
+    currentHp: 0,
+    pendingProfit: 0,
+    deityGold: 0,
     lastExpeditionLog: null,
     diaryLogs: [],
     hasUnreadDiary: false,
     diarySettings: getDiarySettingsWithDefaults(undefined),
   };
+
+  return initializePartyRuntimeState(party);
 }
 
 function createSecondParty() {
@@ -371,7 +393,7 @@ function createSecondParty() {
     equipment: [],
   }));
 
-  return {
+  const party: Party = {
     id: 2,
     name: 'PT2',
     level: 1,
@@ -381,11 +403,16 @@ function createSecondParty() {
     deity: createInitialDeity('God of Attrition'),
     characters,
     selectedDungeonId: 2,
+    currentHp: 0,
+    pendingProfit: 0,
+    deityGold: 0,
     lastExpeditionLog: null,
     diaryLogs: [],
     hasUnreadDiary: false,
     diarySettings: getDiarySettingsWithDefaults(undefined),
   };
+
+  return initializePartyRuntimeState(party);
 }
 
 function createInitialState(): GameState {
@@ -424,6 +451,10 @@ type GameAction =
   | { type: 'SELECT_DUNGEON'; partyIndex: number; dungeonId: number }
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
   | { type: 'RUN_EXPEDITION'; partyIndex: number }
+  | { type: 'HEAL_PARTY_HP'; partyIndex: number; amount: number }
+  | { type: 'CLEAR_PENDING_PROFIT'; partyIndex: number }
+  | { type: 'PROCESS_PENDING_PROFIT'; partyIndex: number; donation: number; deposit: number }
+  | { type: 'SPEND_PENDING_PROFIT'; partyIndex: number; amount: number }
   | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; itemKey: string | null }
   | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character> }
   | { type: 'SELL_STACK'; variantKey: string }
@@ -804,7 +835,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const dungeon = getDungeonById(currentParty.selectedDungeonId);
       if (!dungeon) return state;
       const { partyStats } = computePartyStats(currentParty);
-      let currentHp = partyStats.hp;
+      let currentHp = Math.max(0, Math.min(currentParty.currentHp || partyStats.hp, partyStats.hp));
 
       const entries: ExpeditionLogEntry[] = [];
       const rewards: Item[] = [];
@@ -1097,9 +1128,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       // On defeat: revert inventory and gold (no item rewards), but keep experience
       const isDefeat = finalOutcome === 'defeat';
       const finalInventory = isDefeat ? state.global.inventory : currentInventory;
-      const finalGold = isDefeat ? state.global.gold : currentGold;
       const finalRewards = isDefeat ? [] : rewards;
       const finalAutoSellProfit = isDefeat ? 0 : totalAutoSellProfit;
+      const finalGold = isDefeat ? state.global.gold : (currentGold - finalAutoSellProfit);
 
       const nextLootGateProgress = isDefeat
         ? currentParty.lootGateProgress
@@ -1170,6 +1201,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         lastExpeditionLog: log,
         diaryLogs: nextDiaryLogs,
         hasUnreadDiary: nextDiaryLogs.some((diaryLog) => !diaryLog.isRead),
+        currentHp: finalRemainingPartyHP,
+        pendingProfit: (currentParty.pendingProfit ?? 0) + finalAutoSellProfit,
       };
 
       return {
@@ -1180,6 +1213,73 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...state.global,
           inventory: finalInventory,
           gold: finalGold,
+        },
+      };
+    }
+
+    case 'HEAL_PARTY_HP': {
+      const currentParty = state.parties[action.partyIndex];
+      if (!currentParty) return state;
+      const { partyStats } = computePartyStats(currentParty);
+      const healedHp = Math.min(partyStats.hp, (currentParty.currentHp ?? partyStats.hp) + action.amount);
+      const updatedParties = [...state.parties];
+      updatedParties[action.partyIndex] = {
+        ...currentParty,
+        currentHp: healedHp,
+      };
+      return {
+        ...state,
+        parties: updatedParties,
+      };
+    }
+
+    case 'CLEAR_PENDING_PROFIT': {
+      const currentParty = state.parties[action.partyIndex];
+      if (!currentParty) return state;
+      const updatedParties = [...state.parties];
+      updatedParties[action.partyIndex] = {
+        ...currentParty,
+        pendingProfit: 0,
+      };
+      return {
+        ...state,
+        parties: updatedParties,
+      };
+    }
+
+
+    case 'SPEND_PENDING_PROFIT': {
+      const currentParty = state.parties[action.partyIndex];
+      if (!currentParty) return state;
+      const amount = Math.max(0, Math.floor(action.amount));
+      const updatedParties = [...state.parties];
+      updatedParties[action.partyIndex] = {
+        ...currentParty,
+        pendingProfit: Math.max(0, (currentParty.pendingProfit ?? 0) - amount),
+      };
+      return {
+        ...state,
+        parties: updatedParties,
+      };
+    }
+
+    case 'PROCESS_PENDING_PROFIT': {
+      const currentParty = state.parties[action.partyIndex];
+      if (!currentParty) return state;
+      const donation = Math.max(0, Math.floor(action.donation));
+      const deposit = Math.max(0, Math.floor(action.deposit));
+      const updatedParties = [...state.parties];
+      updatedParties[action.partyIndex] = {
+        ...currentParty,
+        pendingProfit: 0,
+        deityGold: (currentParty.deityGold ?? 0) + donation,
+      };
+      return {
+        ...state,
+        parties: updatedParties,
+        global: {
+          ...state.global,
+          gold: state.global.gold + deposit,
         },
       };
     }
@@ -1564,6 +1664,22 @@ export function useGameState() {
 
     runExpedition: useCallback((partyIndex: number) => {
       dispatch({ type: 'RUN_EXPEDITION', partyIndex });
+    }, []),
+
+    healPartyHp: useCallback((partyIndex: number, amount: number) => {
+      dispatch({ type: 'HEAL_PARTY_HP', partyIndex, amount });
+    }, []),
+
+    clearPendingProfit: useCallback((partyIndex: number) => {
+      dispatch({ type: 'CLEAR_PENDING_PROFIT', partyIndex });
+    }, []),
+
+    processPendingProfit: useCallback((partyIndex: number, donation: number, deposit: number) => {
+      dispatch({ type: 'PROCESS_PENDING_PROFIT', partyIndex, donation, deposit });
+    }, []),
+
+    spendPendingProfit: useCallback((partyIndex: number, amount: number) => {
+      dispatch({ type: 'SPEND_PENDING_PROFIT', partyIndex, amount });
     }, []),
 
     equipItem: useCallback((characterId: number, slotIndex: number, itemKey: string | null) => {

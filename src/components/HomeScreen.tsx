@@ -30,6 +30,10 @@ interface HomeScreenProps {
     selectDungeon: (partyIndex: number, dungeonId: number) => void;
     runExpedition: (partyIndex: number) => void;
     updatePartyDeity: (partyIndex: number, deityName: string) => void;
+    healPartyHp: (partyIndex: number, amount: number) => void;
+    clearPendingProfit: (partyIndex: number) => void;
+    processPendingProfit: (partyIndex: number, donation: number, deposit: number) => void;
+    spendPendingProfit: (partyIndex: number, amount: number) => void;
     equipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
     updateCharacter: (characterId: number, updates: Partial<Character>) => void;
     sellStack: (variantKey: string) => void;
@@ -53,6 +57,15 @@ interface HomeScreenProps {
 }
 
 type Tab = 'party' | 'expedition' | 'inventory' | 'diary' | 'setting';
+
+
+type PartyCycleState = '休息中' | '宴会中' | '睡眠中' | '祈り中' | '待機中' | '移動中' | '探索中' | '帰還中';
+
+interface PartyCycleRuntime {
+  state: PartyCycleState;
+  elapsedMs: number;
+  durationMs: number;
+}
 
 type ItemRarity = 'common' | 'uncommon' | 'rare' | 'mythic';
 type RarityFilter = 'all' | ItemRarity;
@@ -607,6 +620,11 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             state={state}
             onSelectDungeon={actions.selectDungeon}
             onRunExpedition={actions.runExpedition}
+            onHealPartyHp={actions.healPartyHp}
+            onClearPendingProfit={actions.clearPendingProfit}
+            onProcessPendingProfit={actions.processPendingProfit}
+            onSpendPendingProfit={actions.spendPendingProfit}
+            onAddNotification={actions.addNotification}
           />
         )}
 
@@ -1549,76 +1567,115 @@ function ExpeditionTab({
   state,
   onSelectDungeon,
   onRunExpedition,
+  onHealPartyHp,
+  onClearPendingProfit,
+  onProcessPendingProfit,
+  onSpendPendingProfit,
+  onAddNotification,
 }: {
   state: GameState;
   onSelectDungeon: (partyIndex: number, dungeonId: number) => void;
   onRunExpedition: (partyIndex: number) => void;
+  onHealPartyHp: (partyIndex: number, amount: number) => void;
+  onClearPendingProfit: (partyIndex: number) => void;
+  onProcessPendingProfit: (partyIndex: number, donation: number, deposit: number) => void;
+  onSpendPendingProfit: (partyIndex: number, amount: number) => void;
+  onAddNotification: (message: string) => void;
 }) {
   const AUTO_REPEAT_INTERVAL_MS = 5000;
   const [expandedLogParty, setExpandedLogParty] = useState<number | null>(null);
   const [expandedRoom, setExpandedRoom] = useState<{ partyIndex: number; roomIndex: number } | null>(null);
   const [isAutoRepeatEnabled, setIsAutoRepeatEnabled] = useState(false);
   const [autoRepeatCycleKey, setAutoRepeatCycleKey] = useState(0);
-  const latestPartiesRef = useRef(state.parties);
+  const [partyCycles, setPartyCycles] = useState<Record<number, PartyCycleRuntime>>({});
 
-  useEffect(() => {
-    latestPartiesRef.current = state.parties;
-  }, [state.parties]);
-
-  const runAllExpeditions = (parties: GameState['parties']) => {
-    parties.forEach((party, partyIndex) => {
-      const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
-      if (!selectedDungeon) return;
-      const gateState = getDungeonEntryGateState(party, selectedDungeon);
-      if (!gateState.locked) {
-        onRunExpedition(partyIndex);
-      }
-    });
+  const transitionTo = (partyIndex: number, nextState: PartyCycleState, durationMs: number) => {
+    setPartyCycles((prev) => ({
+      ...prev,
+      [partyIndex]: { state: nextState, elapsedMs: 0, durationMs },
+    }));
   };
 
-  const handleRunAllExpeditions = () => {
-    runAllExpeditions(state.parties);
+  const triggerSortie = (partyIndex: number) => {
+    const cycle = partyCycles[partyIndex];
+    if (cycle && (cycle.state === '移動中' || cycle.state === '探索中' || cycle.state === '帰還中')) return;
+    const party = state.parties[partyIndex];
+    if (!party) return;
+    if (party.pendingProfit > 0) onClearPendingProfit(partyIndex);
+    transitionTo(partyIndex, '移動中', 5000);
   };
 
   useEffect(() => {
-    if (!isAutoRepeatEnabled) {
-      return;
-    }
+    const id = window.setInterval(() => {
+      setPartyCycles((prev) => {
+        const next = { ...prev };
+        state.parties.forEach((party, partyIndex) => {
+          const runtime = next[partyIndex] ?? { state: '休息中' as PartyCycleState, elapsedMs: 0, durationMs: 1000 };
+          const updated = { ...runtime, elapsedMs: runtime.elapsedMs + 1000 };
 
-    let isCancelled = false;
-    let timeoutId: number | undefined;
+          if (updated.state === '休息中') {
+            const { partyStats } = computePartyStats(party);
+            if (party.currentHp < partyStats.hp) onHealPartyHp(partyIndex, Math.max(1, Math.floor(partyStats.hp * 0.01)));
+            if (party.currentHp >= partyStats.hp) {
+              updated.state = party.pendingProfit > 0 ? '宴会中' : '睡眠中';
+              updated.elapsedMs = 0;
+              updated.durationMs = updated.state === '宴会中' ? 5000 : 10000;
+            }
+          } else if (updated.elapsedMs >= updated.durationMs) {
+            if (updated.state === '宴会中') {
+              const spend = Math.floor((party.pendingProfit * (33 + Math.random() * 34)) / 100);
+              if (spend > 0) onAddNotification(`${party.name}は${formatNumber(spend)}Gお金を使った`);
+              onSpendPendingProfit(partyIndex, spend);
+              updated.state = '睡眠中';
+              updated.durationMs = 10000;
+            } else if (updated.state === '睡眠中') {
+              updated.state = '祈り中';
+              updated.durationMs = 5000;
+            } else if (updated.state === '祈り中') {
+              const donationRate = 10 + Math.random() * 23;
+              const donation = Math.floor((party.pendingProfit * donationRate) / 100);
+              const deposit = Math.max(0, party.pendingProfit - donation);
+              onProcessPendingProfit(partyIndex, donation, deposit);
+              onAddNotification(`${party.name}は${formatNumber(donation)}G神に捧げ、${formatNumber(deposit)}Gを貯金した`);
+              updated.state = isAutoRepeatEnabled ? '移動中' : '待機中';
+              updated.durationMs = updated.state === '移動中' ? 5000 : 1000;
+            } else if (updated.state === '待機中') {
+              updated.durationMs = 1000;
+            } else if (updated.state === '移動中') {
+              onRunExpedition(partyIndex);
+              const activeDungeon = DUNGEONS.find((d) => d.id === party.selectedDungeonId);
+              const totalRooms = activeDungeon?.floors
+                ? activeDungeon.floors.reduce((sum, floor) => sum + floor.rooms.length, 0)
+                : (activeDungeon?.numberOfRooms ?? 1);
+              updated.state = '探索中';
+              updated.durationMs = Math.max(1000, totalRooms * 1000);
+            } else if (updated.state === '探索中') {
+              updated.state = '帰還中';
+              updated.durationMs = 5000;
+            } else if (updated.state === '帰還中') {
+              updated.state = '休息中';
+              updated.durationMs = 1000;
+            }
+            updated.elapsedMs = 0;
+          }
+          next[partyIndex] = updated;
+        });
+        return next;
+      });
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [state.parties, isAutoRepeatEnabled, onAddNotification, onHealPartyHp, onProcessPendingProfit, onRunExpedition, onSpendPendingProfit]);
 
-    setAutoRepeatCycleKey((prev) => prev + 1);
-
-    const queueNextRun = () => {
-      timeoutId = window.setTimeout(() => {
-        if (isCancelled) {
-          return;
-        }
-
-        runAllExpeditions(latestPartiesRef.current);
-        setAutoRepeatCycleKey((prev) => prev + 1);
-        queueNextRun();
-      }, AUTO_REPEAT_INTERVAL_MS);
-    };
-
-    queueNextRun();
-
-    return () => {
-      isCancelled = true;
-      if (timeoutId !== undefined) {
-        window.clearTimeout(timeoutId);
-      }
-    };
+  useEffect(() => {
+    if (!isAutoRepeatEnabled) return;
+    const tid = window.setInterval(() => setAutoRepeatCycleKey((prev) => prev + 1), AUTO_REPEAT_INTERVAL_MS);
+    return () => window.clearInterval(tid);
   }, [isAutoRepeatEnabled]);
 
   return (
     <div className="space-y-4">
       <div className="flex justify-end items-start gap-3">
-        <button
-          onClick={handleRunAllExpeditions}
-          className="px-3 py-1 text-white rounded font-medium text-sm bg-sub hover:bg-blue-600"
-        >
+        <button onClick={() => state.parties.forEach((_, i) => triggerSortie(i))} className="px-3 py-1 text-white rounded font-medium text-sm bg-sub hover:bg-blue-600">
           一斉出撃
         </button>
         <div className="flex flex-col">
@@ -1634,276 +1691,185 @@ function ExpeditionTab({
           </button>
           {isAutoRepeatEnabled && (
             <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-blue-100/80">
-              <div
-                key={autoRepeatCycleKey}
-                className="h-full rounded-full bg-blue-300"
-                style={{ animation: `auto-repeat-progress ${AUTO_REPEAT_INTERVAL_MS}ms linear forwards` }}
-              />
+              <div key={autoRepeatCycleKey} className="h-full rounded-full bg-blue-300" style={{ animation: `auto-repeat-progress ${AUTO_REPEAT_INTERVAL_MS}ms linear forwards` }} />
             </div>
           )}
         </div>
       </div>
 
-      {/* Party Expedition Slots */}
       {[0, 1, 2, 3, 4, 5].map((partyIndex) => {
         const party = state.parties[partyIndex];
         if (!party) {
-          // Locked party slot
-          return (
-            <div key={partyIndex} className="bg-pane rounded-lg p-4">
-              <div className="text-sm text-gray-400">PT{partyIndex + 1}: (未開放)</div>
-            </div>
-          );
+          return <div key={partyIndex} className="bg-pane rounded-lg p-4"><div className="text-sm text-gray-400">PT{partyIndex + 1}: (未開放)</div></div>;
         }
 
         const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
         const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
-        const lastLog = party.lastExpeditionLog;
-        const hasLastLog = !!lastLog;
+        const cycle = partyCycles[partyIndex] ?? { state: '休息中', elapsedMs: 0, durationMs: 1000 };
+        const progressPercent = Math.min(100, Math.round((cycle.elapsedMs / Math.max(1, cycle.durationMs)) * 100));
+        const { partyStats } = computePartyStats(party);
+        const hpPercent = Math.round((party.currentHp / Math.max(1, partyStats.hp)) * 100);
         const isLogExpanded = expandedLogParty === partyIndex;
-        const isCollapsedSummary = hasLastLog && !isLogExpanded;
-        const remainingHpPercent = hasLastLog
-          ? formatNumber(Math.round((lastLog!.remainingPartyHP / Math.max(1, lastLog!.maxPartyHP)) * 100))
-          : '0';
-        const outcomeLabel = hasLastLog
-          ? (lastLog!.finalOutcome === 'victory' ? '踏破' :
-             lastLog!.finalOutcome === 'return' ? '帰還' :
-             lastLog!.finalOutcome === 'defeat' ? '敗北' : '撤退')
-          : '';
-        const outcomeClass = hasLastLog
-          ? (lastLog!.finalOutcome === 'victory' || lastLog!.finalOutcome === 'return' ? 'text-sub' :
-             lastLog!.finalOutcome === 'defeat' ? 'text-red-600' : 'text-yellow-600')
-          : '';
-        const collapsedRowClass = 'cursor-pointer';
+        const currentLog = party.lastExpeditionLog;
+
+        const displayedEntries = (() => {
+          if (!currentLog) return [];
+          if (cycle.state !== '探索中') return currentLog.entries;
+          const visibleCount = Math.min(
+            currentLog.entries.length,
+            Math.max(0, Math.ceil((cycle.elapsedMs / Math.max(1, cycle.durationMs)) * currentLog.entries.length)),
+          );
+          return currentLog.entries.slice(0, visibleCount);
+        })();
 
         return (
-          <div key={partyIndex} className={`bg-pane rounded-lg p-4 ${isCollapsedSummary ? collapsedRowClass : ''}`}>
-            {/* Party Expedition Header */}
-            {hasLastLog ? (
-              <button
-                onClick={() => setExpandedLogParty(isLogExpanded ? null : partyIndex)}
-                className={`w-full flex justify-between items-center text-sm ${isLogExpanded ? 'mb-3' : ''}`}
-              >
-                <span>
-                  <span className="font-bold text-black">{party.name}</span>
-                  <span className="ml-2">{lastLog?.dungeonName}</span>
-                  <span className={`ml-2 font-medium ${outcomeClass}`}>
-                    {outcomeLabel}(残{remainingHpPercent}%)
-                  </span>
-                </span>
-                <span className={isLogExpanded ? 'transform transition-transform rotate-180' : ''}>▼</span>
-              </button>
-            ) : null}
+          <div key={partyIndex} className="bg-pane rounded-lg p-4">
+            <button onClick={() => setExpandedLogParty(isLogExpanded ? null : partyIndex)} className={`w-full flex justify-between items-center text-sm ${isLogExpanded ? 'mb-3' : ''}`}>
+              <span><span className="font-bold text-black">{party.name}</span><span className="ml-2">{selectedDungeon?.name}</span><span className="ml-2 font-medium text-sub">{cycle.state}</span></span>
+              <span className={isLogExpanded ? 'transform transition-transform rotate-180' : ''}>▼</span>
+            </button>
 
-            {(!hasLastLog || isLogExpanded) && (
-              <div className="flex items-center gap-2 mb-3">
-                {!hasLastLog && (
-                  <span className="text-sm font-bold text-black whitespace-nowrap">{party.name}</span>
-                )}
-                <select
-                  value={party.selectedDungeonId}
-                  onChange={(e) => onSelectDungeon(partyIndex, Number(e.target.value))}
-                  className="border border-gray-300 rounded px-2 py-1 text-sm flex-1"
-                >
-                  {DUNGEONS.map(dungeon => {
-                    const gateState = getDungeonEntryGateState(party, dungeon);
-                    return (
-                      <option key={dungeon.id} value={dungeon.id} disabled={gateState.locked}>
-                        {dungeon.name} {gateState.locked ? '🔒' : ''}
-                      </option>
-                    );
-                  })}
-                </select>
-                <button
-                  onClick={() => onRunExpedition(partyIndex)}
-                  disabled={selectedDungeonGate?.locked}
-                  className={`px-3 py-1 text-white rounded font-medium text-sm ${
-                    selectedDungeonGate?.locked
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-sub hover:bg-blue-600'
-                  }`}
-                >
-                  出撃
-                </button>
+            <div className="grid grid-cols-2 gap-2 mb-3 text-xs text-gray-600">
+              <div>HP</div><div>{cycle.state}</div>
+              <div className="h-2 rounded-full bg-blue-100 overflow-hidden"><div className="h-full bg-blue-500" style={{ width: `${hpPercent}%` }} /></div>
+              <div className="h-2 rounded-full bg-gray-200 overflow-hidden"><div className="h-full bg-sub" style={{ width: `${progressPercent}%` }} /></div>
+            </div>
+
+            {isLogExpanded && (
+              <div className="space-y-2 mb-3">
+                <div className="flex items-center gap-2">
+                  <select
+                    value={party.selectedDungeonId}
+                    onChange={(e) => onSelectDungeon(partyIndex, Number(e.target.value))}
+                    className="border border-gray-300 rounded px-2 py-1 text-sm flex-1"
+                  >
+                    {DUNGEONS.map(dungeon => {
+                      const gateState = getDungeonEntryGateState(party, dungeon);
+                      return <option key={dungeon.id} value={dungeon.id} disabled={gateState.locked}>{dungeon.name} {gateState.locked ? '🔒' : ''}</option>;
+                    })}
+                  </select>
+                  <button onClick={() => triggerSortie(partyIndex)} disabled={selectedDungeonGate?.locked} className={`px-3 py-1 text-white rounded font-medium text-sm ${selectedDungeonGate?.locked ? 'bg-gray-400 cursor-not-allowed' : 'bg-sub hover:bg-blue-600'}`}>出撃</button>
+                </div>
+                {getNextGoalText(party) && <div className="text-sm text-gray-700">{getNextGoalText(party)}</div>}
               </div>
             )}
 
-            {(!hasLastLog || isLogExpanded) && (() => {
-              const nextGoalText = getNextGoalText(party);
-              if (!nextGoalText) return null;
-              return <div className="mt-3 text-sm text-gray-700">{nextGoalText}</div>;
-            })()}
-
-            {/* Last Expedition Log */}
-            {party.lastExpeditionLog && isLogExpanded && (
+            {currentLog && isLogExpanded && (
               <div className="border-t border-gray-200 pt-3">
                 <div className="space-y-2">
                   <div className="text-sm text-gray-500">
-                    Lv: {formatNumber(party.level)} | {party.deity.name} | 
-                    +{formatNumber(party.lastExpeditionLog.totalExperience)}EXP
-                    {party.lastExpeditionLog.autoSellProfit > 0 && (
-                      <span> | +{formatNumber(party.lastExpeditionLog.autoSellProfit)}G</span>
-                    )}
+                    EXP: +{formatNumber(currentLog.totalExperience)}
+                    {currentLog.autoSellProfit > 0 && <span> | 自動売却額: {formatNumber(currentLog.autoSellProfit)}G</span>}
                   </div>
 
-                    {party.lastExpeditionLog.rewards.length > 0 && (
-                      <div className="text-sm">
-                        <span className="text-gray-500">獲得アイテム: </span>
-                        {party.lastExpeditionLog.rewards.map((item, i) => {
-                          const rarity = getItemRarityById(item.id);
-                          const isSuperRare = item.superRare > 0;
-                          const rarityClass = getRarityTextClass(rarity, isSuperRare);
-                          return (
-                            <span key={i} className={`${rarityClass} font-medium`}>
-                              {i > 0 && ', '}{getItemDisplayName(item)}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    )}
+                  {currentLog.rewards.length > 0 && (
+                    <div className="text-sm">
+                      <span className="text-gray-500">獲得アイテム: </span>
+                      {currentLog.rewards.map((item, i) => {
+                        const rarity = getItemRarityById(item.id);
+                        const isSuperRare = item.superRare > 0;
+                        const rarityClass = getRarityTextClass(rarity, isSuperRare);
+                        return <span key={i} className={`${rarityClass} font-medium`}>{i > 0 && ', '}{getItemDisplayName(item)}</span>;
+                      })}
+                    </div>
+                  )}
 
                   <div className="border-t border-gray-200 pt-2 space-y-2">
-                      {[...party.lastExpeditionLog.entries].reverse().map((entry, i, arr) => {
-                        const originalIndex = arr.length - 1 - i;
-                        let roomLabel: string;
-                        if (entry.floor && entry.roomInFloor) {
-                          roomLabel = `${entry.floor}F-${entry.roomInFloor}`;
-                        } else {
-                          const isBoss = entry.room === party.lastExpeditionLog!.totalRooms + 1;
-                          roomLabel = isBoss ? 'BOSS' : entry.room.toString();
-                        }
-                        const healAmount = Math.max(0, entry.healAmount ?? 0);
-                        const attritionAmount = Math.max(0, entry.attritionAmount ?? 0);
-                        const estimatedStartHP = Math.min(
-                          entry.maxPartyHP,
-                          Math.max(0, entry.remainingPartyHP + entry.damageTaken + attritionAmount - healAmount)
-                        );
-                        const takenDamageAmount = Math.max(0, estimatedStartHP - entry.remainingPartyHP);
-                        const remainingRatio = entry.maxPartyHP > 0 ? (entry.remainingPartyHP / entry.maxPartyHP) * 100 : 0;
-                        const healRatio = entry.maxPartyHP > 0 ? (healAmount / entry.maxPartyHP) * 100 : 0;
-                        const takenRatio = entry.maxPartyHP > 0 ? (takenDamageAmount / entry.maxPartyHP) * 100 : 0;
-                        const enemyTakenAmount = Math.min(entry.enemyHP, Math.max(0, entry.damageDealt));
-                        const enemyRemainingAmount = Math.max(0, entry.enemyHP - enemyTakenAmount);
-                        const enemyRemainingRatio = entry.enemyHP > 0 ? (enemyRemainingAmount / entry.enemyHP) * 100 : 0;
-                        const isRoomExpanded = expandedRoom?.partyIndex === partyIndex && expandedRoom?.roomIndex === originalIndex;
+                    {[...displayedEntries].reverse().map((entry, i, arr) => {
+                      const originalIndex = arr.length - 1 - i;
+                      const roomLabel = entry.floor && entry.roomInFloor
+                        ? `${entry.floor}F-${entry.roomInFloor}`
+                        : entry.room === currentLog.totalRooms + 1 ? 'BOSS' : entry.room.toString();
+                      const healAmount = Math.max(0, entry.healAmount ?? 0);
+                      const attritionAmount = Math.max(0, entry.attritionAmount ?? 0);
+                      const estimatedStartHP = Math.min(entry.maxPartyHP, Math.max(0, entry.remainingPartyHP + entry.damageTaken + attritionAmount - healAmount));
+                      const takenDamageAmount = Math.max(0, estimatedStartHP - entry.remainingPartyHP);
+                      const remainingRatio = entry.maxPartyHP > 0 ? (entry.remainingPartyHP / entry.maxPartyHP) * 100 : 0;
+                      const healRatio = entry.maxPartyHP > 0 ? (healAmount / entry.maxPartyHP) * 100 : 0;
+                      const takenRatio = entry.maxPartyHP > 0 ? (takenDamageAmount / entry.maxPartyHP) * 100 : 0;
+                      const enemyTakenAmount = Math.min(entry.enemyHP, Math.max(0, entry.damageDealt));
+                      const enemyRemainingAmount = Math.max(0, entry.enemyHP - enemyTakenAmount);
+                      const enemyRemainingRatio = entry.enemyHP > 0 ? (enemyRemainingAmount / entry.enemyHP) * 100 : 0;
+                      const isRoomExpanded = expandedRoom?.partyIndex === partyIndex && expandedRoom?.roomIndex === originalIndex;
 
-                        return (
-                          <div key={originalIndex} className="bg-white rounded overflow-hidden">
-                            <button
-                              onClick={() => setExpandedRoom(isRoomExpanded ? null : { partyIndex, roomIndex: originalIndex })}
-                              className="w-full text-left p-2 text-xs"
-                            >
-                              <div className="flex justify-between items-center">
-                                <span>
-                                  <span className="font-medium">{roomLabel}: {entry.enemyName}</span>
+                      return (
+                        <div key={`${partyIndex}-${originalIndex}-${entry.room}`} className="bg-white rounded overflow-hidden">
+                          <button onClick={() => setExpandedRoom(isRoomExpanded ? null : { partyIndex, roomIndex: originalIndex })} className="w-full text-left p-2 text-xs">
+                            <div className="flex justify-between items-center">
+                              <span className="font-medium">{roomLabel}: {entry.enemyName}</span>
+                              <span className="flex items-center gap-2">
+                                <span className={entry.gateInfo ? 'text-gray-500 font-medium' : entry.outcome === 'victory' ? 'text-sub font-medium' : entry.outcome === 'defeat' ? 'text-red-600 font-medium' : 'text-yellow-600 font-medium'}>
+                                  {entry.gateInfo ? '未到達' : entry.outcome === 'victory' ? '勝利' : entry.outcome === 'defeat' ? '敗北' : '引分'}
                                 </span>
-                                <span className="flex items-center gap-2">
-                                  <span className={
-                                    entry.gateInfo ? 'text-gray-500 font-medium' :
-                                    entry.outcome === 'victory' ? 'text-sub font-medium' :
-                                    entry.outcome === 'defeat' ? 'text-red-600 font-medium' : 'text-yellow-600 font-medium'
-                                  }>
-                                    {entry.gateInfo ? '未到達' :
-                                     entry.outcome === 'victory' ? '勝利' :
-                                     entry.outcome === 'defeat' ? '敗北' : '引分'}
-                                  </span>
-                                  <span className={`transform transition-transform ${isRoomExpanded ? 'rotate-180' : ''}`}>▼</span>
-                                </span>
-                              </div>
-                              {(entry.gateInfo || entry.reward) && (
-                                <div className="text-gray-500 mt-1 flex flex-wrap items-center gap-1">
-                                  {entry.gateInfo && <span className="text-orange-700">解放条件: {entry.gateInfo}</span>}
-                                  {entry.reward && (
-                                    <span className={`${getRewardTextClass(entry.rewardRarity, entry.rewardIsSuperRare)} ${entry.rewardIsSuperRare ? 'font-bold' : 'font-medium'}`}>
-                                      獲得:{entry.reward}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-                              <div className="mt-1 grid grid-cols-2 gap-2 text-gray-600">
-                                <div>
-                                  <div className="mb-0.5">自HP {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
-                                  <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                                    <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: "#93c5fd" }} />
-                                    <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: "#b8edb2" }} />
-                                    <div className="h-full" style={{ width: `${Math.min(100, takenRatio)}%`, backgroundColor: "#fcb786" }} />
-                                  </div>
-                                </div>
-                                <div>
-                                  <div className="mb-0.5">敵HP {formatNumber(enemyRemainingAmount)} / {formatNumber(entry.enemyHP)}</div>
-                                  <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                                    <div className="h-full" style={{ width: `${Math.min(100, enemyRemainingRatio)}%`, backgroundColor: "#93c5fd" }} />
-                                  </div>
-                                </div>
-                              </div>
-                            </button>
-                            {isRoomExpanded && entry.details && (
-                              <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
-                                <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
-                                {entry.details.map((log, j) => {
-                                  const phaseLabel = log.actor === 'deity'
-                                    ? '末'
-                                    : log.actor === 'effect'
-                                      ? '効'
-                                      : log.phase === 'long'
-                                      ? '遠'
-                                      : log.phase === 'mid'
-                                        ? '魔'
-                                        : '近';
-                                  const getPhaseEmoji = () => {
-                                    if (log.elementalOffense === 'fire') return '🔥';
-                                    if (log.elementalOffense === 'thunder') return '⚡';
-                                    if (log.elementalOffense === 'ice') return '❄️';
-                                    if (log.phase === 'long') return '🏹';
-                                    if (log.phase === 'mid') return '🪄';
-                                    return '⚔';
-                                  };
-                                  const emoji = getPhaseEmoji();
-                                  const isEnemy = log.actor === 'enemy';
-                                  const hits = log.hits ?? 0;
-                                  const totalAttempts = log.totalAttempts ?? 0;
-                                  const allMissed = totalAttempts > 0 && hits === 0;
-                                  const hitDisplay = totalAttempts > 0 ? `(${hits}/${totalAttempts}回)` : '';
-
-                                  let actionText: string;
-                                  if (log.actor === 'effect') {
-                                    actionText = log.action;
-                                  } else if (isEnemy) {
-                                    if (allMissed) {
-                                      actionText = `敵が${log.action.replace('！', 'したが外れた！')}`;
-                                    } else {
-                                      actionText = `敵が${log.action}`;
-                                    }
-                                  } else {
-                                    if (allMissed) {
-                                      const charName = log.action.replace(/ の.*$/, '');
-                                      actionText = `${charName} の攻撃は外れた！`;
-                                    } else {
-                                      actionText = log.action;
-                                    }
-                                  }
-
-                                  return (
-                                    <div key={j} className="flex justify-between text-gray-600">
-                                      <span>
-                                        <span className="text-gray-400">[{phaseLabel}]</span>{' '}
-                                        {actionText}
-                                        {log.note && <span className="text-gray-400"> {log.note}</span>}
-                                        {hitDisplay && <span className="text-gray-400">{hitDisplay}</span>}
-                                      </span>
-                                      {log.damage !== undefined && log.damage > 0 && (
-                                        <span className={isEnemy ? 'text-accent' : 'text-sub'}>
-                                          ({emoji} {formatNumber(log.damage)})
-                                        </span>
-                                      )}
-                                    </div>
-                                  );
-                                })}
+                                <span className={`transform transition-transform ${isRoomExpanded ? 'rotate-180' : ''}`}>▼</span>
+                              </span>
+                            </div>
+                            {(entry.gateInfo || entry.reward) && (
+                              <div className="text-gray-500 mt-1 flex flex-wrap items-center gap-1">
+                                {entry.gateInfo && <span className="text-orange-700">解放条件: {entry.gateInfo}</span>}
+                                {entry.reward && <span className={`${getRewardTextClass(entry.rewardRarity, entry.rewardIsSuperRare)} ${entry.rewardIsSuperRare ? 'font-bold' : 'font-medium'}`}>獲得:{entry.reward}</span>}
                               </div>
                             )}
-                          </div>
-                        );
-                      })}
+                            <div className="mt-1 grid grid-cols-2 gap-2 text-gray-600">
+                              <div>
+                                <div className="mb-0.5">自HP {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
+                                <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                                  <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: '#93c5fd' }} />
+                                  <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: '#b8edb2' }} />
+                                  <div className="h-full" style={{ width: `${Math.min(100, takenRatio)}%`, backgroundColor: '#fcb786' }} />
+                                </div>
+                              </div>
+                              <div>
+                                <div className="mb-0.5">敵HP {formatNumber(enemyRemainingAmount)} / {formatNumber(entry.enemyHP)}</div>
+                                <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                                  <div className="h-full" style={{ width: `${Math.min(100, enemyRemainingRatio)}%`, backgroundColor: '#93c5fd' }} />
+                                </div>
+                              </div>
+                            </div>
+                          </button>
+                          {isRoomExpanded && entry.details && (
+                            <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
+                              <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
+                              {entry.details.map((log, j) => {
+                                const phaseLabel = log.actor === 'deity' ? '末' : log.actor === 'effect' ? '効' : log.phase === 'long' ? '遠' : log.phase === 'mid' ? '魔' : '近';
+                                const emoji = log.elementalOffense === 'fire' ? '🔥' : log.elementalOffense === 'thunder' ? '⚡' : log.elementalOffense === 'ice' ? '❄️' : log.phase === 'long' ? '🏹' : log.phase === 'mid' ? '🪄' : '⚔';
+                                const isEnemy = log.actor === 'enemy';
+                                const hits = log.hits ?? 0;
+                                const totalAttempts = log.totalAttempts ?? 0;
+                                const allMissed = totalAttempts > 0 && hits === 0;
+                                const hitDisplay = totalAttempts > 0 ? `(${hits}/${totalAttempts}回)` : '';
+
+                                let actionText: string;
+                                if (log.actor === 'effect') {
+                                  actionText = log.action;
+                                } else if (isEnemy) {
+                                  actionText = allMissed ? `敵が${log.action.replace('！', 'したが外れた！')}` : `敵が${log.action}`;
+                                } else {
+                                  actionText = allMissed ? `${log.action.replace(/ の.*$/, '')} の攻撃は外れた！` : log.action;
+                                }
+
+                                return (
+                                  <div key={j} className="flex justify-between text-gray-600">
+                                    <span>
+                                      <span className="text-gray-400">[{phaseLabel}]</span>{' '}
+                                      {actionText}
+                                      {log.note && <span className="text-gray-400"> {log.note}</span>}
+                                      {hitDisplay && <span className="text-gray-400">{hitDisplay}</span>}
+                                    </span>
+                                    {log.damage !== undefined && log.damage > 0 && (
+                                      <span className={isEnemy ? 'text-accent' : 'text-sub'}>({emoji} {formatNumber(log.damage)})</span>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {cycle.state === '探索中' && displayedEntries.length === 0 && (
+                      <div className="text-xs text-gray-500">探索進行中... 1部屋ずつログを更新中</div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1914,6 +1880,7 @@ function ExpeditionTab({
     </div>
   );
 }
+
 function InventoryTab({
   inventory,
   onSellStack,
