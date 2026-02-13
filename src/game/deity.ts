@@ -43,6 +43,12 @@ export function getDeityRank(totalDonatedGold: number): number {
   return getDonationTier(totalDonatedGold) + 1;
 }
 
+export function getNextDonationThreshold(totalDonatedGold: number): number | null {
+  const safeDonation = Math.max(0, totalDonatedGold);
+  const nextThreshold = DONATION_THRESHOLDS.find((threshold) => threshold > safeDonation);
+  return nextThreshold ?? null;
+}
+
 export function getEffectiveDeityTier(totalDonatedGold: number): number {
   return Math.min(getDonationTier(totalDonatedGold), 10);
 }
