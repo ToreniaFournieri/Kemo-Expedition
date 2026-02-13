@@ -804,6 +804,7 @@ inventory = {
 
 ### 4.1 AFK Handling
 - Store the last update timestamp and, on app launch, simulate each party’s state progression, recovery, exploration progress, and profit handling using the elapsed time.
+- Limit: maximum 60 minutes. (for current version) 
 
 
 ## 5. EXPEDITION 
