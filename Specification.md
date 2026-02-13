@@ -1379,12 +1379,47 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
 
 **1.Donation box (寄付箱)**
 - Display donated amount of gold of each god.
-  - In this version, it is just a collective feature.
+
+
+- Donation Scaling (Divine Bureau)
+  - For each god g:
+  - Let D_g be total donated gold to god g.
+  - Convert donation to tier T_g using thresholds.
+  - Use effectiveTier = min(T_g, 10).
+
+- thresholds: [0, 500, 1200, 2200, 3600, 5500, 8000, 11000, 14500, 18500, 23000]
+
+- God scaling:
+  - Restoration:
+    heal_missing_pct = clamp(0.20 + 0.02*effectiveTier, 0.20, 0.40)
+    trigger_every_rooms = 4
+  
+  - Attrition:
+    attack_bonus = 20 + 2*effectiveTier
+    hp_loss_pct = max(0.05 - 0.002*effectiveTier, 0.03)
+    trigger_every_rooms = 4
+  
+  - Fortification:
+    physical_def_bonus = clamp(10 + 1*effectiveTier, 10, 20)
+    magical_def_bonus  = clamp(10 + 1*effectiveTier, 10, 20)
+  
+  - Precision:
+    accuracy_bonus = clamp(0.020 + 0.0015*effectiveTier, 0.020, 0.035)
+    evasion_penalty = clamp(-0.005 - 0.0005*effectiveTier, -0.010, -0.005)
+  
+  - Evasion:
+    evasion_bonus = clamp(0.015 + 0.0015*effectiveTier, 0.015, 0.030)
+  
+  - Resonance:
+    resonance_upgrade_tiers = 1 + floor(effectiveTier/5)
+    magical_def_penalty = clamp(-5 + 1*effectiveTier, -5, 0)
+
 
 ```
 (Left-aligned)      (Right-aligned)
-再生の神              1,203G
-消耗の神                345G
+再生の神(ランク3)      1,203G (次のランク 2,200G)
+消耗の神(ランク2)         545G (次のランク 2,200G)
+防備の神(ランク1)         0G (次のランク　500G)
 ...
 
 ```
