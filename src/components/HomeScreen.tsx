@@ -67,6 +67,17 @@ interface PartyCycleRuntime {
   durationMs: number;
 }
 
+const PARTY_CYCLE_TICK_MS = 100;
+const EXPLORING_PROGRESS_STEP_MS = 1000;
+const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
+
+function getExpeditionOutcomeLabel(outcome: 'victory' | 'return' | 'defeat' | 'retreat'): string {
+  if (outcome === 'victory') return '踏破';
+  if (outcome === 'return') return '帰還';
+  if (outcome === 'defeat') return '敗北';
+  return '撤退';
+}
+
 type ItemRarity = 'common' | 'uncommon' | 'rare' | 'mythic';
 type RarityFilter = 'all' | ItemRarity;
 
@@ -1582,11 +1593,9 @@ function ExpeditionTab({
   onSpendPendingProfit: (partyIndex: number, amount: number) => void;
   onAddNotification: (message: string) => void;
 }) {
-  const AUTO_REPEAT_INTERVAL_MS = 5000;
   const [expandedLogParty, setExpandedLogParty] = useState<number | null>(null);
   const [expandedRoom, setExpandedRoom] = useState<{ partyIndex: number; roomIndex: number } | null>(null);
   const [isAutoRepeatEnabled, setIsAutoRepeatEnabled] = useState(false);
-  const [autoRepeatCycleKey, setAutoRepeatCycleKey] = useState(0);
   const [partyCycles, setPartyCycles] = useState<Record<number, PartyCycleRuntime>>({});
 
   const transitionTo = (partyIndex: number, nextState: PartyCycleState, durationMs: number) => {
@@ -1611,7 +1620,7 @@ function ExpeditionTab({
         const next = { ...prev };
         state.parties.forEach((party, partyIndex) => {
           const runtime = next[partyIndex] ?? { state: '休息中' as PartyCycleState, elapsedMs: 0, durationMs: 1000 };
-          const updated = { ...runtime, elapsedMs: runtime.elapsedMs + 1000 };
+          const updated = { ...runtime, elapsedMs: runtime.elapsedMs + PARTY_CYCLE_TICK_MS };
 
           if (updated.state === '休息中') {
             const { partyStats } = computePartyStats(party);
@@ -1643,12 +1652,8 @@ function ExpeditionTab({
               updated.durationMs = 1000;
             } else if (updated.state === '移動中') {
               onRunExpedition(partyIndex);
-              const activeDungeon = DUNGEONS.find((d) => d.id === party.selectedDungeonId);
-              const totalRooms = activeDungeon?.floors
-                ? activeDungeon.floors.reduce((sum, floor) => sum + floor.rooms.length, 0)
-                : (activeDungeon?.numberOfRooms ?? 1);
               updated.state = '探索中';
-              updated.durationMs = Math.max(1000, totalRooms * 1000);
+              updated.durationMs = EXPLORING_PROGRESS_TOTAL_STEPS * EXPLORING_PROGRESS_STEP_MS;
             } else if (updated.state === '探索中') {
               updated.state = '帰還中';
               updated.durationMs = 5000;
@@ -1662,15 +1667,9 @@ function ExpeditionTab({
         });
         return next;
       });
-    }, 1000);
+    }, PARTY_CYCLE_TICK_MS);
     return () => window.clearInterval(id);
   }, [state.parties, isAutoRepeatEnabled, onAddNotification, onHealPartyHp, onProcessPendingProfit, onRunExpedition, onSpendPendingProfit]);
-
-  useEffect(() => {
-    if (!isAutoRepeatEnabled) return;
-    const tid = window.setInterval(() => setAutoRepeatCycleKey((prev) => prev + 1), AUTO_REPEAT_INTERVAL_MS);
-    return () => window.clearInterval(tid);
-  }, [isAutoRepeatEnabled]);
 
   return (
     <div className="space-y-4">
@@ -1678,23 +1677,16 @@ function ExpeditionTab({
         <button onClick={() => state.parties.forEach((_, i) => triggerSortie(i))} className="px-3 py-1 text-white rounded font-medium text-sm bg-sub hover:bg-blue-600">
           一斉出撃
         </button>
-        <div className="flex flex-col">
-          <button
-            onClick={() => setIsAutoRepeatEnabled((prev) => !prev)}
-            className={`px-3 py-1 rounded font-medium text-sm border ${
-              isAutoRepeatEnabled
-                ? 'bg-blue-50 border-sub text-sub'
-                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            自動周回 {isAutoRepeatEnabled ? 'ON' : 'OFF'}
-          </button>
-          {isAutoRepeatEnabled && (
-            <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-blue-100/80">
-              <div key={autoRepeatCycleKey} className="h-full rounded-full bg-blue-300" style={{ animation: `auto-repeat-progress ${AUTO_REPEAT_INTERVAL_MS}ms linear forwards` }} />
-            </div>
-          )}
-        </div>
+        <button
+          onClick={() => setIsAutoRepeatEnabled((prev) => !prev)}
+          className={`px-3 py-1 rounded font-medium text-sm border ${
+            isAutoRepeatEnabled
+              ? 'bg-blue-50 border-sub text-sub'
+              : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+          }`}
+        >
+          自動周回 {isAutoRepeatEnabled ? 'ON' : 'OFF'}
+        </button>
       </div>
 
       {[0, 1, 2, 3, 4, 5].map((partyIndex) => {
@@ -1706,11 +1698,21 @@ function ExpeditionTab({
         const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
         const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
         const cycle = partyCycles[partyIndex] ?? { state: '休息中', elapsedMs: 0, durationMs: 1000 };
-        const progressPercent = Math.min(100, Math.round((cycle.elapsedMs / Math.max(1, cycle.durationMs)) * 100));
+        const progressPercent = cycle.state === '探索中'
+          ? Math.min(
+            100,
+            Math.floor(cycle.elapsedMs / EXPLORING_PROGRESS_STEP_MS) * (100 / EXPLORING_PROGRESS_TOTAL_STEPS),
+          )
+          : Math.min(100, (cycle.elapsedMs / Math.max(1, cycle.durationMs)) * 100);
         const { partyStats } = computePartyStats(party);
         const hpPercent = Math.round((party.currentHp / Math.max(1, partyStats.hp)) * 100);
         const isLogExpanded = expandedLogParty === partyIndex;
         const currentLog = party.lastExpeditionLog;
+        const headlineState = cycle.state === '探索中'
+          ? '探索中'
+          : currentLog
+            ? getExpeditionOutcomeLabel(currentLog.finalOutcome)
+            : cycle.state;
 
         const displayedEntries = (() => {
           if (!currentLog) return [];
@@ -1725,14 +1727,22 @@ function ExpeditionTab({
         return (
           <div key={partyIndex} className="bg-pane rounded-lg p-4">
             <button onClick={() => setExpandedLogParty(isLogExpanded ? null : partyIndex)} className={`w-full flex justify-between items-center text-sm ${isLogExpanded ? 'mb-3' : ''}`}>
-              <span><span className="font-bold text-black">{party.name}</span><span className="ml-2">{selectedDungeon?.name}</span><span className="ml-2 font-medium text-sub">{cycle.state}</span></span>
+              <span><span className="font-bold text-black">{party.name}</span><span className="ml-2">{selectedDungeon?.name}</span><span className="ml-2 font-medium text-sub">{headlineState}</span></span>
               <span className={isLogExpanded ? 'transform transition-transform rotate-180' : ''}>▼</span>
             </button>
 
-            <div className="grid grid-cols-2 gap-2 mb-3 text-xs text-gray-600">
-              <div>HP</div><div>{cycle.state}</div>
-              <div className="h-2 rounded-full bg-blue-100 overflow-hidden"><div className="h-full bg-blue-500" style={{ width: `${hpPercent}%` }} /></div>
-              <div className="h-2 rounded-full bg-gray-200 overflow-hidden"><div className="h-full bg-sub" style={{ width: `${progressPercent}%` }} /></div>
+            <div className="mb-3 flex items-center gap-2 text-xs text-gray-600">
+              <span className="shrink-0">HP</span>
+              <div className="h-2 w-28 rounded-full bg-blue-100 overflow-hidden">
+                <div className="h-full bg-blue-500 transition-[width] duration-200" style={{ width: `${hpPercent}%` }} />
+              </div>
+              <span className="shrink-0">{cycle.state}</span>
+              <div className="h-2 min-w-0 flex-1 rounded-full bg-gray-200 overflow-hidden">
+                <div
+                  className={`h-full bg-sub ${cycle.state === '探索中' ? '' : 'transition-[width] duration-200'}`}
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
             </div>
 
             {isLogExpanded && (
