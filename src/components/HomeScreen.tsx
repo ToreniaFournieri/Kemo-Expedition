@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { DUNGEONS } from '../data/dungeons';
 import { RACES } from '../data/races';
@@ -1598,6 +1598,12 @@ function ExpeditionTab({
   const [isAutoRepeatEnabled, setIsAutoRepeatEnabled] = useState(false);
   const [partyCycles, setPartyCycles] = useState<Record<number, PartyCycleRuntime>>({});
 
+  const getEstimatedStartHp = (entry: ExpeditionLogEntry) => {
+    const healAmount = Math.max(0, entry.healAmount ?? 0);
+    const attritionAmount = Math.max(0, entry.attritionAmount ?? 0);
+    return Math.min(entry.maxPartyHP, Math.max(0, entry.remainingPartyHP + entry.damageTaken + attritionAmount - healAmount));
+  };
+
   const transitionTo = (partyIndex: number, nextState: PartyCycleState, durationMs: number) => {
     setPartyCycles((prev) => ({
       ...prev,
@@ -1678,7 +1684,24 @@ function ExpeditionTab({
           一斉出撃
         </button>
         <button
-          onClick={() => setIsAutoRepeatEnabled((prev) => !prev)}
+          onClick={() => {
+            setIsAutoRepeatEnabled((prev) => {
+              const nextEnabled = !prev;
+              if (nextEnabled) {
+                setPartyCycles((prevCycles) => {
+                  const nextCycles = { ...prevCycles };
+                  state.parties.forEach((_, partyIndex) => {
+                    const runtime = nextCycles[partyIndex] ?? { state: '休息中' as PartyCycleState, elapsedMs: 0, durationMs: 1000 };
+                    if (runtime.state === '待機中') {
+                      nextCycles[partyIndex] = { state: '移動中', elapsedMs: 0, durationMs: 5000 };
+                    }
+                  });
+                  return nextCycles;
+                });
+              }
+              return nextEnabled;
+            });
+          }}
           className={`px-3 py-1 rounded font-medium text-sm border ${
             isAutoRepeatEnabled
               ? 'bg-blue-50 border-sub text-sub'
@@ -1698,14 +1721,15 @@ function ExpeditionTab({
         const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
         const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
         const cycle = partyCycles[partyIndex] ?? { state: '休息中', elapsedMs: 0, durationMs: 1000 };
-        const progressPercent = cycle.state === '探索中'
+        const progressPercent = cycle.state === '待機中'
+          ? 100
+          : cycle.state === '探索中'
           ? Math.min(
             100,
             Math.floor(cycle.elapsedMs / EXPLORING_PROGRESS_STEP_MS) * (100 / EXPLORING_PROGRESS_TOTAL_STEPS),
           )
           : Math.min(100, (cycle.elapsedMs / Math.max(1, cycle.durationMs)) * 100);
         const { partyStats } = computePartyStats(party);
-        const hpPercent = Math.round((party.currentHp / Math.max(1, partyStats.hp)) * 100);
         const isLogExpanded = expandedLogParty === partyIndex;
         const currentLog = party.lastExpeditionLog;
         const headlineState = cycle.state === '探索中'
@@ -1723,6 +1747,13 @@ function ExpeditionTab({
           );
           return currentLog.entries.slice(0, visibleCount);
         })();
+
+        const displayedHp = (() => {
+          if (cycle.state !== '探索中' || !currentLog || currentLog.entries.length === 0) return party.currentHp;
+          if (displayedEntries.length === 0) return getEstimatedStartHp(currentLog.entries[0]);
+          return displayedEntries[displayedEntries.length - 1].remainingPartyHP;
+        })();
+        const hpPercent = Math.round((displayedHp / Math.max(1, partyStats.hp)) * 100);
 
         return (
           <div key={partyIndex} className="bg-pane rounded-lg p-4">
