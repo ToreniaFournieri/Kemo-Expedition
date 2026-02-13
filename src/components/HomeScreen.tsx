@@ -1036,6 +1036,20 @@ function PartyTab({
   }, [availableCategories, equipCategory]);
 
   const displayedDeityName = editingDeity ? pendingDeityName : party.deity.name;
+  const normalizedCurrentDeityName = normalizeDeityName((party.deity.name ?? '').trim());
+  const normalizedDisplayedDeityName = normalizeDeityName((displayedDeityName ?? '').trim());
+  const displayedDeityGold = editingDeity
+    ? parties.reduce((sum, partyCandidate, index) => {
+      const candidateDeityName = normalizeDeityName((partyCandidate.deity.name ?? '').trim());
+      if (candidateDeityName !== normalizedDisplayedDeityName) {
+        return sum;
+      }
+      if (index === selectedPartyIndex && normalizedDisplayedDeityName !== normalizedCurrentDeityName) {
+        return sum;
+      }
+      return sum + (partyCandidate.deityGold ?? 0);
+    }, 0)
+    : (party.deityGold ?? 0);
 
 
   return (
@@ -1072,8 +1086,8 @@ function PartyTab({
       <div className="mb-3 text-sm flex items-center justify-between gap-2">
         <div className="min-w-0">
           <div className="text-gray-600">PTレベル: {formatNumber(party.level)}, 経験値: {formatNumber(party.experience)}/{formatNumber(party.level < 29 ? PARTY_LEVEL_EXP[party.level] : party.experience)}</div>
-          <div className="font-medium mt-1">{displayedDeityName} (ランク{getDeityRank(party.deityGold ?? 0)})</div>
-          <div className="text-xs text-gray-600 mt-1">効果:{getDeityEffectDescription(displayedDeityName, party.deityGold ?? 0)}</div>
+          <div className="font-medium mt-1">{displayedDeityName} (ランク{getDeityRank(displayedDeityGold)})</div>
+          <div className="text-xs text-gray-600 mt-1">効果:{getDeityEffectDescription(displayedDeityName, displayedDeityGold)}</div>
         </div>
         {editingDeity ? (
           <div className="flex items-center gap-2">
