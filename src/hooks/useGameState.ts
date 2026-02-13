@@ -472,6 +472,7 @@ type GameAction =
   | { type: 'MARK_DIARY_LOG_SEEN'; logId: string }
   | { type: 'MARK_ALL_DIARY_LOGS_SEEN' }
   | { type: 'UPDATE_DIARY_SETTINGS'; partyIndex: number; settings: Partial<DiarySettings> }
+  | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean }
   | { type: 'RESET_GAME' }
   | { type: 'RESET_COMMON_BAGS' }
   | { type: 'RESET_UNIQUE_BAGS' }
@@ -1445,6 +1446,50 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'SIMULATE_AFK': {
+      if (!action.isAutoRepeatEnabled) return state;
+
+      const cappedElapsedMs = Math.max(0, Math.min(action.elapsedMs, 60 * 60 * 1000));
+      if (cappedElapsedMs < 1000) return state;
+
+      const approxCycleDurationMs = 44_000;
+      const runCount = Math.max(0, Math.floor(cappedElapsedMs / approxCycleDurationMs));
+      if (runCount <= 0) return state;
+
+      let workingState = state;
+
+      for (let runIndex = 0; runIndex < runCount; runIndex++) {
+        for (let partyIndex = 0; partyIndex < workingState.parties.length; partyIndex++) {
+          workingState = gameReducer(workingState, { type: 'RUN_EXPEDITION', partyIndex });
+          workingState = gameReducer(workingState, { type: 'FINALIZE_DIARY_LOG', partyIndex });
+
+          const currentParty = workingState.parties[partyIndex];
+          if (!currentParty) continue;
+
+          const spend = Math.floor((currentParty.pendingProfit ?? 0) * 0.5);
+          if (spend > 0) {
+            workingState = gameReducer(workingState, { type: 'SPEND_PENDING_PROFIT', partyIndex, amount: spend });
+          }
+
+          const afterSpend = workingState.parties[partyIndex];
+          if (!afterSpend) continue;
+          const donation = Math.floor((afterSpend.pendingProfit ?? 0) * 0.2);
+          const deposit = Math.max(0, (afterSpend.pendingProfit ?? 0) - donation);
+          workingState = gameReducer(workingState, { type: 'PROCESS_PENDING_PROFIT', partyIndex, donation, deposit });
+
+          const partyAfterProfit = workingState.parties[partyIndex];
+          if (!partyAfterProfit) continue;
+          const { partyStats } = computePartyStats(partyAfterProfit);
+          const missingHp = Math.max(0, partyStats.hp - (partyAfterProfit.currentHp ?? partyStats.hp));
+          if (missingHp > 0) {
+            workingState = gameReducer(workingState, { type: 'HEAL_PARTY_HP', partyIndex, amount: missingHp });
+          }
+        }
+      }
+
+      return workingState;
+    }
+
     case 'MARK_ITEMS_SEEN': {
       const currentParty = state.parties[state.selectedPartyIndex];
       const newInventory: InventoryRecord = {};
@@ -1670,6 +1715,10 @@ export function useGameState() {
 
     updateDiarySettings: useCallback((partyIndex: number, settings: Partial<DiarySettings>) => {
       dispatch({ type: 'UPDATE_DIARY_SETTINGS', partyIndex, settings });
+    }, []),
+
+    simulateAfk: useCallback((elapsedMs: number, isAutoRepeatEnabled: boolean) => {
+      dispatch({ type: 'SIMULATE_AFK', elapsedMs, isAutoRepeatEnabled });
     }, []),
 
     resetGame: useCallback(() => {
