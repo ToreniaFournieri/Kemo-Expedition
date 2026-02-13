@@ -209,7 +209,7 @@ function getNextGoalText(party: Party): string | null {
       const collected = getLootCollectionCount(party, tier, 'uncommon');
       const unlocked = isLootGateUnlocked(party, getEliteGateKey(currentDungeon.id, floor.floorNumber)) || collected >= required;
       if (!unlocked) {
-        return `次の目標: ${currentDungeon.name} ${floor.floorNumber}F-4の解放: アンコモンアイテム(持ち帰り) ${collected}/${required}`;
+        return `次の目標: ${currentDungeon.name} ${floor.floorNumber}F-4の解放: アンコモンアイテム(持ち帰り) ${collected}/${required}（現在）`;
       }
     }
   }
@@ -218,7 +218,7 @@ function getNextGoalText(party: Party): string | null {
   const rareCollected = getLootCollectionCount(party, tier, 'rare');
   const bossUnlocked = isLootGateUnlocked(party, getBossGateKey(currentDungeon.id)) || rareCollected >= bossRequired;
   if (!bossUnlocked) {
-    return `次の目標: ${currentDungeon.name} 6F-4の解放: レアアイテム(持ち帰り) ${rareCollected}/${bossRequired}`;
+    return `次の目標: ${currentDungeon.name} 6F-4の解放: レアアイテム(持ち帰り) ${rareCollected}/${bossRequired}（現在）`;
   }
 
   const nextDungeon = DUNGEONS.find(d => d.id === currentDungeon.id + 1);
@@ -227,7 +227,7 @@ function getNextGoalText(party: Party): string | null {
     const mythicCollected = getLootCollectionCount(party, currentDungeon.id, 'mythic');
     const entryUnlocked = isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id)) || mythicCollected >= entryRequired;
     if (!entryUnlocked) {
-      return `次の目標: ${nextDungeon.name}の解放: ${currentDungeon.name}の神魔レアアイテム(持ち帰り) ${mythicCollected}/${entryRequired}`;
+      return `次の目標: ${nextDungeon.name}の解放: ${currentDungeon.name}の神魔レアアイテム(持ち帰り) ${mythicCollected}/${entryRequired}（現在）`;
     }
   }
 

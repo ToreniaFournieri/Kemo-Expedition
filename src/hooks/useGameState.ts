@@ -916,7 +916,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   remainingPartyHP: currentHp,
                   maxPartyHP: partyStats.hp,
                   details: [],
-                  gateInfo: `${prevDungeonName}の神魔レアアイテム(持ち帰り) ${collected}/${gateRequired}`,
+                  gateInfo: `${prevDungeonName}の神魔レアアイテム(持ち帰り) ${collected}/${gateRequired}（判定時）`,
                 };
                 entries.push(gateEntry);
                 finalOutcome = 'return';
@@ -959,7 +959,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   remainingPartyHP: currentHp,
                   maxPartyHP: partyStats.hp,
                   details: [],
-                  gateInfo: `${rarityLabel}(持ち帰り) ${collected}/${gateRequired}`,
+                  gateInfo: `${rarityLabel}(持ち帰り) ${collected}/${gateRequired}（判定時）`,
                 };
                 entries.push(gateEntry);
                 finalOutcome = 'return';
