@@ -803,9 +803,21 @@ inventory = {
 
 
 ### 4.1 AFK Handling
+**Simulation**
 - Store the last update timestamp and, on app launch, simulate each party’s state progression, recovery, exploration progress, and profit handling using the elapsed time.
 - Limit: maximum 60 minutes. (for current version) 
 
+
+**Notification**
+- Format: 踏破N回/撤退M回/敗北X回 寄付金額: vG, 貯金額:　vG
+- If the value is 0, not display its text (if all zero, then no notification)
+
+```
+Exapmle:
+PT1: 踏破10回/敗北1回 寄付金額: 10G, 貯金額:　30G
+PT2: 踏破1回 寄付金額: 10G, 貯金額:　30G
+PT3: 貯金額: 10G
+```
 
 ## 5. EXPEDITION 
 - Persistence through an expedition:`d.HP`.
