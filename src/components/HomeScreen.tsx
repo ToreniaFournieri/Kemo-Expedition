@@ -29,6 +29,7 @@ interface HomeScreenProps {
     selectParty: (partyIndex: number) => void;
     selectDungeon: (partyIndex: number, dungeonId: number) => void;
     runExpedition: (partyIndex: number) => void;
+    finalizeDiaryLog: (partyIndex: number) => void;
     updatePartyDeity: (partyIndex: number, deityName: string) => void;
     healPartyHp: (partyIndex: number, amount: number) => void;
     clearPendingProfit: (partyIndex: number) => void;
@@ -640,6 +641,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
               updated.state = '探索中';
               updated.durationMs = getExplorationDurationMs();
             } else if (updated.state === '探索中') {
+              actions.finalizeDiaryLog(partyIndex);
               updated.state = '帰還中';
               updated.durationMs = 5000;
             } else if (updated.state === '帰還中') {

@@ -210,6 +210,7 @@ export interface Party {
   pendingProfit: number;
   deityGold: number;
   lastExpeditionLog: ExpeditionLog | null;
+  pendingDiaryLog: DiaryLog | null;
   diaryLogs: DiaryLog[];
   hasUnreadDiary: boolean;
   diarySettings: DiarySettings;
