@@ -527,7 +527,7 @@ function sortInventoryItems(items: [string, InventoryVariant][]): [string, Inven
 }
 
 export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
-  const [activeTab, setActiveTab] = useState<Tab>('party');
+  const [activeTab, setActiveTab] = useState<Tab>('expedition');
   const [selectedCharacter, setSelectedCharacter] = useState<number>(0);
   const [editingCharacter, setEditingCharacter] = useState<number | null>(null);
   const [isAutoRepeatEnabled, setIsAutoRepeatEnabled] = useState(false);
@@ -541,6 +541,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const prevPartyLogsRef = useRef(state.parties.map((party) => party.lastExpeditionLog));
   const pendingNotificationTimersRef = useRef<Record<number, number>>({});
   const hasHydratedAfkRef = useRef(false);
+  const hasShownLaunchProgressRef = useRef(false);
   const { partyStats, characterStats } = computePartyStats(currentParty);
 
   useEffect(() => {
@@ -588,6 +589,28 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       console.error('Failed to persist AFK runtime state:', error);
     }
   }, [isAutoRepeatEnabled, partyCycles]);
+
+  useEffect(() => {
+    if (hasShownLaunchProgressRef.current) return;
+    hasShownLaunchProgressRef.current = true;
+
+    state.parties.forEach((party, partyIndex) => {
+      const stats = party.expeditionStats;
+      const summaryParts: string[] = [];
+      if (stats.victories > 0) summaryParts.push(`踏破${formatNumber(stats.victories)}回`);
+      if (stats.retreats > 0) summaryParts.push(`撤退${formatNumber(stats.retreats)}回`);
+      if (stats.defeats > 0) summaryParts.push(`敗北${formatNumber(stats.defeats)}回`);
+
+      const financeParts: string[] = [];
+      if (stats.donatedGold > 0) financeParts.push(`寄付金額: ${formatNumber(stats.donatedGold)}G`);
+      if (stats.savedGold > 0) financeParts.push(`貯金額:　${formatNumber(stats.savedGold)}G`);
+
+      if (summaryParts.length === 0 && financeParts.length === 0) return;
+
+      const body = [summaryParts.join('/'), financeParts.join(', ')].filter(Boolean).join(' ');
+      actions.addNotification(`PT${partyIndex + 1}: ${body}`);
+    });
+  }, [actions, state.parties]);
 
   // Item drop notifications after expedition
   useEffect(() => {
@@ -775,7 +798,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         <div className="flex justify-between items-center gap-3">
           <div>
             <h1 className="text-lg font-bold">ケモの冒険</h1>
-            <div className="text-xs text-gray-500">v0.2.3 ({state.buildNumber})</div>
+            <div className="text-xs text-gray-500">v0.2.4 ({state.buildNumber})</div>
           </div>
           <div className="flex items-center gap-2 text-right text-sm font-medium">
             <span>{formatNumber(state.global.gold)}G</span>

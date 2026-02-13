@@ -215,6 +215,13 @@ export interface Party {
   diaryLogs: DiaryLog[];
   hasUnreadDiary: boolean;
   diarySettings: DiarySettings;
+  expeditionStats: {
+    victories: number;
+    retreats: number;
+    defeats: number;
+    donatedGold: number;
+    savedGold: number;
+  };
 }
 
 export interface DiaryLog {
