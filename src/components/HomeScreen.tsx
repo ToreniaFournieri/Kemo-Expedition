@@ -71,6 +71,11 @@ const PARTY_CYCLE_TICK_MS = 100;
 const EXPLORING_PROGRESS_STEP_MS = 1000;
 const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
 
+function getExplorationDurationMs(entryCount?: number): number {
+  const exploredSteps = Math.max(1, Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, entryCount ?? EXPLORING_PROGRESS_TOTAL_STEPS));
+  return exploredSteps * EXPLORING_PROGRESS_STEP_MS;
+}
+
 function getExpeditionOutcomeLabel(outcome: 'victory' | 'return' | 'defeat' | 'retreat'): string {
   if (outcome === 'victory') return '踏破';
   if (outcome === 'return') return '帰還';
@@ -597,6 +602,11 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
           const runtime = next[partyIndex] ?? { state: '休息中' as PartyCycleState, elapsedMs: 0, durationMs: 1000 };
           const updated = { ...runtime, elapsedMs: runtime.elapsedMs + PARTY_CYCLE_TICK_MS };
 
+          if (updated.state === '探索中') {
+            const exploredRooms = party.lastExpeditionLog?.entries.length;
+            updated.durationMs = getExplorationDurationMs(exploredRooms);
+          }
+
           if (updated.state === '休息中') {
             const { partyStats: partyRuntimeStats } = computePartyStats(party);
             if (party.currentHp < partyRuntimeStats.hp) actions.healPartyHp(partyIndex, Math.max(1, Math.floor(partyRuntimeStats.hp * 0.01)));
@@ -628,7 +638,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             } else if (updated.state === '移動中') {
               actions.runExpedition(partyIndex);
               updated.state = '探索中';
-              updated.durationMs = EXPLORING_PROGRESS_TOTAL_STEPS * EXPLORING_PROGRESS_STEP_MS;
+              updated.durationMs = getExplorationDurationMs();
             } else if (updated.state === '探索中') {
               updated.state = '帰還中';
               updated.durationMs = 5000;
