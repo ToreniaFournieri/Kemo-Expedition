@@ -55,6 +55,7 @@ import {
   addRecoveredItemsToLootProgress,
   unlockAvailableLootGates,
 } from '../game/lootGate';
+import { LEVEL_EXP } from '../game/partyLevel';
 
 const BUILD_NUMBER = 44;
 const STORAGE_KEY = 'kemo-expedition-save';
@@ -295,12 +296,6 @@ function saveState(state: GameState): void {
     console.error('Failed to save state:', e);
   }
 }
-
-const LEVEL_EXP: number[] = [
-  0, 200, 500, 900, 2100, 3000, 4200, 19000, 25000, 32000,
-  40000, 50000, 62000, 76000, 92000, 110000, 130000, 155000, 185000, 220000,
-  260000, 300500, 355000, 410000, 470000, 535000, 605000, 680000, 760000
-];
 
 function createInitialDeity(name: string) {
   return {
