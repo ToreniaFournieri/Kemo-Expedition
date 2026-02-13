@@ -68,9 +68,11 @@ export const CLASSES: ClassDef[] = [
     ],
     mainBonuses: [
       { type: 'ability', value: 1, abilityId: 'command', abilityLevel: 1 },
+      { type: 'ability', value: 1, abilityId: 'squander', abilityLevel: 1 },
     ],
     masterBonuses: [
       { type: 'ability', value: 1, abilityId: 'command', abilityLevel: 2 },
+      { type: 'ability', value: 1, abilityId: 'squander', abilityLevel: 1 },
     ],
   },
   {
@@ -141,10 +143,11 @@ export const CLASSES: ClassDef[] = [
       { type: 'equip_slot', value: 1 },
     ],
     mainBonuses: [
-      { type: 'ability', value: 1, abilityId: 'null_counter', abilityLevel: 1 },
+      { type: 'ability', value: 1, abilityId: 'tithe', abilityLevel: 1 },
     ],
     masterBonuses: [
       { type: 'ability', value: 1, abilityId: 'null_counter', abilityLevel: 1 },
+      { type: 'ability', value: 1, abilityId: 'tithe', abilityLevel: 1 },
     ],
   },
 ];
