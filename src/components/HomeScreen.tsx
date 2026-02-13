@@ -1761,9 +1761,7 @@ function ExpeditionTab({
         const { partyStats } = computePartyStats(party);
         const isLogExpanded = expandedLogParty === partyIndex;
         const currentLog = party.lastExpeditionLog;
-        const headlineDungeonName = cycle.state === '探索中'
-          ? currentLog?.dungeonName ?? selectedDungeon?.name
-          : selectedDungeon?.name;
+        const headlineDungeonName = currentLog?.dungeonName ?? selectedDungeon?.name;
         const headlineState = cycle.state === '探索中'
           ? '探索中'
           : currentLog
