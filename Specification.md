@@ -683,6 +683,8 @@ inventory = {
   - experience: 0
   - Gold: 200G
   - Auto-sell: none
+  - state: 待機中
+
 
 ### 3.3 Character initialization
 
@@ -781,7 +783,7 @@ inventory = {
   - 休息中: at home, heal +1% MaxHP / sec until full
   - 宴会中: at home, spend 33–67% of previous expedition profit (auto-sell gold), duration 5 sec (skip if profit = 0). if party has `a.squander` ability, double the gold spent on feasting.  Notification : Without Squander: PT1は25Gお金を使った/With Squander: PT1 君主トムは贅沢に50G使った
   - 睡眠中: at home. Duration 10 sec
-  - 祈り中: at home, donate 10–33% of previous expedition profit, if party has `a.tithe`, Adds +10% of expedition profit to donation. remaining profits to global gold wallet. duration 5 sec (if profit = 0 → donate 0G, but still pray). The deity earns that amount of gold (keep record internally, later vision it may use this gold for something). Notification: Without Tithe: PT1は10G神に捧げ、30Gを貯金した/With Tithe: PT1 巡礼者ブラザは祈りと共に12G神に捧げて、28Gを貯金した
+  - 祈り中: at home, donate 10–33% of previous expedition profit, if party has `a.tithe`, Adds +10% of expedition profit to donation. remaining profits to global gold wallet. duration 5 sec (if profit = 0 → donate 0G, but still pray). The deity earns that amount of gold (keep record internally, later vision it may use this gold for something). Notification: Without Tithe: PT1は10G神に捧げ、30Gを貯金した/With Tithe: PT1 巡礼者ブラザは祈りと共に12G神に捧げて、28Gを貯金した/ Without Gold: (no notification)
   - 待機中: at home, only when 自動周回 = OFF (idle state)
   - 移動中: home → dungeon, duration 5 sec
   - 探索中: in dungeon, advance 1 room / sec, update HP per room; if HP < 30% MaxHP → retreat. At the end of this state, update this {ルピニアンの断崖踏破} part )
