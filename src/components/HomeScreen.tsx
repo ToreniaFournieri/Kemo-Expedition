@@ -1060,7 +1060,13 @@ function PartyTab({
 
 
   return (
-    <div>
+    <div
+      onPointerDown={() => {
+        if (showBonusHelp) {
+          setShowBonusHelp(false);
+        }
+      }}
+    >
       {/* Party selector - tab style */}
       <div className="flex mb-4 border-b border-gray-200">
         {[0, 1, 2, 3, 4, 5].map((partyIndex) => {
@@ -1544,7 +1550,11 @@ function PartyTab({
                     <span>ボーナス: {parts.join(', ')}</span>
                     <button
                       type="button"
-                      onClick={() => setShowBonusHelp((prev) => !prev)}
+                      onPointerDown={(event) => event.stopPropagation()}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setShowBonusHelp((prev) => !prev);
+                      }}
                       className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-gray-400 text-[10px] leading-none text-gray-600 hover:bg-gray-100"
                       aria-label="c.ボーナスの説明を表示"
                     >
@@ -1552,7 +1562,10 @@ function PartyTab({
                     </button>
                   </div>
                   {showBonusHelp && (
-                    <div className="absolute left-0 top-5 z-20 w-[min(38rem,88vw)] rounded-md border border-gray-200 bg-white p-3 shadow-lg">
+                    <div
+                      onPointerDown={(event) => event.stopPropagation()}
+                      className="absolute left-0 top-5 z-20 w-[min(38rem,88vw)] rounded-md border border-gray-200 bg-white p-3 shadow-lg"
+                    >
                       <div className="mb-2 text-[11px] font-semibold text-gray-700">c. ボーナス説明 (同一名ボーナスは重複無効)</div>
                       <div className="max-h-56 space-y-1 overflow-y-auto pr-1 text-[11px] leading-4 text-gray-700">
                         {helpRows.map((row) => (
