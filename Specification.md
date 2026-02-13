@@ -245,7 +245,7 @@
 |魔法使い(魔,Wizard) | `c.caster+1`, `c.wand_x1.4` | `a.resonance`1:All hits +5% damage per `d.magical_NoA`. | `a.resonance`2:All hits +8% damage per `d.magical_NoA`. | 
 |賢者(賢,Sage) | `c.caster+2`, `c.robe_x1.4`, `c.grimoire_x1.2`, `c.equip_slot+2` | `a.m-barrier`1: Incoming magical damage to party × 2/3 | `a.m-barrier`2: Incoming magical damage to party × 3/5 | 
 |盗賊(盗,Rogue) | `c.pursuit+1`, `c.unlock` additional reward chance |`a.first-strike`1: Acts faster than enemy at CLOSE phase |`a.first-strike`2: Acts faster than enemy at All phases | 
-|巡礼者(巡,Pilgrim) | `c.caster+1`, `c.grit+1`, `c.evasion+0.02`, `c.equip_slot+1` |`a.null-counter`: Negate counter attack |`a.null-counter`: Negate counter attack | 
+|巡礼者(巡,Pilgrim) | `c.caster+1`, `c.grit+1`, `c.evasion+0.02`, `c.equip_slot+1` |`a.tithe`: Adds +10% of expedition profit to donation. |`a.null-counter`: Negate counter attack. `a.tithe`: Adds +10% of expedition profit to donation. | 
 
 - If `main_class` and  `sub_class` are same class, then it turns into master class, applies master bonus.
 - `main_class` applies main/sub bonuses and main bonus. `sub_class` applies only main/sub bonuses.
