@@ -509,6 +509,8 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const [activeTab, setActiveTab] = useState<Tab>('party');
   const [selectedCharacter, setSelectedCharacter] = useState<number>(0);
   const [editingCharacter, setEditingCharacter] = useState<number | null>(null);
+  const [isAutoRepeatEnabled, setIsAutoRepeatEnabled] = useState(false);
+  const [partyCycles, setPartyCycles] = useState<Record<number, PartyCycleRuntime>>({});
   const tabContentRef = useRef<HTMLDivElement | null>(null);
 
   const currentParty = state.parties[state.selectedPartyIndex];
@@ -561,6 +563,80 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     tabContentRef.current?.scrollTo({ top: 0, behavior: 'auto' });
   }, [activeTab]);
 
+  const transitionTo = (partyIndex: number, nextState: PartyCycleState, durationMs: number) => {
+    setPartyCycles((prev) => ({
+      ...prev,
+      [partyIndex]: { state: nextState, elapsedMs: 0, durationMs },
+    }));
+  };
+
+  const triggerSortie = (partyIndex: number) => {
+    const cycle = partyCycles[partyIndex];
+    if (cycle && (cycle.state === '移動中' || cycle.state === '探索中' || cycle.state === '帰還中')) return;
+    const party = state.parties[partyIndex];
+    if (!party) return;
+    if (party.pendingProfit > 0) actions.clearPendingProfit(partyIndex);
+    transitionTo(partyIndex, '移動中', 5000);
+  };
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setPartyCycles((prev) => {
+        const next = { ...prev };
+        state.parties.forEach((party, partyIndex) => {
+          const runtime = next[partyIndex] ?? { state: '休息中' as PartyCycleState, elapsedMs: 0, durationMs: 1000 };
+          const updated = { ...runtime, elapsedMs: runtime.elapsedMs + PARTY_CYCLE_TICK_MS };
+
+          if (updated.state === '休息中') {
+            const { partyStats: partyRuntimeStats } = computePartyStats(party);
+            if (party.currentHp < partyRuntimeStats.hp) actions.healPartyHp(partyIndex, Math.max(1, Math.floor(partyRuntimeStats.hp * 0.01)));
+            if (party.currentHp >= partyRuntimeStats.hp) {
+              updated.state = party.pendingProfit > 0 ? '宴会中' : '睡眠中';
+              updated.elapsedMs = 0;
+              updated.durationMs = updated.state === '宴会中' ? 5000 : 10000;
+            }
+          } else if (updated.elapsedMs >= updated.durationMs) {
+            if (updated.state === '宴会中') {
+              const spend = Math.floor((party.pendingProfit * (33 + Math.random() * 34)) / 100);
+              if (spend > 0) actions.addNotification(`${party.name}は${formatNumber(spend)}Gお金を使った`);
+              actions.spendPendingProfit(partyIndex, spend);
+              updated.state = '睡眠中';
+              updated.durationMs = 10000;
+            } else if (updated.state === '睡眠中') {
+              updated.state = '祈り中';
+              updated.durationMs = 5000;
+            } else if (updated.state === '祈り中') {
+              const donationRate = 10 + Math.random() * 23;
+              const donation = Math.floor((party.pendingProfit * donationRate) / 100);
+              const deposit = Math.max(0, party.pendingProfit - donation);
+              actions.processPendingProfit(partyIndex, donation, deposit);
+              actions.addNotification(`${party.name}は${formatNumber(donation)}G神に捧げ、${formatNumber(deposit)}Gを貯金した`);
+              updated.state = isAutoRepeatEnabled ? '移動中' : '待機中';
+              updated.durationMs = updated.state === '移動中' ? 5000 : 1000;
+            } else if (updated.state === '待機中') {
+              updated.durationMs = 1000;
+            } else if (updated.state === '移動中') {
+              actions.runExpedition(partyIndex);
+              updated.state = '探索中';
+              updated.durationMs = EXPLORING_PROGRESS_TOTAL_STEPS * EXPLORING_PROGRESS_STEP_MS;
+            } else if (updated.state === '探索中') {
+              updated.state = '帰還中';
+              updated.durationMs = 5000;
+            } else if (updated.state === '帰還中') {
+              updated.state = '休息中';
+              updated.durationMs = 1000;
+            }
+            updated.elapsedMs = 0;
+          }
+
+          next[partyIndex] = updated;
+        });
+        return next;
+      });
+    }, PARTY_CYCLE_TICK_MS);
+    return () => window.clearInterval(id);
+  }, [actions, isAutoRepeatEnabled, state.parties]);
+
   const prevActiveTabRef = useRef<Tab>(activeTab);
   useEffect(() => {
     if (prevActiveTabRef.current === 'diary' && activeTab !== 'diary') {
@@ -586,12 +662,41 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     <div className="flex flex-col h-screen">
       {/* Sticky Header */}
       <div className="sticky top-0 bg-white border-b border-gray-300 p-3 z-10">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center gap-3">
           <div>
             <h1 className="text-lg font-bold">ケモの冒険</h1>
             <div className="text-xs text-gray-500">v0.2.3 ({state.buildNumber})</div>
           </div>
-          <div className="text-right text-sm font-medium">{formatNumber(state.global.gold)}G</div>
+          <div className="flex items-center gap-2 text-right text-sm font-medium">
+            <span>{formatNumber(state.global.gold)}G</span>
+            <button
+              onClick={() => {
+                setIsAutoRepeatEnabled((prev) => {
+                  const nextEnabled = !prev;
+                  if (nextEnabled) {
+                    setPartyCycles((prevCycles) => {
+                      const nextCycles = { ...prevCycles };
+                      state.parties.forEach((_, partyIndex) => {
+                        const runtime = nextCycles[partyIndex] ?? { state: '休息中' as PartyCycleState, elapsedMs: 0, durationMs: 1000 };
+                        if (runtime.state === '待機中') {
+                          nextCycles[partyIndex] = { state: '移動中', elapsedMs: 0, durationMs: 5000 };
+                        }
+                      });
+                      return nextCycles;
+                    });
+                  }
+                  return nextEnabled;
+                });
+              }}
+              className={`rounded px-2 py-0.5 text-xs border ${
+                isAutoRepeatEnabled
+                  ? 'bg-blue-50 border-sub text-sub'
+                  : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              自動周回{isAutoRepeatEnabled ? 'ON' : 'OFF'}
+            </button>
+          </div>
         </div>
         
         {/* Tabs */}
@@ -645,12 +750,8 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
           <ExpeditionTab
             state={state}
             onSelectDungeon={actions.selectDungeon}
-            onRunExpedition={actions.runExpedition}
-            onHealPartyHp={actions.healPartyHp}
-            onClearPendingProfit={actions.clearPendingProfit}
-            onProcessPendingProfit={actions.processPendingProfit}
-            onSpendPendingProfit={actions.spendPendingProfit}
-            onAddNotification={actions.addNotification}
+            partyCycles={partyCycles}
+            onTriggerSortie={triggerSortie}
           />
         )}
 
@@ -1592,26 +1693,16 @@ function PartyTab({
 function ExpeditionTab({
   state,
   onSelectDungeon,
-  onRunExpedition,
-  onHealPartyHp,
-  onClearPendingProfit,
-  onProcessPendingProfit,
-  onSpendPendingProfit,
-  onAddNotification,
+  partyCycles,
+  onTriggerSortie,
 }: {
   state: GameState;
   onSelectDungeon: (partyIndex: number, dungeonId: number) => void;
-  onRunExpedition: (partyIndex: number) => void;
-  onHealPartyHp: (partyIndex: number, amount: number) => void;
-  onClearPendingProfit: (partyIndex: number) => void;
-  onProcessPendingProfit: (partyIndex: number, donation: number, deposit: number) => void;
-  onSpendPendingProfit: (partyIndex: number, amount: number) => void;
-  onAddNotification: (message: string) => void;
+  partyCycles: Record<number, PartyCycleRuntime>;
+  onTriggerSortie: (partyIndex: number) => void;
 }) {
   const [expandedLogParty, setExpandedLogParty] = useState<number | null>(null);
   const [expandedRoom, setExpandedRoom] = useState<{ partyIndex: number; roomIndex: number } | null>(null);
-  const [isAutoRepeatEnabled, setIsAutoRepeatEnabled] = useState(false);
-  const [partyCycles, setPartyCycles] = useState<Record<number, PartyCycleRuntime>>({});
 
   const getEstimatedStartHp = (entry: ExpeditionLogEntry) => {
     const healAmount = Math.max(0, entry.healAmount ?? 0);
@@ -1619,114 +1710,8 @@ function ExpeditionTab({
     return Math.min(entry.maxPartyHP, Math.max(0, entry.remainingPartyHP + entry.damageTaken + attritionAmount - healAmount));
   };
 
-  const transitionTo = (partyIndex: number, nextState: PartyCycleState, durationMs: number) => {
-    setPartyCycles((prev) => ({
-      ...prev,
-      [partyIndex]: { state: nextState, elapsedMs: 0, durationMs },
-    }));
-  };
-
-  const triggerSortie = (partyIndex: number) => {
-    const cycle = partyCycles[partyIndex];
-    if (cycle && (cycle.state === '移動中' || cycle.state === '探索中' || cycle.state === '帰還中')) return;
-    const party = state.parties[partyIndex];
-    if (!party) return;
-    if (party.pendingProfit > 0) onClearPendingProfit(partyIndex);
-    transitionTo(partyIndex, '移動中', 5000);
-  };
-
-  useEffect(() => {
-    const id = window.setInterval(() => {
-      setPartyCycles((prev) => {
-        const next = { ...prev };
-        state.parties.forEach((party, partyIndex) => {
-          const runtime = next[partyIndex] ?? { state: '休息中' as PartyCycleState, elapsedMs: 0, durationMs: 1000 };
-          const updated = { ...runtime, elapsedMs: runtime.elapsedMs + PARTY_CYCLE_TICK_MS };
-
-          if (updated.state === '休息中') {
-            const { partyStats } = computePartyStats(party);
-            if (party.currentHp < partyStats.hp) onHealPartyHp(partyIndex, Math.max(1, Math.floor(partyStats.hp * 0.01)));
-            if (party.currentHp >= partyStats.hp) {
-              updated.state = party.pendingProfit > 0 ? '宴会中' : '睡眠中';
-              updated.elapsedMs = 0;
-              updated.durationMs = updated.state === '宴会中' ? 5000 : 10000;
-            }
-          } else if (updated.elapsedMs >= updated.durationMs) {
-            if (updated.state === '宴会中') {
-              const spend = Math.floor((party.pendingProfit * (33 + Math.random() * 34)) / 100);
-              if (spend > 0) onAddNotification(`${party.name}は${formatNumber(spend)}Gお金を使った`);
-              onSpendPendingProfit(partyIndex, spend);
-              updated.state = '睡眠中';
-              updated.durationMs = 10000;
-            } else if (updated.state === '睡眠中') {
-              updated.state = '祈り中';
-              updated.durationMs = 5000;
-            } else if (updated.state === '祈り中') {
-              const donationRate = 10 + Math.random() * 23;
-              const donation = Math.floor((party.pendingProfit * donationRate) / 100);
-              const deposit = Math.max(0, party.pendingProfit - donation);
-              onProcessPendingProfit(partyIndex, donation, deposit);
-              onAddNotification(`${party.name}は${formatNumber(donation)}G神に捧げ、${formatNumber(deposit)}Gを貯金した`);
-              updated.state = isAutoRepeatEnabled ? '移動中' : '待機中';
-              updated.durationMs = updated.state === '移動中' ? 5000 : 1000;
-            } else if (updated.state === '待機中') {
-              updated.durationMs = 1000;
-            } else if (updated.state === '移動中') {
-              onRunExpedition(partyIndex);
-              updated.state = '探索中';
-              updated.durationMs = EXPLORING_PROGRESS_TOTAL_STEPS * EXPLORING_PROGRESS_STEP_MS;
-            } else if (updated.state === '探索中') {
-              updated.state = '帰還中';
-              updated.durationMs = 5000;
-            } else if (updated.state === '帰還中') {
-              updated.state = '休息中';
-              updated.durationMs = 1000;
-            }
-            updated.elapsedMs = 0;
-          }
-          next[partyIndex] = updated;
-        });
-        return next;
-      });
-    }, PARTY_CYCLE_TICK_MS);
-    return () => window.clearInterval(id);
-  }, [state.parties, isAutoRepeatEnabled, onAddNotification, onHealPartyHp, onProcessPendingProfit, onRunExpedition, onSpendPendingProfit]);
-
   return (
     <div className="space-y-4">
-      <div className="flex justify-end items-start gap-3">
-        <button onClick={() => state.parties.forEach((_, i) => triggerSortie(i))} className="px-3 py-1 text-white rounded font-medium text-sm bg-sub hover:bg-blue-600">
-          一斉出撃
-        </button>
-        <button
-          onClick={() => {
-            setIsAutoRepeatEnabled((prev) => {
-              const nextEnabled = !prev;
-              if (nextEnabled) {
-                setPartyCycles((prevCycles) => {
-                  const nextCycles = { ...prevCycles };
-                  state.parties.forEach((_, partyIndex) => {
-                    const runtime = nextCycles[partyIndex] ?? { state: '休息中' as PartyCycleState, elapsedMs: 0, durationMs: 1000 };
-                    if (runtime.state === '待機中') {
-                      nextCycles[partyIndex] = { state: '移動中', elapsedMs: 0, durationMs: 5000 };
-                    }
-                  });
-                  return nextCycles;
-                });
-              }
-              return nextEnabled;
-            });
-          }}
-          className={`px-3 py-1 rounded font-medium text-sm border ${
-            isAutoRepeatEnabled
-              ? 'bg-blue-50 border-sub text-sub'
-              : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-          }`}
-        >
-          自動周回 {isAutoRepeatEnabled ? 'ON' : 'OFF'}
-        </button>
-      </div>
-
       {[0, 1, 2, 3, 4, 5].map((partyIndex) => {
         const party = state.parties[partyIndex];
         if (!party) {
@@ -1804,7 +1789,7 @@ function ExpeditionTab({
                       return <option key={dungeon.id} value={dungeon.id} disabled={gateState.locked}>{dungeon.name} {gateState.locked ? '🔒' : ''}</option>;
                     })}
                   </select>
-                  <button onClick={() => triggerSortie(partyIndex)} disabled={selectedDungeonGate?.locked} className={`px-3 py-1 text-white rounded font-medium text-sm ${selectedDungeonGate?.locked ? 'bg-gray-400 cursor-not-allowed' : 'bg-sub hover:bg-blue-600'}`}>出撃</button>
+                  <button onClick={() => onTriggerSortie(partyIndex)} disabled={selectedDungeonGate?.locked} className={`px-3 py-1 text-white rounded font-medium text-sm ${selectedDungeonGate?.locked ? 'bg-gray-400 cursor-not-allowed' : 'bg-sub hover:bg-blue-600'}`}>出撃</button>
                 </div>
                 {getNextGoalText(party) && <div className="text-sm text-gray-700">{getNextGoalText(party)}</div>}
               </div>
