@@ -1761,6 +1761,9 @@ function ExpeditionTab({
         const { partyStats } = computePartyStats(party);
         const isLogExpanded = expandedLogParty === partyIndex;
         const currentLog = party.lastExpeditionLog;
+        const headlineDungeonName = cycle.state === '探索中'
+          ? currentLog?.dungeonName ?? selectedDungeon?.name
+          : selectedDungeon?.name;
         const headlineState = cycle.state === '探索中'
           ? '探索中'
           : currentLog
@@ -1787,7 +1790,7 @@ function ExpeditionTab({
         return (
           <div key={partyIndex} className="bg-pane rounded-lg p-4">
             <button onClick={() => setExpandedLogParty(isLogExpanded ? null : partyIndex)} className={`w-full flex justify-between items-center text-sm ${isLogExpanded ? 'mb-3' : ''}`}>
-              <span><span className="font-bold text-black">{party.name}</span><span className="ml-2">{selectedDungeon?.name}</span><span className="ml-2 font-medium text-sub">{headlineState}</span></span>
+              <span><span className="font-bold text-black">{party.name}</span><span className="ml-2">{headlineDungeonName}</span><span className="ml-2 font-medium text-sub">{headlineState}</span></span>
               <span className={isLogExpanded ? 'transform transition-transform rotate-180' : ''}>▼</span>
             </button>
 

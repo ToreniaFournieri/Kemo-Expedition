@@ -758,6 +758,10 @@ function buildDeityEffectLogEntry(
   return null;
 }
 
+function isRetreatHpThresholdReached(currentHp: number, maxHp: number): boolean {
+  return currentHp <= maxHp * 0.3;
+}
+
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'SELECT_PARTY':
@@ -1025,6 +1029,17 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 entry.details.push(deityLogEntry);
               }
               entry.details.push(...buildRewardLogEntries(rewardResult.rewardLogEntries, unlockActorName));
+
+              if (isRetreatHpThresholdReached(currentHp, partyStats.hp)) {
+                finalOutcome = 'retreat';
+                expeditionEnded = true;
+                entry.details.push({
+                  phase: 'close',
+                  actor: 'deity',
+                  action: '撤退',
+                  note: 'HPが30%以下のため、戦利品を持ち帰ります。',
+                });
+              }
             } else if (battleResult.outcome === 'defeat') {
               entries.push(entry);
               finalOutcome = 'defeat';
@@ -1112,6 +1127,17 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               entry.details.push(deityLogEntry);
             }
             entry.details.push(...buildRewardLogEntries(rewardResult.rewardLogEntries, unlockActorName));
+
+            if (isRetreatHpThresholdReached(currentHp, partyStats.hp)) {
+              finalOutcome = 'retreat';
+              entry.details.push({
+                phase: 'close',
+                actor: 'deity',
+                action: '撤退',
+                note: 'HPが30%以下のため、戦利品を持ち帰ります。',
+              });
+              break;
+            }
           } else if (battleResult.outcome === 'defeat') {
             entries.push(entry);
             finalOutcome = 'defeat';
