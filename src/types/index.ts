@@ -206,6 +206,9 @@ export interface Party {
   deity: Deity;
   characters: Character[];
   selectedDungeonId: number;
+  currentHp: number;
+  pendingProfit: number;
+  deityGold: number;
   lastExpeditionLog: ExpeditionLog | null;
   diaryLogs: DiaryLog[];
   hasUnreadDiary: boolean;
