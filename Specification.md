@@ -63,6 +63,7 @@
   - name
     - Initial deity: PT1:`God of Restoration` PT2: `God of Attrition`
   - unique abulities 
+  - donated gold
 
 **Party structure**
   - party id
@@ -1375,7 +1376,21 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
   
 #### 8.7 Divine Bureau (神聖局)
 
-**1. Clairvoyance (未来視)**
+
+**1.Donation box (寄付箱)**
+- Display donated amount of gold of each god.
+  - In this version, it is just a collective feature.
+
+```
+(Left-aligned)      (Right-aligned)
+再生の神              1,203G
+消耗の神                345G
+...
+
+```
+
+
+**2. Clairvoyance (未来視)**
 - Displays belows 
 
 **Normal reward (通常報酬)**
@@ -1418,7 +1433,7 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
     - 超レア残り remaining / initial counts
 - Button (超レア報酬初期化): Initialize `g.superRare_bag` 
 
-**2. Item Comedium (アイテム図鑑)**
+**3. Item Comedium (アイテム図鑑)**
 - The Item Compendium acts as a global reference for all items within the game. Unlike the Inventory, it displays the base potential of every item, regardless of ownership status.
 - View Settings:
   - Visibility: Shows all items in the database (including undiscovered items).
@@ -1433,7 +1448,7 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
   - Interaction: Tap an item name to expand the detailed status panel.
 
 
-**3. Bestiary (敵キャラクター図鑑)**
+**4. Bestiary (敵キャラクター図鑑)**
 - A comprehensive record of all threats encountered (or to be encountered) during expeditions.
 - Expedition category tabs: 原, 崖, 樹, 峰, 茂, 巣, 園, 谷
   - Each letter represents for corresponding expedition. And tap to show the enemy list of it. 
