@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.2.3 - SPECIFICATION
+# KEMO EXPEDITION v0.2.4 - SPECIFICATION
 
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
@@ -729,14 +729,30 @@ inventory = {
 - party.`f.elemental_resistance_attribute`:
   	- Always set 1. (not for this version)
 
-## 4. HOME
-- Manage party setting. character build (can also change its class, race, predisposition, lineage!). change their equipment.
-- set the destination of dungeon.
-- sell items and gain gold.
+## 4. Party State Machine
+- Use one state per party. Every party ticks independently.
 
-### 4.1 Equipment
-- Each character has its own equipment slots.
-- Assigns items to a character from inventory. 
+- **State list**
+  - 休息中: at home, heal +1% MaxHP / sec until full
+  - 宴会中: at home, spend 33–67% of previous expedition profit (auto-sell gold), duration 5 sec (skip if profit = 0). Notification : PT1は25Gお金を使った
+  - 睡眠中: at home. Duration 10 sec
+  - 祈り中: at home, donate 10–33% of previous expedition profit, remaining profits to global gold wallet. duration 5 sec (if profit = 0 → donate 0G, but still pray). The deity earns that amount of gold (keep record internally, later vision it may use this gold for something). Notification: PT1は10G神に捧げ、30Gを貯金した
+  - 待機中: at home, only when 自動周回 = OFF (idle state)
+  - 移動中: home → dungeon, duration 5 sec
+  - 探索中: in dungeon, advance 1 room / sec, update HP per room; if HP < 30% MaxHP → retreat. At the end of this state, update this {ルピニアンの断崖踏破} part )
+  - 帰還中: dungeon → home, duration 5 sec. Back to 休息中
+
+- Player taps 出撃/一斉出撃
+  - If party is in 待機中 / 休息中 / 宴会中 / 祈り中:
+  - Immediately set state to 移動中
+  - Do not refill HP; dungeon starts with current HP. No squander, donation, nor remaining profits to the global wallet. The profit vanishes (The party menders would definitely not be happy with this players emergency sortie.)
+  - If party is already in 移動中 / 探索中 / 帰還中: ignore tap
+
+
+- *+Transition rules**
+  - 自動周回ON: 休息中→宴会中(if possible)→睡眠中→祈り中→待機中→移動中→探索中→帰還中→休息中
+  - 自動周回OFF: 移動中→探索中→帰還中→休息中 → 宴会中(条件付き) → 睡眠中 → 祈り中 → 待機中 (stop here)
+
 
 ## 5. EXPEDITION 
 - Persistence through an expedition:`d.HP`.
@@ -1271,13 +1287,14 @@ displays [遠距離攻撃:矢,ボ,弓]
           (Right-Aligned)
            [一斉出撃] 自動周回 ON/OFF
 
-(Left-Aligned)   (Right-Aligned)
-PT1 (レベル: 4) 再生の神　　  HP: 2309
-出撃先: ルピニアンの断崖 (pull down menu to select) 出撃
-結果: ルピニアンの断崖 (残HP 0%) 敗北 ▼
+PT1ルピニアンの断崖踏破▼
+(column 1)      (Column 2)
+HP (HP bar, blue)    移動中(state progress bar)
+ルピニアンの断崖(pull down list)  出撃
 次の目標: ルピニアンの断崖の神魔レアアイテム 0/1 でヴァルピニアンの樹林帯 開放
+Lv: 29 | 再生の神 | +2,856EXP | +134G
 
-PT2 HP:…
+PT2...
 ```
 - Per party:
   - Currently selected dungeon with Loot-Gate conditions (ex. 2nd Elite Gate is locked: 2/6 Floor 2 Uncommons collected.)
