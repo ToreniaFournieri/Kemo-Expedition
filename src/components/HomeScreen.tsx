@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
+import { useState, useEffect, useRef, useCallback, type Dispatch, type SetStateAction } from 'react';
 import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { DUNGEONS } from '../data/dungeons';
@@ -541,7 +541,9 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const prevPartyLogsRef = useRef(state.parties.map((party) => party.lastExpeditionLog));
   const pendingNotificationTimersRef = useRef<Record<number, number>>({});
   const hasHydratedAfkRef = useRef(false);
-  const hasShownLaunchProgressRef = useRef(false);
+  const pendingAfkSimulationRef = useRef<{ elapsedMs: number; autoRepeatEnabled: boolean } | null>(null);
+  const afkSummaryBaselineRef = useRef<Array<{ victories: number; retreats: number; defeats: number; donatedGold: number; savedGold: number }> | null>(null);
+  const shouldShowAfkSummaryRef = useRef(false);
   const { partyStats, characterStats } = computePartyStats(currentParty);
 
   useEffect(() => {
@@ -568,7 +570,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       }
 
       if (elapsedMs > 0) {
-        actions.simulateAfk(elapsedMs, autoRepeatEnabled);
+        pendingAfkSimulationRef.current = { elapsedMs, autoRepeatEnabled };
       }
     } catch (error) {
       console.error('Failed to restore AFK runtime state:', error);
@@ -576,6 +578,8 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   }, [actions]);
 
   useEffect(() => {
+    if (pendingAfkSimulationRef.current) return;
+
     try {
       localStorage.setItem(
         AFK_RUNTIME_STORAGE_KEY,
@@ -591,11 +595,25 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   }, [isAutoRepeatEnabled, partyCycles]);
 
   useEffect(() => {
-    if (hasShownLaunchProgressRef.current) return;
-    hasShownLaunchProgressRef.current = true;
+    if (!shouldShowAfkSummaryRef.current) return;
+    const baselineStats = afkSummaryBaselineRef.current;
+    if (!baselineStats) return;
+
+    shouldShowAfkSummaryRef.current = false;
+    afkSummaryBaselineRef.current = null;
 
     state.parties.forEach((party, partyIndex) => {
-      const stats = party.expeditionStats;
+      const baseline = baselineStats[partyIndex];
+      if (!baseline) return;
+
+      const stats = {
+        victories: Math.max(0, party.expeditionStats.victories - baseline.victories),
+        retreats: Math.max(0, party.expeditionStats.retreats - baseline.retreats),
+        defeats: Math.max(0, party.expeditionStats.defeats - baseline.defeats),
+        donatedGold: Math.max(0, party.expeditionStats.donatedGold - baseline.donatedGold),
+        savedGold: Math.max(0, party.expeditionStats.savedGold - baseline.savedGold),
+      };
+
       const summaryParts: string[] = [];
       if (stats.victories > 0) summaryParts.push(`踏破${formatNumber(stats.victories)}回`);
       if (stats.retreats > 0) summaryParts.push(`撤退${formatNumber(stats.retreats)}回`);
@@ -611,6 +629,43 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       actions.addNotification(`PT${partyIndex + 1}: ${body}`);
     });
   }, [actions, state.parties]);
+
+  const processAfkCheckpoint = useCallback(() => {
+    const pendingSimulation = pendingAfkSimulationRef.current;
+    if (!pendingSimulation) return;
+
+    pendingAfkSimulationRef.current = null;
+    afkSummaryBaselineRef.current = state.parties.map((party) => ({ ...party.expeditionStats }));
+    shouldShowAfkSummaryRef.current = true;
+
+    actions.simulateAfk(pendingSimulation.elapsedMs, pendingSimulation.autoRepeatEnabled);
+  }, [actions, state.parties]);
+
+  useEffect(() => {
+    const handleFocus = () => {
+      processAfkCheckpoint();
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        processAfkCheckpoint();
+      }
+    };
+    const handleUserAction = () => {
+      processAfkCheckpoint();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('pointerdown', handleUserAction);
+    window.addEventListener('keydown', handleUserAction);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('pointerdown', handleUserAction);
+      window.removeEventListener('keydown', handleUserAction);
+    };
+  }, [processAfkCheckpoint]);
 
   // Item drop notifications after expedition
   useEffect(() => {
