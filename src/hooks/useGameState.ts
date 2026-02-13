@@ -231,6 +231,7 @@ function loadSavedState(): GameState | null {
           if (!party.lootGateStatus) party.lootGateStatus = party.deity.lootGateStatus ?? {};
           if (!party.lootGateProgress) party.lootGateProgress = party.deity.lootGateProgress ?? {};
           if (!Array.isArray(party.diaryLogs)) party.diaryLogs = [];
+          if (typeof party.pendingDiaryLog === 'undefined') party.pendingDiaryLog = null;
           if (typeof party.hasUnreadDiary !== 'boolean') party.hasUnreadDiary = false;
           party.diaryLogs = party.diaryLogs.map((log: DiaryLog) => ({
             ...log,
@@ -363,6 +364,7 @@ function createInitialParty() {
     pendingProfit: 0,
     deityGold: 0,
     lastExpeditionLog: null,
+    pendingDiaryLog: null,
     diaryLogs: [],
     hasUnreadDiary: false,
     diarySettings: getDiarySettingsWithDefaults(undefined),
@@ -407,6 +409,7 @@ function createSecondParty() {
     pendingProfit: 0,
     deityGold: 0,
     lastExpeditionLog: null,
+    pendingDiaryLog: null,
     diaryLogs: [],
     hasUnreadDiary: false,
     diarySettings: getDiarySettingsWithDefaults(undefined),
@@ -451,6 +454,7 @@ type GameAction =
   | { type: 'SELECT_DUNGEON'; partyIndex: number; dungeonId: number }
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
   | { type: 'RUN_EXPEDITION'; partyIndex: number }
+  | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number }
   | { type: 'HEAL_PARTY_HP'; partyIndex: number; amount: number }
   | { type: 'CLEAR_PENDING_PROFIT'; partyIndex: number }
   | { type: 'PROCESS_PENDING_PROFIT'; partyIndex: number; donation: number; deposit: number }
@@ -1207,15 +1211,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         if (hasRareMatch) diaryTriggers.push('rare');
       }
 
-      const nextDiaryLogs = diaryTriggers.length > 0
-        ? ([{
+      const pendingDiaryLog = diaryTriggers.length > 0
+        ? {
             id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
             expeditionLog: log,
             triggers: diaryTriggers,
             createdAt: Date.now(),
             isRead: false,
-          }, ...(currentParty.diaryLogs ?? [])].slice(0, 10))
-        : (currentParty.diaryLogs ?? []);
+          }
+        : null;
 
       const updatedParties = [...state.parties];
       updatedParties[action.partyIndex] = {
@@ -1225,8 +1229,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         lootGateProgress: nextLootGateProgress,
         lootGateStatus: nextLootGateStatus,
         lastExpeditionLog: log,
-        diaryLogs: nextDiaryLogs,
-        hasUnreadDiary: nextDiaryLogs.some((diaryLog) => !diaryLog.isRead),
+        pendingDiaryLog,
         currentHp: finalRemainingPartyHP,
         pendingProfit: (currentParty.pendingProfit ?? 0) + finalAutoSellProfit,
       };
@@ -1240,6 +1243,25 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           inventory: finalInventory,
           gold: finalGold,
         },
+      };
+    }
+
+    case 'FINALIZE_DIARY_LOG': {
+      const party = state.parties[action.partyIndex];
+      if (!party || !party.pendingDiaryLog) return state;
+
+      const nextDiaryLogs = [party.pendingDiaryLog, ...(party.diaryLogs ?? [])].slice(0, 10);
+      const updatedParties = [...state.parties];
+      updatedParties[action.partyIndex] = {
+        ...party,
+        pendingDiaryLog: null,
+        diaryLogs: nextDiaryLogs,
+        hasUnreadDiary: nextDiaryLogs.some((diaryLog) => !diaryLog.isRead),
+      };
+
+      return {
+        ...state,
+        parties: updatedParties,
       };
     }
 
@@ -1690,6 +1712,10 @@ export function useGameState() {
 
     runExpedition: useCallback((partyIndex: number) => {
       dispatch({ type: 'RUN_EXPEDITION', partyIndex });
+    }, []),
+
+    finalizeDiaryLog: useCallback((partyIndex: number) => {
+      dispatch({ type: 'FINALIZE_DIARY_LOG', partyIndex });
     }, []),
 
     healPartyHp: useCallback((partyIndex: number, amount: number) => {
