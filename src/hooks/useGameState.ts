@@ -1252,7 +1252,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         lastExpeditionLog: log,
         pendingDiaryLog,
         currentHp: finalRemainingPartyHP,
-        pendingProfit: (currentParty.pendingProfit ?? 0) + finalAutoSellProfit,
+        // Party-cycle spending/donation is defined from the *latest* expedition's
+        // auto-sell profit, so this should not accumulate across expeditions.
+        pendingProfit: finalAutoSellProfit,
       };
 
       return {
