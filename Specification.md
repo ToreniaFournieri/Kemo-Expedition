@@ -777,6 +777,7 @@ inventory = {
   	- Always set 1. (not for this version)
 
 ## 4. Party State Machine
+
 - Use one state per party. Every party ticks independently.
 
 - **State list**
@@ -799,6 +800,10 @@ inventory = {
 - **Transition rules**
   - 自動周回ON: 休息中→宴会中(if possible)→睡眠中→祈り中→待機中→移動中→探索中→帰還中→休息中
   - 自動周回OFF: 移動中→探索中→帰還中→休息中 → 宴会中(条件付き) → 睡眠中 → 祈り中 → 待機中 (stop here)
+
+
+### 4.1 AFK Handling
+- Store the last update timestamp and, on app launch, simulate each party’s state progression, recovery, exploration progress, and profit handling using the elapsed time.
 
 
 ## 5. EXPEDITION 
