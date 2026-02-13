@@ -43,6 +43,7 @@ interface HomeScreenProps {
     markDiaryLogSeen: (logId: string) => void;
     markAllDiaryLogsSeen: () => void;
     updateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
+    simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean) => void;
     resetGame: () => void;
     resetCommonBags: () => void;
     resetUniqueBags: () => void;
@@ -72,6 +73,8 @@ interface PartyCycleRuntime {
 const PARTY_CYCLE_TICK_MS = 100;
 const EXPLORING_PROGRESS_STEP_MS = 1000;
 const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
+const AFK_RUNTIME_STORAGE_KEY = 'kemo-expedition-afk-runtime';
+const AFK_MAX_ELAPSED_MS = 60 * 60 * 1000;
 
 function getExplorationDurationMs(entryCount?: number): number {
   const exploredSteps = Math.max(1, Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, entryCount ?? EXPLORING_PROGRESS_TOTAL_STEPS));
@@ -537,7 +540,54 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const currentParty = state.parties[state.selectedPartyIndex];
   const prevPartyLogsRef = useRef(state.parties.map((party) => party.lastExpeditionLog));
   const pendingNotificationTimersRef = useRef<Record<number, number>>({});
+  const hasHydratedAfkRef = useRef(false);
   const { partyStats, characterStats } = computePartyStats(currentParty);
+
+  useEffect(() => {
+    if (hasHydratedAfkRef.current) return;
+    hasHydratedAfkRef.current = true;
+
+    try {
+      const savedRuntime = localStorage.getItem(AFK_RUNTIME_STORAGE_KEY);
+      if (!savedRuntime) return;
+
+      const parsed = JSON.parse(savedRuntime) as {
+        timestamp?: number;
+        autoRepeatEnabled?: boolean;
+        partyCycles?: Record<number, PartyCycleRuntime>;
+      };
+
+      const autoRepeatEnabled = parsed.autoRepeatEnabled === true;
+      const timestamp = typeof parsed.timestamp === 'number' ? parsed.timestamp : Date.now();
+      const elapsedMs = Math.max(0, Math.min(Date.now() - timestamp, AFK_MAX_ELAPSED_MS));
+
+      setIsAutoRepeatEnabled(autoRepeatEnabled);
+      if (parsed.partyCycles && typeof parsed.partyCycles === 'object') {
+        setPartyCycles(parsed.partyCycles);
+      }
+
+      if (elapsedMs > 0) {
+        actions.simulateAfk(elapsedMs, autoRepeatEnabled);
+      }
+    } catch (error) {
+      console.error('Failed to restore AFK runtime state:', error);
+    }
+  }, [actions]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        AFK_RUNTIME_STORAGE_KEY,
+        JSON.stringify({
+          timestamp: Date.now(),
+          autoRepeatEnabled: isAutoRepeatEnabled,
+          partyCycles,
+        })
+      );
+    } catch (error) {
+      console.error('Failed to persist AFK runtime state:', error);
+    }
+  }, [isAutoRepeatEnabled, partyCycles]);
 
   // Item drop notifications after expedition
   useEffect(() => {
