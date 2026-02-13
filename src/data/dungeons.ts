@@ -78,7 +78,6 @@ export const DUNGEONS: Dungeon[] = [
   {
     id: 1,
     name: 'ケイナイアン平原',
-    numberOfRooms: 24,
     enemyPoolIds: [1],
     bossId: 101,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[0],
@@ -89,7 +88,6 @@ export const DUNGEONS: Dungeon[] = [
   {
     id: 2,
     name: 'ルピニアンの断崖',
-    numberOfRooms: 24,
     enemyPoolIds: [2],
     bossId: 201,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[1],
@@ -100,7 +98,6 @@ export const DUNGEONS: Dungeon[] = [
   {
     id: 3,
     name: 'ヴァルピニアンの樹林帯',
-    numberOfRooms: 24,
     enemyPoolIds: [3],
     bossId: 301,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[2],
@@ -111,7 +108,6 @@ export const DUNGEONS: Dungeon[] = [
   {
     id: 4,
     name: 'ウルサンの霊峰',
-    numberOfRooms: 24,
     enemyPoolIds: [4],
     bossId: 401,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[3],
@@ -122,7 +118,6 @@ export const DUNGEONS: Dungeon[] = [
   {
     id: 5,
     name: 'フェリディアンの茂み',
-    numberOfRooms: 24,
     enemyPoolIds: [5],
     bossId: 501,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[4],
@@ -133,7 +128,6 @@ export const DUNGEONS: Dungeon[] = [
   {
     id: 6,
     name: 'マステリドの巣穴',
-    numberOfRooms: 24,
     enemyPoolIds: [6],
     bossId: 601,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[5],
@@ -144,7 +138,6 @@ export const DUNGEONS: Dungeon[] = [
   {
     id: 7,
     name: 'レポリアンの庭園',
-    numberOfRooms: 24,
     enemyPoolIds: [7],
     bossId: 701,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[6],
@@ -155,7 +148,6 @@ export const DUNGEONS: Dungeon[] = [
   {
     id: 8,
     name: 'セルヴィンの谷',
-    numberOfRooms: 24,
     enemyPoolIds: [8],
     bossId: 801,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[7],
