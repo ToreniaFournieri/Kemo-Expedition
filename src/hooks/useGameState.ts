@@ -402,7 +402,7 @@ function createSecondParty() {
     experience: 0,
     lootGateProgress: {},
     lootGateStatus: {},
-    deity: createInitialDeity('God of Attrition'),
+    deity: createInitialDeity('God of Evasion'),
     characters,
     selectedDungeonId: 2,
     currentHp: 0,

@@ -2647,7 +2647,7 @@ function SettingTab({
     .map(([deityName, donationGold]) => ({
       deityName,
       donationGold,
-      rank: getDeityRank(donationGold),
+      rank: donationGold > 0 ? getDeityRank(donationGold) : 1,
       nextDonationThreshold: getNextDonationThreshold(donationGold),
     }));
 
