@@ -289,7 +289,7 @@
 |狩人(狩,Ranger) | `c.pursuit+2`, `c.arrow_x1.4` | `a.hunter`1: Reduces row-based damage decay from 15% to 10% per step. |`a.hunter`2: Reduces row-based damage decay from 15% to 7% per step. | 
 |魔法使い(魔,Wizard) | `c.caster+1`, `c.wand_x1.4` | `a.resonance`1:All hits +5% damage per `d.magical_NoA`. | `a.resonance`2:All hits +8% damage per `d.magical_NoA`. | 
 |賢者(賢,Sage) | `c.caster+2`, `c.robe_x1.4`, `c.grimoire_x1.2`, `c.equip_slot+2` | `a.m-barrier`1: Incoming magical damage to party × 2/3 | `a.m-barrier`2: Incoming magical damage to party × 3/5 | 
-|盗賊(盗,Rogue) | `c.pursuit+1`, `c.unlock` additional reward chance |`a.deflection`: +10% chance to avoid ranged attacks only. `a.first-strike`1: Acts faster than enemy at CLOSE phase |`a.deflection`: +10% chance to avoid ranged attacks only. `a.first-strike`2: Acts faster than enemy at All phases | 
+|盗賊(盗,Rogue) | `c.pursuit+1`, `c.unlock` additional reward chance |`a.deflection`: During LONG phase only, opponent ranged attacks suffer −10 percentage points to hit chance. `a.first-strike`1: Acts faster than enemy at CLOSE phase |`a.deflection`: During LONG phase only, opponent ranged attacks suffer −10 percentage points to hit chance. `a.first-strike`2: Acts faster than enemy at All phases | 
 |巡礼者(巡,Pilgrim) | `c.caster+1`, `c.grit+1`, `c.evasion+0.02`, `c.equip_slot+1` |`a.tithe`: Adds +10% of expedition profit to donation. |`a.null-counter`: Negate counter attack. `a.tithe`: Adds +10% of expedition profit to donation. | 
 
 - If `main_class` and  `sub_class` are same class, then it turns into master class, applies master bonus.
@@ -481,7 +481,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | Ranger | 38 | (none) | 0.03 | 0.01 | 14 | 4 | 0 | 0 | 0 | 0 | x1.2 | x1.0 | x1.0 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 12 |
 | Wizard | 32 | (none) | 0.00 | 0.00 |0 | 0 | 20 | 2 | 0 | 0 | x1.0 | x1.2 | x1.0 | 6 | 14 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
 | Sage | 38 | (none) | 0.00 | 0.00 |0 | 0 | 10 | 4 | 0 | 0 | x1.0 | x1.2 | x1.0 | 8 | 20 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
-| Rogue | 30 | `a.deflection` | 0.06 | 0.06 | 10 | 4 | 0 | 0 | 10 | 4 | x1.0 | x1.2 | x1.0 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 8 |
+| Rogue | 30 | `a.deflection` | 0.06 | 0.06 | 10 | 4 | 0 | 0 | 10 | 4 | x1.2 | x1.0 | x1.0 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 8 |
 | Pilgrim | 66 | `a.null-counter` | 0.00 | 0.02 | 0 | 0 | 10 | 2 | 16 | 2 | x1.0 | x1.2 | x1.2 | 12 | 12 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 16 |
 
 
@@ -996,13 +996,16 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 - `f.hit_detection`(actor: , opponent: ,Nth_hit: )
   - For all pahse, LONG, MID, CLOSE. 
   - decay_of_accuracy: clamp(0.86, 0.90 + actor.`c.accuracy+v` - opponent.`c.evasion+v`, 0.98)
-  - chance = (`d.accuracy_potency` - (if opponent.`a.deflection` and phase is LONG, 10) ) x (decay_of_accuracy)^(Nth_hit)
+  - baseChance = actor.d.accuracy_potency
+  - if opponent has a.deflection AND phase == LONG: baseChance -= 0.10
+  - chance = clamp(0.0, baseChance, 1.0) x (decay ^ (Nth_hit - 1))
     - Note: Nth_hit starts at 1 for the first strike.
   - Roll: Return Random(0, 1.0) <= chance
+ 
 
-- **`f.counter`(actor: , opponent: ,phase: ) :** IF actor.`a.counter` and (opponent has not `a.null-counter`) and take damage in CLOSE phase, the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`, and actor.`f.NoA` x 0.5, round up)
+- **`f.counter`(actor: , opponent: ,phase: ) :** IF actor.`a.counter` and (opponent or party members have not `a.null-counter`) and take damage in CLOSE phase, the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`, and actor.`f.NoA` x 0.5, round up)
     - Counter triggers immediately after damage resolution, regardless of turn order modifiers.
-    - IF actor.`a.counter` and (opponent has `a.null-counter`), displays log: Opponent negate actor's counter attack.
+    - IF actor.`a.counter` and (opponent or party member have `a.null-counter`), displays log like : “巡礼者ブラザの反撃無効化により、二枚爪の黒豹のカウンターは防がれた！”
     - *note:* if opponent is character, then check party.`a.null-counter`. if at least one party member has `a.null-counter`, nagete the counter attack.
 
 
