@@ -541,6 +541,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const prevPartyLogsRef = useRef(state.parties.map((party) => party.lastExpeditionLog));
   const pendingNotificationTimersRef = useRef<Record<number, number>>({});
   const hasHydratedAfkRef = useRef(false);
+  const pendingAfkSimulationRef = useRef(true);
   const lastCheckpointAtRef = useRef(Date.now());
   const afkSummaryBaselineRef = useRef<Array<{ victories: number; retreats: number; defeats: number; donatedGold: number; savedGold: number }> | null>(null);
   const shouldShowAfkSummaryRef = useRef(false);
@@ -570,6 +571,8 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       }
     } catch (error) {
       console.error('Failed to restore AFK runtime state:', error);
+    } finally {
+      pendingAfkSimulationRef.current = false;
     }
   }, []);
 
