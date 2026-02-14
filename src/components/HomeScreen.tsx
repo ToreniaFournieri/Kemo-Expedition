@@ -660,7 +660,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
 
     if (elapsedMs > 60_000) {
       const elapsedSeconds = Math.floor(elapsedMs / 1000);
-      actions.addNotification(`(Debug)前回の更新から ${formatNumber(elapsedSeconds)}秒経過し、その間の進捗を演算しました。`);
+      actions.addNotification(`(Debug)前回の更新から ${formatNumber(elapsedSeconds)}秒経過`);
     }
 
     if (elapsedMs >= 1000) {
