@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
+import { useState, useEffect, useRef, useCallback, type Dispatch, type SetStateAction } from 'react';
 import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { DUNGEONS } from '../data/dungeons';
@@ -541,7 +541,9 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const prevPartyLogsRef = useRef(state.parties.map((party) => party.lastExpeditionLog));
   const pendingNotificationTimersRef = useRef<Record<number, number>>({});
   const hasHydratedAfkRef = useRef(false);
-  const hasShownLaunchProgressRef = useRef(false);
+  const lastCheckpointAtRef = useRef(Date.now());
+  const afkSummaryBaselineRef = useRef<Array<{ victories: number; retreats: number; defeats: number; donatedGold: number; savedGold: number }> | null>(null);
+  const shouldShowAfkSummaryRef = useRef(false);
   const { partyStats, characterStats } = computePartyStats(currentParty);
 
   useEffect(() => {
@@ -558,29 +560,25 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         partyCycles?: Record<number, PartyCycleRuntime>;
       };
 
-      const autoRepeatEnabled = parsed.autoRepeatEnabled === true;
       const timestamp = typeof parsed.timestamp === 'number' ? parsed.timestamp : Date.now();
       const elapsedMs = Math.max(0, Math.min(Date.now() - timestamp, AFK_MAX_ELAPSED_MS));
+      lastCheckpointAtRef.current = Date.now() - elapsedMs;
 
-      setIsAutoRepeatEnabled(autoRepeatEnabled);
+      setIsAutoRepeatEnabled(parsed.autoRepeatEnabled === true);
       if (parsed.partyCycles && typeof parsed.partyCycles === 'object') {
         setPartyCycles(parsed.partyCycles);
-      }
-
-      if (elapsedMs > 0) {
-        actions.simulateAfk(elapsedMs, autoRepeatEnabled);
       }
     } catch (error) {
       console.error('Failed to restore AFK runtime state:', error);
     }
-  }, [actions]);
+  }, []);
 
   useEffect(() => {
     try {
       localStorage.setItem(
         AFK_RUNTIME_STORAGE_KEY,
         JSON.stringify({
-          timestamp: Date.now(),
+          timestamp: lastCheckpointAtRef.current,
           autoRepeatEnabled: isAutoRepeatEnabled,
           partyCycles,
         })
@@ -591,11 +589,25 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   }, [isAutoRepeatEnabled, partyCycles]);
 
   useEffect(() => {
-    if (hasShownLaunchProgressRef.current) return;
-    hasShownLaunchProgressRef.current = true;
+    if (!shouldShowAfkSummaryRef.current) return;
+    const baselineStats = afkSummaryBaselineRef.current;
+    if (!baselineStats) return;
+
+    shouldShowAfkSummaryRef.current = false;
+    afkSummaryBaselineRef.current = null;
 
     state.parties.forEach((party, partyIndex) => {
-      const stats = party.expeditionStats;
+      const baseline = baselineStats[partyIndex];
+      if (!baseline) return;
+
+      const stats = {
+        victories: Math.max(0, party.expeditionStats.victories - baseline.victories),
+        retreats: Math.max(0, party.expeditionStats.retreats - baseline.retreats),
+        defeats: Math.max(0, party.expeditionStats.defeats - baseline.defeats),
+        donatedGold: Math.max(0, party.expeditionStats.donatedGold - baseline.donatedGold),
+        savedGold: Math.max(0, party.expeditionStats.savedGold - baseline.savedGold),
+      };
+
       const summaryParts: string[] = [];
       if (stats.victories > 0) summaryParts.push(`踏破${formatNumber(stats.victories)}回`);
       if (stats.retreats > 0) summaryParts.push(`撤退${formatNumber(stats.retreats)}回`);
@@ -612,84 +624,19 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     });
   }, [actions, state.parties]);
 
-  // Item drop notifications after expedition
-  useEffect(() => {
-    state.parties.forEach((party, index) => {
-      const previousLog = prevPartyLogsRef.current[index] ?? null;
-      const currentLog = party.lastExpeditionLog;
-      if (!currentLog || currentLog === previousLog) {
-        return;
-      }
+  const processTimeCheckpoint = useCallback((now: number = Date.now()) => {
+    const elapsedMs = Math.max(0, Math.min(now - lastCheckpointAtRef.current, AFK_MAX_ELAPSED_MS));
+    if (elapsedMs < PARTY_CYCLE_TICK_MS) return;
 
-      const existingTimer = pendingNotificationTimersRef.current[index];
-      if (existingTimer) {
-        window.clearTimeout(existingTimer);
-      }
+    lastCheckpointAtRef.current = now;
+    if (elapsedMs >= 1000) {
+      afkSummaryBaselineRef.current = state.parties.map((party) => ({ ...party.expeditionStats }));
+      shouldShowAfkSummaryRef.current = true;
+    }
 
-      // Delay reward notifications until exploration visually finishes.
-      pendingNotificationTimersRef.current[index] = window.setTimeout(() => {
-        for (const item of currentLog.rewards) {
-          const isSuperRare = item.superRare > 0;
-          const itemName = getItemDisplayName(item);
-          const rarity = getItemRarityById(item.id);
-          actions.addNotification(
-            `${party.name}:${itemName}を入手！`,
-            rarity === 'rare' || rarity === 'mythic' || isSuperRare ? 'rare' : 'normal',
-            'item',
-            undefined,
-            { rarity, isSuperRareItem: isSuperRare }
-          );
-        }
-        delete pendingNotificationTimersRef.current[index];
-      }, EXPLORING_PROGRESS_TOTAL_STEPS * EXPLORING_PROGRESS_STEP_MS);
-    });
+    const tickCount = Math.floor(elapsedMs / PARTY_CYCLE_TICK_MS);
 
-    prevPartyLogsRef.current = state.parties.map((party) => party.lastExpeditionLog);
-  }, [state.parties, actions]);
-
-  useEffect(() => () => {
-    Object.values(pendingNotificationTimersRef.current).forEach((timerId) => {
-      window.clearTimeout(timerId);
-    });
-  }, []);
-
-  useEffect(() => {
-    const currentScrollTop = tabScrollPositionsRef.current[activeTab] ?? 0;
-    tabContentRef.current?.scrollTo({ top: currentScrollTop, behavior: 'auto' });
-  }, [activeTab]);
-
-  const switchTab = (nextTab: Tab) => {
-    const currentScrollTop = tabContentRef.current?.scrollTop ?? 0;
-    tabScrollPositionsRef.current[activeTab] = currentScrollTop;
-    setActiveTab(nextTab);
-  };
-
-  const transitionTo = (partyIndex: number, nextState: PartyCycleState, durationMs: number) => {
-    setPartyCycles((prev) => ({
-      ...prev,
-      [partyIndex]: { state: nextState, elapsedMs: 0, durationMs },
-    }));
-  };
-
-  const getPartyAbilityOwnerName = (party: Party, abilityId: string): string | null => {
-    const { characterStats } = computePartyStats(party);
-    const owner = party.characters.find((character) =>
-      characterStats.find((stats) => stats.characterId === character.id)?.abilities.some((ability) => ability.id === abilityId)
-    );
-    return owner?.name ?? null;
-  };
-
-  const triggerSortie = (partyIndex: number) => {
-    const cycle = partyCycles[partyIndex];
-    if (cycle && (cycle.state === '移動中' || cycle.state === '探索中' || cycle.state === '帰還中')) return;
-    const party = state.parties[partyIndex];
-    if (!party) return;
-    if (party.pendingProfit > 0) actions.clearPendingProfit(partyIndex);
-    transitionTo(partyIndex, '移動中', 5000);
-  };
-
-  useEffect(() => {
-    const id = window.setInterval(() => {
+    for (let tick = 0; tick < tickCount; tick += 1) {
       setPartyCycles((prev) => {
         const next = { ...prev };
         state.parties.forEach((party, partyIndex) => {
@@ -766,9 +713,117 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         });
         return next;
       });
+    }
+  }, [actions, isAutoRepeatEnabled, state.parties]);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      processTimeCheckpoint();
     }, PARTY_CYCLE_TICK_MS);
     return () => window.clearInterval(id);
-  }, [actions, isAutoRepeatEnabled, state.parties]);
+  }, [processTimeCheckpoint]);
+
+  useEffect(() => {
+    const handleFocus = () => {
+      processTimeCheckpoint();
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        processTimeCheckpoint();
+      }
+    };
+    const handleUserAction = () => {
+      processTimeCheckpoint();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('pointerdown', handleUserAction);
+    window.addEventListener('keydown', handleUserAction);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('pointerdown', handleUserAction);
+      window.removeEventListener('keydown', handleUserAction);
+    };
+  }, [processTimeCheckpoint]);
+
+  // Item drop notifications after expedition
+  useEffect(() => {
+    state.parties.forEach((party, index) => {
+      const previousLog = prevPartyLogsRef.current[index] ?? null;
+      const currentLog = party.lastExpeditionLog;
+      if (!currentLog || currentLog === previousLog) {
+        return;
+      }
+
+      const existingTimer = pendingNotificationTimersRef.current[index];
+      if (existingTimer) {
+        window.clearTimeout(existingTimer);
+      }
+
+      // Delay reward notifications until exploration visually finishes.
+      pendingNotificationTimersRef.current[index] = window.setTimeout(() => {
+        for (const item of currentLog.rewards) {
+          const isSuperRare = item.superRare > 0;
+          const itemName = getItemDisplayName(item);
+          const rarity = getItemRarityById(item.id);
+          actions.addNotification(
+            `${party.name}:${itemName}を入手！`,
+            rarity === 'rare' || rarity === 'mythic' || isSuperRare ? 'rare' : 'normal',
+            'item',
+            undefined,
+            { rarity, isSuperRareItem: isSuperRare }
+          );
+        }
+        delete pendingNotificationTimersRef.current[index];
+      }, EXPLORING_PROGRESS_TOTAL_STEPS * EXPLORING_PROGRESS_STEP_MS);
+    });
+
+    prevPartyLogsRef.current = state.parties.map((party) => party.lastExpeditionLog);
+  }, [state.parties, actions]);
+
+  useEffect(() => () => {
+    Object.values(pendingNotificationTimersRef.current).forEach((timerId) => {
+      window.clearTimeout(timerId);
+    });
+  }, []);
+
+  useEffect(() => {
+    const currentScrollTop = tabScrollPositionsRef.current[activeTab] ?? 0;
+    tabContentRef.current?.scrollTo({ top: currentScrollTop, behavior: 'auto' });
+  }, [activeTab]);
+
+  const switchTab = (nextTab: Tab) => {
+    const currentScrollTop = tabContentRef.current?.scrollTop ?? 0;
+    tabScrollPositionsRef.current[activeTab] = currentScrollTop;
+    setActiveTab(nextTab);
+  };
+
+  const transitionTo = (partyIndex: number, nextState: PartyCycleState, durationMs: number) => {
+    setPartyCycles((prev) => ({
+      ...prev,
+      [partyIndex]: { state: nextState, elapsedMs: 0, durationMs },
+    }));
+  };
+
+  const getPartyAbilityOwnerName = (party: Party, abilityId: string): string | null => {
+    const { characterStats } = computePartyStats(party);
+    const owner = party.characters.find((character) =>
+      characterStats.find((stats) => stats.characterId === character.id)?.abilities.some((ability) => ability.id === abilityId)
+    );
+    return owner?.name ?? null;
+  };
+
+  const triggerSortie = (partyIndex: number) => {
+    const cycle = partyCycles[partyIndex];
+    if (cycle && (cycle.state === '移動中' || cycle.state === '探索中' || cycle.state === '帰還中')) return;
+    const party = state.parties[partyIndex];
+    if (!party) return;
+    if (party.pendingProfit > 0) actions.clearPendingProfit(partyIndex);
+    transitionTo(partyIndex, '移動中', 5000);
+  };
 
   const prevActiveTabRef = useRef<Tab>(activeTab);
   useEffect(() => {
