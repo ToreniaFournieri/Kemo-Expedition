@@ -1743,6 +1743,43 @@ function PartyTab({
                 }
               }
 
+              const bHelpRows = [
+                {
+                  key: 'vitality',
+                  token: 'b.vitality',
+                  short: '体',
+                  description: '基礎体力に {value} を加算（HP/物防に影響）',
+                },
+                {
+                  key: 'strength',
+                  token: 'b.strength',
+                  short: '力',
+                  description: '基礎筋力に {value} を加算（近接火力に影響）',
+                },
+                {
+                  key: 'intelligence',
+                  token: 'b.intelligence',
+                  short: '知',
+                  description: '基礎知性に {value} を加算（魔法火力に影響）',
+                },
+                {
+                  key: 'mind',
+                  token: 'b.mind',
+                  short: '精',
+                  description: '基礎精神に {value} を加算（HP/魔防に影響）',
+                },
+              ]
+                .map((row) => {
+                  const value = additive[row.key as keyof typeof additive];
+                  if (!value) return null;
+                  return {
+                    title: `${row.token}+${value}`,
+                    label: `${row.short}+${value}`,
+                    description: row.description.replace('{value}', `${value}`),
+                  };
+                })
+                .filter((row): row is { title: string; label: string; description: string } => row !== null);
+
               if (parts.length === 0) return null;
               return (
                 <div className="text-xs text-gray-600 mt-1 relative">
@@ -1767,6 +1804,17 @@ function PartyTab({
                       className="absolute left-0 top-5 z-20 w-[min(38rem,88vw)] rounded-md border border-gray-200 bg-white p-3 shadow-lg"
                     >
                       <div className="mb-2 text-[11px] font-semibold text-gray-700">c. ボーナス説明 (同一名ボーナスは重複無効)</div>
+                      {bHelpRows.length > 0 && (
+                        <div className="mb-2 rounded border border-gray-100 bg-gray-50 px-2 py-1 text-[11px] leading-4 text-gray-700">
+                          <div className="font-semibold text-gray-700">b.ボーナス説明(重複有効)</div>
+                          {bHelpRows.map((row) => (
+                            <div key={row.title}>
+                              <span className="font-semibold">{row.title}</span>
+                              <span className="text-gray-500"> - {row.label} - {row.description}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                       <div className="max-h-56 space-y-1 overflow-y-auto pr-1 text-[11px] leading-4 text-gray-700">
                         {helpRows.map((row) => (
                           <div key={row.label}>
