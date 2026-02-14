@@ -1138,12 +1138,16 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 ### 8.2 Header
 - Always fixed at the top.
 - Displays:
-  - Game title + version + build number
+  - Game title + version + (env)
+    - env label by URL subpath const getEnvLabel = () => {
+  const p = window.location.pathname; // e.g. "/Kemo-Expedition/dev/..."
+  if (p.includes("/dev/")) return "開発機";
+  if (p.includes("/qa/")) return "αテスト";
+  return "";  };
   - Use this specification's version
-  - increment the build number each time you edited the code.
 ```
 (Left-aligned)             (Right-aligned)
-ケモの冒険　v0.2.3 (43)        200G
+ケモの冒険　v0.2.3 (αテスト)        200G
 ```
 - Tab header (primary navigation):
   - Party
