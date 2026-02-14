@@ -574,6 +574,8 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   }, []);
 
   useEffect(() => {
+    if (pendingAfkSimulationRef.current) return;
+
     try {
       localStorage.setItem(
         AFK_RUNTIME_STORAGE_KEY,
