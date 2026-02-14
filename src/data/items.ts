@@ -422,6 +422,37 @@ function getMasterItemName(tier: number, rarity: Rarity, category: ItemCategory,
   }
   return names[0];
 }
+
+const CATEGORY_FALLBACK_NAMES: Record<ItemCategory, string> = {
+  armor: '鎧',
+  robe: '法衣',
+  shield: '盾',
+  sword: '剣',
+  katana: '刀',
+  gauntlet: '籠手',
+  arrow: '矢',
+  bolt: 'ボルト',
+  archery: '弓',
+  wand: '杖',
+  grimoire: '書',
+  catalyst: '触媒',
+};
+
+const RARITY_FALLBACK_PREFIX: Record<Rarity, string> = {
+  common: '並',
+  uncommon: '上',
+  rare: '稀',
+  mythic: '神',
+};
+
+function getFallbackItemName(tier: number, rarity: Rarity, category: ItemCategory, variantIndex?: number): string {
+  const variantSuffix = rarity === 'uncommon'
+    ? (variantIndex === 1 ? '・乙' : '・甲')
+    : '';
+
+  return `${tier}層${RARITY_FALLBACK_PREFIX[rarity]}${CATEGORY_FALLBACK_NAMES[category]}${variantSuffix}`;
+}
+
 const ITEM_NAME_OVERRIDES: Record<number, string> = {
   1401: '黎明の聖剣',
   1402: '秘奥真理の書',
@@ -606,8 +637,9 @@ function createItem(
   const noaBasePower = TIER_NOA_BASE_POWER[tier - 1];
 
   const masterName = getMasterItemName(tier, rarity, template.category, variantIndex);
-  const name = ITEM_NAME_OVERRIDES[id] ?? masterName;
-  if (!name) return null;
+  const name = ITEM_NAME_OVERRIDES[id]
+    ?? masterName
+    ?? getFallbackItemName(tier, rarity, template.category, variantIndex);
 
   // Base item
   const item: ItemDef = {
