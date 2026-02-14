@@ -668,6 +668,27 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       shouldShowAfkSummaryRef.current = true;
     }
 
+    // Long background spans should be simulated inside the reducer so each expedition
+    // phase reads the latest pending profit / HP values instead of stale render snapshots.
+    if (elapsedMs >= 60_000) {
+      actions.simulateAfk(elapsedMs, isAutoRepeatEnabled);
+      setPartyCycles((prev) => {
+        const resetAt = now;
+        const next: Record<number, PartyCycleRuntime> = {};
+        state.parties.forEach((_, partyIndex) => {
+          const runtime = prev[partyIndex];
+          next[partyIndex] = {
+            state: runtime?.state ?? '待機中',
+            stateStartedAt: resetAt,
+            durationMs: runtime?.durationMs ?? 1000,
+          };
+        });
+        return next;
+      });
+      lastCheckpointAtRef.current = now;
+      return;
+    }
+
     const simulationNow = lastCheckpointAtRef.current + elapsedMs;
 
     setPartyCycles((prev) => {
