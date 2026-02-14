@@ -113,7 +113,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
     uncommon: {
       archery: ['つる巻き弓'],
       armor: ['硬革の鎧'],
-      arrow: ['黒曜石の矢'],
+      arrow: ['黒曜石の炎矢', '黒曜石の氷矢'],
       catalyst: ['琥珀粉の触媒'],
       grimoire: ['洞窟壁画の呪頁'],
       robe: ['苔縫いの法衣'],
@@ -153,7 +153,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
     uncommon: {
       archery: ['岩角の長弓'],
       armor: ['磨石板の鎧'],
-      arrow: ['黒曜尖石の矢'],
+      arrow: ['黒曜尖石の炎矢', '黒曜尖石の氷矢'],
       catalyst: ['磁石砂の触媒'],
       grimoire: ['断崖壁画の呪典'],
       robe: ['霧染みの法衣'],
@@ -193,7 +193,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
     uncommon: {
       archery: ['狐狩人の戦弓'],
       armor: ['狐族戦士の青銅鎧'],
-      arrow: ['幻裂きの青銅矢'],
+      arrow: ['幻裂きの青銅炎矢', '幻裂きの青銅氷矢'],
       catalyst: ['霧精粉の触媒'],
       grimoire: ['幻霧の秘呪書'],
       robe: ['幻術師の法衣'],
@@ -233,7 +233,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
     uncommon: {
       archery: ['熊狩人の戦弓'],
       armor: ['霊峰鍛冶の鉄鎧'],
-      arrow: ['火花裂きの鉄矢'],
+      arrow: ['火花裂きの鉄炎矢', '火花裂きの鉄氷矢'],
       catalyst: ['熔核粉の触媒'],
       grimoire: ['鍛炉秘伝の呪典'],
       robe: ['炉祈司の法衣'],
@@ -273,7 +273,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
     uncommon: {
       archery: ['聖茂狩人の戦弓'],
       armor: ['聖域守護の月鋼鎧'],
-      arrow: ['閃撃の月鋼矢'],
+      arrow: ['閃撃の月鋼炎矢', '閃撃の月鋼氷矢'],
       catalyst: ['燐精核の触媒'],
       grimoire: ['月影秘儀書'],
       robe: ['燐光司祭の法衣'],
@@ -313,7 +313,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
     uncommon: {
       archery: ['歯車補助の戦弓'],
       armor: ['耐圧配管の機甲'],
-      arrow: ['貫孔加工の精密矢'],
+      arrow: ['貫孔加工の精密炎矢', '貫孔加工の精密氷矢'],
       catalyst: ['中和強化触媒'],
       grimoire: ['迷宮制御の秘呪書'],
       robe: ['毒気遮断の法衣'],
@@ -353,7 +353,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
     uncommon: {
       archery: ['高天狩人の戦弓'],
       armor: ['浮島守護の天鋼鎧'],
-      arrow: ['旋風穿ちの鋼矢'],
+      arrow: ['旋風穿ちの鋼炎矢', '旋風穿ちの鋼氷矢'],
       catalyst: ['高天触媒核'],
       grimoire: ['風律の秘呪書'],
       robe: ['天輝司祭の法衣'],
@@ -393,7 +393,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
     uncommon: {
       archery: ['次元狩人の戦弓'],
       armor: ['玻璃界守護の結晶鎧'],
-      arrow: ['層界穿ちの結晶矢'],
+      arrow: ['層界穿ちの結晶炎矢', '層界穿ちの結晶氷矢'],
       catalyst: ['次元安定の触媒核'],
       grimoire: ['終焉律法の秘呪書'],
       robe: ['無音司祭の法衣'],
