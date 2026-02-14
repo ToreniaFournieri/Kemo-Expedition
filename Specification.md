@@ -996,7 +996,7 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 - `f.hit_detection`(actor: , opponent: ,Nth_hit: )
   - For all pahse, LONG, MID, CLOSE. 
   - decay_of_accuracy: clamp(0.86, 0.90 + actor.`c.accuracy+v` - opponent.`c.evasion+v`, 0.98)
-  - chance = `d.accuracy_potency` x (decay_of_accuracy)^(Nth_hit)
+  - chance = (`d.accuracy_potency` - (if opponent.`a.deflection` and phase is LONG, 10) ) x (decay_of_accuracy)^(Nth_hit)
     - Note: Nth_hit starts at 1 for the first strike.
   - Roll: Return Random(0, 1.0) <= chance
 
