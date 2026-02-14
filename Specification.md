@@ -96,7 +96,34 @@
 | `c.wand_x1.x` | 杖x1.x | 杖カテゴリ装備の効果が 1.x 倍  |
 | `c.grimoire_x1.x` | 書x1.x | 魔導書カテゴリ装備の効果が 1.x 倍  |
 | `c.catalyst_x1.x` | 媒x1.x | 触媒カテゴリ装備の効果が 1.x 倍  |
- 
+
+**`a.*` Ability List (Japanese)**
+
+| `a.` ability | 表示 | 説明 |
+|----|----|----|
+| `a.defender1` | 守護者1 | 味方全体が受ける物理ダメージを **2/3倍** にする |
+| `a.defender2` | 守護者2 | 味方全体が受ける物理ダメージを **3/5倍** にする |
+| `a.counter1` | 反撃1 | 敵の**近距離攻撃**を受けたとき反撃する(攻撃回数は半減) |
+| `a.counter2` | 反撃2 | 敵の**近距離・中距離攻撃**を受けたとき反撃する(攻撃回数は半減) |
+| `a.re-attack1` | 再攻撃1 | 攻撃時に **追加攻撃を1回**行う(攻撃回数は半減) |
+| `a.re-attack2` | 再攻撃2 | 攻撃時に **追加攻撃を2回**行う(攻撃回数は半減) |
+| `a.iaigiri`1 | 居合斬り1 | 物理ダメージをx2.0倍する。攻撃回数が半減する |
+| `a.iaigiri`2 | 居合斬り2 | 物理ダメージをx2.5倍する。攻撃回数を半減する |
+| `a.command1` | 指揮1 | 与える物理ダメージを **1.3倍** にする |
+| `a.command2` | 指揮2 | 与える物理ダメージを **1.6倍** にする |
+| `a.squander` | 浪費 | 宴会で消費するゴールドが **2倍** になる |
+| `a.hunter1` | 狩人1 | 列によるダメージ減衰を **1列ごと15%→10%** に軽減する |
+| `a.hunter2` | 狩人2 | 列によるダメージ減衰を **1列ごと15%→7%** に軽減する |
+| `a.resonance1` | 共鳴1 | 魔法攻撃 1回毎に、全ヒットのダメージが **+5%** 増加する |
+| `a.resonance2` | 共鳴2 | 魔法攻撃 1回毎に、全ヒットのダメージが **+8%** 増加する |
+| `a.resonance3` | 共鳴3 | 魔法攻撃 1回毎に、全ヒットのダメージが **+11%** 増加する |
+| `a.m-barrier1` | 魔法障壁1 | 味方全体が受ける魔法ダメージを **2/3倍** にする |
+| `a.m-barrier2` | 魔法障壁2 | 味方全体が受ける魔法ダメージを **3/5倍** にする |
+| `a.deflection` | 矢払い |　敵の遠距離攻撃の命中率を **10ポイント低下** させる |
+| `a.first-strike1` | 先制攻撃1 | **遠距離攻撃時**に敵より先に行動する |
+| `a.first-strike2` | 先制攻撃2 | **全フェーズ**で敵より先に行動する |
+| `a.tithe` | 十分の一税 | 遠征利益の **+10%** を寄付額に上乗せする |
+| `a.null-counter` | 反撃無効化 | 反撃を無効化する |
 
 ### 2.1 Global constants
 
@@ -284,12 +311,12 @@
 |戦士(戦,Fighter) | `c.grit+1`, `c.equip_slot+1`,  `c.armor_x1.4` |`a.defender`1: Incoming physical damage to party × 2/3 |`a.defender`2: Incoming physical damage to party × 3/5 | 
 |剣士(剣,Duelist) | `c.grit+1`, `c.sword_x1.4` | `a.counter`1: enemy CLOSE-range attack (`f.NoA` x 0.5)  | `a.counter`2: enemy CLOSE-range attack and MID-range (`f.NoA` x 0.5)  | 
 |忍者(忍,Ninja) | `c.grit+1`, `c.penet_+0.15` | `a.re-attack`1: once when attacking (`f.NoA` x 0.5) | `a.re-attack`2: twice when attacking (`f.NoA` x 0.5) | 
-|侍(侍,Samurai) | `c.grit+1`, `c.katana_x1.4` |`a.iaigiri`: Physical damage ×2,  number of attacks ÷2 | `a.iaigiri`: Physical damage ×2.5,  number of attacks ÷2 |
+|侍(侍,Samurai) | `c.grit+1`, `c.katana_x1.4` |`a.iaigiri`1: Physical damage ×2,  number of attacks ÷2 | `a.iaigiri`2: Physical damage ×2.5,  number of attacks ÷2 |
 |君主(君,Lord) | `c.grit+1`, `c.gauntlet_x1.4`, `c.equip_slot+1` |`a.command`1: Physical damage x1.3. `a.squander`:double the gold spent on feasting. |`a.command`2: Physical damage x1.6. `a.squander`:double the gold spent on feasting. | 
 |狩人(狩,Ranger) | `c.pursuit+2`, `c.arrow_x1.4` | `a.hunter`1: Reduces row-based damage decay from 15% to 10% per step. |`a.hunter`2: Reduces row-based damage decay from 15% to 7% per step. | 
 |魔法使い(魔,Wizard) | `c.caster+1`, `c.wand_x1.4` | `a.resonance`1:All hits +5% damage per `d.magical_NoA`. | `a.resonance`2:All hits +8% damage per `d.magical_NoA`. | 
 |賢者(賢,Sage) | `c.caster+2`, `c.robe_x1.4`, `c.grimoire_x1.2`, `c.equip_slot+2` | `a.m-barrier`1: Incoming magical damage to party × 2/3 | `a.m-barrier`2: Incoming magical damage to party × 3/5 | 
-|盗賊(盗,Rogue) | `c.pursuit+1`, `c.unlock` additional reward chance |`a.first-strike`1: Acts faster than enemy at CLOSE phase |`a.first-strike`2: Acts faster than enemy at All phases | 
+|盗賊(盗,Rogue) | `c.pursuit+1`, `c.unlock` additional reward chance |`a.deflection`: During LONG phase only, opponent ranged attacks suffer −10 percentage points to hit chance. `a.first-strike`1: Acts faster than enemy at CLOSE phase |`a.deflection`: During LONG phase only, opponent ranged attacks suffer −10 percentage points to hit chance. `a.first-strike`2: Acts faster than enemy at All phases | 
 |巡礼者(巡,Pilgrim) | `c.caster+1`, `c.grit+1`, `c.evasion+0.02`, `c.equip_slot+1` |`a.tithe`: Adds +10% of expedition profit to donation. |`a.null-counter`: Negate counter attack. `a.tithe`: Adds +10% of expedition profit to donation. | 
 
 - If `main_class` and  `sub_class` are same class, then it turns into master class, applies master bonus.
@@ -481,7 +508,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | Ranger | 38 | (none) | 0.03 | 0.01 | 14 | 4 | 0 | 0 | 0 | 0 | x1.2 | x1.0 | x1.0 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 12 |
 | Wizard | 32 | (none) | 0.00 | 0.00 |0 | 0 | 20 | 2 | 0 | 0 | x1.0 | x1.2 | x1.0 | 6 | 14 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
 | Sage | 38 | (none) | 0.00 | 0.00 |0 | 0 | 10 | 4 | 0 | 0 | x1.0 | x1.2 | x1.0 | 8 | 20 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
-| Rogue | 30 | (none) | 0.06 | 0.06 | 10 | 4 | 0 | 0 | 10 | 4 | x1.0 | x1.2 | x1.0 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 8 |
+| Rogue | 30 | `a.deflection` | 0.06 | 0.06 | 10 | 4 | 0 | 0 | 10 | 4 | x1.2 | x1.0 | x1.0 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 8 |
 | Pilgrim | 66 | `a.null-counter` | 0.00 | 0.02 | 0 | 0 | 10 | 2 | 16 | 2 | x1.0 | x1.2 | x1.2 | 12 | 12 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 16 |
 
 
@@ -546,8 +573,8 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 |`i.armor` | x1.0 | x1.2 | x1.44 | x1.73 |
 |`i.robe` | x1.0 | x1.2 | x1.44 | x1.73 |
 |`i.shield ` | x1.0 | x1.2 | x1.44 | x1.73 |
-|`i.sword` | x1.0 | x1.2 | x1.44 | x1.73 |
-|`i.katana` | x2.0 | x2.4 | x2.9 | x3.46 |
+|`i.sword` | x1.2 | x1.44 | x1.73 | x2.08 |
+|`i.katana` | x2.4 | x2.9 | x3.46 | x4.15 |
 |`i.gauntlet` | x1.0 | x1.2 | x1.44 | x1.73 |
 |`i.arrow` | x0.67 | x0.80 | x0.95 | x1.16 |
 |`i.bolt` | x1.33  | x1.60 | x1.92 | x2.30 |
@@ -996,9 +1023,18 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 - `f.hit_detection`(actor: , opponent: ,Nth_hit: )
   - For all pahse, LONG, MID, CLOSE. 
   - decay_of_accuracy: clamp(0.86, 0.90 + actor.`c.accuracy+v` - opponent.`c.evasion+v`, 0.98)
-  - chance = `d.accuracy_potency` x (decay_of_accuracy)^(Nth_hit)
+  - baseChance = actor.d.accuracy_potency
+  - if opponent has a.deflection AND phase == LONG: baseChance -= 0.10
+  - chance = clamp(0.0, baseChance, 1.0) x (decay ^ (Nth_hit - 1))
     - Note: Nth_hit starts at 1 for the first strike.
   - Roll: Return Random(0, 1.0) <= chance
+ 
+
+- **`f.counter`(actor: , opponent: ,phase: ) :** IF actor.`a.counter` and (opponent or party members have not `a.null-counter`) and take damage in CLOSE phase, the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`, and actor.`f.NoA` x 0.5, round up)
+    - Counter triggers immediately after damage resolution, regardless of turn order modifiers.
+    - IF actor.`a.counter` and (opponent or party member have `a.null-counter`), displays log like : “巡礼者ブラザの反撃無効化により、二枚爪の黒豹のカウンターは防がれた！”
+    - *note:* if opponent is character, then check party.`a.null-counter`. if at least one party member has `a.null-counter`, nagete the counter attack.
+
 
 
 ### 6.3 Turn resolution 
@@ -1013,12 +1049,13 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 - Enemy always moves first.
 - `f.NoA` times, get `f.targeting` -> target character
   	- If `f.hit_detection`(actor: , opponent: ,Nth_hit: the current hit index), current party.`d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
-- If currenr party.`d.HP` =< 0, Defeat. 
+- If currenr party.`d.HP` =< 0, Defeat.
+
+- **Coutner:** `f.counter`(actor:enemy , opponent:character ,phase: CLOSE )
+
 
 - *Note:* Nth_hit is global for all enemy attacks in the phase (not per-target)
 
-- **Counter:** IF character.`a.counter` and take damage in CLOSE phase, the character attacks to enemy. (using `f.hit_detection` and `f.damage_calculation`, and character.`f.NoA` x 0.5, round up)
-    - Counter triggers immediately after damage resolution, regardless of turn order modifiers.
 
 **Player action**
 - Each party member act if he has corresponding damage source in the phase. 
@@ -1026,6 +1063,8 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 - `f.NoA` times -> enemy
 	- If `f.hit_detection`(actor: , opponent: ,Nth_hit: the current hit index), current enemy.`d.HP` -= `f.damage_calculation` (actor: character, opponent: enemy, phase: phase)
 - If enemy.`d.HP` =< 0, Victory.
+
+- **Coutner:** `f.counter`(actor:character , opponent: enemy , phase: CLOSE )
 
 - **Re-attack:** IF character.`a.re-attack`, the character attacks to enemy.  (using `f.hit_detection`, `f.damage_calculation`, and character.`f.NoA` x 0.5, round up)
 
@@ -1584,7 +1623,6 @@ HP: 312                 経験値: 88
 
 ```
 
-
 **4. Game Reset**
   - Full reset option
   - Warning required before execution
@@ -1595,7 +1633,6 @@ HP: 312                 経験値: 88
 **Branch:** `main` → `/dev/`, `qa` → `/qa/`.
 **Environment:** `/dev/` = 開発機, `/qa/` = αテスト; display the environment label in the version line.
 **Save Data Isolation:** Save data must be namespaced per environment (`/dev/` and `/qa/`) and never shared between them.
-
 
 
 ## 10. CHANGELOG

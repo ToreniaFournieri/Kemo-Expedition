@@ -79,7 +79,7 @@ export interface Bonus {
 // Ability Types
 export type AbilityId =
   | 'first_strike' | 'hunter' | 'defender' | 'counter' | 're_attack'
-  | 'iaigiri' | 'resonance' | 'command' | 'm_barrier' | 'null_counter' | 'unlock'
+  | 'iaigiri' | 'resonance' | 'command' | 'm_barrier' | 'deflection' | 'null_counter' | 'unlock'
   | 'squander' | 'tithe';
 
 export interface Ability {

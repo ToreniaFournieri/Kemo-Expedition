@@ -366,8 +366,9 @@ const ABILITY_NAMES: Record<string, string> = {
   resonance: '共鳴',
   command: '指揮',
   m_barrier: '魔法障壁',
+  deflection: '矢払い',
   unlock: '解錠',
-  null_counter: '無効化',
+  null_counter: '反撃無効化',
   squander: '散財',
   tithe: '十分の一税',
 };
@@ -3074,7 +3075,8 @@ function SettingTab({
   const ENEMY_ABILITY_LABELS: Record<string, string> = {
     counter: 'カウンター:CLOSEフェーズで反撃',
     re_attack: '連撃:攻撃時に1回追加攻撃',
-    null_counter: '無効化:カウンター攻撃を無効化',
+    deflection: '矢払い:LONGフェーズで敵遠距離命中-10pt',
+    null_counter: '反撃無効化:カウンター攻撃を無効化',
   };
 
   const ENEMY_CLASS_LABELS: Record<string, string> = {
@@ -3368,7 +3370,7 @@ function SettingTab({
                             }
 
                             const defenseRows: string[] = [
-                              `属性: ${ENEMY_ELEMENT_LABELS[displayEnemy.elementalOffense] ?? '無'} (${displayEnemy.elementalOffense === 'none' ? 'x1.0' : 'x1.2'})`,
+                              `属性: ${ENEMY_ELEMENT_LABELS[displayEnemy.elementalOffense] ?? '無'} (x1.0)`,
                               formatEnemyDefenseLine('物理防御', displayEnemy.physicalDefense, physicalDefensePercent),
                               formatEnemyDefenseLine('魔法防御', displayEnemy.magicalDefense, magicalDefensePercent),
                               `回避: ${formatNumber(Math.round(displayEnemy.evasionBonus * 1000))}`,
