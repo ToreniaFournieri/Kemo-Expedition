@@ -658,6 +658,11 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     const elapsedMs = Math.max(0, Math.min(now - lastCheckpointAtRef.current, AFK_MAX_ELAPSED_MS));
     if (elapsedMs < PARTY_CYCLE_TICK_MS) return;
 
+    if (elapsedMs > 60_000) {
+      const elapsedSeconds = Math.floor(elapsedMs / 1000);
+      actions.addNotification(`(Debug)前回の更新から ${formatNumber(elapsedSeconds)}秒経過し、その間の進捗を演算しました。`);
+    }
+
     if (elapsedMs >= 1000) {
       afkSummaryBaselineRef.current = state.parties.map((party) => ({ ...party.expeditionStats }));
       shouldShowAfkSummaryRef.current = true;
