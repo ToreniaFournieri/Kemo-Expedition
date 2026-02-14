@@ -1589,7 +1589,13 @@ HP: 312                 経験値: 88
   - Warning required before execution
 
 
-## 9. CHANGELOG
+## 9. Environment
+**Environment:** `/dev/` = 開発機, `/qa/` = αテスト; display the environment label in the version line.
+**Save Data Isolation:** Save data must be namespaced per environment (`/dev/` and `/qa/`) and never shared between them.
+
+
+
+## 10. CHANGELOG
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
