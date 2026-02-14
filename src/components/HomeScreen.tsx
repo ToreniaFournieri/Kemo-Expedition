@@ -66,7 +66,7 @@ type PartyCycleState = '休息中' | '宴会中' | '睡眠中' | '祈り中' | '
 
 interface PartyCycleRuntime {
   state: PartyCycleState;
-  elapsedMs: number;
+  stateStartedAt: number;
   durationMs: number;
 }
 
@@ -556,18 +556,31 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       if (!savedRuntime) return;
 
       const parsed = JSON.parse(savedRuntime) as {
-        timestamp?: number;
+        checkpointAt?: number;
         autoRepeatEnabled?: boolean;
         partyCycles?: Record<number, PartyCycleRuntime>;
       };
 
-      const timestamp = typeof parsed.timestamp === 'number' ? parsed.timestamp : Date.now();
-      const elapsedMs = Math.max(0, Math.min(Date.now() - timestamp, AFK_MAX_ELAPSED_MS));
+      const checkpointAt = typeof parsed.checkpointAt === 'number' ? parsed.checkpointAt : Date.now();
+      const elapsedMs = Math.max(0, Math.min(Date.now() - checkpointAt, AFK_MAX_ELAPSED_MS));
       lastCheckpointAtRef.current = Date.now() - elapsedMs;
 
       setIsAutoRepeatEnabled(parsed.autoRepeatEnabled === true);
       if (parsed.partyCycles && typeof parsed.partyCycles === 'object') {
-        setPartyCycles(parsed.partyCycles);
+        const restoredCycles: Record<number, PartyCycleRuntime> = {};
+        Object.entries(parsed.partyCycles).forEach(([key, value]) => {
+          if (!value || typeof value !== 'object') return;
+          const runtime = value as Partial<PartyCycleRuntime> & { elapsedMs?: number };
+          const stateStartedAt = typeof runtime.stateStartedAt === 'number'
+            ? runtime.stateStartedAt
+            : Date.now() - Math.max(0, runtime.elapsedMs ?? 0);
+          restoredCycles[Number(key)] = {
+            state: runtime.state ?? '待機中',
+            stateStartedAt,
+            durationMs: typeof runtime.durationMs === 'number' ? runtime.durationMs : 1000,
+          };
+        });
+        setPartyCycles(restoredCycles);
       }
     } catch (error) {
       console.error('Failed to restore AFK runtime state:', error);
@@ -583,7 +596,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       localStorage.setItem(
         AFK_RUNTIME_STORAGE_KEY,
         JSON.stringify({
-          timestamp: lastCheckpointAtRef.current,
+          checkpointAt: lastCheckpointAtRef.current,
           autoRepeatEnabled: isAutoRepeatEnabled,
           partyCycles,
         })
@@ -633,35 +646,39 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     const elapsedMs = Math.max(0, Math.min(now - lastCheckpointAtRef.current, AFK_MAX_ELAPSED_MS));
     if (elapsedMs < PARTY_CYCLE_TICK_MS) return;
 
-    lastCheckpointAtRef.current = now;
     if (elapsedMs >= 1000) {
       afkSummaryBaselineRef.current = state.parties.map((party) => ({ ...party.expeditionStats }));
       shouldShowAfkSummaryRef.current = true;
     }
 
-    const tickCount = Math.floor(elapsedMs / PARTY_CYCLE_TICK_MS);
+    const simulationNow = lastCheckpointAtRef.current + elapsedMs;
 
-    for (let tick = 0; tick < tickCount; tick += 1) {
-      setPartyCycles((prev) => {
-        const next = { ...prev };
-        state.parties.forEach((party, partyIndex) => {
-          const runtime = next[partyIndex] ?? { state: '待機中' as PartyCycleState, elapsedMs: 0, durationMs: 1000 };
-          const updated = { ...runtime, elapsedMs: runtime.elapsedMs + PARTY_CYCLE_TICK_MS };
+    setPartyCycles((prev) => {
+      const next = { ...prev };
+      state.parties.forEach((party, partyIndex) => {
+        const runtime = next[partyIndex] ?? { state: '待機中' as PartyCycleState, stateStartedAt: simulationNow, durationMs: 1000 };
+        const updated = { ...runtime };
 
-          if (updated.state === '探索中') {
-            const exploredRooms = party.lastExpeditionLog?.entries.length;
-            updated.durationMs = getExplorationDurationMs(exploredRooms);
+        if (updated.state === '探索中') {
+          const exploredRooms = party.lastExpeditionLog?.entries.length;
+          updated.durationMs = getExplorationDurationMs(exploredRooms);
+        }
+
+        if (updated.state === '休息中') {
+          const { partyStats: partyRuntimeStats } = computePartyStats(party);
+          if (party.currentHp < partyRuntimeStats.hp) actions.healPartyHp(partyIndex, Math.max(1, Math.floor(partyRuntimeStats.hp * 0.01)));
+          if (party.currentHp >= partyRuntimeStats.hp) {
+            updated.state = party.pendingProfit > 0 ? '宴会中' : '睡眠中';
+            updated.stateStartedAt = simulationNow;
+            updated.durationMs = updated.state === '宴会中' ? 5000 : 10000;
           }
+        }
 
-          if (updated.state === '休息中') {
-            const { partyStats: partyRuntimeStats } = computePartyStats(party);
-            if (party.currentHp < partyRuntimeStats.hp) actions.healPartyHp(partyIndex, Math.max(1, Math.floor(partyRuntimeStats.hp * 0.01)));
-            if (party.currentHp >= partyRuntimeStats.hp) {
-              updated.state = party.pendingProfit > 0 ? '宴会中' : '睡眠中';
-              updated.elapsedMs = 0;
-              updated.durationMs = updated.state === '宴会中' ? 5000 : 10000;
-            }
-          } else if (updated.elapsedMs >= updated.durationMs) {
+        let stateElapsedMs = Math.max(0, simulationNow - updated.stateStartedAt);
+        while (updated.state !== '休息中' && stateElapsedMs >= updated.durationMs) {
+          updated.stateStartedAt += updated.durationMs;
+          stateElapsedMs -= updated.durationMs;
+
             if (updated.state === '宴会中') {
               const baseSpend = Math.floor((party.pendingProfit * (33 + Math.random() * 34)) / 100);
               const hasSquander = !!getPartyAbilityOwnerName(party, 'squander');
@@ -711,14 +728,19 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
               updated.state = '休息中';
               updated.durationMs = 1000;
             }
-            updated.elapsedMs = 0;
-          }
 
-          next[partyIndex] = updated;
-        });
-        return next;
+            if (updated.state === '休息中') {
+              updated.stateStartedAt = simulationNow;
+              stateElapsedMs = 0;
+            }
+        }
+
+        next[partyIndex] = updated;
       });
-    }
+      return next;
+    });
+
+    lastCheckpointAtRef.current = now;
   }, [actions, isAutoRepeatEnabled, state.parties]);
 
   useEffect(() => {
@@ -809,7 +831,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const transitionTo = (partyIndex: number, nextState: PartyCycleState, durationMs: number) => {
     setPartyCycles((prev) => ({
       ...prev,
-      [partyIndex]: { state: nextState, elapsedMs: 0, durationMs },
+      [partyIndex]: { state: nextState, stateStartedAt: Date.now(), durationMs },
     }));
   };
 
@@ -870,9 +892,9 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
                     setPartyCycles((prevCycles) => {
                       const nextCycles = { ...prevCycles };
                       state.parties.forEach((_, partyIndex) => {
-                        const runtime = nextCycles[partyIndex] ?? { state: '待機中' as PartyCycleState, elapsedMs: 0, durationMs: 1000 };
+                        const runtime = nextCycles[partyIndex] ?? { state: '待機中' as PartyCycleState, stateStartedAt: Date.now(), durationMs: 1000 };
                         if (runtime.state === '待機中') {
-                          nextCycles[partyIndex] = { state: '移動中', elapsedMs: 0, durationMs: 5000 };
+                          nextCycles[partyIndex] = { state: '移動中', stateStartedAt: Date.now(), durationMs: 5000 };
                         }
                       });
                       return nextCycles;
@@ -1998,15 +2020,16 @@ function ExpeditionTab({
 
         const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
         const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
-        const cycle = partyCycles[partyIndex] ?? { state: '待機中', elapsedMs: 0, durationMs: 1000 };
+        const cycle = partyCycles[partyIndex] ?? { state: '待機中', stateStartedAt: Date.now(), durationMs: 1000 };
+        const cycleElapsedMs = Math.max(0, Date.now() - cycle.stateStartedAt);
         const progressPercent = cycle.state === '待機中'
           ? 100
           : cycle.state === '探索中'
           ? Math.min(
             100,
-            Math.floor(cycle.elapsedMs / EXPLORING_PROGRESS_STEP_MS) * (100 / EXPLORING_PROGRESS_TOTAL_STEPS),
+            Math.floor(cycleElapsedMs / EXPLORING_PROGRESS_STEP_MS) * (100 / EXPLORING_PROGRESS_TOTAL_STEPS),
           )
-          : Math.min(100, (cycle.elapsedMs / Math.max(1, cycle.durationMs)) * 100);
+          : Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100);
         const { partyStats } = computePartyStats(party);
         const isLogExpanded = expandedLogParty === partyIndex;
         const currentLog = party.lastExpeditionLog;
@@ -2022,7 +2045,7 @@ function ExpeditionTab({
           if (cycle.state !== '探索中') return currentLog.entries;
           const visibleCount = Math.min(
             currentLog.entries.length,
-            Math.max(0, Math.ceil((cycle.elapsedMs / Math.max(1, cycle.durationMs)) * currentLog.entries.length)),
+            Math.max(0, Math.ceil((cycleElapsedMs / Math.max(1, cycle.durationMs)) * currentLog.entries.length)),
           );
           return currentLog.entries.slice(0, visibleCount);
         })();
