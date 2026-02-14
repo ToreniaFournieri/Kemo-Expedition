@@ -412,9 +412,9 @@ function formatBonuses(bonuses: Bonus[]): string {
     } else if (b.type === 'pursuit') {
       parts.push(`追撃+${b.value}`);
     } else if (b.type === 'accuracy') {
-      parts.push(`命中+${b.value}`);
+      parts.push(`命中+${Math.round(b.value * 1000)}`);
     } else if (b.type === 'evasion') {
-      parts.push(`回避+${b.value}`);
+      parts.push(`回避+${Math.round(b.value * 1000)}`);
     } else if (b.type === 'ability' && b.abilityId) {
       const name = ABILITY_NAMES[b.abilityId] || b.abilityId;
       parts.push(`${name}Lv${b.abilityLevel || 1}`);
@@ -1726,11 +1726,11 @@ function PartyTab({
                     parts.push(label);
                     helpRows.push({ label, description: `敵の防御力を ${Math.round(val * 100)}% 分無視する` });
                   } else if (key === 'accuracy') {
-                    const label = `${addNames[key]}+${val.toFixed(2)}`;
+                    const label = `${addNames[key]}+${Math.round(val * 1000)}`;
                     parts.push(label);
                     helpRows.push({ label, description: '値が多いほどより多くの攻撃が命中するようになる' });
                   } else if (key === 'evasion') {
-                    const label = `${addNames[key]}+${val.toFixed(2)}`;
+                    const label = `${addNames[key]}+${Math.round(val * 1000)}`;
                     parts.push(label);
                     helpRows.push({ label, description: '値が多いほどより多くの攻撃を回避するようになる' });
                   } else {
