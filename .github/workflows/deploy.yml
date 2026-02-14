@@ -33,10 +33,16 @@ jobs:
         run: |
           set -euo pipefail
 
-          git fetch origin main qa
-
+          git fetch origin main
           git worktree add ../kemo-main origin/main
-          git worktree add ../kemo-qa origin/qa
+
+          if git ls-remote --exit-code --heads origin qa >/dev/null 2>&1; then
+            git fetch origin qa
+            git worktree add ../kemo-qa origin/qa
+          else
+            echo 'Remote qa branch not found; using main build for /qa/ fallback.'
+            git worktree add ../kemo-qa origin/main
+          fi
 
           npm ci --prefix ../kemo-main
           npm run build --prefix ../kemo-main
