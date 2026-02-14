@@ -274,7 +274,7 @@ export function computeCharacterStats(
       const priority = { thunder: 3, ice: 2, fire: 1, none: 0 };
       if (priority[item.elementalOffense] > priority[elementalOffense]) {
         elementalOffense = item.elementalOffense;
-        elementalOffenseValue = 1.2; // Default elemental bonus
+        elementalOffenseValue = 1.0; // Elemental offense is flavor text in this version
       }
     }
   }
@@ -402,7 +402,8 @@ function getAbilityName(id: AbilityId): string {
     resonance: '共鳴',
     command: '指揮',
     m_barrier: '魔法障壁',
-    null_counter: 'カウンター無効',
+    deflection: '矢払い',
+    null_counter: '反撃無効化',
     unlock: '解錠',
     squander: '散財',
     tithe: '十分の一税',
@@ -412,16 +413,17 @@ function getAbilityName(id: AbilityId): string {
 
 function getAbilityDescription(id: AbilityId, level: number): string {
   const descriptions: Record<AbilityId, (level: number) => string> = {
-    first_strike: (l) => l === 2 ? '全フェーズで敵より先に行動' : 'CLOSEフェーズで敵より先に行動',
-    hunter: (l) => `攻撃効力 +${l === 3 ? 15 : l === 2 ? 10 : 5}%`,
+    first_strike: (l) => l === 2 ? '全フェーズで敵より先に行動' : '遠距離攻撃時に敵より先に行動',
+    hunter: (l) => l === 2 ? '列によるダメージ減衰を1列ごと15%→7%に軽減する' : '列によるダメージ減衰を1列ごと15%→10%に軽減する',
     defender: (l) => `パーティへの物理ダメージ × ${l === 2 ? '3/5' : '2/3'}`,
-    counter: (l) => l === 2 ? 'CLOSE/MIDフェーズで反撃' : 'CLOSEフェーズで反撃',
-    re_attack: (l) => `攻撃時に${l === 2 ? '2回' : '1回'}追加攻撃`,
-    iaigiri: () => `CLOSEフェーズでダメージ × 2.0、攻撃回数 ÷ 2`,
-    resonance: (l) => `全攻撃ヒット毎に魔攻撃回数×${l >= 3 ? '11' : l === 2 ? '8' : '5'}%の追加補正`,
+    counter: (l) => l === 2 ? '敵の近距離・中距離攻撃を受けたとき反撃(攻撃回数半減)' : '敵の近距離攻撃を受けたとき反撃(攻撃回数半減)',
+    re_attack: (l) => `攻撃時に追加攻撃を${l === 2 ? '2回' : '1回'}行う(攻撃回数半減)`,
+    iaigiri: (l) => `物理ダメージをx${l === 2 ? '2.5' : '2.0'}倍する。攻撃回数を半減する`,
+    resonance: (l) => `魔法攻撃1回毎に、全ヒットのダメージが+${l >= 3 ? 11 : l === 2 ? 8 : 5}%増加する`,
     command: (l) => `パーティ攻撃力 × ${l === 2 ? 1.6 : 1.3}`,
     m_barrier: (l) => `パーティへの魔法ダメージ × ${l === 2 ? '3/5' : '2/3'}`,
-    null_counter: () => '反撃を無効化',
+    deflection: () => '敵の遠距離攻撃命中率を10ポイント低下',
+    null_counter: () => '反撃を無効化する',
     unlock: () => '追加報酬チャンス',
     squander: () => '宴会で消費するゴールドが2倍になる',
     tithe: () => '祈り時に寄付額へ探検利益の+10%を加算',
