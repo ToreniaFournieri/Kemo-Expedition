@@ -1802,7 +1802,7 @@ function PartyTab({
                       <div className="max-h-56 space-y-1 overflow-y-auto pr-1 text-[11px] leading-4 text-gray-700">
                         {helpRows.map((row) => (
                           <div key={row.label}>
-                            <span className="font-semibold">{row.label}</span>
+                            <span className="font-bold">{row.label}</span>
                             <span className="text-gray-500"> - {row.description}</span>
                           </div>
                         ))}
@@ -1812,7 +1812,7 @@ function PartyTab({
                           <div className="font-semibold text-gray-700">b.ボーナス説明(重複有効)</div>
                           {bHelpRows.map((row) => (
                             <div key={row.label}>
-                              <span className="font-semibold">{row.label}</span>
+                              <span className="font-bold">{row.label}</span>
                               <span className="text-gray-500"> - {row.description}</span>
                             </div>
                           ))}
