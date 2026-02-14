@@ -1000,6 +1000,12 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
     - Note: Nth_hit starts at 1 for the first strike.
   - Roll: Return Random(0, 1.0) <= chance
 
+- **`f.counter`(actor: , opponent: ,phase: ) :** IF actor.`a.counter` and (opponent has not `a.null-counter`) and take damage in CLOSE phase, the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`, and actor.`f.NoA` x 0.5, round up)
+    - Counter triggers immediately after damage resolution, regardless of turn order modifiers.
+    - IF actor.`a.counter` and (opponent has `a.null-counter`), displays log: Opponent negate actor's counter attack.
+    - *note:* if opponent is character, then check party.`a.null-counter`. if at least one party member has `a.null-counter`, nagete the counter attack.
+
+
 
 ### 6.3 Turn resolution 
 - For each phase, actions are resolved in the following order:
@@ -1013,12 +1019,13 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 - Enemy always moves first.
 - `f.NoA` times, get `f.targeting` -> target character
   	- If `f.hit_detection`(actor: , opponent: ,Nth_hit: the current hit index), current party.`d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
-- If currenr party.`d.HP` =< 0, Defeat. 
+- If currenr party.`d.HP` =< 0, Defeat.
+
+- **Coutner:** `f.counter`(actor:enemy , opponent:character ,phase: CLOSE )
+
 
 - *Note:* Nth_hit is global for all enemy attacks in the phase (not per-target)
 
-- **Counter:** IF character.`a.counter` and take damage in CLOSE phase, the character attacks to enemy. (using `f.hit_detection` and `f.damage_calculation`, and character.`f.NoA` x 0.5, round up)
-    - Counter triggers immediately after damage resolution, regardless of turn order modifiers.
 
 **Player action**
 - Each party member act if he has corresponding damage source in the phase. 
@@ -1026,6 +1033,8 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 - `f.NoA` times -> enemy
 	- If `f.hit_detection`(actor: , opponent: ,Nth_hit: the current hit index), current enemy.`d.HP` -= `f.damage_calculation` (actor: character, opponent: enemy, phase: phase)
 - If enemy.`d.HP` =< 0, Victory.
+
+- **Coutner:** `f.counter`(actor:character , opponent: enemy , phase: CLOSE )
 
 - **Re-attack:** IF character.`a.re-attack`, the character attacks to enemy.  (using `f.hit_detection`, `f.damage_calculation`, and character.`f.NoA` x 0.5, round up)
 
