@@ -289,7 +289,7 @@
 |狩人(狩,Ranger) | `c.pursuit+2`, `c.arrow_x1.4` | `a.hunter`1: Reduces row-based damage decay from 15% to 10% per step. |`a.hunter`2: Reduces row-based damage decay from 15% to 7% per step. | 
 |魔法使い(魔,Wizard) | `c.caster+1`, `c.wand_x1.4` | `a.resonance`1:All hits +5% damage per `d.magical_NoA`. | `a.resonance`2:All hits +8% damage per `d.magical_NoA`. | 
 |賢者(賢,Sage) | `c.caster+2`, `c.robe_x1.4`, `c.grimoire_x1.2`, `c.equip_slot+2` | `a.m-barrier`1: Incoming magical damage to party × 2/3 | `a.m-barrier`2: Incoming magical damage to party × 3/5 | 
-|盗賊(盗,Rogue) | `c.pursuit+1`, `c.unlock` additional reward chance |`a.first-strike`1: Acts faster than enemy at CLOSE phase |`a.first-strike`2: Acts faster than enemy at All phases | 
+|盗賊(盗,Rogue) | `c.pursuit+1`, `c.unlock` additional reward chance |`a.deflection`: +10% chance to avoid ranged attacks only. `a.first-strike`1: Acts faster than enemy at CLOSE phase |`a.deflection`: +10% chance to avoid ranged attacks only. `a.first-strike`2: Acts faster than enemy at All phases | 
 |巡礼者(巡,Pilgrim) | `c.caster+1`, `c.grit+1`, `c.evasion+0.02`, `c.equip_slot+1` |`a.tithe`: Adds +10% of expedition profit to donation. |`a.null-counter`: Negate counter attack. `a.tithe`: Adds +10% of expedition profit to donation. | 
 
 - If `main_class` and  `sub_class` are same class, then it turns into master class, applies master bonus.
@@ -481,7 +481,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | Ranger | 38 | (none) | 0.03 | 0.01 | 14 | 4 | 0 | 0 | 0 | 0 | x1.2 | x1.0 | x1.0 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 12 |
 | Wizard | 32 | (none) | 0.00 | 0.00 |0 | 0 | 20 | 2 | 0 | 0 | x1.0 | x1.2 | x1.0 | 6 | 14 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
 | Sage | 38 | (none) | 0.00 | 0.00 |0 | 0 | 10 | 4 | 0 | 0 | x1.0 | x1.2 | x1.0 | 8 | 20 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
-| Rogue | 30 | (none) | 0.06 | 0.06 | 10 | 4 | 0 | 0 | 10 | 4 | x1.0 | x1.2 | x1.0 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 8 |
+| Rogue | 30 | `a.deflection` | 0.06 | 0.06 | 10 | 4 | 0 | 0 | 10 | 4 | x1.0 | x1.2 | x1.0 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 8 |
 | Pilgrim | 66 | `a.null-counter` | 0.00 | 0.02 | 0 | 0 | 10 | 2 | 16 | 2 | x1.0 | x1.2 | x1.2 | 12 | 12 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 16 |
 
 
@@ -546,8 +546,8 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 |`i.armor` | x1.0 | x1.2 | x1.44 | x1.73 |
 |`i.robe` | x1.0 | x1.2 | x1.44 | x1.73 |
 |`i.shield ` | x1.0 | x1.2 | x1.44 | x1.73 |
-|`i.sword` | x1.0 | x1.2 | x1.44 | x1.73 |
-|`i.katana` | x2.0 | x2.4 | x2.9 | x3.46 |
+|`i.sword` | x1.2 | x1.44 | x1.73 | x2.08 |
+|`i.katana` | x2.4 | x2.9 | x3.46 | x4.15 |
 |`i.gauntlet` | x1.0 | x1.2 | x1.44 | x1.73 |
 |`i.arrow` | x0.67 | x0.80 | x0.95 | x1.16 |
 |`i.bolt` | x1.33  | x1.60 | x1.92 | x2.30 |
@@ -1584,7 +1584,6 @@ HP: 312                 経験値: 88
 
 ```
 
-
 **4. Game Reset**
   - Full reset option
   - Warning required before execution
@@ -1595,7 +1594,6 @@ HP: 312                 経験値: 88
 **Branch:** `main` → `/dev/`, `qa` → `/qa/`.
 **Environment:** `/dev/` = 開発機, `/qa/` = αテスト; display the environment label in the version line.
 **Save Data Isolation:** Save data must be namespaced per environment (`/dev/` and `/qa/`) and never shared between them.
-
 
 
 ## 10. CHANGELOG
