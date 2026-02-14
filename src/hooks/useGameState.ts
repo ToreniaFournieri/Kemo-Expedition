@@ -426,7 +426,7 @@ function createSecondParty() {
     lootGateStatus: {},
     deity: createInitialDeity('God of Evasion'),
     characters,
-    selectedDungeonId: 2,
+    selectedDungeonId: 1,
     currentHp: 0,
     pendingProfit: 0,
     deityGold: 0,
