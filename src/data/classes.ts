@@ -127,9 +127,11 @@ export const CLASSES: ClassDef[] = [
       { type: 'ability', value: 1, abilityId: 'unlock', abilityLevel: 1 },
     ],
     mainBonuses: [
+      { type: 'ability', value: 1, abilityId: 'deflection', abilityLevel: 1 },
       { type: 'ability', value: 1, abilityId: 'first_strike', abilityLevel: 1 },
     ],
     masterBonuses: [
+      { type: 'ability', value: 1, abilityId: 'deflection', abilityLevel: 1 },
       { type: 'ability', value: 1, abilityId: 'first_strike', abilityLevel: 2 },
     ],
   },

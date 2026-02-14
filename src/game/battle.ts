@@ -149,10 +149,16 @@ function hitDetection(
   actorAccuracyPotency: number,
   actorAccuracyBonus: number,
   opponentEvasionBonus: number,
-  nthHit: number // 1-indexed
+  nthHit: number, // 1-indexed
+  phase: BattlePhase,
+  opponentHasDeflection: boolean
 ): boolean {
   const decayOfAccuracy = Math.max(0.86, Math.min(0.98, 0.90 + actorAccuracyBonus - opponentEvasionBonus));
-  const chance = actorAccuracyPotency * Math.pow(decayOfAccuracy, nthHit);
+  let baseChance = actorAccuracyPotency;
+  if (opponentHasDeflection && phase === 'long') {
+    baseChance -= 0.10;
+  }
+  const chance = Math.max(0.0, Math.min(1.0, baseChance)) * Math.pow(decayOfAccuracy, nthHit - 1);
   return Math.random() <= chance;
 }
 
@@ -221,7 +227,7 @@ function calculateCharacterDamage(
   let hits = 0;
   let damage = 0;
   for (let i = 1; i <= noA; i++) {
-    if (hitDetection(actorAccuracyPotency, charStats.accuracyBonus, enemyEvasion, i)) {
+    if (hitDetection(actorAccuracyPotency, charStats.accuracyBonus, enemyEvasion, i, phase, enemy.abilities.includes('deflection'))) {
       hits++;
       damage += Math.max(1, Math.floor(basePerHitDamage * getResonanceAmplifier(resonance?.level, i)));
     }
@@ -234,7 +240,19 @@ function hasFirstStrike(charStats: ComputedCharacterStats, phase: BattlePhase): 
   const ability = charStats.abilities.find(a => a.id === 'first_strike');
   if (!ability) return false;
   if (ability.level === 2) return true; // All phases
-  return phase === 'close'; // Level 1 only close phase
+  return phase === 'long'; // Level 1 only long phase
+}
+
+function hasDeflection(charStats: ComputedCharacterStats): boolean {
+  return charStats.abilities.some(a => a.id === 'deflection');
+}
+
+function partyHasNullCounter(characterStats: ComputedCharacterStats[]): boolean {
+  return characterStats.some(cs => cs.abilities.some(a => a.id === 'null_counter'));
+}
+
+function enemyHasCounter(enemy: EnemyDef): boolean {
+  return enemy.abilities.includes('counter');
 }
 
 function hasCounter(charStats: ComputedCharacterStats, phase: BattlePhase): boolean {
@@ -322,6 +340,53 @@ export function executeBattle(
     }
   }
 
+  const triggerEnemyCounter = (targetCharStats: ComputedCharacterStats, dealtDamage: number): void => {
+    if (dealtDamage <= 0 || !enemyHasCounter(enemy)) return;
+
+    const nullifiedByParty = partyHasNullCounter(characterStats);
+    const targetChar = party.characters.find(c => c.id === targetCharStats.characterId);
+
+    if (nullifiedByParty) {
+      const nullifier = party.characters.find(c => {
+        const stats = characterStats.find(cs => cs.characterId === c.id);
+        return stats?.abilities.some(a => a.id === 'null_counter');
+      });
+      log.push({
+        phase: 'close',
+        actor: 'effect',
+        action: `${nullifier?.name ?? '味方'}の反撃無効化により、${enemy.name}のカウンターは防がれた！`,
+      });
+      return;
+    }
+
+    const singleDamage = calculateSingleEnemyAttackDamage('close', enemy, partyStats, targetCharStats);
+    const attempts = Math.ceil(enemy.meleeNoA * 0.5);
+    let damage = 0;
+    let hits = 0;
+    for (let i = 1; i <= attempts; i++) {
+      const didHit = hitDetection(1.0, enemy.accuracyBonus, targetCharStats.evasionBonus, i, 'close', hasDeflection(targetCharStats));
+      if (didHit) {
+        hits += 1;
+        damage += singleDamage;
+      }
+    }
+
+    if (damage > 0) {
+      partyHp -= damage;
+    }
+
+    log.push({
+      phase: 'close',
+      actor: 'enemy',
+      action: `${targetChar?.name ?? '???'} にカウンター！`,
+      damage: damage > 0 ? damage : undefined,
+      hits,
+      totalAttempts: attempts,
+      isCounter: true,
+      elementalOffense: enemy.elementalOffense,
+    });
+  };
+
   const phases: BattlePhase[] = ['long', 'mid', 'close'];
 
   for (const phase of phases) {
@@ -333,6 +398,9 @@ export function executeBattle(
       if (result.totalAttempts > 0) {
         if (result.damage > 0) {
           enemyHp -= result.damage;
+        }
+        if (phase === 'close') {
+          triggerEnemyCounter(cs, result.damage);
         }
         const char = party.characters.find(c => c.id === cs.characterId);
         const attackType = phase === 'mid' ? '魔法先制攻撃' : '先制攻撃';
@@ -388,7 +456,7 @@ export function executeBattle(
         // All phases use hit detection for enemy attacks as well.
         // Enemy d.accuracy_potency is fixed at 1.0 in all phases.
         // Nth_hit is (i + 1) - global across all enemy attacks.
-        const didHit = hitDetection(enemyAccuracyPotency, enemyAccuracyBonus, targetCharStats.evasionBonus, i + 1);
+        const didHit = hitDetection(enemyAccuracyPotency, enemyAccuracyBonus, targetCharStats.evasionBonus, i + 1, phase, hasDeflection(targetCharStats));
 
         if (existing) {
           existing.totalAttempts += 1;
@@ -448,26 +516,36 @@ export function executeBattle(
     // Counter attacks (for each targeted character with counter ability)
     // Counter uses NoA x 0.5 (rounded up)
     for (const [charId, attack] of attacksByTarget) {
-      if (attack.damage > 0 && hasCounter(attack.charStats, phase)) {
-        const result = calculateCharacterDamage(phase, attack.charStats, enemy, partyStats, 0.5);
-        if (result.totalAttempts > 0) {
-          if (result.damage > 0) {
-            enemyHp -= result.damage;
-          }
-          const targetChar = party.characters.find(c => c.id === charId);
-          const counterType = phase === 'mid' ? '魔法カウンター' : 'カウンター';
-          log.push({
-            phase,
-            actor: 'character',
-            characterId: charId,
-            action: `${targetChar?.name ?? '???'} の${counterType}！`,
-            damage: result.damage,
-            hits: result.hits,
-            totalAttempts: result.totalAttempts,
-            isCounter: true,
-            elementalOffense: attack.charStats.elementalOffense,
-          });
+      if (attack.damage <= 0 || !hasCounter(attack.charStats, phase)) continue;
+
+      if (enemy.abilities.includes('null_counter')) {
+        const targetChar = party.characters.find(c => c.id === charId);
+        log.push({
+          phase,
+          actor: 'effect',
+          action: `${enemy.name}の反撃無効化により、${targetChar?.name ?? '???'}のカウンターは防がれた！`,
+        });
+        continue;
+      }
+
+      const result = calculateCharacterDamage(phase, attack.charStats, enemy, partyStats, 0.5);
+      if (result.totalAttempts > 0) {
+        if (result.damage > 0) {
+          enemyHp -= result.damage;
         }
+        const targetChar = party.characters.find(c => c.id === charId);
+        const counterType = phase === 'mid' ? '魔法カウンター' : 'カウンター';
+        log.push({
+          phase,
+          actor: 'character',
+          characterId: charId,
+          action: `${targetChar?.name ?? '???'} の${counterType}！`,
+          damage: result.damage,
+          hits: result.hits,
+          totalAttempts: result.totalAttempts,
+          isCounter: true,
+          elementalOffense: attack.charStats.elementalOffense,
+        });
       }
     }
 
@@ -495,6 +573,9 @@ export function executeBattle(
         if (result.damage > 0) {
           enemyHp -= result.damage;
         }
+        if (phase === 'close') {
+          triggerEnemyCounter(cs, result.damage);
+        }
         const char = party.characters.find(c => c.id === cs.characterId);
         const attackType = phase === 'mid' ? '魔法攻撃' : '攻撃';
         log.push({
@@ -519,6 +600,9 @@ export function executeBattle(
         if (result.totalAttempts > 0) {
           if (result.damage > 0) {
             enemyHp -= result.damage;
+          }
+          if (phase === 'close') {
+            triggerEnemyCounter(cs, result.damage);
           }
           const char = party.characters.find(c => c.id === cs.characterId);
           const reAttackType = phase === 'mid' ? '魔法連撃' : '連撃';
