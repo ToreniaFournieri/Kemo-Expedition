@@ -1590,6 +1590,8 @@ HP: 312                 経験値: 88
 
 
 ## 9. Environment
+
+**Branch:** `main` → `/dev/`, `qa` → `/qa/`.
 **Environment:** `/dev/` = 開発機, `/qa/` = αテスト; display the environment label in the version line.
 **Save Data Isolation:** Save data must be namespaced per environment (`/dev/` and `/qa/`) and never shared between them.
 
