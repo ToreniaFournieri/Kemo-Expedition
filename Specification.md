@@ -596,11 +596,11 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | Rarelity | Features |
 |------|--------|
 | common | base_power x `type_amplifier` x rarelity.amplifier, and base c.multiplier |
-| uncommon | base_power x `type_amplifier` x rarelity.amplifier + **one (subtle_power`d.` x `type_amplifier` x rarelity.amplifier)  or `c.` bonus**, base c.multiplier +1 tier upgrade(ecept penalty) |
-| rare | base_power x `type_amplifier` x rarelity.amplifier + **two** (subtle_power`d.` x `type_amplifier` x rarelity.amplifier ), **`e.`**, or `c.` bonus, base c.multiplier +2 tier upgrade(ecept penalty) |
-| mythic | base_power x `type_amplifier` x rarelity.amplifier + **three** (subtle_power`d.` x `type_amplifier` x rarelity.amplifier), `e.`, or `c.` bonus, one **`b.` bonus**, but **no base c.multiplier** |
+| uncommon | base_power x `type_amplifier` x rarelity.amplifier + **one subtle_power`d.` or `c.` bonus**, base c.multiplier +1 tier upgrade(ecept penalty) |
+| rare | base_power x `type_amplifier` x rarelity.amplifier + **two** subtle_power`d.`, **`e.`**, or `c.` bonus, base c.multiplier +2 tier upgrade(ecept penalty) |
+| mythic | base_power x `type_amplifier` x rarelity.amplifier + **three** subtle_power`d.`, `e.`, or `c.` bonus, one **`b.` bonus**, but **no base c.multiplier** |
 
-*Note:* subtle_power: x0.20 ~ x0.34 of base_power value.
+*Note:* subtle_power: x0.20 ~ x0.34 of base_power x `type_amplifier` x rarelity.amplifier value.
 
 - example of basic item:
 ```
