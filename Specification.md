@@ -802,11 +802,10 @@ inventory = {
   - 自動周回OFF: 移動中→探索中→帰還中→休息中 → 宴会中(条件付き) → 睡眠中 → 祈り中 → 待機中 (stop here)
 
 
-### 4.1 AFK Handling
-**Simulation**
-- Store the last update timestamp and, on the next checkpoint (e.g., page focus / reload / user action), simulate each party’s state progression, recovery, exploration progress, and profit handling using the elapsed time.
-- Limit: maximum 60 minutes. (for current version) 
 
+### 4.1 Time-Based Progress handling (Online + AFK)
+- The party state machine is time-driven: store `state` and `state_started_at`, and at every checkpoint recompute the latest state by consuming the elapsed time since the last update (this applies continuously during play, AFK, and long gaps such as daily progress).
+- Limit: maximum 60 minutes per catch-up simulation (current version).
 
 **Notification**
 - Format: 踏破N回/撤退M回/敗北X回 寄付金額: vG, 貯金額:　vG
