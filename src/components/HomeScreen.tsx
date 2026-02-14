@@ -12,6 +12,7 @@ import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { applyEnemyEncounterScaling } from '../game/enemyScaling';
 import { DEITY_OPTIONS, getDeityEffectDescription, getDeityRank, getNextDonationThreshold, normalizeDeityName } from '../game/deity';
 import { LEVEL_EXP } from '../game/partyLevel';
+import { createEnvironmentStorageKey, getEnvLabel } from '../game/environment';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -73,8 +74,9 @@ interface PartyCycleRuntime {
 const PARTY_CYCLE_TICK_MS = 100;
 const EXPLORING_PROGRESS_STEP_MS = 1000;
 const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
-const AFK_RUNTIME_STORAGE_KEY = 'kemo-expedition-afk-runtime';
+const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
 const AFK_MAX_ELAPSED_MS = 60 * 60 * 1000;
+const HEADER_HEIGHT_CLASS = 'pt-[108px]';
 
 function getExplorationDurationMs(entryCount?: number): number {
   const exploredSteps = Math.max(1, Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, entryCount ?? EXPLORING_PROGRESS_TOTAL_STEPS));
@@ -911,69 +913,74 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   ), 0);
   const hasUnreadDiary = unreadDiaryCount > 0;
   const unreadDiaryBadgeLabel = unreadDiaryCount >= 11 ? '10+' : `${unreadDiaryCount}`;
+  const envLabel = getEnvLabel();
+  const versionLabel = envLabel ? `v0.2.3 (${envLabel})` : 'v0.2.3';
+
   return (
-    <div className="flex flex-col h-screen">
-      {/* Sticky Header */}
-      <div className="sticky top-0 bg-white border-b border-gray-300 p-3 z-10">
-        <div className="flex justify-between items-center gap-3">
-          <div>
-            <h1 className="text-lg font-bold">ケモの冒険</h1>
-            <div className="text-xs text-gray-500">v0.2.4 ({state.buildNumber})</div>
-          </div>
-          <div className="flex items-center gap-2 text-right text-sm font-medium">
-            <span>{formatNumber(state.global.gold)}G</span>
-            <button
-              onClick={() => {
-                setIsAutoRepeatEnabled((prev) => {
-                  const nextEnabled = !prev;
-                  if (nextEnabled) {
-                    setPartyCycles((prevCycles) => {
-                      const nextCycles = { ...prevCycles };
-                      state.parties.forEach((_, partyIndex) => {
-                        const runtime = nextCycles[partyIndex] ?? { state: '待機中' as PartyCycleState, stateStartedAt: Date.now(), durationMs: 1000 };
-                        if (runtime.state === '待機中') {
-                          nextCycles[partyIndex] = { state: '移動中', stateStartedAt: Date.now(), durationMs: 5000 };
-                        }
+    <div className={`flex flex-col h-screen ${HEADER_HEIGHT_CLASS}`}>
+      {/* Fixed Header */}
+      <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-300 p-3 z-10">
+        <div className="max-w-lg mx-auto w-full">
+          <div className="flex justify-between items-center gap-3">
+            <div>
+              <h1 className="text-lg font-bold">ケモの冒険</h1>
+              <div className="text-xs text-gray-500">{versionLabel}</div>
+            </div>
+            <div className="flex items-center gap-2 text-right text-sm font-medium">
+              <span>{formatNumber(state.global.gold)}G</span>
+              <button
+                onClick={() => {
+                  setIsAutoRepeatEnabled((prev) => {
+                    const nextEnabled = !prev;
+                    if (nextEnabled) {
+                      setPartyCycles((prevCycles) => {
+                        const nextCycles = { ...prevCycles };
+                        state.parties.forEach((_, partyIndex) => {
+                          const runtime = nextCycles[partyIndex] ?? { state: '待機中' as PartyCycleState, stateStartedAt: Date.now(), durationMs: 1000 };
+                          if (runtime.state === '待機中') {
+                            nextCycles[partyIndex] = { state: '移動中', stateStartedAt: Date.now(), durationMs: 5000 };
+                          }
+                        });
+                        return nextCycles;
                       });
-                      return nextCycles;
-                    });
-                  }
-                  return nextEnabled;
-                });
-              }}
-              className={`rounded px-2 py-0.5 text-xs border ${
-                isAutoRepeatEnabled
-                  ? 'bg-blue-50 border-sub text-sub'
-                  : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              自動周回{isAutoRepeatEnabled ? 'ON' : 'OFF'}
-            </button>
+                    }
+                    return nextEnabled;
+                  });
+                }}
+                className={`rounded px-2 py-0.5 text-xs border ${
+                  isAutoRepeatEnabled
+                    ? 'bg-blue-50 border-sub text-sub'
+                    : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                自動周回{isAutoRepeatEnabled ? 'ON' : 'OFF'}
+              </button>
+            </div>
           </div>
-        </div>
-        
-        {/* Tabs */}
-        <div className="flex mt-3 -mb-3 border-b border-gray-200">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                switchTab(tab.id);
-              }}
-              className={`flex-1 py-2 text-sm font-medium relative ${
-                activeTab === tab.id
-                  ? 'text-sub border-b-2 border-sub'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {tab.label}
-              {tab.id === 'diary' && hasUnreadDiary && (
-                <span className="absolute -top-0.5 right-1 rounded-full bg-accent px-1.5 py-0.5 text-[10px] leading-none text-white">
-                  {unreadDiaryBadgeLabel}
-                </span>
-              )}
-            </button>
-          ))}
+
+          {/* Tabs */}
+          <div className="flex mt-3 -mb-3 border-b border-gray-200">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  switchTab(tab.id);
+                }}
+                className={`flex-1 py-2 text-sm font-medium relative ${
+                  activeTab === tab.id
+                    ? 'text-sub border-b-2 border-sub'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {tab.label}
+                {tab.id === 'diary' && hasUnreadDiary && (
+                  <span className="absolute -top-0.5 right-1 rounded-full bg-accent px-1.5 py-0.5 text-[10px] leading-none text-white">
+                    {unreadDiaryBadgeLabel}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
