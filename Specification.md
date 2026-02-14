@@ -566,30 +566,39 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 |`i.catalyst` | `d.magical_NoA` | `c.magical_NoA+v` | additional `d.magical_NoA`, `e.fire`, `e.ice`, `e.thunder`, `b.intelligence+1` |
 
 
+**type.amplifier of base_power**
+
+| Item type | `type_amplifier` |
+|------|--------|
+|`i.armor` | x1.0 |
+|`i.robe` | x1.0 |
+|`i.shield` | x1.0 |
+|`i.sword` | x1.2 |
+|`i.katana` | x2.4 |
+|`i.gauntlet` | x1.0 |
+|`i.arrow` | x0.67 |
+|`i.bolt` | x1.33  |
+|`i.archery` | x1.0 | 
+|`i.wand` | x0.5 |
+|`i.grimoire` | x1.0 |
+|`i.catalyst` | x1.0 |
+
 **rarelity.amplifier of base_power**
 
-| Item type | common | uncommon | rare | mythic |
-|------|--------|--------|--------|--------|
-|`i.armor` | x1.0 | x1.2 | x1.44 | x1.73 |
-|`i.robe` | x1.0 | x1.2 | x1.44 | x1.73 |
-|`i.shield ` | x1.0 | x1.2 | x1.44 | x1.73 |
-|`i.sword` | x1.2 | x1.44 | x1.73 | x2.08 |
-|`i.katana` | x2.4 | x2.9 | x3.46 | x4.15 |
-|`i.gauntlet` | x1.0 | x1.2 | x1.44 | x1.73 |
-|`i.arrow` | x0.67 | x0.80 | x0.95 | x1.16 |
-|`i.bolt` | x1.33  | x1.60 | x1.92 | x2.30 |
-|`i.archery` | x1.0 | x1.2 | x1.44 | x1.73 |
-|`i.wand` | x0.5 | x0.6 | x0.72 | x0.86 |
-|`i.grimoire` | x1.0 | x1.2 | x1.44 | x1.73 |
-|`i.catalyst` | x1.0 | x1.2 | x1.44 | x1.73 |
+| Rarelity | `rarelity.amplifier` |
+|------|--------|
+| common | x1.0 |
+| uncommon | x1.2 |
+| rare | x3.0 |
+| mythic | x6.0 |
 
 **Rarelity base**
 | Rarelity | Features |
 |------|--------|
-| common | base_power x rarelity.amplifier, and base c.multiplier |
-| uncommon | base_power x rarelity.amplifier + **one subtle_power`d.` or `c.` bonus**, base c.multiplier +1 tier upgrade(ecept penalty) |
-| rare | base_power x rarelity.amplifier + **two** subtle_power`d.`, **`e.`**, or `c.` bonus, base c.multiplier +2 tier upgrade(ecept penalty) |
-| mythic | base_power x rarelity.amplifier + **three** subtle_power`d.`, `e.`, or `c.` bonus, one **`b.` bonus**, but **no base c.multiplier** |
+| common | base_power x `type_amplifier` x rarelity.amplifier, and base c.multiplier |
+| uncommon | base_power x `type_amplifier` x rarelity.amplifier + **one (subtle_power`d.` x `type_amplifier` x rarelity.amplifier)  or `c.` bonus**, base c.multiplier +1 tier upgrade(ecept penalty) |
+| rare | base_power x `type_amplifier` x rarelity.amplifier + **two** (subtle_power`d.` x `type_amplifier` x rarelity.amplifier ), **`e.`**, or `c.` bonus, base c.multiplier +2 tier upgrade(ecept penalty) |
+| mythic | base_power x `type_amplifier` x rarelity.amplifier + **three** (subtle_power`d.` x `type_amplifier` x rarelity.amplifier), `e.`, or `c.` bonus, one **`b.` bonus**, but **no base c.multiplier** |
 
 *Note:* subtle_power: x0.20 ~ x0.34 of base_power value.
 
