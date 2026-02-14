@@ -88,6 +88,27 @@ function getExpeditionOutcomeLabel(outcome: 'victory' | 'return' | 'defeat' | 'r
   return '撤退';
 }
 
+
+function buildAfkSummaryNotification(stats: {
+  victories: number;
+  retreats: number;
+  defeats: number;
+  donatedGold: number;
+  savedGold: number;
+}): string | null {
+  const summaryParts: string[] = [];
+  if (stats.victories > 0) summaryParts.push(`踏破${formatNumber(stats.victories)}回`);
+  if (stats.retreats > 0) summaryParts.push(`撤退${formatNumber(stats.retreats)}回`);
+  if (stats.defeats > 0) summaryParts.push(`敗北${formatNumber(stats.defeats)}回`);
+
+  const financeParts: string[] = [];
+  if (stats.donatedGold > 0) financeParts.push(`寄付金額: ${formatNumber(stats.donatedGold)}G`);
+  if (stats.savedGold > 0) financeParts.push(`貯金額:　${formatNumber(stats.savedGold)}G`);
+
+  if (summaryParts.length === 0 && financeParts.length === 0) return null;
+  return [summaryParts.join('/'), financeParts.join(', ')].filter(Boolean).join(' ');
+}
+
 type ItemRarity = 'common' | 'uncommon' | 'rare' | 'mythic';
 type RarityFilter = 'all' | ItemRarity;
 
@@ -626,18 +647,9 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         savedGold: Math.max(0, party.expeditionStats.savedGold - baseline.savedGold),
       };
 
-      const summaryParts: string[] = [];
-      if (stats.victories > 0) summaryParts.push(`踏破${formatNumber(stats.victories)}回`);
-      if (stats.retreats > 0) summaryParts.push(`撤退${formatNumber(stats.retreats)}回`);
-      if (stats.defeats > 0) summaryParts.push(`敗北${formatNumber(stats.defeats)}回`);
+      const body = buildAfkSummaryNotification(stats);
+      if (!body) return;
 
-      const financeParts: string[] = [];
-      if (stats.donatedGold > 0) financeParts.push(`寄付金額: ${formatNumber(stats.donatedGold)}G`);
-      if (stats.savedGold > 0) financeParts.push(`貯金額:　${formatNumber(stats.savedGold)}G`);
-
-      if (summaryParts.length === 0 && financeParts.length === 0) return;
-
-      const body = [summaryParts.join('/'), financeParts.join(', ')].filter(Boolean).join(' ');
       actions.addNotification(`PT${partyIndex + 1}: ${body}`);
     });
   }, [actions, state.parties]);
