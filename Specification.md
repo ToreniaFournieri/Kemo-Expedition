@@ -96,7 +96,34 @@
 | `c.wand_x1.x` | 杖x1.x | 杖カテゴリ装備の効果が 1.x 倍  |
 | `c.grimoire_x1.x` | 書x1.x | 魔導書カテゴリ装備の効果が 1.x 倍  |
 | `c.catalyst_x1.x` | 媒x1.x | 触媒カテゴリ装備の効果が 1.x 倍  |
- 
+
+**`a.*` Ability List (Japanese)**
+
+| `a.` ability | 表示 | 説明 |
+|----|----|----|
+| `a.defender1` | 守護者1 | 味方全体が受ける物理ダメージを **2/3倍** にする |
+| `a.defender2` | 守護者2 | 味方全体が受ける物理ダメージを **3/5倍** にする |
+| `a.counter1` | 反撃1 | 敵の**近距離攻撃**を受けたとき反撃する(攻撃回数は半減) |
+| `a.counter2` | 反撃2 | 敵の**近距離・中距離攻撃**を受けたとき反撃する(攻撃回数は半減) |
+| `a.re-attack1` | 再攻撃1 | 攻撃時に **追加攻撃を1回**行う(攻撃回数は半減) |
+| `a.re-attack2` | 再攻撃2 | 攻撃時に **追加攻撃を2回**行う(攻撃回数は半減) |
+| `a.iaigiri`1 | 居合斬り1 | 物理ダメージをx2.0倍する。攻撃回数が半減する |
+| `a.iaigiri`2 | 居合斬り2 | 物理ダメージをx2.5倍する。攻撃回数を半減する |
+| `a.command1` | 指揮1 | 与える物理ダメージを **1.3倍** にする |
+| `a.command2` | 指揮2 | 与える物理ダメージを **1.6倍** にする |
+| `a.squander` | 浪費 | 宴会で消費するゴールドが **2倍** になる |
+| `a.hunter1` | 狩人1 | 列によるダメージ減衰を **1列ごと15%→10%** に軽減する |
+| `a.hunter2` | 狩人2 | 列によるダメージ減衰を **1列ごと15%→7%** に軽減する |
+| `a.resonance1` | 反響1 | 魔法攻撃 1回毎に、全ヒットのダメージが **+5%** 増加する |
+| `a.resonance2` | 反響2 | 魔法攻撃 1回毎に、全ヒットのダメージが **+8%** 増加する |
+| `a.resonance3` | 反響3 | 魔法攻撃 1回毎に、全ヒットのダメージが **+11%** 増加する |
+| `a.m-barrier1` | 魔法障壁1 | 味方全体が受ける魔法ダメージを **2/3倍** にする |
+| `a.m-barrier2` | 魔法障壁2 | 味方全体が受ける魔法ダメージを **3/5倍** にする |
+| `a.deflection` | 矢払い |　敵の遠距離攻撃の命中率を **10ポイント低下** させる |
+| `a.first-strike1` | 先制攻撃1 | **遠距離攻撃時**に敵より先に行動する |
+| `a.first-strike2` | 先制攻撃2 | **全フェーズ**で敵より先に行動する |
+| `a.tithe` | 十分の一税 | 遠征利益の **+10%** を寄付額に上乗せする |
+| `a.null-counter` | 反撃無効化 | 反撃を無効化する |
 
 ### 2.1 Global constants
 
@@ -284,7 +311,7 @@
 |戦士(戦,Fighter) | `c.grit+1`, `c.equip_slot+1`,  `c.armor_x1.4` |`a.defender`1: Incoming physical damage to party × 2/3 |`a.defender`2: Incoming physical damage to party × 3/5 | 
 |剣士(剣,Duelist) | `c.grit+1`, `c.sword_x1.4` | `a.counter`1: enemy CLOSE-range attack (`f.NoA` x 0.5)  | `a.counter`2: enemy CLOSE-range attack and MID-range (`f.NoA` x 0.5)  | 
 |忍者(忍,Ninja) | `c.grit+1`, `c.penet_+0.15` | `a.re-attack`1: once when attacking (`f.NoA` x 0.5) | `a.re-attack`2: twice when attacking (`f.NoA` x 0.5) | 
-|侍(侍,Samurai) | `c.grit+1`, `c.katana_x1.4` |`a.iaigiri`: Physical damage ×2,  number of attacks ÷2 | `a.iaigiri`: Physical damage ×2.5,  number of attacks ÷2 |
+|侍(侍,Samurai) | `c.grit+1`, `c.katana_x1.4` |`a.iaigiri`1: Physical damage ×2,  number of attacks ÷2 | `a.iaigiri`2: Physical damage ×2.5,  number of attacks ÷2 |
 |君主(君,Lord) | `c.grit+1`, `c.gauntlet_x1.4`, `c.equip_slot+1` |`a.command`1: Physical damage x1.3. `a.squander`:double the gold spent on feasting. |`a.command`2: Physical damage x1.6. `a.squander`:double the gold spent on feasting. | 
 |狩人(狩,Ranger) | `c.pursuit+2`, `c.arrow_x1.4` | `a.hunter`1: Reduces row-based damage decay from 15% to 10% per step. |`a.hunter`2: Reduces row-based damage decay from 15% to 7% per step. | 
 |魔法使い(魔,Wizard) | `c.caster+1`, `c.wand_x1.4` | `a.resonance`1:All hits +5% damage per `d.magical_NoA`. | `a.resonance`2:All hits +8% damage per `d.magical_NoA`. | 
