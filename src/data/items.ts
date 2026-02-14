@@ -53,10 +53,6 @@ type ItemVariantMod = {
 
 type ItemTemplate = {
   category: ItemCategory;
-  baseName: string;
-  variants?: [string, string];
-  rareName?: string;
-  mythicName?: string;
   variant1Mod?: ItemVariantMod;
   variant2Mod?: ItemVariantMod;
   variant3Mod?: ItemVariantMod;
@@ -92,9 +88,6 @@ const RARITY_AMPLIFIERS: Record<ItemCategory, number[]> = {
   catalyst: [1.0, 1.2, 1.44, 1.73],
 };
 
-// Tier name prefixes for generated items
-const TIER_PREFIXES = ['銅の', '鉄の', '鋼の', 'ミスリルの', 'アダマンの', 'オリハルの', 'エーテルの', '星鉄の'];
-
 type MasterItemNameTable = Record<number, Partial<Record<Rarity, Partial<Record<ItemCategory, string[]>>>>>;
 
 const MASTER_ITEM_NAMES: MasterItemNameTable = {
@@ -113,7 +106,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
     uncommon: {
       archery: ['つる巻き弓'],
       armor: ['硬革の鎧'],
-      arrow: ['黒曜石の矢'],
+      arrow: ['黒曜石の炎矢', '黒曜石の氷矢'],
       catalyst: ['琥珀粉の触媒'],
       grimoire: ['洞窟壁画の呪頁'],
       robe: ['苔縫いの法衣'],
@@ -153,7 +146,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
     uncommon: {
       archery: ['岩角の長弓'],
       armor: ['磨石板の鎧'],
-      arrow: ['黒曜尖石の矢'],
+      arrow: ['黒曜尖石の炎矢', '黒曜尖石の氷矢'],
       catalyst: ['磁石砂の触媒'],
       grimoire: ['断崖壁画の呪典'],
       robe: ['霧染みの法衣'],
@@ -193,7 +186,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
     uncommon: {
       archery: ['狐狩人の戦弓'],
       armor: ['狐族戦士の青銅鎧'],
-      arrow: ['幻裂きの青銅矢'],
+      arrow: ['幻裂きの青銅炎矢', '幻裂きの青銅氷矢'],
       catalyst: ['霧精粉の触媒'],
       grimoire: ['幻霧の秘呪書'],
       robe: ['幻術師の法衣'],
@@ -233,7 +226,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
     uncommon: {
       archery: ['熊狩人の戦弓'],
       armor: ['霊峰鍛冶の鉄鎧'],
-      arrow: ['火花裂きの鉄矢'],
+      arrow: ['火花裂きの鉄炎矢', '火花裂きの鉄氷矢'],
       catalyst: ['熔核粉の触媒'],
       grimoire: ['鍛炉秘伝の呪典'],
       robe: ['炉祈司の法衣'],
@@ -273,7 +266,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
     uncommon: {
       archery: ['聖茂狩人の戦弓'],
       armor: ['聖域守護の月鋼鎧'],
-      arrow: ['閃撃の月鋼矢'],
+      arrow: ['閃撃の月鋼炎矢', '閃撃の月鋼氷矢'],
       catalyst: ['燐精核の触媒'],
       grimoire: ['月影秘儀書'],
       robe: ['燐光司祭の法衣'],
@@ -313,7 +306,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
     uncommon: {
       archery: ['歯車補助の戦弓'],
       armor: ['耐圧配管の機甲'],
-      arrow: ['貫孔加工の精密矢'],
+      arrow: ['貫孔加工の精密炎矢', '貫孔加工の精密氷矢'],
       catalyst: ['中和強化触媒'],
       grimoire: ['迷宮制御の秘呪書'],
       robe: ['毒気遮断の法衣'],
@@ -353,7 +346,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
     uncommon: {
       archery: ['高天狩人の戦弓'],
       armor: ['浮島守護の天鋼鎧'],
-      arrow: ['旋風穿ちの鋼矢'],
+      arrow: ['旋風穿ちの鋼炎矢', '旋風穿ちの鋼氷矢'],
       catalyst: ['高天触媒核'],
       grimoire: ['風律の秘呪書'],
       robe: ['天輝司祭の法衣'],
@@ -393,7 +386,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
     uncommon: {
       archery: ['次元狩人の戦弓'],
       armor: ['玻璃界守護の結晶鎧'],
-      arrow: ['層界穿ちの結晶矢'],
+      arrow: ['層界穿ちの結晶炎矢', '層界穿ちの結晶氷矢'],
       catalyst: ['次元安定の触媒核'],
       grimoire: ['終焉律法の秘呪書'],
       robe: ['無音司祭の法衣'],
@@ -425,7 +418,7 @@ function getMasterItemName(tier: number, rarity: Rarity, category: ItemCategory,
   if (!names || names.length === 0) return undefined;
   if (rarity === 'uncommon') {
     const index = variantIndex ?? 0;
-    return names[index] ?? names[0];
+    return names[index];
   }
   return names[0];
 }
@@ -459,9 +452,7 @@ const SHIELD_HP_MULTIPLIERS = [12, 18, 27, 41, 61, 91, 137, 205];
 const ITEM_TEMPLATES: ItemTemplate[] = [
   // Index 0: armor (鎧) - +physicalDefense
   {
-    category: 'armor', baseName: '鎧',
-    variants: ['堅守の鎧', '活力の鎧'],
-    rareName: '騎士の鎧', mythicName: '英雄の鎧',
+    category: 'armor',
     variant1Mod: { physicalDefense: 2 },
     variant2Mod: { partyHP: 3 },
     variant3Mod: { magicalDefense: 2 },
@@ -469,9 +460,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
   },
   // Index 1: robe (法衣) - +magicalDefense
   {
-    category: 'robe', baseName: 'ローブ',
-    variants: ['守護のローブ', '聖者のローブ'],
-    rareName: '大魔導のローブ', mythicName: '天衣',
+    category: 'robe',
     variant1Mod: { magicalDefense: 2 },
     variant2Mod: { partyHP: 3 },
     variant3Mod: { evasionBonus: 0.01 },
@@ -479,9 +468,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
   },
   // Index 2: shield (盾) - +HP, +physicalDefense
   {
-    category: 'shield', baseName: '盾',
-    variants: ['守りの盾', '闘士の盾'],
-    rareName: '守護盾', mythicName: '聖盾',
+    category: 'shield',
     variant1Mod: { physicalDefense: 2 },
     variant2Mod: { meleeAttack: 1 },
     variant3Mod: { partyHP: 2 },
@@ -489,9 +476,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
   },
   // Index 3: sword (剣) - +meleeAttack
   {
-    category: 'sword', baseName: '剣',
-    variants: ['鋭利な剣', '堅固な剣'],
-    rareName: '騎士剣', mythicName: '聖剣',
+    category: 'sword',
     variant1Mod: { meleeAttack: 1 },
     variant2Mod: { physicalDefense: 1 },
     variant3Mod: { partyHP: 2 },
@@ -499,9 +484,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
   },
   // Index 4: katana (刀) - +meleeAttack, -meleeNoA
   {
-    category: 'katana', baseName: '刀',
-    variants: ['業物の刀', '名匠の刀'],
-    rareName: '銘刀', mythicName: '妖刀',
+    category: 'katana',
     variant1Mod: { meleeAttack: 2 },
     variant2Mod: { penetBonus: 0.01 },
     variant3Mod: { penetBonus: 0.02 },
@@ -509,9 +492,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
   },
   // Index 5: gauntlet (籠手) - +meleeNoA
   {
-    category: 'gauntlet', baseName: '籠手',
-    variants: ['戦士の籠手', '闘士の籠手'],
-    rareName: '英雄の籠手', mythicName: '覇王の籠手',
+    category: 'gauntlet',
     variant1Mod: { meleeNoA: 0.1 },
     variant2Mod: { physicalDefense: 1 },
     variant3Mod: { meleeAttack: 1 },
@@ -519,18 +500,14 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
   },
   // Index 6: arrow (矢) - +rangedAttack
   {
-    category: 'arrow', baseName: '矢',
-    variants: ['炎の矢', '氷の矢'],
-    rareName: '雷の矢', mythicName: '神矢',
+    category: 'arrow',
     variant1Mod: { elementalOffense: 'fire' },
     variant2Mod: { elementalOffense: 'ice' },
     variant3Mod: { rangedAttack: 1 },
   },
   // Index 7: bolt (ボルト) - +rangedAttack, -rangedNoA
   {
-    category: 'bolt', baseName: 'ボルト',
-    variants: ['強化ボルト', '雷のボルト'],
-    rareName: '炎のボルト', mythicName: '神雷ボルト',
+    category: 'bolt',
     variant1Mod: { rangedAttack: 1 },
     variant2Mod: { elementalOffense: 'thunder' },
     variant3Mod: { rangedAttack: 1 },
@@ -538,9 +515,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
   },
   // Index 8: archery (弓) - +rangedNoA
   {
-    category: 'archery', baseName: '弓',
-    variants: ['狩人の弓', '精密な弓'],
-    rareName: '精霊弓', mythicName: '天弓',
+    category: 'archery',
     variant1Mod: { accuracyBonus: 0.01 },
     variant2Mod: { partyHP: 2 },
     variant3Mod: { accuracyBonus: 0.02 },
@@ -548,9 +523,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
   },
   // Index 9: wand (ワンド) - +magicalAttack
   {
-    category: 'wand', baseName: 'ワンド',
-    variants: ['賢者のワンド', '闇のワンド'],
-    rareName: '大魔導の杖', mythicName: '神杖',
+    category: 'wand',
     variant1Mod: { magicalAttack: 1 },
     variant2Mod: { magicalDefense: 1 },
     variant3Mod: { magicalAttack: 1 },
@@ -558,9 +531,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
   },
   // Index 10: grimoire (魔導書) - +magicalAttack, -magicalNoA
   {
-    category: 'grimoire', baseName: '魔導書',
-    variants: ['古の魔導書', '禁断の書'],
-    rareName: '神代の書', mythicName: '真理の書',
+    category: 'grimoire',
     variant1Mod: { magicalAttack: 1 },
     variant2Mod: { magicalDefense: 1 },
     variant3Mod: { magicalAttack: 1 },
@@ -568,9 +539,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
   },
   // Index 11: catalyst (触媒) - +magicalNoA
   {
-    category: 'catalyst', baseName: '触媒',
-    variants: ['精霊の触媒', '炎の触媒'],
-    rareName: '賢者の石', mythicName: '神核',
+    category: 'catalyst',
     variant1Mod: { magicalNoA: 0.1 },
     variant2Mod: { elementalOffense: 'fire' },
     variant3Mod: { elementalOffense: 'thunder' },
@@ -624,11 +593,10 @@ function createItem(
   rarity: Rarity,
   template: ItemTemplate,
   variantIndex?: number
-): ItemDef {
+): ItemDef | null {
   const basePower = TIER_BASE_POWER[tier - 1];
   const rarityIndex = { common: 0, uncommon: 1, rare: 2, mythic: 3 }[rarity];
   const amplifier = RARITY_AMPLIFIERS[template.category][rarityIndex];
-  const tierPrefix = TIER_PREFIXES[tier - 1];
   const multiplierTier = getMultiplierTier(tier, rarity);
   const targetMultiplier = multiplierTier ? 1 + TIER_TARGET_MULTIPLIERS[multiplierTier - 1] : 1;
   const shieldEvasionBonus = multiplierTier ? TIER_SHIELD_EVASION_BONUS[multiplierTier - 1] : 0;
@@ -637,24 +605,9 @@ function createItem(
   const evasionPenalty = TIER_EVASION_PENALTIES[tier - 1];
   const noaBasePower = TIER_NOA_BASE_POWER[tier - 1];
 
-  // Determine name
-  let name: string;
-  if (rarity === 'common') {
-    name = tierPrefix + template.baseName;
-  } else if (rarity === 'uncommon' && template.variants && variantIndex !== undefined) {
-    name = tierPrefix + template.variants[variantIndex];
-  } else if (rarity === 'rare') {
-    name = tierPrefix + (template.rareName || template.baseName);
-  } else {
-    name = template.mythicName || tierPrefix + template.baseName;
-  }
-
   const masterName = getMasterItemName(tier, rarity, template.category, variantIndex);
-  if (masterName) {
-    name = masterName;
-  }
-
-  name = ITEM_NAME_OVERRIDES[id] ?? name;
+  const name = ITEM_NAME_OVERRIDES[id] ?? masterName;
+  if (!name) return null;
 
   // Base item
   const item: ItemDef = {
@@ -774,7 +727,8 @@ function generateItems(): ItemDef[] {
     for (let i = 0; i < ITEM_TEMPLATES.length; i++) {
       const template = ITEM_TEMPLATES[i];
       const id = tier * 1000 + 100 + i + 1; // T1CC format: 1101-1112 for tier 1 common
-      items.push(createItem(id, tier, 'common', template));
+      const item = createItem(id, tier, 'common', template);
+      if (item) items.push(item);
     }
 
     // Uncommon items (24 per tier - two of each type)
@@ -782,17 +736,20 @@ function generateItems(): ItemDef[] {
       const template = ITEM_TEMPLATES[i];
       // Variant 1
       const id1 = tier * 1000 + 200 + i * 2 + 1; // T2CC format
-      items.push(createItem(id1, tier, 'uncommon', template, 0));
+      const item1 = createItem(id1, tier, 'uncommon', template, 0);
+      if (item1) items.push(item1);
       // Variant 2
       const id2 = tier * 1000 + 200 + i * 2 + 2;
-      items.push(createItem(id2, tier, 'uncommon', template, 1));
+      const item2 = createItem(id2, tier, 'uncommon', template, 1);
+      if (item2) items.push(item2);
     }
 
     // Rare items (12 per tier - one of each type)
     for (let i = 0; i < ITEM_TEMPLATES.length; i++) {
       const template = ITEM_TEMPLATES[i];
       const id = tier * 1000 + 300 + i + 1; // T3CC format
-      items.push(createItem(id, tier, 'rare', template));
+      const item = createItem(id, tier, 'rare', template);
+      if (item) items.push(item);
     }
 
     // Mythic items (2~3 per tier based on boss drop tables)
@@ -800,7 +757,8 @@ function generateItems(): ItemDef[] {
     mythicCategories.forEach((category, index) => {
       const template = ITEM_TEMPLATE_BY_CATEGORY[category];
       const id = tier * 1000 + 400 + index + 1; // T4CC format
-      items.push(createItem(id, tier, 'mythic', template));
+      const item = createItem(id, tier, 'mythic', template);
+      if (item) items.push(item);
     });
   }
 
@@ -833,7 +791,7 @@ export const getItemsByCategory = (category: string): ItemDef[] =>
   ITEMS.filter(i => i.category === category);
 
 // Get random item from tier (for rewards)
-export function getRandomItemFromTier(tier: number, rarity?: Rarity): ItemDef {
+export function getRandomItemFromTier(tier: number, rarity?: Rarity): ItemDef | null {
   const pool = rarity ? getItemsByTierAndRarity(tier, rarity) : getItemsByTier(tier);
   return pool[Math.floor(Math.random() * pool.length)];
 }
