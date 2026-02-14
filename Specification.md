@@ -802,9 +802,9 @@ inventory = {
   - 自動周回OFF: 移動中→探索中→帰還中→休息中 → 宴会中(条件付き) → 睡眠中 → 祈り中 → 待機中 (stop here)
 
 
-
-### 4.1 Time-Based Progress handling (Online + AFK)
-- The party state machine is time-driven: store `state` and `state_started_at`, and at every checkpoint recompute the latest state by consuming the elapsed time since the last update (this applies continuously during play, AFK, and long gaps such as daily progress).
+### 4.1 Time-Based Progress Handling (Online + AFK)
+- The state machine is purely time-based: persist `state` and `state_started_at`, and on each update tick compute progress from `now - state_started_at`, applying any completed transitions to reach the latest state.
+- Update `state_started_at` **only when the party state changes** (on every state transition).
 - Limit: maximum 60 minutes per catch-up simulation (current version).
 
 **Notification**
