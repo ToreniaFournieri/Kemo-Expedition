@@ -2155,7 +2155,7 @@ function ExpeditionTab({
                             <div className="flex justify-between items-center">
                               <span className="font-medium">{roomLabel}: {entry.enemyName}</span>
                               <span className="flex items-center gap-2">
-                                <span className={entry.gateInfo ? 'text-gray-500 font-medium' : entry.outcome === 'victory' ? 'text-sub font-medium' : entry.outcome === 'defeat' ? 'text-red-600 font-medium' : 'text-yellow-600 font-medium'}>
+                                <span className={entry.gateInfo ? 'text-gray-500 font-medium' : entry.outcome === 'victory' ? 'text-sub font-medium' : entry.outcome === 'defeat' ? 'text-accent font-medium' : 'text-yellow-600 font-medium'}>
                                   {entry.gateInfo ? '未到達' : entry.outcome === 'victory' ? '勝利' : entry.outcome === 'defeat' ? '敗北' : '引分'}
                                 </span>
                                 <span className={`transform transition-transform ${isRoomExpanded ? 'rotate-180' : ''}`}>▼</span>
@@ -2691,7 +2691,7 @@ function DiaryTab({
                               <span className={
                                 entry.gateInfo ? 'text-gray-500 font-medium' :
                                 entry.outcome === 'victory' ? 'text-sub font-medium' :
-                                entry.outcome === 'defeat' ? 'text-red-600 font-medium' : 'text-yellow-600 font-medium'
+                                entry.outcome === 'defeat' ? 'text-accent font-medium' : 'text-yellow-600 font-medium'
                               }>
                                 {entry.gateInfo ? '未到達' :
                                  entry.outcome === 'victory' ? '勝利' :
@@ -3320,12 +3320,12 @@ function SettingTab({
       <div className="bg-pane rounded-lg p-4">
         <div className="text-sm font-medium mb-2">4. ゲームリセット</div>
         {!showResetConfirm ? (
-          <button onClick={() => setShowResetConfirm(true)} className="w-full py-2 bg-red-600 text-white rounded font-medium">ゲームをリセット</button>
+          <button onClick={() => setShowResetConfirm(true)} className="w-full py-2 bg-accent text-white rounded font-medium">ゲームをリセット</button>
         ) : (
           <div>
             <div className="text-sm text-accent mb-2 p-2 bg-orange-50 rounded border border-orange-200">本当にリセットしますか？全てのデータが失われます。この操作は取り消せません。</div>
             <div className="flex gap-2">
-              <button onClick={() => { onResetGame(); setShowResetConfirm(false); }} className="flex-1 py-2 bg-red-600 text-white rounded font-medium">リセット実行</button>
+              <button onClick={() => { onResetGame(); setShowResetConfirm(false); }} className="flex-1 py-2 bg-accent text-white rounded font-medium">リセット実行</button>
               <button onClick={() => setShowResetConfirm(false)} className="flex-1 py-2 bg-gray-300 rounded font-medium">キャンセル</button>
             </div>
           </div>
