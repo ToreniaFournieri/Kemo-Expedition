@@ -1804,6 +1804,14 @@ function PartyTab({
                       className="absolute left-0 top-5 z-20 w-[min(38rem,88vw)] rounded-md border border-gray-200 bg-white p-3 shadow-lg"
                     >
                       <div className="mb-2 text-[11px] font-semibold text-gray-700">c. ボーナス説明 (同一名ボーナスは重複無効)</div>
+                      <div className="max-h-56 space-y-1 overflow-y-auto pr-1 text-[11px] leading-4 text-gray-700">
+                        {helpRows.map((row) => (
+                          <div key={row.label}>
+                            <span className="font-semibold">{row.label}</span>
+                            <span className="text-gray-500"> - {row.description}</span>
+                          </div>
+                        ))}
+                      </div>
                       {bHelpRows.length > 0 && (
                         <div className="mb-2 rounded border border-gray-100 bg-gray-50 px-2 py-1 text-[11px] leading-4 text-gray-700">
                           <div className="font-semibold text-gray-700">b.ボーナス説明(重複有効)</div>
@@ -1815,14 +1823,6 @@ function PartyTab({
                           ))}
                         </div>
                       )}
-                      <div className="max-h-56 space-y-1 overflow-y-auto pr-1 text-[11px] leading-4 text-gray-700">
-                        {helpRows.map((row) => (
-                          <div key={row.label}>
-                            <span className="font-semibold">{row.label}</span>
-                            <span className="text-gray-500"> - {row.description}</span>
-                          </div>
-                        ))}
-                      </div>
                     </div>
                   )}
                 </div>
