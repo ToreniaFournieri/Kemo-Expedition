@@ -942,7 +942,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             >
               {tab.label}
               {tab.id === 'diary' && hasUnreadDiary && (
-                <span className="absolute -top-0.5 right-1 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] leading-none text-white">
+                <span className="absolute -top-0.5 right-1 rounded-full bg-accent px-1.5 py-0.5 text-[10px] leading-none text-white">
                   {unreadDiaryBadgeLabel}
                 </span>
               )}
