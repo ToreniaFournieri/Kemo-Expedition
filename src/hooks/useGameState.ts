@@ -803,33 +803,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const updatedParties = [...state.parties];
       const targetParty = updatedParties[action.partyIndex];
-      let newInventory = { ...state.global.inventory };
-
-      const resetCharacters = targetParty.characters.map((character) => {
-        for (const equippedItem of character.equipment) {
-          if (!equippedItem) continue;
-          const key = getVariantKey(equippedItem);
-          const existing = newInventory[key];
-          if (existing) {
-            newInventory[key] = {
-              ...existing,
-              count: existing.count + 1,
-              status: 'owned',
-            };
-          } else {
-            newInventory[key] = {
-              item: { ...equippedItem, isNew: undefined },
-              count: 1,
-              status: 'owned',
-            };
-          }
-        }
-
-        return {
-          ...character,
-          equipment: [],
-        };
-      });
 
       updatedParties[action.partyIndex] = {
         ...targetParty,
@@ -838,16 +811,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           name: normalizedDeityName,
         },
         deityGold: state.global.deityDonations[normalizedDeityName] ?? 0,
-        characters: resetCharacters,
       };
 
       return {
         ...state,
         parties: updatedParties,
-        global: {
-          ...state.global,
-          inventory: newInventory,
-        },
       };
     }
 
