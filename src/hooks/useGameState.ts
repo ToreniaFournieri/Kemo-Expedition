@@ -477,7 +477,7 @@ type GameAction =
   | { type: 'SELECT_PARTY'; partyIndex: number }
   | { type: 'SELECT_DUNGEON'; partyIndex: number; dungeonId: number }
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
-  | { type: 'RUN_EXPEDITION'; partyIndex: number }
+  | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number }
   | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number }
   | { type: 'HEAL_PARTY_HP'; partyIndex: number; amount: number }
   | { type: 'CLEAR_PENDING_PROFIT'; partyIndex: number }
@@ -1096,12 +1096,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         if (hasRareMatch) diaryTriggers.push('rare');
       }
 
+      const diaryCreatedAt = action.simulatedAt ?? Date.now();
+
       const pendingDiaryLog = diaryTriggers.length > 0
         ? {
-            id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            id: `${diaryCreatedAt}-${Math.random().toString(36).slice(2, 8)}`,
             expeditionLog: log,
             triggers: diaryTriggers,
-            createdAt: Date.now(),
+            createdAt: diaryCreatedAt,
             isRead: false,
           }
         : null;
@@ -1455,10 +1457,19 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (runCount <= 0) return state;
 
       let workingState = state;
+      const simulationStartAt = Date.now() - cappedElapsedMs;
+      const simulationEndAt = simulationStartAt + (runCount * approxCycleDurationMs);
+      const partyTimestampStepMs = 1_000;
 
       for (let runIndex = 0; runIndex < runCount; runIndex++) {
+        const cycleCompletedAt = simulationStartAt + ((runIndex + 1) * approxCycleDurationMs);
         for (let partyIndex = 0; partyIndex < workingState.parties.length; partyIndex++) {
-          workingState = gameReducer(workingState, { type: 'RUN_EXPEDITION', partyIndex });
+          const simulatedAt = Math.min(
+            simulationEndAt,
+            cycleCompletedAt + (partyIndex * partyTimestampStepMs)
+          );
+
+          workingState = gameReducer(workingState, { type: 'RUN_EXPEDITION', partyIndex, simulatedAt });
           workingState = gameReducer(workingState, { type: 'FINALIZE_DIARY_LOG', partyIndex });
 
           const currentParty = workingState.parties[partyIndex];
