@@ -56,9 +56,10 @@ import {
   unlockAvailableLootGates,
 } from '../game/lootGate';
 import { LEVEL_EXP } from '../game/partyLevel';
+import { createEnvironmentStorageKey } from '../game/environment';
 
 const BUILD_NUMBER = 1;
-const STORAGE_KEY = 'kemo-expedition-save';
+const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
 
 const DEFAULT_DIARY_SETTINGS: DiarySettings = {
   superRareThreshold: 'all',

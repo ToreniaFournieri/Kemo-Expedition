@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ['main']
+    branches: ['main', 'qa']
   workflow_dispatch:
 
 permissions:
@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -27,11 +29,47 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Build main and qa artifacts
+        run: |
+          set -euo pipefail
 
-      - name: Build
-        run: npm run build
+          git fetch origin main
+          git worktree add ../kemo-main origin/main
+
+          if git ls-remote --exit-code --heads origin qa >/dev/null 2>&1; then
+            git fetch origin qa
+            git worktree add ../kemo-qa origin/qa
+          else
+            echo 'Remote qa branch not found; using main build for /qa/ fallback.'
+            git worktree add ../kemo-qa origin/main
+          fi
+
+          npm ci --prefix ../kemo-main
+          npm run build --prefix ../kemo-main
+
+          npm ci --prefix ../kemo-qa
+          npm run build --prefix ../kemo-qa
+
+          rm -rf site
+          mkdir -p site/dev site/qa
+
+          cp -R ../kemo-main/dist/. site/dev/
+          cp -R ../kemo-qa/dist/. site/qa/
+
+          cat > site/index.html <<'HTML'
+          <!doctype html>
+          <html lang="ja">
+            <head>
+              <meta charset="UTF-8" />
+              <meta http-equiv="refresh" content="0; url=./dev/" />
+              <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+              <title>Kemo Expedition</title>
+            </head>
+            <body>
+              <p>Redirecting to <a href="./dev/">開発環境</a>...</p>
+            </body>
+          </html>
+          HTML
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -39,7 +77,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './dist'
+          path: './site'
 
   deploy:
     environment:
