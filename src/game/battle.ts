@@ -150,6 +150,36 @@ function getResonanceAmplifier(resonanceLevel: number | undefined, hitNumber: nu
   return 1.0 + (0.05 * (hitNumber - 1));
 }
 
+function getResonanceBonusPerHit(resonanceLevel: number | undefined): number {
+  if (!resonanceLevel) {
+    return 0;
+  }
+
+  if (resonanceLevel >= 5) return 15;
+  if (resonanceLevel === 4) return 13;
+  if (resonanceLevel === 3) return 11;
+  if (resonanceLevel === 2) return 8;
+  return 5;
+}
+
+function getResonanceLogText(
+  phase: BattlePhase,
+  charStats: ComputedCharacterStats,
+  successfulHits: number
+): string {
+  if (phase !== 'mid' || successfulHits <= 0) {
+    return '';
+  }
+
+  const resonance = charStats.abilities.find(a => a.id === 'resonance');
+  if (!resonance) {
+    return '';
+  }
+
+  const bonusPercent = getResonanceBonusPerHit(resonance.level) * successfulHits;
+  return `(共鳴${resonance.level}:威力${bonusPercent}%増幅)`;
+}
+
 // Hit detection for physical attacks (LONG and CLOSE phases)
 // decay_of_accuracy = clamp(0.86, 0.90 + actor.accuracy - opponent.evasion, 0.98)
 // chance = d.accuracy_potency * (decay_of_accuracy)^(Nth_hit)
@@ -237,7 +267,7 @@ function calculateCharacterDamage(
   for (let i = 1; i <= noA; i++) {
     if (hitDetection(actorAccuracyPotency, charStats.accuracyBonus, enemyEvasion, i, phase, enemy.abilities.includes('deflection'))) {
       hits++;
-      damage += Math.max(1, Math.floor(basePerHitDamage * getResonanceAmplifier(resonance?.level, i)));
+      damage += Math.max(1, Math.floor(basePerHitDamage * getResonanceAmplifier(resonance?.level, hits)));
     }
   }
 
@@ -412,11 +442,12 @@ export function executeBattle(
         }
         const char = party.characters.find(c => c.id === cs.characterId);
         const attackType = phase === 'mid' ? '魔法先制攻撃' : '先制攻撃';
+        const resonanceLogText = getResonanceLogText(phase, cs, result.hits);
         log.push({
           phase,
           actor: 'character',
           characterId: cs.characterId,
-          action: `${char?.name ?? '???'} の${attackType}！`,
+          action: `${char?.name ?? '???'} の${attackType}！${resonanceLogText}`,
           damage: result.damage,
           hits: result.hits,
           totalAttempts: result.totalAttempts,
@@ -543,11 +574,12 @@ export function executeBattle(
         }
         const targetChar = party.characters.find(c => c.id === charId);
         const counterType = phase === 'mid' ? '魔法カウンター' : 'カウンター';
+        const resonanceLogText = getResonanceLogText(phase, attack.charStats, result.hits);
         log.push({
           phase,
           actor: 'character',
           characterId: charId,
-          action: `${targetChar?.name ?? '???'} の${counterType}！`,
+          action: `${targetChar?.name ?? '???'} の${counterType}！${resonanceLogText}`,
           damage: result.damage,
           hits: result.hits,
           totalAttempts: result.totalAttempts,
@@ -586,11 +618,12 @@ export function executeBattle(
         }
         const char = party.characters.find(c => c.id === cs.characterId);
         const attackType = phase === 'mid' ? '魔法攻撃' : '攻撃';
+        const resonanceLogText = getResonanceLogText(phase, cs, result.hits);
         log.push({
           phase,
           actor: 'character',
           characterId: cs.characterId,
-          action: `${char?.name ?? '???'} の${attackType}！`,
+          action: `${char?.name ?? '???'} の${attackType}！${resonanceLogText}`,
           damage: result.damage,
           hits: result.hits,
           totalAttempts: result.totalAttempts,
@@ -614,11 +647,12 @@ export function executeBattle(
           }
           const char = party.characters.find(c => c.id === cs.characterId);
           const reAttackType = phase === 'mid' ? '魔法連撃' : '連撃';
+          const resonanceLogText = getResonanceLogText(phase, cs, result.hits);
           log.push({
             phase,
             actor: 'character',
             characterId: cs.characterId,
-            action: `${char?.name ?? '???'} の${reAttackType}！`,
+            action: `${char?.name ?? '???'} の${reAttackType}！${resonanceLogText}`,
             damage: result.damage,
             hits: result.hits,
             totalAttempts: result.totalAttempts,
