@@ -2193,25 +2193,25 @@ function ExpeditionTab({
 
             {isLogExpanded && (
               <div className="space-y-2 mb-3">
-                <div className="flex items-center gap-2">
+                <div className="grid grid-cols-[max-content_minmax(0,1fr)] items-center gap-x-2 gap-y-2 text-sm text-gray-700">
                   <select
                     value={party.selectedDungeonId}
                     onChange={(e) => onSelectDungeon(partyIndex, Number(e.target.value))}
-                    className="border border-gray-300 rounded px-2 py-1 text-sm flex-1"
+                    className="border border-gray-300 rounded px-2 py-1 text-sm justify-self-end text-right"
                   >
                     {DUNGEONS.map(dungeon => {
                       const gateState = getDungeonEntryGateState(party, dungeon);
                       return <option key={dungeon.id} value={dungeon.id} disabled={gateState.locked}>{dungeon.name} {gateState.locked ? '🔒' : ''}</option>;
                     })}
                   </select>
-                  <button onClick={() => onTriggerSortie(partyIndex)} disabled={selectedDungeonGate?.locked} className={`px-3 py-1 text-white rounded font-medium text-sm ${selectedDungeonGate?.locked ? 'bg-gray-400 cursor-not-allowed' : 'bg-sub hover:bg-blue-600'}`}>出撃</button>
-                </div>
-                <div className="flex items-center justify-end gap-2 text-sm text-gray-700">
-                  <span className="shrink-0">探索深度</span>
+                  <div className="flex items-center">
+                    <button onClick={() => onTriggerSortie(partyIndex)} disabled={selectedDungeonGate?.locked} className={`px-3 py-1 text-white rounded font-medium text-sm ${selectedDungeonGate?.locked ? 'bg-gray-400 cursor-not-allowed' : 'bg-sub hover:bg-blue-600'}`}>出撃</button>
+                  </div>
+                  <span className="justify-self-end">探索深度</span>
                   <select
                     value={party.expeditionDepthLimit}
                     onChange={(e) => onSetExpeditionDepthLimit(partyIndex, e.target.value as ExpeditionDepthLimit)}
-                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    className="border border-gray-300 rounded px-2 py-1 text-sm justify-self-start"
                   >
                     {EXPEDITION_DEPTH_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>{option.label}</option>
