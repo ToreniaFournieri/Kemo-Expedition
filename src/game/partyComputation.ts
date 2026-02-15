@@ -247,7 +247,7 @@ function getAbilityName(id: AbilityId, level: number): string {
     first_strike: '先制攻撃',
     hunter: '狩人',
     defender: '守護者',
-    counter: 'カウンター',
+    counter: '反撃',
     re_attack: '連撃',
     iaigiri: '居合斬り',
     resonance: '共鳴',
