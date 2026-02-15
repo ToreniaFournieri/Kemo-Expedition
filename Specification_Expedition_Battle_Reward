@@ -107,7 +107,7 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 |CLOSE |`d.melee_attack` |`d.melee_NoA` | `d.physical_defense` |
 
 - After the CLOSE phase, the battle is over. Party needs to beat enemy within these three phases.
-
+ 
 
 **functions of attack**
 
@@ -193,15 +193,13 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 
 
 ### 6.3 Turn resolution 
-- For each phase, actions are resolved in the following order:
-    - Enemy attacks
-    - Player party attacks
-
-**First strike**
-- IF character.`a.first-strike`2, the character acts before enemy.`a.first-strike`1 action. (using `f.damage_calculation`)
-- IF enemy.`a.first-strike`1, the enemy acts before character.`a.first-strike`1 action. (using `f.damage_calculation`)
-- IF character.`a.first-strike`1, the character acts  acts before enemy action. (using `f.damage_calculation`)
-
+**Speed & Turn Order (Rolling Dice Rule)**
+- Each character and the enemy rolls initiative at the start of each phase.
+  - Has `a.first-strike`2, **3d3**. (3~9)
+  - Has `a.first-strike`1, **2d3**. (2~6)
+  - Normal **1d3**. (1~3)
+- Actions are resolved in descending order of roll result.
+- Tie-breaker: Enemy > Front row party members > Last row party member.
 
 **Enemy action**
 - Enemy always moves first.
@@ -210,8 +208,6 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 - If currenr party.`d.HP` =< 0, Defeat.
 
 - **Coutner:** `f.counter`(actor:enemy , opponent:character ,phase: CLOSE )
-
-
 - *Note:* Nth_hit is global for all enemy attacks in the phase (not per-target)
 
 
