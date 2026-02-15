@@ -1063,8 +1063,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   expeditionEnded = true;
                   entry.details.push({
                     phase: 'close',
-                    actor: 'effect',
-                    action: '[末] 探索深度に到達した為帰還します',
+                    actor: 'deity',
+                    action: '探索深度に到達した為帰還します',
                   });
                 }
               }
