@@ -282,6 +282,11 @@ function getItemStats(item: Item): string {
   };
   const formatSigned = (value: number, suffix: string = ''): string =>
     `${value >= 0 ? '+' : ''}${formatDecimal(value)}${suffix}`;
+  const getScaledNoA = (value: number): number => {
+    // Positive NoA item bonuses scale with enhancement + super rare multipliers.
+    // Penalty style values should remain fixed (same as runtime stat computation).
+    return value > 0 ? value * multiplier : value;
+  };
   const formatBracket = (label: string, value: number, suffix: string = ''): string =>
     `[${label}${formatSigned(value, suffix)}]`;
 
@@ -300,17 +305,17 @@ function getItemStats(item: Item): string {
   }
   if (item.meleeNoA || item.meleeNoABonus) {
     const baseNoA = item.meleeNoA ?? 0;
-    if (baseNoA !== 0) stats.push(`近回数${formatSigned(baseNoA)}`);
+    if (baseNoA !== 0) stats.push(`近回数${formatSigned(getScaledNoA(baseNoA))}`);
     if (item.meleeNoABonus) stats.push(formatBracket('近回数', item.meleeNoABonus));
   }
   if (item.rangedNoA || item.rangedNoABonus) {
     const baseNoA = item.rangedNoA ?? 0;
-    if (baseNoA !== 0) stats.push(`遠回数${formatSigned(baseNoA)}`);
+    if (baseNoA !== 0) stats.push(`遠回数${formatSigned(getScaledNoA(baseNoA))}`);
     if (item.rangedNoABonus) stats.push(formatBracket('遠回数', item.rangedNoABonus));
   }
   if (item.magicalNoA || item.magicalNoABonus) {
     const baseNoA = item.magicalNoA ?? 0;
-    if (baseNoA !== 0) stats.push(`魔回数${formatSigned(baseNoA)}`);
+    if (baseNoA !== 0) stats.push(`魔回数${formatSigned(getScaledNoA(baseNoA))}`);
     if (item.magicalNoABonus) stats.push(formatBracket('魔回数', item.magicalNoABonus));
   }
   if (item.physicalDefense) stats.push(`物防+${Math.floor(item.physicalDefense * multiplier)}`);
