@@ -338,21 +338,45 @@ function getItemStats(item: Item): string {
 }
 
 function getOffenseMultiplierSum(items: Item[], kind: 'melee' | 'ranged' | 'magical'): number {
+  const appliedBonusNames = new Set<string>();
   const relevant = items.filter(item => {
     if (kind === 'melee') return item.meleeAttack || item.meleeNoA || item.meleeNoABonus;
     if (kind === 'ranged') return item.rangedAttack || item.rangedNoA || item.rangedNoABonus;
     return item.magicalAttack || item.magicalNoA || item.magicalNoABonus;
   });
-  const bonusSum = relevant.reduce((sum, item) => sum + ((item.baseMultiplier ?? 1) - 1), 0);
+
+  const bonusSum = relevant.reduce((sum, item) => {
+    const baseMultiplier = item.baseMultiplier ?? 1;
+    if (baseMultiplier === 1) return sum;
+
+    const percent = Math.round((baseMultiplier - 1) * 1000) / 10;
+    const bonusName = `c.${kind}_attack+${percent}`;
+    if (appliedBonusNames.has(bonusName)) return sum;
+    appliedBonusNames.add(bonusName);
+    return sum + (baseMultiplier - 1);
+  }, 0);
+
   return 1 + bonusSum;
 }
 
 function getDefenseMultiplierSum(items: Item[], kind: 'physical' | 'magical'): number {
+  const appliedBonusNames = new Set<string>();
   const relevant = items.filter(item => {
     if (kind === 'physical') return item.physicalDefense;
     return item.magicalDefense;
   });
-  const bonusSum = relevant.reduce((sum, item) => sum + ((item.baseMultiplier ?? 1) - 1), 0);
+
+  const bonusSum = relevant.reduce((sum, item) => {
+    const baseMultiplier = item.baseMultiplier ?? 1;
+    if (baseMultiplier === 1) return sum;
+
+    const percent = Math.round((baseMultiplier - 1) * 1000) / 10;
+    const bonusName = `c.${kind}_defense+${percent}`;
+    if (appliedBonusNames.has(bonusName)) return sum;
+    appliedBonusNames.add(bonusName);
+    return sum + (baseMultiplier - 1);
+  }, 0);
+
   return Math.max(0.01, 1 - bonusSum);
 }
 
@@ -1847,6 +1871,7 @@ function PartyTab({
               // Aggregate bonuses - deduplicate multipliers by value before multiplying
               const multiplierValues: Record<string, Set<number>> = {};
               const additive: Record<string, number> = {};
+              const uniqueEvasionBonusNames = new Set<string>();
 
               for (const b of allBonuses) {
                 if (b.type.endsWith('_multiplier')) {
@@ -1856,7 +1881,15 @@ function PartyTab({
                 } else if (['vitality', 'strength', 'intelligence', 'mind', 'equip_slot', 'grit', 'caster', 'pursuit'].includes(b.type)) {
                   additive[b.type] = (additive[b.type] ?? 0) + b.value;
                 } else if (b.type === 'penet' || b.type === 'accuracy' || b.type === 'evasion') {
-                  additive[b.type] = (additive[b.type] ?? 0) + b.value;
+                  if (b.type === 'evasion') {
+                    const bonusName = `c.evasion+${b.value}`;
+                    if (!uniqueEvasionBonusNames.has(bonusName)) {
+                      uniqueEvasionBonusNames.add(bonusName);
+                      additive[b.type] = (additive[b.type] ?? 0) + b.value;
+                    }
+                  } else {
+                    additive[b.type] = (additive[b.type] ?? 0) + b.value;
+                  }
                 }
               }
 
