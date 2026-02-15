@@ -81,30 +81,6 @@ function getUniqueCBonusSum(
   return bonusSum;
 }
 
-function getUniqueCBonusSum(
-  items: Item[],
-  kind: 'physical_defense' | 'magical_defense'
-): number {
-  const appliedBonusNames = new Set<string>();
-  let bonusSum = 0;
-
-  for (const item of items) {
-    const baseMultiplier = item.baseMultiplier ?? 1;
-    if (baseMultiplier === 1) continue;
-    if (kind === 'physical_defense' && !item.physicalDefense) continue;
-    if (kind === 'magical_defense' && !item.magicalDefense) continue;
-
-    const percent = Math.round((baseMultiplier - 1) * 1000) / 10;
-    const bonusName = `c.${kind}+${percent}`;
-    if (appliedBonusNames.has(bonusName)) continue;
-    appliedBonusNames.add(bonusName);
-    bonusSum += baseMultiplier - 1;
-  }
-
-  return bonusSum;
-}
-
-
 const SUBCLASS_ALLOWED_ABILITY_IDS = new Set<AbilityId>(['unlock']);
 
 function filterSubclassMainSubBonuses(bonuses: Bonus[]): Bonus[] {
