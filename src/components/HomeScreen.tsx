@@ -558,6 +558,9 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const [partyCycles, setPartyCycles] = useState<Record<number, PartyCycleRuntime>>({});
   const [expeditionExpandedLogParty, setExpeditionExpandedLogParty] = useState<number | null>(null);
   const [expeditionExpandedRoom, setExpeditionExpandedRoom] = useState<{ partyIndex: number; roomIndex: number } | null>(null);
+  const [diaryExpandedLogs, setDiaryExpandedLogs] = useState<Record<string, boolean>>({});
+  const [diaryExpandedRooms, setDiaryExpandedRooms] = useState<Record<string, boolean>>({});
+  const [diarySettingsExpanded, setDiarySettingsExpanded] = useState(false);
   const tabScrollPositionsRef = useRef<Partial<Record<Tab, number>>>({});
   const tabContentRef = useRef<HTMLDivElement | null>(null);
 
@@ -1041,6 +1044,12 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             parties={state.parties}
             onOpenDiaryLog={actions.markDiaryLogSeen}
             onUpdateDiarySettings={actions.updateDiarySettings}
+            expandedLogs={diaryExpandedLogs}
+            onSetExpandedLogs={setDiaryExpandedLogs}
+            expandedRooms={diaryExpandedRooms}
+            onSetExpandedRooms={setDiaryExpandedRooms}
+            isSettingsExpanded={diarySettingsExpanded}
+            onSetIsSettingsExpanded={setDiarySettingsExpanded}
           />
         )}
 
@@ -2505,14 +2514,23 @@ function DiaryTab({
   parties,
   onOpenDiaryLog,
   onUpdateDiarySettings,
+  expandedLogs,
+  onSetExpandedLogs,
+  expandedRooms,
+  onSetExpandedRooms,
+  isSettingsExpanded,
+  onSetIsSettingsExpanded,
 }: {
   parties: Party[];
   onOpenDiaryLog: (logId: string) => void;
   onUpdateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
+  expandedLogs: Record<string, boolean>;
+  onSetExpandedLogs: Dispatch<SetStateAction<Record<string, boolean>>>;
+  expandedRooms: Record<string, boolean>;
+  onSetExpandedRooms: Dispatch<SetStateAction<Record<string, boolean>>>;
+  isSettingsExpanded: boolean;
+  onSetIsSettingsExpanded: Dispatch<SetStateAction<boolean>>;
 }) {
-  const [expandedLogs, setExpandedLogs] = useState<Record<string, boolean>>({});
-  const [expandedRooms, setExpandedRooms] = useState<Record<string, boolean>>({});
-  const [isSettingsExpanded, setIsSettingsExpanded] = useState(false);
 
   const diaryLogs = parties
     .flatMap((party) =>
@@ -2578,7 +2596,7 @@ function DiaryTab({
   const renderDiarySettings = () => (
     <div className="bg-pane rounded-lg p-3">
       <button
-        onClick={() => setIsSettingsExpanded((prev) => !prev)}
+        onClick={() => onSetIsSettingsExpanded((prev) => !prev)}
         className="w-full text-left"
       >
         <span className="flex items-center justify-between text-sm font-medium">
@@ -2675,7 +2693,7 @@ function DiaryTab({
             <button
               onClick={() => {
                 const nextExpanded = !isExpanded;
-                setExpandedLogs((prev) => ({ ...prev, [diaryLog.id]: nextExpanded }));
+                onSetExpandedLogs((prev) => ({ ...prev, [diaryLog.id]: nextExpanded }));
                 if (nextExpanded && !diaryLog.isRead) {
                   onOpenDiaryLog(diaryLog.id);
                 }
@@ -2765,7 +2783,7 @@ function DiaryTab({
                     return (
                       <div key={roomKey} className="bg-white rounded overflow-hidden">
                         <button
-                          onClick={() => setExpandedRooms((prev) => ({ ...prev, [roomKey]: !isRoomExpanded }))}
+                          onClick={() => onSetExpandedRooms((prev) => ({ ...prev, [roomKey]: !isRoomExpanded }))}
                           className="w-full text-left p-2 text-xs"
                         >
                           <div className="flex justify-between items-center">
