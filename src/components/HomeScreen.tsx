@@ -153,13 +153,18 @@ const DIARY_THRESHOLD_OPTIONS: Array<{ value: DiaryRarityThreshold; label: strin
 ];
 
 const EXPEDITION_DEPTH_OPTIONS: Array<{ value: ExpeditionDepthLimit; label: string }> = [
-  { value: '1f-3', label: '1F-3' },
-  { value: '2f-3', label: '2F-3' },
-  { value: '3f-3', label: '3F-3' },
-  { value: '4f-3', label: '4F-3' },
-  { value: '5f-3', label: '5F-3' },
-  { value: 'beforeBoss', label: 'ボス前' },
   { value: 'all', label: '全て' },
+  { value: 'beforeBoss', label: 'ボス前' },
+  { value: '5f-4', label: '5F-4' },
+  { value: '5f-3', label: '5F-3' },
+  { value: '4f-4', label: '4F-4' },
+  { value: '4f-3', label: '4F-3' },
+  { value: '3f-4', label: '3F-4' },
+  { value: '3f-3', label: '3F-3' },
+  { value: '2f-4', label: '2F-4' },
+  { value: '2f-3', label: '2F-3' },
+  { value: '1f-4', label: '1F-4' },
+  { value: '1f-3', label: '1F-3' },
 ];
 
 
