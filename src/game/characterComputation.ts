@@ -342,7 +342,7 @@ export function computeCharacterStats(
   for (const [id, level] of collection.abilities) {
     abilities.push({
       id,
-      name: getAbilityName(id),
+      name: getAbilityName(id, level),
       level,
       description: getAbilityDescription(id, level),
     });
@@ -391,7 +391,7 @@ export function computeCharacterStats(
   };
 }
 
-function getAbilityName(id: AbilityId): string {
+function getAbilityName(id: AbilityId, level: number): string {
   const names: Record<AbilityId, string> = {
     first_strike: '先制攻撃',
     hunter: '狩人',
@@ -408,6 +408,9 @@ function getAbilityName(id: AbilityId): string {
     squander: '散財',
     tithe: '十分の一税',
   };
+  if ((id === 'iaigiri' || id === 'resonance') && level >= 1) {
+    return `${names[id]}${level}`;
+  }
   return names[id];
 }
 
@@ -419,7 +422,7 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     counter: (l) => l === 2 ? '敵の近距離・中距離攻撃を受けたとき反撃(攻撃回数半減)' : '敵の近距離攻撃を受けたとき反撃(攻撃回数半減)',
     re_attack: (l) => `攻撃時に追加攻撃を${l === 2 ? '2回' : '1回'}行う(攻撃回数半減)`,
     iaigiri: (l) => `物理ダメージをx${l === 2 ? '2.5' : '2.0'}倍する。攻撃回数を半減する`,
-    resonance: (l) => `魔法攻撃1回毎に、全ヒットのダメージが+${l >= 3 ? 11 : l === 2 ? 8 : 5}%増加する`,
+    resonance: (l) => `魔法攻撃1回毎に、全ヒットのダメージが+${l >= 5 ? 15 : l === 4 ? 13 : l === 3 ? 11 : l === 2 ? 8 : 5}%増加する`,
     command: (l) => `パーティ攻撃力 × ${l === 2 ? 1.6 : 1.3}`,
     m_barrier: (l) => `パーティへの魔法ダメージ × ${l === 2 ? '3/5' : '2/3'}`,
     deflection: () => '敵の遠距離攻撃命中率を10ポイント低下',

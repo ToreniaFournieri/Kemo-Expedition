@@ -1578,7 +1578,7 @@ function PartyTab({
                 // MID phase: 1.0 + deity bonus
                 const midAmp = 1.0 + stats.deityOffenseAmplifierBonus;
                 // CLOSE phase: iaigiri multiplier, then deity bonus
-                const closeAmp = (iaigiri ? 2.0 : 1.0) * (1.0 + stats.deityOffenseAmplifierBonus);
+                const closeAmp = (iaigiri ? (iaigiri.level >= 2 ? 2.5 : 2.0) : 1.0) * (1.0 + stats.deityOffenseAmplifierBonus);
                 const elementName = stats.elementalOffense === 'fire' ? '火' :
                   stats.elementalOffense === 'thunder' ? '雷' :
                   stats.elementalOffense === 'ice' ? '氷' : '無';
