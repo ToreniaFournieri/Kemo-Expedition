@@ -408,7 +408,7 @@ function getAbilityName(id: AbilityId, level: number): string {
     squander: '散財',
     tithe: '十分の一税',
   };
-  if ((id === 'iaigiri' || id === 'resonance') && level >= 1) {
+  if ((id === 'first_strike' || id === 'hunter' || id === 'iaigiri' || id === 'resonance') && level >= 1) {
     return `${names[id]}${level}`;
   }
   return names[id];
@@ -416,8 +416,8 @@ function getAbilityName(id: AbilityId, level: number): string {
 
 function getAbilityDescription(id: AbilityId, level: number): string {
   const descriptions: Record<AbilityId, (level: number) => string> = {
-    first_strike: (l) => l === 2 ? '全フェーズで敵の先制攻撃1より先に行動' : '全フェーズで敵より先に行動',
-    hunter: (l) => l === 2 ? '列によるダメージ減衰を1列ごと15%→7%に軽減する' : '列によるダメージ減衰を1列ごと15%→10%に軽減する',
+    first_strike: (l) => l === 2 ? '敵の先制攻撃より早く先に行動する' : '敵より先に行動する',
+    hunter: (l) => l === 2 ? '列による命中率減衰を1列ごと15%→7%に軽減する' : '列による命中率減衰を1列ごと15%→10%に軽減する',
     defender: (l) => `パーティへの物理ダメージ × ${l === 2 ? '3/5' : '2/3'}`,
     counter: (l) => l === 2 ? '敵の近距離・中距離攻撃を受けたとき反撃(攻撃回数半減)' : '敵の近距離攻撃を受けたとき反撃(攻撃回数半減)',
     re_attack: (l) => `攻撃時に追加攻撃を${l === 2 ? '2回' : '1回'}行う(攻撃回数半減)`,

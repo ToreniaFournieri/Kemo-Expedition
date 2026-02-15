@@ -259,7 +259,7 @@ function getAbilityName(id: AbilityId, level: number): string {
     squander: '散財',
     tithe: '十分の一税',
   };
-  if ((id === 'iaigiri' || id === 'resonance') && level >= 1) {
+  if ((id === 'first_strike' || id === 'hunter' || id === 'iaigiri' || id === 'resonance') && level >= 1) {
     return `${names[id]}${level}`;
   }
   return names[id];
