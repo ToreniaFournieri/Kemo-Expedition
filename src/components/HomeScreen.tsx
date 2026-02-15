@@ -2362,7 +2362,7 @@ function ExpeditionTab({
 
         return (
           <div key={partyIndex} className="bg-pane rounded-lg p-4">
-            <button onClick={() => setExpandedLogParty(isLogExpanded ? null : partyIndex)} className={`w-full flex justify-between items-center text-sm ${isLogExpanded ? 'mb-3' : ''}`}>
+            <button onClick={() => setExpandedLogParty(isLogExpanded ? null : partyIndex)} className="w-full flex justify-between items-center text-sm mb-3">
               <span><span className="font-bold text-black">{party.name}</span><span className="ml-2">{headlineDungeonName}</span><span className="ml-2 font-medium text-sub">{headlineState}</span></span>
               <span className={isLogExpanded ? 'transform transition-transform rotate-180' : ''}>▼</span>
             </button>
