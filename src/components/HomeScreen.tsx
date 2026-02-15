@@ -152,12 +152,12 @@ const DIARY_THRESHOLD_OPTIONS: Array<{ value: DiaryRarityThreshold; label: strin
 ];
 
 const EXPEDITION_DEPTH_OPTIONS: Array<{ value: ExpeditionDepthLimit; label: string }> = [
-  { value: '1f-3', label: '1F-3まで' },
-  { value: '2f-3', label: '2F-3まで' },
-  { value: '3f-3', label: '3F-3まで' },
-  { value: '4f-3', label: '4F-3まで' },
-  { value: '5f-3', label: '5F-3まで' },
-  { value: 'beforeBoss', label: 'ボス直前まで' },
+  { value: '1f-3', label: '1F-3' },
+  { value: '2f-3', label: '2F-3' },
+  { value: '3f-3', label: '3F-3' },
+  { value: '4f-3', label: '4F-3' },
+  { value: '5f-3', label: '5F-3' },
+  { value: 'beforeBoss', label: 'ボス前' },
   { value: 'all', label: '全て' },
 ];
 
@@ -2193,31 +2193,27 @@ function ExpeditionTab({
 
             {isLogExpanded && (
               <div className="space-y-2 mb-3">
-                <div className="grid grid-cols-[minmax(0,1fr)_max-content] items-center gap-x-6 gap-y-2 text-sm text-gray-700">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 text-sm text-gray-700">
                   <select
                     value={party.selectedDungeonId}
                     onChange={(e) => onSelectDungeon(partyIndex, Number(e.target.value))}
-                    className="border border-gray-300 rounded px-2 py-1 text-sm justify-self-end text-right"
+                    className="min-w-0 w-full border border-gray-300 rounded px-2 py-1 text-sm"
                   >
                     {DUNGEONS.map(dungeon => {
                       const gateState = getDungeonEntryGateState(party, dungeon);
                       return <option key={dungeon.id} value={dungeon.id} disabled={gateState.locked}>{dungeon.name} {gateState.locked ? '🔒' : ''}</option>;
                     })}
                   </select>
-                  <button onClick={() => onTriggerSortie(partyIndex)} disabled={selectedDungeonGate?.locked} className={`px-3 py-1 text-white rounded font-medium text-sm ${selectedDungeonGate?.locked ? 'bg-gray-400 cursor-not-allowed' : 'bg-sub hover:bg-blue-600'}`}>出撃</button>
-                  <div className="flex items-center justify-end gap-2 justify-self-end">
-                    <span>探索深度</span>
-                    <select
-                      value={party.expeditionDepthLimit}
-                      onChange={(e) => onSetExpeditionDepthLimit(partyIndex, e.target.value as ExpeditionDepthLimit)}
-                      className="border border-gray-300 rounded px-2 py-1 text-sm"
-                    >
-                      {EXPEDITION_DEPTH_OPTIONS.map((option) => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div aria-hidden="true" />
+                  <select
+                    value={party.expeditionDepthLimit}
+                    onChange={(e) => onSetExpeditionDepthLimit(partyIndex, e.target.value as ExpeditionDepthLimit)}
+                    className="w-20 sm:w-24 border border-gray-300 rounded px-2 py-1 text-sm"
+                  >
+                    {EXPEDITION_DEPTH_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                  <button onClick={() => onTriggerSortie(partyIndex)} disabled={selectedDungeonGate?.locked} className={`px-3 py-2 text-white rounded font-medium text-sm leading-none whitespace-nowrap ${selectedDungeonGate?.locked ? 'bg-gray-400 cursor-not-allowed' : 'bg-sub hover:bg-blue-600'}`}>出撃</button>
                 </div>
                 {getNextGoalText(party) && <div className="text-sm text-gray-700">{getNextGoalText(party)}</div>}
               </div>
