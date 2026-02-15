@@ -5,6 +5,7 @@ import {
   BattleOutcome,
   ComputedPartyStats,
   ComputedCharacterStats,
+  Character,
   EnemyDef,
   Party,
   ElementalOffense,
@@ -203,6 +204,7 @@ function hitDetection(
 function calculateCharacterDamage(
   phase: BattlePhase,
   charStats: ComputedCharacterStats,
+  character: Character,
   enemy: EnemyDef,
   partyStats: ComputedPartyStats,
   noAMultiplier: number = 1.0 // For counter/re-attack, use 0.5
@@ -238,8 +240,39 @@ function calculateCharacterDamage(
   // Apply penetration
   const effectiveDefense = defense * (1 - charStats.penetMultiplier);
 
+  const getUniqueOffenseBonusSum = (kind: 'melee' | 'ranged' | 'magical'): number => {
+    const appliedBonusNames = new Set<string>();
+    let bonusSum = 0;
+
+    for (const item of character.equipment) {
+      if (!item) continue;
+      const baseMultiplier = item.baseMultiplier ?? 1;
+      if (baseMultiplier === 1) continue;
+
+      const isRelevant = kind === 'melee'
+        ? !!(item.meleeAttack || item.meleeNoA || item.meleeNoABonus)
+        : kind === 'ranged'
+          ? !!(item.rangedAttack || item.rangedNoA || item.rangedNoABonus)
+          : !!(item.magicalAttack || item.magicalNoA || item.magicalNoABonus);
+      if (!isRelevant) continue;
+
+      const percent = Math.round((baseMultiplier - 1) * 1000) / 10;
+      const bonusName = `c.${kind}_attack+${percent}`;
+      if (appliedBonusNames.has(bonusName)) continue;
+      appliedBonusNames.add(bonusName);
+      bonusSum += baseMultiplier - 1;
+    }
+
+    return bonusSum;
+  };
+
   // Offense amplifier: iaigiri scales with ability level on CLOSE phase
-  let offenseAmplifier = 1.0 + charStats.deityOffenseAmplifierBonus;
+  const cBonus = phase === 'close'
+    ? getUniqueOffenseBonusSum('melee')
+    : phase === 'long'
+      ? getUniqueOffenseBonusSum('ranged')
+      : getUniqueOffenseBonusSum('magical');
+  let offenseAmplifier = 1.0 + cBonus + charStats.deityOffenseAmplifierBonus;
   const iaigiri = charStats.abilities.find(a => a.id === 'iaigiri');
   if (iaigiri && phase === 'close') {
     offenseAmplifier *= iaigiri.level >= 2 ? 2.5 : 2.0;
@@ -439,7 +472,9 @@ export function executeBattle(
       const attackType = phase === 'mid' ? '魔法先制攻撃' : '先制攻撃';
       for (const cs of attackers) {
         if (enemyHp <= 0) break;
-        const result = calculateCharacterDamage(phase, cs, enemy, partyStats);
+        const char = party.characters.find(c => c.id === cs.characterId);
+        if (!char) continue;
+        const result = calculateCharacterDamage(phase, cs, char, enemy, partyStats);
         if (result.totalAttempts > 0) {
           if (result.damage > 0) {
             enemyHp -= result.damage;
@@ -447,7 +482,6 @@ export function executeBattle(
           if (phase === 'close') {
             triggerEnemyCounter(cs, result.damage);
           }
-          const char = party.characters.find(c => c.id === cs.characterId);
           const resonanceLogText = getResonanceLogText(phase, cs, result.hits);
           log.push({
             phase,
@@ -583,7 +617,9 @@ export function executeBattle(
         continue;
       }
 
-      const result = calculateCharacterDamage(phase, attack.charStats, enemy, partyStats, 0.5);
+      const attackChar = party.characters.find(c => c.id === charId);
+      if (!attackChar) continue;
+      const result = calculateCharacterDamage(phase, attack.charStats, attackChar, enemy, partyStats, 0.5);
       if (result.totalAttempts > 0) {
         if (result.damage > 0) {
           enemyHp -= result.damage;
@@ -642,7 +678,9 @@ export function executeBattle(
     const regularChars = characterStats.filter(cs => !hasFirstStrike(cs, phase));
     for (const cs of regularChars) {
       if (enemyHp <= 0) break;
-      const result = calculateCharacterDamage(phase, cs, enemy, partyStats);
+      const char = party.characters.find(c => c.id === cs.characterId);
+      if (!char) continue;
+      const result = calculateCharacterDamage(phase, cs, char, enemy, partyStats);
       if (result.totalAttempts > 0) {
         if (result.damage > 0) {
           enemyHp -= result.damage;
@@ -650,7 +688,6 @@ export function executeBattle(
         if (phase === 'close') {
           triggerEnemyCounter(cs, result.damage);
         }
-        const char = party.characters.find(c => c.id === cs.characterId);
         const attackType = phase === 'mid' ? '魔法攻撃' : '攻撃';
         const resonanceLogText = getResonanceLogText(phase, cs, result.hits);
         log.push({
@@ -671,7 +708,9 @@ export function executeBattle(
     for (const cs of characterStats) {
       const reAttackCount = hasReAttack(cs);
       for (let i = 0; i < reAttackCount && enemyHp > 0; i++) {
-        const result = calculateCharacterDamage(phase, cs, enemy, partyStats, 0.5);
+        const char = party.characters.find(c => c.id === cs.characterId);
+        if (!char) continue;
+        const result = calculateCharacterDamage(phase, cs, char, enemy, partyStats, 0.5);
         if (result.totalAttempts > 0) {
           if (result.damage > 0) {
             enemyHp -= result.damage;
@@ -679,7 +718,6 @@ export function executeBattle(
           if (phase === 'close') {
             triggerEnemyCounter(cs, result.damage);
           }
-          const char = party.characters.find(c => c.id === cs.characterId);
           const reAttackType = phase === 'mid' ? '魔法連撃' : '連撃';
           const resonanceLogText = getResonanceLogText(phase, cs, result.hits);
           log.push({
