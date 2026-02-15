@@ -1408,7 +1408,7 @@ function PartyTab({
 
       {editingDeity && (
         <div className="mb-3 text-xs text-gray-500">
-          キャラクターアイコンを長押しで隊列変更できます。
+          キャラクターアイコン長押しで隊列変更
         </div>
       )}
 
