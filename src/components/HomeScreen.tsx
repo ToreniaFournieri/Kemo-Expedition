@@ -153,13 +153,18 @@ const DIARY_THRESHOLD_OPTIONS: Array<{ value: DiaryRarityThreshold; label: strin
 ];
 
 const EXPEDITION_DEPTH_OPTIONS: Array<{ value: ExpeditionDepthLimit; label: string }> = [
-  { value: '1f-3', label: '1F-3' },
-  { value: '2f-3', label: '2F-3' },
-  { value: '3f-3', label: '3F-3' },
-  { value: '4f-3', label: '4F-3' },
-  { value: '5f-3', label: '5F-3' },
-  { value: 'beforeBoss', label: 'ボス前' },
   { value: 'all', label: '全て' },
+  { value: 'beforeBoss', label: 'ボス前' },
+  { value: '5f-4', label: '5F-4' },
+  { value: '5f-3', label: '5F-3' },
+  { value: '4f-4', label: '4F-4' },
+  { value: '4f-3', label: '4F-3' },
+  { value: '3f-4', label: '3F-4' },
+  { value: '3f-3', label: '3F-3' },
+  { value: '2f-4', label: '2F-4' },
+  { value: '2f-3', label: '2F-3' },
+  { value: '1f-4', label: '1F-4' },
+  { value: '1f-3', label: '1F-3' },
 ];
 
 
@@ -338,21 +343,45 @@ function getItemStats(item: Item): string {
 }
 
 function getOffenseMultiplierSum(items: Item[], kind: 'melee' | 'ranged' | 'magical'): number {
+  const appliedBonusNames = new Set<string>();
   const relevant = items.filter(item => {
     if (kind === 'melee') return item.meleeAttack || item.meleeNoA || item.meleeNoABonus;
     if (kind === 'ranged') return item.rangedAttack || item.rangedNoA || item.rangedNoABonus;
     return item.magicalAttack || item.magicalNoA || item.magicalNoABonus;
   });
-  const bonusSum = relevant.reduce((sum, item) => sum + ((item.baseMultiplier ?? 1) - 1), 0);
+
+  const bonusSum = relevant.reduce((sum, item) => {
+    const baseMultiplier = item.baseMultiplier ?? 1;
+    if (baseMultiplier === 1) return sum;
+
+    const percent = Math.round((baseMultiplier - 1) * 1000) / 10;
+    const bonusName = `c.${kind}_attack+${percent}`;
+    if (appliedBonusNames.has(bonusName)) return sum;
+    appliedBonusNames.add(bonusName);
+    return sum + (baseMultiplier - 1);
+  }, 0);
+
   return 1 + bonusSum;
 }
 
 function getDefenseMultiplierSum(items: Item[], kind: 'physical' | 'magical'): number {
+  const appliedBonusNames = new Set<string>();
   const relevant = items.filter(item => {
     if (kind === 'physical') return item.physicalDefense;
     return item.magicalDefense;
   });
-  const bonusSum = relevant.reduce((sum, item) => sum + ((item.baseMultiplier ?? 1) - 1), 0);
+
+  const bonusSum = relevant.reduce((sum, item) => {
+    const baseMultiplier = item.baseMultiplier ?? 1;
+    if (baseMultiplier === 1) return sum;
+
+    const percent = Math.round((baseMultiplier - 1) * 1000) / 10;
+    const bonusName = `c.${kind}_defense+${percent}`;
+    if (appliedBonusNames.has(bonusName)) return sum;
+    appliedBonusNames.add(bonusName);
+    return sum + (baseMultiplier - 1);
+  }, 0);
+
   return Math.max(0.01, 1 - bonusSum);
 }
 
@@ -1154,6 +1183,9 @@ function PartyTab({
   const [partyRarityFilter, setPartyRarityFilter] = useState<RarityFilter>('all');
   const [partySuperRareOnly, setPartySuperRareOnly] = useState(false);
   const [draggingCharacterIndex, setDraggingCharacterIndex] = useState<number | null>(null);
+  const selectedChar = party.characters[selectedCharacter];
+  const equippedItems = selectedChar.equipment.filter((item): item is Item => item !== null);
+
   // Calculate current stats for notification: HP is party-wide, others are per selected character
   const selectedStats = characterStats[selectedCharacter];
   const combatTotals = {
@@ -1165,6 +1197,13 @@ function PartyTab({
     magicalNoA: selectedStats.magicalNoA,
     physDef: Math.floor(selectedStats.physicalDefense),
     magDef: Math.floor(selectedStats.magicalDefense),
+    physicalDefenseResistPercent: Math.round(getDefenseMultiplierSum(equippedItems, 'physical') * 100),
+    magicalDefenseResistPercent: Math.round(getDefenseMultiplierSum(equippedItems, 'magical') * 100),
+    meleeAttackAmp: getOffenseMultiplierSum(equippedItems, 'melee'),
+    rangedAttackAmp: getOffenseMultiplierSum(equippedItems, 'ranged'),
+    magicalAttackAmp: getOffenseMultiplierSum(equippedItems, 'magical'),
+    accuracy: Math.round(selectedStats.accuracyBonus * 1000),
+    evasion: Math.round(selectedStats.evasionBonus * 1000),
     hp: Math.floor(partyStats.hp),
   };
 
@@ -1221,6 +1260,20 @@ function PartyTab({
         const isPositive = combatTotals.magDef > prev.magDef;
         changes.push({ message: `魔防 ${formatNumber(prev.magDef)} → ${formatNumber(combatTotals.magDef)}`, isPositive });
       }
+      if (combatTotals.physicalDefenseResistPercent !== prev.physicalDefenseResistPercent) {
+        const isPositive = combatTotals.physicalDefenseResistPercent < prev.physicalDefenseResistPercent;
+        changes.push({
+          message: `物理防御耐性 ${formatNumber(prev.physicalDefenseResistPercent)}% → ${formatNumber(combatTotals.physicalDefenseResistPercent)}%`,
+          isPositive,
+        });
+      }
+      if (combatTotals.magicalDefenseResistPercent !== prev.magicalDefenseResistPercent) {
+        const isPositive = combatTotals.magicalDefenseResistPercent < prev.magicalDefenseResistPercent;
+        changes.push({
+          message: `魔法防御耐性 ${formatNumber(prev.magicalDefenseResistPercent)}% → ${formatNumber(combatTotals.magicalDefenseResistPercent)}%`,
+          isPositive,
+        });
+      }
       if (combatTotals.hp !== prev.hp) {
         const isPositive = combatTotals.hp > prev.hp;
         changes.push({ message: `HP ${formatNumber(prev.hp)} → ${formatNumber(combatTotals.hp)}`, isPositive });
@@ -1245,9 +1298,29 @@ function PartyTab({
         const isPositive = combatTotals.magicalAtk > prev.magicalAtk;
         changes.push({ message: `魔攻 ${formatNumber(prev.magicalAtk)} → ${formatNumber(combatTotals.magicalAtk)}`, isPositive });
       }
+      if (combatTotals.meleeAttackAmp !== prev.meleeAttackAmp) {
+        const isPositive = combatTotals.meleeAttackAmp > prev.meleeAttackAmp;
+        changes.push({ message: `近接攻撃倍率 x${prev.meleeAttackAmp.toFixed(2)} → x${combatTotals.meleeAttackAmp.toFixed(2)}`, isPositive });
+      }
+      if (combatTotals.rangedAttackAmp !== prev.rangedAttackAmp) {
+        const isPositive = combatTotals.rangedAttackAmp > prev.rangedAttackAmp;
+        changes.push({ message: `遠距離攻撃倍率 x${prev.rangedAttackAmp.toFixed(2)} → x${combatTotals.rangedAttackAmp.toFixed(2)}`, isPositive });
+      }
+      if (combatTotals.magicalAttackAmp !== prev.magicalAttackAmp) {
+        const isPositive = combatTotals.magicalAttackAmp > prev.magicalAttackAmp;
+        changes.push({ message: `魔法攻撃倍率 x${prev.magicalAttackAmp.toFixed(2)} → x${combatTotals.magicalAttackAmp.toFixed(2)}`, isPositive });
+      }
       if (combatTotals.magicalNoA !== prev.magicalNoA) {
         const isPositive = combatTotals.magicalNoA > prev.magicalNoA;
         changes.push({ message: `魔回数 ${formatNumber(prev.magicalNoA)} → ${formatNumber(combatTotals.magicalNoA)}`, isPositive });
+      }
+      if (combatTotals.accuracy !== prev.accuracy) {
+        const isPositive = combatTotals.accuracy > prev.accuracy;
+        changes.push({ message: `命中 ${prev.accuracy >= 0 ? '+' : ''}${formatNumber(prev.accuracy)} → ${combatTotals.accuracy >= 0 ? '+' : ''}${formatNumber(combatTotals.accuracy)}`, isPositive });
+      }
+      if (combatTotals.evasion !== prev.evasion) {
+        const isPositive = combatTotals.evasion > prev.evasion;
+        changes.push({ message: `回避 ${prev.evasion >= 0 ? '+' : ''}${formatNumber(prev.evasion)} → ${combatTotals.evasion >= 0 ? '+' : ''}${formatNumber(combatTotals.evasion)}`, isPositive });
       }
 
       // Send all stat notifications at once (clears previous stat notifications)
@@ -1256,10 +1329,13 @@ function PartyTab({
       }
     }
     prevStatsRef.current = combatTotals;
-  }, [combatTotals.physDef, combatTotals.magDef, combatTotals.hp,
+  }, [combatTotals.physDef, combatTotals.magDef, combatTotals.physicalDefenseResistPercent, combatTotals.magicalDefenseResistPercent, combatTotals.hp,
       combatTotals.meleeAtk, combatTotals.meleeNoA,
       combatTotals.rangedAtk, combatTotals.rangedNoA,
-      combatTotals.magicalAtk, combatTotals.magicalNoA, onAddStatNotifications, selectedCharacter, selectedPartyIndex]);
+      combatTotals.magicalAtk, combatTotals.magicalNoA,
+      combatTotals.meleeAttackAmp, combatTotals.rangedAttackAmp, combatTotals.magicalAttackAmp,
+      combatTotals.accuracy, combatTotals.evasion,
+      onAddStatNotifications, selectedCharacter, selectedPartyIndex]);
   const [pendingEdits, setPendingEdits] = useState<Partial<Character> | null>(null);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
   const [editingDeity, setEditingDeity] = useState(false);
@@ -1311,7 +1387,7 @@ function PartyTab({
     }
   }, [party.deity.name, editingDeity]);
 
-  const char = party.characters[selectedCharacter];
+  const char = selectedChar;
   const stats = characterStats[selectedCharacter];
   const race = RACES.find(r => r.id === char.raceId)!;
   const mainClass = CLASSES.find(c => c.id === char.mainClassId)!;
@@ -1800,6 +1876,7 @@ function PartyTab({
               // Aggregate bonuses - deduplicate multipliers by value before multiplying
               const multiplierValues: Record<string, Set<number>> = {};
               const additive: Record<string, number> = {};
+              const uniqueEvasionBonusNames = new Set<string>();
 
               for (const b of allBonuses) {
                 if (b.type.endsWith('_multiplier')) {
@@ -1809,7 +1886,15 @@ function PartyTab({
                 } else if (['vitality', 'strength', 'intelligence', 'mind', 'equip_slot', 'grit', 'caster', 'pursuit'].includes(b.type)) {
                   additive[b.type] = (additive[b.type] ?? 0) + b.value;
                 } else if (b.type === 'penet' || b.type === 'accuracy' || b.type === 'evasion') {
-                  additive[b.type] = (additive[b.type] ?? 0) + b.value;
+                  if (b.type === 'evasion') {
+                    const bonusName = `c.evasion+${b.value}`;
+                    if (!uniqueEvasionBonusNames.has(bonusName)) {
+                      uniqueEvasionBonusNames.add(bonusName);
+                      additive[b.type] = (additive[b.type] ?? 0) + b.value;
+                    }
+                  } else {
+                    additive[b.type] = (additive[b.type] ?? 0) + b.value;
+                  }
                 }
               }
 

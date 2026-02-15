@@ -51,8 +51,35 @@ interface BonusCollection {
   accuracy: number;
   evasion: number;
   abilities: Map<AbilityId, number>;
+  uniqueEvasionBonusNames: Set<string>;
 }
 
+function formatCBonusValue(value: number): string {
+  return (Math.round(value * 1000000) / 1000000).toString();
+}
+
+function getUniqueCBonusSum(
+  items: Item[],
+  kind: 'physical_defense' | 'magical_defense'
+): number {
+  const appliedBonusNames = new Set<string>();
+  let bonusSum = 0;
+
+  for (const item of items) {
+    const baseMultiplier = item.baseMultiplier ?? 1;
+    if (baseMultiplier === 1) continue;
+    if (kind === 'physical_defense' && !item.physicalDefense) continue;
+    if (kind === 'magical_defense' && !item.magicalDefense) continue;
+
+    const percent = Math.round((baseMultiplier - 1) * 1000) / 10;
+    const bonusName = `c.${kind}+${percent}`;
+    if (appliedBonusNames.has(bonusName)) continue;
+    appliedBonusNames.add(bonusName);
+    bonusSum += baseMultiplier - 1;
+  }
+
+  return bonusSum;
+}
 
 const SUBCLASS_ALLOWED_ABILITY_IDS = new Set<AbilityId>(['unlock']);
 
@@ -118,7 +145,13 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
         collection.accuracy += bonus.value;
         break;
       case 'evasion':
-        collection.evasion += bonus.value;
+        {
+          const bonusName = `c.evasion+${formatCBonusValue(bonus.value)}`;
+          if (!collection.uniqueEvasionBonusNames.has(bonusName)) {
+            collection.uniqueEvasionBonusNames.add(bonusName);
+            collection.evasion += bonus.value;
+          }
+        }
         break;
       case 'ability':
         if (bonus.abilityId) {
@@ -159,6 +192,7 @@ export function computeCharacterStats(
     accuracy: 0,
     evasion: 0,
     abilities: new Map(),
+    uniqueEvasionBonusNames: new Set<string>(),
   };
 
   // Collect bonuses from all sources
@@ -210,6 +244,7 @@ export function computeCharacterStats(
   const rangedNoAFixedBonuses = new Set<number>();
   const magicalNoAFixedBonuses = new Set<number>();
   const meleeNoAFixedBonuses = new Set<number>();
+  const evasionBonusNames = new Set<string>(collection.uniqueEvasionBonusNames);
   let accuracyBonus = collection.accuracy;
   let evasionBonus = collection.evasion;
   let elementalOffense: ElementalOffense = 'none';
@@ -266,7 +301,13 @@ export function computeCharacterStats(
     if (item.rangedNoABonus) rangedNoAFixedBonuses.add(item.rangedNoABonus);
     if (item.magicalNoABonus) magicalNoAFixedBonuses.add(item.magicalNoABonus);
     if (item.accuracyBonus) accuracyBonus += item.accuracyBonus;
-    if (item.evasionBonus) evasionBonus += item.evasionBonus;
+    if (item.evasionBonus) {
+      const bonusName = `c.evasion+${formatCBonusValue(item.evasionBonus)}`;
+      if (!evasionBonusNames.has(bonusName)) {
+        evasionBonusNames.add(bonusName);
+        evasionBonus += item.evasionBonus;
+      }
+    }
     if (item.penetBonus) collection.penet += item.penetBonus;
 
     // Elemental offense from equipment (priority: thunder > ice > fire > none)
@@ -324,13 +365,14 @@ export function computeCharacterStats(
     const multiplier = categoryMult * enhanceMult * baseMult;
     if (item.physicalDefense) {
       physicalDefense += item.physicalDefense * multiplier;
-      if (item.baseMultiplier) physicalDefenseBonus += item.baseMultiplier - 1;
     }
     if (item.magicalDefense) {
       magicalDefense += item.magicalDefense * multiplier;
-      if (item.baseMultiplier) magicalDefenseBonus += item.baseMultiplier - 1;
     }
   }
+
+  physicalDefenseBonus = getUniqueCBonusSum(equippedItems, 'physical_defense');
+  magicalDefenseBonus = getUniqueCBonusSum(equippedItems, 'magical_defense');
 
   physicalDefense = physicalDefense * (baseStats.vitality / 10);
   magicalDefense = magicalDefense * (baseStats.mind / 10);

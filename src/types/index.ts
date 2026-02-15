@@ -227,10 +227,15 @@ export interface Party {
 
 export type ExpeditionDepthLimit =
   | '1f-3'
+  | '1f-4'
   | '2f-3'
+  | '2f-4'
   | '3f-3'
+  | '3f-4'
   | '4f-3'
+  | '4f-4'
   | '5f-3'
+  | '5f-4'
   | 'beforeBoss'
   | 'all';
 
