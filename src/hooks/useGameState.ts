@@ -495,6 +495,7 @@ type GameAction =
   | { type: 'SPEND_PENDING_PROFIT'; partyIndex: number; amount: number }
   | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; itemKey: string | null }
   | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character> }
+  | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number }
   | { type: 'SELL_STACK'; variantKey: string }
   | { type: 'SET_VARIANT_STATUS'; variantKey: string; status: 'notown' }
   | { type: 'MARK_ITEMS_SEEN' }
@@ -1379,6 +1380,37 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'REORDER_PARTY_CHARACTER': {
+      const currentParty = state.parties[state.selectedPartyIndex];
+      const fromIndex = action.fromIndex;
+      const toIndex = action.toIndex;
+
+      if (
+        fromIndex < 0 ||
+        toIndex < 0 ||
+        fromIndex >= currentParty.characters.length ||
+        toIndex >= currentParty.characters.length ||
+        fromIndex === toIndex
+      ) {
+        return state;
+      }
+
+      const reorderedCharacters = [...currentParty.characters];
+      const [movedCharacter] = reorderedCharacters.splice(fromIndex, 1);
+      reorderedCharacters.splice(toIndex, 0, movedCharacter);
+
+      const updatedParties = [...state.parties];
+      updatedParties[state.selectedPartyIndex] = {
+        ...currentParty,
+        characters: reorderedCharacters,
+      };
+
+      return {
+        ...state,
+        parties: updatedParties,
+      };
+    }
+
     case 'SELL_STACK': {
       const currentParty = state.parties[state.selectedPartyIndex];
       const variant = state.global.inventory[action.variantKey];
@@ -1746,6 +1778,10 @@ export function useGameState() {
 
     updateCharacter: useCallback((characterId: number, updates: Partial<Character>) => {
       dispatch({ type: 'UPDATE_CHARACTER', characterId, updates });
+    }, []),
+
+    reorderPartyCharacter: useCallback((fromIndex: number, toIndex: number) => {
+      dispatch({ type: 'REORDER_PARTY_CHARACTER', fromIndex, toIndex });
     }, []),
 
     sellStack: useCallback((variantKey: string) => {
