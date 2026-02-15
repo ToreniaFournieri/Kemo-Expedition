@@ -274,11 +274,14 @@ function calculateCharacterDamage(
   return { damage, totalAttempts: noA, hits };
 }
 
-function hasFirstStrike(charStats: ComputedCharacterStats, phase: BattlePhase): boolean {
+function hasFirstStrike(charStats: ComputedCharacterStats, _phase: BattlePhase): boolean {
   const ability = charStats.abilities.find(a => a.id === 'first_strike');
   if (!ability) return false;
-  if (ability.level === 2) return true; // All phases
-  return phase === 'long'; // Level 1 only long phase
+  return ability.level >= 1;
+}
+
+function getFirstStrikeLevel(charStats: ComputedCharacterStats): number {
+  return charStats.abilities.find(a => a.id === 'first_strike')?.level ?? 0;
 }
 
 function hasDeflection(charStats: ComputedCharacterStats): boolean {
@@ -340,7 +343,7 @@ export function executeBattle(
 
   const createPartyEffectEntry = (
     classId: 'fighter' | 'lord' | 'sage',
-    label: string,
+    label: (level: number) => string,
     noteText: (level: number) => string,
   ): BattleLogEntry | null => {
     let bestLevel = 0;
@@ -361,15 +364,15 @@ export function executeBattle(
     return {
       phase: 'long',
       actor: 'effect',
-      action: `${ownerName}の ${label}！`,
+      action: `${ownerName}の ${label(bestLevel)}！`,
       note: noteText(bestLevel),
     };
   };
 
   const partyEffects = [
-    createPartyEffectEntry('fighter', '守護者', level => `(パーティへの物理ダメージ × ${level === 2 ? '3/5' : '2/3'})`),
-    createPartyEffectEntry('lord', '指揮', level => `(パーティ攻撃力 × ${level === 2 ? '1.6' : '1.3'})`),
-    createPartyEffectEntry('sage', '魔法障壁', level => `(パーティへの魔法ダメージ × ${level === 2 ? '3/5' : '2/3'})`),
+    createPartyEffectEntry('fighter', level => `守護者${level}`, level => `(パーティへの物理ダメージ × ${level === 2 ? '3/5' : '2/3'})`),
+    createPartyEffectEntry('lord', level => `指揮${level}`, level => `(パーティ攻撃力 × ${level === 2 ? '1.6' : '1.3'})`),
+    createPartyEffectEntry('sage', level => `魔法障壁${level}`, level => `(パーティへの魔法ダメージ × ${level === 2 ? '3/5' : '2/3'})`),
   ];
 
   for (const partyEffect of partyEffects) {
@@ -428,33 +431,46 @@ export function executeBattle(
   const phases: BattlePhase[] = ['long', 'mid', 'close'];
 
   for (const phase of phases) {
-    // First strike characters act first
-    const firstStrikeChars = characterStats.filter(cs => hasFirstStrike(cs, phase));
-    for (const cs of firstStrikeChars) {
-      if (enemyHp <= 0) break;
-      const result = calculateCharacterDamage(phase, cs, enemy, partyStats);
-      if (result.totalAttempts > 0) {
-        if (result.damage > 0) {
-          enemyHp -= result.damage;
+    const enemyHasFirstStrike = enemy.abilities.includes('first_strike');
+    const firstStrikeLevel2Chars = characterStats.filter(cs => getFirstStrikeLevel(cs) >= 2);
+    const firstStrikeLevel1Chars = characterStats.filter(cs => getFirstStrikeLevel(cs) === 1);
+
+    const executeFirstStrikeAttacks = (attackers: ComputedCharacterStats[]): void => {
+      const attackType = phase === 'mid' ? '魔法先制攻撃' : '先制攻撃';
+      for (const cs of attackers) {
+        if (enemyHp <= 0) break;
+        const result = calculateCharacterDamage(phase, cs, enemy, partyStats);
+        if (result.totalAttempts > 0) {
+          if (result.damage > 0) {
+            enemyHp -= result.damage;
+          }
+          if (phase === 'close') {
+            triggerEnemyCounter(cs, result.damage);
+          }
+          const char = party.characters.find(c => c.id === cs.characterId);
+          const resonanceLogText = getResonanceLogText(phase, cs, result.hits);
+          log.push({
+            phase,
+            actor: 'character',
+            characterId: cs.characterId,
+            action: `${char?.name ?? '???'} の${attackType}！${resonanceLogText}`,
+            damage: result.damage,
+            hits: result.hits,
+            totalAttempts: result.totalAttempts,
+            isFirstStrike: true,
+            elementalOffense: cs.elementalOffense,
+          });
         }
-        if (phase === 'close') {
-          triggerEnemyCounter(cs, result.damage);
-        }
-        const char = party.characters.find(c => c.id === cs.characterId);
-        const attackType = phase === 'mid' ? '魔法先制攻撃' : '先制攻撃';
-        const resonanceLogText = getResonanceLogText(phase, cs, result.hits);
-        log.push({
-          phase,
-          actor: 'character',
-          characterId: cs.characterId,
-          action: `${char?.name ?? '???'} の${attackType}！${resonanceLogText}`,
-          damage: result.damage,
-          hits: result.hits,
-          totalAttempts: result.totalAttempts,
-          isFirstStrike: true,
-          elementalOffense: cs.elementalOffense,
-        });
       }
+    };
+
+    // First strike priority:
+    // 1) character first_strike Lv2 (always first)
+    // 2) enemy first_strike (if present)
+    // 3) character first_strike Lv1 (only before enemy when enemy lacks first_strike)
+    executeFirstStrikeAttacks(firstStrikeLevel2Chars);
+    if (!enemyHasFirstStrike) {
+      executeFirstStrikeAttacks(firstStrikeLevel1Chars);
     }
 
     // Check if enemy is defeated
@@ -590,6 +606,24 @@ export function executeBattle(
     }
 
     // Check if enemy is defeated after counters
+    if (enemyHp <= 0) {
+      return {
+        phase,
+        partyHp,
+        enemyHp: 0,
+        log,
+        outcome: 'victory',
+        updatedBags: {
+          physicalThreatBag: ctx.physicalThreatBag,
+          magicalThreatBag: ctx.magicalThreatBag,
+        },
+      };
+    }
+
+    if (enemyHasFirstStrike && partyHp > 0 && enemyHp > 0) {
+      executeFirstStrikeAttacks(firstStrikeLevel1Chars);
+    }
+
     if (enemyHp <= 0) {
       return {
         phase,
