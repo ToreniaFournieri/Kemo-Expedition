@@ -21,6 +21,7 @@ import {
   NotificationCategory,
   RoomType,
   EnemyDef,
+  ExpeditionDepthLimit,
 } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
@@ -95,6 +96,11 @@ function getExpeditionStatsWithDefaults(value: unknown) {
     donatedGold: typeof raw.donatedGold === 'number' ? raw.donatedGold : 0,
     savedGold: typeof raw.savedGold === 'number' ? raw.savedGold : 0,
   };
+}
+
+function getExpeditionDepthLimitWithDefault(value: unknown): ExpeditionDepthLimit {
+  const validDepthLimits: ExpeditionDepthLimit[] = ['1f-3', '2f-3', '3f-3', '4f-3', '5f-3', 'beforeBoss', 'all'];
+  return validDepthLimits.includes(value as ExpeditionDepthLimit) ? (value as ExpeditionDepthLimit) : 'all';
 }
 
 function matchesDiaryThreshold(item: Item, threshold: DiarySettings['superRareThreshold']): boolean {
@@ -262,6 +268,7 @@ function loadSavedState(): GameState | null {
             const computed = computePartyStats(party).partyStats;
             party.currentHp = computed.hp;
           }
+          party.expeditionDepthLimit = getExpeditionDepthLimitWithDefault(party.expeditionDepthLimit);
           if (typeof party.pendingProfit !== 'number') party.pendingProfit = 0;
           if (typeof party.deityGold !== 'number') party.deityGold = 0;
           party.expeditionStats = getExpeditionStatsWithDefaults(party.expeditionStats);
@@ -381,6 +388,7 @@ function createInitialParty() {
     deity: createInitialDeity('God of Restoration'),
     characters,
     selectedDungeonId: 1,
+    expeditionDepthLimit: 'all',
     currentHp: 0,
     pendingProfit: 0,
     deityGold: 0,
@@ -427,6 +435,7 @@ function createSecondParty() {
     deity: createInitialDeity('God of Evasion'),
     characters,
     selectedDungeonId: 1,
+    expeditionDepthLimit: 'all',
     currentHp: 0,
     pendingProfit: 0,
     deityGold: 0,
@@ -476,6 +485,7 @@ function createInitialState(): GameState {
 type GameAction =
   | { type: 'SELECT_PARTY'; partyIndex: number }
   | { type: 'SELECT_DUNGEON'; partyIndex: number; dungeonId: number }
+  | { type: 'SET_EXPEDITION_DEPTH_LIMIT'; partyIndex: number; depthLimit: ExpeditionDepthLimit }
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
   | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number }
   | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number }
@@ -793,6 +803,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, parties: updatedParties };
     }
 
+    case 'SET_EXPEDITION_DEPTH_LIMIT': {
+      const updatedParties = [...state.parties];
+      updatedParties[action.partyIndex] = {
+        ...updatedParties[action.partyIndex],
+        expeditionDepthLimit: action.depthLimit,
+      };
+      return { ...state, parties: updatedParties };
+    }
+
     case 'UPDATE_PARTY_DEITY': {
       const normalizedDeityName = normalizeDeityName(action.deityName);
       const isUsedByOtherParty = state.parties.some((party, index) =>
@@ -1030,6 +1049,24 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   action: '撤退',
                   note: 'HPが30%以下のため、戦利品を持ち帰ります。',
                 });
+              } else {
+                const reachedDepthLimit =
+                  (currentParty.expeditionDepthLimit === '1f-3' && floor.floorNumber === 1 && roomIndex === 2)
+                  || (currentParty.expeditionDepthLimit === '2f-3' && floor.floorNumber === 2 && roomIndex === 2)
+                  || (currentParty.expeditionDepthLimit === '3f-3' && floor.floorNumber === 3 && roomIndex === 2)
+                  || (currentParty.expeditionDepthLimit === '4f-3' && floor.floorNumber === 4 && roomIndex === 2)
+                  || (currentParty.expeditionDepthLimit === '5f-3' && floor.floorNumber === 5 && roomIndex === 2)
+                  || (currentParty.expeditionDepthLimit === 'beforeBoss' && floor.floorNumber === 6 && roomIndex === 2);
+
+                if (reachedDepthLimit) {
+                  finalOutcome = 'return';
+                  expeditionEnded = true;
+                  entry.details.push({
+                    phase: 'close',
+                    actor: 'effect',
+                    action: '[末] 探索深度に到達した為帰還します',
+                  });
+                }
               }
             } else if (battleResult.outcome === 'defeat') {
               entries.push(entry);
@@ -1669,6 +1706,10 @@ export function useGameState() {
 
     selectDungeon: useCallback((partyIndex: number, dungeonId: number) => {
       dispatch({ type: 'SELECT_DUNGEON', partyIndex, dungeonId });
+    }, []),
+
+    setExpeditionDepthLimit: useCallback((partyIndex: number, depthLimit: ExpeditionDepthLimit) => {
+      dispatch({ type: 'SET_EXPEDITION_DEPTH_LIMIT', partyIndex, depthLimit });
     }, []),
 
     updatePartyDeity: useCallback((partyIndex: number, deityName: string) => {

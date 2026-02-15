@@ -207,6 +207,7 @@ export interface Party {
   deity: Deity;
   characters: Character[];
   selectedDungeonId: number;
+  expeditionDepthLimit: ExpeditionDepthLimit;
   currentHp: number;
   pendingProfit: number;
   deityGold: number;
@@ -223,6 +224,15 @@ export interface Party {
     savedGold: number;
   };
 }
+
+export type ExpeditionDepthLimit =
+  | '1f-3'
+  | '2f-3'
+  | '3f-3'
+  | '4f-3'
+  | '5f-3'
+  | 'beforeBoss'
+  | 'all';
 
 export interface DiaryLog {
   id: string;
