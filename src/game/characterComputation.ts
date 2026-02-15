@@ -396,7 +396,7 @@ function getAbilityName(id: AbilityId, level: number): string {
     first_strike: '先制攻撃',
     hunter: '狩人',
     defender: '守護者',
-    counter: 'カウンター',
+    counter: '反撃',
     re_attack: '連撃',
     iaigiri: '居合斬り',
     resonance: '共鳴',
@@ -408,7 +408,20 @@ function getAbilityName(id: AbilityId, level: number): string {
     squander: '散財',
     tithe: '十分の一税',
   };
-  if ((id === 'first_strike' || id === 'hunter' || id === 'iaigiri' || id === 'resonance') && level >= 1) {
+  if (
+    (
+      id === 'first_strike'
+      || id === 'hunter'
+      || id === 'defender'
+      || id === 'counter'
+      || id === 're_attack'
+      || id === 'iaigiri'
+      || id === 'resonance'
+      || id === 'command'
+      || id === 'm_barrier'
+    )
+    && level >= 1
+  ) {
     return `${names[id]}${level}`;
   }
   return names[id];

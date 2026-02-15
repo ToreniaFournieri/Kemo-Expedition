@@ -378,7 +378,7 @@ const ABILITY_NAMES: Record<string, string> = {
   first_strike: '先手',
   hunter: '狩人',
   defender: '防御者',
-  counter: 'カウンター',
+  counter: '反撃',
   re_attack: '再攻撃',
   iaigiri: '居合斬り',
   resonance: '共鳴',
