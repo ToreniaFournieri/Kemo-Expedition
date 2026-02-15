@@ -53,6 +53,29 @@ interface BonusCollection {
   abilities: Map<AbilityId, number>;
 }
 
+function getUniqueCBonusSum(
+  items: Item[],
+  kind: 'physical_defense' | 'magical_defense'
+): number {
+  const appliedBonusNames = new Set<string>();
+  let bonusSum = 0;
+
+  for (const item of items) {
+    const baseMultiplier = item.baseMultiplier ?? 1;
+    if (baseMultiplier === 1) continue;
+    if (kind === 'physical_defense' && !item.physicalDefense) continue;
+    if (kind === 'magical_defense' && !item.magicalDefense) continue;
+
+    const percent = Math.round((baseMultiplier - 1) * 1000) / 10;
+    const bonusName = `c.${kind}+${percent}`;
+    if (appliedBonusNames.has(bonusName)) continue;
+    appliedBonusNames.add(bonusName);
+    bonusSum += baseMultiplier - 1;
+  }
+
+  return bonusSum;
+}
+
 
 const SUBCLASS_ALLOWED_ABILITY_IDS = new Set<AbilityId>(['unlock']);
 
@@ -324,13 +347,14 @@ export function computeCharacterStats(
     const multiplier = categoryMult * enhanceMult * baseMult;
     if (item.physicalDefense) {
       physicalDefense += item.physicalDefense * multiplier;
-      if (item.baseMultiplier) physicalDefenseBonus += item.baseMultiplier - 1;
     }
     if (item.magicalDefense) {
       magicalDefense += item.magicalDefense * multiplier;
-      if (item.baseMultiplier) magicalDefenseBonus += item.baseMultiplier - 1;
     }
   }
+
+  physicalDefenseBonus = getUniqueCBonusSum(equippedItems, 'physical_defense');
+  magicalDefenseBonus = getUniqueCBonusSum(equippedItems, 'magical_defense');
 
   physicalDefense = physicalDefense * (baseStats.vitality / 10);
   magicalDefense = magicalDefense * (baseStats.mind / 10);
