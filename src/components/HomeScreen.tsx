@@ -2207,13 +2207,13 @@ function ExpeditionTab({
                   <select
                     value={party.expeditionDepthLimit}
                     onChange={(e) => onSetExpeditionDepthLimit(partyIndex, e.target.value as ExpeditionDepthLimit)}
-                    className="w-24 border border-gray-300 rounded px-2 py-1 text-sm"
+                    className="w-20 sm:w-24 border border-gray-300 rounded px-2 py-1 text-sm"
                   >
                     {EXPEDITION_DEPTH_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </select>
-                  <button onClick={() => onTriggerSortie(partyIndex)} disabled={selectedDungeonGate?.locked} className={`px-2 py-1 text-white rounded font-medium text-xs sm:text-sm whitespace-nowrap ${selectedDungeonGate?.locked ? 'bg-gray-400 cursor-not-allowed' : 'bg-sub hover:bg-blue-600'}`}>出撃</button>
+                  <button onClick={() => onTriggerSortie(partyIndex)} disabled={selectedDungeonGate?.locked} className={`px-3 py-2 text-white rounded font-medium text-sm leading-none whitespace-nowrap ${selectedDungeonGate?.locked ? 'bg-gray-400 cursor-not-allowed' : 'bg-sub hover:bg-blue-600'}`}>出撃</button>
                 </div>
                 {getNextGoalText(party) && <div className="text-sm text-gray-700">{getNextGoalText(party)}</div>}
               </div>
