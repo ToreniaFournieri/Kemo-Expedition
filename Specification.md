@@ -394,7 +394,7 @@
 
 - `x.expedition` layout overview:
 
-| `x.floor` | `x.room` | `x.room_type` | `x.floor_HP_mult` | `x.floor_atk_mult` | `x.floor_NoA_mult` | `x.floor_atk_amp_mult` | `x.floor_def_mult` | `x.exp_def_amp_mult` | `x.Spawn_pool`, drops | `x.key_concept` |
+| `x.floor` | `x.room` | `x.room_type` | `x.floor_HP_mult` | `x.floor_atk_mult` | `x.floor_NoA_mult` | `x.floor_atk_amp_mult` | `x.floor_def_mult` | `x.floor_def_amp_mult` | `x.Spawn_pool`, drops | `x.key_concept` |
 |----|----|----|-----|-----|-----|-----|-----|-----|-----|-----|
 | 1 | 1-3 | `x.battle_Normal` | x1.0 | x1.0 | x1.0 | x1.0 | x1.0 | x1.0 | pool_1 | easy farming |
 | 1 | 4 | `x.battle_Elite` | x1.50 | x1.50 | x1.0 | x1.0 | x1.5 | x1.0 | fixed Elite. rare  `i.sword`, `i.armor` | Class:Rogue. Checks if you have equipped items properly. |
@@ -492,7 +492,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 - `f.NoA` :  master value x `x.exp_NoA_mult` x `x.floor_NoA_mult`
 - `f.offense_amplifier` :  master value x `x.exp_atk_amp_mult` x `x.floor_atk_amp_mult`
 - `f.defense` :  master value x `x.exp_def_mult`  x `x.floor_def_mult` 
-- `f.defense_amplifier` : 1.0 x `x.exp_def_amp_mult` x `x.exp_def_amp_mult`
+- `f.defense_amplifier` : 1.0 x `x.exp_def_amp_mult` x `x.floor_def_amp_mult`  //for physical and magical defense
 - `f.elemental_offense_attribute` :  not scale
 - `f.elemental_resistance_attribute` : not scale
 - `f.penet_multiplier`: not scale
@@ -937,7 +937,7 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 [効] ラビの 魔法障壁！ (パーティへの魔法ダメージ × 2/3)
 
 [遠] ミミ の攻撃！(3/4回)              (🏹 120)
-[魔] セルヴァ の魔法攻撃！(共鳴1:威力10%増幅)(2/2回)         (🪄 100)
+[魔] セルヴァ の魔法攻撃！(2/2回, 共鳴+10%))         (🪄 100)
 [近] 敵が キツネ丸 に攻撃！(2/2回)       (⚔ 36)
 [近] 敵が ミミ に攻撃したが外れた！(0/1回)
 [近] キツネ丸 のカウンター！(2/4回)        (⚔ 367)
