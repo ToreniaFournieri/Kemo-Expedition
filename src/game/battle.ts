@@ -177,7 +177,7 @@ function getResonanceLogText(
   }
 
   const bonusPercent = getResonanceBonusPerHit(resonance.level) * successfulHits;
-  return `(共鳴${resonance.level}:威力${bonusPercent}%増幅)`;
+  return `(共鳴+${bonusPercent}%)`;
 }
 
 // Hit detection for physical attacks (LONG and CLOSE phases)

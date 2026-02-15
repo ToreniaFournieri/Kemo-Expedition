@@ -2272,6 +2272,7 @@ function ExpeditionTab({
                                 const totalAttempts = log.totalAttempts ?? 0;
                                 const allMissed = totalAttempts > 0 && hits === 0;
                                 const hitDisplay = totalAttempts > 0 ? `(${hits}/${totalAttempts}回)` : '';
+                                const resonanceMatch = /(\(共鳴\+\d+%\))$/.exec(log.action);
 
                                 let actionText: string;
                                 if (log.actor === 'effect') {
@@ -2282,13 +2283,20 @@ function ExpeditionTab({
                                   actionText = allMissed ? `${log.action.replace(/ の.*$/, '')} の攻撃は外れた！` : log.action;
                                 }
 
+                                const compactHitDisplay = hitDisplay && resonanceMatch
+                                  ? `(${hits}/${totalAttempts}回, ${resonanceMatch[1].slice(1, -1)})`
+                                  : hitDisplay;
+                                const actionDisplay = resonanceMatch && !allMissed
+                                  ? actionText.replace(/\(共鳴\+\d+%\)$/, '')
+                                  : actionText;
+
                                 return (
                                   <div key={j} className="flex justify-between text-gray-600">
                                     <span>
                                       <span className="text-gray-400">[{phaseLabel}]</span>{' '}
-                                      {actionText}
+                                      {actionDisplay}
                                       {log.note && <span className="text-gray-400"> {log.note}</span>}
-                                      {hitDisplay && <span className="text-gray-400">{hitDisplay}</span>}
+                                      {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                     </span>
                                     {log.damage !== undefined && log.damage > 0 && (
                                       <span className={isEnemy ? 'text-accent' : 'text-sub'}>({emoji} {formatNumber(log.damage)})</span>
@@ -2831,6 +2839,7 @@ function DiaryTab({
                               const totalAttempts = battleLog.totalAttempts ?? 0;
                               const allMissed = totalAttempts > 0 && hits === 0;
                               const hitDisplay = totalAttempts > 0 ? `(${hits}/${totalAttempts}回)` : '';
+                              const resonanceMatch = /(\(共鳴\+\d+%\))$/.exec(battleLog.action);
 
                               let actionText: string;
                               if (battleLog.actor === 'effect') {
@@ -2850,13 +2859,20 @@ function DiaryTab({
                                 }
                               }
 
+                              const compactHitDisplay = hitDisplay && resonanceMatch
+                                ? `(${hits}/${totalAttempts}回, ${resonanceMatch[1].slice(1, -1)})`
+                                : hitDisplay;
+                              const actionDisplay = resonanceMatch && !allMissed
+                                ? actionText.replace(/\(共鳴\+\d+%\)$/, '')
+                                : actionText;
+
                               return (
                                 <div key={j} className="flex justify-between text-gray-600">
                                   <span>
                                     <span className="text-gray-400">[{phaseLabel}]</span>{' '}
-                                    {actionText}
+                                    {actionDisplay}
                                     {battleLog.note && <span className="text-gray-400"> {battleLog.note}</span>}
-                                    {hitDisplay && <span className="text-gray-400">{hitDisplay}</span>}
+                                    {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                   </span>
                                   {battleLog.damage !== undefined && battleLog.damage > 0 && (
                                     <span className={isEnemy ? 'text-accent' : 'text-sub'}>
