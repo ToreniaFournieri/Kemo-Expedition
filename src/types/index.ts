@@ -375,6 +375,7 @@ export interface BattleState {
 
 export interface BattleLogEntry {
   phase: BattlePhase;
+  initiativeRoll?: number;
   actor: 'party' | 'enemy' | 'character' | 'effect' | 'deity';
   characterId?: number;
   action: string;
