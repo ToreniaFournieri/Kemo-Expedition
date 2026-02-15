@@ -361,7 +361,7 @@
 |`God of Fortification` | 防備の神 | Add `c.physical_defense+10`, `c.magical_defense+10` to each party member.|
 |`God of Precision`| 命中の神 | Add `c.accuracy+0.020` and `c.evasion-0.005` to each party member.|
 |`God of Evasion`| 回避の神 | Add `c.evasion+0.015` to each party member.|
-|`God of Resonance`| 反響の神 | Upgrade all `a.resonance` values by +1 tier. Add `c.magical_defense-5`to each party member.|
+|`God of Resonance`| 共鳴の神 | Upgrade all `a.resonance` values by +1 tier. Add `c.magical_defense-5`to each party member.|
 
 
 ### 2.3 Expedition & Enemies
