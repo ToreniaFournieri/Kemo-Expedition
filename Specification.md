@@ -105,9 +105,11 @@
   - If phase is CLOSE,
     - If character.`a.iaigiri`, return v x sum of ( `c.melee_attack+v` )
   - Else return 1.0 x  sum of (`c.melee_attack+v` or `c.ranged_attack+v` or `c.magical_attack+v` )
+  - *note: `c.melee_attack+v`,  `c.ranged_attack+v`, or `c.magical_attack+v`  Only one single bonuses(c.) of the **exact** same name applies.  
 
 - character.`f.defense_amplifier` (phase: )
   - return max(0.01, 1.00 - sum of (`c.physical_defense+v` or `c.magical_defense+v` ))
+  - *note: `c.physical_defense+v`, `c.magical_defense+v`  Only one single bonuses(c.) of the **exact** same name applies.  
 
 
 - character.`f.accuracy_amplifier` (phase: )
