@@ -915,7 +915,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const hasUnreadDiary = unreadDiaryCount > 0;
   const unreadDiaryBadgeLabel = unreadDiaryCount >= 11 ? '10+' : `${unreadDiaryCount}`;
   const envLabel = getEnvLabel();
-  const versionLabel = envLabel ? `v0.2.3 (${envLabel})` : 'v0.2.3';
+  const versionLabel = envLabel ? `v0.2.5 (${envLabel})` : 'v0.2.5';
 
   return (
     <div className={`flex flex-col h-screen ${HEADER_HEIGHT_CLASS}`}>
@@ -1299,7 +1299,7 @@ function PartyTab({
 
       <div className="mb-3 text-sm flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <div className="text-gray-600">PTレベル: {formatNumber(party.level)}, 経験値: {formatNumber(party.experience)}/{formatNumber(party.level < 29 ? LEVEL_EXP[party.level] : party.experience)}</div>
+          <div className="text-gray-600">PTレベル: {formatNumber(party.level)}, 経験値: {formatNumber(party.experience)}/{party.level < 29 ? formatNumber(LEVEL_EXP[party.level]) : '（レベル上限）'}</div>
           <div className="font-medium mt-1">{displayedDeityName} (ランク{getDeityRank(displayedDeityGold)})</div>
           <div className="text-xs text-gray-600 mt-1">効果:{getDeityEffectDescription(displayedDeityName, displayedDeityGold)}</div>
         </div>
