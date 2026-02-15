@@ -2488,7 +2488,8 @@ function ExpeditionTab({
                             <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
                               <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
                               {entry.details.map((log, j) => {
-                                const phaseLabel = log.actor === 'deity' ? '末' : log.actor === 'effect' ? '効' : log.phase === 'long' ? '遠' : log.phase === 'mid' ? '魔' : '近';
+                                const phaseBaseLabel = log.actor === 'deity' ? '末' : log.actor === 'effect' ? '効' : log.phase === 'long' ? '遠' : log.phase === 'mid' ? '魔' : '近';
+                                const phaseLabel = log.initiativeRoll !== undefined && log.actor !== 'deity' && log.actor !== 'effect' ? `${phaseBaseLabel}${log.initiativeRoll}` : phaseBaseLabel;
                                 const emoji = log.elementalOffense === 'fire' ? '🔥' : log.elementalOffense === 'thunder' ? '⚡' : log.elementalOffense === 'ice' ? '❄️' : log.phase === 'long' ? '🏹' : log.phase === 'mid' ? '🪄' : '⚔';
                                 const isEnemy = log.actor === 'enemy';
                                 const hits = log.hits ?? 0;
@@ -3048,7 +3049,7 @@ function DiaryTab({
                           <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
                             <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
                             {entry.details.map((battleLog, j) => {
-                              const phaseLabel = battleLog.actor === 'deity'
+                              const phaseBaseLabel = battleLog.actor === 'deity'
                                 ? '末'
                                 : battleLog.actor === 'effect'
                                   ? '効'
@@ -3057,6 +3058,9 @@ function DiaryTab({
                                     : battleLog.phase === 'mid'
                                       ? '魔'
                                       : '近';
+                              const phaseLabel = battleLog.initiativeRoll !== undefined && battleLog.actor !== 'deity' && battleLog.actor !== 'effect'
+                                ? `${phaseBaseLabel}${battleLog.initiativeRoll}`
+                                : phaseBaseLabel;
                               const getPhaseEmoji = () => {
                                 if (battleLog.elementalOffense === 'fire') return '🔥';
                                 if (battleLog.elementalOffense === 'thunder') return '⚡';
