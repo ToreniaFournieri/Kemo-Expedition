@@ -281,30 +281,30 @@
 
 - **predisposition(性格):**
 
-|predisposition | bonus |
-|-----|-----------|
-|頑強 (Sturdy)|`b.vitality+2`,  `c.armor_x1.1`|
-|俊敏 (Agile)| `c.evasion+0.01` |
-|聡明 (Brilliant)|`c.wand_x1.2`|
-|器用 (Dexterous)|`c.accuracy+0.01`, `c.catalyst_x1.2`|
-|騎士道 (Chivalric)|`c.sword_x1.2`, `c.bolt_x1.1`|
-|士魂 (Shikon)|`b.strength+1`, `c.katana_x1.1`, `c.arrow_x1.2`|
-|追求 (Pursuing)|`b.intelligence+2`, `c.robe_x1.1`|
-|商才 (Canny)|`c.equip_slot+1`|
-|忍耐(Persistent)|`b.mind+1`, `c.robe_x1.1`|
+|predisposition | short word | bonus |
+|-----|---|-----------|
+|頑強 (Sturdy)| 頑 |`b.vitality+2`,  `c.armor_x1.1`|
+|俊敏 (Agile)| 俊 | `c.evasion+0.01` |
+|聡明 (Brilliant)| 聡 |`c.wand_x1.2`|
+|器用 (Dexterous)|　器  |`c.accuracy+0.01`, `c.catalyst_x1.2`|
+|騎士道 (Chivalric)| 騎 |`c.sword_x1.2`, `c.bolt_x1.1`|
+|士魂 (Shikon)| 士 |`b.strength+1`, `c.katana_x1.1`, `c.arrow_x1.2`|
+|追求 (Pursuing)| 追 |`b.intelligence+2`, `c.robe_x1.1`|
+|商才 (Canny)| 商 |`c.equip_slot+1`|
+|忍耐(Persistent)| 耐 |`b.mind+1`, `c.robe_x1.1`|
 
 - **lineage(家系):**
 
-|lineage | bonus |
-|-----|-----------|
-|鋼誓の家（House of Steel Oath）|`c.sword_x1.3` |
-|戦魂の家（House of War Spirit）|`c.katana_x1.2`, `b.mind+1`|
-|遠眼の家（House of Far Sight）|`c.arrow_x1.3`|
-|不動の家（House of the Unmoving）|`c.armor_x1.2`, `b.vitality+1` |
-|砕手の家（House of the Breaking Hand）|`c.gauntlet_x1.2`, `b.strength+1`|
-|導智の家（House of Guiding Thought）|`c.wand_x1.3`|
-|秘理の家（House of Hidden Principles）|`c.robe_x1.2`, `b.intelligence+1`|
-|継誓の家（House of Inherited Oaths）|`c.shield_x1.2`, `b.vitality+1`|
+|lineage | short word | bonus |
+|-----|---|-----------|
+|鋼誓の家（House of Steel Oath）| 鋼 |`c.sword_x1.3` |
+|戦魂の家（House of War Spirit）| 魂 |`c.katana_x1.2`, `b.mind+1`|
+|遠眼の家（House of Far Sight）| 眼 |`c.arrow_x1.3`|
+|不動の家（House of the Unmoving）| 不 |`c.armor_x1.2`, `b.vitality+1` |
+|砕手の家（House of the Breaking Hand）| 砕 |`c.gauntlet_x1.2`, `b.strength+1`|
+|導智の家（House of Guiding Thought）| 導 |`c.wand_x1.3`|
+|秘理の家（House of Hidden Principles）| 秘 |`c.robe_x1.2`, `b.intelligence+1`|
+|継誓の家（House of Inherited Oaths）| 継 |`c.shield_x1.2`, `b.vitality+1`|
 
 - **classes:**
 
@@ -1232,6 +1232,7 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 ```
 🐶
 戦(剣)
+頑/不
 ```
 
 - Current status, abilities, bonuses
