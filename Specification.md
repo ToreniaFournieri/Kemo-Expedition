@@ -122,8 +122,8 @@
 | `a.m-barrier`1 | 魔法障壁1 | 味方全体が受ける魔法ダメージを **2/3倍** にする |
 | `a.m-barrier`2 | 魔法障壁2 | 味方全体が受ける魔法ダメージを **3/5倍** にする |
 | `a.deflection` | 矢払い |　敵の遠距離攻撃の命中率を **10ポイント低下** させる |
-| `a.first-strike`1 | 先制攻撃1 | **遠距離攻撃時**に敵より先に行動する |
-| `a.first-strike`2 | 先制攻撃2 | **全フェーズ**で敵より先に行動する |
+| `a.first-strike`1 | 先制攻撃1 | 敵より先に行動する |
+| `a.first-strike`2 | 先制攻撃2 | 敵の**先制攻撃より**早く先に行動する |
 | `a.tithe` | 十分の一税 | 遠征利益の **+10%** を寄付額に上乗せする |
 | `a.null-counter` | 反撃無効化 | 反撃を無効化する |
 
@@ -272,7 +272,7 @@
 |ルピニアン(Lupinian) | `c.equip_slot+1`, `c.katana_x1.3`  |9,12,8,7| 🐺Wolf |
 |ヴァルピニアン(Vulpinian) |`c.equip_slot+1`, `c.sword_x1.3`, `c.grimoire_x1.2` |10,10,12,8| 🦊Fox |
 |ウルサン(Ursan) |`c.equip_slot+2`, `c.catalyst_x1.2` |13,11,6,7| 🐻Bear |
-|フェリディアン(Felidian) |`c.robe_x1.3`, `a.first-strike`1: Acts faster than enemy at CLOSE phase |9,9,10,12| 😺Cat |
+|フェリディアン(Felidian) |`c.robe_x1.3`, `a.first-strike`1 |9,9,10,12| 😺Cat |
 |マステリド(Mustelid) | `c.gauntlet_x1.3`, `c.arrow_x1.3` |10,10,9,11| 🦡Ferret |
 |レポリアン(Leporian) | `c.archery_x1.3`,  `c.armor_x1.3` |9,8,11,10| 🐰Rabbit |
 |セルヴィン(Cervin) |`c.wand_x1.3`, `c.shield_x1.2` |6,7,13,10| 🦌Deer |
@@ -318,7 +318,7 @@
 |狩人(狩,Ranger) | `c.pursuit+2`, `c.arrow_x1.4` | `a.hunter`1: Reduces row-based damage decay from 15% to 10% per step. |`a.hunter`2: Reduces row-based damage decay from 15% to 7% per step. | 
 |魔法使い(魔,Wizard) | `c.caster+1`, `c.wand_x1.4` | `a.resonance`1:All hits +5% damage per `d.magical_NoA`. | `a.resonance`2:All hits +8% damage per `d.magical_NoA`. | 
 |賢者(賢,Sage) | `c.caster+2`, `c.robe_x1.4`, `c.grimoire_x1.2`, `c.equip_slot+2` | `a.m-barrier`1: Incoming magical damage to party × 2/3 | `a.m-barrier`2: Incoming magical damage to party × 3/5 | 
-|盗賊(盗,Rogue) | `c.pursuit+1`, `c.unlock` additional reward chance |`a.deflection`: During LONG phase only, opponent ranged attacks suffer −10 percentage points to hit chance. `a.first-strike`1: Acts faster than enemy at CLOSE phase |`a.deflection`: During LONG phase only, opponent ranged attacks suffer −10 percentage points to hit chance. `a.first-strike`2: Acts faster than enemy at All phases | 
+|盗賊(盗,Rogue) | `c.pursuit+1`, `c.unlock` additional reward chance |`a.deflection`: During LONG phase only, opponent ranged attacks suffer −10 percentage points to hit chance. `a.first-strike`1: Acts faster than enemy |`a.deflection`: During LONG phase only, opponent ranged attacks suffer −10 percentage points to hit chance. `a.first-strike`2: Acts faster than enemy, even enemy has `a.first-strike`1. | 
 |巡礼者(巡,Pilgrim) | `c.caster+1`, `c.grit+1`, `c.evasion+0.02`, `c.equip_slot+1` |`a.tithe`: Adds +10% of expedition profit to donation. |`a.null-counter`: Negate counter attack. `a.tithe`: Adds +10% of expedition profit to donation. | 
 
 - If `main_class` and  `sub_class` are same class, then it turns into master class, applies master bonus.
@@ -1057,7 +1057,10 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
     - Player party attacks
 
 **First strike**
-- IF character.`a.first-strike`, the character acts before enemy action. (using `f.damage_calculation`)
+- IF character.`a.first-strike`2, the character acts before enemy.`a.first-strike`1 action. (using `f.damage_calculation`)
+- IF enemy.`a.first-strike`1, the enemy acts before character.`a.first-strike`1 action. (using `f.damage_calculation`)
+- IF character.`a.first-strike`1, the character acts  acts before enemy action. (using `f.damage_calculation`)
+
 
 **Enemy action**
 - Enemy always moves first.
