@@ -110,8 +110,8 @@
 | `a.m-barrier`1 | 魔法障壁1 | 味方全体が受ける魔法ダメージを **2/3倍** にする |
 | `a.m-barrier`2 | 魔法障壁2 | 味方全体が受ける魔法ダメージを **3/5倍** にする |
 | `a.deflection` | 矢払い |　敵の遠距離攻撃の命中率を **10ポイント低下** させる |
-| `a.first-strike`1 | 先制攻撃1 | 敵より先に行動する |
-| `a.first-strike`2 | 先制攻撃2 | 敵の**先制攻撃より**早く先に行動する |
+| `a.first-strike`1 | 先制攻撃1 | 行動が速くなります |
+| `a.first-strike`2 | 先制攻撃2 | 行動がとても速くなります |
 | `a.tithe` | 十分の一税 | 遠征利益の **+10%** を寄付額に上乗せする |
 | `a.null-counter` | 反撃無効化 | 反撃を無効化する |
 
@@ -306,7 +306,7 @@
 |狩人(狩,Ranger) | `c.pursuit+2`, `c.arrow_x1.4` | `a.hunter`1: Reduces row-based damage decay from 15% to 10% per step. |`a.hunter`2: Reduces row-based damage decay from 15% to 7% per step. | 
 |魔法使い(魔,Wizard) | `c.caster+1`, `c.wand_x1.4` | `a.resonance`1:All hits +5% damage per `d.magical_NoA`. | `a.resonance`2:All hits +8% damage per `d.magical_NoA`. | 
 |賢者(賢,Sage) | `c.caster+2`, `c.robe_x1.4`, `c.grimoire_x1.2`, `c.equip_slot+2` | `a.m-barrier`1: Incoming magical damage to party × 2/3 | `a.m-barrier`2: Incoming magical damage to party × 3/5 | 
-|盗賊(盗,Rogue) | `c.pursuit+1`, `c.unlock` additional reward chance |`a.deflection`: During LONG phase only, opponent ranged attacks suffer −10 percentage points to hit chance. `a.first-strike`1: Acts faster than enemy |`a.deflection`: During LONG phase only, opponent ranged attacks suffer −10 percentage points to hit chance. `a.first-strike`2: Acts faster than enemy, even enemy has `a.first-strike`1. | 
+|盗賊(盗,Rogue) | `c.pursuit+1`, `c.unlock` additional reward chance |`a.deflection`: During LONG phase only, opponent ranged attacks suffer −10 percentage points to hit chance. `a.first-strike`1 |`a.deflection`: During LONG phase only, opponent ranged attacks suffer −10 percentage points to hit chance. `a.first-strike`2. | 
 |巡礼者(巡,Pilgrim) | `c.caster+1`, `c.grit+1`, `c.evasion+0.02`, `c.equip_slot+1` |`a.tithe`: Adds +10% of expedition profit to donation. |`a.null-counter`: Negate counter attack. `a.tithe`: Adds +10% of expedition profit to donation. | 
 
 - If `main_class` and  `sub_class` are same class, then it turns into master class, applies master bonus.
