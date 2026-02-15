@@ -12,6 +12,7 @@
 
 ## 2. CONSTANTS & DATA
 - @Specification_CONSTANTS_&_DATA.md
+- @Specification_Master.md
 
 ## 3. INITIALIZATION 
 
