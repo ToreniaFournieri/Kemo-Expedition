@@ -1016,7 +1016,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               }
               entry.details.push(...buildRewardLogEntries(rewardResult.rewardLogEntries, unlockActorName));
 
-              if (isRetreatHpThresholdReached(currentHp, partyStats.hp)) {
+              const isFinalBossRoom =
+                roomDef.type === 'battle_Boss'
+                && floor.floorNumber === dungeon.floors.length
+                && roomIndex === floor.rooms.length - 1;
+
+              if (!isFinalBossRoom && isRetreatHpThresholdReached(currentHp, partyStats.hp)) {
                 finalOutcome = 'retreat';
                 expeditionEnded = true;
                 entry.details.push({
