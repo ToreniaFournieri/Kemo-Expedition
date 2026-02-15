@@ -40,6 +40,7 @@ interface HomeScreenProps {
     spendPendingProfit: (partyIndex: number, amount: number) => void;
     equipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
     updateCharacter: (characterId: number, updates: Partial<Character>) => void;
+    reorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
     sellStack: (variantKey: string) => void;
     setVariantStatus: (variantKey: string, status: 'notown') => void;
     markDiaryLogSeen: (logId: string) => void;
@@ -281,6 +282,11 @@ function getItemStats(item: Item): string {
   };
   const formatSigned = (value: number, suffix: string = ''): string =>
     `${value >= 0 ? '+' : ''}${formatDecimal(value)}${suffix}`;
+  const getScaledNoA = (value: number): number => {
+    // Positive NoA item bonuses scale with enhancement + super rare multipliers.
+    // Penalty style values should remain fixed (same as runtime stat computation).
+    return value > 0 ? value * multiplier : value;
+  };
   const formatBracket = (label: string, value: number, suffix: string = ''): string =>
     `[${label}${formatSigned(value, suffix)}]`;
 
@@ -299,17 +305,17 @@ function getItemStats(item: Item): string {
   }
   if (item.meleeNoA || item.meleeNoABonus) {
     const baseNoA = item.meleeNoA ?? 0;
-    if (baseNoA !== 0) stats.push(`近回数${formatSigned(baseNoA)}`);
+    if (baseNoA !== 0) stats.push(`近回数${formatSigned(getScaledNoA(baseNoA))}`);
     if (item.meleeNoABonus) stats.push(formatBracket('近回数', item.meleeNoABonus));
   }
   if (item.rangedNoA || item.rangedNoABonus) {
     const baseNoA = item.rangedNoA ?? 0;
-    if (baseNoA !== 0) stats.push(`遠回数${formatSigned(baseNoA)}`);
+    if (baseNoA !== 0) stats.push(`遠回数${formatSigned(getScaledNoA(baseNoA))}`);
     if (item.rangedNoABonus) stats.push(formatBracket('遠回数', item.rangedNoABonus));
   }
   if (item.magicalNoA || item.magicalNoABonus) {
     const baseNoA = item.magicalNoA ?? 0;
-    if (baseNoA !== 0) stats.push(`魔回数${formatSigned(baseNoA)}`);
+    if (baseNoA !== 0) stats.push(`魔回数${formatSigned(getScaledNoA(baseNoA))}`);
     if (item.magicalNoABonus) stats.push(formatBracket('魔回数', item.magicalNoABonus));
   }
   if (item.physicalDefense) stats.push(`物防+${Math.floor(item.physicalDefense * multiplier)}`);
@@ -447,6 +453,29 @@ const CLASS_SHORT_NAMES: Record<string, string> = {
   sage: '賢',
   rogue: '盗',
   pilgrim: '巡',
+};
+
+const PREDISPOSITION_SHORT_NAMES: Record<string, string> = {
+  sturdy: '頑',
+  agile: '俊',
+  brilliant: '聡',
+  dexterous: '器',
+  chivalric: '騎',
+  shikon: '士',
+  pursuing: '追',
+  canny: '商',
+  persistent: '耐',
+};
+
+const LINEAGE_SHORT_NAMES: Record<string, string> = {
+  steel_oath: '鋼',
+  war_spirit: '魂',
+  far_sight: '眼',
+  unmoving: '不',
+  breaking_hand: '砕',
+  guiding_thought: '導',
+  hidden_principles: '秘',
+  inherited_oaths: '継',
 };
 
 // Category name mapping
@@ -1021,6 +1050,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             editingCharacter={editingCharacter}
             setEditingCharacter={setEditingCharacter}
             onUpdateCharacter={actions.updateCharacter}
+            onReorderPartyCharacter={actions.reorderPartyCharacter}
             onEquipItem={actions.equipItem}
             onAddStatNotifications={actions.addStatNotifications}
             onSelectParty={actions.selectParty}
@@ -1092,6 +1122,7 @@ function PartyTab({
   editingCharacter,
   setEditingCharacter,
   onUpdateCharacter,
+  onReorderPartyCharacter,
   onEquipItem,
   onAddStatNotifications,
   onSelectParty,
@@ -1105,10 +1136,11 @@ function PartyTab({
   partyStats: ReturnType<typeof computePartyStats>['partyStats'];
   characterStats: ReturnType<typeof computePartyStats>['characterStats'];
   selectedCharacter: number;
-  setSelectedCharacter: (i: number) => void;
+  setSelectedCharacter: Dispatch<SetStateAction<number>>;
   editingCharacter: number | null;
-  setEditingCharacter: (i: number | null) => void;
+  setEditingCharacter: Dispatch<SetStateAction<number | null>>;
   onUpdateCharacter: (id: number, updates: Partial<Character>) => void;
+  onReorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
   onEquipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
   onAddStatNotifications: (changes: Array<{ message: string; isPositive: boolean }>) => void;
   onSelectParty: (partyIndex: number) => void;
@@ -1121,6 +1153,7 @@ function PartyTab({
   const [showBonusHelp, setShowBonusHelp] = useState(false);
   const [partyRarityFilter, setPartyRarityFilter] = useState<RarityFilter>('all');
   const [partySuperRareOnly, setPartySuperRareOnly] = useState(false);
+  const [draggingCharacterIndex, setDraggingCharacterIndex] = useState<number | null>(null);
   // Calculate current stats for notification: HP is party-wide, others are per selected character
   const selectedStats = characterStats[selectedCharacter];
   const combatTotals = {
@@ -1138,6 +1171,27 @@ function PartyTab({
   const prevStatsRef = useRef<typeof combatTotals | null>(null);
   const prevSelectedCharRef = useRef(selectedCharacter);
   const prevSelectedPartyRef = useRef(selectedPartyIndex);
+  const touchDraggingCharacterIndexRef = useRef<number | null>(null);
+
+  const getReorderedIndex = useCallback((currentIndex: number, fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return currentIndex;
+    if (currentIndex === fromIndex) return toIndex;
+    if (fromIndex < toIndex && currentIndex > fromIndex && currentIndex <= toIndex) return currentIndex - 1;
+    if (fromIndex > toIndex && currentIndex >= toIndex && currentIndex < fromIndex) return currentIndex + 1;
+    return currentIndex;
+  }, []);
+
+  const reorderCharacter = useCallback((fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return;
+
+    onReorderPartyCharacter(fromIndex, toIndex);
+    setSelectedCharacter((currentIndex) => getReorderedIndex(currentIndex, fromIndex, toIndex));
+    setEditingCharacter((currentIndex) => {
+      if (currentIndex === null) return null;
+      return getReorderedIndex(currentIndex, fromIndex, toIndex);
+    });
+    setSelectingSlot(null);
+  }, [getReorderedIndex, onReorderPartyCharacter, setEditingCharacter, setSelectedCharacter]);
 
   // Watch for stat changes after equipment - send individual notification per stat change
   useEffect(() => {
@@ -1380,6 +1434,12 @@ function PartyTab({
         )}
       </div>
 
+      {editingDeity && (
+        <div className="mb-3 text-xs text-gray-500">
+          キャラクターアイコン長押しで隊列変更
+        </div>
+      )}
+
       {/* Character selector */}
       <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
         {party.characters.map((c, i) => {
@@ -1389,17 +1449,65 @@ function PartyTab({
           const isMaster = c.mainClassId === c.subClassId;
           const mcShort = CLASS_SHORT_NAMES[mc.id] ?? mc.name;
           const scShort = CLASS_SHORT_NAMES[sc.id] ?? sc.name;
+          const predispositionShort = PREDISPOSITION_SHORT_NAMES[c.predispositionId] ?? c.predispositionId;
+          const lineageShort = LINEAGE_SHORT_NAMES[c.lineageId] ?? c.lineageId;
           return (
             <button
               key={c.id}
+              type="button"
+              draggable
+              onDragStart={(event) => {
+                setDraggingCharacterIndex(i);
+                event.dataTransfer.effectAllowed = 'move';
+                event.dataTransfer.setData('text/plain', String(i));
+              }}
+              onDragOver={(event) => {
+                event.preventDefault();
+                event.dataTransfer.dropEffect = 'move';
+              }}
+              onDrop={(event) => {
+                event.preventDefault();
+                const sourceIndex = Number(event.dataTransfer.getData('text/plain'));
+                reorderCharacter(Number.isNaN(sourceIndex) ? i : sourceIndex, i);
+                setDraggingCharacterIndex(null);
+              }}
+              onDragEnd={() => {
+                setDraggingCharacterIndex(null);
+              }}
+              onTouchStart={() => {
+                touchDraggingCharacterIndexRef.current = i;
+                setDraggingCharacterIndex(i);
+              }}
+              onTouchMove={(event) => {
+                const touch = event.touches[0];
+                if (!touch) return;
+                const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                const dropTarget = target?.closest<HTMLButtonElement>('[data-party-character-index]');
+                if (!dropTarget) return;
+                const toIndex = Number(dropTarget.dataset.partyCharacterIndex);
+                const fromIndex = touchDraggingCharacterIndexRef.current;
+                if (fromIndex === null || Number.isNaN(toIndex) || fromIndex === toIndex) return;
+
+                reorderCharacter(fromIndex, toIndex);
+                touchDraggingCharacterIndexRef.current = toIndex;
+                setDraggingCharacterIndex(toIndex);
+              }}
+              onTouchEnd={() => {
+                touchDraggingCharacterIndexRef.current = null;
+                setDraggingCharacterIndex(null);
+              }}
               onClick={() => { setSelectedCharacter(i); setSelectingSlot(null); }}
               className={`flex-shrink-0 p-2 rounded-lg border ${
                 i === selectedCharacter ? 'border-sub bg-blue-50' : 'border-gray-200'
-              }`}
+              } ${draggingCharacterIndex === i ? 'opacity-70 border-sub' : ''}`}
+              data-party-character-index={i}
             >
               <div className="text-2xl text-center">{r.emoji}</div>
               <div className="text-xs text-gray-400 text-center">
                 {mcShort}({isMaster ? '師' : scShort})
+              </div>
+              <div className="text-xs text-gray-400 text-center">
+                {predispositionShort}/{lineageShort}
               </div>
             </button>
           );
