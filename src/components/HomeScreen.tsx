@@ -1328,12 +1328,7 @@ function PartyTab({
     }
   }, [availableCategories, equipCategory]);
 
-  const displayedDeityName = editingDeity ? pendingDeityName : party.deity.name;
   const normalizedCurrentDeityName = normalizeDeityName((party.deity.name ?? '').trim());
-  const normalizedDisplayedDeityName = normalizeDeityName((displayedDeityName ?? '').trim());
-  const displayedDeityGold = editingDeity
-    ? (deityDonations[normalizedDisplayedDeityName] ?? 0)
-    : (deityDonations[normalizedCurrentDeityName] ?? 0);
 
 
   return (
@@ -1373,14 +1368,34 @@ function PartyTab({
         })}
       </div>
 
-      <div className="mb-3 text-sm flex items-center justify-between gap-2">
+      <div className="mb-3 text-sm flex items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="text-gray-600">PTレベル: {formatNumber(party.level)}, 経験値: {formatNumber(party.experience)}/{party.level < 29 ? formatNumber(LEVEL_EXP[party.level]) : '（レベル上限）'}</div>
-          <div className="font-medium mt-1">{displayedDeityName} (ランク{getDeityRank(displayedDeityGold)})</div>
-          <div className="text-xs text-gray-600 mt-1">効果:{getDeityEffectDescription(displayedDeityName, displayedDeityGold)}</div>
+          <div className="font-medium mt-1">{party.deity.name} (ランク{getDeityRank(deityDonations[normalizedCurrentDeityName] ?? 0)})</div>
+          <div className="text-xs text-gray-600 mt-1">効果:{getDeityEffectDescription(party.deity.name, deityDonations[normalizedCurrentDeityName] ?? 0)}</div>
         </div>
         {editingDeity ? (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col items-end gap-1">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  onUpdatePartyDeity(selectedPartyIndex, pendingDeityName);
+                  setEditingDeity(false);
+                }}
+                className="text-xs text-sub border border-sub rounded px-3 py-1 min-w-[3.5rem]"
+              >
+                完了
+              </button>
+              <button
+                onClick={() => {
+                  setPendingDeityName(party.deity.name);
+                  setEditingDeity(false);
+                }}
+                className="text-xs text-gray-600 border border-gray-300 rounded px-3 py-1 min-w-[3.5rem]"
+              >
+                取消
+              </button>
+            </div>
             <select
               value={pendingDeityName}
               onChange={(e) => setPendingDeityName(e.target.value)}
@@ -1402,24 +1417,6 @@ function PartyTab({
                 );
               })}
             </select>
-            <button
-              onClick={() => {
-                onUpdatePartyDeity(selectedPartyIndex, pendingDeityName);
-                setEditingDeity(false);
-              }}
-              className="text-xs text-sub border border-sub rounded px-3 py-1 min-w-[3.5rem]"
-            >
-              完了
-            </button>
-            <button
-              onClick={() => {
-                setPendingDeityName(party.deity.name);
-                setEditingDeity(false);
-              }}
-              className="text-xs text-gray-600 border border-gray-300 rounded px-3 py-1 min-w-[3.5rem]"
-            >
-              取消
-            </button>
           </div>
         ) : (
           <button
