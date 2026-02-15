@@ -2206,7 +2206,7 @@ function ExpeditionTab({
                   </select>
                   <button onClick={() => onTriggerSortie(partyIndex)} disabled={selectedDungeonGate?.locked} className={`px-3 py-1 text-white rounded font-medium text-sm ${selectedDungeonGate?.locked ? 'bg-gray-400 cursor-not-allowed' : 'bg-sub hover:bg-blue-600'}`}>出撃</button>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-700">
+                <div className="flex items-center justify-end gap-2 text-sm text-gray-700">
                   <span className="shrink-0">探索深度</span>
                   <select
                     value={party.expeditionDepthLimit}
