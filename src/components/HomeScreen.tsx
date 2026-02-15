@@ -3383,10 +3383,7 @@ function SettingTab({
                 const displayEnemy = getDisplayEnemy(enemy, selectedBestiaryDungeon, group.floorNumber, group.groupType);
                 const enemyClass = ENEMY_CLASS_LABELS[displayEnemy.enemyClass] ?? '不明';
                 const enemyExpanded = !!expandedEnemies[displayEnemy.id];
-                const physicalDefensePercent = 100;
-                const magicalDefensePercent = displayEnemy.physicalDefense > 0
-                  ? (displayEnemy.magicalDefense / displayEnemy.physicalDefense) * 100
-                  : 100;
+                const defenseAmplifierPercent = displayEnemy.defenseAmplifier * 100;
                 return (
                   <div key={displayEnemy.id} className="mt-2 border border-gray-100 rounded">
                     <button
@@ -3429,8 +3426,8 @@ function SettingTab({
 
                             const defenseRows: string[] = [
                               `属性: ${ENEMY_ELEMENT_LABELS[displayEnemy.elementalOffense] ?? '無'} (x1.0)`,
-                              formatEnemyDefenseLine('物理防御', displayEnemy.physicalDefense, physicalDefensePercent),
-                              formatEnemyDefenseLine('魔法防御', displayEnemy.magicalDefense, magicalDefensePercent),
+                              formatEnemyDefenseLine('物理防御', displayEnemy.physicalDefense, defenseAmplifierPercent),
+                              formatEnemyDefenseLine('魔法防御', displayEnemy.magicalDefense, defenseAmplifierPercent),
                               `回避: ${formatNumber(Math.round(displayEnemy.evasionBonus * 1000))}`,
                             ];
 
