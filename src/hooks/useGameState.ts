@@ -99,7 +99,7 @@ function getExpeditionStatsWithDefaults(value: unknown) {
 }
 
 function getExpeditionDepthLimitWithDefault(value: unknown): ExpeditionDepthLimit {
-  const validDepthLimits: ExpeditionDepthLimit[] = ['1f-3', '2f-3', '3f-3', '4f-3', '5f-3', 'beforeBoss', 'all'];
+  const validDepthLimits: ExpeditionDepthLimit[] = ['1f-3', '1f-4', '2f-3', '2f-4', '3f-3', '3f-4', '4f-3', '4f-4', '5f-3', '5f-4', 'beforeBoss', 'all'];
   return validDepthLimits.includes(value as ExpeditionDepthLimit) ? (value as ExpeditionDepthLimit) : 'all';
 }
 
@@ -1053,10 +1053,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               } else {
                 const reachedDepthLimit =
                   (currentParty.expeditionDepthLimit === '1f-3' && floor.floorNumber === 1 && roomIndex === 2)
+                  || (currentParty.expeditionDepthLimit === '1f-4' && floor.floorNumber === 1 && roomIndex === 3)
                   || (currentParty.expeditionDepthLimit === '2f-3' && floor.floorNumber === 2 && roomIndex === 2)
+                  || (currentParty.expeditionDepthLimit === '2f-4' && floor.floorNumber === 2 && roomIndex === 3)
                   || (currentParty.expeditionDepthLimit === '3f-3' && floor.floorNumber === 3 && roomIndex === 2)
+                  || (currentParty.expeditionDepthLimit === '3f-4' && floor.floorNumber === 3 && roomIndex === 3)
                   || (currentParty.expeditionDepthLimit === '4f-3' && floor.floorNumber === 4 && roomIndex === 2)
+                  || (currentParty.expeditionDepthLimit === '4f-4' && floor.floorNumber === 4 && roomIndex === 3)
                   || (currentParty.expeditionDepthLimit === '5f-3' && floor.floorNumber === 5 && roomIndex === 2)
+                  || (currentParty.expeditionDepthLimit === '5f-4' && floor.floorNumber === 5 && roomIndex === 3)
                   || (currentParty.expeditionDepthLimit === 'beforeBoss' && floor.floorNumber === 6 && roomIndex === 2);
 
                 if (reachedDepthLimit) {
