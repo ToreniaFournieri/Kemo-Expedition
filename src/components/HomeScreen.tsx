@@ -2193,7 +2193,7 @@ function ExpeditionTab({
 
             {isLogExpanded && (
               <div className="space-y-2 mb-3">
-                <div className="grid grid-cols-[max-content_minmax(0,1fr)] items-center gap-x-2 gap-y-2 text-sm text-gray-700">
+                <div className="grid grid-cols-[minmax(0,1fr)_max-content] items-center gap-x-6 gap-y-2 text-sm text-gray-700">
                   <select
                     value={party.selectedDungeonId}
                     onChange={(e) => onSelectDungeon(partyIndex, Number(e.target.value))}
@@ -2204,9 +2204,7 @@ function ExpeditionTab({
                       return <option key={dungeon.id} value={dungeon.id} disabled={gateState.locked}>{dungeon.name} {gateState.locked ? '🔒' : ''}</option>;
                     })}
                   </select>
-                  <div className="flex items-center">
-                    <button onClick={() => onTriggerSortie(partyIndex)} disabled={selectedDungeonGate?.locked} className={`px-3 py-1 text-white rounded font-medium text-sm ${selectedDungeonGate?.locked ? 'bg-gray-400 cursor-not-allowed' : 'bg-sub hover:bg-blue-600'}`}>出撃</button>
-                  </div>
+                  <button onClick={() => onTriggerSortie(partyIndex)} disabled={selectedDungeonGate?.locked} className={`px-3 py-1 text-white rounded font-medium text-sm ${selectedDungeonGate?.locked ? 'bg-gray-400 cursor-not-allowed' : 'bg-sub hover:bg-blue-600'}`}>出撃</button>
                   <div className="flex items-center justify-end gap-2 justify-self-end">
                     <span>探索深度</span>
                     <select
