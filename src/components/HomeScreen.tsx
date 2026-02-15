@@ -450,6 +450,29 @@ const CLASS_SHORT_NAMES: Record<string, string> = {
   pilgrim: '巡',
 };
 
+const PREDISPOSITION_SHORT_NAMES: Record<string, string> = {
+  sturdy: '頑',
+  agile: '俊',
+  brilliant: '聡',
+  dexterous: '器',
+  chivalric: '騎',
+  shikon: '士',
+  pursuing: '追',
+  canny: '商',
+  persistent: '耐',
+};
+
+const LINEAGE_SHORT_NAMES: Record<string, string> = {
+  steel_oath: '鋼',
+  war_spirit: '魂',
+  far_sight: '眼',
+  unmoving: '不',
+  breaking_hand: '砕',
+  guiding_thought: '導',
+  hidden_principles: '秘',
+  inherited_oaths: '継',
+};
+
 // Category name mapping
 const CATEGORY_NAMES: Record<string, string> = {
   sword: '剣',
@@ -1421,6 +1444,8 @@ function PartyTab({
           const isMaster = c.mainClassId === c.subClassId;
           const mcShort = CLASS_SHORT_NAMES[mc.id] ?? mc.name;
           const scShort = CLASS_SHORT_NAMES[sc.id] ?? sc.name;
+          const predispositionShort = PREDISPOSITION_SHORT_NAMES[c.predispositionId] ?? c.predispositionId;
+          const lineageShort = LINEAGE_SHORT_NAMES[c.lineageId] ?? c.lineageId;
           return (
             <button
               key={c.id}
@@ -1475,6 +1500,9 @@ function PartyTab({
               <div className="text-2xl text-center">{r.emoji}</div>
               <div className="text-xs text-gray-400 text-center">
                 {mcShort}({isMaster ? '師' : scShort})
+              </div>
+              <div className="text-xs text-gray-400 text-center">
+                {predispositionShort}/{lineageShort}
               </div>
             </button>
           );
