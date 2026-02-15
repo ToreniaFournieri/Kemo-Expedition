@@ -157,7 +157,7 @@ const EXPEDITION_DEPTH_OPTIONS: Array<{ value: ExpeditionDepthLimit; label: stri
   { value: '3f-3', label: '3F-3まで' },
   { value: '4f-3', label: '4F-3まで' },
   { value: '5f-3', label: '5F-3まで' },
-  { value: 'beforeBoss', label: 'ボス直前まで' },
+  { value: 'beforeBoss', label: 'ボス前まで' },
   { value: 'all', label: '全て' },
 ];
 
@@ -2193,31 +2193,27 @@ function ExpeditionTab({
 
             {isLogExpanded && (
               <div className="space-y-2 mb-3">
-                <div className="grid grid-cols-[minmax(0,1fr)_max-content] items-center gap-x-6 gap-y-2 text-sm text-gray-700">
+                <div className="flex items-center justify-end gap-2 text-sm text-gray-700">
                   <select
                     value={party.selectedDungeonId}
                     onChange={(e) => onSelectDungeon(partyIndex, Number(e.target.value))}
-                    className="border border-gray-300 rounded px-2 py-1 text-sm justify-self-end text-right"
+                    className="border border-gray-300 rounded px-2 py-1 text-sm text-right"
                   >
                     {DUNGEONS.map(dungeon => {
                       const gateState = getDungeonEntryGateState(party, dungeon);
                       return <option key={dungeon.id} value={dungeon.id} disabled={gateState.locked}>{dungeon.name} {gateState.locked ? '🔒' : ''}</option>;
                     })}
                   </select>
+                  <select
+                    value={party.expeditionDepthLimit}
+                    onChange={(e) => onSetExpeditionDepthLimit(partyIndex, e.target.value as ExpeditionDepthLimit)}
+                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                  >
+                    {EXPEDITION_DEPTH_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
                   <button onClick={() => onTriggerSortie(partyIndex)} disabled={selectedDungeonGate?.locked} className={`px-3 py-1 text-white rounded font-medium text-sm ${selectedDungeonGate?.locked ? 'bg-gray-400 cursor-not-allowed' : 'bg-sub hover:bg-blue-600'}`}>出撃</button>
-                  <div className="flex items-center justify-end gap-2 justify-self-end">
-                    <span>探索深度</span>
-                    <select
-                      value={party.expeditionDepthLimit}
-                      onChange={(e) => onSetExpeditionDepthLimit(partyIndex, e.target.value as ExpeditionDepthLimit)}
-                      className="border border-gray-300 rounded px-2 py-1 text-sm"
-                    >
-                      {EXPEDITION_DEPTH_OPTIONS.map((option) => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div aria-hidden="true" />
                 </div>
                 {getNextGoalText(party) && <div className="text-sm text-gray-700">{getNextGoalText(party)}</div>}
               </div>
