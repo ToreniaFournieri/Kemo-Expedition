@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, type Dispatch, type SetStateAction } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { DUNGEONS } from '../data/dungeons';
 import { RACES } from '../data/races';
@@ -30,6 +30,7 @@ interface HomeScreenProps {
   actions: {
     selectParty: (partyIndex: number) => void;
     selectDungeon: (partyIndex: number, dungeonId: number) => void;
+    setExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
     runExpedition: (partyIndex: number) => void;
     finalizeDiaryLog: (partyIndex: number) => void;
     updatePartyDeity: (partyIndex: number, deityName: string) => void;
@@ -149,6 +150,17 @@ const DIARY_THRESHOLD_OPTIONS: Array<{ value: DiaryRarityThreshold; label: strin
   { value: 6, label: '究極' },
   { value: 'none', label: 'なし' },
 ];
+
+const EXPEDITION_DEPTH_OPTIONS: Array<{ value: ExpeditionDepthLimit; label: string }> = [
+  { value: '1f-3', label: '1F-3まで' },
+  { value: '2f-3', label: '2F-3まで' },
+  { value: '3f-3', label: '3F-3まで' },
+  { value: '4f-3', label: '4F-3まで' },
+  { value: '5f-3', label: '5F-3まで' },
+  { value: 'beforeBoss', label: 'ボス直前まで' },
+  { value: 'all', label: '全て' },
+];
+
 
 function parseDiaryThreshold(value: string): DiaryRarityThreshold {
   if (value === 'all' || value === 'none') return value;
@@ -1022,6 +1034,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
           <ExpeditionTab
             state={state}
             onSelectDungeon={actions.selectDungeon}
+            onSetExpeditionDepthLimit={actions.setExpeditionDepthLimit}
             partyCycles={partyCycles}
             onTriggerSortie={triggerSortie}
             expandedLogParty={expeditionExpandedLogParty}
@@ -2086,6 +2099,7 @@ function PartyTab({
 function ExpeditionTab({
   state,
   onSelectDungeon,
+  onSetExpeditionDepthLimit,
   partyCycles,
   onTriggerSortie,
   expandedLogParty,
@@ -2095,6 +2109,7 @@ function ExpeditionTab({
 }: {
   state: GameState;
   onSelectDungeon: (partyIndex: number, dungeonId: number) => void;
+  onSetExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
   partyCycles: Record<number, PartyCycleRuntime>;
   onTriggerSortie: (partyIndex: number) => void;
   expandedLogParty: number | null;
@@ -2178,11 +2193,11 @@ function ExpeditionTab({
 
             {isLogExpanded && (
               <div className="space-y-2 mb-3">
-                <div className="flex items-center gap-2">
+                <div className="grid grid-cols-[minmax(0,1fr)_max-content] items-center gap-x-6 gap-y-2 text-sm text-gray-700">
                   <select
                     value={party.selectedDungeonId}
                     onChange={(e) => onSelectDungeon(partyIndex, Number(e.target.value))}
-                    className="border border-gray-300 rounded px-2 py-1 text-sm flex-1"
+                    className="border border-gray-300 rounded px-2 py-1 text-sm justify-self-end text-right"
                   >
                     {DUNGEONS.map(dungeon => {
                       const gateState = getDungeonEntryGateState(party, dungeon);
@@ -2190,6 +2205,19 @@ function ExpeditionTab({
                     })}
                   </select>
                   <button onClick={() => onTriggerSortie(partyIndex)} disabled={selectedDungeonGate?.locked} className={`px-3 py-1 text-white rounded font-medium text-sm ${selectedDungeonGate?.locked ? 'bg-gray-400 cursor-not-allowed' : 'bg-sub hover:bg-blue-600'}`}>出撃</button>
+                  <div className="flex items-center justify-end gap-2 justify-self-end">
+                    <span>探索深度</span>
+                    <select
+                      value={party.expeditionDepthLimit}
+                      onChange={(e) => onSetExpeditionDepthLimit(partyIndex, e.target.value as ExpeditionDepthLimit)}
+                      className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    >
+                      {EXPEDITION_DEPTH_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div aria-hidden="true" />
                 </div>
                 {getNextGoalText(party) && <div className="text-sm text-gray-700">{getNextGoalText(party)}</div>}
               </div>

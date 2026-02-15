@@ -947,6 +947,7 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 [末] 再生の神の効果！(HP回復+25)
 [末] 消耗の神の効果！(HP消耗-10)
 [末] イタチの解錠 石板の盾 を獲得した！(自動売却対象: 10G)
+[末] 探索深度に到達した為帰還します
 ```
 
 ## 6. BATTLE
@@ -1405,6 +1406,10 @@ displays [遠距離攻撃:矢,ボ,弓]
 #### 8.4 Expedition
 - If 自動周回 is ON, it repeats repart to the dungeon **every 5 seconds** (for this version). Default is OFF.
 
+- **Expedition Depth Limit (探索深度)**
+  - Players can set a depth limit; when the party reaches the selected floor, it stops the expedition and returns home automatically.
+  - Selectable Options : 1F-3まで/2F-3まで/3F-3まで/4F-3まで/5F-3まで/ボス直前まで/全て (default: 全て)
+
 ```
           (Right-Aligned)
            [一斉出撃] 自動周回 ON/OFF
@@ -1413,6 +1418,7 @@ PT1ルピニアンの断崖踏破▼
 (column 1)      (Column 2)
 HP (HP bar, blue)    移動中(state progress bar)
 ルピニアンの断崖(pull down list)  出撃
+探索深度　　全て
 次の目標: ルピニアンの断崖の神魔レアアイテム 0/1 でヴァルピニアンの樹林帯 開放
 Lv: 29 | 再生の神 | +2,856EXP | +134G
 
