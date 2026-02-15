@@ -969,7 +969,7 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 
 **functions of attack**
 
-- `f.resonance_amplifier`(actor: ,hit: )
+- `f.resonance_amplifier`(actor: ,successful hit: n )
   	If actor.`a.resonance`1, return 1.0 + (0.05 x (n - 1))   
   	If actor.`a.resonance`2, return 1.0 + (0.08 x (n - 1))
   	If actor.`a.resonance`3, return 1.0 + (0.11 x (n - 1))
