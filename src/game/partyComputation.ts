@@ -188,7 +188,7 @@ export function computePartyStats(party: Party): {
   for (const [id, level] of partyAbilitiesMap) {
     abilities.push({
       id,
-      name: getAbilityName(id),
+      name: getAbilityName(id, level),
       level,
       description: '',
     });
@@ -242,7 +242,7 @@ export function computePartyStats(party: Party): {
   };
 }
 
-function getAbilityName(id: AbilityId): string {
+function getAbilityName(id: AbilityId, level: number): string {
   const names: Record<AbilityId, string> = {
     first_strike: '先制攻撃',
     hunter: '狩人',
@@ -259,5 +259,8 @@ function getAbilityName(id: AbilityId): string {
     squander: '散財',
     tithe: '十分の一税',
   };
+  if ((id === 'iaigiri' || id === 'resonance') && level >= 1) {
+    return `${names[id]}${level}`;
+  }
   return names[id];
 }

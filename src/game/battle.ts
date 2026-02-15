@@ -131,7 +131,15 @@ function getResonanceAmplifier(resonanceLevel: number | undefined, hitNumber: nu
     return 1.0;
   }
 
-  if (resonanceLevel >= 3) {
+  if (resonanceLevel >= 5) {
+    return 1.0 + (0.15 * (hitNumber - 1));
+  }
+
+  if (resonanceLevel === 4) {
+    return 1.0 + (0.13 * (hitNumber - 1));
+  }
+
+  if (resonanceLevel === 3) {
     return 1.0 + (0.11 * (hitNumber - 1));
   }
 

@@ -6,7 +6,7 @@ export const DEITY_OPTIONS = [
   { key: 'God of Fortification', name: '防備の神' },
   { key: 'God of Precision', name: '命中の神' },
   { key: 'God of Evasion', name: '回避の神' },
-  { key: 'God of Resonance', name: '反響の神' },
+  { key: 'God of Resonance', name: '共鳴の神' },
 ] as const;
 
 export type DeityKey = typeof DEITY_OPTIONS[number]['key'];
@@ -23,6 +23,9 @@ const DEITY_KEY_BY_NAME: Record<string, DeityKey> = DEITY_OPTIONS.reduce((acc, d
   acc[deity.name] = deity.key;
   return acc;
 }, {} as Record<string, DeityKey>);
+
+// Backward compatibility for older save data.
+DEITY_KEY_BY_NAME['反響の神'] = 'God of Resonance';
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
@@ -67,10 +70,11 @@ function upgradeResonanceAbility(abilities: Ability[], upgradeTiers: number): Ab
       return ability;
     }
 
-    const nextLevel = Math.min(3, ability.level + upgradeTiers);
-    const perNoA = nextLevel === 3 ? '11' : nextLevel === 2 ? '8' : '5';
+    const nextLevel = Math.min(5, ability.level + upgradeTiers);
+    const perNoA = nextLevel === 5 ? '15' : nextLevel === 4 ? '13' : nextLevel === 3 ? '11' : nextLevel === 2 ? '8' : '5';
     return {
       ...ability,
+      name: `共鳴${nextLevel}`,
       level: nextLevel,
       description: `全攻撃ヒット毎に魔攻撃回数×${perNoA}%の追加補正`,
     };
