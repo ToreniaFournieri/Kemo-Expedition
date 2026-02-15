@@ -2193,11 +2193,11 @@ function ExpeditionTab({
 
             {isLogExpanded && (
               <div className="space-y-2 mb-3">
-                <div className="flex items-center justify-end gap-2 text-sm text-gray-700">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 text-sm text-gray-700">
                   <select
                     value={party.selectedDungeonId}
                     onChange={(e) => onSelectDungeon(partyIndex, Number(e.target.value))}
-                    className="border border-gray-300 rounded px-2 py-1 text-sm text-right"
+                    className="min-w-0 w-full border border-gray-300 rounded px-2 py-1 text-sm"
                   >
                     {DUNGEONS.map(dungeon => {
                       const gateState = getDungeonEntryGateState(party, dungeon);
@@ -2207,13 +2207,13 @@ function ExpeditionTab({
                   <select
                     value={party.expeditionDepthLimit}
                     onChange={(e) => onSetExpeditionDepthLimit(partyIndex, e.target.value as ExpeditionDepthLimit)}
-                    className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    className="w-24 border border-gray-300 rounded px-2 py-1 text-sm"
                   >
                     {EXPEDITION_DEPTH_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </select>
-                  <button onClick={() => onTriggerSortie(partyIndex)} disabled={selectedDungeonGate?.locked} className={`px-3 py-1 text-white rounded font-medium text-sm ${selectedDungeonGate?.locked ? 'bg-gray-400 cursor-not-allowed' : 'bg-sub hover:bg-blue-600'}`}>出撃</button>
+                  <button onClick={() => onTriggerSortie(partyIndex)} disabled={selectedDungeonGate?.locked} className={`px-2 py-1 text-white rounded font-medium text-xs sm:text-sm whitespace-nowrap ${selectedDungeonGate?.locked ? 'bg-gray-400 cursor-not-allowed' : 'bg-sub hover:bg-blue-600'}`}>出撃</button>
                 </div>
                 {getNextGoalText(party) && <div className="text-sm text-gray-700">{getNextGoalText(party)}</div>}
               </div>
