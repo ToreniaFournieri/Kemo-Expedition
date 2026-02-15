@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, type Dispatch, type SetStateAction } from 'react';
 import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit } from '../types';
 import { computePartyStats } from '../game/partyComputation';
-import { DUNGEONS } from '../data/dungeons';
+import { DUNGEONS, getFloorRoomMultipliers } from '../data/dungeons';
 import { RACES } from '../data/races';
 import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
@@ -3123,6 +3123,9 @@ function SettingTab({
   const formatEnemyDefenseLine = (label: string, defense: number, percent: number) =>
     `${label}: ${formatNumber(defense)} (${percent.toFixed(0)}%)`;
 
+  const formatEnemyDefenseAmplifierLine = (defenseAmplifier: number) =>
+    `防御補正: x${defenseAmplifier.toFixed(2)} (${Math.round(defenseAmplifier * 100)}%)`;
+
   const ENEMY_ELEMENT_LABELS: Record<string, string> = {
     none: '無',
     fire: '炎',
@@ -3150,13 +3153,16 @@ function SettingTab({
     pilgrim: '巡礼者',
   };
 
+  const getEncounterRoomType = (groupType: 'boss' | 'elite' | 'normal') =>
+    groupType === 'boss' ? 'battle_Boss' : groupType === 'elite' ? 'battle_Elite' : 'battle_Normal';
+
   const getDisplayEnemy = (
     enemy: EnemyDef,
     dungeon: Dungeon,
     floorNumber: number,
     groupType: 'boss' | 'elite' | 'normal'
   ): EnemyDef => {
-    const roomType = groupType === 'boss' ? 'battle_Boss' : groupType === 'elite' ? 'battle_Elite' : 'battle_Normal';
+    const roomType = getEncounterRoomType(groupType);
     return applyEnemyEncounterScaling(enemy, dungeon, floorNumber, roomType);
   };
 
@@ -3380,6 +3386,9 @@ function SettingTab({
             <div key={group.key} className="bg-white rounded border border-gray-200 p-2">
               <div className="text-xs text-gray-500 font-medium mb-1">{group.label}</div>
               {group.enemies.map(enemy => {
+                const roomType = getEncounterRoomType(group.groupType);
+                const roomMultipliers = getFloorRoomMultipliers(group.floorNumber, roomType);
+                const expeditionMultipliers = selectedBestiaryDungeon.enemyMultipliers;
                 const displayEnemy = getDisplayEnemy(enemy, selectedBestiaryDungeon, group.floorNumber, group.groupType);
                 const enemyClass = ENEMY_CLASS_LABELS[displayEnemy.enemyClass] ?? '不明';
                 const enemyExpanded = !!expandedEnemies[displayEnemy.id];
@@ -3387,6 +3396,22 @@ function SettingTab({
                 const magicalDefensePercent = displayEnemy.physicalDefense > 0
                   ? (displayEnemy.magicalDefense / displayEnemy.physicalDefense) * 100
                   : 100;
+                const totalHpMultiplier = expeditionMultipliers.hp * roomMultipliers.hp;
+                const totalAttackMultiplier = expeditionMultipliers.attack * roomMultipliers.attack;
+                const totalNoaMultiplier = expeditionMultipliers.noa * roomMultipliers.noa;
+                const totalAttackAmplifierMultiplier = expeditionMultipliers.attackAmplifier * roomMultipliers.attackAmplifier;
+                const totalDefenseMultiplier = expeditionMultipliers.defense * roomMultipliers.defense;
+                const totalDefenseAmplifierMultiplier = expeditionMultipliers.defenseAmplifier * roomMultipliers.defenseAmplifier;
+                const enemyTypeExperienceMultiplier = group.groupType === 'boss' ? 5 : group.groupType === 'elite' ? 2 : 1;
+                const multiplierRows: string[] = [
+                  `HP倍率: x${totalHpMultiplier.toFixed(2)} (遠征x${expeditionMultipliers.hp.toFixed(2)} × 階層x${roomMultipliers.hp.toFixed(2)})`,
+                  `攻撃倍率: x${totalAttackMultiplier.toFixed(2)} (遠征x${expeditionMultipliers.attack.toFixed(2)} × 階層x${roomMultipliers.attack.toFixed(2)})`,
+                  `回数倍率: x${totalNoaMultiplier.toFixed(2)} (遠征x${expeditionMultipliers.noa.toFixed(2)} × 階層x${roomMultipliers.noa.toFixed(2)})`,
+                  `攻撃補正倍率: x${totalAttackAmplifierMultiplier.toFixed(2)} (遠征x${expeditionMultipliers.attackAmplifier.toFixed(2)} × 階層x${roomMultipliers.attackAmplifier.toFixed(2)})`,
+                  `防御倍率: x${totalDefenseMultiplier.toFixed(2)} (遠征x${expeditionMultipliers.defense.toFixed(2)} × 階層x${roomMultipliers.defense.toFixed(2)})`,
+                  `防御補正倍率: x${totalDefenseAmplifierMultiplier.toFixed(2)} (遠征x${expeditionMultipliers.defenseAmplifier.toFixed(2)} × 階層x${roomMultipliers.defenseAmplifier.toFixed(2)})`,
+                  `経験値倍率: x${(expeditionMultipliers.experience * enemyTypeExperienceMultiplier).toFixed(2)} (遠征x${expeditionMultipliers.experience.toFixed(2)} × 種別x${enemyTypeExperienceMultiplier.toFixed(2)})`,
+                ];
                 return (
                   <div key={displayEnemy.id} className="mt-2 border border-gray-100 rounded">
                     <button
@@ -3431,8 +3456,10 @@ function SettingTab({
                               `属性: ${ENEMY_ELEMENT_LABELS[displayEnemy.elementalOffense] ?? '無'} (x1.0)`,
                               formatEnemyDefenseLine('物理防御', displayEnemy.physicalDefense, physicalDefensePercent),
                               formatEnemyDefenseLine('魔法防御', displayEnemy.magicalDefense, magicalDefensePercent),
+                              formatEnemyDefenseAmplifierLine(displayEnemy.defenseAmplifier),
                               `回避: ${formatNumber(Math.round(displayEnemy.evasionBonus * 1000))}`,
                             ];
+
 
                             const rowCount = Math.max(offenseRows.length, defenseRows.length);
                             return Array.from({ length: rowCount }).flatMap((_, index) => [
@@ -3442,6 +3469,12 @@ function SettingTab({
                           })()}
                         </div>
                         <div>スキル: {displayEnemy.abilities.length > 0 ? displayEnemy.abilities.map(a => ENEMY_ABILITY_LABELS[a] ?? a).join('、 ') : 'なし'}</div>
+                        <div className="pt-1 space-y-1">
+                          <div className="text-gray-600">倍率内訳:</div>
+                          {multiplierRows.map(line => (
+                            <div key={line}>{line}</div>
+                          ))}
+                        </div>
                         <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id)}${item.name}`).join(' / ')}</div>
                       </div>
                     )}
