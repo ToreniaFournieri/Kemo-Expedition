@@ -1871,6 +1871,7 @@ function PartyTab({
               // Aggregate bonuses - deduplicate multipliers by value before multiplying
               const multiplierValues: Record<string, Set<number>> = {};
               const additive: Record<string, number> = {};
+              const uniqueEvasionBonusNames = new Set<string>();
 
               for (const b of allBonuses) {
                 if (b.type.endsWith('_multiplier')) {
@@ -1880,7 +1881,15 @@ function PartyTab({
                 } else if (['vitality', 'strength', 'intelligence', 'mind', 'equip_slot', 'grit', 'caster', 'pursuit'].includes(b.type)) {
                   additive[b.type] = (additive[b.type] ?? 0) + b.value;
                 } else if (b.type === 'penet' || b.type === 'accuracy' || b.type === 'evasion') {
-                  additive[b.type] = (additive[b.type] ?? 0) + b.value;
+                  if (b.type === 'evasion') {
+                    const bonusName = `c.evasion+${b.value}`;
+                    if (!uniqueEvasionBonusNames.has(bonusName)) {
+                      uniqueEvasionBonusNames.add(bonusName);
+                      additive[b.type] = (additive[b.type] ?? 0) + b.value;
+                    }
+                  } else {
+                    additive[b.type] = (additive[b.type] ?? 0) + b.value;
+                  }
                 }
               }
 
