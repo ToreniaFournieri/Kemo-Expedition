@@ -194,7 +194,7 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 
 ### 6.3 Turn resolution 
 **Speed & Turn Order (Rolling Dice Rule)**
-- Each character and the enemy rolls initiative at the start of each phase.
+- At the start of each phase (LONG / MID / CLOSE), **each actor** (enemy + each party member) rolls initiative.
   - Has `a.first-strike`2, **3d3**. (3~9)
   - Has `a.first-strike`1, **2d3**. (2~6)
   - Normal **1d3**. (1~3)
