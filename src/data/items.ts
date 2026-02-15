@@ -72,21 +72,30 @@ const TIER_NOA_FIXED_BONUS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const TIER_NOA_PENALTIES = [-1.0, -1.2, -1.4, -1.6, -1.8, -2.0, -2.2, -2.4];
 const TIER_EVASION_PENALTIES = [-0.001, -0.002, -0.003, -0.004, -0.005, -0.006, -0.007, -0.008];
 
-// Rarity amplifiers per category (from spec 2.4.2)
-const RARITY_AMPLIFIERS: Record<ItemCategory, number[]> = {
-  armor:    [1.0, 1.2, 1.44, 1.73],
-  robe:     [1.0, 1.2, 1.44, 1.73],
-  shield:   [1.0, 1.2, 1.44, 1.73],
-  sword:    [1.2, 1.44, 1.73, 2.08],
-  katana:   [2.4, 2.9, 3.46, 4.15],
-  gauntlet: [1.0, 1.2, 1.44, 1.73],
-  arrow:    [0.67, 0.80, 0.95, 1.16],
-  bolt:     [1.33, 1.60, 1.92, 2.30],
-  archery:  [1.0, 1.2, 1.44, 1.73],
-  wand:     [0.5, 0.6, 0.72, 0.86],
-  grimoire: [1.0, 1.2, 1.44, 1.73],
-  catalyst: [1.0, 1.2, 1.44, 1.73],
+// Base power scaling (from spec 2.4.2)
+const TYPE_AMPLIFIERS: Record<ItemCategory, number> = {
+  armor: 1.0,
+  robe: 1.0,
+  shield: 1.0,
+  sword: 1.2,
+  katana: 2.4,
+  gauntlet: 1.0,
+  arrow: 0.67,
+  bolt: 1.33,
+  archery: 1.0,
+  wand: 0.5,
+  grimoire: 1.0,
+  catalyst: 1.0,
 };
+
+const RARITY_AMPLIFIERS: Record<Rarity, number> = {
+  common: 1.0,
+  uncommon: 1.2,
+  rare: 3.0,
+  mythic: 6.0,
+};
+
+const SUBTLE_POWER_MULTIPLIERS = [0.2, 0.27, 0.34] as const;
 
 type MasterItemNameTable = Record<number, Partial<Record<Rarity, Partial<Record<ItemCategory, string[]>>>>>;
 
@@ -688,8 +697,10 @@ function createItem(
   variantIndex?: number
 ): ItemDef | null {
   const basePower = TIER_BASE_POWER[tier - 1];
-  const rarityIndex = { common: 0, uncommon: 1, rare: 2, mythic: 3 }[rarity];
-  const amplifier = RARITY_AMPLIFIERS[template.category][rarityIndex];
+  const typeAmplifier = TYPE_AMPLIFIERS[template.category];
+  const rarityAmplifier = RARITY_AMPLIFIERS[rarity];
+  const amplifier = typeAmplifier * rarityAmplifier;
+  const subtlePowerBase = basePower * amplifier;
   const multiplierTier = getMultiplierTier(tier, rarity);
   const targetMultiplier = multiplierTier ? 1 + TIER_TARGET_MULTIPLIERS[multiplierTier - 1] : 1;
   const shieldEvasionBonus = multiplierTier ? TIER_SHIELD_EVASION_BONUS[multiplierTier - 1] : 0;
@@ -765,17 +776,23 @@ function createItem(
       break;
   }
 
-  const applyVariantMod = (mod?: ItemVariantMod) => {
+  const getSubtlePower = (slotIndex = 0): number => {
+    const multiplier = SUBTLE_POWER_MULTIPLIERS[Math.min(slotIndex, SUBTLE_POWER_MULTIPLIERS.length - 1)];
+    return subtlePowerBase * multiplier;
+  };
+
+  const applyVariantMod = (mod?: ItemVariantMod, subtleSlotIndex = 0) => {
     if (!mod) return;
-    if (mod.partyHP) item.partyHP = (item.partyHP || 0) + mod.partyHP * tier;
-    if (mod.physicalDefense) item.physicalDefense = (item.physicalDefense || 0) + mod.physicalDefense * tier;
-    if (mod.magicalDefense) item.magicalDefense = (item.magicalDefense || 0) + mod.magicalDefense * tier;
-    if (mod.meleeAttack) item.meleeAttack = (item.meleeAttack || 0) + mod.meleeAttack * tier;
-    if (mod.rangedAttack) item.rangedAttack = (item.rangedAttack || 0) + mod.rangedAttack * tier;
-    if (mod.magicalAttack) item.magicalAttack = (item.magicalAttack || 0) + mod.magicalAttack * tier;
-    if (mod.meleeNoA) item.meleeNoA = (item.meleeNoA || 0) + mod.meleeNoA;
-    if (mod.rangedNoA) item.rangedNoA = (item.rangedNoA || 0) + Math.floor(mod.rangedNoA);
-    if (mod.magicalNoA) item.magicalNoA = (item.magicalNoA || 0) + Math.floor(mod.magicalNoA * tier);
+    const subtlePower = getSubtlePower(subtleSlotIndex);
+    if (mod.partyHP) item.partyHP = (item.partyHP || 0) + Math.floor(subtlePower * mod.partyHP);
+    if (mod.physicalDefense) item.physicalDefense = (item.physicalDefense || 0) + Math.floor(subtlePower * mod.physicalDefense);
+    if (mod.magicalDefense) item.magicalDefense = (item.magicalDefense || 0) + Math.floor(subtlePower * mod.magicalDefense);
+    if (mod.meleeAttack) item.meleeAttack = (item.meleeAttack || 0) + Math.floor(subtlePower * mod.meleeAttack);
+    if (mod.rangedAttack) item.rangedAttack = (item.rangedAttack || 0) + Math.floor(subtlePower * mod.rangedAttack);
+    if (mod.magicalAttack) item.magicalAttack = (item.magicalAttack || 0) + Math.floor(subtlePower * mod.magicalAttack);
+    if (mod.meleeNoA) item.meleeNoA = (item.meleeNoA || 0) + Number((subtlePower * mod.meleeNoA).toFixed(2));
+    if (mod.rangedNoA) item.rangedNoA = (item.rangedNoA || 0) + Number((subtlePower * mod.rangedNoA).toFixed(2));
+    if (mod.magicalNoA) item.magicalNoA = (item.magicalNoA || 0) + Number((subtlePower * mod.magicalNoA).toFixed(2));
     if (mod.elementalOffense) item.elementalOffense = mod.elementalOffense;
     if (mod.meleeNoABonus) item.meleeNoABonus = (item.meleeNoABonus || 0) + mod.meleeNoABonus;
     if (mod.rangedNoABonus) item.rangedNoABonus = (item.rangedNoABonus || 0) + mod.rangedNoABonus;
@@ -791,18 +808,18 @@ function createItem(
 
   // Apply rarity subtle modifiers
   if (rarity === 'uncommon' && variantIndex !== undefined) {
-    applyVariantMod(variantIndex === 0 ? template.variant1Mod : template.variant2Mod);
+    applyVariantMod(variantIndex === 0 ? template.variant1Mod : template.variant2Mod, variantIndex);
   }
 
   if (rarity === 'rare') {
     const rareSubtleMods = getRareSubtleMods(template, tier);
-    rareSubtleMods.forEach(applyVariantMod);
+    rareSubtleMods.forEach((mod, index) => applyVariantMod(mod, index));
   }
 
   if (rarity === 'mythic') {
-    applyVariantMod(template.variant1Mod);
-    applyVariantMod(template.variant2Mod);
-    applyVariantMod(template.variant3Mod || template.variant1Mod);
+    applyVariantMod(template.variant1Mod, 0);
+    applyVariantMod(template.variant2Mod, 1);
+    applyVariantMod(template.variant3Mod || template.variant1Mod, 2);
     applyVariantMod(template.mythicBonusMod);
   }
 

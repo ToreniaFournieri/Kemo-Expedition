@@ -412,9 +412,9 @@ function formatBonuses(bonuses: Bonus[]): string {
     } else if (b.type === 'pursuit') {
       parts.push(`追撃+${b.value}`);
     } else if (b.type === 'accuracy') {
-      parts.push(`命中+${b.value}`);
+      parts.push(`命中+${Math.round(b.value * 1000)}`);
     } else if (b.type === 'evasion') {
-      parts.push(`回避+${b.value}`);
+      parts.push(`回避+${Math.round(b.value * 1000)}`);
     } else if (b.type === 'ability' && b.abilityId) {
       const name = ABILITY_NAMES[b.abilityId] || b.abilityId;
       parts.push(`${name}Lv${b.abilityLevel || 1}`);
@@ -915,7 +915,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const hasUnreadDiary = unreadDiaryCount > 0;
   const unreadDiaryBadgeLabel = unreadDiaryCount >= 11 ? '10+' : `${unreadDiaryCount}`;
   const envLabel = getEnvLabel();
-  const versionLabel = envLabel ? `v0.2.3 (${envLabel})` : 'v0.2.3';
+  const versionLabel = envLabel ? `v0.2.5 (${envLabel})` : 'v0.2.5';
 
   return (
     <div className={`flex flex-col h-screen ${HEADER_HEIGHT_CLASS}`}>
@@ -1299,7 +1299,7 @@ function PartyTab({
 
       <div className="mb-3 text-sm flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <div className="text-gray-600">PTレベル: {formatNumber(party.level)}, 経験値: {formatNumber(party.experience)}/{formatNumber(party.level < 29 ? LEVEL_EXP[party.level] : party.experience)}</div>
+          <div className="text-gray-600">PTレベル: {formatNumber(party.level)}, 経験値: {formatNumber(party.experience)}/{party.level < 29 ? formatNumber(LEVEL_EXP[party.level]) : '（レベル上限）'}</div>
           <div className="font-medium mt-1">{displayedDeityName} (ランク{getDeityRank(displayedDeityGold)})</div>
           <div className="text-xs text-gray-600 mt-1">効果:{getDeityEffectDescription(displayedDeityName, displayedDeityGold)}</div>
         </div>
@@ -1578,7 +1578,7 @@ function PartyTab({
                 // MID phase: 1.0 + deity bonus
                 const midAmp = 1.0 + stats.deityOffenseAmplifierBonus;
                 // CLOSE phase: iaigiri multiplier, then deity bonus
-                const closeAmp = (iaigiri ? 2.0 : 1.0) * (1.0 + stats.deityOffenseAmplifierBonus);
+                const closeAmp = (iaigiri ? (iaigiri.level >= 2 ? 2.5 : 2.0) : 1.0) * (1.0 + stats.deityOffenseAmplifierBonus);
                 const elementName = stats.elementalOffense === 'fire' ? '火' :
                   stats.elementalOffense === 'thunder' ? '雷' :
                   stats.elementalOffense === 'ice' ? '氷' : '無';
@@ -1726,11 +1726,11 @@ function PartyTab({
                     parts.push(label);
                     helpRows.push({ label, description: `敵の防御力を ${Math.round(val * 100)}% 分無視する` });
                   } else if (key === 'accuracy') {
-                    const label = `${addNames[key]}+${val.toFixed(2)}`;
+                    const label = `${addNames[key]}+${Math.round(val * 1000)}`;
                     parts.push(label);
                     helpRows.push({ label, description: '値が多いほどより多くの攻撃が命中するようになる' });
                   } else if (key === 'evasion') {
-                    const label = `${addNames[key]}+${val.toFixed(2)}`;
+                    const label = `${addNames[key]}+${Math.round(val * 1000)}`;
                     parts.push(label);
                     helpRows.push({ label, description: '値が多いほどより多くの攻撃を回避するようになる' });
                   } else {
@@ -2272,6 +2272,7 @@ function ExpeditionTab({
                                 const totalAttempts = log.totalAttempts ?? 0;
                                 const allMissed = totalAttempts > 0 && hits === 0;
                                 const hitDisplay = totalAttempts > 0 ? `(${hits}/${totalAttempts}回)` : '';
+                                const resonanceMatch = /(\(共鳴\+\d+%\))$/.exec(log.action);
 
                                 let actionText: string;
                                 if (log.actor === 'effect') {
@@ -2282,13 +2283,20 @@ function ExpeditionTab({
                                   actionText = allMissed ? `${log.action.replace(/ の.*$/, '')} の攻撃は外れた！` : log.action;
                                 }
 
+                                const compactHitDisplay = hitDisplay && resonanceMatch
+                                  ? `(${hits}/${totalAttempts}回, ${resonanceMatch[1].slice(1, -1)})`
+                                  : hitDisplay;
+                                const actionDisplay = resonanceMatch && !allMissed
+                                  ? actionText.replace(/\(共鳴\+\d+%\)$/, '')
+                                  : actionText;
+
                                 return (
                                   <div key={j} className="flex justify-between text-gray-600">
                                     <span>
                                       <span className="text-gray-400">[{phaseLabel}]</span>{' '}
-                                      {actionText}
+                                      {actionDisplay}
                                       {log.note && <span className="text-gray-400"> {log.note}</span>}
-                                      {hitDisplay && <span className="text-gray-400">{hitDisplay}</span>}
+                                      {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                     </span>
                                     {log.damage !== undefined && log.damage > 0 && (
                                       <span className={isEnemy ? 'text-accent' : 'text-sub'}>({emoji} {formatNumber(log.damage)})</span>
@@ -2831,6 +2839,7 @@ function DiaryTab({
                               const totalAttempts = battleLog.totalAttempts ?? 0;
                               const allMissed = totalAttempts > 0 && hits === 0;
                               const hitDisplay = totalAttempts > 0 ? `(${hits}/${totalAttempts}回)` : '';
+                              const resonanceMatch = /(\(共鳴\+\d+%\))$/.exec(battleLog.action);
 
                               let actionText: string;
                               if (battleLog.actor === 'effect') {
@@ -2850,13 +2859,20 @@ function DiaryTab({
                                 }
                               }
 
+                              const compactHitDisplay = hitDisplay && resonanceMatch
+                                ? `(${hits}/${totalAttempts}回, ${resonanceMatch[1].slice(1, -1)})`
+                                : hitDisplay;
+                              const actionDisplay = resonanceMatch && !allMissed
+                                ? actionText.replace(/\(共鳴\+\d+%\)$/, '')
+                                : actionText;
+
                               return (
                                 <div key={j} className="flex justify-between text-gray-600">
                                   <span>
                                     <span className="text-gray-400">[{phaseLabel}]</span>{' '}
-                                    {actionText}
+                                    {actionDisplay}
                                     {battleLog.note && <span className="text-gray-400"> {battleLog.note}</span>}
-                                    {hitDisplay && <span className="text-gray-400">{hitDisplay}</span>}
+                                    {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                   </span>
                                   {battleLog.damage !== undefined && battleLog.damage > 0 && (
                                     <span className={isEnemy ? 'text-accent' : 'text-sub'}>

@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.2.4 - SPECIFICATION
+# KEMO EXPEDITION v0.2.5 - SPECIFICATION
 
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
@@ -101,27 +101,29 @@
 
 | `a.` ability | 表示 | 説明 |
 |----|----|----|
-| `a.defender1` | 守護者1 | 味方全体が受ける物理ダメージを **2/3倍** にする |
-| `a.defender2` | 守護者2 | 味方全体が受ける物理ダメージを **3/5倍** にする |
-| `a.counter1` | 反撃1 | 敵の**近距離攻撃**を受けたとき反撃する(攻撃回数は半減) |
-| `a.counter2` | 反撃2 | 敵の**近距離・中距離攻撃**を受けたとき反撃する(攻撃回数は半減) |
-| `a.re-attack1` | 再攻撃1 | 攻撃時に **追加攻撃を1回**行う(攻撃回数は半減) |
-| `a.re-attack2` | 再攻撃2 | 攻撃時に **追加攻撃を2回**行う(攻撃回数は半減) |
+| `a.defender`2 | 守護者1 | 味方全体が受ける物理ダメージを **2/3倍** にする |
+| `a.defender`1 | 守護者2 | 味方全体が受ける物理ダメージを **3/5倍** にする |
+| `a.counter`1 | 反撃1 | 敵の**近距離攻撃**を受けたとき反撃する(攻撃回数は半減) |
+| `a.counter`2 | 反撃2 | 敵の**近距離・中距離攻撃**を受けたとき反撃する(攻撃回数は半減) |
+| `a.re-attack`1 | 連撃1 | 攻撃時に **追加攻撃を1回**行う(攻撃回数は半減) |
+| `a.re-attack`2 | 連撃2 | 攻撃時に **追加攻撃を2回**行う(攻撃回数は半減) |
 | `a.iaigiri`1 | 居合斬り1 | 物理ダメージをx2.0倍する。攻撃回数が半減する |
 | `a.iaigiri`2 | 居合斬り2 | 物理ダメージをx2.5倍する。攻撃回数を半減する |
-| `a.command1` | 指揮1 | 与える物理ダメージを **1.3倍** にする |
-| `a.command2` | 指揮2 | 与える物理ダメージを **1.6倍** にする |
+| `a.command`1 | 指揮1 | 与える物理ダメージを **1.3倍** にする |
+| `a.command`2 | 指揮2 | 与える物理ダメージを **1.6倍** にする |
 | `a.squander` | 浪費 | 宴会で消費するゴールドが **2倍** になる |
 | `a.hunter1` | 狩人1 | 列によるダメージ減衰を **1列ごと15%→10%** に軽減する |
 | `a.hunter2` | 狩人2 | 列によるダメージ減衰を **1列ごと15%→7%** に軽減する |
-| `a.resonance1` | 共鳴1 | 魔法攻撃 1回毎に、全ヒットのダメージが **+5%** 増加する |
-| `a.resonance2` | 共鳴2 | 魔法攻撃 1回毎に、全ヒットのダメージが **+8%** 増加する |
-| `a.resonance3` | 共鳴3 | 魔法攻撃 1回毎に、全ヒットのダメージが **+11%** 増加する |
-| `a.m-barrier1` | 魔法障壁1 | 味方全体が受ける魔法ダメージを **2/3倍** にする |
-| `a.m-barrier2` | 魔法障壁2 | 味方全体が受ける魔法ダメージを **3/5倍** にする |
+| `a.resonance`1| 共鳴1 | 魔法攻撃 1回毎に、全ヒットのダメージが **+5%** 増加する |
+| `a.resonance`2 | 共鳴2 | 魔法攻撃 1回毎に、全ヒットのダメージが **+8%** 増加する |
+| `a.resonance`3 | 共鳴3 | 魔法攻撃 1回毎に、全ヒットのダメージが **+11%** 増加する |
+| `a.resonance`4 | 共鳴4 | 魔法攻撃 1回毎に、全ヒットのダメージが **+13%** 増加する |
+| `a.resonance`5 | 共鳴5 | 魔法攻撃 1回毎に、全ヒットのダメージが **+15%** 増加する |
+| `a.m-barrier`1 | 魔法障壁1 | 味方全体が受ける魔法ダメージを **2/3倍** にする |
+| `a.m-barrier`2 | 魔法障壁2 | 味方全体が受ける魔法ダメージを **3/5倍** にする |
 | `a.deflection` | 矢払い |　敵の遠距離攻撃の命中率を **10ポイント低下** させる |
-| `a.first-strike1` | 先制攻撃1 | **遠距離攻撃時**に敵より先に行動する |
-| `a.first-strike2` | 先制攻撃2 | **全フェーズ**で敵より先に行動する |
+| `a.first-strike`1 | 先制攻撃1 | **遠距離攻撃時**に敵より先に行動する |
+| `a.first-strike`2 | 先制攻撃2 | **全フェーズ**で敵より先に行動する |
 | `a.tithe` | 十分の一税 | 遠征利益の **+10%** を寄付額に上乗せする |
 | `a.null-counter` | 反撃無効化 | 反撃を無効化する |
 
@@ -361,7 +363,7 @@
 |`God of Fortification` | 防備の神 | Add `c.physical_defense+10`, `c.magical_defense+10` to each party member.|
 |`God of Precision`| 命中の神 | Add `c.accuracy+0.020` and `c.evasion-0.005` to each party member.|
 |`God of Evasion`| 回避の神 | Add `c.evasion+0.015` to each party member.|
-|`God of Resonance`| 反響の神 | Upgrade all `a.resonance` values by +1 tier. Add `c.magical_defense-5`to each party member.|
+|`God of Resonance`| 共鳴の神 | Upgrade all `a.resonance` values by +1 tier. Add `c.magical_defense-5`to each party member.|
 
 
 ### 2.3 Expedition & Enemies
@@ -566,32 +568,41 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 |`i.catalyst` | `d.magical_NoA` | `c.magical_NoA+v` | additional `d.magical_NoA`, `e.fire`, `e.ice`, `e.thunder`, `b.intelligence+1` |
 
 
+**type.amplifier of base_power**
+
+| Item type | `type_amplifier` |
+|------|--------|
+|`i.armor` | x1.0 |
+|`i.robe` | x1.0 |
+|`i.shield` | x1.0 |
+|`i.sword` | x1.2 |
+|`i.katana` | x2.4 |
+|`i.gauntlet` | x1.0 |
+|`i.arrow` | x0.67 |
+|`i.bolt` | x1.33  |
+|`i.archery` | x1.0 | 
+|`i.wand` | x0.5 |
+|`i.grimoire` | x1.0 |
+|`i.catalyst` | x1.0 |
+
 **rarelity.amplifier of base_power**
 
-| Item type | common | uncommon | rare | mythic |
-|------|--------|--------|--------|--------|
-|`i.armor` | x1.0 | x1.2 | x1.44 | x1.73 |
-|`i.robe` | x1.0 | x1.2 | x1.44 | x1.73 |
-|`i.shield ` | x1.0 | x1.2 | x1.44 | x1.73 |
-|`i.sword` | x1.2 | x1.44 | x1.73 | x2.08 |
-|`i.katana` | x2.4 | x2.9 | x3.46 | x4.15 |
-|`i.gauntlet` | x1.0 | x1.2 | x1.44 | x1.73 |
-|`i.arrow` | x0.67 | x0.80 | x0.95 | x1.16 |
-|`i.bolt` | x1.33  | x1.60 | x1.92 | x2.30 |
-|`i.archery` | x1.0 | x1.2 | x1.44 | x1.73 |
-|`i.wand` | x0.5 | x0.6 | x0.72 | x0.86 |
-|`i.grimoire` | x1.0 | x1.2 | x1.44 | x1.73 |
-|`i.catalyst` | x1.0 | x1.2 | x1.44 | x1.73 |
+| Rarelity | `rarelity.amplifier` |
+|------|--------|
+| common | x1.0 |
+| uncommon | x1.2 |
+| rare | x3.0 |
+| mythic | x6.0 |
 
 **Rarelity base**
 | Rarelity | Features |
 |------|--------|
-| common | base_power x rarelity.amplifier, and base c.multiplier |
-| uncommon | base_power x rarelity.amplifier + **one subtle_power`d.` or `c.` bonus**, base c.multiplier +1 tier upgrade(ecept penalty) |
-| rare | base_power x rarelity.amplifier + **two** subtle_power`d.`, **`e.`**, or `c.` bonus, base c.multiplier +2 tier upgrade(ecept penalty) |
-| mythic | base_power x rarelity.amplifier + **three** subtle_power`d.`, `e.`, or `c.` bonus, one **`b.` bonus**, but **no base c.multiplier** |
+| common | base_power x `type_amplifier` x rarelity.amplifier, and base c.multiplier |
+| uncommon | base_power x `type_amplifier` x rarelity.amplifier + **one subtle_power`d.` or `c.` bonus**, base c.multiplier +1 tier upgrade(ecept penalty) |
+| rare | base_power x `type_amplifier` x rarelity.amplifier + **two** subtle_power`d.`, **`e.`**, or `c.` bonus, base c.multiplier +2 tier upgrade(ecept penalty) |
+| mythic | base_power x `type_amplifier` x rarelity.amplifier + **three** subtle_power`d.`, `e.`, or `c.` bonus, one **`b.` bonus**, but **no base c.multiplier** |
 
-*Note:* subtle_power: x0.20 ~ x0.34 of base_power value.
+*Note:* subtle_power: x0.20 ~ x0.34 of base_power x `type_amplifier` x rarelity.amplifier value.
 
 - example of basic item:
 ```
@@ -926,7 +937,7 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 [効] ラビの 魔法障壁！ (パーティへの魔法ダメージ × 2/3)
 
 [遠] ミミ の攻撃！(3/4回)              (🏹 120)
-[魔] セルヴァ の魔法攻撃！(2/2回)         (🪄 100)
+[魔] セルヴァ の魔法攻撃！(共鳴1:威力10%増幅)(2/2回)         (🪄 100)
 [近] 敵が キツネ丸 に攻撃！(2/2回)       (⚔ 36)
 [近] 敵が ミミ に攻撃したが外れた！(0/1回)
 [近] キツネ丸 のカウンター！(2/4回)        (⚔ 367)
@@ -958,10 +969,12 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 
 **functions of attack**
 
-- `f.resonance_amplifier`(actor: ,hit: )
+- `f.resonance_amplifier`(actor: ,successful hit: n )
   	If actor.`a.resonance`1, return 1.0 + (0.05 x (n - 1))   
   	If actor.`a.resonance`2, return 1.0 + (0.08 x (n - 1))
   	If actor.`a.resonance`3, return 1.0 + (0.11 x (n - 1))
+  	If actor.`a.resonance`4, return 1.0 + (0.13 x (n - 1))
+  	If actor.`a.resonance`5, return 1.0 + (0.15 x (n - 1))
     Else, return 1.0.
 
 - `f.damage_calculation`: (actor: , opponent: , phase: )
@@ -1639,7 +1652,8 @@ HP: 312                 経験値: 88
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
-| **0.2.4** | Party State Machine update, AFK mode.  |
+| **0.2.5** | Alpha test update, barance fix  |
+| 0.2.4 | Party State Machine update, AFK mode.  |
 | 0.2.3 | Accuracy update. Magic is now respect `f.hit_detection`. |
 | 0.2.2| Game balance modified, Enemy status mutipliers update, 2.3.3 Base data structure (enemy) update |
 | 0.2.1 | Update:8.7 Divine Bureau, 1. Clairvoyance (add total counts at Normal reward ), Adding 2. Item Comedium and 3. Bestiary |
