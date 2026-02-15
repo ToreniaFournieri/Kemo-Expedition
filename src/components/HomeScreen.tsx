@@ -1406,6 +1406,12 @@ function PartyTab({
         )}
       </div>
 
+      {editingDeity && (
+        <div className="mb-3 text-xs text-gray-500">
+          キャラクターアイコンを長押しで隊列変更できます。
+        </div>
+      )}
+
       {/* Character selector */}
       <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
         {party.characters.map((c, i) => {
