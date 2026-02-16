@@ -366,10 +366,14 @@ function getItemStats(item: Item): string {
     if (baseNoA !== 0) stats.push(`魔回数${formatSigned(getScaledNoA(baseNoA))}`);
     if (item.magicalNoABonus) stats.push(formatBracket('魔回数', item.magicalNoABonus));
   }
-  if (item.physicalDefense) stats.push(`物防+${Math.floor(item.physicalDefense * multiplier)}`);
-  if (item.magicalDefense) stats.push(`魔防+${Math.floor(item.magicalDefense * multiplier)}`);
-  if (item.category === 'armor' && multiplierPercent) stats.push(formatBracket('物防', multiplierPercent, '%'));
-  if (item.category === 'robe' && multiplierPercent) stats.push(formatBracket('魔防', multiplierPercent, '%'));
+  if (item.physicalDefense) {
+    stats.push(`物防+${Math.floor(item.physicalDefense * multiplier)}`);
+    if (multiplierPercent) stats.push(formatBracket('物防', multiplierPercent, '%'));
+  }
+  if (item.magicalDefense) {
+    stats.push(`魔防+${Math.floor(item.magicalDefense * multiplier)}`);
+    if (multiplierPercent) stats.push(formatBracket('魔防', multiplierPercent, '%'));
+  }
   if (item.partyHP) stats.push(`HP+${Math.floor(item.partyHP * multiplier)}`);
   if (item.accuracyBonus) stats.push(formatBracket('命中', Math.round(item.accuracyBonus * 1000)));
   if (item.evasionBonus) stats.push(formatBracket('回避', Math.round(item.evasionBonus * 1000)));
