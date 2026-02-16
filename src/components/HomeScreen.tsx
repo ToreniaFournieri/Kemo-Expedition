@@ -2550,7 +2550,9 @@ function ExpeditionTab({
                                 const previousWasPhaseAction = !!previousLog && previousLog.actor !== 'deity' && previousLog.actor !== 'effect';
                                 const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousWasPhaseAction || previousLog.phase !== log.phase);
                                 const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
-                                const phaseLabel = isPhaseAction ? `${log.initiativeRoll ?? '?'}` : log.actor === 'deity' ? '末' : '効';
+                                const phaseLabel = isPhaseAction
+                                  ? (log.isCounter ? '-' : `${log.initiativeRoll ?? '?'}`)
+                                  : log.actor === 'deity' ? '末' : '効';
                                 const phaseHeader = log.phase === 'long'
                                   ? '遠距離攻撃フェーズ'
                                   : log.phase === 'mid'
@@ -3119,7 +3121,9 @@ function DiaryTab({
                               const previousWasPhaseAction = !!previousLog && previousLog.actor !== 'deity' && previousLog.actor !== 'effect';
                               const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousWasPhaseAction || previousLog.phase !== battleLog.phase);
                               const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
-                              const phaseLabel = isPhaseAction ? `${battleLog.initiativeRoll ?? '?'}` : battleLog.actor === 'deity' ? '末' : '効';
+                              const phaseLabel = isPhaseAction
+                                ? (battleLog.isCounter ? '-' : `${battleLog.initiativeRoll ?? '?'}`)
+                                : battleLog.actor === 'deity' ? '末' : '効';
                               const phaseHeader = battleLog.phase === 'long'
                                 ? '遠距離攻撃フェーズ'
                                 : battleLog.phase === 'mid'
