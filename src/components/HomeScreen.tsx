@@ -3366,9 +3366,9 @@ function SettingTab({
 
   const ENEMY_ABILITY_LABELS: Record<string, string> = {
     first_strike: '先制攻撃1:行動が早くなる',
-    counter: 'カウンター:CLOSEフェーズで反撃',
-    re_attack: '連撃:攻撃時に1回追加攻撃',
-    deflection: '矢払い:敵の遠距離攻撃の命中率を **10ポイント低下** させる',
+    counter: '反撃1:相手の近距離攻撃を受けたとき反撃(攻撃回数半減)',
+    re_attack: '連撃1:攻撃時に追加攻撃を1回行う(攻撃回数半減)',
+    deflection: '矢払い:相手の遠距離攻撃の命中率を10ポイント低下させる',
     null_counter: '反撃無効化:カウンター攻撃を無効化',
   };
 
