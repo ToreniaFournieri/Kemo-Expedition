@@ -988,10 +988,17 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
 
   const triggerSortie = (partyIndex: number) => {
     const cycle = partyCycles[partyIndex];
-    if (cycle && (cycle.state === '移動中' || cycle.state === '探索中' || cycle.state === '帰還中')) return;
     const party = state.parties[partyIndex];
     if (!party) return;
-    if (party.pendingProfit > 0) actions.clearPendingProfit(partyIndex);
+
+    if (cycle?.state === '探索中') {
+      actions.addNotification(`${party.name} は探索中であり、その要請には従えない`);
+      return;
+    }
+
+    const stolenProfit = Math.max(0, party.pendingProfit);
+    actions.clearPendingProfit(partyIndex);
+    actions.addNotification(`${party.name} は神の緊急動員に憤り、${formatNumber(stolenProfit)}Gを持ち逃げして出撃した`);
     transitionTo(partyIndex, '移動中', 5000);
   };
 
