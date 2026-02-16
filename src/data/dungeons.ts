@@ -5,46 +5,46 @@ type CombatMultipliers = NonNullable<FloorDef['multipliers']>;
 const FLOOR_ROOM_MULTIPLIERS: Record<number, Record<RoomType, CombatMultipliers>> = {
   1: {
     battle_Normal: { hp: 1.0, attack: 1.0, noa: 1.0, attackAmplifier: 1.0, defense: 1.0, defenseAmplifier: 1.0 },
-    battle_Elite: { hp: 1.50, attack: 1.50, noa: 1.0, attackAmplifier: 1.0, defense: 1.50, defenseAmplifier: 1.0 },
+    battle_Elite: { hp: 1.50, attack: 1.00, noa: 1.0, attackAmplifier: 1.50, defense: 1.50, defenseAmplifier: 1.0 },
     battle_Boss: { hp: 6.10, attack: 5.00, noa: 1.0, attackAmplifier: 1.0, defense: 5.00, defenseAmplifier: 0.86 },
   },
   2: {
-    battle_Normal: { hp: 1.25, attack: 1.20, noa: 1.0, attackAmplifier: 1.0, defense: 1.20, defenseAmplifier: 0.97 },
-    battle_Elite: { hp: 1.85, attack: 1.80, noa: 1.0, attackAmplifier: 1.0, defense: 1.80, defenseAmplifier: 0.97 },
+    battle_Normal: { hp: 1.25, attack: 1.00, noa: 1.0, attackAmplifier: 1.14, defense: 1.20, defenseAmplifier: 0.97 },
+    battle_Elite: { hp: 1.85, attack: 1.05, noa: 1.0, attackAmplifier: 1.71, defense: 1.80, defenseAmplifier: 0.97 },
     battle_Boss: { hp: 6.10, attack: 5.00, noa: 1.0, attackAmplifier: 1.0, defense: 5.00, defenseAmplifier: 0.86 },
   },
   3: {
-    battle_Normal: { hp: 1.56, attack: 1.44, noa: 1.0, attackAmplifier: 1.0, defense: 1.44, defenseAmplifier: 0.94 },
-    battle_Elite: { hp: 2.34, attack: 2.16, noa: 1.0, attackAmplifier: 1.0, defense: 2.16, defenseAmplifier: 0.94 },
+    battle_Normal: { hp: 1.56, attack: 1.05, noa: 1.0, attackAmplifier: 1.30, defense: 1.44, defenseAmplifier: 0.94 },
+    battle_Elite: { hp: 2.34, attack: 1.10, noa: 1.0, attackAmplifier: 1.95, defense: 2.16, defenseAmplifier: 0.94 },
     battle_Boss: { hp: 6.10, attack: 5.00, noa: 1.0, attackAmplifier: 1.0, defense: 5.00, defenseAmplifier: 0.86 },
   },
   4: {
-    battle_Normal: { hp: 2.95, attack: 1.72, noa: 1.0, attackAmplifier: 1.0, defense: 1.72, defenseAmplifier: 0.92 },
-    battle_Elite: { hp: 4.43, attack: 2.58, noa: 1.0, attackAmplifier: 1.0, defense: 2.58, defenseAmplifier: 0.92 },
+    battle_Normal: { hp: 2.95, attack: 1.10, noa: 1.0, attackAmplifier: 1.48, defense: 1.72, defenseAmplifier: 0.92 },
+    battle_Elite: { hp: 4.43, attack: 1.16, noa: 1.0, attackAmplifier: 2.22, defense: 2.58, defenseAmplifier: 0.92 },
     battle_Boss: { hp: 6.10, attack: 5.00, noa: 1.0, attackAmplifier: 1.0, defense: 5.00, defenseAmplifier: 0.86 },
   },
   5: {
-    battle_Normal: { hp: 2.44, attack: 2.07, noa: 1.0, attackAmplifier: 1.0, defense: 2.07, defenseAmplifier: 0.89 },
-    battle_Elite: { hp: 4.04, attack: 3.11, noa: 1.0, attackAmplifier: 1.0, defense: 3.11, defenseAmplifier: 0.89 },
+    battle_Normal: { hp: 2.44, attack: 1.16, noa: 1.0, attackAmplifier: 1.69, defense: 2.07, defenseAmplifier: 0.89 },
+    battle_Elite: { hp: 4.04, attack: 1.22, noa: 1.0, attackAmplifier: 2.54, defense: 3.11, defenseAmplifier: 0.89 },
     battle_Boss: { hp: 6.10, attack: 5.00, noa: 1.0, attackAmplifier: 1.0, defense: 5.00, defenseAmplifier: 0.86 },
   },
   6: {
-    battle_Normal: { hp: 3.05, attack: 2.49, noa: 1.0, attackAmplifier: 1.0, defense: 2.49, defenseAmplifier: 0.86 },
+    battle_Normal: { hp: 3.05, attack: 1.22, noa: 1.0, attackAmplifier: 1.93, defense: 2.49, defenseAmplifier: 0.86 },
     battle_Elite: { hp: 3.05, attack: 2.49, noa: 1.0, attackAmplifier: 1.0, defense: 2.49, defenseAmplifier: 0.86 },
-    battle_Boss: { hp: 6.10, attack: 5.00, noa: 1.0, attackAmplifier: 1.0, defense: 5.00, defenseAmplifier: 0.86 },
+    battle_Boss: { hp: 6.10, attack: 1.30, noa: 1.0, attackAmplifier: 3.86, defense: 5.00, defenseAmplifier: 0.86 },
   },
 };
 
 // Expedition enemy multipliers (Specification 2.3.1)
 export const EXPEDITION_ENEMY_MULTIPLIERS: ExpeditionEnemyMultipliers[] = [
   { hp: 1, attack: 1, noa: 1, attackAmplifier: 1, defense: 1, defenseAmplifier: 1, experience: 1 },
-  { hp: 4, attack: 3, noa: 2, attackAmplifier: 2, defense: 3, defenseAmplifier: 0.8, experience: 4 },
-  { hp: 16, attack: 9, noa: 3, attackAmplifier: 3, defense: 9, defenseAmplifier: 0.64, experience: 16 },
-  { hp: 64, attack: 27, noa: 4, attackAmplifier: 4, defense: 27, defenseAmplifier: 0.51, experience: 64 },
-  { hp: 256, attack: 81, noa: 5, attackAmplifier: 5, defense: 81, defenseAmplifier: 0.41, experience: 256 },
-  { hp: 1024, attack: 243, noa: 6, attackAmplifier: 6, defense: 243, defenseAmplifier: 0.33, experience: 1024 },
-  { hp: 4096, attack: 729, noa: 7, attackAmplifier: 7, defense: 729, defenseAmplifier: 0.26, experience: 4096 },
-  { hp: 16384, attack: 2187, noa: 8, attackAmplifier: 8, defense: 729, defenseAmplifier: 0.21, experience: 16384 },
+  { hp: 4, attack: 2, noa: 2, attackAmplifier: 3, defense: 3, defenseAmplifier: 0.8, experience: 4 },
+  { hp: 16, attack: 6, noa: 3, attackAmplifier: 4.5, defense: 9, defenseAmplifier: 0.64, experience: 16 },
+  { hp: 64, attack: 16, noa: 4, attackAmplifier: 6, defense: 27, defenseAmplifier: 0.51, experience: 64 },
+  { hp: 256, attack: 54, noa: 5, attackAmplifier: 7.5, defense: 81, defenseAmplifier: 0.41, experience: 256 },
+  { hp: 1024, attack: 162, noa: 6, attackAmplifier: 9, defense: 243, defenseAmplifier: 0.33, experience: 1024 },
+  { hp: 4096, attack: 486, noa: 7, attackAmplifier: 10.5, defense: 729, defenseAmplifier: 0.26, experience: 4096 },
+  { hp: 16384, attack: 1458, noa: 8, attackAmplifier: 12, defense: 729, defenseAmplifier: 0.21, experience: 16384 },
 ];
 
 // Create floor structure for a dungeon
