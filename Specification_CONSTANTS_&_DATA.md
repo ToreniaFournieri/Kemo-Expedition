@@ -385,17 +385,17 @@
 | `x.floor` | `x.room` | `x.room_type` | `x.floor_HP_mult` | `x.floor_atk_mult` | `x.floor_NoA_mult` | `x.floor_atk_amp_mult` | `x.floor_def_mult` | `x.floor_def_amp_mult` | `x.Spawn_pool`, drops | `x.key_concept` |
 |----|----|----|-----|-----|-----|-----|-----|-----|-----|-----|
 | 1 | 1-3 | `x.battle_Normal` | x1.0 | x1.0 | x1.0 | x1.00 | x1.0 | x1.0 | pool_1 | easy farming |
-| 1 | 4 | `x.battle_Elite` | x1.50 | x1.0 | x1.0 | x1.50 | x1.5 | x1.0 | fixed Elite. rare  `i.sword`, `i.armor` | Class:Rogue. Checks if you have equipped items properly. |
-| 2 | 1-3 | `x.battle_Normal` | x1.25 | x1.00 | x1.0 | x1.14 | x1.20 | x0.97 | pool_2 | |
-| 2 | 4 | `x.battle_Elite` | x1.85 | x1.05 | x1.0 | x1.71 | x1.80 | x0.97 | fixed Elite. rare  `i.shield`, `i.robe` | Class:Fighter. Checks if you have equipped enough offensive items. |
-| 3 | 1-3 | `x.battle_Normal` | x1.56 | x1.05 | x1.0 | x1.30 | x1.44 | x0.94 | pool_3  |  |
-| 3 | 4 | `x.battle_Elite` | x2.34 | x1.10 | x1.0 | x1.95 | x2.16 | x0.94 | fixed Elite. rare  `i.arrow`, `i.bolt`, `i.archery` | Class:Ranger. Check if you have enough physical defensive items. |
-| 4 | 1-3 | `x.battle_Normal` | x2.95 | x1.10 | x1.0 | x1.48 | x1.72 | x0.92 | pool_4 | |
-| 4 | 4 | `x.battle_Elite` | x4.43 | x1.16 | x1.0 | x2.22 | x2.58 | x0.92 | fixed Elite. rare  `i.armor`, `i.katana` | Class:Duelist. Checks if you have archery or magic items. (kill it before his melee attacks) |
-| 5 | 1-3 | `x.battle_Normal` | x2.44 | x1.16 | x1.69 | x1.0 | x2.07 | x0.89 | pool_5  | |
-| 5 | 4 | `x.battle_Elite` | x4.04 | x1.22 | x1.0 | x2.54 | x3.11 | x0.89 | fixed Elite. rare  `i.wand`, `i.grimoire`, `i.catalyst` | Class:Mage. Checks if you have equipped enough magical defensive items.  |
-| 6 | 1-3 | `x.battle_Normal` | x3.05 | x1.22 | x1.0 | x1.93 | x2.49 | x0.86 | pool_6 | |
-| 6 | 4 | `x.battle_Boss` | x6.10 | x1.30 | x1.0 | x3.86 | x5.0 | x0.86 | fixed Boss. mythic (see bellows) | Checks if you have enough tital power. |
+| 1 | 4 | `x.battle_Elite` | x1.50 | x1.23 | x1.0 | x1.23 | x1.5 | x1.0 | fixed Elite. rare  `i.sword`, `i.armor` | Class:Rogue. Checks if you have equipped items properly. |
+| 2 | 1-3 | `x.battle_Normal` | x1.25 | x1.10 | x1.0 | x1.10 | x1.20 | x0.97 | pool_2 | |
+| 2 | 4 | `x.battle_Elite` | x1.85 | x1.34 | x1.0 | x1.34 | x1.80 | x0.97 | fixed Elite. rare  `i.shield`, `i.robe` | Class:Fighter. Checks if you have equipped enough offensive items. |
+| 3 | 1-3 | `x.battle_Normal` | x1.56 | x1.20 | x1.0 | x1.20 | x1.44 | x0.94 | pool_3  |  |
+| 3 | 4 | `x.battle_Elite` | x2.34 | x1.47 | x1.0 | x1.47 | x2.16 | x0.94 | fixed Elite. rare  `i.arrow`, `i.bolt`, `i.archery` | Class:Ranger. Check if you have enough physical defensive items. |
+| 4 | 1-3 | `x.battle_Normal` | x2.95 | x1.32 | x1.0 | x1.32 | x1.72 | x0.92 | pool_4 | |
+| 4 | 4 | `x.battle_Elite` | x4.43 | x1.61 | x1.0 | x1.61 | x2.58 | x0.92 | fixed Elite. rare  `i.armor`, `i.katana` | Class:Duelist. Checks if you have archery or magic items. (kill it before his melee attacks) |
+| 5 | 1-3 | `x.battle_Normal` | x2.44 | x1.44 | x1.0 | x1.44 | x2.07 | x0.89 | pool_5  | |
+| 5 | 4 | `x.battle_Elite` | x4.04 | x1.76 | x1.0 | x1.76 | x3.11 | x0.89 | fixed Elite. rare  `i.wand`, `i.grimoire`, `i.catalyst` | Class:Mage. Checks if you have equipped enough magical defensive items.  |
+| 6 | 1-3 | `x.battle_Normal` | x3.05 | x1.58 | x1.0 | x1.58 | x2.49 | x0.86 | pool_6 | |
+| 6 | 4 | `x.battle_Boss` | x6.10 | x2.24 | x1.0 | x2.24 | x5.0 | x0.86 | fixed Boss. mythic (see bellows) | Checks if you have enough tital power. |
 
 - each pool has enemies with unique item drops. (*note:* common items are not specifically mentioned but are dropped.)
   
