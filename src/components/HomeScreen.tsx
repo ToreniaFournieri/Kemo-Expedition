@@ -92,6 +92,20 @@ function getExpeditionOutcomeLabel(outcome: 'victory' | 'return' | 'defeat' | 'r
   return '撤退';
 }
 
+function renderEnemyNameWithMutedClass(enemyName: string) {
+  const classSuffixMatch = enemyName.match(/^(.*?)(\([^()]+\))(.*)$/);
+  if (!classSuffixMatch) return enemyName;
+
+  const [, baseName, classSuffix, trailingText] = classSuffixMatch;
+  return (
+    <>
+      {baseName}
+      <span className="text-gray-500">{classSuffix}</span>
+      {trailingText}
+    </>
+  );
+}
+
 
 function buildAfkSummaryNotification(stats: {
   victories: number;
@@ -2483,7 +2497,7 @@ function ExpeditionTab({
                         <div key={`${partyIndex}-${originalIndex}-${entry.room}`} className="bg-white rounded overflow-hidden">
                           <button onClick={() => setExpandedRoom(isRoomExpanded ? null : { partyIndex, roomIndex: originalIndex })} className="w-full text-left p-2 text-xs">
                             <div className="flex justify-between items-center">
-                              <span className="font-medium">{roomLabel}: {entry.enemyName}</span>
+                              <span className="font-medium">{roomLabel}: {renderEnemyNameWithMutedClass(entry.enemyName)}</span>
                               <span className="flex items-center gap-2">
                                 <span className={entry.gateInfo ? 'text-gray-500 font-medium' : entry.outcome === 'victory' ? 'text-sub font-medium' : entry.outcome === 'defeat' ? 'text-accent font-medium' : 'text-yellow-600 font-medium'}>
                                   {entry.gateInfo ? '未到達' : entry.outcome === 'victory' ? '勝利' : entry.outcome === 'defeat' ? '敗北' : '引分'}
@@ -3615,7 +3629,7 @@ function SettingTab({
                       onClick={() => setExpandedEnemies(prev => ({ ...prev, [displayEnemy.id]: !enemyExpanded }))}
                       className="w-full text-left px-2 py-1 text-sm flex justify-between items-center"
                     >
-                      <span>{getEnemyDisplayNameWithClass(displayEnemy)}</span>
+                      <span>{renderEnemyNameWithMutedClass(getEnemyDisplayNameWithClass(displayEnemy))}</span>
                       <span className="text-xs text-gray-500">{enemyExpanded ? '▲' : '▼'}</span>
                     </button>
                     {enemyExpanded && (
