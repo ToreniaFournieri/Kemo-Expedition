@@ -182,6 +182,8 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
   - if opponent has a.deflection AND phase == LONG: baseChance -= 0.10
   - chance = clamp(0.0, baseChance, 1.0) x (decay ^ (Nth_hit - 1))
     - Note: Nth_hit starts at 1 for the first strike.
+    - Note: Nth_hit counts indevisually and not share with normal attack, re-attack and counter.
+      
   - Roll: Return Random(0, 1.0) <= chance
  
 
@@ -220,7 +222,7 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 - If enemy.`d.HP` =< 0, Victory.
 
 - **Coutner:** `f.counter`(actor:character , opponent: enemy , phase: CLOSE )
-- **Re-attack:** IF character.`a.re-attack`, the character attacks to enemy.  (using `f.hit_detection`, `f.damage_calculation`, and character.`f.NoA` x 0.5, round up)
+- **Re-attack:** IF character.`a.re-attack`, the character attacks to enemy. (using `f.hit_detection`, `f.damage_calculation`, and character.`f.NoA` x 0.5, round up)
 
 ### 6.4 Post battle
 
