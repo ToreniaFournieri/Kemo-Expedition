@@ -446,6 +446,7 @@ export interface ExpeditionLogEntry {
   remainingPartyHP: number;
   maxPartyHP: number;
   reward?: string;
+  rewardItems?: Item[];
   rewardRarity?: ItemRarity;
   rewardIsSuperRare?: boolean;
   healAmount?: number;
