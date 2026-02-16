@@ -109,8 +109,7 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
     }
     case 'God of Resonance': {
       const resonanceUpgradeTiers = 1 + Math.floor(effectiveTier / 5);
-      const magicalDefensePenalty = clamp(-5 + effectiveTier, -5, 0);
-      return `全員の共鳴を${resonanceUpgradeTiers}段階強化し、魔法被ダメージ補正${magicalDefensePenalty.toFixed(1)}%`;
+      return `全員の共鳴を${resonanceUpgradeTiers}段階強化し、[魔防-5%](魔法攻撃に弱くなります)`;
     }
     default:
       return '効果なし';
