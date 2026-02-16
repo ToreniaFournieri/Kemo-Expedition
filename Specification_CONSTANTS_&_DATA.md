@@ -344,14 +344,14 @@
 
 #### 2.2.3 Deity list
 
-| God | Name  | effect (Rank 1) |
-|-----|-----|----|
-|`God of Restoration`| 再生の神 | At the end of every 4th room,  Heal 20% of missing HP |
-|`God of Attrition`| 消耗の神 | Add `c.melee_attack+20`, `c.ranged_attack+20`, and `c.magical_attack+20` to each party member. At the end of every 4th room, reduce 5% of remaining HP.|
-|`God of Fortification` | 防備の神 | Add `c.physical_defense+10`, `c.magical_defense+10` to each party member.|
-|`God of Precision`| 命中の神 | Add `c.accuracy+0.020` and `c.evasion-0.005` to each party member.|
-|`God of Evasion`| 回避の神 | Add `c.evasion+0.015` to each party member.|
-|`God of Resonance`| 共鳴の神 | Upgrade all `a.resonance` values by +1 tier. Add `c.magical_defense-5`to each party member.|
+| God | Name  | effect (Rank 1) | 説明　|
+|-----|-----|----|---|
+|`God of Restoration`| 再生の神 | At the end of every 4th room,  Heal 20% of missing HP | |
+|`God of Attrition`| 消耗の神 | Add `c.melee_attack+20`, `c.ranged_attack+20`, and `c.magical_attack+20` to each party member. At the end of every 4th room, reduce 5% of remaining HP.| |
+|`God of Fortification` | 防備の神 | Add `c.physical_defense+10`, `c.magical_defense+10` to each party member.| |
+|`God of Precision`| 命中の神 | Add `c.accuracy+0.020` and `c.evasion-0.005` to each party member.| |
+|`God of Evasion`| 回避の神 | Add `c.evasion+0.015` to each party member.| |
+|`God of Resonance`| 共鳴の神 | Upgrade all `a.resonance` values by +1 tier. Add `c.magical_defense-5`to each party member.| 全員の共鳴を1段階強化し、[魔防-5%](魔法攻撃に弱くなります) |
 
 
 ### 2.3 Expedition & Enemies
