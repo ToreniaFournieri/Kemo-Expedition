@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.2.5 - SPECIFICATION
+# KEMO EXPEDITION v0.2.6 - SPECIFICATION
 
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
@@ -216,6 +216,7 @@ PT3: 貯金額: 10G
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
+| **0.2.6** | Version bump to 0.2.6, First Strike description text update |
 | **0.2.5** | Alpha test update, barance fix  |
 | 0.2.4 | Party State Machine update, AFK mode.  |
 | 0.2.3 | Accuracy update. Magic is now respect `f.hit_detection`. |
