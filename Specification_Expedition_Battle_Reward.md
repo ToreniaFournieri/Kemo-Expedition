@@ -208,6 +208,7 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 - If currenr party.`d.HP` =< 0, Defeat.
 
 - **Coutner:** `f.counter`(actor:enemy , opponent:character ,phase: CLOSE )
+- **Re-attack**: IF enemy.`a.re-attack`, the enemy attacks to characters. (using f.hit_detection, f.damage_calculation, and enemy.f.NoA x 0.5, round up)
 - *Note:* Nth_hit is global for all enemy attacks in the phase (not per-target)
 
 
@@ -219,7 +220,6 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 - If enemy.`d.HP` =< 0, Victory.
 
 - **Coutner:** `f.counter`(actor:character , opponent: enemy , phase: CLOSE )
-
 - **Re-attack:** IF character.`a.re-attack`, the character attacks to enemy.  (using `f.hit_detection`, `f.damage_calculation`, and character.`f.NoA` x 0.5, round up)
 
 ### 6.4 Post battle
