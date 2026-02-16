@@ -5,33 +5,33 @@ type CombatMultipliers = NonNullable<FloorDef['multipliers']>;
 const FLOOR_ROOM_MULTIPLIERS: Record<number, Record<RoomType, CombatMultipliers>> = {
   1: {
     battle_Normal: { hp: 1.0, attack: 1.0, noa: 1.0, attackAmplifier: 1.0, defense: 1.0, defenseAmplifier: 1.0 },
-    battle_Elite: { hp: 1.50, attack: 1.00, noa: 1.0, attackAmplifier: 1.50, defense: 1.50, defenseAmplifier: 1.0 },
+    battle_Elite: { hp: 1.50, attack: 1.23, noa: 1.0, attackAmplifier: 1.23, defense: 1.50, defenseAmplifier: 1.0 },
     battle_Boss: { hp: 6.10, attack: 5.00, noa: 1.0, attackAmplifier: 1.0, defense: 5.00, defenseAmplifier: 0.86 },
   },
   2: {
-    battle_Normal: { hp: 1.25, attack: 1.00, noa: 1.0, attackAmplifier: 1.14, defense: 1.20, defenseAmplifier: 0.97 },
-    battle_Elite: { hp: 1.85, attack: 1.05, noa: 1.0, attackAmplifier: 1.71, defense: 1.80, defenseAmplifier: 0.97 },
+    battle_Normal: { hp: 1.25, attack: 1.10, noa: 1.0, attackAmplifier: 1.10, defense: 1.20, defenseAmplifier: 0.97 },
+    battle_Elite: { hp: 1.85, attack: 1.34, noa: 1.0, attackAmplifier: 1.34, defense: 1.80, defenseAmplifier: 0.97 },
     battle_Boss: { hp: 6.10, attack: 5.00, noa: 1.0, attackAmplifier: 1.0, defense: 5.00, defenseAmplifier: 0.86 },
   },
   3: {
-    battle_Normal: { hp: 1.56, attack: 1.05, noa: 1.0, attackAmplifier: 1.30, defense: 1.44, defenseAmplifier: 0.94 },
-    battle_Elite: { hp: 2.34, attack: 1.10, noa: 1.0, attackAmplifier: 1.95, defense: 2.16, defenseAmplifier: 0.94 },
+    battle_Normal: { hp: 1.56, attack: 1.20, noa: 1.0, attackAmplifier: 1.20, defense: 1.44, defenseAmplifier: 0.94 },
+    battle_Elite: { hp: 2.34, attack: 1.47, noa: 1.0, attackAmplifier: 1.47, defense: 2.16, defenseAmplifier: 0.94 },
     battle_Boss: { hp: 6.10, attack: 5.00, noa: 1.0, attackAmplifier: 1.0, defense: 5.00, defenseAmplifier: 0.86 },
   },
   4: {
-    battle_Normal: { hp: 2.95, attack: 1.10, noa: 1.0, attackAmplifier: 1.48, defense: 1.72, defenseAmplifier: 0.92 },
-    battle_Elite: { hp: 4.43, attack: 1.16, noa: 1.0, attackAmplifier: 2.22, defense: 2.58, defenseAmplifier: 0.92 },
+    battle_Normal: { hp: 2.95, attack: 1.32, noa: 1.0, attackAmplifier: 1.32, defense: 1.72, defenseAmplifier: 0.92 },
+    battle_Elite: { hp: 4.43, attack: 1.61, noa: 1.0, attackAmplifier: 1.61, defense: 2.58, defenseAmplifier: 0.92 },
     battle_Boss: { hp: 6.10, attack: 5.00, noa: 1.0, attackAmplifier: 1.0, defense: 5.00, defenseAmplifier: 0.86 },
   },
   5: {
-    battle_Normal: { hp: 2.44, attack: 1.16, noa: 1.0, attackAmplifier: 1.69, defense: 2.07, defenseAmplifier: 0.89 },
-    battle_Elite: { hp: 4.04, attack: 1.22, noa: 1.0, attackAmplifier: 2.54, defense: 3.11, defenseAmplifier: 0.89 },
+    battle_Normal: { hp: 2.44, attack: 1.44, noa: 1.0, attackAmplifier: 1.44, defense: 2.07, defenseAmplifier: 0.89 },
+    battle_Elite: { hp: 4.04, attack: 1.76, noa: 1.0, attackAmplifier: 1.76, defense: 3.11, defenseAmplifier: 0.89 },
     battle_Boss: { hp: 6.10, attack: 5.00, noa: 1.0, attackAmplifier: 1.0, defense: 5.00, defenseAmplifier: 0.86 },
   },
   6: {
-    battle_Normal: { hp: 3.05, attack: 1.22, noa: 1.0, attackAmplifier: 1.93, defense: 2.49, defenseAmplifier: 0.86 },
+    battle_Normal: { hp: 3.05, attack: 1.58, noa: 1.0, attackAmplifier: 1.58, defense: 2.49, defenseAmplifier: 0.86 },
     battle_Elite: { hp: 3.05, attack: 2.49, noa: 1.0, attackAmplifier: 1.0, defense: 2.49, defenseAmplifier: 0.86 },
-    battle_Boss: { hp: 6.10, attack: 1.30, noa: 1.0, attackAmplifier: 3.86, defense: 5.00, defenseAmplifier: 0.86 },
+    battle_Boss: { hp: 6.10, attack: 2.24, noa: 1.0, attackAmplifier: 2.24, defense: 5.00, defenseAmplifier: 0.86 },
   },
 };
 
