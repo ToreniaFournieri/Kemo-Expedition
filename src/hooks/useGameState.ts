@@ -1010,6 +1010,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
               if (rewardResult.rewardNames.length > 0) {
                 entry.reward = rewardResult.rewardNames.join(' / ');
+                entry.rewardItems = [...rewardResult.rewards];
                 entry.rewardRarity = rewardResult.highestRewardRarity;
                 entry.rewardIsSuperRare = rewardResult.hasSuperRareReward;
               }

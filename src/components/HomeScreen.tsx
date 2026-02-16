@@ -212,6 +212,35 @@ function getRewardTextClass(rarity?: ItemRarity, isSuperRare?: boolean): string 
   return 'text-black';
 }
 
+function renderEntryReward(entry: ExpeditionLogEntry): JSX.Element | null {
+  if (!entry.reward) return null;
+
+  if (entry.rewardItems && entry.rewardItems.length > 0) {
+    return (
+      <>
+        <span className="text-black">獲得:</span>
+        {entry.rewardItems.map((item, index) => {
+          const rarity = getItemRarityById(item.id);
+          const isSuperRare = item.superRare > 0;
+          const rarityClass = getRarityTextClass(rarity, isSuperRare);
+          return (
+            <span key={`${item.id}-${item.enhancement}-${item.superRare}-${index}`} className={`${rarityClass} ${isSuperRare ? 'font-bold' : 'font-medium'}`}>
+              {index > 0 && ' / '}
+              {getItemDisplayName(item)}
+            </span>
+          );
+        })}
+      </>
+    );
+  }
+
+  return (
+    <span className={`${getRewardTextClass(entry.rewardRarity, entry.rewardIsSuperRare)} ${entry.rewardIsSuperRare ? 'font-bold' : 'font-medium'}`}>
+      獲得:{entry.reward}
+    </span>
+  );
+}
+
 function getDungeonEntryGateState(
   party: Party,
   dungeon: Dungeon
@@ -2464,7 +2493,7 @@ function ExpeditionTab({
                             {(entry.gateInfo || entry.reward) && (
                               <div className="text-gray-500 mt-1 flex flex-wrap items-center gap-1">
                                 {entry.gateInfo && <span className="text-orange-700">解放条件: {entry.gateInfo}</span>}
-                                {entry.reward && <span className={`${getRewardTextClass(entry.rewardRarity, entry.rewardIsSuperRare)} ${entry.rewardIsSuperRare ? 'font-bold' : 'font-medium'}`}>獲得:{entry.reward}</span>}
+                                {renderEntryReward(entry)}
                               </div>
                             )}
                             <div className="mt-1 grid grid-cols-2 gap-2 text-gray-600">
@@ -3021,11 +3050,7 @@ function DiaryTab({
                           {(entry.gateInfo || entry.reward) && (
                             <div className="text-gray-500 mt-1 flex flex-wrap items-center gap-1">
                               {entry.gateInfo && <span className="text-orange-700">解放条件: {entry.gateInfo}</span>}
-                              {entry.reward && (
-                                <span className={`${getRewardTextClass(entry.rewardRarity, entry.rewardIsSuperRare)} ${entry.rewardIsSuperRare ? 'font-bold' : 'font-medium'}`}>
-                                  獲得:{entry.reward}
-                                </span>
-                              )}
+                              {renderEntryReward(entry)}
                             </div>
                           )}
                           <div className="mt-1 grid grid-cols-2 gap-2 text-gray-600">
