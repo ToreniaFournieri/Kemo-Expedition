@@ -69,6 +69,24 @@ const DEFAULT_DIARY_SETTINGS: DiarySettings = {
   notifyDefeat: true,
 };
 
+const CLASS_SHORT_NAMES: Record<string, string> = {
+  fighter: '戦',
+  duelist: '剣',
+  ninja: '忍',
+  samurai: '侍',
+  lord: '君',
+  ranger: '狩',
+  wizard: '魔',
+  sage: '賢',
+  rogue: '盗',
+  pilgrim: '巡',
+};
+
+function formatEnemyNameWithClass(name: string, classId: string): string {
+  const shortName = CLASS_SHORT_NAMES[classId];
+  return shortName ? `${name}(${shortName})` : name;
+}
+
 function getDiarySettingsWithDefaults(value: Partial<DiarySettings> | undefined): DiarySettings {
   return {
     ...DEFAULT_DIARY_SETTINGS,
@@ -984,7 +1002,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               roomInFloor: roomIndex + 1,
               roomType: roomDef.type,
               floorMultiplier: roomMultiplier,
-              enemyName: enemy.name + roomSuffix,
+              enemyName: formatEnemyNameWithClass(enemy.name, enemy.enemyClass) + roomSuffix,
               enemyHP: enemy.hp,
               enemyAttackValues,
               outcome: battleResult.outcome!,

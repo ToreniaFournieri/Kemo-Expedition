@@ -3363,6 +3363,11 @@ function SettingTab({
     null_counter: '反撃無効化:カウンター攻撃を無効化',
   };
 
+  const getEnemyDisplayNameWithClass = (enemy: EnemyDef): string => {
+    const shortName = CLASS_SHORT_NAMES[enemy.enemyClass];
+    return shortName ? `${enemy.name}(${shortName})` : enemy.name;
+  };
+
   const ENEMY_CLASS_LABELS: Record<string, string> = {
     fighter: '戦士',
     duelist: '剣士',
@@ -3616,7 +3621,7 @@ function SettingTab({
                       onClick={() => setExpandedEnemies(prev => ({ ...prev, [displayEnemy.id]: !enemyExpanded }))}
                       className="w-full text-left px-2 py-1 text-sm flex justify-between items-center"
                     >
-                      <span>{displayEnemy.name}</span>
+                      <span>{getEnemyDisplayNameWithClass(displayEnemy)}</span>
                       <span className="text-xs text-gray-500">{enemyExpanded ? '▲' : '▼'}</span>
                     </button>
                     {enemyExpanded && (
