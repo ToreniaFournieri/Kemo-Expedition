@@ -480,7 +480,7 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     resonance: (l) => `魔法攻撃1回毎に、全ヒットのダメージが+${l >= 5 ? 15 : l === 4 ? 13 : l === 3 ? 11 : l === 2 ? 8 : 5}%増加する`,
     command: (l) => `パーティ攻撃力 × ${l === 2 ? 1.6 : 1.3}`,
     m_barrier: (l) => `パーティへの魔法ダメージ × ${l === 2 ? '3/5' : '2/3'}`,
-    deflection: () => '敵の遠距離攻撃命中率を10ポイント低下',
+    deflection: () => '敵の遠距離攻撃の命中率を10ポイント低下させる',
     null_counter: () => '反撃を無効化する',
     unlock: () => '追加報酬チャンス',
     squander: () => '宴会で消費するゴールドが2倍になる',

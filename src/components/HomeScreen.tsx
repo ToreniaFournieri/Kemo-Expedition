@@ -3365,9 +3365,10 @@ function SettingTab({
   };
 
   const ENEMY_ABILITY_LABELS: Record<string, string> = {
+    first_strike: '先制攻撃1:行動が早くなる',
     counter: 'カウンター:CLOSEフェーズで反撃',
     re_attack: '連撃:攻撃時に1回追加攻撃',
-    deflection: '矢払い:LONGフェーズで敵遠距離命中-10pt',
+    deflection: '矢払い:敵の遠距離攻撃の命中率を **10ポイント低下** させる',
     null_counter: '反撃無効化:カウンター攻撃を無効化',
   };
 
@@ -3677,7 +3678,7 @@ function SettingTab({
                             ]);
                           })()}
                         </div>
-                        <div>スキル: {displayEnemy.abilities.length > 0 ? displayEnemy.abilities.map(a => ENEMY_ABILITY_LABELS[a] ?? a).join('、 ') : 'なし'}</div>
+                        <div>特殊能力: {displayEnemy.abilities.length > 0 ? displayEnemy.abilities.map(a => ENEMY_ABILITY_LABELS[a] ?? a).join(', ') : 'なし'}</div>
                         <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id)}${item.name}`).join(' / ')}</div>
                       </div>
                     )}
