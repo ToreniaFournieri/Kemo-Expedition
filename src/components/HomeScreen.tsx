@@ -2536,8 +2536,17 @@ function ExpeditionTab({
                             <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
                               <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
                               {entry.details.map((log, j) => {
-                                const phaseBaseLabel = log.actor === 'deity' ? '末' : log.actor === 'effect' ? '効' : log.phase === 'long' ? '遠' : log.phase === 'mid' ? '魔' : '近';
-                                const phaseLabel = log.initiativeRoll !== undefined && log.actor !== 'deity' && log.actor !== 'effect' ? `${phaseBaseLabel}${log.initiativeRoll}` : phaseBaseLabel;
+                                const isPhaseAction = log.actor !== 'deity' && log.actor !== 'effect';
+                                const previousLog = j > 0 ? entry.details[j - 1] : undefined;
+                                const previousWasPhaseAction = !!previousLog && previousLog.actor !== 'deity' && previousLog.actor !== 'effect';
+                                const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousWasPhaseAction || previousLog.phase !== log.phase);
+                                const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
+                                const phaseLabel = isPhaseAction ? `${log.initiativeRoll ?? '?'}` : log.actor === 'deity' ? '末' : '効';
+                                const phaseHeader = log.phase === 'long'
+                                  ? '遠距離攻撃フェーズ'
+                                  : log.phase === 'mid'
+                                    ? '魔法攻撃フェーズ'
+                                    : '近接攻撃フェーズ';
                                 const emoji = log.elementalOffense === 'fire' ? '🔥' : log.elementalOffense === 'thunder' ? '⚡' : log.elementalOffense === 'ice' ? '❄️' : log.phase === 'long' ? '🏹' : log.phase === 'mid' ? '🪄' : '⚔';
                                 const isEnemy = log.actor === 'enemy';
                                 const hits = log.hits ?? 0;
@@ -2563,16 +2572,19 @@ function ExpeditionTab({
                                   : actionText;
 
                                 return (
-                                  <div key={j} className="flex justify-between text-gray-600">
-                                    <span>
-                                      <span className="text-gray-400">[{phaseLabel}]</span>{' '}
-                                      {actionDisplay}
-                                      {log.note && <span className="text-gray-400"> {log.note}</span>}
-                                      {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
-                                    </span>
-                                    {log.damage !== undefined && log.damage > 0 && (
-                                      <span className={isEnemy ? 'text-accent' : 'text-sub'}>({emoji} {formatNumber(log.damage)})</span>
-                                    )}
+                                  <div key={j}>
+                                    {shouldShowPhaseHeader && <div className="text-gray-400">({phaseHeader})</div>}
+                                    <div className={`flex justify-between text-gray-600 ${shouldShowEndPhaseSpacer ? 'mt-1' : ''}`}>
+                                      <span>
+                                        <span className="text-gray-400">[{phaseLabel}]</span>{' '}
+                                        {actionDisplay}
+                                        {log.note && <span className="text-gray-400"> {log.note}</span>}
+                                        {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
+                                      </span>
+                                      {log.damage !== undefined && log.damage > 0 && (
+                                        <span className={isEnemy ? 'text-accent' : 'text-sub'}>({emoji} {formatNumber(log.damage)})</span>
+                                      )}
+                                    </div>
                                   </div>
                                 );
                               })}
@@ -3093,18 +3105,17 @@ function DiaryTab({
                           <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
                             <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
                             {entry.details.map((battleLog, j) => {
-                              const phaseBaseLabel = battleLog.actor === 'deity'
-                                ? '末'
-                                : battleLog.actor === 'effect'
-                                  ? '効'
-                                  : battleLog.phase === 'long'
-                                    ? '遠'
-                                    : battleLog.phase === 'mid'
-                                      ? '魔'
-                                      : '近';
-                              const phaseLabel = battleLog.initiativeRoll !== undefined && battleLog.actor !== 'deity' && battleLog.actor !== 'effect'
-                                ? `${phaseBaseLabel}${battleLog.initiativeRoll}`
-                                : phaseBaseLabel;
+                              const isPhaseAction = battleLog.actor !== 'deity' && battleLog.actor !== 'effect';
+                              const previousLog = j > 0 ? entry.details[j - 1] : undefined;
+                              const previousWasPhaseAction = !!previousLog && previousLog.actor !== 'deity' && previousLog.actor !== 'effect';
+                              const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousWasPhaseAction || previousLog.phase !== battleLog.phase);
+                              const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
+                              const phaseLabel = isPhaseAction ? `${battleLog.initiativeRoll ?? '?'}` : battleLog.actor === 'deity' ? '末' : '効';
+                              const phaseHeader = battleLog.phase === 'long'
+                                ? '遠距離攻撃フェーズ'
+                                : battleLog.phase === 'mid'
+                                  ? '魔法攻撃フェーズ'
+                                  : '近接攻撃フェーズ';
                               const getPhaseEmoji = () => {
                                 if (battleLog.elementalOffense === 'fire') return '🔥';
                                 if (battleLog.elementalOffense === 'thunder') return '⚡';
@@ -3147,18 +3158,21 @@ function DiaryTab({
                                 : actionText;
 
                               return (
-                                <div key={j} className="flex justify-between text-gray-600">
-                                  <span>
-                                    <span className="text-gray-400">[{phaseLabel}]</span>{' '}
-                                    {actionDisplay}
-                                    {battleLog.note && <span className="text-gray-400"> {battleLog.note}</span>}
-                                    {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
-                                  </span>
-                                  {battleLog.damage !== undefined && battleLog.damage > 0 && (
-                                    <span className={isEnemy ? 'text-accent' : 'text-sub'}>
-                                      ({emoji} {formatNumber(battleLog.damage)})
+                                <div key={j}>
+                                  {shouldShowPhaseHeader && <div className="text-gray-400">({phaseHeader})</div>}
+                                  <div className={`flex justify-between text-gray-600 ${shouldShowEndPhaseSpacer ? 'mt-1' : ''}`}>
+                                    <span>
+                                      <span className="text-gray-400">[{phaseLabel}]</span>{' '}
+                                      {actionDisplay}
+                                      {battleLog.note && <span className="text-gray-400"> {battleLog.note}</span>}
+                                      {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                     </span>
-                                  )}
+                                    {battleLog.damage !== undefined && battleLog.damage > 0 && (
+                                      <span className={isEnemy ? 'text-accent' : 'text-sub'}>
+                                        ({emoji} {formatNumber(battleLog.damage)})
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                               );
                             })}
