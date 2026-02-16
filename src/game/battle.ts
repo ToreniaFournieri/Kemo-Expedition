@@ -336,6 +336,10 @@ function enemyHasCounter(enemy: EnemyDef): boolean {
   return enemy.abilities.includes('counter');
 }
 
+function enemyHasReAttack(enemy: EnemyDef): boolean {
+  return enemy.abilities.includes('re_attack');
+}
+
 function hasCounter(charStats: ComputedCharacterStats, phase: BattlePhase): boolean {
   const ability = charStats.abilities.find(a => a.id === 'counter');
   if (!ability) return false;
@@ -506,91 +510,115 @@ export function executeBattle(
         const noA = getEnemyNoA(phase, enemy);
         if (noA <= 0) continue;
 
-        const attacksByTarget = new Map<number, { damage: number; hits: number; totalAttempts: number; charStats: ComputedCharacterStats }>();
-        const enemyAccuracyPotency = 1.0;
-        const enemyAccuracyBonus = enemy.accuracyBonus;
+        let enemyHitIndex = 1;
+        const runEnemyAttack = (attempts: number, isReAttack = false): void => {
+          if (attempts <= 0 || partyHp <= 0 || enemyHp <= 0) return;
 
-        for (let i = 0; i < noA; i++) {
-          const { row: targetRow, newCtx } = getTargetRow(ctx, phase);
-          ctx = newCtx;
-          const targetCharStats = characterStats.find(cs => cs.row === targetRow);
-          if (!targetCharStats) continue;
+          const attacksByTarget = new Map<number, { damage: number; hits: number; totalAttempts: number; charStats: ComputedCharacterStats }>();
+          const enemyAccuracyPotency = 1.0;
+          const enemyAccuracyBonus = enemy.accuracyBonus;
 
-          const singleDamage = calculateSingleEnemyAttackDamage(phase, enemy, partyStats, targetCharStats);
-          const existing = attacksByTarget.get(targetCharStats.characterId);
-          const didHit = hitDetection(enemyAccuracyPotency, enemyAccuracyBonus, targetCharStats.evasionBonus, i + 1, phase, hasDeflection(targetCharStats));
-
-          if (existing) {
-            existing.totalAttempts += 1;
-            if (didHit) {
-              existing.damage += singleDamage;
-              existing.hits += 1;
+          for (let i = 0; i < attempts; i++) {
+            const { row: targetRow, newCtx } = getTargetRow(ctx, phase);
+            ctx = newCtx;
+            const targetCharStats = characterStats.find(cs => cs.row === targetRow);
+            if (!targetCharStats) {
+              enemyHitIndex += 1;
+              continue;
             }
-          } else {
-            attacksByTarget.set(targetCharStats.characterId, {
-              damage: didHit ? singleDamage : 0,
-              hits: didHit ? 1 : 0,
-              totalAttempts: 1,
-              charStats: targetCharStats,
-            });
+
+            const singleDamage = calculateSingleEnemyAttackDamage(phase, enemy, partyStats, targetCharStats);
+            const existing = attacksByTarget.get(targetCharStats.characterId);
+            const didHit = hitDetection(
+              enemyAccuracyPotency,
+              enemyAccuracyBonus,
+              targetCharStats.evasionBonus,
+              enemyHitIndex,
+              phase,
+              hasDeflection(targetCharStats)
+            );
+            enemyHitIndex += 1;
+
+            if (existing) {
+              existing.totalAttempts += 1;
+              if (didHit) {
+                existing.damage += singleDamage;
+                existing.hits += 1;
+              }
+            } else {
+              attacksByTarget.set(targetCharStats.characterId, {
+                damage: didHit ? singleDamage : 0,
+                hits: didHit ? 1 : 0,
+                totalAttempts: 1,
+                charStats: targetCharStats,
+              });
+            }
           }
-        }
 
-        for (const [charId, attack] of attacksByTarget) {
-          const targetChar = party.characters.find(c => c.id === charId);
-          const attackName = phase === 'mid' ? '魔法攻撃' : '攻撃';
+          for (const [charId, attack] of attacksByTarget) {
+            const targetChar = party.characters.find(c => c.id === charId);
+            const attackName = isReAttack
+              ? (phase === 'mid' ? '魔法連撃' : '連撃')
+              : (phase === 'mid' ? '魔法攻撃' : '攻撃');
 
-          if (attack.damage > 0) {
-            partyHp -= attack.damage;
-          }
+            if (attack.damage > 0) {
+              partyHp -= attack.damage;
+            }
 
-          log.push({
-            phase,
-            initiativeRoll: turn.roll,
-            actor: 'enemy',
-            action: `${targetChar?.name ?? '???'} に${attackName}！`,
-            damage: attack.damage > 0 ? attack.damage : undefined,
-            hits: attack.hits,
-            totalAttempts: attack.totalAttempts,
-            elementalOffense: enemy.elementalOffense,
-          });
-
-          if (partyHp <= 0 || enemyHp <= 0) continue;
-          if (attack.damage <= 0 || !hasCounter(attack.charStats, phase)) continue;
-
-          if (enemy.abilities.includes('null_counter')) {
             log.push({
               phase,
-              actor: 'effect',
-              action: `${enemy.name}の反撃無効化により、${targetChar?.name ?? '???'}のカウンターは防がれた！`,
+              initiativeRoll: turn.roll,
+              actor: 'enemy',
+              action: `${targetChar?.name ?? '???'} に${attackName}！`,
+              damage: attack.damage > 0 ? attack.damage : undefined,
+              hits: attack.hits,
+              totalAttempts: attack.totalAttempts,
+              isReAttack: isReAttack || undefined,
+              elementalOffense: enemy.elementalOffense,
             });
-            continue;
+
+            if (partyHp <= 0 || enemyHp <= 0) continue;
+            if (attack.damage <= 0 || !hasCounter(attack.charStats, phase)) continue;
+
+            if (enemy.abilities.includes('null_counter')) {
+              log.push({
+                phase,
+                actor: 'effect',
+                action: `${enemy.name}の反撃無効化により、${targetChar?.name ?? '???'}のカウンターは防がれた！`,
+              });
+              continue;
+            }
+
+            const attackChar = party.characters.find(c => c.id === charId);
+            if (!attackChar) continue;
+
+            const counterResult = calculateCharacterDamage(phase, attack.charStats, attackChar, enemy, partyStats, 0.5);
+            if (counterResult.totalAttempts <= 0) continue;
+
+            if (counterResult.damage > 0) {
+              enemyHp -= counterResult.damage;
+            }
+
+            const counterType = phase === 'mid' ? '魔法カウンター' : 'カウンター';
+            const resonanceLogText = getResonanceLogText(phase, attack.charStats, counterResult.hits);
+            log.push({
+              phase,
+              initiativeRoll: initiativeByCharacter.get(charId),
+              actor: 'character',
+              characterId: charId,
+              action: `${targetChar?.name ?? '???'} の${counterType}！${resonanceLogText}`,
+              damage: counterResult.damage,
+              hits: counterResult.hits,
+              totalAttempts: counterResult.totalAttempts,
+              isCounter: true,
+              elementalOffense: attack.charStats.elementalOffense,
+            });
           }
+        };
 
-          const attackChar = party.characters.find(c => c.id === charId);
-          if (!attackChar) continue;
-
-          const counterResult = calculateCharacterDamage(phase, attack.charStats, attackChar, enemy, partyStats, 0.5);
-          if (counterResult.totalAttempts <= 0) continue;
-
-          if (counterResult.damage > 0) {
-            enemyHp -= counterResult.damage;
-          }
-
-          const counterType = phase === 'mid' ? '魔法カウンター' : 'カウンター';
-          const resonanceLogText = getResonanceLogText(phase, attack.charStats, counterResult.hits);
-          log.push({
-            phase,
-            initiativeRoll: initiativeByCharacter.get(charId),
-            actor: 'character',
-            characterId: charId,
-            action: `${targetChar?.name ?? '???'} の${counterType}！${resonanceLogText}`,
-            damage: counterResult.damage,
-            hits: counterResult.hits,
-            totalAttempts: counterResult.totalAttempts,
-            isCounter: true,
-            elementalOffense: attack.charStats.elementalOffense,
-          });
+        runEnemyAttack(noA, false);
+        if (enemyHasReAttack(enemy) && enemyHp > 0 && partyHp > 0) {
+          runEnemyAttack(Math.ceil(noA * 0.5), true);
         }
 
         continue;
