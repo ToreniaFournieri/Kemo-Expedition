@@ -27,6 +27,7 @@ import { computePartyStats } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
 import { applyEnemyEncounterScaling, getRoomMultiplier } from '../game/enemyScaling';
 import { DUNGEONS, getDungeonById } from '../data/dungeons';
+import { CLASS_SHORT_NAMES } from '../data/classes';
 import { getEnemiesByPool, getElitesByPool, getBossEnemy, getEnemyDropCandidates } from '../data/enemies';
 import {
   drawFromBag,
@@ -68,6 +69,11 @@ const DEFAULT_DIARY_SETTINGS: DiarySettings = {
   rareThreshold: 5,
   notifyDefeat: true,
 };
+
+function formatEnemyNameWithClass(name: string, classId: keyof typeof CLASS_SHORT_NAMES): string {
+  const shortName = CLASS_SHORT_NAMES[classId];
+  return shortName ? `${name}(${shortName})` : name;
+}
 
 function getDiarySettingsWithDefaults(value: Partial<DiarySettings> | undefined): DiarySettings {
   return {
@@ -984,7 +990,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               roomInFloor: roomIndex + 1,
               roomType: roomDef.type,
               floorMultiplier: roomMultiplier,
-              enemyName: enemy.name + roomSuffix,
+              enemyName: formatEnemyNameWithClass(enemy.name, enemy.enemyClass) + roomSuffix,
               enemyHP: enemy.hp,
               enemyAttackValues,
               outcome: battleResult.outcome!,
