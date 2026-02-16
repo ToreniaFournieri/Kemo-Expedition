@@ -510,13 +510,14 @@ export function executeBattle(
         const noA = getEnemyNoA(phase, enemy);
         if (noA <= 0) continue;
 
-        let enemyHitIndex = 1;
         const runEnemyAttack = (attempts: number, isReAttack = false): void => {
           if (attempts <= 0 || partyHp <= 0 || enemyHp <= 0) return;
 
           const attacksByTarget = new Map<number, { damage: number; hits: number; totalAttempts: number; charStats: ComputedCharacterStats }>();
           const enemyAccuracyPotency = 1.0;
           const enemyAccuracyBonus = enemy.accuracyBonus;
+          // Nth hit is counted per attack sequence; re-attacks/counters do not inherit prior hit decay.
+          let enemyHitIndex = 1;
 
           for (let i = 0; i < attempts; i++) {
             const { row: targetRow, newCtx } = getTargetRow(ctx, phase);
