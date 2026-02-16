@@ -3,7 +3,7 @@ import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant
 import { computePartyStats } from '../game/partyComputation';
 import { DUNGEONS } from '../data/dungeons';
 import { RACES } from '../data/races';
-import { CLASSES } from '../data/classes';
+import { CLASSES, CLASS_SHORT_NAMES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
 import { LINEAGES } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS } from '../data/items';
@@ -498,20 +498,6 @@ function formatBonuses(bonuses: Bonus[]): string {
   }
   return parts.join(', ');
 }
-
-// Short class names for party list
-const CLASS_SHORT_NAMES: Record<string, string> = {
-  fighter: '戦',
-  duelist: '剣',
-  ninja: '忍',
-  samurai: '侍',
-  lord: '君',
-  ranger: '狩',
-  wizard: '魔',
-  sage: '賢',
-  rogue: '盗',
-  pilgrim: '巡',
-};
 
 const PREDISPOSITION_SHORT_NAMES: Record<string, string> = {
   sturdy: '頑',

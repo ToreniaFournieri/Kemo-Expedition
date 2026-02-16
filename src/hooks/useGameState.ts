@@ -27,6 +27,7 @@ import { computePartyStats } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
 import { applyEnemyEncounterScaling, getRoomMultiplier } from '../game/enemyScaling';
 import { DUNGEONS, getDungeonById } from '../data/dungeons';
+import { CLASS_SHORT_NAMES } from '../data/classes';
 import { getEnemiesByPool, getElitesByPool, getBossEnemy, getEnemyDropCandidates } from '../data/enemies';
 import {
   drawFromBag,
@@ -69,20 +70,7 @@ const DEFAULT_DIARY_SETTINGS: DiarySettings = {
   notifyDefeat: true,
 };
 
-const CLASS_SHORT_NAMES: Record<string, string> = {
-  fighter: '戦',
-  duelist: '剣',
-  ninja: '忍',
-  samurai: '侍',
-  lord: '君',
-  ranger: '狩',
-  wizard: '魔',
-  sage: '賢',
-  rogue: '盗',
-  pilgrim: '巡',
-};
-
-function formatEnemyNameWithClass(name: string, classId: string): string {
+function formatEnemyNameWithClass(name: string, classId: keyof typeof CLASS_SHORT_NAMES): string {
   const shortName = CLASS_SHORT_NAMES[classId];
   return shortName ? `${name}(${shortName})` : name;
 }

@@ -1,4 +1,17 @@
-import { ClassDef } from '../types';
+import { ClassDef, ClassId } from '../types';
+
+export const CLASS_SHORT_NAMES: Record<ClassId, string> = {
+  fighter: '戦',
+  duelist: '剣',
+  ninja: '忍',
+  samurai: '侍',
+  lord: '君',
+  ranger: '狩',
+  wizard: '魔',
+  sage: '賢',
+  rogue: '盗',
+  pilgrim: '巡',
+};
 
 export const CLASSES: ClassDef[] = [
   {
