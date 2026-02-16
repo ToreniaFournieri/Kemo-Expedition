@@ -182,7 +182,7 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
   - if opponent has a.deflection AND phase == LONG: baseChance -= 0.10
   - chance = clamp(0.0, baseChance, 1.0) x (decay ^ (Nth_hit - 1))
     - Note: Nth_hit starts at 1 for the first strike.
-    - Note: Nth_hit counts indevisually and not share with normal attack, re-attack and counter.
+    - Note: Nth_hit counts indevisually and not share with normal attack, re-attack and counter. (Nth_hit is reset per attack sequence)
       
   - Roll: Return Random(0, 1.0) <= chance
  
