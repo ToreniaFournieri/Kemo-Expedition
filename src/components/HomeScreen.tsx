@@ -1502,7 +1502,7 @@ function PartyTab({
                   onUpdatePartyDeity(selectedPartyIndex, pendingDeityName);
                   setEditingDeity(false);
                 }}
-                className="text-xs text-sub border border-sub rounded px-3 py-1 min-w-[3.5rem]"
+                className="text-sm text-sub border border-sub rounded px-4 py-1.5 min-w-[4.5rem]"
               >
                 完了
               </button>
@@ -1511,7 +1511,7 @@ function PartyTab({
                   setPendingDeityName(party.deity.name);
                   setEditingDeity(false);
                 }}
-                className="text-xs text-gray-600 border border-gray-300 rounded px-3 py-1 min-w-[3.5rem]"
+                className="text-sm text-gray-600 border border-gray-300 rounded px-4 py-1.5 min-w-[4.5rem]"
               >
                 取消
               </button>
@@ -1519,7 +1519,7 @@ function PartyTab({
             <select
               value={pendingDeityName}
               onChange={(e) => setPendingDeityName(e.target.value)}
-              className="text-xs border rounded px-2 py-1"
+              className="text-sm border rounded px-3 py-1.5"
             >
               {DEITY_OPTIONS.map((deity) => {
                 const normalizedName = normalizeDeityName(deity.name);
