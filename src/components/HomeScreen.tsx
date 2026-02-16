@@ -983,8 +983,16 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     }
 
     const stolenProfit = Math.max(0, party.pendingProfit);
+
+    if (cycle?.state !== '待機中') {
+      if (stolenProfit > 0) {
+        actions.addNotification(`${party.name} は神の緊急動員に憤り、${formatNumber(stolenProfit)}Gを持ち逃げして出撃した`);
+      } else {
+        actions.addNotification(`${party.name} は神の緊急動員に憤りながらも出撃した`);
+      }
+    }
+
     actions.clearPendingProfit(partyIndex);
-    actions.addNotification(`${party.name} は神の緊急動員に憤り、${formatNumber(stolenProfit)}Gを持ち逃げして出撃した`);
     transitionTo(partyIndex, '移動中', 5000);
   };
 
