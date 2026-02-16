@@ -664,6 +664,9 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const [diaryExpandedLogs, setDiaryExpandedLogs] = useState<Record<string, boolean>>({});
   const [diaryExpandedRooms, setDiaryExpandedRooms] = useState<Record<string, boolean>>({});
   const [diarySettingsExpanded, setDiarySettingsExpanded] = useState(false);
+  const [selectedBestiaryDungeonId, setSelectedBestiaryDungeonId] = useState<number>(1);
+  const [expandedBestiaryEnemies, setExpandedBestiaryEnemies] = useState<Record<number, boolean>>({});
+  const [bestiaryScrollTop, setBestiaryScrollTop] = useState(0);
   const tabScrollPositionsRef = useRef<Partial<Record<Tab, number>>>({});
   const tabContentRef = useRef<HTMLDivElement | null>(null);
 
@@ -1181,6 +1184,12 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             onResetCommonBags={actions.resetCommonBags}
             onResetUniqueBags={actions.resetUniqueBags}
             onResetSuperRareBag={actions.resetSuperRareBag}
+            selectedBestiaryDungeonId={selectedBestiaryDungeonId}
+            onSetSelectedBestiaryDungeonId={setSelectedBestiaryDungeonId}
+            expandedBestiaryEnemies={expandedBestiaryEnemies}
+            onSetExpandedBestiaryEnemies={setExpandedBestiaryEnemies}
+            bestiaryScrollTop={bestiaryScrollTop}
+            onSetBestiaryScrollTop={setBestiaryScrollTop}
           />
         )}
       </div>
@@ -3198,6 +3207,12 @@ function SettingTab({
   onResetCommonBags,
   onResetUniqueBags,
   onResetSuperRareBag,
+  selectedBestiaryDungeonId,
+  onSetSelectedBestiaryDungeonId,
+  expandedBestiaryEnemies,
+  onSetExpandedBestiaryEnemies,
+  bestiaryScrollTop,
+  onSetBestiaryScrollTop,
 }: {
   deityDonations: Record<string, number>;
   bags: GameBags;
@@ -3205,13 +3220,22 @@ function SettingTab({
   onResetCommonBags: () => void;
   onResetUniqueBags: () => void;
   onResetSuperRareBag: () => void;
+  selectedBestiaryDungeonId: number;
+  onSetSelectedBestiaryDungeonId: Dispatch<SetStateAction<number>>;
+  expandedBestiaryEnemies: Record<number, boolean>;
+  onSetExpandedBestiaryEnemies: Dispatch<SetStateAction<Record<number, boolean>>>;
+  bestiaryScrollTop: number;
+  onSetBestiaryScrollTop: Dispatch<SetStateAction<number>>;
 }) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [compendiumCategory, setCompendiumCategory] = useState<string>('armor');
   const [compendiumRarityFilter, setCompendiumRarityFilter] = useState<RarityFilter>('all');
   const [expandedCompendiumItems, setExpandedCompendiumItems] = useState<Record<number, boolean>>({});
-  const [selectedBestiaryDungeonId, setSelectedBestiaryDungeonId] = useState<number>(1);
-  const [expandedEnemies, setExpandedEnemies] = useState<Record<number, boolean>>({});
+  const bestiaryListRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    bestiaryListRef.current?.scrollTo({ top: bestiaryScrollTop, behavior: 'auto' });
+  }, [bestiaryScrollTop]);
 
   const getInitialCount = (value: number) => ENHANCEMENT_TITLES.find(t => t.value === value)?.tickets ?? 0;
   const craftsmanInitial = getInitialCount(1);
@@ -3620,7 +3644,7 @@ function SettingTab({
           {DUNGEONS.map(dungeon => (
             <button
               key={dungeon.id}
-              onClick={() => setSelectedBestiaryDungeonId(dungeon.id)}
+              onClick={() => onSetSelectedBestiaryDungeonId(dungeon.id)}
               className={`px-2 py-1 text-sm rounded ${
                 selectedBestiaryDungeonId === dungeon.id
                   ? 'bg-sub text-white'
@@ -3632,7 +3656,14 @@ function SettingTab({
             </button>
           ))}
         </div>
-        <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+        <div
+          ref={bestiaryListRef}
+          className="space-y-2 max-h-96 overflow-y-auto pr-1"
+          onScroll={() => {
+            const currentScrollTop = bestiaryListRef.current?.scrollTop ?? 0;
+            onSetBestiaryScrollTop(currentScrollTop);
+          }}
+        >
           <div className="text-xs text-gray-500">{selectedBestiaryDungeon.name}</div>
           {selectedBestiaryGroups.map(group => (
             <div key={group.key} className="bg-white rounded border border-gray-200 p-2">
@@ -3640,12 +3671,12 @@ function SettingTab({
               {group.enemies.map(enemy => {
                 const displayEnemy = getDisplayEnemy(enemy, selectedBestiaryDungeon, group.floorNumber, group.groupType);
                 const enemyClass = ENEMY_CLASS_LABELS[displayEnemy.enemyClass] ?? '不明';
-                const enemyExpanded = !!expandedEnemies[displayEnemy.id];
+                const enemyExpanded = !!expandedBestiaryEnemies[displayEnemy.id];
                 const defenseAmplifierPercent = displayEnemy.defenseAmplifier * 100;
                 return (
                   <div key={displayEnemy.id} className="mt-2 border border-gray-100 rounded">
                     <button
-                      onClick={() => setExpandedEnemies(prev => ({ ...prev, [displayEnemy.id]: !enemyExpanded }))}
+                      onClick={() => onSetExpandedBestiaryEnemies(prev => ({ ...prev, [displayEnemy.id]: !enemyExpanded }))}
                       className="w-full text-left px-2 py-1 text-sm flex justify-between items-center"
                     >
                       <span>{renderEnemyNameWithMutedClass(getEnemyDisplayNameWithClass(displayEnemy))}</span>
