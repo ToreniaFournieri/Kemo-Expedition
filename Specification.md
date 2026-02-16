@@ -216,8 +216,8 @@ PT3: 貯金額: 10G
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
-| **0.2.6** | Speed update  |
-| 0.2.5 | Alpha test update, barance fix  |
+| **0.2.6** | Version bump to 0.2.6, First Strike description text update |
+| **0.2.5** | Alpha test update, barance fix  |
 | 0.2.4 | Party State Machine update, AFK mode.  |
 | 0.2.3 | Accuracy update. Magic is now respect `f.hit_detection`. |
 | 0.2.2| Game balance modified, Enemy status mutipliers update, 2.3.3 Base data structure (enemy) update |

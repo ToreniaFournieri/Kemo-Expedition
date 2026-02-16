@@ -471,7 +471,7 @@ function getAbilityName(id: AbilityId, level: number): string {
 
 function getAbilityDescription(id: AbilityId, level: number): string {
   const descriptions: Record<AbilityId, (level: number) => string> = {
-    first_strike: (l) => l === 2 ? '行動がとても速くなります' : '行動が速くなります',
+    first_strike: (l) => l === 2 ? '行動がとても速くなる' : '行動が速くなる',
     hunter: (l) => l === 2 ? '列による命中率減衰を1列ごと15%→7%に軽減する' : '列による命中率減衰を1列ごと15%→10%に軽減する',
     defender: (l) => `パーティへの物理ダメージ × ${l === 2 ? '3/5' : '2/3'}`,
     counter: (l) => l === 2 ? '敵の近距離・中距離攻撃を受けたとき反撃(攻撃回数半減)' : '敵の近距離攻撃を受けたとき反撃(攻撃回数半減)',
