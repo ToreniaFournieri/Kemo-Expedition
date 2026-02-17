@@ -77,7 +77,7 @@ const PARTY_CYCLE_TICK_MS = 100;
 const EXPLORING_PROGRESS_STEP_MS = 1000;
 const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
 const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
-const AFK_MAX_ELAPSED_MS = 60 * 60 * 1000;
+const AFK_MAX_ELAPSED_MS = 600 * 60 * 1000;
 const HEADER_HEIGHT_CLASS = 'pt-[108px]';
 
 function getExplorationDurationMs(entryCount?: number): number {
@@ -1989,7 +1989,7 @@ function PartyTab({
                     text: `遠距離攻撃:${formatNumber(Math.floor(stats.rangedAttack))} x ${formatNumber(stats.rangedNoA)}回(x${amp.toFixed(2)})`,
                     helpTitle: '遠距離攻撃',
                     helpLines: [
-                      `遠距離攻撃力: ${formatNumber(Math.floor(stats.rangedAttack))} ※ダメージを与えるには敵の防御力を超える必要があります`,
+                      `遠距離攻撃力: ${formatNumber(Math.floor(stats.rangedAttack))} ※ダメージを与えるには敵の物理防御力を超える必要があります`,
                       `遠距離攻撃回数: ${formatNumber(stats.rangedNoA)}回`,
                       `遠距離攻撃倍率: x${amp.toFixed(2)} ※値が大きいほどダメージが大きくなります`,
                     ],
@@ -2002,7 +2002,7 @@ function PartyTab({
                     text: `魔法攻撃:${formatNumber(Math.floor(stats.magicalAttack))} x ${formatNumber(stats.magicalNoA)}回(x${amp.toFixed(2)})`,
                     helpTitle: '魔法攻撃',
                     helpLines: [
-                      `魔法攻撃力: ${formatNumber(Math.floor(stats.magicalAttack))} ※ダメージを与えるには敵の防御力を超える必要があります`,
+                      `魔法攻撃力: ${formatNumber(Math.floor(stats.magicalAttack))} ※ダメージを与えるには敵の魔法防御力を超える必要があります`,
                       `魔法攻撃回数: ${formatNumber(stats.magicalNoA)}回`,
                       `魔法攻撃倍率: x${amp.toFixed(2)} ※値が大きいほどダメージが大きくなります`,
                     ],
@@ -2015,7 +2015,7 @@ function PartyTab({
                     text: `近接攻撃:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}回(x${amp.toFixed(2)})`,
                     helpTitle: '近接攻撃',
                     helpLines: [
-                      `近接攻撃力: ${formatNumber(Math.floor(stats.meleeAttack))} ※ダメージを与えるには敵の防御力を超える必要があります`,
+                      `近接攻撃力: ${formatNumber(Math.floor(stats.meleeAttack))} ※ダメージを与えるには敵の物理防御力を超える必要があります`,
                       `近接攻撃回数: ${formatNumber(stats.meleeNoA)}回`,
                       `近接攻撃倍率: x${amp.toFixed(2)} ※値が大きいほどダメージが大きくなります`,
                     ],
@@ -2064,7 +2064,7 @@ function PartyTab({
                     text: `物防:${formatNumber(stats.physicalDefense)} (${formatNumber(Math.round(defenseAmpPhysical * 100))}%)`,
                     helpTitle: '物理防御',
                     helpLines: [
-                      `物理防御力: ${formatNumber(stats.physicalDefense)} ※敵の遠距離/近接攻撃力を超える防御力を持つとダメージをほぼ受けなくなります`,
+                      `物理防御力: ${formatNumber(stats.physicalDefense)} ※敵の遠距離/近接攻撃力を超える物理防御力を持つとダメージをほぼ受けなくなります`,
                       `物理耐性: ${formatNumber(Math.round(defenseAmpPhysical * 100))}% ※耐性%が低いほど攻撃に強くなります`,
                     ],
                   },
@@ -2073,7 +2073,7 @@ function PartyTab({
                     text: `魔防:${formatNumber(stats.magicalDefense)} (${formatNumber(Math.round(defenseAmpMagical * 100))}%)`,
                     helpTitle: '魔法防御',
                     helpLines: [
-                      `魔法防御力: ${formatNumber(stats.magicalDefense)} ※敵の魔法攻撃力を超える防御力を持つとダメージをほぼ受けなくなります`,
+                      `魔法防御力: ${formatNumber(stats.magicalDefense)} ※敵の魔法攻撃力を超える魔法防御力を持つとダメージをほぼ受けなくなります`,
                       `魔法耐性: ${formatNumber(Math.round(defenseAmpMagical * 100))}% ※耐性%が低いほど攻撃に強くなります`,
                     ],
                   },
