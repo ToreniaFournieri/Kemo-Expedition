@@ -2248,10 +2248,14 @@ function PartyTab({
                   additive[b.type] = (additive[b.type] ?? 0) + b.value;
                 } else if (b.type === 'penet' || b.type === 'accuracy' || b.type === 'evasion') {
                   if (b.type === 'evasion') {
-                    const bonusName = `c.evasion+${b.value}`;
-                    if (!uniqueEvasionBonusNames.has(bonusName)) {
-                      uniqueEvasionBonusNames.add(bonusName);
+                    if (b.value < 0) {
                       additive[b.type] = (additive[b.type] ?? 0) + b.value;
+                    } else {
+                      const bonusName = `c.evasion+${b.value}`;
+                      if (!uniqueEvasionBonusNames.has(bonusName)) {
+                        uniqueEvasionBonusNames.add(bonusName);
+                        additive[b.type] = (additive[b.type] ?? 0) + b.value;
+                      }
                     }
                   } else {
                     additive[b.type] = (additive[b.type] ?? 0) + b.value;

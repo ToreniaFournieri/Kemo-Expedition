@@ -154,6 +154,12 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
         break;
       case 'evasion':
         {
+          // c.evasion is unique by name, but penalty-side d.evasion values are stackable.
+          if (bonus.value < 0) {
+            collection.evasion += bonus.value;
+            break;
+          }
+
           const bonusName = `c.evasion+${formatCBonusValue(bonus.value)}`;
           if (!collection.uniqueEvasionBonusNames.has(bonusName)) {
             collection.uniqueEvasionBonusNames.add(bonusName);
@@ -318,10 +324,16 @@ export function computeCharacterStats(
       }
     }
     if (item.evasionBonus) {
-      const bonusName = `c.evasion+${formatCBonusValue(item.evasionBonus)}`;
-      if (!evasionBonusNames.has(bonusName)) {
-        evasionBonusNames.add(bonusName);
+      // Positive c.evasion bonuses are unique by name.
+      // Negative d.evasion penalties are stackable.
+      if (item.evasionBonus < 0) {
         evasionBonus += item.evasionBonus;
+      } else {
+        const bonusName = `c.evasion+${formatCBonusValue(item.evasionBonus)}`;
+        if (!evasionBonusNames.has(bonusName)) {
+          evasionBonusNames.add(bonusName);
+          evasionBonus += item.evasionBonus;
+        }
       }
     }
     if (item.penetBonus) collection.penet += item.penetBonus;

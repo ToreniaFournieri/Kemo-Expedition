@@ -33,7 +33,7 @@
 
 d. bonus (stackable)
 
-| `c.` | Display |
+| `d.` | Display |
 |---|----|
 |`d.accuracy-v`| 命中-v |
 |`d.evasion-v` | 回避-v |
@@ -556,13 +556,13 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 |`i.robe` |  `d.magical_defense`  | `c.magical_defense+v` | `b.mind+1`, `d.HP`, `c.evasion+0.01` |
 |`i.shield ` | `d.HP` | `c.evasion+v` | `d.physical_defense`, `d.melee_attack`, `b.vitality+1` |
 |`i.sword` | `d.melee_attack` | `c.melee_attack+v` | `c.accuracy+0.01`, `b.strength+1`, `e.fire`, `d.physical_defense` ,`d.HP` |
-|`i.katana` | `d.melee_attack` | `c.melee_attack+V`, `d.evasion-v`, `c.melee_NoA-v` | additional `d.melee_attack`, `c.penet_+0.01`, `c.penet_+0.02`, `b.mind+1` |
+|`i.katana` | `d.melee_attack` | `c.melee_attack+V`, `d.evasion-v`, `d.melee_NoA-v` | additional `d.melee_attack`, `c.penet_+0.01`, `c.penet_+0.02`, `b.mind+1` |
 |`i.gauntlet` | `d.melee_NoA` | `c.melee_NoA+v` | additional `d.melee_NoA`, `d.physical_defense`, `b.strength+1` |
 |`i.arrow` | `d.ranged_attack` | `c.ranged_attack+v` | additional `d.ranged_attack`, `e.fire`, `e.ice` |
-|`i.bolt` | `d.ranged_attack` | `c.ranged_attack+v`, `d.evasion-v`, `c.ranged_NoA-v` | additional `d.ranged_attack`, `e.thunder`,`b.strength+1` |
+|`i.bolt` | `d.ranged_attack` | `c.ranged_attack+v`, `d.evasion-v`, `d.ranged_NoA-v` | additional `d.ranged_attack`, `e.thunder`,`b.strength+1` |
 |`i.archery` | `d.ranged_NoA` | `c.ranged_NoA+v` | `c.accuracy+0.01`, `c.accuracy+0.02`, `d.evasion`, `d.HP`, `b.strength+1`|
 |`i.wand` | `d.magical_attack` | `c.magical_attack+v` | additional `d.magical_attack`, `d.magical_defense`, `b.intelligence+1` |
-|`i.grimoire` | `d.magical_attack` | `c.magical_attack+v`, `d.evasion-v`, `c.magical_NoA-v` | additional `d.magical_attack`, `b.mind+1`, `d.magical_defense` |
+|`i.grimoire` | `d.magical_attack` | `c.magical_attack+v`, `d.evasion-v`, `d.magical_NoA-v` | additional `d.magical_attack`, `b.mind+1`, `d.magical_defense` |
 |`i.catalyst` | `d.magical_NoA` | `c.magical_NoA+v` | additional `d.magical_NoA`, `e.fire`, `e.ice`, `e.thunder`, `b.intelligence+1` |
 
 
