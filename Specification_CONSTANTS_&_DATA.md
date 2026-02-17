@@ -364,13 +364,13 @@
 | `x.expediton` | short word | `x.exp_HP_mult` | `x.exp_atk_mult` | `x.exp_NoA_mult` | `x.exp_atk_amp_mult` | `x.exp_def_mult` | `x.exp_def_amp_mult` | drop item tier | lore |
 |------|-----|-----|----|----|----|----|----|----|----|
 | ケイナイアン平原(Caninian Plains) | 原 | x1 | x1 | x1 | x1 | x1 | x1 | 1 | The Fields of First Vows. A sun-drenched grassland dotted with wooden watchtowers. This is the training ground for all new expeditions. The atmosphere is stable, making it the perfect place to master the basics of the Sword and Grimoire under the watchful eyes of the loyal Caninian sentries. |
-| ルピニアンの断崖(Lupinian Crag) | 崖 | x4 | x2 | x2 | x1.5 | x3 | x0.8 | 2 | The Razor-Wind Peaks. Sharp obsidian cliffs where the wind howls like a hungry wolf. The Lupinian tribes test their endurance here. |
-| ヴァルピニアンの樹林帯(Vulpinian Taiga) | 樹 | x16 | x6 | x3 | x1.9 | x9 | x0.64 | 3 | The Forest of Veils. A dense, autumnal woodland where the trees seem to move when you blink. The Vulpinian mages use the natural spiritual mist to weave illusions. Requiring explorers to seek the protection of high-tier Robes and Wands to see through the deception. |
-| ウルサンの霊峰(Ursan Peaks) | 峰 | x64 | x16 | x4 | x2.2 | x27 | x0.51 | 4 | The Thunder-Forge Mountains. A volcanic range where the ground shakes with the rhythmic pounding of Ursan blacksmiths. Deep in these magma-lit halls, the lost art of the Katana is guarded by those whose bodies are as hard as the stone itself. |
-| フェリディアンの茂み(Felidian Grove) | 茂 | x256 | x54 | x5 | x2.4 | x81 | x0.41 | 5 | The Moonlit Sanctuary. An ancient, overgrown jungle where ruins of a pre-shattering civilization glow with bioluminescence. To clear this grove, one must master the Bolt—the only weapon fast enough to strike before the forest strikes back. |
-| マステリドの巣穴(Mustelid Burrow) | 巣 | x1,024 | x162 | x6 | x2.5 | x243 | x0.33 | 6 | The Copper Labyrinth. A massive subterranean industrial hive. The air is thick with chemical steam and the clank of gears. Only those with high-tier Catalysts can neutralize the toxins found in the deepest vents. |
-| レポリアンの庭園(Leporian Garden) | 園 | x4,096 | x486 | x7 | x2.6 | x729 | x0.26 | 7 | The High-Heaven Isles. A cluster of floating islands suspended miles above the clouds. The Leporians navigate these heights using wind currents. Only those with the "Lord's" resolve can stabilize their spirit enough to claim the Mythic Sword. |
-| セルヴィンの谷(Cervin Vale) | 谷 | x16,384 | x1,458 | x8 | x2.7 | x2,187 | x0.21 | 8 | The Glass Horizon. A dimension where space and time have crystallized. The Cervin Sages reside here in total silence. Here, the final Grimoire and Katana await the one who can transcend mortality. |
+| ルピニアンの断崖(Lupinian Crag) | 崖 | x4 | x2 | x2 | x1.5 | x2 | x0.8 | 2 | The Razor-Wind Peaks. Sharp obsidian cliffs where the wind howls like a hungry wolf. The Lupinian tribes test their endurance here. |
+| ヴァルピニアンの樹林帯(Vulpinian Taiga) | 樹 | x16 | x4 | x3 | x1.9 | x4 | x0.64 | 3 | The Forest of Veils. A dense, autumnal woodland where the trees seem to move when you blink. The Vulpinian mages use the natural spiritual mist to weave illusions. Requiring explorers to seek the protection of high-tier Robes and Wands to see through the deception. |
+| ウルサンの霊峰(Ursan Peaks) | 峰 | x64 | x8 | x4 | x2.2 | x8 | x0.51 | 4 | The Thunder-Forge Mountains. A volcanic range where the ground shakes with the rhythmic pounding of Ursan blacksmiths. Deep in these magma-lit halls, the lost art of the Katana is guarded by those whose bodies are as hard as the stone itself. |
+| フェリディアンの茂み(Felidian Grove) | 茂 | x256 | x16 | x5 | x2.4 | x16 | x0.41 | 5 | The Moonlit Sanctuary. An ancient, overgrown jungle where ruins of a pre-shattering civilization glow with bioluminescence. To clear this grove, one must master the Bolt—the only weapon fast enough to strike before the forest strikes back. |
+| マステリドの巣穴(Mustelid Burrow) | 巣 | x1,024 | x32 | x6 | x2.5 | x32 | x0.33 | 6 | The Copper Labyrinth. A massive subterranean industrial hive. The air is thick with chemical steam and the clank of gears. Only those with high-tier Catalysts can neutralize the toxins found in the deepest vents. |
+| レポリアンの庭園(Leporian Garden) | 園 | x4,096 | x64 | x7 | x2.6 | x64 | x0.26 | 7 | The High-Heaven Isles. A cluster of floating islands suspended miles above the clouds. The Leporians navigate these heights using wind currents. Only those with the "Lord's" resolve can stabilize their spirit enough to claim the Mythic Sword. |
+| セルヴィンの谷(Cervin Vale) | 谷 | x16,384 | x128 | x8 | x2.7 | x128 | x0.21 | 8 | The Glass Horizon. A dimension where space and time have crystallized. The Cervin Sages reside here in total silence. Here, the final Grimoire and Katana await the one who can transcend mortality. |
 
 - **Enemy entity distribution** for each `x.expediton`
 
@@ -385,17 +385,17 @@
 | `x.floor` | `x.room` | `x.room_type` | `x.floor_HP_mult` | `x.floor_atk_mult` | `x.floor_NoA_mult` | `x.floor_atk_amp_mult` | `x.floor_def_mult` | `x.floor_def_amp_mult` | `x.Spawn_pool`, drops | `x.key_concept` |
 |----|----|----|-----|-----|-----|-----|-----|-----|-----|-----|
 | 1 | 1-3 | `x.battle_Normal` | x1.0 | x1.0 | x1.0 | x1.00 | x1.0 | x1.0 | pool_1 | easy farming |
-| 1 | 4 | `x.battle_Elite` | x1.50 | x1.23 | x1.0 | x1.05 | x1.5 | x1.0 | fixed Elite. rare  `i.sword`, `i.armor` | Class:Rogue. Checks if you have equipped items properly. |
-| 2 | 1-3 | `x.battle_Normal` | x1.25 | x1.10 | x1.0 | x1.02 | x1.20 | x0.97 | pool_2 | |
-| 2 | 4 | `x.battle_Elite` | x1.85 | x1.34 | x1.0 | x1.09 | x1.80 | x0.97 | fixed Elite. rare  `i.shield`, `i.robe` | Class:Fighter. Checks if you have equipped enough offensive items. |
-| 3 | 1-3 | `x.battle_Normal` | x1.56 | x1.20 | x1.0 | x1.04 | x1.44 | x0.94 | pool_3  |  |
-| 3 | 4 | `x.battle_Elite` | x2.34 | x1.47 | x1.0 | x1.12 | x2.16 | x0.94 | fixed Elite. rare  `i.arrow`, `i.bolt`, `i.archery` | Class:Ranger. Check if you have enough physical defensive items. |
-| 4 | 1-3 | `x.battle_Normal` | x2.95 | x1.32 | x1.0 | x1.06 | x1.72 | x0.92 | pool_4 | |
-| 4 | 4 | `x.battle_Elite` | x4.43 | x1.61 | x1.0 | x1.14 | x2.58 | x0.92 | fixed Elite. rare  `i.armor`, `i.katana` | Class:Duelist. Checks if you have archery or magic items. (kill it before his melee attacks) |
-| 5 | 1-3 | `x.battle_Normal` | x2.44 | x1.44 | x1.0 | x1.07 | x2.07 | x0.89 | pool_5  | |
-| 5 | 4 | `x.battle_Elite` | x4.04 | x1.76 | x1.0 | x1.15 | x3.11 | x0.89 | fixed Elite. rare  `i.wand`, `i.grimoire`, `i.catalyst` | Class:Mage. Checks if you have equipped enough magical defensive items.  |
-| 6 | 1-3 | `x.battle_Normal` | x3.05 | x1.58 | x1.0 | x1.08 | x2.49 | x0.86 | pool_6 | |
-| 6 | 4 | `x.battle_Boss` | x6.10 | x2.24 | x1.0 | x1.20 | x5.0 | x0.86 | fixed Boss. mythic (see bellows) | Checks if you have enough tital power. |
+| 1 | 4 | `x.battle_Elite` | x1.50 | x1.23 | x1.0 | x1.05 | x1.23 | x1.0 | fixed Elite. rare  `i.sword`, `i.armor` | Class:Rogue. Checks if you have equipped items properly. |
+| 2 | 1-3 | `x.battle_Normal` | x1.25 | x1.10 | x1.0 | x1.02 | x1.10 | x0.97 | pool_2 | |
+| 2 | 4 | `x.battle_Elite` | x1.85 | x1.34 | x1.0 | x1.09 | x1.34 | x0.97 | fixed Elite. rare  `i.shield`, `i.robe` | Class:Fighter. Checks if you have equipped enough offensive items. |
+| 3 | 1-3 | `x.battle_Normal` | x1.56 | x1.20 | x1.0 | x1.04 | x1.20 | x0.94 | pool_3  |  |
+| 3 | 4 | `x.battle_Elite` | x2.34 | x1.47 | x1.0 | x1.12 | x1.47 | x0.94 | fixed Elite. rare  `i.arrow`, `i.bolt`, `i.archery` | Class:Ranger. Check if you have enough physical defensive items. |
+| 4 | 1-3 | `x.battle_Normal` | x2.95 | x1.32 | x1.0 | x1.06 | x1.32 | x0.92 | pool_4 | |
+| 4 | 4 | `x.battle_Elite` | x4.43 | x1.61 | x1.0 | x1.14 | x1.61 | x0.92 | fixed Elite. rare  `i.armor`, `i.katana` | Class:Duelist. Checks if you have archery or magic items. (kill it before his melee attacks) |
+| 5 | 1-3 | `x.battle_Normal` | x2.44 | x1.44 | x1.0 | x1.07 | x1.44 | x0.89 | pool_5  | |
+| 5 | 4 | `x.battle_Elite` | x4.04 | x1.76 | x1.0 | x1.15 | x1.76 | x0.89 | fixed Elite. rare  `i.wand`, `i.grimoire`, `i.catalyst` | Class:Mage. Checks if you have equipped enough magical defensive items.  |
+| 6 | 1-3 | `x.battle_Normal` | x3.05 | x1.58 | x1.0 | x1.08 | x1.58 | x0.86 | pool_6 | |
+| 6 | 4 | `x.battle_Boss` | x6.10 | x2.24 | x1.0 | x1.20 | x2.24 | x0.86 | fixed Boss. mythic (see bellows) | Checks if you have enough tital power. |
 
 - each pool has enemies with unique item drops. (*note:* common items are not specifically mentioned but are dropped.)
   
@@ -490,16 +490,16 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 | Class | `d.HP` | `a.ability` | `c.accuracy` | `c.evasion` | `d.ranged_attack` | `d.ranged_NoA` | `d.magical_attack` | `d.magical_NoA` | `d.melee_attack` | `d.melee_NoA` | `d.ranged_attack_amplifier` | `d.magical_attack_amplifier` | `d.melee_attack_amplifier` | `d.physical_defense` | `d.magical_defense` | `e.fire` | `e.ice` | `e.thunder` | `r.fire` | `r.ice` |`r.thunder` | `d.experience` |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Fighter | 75 | (none) | 0.00| 0.02 | 0 | 0 | 0 | 0 | 16 | 2 | x1.0 | x1.0 | x1.0 | 16 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
+| Fighter | 63 | (none) | 0.00| 0.02 | 0 | 0 | 0 | 0 | 16 | 2 | x1.0 | x1.0 | x1.0 | 13 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
 | Duelist | 50 | `a.counter`1 | 0.01 | 0.01 | 0 | 0 | 0 | 0 | 20 | 4 | x1.0 | x1.0 | x1.2 | 10 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
-| Ninja | 47 | `a.re-attack`1 | 0.00 | 0.04 | 0 | 0 | 0 | 0 | 24 | 4 | x1.0 | x1.0 | x1.2 | 9 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 14 |
+| Ninja | 46 | `a.re-attack`1 | 0.00 | 0.04 | 0 | 0 | 0 | 0 | 24 | 4 | x1.0 | x1.0 | x1.2 | 9 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 14 |
 | Samurai | 40 | (none) | -0.05 | -0.01 | 0 | 0 | 0 | 0 | 40 | 1 | x1.0 | x1.0 | x1.3 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 12 |
-| Lord | 60 | (none) | 0.00 | 0.00 | 0 | 0 | 0 | 0 | 18 | 4 | x1.0 | x1.0 | x1.1 | 14 | 14 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 20 |
-| Ranger | 38 | (none) | 0.03 | 0.01 | 14 | 4 | 0 | 0 | 0 | 0 | x1.2 | x1.0 | x1.0 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 12 |
-| Wizard | 32 | (none) | 0.00 | 0.00 |0 | 0 | 20 | 2 | 0 | 0 | x1.0 | x1.2 | x1.0 | 6 | 14 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
-| Sage | 38 | (none) | 0.00 | 0.00 |0 | 0 | 10 | 4 | 0 | 0 | x1.0 | x1.2 | x1.0 | 8 | 20 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
-| Rogue | 30 | `a.deflection`, `a.first-strike`1 | 0.06 | 0.06 | 10 | 4 | 0 | 0 | 10 | 4 | x1.2 | x1.0 | x1.0 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 8 |
-| Pilgrim | 66 | `a.null-counter` | 0.00 | 0.02 | 0 | 0 | 10 | 2 | 16 | 2 | x1.0 | x1.2 | x1.2 | 12 | 12 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 16 |
+| Lord | 58 | (none) | 0.00 | 0.00 | 0 | 0 | 0 | 0 | 18 | 4 | x1.0 | x1.0 | x1.1 | 12 | 12 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 20 |
+| Ranger | 44 | (none) | 0.03 | 0.01 | 14 | 4 | 0 | 0 | 0 | 0 | x1.2 | x1.0 | x1.0 | 9 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 12 |
+| Wizard | 42 | (none) | 0.00 | 0.00 |0 | 0 | 20 | 2 | 0 | 0 | x1.0 | x1.2 | x1.0 | 8 | 12 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
+| Sage | 47 | (none) | 0.00 | 0.00 |0 | 0 | 10 | 4 | 0 | 0 | x1.0 | x1.2 | x1.0 | 9 | 13 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
+| Rogue | 40 | `a.deflection`, `a.first-strike`1 | 0.06 | 0.06 | 10 | 4 | 0 | 0 | 10 | 4 | x1.2 | x1.0 | x1.0 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 8 |
+| Pilgrim | 62 | `a.null-counter` | 0.00 | 0.02 | 0 | 0 | 10 | 2 | 16 | 2 | x1.0 | x1.2 | x1.2 | 11 | 11 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 16 |
 
 
 ### 2.4 Items
@@ -579,8 +579,8 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 |------|--------|
 | common | x1.0 |
 | uncommon | x1.2 |
-| rare | x3.0 |
-| mythic | x6.0 |
+| rare | x1.6 |
+| mythic | x2.4 |
 
 **Rarelity base**
 | Rarelity | Features |
