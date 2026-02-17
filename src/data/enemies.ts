@@ -707,8 +707,8 @@ export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
   if (enemy.type === 'normal') {
     const drops: ItemDef[] = [];
     const uncommonCats = classUncommonCategories[enemy.enemyClass] ?? ['sword', 'gauntlet'];
-    const uncommon1 = pickByCategory(uncommon, uncommonCats[0], enemy.id);
-    const uncommon2 = pickByCategory(uncommon, uncommonCats[1], enemy.id + 1);
+    const uncommon1 = pickByCategory(uncommon, uncommonCats[0], enemy.id) ?? pickAny(uncommon, 1, enemy.id)[0];
+    const uncommon2 = pickByCategory(uncommon, uncommonCats[1], enemy.id + 1) ?? pickAny(uncommon, 1, enemy.id + 1)[0];
     if (uncommon1) drops.push(uncommon1);
     if (uncommon2) drops.push(uncommon2);
 
@@ -734,8 +734,8 @@ export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
 
   const drops: ItemDef[] = [];
   const mythicCats = bossMythicByTier[tier] ?? ['sword', 'grimoire'];
-  const mythic1 = pickByCategory(mythic, mythicCats[0], enemy.id);
-  const mythic2 = pickByCategory(mythic, mythicCats[1] ?? mythicCats[0], enemy.id + 1);
+  const mythic1 = pickByCategory(mythic, mythicCats[0], enemy.id) ?? pickAny(mythic, 1, enemy.id)[0];
+  const mythic2 = pickByCategory(mythic, mythicCats[1] ?? mythicCats[0], enemy.id + 1) ?? pickAny(mythic, 1, enemy.id + 1)[0];
   if (mythic1) drops.push(mythic1);
   if (mythic2) drops.push(mythic2);
 
