@@ -612,7 +612,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
     category: 'bolt',
     variant1Mod: { rangedAttack: 1 },
     variant2Mod: { elementalOffense: 'thunder' },
-    variant3Mod: { rangedAttack: 1 },
+    variant3Mod: { strengthBonus: 1 },
     mythicBonusMod: { strengthBonus: 1 },
   },
   // Index 8: archery (弓) - +rangedNoA
@@ -628,7 +628,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
     category: 'wand',
     variant1Mod: { magicalAttack: 1 },
     variant2Mod: { magicalDefense: 1 },
-    variant3Mod: { magicalAttack: 1 },
+    variant3Mod: { intelligenceBonus: 1 },
     mythicBonusMod: { intelligenceBonus: 1 },
   },
   // Index 10: grimoire (魔導書) - +magicalAttack, -magicalNoA
@@ -636,7 +636,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
     category: 'grimoire',
     variant1Mod: { magicalAttack: 1 },
     variant2Mod: { magicalDefense: 1 },
-    variant3Mod: { magicalAttack: 1 },
+    variant3Mod: { mindBonus: 1 },
     mythicBonusMod: { mindBonus: 1 },
   },
   // Index 11: catalyst (触媒) - +magicalNoA
