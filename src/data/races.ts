@@ -15,7 +15,7 @@ export const RACES: Race[] = [
     id: 'lupinian',
     name: 'ルピニアン',
     emoji: '🐺',
-    stats: { vitality: 9, strength: 12, intelligence: 8, mind: 7 },
+    stats: { vitality: 10, strength: 12, intelligence: 8, mind: 7 },
     bonuses: [
       { type: 'equip_slot', value: 1 },
       { type: 'katana_multiplier', value: 1.3 },
@@ -25,7 +25,7 @@ export const RACES: Race[] = [
     id: 'vulpinian',
     name: 'ヴァルピニアン',
     emoji: '🦊',
-    stats: { vitality: 10, strength: 10, intelligence: 12, mind: 8 },
+    stats: { vitality: 11, strength: 10, intelligence: 12, mind: 8 },
     bonuses: [
       { type: 'equip_slot', value: 1 },
       { type: 'sword_multiplier', value: 1.3 },
@@ -76,7 +76,7 @@ export const RACES: Race[] = [
     id: 'cervin',
     name: 'セルヴィン',
     emoji: '🦌',
-    stats: { vitality: 6, strength: 7, intelligence: 13, mind: 10 },
+    stats: { vitality: 8, strength: 7, intelligence: 13, mind: 10 },
     bonuses: [
       { type: 'wand_multiplier', value: 1.3 },
       { type: 'shield_multiplier', value: 1.2 },

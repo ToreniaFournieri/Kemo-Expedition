@@ -1088,7 +1088,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const hasUnreadDiary = unreadDiaryCount > 0;
   const unreadDiaryBadgeLabel = unreadDiaryCount >= 11 ? '10+' : `${unreadDiaryCount}`;
   const envLabel = getEnvLabel();
-  const versionLabel = envLabel ? `v0.2.7 (${envLabel})` : 'v0.2.7';
+  const versionLabel = envLabel ? `v0.2.8 (${envLabel})` : 'v0.2.8';
 
   return (
     <div className={`flex flex-col h-screen ${HEADER_HEIGHT_CLASS}`}>
