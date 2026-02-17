@@ -41,7 +41,8 @@ const CATEGORY_TO_MULTIPLIER: Record<ItemCategory, BonusType | null> = {
 };
 
 interface BonusCollection {
-  equipSlots: Set<number>;
+  equipSlotBonusTotal: number;
+  cEquipSlotBonusNames: Set<string>;
   multipliers: Map<BonusType, number[]>;
   statBonuses: BaseStats;
   grit: number;
@@ -96,7 +97,13 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
   for (const bonus of bonuses) {
     switch (bonus.type) {
       case 'equip_slot':
-        collection.equipSlots.add(bonus.value);
+        {
+          const bonusName = `c.equip_slot+${formatCBonusValue(bonus.value)}`;
+          if (!collection.cEquipSlotBonusNames.has(bonusName)) {
+            collection.cEquipSlotBonusNames.add(bonusName);
+            collection.equipSlotBonusTotal += bonus.value;
+          }
+        }
         break;
       case 'sword_multiplier':
       case 'katana_multiplier':
@@ -196,7 +203,8 @@ export function computeCharacterStats(
 
   // Initialize bonus collection
   const collection: BonusCollection = {
-    equipSlots: new Set<number>(),
+    equipSlotBonusTotal: 0,
+    cEquipSlotBonusNames: new Set<string>(),
     multipliers: new Map(),
     statBonuses: { vitality: 0, strength: 0, intelligence: 0, mind: 0 },
     grit: 0,
@@ -237,7 +245,7 @@ export function computeCharacterStats(
       baseSlots = slots;
     }
   }
-  const equipSlotBonus = Array.from(collection.equipSlots).reduce((sum, v) => sum + v, 0);
+  const equipSlotBonus = collection.equipSlotBonusTotal;
   const maxEquipSlots = baseSlots + equipSlotBonus;
 
   // Calculate multipliers for each category (product of all unique multipliers)
