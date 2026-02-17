@@ -1532,6 +1532,7 @@ function PartyTab({
   useEffect(() => {
     setShowBaseStatHelp(false);
     setActiveStatusHelpKey(null);
+    setShowBonusHelp(false);
   }, [selectedCharacter, editingCharacter]);
 
   const normalizedCurrentDeityName = normalizeDeityName((party.deity.name ?? '').trim());
@@ -2291,9 +2292,9 @@ function PartyTab({
 
               if (parts.length === 0) return null;
               return (
-                <div className="text-xs text-gray-600 mt-1 relative">
-                  <div className="inline-flex items-center gap-1">
-                    <span>ボーナス: {parts.join(', ')}</span>
+                <div className="text-xs text-gray-600 mt-1 relative leading-5">
+                  <div className="inline-flex items-start gap-1">
+                    <span className="break-words leading-5">ボーナス: {parts.join(', ')}</span>
                     <button
                       type="button"
                       onPointerDown={(event) => event.stopPropagation()}
