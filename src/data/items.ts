@@ -555,9 +555,9 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
   // Index 0: armor (鎧) - +physicalDefense
   {
     category: 'armor',
-    variant1Mod: { physicalDefense: 2 },
-    variant2Mod: { partyHP: 3 },
-    variant3Mod: { magicalDefense: 2 },
+    variant1Mod: { partyHP: 3 },
+    variant2Mod: { magicalDefense: 2 },
+    variant3Mod: { physicalDefense: 2},
     mythicBonusMod: { vitalityBonus: 1 },
   },
   // Index 1: robe (法衣) - +magicalDefense
@@ -579,17 +579,17 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
   // Index 3: sword (剣) - +meleeAttack
   {
     category: 'sword',
-    variant1Mod: { meleeAttack: 1 },
-    variant2Mod: { physicalDefense: 1 },
-    variant3Mod: { partyHP: 2 },
+    variant1Mod: { physicalDefense: 1 },
+    variant2Mod: { partyHP: 1 },
+    variant3Mod: { meleeAttack: 2 },
     mythicBonusMod: { strengthBonus: 1 },
   },
   // Index 4: katana (刀) - +meleeAttack, -meleeNoA
   {
     category: 'katana',
-    variant1Mod: { meleeAttack: 2 },
-    variant2Mod: { penetBonus: 0.01 },
-    variant3Mod: { penetBonus: 0.02 },
+    variant1Mod: { penetBonus: 0.01 },
+    variant2Mod: { penetBonus: 0.02 },
+    variant3Mod: { meleeAttack: 2 },
     mythicBonusMod: { mindBonus: 1 },
   },
   // Index 5: gauntlet (籠手) - +meleeNoA
@@ -626,8 +626,8 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
   // Index 9: wand (ワンド) - +magicalAttack
   {
     category: 'wand',
-    variant1Mod: { magicalAttack: 1 },
-    variant2Mod: { magicalDefense: 1 },
+    variant1Mod: { magicalDefense: 1 },
+    variant2Mod: { magicalAttack: 1 },
     variant3Mod: { magicalAttack: 1 },
     mythicBonusMod: { intelligenceBonus: 1 },
   },
