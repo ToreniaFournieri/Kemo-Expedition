@@ -1902,7 +1902,7 @@ function PartyTab({
                 type="button"
                 onPointerDown={(event) => event.stopPropagation()}
                 onClick={() => setShowBaseStatHelp((current) => !current)}
-                className="w-5 h-5 rounded-full border border-gray-400 text-xs text-gray-600 bg-white hover:bg-gray-100"
+                className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-gray-400 text-[10px] leading-none text-gray-600 hover:bg-gray-100"
                 aria-label="基礎値ヘルプ"
               >
                 ?
