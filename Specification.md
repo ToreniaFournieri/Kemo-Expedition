@@ -118,7 +118,16 @@
   - If phase is CLOSE, return `d.accuracy_potency`.
 
 - character.`f.elemental_offense_attribute`
-  - Default is 1. If the damage type has `elemental_offense_attribute`, multiply x V. (ex. fire arrow has `e.fire` and its value is 1.2, multiply 1.2 )
+  - Compute the single elemental amplifier used in damage calculation.
+  - Definitions
+	- For each element E ∈ {fire, ice, thunder}:
+	- sum_v(E) = Σ v for all equipped item bonuses of e.E+v
+	- selected_element = **argmax_E sum_v(E)**
+    - Tie-breaker: thunder > ice > fire > none
+    - elemental_offense_attribute = 1 + sum_v(selected_element)
+    - If all sums are 0, then selected_element = none and elemental_offense_attribute = 1.0
+    - Stackable:  if two `e.fire+0.15`, then 1 + 0.15 + 0.15 -> 1.30
+
  
 - character.`f.penet_multiplier`
   -If character.`c.penet`, add them. (ex. `c.penet_+0.10` & `c.penet_+0.15` -> 0.25)
