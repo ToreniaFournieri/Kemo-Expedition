@@ -1296,7 +1296,7 @@ function PartyTab({
   const [partySuperRareOnly, setPartySuperRareOnly] = useState(false);
   const [draggingCharacterIndex, setDraggingCharacterIndex] = useState<number | null>(null);
   const selectedChar = party.characters[selectedCharacter];
-  const equippedItems = selectedChar.equipment.filter((item): item is Item => item !== null);
+  const equippedItems = selectedChar.equipment.filter((item): item is Item => item != null);
 
   // Calculate current stats for notification: HP is party-wide, others are per selected character
   const selectedStats = characterStats[selectedCharacter];
@@ -2013,7 +2013,7 @@ function PartyTab({
                 const hasRanged = stats.rangedAttack > 0 || stats.rangedNoA > 0;
                 const hasMagical = stats.magicalAttack > 0 || stats.magicalNoA > 0;
                 const hasMelee = stats.meleeAttack > 0 || stats.meleeNoA > 0;
-                const equippedItems = char.equipment.filter((item): item is Item => item !== null);
+                const equippedItems = char.equipment.filter((item): item is Item => item != null);
                 const baseMultMelee = getOffenseMultiplierSum(
                   equippedItems,
                   'melee'
