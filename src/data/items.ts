@@ -563,9 +563,9 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
   // Index 1: robe (法衣) - +magicalDefense
   {
     category: 'robe',
-    variant1Mod: { magicalDefense: 2 },
-    variant2Mod: { partyHP: 3 },
-    variant3Mod: { evasionBonus: 0.01 },
+    variant1Mod: { partyHP: 3 },
+    variant2Mod: { evasionBonus: 0.01 },
+    variant3Mod: { magicalDefense: 2 },
     mythicBonusMod: { mindBonus: 1 },
   },
   // Index 2: shield (盾) - +HP, +physicalDefense
