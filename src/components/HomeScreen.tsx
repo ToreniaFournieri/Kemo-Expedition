@@ -1445,6 +1445,7 @@ function PartyTab({
   const [pendingEdits, setPendingEdits] = useState<Partial<Character> | null>(null);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
   const [showBaseStatHelp, setShowBaseStatHelp] = useState(false);
+  const [activeStatusHelpKey, setActiveStatusHelpKey] = useState<string | null>(null);
   const [editingDeity, setEditingDeity] = useState(false);
   const [pendingDeityName, setPendingDeityName] = useState(party.deity.name);
   const [lastSlotTap, setLastSlotTap] = useState<{ slot: number; time: number } | null>(null);
@@ -1530,6 +1531,7 @@ function PartyTab({
 
   useEffect(() => {
     setShowBaseStatHelp(false);
+    setActiveStatusHelpKey(null);
   }, [selectedCharacter, editingCharacter]);
 
   const normalizedCurrentDeityName = normalizeDeityName((party.deity.name ?? '').trim());
@@ -1543,6 +1545,9 @@ function PartyTab({
         }
         if (showBaseStatHelp) {
           setShowBaseStatHelp(false);
+        }
+        if (activeStatusHelpKey) {
+          setActiveStatusHelpKey(null);
         }
       }}
     >
@@ -1943,10 +1948,6 @@ function PartyTab({
                 const midAmp = 1.0 + stats.deityOffenseAmplifierBonus;
                 // CLOSE phase: iaigiri multiplier, then deity bonus
                 const closeAmp = (iaigiri ? (iaigiri.level >= 2 ? 2.5 : 2.0) : 1.0) * (1.0 + stats.deityOffenseAmplifierBonus);
-                const elementName = stats.elementalOffense === 'fire' ? '火' :
-                  stats.elementalOffense === 'thunder' ? '雷' :
-                  stats.elementalOffense === 'ice' ? '氷' : '無';
-
                 const hasRanged = stats.rangedAttack > 0 || stats.rangedNoA > 0;
                 const hasMagical = stats.magicalAttack > 0 || stats.magicalNoA > 0;
                 const hasMelee = stats.meleeAttack > 0 || stats.meleeNoA > 0;
@@ -1972,51 +1973,176 @@ function PartyTab({
                   'magical'
                 );
 
+                type StatusLine = {
+                  key: string;
+                  text: string;
+                  helpTitle: string;
+                  helpLines: string[];
+                };
+
                 // Build offense lines
-                const offenseLines: string[] = [];
+                const offenseLines: StatusLine[] = [];
                 if (hasRanged) {
                   const amp = longAmp * baseMultRanged;
-                  offenseLines.push(`遠距離攻撃:${formatNumber(Math.floor(stats.rangedAttack))} x ${formatNumber(stats.rangedNoA)}回(x${amp.toFixed(2)})`);
+                  offenseLines.push({
+                    key: 'ranged-attack',
+                    text: `遠距離攻撃:${formatNumber(Math.floor(stats.rangedAttack))} x ${formatNumber(stats.rangedNoA)}回(x${amp.toFixed(2)})`,
+                    helpTitle: '遠距離攻撃',
+                    helpLines: [
+                      `遠距離攻撃力: ${formatNumber(Math.floor(stats.rangedAttack))} ※ダメージを与えるには敵の防御力を超える必要があります`,
+                      `遠距離攻撃回数: ${formatNumber(stats.rangedNoA)}回`,
+                      `遠距離攻撃倍率: x${amp.toFixed(2)} ※値が大きいほどダメージが大きくなります`,
+                    ],
+                  });
                 }
                 if (hasMagical) {
                   const amp = midAmp * baseMultMagical;
-                  offenseLines.push(`魔法攻撃:${formatNumber(Math.floor(stats.magicalAttack))} x ${formatNumber(stats.magicalNoA)}回(x${amp.toFixed(2)})`);
+                  offenseLines.push({
+                    key: 'magical-attack',
+                    text: `魔法攻撃:${formatNumber(Math.floor(stats.magicalAttack))} x ${formatNumber(stats.magicalNoA)}回(x${amp.toFixed(2)})`,
+                    helpTitle: '魔法攻撃',
+                    helpLines: [
+                      `魔法攻撃力: ${formatNumber(Math.floor(stats.magicalAttack))} ※ダメージを与えるには敵の防御力を超える必要があります`,
+                      `魔法攻撃回数: ${formatNumber(stats.magicalNoA)}回`,
+                      `魔法攻撃倍率: x${amp.toFixed(2)} ※値が大きいほどダメージが大きくなります`,
+                    ],
+                  });
                 }
                 if (hasMelee) {
                   const amp = closeAmp * baseMultMelee;
-                  offenseLines.push(`近接攻撃:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}回(x${amp.toFixed(2)})`);
+                  offenseLines.push({
+                    key: 'melee-attack',
+                    text: `近接攻撃:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}回(x${amp.toFixed(2)})`,
+                    helpTitle: '近接攻撃',
+                    helpLines: [
+                      `近接攻撃力: ${formatNumber(Math.floor(stats.meleeAttack))} ※ダメージを与えるには敵の防御力を超える必要があります`,
+                      `近接攻撃回数: ${formatNumber(stats.meleeNoA)}回`,
+                      `近接攻撃倍率: x${amp.toFixed(2)} ※値が大きいほどダメージが大きくなります`,
+                    ],
+                  });
                 }
 
                 const baseDecay = 0.90 + stats.accuracyBonus;
                 const hasPhysicalAttacks = stats.rangedNoA > 0 || stats.meleeNoA > 0;
                 if (hasPhysicalAttacks) {
-                  offenseLines.push(`物理命中率: ${Math.round(stats.accuracyPotency * 100)}% (減衰: x${baseDecay.toFixed(2)})`);
+                  offenseLines.push({
+                    key: 'physical-accuracy',
+                    text: `物理命中率: ${Math.round(stats.accuracyPotency * 100)}% (減衰: x${baseDecay.toFixed(2)})`,
+                    helpTitle: '物理命中率',
+                    helpLines: [
+                      `物理命中率: ${Math.round(stats.accuracyPotency * 100)}% ※初回の命中率`,
+                      `命中減衰率: x${baseDecay.toFixed(2)} ※2回目以降の命中率にはこの値が掛かります`,
+                    ],
+                  });
                 }
                 if (hasMagical) {
-                  offenseLines.push(`魔法命中率: 100% (減衰: x${baseDecay.toFixed(2)})`);
+                  offenseLines.push({
+                    key: 'magical-accuracy',
+                    text: `魔法命中率: 100% (減衰: x${baseDecay.toFixed(2)})`,
+                    helpTitle: '魔法命中率',
+                    helpLines: [
+                      '魔法命中率: 100% ※初回の命中率',
+                      `命中減衰率: x${baseDecay.toFixed(2)} ※2回目以降の命中率にはこの値が掛かります`,
+                    ],
+                  });
                 }
 
                 // Defense lines
                 const defenseAmpPhysical = Math.max(0.01, defenseMultPhysical + stats.deityDefenseAmplifierBonus.physical);
                 const defenseAmpMagical = Math.max(0.01, defenseMultMagical + stats.deityDefenseAmplifierBonus.magical);
-                const defenseLines = [
-                  `属性:${elementName}(x${stats.elementalOffenseValue.toFixed(1)})`,
-                  `物防:${formatNumber(stats.physicalDefense)} (${formatNumber(Math.round(defenseAmpPhysical * 100))}%)`,
-                  `魔防:${formatNumber(stats.magicalDefense)} (${formatNumber(Math.round(defenseAmpMagical * 100))}%)`,
+                const defenseLines: StatusLine[] = [
+                  {
+                    key: 'physical-defense',
+                    text: `物防:${formatNumber(stats.physicalDefense)} (${formatNumber(Math.round(defenseAmpPhysical * 100))}%)`,
+                    helpTitle: '物理防御',
+                    helpLines: [
+                      `物理防御力: ${formatNumber(stats.physicalDefense)} ※敵の遠距離/近接攻撃力を超える防御力を持つとダメージをほぼ受けなくなります`,
+                      `物理耐性: ${formatNumber(Math.round(defenseAmpPhysical * 100))}% ※耐性%が低いほど攻撃に強くなります`,
+                    ],
+                  },
+                  {
+                    key: 'magical-defense',
+                    text: `魔防:${formatNumber(stats.magicalDefense)} (${formatNumber(Math.round(defenseAmpMagical * 100))}%)`,
+                    helpTitle: '魔法防御',
+                    helpLines: [
+                      `魔法防御力: ${formatNumber(stats.magicalDefense)} ※敵の魔法攻撃力を超える防御力を持つとダメージをほぼ受けなくなります`,
+                      `魔法耐性: ${formatNumber(Math.round(defenseAmpMagical * 100))}% ※耐性%が低いほど攻撃に強くなります`,
+                    ],
+                  },
+                  {
+                    key: 'evasion',
+                    text: `回避:${stats.evasionBonus >= 0 ? '+' : ''}${formatNumber(Math.round(stats.evasionBonus * 1000))}`,
+                    helpTitle: '回避',
+                    helpLines: [
+                      `回避: ${stats.evasionBonus >= 0 ? '+' : ''}${formatNumber(Math.round(stats.evasionBonus * 1000))}`,
+                      '※敵の命中減衰率を値分、減少させます(攻撃回数が多いほど回避しやすくなります)',
+                    ],
+                  },
                 ];
-                defenseLines.push(`回避:${stats.evasionBonus >= 0 ? '+' : ''}${formatNumber(Math.round(stats.evasionBonus * 1000))}`);
 
                 // Pad offense lines to match defense lines count
                 while (offenseLines.length < defenseLines.length) {
-                  offenseLines.push('');
+                  offenseLines.push({ key: `offense-blank-${offenseLines.length}`, text: '', helpTitle: '', helpLines: [] });
                 }
 
                 return (
                   <div className="text-xs space-y-1">
                     {offenseLines.map((offense, i) => (
-                      <div key={i} className="flex justify-between">
-                        <span>{offense}</span>
-                        <span className="text-gray-500">{defenseLines[i]}</span>
+                      <div key={`${offense.key}-${defenseLines[i]?.key ?? i}`} className="flex justify-between gap-2">
+                        <div className="relative">
+                          {offense.text ? (
+                            <button
+                              type="button"
+                              onPointerDown={(event) => event.stopPropagation()}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                setActiveStatusHelpKey((current) => (current === offense.key ? null : offense.key));
+                              }}
+                              className="text-left"
+                            >
+                              {offense.text}
+                            </button>
+                          ) : (
+                            <span>{offense.text}</span>
+                          )}
+                          {offense.text && activeStatusHelpKey === offense.key && (
+                            <div
+                              className="absolute left-0 top-full mt-1 z-20 w-[20rem] max-w-[calc(100vw-3rem)] rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-1"
+                              onPointerDown={(event) => event.stopPropagation()}
+                            >
+                              <div className="font-semibold text-gray-800">{offense.helpTitle}</div>
+                              {offense.helpLines.map((line) => (
+                                <div key={`${offense.key}-${line}`}>{line}</div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <div className="relative text-gray-500">
+                          <button
+                            type="button"
+                            onPointerDown={(event) => event.stopPropagation()}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              const defense = defenseLines[i];
+                              if (!defense) return;
+                              setActiveStatusHelpKey((current) => (current === defense.key ? null : defense.key));
+                            }}
+                            className="text-left"
+                          >
+                            {defenseLines[i]?.text}
+                          </button>
+                          {defenseLines[i] && activeStatusHelpKey === defenseLines[i].key && (
+                            <div
+                              className="absolute right-0 top-full mt-1 z-20 w-[20rem] max-w-[calc(100vw-3rem)] rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-1"
+                              onPointerDown={(event) => event.stopPropagation()}
+                            >
+                              <div className="font-semibold text-gray-800">{defenseLines[i].helpTitle}</div>
+                              {defenseLines[i].helpLines.map((line) => (
+                                <div key={`${defenseLines[i].key}-${line}`}>{line}</div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
