@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, type Dispatch, type MouseEvent, type SetStateAction } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { DUNGEONS } from '../data/dungeons';
 import { RACES } from '../data/races';
@@ -390,7 +390,8 @@ function getItemStats(item: Item): string {
   if (item.penetBonus) stats.push(formatBracket('貫通', Math.round(item.penetBonus * 100)));
   if (item.elementalOffense && item.elementalOffense !== 'none') {
     const elem = { fire: '炎', ice: '氷', thunder: '雷' }[item.elementalOffense];
-    stats.push(`${elem}属性`);
+    const elementalPercent = Math.round((item.elementalOffenseBonus ?? 0) * 100);
+    stats.push(`${elem}属性+${elementalPercent}%`);
   }
   return stats.join(' ');
 }
@@ -415,6 +416,54 @@ function getOffenseMultiplierSum(items: Item[], kind: 'melee' | 'ranged' | 'magi
   }, 0);
 
   return 1 + bonusSum;
+}
+
+function getElementalOffenseHelpLines(character: Character, stats: ComputedCharacterStats): string[] {
+  const elementalSums: Record<ElementalOffense, number> = {
+    none: 0,
+    fire: 0,
+    ice: 0,
+    thunder: 0,
+  };
+  const equippedItems = character.equipment
+    .slice(0, stats.maxEquipSlots)
+    .filter((item): item is Item => item != null);
+
+  for (const item of equippedItems) {
+    if (item.elementalOffense && item.elementalOffense !== 'none') {
+      elementalSums[item.elementalOffense] += item.elementalOffenseBonus ?? 0;
+    }
+  }
+
+  const elementMeta: Record<Exclude<ElementalOffense, 'none'>, { label: string; emoji: string }> = {
+    fire: { label: '火', emoji: '🔥' },
+    ice: { label: '氷', emoji: '❄️' },
+    thunder: { label: '雷', emoji: '⚡' },
+  };
+
+  const lines = [
+    '攻撃時に属性を持つことがあります。 複数の属性を持つ武器を装備した場合は、その属性の威力増加値が高いものが優先されます。(威力増加値が等しい場合は 雷>氷>炎 の順)',
+    '',
+  ];
+
+  if (stats.elementalOffense === 'none') {
+    lines.push('攻撃は無属性です。');
+    return lines;
+  }
+
+  const selectedMeta = elementMeta[stats.elementalOffense];
+  const selectedPercent = Math.round((stats.elementalOffenseValue - 1) * 100);
+  lines.push(`攻撃が${selectedMeta.label}属性${selectedMeta.emoji}になり、${selectedPercent}%威力が増加する`);
+
+  (['fire', 'ice', 'thunder'] as const).forEach((element) => {
+    if (element === stats.elementalOffense) return;
+    const total = elementalSums[element];
+    if (total <= 0) return;
+    const meta = elementMeta[element];
+    lines.push(`(非採用)${meta.label}属性${meta.emoji} ${Math.round(total * 100)}%威力増加`);
+  });
+
+  return lines;
 }
 
 function getDefenseMultiplierSum(items: Item[], kind: 'physical' | 'magical'): number {
@@ -2112,14 +2161,16 @@ function PartyTab({
                 // Defense lines
                 const defenseAmpPhysical = Math.max(0.01, defenseMultPhysical + stats.deityDefenseAmplifierBonus.physical);
                 const defenseAmpMagical = Math.max(0.01, defenseMultMagical + stats.deityDefenseAmplifierBonus.magical);
-                const elementName = stats.elementalOffense === 'fire' ? '火' :
-                  stats.elementalOffense === 'thunder' ? '雷' :
-                  stats.elementalOffense === 'ice' ? '氷' : '無';
+                const elementName = stats.elementalOffense === 'fire' ? '🔥' :
+                  stats.elementalOffense === 'thunder' ? '⚡' :
+                  stats.elementalOffense === 'ice' ? '❄️' : '無';
 
                 const defenseLines: StatusLine[] = [
                   {
                     key: 'element',
                     text: `属性:${elementName}(x${stats.elementalOffenseValue.toFixed(1)})`,
+                    helpTitle: 'e. 属性攻撃',
+                    helpLines: getElementalOffenseHelpLines(char, stats),
                   },
                   {
                     key: 'physical-defense',
@@ -4028,6 +4079,8 @@ function SettingTab({
                               offenseRows.push(`魔法命中率: 100% (減衰: x${decay})`);
                             }
 
+                            // Bestiary detail keeps the compact 4-line defense block.
+                            // NOTE: Elemental resistance breakdown is intentionally hidden here.
                             const defenseRows: string[] = [
                               `属性: ${ENEMY_ELEMENT_LABELS[displayEnemy.elementalOffense] ?? '無'} (x1.0)`,
                               formatEnemyDefenseLine('物理防御', displayEnemy.physicalDefense, defenseAmplifierPercent),
