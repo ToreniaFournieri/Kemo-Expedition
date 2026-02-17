@@ -91,8 +91,8 @@ const TYPE_AMPLIFIERS: Record<ItemCategory, number> = {
 const RARITY_AMPLIFIERS: Record<Rarity, number> = {
   common: 1.0,
   uncommon: 1.2,
-  rare: 3.0,
-  mythic: 6.0,
+  rare: 1.6,
+  mythic: 2.4,
 };
 
 const SUBTLE_POWER_MULTIPLIERS = [0.2, 0.27, 0.34] as const;
