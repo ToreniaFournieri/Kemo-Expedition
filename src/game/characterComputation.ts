@@ -52,6 +52,7 @@ interface BonusCollection {
   evasion: number;
   abilities: Map<AbilityId, number>;
   uniqueEvasionBonusNames: Set<string>;
+  cAccuracyBonusCounts: Map<string, number>;
 }
 
 function formatCBonusValue(value: number): string {
@@ -142,7 +143,14 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
         collection.pursuit += bonus.value;
         break;
       case 'accuracy':
-        collection.accuracy += bonus.value;
+        {
+          const bonusName = `c.accuracy+${formatCBonusValue(bonus.value)}`;
+          const appliedCount = collection.cAccuracyBonusCounts.get(bonusName) ?? 0;
+          if (appliedCount < 1) {
+            collection.cAccuracyBonusCounts.set(bonusName, appliedCount + 1);
+            collection.accuracy += bonus.value;
+          }
+        }
         break;
       case 'evasion':
         {
@@ -193,6 +201,7 @@ export function computeCharacterStats(
     evasion: 0,
     abilities: new Map(),
     uniqueEvasionBonusNames: new Set<string>(),
+    cAccuracyBonusCounts: new Map<string, number>(),
   };
 
   // Collect bonuses from all sources
@@ -300,7 +309,14 @@ export function computeCharacterStats(
     if (item.meleeNoABonus) meleeNoAFixedBonuses.add(item.meleeNoABonus);
     if (item.rangedNoABonus) rangedNoAFixedBonuses.add(item.rangedNoABonus);
     if (item.magicalNoABonus) magicalNoAFixedBonuses.add(item.magicalNoABonus);
-    if (item.accuracyBonus) accuracyBonus += item.accuracyBonus;
+    if (item.accuracyBonus) {
+      const bonusName = `c.accuracy+${formatCBonusValue(item.accuracyBonus)}`;
+      const appliedCount = collection.cAccuracyBonusCounts.get(bonusName) ?? 0;
+      if (appliedCount < 1) {
+        collection.cAccuracyBonusCounts.set(bonusName, appliedCount + 1);
+        accuracyBonus += item.accuracyBonus;
+      }
+    }
     if (item.evasionBonus) {
       const bonusName = `c.evasion+${formatCBonusValue(item.evasionBonus)}`;
       if (!evasionBonusNames.has(bonusName)) {
