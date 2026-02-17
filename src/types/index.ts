@@ -121,6 +121,7 @@ export interface ItemDef {
   physicalDefense?: number;
   magicalDefense?: number;
   elementalOffense?: ElementalOffense;
+  elementalOffenseBonus?: number;
   accuracyBonus?: number;
   evasionBonus?: number;
   vitalityBonus?: number;

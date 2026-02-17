@@ -272,6 +272,12 @@ export function computeCharacterStats(
   let evasionBonus = collection.evasion;
   let elementalOffense: ElementalOffense = 'none';
   let elementalOffenseValue = 1.0;
+  const elementalOffenseTotals: Record<ElementalOffense, number> = {
+    none: 0,
+    fire: 0,
+    ice: 0,
+    thunder: 0,
+  };
 
   // Process equipment (limited to maxEquipSlots)
   const equippedItems = character.equipment.slice(0, maxEquipSlots).filter((item): item is Item => item != null);
@@ -364,15 +370,25 @@ export function computeCharacterStats(
     }
     if (item.penetBonus) collection.penet += item.penetBonus;
 
-    // Elemental offense from equipment (priority: thunder > ice > fire > none)
     if (item.elementalOffense && item.elementalOffense !== 'none') {
-      const priority = { thunder: 3, ice: 2, fire: 1, none: 0 };
-      if (priority[item.elementalOffense] > priority[elementalOffense]) {
-        elementalOffense = item.elementalOffense;
-        elementalOffenseValue = 1.0; // Elemental offense is flavor text in this version
-      }
+      elementalOffenseTotals[item.elementalOffense] += item.elementalOffenseBonus ?? 0;
     }
   }
+
+  const elementalPriority: ElementalOffense[] = ['thunder', 'ice', 'fire'];
+  let selectedElement: ElementalOffense = 'none';
+  let selectedElementBonus = 0;
+
+  for (const element of elementalPriority) {
+    const total = elementalOffenseTotals[element];
+    if (total > selectedElementBonus) {
+      selectedElement = element;
+      selectedElementBonus = total;
+    }
+  }
+
+  elementalOffense = selectedElement;
+  elementalOffenseValue = 1 + selectedElementBonus;
 
   // Apply base stats scaling
   rangedAttack = rangedAttack * (baseStats.strength / 10);

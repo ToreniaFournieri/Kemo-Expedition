@@ -71,6 +71,7 @@ const TIER_SHIELD_EVASION_BONUS = [0.013, 0.012, 0.011, 0.009, 0.008, 0.007, 0.0
 const TIER_NOA_FIXED_BONUS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const TIER_NOA_PENALTIES = [-1.0, -1.2, -1.4, -1.6, -1.8, -2.0, -2.2, -2.4];
 const TIER_EVASION_PENALTIES = [-0.001, -0.002, -0.003, -0.004, -0.005, -0.006, -0.007, -0.008];
+const TIER_ELEMENTAL_BONUS = [0.15, 0.14, 0.13, 0.12, 0.11, 0.09, 0.08, 0.07, 0.06, 0.05];
 
 // Base power scaling (from spec 2.4.2)
 const TYPE_AMPLIFIERS: Record<ItemCategory, number> = {
@@ -708,6 +709,7 @@ function createItem(
   const noaPenalty = TIER_NOA_PENALTIES[tier - 1];
   const evasionPenalty = TIER_EVASION_PENALTIES[tier - 1];
   const noaBasePower = TIER_NOA_BASE_POWER[tier - 1];
+  const elementalBonus = TIER_ELEMENTAL_BONUS[tier - 1] ?? 0;
 
   const masterName = getMasterItemName(tier, rarity, template.category, variantIndex);
   const name = ITEM_NAME_OVERRIDES[id] ?? masterName;
@@ -794,7 +796,10 @@ function createItem(
     if (mod.meleeNoA) item.meleeNoA = (item.meleeNoA || 0) + Number((subtlePower * mod.meleeNoA).toFixed(2));
     if (mod.rangedNoA) item.rangedNoA = (item.rangedNoA || 0) + Number((subtlePower * mod.rangedNoA).toFixed(2));
     if (mod.magicalNoA) item.magicalNoA = (item.magicalNoA || 0) + Number((subtlePower * mod.magicalNoA).toFixed(2));
-    if (mod.elementalOffense) item.elementalOffense = mod.elementalOffense;
+    if (mod.elementalOffense) {
+      item.elementalOffense = mod.elementalOffense;
+      item.elementalOffenseBonus = elementalBonus;
+    }
     if (mod.meleeNoABonus) item.meleeNoABonus = (item.meleeNoABonus || 0) + mod.meleeNoABonus;
     if (mod.rangedNoABonus) item.rangedNoABonus = (item.rangedNoABonus || 0) + mod.rangedNoABonus;
     if (mod.magicalNoABonus) item.magicalNoABonus = (item.magicalNoABonus || 0) + mod.magicalNoABonus;
