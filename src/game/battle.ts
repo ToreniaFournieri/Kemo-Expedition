@@ -557,6 +557,8 @@ export function executeBattle(
           }
 
           for (const [charId, attack] of attacksByTarget) {
+            if (enemyHp <= 0 || partyHp <= 0) break;
+
             const targetChar = party.characters.find(c => c.id === charId);
             const attackName = isReAttack
               ? (phase === 'mid' ? '魔法連撃' : '連撃')
@@ -614,6 +616,8 @@ export function executeBattle(
               isCounter: true,
               elementalOffense: attack.charStats.elementalOffense,
             });
+
+            if (enemyHp <= 0) break;
           }
         };
 
