@@ -226,6 +226,11 @@ function getRewardTextClass(rarity?: ItemRarity, isSuperRare?: boolean): string 
   return 'text-black';
 }
 
+function getRewardFontWeightClass(rarity: ItemRarity, isSuperRare: boolean): string {
+  if (isSuperRare) return 'font-bold';
+  return rarity === 'common' ? 'font-normal' : 'font-medium';
+}
+
 function renderEntryReward(entry: ExpeditionLogEntry): JSX.Element | null {
   if (!entry.reward) return null;
 
@@ -237,8 +242,9 @@ function renderEntryReward(entry: ExpeditionLogEntry): JSX.Element | null {
           const rarity = getItemRarityById(item.id);
           const isSuperRare = item.superRare > 0;
           const rarityClass = getRarityTextClass(rarity, isSuperRare);
+          const fontWeightClass = getRewardFontWeightClass(rarity, isSuperRare);
           return (
-            <span key={`${item.id}-${item.enhancement}-${item.superRare}-${index}`} className={`${rarityClass} ${isSuperRare ? 'font-bold' : 'font-medium'}`}>
+            <span key={`${item.id}-${item.enhancement}-${item.superRare}-${index}`} className={`${rarityClass} ${fontWeightClass}`}>
               {index > 0 && ' / '}
               {getItemDisplayName(item)}
             </span>
@@ -249,7 +255,7 @@ function renderEntryReward(entry: ExpeditionLogEntry): JSX.Element | null {
   }
 
   return (
-    <span className={`${getRewardTextClass(entry.rewardRarity, entry.rewardIsSuperRare)} ${entry.rewardIsSuperRare ? 'font-bold' : 'font-medium'}`}>
+    <span className={`${getRewardTextClass(entry.rewardRarity, entry.rewardIsSuperRare)} ${getRewardFontWeightClass(entry.rewardRarity ?? 'common', entry.rewardIsSuperRare ?? false)}`}>
       獲得:{entry.reward}
     </span>
   );
@@ -2781,7 +2787,8 @@ function ExpeditionTab({
                         const rarity = getItemRarityById(item.id);
                         const isSuperRare = item.superRare > 0;
                         const rarityClass = getRarityTextClass(rarity, isSuperRare);
-                        return <span key={i} className={`${rarityClass} font-medium`}>{i > 0 && ', '}{getItemDisplayName(item)}</span>;
+                        const fontWeightClass = getRewardFontWeightClass(rarity, isSuperRare);
+                        return <span key={i} className={`${rarityClass} ${fontWeightClass}`}>{i > 0 && ', '}{getItemDisplayName(item)}</span>;
                       })}
                     </div>
                   )}
@@ -3303,8 +3310,9 @@ function DiaryTab({
                   const rarity = getItemRarityById(item.id);
                   const isSuperRare = item.superRare > 0;
                   const rarityClass = getRarityTextClass(rarity, isSuperRare);
+                  const fontWeightClass = getRewardFontWeightClass(rarity, isSuperRare);
                   return (
-                    <span key={`${item.id}-${item.enhancement}-${item.superRare}-${i}`} className={`${rarityClass} font-medium`}>
+                    <span key={`${item.id}-${item.enhancement}-${item.superRare}-${i}`} className={`${rarityClass} ${fontWeightClass}`}>
                       {i > 0 && ', '}
                       {getItemDisplayName(item)}
                     </span>
@@ -3329,8 +3337,9 @@ function DiaryTab({
                       const rarity = getItemRarityById(item.id);
                       const isSuperRare = item.superRare > 0;
                       const rarityClass = getRarityTextClass(rarity, isSuperRare);
+                      const fontWeightClass = getRewardFontWeightClass(rarity, isSuperRare);
                       return (
-                        <span key={i} className={`${rarityClass} font-medium`}>
+                        <span key={i} className={`${rarityClass} ${fontWeightClass}`}>
                           {i > 0 && ', '}{getItemDisplayName(item)}
                         </span>
                       );
