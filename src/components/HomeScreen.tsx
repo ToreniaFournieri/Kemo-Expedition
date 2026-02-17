@@ -1976,8 +1976,8 @@ function PartyTab({
                 type StatusLine = {
                   key: string;
                   text: string;
-                  helpTitle: string;
-                  helpLines: string[];
+                  helpTitle?: string;
+                  helpLines?: string[];
                 };
 
                 // Build offense lines
@@ -2050,7 +2050,15 @@ function PartyTab({
                 // Defense lines
                 const defenseAmpPhysical = Math.max(0.01, defenseMultPhysical + stats.deityDefenseAmplifierBonus.physical);
                 const defenseAmpMagical = Math.max(0.01, defenseMultMagical + stats.deityDefenseAmplifierBonus.magical);
+                const elementName = stats.elementalOffense === 'fire' ? '火' :
+                  stats.elementalOffense === 'thunder' ? '雷' :
+                  stats.elementalOffense === 'ice' ? '氷' : '無';
+
                 const defenseLines: StatusLine[] = [
+                  {
+                    key: 'element',
+                    text: `属性:${elementName}(x${stats.elementalOffenseValue.toFixed(1)})`,
+                  },
                   {
                     key: 'physical-defense',
                     text: `物防:${formatNumber(stats.physicalDefense)} (${formatNumber(Math.round(defenseAmpPhysical * 100))}%)`,
@@ -2111,36 +2119,42 @@ function PartyTab({
                               onPointerDown={(event) => event.stopPropagation()}
                             >
                               <div className="font-semibold text-gray-800">{offense.helpTitle}</div>
-                              {offense.helpLines.map((line) => (
+                              {(offense.helpLines ?? []).map((line) => (
                                 <div key={`${offense.key}-${line}`}>{line}</div>
                               ))}
                             </div>
                           )}
                         </div>
                         <div className="relative text-gray-500">
-                          <button
-                            type="button"
-                            onPointerDown={(event) => event.stopPropagation()}
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              const defense = defenseLines[i];
-                              if (!defense) return;
-                              setActiveStatusHelpKey((current) => (current === defense.key ? null : defense.key));
-                            }}
-                            className="text-left"
-                          >
-                            {defenseLines[i]?.text}
-                          </button>
-                          {defenseLines[i] && activeStatusHelpKey === defenseLines[i].key && (
-                            <div
-                              className="absolute right-0 top-full mt-1 z-20 w-[20rem] max-w-[calc(100vw-3rem)] rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-1"
-                              onPointerDown={(event) => event.stopPropagation()}
-                            >
-                              <div className="font-semibold text-gray-800">{defenseLines[i].helpTitle}</div>
-                              {defenseLines[i].helpLines.map((line) => (
-                                <div key={`${defenseLines[i].key}-${line}`}>{line}</div>
-                              ))}
-                            </div>
+                          {defenseLines[i]?.helpLines?.length ? (
+                            <>
+                              <button
+                                type="button"
+                                onPointerDown={(event) => event.stopPropagation()}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  const defense = defenseLines[i];
+                                  if (!defense) return;
+                                  setActiveStatusHelpKey((current) => (current === defense.key ? null : defense.key));
+                                }}
+                                className="text-left"
+                              >
+                                {defenseLines[i]?.text}
+                              </button>
+                              {defenseLines[i] && activeStatusHelpKey === defenseLines[i].key && (
+                                <div
+                                  className="absolute right-0 top-full mt-1 z-20 w-[20rem] max-w-[calc(100vw-3rem)] rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-1"
+                                  onPointerDown={(event) => event.stopPropagation()}
+                                >
+                                  <div className="font-semibold text-gray-800">{defenseLines[i].helpTitle}</div>
+                                  {(defenseLines[i].helpLines ?? []).map((line) => (
+                                    <div key={`${defenseLines[i].key}-${line}`}>{line}</div>
+                                  ))}
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <span>{defenseLines[i]?.text}</span>
                           )}
                         </div>
                       </div>
