@@ -620,7 +620,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
     category: 'archery',
     variant1Mod: { accuracyBonus: 0.01 },
     variant2Mod: { partyHP: 2 },
-    variant3Mod: { accuracyBonus: 0.02 },
+    variant3Mod: { evasionBonus: 0.01 },
     mythicBonusMod: { strengthBonus: 1 },
   },
   // Index 9: wand (ワンド) - +magicalAttack
@@ -784,6 +784,7 @@ function createItem(
   const applyVariantMod = (mod?: ItemVariantMod, subtleSlotIndex = 0) => {
     if (!mod) return;
     const subtlePower = getSubtlePower(subtleSlotIndex);
+    const archeryCBonusScale = template.category === 'archery' ? tier / 10 : 1;
     if (mod.partyHP) item.partyHP = (item.partyHP || 0) + Math.floor(subtlePower * mod.partyHP);
     if (mod.physicalDefense) item.physicalDefense = (item.physicalDefense || 0) + Math.floor(subtlePower * mod.physicalDefense);
     if (mod.magicalDefense) item.magicalDefense = (item.magicalDefense || 0) + Math.floor(subtlePower * mod.magicalDefense);
@@ -797,8 +798,8 @@ function createItem(
     if (mod.meleeNoABonus) item.meleeNoABonus = (item.meleeNoABonus || 0) + mod.meleeNoABonus;
     if (mod.rangedNoABonus) item.rangedNoABonus = (item.rangedNoABonus || 0) + mod.rangedNoABonus;
     if (mod.magicalNoABonus) item.magicalNoABonus = (item.magicalNoABonus || 0) + mod.magicalNoABonus;
-    if (mod.accuracyBonus) item.accuracyBonus = (item.accuracyBonus || 0) + mod.accuracyBonus;
-    if (mod.evasionBonus) item.evasionBonus = (item.evasionBonus || 0) + mod.evasionBonus;
+    if (mod.accuracyBonus) item.accuracyBonus = (item.accuracyBonus || 0) + mod.accuracyBonus * archeryCBonusScale;
+    if (mod.evasionBonus) item.evasionBonus = (item.evasionBonus || 0) + mod.evasionBonus * archeryCBonusScale;
     if (mod.vitalityBonus) item.vitalityBonus = (item.vitalityBonus || 0) + mod.vitalityBonus;
     if (mod.strengthBonus) item.strengthBonus = (item.strengthBonus || 0) + mod.strengthBonus;
     if (mod.intelligenceBonus) item.intelligenceBonus = (item.intelligenceBonus || 0) + mod.intelligenceBonus;
