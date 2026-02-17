@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, type Dispatch, type SetStateAction } from 'react';
+import { useState, useEffect, useRef, useCallback, type Dispatch, type MouseEvent, type SetStateAction } from 'react';
 import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { DUNGEONS } from '../data/dungeons';
@@ -1445,7 +1445,9 @@ function PartyTab({
   const [pendingEdits, setPendingEdits] = useState<Partial<Character> | null>(null);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
   const [showBaseStatHelp, setShowBaseStatHelp] = useState(false);
+  const [baseStatHelpPosition, setBaseStatHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const [activeStatusHelpKey, setActiveStatusHelpKey] = useState<string | null>(null);
+  const [activeStatusHelpPosition, setActiveStatusHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const [editingDeity, setEditingDeity] = useState(false);
   const [pendingDeityName, setPendingDeityName] = useState(party.deity.name);
   const [lastSlotTap, setLastSlotTap] = useState<{ slot: number; time: number } | null>(null);
@@ -1531,11 +1533,61 @@ function PartyTab({
 
   useEffect(() => {
     setShowBaseStatHelp(false);
+    setBaseStatHelpPosition(null);
     setActiveStatusHelpKey(null);
     setShowBonusHelp(false);
   }, [selectedCharacter, editingCharacter]);
 
   const normalizedCurrentDeityName = normalizeDeityName((party.deity.name ?? '').trim());
+
+  const handleBaseStatHelpToggle = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    if (showBaseStatHelp) {
+      setShowBaseStatHelp(false);
+      setBaseStatHelpPosition(null);
+      return;
+    }
+
+    const triggerRect = event.currentTarget.getBoundingClientRect();
+    const viewportPadding = 12;
+    const tooltipWidth = Math.min(320, window.innerWidth - viewportPadding * 2);
+    const left = Math.min(
+      Math.max(triggerRect.left, viewportPadding),
+      window.innerWidth - viewportPadding - tooltipWidth,
+    );
+
+    setBaseStatHelpPosition({
+      top: triggerRect.bottom + 8,
+      left,
+      width: tooltipWidth,
+    });
+    setShowBaseStatHelp(true);
+  };
+
+  const handleStatusHelpToggle = (key: string, event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    setActiveStatusHelpKey((current) => {
+      if (current === key) {
+        setActiveStatusHelpPosition(null);
+        return null;
+      }
+
+      const triggerRect = event.currentTarget.getBoundingClientRect();
+      const viewportPadding = 12;
+      const tooltipWidth = Math.min(320, window.innerWidth - viewportPadding * 2);
+      const left = Math.min(
+        Math.max(triggerRect.left, viewportPadding),
+        window.innerWidth - viewportPadding - tooltipWidth,
+      );
+
+      setActiveStatusHelpPosition({
+        top: triggerRect.bottom + 8,
+        left,
+        width: tooltipWidth,
+      });
+      return key;
+    });
+  };
 
 
   return (
@@ -1546,9 +1598,11 @@ function PartyTab({
         }
         if (showBaseStatHelp) {
           setShowBaseStatHelp(false);
+          setBaseStatHelpPosition(null);
         }
         if (activeStatusHelpKey) {
           setActiveStatusHelpKey(null);
+          setActiveStatusHelpPosition(null);
         }
       }}
     >
@@ -1907,7 +1961,7 @@ function PartyTab({
               <button
                 type="button"
                 onPointerDown={(event) => event.stopPropagation()}
-                onClick={() => setShowBaseStatHelp((current) => !current)}
+                onClick={handleBaseStatHelpToggle}
                 className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-gray-400 text-[10px] leading-none text-gray-600 hover:bg-gray-100"
                 aria-label="基礎値ヘルプ"
               >
@@ -1915,7 +1969,8 @@ function PartyTab({
               </button>
               {showBaseStatHelp && (
                 <div
-                  className="absolute right-0 top-full mt-2 z-20 w-[20rem] max-w-[calc(100vw-3rem)] rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-2"
+                  className="fixed z-20 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-2"
+                  style={baseStatHelpPosition ?? undefined}
                   onPointerDown={(event) => event.stopPropagation()}
                 >
                   <div className="font-medium text-gray-900">現在の基礎値とその補正解説:</div>
@@ -2103,10 +2158,7 @@ function PartyTab({
                             <button
                               type="button"
                               onPointerDown={(event) => event.stopPropagation()}
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                setActiveStatusHelpKey((current) => (current === offense.key ? null : offense.key));
-                              }}
+                              onClick={(event) => handleStatusHelpToggle(offense.key, event)}
                               className="text-left"
                             >
                               {offense.text}
@@ -2116,7 +2168,8 @@ function PartyTab({
                           )}
                           {offense.text && activeStatusHelpKey === offense.key && (
                             <div
-                              className="absolute left-0 top-full mt-1 z-20 w-[20rem] max-w-[calc(100vw-3rem)] rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-1"
+                              className="fixed z-20 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-1"
+                              style={activeStatusHelpPosition ?? undefined}
                               onPointerDown={(event) => event.stopPropagation()}
                             >
                               <div className="font-semibold text-gray-800">{offense.helpTitle}</div>
@@ -2133,10 +2186,9 @@ function PartyTab({
                                 type="button"
                                 onPointerDown={(event) => event.stopPropagation()}
                                 onClick={(event) => {
-                                  event.stopPropagation();
                                   const defense = defenseLines[i];
                                   if (!defense) return;
-                                  setActiveStatusHelpKey((current) => (current === defense.key ? null : defense.key));
+                                  handleStatusHelpToggle(defense.key, event);
                                 }}
                                 className="text-left"
                               >
@@ -2144,7 +2196,8 @@ function PartyTab({
                               </button>
                               {defenseLines[i] && activeStatusHelpKey === defenseLines[i].key && (
                                 <div
-                                  className="absolute right-0 top-full mt-1 z-20 w-[20rem] max-w-[calc(100vw-3rem)] rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-1"
+                                  className="fixed z-20 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-1"
+                                  style={activeStatusHelpPosition ?? undefined}
                                   onPointerDown={(event) => event.stopPropagation()}
                                 >
                                   <div className="font-semibold text-gray-800">{defenseLines[i].helpTitle}</div>
