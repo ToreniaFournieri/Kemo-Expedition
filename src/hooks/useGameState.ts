@@ -52,6 +52,7 @@ import {
   getEntryGateKey,
   getEliteGateKey,
   getBossGateKey,
+  getLootCollectionKey,
   getLootCollectionCount,
   isLootGateUnlocked,
   addRecoveredItemsToLootProgress,
@@ -864,6 +865,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let totalAutoSellProfit = 0;
       let roomCounter = 0;
       let expeditionEnded = false;
+      let expeditionLootGateProgress = { ...(currentParty.lootGateProgress ?? {}) };
 
       // Use new floor structure if available
       if (dungeon.floors && dungeon.floors.length > 0) {
@@ -886,7 +888,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               const gateRequired = ENTRY_GATE_REQUIRED;
               const entryGateKey = getEntryGateKey(dungeon.id);
               const collected = getLootCollectionCount(currentParty, prevTier, 'mythic');
-              const gateUnlocked = isLootGateUnlocked(currentParty, entryGateKey) || collected >= gateRequired;
+              const currentCollected = expeditionLootGateProgress[getLootCollectionKey(prevTier, 'mythic')] ?? collected;
+              const gateUnlocked = isLootGateUnlocked(currentParty, entryGateKey) || currentCollected >= gateRequired;
               if (!gateUnlocked) {
                 const gateEntry: ExpeditionLogEntry = {
                   room: roomCounter,
@@ -903,7 +906,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   remainingPartyHP: currentHp,
                   maxPartyHP: partyStats.hp,
                   details: [],
-                  gateInfo: `${prevDungeonName}の神魔レアアイテム(持ち帰り) ${collected}/${gateRequired}（判定時）`,
+                  gateInfo: `${prevDungeonName}の神魔レアアイテム(持ち帰り) ${currentCollected}/${gateRequired}（判定時）`,
                 };
                 entries.push(gateEntry);
                 finalOutcome = 'return';
@@ -927,7 +930,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 ? getBossGateKey(dungeon.id)
                 : getEliteGateKey(dungeon.id, floor.floorNumber);
               const collected = getLootCollectionCount(currentParty, tier, gateRarity);
-              const gateUnlocked = isLootGateUnlocked(currentParty, gateKey) || collected >= gateRequired;
+              const currentCollected = expeditionLootGateProgress[getLootCollectionKey(tier, gateRarity)] ?? collected;
+              const gateUnlocked = isLootGateUnlocked(currentParty, gateKey) || currentCollected >= gateRequired;
               if (!gateUnlocked) {
                 // Gate locked - expedition ends
                 const rarityLabel = gateRarity === 'rare' ? 'レアアイテム' : 'アンコモンアイテム';
@@ -946,7 +950,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   remainingPartyHP: currentHp,
                   maxPartyHP: partyStats.hp,
                   details: [],
-                  gateInfo: `${rarityLabel}(持ち帰り) ${collected}/${gateRequired}（判定時）`,
+                  gateInfo: `${rarityLabel}(持ち帰り) ${currentCollected}/${gateRequired}（判定時）`,
                 };
                 entries.push(gateEntry);
                 finalOutcome = 'return';
@@ -1013,6 +1017,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               totalAutoSellProfit += rewardResult.autoSellProfit;
               rewards.push(...rewardResult.rewards);
               recoveredItems.push(...rewardResult.recoveredItems);
+              expeditionLootGateProgress = addRecoveredItemsToLootProgress(expeditionLootGateProgress, rewardResult.recoveredItems);
 
               if (rewardResult.rewardNames.length > 0) {
                 entry.reward = rewardResult.rewardNames.join(' / ');
