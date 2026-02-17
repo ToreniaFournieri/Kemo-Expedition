@@ -1505,7 +1505,7 @@ function PartyTab({
 
   const baseStatMultiplierRows = [
     { label: '体力', value: stats.baseStats.vitality, note: '物理防御力', ratio: stats.baseStats.vitality / 10 },
-    { label: '力', value: stats.baseStats.strength, note: '近接攻撃力', ratio: stats.baseStats.strength / 10 },
+    { label: '力', value: stats.baseStats.strength, note: '遠距離攻撃力/近接攻撃力', ratio: stats.baseStats.strength / 10 },
     { label: '知性', value: stats.baseStats.intelligence, note: '魔法攻撃力', ratio: stats.baseStats.intelligence / 10 },
     { label: '精神', value: stats.baseStats.mind, note: '魔法防御力', ratio: stats.baseStats.mind / 10 },
   ];

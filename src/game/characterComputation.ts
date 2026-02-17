@@ -321,6 +321,7 @@ export function computeCharacterStats(
   }
 
   // Apply base stats scaling
+  rangedAttack = rangedAttack * (baseStats.strength / 10);
   meleeAttack = meleeAttack * (baseStats.strength / 10);
   magicalAttack = magicalAttack * (baseStats.intelligence / 10);
 
