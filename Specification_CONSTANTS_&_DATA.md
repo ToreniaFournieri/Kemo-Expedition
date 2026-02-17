@@ -338,9 +338,9 @@ d. bonus (stackable)
 		- `d.ranged_attack`, `d.ranged_NoA`
 	    - `d.magical_attack`, `d.magical_NoA`
 	    - `d.melee_attack`, `d.melee_NoA`
-    - `f.elemental_offense_attribute`  // 1.0 as default. 0.5 is weak, 2.0 is strong
+    - `f.elemental_offense_attribute`  
 		- Has only one type of `none`, `e.fire`, `e.ice`, or `e.thunder`
-      		- Priority: `e.thunder` > `e.ice` > `e.fire` > `none` (if it has multiple attribute)
+      	- Has its multiplier like x1.15
     - `f.defense`
 	    - `d.physical_defense`
 	    - `d.magical_defense`
