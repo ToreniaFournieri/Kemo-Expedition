@@ -1445,6 +1445,7 @@ function PartyTab({
   const [pendingEdits, setPendingEdits] = useState<Partial<Character> | null>(null);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
   const [showBaseStatHelp, setShowBaseStatHelp] = useState(false);
+  const [baseStatHelpPosition, setBaseStatHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const [activeStatusHelpKey, setActiveStatusHelpKey] = useState<string | null>(null);
   const [activeStatusHelpPosition, setActiveStatusHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const [editingDeity, setEditingDeity] = useState(false);
@@ -1532,11 +1533,36 @@ function PartyTab({
 
   useEffect(() => {
     setShowBaseStatHelp(false);
+    setBaseStatHelpPosition(null);
     setActiveStatusHelpKey(null);
     setShowBonusHelp(false);
   }, [selectedCharacter, editingCharacter]);
 
   const normalizedCurrentDeityName = normalizeDeityName((party.deity.name ?? '').trim());
+
+  const handleBaseStatHelpToggle = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    if (showBaseStatHelp) {
+      setShowBaseStatHelp(false);
+      setBaseStatHelpPosition(null);
+      return;
+    }
+
+    const triggerRect = event.currentTarget.getBoundingClientRect();
+    const viewportPadding = 12;
+    const tooltipWidth = Math.min(320, window.innerWidth - viewportPadding * 2);
+    const left = Math.min(
+      Math.max(triggerRect.left, viewportPadding),
+      window.innerWidth - viewportPadding - tooltipWidth,
+    );
+
+    setBaseStatHelpPosition({
+      top: triggerRect.bottom + 8,
+      left,
+      width: tooltipWidth,
+    });
+    setShowBaseStatHelp(true);
+  };
 
   const handleStatusHelpToggle = (key: string, event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -1572,6 +1598,7 @@ function PartyTab({
         }
         if (showBaseStatHelp) {
           setShowBaseStatHelp(false);
+          setBaseStatHelpPosition(null);
         }
         if (activeStatusHelpKey) {
           setActiveStatusHelpKey(null);
@@ -1934,7 +1961,7 @@ function PartyTab({
               <button
                 type="button"
                 onPointerDown={(event) => event.stopPropagation()}
-                onClick={() => setShowBaseStatHelp((current) => !current)}
+                onClick={handleBaseStatHelpToggle}
                 className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-gray-400 text-[10px] leading-none text-gray-600 hover:bg-gray-100"
                 aria-label="基礎値ヘルプ"
               >
@@ -1942,7 +1969,8 @@ function PartyTab({
               </button>
               {showBaseStatHelp && (
                 <div
-                  className="absolute right-0 top-full mt-2 z-20 w-[20rem] max-w-[calc(100vw-3rem)] rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-2"
+                  className="fixed z-20 max-h-[calc(100vh-2rem)] overflow-y-auto rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-2"
+                  style={baseStatHelpPosition ?? undefined}
                   onPointerDown={(event) => event.stopPropagation()}
                 >
                   <div className="font-medium text-gray-900">現在の基礎値とその補正解説:</div>
