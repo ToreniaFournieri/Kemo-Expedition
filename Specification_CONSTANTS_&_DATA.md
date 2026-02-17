@@ -564,13 +564,13 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 |`i.robe` | x1.0 |
 |`i.shield` | x1.0 |
 |`i.sword` | x1.2 |
-|`i.katana` | x1.92 |
+|`i.katana` | x1.8 |
 |`i.gauntlet` | x1.0 |
 |`i.arrow` | x0.67 |
-|`i.bolt` | x1.07  |
+|`i.bolt` | x1.00 |
 |`i.archery` | x1.0 | 
 |`i.wand` | x0.5 |
-|`i.grimoire` | x0.8 |
+|`i.grimoire` | x0.75 |
 |`i.catalyst` | x1.0 |
 
 **rarelity.amplifier of base_power**
