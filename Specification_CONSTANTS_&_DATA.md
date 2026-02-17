@@ -6,8 +6,8 @@
 |-------|-------------------------|
 | `a.` | **A**bility. Unique/Strongest. If multiple abilities share the same name, only the one with the highest value (or the highest priority) is active. |
 | `b.` | **B**ase Status (Core attributes) and Base status bonus |
-| `c.` | **C**ategory Bonus. Different named modifiers combine. Identical named modifiers follow the "Unique" rule. |
-| `d.` | **D**uel Status (Current combat values) |
+| `c.` | **C**ategory Bonus. Only one single bonuses(c.) of the **exact** same name applies. |
+| `d.` | **D**uel Status (Current combat values). the bonus is stackable. |
 | `e.` | **E**lemental Offense Attribute |
 | `f.` | **F**unction (Logic/Calculated value) |
 | `g.` | Ba**g** Randomization |
