@@ -360,17 +360,17 @@ function getItemStats(item: Item): string {
   if (item.meleeNoA || item.meleeNoABonus) {
     const baseNoA = item.meleeNoA ?? 0;
     if (baseNoA !== 0) stats.push(`近回数${formatSigned(getScaledNoA(baseNoA))}`);
-    if (item.meleeNoABonus) stats.push(formatBracket('近回数', item.meleeNoABonus));
+    if (item.meleeNoABonus) stats.push(`近回数${formatSigned(item.meleeNoABonus)}`);
   }
   if (item.rangedNoA || item.rangedNoABonus) {
     const baseNoA = item.rangedNoA ?? 0;
     if (baseNoA !== 0) stats.push(`遠回数${formatSigned(getScaledNoA(baseNoA))}`);
-    if (item.rangedNoABonus) stats.push(formatBracket('遠回数', item.rangedNoABonus));
+    if (item.rangedNoABonus) stats.push(`遠回数${formatSigned(item.rangedNoABonus)}`);
   }
   if (item.magicalNoA || item.magicalNoABonus) {
     const baseNoA = item.magicalNoA ?? 0;
     if (baseNoA !== 0) stats.push(`魔回数${formatSigned(getScaledNoA(baseNoA))}`);
-    if (item.magicalNoABonus) stats.push(formatBracket('魔回数', item.magicalNoABonus));
+    if (item.magicalNoABonus) stats.push(`魔回数${formatSigned(item.magicalNoABonus)}`);
   }
   if (item.physicalDefense) {
     stats.push(`物防+${Math.floor(item.physicalDefense * multiplier)}`);
@@ -382,7 +382,7 @@ function getItemStats(item: Item): string {
   }
   if (item.partyHP) stats.push(`HP+${Math.floor(item.partyHP * multiplier)}`);
   if (item.accuracyBonus) stats.push(formatBracket('命中', Math.round(item.accuracyBonus * 1000)));
-  if (item.evasionBonus) stats.push(formatBracket('回避', Math.round(item.evasionBonus * 1000)));
+  if (item.evasionBonus) stats.push(`回避${formatSigned(Math.round(item.evasionBonus * 1000))}`);
   if (item.vitalityBonus) stats.push(`体力+${item.vitalityBonus}`);
   if (item.strengthBonus) stats.push(`力+${item.strengthBonus}`);
   if (item.intelligenceBonus) stats.push(`知力+${item.intelligenceBonus}`);
