@@ -320,9 +320,27 @@ export function computeCharacterStats(
         meleeNoA += item.meleeNoA;
       }
     }
-    if (item.meleeNoABonus) meleeNoAFixedBonuses.add(item.meleeNoABonus);
-    if (item.rangedNoABonus) rangedNoAFixedBonuses.add(item.rangedNoABonus);
-    if (item.magicalNoABonus) magicalNoAFixedBonuses.add(item.magicalNoABonus);
+    if (item.meleeNoABonus) {
+      if (item.meleeNoABonus < 0) {
+        meleeNoA += item.meleeNoABonus;
+      } else {
+        meleeNoAFixedBonuses.add(item.meleeNoABonus);
+      }
+    }
+    if (item.rangedNoABonus) {
+      if (item.rangedNoABonus < 0) {
+        rangedNoA += item.rangedNoABonus;
+      } else {
+        rangedNoAFixedBonuses.add(item.rangedNoABonus);
+      }
+    }
+    if (item.magicalNoABonus) {
+      if (item.magicalNoABonus < 0) {
+        magicalNoA += item.magicalNoABonus;
+      } else {
+        magicalNoAFixedBonuses.add(item.magicalNoABonus);
+      }
+    }
     if (item.accuracyBonus) {
       const bonusName = `c.accuracy+${formatCBonusValue(item.accuracyBonus)}`;
       const appliedCount = collection.cAccuracyBonusCounts.get(bonusName) ?? 0;
