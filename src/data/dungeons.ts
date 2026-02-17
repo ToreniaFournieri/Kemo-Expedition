@@ -19,7 +19,7 @@ const FLOOR_ROOM_MULTIPLIERS: Record<number, Record<RoomType, CombatMultipliers>
     battle_Boss: { hp: 6.10, attack: 2.24, noa: 1.0, attackAmplifier: 1.20, defense: 2.24, defenseAmplifier: 0.86 },
   },
   4: {
-    battle_Normal: { hp: 2.95, attack: 1.32, noa: 1.0, attackAmplifier: 1.06, defense: 1.32, defenseAmplifier: 0.92 },
+    battle_Normal: { hp: 1.95, attack: 1.32, noa: 1.0, attackAmplifier: 1.06, defense: 1.32, defenseAmplifier: 0.92 },
     battle_Elite: { hp: 4.43, attack: 1.61, noa: 1.0, attackAmplifier: 1.14, defense: 1.61, defenseAmplifier: 0.92 },
     battle_Boss: { hp: 6.10, attack: 2.24, noa: 1.0, attackAmplifier: 1.20, defense: 2.24, defenseAmplifier: 0.86 },
   },
