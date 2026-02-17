@@ -31,6 +31,16 @@
 | `c.accuracy+v` | [命中+(v*1000)] | `c.accuracy+0.001` -> [命中+1] |
 | `c.evasion+v` | [回避+(v*1000)] | `c.evasion-3` [回避-3]  |
 
+d. bonus (stackable)
+
+| `c.` | Display |
+|---|----|
+|`d.accuracy-v`| 命中-v |
+|`d.evasion-v` | 回避-v |
+| `d.melee_NoA-v` | 近回数-v | 
+| `d.ranged_NoA-v` | 遠回数-v | 
+| `d.magical_NoA-v` | 魔回数-v |
+
 - Translation
 
 | name | Japanese | short word |
@@ -527,14 +537,14 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 |Tier| base_power | multiplier for　鎧, 衣, 剣, 矢, 杖 | plus for 盾 | base_power (NoA) for 手, 弓, 媒 | fixed NoA for 手, 弓, 媒 |penalty for 刀, ボ, 書| 
 |----|------------|--------|-----------|--------|--------|-------|
-| 1 | 12 | `c.target_status+0.13` | `c.evasion+0.013` | 0.8 | `c.N_NoA+1` | `c.evasion-0.001`, `d.N_NoA-1.0` |
-| 2 | 18 | `c.target_status+0.12` | `c.evasion+0.012` | 0.7 | `c.N_NoA+2` | `c.evasion-0.002`, `d.N_NoA-1.2` |
-| 3 | 27 | `c.target_status+0.11` | `c.evasion+0.011` | 0.6 | `c.N_NoA+3` | `c.evasion-0.003`, `d.N_NoA-1.4` |
-| 4 | 41 | `c.target_status+0.09` | `c.evasion+0.009` | 0.5 | `c.N_NoA+4` | `c.evasion-0.004`, `d.N_NoA-1.6` |
-| 5 | 61 | `c.target_status+0.08` | `c.evasion+0.008` | 0.4 | `c.N_NoA+5` | `c.evasion-0.005`, `d.N_NoA-1.8` |
-| 6 | 91 | `c.target_status+0.07` | `c.evasion+0.007` | 0.3 | `c.N_NoA+6` | `c.evasion-0.006`, `d.N_NoA-2.0` |
-| 7 | 137 | `c.target_status+0.06` | `c.evasion+0.006` | 0.2 | `c.N_NoA+7` | `c.evasion-0.007`, `d.N_NoA-2.2` |
-| 8 | 205 | `c.target_status+0.05` | `c.evasion+0.005` | 0.1 | `c.N_NoA+8` | `c.evasion-0.008`, `d.N_NoA-2.4` |
+| 1 | 12 | `c.target_status+0.13` | `c.evasion+0.013` | 0.8 | `c.N_NoA+1` | `d.evasion-0.001`, `d.N_NoA-1.0` |
+| 2 | 18 | `c.target_status+0.12` | `c.evasion+0.012` | 0.7 | `c.N_NoA+2` | `d.evasion-0.002`, `d.N_NoA-1.2` |
+| 3 | 27 | `c.target_status+0.11` | `c.evasion+0.011` | 0.6 | `c.N_NoA+3` | `d.evasion-0.003`, `d.N_NoA-1.4` |
+| 4 | 41 | `c.target_status+0.09` | `c.evasion+0.009` | 0.5 | `c.N_NoA+4` | `d.evasion-0.004`, `d.N_NoA-1.6` |
+| 5 | 61 | `c.target_status+0.08` | `c.evasion+0.008` | 0.4 | `c.N_NoA+5` | `d.evasion-0.005`, `d.N_NoA-1.8` |
+| 6 | 91 | `c.target_status+0.07` | `c.evasion+0.007` | 0.3 | `c.N_NoA+6` | `d.evasion-0.006`, `d.N_NoA-2.0` |
+| 7 | 137 | `c.target_status+0.06` | `c.evasion+0.006` | 0.2 | `c.N_NoA+7` | `d.evasion-0.007`, `d.N_NoA-2.2` |
+| 8 | 205 | `c.target_status+0.05` | `c.evasion+0.005` | 0.1 | `c.N_NoA+8` | `d.evasion-0.008`, `d.N_NoA-2.4` |
 | 9 | - | `c.target_status+0.04` | `c.evasion+0.004` | - | `c.N_NoA+9` | - |
 | 10 | - | `c.target_status+0.03` | `c.evasion+0.003` | - | `c.N_NoA+10` | - |
 
@@ -546,13 +556,13 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 |`i.robe` |  `d.magical_defense`  | `c.magical_defense+v` | `b.mind+1`, `d.HP`, `c.evasion+0.01` |
 |`i.shield ` | `d.HP` | `c.evasion+v` | `d.physical_defense`, `d.melee_attack`, `b.vitality+1` |
 |`i.sword` | `d.melee_attack` | `c.melee_attack+v` | `c.accuracy+0.01`, `b.strength+1`, `e.fire`, `d.physical_defense` ,`d.HP` |
-|`i.katana` | `d.melee_attack` | `c.melee_attack+V`, `c.evasion-v`, `c.melee_NoA-v` | additional `d.melee_attack`, `c.penet_+0.01`, `c.penet_+0.02`, `b.mind+1` |
+|`i.katana` | `d.melee_attack` | `c.melee_attack+V`, `d.evasion-v`, `c.melee_NoA-v` | additional `d.melee_attack`, `c.penet_+0.01`, `c.penet_+0.02`, `b.mind+1` |
 |`i.gauntlet` | `d.melee_NoA` | `c.melee_NoA+v` | additional `d.melee_NoA`, `d.physical_defense`, `b.strength+1` |
 |`i.arrow` | `d.ranged_attack` | `c.ranged_attack+v` | additional `d.ranged_attack`, `e.fire`, `e.ice` |
-|`i.bolt` | `d.ranged_attack` | `c.ranged_attack+v`, `c.evasion-v`, `c.ranged_NoA-v` | additional `d.ranged_attack`, `e.thunder`,`b.strength+1` |
+|`i.bolt` | `d.ranged_attack` | `c.ranged_attack+v`, `d.evasion-v`, `c.ranged_NoA-v` | additional `d.ranged_attack`, `e.thunder`,`b.strength+1` |
 |`i.archery` | `d.ranged_NoA` | `c.ranged_NoA+v` | `c.accuracy+0.01`, `c.accuracy+0.02`, `d.evasion`, `d.HP`, `b.strength+1`|
 |`i.wand` | `d.magical_attack` | `c.magical_attack+v` | additional `d.magical_attack`, `d.magical_defense`, `b.intelligence+1` |
-|`i.grimoire` | `d.magical_attack` | `c.magical_attack+v`, `c.evasion-v`, `c.magical_NoA-v` | additional `d.magical_attack`, `b.mind+1`, `d.magical_defense` |
+|`i.grimoire` | `d.magical_attack` | `c.magical_attack+v`, `d.evasion-v`, `c.magical_NoA-v` | additional `d.magical_attack`, `b.mind+1`, `d.magical_defense` |
 |`i.catalyst` | `d.magical_NoA` | `c.magical_NoA+v` | additional `d.magical_NoA`, `e.fire`, `e.ice`, `e.thunder`, `b.intelligence+1` |
 
 
@@ -598,7 +608,7 @@ Tier 1 common `i.sword`: `d.melee_attack` +12, `c.physical_attack+0.13`
 Tier 1 rare `i.sword`: `d.melee_attack` +17, `d.melee_defense` + 5, `d.HP` +4 , `c.physical_attack+0.13`
 Tier 2 common `i.shield`: `d.HP` +18, `c.evasion+0.012`
 Tier 3 common `i.gauntlet`: `d.melee_NoA` +0.6, `c.N_NoA+3`
-Tier 4 common `i.katana`: `d.melee_attack` +82, `c.evasion-0.004`, `c_melee_NoA-1.6`
+Tier 4 common `i.katana`: `d.melee_attack` +82, `d.evasion-0.004`, `c_melee_NoA-1.6`
 Tier 5 common `i.arrow`: `d.ranged_attack` +41, `c.ranged_attack+0.08`
 
 ```
