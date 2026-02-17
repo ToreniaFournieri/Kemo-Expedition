@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, type Dispatch, type SetStateAction } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { DUNGEONS } from '../data/dungeons';
 import { RACES } from '../data/races';
@@ -453,7 +453,7 @@ const MULTIPLIER_LABELS: Record<string, string> = {
 const ABILITY_NAMES: Record<string, string> = {
   first_strike: '先手',
   hunter: '狩人',
-  defender: '防御者',
+  defender: '守護者',
   counter: '反撃',
   re_attack: '再攻撃',
   iaigiri: '居合斬り',
@@ -481,6 +481,55 @@ const C_MULTIPLIER_HELP_DESCRIPTIONS: Record<string, string> = {
   catalyst: '触媒カテゴリ装備の効果が {value} 倍',
   arrow: '矢カテゴリ装備の効果が {value} 倍',
 };
+
+const CATEGORY_TO_MULTIPLIER_BONUS: Record<ItemCategory, BonusType | null> = {
+  sword: 'sword_multiplier',
+  katana: 'katana_multiplier',
+  archery: 'archery_multiplier',
+  armor: 'armor_multiplier',
+  gauntlet: 'gauntlet_multiplier',
+  wand: 'wand_multiplier',
+  robe: 'robe_multiplier',
+  shield: 'shield_multiplier',
+  bolt: 'bolt_multiplier',
+  grimoire: 'grimoire_multiplier',
+  catalyst: 'catalyst_multiplier',
+  arrow: 'arrow_multiplier',
+};
+
+function getEnhancementAndSuperRareMultiplier(item: Item): number {
+  const enhancementMultiplier = ENHANCEMENT_TITLES.find((t) => t.value === item.enhancement)?.multiplier ?? 1;
+  const superRareMultiplier = SUPER_RARE_TITLES.find((t) => t.value === item.superRare)?.multiplier ?? 1;
+  return enhancementMultiplier * superRareMultiplier;
+}
+
+function getCharacterCategoryMultiplier(character: Character, category: ItemCategory): number {
+  const multiplierType = CATEGORY_TO_MULTIPLIER_BONUS[category];
+  if (!multiplierType) return 1;
+
+  const mainClassData = CLASSES.find((c) => c.id === character.mainClassId);
+  const subClassData = CLASSES.find((c) => c.id === character.subClassId);
+  const predispositionData = PREDISPOSITIONS.find((p) => p.id === character.predispositionId);
+  const lineageData = LINEAGES.find((l) => l.id === character.lineageId);
+  const raceData = RACES.find((r) => r.id === character.raceId);
+
+  if (!mainClassData || !subClassData || !predispositionData || !lineageData || !raceData) {
+    return 1;
+  }
+
+  const isMasterClass = character.mainClassId === character.subClassId;
+  const allBonuses = [
+    ...raceData.bonuses,
+    ...mainClassData.mainSubBonuses,
+    ...(isMasterClass ? mainClassData.masterBonuses : [...mainClassData.mainBonuses, ...subClassData.mainSubBonuses]),
+    ...predispositionData.bonuses,
+    ...lineageData.bonuses,
+  ];
+
+  return allBonuses
+    .filter((bonus) => bonus.type === multiplierType)
+    .reduce((total, bonus) => total * bonus.value, 1);
+}
 
 function formatBonuses(bonuses: Bonus[]): string {
   const parts: string[] = [];
@@ -1395,6 +1444,7 @@ function PartyTab({
       onAddStatNotifications, selectedCharacter, selectedPartyIndex]);
   const [pendingEdits, setPendingEdits] = useState<Partial<Character> | null>(null);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
+  const [showBaseStatHelp, setShowBaseStatHelp] = useState(false);
   const [editingDeity, setEditingDeity] = useState(false);
   const [pendingDeityName, setPendingDeityName] = useState(party.deity.name);
   const [lastSlotTap, setLastSlotTap] = useState<{ slot: number; time: number } | null>(null);
@@ -1452,6 +1502,23 @@ function PartyTab({
   const predisposition = PREDISPOSITIONS.find(p => p.id === char.predispositionId)!;
   const lineage = LINEAGES.find(l => l.id === char.lineageId)!;
 
+  const baseStatMultiplierRows = [
+    { label: '体力', value: stats.baseStats.vitality, note: '物理防御力', ratio: stats.baseStats.vitality / 10 },
+    { label: '力', value: stats.baseStats.strength, note: '近接攻撃力', ratio: stats.baseStats.strength / 10 },
+    { label: '知性', value: stats.baseStats.intelligence, note: '魔法攻撃力', ratio: stats.baseStats.intelligence / 10 },
+    { label: '精神', value: stats.baseStats.mind, note: '魔法防御力', ratio: stats.baseStats.mind / 10 },
+  ];
+
+  const hpStatMultiplier = (stats.baseStats.vitality + stats.baseStats.mind) / 20;
+  const hpBaseIncrease = party.level * stats.baseStats.vitality * hpStatMultiplier;
+  const hpItemIncrease = char.equipment.reduce((total, item) => {
+    if (!item?.partyHP) return total;
+    const categoryMultiplier = getCharacterCategoryMultiplier(char, item.category);
+    const itemMultiplier = getEnhancementAndSuperRareMultiplier(item);
+    const baseMultiplier = item.baseMultiplier ?? 1;
+    return total + (item.partyHP * categoryMultiplier * itemMultiplier * baseMultiplier * hpStatMultiplier);
+  }, 0);
+
   const availableCategoryGroups = getAvailableCategoryGroups(char);
   const availableCategories = availableCategoryGroups.flatMap(group => group.categories);
 
@@ -1461,6 +1528,10 @@ function PartyTab({
     }
   }, [availableCategories, equipCategory]);
 
+  useEffect(() => {
+    setShowBaseStatHelp(false);
+  }, [selectedCharacter, editingCharacter]);
+
   const normalizedCurrentDeityName = normalizeDeityName((party.deity.name ?? '').trim());
 
 
@@ -1469,6 +1540,9 @@ function PartyTab({
       onPointerDown={() => {
         if (showBonusHelp) {
           setShowBonusHelp(false);
+        }
+        if (showBaseStatHelp) {
+          setShowBaseStatHelp(false);
         }
       }}
     >
@@ -1820,8 +1894,38 @@ function PartyTab({
           </div>
         ) : (
           <div className="space-y-1 text-sm">
-            <div className="text-gray-500">
-              {race.emoji} {race.name} / {mainClass.name}({char.mainClassId === char.subClassId ? '師範' : subClass.name}) / {predisposition.name} / {lineage.name}
+            <div className="text-gray-500 relative inline-flex items-center gap-2 flex-wrap">
+              <span>
+                {race.emoji} {race.name} / {mainClass.name}({char.mainClassId === char.subClassId ? '師範' : subClass.name}) / {predisposition.name} / {lineage.name}
+              </span>
+              <button
+                type="button"
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={() => setShowBaseStatHelp((current) => !current)}
+                className="w-5 h-5 rounded-full border border-gray-400 text-xs text-gray-600 bg-white hover:bg-gray-100"
+                aria-label="基礎値ヘルプ"
+              >
+                ?
+              </button>
+              {showBaseStatHelp && (
+                <div
+                  className="absolute right-0 top-full mt-2 z-20 w-[20rem] max-w-[calc(100vw-3rem)] rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-2"
+                  onPointerDown={(event) => event.stopPropagation()}
+                >
+                  <div className="font-medium text-gray-900">現在の基礎値とその補正解説:</div>
+                  <div className="space-y-1">
+                    {baseStatMultiplierRows.map((row) => (
+                      <div key={row.label}>
+                        {row.label}: {formatNumber(row.value)} ({row.note} x{row.ratio.toFixed(1)})
+                      </div>
+                    ))}
+                  </div>
+                  <div className="pt-1 border-t border-gray-100 space-y-1">
+                    <div>HP増加基礎値: +{formatNumber(Math.floor(hpBaseIncrease))}</div>
+                    <div>アイテムHP増加値: +{formatNumber(Math.floor(hpItemIncrease))}</div>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="grid grid-cols-4 gap-1 mt-1 text-xs">
               <div className="bg-white rounded p-1 text-center">体力:{stats.baseStats.vitality}</div>
