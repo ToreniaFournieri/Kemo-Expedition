@@ -612,7 +612,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
     category: 'bolt',
     variant1Mod: { rangedAttack: 1 },
     variant2Mod: { elementalOffense: 'thunder' },
-    variant3Mod: { rangedAttack: 1 },
+    variant3Mod: { strengthBonus: 1 },
     mythicBonusMod: { strengthBonus: 1 },
   },
   // Index 8: archery (弓) - +rangedNoA
