@@ -571,7 +571,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
   // Index 2: shield (盾) - +HP, +physicalDefense
   {
     category: 'shield',
-    variant1Mod: { physicalDefense: 2 },
+    variant1Mod: { physicalDefense: 1 },
     variant2Mod: { meleeAttack: 1 },
     variant3Mod: { partyHP: 2 },
     mythicBonusMod: { vitalityBonus: 1 },
