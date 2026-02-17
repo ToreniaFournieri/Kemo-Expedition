@@ -78,13 +78,13 @@ const TYPE_AMPLIFIERS: Record<ItemCategory, number> = {
   robe: 1.0,
   shield: 1.0,
   sword: 1.2,
-  katana: 2.4,
+  katana: 1.92,
   gauntlet: 1.0,
   arrow: 0.67,
-  bolt: 1.33,
+  bolt: 1.07,
   archery: 1.0,
   wand: 0.5,
-  grimoire: 1.0,
+  grimoire: 0.8,
   catalyst: 1.0,
 };
 
