@@ -579,7 +579,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
   // Index 3: sword (剣) - +meleeAttack
   {
     category: 'sword',
-    variant1Mod: { physicalDefense: 1 },
+    variant1Mod: { physicalDefense: 2 },
     variant2Mod: { partyHP: 1 },
     variant3Mod: { meleeAttack: 2 },
     mythicBonusMod: { strengthBonus: 1 },
