@@ -266,7 +266,7 @@ export function computeCharacterStats(
   let elementalOffenseValue = 1.0;
 
   // Process equipment (limited to maxEquipSlots)
-  const equippedItems = character.equipment.slice(0, maxEquipSlots).filter((item): item is Item => item !== null);
+  const equippedItems = character.equipment.slice(0, maxEquipSlots).filter((item): item is Item => item != null);
 
   for (const item of equippedItems) {
     if (item.vitalityBonus) baseStats.vitality += item.vitalityBonus;

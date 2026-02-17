@@ -1370,7 +1370,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (isCharacterChanged) {
         // Return equipment to inventory
         newInventory = { ...state.global.inventory };
-        for (const item of oldChar.equipment.filter((e): e is Item => e !== null)) {
+        for (const item of oldChar.equipment.filter((e): e is Item => e != null)) {
           const key = getVariantKey(item);
           const existing = newInventory[key];
           if (existing) {
