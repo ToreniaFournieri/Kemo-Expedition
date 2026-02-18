@@ -441,10 +441,7 @@ function getElementalOffenseHelpLines(character: Character, stats: ComputedChara
     thunder: { label: '雷', emoji: '⚡' },
   };
 
-  const lines = [
-    '攻撃時に属性を持つことがあります。 複数の属性を持つ武器を装備した場合は、その属性の威力増加値が高いものが優先されます。(威力増加値が等しい場合は 雷>氷>炎 の順)',
-    '',
-  ];
+  const lines: string[] = [];
 
   if (stats.elementalOffense === 'none') {
     lines.push('攻撃は無属性です。');
