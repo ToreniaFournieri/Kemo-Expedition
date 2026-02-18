@@ -1181,7 +1181,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
                     : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
                 }`}
               >
-                自動周回{isAutoRepeatEnabled ? 'ON' : 'OFF'}
+                自動進行{isAutoRepeatEnabled ? 'ON' : 'OFF'}
               </button>
             </div>
           </div>
