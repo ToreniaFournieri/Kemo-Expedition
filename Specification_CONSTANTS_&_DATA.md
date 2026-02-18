@@ -295,7 +295,7 @@ d. bonus (stackable)
 |頑強 (Sturdy)| 頑 |`b.vitality+2`,  `c.armor_x1.1`|
 |俊敏 (Agile)| 俊 | `c.evasion+0.01` |
 |聡明 (Brilliant)| 聡 |`c.wand_x1.2`|
-|器用 (Dexterous)|　器  |`c.accuracy+0.01`, `c.catalyst_x1.2`|
+|器用 (Dexterous)| 器 |`c.accuracy+0.01`, `c.catalyst_x1.2`|
 |騎士道 (Chivalric)| 騎 |`c.sword_x1.2`, `c.bolt_x1.1`|
 |士魂 (Shikon)| 士 |`b.strength+1`, `c.katana_x1.1`, `c.arrow_x1.2`|
 |追求 (Pursuing)| 追 |`b.intelligence+2`, `c.robe_x1.1`|
