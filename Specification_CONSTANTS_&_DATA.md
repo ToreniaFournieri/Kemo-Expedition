@@ -517,7 +517,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | Samurai | 40 | (none) | -0.05 | -0.01 | 0 | 0 | 0 | 0 | 75 | 1 | x1.0 | x1.0 | x1.3 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 12 |
 | Lord | 58 | (none) | 0.00 | 0.00 | 0 | 0 | 0 | 0 | 32 | 4 | x1.0 | x1.0 | x1.1 | 12 | 12 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 20 |
 | Ranger | 44 | (none) | 0.03 | 0.01 | 28 | 4 | 0 | 0 | 0 | 0 | x1.2 | x1.0 | x1.0 | 9 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 12 |
-| Wizard | 42 | (none) | 0.00 | 0.00 |0 | 0 | 40 | 2 | 0 | 0 | x1.0 | x1.2 | x1.0 | 8 | 12 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
+| Wizard | 30 | (none) | 0.00 | 0.00 |0 | 0 | 40 | 2 | 0 | 0 | x1.0 | x1.2 | x1.0 | 7 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
 | Sage | 47 | (none) | 0.00 | 0.00 |0 | 0 | 20 | 4 | 0 | 0 | x1.0 | x1.2 | x1.0 | 9 | 13 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 10 |
 | Rogue | 40 | `a.deflection`, `a.first-strike`1 | 0.06 | 0.06 | 20 | 4 | 0 | 0 | 20 | 4 | x1.2 | x1.0 | x1.0 | 8 | 8 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 8 |
 | Pilgrim | 62 | `a.null-counter` | 0.00 | 0.02 | 0 | 0 | 20 | 2 | 32 | 2 | x1.0 | x1.2 | x1.2 | 11 | 11 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 16 |
