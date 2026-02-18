@@ -39,6 +39,10 @@ const CATEGORY_TO_MULTIPLIER: Record<ItemCategory, BonusType | null> = {
   arrow: 'arrow_multiplier',
 };
 
+function formatCBonusValue(value: number): string {
+  return (Math.round(value * 1000000) / 1000000).toString();
+}
+
 function getCharacterMultiplier(
   character: { raceId: string; mainClassId: string; subClassId: string; predispositionId: string; lineageId: string },
   category: ItemCategory
@@ -64,8 +68,15 @@ function getCharacterMultiplier(
     ...lineage.bonuses,
   ];
 
+  const appliedBonusNames = new Set<string>();
   const multipliers = allBonuses
     .filter(b => b.type === bonusType)
+    .filter((b) => {
+      const bonusName = `c.${bonusType}+${formatCBonusValue(b.value)}`;
+      if (appliedBonusNames.has(bonusName)) return false;
+      appliedBonusNames.add(bonusName);
+      return true;
+    })
     .map(b => b.value);
 
   return multipliers.reduce((prod, v) => prod * v, 1);

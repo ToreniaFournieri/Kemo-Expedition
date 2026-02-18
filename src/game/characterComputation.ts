@@ -42,7 +42,7 @@ const CATEGORY_TO_MULTIPLIER: Record<ItemCategory, BonusType | null> = {
 
 interface BonusCollection {
   equipSlotBonusTotal: number;
-  cEquipSlotBonusNames: Set<string>;
+  uniqueCAdditiveBonusNames: Set<string>;
   multipliers: Map<BonusType, number[]>;
   statBonuses: BaseStats;
   grit: number;
@@ -99,8 +99,8 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
       case 'equip_slot':
         {
           const bonusName = `c.equip_slot+${formatCBonusValue(bonus.value)}`;
-          if (!collection.cEquipSlotBonusNames.has(bonusName)) {
-            collection.cEquipSlotBonusNames.add(bonusName);
+          if (!collection.uniqueCAdditiveBonusNames.has(bonusName)) {
+            collection.uniqueCAdditiveBonusNames.add(bonusName);
             collection.equipSlotBonusTotal += bonus.value;
           }
         }
@@ -138,16 +138,40 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
         collection.statBonuses.mind += bonus.value;
         break;
       case 'grit':
-        collection.grit = Math.max(collection.grit, bonus.value);
+        {
+          const bonusName = `c.grit+${formatCBonusValue(bonus.value)}`;
+          if (!collection.uniqueCAdditiveBonusNames.has(bonusName)) {
+            collection.uniqueCAdditiveBonusNames.add(bonusName);
+            collection.grit += bonus.value;
+          }
+        }
         break;
       case 'caster':
-        collection.caster = Math.max(collection.caster, bonus.value);
+        {
+          const bonusName = `c.caster+${formatCBonusValue(bonus.value)}`;
+          if (!collection.uniqueCAdditiveBonusNames.has(bonusName)) {
+            collection.uniqueCAdditiveBonusNames.add(bonusName);
+            collection.caster += bonus.value;
+          }
+        }
         break;
       case 'penet':
-        collection.penet += bonus.value;
+        {
+          const bonusName = `c.penet+${formatCBonusValue(bonus.value)}`;
+          if (!collection.uniqueCAdditiveBonusNames.has(bonusName)) {
+            collection.uniqueCAdditiveBonusNames.add(bonusName);
+            collection.penet += bonus.value;
+          }
+        }
         break;
       case 'pursuit':
-        collection.pursuit += bonus.value;
+        {
+          const bonusName = `c.pursuit+${formatCBonusValue(bonus.value)}`;
+          if (!collection.uniqueCAdditiveBonusNames.has(bonusName)) {
+            collection.uniqueCAdditiveBonusNames.add(bonusName);
+            collection.pursuit += bonus.value;
+          }
+        }
         break;
       case 'accuracy':
         {
@@ -204,7 +228,7 @@ export function computeCharacterStats(
   // Initialize bonus collection
   const collection: BonusCollection = {
     equipSlotBonusTotal: 0,
-    cEquipSlotBonusNames: new Set<string>(),
+    uniqueCAdditiveBonusNames: new Set<string>(),
     multipliers: new Map(),
     statBonuses: { vitality: 0, strength: 0, intelligence: 0, mind: 0 },
     grit: 0,
