@@ -1363,6 +1363,8 @@ function PartyTab({
     accuracy: Math.round(selectedStats.accuracyBonus * 1000),
     evasion: Math.round(selectedStats.evasionBonus * 1000),
     hp: Math.floor(partyStats.hp),
+    elementalOffense: selectedStats.elementalOffense,
+    elementalOffensePercent: Math.round((selectedStats.elementalOffenseValue - 1) * 100),
   };
 
   const prevStatsRef = useRef<typeof combatTotals | null>(null);
@@ -1480,6 +1482,37 @@ function PartyTab({
         const isPositive = combatTotals.evasion > prev.evasion;
         changes.push({ message: `回避 ${prev.evasion >= 0 ? '+' : ''}${formatNumber(prev.evasion)} → ${combatTotals.evasion >= 0 ? '+' : ''}${formatNumber(combatTotals.evasion)}`, isPositive });
       }
+      const elementalLabels: Record<Exclude<ElementalOffense, 'none'>, string> = {
+        fire: '火',
+        ice: '氷',
+        thunder: '雷',
+      };
+      const prevElementPercents: Record<Exclude<ElementalOffense, 'none'>, number> = {
+        fire: 0,
+        ice: 0,
+        thunder: 0,
+      };
+      const currentElementPercents: Record<Exclude<ElementalOffense, 'none'>, number> = {
+        fire: 0,
+        ice: 0,
+        thunder: 0,
+      };
+
+      if (prev.elementalOffense !== 'none') {
+        prevElementPercents[prev.elementalOffense] = prev.elementalOffensePercent;
+      }
+      if (combatTotals.elementalOffense !== 'none') {
+        currentElementPercents[combatTotals.elementalOffense] = combatTotals.elementalOffensePercent;
+      }
+
+      (['fire', 'ice', 'thunder'] as const).forEach((element) => {
+        if (prevElementPercents[element] === currentElementPercents[element]) return;
+        const isPositive = currentElementPercents[element] > prevElementPercents[element];
+        changes.push({
+          message: `${elementalLabels[element]}属性: ${prevElementPercents[element]}% → ${currentElementPercents[element]}%`,
+          isPositive,
+        });
+      });
 
       // Send all stat notifications at once (clears previous stat notifications)
       if (changes.length > 0) {
@@ -1493,6 +1526,7 @@ function PartyTab({
       combatTotals.magicalAtk, combatTotals.magicalNoA,
       combatTotals.meleeAttackAmp, combatTotals.rangedAttackAmp, combatTotals.magicalAttackAmp,
       combatTotals.accuracy, combatTotals.evasion,
+      combatTotals.elementalOffense, combatTotals.elementalOffensePercent,
       onAddStatNotifications, selectedCharacter, selectedPartyIndex]);
   const [pendingEdits, setPendingEdits] = useState<Partial<Character> | null>(null);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
@@ -2165,7 +2199,7 @@ function PartyTab({
                 const defenseLines: StatusLine[] = [
                   {
                     key: 'element',
-                    text: `属性:${elementName}(x${stats.elementalOffenseValue.toFixed(1)})`,
+                    text: `属性:${elementName}(x${stats.elementalOffenseValue.toFixed(2)})`,
                     helpTitle: 'e. 属性攻撃(重複有効)',
                     helpLines: getElementalOffenseHelpLines(char, stats),
                   },
