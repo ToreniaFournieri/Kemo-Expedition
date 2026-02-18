@@ -266,16 +266,20 @@ function calculateCharacterDamage(
     return bonusSum;
   };
 
-  // Offense amplifier: iaigiri scales with ability level on CLOSE phase
-  const cBonus = phase === 'close'
-    ? getUniqueOffenseBonusSum('melee')
-    : phase === 'long'
-      ? getUniqueOffenseBonusSum('ranged')
-      : getUniqueOffenseBonusSum('magical');
-  let offenseAmplifier = 1.0 + cBonus + charStats.deityOffenseAmplifierBonus;
   const iaigiri = charStats.abilities.find(a => a.id === 'iaigiri');
-  if (iaigiri && phase === 'close') {
-    offenseAmplifier *= iaigiri.level >= 2 ? 2.5 : 2.0;
+  const iaigiriMultiplier = iaigiri ? (iaigiri.level >= 2 ? 2.5 : 2.0) : 1.0;
+  const cBonus = phase === 'mid'
+    ? getUniqueOffenseBonusSum('magical')
+    : (iaigiri && (phase === 'long' || phase === 'close'))
+      ? getUniqueOffenseBonusSum('melee') * iaigiriMultiplier
+      : phase === 'long'
+        ? getUniqueOffenseBonusSum('ranged')
+        : getUniqueOffenseBonusSum('melee');
+  let offenseAmplifier = 1.0 + cBonus + charStats.deityOffenseAmplifierBonus;
+
+  // iaigiri physical damage bonus applies to LONG/CLOSE physical phases
+  if (iaigiri && (phase === 'long' || phase === 'close')) {
+    offenseAmplifier *= iaigiriMultiplier;
   }
 
   const resonance = charStats.abilities.find(a => a.id === 'resonance');
