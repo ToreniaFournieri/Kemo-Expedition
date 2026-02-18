@@ -434,8 +434,9 @@ export function computeCharacterStats(
   // Check for iaigiri ability
   const hasIaigiri = collection.abilities.has('iaigiri');
   if (hasIaigiri) {
+    rangedNoA = rangedNoA / 2;
     meleeNoA = meleeNoA / 2;
-    // meleeAttack will be amplified during battle
+    // Physical attack damage amplification is applied during battle
   }
 
   // Round NoA values up (ceil per spec)

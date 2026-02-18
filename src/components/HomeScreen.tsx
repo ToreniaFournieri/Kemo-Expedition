@@ -2086,12 +2086,7 @@ function PartyTab({
               {(() => {
                 // Calculate offense amplifiers per phase
                 const iaigiri = stats.abilities.find(a => a.id === 'iaigiri');
-                // LONG phase: 1.0 + deity bonus
-                const longAmp = 1.0 + stats.deityOffenseAmplifierBonus;
-                // MID phase: 1.0 + deity bonus
-                const midAmp = 1.0 + stats.deityOffenseAmplifierBonus;
-                // CLOSE phase: iaigiri multiplier, then deity bonus
-                const closeAmp = (iaigiri ? (iaigiri.level >= 2 ? 2.5 : 2.0) : 1.0) * (1.0 + stats.deityOffenseAmplifierBonus);
+                const iaigiriMultiplier = iaigiri ? (iaigiri.level >= 2 ? 2.5 : 2.0) : 1.0;
                 const hasRanged = stats.rangedAttack > 0 || stats.rangedNoA > 0;
                 const hasMagical = stats.magicalAttack > 0 || stats.magicalNoA > 0;
                 const hasMelee = stats.meleeAttack > 0 || stats.meleeNoA > 0;
@@ -2127,7 +2122,8 @@ function PartyTab({
                 // Build offense lines
                 const offenseLines: StatusLine[] = [];
                 if (hasRanged) {
-                  const amp = longAmp * baseMultRanged;
+                  const rangedBaseMult = iaigiri ? (1 + ((baseMultMelee - 1) * iaigiriMultiplier)) : baseMultRanged;
+                  const amp = (1.0 + stats.deityOffenseAmplifierBonus) * rangedBaseMult * (iaigiri ? iaigiriMultiplier : 1.0);
                   offenseLines.push({
                     key: 'ranged-attack',
                     text: `遠距離攻撃:${formatNumber(Math.floor(stats.rangedAttack))} x ${formatNumber(stats.rangedNoA)}回(x${amp.toFixed(2)})`,
@@ -2140,7 +2136,7 @@ function PartyTab({
                   });
                 }
                 if (hasMagical) {
-                  const amp = midAmp * baseMultMagical;
+                  const amp = (1.0 + stats.deityOffenseAmplifierBonus) * baseMultMagical;
                   offenseLines.push({
                     key: 'magical-attack',
                     text: `魔法攻撃:${formatNumber(Math.floor(stats.magicalAttack))} x ${formatNumber(stats.magicalNoA)}回(x${amp.toFixed(2)})`,
@@ -2153,7 +2149,8 @@ function PartyTab({
                   });
                 }
                 if (hasMelee) {
-                  const amp = closeAmp * baseMultMelee;
+                  const meleeBaseMult = iaigiri ? (1 + ((baseMultMelee - 1) * iaigiriMultiplier)) : baseMultMelee;
+                  const amp = (1.0 + stats.deityOffenseAmplifierBonus) * meleeBaseMult * (iaigiri ? iaigiriMultiplier : 1.0);
                   offenseLines.push({
                     key: 'melee-attack',
                     text: `近接攻撃:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}回(x${amp.toFixed(2)})`,
