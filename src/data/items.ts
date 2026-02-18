@@ -627,7 +627,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
   // Index 9: wand (ワンド) - +magicalAttack
   {
     category: 'wand',
-    variant1Mod: { magicalDefense: 1 },
+    variant1Mod: { magicalDefense: 2 },
     variant2Mod: { magicalAttack: 1 },
     variant3Mod: { magicalAttack: 1 },
     mythicBonusMod: { intelligenceBonus: 1 },
