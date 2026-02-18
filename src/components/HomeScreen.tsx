@@ -3769,6 +3769,21 @@ function SettingTab({
     ice: '氷',
   };
 
+  const formatEnemyElementalResistanceLine = (enemy: EnemyDef): string => {
+    const resistanceOrder: Array<{ key: 'fire' | 'ice' | 'thunder'; emoji: string }> = [
+      { key: 'fire', emoji: '🔥' },
+      { key: 'ice', emoji: '❄️' },
+      { key: 'thunder', emoji: '⚡' },
+    ];
+
+    const parts = resistanceOrder.map(({ key, emoji }) => {
+      const value = enemy.elementalResistance[key] ?? 1;
+      return `${emoji}${Math.round(value * 100)}%`;
+    });
+
+    return `属性耐性: ${parts.join(',')}`;
+  };
+
   const ENEMY_ABILITY_LABELS: Record<string, string> = {
     first_strike: '先制攻撃1:行動が早くなる',
     counter: '反撃1:相手の近距離攻撃を受けたとき反撃(攻撃回数半減)',
@@ -4077,7 +4092,6 @@ function SettingTab({
                             }
 
                             // Bestiary detail keeps the compact 4-line defense block.
-                            // NOTE: Elemental resistance breakdown is intentionally hidden here.
                             const defenseRows: string[] = [
                               `属性: ${ENEMY_ELEMENT_LABELS[displayEnemy.elementalOffense] ?? '無'} (x1.0)`,
                               formatEnemyDefenseLine('物理防御', displayEnemy.physicalDefense, defenseAmplifierPercent),
@@ -4092,6 +4106,7 @@ function SettingTab({
                             ]);
                           })()}
                         </div>
+                        <div>{formatEnemyElementalResistanceLine(displayEnemy)}</div>
                         <div>特殊能力: {displayEnemy.abilities.length > 0 ? displayEnemy.abilities.map(a => ENEMY_ABILITY_LABELS[a] ?? a).join(', ') : 'なし'}</div>
                         <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id)}${item.name}`).join(' / ')}</div>
                       </div>
