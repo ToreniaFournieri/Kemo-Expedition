@@ -2319,29 +2319,36 @@ function PartyTab({
               // Aggregate bonuses - deduplicate multipliers by value before multiplying
               const multiplierValues: Record<string, Set<number>> = {};
               const additive: Record<string, number> = {};
+              const uniqueCAdditiveBonusNames = new Set<string>();
               const uniqueEvasionBonusNames = new Set<string>();
+              const formatCBonusValue = (value: number): string => (Math.round(value * 1000000) / 1000000).toString();
+
+              const addUniqueCBonus = (type: string, value: number) => {
+                const bonusName = `c.${type}+${formatCBonusValue(value)}`;
+                if (uniqueCAdditiveBonusNames.has(bonusName)) return;
+                uniqueCAdditiveBonusNames.add(bonusName);
+                additive[type] = (additive[type] ?? 0) + value;
+              };
 
               for (const b of allBonuses) {
                 if (b.type.endsWith('_multiplier')) {
                   const key = b.type.replace('_multiplier', '');
                   if (!multiplierValues[key]) multiplierValues[key] = new Set();
                   multiplierValues[key].add(b.value);
-                } else if (['vitality', 'strength', 'intelligence', 'mind', 'equip_slot', 'grit', 'caster', 'pursuit'].includes(b.type)) {
+                } else if (['vitality', 'strength', 'intelligence', 'mind'].includes(b.type)) {
                   additive[b.type] = (additive[b.type] ?? 0) + b.value;
-                } else if (b.type === 'penet' || b.type === 'accuracy' || b.type === 'evasion') {
-                  if (b.type === 'evasion') {
+                } else if (['equip_slot', 'grit', 'caster', 'pursuit', 'penet', 'accuracy'].includes(b.type)) {
+                  addUniqueCBonus(b.type, b.value);
+                } else if (b.type === 'evasion') {
                     if (b.value < 0) {
                       additive[b.type] = (additive[b.type] ?? 0) + b.value;
                     } else {
-                      const bonusName = `c.evasion+${b.value}`;
+                      const bonusName = `c.evasion+${formatCBonusValue(b.value)}`;
                       if (!uniqueEvasionBonusNames.has(bonusName)) {
                         uniqueEvasionBonusNames.add(bonusName);
                         additive[b.type] = (additive[b.type] ?? 0) + b.value;
                       }
                     }
-                  } else {
-                    additive[b.type] = (additive[b.type] ?? 0) + b.value;
-                  }
                 }
               }
 
