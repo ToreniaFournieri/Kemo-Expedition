@@ -2166,7 +2166,7 @@ function PartyTab({
                   {
                     key: 'element',
                     text: `属性:${elementName}(x${stats.elementalOffenseValue.toFixed(1)})`,
-                    helpTitle: 'e. 属性攻撃',
+                    helpTitle: 'e. 属性攻撃(重複有効)',
                     helpLines: getElementalOffenseHelpLines(char, stats),
                   },
                   {
