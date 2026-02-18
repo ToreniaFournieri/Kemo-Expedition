@@ -343,6 +343,8 @@ function getItemStats(item: Item): string {
   };
   const formatBracket = (label: string, value: number, suffix: string = ''): string =>
     `[${label}${formatSigned(value, suffix)}]`;
+  const formatFixedNoA = (label: string, value: number): string =>
+    value > 0 ? formatBracket(label, value) : `${label}${formatSigned(value)}`;
 
   const stats: string[] = [];
   if (item.meleeAttack) {
@@ -360,17 +362,17 @@ function getItemStats(item: Item): string {
   if (item.meleeNoA || item.meleeNoABonus) {
     const baseNoA = item.meleeNoA ?? 0;
     if (baseNoA !== 0) stats.push(`近回数${formatSigned(getScaledNoA(baseNoA))}`);
-    if (item.meleeNoABonus) stats.push(`近回数${formatSigned(item.meleeNoABonus)}`);
+    if (item.meleeNoABonus) stats.push(formatFixedNoA('近回数', item.meleeNoABonus));
   }
   if (item.rangedNoA || item.rangedNoABonus) {
     const baseNoA = item.rangedNoA ?? 0;
     if (baseNoA !== 0) stats.push(`遠回数${formatSigned(getScaledNoA(baseNoA))}`);
-    if (item.rangedNoABonus) stats.push(`遠回数${formatSigned(item.rangedNoABonus)}`);
+    if (item.rangedNoABonus) stats.push(formatFixedNoA('遠回数', item.rangedNoABonus));
   }
   if (item.magicalNoA || item.magicalNoABonus) {
     const baseNoA = item.magicalNoA ?? 0;
     if (baseNoA !== 0) stats.push(`魔回数${formatSigned(getScaledNoA(baseNoA))}`);
-    if (item.magicalNoABonus) stats.push(`魔回数${formatSigned(item.magicalNoABonus)}`);
+    if (item.magicalNoABonus) stats.push(formatFixedNoA('魔回数', item.magicalNoABonus));
   }
   if (item.physicalDefense) {
     stats.push(`物防+${Math.floor(item.physicalDefense * multiplier)}`);
