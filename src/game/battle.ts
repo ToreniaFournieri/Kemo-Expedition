@@ -443,7 +443,7 @@ export function executeBattle(
       log.push({
         phase: 'close',
         actor: 'effect',
-        action: `${nullifier?.name ?? '味方'}の反撃無効化により、${enemy.name}のカウンターは防がれた！`,
+        action: `${nullifier?.name ?? '味方'}の反撃無効化により、${enemy.name}の反撃は防がれた！`,
       });
       return;
     }
@@ -468,7 +468,7 @@ export function executeBattle(
       phase: 'close',
       initiativeRoll,
       actor: 'enemy',
-      action: `${targetChar?.name ?? '???'} にカウンター！`,
+      action: `${targetChar?.name ?? '???'} に反撃！`,
       damage: damage > 0 ? damage : undefined,
       hits,
       totalAttempts: attempts,
@@ -591,7 +591,7 @@ export function executeBattle(
               log.push({
                 phase,
                 actor: 'effect',
-                action: `${enemy.name}の反撃無効化により、${targetChar?.name ?? '???'}のカウンターは防がれた！`,
+                action: `${enemy.name}の反撃無効化により、${targetChar?.name ?? '???'}の反撃は防がれた！`,
               });
               continue;
             }
@@ -606,7 +606,7 @@ export function executeBattle(
               enemyHp -= counterResult.damage;
             }
 
-            const counterType = phase === 'mid' ? '魔法カウンター' : 'カウンター';
+            const counterType = phase === 'mid' ? '魔法反撃' : '反撃';
             const resonanceLogText = getResonanceLogText(phase, attack.charStats, counterResult.hits);
             log.push({
               phase,
