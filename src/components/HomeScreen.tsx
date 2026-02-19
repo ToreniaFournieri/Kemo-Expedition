@@ -123,12 +123,16 @@ function RaceIcon({ race, className = "h-8 w-8" }: { race: Race; className?: str
     setHasIconLoadError(false);
   }, [race.icon]);
 
-  if (race.icon && !hasIconLoadError) {
+  const iconSrc = race.icon?.startsWith('/')
+    ? `${import.meta.env.BASE_URL}${race.icon.replace(/^\//, '')}`
+    : race.icon;
+
+  if (iconSrc && !hasIconLoadError) {
     return (
       <img
-        src={race.icon}
+        src={iconSrc}
         alt={`${race.englishName} icon`}
-        className={className}
+        className={`${className} object-contain`}
         onError={() => setHasIconLoadError(true)}
       />
     );
