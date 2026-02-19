@@ -241,6 +241,7 @@ function getAbilityName(id: AbilityId, level: number): string {
     cunning: '狡猾',
     bulwark: '壁',
     cyborgization: 'サイボーグ化',
+    covering_fire: '援護射撃',
   };
   if (
     (

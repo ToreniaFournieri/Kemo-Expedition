@@ -558,6 +558,7 @@ function getAbilityName(id: AbilityId, level: number): string {
     cunning: '狡猾',
     bulwark: '壁',
     cyborgization: 'サイボーグ化',
+    covering_fire: '援護射撃',
   };
   if (
     (
@@ -602,6 +603,7 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     cunning: () => '自動売却額が1.2倍',
     bulwark: () => '真後ろの味方への遠距離攻撃を肩代わりする',
     cyborgization: () => '命中+30、回避-20',
+    covering_fire: () => '味方の近接が1回の時、遠距離攻撃する（攻撃回数半減）',
   };
   return descriptions[id](level);
 }
