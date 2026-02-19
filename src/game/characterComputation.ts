@@ -502,7 +502,8 @@ export function computeCharacterStats(
   } else if (hunterLevel === 1) {
     decayRate = 0.90; // Hunter1: 10% decay
   }
-  const accuracyPotency = Math.pow(decayRate, row - 1);
+  const hasComposure = collection.abilities.has('composure');
+  const accuracyPotency = Math.min(1, Math.pow(decayRate, row - 1) + (hasComposure ? 0.10 : 0));
 
   return {
     characterId: character.id,
@@ -560,6 +561,8 @@ function getAbilityName(id: AbilityId, level: number): string {
     cyborgization: 'サイボーグ化',
     covering_fire: '援護射撃',
     peddler: '行商',
+    composure: '平静',
+    magical_counter: '魔法反撃',
   };
   if (
     (
@@ -606,6 +609,8 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     cyborgization: () => '命中+30、回避-20',
     covering_fire: () => '味方の近接が1回の時、遠距離攻撃する（攻撃回数半減）',
     peddler: () => '移動時間(移動中/帰還中)が2/3になる',
+    composure: () => '物理/魔法命中率+10%加算',
+    magical_counter: () => '魔法攻撃に対して魔法攻撃で反撃する(攻撃回数半減)',
   };
   return descriptions[id](level);
 }

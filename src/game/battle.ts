@@ -425,6 +425,10 @@ function hasReCounter(charStats: ComputedCharacterStats): boolean {
   return charStats.abilities.some(a => a.id === 're_counter');
 }
 
+function hasMagicalCounter(charStats: ComputedCharacterStats): boolean {
+  return charStats.abilities.some(a => a.id === 'magical_counter');
+}
+
 function hasCoveringFire(charStats: ComputedCharacterStats): boolean {
   return charStats.abilities.some(a => a.id === 'covering_fire');
 }
@@ -690,6 +694,8 @@ export function executeBattle(
         const noA = getEnemyNoA(phase, enemy);
         if (noA <= 0) continue;
 
+        const magicalCounterCandidates = new Map<number, ComputedCharacterStats>();
+
         const runEnemyAttack = (attempts: number, isReAttack = false): void => {
           if (attempts <= 0 || partyHp <= 0 || enemyHp <= 0) return;
 
@@ -782,6 +788,15 @@ export function executeBattle(
                 isCounter: true,
                 action: `${resurrectedChar?.name ?? '???'} は即死攻撃を食いしばって耐えた！`,
               });
+            }
+
+            if (
+              phase === 'mid'
+              && attack.damage > 0
+              && hasMagicalCounter(attack.charStats)
+              && !enemy.abilities.includes('null_counter')
+            ) {
+              magicalCounterCandidates.set(charId, attack.charStats);
             }
 
             if (partyHp <= 0 || enemyHp <= 0) continue;
@@ -893,6 +908,42 @@ export function executeBattle(
         runEnemyAttack(noA, false);
         if (enemyHasReAttack(enemy) && enemyHp > 0 && partyHp > 0) {
           runEnemyAttack(Math.ceil(noA * 0.5), true);
+        }
+
+        if (phase === 'mid' && enemyHp > 0 && partyHp > 0 && !enemy.abilities.includes('null_counter')) {
+          for (const [charId, magicalCounterStats] of magicalCounterCandidates) {
+            if (enemyHp <= 0 || partyHp <= 0) break;
+
+            const magicalCounterChar = party.characters.find(c => c.id === charId);
+            if (!magicalCounterChar) continue;
+
+            const magicalCounterResult = calculateCharacterDamage('mid', magicalCounterStats, magicalCounterChar, enemy, partyStats, partyHp, 0.5);
+            if (magicalCounterResult.totalAttempts <= 0) continue;
+
+            if (magicalCounterResult.damage > 0) {
+              enemyHp -= magicalCounterResult.damage;
+            }
+
+            const resonanceLogText = getResonanceLogText('mid', magicalCounterStats, magicalCounterResult.hits);
+            const magicalCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(magicalCounterStats, partyHp, partyStats.hp));
+            const magicalCounterMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(magicalCounterStats, partyHp, partyStats.hp));
+            log.push({
+              phase,
+              initiativeRoll: initiativeByCharacter.get(charId),
+              actor: 'character',
+              characterId: charId,
+              action: `${magicalCounterChar.name} の魔法反撃！${resonanceLogText}`,
+              damage: magicalCounterResult.damage,
+              hits: magicalCounterResult.hits,
+              totalAttempts: magicalCounterResult.totalAttempts,
+              rageBonusPercent: magicalCounterRageBonusPercent > 0 ? magicalCounterRageBonusPercent : undefined,
+              momentumBonusPercent: magicalCounterStats.abilities.some(a => a.id === 'momentum')
+                ? magicalCounterMomentumBonusPercent
+                : undefined,
+              isCounter: true,
+              elementalOffense: magicalCounterStats.elementalOffense,
+            });
+          }
         }
 
         continue;

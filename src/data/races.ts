@@ -126,6 +126,8 @@ export const RACES: Race[] = [
     bonuses: [
       { type: 'archery_multiplier', value: 1.3 },
       { type: 'armor_multiplier', value: 1.3 },
+      { type: 'ability', value: 1, abilityId: 'composure', abilityLevel: 1 },
+      { type: 'ability', value: 1, abilityId: 'magical_counter', abilityLevel: 1 },
     ],
   },
   {
