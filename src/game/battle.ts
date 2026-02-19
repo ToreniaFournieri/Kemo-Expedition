@@ -581,14 +581,6 @@ export function executeBattle(
       && !consumedResurrectCharacterIds.has(targetCharStats.characterId)
     );
 
-    if (avoidedByStealth) {
-      log.push({
-        phase: 'close',
-        actor: 'effect',
-        action: `${targetName} は物陰に隠れて攻撃をやり過ごした！`,
-      });
-    }
-
     if (triggeredResurrect) {
       partyHp = 1;
       consumedResurrectCharacterIds.add(targetCharStats.characterId);
@@ -607,6 +599,14 @@ export function executeBattle(
       isCounter: true,
       elementalOffense: enemy.elementalOffense,
     });
+
+    if (avoidedByStealth) {
+      log.push({
+        phase: 'close',
+        actor: 'effect',
+        action: `${targetName} は物陰に隠れて攻撃をやり過ごせたのだ！`,
+      });
+    }
 
     if (triggeredResurrect) {
       log.push({
@@ -806,14 +806,6 @@ export function executeBattle(
               && !consumedResurrectCharacterIds.has(charId)
             );
 
-            if (avoidedByStealth) {
-              log.push({
-                phase,
-                actor: 'effect',
-                action: `${targetName} は物陰に隠れて攻撃をやり過ごした！`,
-              });
-            }
-
             if (triggeredResurrect) {
               partyHp = 1;
               consumedResurrectCharacterIds.add(charId);
@@ -832,6 +824,14 @@ export function executeBattle(
               isReAttack: isReAttack || undefined,
               elementalOffense: enemy.elementalOffense,
             });
+
+            if (avoidedByStealth) {
+              log.push({
+                phase,
+                actor: 'effect',
+                action: `${targetName} は物陰に隠れて攻撃をやり過ごせたのだ！`,
+              });
+            }
 
             if (triggeredResurrect) {
               const resurrectedChar = party.characters.find(c => c.id === charId);
@@ -932,14 +932,6 @@ export function executeBattle(
               && !consumedResurrectCharacterIds.has(charId)
             );
 
-            if (avoidedReCounterByStealth) {
-              log.push({
-                phase,
-                actor: 'effect',
-                action: `${targetChar?.name ?? '???'} は物陰に隠れて攻撃をやり過ごした！`,
-              });
-            }
-
             if (reCounterResurrect) {
               partyHp = 1;
               consumedResurrectCharacterIds.add(charId);
@@ -958,6 +950,14 @@ export function executeBattle(
               isCounter: true,
               elementalOffense: enemy.elementalOffense,
             });
+
+            if (avoidedReCounterByStealth) {
+              log.push({
+                phase,
+                actor: 'effect',
+                action: `${targetChar?.name ?? '???'} は物陰に隠れて攻撃をやり過ごせたのだ！`,
+              });
+            }
 
             if (reCounterResurrect) {
               log.push({
