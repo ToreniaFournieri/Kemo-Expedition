@@ -610,7 +610,7 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     cunning: () => '自動売却額が1.2倍',
     bulwark: () => '真後ろの味方への遠距離攻撃を肩代わりする',
     cyborgization: () => '命中+30、回避-20',
-    covering_fire: () => '味方の近接が1回の時、遠距離攻撃する（攻撃回数半減）',
+    covering_fire: () => '味方近接攻撃の命中が1回のみなら遠距離射撃(攻撃回数半減)',
     peddler: () => '移動時間(移動中/帰還中)が2/3になる',
     composure: () => '物理/魔法命中率+10%加算',
     magical_counter: () => '魔法には魔法で反撃する(攻撃回数半減)',
