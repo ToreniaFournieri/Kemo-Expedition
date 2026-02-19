@@ -196,6 +196,13 @@ function formatNumber(value: number): string {
   return numberFormatter.format(Math.trunc(value));
 }
 
+function formatAutoSellSummary(autoSellProfit: number, autoSellMultiplier?: number): string {
+  if (autoSellMultiplier && autoSellMultiplier > 1) {
+    return `自動売却額(x${autoSellMultiplier.toFixed(1)}): ${formatNumber(autoSellProfit)}G`;
+  }
+  return `自動売却額: ${formatNumber(autoSellProfit)}G`;
+}
+
 function getItemRarityById(itemId: number): ItemRarity {
   const rarityCode = itemId % 1000;
   if (rarityCode >= 400) return 'mythic';
@@ -2892,7 +2899,7 @@ function ExpeditionTab({
                   {cycle.state !== '探索中' && (
                     <div className="text-sm text-gray-500">
                       EXP: +{formatNumber(currentLog.totalExperience)}
-                      {currentLog.autoSellProfit > 0 && <span> | 自動売却額: {formatNumber(currentLog.autoSellProfit)}G</span>}
+                      {currentLog.autoSellProfit > 0 && <span> | {formatAutoSellSummary(currentLog.autoSellProfit, currentLog.autoSellMultiplier)}</span>}
                     </div>
                   )}
 
@@ -2989,6 +2996,9 @@ function ExpeditionTab({
                                 const rageDisplay = log.rageBonusPercent && log.rageBonusPercent > 0
                                   ? `闘志+${log.rageBonusPercent}%`
                                   : '';
+                                const momentumDisplay = typeof log.momentumBonusPercent === 'number'
+                                  ? `気勢${log.momentumBonusPercent >= 0 ? '+' : ''}${log.momentumBonusPercent}%`
+                                  : '';
 
                                 let actionText: string;
                                 if (log.actor === 'effect') {
@@ -3002,6 +3012,7 @@ function ExpeditionTab({
                                 const extraSegments = [
                                   resonanceMatch ? resonanceMatch[1].slice(1, -1) : '',
                                   rageDisplay,
+                                  momentumDisplay,
                                 ].filter(Boolean);
                                 const compactHitDisplay = hitDisplay && extraSegments.length > 0
                                   ? `(${hits}/${totalAttempts}回, ${extraSegments.join(', ')})`
@@ -3264,6 +3275,7 @@ function DiaryTab({
     return '特別記録';
   };
 
+
   const getDiaryHeadline = (
     partyName: string,
     triggers: Array<'defeat' | 'rare' | 'mythic' | 'superRare'>,
@@ -3449,7 +3461,7 @@ function DiaryTab({
                 <div className="text-sm text-gray-500">
                   EXP: +{formatNumber(log.totalExperience)}
                   {log.autoSellProfit > 0 && (
-                    <span> | 自動売却額: {formatNumber(log.autoSellProfit)}G</span>
+                    <span> | {formatAutoSellSummary(log.autoSellProfit, log.autoSellMultiplier)}</span>
                   )}
                 </div>
 
@@ -3577,6 +3589,9 @@ function DiaryTab({
                               const rageDisplay = battleLog.rageBonusPercent && battleLog.rageBonusPercent > 0
                                 ? `闘志+${battleLog.rageBonusPercent}%`
                                 : '';
+                              const momentumDisplay = typeof battleLog.momentumBonusPercent === 'number'
+                                ? `気勢${battleLog.momentumBonusPercent >= 0 ? '+' : ''}${battleLog.momentumBonusPercent}%`
+                                : '';
 
                               let actionText: string;
                               if (battleLog.actor === 'effect') {
@@ -3599,6 +3614,7 @@ function DiaryTab({
                               const extraSegments = [
                                 resonanceMatch ? resonanceMatch[1].slice(1, -1) : '',
                                 rageDisplay,
+                                momentumDisplay,
                               ].filter(Boolean);
                               const compactHitDisplay = hitDisplay && extraSegments.length > 0
                                 ? `(${hits}/${totalAttempts}回, ${extraSegments.join(', ')})`

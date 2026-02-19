@@ -237,6 +237,8 @@ function getAbilityName(id: AbilityId, level: number): string {
     resurrect: '再起',
     rage: '闘志',
     re_counter: '再反撃',
+    momentum: '気勢',
+    cunning: '狡猾',
   };
   if (
     (
