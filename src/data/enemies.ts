@@ -680,7 +680,7 @@ export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
     1: ['sword', 'armor'],
     2: ['shield', 'robe'],
     3: ['arrow', 'bolt', 'archery'],
-    4: ['armor', 'katana'],
+    4: ['gauntlet', 'katana'],
     5: ['wand', 'grimoire', 'catalyst'],
   };
 
@@ -725,15 +725,16 @@ export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
     const drops: ItemDef[] = [];
     const floor = Math.max(1, Math.min(5, (enemy.id % 1000) - 50));
     const rareCats = eliteRareByFloor[floor] ?? ['sword', 'armor'];
-    const rare1 = pickByCategory(rare, rareCats[0], enemy.id);
-    const rare2 = pickByCategory(rare, rareCats[1] ?? rareCats[0], enemy.id + 1);
-    if (rare1) drops.push(rare1);
-    if (rare2) drops.push(rare2);
+    const rarePicks = rareCats
+      .map((category, index) => pickByCategory(rare, category, enemy.id + index, drops.map(item => item.id)))
+      .filter((item): item is ItemDef => item !== undefined);
+    drops.push(...rarePicks);
 
-    const uncommonPick = pickByCategory(uncommon, rareCats[0], enemy.id + 2) ?? pickAny(uncommon, 1, enemy.id + 2)[0];
+    const uncommonPick = pickByCategory(uncommon, rareCats[0], enemy.id + 3) ?? pickAny(uncommon, 1, enemy.id + 3)[0];
     if (uncommonPick) drops.push(uncommonPick);
 
-    drops.push(...pickAny(common, 2, enemy.id + 3));
+    const commonCount = rarePicks.length >= 3 ? 1 : 2;
+    drops.push(...pickAny(common, commonCount, enemy.id + 4));
     return drops.slice(0, 5);
   }
 
