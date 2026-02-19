@@ -87,12 +87,36 @@
 
 #### 3.3.2 Multiplier and Functions
 
-- c.multiplier like `c.sword_x1.3` applies only for sword item type. other item types like shield may have +10 melee_attack bonus, but shield's melee_attack bonus is not multiplied by `c.sword_x1.3` effect. 
+- c.multiplier like `c.sword_x1.3` applies only for sword item type. other item types like shield may have +10 melee_attack bonus, but shield's melee_attack bonus is not multiplied by `c.sword_x1.3` effect.
 
-- character.`f.attack`:
-  - `d.ranged_attack`= Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier x `b.strength` / 10
-  - `d.melee_attack`= Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier x `b.strength` / 10
-  - `d.magical_attack`= Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier x `b.intelligence` / 10
+
+- **`f.base_multiplier`(base_type: ) table of `b.value`**
+  - base_type: `b.strength` or `b.intelligence` -> attack scale
+  - base_type: `b.vitality` or `b.mind` -> defense scale
+  - If `b.strength` is 12, then it applies x1.10. If `b.vitality` is 15, then it applies x0.77.
+
+
+| Value | attack scale | defense scale |
+|---|---|----|
+| 6 | x0.81 | x1.22 |
+| 7 | x0.86 | x1.16 |
+| 8 | x0.90 | x1.10 |
+| 9 | x0.95 | x1.05 |
+| 10 | x1.00 | x1.00 |
+| 11 | x1.05 | x0.95 |
+| 12 | x1.10 | x0.90 |
+| 13 | x1.16 | x0.86 |
+| 14 | x1.22 | x0.81 |
+| 15 | x1.28 | x0.77 |
+| 16 | x1.34 | x0.73 |
+| 17 | x1.41 | x0.69 |
+| 18 | x1.48 | x0.66 |
+| 19 | x1.55 | x0.63 |
+| 20 | x1.63 | x0.60 |
+| 21 | x1.71 | x0.57 |
+| 22 | x1.80 | x0.54 |
+| 23 | x1.89 | x0.51 |
+
 
 - character.`f.NoA`: // NoA 0 = No Action.
   - `d.ranged_NoA` = 0 + `c.pursuit+v` bonuses + Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier + `c.ranged_NoA+v` (round up) 
@@ -102,14 +126,29 @@
     - IF the character has `a.iaigiri`, halve these number of attacks, round up. 
   - *note: `c.ranged_NoA+v`, `c.magical_NoA+v`, `c.melee_NoA+v`  Only one single bonuses(c.) of the **exact** same name applies.  
 
+- character.`f.attack`:
+  - `d.ranged_attack`= Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier
+  - `d.melee_attack`= Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier
+  - `d.magical_attack`= Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier
+
 - character.`f.offense_amplifier` (phase: )
   - If phase is LONG or CLOSE,
-    - If character.`a.iaigiri`, return v x sum of ( `c.melee_attack+v` )
-  - Else return 1.0 x  sum of (`c.melee_attack+v` or `c.ranged_attack+v` or `c.magical_attack+v` )
+    - If character.`a.iaigiri`, return v x sum of ( `c.melee_attack+v` or `c.ranged_attack+v`) x `f.base_multiplier`(base_type: `b.strength`)
+    - Else return 1.0 x sum of ( `c.melee_attack+v` or `c.ranged_attack+v` ) x `f.base_multiplier`(base_type: `b.strength`)
+  - If phase is MID,  return 1.0 x  sum of (`c.magical_attack+v` ) x `f.base_multiplier`(base_type: `b.intelligence`)
   - *note: `c.melee_attack+v`,  `c.ranged_attack+v`, or `c.magical_attack+v`  Only one single bonuses(c.) of the **exact** same name applies.  
 
+- character .`f.defense` (phase: ):
+  - If phase is LONG or CLOSE:
+  	- `d.physical_defense`: Item Bonuses of Physical defense x enhancement multiplier x super rare multiplier x its c.multiplier
+  - If phase is MID:
+  	- `d.magical_defense`: Item Bonuses of Magical defense x enhancement multiplier x super rare multiplier x its c.multiplier
+
 - character.`f.defense_amplifier` (phase: )
-  - return max(0.01, 1.00 - sum of (`c.physical_defense+v` or `c.magical_defense+v` ))
+  - If phase is LONG or CLOSE
+    - return max(0.01, (1.00 - sum of (`c.physical_defense+v`)) x `f.base_multiplier`(base_type: `b.vitality` ))
+  - Else (phase is MID), return max(0.01, (1.00 - sum of (`c.magical_defense+v` )) x `f.base_multiplier`(base_type: `b.mind` ))
+
   - *note: `c.physical_defense+v`, `c.magical_defense+v`  Only one single bonuses(c.) of the **exact** same name applies.  
 
 
@@ -129,15 +168,8 @@
     - If all sums are 0, then selected_element = none and elemental_offense_attribute = 1.0
     - Stackable:  if two `e.fire+0.15`, then 1 + 0.15 + 0.15 -> 1.30
 
- 
 - character.`f.penet_multiplier`
   -If character.`c.penet`, add them. (ex. `c.penet_+0.10` & `c.penet_+0.15` -> 0.25)
-
-- character .`f.defense` (phase: phase):
-  - If phase is LONG or CLOSE:
-  	- `d.physical_defense`: Item Bonuses of Physical defense x enhancement multiplier x super rare multiplier x its c.multiplier x `b.vitality` / 10
-  - If phase is MID:
-  	- `d.magical_defense`: Item Bonuses of Magical defense x enhancement multiplier x super rare multiplier x its c.multiplier x `b.mind` / 10
 
 #### 3.3.3 Mathematical Precision & Display Rules
 - Internal Calculation: All multipliers and final status values are calculated using floating-point precision (e.g., 1.4 * 1.3 = 1.82) to ensure accuracy across multiple stacked bonuses.
