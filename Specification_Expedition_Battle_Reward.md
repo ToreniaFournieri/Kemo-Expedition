@@ -157,10 +157,16 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 
 - `f.targeting`:
   - If phase is LONG or CLOSE, Gets one ticket from `g.physical_threat_weight_bag`.
+    - `a.bulwark` redirect 
+	  if phase is LONG:
+	      flont_character = party.unit_in_front_of(t)    // the unit directly ahead of selected character (one row closer to enemy)
+	      if flont_character != null and flont_character.has(a.bulwark):
+	          return flont_character
   - If phase is MID, Gets one ticket from `g.magical_threat_weight_bag`. 
     - Bag contains numbers [1,2,3,4,5,6]
     - The drawn number corresponds to row index (1–6).
     - The character currently occupying that row is selected as the target.
+
 
 - `d.accuracy_potency` 
   - A global accuracy modifier applied to a unit’s final output based on their current row position.
