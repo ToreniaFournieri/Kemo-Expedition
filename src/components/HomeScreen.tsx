@@ -522,6 +522,7 @@ const MULTIPLIER_LABELS: Record<string, string> = {
 
 const ABILITY_NAMES: Record<string, string> = {
   first_strike: '先手',
+  covering_fire: '援護射撃',
   hunter: '狩人',
   defender: '守護者',
   counter: '反撃',
@@ -539,9 +540,14 @@ const ABILITY_NAMES: Record<string, string> = {
   resurrect: '再起',
   rage: '闘志',
   re_counter: '再反撃',
+  bulwark: '堅守',
+  cyborgization: '機械化',
   peddler: '行商',
   composure: '平静',
   magical_counter: '魔法反撃',
+  focus: '集中',
+  prophecy: '予言',
+  stealth: '隠れ蓑',
 };
 
 const C_MULTIPLIER_HELP_DESCRIPTIONS: Record<string, string> = {
