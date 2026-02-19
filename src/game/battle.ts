@@ -52,6 +52,17 @@ function toRageBonusPercent(rageAmplifier: number): number {
 }
 
 
+
+function hasStealth(charStats: ComputedCharacterStats): boolean {
+  return charStats.abilities.some(a => a.id === 'stealth');
+}
+
+function isStealthActive(charStats: ComputedCharacterStats, partyHp: number, maxPartyHp: number): boolean {
+  if (!hasStealth(charStats)) return false;
+  if (maxPartyHp <= 0) return false;
+  return (partyHp / maxPartyHp) <= 0.24;
+}
+
 function hasBulwark(charStats: ComputedCharacterStats): boolean {
   return charStats.abilities.some(a => a.id === 'bulwark');
 }
@@ -549,6 +560,13 @@ export function executeBattle(
       }
     }
 
+    const targetName = targetChar?.name ?? '???';
+    const avoidedByStealth = isStealthActive(targetCharStats, partyHp, partyStats.hp);
+    if (avoidedByStealth) {
+      damage = 0;
+      hits = 0;
+    }
+
     if (damage > 0) {
       partyHp -= damage;
     }
@@ -558,6 +576,14 @@ export function executeBattle(
       && hasResurrect(targetCharStats)
       && !consumedResurrectCharacterIds.has(targetCharStats.characterId)
     );
+
+    if (avoidedByStealth) {
+      log.push({
+        phase: 'close',
+        actor: 'effect',
+        action: `${targetName} は物陰に隠れて攻撃をやり過ごした！`,
+      });
+    }
 
     if (triggeredResurrect) {
       partyHp = 1;
@@ -569,7 +595,7 @@ export function executeBattle(
       phase: 'close',
       initiativeRoll,
       actor: 'enemy',
-      action: `${targetChar?.name ?? '???'} に反撃！`,
+      action: `${targetName} に反撃！`,
       damage: damage > 0 ? damage : undefined,
       hits,
       totalAttempts: attempts,
@@ -759,6 +785,13 @@ export function executeBattle(
               ? (phase === 'mid' ? '魔法連撃' : '連撃')
               : (phase === 'mid' ? '魔法攻撃' : '攻撃');
 
+            const targetName = targetChar?.name ?? '???';
+            const avoidedByStealth = isStealthActive(attack.charStats, partyHp, partyStats.hp);
+            if (avoidedByStealth) {
+              attack.damage = 0;
+              attack.hits = 0;
+            }
+
             if (attack.damage > 0) {
               partyHp -= attack.damage;
             }
@@ -768,6 +801,14 @@ export function executeBattle(
               && hasResurrect(attack.charStats)
               && !consumedResurrectCharacterIds.has(charId)
             );
+
+            if (avoidedByStealth) {
+              log.push({
+                phase,
+                actor: 'effect',
+                action: `${targetName} は物陰に隠れて攻撃をやり過ごした！`,
+              });
+            }
 
             if (triggeredResurrect) {
               partyHp = 1;
@@ -779,7 +820,7 @@ export function executeBattle(
               phase,
               initiativeRoll: turn.roll,
               actor: 'enemy',
-              action: `${targetChar?.name ?? '???'} に${attackName}！`,
+              action: `${targetName} に${attackName}！`,
               damage: attack.damage > 0 ? attack.damage : undefined,
               hits: attack.hits,
               totalAttempts: attack.totalAttempts,
@@ -871,6 +912,12 @@ export function executeBattle(
               reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, partyStats, attack.charStats, enemyHp);
             }
 
+            const avoidedReCounterByStealth = isStealthActive(attack.charStats, partyHp, partyStats.hp);
+            if (avoidedReCounterByStealth) {
+              reCounterDamage = 0;
+              reCounterHits = 0;
+            }
+
             if (reCounterDamage > 0) {
               partyHp -= reCounterDamage;
             }
@@ -880,6 +927,14 @@ export function executeBattle(
               && hasResurrect(attack.charStats)
               && !consumedResurrectCharacterIds.has(charId)
             );
+
+            if (avoidedReCounterByStealth) {
+              log.push({
+                phase,
+                actor: 'effect',
+                action: `${targetChar?.name ?? '???'} は物陰に隠れて攻撃をやり過ごした！`,
+              });
+            }
 
             if (reCounterResurrect) {
               partyHp = 1;
