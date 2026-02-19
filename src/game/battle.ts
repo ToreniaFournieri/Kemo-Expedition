@@ -349,6 +349,11 @@ function hasCounter(charStats: ComputedCharacterStats, phase: BattlePhase): bool
   return phase === 'close';
 }
 
+
+function hasResurrect(charStats: ComputedCharacterStats): boolean {
+  return charStats.abilities.some(a => a.id === 'resurrect');
+}
+
 function hasReAttack(charStats: ComputedCharacterStats): number {
   const ability = charStats.abilities.find(a => a.id === 're_attack');
   if (!ability) return 0;
@@ -386,6 +391,7 @@ export function executeBattle(
   let partyHp = initialPartyHp !== undefined ? initialPartyHp : partyStats.hp;
   let enemyHp = enemy.hp;
   const log: BattleLogEntry[] = [];
+  const consumedResurrectCharacterIds = new Set<number>();
 
   const createPartyEffectEntry = (
     classId: 'fighter' | 'lord' | 'sage',
@@ -462,6 +468,22 @@ export function executeBattle(
       partyHp -= damage;
     }
 
+    if (
+      partyHp <= 0
+      && hasResurrect(targetCharStats)
+      && !consumedResurrectCharacterIds.has(targetCharStats.characterId)
+    ) {
+      partyHp = 1;
+      consumedResurrectCharacterIds.add(targetCharStats.characterId);
+      log.push({
+        phase: 'close',
+        actor: 'character',
+        characterId: targetCharStats.characterId,
+        isCounter: true,
+        action: `${targetChar?.name ?? '???'} は即死攻撃を食いしばって耐えた！`,
+      });
+    }
+
     log.push({
       phase: 'close',
       initiativeRoll,
@@ -488,22 +510,20 @@ export function executeBattle(
       characterInitiative.map(ci => [ci.stats.characterId, ci.roll])
     );
 
-    const turnOrder: Array<{ kind: 'enemy'; roll: number } | { kind: 'character'; roll: number; stats: ComputedCharacterStats }> = [
-      { kind: 'enemy', roll: enemyInitiativeRoll },
-      ...characterInitiative.map(ci => ({ kind: 'character' as const, roll: ci.roll, stats: ci.stats })),
-    ];
-
-    turnOrder.sort((a, b) => {
-      if (b.roll !== a.roll) return b.roll - a.roll;
-      if (a.kind !== b.kind) return a.kind === 'enemy' ? -1 : 1;
-      if (a.kind === 'character' && b.kind === 'character') {
+    const characterTurnOrder = characterInitiative
+      .map(ci => ({ kind: 'character' as const, roll: ci.roll, stats: ci.stats }))
+      .sort((a, b) => {
+        if (b.roll !== a.roll) return b.roll - a.roll;
         const aFront = a.stats.row <= 3;
         const bFront = b.stats.row <= 3;
         if (aFront !== bFront) return aFront ? -1 : 1;
         return a.stats.row - b.stats.row;
-      }
-      return 0;
-    });
+      });
+
+    const turnOrder: Array<{ kind: 'enemy'; roll: number } | { kind: 'character'; roll: number; stats: ComputedCharacterStats }> = [
+      { kind: 'enemy', roll: enemyInitiativeRoll },
+      ...characterTurnOrder,
+    ];
 
     for (const turn of turnOrder) {
       if (enemyHp <= 0 || partyHp <= 0) break;
@@ -568,6 +588,19 @@ export function executeBattle(
 
             if (attack.damage > 0) {
               partyHp -= attack.damage;
+            }
+
+            if (partyHp <= 0 && hasResurrect(attack.charStats) && !consumedResurrectCharacterIds.has(charId)) {
+              partyHp = 1;
+              consumedResurrectCharacterIds.add(charId);
+              const resurrectedChar = party.characters.find(c => c.id === charId);
+              log.push({
+                phase,
+                actor: 'character',
+                characterId: charId,
+                isCounter: true,
+                action: `${resurrectedChar?.name ?? '???'} は即死攻撃を食いしばって耐えた！`,
+              });
             }
 
             log.push({

@@ -233,6 +233,8 @@ function getAbilityName(id: AbilityId, level: number): string {
     unlock: '解錠',
     squander: '散財',
     tithe: '十分の一税',
+    seeker: '探究者',
+    resurrect: '再起',
   };
   if (
     (
