@@ -1643,6 +1643,37 @@ function PartyTab({
   const predisposition = PREDISPOSITIONS.find(p => p.id === char.predispositionId)!;
   const lineage = LINEAGES.find(l => l.id === char.lineageId)!;
 
+  const getChangedEditKeys = (edits: Partial<Character> | null): (keyof Character)[] => {
+    if (!edits) return [];
+
+    return (Object.keys(edits) as (keyof Character)[]).filter((key) => {
+      const nextValue = edits[key];
+      if (nextValue === undefined) return false;
+      return nextValue !== char[key];
+    });
+  };
+
+  const completeCharacterEdit = () => {
+    const changedKeys = getChangedEditKeys(pendingEdits);
+
+    if (changedKeys.length === 0) {
+      setPendingEdits(null);
+      setEditingCharacter(null);
+      setShowEditConfirm(false);
+      return;
+    }
+
+    if (changedKeys.length === 1 && changedKeys[0] === 'name') {
+      onUpdateCharacter(char.id, { name: pendingEdits?.name ?? char.name });
+      setPendingEdits(null);
+      setEditingCharacter(null);
+      setShowEditConfirm(false);
+      return;
+    }
+
+    setShowEditConfirm(true);
+  };
+
   const baseStatMultiplierRows = [
     { label: '体力', value: stats.baseStats.vitality, note: '物理耐性', ratio: getBaseDefenseScale(stats.baseStats.vitality) },
     { label: '力', value: stats.baseStats.strength, note: '遠距離/近接攻撃倍率', ratio: getBaseOffenseScale(stats.baseStats.strength) },
@@ -1932,7 +1963,7 @@ function PartyTab({
           {editingCharacter === selectedCharacter ? (
             <div className="flex gap-2 flex-shrink-0">
               <button
-                onClick={() => setShowEditConfirm(true)}
+                onClick={completeCharacterEdit}
                 className="text-sm text-white bg-sub px-3 py-1 rounded whitespace-nowrap"
               >
                 完了
@@ -1970,7 +2001,8 @@ function PartyTab({
               <button
                 onClick={() => {
                   // Apply pending edits
-                  if (pendingEdits && Object.keys(pendingEdits).length > 0) {
+                  const changedKeys = getChangedEditKeys(pendingEdits);
+                  if (changedKeys.length > 0 && pendingEdits) {
                     onUpdateCharacter(char.id, pendingEdits);
                   }
                   // Unequip all items
