@@ -245,6 +245,8 @@ function getAbilityName(id: AbilityId, level: number): string {
     peddler: '行商',
     composure: '平静',
     magical_counter: '魔法反撃',
+    focus: '集中',
+    prophecy: '予言',
   };
   if (
     (

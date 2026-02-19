@@ -136,13 +136,15 @@ export const RACES: Race[] = [
     englishName: 'Cervin',
     emoji: '🦌',
     stats: { vitality: 8, strength: 7, intelligence: 13, mind: 10 },
-    defaultAbility: { id: 'a.focus', name: '集中', description: '命中(c.accuracy+v)の効果が1.2倍になる' },
+    defaultAbility: { id: 'a.focus', name: '集中', description: '命中ボーナスの効果が1.2倍になる' },
     unlockAbility: { id: 'a.prophecy', name: '予言', description: '報酬抽選内容が見えるようになる' },
     unlockCondition: '谷攻略',
     memo: 'Deer',
     bonuses: [
       { type: 'wand_multiplier', value: 1.3 },
       { type: 'shield_multiplier', value: 1.2 },
+      { type: 'ability', value: 1, abilityId: 'focus', abilityLevel: 1 },
+      { type: 'ability', value: 1, abilityId: 'prophecy', abilityLevel: 1 },
     ],
   },
   {
