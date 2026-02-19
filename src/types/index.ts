@@ -393,6 +393,7 @@ export interface BattleLogEntry {
   damage?: number;
   hits?: number; // Number of successful hits
   totalAttempts?: number; // Total number of attack attempts
+  rageBonusPercent?: number; // 闘志 bonus shown in battle log
   isFirstStrike?: boolean;
   isCounter?: boolean;
   isReAttack?: boolean;

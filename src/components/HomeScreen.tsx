@@ -530,6 +530,8 @@ const ABILITY_NAMES: Record<string, string> = {
   tithe: '十分の一税',
   seeker: '探究者',
   resurrect: '再起',
+  rage: '闘志',
+  re_counter: '再反撃',
 };
 
 const C_MULTIPLIER_HELP_DESCRIPTIONS: Record<string, string> = {
@@ -2984,6 +2986,9 @@ function ExpeditionTab({
                                 const allMissed = totalAttempts > 0 && hits === 0;
                                 const hitDisplay = totalAttempts > 0 ? `(${hits}/${totalAttempts}回)` : '';
                                 const resonanceMatch = /(\(共鳴\+\d+%\))$/.exec(log.action);
+                                const rageDisplay = log.rageBonusPercent && log.rageBonusPercent > 0
+                                  ? `闘志+${log.rageBonusPercent}%`
+                                  : '';
 
                                 let actionText: string;
                                 if (log.actor === 'effect') {
@@ -2994,8 +2999,12 @@ function ExpeditionTab({
                                   actionText = allMissed ? `${log.action.replace(/ の.*$/, '')} の攻撃は外れた！` : log.action;
                                 }
 
-                                const compactHitDisplay = hitDisplay && resonanceMatch
-                                  ? `(${hits}/${totalAttempts}回, ${resonanceMatch[1].slice(1, -1)})`
+                                const extraSegments = [
+                                  resonanceMatch ? resonanceMatch[1].slice(1, -1) : '',
+                                  rageDisplay,
+                                ].filter(Boolean);
+                                const compactHitDisplay = hitDisplay && extraSegments.length > 0
+                                  ? `(${hits}/${totalAttempts}回, ${extraSegments.join(', ')})`
                                   : hitDisplay;
                                 const actionDisplay = resonanceMatch && !allMissed
                                   ? actionText.replace(/\(共鳴\+\d+%\)$/, '')
@@ -3565,6 +3574,9 @@ function DiaryTab({
                               const allMissed = totalAttempts > 0 && hits === 0;
                               const hitDisplay = totalAttempts > 0 ? `(${hits}/${totalAttempts}回)` : '';
                               const resonanceMatch = /(\(共鳴\+\d+%\))$/.exec(battleLog.action);
+                              const rageDisplay = battleLog.rageBonusPercent && battleLog.rageBonusPercent > 0
+                                ? `闘志+${battleLog.rageBonusPercent}%`
+                                : '';
 
                               let actionText: string;
                               if (battleLog.actor === 'effect') {
@@ -3584,8 +3596,12 @@ function DiaryTab({
                                 }
                               }
 
-                              const compactHitDisplay = hitDisplay && resonanceMatch
-                                ? `(${hits}/${totalAttempts}回, ${resonanceMatch[1].slice(1, -1)})`
+                              const extraSegments = [
+                                resonanceMatch ? resonanceMatch[1].slice(1, -1) : '',
+                                rageDisplay,
+                              ].filter(Boolean);
+                              const compactHitDisplay = hitDisplay && extraSegments.length > 0
+                                ? `(${hits}/${totalAttempts}回, ${extraSegments.join(', ')})`
                                 : hitDisplay;
                               const actionDisplay = resonanceMatch && !allMissed
                                 ? actionText.replace(/\(共鳴\+\d+%\)$/, '')

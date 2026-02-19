@@ -47,6 +47,10 @@ function getEnemyRageAmplifier(enemy: EnemyDef, enemyHp: number): number {
   return Math.min(2.0, 1.0 + (1.0 - hpRatio));
 }
 
+function toRageBonusPercent(rageAmplifier: number): number {
+  return Math.max(0, Math.round((rageAmplifier - 1.0) * 100));
+}
+
 // Get target row index (1-6) using threat bag
 function getTargetRow(ctx: BattleContext, phase: BattlePhase): { row: number; newCtx: BattleContext } {
   const isPhysical = phase === 'long' || phase === 'close';
@@ -507,6 +511,7 @@ export function executeBattle(
       consumedResurrectCharacterIds.add(targetCharStats.characterId);
     }
 
+    const enemyCounterRageBonusPercent = toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp));
     log.push({
       phase: 'close',
       initiativeRoll,
@@ -515,6 +520,7 @@ export function executeBattle(
       damage: damage > 0 ? damage : undefined,
       hits,
       totalAttempts: attempts,
+      rageBonusPercent: enemyCounterRageBonusPercent > 0 ? enemyCounterRageBonusPercent : undefined,
       isCounter: true,
       elementalOffense: enemy.elementalOffense,
     });
@@ -542,6 +548,7 @@ export function executeBattle(
       enemyHp -= reCounterResult.damage;
     }
 
+    const characterReCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(targetCharStats, partyHp, partyStats.hp));
     log.push({
       phase: 'close',
       actor: 'character',
@@ -550,6 +557,7 @@ export function executeBattle(
       damage: reCounterResult.damage,
       hits: reCounterResult.hits,
       totalAttempts: reCounterResult.totalAttempts,
+      rageBonusPercent: characterReCounterRageBonusPercent > 0 ? characterReCounterRageBonusPercent : undefined,
       isCounter: true,
       elementalOffense: targetCharStats.elementalOffense,
     });
@@ -659,6 +667,7 @@ export function executeBattle(
               consumedResurrectCharacterIds.add(charId);
             }
 
+            const enemyAttackRageBonusPercent = toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp));
             log.push({
               phase,
               initiativeRoll: turn.roll,
@@ -667,6 +676,7 @@ export function executeBattle(
               damage: attack.damage > 0 ? attack.damage : undefined,
               hits: attack.hits,
               totalAttempts: attack.totalAttempts,
+              rageBonusPercent: enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined,
               isReAttack: isReAttack || undefined,
               elementalOffense: enemy.elementalOffense,
             });
@@ -706,6 +716,7 @@ export function executeBattle(
 
             const counterType = phase === 'mid' ? '魔法反撃' : '反撃';
             const resonanceLogText = getResonanceLogText(phase, attack.charStats, counterResult.hits);
+            const characterCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(attack.charStats, partyHp, partyStats.hp));
             log.push({
               phase,
               initiativeRoll: initiativeByCharacter.get(charId),
@@ -715,6 +726,7 @@ export function executeBattle(
               damage: counterResult.damage,
               hits: counterResult.hits,
               totalAttempts: counterResult.totalAttempts,
+              rageBonusPercent: characterCounterRageBonusPercent > 0 ? characterCounterRageBonusPercent : undefined,
               isCounter: true,
               elementalOffense: attack.charStats.elementalOffense,
             });
@@ -754,6 +766,7 @@ export function executeBattle(
               consumedResurrectCharacterIds.add(charId);
             }
 
+            const enemyReCounterRageBonusPercent = toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp));
             log.push({
               phase,
               initiativeRoll: turn.roll,
@@ -762,6 +775,7 @@ export function executeBattle(
               damage: reCounterDamage > 0 ? reCounterDamage : undefined,
               hits: reCounterHits,
               totalAttempts: reCounterAttempts,
+              rageBonusPercent: enemyReCounterRageBonusPercent > 0 ? enemyReCounterRageBonusPercent : undefined,
               isCounter: true,
               elementalOffense: enemy.elementalOffense,
             });
@@ -804,6 +818,7 @@ export function executeBattle(
           ? (phase === 'mid' ? '魔法連撃' : '連撃')
           : (phase === 'mid' ? '魔法攻撃' : '攻撃');
         const resonanceLogText = getResonanceLogText(phase, cs, result.hits);
+        const characterAttackRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(cs, partyHp, partyStats.hp));
         log.push({
           phase,
           initiativeRoll: turn.roll,
@@ -813,6 +828,7 @@ export function executeBattle(
           damage: result.damage,
           hits: result.hits,
           totalAttempts: result.totalAttempts,
+          rageBonusPercent: characterAttackRageBonusPercent > 0 ? characterAttackRageBonusPercent : undefined,
           isReAttack: isReAttack || undefined,
           elementalOffense: cs.elementalOffense,
         });
