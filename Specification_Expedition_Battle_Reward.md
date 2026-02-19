@@ -191,8 +191,8 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 
 - `f.hit_detection`(actor: , opponent: ,Nth_hit: )
   - For all pahse, LONG, MID, CLOSE.
-  - If character.`a.focus`, `f.c_accuracy+v` =  actor.`c.accuracy+v` x 1.2 (rounding up to the 3rd decimal ex. 0.003 * 1.2 = 0.0036 → 0.004)
-  - decay_of_accuracy: clamp(0.86, 0.90 + `f.c_accuracy+v` - opponent.`c.evasion+v`, 0.98)
+  - If actor.`a.focus`, `f.c_accuracy+v` =  actor.`c.accuracy+v` x 1.2 (rounding up to the 3rd decimal ex. 0.003 * 1.2 = 0.0036 → 0.004)
+  - decay_of_accuracy: clamp(0.86, 0.90 + actor.`f.c_accuracy+v` - opponent.`c.evasion+v`, 0.98)
   - baseChance = actor.d.accuracy_potency
   - if opponent has a.deflection AND phase == LONG: baseChance -= 0.10
   - chance = clamp(0.0, baseChance, 1.0) x (decay ^ (Nth_hit - 1))
