@@ -3034,8 +3034,8 @@ function ExpeditionTab({
                   </select>
                   <button onClick={() => onTriggerSortie(partyIndex)} disabled={isSortieDisabled} className={`px-3 py-2 text-white rounded font-medium text-sm leading-none whitespace-nowrap ${isSortieDisabled ? 'bg-gray-400 cursor-not-allowed' : 'bg-sub hover:bg-blue-600'}`}>出撃</button>
                 </div>
-                {party.currentHp <= 0 && (
-                  <div className="text-xs text-red-600">HPが0のため出撃できません。休息で回復してください。</div>
+                {['帰還中', '待機中'].includes(cycle.state) && party.currentHp <= 0 && (
+                  <div className="text-xs text-accent">HPが0のため出撃できません。休息で回復してください。</div>
                 )}
                 {getNextGoalText(party) && <div className="text-sm text-gray-700">{getNextGoalText(party)}</div>}
               </div>
