@@ -236,7 +236,6 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 
 - `f.NoA` times -> enemy
 	- If `f.hit_detection`(actor: , opponent: ,Nth_hit: the current hit index), current enemy.`d.HP` -= `f.damage_calculation` (actor: character, opponent: enemy, phase: phase)
-- If enemy.`d.HP` =< 0, Victory.
 
 - **Coutner:** `f.counter`(actor:character , opponent: enemy , phase:  )
    - **Re-counter** If opponent.`a.re-counter`, `f.re-counter`(actor:enemy , opponent:character ,phase: )
@@ -244,6 +243,9 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 - **Re-attack:** IF character.`a.re-attack`, the character attacks to enemy. (using `f.hit_detection`, `f.damage_calculation`, and character.`f.NoA` x 0.5, round up)
 
 - **Covering fire:** IF character.`a.covering-fire` and the actor's successful hit is only one and phase is CLOSE, `f.covering-fire`(actor:covering fire character , opponent:enemy)
+
+- If enemy.`d.HP` =< 0, Victory.
+
 
 ### 6.4 Post battle
 
