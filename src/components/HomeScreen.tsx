@@ -1142,6 +1142,13 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     const cycle = partyCycles[partyIndex];
     const party = state.parties[partyIndex];
     if (!party) return;
+    const { partyStats } = computePartyStats(party);
+
+    if (party.currentHp <= 0 || partyStats.hp <= 0) {
+      const refusingCharacter = party.characters[Math.floor(Math.random() * party.characters.length)]?.name ?? `PT${partyIndex + 1}`;
+      actions.addNotification(`${refusingCharacter} は疲弊しており出撃を拒否した`);
+      return;
+    }
 
     if (cycle?.state === '探索中') {
       actions.addNotification(`${party.name} は探索中であり、その要請には従えない`);
@@ -2866,6 +2873,7 @@ function ExpeditionTab({
           return displayedEntries[displayedEntries.length - 1].remainingPartyHP;
         })();
         const hpPercent = Math.round((displayedHp / Math.max(1, partyStats.hp)) * 100);
+        const isSortieDisabled = !!selectedDungeonGate?.locked || party.currentHp <= 0 || partyStats.hp <= 0;
 
         return (
           <div key={partyIndex} className="bg-pane rounded-lg p-4">
@@ -2910,8 +2918,11 @@ function ExpeditionTab({
                       <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </select>
-                  <button onClick={() => onTriggerSortie(partyIndex)} disabled={selectedDungeonGate?.locked} className={`px-3 py-2 text-white rounded font-medium text-sm leading-none whitespace-nowrap ${selectedDungeonGate?.locked ? 'bg-gray-400 cursor-not-allowed' : 'bg-sub hover:bg-blue-600'}`}>出撃</button>
+                  <button onClick={() => onTriggerSortie(partyIndex)} disabled={isSortieDisabled} className={`px-3 py-2 text-white rounded font-medium text-sm leading-none whitespace-nowrap ${isSortieDisabled ? 'bg-gray-400 cursor-not-allowed' : 'bg-sub hover:bg-blue-600'}`}>出撃</button>
                 </div>
+                {party.currentHp <= 0 && (
+                  <div className="text-xs text-red-600">HPが0のため出撃できません。休息で回復してください。</div>
+                )}
                 {getNextGoalText(party) && <div className="text-sm text-gray-700">{getNextGoalText(party)}</div>}
               </div>
             )}

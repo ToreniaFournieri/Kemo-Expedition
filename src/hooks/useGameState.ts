@@ -860,7 +860,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const dungeon = getDungeonById(currentParty.selectedDungeonId);
       if (!dungeon) return state;
       const { partyStats } = computePartyStats(currentParty);
-      let currentHp = Math.max(0, Math.min(currentParty.currentHp || partyStats.hp, partyStats.hp));
+      const persistedCurrentHp = currentParty.currentHp ?? partyStats.hp;
+      if (persistedCurrentHp <= 0 || partyStats.hp <= 0) {
+        return state;
+      }
+      let currentHp = Math.max(0, Math.min(persistedCurrentHp, partyStats.hp));
 
       const entries: ExpeditionLogEntry[] = [];
       const rewards: Item[] = [];
