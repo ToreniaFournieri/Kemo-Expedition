@@ -546,6 +546,8 @@ const ABILITY_NAMES: Record<string, string> = {
   resurrect: '再起',
   rage: '闘志',
   re_counter: '再反撃',
+  momentum: '気勢',
+  cunning: '狡猾',
   bulwark: '堅守',
   cyborgization: '機械化',
   peddler: '行商',
