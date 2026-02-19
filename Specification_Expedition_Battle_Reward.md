@@ -209,7 +209,7 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 - Enemy always moves first.
 - `f.NoA` times, get `f.targeting` -> target character
   	- If `f.hit_detection`(actor: , opponent: ,Nth_hit: the current hit index), current party.`d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
-- If currenr party.`d.HP` =< 0, Defeat.
+- If currenr party.`d.HP` =< 0, if character.`a.resurrect`, set `d.HP` = 1 and disable `a.resurrect` for this battle. log "[-] ケモは即死攻撃を食いしばって耐えた！" . Else,  Defeat. 
 
 - **Coutner:** `f.counter`(actor:enemy , opponent:character ,phase: CLOSE )
 - **Re-attack**: IF enemy.`a.re-attack`, the enemy attacks to characters. (using f.hit_detection, f.damage_calculation, and enemy.f.NoA x 0.5, round up)
