@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, type Dispatch, type MouseEvent, type SetStateAction } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense, RaceId } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { DUNGEONS } from '../data/dungeons';
 import { RACES } from '../data/races';
@@ -188,6 +188,18 @@ const EXPEDITION_DEPTH_OPTIONS: Array<{ value: ExpeditionDepthLimit; label: stri
   { value: '1f-4', label: '1F-4' },
   { value: '1f-3', label: '1F-3' },
 ];
+
+const POTENTIAL_DEFAULT_NAMES: Record<RaceId, string[]> = {
+  caninian: ['タロウ', 'コテツ', 'ハヤテ', 'シロ', 'レオ', 'アキラ', 'リク', 'ソラ', 'マル', 'ジン'],
+  lupinian: ['ガルム', 'フェン', 'クロウ', 'ハク', 'レイガ', 'ヴォルフ', 'ギン', 'ランガ', 'ゼル', 'バルト'],
+  vulpinian: ['キツネ丸', 'アカネ', 'イズナ', 'ヨウコ', 'センリ', 'コトネ', 'クズノハ', 'ミカゲ', 'ヒナ', 'アヤ'],
+  ursan: ['ゴンタ', 'バルド', 'クマジロウ', 'ドーガ', 'グルン', 'ダン', 'ボルグ', 'ガイ', 'ザン', 'ブラム'],
+  felidian: ['ミミ', 'タマ', 'ルナ', 'ネロ', 'シエル', 'レイ', 'アオ', 'カノン', 'フィン', 'ユイ'],
+  mustelid: ['チョロ', 'ムサシ', 'コハク', 'レン', 'シノ', 'ハク', 'タケ', 'ツバメ', 'セン', 'カイ'],
+  leporian: ['フブキ', 'ハル', 'トワ', 'ユキ', 'ナギ', 'ミナ', 'サラ', 'アオイ', 'レイナ', 'カスミ'],
+  cervin: ['サイカ', 'カナエ', 'リンネ', 'ミコト', 'ユズリハ', 'シオン', 'セツナ', 'トキ', 'マヒロ', 'ツムギ'],
+  murid: ['チュウタ', 'ネズミ丸', 'カゲ', 'コソネ', 'スズ', 'コマ', 'ヒソカ', 'ネム', 'チビ', 'クルミ'],
+};
 
 
 function parseDiaryThreshold(value: string): DiaryRarityThreshold {
@@ -1629,6 +1641,30 @@ function PartyTab({
     }
   };
 
+  const getRandomDefaultNameForRace = (raceId: RaceId): string => {
+    const candidates = POTENTIAL_DEFAULT_NAMES[raceId] ?? [];
+    if (candidates.length === 0) return char.name;
+
+    const usedNames = new Set(
+      parties
+        .flatMap((currentParty) => currentParty.characters)
+        .filter((character) => character.id !== char.id)
+        .map((character) => character.name)
+    );
+
+    const availableCandidates = candidates.filter((candidate) => !usedNames.has(candidate));
+    const targetPool = availableCandidates.length > 0 ? availableCandidates : candidates;
+    return targetPool[Math.floor(Math.random() * targetPool.length)];
+  };
+
+  const handleRaceChange = (raceId: Character['raceId']) => {
+    setPendingEdits((prev) => ({
+      ...prev,
+      raceId,
+      name: getRandomDefaultNameForRace(raceId),
+    }));
+  };
+
 
   useEffect(() => {
     if (!editingDeity) {
@@ -2054,7 +2090,7 @@ function PartyTab({
               <label className="block text-gray-500">種族</label>
               <select
                 value={pendingEdits?.raceId ?? char.raceId}
-                onChange={(e) => setPendingEdits({ ...pendingEdits, raceId: e.target.value as Character['raceId'] })}
+                onChange={(e) => handleRaceChange(e.target.value as Character['raceId'])}
                 className="w-full p-1 border rounded text-xs"
               >
                 {RACES.map(r => {
