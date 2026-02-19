@@ -251,7 +251,7 @@ function getResonanceLogText(
 
 // Hit detection for physical attacks (LONG and CLOSE phases)
 // decay_of_accuracy = clamp(0.86, 0.90 + actor.accuracy - opponent.evasion, 0.98)
-// chance = d.accuracy_potency * (decay_of_accuracy)^(Nth_hit)
+// chance = d.accuracy_potency * (decay_of_accuracy)^(Nth_hit - 1)
 function roundUpToThirdDecimal(value: number): number {
   return Math.ceil((value + Number.EPSILON) * 1000) / 1000;
 }
@@ -409,6 +409,10 @@ function hasDeflection(charStats: ComputedCharacterStats): boolean {
   return charStats.abilities.some(a => a.id === 'deflection');
 }
 
+function enemyHasFocus(enemy: EnemyDef): boolean {
+  return enemy.abilities.includes('focus');
+}
+
 function partyHasNullCounter(characterStats: ComputedCharacterStats[]): boolean {
   return characterStats.some(cs => cs.abilities.some(a => a.id === 'null_counter'));
 }
@@ -553,7 +557,7 @@ export function executeBattle(
     let damage = 0;
     let hits = 0;
     for (let i = 1; i <= attempts; i++) {
-      const didHit = hitDetection(1.0, enemy.accuracyBonus, targetCharStats.evasionBonus, i, 'close', hasDeflection(targetCharStats), false);
+      const didHit = hitDetection(1.0, enemy.accuracyBonus, targetCharStats.evasionBonus, i, 'close', hasDeflection(targetCharStats), enemyHasFocus(enemy));
       if (didHit) {
         hits += 1;
         damage += singleDamage;
@@ -757,7 +761,7 @@ export function executeBattle(
               enemyHitIndex,
               phase,
               hasDeflection(targetCharStats),
-              false
+              enemyHasFocus(enemy)
             );
             enemyHitIndex += 1;
 
@@ -906,7 +910,7 @@ export function executeBattle(
             let reCounterDamage = 0;
             let reCounterHits = 0;
             for (let i = 1; i <= reCounterAttempts; i++) {
-              const didHit = hitDetection(1.0, enemy.accuracyBonus, attack.charStats.evasionBonus, i, phase, hasDeflection(attack.charStats), false);
+              const didHit = hitDetection(1.0, enemy.accuracyBonus, attack.charStats.evasionBonus, i, phase, hasDeflection(attack.charStats), enemyHasFocus(enemy));
               if (!didHit) continue;
               reCounterHits += 1;
               reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, partyStats, attack.charStats, enemyHp);
