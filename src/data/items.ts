@@ -199,6 +199,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
     mythic: {
       archery: ['天裂きの断崖戦弓'],
       armor: ['風哭きの岩王鎧'],
+      arrow: ['天裂きの断崖神矢'],
       bolt: ['天裂きの断崖神弩矢'],
       gauntlet: ['断崖王の巨拳'],
       katana: ['断崖王の断風太刀'],

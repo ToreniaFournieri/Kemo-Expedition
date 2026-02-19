@@ -695,14 +695,19 @@ export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
     8: ['katana', 'bolt', 'grimoire'],
   };
 
-  const pickByCategory = (pool: ItemDef[], category: ItemCategory, seed: number): ItemDef | undefined => {
-    const candidates = pool.filter(item => item.category === category);
+  const pickByCategory = (
+    pool: ItemDef[],
+    category: ItemCategory,
+    seed: number,
+    excludeItemIds: number[] = [],
+  ): ItemDef | undefined => {
+    const candidates = pool.filter(item => item.category === category && !excludeItemIds.includes(item.id));
     if (candidates.length === 0) return undefined;
     return candidates[Math.abs(seed) % candidates.length];
   };
 
-  const pickAny = (pool: ItemDef[], count: number, seed: number): ItemDef[] =>
-    pickItems(pool, count, seed);
+  const pickAny = (pool: ItemDef[], count: number, seed: number, excludeItemIds: number[] = []): ItemDef[] =>
+    pickItems(pool.filter(item => !excludeItemIds.includes(item.id)), count, seed);
 
   if (enemy.type === 'normal') {
     const drops: ItemDef[] = [];
@@ -735,12 +740,14 @@ export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
   const drops: ItemDef[] = [];
   const mythicCats = bossMythicByTier[tier] ?? ['sword', 'grimoire'];
   const mythic1 = pickByCategory(mythic, mythicCats[0], enemy.id) ?? pickAny(mythic, 1, enemy.id)[0];
-  const mythic2 = pickByCategory(mythic, mythicCats[1] ?? mythicCats[0], enemy.id + 1) ?? pickAny(mythic, 1, enemy.id + 1)[0];
+  const mythic2 = pickByCategory(mythic, mythicCats[1] ?? mythicCats[0], enemy.id + 1, mythic1 ? [mythic1.id] : [])
+    ?? pickAny(mythic, 1, enemy.id + 1, mythic1 ? [mythic1.id] : [])[0];
   if (mythic1) drops.push(mythic1);
   if (mythic2) drops.push(mythic2);
 
   const rare1 = pickByCategory(rare, mythicCats[0], enemy.id + 2) ?? pickAny(rare, 1, enemy.id + 2)[0];
-  const rare2 = pickByCategory(rare, mythicCats[1] ?? mythicCats[0], enemy.id + 3) ?? pickAny(rare, 1, enemy.id + 3)[0];
+  const rare2 = pickByCategory(rare, mythicCats[1] ?? mythicCats[0], enemy.id + 3, rare1 ? [rare1.id] : [])
+    ?? pickAny(rare, 1, enemy.id + 3, rare1 ? [rare1.id] : [])[0];
   if (rare1) drops.push(rare1);
   if (rare2) drops.push(rare2);
 
