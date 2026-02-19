@@ -565,6 +565,7 @@ function getAbilityName(id: AbilityId, level: number): string {
     magical_counter: '魔法反撃',
     focus: '集中',
     prophecy: '予言',
+    stealth: '隠れ蓑',
   };
   if (
     (
@@ -615,6 +616,7 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     magical_counter: () => '魔法攻撃に対して魔法攻撃で反撃する(攻撃回数半減)',
     focus: () => '命中ボーナスの効果が1.2倍になる',
     prophecy: () => '報酬抽選内容が見えるようになる',
+    stealth: () => 'HP24%未満の時、自身へのダメージをすべて回避する',
   };
   return descriptions[id](level);
 }

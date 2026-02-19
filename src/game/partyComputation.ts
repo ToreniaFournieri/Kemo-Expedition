@@ -247,6 +247,7 @@ function getAbilityName(id: AbilityId, level: number): string {
     magical_counter: '魔法反撃',
     focus: '集中',
     prophecy: '予言',
+    stealth: '隠れ蓑',
   };
   if (
     (

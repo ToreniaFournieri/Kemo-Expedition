@@ -93,7 +93,7 @@ export type AbilityId =
   | 'iaigiri' | 'resonance' | 'command' | 'm_barrier' | 'deflection' | 'null_counter' | 'unlock'
   | 'squander' | 'tithe' | 'seeker' | 'resurrect' | 'rage' | 're_counter' | 'momentum' | 'cunning'
   | 'bulwark' | 'cyborgization' | 'covering_fire' | 'peddler' | 'composure' | 'magical_counter'
-  | 'focus' | 'prophecy';
+  | 'focus' | 'prophecy' | 'stealth';
 
 export interface Ability {
   id: AbilityId;
