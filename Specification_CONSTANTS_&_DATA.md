@@ -284,7 +284,7 @@ d. bonus (stackable)
 |フェリディアン(Felidian)  | `a.first-strike`1 先制攻撃1: 行動が速くなる | `a.covering-fire`援護射撃:味方近接攻撃の命中が1回のみなら遠距離射撃(攻撃回数半減) | 茂攻略 |`c.robe_x1.3` |9,9,10,12| 😺Cat |
 |マステリド(Mustelid) | `a.resonance`1 共鳴1:魔法攻撃 1回毎に、全ヒットのダメージが +5% 増加する | `a.peddler`行商:移動時間が2/3になる | 巣攻略 | `c.gauntlet_x1.3`, `c.arrow_x1.3` |10,10,9,11| 🦡Ferret |
 |レポリアン(Leporian) | `a.composure`平静:命中率+10%加算 | `a.magical-counter`魔法反撃:魔法には魔法で反撃する(攻撃回数半減) | 園攻略 | `c.archery_x1.3`,  `c.armor_x1.3` |9,8,11,10| 🐰Rabbit |
-|セルヴィン(Cervin)  | `a.focus`集中:命中(`c.accuracy+v`)の効果が1.2倍になる | `a.prophecy`予言:報酬抽選内容が見えるようになる | 谷攻略 |`c.wand_x1.3`, `c.shield_x1.2` |8,7,13,10| 🦌Deer |
+|セルヴィン(Cervin)  | `a.focus`集中:命中ボーナス(`c.accuracy+v`)の効果が1.2倍になる | `a.prophecy`予言:報酬抽選内容が見えるようになる | 谷攻略 |`c.wand_x1.3`, `c.shield_x1.2` |8,7,13,10| 🦌Deer |
 |ミュリッド(Murid)  | `a.stealth`隠れ蓑: HP24%未満の時、自身へのダメージをすべて回避する | (none) | (none) |`c.penet_+0.10`, `c.bolt_x1.3`  |9,8,10,10| 🐭Mouse |
 
 - note: 未来視はパーティ単位で管理する方針に　神聖局で、セルヴィンがいる場合に表示可能、またコストを払ってリセットも可能に(詳細は今後検討)
