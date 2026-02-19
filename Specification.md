@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.2.8- SPECIFICATION
+# KEMO EXPEDITION v0.2.9- SPECIFICATION
 
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
@@ -259,7 +259,8 @@ PT3: 貯金額: 10G
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
-| **0.2.7** | Enemy scale rebarance update |
+| **0.2.9** | Race ability update |
+| 0.2.7 | Enemy scale rebarance update |
 | 0.2.6 | First Strike description text update |
 | 0.2.5 | Alpha test update, barance fix  |
 | 0.2.4 | Party State Machine update, AFK mode.  |
