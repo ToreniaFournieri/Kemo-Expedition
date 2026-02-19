@@ -596,7 +596,7 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     resurrect: () => '即死ダメージをHP1残して耐える',
     rage: () => '物理/魔法攻撃倍率増大(受けたダメージ1%につき1%増、最大2倍)',
     re_counter: () => '敵から反撃に対して、反撃する(攻撃回数半減)',
-    momentum: () => '物理/魔法攻撃倍率1.5倍(受けたダメージ1%につき1%減、最小0.5倍)',
+    momentum: () => '物理/魔法攻撃倍率1.5倍(受けたダメージ1%につき1%減)',
     cunning: () => '自動売却額が1.2倍',
   };
   return descriptions[id](level);
