@@ -4,18 +4,38 @@ export const RACES: Race[] = [
   {
     id: 'caninian',
     name: 'ケイナイアン',
+    englishName: 'Caninian',
     emoji: '🐶',
     stats: { vitality: 10, strength: 10, intelligence: 10, mind: 10 },
+    defaultAbility: {
+      id: 'a.seeker',
+      name: '探究者',
+      description: 'レベルに応じて魔導書の効果増加(レベル毎に0.25%)',
+    },
+    unlockAbility: {
+      id: 'a.resurrect',
+      name: '再起',
+      description: '1戦闘につき1回のみ自分が受けた即死ダメージをHP1残して耐える',
+    },
+    unlockCondition: '原攻略',
+    memo: 'Dog',
     bonuses: [
       { type: 'shield_multiplier', value: 1.3 },
       { type: 'archery_multiplier', value: 1.1 },
+      { type: 'ability', value: 1, abilityId: 'seeker', abilityLevel: 1 },
+      { type: 'ability', value: 1, abilityId: 'resurrect', abilityLevel: 1 },
     ],
   },
   {
     id: 'lupinian',
     name: 'ルピニアン',
+    englishName: 'Lupinian',
     emoji: '🐺',
     stats: { vitality: 10, strength: 12, intelligence: 8, mind: 7 },
+    defaultAbility: { id: 'a.rage', name: '闘志', description: 'HPが低くなるほど物理/魔法攻撃倍率増大(最大2倍)' },
+    unlockAbility: { id: 'a.re-counter', name: '再反撃', description: '敵から反撃に対して、反撃する(攻撃回数半減)' },
+    unlockCondition: '崖攻略',
+    memo: 'Wolf',
     bonuses: [
       { type: 'equip_slot', value: 1 },
       { type: 'katana_multiplier', value: 1.3 },
@@ -24,8 +44,13 @@ export const RACES: Race[] = [
   {
     id: 'vulpinian',
     name: 'ヴァルピニアン',
+    englishName: 'Vulpinian',
     emoji: '🦊',
     stats: { vitality: 11, strength: 10, intelligence: 12, mind: 8 },
+    defaultAbility: { id: 'a.momentum', name: '気勢', description: '物理/魔法攻撃倍率1.5倍(受けたダメージで減衰)' },
+    unlockAbility: { id: 'a.cunning', name: '狡猾', description: '自動売却額が1.2倍' },
+    unlockCondition: '樹攻略',
+    memo: 'Fox',
     bonuses: [
       { type: 'equip_slot', value: 1 },
       { type: 'sword_multiplier', value: 1.3 },
@@ -35,8 +60,13 @@ export const RACES: Race[] = [
   {
     id: 'ursan',
     name: 'ウルサン',
+    englishName: 'Ursan',
     emoji: '🐻',
-    stats: { vitality: 13, strength: 11, intelligence: 6, mind: 7 },
+    stats: { vitality: 13, strength: 11, intelligence: 7, mind: 7 },
+    defaultAbility: { id: 'a.bulwark', name: '壁', description: '自身の真後ろの味方1体への遠距離攻撃をすべて身代わりに受ける' },
+    unlockAbility: { id: 'a.cyborgization', name: 'サイボーグ化', description: '命中+30、回避-20' },
+    unlockCondition: '峰攻略',
+    memo: 'Bear',
     bonuses: [
       { type: 'equip_slot', value: 2 },
       { type: 'catalyst_multiplier', value: 1.2 },
@@ -45,8 +75,13 @@ export const RACES: Race[] = [
   {
     id: 'felidian',
     name: 'フェリディアン',
+    englishName: 'Felidian',
     emoji: '😺',
     stats: { vitality: 9, strength: 9, intelligence: 10, mind: 12 },
+    defaultAbility: { id: 'a.first-strike', name: '先制攻撃1', description: '行動が速くなる' },
+    unlockAbility: { id: 'a.covering-fire', name: '援護射撃', description: '味方の近接攻撃の命中回数が1回だった場合、遠距離攻撃する(攻撃回数半減)' },
+    unlockCondition: '茂攻略',
+    memo: 'Cat',
     bonuses: [
       { type: 'robe_multiplier', value: 1.3 },
       { type: 'ability', value: 1, abilityId: 'first_strike', abilityLevel: 1 },
@@ -55,8 +90,13 @@ export const RACES: Race[] = [
   {
     id: 'mustelid',
     name: 'マステリド',
+    englishName: 'Mustelid',
     emoji: '🦡',
     stats: { vitality: 10, strength: 10, intelligence: 9, mind: 11 },
+    defaultAbility: { id: 'a.resonance', name: '共鳴1', description: '魔法攻撃1回毎に、全ヒットのダメージが +5% 増加する' },
+    unlockAbility: { id: 'a.peddler', name: '行商', description: '移動時間(移動中/帰還中)が2/3になる' },
+    unlockCondition: '巣攻略',
+    memo: 'Ferret',
     bonuses: [
       { type: 'gauntlet_multiplier', value: 1.3 },
       { type: 'arrow_multiplier', value: 1.3 },
@@ -65,8 +105,13 @@ export const RACES: Race[] = [
   {
     id: 'leporian',
     name: 'レポリアン',
+    englishName: 'Leporian',
     emoji: '🐰',
     stats: { vitality: 9, strength: 8, intelligence: 11, mind: 10 },
+    defaultAbility: { id: 'a.composure', name: '平静', description: '物理/魔法命中率+10%加算' },
+    unlockAbility: { id: 'a.magical-counter', name: '魔法反撃', description: '魔法攻撃を受けた際に、魔法が使えたら魔法攻撃で反撃する(攻撃回数半減)' },
+    unlockCondition: '園攻略',
+    memo: 'Rabbit',
     bonuses: [
       { type: 'archery_multiplier', value: 1.3 },
       { type: 'armor_multiplier', value: 1.3 },
@@ -75,8 +120,13 @@ export const RACES: Race[] = [
   {
     id: 'cervin',
     name: 'セルヴィン',
+    englishName: 'Cervin',
     emoji: '🦌',
     stats: { vitality: 8, strength: 7, intelligence: 13, mind: 10 },
+    defaultAbility: { id: 'a.focus', name: '集中', description: '命中(c.accuracy+v)の効果が1.2倍になる' },
+    unlockAbility: { id: 'a.prophecy', name: '予言', description: '報酬抽選内容が見えるようになる' },
+    unlockCondition: '谷攻略',
+    memo: 'Deer',
     bonuses: [
       { type: 'wand_multiplier', value: 1.3 },
       { type: 'shield_multiplier', value: 1.2 },
@@ -85,8 +135,11 @@ export const RACES: Race[] = [
   {
     id: 'murid',
     name: 'ミュリッド',
+    englishName: 'Murid',
     emoji: '🐭',
     stats: { vitality: 9, strength: 8, intelligence: 10, mind: 10 },
+    defaultAbility: { id: 'a.stealth', name: '隠れ蓑', description: 'HP24%未満の時、自身へのダメージをすべて回避する' },
+    memo: 'Mouse',
     bonuses: [
       { type: 'penet', value: 0.10 },
       { type: 'bolt_multiplier', value: 1.3 },

@@ -10,9 +10,20 @@ export type RaceId =
 export interface Race {
   id: RaceId;
   name: string;
+  englishName: string;
   emoji: string;
   stats: BaseStats;
   bonuses: Bonus[];
+  defaultAbility: RaceAbilityDefinition;
+  unlockAbility?: RaceAbilityDefinition;
+  unlockCondition?: string;
+  memo?: string;
+}
+
+export interface RaceAbilityDefinition {
+  id: string;
+  name: string;
+  description: string;
 }
 
 // Class Types
@@ -80,7 +91,7 @@ export interface Bonus {
 export type AbilityId =
   | 'first_strike' | 'hunter' | 'defender' | 'counter' | 're_attack'
   | 'iaigiri' | 'resonance' | 'command' | 'm_barrier' | 'deflection' | 'null_counter' | 'unlock'
-  | 'squander' | 'tithe';
+  | 'squander' | 'tithe' | 'seeker' | 'resurrect';
 
 export interface Ability {
   id: AbilityId;

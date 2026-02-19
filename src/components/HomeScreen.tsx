@@ -528,6 +528,8 @@ const ABILITY_NAMES: Record<string, string> = {
   null_counter: '反撃無効化',
   squander: '散財',
   tithe: '十分の一税',
+  seeker: '探究者',
+  resurrect: '再起',
 };
 
 const C_MULTIPLIER_HELP_DESCRIPTIONS: Record<string, string> = {
