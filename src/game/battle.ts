@@ -468,20 +468,15 @@ export function executeBattle(
       partyHp -= damage;
     }
 
-    if (
+    const triggeredResurrect = (
       partyHp <= 0
       && hasResurrect(targetCharStats)
       && !consumedResurrectCharacterIds.has(targetCharStats.characterId)
-    ) {
+    );
+
+    if (triggeredResurrect) {
       partyHp = 1;
       consumedResurrectCharacterIds.add(targetCharStats.characterId);
-      log.push({
-        phase: 'close',
-        actor: 'character',
-        characterId: targetCharStats.characterId,
-        isCounter: true,
-        action: `${targetChar?.name ?? '???'} は即死攻撃を食いしばって耐えた！`,
-      });
     }
 
     log.push({
@@ -495,6 +490,16 @@ export function executeBattle(
       isCounter: true,
       elementalOffense: enemy.elementalOffense,
     });
+
+    if (triggeredResurrect) {
+      log.push({
+        phase: 'close',
+        actor: 'character',
+        characterId: targetCharStats.characterId,
+        isCounter: true,
+        action: `${targetChar?.name ?? '???'} は即死攻撃を食いしばって耐えた！`,
+      });
+    }
   };
 
   const phases: BattlePhase[] = ['long', 'mid', 'close'];
@@ -590,17 +595,15 @@ export function executeBattle(
               partyHp -= attack.damage;
             }
 
-            if (partyHp <= 0 && hasResurrect(attack.charStats) && !consumedResurrectCharacterIds.has(charId)) {
+            const triggeredResurrect = (
+              partyHp <= 0
+              && hasResurrect(attack.charStats)
+              && !consumedResurrectCharacterIds.has(charId)
+            );
+
+            if (triggeredResurrect) {
               partyHp = 1;
               consumedResurrectCharacterIds.add(charId);
-              const resurrectedChar = party.characters.find(c => c.id === charId);
-              log.push({
-                phase,
-                actor: 'character',
-                characterId: charId,
-                isCounter: true,
-                action: `${resurrectedChar?.name ?? '???'} は即死攻撃を食いしばって耐えた！`,
-              });
             }
 
             log.push({
@@ -614,6 +617,17 @@ export function executeBattle(
               isReAttack: isReAttack || undefined,
               elementalOffense: enemy.elementalOffense,
             });
+
+            if (triggeredResurrect) {
+              const resurrectedChar = party.characters.find(c => c.id === charId);
+              log.push({
+                phase,
+                actor: 'character',
+                characterId: charId,
+                isCounter: true,
+                action: `${resurrectedChar?.name ?? '???'} は即死攻撃を食いしばって耐えた！`,
+              });
+            }
 
             if (partyHp <= 0 || enemyHp <= 0) continue;
             if (attack.damage <= 0 || !hasCounter(attack.charStats, phase)) continue;
