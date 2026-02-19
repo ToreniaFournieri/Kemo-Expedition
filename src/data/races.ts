@@ -67,7 +67,7 @@ export const RACES: Race[] = [
     englishName: 'Ursan',
     emoji: '🐻',
     stats: { vitality: 13, strength: 11, intelligence: 7, mind: 7 },
-    defaultAbility: { id: 'a.bulwark', name: '壁', description: '自身の真後ろの味方1体への遠距離攻撃をすべて身代わりに受ける' },
+    defaultAbility: { id: 'a.bulwark', name: '壁', description: '真後ろの味方への遠距離攻撃を肩代わりする' },
     unlockAbility: { id: 'a.cyborgization', name: 'サイボーグ化', description: '命中+30、回避-20' },
     unlockCondition: '峰攻略',
     memo: 'Bear',
