@@ -283,7 +283,7 @@ d. bonus (stackable)
 |ウルサン(Ursan) | `a.bulwark`壁:真後ろの味方への遠距離攻撃を肩代わりする | `a.cyborgization `サイボーグ化:命中+30(`c.accuracy+0.030`)、回避-20(`c.evasion-0.020`) | 峰攻略 |`c.equip_slot+2`, `c.catalyst_x1.2` |13,11,**7**,7| 🐻Bear |
 |フェリディアン(Felidian)  | `a.first-strike`1 先制攻撃1: 行動が速くなる | `a.covering-fire`援護射撃:味方の近接が1回の時、遠距離攻撃する（攻撃回数半減） | 茂攻略 |`c.robe_x1.3` |9,9,10,12| 😺Cat |
 |マステリド(Mustelid) | `a.resonance`1 共鳴1:魔法攻撃 1回毎に、全ヒットのダメージが +5% 増加する | `a.peddler`行商:移動時間(移動中/帰還中)が2/3になる | 巣攻略 | `c.gauntlet_x1.3`, `c.arrow_x1.3` |10,10,9,11| 🦡Ferret |
-|レポリアン(Leporian) | `a.composure`平静:物理/魔法命中率+10%加算 | `a.magical-counter`魔法反撃:魔法攻撃を受けた際に、魔法が使えたら魔法攻撃で反撃する(攻撃回数半減) | 園攻略 | `c.archery_x1.3`,  `c.armor_x1.3` |9,8,11,10| 🐰Rabbit |
+|レポリアン(Leporian) | `a.composure`平静:物理/魔法命中率+10%加算 | `a.magical-counter`魔法反撃:魔法攻撃に対して魔法攻撃で反撃する(攻撃回数半減) | 園攻略 | `c.archery_x1.3`,  `c.armor_x1.3` |9,8,11,10| 🐰Rabbit |
 |セルヴィン(Cervin)  | `a.focus`集中:命中(`c.accuracy+v`)の効果が1.2倍になる | `a.prophecy`予言:報酬抽選内容が見えるようになる(現Verでは当該能力なしでも確認可) | 谷攻略 |`c.wand_x1.3`, `c.shield_x1.2` |8,7,13,10| 🦌Deer |
 |ミュリッド(Murid)  | `a.stealth`隠れ蓑: HP24%未満の時、自身へのダメージをすべて回避する | (none) | (none) |`c.penet_+0.10`, `c.bolt_x1.3`  |9,8,10,10| 🐭Mouse |
 
