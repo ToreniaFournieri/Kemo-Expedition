@@ -1,5 +1,6 @@
 ## 5. EXPEDITION 
 - Persistence through an expedition:`d.HP`.
+- auto-sell profit amp: If party.character.`a.cunning`, multiplier x1.2.
 
 ### 5.1 "Loot-Gate" progression system
 - If the party fails to meet the entry requirements, the expedition ends before the Gate Room and they are returned to Home.
@@ -122,9 +123,10 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
     Else, return 1.0.
 
 - `f.damage_calculation`: (actor: , opponent: , phase: )
-	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) ) x actor.`f.offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x opponent.`f.defense_amplifier` x party.`f.party.offense_amplifier` x `f.resonance_amplifier` x `f.rage_amplifier` )
+	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) ) x actor.`f.offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x opponent.`f.defense_amplifier` x party.`f.party.offense_amplifier` x `f.resonance_amplifier` x `f.rage_amplifier` x `f.momentum_amplifer` )
 
   - `f.rage_amplifier`: If actor has `a.rage`, return min(2.0, 1.0 + (1 - (actor.current_HP / actor.max_HP)))
+  - `f.momentum_amplifer`: If actor has `a.momentum`, return 1.5 - (1 - (actor.current_HP / actor.max_HP))
   - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
 
 **Row-based modifier** 
