@@ -93,6 +93,12 @@ function getExpeditionOutcomeLabel(outcome: 'victory' | 'return' | 'defeat' | 'r
   return '撤退';
 }
 
+function getEffectiveAccuracyBonus(accuracyBonus: number, abilities: ComputedCharacterStats['abilities']): number {
+  const hasFocus = abilities.some(a => a.id === 'focus');
+  if (!hasFocus) return accuracyBonus;
+  return Math.ceil((accuracyBonus * 1.2 + Number.EPSILON) * 1000) / 1000;
+}
+
 function renderEnemyNameWithMutedClass(enemyName: string) {
   const classSuffixMatch = enemyName.match(/^(.*?)(\([^()]+\))(.*)$/);
   if (!classSuffixMatch) return enemyName;
@@ -1382,6 +1388,7 @@ function PartyTab({
 
   // Calculate current stats for notification: HP is party-wide, others are per selected character
   const selectedStats = characterStats[selectedCharacter];
+  const selectedEffectiveAccuracyBonus = getEffectiveAccuracyBonus(selectedStats.accuracyBonus, selectedStats.abilities);
   const combatTotals = {
     meleeAtk: Math.floor(selectedStats.meleeAttack),
     rangedAtk: Math.floor(selectedStats.rangedAttack),
@@ -1396,7 +1403,7 @@ function PartyTab({
     meleeAttackAmp: ((selectedStats.abilities.some(a => a.id === 'iaigiri') ? (selectedStats.abilities.find(a => a.id === 'iaigiri')?.level === 2 ? 2.5 : 2.0) : 1.0) * getOffenseMultiplierSum(equippedItems, 'melee') + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.strength),
     rangedAttackAmp: ((selectedStats.abilities.some(a => a.id === 'iaigiri') ? (selectedStats.abilities.find(a => a.id === 'iaigiri')?.level === 2 ? 2.5 : 2.0) : 1.0) * getOffenseMultiplierSum(equippedItems, 'ranged') + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.strength),
     magicalAttackAmp: (getOffenseMultiplierSum(equippedItems, 'magical') + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.intelligence),
-    accuracy: Math.round(selectedStats.accuracyBonus * 1000),
+    accuracy: Math.round(selectedEffectiveAccuracyBonus * 1000),
     evasion: Math.round(selectedStats.evasionBonus * 1000),
     hp: Math.floor(partyStats.hp),
     elementalOffense: selectedStats.elementalOffense,
@@ -2199,7 +2206,7 @@ function PartyTab({
                   });
                 }
 
-                const baseDecay = 0.90 + stats.accuracyBonus;
+                const baseDecay = 0.90 + getEffectiveAccuracyBonus(stats.accuracyBonus, stats.abilities);
                 const hasPhysicalAttacks = stats.rangedNoA > 0 || stats.meleeNoA > 0;
                 if (hasPhysicalAttacks) {
                   offenseLines.push({
