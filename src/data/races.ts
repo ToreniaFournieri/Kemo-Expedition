@@ -32,13 +32,15 @@ export const RACES: Race[] = [
     englishName: 'Lupinian',
     emoji: '🐺',
     stats: { vitality: 10, strength: 12, intelligence: 8, mind: 7 },
-    defaultAbility: { id: 'a.rage', name: '闘志', description: 'HPが低くなるほど物理/魔法攻撃倍率増大(最大2倍)' },
+    defaultAbility: { id: 'a.rage', name: '闘志', description: '物理/魔法攻撃倍率増大(受けたダメージ1%につき1%増)' },
     unlockAbility: { id: 'a.re-counter', name: '再反撃', description: '敵から反撃に対して、反撃する(攻撃回数半減)' },
     unlockCondition: '崖攻略',
     memo: 'Wolf',
     bonuses: [
       { type: 'equip_slot', value: 1 },
       { type: 'katana_multiplier', value: 1.3 },
+      { type: 'ability', value: 1, abilityId: 'rage', abilityLevel: 1 },
+      { type: 'ability', value: 1, abilityId: 're_counter', abilityLevel: 1 },
     ],
   },
   {

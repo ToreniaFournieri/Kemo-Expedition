@@ -33,6 +33,20 @@ function getElementalMultiplier(
   return resistance[offense] ?? 1.0;
 }
 
+function getCharacterRageAmplifier(charStats: ComputedCharacterStats, partyHp: number, maxPartyHp: number): number {
+  if (!charStats.abilities.some(a => a.id === 'rage')) return 1.0;
+  if (maxPartyHp <= 0) return 1.0;
+  const hpRatio = Math.max(0, Math.min(1, partyHp / maxPartyHp));
+  return Math.min(2.0, 1.0 + (1.0 - hpRatio));
+}
+
+function getEnemyRageAmplifier(enemy: EnemyDef, enemyHp: number): number {
+  if (!enemy.abilities.includes('rage')) return 1.0;
+  if (enemy.hp <= 0) return 1.0;
+  const hpRatio = Math.max(0, Math.min(1, enemyHp / enemy.hp));
+  return Math.min(2.0, 1.0 + (1.0 - hpRatio));
+}
+
 // Get target row index (1-6) using threat bag
 function getTargetRow(ctx: BattleContext, phase: BattlePhase): { row: number; newCtx: BattleContext } {
   const isPhysical = phase === 'long' || phase === 'close';
@@ -61,7 +75,8 @@ function calculateSingleEnemyAttackDamage(
   phase: BattlePhase,
   enemy: EnemyDef,
   partyStats: ComputedPartyStats,
-  targetCharStats: ComputedCharacterStats
+  targetCharStats: ComputedCharacterStats,
+  enemyHp: number
 ): number {
   let attack = 0;
   let amplifier = 1.0;
@@ -97,7 +112,8 @@ function calculateSingleEnemyAttackDamage(
   );
 
   const partyDefenseAbilityAmplifier = getPartyDefenseAbilityAmplifier(phase, partyStats);
-  const rawDamage = (attack - defense) * amplifier * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier;
+  const rageAmplifier = getEnemyRageAmplifier(enemy, enemyHp);
+  const rawDamage = (attack - defense) * amplifier * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier;
   const totalDamage = Math.max(1, rawDamage);
 
   return Math.floor(totalDamage);
@@ -208,6 +224,7 @@ function calculateCharacterDamage(
   character: Character,
   enemy: EnemyDef,
   partyStats: ComputedPartyStats,
+  partyHp: number,
   noAMultiplier: number = 1.0 // For counter/re-attack, use 0.5
 ): CharacterAttackResult {
   let attack = 0;
@@ -287,9 +304,11 @@ function calculateCharacterDamage(
     enemy.elementalResistance
   );
 
+  const rageAmplifier = getCharacterRageAmplifier(charStats, partyHp, partyStats.hp);
+
   const basePerHitDamage = Math.max(1, Math.floor(
     (attack - effectiveDefense) * offenseAmplifier * charStats.elementalOffenseValue *
-    elementalMultiplier * defenseAmplifier * (phase === 'mid' ? 1.0 : partyStats.offenseAmplifier)
+    elementalMultiplier * defenseAmplifier * partyStats.offenseAmplifier * rageAmplifier
   ));
 
   // All phases now use hit detection.
@@ -358,6 +377,15 @@ function hasReAttack(charStats: ComputedCharacterStats): number {
   const ability = charStats.abilities.find(a => a.id === 're_attack');
   if (!ability) return 0;
   return ability.level === 2 ? 2 : 1;
+}
+
+
+function hasReCounter(charStats: ComputedCharacterStats): boolean {
+  return charStats.abilities.some(a => a.id === 're_counter');
+}
+
+function enemyHasReCounter(enemy: EnemyDef): boolean {
+  return enemy.abilities.includes('re_counter');
 }
 
 // Hit detection functions are available for future use when implementing
@@ -452,7 +480,7 @@ export function executeBattle(
       return;
     }
 
-    const singleDamage = calculateSingleEnemyAttackDamage('close', enemy, partyStats, targetCharStats);
+    const singleDamage = calculateSingleEnemyAttackDamage('close', enemy, partyStats, targetCharStats, enemyHp);
     const attempts = Math.ceil(enemy.meleeNoA * 0.5);
     let damage = 0;
     let hits = 0;
@@ -500,6 +528,31 @@ export function executeBattle(
         action: `${targetChar?.name ?? '???'} は即死攻撃を食いしばって耐えた！`,
       });
     }
+
+    if (partyHp <= 0 || enemyHp <= 0 || !targetChar || !hasReCounter(targetCharStats) || enemy.abilities.includes('null_counter')) {
+      return;
+    }
+
+    const reCounterResult = calculateCharacterDamage('close', targetCharStats, targetChar, enemy, partyStats, partyHp, 0.5);
+    if (reCounterResult.totalAttempts <= 0) {
+      return;
+    }
+
+    if (reCounterResult.damage > 0) {
+      enemyHp -= reCounterResult.damage;
+    }
+
+    log.push({
+      phase: 'close',
+      actor: 'character',
+      characterId: targetCharStats.characterId,
+      action: `${targetChar.name} の再反撃！`,
+      damage: reCounterResult.damage,
+      hits: reCounterResult.hits,
+      totalAttempts: reCounterResult.totalAttempts,
+      isCounter: true,
+      elementalOffense: targetCharStats.elementalOffense,
+    });
   };
 
   const phases: BattlePhase[] = ['long', 'mid', 'close'];
@@ -555,7 +608,7 @@ export function executeBattle(
               continue;
             }
 
-            const singleDamage = calculateSingleEnemyAttackDamage(phase, enemy, partyStats, targetCharStats);
+            const singleDamage = calculateSingleEnemyAttackDamage(phase, enemy, partyStats, targetCharStats, enemyHp);
             const existing = attacksByTarget.get(targetCharStats.characterId);
             const didHit = hitDetection(
               enemyAccuracyPotency,
@@ -644,7 +697,7 @@ export function executeBattle(
             const attackChar = party.characters.find(c => c.id === charId);
             if (!attackChar) continue;
 
-            const counterResult = calculateCharacterDamage(phase, attack.charStats, attackChar, enemy, partyStats, 0.5);
+            const counterResult = calculateCharacterDamage(phase, attack.charStats, attackChar, enemy, partyStats, partyHp, 0.5);
             if (counterResult.totalAttempts <= 0) continue;
 
             if (counterResult.damage > 0) {
@@ -667,6 +720,63 @@ export function executeBattle(
             });
 
             if (enemyHp <= 0) break;
+
+            if (partyHp <= 0 || !enemyHasReCounter(enemy) || partyHasNullCounter(characterStats)) {
+              continue;
+            }
+
+            const reCounterAttempts = Math.ceil(getEnemyNoA(phase, enemy) * 0.5);
+            if (reCounterAttempts <= 0) {
+              continue;
+            }
+
+            let reCounterDamage = 0;
+            let reCounterHits = 0;
+            for (let i = 1; i <= reCounterAttempts; i++) {
+              const didHit = hitDetection(1.0, enemy.accuracyBonus, attack.charStats.evasionBonus, i, phase, hasDeflection(attack.charStats));
+              if (!didHit) continue;
+              reCounterHits += 1;
+              reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, partyStats, attack.charStats, enemyHp);
+            }
+
+            if (reCounterDamage > 0) {
+              partyHp -= reCounterDamage;
+            }
+
+            const reCounterResurrect = (
+              partyHp <= 0
+              && hasResurrect(attack.charStats)
+              && !consumedResurrectCharacterIds.has(charId)
+            );
+
+            if (reCounterResurrect) {
+              partyHp = 1;
+              consumedResurrectCharacterIds.add(charId);
+            }
+
+            log.push({
+              phase,
+              initiativeRoll: turn.roll,
+              actor: 'enemy',
+              action: `${targetChar?.name ?? '???'} に再反撃！`,
+              damage: reCounterDamage > 0 ? reCounterDamage : undefined,
+              hits: reCounterHits,
+              totalAttempts: reCounterAttempts,
+              isCounter: true,
+              elementalOffense: enemy.elementalOffense,
+            });
+
+            if (reCounterResurrect) {
+              log.push({
+                phase,
+                actor: 'character',
+                characterId: charId,
+                isCounter: true,
+                action: `${targetChar?.name ?? '???'} は即死攻撃を食いしばって耐えた！`,
+              });
+            }
+
+            if (partyHp <= 0) break;
           }
         };
 
@@ -683,7 +793,7 @@ export function executeBattle(
       if (!char) continue;
 
       const runCharacterAttack = (noAMultiplier: number, isReAttack = false) => {
-        const result = calculateCharacterDamage(phase, cs, char, enemy, partyStats, noAMultiplier);
+        const result = calculateCharacterDamage(phase, cs, char, enemy, partyStats, partyHp, noAMultiplier);
         if (result.totalAttempts <= 0) return;
 
         if (result.damage > 0) {

@@ -552,6 +552,8 @@ function getAbilityName(id: AbilityId, level: number): string {
     tithe: '十分の一税',
     seeker: '探究者',
     resurrect: '再起',
+    rage: '闘志',
+    re_counter: '再反撃',
   };
   if (
     (
@@ -590,6 +592,8 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     tithe: () => '祈り時に寄付額へ探検利益の+10%を加算',
     seeker: () => '魔導書の効果増加(レベル毎に0.25%)',
     resurrect: () => '即死ダメージをHP1残して耐える',
+    rage: () => '物理/魔法攻撃倍率増大(受けたダメージ1%につき1%増、最大2倍)',
+    re_counter: () => '敵から反撃に対して、反撃する(攻撃回数半減)',
   };
   return descriptions[id](level);
 }
