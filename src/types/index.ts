@@ -12,6 +12,7 @@ export interface Race {
   name: string;
   englishName: string;
   emoji: string;
+  icon?: string;
   stats: BaseStats;
   bonuses: Bonus[];
   defaultAbility: RaceAbilityDefinition;

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, type Dispatch, type MouseEvent, type SetStateAction } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense, RaceId } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { DUNGEONS } from '../data/dungeons';
 import { RACES } from '../data/races';
@@ -114,6 +114,15 @@ function renderEnemyNameWithMutedClass(enemyName: string) {
   );
 }
 
+
+
+function RaceIcon({ race, className = "h-8 w-8" }: { race: Race; className?: string }) {
+  if (race.icon) {
+    return <img src={race.icon} alt={`${race.englishName} icon`} className={className} />;
+  }
+
+  return <span className={className}>{race.emoji}</span>;
+}
 
 function buildAfkSummaryNotification(stats: {
   victories: number;
@@ -2014,7 +2023,7 @@ function PartyTab({
               } ${draggingCharacterIndex === i ? 'opacity-70 border-sub' : ''}`}
               data-party-character-index={i}
             >
-              <div className="text-2xl text-center">{r.emoji}</div>
+              <div className="flex justify-center"><RaceIcon race={r} className="h-8 w-8" /></div>
               <div className="text-xs text-gray-400 text-center">
                 {mcShort}({isMaster ? '師' : scShort})
               </div>
@@ -2180,8 +2189,9 @@ function PartyTab({
         ) : (
           <div className="space-y-1 text-sm">
             <div className="text-gray-500 relative inline-flex items-center gap-2 flex-wrap">
-              <span>
-                {race.emoji} {race.name} / {mainClass.name}({char.mainClassId === char.subClassId ? '師範' : subClass.name}) / {predisposition.name} / {lineage.name}
+              <span className="inline-flex items-center gap-1">
+                <RaceIcon race={race} className="h-4 w-4" />
+                <span>{race.name} / {mainClass.name}({char.mainClassId === char.subClassId ? '師範' : subClass.name}) / {predisposition.name} / {lineage.name}</span>
               </span>
               <button
                 type="button"
@@ -2868,7 +2878,7 @@ function PartyTab({
                 >
                   <div className="flex justify-between items-center">
                     <span>
-                      {displayItem.isEquipped && <span>{race.emoji}</span>}
+                      {displayItem.isEquipped && <RaceIcon race={race} className="h-4 w-4 inline-block mr-1 align-text-bottom" />}
                       <span className="font-medium">{getItemDisplayName(displayItem.item)}</span>
                       {!displayItem.isEquipped && <span className="text-xs text-gray-500"> x{displayItem.count}</span>}
                       <span className="text-xs text-gray-400"> {getRarityShortLabel(displayItem.item.id)} {getItemStats(displayItem.item)}</span>
