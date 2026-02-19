@@ -60,6 +60,7 @@ import {
 } from '../game/lootGate';
 import { LEVEL_EXP } from '../game/partyLevel';
 import { createEnvironmentStorageKey } from '../game/environment';
+import { computeCharacterStats } from '../game/characterComputation';
 
 const BUILD_NUMBER = 1;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
@@ -1378,21 +1379,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const oldChar = currentParty.characters[charIndex];
       const newCharacters = [...currentParty.characters];
 
-      // If race/class/etc changed, remove all equipment
-      const isCharacterChanged =
-        (action.updates.raceId && action.updates.raceId !== oldChar.raceId) ||
-        (action.updates.mainClassId && action.updates.mainClassId !== oldChar.mainClassId) ||
-        (action.updates.subClassId && action.updates.subClassId !== oldChar.subClassId) ||
-        (action.updates.predispositionId && action.updates.predispositionId !== oldChar.predispositionId) ||
-        (action.updates.lineageId && action.updates.lineageId !== oldChar.lineageId);
-
       let newInventory = state.global.inventory;
-      let newEquipment = oldChar.equipment;
+      const nextCharacter = { ...oldChar, ...action.updates };
+      const oldMaxEquipSlots = computeCharacterStats(oldChar, currentParty.level).maxEquipSlots;
+      const nextMaxEquipSlots = computeCharacterStats(nextCharacter, currentParty.level).maxEquipSlots;
+      let newEquipment = [...oldChar.equipment];
 
-      if (isCharacterChanged) {
-        // Return equipment to inventory
+      if (nextMaxEquipSlots < oldMaxEquipSlots) {
         newInventory = { ...state.global.inventory };
-        for (const item of oldChar.equipment.filter((e): e is Item => e != null)) {
+        for (const item of oldChar.equipment.slice(nextMaxEquipSlots).filter((e): e is Item => e != null)) {
           const key = getVariantKey(item);
           const existing = newInventory[key];
           if (existing) {
@@ -1401,7 +1396,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             newInventory[key] = { item, count: 1, status: 'owned' };
           }
         }
-        newEquipment = [];
+        for (let i = nextMaxEquipSlots; i < newEquipment.length; i++) {
+          newEquipment[i] = null;
+        }
       }
 
       newCharacters[charIndex] = { ...oldChar, ...action.updates, equipment: newEquipment };

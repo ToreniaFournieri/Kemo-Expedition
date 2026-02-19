@@ -14,6 +14,7 @@ import { DEITY_OPTIONS, getDeityEffectDescription, getDeityRank, getNextDonation
 import { LEVEL_EXP } from '../game/partyLevel';
 import { createEnvironmentStorageKey, getEnvLabel } from '../game/environment';
 import { getBaseMultiplier } from '../game/baseMultiplier';
+import { computeCharacterStats } from '../game/characterComputation';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -1653,6 +1654,15 @@ function PartyTab({
     });
   };
 
+  const getEquipSlotReductionCount = (edits: Partial<Character> | null): number => {
+    const changedKeys = getChangedEditKeys(edits);
+    if (changedKeys.length === 0) return 0;
+
+    const nextCharacter = { ...char, ...edits };
+    const nextStats = computeCharacterStats(nextCharacter, party.level);
+    return Math.max(0, stats.maxEquipSlots - nextStats.maxEquipSlots);
+  };
+
   const completeCharacterEdit = () => {
     const changedKeys = getChangedEditKeys(pendingEdits);
 
@@ -1671,6 +1681,15 @@ function PartyTab({
       return;
     }
 
+    const equipSlotReductionCount = getEquipSlotReductionCount(pendingEdits);
+    if (equipSlotReductionCount === 0) {
+      onUpdateCharacter(char.id, pendingEdits ?? {});
+      setPendingEdits(null);
+      setEditingCharacter(null);
+      setShowEditConfirm(false);
+      return;
+    }
+
     setShowEditConfirm(true);
   };
 
@@ -1678,12 +1697,6 @@ function PartyTab({
     const changedKeys = getChangedEditKeys(pendingEdits);
     if (changedKeys.length > 0 && pendingEdits) {
       onUpdateCharacter(char.id, pendingEdits);
-    }
-
-    for (let i = 0; i < 4; i++) {
-      if (char.equipment[i]) {
-        onEquipItem(char.id, i, null);
-      }
     }
 
     setPendingEdits(null);
@@ -2017,7 +2030,7 @@ function PartyTab({
         {editingCharacter === selectedCharacter && showEditConfirm && (
           <div className="mb-3 p-3 bg-orange-50 border border-orange-200 rounded">
             <div className="text-sm text-accent">
-              ⚠️ 変更を保存すると装備が全て外れます。よろしいですか？
+              ⚠️ 変更を保存すると装備枠が減った分の装備が外れます。
             </div>
           </div>
         )}
