@@ -540,6 +540,8 @@ const ABILITY_NAMES: Record<string, string> = {
   rage: '闘志',
   re_counter: '再反撃',
   peddler: '行商',
+  composure: '平静',
+  magical_counter: '魔法反撃',
 };
 
 const C_MULTIPLIER_HELP_DESCRIPTIONS: Record<string, string> = {

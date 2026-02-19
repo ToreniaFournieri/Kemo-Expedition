@@ -92,7 +92,7 @@ export type AbilityId =
   | 'first_strike' | 'hunter' | 'defender' | 'counter' | 're_attack'
   | 'iaigiri' | 'resonance' | 'command' | 'm_barrier' | 'deflection' | 'null_counter' | 'unlock'
   | 'squander' | 'tithe' | 'seeker' | 'resurrect' | 'rage' | 're_counter' | 'momentum' | 'cunning'
-  | 'bulwark' | 'cyborgization' | 'covering_fire' | 'peddler';
+  | 'bulwark' | 'cyborgization' | 'covering_fire' | 'peddler' | 'composure' | 'magical_counter';
 
 export interface Ability {
   id: AbilityId;
