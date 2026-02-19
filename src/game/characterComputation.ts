@@ -556,6 +556,8 @@ function getAbilityName(id: AbilityId, level: number): string {
     re_counter: '再反撃',
     momentum: '気勢',
     cunning: '狡猾',
+    bulwark: '壁',
+    cyborgization: 'サイボーグ化',
   };
   if (
     (
@@ -598,6 +600,8 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     re_counter: () => '敵から反撃に対して、反撃する(攻撃回数半減)',
     momentum: () => '物理/魔法攻撃倍率1.5倍(受けたダメージ1%につき1%減)',
     cunning: () => '自動売却額が1.2倍',
+    bulwark: () => '自身の真後ろの味方1体への遠距離攻撃をすべて身代わりに受ける',
+    cyborgization: () => '命中+30、回避-20',
   };
   return descriptions[id](level);
 }

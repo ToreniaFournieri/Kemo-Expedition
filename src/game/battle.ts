@@ -51,6 +51,31 @@ function toRageBonusPercent(rageAmplifier: number): number {
   return Math.max(0, Math.round((rageAmplifier - 1.0) * 100));
 }
 
+
+function hasBulwark(charStats: ComputedCharacterStats): boolean {
+  return charStats.abilities.some(a => a.id === 'bulwark');
+}
+
+function resolveEnemyTarget(
+  targetRow: number,
+  characterStats: ComputedCharacterStats[],
+  phase: BattlePhase
+): ComputedCharacterStats | null {
+  const selectedTarget = characterStats.find(cs => cs.row === targetRow);
+  if (!selectedTarget) return null;
+
+  if (phase !== 'long') {
+    return selectedTarget;
+  }
+
+  const frontCharacter = characterStats.find(cs => cs.row === selectedTarget.row - 1);
+  if (frontCharacter && hasBulwark(frontCharacter)) {
+    return frontCharacter;
+  }
+
+  return selectedTarget;
+}
+
 function getCharacterMomentumAmplifier(charStats: ComputedCharacterStats, partyHp: number, maxPartyHp: number): number {
   if (!charStats.abilities.some(a => a.id === 'momentum')) return 1.0;
   if (maxPartyHp <= 0) return 1.0;
@@ -626,7 +651,7 @@ export function executeBattle(
           for (let i = 0; i < attempts; i++) {
             const { row: targetRow, newCtx } = getTargetRow(ctx, phase);
             ctx = newCtx;
-            const targetCharStats = characterStats.find(cs => cs.row === targetRow);
+            const targetCharStats = resolveEnemyTarget(targetRow, characterStats, phase);
             if (!targetCharStats) {
               enemyHitIndex += 1;
               continue;
