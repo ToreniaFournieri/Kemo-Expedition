@@ -10,7 +10,7 @@ export const RACES: Race[] = [
     defaultAbility: {
       id: 'a.seeker',
       name: '探究者',
-      description: 'レベルに応じて魔導書の効果増加(レベル毎に0.25%)',
+      description: '魔導書の効果増加(レベル毎に0.25%)',
     },
     unlockAbility: {
       id: 'a.resurrect',
