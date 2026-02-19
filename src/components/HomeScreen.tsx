@@ -1674,6 +1674,23 @@ function PartyTab({
     setShowEditConfirm(true);
   };
 
+  const saveCharacterEditWithEquipmentReset = () => {
+    const changedKeys = getChangedEditKeys(pendingEdits);
+    if (changedKeys.length > 0 && pendingEdits) {
+      onUpdateCharacter(char.id, pendingEdits);
+    }
+
+    for (let i = 0; i < 4; i++) {
+      if (char.equipment[i]) {
+        onEquipItem(char.id, i, null);
+      }
+    }
+
+    setPendingEdits(null);
+    setEditingCharacter(null);
+    setShowEditConfirm(false);
+  };
+
   const baseStatMultiplierRows = [
     { label: '体力', value: stats.baseStats.vitality, note: '物理耐性', ratio: getBaseDefenseScale(stats.baseStats.vitality) },
     { label: '力', value: stats.baseStats.strength, note: '遠距離/近接攻撃倍率', ratio: getBaseOffenseScale(stats.baseStats.strength) },
@@ -1963,19 +1980,23 @@ function PartyTab({
           {editingCharacter === selectedCharacter ? (
             <div className="flex gap-2 flex-shrink-0">
               <button
-                onClick={completeCharacterEdit}
+                onClick={showEditConfirm ? saveCharacterEditWithEquipmentReset : completeCharacterEdit}
                 className="text-sm text-white bg-sub px-3 py-1 rounded whitespace-nowrap"
               >
-                完了
+                {showEditConfirm ? '保存する' : '完了'}
               </button>
               <button
                 onClick={() => {
+                  if (showEditConfirm) {
+                    setShowEditConfirm(false);
+                    return;
+                  }
                   setPendingEdits(null);
                   setEditingCharacter(null);
                 }}
                 className="text-sm text-gray-600 bg-gray-200 px-3 py-1 rounded whitespace-nowrap"
               >
-                取消
+                {showEditConfirm ? '戻る' : '取消'}
               </button>
             </div>
           ) : (
@@ -1983,6 +2004,7 @@ function PartyTab({
               onClick={() => {
                 setPendingEdits({});
                 setEditingCharacter(selectedCharacter);
+                setShowEditConfirm(false);
               }}
               className="text-sm text-sub"
             >
@@ -1992,39 +2014,10 @@ function PartyTab({
         </div>
 
         {/* Edit confirmation dialog */}
-        {showEditConfirm && (
+        {editingCharacter === selectedCharacter && showEditConfirm && (
           <div className="mb-3 p-3 bg-orange-50 border border-orange-200 rounded">
-            <div className="text-sm text-accent mb-2">
+            <div className="text-sm text-accent">
               ⚠️ 変更を保存すると装備が全て外れます。よろしいですか？
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  // Apply pending edits
-                  const changedKeys = getChangedEditKeys(pendingEdits);
-                  if (changedKeys.length > 0 && pendingEdits) {
-                    onUpdateCharacter(char.id, pendingEdits);
-                  }
-                  // Unequip all items
-                  for (let i = 0; i < 4; i++) {
-                    if (char.equipment[i]) {
-                      onEquipItem(char.id, i, null);
-                    }
-                  }
-                  setPendingEdits(null);
-                  setEditingCharacter(null);
-                  setShowEditConfirm(false);
-                }}
-                className="flex-1 py-1 bg-accent text-white rounded text-sm font-medium"
-              >
-                保存する
-              </button>
-              <button
-                onClick={() => setShowEditConfirm(false)}
-                className="flex-1 py-1 bg-gray-300 rounded text-sm font-medium"
-              >
-                戻る
-              </button>
             </div>
           </div>
         )}
