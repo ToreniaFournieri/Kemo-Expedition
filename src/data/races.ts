@@ -87,7 +87,7 @@ export const RACES: Race[] = [
     emoji: '😺',
     stats: { vitality: 9, strength: 9, intelligence: 10, mind: 12 },
     defaultAbility: { id: 'a.first-strike', name: '先制攻撃1', description: '行動が速くなる' },
-    unlockAbility: { id: 'a.covering-fire', name: '援護射撃', description: '味方の近接が1回の時、遠距離攻撃する（攻撃回数半減）' },
+    unlockAbility: { id: 'a.covering-fire', name: '援護射撃', description: '味方近接攻撃の命中が1回のみなら遠距離射撃(攻撃回数半減)' },
     unlockCondition: '茂攻略',
     memo: 'Cat',
     bonuses: [
@@ -103,7 +103,7 @@ export const RACES: Race[] = [
     emoji: '🦡',
     stats: { vitality: 10, strength: 10, intelligence: 9, mind: 11 },
     defaultAbility: { id: 'a.resonance', name: '共鳴1', description: '魔法攻撃1回毎に、全ヒットのダメージが +5% 増加する' },
-    unlockAbility: { id: 'a.peddler', name: '行商', description: '移動時間(移動中/帰還中)が2/3になる' },
+    unlockAbility: { id: 'a.peddler', name: '行商', description: '移動時間が2/3になる' },
     unlockCondition: '巣攻略',
     memo: 'Ferret',
     bonuses: [
@@ -119,8 +119,8 @@ export const RACES: Race[] = [
     englishName: 'Leporian',
     emoji: '🐰',
     stats: { vitality: 9, strength: 8, intelligence: 11, mind: 10 },
-    defaultAbility: { id: 'a.composure', name: '平静', description: '物理/魔法命中率+10%加算' },
-    unlockAbility: { id: 'a.magical-counter', name: '魔法反撃', description: '魔法攻撃を受けた際に、魔法が使えたら魔法攻撃で反撃する(攻撃回数半減)' },
+    defaultAbility: { id: 'a.composure', name: '平静', description: '命中率+10%加算' },
+    unlockAbility: { id: 'a.magical-counter', name: '魔法反撃', description: '魔法には魔法で反撃する(攻撃回数半減)' },
     unlockCondition: '園攻略',
     memo: 'Rabbit',
     bonuses: [
