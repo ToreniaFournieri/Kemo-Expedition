@@ -124,10 +124,12 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 
 - `f.damage_calculation`: (actor: , opponent: , phase: )
 	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) ) x actor.`f.offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x opponent.`f.defense_amplifier` x party.`f.party.offense_amplifier` x `f.resonance_amplifier` x `f.rage_amplifier` x `f.momentum_amplifer` )
-
   - `f.rage_amplifier`: If actor has `a.rage`, return min(2.0, 1.0 + (1 - (actor.current_HP / actor.max_HP)))
   - `f.momentum_amplifer`: If actor has `a.momentum`, return 1.5 - (1 - (actor.current_HP / actor.max_HP))
   - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
+
+  - If opponent.`a.stealth` and (opponent.current_HP / opponent.max_HP) <= 0.24, damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごした！"
+    - note: This is only for party member ability. enemy should not have this `a.stealth` ability.
 
 **Row-based modifier** 
 - Targeting selects a character only to determine defense, row potency, abilities (counter). All damage resolved against a character is applied to `d.HP`.
@@ -189,7 +191,7 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 
 - `f.hit_detection`(actor: , opponent: ,Nth_hit: )
   - For all pahse, LONG, MID, CLOSE.
-  - If character.`a.focus`, `f.c_accuracy+v` =  actor.`c.accuracy+v` x 1.2 (Roundup ex. 0.003 * 1.2 = 0.0036 → 0.004)
+  - If character.`a.focus`, `f.c_accuracy+v` =  actor.`c.accuracy+v` x 1.2 (rounding up to the 3rd decimal ex. 0.003 * 1.2 = 0.0036 → 0.004)
   - decay_of_accuracy: clamp(0.86, 0.90 + `f.c_accuracy+v` - opponent.`c.evasion+v`, 0.98)
   - baseChance = actor.d.accuracy_potency
   - if opponent has a.deflection AND phase == LONG: baseChance -= 0.10
