@@ -87,7 +87,7 @@ export const RACES: Race[] = [
     emoji: '😺',
     stats: { vitality: 9, strength: 9, intelligence: 10, mind: 12 },
     defaultAbility: { id: 'a.first-strike', name: '先制攻撃1', description: '行動が速くなる' },
-    unlockAbility: { id: 'a.covering-fire', name: '援護射撃', description: '味方の近接攻撃の命中回数が1回だった場合、遠距離攻撃する(攻撃回数半減)' },
+    unlockAbility: { id: 'a.covering-fire', name: '援護射撃', description: '味方の近接が1回の時、遠距離攻撃する（攻撃回数半減）' },
     unlockCondition: '茂攻略',
     memo: 'Cat',
     bonuses: [

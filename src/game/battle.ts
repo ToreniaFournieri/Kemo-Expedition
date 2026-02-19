@@ -425,6 +425,10 @@ function hasReCounter(charStats: ComputedCharacterStats): boolean {
   return charStats.abilities.some(a => a.id === 're_counter');
 }
 
+function hasCoveringFire(charStats: ComputedCharacterStats): boolean {
+  return charStats.abilities.some(a => a.id === 'covering_fire');
+}
+
 function enemyHasReCounter(enemy: EnemyDef): boolean {
   return enemy.abilities.includes('re_counter');
 }
@@ -602,6 +606,52 @@ export function executeBattle(
       isCounter: true,
       elementalOffense: targetCharStats.elementalOffense,
     });
+  };
+
+  const triggerCoveringFire = (
+    phase: BattlePhase,
+    sourceCharStats: ComputedCharacterStats,
+    sourceHits: number,
+    initiativeRoll: number,
+  ): void => {
+    if (phase !== 'close' || sourceHits !== 1 || enemyHp <= 0 || partyHp <= 0) return;
+
+    for (const coverCharStats of characterStats) {
+      if (coverCharStats.characterId === sourceCharStats.characterId) continue;
+      if (!hasCoveringFire(coverCharStats)) continue;
+
+      const coverChar = party.characters.find(c => c.id === coverCharStats.characterId);
+      if (!coverChar) continue;
+
+      const coveringFireResult = calculateCharacterDamage('long', coverCharStats, coverChar, enemy, partyStats, partyHp, 0.5);
+      if (coveringFireResult.totalAttempts <= 0) continue;
+
+      if (coveringFireResult.damage > 0) {
+        enemyHp -= coveringFireResult.damage;
+      }
+
+      const coverFireRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(coverCharStats, partyHp, partyStats.hp));
+      const coverFireMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(coverCharStats, partyHp, partyStats.hp));
+      log.push({
+        phase,
+        initiativeRoll,
+        actor: 'character',
+        characterId: coverCharStats.characterId,
+        action: `${coverChar.name} の援護射撃！`,
+        damage: coveringFireResult.damage,
+        hits: coveringFireResult.hits,
+        totalAttempts: coveringFireResult.totalAttempts,
+        rageBonusPercent: coverFireRageBonusPercent > 0 ? coverFireRageBonusPercent : undefined,
+        momentumBonusPercent: coverCharStats.abilities.some(a => a.id === 'momentum')
+          ? coverFireMomentumBonusPercent
+          : undefined,
+        elementalOffense: coverCharStats.elementalOffense,
+      });
+
+      if (enemyHp <= 0) {
+        break;
+      }
+    }
   };
 
   const phases: BattlePhase[] = ['long', 'mid', 'close'];
@@ -851,9 +901,9 @@ export function executeBattle(
       const char = party.characters.find(c => c.id === cs.characterId);
       if (!char) continue;
 
-      const runCharacterAttack = (noAMultiplier: number, isReAttack = false) => {
+      const runCharacterAttack = (noAMultiplier: number, isReAttack = false): CharacterAttackResult | null => {
         const result = calculateCharacterDamage(phase, cs, char, enemy, partyStats, partyHp, noAMultiplier);
-        if (result.totalAttempts <= 0) return;
+        if (result.totalAttempts <= 0) return null;
 
         if (result.damage > 0) {
           enemyHp -= result.damage;
@@ -885,14 +935,23 @@ export function executeBattle(
         if (enemyHp > 0 && phase === 'close') {
           triggerEnemyCounter(cs, result.damage, enemyInitiativeRoll);
         }
+
+        return result;
       };
 
-      runCharacterAttack(1.0, false);
+      const firstAttackResult = runCharacterAttack(1.0, false);
+      if (firstAttackResult && enemyHp > 0 && partyHp > 0) {
+        triggerCoveringFire(phase, cs, firstAttackResult.hits, turn.roll);
+      }
+
       if (enemyHp <= 0 || partyHp <= 0) continue;
 
       const reAttackCount = hasReAttack(cs);
       for (let i = 0; i < reAttackCount && enemyHp > 0 && partyHp > 0; i++) {
-        runCharacterAttack(0.5, true);
+        const reAttackResult = runCharacterAttack(0.5, true);
+        if (reAttackResult && enemyHp > 0 && partyHp > 0) {
+          triggerCoveringFire(phase, cs, reAttackResult.hits, turn.roll);
+        }
       }
     }
 
