@@ -645,6 +645,7 @@ export function executeBattle(
         momentumBonusPercent: coverCharStats.abilities.some(a => a.id === 'momentum')
           ? coverFireMomentumBonusPercent
           : undefined,
+        isCounter: true,
         elementalOffense: coverCharStats.elementalOffense,
       });
 
