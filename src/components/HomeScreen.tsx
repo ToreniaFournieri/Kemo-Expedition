@@ -117,8 +117,21 @@ function renderEnemyNameWithMutedClass(enemyName: string) {
 
 
 function RaceIcon({ race, className = "h-8 w-8" }: { race: Race; className?: string }) {
-  if (race.icon) {
-    return <img src={race.icon} alt={`${race.englishName} icon`} className={className} />;
+  const [hasIconLoadError, setHasIconLoadError] = useState(false);
+
+  useEffect(() => {
+    setHasIconLoadError(false);
+  }, [race.icon]);
+
+  if (race.icon && !hasIconLoadError) {
+    return (
+      <img
+        src={race.icon}
+        alt={`${race.englishName} icon`}
+        className={className}
+        onError={() => setHasIconLoadError(true)}
+      />
+    );
   }
 
   return <span className={className}>{race.emoji}</span>;
