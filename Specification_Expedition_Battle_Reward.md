@@ -175,7 +175,6 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
   - MID phase ignores row-based accuracy potency, so has fixed potency (1.0).
 
 - **`d.accuracy_potency`**
-
   - If character.`a.composure`, min(1, `d.accuracy_potency` + 0.1)
 
 |row | normal | `a.hunter`1 | `a.hunter`2 |
@@ -189,8 +188,9 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 
 
 - `f.hit_detection`(actor: , opponent: ,Nth_hit: )
-  - For all pahse, LONG, MID, CLOSE. 
-  - decay_of_accuracy: clamp(0.86, 0.90 + actor.`c.accuracy+v` - opponent.`c.evasion+v`, 0.98)
+  - For all pahse, LONG, MID, CLOSE.
+  - If character.`a.focus`, `f.c_accuracy+v` =  actor.`c.accuracy+v` x 1.2 (Roundup ex. 0.003 * 1.2 = 0.0036 → 0.004)
+  - decay_of_accuracy: clamp(0.86, 0.90 + `f.c_accuracy+v` - opponent.`c.evasion+v`, 0.98)
   - baseChance = actor.d.accuracy_potency
   - if opponent has a.deflection AND phase == LONG: baseChance -= 0.10
   - chance = clamp(0.0, baseChance, 1.0) x (decay ^ (Nth_hit - 1))
