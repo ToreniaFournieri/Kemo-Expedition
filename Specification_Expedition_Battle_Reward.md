@@ -176,7 +176,7 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 
 - **`d.accuracy_potency`**
 
-  - If character.`a.composure`, min(100, `d.accuracy_potency` + 10)
+  - If character.`a.composure`, min(1, `d.accuracy_potency` + 0.1)
 
 |row | normal | `a.hunter`1 | `a.hunter`2 |
 |---|---|---|---|
