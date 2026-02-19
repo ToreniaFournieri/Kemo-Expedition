@@ -275,17 +275,20 @@ d. bonus (stackable)
 
 - **races(種族):**
 
-|races | bonus | 体,力,知,精 | memo |
-|-----|-------|-----------|------|
-|ケイナイアン(Caninian) | `c.shield_x1.3`, `c.archery_x1.1` |10,10,10,10| 🐶Dog |
-|ルピニアン(Lupinian) | `c.equip_slot+1`, `c.katana_x1.3`  |10,12,8,7| 🐺Wolf |
-|ヴァルピニアン(Vulpinian) |`c.equip_slot+1`, `c.sword_x1.3`, `c.grimoire_x1.2` |11,10,12,8| 🦊Fox |
-|ウルサン(Ursan) |`c.equip_slot+2`, `c.catalyst_x1.2` |13,11,6,7| 🐻Bear |
-|フェリディアン(Felidian) |`c.robe_x1.3`, `a.first-strike`1 |9,9,10,12| 😺Cat |
-|マステリド(Mustelid) | `c.gauntlet_x1.3`, `c.arrow_x1.3` |10,10,9,11| 🦡Ferret |
-|レポリアン(Leporian) | `c.archery_x1.3`,  `c.armor_x1.3` |9,8,11,10| 🐰Rabbit |
-|セルヴィン(Cervin) |`c.wand_x1.3`, `c.shield_x1.2` |8,7,13,10| 🦌Deer |
-|ミュリッド(Murid) |`c.penet_+0.10`, `c.bolt_x1.3`  |9,8,10,10| 🐭Mouse |
+|races | default ability　| unlock ability | unclock condition | bonus | 体,力,知,精 | memo |
+|-----|-------|------|--------|--------|-----------|----------|
+|ケイナイアン(Caninian) |  `a.seeker`探究者: レベルに応じて魔導書の効果増加(レベル毎に0.25%)) | `a.resurrect`再起:1戦闘につき1回のみ自分が受けた即死ダメージをHP1残して耐える | 原攻略 | `c.shield_x1.3`, `c.archery_x1.1` |10,10,10,10| 🐶Dog |
+|ルピニアン(Lupinian) | `a.rage`闘志: HPが低くなるほど物理/魔法攻撃倍率増大(受けたダメージ1%につき1%増, 最大2倍) | `a.re-counter`再反撃:敵から反撃に対して、反撃する(攻撃回数半減) | 崖攻略 | `c.equip_slot+1`, `c.katana_x1.3`  |10,12,8,7| 🐺Wolf |
+|ヴァルピニアン(Vulpinian) | `a.momentum`気勢:物理/魔法攻撃倍率1.5倍(受けたダメージ1%につき1%減,最小0.5倍) | `a.cunning`狡猾:自動売却額が1.2倍 | 樹攻略 |`c.equip_slot+1`, `c.sword_x1.3`, `c.grimoire_x1.2` |11,10,12,8| 🦊Fox |
+|ウルサン(Ursan) | `a.bulwark`壁: 自身の真後ろの味方1体への遠距離攻撃をすべて身代わりに受ける | `a.cyborgization `サイボーグ化:命中+30(`c.accuracy+0.030`)、回避-20(`c.evasion-0.020`) | 峰攻略 |`c.equip_slot+2`, `c.catalyst_x1.2` |13,11,**7**,7| 🐻Bear |
+|フェリディアン(Felidian)  | `a.first-strike`1 先制攻撃1: 行動が速くなる | `a.covering-fire`援護射撃:味方の近接攻撃の命中回数が1回だった場合、遠距離攻撃する(攻撃回数半減) | 茂攻略 |`c.robe_x1.3` |9,9,10,12| 😺Cat |
+|マステリド(Mustelid) | `a.resonance`1 共鳴1:魔法攻撃 1回毎に、全ヒットのダメージが +5% 増加する | `a.peddler`行商:移動時間(移動中/帰還中)が2/3になる | 巣攻略 | `c.gauntlet_x1.3`, `c.arrow_x1.3` |10,10,9,11| 🦡Ferret |
+|レポリアン(Leporian) | `a.composure`平静:物理/魔法命中率+10%加算 | `a.magical-counter`魔法反撃:魔法攻撃を受けた際に、魔法が使えたら魔法攻撃で反撃する(攻撃回数半減) | 園攻略 | `c.archery_x1.3`,  `c.armor_x1.3` |9,8,11,10| 🐰Rabbit |
+|セルヴィン(Cervin)  | `a.focus`集中:命中(`c.accuracy+v`)の効果が1.2倍になる | `a.prophecy`予言:報酬抽選内容が見えるようになる(現Verでは当該能力なしでも確認可) | 谷攻略 |`c.wand_x1.3`, `c.shield_x1.2` |8,7,13,10| 🦌Deer |
+|ミュリッド(Murid)  | `a.stealth`隠れ蓑: HP24%未満の時、自身へのダメージをすべて回避する | (none) | (none) |`c.penet_+0.10`, `c.bolt_x1.3`  |9,8,10,10| 🐭Mouse |
+
+- note: 未来視はパーティ単位で管理する方針に　神聖局で、セルヴィンがいる場合に表示可能、またコストを払ってリセットも可能に(詳細は今後検討)
+
 
 
 - **predisposition(性格):**
