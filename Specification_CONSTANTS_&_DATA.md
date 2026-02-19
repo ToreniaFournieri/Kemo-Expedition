@@ -415,7 +415,7 @@ d. bonus (stackable)
 | 3 | 1-3 | `x.battle_Normal` | x1.56 | x1.20 | x1.0 | x1.04 | x1.20 | x0.94 | pool_3  |  |
 | 3 | 4 | `x.battle_Elite` | x2.34 | x1.47 | x1.0 | x1.12 | x1.47 | x0.94 | fixed Elite. rare  `i.arrow`, `i.bolt`, `i.archery` | Class:Ranger. Check if you have enough physical defensive items. |
 | 4 | 1-3 | `x.battle_Normal` | x1.95 | x1.32 | x1.0 | x1.06 | x1.32 | x0.92 | pool_4 | |
-| 4 | 4 | `x.battle_Elite` | x3.43 | x1.61 | x1.0 | x1.14 | x1.61 | x0.92 | fixed Elite. rare  `i.armor`, `i.katana` | Class:Duelist. Checks if you have archery or magic items. (kill it before his melee attacks) |
+| 4 | 4 | `x.battle_Elite` | x3.43 | x1.61 | x1.0 | x1.14 | x1.61 | x0.92 | fixed Elite. rare  `i.gauntlet`, `i.katana` | Class:Duelist. Checks if you have archery or magic items. (kill it before his melee attacks) |
 | 5 | 1-3 | `x.battle_Normal` | x2.44 | x1.44 | x1.0 | x1.07 | x1.44 | x0.89 | pool_5  | |
 | 5 | 4 | `x.battle_Elite` | x4.04 | x1.76 | x1.0 | x1.15 | x1.76 | x0.89 | fixed Elite. rare  `i.wand`, `i.grimoire`, `i.catalyst` | Class:Mage. Checks if you have equipped enough magical defensive items.  |
 | 6 | 1-3 | `x.battle_Normal` | x3.05 | x1.58 | x1.0 | x1.08 | x1.58 | x0.86 | pool_6 | |
