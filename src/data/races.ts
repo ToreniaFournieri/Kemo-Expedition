@@ -57,6 +57,8 @@ export const RACES: Race[] = [
       { type: 'equip_slot', value: 1 },
       { type: 'sword_multiplier', value: 1.3 },
       { type: 'grimoire_multiplier', value: 1.2 },
+      { type: 'ability', value: 1, abilityId: 'momentum', abilityLevel: 1 },
+      { type: 'ability', value: 1, abilityId: 'cunning', abilityLevel: 1 },
     ],
   },
   {

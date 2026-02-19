@@ -125,24 +125,25 @@ function getItemRarityCode(item: Item): 'common' | 'uncommon' | 'rare' | 'mythic
 }
 
 // Helper to calculate sell price for an item
-function calculateSellPrice(item: Item): number {
+function calculateSellPrice(item: Item, autoSellMultiplier: number = 1): number {
   const enhMult = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
   const srMult = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
-  return Math.floor(10 * enhMult * srMult);
+  return Math.floor(10 * enhMult * srMult * autoSellMultiplier);
 }
 
 // Helper to add item to inventory (handles stacking and auto-sell)
 function addItemToInventory(
   inventory: InventoryRecord,
   item: Item,
-  currentGold: number
+  currentGold: number,
+  autoSellMultiplier: number = 1
 ): { inventory: InventoryRecord; gold: number; wasAutoSold: boolean; autoSellProfit: number } {
   const key = getVariantKey(item);
   const existing = inventory[key];
 
   // If this variant is marked as sold, auto-sell it
   if (existing?.status === 'sold') {
-    const sellPrice = calculateSellPrice(item);
+    const sellPrice = calculateSellPrice(item, autoSellMultiplier);
     return {
       inventory,
       gold: currentGold + sellPrice,
@@ -589,7 +590,8 @@ function resolveEnemyRewards(
   currentBags: GameState['bags'],
   currentInventory: InventoryRecord,
   currentGold: number,
-  hasUnlock: boolean
+  hasUnlock: boolean,
+  autoSellMultiplier: number
 ): {
   bags: GameState['bags'];
   inventory: InventoryRecord;
@@ -652,7 +654,7 @@ function resolveEnemyRewards(
 
     const newItem: Item = { ...baseItem, enhancement: enhVal, superRare: srVal };
     const itemName = getItemDisplayName(newItem);
-    const result = addItemToInventory(inventory, newItem, gold);
+    const result = addItemToInventory(inventory, newItem, gold, autoSellMultiplier);
     recoveredItems.push(newItem);
     inventory = result.inventory;
     gold = result.gold;
@@ -685,6 +687,12 @@ function resolveEnemyRewards(
     highestRewardRarity,
     hasSuperRareReward,
   };
+}
+
+
+function partyHasCunning(party: Party): boolean {
+  const { characterStats } = computePartyStats(party);
+  return characterStats.some(stats => stats.abilities.some(ability => ability.id === 'cunning'));
 }
 
 function getUnlockActorName(party: Party): string | undefined {
@@ -1010,7 +1018,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
               const unlockActorName = getUnlockActorName(currentParty);
               const hasUnlock = !!unlockActorName;
-              const rewardResult = resolveEnemyRewards(enemy, bags, currentInventory, currentGold, hasUnlock);
+              const autoSellMultiplier = partyHasCunning(currentParty) ? 1.2 : 1.0;
+              const rewardResult = resolveEnemyRewards(
+                enemy,
+                bags,
+                currentInventory,
+                currentGold,
+                hasUnlock,
+                autoSellMultiplier
+              );
               bags = rewardResult.bags;
               currentInventory = rewardResult.inventory;
               currentGold = rewardResult.gold;
@@ -1126,6 +1142,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const finalRemainingPartyHP = entries.length > 0
         ? entries[entries.length - 1].remainingPartyHP
         : currentHp;
+      const expeditionAutoSellMultiplier = partyHasCunning(currentParty) ? 1.2 : 1.0;
 
       const log: ExpeditionLog = {
         dungeonId: dungeon.id,
@@ -1137,6 +1154,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         entries,
         rewards: finalRewards,
         autoSellProfit: finalAutoSellProfit,
+        autoSellMultiplier: expeditionAutoSellMultiplier > 1 ? expeditionAutoSellMultiplier : undefined,
         remainingPartyHP: finalRemainingPartyHP,
         maxPartyHP: partyStats.hp,
       };
