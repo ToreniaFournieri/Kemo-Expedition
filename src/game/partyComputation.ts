@@ -152,40 +152,6 @@ export function computePartyStats(party: Party): {
     bonusHp += (itemHpBonus + levelBonus) * statMultiplier;
   }
 
-  // Calculate party physical defense
-  // d.physical_defense = (Total sum of individual (Item Bonuses of Physical defense x its c.multiplier x enhancement x b.vitality / 10))
-  let physicalDefense = 0;
-  for (const character of party.characters) {
-    const stats = getCharacterBaseStats(character);
-    const statMultiplier = stats.vitality / 10;
-
-    for (const item of character.equipment) {
-      if (item && item.physicalDefense) {
-        const categoryMult = getCharacterMultiplier(character, item.category);
-        const enhanceMult = getItemEnhancementMultiplier(item);
-        const baseMult = item.baseMultiplier ?? 1;
-        physicalDefense += item.physicalDefense * categoryMult * enhanceMult * baseMult * statMultiplier;
-      }
-    }
-  }
-
-  // Calculate party magical defense
-  // d.magical_defense = (Total sum of individual (Item Bonuses of Magical defense x its c.multiplier x enhancement x b.mind / 10))
-  let magicalDefense = 0;
-  for (const character of party.characters) {
-    const stats = getCharacterBaseStats(character);
-    const statMultiplier = stats.mind / 10;
-
-    for (const item of character.equipment) {
-      if (item && item.magicalDefense) {
-        const categoryMult = getCharacterMultiplier(character, item.category);
-        const enhanceMult = getItemEnhancementMultiplier(item);
-        const baseMult = item.baseMultiplier ?? 1;
-        magicalDefense += item.magicalDefense * categoryMult * enhanceMult * baseMult * statMultiplier;
-      }
-    }
-  }
-
   // Collect all party abilities
   const partyAbilitiesMap = new Map<AbilityId, number>();
   for (const cs of characterStats) {
@@ -239,8 +205,6 @@ export function computePartyStats(party: Party): {
     partyStats: {
       hp: totalHp,
       currentHp: totalHp,
-      physicalDefense: Math.floor(physicalDefense),
-      magicalDefense: Math.floor(magicalDefense),
       elementalResistance,
       abilities,
       offenseAmplifier,
