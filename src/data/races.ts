@@ -106,6 +106,7 @@ export const RACES: Race[] = [
     name: 'マステリド',
     englishName: 'Mustelid',
     emoji: '🦡',
+    icon: '/race-icons/mustelid.svg',
     stats: { vitality: 10, strength: 10, intelligence: 9, mind: 11 },
     defaultAbility: { id: 'a.resonance', name: '共鳴1', description: '魔法攻撃1回毎に、全ヒットのダメージが +5% 増加する' },
     unlockAbility: { id: 'a.peddler', name: '行商', description: '移動時間が2/3になる' },
