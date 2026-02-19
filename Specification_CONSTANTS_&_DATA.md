@@ -277,7 +277,7 @@ d. bonus (stackable)
 
 |races | default ability　| unlock ability | unclock condition | bonus | 体,力,知,精 | memo |
 |-----|-------|------|--------|--------|-----------|----------|
-|ケイナイアン(Caninian) |  `a.seeker`探究者: レベルに応じて魔導書の効果増加(レベル毎に0.25%)) | `a.resurrect`再起:1戦闘につき1回のみ自分が受けた即死ダメージをHP1残して耐える | 原攻略 | `c.shield_x1.3`, `c.archery_x1.1` |10,10,10,10| 🐶Dog |
+|ケイナイアン(Caninian) |  `a.seeker`探究者: 魔導書の効果増加(レベル毎に0.25%) | `a.resurrect`再起:1戦闘につき1回のみ自分が受けた即死ダメージをHP1残して耐える | 原攻略 | `c.shield_x1.3`, `c.archery_x1.1` |10,10,10,10| 🐶Dog |
 |ルピニアン(Lupinian) | `a.rage`闘志: HPが低くなるほど物理/魔法攻撃倍率増大(受けたダメージ1%につき1%増, 最大2倍) | `a.re-counter`再反撃:敵から反撃に対して、反撃する(攻撃回数半減) | 崖攻略 | `c.equip_slot+1`, `c.katana_x1.3`  |10,12,8,7| 🐺Wolf |
 |ヴァルピニアン(Vulpinian) | `a.momentum`気勢:物理/魔法攻撃倍率1.5倍(受けたダメージ1%につき1%減,最小0.5倍) | `a.cunning`狡猾:自動売却額が1.2倍 | 樹攻略 |`c.equip_slot+1`, `c.sword_x1.3`, `c.grimoire_x1.2` |11,10,12,8| 🦊Fox |
 |ウルサン(Ursan) | `a.bulwark`壁: 自身の真後ろの味方1体への遠距離攻撃をすべて身代わりに受ける | `a.cyborgization `サイボーグ化:命中+30(`c.accuracy+0.030`)、回避-20(`c.evasion-0.020`) | 峰攻略 |`c.equip_slot+2`, `c.catalyst_x1.2` |13,11,**7**,7| 🐻Bear |
