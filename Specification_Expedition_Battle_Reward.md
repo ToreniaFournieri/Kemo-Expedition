@@ -122,8 +122,9 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
     Else, return 1.0.
 
 - `f.damage_calculation`: (actor: , opponent: , phase: )
-	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) ) x actor.`f.offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x opponent.`f.defense_amplifier` x party.`f.party.offense_amplifier` x `f.resonance_amplifier`)
+	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) ) x actor.`f.offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x opponent.`f.defense_amplifier` x party.`f.party.offense_amplifier` x `f.resonance_amplifier` x `f.rage_amplifier` )
 
+  - `f.rage_amplifier`: If actor has `a.rage`, return min(2.0, 1.0 + (1 - (actor.current_HP / actor.max_HP)))
   - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
 
 **Row-based modifier** 
@@ -194,6 +195,10 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
     - IF actor.`a.counter` and (opponent or party member have `a.null-counter`), displays log like : “巡礼者ブラザの反撃無効化により、二枚爪の黒豹のカウンターは防がれた！”
     - *note:* if opponent is character, then check party.`a.null-counter`. if at least one party member has `a.null-counter`, nagete the counter attack.
 
+- **`f.re-counter`(actor: , opponent: ,phase: ) :** IF actor.`a.re-counter` and (opponent or party members have not `a.null-counter`), the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`, and actor.`f.NoA` x 0.5, round up)
+    - Re Counter triggers immediately after damage resolution, regardless of turn order modifiers.
+
+
 
 
 ### 6.3 Turn resolution 
@@ -211,7 +216,8 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
   	- If `f.hit_detection`(actor: , opponent: ,Nth_hit: the current hit index), current party.`d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
 - If currenr party.`d.HP` =< 0, if character.`a.resurrect`, set `d.HP` = 1 and disable `a.resurrect` for this battle. log "[-] ケモは即死攻撃を食いしばって耐えた！" . Else,  Defeat. 
 
-- **Coutner:** `f.counter`(actor:enemy , opponent:character ,phase: CLOSE )
+- **Coutner:** `f.counter`(actor:enemy , opponent:character ,phase: )
+  - **Re-counter** If opponent.`a.re-counter`, `f.re-counter`(actor:character , opponent:enemy ,phase: )
 - **Re-attack**: IF enemy.`a.re-attack`, the enemy attacks to characters. (using f.hit_detection, f.damage_calculation, and enemy.f.NoA x 0.5, round up)
 - *Note:* Nth_hit is global for all enemy attacks in the phase (not per-target)
 
@@ -223,7 +229,9 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 	- If `f.hit_detection`(actor: , opponent: ,Nth_hit: the current hit index), current enemy.`d.HP` -= `f.damage_calculation` (actor: character, opponent: enemy, phase: phase)
 - If enemy.`d.HP` =< 0, Victory.
 
-- **Coutner:** `f.counter`(actor:character , opponent: enemy , phase: CLOSE )
+- **Coutner:** `f.counter`(actor:character , opponent: enemy , phase:  )
+   - **Re-counter** If opponent.`a.re-counter`, `f.re-counter`(actor:enemy , opponent:character ,phase: )
+
 - **Re-attack:** IF character.`a.re-attack`, the character attacks to enemy. (using `f.hit_detection`, `f.damage_calculation`, and character.`f.NoA` x 0.5, round up)
 
 ### 6.4 Post battle
