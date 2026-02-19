@@ -235,6 +235,8 @@ function getAbilityName(id: AbilityId, level: number): string {
     tithe: '十分の一税',
     seeker: '探究者',
     resurrect: '再起',
+    rage: '闘志',
+    re_counter: '再反撃',
   };
   if (
     (
