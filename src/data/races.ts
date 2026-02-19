@@ -93,6 +93,7 @@ export const RACES: Race[] = [
     bonuses: [
       { type: 'robe_multiplier', value: 1.3 },
       { type: 'ability', value: 1, abilityId: 'first_strike', abilityLevel: 1 },
+      { type: 'ability', value: 1, abilityId: 'covering_fire', abilityLevel: 1 },
     ],
   },
   {
