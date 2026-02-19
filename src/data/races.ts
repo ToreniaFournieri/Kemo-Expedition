@@ -74,6 +74,10 @@ export const RACES: Race[] = [
     bonuses: [
       { type: 'equip_slot', value: 2 },
       { type: 'catalyst_multiplier', value: 1.2 },
+      { type: 'ability', value: 1, abilityId: 'bulwark', abilityLevel: 1 },
+      { type: 'ability', value: 1, abilityId: 'cyborgization', abilityLevel: 1 },
+      { type: 'accuracy', value: 0.03 },
+      { type: 'evasion', value: -0.02 },
     ],
   },
   {

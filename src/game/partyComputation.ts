@@ -239,6 +239,8 @@ function getAbilityName(id: AbilityId, level: number): string {
     re_counter: '再反撃',
     momentum: '気勢',
     cunning: '狡猾',
+    bulwark: '壁',
+    cyborgization: 'サイボーグ化',
   };
   if (
     (
