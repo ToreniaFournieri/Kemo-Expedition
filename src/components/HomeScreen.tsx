@@ -2992,9 +2992,10 @@ function ExpeditionTab({
                                 const previousWasPhaseAction = !!previousLog && previousLog.actor !== 'deity' && previousLog.actor !== 'effect';
                                 const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousWasPhaseAction || previousLog.phase !== log.phase);
                                 const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
+                                const isStealthEffectLog = log.actor === 'effect' && log.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！');
                                 const phaseLabel = isPhaseAction
                                   ? (log.isCounter ? '-' : `${log.initiativeRoll ?? '?'}`)
-                                  : log.actor === 'deity' ? '末' : '効';
+                                  : log.actor === 'deity' ? '末' : isStealthEffectLog ? '-' : '効';
                                 const phaseHeader = log.phase === 'long'
                                   ? '遠距離攻撃フェーズ'
                                   : log.phase === 'mid'
@@ -3577,9 +3578,10 @@ function DiaryTab({
                               const previousWasPhaseAction = !!previousLog && previousLog.actor !== 'deity' && previousLog.actor !== 'effect';
                               const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousWasPhaseAction || previousLog.phase !== battleLog.phase);
                               const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
+                              const isStealthEffectLog = battleLog.actor === 'effect' && battleLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！');
                               const phaseLabel = isPhaseAction
                                 ? (battleLog.isCounter ? '-' : `${battleLog.initiativeRoll ?? '?'}`)
-                                : battleLog.actor === 'deity' ? '末' : '効';
+                                : battleLog.actor === 'deity' ? '末' : isStealthEffectLog ? '-' : '効';
                               const phaseHeader = battleLog.phase === 'long'
                                 ? '遠距離攻撃フェーズ'
                                 : battleLog.phase === 'mid'
