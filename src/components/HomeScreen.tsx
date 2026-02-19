@@ -1603,10 +1603,10 @@ function PartyTab({
   const lineage = LINEAGES.find(l => l.id === char.lineageId)!;
 
   const baseStatMultiplierRows = [
-    { label: '体力', value: stats.baseStats.vitality, note: '防御倍率', ratio: getBaseDefenseScale(stats.baseStats.vitality) },
-    { label: '力', value: stats.baseStats.strength, note: '攻撃倍率(遠距離/近接)', ratio: getBaseOffenseScale(stats.baseStats.strength) },
-    { label: '知性', value: stats.baseStats.intelligence, note: '攻撃倍率(魔法)', ratio: getBaseOffenseScale(stats.baseStats.intelligence) },
-    { label: '精神', value: stats.baseStats.mind, note: '防御倍率(魔法耐性)', ratio: getBaseDefenseScale(stats.baseStats.mind) },
+    { label: '体力', value: stats.baseStats.vitality, note: '物理耐性', ratio: getBaseDefenseScale(stats.baseStats.vitality) },
+    { label: '力', value: stats.baseStats.strength, note: '遠距離/近接攻撃倍率', ratio: getBaseOffenseScale(stats.baseStats.strength) },
+    { label: '知性', value: stats.baseStats.intelligence, note: '魔法攻撃倍率', ratio: getBaseOffenseScale(stats.baseStats.intelligence) },
+    { label: '精神', value: stats.baseStats.mind, note: '魔法耐性', ratio: getBaseDefenseScale(stats.baseStats.mind) },
   ];
 
   const hpStatMultiplier = (stats.baseStats.vitality + stats.baseStats.mind) / 20;
