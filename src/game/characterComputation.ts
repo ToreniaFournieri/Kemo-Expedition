@@ -563,6 +563,8 @@ function getAbilityName(id: AbilityId, level: number): string {
     peddler: '行商',
     composure: '平静',
     magical_counter: '魔法反撃',
+    focus: '集中',
+    prophecy: '予言',
   };
   if (
     (
@@ -611,6 +613,8 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     peddler: () => '移動時間(移動中/帰還中)が2/3になる',
     composure: () => '物理/魔法命中率+10%加算',
     magical_counter: () => '魔法攻撃に対して魔法攻撃で反撃する(攻撃回数半減)',
+    focus: () => '命中ボーナスの効果が1.2倍になる',
+    prophecy: () => '報酬抽選内容が見えるようになる',
   };
   return descriptions[id](level);
 }

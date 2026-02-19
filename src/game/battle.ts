@@ -241,15 +241,23 @@ function getResonanceLogText(
 // Hit detection for physical attacks (LONG and CLOSE phases)
 // decay_of_accuracy = clamp(0.86, 0.90 + actor.accuracy - opponent.evasion, 0.98)
 // chance = d.accuracy_potency * (decay_of_accuracy)^(Nth_hit)
+function roundUpToThirdDecimal(value: number): number {
+  return Math.ceil((value + Number.EPSILON) * 1000) / 1000;
+}
+
 function hitDetection(
   actorAccuracyPotency: number,
   actorAccuracyBonus: number,
   opponentEvasionBonus: number,
   nthHit: number, // 1-indexed
   phase: BattlePhase,
-  opponentHasDeflection: boolean
+  opponentHasDeflection: boolean,
+  actorHasFocus: boolean
 ): boolean {
-  const decayOfAccuracy = Math.max(0.86, Math.min(0.98, 0.90 + actorAccuracyBonus - opponentEvasionBonus));
+  const effectiveAccuracyBonus = actorHasFocus
+    ? roundUpToThirdDecimal(actorAccuracyBonus * 1.2)
+    : actorAccuracyBonus;
+  const decayOfAccuracy = Math.max(0.86, Math.min(0.98, 0.90 + effectiveAccuracyBonus - opponentEvasionBonus));
   let baseChance = actorAccuracyPotency;
   if (opponentHasDeflection && phase === 'long') {
     baseChance -= 0.10;
@@ -360,7 +368,7 @@ function calculateCharacterDamage(
   let hits = 0;
   let damage = 0;
   for (let i = 1; i <= noA; i++) {
-    if (hitDetection(actorAccuracyPotency, charStats.accuracyBonus, enemyEvasion, i, phase, enemy.abilities.includes('deflection'))) {
+    if (hitDetection(actorAccuracyPotency, charStats.accuracyBonus, enemyEvasion, i, phase, enemy.abilities.includes('deflection'), charStats.abilities.some(a => a.id === 'focus'))) {
       hits++;
       damage += Math.max(1, Math.floor(basePerHitDamage * getResonanceAmplifier(resonance?.level, hits)));
     }
@@ -534,7 +542,7 @@ export function executeBattle(
     let damage = 0;
     let hits = 0;
     for (let i = 1; i <= attempts; i++) {
-      const didHit = hitDetection(1.0, enemy.accuracyBonus, targetCharStats.evasionBonus, i, 'close', hasDeflection(targetCharStats));
+      const didHit = hitDetection(1.0, enemy.accuracyBonus, targetCharStats.evasionBonus, i, 'close', hasDeflection(targetCharStats), false);
       if (didHit) {
         hits += 1;
         damage += singleDamage;
@@ -722,7 +730,8 @@ export function executeBattle(
               targetCharStats.evasionBonus,
               enemyHitIndex,
               phase,
-              hasDeflection(targetCharStats)
+              hasDeflection(targetCharStats),
+              false
             );
             enemyHitIndex += 1;
 
@@ -856,7 +865,7 @@ export function executeBattle(
             let reCounterDamage = 0;
             let reCounterHits = 0;
             for (let i = 1; i <= reCounterAttempts; i++) {
-              const didHit = hitDetection(1.0, enemy.accuracyBonus, attack.charStats.evasionBonus, i, phase, hasDeflection(attack.charStats));
+              const didHit = hitDetection(1.0, enemy.accuracyBonus, attack.charStats.evasionBonus, i, phase, hasDeflection(attack.charStats), false);
               if (!didHit) continue;
               reCounterHits += 1;
               reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, partyStats, attack.charStats, enemyHp);
