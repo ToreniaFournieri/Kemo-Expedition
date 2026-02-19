@@ -215,7 +215,7 @@
   - Immediately set state to 移動中
   - Do not refill HP; dungeon starts with current HP. No squander, donation, nor remaining profits to the global wallet. The profit vanishes (The party menders would definitely not be happy with this players emergency sortie.)
   - If party is already in 移動中 / 探索中 / 帰還中: ignore tap
-  - If party Hp is 0 (just after defeated): ignore tap and show notification log:"PT1 は疲弊しており出撃を拒否した"
+  - If party Hp is 0 (just after defeated): ignore tap and show notification log:"random party.character は疲弊しており出撃を拒否した"
 
 
 - **Transition rules**
