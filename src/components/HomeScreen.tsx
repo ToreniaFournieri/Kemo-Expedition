@@ -2370,6 +2370,11 @@ function PartyTab({
                 multipliers[key] = Array.from(values).reduce((prod, v) => prod * v, 1);
               }
 
+              const seekerAbilityLevel = allBonuses
+                .filter((b) => b.type === 'ability' && b.abilityId === 'seeker')
+                .reduce((max, b) => Math.max(max, b.abilityLevel ?? 1), 0);
+              const seekerMultiplier = seekerAbilityLevel > 0 ? 1 + (party.level * 0.0025) : 1;
+
               // Format display
               const parts: string[] = [];
               const helpRows: Array<{ label: string; description: string }> = [];
@@ -2386,13 +2391,17 @@ function PartyTab({
 
               for (const [key, val] of Object.entries(multipliers)) {
                 if (val !== 1) {
-                  const label = `${mulNames[key] ?? key}x${val.toFixed(1)}`;
+                  const effectiveMultiplier = key === 'grimoire' ? val * seekerMultiplier : val;
+                  const formattedMultiplier = key === 'grimoire'
+                    ? effectiveMultiplier.toFixed(2)
+                    : effectiveMultiplier.toFixed(1);
+                  const label = `${mulNames[key] ?? key}x${formattedMultiplier}`;
                   parts.push(label);
                   const template = C_MULTIPLIER_HELP_DESCRIPTIONS[key];
                   if (template) {
                     helpRows.push({
                       label,
-                      description: template.replace('{value}', val.toFixed(1)),
+                      description: template.replace('{value}', formattedMultiplier),
                     });
                   }
                 }
