@@ -554,25 +554,26 @@ export function executeBattle(
 
     const singleDamage = calculateSingleEnemyAttackDamage('close', enemy, partyStats, targetCharStats, enemyHp);
     const attempts = Math.ceil(enemy.meleeNoA * 0.5);
-    let damage = 0;
     let hits = 0;
     for (let i = 1; i <= attempts; i++) {
       const didHit = hitDetection(1.0, enemy.accuracyBonus, targetCharStats.evasionBonus, i, 'close', hasDeflection(targetCharStats), enemyHasFocus(enemy));
       if (didHit) {
         hits += 1;
-        damage += singleDamage;
       }
     }
 
     const targetName = targetChar?.name ?? '???';
-    const avoidedByStealth = isStealthActive(targetCharStats, partyHp, partyStats.hp);
-    if (avoidedByStealth) {
-      damage = 0;
-      hits = 0;
-    }
-
-    if (damage > 0) {
-      partyHp -= damage;
+    let damage = 0;
+    let appliedHits = 0;
+    let avoidedByStealth = false;
+    for (let i = 0; i < hits; i++) {
+      if (isStealthActive(targetCharStats, partyHp, partyStats.hp)) {
+        avoidedByStealth = true;
+        continue;
+      }
+      appliedHits += 1;
+      damage += singleDamage;
+      partyHp -= singleDamage;
     }
 
     const triggeredResurrect = (
@@ -593,7 +594,7 @@ export function executeBattle(
       actor: 'enemy',
       action: `${targetName} に反撃！`,
       damage: damage > 0 ? damage : undefined,
-      hits,
+      hits: appliedHits,
       totalAttempts: attempts,
       rageBonusPercent: enemyCounterRageBonusPercent > 0 ? enemyCounterRageBonusPercent : undefined,
       isCounter: true,
@@ -737,7 +738,7 @@ export function executeBattle(
         const runEnemyAttack = (attempts: number, isReAttack = false): void => {
           if (attempts <= 0 || partyHp <= 0 || enemyHp <= 0) return;
 
-          const attacksByTarget = new Map<number, { damage: number; hits: number; totalAttempts: number; charStats: ComputedCharacterStats }>();
+          const attacksByTarget = new Map<number, { damage: number; singleDamage: number; hits: number; totalAttempts: number; charStats: ComputedCharacterStats }>();
           const enemyAccuracyPotency = 1.0;
           const enemyAccuracyBonus = enemy.accuracyBonus;
           // Nth hit is counted per attack sequence; re-attacks/counters do not inherit prior hit decay.
@@ -766,20 +767,20 @@ export function executeBattle(
             enemyHitIndex += 1;
 
             if (existing) {
-              existing.totalAttempts += 1;
-              if (didHit) {
-                existing.damage += singleDamage;
-                existing.hits += 1;
+                existing.totalAttempts += 1;
+                if (didHit) {
+                  existing.hits += 1;
+                }
+              } else {
+                attacksByTarget.set(targetCharStats.characterId, {
+                  damage: 0,
+                  singleDamage,
+                  hits: didHit ? 1 : 0,
+                  totalAttempts: 1,
+                  charStats: targetCharStats,
+                });
               }
-            } else {
-              attacksByTarget.set(targetCharStats.characterId, {
-                damage: didHit ? singleDamage : 0,
-                hits: didHit ? 1 : 0,
-                totalAttempts: 1,
-                charStats: targetCharStats,
-              });
             }
-          }
 
           for (const [charId, attack] of attacksByTarget) {
             if (enemyHp <= 0 || partyHp <= 0) break;
@@ -790,14 +791,17 @@ export function executeBattle(
               : (phase === 'mid' ? '魔法攻撃' : '攻撃');
 
             const targetName = targetChar?.name ?? '???';
-            const avoidedByStealth = isStealthActive(attack.charStats, partyHp, partyStats.hp);
-            if (avoidedByStealth) {
-              attack.damage = 0;
-              attack.hits = 0;
-            }
-
-            if (attack.damage > 0) {
-              partyHp -= attack.damage;
+            let appliedHits = 0;
+            let avoidedByStealth = false;
+            attack.damage = 0;
+            for (let i = 0; i < attack.hits; i++) {
+              if (isStealthActive(attack.charStats, partyHp, partyStats.hp)) {
+                avoidedByStealth = true;
+                continue;
+              }
+              appliedHits += 1;
+              attack.damage += attack.singleDamage;
+              partyHp -= attack.singleDamage;
             }
 
             const triggeredResurrect = (
@@ -818,7 +822,7 @@ export function executeBattle(
               actor: 'enemy',
               action: `${targetName} に${attackName}！`,
               damage: attack.damage > 0 ? attack.damage : undefined,
-              hits: attack.hits,
+              hits: appliedHits,
               totalAttempts: attack.totalAttempts,
               rageBonusPercent: enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined,
               isReAttack: isReAttack || undefined,
