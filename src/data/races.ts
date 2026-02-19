@@ -6,7 +6,7 @@ export const RACES: Race[] = [
     name: 'ケイナイアン',
     englishName: 'Caninian',
     emoji: '🐶',
-    icon: '/race-icons/Caninian.bmp',
+    icon: '/race-icons/Caninian.png',
     stats: { vitality: 10, strength: 10, intelligence: 10, mind: 10 },
     defaultAbility: {
       id: 'a.seeker',
