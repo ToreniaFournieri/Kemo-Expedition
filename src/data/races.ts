@@ -108,6 +108,8 @@ export const RACES: Race[] = [
     bonuses: [
       { type: 'gauntlet_multiplier', value: 1.3 },
       { type: 'arrow_multiplier', value: 1.3 },
+      { type: 'ability', value: 1, abilityId: 'resonance', abilityLevel: 1 },
+      { type: 'ability', value: 1, abilityId: 'peddler', abilityLevel: 1 },
     ],
   },
   {
