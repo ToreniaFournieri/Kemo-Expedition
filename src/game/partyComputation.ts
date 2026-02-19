@@ -242,6 +242,7 @@ function getAbilityName(id: AbilityId, level: number): string {
     bulwark: '壁',
     cyborgization: 'サイボーグ化',
     covering_fire: '援護射撃',
+    peddler: '行商',
   };
   if (
     (

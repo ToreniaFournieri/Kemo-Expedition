@@ -539,6 +539,7 @@ const ABILITY_NAMES: Record<string, string> = {
   resurrect: '再起',
   rage: '闘志',
   re_counter: '再反撃',
+  peddler: '行商',
 };
 
 const C_MULTIPLIER_HELP_DESCRIPTIONS: Record<string, string> = {
@@ -986,7 +987,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
                 }
               }
               updated.state = isAutoRepeatEnabled ? '移動中' : '待機中';
-              updated.durationMs = updated.state === '移動中' ? 5000 : 1000;
+              updated.durationMs = updated.state === '移動中' ? getPartyTravelDurationMs(party) : 1000;
             } else if (updated.state === '待機中') {
               updated.durationMs = 1000;
             } else if (updated.state === '移動中') {
@@ -996,7 +997,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             } else if (updated.state === '探索中') {
               actions.finalizeDiaryLog(partyIndex);
               updated.state = '帰還中';
-              updated.durationMs = 5000;
+              updated.durationMs = getPartyTravelDurationMs(party);
             } else if (updated.state === '帰還中') {
               updated.state = '休息中';
               updated.durationMs = 1000;
@@ -1116,6 +1117,11 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     return owner?.name ?? null;
   };
 
+  const getPartyTravelDurationMs = (party: Party): number => {
+    const hasPeddler = !!getPartyAbilityOwnerName(party, 'peddler');
+    return hasPeddler ? Math.floor((5000 * 2) / 3) : 5000;
+  };
+
   const triggerSortie = (partyIndex: number) => {
     const cycle = partyCycles[partyIndex];
     const party = state.parties[partyIndex];
@@ -1137,7 +1143,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     }
 
     actions.clearPendingProfit(partyIndex);
-    transitionTo(partyIndex, '移動中', 5000);
+    transitionTo(partyIndex, '移動中', getPartyTravelDurationMs(party));
   };
 
   const prevActiveTabRef = useRef<Tab>(activeTab);

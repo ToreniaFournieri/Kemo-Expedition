@@ -559,6 +559,7 @@ function getAbilityName(id: AbilityId, level: number): string {
     bulwark: '壁',
     cyborgization: 'サイボーグ化',
     covering_fire: '援護射撃',
+    peddler: '行商',
   };
   if (
     (
@@ -604,6 +605,7 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     bulwark: () => '真後ろの味方への遠距離攻撃を肩代わりする',
     cyborgization: () => '命中+30、回避-20',
     covering_fire: () => '味方の近接が1回の時、遠距離攻撃する（攻撃回数半減）',
+    peddler: () => '移動時間(移動中/帰還中)が2/3になる',
   };
   return descriptions[id](level);
 }
