@@ -207,7 +207,8 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
     - Re Counter triggers immediately after damage resolution, regardless of turn order modifiers.
 
 
-
+- **`f.covering-fire`(actor: , opponent: ) :** IF actor.`a.covering-fire` and actor can ranged attack, the actor ranged attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`, and actor.`f.NoA` x 0.5, round up)
+    - covering fire triggers immediately after damage resolution, regardless of turn order modifiers.
 
 ### 6.3 Turn resolution 
 **Speed & Turn Order (Rolling Dice Rule)**
@@ -241,6 +242,8 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
    - **Re-counter** If opponent.`a.re-counter`, `f.re-counter`(actor:enemy , opponent:character ,phase: )
 
 - **Re-attack:** IF character.`a.re-attack`, the character attacks to enemy. (using `f.hit_detection`, `f.damage_calculation`, and character.`f.NoA` x 0.5, round up)
+
+- **Covering fire:** IF character.`a.covering-fire` and the actor's successful hit is only one and phase is CLOSE, `f.covering-fire`(actor:covering fire character , opponent:enemy)
 
 ### 6.4 Post battle
 
