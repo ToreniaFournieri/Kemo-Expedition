@@ -51,6 +51,17 @@ function toRageBonusPercent(rageAmplifier: number): number {
   return Math.max(0, Math.round((rageAmplifier - 1.0) * 100));
 }
 
+function getCharacterMomentumAmplifier(charStats: ComputedCharacterStats, partyHp: number, maxPartyHp: number): number {
+  if (!charStats.abilities.some(a => a.id === 'momentum')) return 1.0;
+  if (maxPartyHp <= 0) return 1.0;
+  const hpRatio = Math.max(0, Math.min(1, partyHp / maxPartyHp));
+  return Math.max(0.5, 1.5 - (1.0 - hpRatio));
+}
+
+function toMomentumBonusPercent(momentumAmplifier: number): number {
+  return Math.round((momentumAmplifier - 1.0) * 100);
+}
+
 // Get target row index (1-6) using threat bag
 function getTargetRow(ctx: BattleContext, phase: BattlePhase): { row: number; newCtx: BattleContext } {
   const isPhysical = phase === 'long' || phase === 'close';
@@ -309,10 +320,11 @@ function calculateCharacterDamage(
   );
 
   const rageAmplifier = getCharacterRageAmplifier(charStats, partyHp, partyStats.hp);
+  const momentumAmplifier = getCharacterMomentumAmplifier(charStats, partyHp, partyStats.hp);
 
   const basePerHitDamage = Math.max(1, Math.floor(
     (attack - effectiveDefense) * offenseAmplifier * charStats.elementalOffenseValue *
-    elementalMultiplier * defenseAmplifier * partyStats.offenseAmplifier * rageAmplifier
+    elementalMultiplier * defenseAmplifier * partyStats.offenseAmplifier * rageAmplifier * momentumAmplifier
   ));
 
   // All phases now use hit detection.
@@ -549,6 +561,7 @@ export function executeBattle(
     }
 
     const characterReCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(targetCharStats, partyHp, partyStats.hp));
+    const characterReCounterMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(targetCharStats, partyHp, partyStats.hp));
     log.push({
       phase: 'close',
       actor: 'character',
@@ -558,6 +571,9 @@ export function executeBattle(
       hits: reCounterResult.hits,
       totalAttempts: reCounterResult.totalAttempts,
       rageBonusPercent: characterReCounterRageBonusPercent > 0 ? characterReCounterRageBonusPercent : undefined,
+      momentumBonusPercent: targetCharStats.abilities.some(a => a.id === 'momentum')
+        ? characterReCounterMomentumBonusPercent
+        : undefined,
       isCounter: true,
       elementalOffense: targetCharStats.elementalOffense,
     });
@@ -717,6 +733,7 @@ export function executeBattle(
             const counterType = phase === 'mid' ? '魔法反撃' : '反撃';
             const resonanceLogText = getResonanceLogText(phase, attack.charStats, counterResult.hits);
             const characterCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(attack.charStats, partyHp, partyStats.hp));
+            const characterCounterMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(attack.charStats, partyHp, partyStats.hp));
             log.push({
               phase,
               initiativeRoll: initiativeByCharacter.get(charId),
@@ -727,6 +744,9 @@ export function executeBattle(
               hits: counterResult.hits,
               totalAttempts: counterResult.totalAttempts,
               rageBonusPercent: characterCounterRageBonusPercent > 0 ? characterCounterRageBonusPercent : undefined,
+              momentumBonusPercent: attack.charStats.abilities.some(a => a.id === 'momentum')
+                ? characterCounterMomentumBonusPercent
+                : undefined,
               isCounter: true,
               elementalOffense: attack.charStats.elementalOffense,
             });
@@ -819,6 +839,7 @@ export function executeBattle(
           : (phase === 'mid' ? '魔法攻撃' : '攻撃');
         const resonanceLogText = getResonanceLogText(phase, cs, result.hits);
         const characterAttackRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(cs, partyHp, partyStats.hp));
+        const characterAttackMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(cs, partyHp, partyStats.hp));
         log.push({
           phase,
           initiativeRoll: turn.roll,
@@ -829,6 +850,9 @@ export function executeBattle(
           hits: result.hits,
           totalAttempts: result.totalAttempts,
           rageBonusPercent: characterAttackRageBonusPercent > 0 ? characterAttackRageBonusPercent : undefined,
+          momentumBonusPercent: cs.abilities.some(a => a.id === 'momentum')
+            ? characterAttackMomentumBonusPercent
+            : undefined,
           isReAttack: isReAttack || undefined,
           elementalOffense: cs.elementalOffense,
         });
