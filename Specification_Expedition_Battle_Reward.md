@@ -212,6 +212,10 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 - **`f.covering-fire`(actor: , opponent: ) :** IF actor.`a.covering-fire` and actor can ranged attack, the actor ranged attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`, and actor.`f.NoA` x 0.5, round up)
     - covering fire triggers immediately after damage resolution, regardless of turn order modifiers.
 
+- **`f.magical-counter`(actor: , opponent: ,phase: ) :** IF actor.`a.magical-counter` and actor can magical attack, the actor magic attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`, and actor.`f.NoA` x 0.5, round up)
+    - Magical counter triggers immediately after damage resolution, regardless of turn order modifiers.
+
+
 ### 6.3 Turn resolution 
 **Speed & Turn Order (Rolling Dice Rule)**
 - At the start of each phase (LONG / MID / CLOSE), **each actor** (enemy + each party member) rolls initiative.
@@ -230,6 +234,8 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 - **Coutner:** `f.counter`(actor:enemy , opponent:character ,phase: )
   - **Re-counter** If opponent.`a.re-counter`, `f.re-counter`(actor:character , opponent:enemy ,phase: )
 - **Re-attack**: IF enemy.`a.re-attack`, the enemy attacks to characters. (using f.hit_detection, f.damage_calculation, and enemy.f.NoA x 0.5, round up)
+- **Magical counter:** If opponent.`a.magical-counter` and phase is MID, `f.magical-counter`(actor:character , opponent:enemy ,phase: )
+
 - *Note:* Nth_hit is global for all enemy attacks in the phase (not per-target)
 
 
