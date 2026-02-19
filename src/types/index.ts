@@ -91,7 +91,7 @@ export interface Bonus {
 export type AbilityId =
   | 'first_strike' | 'hunter' | 'defender' | 'counter' | 're_attack'
   | 'iaigiri' | 'resonance' | 'command' | 'm_barrier' | 'deflection' | 'null_counter' | 'unlock'
-  | 'squander' | 'tithe' | 'seeker' | 'resurrect';
+  | 'squander' | 'tithe' | 'seeker' | 'resurrect' | 'rage' | 're_counter';
 
 export interface Ability {
   id: AbilityId;
@@ -393,6 +393,7 @@ export interface BattleLogEntry {
   damage?: number;
   hits?: number; // Number of successful hits
   totalAttempts?: number; // Total number of attack attempts
+  rageBonusPercent?: number; // 闘志 bonus shown in battle log
   isFirstStrike?: boolean;
   isCounter?: boolean;
   isReAttack?: boolean;
