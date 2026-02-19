@@ -81,6 +81,21 @@ const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
 const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
 const AFK_MAX_ELAPSED_MS = 600 * 60 * 1000;
 const HEADER_HEIGHT_CLASS = 'pt-[108px]';
+const RACE_ICON_SOURCES = RACES
+  .map((race) => race.icon)
+  .filter((icon): icon is string => Boolean(icon))
+  .map((icon) => (
+    icon.startsWith('/')
+      ? `${import.meta.env.BASE_URL}${icon.replace(/^\//, '')}`
+      : icon
+  ));
+
+function preloadRaceIcons(): void {
+  RACE_ICON_SOURCES.forEach((iconSrc) => {
+    const image = new Image();
+    image.src = iconSrc;
+  });
+}
 
 function getExplorationDurationMs(entryCount?: number): number {
   const exploredSteps = Math.max(1, Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, entryCount ?? EXPLORING_PROGRESS_TOTAL_STEPS));
@@ -858,6 +873,10 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const afkSummaryBaselineRef = useRef<Array<{ victories: number; retreats: number; defeats: number; donatedGold: number; savedGold: number }> | null>(null);
   const shouldShowAfkSummaryRef = useRef(false);
   const { partyStats, characterStats } = computePartyStats(currentParty);
+
+  useEffect(() => {
+    preloadRaceIcons();
+  }, []);
 
   useEffect(() => {
     if (hasHydratedAfkRef.current) return;
