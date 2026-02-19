@@ -3009,10 +3009,12 @@ function ExpeditionTab({
                               {entry.details.map((log, j) => {
                                 const isPhaseAction = log.actor !== 'deity' && log.actor !== 'effect';
                                 const previousLog = j > 0 ? entry.details[j - 1] : undefined;
-                                const previousWasPhaseAction = !!previousLog && previousLog.actor !== 'deity' && previousLog.actor !== 'effect';
-                                const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousWasPhaseAction || previousLog.phase !== log.phase);
-                                const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
                                 const isStealthEffectLog = log.actor === 'effect' && log.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！');
+                                const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && previousLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！');
+                                const previousWasPhaseAction = !!previousLog && (previousLog.actor !== 'deity' && previousLog.actor !== 'effect');
+                                const previousContinuesCurrentPhase = !!previousLog && (previousWasPhaseAction || previousWasStealthEffectLog);
+                                const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousContinuesCurrentPhase || previousLog.phase !== log.phase);
+                                const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
                                 const phaseLabel = isPhaseAction
                                   ? (log.isCounter ? '-' : `${log.initiativeRoll ?? '?'}`)
                                   : log.actor === 'deity' ? '末' : isStealthEffectLog ? '-' : '効';
@@ -3595,10 +3597,12 @@ function DiaryTab({
                             {entry.details.map((battleLog, j) => {
                               const isPhaseAction = battleLog.actor !== 'deity' && battleLog.actor !== 'effect';
                               const previousLog = j > 0 ? entry.details[j - 1] : undefined;
-                              const previousWasPhaseAction = !!previousLog && previousLog.actor !== 'deity' && previousLog.actor !== 'effect';
-                              const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousWasPhaseAction || previousLog.phase !== battleLog.phase);
-                              const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
                               const isStealthEffectLog = battleLog.actor === 'effect' && battleLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！');
+                              const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && previousLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！');
+                              const previousWasPhaseAction = !!previousLog && (previousLog.actor !== 'deity' && previousLog.actor !== 'effect');
+                              const previousContinuesCurrentPhase = !!previousLog && (previousWasPhaseAction || previousWasStealthEffectLog);
+                              const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousContinuesCurrentPhase || previousLog.phase !== battleLog.phase);
+                              const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
                               const phaseLabel = isPhaseAction
                                 ? (battleLog.isCounter ? '-' : `${battleLog.initiativeRoll ?? '?'}`)
                                 : battleLog.actor === 'deity' ? '末' : isStealthEffectLog ? '-' : '効';
