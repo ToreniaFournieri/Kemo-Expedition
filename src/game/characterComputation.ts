@@ -613,7 +613,7 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     covering_fire: () => '味方の近接が1回の時、遠距離攻撃する（攻撃回数半減）',
     peddler: () => '移動時間(移動中/帰還中)が2/3になる',
     composure: () => '物理/魔法命中率+10%加算',
-    magical_counter: () => '魔法攻撃に対して魔法攻撃で反撃する(攻撃回数半減)',
+    magical_counter: () => '魔法には魔法で反撃する(攻撃回数半減)',
     focus: () => '命中ボーナスの効果が1.2倍になる',
     prophecy: () => '報酬抽選内容が見えるようになる',
     stealth: () => 'HP24%未満の時、自身へのダメージをすべて回避する',
