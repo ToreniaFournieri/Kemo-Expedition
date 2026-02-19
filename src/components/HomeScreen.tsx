@@ -1663,6 +1663,19 @@ function PartyTab({
     return Math.max(0, stats.maxEquipSlots - nextStats.maxEquipSlots);
   };
 
+  const hasEquippedItemInReducedSlots = (edits: Partial<Character> | null): boolean => {
+    const changedKeys = getChangedEditKeys(edits);
+    if (changedKeys.length === 0) return false;
+
+    const nextCharacter = { ...char, ...edits };
+    const nextStats = computeCharacterStats(nextCharacter, party.level);
+    if (nextStats.maxEquipSlots >= stats.maxEquipSlots) return false;
+
+    return char.equipment
+      .slice(nextStats.maxEquipSlots, stats.maxEquipSlots)
+      .some((item) => item != null);
+  };
+
   const completeCharacterEdit = () => {
     const changedKeys = getChangedEditKeys(pendingEdits);
 
@@ -1682,7 +1695,7 @@ function PartyTab({
     }
 
     const equipSlotReductionCount = getEquipSlotReductionCount(pendingEdits);
-    if (equipSlotReductionCount === 0) {
+    if (equipSlotReductionCount === 0 || !hasEquippedItemInReducedSlots(pendingEdits)) {
       onUpdateCharacter(char.id, pendingEdits ?? {});
       setPendingEdits(null);
       setEditingCharacter(null);
