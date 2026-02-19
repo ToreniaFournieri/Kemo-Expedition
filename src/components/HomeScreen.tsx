@@ -13,6 +13,7 @@ import { applyEnemyEncounterScaling } from '../game/enemyScaling';
 import { DEITY_OPTIONS, getDeityEffectDescription, getDeityRank, getNextDonationThreshold, normalizeDeityName } from '../game/deity';
 import { LEVEL_EXP } from '../game/partyLevel';
 import { createEnvironmentStorageKey, getEnvLabel } from '../game/environment';
+import { getBaseMultiplier } from '../game/baseMultiplier';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -418,6 +419,14 @@ function getOffenseMultiplierSum(items: Item[], kind: 'melee' | 'ranged' | 'magi
   }, 0);
 
   return 1 + bonusSum;
+}
+
+function getBaseOffenseScale(value: number): number {
+  return getBaseMultiplier(value, 'attack');
+}
+
+function getBaseDefenseScale(value: number): number {
+  return getBaseMultiplier(value, 'defense');
 }
 
 function getElementalOffenseHelpLines(character: Character, stats: ComputedCharacterStats): string[] {
@@ -1357,11 +1366,11 @@ function PartyTab({
     magicalNoA: selectedStats.magicalNoA,
     physDef: Math.floor(selectedStats.physicalDefense),
     magDef: Math.floor(selectedStats.magicalDefense),
-    physicalDefenseResistPercent: Math.round(getDefenseMultiplierSum(equippedItems, 'physical') * 100),
-    magicalDefenseResistPercent: Math.round(getDefenseMultiplierSum(equippedItems, 'magical') * 100),
-    meleeAttackAmp: getOffenseMultiplierSum(equippedItems, 'melee'),
-    rangedAttackAmp: getOffenseMultiplierSum(equippedItems, 'ranged'),
-    magicalAttackAmp: getOffenseMultiplierSum(equippedItems, 'magical'),
+    physicalDefenseResistPercent: Math.round(Math.max(0.01, getDefenseMultiplierSum(equippedItems, 'physical') * getBaseDefenseScale(selectedStats.baseStats.vitality) + selectedStats.deityDefenseAmplifierBonus.physical) * 100),
+    magicalDefenseResistPercent: Math.round(Math.max(0.01, getDefenseMultiplierSum(equippedItems, 'magical') * getBaseDefenseScale(selectedStats.baseStats.mind) + selectedStats.deityDefenseAmplifierBonus.magical) * 100),
+    meleeAttackAmp: ((selectedStats.abilities.some(a => a.id === 'iaigiri') ? (selectedStats.abilities.find(a => a.id === 'iaigiri')?.level === 2 ? 2.5 : 2.0) : 1.0) * getOffenseMultiplierSum(equippedItems, 'melee') + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.strength),
+    rangedAttackAmp: ((selectedStats.abilities.some(a => a.id === 'iaigiri') ? (selectedStats.abilities.find(a => a.id === 'iaigiri')?.level === 2 ? 2.5 : 2.0) : 1.0) * getOffenseMultiplierSum(equippedItems, 'ranged') + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.strength),
+    magicalAttackAmp: (getOffenseMultiplierSum(equippedItems, 'magical') + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.intelligence),
     accuracy: Math.round(selectedStats.accuracyBonus * 1000),
     evasion: Math.round(selectedStats.evasionBonus * 1000),
     hp: Math.floor(partyStats.hp),
@@ -1594,10 +1603,10 @@ function PartyTab({
   const lineage = LINEAGES.find(l => l.id === char.lineageId)!;
 
   const baseStatMultiplierRows = [
-    { label: '体力', value: stats.baseStats.vitality, note: '物理防御力', ratio: stats.baseStats.vitality / 10 },
-    { label: '力', value: stats.baseStats.strength, note: '遠距離攻撃力/近接攻撃力', ratio: stats.baseStats.strength / 10 },
-    { label: '知性', value: stats.baseStats.intelligence, note: '魔法攻撃力', ratio: stats.baseStats.intelligence / 10 },
-    { label: '精神', value: stats.baseStats.mind, note: '魔法防御力', ratio: stats.baseStats.mind / 10 },
+    { label: '体力', value: stats.baseStats.vitality, note: '防御倍率', ratio: getBaseDefenseScale(stats.baseStats.vitality) },
+    { label: '力', value: stats.baseStats.strength, note: '攻撃倍率(遠距離/近接)', ratio: getBaseOffenseScale(stats.baseStats.strength) },
+    { label: '知性', value: stats.baseStats.intelligence, note: '攻撃倍率(魔法)', ratio: getBaseOffenseScale(stats.baseStats.intelligence) },
+    { label: '精神', value: stats.baseStats.mind, note: '防御倍率(魔法耐性)', ratio: getBaseDefenseScale(stats.baseStats.mind) },
   ];
 
   const hpStatMultiplier = (stats.baseStats.vitality + stats.baseStats.mind) / 20;
@@ -2065,7 +2074,7 @@ function PartyTab({
                   <div className="space-y-1">
                     {baseStatMultiplierRows.map((row) => (
                       <div key={row.label}>
-                        {row.label}: {formatNumber(row.value)} ({row.note} x{row.ratio.toFixed(1)})
+                        {row.label}: {formatNumber(row.value)} ({row.note} x{row.ratio.toFixed(2)})
                       </div>
                     ))}
                   </div>
@@ -2087,6 +2096,10 @@ function PartyTab({
                 // Calculate offense amplifiers per phase
                 const iaigiri = stats.abilities.find(a => a.id === 'iaigiri');
                 const iaigiriMultiplier = iaigiri ? (iaigiri.level >= 2 ? 2.5 : 2.0) : 1.0;
+                const strengthScale = getBaseOffenseScale(stats.baseStats.strength);
+                const intelligenceScale = getBaseOffenseScale(stats.baseStats.intelligence);
+                const vitalityScale = getBaseDefenseScale(stats.baseStats.vitality);
+                const mindScale = getBaseDefenseScale(stats.baseStats.mind);
                 const hasRanged = stats.rangedAttack > 0 || stats.rangedNoA > 0;
                 const hasMagical = stats.magicalAttack > 0 || stats.magicalNoA > 0;
                 const hasMelee = stats.meleeAttack > 0 || stats.meleeNoA > 0;
@@ -2122,8 +2135,7 @@ function PartyTab({
                 // Build offense lines
                 const offenseLines: StatusLine[] = [];
                 if (hasRanged) {
-                  const rangedBaseMult = iaigiri ? (1 + ((baseMultMelee - 1) * iaigiriMultiplier)) : baseMultRanged;
-                  const amp = (1.0 + stats.deityOffenseAmplifierBonus) * rangedBaseMult * (iaigiri ? iaigiriMultiplier : 1.0);
+                  const amp = ((iaigiri ? iaigiriMultiplier : 1.0) * baseMultRanged + stats.deityOffenseAmplifierBonus) * strengthScale;
                   offenseLines.push({
                     key: 'ranged-attack',
                     text: `遠距離攻撃:${formatNumber(Math.floor(stats.rangedAttack))} x ${formatNumber(stats.rangedNoA)}回(x${amp.toFixed(2)})`,
@@ -2136,7 +2148,7 @@ function PartyTab({
                   });
                 }
                 if (hasMagical) {
-                  const amp = (1.0 + stats.deityOffenseAmplifierBonus) * baseMultMagical;
+                  const amp = (1.0 * baseMultMagical + stats.deityOffenseAmplifierBonus) * intelligenceScale;
                   offenseLines.push({
                     key: 'magical-attack',
                     text: `魔法攻撃:${formatNumber(Math.floor(stats.magicalAttack))} x ${formatNumber(stats.magicalNoA)}回(x${amp.toFixed(2)})`,
@@ -2149,8 +2161,7 @@ function PartyTab({
                   });
                 }
                 if (hasMelee) {
-                  const meleeBaseMult = iaigiri ? (1 + ((baseMultMelee - 1) * iaigiriMultiplier)) : baseMultMelee;
-                  const amp = (1.0 + stats.deityOffenseAmplifierBonus) * meleeBaseMult * (iaigiri ? iaigiriMultiplier : 1.0);
+                  const amp = ((iaigiri ? iaigiriMultiplier : 1.0) * baseMultMelee + stats.deityOffenseAmplifierBonus) * strengthScale;
                   offenseLines.push({
                     key: 'melee-attack',
                     text: `近接攻撃:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}回(x${amp.toFixed(2)})`,
@@ -2189,8 +2200,8 @@ function PartyTab({
                 }
 
                 // Defense lines
-                const defenseAmpPhysical = Math.max(0.01, defenseMultPhysical + stats.deityDefenseAmplifierBonus.physical);
-                const defenseAmpMagical = Math.max(0.01, defenseMultMagical + stats.deityDefenseAmplifierBonus.magical);
+                const defenseAmpPhysical = Math.max(0.01, defenseMultPhysical * vitalityScale + stats.deityDefenseAmplifierBonus.physical);
+                const defenseAmpMagical = Math.max(0.01, defenseMultMagical * mindScale + stats.deityDefenseAmplifierBonus.magical);
                 const elementName = stats.elementalOffense === 'fire' ? '🔥' :
                   stats.elementalOffense === 'thunder' ? '⚡' :
                   stats.elementalOffense === 'ice' ? '❄️' : '無';

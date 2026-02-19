@@ -272,8 +272,6 @@ export interface GlobalState {
 export interface ComputedPartyStats {
   hp: number;
   currentHp: number;
-  physicalDefense: number;
-  magicalDefense: number;
   elementalResistance: Record<ElementalResistance, number>;
   abilities: Ability[];
   offenseAmplifier: number;

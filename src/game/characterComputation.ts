@@ -16,6 +16,7 @@ import { getClassById } from '../data/classes';
 import { getPredispositionById } from '../data/predispositions';
 import { getLineageById } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
+import { getBaseMultiplier } from './baseMultiplier';
 
 // Get enhancement and super rare multiplier for an item
 function getItemEnhancementMultiplier(item: Item): number {
@@ -414,11 +415,6 @@ export function computeCharacterStats(
   elementalOffense = selectedElement;
   elementalOffenseValue = 1 + selectedElementBonus;
 
-  // Apply base stats scaling
-  rangedAttack = rangedAttack * (baseStats.strength / 10);
-  meleeAttack = meleeAttack * (baseStats.strength / 10);
-  magicalAttack = magicalAttack * (baseStats.intelligence / 10);
-
   // Add pursuit bonus to ranged NoA
   const rangedNoAFixedBonus = Array.from(rangedNoAFixedBonuses).reduce((sum, v) => sum + v, 0);
   rangedNoA += collection.pursuit + rangedNoAFixedBonus;
@@ -445,8 +441,8 @@ export function computeCharacterStats(
   meleeNoA = Math.ceil(meleeNoA);
 
   // Calculate individual defense stats
-  // d.physical_defense = Item Bonuses of Physical defense x its c.multiplier x enhancement x b.vitality / 10
-  // d.magical_defense = Item Bonuses of Magical defense x its c.multiplier x enhancement x b.mind / 10
+  // d.physical_defense = Item Bonuses of Physical defense x enhancement multiplier x super rare multiplier x c.multiplier
+  // d.magical_defense = Item Bonuses of Magical defense x enhancement multiplier x super rare multiplier x c.multiplier
   let physicalDefense = 0;
   let magicalDefense = 0;
   let physicalDefenseAmplifier = 1.0;
@@ -470,10 +466,10 @@ export function computeCharacterStats(
   physicalDefenseBonus = getUniqueCBonusSum(equippedItems, 'physical_defense');
   magicalDefenseBonus = getUniqueCBonusSum(equippedItems, 'magical_defense');
 
-  physicalDefense = physicalDefense * (baseStats.vitality / 10);
-  magicalDefense = magicalDefense * (baseStats.mind / 10);
-  physicalDefenseAmplifier = Math.max(0.01, 1 - physicalDefenseBonus);
-  magicalDefenseAmplifier = Math.max(0.01, 1 - magicalDefenseBonus);
+  const vitalityDefenseScale = getBaseMultiplier(baseStats.vitality, 'defense');
+  const mindDefenseScale = getBaseMultiplier(baseStats.mind, 'defense');
+  physicalDefenseAmplifier = Math.max(0.01, (1 - physicalDefenseBonus) * vitalityDefenseScale);
+  magicalDefenseAmplifier = Math.max(0.01, (1 - magicalDefenseBonus) * mindDefenseScale);
 
   // Build abilities list
   const abilities: Ability[] = [];

@@ -13,6 +13,7 @@ import {
   RandomBag,
 } from '../types';
 import { computePartyStats } from './partyComputation';
+import { getBaseMultiplier } from './baseMultiplier';
 import { drawFromBag, createPhysicalThreatBag, createMagicalThreatBag } from './bags';
 
 interface BattleContext {
@@ -270,17 +271,14 @@ function calculateCharacterDamage(
   const iaigiriMultiplier = iaigiri ? (iaigiri.level >= 2 ? 2.5 : 2.0) : 1.0;
   const cBonus = phase === 'mid'
     ? getUniqueOffenseBonusSum('magical')
-    : (iaigiri && (phase === 'long' || phase === 'close'))
-      ? getUniqueOffenseBonusSum('melee') * iaigiriMultiplier
-      : phase === 'long'
-        ? getUniqueOffenseBonusSum('ranged')
-        : getUniqueOffenseBonusSum('melee');
-  let offenseAmplifier = 1.0 + cBonus + charStats.deityOffenseAmplifierBonus;
-
-  // iaigiri physical damage bonus applies to LONG/CLOSE physical phases
-  if (iaigiri && (phase === 'long' || phase === 'close')) {
-    offenseAmplifier *= iaigiriMultiplier;
-  }
+    : phase === 'long'
+      ? getUniqueOffenseBonusSum('ranged')
+      : getUniqueOffenseBonusSum('melee');
+  const phaseAttackScale = phase === 'mid'
+    ? getBaseMultiplier(charStats.baseStats.intelligence, 'attack')
+    : getBaseMultiplier(charStats.baseStats.strength, 'attack');
+  const phaseMultiplier = phase === 'mid' ? 1.0 : iaigiriMultiplier;
+  const offenseAmplifier = (phaseMultiplier * (1.0 + cBonus) + charStats.deityOffenseAmplifierBonus) * phaseAttackScale;
 
   const resonance = charStats.abilities.find(a => a.id === 'resonance');
 
