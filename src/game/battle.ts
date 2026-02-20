@@ -57,6 +57,10 @@ function hasStealth(charStats: ComputedCharacterStats): boolean {
   return charStats.abilities.some(a => a.id === 'stealth');
 }
 
+function hasIllusion(charStats: ComputedCharacterStats): boolean {
+  return charStats.abilities.some(a => a.id === 'illusion');
+}
+
 function isStealthActive(charStats: ComputedCharacterStats, partyHp: number, maxPartyHp: number): boolean {
   if (!hasStealth(charStats)) return false;
   if (maxPartyHp <= 0) return false;
@@ -492,6 +496,7 @@ export function executeBattle(
   let enemyHp = enemy.hp;
   const log: BattleLogEntry[] = [];
   const consumedResurrectCharacterIds = new Set<number>();
+  const consumedIllusionCharacterIds = new Set<number>();
 
   const createPartyEffectEntry = (
     classId: 'fighter' | 'lord' | 'sage',
@@ -566,14 +571,23 @@ export function executeBattle(
     let damage = 0;
     let appliedHits = 0;
     let avoidedByStealth = false;
-    for (let i = 0; i < hits; i++) {
-      if (isStealthActive(targetCharStats, partyHp, partyStats.hp)) {
-        avoidedByStealth = true;
-        continue;
+    const avoidedByIllusion = (
+      hasIllusion(targetCharStats)
+      && !consumedIllusionCharacterIds.has(targetCharStats.characterId)
+    );
+
+    if (avoidedByIllusion) {
+      consumedIllusionCharacterIds.add(targetCharStats.characterId);
+    } else {
+      for (let i = 0; i < hits; i++) {
+        if (isStealthActive(targetCharStats, partyHp, partyStats.hp)) {
+          avoidedByStealth = true;
+          continue;
+        }
+        appliedHits += 1;
+        damage += singleDamage;
+        partyHp -= singleDamage;
       }
-      appliedHits += 1;
-      damage += singleDamage;
-      partyHp -= singleDamage;
     }
 
     const triggeredResurrect = (
@@ -600,6 +614,14 @@ export function executeBattle(
       isCounter: true,
       elementalOffense: enemy.elementalOffense,
     });
+
+    if (avoidedByIllusion) {
+      log.push({
+        phase: 'close',
+        actor: 'effect',
+        action: `${targetName} への攻撃はすべて幻だった！`,
+      });
+    }
 
     if (avoidedByStealth) {
       log.push({
@@ -793,15 +815,24 @@ export function executeBattle(
             const targetName = targetChar?.name ?? '???';
             let appliedHits = 0;
             let avoidedByStealth = false;
+            const avoidedByIllusion = (
+              hasIllusion(attack.charStats)
+              && !consumedIllusionCharacterIds.has(charId)
+            );
             attack.damage = 0;
-            for (let i = 0; i < attack.hits; i++) {
-              if (isStealthActive(attack.charStats, partyHp, partyStats.hp)) {
-                avoidedByStealth = true;
-                continue;
+
+            if (avoidedByIllusion) {
+              consumedIllusionCharacterIds.add(charId);
+            } else {
+              for (let i = 0; i < attack.hits; i++) {
+                if (isStealthActive(attack.charStats, partyHp, partyStats.hp)) {
+                  avoidedByStealth = true;
+                  continue;
+                }
+                appliedHits += 1;
+                attack.damage += attack.singleDamage;
+                partyHp -= attack.singleDamage;
               }
-              appliedHits += 1;
-              attack.damage += attack.singleDamage;
-              partyHp -= attack.singleDamage;
             }
 
             const triggeredResurrect = (
@@ -828,6 +859,14 @@ export function executeBattle(
               isReAttack: isReAttack || undefined,
               elementalOffense: enemy.elementalOffense,
             });
+
+            if (avoidedByIllusion) {
+              log.push({
+                phase,
+                actor: 'effect',
+                action: `${targetName} への攻撃はすべて幻だった！`,
+              });
+            }
 
             if (avoidedByStealth) {
               log.push({
@@ -920,8 +959,16 @@ export function executeBattle(
               reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, partyStats, attack.charStats, enemyHp);
             }
 
-            const avoidedReCounterByStealth = isStealthActive(attack.charStats, partyHp, partyStats.hp);
-            if (avoidedReCounterByStealth) {
+            const avoidedReCounterByIllusion = (
+              hasIllusion(attack.charStats)
+              && !consumedIllusionCharacterIds.has(charId)
+            );
+            const avoidedReCounterByStealth = !avoidedReCounterByIllusion && isStealthActive(attack.charStats, partyHp, partyStats.hp);
+            if (avoidedReCounterByIllusion) {
+              consumedIllusionCharacterIds.add(charId);
+              reCounterDamage = 0;
+              reCounterHits = 0;
+            } else if (avoidedReCounterByStealth) {
               reCounterDamage = 0;
               reCounterHits = 0;
             }
@@ -954,6 +1001,14 @@ export function executeBattle(
               isCounter: true,
               elementalOffense: enemy.elementalOffense,
             });
+
+            if (avoidedReCounterByIllusion) {
+              log.push({
+                phase,
+                actor: 'effect',
+                action: `${targetName} への攻撃はすべて幻だった！`,
+              });
+            }
 
             if (avoidedReCounterByStealth) {
               log.push({

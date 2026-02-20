@@ -566,6 +566,7 @@ function getAbilityName(id: AbilityId, level: number): string {
     focus: '集中',
     prophecy: '予言',
     stealth: '隠れ蓑',
+    illusion: '幻化',
   };
   if (
     (
@@ -578,6 +579,7 @@ function getAbilityName(id: AbilityId, level: number): string {
       || id === 'resonance'
       || id === 'command'
       || id === 'm_barrier'
+      || id === 'illusion'
     )
     && level >= 1
   ) {
@@ -617,6 +619,7 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     focus: () => '命中ボーナスの効果が1.2倍になる',
     prophecy: () => '報酬抽選内容が見えるようになる',
     stealth: () => 'HP24%未満の時、自身へのダメージをすべて回避する',
+    illusion: () => '自分が受ける最初のダメージを無効化する',
   };
   return descriptions[id](level);
 }

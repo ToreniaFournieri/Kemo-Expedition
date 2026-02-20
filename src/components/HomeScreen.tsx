@@ -243,6 +243,7 @@ const POTENTIAL_DEFAULT_NAMES: Record<RaceId, string[]> = {
   leporian: ['フブキ', 'ハル', 'トワ', 'ユキ', 'ナギ', 'ミナ', 'サラ', 'アオイ', 'レイナ', 'カスミ'],
   cervin: ['サイカ', 'カナエ', 'リンネ', 'ミコト', 'ユズリハ', 'シオン', 'セツナ', 'トキ', 'マヒロ', 'ツムギ'],
   murid: ['チュウタ', 'ネズミ丸', 'カゲ', 'コソネ', 'スズ', 'コマ', 'ヒソカ', 'ネム', 'チビ', 'クルミ'],
+  procyonian: ['ポンタ', 'マメ', 'コウタ', 'シゲ', 'ミナト', 'コロ', 'ツヅミ', 'ハヤ', 'ノノ', 'ムジナ'],
 };
 
 
@@ -613,6 +614,7 @@ const ABILITY_NAMES: Record<string, string> = {
   focus: '集中',
   prophecy: '予言',
   stealth: '隠れ蓑',
+  illusion: '幻化',
 };
 
 const C_MULTIPLIER_HELP_DESCRIPTIONS: Record<string, string> = {
@@ -3155,7 +3157,7 @@ function ExpeditionTab({
                               {entry.details.map((log, j) => {
                                 const isPhaseAction = log.actor !== 'deity' && log.actor !== 'effect';
                                 const previousLog = j > 0 ? entry.details[j - 1] : undefined;
-                                const isStealthEffectLog = log.actor === 'effect' && log.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！');
+                                const isStealthEffectLog = log.actor === 'effect' && (log.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || log.action.includes('への攻撃はすべて幻だった！'));
                                 const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && previousLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！');
                                 const previousWasPhaseAction = !!previousLog && (previousLog.actor !== 'deity' && previousLog.actor !== 'effect');
                                 const previousContinuesCurrentPhase = !!previousLog && (previousWasPhaseAction || previousWasStealthEffectLog);
@@ -3743,7 +3745,7 @@ function DiaryTab({
                             {entry.details.map((battleLog, j) => {
                               const isPhaseAction = battleLog.actor !== 'deity' && battleLog.actor !== 'effect';
                               const previousLog = j > 0 ? entry.details[j - 1] : undefined;
-                              const isStealthEffectLog = battleLog.actor === 'effect' && battleLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！');
+                              const isStealthEffectLog = battleLog.actor === 'effect' && (battleLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || battleLog.action.includes('への攻撃はすべて幻だった！'));
                               const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && previousLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！');
                               const previousWasPhaseAction = !!previousLog && (previousLog.actor !== 'deity' && previousLog.actor !== 'effect');
                               const previousContinuesCurrentPhase = !!previousLog && (previousWasPhaseAction || previousWasStealthEffectLog);
