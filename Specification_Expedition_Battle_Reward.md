@@ -236,9 +236,10 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 ### 6.3 Turn resolution 
 **Speed & Turn Order (Rolling Dice Rule)**
 - At the start of each phase (LONG / MID / CLOSE), **each actor** (enemy + each party member) rolls initiative.
-  - Has `a.first-strike`2, **3d3**. (3~9)
-  - Has `a.first-strike`1, **2d3**. (2~6)
-  - Normal **1d3**. (1~3)
+  - `a.first-strike`3, roll **4d3** (4~12) cap the result at 9
+  - `a.first-strike`2, roll **3d3** (3~9)
+  - `a.first-strike`1, roll **2d3** (2~6)
+  - No `a.first-strike`, roll **1d3** (1~3)
 - Actions are resolved in descending order of roll result.
 - Tie-breaker: Enemy > Front row party members > Last row party member.
 
