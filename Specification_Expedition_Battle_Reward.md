@@ -249,7 +249,7 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
   	- If `f.hit_detection`(actor: , opponent: ,Nth_hit: the current hit index), current party.`d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
 - If current party.`d.HP` =< 0, if character.`a.resurrect`1, set `d.HP` = 1 and disable `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat.
 - If current party.`d.HP` =< 0, if character.`a.resurrect`2, set `d.HP` = 1% of (party.max_HP) and disable `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat. 
-- If (phase is LONG) and (character.`a.illusion`1) and (the `a.illusion` is enable), treats all incoming attack as miss hits, disable `a.illusion` for this battle. log "タヌキへの攻撃はすべて幻だった！".
+- If (phase is LONG) and (character.`a.illusion`1) and (the `a.illusion` is enable), treats all incoming attack as miss hits, disable `a.illusion` for this battle. log "ポンタへの攻撃はすべて幻だった！".
 - If (phase is LONG) and (party.character.`a.illusion`2) and (the `a.illusion` is enable), treats all incoming attack as miss hits, disable `a.illusion` for this battle. log "nameへの攻撃はすべて幻だった！".
 
 - **Coutner:** `f.counter`(actor:enemy , opponent:character ,phase: )
