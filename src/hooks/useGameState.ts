@@ -160,7 +160,7 @@ function addItemToInventory(
       ...existing,
       count: existing.count + 1,
       status: 'owned',
-      isNew: true,
+      isNew: existing.isNew ?? false,
     };
   } else {
     newInventory[key] = {
