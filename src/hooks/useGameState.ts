@@ -2,7 +2,6 @@ import { useReducer, useCallback, useEffect, useState } from 'react';
 import {
   GameState,
   Item,
-  ItemDef,
   Character,
   Party,
   RaceId,
@@ -41,9 +40,8 @@ import {
   createSuperRareBag,
   createPhysicalThreatBag,
   createMagicalThreatBag,
-  createVariantSelectionBag,
 } from '../game/bags';
-import { getItemById, getItemsByTierAndRarity, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
+import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { getItemDisplayName } from '../game/gameState';
 import { getDeityKey, getEffectiveDeityTier, normalizeDeityName } from '../game/deity';
@@ -227,7 +225,6 @@ function loadSavedState(): GameState | null {
         if (!parsed.bags.uncommonRewardBag) parsed.bags.uncommonRewardBag = createUncommonRewardBag();
         if (!parsed.bags.rareRewardBag) parsed.bags.rareRewardBag = createRareRewardBag();
         if (!parsed.bags.mythicRewardBag) parsed.bags.mythicRewardBag = createMythicRewardBag();
-        if (!parsed.bags.dropVariantBags) parsed.bags.dropVariantBags = {};
 
         if (!parsed.global) {
           const firstParty = parsed.parties?.[0];
@@ -464,7 +461,6 @@ function createInitialState(): GameState {
       superRareBag: createSuperRareBag(),
       physicalThreatBag: createPhysicalThreatBag(),
       magicalThreatBag: createMagicalThreatBag(),
-      dropVariantBags: {},
     },
     buildNumber: BUILD_NUMBER,
   };
@@ -559,35 +555,6 @@ function getRewardBagTypeForRarity(rarity: 'common' | 'uncommon' | 'rare' | 'myt
   return 'commonRewardBag';
 }
 
-function pickVariantByBag(
-  baseItem: ItemDef,
-  bags: GameState['bags']
-): { selectedItem: ItemDef; bags: GameState['bags'] } {
-  const rarity = getItemRarityById(baseItem.id);
-  const tier = Math.floor(baseItem.id / 1000);
-  const variants = getItemsByTierAndRarity(tier, rarity).filter(item => item.category === baseItem.category);
-  if (variants.length <= 1) {
-    return { selectedItem: baseItem, bags };
-  }
-
-  const bagKey = `${tier}:${rarity}:${baseItem.category}`;
-  const currentBag = bags.dropVariantBags[bagKey] ?? createVariantSelectionBag(variants.length);
-  const refillBag = currentBag.tickets.length > 0 ? currentBag : createVariantSelectionBag(variants.length);
-  const { ticket, newBag } = drawFromBag(refillBag);
-  const selectedIndex = Math.max(0, Math.min(variants.length - 1, ticket - 1));
-
-  return {
-    selectedItem: variants[selectedIndex] ?? baseItem,
-    bags: {
-      ...bags,
-      dropVariantBags: {
-        ...bags.dropVariantBags,
-        [bagKey]: newBag,
-      },
-    },
-  };
-}
-
 function getRarityRank(rarity: 'common' | 'uncommon' | 'rare' | 'mythic'): number {
   if (rarity === 'mythic') return 4;
   if (rarity === 'rare') return 3;
@@ -632,10 +599,7 @@ function resolveEnemyRewards(
     : (fallbackItem ? [fallbackItem] : []);
 
   for (const baseItem of baseDropItems) {
-    const variantResult = pickVariantByBag(baseItem, bags);
-    bags = variantResult.bags;
-    const selectedBaseItem = variantResult.selectedItem;
-    const baseRarity = getItemRarityById(selectedBaseItem.id);
+    const baseRarity = getItemRarityById(baseItem.id);
     const rewardBagType = getRewardBagTypeForRarity(baseRarity);
     const enhancementBagType = rewardBagType === 'commonRewardBag' ? 'commonEnhancementBag' : 'enhancementBag';
 
@@ -665,7 +629,7 @@ function resolveEnemyRewards(
       srVal = drawnSrVal;
     }
 
-    const newItem: Item = { ...selectedBaseItem, enhancement: enhVal, superRare: srVal };
+    const newItem: Item = { ...baseItem, enhancement: enhVal, superRare: srVal };
     const itemName = getItemDisplayName(newItem);
     const result = addItemToInventory(inventory, newItem, gold, autoSellMultiplier);
     recoveredItems.push(newItem);
@@ -1667,20 +1631,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           superRareBag: createSuperRareBag(),
           physicalThreatBag: createPhysicalThreatBag(),
           magicalThreatBag: createMagicalThreatBag(),
-          dropVariantBags: {},
         },
         buildNumber: BUILD_NUMBER,
       };
     }
 
     case 'IMPORT_GAME_STATE': {
-      const hydrated = hydrateGameState(action.state);
       return {
-        ...hydrated,
-        bags: {
-          ...hydrated.bags,
-          dropVariantBags: hydrated.bags.dropVariantBags ?? {},
-        },
+        ...hydrateGameState(action.state),
         buildNumber: BUILD_NUMBER,
       };
     }
@@ -1706,7 +1664,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           rareRewardBag: createRareRewardBag(),
           mythicRewardBag: createMythicRewardBag(),
           enhancementBag: createEnhancementBag(),
-          dropVariantBags: {},
         },
       };
     }

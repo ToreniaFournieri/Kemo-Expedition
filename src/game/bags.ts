@@ -89,14 +89,6 @@ export function createMagicalThreatBag(): RandomBag {
   return { tickets: shuffleArray(tickets) };
 }
 
-
-// Variant selection bag: contains a single ticket for each candidate index (1..N)
-export function createVariantSelectionBag(candidateCount: number): RandomBag {
-  if (candidateCount <= 0) return { tickets: [] };
-  const tickets = Array.from({ length: candidateCount }, (_, index) => index + 1);
-  return { tickets: shuffleArray(tickets) };
-}
-
 export function initializeBags(): GameBags {
   return {
     commonRewardBag: createCommonRewardBag(),
@@ -108,7 +100,6 @@ export function initializeBags(): GameBags {
     superRareBag: createSuperRareBag(),
     physicalThreatBag: createPhysicalThreatBag(),
     magicalThreatBag: createMagicalThreatBag(),
-    dropVariantBags: {},
   };
 }
 
