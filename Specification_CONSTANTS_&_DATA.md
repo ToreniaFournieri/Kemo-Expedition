@@ -166,8 +166,8 @@ d. bonus (stackable)
 | `a.prophecy`2 | 予言2 | 報酬抽選内容が見える、リセット出来るようになる |
 | `a.stealth`1 | 隠れ蓑1 | HP24%未満の時、自身へのダメージをすべて回避する|
 | `a.stealth`2 | 隠れ蓑2 | HP29%未満の時、自身へのダメージをすべて回避する|
-| `a.illusion`1 | 幻化1 | 自分が受ける最初のダメージを無効化する |
-| `a.illusion`2 | 幻化2 | パーティーが受ける最初のダメージを無効化する |
+| `a.illusion`1 | 幻化1 | 自分が受ける最初の遠距離攻撃を無効化する |
+| `a.illusion`2 | 幻化2 | パーティーが受ける最初の遠距離攻撃を無効化する |
 
 
 **e. 属性攻撃(重複有効)**
@@ -331,7 +331,7 @@ d. bonus (stackable)
 |レポリアン(Leporian) | `a.composure`1 | `a.magical-counter`1 | 園攻略 | `c.archery_x1.3`,  `c.armor_x1.3` |9,8,11,10| 🐰Rabbit |
 |セルヴィン(Cervin)  | `a.focus`1 | `a.prophecy`1 | 谷攻略 |`c.wand_x1.3`, `c.shield_x1.2` |8,7,13,10| 🦌Deer |
 |ミュリッド(Murid) | `a.stealth`1 | (none) | (none) |`c.penet_+0.10`, `c.bolt_x1.3`  |9,8,10,10| 🐭Mouse |
-|プロキオニアン(Procyonian) | `a.illusion`1 | (none) | (none) |`c.equip_slot+1`, `c.grimoire_x1.3`  |11,13,11,6| 🦝Tanuki |
+|プロキオニアン(Procyonian) | `a.illusion`1 | (none) | (none) |`c.equip_slot+1`, `c.grimoire_x1.3`  |9,8,10,6| 🦝Tanuki |
 
 - note: 未来視はパーティ単位で管理する方針に　神聖局で、セルヴィンがいる場合に表示可能、またコストを払ってリセットも可能に(詳細は今後検討)
 
