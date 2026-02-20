@@ -14,7 +14,6 @@ import {
   ExpeditionLogEntry,
   BattleLogEntry,
   InventoryRecord,
-  InventoryVariant,
   getVariantKey,
   GameNotification,
   NotificationStyle,
@@ -43,6 +42,7 @@ import {
   createMagicalThreatBag,
 } from '../game/bags';
 import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
+import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { getItemDisplayName } from '../game/gameState';
 import { getDeityKey, getEffectiveDeityTier, normalizeDeityName } from '../game/deity';
 import {
@@ -226,17 +226,6 @@ function loadSavedState(): GameState | null {
         if (!parsed.bags.rareRewardBag) parsed.bags.rareRewardBag = createRareRewardBag();
         if (!parsed.bags.mythicRewardBag) parsed.bags.mythicRewardBag = createMythicRewardBag();
 
-        const mergeWithBaseItem = (item: Item): Item => {
-          const baseItem = getItemById(item.id);
-          if (!baseItem) return item;
-          return {
-            ...baseItem,
-            enhancement: item.enhancement,
-            superRare: item.superRare,
-            isNew: item.isNew,
-          };
-        };
-
         if (!parsed.global) {
           const firstParty = parsed.parties?.[0];
           parsed.global = {
@@ -288,24 +277,9 @@ function loadSavedState(): GameState | null {
           }
           party.deityGold = parsed.global.deityDonations[normalizedDeityName] ?? 0;
 
-          // Merge latest item definitions onto saved items (for new fields like baseMultiplier)
-          for (const character of party.characters ?? []) {
-            if (Array.isArray(character.equipment)) {
-              character.equipment = character.equipment.map((item: Item | null) => {
-                if (!item) return null;
-                return mergeWithBaseItem(item);
-              });
-            }
-          }
         }
 
-        for (const variant of Object.values(parsed.global.inventory) as InventoryVariant[]) {
-          if (variant?.item) {
-            variant.item = mergeWithBaseItem(variant.item);
-          }
-        }
-
-        return parsed as GameState;
+        return hydrateGameState(parsed as GameState);
       }
     }
   } catch (e) {
@@ -316,7 +290,8 @@ function loadSavedState(): GameState | null {
 
 function saveState(state: GameState): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeGameState(state)));
+
   } catch (e) {
     console.error('Failed to save state:', e);
   }
@@ -1663,7 +1638,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'IMPORT_GAME_STATE': {
       return {
-        ...action.state,
+        ...hydrateGameState(action.state),
         buildNumber: BUILD_NUMBER,
       };
     }
