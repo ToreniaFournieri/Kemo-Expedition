@@ -597,7 +597,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
   // Index 5: gauntlet (籠手) - +meleeNoA
   {
     category: 'gauntlet',
-    variant1Mod: { meleeNoA: 0.1 },
+    variant1Mod: { partyHP: 2 },
     variant2Mod: { physicalDefense: 1 },
     variant3Mod: { meleeAttack: 1 },
     mythicBonusMod: { strengthBonus: 1 },
@@ -644,7 +644,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
   // Index 11: catalyst (触媒) - +magicalNoA
   {
     category: 'catalyst',
-    variant1Mod: { magicalNoA: 0.1 },
+    variant1Mod: { magicalDefense: 1 },
     variant2Mod: { elementalOffense: 'fire' },
     variant3Mod: { elementalOffense: 'thunder' },
     mythicBonusMod: { intelligenceBonus: 1 },
