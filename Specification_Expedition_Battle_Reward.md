@@ -134,7 +134,8 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
     - If actor has `a.momentum`2, return 1.5 - (1 - 0.75 x (actor.current_HP / actor.max_HP))
   - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
 
-  - If opponent.`a.stealth` and (opponent.current_HP / opponent.max_HP) <= 0.24, damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
+  - If opponent.`a.stealth`1 and (opponent.current_HP / opponent.max_HP) <= 0.24, damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
+ - If opponent.`a.stealth`2 and (opponent.current_HP / opponent.max_HP) <= 0.29, damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
     - note: This is only for party member ability. enemy should not have this `a.stealth` ability.
 
 **Row-based modifier** 
@@ -183,21 +184,23 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
   - MID phase ignores row-based accuracy potency, so has fixed potency (1.0).
 
 - **`d.accuracy_potency`**
-  - If character.`a.composure`, min(1, `d.accuracy_potency` + 0.1)
+  - If character.`a.composure`1, min(1, `d.accuracy_potency` + 0.10)
+  - If character.`a.composure`2, min(1, `d.accuracy_potency` + 0.13)
 
-|row | normal | `a.hunter`1 | `a.hunter`2 |
-|---|---|---|---|
-|1| 1.00 | 1.00 | 1.00 |
-|2| 0.85 | 0.90 | 0.93 |
-|3| 0.72 | 0.81 | 0.86 |
-|4| 0.61 | 0.73 | 0.80 |
-|5| 0.52 | 0.66 | 0.75 |
-|6| 0.44 | 0.59 | 0.70 |
+|row | normal | `a.hunter`1 | `a.hunter`2 | `a.hunter`3 |
+|---|---|---|---|---|
+|1| 1.00 | 1.00 | 1.00 | 1.00 |
+|2| 0.85 | 0.90 | 0.93 | 0.95 |
+|3| 0.72 | 0.81 | 0.86 | 0.90 |
+|4| 0.61 | 0.73 | 0.80 | 0.86 |
+|5| 0.52 | 0.66 | 0.75 | 0.81 |
+|6| 0.44 | 0.59 | 0.70 | 0.77 |
 
 
 - `f.hit_detection`(actor: , opponent: ,Nth_hit: )
   - For all pahse, LONG, MID, CLOSE.
-  - If actor.`a.focus`, `f.c_accuracy+v` =  actor.`c.accuracy+v` x 1.2 (rounding up to the 3rd decimal ex. 0.003 * 1.2 = 0.0036 → 0.004)
+  - If actor.`a.focus`1, `f.c_accuracy+v` =  actor.`c.accuracy+v` x 1.2 (rounding up to the 3rd decimal ex. 0.003 * 1.2 = 0.0036 → 0.004)
+  - If actor.`a.focus`2, `f.c_accuracy+v` =  actor.`c.accuracy+v` x 1.3 (rounding up to the 3rd decimal)
   - decay_of_accuracy: clamp(0.86, 0.90 + actor.`f.c_accuracy+v` - opponent.`c.evasion+v`, 0.98)
   - baseChance = actor.d.accuracy_potency
   - if opponent has a.deflection AND phase == LONG: baseChance -= 0.10
@@ -208,7 +211,7 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
   - Roll: Return Random(0, 1.0) <= chance
  
 
-- **`f.counter`(actor: , opponent: ,phase: ) :** IF actor.`a.counter` and (opponent or party members have not `a.null-counter`) and take damage in CLOSE phase, the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`, and actor.`f.NoA` x 0.5, round up)
+- **`f.counter`(actor: , opponent: ,phase: ) :** IF (opponent or party members have not `a.null-counter`) and {(actor.`a.counter`1, phase is CLOSE) or (actor.`a.counter`2, phase is (CLOSE or MID)) or (actor.`a.counter`3)}, the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`, and actor.`f.NoA` x 0.5, round up)
     - Counter triggers immediately after damage resolution, regardless of turn order modifiers.
     - IF actor.`a.counter` and (opponent or party member have `a.null-counter`), displays log like : “巡礼者ブラザの反撃無効化により、二枚爪の黒豹のカウンターは防がれた！”
     - *note:* if opponent is character, then check party.`a.null-counter`. if at least one party member has `a.null-counter`, nagete the counter attack.
@@ -225,6 +228,8 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
     - covering fire triggers immediately after damage resolution, regardless of turn order modifiers.
 
 - **`f.magical-counter`(actor: , opponent: ,phase: ) :** IF actor.`a.magical-counter` and actor can magical attack, the actor magic attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`, and actor.`f.NoA` x 0.5, round up)
+  	- `a.magical-counter`1:   actor.`f.NoA` x 0.5, round up
+  	- `a.magical-counter`2:   actor.`f.NoA` x 1.0
     - Magical counter triggers immediately after damage resolution, regardless of turn order modifiers.
 
 
@@ -243,7 +248,8 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
   	- If `f.hit_detection`(actor: , opponent: ,Nth_hit: the current hit index), current party.`d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
 - If current party.`d.HP` =< 0, if character.`a.resurrect`1, set `d.HP` = 1 and disable `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat.
 - If current party.`d.HP` =< 0, if character.`a.resurrect`2, set `d.HP` = 1% of (party.max_HP) and disable `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat. 
-- If character.`a.illusion` and the `a.illusion` is enable, treats all incoming attack as miss hits, disable `a.illusion` for this battle. log "タヌキへの攻撃はすべて幻だった！".
+- If character.`a.illusion`1 and the `a.illusion` is enable, treats all incoming attack as miss hits, disable `a.illusion` for this battle. log "タヌキへの攻撃はすべて幻だった！".
+- If character.`a.illusion`2 and the `a.illusion` is enable, treats all incoming attack as miss hits, disable `a.illusion` for this battle. log "nameへの攻撃はすべて幻だった！".
 
 - **Coutner:** `f.counter`(actor:enemy , opponent:character ,phase: )
   - **Re-counter** If opponent.`a.re-counter`, `f.re-counter`(actor:character , opponent:enemy ,phase: )
@@ -262,7 +268,10 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 - **Coutner:** `f.counter`(actor:character , opponent: enemy , phase:  )
    - **Re-counter** If opponent.`a.re-counter`, `f.re-counter`(actor:enemy , opponent:character ,phase: )
 
-- **Re-attack:** IF character.`a.re-attack`, the character attacks to enemy. (using `f.hit_detection`, `f.damage_calculation`, and character.`f.NoA` x 0.5, round up)
+- **Re-attack:** IF character.`a.re-attack`, the character attacks to enemy. (using `f.hit_detection`, `f.damage_calculation`)
+  	- `a.re-attack`1: One attack and character.`f.NoA` x 0.5, round up
+  	- `a.re-attack`2: **Two** attack and character.`f.NoA` x 0.5, round up
+  	- `a.re-attack`3: **Two** attack and character.`f.NoA` x 1.0
 
 - **Covering fire:** IF character.`a.covering-fire` and the actor's successful hit is only one and phase is CLOSE, `f.covering-fire`(actor:covering fire character , opponent:enemy)
 
