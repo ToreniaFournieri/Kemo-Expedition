@@ -161,8 +161,8 @@ export const RACES: Race[] = [
     englishName: 'Procyonian',
     emoji: '🦝',
     icon: '/race-icons/Procyonian.png',
-    stats: { vitality: 11, strength: 13, intelligence: 11, mind: 6 },
-    defaultAbility: { id: 'a.illusion1', name: '幻化1', description: '自分が受ける最初のダメージを無効化する' },
+    stats: { vitality: 9, strength: 8, intelligence: 10, mind: 6 },
+    defaultAbility: { id: 'a.illusion1', name: '幻化1', description: '自分が受ける最初の遠距離攻撃を無効化する' },
     memo: 'Tanuki',
     bonuses: [
       { type: 'equip_slot', value: 1 },

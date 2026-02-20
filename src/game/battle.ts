@@ -61,6 +61,10 @@ function hasIllusion(charStats: ComputedCharacterStats): boolean {
   return charStats.abilities.some(a => a.id === 'illusion');
 }
 
+function isIllusionActive(phase: BattlePhase, charStats: ComputedCharacterStats, consumedIllusionCharacterIds: Set<number>): boolean {
+  return phase === 'long' && hasIllusion(charStats) && !consumedIllusionCharacterIds.has(charStats.characterId);
+}
+
 function isStealthActive(charStats: ComputedCharacterStats, partyHp: number, maxPartyHp: number): boolean {
   if (!hasStealth(charStats)) return false;
   if (maxPartyHp <= 0) return false;
@@ -571,10 +575,7 @@ export function executeBattle(
     let damage = 0;
     let appliedHits = 0;
     let avoidedByStealth = false;
-    const avoidedByIllusion = (
-      hasIllusion(targetCharStats)
-      && !consumedIllusionCharacterIds.has(targetCharStats.characterId)
-    );
+    const avoidedByIllusion = isIllusionActive('close', targetCharStats, consumedIllusionCharacterIds);
 
     if (avoidedByIllusion) {
       consumedIllusionCharacterIds.add(targetCharStats.characterId);
@@ -815,10 +816,7 @@ export function executeBattle(
             const targetName = targetChar?.name ?? '???';
             let appliedHits = 0;
             let avoidedByStealth = false;
-            const avoidedByIllusion = (
-              hasIllusion(attack.charStats)
-              && !consumedIllusionCharacterIds.has(charId)
-            );
+            const avoidedByIllusion = isIllusionActive(phase, attack.charStats, consumedIllusionCharacterIds);
             attack.damage = 0;
 
             if (avoidedByIllusion) {
@@ -959,10 +957,7 @@ export function executeBattle(
               reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, partyStats, attack.charStats, enemyHp);
             }
 
-            const avoidedReCounterByIllusion = (
-              hasIllusion(attack.charStats)
-              && !consumedIllusionCharacterIds.has(charId)
-            );
+            const avoidedReCounterByIllusion = isIllusionActive(phase, attack.charStats, consumedIllusionCharacterIds);
             const avoidedReCounterByStealth = !avoidedReCounterByIllusion && isStealthActive(attack.charStats, partyHp, partyStats.hp);
             if (avoidedReCounterByIllusion) {
               consumedIllusionCharacterIds.add(charId);
@@ -1006,7 +1001,7 @@ export function executeBattle(
               log.push({
                 phase,
                 actor: 'effect',
-                action: `${targetName} への攻撃はすべて幻だった！`,
+                action: `${targetChar?.name ?? '???'} への攻撃はすべて幻だった！`,
               });
             }
 
