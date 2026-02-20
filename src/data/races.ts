@@ -16,7 +16,7 @@ export const RACES: Race[] = [
     unlockAbility: {
       id: 'a.resurrect',
       name: '再起',
-      description: '自分が受けた即死ダメージをHP1残して耐える',
+      description: '自分が受けた致命ダメージをHP1残して耐える',
     },
     unlockCondition: '原攻略',
     memo: 'Dog',

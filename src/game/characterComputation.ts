@@ -603,7 +603,7 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     squander: () => '宴会で消費するゴールドが2倍になる',
     tithe: () => '祈り時に寄付額へ探検利益の+10%を加算',
     seeker: () => '魔導書の効果増加(レベル毎に0.25%)',
-    resurrect: () => '即死ダメージをHP1残して耐える',
+    resurrect: () => '自分が受けた致命ダメージをHP1残して耐える',
     rage: () => '物理/魔法攻撃倍率増大(受けたダメージ1%につき1%増)',
     re_counter: () => '敵から反撃に対して、反撃する(攻撃回数半減)',
     momentum: () => '物理/魔法攻撃倍率1.5倍(受けたダメージ1%につき1%減)',
