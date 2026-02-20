@@ -76,7 +76,7 @@ function upgradeResonanceAbility(abilities: Ability[], upgradeTiers: number): Ab
       ...ability,
       name: `共鳴${nextLevel}`,
       level: nextLevel,
-      description: `全攻撃ヒット毎に魔攻撃回数×${perNoA}%の追加補正`,
+      description: `魔法攻撃1回毎に、全ヒットのダメージが +${perNoA}% 増加する`,
     };
   });
 }
