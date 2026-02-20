@@ -1872,19 +1872,19 @@ function PartyTab({
 
   const handleStatusHelpToggle = (key: string, event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
+    const triggerRect = event.currentTarget.getBoundingClientRect();
+    const viewportPadding = 12;
+    const tooltipWidth = Math.min(320, window.innerWidth - viewportPadding * 2);
+    const left = Math.min(
+      Math.max(triggerRect.left, viewportPadding),
+      window.innerWidth - viewportPadding - tooltipWidth,
+    );
+
     setActiveStatusHelpKey((current) => {
       if (current === key) {
         setActiveStatusHelpPosition(null);
         return null;
       }
-
-      const triggerRect = event.currentTarget.getBoundingClientRect();
-      const viewportPadding = 12;
-      const tooltipWidth = Math.min(320, window.innerWidth - viewportPadding * 2);
-      const left = Math.min(
-        Math.max(triggerRect.left, viewportPadding),
-        window.innerWidth - viewportPadding - tooltipWidth,
-      );
 
       setActiveStatusHelpPosition({
         top: triggerRect.bottom + 8,
