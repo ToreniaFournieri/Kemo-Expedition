@@ -231,7 +231,8 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 - Enemy always moves first.
 - `f.NoA` times, get `f.targeting` -> target character
   	- If `f.hit_detection`(actor: , opponent: ,Nth_hit: the current hit index), current party.`d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
-- If currenr party.`d.HP` =< 0, if character.`a.resurrect`, set `d.HP` = 1 and disable `a.resurrect` for this battle. log "[-] ケモは即死攻撃を食いしばって耐えた！" . Else,  Defeat. 
+- If current party.`d.HP` =< 0, if character.`a.resurrect`, set `d.HP` = 1 and disable `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat. 
+- If character.`a.illusion` and the `a.illusion` is enable, treats all incoming attack as miss hits, disable `a.illusion` for this battle. log "タヌキへの攻撃はすべて幻だった！".
 
 - **Coutner:** `f.counter`(actor:enemy , opponent:character ,phase: )
   - **Re-counter** If opponent.`a.re-counter`, `f.re-counter`(actor:character , opponent:enemy ,phase: )
