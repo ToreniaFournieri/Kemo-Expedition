@@ -243,6 +243,7 @@ const POTENTIAL_DEFAULT_NAMES: Record<RaceId, string[]> = {
   leporian: ['フブキ', 'ハル', 'トワ', 'ユキ', 'ナギ', 'ミナ', 'サラ', 'アオイ', 'レイナ', 'カスミ'],
   cervin: ['サイカ', 'カナエ', 'リンネ', 'ミコト', 'ユズリハ', 'シオン', 'セツナ', 'トキ', 'マヒロ', 'ツムギ'],
   murid: ['チュウタ', 'ネズミ丸', 'カゲ', 'コソネ', 'スズ', 'コマ', 'ヒソカ', 'ネム', 'チビ', 'クルミ'],
+  procyonian: ['ポンタ', 'マメ', 'コウタ', 'シゲ', 'ミナト', 'コロ', 'ツヅミ', 'ハヤ', 'ノノ', 'ムジナ'],
 };
 
 
@@ -613,6 +614,7 @@ const ABILITY_NAMES: Record<string, string> = {
   focus: '集中',
   prophecy: '予言',
   stealth: '隠れ蓑',
+  illusion: '幻化',
 };
 
 const C_MULTIPLIER_HELP_DESCRIPTIONS: Record<string, string> = {
