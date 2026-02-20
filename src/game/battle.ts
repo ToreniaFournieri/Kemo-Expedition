@@ -615,7 +615,7 @@ export function executeBattle(
         actor: 'character',
         characterId: targetCharStats.characterId,
         isCounter: true,
-        action: `${targetChar?.name ?? '???'} は即死攻撃を食いしばって耐えた！`,
+        action: `${targetChar?.name ?? '???'} は致死攻撃を食いしばって耐えた！`,
       });
     }
 
@@ -844,7 +844,7 @@ export function executeBattle(
                 actor: 'character',
                 characterId: charId,
                 isCounter: true,
-                action: `${resurrectedChar?.name ?? '???'} は即死攻撃を食いしばって耐えた！`,
+                action: `${resurrectedChar?.name ?? '???'} は致死攻撃を食いしばって耐えた！`,
               });
             }
 
@@ -969,7 +969,7 @@ export function executeBattle(
                 actor: 'character',
                 characterId: charId,
                 isCounter: true,
-                action: `${targetChar?.name ?? '???'} は即死攻撃を食いしばって耐えた！`,
+                action: `${targetChar?.name ?? '???'} は致死攻撃を食いしばって耐えた！`,
               });
             }
 
