@@ -709,11 +709,32 @@ export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
   const pickAny = (pool: ItemDef[], count: number, seed: number, excludeItemIds: number[] = []): ItemDef[] =>
     pickItems(pool.filter(item => !excludeItemIds.includes(item.id)), count, seed);
 
+  const pickUncommonVariantByCategory = (
+    category: ItemCategory,
+    poolGroup: number,
+    excludeItemIds: number[] = [],
+  ): ItemDef | undefined => {
+    const variantIndex = poolGroup <= 3 ? 0 : 1;
+    const candidates = uncommon
+      .filter(item => item.category === category && !excludeItemIds.includes(item.id))
+      .sort((a, b) => a.id - b.id);
+    if (candidates.length === 0) return undefined;
+    return candidates[Math.min(variantIndex, candidates.length - 1)];
+  };
+
   if (enemy.type === 'normal') {
     const drops: ItemDef[] = [];
     const uncommonCats = classUncommonCategories[enemy.enemyClass] ?? ['sword', 'gauntlet'];
-    const uncommon1 = pickByCategory(uncommon, uncommonCats[0], enemy.id) ?? pickAny(uncommon, 1, enemy.id)[0];
-    const uncommon2 = pickByCategory(uncommon, uncommonCats[1], enemy.id + 1) ?? pickAny(uncommon, 1, enemy.id + 1)[0];
+    const uncommon1 = pickUncommonVariantByCategory(uncommonCats[0], enemy.spawnPool)
+      ?? pickByCategory(uncommon, uncommonCats[0], enemy.id)
+      ?? pickAny(uncommon, 1, enemy.id)[0];
+    const uncommon2 = pickUncommonVariantByCategory(
+      uncommonCats[1],
+      enemy.spawnPool,
+      uncommon1 ? [uncommon1.id] : [],
+    )
+      ?? pickByCategory(uncommon, uncommonCats[1], enemy.id + 1, uncommon1 ? [uncommon1.id] : [])
+      ?? pickAny(uncommon, 1, enemy.id + 1, uncommon1 ? [uncommon1.id] : [])[0];
     if (uncommon1) drops.push(uncommon1);
     if (uncommon2) drops.push(uncommon2);
 
