@@ -698,12 +698,16 @@ export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
   const pickByCategory = (
     pool: ItemDef[],
     category: ItemCategory,
-    seed: number,
+    _seed: number,
     excludeItemIds: number[] = [],
   ): ItemDef | undefined => {
-    const candidates = pool.filter(item => item.category === category && !excludeItemIds.includes(item.id));
+    const candidates = pool
+      .filter(item => item.category === category && !excludeItemIds.includes(item.id))
+      .sort((a, b) => a.id - b.id);
     if (candidates.length === 0) return undefined;
-    return candidates[Math.abs(seed) % candidates.length];
+
+    // Category candidate selection is deterministic; actual variant rotation is handled by drop variant bags.
+    return candidates[0];
   };
 
   const pickAny = (pool: ItemDef[], count: number, seed: number, excludeItemIds: number[] = []): ItemDef[] =>

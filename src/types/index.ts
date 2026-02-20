@@ -428,6 +428,7 @@ export interface GameBags {
   superRareBag: RandomBag;
   physicalThreatBag: RandomBag;
   magicalThreatBag: RandomBag;
+  dropVariantBags: Record<string, RandomBag>; // For per-tier/rarity/category variant cycling
 }
 
 // Enhancement/SuperRare Title
