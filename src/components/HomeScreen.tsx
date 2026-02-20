@@ -697,7 +697,7 @@ function formatBonuses(bonuses: Bonus[]): string {
     } else if (b.type === 'grit') {
       parts.push(`根性+${b.value}`);
     } else if (b.type === 'caster') {
-      parts.push(`詠唱+${b.value}`);
+      parts.push(`術者+${b.value}`);
     } else if (b.type === 'penet') {
       parts.push(`貫通${Math.round(b.value * 100)}%`);
     } else if (b.type === 'pursuit') {
