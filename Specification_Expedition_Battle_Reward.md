@@ -124,8 +124,12 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 
 - `f.damage_calculation`: (actor: , opponent: , phase: )
 	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) ) x actor.`f.offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x opponent.`f.defense_amplifier` x party.`f.party.offense_amplifier` x `f.resonance_amplifier` x `f.rage_amplifier` x `f.momentum_amplifer` )
-  - `f.rage_amplifier`: If actor has `a.rage`, return min(2.0, 1.0 + (1 - (actor.current_HP / actor.max_HP)))
-  - `f.momentum_amplifer`: If actor has `a.momentum`, return 1.5 - (1 - (actor.current_HP / actor.max_HP))
+  - `f.rage_amplifier`:
+    - If actor has `a.rage`1, return min(2.0, 1.0 + (1 - (actor.current_HP / actor.max_HP)))
+    - If actor has `a.rage`2, return min(2.0, 1.0 + 1.2 x (1 - (actor.current_HP / actor.max_HP)))
+  - `f.momentum_amplifer`:
+    - If actor has `a.momentum`1, return 1.5 - (1 - (actor.current_HP / actor.max_HP))
+    - If actor has `a.momentum`2, return 1.5 - (1 - 0.75 x (actor.current_HP / actor.max_HP))
   - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
 
   - If opponent.`a.stealth` and (opponent.current_HP / opponent.max_HP) <= 0.24, damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
@@ -207,7 +211,9 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
     - IF actor.`a.counter` and (opponent or party member have `a.null-counter`), displays log like : “巡礼者ブラザの反撃無効化により、二枚爪の黒豹のカウンターは防がれた！”
     - *note:* if opponent is character, then check party.`a.null-counter`. if at least one party member has `a.null-counter`, nagete the counter attack.
 
-- **`f.re-counter`(actor: , opponent: ,phase: ) :** IF actor.`a.re-counter` and (opponent or party members have not `a.null-counter`), the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`, and actor.`f.NoA` x 0.5, round up)
+- **`f.re-counter`(actor: , opponent: ,phase: ) :** IF actor.`a.re-counter` and (opponent or party members have not `a.null-counter`), the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
+  	- `a.re-counter`1:   actor.`f.NoA` x 0.5, round up
+  	- `a.re-counter`2:   actor.`f.NoA` x 1.0
     - Re Counter triggers immediately after damage resolution, regardless of turn order modifiers.
 
 
@@ -231,7 +237,8 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 - Enemy always moves first.
 - `f.NoA` times, get `f.targeting` -> target character
   	- If `f.hit_detection`(actor: , opponent: ,Nth_hit: the current hit index), current party.`d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
-- If current party.`d.HP` =< 0, if character.`a.resurrect`, set `d.HP` = 1 and disable `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat. 
+- If current party.`d.HP` =< 0, if character.`a.resurrect`1, set `d.HP` = 1 and disable `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat.
+- If current party.`d.HP` =< 0, if character.`a.resurrect`2, set `d.HP` = 1% of (party.max_HP) and disable `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat. 
 - If character.`a.illusion` and the `a.illusion` is enable, treats all incoming attack as miss hits, disable `a.illusion` for this battle. log "タヌキへの攻撃はすべて幻だった！".
 
 - **Coutner:** `f.counter`(actor:enemy , opponent:character ,phase: )
