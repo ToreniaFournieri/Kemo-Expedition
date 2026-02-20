@@ -165,8 +165,8 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 
 - `f.targeting`:
   - If phase is LONG or CLOSE, Gets one ticket from `g.physical_threat_weight_bag`.
-    - `a.bulwark` redirect 
-	  if phase is LONG:
+    - `a.bulwark`1 or `a.bulwark`2 redirect 
+	  if (`a.bulwark`1 and phase is LONG) or (`a.bulwark`2 and phase is (LONG or CLOSE)):
 	      flont_character = party.unit_in_front_of(t)    // the unit directly ahead of selected character (one row closer to enemy)
 	      if flont_character != null and flont_character.has(a.bulwark):
 	          return flont_character
@@ -219,7 +219,9 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
     - Re Counter triggers immediately after damage resolution, regardless of turn order modifiers.
 
 
-- **`f.covering-fire`(actor: , opponent: ) :** IF actor.`a.covering-fire` and actor can ranged attack, the actor ranged attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`, and actor.`f.NoA` x 0.5, round up)
+- **`f.covering-fire`(actor: , opponent: ) :** IF actor.`a.covering-fire` and actor can ranged attack, the actor ranged attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
+  	- `a.covering-fire`1:   actor.`f.NoA` x 0.5, round up
+  	- `a.covering-fire`2:   actor.`f.NoA` x 1.0
     - covering fire triggers immediately after damage resolution, regardless of turn order modifiers.
 
 - **`f.magical-counter`(actor: , opponent: ,phase: ) :** IF actor.`a.magical-counter` and actor can magical attack, the actor magic attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`, and actor.`f.NoA` x 0.5, round up)
