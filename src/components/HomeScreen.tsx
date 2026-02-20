@@ -4531,9 +4531,6 @@ function SettingTab({
         <div className="space-y-4">
           <div>
             <div className="text-sm font-medium mb-1">5.1 バックアップ（Export）</div>
-            <div className="text-xs text-gray-500 mb-2">
-              現在のセーブデータをファイルとして書き出します。形式: Kemo-Expedition_Backup_[version]_[env]_YYYYMMDD
-            </div>
             <button
               onClick={handleExportBackup}
               className="w-full py-2 bg-sub text-white rounded font-medium"
@@ -4544,9 +4541,6 @@ function SettingTab({
 
           <div>
             <div className="text-sm font-medium mb-1">5.2 インポート（Import）</div>
-            <div className="text-xs text-gray-500 mb-2">
-              互換性チェックと基本整合性チェックを実行後、確認ダイアログで確定します。
-            </div>
             <input
               ref={importInputRef}
               type="file"
@@ -4564,9 +4558,6 @@ function SettingTab({
 
           <div>
             <div className="text-sm font-medium mb-1">5.3 フルリセット（Reset）</div>
-            <div className="text-xs text-accent mb-2 p-2 bg-orange-50 rounded border border-orange-200">
-              フルリセットはローカル保存データをすべて削除します。必ず確認のうえ実行してください。
-            </div>
             {!showResetConfirm ? (
               <button onClick={() => setShowResetConfirm(true)} className="w-full py-2 bg-accent text-white rounded font-medium">ゲームをリセット</button>
             ) : (
