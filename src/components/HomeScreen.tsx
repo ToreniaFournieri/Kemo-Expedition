@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, type Dispatch, type MouseEvent, type SetStateAction } from 'react';
+import { useState, useEffect, useRef, useCallback, type ChangeEvent, type Dispatch, type MouseEvent, type SetStateAction } from 'react';
 import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { DUNGEONS } from '../data/dungeons';
@@ -12,7 +12,7 @@ import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { applyEnemyEncounterScaling } from '../game/enemyScaling';
 import { DEITY_OPTIONS, getDeityEffectDescription, getDeityRank, getNextDonationThreshold, normalizeDeityName } from '../game/deity';
 import { LEVEL_EXP } from '../game/partyLevel';
-import { createEnvironmentStorageKey, getEnvLabel } from '../game/environment';
+import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../game/environment';
 import { getBaseMultiplier } from '../game/baseMultiplier';
 import { computeCharacterStats } from '../game/characterComputation';
 import {
@@ -50,6 +50,7 @@ interface HomeScreenProps {
     updateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
     simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean) => void;
     resetGame: () => void;
+    importGameState: (state: GameState) => void;
     resetCommonBags: () => void;
     resetUniqueBags: () => void;
     resetSuperRareBag: () => void;
@@ -1388,9 +1389,12 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
 
         {activeTab === 'setting' && (
           <SettingTab
+            gameState={state}
             deityDonations={state.global.deityDonations}
             bags={bags}
             onResetGame={actions.resetGame}
+            onImportGameState={actions.importGameState}
+            onAddNotification={actions.addNotification}
             onResetCommonBags={actions.resetCommonBags}
             onResetUniqueBags={actions.resetUniqueBags}
             onResetSuperRareBag={actions.resetSuperRareBag}
@@ -3831,9 +3835,12 @@ function DiaryTab({
 }
 
 function SettingTab({
+  gameState,
   deityDonations,
   bags,
   onResetGame,
+  onImportGameState,
+  onAddNotification,
   onResetCommonBags,
   onResetUniqueBags,
   onResetSuperRareBag,
@@ -3844,9 +3851,17 @@ function SettingTab({
   bestiaryScrollTop,
   onSetBestiaryScrollTop,
 }: {
+  gameState: GameState;
   deityDonations: Record<string, number>;
   bags: GameBags;
   onResetGame: () => void;
+  onImportGameState: (state: GameState) => void;
+  onAddNotification: (
+    message: string,
+    style?: NotificationStyle,
+    category?: NotificationCategory,
+    isPositive?: boolean
+  ) => void;
   onResetCommonBags: () => void;
   onResetUniqueBags: () => void;
   onResetSuperRareBag: () => void;
@@ -3858,10 +3873,134 @@ function SettingTab({
   onSetBestiaryScrollTop: Dispatch<SetStateAction<number>>;
 }) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const importInputRef = useRef<HTMLInputElement | null>(null);
   const [compendiumCategory, setCompendiumCategory] = useState<string>('armor');
   const [compendiumRarityFilter, setCompendiumRarityFilter] = useState<RarityFilter>('all');
   const [expandedCompendiumItems, setExpandedCompendiumItems] = useState<Record<number, boolean>>({});
   const bestiaryListRef = useRef<HTMLDivElement | null>(null);
+
+  const versionTag = 'v0.2.9';
+  const currentEnv = getEnvironmentId();
+
+  const getBackupFileName = (): string => {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = `${now.getMonth() + 1}`.padStart(2, '0');
+    const dd = `${now.getDate()}`.padStart(2, '0');
+    return `Kemo-Expedition_Backup_${versionTag}_${currentEnv}_${yyyy}${mm}${dd}.json`;
+  };
+
+  const handleExportBackup = () => {
+    const payload = {
+      meta: {
+        app: 'Kemo-Expedition',
+        version: versionTag,
+        env: currentEnv,
+        exportedAt: new Date().toISOString(),
+      },
+      saveData: gameState,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = getBackupFileName();
+    anchor.click();
+    URL.revokeObjectURL(url);
+    onAddNotification('バックアップをエクスポートしました', 'normal', 'item', true);
+  };
+
+  const handleImportFile = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    try {
+      const rawText = await file.text();
+      const parsed = JSON.parse(rawText) as unknown;
+      const source = parsed && typeof parsed === 'object' && 'saveData' in parsed
+        ? (parsed as { saveData: unknown }).saveData
+        : parsed;
+
+      if (!source || typeof source !== 'object') {
+        window.alert('インポート失敗: 保存データ形式が不正です。');
+        return;
+      }
+
+      const saveData = source as Partial<GameState>;
+      const issues: string[] = [];
+
+      if (!Array.isArray(saveData.parties)) issues.push('parties が存在しない、または配列ではありません。');
+      if (!saveData.global || typeof saveData.global !== 'object') {
+        issues.push('global が存在しません。');
+      } else {
+        if (typeof saveData.global.gold !== 'number') issues.push('global.gold が存在しない、または数値ではありません。');
+        if (!saveData.global.inventory || typeof saveData.global.inventory !== 'object') issues.push('global.inventory が存在しません。');
+      }
+      if (!saveData.bags || typeof saveData.bags !== 'object') {
+        issues.push('bags が存在しません。');
+      } else {
+        const requiredBags: Array<keyof GameState['bags']> = [
+          'commonRewardBag',
+          'commonEnhancementBag',
+          'uncommonRewardBag',
+          'rareRewardBag',
+          'mythicRewardBag',
+          'enhancementBag',
+          'superRareBag',
+          'physicalThreatBag',
+          'magicalThreatBag',
+        ];
+        const missingBags = requiredBags.filter((bagKey) => !(bagKey in saveData.bags!));
+        if (missingBags.length > 0) {
+          issues.push(`bags に不足があります: ${missingBags.join(', ')}`);
+        }
+      }
+      if (typeof saveData.selectedPartyIndex !== 'number') issues.push('selectedPartyIndex が存在しない、または数値ではありません。');
+      if (typeof saveData.buildNumber !== 'number') issues.push('buildNumber が存在しない、または数値ではありません。');
+
+      if (Array.isArray(saveData.parties)) {
+        if (saveData.parties.length === 0) {
+          issues.push('parties が空です。');
+        }
+        saveData.parties.forEach((party, index) => {
+          if (!party || typeof party !== 'object') {
+            issues.push(`party[${index}] が不正です。`);
+            return;
+          }
+          if (!Array.isArray(party.characters)) issues.push(`party[${index}].characters が存在しない、または配列ではありません。`);
+        });
+      }
+
+      if (parsed && typeof parsed === 'object' && 'meta' in parsed) {
+        const meta = (parsed as { meta?: { version?: string; env?: string } }).meta;
+        if (meta?.version && meta.version !== versionTag) {
+          issues.push(`バージョン差異: 現在 ${versionTag} / ファイル ${meta.version}`);
+        }
+        if (meta?.env && meta.env !== currentEnv) {
+          issues.push(`環境差異: 現在 ${currentEnv} / ファイル ${meta.env}`);
+        }
+      }
+
+      if (issues.length > 0) {
+        const shouldContinue = window.confirm(
+          `検証時に注意事項が見つかりました:\n\n- ${issues.join('\n- ')}\n\nこのままインポートを適用しますか？`
+        );
+        if (!shouldContinue) return;
+      }
+
+      const shouldImport = window.confirm(
+        'インポートを実行すると現在のセーブデータは完全に置き換わります。\nこの操作は取り消せません。実行しますか？'
+      );
+      if (!shouldImport) return;
+
+      onImportGameState(saveData as GameState);
+      onAddNotification('バックアップをインポートしました', 'normal', 'item', true);
+    } catch (error) {
+      console.error(error);
+      window.alert('インポート失敗: JSONの解析に失敗しました。');
+    }
+  };
 
   useEffect(() => {
     bestiaryListRef.current?.scrollTo({ top: bestiaryScrollTop, behavior: 'auto' });
@@ -4386,8 +4525,53 @@ function SettingTab({
         </div>
       </div>
 
+      <div className="bg-pane rounded-lg p-4 mb-4">
+        <div className="text-sm font-medium mb-3">5. ゲーム設定</div>
+        <div className="space-y-4">
+          <div>
+            <div className="text-sm font-medium mb-1">5.1 バックアップ（Export）</div>
+            <div className="text-xs text-gray-500 mb-2">
+              現在のセーブデータをファイルとして書き出します。形式: Kemo-Expedition_Backup_[version]_[env]_YYYYMMDD
+            </div>
+            <button
+              onClick={handleExportBackup}
+              className="w-full py-2 bg-sub text-white rounded font-medium"
+            >
+              バックアップをダウンロード
+            </button>
+          </div>
+
+          <div>
+            <div className="text-sm font-medium mb-1">5.2 インポート（Import）</div>
+            <div className="text-xs text-gray-500 mb-2">
+              互換性チェックと基本整合性チェックを実行後、確認ダイアログで確定します。
+            </div>
+            <input
+              ref={importInputRef}
+              type="file"
+              accept="application/json,.json"
+              onChange={handleImportFile}
+              className="hidden"
+            />
+            <button
+              onClick={() => importInputRef.current?.click()}
+              className="w-full py-2 bg-sub text-white rounded font-medium"
+            >
+              バックアップファイルを選択
+            </button>
+          </div>
+
+          <div>
+            <div className="text-sm font-medium mb-1">5.3 フルリセット（Reset）</div>
+            <div className="text-xs text-accent mb-2 p-2 bg-orange-50 rounded border border-orange-200">
+              フルリセットはローカル保存データをすべて削除します。必ず確認のうえ実行してください。
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="bg-pane rounded-lg p-4">
-        <div className="text-sm font-medium mb-2">4. ゲームリセット</div>
+        <div className="text-sm font-medium mb-2">5.3 リセット実行</div>
         {!showResetConfirm ? (
           <button onClick={() => setShowResetConfirm(true)} className="w-full py-2 bg-accent text-white rounded font-medium">ゲームをリセット</button>
         ) : (

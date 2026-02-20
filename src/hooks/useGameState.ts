@@ -513,6 +513,7 @@ type GameAction =
   | { type: 'UPDATE_DIARY_SETTINGS'; partyIndex: number; settings: Partial<DiarySettings> }
   | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean }
   | { type: 'RESET_GAME' }
+  | { type: 'IMPORT_GAME_STATE'; state: GameState }
   | { type: 'RESET_COMMON_BAGS' }
   | { type: 'RESET_UNIQUE_BAGS' }
   | { type: 'RESET_SUPER_RARE_BAG' };
@@ -1660,6 +1661,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'IMPORT_GAME_STATE': {
+      return {
+        ...action.state,
+        buildNumber: BUILD_NUMBER,
+      };
+    }
+
     case 'RESET_COMMON_BAGS': {
       return {
         ...state,
@@ -1850,6 +1858,10 @@ export function useGameState() {
 
     resetGame: useCallback(() => {
       dispatch({ type: 'RESET_GAME' });
+    }, []),
+
+    importGameState: useCallback((nextState: GameState) => {
+      dispatch({ type: 'IMPORT_GAME_STATE', state: nextState });
     }, []),
 
     resetCommonBags: useCallback(() => {
