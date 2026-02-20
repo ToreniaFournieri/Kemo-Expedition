@@ -248,6 +248,7 @@ function getAbilityName(id: AbilityId, level: number): string {
     focus: '集中',
     prophecy: '予言',
     stealth: '隠れ蓑',
+    illusion: '幻化',
   };
   if (
     (
@@ -260,6 +261,7 @@ function getAbilityName(id: AbilityId, level: number): string {
       || id === 'resonance'
       || id === 'command'
       || id === 'm_barrier'
+      || id === 'illusion'
     )
     && level >= 1
   ) {

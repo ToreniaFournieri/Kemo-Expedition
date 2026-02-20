@@ -156,6 +156,21 @@ export const RACES: Race[] = [
     ],
   },
   {
+    id: 'procyonian',
+    name: 'プロキオニアン',
+    englishName: 'Procyonian',
+    emoji: '🦝',
+    icon: '/race-icons/Procyonian.png',
+    stats: { vitality: 11, strength: 13, intelligence: 11, mind: 6 },
+    defaultAbility: { id: 'a.illusion1', name: '幻化1', description: '自分が受ける最初のダメージを無効化する' },
+    memo: 'Tanuki',
+    bonuses: [
+      { type: 'equip_slot', value: 1 },
+      { type: 'grimoire_multiplier', value: 1.3 },
+      { type: 'ability', value: 1, abilityId: 'illusion', abilityLevel: 1 },
+    ],
+  },
+  {
     id: 'murid',
     name: 'ミュリッド',
     englishName: 'Murid',

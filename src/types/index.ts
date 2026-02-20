@@ -5,7 +5,7 @@ export type ElementalResistance = 'fire' | 'thunder' | 'ice';
 // Race Types
 export type RaceId =
   | 'caninian' | 'lupinian' | 'vulpinian' | 'ursan'
-  | 'felidian' | 'mustelid' | 'leporian' | 'cervin' | 'murid';
+  | 'felidian' | 'mustelid' | 'leporian' | 'cervin' | 'murid' | 'procyonian';
 
 export interface Race {
   id: RaceId;
@@ -94,7 +94,7 @@ export type AbilityId =
   | 'iaigiri' | 'resonance' | 'command' | 'm_barrier' | 'deflection' | 'null_counter' | 'unlock'
   | 'squander' | 'tithe' | 'seeker' | 'resurrect' | 'rage' | 're_counter' | 'momentum' | 'cunning'
   | 'bulwark' | 'cyborgization' | 'covering_fire' | 'peddler' | 'composure' | 'magical_counter'
-  | 'focus' | 'prophecy' | 'stealth';
+  | 'focus' | 'prophecy' | 'stealth' | 'illusion';
 
 export interface Ability {
   id: AbilityId;
