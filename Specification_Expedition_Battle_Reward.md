@@ -203,7 +203,7 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
   - If actor.`a.focus`2, `f.c_accuracy+v` =  actor.`c.accuracy+v` x 1.3 (rounding up to the 3rd decimal)
   - decay_of_accuracy: clamp(0.86, 0.90 + actor.`f.c_accuracy+v` - opponent.`c.evasion+v`, 0.98)
   - baseChance = actor.d.accuracy_potency
-  - if opponent has a.deflection AND phase == LONG: baseChance -= 0.10
+  - If opponent has `a.deflection`2 AND phase == LONG: baseChance -= 0.15. Else if opponent has `a.deflection`1 AND phase == LONG: baseChance -= 0.10
   - chance = clamp(0.0, baseChance, 1.0) x (decay ^ (Nth_hit - 1))
     - Note: Nth_hit starts at 1 for the first strike.
     - Note: Nth_hit counts indevisually and not share with normal attack, re-attack and counter. (Nth_hit is reset per attack sequence)
