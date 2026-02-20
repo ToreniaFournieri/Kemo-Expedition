@@ -497,13 +497,13 @@ HP: 312                 経験値: 88
 
 ```
 
-**4. Game Setting**
-  - 4.1 Backup (Export)
+**5. Game Setting**
+  - 5.1 Backup (Export)
     - Allow the player to export the current save data as a file download.
     - File name format: `Kemo-Expedition_Backup_[version]_[env]_YYYYMMDD`
     - Example: `Kemo-Expedition_Backup_v0.2.9_qa_20260220`
 
-  - 4.2 Import
+  - 5.2 Import
     - Allow the player to import save data via file upload.
 	- Before importing, run validation checks:
 	  - File format compatibility check
@@ -512,6 +512,6 @@ HP: 312                 経験値: 88
    - If any issue is detected, show a clear warning and require explicit confirmation before applying import.
    - On success, replace current save data with the imported data.
 
-  - 4.3 Reset
+  - 5.3 Reset
     - Provide a Full Reset option that deletes all local save data.
     - Always show a strong warning and require confirmation before execution.
