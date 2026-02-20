@@ -206,9 +206,9 @@
   - 睡眠中: at home. Duration 10 sec
   - 祈り中: at home, donate 10–33% of previous expedition profit, if party has `a.tithe`, Adds +10% of expedition profit to donation. remaining profits to global gold wallet. duration 5 sec (if profit = 0 → donate 0G, but still pray). The deity earns that amount of gold (keep record internally, later vision it may use this gold for something). Notification: Without Tithe: PT1は10G神に捧げ、30Gを貯金した/With Tithe: PT1 巡礼者ブラザは祈りと共に12G神に捧げて、28Gを貯金した/ Without Gold: (no notification)
   - 待機中: at home, only when 自動周回 = OFF (idle state)
-  - 移動中: home → dungeon, duration 5 sec. If party.character.`a.peddler`, reduce its duration.
+  - 移動中: home → dungeon, duration 5 sec. If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5)
   - 探索中: in dungeon, advance 1 room / sec, update HP per room; if HP < 30% MaxHP → retreat. At the end of this state, update this {ルピニアンの断崖踏破} part )
-  - 帰還中: dungeon → home, duration 5 sec.  If party.character.`a.peddler`, reduce its duration. Back to 休息中
+  - 帰還中: dungeon → home, duration 5 sec.  If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) Back to 休息中
 
 - Player taps 出撃/一斉出撃
   - If party is in 待機中 / 休息中 / 宴会中 / 祈り中:
