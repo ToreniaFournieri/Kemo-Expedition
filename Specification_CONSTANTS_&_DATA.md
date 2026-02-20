@@ -471,12 +471,14 @@ d. bonus (stackable)
   
 | `x.Spawn_pool` | enemy class/drop 1 | enemy class/drop 2 | enemy class/drop 3 | enemy class/drop 4 | enemy class/drop 5 |
 |---|---|---|---|---|---|
-| pool_1 | E01:Fighter/ uncommon `i.sword`, `i.gauntlet` | E02:Ranger/ uncommon `i.arrow`, `i.archery` | E03:Wizard/ uncommon `i.wand`, `i.catalyst` | E04:Pilgrim/ uncommon `i.sword`, `i.wand` | E05:Rogue/ uncommon `i.bolt`, `i.shield ` |
-| pool_2 | E06:Ninja/ uncommon `i.katana`, `i.armor` | E07:Samurai/ uncommon `i.katana`, `i.bolt` | E08:Sage/ uncommon `i.grimoire`, `i.robe` | E09:Duelist/ uncommon `i.sword`, `i.arrow` | E10:Lord/ uncommon `i.shield `, `i.robe` |
-| pool_3 | E11:Fighter/ uncommon `i.sword`, `i.gauntlet` | E12:Ranger/ uncommon `i.arrow`, `i.archery` | E13:Wizard/ uncommon `i.wand`, `i.catalyst` | E14:Lord/ uncommon `i.shield `, `i.robe` | E15:Samurai/ uncommon `i.katana`, `i.bolt` |
-| pool_4 | E16:Ninja/ uncommon `i.katana`, `i.armor` | E17:Rogue/ uncommon `i.bolt`, `i.shield `| E18:Sage/ uncommon `i.grimoire`, `i.robe` | E19:Duelist/ uncommon `i.sword`, `i.arrow` | E20:Pilgrim/ uncommon `i.sword`, `i.wand` |
-| pool_5 | E21:Fighter/ uncommon `i.sword`, `i.gauntlet` | E22:Ranger/ uncommon `i.arrow`, `i.archery` | E23:Wizard/ uncommon `i.wand`, `i.catalyst` | E24:Lord/ uncommon `i.shield `, `i.robe` | E25:Samurai/ uncommon `i.katana`, `i.bolt` |
-| pool_6 | E26:Ninja/ uncommon `i.katana`, `i.armor` | E27:Rogue/ uncommon `i.bolt`, `i.shield `| E28:Sage/ uncommon `i.grimoire`, `i.robe` | E29:Duelist/ uncommon `i.sword`, `i.arrow` | E30:Pilgrim/ uncommon `i.sword`, `i.wand` |
+| pool_1 | E01:Fighter/ uncommon `i.sword`1, `i.gauntlet`1 | E02:Ranger/ uncommon `i.arrow1`, `i.archery`1 | E03:Wizard/ uncommon `i.wand`1, `i.catalyst`1 | E04:Pilgrim/ uncommon `i.sword`1, `i.wand`1 | E05:Rogue/ uncommon `i.bolt`1, `i.shield`1 |
+| pool_2 | E06:Ninja/ uncommon `i.katana`1, `i.armor`1 | E07:Samurai/ uncommon `i.katana`1, `i.bolt`1 | E08:Sage/ uncommon `i.grimoire`1, `i.robe`1 | E09:Duelist/ uncommon `i.sword`, `i.arrow` | E10:Lord/ uncommon `i.shield `, `i.robe` |
+| pool_3 | E11:Fighter/ uncommon `i.sword`1, `i.gauntlet`1 | E12:Ranger/ uncommon `i.arrow`1, `i.archery`1 | E13:Wizard/ uncommon `i.wand`1, `i.catalyst`1 | E14:Lord/ uncommon `i.shield`1, `i.robe`1 | E15:Samurai/ uncommon `i.katana`1, `i.bolt`1 |
+| pool_4 | E16:Ninja/ uncommon `i.katana`2, `i.armor`2 | E17:Rogue/ uncommon `i.bolt`2, `i.shield`2 | E18:Sage/ uncommon `i.grimoire`2, `i.robe`2 | E19:Duelist/ uncommon `i.sword`2, `i.arrow`2 | E20:Pilgrim/ uncommon `i.sword`2 , `i.wand`2 |
+| pool_5 | E21:Fighter/ uncommon `i.sword`2, `i.gauntlet`2 | E22:Ranger/ uncommon `i.arrow`2, `i.archery`2 | E23:Wizard/ uncommon `i.wand`2, `i.catalyst`2 | E24:Lord/ uncommon `i.shield`2, `i.robe`2 | E25:Samurai/ uncommon `i.katana`2, `i.bolt`2 |
+| pool_6 | E26:Ninja/ uncommon `i.katana`2, `i.armor`2 | E27:Rogue/ uncommon `i.bolt`2, `i.shield`2 | E28:Sage/ uncommon `i.grimoire`2, `i.robe`2 | E29:Duelist/ uncommon `i.sword`2, `i.arrow`2 | E30:Pilgrim/ uncommon `i.sword`2, `i.wand`2 |
+
+ - `i.item_type`variant
 
 - Boss:
 
