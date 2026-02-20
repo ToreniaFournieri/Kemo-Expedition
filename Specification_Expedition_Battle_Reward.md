@@ -1,6 +1,8 @@
 ## 5. EXPEDITION 
 - Persistence through an expedition:`d.HP`.
-- auto-sell profit amp: If party.character.`a.cunning`, multiplier x1.2.
+- auto-sell profit amp:
+  - If party.character.`a.cunning`, multiplier x1.2.
+  - If party.character.`a.cunning`, multiplier x1.3.
 
 ### 5.1 "Loot-Gate" progression system
 - If the party fails to meet the entry requirements, the expedition ends before the Gate Room and they are returned to Home.
