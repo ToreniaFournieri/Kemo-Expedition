@@ -561,6 +561,7 @@ function getRewardBagTypeForRarity(rarity: 'common' | 'uncommon' | 'rare' | 'myt
 
 function pickVariantByBag(
   baseItem: ItemDef,
+  enemy: EnemyDef,
   bags: GameState['bags']
 ): { selectedItem: ItemDef; bags: GameState['bags'] } {
   const rarity = getItemRarityById(baseItem.id);
@@ -570,7 +571,7 @@ function pickVariantByBag(
     return { selectedItem: baseItem, bags };
   }
 
-  const bagKey = `${tier}:${rarity}:${baseItem.category}`;
+  const bagKey = `${tier}:${enemy.enemyClass}:${rarity}:${baseItem.category}`;
   const currentBag = bags.dropVariantBags[bagKey] ?? createVariantSelectionBag(variants.length);
   const refillBag = currentBag.tickets.length > 0 ? currentBag : createVariantSelectionBag(variants.length);
   const { ticket, newBag } = drawFromBag(refillBag);
@@ -632,7 +633,7 @@ function resolveEnemyRewards(
     : (fallbackItem ? [fallbackItem] : []);
 
   for (const baseItem of baseDropItems) {
-    const variantResult = pickVariantByBag(baseItem, bags);
+    const variantResult = pickVariantByBag(baseItem, enemy, bags);
     bags = variantResult.bags;
     const selectedBaseItem = variantResult.selectedItem;
     const baseRarity = getItemRarityById(selectedBaseItem.id);
