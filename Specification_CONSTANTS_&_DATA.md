@@ -136,7 +136,7 @@ d. bonus (stackable)
 | `a.tithe`2 | 十分の一税2 | 遠征利益の +15% を寄付額に上乗せする |
 | `a.null-counter`1 | 反撃無効化1 | 反撃を無効化する |
 | `a.null-counter`2 | 反撃無効化2 | 反撃を無効化する |
-| `a.seeker` | 探究者:魔導書の効果増加(レベル毎に0.25%) |
+| `a.seeker` | 探究者 | 魔導書の効果増加(レベル毎に0.25%) |
 | `a.resurrect` | 再起 | 自分が受けた致命ダメージをHP1残して耐える |
 | `a.rage` | 闘志 | 物理/魔法攻撃倍率増大(受けたダメージ1%につき1%増) |
 | `a.re-counter` | 再反撃 | 敵から反撃に対して、反撃する(攻撃回数半減) |
@@ -306,16 +306,16 @@ d. bonus (stackable)
 
 |races | default ability　| unlock ability | unclock condition | bonus | 体,力,知,精 | memo |
 |-----|-------|------|--------|--------|-----------|----------|
-|ケイナイアン(Caninian) |  `a.seeker`探究者:魔導書の効果増加(レベル毎に0.25%) | `a.resurrect`再起:自分が受けた致命ダメージをHP1残して耐える | 原攻略 | `c.shield_x1.3`, `c.archery_x1.1` |10,10,10,10| 🐶Dog |
-|ルピニアン(Lupinian) | `a.rage`闘志: 物理/魔法攻撃倍率増大(受けたダメージ1%につき1%増) | `a.re-counter`再反撃:敵から反撃に対して、反撃する(攻撃回数半減) | 崖攻略 | `c.equip_slot+1`, `c.katana_x1.3`  |10,12,8,7| 🐺Wolf |
-|ヴァルピニアン(Vulpinian) | `a.momentum`気勢:物理/魔法攻撃倍率1.5倍(受けたダメージ1%につき1%減,最小0.5倍) | `a.cunning`狡猾:自動売却額が1.2倍 | 樹攻略 |`c.equip_slot+1`, `c.sword_x1.3`, `c.grimoire_x1.2` |11,10,12,8| 🦊Fox |
-|ウルサン(Ursan) | `a.bulwark`壁:真後ろの味方への遠距離攻撃を肩代わりする | `a.cyborgization `サイボーグ化:命中+30(`c.accuracy+0.030`)、回避-20(`c.evasion-0.020`) | 峰攻略 |`c.equip_slot+2`, `c.catalyst_x1.2` |13,11,**7**,7| 🐻Bear |
-|フェリディアン(Felidian)  | `a.first-strike`1 先制攻撃1: 行動が速くなる | `a.covering-fire`援護射撃:味方近接攻撃の命中が1回のみなら遠距離射撃(攻撃回数半減) | 茂攻略 |`c.robe_x1.3` |9,9,10,12| 😺Cat |
-|マステリド(Mustelid) | `a.resonance`1 共鳴1:魔法攻撃 1回毎に、全ヒットのダメージが +5% 増加する | `a.peddler`行商:移動時間が2/3になる | 巣攻略 | `c.gauntlet_x1.3`, `c.arrow_x1.3` |10,10,9,11| 🦡Ferret |
-|レポリアン(Leporian) | `a.composure`平静:命中率+10%加算 | `a.magical-counter`魔法反撃:魔法には魔法で反撃する(攻撃回数半減) | 園攻略 | `c.archery_x1.3`,  `c.armor_x1.3` |9,8,11,10| 🐰Rabbit |
-|セルヴィン(Cervin)  | `a.focus`集中:命中ボーナス(`c.accuracy+v`)の効果が1.2倍になる | `a.prophecy`予言:報酬抽選内容が見えるようになる | 谷攻略 |`c.wand_x1.3`, `c.shield_x1.2` |8,7,13,10| 🦌Deer |
-|ミュリッド(Murid) | `a.stealth`隠れ蓑: HP24%未満の時、自身へのダメージをすべて回避する | (none) | (none) |`c.penet_+0.10`, `c.bolt_x1.3`  |9,8,10,10| 🐭Mouse |
-|プロキオニアン(Procyonian) | `a.illusion`1 幻化1: 自分が受ける最初のダメージを無効化する | (none) | (none) |`c.equip_slot+1`, `c.grimoire_x1.3`  |11,13,11,6| 🦝Tanuki |
+|ケイナイアン(Caninian) |  `a.seeker`1 | `a.resurrect`1 | 原攻略 | `c.shield_x1.3`, `c.archery_x1.1` |10,10,10,10| 🐶Dog |
+|ルピニアン(Lupinian) | `a.rage`1 | `a.re-counter`1 | 崖攻略 | `c.equip_slot+1`, `c.katana_x1.3`  |10,12,8,7| 🐺Wolf |
+|ヴァルピニアン(Vulpinian) | `a.momentum`1 | `a.cunning`1 | 樹攻略 |`c.equip_slot+1`, `c.sword_x1.3`, `c.grimoire_x1.2` |11,10,12,8| 🦊Fox |
+|ウルサン(Ursan) | `a.bulwark`1 | `a.cyborgization`1 | 峰攻略 |`c.equip_slot+2`, `c.catalyst_x1.2` |13,11,**7**,7| 🐻Bear |
+|フェリディアン(Felidian)  | `a.first-strike`1 | `a.covering-fire`1 | 茂攻略 |`c.robe_x1.3` |9,9,10,12| 😺Cat |
+|マステリド(Mustelid) | `a.resonance`1 | `a.peddler`1 | 巣攻略 | `c.gauntlet_x1.3`, `c.arrow_x1.3` |10,10,9,11| 🦡Ferret |
+|レポリアン(Leporian) | `a.composure`1 | `a.magical-counter`1 | 園攻略 | `c.archery_x1.3`,  `c.armor_x1.3` |9,8,11,10| 🐰Rabbit |
+|セルヴィン(Cervin)  | `a.focus`1 | `a.prophecy`1 | 谷攻略 |`c.wand_x1.3`, `c.shield_x1.2` |8,7,13,10| 🦌Deer |
+|ミュリッド(Murid) | `a.stealth`1 | (none) | (none) |`c.penet_+0.10`, `c.bolt_x1.3`  |9,8,10,10| 🐭Mouse |
+|プロキオニアン(Procyonian) | `a.illusion`1 | (none) | (none) |`c.equip_slot+1`, `c.grimoire_x1.3`  |11,13,11,6| 🦝Tanuki |
 
 - note: 未来視はパーティ単位で管理する方針に　神聖局で、セルヴィンがいる場合に表示可能、またコストを払ってリセットも可能に(詳細は今後検討)
 
