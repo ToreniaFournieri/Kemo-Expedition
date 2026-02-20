@@ -4566,23 +4566,19 @@ function SettingTab({
             <div className="text-xs text-accent mb-2 p-2 bg-orange-50 rounded border border-orange-200">
               フルリセットはローカル保存データをすべて削除します。必ず確認のうえ実行してください。
             </div>
+            {!showResetConfirm ? (
+              <button onClick={() => setShowResetConfirm(true)} className="w-full py-2 bg-accent text-white rounded font-medium">ゲームをリセット</button>
+            ) : (
+              <div>
+                <div className="text-sm text-accent mb-2 p-2 bg-orange-50 rounded border border-orange-200">本当にリセットしますか？全てのデータが失われます。この操作は取り消せません。</div>
+                <div className="flex gap-2">
+                  <button onClick={() => { onResetGame(); setShowResetConfirm(false); }} className="flex-1 py-2 bg-accent text-white rounded font-medium">リセット実行</button>
+                  <button onClick={() => setShowResetConfirm(false)} className="flex-1 py-2 bg-gray-300 rounded font-medium">キャンセル</button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-      </div>
-
-      <div className="bg-pane rounded-lg p-4">
-        <div className="text-sm font-medium mb-2">5.3 リセット実行</div>
-        {!showResetConfirm ? (
-          <button onClick={() => setShowResetConfirm(true)} className="w-full py-2 bg-accent text-white rounded font-medium">ゲームをリセット</button>
-        ) : (
-          <div>
-            <div className="text-sm text-accent mb-2 p-2 bg-orange-50 rounded border border-orange-200">本当にリセットしますか？全てのデータが失われます。この操作は取り消せません。</div>
-            <div className="flex gap-2">
-              <button onClick={() => { onResetGame(); setShowResetConfirm(false); }} className="flex-1 py-2 bg-accent text-white rounded font-medium">リセット実行</button>
-              <button onClick={() => setShowResetConfirm(false)} className="flex-1 py-2 bg-gray-300 rounded font-medium">キャンセル</button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
