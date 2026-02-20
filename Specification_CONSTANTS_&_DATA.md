@@ -286,7 +286,7 @@ d. bonus (stackable)
 |レポリアン(Leporian) | `a.composure`平静:命中率+10%加算 | `a.magical-counter`魔法反撃:魔法には魔法で反撃する(攻撃回数半減) | 園攻略 | `c.archery_x1.3`,  `c.armor_x1.3` |9,8,11,10| 🐰Rabbit |
 |セルヴィン(Cervin)  | `a.focus`集中:命中ボーナス(`c.accuracy+v`)の効果が1.2倍になる | `a.prophecy`予言:報酬抽選内容が見えるようになる | 谷攻略 |`c.wand_x1.3`, `c.shield_x1.2` |8,7,13,10| 🦌Deer |
 |ミュリッド(Murid) | `a.stealth`隠れ蓑: HP24%未満の時、自身へのダメージをすべて回避する | (none) | (none) |`c.penet_+0.10`, `c.bolt_x1.3`  |9,8,10,10| 🐭Mouse |
-|プロキオニアン(Procyonian) | `a.illusion`幻化: 自分が受ける最初のダメージを無効化する | (none) | (none) |`c.equip_slot+1`, `c.grimoire_x1.3`  |11,13,11,6| 🦝Tanuki |
+|プロキオニアン(Procyonian) | `a.illusion`1 幻化1: 自分が受ける最初のダメージを無効化する | (none) | (none) |`c.equip_slot+1`, `c.grimoire_x1.3`  |11,13,11,6| 🦝Tanuki |
 
 - note: 未来視はパーティ単位で管理する方針に　神聖局で、セルヴィンがいる場合に表示可能、またコストを払ってリセットも可能に(詳細は今後検討)
 
