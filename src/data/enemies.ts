@@ -703,10 +703,7 @@ export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
   ): ItemDef | undefined => {
     const candidates = pool.filter(item => item.category === category && !excludeItemIds.includes(item.id));
     if (candidates.length === 0) return undefined;
-
-    // Mix the seed to avoid simple odd/even bias that can lock a category to one variant.
-    const mixedSeed = Math.imul(Math.abs(seed) + 1, 2654435761) >>> 0;
-    return candidates[mixedSeed % candidates.length];
+    return candidates[Math.abs(seed) % candidates.length];
   };
 
   const pickAny = (pool: ItemDef[], count: number, seed: number, excludeItemIds: number[] = []): ItemDef[] =>
