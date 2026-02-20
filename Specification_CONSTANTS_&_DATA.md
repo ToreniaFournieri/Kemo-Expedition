@@ -605,8 +605,8 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | 6 | 91 | `c.target_status+0.07` | `c.evasion+0.007` | 0.3 | `c.N_NoA+6` | `d.evasion-0.006`, `d.N_NoA-2.0` | `e.element+0.09` |
 | 7 | 137 | `c.target_status+0.06` | `c.evasion+0.006` | 0.2 | `c.N_NoA+7` | `d.evasion-0.007`, `d.N_NoA-2.2` | `e.element+0.08` |
 | 8 | 205 | `c.target_status+0.05` | `c.evasion+0.005` | 0.1 | `c.N_NoA+8` | `d.evasion-0.008`, `d.N_NoA-2.4` | `e.element+0.07` |
-| 9 | - | `c.target_status+0.04` | `c.evasion+0.004` | - | `c.N_NoA+9` | - | `e.element+0.06` |
-| 10 | - | `c.target_status+0.03` | `c.evasion+0.003` | - | `c.N_NoA+10` | - | `e.element+0.05` |
+| 9 | - | `c.target_status+0.04` | `c.evasion+0.004` | 0.1 | `c.N_NoA+9` | - | `e.element+0.06` |
+| 10 | - | `c.target_status+0.03` | `c.evasion+0.003` | 0.1 | `c.N_NoA+10` | - | `e.element+0.05` |
 
 -　Tier 9 and 10 are Multiplier-Only Tiers. (Unccommon/Rare item upgared reference)
 
