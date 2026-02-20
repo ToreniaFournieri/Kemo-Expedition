@@ -46,6 +46,7 @@ interface HomeScreenProps {
     reorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
     sellStack: (variantKey: string) => void;
     setVariantStatus: (variantKey: string, status: 'notown') => void;
+    markItemsSeen: () => void;
     markDiaryLogSeen: (logId: string) => void;
     markAllDiaryLogsSeen: () => void;
     updateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
@@ -1236,6 +1237,13 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     }
     prevActiveTabRef.current = activeTab;
   }, [activeTab, actions]);
+
+  useEffect(() => {
+    if (activeTab !== 'inventory') return;
+    const hasNewInventoryItems = Object.values(state.global.inventory).some((variant) => variant.isNew);
+    if (!hasNewInventoryItems) return;
+    actions.markItemsSeen();
+  }, [activeTab, state.global.inventory, actions]);
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'party', label: 'パーティ' },
@@ -3342,7 +3350,7 @@ function InventoryTab({
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">
+                    <span className={`text-sm ${variant.isNew ? 'font-bold' : 'font-normal'}`}>
                       {getItemDisplayName(item)}
                     </span>
                     <span className="text-xs text-gray-500">x{formatNumber(count)}</span>
