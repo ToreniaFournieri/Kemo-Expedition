@@ -619,7 +619,7 @@ export function executeBattle(
       log.push({
         phase: 'close',
         actor: 'effect',
-        action: 'タヌキへの攻撃はすべて幻だった！',
+        action: `${targetName} への攻撃はすべて幻だった！`,
       });
     }
 
@@ -864,7 +864,7 @@ export function executeBattle(
               log.push({
                 phase,
                 actor: 'effect',
-                action: 'タヌキへの攻撃はすべて幻だった！',
+                action: `${targetName} への攻撃はすべて幻だった！`,
               });
             }
 
@@ -1006,7 +1006,7 @@ export function executeBattle(
               log.push({
                 phase,
                 actor: 'effect',
-                action: 'タヌキへの攻撃はすべて幻だった！',
+                action: `${targetName} への攻撃はすべて幻だった！`,
               });
             }
 
