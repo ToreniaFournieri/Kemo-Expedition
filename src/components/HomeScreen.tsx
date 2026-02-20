@@ -15,6 +15,7 @@ import { LEVEL_EXP } from '../game/partyLevel';
 import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../game/environment';
 import { getBaseMultiplier } from '../game/baseMultiplier';
 import { computeCharacterStats } from '../game/characterComputation';
+import { serializeGameState } from '../game/saveCodec';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -3898,7 +3899,7 @@ function SettingTab({
         env: currentEnv,
         exportedAt: new Date().toISOString(),
       },
-      saveData: gameState,
+      saveData: serializeGameState(gameState),
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
