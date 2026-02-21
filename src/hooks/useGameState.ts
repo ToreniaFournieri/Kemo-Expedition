@@ -528,6 +528,7 @@ type GameAction =
   | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character> }
   | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number }
   | { type: 'SELL_STACK'; variantKey: string }
+  | { type: 'BUY_SHOP_ITEM'; superRare: number }
   | { type: 'SET_VARIANT_STATUS'; variantKey: string; status: 'notown' }
   | { type: 'MARK_ITEMS_SEEN' }
   | { type: 'MARK_DIARY_LOG_SEEN'; logId: string }
@@ -1537,6 +1538,44 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'BUY_SHOP_ITEM': {
+      const baseItem = getItemById(1103);
+      const hasSuperRareTitle = SUPER_RARE_TITLES.some((title) => title.value === action.superRare && title.value > 0);
+      const shopPrice = 10000;
+      if (!baseItem || !hasSuperRareTitle || state.global.gold < shopPrice) return state;
+
+      const purchasedItem: Item = {
+        ...baseItem,
+        enhancement: 0,
+        superRare: action.superRare,
+      };
+      const variantKey = getVariantKey(purchasedItem);
+      const existing = state.global.inventory[variantKey];
+
+      if (existing) {
+        return state;
+      }
+
+      const newInventory = {
+        ...state.global.inventory,
+        [variantKey]: {
+          item: purchasedItem,
+          count: 1,
+          status: 'owned' as const,
+          isNew: true,
+        },
+      };
+
+      return {
+        ...state,
+        global: {
+          ...state.global,
+          inventory: newInventory,
+          gold: state.global.gold - shopPrice,
+        },
+      };
+    }
+
     case 'SET_VARIANT_STATUS': {
       const currentParty = state.parties[state.selectedPartyIndex];
       const variant = state.global.inventory[action.variantKey];
@@ -1902,6 +1941,10 @@ export function useGameState() {
 
     sellStack: useCallback((variantKey: string) => {
       dispatch({ type: 'SELL_STACK', variantKey });
+    }, []),
+
+    buyShopItem: useCallback((superRare: number) => {
+      dispatch({ type: 'BUY_SHOP_ITEM', superRare });
     }, []),
 
     setVariantStatus: useCallback((variantKey: string, status: 'notown') => {
