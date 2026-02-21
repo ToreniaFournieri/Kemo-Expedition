@@ -576,7 +576,7 @@ function getDefenseMultiplierSum(items: Item[], kind: 'physical' | 'magical'): n
 }
 
 // Helper to format bonus descriptions
-type Bonus = { type: string; value: number; abilityId?: string; abilityLevel?: number };
+type Bonus = { type: string; value: number; abilityId?: string; abilityLevel?: number; unimplementedLabel?: string };
 
 const MULTIPLIER_LABELS: Record<string, string> = {
   sword_multiplier: '剣',
@@ -857,6 +857,11 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
     } else if (b.type === 'ability' && b.abilityId) {
       const name = ABILITY_NAMES[b.abilityId] || b.abilityId;
       parts.push(`${name}Lv${b.abilityLevel || 1}`);
+    } else if (b.type === 'ability_upgrade' && b.abilityId) {
+      const name = ABILITY_NAMES[b.abilityId] || b.abilityId;
+      parts.push(`${name}強化+${b.value}`);
+    } else if (b.type === 'unimplemented_bonus') {
+      parts.push(`(${b.unimplementedLabel || '未実装ボーナス'})`);
     }
   }
   return parts.join(', ');

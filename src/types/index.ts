@@ -88,6 +88,8 @@ export type BonusType =
   // Growth bonuses
   | 'growth_xV'
   | 'upgrade_V'
+  | 'ability_upgrade'
+  | 'unimplemented_bonus'
   // Abilities
   | 'ability';
 
@@ -96,6 +98,7 @@ export interface Bonus {
   value: number;
   abilityId?: AbilityId;
   abilityLevel?: number;
+  unimplementedLabel?: string;
 }
 
 // Ability Types
