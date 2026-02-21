@@ -1880,13 +1880,13 @@ function PartyTab({
 
     const capabilityWarnings = getCapabilityRemovalWarningState(edits);
     if (capabilityWarnings.melee) {
-      warnings.push('Warning: 近距離攻撃適正がなくなったため、一部の装備が外れます。');
+      warnings.push('近距離攻撃適正がなくなったため、一部の装備が外れます。');
     }
     if (capabilityWarnings.ranged) {
-      warnings.push('Warning: 遠距離攻撃適正がなくなったため、一部の装備が外れます。');
+      warnings.push('遠距離攻撃適正がなくなったため、一部の装備が外れます。');
     }
     if (capabilityWarnings.magic) {
-      warnings.push('Warning: 魔法攻撃適正がなくなったため、一部の装備が外れます。');
+      warnings.push('魔法攻撃適正がなくなったため、一部の装備が外れます。');
     }
 
     return warnings;
