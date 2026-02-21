@@ -1322,7 +1322,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const hasUnreadDiary = unreadDiaryCount > 0;
   const unreadDiaryBadgeLabel = unreadDiaryCount >= 11 ? '10+' : `${unreadDiaryCount}`;
   const envLabel = getEnvLabel();
-  const versionLabel = envLabel ? `v0.2.9 (${envLabel})` : 'v0.2.9';
+  const versionLabel = envLabel ? `v0.3.0 (${envLabel})` : 'v0.3.0';
 
   return (
     <div className={`flex flex-col h-screen ${HEADER_HEIGHT_CLASS}`}>
@@ -3989,7 +3989,7 @@ function SettingTab({
   const [expandedCompendiumItems, setExpandedCompendiumItems] = useState<Record<number, boolean>>({});
   const bestiaryListRef = useRef<HTMLDivElement | null>(null);
 
-  const versionTag = 'v0.2.9';
+  const versionTag = 'v0.3.0';
   const currentEnv = getEnvironmentId();
 
   const getBackupFileName = (): string => {
