@@ -756,10 +756,11 @@ function formatDefenseMultiplierBonus(label: string, value: number, preferPercen
   const rounded = Math.round(value * 100) / 100;
 
   if (preferPercent && rounded < 1) {
-    const improvementPercent = (1 - rounded) * 100;
-    if (Number.isInteger(improvementPercent)) {
-      return `${label}+${improvementPercent}%`;
-    }
+    const improvementPercent = Math.max(0, (1 - rounded) * 100);
+    const percentText = Number.isInteger(improvementPercent)
+      ? improvementPercent.toString()
+      : improvementPercent.toFixed(1).replace(/\.0$/, '');
+    return `${label}+${percentText}%`;
   }
 
   const precision = 100;
