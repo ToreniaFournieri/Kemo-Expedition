@@ -584,6 +584,9 @@ function getAbilityName(id: AbilityId, level: number): string {
       || id === 'resonance'
       || id === 'command'
       || id === 'm_barrier'
+      || id === 'null_counter'
+      || id === 'resurrect'
+      || id === 'stealth'
       || id === 'illusion'
     )
     && level >= 1
@@ -614,7 +617,9 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     squander: (l) => `宴会で消費するゴールドが${l >= 2 ? '2' : '1.5'}倍になる`,
     tithe: (l) => `祈り時に寄付額へ探検利益の+${l >= 2 ? '15' : '10'}%を加算`,
     seeker: (l) => `魔導書の効果増加(レベル毎に${l >= 2 ? '0.35' : '0.25'}%)`,
-    resurrect: () => '自分が受けた致命ダメージをHP1残して耐える',
+    resurrect: (l) => l >= 2
+      ? '自分が受けた致命ダメージをHP1%残して耐える(1回のみ)'
+      : '自分が受けた致命ダメージをHP1残して耐える',
     rage: (l) => `物理/魔法攻撃倍率増大(受けたダメージ1%につき${l >= 2 ? '1.2' : '1'}%増)`,
     re_counter: (l) => l >= 2
       ? '敵から反撃に対して、反撃する(攻撃回数半減しない)'
@@ -635,8 +640,12 @@ function getAbilityDescription(id: AbilityId, level: number): string {
       : '魔法には魔法で反撃する(攻撃回数半減)',
     focus: (l) => `命中ボーナスの効果が${l >= 2 ? '1.3' : '1.2'}倍になる`,
     prophecy: () => '報酬抽選内容が見えるようになる',
-    stealth: () => 'HP24%未満の時、自身へのダメージをすべて回避する',
-    illusion: () => '自分が受ける最初の遠距離攻撃を無効化する',
+    stealth: (l) => l >= 2
+      ? 'HP29%未満の時、自身へのダメージをすべて回避する'
+      : 'HP24%未満の時、自身へのダメージをすべて回避する',
+    illusion: (l) => l >= 2
+      ? 'パーティーが受ける最初の遠距離攻撃を無効化する'
+      : '自分が受ける最初の遠距離攻撃を無効化する',
   };
   return descriptions[id](level);
 }

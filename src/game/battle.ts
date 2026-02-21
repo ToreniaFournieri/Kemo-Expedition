@@ -60,18 +60,39 @@ function hasStealth(charStats: ComputedCharacterStats): boolean {
   return charStats.abilities.some(a => a.id === 'stealth');
 }
 
+function getStealthLevel(charStats: ComputedCharacterStats): number {
+  return charStats.abilities.find(a => a.id === 'stealth')?.level ?? 0;
+}
+
 function hasIllusion(charStats: ComputedCharacterStats): boolean {
   return charStats.abilities.some(a => a.id === 'illusion');
+}
+
+function getIllusionLevel(charStats: ComputedCharacterStats): number {
+  return charStats.abilities.find(a => a.id === 'illusion')?.level ?? 0;
+}
+
+function partyHasIllusionLevel(characterStats: ComputedCharacterStats[], requiredLevel: number): boolean {
+  return characterStats.some(cs => getIllusionLevel(cs) >= requiredLevel);
 }
 
 function isIllusionActive(phase: BattlePhase, charStats: ComputedCharacterStats, consumedIllusionCharacterIds: Set<number>): boolean {
   return phase === 'long' && hasIllusion(charStats) && !consumedIllusionCharacterIds.has(charStats.characterId);
 }
 
+function isPartyIllusionActive(
+  phase: BattlePhase,
+  characterStats: ComputedCharacterStats[],
+  consumedPartyIllusion: boolean,
+): boolean {
+  return phase === 'long' && !consumedPartyIllusion && partyHasIllusionLevel(characterStats, 2);
+}
+
 function isStealthActive(charStats: ComputedCharacterStats, partyHp: number, maxPartyHp: number): boolean {
   if (!hasStealth(charStats)) return false;
   if (maxPartyHp <= 0) return false;
-  return (partyHp / maxPartyHp) <= 0.24;
+  const threshold = getStealthLevel(charStats) >= 2 ? 0.29 : 0.24;
+  return (partyHp / maxPartyHp) <= threshold;
 }
 
 function hasBulwark(charStats: ComputedCharacterStats): boolean {
@@ -478,8 +499,12 @@ function hasCounter(charStats: ComputedCharacterStats, phase: BattlePhase): bool
 }
 
 
+function getResurrectLevel(charStats: ComputedCharacterStats): number {
+  return charStats.abilities.find(a => a.id === 'resurrect')?.level ?? 0;
+}
+
 function hasResurrect(charStats: ComputedCharacterStats): boolean {
-  return charStats.abilities.some(a => a.id === 'resurrect');
+  return getResurrectLevel(charStats) > 0;
 }
 
 function getAbilityLevel(charStats: ComputedCharacterStats, abilityId: AbilityId): number {
@@ -548,6 +573,7 @@ export function executeBattle(
   const log: BattleLogEntry[] = [];
   const consumedResurrectCharacterIds = new Set<number>();
   const consumedIllusionCharacterIds = new Set<number>();
+  let consumedPartyIllusion = false;
 
   const createPartyEffectEntry = (
     classId: 'fighter' | 'lord' | 'sage',
@@ -649,7 +675,10 @@ export function executeBattle(
     );
 
     if (triggeredResurrect) {
-      partyHp = 1;
+      const resurrectLevel = getResurrectLevel(targetCharStats);
+      partyHp = resurrectLevel >= 2
+        ? Math.max(1, Math.ceil(partyStats.hp * 0.01))
+        : 1;
       consumedResurrectCharacterIds.add(targetCharStats.characterId);
     }
 
@@ -689,7 +718,7 @@ export function executeBattle(
         actor: 'character',
         characterId: targetCharStats.characterId,
         isCounter: true,
-        action: `${targetChar?.name ?? '???'} は致死攻撃を食いしばって耐えた！`,
+        action: `${targetChar?.name ?? '???'} は致命ダメージを食いしばって耐えた！`,
       });
     }
 
@@ -868,11 +897,16 @@ export function executeBattle(
             const targetName = targetChar?.name ?? '???';
             let appliedHits = 0;
             let avoidedByStealth = false;
-            const avoidedByIllusion = isIllusionActive(phase, attack.charStats, consumedIllusionCharacterIds);
+            const avoidedByPartyIllusion = isPartyIllusionActive(phase, characterStats, consumedPartyIllusion);
+            const avoidedByIllusion = avoidedByPartyIllusion || isIllusionActive(phase, attack.charStats, consumedIllusionCharacterIds);
             attack.damage = 0;
 
             if (avoidedByIllusion) {
-              consumedIllusionCharacterIds.add(charId);
+              if (avoidedByPartyIllusion) {
+                consumedPartyIllusion = true;
+              } else {
+                consumedIllusionCharacterIds.add(charId);
+              }
             } else {
               for (let i = 0; i < attack.hits; i++) {
                 if (isStealthActive(attack.charStats, partyHp, partyStats.hp)) {
@@ -892,7 +926,10 @@ export function executeBattle(
             );
 
             if (triggeredResurrect) {
-              partyHp = 1;
+              const resurrectLevel = getResurrectLevel(attack.charStats);
+              partyHp = resurrectLevel >= 2
+                ? Math.max(1, Math.ceil(partyStats.hp * 0.01))
+                : 1;
               consumedResurrectCharacterIds.add(charId);
             }
 
@@ -933,7 +970,7 @@ export function executeBattle(
                 actor: 'character',
                 characterId: charId,
                 isCounter: true,
-                action: `${resurrectedChar?.name ?? '???'} は致死攻撃を食いしばって耐えた！`,
+                action: `${resurrectedChar?.name ?? '???'} は致命ダメージを食いしばって耐えた！`,
               });
             }
 
@@ -1009,10 +1046,15 @@ export function executeBattle(
               reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, partyStats, attack.charStats, enemyHp);
             }
 
-            const avoidedReCounterByIllusion = isIllusionActive(phase, attack.charStats, consumedIllusionCharacterIds);
+            const avoidedByPartyIllusionOnReCounter = isPartyIllusionActive(phase, characterStats, consumedPartyIllusion);
+            const avoidedReCounterByIllusion = avoidedByPartyIllusionOnReCounter || isIllusionActive(phase, attack.charStats, consumedIllusionCharacterIds);
             const avoidedReCounterByStealth = !avoidedReCounterByIllusion && isStealthActive(attack.charStats, partyHp, partyStats.hp);
             if (avoidedReCounterByIllusion) {
-              consumedIllusionCharacterIds.add(charId);
+              if (avoidedByPartyIllusionOnReCounter) {
+                consumedPartyIllusion = true;
+              } else {
+                consumedIllusionCharacterIds.add(charId);
+              }
               reCounterDamage = 0;
               reCounterHits = 0;
             } else if (avoidedReCounterByStealth) {
@@ -1031,7 +1073,10 @@ export function executeBattle(
             );
 
             if (reCounterResurrect) {
-              partyHp = 1;
+              const resurrectLevel = getResurrectLevel(attack.charStats);
+              partyHp = resurrectLevel >= 2
+                ? Math.max(1, Math.ceil(partyStats.hp * 0.01))
+                : 1;
               consumedResurrectCharacterIds.add(charId);
             }
 
@@ -1071,7 +1116,7 @@ export function executeBattle(
                 actor: 'character',
                 characterId: charId,
                 isCounter: true,
-                action: `${targetChar?.name ?? '???'} は致死攻撃を食いしばって耐えた！`,
+                action: `${targetChar?.name ?? '???'} は致命ダメージを食いしばって耐えた！`,
               });
             }
 
