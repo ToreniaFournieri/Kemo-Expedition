@@ -2566,7 +2566,7 @@ function PartyTab({
                   multiplierValues[key].add(b.value);
                 } else if (['vitality', 'strength', 'intelligence', 'mind'].includes(b.type)) {
                   additive[b.type] = (additive[b.type] ?? 0) + b.value;
-                } else if (['equip_slot', 'grit', 'caster', 'pursuit', 'penet', 'accuracy'].includes(b.type)) {
+                } else if (['equip_slot', 'grit', 'caster', 'pursuit', 'penet', 'accuracy', 'growth_xV'].includes(b.type)) {
                   addUniqueCBonus(b.type, b.value);
                 } else if (b.type === 'evasion') {
                     if (b.value < 0) {
@@ -2604,7 +2604,7 @@ function PartyTab({
               const addNames: Record<string, string> = {
                 vitality: '体', strength: '力', intelligence: '知', mind: '精',
                 equip_slot: '装備', grit: '根性', caster: '術者', penet: '貫通',
-                pursuit: '追撃', accuracy: '命中', evasion: '回避'
+                pursuit: '追撃', accuracy: '命中', evasion: '回避', growth_xV: '成長' 
               };
 
               for (const [key, val] of Object.entries(multipliers)) {
@@ -2638,6 +2638,10 @@ function PartyTab({
                     const label = `${addNames[key]}+${Math.round(val * 1000)}`;
                     parts.push(label);
                     helpRows.push({ label, description: '値が多いほどより多くの攻撃を回避するようになる' });
+                  } else if (key === 'growth_xV') {
+                    const label = `${addNames[key] ?? key}x${val.toFixed(2)}`;
+                    parts.push(label);
+                    helpRows.push({ label, description: `キャラクター個人のHP基礎値及びアイテムHP増加値が ${val.toFixed(2)} 倍になる` });
                   } else {
                     const label = `${addNames[key] ?? key}+${val}`;
                     parts.push(label);

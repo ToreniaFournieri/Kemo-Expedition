@@ -116,6 +116,40 @@ function getCharacterBaseStats(character: { raceId: string; predispositionId: st
   return { vitality, strength, intelligence, mind };
 }
 
+function getCharacterGrowthMultiplier(
+  character: { raceId: string; mainClassId: string; subClassId: string; predispositionId: string; lineageId: string }
+): number {
+  const race = getRaceById(character.raceId);
+  const mainClass = getClassById(character.mainClassId);
+  const subClass = getClassById(character.subClassId);
+  const predisposition = getPredispositionById(character.predispositionId);
+  const lineage = getLineageById(character.lineageId);
+
+  if (!race || !mainClass || !subClass || !predisposition || !lineage) return 1;
+
+  const isMasterClass = character.mainClassId === character.subClassId;
+  const allBonuses = [
+    ...race.bonuses,
+    ...mainClass.mainSubBonuses,
+    ...(isMasterClass ? mainClass.masterBonuses : [...mainClass.mainBonuses, ...subClass.mainSubBonuses]),
+    ...predisposition.bonuses,
+    ...lineage.bonuses,
+  ];
+
+  const appliedBonusNames = new Set<string>();
+  const growthMultipliers = allBonuses
+    .filter((bonus) => bonus.type === 'growth_xV')
+    .filter((bonus) => {
+      const bonusName = `c.growth_x${formatCBonusValue(bonus.value)}`;
+      if (appliedBonusNames.has(bonusName)) return false;
+      appliedBonusNames.add(bonusName);
+      return true;
+    })
+    .map((bonus) => bonus.value);
+
+  return growthMultipliers.reduce((prod, value) => prod * value, 1);
+}
+
 export function computePartyStats(party: Party): {
   partyStats: ComputedPartyStats;
   characterStats: ComputedCharacterStats[];
@@ -126,13 +160,14 @@ export function computePartyStats(party: Party): {
   const characterStats = applyDeityCharacterModifiers(party, baseCharacterStats);
 
   // Calculate party HP
-  // Party.d.HP = 100 + (Total sum of individual ((Item Bonuses of HP x its c.multiplier x enhancement + level x b.vitality) x (b.vitality + b.mind) / 20))
+  // Party.d.HP = 100 + (Total sum of individual ((Item Bonuses of HP x its c.multiplier x enhancement + level x b.vitality) x (b.vitality + b.mind) / 20) x c.growth_xV)
   let baseHp = 100;
   let bonusHp = 0;
 
   for (const character of party.characters) {
     const stats = getCharacterBaseStats(character);
     const statMultiplier = (stats.vitality + stats.mind) / 20;
+    const growthMultiplier = getCharacterGrowthMultiplier(character);
 
     // Sum item HP bonuses with multipliers (category + enhancement)
     let itemHpBonus = 0;
@@ -149,7 +184,7 @@ export function computePartyStats(party: Party): {
     const levelBonus = party.level * stats.vitality;
 
     // Character's HP contribution
-    bonusHp += (itemHpBonus + levelBonus) * statMultiplier;
+    bonusHp += ((itemHpBonus + levelBonus) * statMultiplier) * growthMultiplier;
   }
 
   // Collect all party abilities
