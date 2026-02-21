@@ -174,7 +174,7 @@
     - If all sums are 0, then selected_element = none and elemental_offense_attribute = 1.0
     - Stackable:  if two `e.fire+0.15`, then 1 + 0.15 + 0.15 -> 1.30
 
-- character.`f.elemental_defense_amplifier` (element: )
+- character.`f.elemental_resistance_attribute` (element: )
   	- return 1.0 x `c.element_defense_multiplier_xV`
   	  - ex. character has `c.fire_defense_multiplier_x3/5`, then 1.0 x 3/5 -> 0.60 for fire.
 
@@ -205,8 +205,7 @@
     - If party.`a.m-barrier`2, multiply x3/5
     - If party.`a.m-barrier`3, multiply x1/2
 
-- party.`f.elemental_resistance_attribute`:
-  	- Always set 1. (not for this version)
+
 
 ## 4. Party State Machine
 
