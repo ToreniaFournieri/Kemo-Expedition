@@ -165,6 +165,7 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
   - A numerical value assigned to a unit based on their row position that determines the size of their "slice" in the enemy's targeting pool.
 
 - `f.targeting`:
+  - If actor.`c.antagonism`, target is opposite. (character -> character. enemy -> enemy)
   - If phase is LONG or CLOSE, Gets one ticket from `g.physical_threat_weight_bag`.
     - `a.bulwark`1 or `a.bulwark`2 redirect 
 	  if (`a.bulwark`1 and phase is LONG) or (`a.bulwark`2 and phase is (LONG or CLOSE)):
