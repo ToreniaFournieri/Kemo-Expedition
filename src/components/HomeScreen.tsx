@@ -401,7 +401,7 @@ function getItemStats(item: Item): string {
   const multiplier = (ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1) *
     (SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1);
   const superRareUniqueBonusText = formatBonuses(
-    (SUPER_RARE_TITLES.find((title) => title.value === item.superRare)?.bonuses ?? []).filter((bonus) => bonus.type !== 'growth_xV')
+    SUPER_RARE_TITLES.find((title) => title.value === item.superRare)?.bonuses ?? []
   );
   const baseMultiplier = item.baseMultiplier ?? 1;
   const multiplierPercent = Math.round((baseMultiplier - 1) * 100);
@@ -697,6 +697,12 @@ function getCharacterCategoryMultiplier(character: Character, category: ItemCate
     .reduce((total, bonus) => total * bonus.value, 1);
 }
 
+function formatMultiplierValue(value: number): string {
+  const rounded = Math.round(value * 100) / 100;
+  if (Number.isInteger(rounded)) return `${rounded}`;
+  return rounded.toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
+}
+
 function formatBonuses(bonuses: Bonus[]): string {
   const parts: string[] = [];
   for (const b of bonuses) {
@@ -734,6 +740,12 @@ function formatBonuses(bonuses: Bonus[]): string {
       parts.push(`魔攻撃+${Math.round(b.value * 100)}%`);
     } else if (b.type === 'physical_attack') {
       parts.push(`物攻撃+${Math.round(b.value * 100)}%`);
+    } else if (b.type === 'fire_offense') {
+      parts.push(`炎攻+${Math.round(b.value * 100)}%`);
+    } else if (b.type === 'ice_offense') {
+      parts.push(`氷攻+${Math.round(b.value * 100)}%`);
+    } else if (b.type === 'thunder_offense') {
+      parts.push(`雷攻+${Math.round(b.value * 100)}%`);
     } else if (b.type === 'physical_offense_multiplier_xV') {
       parts.push(`物攻撃x${b.value.toFixed(2)}`);
     } else if (b.type === 'magical_offense_multiplier_xV') {
@@ -748,6 +760,8 @@ function formatBonuses(bonuses: Bonus[]): string {
       parts.push(`氷防x${b.value.toFixed(2)}`);
     } else if (b.type === 'thunder_defense_multiplier_xV') {
       parts.push(`雷防x${b.value.toFixed(2)}`);
+    } else if (b.type === 'growth_xV') {
+      parts.push(`成長${formatMultiplierValue(b.value)}倍`);
     } else if (b.type === 'ability' && b.abilityId) {
       const name = ABILITY_NAMES[b.abilityId] || b.abilityId;
       parts.push(`${name}Lv${b.abilityLevel || 1}`);
@@ -2771,9 +2785,9 @@ function PartyTab({
                     parts.push(label);
                     helpRows.push({ label, description: '値が多いほどより多くの攻撃を回避するようになる' });
                   } else if (key === 'growth_xV') {
-                    const label = `${addNames[key] ?? key}x${val.toFixed(2)}`;
+                    const label = `${addNames[key] ?? key}${formatMultiplierValue(val)}倍`;
                     parts.push(label);
-                    helpRows.push({ label, description: `キャラクター個人のHP基礎値及びアイテムHP増加値が ${val.toFixed(2)} 倍になる` });
+                    helpRows.push({ label, description: `キャラクター個人のHP基礎値及びアイテムHP増加値が ${formatMultiplierValue(val)} 倍になる` });
                   } else {
                     const label = `${addNames[key] ?? key}+${val}`;
                     parts.push(label);
@@ -4710,7 +4724,7 @@ function SettingTab({
         <div className="text-xs text-gray-500 mb-2">Super Rare List (超レア一覧)</div>
         <div className="bg-white rounded p-2 text-sm space-y-1 max-h-72 overflow-y-auto">
           {SUPER_RARE_TITLES.filter(title => title.value > 0).map(title => {
-            const uniqueBonus = formatBonuses((title.bonuses ?? []).filter((bonus) => bonus.type !== 'growth_xV'));
+            const uniqueBonus = formatBonuses(title.bonuses ?? []);
             return (
               <div key={title.value} className="grid grid-cols-[auto,1fr] gap-x-2 border-b border-gray-100 last:border-b-0 py-1">
                 <div className="text-gray-500">{title.value}.</div>
