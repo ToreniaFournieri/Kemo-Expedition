@@ -87,7 +87,7 @@ d. bonus (stackable)
 | `c.fire_defense_multiplier_xV` | 炎防xV |  炎属性耐性がV倍(少ないほうが攻撃に強い) |
 | `c.ice_defense_multiplier_xV` | 氷防xV |  氷属性耐性がV倍(少ないほうが攻撃に強い) |
 | `c.thunder_defense_multiplier_xV` | 雷防xV |  雷属性耐性がV倍(少ないほうが攻撃に強い) |
-| `c.upgrade_V` | V強化+1 | Vが1段階強化する |
+| `c.upgrade_V` | V強化+1 | アビリティ:V が1段階強化する |
 | `c.antagonism` | ⚠️敵対 | 味方を攻撃するようになる |
 
 ---
