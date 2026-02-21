@@ -72,7 +72,7 @@ export const RACES: Race[] = [
     icon: '/race-icons/Ursan.png',
     stats: { vitality: 13, strength: 11, intelligence: 7, mind: 7 },
     defaultAbility: { id: 'a.bulwark', name: '壁', description: '真後ろの味方への遠距離攻撃を肩代わりする' },
-    unlockAbility: { id: 'a.cyborgization', name: 'サイボーグ化', description: '命中+30、回避-20' },
+    unlockAbility: { id: 'a.cyborgization1', name: 'サイボーグ化1', description: '命中+30、回避-20' },
     unlockCondition: '峰攻略',
     memo: 'Bear',
     bonuses: [
@@ -80,8 +80,6 @@ export const RACES: Race[] = [
       { type: 'catalyst_multiplier', value: 1.2 },
       { type: 'ability', value: 1, abilityId: 'bulwark', abilityLevel: 1 },
       { type: 'ability', value: 1, abilityId: 'cyborgization', abilityLevel: 1 },
-      { type: 'accuracy', value: 0.03 },
-      { type: 'evasion', value: -0.02 },
     ],
   },
   {
@@ -145,7 +143,7 @@ export const RACES: Race[] = [
     icon: '/race-icons/Cervin.png',
     stats: { vitality: 8, strength: 7, intelligence: 13, mind: 10 },
     defaultAbility: { id: 'a.focus', name: '集中', description: '命中ボーナスの効果が1.2倍になる' },
-    unlockAbility: { id: 'a.prophecy', name: '予言', description: '報酬抽選内容が見えるようになる' },
+    unlockAbility: { id: 'a.prophecy1', name: '予言1', description: '報酬抽選内容が見えるようになる' },
     unlockCondition: '谷攻略',
     memo: 'Deer',
     bonuses: [
