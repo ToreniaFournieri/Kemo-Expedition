@@ -238,7 +238,7 @@ d. bonus (stackable)
 
 **enhancement title**
 
-- enhancement multipiler
+- enhancement multiplier
 
 | value | title | multiplier |
 |-----|------|------|
