@@ -75,6 +75,19 @@ d. bonus (stackable)
 | `b.strength+v` | 力+v | 基礎筋力に v を加算（近接火力に影響） |
 | `b.intelligence+v` | 知+v | 基礎知性に v を加算（魔法火力に影響） |
 | `b.mind+v` | 精+v | 基礎精神に v を加算（HP/魔防に影響） |
+| `c.growth_xV` | 成長V倍 | キャラクター個人のHP基礎値及びアイテムHP増加値V倍 |
+| `c.physical_offense_multiplier_xV` | 物攻撃V倍 | 遠距離攻撃・近接攻撃がV倍 |
+| `c.magical_offense_multiplier_xV` | 魔攻撃V倍 | 魔法攻撃がV倍 |
+| `c.fire_offense_multiplier_xV` | 炎攻撃V倍 | 炎属性攻撃がV倍 |
+| `c.ice_offense_multiplier_xV` | 氷攻撃V倍 | 氷属性攻撃がV倍 |
+| `c.thunder_offense_multiplier_xV` | 雷攻撃V倍 | 雷属性攻撃がV倍 |
+| `c.physical_defense_multiplier_xV` | 物防xV | 物理防御力がV倍(少ないほうが攻撃に強い) |
+| `c.magical_defense_multiplier_xV` | 魔防xV | 魔法防御力がV倍(少ないほうが攻撃に強い) |
+| `c.fire_defense_multiplier_xV` | 炎防xV |  炎属性耐性がV倍(少ないほうが攻撃に強い) |
+| `c.ice_defense_multiplier_xV` | 氷防xV |  氷属性耐性がV倍(少ないほうが攻撃に強い) |
+| `c.thunder_defense_multiplier_xV` | 雷防xV |  雷属性耐性がV倍(少ないほうが攻撃に強い) |
+| `c.upgrade_V` | V強化+1 | Vが1段階強化する |
+| `c.antagonism` | ⚠️敵対 | 味方を攻撃するようになる |
 
 ---
 
