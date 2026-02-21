@@ -251,6 +251,18 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
           collection.abilities.set(bonus.abilityId, Math.max(currentLevel, bonus.abilityLevel ?? 1));
         }
         break;
+      case 'ability_upgrade':
+        if (bonus.abilityId) {
+          const bonusName = `c.upgrade_${bonus.abilityId}+${formatCBonusValue(bonus.value)}`;
+          if (collection.uniqueCAdditiveBonusNames.has(bonusName)) break;
+          collection.uniqueCAdditiveBonusNames.add(bonusName);
+
+          const currentLevel = collection.abilities.get(bonus.abilityId) ?? 0;
+          if (currentLevel > 0) {
+            collection.abilities.set(bonus.abilityId, currentLevel + bonus.value);
+          }
+        }
+        break;
       case 'upgrade_V':
         {
           const bonusName = `c.upgrade_V+${formatCBonusValue(bonus.value)}`;
