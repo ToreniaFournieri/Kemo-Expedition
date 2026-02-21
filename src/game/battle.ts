@@ -35,10 +35,12 @@ function getElementalMultiplier(
 }
 
 function getCharacterRageAmplifier(charStats: ComputedCharacterStats, partyHp: number, maxPartyHp: number): number {
-  if (!charStats.abilities.some(a => a.id === 'rage')) return 1.0;
+  const rageLevel = charStats.abilities.find(a => a.id === 'rage')?.level ?? 0;
+  if (rageLevel <= 0) return 1.0;
   if (maxPartyHp <= 0) return 1.0;
   const hpRatio = Math.max(0, Math.min(1, partyHp / maxPartyHp));
-  return Math.min(2.0, 1.0 + (1.0 - hpRatio));
+  const multiplierPerDamageRate = rageLevel >= 2 ? 1.2 : 1.0;
+  return Math.min(2.0, 1.0 + (multiplierPerDamageRate * (1.0 - hpRatio)));
 }
 
 function getEnemyRageAmplifier(enemy: EnemyDef, enemyHp: number): number {
@@ -76,6 +78,10 @@ function hasBulwark(charStats: ComputedCharacterStats): boolean {
   return charStats.abilities.some(a => a.id === 'bulwark');
 }
 
+function getBulwarkLevel(charStats: ComputedCharacterStats): number {
+  return charStats.abilities.find(a => a.id === 'bulwark')?.level ?? 0;
+}
+
 function resolveEnemyTarget(
   targetRow: number,
   characterStats: ComputedCharacterStats[],
@@ -84,12 +90,21 @@ function resolveEnemyTarget(
   const selectedTarget = characterStats.find(cs => cs.row === targetRow);
   if (!selectedTarget) return null;
 
-  if (phase !== 'long') {
+  const allowsBulwarkRedirect = phase === 'long' || phase === 'close';
+  if (!allowsBulwarkRedirect) {
     return selectedTarget;
   }
 
   const frontCharacter = characterStats.find(cs => cs.row === selectedTarget.row - 1);
-  if (frontCharacter && hasBulwark(frontCharacter)) {
+  const frontBulwarkLevel = frontCharacter ? getBulwarkLevel(frontCharacter) : 0;
+  if (
+    frontCharacter
+    && hasBulwark(frontCharacter)
+    && (
+      phase === 'long'
+      || (phase === 'close' && frontBulwarkLevel >= 2)
+    )
+  ) {
     return frontCharacter;
   }
 
@@ -97,9 +112,13 @@ function resolveEnemyTarget(
 }
 
 function getCharacterMomentumAmplifier(charStats: ComputedCharacterStats, partyHp: number, maxPartyHp: number): number {
-  if (!charStats.abilities.some(a => a.id === 'momentum')) return 1.0;
+  const momentumLevel = charStats.abilities.find(a => a.id === 'momentum')?.level ?? 0;
+  if (momentumLevel <= 0) return 1.0;
   if (maxPartyHp <= 0) return 1.0;
   const hpRatio = Math.max(0, Math.min(1, partyHp / maxPartyHp));
+  if (momentumLevel >= 2) {
+    return 1.5 - ((1.0 - hpRatio) * 0.75);
+  }
   return Math.max(0.5, 1.5 - (1.0 - hpRatio));
 }
 
@@ -416,10 +435,13 @@ function getFirstStrikeLevel(charStats: ComputedCharacterStats): number {
 }
 
 function rollInitiative(firstStrikeLevel: number): number {
-  const diceCount = firstStrikeLevel >= 2 ? 3 : firstStrikeLevel === 1 ? 2 : 1;
+  const diceCount = firstStrikeLevel >= 3 ? 4 : firstStrikeLevel >= 2 ? 3 : firstStrikeLevel === 1 ? 2 : 1;
   let total = 0;
   for (let i = 0; i < diceCount; i++) {
     total += Math.floor(Math.random() * 3) + 1;
+  }
+  if (firstStrikeLevel >= 3) {
+    return Math.min(9, total);
   }
   return total;
 }
@@ -765,20 +787,19 @@ export function executeBattle(
       characterInitiative.map(ci => [ci.stats.characterId, ci.roll])
     );
 
-    const characterTurnOrder = characterInitiative
-      .map(ci => ({ kind: 'character' as const, roll: ci.roll, stats: ci.stats }))
-      .sort((a, b) => {
-        if (b.roll !== a.roll) return b.roll - a.roll;
-        const aFront = a.stats.row <= 3;
-        const bFront = b.stats.row <= 3;
-        if (aFront !== bFront) return aFront ? -1 : 1;
-        return a.stats.row - b.stats.row;
-      });
-
     const turnOrder: Array<{ kind: 'enemy'; roll: number } | { kind: 'character'; roll: number; stats: ComputedCharacterStats }> = [
-      { kind: 'enemy', roll: enemyInitiativeRoll },
-      ...characterTurnOrder,
-    ];
+      { kind: 'enemy' as const, roll: enemyInitiativeRoll },
+      ...characterInitiative.map(ci => ({ kind: 'character' as const, roll: ci.roll, stats: ci.stats })),
+    ].sort((a, b) => {
+      if (b.roll !== a.roll) return b.roll - a.roll;
+      if (a.kind !== b.kind) return a.kind === 'enemy' ? -1 : 1;
+      if (a.kind === 'enemy' && b.kind === 'enemy') return 0;
+      if (!('stats' in a) || !('stats' in b)) return 0;
+      const aFront = a.stats.row <= 3;
+      const bFront = b.stats.row <= 3;
+      if (aFront !== bFront) return aFront ? -1 : 1;
+      return a.stats.row - b.stats.row;
+    });
 
     for (const turn of turnOrder) {
       if (enemyHp <= 0 || partyHp <= 0) break;
