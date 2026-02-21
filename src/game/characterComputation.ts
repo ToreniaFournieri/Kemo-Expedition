@@ -408,6 +408,12 @@ export function computeCharacterStats(
   const seekerMultiplier = seekerLevel > 0 ? 1 + (partyLevel * seekerPerLevelBonus) : 1;
 
   // Calculate stats from equipment
+  // Process equipment (limited to maxEquipSlots)
+  const equippedItems = character.equipment.slice(0, maxEquipSlots).filter((item): item is Item => item != null);
+  for (const item of equippedItems) {
+    collectBonuses(getSuperRareBonuses(item.superRare), collection);
+  }
+
   let rangedAttack = 0;
   let magicalAttack = 0;
   let meleeAttack = 0;
@@ -428,12 +434,6 @@ export function computeCharacterStats(
     ice: 0,
     thunder: 0,
   };
-
-  // Process equipment (limited to maxEquipSlots)
-  const equippedItems = character.equipment.slice(0, maxEquipSlots).filter((item): item is Item => item != null);
-  for (const item of equippedItems) {
-    collectBonuses(getSuperRareBonuses(item.superRare), collection);
-  }
 
   for (const item of equippedItems) {
     if (item.vitalityBonus) baseStats.vitality += item.vitalityBonus;
