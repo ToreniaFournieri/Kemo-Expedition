@@ -4706,10 +4706,29 @@ function SettingTab({
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4">
-        <div className="text-sm font-medium mb-3">5. ゲーム設定</div>
+        <div className="text-sm font-medium mb-3">5. 超レア一覧</div>
+        <div className="text-xs text-gray-500 mb-2">Super Rare List (超レア一覧)</div>
+        <div className="bg-white rounded p-2 text-sm space-y-1 max-h-72 overflow-y-auto">
+          {SUPER_RARE_TITLES.filter(title => title.value > 0).map(title => {
+            const uniqueBonus = formatBonuses((title.bonuses ?? []).filter((bonus) => bonus.type !== 'growth_xV'));
+            return (
+              <div key={title.value} className="grid grid-cols-[auto,1fr] gap-x-2 border-b border-gray-100 last:border-b-0 py-1">
+                <div className="text-gray-500">{title.value}.</div>
+                <div>
+                  <div className="font-medium text-gray-700">{title.title}</div>
+                  <div className="text-xs text-sub">固有ボーナス: {uniqueBonus || 'なし'}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="bg-pane rounded-lg p-4 mb-4">
+        <div className="text-sm font-medium mb-3">6. ゲーム設定</div>
         <div className="space-y-4">
           <div>
-            <div className="text-sm font-medium mb-1">5.1 バックアップ（Export）</div>
+            <div className="text-sm font-medium mb-1">6.1 バックアップ（Export）</div>
             <button
               onClick={handleExportBackup}
               className="w-full py-2 bg-sub text-white rounded font-medium"
@@ -4719,7 +4738,7 @@ function SettingTab({
           </div>
 
           <div>
-            <div className="text-sm font-medium mb-1">5.2 インポート（Import）</div>
+            <div className="text-sm font-medium mb-1">6.2 インポート（Import）</div>
             <input
               ref={importInputRef}
               type="file"
@@ -4736,7 +4755,7 @@ function SettingTab({
           </div>
 
           <div>
-            <div className="text-sm font-medium mb-1">5.3 フルリセット（Reset）</div>
+            <div className="text-sm font-medium mb-1">6.3 フルリセット（Reset）</div>
             {!showResetConfirm ? (
               <button onClick={() => setShowResetConfirm(true)} className="w-full py-2 bg-accent text-white rounded font-medium">ゲームをリセット</button>
             ) : (
