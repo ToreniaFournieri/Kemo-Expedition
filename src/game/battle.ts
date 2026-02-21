@@ -11,6 +11,7 @@ import {
   ElementalOffense,
   GameBags,
   RandomBag,
+  AbilityId,
 } from '../types';
 import { computePartyStats } from './partyComputation';
 import { getBaseMultiplier } from './baseMultiplier';
@@ -445,23 +446,33 @@ function hasResurrect(charStats: ComputedCharacterStats): boolean {
   return charStats.abilities.some(a => a.id === 'resurrect');
 }
 
-function hasReAttack(charStats: ComputedCharacterStats): number {
+function getAbilityLevel(charStats: ComputedCharacterStats, abilityId: AbilityId): number {
+  return charStats.abilities.find(a => a.id === abilityId)?.level ?? 0;
+}
+
+function getReAttackProfile(charStats: ComputedCharacterStats): { count: number; noAMultiplier: number } {
   const ability = charStats.abilities.find(a => a.id === 're_attack');
-  if (!ability) return 0;
-  return ability.level === 2 ? 2 : 1;
+  if (!ability) return { count: 0, noAMultiplier: 0.5 };
+  if (ability.level === 2) return { count: 2, noAMultiplier: 0.5 };
+  return { count: 1, noAMultiplier: 0.5 };
 }
 
-
-function hasReCounter(charStats: ComputedCharacterStats): boolean {
-  return charStats.abilities.some(a => a.id === 're_counter');
+function getReCounterNoAMultiplier(charStats: ComputedCharacterStats): number {
+  const level = getAbilityLevel(charStats, 're_counter');
+  if (level <= 0) return 0;
+  return level >= 2 ? 1.0 : 0.5;
 }
 
-function hasMagicalCounter(charStats: ComputedCharacterStats): boolean {
-  return charStats.abilities.some(a => a.id === 'magical_counter');
+function getMagicalCounterNoAMultiplier(charStats: ComputedCharacterStats): number {
+  const level = getAbilityLevel(charStats, 'magical_counter');
+  if (level <= 0) return 0;
+  return level >= 2 ? 1.0 : 0.5;
 }
 
-function hasCoveringFire(charStats: ComputedCharacterStats): boolean {
-  return charStats.abilities.some(a => a.id === 'covering_fire');
+function getCoveringFireNoAMultiplier(charStats: ComputedCharacterStats): number {
+  const level = getAbilityLevel(charStats, 'covering_fire');
+  if (level <= 0) return 0;
+  return level >= 2 ? 1.0 : 0.5;
 }
 
 function enemyHasReCounter(enemy: EnemyDef): boolean {
@@ -646,11 +657,12 @@ export function executeBattle(
       });
     }
 
-    if (partyHp <= 0 || enemyHp <= 0 || !targetChar || !hasReCounter(targetCharStats) || enemy.abilities.includes('null_counter')) {
+    const reCounterNoAMultiplier = getReCounterNoAMultiplier(targetCharStats);
+    if (partyHp <= 0 || enemyHp <= 0 || !targetChar || reCounterNoAMultiplier <= 0 || enemy.abilities.includes('null_counter')) {
       return;
     }
 
-    const reCounterResult = calculateCharacterDamage('close', targetCharStats, targetChar, enemy, partyStats, partyHp, 0.5);
+    const reCounterResult = calculateCharacterDamage('close', targetCharStats, targetChar, enemy, partyStats, partyHp, reCounterNoAMultiplier);
     if (reCounterResult.totalAttempts <= 0) {
       return;
     }
@@ -688,12 +700,13 @@ export function executeBattle(
 
     for (const coverCharStats of characterStats) {
       if (coverCharStats.characterId === sourceCharStats.characterId) continue;
-      if (!hasCoveringFire(coverCharStats)) continue;
+      const coveringFireNoAMultiplier = getCoveringFireNoAMultiplier(coverCharStats);
+      if (coveringFireNoAMultiplier <= 0) continue;
 
       const coverChar = party.characters.find(c => c.id === coverCharStats.characterId);
       if (!coverChar) continue;
 
-      const coveringFireResult = calculateCharacterDamage('long', coverCharStats, coverChar, enemy, partyStats, partyHp, 0.5);
+      const coveringFireResult = calculateCharacterDamage('long', coverCharStats, coverChar, enemy, partyStats, partyHp, coveringFireNoAMultiplier);
       if (coveringFireResult.totalAttempts <= 0) continue;
 
       if (coveringFireResult.damage > 0) {
@@ -892,7 +905,7 @@ export function executeBattle(
             if (
               phase === 'mid'
               && attack.damage > 0
-              && hasMagicalCounter(attack.charStats)
+              && getMagicalCounterNoAMultiplier(attack.charStats) > 0
               && !enemy.abilities.includes('null_counter')
             ) {
               magicalCounterCandidates.set(charId, attack.charStats);
@@ -1043,7 +1056,10 @@ export function executeBattle(
             const magicalCounterChar = party.characters.find(c => c.id === charId);
             if (!magicalCounterChar) continue;
 
-            const magicalCounterResult = calculateCharacterDamage('mid', magicalCounterStats, magicalCounterChar, enemy, partyStats, partyHp, 0.5);
+            const magicalCounterNoAMultiplier = getMagicalCounterNoAMultiplier(magicalCounterStats);
+            if (magicalCounterNoAMultiplier <= 0) continue;
+
+            const magicalCounterResult = calculateCharacterDamage('mid', magicalCounterStats, magicalCounterChar, enemy, partyStats, partyHp, magicalCounterNoAMultiplier);
             if (magicalCounterResult.totalAttempts <= 0) continue;
 
             if (magicalCounterResult.damage > 0) {
@@ -1124,9 +1140,9 @@ export function executeBattle(
 
       if (enemyHp <= 0 || partyHp <= 0) continue;
 
-      const reAttackCount = hasReAttack(cs);
-      for (let i = 0; i < reAttackCount && enemyHp > 0 && partyHp > 0; i++) {
-        const reAttackResult = runCharacterAttack(0.5, true);
+      const reAttackProfile = getReAttackProfile(cs);
+      for (let i = 0; i < reAttackProfile.count && enemyHp > 0 && partyHp > 0; i++) {
+        const reAttackResult = runCharacterAttack(reAttackProfile.noAMultiplier, true);
         if (reAttackResult && enemyHp > 0 && partyHp > 0) {
           triggerCoveringFire(phase, cs, reAttackResult.hits, turn.roll);
         }
