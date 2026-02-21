@@ -79,9 +79,6 @@ d. bonus (stackable)
 | `c.physical_attack+v` | 物攻+v% | 遠距離攻撃・近距離攻撃の最終ダメージを v% 乗算強化する |
 | `c.physical_offense_multiplier_xV` | 物攻撃V倍 | 遠距離攻撃・近接攻撃がV倍 |
 | `c.magical_offense_multiplier_xV` | 魔攻撃V倍 | 魔法攻撃がV倍 |
-| `c.fire_offense_multiplier_xV` | 炎攻撃V倍 | 炎属性攻撃がV倍 |
-| `c.ice_offense_multiplier_xV` | 氷攻撃V倍 | 氷属性攻撃がV倍 |
-| `c.thunder_offense_multiplier_xV` | 雷攻撃V倍 | 雷属性攻撃がV倍 |
 | `c.physical_defense_multiplier_xV` | 物防xV | 物理防御力がV倍(少ないほうが攻撃に強い) |
 | `c.magical_defense_multiplier_xV` | 魔防xV | 魔法防御力がV倍(少ないほうが攻撃に強い) |
 | `c.fire_defense_multiplier_xV` | 炎防xV |  炎属性耐性がV倍(少ないほうが攻撃に強い) |
