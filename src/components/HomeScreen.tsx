@@ -3664,7 +3664,7 @@ function ShopTab({
               <button
                 onClick={() => onBuyShopItem(entry.titleValue)}
                 disabled={!entry.canBuy}
-                className={`rounded px-3 py-1 text-xs font-medium ${
+                className={`shrink-0 min-w-[3.25rem] whitespace-nowrap rounded px-3 py-1 text-xs font-medium ${
                   entry.isSoldOut
                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                     : entry.canBuy
