@@ -752,15 +752,8 @@ function formatMultiplierValue(value: number): string {
   return rounded.toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
 }
 
-function formatDefenseMultiplierBonus(label: string, value: number, preferPercent: boolean): string {
+function formatDefenseMultiplierBonus(label: string, value: number): string {
   const rounded = Math.round(value * 100) / 100;
-
-  if (preferPercent && rounded < 1) {
-    const improvementPercent = (1 - rounded) * 100;
-    if (Number.isInteger(improvementPercent)) {
-      return `${label}+${improvementPercent}%`;
-    }
-  }
 
   const precision = 100;
   const numerator = Math.round(rounded * precision);
@@ -828,31 +821,31 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
     } else if (b.type === 'physical_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
-          ? formatDefenseMultiplierBonus('物防', b.value, true)
+          ? formatDefenseMultiplierBonus('物防', b.value)
           : `物防x${b.value.toFixed(2)}`
       );
     } else if (b.type === 'magical_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
-          ? formatDefenseMultiplierBonus('魔防', b.value, true)
+          ? formatDefenseMultiplierBonus('魔防', b.value)
           : `魔防x${b.value.toFixed(2)}`
       );
     } else if (b.type === 'fire_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
-          ? formatDefenseMultiplierBonus('炎防', b.value, false)
+          ? formatDefenseMultiplierBonus('炎防', b.value)
           : `炎防x${b.value.toFixed(2)}`
       );
     } else if (b.type === 'ice_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
-          ? formatDefenseMultiplierBonus('氷防', b.value, false)
+          ? formatDefenseMultiplierBonus('氷防', b.value)
           : `氷防x${b.value.toFixed(2)}`
       );
     } else if (b.type === 'thunder_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
-          ? formatDefenseMultiplierBonus('雷防', b.value, false)
+          ? formatDefenseMultiplierBonus('雷防', b.value)
           : `雷防x${b.value.toFixed(2)}`
       );
     } else if (b.type === 'growth_xV') {
