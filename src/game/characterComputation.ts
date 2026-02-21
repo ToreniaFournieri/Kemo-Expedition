@@ -15,7 +15,7 @@ import { getRaceById } from '../data/races';
 import { getClassById } from '../data/classes';
 import { getPredispositionById } from '../data/predispositions';
 import { getLineageById } from '../data/lineages';
-import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
+import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, getSuperRareBonuses } from '../data/items';
 import { getBaseMultiplier } from './baseMultiplier';
 
 // Get enhancement and super rare multiplier for an item
@@ -65,6 +65,11 @@ interface BonusCollection {
   physicalDefenseMultiplier: number;
   magicalDefenseMultiplier: number;
   elementalDefenseMultipliers: {
+    fire: number;
+    thunder: number;
+    ice: number;
+  };
+  elementalOffenseBonuses: {
     fire: number;
     thunder: number;
     ice: number;
@@ -288,6 +293,18 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
           }
         }
         break;
+      case 'fire_offense':
+      case 'ice_offense':
+      case 'thunder_offense':
+        {
+          const bonusName = `e.${bonus.type}+${formatCBonusValue(bonus.value)}`;
+          if (collection.offenseCBonusNames.has(bonusName)) break;
+          collection.offenseCBonusNames.add(bonusName);
+          if (bonus.type === 'fire_offense') collection.elementalOffenseBonuses.fire += bonus.value;
+          if (bonus.type === 'ice_offense') collection.elementalOffenseBonuses.ice += bonus.value;
+          if (bonus.type === 'thunder_offense') collection.elementalOffenseBonuses.thunder += bonus.value;
+        }
+        break;
     }
   }
 }
@@ -337,6 +354,11 @@ export function computeCharacterStats(
       fire: 1,
       thunder: 1,
       ice: 1,
+    },
+    elementalOffenseBonuses: {
+      fire: 0,
+      thunder: 0,
+      ice: 0,
     },
     offenseCBonusNames: new Set<string>(),
     antagonism: false,
@@ -409,6 +431,9 @@ export function computeCharacterStats(
 
   // Process equipment (limited to maxEquipSlots)
   const equippedItems = character.equipment.slice(0, maxEquipSlots).filter((item): item is Item => item != null);
+  for (const item of equippedItems) {
+    collectBonuses(getSuperRareBonuses(item.superRare), collection);
+  }
 
   for (const item of equippedItems) {
     if (item.vitalityBonus) baseStats.vitality += item.vitalityBonus;
@@ -506,12 +531,12 @@ export function computeCharacterStats(
     }
   }
 
-  const elementalPriority: ElementalOffense[] = ['thunder', 'ice', 'fire'];
+  const elementalPriority: Array<Exclude<ElementalOffense, 'none'>> = ['thunder', 'ice', 'fire'];
   let selectedElement: ElementalOffense = 'none';
   let selectedElementBonus = 0;
 
   for (const element of elementalPriority) {
-    const total = elementalOffenseTotals[element];
+    const total = elementalOffenseTotals[element] + collection.elementalOffenseBonuses[element];
     if (total > selectedElementBonus) {
       selectedElement = element;
       selectedElementBonus = total;

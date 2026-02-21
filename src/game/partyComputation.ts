@@ -14,7 +14,7 @@ import { getRaceById } from '../data/races';
 import { getClassById } from '../data/classes';
 import { getPredispositionById } from '../data/predispositions';
 import { getLineageById } from '../data/lineages';
-import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
+import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, getSuperRareBonuses } from '../data/items';
 import { applyDeityCharacterModifiers } from './deity';
 
 // Get enhancement and super rare multiplier for an item
@@ -44,7 +44,7 @@ function formatCBonusValue(value: number): string {
 }
 
 function getCharacterMultiplier(
-  character: { raceId: string; mainClassId: string; subClassId: string; predispositionId: string; lineageId: string },
+  character: { raceId: string; mainClassId: string; subClassId: string; predispositionId: string; lineageId: string; equipment: (Item | null)[] },
   category: ItemCategory
 ): number {
   const bonusType = CATEGORY_TO_MULTIPLIER[category];
@@ -66,6 +66,7 @@ function getCharacterMultiplier(
     ...(isMasterClass ? mainClass.masterBonuses : [...mainClass.mainBonuses, ...subClass.mainSubBonuses]),
     ...predisposition.bonuses,
     ...lineage.bonuses,
+    ...character.equipment.flatMap((item) => (item ? getSuperRareBonuses(item.superRare) : [])),
   ];
 
   const appliedBonusNames = new Set<string>();
@@ -107,6 +108,12 @@ function getCharacterBaseStats(character: { raceId: string; predispositionId: st
 
   for (const item of character.equipment) {
     if (!item) continue;
+    for (const bonus of getSuperRareBonuses(item.superRare)) {
+      if (bonus.type === 'vitality') vitality += bonus.value;
+      if (bonus.type === 'strength') strength += bonus.value;
+      if (bonus.type === 'intelligence') intelligence += bonus.value;
+      if (bonus.type === 'mind') mind += bonus.value;
+    }
     if (item.vitalityBonus) vitality += item.vitalityBonus;
     if (item.strengthBonus) strength += item.strengthBonus;
     if (item.intelligenceBonus) intelligence += item.intelligenceBonus;
@@ -117,7 +124,7 @@ function getCharacterBaseStats(character: { raceId: string; predispositionId: st
 }
 
 function getCharacterGrowthMultiplier(
-  character: { raceId: string; mainClassId: string; subClassId: string; predispositionId: string; lineageId: string }
+  character: { raceId: string; mainClassId: string; subClassId: string; predispositionId: string; lineageId: string; equipment: (Item | null)[] }
 ): number {
   const race = getRaceById(character.raceId);
   const mainClass = getClassById(character.mainClassId);
@@ -134,6 +141,7 @@ function getCharacterGrowthMultiplier(
     ...(isMasterClass ? mainClass.masterBonuses : [...mainClass.mainBonuses, ...subClass.mainSubBonuses]),
     ...predisposition.bonuses,
     ...lineage.bonuses,
+    ...character.equipment.flatMap((item) => (item ? getSuperRareBonuses(item.superRare) : [])),
   ];
 
   const appliedBonusNames = new Set<string>();

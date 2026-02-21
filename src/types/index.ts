@@ -81,6 +81,7 @@ export type BonusType =
   | 'physical_offense_multiplier_xV' | 'magical_offense_multiplier_xV'
   | 'physical_defense_multiplier_xV' | 'magical_defense_multiplier_xV'
   | 'fire_defense_multiplier_xV' | 'ice_defense_multiplier_xV' | 'thunder_defense_multiplier_xV'
+  | 'fire_offense' | 'ice_offense' | 'thunder_offense'
   // Accuracy/Evasion bonuses
   | 'accuracy' | 'evasion'
   // Growth bonuses
@@ -155,7 +156,7 @@ export interface ItemDef {
 
 export interface Item extends ItemDef {
   enhancement: number; // 0-6
-  superRare: number; // 0-5
+  superRare: number; // 0-80
   isNew?: boolean; // For highlighting newly acquired items
 }
 
@@ -462,6 +463,7 @@ export interface SuperRareTitle {
   title: string;
   tickets: number;
   multiplier: number;
+  bonuses?: Bonus[];
 }
 
 // Expedition Log Types
