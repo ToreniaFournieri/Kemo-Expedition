@@ -494,6 +494,7 @@ function enemyHasReAttack(enemy: EnemyDef): boolean {
 function hasCounter(charStats: ComputedCharacterStats, phase: BattlePhase): boolean {
   const ability = charStats.abilities.find(a => a.id === 'counter');
   if (!ability) return false;
+  if (ability.level >= 3) return true;
   if (ability.level === 2) return phase === 'close' || phase === 'mid';
   return phase === 'close';
 }
@@ -514,6 +515,7 @@ function getAbilityLevel(charStats: ComputedCharacterStats, abilityId: AbilityId
 function getReAttackProfile(charStats: ComputedCharacterStats): { count: number; noAMultiplier: number } {
   const ability = charStats.abilities.find(a => a.id === 're_attack');
   if (!ability) return { count: 0, noAMultiplier: 0.5 };
+  if (ability.level >= 3) return { count: 2, noAMultiplier: 1.0 };
   if (ability.level === 2) return { count: 2, noAMultiplier: 0.5 };
   return { count: 1, noAMultiplier: 0.5 };
 }
