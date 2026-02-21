@@ -3614,9 +3614,9 @@ function ShopTab({
 }) {
   const shopPrice = 10000;
   const baseShield = ITEMS.find((item) => item.id === 1103);
-  const felidianRace = RACES.find((race) => race.id === 'felidian');
+  const mustelidRace = RACES.find((race) => race.id === 'mustelid');
 
-  if (!baseShield || !felidianRace) {
+  if (!baseShield || !mustelidRace) {
     return <div className="text-sm text-gray-600">お店の準備中です。</div>;
   }
 
@@ -3643,7 +3643,7 @@ function ShopTab({
       <div className="rounded border border-gray-200 bg-white p-3">
         <div className="text-sm font-semibold text-sub">フェリスのガラクタ屋</div>
         <div className="mt-2 flex items-start gap-3">
-          <RaceIcon race={felidianRace} className="h-10 w-10" />
+          <RaceIcon race={mustelidRace} className="h-10 w-10" />
           <p className="text-sm text-gray-700">
             とても珍しい品物が揃ってるよ。オラよくわかんねぇけど、売主がデバッグ用にって言ってた。
           </p>
