@@ -64,6 +64,8 @@ interface BonusCollection {
   magicalOffenseMultiplier: number;
   physicalDefenseMultiplier: number;
   magicalDefenseMultiplier: number;
+  physicalDefenseCBonuses: Map<string, number>;
+  magicalDefenseCBonuses: Map<string, number>;
   elementalDefenseMultipliers: {
     fire: number;
     thunder: number;
@@ -82,9 +84,15 @@ function formatCBonusValue(value: number): string {
   return (Math.round(value * 1000000) / 1000000).toString();
 }
 
+function formatDefenseBonusPercent(value: number): string {
+  const percent = Math.round(value * 1000) / 10;
+  return Number.isInteger(percent) ? `${percent}` : `${percent.toFixed(1)}`;
+}
+
 function getUniqueCBonusSum(
   items: Item[],
-  kind: 'physical_defense' | 'magical_defense'
+  kind: 'physical_defense' | 'magical_defense',
+  additionalBonuses?: Map<string, number>
 ): number {
   const appliedBonusNames = new Set<string>();
   let bonusSum = 0;
@@ -95,11 +103,19 @@ function getUniqueCBonusSum(
     if (kind === 'physical_defense' && !item.physicalDefense) continue;
     if (kind === 'magical_defense' && !item.magicalDefense) continue;
 
-    const percent = Math.round((baseMultiplier - 1) * 1000) / 10;
+    const percent = formatDefenseBonusPercent(baseMultiplier - 1);
     const bonusName = `c.${kind}+${percent}`;
     if (appliedBonusNames.has(bonusName)) continue;
     appliedBonusNames.add(bonusName);
     bonusSum += baseMultiplier - 1;
+  }
+
+  if (additionalBonuses) {
+    for (const [bonusName, value] of additionalBonuses) {
+      if (appliedBonusNames.has(bonusName)) continue;
+      appliedBonusNames.add(bonusName);
+      bonusSum += value;
+    }
   }
 
   return bonusSum;
@@ -258,6 +274,19 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
           if (bonus.type === 'physical_attack') collection.physicalAttackCBonus += bonus.value;
         }
         break;
+      case 'physical_defense':
+      case 'magical_defense':
+        {
+          const bonusName = `c.${bonus.type}+${formatDefenseBonusPercent(bonus.value)}`;
+          if (collection.uniqueCAdditiveBonusNames.has(bonusName)) break;
+          collection.uniqueCAdditiveBonusNames.add(bonusName);
+          if (bonus.type === 'physical_defense') {
+            collection.physicalDefenseCBonuses.set(bonusName, bonus.value);
+          } else {
+            collection.magicalDefenseCBonuses.set(bonusName, bonus.value);
+          }
+        }
+        break;
       case 'physical_offense_multiplier_xV':
       case 'magical_offense_multiplier_xV':
         {
@@ -350,6 +379,8 @@ export function computeCharacterStats(
     magicalOffenseMultiplier: 1,
     physicalDefenseMultiplier: 1,
     magicalDefenseMultiplier: 1,
+    physicalDefenseCBonuses: new Map<string, number>(),
+    magicalDefenseCBonuses: new Map<string, number>(),
     elementalDefenseMultipliers: {
       fire: 1,
       thunder: 1,
@@ -597,8 +628,8 @@ export function computeCharacterStats(
     }
   }
 
-  physicalDefenseBonus = getUniqueCBonusSum(equippedItems, 'physical_defense');
-  magicalDefenseBonus = getUniqueCBonusSum(equippedItems, 'magical_defense');
+  physicalDefenseBonus = getUniqueCBonusSum(equippedItems, 'physical_defense', collection.physicalDefenseCBonuses);
+  magicalDefenseBonus = getUniqueCBonusSum(equippedItems, 'magical_defense', collection.magicalDefenseCBonuses);
 
   const vitalityDefenseScale = getBaseMultiplier(baseStats.vitality, 'defense');
   const mindDefenseScale = getBaseMultiplier(baseStats.mind, 'defense');
