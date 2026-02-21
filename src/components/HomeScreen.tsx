@@ -2774,12 +2774,16 @@ function PartyTab({
             {/* Bonuses */}
             {(() => {
               const isMasterClass = char.mainClassId === char.subClassId;
+              const equippedItems = char.equipment
+                .slice(0, stats.maxEquipSlots)
+                .filter((item): item is Item => item != null);
               const allBonuses = [
                 ...race.bonuses,
                 ...mainClass.mainSubBonuses,
                 ...(isMasterClass ? mainClass.masterBonuses : [...mainClass.mainBonuses, ...subClass.mainSubBonuses]),
                 ...predisposition.bonuses,
                 ...lineage.bonuses,
+                ...equippedItems.flatMap((item) => getSuperRareBonuses(item.superRare)),
               ];
 
               // Aggregate bonuses - deduplicate multipliers by value before multiplying
@@ -2827,9 +2831,21 @@ function PartyTab({
                 multipliers[key] = Array.from(values).reduce((prod, v) => prod * v, 1);
               }
 
-              const seekerAbilityLevel = allBonuses
+              const seekerBaseLevel = allBonuses
                 .filter((b) => b.type === 'ability' && b.abilityId === 'seeker')
                 .reduce((max, b) => Math.max(max, b.abilityLevel ?? 1), 0);
+              const appliedSeekerUpgradeNames = new Set<string>();
+              const seekerUpgradeLevel = allBonuses
+                .filter((b) => b.type === 'ability_upgrade' && b.abilityId === 'seeker')
+                .reduce((sum, b) => {
+                  const bonusName = `c.upgrade_seeker+${formatCBonusValue(b.value)}`;
+                  if (appliedSeekerUpgradeNames.has(bonusName)) return sum;
+                  appliedSeekerUpgradeNames.add(bonusName);
+                  return sum + b.value;
+                }, 0);
+              const seekerAbilityLevel = seekerBaseLevel > 0
+                ? seekerBaseLevel + seekerUpgradeLevel
+                : seekerBaseLevel;
               const seekerPerLevelBonus = seekerAbilityLevel >= 2 ? 0.0035 : seekerAbilityLevel >= 1 ? 0.0025 : 0;
               const seekerMultiplier = seekerAbilityLevel > 0 ? 1 + (party.level * seekerPerLevelBonus) : 1;
 
