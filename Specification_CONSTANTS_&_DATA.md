@@ -70,7 +70,7 @@ d. bonus (stackable)
 | `c.grit+v` | 根性+v | 近接攻撃の装備が出来るようになる。近接攻撃回数が　v 回増える |
 | `c.pursuit+v` | 追撃+v | 遠距離攻撃の装備が出来るようになる。遠距離攻撃回数が　v 回増える |
 | `c.caster+v` | 術者+v | 魔法攻撃の装備が出来るようになる。魔法攻撃回数が　v 回増える |
-| `c.penet_+v` | 貫通+v*100% | 敵の防御力を　v*100% 分無視する |
+| `c.penet+v` | 貫通+v*100% | 敵の防御力を　v*100% 分無視する |
 | `b.vitality+v` | 体+v | 基礎体力に v を加算（HP/物防に影響） |
 | `b.strength+v` | 力+v | 基礎筋力に v を加算（近接火力に影響） |
 | `b.intelligence+v` | 知+v | 基礎知性に v を加算（魔法火力に影響） |
@@ -344,7 +344,7 @@ d. bonus (stackable)
 |マステリド(Mustelid) | `a.resonance`1 | `a.peddler`1 | 巣攻略 | `c.gauntlet_x1.3`, `c.arrow_x1.3` |10,10,9,11| 🦡Ferret |
 |レポリアン(Leporian) | `a.composure`1 | `a.magical-counter`1 | 園攻略 | `c.archery_x1.3`,  `c.armor_x1.3` |9,8,11,10| 🐰Rabbit |
 |セルヴィン(Cervin)  | `a.focus`1 | `a.prophecy`1 | 谷攻略 |`c.wand_x1.3`, `c.shield_x1.2` |8,7,13,10| 🦌Deer |
-|ミュリッド(Murid) | `a.stealth`1 | (none) | (none) |`c.penet_+0.10`, `c.bolt_x1.3`  |9,8,10,10| 🐭Mouse |
+|ミュリッド(Murid) | `a.stealth`1 | (none) | (none) |`c.penet+0.10`, `c.bolt_x1.3`  |9,8,10,10| 🐭Mouse |
 |プロキオニアン(Procyonian) | `a.illusion`1 | (none) | (none) |`c.equip_slot+1`, `c.grimoire_x1.3`  |9,8,10,6| 🦝Tanuki |
 
 - note: 未来視はパーティ単位で管理する方針に　神聖局で、セルヴィンがいる場合に表示可能、またコストを払ってリセットも可能に(詳細は今後検討)
@@ -384,7 +384,7 @@ d. bonus (stackable)
 |-----|-----------|---------|---------|
 |戦士(戦,Fighter) | `c.grit+1`, `c.equip_slot+1`,  `c.armor_x1.4` |`a.defender`1: Incoming physical damage to party × 2/3 |`a.defender`2: Incoming physical damage to party × 3/5 | 
 |剣士(剣,Duelist) | `c.grit+1`, `c.sword_x1.4` | `a.counter`1: enemy CLOSE-range attack (`f.NoA` x 0.5)  | `a.counter`2: enemy CLOSE-range attack and MID-range (`f.NoA` x 0.5)  | 
-|忍者(忍,Ninja) | `c.grit+1`, `c.penet_+0.15` | `a.re-attack`1: once when attacking (`f.NoA` x 0.5) | `a.re-attack`2: twice when attacking (`f.NoA` x 0.5) | 
+|忍者(忍,Ninja) | `c.grit+1`, `c.penet+0.15` | `a.re-attack`1: once when attacking (`f.NoA` x 0.5) | `a.re-attack`2: twice when attacking (`f.NoA` x 0.5) | 
 |侍(侍,Samurai) | `c.grit+1`, `c.katana_x1.4` |`a.iaigiri`1: Physical damage ×2,  number of attacks ÷2 | `a.iaigiri`2: Physical damage ×2.5,  number of attacks ÷2 |
 |君主(君,Lord) | `c.grit+1`, `c.gauntlet_x1.4`, `c.equip_slot+1` |`a.command`1: Physical damage x1.3. `a.squander`:double the gold spent on feasting. |`a.command`2: Physical damage x1.6. `a.squander`:double the gold spent on feasting. | 
 |狩人(狩,Ranger) | `c.pursuit+2`, `c.arrow_x1.4` | `a.hunter`1: Reduces row-based damage decay from 15% to 10% per step. |`a.hunter`2: Reduces row-based damage decay from 15% to 7% per step. | 
@@ -632,7 +632,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 |`i.robe` |  `d.magical_defense`  | `c.magical_defense+v` | `b.mind+1`, `d.HP`, `c.evasion+0.01` |
 |`i.shield ` | `d.HP` | `c.evasion+v` | `d.physical_defense`, `d.melee_attack`, `b.vitality+1` |
 |`i.sword` | `d.melee_attack` | `c.melee_attack+v` | `c.accuracy+0.01`, `b.strength+1`, `e.fire`, `d.physical_defense` ,`d.HP` |
-|`i.katana` | `d.melee_attack` | `c.melee_attack+V`, `d.evasion-v`, `d.melee_NoA-v` | additional `d.melee_attack`, `c.penet_+0.01`, `c.penet_+0.02`, `b.mind+1` |
+|`i.katana` | `d.melee_attack` | `c.melee_attack+V`, `d.evasion-v`, `d.melee_NoA-v` | additional `d.melee_attack`, `c.penet+0.01`, `c.penet+0.02`, `b.mind+1` |
 |`i.gauntlet` | `d.melee_NoA` | `c.melee_NoA+v` | additional `d.melee_NoA`, `d.physical_defense`, `b.strength+1` |
 |`i.arrow` | `d.ranged_attack` | `c.ranged_attack+v` | additional `d.ranged_attack`, `e.fire+v`, `e.ice+v`, `e.thunder+v` |
 |`i.bolt` | `d.ranged_attack` | `c.ranged_attack+v`, `d.evasion-v`, `d.ranged_NoA-v` | additional `d.ranged_attack`, `e.thunder`,`b.strength+1` |
