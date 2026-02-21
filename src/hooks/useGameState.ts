@@ -667,9 +667,21 @@ function resolveEnemyRewards(
 }
 
 
-function partyHasCunning(party: Party): boolean {
+function getPartyAbilityLevel(party: Party, abilityId: string): number {
   const { characterStats } = computePartyStats(party);
-  return characterStats.some(stats => stats.abilities.some(ability => ability.id === 'cunning'));
+  return characterStats.reduce((maxLevel, stats) => {
+    const abilityLevel = stats.abilities
+      .filter((ability) => ability.id === abilityId)
+      .reduce((abilityMaxLevel, ability) => Math.max(abilityMaxLevel, ability.level), 0);
+    return Math.max(maxLevel, abilityLevel);
+  }, 0);
+}
+
+function getPartyCunningMultiplier(party: Party): number {
+  const cunningLevel = getPartyAbilityLevel(party, 'cunning');
+  if (cunningLevel >= 2) return 1.3;
+  if (cunningLevel >= 1) return 1.2;
+  return 1;
 }
 
 function getUnlockActorName(party: Party): string | undefined {
@@ -999,7 +1011,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
               const unlockActorName = getUnlockActorName(currentParty);
               const hasUnlock = !!unlockActorName;
-              const autoSellMultiplier = partyHasCunning(currentParty) ? 1.2 : 1.0;
+              const autoSellMultiplier = getPartyCunningMultiplier(currentParty);
               const rewardResult = resolveEnemyRewards(
                 enemy,
                 bags,
@@ -1123,7 +1135,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const finalRemainingPartyHP = entries.length > 0
         ? entries[entries.length - 1].remainingPartyHP
         : currentHp;
-      const expeditionAutoSellMultiplier = partyHasCunning(currentParty) ? 1.2 : 1.0;
+      const expeditionAutoSellMultiplier = getPartyCunningMultiplier(currentParty);
 
       const log: ExpeditionLog = {
         dungeonId: dungeon.id,
@@ -1561,14 +1573,23 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           const currentParty = workingState.parties[partyIndex];
           if (!currentParty) continue;
 
-          const spend = Math.floor((currentParty.pendingProfit ?? 0) * 0.5);
+          const pendingProfit = currentParty.pendingProfit ?? 0;
+          const baseSpend = Math.floor((pendingProfit * (33 + Math.random() * 34)) / 100);
+          const squanderLevel = getPartyAbilityLevel(currentParty, 'squander');
+          const squanderMultiplier = squanderLevel >= 2 ? 2 : squanderLevel >= 1 ? 1.5 : 1;
+          const spend = Math.min(pendingProfit, Math.floor(baseSpend * squanderMultiplier));
           if (spend > 0) {
             workingState = gameReducer(workingState, { type: 'SPEND_PENDING_PROFIT', partyIndex, amount: spend });
           }
 
           const afterSpend = workingState.parties[partyIndex];
           if (!afterSpend) continue;
-          const donation = Math.floor((afterSpend.pendingProfit ?? 0) * 0.2);
+          const donationRate = 10 + Math.random() * 23;
+          const baseDonation = Math.floor(((afterSpend.pendingProfit ?? 0) * donationRate) / 100);
+          const titheLevel = getPartyAbilityLevel(afterSpend, 'tithe');
+          const titheBonusRate = titheLevel >= 2 ? 0.15 : titheLevel >= 1 ? 0.1 : 0;
+          const titheBonus = Math.floor((afterSpend.pendingProfit ?? 0) * titheBonusRate);
+          const donation = Math.min(afterSpend.pendingProfit ?? 0, baseDonation + titheBonus);
           const deposit = Math.max(0, (afterSpend.pendingProfit ?? 0) - donation);
           workingState = gameReducer(workingState, { type: 'PROCESS_PENDING_PROFIT', partyIndex, donation, deposit });
 
