@@ -6,7 +6,7 @@ import { RACES } from '../data/races';
 import { CLASSES, CLASS_SHORT_NAMES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
 import { LINEAGES } from '../data/lineages';
-import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS } from '../data/items';
+import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS, getSuperRareBonuses } from '../data/items';
 import { getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { applyEnemyEncounterScaling } from '../game/enemyScaling';
@@ -669,6 +669,10 @@ function getEnhancementAndSuperRareMultiplier(item: Item): number {
   return enhancementMultiplier * superRareMultiplier;
 }
 
+function formatCBonusValue(value: number): string {
+  return (Math.round(value * 1000000) / 1000000).toString();
+}
+
 function getCharacterCategoryMultiplier(character: Character, category: ItemCategory): number {
   const multiplierType = CATEGORY_TO_MULTIPLIER_BONUS[category];
   if (!multiplierType) return 1;
@@ -690,11 +694,56 @@ function getCharacterCategoryMultiplier(character: Character, category: ItemCate
     ...(isMasterClass ? mainClassData.masterBonuses : [...mainClassData.mainBonuses, ...subClassData.mainSubBonuses]),
     ...predispositionData.bonuses,
     ...lineageData.bonuses,
+    ...character.equipment.flatMap((item) => (item ? getSuperRareBonuses(item.superRare) : [])),
   ];
 
-  return allBonuses
+  const appliedBonusNames = new Set<string>();
+  const multipliers = allBonuses
     .filter((bonus) => bonus.type === multiplierType)
-    .reduce((total, bonus) => total * bonus.value, 1);
+    .filter((bonus) => {
+      const bonusName = `c.${multiplierType}+${formatCBonusValue(bonus.value)}`;
+      if (appliedBonusNames.has(bonusName)) return false;
+      appliedBonusNames.add(bonusName);
+      return true;
+    })
+    .map((bonus) => bonus.value);
+
+  return multipliers.reduce((total, value) => total * value, 1);
+}
+
+function getCharacterGrowthMultiplier(character: Character): number {
+  const mainClassData = CLASSES.find((c) => c.id === character.mainClassId);
+  const subClassData = CLASSES.find((c) => c.id === character.subClassId);
+  const predispositionData = PREDISPOSITIONS.find((p) => p.id === character.predispositionId);
+  const lineageData = LINEAGES.find((l) => l.id === character.lineageId);
+  const raceData = RACES.find((r) => r.id === character.raceId);
+
+  if (!mainClassData || !subClassData || !predispositionData || !lineageData || !raceData) {
+    return 1;
+  }
+
+  const isMasterClass = character.mainClassId === character.subClassId;
+  const allBonuses = [
+    ...raceData.bonuses,
+    ...mainClassData.mainSubBonuses,
+    ...(isMasterClass ? mainClassData.masterBonuses : [...mainClassData.mainBonuses, ...subClassData.mainSubBonuses]),
+    ...predispositionData.bonuses,
+    ...lineageData.bonuses,
+    ...character.equipment.flatMap((item) => (item ? getSuperRareBonuses(item.superRare) : [])),
+  ];
+
+  const appliedBonusNames = new Set<string>();
+  const growthMultipliers = allBonuses
+    .filter((bonus) => bonus.type === 'growth_xV')
+    .filter((bonus) => {
+      const bonusName = `c.growth_x${formatCBonusValue(bonus.value)}`;
+      if (appliedBonusNames.has(bonusName)) return false;
+      appliedBonusNames.add(bonusName);
+      return true;
+    })
+    .map((bonus) => bonus.value);
+
+  return growthMultipliers.reduce((total, value) => total * value, 1);
 }
 
 function formatMultiplierValue(value: number): string {
@@ -1971,13 +2020,14 @@ function PartyTab({
   ];
 
   const hpStatMultiplier = (stats.baseStats.vitality + stats.baseStats.mind) / 20;
-  const hpBaseIncrease = party.level * stats.baseStats.vitality * hpStatMultiplier;
+  const hpGrowthMultiplier = getCharacterGrowthMultiplier(char);
+  const hpBaseIncrease = party.level * stats.baseStats.vitality * hpStatMultiplier * hpGrowthMultiplier;
   const hpItemIncrease = char.equipment.reduce((total, item) => {
     if (!item?.partyHP) return total;
     const categoryMultiplier = getCharacterCategoryMultiplier(char, item.category);
     const itemMultiplier = getEnhancementAndSuperRareMultiplier(item);
     const baseMultiplier = item.baseMultiplier ?? 1;
-    return total + (item.partyHP * categoryMultiplier * itemMultiplier * baseMultiplier * hpStatMultiplier);
+    return total + (item.partyHP * categoryMultiplier * itemMultiplier * baseMultiplier * hpStatMultiplier * hpGrowthMultiplier);
   }, 0);
 
   const availableCategoryGroups = getAvailableCategoryGroups(char);
