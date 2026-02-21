@@ -815,6 +815,9 @@ const CATEGORY_GROUPS = [
   { id: 'magic', label: '魔法攻撃', categories: ['wand', 'grimoire', 'catalyst'] },
 ];
 
+const MELEE_CATEGORIES = new Set<ItemCategory>(['sword', 'katana', 'gauntlet']);
+const RANGED_MAGIC_CATEGORIES = new Set<ItemCategory>(['arrow', 'bolt', 'archery', 'wand', 'grimoire', 'catalyst']);
+
 type CategoryGroup = typeof CATEGORY_GROUPS[number];
 
 function getCharacterCombatBonusLevels(character: Character): { grit: number; pursuit: number; caster: number } {
@@ -1843,6 +1846,51 @@ function PartyTab({
       .some((item) => item != null);
   };
 
+  const getCapabilityRemovalWarningState = (edits: Partial<Character> | null): { melee: boolean; rangedMagic: boolean } => {
+    const changedKeys = getChangedEditKeys(edits);
+    if (changedKeys.length === 0) {
+      return { melee: false, rangedMagic: false };
+    }
+
+    const nextCharacter = { ...char, ...edits };
+    const oldCombatBonuses = getCharacterCombatBonusLevels(char);
+    const nextCombatBonuses = getCharacterCombatBonusLevels(nextCharacter);
+    const lostMeleeAptitude = oldCombatBonuses.grit > 0 && nextCombatBonuses.grit <= 0;
+    const lostRangedOrMagicAptitude =
+      (oldCombatBonuses.pursuit > 0 && nextCombatBonuses.pursuit <= 0)
+      || (oldCombatBonuses.caster > 0 && nextCombatBonuses.caster <= 0);
+
+    if (!lostMeleeAptitude && !lostRangedOrMagicAptitude) {
+      return { melee: false, rangedMagic: false };
+    }
+
+    const hasMeleeEquipment = lostMeleeAptitude && char.equipment.some((item) => item != null && MELEE_CATEGORIES.has(item.category));
+    const hasRangedMagicEquipment = lostRangedOrMagicAptitude
+      && char.equipment.some((item) => item != null && RANGED_MAGIC_CATEGORIES.has(item.category));
+
+    return { melee: hasMeleeEquipment, rangedMagic: hasRangedMagicEquipment };
+  };
+
+  const getEditConfirmWarnings = (edits: Partial<Character> | null): string[] => {
+    const warnings: string[] = [];
+    const equipSlotReductionCount = getEquipSlotReductionCount(edits);
+    if (equipSlotReductionCount > 0) {
+      warnings.push(`変更を保存すると装備枠が${equipSlotReductionCount}枠減るため、該当分の装備が外れます。`);
+    }
+
+    const capabilityWarnings = getCapabilityRemovalWarningState(edits);
+    if (capabilityWarnings.melee) {
+      warnings.push('近距離攻撃適正がなくなったため、一部の装備が外れます。');
+    }
+    if (capabilityWarnings.rangedMagic) {
+      warnings.push('遠距離攻撃/魔法攻撃適正がなくなったため、一部の装備が外れます。');
+    }
+
+    return warnings;
+  };
+
+  const editConfirmWarnings = getEditConfirmWarnings(pendingEdits);
+
   const completeCharacterEdit = () => {
     const changedKeys = getChangedEditKeys(pendingEdits);
 
@@ -1862,7 +1910,17 @@ function PartyTab({
     }
 
     const equipSlotReductionCount = getEquipSlotReductionCount(pendingEdits);
-    if (equipSlotReductionCount === 0 || !hasEquippedItemInReducedSlots(pendingEdits)) {
+    const capabilityWarnings = getCapabilityRemovalWarningState(pendingEdits);
+    const hasCapabilityRemovals = capabilityWarnings.melee || capabilityWarnings.rangedMagic;
+    if (equipSlotReductionCount === 0 && !hasCapabilityRemovals) {
+      onUpdateCharacter(char.id, pendingEdits ?? {});
+      setPendingEdits(null);
+      setEditingCharacter(null);
+      setShowEditConfirm(false);
+      return;
+    }
+
+    if (equipSlotReductionCount > 0 && !hasEquippedItemInReducedSlots(pendingEdits) && !hasCapabilityRemovals) {
       onUpdateCharacter(char.id, pendingEdits ?? {});
       setPendingEdits(null);
       setEditingCharacter(null);
@@ -2209,9 +2267,11 @@ function PartyTab({
         {/* Edit confirmation dialog */}
         {editingCharacter === selectedCharacter && showEditConfirm && (
           <div className="mb-3 p-3 bg-orange-50 border border-orange-200 rounded">
-            <div className="text-sm text-accent">
-              ⚠️ 変更を保存すると装備枠が減った分の装備が外れます。
-            </div>
+            <ul className="text-sm text-accent space-y-1">
+              {editConfirmWarnings.map((warning) => (
+                <li key={warning}>⚠️ {warning}</li>
+              ))}
+            </ul>
           </div>
         )}
 
