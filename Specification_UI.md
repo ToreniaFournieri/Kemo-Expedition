@@ -60,7 +60,7 @@
 - Tab header (primary navigation):
   - Party
   - Expedition
-  - Inventory
+  - Base
   - Diary
   - Divine Bureau
 
@@ -290,7 +290,10 @@ PT2...
     - Tapping a room opens the `f.battle_logs`.
   - 次の目標: show next Loot-Gate condition. 
 
-#### 8.5 Inventory
+#### 8.5 Base(拠点)
+- It has two tabs inside Base tab. Inventory(所持品), and Shop(お店). (same visual UI as List of party (PT1, PT2...) tab in Party tab)
+
+**Inventory(所持品)**
 - Behavior:
   - Notification pops up when acquiring a new item
   - Newly acquired items are shown in bold
@@ -327,6 +330,18 @@ PT2...
   - Item Row: The name, count, and status are left-aligned, while the Unlock button is right-aligned on the same line
     - ex. 名工のロングソード x3 | 近攻+19     [解除]
   - Unlock button(解除): Changes item state from `s.sold` to `s.notown`
+
+**Shop(お店)**
+- Function: Sells items.
+- Shop name: フェリスのガラクタ屋 (Felis’s Junk Shop)
+- Shop owner icon: Felidian icon
+- Dialogue: "とても珍しい品物が揃ってるよ。オラよくわかんねぇけど、売主がデバッグ用にって言ってた。"
+  - The shop sells all 80 Super Rare title variants of a single base item.
+	- Base item: 木の盾 (ID: 1103)
+    - Enhancement: 0 (No enhancement)
+	- Examples of sold items: 探し求めた木の盾 x1, 渡り歩く木の盾 x1… (all Super Rare title variants)
+	- Price: 10,000G each
+    - Stock: One per Super Rare title (no duplicates)
 
 #### 8.6 Diary
 - When a party was defeated, got mythic item, and acquiring super rare item, the diary updates. 
