@@ -69,7 +69,7 @@ interface HomeScreenProps {
 }
 
 type Tab = 'party' | 'expedition' | 'base' | 'diary' | 'setting';
-type BaseSubTab = 'inventory' | 'shop';
+type BaseSubTab = 'inventory' | 'shop' | 'workshop' | 'altar';
 
 
 type PartyCycleState = '休息中' | '宴会中' | '睡眠中' | '祈り中' | '待機中' | '移動中' | '探索中' | '帰還中';
@@ -3553,20 +3553,30 @@ function BaseTab({
   activeSubTab: BaseSubTab;
   onSetActiveSubTab: (tab: BaseSubTab) => void;
 }) {
+  const baseSubTabs = [
+    { id: 'inventory' as const, label: '所持品', isAvailable: true },
+    { id: 'shop' as const, label: 'お店', isAvailable: true },
+    { id: 'workshop' as const, label: '工房', isAvailable: false },
+    { id: 'altar' as const, label: '祭壇', isAvailable: false },
+  ];
+
   return (
     <div>
       <div className="flex mb-4 border-b border-gray-200">
-        {[
-          { id: 'inventory' as const, label: '所持品' },
-          { id: 'shop' as const, label: 'お店' },
-        ].map((tab) => (
+        {baseSubTabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => onSetActiveSubTab(tab.id)}
+            onClick={() => {
+              if (!tab.isAvailable) return;
+              onSetActiveSubTab(tab.id);
+            }}
+            disabled={!tab.isAvailable}
             className={`flex-1 py-2 text-sm font-medium ${
               activeSubTab === tab.id
                 ? 'text-sub border-b-2 border-sub'
-                : 'text-gray-700 hover:text-gray-900'
+                : tab.isAvailable
+                ? 'text-gray-700 hover:text-gray-900'
+                : 'text-gray-300 cursor-not-allowed'
             }`}
           >
             {tab.label}
@@ -3580,12 +3590,14 @@ function BaseTab({
           onSellStack={onSellStack}
           onSetVariantStatus={onSetVariantStatus}
         />
-      ) : (
+      ) : activeSubTab === 'shop' ? (
         <ShopTab
           inventory={inventory}
           gold={gold}
           onBuyShopItem={onBuyShopItem}
         />
+      ) : (
+        <div className="text-sm text-gray-600">この機能は次のバージョンで利用可能になります。</div>
       )}
     </div>
   );
