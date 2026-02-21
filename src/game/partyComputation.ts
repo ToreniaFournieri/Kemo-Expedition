@@ -171,26 +171,32 @@ export function computePartyStats(party: Party): {
     });
   }
 
-  const getBestMainClassAbilityLevel = (classId: 'fighter' | 'lord' | 'sage'): number => {
+  const getBestMainClassAbilityLevel = (
+    classId: 'fighter' | 'lord' | 'sage',
+    abilityId: 'defender' | 'command' | 'm_barrier',
+  ): number => {
     let bestLevel = 0;
-    for (const character of party.characters) {
-      if (character.mainClassId !== classId) continue;
-      const level = character.subClassId === classId ? 2 : 1;
+    for (const stats of characterStats) {
+      const character = party.characters.find((c) => c.id === stats.characterId);
+      if (!character || character.mainClassId !== classId) continue;
+      const level = stats.abilities
+        .filter((ability) => ability.id === abilityId)
+        .reduce((maxLevel, ability) => Math.max(maxLevel, ability.level), 0);
       bestLevel = Math.max(bestLevel, level);
     }
     return bestLevel;
   };
 
   // Calculate offense amplifier from command ability (main class: lord)
-  const commandLevel = getBestMainClassAbilityLevel('lord');
-  const offenseAmplifier = commandLevel === 2 ? 1.6 : commandLevel === 1 ? 1.3 : 1.0;
+  const commandLevel = getBestMainClassAbilityLevel('lord', 'command');
+  const offenseAmplifier = commandLevel >= 3 ? 2.0 : commandLevel === 2 ? 1.6 : commandLevel === 1 ? 1.3 : 1.0;
 
   // Party-wide damage reduction abilities (main class: fighter/sage)
-  const defenderLevel = getBestMainClassAbilityLevel('fighter');
-  const physicalDefenseAmplifier = defenderLevel === 2 ? 3 / 5 : defenderLevel === 1 ? 2 / 3 : 1.0;
+  const defenderLevel = getBestMainClassAbilityLevel('fighter', 'defender');
+  const physicalDefenseAmplifier = defenderLevel >= 3 ? 1 / 2 : defenderLevel === 2 ? 3 / 5 : defenderLevel === 1 ? 2 / 3 : 1.0;
 
-  const mBarrierLevel = getBestMainClassAbilityLevel('sage');
-  const magicalDefenseAmplifier = mBarrierLevel === 2 ? 3 / 5 : mBarrierLevel === 1 ? 2 / 3 : 1.0;
+  const mBarrierLevel = getBestMainClassAbilityLevel('sage', 'm_barrier');
+  const magicalDefenseAmplifier = mBarrierLevel >= 3 ? 1 / 2 : mBarrierLevel === 2 ? 3 / 5 : mBarrierLevel === 1 ? 2 / 3 : 1.0;
 
   // Elemental resistance (always 1.0 in current version)
   const elementalResistance: Record<ElementalResistance, number> = {
