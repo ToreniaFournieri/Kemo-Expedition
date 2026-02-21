@@ -752,7 +752,33 @@ function formatMultiplierValue(value: number): string {
   return rounded.toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
 }
 
-function formatBonuses(bonuses: Bonus[]): string {
+function formatDefenseMultiplierBonus(label: string, value: number, preferPercent: boolean): string {
+  const rounded = Math.round(value * 100) / 100;
+
+  if (preferPercent && rounded < 1) {
+    const improvementPercent = (1 - rounded) * 100;
+    if (Number.isInteger(improvementPercent)) {
+      return `${label}+${improvementPercent}%`;
+    }
+  }
+
+  const precision = 100;
+  const numerator = Math.round(rounded * precision);
+  const denominator = precision;
+  const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
+  const divisor = gcd(Math.abs(numerator), denominator);
+  const reducedNumerator = numerator / divisor;
+  const reducedDenominator = denominator / divisor;
+
+  if (reducedDenominator <= 12) {
+    return `${label}x${reducedNumerator}/${reducedDenominator}`;
+  }
+
+  return `${label}x${rounded.toFixed(2)}`;
+}
+
+function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'raw' | 'friendly' }): string {
+  const defenseMultiplierStyle = options?.defenseMultiplierStyle ?? 'raw';
   const parts: string[] = [];
   for (const b of bonuses) {
     if (b.type.endsWith('_multiplier') && MULTIPLIER_LABELS[b.type]) {
@@ -800,15 +826,35 @@ function formatBonuses(bonuses: Bonus[]): string {
     } else if (b.type === 'magical_offense_multiplier_xV') {
       parts.push(`魔攻撃x${b.value.toFixed(2)}`);
     } else if (b.type === 'physical_defense_multiplier_xV') {
-      parts.push(`物防x${b.value.toFixed(2)}`);
+      parts.push(
+        defenseMultiplierStyle === 'friendly'
+          ? formatDefenseMultiplierBonus('物防', b.value, true)
+          : `物防x${b.value.toFixed(2)}`
+      );
     } else if (b.type === 'magical_defense_multiplier_xV') {
-      parts.push(`魔防x${b.value.toFixed(2)}`);
+      parts.push(
+        defenseMultiplierStyle === 'friendly'
+          ? formatDefenseMultiplierBonus('魔防', b.value, true)
+          : `魔防x${b.value.toFixed(2)}`
+      );
     } else if (b.type === 'fire_defense_multiplier_xV') {
-      parts.push(`炎防x${b.value.toFixed(2)}`);
+      parts.push(
+        defenseMultiplierStyle === 'friendly'
+          ? formatDefenseMultiplierBonus('炎防', b.value, false)
+          : `炎防x${b.value.toFixed(2)}`
+      );
     } else if (b.type === 'ice_defense_multiplier_xV') {
-      parts.push(`氷防x${b.value.toFixed(2)}`);
+      parts.push(
+        defenseMultiplierStyle === 'friendly'
+          ? formatDefenseMultiplierBonus('氷防', b.value, false)
+          : `氷防x${b.value.toFixed(2)}`
+      );
     } else if (b.type === 'thunder_defense_multiplier_xV') {
-      parts.push(`雷防x${b.value.toFixed(2)}`);
+      parts.push(
+        defenseMultiplierStyle === 'friendly'
+          ? formatDefenseMultiplierBonus('雷防', b.value, false)
+          : `雷防x${b.value.toFixed(2)}`
+      );
     } else if (b.type === 'growth_xV') {
       parts.push(`成長${formatMultiplierValue(b.value)}倍`);
     } else if (b.type === 'ability' && b.abilityId) {
@@ -4774,13 +4820,13 @@ function SettingTab({
         <div className="text-xs text-gray-500 mb-2">Super Rare List (超レア一覧)</div>
         <div className="bg-white rounded p-2 text-sm space-y-1 max-h-72 overflow-y-auto">
           {SUPER_RARE_TITLES.filter(title => title.value > 0).map(title => {
-            const uniqueBonus = formatBonuses(title.bonuses ?? []);
+            const uniqueBonus = formatBonuses(title.bonuses ?? [], { defenseMultiplierStyle: 'friendly' });
             return (
               <div key={title.value} className="grid grid-cols-[auto,1fr] gap-x-2 border-b border-gray-100 last:border-b-0 py-1">
                 <div className="text-gray-500">{title.value}.</div>
                 <div>
                   <div className="font-medium text-gray-700">{title.title}</div>
-                  <div className="text-xs text-sub">固有ボーナス: {uniqueBonus || 'なし'}</div>
+                  <div className="text-xs text-sub">{uniqueBonus || 'なし'}</div>
                 </div>
               </div>
             );
