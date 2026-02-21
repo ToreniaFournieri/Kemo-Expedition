@@ -84,6 +84,7 @@ export type BonusType =
   | 'accuracy' | 'evasion'
   // Growth bonuses
   | 'growth_xV'
+  | 'upgrade_V'
   // Abilities
   | 'ability';
 

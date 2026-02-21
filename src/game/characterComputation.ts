@@ -52,6 +52,7 @@ interface BonusCollection {
   pursuit: number;
   accuracy: number;
   evasion: number;
+  upgradeV: number;
   abilities: Map<AbilityId, number>;
   uniqueEvasionBonusNames: Set<string>;
   cAccuracyBonusCounts: Map<string, number>;
@@ -219,6 +220,15 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
           collection.abilities.set(bonus.abilityId, Math.max(currentLevel, bonus.abilityLevel ?? 1));
         }
         break;
+      case 'upgrade_V':
+        {
+          const bonusName = `c.upgrade_V+${formatCBonusValue(bonus.value)}`;
+          if (!collection.uniqueCAdditiveBonusNames.has(bonusName)) {
+            collection.uniqueCAdditiveBonusNames.add(bonusName);
+            collection.upgradeV += bonus.value;
+          }
+        }
+        break;
       case 'melee_attack':
       case 'ranged_attack':
       case 'magical_attack':
@@ -301,6 +311,7 @@ export function computeCharacterStats(
     pursuit: 0,
     accuracy: 0,
     evasion: 0,
+    upgradeV: 0,
     abilities: new Map(),
     uniqueEvasionBonusNames: new Set<string>(),
     cAccuracyBonusCounts: new Map<string, number>(),
@@ -565,13 +576,15 @@ export function computeCharacterStats(
   );
 
   // Build abilities list
+  const upgradeTier = Math.max(0, Math.floor(collection.upgradeV));
   const abilities: Ability[] = [];
   for (const [id, level] of collection.abilities) {
+    const upgradedLevel = level + upgradeTier;
     abilities.push({
       id,
-      name: getAbilityName(id, level),
-      level,
-      description: getAbilityDescription(id, level),
+      name: getAbilityName(id, upgradedLevel),
+      level: upgradedLevel,
+      description: getAbilityDescription(id, upgradedLevel),
     });
   }
 

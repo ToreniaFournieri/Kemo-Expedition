@@ -2618,7 +2618,7 @@ function PartyTab({
                   multiplierValues[b.type].add(b.value);
                 } else if (['vitality', 'strength', 'intelligence', 'mind'].includes(b.type)) {
                   additive[b.type] = (additive[b.type] ?? 0) + b.value;
-                } else if (['equip_slot', 'grit', 'caster', 'pursuit', 'penet', 'accuracy', 'growth_xV', 'melee_attack', 'ranged_attack', 'magical_attack', 'physical_attack'].includes(b.type)) {
+                } else if (['equip_slot', 'grit', 'caster', 'pursuit', 'penet', 'accuracy', 'growth_xV', 'upgrade_V', 'melee_attack', 'ranged_attack', 'magical_attack', 'physical_attack'].includes(b.type)) {
                   addUniqueCBonus(b.type, b.value);
                 } else if (b.type === 'evasion') {
                     if (b.value < 0) {
@@ -2659,7 +2659,7 @@ function PartyTab({
               const addNames: Record<string, string> = {
                 vitality: '体', strength: '力', intelligence: '知', mind: '精',
                 equip_slot: '装備', grit: '根性', caster: '術者', penet: '貫通',
-                pursuit: '追撃', accuracy: '命中', evasion: '回避', growth_xV: '成長',
+                pursuit: '追撃', accuracy: '命中', evasion: '回避', growth_xV: '成長', upgrade_V: 'V強化',
                 melee_attack: '近攻撃', ranged_attack: '遠攻撃', magical_attack: '魔攻撃', physical_attack: '物攻撃' 
               };
 
@@ -2712,6 +2712,7 @@ function PartyTab({
                     if (key === 'grit') helpRows.push({ label, description: `近接攻撃の装備が出来るようになる。近接攻撃回数が ${val} 回増える` });
                     if (key === 'pursuit') helpRows.push({ label, description: `遠距離攻撃の装備が出来るようになる。遠距離攻撃回数が ${val} 回増える` });
                     if (key === 'caster') helpRows.push({ label, description: `魔法攻撃の装備が出来るようになる。魔法攻撃回数が ${val} 回増える` });
+                    if (key === 'upgrade_V') helpRows.push({ label, description: `アビリティが ${val} 段階強化する` });
                   }
                 }
               }
