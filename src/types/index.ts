@@ -78,6 +78,8 @@ export type BonusType =
   | 'grit' | 'caster' | 'penet' | 'pursuit'
   // Accuracy/Evasion bonuses
   | 'accuracy' | 'evasion'
+  // Growth bonuses
+  | 'growth_xV'
   // Abilities
   | 'ability';
 
