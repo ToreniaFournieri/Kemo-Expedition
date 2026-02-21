@@ -77,7 +77,8 @@ const DEFAULT_DIARY_SETTINGS: DiarySettings = {
 };
 
 const MELEE_CATEGORIES = new Set<Item['category']>(['sword', 'katana', 'gauntlet']);
-const RANGED_MAGIC_CATEGORIES = new Set<Item['category']>(['arrow', 'bolt', 'archery', 'wand', 'grimoire', 'catalyst']);
+const RANGED_CATEGORIES = new Set<Item['category']>(['arrow', 'bolt', 'archery']);
+const MAGIC_CATEGORIES = new Set<Item['category']>(['wand', 'grimoire', 'catalyst']);
 
 function getCharacterCombatBonusLevels(character: Character): { grit: number; pursuit: number; caster: number } {
   const race = RACES.find(r => r.id === character.raceId);
@@ -1438,18 +1439,18 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const oldCombatBonuses = getCharacterCombatBonusLevels(oldChar);
       const nextCombatBonuses = getCharacterCombatBonusLevels(nextCharacter);
       const lostMeleeAptitude = oldCombatBonuses.grit > 0 && nextCombatBonuses.grit <= 0;
-      const lostRangedOrMagicAptitude =
-        (oldCombatBonuses.pursuit > 0 && nextCombatBonuses.pursuit <= 0)
-        || (oldCombatBonuses.caster > 0 && nextCombatBonuses.caster <= 0);
+      const lostRangedAptitude = oldCombatBonuses.pursuit > 0 && nextCombatBonuses.pursuit <= 0;
+      const lostMagicAptitude = oldCombatBonuses.caster > 0 && nextCombatBonuses.caster <= 0;
 
-      if (lostMeleeAptitude || lostRangedOrMagicAptitude) {
+      if (lostMeleeAptitude || lostRangedAptitude || lostMagicAptitude) {
         newInventory = { ...newInventory };
         for (let i = 0; i < newEquipment.length; i++) {
           const item = newEquipment[i];
           if (!item) continue;
 
           const shouldRemove = (lostMeleeAptitude && MELEE_CATEGORIES.has(item.category))
-            || (lostRangedOrMagicAptitude && RANGED_MAGIC_CATEGORIES.has(item.category));
+            || (lostRangedAptitude && RANGED_CATEGORIES.has(item.category))
+            || (lostMagicAptitude && MAGIC_CATEGORIES.has(item.category));
           if (!shouldRemove) continue;
 
           const key = getVariantKey(item);

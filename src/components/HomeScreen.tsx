@@ -816,7 +816,8 @@ const CATEGORY_GROUPS = [
 ];
 
 const MELEE_CATEGORIES = new Set<ItemCategory>(['sword', 'katana', 'gauntlet']);
-const RANGED_MAGIC_CATEGORIES = new Set<ItemCategory>(['arrow', 'bolt', 'archery', 'wand', 'grimoire', 'catalyst']);
+const RANGED_CATEGORIES = new Set<ItemCategory>(['arrow', 'bolt', 'archery']);
+const MAGIC_CATEGORIES = new Set<ItemCategory>(['wand', 'grimoire', 'catalyst']);
 
 type CategoryGroup = typeof CATEGORY_GROUPS[number];
 
@@ -1846,29 +1847,28 @@ function PartyTab({
       .some((item) => item != null);
   };
 
-  const getCapabilityRemovalWarningState = (edits: Partial<Character> | null): { melee: boolean; rangedMagic: boolean } => {
+  const getCapabilityRemovalWarningState = (edits: Partial<Character> | null): { melee: boolean; ranged: boolean; magic: boolean } => {
     const changedKeys = getChangedEditKeys(edits);
     if (changedKeys.length === 0) {
-      return { melee: false, rangedMagic: false };
+      return { melee: false, ranged: false, magic: false };
     }
 
     const nextCharacter = { ...char, ...edits };
     const oldCombatBonuses = getCharacterCombatBonusLevels(char);
     const nextCombatBonuses = getCharacterCombatBonusLevels(nextCharacter);
     const lostMeleeAptitude = oldCombatBonuses.grit > 0 && nextCombatBonuses.grit <= 0;
-    const lostRangedOrMagicAptitude =
-      (oldCombatBonuses.pursuit > 0 && nextCombatBonuses.pursuit <= 0)
-      || (oldCombatBonuses.caster > 0 && nextCombatBonuses.caster <= 0);
+    const lostRangedAptitude = oldCombatBonuses.pursuit > 0 && nextCombatBonuses.pursuit <= 0;
+    const lostMagicAptitude = oldCombatBonuses.caster > 0 && nextCombatBonuses.caster <= 0;
 
-    if (!lostMeleeAptitude && !lostRangedOrMagicAptitude) {
-      return { melee: false, rangedMagic: false };
+    if (!lostMeleeAptitude && !lostRangedAptitude && !lostMagicAptitude) {
+      return { melee: false, ranged: false, magic: false };
     }
 
     const hasMeleeEquipment = lostMeleeAptitude && char.equipment.some((item) => item != null && MELEE_CATEGORIES.has(item.category));
-    const hasRangedMagicEquipment = lostRangedOrMagicAptitude
-      && char.equipment.some((item) => item != null && RANGED_MAGIC_CATEGORIES.has(item.category));
+    const hasRangedEquipment = lostRangedAptitude && char.equipment.some((item) => item != null && RANGED_CATEGORIES.has(item.category));
+    const hasMagicEquipment = lostMagicAptitude && char.equipment.some((item) => item != null && MAGIC_CATEGORIES.has(item.category));
 
-    return { melee: hasMeleeEquipment, rangedMagic: hasRangedMagicEquipment };
+    return { melee: hasMeleeEquipment, ranged: hasRangedEquipment, magic: hasMagicEquipment };
   };
 
   const getEditConfirmWarnings = (edits: Partial<Character> | null): string[] => {
@@ -1880,10 +1880,13 @@ function PartyTab({
 
     const capabilityWarnings = getCapabilityRemovalWarningState(edits);
     if (capabilityWarnings.melee) {
-      warnings.push('近距離攻撃適正がなくなったため、一部の装備が外れます。');
+      warnings.push('Warning: 近距離攻撃適正がなくなったため、一部の装備が外れます。');
     }
-    if (capabilityWarnings.rangedMagic) {
-      warnings.push('遠距離攻撃/魔法攻撃適正がなくなったため、一部の装備が外れます。');
+    if (capabilityWarnings.ranged) {
+      warnings.push('Warning: 遠距離攻撃適正がなくなったため、一部の装備が外れます。');
+    }
+    if (capabilityWarnings.magic) {
+      warnings.push('Warning: 魔法攻撃適正がなくなったため、一部の装備が外れます。');
     }
 
     return warnings;
@@ -1911,7 +1914,7 @@ function PartyTab({
 
     const equipSlotReductionCount = getEquipSlotReductionCount(pendingEdits);
     const capabilityWarnings = getCapabilityRemovalWarningState(pendingEdits);
-    const hasCapabilityRemovals = capabilityWarnings.melee || capabilityWarnings.rangedMagic;
+    const hasCapabilityRemovals = capabilityWarnings.melee || capabilityWarnings.ranged || capabilityWarnings.magic;
     if (equipSlotReductionCount === 0 && !hasCapabilityRemovals) {
       onUpdateCharacter(char.id, pendingEdits ?? {});
       setPendingEdits(null);
