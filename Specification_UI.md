@@ -358,7 +358,7 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
 #### 8.7 Divine Bureau (神聖局)
 
 
-**1.Donation box (寄付箱)**
+**Donation box (寄付箱)**
 - Display donated amount of gold of each god.
 
 
@@ -406,10 +406,10 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
 ```
 
 
-**2. Clairvoyance (未来視)**
+**Clairvoyance (未来視)**
 - Displays belows 
 
-**Normal reward (通常報酬)**
+  **Normal reward (通常報酬)**
   - common_reward_bag (通常報酬 抽選確率):  
     - 報酬抽選: remaining / total counts 
     - 当たり残り counts
@@ -421,9 +421,9 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
     - 伝説の残り counts / initial counts
     - 恐ろしい残り counts / initial counts
     - 究極の残り counts / initial counts
-- Button (通常報酬初期化): Initialize `g.common_reward_bag` and `g.common_enhancement_bag` 
+  - Button (通常報酬初期化): Initialize `g.common_reward_bag` and `g.common_enhancement_bag` 
 
-**Unieque reward (固有報酬)**
+  **Unieque reward (固有報酬)**
   - uncommon reward_bag (アンコモン抽選確率):  
     - 報酬抽選: remaining / total counts 
     - 当たり残り remaining
@@ -441,15 +441,15 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
     - 伝説の残り remaining / initial counts
     - 恐ろしい残り remaining / initial counts
     - 究極の残り remaining / initial counts
-- Button (固有報酬初期化): Initialize `g.common_reward_bag`, `g.uncommon_reward_bag`, `g.rare_reward_bag`, `g.mythic_reward_bag`  and `g.enhancement_bag` 
+  - Button (固有報酬初期化): Initialize `g.common_reward_bag`, `g.uncommon_reward_bag`, `g.rare_reward_bag`, `g.mythic_reward_bag`  and `g.enhancement_bag` 
 
-**Super rare reward (超レア報酬)**
+  **Super rare reward (超レア報酬)**
   - superRare_bag (称号超レア称号付与 抽選確率):
     - 超レア称号抽選: remaining / total counts
     - 超レア残り remaining / initial counts
-- Button (超レア報酬初期化): Initialize `g.superRare_bag` 
+  - Button (超レア報酬初期化): Initialize `g.superRare_bag` 
 
-**3. Item Comedium (アイテム図鑑)**
+**Item Comedium (アイテム図鑑)**
 - The Item Compendium acts as a global reference for all items within the game. Unlike the Inventory, it displays the base potential of every item, regardless of ownership status.
 - View Settings:
   - Visibility: Shows all items in the database (including undiscovered items).
@@ -464,7 +464,7 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
   - Interaction: Tap an item name to expand the detailed status panel.
 
 
-**4. Bestiary (敵キャラクター図鑑)**
+**Bestiary (敵キャラクター図鑑)**
 - A comprehensive record of all threats encountered (or to be encountered) during expeditions.
 - Expedition category tabs: 原, 崖, 樹, 峰, 茂, 巣, 園, 谷
   - Each letter represents for corresponding expedition. And tap to show the enemy list of it. 
@@ -497,7 +497,11 @@ HP: 312                 経験値: 88
 
 ```
 
-**5. Game Setting**
+**Super Rare List(超レア一覧)**
+- Display Super Rare list with its unique bonus.
+
+
+**Game Setting**
   - 5.1 Backup (Export)
     - Allow the player to export the current save data as a file download.
     - File name format: `Kemo-Expedition_Backup_[version]_[env]_YYYYMMDD`
