@@ -138,9 +138,9 @@
       - `a.iaigiri`1: v = 2.0
       - `a.iaigiri`2: v = 2.5
       - `a.iaigiri`3: v = 3.0
-    - Else return 1.0 x sum of ( `c.melee_attack+v` or `c.ranged_attack+v` ) x sum of ( `c.physical_attack+v` ) x `f.base_multiplier`(base_type: `b.strength`)
-  - If phase is MID,  return 1.0 x  sum of (`c.magical_attack+v` ) x sum of ( `c.magical_attack+v` ) x `f.base_multiplier`(base_type: `b.intelligence`)
-  - *note: `c.melee_attack+v`,  `c.ranged_attack+v`, or `c.magical_attack+v`  Only one single bonuses(c.) of the **exact** same name applies.  
+    - Else return 1.0 x sum of ( `c.melee_attack+v`, `c.ranged_attack+v` and `c.physical_attack+v` ) x sum of ( `c.physical_offense_multiplier_xV` ) x `f.base_multiplier`(base_type: `b.strength`)
+  - If phase is MID,  return 1.0 x  sum of (`c.magical_attack+v` and `c.magical_attack+v` ) x sum of ( `c.magical_offense_multiplier_xV` ) x `f.base_multiplier`(base_type: `b.intelligence`)
+  - *note: `c.melee_attack+v`,  `c.ranged_attack+v`, `c.magical_attack+v`, `c.physical_attack+v`, `c.physical_offense_multiplier_xV` or  `c.magical_offense_multiplier_xV`. Only one single bonuses(c.) of the **exact** same name applies.  
 
 - character .`f.defense` (phase: ):
   - If phase is LONG or CLOSE:
