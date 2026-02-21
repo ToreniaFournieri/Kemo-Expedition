@@ -495,15 +495,19 @@ export function computeCharacterStats(
   // Normal decay: 15% per step (1.0 * 0.85^(row-1))
   // Hunter1 decay: 10% per step (1.0 * 0.90^(row-1))
   // Hunter2 decay: 7% per step (1.0 * 0.93^(row-1))
+  // Hunter3 decay: 5% per step (1.0 * 0.95^(row-1))
   const hunterLevel = collection.abilities.get('hunter');
   let decayRate = 0.85; // Normal: 15% decay
-  if (hunterLevel === 2) {
+  if (hunterLevel === 3) {
+    decayRate = 0.95; // Hunter3: 5% decay
+  } else if (hunterLevel === 2) {
     decayRate = 0.93; // Hunter2: 7% decay
   } else if (hunterLevel === 1) {
     decayRate = 0.90; // Hunter1: 10% decay
   }
-  const hasComposure = collection.abilities.has('composure');
-  const accuracyPotency = Math.min(1, Math.pow(decayRate, row - 1) + (hasComposure ? 0.10 : 0));
+  const composureLevel = collection.abilities.get('composure') ?? 0;
+  const composureBonus = composureLevel >= 2 ? 0.13 : composureLevel >= 1 ? 0.10 : 0;
+  const accuracyPotency = Math.min(1, Math.pow(decayRate, row - 1) + composureBonus);
 
   return {
     characterId: character.id,
@@ -591,15 +595,19 @@ function getAbilityName(id: AbilityId, level: number): string {
 function getAbilityDescription(id: AbilityId, level: number): string {
   const descriptions: Record<AbilityId, (level: number) => string> = {
     first_strike: (l) => l === 2 ? '行動がとても速くなる' : '行動が速くなる',
-    hunter: (l) => l === 2 ? '列による命中率減衰を1列ごと15%→7%に軽減する' : '列による命中率減衰を1列ごと15%→10%に軽減する',
+    hunter: (l) => l >= 3
+      ? '列による命中率減衰を1列ごと15%→5%に軽減する'
+      : l === 2
+        ? '列による命中率減衰を1列ごと15%→7%に軽減する'
+        : '列による命中率減衰を1列ごと15%→10%に軽減する',
     defender: (l) => `パーティへの物理ダメージ × ${l >= 3 ? '1/2' : l === 2 ? '3/5' : '2/3'}`,
     counter: (l) => l === 2 ? '敵の近距離・中距離攻撃を受けたとき反撃(攻撃回数半減)' : '敵の近距離攻撃を受けたとき反撃(攻撃回数半減)',
     re_attack: (l) => `攻撃時に追加攻撃を${l === 2 ? '2回' : '1回'}行う(攻撃回数半減)`,
-    iaigiri: (l) => `物理ダメージをx${l === 2 ? '2.5' : '2.0'}倍する。攻撃回数を半減する`,
+    iaigiri: (l) => `物理ダメージをx${l >= 3 ? '3.0' : l === 2 ? '2.5' : '2.0'}倍する。攻撃回数を半減する`,
     resonance: (l) => `魔法攻撃1回毎に、全ヒットのダメージが+${l >= 5 ? 15 : l === 4 ? 13 : l === 3 ? 11 : l === 2 ? 8 : 5}%増加する`,
     command: (l) => `パーティ攻撃力 × ${l >= 3 ? 2.0 : l === 2 ? 1.6 : 1.3}`,
     m_barrier: (l) => `パーティへの魔法ダメージ × ${l >= 3 ? '1/2' : l === 2 ? '3/5' : '2/3'}`,
-    deflection: () => '敵の遠距離攻撃の命中率を10%低下させる',
+    deflection: (l) => `敵の遠距離攻撃の命中率を${l >= 2 ? '15' : '10'}%低下させる`,
     null_counter: () => '反撃を無効化する',
     unlock: () => '追加報酬チャンス',
     squander: () => '宴会で消費するゴールドが2倍になる',
@@ -618,11 +626,11 @@ function getAbilityDescription(id: AbilityId, level: number): string {
       ? '味方近接攻撃の命中が1回のみなら遠距離射撃(攻撃回数半減しない)'
       : '味方近接攻撃の命中が1回のみなら遠距離射撃(攻撃回数半減)',
     peddler: () => '移動時間(移動中/帰還中)が2/3になる',
-    composure: () => '物理/魔法命中率+10%加算',
+    composure: (l) => `物理/魔法命中率+${l >= 2 ? '13' : '10'}%加算`,
     magical_counter: (l) => l >= 2
       ? '魔法には魔法で反撃する(攻撃回数半減しない)'
       : '魔法には魔法で反撃する(攻撃回数半減)',
-    focus: () => '命中ボーナスの効果が1.2倍になる',
+    focus: (l) => `命中ボーナスの効果が${l >= 2 ? '1.3' : '1.2'}倍になる`,
     prophecy: () => '報酬抽選内容が見えるようになる',
     stealth: () => 'HP24%未満の時、自身へのダメージをすべて回避する',
     illusion: () => '自分が受ける最初の遠距離攻撃を無効化する',
