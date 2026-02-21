@@ -45,6 +45,7 @@ interface HomeScreenProps {
     updateCharacter: (characterId: number, updates: Partial<Character>) => void;
     reorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
     sellStack: (variantKey: string) => void;
+    buyShopItem: (superRare: number) => void;
     setVariantStatus: (variantKey: string, status: 'notown') => void;
     markItemsSeen: () => void;
     markDiaryLogSeen: (logId: string) => void;
@@ -67,7 +68,8 @@ interface HomeScreenProps {
   };
 }
 
-type Tab = 'party' | 'expedition' | 'inventory' | 'diary' | 'setting';
+type Tab = 'party' | 'expedition' | 'base' | 'diary' | 'setting';
+type BaseSubTab = 'inventory' | 'shop';
 
 
 type PartyCycleState = '休息中' | '宴会中' | '睡眠中' | '祈り中' | '待機中' | '移動中' | '探索中' | '帰還中';
@@ -1009,6 +1011,7 @@ function sortInventoryItems(items: [string, InventoryVariant][]): [string, Inven
 
 export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const [activeTab, setActiveTab] = useState<Tab>('expedition');
+  const [activeBaseSubTab, setActiveBaseSubTab] = useState<BaseSubTab>('inventory');
   const [selectedCharacter, setSelectedCharacter] = useState<number>(0);
   const [editingCharacter, setEditingCharacter] = useState<number | null>(null);
   const [isAutoRepeatEnabled, setIsAutoRepeatEnabled] = useState(false);
@@ -1423,16 +1426,16 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   }, [activeTab, actions]);
 
   useEffect(() => {
-    if (activeTab !== 'inventory') return;
+    if (activeTab !== 'base' || activeBaseSubTab !== 'inventory') return;
     const hasNewInventoryItems = Object.values(state.global.inventory).some((variant) => variant.isNew);
     if (!hasNewInventoryItems) return;
     actions.markItemsSeen();
-  }, [activeTab, state.global.inventory, actions]);
+  }, [activeTab, activeBaseSubTab, state.global.inventory, actions]);
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'party', label: 'パーティ' },
     { id: 'expedition', label: '探検' },
-    { id: 'inventory', label: '所持品' },
+    { id: 'base', label: '拠点' },
     { id: 'diary', label: '日誌' },
     { id: 'setting', label: '神聖局' },
   ];
@@ -1558,11 +1561,15 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
           />
         )}
 
-        {activeTab === 'inventory' && (
-          <InventoryTab
+        {activeTab === 'base' && (
+          <BaseTab
             inventory={state.global.inventory}
+            gold={state.global.gold}
             onSellStack={actions.sellStack}
             onSetVariantStatus={actions.setVariantStatus}
+            onBuyShopItem={actions.buyShopItem}
+            activeSubTab={activeBaseSubTab}
+            onSetActiveSubTab={setActiveBaseSubTab}
           />
         )}
 
@@ -3525,6 +3532,136 @@ function ExpeditionTab({
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function BaseTab({
+  inventory,
+  gold,
+  onSellStack,
+  onSetVariantStatus,
+  onBuyShopItem,
+  activeSubTab,
+  onSetActiveSubTab,
+}: {
+  inventory: InventoryRecord;
+  gold: number;
+  onSellStack: (variantKey: string) => void;
+  onSetVariantStatus: (variantKey: string, status: 'notown') => void;
+  onBuyShopItem: (superRare: number) => void;
+  activeSubTab: BaseSubTab;
+  onSetActiveSubTab: (tab: BaseSubTab) => void;
+}) {
+  return (
+    <div>
+      <div className="flex mb-4 border-b border-gray-200">
+        {[
+          { id: 'inventory' as const, label: '所持品' },
+          { id: 'shop' as const, label: 'お店' },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => onSetActiveSubTab(tab.id)}
+            className={`flex-1 py-2 text-sm font-medium ${
+              activeSubTab === tab.id
+                ? 'text-sub border-b-2 border-sub'
+                : 'text-gray-700 hover:text-gray-900'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {activeSubTab === 'inventory' ? (
+        <InventoryTab
+          inventory={inventory}
+          onSellStack={onSellStack}
+          onSetVariantStatus={onSetVariantStatus}
+        />
+      ) : (
+        <ShopTab
+          inventory={inventory}
+          gold={gold}
+          onBuyShopItem={onBuyShopItem}
+        />
+      )}
+    </div>
+  );
+}
+
+function ShopTab({
+  inventory,
+  gold,
+  onBuyShopItem,
+}: {
+  inventory: InventoryRecord;
+  gold: number;
+  onBuyShopItem: (superRare: number) => void;
+}) {
+  const shopPrice = 10000;
+  const baseShield = ITEMS.find((item) => item.id === 1103);
+  const felidianRace = RACES.find((race) => race.id === 'felidian');
+
+  if (!baseShield || !felidianRace) {
+    return <div className="text-sm text-gray-600">お店の準備中です。</div>;
+  }
+
+  const shopItems = SUPER_RARE_TITLES
+    .filter((title) => title.value > 0)
+    .map((title) => {
+      const item: Item = { ...baseShield, enhancement: 0, superRare: title.value };
+      const key = `${item.id}-${item.enhancement}-${item.superRare}`;
+      const isSoldOut = Boolean(inventory[key]);
+      const canBuy = !isSoldOut && gold >= shopPrice;
+
+      return {
+        key,
+        titleValue: title.value,
+        name: getItemDisplayName(item),
+        isSoldOut,
+        canBuy,
+      };
+    });
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded border border-gray-200 bg-white p-3">
+        <div className="text-sm font-semibold text-sub">フェリスのガラクタ屋</div>
+        <div className="mt-2 flex items-start gap-3">
+          <RaceIcon race={felidianRace} className="h-10 w-10" />
+          <p className="text-sm text-gray-700">
+            とても珍しい品物が揃ってるよ。オラよくわかんねぇけど、売主がデバッグ用にって言ってた。
+          </p>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        {shopItems.map((entry) => (
+          <div key={entry.key} className="rounded border border-gray-200 bg-white px-3 py-2">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="truncate text-sm font-medium text-gray-900">{entry.name} x1</div>
+                <div className="text-xs text-gray-500">{formatNumber(shopPrice)}G</div>
+              </div>
+              <button
+                onClick={() => onBuyShopItem(entry.titleValue)}
+                disabled={!entry.canBuy}
+                className={`rounded px-3 py-1 text-xs font-medium ${
+                  entry.isSoldOut
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : entry.canBuy
+                    ? 'bg-sub text-white hover:bg-sub/90'
+                    : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                {entry.isSoldOut ? '売切' : '購入'}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
