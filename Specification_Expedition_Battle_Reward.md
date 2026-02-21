@@ -135,7 +135,7 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
   - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
 
   - If opponent.`a.stealth`1 and (opponent.current_HP / opponent.max_HP) <= 0.24, damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
- - If opponent.`a.stealth`2 and (opponent.current_HP / opponent.max_HP) <= 0.29, damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
+  - If opponent.`a.stealth`2 and (opponent.current_HP / opponent.max_HP) <= 0.29, damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
     - note: This is only for party member ability. enemy should not have this `a.stealth` ability.
 
 **Row-based modifier** 
