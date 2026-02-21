@@ -2731,7 +2731,7 @@ function PartyTab({
             })()}
             {stats.abilities.length > 0 && (
               <div className="border-t border-gray-200 mt-2 pt-2">
-                <div className="text-gray-500 text-xs">特殊能力:</div>
+                <div className="text-gray-500 text-xs">アビリティ:</div>
                 {stats.abilities.map(a => (
                   <div key={a.id} className="text-xs text-sub">{a.name}: {a.description}</div>
                 ))}
@@ -4555,7 +4555,7 @@ function SettingTab({
                           })()}
                         </div>
                         <div>{formatEnemyElementalResistanceLine(displayEnemy)}</div>
-                        <div>特殊能力: {displayEnemy.abilities.length > 0 ? displayEnemy.abilities.map(a => ENEMY_ABILITY_LABELS[a] ?? a).join(', ') : 'なし'}</div>
+                        <div>アビリティ: {displayEnemy.abilities.length > 0 ? displayEnemy.abilities.map(a => ENEMY_ABILITY_LABELS[a] ?? a).join(', ') : 'なし'}</div>
                         <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id)}${item.name}`).join(' / ')}</div>
                       </div>
                     )}
