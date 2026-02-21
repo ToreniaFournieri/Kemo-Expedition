@@ -335,7 +335,7 @@ PT2...
 **Shop(お店)**
 - Function: Sells items.
 - Shop name: フェリスのガラクタ屋 (Felis’s Junk Shop)
-- Shop owner icon: Felidian icon
+- Shop owner icon: Mustelid icon
 - Dialogue: "とても珍しい品物が揃ってるよ。オラよくわかんねぇけど、売主がデバッグ用にって言ってた。"
   - The shop sells all 80 Super Rare title variants of a single base item.
 	- Base item: 木の盾 (ID: 1103)
