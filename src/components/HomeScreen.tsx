@@ -875,6 +875,16 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const hasHydratedAfkRef = useRef(false);
   const pendingAfkSimulationRef = useRef(true);
   const lastCheckpointAtRef = useRef(Date.now());
+  const latestPartiesRef = useRef(state.parties);
+  const autoRepeatEnabledRef = useRef(isAutoRepeatEnabled);
+
+  useEffect(() => {
+    latestPartiesRef.current = state.parties;
+  }, [state.parties]);
+
+  useEffect(() => {
+    autoRepeatEnabledRef.current = isAutoRepeatEnabled;
+  }, [isAutoRepeatEnabled]);
   const afkSummaryBaselineRef = useRef<Array<{ victories: number; retreats: number; defeats: number; donatedGold: number; savedGold: number }> | null>(null);
   const shouldShowAfkSummaryRef = useRef(false);
   const { partyStats, characterStats } = computePartyStats(currentParty);
@@ -970,6 +980,8 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   }, [actions, state.parties]);
 
   const processTimeCheckpoint = useCallback((now: number = Date.now()) => {
+    const parties = latestPartiesRef.current;
+    const autoRepeatEnabled = autoRepeatEnabledRef.current;
     const elapsedMs = Math.max(0, Math.min(now - lastCheckpointAtRef.current, AFK_MAX_ELAPSED_MS));
     if (elapsedMs < PARTY_CYCLE_TICK_MS) return;
 
@@ -979,18 +991,18 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     }
 
     if (elapsedMs >= 1000) {
-      afkSummaryBaselineRef.current = state.parties.map((party) => ({ ...party.expeditionStats }));
+      afkSummaryBaselineRef.current = parties.map((party) => ({ ...party.expeditionStats }));
       shouldShowAfkSummaryRef.current = true;
     }
 
     // Long background spans should be simulated inside the reducer so each expedition
     // phase reads the latest pending profit / HP values instead of stale render snapshots.
     if (elapsedMs >= 60_000) {
-      actions.simulateAfk(elapsedMs, isAutoRepeatEnabled);
+      actions.simulateAfk(elapsedMs, autoRepeatEnabled);
       setPartyCycles((prev) => {
         const resetAt = now;
         const next: Record<number, PartyCycleRuntime> = {};
-        state.parties.forEach((_, partyIndex) => {
+        parties.forEach((_, partyIndex) => {
           const runtime = prev[partyIndex];
           next[partyIndex] = {
             state: runtime?.state ?? '待機中',
@@ -1008,7 +1020,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
 
     setPartyCycles((prev) => {
       const next = { ...prev };
-      state.parties.forEach((party, partyIndex) => {
+      parties.forEach((party, partyIndex) => {
         const runtime = next[partyIndex] ?? { state: '待機中' as PartyCycleState, stateStartedAt: simulationNow, durationMs: 1000 };
         const updated = { ...runtime };
 
@@ -1065,7 +1077,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
                   actions.addNotification(`${party.name}は${formatNumber(donation)}G神に捧げ、${formatNumber(deposit)}Gを貯金した`);
                 }
               }
-              updated.state = isAutoRepeatEnabled ? '移動中' : '待機中';
+              updated.state = autoRepeatEnabled ? '移動中' : '待機中';
               updated.durationMs = updated.state === '移動中' ? getPartyTravelDurationMs(party) : 1000;
             } else if (updated.state === '待機中') {
               updated.durationMs = 1000;
@@ -1094,7 +1106,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     });
 
     lastCheckpointAtRef.current = now;
-  }, [actions, isAutoRepeatEnabled, state.parties]);
+  }, [actions]);
 
   useEffect(() => {
     const id = window.setInterval(() => {
