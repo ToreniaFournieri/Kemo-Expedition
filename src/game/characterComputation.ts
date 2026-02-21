@@ -579,26 +579,7 @@ function getAbilityName(id: AbilityId, level: number): string {
     stealth: '隠れ蓑',
     illusion: '幻化',
   };
-  if (
-    (
-      id === 'first_strike'
-      || id === 'hunter'
-      || id === 'defender'
-      || id === 'counter'
-      || id === 're_attack'
-      || id === 'iaigiri'
-      || id === 'resonance'
-      || id === 'command'
-      || id === 'm_barrier'
-      || id === 'null_counter'
-      || id === 'resurrect'
-      || id === 'cyborgization'
-      || id === 'prophecy'
-      || id === 'stealth'
-      || id === 'illusion'
-    )
-    && level >= 1
-  ) {
+  if (level >= 1) {
     return `${names[id]}${level}`;
   }
   return names[id];
