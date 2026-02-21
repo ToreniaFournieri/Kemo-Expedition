@@ -45,6 +45,10 @@ import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/item
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { getItemDisplayName } from '../game/gameState';
 import { getDeityKey, getEffectiveDeityTier, normalizeDeityName } from '../game/deity';
+import { RACES } from '../data/races';
+import { CLASSES } from '../data/classes';
+import { PREDISPOSITIONS } from '../data/predispositions';
+import { LINEAGES } from '../data/lineages';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -71,6 +75,49 @@ const DEFAULT_DIARY_SETTINGS: DiarySettings = {
   rareThreshold: 5,
   notifyDefeat: true,
 };
+
+const MELEE_CATEGORIES = new Set<Item['category']>(['sword', 'katana', 'gauntlet']);
+const RANGED_CATEGORIES = new Set<Item['category']>(['arrow', 'bolt', 'archery']);
+const MAGIC_CATEGORIES = new Set<Item['category']>(['wand', 'grimoire', 'catalyst']);
+
+function getCharacterCombatBonusLevels(character: Character): { grit: number; pursuit: number; caster: number } {
+  const race = RACES.find(r => r.id === character.raceId);
+  const mainClass = CLASSES.find(c => c.id === character.mainClassId);
+  const subClass = CLASSES.find(c => c.id === character.subClassId);
+  const predisposition = PREDISPOSITIONS.find(p => p.id === character.predispositionId);
+  const lineage = LINEAGES.find(l => l.id === character.lineageId);
+
+  if (!race || !mainClass || !subClass || !predisposition || !lineage) {
+    return { grit: 0, pursuit: 0, caster: 0 };
+  }
+
+  const isMasterClass = character.mainClassId === character.subClassId;
+  const bonusSources = [
+    race.bonuses,
+    mainClass.mainSubBonuses,
+    isMasterClass ? mainClass.masterBonuses : mainClass.mainBonuses,
+    ...(isMasterClass ? [] : [subClass.mainSubBonuses]),
+    predisposition.bonuses,
+    lineage.bonuses,
+  ];
+
+  let grit = 0;
+  let caster = 0;
+  let pursuit = 0;
+  for (const bonuses of bonusSources) {
+    for (const bonus of bonuses) {
+      if (bonus.type === 'grit') {
+        grit = Math.max(grit, bonus.value);
+      } else if (bonus.type === 'caster') {
+        caster = Math.max(caster, bonus.value);
+      } else if (bonus.type === 'pursuit') {
+        pursuit += bonus.value;
+      }
+    }
+  }
+
+  return { grit, pursuit, caster };
+}
 
 function formatEnemyNameWithClass(name: string, classId: keyof typeof CLASS_SHORT_NAMES): string {
   const shortName = CLASS_SHORT_NAMES[classId];
@@ -1385,6 +1432,35 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           }
         }
         for (let i = nextMaxEquipSlots; i < newEquipment.length; i++) {
+          newEquipment[i] = null;
+        }
+      }
+
+      const oldCombatBonuses = getCharacterCombatBonusLevels(oldChar);
+      const nextCombatBonuses = getCharacterCombatBonusLevels(nextCharacter);
+      const lostMeleeAptitude = oldCombatBonuses.grit > 0 && nextCombatBonuses.grit <= 0;
+      const lostRangedAptitude = oldCombatBonuses.pursuit > 0 && nextCombatBonuses.pursuit <= 0;
+      const lostMagicAptitude = oldCombatBonuses.caster > 0 && nextCombatBonuses.caster <= 0;
+
+      if (lostMeleeAptitude || lostRangedAptitude || lostMagicAptitude) {
+        newInventory = { ...newInventory };
+        for (let i = 0; i < newEquipment.length; i++) {
+          const item = newEquipment[i];
+          if (!item) continue;
+
+          const shouldRemove = (lostMeleeAptitude && MELEE_CATEGORIES.has(item.category))
+            || (lostRangedAptitude && RANGED_CATEGORIES.has(item.category))
+            || (lostMagicAptitude && MAGIC_CATEGORIES.has(item.category));
+          if (!shouldRemove) continue;
+
+          const key = getVariantKey(item);
+          const existing = newInventory[key];
+          if (existing) {
+            newInventory[key] = { ...existing, count: existing.count + 1, status: 'owned' };
+          } else {
+            newInventory[key] = { item, count: 1, status: 'owned' };
+          }
+
           newEquipment[i] = null;
         }
       }
