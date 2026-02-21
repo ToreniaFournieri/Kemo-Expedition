@@ -76,6 +76,7 @@ d. bonus (stackable)
 | `b.intelligence+v` | 知+v | 基礎知性に v を加算（魔法火力に影響） |
 | `b.mind+v` | 精+v | 基礎精神に v を加算（HP/魔防に影響） |
 | `c.growth_xV` | 成長V倍 | キャラクター個人のHP基礎値及びアイテムHP増加値V倍 |
+| `c.physical_attack+v` | 物攻+v% | 遠距離攻撃・近距離攻撃の最終ダメージを v% 乗算強化する |
 | `c.physical_offense_multiplier_xV` | 物攻撃V倍 | 遠距離攻撃・近接攻撃がV倍 |
 | `c.magical_offense_multiplier_xV` | 魔攻撃V倍 | 魔法攻撃がV倍 |
 | `c.fire_offense_multiplier_xV` | 炎攻撃V倍 | 炎属性攻撃がV倍 |
