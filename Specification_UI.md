@@ -291,8 +291,9 @@ PT2...
   - 次の目標: show next Loot-Gate condition. 
 
 #### 8.5 Base(拠点)
-- It has two tabs inside Base tab. Inventory(所持品), and Shop(お店). (same visual UI as List of party (PT1, PT2...) tab in Party tab)
-
+- It has two tabs inside Base tab. Inventory(所持品), Shop(お店), Workshop(工房), Altar(祭壇). (same visual UI as List of party (PT1, PT2...) tab in Party tab)
+  - not available for Workshop(工房), Altar(祭壇) in this version. (Gray out)
+	
 **Inventory(所持品)**
 - Behavior:
   - Notification pops up when acquiring a new item
