@@ -271,16 +271,21 @@ function hitDetection(
   opponentEvasionBonus: number,
   nthHit: number, // 1-indexed
   phase: BattlePhase,
-  opponentHasDeflection: boolean,
-  actorHasFocus: boolean
+  opponentDeflectionLevel: number,
+  actorFocusLevel: number
 ): boolean {
-  const effectiveAccuracyBonus = actorHasFocus
-    ? roundUpToThirdDecimal(actorAccuracyBonus * 1.2)
+  const focusMultiplier = actorFocusLevel >= 2 ? 1.3 : actorFocusLevel >= 1 ? 1.2 : 1.0;
+  const effectiveAccuracyBonus = actorFocusLevel > 0
+    ? roundUpToThirdDecimal(actorAccuracyBonus * focusMultiplier)
     : actorAccuracyBonus;
   const decayOfAccuracy = Math.max(0.86, Math.min(0.98, 0.90 + effectiveAccuracyBonus - opponentEvasionBonus));
   let baseChance = actorAccuracyPotency;
-  if (opponentHasDeflection && phase === 'long') {
-    baseChance -= 0.10;
+  if (phase === 'long') {
+    if (opponentDeflectionLevel >= 2) {
+      baseChance -= 0.15;
+    } else if (opponentDeflectionLevel >= 1) {
+      baseChance -= 0.10;
+    }
   }
   const chance = Math.max(0.0, Math.min(1.0, baseChance)) * Math.pow(decayOfAccuracy, nthHit - 1);
   return Math.random() <= chance;
@@ -353,7 +358,13 @@ function calculateCharacterDamage(
   };
 
   const iaigiri = charStats.abilities.find(a => a.id === 'iaigiri');
-  const iaigiriMultiplier = iaigiri ? (iaigiri.level >= 2 ? 2.5 : 2.0) : 1.0;
+  const iaigiriMultiplier = iaigiri
+    ? iaigiri.level >= 3
+      ? 3.0
+      : iaigiri.level >= 2
+        ? 2.5
+        : 2.0
+    : 1.0;
   const cBonus = phase === 'mid'
     ? getUniqueOffenseBonusSum('magical')
     : phase === 'long'
@@ -385,10 +396,13 @@ function calculateCharacterDamage(
   const actorAccuracyPotency = phase === 'mid' ? 1.0 : charStats.accuracyPotency;
   const enemyEvasion = enemy.evasionBonus;
 
+  const actorFocusLevel = charStats.abilities.find(a => a.id === 'focus')?.level ?? 0;
+  const enemyDeflectionLevel = enemy.abilities.includes('deflection') ? 1 : 0;
+
   let hits = 0;
   let damage = 0;
   for (let i = 1; i <= noA; i++) {
-    if (hitDetection(actorAccuracyPotency, charStats.accuracyBonus, enemyEvasion, i, phase, enemy.abilities.includes('deflection'), charStats.abilities.some(a => a.id === 'focus'))) {
+    if (hitDetection(actorAccuracyPotency, charStats.accuracyBonus, enemyEvasion, i, phase, enemyDeflectionLevel, actorFocusLevel)) {
       hits++;
       damage += Math.max(1, Math.floor(basePerHitDamage * getResonanceAmplifier(resonance?.level, hits)));
     }
@@ -414,12 +428,12 @@ function getEnemyFirstStrikeLevel(enemy: EnemyDef): number {
   return enemy.abilities.includes('first_strike') ? 1 : 0;
 }
 
-function hasDeflection(charStats: ComputedCharacterStats): boolean {
-  return charStats.abilities.some(a => a.id === 'deflection');
+function getDeflectionLevel(charStats: ComputedCharacterStats): number {
+  return charStats.abilities.find(a => a.id === 'deflection')?.level ?? 0;
 }
 
-function enemyHasFocus(enemy: EnemyDef): boolean {
-  return enemy.abilities.includes('focus');
+function getEnemyFocusLevel(enemy: EnemyDef): number {
+  return enemy.abilities.includes('focus') ? 1 : 0;
 }
 
 function partyHasNullCounter(characterStats: ComputedCharacterStats[]): boolean {
@@ -580,7 +594,7 @@ export function executeBattle(
     const attempts = Math.ceil(enemy.meleeNoA * 0.5);
     let hits = 0;
     for (let i = 1; i <= attempts; i++) {
-      const didHit = hitDetection(1.0, enemy.accuracyBonus, targetCharStats.evasionBonus, i, 'close', hasDeflection(targetCharStats), enemyHasFocus(enemy));
+      const didHit = hitDetection(1.0, enemy.accuracyBonus, targetCharStats.evasionBonus, i, 'close', getDeflectionLevel(targetCharStats), getEnemyFocusLevel(enemy));
       if (didHit) {
         hits += 1;
       }
@@ -801,8 +815,8 @@ export function executeBattle(
               targetCharStats.evasionBonus,
               enemyHitIndex,
               phase,
-              hasDeflection(targetCharStats),
-              enemyHasFocus(enemy)
+              getDeflectionLevel(targetCharStats),
+              getEnemyFocusLevel(enemy)
             );
             enemyHitIndex += 1;
 
@@ -968,7 +982,7 @@ export function executeBattle(
             let reCounterDamage = 0;
             let reCounterHits = 0;
             for (let i = 1; i <= reCounterAttempts; i++) {
-              const didHit = hitDetection(1.0, enemy.accuracyBonus, attack.charStats.evasionBonus, i, phase, hasDeflection(attack.charStats), enemyHasFocus(enemy));
+              const didHit = hitDetection(1.0, enemy.accuracyBonus, attack.charStats.evasionBonus, i, phase, getDeflectionLevel(attack.charStats), getEnemyFocusLevel(enemy));
               if (!didHit) continue;
               reCounterHits += 1;
               reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, partyStats, attack.charStats, enemyHp);

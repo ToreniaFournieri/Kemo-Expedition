@@ -113,9 +113,10 @@ function getExpeditionOutcomeLabel(outcome: 'victory' | 'return' | 'defeat' | 'r
 }
 
 function getEffectiveAccuracyBonus(accuracyBonus: number, abilities: ComputedCharacterStats['abilities']): number {
-  const hasFocus = abilities.some(a => a.id === 'focus');
-  if (!hasFocus) return accuracyBonus;
-  return Math.ceil((accuracyBonus * 1.2 + Number.EPSILON) * 1000) / 1000;
+  const focusLevel = abilities.find(a => a.id === 'focus')?.level ?? 0;
+  if (focusLevel <= 0) return accuracyBonus;
+  const focusMultiplier = focusLevel >= 2 ? 1.3 : 1.2;
+  return Math.ceil((accuracyBonus * focusMultiplier + Number.EPSILON) * 1000) / 1000;
 }
 
 function renderEnemyNameWithMutedClass(enemyName: string) {
@@ -1482,6 +1483,8 @@ function PartyTab({
 
   // Calculate current stats for notification: HP is party-wide, others are per selected character
   const selectedStats = characterStats[selectedCharacter];
+  const selectedIaigiriLevel = selectedStats.abilities.find(a => a.id === 'iaigiri')?.level ?? 0;
+  const selectedIaigiriMultiplier = selectedIaigiriLevel >= 3 ? 3.0 : selectedIaigiriLevel >= 2 ? 2.5 : selectedIaigiriLevel >= 1 ? 2.0 : 1.0;
   const selectedEffectiveAccuracyBonus = getEffectiveAccuracyBonus(selectedStats.accuracyBonus, selectedStats.abilities);
   const combatTotals = {
     meleeAtk: Math.floor(selectedStats.meleeAttack),
@@ -1494,8 +1497,8 @@ function PartyTab({
     magDef: Math.floor(selectedStats.magicalDefense),
     physicalDefenseResistPercent: Math.round(Math.max(0.01, getDefenseMultiplierSum(equippedItems, 'physical') * getBaseDefenseScale(selectedStats.baseStats.vitality) + selectedStats.deityDefenseAmplifierBonus.physical) * 100),
     magicalDefenseResistPercent: Math.round(Math.max(0.01, getDefenseMultiplierSum(equippedItems, 'magical') * getBaseDefenseScale(selectedStats.baseStats.mind) + selectedStats.deityDefenseAmplifierBonus.magical) * 100),
-    meleeAttackAmp: ((selectedStats.abilities.some(a => a.id === 'iaigiri') ? (selectedStats.abilities.find(a => a.id === 'iaigiri')?.level === 2 ? 2.5 : 2.0) : 1.0) * getOffenseMultiplierSum(equippedItems, 'melee') + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.strength),
-    rangedAttackAmp: ((selectedStats.abilities.some(a => a.id === 'iaigiri') ? (selectedStats.abilities.find(a => a.id === 'iaigiri')?.level === 2 ? 2.5 : 2.0) : 1.0) * getOffenseMultiplierSum(equippedItems, 'ranged') + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.strength),
+    meleeAttackAmp: (selectedIaigiriMultiplier * getOffenseMultiplierSum(equippedItems, 'melee') + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.strength),
+    rangedAttackAmp: (selectedIaigiriMultiplier * getOffenseMultiplierSum(equippedItems, 'ranged') + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.strength),
     magicalAttackAmp: (getOffenseMultiplierSum(equippedItems, 'magical') + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.intelligence),
     accuracy: Math.round(selectedEffectiveAccuracyBonus * 1000),
     evasion: Math.round(selectedStats.evasionBonus * 1000),
@@ -2296,7 +2299,7 @@ function PartyTab({
               {(() => {
                 // Calculate offense amplifiers per phase
                 const iaigiri = stats.abilities.find(a => a.id === 'iaigiri');
-                const iaigiriMultiplier = iaigiri ? (iaigiri.level >= 2 ? 2.5 : 2.0) : 1.0;
+                const iaigiriMultiplier = iaigiri ? (iaigiri.level >= 3 ? 3.0 : iaigiri.level >= 2 ? 2.5 : 2.0) : 1.0;
                 const strengthScale = getBaseOffenseScale(stats.baseStats.strength);
                 const intelligenceScale = getBaseOffenseScale(stats.baseStats.intelligence);
                 const vitalityScale = getBaseDefenseScale(stats.baseStats.vitality);
@@ -4217,7 +4220,7 @@ function SettingTab({
     first_strike: '先制攻撃1:行動が早くなる',
     counter: '反撃1:相手の近距離攻撃を受けたとき反撃(攻撃回数半減)',
     re_attack: '連撃1:攻撃時に追加攻撃を1回行う(攻撃回数半減)',
-    deflection: '矢払い:相手の遠距離攻撃の命中率を10%低下させる',
+    deflection: '矢払い1:相手の遠距離攻撃の命中率を10%低下させる',
     null_counter: '反撃無効化:カウンター攻撃を無効化',
   };
 
