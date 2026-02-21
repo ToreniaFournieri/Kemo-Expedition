@@ -471,8 +471,12 @@ function getItemStats(item: Item): string {
   return stats.join(' ');
 }
 
-function getOffenseMultiplierSum(items: Item[], kind: 'melee' | 'ranged' | 'magical'): number {
-  const appliedBonusNames = new Set<string>();
+function getOffenseMultiplierSum(
+  items: Item[],
+  kind: 'melee' | 'ranged' | 'magical',
+  initialAppliedBonusNames?: Iterable<string>
+): number {
+  const appliedBonusNames = new Set<string>(initialAppliedBonusNames ?? []);
   const relevant = items.filter(item => {
     if (kind === 'melee') return item.meleeAttack || item.meleeNoA || item.meleeNoABonus;
     if (kind === 'ranged') return item.rangedAttack || item.rangedNoA || item.rangedNoABonus;
@@ -490,7 +494,7 @@ function getOffenseMultiplierSum(items: Item[], kind: 'melee' | 'ranged' | 'magi
     return sum + (baseMultiplier - 1);
   }, 0);
 
-  return 1 + bonusSum;
+  return bonusSum;
 }
 
 function getBaseOffenseScale(value: number): number {
@@ -631,6 +635,8 @@ const C_MULTIPLIER_HELP_DESCRIPTIONS: Record<string, string> = {
   grimoire: '魔導書カテゴリ装備の効果が {value} 倍',
   catalyst: '触媒カテゴリ装備の効果が {value} 倍',
   arrow: '矢カテゴリ装備の効果が {value} 倍',
+  physical_offense_multiplier_xV: '遠距離攻撃・近接攻撃の攻撃倍率が {value} 倍',
+  magical_offense_multiplier_xV: '魔法攻撃の攻撃倍率が {value} 倍',
 };
 
 const CATEGORY_TO_MULTIPLIER_BONUS: Record<ItemCategory, BonusType | null> = {
@@ -709,6 +715,18 @@ function formatBonuses(bonuses: Bonus[]): string {
       parts.push(`命中+${Math.round(b.value * 1000)}`);
     } else if (b.type === 'evasion') {
       parts.push(`回避+${Math.round(b.value * 1000)}`);
+    } else if (b.type === 'melee_attack') {
+      parts.push(`近攻撃+${Math.round(b.value * 100)}%`);
+    } else if (b.type === 'ranged_attack') {
+      parts.push(`遠攻撃+${Math.round(b.value * 100)}%`);
+    } else if (b.type === 'magical_attack') {
+      parts.push(`魔攻撃+${Math.round(b.value * 100)}%`);
+    } else if (b.type === 'physical_attack') {
+      parts.push(`物攻撃+${Math.round(b.value * 100)}%`);
+    } else if (b.type === 'physical_offense_multiplier_xV') {
+      parts.push(`物攻撃x${b.value.toFixed(2)}`);
+    } else if (b.type === 'magical_offense_multiplier_xV') {
+      parts.push(`魔攻撃x${b.value.toFixed(2)}`);
     } else if (b.type === 'ability' && b.abilityId) {
       const name = ABILITY_NAMES[b.abilityId] || b.abilityId;
       parts.push(`${name}Lv${b.abilityLevel || 1}`);
@@ -1512,9 +1530,15 @@ function PartyTab({
     magDef: Math.floor(selectedStats.magicalDefense),
     physicalDefenseResistPercent: Math.round(Math.max(0.01, getDefenseMultiplierSum(equippedItems, 'physical') * getBaseDefenseScale(selectedStats.baseStats.vitality) + selectedStats.deityDefenseAmplifierBonus.physical) * 100),
     magicalDefenseResistPercent: Math.round(Math.max(0.01, getDefenseMultiplierSum(equippedItems, 'magical') * getBaseDefenseScale(selectedStats.baseStats.mind) + selectedStats.deityDefenseAmplifierBonus.magical) * 100),
-    meleeAttackAmp: (selectedIaigiriMultiplier * getOffenseMultiplierSum(equippedItems, 'melee') + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.strength),
-    rangedAttackAmp: (selectedIaigiriMultiplier * getOffenseMultiplierSum(equippedItems, 'ranged') + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.strength),
-    magicalAttackAmp: (getOffenseMultiplierSum(equippedItems, 'magical') + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.intelligence),
+    meleeAttackAmp: ((selectedIaigiriLevel > 0
+      ? selectedIaigiriMultiplier * (1 + selectedStats.meleeAttackCBonus + getOffenseMultiplierSum(equippedItems, 'melee', selectedStats.offenseCBonusNames)) * selectedStats.physicalOffenseMultiplier
+      : (1 + selectedStats.meleeAttackCBonus + getOffenseMultiplierSum(equippedItems, 'melee', selectedStats.offenseCBonusNames) + selectedStats.physicalAttackCBonus) * selectedStats.physicalOffenseMultiplier
+    ) + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.strength),
+    rangedAttackAmp: ((selectedIaigiriLevel > 0
+      ? selectedIaigiriMultiplier * (1 + selectedStats.rangedAttackCBonus + getOffenseMultiplierSum(equippedItems, 'ranged', selectedStats.offenseCBonusNames)) * selectedStats.physicalOffenseMultiplier
+      : (1 + selectedStats.rangedAttackCBonus + getOffenseMultiplierSum(equippedItems, 'ranged', selectedStats.offenseCBonusNames) + selectedStats.physicalAttackCBonus) * selectedStats.physicalOffenseMultiplier
+    ) + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.strength),
+    magicalAttackAmp: (((1 + selectedStats.magicalAttackCBonus + getOffenseMultiplierSum(equippedItems, 'magical', selectedStats.offenseCBonusNames)) * selectedStats.magicalOffenseMultiplier) + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.intelligence),
     accuracy: Math.round(selectedEffectiveAccuracyBonus * 1000),
     evasion: Math.round(selectedStats.evasionBonus * 1000),
     hp: Math.floor(partyStats.hp),
@@ -2323,17 +2347,21 @@ function PartyTab({
                 const hasMagical = stats.magicalAttack > 0 || stats.magicalNoA > 0;
                 const hasMelee = stats.meleeAttack > 0 || stats.meleeNoA > 0;
                 const equippedItems = char.equipment.filter((item): item is Item => item != null);
-                const baseMultMelee = getOffenseMultiplierSum(
+                const baseAppliedOffenseBonusNames = stats.offenseCBonusNames;
+                const baseMultMelee = stats.meleeAttackCBonus + getOffenseMultiplierSum(
                   equippedItems,
-                  'melee'
+                  'melee',
+                  baseAppliedOffenseBonusNames
                 );
-                const baseMultRanged = getOffenseMultiplierSum(
+                const baseMultRanged = stats.rangedAttackCBonus + getOffenseMultiplierSum(
                   equippedItems,
-                  'ranged'
+                  'ranged',
+                  baseAppliedOffenseBonusNames
                 );
-                const baseMultMagical = getOffenseMultiplierSum(
+                const baseMultMagical = stats.magicalAttackCBonus + getOffenseMultiplierSum(
                   equippedItems,
-                  'magical'
+                  'magical',
+                  baseAppliedOffenseBonusNames
                 );
                 const defenseMultPhysical = getDefenseMultiplierSum(
                   equippedItems,
@@ -2354,7 +2382,10 @@ function PartyTab({
                 // Build offense lines
                 const offenseLines: StatusLine[] = [];
                 if (hasRanged) {
-                  const amp = ((iaigiri ? iaigiriMultiplier : 1.0) * baseMultRanged + stats.deityOffenseAmplifierBonus) * strengthScale;
+                  const amp = ((iaigiri
+                    ? iaigiriMultiplier * (1.0 + baseMultRanged) * stats.physicalOffenseMultiplier
+                    : (1.0 + baseMultRanged + stats.physicalAttackCBonus) * stats.physicalOffenseMultiplier
+                  ) + stats.deityOffenseAmplifierBonus) * strengthScale;
                   offenseLines.push({
                     key: 'ranged-attack',
                     text: `遠距離攻撃:${formatNumber(Math.floor(stats.rangedAttack))} x ${formatNumber(stats.rangedNoA)}回(x${amp.toFixed(2)})`,
@@ -2367,7 +2398,7 @@ function PartyTab({
                   });
                 }
                 if (hasMagical) {
-                  const amp = (1.0 * baseMultMagical + stats.deityOffenseAmplifierBonus) * intelligenceScale;
+                  const amp = ((1.0 + baseMultMagical) * stats.magicalOffenseMultiplier + stats.deityOffenseAmplifierBonus) * intelligenceScale;
                   offenseLines.push({
                     key: 'magical-attack',
                     text: `魔法攻撃:${formatNumber(Math.floor(stats.magicalAttack))} x ${formatNumber(stats.magicalNoA)}回(x${amp.toFixed(2)})`,
@@ -2380,7 +2411,10 @@ function PartyTab({
                   });
                 }
                 if (hasMelee) {
-                  const amp = ((iaigiri ? iaigiriMultiplier : 1.0) * baseMultMelee + stats.deityOffenseAmplifierBonus) * strengthScale;
+                  const amp = ((iaigiri
+                    ? iaigiriMultiplier * (1.0 + baseMultMelee) * stats.physicalOffenseMultiplier
+                    : (1.0 + baseMultMelee + stats.physicalAttackCBonus) * stats.physicalOffenseMultiplier
+                  ) + stats.deityOffenseAmplifierBonus) * strengthScale;
                   offenseLines.push({
                     key: 'melee-attack',
                     text: `近接攻撃:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}回(x${amp.toFixed(2)})`,
@@ -2564,9 +2598,12 @@ function PartyTab({
                   const key = b.type.replace('_multiplier', '');
                   if (!multiplierValues[key]) multiplierValues[key] = new Set();
                   multiplierValues[key].add(b.value);
+                } else if (b.type === 'physical_offense_multiplier_xV' || b.type === 'magical_offense_multiplier_xV') {
+                  if (!multiplierValues[b.type]) multiplierValues[b.type] = new Set();
+                  multiplierValues[b.type].add(b.value);
                 } else if (['vitality', 'strength', 'intelligence', 'mind'].includes(b.type)) {
                   additive[b.type] = (additive[b.type] ?? 0) + b.value;
-                } else if (['equip_slot', 'grit', 'caster', 'pursuit', 'penet', 'accuracy', 'growth_xV'].includes(b.type)) {
+                } else if (['equip_slot', 'grit', 'caster', 'pursuit', 'penet', 'accuracy', 'growth_xV', 'melee_attack', 'ranged_attack', 'magical_attack', 'physical_attack'].includes(b.type)) {
                   addUniqueCBonus(b.type, b.value);
                 } else if (b.type === 'evasion') {
                     if (b.value < 0) {
@@ -2599,12 +2636,14 @@ function PartyTab({
               const mulNames: Record<string, string> = {
                 sword: '剣', katana: '刀', archery: '弓', armor: '鎧',
                 gauntlet: '手', wand: '杖', robe: '衣', shield: '盾',
-                bolt: 'ボ', grimoire: '書', catalyst: '媒', arrow: '矢'
+                bolt: 'ボ', grimoire: '書', catalyst: '媒', arrow: '矢',
+                physical_offense_multiplier_xV: '物攻撃', magical_offense_multiplier_xV: '魔攻撃'
               };
               const addNames: Record<string, string> = {
                 vitality: '体', strength: '力', intelligence: '知', mind: '精',
                 equip_slot: '装備', grit: '根性', caster: '術者', penet: '貫通',
-                pursuit: '追撃', accuracy: '命中', evasion: '回避', growth_xV: '成長' 
+                pursuit: '追撃', accuracy: '命中', evasion: '回避', growth_xV: '成長',
+                melee_attack: '近攻撃', ranged_attack: '遠攻撃', magical_attack: '魔攻撃', physical_attack: '物攻撃' 
               };
 
               for (const [key, val] of Object.entries(multipliers)) {
@@ -2626,7 +2665,14 @@ function PartyTab({
               }
               for (const [key, val] of Object.entries(additive)) {
                 if (val !== 0) {
-                  if (key === 'penet') {
+                  if (key === 'melee_attack' || key === 'ranged_attack' || key === 'magical_attack' || key === 'physical_attack') {
+                    const label = `${addNames[key]}+${Math.round(val * 100)}%`;
+                    parts.push(label);
+                    if (key === 'melee_attack') helpRows.push({ label, description: '近接攻撃の攻撃倍率が上昇する' });
+                    if (key === 'ranged_attack') helpRows.push({ label, description: '遠距離攻撃の攻撃倍率が上昇する' });
+                    if (key === 'magical_attack') helpRows.push({ label, description: '魔法攻撃の攻撃倍率が上昇する' });
+                    if (key === 'physical_attack') helpRows.push({ label, description: '遠距離攻撃・近接攻撃の攻撃倍率が上昇する' });
+                  } else if (key === 'penet') {
                     const label = `${addNames[key]}+${Math.round(val * 100)}%`;
                     parts.push(label);
                     helpRows.push({ label, description: `敵の防御力を ${Math.round(val * 100)}% 分無視する` });
@@ -2708,7 +2754,7 @@ function PartyTab({
                       onPointerDown={(event) => event.stopPropagation()}
                       className="absolute left-0 top-5 z-20 w-[min(38rem,88vw)] rounded-md border border-gray-200 bg-white p-3 shadow-lg"
                     >
-                      <div className="mb-2 text-[11px] font-semibold text-gray-700">c. ボーナス説明 (同一名ボーナスは重複無効)</div>
+                      <div className="mb-2 text-[11px] font-semibold text-gray-700">c. ボーナス説明　(同一名ボーナスは重複無効)</div>
                       <div className="max-h-56 space-y-1 overflow-y-auto pr-1 text-[11px] leading-4 text-gray-700">
                         {helpRows.map((row) => (
                           <div key={row.label}>
@@ -2719,7 +2765,7 @@ function PartyTab({
                       </div>
                       {bHelpRows.length > 0 && (
                         <div className="mb-2 rounded border border-gray-100 bg-gray-50 px-2 py-1 text-[11px] leading-4 text-gray-700">
-                          <div className="font-semibold text-gray-700">b.ボーナス説明(重複有効)</div>
+                          <div className="font-semibold text-gray-700">b. ボーナス説明(重複有効)</div>
                           {bHelpRows.map((row) => (
                             <div key={row.label}>
                               <span className="font-bold">{row.label}</span>
