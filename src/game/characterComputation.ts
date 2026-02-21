@@ -595,7 +595,7 @@ function getAbilityName(id: AbilityId, level: number): string {
 
 function getAbilityDescription(id: AbilityId, level: number): string {
   const descriptions: Record<AbilityId, (level: number) => string> = {
-    first_strike: (l) => l === 2 ? '行動がとても速くなる' : '行動が速くなる',
+    first_strike: (l) => l >= 3 ? '行動が極めて速くなる' : l === 2 ? '行動がとても速くなる' : '行動が速くなる',
     hunter: (l) => l >= 3
       ? '列による命中率減衰を1列ごと15%→5%に軽減する'
       : l === 2
@@ -615,13 +615,15 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     tithe: (l) => `祈り時に寄付額へ探検利益の+${l >= 2 ? '15' : '10'}%を加算`,
     seeker: (l) => `魔導書の効果増加(レベル毎に${l >= 2 ? '0.35' : '0.25'}%)`,
     resurrect: () => '自分が受けた致命ダメージをHP1残して耐える',
-    rage: () => '物理/魔法攻撃倍率増大(受けたダメージ1%につき1%増)',
+    rage: (l) => `物理/魔法攻撃倍率増大(受けたダメージ1%につき${l >= 2 ? '1.2' : '1'}%増)`,
     re_counter: (l) => l >= 2
       ? '敵から反撃に対して、反撃する(攻撃回数半減しない)'
       : '敵から反撃に対して、反撃する(攻撃回数半減)',
-    momentum: () => '物理/魔法攻撃倍率1.5倍(受けたダメージ1%につき1%減)',
+    momentum: (l) => `物理/魔法攻撃倍率1.5倍(受けたダメージ1%につき${l >= 2 ? '0.75' : '1'}%減)`,
     cunning: (l) => `自動売却額が${l >= 2 ? '1.3' : '1.2'}倍`,
-    bulwark: () => '真後ろの味方への遠距離攻撃を肩代わりする',
+    bulwark: (l) => l >= 2
+      ? '真後ろの味方への遠距離/近距離攻撃を肩代わりする'
+      : '真後ろの味方への遠距離攻撃を肩代わりする',
     cyborgization: () => '命中+30、回避-20',
     covering_fire: (l) => l >= 2
       ? '味方近接攻撃の命中が1回のみなら遠距離射撃(攻撃回数半減しない)'
