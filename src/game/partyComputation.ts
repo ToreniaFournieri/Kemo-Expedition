@@ -267,6 +267,9 @@ function getAbilityName(id: AbilityId, level: number): string {
       || id === 'resonance'
       || id === 'command'
       || id === 'm_barrier'
+      || id === 'null_counter'
+      || id === 'resurrect'
+      || id === 'stealth'
       || id === 'illusion'
     )
     && level >= 1
