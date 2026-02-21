@@ -400,6 +400,9 @@ function getNextGoalText(party: Party): string | null {
 function getItemStats(item: Item): string {
   const multiplier = (ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1) *
     (SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1);
+  const superRareUniqueBonusText = formatBonuses(
+    (SUPER_RARE_TITLES.find((title) => title.value === item.superRare)?.bonuses ?? []).filter((bonus) => bonus.type !== 'growth_xV')
+  );
   const baseMultiplier = item.baseMultiplier ?? 1;
   const multiplierPercent = Math.round((baseMultiplier - 1) * 100);
   const formatDecimal = (value: number): string => {
@@ -468,6 +471,7 @@ function getItemStats(item: Item): string {
     const elementalPercent = Math.round((item.elementalOffenseBonus ?? 0) * 100);
     stats.push(`${elem}属性+${elementalPercent}%`);
   }
+  if (superRareUniqueBonusText) stats.push(`[超:${superRareUniqueBonusText}]`);
   return stats.join(' ');
 }
 
