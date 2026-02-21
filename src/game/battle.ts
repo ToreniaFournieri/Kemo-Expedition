@@ -235,6 +235,94 @@ function getPartyDefenseAbilityAmplifier(phase: BattlePhase, partyStats: Compute
   return partyStats.defenseAmplifiers.physical;
 }
 
+function calculateCharacterFriendlyFireDamage(
+  phase: BattlePhase,
+  attacker: ComputedCharacterStats,
+  target: ComputedCharacterStats,
+  partyStats: ComputedPartyStats,
+  partyHp: number,
+  noAMultiplier: number = 1.0
+): CharacterAttackResult {
+  let attack = 0;
+  let noA = 0;
+  let defense = 0;
+  let defenseAmplifier = 1.0;
+
+  if (phase === 'long') {
+    attack = attacker.rangedAttack;
+    noA = attacker.rangedNoA;
+    defense = target.physicalDefense;
+    defenseAmplifier = Math.max(0.01, target.physicalDefenseAmplifier + target.deityDefenseAmplifierBonus.physical);
+  } else if (phase === 'mid') {
+    attack = attacker.magicalAttack;
+    noA = attacker.magicalNoA;
+    defense = target.magicalDefense;
+    defenseAmplifier = Math.max(0.01, target.magicalDefenseAmplifier + target.deityDefenseAmplifierBonus.magical);
+  } else {
+    attack = attacker.meleeAttack;
+    noA = attacker.meleeNoA;
+    defense = target.physicalDefense;
+    defenseAmplifier = Math.max(0.01, target.physicalDefenseAmplifier + target.deityDefenseAmplifierBonus.physical);
+  }
+
+  noA = Math.ceil(noA * noAMultiplier);
+  if (noA <= 0 || attack <= 0) return { damage: 0, totalAttempts: 0, hits: 0 };
+
+  const effectiveDefense = defense * (1 - attacker.penetMultiplier);
+  const phaseAttackScale = phase === 'mid'
+    ? getBaseMultiplier(attacker.baseStats.intelligence, 'attack')
+    : getBaseMultiplier(attacker.baseStats.strength, 'attack');
+
+  const iaigiri = attacker.abilities.find(a => a.id === 'iaigiri');
+  const iaigiriMultiplier = iaigiri ? (iaigiri.level >= 3 ? 3.0 : iaigiri.level >= 2 ? 2.5 : 2.0) : 1.0;
+  const phaseBonusSum = phase === 'mid'
+    ? attacker.magicalAttackCBonus
+    : (phase === 'long' ? attacker.rangedAttackCBonus : attacker.meleeAttackCBonus);
+
+  let offenseAmplifier = 1.0;
+  if (phase === 'mid') {
+    offenseAmplifier = ((1.0 + phaseBonusSum) * attacker.magicalOffenseMultiplier + attacker.deityOffenseAmplifierBonus) * phaseAttackScale;
+  } else if (iaigiri) {
+    offenseAmplifier = (iaigiriMultiplier * (1.0 + phaseBonusSum) * attacker.physicalOffenseMultiplier + attacker.deityOffenseAmplifierBonus) * phaseAttackScale;
+  } else {
+    offenseAmplifier = ((1.0 + phaseBonusSum + attacker.physicalAttackCBonus) * attacker.physicalOffenseMultiplier + attacker.deityOffenseAmplifierBonus) * phaseAttackScale;
+  }
+
+  const elementalMultiplier = attacker.elementalOffense === 'none'
+    ? 1.0
+    : target.elementalDefenseMultipliers[attacker.elementalOffense] ?? 1.0;
+
+  const rageAmplifier = getCharacterRageAmplifier(attacker, partyHp, partyStats.hp);
+  const momentumAmplifier = getCharacterMomentumAmplifier(attacker, partyHp, partyStats.hp);
+
+  const basePerHitDamage = Math.max(1, Math.floor(
+    (attack - effectiveDefense)
+      * offenseAmplifier
+      * attacker.elementalOffenseValue
+      * elementalMultiplier
+      * defenseAmplifier
+      * partyStats.offenseAmplifier
+      * rageAmplifier
+      * momentumAmplifier
+  ));
+
+  const actorAccuracyPotency = phase === 'mid' ? 1.0 : attacker.accuracyPotency;
+  const actorFocusLevel = attacker.abilities.find(a => a.id === 'focus')?.level ?? 0;
+  const targetDeflectionLevel = getDeflectionLevel(target);
+  const resonance = attacker.abilities.find(a => a.id === 'resonance');
+
+  let hits = 0;
+  let damage = 0;
+  for (let i = 1; i <= noA; i++) {
+    if (hitDetection(actorAccuracyPotency, attacker.accuracyBonus, target.evasionBonus, i, phase, targetDeflectionLevel, actorFocusLevel)) {
+      hits += 1;
+      damage += Math.max(1, Math.floor(basePerHitDamage * getResonanceAmplifier(resonance?.level, hits)));
+    }
+  }
+
+  return { damage, totalAttempts: noA, hits };
+}
+
 
 interface CharacterAttackResult {
   damage: number;
@@ -1189,12 +1277,29 @@ export function executeBattle(
       if (!char) continue;
 
       const runCharacterAttack = (noAMultiplier: number, isReAttack = false): CharacterAttackResult | null => {
-        const result = calculateCharacterDamage(phase, cs, char, enemy, partyStats, partyHp, noAMultiplier);
-        if (result.totalAttempts <= 0) return null;
+        const isAntagonism = cs.hasAntagonism;
+        let result: CharacterAttackResult;
+        let antagonismTarget: ComputedCharacterStats | null = null;
 
-        if (result.damage > 0) {
-          enemyHp -= result.damage;
+        if (isAntagonism) {
+          const candidates = characterStats.filter(target => target.characterId !== cs.characterId);
+          if (candidates.length === 0) return null;
+          const { row: targetRow, newCtx } = getTargetRow(ctx, phase);
+          ctx = newCtx;
+          const selected = resolveEnemyTarget(targetRow, candidates, phase) ?? candidates[Math.floor(Math.random() * candidates.length)];
+          antagonismTarget = selected;
+          result = calculateCharacterFriendlyFireDamage(phase, cs, selected, partyStats, partyHp, noAMultiplier);
+          if (result.damage > 0) {
+            partyHp -= result.damage;
+          }
+        } else {
+          result = calculateCharacterDamage(phase, cs, char, enemy, partyStats, partyHp, noAMultiplier);
+          if (result.damage > 0) {
+            enemyHp -= result.damage;
+          }
         }
+
+        if (result.totalAttempts <= 0) return null;
 
         const attackType = isReAttack
           ? (phase === 'mid' ? '魔法連撃' : '連撃')
@@ -1202,12 +1307,17 @@ export function executeBattle(
         const resonanceLogText = getResonanceLogText(phase, cs, result.hits);
         const characterAttackRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(cs, partyHp, partyStats.hp));
         const characterAttackMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(cs, partyHp, partyStats.hp));
+        const antagonismTargetName = antagonismTarget
+          ? (party.characters.find(c => c.id === antagonismTarget.characterId)?.name ?? '???')
+          : null;
         log.push({
           phase,
           initiativeRoll: turn.roll,
           actor: 'character',
           characterId: cs.characterId,
-          action: `${char.name} の${attackType}！${resonanceLogText}`,
+          action: isAntagonism
+            ? `${char.name} は敵対状態！${antagonismTargetName} へ${attackType}！${resonanceLogText}`
+            : `${char.name} の${attackType}！${resonanceLogText}`,
           damage: result.damage,
           hits: result.hits,
           totalAttempts: result.totalAttempts,
@@ -1219,7 +1329,7 @@ export function executeBattle(
           elementalOffense: cs.elementalOffense,
         });
 
-        if (enemyHp > 0 && phase === 'close') {
+        if (!isAntagonism && enemyHp > 0 && phase === 'close') {
           triggerEnemyCounter(cs, result.damage, enemyInitiativeRoll);
         }
 
