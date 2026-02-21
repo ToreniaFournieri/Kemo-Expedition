@@ -463,7 +463,7 @@ function getItemStats(item: Item): string {
   if (item.evasionBonus) stats.push(`回避${formatSigned(Math.round(item.evasionBonus * 1000))}`);
   if (item.vitalityBonus) stats.push(`体力+${item.vitalityBonus}`);
   if (item.strengthBonus) stats.push(`力+${item.strengthBonus}`);
-  if (item.intelligenceBonus) stats.push(`知力+${item.intelligenceBonus}`);
+  if (item.intelligenceBonus) stats.push(`知性+${item.intelligenceBonus}`);
   if (item.mindBonus) stats.push(`精神+${item.mindBonus}`);
   if (item.penetBonus) stats.push(formatBracket('貫通', Math.round(item.penetBonus * 100)));
   if (item.elementalOffense && item.elementalOffense !== 'none') {
