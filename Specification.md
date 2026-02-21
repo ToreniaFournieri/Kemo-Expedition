@@ -134,7 +134,7 @@
 
 - character.`f.offense_amplifier` (phase: )
   - If phase is LONG or CLOSE,
-    - If character.`a.iaigiri`, return v x sum of ( `c.melee_attack+v` or `c.ranged_attack+v`) x `f.base_multiplier`(base_type: `b.strength`)
+    - If character.`a.iaigiri`, return v x sum of ( `c.melee_attack+v` or `c.ranged_attack+v`)　x `c.physical_offense_multiplier_xV` x `f.base_multiplier`(base_type: `b.strength`)
       - `a.iaigiri`1: v = 2.0
       - `a.iaigiri`2: v = 2.5
       - `a.iaigiri`3: v = 3.0
