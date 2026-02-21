@@ -1047,10 +1047,11 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
 
             if (updated.state === '宴会中') {
               const baseSpend = Math.floor((party.pendingProfit * (33 + Math.random() * 34)) / 100);
-              const hasSquander = !!getPartyAbilityOwnerName(party, 'squander');
-              const spend = Math.min(party.pendingProfit, hasSquander ? baseSpend * 2 : baseSpend);
+              const squanderLevel = getPartyAbilityLevel(party, 'squander');
+              const squanderMultiplier = squanderLevel >= 2 ? 2 : squanderLevel >= 1 ? 1.5 : 1;
+              const spend = Math.min(party.pendingProfit, Math.floor(baseSpend * squanderMultiplier));
               if (spend > 0) {
-                if (hasSquander) {
+                if (squanderLevel > 0) {
                   const lordName = getPartyAbilityOwnerName(party, 'squander') ?? '名無し';
                   actions.addNotification(`${party.name} 君主${lordName}は贅沢に${formatNumber(spend)}G使った`);
                 } else {
@@ -1066,12 +1067,14 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             } else if (updated.state === '祈り中') {
               const donationRate = 10 + Math.random() * 23;
               const baseDonation = Math.floor((party.pendingProfit * donationRate) / 100);
-              const titheBonus = getPartyAbilityOwnerName(party, 'tithe') ? Math.floor(party.pendingProfit * 0.1) : 0;
+              const titheLevel = getPartyAbilityLevel(party, 'tithe');
+              const titheBonusRate = titheLevel >= 2 ? 0.15 : titheLevel >= 1 ? 0.1 : 0;
+              const titheBonus = Math.floor(party.pendingProfit * titheBonusRate);
               const donation = Math.min(party.pendingProfit, baseDonation + titheBonus);
               const deposit = Math.max(0, party.pendingProfit - donation);
               actions.processPendingProfit(partyIndex, donation, deposit);
               if (donation > 0 || deposit > 0) {
-                if (titheBonus > 0) {
+                if (titheLevel > 0) {
                   const pilgrimName = getPartyAbilityOwnerName(party, 'tithe') ?? '名無し';
                   actions.addNotification(`${party.name} 巡礼者${pilgrimName}は祈りと共に${formatNumber(donation)}G神に捧げて、${formatNumber(deposit)}Gを貯金した`);
                 } else {
@@ -1209,9 +1212,21 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     return owner?.name ?? null;
   };
 
+  const getPartyAbilityLevel = (party: Party, abilityId: string): number => {
+    const { characterStats } = computePartyStats(party);
+    return characterStats.reduce((maxLevel, stats) => {
+      const level = stats.abilities
+        .filter((ability) => ability.id === abilityId)
+        .reduce((abilityMax, ability) => Math.max(abilityMax, ability.level), 0);
+      return Math.max(maxLevel, level);
+    }, 0);
+  };
+
   const getPartyTravelDurationMs = (party: Party): number => {
-    const hasPeddler = !!getPartyAbilityOwnerName(party, 'peddler');
-    return hasPeddler ? Math.floor((5000 * 2) / 3) : 5000;
+    const peddlerLevel = getPartyAbilityLevel(party, 'peddler');
+    if (peddlerLevel >= 2) return Math.floor((5000 * 3) / 5);
+    if (peddlerLevel >= 1) return Math.floor((5000 * 2) / 3);
+    return 5000;
   };
 
   const triggerSortie = (partyIndex: number) => {
@@ -2575,7 +2590,8 @@ function PartyTab({
               const seekerAbilityLevel = allBonuses
                 .filter((b) => b.type === 'ability' && b.abilityId === 'seeker')
                 .reduce((max, b) => Math.max(max, b.abilityLevel ?? 1), 0);
-              const seekerMultiplier = seekerAbilityLevel > 0 ? 1 + (party.level * 0.0025) : 1;
+              const seekerPerLevelBonus = seekerAbilityLevel >= 2 ? 0.0035 : seekerAbilityLevel >= 1 ? 0.0025 : 0;
+              const seekerMultiplier = seekerAbilityLevel > 0 ? 1 + (party.level * seekerPerLevelBonus) : 1;
 
               // Format display
               const parts: string[] = [];

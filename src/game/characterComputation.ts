@@ -283,7 +283,8 @@ export function computeCharacterStats(
   };
 
   const seekerLevel = collection.abilities.get('seeker') ?? 0;
-  const seekerMultiplier = seekerLevel > 0 ? 1 + (partyLevel * 0.0025) : 1;
+  const seekerPerLevelBonus = seekerLevel >= 2 ? 0.0035 : seekerLevel >= 1 ? 0.0025 : 0;
+  const seekerMultiplier = seekerLevel > 0 ? 1 + (partyLevel * seekerPerLevelBonus) : 1;
 
   // Calculate stats from equipment
   let rangedAttack = 0;
@@ -610,22 +611,22 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     deflection: (l) => `敵の遠距離攻撃の命中率を${l >= 2 ? '15' : '10'}%低下させる`,
     null_counter: () => '反撃を無効化する',
     unlock: () => '追加報酬チャンス',
-    squander: () => '宴会で消費するゴールドが2倍になる',
-    tithe: () => '祈り時に寄付額へ探検利益の+10%を加算',
-    seeker: () => '魔導書の効果増加(レベル毎に0.25%)',
+    squander: (l) => `宴会で消費するゴールドが${l >= 2 ? '2' : '1.5'}倍になる`,
+    tithe: (l) => `祈り時に寄付額へ探検利益の+${l >= 2 ? '15' : '10'}%を加算`,
+    seeker: (l) => `魔導書の効果増加(レベル毎に${l >= 2 ? '0.35' : '0.25'}%)`,
     resurrect: () => '自分が受けた致命ダメージをHP1残して耐える',
     rage: () => '物理/魔法攻撃倍率増大(受けたダメージ1%につき1%増)',
     re_counter: (l) => l >= 2
       ? '敵から反撃に対して、反撃する(攻撃回数半減しない)'
       : '敵から反撃に対して、反撃する(攻撃回数半減)',
     momentum: () => '物理/魔法攻撃倍率1.5倍(受けたダメージ1%につき1%減)',
-    cunning: () => '自動売却額が1.2倍',
+    cunning: (l) => `自動売却額が${l >= 2 ? '1.3' : '1.2'}倍`,
     bulwark: () => '真後ろの味方への遠距離攻撃を肩代わりする',
     cyborgization: () => '命中+30、回避-20',
     covering_fire: (l) => l >= 2
       ? '味方近接攻撃の命中が1回のみなら遠距離射撃(攻撃回数半減しない)'
       : '味方近接攻撃の命中が1回のみなら遠距離射撃(攻撃回数半減)',
-    peddler: () => '移動時間(移動中/帰還中)が2/3になる',
+    peddler: (l) => `移動時間(移動中/帰還中)が${l >= 2 ? '3/5' : '2/3'}になる`,
     composure: (l) => `物理/魔法命中率+${l >= 2 ? '13' : '10'}%加算`,
     magical_counter: (l) => l >= 2
       ? '魔法には魔法で反撃する(攻撃回数半減しない)'
