@@ -3618,6 +3618,7 @@ function ShopTab({
 
       return {
         key,
+        item,
         titleValue: title.value,
         name: getItemDisplayName(item),
         isSoldOut,
@@ -3644,6 +3645,9 @@ function ShopTab({
               <div className="min-w-0">
                 <div className="truncate text-sm font-medium text-gray-900">{entry.name} x1</div>
                 <div className="text-xs text-gray-500">{formatNumber(shopPrice)}G</div>
+                <div className="mt-0.5 text-xs leading-tight text-gray-400">
+                  {getRarityShortLabel(entry.item.id)} {getItemStats(entry.item)}
+                </div>
               </div>
               <button
                 onClick={() => onBuyShopItem(entry.titleValue)}
