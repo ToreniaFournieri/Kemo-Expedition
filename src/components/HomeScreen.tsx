@@ -637,6 +637,11 @@ const C_MULTIPLIER_HELP_DESCRIPTIONS: Record<string, string> = {
   arrow: '矢カテゴリ装備の効果が {value} 倍',
   physical_offense_multiplier_xV: '遠距離攻撃・近接攻撃の攻撃倍率が {value} 倍',
   magical_offense_multiplier_xV: '魔法攻撃の攻撃倍率が {value} 倍',
+  physical_defense_multiplier_xV: '物理防御倍率が {value} 倍',
+  magical_defense_multiplier_xV: '魔法防御倍率が {value} 倍',
+  fire_defense_multiplier_xV: '炎属性耐性が {value} 倍',
+  ice_defense_multiplier_xV: '氷属性耐性が {value} 倍',
+  thunder_defense_multiplier_xV: '雷属性耐性が {value} 倍',
 };
 
 const CATEGORY_TO_MULTIPLIER_BONUS: Record<ItemCategory, BonusType | null> = {
@@ -727,6 +732,16 @@ function formatBonuses(bonuses: Bonus[]): string {
       parts.push(`物攻撃x${b.value.toFixed(2)}`);
     } else if (b.type === 'magical_offense_multiplier_xV') {
       parts.push(`魔攻撃x${b.value.toFixed(2)}`);
+    } else if (b.type === 'physical_defense_multiplier_xV') {
+      parts.push(`物防x${b.value.toFixed(2)}`);
+    } else if (b.type === 'magical_defense_multiplier_xV') {
+      parts.push(`魔防x${b.value.toFixed(2)}`);
+    } else if (b.type === 'fire_defense_multiplier_xV') {
+      parts.push(`炎防x${b.value.toFixed(2)}`);
+    } else if (b.type === 'ice_defense_multiplier_xV') {
+      parts.push(`氷防x${b.value.toFixed(2)}`);
+    } else if (b.type === 'thunder_defense_multiplier_xV') {
+      parts.push(`雷防x${b.value.toFixed(2)}`);
     } else if (b.type === 'ability' && b.abilityId) {
       const name = ABILITY_NAMES[b.abilityId] || b.abilityId;
       parts.push(`${name}Lv${b.abilityLevel || 1}`);
@@ -2598,7 +2613,7 @@ function PartyTab({
                   const key = b.type.replace('_multiplier', '');
                   if (!multiplierValues[key]) multiplierValues[key] = new Set();
                   multiplierValues[key].add(b.value);
-                } else if (b.type === 'physical_offense_multiplier_xV' || b.type === 'magical_offense_multiplier_xV') {
+                } else if (['physical_offense_multiplier_xV', 'magical_offense_multiplier_xV', 'physical_defense_multiplier_xV', 'magical_defense_multiplier_xV', 'fire_defense_multiplier_xV', 'ice_defense_multiplier_xV', 'thunder_defense_multiplier_xV'].includes(b.type)) {
                   if (!multiplierValues[b.type]) multiplierValues[b.type] = new Set();
                   multiplierValues[b.type].add(b.value);
                 } else if (['vitality', 'strength', 'intelligence', 'mind'].includes(b.type)) {
@@ -2637,7 +2652,9 @@ function PartyTab({
                 sword: '剣', katana: '刀', archery: '弓', armor: '鎧',
                 gauntlet: '手', wand: '杖', robe: '衣', shield: '盾',
                 bolt: 'ボ', grimoire: '書', catalyst: '媒', arrow: '矢',
-                physical_offense_multiplier_xV: '物攻撃', magical_offense_multiplier_xV: '魔攻撃'
+                physical_offense_multiplier_xV: '物攻撃', magical_offense_multiplier_xV: '魔攻撃',
+                physical_defense_multiplier_xV: '物防', magical_defense_multiplier_xV: '魔防',
+                fire_defense_multiplier_xV: '炎防', ice_defense_multiplier_xV: '氷防', thunder_defense_multiplier_xV: '雷防'
               };
               const addNames: Record<string, string> = {
                 vitality: '体', strength: '力', intelligence: '知', mind: '精',

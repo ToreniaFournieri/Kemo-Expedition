@@ -206,10 +206,9 @@ function calculateSingleEnemyAttackDamage(
 
   if (attack === 0) return 0;
 
-  const elementalMultiplier = getElementalMultiplier(
-    enemy.elementalOffense,
-    partyStats.elementalResistance
-  );
+  const elementalMultiplier = enemy.elementalOffense === 'none'
+    ? 1.0
+    : targetCharStats.elementalDefenseMultipliers[enemy.elementalOffense] ?? 1.0;
 
   const partyDefenseAbilityAmplifier = getPartyDefenseAbilityAmplifier(phase, partyStats);
   const rageAmplifier = getEnemyRageAmplifier(enemy, enemyHp);

@@ -78,6 +78,8 @@ export type BonusType =
   | 'grit' | 'caster' | 'penet' | 'pursuit'
   | 'melee_attack' | 'ranged_attack' | 'magical_attack' | 'physical_attack'
   | 'physical_offense_multiplier_xV' | 'magical_offense_multiplier_xV'
+  | 'physical_defense_multiplier_xV' | 'magical_defense_multiplier_xV'
+  | 'fire_defense_multiplier_xV' | 'ice_defense_multiplier_xV' | 'thunder_defense_multiplier_xV'
   // Accuracy/Evasion bonuses
   | 'accuracy' | 'evasion'
   // Growth bonuses
@@ -214,6 +216,9 @@ export interface ComputedCharacterStats {
   physicalAttackCBonus: number; // c.physical_attack+v sum
   physicalOffenseMultiplier: number; // c.physical_offense_multiplier_xV product
   magicalOffenseMultiplier: number; // c.magical_offense_multiplier_xV product
+  physicalDefenseMultiplier: number; // c.physical_defense_multiplier_xV product
+  magicalDefenseMultiplier: number; // c.magical_defense_multiplier_xV product
+  elementalDefenseMultipliers: Record<ElementalResistance, number>; // c.<element>_defense_multiplier_xV products
   offenseCBonusNames: string[]; // applied c.* offense bonus names (for de-duplication with equipment)
   deityOffenseAmplifierBonus: number; // additive bonus for character.f.offense_amplifier
   deityDefenseAmplifierBonus: {

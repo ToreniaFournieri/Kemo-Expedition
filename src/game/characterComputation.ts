@@ -61,6 +61,13 @@ interface BonusCollection {
   physicalAttackCBonus: number;
   physicalOffenseMultiplier: number;
   magicalOffenseMultiplier: number;
+  physicalDefenseMultiplier: number;
+  magicalDefenseMultiplier: number;
+  elementalDefenseMultipliers: {
+    fire: number;
+    thunder: number;
+    ice: number;
+  };
   offenseCBonusNames: Set<string>;
 }
 
@@ -239,6 +246,28 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
           }
         }
         break;
+      case 'physical_defense_multiplier_xV':
+      case 'magical_defense_multiplier_xV':
+      case 'fire_defense_multiplier_xV':
+      case 'ice_defense_multiplier_xV':
+      case 'thunder_defense_multiplier_xV':
+        {
+          const bonusName = `c.${bonus.type}_${formatCBonusValue(bonus.value)}`;
+          if (collection.offenseCBonusNames.has(bonusName)) break;
+          collection.offenseCBonusNames.add(bonusName);
+          if (bonus.type === 'physical_defense_multiplier_xV') {
+            collection.physicalDefenseMultiplier *= bonus.value;
+          } else if (bonus.type === 'magical_defense_multiplier_xV') {
+            collection.magicalDefenseMultiplier *= bonus.value;
+          } else if (bonus.type === 'fire_defense_multiplier_xV') {
+            collection.elementalDefenseMultipliers.fire *= bonus.value;
+          } else if (bonus.type === 'ice_defense_multiplier_xV') {
+            collection.elementalDefenseMultipliers.ice *= bonus.value;
+          } else {
+            collection.elementalDefenseMultipliers.thunder *= bonus.value;
+          }
+        }
+        break;
     }
   }
 }
@@ -281,6 +310,13 @@ export function computeCharacterStats(
     physicalAttackCBonus: 0,
     physicalOffenseMultiplier: 1,
     magicalOffenseMultiplier: 1,
+    physicalDefenseMultiplier: 1,
+    magicalDefenseMultiplier: 1,
+    elementalDefenseMultipliers: {
+      fire: 1,
+      thunder: 1,
+      ice: 1,
+    },
     offenseCBonusNames: new Set<string>(),
   };
 
@@ -519,8 +555,14 @@ export function computeCharacterStats(
 
   const vitalityDefenseScale = getBaseMultiplier(baseStats.vitality, 'defense');
   const mindDefenseScale = getBaseMultiplier(baseStats.mind, 'defense');
-  physicalDefenseAmplifier = Math.max(0.01, (1 - physicalDefenseBonus) * vitalityDefenseScale);
-  magicalDefenseAmplifier = Math.max(0.01, (1 - magicalDefenseBonus) * mindDefenseScale);
+  physicalDefenseAmplifier = Math.max(
+    0.01,
+    (1 - physicalDefenseBonus) * collection.physicalDefenseMultiplier * vitalityDefenseScale
+  );
+  magicalDefenseAmplifier = Math.max(
+    0.01,
+    (1 - magicalDefenseBonus) * collection.magicalDefenseMultiplier * mindDefenseScale
+  );
 
   // Build abilities list
   const abilities: Ability[] = [];
@@ -585,6 +627,9 @@ export function computeCharacterStats(
     physicalAttackCBonus: collection.physicalAttackCBonus,
     physicalOffenseMultiplier: collection.physicalOffenseMultiplier,
     magicalOffenseMultiplier: collection.magicalOffenseMultiplier,
+    physicalDefenseMultiplier: collection.physicalDefenseMultiplier,
+    magicalDefenseMultiplier: collection.magicalDefenseMultiplier,
+    elementalDefenseMultipliers: collection.elementalDefenseMultipliers,
     offenseCBonusNames: Array.from(collection.offenseCBonusNames),
     deityOffenseAmplifierBonus: 0,
     deityDefenseAmplifierBonus: {
