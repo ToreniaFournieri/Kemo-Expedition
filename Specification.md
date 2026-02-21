@@ -138,8 +138,10 @@
       - `a.iaigiri`1: v = 2.0
       - `a.iaigiri`2: v = 2.5
       - `a.iaigiri`3: v = 3.0
-    - Else return 1.0 x sum of ( `c.melee_attack+v`, `c.ranged_attack+v` and `c.physical_attack+v` ) x sum of ( `c.physical_offense_multiplier_xV` ) x `f.base_multiplier`(base_type: `b.strength`)
-  - If phase is MID,  return 1.0 x  sum of (`c.magical_attack+v` and `c.magical_attack+v` ) x sum of ( `c.magical_offense_multiplier_xV` ) x `f.base_multiplier`(base_type: `b.intelligence`)
+    - Else return 1.0 x sum of ( `c.melee_attack+v`, `c.ranged_attack+v` and `c.physical_attack+v` ) x `c.physical_offense_multiplier_xV` x `f.base_multiplier`(base_type: `b.strength`)
+  		- ex. If chracter has `c.physical_offense_multiplier_x1.4` and `c.physical_offense_multiplier_x1.2`, 1.4 x 1.2 = 1.68.
+  - If phase is MID,  return 1.0 x  sum of (`c.magical_attack+v` and `c.magical_attack+v` ) x `c.magical_offense_multiplier_xV` x `f.base_multiplier`(base_type: `b.intelligence`)
+     	- ex. If chracter has `c.magical_offense_multiplier_x1.4` and `c.magical_offense_multiplier_x1.2`, 1.4 x 1.2 = 1.68.
   - *note: `c.melee_attack+v`,  `c.ranged_attack+v`, `c.magical_attack+v`, `c.physical_attack+v`, `c.physical_offense_multiplier_xV` or  `c.magical_offense_multiplier_xV`. Only one single bonuses(c.) of the **exact** same name applies.  
 
 - character .`f.defense` (phase: ):
@@ -150,8 +152,8 @@
 
 - character.`f.defense_amplifier` (phase: )
   - If phase is LONG or CLOSE
-    - return max(0.01, (1.00 - sum of (`c.physical_defense+v`)) x `f.base_multiplier`(base_type: `b.vitality` ))
-  - Else (phase is MID), return max(0.01, (1.00 - sum of (`c.magical_defense+v` )) x `f.base_multiplier`(base_type: `b.mind` ))
+    - return max(0.01, (1.00 - sum of (`c.physical_defense+v`)) x sum of (`c.physical_defense_multiplier_xV`) x `f.base_multiplier`(base_type: `b.vitality` ) )
+  - Else (phase is MID), return max(0.01, (1.00 - sum of (`c.magical_defense+v` )) x `c.magical_defense_multiplier_xV` x `f.base_multiplier`(base_type: `b.mind` ))
 
   - *note: `c.physical_defense+v`, `c.magical_defense+v`  Only one single bonuses(c.) of the **exact** same name applies.  
 
@@ -171,6 +173,10 @@
     - elemental_offense_attribute = 1 + sum_v(selected_element)
     - If all sums are 0, then selected_element = none and elemental_offense_attribute = 1.0
     - Stackable:  if two `e.fire+0.15`, then 1 + 0.15 + 0.15 -> 1.30
+
+- character.`f.elemental_defense_amplifier` (element: )
+  	- return 1.0 x `c.element_defense_multiplier_xV`
+  	  - ex. character has `c.fire_defense_multiplier_x3/5`, then 1.0 x 3/5 -> 0.60 for fire.
 
 - character.`f.penet_multiplier`
   -If character.`c.penet`, add them. (ex. `c.penet+0.10` & `c.penet+0.15` -> 0.25)
