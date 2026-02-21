@@ -510,6 +510,12 @@ export function computeCharacterStats(
   const composureBonus = composureLevel >= 2 ? 0.13 : composureLevel >= 1 ? 0.10 : 0;
   const accuracyPotency = Math.min(1, Math.pow(decayRate, row - 1) + composureBonus);
 
+  const cyborgizationLevel = collection.abilities.get('cyborgization') ?? 0;
+  if (cyborgizationLevel >= 1) {
+    accuracyBonus += cyborgizationLevel >= 2 ? 0.04 : 0.03;
+    evasionBonus += cyborgizationLevel >= 2 ? -0.015 : -0.02;
+  }
+
   return {
     characterId: character.id,
     row,
@@ -586,6 +592,8 @@ function getAbilityName(id: AbilityId, level: number): string {
       || id === 'm_barrier'
       || id === 'null_counter'
       || id === 'resurrect'
+      || id === 'cyborgization'
+      || id === 'prophecy'
       || id === 'stealth'
       || id === 'illusion'
     )
@@ -629,7 +637,7 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     bulwark: (l) => l >= 2
       ? '真後ろの味方への遠距離/近距離攻撃を肩代わりする'
       : '真後ろの味方への遠距離攻撃を肩代わりする',
-    cyborgization: () => '命中+30、回避-20',
+    cyborgization: (l) => l >= 2 ? '命中+40、回避-15' : '命中+30、回避-20',
     covering_fire: (l) => l >= 2
       ? '味方近接攻撃の命中が1回のみなら遠距離射撃(攻撃回数半減しない)'
       : '味方近接攻撃の命中が1回のみなら遠距離射撃(攻撃回数半減)',
@@ -639,7 +647,9 @@ function getAbilityDescription(id: AbilityId, level: number): string {
       ? '魔法には魔法で反撃する(攻撃回数半減しない)'
       : '魔法には魔法で反撃する(攻撃回数半減)',
     focus: (l) => `命中ボーナスの効果が${l >= 2 ? '1.3' : '1.2'}倍になる`,
-    prophecy: () => '報酬抽選内容が見えるようになる',
+    prophecy: (l) => l >= 2
+      ? '報酬抽選内容が見える、リセット出来るようになる'
+      : '報酬抽選内容が見えるようになる',
     stealth: (l) => l >= 2
       ? 'HP29%未満の時、自身へのダメージをすべて回避する'
       : 'HP24%未満の時、自身へのダメージをすべて回避する',
