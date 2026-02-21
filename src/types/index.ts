@@ -78,6 +78,7 @@ export type BonusType =
   | 'grit' | 'caster' | 'penet' | 'pursuit'
   | 'antagonism'
   | 'melee_attack' | 'ranged_attack' | 'magical_attack' | 'physical_attack'
+  | 'physical_defense' | 'magical_defense'
   | 'physical_offense_multiplier_xV' | 'magical_offense_multiplier_xV'
   | 'physical_defense_multiplier_xV' | 'magical_defense_multiplier_xV'
   | 'fire_defense_multiplier_xV' | 'ice_defense_multiplier_xV' | 'thunder_defense_multiplier_xV'

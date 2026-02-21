@@ -808,6 +808,10 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
       parts.push(`魔攻撃+${Math.round(b.value * 100)}%`);
     } else if (b.type === 'physical_attack') {
       parts.push(`物攻撃+${Math.round(b.value * 100)}%`);
+    } else if (b.type === 'physical_defense') {
+      parts.push(`物防+${Math.round(b.value * 100)}%`);
+    } else if (b.type === 'magical_defense') {
+      parts.push(`魔防+${Math.round(b.value * 100)}%`);
     } else if (b.type === 'fire_offense') {
       parts.push(`炎攻+${Math.round(b.value * 100)}%`);
     } else if (b.type === 'ice_offense') {
@@ -2790,7 +2794,7 @@ function PartyTab({
                   multiplierValues[b.type].add(b.value);
                 } else if (['vitality', 'strength', 'intelligence', 'mind'].includes(b.type)) {
                   additive[b.type] = (additive[b.type] ?? 0) + b.value;
-                } else if (['equip_slot', 'grit', 'caster', 'pursuit', 'penet', 'accuracy', 'growth_xV', 'upgrade_V', 'melee_attack', 'ranged_attack', 'magical_attack', 'physical_attack', 'antagonism'].includes(b.type)) {
+                } else if (['equip_slot', 'grit', 'caster', 'pursuit', 'penet', 'accuracy', 'growth_xV', 'upgrade_V', 'melee_attack', 'ranged_attack', 'magical_attack', 'physical_attack', 'physical_defense', 'magical_defense', 'antagonism'].includes(b.type)) {
                   addUniqueCBonus(b.type, b.value);
                 } else if (b.type === 'evasion') {
                     if (b.value < 0) {
@@ -2832,7 +2836,8 @@ function PartyTab({
                 vitality: '体', strength: '力', intelligence: '知', mind: '精',
                 equip_slot: '装備', grit: '根性', caster: '術者', penet: '貫通',
                 pursuit: '追撃', accuracy: '命中', evasion: '回避', growth_xV: '成長', upgrade_V: 'V強化', antagonism: '⚠️敵対',
-                melee_attack: '近攻撃', ranged_attack: '遠攻撃', magical_attack: '魔攻撃', physical_attack: '物攻撃' 
+                melee_attack: '近攻撃', ranged_attack: '遠攻撃', magical_attack: '魔攻撃', physical_attack: '物攻撃',
+                physical_defense: '物防', magical_defense: '魔防' 
               };
 
               for (const [key, val] of Object.entries(multipliers)) {
@@ -2857,10 +2862,15 @@ function PartyTab({
                   if (key === 'melee_attack' || key === 'ranged_attack' || key === 'magical_attack' || key === 'physical_attack') {
                     const label = `${addNames[key]}+${Math.round(val * 100)}%`;
                     parts.push(label);
-                    if (key === 'melee_attack') helpRows.push({ label, description: '近接攻撃の攻撃倍率が上昇する' });
+                      if (key === 'melee_attack') helpRows.push({ label, description: '近接攻撃の攻撃倍率が上昇する' });
                     if (key === 'ranged_attack') helpRows.push({ label, description: '遠距離攻撃の攻撃倍率が上昇する' });
                     if (key === 'magical_attack') helpRows.push({ label, description: '魔法攻撃の攻撃倍率が上昇する' });
                     if (key === 'physical_attack') helpRows.push({ label, description: '遠距離攻撃・近接攻撃の攻撃倍率が上昇する' });
+                  } else if (key === 'physical_defense' || key === 'magical_defense') {
+                    const label = `${addNames[key]}+${Math.round(val * 100)}%`;
+                    parts.push(label);
+                    if (key === 'physical_defense') helpRows.push({ label, description: '物理耐性を強化する' });
+                    if (key === 'magical_defense') helpRows.push({ label, description: '魔法耐性を強化する' });
                   } else if (key === 'penet') {
                     const label = `${addNames[key]}+${Math.round(val * 100)}%`;
                     parts.push(label);
