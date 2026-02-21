@@ -371,8 +371,10 @@ function calculateCharacterDamage(
   // Apply penetration
   const effectiveDefense = defense * (1 - charStats.penetMultiplier);
 
-  const getUniqueOffenseBonusSum = (kind: 'melee' | 'ranged' | 'magical'): number => {
-    const appliedBonusNames = new Set<string>();
+  const getUniqueOffenseBonusSum = (
+    kind: 'melee' | 'ranged' | 'magical',
+    appliedBonusNames: Set<string>
+  ): number => {
     let bonusSum = 0;
 
     for (const item of character.equipment) {
@@ -405,16 +407,26 @@ function calculateCharacterDamage(
         ? 2.5
         : 2.0
     : 1.0;
-  const cBonus = phase === 'mid'
-    ? getUniqueOffenseBonusSum('magical')
-    : phase === 'long'
-      ? getUniqueOffenseBonusSum('ranged')
-      : getUniqueOffenseBonusSum('melee');
+  const appliedOffenseBonusNames = new Set<string>(charStats.offenseCBonusNames);
+  const meleeBonusSum = charStats.meleeAttackCBonus + getUniqueOffenseBonusSum('melee', appliedOffenseBonusNames);
+  const rangedBonusSum = charStats.rangedAttackCBonus + getUniqueOffenseBonusSum('ranged', appliedOffenseBonusNames);
+  const magicalBonusSum = charStats.magicalAttackCBonus + getUniqueOffenseBonusSum('magical', appliedOffenseBonusNames);
+
   const phaseAttackScale = phase === 'mid'
     ? getBaseMultiplier(charStats.baseStats.intelligence, 'attack')
     : getBaseMultiplier(charStats.baseStats.strength, 'attack');
-  const phaseMultiplier = phase === 'mid' ? 1.0 : iaigiriMultiplier;
-  const offenseAmplifier = (phaseMultiplier * (1.0 + cBonus) + charStats.deityOffenseAmplifierBonus) * phaseAttackScale;
+
+  let offenseAmplifier = 1;
+  if (phase === 'mid') {
+    offenseAmplifier = ((1.0 + magicalBonusSum) * charStats.magicalOffenseMultiplier + charStats.deityOffenseAmplifierBonus) * phaseAttackScale;
+  } else if (iaigiri) {
+    const phaseBonusSum = phase === 'long' ? rangedBonusSum : meleeBonusSum;
+    offenseAmplifier = (iaigiriMultiplier * (1.0 + phaseBonusSum) * charStats.physicalOffenseMultiplier + charStats.deityOffenseAmplifierBonus) * phaseAttackScale;
+  } else {
+    const phaseBonusSum = phase === 'long' ? rangedBonusSum : meleeBonusSum;
+    const physicalBonusSum = phaseBonusSum + charStats.physicalAttackCBonus;
+    offenseAmplifier = ((1.0 + physicalBonusSum) * charStats.physicalOffenseMultiplier + charStats.deityOffenseAmplifierBonus) * phaseAttackScale;
+  }
 
   const resonance = charStats.abilities.find(a => a.id === 'resonance');
 

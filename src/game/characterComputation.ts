@@ -55,6 +55,13 @@ interface BonusCollection {
   abilities: Map<AbilityId, number>;
   uniqueEvasionBonusNames: Set<string>;
   cAccuracyBonusCounts: Map<string, number>;
+  meleeAttackCBonus: number;
+  rangedAttackCBonus: number;
+  magicalAttackCBonus: number;
+  physicalAttackCBonus: number;
+  physicalOffenseMultiplier: number;
+  magicalOffenseMultiplier: number;
+  offenseCBonusNames: Set<string>;
 }
 
 function formatCBonusValue(value: number): string {
@@ -205,6 +212,33 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
           collection.abilities.set(bonus.abilityId, Math.max(currentLevel, bonus.abilityLevel ?? 1));
         }
         break;
+      case 'melee_attack':
+      case 'ranged_attack':
+      case 'magical_attack':
+      case 'physical_attack':
+        {
+          const bonusName = `c.${bonus.type}+${formatCBonusValue(bonus.value)}`;
+          if (collection.offenseCBonusNames.has(bonusName)) break;
+          collection.offenseCBonusNames.add(bonusName);
+          if (bonus.type === 'melee_attack') collection.meleeAttackCBonus += bonus.value;
+          if (bonus.type === 'ranged_attack') collection.rangedAttackCBonus += bonus.value;
+          if (bonus.type === 'magical_attack') collection.magicalAttackCBonus += bonus.value;
+          if (bonus.type === 'physical_attack') collection.physicalAttackCBonus += bonus.value;
+        }
+        break;
+      case 'physical_offense_multiplier_xV':
+      case 'magical_offense_multiplier_xV':
+        {
+          const bonusName = `c.${bonus.type}_${formatCBonusValue(bonus.value)}`;
+          if (collection.offenseCBonusNames.has(bonusName)) break;
+          collection.offenseCBonusNames.add(bonusName);
+          if (bonus.type === 'physical_offense_multiplier_xV') {
+            collection.physicalOffenseMultiplier *= bonus.value;
+          } else {
+            collection.magicalOffenseMultiplier *= bonus.value;
+          }
+        }
+        break;
     }
   }
 }
@@ -241,6 +275,13 @@ export function computeCharacterStats(
     abilities: new Map(),
     uniqueEvasionBonusNames: new Set<string>(),
     cAccuracyBonusCounts: new Map<string, number>(),
+    meleeAttackCBonus: 0,
+    rangedAttackCBonus: 0,
+    magicalAttackCBonus: 0,
+    physicalAttackCBonus: 0,
+    physicalOffenseMultiplier: 1,
+    magicalOffenseMultiplier: 1,
+    offenseCBonusNames: new Set<string>(),
   };
 
   // Collect bonuses from all sources
@@ -538,6 +579,13 @@ export function computeCharacterStats(
     accuracyPotency,
     accuracyBonus,
     evasionBonus,
+    meleeAttackCBonus: collection.meleeAttackCBonus,
+    rangedAttackCBonus: collection.rangedAttackCBonus,
+    magicalAttackCBonus: collection.magicalAttackCBonus,
+    physicalAttackCBonus: collection.physicalAttackCBonus,
+    physicalOffenseMultiplier: collection.physicalOffenseMultiplier,
+    magicalOffenseMultiplier: collection.magicalOffenseMultiplier,
+    offenseCBonusNames: Array.from(collection.offenseCBonusNames),
     deityOffenseAmplifierBonus: 0,
     deityDefenseAmplifierBonus: {
       physical: 0,
