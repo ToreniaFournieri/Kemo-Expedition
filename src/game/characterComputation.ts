@@ -70,6 +70,7 @@ interface BonusCollection {
     ice: number;
   };
   offenseCBonusNames: Set<string>;
+  antagonism: boolean;
 }
 
 function formatCBonusValue(value: number): string {
@@ -186,6 +187,15 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
           if (!collection.uniqueCAdditiveBonusNames.has(bonusName)) {
             collection.uniqueCAdditiveBonusNames.add(bonusName);
             collection.pursuit += bonus.value;
+          }
+        }
+        break;
+      case 'antagonism':
+        {
+          const bonusName = `c.antagonism+${formatCBonusValue(bonus.value)}`;
+          if (!collection.uniqueCAdditiveBonusNames.has(bonusName)) {
+            collection.uniqueCAdditiveBonusNames.add(bonusName);
+            collection.antagonism = true;
           }
         }
         break;
@@ -329,6 +339,7 @@ export function computeCharacterStats(
       ice: 1,
     },
     offenseCBonusNames: new Set<string>(),
+    antagonism: false,
   };
 
   // Collect bonuses from all sources
@@ -649,6 +660,7 @@ export function computeCharacterStats(
       physical: 0,
       magical: 0,
     },
+    hasAntagonism: collection.antagonism,
   };
 }
 

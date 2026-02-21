@@ -76,6 +76,7 @@ export type BonusType =
   | 'vitality' | 'strength' | 'intelligence' | 'mind'
   // Combat bonuses
   | 'grit' | 'caster' | 'penet' | 'pursuit'
+  | 'antagonism'
   | 'melee_attack' | 'ranged_attack' | 'magical_attack' | 'physical_attack'
   | 'physical_offense_multiplier_xV' | 'magical_offense_multiplier_xV'
   | 'physical_defense_multiplier_xV' | 'magical_defense_multiplier_xV'
@@ -226,6 +227,7 @@ export interface ComputedCharacterStats {
     physical: number;
     magical: number;
   }; // additive bonus applied to character.f.defense_amplifier
+  hasAntagonism: boolean;
 }
 
 // Party Types

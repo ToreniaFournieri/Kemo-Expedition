@@ -716,6 +716,8 @@ function formatBonuses(bonuses: Bonus[]): string {
       parts.push(`貫通${Math.round(b.value * 100)}%`);
     } else if (b.type === 'pursuit') {
       parts.push(`追撃+${b.value}`);
+    } else if (b.type === 'antagonism') {
+      parts.push('⚠️敵対');
     } else if (b.type === 'accuracy') {
       parts.push(`命中+${Math.round(b.value * 1000)}`);
     } else if (b.type === 'evasion') {
@@ -2618,7 +2620,7 @@ function PartyTab({
                   multiplierValues[b.type].add(b.value);
                 } else if (['vitality', 'strength', 'intelligence', 'mind'].includes(b.type)) {
                   additive[b.type] = (additive[b.type] ?? 0) + b.value;
-                } else if (['equip_slot', 'grit', 'caster', 'pursuit', 'penet', 'accuracy', 'growth_xV', 'upgrade_V', 'melee_attack', 'ranged_attack', 'magical_attack', 'physical_attack'].includes(b.type)) {
+                } else if (['equip_slot', 'grit', 'caster', 'pursuit', 'penet', 'accuracy', 'growth_xV', 'upgrade_V', 'melee_attack', 'ranged_attack', 'magical_attack', 'physical_attack', 'antagonism'].includes(b.type)) {
                   addUniqueCBonus(b.type, b.value);
                 } else if (b.type === 'evasion') {
                     if (b.value < 0) {
@@ -2659,7 +2661,7 @@ function PartyTab({
               const addNames: Record<string, string> = {
                 vitality: '体', strength: '力', intelligence: '知', mind: '精',
                 equip_slot: '装備', grit: '根性', caster: '術者', penet: '貫通',
-                pursuit: '追撃', accuracy: '命中', evasion: '回避', growth_xV: '成長', upgrade_V: 'V強化',
+                pursuit: '追撃', accuracy: '命中', evasion: '回避', growth_xV: '成長', upgrade_V: 'V強化', antagonism: '⚠️敵対',
                 melee_attack: '近攻撃', ranged_attack: '遠攻撃', magical_attack: '魔攻撃', physical_attack: '物攻撃' 
               };
 
@@ -2713,6 +2715,7 @@ function PartyTab({
                     if (key === 'pursuit') helpRows.push({ label, description: `遠距離攻撃の装備が出来るようになる。遠距離攻撃回数が ${val} 回増える` });
                     if (key === 'caster') helpRows.push({ label, description: `魔法攻撃の装備が出来るようになる。魔法攻撃回数が ${val} 回増える` });
                     if (key === 'upgrade_V') helpRows.push({ label, description: `アビリティが ${val} 段階強化する` });
+                    if (key === 'antagonism') helpRows.push({ label: addNames[key], description: '味方を攻撃するようになる' });
                   }
                 }
               }
@@ -2772,7 +2775,7 @@ function PartyTab({
                       onPointerDown={(event) => event.stopPropagation()}
                       className="absolute left-0 top-5 z-20 w-[min(38rem,88vw)] rounded-md border border-gray-200 bg-white p-3 shadow-lg"
                     >
-                      <div className="mb-2 text-[11px] font-semibold text-gray-700">c. ボーナス説明　(同一名ボーナスは重複無効)</div>
+                      <div className="mb-2 text-[11px] font-semibold text-gray-700">c. ボーナス説明 (同一名ボーナスは重複無効)</div>
                       <div className="max-h-56 space-y-1 overflow-y-auto pr-1 text-[11px] leading-4 text-gray-700">
                         {helpRows.map((row) => (
                           <div key={row.label}>
@@ -2783,7 +2786,7 @@ function PartyTab({
                       </div>
                       {bHelpRows.length > 0 && (
                         <div className="mb-2 rounded border border-gray-100 bg-gray-50 px-2 py-1 text-[11px] leading-4 text-gray-700">
-                          <div className="font-semibold text-gray-700">b. ボーナス説明(重複有効)</div>
+                          <div className="font-semibold text-gray-700">b. ボーナス説明 (重複有効)</div>
                           {bHelpRows.map((row) => (
                             <div key={row.label}>
                               <span className="font-bold">{row.label}</span>
