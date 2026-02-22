@@ -213,10 +213,11 @@ d. bonus (stackable)
   - deity // replacing deity reset character equipment slots. 
   - characters slots
 
-**Bag Randomization** There are weighted bags (g.*_bag) that control probabilistic randomness: `g.common_reward_bag`, `g.common_enhancement_bag`, `g.uncommon_reward_bag`, `g.rare_reward_bag`, `g.mythic_reward_bag`, `g.enhancement_bag`, `g.superRare_bag`, `g.physical_threat_weight_bag`, and `g.magical_threat_weight_bag`
+**Bag Randomization:** 
+- There are weighted bags (g.*_bag) that control probabilistic randomness: `g.common_reward_bag`, `g.common_enhancement_bag`, `g.uncommon_reward_bag`, `g.rare_reward_bag`, `g.mythic_reward_bag`, `g.enhancement_bag`, `g.superRare_bag`, `g.physical_threat_weight_bag`, and `g.magical_threat_weight_bag`
   - All bags persist in save data and are not reset per battle or per expedition.
   - Bags are reset only when: explicitly reset, or automatically reset when the bag becomes empty (total_tickets == 0).
-  
+	
 - Weighted Random Bag (Count-Based Ticket Rule)
   - Each bag stores counts per entry, not individual tickets.
   - Each entry is { ID, tickets }.
