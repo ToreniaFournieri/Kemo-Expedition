@@ -3834,7 +3834,7 @@ function ShopTab({
         <div className="text-sm font-semibold text-sub">フェリスのガラクタ屋</div>
         <div className="mt-2 flex items-start justify-between gap-3">
           <div className="grid flex-1 grid-cols-[auto,1fr] items-start gap-3">
-            <RaceIcon race={mustelidRace} className="h-10 w-10" />
+            <RaceIcon race={mustelidRace} className="h-10 w-10 self-center" />
             <div className="space-y-1">
               <p className="text-sm text-gray-700">
                 {intimacyDialogue}
