@@ -217,16 +217,20 @@ d. bonus (stackable)
 
   - **Weighted Random Bag (Count-Based Ticket Rule)**
     - Each bag stores counts per entry, not individual tickets.
-	  - Example: g.common_reward_bag = { { value: 1, tickets: 10 }, { value: 0, tickets: 90 } }
+	  - Example: g.common_reward_bag = { { ID: 1, tickets: 10 }, { ID: 0, tickets: 90 } }
 
     - `f.pop_from_weighted_bag`(bag_key: g.*)
       - Get bag by bag_key.
       - Compute total_tickets = sum(entry.tickets where tickets > 0).
-      - Roll random = random_int(1, total_tickets) (inclusive).
-      - Select the entry whose cumulative ticket range contains random.
-      - Return entry.value.
+      - Roll r = random_int(1, total_tickets) (inclusive).
+      - Select the entry whose cumulative ticket range contains r (stable iteration order).
       - Decrement the selected entry’s tickets -= 1
-      - If total_tickets == 0 or the bag is explicitly reset, reinitialize the bag to its default state.
+      - Return the selected ID.
+     
+    - `f.reset_weight_bag`(bag_key: g.*)
+      - Bags reset only by either:
+        - Explicit reset (f.reset_bag(bag_key))
+        - Automatic reset when total == 0 (bag is empty)
 
 
 
@@ -234,7 +238,7 @@ d. bonus (stackable)
 
 - `g.common_reward_bag` table
 
-| value | title | tickets |
+| ID | title | tickets |
 |-----|---------|------|
 | 0 | no item | 90 |
 | 1 | win | 10 |
@@ -242,21 +246,21 @@ d. bonus (stackable)
 
 - `g.uncommon_reward_bag` table
  
-| value | title | tickets |
+| ID | title | tickets |
 |-----|---------|------|
 | 0 | no item | 99 |
 | 1 | win | 1 |
 
 - `g.rare_reward_bag` table
  
-| value | title | tickets |
+| ID | title | tickets |
 |-----|---------|------|
 | 0 | no item | 99 |
 | 1 | win | 1 |
 
 - `g.mythic_reward_bag` table
  
-| value | title | tickets |
+| ID | title | tickets |
 |-----|---------|------|
 | 0 | no item | 99 |
 | 1 | win | 1 |
@@ -266,7 +270,7 @@ d. bonus (stackable)
 
 - enhancement multiplier
 
-| value | title | multiplier |
+| ID | title | multiplier |
 |-----|------|------|
 | 0 | (none) | x1.00 |
 | 1 | 名工の | x1.33 |
@@ -278,7 +282,7 @@ d. bonus (stackable)
 
 - `g.common_enhancement_bag` table
 
-| value | title | tickets |
+| ID | title | tickets |
 |-----|---------|------|
 | 0 | (none) | 1390 |
 | 1 | 名工の | 350 |
@@ -290,7 +294,7 @@ d. bonus (stackable)
 
 - `g.enhancement_bag` table
  
-| value | title | tickets |
+| ID | title | tickets |
 |-----|---------|------|
 | 0 | (none) | 5490 |
 | 1 | 名工の | 350 |
