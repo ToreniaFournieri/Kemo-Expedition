@@ -3741,6 +3741,9 @@ function ShopTab({
   const effectiveIntimacy = Math.max(0, Math.floor(shopIntimacy * (0.9 ** elapsedRefreshes)));
   const nextRefreshDate = getNextShopRefreshDate(now);
   const minutesToRefresh = Math.max(1, Math.ceil((nextRefreshDate.getTime() - now.getTime()) / 60000));
+  const countdownText = minutesToRefresh >= 60
+    ? `後${Math.floor(minutesToRefresh / 60)}時間`
+    : `後${minutesToRefresh}分`;
   const hourKey = getShopHourKey(now);
   const refreshCount = shopRefreshCounts[hourKey] ?? 0;
   const highestDefeatedBossTier = DUNGEONS.reduce((highestTier, dungeon) => {
@@ -3781,11 +3784,16 @@ function ShopTab({
     return Math.floor(normalized * highestDefeatedBossTier) + 1;
   };
 
-  const shopItems = shopCategories.map((category, index) => {
+  const shopItems = rarityPool.map((rarityBase, index) => {
     const tier = seededTierForIndex(index);
-    const rarityBase = rarityPool[index] ?? 100;
-    const categoryIndex = ITEM_CATEGORY_ORDER.indexOf(category);
-    const baseItemId = tier * 1000 + rarityBase + categoryIndex + 1;
+    const rotatedCategories = shopCategories.map((_, offset) => shopCategories[(index + offset) % shopCategories.length]);
+    const baseItemId = rotatedCategories
+      .map((category) => {
+        const categoryIndex = ITEM_CATEGORY_ORDER.indexOf(category);
+        return tier * 1000 + rarityBase + categoryIndex + 1;
+      })
+      .find((itemId) => ITEMS.some((item) => item.id === itemId));
+    if (!baseItemId) return null;
     const baseItem = ITEMS.find((item) => item.id === baseItemId);
     if (!baseItem) return null;
 
@@ -3823,21 +3831,27 @@ function ShopTab({
           <div className="grid flex-1 grid-cols-[auto,1fr] items-start gap-3">
             <RaceIcon race={mustelidRace} className="h-10 w-10" />
             <p className="text-sm text-gray-700">
-              {intimacyDialogue}（商品洗替まであと {minutesToRefresh} 分）
+              {intimacyDialogue}
             </p>
           </div>
-          <button
-            onClick={onRefreshShopLineup}
-            disabled={gold < SHOP_REFRESH_PRICE}
-            className={`shrink-0 rounded px-3 py-1 text-xs font-semibold ${
-              gold >= SHOP_REFRESH_PRICE
-                ? 'bg-accent text-white hover:bg-accent/90'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-            }`}
-          >
-            <span className="block">[有償洗替]</span>
-            <span className="block text-[11px]">{formatNumber(SHOP_REFRESH_PRICE)}G</span>
-          </button>
+          <div className="shrink-0 text-right">
+            <button
+              onClick={onRefreshShopLineup}
+              disabled={gold < SHOP_REFRESH_PRICE}
+              className={`rounded px-3 py-1 text-xs font-semibold ${
+                gold >= SHOP_REFRESH_PRICE
+                  ? 'bg-accent text-white hover:bg-accent/90'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              <span className="block">[有償洗替]</span>
+              <span className="block text-[11px]">{formatNumber(SHOP_REFRESH_PRICE)}G</span>
+            </button>
+            <div className="mt-1 text-[11px] leading-tight text-gray-500">
+              <span className="block">商品洗替まで</span>
+              <span className="block">{countdownText}</span>
+            </div>
+          </div>
         </div>
       </div>
 
