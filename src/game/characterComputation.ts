@@ -419,14 +419,6 @@ export function computeCharacterStats(
   collectBonuses(predisposition.bonuses, collection);
   collectBonuses(lineage.bonuses, collection);
 
-  // Calculate base stats
-  const baseStats: BaseStats = {
-    vitality: race.stats.vitality + collection.statBonuses.vitality,
-    strength: race.stats.strength + collection.statBonuses.strength,
-    intelligence: race.stats.intelligence + collection.statBonuses.intelligence,
-    mind: race.stats.mind + collection.statBonuses.mind,
-  };
-
   // Calculate max equipment slots
   let baseSlots = 1;
   for (const [level, slots] of Object.entries(LEVEL_EQUIP_SLOTS)) {
@@ -435,7 +427,24 @@ export function computeCharacterStats(
     }
   }
   const equipSlotBonus = collection.equipSlotBonusTotal;
-  const maxEquipSlots = baseSlots + equipSlotBonus;
+  let maxEquipSlots = baseSlots + equipSlotBonus;
+
+  // Collect Super Rare bonuses from currently active slots before deriving b.* stats.
+  const initialEquippedItems = character.equipment.slice(0, maxEquipSlots).filter((item): item is Item => item != null);
+  for (const item of initialEquippedItems) {
+    collectBonuses(getSuperRareBonuses(item.superRare), collection);
+  }
+
+  // Calculate base stats (b.*), including Super Rare additive stat bonuses.
+  const baseStats: BaseStats = {
+    vitality: race.stats.vitality + collection.statBonuses.vitality,
+    strength: race.stats.strength + collection.statBonuses.strength,
+    intelligence: race.stats.intelligence + collection.statBonuses.intelligence,
+    mind: race.stats.mind + collection.statBonuses.mind,
+  };
+
+  // Re-evaluate active slots in case a Super Rare bonus affected equip slots.
+  maxEquipSlots = baseSlots + collection.equipSlotBonusTotal;
 
   // Calculate multipliers for each category (product of all unique multipliers)
   const getMultiplier = (category: ItemCategory): number => {
@@ -453,9 +462,6 @@ export function computeCharacterStats(
   // Calculate stats from equipment
   // Process equipment (limited to maxEquipSlots)
   const equippedItems = character.equipment.slice(0, maxEquipSlots).filter((item): item is Item => item != null);
-  for (const item of equippedItems) {
-    collectBonuses(getSuperRareBonuses(item.superRare), collection);
-  }
 
   let rangedAttack = 0;
   let magicalAttack = 0;

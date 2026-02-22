@@ -1645,6 +1645,10 @@ function PartyTab({
   const selectedIaigiriMultiplier = selectedIaigiriLevel >= 3 ? 3.0 : selectedIaigiriLevel >= 2 ? 2.5 : selectedIaigiriLevel >= 1 ? 2.0 : 1.0;
   const selectedEffectiveAccuracyBonus = getEffectiveAccuracyBonus(selectedStats.accuracyBonus, selectedStats.abilities);
   const combatTotals = {
+    vitality: selectedStats.baseStats.vitality,
+    strength: selectedStats.baseStats.strength,
+    intelligence: selectedStats.baseStats.intelligence,
+    mind: selectedStats.baseStats.mind,
     meleeAtk: Math.floor(selectedStats.meleeAttack),
     rangedAtk: Math.floor(selectedStats.rangedAttack),
     magicalAtk: Math.floor(selectedStats.magicalAttack),
@@ -1717,6 +1721,23 @@ function PartyTab({
     if (prevStatsRef.current) {
       const prev = prevStatsRef.current;
       const changes: { message: string; isPositive: boolean }[] = [];
+
+      if (combatTotals.vitality !== prev.vitality) {
+        const isPositive = combatTotals.vitality > prev.vitality;
+        changes.push({ message: `体力 ${formatNumber(prev.vitality)} → ${formatNumber(combatTotals.vitality)}`, isPositive });
+      }
+      if (combatTotals.strength !== prev.strength) {
+        const isPositive = combatTotals.strength > prev.strength;
+        changes.push({ message: `力 ${formatNumber(prev.strength)} → ${formatNumber(combatTotals.strength)}`, isPositive });
+      }
+      if (combatTotals.intelligence !== prev.intelligence) {
+        const isPositive = combatTotals.intelligence > prev.intelligence;
+        changes.push({ message: `知性 ${formatNumber(prev.intelligence)} → ${formatNumber(combatTotals.intelligence)}`, isPositive });
+      }
+      if (combatTotals.mind !== prev.mind) {
+        const isPositive = combatTotals.mind > prev.mind;
+        changes.push({ message: `精神 ${formatNumber(prev.mind)} → ${formatNumber(combatTotals.mind)}`, isPositive });
+      }
 
       // Check all stat changes and collect them
       if (combatTotals.physDef !== prev.physDef) {
@@ -1848,7 +1869,8 @@ function PartyTab({
       }
     }
     prevStatsRef.current = combatTotals;
-  }, [combatTotals.physDef, combatTotals.magDef, combatTotals.physicalDefenseResistPercent, combatTotals.magicalDefenseResistPercent,
+  }, [combatTotals.vitality, combatTotals.strength, combatTotals.intelligence, combatTotals.mind,
+      combatTotals.physDef, combatTotals.magDef, combatTotals.physicalDefenseResistPercent, combatTotals.magicalDefenseResistPercent,
       combatTotals.fireDefenseResistPercent, combatTotals.iceDefenseResistPercent, combatTotals.thunderDefenseResistPercent, combatTotals.hp,
       combatTotals.meleeAtk, combatTotals.meleeNoA,
       combatTotals.rangedAtk, combatTotals.rangedNoA,
