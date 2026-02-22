@@ -867,6 +867,7 @@ function createItem(
     if (!mod) return;
     const subtlePower = getSubtlePower(subtleSlotIndex);
     const archeryCBonusScale = template.category === 'archery' ? tier / 10 : 1;
+    const robeEvasionScale = template.category === 'robe' ? tier / 10 : 1;
     if (mod.partyHP) item.partyHP = (item.partyHP || 0) + Math.floor(subtlePower * mod.partyHP);
     if (mod.physicalDefense) item.physicalDefense = (item.physicalDefense || 0) + Math.floor(subtlePower * mod.physicalDefense);
     if (mod.magicalDefense) item.magicalDefense = (item.magicalDefense || 0) + Math.floor(subtlePower * mod.magicalDefense);
@@ -884,7 +885,7 @@ function createItem(
     if (mod.rangedNoABonus) item.rangedNoABonus = (item.rangedNoABonus || 0) + mod.rangedNoABonus;
     if (mod.magicalNoABonus) item.magicalNoABonus = (item.magicalNoABonus || 0) + mod.magicalNoABonus;
     if (mod.accuracyBonus) item.accuracyBonus = (item.accuracyBonus || 0) + mod.accuracyBonus * archeryCBonusScale;
-    if (mod.evasionBonus) item.evasionBonus = (item.evasionBonus || 0) + mod.evasionBonus * archeryCBonusScale;
+    if (mod.evasionBonus) item.evasionBonus = (item.evasionBonus || 0) + mod.evasionBonus * archeryCBonusScale * robeEvasionScale;
     if (mod.vitalityBonus) item.vitalityBonus = (item.vitalityBonus || 0) + mod.vitalityBonus;
     if (mod.strengthBonus) item.strengthBonus = (item.strengthBonus || 0) + mod.strengthBonus;
     if (mod.intelligenceBonus) item.intelligenceBonus = (item.intelligenceBonus || 0) + mod.intelligenceBonus;
