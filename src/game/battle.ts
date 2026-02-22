@@ -583,7 +583,7 @@ function createNullCounterPool(characterStats: ComputedCharacterStats[]): Map<nu
   for (const stats of characterStats) {
     const level = getAbilityLevel(stats, 'null_counter');
     if (level <= 0) continue;
-    pool.set(stats.characterId, Math.min(2, level));
+    pool.set(stats.characterId, Math.min(3, level));
   }
   return pool;
 }
