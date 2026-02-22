@@ -338,21 +338,25 @@ PT2...
 - Function: Sells items.
 - Shop name: フェリスのガラクタ屋 (Felis’s Junk Shop)
 - Shop owner icon: Mustelid icon
-- Dialogue: "荷馬車がまだ来てなくて品物ないんだ。"
-  - The shop sells
-    - Base item: Tier 1 common items
-	  - Enhancement: 1 (名工の enhancement)
-	  - Examples of sold items: 名工の木の盾 x5, 名工の木の胸て x5 … 
-	  - Price: 100G each
-    - Stock: Five per Super Rare title (no duplicates)
-	- current version: **debug mode: OFF**, no debug items bellow:
-		- Dialogue: "とても珍しい品物が揃ってるよ。オラよくわかんねぇけど、売主がデバッグ用にって言ってた。"
-		  - The shop sells all 80 Super Rare title variants of a single base item.
-			- Base item: 木の盾 (ID: 1103)
-		    - Enhancement: 0 (No enhancement)
-			- Examples of sold items: 探し求めた木の盾 x1, 渡り歩く木の盾 x1… (all Super Rare title variants)
-			- Price: 10,000G each
-		    - Stock: One per Super Rare title (no duplicates)
+- Dialogue: "ひょっとしたらいいお宝が眠ってるかもしれないよ？買うまで商品に触らないでね。 (商品洗替まであと 34 分)"
+- **Lineup:** 5Tier 1 to Tier X (**up to the highest tier the player has reached**) **Common base items** (one per item type).
+- **Mystery enhancement (same as item drop logic):**
+  - When the player selects an item to buy, roll:
+    - 1 ticket from `g.enhancement_bag`
+    - 1 ticket from `g.superRare_bag`
+  - The resulting enhancement/title is **hidden until purchased** (can become a Super Rare title item).
+  - **UI examples:** `?木の盾 x1`, `?木の胸当て x1`
+  - **Stock:** 5 items total (one per item type).
+  - **Refresh cycle:** Updates every hour (lineup refreshes at **:00** each hour).
+
+  - current version: **debug mode: OFF**, no debug items bellow:
+	- Dialogue: "とても珍しい品物が揃ってるよ。オラよくわかんねぇけど、売主がデバッグ用にって言ってた。"
+	  - The shop sells all 80 Super Rare title variants of a single base item.
+		- Base item: 木の盾 (ID: 1103)
+		- Enhancement: 0 (No enhancement)
+		- Examples of sold items: 探し求めた木の盾 x1, 渡り歩く木の盾 x1… (all Super Rare title variants)
+		- Price: 10,000G each
+		- Stock: One per Super Rare title (no duplicates)
 
 #### 8.6 Diary
 - When a party was defeated, got mythic item, and acquiring super rare item, the diary updates. 
