@@ -68,7 +68,14 @@ import {
 import { LEVEL_EXP } from '../game/partyLevel';
 import { createEnvironmentStorageKey } from '../game/environment';
 import { computeCharacterStats } from '../game/characterComputation';
-import { getShopItemPrice, getShopHourKey, getShopStockKey, SHOP_REFRESH_PRICE } from '../game/shop';
+import {
+  getShopItemPrice,
+  getShopHourKey,
+  getShopStockKey,
+  SHOP_REFRESH_PRICE,
+  countElapsedShopRefreshes,
+  getCurrentShopRefreshDate,
+} from '../game/shop';
 
 const BUILD_NUMBER = 1;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
@@ -83,6 +90,21 @@ const DEFAULT_DIARY_SETTINGS: DiarySettings = {
 const MELEE_CATEGORIES = new Set<Item['category']>(['sword', 'katana', 'gauntlet']);
 const RANGED_CATEGORIES = new Set<Item['category']>(['arrow', 'bolt', 'archery']);
 const MAGIC_CATEGORIES = new Set<Item['category']>(['wand', 'grimoire', 'catalyst']);
+
+
+function applyShopIntimacyDecay(global: GameState['global'], now: Date): GameState['global'] {
+  const elapsedRefreshes = countElapsedShopRefreshes(global.shopIntimacyLastDecayAt, now);
+  if (elapsedRefreshes <= 0) {
+    return global;
+  }
+
+  const decayedIntimacy = Math.max(0, Math.floor(global.shopIntimacy * (0.9 ** elapsedRefreshes)));
+  return {
+    ...global,
+    shopIntimacy: decayedIntimacy,
+    shopIntimacyLastDecayAt: getCurrentShopRefreshDate(now).getTime(),
+  };
+}
 
 function getCharacterCombatBonusLevels(character: Character): { grit: number; pursuit: number; caster: number } {
   const race = RACES.find(r => r.id === character.raceId);
@@ -331,6 +353,8 @@ function loadSavedState(): GameState | null {
             deityDonations: {},
             shopPurchases: {},
             shopRefreshCounts: {},
+            shopIntimacy: 0,
+            shopIntimacyLastDecayAt: Date.now(),
           };
         }
         if (Array.isArray(parsed.global.inventory)) {
@@ -355,6 +379,11 @@ function loadSavedState(): GameState | null {
               return acc;
             }, {})
           : {};
+
+        parsed.global.shopIntimacy = Math.max(0, Math.min(99, Math.floor(typeof parsed.global.shopIntimacy === 'number' ? parsed.global.shopIntimacy : 0)));
+        parsed.global.shopIntimacyLastDecayAt = typeof parsed.global.shopIntimacyLastDecayAt === 'number'
+          ? parsed.global.shopIntimacyLastDecayAt
+          : Date.now();
 
         // Process all parties (whether single or array)
         const partiesToProcess = parsed.parties ?? [];
@@ -567,6 +596,8 @@ function createInitialState(): GameState {
       deityDonations: {},
       shopPurchases: {},
       shopRefreshCounts: {},
+      shopIntimacy: 0,
+      shopIntimacyLastDecayAt: Date.now(),
     },
     parties: [createInitialParty(), createSecondParty()],
     selectedPartyIndex: 0,
@@ -1628,15 +1659,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'BUY_SHOP_ITEM': {
+      const now = new Date();
+      const globalState = applyShopIntimacyDecay(state.global, now);
       const baseItem = getItemById(action.itemId);
       const shopPrice = getShopItemPrice(action.itemId);
-      if (!baseItem || state.global.gold < shopPrice) return state;
+      if (!baseItem || globalState.gold < shopPrice) return state;
 
-      const now = new Date();
       const hourKey = getShopHourKey(now);
-      const refreshCount = state.global.shopRefreshCounts[hourKey] ?? 0;
+      const refreshCount = globalState.shopRefreshCounts[hourKey] ?? 0;
       const stockKey = getShopStockKey(now, refreshCount);
-      const soldOutItemIds = state.global.shopPurchases[stockKey] ?? [];
+      const soldOutItemIds = globalState.shopPurchases[stockKey] ?? [];
       if (soldOutItemIds.includes(action.itemId)) return state;
 
       const guaranteedEnhancementResult = drawGuaranteedEnhancement(state.bags);
@@ -1655,9 +1687,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const currentParty = state.parties[state.selectedPartyIndex];
       const autoSellMultiplier = getPartyCunningMultiplier(currentParty);
       const inventoryResult = addItemToInventory(
-        state.global.inventory,
+        globalState.inventory,
         purchasedItem,
-        state.global.gold,
+        globalState.gold,
         autoSellMultiplier,
       );
 
@@ -1665,11 +1697,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         bags,
         global: {
-          ...state.global,
+          ...globalState,
           inventory: inventoryResult.inventory,
           gold: inventoryResult.gold - shopPrice,
+          shopIntimacy: Math.min(99, globalState.shopIntimacy + 1),
           shopPurchases: {
-            ...state.global.shopPurchases,
+            ...globalState.shopPurchases,
             [stockKey]: [...soldOutItemIds, action.itemId],
           },
         },
@@ -1678,19 +1711,21 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
 
     case 'REFRESH_SHOP_LINEUP': {
-      if (state.global.gold < SHOP_REFRESH_PRICE) return state;
-
       const now = new Date();
+      const globalState = applyShopIntimacyDecay(state.global, now);
+      if (globalState.gold < SHOP_REFRESH_PRICE) return state;
+
       const hourKey = getShopHourKey(now);
-      const currentRefreshCount = state.global.shopRefreshCounts[hourKey] ?? 0;
+      const currentRefreshCount = globalState.shopRefreshCounts[hourKey] ?? 0;
 
       return {
         ...state,
         global: {
-          ...state.global,
-          gold: state.global.gold - SHOP_REFRESH_PRICE,
+          ...globalState,
+          gold: globalState.gold - SHOP_REFRESH_PRICE,
+          shopIntimacy: Math.min(99, globalState.shopIntimacy + 2),
           shopRefreshCounts: {
-            ...state.global.shopRefreshCounts,
+            ...globalState.shopRefreshCounts,
             [hourKey]: currentRefreshCount + 1,
           },
         },
@@ -1877,6 +1912,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           deityDonations: {},
           shopPurchases: {},
           shopRefreshCounts: {},
+          shopIntimacy: 0,
+          shopIntimacyLastDecayAt: Date.now(),
         },
         parties: [createInitialParty(), createSecondParty()],
         selectedPartyIndex: 0,
