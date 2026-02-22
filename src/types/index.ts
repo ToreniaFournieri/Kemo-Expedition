@@ -304,6 +304,10 @@ export interface GlobalState {
   gold: number;
   inventory: InventoryRecord;
   deityDonations: Record<string, number>;
+  shop: {
+    refreshHourKey: number;
+    soldSlotIds: number[];
+  };
 }
 
 // Computed party stats for battle

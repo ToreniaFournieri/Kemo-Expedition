@@ -46,7 +46,7 @@ interface HomeScreenProps {
     updateCharacter: (characterId: number, updates: Partial<Character>) => void;
     reorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
     sellStack: (variantKey: string) => void;
-    buyShopItem: (superRare: number) => void;
+    buyShopItem: (slotId: number, hourKey: number) => void;
     setVariantStatus: (variantKey: string, status: 'notown') => void;
     markItemsSeen: () => void;
     markDiaryLogSeen: (logId: string) => void;
@@ -87,6 +87,17 @@ const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
 const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
 const AFK_MAX_ELAPSED_MS = 600 * 60 * 1000;
 const HEADER_HEIGHT_CLASS = 'pt-[108px]';
+const SHOP_ITEM_TYPE_OFFSETS = [1, 2, 3, 4, 10] as const;
+const SHOP_PRICE = 10000;
+
+function getCurrentShopHourKey(timestamp = Date.now()): number {
+  return Math.floor(timestamp / (60 * 60 * 1000));
+}
+
+function getHighestReachedTier(parties: Party[]): number {
+  const maxDungeonId = parties.reduce((highest, party) => Math.max(highest, party.selectedDungeonId || 1), 1);
+  return Math.min(10, Math.max(1, maxDungeonId));
+}
 const RACE_ICON_SOURCES = RACES
   .map((race) => race.icon)
   .filter((icon): icon is string => Boolean(icon))
@@ -1547,6 +1558,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             inventory={state.global.inventory}
             parties={state.parties}
             gold={state.global.gold}
+            shopState={state.global.shop}
             onSellStack={actions.sellStack}
             onSetVariantStatus={actions.setVariantStatus}
             onBuyShopItem={actions.buyShopItem}
@@ -3577,6 +3589,7 @@ function BaseTab({
   inventory,
   parties,
   gold,
+  shopState,
   onSellStack,
   onSetVariantStatus,
   onBuyShopItem,
@@ -3586,9 +3599,10 @@ function BaseTab({
   inventory: InventoryRecord;
   parties: Party[];
   gold: number;
+  shopState: GameState['global']['shop'];
   onSellStack: (variantKey: string) => void;
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
-  onBuyShopItem: (superRare: number) => void;
+  onBuyShopItem: (slotId: number, hourKey: number) => void;
   activeSubTab: BaseSubTab;
   onSetActiveSubTab: (tab: BaseSubTab) => void;
 }) {
@@ -3632,8 +3646,9 @@ function BaseTab({
         />
       ) : activeSubTab === 'shop' ? (
         <ShopTab
-          inventory={inventory}
           gold={gold}
+          parties={parties}
+          shopState={shopState}
           onBuyShopItem={onBuyShopItem}
         />
       ) : (
@@ -3644,39 +3659,45 @@ function BaseTab({
 }
 
 function ShopTab({
-  inventory,
   gold,
+  parties,
+  shopState,
   onBuyShopItem,
 }: {
-  inventory: InventoryRecord;
   gold: number;
-  onBuyShopItem: (superRare: number) => void;
+  parties: Party[];
+  shopState: GameState['global']['shop'];
+  onBuyShopItem: (slotId: number, hourKey: number) => void;
 }) {
-  const shopPrice = 10000;
-  const baseShield = ITEMS.find((item) => item.id === 1103);
+  const nowHourKey = getCurrentShopHourKey();
+  const highestTier = getHighestReachedTier(parties);
+  const activeSoldSlots = shopState.refreshHourKey === nowHourKey ? shopState.soldSlotIds : [];
   const mustelidRace = RACES.find((race) => race.id === 'mustelid');
 
-  if (!baseShield || !mustelidRace) {
+  if (!mustelidRace) {
     return <div className="text-sm text-gray-600">お店の準備中です。</div>;
   }
 
-  const shopItems = SUPER_RARE_TITLES
-    .filter((title) => title.value > 0)
-    .map((title) => {
-      const item: Item = { ...baseShield, enhancement: 0, superRare: title.value };
-      const key = `${item.id}-${item.enhancement}-${item.superRare}`;
-      const isSoldOut = Boolean(inventory[key]);
-      const canBuy = !isSoldOut && gold >= shopPrice;
+  const shopItems = SHOP_ITEM_TYPE_OFFSETS.map((itemOffset, slotId) => {
+      const itemId = highestTier * 1000 + 100 + itemOffset;
+      const baseItem = ITEMS.find((item) => item.id === itemId);
+      if (!baseItem) return null;
+
+      const item: Item = { ...baseItem, enhancement: 0, superRare: 0 };
+      const isSoldOut = activeSoldSlots.includes(slotId);
+      const canBuy = !isSoldOut && gold >= SHOP_PRICE;
 
       return {
-        key,
+        key: `${slotId}-${item.id}`,
+        slotId,
         item,
-        titleValue: title.value,
-        name: getItemDisplayName(item),
+        name: `?${baseItem.name}`,
         isSoldOut,
         canBuy,
       };
-    });
+    }).filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+
+  const minutesToRefresh = 60 - new Date().getMinutes();
 
   return (
     <div className="space-y-4">
@@ -3685,7 +3706,7 @@ function ShopTab({
         <div className="mt-2 flex items-start gap-3">
           <RaceIcon race={mustelidRace} className="h-10 w-10" />
           <p className="text-sm text-gray-700">
-            とても珍しい品物が揃ってるよ。オラよくわかんねぇけど、売主がデバッグ用にって言ってた。
+            ひょっとしたらいいお宝が眠ってるかもしれないよ？買うまで商品に触らないでね。 (商品洗替まであと {minutesToRefresh} 分)
           </p>
         </div>
       </div>
@@ -3694,15 +3715,15 @@ function ShopTab({
         {shopItems.map((entry) => (
           <div key={entry.key} className="rounded border border-gray-200 bg-white px-3 py-2">
             <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="truncate text-sm font-medium text-gray-900">{entry.name} x1</div>
-                <div className="text-xs text-gray-500">{formatNumber(shopPrice)}G</div>
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-medium text-gray-900">{entry.name} x1</div>
+                <div className="text-xs text-gray-500">{formatNumber(SHOP_PRICE)}G</div>
                 <div className="mt-0.5 text-xs leading-tight text-gray-400">
                   {getRarityShortLabel(entry.item.id)} {getItemStats(entry.item)}
                 </div>
               </div>
               <button
-                onClick={() => onBuyShopItem(entry.titleValue)}
+                onClick={() => onBuyShopItem(entry.slotId, nowHourKey)}
                 disabled={!entry.canBuy}
                 className={`shrink-0 min-w-[3.25rem] whitespace-nowrap rounded px-3 py-1 text-xs font-medium ${
                   entry.isSoldOut

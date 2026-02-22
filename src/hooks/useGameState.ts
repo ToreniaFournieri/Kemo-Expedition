@@ -82,6 +82,23 @@ const DEFAULT_DIARY_SETTINGS: DiarySettings = {
 const MELEE_CATEGORIES = new Set<Item['category']>(['sword', 'katana', 'gauntlet']);
 const RANGED_CATEGORIES = new Set<Item['category']>(['arrow', 'bolt', 'archery']);
 const MAGIC_CATEGORIES = new Set<Item['category']>(['wand', 'grimoire', 'catalyst']);
+const SHOP_ITEM_TYPE_OFFSETS = [1, 2, 3, 4, 10] as const;
+const SHOP_PRICE = 10000;
+
+function getCurrentShopHourKey(timestamp = Date.now()): number {
+  return Math.floor(timestamp / (60 * 60 * 1000));
+}
+
+function getHighestReachedTier(parties: Party[]): number {
+  const maxDungeonId = parties.reduce((highest, party) => Math.max(highest, party.selectedDungeonId || 1), 1);
+  return Math.min(10, Math.max(1, maxDungeonId));
+}
+
+function buildShopItemIdForSlot(slotId: number, highestTier: number): number | null {
+  const itemOffset = SHOP_ITEM_TYPE_OFFSETS[slotId];
+  if (typeof itemOffset !== 'number') return null;
+  return highestTier * 1000 + 100 + itemOffset;
+}
 
 function getCharacterCombatBonusLevels(character: Character): { grit: number; pursuit: number; caster: number } {
   const race = RACES.find(r => r.id === character.raceId);
@@ -328,12 +345,28 @@ function loadSavedState(): GameState | null {
             gold: firstParty?.gold ?? 200,
             inventory: migrateOldInventory(firstParty?.inventory ?? []),
             deityDonations: {},
+            shop: {
+              refreshHourKey: getCurrentShopHourKey(),
+              soldSlotIds: [],
+            },
           };
         }
         if (Array.isArray(parsed.global.inventory)) {
           parsed.global.inventory = migrateOldInventory(parsed.global.inventory);
         }
         parsed.global.deityDonations = getDeityDonationsWithDefaults(parsed.global.deityDonations);
+        if (!parsed.global.shop || typeof parsed.global.shop !== 'object') {
+          parsed.global.shop = {
+            refreshHourKey: getCurrentShopHourKey(),
+            soldSlotIds: [],
+          };
+        }
+        if (typeof parsed.global.shop.refreshHourKey !== 'number') {
+          parsed.global.shop.refreshHourKey = getCurrentShopHourKey();
+        }
+        if (!Array.isArray(parsed.global.shop.soldSlotIds)) {
+          parsed.global.shop.soldSlotIds = [];
+        }
 
         // Process all parties (whether single or array)
         const partiesToProcess = parsed.parties ?? [];
@@ -544,6 +577,10 @@ function createInitialState(): GameState {
       gold: 200,
       inventory: createStarterInventory(),
       deityDonations: {},
+      shop: {
+        refreshHourKey: getCurrentShopHourKey(),
+        soldSlotIds: [],
+      },
     },
     parties: [createInitialParty(), createSecondParty()],
     selectedPartyIndex: 0,
@@ -577,7 +614,7 @@ type GameAction =
   | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character> }
   | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number }
   | { type: 'SELL_STACK'; variantKey: string }
-  | { type: 'BUY_SHOP_ITEM'; superRare: number }
+  | { type: 'BUY_SHOP_ITEM'; slotId: number; hourKey: number }
   | { type: 'SET_VARIANT_STATUS'; variantKey: string; status: 'notown' }
   | { type: 'MARK_ITEMS_SEEN' }
   | { type: 'MARK_DIARY_LOG_SEEN'; logId: string }
@@ -1588,28 +1625,43 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'BUY_SHOP_ITEM': {
-      const baseItem = getItemById(1103);
-      const hasSuperRareTitle = SUPER_RARE_TITLES.some((title) => title.value === action.superRare && title.value > 0);
-      const shopPrice = 10000;
-      if (!baseItem || !hasSuperRareTitle || state.global.gold < shopPrice) return state;
+      const currentHourKey = getCurrentShopHourKey();
+      const isCurrentLineup = action.hourKey === currentHourKey;
+      if (!isCurrentLineup || state.global.gold < SHOP_PRICE) return state;
+
+      const highestTier = getHighestReachedTier(state.parties);
+      const itemId = buildShopItemIdForSlot(action.slotId, highestTier);
+      if (!itemId) return state;
+
+      const refreshedSoldSlots = state.global.shop.refreshHourKey === currentHourKey ? state.global.shop.soldSlotIds : [];
+      if (refreshedSoldSlots.includes(action.slotId)) return state;
+
+      const baseItem = getItemById(itemId);
+      if (!baseItem) return state;
+
+      let bags = refillBagIfEmpty(state.bags, 'enhancementBag');
+      const { ticket: drawnEnhVal, newBag: newEnhBag } = drawFromBag(bags.enhancementBag);
+      bags = { ...bags, enhancementBag: newEnhBag };
+      bags = refillBagIfEmpty(bags, 'superRareBag');
+      const { ticket: drawnSrVal, newBag: newSRBag } = drawFromBag(bags.superRareBag);
+      bags = { ...bags, superRareBag: newSRBag };
+
+      const enhancement = ENHANCEMENT_TITLES.find((title) => title.value === drawnEnhVal) ? drawnEnhVal : 0;
+      const superRare = SUPER_RARE_TITLES.find((title) => title.value === drawnSrVal) ? drawnSrVal : 0;
 
       const purchasedItem: Item = {
         ...baseItem,
-        enhancement: 0,
-        superRare: action.superRare,
+        enhancement,
+        superRare,
       };
       const variantKey = getVariantKey(purchasedItem);
       const existing = state.global.inventory[variantKey];
-
-      if (existing) {
-        return state;
-      }
 
       const newInventory = {
         ...state.global.inventory,
         [variantKey]: {
           item: purchasedItem,
-          count: 1,
+          count: (existing?.count ?? 0) + 1,
           status: 'owned' as const,
           isNew: true,
         },
@@ -1620,8 +1672,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         global: {
           ...state.global,
           inventory: newInventory,
-          gold: state.global.gold - shopPrice,
+          gold: state.global.gold - SHOP_PRICE,
+          shop: {
+            refreshHourKey: currentHourKey,
+            soldSlotIds: [...refreshedSoldSlots, action.slotId],
+          },
         },
+        bags,
       };
     }
 
@@ -1803,6 +1860,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           gold: 200,
           inventory: createStarterInventory(),
           deityDonations: {},
+          shop: {
+            refreshHourKey: getCurrentShopHourKey(),
+            soldSlotIds: [],
+          },
         },
         parties: [createInitialParty(), createSecondParty()],
         selectedPartyIndex: 0,
@@ -1994,8 +2055,8 @@ export function useGameState() {
       dispatch({ type: 'SELL_STACK', variantKey });
     }, []),
 
-    buyShopItem: useCallback((superRare: number) => {
-      dispatch({ type: 'BUY_SHOP_ITEM', superRare });
+    buyShopItem: useCallback((slotId: number, hourKey: number) => {
+      dispatch({ type: 'BUY_SHOP_ITEM', slotId, hourKey });
     }, []),
 
     setVariantStatus: useCallback((variantKey: string, status: 'notown') => {
