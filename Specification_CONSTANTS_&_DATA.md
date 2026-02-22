@@ -630,16 +630,16 @@ d. bonus (stackable)
 
 - Boss:
 
-| `x.expedition` Tier | Boss concept | Class | Boss drop mythic item types |
+| `x.expedition` Tier | Boss unique ability | Class | Boss drop mythic item types |
 |---|---------|------|---|
-| 1 | | Fighter | `i.sword` , `i.grimoire` |
-| 2 | | Ranger  | `i.armor` , `i.arrow` |
-| 3 | | Wizard | `i.wand`,`i.robe` |
-| 4 | | Samurai | `i.katana` , `i.shield `| 
-| 5 | | Ranger | `i.bolt`,  `i.archery` |
-| 6 | | Sage | `i.armor`, `i.catalyst` |
-| 7 | | Lord | `i.sword` , `i.wand` |
-| 8 | Superior existence | Ninjya | `i.katana`, `i.bolt`, `i.grimoire`  |
+| 1 | `a.seeker`1 | Fighter | `i.sword` , `i.grimoire` |
+| 2 | `a.rage`1 | Ranger  | `i.armor` , `i.arrow` |
+| 3 | `a.momentum`1 | Wizard | `i.wand`,`i.robe` |
+| 4 | `a.cyborgization`1 | Samurai | `i.katana` , `i.shield `| 
+| 5 | `a.first-strike`1 | Ranger | `i.bolt`,  `i.archery` |
+| 6 | `a.resonance`1 | Sage | `i.armor`, `i.catalyst` |
+| 7 | `a.composure`1 | Lord | `i.sword` , `i.wand` |
+| 8 | `a.focus`1 | Ninjya | `i.katana`, `i.bolt`, `i.grimoire`  |
 
 
 
