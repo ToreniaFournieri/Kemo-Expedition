@@ -795,7 +795,9 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     command: (l) => `パーティ攻撃力 × ${l >= 3 ? 2.0 : l === 2 ? 1.6 : 1.3}`,
     m_barrier: (l) => `パーティへの魔法ダメージ × ${l >= 3 ? '1/2' : l === 2 ? '3/5' : '2/3'}`,
     deflection: (l) => `敵の遠距離攻撃の命中率を${l >= 2 ? '15' : '10'}%低下させる`,
-    null_counter: () => '反撃を無効化する',
+    null_counter: (l) => l >= 2
+      ? '反撃を無効化する(2回まで)'
+      : '反撃を無効化する(1回のみ)',
     unlock: () => '追加報酬チャンス',
     squander: (l) => `宴会で消費するゴールドが${l >= 2 ? '2' : '1.5'}倍になる`,
     tithe: (l) => `祈り時に寄付額へ探検利益の+${l >= 2 ? '15' : '10'}%を加算`,
