@@ -3376,14 +3376,6 @@ function ExpeditionTab({
         const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
         const cycle = partyCycles[partyIndex] ?? { state: '待機中', stateStartedAt: Date.now(), durationMs: 1000 };
         const cycleElapsedMs = Math.max(0, Date.now() - cycle.stateStartedAt);
-        const progressPercent = cycle.state === '待機中'
-          ? 100
-          : cycle.state === '探索中'
-          ? Math.min(
-            100,
-            Math.floor(cycleElapsedMs / EXPLORING_PROGRESS_STEP_MS) * (100 / EXPLORING_PROGRESS_TOTAL_STEPS),
-          )
-          : Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100);
         const { partyStats } = computePartyStats(party);
         const isLogExpanded = expandedLogParty === partyIndex;
         const currentLog = party.lastExpeditionLog;
@@ -3409,7 +3401,17 @@ function ExpeditionTab({
           if (displayedEntries.length === 0) return getEstimatedStartHp(currentLog.entries[0]);
           return displayedEntries[displayedEntries.length - 1].remainingPartyHP;
         })();
-        const hpPercent = Math.round((displayedHp / Math.max(1, partyStats.hp)) * 100);
+        const hpPercent = Math.min(100, Math.round((displayedHp / Math.max(1, partyStats.hp)) * 100));
+        const progressPercent = cycle.state === '待機中'
+          ? 100
+          : cycle.state === '休息中'
+          ? hpPercent
+          : cycle.state === '探索中'
+          ? Math.min(
+            100,
+            Math.floor(cycleElapsedMs / EXPLORING_PROGRESS_STEP_MS) * (100 / EXPLORING_PROGRESS_TOTAL_STEPS),
+          )
+          : Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100);
         const isSortieDisabled = !!selectedDungeonGate?.locked || party.currentHp <= 0 || partyStats.hp <= 0;
 
         return (
