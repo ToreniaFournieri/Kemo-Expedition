@@ -3692,7 +3692,7 @@ function ShopTab({
   const shopPrice = 10000;
   const mustelidRace = RACES.find((race) => race.id === 'mustelid');
   const now = new Date();
-  const minutesToRefresh = 59 - now.getMinutes();
+  const minutesToRefresh = 60 - now.getMinutes();
   const highestTierReached = DUNGEONS.reduce((highestId, dungeon) => {
     if (dungeon.id === 1) return 1;
 

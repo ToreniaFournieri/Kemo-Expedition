@@ -774,6 +774,22 @@ function resolveEnemyRewards(
   };
 }
 
+function drawGuaranteedEnhancement(
+  bags: GameState['bags'],
+): { enhancement: number; bags: GameState['bags'] } {
+  let nextBags = bags;
+  let enhancement = 0;
+
+  do {
+    nextBags = refillBagIfEmpty(nextBags, 'enhancementBag');
+    const { ticket, newBag } = drawFromBag(nextBags.enhancementBag);
+    nextBags = { ...nextBags, enhancementBag: newBag };
+    enhancement = ticket;
+  } while (enhancement < 1);
+
+  return { enhancement, bags: nextBags };
+}
+
 
 function getPartyAbilityLevel(party: Party, abilityId: string): number {
   const { characterStats } = computePartyStats(party);
@@ -1608,9 +1624,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const soldOutItemIds = state.global.shopPurchases[hourKey] ?? [];
       if (soldOutItemIds.includes(action.itemId)) return state;
 
-      let bags = refillBagIfEmpty(state.bags, 'enhancementBag');
-      const { ticket: enhancement, newBag: newEnhancementBag } = drawFromBag(bags.enhancementBag);
-      bags = { ...bags, enhancementBag: newEnhancementBag };
+      const guaranteedEnhancementResult = drawGuaranteedEnhancement(state.bags);
+      const enhancement = guaranteedEnhancementResult.enhancement;
+      let bags = guaranteedEnhancementResult.bags;
 
       bags = refillBagIfEmpty(bags, 'superRareBag');
       const { ticket: superRare, newBag: newSuperRareBag } = drawFromBag(bags.superRareBag);
