@@ -13,6 +13,7 @@ import { applyEnemyEncounterScaling } from '../game/enemyScaling';
 import { DEITY_OPTIONS, getDeityEffectDescription, getDeityRank, getNextDonationThreshold, normalizeDeityName } from '../game/deity';
 import { LEVEL_EXP } from '../game/partyLevel';
 import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../game/environment';
+import { getShopItemPrice } from '../game/shop';
 import { getBaseMultiplier } from '../game/baseMultiplier';
 import { computeCharacterStats } from '../game/characterComputation';
 import { serializeGameState } from '../game/saveCodec';
@@ -3689,7 +3690,6 @@ function ShopTab({
   shopPurchases: Record<string, number[]>;
   onBuyShopItem: (itemId: number) => void;
 }) {
-  const shopPrice = 10000;
   const mustelidRace = RACES.find((race) => race.id === 'mustelid');
   const now = new Date();
   const minutesToRefresh = 60 - now.getMinutes();
@@ -3724,13 +3724,15 @@ function ShopTab({
       if (!baseItem) return null;
 
       const item: Item = { ...baseItem, enhancement: 0, superRare: 0 };
+      const price = getShopItemPrice(baseItemId);
       const isSoldOut = soldOutItemIds.includes(baseItemId);
-      const canBuy = !isSoldOut && gold >= shopPrice;
+      const canBuy = !isSoldOut && gold >= price;
 
       return {
         key: `${baseItemId}-${index}`,
         itemId: baseItemId,
         item,
+        price,
         isSoldOut,
         canBuy,
       };
@@ -3754,7 +3756,7 @@ function ShopTab({
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <div className="truncate text-sm font-medium text-gray-900">?{entry.item.name} x1</div>
-                <div className="text-xs text-gray-500">{formatNumber(shopPrice)}G</div>
+                <div className="text-xs text-gray-500">{formatNumber(entry.price)}G</div>
                 <div className="mt-0.5 text-xs leading-tight text-gray-400">
                   {getRarityShortLabel(entry.item.id)} {getItemStats(entry.item)}
                 </div>

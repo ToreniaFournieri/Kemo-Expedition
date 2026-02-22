@@ -68,6 +68,7 @@ import {
 import { LEVEL_EXP } from '../game/partyLevel';
 import { createEnvironmentStorageKey } from '../game/environment';
 import { computeCharacterStats } from '../game/characterComputation';
+import { getShopItemPrice } from '../game/shop';
 
 const BUILD_NUMBER = 1;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
@@ -1616,7 +1617,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'BUY_SHOP_ITEM': {
       const baseItem = getItemById(action.itemId);
-      const shopPrice = 10000;
+      const shopPrice = getShopItemPrice(action.itemId);
       if (!baseItem || state.global.gold < shopPrice) return state;
 
       const now = new Date();
