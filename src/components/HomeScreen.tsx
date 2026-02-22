@@ -4765,14 +4765,6 @@ function SettingTab({
     return `属性耐性: ${parts.join(',')}`;
   };
 
-  const ENEMY_ABILITY_LABELS: Record<string, string> = {
-    first_strike: '先制攻撃1:行動が早くなる',
-    counter: '反撃1:相手の近距離攻撃を受けたとき反撃(攻撃回数半減)',
-    re_attack: '連撃1:攻撃時に追加攻撃を1回行う(攻撃回数半減) / 連撃2:攻撃回数0.7倍 / 連撃3:攻撃回数半減なし',
-    deflection: '矢払い1:相手の遠距離攻撃の命中率を10%低下させる',
-    null_counter: '反撃無効化:カウンター攻撃を無効化',
-  };
-
   const getEnemyDisplayNameWithClass = (enemy: EnemyDef): string => {
     const shortName = CLASS_SHORT_NAMES[enemy.enemyClass];
     return shortName ? `${enemy.name}(${shortName})` : enemy.name;
@@ -5088,7 +5080,7 @@ function SettingTab({
                           })()}
                         </div>
                         <div>{formatEnemyElementalResistanceLine(displayEnemy)}</div>
-                        <div>アビリティ: {displayEnemy.abilities.length > 0 ? displayEnemy.abilities.map(a => ENEMY_ABILITY_LABELS[a] ?? a).join(', ') : 'なし'}</div>
+                        <div>アビリティ: {displayEnemy.abilities.length > 0 ? displayEnemy.abilities.map(a => ABILITY_NAMES[a] ?? a).join(', ') : 'なし'}</div>
                         <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id)}${item.name}`).join(' / ')}</div>
                       </div>
                     )}
