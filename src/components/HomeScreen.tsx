@@ -16,6 +16,7 @@ import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../g
 import { getBaseMultiplier } from '../game/baseMultiplier';
 import { computeCharacterStats } from '../game/characterComputation';
 import { serializeGameState } from '../game/saveCodec';
+import { getBagEntryTickets, getBagTicketTotal } from '../game/bags';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -4482,34 +4483,34 @@ function SettingTab({
   const ultimateInitial = getInitialCount(6);
 
   const commonRewardTotal = 100;
-  const commonRewardRemaining = bags.commonRewardBag?.tickets.length ?? 0;
-  const commonRewardWins = bags.commonRewardBag?.tickets.filter(t => t === 1).length ?? 0;
+  const commonRewardRemaining = getBagTicketTotal(bags.commonRewardBag);
+  const commonRewardWins = getBagEntryTickets(bags.commonRewardBag, 1);
 
   const commonEnhancementTotal = ENHANCEMENT_TITLES.reduce((sum, t) => sum + t.tickets, 0);
-  const commonEnhancementRemaining = bags.commonEnhancementBag?.tickets.length ?? 0;
-  const commonCraftsmanRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 1).length ?? 0;
-  const commonDemonicRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 2).length ?? 0;
-  const commonDwellingRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 3).length ?? 0;
-  const commonLegendaryRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 4).length ?? 0;
-  const commonTerribleRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 5).length ?? 0;
-  const commonUltimateRemaining = bags.commonEnhancementBag?.tickets.filter(t => t === 6).length ?? 0;
+  const commonEnhancementRemaining = getBagTicketTotal(bags.commonEnhancementBag);
+  const commonCraftsmanRemaining = getBagEntryTickets(bags.commonEnhancementBag, 1);
+  const commonDemonicRemaining = getBagEntryTickets(bags.commonEnhancementBag, 2);
+  const commonDwellingRemaining = getBagEntryTickets(bags.commonEnhancementBag, 3);
+  const commonLegendaryRemaining = getBagEntryTickets(bags.commonEnhancementBag, 4);
+  const commonTerribleRemaining = getBagEntryTickets(bags.commonEnhancementBag, 5);
+  const commonUltimateRemaining = getBagEntryTickets(bags.commonEnhancementBag, 6);
 
   const uniqueRewardTotal = 100;
-  const uncommonRewardRemaining = bags.uncommonRewardBag.tickets.length;
-  const uncommonRewardWins = bags.uncommonRewardBag.tickets.filter(t => t === 1).length;
-  const rareRewardRemaining = bags.rareRewardBag.tickets.length;
-  const rareRewardWins = bags.rareRewardBag.tickets.filter(t => t === 1).length;
-  const mythicRewardRemaining = bags.mythicRewardBag.tickets.length;
-  const mythicRewardWins = bags.mythicRewardBag.tickets.filter(t => t === 1).length;
+  const uncommonRewardRemaining = getBagTicketTotal(bags.uncommonRewardBag);
+  const uncommonRewardWins = getBagEntryTickets(bags.uncommonRewardBag, 1);
+  const rareRewardRemaining = getBagTicketTotal(bags.rareRewardBag);
+  const rareRewardWins = getBagEntryTickets(bags.rareRewardBag, 1);
+  const mythicRewardRemaining = getBagTicketTotal(bags.mythicRewardBag);
+  const mythicRewardWins = getBagEntryTickets(bags.mythicRewardBag, 1);
 
   const enhancementTotal = 5490 + (ENHANCEMENT_TITLES.reduce((sum, t) => sum + (t.value === 0 ? 0 : t.tickets), 0));
-  const enhancementRemaining = bags.enhancementBag.tickets.length;
-  const craftsmanRemaining = bags.enhancementBag.tickets.filter(t => t === 1).length;
-  const demonicRemaining = bags.enhancementBag.tickets.filter(t => t === 2).length;
-  const dwellingRemaining = bags.enhancementBag.tickets.filter(t => t === 3).length;
-  const legendaryRemaining = bags.enhancementBag.tickets.filter(t => t === 4).length;
-  const terribleRemaining = bags.enhancementBag.tickets.filter(t => t === 5).length;
-  const ultimateRemaining = bags.enhancementBag.tickets.filter(t => t === 6).length;
+  const enhancementRemaining = getBagTicketTotal(bags.enhancementBag);
+  const craftsmanRemaining = getBagEntryTickets(bags.enhancementBag, 1);
+  const demonicRemaining = getBagEntryTickets(bags.enhancementBag, 2);
+  const dwellingRemaining = getBagEntryTickets(bags.enhancementBag, 3);
+  const legendaryRemaining = getBagEntryTickets(bags.enhancementBag, 4);
+  const terribleRemaining = getBagEntryTickets(bags.enhancementBag, 5);
+  const ultimateRemaining = getBagEntryTickets(bags.enhancementBag, 6);
 
   const confirmReset = (label: string, onConfirm: () => void) => {
     if (!window.confirm(`${label}を実行します。\n現在の抽選状況が初期化されます。\nよろしいですか？`)) {
@@ -4520,9 +4521,9 @@ function SettingTab({
   };
 
   const superRareTotal = SUPER_RARE_TITLES.reduce((sum, t) => sum + t.tickets, 0);
-  const superRareRemaining = bags.superRareBag.tickets.length;
+  const superRareRemaining = getBagTicketTotal(bags.superRareBag);
   const superRareInitial = SUPER_RARE_TITLES.filter(t => t.value > 0).reduce((sum, t) => sum + t.tickets, 0);
-  const superRareHits = bags.superRareBag.tickets.filter(t => t > 0).length;
+  const superRareHits = SUPER_RARE_TITLES.filter(t => t.value > 0).reduce((sum, t) => sum + getBagEntryTickets(bags.superRareBag, t.value), 0);
 
   const donationByDeity = DEITY_OPTIONS.reduce<Record<string, number>>((totals, deity) => {
     const deityName = normalizeDeityName(deity.name);

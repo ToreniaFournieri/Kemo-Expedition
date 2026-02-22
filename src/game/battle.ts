@@ -15,7 +15,7 @@ import {
 } from '../types';
 import { computePartyStats } from './partyComputation';
 import { getBaseMultiplier } from './baseMultiplier';
-import { drawFromBag, createPhysicalThreatBag, createMagicalThreatBag } from './bags';
+import { drawFromBag, createPhysicalThreatBag, createMagicalThreatBag, getBagTicketTotal } from './bags';
 
 interface BattleContext {
   partyStats: ComputedPartyStats;
@@ -153,7 +153,7 @@ function getTargetRow(ctx: BattleContext, phase: BattlePhase): { row: number; ne
 
   // Refill bag if empty
   let bag = isPhysical ? ctx.physicalThreatBag : ctx.magicalThreatBag;
-  if (bag.tickets.length === 0) {
+  if (getBagTicketTotal(bag) === 0) {
     bag = isPhysical ? createPhysicalThreatBag() : createMagicalThreatBag();
   }
 

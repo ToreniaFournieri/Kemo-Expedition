@@ -1,92 +1,153 @@
-import { GameBags, RandomBag } from '../types';
+import { GameBags, RandomBag, WeightedBagEntry } from '../types';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 
-// Fisher-Yates shuffle
-function shuffleArray<T>(array: T[]): T[] {
-  const result = [...array];
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
+function cloneEntries(entries: WeightedBagEntry[]): WeightedBagEntry[] {
+  return entries.map((entry) => ({ ...entry }));
 }
 
-// Common reward bag: 90 no item, 10 win (10% chance)
+function createBagFromEntries(entries: WeightedBagEntry[]): RandomBag {
+  return { entries: sortEntriesStable(cloneEntries(entries)) };
+}
+
+const COMMON_REWARD_BAG_DEFAULT: WeightedBagEntry[] = [
+  { id: 0, tickets: 90 },
+  { id: 1, tickets: 10 },
+];
+
+const COMMON_ENHANCEMENT_BAG_DEFAULT: WeightedBagEntry[] = ENHANCEMENT_TITLES.map((title) => ({
+  id: title.value,
+  tickets: title.tickets,
+}));
+
+const UNCOMMON_REWARD_BAG_DEFAULT: WeightedBagEntry[] = [
+  { id: 0, tickets: 99 },
+  { id: 1, tickets: 1 },
+];
+
+const RARE_REWARD_BAG_DEFAULT: WeightedBagEntry[] = [
+  { id: 0, tickets: 99 },
+  { id: 1, tickets: 1 },
+];
+
+const MYTHIC_REWARD_BAG_DEFAULT: WeightedBagEntry[] = [
+  { id: 0, tickets: 99 },
+  { id: 1, tickets: 1 },
+];
+
+const ENHANCEMENT_BAG_DEFAULT: WeightedBagEntry[] = ENHANCEMENT_TITLES.map((title) => ({
+  id: title.value,
+  tickets: title.value === 0 ? 5490 : title.tickets,
+}));
+
+const SUPER_RARE_BAG_DEFAULT: WeightedBagEntry[] = SUPER_RARE_TITLES.map((title) => ({
+  id: title.value,
+  tickets: title.tickets,
+}));
+
+const PHYSICAL_THREAT_WEIGHT_BAG_DEFAULT: WeightedBagEntry[] = [
+  { id: 1, tickets: 16 },
+  { id: 2, tickets: 8 },
+  { id: 3, tickets: 4 },
+  { id: 4, tickets: 2 },
+  { id: 5, tickets: 1 },
+  { id: 6, tickets: 1 },
+];
+
+const MAGICAL_THREAT_WEIGHT_BAG_DEFAULT: WeightedBagEntry[] = [
+  { id: 1, tickets: 2 },
+  { id: 2, tickets: 2 },
+  { id: 3, tickets: 2 },
+  { id: 4, tickets: 2 },
+  { id: 5, tickets: 2 },
+  { id: 6, tickets: 2 },
+];
+
+const BAG_DEFAULT_CREATORS = {
+  commonRewardBag: () => createBagFromEntries(COMMON_REWARD_BAG_DEFAULT),
+  commonEnhancementBag: () => createBagFromEntries(COMMON_ENHANCEMENT_BAG_DEFAULT),
+  uncommonRewardBag: () => createBagFromEntries(UNCOMMON_REWARD_BAG_DEFAULT),
+  rareRewardBag: () => createBagFromEntries(RARE_REWARD_BAG_DEFAULT),
+  mythicRewardBag: () => createBagFromEntries(MYTHIC_REWARD_BAG_DEFAULT),
+  enhancementBag: () => createBagFromEntries(ENHANCEMENT_BAG_DEFAULT),
+  superRareBag: () => createBagFromEntries(SUPER_RARE_BAG_DEFAULT),
+  physicalThreatBag: () => createBagFromEntries(PHYSICAL_THREAT_WEIGHT_BAG_DEFAULT),
+  magicalThreatBag: () => createBagFromEntries(MAGICAL_THREAT_WEIGHT_BAG_DEFAULT),
+} as const;
+
+export type BagType = keyof typeof BAG_DEFAULT_CREATORS;
+
+function getDefaultEntriesForBagType(bagType: BagType): WeightedBagEntry[] {
+  return BAG_DEFAULT_CREATORS[bagType]().entries;
+}
+
+export function normalizeBagForType(bag: RandomBag, bagType: BagType): RandomBag {
+  const defaultEntries = getDefaultEntriesForBagType(bagType);
+  const currentById = new Map<number, number>();
+
+  for (const entry of bag.entries) {
+    if (!Number.isFinite(entry.id)) continue;
+    const id = Math.floor(entry.id);
+    const tickets = Math.max(0, Math.floor(entry.tickets));
+    currentById.set(id, (currentById.get(id) ?? 0) + tickets);
+  }
+
+  const normalizedEntries = defaultEntries.map((defaultEntry) => ({
+    id: defaultEntry.id,
+    tickets: currentById.get(defaultEntry.id) ?? 0,
+  }));
+
+  return { entries: normalizedEntries };
+}
+
+
+export function normalizeGameBags(bags: GameBags): GameBags {
+  return {
+    commonRewardBag: normalizeBagForType(bags.commonRewardBag, 'commonRewardBag'),
+    commonEnhancementBag: normalizeBagForType(bags.commonEnhancementBag, 'commonEnhancementBag'),
+    uncommonRewardBag: normalizeBagForType(bags.uncommonRewardBag, 'uncommonRewardBag'),
+    rareRewardBag: normalizeBagForType(bags.rareRewardBag, 'rareRewardBag'),
+    mythicRewardBag: normalizeBagForType(bags.mythicRewardBag, 'mythicRewardBag'),
+    enhancementBag: normalizeBagForType(bags.enhancementBag, 'enhancementBag'),
+    superRareBag: normalizeBagForType(bags.superRareBag, 'superRareBag'),
+    physicalThreatBag: normalizeBagForType(bags.physicalThreatBag, 'physicalThreatBag'),
+    magicalThreatBag: normalizeBagForType(bags.magicalThreatBag, 'magicalThreatBag'),
+  };
+}
+
 export function createCommonRewardBag(): RandomBag {
-  const tickets = [...Array(10).fill(1), ...Array(90).fill(0)];
-  return { tickets: shuffleArray(tickets) };
+  return BAG_DEFAULT_CREATORS.commonRewardBag();
 }
 
-// Common enhancement bag: Uses standard ENHANCEMENT_TITLES tickets
 export function createCommonEnhancementBag(): RandomBag {
-  const tickets: number[] = [];
-  for (const title of ENHANCEMENT_TITLES) {
-    for (let i = 0; i < title.tickets; i++) {
-      tickets.push(title.value);
-    }
-  }
-  return { tickets: shuffleArray(tickets) };
+  return BAG_DEFAULT_CREATORS.commonEnhancementBag();
 }
 
-// Uncommon reward bag: 99 no item, 1 win (1% chance)
 export function createUncommonRewardBag(): RandomBag {
-  const tickets = [1, ...Array(99).fill(0)];
-  return { tickets: shuffleArray(tickets) };
+  return BAG_DEFAULT_CREATORS.uncommonRewardBag();
 }
 
-// Rare reward bag: 99 no item, 1 win (1% chance)
 export function createRareRewardBag(): RandomBag {
-  const tickets = [1, ...Array(99).fill(0)];
-  return { tickets: shuffleArray(tickets) };
+  return BAG_DEFAULT_CREATORS.rareRewardBag();
 }
 
-// Mythic reward bag: 99 no item, 1 win (1% chance)
 export function createMythicRewardBag(): RandomBag {
-  const tickets = [1, ...Array(99).fill(0)];
-  return { tickets: shuffleArray(tickets) };
+  return BAG_DEFAULT_CREATORS.mythicRewardBag();
 }
 
-// Unique enhancement bag: 5490 none instead of 1390
-// This makes enhancement titles rarer for unique rewards
 export function createEnhancementBag(): RandomBag {
-  const tickets: number[] = [];
-  for (const title of ENHANCEMENT_TITLES) {
-    // For value 0 (none), use 5490 tickets instead of 1390
-    const ticketCount = title.value === 0 ? 5490 : title.tickets;
-    for (let i = 0; i < ticketCount; i++) {
-      tickets.push(title.value);
-    }
-  }
-  return { tickets: shuffleArray(tickets) };
+  return BAG_DEFAULT_CREATORS.enhancementBag();
 }
 
 export function createSuperRareBag(): RandomBag {
-  const tickets: number[] = [];
-  for (const title of SUPER_RARE_TITLES) {
-    for (let i = 0; i < title.tickets; i++) {
-      tickets.push(title.value);
-    }
-  }
-  return { tickets: shuffleArray(tickets) };
+  return BAG_DEFAULT_CREATORS.superRareBag();
 }
 
-// Physical threat weight: Row 1=16, Row 2=8, Row 3=4, Row 4=2, Row 5=1, Row 6=1
 export function createPhysicalThreatBag(): RandomBag {
-  const tickets = [
-    ...Array(16).fill(1), // Row 1: 16 tickets
-    ...Array(8).fill(2),  // Row 2: 8 tickets
-    ...Array(4).fill(3),  // Row 3: 4 tickets
-    ...Array(2).fill(4),  // Row 4: 2 tickets
-    5,                    // Row 5: 1 ticket
-    6,                    // Row 6: 1 ticket
-  ];
-  return { tickets: shuffleArray(tickets) };
+  return BAG_DEFAULT_CREATORS.physicalThreatBag();
 }
 
-// Magical threat weight: All rows equal (1 ticket each)
 export function createMagicalThreatBag(): RandomBag {
-  const tickets = [1, 2, 3, 4, 5, 6];
-  return { tickets: shuffleArray(tickets) };
+  return BAG_DEFAULT_CREATORS.magicalThreatBag();
 }
 
 export function initializeBags(): GameBags {
@@ -103,53 +164,58 @@ export function initializeBags(): GameBags {
   };
 }
 
+function sortEntriesStable(entries: WeightedBagEntry[]): WeightedBagEntry[] {
+  return [...entries].sort((a, b) => a.id - b.id);
+}
+
+function getTotalTickets(bag: RandomBag): number {
+  return bag.entries.reduce((sum, entry) => sum + Math.max(0, entry.tickets), 0);
+}
+
 export function drawFromBag(bag: RandomBag): { ticket: number; newBag: RandomBag } {
-  if (bag.tickets.length === 0) {
+  const totalTickets = getTotalTickets(bag);
+  if (totalTickets <= 0) {
     throw new Error('Bag is empty');
   }
-  const [ticket, ...remaining] = bag.tickets;
+
+  const sortedEntries = sortEntriesStable(bag.entries);
+  const roll = Math.floor(Math.random() * totalTickets) + 1;
+  let cumulative = 0;
+
+  const newEntries = sortedEntries.map((entry) => ({ ...entry }));
+  for (let i = 0; i < newEntries.length; i++) {
+    const entry = newEntries[i];
+    if (entry.tickets <= 0) continue;
+
+    cumulative += entry.tickets;
+    if (roll <= cumulative) {
+      newEntries[i] = { ...entry, tickets: entry.tickets - 1 };
+      return {
+        ticket: entry.id,
+        newBag: { entries: newEntries },
+      };
+    }
+  }
+
+  throw new Error('Failed to draw from weighted bag');
+}
+
+export function refillBagIfEmpty(bags: GameBags, bagType: BagType): GameBags {
+  const currentBag = bags[bagType];
+  if (getTotalTickets(currentBag) > 0) {
+    return bags;
+  }
+
   return {
-    ticket,
-    newBag: { tickets: remaining },
+    ...bags,
+    [bagType]: BAG_DEFAULT_CREATORS[bagType](),
   };
 }
 
-export type BagType =
-  | 'commonRewardBag'
-  | 'commonEnhancementBag'
-  | 'uncommonRewardBag'
-  | 'rareRewardBag'
-  | 'mythicRewardBag'
-  | 'enhancementBag'
-  | 'superRareBag'
-  | 'physicalThreatBag'
-  | 'magicalThreatBag';
+export function getBagTicketTotal(bag: RandomBag): number {
+  return getTotalTickets(bag);
+}
 
-export function refillBagIfEmpty(
-  bags: GameBags,
-  bagType: BagType
-): GameBags {
-  if (bags[bagType].tickets.length === 0) {
-    switch (bagType) {
-      case 'commonRewardBag':
-        return { ...bags, commonRewardBag: createCommonRewardBag() };
-      case 'commonEnhancementBag':
-        return { ...bags, commonEnhancementBag: createCommonEnhancementBag() };
-      case 'uncommonRewardBag':
-        return { ...bags, uncommonRewardBag: createUncommonRewardBag() };
-      case 'rareRewardBag':
-        return { ...bags, rareRewardBag: createRareRewardBag() };
-      case 'mythicRewardBag':
-        return { ...bags, mythicRewardBag: createMythicRewardBag() };
-      case 'enhancementBag':
-        return { ...bags, enhancementBag: createEnhancementBag() };
-      case 'superRareBag':
-        return { ...bags, superRareBag: createSuperRareBag() };
-      case 'physicalThreatBag':
-        return { ...bags, physicalThreatBag: createPhysicalThreatBag() };
-      case 'magicalThreatBag':
-        return { ...bags, magicalThreatBag: createMagicalThreatBag() };
-    }
-  }
-  return bags;
+export function getBagEntryTickets(bag: RandomBag, id: number): number {
+  return bag.entries.find((entry) => entry.id === id)?.tickets ?? 0;
 }

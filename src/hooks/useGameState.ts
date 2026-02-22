@@ -40,6 +40,9 @@ import {
   createSuperRareBag,
   createPhysicalThreatBag,
   createMagicalThreatBag,
+  normalizeBagForType,
+  BagType,
+  normalizeGameBags,
 } from '../game/bags';
 import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
@@ -261,6 +264,44 @@ function migrateOldInventory(oldInventory: Item[] | InventoryRecord): InventoryR
   return newInventory;
 }
 
+
+function migrateLegacyBag(
+  rawBag: unknown,
+  fallbackFactory: () => ReturnType<typeof createCommonRewardBag>,
+  bagType: BagType
+) {
+  if (!rawBag || typeof rawBag !== 'object') {
+    return normalizeBagForType(fallbackFactory(), bagType);
+  }
+
+  const bag = rawBag as { entries?: unknown; tickets?: unknown };
+  if (Array.isArray(bag.entries)) {
+    return normalizeBagForType({
+      entries: bag.entries
+        .filter((entry): entry is { id: unknown; tickets: unknown } => Boolean(entry) && typeof entry === 'object' && 'id' in entry && 'tickets' in entry)
+        .map((entry) => ({
+          id: typeof entry.id === 'number' ? entry.id : 0,
+          tickets: Math.max(0, Math.floor(typeof entry.tickets === 'number' ? entry.tickets : 0)),
+        })),
+    }, bagType);
+  }
+
+  if (Array.isArray(bag.tickets)) {
+    const counter = new Map<number, number>();
+    for (const ticket of bag.tickets) {
+      if (typeof ticket !== 'number') continue;
+      counter.set(ticket, (counter.get(ticket) ?? 0) + 1);
+    }
+    return normalizeBagForType({
+      entries: Array.from(counter.entries())
+        .sort((a, b) => a[0] - b[0])
+        .map(([id, tickets]) => ({ id, tickets })),
+    }, bagType);
+  }
+
+  return normalizeBagForType(fallbackFactory(), bagType);
+}
+
 function loadSavedState(): GameState | null {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -269,9 +310,17 @@ function loadSavedState(): GameState | null {
       // Validate it has required properties
       if (parsed.parties && parsed.bags && parsed.buildNumber) {
 
-        if (!parsed.bags.uncommonRewardBag) parsed.bags.uncommonRewardBag = createUncommonRewardBag();
-        if (!parsed.bags.rareRewardBag) parsed.bags.rareRewardBag = createRareRewardBag();
-        if (!parsed.bags.mythicRewardBag) parsed.bags.mythicRewardBag = createMythicRewardBag();
+        parsed.bags = normalizeGameBags({
+          commonRewardBag: migrateLegacyBag(parsed.bags.commonRewardBag, createCommonRewardBag, 'commonRewardBag'),
+          commonEnhancementBag: migrateLegacyBag(parsed.bags.commonEnhancementBag, createCommonEnhancementBag, 'commonEnhancementBag'),
+          uncommonRewardBag: migrateLegacyBag(parsed.bags.uncommonRewardBag, createUncommonRewardBag, 'uncommonRewardBag'),
+          rareRewardBag: migrateLegacyBag(parsed.bags.rareRewardBag, createRareRewardBag, 'rareRewardBag'),
+          mythicRewardBag: migrateLegacyBag(parsed.bags.mythicRewardBag, createMythicRewardBag, 'mythicRewardBag'),
+          enhancementBag: migrateLegacyBag(parsed.bags.enhancementBag, createEnhancementBag, 'enhancementBag'),
+          superRareBag: migrateLegacyBag(parsed.bags.superRareBag, createSuperRareBag, 'superRareBag'),
+          physicalThreatBag: migrateLegacyBag(parsed.bags.physicalThreatBag, createPhysicalThreatBag, 'physicalThreatBag'),
+          magicalThreatBag: migrateLegacyBag(parsed.bags.magicalThreatBag, createMagicalThreatBag, 'magicalThreatBag'),
+        });
 
         if (!parsed.global) {
           const firstParty = parsed.parties?.[0];
@@ -1773,8 +1822,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'IMPORT_GAME_STATE': {
+      const hydrated = hydrateGameState(action.state);
       return {
-        ...hydrateGameState(action.state),
+        ...hydrated,
+        bags: normalizeGameBags(hydrated.bags),
         buildNumber: BUILD_NUMBER,
       };
     }
