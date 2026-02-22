@@ -2681,26 +2681,27 @@ function PartyTab({
                 }
 
                 const baseDecay = 0.90 + getEffectiveAccuracyBonus(stats.accuracyBonus, stats.abilities);
+                const decayText = baseDecay.toFixed(3);
                 const hasPhysicalAttacks = stats.rangedNoA > 0 || stats.meleeNoA > 0;
                 if (hasPhysicalAttacks) {
                   offenseLines.push({
                     key: 'physical-accuracy',
-                    text: `物理命中率: ${Math.round(stats.accuracyPotency * 100)}% (減衰: x${baseDecay.toFixed(2)})`,
+                    text: `物理命中率: ${Math.round(stats.accuracyPotency * 100)}% (減衰: x${decayText})`,
                     helpTitle: '物理命中率',
                     helpLines: [
                       `物理命中率: ${Math.round(stats.accuracyPotency * 100)}% ※初回の命中率`,
-                      `命中減衰率: x${baseDecay.toFixed(2)} ※2回目以降の命中率にはこの値が掛かります`,
+                      `命中減衰率: x${decayText} ※2回目以降の命中率にはこの値が掛かります`,
                     ],
                   });
                 }
                 if (hasMagical) {
                   offenseLines.push({
                     key: 'magical-accuracy',
-                    text: `魔法命中率: 100% (減衰: x${baseDecay.toFixed(2)})`,
+                    text: `魔法命中率: 100% (減衰: x${decayText})`,
                     helpTitle: '魔法命中率',
                     helpLines: [
                       '魔法命中率: 100% ※初回の命中率',
-                      `命中減衰率: x${baseDecay.toFixed(2)} ※2回目以降の命中率にはこの値が掛かります`,
+                      `命中減衰率: x${decayText} ※2回目以降の命中率にはこの値が掛かります`,
                     ],
                   });
                 }
@@ -5104,7 +5105,7 @@ function SettingTab({
                             const hasMeleeAttack = hasEnemyAttack(displayEnemy.meleeAttack, displayEnemy.meleeNoA);
                             const hasMagicalAttack = hasEnemyAttack(displayEnemy.magicalAttack, displayEnemy.magicalNoA);
                             const hasPhysicalAttack = hasRangedAttack || hasMeleeAttack;
-                            const decay = (0.90 + displayEnemy.accuracyBonus).toFixed(2);
+                            const decay = (0.90 + displayEnemy.accuracyBonus).toFixed(3);
 
                             const offenseRows: string[] = [];
                             if (hasRangedAttack) {
