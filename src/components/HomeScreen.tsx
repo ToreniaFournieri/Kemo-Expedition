@@ -13,7 +13,7 @@ import { applyEnemyEncounterScaling } from '../game/enemyScaling';
 import { DEITY_OPTIONS, getDeityEffectDescription, getDeityRank, getNextDonationThreshold, normalizeDeityName } from '../game/deity';
 import { LEVEL_EXP } from '../game/partyLevel';
 import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../game/environment';
-import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, SHOP_REFRESH_PRICE } from '../game/shop';
+import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, SHOP_REFRESH_PRICE, getNextShopRefreshDate, countElapsedShopRefreshes } from '../game/shop';
 import { getBaseMultiplier } from '../game/baseMultiplier';
 import { computeCharacterStats } from '../game/characterComputation';
 import { serializeGameState } from '../game/saveCodec';
@@ -1601,6 +1601,8 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             gold={state.global.gold}
             shopPurchases={state.global.shopPurchases}
             shopRefreshCounts={state.global.shopRefreshCounts}
+            shopIntimacy={state.global.shopIntimacy}
+            shopIntimacyLastDecayAt={state.global.shopIntimacyLastDecayAt}
             onSellStack={actions.sellStack}
             onSetVariantStatus={actions.setVariantStatus}
             onBuyShopItem={actions.buyShopItem}
@@ -3635,6 +3637,8 @@ function BaseTab({
   gold,
   shopPurchases,
   shopRefreshCounts,
+  shopIntimacy,
+  shopIntimacyLastDecayAt,
   onSellStack,
   onSetVariantStatus,
   onBuyShopItem,
@@ -3647,6 +3651,8 @@ function BaseTab({
   gold: number;
   shopPurchases: Record<string, number[]>;
   shopRefreshCounts: Record<string, number>;
+  shopIntimacy: number;
+  shopIntimacyLastDecayAt: number;
   onSellStack: (variantKey: string) => void;
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
   onBuyShopItem: (itemId: number) => void;
@@ -3698,6 +3704,8 @@ function BaseTab({
           parties={parties}
           shopPurchases={shopPurchases}
           shopRefreshCounts={shopRefreshCounts}
+          shopIntimacy={shopIntimacy}
+          shopIntimacyLastDecayAt={shopIntimacyLastDecayAt}
           onBuyShopItem={onBuyShopItem}
           onRefreshShopLineup={onRefreshShopLineup}
         />
@@ -3713,6 +3721,8 @@ function ShopTab({
   parties,
   shopPurchases,
   shopRefreshCounts,
+  shopIntimacy,
+  shopIntimacyLastDecayAt,
   onBuyShopItem,
   onRefreshShopLineup,
 }: {
@@ -3720,22 +3730,25 @@ function ShopTab({
   parties: Party[];
   shopPurchases: Record<string, number[]>;
   shopRefreshCounts: Record<string, number>;
+  shopIntimacy: number;
+  shopIntimacyLastDecayAt: number;
   onBuyShopItem: (itemId: number) => void;
   onRefreshShopLineup: () => void;
 }) {
   const mustelidRace = RACES.find((race) => race.id === 'mustelid');
   const now = new Date();
-  const minutesToRefresh = 60 - now.getMinutes();
+  const elapsedRefreshes = countElapsedShopRefreshes(shopIntimacyLastDecayAt, now);
+  const effectiveIntimacy = Math.max(0, Math.floor(shopIntimacy * (0.9 ** elapsedRefreshes)));
+  const nextRefreshDate = getNextShopRefreshDate(now);
+  const minutesToRefresh = Math.max(1, Math.ceil((nextRefreshDate.getTime() - now.getTime()) / 60000));
   const hourKey = getShopHourKey(now);
   const refreshCount = shopRefreshCounts[hourKey] ?? 0;
-  const highestTierReached = DUNGEONS.reduce((highestId, dungeon) => {
-    if (dungeon.id === 1) return 1;
-
-    const isUnlockedGlobally = parties.some((party) => (
-      party.selectedDungeonId >= dungeon.id || isLootGateUnlocked(party, getEntryGateKey(dungeon.id))
+  const highestDefeatedBossTier = DUNGEONS.reduce((highestTier, dungeon) => {
+    const nextDungeonId = dungeon.id + 1;
+    const hasBeatenBoss = parties.some((party) => (
+      party.selectedDungeonId >= nextDungeonId || isLootGateUnlocked(party, getEntryGateKey(nextDungeonId))
     ));
-
-    return isUnlockedGlobally ? Math.max(highestId, dungeon.id) : highestId;
+    return hasBeatenBoss ? Math.max(highestTier, dungeon.id) : highestTier;
   }, 1);
   const lineupSeed = getShopLineupSeed(now, refreshCount);
   const stockKey = getShopStockKey(now, refreshCount);
@@ -3746,43 +3759,71 @@ function ShopTab({
     return <div className="text-sm text-gray-600">お店の準備中です。</div>;
   }
 
+  const intimacyDialogue = effectiveIntimacy >= 80
+    ? '「待ってたよ。あんたには特別な品も回してるんだ。……他の客には内緒だぜ？」'
+    : effectiveIntimacy >= 40
+      ? '「やぁ。奥の棚も見ていいよ。運が良けりゃ掘り出し物があるかもな。」'
+      : effectiveIntimacy >= 20
+        ? '「お、また来たのかい。うちのガラクタも、見ていくうちに味が出てくるもんさ。」'
+        : '「ひょっとしたらいいお宝が眠ってるかもしれないよ？……おっと、獲物には触らんといてな。」';
+
+  const rarityPool: number[] = effectiveIntimacy >= 80
+    ? [400, 300, 300, 200, 200]
+    : effectiveIntimacy >= 40
+      ? [300, 200, 200, 100, 100]
+      : effectiveIntimacy >= 20
+        ? [200, 100, 100, 100, 100]
+        : [100, 100, 100, 100, 100];
+
   const seededTierForIndex = (index: number): number => {
     const x = Math.sin(lineupSeed + (index + 1) * 97) * 10000;
     const normalized = x - Math.floor(x);
-    return Math.floor(normalized * highestTierReached) + 1;
+    return Math.floor(normalized * highestDefeatedBossTier) + 1;
   };
 
   const shopItems = shopCategories.map((category, index) => {
-      const tier = seededTierForIndex(index);
-      const categoryIndex = ITEM_CATEGORY_ORDER.indexOf(category);
-      const baseItemId = tier * 1000 + 100 + categoryIndex + 1;
-      const baseItem = ITEMS.find((item) => item.id === baseItemId);
-      if (!baseItem) return null;
+    const tier = seededTierForIndex(index);
+    const rarityBase = rarityPool[index] ?? 100;
+    const categoryIndex = ITEM_CATEGORY_ORDER.indexOf(category);
+    const baseItemId = tier * 1000 + rarityBase + categoryIndex + 1;
+    const baseItem = ITEMS.find((item) => item.id === baseItemId);
+    if (!baseItem) return null;
 
-      const item: Item = { ...baseItem, enhancement: 0, superRare: 0 };
-      const price = getShopItemPrice(baseItemId);
-      const isSoldOut = soldOutItemIds.includes(baseItemId);
-      const canBuy = !isSoldOut && gold >= price;
+    const item: Item = { ...baseItem, enhancement: 0, superRare: 0 };
+    const price = getShopItemPrice(baseItemId);
+    const isSoldOut = soldOutItemIds.includes(baseItemId);
+    const canBuy = !isSoldOut && gold >= price;
+    const rarity = getItemRarityById(baseItemId);
+    const rarityClass = isSoldOut
+      ? 'text-gray-400'
+      : rarity === 'mythic'
+        ? 'text-orange-700'
+        : rarity === 'rare'
+          ? 'text-blue-600'
+          : rarity === 'uncommon'
+            ? 'font-bold text-gray-900'
+            : 'text-gray-900 font-normal';
 
-      return {
-        key: `${baseItemId}-${index}`,
-        itemId: baseItemId,
-        item,
-        price,
-        isSoldOut,
-        canBuy,
-      };
-    }).filter((entry): entry is NonNullable<typeof entry> => entry !== null);
+    return {
+      key: `${baseItemId}-${index}`,
+      itemId: baseItemId,
+      item,
+      price,
+      isSoldOut,
+      canBuy,
+      rarityClass,
+    };
+  }).filter((entry): entry is NonNullable<typeof entry> => entry !== null);
 
   return (
     <div className="space-y-4">
       <div className="rounded border border-gray-200 bg-white p-3">
         <div className="text-sm font-semibold text-sub">フェリスのガラクタ屋</div>
         <div className="mt-2 flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3">
+          <div className="grid flex-1 grid-cols-[auto,1fr] items-start gap-3">
             <RaceIcon race={mustelidRace} className="h-10 w-10" />
             <p className="text-sm text-gray-700">
-              ひょっとしたらいいお宝が眠ってるかもしれないよ？買うまで商品に触らないでね。 (商品洗替まであと {minutesToRefresh} 分)
+              {intimacyDialogue}（商品洗替まであと {minutesToRefresh} 分）
             </p>
           </div>
           <button
@@ -3805,7 +3846,7 @@ function ShopTab({
           <div key={entry.key} className="rounded border border-gray-200 bg-white px-3 py-2">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <div className={`truncate text-sm font-medium ${entry.isSoldOut ? 'text-gray-400' : 'text-gray-900'}`}>
+                <div className={`truncate text-sm ${entry.rarityClass}`}>
                   ?{entry.item.name} {entry.isSoldOut ? 'x0' : 'x1'}
                 </div>
                 <div className={`text-xs ${entry.isSoldOut ? 'text-gray-400' : 'text-gray-500'}`}>{formatNumber(entry.price)}G</div>
@@ -3833,7 +3874,6 @@ function ShopTab({
     </div>
   );
 }
-
 function InventoryTab({
   inventory,
   parties,

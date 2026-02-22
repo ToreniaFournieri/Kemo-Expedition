@@ -306,6 +306,8 @@ export interface GlobalState {
   deityDonations: Record<string, number>;
   shopPurchases: Record<string, number[]>;
   shopRefreshCounts: Record<string, number>;
+  shopIntimacy: number;
+  shopIntimacyLastDecayAt: number;
 }
 
 // Computed party stats for battle
