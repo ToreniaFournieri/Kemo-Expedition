@@ -1348,7 +1348,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
           ? getItemDisplayName(purchasedVariant.item)
           : `${ITEMS.find((item) => item.id === itemId)?.name ?? '不明な品'} x1`;
 
-        actions.addNotification(`お店:${purchasedName}を購入した！`, 'normal', 'item', true);
+        actions.addNotification(`店から ${purchasedName} を購入した！`, 'normal', 'item', true);
       }
     }
 
@@ -3487,7 +3487,7 @@ function ExpeditionTab({
                             <div className="flex justify-between items-center">
                               <span className="font-medium">{roomLabel}: {renderEnemyNameWithMutedClass(entry.enemyName)}</span>
                               <span className="flex items-center gap-2">
-                                <span className={entry.gateInfo ? 'text-gray-500 font-medium' : entry.outcome === 'victory' ? 'text-sub font-medium' : entry.outcome === 'defeat' ? 'text-accent font-medium' : 'text-yellow-600 font-medium'}>
+                                <span className={entry.gateInfo ? 'text-gray-500 font-medium' : entry.outcome === 'victory' ? 'text-sub font-medium' : entry.outcome === 'defeat' ? 'text-accent font-medium' : 'text-accent font-medium'}>
                                   {entry.gateInfo ? '未到達' : entry.outcome === 'victory' ? '勝利' : entry.outcome === 'defeat' ? '敗北' : '引分'}
                                 </span>
                                 <span className={`transform transition-transform ${isRoomExpanded ? 'rotate-180' : ''}`}>▼</span>
@@ -3770,7 +3770,7 @@ function ShopTab({
             disabled={gold < SHOP_REFRESH_PRICE}
             className={`shrink-0 rounded px-3 py-1 text-xs font-semibold ${
               gold >= SHOP_REFRESH_PRICE
-                ? 'bg-amber-500 text-white hover:bg-amber-600'
+                ? 'bg-accent text-white hover:bg-accent/90'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             }`}
           >
@@ -4361,7 +4361,7 @@ function DiaryTab({
                               <span className={
                                 entry.gateInfo ? 'text-gray-500 font-medium' :
                                 entry.outcome === 'victory' ? 'text-sub font-medium' :
-                                entry.outcome === 'defeat' ? 'text-accent font-medium' : 'text-yellow-600 font-medium'
+                                entry.outcome === 'defeat' ? 'text-accent font-medium' : 'text-accent font-medium'
                               }>
                                 {entry.gateInfo ? '未到達' :
                                  entry.outcome === 'victory' ? '勝利' :
