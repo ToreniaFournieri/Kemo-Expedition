@@ -3470,14 +3470,16 @@ function ExpeditionTab({
                                 const isPhaseAction = log.actor !== 'deity' && log.actor !== 'effect';
                                 const previousLog = j > 0 ? entry.details[j - 1] : undefined;
                                 const isStealthEffectLog = log.actor === 'effect' && (log.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || log.action.includes('への攻撃はすべて幻だった！'));
+                                const isCounterNegationEffectLog = log.actor === 'effect' && log.action.includes('反撃無効化により');
                                 const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || previousLog.action.includes('への攻撃はすべて幻だった！'));
+                                const previousWasCounterNegationEffectLog = !!previousLog && previousLog.actor === 'effect' && previousLog.action.includes('反撃無効化により');
                                 const previousWasPhaseAction = !!previousLog && (previousLog.actor !== 'deity' && previousLog.actor !== 'effect');
-                                const previousContinuesCurrentPhase = !!previousLog && (previousWasPhaseAction || previousWasStealthEffectLog);
+                                const previousContinuesCurrentPhase = !!previousLog && (previousWasPhaseAction || previousWasStealthEffectLog || previousWasCounterNegationEffectLog);
                                 const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousContinuesCurrentPhase || previousLog.phase !== log.phase);
                                 const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
                                 const phaseLabel = isPhaseAction
                                   ? (log.isCounter ? '-' : `${log.initiativeRoll ?? '?'}`)
-                                  : log.actor === 'deity' ? '末' : isStealthEffectLog ? '-' : '効';
+                                  : log.actor === 'deity' ? '末' : (isStealthEffectLog || isCounterNegationEffectLog) ? '-' : '効';
                                 const phaseHeader = log.phase === 'long'
                                   ? '遠距離攻撃フェーズ'
                                   : log.phase === 'mid'
@@ -4289,14 +4291,16 @@ function DiaryTab({
                               const isPhaseAction = battleLog.actor !== 'deity' && battleLog.actor !== 'effect';
                               const previousLog = j > 0 ? entry.details[j - 1] : undefined;
                               const isStealthEffectLog = battleLog.actor === 'effect' && (battleLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || battleLog.action.includes('への攻撃はすべて幻だった！'));
+                              const isCounterNegationEffectLog = battleLog.actor === 'effect' && battleLog.action.includes('反撃無効化により');
                               const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || previousLog.action.includes('への攻撃はすべて幻だった！'));
+                              const previousWasCounterNegationEffectLog = !!previousLog && previousLog.actor === 'effect' && previousLog.action.includes('反撃無効化により');
                               const previousWasPhaseAction = !!previousLog && (previousLog.actor !== 'deity' && previousLog.actor !== 'effect');
-                              const previousContinuesCurrentPhase = !!previousLog && (previousWasPhaseAction || previousWasStealthEffectLog);
+                              const previousContinuesCurrentPhase = !!previousLog && (previousWasPhaseAction || previousWasStealthEffectLog || previousWasCounterNegationEffectLog);
                               const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousContinuesCurrentPhase || previousLog.phase !== battleLog.phase);
                               const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
                               const phaseLabel = isPhaseAction
                                 ? (battleLog.isCounter ? '-' : `${battleLog.initiativeRoll ?? '?'}`)
-                                : battleLog.actor === 'deity' ? '末' : isStealthEffectLog ? '-' : '効';
+                                : battleLog.actor === 'deity' ? '末' : (isStealthEffectLog || isCounterNegationEffectLog) ? '-' : '効';
                               const phaseHeader = battleLog.phase === 'long'
                                 ? '遠距離攻撃フェーズ'
                                 : battleLog.phase === 'mid'
