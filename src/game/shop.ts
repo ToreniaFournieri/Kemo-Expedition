@@ -1,5 +1,5 @@
 const SHOP_BASE_PRICE = 100;
-export const SHOP_REFRESH_PRICE = 1000;
+export const SHOP_REFRESH_PRICE = 10;
 const SHOP_REFRESH_HOURS = [2, 10, 18] as const;
 
 function getRefreshDateAt(base: Date, hour: number): Date {
