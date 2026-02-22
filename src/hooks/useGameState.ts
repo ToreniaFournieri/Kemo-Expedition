@@ -72,7 +72,7 @@ import {
   getShopItemPrice,
   getShopHourKey,
   getShopStockKey,
-  SHOP_REFRESH_PRICE,
+  getShopRefreshPrice,
   countElapsedShopRefreshes,
   getCurrentShopRefreshDate,
 } from '../game/shop';
@@ -102,6 +102,7 @@ function applyShopIntimacyDecay(global: GameState['global'], now: Date): GameSta
   return {
     ...global,
     shopIntimacy: decayedIntimacy,
+    shopRefreshCounts: {},
     shopIntimacyLastDecayAt: getCurrentShopRefreshDate(now).getTime(),
   };
 }
@@ -1713,16 +1714,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'REFRESH_SHOP_LINEUP': {
       const now = new Date();
       const globalState = applyShopIntimacyDecay(state.global, now);
-      if (globalState.gold < SHOP_REFRESH_PRICE) return state;
-
       const hourKey = getShopHourKey(now);
       const currentRefreshCount = globalState.shopRefreshCounts[hourKey] ?? 0;
+      const refreshPrice = getShopRefreshPrice(currentRefreshCount);
+      if (globalState.gold < refreshPrice) return state;
 
       return {
         ...state,
         global: {
           ...globalState,
-          gold: globalState.gold - SHOP_REFRESH_PRICE,
+          gold: globalState.gold - refreshPrice,
           shopIntimacy: Math.min(99, globalState.shopIntimacy + 2),
           shopRefreshCounts: {
             ...globalState.shopRefreshCounts,

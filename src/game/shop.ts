@@ -1,5 +1,5 @@
 const SHOP_BASE_PRICE = 100;
-export const SHOP_REFRESH_PRICE = 10;
+const SHOP_REFRESH_BASE_PRICE = 2000;
 const SHOP_REFRESH_HOURS = [2, 10, 18] as const;
 
 function getRefreshDateAt(base: Date, hour: number): Date {
@@ -57,6 +57,10 @@ export function getShopLineupSeed(now: Date, refreshCount: number): number {
 
 export function getShopStockKey(now: Date, refreshCount: number): string {
   return `${getShopHourKey(now)}-${Math.max(0, refreshCount)}`;
+}
+
+export function getShopRefreshPrice(refreshCount: number): number {
+  return SHOP_REFRESH_BASE_PRICE * (1 + Math.max(0, refreshCount));
 }
 
 export function getShopItemPrice(itemId: number): number {

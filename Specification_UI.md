@@ -343,7 +343,7 @@ PT2...
 - **Column 1:** Shop owner icon (Mustelid icon)  
 - **Column 2:** Dialogue + countdown  
   - 表示例: （商品洗替まであと 34 分）
-- **Column 3:** [有償洗替] X,XXXG
+- **Column 3:** 有償洗替 X,XXXG
 
 **Dialogue by intimacy**
 | Intimacy | Dialogue |
