@@ -213,7 +213,13 @@ d. bonus (stackable)
   - deity // replacing deity reset character equipment slots. 
   - characters slots
 
-**Bag Randomization** There are `g.common_reward_bag`, `g.common_enhancement_bag`, `g.uncommon_reward_bag`, `g.rare_reward_bag`, `g.mythic_reward_bag`, `g.enhancement_bag`, `g.superRare_bag`, and `g.threat_weight_bag` which control probable randomness.
+**Bag Randomization (indivisual)**
+  - **Threat weight:** 
+    - Populate `g.physical_threat_weight_bag` with tickets: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 2,2,2,2,2,2,2,2, 3,3,3,3, 4,4, 5, 6]. 
+    - Populate `g.magical_threat_weight_bag` with tickets: [1,2,3,4,5,6].
+  - If a bag is empty or explicitly reset the bag, initialize it.
+
+**Bag Randomization (complessed)** There are `g.common_reward_bag`, `g.common_enhancement_bag`, `g.uncommon_reward_bag`, `g.rare_reward_bag`, `g.mythic_reward_bag`, `g.enhancement_bag`, and `g.superRare_bag` which control probable randomness.
 
   - **Weighted Random Bag (Count-Based Ticket Rule)**
     - Each bag stores counts per entry, not individual tickets.
@@ -391,7 +397,7 @@ d. bonus (stackable)
 
 - `g.superRare_bag` table
 
-| value | tickets | multiplier |
+| ID | tickets | multiplier |
 |-----|------|-----|
 | 0  | 399920 | x1.0 |
 | 1~80 | 1 | x2.0 |
