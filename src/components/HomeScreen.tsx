@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, type ChangeEvent, type Dispatch, type MouseEvent, type SetStateAction } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, getVariantKey } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { DUNGEONS } from '../data/dungeons';
 import { RACES } from '../data/races';
@@ -1011,6 +1011,8 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
 
   const currentParty = state.parties[state.selectedPartyIndex];
   const prevPartyLogsRef = useRef(state.parties.map((party) => party.lastExpeditionLog));
+  const prevShopPurchasesRef = useRef(state.global.shopPurchases);
+  const prevInventoryRef = useRef(state.global.inventory);
   const pendingNotificationTimersRef = useRef<Record<number, number>>({});
   const hasHydratedAfkRef = useRef(false);
   const pendingAfkSimulationRef = useRef(true);
@@ -1324,6 +1326,33 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       window.clearTimeout(timerId);
     });
   }, []);
+
+  useEffect(() => {
+    const now = new Date();
+    const hourKey = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}`;
+    const previousHourPurchases = new Set(prevShopPurchasesRef.current[hourKey] ?? []);
+    const currentHourPurchases = state.global.shopPurchases[hourKey] ?? [];
+    const newlyPurchasedItemIds = currentHourPurchases.filter((itemId) => !previousHourPurchases.has(itemId));
+
+    if (newlyPurchasedItemIds.length > 0) {
+      for (const itemId of newlyPurchasedItemIds) {
+        const purchasedVariant = Object.values(state.global.inventory).find((variant) => {
+          if (variant.item.id !== itemId) return false;
+          const previousCount = prevInventoryRef.current[getVariantKey(variant.item)]?.count ?? 0;
+          return variant.count > previousCount;
+        });
+
+        const purchasedName = purchasedVariant
+          ? getItemDisplayName(purchasedVariant.item)
+          : `${ITEMS.find((item) => item.id === itemId)?.name ?? '不明な品'} x1`;
+
+        actions.addNotification(`お店:${purchasedName}を購入した！`, 'normal', 'item', true);
+      }
+    }
+
+    prevShopPurchasesRef.current = state.global.shopPurchases;
+    prevInventoryRef.current = state.global.inventory;
+  }, [state.global.shopPurchases, state.global.inventory, actions]);
 
   useEffect(() => {
     const currentScrollTop = tabScrollPositionsRef.current[activeTab] ?? 0;
@@ -3663,7 +3692,15 @@ function ShopTab({
   const mustelidRace = RACES.find((race) => race.id === 'mustelid');
   const now = new Date();
   const minutesToRefresh = 59 - now.getMinutes();
-  const highestTierReached = Math.max(1, ...parties.map((party) => Math.max(1, party.selectedDungeonId)));
+  const highestTierReached = DUNGEONS.reduce((highestId, dungeon) => {
+    if (dungeon.id === 1) return 1;
+
+    const isUnlockedGlobally = parties.some((party) => (
+      party.selectedDungeonId >= dungeon.id || isLootGateUnlocked(party, getEntryGateKey(dungeon.id))
+    ));
+
+    return isUnlockedGlobally ? Math.max(highestId, dungeon.id) : highestId;
+  }, 1);
   const hourlySeed = Number(`${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}`);
   const shopCategories: ItemCategory[] = ['shield', 'armor', 'sword', 'wand', 'grimoire'];
   const soldOutItemIds = shopPurchases[String(hourlySeed)] ?? [];
