@@ -350,6 +350,16 @@ PT2...
   - **Stock:** 5 items total (one per item type).
   - **Refresh cycle:** Updates every hour (lineup refreshes at **:00** each hour).
 
+  - Price (per item, by tier)
+    - Tier 1: 100G  
+    - Tier 2: 200G  
+    - Tier 3: 400G  
+	- Tier 4: 800G  
+	- Tier 5: 1,600G  
+	- Tier 6: 3,200G  
+	- Tier 7: 6,400G  
+	- Tier 8: 12,800G  
+
   - current version: **debug mode: OFF**, no debug items bellow:
 	- Dialogue: "とても珍しい品物が揃ってるよ。オラよくわかんねぇけど、売主がデバッグ用にって言ってた。"
 	  - The shop sells all 80 Super Rare title variants of a single base item.
