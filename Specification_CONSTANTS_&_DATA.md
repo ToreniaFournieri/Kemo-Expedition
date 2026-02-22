@@ -215,6 +215,20 @@ d. bonus (stackable)
 
 **Bag Randomization** There are `g.common_reward_bag`, `g.common_enhancement_bag`, `g.uncommon_reward_bag`, `g.rare_reward_bag`, `g.mythic_reward_bag`, `g.enhancement_bag`, `g.superRare_bag`, and `g.threat_weight_bag` which control probable randomness.
 
+  - **Weighted Random Bag (Count-Based Ticket Rule)**
+    - Each bag stores counts per entry, not individual tickets.
+	  - Example: g.common_reward_bag = { { value: 1, tickets: 10 }, { value: 0, tickets: 90 } }
+
+    - `f.pop_from_weighted_bag`(bag_key: g.*)
+      - Get bag by bag_key.
+      - Compute total_tickets = sum(entry.tickets where tickets > 0).
+      - Roll random = random_int(1, total_tickets) (inclusive).
+      - Select the entry whose cumulative ticket range contains random.
+      - Return entry.value.
+      - Decrement the selected entry’s tickets -= 1
+      - If total_tickets == 0 or the bag is explicitly reset, reinitialize the bag to its default state.
+
+
 
 **reward list**
 
@@ -224,6 +238,7 @@ d. bonus (stackable)
 |-----|---------|------|
 | 0 | no item | 90 |
 | 1 | win | 10 |
+
 
 - `g.uncommon_reward_bag` table
  
