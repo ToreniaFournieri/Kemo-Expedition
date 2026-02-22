@@ -512,6 +512,9 @@ function createEnemyFromTemplate(
   const classBase = ENEMY_CLASS_BASES[enemyClass];
   const enemyTypeExpMult = type === 'elite' ? 2.0 : type === 'boss' ? 5.0 : 1.0;
   const enemyAbilities = Array.from(new Set([...classBase.abilities, ...extraAbilities]));
+  const hasCyborgization = enemyAbilities.includes('cyborgization');
+  const accuracyBonus = classBase.accuracyBonus + (hasCyborgization ? 0.03 : 0);
+  const evasionBonus = classBase.evasionBonus + (hasCyborgization ? -0.02 : 0);
 
   // Master enemy data (before expedition/floor multipliers)
   const hp = Math.floor(classBase.hp * template.hpMod);
@@ -541,8 +544,8 @@ function createEnemyFromTemplate(
     name: template.name,
     enemyClass,
     abilities: enemyAbilities,
-    accuracyBonus: classBase.accuracyBonus,
-    evasionBonus: classBase.evasionBonus,
+    accuracyBonus,
+    evasionBonus,
     hp,
     rangedAttack: Math.floor(classBase.rangedAttack * attackScale),
     rangedNoA: classBase.rangedNoA,
