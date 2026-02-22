@@ -1652,25 +1652,22 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         enhancement,
         superRare,
       };
-      const variantKey = getVariantKey(purchasedItem);
-      const existing = state.global.inventory[variantKey];
-      const newInventory = {
-        ...state.global.inventory,
-        [variantKey]: {
-          item: purchasedItem,
-          count: (existing?.count ?? 0) + 1,
-          status: 'owned' as const,
-          isNew: true,
-        },
-      };
+      const currentParty = state.parties[state.selectedPartyIndex];
+      const autoSellMultiplier = getPartyCunningMultiplier(currentParty);
+      const inventoryResult = addItemToInventory(
+        state.global.inventory,
+        purchasedItem,
+        state.global.gold,
+        autoSellMultiplier,
+      );
 
       return {
         ...state,
         bags,
         global: {
           ...state.global,
-          inventory: newInventory,
-          gold: state.global.gold - shopPrice,
+          inventory: inventoryResult.inventory,
+          gold: inventoryResult.gold - shopPrice,
           shopPurchases: {
             ...state.global.shopPurchases,
             [stockKey]: [...soldOutItemIds, action.itemId],

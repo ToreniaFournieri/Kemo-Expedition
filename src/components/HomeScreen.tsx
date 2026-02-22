@@ -1349,9 +1349,24 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
           return variant.count > previousCount;
         });
 
+        const autoSoldVariant = Object.values(state.global.inventory).find((variant) => {
+          if (variant.item.id !== itemId || variant.status !== 'sold') return false;
+          const previousVariant = prevInventoryRef.current[getVariantKey(variant.item)];
+          return previousVariant?.status === 'sold' && previousVariant.count === variant.count;
+        });
+
+        const wasAutoSold = !purchasedVariant && Boolean(autoSoldVariant);
+
         const purchasedName = purchasedVariant
           ? getItemDisplayName(purchasedVariant.item)
-          : `${ITEMS.find((item) => item.id === itemId)?.name ?? '不明な品'} x1`;
+          : autoSoldVariant
+            ? getItemDisplayName(autoSoldVariant.item)
+            : `${ITEMS.find((item) => item.id === itemId)?.name ?? '不明な品'} x1`;
+
+        if (wasAutoSold) {
+          actions.addNotification(`店から ${purchasedName} を購入して失望した(自動売却)`, 'normal', 'item', true);
+          continue;
+        }
 
         actions.addNotification(`店から ${purchasedName} を購入した！`, 'normal', 'item', true);
       }
