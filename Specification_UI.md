@@ -342,7 +342,8 @@ PT2...
 - **Lineup:** 5Tier 1 to Tier X (**up to the highest tier the player has reached**) **Common base items** (one per item type).
 - **Mystery enhancement (same as item drop logic):**
   - When the player selects an item to buy, roll:
-    - 1 ticket from `g.enhancement_bag`
+    - 1 ticket from `g.enhancement_bag`,
+      - If the drawn ticket ID is `0`, redraw until the ticket ID is `>= 1`.
     - 1 ticket from `g.superRare_bag`
   - The resulting enhancement/title is **hidden until purchased** (can become a Super Rare title item).
   - **UI examples:** `?木の盾 x1`, `?木の胸当て x1`
