@@ -3832,7 +3832,7 @@ function ShopTab({
     <div className="space-y-4">
       <div className="rounded border border-gray-200 bg-white p-3">
         <div className="text-sm font-semibold text-sub">フェリスのガラクタ屋</div>
-        <div className="mt-2 flex items-start justify-between gap-3">
+        <div className="mt-2 flex items-center justify-between gap-3">
           <div className="grid flex-1 grid-cols-[auto,1fr] items-start gap-3">
             <RaceIcon race={mustelidRace} className="h-10 w-10 self-center" />
             <div className="space-y-1">
