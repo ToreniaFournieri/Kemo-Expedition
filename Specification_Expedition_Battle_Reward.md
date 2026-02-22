@@ -212,10 +212,10 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
   - Roll: Return Random(0, 1.0) <= chance
  
 
-- **`f.counter`(actor: , opponent: ,phase: ) :** IF (opponent or party members have not `a.null-counter`) and {(actor.`a.counter`1, phase is CLOSE) or (actor.`a.counter`2, phase is (CLOSE or MID)) or (actor.`a.counter`3)}, the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`, and actor.`f.NoA` x 0.5, round up)
+- **`f.counter`(actor: , opponent: ,phase: ) :** IF (opponent or party members have not available `a.null-counter`) and {(actor.`a.counter`1, phase is CLOSE) or (actor.`a.counter`2, phase is (CLOSE or MID)) or (actor.`a.counter`3)}, the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`, and actor.`f.NoA` x 0.5, round up)
     - Counter triggers immediately after damage resolution, regardless of turn order modifiers.
-    - IF actor.`a.counter` and (opponent or party member have `a.null-counter`), displays log like : “巡礼者ブラザの反撃無効化により、二枚爪の黒豹のカウンターは防がれた！”
-    - *note:* if opponent is character, then check party.`a.null-counter`. if at least one party member has `a.null-counter`, nagete the counter attack.
+    - IF actor.`a.counter` and (opponent or party member have available `a.null-counter`), displays log like : “巡礼者ブラザの反撃無効化により、二枚爪の黒豹のカウンターは防がれた！”. Reduce null-counter counter. (note: `a.null-counter`1 can disable once in battle,  `a.null-counter`2 can disable twice in battle. if the null-counter is 0, the `a.null-counter` is disable in this battle. )
+    - *note:* if opponent is character, then check party.`a.null-counter`. if at least one party member has available `a.null-counter`, nagete the counter attack.
 
 - **`f.re-counter`(actor: , opponent: ,phase: ) :** IF actor.`a.re-counter` and (opponent or party members have not `a.null-counter`), the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
   	- `a.re-counter`1:   actor.`f.NoA` x 0.5, round up
