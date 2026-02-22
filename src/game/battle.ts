@@ -369,14 +369,14 @@ function getResonanceBonusPerHit(resonanceLevel: number | undefined): number {
 
 function getResonanceLogText(
   phase: BattlePhase,
-  charStats: ComputedCharacterStats,
+  actorAbilities: Array<{ id: AbilityId; level: number }>,
   successfulHits: number
 ): string {
   if (phase !== 'mid' || successfulHits <= 0) {
     return '';
   }
 
-  const resonance = charStats.abilities.find(a => a.id === 'resonance');
+  const resonance = actorAbilities.find(a => a.id === 'resonance');
   if (!resonance) {
     return '';
   }
@@ -979,11 +979,13 @@ export function executeBattle(
         const runEnemyAttack = (attempts: number, isReAttack = false): void => {
           if (attempts <= 0 || partyHp <= 0 || enemyHp <= 0) return;
 
-          const attacksByTarget = new Map<number, { damage: number; singleDamage: number; hits: number; totalAttempts: number; charStats: ComputedCharacterStats }>();
+          const attacksByTarget = new Map<number, { hitDamages: number[]; totalAttempts: number; charStats: ComputedCharacterStats }>();
           const enemyAccuracyPotency = 1.0;
           const enemyAccuracyBonus = enemy.accuracyBonus;
+          const enemyResonanceLevel = enemy.abilities.includes('resonance') ? 1 : 0;
           // Nth hit is counted per attack sequence; re-attacks/counters do not inherit prior hit decay.
           let enemyHitIndex = 1;
+          let enemySuccessfulHits = 0;
 
           for (let i = 0; i < attempts; i++) {
             const { row: targetRow, newCtx } = getTargetRow(ctx, phase);
@@ -994,7 +996,6 @@ export function executeBattle(
               continue;
             }
 
-            const singleDamage = calculateSingleEnemyAttackDamage(phase, enemy, partyStats, targetCharStats, enemyHp);
             const existing = attacksByTarget.get(targetCharStats.characterId);
             const didHit = hitDetection(
               enemyAccuracyPotency,
@@ -1007,21 +1008,26 @@ export function executeBattle(
             );
             enemyHitIndex += 1;
 
-            if (existing) {
-                existing.totalAttempts += 1;
-                if (didHit) {
-                  existing.hits += 1;
-                }
-              } else {
-                attacksByTarget.set(targetCharStats.characterId, {
-                  damage: 0,
-                  singleDamage,
-                  hits: didHit ? 1 : 0,
-                  totalAttempts: 1,
-                  charStats: targetCharStats,
-                });
-              }
+            const targetAttack = existing ?? {
+              hitDamages: [],
+              totalAttempts: 0,
+              charStats: targetCharStats,
+            };
+            targetAttack.totalAttempts += 1;
+
+            if (didHit) {
+              enemySuccessfulHits += 1;
+              const resonanceAmplifier = phase === 'mid'
+                ? getResonanceAmplifier(enemyResonanceLevel, enemySuccessfulHits)
+                : 1.0;
+              const singleDamage = calculateSingleEnemyAttackDamage(phase, enemy, partyStats, targetCharStats, enemyHp);
+              targetAttack.hitDamages.push(Math.max(1, Math.floor(singleDamage * resonanceAmplifier)));
             }
+
+            if (!existing) {
+              attacksByTarget.set(targetCharStats.characterId, targetAttack);
+            }
+          }
 
           for (const [charId, attack] of attacksByTarget) {
             if (enemyHp <= 0 || partyHp <= 0) break;
@@ -1033,10 +1039,10 @@ export function executeBattle(
 
             const targetName = targetChar?.name ?? '???';
             let appliedHits = 0;
+            let appliedDamage = 0;
             let avoidedByStealth = false;
             const avoidedByPartyIllusion = isPartyIllusionActive(phase, characterStats, consumedPartyIllusion);
             const avoidedByIllusion = avoidedByPartyIllusion || isIllusionActive(phase, attack.charStats, consumedIllusionCharacterIds);
-            attack.damage = 0;
 
             if (avoidedByIllusion) {
               if (avoidedByPartyIllusion) {
@@ -1045,16 +1051,21 @@ export function executeBattle(
                 consumedIllusionCharacterIds.add(charId);
               }
             } else {
-              for (let i = 0; i < attack.hits; i++) {
+              for (const hitDamage of attack.hitDamages) {
                 if (isStealthActive(attack.charStats, partyHp, partyStats.hp)) {
                   avoidedByStealth = true;
                   continue;
                 }
                 appliedHits += 1;
-                attack.damage += attack.singleDamage;
-                partyHp -= attack.singleDamage;
+                appliedDamage += hitDamage;
+                partyHp -= hitDamage;
               }
             }
+
+            const resonanceActor = enemyResonanceLevel > 0
+              ? { abilities: [{ id: 'resonance' as const, level: enemyResonanceLevel }] }
+              : { abilities: [] };
+            const enemyResonanceLogText = getResonanceLogText(phase, resonanceActor.abilities, appliedHits);
 
             const triggeredResurrect = (
               partyHp <= 0
@@ -1075,8 +1086,8 @@ export function executeBattle(
               phase,
               initiativeRoll: turn.roll,
               actor: 'enemy',
-              action: `${targetName} に${attackName}！`,
-              damage: attack.damage > 0 ? attack.damage : undefined,
+              action: `${targetName} に${attackName}！${enemyResonanceLogText}`,
+              damage: appliedDamage > 0 ? appliedDamage : undefined,
               hits: appliedHits,
               totalAttempts: attack.totalAttempts,
               wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
@@ -1114,7 +1125,7 @@ export function executeBattle(
 
             if (
               phase === 'mid'
-              && attack.damage > 0
+              && appliedDamage > 0
               && getMagicalCounterNoAMultiplier(attack.charStats) > 0
               && !enemy.abilities.includes('null_counter')
             ) {
@@ -1122,7 +1133,7 @@ export function executeBattle(
             }
 
             if (partyHp <= 0 || enemyHp <= 0) continue;
-            if (attack.damage <= 0 || !hasCounter(attack.charStats, phase)) continue;
+            if (appliedDamage <= 0 || !hasCounter(attack.charStats, phase)) continue;
 
             if (enemy.abilities.includes('null_counter')) {
               log.push({
@@ -1152,7 +1163,7 @@ export function executeBattle(
             }
 
             const counterType = phase === 'mid' ? '魔法反撃' : '反撃';
-            const resonanceLogText = getResonanceLogText(phase, attack.charStats, counterResult.hits);
+            const resonanceLogText = getResonanceLogText(phase, attack.charStats.abilities, counterResult.hits);
             const characterCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(attack.charStats, partyHp, partyStats.hp));
             const characterCounterMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(attack.charStats, partyHp, partyStats.hp));
             log.push({
@@ -1303,7 +1314,7 @@ export function executeBattle(
               enemyHp -= magicalCounterResult.damage;
             }
 
-            const resonanceLogText = getResonanceLogText('mid', magicalCounterStats, magicalCounterResult.hits);
+            const resonanceLogText = getResonanceLogText('mid', magicalCounterStats.abilities, magicalCounterResult.hits);
             const magicalCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(magicalCounterStats, partyHp, partyStats.hp));
             const magicalCounterMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(magicalCounterStats, partyHp, partyStats.hp));
             log.push({
@@ -1360,7 +1371,7 @@ export function executeBattle(
         const attackType = isReAttack
           ? (phase === 'mid' ? '魔法連撃' : '連撃')
           : (phase === 'mid' ? '魔法攻撃' : '攻撃');
-        const resonanceLogText = getResonanceLogText(phase, cs, result.hits);
+        const resonanceLogText = getResonanceLogText(phase, cs.abilities, result.hits);
         const characterAttackRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(cs, partyHp, partyStats.hp));
         const characterAttackMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(cs, partyHp, partyStats.hp));
         const antagonismTargetName = antagonismTarget

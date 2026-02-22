@@ -3532,7 +3532,7 @@ function ExpeditionTab({
                                   momentumDisplay,
                                 ].filter(Boolean);
                                 const compactHitDisplay = hitDisplay && extraSegments.length > 0
-                                  ? `(${hits}/${totalAttempts}回, ${extraSegments.join(', ')})`
+                                  ? `(${hits}/${totalAttempts}回,${extraSegments.join(',')})`
                                   : hitDisplay;
                                 const actionDisplay = resonanceMatch && !allMissed
                                   ? actionText.replace(/\(共鳴\+\d+%\)$/, '')
@@ -4385,7 +4385,7 @@ function DiaryTab({
                                 momentumDisplay,
                               ].filter(Boolean);
                               const compactHitDisplay = hitDisplay && extraSegments.length > 0
-                                ? `(${hits}/${totalAttempts}回, ${extraSegments.join(', ')})`
+                                ? `(${hits}/${totalAttempts}回,${extraSegments.join(',')})`
                                 : hitDisplay;
                               const actionDisplay = resonanceMatch && !allMissed
                                 ? actionText.replace(/\(共鳴\+\d+%\)$/, '')
