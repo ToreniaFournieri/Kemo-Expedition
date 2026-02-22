@@ -1655,6 +1655,9 @@ function PartyTab({
     magDef: Math.floor(selectedStats.magicalDefense),
     physicalDefenseResistPercent: Math.round(Math.max(0.01, selectedStats.physicalDefenseAmplifier + selectedStats.deityDefenseAmplifierBonus.physical) * 100),
     magicalDefenseResistPercent: Math.round(Math.max(0.01, selectedStats.magicalDefenseAmplifier + selectedStats.deityDefenseAmplifierBonus.magical) * 100),
+    fireDefenseResistPercent: Math.round(Math.max(0.01, selectedStats.elementalDefenseMultipliers.fire) * 100),
+    iceDefenseResistPercent: Math.round(Math.max(0.01, selectedStats.elementalDefenseMultipliers.ice) * 100),
+    thunderDefenseResistPercent: Math.round(Math.max(0.01, selectedStats.elementalDefenseMultipliers.thunder) * 100),
     meleeAttackAmp: ((selectedIaigiriLevel > 0
       ? selectedIaigiriMultiplier * (1 + selectedStats.meleeAttackCBonus + getOffenseMultiplierSum(equippedItems, 'melee', selectedStats.offenseCBonusNames)) * selectedStats.physicalOffenseMultiplier
       : (1 + selectedStats.meleeAttackCBonus + getOffenseMultiplierSum(equippedItems, 'melee', selectedStats.offenseCBonusNames) + selectedStats.physicalAttackCBonus) * selectedStats.physicalOffenseMultiplier
@@ -1735,6 +1738,27 @@ function PartyTab({
         const isPositive = combatTotals.magicalDefenseResistPercent < prev.magicalDefenseResistPercent;
         changes.push({
           message: `魔法防御耐性 ${formatNumber(prev.magicalDefenseResistPercent)}% → ${formatNumber(combatTotals.magicalDefenseResistPercent)}%`,
+          isPositive,
+        });
+      }
+      if (combatTotals.fireDefenseResistPercent !== prev.fireDefenseResistPercent) {
+        const isPositive = combatTotals.fireDefenseResistPercent < prev.fireDefenseResistPercent;
+        changes.push({
+          message: `炎防御耐性 ${formatNumber(prev.fireDefenseResistPercent)}% → ${formatNumber(combatTotals.fireDefenseResistPercent)}%`,
+          isPositive,
+        });
+      }
+      if (combatTotals.iceDefenseResistPercent !== prev.iceDefenseResistPercent) {
+        const isPositive = combatTotals.iceDefenseResistPercent < prev.iceDefenseResistPercent;
+        changes.push({
+          message: `氷防御耐性 ${formatNumber(prev.iceDefenseResistPercent)}% → ${formatNumber(combatTotals.iceDefenseResistPercent)}%`,
+          isPositive,
+        });
+      }
+      if (combatTotals.thunderDefenseResistPercent !== prev.thunderDefenseResistPercent) {
+        const isPositive = combatTotals.thunderDefenseResistPercent < prev.thunderDefenseResistPercent;
+        changes.push({
+          message: `雷防御耐性 ${formatNumber(prev.thunderDefenseResistPercent)}% → ${formatNumber(combatTotals.thunderDefenseResistPercent)}%`,
           isPositive,
         });
       }
@@ -1824,7 +1848,8 @@ function PartyTab({
       }
     }
     prevStatsRef.current = combatTotals;
-  }, [combatTotals.physDef, combatTotals.magDef, combatTotals.physicalDefenseResistPercent, combatTotals.magicalDefenseResistPercent, combatTotals.hp,
+  }, [combatTotals.physDef, combatTotals.magDef, combatTotals.physicalDefenseResistPercent, combatTotals.magicalDefenseResistPercent,
+      combatTotals.fireDefenseResistPercent, combatTotals.iceDefenseResistPercent, combatTotals.thunderDefenseResistPercent, combatTotals.hp,
       combatTotals.meleeAtk, combatTotals.meleeNoA,
       combatTotals.rangedAtk, combatTotals.rangedNoA,
       combatTotals.magicalAtk, combatTotals.magicalNoA,
