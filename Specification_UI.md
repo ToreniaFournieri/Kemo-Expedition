@@ -294,7 +294,7 @@ PT2...
 - It has two tabs inside Base tab. Inventory(所持品), Shop(お店), Workshop(工房), Altar(祭壇). (same visual UI as List of party (PT1, PT2...) tab in Party tab)
   - not available for Workshop(工房), Altar(祭壇) in this version. (Gray out)
 	
-**Inventory(所持品)**
+##### 8.5.1 Inventory(所持品)
 - Behavior:
   - Notification pops up when acquiring a new item
   - Newly acquired items are shown in bold
@@ -334,66 +334,73 @@ PT2...
     - ex. 名工のロングソード x3 | 近攻+19     [解除]
   - Unlock button(解除): Changes item state from `s.sold` to `s.notown`
 
-**Shop(お店)**
-- Function: Sells items.
-- Shop name: フェリスのガラクタ屋 (Felis’s Junk Shop)
-- Dialogue pane
-  - Column1: Shop owner icon: Mustelid icon
-  - Column2: Dialogue + (商品洗替まであと 34 分)
-  - Column3: [有償洗替] 1,000G
+##### 8.5.2 Shop (お店)
 
+- **Function:** Sells items.
+- **Shop name:** フェリスのガラクタ屋 (Felis’s Junk Shop)
+
+**Dialogue pane (UI)**
+- **Column 1:** Shop owner icon (Mustelid icon)  
+- **Column 2:** Dialogue + countdown  
+  - 表示例: （商品洗替まであと 34 分）
+- **Column 3:** [有償洗替] 1,000G
+
+**Dialogue by intimacy**
 | Intimacy | Dialogue |
 |--------|----------|
-| 0–19 | 「ひょっとしたらいいお宝が眠ってるかもしれないよ？……おっと獲物には触らんといてな。」 |
+| 0–19 | 「ひょっとしたらいいお宝が眠ってるかもしれないよ？……おっと、獲物には触らんといてな。」 |
 | 20–39 | 「お、また来たのかい。うちのガラクタも、見ていくうちに味が出てくるもんさ。」 |
 | 40–79 | 「やぁ。奥の棚も見ていいよ。運が良けりゃ掘り出し物があるかもな。」 |
 | 80–99 | 「待ってたよ。あんたには特別な品も回してるんだ。……他の客には内緒だぜ？」 |
 
-- **Lineup:** 5 Tier 1 to Tier X items (**up to the highest tier the player has reached**).
+**Lineup**
+- **Lineup:** 5 items from Tier 1 to Tier X (**up to the highest tier whose boss the player has defeated**).
 
 | Intimacy | Lineup |
-|---|---|---|
+|---|---|
 | 0–19 | 5 Common |
 | 20–39 | 1 Uncommon, 4 Common |
 | 40–79 | 1 Rare, 2 Uncommon, 2 Common |
 | 80–99 | 1 Mythic, 2 Rare, 2 Uncommon |
 
-- display item color code:
-  - Common: non-bold
-  - Uncommon: bold 
-  - Rare: Sub color (blue)
-  - Mythic: Accent color (Dark orange)
+### Display (rarity color)
+- Common: non-bold  
+- Uncommon: **bold**  
+- Rare: Sub color (blue)  
+- Mythic: Accent color (dark orange)
 
-- **Mystery enhancement (same as item drop logic):**
-  - When the player selects an item to buy, roll:
-    - 1 ticket from `g.enhancement_bag`,
-      - If the drawn ticket ID is `0`, redraw until the ticket ID is `>= 1`.
-    - 1 ticket from `g.superRare_bag`
-  - The resulting enhancement/title is **hidden until purchased** (can become a Super Rare title item).
-  - **UI examples:** `?木の盾 x1`, `?木の胸当て x1`
-  - notification "店から 名工の木の盾 を購入した！"
+**Mystery enhancement (same as item drop logic)**
+- When the player selects an item to buy, roll:
+  - Draw 1 ticket from `g.enhancement_bag`.  
+    - If the drawn ticket ID is `0`, redraw until the ticket ID is `>= 1`.
+  - Draw 1 ticket from `g.superRare_bag`.
+- The resulting enhancement/title is **hidden until purchased** (can become a Super Rare title item).
+- **UI examples:** `?木の盾 x1`, `?木の胸当て x1`
+- **Notification:** 「店から 名工の木の盾 を購入した！」
 
-  - Price (per item, by tier)
-    - Tier 1: 100G  
-    - Tier 2: 200G  
-    - Tier 3: 400G  
-  	- Tier 4: 800G  
-  	- Tier 5: 1,600G  
-  	- Tier 6: 3,200G  
-  	- Tier 7: 6,400G  
-  	- Tier 8: 12,800G  
+**Price (per item, by tier)**
+- Tier 1: 100G  
+- Tier 2: 200G  
+- Tier 3: 400G  
+- Tier 4: 800G  
+- Tier 5: 1,600G  
+- Tier 6: 3,200G  
+- Tier 7: 6,400G  
+- Tier 8: 12,800G  
 
-- **Shop Refresh & Intimacy (親密度)**
+**Shop Refresh & Intimacy (親密度)**
 
-  - Refresh timing
-    - Shop lineup refreshes every 8 hours at **02:00, 10:00, 18:00** (local time).
+- Refresh timing
+  - Shop lineup refreshes every 8 hours at **02:00, 10:00, 18:00** (local time).
 
-  - Intimacy decay
-    - Intimacy decays by **10%** (multiplicative) at the refresh times (02:00 / 10:00 / 18:00).
+- Intimacy decay
+  - Intimacy decays by **10% (multiplicative)** at each refresh time (02:00 / 10:00 / 18:00).
+
+- Intimacy cap
   - Intimacy is capped at **99**.
 
 
-  - current version: **debug mode: OFF**, no debug items bellow:
+- current version: **debug mode: OFF**, no debug items bellow:
 	- Dialogue: "とても珍しい品物が揃ってるよ。オラよくわかんねぇけど、売主がデバッグ用にって言ってた。"
 	  - The shop sells all 80 Super Rare title variants of a single base item.
 		- Base item: 木の盾 (ID: 1103)
