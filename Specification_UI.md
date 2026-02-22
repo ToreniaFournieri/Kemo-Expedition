@@ -337,8 +337,10 @@ PT2...
 **Shop(お店)**
 - Function: Sells items.
 - Shop name: フェリスのガラクタ屋 (Felis’s Junk Shop)
-- Shop owner icon: Mustelid icon
-- Dialogue: "ひょっとしたらいいお宝が眠ってるかもしれないよ？買うまで商品に触らないでね。 (商品洗替まであと 34 分)"
+- Dialogue pane
+  - Column1: Shop owner icon: Mustelid icon
+  - Column2: "ひょっとしたらいいお宝が眠ってるかもしれないよ？買うまで商品に触らないでね。 (商品洗替まであと 34 分)"
+  - Column3: [有償洗替] 1,000G
 - **Lineup:** 5Tier 1 to Tier X (**up to the highest tier the player has reached**) **Common base items** (one per item type).
 - **Mystery enhancement (same as item drop logic):**
   - When the player selects an item to buy, roll:
@@ -348,7 +350,7 @@ PT2...
   - The resulting enhancement/title is **hidden until purchased** (can become a Super Rare title item).
   - **UI examples:** `?木の盾 x1`, `?木の胸当て x1`
   - **Stock:** 5 items total (one per item type).
-  - **Refresh cycle:** Updates every hour (lineup refreshes at **:00** each hour).
+  - **Refresh cycle:** Updates every hour (lineup refreshes at **:00** each hour). (or pressing [有償洗替] button.)
 
   - Price (per item, by tier)
     - Tier 1: 100G  
