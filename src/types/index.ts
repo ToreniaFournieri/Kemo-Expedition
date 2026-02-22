@@ -438,8 +438,13 @@ export interface ExpeditionState {
 }
 
 // Bag Randomization Types
+export interface WeightedBagEntry {
+  id: number;
+  tickets: number;
+}
+
 export interface RandomBag {
-  tickets: number[]; // 0 = lose, 1+ = win with value
+  entries: WeightedBagEntry[];
 }
 
 export interface GameBags {
