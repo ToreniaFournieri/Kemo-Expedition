@@ -1330,11 +1330,16 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   }, []);
 
   useEffect(() => {
-    const now = new Date();
-    const hourKey = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}`;
-    const previousHourPurchases = new Set(prevShopPurchasesRef.current[hourKey] ?? []);
-    const currentHourPurchases = state.global.shopPurchases[hourKey] ?? [];
-    const newlyPurchasedItemIds = currentHourPurchases.filter((itemId) => !previousHourPurchases.has(itemId));
+    const newlyPurchasedItemIds: number[] = [];
+
+    for (const [stockKey, currentPurchases] of Object.entries(state.global.shopPurchases)) {
+      const previousPurchases = new Set(prevShopPurchasesRef.current[stockKey] ?? []);
+      for (const itemId of currentPurchases) {
+        if (!previousPurchases.has(itemId)) {
+          newlyPurchasedItemIds.push(itemId);
+        }
+      }
+    }
 
     if (newlyPurchasedItemIds.length > 0) {
       for (const itemId of newlyPurchasedItemIds) {
