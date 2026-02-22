@@ -383,7 +383,7 @@ PT2...
     - If the drawn ticket ID is `0`, redraw until the ticket ID is `>= 1`.
   - Draw 1 ticket from `g.superRare_bag`.
 - The resulting enhancement/title is **hidden until purchased** (can become a Super Rare title item).
-- **UI examples:** `?木の盾 x1`, `?木の胸当て x1`
+- **UI examples:** `?木の盾 100G`, `?木の胸当て 100G`
 - **Notification:** 「店から 名工の木の盾 を購入した！」
   - if it is auto-sell item: 「店から 名工の木の盾 を購入して失望した(自動売却)」and sold it automatically. 
 
