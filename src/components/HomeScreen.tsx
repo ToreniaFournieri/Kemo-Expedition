@@ -13,7 +13,7 @@ import { applyEnemyEncounterScaling } from '../game/enemyScaling';
 import { DEITY_OPTIONS, getDeityEffectDescription, getDeityRank, getNextDonationThreshold, normalizeDeityName } from '../game/deity';
 import { LEVEL_EXP } from '../game/partyLevel';
 import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../game/environment';
-import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, SHOP_REFRESH_PRICE, getNextShopRefreshDate, countElapsedShopRefreshes } from '../game/shop';
+import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, getShopRefreshPrice, getNextShopRefreshDate, countElapsedShopRefreshes } from '../game/shop';
 import { getBaseMultiplier } from '../game/baseMultiplier';
 import { computeCharacterStats } from '../game/characterComputation';
 import { serializeGameState } from '../game/saveCodec';
@@ -3746,6 +3746,7 @@ function ShopTab({
     : `後${minutesToRefresh}分`;
   const hourKey = getShopHourKey(now);
   const refreshCount = shopRefreshCounts[hourKey] ?? 0;
+  const refreshPrice = getShopRefreshPrice(refreshCount);
   const highestDefeatedBossTier = DUNGEONS.reduce((highestTier, dungeon) => {
     const nextDungeonId = dungeon.id + 1;
     const hasBeatenBoss = parties.some((party) => (
@@ -3830,27 +3831,28 @@ function ShopTab({
         <div className="mt-2 flex items-start justify-between gap-3">
           <div className="grid flex-1 grid-cols-[auto,1fr] items-start gap-3">
             <RaceIcon race={mustelidRace} className="h-10 w-10" />
-            <p className="text-sm text-gray-700">
-              {intimacyDialogue}
-            </p>
+            <div className="space-y-1">
+              <p className="text-sm text-gray-700">
+                {intimacyDialogue}
+              </p>
+              <p className="text-xs text-gray-500">
+                （商品洗替まであと {countdownText.replace('後', '')}）
+              </p>
+            </div>
           </div>
           <div className="shrink-0 text-right">
             <button
               onClick={onRefreshShopLineup}
-              disabled={gold < SHOP_REFRESH_PRICE}
+              disabled={gold < refreshPrice}
               className={`rounded px-3 py-1 text-xs font-semibold ${
-                gold >= SHOP_REFRESH_PRICE
+                gold >= refreshPrice
                   ? 'bg-accent text-white hover:bg-accent/90'
                   : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
             >
-              <span className="block">[有償洗替]</span>
-              <span className="block text-[11px]">{formatNumber(SHOP_REFRESH_PRICE)}G</span>
+              <span className="block">有償洗替</span>
+              <span className="block text-[11px]">{formatNumber(refreshPrice)}G</span>
             </button>
-            <div className="mt-1 text-[11px] leading-tight text-gray-500">
-              <span className="block">商品洗替まで</span>
-              <span className="block">{countdownText}</span>
-            </div>
           </div>
         </div>
       </div>
