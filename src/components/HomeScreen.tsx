@@ -188,11 +188,11 @@ function buildAfkSummaryNotification(stats: {
 type ItemRarity = 'common' | 'uncommon' | 'rare' | 'mythic';
 type RarityFilter = 'all' | ItemRarity;
 
-const RARITY_SHORT_LABELS: Record<ItemRarity, string> = {
-  common: '[C]',
-  uncommon: '[U]',
-  rare: '[R]',
-  mythic: '[M]',
+const RARITY_SHORT_CODES: Record<ItemRarity, string> = {
+  common: 'C',
+  uncommon: 'U',
+  rare: 'R',
+  mythic: 'M',
 };
 
 const RARITY_FILTER_LABELS: Record<RarityFilter, string> = {
@@ -282,7 +282,9 @@ function getItemRarityById(itemId: number): ItemRarity {
 }
 
 function getRarityShortLabel(itemId: number): string {
-  return RARITY_SHORT_LABELS[getItemRarityById(itemId)];
+  const tier = Math.floor(itemId / 1000);
+  const rarityCode = RARITY_SHORT_CODES[getItemRarityById(itemId)];
+  return `[${tier}${rarityCode}]`;
 }
 
 function matchesRarityFilter(itemId: number, filter: RarityFilter): boolean {
