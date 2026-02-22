@@ -147,6 +147,7 @@ d. bonus (stackable)
 | `a.tithe`2 | 十分の一税2 | 遠征利益の +15% を寄付額に上乗せする |
 | `a.null-counter`1 | 反撃無効化1 | 反撃を無効化する(1回のみ) |
 | `a.null-counter`2 | 反撃無効化2 | 反撃を無効化する(2回まで) |
+| `a.null-counter`3 | 反撃無効化3 | 反撃を無効化する(3回まで) |
 | `a.seeker`1 | 探究者1 | 魔導書の効果増加(レベル毎に0.25%) |
 | `a.seeker`2 | 探究者2 | 魔導書の効果増加(レベル毎に0.35%) |
 | `a.resurrect`1 | 再起1 | 自分が受けた致命ダメージをHP1残して耐える |
@@ -515,16 +516,16 @@ d. bonus (stackable)
 
 |class | main/sub bonuses | main bonus | master bonus | 
 |-----|-----------|---------|---------|
-|戦士(戦,Fighter) | `c.grit+1`, `c.equip_slot+1`,  `c.armor_x1.4` |`a.defender`1: Incoming physical damage to party × 2/3 |`a.defender`2: Incoming physical damage to party × 3/5 | 
-|剣士(剣,Duelist) | `c.grit+1`, `c.sword_x1.4` | `a.counter`1: enemy CLOSE-range attack (`f.NoA` x 0.5)  | `a.counter`2: enemy CLOSE-range attack and MID-range (`f.NoA` x 0.5)  | 
-|忍者(忍,Ninja) | `c.grit+1`, `c.penet+0.15` | `a.re-attack`1: once when attacking (`f.NoA` x 0.5) | `a.re-attack`2: twice when attacking (`f.NoA` x 0.5) | 
-|侍(侍,Samurai) | `c.grit+1`, `c.katana_x1.4` |`a.iaigiri`1: Physical damage ×2,  number of attacks ÷2 | `a.iaigiri`2: Physical damage ×2.5,  number of attacks ÷2 |
-|君主(君,Lord) | `c.grit+1`, `c.gauntlet_x1.4`, `c.equip_slot+1` |`a.command`1: Physical damage x1.3. `a.squander`:double the gold spent on feasting. |`a.command`2: Physical damage x1.6. `a.squander`:double the gold spent on feasting. | 
-|狩人(狩,Ranger) | `c.pursuit+2`, `c.arrow_x1.4` | `a.hunter`1: Reduces row-based damage decay from 15% to 10% per step. |`a.hunter`2: Reduces row-based damage decay from 15% to 7% per step. | 
-|魔法使い(魔,Wizard) | `c.caster+1`, `c.wand_x1.4` | `a.resonance`1:All hits +5% damage per `d.magical_NoA`. | `a.resonance`2:All hits +8% damage per `d.magical_NoA`. | 
-|賢者(賢,Sage) | `c.caster+2`, `c.robe_x1.4`, `c.grimoire_x1.2`, `c.equip_slot+2` | `a.m-barrier`1: Incoming magical damage to party × 2/3 | `a.m-barrier`2: Incoming magical damage to party × 3/5 | 
-|盗賊(盗,Rogue) | `c.pursuit+1`, `c.unlock` additional reward chance |`a.deflection`: During LONG phase only, opponent ranged attacks suffer −10 percentage points to hit chance. `a.first-strike`1 |`a.deflection`: During LONG phase only, opponent ranged attacks suffer −10 percentage points to hit chance. `a.first-strike`2. | 
-|巡礼者(巡,Pilgrim) | `c.caster+1`, `c.grit+1`, `c.evasion+0.02`, `c.equip_slot+1` |`a.tithe`: Adds +10% of expedition profit to donation. |`a.null-counter`: Negate counter attack. `a.tithe`: Adds +10% of expedition profit to donation. | 
+|戦士(戦,Fighter) | `c.grit+1`, `c.equip_slot+1`,  `c.armor_x1.4` |`a.defender`1 |`a.defender`2 | 
+|剣士(剣,Duelist) | `c.grit+1`, `c.sword_x1.4` | `a.counter`1 | `a.counter`2 | 
+|忍者(忍,Ninja) | `c.grit+1`, `c.penet+0.15` | `a.re-attack`1 | `a.re-attack`2 | 
+|侍(侍,Samurai) | `c.grit+1`, `c.katana_x1.4` |`a.iaigiri`1 | `a.iaigiri`2 |
+|君主(君,Lord) | `c.grit+1`, `c.gauntlet_x1.4`, `c.equip_slot+1` |`a.command`1, `a.squander`1 |`a.command`2, `a.squander`1 | 
+|狩人(狩,Ranger) | `c.pursuit+2`, `c.arrow_x1.4` | `a.hunter`1: Reduces row-based damage decay from 15% to 10% per step. |`a.hunter`2 | 
+|魔法使い(魔,Wizard) | `c.caster+1`, `c.wand_x1.4` | `a.resonance`1 | `a.resonance`2 | 
+|賢者(賢,Sage) | `c.caster+2`, `c.robe_x1.4`, `c.grimoire_x1.2`, `c.equip_slot+2` | `a.m-barrier`1 | `a.m-barrier`2 | 
+|盗賊(盗,Rogue) | `c.pursuit+1`, `c.unlock` additional reward chance |`a.deflection`, `a.first-strike`1 |`a.deflection`, `a.first-strike`2. | 
+|巡礼者(巡,Pilgrim) | `c.caster+1`, `c.grit+1`, `c.evasion+0.02`, `c.equip_slot+1` |`a.null-counter`1, `a.tithe`1 |`a.null-counter`2, `a.tithe`1 | 
 
 - If `main_class` and  `sub_class` are same class, then it turns into master class, applies master bonus.
 - `main_class` applies main/sub bonuses and main bonus. `sub_class` applies only main/sub bonuses.
