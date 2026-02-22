@@ -334,6 +334,16 @@ function loadSavedState(): GameState | null {
           parsed.global.inventory = migrateOldInventory(parsed.global.inventory);
         }
         parsed.global.deityDonations = getDeityDonationsWithDefaults(parsed.global.deityDonations);
+        parsed.global.shopPurchases = (parsed.global.shopPurchases && typeof parsed.global.shopPurchases === 'object')
+          ? Object.entries(parsed.global.shopPurchases as Record<string, unknown>).reduce<Record<string, number[]>>((acc, [hourKey, itemIds]) => {
+              if (!Array.isArray(itemIds)) return acc;
+              const normalized = itemIds.filter((itemId): itemId is number => typeof itemId === 'number');
+              if (normalized.length > 0) {
+                acc[hourKey] = normalized;
+              }
+              return acc;
+            }, {})
+          : {};
 
         // Process all parties (whether single or array)
         const partiesToProcess = parsed.parties ?? [];
@@ -544,6 +554,7 @@ function createInitialState(): GameState {
       gold: 200,
       inventory: createStarterInventory(),
       deityDonations: {},
+      shopPurchases: {},
     },
     parties: [createInitialParty(), createSecondParty()],
     selectedPartyIndex: 0,
@@ -1592,6 +1603,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const shopPrice = 10000;
       if (!baseItem || state.global.gold < shopPrice) return state;
 
+      const now = new Date();
+      const hourKey = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}`;
+      const soldOutItemIds = state.global.shopPurchases[hourKey] ?? [];
+      if (soldOutItemIds.includes(action.itemId)) return state;
+
       let bags = refillBagIfEmpty(state.bags, 'enhancementBag');
       const { ticket: enhancement, newBag: newEnhancementBag } = drawFromBag(bags.enhancementBag);
       bags = { ...bags, enhancementBag: newEnhancementBag };
@@ -1629,6 +1645,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...state.global,
           inventory: newInventory,
           gold: state.global.gold - shopPrice,
+          shopPurchases: {
+            ...state.global.shopPurchases,
+            [hourKey]: [...soldOutItemIds, action.itemId],
+          },
         },
       };
     }
@@ -1811,6 +1831,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           gold: 200,
           inventory: createStarterInventory(),
           deityDonations: {},
+          shopPurchases: {},
         },
         parties: [createInitialParty(), createSecondParty()],
         selectedPartyIndex: 0,

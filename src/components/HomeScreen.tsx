@@ -1548,6 +1548,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             inventory={state.global.inventory}
             parties={state.parties}
             gold={state.global.gold}
+            shopPurchases={state.global.shopPurchases}
             onSellStack={actions.sellStack}
             onSetVariantStatus={actions.setVariantStatus}
             onBuyShopItem={actions.buyShopItem}
@@ -3578,6 +3579,7 @@ function BaseTab({
   inventory,
   parties,
   gold,
+  shopPurchases,
   onSellStack,
   onSetVariantStatus,
   onBuyShopItem,
@@ -3587,6 +3589,7 @@ function BaseTab({
   inventory: InventoryRecord;
   parties: Party[];
   gold: number;
+  shopPurchases: Record<string, number[]>;
   onSellStack: (variantKey: string) => void;
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
   onBuyShopItem: (itemId: number) => void;
@@ -3633,9 +3636,9 @@ function BaseTab({
         />
       ) : activeSubTab === 'shop' ? (
         <ShopTab
-          inventory={inventory}
           gold={gold}
           parties={parties}
+          shopPurchases={shopPurchases}
           onBuyShopItem={onBuyShopItem}
         />
       ) : (
@@ -3646,14 +3649,14 @@ function BaseTab({
 }
 
 function ShopTab({
-  inventory,
   gold,
   parties,
+  shopPurchases,
   onBuyShopItem,
 }: {
-  inventory: InventoryRecord;
   gold: number;
   parties: Party[];
+  shopPurchases: Record<string, number[]>;
   onBuyShopItem: (itemId: number) => void;
 }) {
   const shopPrice = 10000;
@@ -3663,6 +3666,7 @@ function ShopTab({
   const highestTierReached = Math.max(1, ...parties.map((party) => Math.max(1, party.selectedDungeonId)));
   const hourlySeed = Number(`${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}`);
   const shopCategories: ItemCategory[] = ['shield', 'armor', 'sword', 'wand', 'grimoire'];
+  const soldOutItemIds = shopPurchases[String(hourlySeed)] ?? [];
 
   if (!mustelidRace) {
     return <div className="text-sm text-gray-600">お店の準備中です。</div>;
@@ -3682,7 +3686,7 @@ function ShopTab({
       if (!baseItem) return null;
 
       const item: Item = { ...baseItem, enhancement: 0, superRare: 0 };
-      const isSoldOut = Object.entries(inventory).some(([key, variant]) => key.startsWith(`${baseItemId}-`) && variant.count > 0);
+      const isSoldOut = soldOutItemIds.includes(baseItemId);
       const canBuy = !isSoldOut && gold >= shopPrice;
 
       return {
