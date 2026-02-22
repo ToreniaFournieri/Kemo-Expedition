@@ -763,7 +763,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | Item type | base_power/Scale for | base c.multiplier for | subtle_power`d.`, `e.`, and `c.` bonus|
 |------|--------|------|------|
 |`i.armor` | `d.physical_defense` | `c.physical_defense+v` | additional `d.physical_defense`, `d.HP`, `d.magical_defense`, `b.vitality+1`  |
-|`i.robe` |  `d.magical_defense`  | `c.magical_defense+v` | `b.mind+1`, `d.HP`, `c.evasion+0.01` |
+|`i.robe` |  `d.magical_defense`  | `c.magical_defense+v` | `b.mind+1`, `d.HP`, additional `d.magical_defense`, `c.evasion+0.00v` |
 |`i.shield ` | `d.HP` | `c.evasion+v` | `d.physical_defense`, `d.melee_attack`, `b.vitality+1` |
 |`i.sword` | `d.melee_attack` | `c.melee_attack+v` | `c.accuracy+0.01`, `b.strength+1`, `e.fire`, `d.physical_defense` ,`d.HP` |
 |`i.katana` | `d.melee_attack` | `c.melee_attack+V`, `d.evasion-v`, `d.melee_NoA-v` | additional `d.melee_attack`, `c.penet+0.01`, `c.penet+0.02`, `b.mind+1` |
