@@ -3487,7 +3487,7 @@ function ExpeditionTab({
                                 const isEnemy = log.actor === 'enemy';
                                 const hits = log.hits ?? 0;
                                 const totalAttempts = log.totalAttempts ?? 0;
-                                const allMissed = totalAttempts > 0 && hits === 0;
+                                const allMissed = totalAttempts > 0 && hits === 0 && !log.wasNegated;
                                 const hitDisplay = totalAttempts > 0 ? `(${hits}/${totalAttempts}回)` : '';
                                 const resonanceMatch = /(\(共鳴\+\d+%\))$/.exec(log.action);
                                 const rageDisplay = log.rageBonusPercent && log.rageBonusPercent > 0
@@ -4314,7 +4314,7 @@ function DiaryTab({
                               const isEnemy = battleLog.actor === 'enemy';
                               const hits = battleLog.hits ?? 0;
                               const totalAttempts = battleLog.totalAttempts ?? 0;
-                              const allMissed = totalAttempts > 0 && hits === 0;
+                              const allMissed = totalAttempts > 0 && hits === 0 && !battleLog.wasNegated;
                               const hitDisplay = totalAttempts > 0 ? `(${hits}/${totalAttempts}回)` : '';
                               const resonanceMatch = /(\(共鳴\+\d+%\))$/.exec(battleLog.action);
                               const rageDisplay = battleLog.rageBonusPercent && battleLog.rageBonusPercent > 0
