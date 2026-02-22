@@ -1623,16 +1623,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
       const variantKey = getVariantKey(purchasedItem);
       const existing = state.global.inventory[variantKey];
-
-      if (existing) {
-        return state;
-      }
-
       const newInventory = {
         ...state.global.inventory,
         [variantKey]: {
           item: purchasedItem,
-          count: 1,
+          count: (existing?.count ?? 0) + 1,
           status: 'owned' as const,
           isNew: true,
         },
