@@ -301,7 +301,7 @@ PT2...
   - Once displayed, text returns to normal
 - Item list:
   - Stacked by item variant
-  - Shows state:`s.owned` items
+  - Shows state:`s.owned` items and **equiped items**.
   - Filter button by rarelity (right-aligned): 全て表示, 通常のみ, アンコモンのみ, レアのみ, 神魔レアのみ: [ALL] [C] [U] [R] [M] |超レア: ON/OFF
     - IF player selects [M],   神魔レアのみ: [ALL] [C] [U] [R] **[M]** 
     - 超レア[ON/OFF] default: OFF, if ON, filter superRare >= 1.
@@ -317,13 +317,15 @@ PT2...
 	- **Priority:**
 	   1. Base Item ID: Higher-tier base items (e.g., Mythril Sword > Iron Sword) appear first.
 	   2. Super Rare Title: Items with Super Rare titles are prioritized within their base item ID.
-	   3. Enhancement Tier: Among the same Item ID, higher enhancements (e.g., 究極の > 伝説の) appear higher.
+	   3. Enhancement Tier: Among the same Item ID, higher enhancements (e.g., 究極の > 伝説の) appear higher
+       4. Equiped item (From PT1 row1, PT1 row2, ... , PT2 row6)
   - Item Row: The name, count, and status are left-aligned, while the sell all button is right-aligned on the same line 
-    - ex. 名工のロングソード x3 | 近攻+19     [全売却 39G]
+    - ex. `s.owned`: 名工のロングソード x3 | 近攻+19     [全売却 39G]
+    - ex. `equipped`: [race icon] 名工のロングソード x1 | 近攻+19    PT1:name
   - Sell all button(全売却): Sells all item, with a warning message, and Changes item state from `s.owned` to `s.sold`
   - Inventory pane shows at least 10 items
 - Actions:
-  - Sell item stacks
+  - Sell item stacks (except equipped items)
   - Sold items disappear immediately
 
 - **Auto-sold list** (Collapsed by default; tap to expand)
