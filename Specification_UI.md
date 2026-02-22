@@ -339,7 +339,7 @@ PT2...
 - Shop name: フェリスのガラクタ屋 (Felis’s Junk Shop)
 - Dialogue pane
   - Column1: Shop owner icon: Mustelid icon
-  - Column2: " <dialogue> (商品洗替まであと 34 分)"
+  - Column2: Dialogue + (商品洗替まであと 34 分)
   - Column3: [有償洗替] 1,000G
 
 | Intimacy | Dialogue |
@@ -349,7 +349,7 @@ PT2...
 | 40–79 | 「やぁ。奥の棚も見ていいよ。運が良けりゃ掘り出し物があるかもな。」 |
 | 80–99 | 「待ってたよ。あんたには特別な品も回してるんだ。……他の客には内緒だぜ？」 |
 
-- **Lineup:** 5Tier 1 to Tier X (**up to the highest tier the player has reached**).
+- **Lineup:** 5 Tier 1 to Tier X items (**up to the highest tier the player has reached**).
 
 | Intimacy | Lineup |
 |---|---|---|
