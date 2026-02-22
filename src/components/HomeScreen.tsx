@@ -3731,26 +3731,57 @@ function InventoryTab({
 
   const equippedItems = parties.flatMap((party, partyIndex) =>
     party.characters.flatMap((character, rowIndex) =>
-      character.equipment
-        .filter((item): item is Item => Boolean(item))
-        .filter((item) =>
-          item.category === selectedCategory &&
-          matchesRarityFilter(item.id, inventoryRarityFilter) &&
-          (!inventorySuperRareOnly || item.superRare >= 1)
-        )
-        .map((item, equipIndex) => ({
-          key: `equipped-${party.id}-${character.id}-${rowIndex}-${equipIndex}-${item.id}-${item.enhancement}-${item.superRare}`,
+      character.equipment.flatMap((item, slotIndex) => {
+        if (!item) return [];
+        if (
+          item.category !== selectedCategory ||
+          !matchesRarityFilter(item.id, inventoryRarityFilter) ||
+          (inventorySuperRareOnly && item.superRare < 1)
+        ) {
+          return [];
+        }
+
+        return [{
+          key: `equipped-${party.id}-${character.id}-${rowIndex}-${slotIndex}-${item.id}-${item.enhancement}-${item.superRare}`,
           item,
           partyIndex,
           rowIndex,
+          slotIndex,
           characterName: character.name,
           raceId: character.raceId,
-        }))
+        }];
+      })
     )
   );
-  const sortedEquippedItems = [...equippedItems].sort((a, b) => {
-    if (a.partyIndex !== b.partyIndex) return a.partyIndex - b.partyIndex;
-    return a.rowIndex - b.rowIndex;
+
+  const combinedDisplayItems = [
+    ...filteredOwnedItems.map(([key, variant]) => ({
+      key,
+      type: 'owned' as const,
+      variant,
+      item: variant.item,
+    })),
+    ...equippedItems.map((equipped) => ({
+      key: equipped.key,
+      type: 'equipped' as const,
+      equipped,
+      item: equipped.item,
+    })),
+  ].sort((a, b) => {
+    if (a.item.id !== b.item.id) return b.item.id - a.item.id;
+    if (a.item.superRare !== b.item.superRare) return b.item.superRare - a.item.superRare;
+    if (a.item.enhancement !== b.item.enhancement) return b.item.enhancement - a.item.enhancement;
+
+    // Keep owned stacks above equipped copies of the same item variant.
+    if (a.type !== b.type) return a.type === 'owned' ? -1 : 1;
+
+    if (a.type === 'equipped' && b.type === 'equipped') {
+      if (a.equipped.partyIndex !== b.equipped.partyIndex) return a.equipped.partyIndex - b.equipped.partyIndex;
+      if (a.equipped.rowIndex !== b.equipped.rowIndex) return a.equipped.rowIndex - b.equipped.rowIndex;
+      return a.equipped.slotIndex - b.equipped.slotIndex;
+    }
+
+    return 0;
   });
 
   const allSoldItems = Object.entries(inventory).filter(([, v]) => v.status === 'sold');
@@ -3826,68 +3857,69 @@ function InventoryTab({
 
       {/* Item list */}
       <div className="space-y-1 min-h-[364px] max-h-[26rem] overflow-y-auto mb-4">
-          {filteredOwnedItems.map(([key, variant]) => {
-            const { item, count } = variant;
-            const enhMult = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
-            const srMult = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
-            const baseMult = item.baseMultiplier ?? 1;
-            const sellPrice = Math.floor(10 * enhMult * srMult * baseMult) * count;
+          {combinedDisplayItems.map((entry) => {
+            if (entry.type === 'owned') {
+              const { item, count } = entry.variant;
+              const enhMult = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
+              const srMult = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
+              const baseMult = item.baseMultiplier ?? 1;
+              const sellPrice = Math.floor(10 * enhMult * srMult * baseMult) * count;
 
-            return (
-              <div
-                key={key}
-                className="px-2 py-1.5 rounded bg-pane"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className={`text-sm ${variant.isNew ? 'font-bold' : 'font-normal'}`}>
-                      {getItemDisplayName(item)}
-                    </span>
-                    <span className="text-xs text-gray-500">x{formatNumber(count)}</span>
+              return (
+                <div
+                  key={entry.key}
+                  className="px-2 py-1.5 rounded bg-pane"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm ${entry.variant.isNew ? 'font-bold' : 'font-normal'}`}>
+                        {getItemDisplayName(item)}
+                      </span>
+                      <span className="text-xs text-gray-500">x{formatNumber(count)}</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const shouldSell = window.confirm(
+                          `「${getItemDisplayName(item)} x${formatNumber(count)}」を全売却します。\n${formatNumber(sellPrice)}Gを獲得します。よろしいですか？`
+                        );
+                        if (!shouldSell) return;
+                        onSellStack(entry.key);
+                      }}
+                      className="text-xs text-accent px-2 py-1 border border-accent rounded flex-shrink-0"
+                    >
+                      全売却 {formatNumber(sellPrice)}G
+                    </button>
                   </div>
-                  <button
-                    onClick={() => {
-                      const shouldSell = window.confirm(
-                        `「${getItemDisplayName(item)} x${formatNumber(count)}」を全売却します。\n${formatNumber(sellPrice)}Gを獲得します。よろしいですか？`
-                      );
-                      if (!shouldSell) return;
-                      onSellStack(key);
-                    }}
-                    className="text-xs text-accent px-2 py-1 border border-accent rounded flex-shrink-0"
-                  >
-                    全売却 {formatNumber(sellPrice)}G
-                  </button>
+                  <div className="mt-0.5 text-xs leading-tight text-gray-400">
+                    {getRarityShortLabel(item.id)} {getItemStats(item)}
+                  </div>
                 </div>
-                <div className="mt-0.5 text-xs leading-tight text-gray-400">
-                  {getRarityShortLabel(item.id)} {getItemStats(item)}
-                </div>
-              </div>
-            );
-          })}
-          {sortedEquippedItems.map((equipped) => {
-            const race = RACES.find((entry) => entry.id === equipped.raceId);
+              );
+            }
+
+            const race = RACES.find((raceEntry) => raceEntry.id === entry.equipped.raceId);
             return (
               <div
-                key={equipped.key}
+                key={entry.key}
                 className="px-2 py-1.5 rounded bg-pane"
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
                     {race && <RaceIcon race={race} className="h-4 w-4 shrink-0" />}
-                    <span className="text-sm truncate">{getItemDisplayName(equipped.item)}</span>
+                    <span className="text-sm truncate">{getItemDisplayName(entry.equipped.item)}</span>
                     <span className="text-xs text-gray-500 shrink-0">x1</span>
                   </div>
                   <span className="text-xs text-gray-500 shrink-0">
-                    PT{equipped.partyIndex + 1}:{equipped.characterName}
+                    PT{entry.equipped.partyIndex + 1}:{entry.equipped.characterName}
                   </span>
                 </div>
                 <div className="mt-0.5 text-xs leading-tight text-gray-400">
-                  {getRarityShortLabel(equipped.item.id)} {getItemStats(equipped.item)}
+                  {getRarityShortLabel(entry.equipped.item.id)} {getItemStats(entry.equipped.item)}
                 </div>
               </div>
             );
           })}
-          {filteredOwnedItems.length === 0 && sortedEquippedItems.length === 0 && (
+          {combinedDisplayItems.length === 0 && (
             <div className="text-gray-400 text-sm text-center py-4">このカテゴリにアイテムがありません</div>
           )}
       </div>
