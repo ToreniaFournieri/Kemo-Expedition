@@ -46,7 +46,7 @@ interface HomeScreenProps {
     updateCharacter: (characterId: number, updates: Partial<Character>) => void;
     reorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
     sellStack: (variantKey: string) => void;
-    buyShopItem: (superRare: number) => void;
+    buyShopItem: (itemId: number) => void;
     setVariantStatus: (variantKey: string, status: 'notown') => void;
     markItemsSeen: () => void;
     markDiaryLogSeen: (logId: string) => void;
@@ -916,6 +916,7 @@ const CATEGORY_GROUPS = [
 const MELEE_CATEGORIES = new Set<ItemCategory>(['sword', 'katana', 'gauntlet']);
 const RANGED_CATEGORIES = new Set<ItemCategory>(['arrow', 'bolt', 'archery']);
 const MAGIC_CATEGORIES = new Set<ItemCategory>(['wand', 'grimoire', 'catalyst']);
+const ITEM_CATEGORY_ORDER: ItemCategory[] = ['armor', 'robe', 'shield', 'sword', 'katana', 'gauntlet', 'arrow', 'bolt', 'archery', 'wand', 'grimoire', 'catalyst'];
 
 type CategoryGroup = typeof CATEGORY_GROUPS[number];
 
@@ -3588,7 +3589,7 @@ function BaseTab({
   gold: number;
   onSellStack: (variantKey: string) => void;
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
-  onBuyShopItem: (superRare: number) => void;
+  onBuyShopItem: (itemId: number) => void;
   activeSubTab: BaseSubTab;
   onSetActiveSubTab: (tab: BaseSubTab) => void;
 }) {
@@ -3634,6 +3635,7 @@ function BaseTab({
         <ShopTab
           inventory={inventory}
           gold={gold}
+          parties={parties}
           onBuyShopItem={onBuyShopItem}
         />
       ) : (
@@ -3646,37 +3648,51 @@ function BaseTab({
 function ShopTab({
   inventory,
   gold,
+  parties,
   onBuyShopItem,
 }: {
   inventory: InventoryRecord;
   gold: number;
-  onBuyShopItem: (superRare: number) => void;
+  parties: Party[];
+  onBuyShopItem: (itemId: number) => void;
 }) {
   const shopPrice = 10000;
-  const baseShield = ITEMS.find((item) => item.id === 1103);
   const mustelidRace = RACES.find((race) => race.id === 'mustelid');
+  const now = new Date();
+  const minutesToRefresh = 59 - now.getMinutes();
+  const highestTierReached = Math.max(1, ...parties.map((party) => Math.max(1, party.selectedDungeonId)));
+  const hourlySeed = Number(`${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}`);
+  const shopCategories: ItemCategory[] = ['shield', 'armor', 'sword', 'wand', 'grimoire'];
 
-  if (!baseShield || !mustelidRace) {
+  if (!mustelidRace) {
     return <div className="text-sm text-gray-600">お店の準備中です。</div>;
   }
 
-  const shopItems = SUPER_RARE_TITLES
-    .filter((title) => title.value > 0)
-    .map((title) => {
-      const item: Item = { ...baseShield, enhancement: 0, superRare: title.value };
-      const key = `${item.id}-${item.enhancement}-${item.superRare}`;
-      const isSoldOut = Boolean(inventory[key]);
+  const seededTierForIndex = (index: number): number => {
+    const x = Math.sin(hourlySeed + (index + 1) * 97) * 10000;
+    const normalized = x - Math.floor(x);
+    return Math.floor(normalized * highestTierReached) + 1;
+  };
+
+  const shopItems = shopCategories.map((category, index) => {
+      const tier = seededTierForIndex(index);
+      const categoryIndex = ITEM_CATEGORY_ORDER.indexOf(category);
+      const baseItemId = tier * 1000 + 100 + categoryIndex + 1;
+      const baseItem = ITEMS.find((item) => item.id === baseItemId);
+      if (!baseItem) return null;
+
+      const item: Item = { ...baseItem, enhancement: 0, superRare: 0 };
+      const isSoldOut = Object.entries(inventory).some(([key, variant]) => key.startsWith(`${baseItemId}-`) && variant.count > 0);
       const canBuy = !isSoldOut && gold >= shopPrice;
 
       return {
-        key,
+        key: `${baseItemId}-${index}`,
+        itemId: baseItemId,
         item,
-        titleValue: title.value,
-        name: getItemDisplayName(item),
         isSoldOut,
         canBuy,
       };
-    });
+    }).filter((entry): entry is NonNullable<typeof entry> => entry !== null);
 
   return (
     <div className="space-y-4">
@@ -3685,7 +3701,7 @@ function ShopTab({
         <div className="mt-2 flex items-start gap-3">
           <RaceIcon race={mustelidRace} className="h-10 w-10" />
           <p className="text-sm text-gray-700">
-            とても珍しい品物が揃ってるよ。オラよくわかんねぇけど、売主がデバッグ用にって言ってた。
+            ひょっとしたらいいお宝が眠ってるかもしれないよ？買うまで商品に触らないでね。 (商品洗替まであと {minutesToRefresh} 分)
           </p>
         </div>
       </div>
@@ -3695,14 +3711,14 @@ function ShopTab({
           <div key={entry.key} className="rounded border border-gray-200 bg-white px-3 py-2">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <div className="truncate text-sm font-medium text-gray-900">{entry.name} x1</div>
+                <div className="truncate text-sm font-medium text-gray-900">?{entry.item.name} x1</div>
                 <div className="text-xs text-gray-500">{formatNumber(shopPrice)}G</div>
                 <div className="mt-0.5 text-xs leading-tight text-gray-400">
                   {getRarityShortLabel(entry.item.id)} {getItemStats(entry.item)}
                 </div>
               </div>
               <button
-                onClick={() => onBuyShopItem(entry.titleValue)}
+                onClick={() => onBuyShopItem(entry.itemId)}
                 disabled={!entry.canBuy}
                 className={`shrink-0 min-w-[3.25rem] whitespace-nowrap rounded px-3 py-1 text-xs font-medium ${
                   entry.isSoldOut
