@@ -578,8 +578,10 @@ function getEnemyFocusLevel(enemy: EnemyDef): number {
   return enemy.abilities.includes('focus') ? 1 : 0;
 }
 
-function partyHasNullCounter(characterStats: ComputedCharacterStats[]): boolean {
-  return characterStats.some(cs => cs.abilities.some(a => a.id === 'null_counter'));
+function getNullCounterChargeCount(level: number): number {
+  if (level >= 2) return 2;
+  if (level === 1) return 1;
+  return 0;
 }
 
 function enemyHasCounter(enemy: EnemyDef): boolean {
@@ -675,6 +677,30 @@ export function executeBattle(
   const consumedResurrectCharacterIds = new Set<number>();
   const consumedIllusionCharacterIds = new Set<number>();
   let consumedPartyIllusion = false;
+  const partyNullCounterCharges = new Map<number, number>();
+  for (const charStats of characterStats) {
+    const charges = getNullCounterChargeCount(getAbilityLevel(charStats, 'null_counter'));
+    if (charges > 0) {
+      partyNullCounterCharges.set(charStats.characterId, charges);
+    }
+  }
+  let enemyNullCounterCharges = enemy.abilities.includes('null_counter') ? 1 : 0;
+
+  const consumePartyNullCounter = (): Character | null => {
+    for (const char of party.characters) {
+      const charges = partyNullCounterCharges.get(char.id) ?? 0;
+      if (charges <= 0) continue;
+      partyNullCounterCharges.set(char.id, charges - 1);
+      return char;
+    }
+    return null;
+  };
+
+  const consumeEnemyNullCounter = (): boolean => {
+    if (enemyNullCounterCharges <= 0) return false;
+    enemyNullCounterCharges -= 1;
+    return true;
+  };
 
   const createPartyEffectEntry = (
     classId: 'fighter' | 'lord' | 'sage',
@@ -723,18 +749,14 @@ export function executeBattle(
   const triggerEnemyCounter = (targetCharStats: ComputedCharacterStats, dealtDamage: number, initiativeRoll: number): void => {
     if (dealtDamage <= 0 || !enemyHasCounter(enemy)) return;
 
-    const nullifiedByParty = partyHasNullCounter(characterStats);
+    const nullifier = consumePartyNullCounter();
     const targetChar = party.characters.find(c => c.id === targetCharStats.characterId);
 
-    if (nullifiedByParty) {
-      const nullifier = party.characters.find(c => {
-        const stats = characterStats.find(cs => cs.characterId === c.id);
-        return stats?.abilities.some(a => a.id === 'null_counter');
-      });
+    if (nullifier) {
       log.push({
         phase: 'close',
         actor: 'effect',
-        action: `${nullifier?.name ?? '味方'}の反撃無効化により、${enemy.name}の反撃は防がれた！`,
+        action: `${nullifier.name}の反撃無効化により、${enemy.name}の反撃は防がれた！`,
       });
       return;
     }
@@ -825,7 +847,16 @@ export function executeBattle(
     }
 
     const reCounterNoAMultiplier = getReCounterNoAMultiplier(targetCharStats);
-    if (partyHp <= 0 || enemyHp <= 0 || !targetChar || reCounterNoAMultiplier <= 0 || enemy.abilities.includes('null_counter')) {
+    if (partyHp <= 0 || enemyHp <= 0 || !targetChar || reCounterNoAMultiplier <= 0) {
+      return;
+    }
+
+    if (consumeEnemyNullCounter()) {
+      log.push({
+        phase: 'close',
+        actor: 'effect',
+        action: `${enemy.name}の反撃無効化により、${targetChar.name}の再反撃は防がれた！`,
+      });
       return;
     }
 
@@ -1081,7 +1112,6 @@ export function executeBattle(
               phase === 'mid'
               && attack.damage > 0
               && getMagicalCounterNoAMultiplier(attack.charStats) > 0
-              && !enemy.abilities.includes('null_counter')
             ) {
               magicalCounterCandidates.set(charId, attack.charStats);
             }
@@ -1089,7 +1119,7 @@ export function executeBattle(
             if (partyHp <= 0 || enemyHp <= 0) continue;
             if (attack.damage <= 0 || !hasCounter(attack.charStats, phase)) continue;
 
-            if (enemy.abilities.includes('null_counter')) {
+            if (consumeEnemyNullCounter()) {
               log.push({
                 phase,
                 actor: 'effect',
@@ -1131,7 +1161,17 @@ export function executeBattle(
 
             if (enemyHp <= 0) break;
 
-            if (partyHp <= 0 || !enemyHasReCounter(enemy) || partyHasNullCounter(characterStats)) {
+            if (partyHp <= 0 || !enemyHasReCounter(enemy)) {
+              continue;
+            }
+
+            const reCounterNullifier = consumePartyNullCounter();
+            if (reCounterNullifier) {
+              log.push({
+                phase,
+                actor: 'effect',
+                action: `${reCounterNullifier.name}の反撃無効化により、${enemy.name}の再反撃は防がれた！`,
+              });
               continue;
             }
 
@@ -1233,7 +1273,7 @@ export function executeBattle(
           runEnemyAttack(Math.ceil(noA * 0.5), true);
         }
 
-        if (phase === 'mid' && enemyHp > 0 && partyHp > 0 && !enemy.abilities.includes('null_counter')) {
+        if (phase === 'mid' && enemyHp > 0 && partyHp > 0) {
           for (const [charId, magicalCounterStats] of magicalCounterCandidates) {
             if (enemyHp <= 0 || partyHp <= 0) break;
 
@@ -1242,6 +1282,15 @@ export function executeBattle(
 
             const magicalCounterNoAMultiplier = getMagicalCounterNoAMultiplier(magicalCounterStats);
             if (magicalCounterNoAMultiplier <= 0) continue;
+
+            if (consumeEnemyNullCounter()) {
+              log.push({
+                phase,
+                actor: 'effect',
+                action: `${enemy.name}の反撃無効化により、${magicalCounterChar.name}の魔法反撃は防がれた！`,
+              });
+              continue;
+            }
 
             const magicalCounterResult = calculateCharacterDamage('mid', magicalCounterStats, magicalCounterChar, enemy, partyStats, partyHp, magicalCounterNoAMultiplier);
             if (magicalCounterResult.totalAttempts <= 0) continue;
