@@ -220,7 +220,7 @@ d. bonus (stackable)
   - Each entry is { ID, tickets }.
   - Bag iteration order is stable (e.g., ascending ID).
     - Examples:
-      - `g.common_reward_bag` = { { ID: 1, tickets: 10 }, { ID: 0, tickets: 90 } }
+      - `g.common_reward_bag` = { { ID: 0, tickets: 90 }, { ID: 1, tickets: 10 },  }
       - `g.superRare_bag` = { { ID: 0, tickets: 399920 }, { ID: 1, tickets: 1 }, { ID: 2, tickets: 1 }, ... , { ID: 80, tickets: 1 } }
 
 - `f.pop_from_weighted_bag`(bag_key: g.*)
