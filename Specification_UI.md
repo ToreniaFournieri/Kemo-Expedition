@@ -351,6 +351,7 @@ PT2...
   - **UI examples:** `?木の盾 x1`, `?木の胸当て x1`
   - **Stock:** 5 items total (one per item type).
   - **Refresh cycle:** Updates every hour (lineup refreshes at **:00** each hour). (or pressing [有償洗替] button.)
+　- notification "店から 名工の木の盾 を購入した！"
 
   - Price (per item, by tier)
     - Tier 1: 100G  
