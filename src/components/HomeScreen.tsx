@@ -1565,6 +1565,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         {activeTab === 'base' && (
           <BaseTab
             inventory={state.global.inventory}
+            parties={state.parties}
             gold={state.global.gold}
             onSellStack={actions.sellStack}
             onSetVariantStatus={actions.setVariantStatus}
@@ -3555,6 +3556,7 @@ function ExpeditionTab({
 
 function BaseTab({
   inventory,
+  parties,
   gold,
   onSellStack,
   onSetVariantStatus,
@@ -3563,6 +3565,7 @@ function BaseTab({
   onSetActiveSubTab,
 }: {
   inventory: InventoryRecord;
+  parties: Party[];
   gold: number;
   onSellStack: (variantKey: string) => void;
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
@@ -3604,6 +3607,7 @@ function BaseTab({
       {activeSubTab === 'inventory' ? (
         <InventoryTab
           inventory={inventory}
+          parties={parties}
           onSellStack={onSellStack}
           onSetVariantStatus={onSetVariantStatus}
         />
@@ -3701,10 +3705,12 @@ function ShopTab({
 
 function InventoryTab({
   inventory,
+  parties,
   onSellStack,
   onSetVariantStatus,
 }: {
   inventory: InventoryRecord;
+  parties: Party[];
   onSellStack: (variantKey: string) => void;
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
 }) {
@@ -3722,6 +3728,31 @@ function InventoryTab({
       (!inventorySuperRareOnly || v.item.superRare >= 1)
     )
   );
+
+  const equippedItems = parties.flatMap((party, partyIndex) =>
+    party.characters.flatMap((character, rowIndex) =>
+      character.equipment
+        .filter((item): item is Item => Boolean(item))
+        .filter((item) =>
+          item.category === selectedCategory &&
+          matchesRarityFilter(item.id, inventoryRarityFilter) &&
+          (!inventorySuperRareOnly || item.superRare >= 1)
+        )
+        .map((item, equipIndex) => ({
+          key: `equipped-${party.id}-${character.id}-${rowIndex}-${equipIndex}-${item.id}-${item.enhancement}-${item.superRare}`,
+          item,
+          partyIndex,
+          rowIndex,
+          characterName: character.name,
+          raceId: character.raceId,
+        }))
+    )
+  );
+  const sortedEquippedItems = [...equippedItems].sort((a, b) => {
+    if (a.partyIndex !== b.partyIndex) return a.partyIndex - b.partyIndex;
+    return a.rowIndex - b.rowIndex;
+  });
+
   const allSoldItems = Object.entries(inventory).filter(([, v]) => v.status === 'sold');
   const filteredSoldItems = sortInventoryItems(
     allSoldItems.filter(([, v]) =>
@@ -3833,7 +3864,30 @@ function InventoryTab({
               </div>
             );
           })}
-          {filteredOwnedItems.length === 0 && (
+          {sortedEquippedItems.map((equipped) => {
+            const race = RACES.find((entry) => entry.id === equipped.raceId);
+            return (
+              <div
+                key={equipped.key}
+                className="px-2 py-1.5 rounded bg-pane"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    {race && <RaceIcon race={race} className="h-4 w-4 shrink-0" />}
+                    <span className="text-sm truncate">{getItemDisplayName(equipped.item)}</span>
+                    <span className="text-xs text-gray-500 shrink-0">x1</span>
+                  </div>
+                  <span className="text-xs text-gray-500 shrink-0">
+                    PT{equipped.partyIndex + 1}:{equipped.characterName}
+                  </span>
+                </div>
+                <div className="mt-0.5 text-xs leading-tight text-gray-400">
+                  {getRarityShortLabel(equipped.item.id)} {getItemStats(equipped.item)}
+                </div>
+              </div>
+            );
+          })}
+          {filteredOwnedItems.length === 0 && sortedEquippedItems.length === 0 && (
             <div className="text-gray-400 text-sm text-center py-4">このカテゴリにアイテムがありません</div>
           )}
       </div>
