@@ -13,7 +13,7 @@ import { applyEnemyEncounterScaling } from '../game/enemyScaling';
 import { DEITY_OPTIONS, getDeityEffectDescription, getDeityRank, getNextDonationThreshold, normalizeDeityName } from '../game/deity';
 import { LEVEL_EXP } from '../game/partyLevel';
 import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../game/environment';
-import { getShopItemPrice } from '../game/shop';
+import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, SHOP_REFRESH_PRICE } from '../game/shop';
 import { getBaseMultiplier } from '../game/baseMultiplier';
 import { computeCharacterStats } from '../game/characterComputation';
 import { serializeGameState } from '../game/saveCodec';
@@ -48,6 +48,7 @@ interface HomeScreenProps {
     reorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
     sellStack: (variantKey: string) => void;
     buyShopItem: (itemId: number) => void;
+    refreshShopLineup: () => void;
     setVariantStatus: (variantKey: string, status: 'notown') => void;
     markItemsSeen: () => void;
     markDiaryLogSeen: (logId: string) => void;
@@ -1579,9 +1580,11 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             parties={state.parties}
             gold={state.global.gold}
             shopPurchases={state.global.shopPurchases}
+            shopRefreshCounts={state.global.shopRefreshCounts}
             onSellStack={actions.sellStack}
             onSetVariantStatus={actions.setVariantStatus}
             onBuyShopItem={actions.buyShopItem}
+            onRefreshShopLineup={actions.refreshShopLineup}
             activeSubTab={activeBaseSubTab}
             onSetActiveSubTab={setActiveBaseSubTab}
           />
@@ -3611,9 +3614,11 @@ function BaseTab({
   parties,
   gold,
   shopPurchases,
+  shopRefreshCounts,
   onSellStack,
   onSetVariantStatus,
   onBuyShopItem,
+  onRefreshShopLineup,
   activeSubTab,
   onSetActiveSubTab,
 }: {
@@ -3621,9 +3626,11 @@ function BaseTab({
   parties: Party[];
   gold: number;
   shopPurchases: Record<string, number[]>;
+  shopRefreshCounts: Record<string, number>;
   onSellStack: (variantKey: string) => void;
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
   onBuyShopItem: (itemId: number) => void;
+  onRefreshShopLineup: () => void;
   activeSubTab: BaseSubTab;
   onSetActiveSubTab: (tab: BaseSubTab) => void;
 }) {
@@ -3670,7 +3677,9 @@ function BaseTab({
           gold={gold}
           parties={parties}
           shopPurchases={shopPurchases}
+          shopRefreshCounts={shopRefreshCounts}
           onBuyShopItem={onBuyShopItem}
+          onRefreshShopLineup={onRefreshShopLineup}
         />
       ) : (
         <div className="text-sm text-gray-600">この機能は次のバージョンで利用可能になります。</div>
@@ -3683,16 +3692,22 @@ function ShopTab({
   gold,
   parties,
   shopPurchases,
+  shopRefreshCounts,
   onBuyShopItem,
+  onRefreshShopLineup,
 }: {
   gold: number;
   parties: Party[];
   shopPurchases: Record<string, number[]>;
+  shopRefreshCounts: Record<string, number>;
   onBuyShopItem: (itemId: number) => void;
+  onRefreshShopLineup: () => void;
 }) {
   const mustelidRace = RACES.find((race) => race.id === 'mustelid');
   const now = new Date();
   const minutesToRefresh = 60 - now.getMinutes();
+  const hourKey = getShopHourKey(now);
+  const refreshCount = shopRefreshCounts[hourKey] ?? 0;
   const highestTierReached = DUNGEONS.reduce((highestId, dungeon) => {
     if (dungeon.id === 1) return 1;
 
@@ -3702,16 +3717,17 @@ function ShopTab({
 
     return isUnlockedGlobally ? Math.max(highestId, dungeon.id) : highestId;
   }, 1);
-  const hourlySeed = Number(`${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}`);
+  const lineupSeed = getShopLineupSeed(now, refreshCount);
+  const stockKey = getShopStockKey(now, refreshCount);
   const shopCategories: ItemCategory[] = ['shield', 'armor', 'sword', 'wand', 'grimoire'];
-  const soldOutItemIds = shopPurchases[String(hourlySeed)] ?? [];
+  const soldOutItemIds = shopPurchases[stockKey] ?? [];
 
   if (!mustelidRace) {
     return <div className="text-sm text-gray-600">お店の準備中です。</div>;
   }
 
   const seededTierForIndex = (index: number): number => {
-    const x = Math.sin(hourlySeed + (index + 1) * 97) * 10000;
+    const x = Math.sin(lineupSeed + (index + 1) * 97) * 10000;
     const normalized = x - Math.floor(x);
     return Math.floor(normalized * highestTierReached) + 1;
   };
@@ -3742,11 +3758,25 @@ function ShopTab({
     <div className="space-y-4">
       <div className="rounded border border-gray-200 bg-white p-3">
         <div className="text-sm font-semibold text-sub">フェリスのガラクタ屋</div>
-        <div className="mt-2 flex items-start gap-3">
-          <RaceIcon race={mustelidRace} className="h-10 w-10" />
-          <p className="text-sm text-gray-700">
-            ひょっとしたらいいお宝が眠ってるかもしれないよ？買うまで商品に触らないでね。 (商品洗替まであと {minutesToRefresh} 分)
-          </p>
+        <div className="mt-2 flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <RaceIcon race={mustelidRace} className="h-10 w-10" />
+            <p className="text-sm text-gray-700">
+              ひょっとしたらいいお宝が眠ってるかもしれないよ？買うまで商品に触らないでね。 (商品洗替まであと {minutesToRefresh} 分)
+            </p>
+          </div>
+          <button
+            onClick={onRefreshShopLineup}
+            disabled={gold < SHOP_REFRESH_PRICE}
+            className={`shrink-0 rounded px-3 py-1 text-xs font-semibold ${
+              gold >= SHOP_REFRESH_PRICE
+                ? 'bg-amber-500 text-white hover:bg-amber-600'
+                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            <span className="block">[有償洗替]</span>
+            <span className="block text-[11px]">{formatNumber(SHOP_REFRESH_PRICE)}G</span>
+          </button>
         </div>
       </div>
 

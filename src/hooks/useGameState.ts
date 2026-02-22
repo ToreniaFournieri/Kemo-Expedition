@@ -68,7 +68,7 @@ import {
 import { LEVEL_EXP } from '../game/partyLevel';
 import { createEnvironmentStorageKey } from '../game/environment';
 import { computeCharacterStats } from '../game/characterComputation';
-import { getShopItemPrice } from '../game/shop';
+import { getShopItemPrice, getShopHourKey, getShopStockKey, SHOP_REFRESH_PRICE } from '../game/shop';
 
 const BUILD_NUMBER = 1;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
@@ -329,6 +329,8 @@ function loadSavedState(): GameState | null {
             gold: firstParty?.gold ?? 200,
             inventory: migrateOldInventory(firstParty?.inventory ?? []),
             deityDonations: {},
+            shopPurchases: {},
+            shopRefreshCounts: {},
           };
         }
         if (Array.isArray(parsed.global.inventory)) {
@@ -342,6 +344,14 @@ function loadSavedState(): GameState | null {
               if (normalized.length > 0) {
                 acc[hourKey] = normalized;
               }
+              return acc;
+            }, {})
+          : {};
+
+        parsed.global.shopRefreshCounts = (parsed.global.shopRefreshCounts && typeof parsed.global.shopRefreshCounts === 'object')
+          ? Object.entries(parsed.global.shopRefreshCounts as Record<string, unknown>).reduce<Record<string, number>>((acc, [hourKey, refreshCount]) => {
+              if (typeof refreshCount !== 'number' || refreshCount < 0) return acc;
+              acc[hourKey] = Math.floor(refreshCount);
               return acc;
             }, {})
           : {};
@@ -556,6 +566,7 @@ function createInitialState(): GameState {
       inventory: createStarterInventory(),
       deityDonations: {},
       shopPurchases: {},
+      shopRefreshCounts: {},
     },
     parties: [createInitialParty(), createSecondParty()],
     selectedPartyIndex: 0,
@@ -590,6 +601,7 @@ type GameAction =
   | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number }
   | { type: 'SELL_STACK'; variantKey: string }
   | { type: 'BUY_SHOP_ITEM'; itemId: number }
+  | { type: 'REFRESH_SHOP_LINEUP' }
   | { type: 'SET_VARIANT_STATUS'; variantKey: string; status: 'notown' }
   | { type: 'MARK_ITEMS_SEEN' }
   | { type: 'MARK_DIARY_LOG_SEEN'; logId: string }
@@ -1621,8 +1633,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (!baseItem || state.global.gold < shopPrice) return state;
 
       const now = new Date();
-      const hourKey = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}`;
-      const soldOutItemIds = state.global.shopPurchases[hourKey] ?? [];
+      const hourKey = getShopHourKey(now);
+      const refreshCount = state.global.shopRefreshCounts[hourKey] ?? 0;
+      const stockKey = getShopStockKey(now, refreshCount);
+      const soldOutItemIds = state.global.shopPurchases[stockKey] ?? [];
       if (soldOutItemIds.includes(action.itemId)) return state;
 
       const guaranteedEnhancementResult = drawGuaranteedEnhancement(state.bags);
@@ -1659,7 +1673,28 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           gold: state.global.gold - shopPrice,
           shopPurchases: {
             ...state.global.shopPurchases,
-            [hourKey]: [...soldOutItemIds, action.itemId],
+            [stockKey]: [...soldOutItemIds, action.itemId],
+          },
+        },
+      };
+    }
+
+
+    case 'REFRESH_SHOP_LINEUP': {
+      if (state.global.gold < SHOP_REFRESH_PRICE) return state;
+
+      const now = new Date();
+      const hourKey = getShopHourKey(now);
+      const currentRefreshCount = state.global.shopRefreshCounts[hourKey] ?? 0;
+
+      return {
+        ...state,
+        global: {
+          ...state.global,
+          gold: state.global.gold - SHOP_REFRESH_PRICE,
+          shopRefreshCounts: {
+            ...state.global.shopRefreshCounts,
+            [hourKey]: currentRefreshCount + 1,
           },
         },
       };
@@ -1844,6 +1879,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           inventory: createStarterInventory(),
           deityDonations: {},
           shopPurchases: {},
+          shopRefreshCounts: {},
         },
         parties: [createInitialParty(), createSecondParty()],
         selectedPartyIndex: 0,
@@ -2037,6 +2073,10 @@ export function useGameState() {
 
     buyShopItem: useCallback((itemId: number) => {
       dispatch({ type: 'BUY_SHOP_ITEM', itemId });
+    }, []),
+
+    refreshShopLineup: useCallback(() => {
+      dispatch({ type: 'REFRESH_SHOP_LINEUP' });
     }, []),
 
     setVariantStatus: useCallback((variantKey: string, status: 'notown') => {
