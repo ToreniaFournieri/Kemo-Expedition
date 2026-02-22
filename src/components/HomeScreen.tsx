@@ -3864,10 +3864,12 @@ function ShopTab({
           <div key={entry.key} className="rounded border border-gray-200 bg-white px-3 py-2">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <div className={`truncate text-sm ${entry.rarityClass}`}>
-                  ?{entry.item.name} {entry.isSoldOut ? 'x0' : 'x1'}
+                <div className={`flex items-center gap-2 text-sm ${entry.rarityClass}`}>
+                  <span className="truncate">?{entry.item.name}</span>
+                  <span className={`shrink-0 text-xs ${entry.isSoldOut ? 'text-gray-400' : 'text-gray-500'}`}>
+                    {formatNumber(entry.price)}G
+                  </span>
                 </div>
-                <div className={`text-xs ${entry.isSoldOut ? 'text-gray-400' : 'text-gray-500'}`}>{formatNumber(entry.price)}G</div>
                 <div className={`mt-0.5 text-xs leading-tight ${entry.isSoldOut ? 'text-gray-300' : 'text-gray-400'}`}>
                   {getRarityShortLabel(entry.item.id)} {getItemStats(entry.item)}
                 </div>
