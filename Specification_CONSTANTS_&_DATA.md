@@ -235,34 +235,37 @@ d. bonus (stackable)
  
 - `f.reset_weighted_bag`(bag_key: g.*)
   - Bags reset only by either:
-	- Explicit reset
+	- Explicit reset 
 	- Automatic reset when total == 0 (bag is empty)
+  - Reset: the bag is initialized from `g.(bagname)_default`.
+    - example: `g.physical_threat_weight_bag` is initialized from `g.physical_threat_weight_bag_default`.
 
 **reward list**
 
-- `g.common_reward_bag` table
+- `g.common_reward_bag_default` table
 
 | ID | title | tickets |
 |-----|---------|------|
 | 0 | no item | 90 |
 | 1 | win | 10 |
 
+  
 
-- `g.uncommon_reward_bag` table
+- `g.uncommon_reward_bag_default` table
  
 | ID | title | tickets |
 |-----|---------|------|
 | 0 | no item | 99 |
 | 1 | win | 1 |
 
-- `g.rare_reward_bag` table
+- `g.rare_reward_bag_default` table
  
 | ID | title | tickets |
 |-----|---------|------|
 | 0 | no item | 99 |
 | 1 | win | 1 |
 
-- `g.mythic_reward_bag` table
+- `g.mythic_reward_bag_default` table
  
 | ID | title | tickets |
 |-----|---------|------|
@@ -284,7 +287,7 @@ d. bonus (stackable)
 | 5 | 恐ろしい | x3.50 |
 | 6 | 究極の | x5.00 |
 
-- `g.common_enhancement_bag` table
+- `g.common_enhancement_bag_default` table
 
 | ID | title | tickets |
 |-----|---------|------|
@@ -296,7 +299,7 @@ d. bonus (stackable)
 | 5 | 恐ろしい | 4 |
 | 6 | 究極の | 1 |
 
-- `g.enhancement_bag` table
+- `g.enhancement_bag_default` table
  
 | ID | title | tickets |
 |-----|---------|------|
@@ -393,16 +396,20 @@ d. bonus (stackable)
 | 79 | 災いもたらす | `c.growth_x0.9`成長0.9倍, `c.magical_offense_multiplier_x1.5`魔攻撃1.5倍 |
 | 80 | 呪われし | `c.antagonism`⚠️敵対, `c.growth_x1.8`成長1.8倍 |
 
-- `g.superRare_bag` table
+- `g.superRare_bag_default` table
 
 | ID | tickets | multiplier |
 |-----|------|-----|
 | 0  | 399920 | x1.0 |
-| 1~80 | 1 | x2.0 |
+| 1 | 1 | x2.0 |
+| 2 | 1 | x2.0 |
+| ... | 1 | x2.0 |
+| 80 | 1 | x2.0 |
 
 **Threat weight**
-- `g.physical_threat_weight_bag`
+- `g.physical_threat_weight_bag_default`
   - ID = row
+- Threat weight persist the whole game. (not reset per battle or per expedition.)
 
 | ID | tickets |
 |---|----|
@@ -413,7 +420,7 @@ d. bonus (stackable)
 | 5 | 1 |
 | 6 | 1 |
 
-- `g.magical_threat_weight_bag` 
+- `g.magical_threat_weight_bag_default` 
 
 | ID | tickets |
 |---|----|
