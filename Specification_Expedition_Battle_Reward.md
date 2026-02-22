@@ -260,8 +260,8 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
   - **Re-counter** If opponent.`a.re-counter`, `f.re-counter`(actor:character , opponent:enemy ,phase: )
 - **Re-attack**: IF enemy.`a.re-attack`, the enemy attacks to characters. (using f.hit_detection, f.damage_calculation)
    	- `a.re-attack`1: One attack and character.`f.NoA` x 0.5, round up
-  	- `a.re-attack`2: **Two** attack and character.`f.NoA` x 0.5, round up
-  	- `a.re-attack`3: **Two** attack and character.`f.NoA` x 1.0
+  	- `a.re-attack`2: One attack and character.`f.NoA` x 0.7, round up
+  	- `a.re-attack`3: One attack and character.`f.NoA` x 1.0
 - **Magical counter:** If opponent.`a.magical-counter` and phase is MID, `f.magical-counter`(actor:character , opponent:enemy ,phase: )
 
 - *Note:* Nth_hit is global for all enemy attacks in the phase (not per-target)
