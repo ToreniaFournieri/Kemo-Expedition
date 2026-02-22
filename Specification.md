@@ -17,24 +17,9 @@
 ## 3. INITIALIZATION 
 
 ### 3.1 Randomness initialization
-- **Reward:**
-  - Populate `g.common_reward_bag` with tickets according to the `g.common_reward_bag` table.
-  - Populate `g.uncommon_reward_bag` with tickets according to the `g.uncommon_reward_bag` table.
-  - Populate `g.rare_reward_bag` with tickets according to the `g.rare_reward_bag` table.
-  - Populate `g.mythic_reward_bag` with tickets according to the `g.mythic_reward_bag` table.
+-  `f.reset_weighted_bag`(bag_key: g.*)
+  - bags: `g.common_reward_bag`, `g.common_enhancement_bag`, `g.uncommon_reward_bag`, `g.rare_reward_bag`, `g.mythic_reward_bag`, `g.enhancement_bag`, `g.superRare_bag`, `g.physical_threat_weight_bag`, and `g.magical_threat_weight_bag`
 
-- **Enhancement:**
-  - Populate `g.common_enhancement_bag` with tickets according to the `g.common_enhancement_bag` table.
-  - Populate `g.enhancement_bag` with tickets according to the `g.enhancement_bag` table.
-
-- **Super Rare:**
-  - Populate `g.superRare_bag` with tickets according to the `g.superRare_bag` table.
-
-- **Threat weight:** 
-  - Populate `g.physical_threat_weight_bag` with tickets: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 2,2,2,2,2,2,2,2, 3,3,3,3, 4,4, 5, 6]. 
-  - Populate `g.magical_threat_weight_bag` with tickets: [1,2,3,4,5,6]. 
-
-- If a bag is empty or explicitly reset the bag, initialize it.
 
 ### 3.2 Initial setup
 - Initial setup (or reset condition)
