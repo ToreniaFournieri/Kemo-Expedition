@@ -339,9 +339,31 @@ PT2...
 - Shop name: フェリスのガラクタ屋 (Felis’s Junk Shop)
 - Dialogue pane
   - Column1: Shop owner icon: Mustelid icon
-  - Column2: "ひょっとしたらいいお宝が眠ってるかもしれないよ？買うまで商品に触らないでね。 (商品洗替まであと 34 分)"
+  - Column2: " <dialogue> (商品洗替まであと 34 分)"
   - Column3: [有償洗替] 1,000G
-- **Lineup:** 5Tier 1 to Tier X (**up to the highest tier the player has reached**) **Common base items** (one per item type).
+
+| Intimacy | Dialogue |
+|--------|----------|
+| 0–19 | 「ひょっとしたらいいお宝が眠ってるかもしれないよ？……おっと獲物には触らんといてな。」 |
+| 20–39 | 「お、また来たのかい。うちのガラクタも、見ていくうちに味が出てくるもんさ。」 |
+| 40–79 | 「やぁ。奥の棚も見ていいよ。運が良けりゃ掘り出し物があるかもな。」 |
+| 80–99 | 「待ってたよ。あんたには特別な品も回してるんだ。……他の客には内緒だぜ？」 |
+
+- **Lineup:** 5Tier 1 to Tier X (**up to the highest tier the player has reached**).
+
+| Intimacy | Lineup |
+|---|---|---|
+| 0–19 | 5 Common |
+| 20–39 | 1 Uncommon, 4 Common |
+| 40–79 | 1 Rare, 2 Uncommon, 2 Common |
+| 80–99 | 1 Mythic, 2 Rare, 2 Uncommon |
+
+- display item color code:
+  - Common: non-bold
+  - Uncommon: bold 
+  - Rare: Sub color (blue)
+  - Mythic: Accent color (Dark orange)
+
 - **Mystery enhancement (same as item drop logic):**
   - When the player selects an item to buy, roll:
     - 1 ticket from `g.enhancement_bag`,
@@ -349,19 +371,27 @@ PT2...
     - 1 ticket from `g.superRare_bag`
   - The resulting enhancement/title is **hidden until purchased** (can become a Super Rare title item).
   - **UI examples:** `?木の盾 x1`, `?木の胸当て x1`
-  - **Stock:** 5 items total (one per item type).
-  - **Refresh cycle:** Updates every hour (lineup refreshes at **:00** each hour). (or pressing [有償洗替] button.)
-　- notification "店から 名工の木の盾 を購入した！"
+  - notification "店から 名工の木の盾 を購入した！"
 
   - Price (per item, by tier)
     - Tier 1: 100G  
     - Tier 2: 200G  
     - Tier 3: 400G  
-	- Tier 4: 800G  
-	- Tier 5: 1,600G  
-	- Tier 6: 3,200G  
-	- Tier 7: 6,400G  
-	- Tier 8: 12,800G  
+  	- Tier 4: 800G  
+  	- Tier 5: 1,600G  
+  	- Tier 6: 3,200G  
+  	- Tier 7: 6,400G  
+  	- Tier 8: 12,800G  
+
+- **Shop Refresh & Intimacy (親密度)**
+
+  - Refresh timing
+    - Shop lineup refreshes every 8 hours at **02:00, 10:00, 18:00** (local time).
+
+  - Intimacy decay
+    - Intimacy decays by **10%** (multiplicative) at the refresh times (02:00 / 10:00 / 18:00).
+  - Intimacy is capped at **99**.
+
 
   - current version: **debug mode: OFF**, no debug items bellow:
 	- Dialogue: "とても珍しい品物が揃ってるよ。オラよくわかんねぇけど、売主がデバッグ用にって言ってた。"
