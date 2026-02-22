@@ -377,7 +377,7 @@ PT2...
 - The resulting enhancement/title is **hidden until purchased** (can become a Super Rare title item).
 - **UI examples:** `?木の盾 x1`, `?木の胸当て x1`
 - **Notification:** 「店から 名工の木の盾 を購入した！」
-  - if it is auto-sell item: 「店から 名工の木の盾 を購入して失望した(自動売却対象)」and sold it automatically. 
+  - if it is auto-sell item: 「店から 名工の木の盾 を購入して失望した(自動売却)」and sold it automatically. 
 
 
 **Price (per item, by tier)**
