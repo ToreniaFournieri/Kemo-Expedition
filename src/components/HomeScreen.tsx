@@ -602,7 +602,7 @@ const ABILITY_NAMES: Record<string, string> = {
   hunter: '狩人',
   defender: '守護者',
   counter: '反撃',
-  re_attack: '再攻撃',
+  re_attack: '連撃',
   iaigiri: '居合斬り',
   resonance: '共鳴',
   command: '指揮',
