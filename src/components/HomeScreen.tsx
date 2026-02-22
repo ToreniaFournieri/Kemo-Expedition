@@ -1471,7 +1471,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
                         state.parties.forEach((_, partyIndex) => {
                           const runtime = nextCycles[partyIndex] ?? { state: '待機中' as PartyCycleState, stateStartedAt: Date.now(), durationMs: 1000 };
                           if (runtime.state === '待機中') {
-                            nextCycles[partyIndex] = { state: '移動中', stateStartedAt: Date.now(), durationMs: 5000 };
+                            nextCycles[partyIndex] = { state: '移動中', stateStartedAt: Date.now(), durationMs: getPartyTravelDurationMs(state.parties[partyIndex]) };
                           }
                         });
                         return nextCycles;
