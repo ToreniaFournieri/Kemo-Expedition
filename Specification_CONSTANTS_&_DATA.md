@@ -213,32 +213,27 @@ d. bonus (stackable)
   - deity // replacing deity reset character equipment slots. 
   - characters slots
 
-**Bag Randomization (indivisual)**
-  - **Threat weight:** 
-    - Populate `g.physical_threat_weight_bag` with tickets: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 2,2,2,2,2,2,2,2, 3,3,3,3, 4,4, 5, 6]. 
-    - Populate `g.magical_threat_weight_bag` with tickets: [1,2,3,4,5,6].
-  - If a bag is empty or explicitly reset the bag, initialize it.
-
-**Bag Randomization (complessed)** There are `g.common_reward_bag`, `g.common_enhancement_bag`, `g.uncommon_reward_bag`, `g.rare_reward_bag`, `g.mythic_reward_bag`, `g.enhancement_bag`, and `g.superRare_bag` which control probable randomness.
+**Bag Randomization** There are `g.common_reward_bag`, `g.common_enhancement_bag`, `g.uncommon_reward_bag`, `g.rare_reward_bag`, `g.mythic_reward_bag`, `g.enhancement_bag`, `g.superRare_bag`, `g.physical_threat_weight_bag`, and `g.magical_threat_weight_bag` which control probable randomness.
 
   - **Weighted Random Bag (Count-Based Ticket Rule)**
     - Each bag stores counts per entry, not individual tickets.
 	  - Example: g.common_reward_bag = { { ID: 1, tickets: 10 }, { ID: 0, tickets: 90 } }
+      - Example: `g.superRare_bag` = { { ID: 0, tickets: 399920 }, { ID: 1, tickets: 1 }, { ID: 2, tickets: 1 }, ...  , { ID: 80, tickets: 1 } }
 
     - `f.pop_from_weighted_bag`(bag_key: g.*)
       - Get bag by bag_key.
       - Compute total_tickets = sum(entry.tickets where tickets > 0).
+      - If total_tickets == 0, reinitialize: `f.reset_weighted_bag`(bag_key: bag_key)
       - Roll r = random_int(1, total_tickets) (inclusive).
       - Select the entry whose cumulative ticket range contains r (stable iteration order).
       - Decrement the selected entry’s tickets -= 1
+        - example: ticket Id is 0, then  { ID: 0, tickets: 90 } -> { ID: 0, tickets: 89 }
       - Return the selected ID.
      
-    - `f.reset_weight_bag`(bag_key: g.*)
+    - `f.reset_weighted_bag`(bag_key: g.*)
       - Bags reset only by either:
-        - Explicit reset (f.reset_bag(bag_key))
+        - Explicit reset
         - Automatic reset when total == 0 (bag is empty)
-
-
 
 **reward list**
 
@@ -401,6 +396,30 @@ d. bonus (stackable)
 |-----|------|-----|
 | 0  | 399920 | x1.0 |
 | 1~80 | 1 | x2.0 |
+
+**Threat weight**
+- `g.physical_threat_weight_bag`
+  - ID = row
+
+| ID | tickets |
+|---|----|
+| 1 | 16 |
+| 2 | 8 |
+| 3 | 4 |
+| 4 | 2 |
+| 5 | 1 |
+| 6 | 1 |
+
+- `g.magical_threat_weight_bag` 
+
+| ID | tickets |
+|---|----|
+| 1 | 1 |
+| 2 | 1 |
+| 3 | 1 |
+| 4 | 1 |
+| 5 | 1 |
+| 6 | 1 |
 
 
 **Elemental attribute**
