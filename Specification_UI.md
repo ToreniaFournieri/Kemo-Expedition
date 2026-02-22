@@ -343,7 +343,7 @@ PT2...
 - **Column 1:** Shop owner icon (Mustelid icon)  
 - **Column 2:** Dialogue + countdown  
   - 表示例: （商品洗替まであと 34 分）
-- **Column 3:** [有償洗替] 10G
+- **Column 3:** [有償洗替] X,XXXG
 
 **Dialogue by intimacy**
 | Intimacy | Dialogue |
@@ -352,6 +352,14 @@ PT2...
 | 20–39 | 「お、また来たのかい。うちのガラクタも、見ていくうちに味が出てくるもんさ。」 |
 | 40–79 | 「やぁ。奥の棚も見ていいよ。運が良けりゃ掘り出し物があるかもな。」 |
 | 80–99 | 「待ってたよ。あんたには特別な品も回してるんだ。……他の客には内緒だぜ？」 |
+
+**Paid Refresh (有償洗替):**  
+  - **Cost:** `2,000G × (1 + refresh_count)`  
+    - Example:  
+      - 1st use: 2,000G  
+      - 2nd use: 4,000G  
+      - 3rd use: 6,000G  
+
 
 **Lineup**
 - **Lineup:** 5 items from Tier 1 to Tier X (**up to the highest tier whose boss the player has defeated**).
@@ -390,13 +398,10 @@ PT2...
 - Tier 7: 6,400G  
 - Tier 8: 12,800G  
 
-**Shop Refresh & Intimacy (親密度)**
-
 - Refresh timing
   - Shop lineup refreshes every 8 hours at **02:00, 10:00, 18:00** (local time).
-
-- Intimacy decay
-  - Intimacy decays by **10% (multiplicative)** at each refresh time (02:00 / 10:00 / 18:00).
+  - `paid_refresh_count` resets to `0` at each refresh time.
+  - Intimacy decays by **10% (multiplicative)** at each refresh time.
 
 - Intimacy cap
   - Intimacy is capped at **99**.
