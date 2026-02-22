@@ -577,7 +577,7 @@ type GameAction =
   | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character> }
   | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number }
   | { type: 'SELL_STACK'; variantKey: string }
-  | { type: 'BUY_SHOP_ITEM'; superRare: number }
+  | { type: 'BUY_SHOP_ITEM'; itemId: number }
   | { type: 'SET_VARIANT_STATUS'; variantKey: string; status: 'notown' }
   | { type: 'MARK_ITEMS_SEEN' }
   | { type: 'MARK_DIARY_LOG_SEEN'; logId: string }
@@ -1588,15 +1588,22 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'BUY_SHOP_ITEM': {
-      const baseItem = getItemById(1103);
-      const hasSuperRareTitle = SUPER_RARE_TITLES.some((title) => title.value === action.superRare && title.value > 0);
+      const baseItem = getItemById(action.itemId);
       const shopPrice = 10000;
-      if (!baseItem || !hasSuperRareTitle || state.global.gold < shopPrice) return state;
+      if (!baseItem || state.global.gold < shopPrice) return state;
+
+      let bags = refillBagIfEmpty(state.bags, 'enhancementBag');
+      const { ticket: enhancement, newBag: newEnhancementBag } = drawFromBag(bags.enhancementBag);
+      bags = { ...bags, enhancementBag: newEnhancementBag };
+
+      bags = refillBagIfEmpty(bags, 'superRareBag');
+      const { ticket: superRare, newBag: newSuperRareBag } = drawFromBag(bags.superRareBag);
+      bags = { ...bags, superRareBag: newSuperRareBag };
 
       const purchasedItem: Item = {
         ...baseItem,
-        enhancement: 0,
-        superRare: action.superRare,
+        enhancement,
+        superRare,
       };
       const variantKey = getVariantKey(purchasedItem);
       const existing = state.global.inventory[variantKey];
@@ -1617,6 +1624,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       return {
         ...state,
+        bags,
         global: {
           ...state.global,
           inventory: newInventory,
@@ -1994,8 +2002,8 @@ export function useGameState() {
       dispatch({ type: 'SELL_STACK', variantKey });
     }, []),
 
-    buyShopItem: useCallback((superRare: number) => {
-      dispatch({ type: 'BUY_SHOP_ITEM', superRare });
+    buyShopItem: useCallback((itemId: number) => {
+      dispatch({ type: 'BUY_SHOP_ITEM', itemId });
     }, []),
 
     setVariantStatus: useCallback((variantKey: string, status: 'notown') => {
