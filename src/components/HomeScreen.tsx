@@ -404,7 +404,8 @@ function getItemStats(item: Item): string {
   const multiplier = (ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1) *
     (SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1);
   const superRareUniqueBonusText = formatBonuses(
-    SUPER_RARE_TITLES.find((title) => title.value === item.superRare)?.bonuses ?? []
+    SUPER_RARE_TITLES.find((title) => title.value === item.superRare)?.bonuses ?? [],
+    { defenseMultiplierStyle: 'friendly' }
   );
   const baseMultiplier = item.baseMultiplier ?? 1;
   const multiplierPercent = Math.round((baseMultiplier - 1) * 100);
@@ -555,27 +556,6 @@ function getElementalOffenseHelpLines(character: Character, stats: ComputedChara
   });
 
   return lines;
-}
-
-function getDefenseMultiplierSum(items: Item[], kind: 'physical' | 'magical'): number {
-  const appliedBonusNames = new Set<string>();
-  const relevant = items.filter(item => {
-    if (kind === 'physical') return item.physicalDefense;
-    return item.magicalDefense;
-  });
-
-  const bonusSum = relevant.reduce((sum, item) => {
-    const baseMultiplier = item.baseMultiplier ?? 1;
-    if (baseMultiplier === 1) return sum;
-
-    const percent = Math.round((baseMultiplier - 1) * 1000) / 10;
-    const bonusName = `c.${kind}_defense+${percent}`;
-    if (appliedBonusNames.has(bonusName)) return sum;
-    appliedBonusNames.add(bonusName);
-    return sum + (baseMultiplier - 1);
-  }, 0);
-
-  return Math.max(0.01, 1 - bonusSum);
 }
 
 // Helper to format bonus descriptions
@@ -1673,8 +1653,8 @@ function PartyTab({
     magicalNoA: selectedStats.magicalNoA,
     physDef: Math.floor(selectedStats.physicalDefense),
     magDef: Math.floor(selectedStats.magicalDefense),
-    physicalDefenseResistPercent: Math.round(Math.max(0.01, getDefenseMultiplierSum(equippedItems, 'physical') * getBaseDefenseScale(selectedStats.baseStats.vitality) + selectedStats.deityDefenseAmplifierBonus.physical) * 100),
-    magicalDefenseResistPercent: Math.round(Math.max(0.01, getDefenseMultiplierSum(equippedItems, 'magical') * getBaseDefenseScale(selectedStats.baseStats.mind) + selectedStats.deityDefenseAmplifierBonus.magical) * 100),
+    physicalDefenseResistPercent: Math.round(Math.max(0.01, selectedStats.physicalDefenseAmplifier + selectedStats.deityDefenseAmplifierBonus.physical) * 100),
+    magicalDefenseResistPercent: Math.round(Math.max(0.01, selectedStats.magicalDefenseAmplifier + selectedStats.deityDefenseAmplifierBonus.magical) * 100),
     meleeAttackAmp: ((selectedIaigiriLevel > 0
       ? selectedIaigiriMultiplier * (1 + selectedStats.meleeAttackCBonus + getOffenseMultiplierSum(equippedItems, 'melee', selectedStats.offenseCBonusNames)) * selectedStats.physicalOffenseMultiplier
       : (1 + selectedStats.meleeAttackCBonus + getOffenseMultiplierSum(equippedItems, 'melee', selectedStats.offenseCBonusNames) + selectedStats.physicalAttackCBonus) * selectedStats.physicalOffenseMultiplier
@@ -2546,8 +2526,6 @@ function PartyTab({
                 const iaigiriMultiplier = iaigiri ? (iaigiri.level >= 3 ? 3.0 : iaigiri.level >= 2 ? 2.5 : 2.0) : 1.0;
                 const strengthScale = getBaseOffenseScale(stats.baseStats.strength);
                 const intelligenceScale = getBaseOffenseScale(stats.baseStats.intelligence);
-                const vitalityScale = getBaseDefenseScale(stats.baseStats.vitality);
-                const mindScale = getBaseDefenseScale(stats.baseStats.mind);
                 const hasRanged = stats.rangedAttack > 0 || stats.rangedNoA > 0;
                 const hasMagical = stats.magicalAttack > 0 || stats.magicalNoA > 0;
                 const hasMelee = stats.meleeAttack > 0 || stats.meleeNoA > 0;
@@ -2567,14 +2545,6 @@ function PartyTab({
                   equippedItems,
                   'magical',
                   baseAppliedOffenseBonusNames
-                );
-                const defenseMultPhysical = getDefenseMultiplierSum(
-                  equippedItems,
-                  'physical'
-                );
-                const defenseMultMagical = getDefenseMultiplierSum(
-                  equippedItems,
-                  'magical'
                 );
 
                 type StatusLine = {
@@ -2658,8 +2628,8 @@ function PartyTab({
                 }
 
                 // Defense lines
-                const defenseAmpPhysical = Math.max(0.01, defenseMultPhysical * vitalityScale + stats.deityDefenseAmplifierBonus.physical);
-                const defenseAmpMagical = Math.max(0.01, defenseMultMagical * mindScale + stats.deityDefenseAmplifierBonus.magical);
+                const defenseAmpPhysical = Math.max(0.01, stats.physicalDefenseAmplifier + stats.deityDefenseAmplifierBonus.physical);
+                const defenseAmpMagical = Math.max(0.01, stats.magicalDefenseAmplifier + stats.deityDefenseAmplifierBonus.magical);
                 const elementName = stats.elementalOffense === 'fire' ? '🔥' :
                   stats.elementalOffense === 'thunder' ? '⚡' :
                   stats.elementalOffense === 'ice' ? '❄️' : '無';
