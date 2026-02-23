@@ -784,9 +784,11 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
     } else if (b.type === 'antagonism') {
       parts.push('⚠️敵対');
     } else if (b.type === 'accuracy') {
-      parts.push(`命中+${Math.round(b.value * 1000)}`);
+      const rounded = Math.round(b.value * 1000);
+      parts.push(`命中${rounded >= 0 ? '+' : ''}${rounded}`);
     } else if (b.type === 'evasion') {
-      parts.push(`回避+${Math.round(b.value * 1000)}`);
+      const rounded = Math.round(b.value * 1000);
+      parts.push(`回避${rounded >= 0 ? '+' : ''}${rounded}`);
     } else if (b.type === 'melee_attack') {
       parts.push(`近攻撃+${Math.round(b.value * 100)}%`);
     } else if (b.type === 'ranged_attack') {
