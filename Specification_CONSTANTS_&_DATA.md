@@ -579,7 +579,7 @@ d. bonus (stackable)
 #### 2.3.1 Expedition
 - `x.expedition` list
 
-| `x.expedition_tier` | `x.expediton` | short word | `x.exp_HP_mult` | `x.exp_atk_mult` | `x.exp_NoA_mult` | `x.exp_atk_amp_mult` | `x.exp_def_mult` | `x.exp_def_amp_mult` | drop item tier | lore |
+| `x.tier` | `x.expediton` | short word | `x.exp_HP_mult` | `x.exp_atk_mult` | `x.exp_NoA_mult` | `x.exp_atk_amp_mult` | `x.exp_def_mult` | `x.exp_def_amp_mult` | drop item tier | lore |
 |------|-----|-----|-----|----|----|----|----|----|----|----|
 | 1 | ケイナイアン平原(Caninian Plains) | 原 | x1 | x1 | x1 | x1 | x1 | x1 | 1 |  |
 | 2 | ルピニアンの断崖(Lupinian Crag) | 崖 | x4 | x2 | x2 | x1.5 | x2 | x0.8 | 2 | |
