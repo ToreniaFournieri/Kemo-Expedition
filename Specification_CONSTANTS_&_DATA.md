@@ -579,16 +579,16 @@ d. bonus (stackable)
 #### 2.3.1 Expedition
 - `x.expedition` list
 
-| `x.expediton` | short word | `x.exp_HP_mult` | `x.exp_atk_mult` | `x.exp_NoA_mult` | `x.exp_atk_amp_mult` | `x.exp_def_mult` | `x.exp_def_amp_mult` | drop item tier | lore |
-|------|-----|-----|----|----|----|----|----|----|----|
-| ケイナイアン平原(Caninian Plains) | 原 | x1 | x1 | x1 | x1 | x1 | x1 | 1 | The Fields of First Vows. A sun-drenched grassland dotted with wooden watchtowers. This is the training ground for all new expeditions. The atmosphere is stable, making it the perfect place to master the basics of the Sword and Grimoire under the watchful eyes of the loyal Caninian sentries. |
-| ルピニアンの断崖(Lupinian Crag) | 崖 | x4 | x2 | x2 | x1.5 | x2 | x0.8 | 2 | The Razor-Wind Peaks. Sharp obsidian cliffs where the wind howls like a hungry wolf. The Lupinian tribes test their endurance here. |
-| ヴァルピニアンの樹林帯(Vulpinian Taiga) | 樹 | x16 | x4 | x3 | x1.9 | x4 | x0.64 | 3 | The Forest of Veils. A dense, autumnal woodland where the trees seem to move when you blink. The Vulpinian mages use the natural spiritual mist to weave illusions. Requiring explorers to seek the protection of high-tier Robes and Wands to see through the deception. |
-| ウルサンの霊峰(Ursan Peaks) | 峰 | x64 | x8 | x4 | x2.2 | x8 | x0.51 | 4 | The Thunder-Forge Mountains. A volcanic range where the ground shakes with the rhythmic pounding of Ursan blacksmiths. Deep in these magma-lit halls, the lost art of the Katana is guarded by those whose bodies are as hard as the stone itself. |
-| フェリディアンの茂み(Felidian Grove) | 茂 | x256 | x16 | x5 | x2.4 | x16 | x0.41 | 5 | The Moonlit Sanctuary. An ancient, overgrown jungle where ruins of a pre-shattering civilization glow with bioluminescence. To clear this grove, one must master the Bolt—the only weapon fast enough to strike before the forest strikes back. |
-| マステリドの巣穴(Mustelid Burrow) | 巣 | x1,024 | x32 | x6 | x2.5 | x32 | x0.33 | 6 | The Copper Labyrinth. A massive subterranean industrial hive. The air is thick with chemical steam and the clank of gears. Only those with high-tier Catalysts can neutralize the toxins found in the deepest vents. |
-| レポリアンの庭園(Leporian Garden) | 園 | x4,096 | x64 | x7 | x2.6 | x64 | x0.26 | 7 | The High-Heaven Isles. A cluster of floating islands suspended miles above the clouds. The Leporians navigate these heights using wind currents. Only those with the "Lord's" resolve can stabilize their spirit enough to claim the Mythic Sword. |
-| セルヴィンの谷(Cervin Vale) | 谷 | x16,384 | x128 | x8 | x2.7 | x128 | x0.21 | 8 | The Glass Horizon. A dimension where space and time have crystallized. The Cervin Sages reside here in total silence. Here, the final Grimoire and Katana await the one who can transcend mortality. |
+| `x.expedition_tier` | `x.expediton` | short word | `x.exp_HP_mult` | `x.exp_atk_mult` | `x.exp_NoA_mult` | `x.exp_atk_amp_mult` | `x.exp_def_mult` | `x.exp_def_amp_mult` | drop item tier | lore |
+|------|-----|-----|-----|----|----|----|----|----|----|----|
+| 1 | ケイナイアン平原(Caninian Plains) | 原 | x1 | x1 | x1 | x1 | x1 | x1 | 1 |  |
+| 2 | ルピニアンの断崖(Lupinian Crag) | 崖 | x4 | x2 | x2 | x1.5 | x2 | x0.8 | 2 | |
+| 3 | ヴァルピニアンの樹林帯(Vulpinian Taiga) | 樹 | x16 | x4 | x3 | x1.9 | x4 | x0.64 | 3 |  |
+| 4 | ウルサンの霊峰(Ursan Peaks) | 峰 | x64 | x8 | x4 | x2.2 | x8 | x0.51 | 4 |  |
+| 5 | フェリディアンの茂み(Felidian Grove) | 茂 | x256 | x16 | x5 | x2.4 | x16 | x0.41 | 5 |  |
+| 6 | マステリドの巣穴(Mustelid Burrow) | 巣 | x1,024 | x32 | x6 | x2.5 | x32 | x0.33 | 6 |  |
+| 7 | レポリアンの庭園(Leporian Garden) | 園 | x4,096 | x64 | x7 | x2.6 | x64 | x0.26 | 7 |  |
+| 8 | セルヴィンの谷(Cervin Vale) | 谷 | x16,384 | x128 | x8 | x2.7 | x128 | x0.21 | 8 |  |
 
 - **Enemy entity distribution** for each `x.expediton`
 
