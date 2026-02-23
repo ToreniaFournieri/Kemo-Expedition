@@ -1,5 +1,8 @@
 import { getItemById } from '../data/items';
-import { GameState, InventoryRecord, InventoryVariant, Item } from '../types';
+import { ExpeditionLog, ExpeditionLogEntry, GameState, InventoryRecord, InventoryVariant, Item } from '../types';
+
+const MAX_PERSISTED_BATTLE_LOGS_PER_ROOM = 100;
+const MAX_PRESERVED_DIARY_LOGS = 10;
 
 type ItemReference = Pick<Item, 'id' | 'enhancement' | 'superRare'>;
 
@@ -41,6 +44,24 @@ function hydrateItem(item: Partial<Item>, keyHint?: string): Item {
   };
 }
 
+function trimBattleLogEntries(entry: ExpeditionLogEntry): ExpeditionLogEntry {
+  if (!Array.isArray(entry.details) || entry.details.length <= MAX_PERSISTED_BATTLE_LOGS_PER_ROOM) {
+    return entry;
+  }
+
+  return {
+    ...entry,
+    details: entry.details.slice(-MAX_PERSISTED_BATTLE_LOGS_PER_ROOM),
+  };
+}
+
+function trimExpeditionLog(log: ExpeditionLog): ExpeditionLog {
+  return {
+    ...log,
+    entries: log.entries.map(trimBattleLogEntries),
+  };
+}
+
 export function serializeGameState(state: GameState): GameState {
   const compactInventory = Object.entries(state.global.inventory).reduce<InventoryRecord>((acc, [key, variant]) => {
     acc[key] = {
@@ -58,6 +79,8 @@ export function serializeGameState(state: GameState): GameState {
     },
     parties: state.parties.map((party) => ({
       ...party,
+      lastExpeditionLog: party.lastExpeditionLog ? trimExpeditionLog(party.lastExpeditionLog) : null,
+      diaryLogs: party.diaryLogs.slice(0, MAX_PRESERVED_DIARY_LOGS),
       characters: party.characters.map((character) => ({
         ...character,
         equipment: character.equipment.map((item) => (item ? (toItemReference(item) as Item) : null)),
@@ -84,6 +107,8 @@ export function hydrateGameState(state: GameState): GameState {
     },
     parties: state.parties.map((party) => ({
       ...party,
+      lastExpeditionLog: party.lastExpeditionLog ? trimExpeditionLog(party.lastExpeditionLog) : null,
+      diaryLogs: party.diaryLogs.slice(0, MAX_PRESERVED_DIARY_LOGS),
       characters: party.characters.map((character) => ({
         ...character,
         equipment: character.equipment.map((item) => (item ? hydrateItem(item) : null)),
