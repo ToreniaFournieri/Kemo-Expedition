@@ -444,7 +444,7 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
 
   
 #### 8.7 Divine Bureau (神聖局)
-
+- All panes are folded as default and expandable, the condition is persisted and saved.
 
 **Donation box (寄付箱)**
 - Display donated amount of gold of each god.
@@ -589,7 +589,7 @@ HP: 312                 経験値: 88
 - Display Super Rare list with its unique bonus.
 
 
-**Game Setting**
+**Game Setting(ゲーム設定)**
   - 5.1 Backup (Export)
     - Allow the player to export the current save data as a file download.
     - File name format: `Kemo-Expedition_Backup_[version]_[env]_YYYYMMDD`
