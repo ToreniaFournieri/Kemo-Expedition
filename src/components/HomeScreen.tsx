@@ -5153,7 +5153,7 @@ function SettingTab({
           </div>
           <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600">
             {modeSelectionLocked
-              ? 'Luna環境では m.luna 固定です'
+              ? 'ゲームモードはluna固定で変更する事は出来ません'
               : gameMode === 'm.kemo'
                 ? '通常のモードです'
                 : '敵が大幅に強くなります(少しだけ報酬がよくなります)'}
