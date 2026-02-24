@@ -39,7 +39,7 @@
 | uncommon | アンコモン | [U] |
 | rare | レア | [R] |
 | mythic | 神魔レア | [M] |
-
+ 
 **a. bonus ability**
 - "a. アビリティボーナス (重複なし、強化可能)"
 
