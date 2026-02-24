@@ -10,7 +10,7 @@
   
 - **Color Scheme**
 
-- `m.Day` mode:
+- `m.kemo` mode:
 	- Base colors
 	  - Text: Black
 	  - Pane / card background: Gray
@@ -20,7 +20,7 @@
 	- Accent color (~5%)
 	  - Dark Orange (important actions, warnings, highlights)
 
-  - `m.Luna` mode:
+  - `m.luna` mode:
     - Base colors:
       - Text: Black
       - Pane / card background: Gray
@@ -62,7 +62,7 @@
 - Always fixed at the top.
 - Displays:
   - (Game title) + version + (env)
-    - Game title label: `m.Day` = ケモの冒険, `m.Luna` = "ルナの冒険"
+    - Game title label: `m.kemo` = ケモの冒険, `m.luna` = "ルナの冒険"
 	- env label by URL subpath const getEnvLabel = () => {
   const p = window.location.pathname; // e.g. "/Kemo-Expedition/dev/..."
   if (p.includes("/dev/")) return "開発環境";
@@ -466,7 +466,7 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
 - The expanded/collapsed state is persisted and saved.
 
 **Mode select (モード切替)**
-- Switch to `m.Day` and `m.Luna`.
+- Switch to `m.kemo` and `m.luna`. Default: `m.kemo`
   - (Visual change)
 
 **Donation box (寄付箱)**
