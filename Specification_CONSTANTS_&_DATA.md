@@ -599,13 +599,13 @@
 | `x.exp_level` | `x.expediton` | short word | `x.exp_HP_mult` | `x.exp_atk_mult` | `x.exp_NoA_mult` | `x.exp_atk_amp_mult` | `x.exp_def_mult` | `x.exp_def_amp_mult` | drop item tier | lore |
 |------|-----|-----|-----|----|----|----|----|----|----|----|
 | 1 | ケイナイアン平原(Caninian Plains) | 原 | x1 | x1 | x1 | x1 | x1 | x1 | 1 |  |
-| 2 | ルピニアンの断崖(Lupinian Crag) | 崖 | x4 | x2 | x2 | x1.5 | x2 | x0.8 | 2 | |
-| 3 | ヴァルピニアンの樹林帯(Vulpinian Taiga) | 樹 | x16 | x4 | x3 | x1.9 | x4 | x0.64 | 3 |  |
-| 4 | ウルサンの霊峰(Ursan Peaks) | 峰 | x64 | x8 | x4 | x2.2 | x8 | x0.51 | 4 |  |
-| 5 | フェリディアンの茂み(Felidian Grove) | 茂 | x256 | x16 | x5 | x2.4 | x16 | x0.41 | 5 |  |
-| 6 | マステリドの巣穴(Mustelid Burrow) | 巣 | x1,024 | x32 | x6 | x2.5 | x32 | x0.33 | 6 |  |
-| 7 | レポリアンの庭園(Leporian Garden) | 園 | x4,096 | x64 | x7 | x2.6 | x64 | x0.26 | 7 |  |
-| 8 | セルヴィンの谷(Cervin Vale) | 谷 | x16,384 | x128 | x8 | x2.7 | x128 | x0.21 | 8 |  |
+| 8 | ルピニアンの断崖(Lupinian Crag) | 崖 | x4 | x2 | x2 | x1.5 | x2 | x0.8 | 2 | |
+| 16 | ヴァルピニアンの樹林帯(Vulpinian Taiga) | 樹 | x16 | x4 | x3 | x1.9 | x4 | x0.64 | 3 |  |
+| 24 | ウルサンの霊峰(Ursan Peaks) | 峰 | x64 | x8 | x4 | x2.2 | x8 | x0.51 | 4 |  |
+| 32 | フェリディアンの茂み(Felidian Grove) | 茂 | x256 | x16 | x5 | x2.4 | x16 | x0.41 | 5 |  |
+| 40 | マステリドの巣穴(Mustelid Burrow) | 巣 | x1,024 | x32 | x6 | x2.5 | x32 | x0.33 | 6 |  |
+| 48 | レポリアンの庭園(Leporian Garden) | 園 | x4,096 | x64 | x7 | x2.6 | x64 | x0.26 | 7 |  |
+| 56 | セルヴィンの谷(Cervin Vale) | 谷 | x16,384 | x128 | x8 | x2.7 | x128 | x0.21 | 8 |  |
 
 - **Enemy entity distribution** for each `x.expediton`
 
