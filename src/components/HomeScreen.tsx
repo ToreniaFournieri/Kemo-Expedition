@@ -4623,11 +4623,12 @@ function SettingTab({
   bestiaryScrollTop: number;
   onSetBestiaryScrollTop: Dispatch<SetStateAction<number>>;
 }) {
-  type DivineBureauPanelKey = 'donation' | 'clairvoyance' | 'bestiary' | 'superRare' | 'gameSetting';
+  type DivineBureauPanelKey = 'donation' | 'clairvoyance' | 'itemCompendium' | 'bestiary' | 'superRare' | 'gameSetting';
   const DIVINE_BUREAU_PANEL_STORAGE_KEY = 'kemo-expedition.divine-bureau.panel-expanded';
   const defaultDivineBureauPanelState: Record<DivineBureauPanelKey, boolean> = {
     donation: false,
     clairvoyance: false,
+    itemCompendium: false,
     bestiary: false,
     superRare: false,
     gameSetting: false,
@@ -4652,6 +4653,7 @@ function SettingTab({
       setDivineBureauPanelExpanded({
         donation: parsed.donation === true,
         clairvoyance: parsed.clairvoyance === true,
+        itemCompendium: parsed.itemCompendium === true,
         bestiary: parsed.bestiary === true,
         superRare: parsed.superRare === true,
         gameSetting: parsed.gameSetting === true,
@@ -5149,8 +5151,9 @@ function SettingTab({
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4">
-        <div className="text-sm font-medium mb-3">3. アイテム図鑑</div>
-        <div className="flex justify-end items-center gap-1 mb-3">
+        {renderDivineBureauPanelHeader('itemCompendium', 'アイテム図鑑')}
+        {divineBureauPanelExpanded.itemCompendium && <>
+        <div className="flex justify-end items-center gap-1 mt-3 mb-3">
           <span className="text-xs text-gray-500">
             {compendiumRarityFilter === 'all' ? '全て表示' : `${RARITY_FILTER_NOTES[compendiumRarityFilter]}のみ`}
           </span>
@@ -5219,6 +5222,7 @@ function SettingTab({
             );
           })}
         </div>
+        </>}
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4">
