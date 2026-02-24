@@ -192,8 +192,18 @@ export function getExpeditionTier(dungeonId: number): number {
   return getDungeonById(dungeonId)?.tier ?? 1;
 }
 
+export function getEffectiveExpeditionTier(dungeonId: number, isLunaMode: boolean): number {
+  const tier = getExpeditionTier(dungeonId);
+  if (!isLunaMode) return tier;
+  return Math.min(tier + 2, 8);
+}
+
 // Get expedition multiplier for enemy stat scaling
 export function getExpeditionEnemyMultipliers(dungeonId: number): ExpeditionEnemyMultipliers {
   const tier = getExpeditionTier(dungeonId);
+  return EXPEDITION_ENEMY_MULTIPLIERS[tier - 1] ?? EXPEDITION_ENEMY_MULTIPLIERS[0];
+}
+
+export function getExpeditionEnemyMultipliersForTier(tier: number): ExpeditionEnemyMultipliers {
   return EXPEDITION_ENEMY_MULTIPLIERS[tier - 1] ?? EXPEDITION_ENEMY_MULTIPLIERS[0];
 }

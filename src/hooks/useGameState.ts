@@ -25,7 +25,7 @@ import {
 import { computePartyStats } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
 import { applyEnemyEncounterScaling, getRoomMultiplier } from '../game/enemyScaling';
-import { DUNGEONS, getDungeonById } from '../data/dungeons';
+import { DUNGEONS, getDungeonById, getEffectiveExpeditionTier, getExpeditionEnemyMultipliersForTier } from '../data/dungeons';
 import { CLASS_SHORT_NAMES } from '../data/classes';
 import { getEnemiesByPool, getElitesByPool, getBossEnemy, getEnemyDropCandidates } from '../data/enemies';
 import {
@@ -627,7 +627,7 @@ type GameAction =
   | { type: 'SELECT_DUNGEON'; partyIndex: number; dungeonId: number }
   | { type: 'SET_EXPEDITION_DEPTH_LIMIT'; partyIndex: number; depthLimit: ExpeditionDepthLimit }
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
-  | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number }
+  | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; isLunaMode?: boolean }
   | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number }
   | { type: 'HEAL_PARTY_HP'; partyIndex: number; amount: number }
   | { type: 'CLEAR_PENDING_PROFIT'; partyIndex: number }
@@ -644,7 +644,7 @@ type GameAction =
   | { type: 'MARK_DIARY_LOG_SEEN'; logId: string }
   | { type: 'MARK_ALL_DIARY_LOGS_SEEN' }
   | { type: 'UPDATE_DIARY_SETTINGS'; partyIndex: number; settings: Partial<DiarySettings> }
-  | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean }
+  | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; isLunaMode?: boolean }
   | { type: 'RESET_GAME' }
   | { type: 'IMPORT_GAME_STATE'; state: GameState }
   | { type: 'RESET_COMMON_BAGS' }
@@ -726,6 +726,7 @@ function resolveEnemyRewards(
   currentInventory: InventoryRecord,
   currentGold: number,
   hasUnlock: boolean,
+  isLunaMode: boolean,
   autoSellMultiplier: number
 ): {
   bags: GameState['bags'];
@@ -766,11 +767,13 @@ function resolveEnemyRewards(
     bags = { ...bags, [rewardBagType]: newRewardBag };
 
     let gotReward = rewardTicket === 1;
-    if (hasUnlock) {
+
+    const bonusRollCount = (hasUnlock ? 1 : 0) + (isLunaMode ? 1 : 0);
+    for (let rollIndex = 0; rollIndex < bonusRollCount; rollIndex++) {
       bags = refillBagIfEmpty(bags, rewardBagType);
-      const { ticket: unlockTicket, newBag } = drawFromBag(bags[rewardBagType]);
+      const { ticket: bonusTicket, newBag } = drawFromBag(bags[rewardBagType]);
       bags = { ...bags, [rewardBagType]: newBag };
-      gotReward = gotReward || unlockTicket === 1;
+      gotReward = gotReward || bonusTicket === 1;
     }
 
     if (!gotReward) continue;
@@ -1139,7 +1142,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             if (!baseEnemy) continue;
 
             const roomMultiplier = getRoomMultiplier(floor.floorNumber, roomDef.type, floor.multiplier);
-            const enemy = applyEnemyEncounterScaling(baseEnemy, dungeon, floor.floorNumber, roomDef.type);
+            const effectiveTier = getEffectiveExpeditionTier(dungeon.id, !!action.isLunaMode);
+            const effectiveDungeon = {
+              ...dungeon,
+              tier: effectiveTier,
+              enemyMultipliers: getExpeditionEnemyMultipliersForTier(effectiveTier),
+            };
+            const enemy = applyEnemyEncounterScaling(baseEnemy, effectiveDungeon, floor.floorNumber, roomDef.type);
 
             // Pass currentHp to maintain HP persistence during expedition
             const battleResult = executeBattle(currentParty, enemy, bags, currentHp);
@@ -1185,7 +1194,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               totalExp += calculateExperience(
                 enemy.experience,
                 roomDef.type,
-                dungeon.tier,
+                effectiveDungeon.tier,
                 currentParty.level,
                 enemyLevelFinal
               );
@@ -1199,6 +1208,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 currentInventory,
                 currentGold,
                 hasUnlock,
+                !!action.isLunaMode,
                 autoSellMultiplier
               );
               bags = rewardResult.bags;
@@ -1862,7 +1872,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             cycleCompletedAt + (partyIndex * partyTimestampStepMs)
           );
 
-          workingState = gameReducer(workingState, { type: 'RUN_EXPEDITION', partyIndex, simulatedAt });
+          workingState = gameReducer(workingState, { type: 'RUN_EXPEDITION', partyIndex, simulatedAt, isLunaMode: action.isLunaMode });
           workingState = gameReducer(workingState, { type: 'FINALIZE_DIARY_LOG', partyIndex });
 
           const currentParty = workingState.parties[partyIndex];
@@ -2101,8 +2111,8 @@ export function useGameState() {
       dispatch({ type: 'UPDATE_PARTY_DEITY', partyIndex, deityName });
     }, []),
 
-    runExpedition: useCallback((partyIndex: number) => {
-      dispatch({ type: 'RUN_EXPEDITION', partyIndex });
+    runExpedition: useCallback((partyIndex: number, isLunaMode: boolean = false) => {
+      dispatch({ type: 'RUN_EXPEDITION', partyIndex, isLunaMode });
     }, []),
 
     finalizeDiaryLog: useCallback((partyIndex: number) => {
@@ -2169,8 +2179,8 @@ export function useGameState() {
       dispatch({ type: 'UPDATE_DIARY_SETTINGS', partyIndex, settings });
     }, []),
 
-    simulateAfk: useCallback((elapsedMs: number, isAutoRepeatEnabled: boolean) => {
-      dispatch({ type: 'SIMULATE_AFK', elapsedMs, isAutoRepeatEnabled });
+    simulateAfk: useCallback((elapsedMs: number, isAutoRepeatEnabled: boolean, isLunaMode: boolean = false) => {
+      dispatch({ type: 'SIMULATE_AFK', elapsedMs, isAutoRepeatEnabled, isLunaMode });
     }, []),
 
     resetGame: useCallback(() => {
