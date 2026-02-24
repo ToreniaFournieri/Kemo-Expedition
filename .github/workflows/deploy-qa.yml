@@ -27,31 +27,25 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Build main and qa artifacts
+      - name: Build qa artifact
         run: |
           set -euo pipefail
-
-          git fetch origin main
-          git worktree add ../kemo-main origin/main
 
           if git ls-remote --exit-code --heads origin qa >/dev/null 2>&1; then
             git fetch origin qa
             git worktree add ../kemo-qa origin/qa
           else
             echo 'Remote qa branch not found; using main build for /qa/ fallback.'
+            git fetch origin main
             git worktree add ../kemo-qa origin/main
           fi
-
-          npm ci --prefix ../kemo-main
-          npm run build --prefix ../kemo-main
 
           npm ci --prefix ../kemo-qa
           npm run build --prefix ../kemo-qa
 
           rm -rf site
-          mkdir -p site/dev site/qa
+          mkdir -p site/qa
 
-          cp -R ../kemo-main/dist/. site/dev/
           cp -R ../kemo-qa/dist/. site/qa/
 
           cat > site/index.html <<'HTML'
@@ -59,12 +53,12 @@ jobs:
           <html lang="ja">
             <head>
               <meta charset="UTF-8" />
-              <meta http-equiv="refresh" content="0; url=./dev/" />
+              <meta http-equiv="refresh" content="0; url=./qa/" />
               <meta name="viewport" content="width=device-width, initial-scale=1.0" />
               <title>Kemo Expedition</title>
             </head>
             <body>
-              <p>Redirecting to <a href="./dev/">開発環境</a>...</p>
+              <p>Redirecting to <a href="./qa/">αテスト</a>...</p>
             </body>
           </html>
           HTML
