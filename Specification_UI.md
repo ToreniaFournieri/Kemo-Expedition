@@ -9,15 +9,27 @@
   - Most actions resolve immediately
   
 - **Color Scheme**
-- Base colors
-  - Text: Black
-  - Pane / card background: Gray
-  - Page background: White
-- Sub color (~30%)
-  - Blue (information, selection, links)
-- Accent color (~5%)
-  - Dark Orange (important actions, warnings, highlights)
 
+- `m.Day` mode:
+	- Base colors
+	  - Text: Black
+	  - Pane / card background: Gray
+	  - Page background: White
+	- Sub color (~30%)
+	  - Blue (information, selection, links)
+	- Accent color (~5%)
+	  - Dark Orange (important actions, warnings, highlights)
+
+  - `m.Luna` mode:
+    - Base colors:
+      - Text: Black
+      - Pane / card background: Gray
+      - Page background: White
+    - Sub color (~30%):
+      - Green-Yellow `#E6E600` (information, selection, links)
+    - Accent color (~5%):
+      - Violet / Indigo (important actions, warnings, highlights)
+        
 ### 8.1 Notification Logic & Display
 **Visual & Overlay (Toast)**
 - Position: bottom and left side
@@ -49,8 +61,9 @@
 ### 8.2 Header
 - Always fixed at the top.
 - Displays:
-  - Game title + version + (env)
-    - env label by URL subpath const getEnvLabel = () => {
+  - (Game title) + version + (env)
+    - Game title label: `m.Day` = ケモの冒険, `m.Luna` = "ルナの冒険"
+	- env label by URL subpath const getEnvLabel = () => {
   const p = window.location.pathname; // e.g. "/Kemo-Expedition/dev/..."
   if (p.includes("/dev/")) return "開発環境";
   if (p.includes("/qa/")) return "αテスト";
@@ -451,6 +464,10 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
 #### 8.7 Divine Bureau (神聖局)
 - All panes are collapsed by default and expandable.
 - The expanded/collapsed state is persisted and saved.
+
+**Mode select (モード切替)**
+- Switch to `m.Day` and `m.Luna`.
+  - (Visual change)
 
 **Donation box (寄付箱)**
 - Display donated amount of gold of each god.
