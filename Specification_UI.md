@@ -81,7 +81,9 @@
 
 ```
 (Left-Aligned)                         (Right-Aligned)
-再生の神 (Level: 29, Experience 123450/ 123456)    [編集]
+PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
+
+再生の神 (Level: 29, Experience 123450/ 123456)    
 ```
  
 - List of party members
