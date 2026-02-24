@@ -40,7 +40,7 @@
 | rare | レア | [R] |
 | mythic | 神魔レア | [M] |
  
-**a. bonus ability**
+### 2.1 a. bonus ability
 - "a. アビリティボーナス (重複なし、強化可能)"
 
 | `a.` ability | 表示 | 説明 |
@@ -223,7 +223,7 @@
 | `e.thunder+v` | 雷属性+v% | 攻撃が雷属性⚡になり、v%威力が増加する|
 
 
-### 2.1 Global constants
+### 2.2 Global constants
 
 **Global structure**
   - gold 
@@ -470,7 +470,7 @@
   - `elemental_resistance_attribute` : `r.none`, `r.fire`, `r.thunder`, `r.ice` // Defensive
 
 
-### 2.2 Play characters
+### 2.3 Play characters
 - The deity creates character and assigns 6 Characters to its party. 
 - Characters can change their race, class, and name at any time while at HOME.
 
@@ -482,7 +482,7 @@
 - main_class
 - sub_class
 
-#### 2.2.1 Character 
+#### 2.3.1 Character 
 - A character is defined by Race, Class and Predisposition
   - Race defines base status
   - Class defines combat behavior modifiers and equipment bonuses
@@ -563,7 +563,7 @@
 - Only one single bonuses(c.) of the **exact** same name applies. (`c.equip_slot+2` and `c.equip_slot+1` then +3 slots. two `c.equip_slot+2`, but only one `c.equip_slot+2` works)
  (`c.armor_x1.4`, `c.armor_x1.3`, `c.armor_x1.3` =>1.4 x 1.3 = x 1.82 -> 1.8 (for display))
 
-#### 2.2.2 Party structure 
+#### 2.3.2 Party structure 
 1. Party Properties
 - Player party consists of 6 characters. 
 - Row Assignment: Party members occupy positions 1 through 6. Row 1 represents the front-most position (highest threat), while Row 6 represents the back-most position (lowest threat).
@@ -590,7 +590,7 @@
 
 - Characters do not have individual HP. Each character contributes total HP. 
 
-#### 2.2.3 Deity list
+#### 2.3.3 Deity list
 
 | God | Name  | effect (Rank 1) | 説明　|
 |-----|-----|----|---|
@@ -602,11 +602,11 @@
 |`God of Resonance`| 共鳴の神 | Upgrade all `a.resonance` values by +1 tier. Add `c.magical_defense-5`to each party member.| 全員の共鳴を1段階強化し、[魔防-5%](魔法攻撃に弱くなります) |
 
 
-### 2.3 Expedition & Enemies
+### 2.4 Expedition & Enemies
 - Expedition layout: The 6 `x.floor` spire. Each floor consists of 4 `x.room`s. the last room of the floor is Elite/Boss enemy battle, other rooms are Normal enemy battles.
 - There are 8 `x.expedition` destinations in total. every `x.expedition` has its own tier. (1st `x.expedition` drops tier-1 items. 2nd `x.expedition` drops tier-2 items)
 
-#### 2.3.1 Expedition
+#### 2.4.1 Expedition
 - `x.expedition` list
 
 | `x.tier` | `x.expediton` | short word | `x.exp_HP_mult` | `x.exp_atk_mult` | `x.exp_NoA_mult` | `x.exp_atk_amp_mult` | `x.exp_def_mult` | `x.exp_def_amp_mult` | drop item tier | lore |
@@ -673,7 +673,7 @@
 
 
 
-#### 2.3.2 Enemy structure (in battle)
+#### 2.4.2 Enemy structure (in battle)
 - id: int
 - type: string.  Normal/Elite/Boss
 - x.Spawn_tier
@@ -736,7 +736,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 - `f.penet_multiplier`: not scale
 - `d.experience`: master value x `x.exp_mult` x (If Elite, 2.0. Else if Boss, 5.0. Else 1.0)
 
-#### 2.3.3 Base data structure (enemy)
+#### 2.4.3 Base data structure (enemy)
 
 | Class | `d.HP` | `a.ability` | `c.accuracy` | `c.evasion` | `d.ranged_attack` | `d.ranged_NoA` | `d.magical_attack` | `d.magical_NoA` | `d.melee_attack` | `d.melee_NoA` | `d.ranged_attack_amplifier` | `d.magical_attack_amplifier` | `d.melee_attack_amplifier` | `d.physical_defense` | `d.magical_defense` | `e.fire` | `e.ice` | `e.thunder` | `r.fire` | `r.ice` |`r.thunder` | `d.experience` |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -752,9 +752,9 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | Pilgrim | 62 | `a.null-counter` | 0.00 | 0.02 | 0 | 0 | 20 | 2 | 32 | 2 | x1.0 | x1.2 | x1.2 | 11 | 11 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 16 |
 
 
-### 2.4 Items
+### 2.5 Items
 
-#### 2.4.1 Item category 
+#### 2.5.1 Item category 
 
 |category | name | short name| core concept |
 |-----|----|----|-----------|
@@ -773,7 +773,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 - *note:* item might have multiple bonus. sword may have `d.HP` but subtle value.
 
-#### 2.4.2 Item list
+#### 2.5.2 Item list
 
 |Tier| base_power | multiplier for　鎧, 衣, 剣, 矢, 杖 | plus for 盾 | base_power (NoA) for 手, 弓, 媒 | fixed NoA for 手, 弓, 媒 |penalty for 刀, ボ, 書| elemental v |
 |----|------------|--------|-----------|--------|--------|-------|----|
@@ -852,7 +852,7 @@ Tier 4 common `i.katana`: `d.melee_attack` +82, `d.evasion-0.004`, `c_melee_NoA-
 Tier 5 common `i.arrow`: `d.ranged_attack` +41, `c.ranged_attack+0.08`
 
 ```
-#### 2.4.3 Item variation 
+#### 2.5.3 Item variation 
 
 **Item Variation Hierarchy**
 - Common (12 variations per tier): 1 standard version of every item type.
@@ -860,7 +860,7 @@ Tier 5 common `i.arrow`: `d.ranged_attack` +41, `c.ranged_attack+0.08`
 - Rare ( 12 variations per tier): 1 version of every item type. 
 - Mythic (2~3 variations per tier)
 
-#### 2.4.4 Item stacking
+#### 2.5.4 Item stacking
 - Items are stacked based on their unique combination of (superRare title, enhancement title, and base item ID). The default `max_stack` is 99.
   - Inventory Tracking: The inventory tracks item variants rather than individual instances.
   - Display: Shows the total stack count per variant.
@@ -873,7 +873,7 @@ Tier 5 common `i.arrow`: `d.ranged_attack` +41, `c.ranged_attack+0.08`
   - Sold items cannot be restored or refunded.
   - After a status reset, the variant can be collected in the inventory again.
 
-#### 2.4.4 Item master definitions
+#### 2.5.4 Item master definitions
 - id
 - item_category
 - tier
