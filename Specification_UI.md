@@ -16,9 +16,9 @@
 	  - Pane / card background: Gray
 	  - Page background: White
 	- Sub color (~30%)
-	  - Blue (information, selection, links)
+	  - Blue `#3B82F6` (information, selection, links)
 	- Accent color (~5%)
-	  - Dark Orange (important actions, warnings, highlights)
+	  - Dark Orange `#EA580C` (important actions, warnings, highlights)
 
   - `m.luna` mode:
     - Base colors:
