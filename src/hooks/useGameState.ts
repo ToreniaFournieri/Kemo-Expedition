@@ -1946,8 +1946,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'IMPORT_GAME_STATE': {
       const hydrated = hydrateGameState(action.state);
+      const normalizedParties = hydrated.parties.map((party) => ({
+        ...party,
+        level: typeof party.level === 'number' ? party.level : 1,
+        experience: typeof party.experience === 'number' ? party.experience : 0,
+      }));
+      const normalizedSelectedPartyIndex = Math.min(
+        Math.max(0, hydrated.selectedPartyIndex),
+        Math.max(0, normalizedParties.length - 1),
+      );
+
       return {
         ...hydrated,
+        parties: normalizedParties,
+        selectedPartyIndex: normalizedSelectedPartyIndex,
         bags: normalizeGameBags(hydrated.bags),
         buildNumber: BUILD_NUMBER,
       };
