@@ -10,7 +10,7 @@
   
 - **Color Scheme**
 
-- `m.kemo` mode:
+  - `m.kemo` mode:
 	- Base colors
 	  - Text: Black
 	  - Pane / card background: Gray
