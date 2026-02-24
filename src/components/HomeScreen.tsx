@@ -5168,26 +5168,27 @@ function SettingTab({
         {renderDivineBureauPanelHeader('glossary', '用語集')}
         {divineBureauPanelExpanded.glossary && (
           <div className="space-y-3 mt-3 max-h-96 overflow-y-auto pr-1">
-            <div className="flex justify-end items-center gap-1">
-              {(['A', 'B', 'C', 'D'] as const).map((tab) => (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => setGlossaryTab(tab)}
-                  className={`text-xs px-2 py-0.5 border rounded ${
-                    glossaryTab === tab
-                      ? 'bg-sub text-white border-sub'
-                      : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
             {filteredGlossarySections.map((section) => (
               <div key={section.id} className="bg-white rounded p-2 border border-gray-200">
-                <div className="text-xs text-gray-600 font-medium">{section.heading}</div>
-                <div className="text-xs text-gray-500 mb-2">{section.subtitle}</div>
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="text-xs text-gray-600 font-medium">{section.subtitle}</div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    {(['A', 'B', 'C', 'D'] as const).map((tab) => (
+                      <button
+                        key={tab}
+                        type="button"
+                        onClick={() => setGlossaryTab(tab)}
+                        className={`text-xs px-2 py-0.5 border rounded ${
+                          glossaryTab === tab
+                            ? 'bg-sub text-white border-sub'
+                            : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
+                        }`}
+                      >
+                        {tab}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <div className="space-y-1">
                   {section.entries.map((entry, index) => (
                     <div key={`${section.id}-${entry.key}-${index}`} className="text-xs border-t border-gray-100 pt-1 first:border-t-0 first:pt-0">
