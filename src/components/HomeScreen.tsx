@@ -1018,6 +1018,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
 
   const currentParty = state.parties[state.selectedPartyIndex];
   const prevPartyLogsRef = useRef(state.parties.map((party) => party.lastExpeditionLog));
+  const prevPartyLevelsRef = useRef(state.parties.map((party) => party.level));
   const prevShopPurchasesRef = useRef(state.global.shopPurchases);
   const prevInventoryRef = useRef(state.global.inventory);
   const pendingNotificationTimersRef = useRef<Record<number, number>>({});
@@ -1297,9 +1298,26 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   useEffect(() => {
     state.parties.forEach((party, index) => {
       const previousLog = prevPartyLogsRef.current[index] ?? null;
+      const previousLevel = prevPartyLevelsRef.current[index] ?? party.level;
       const currentLog = party.lastExpeditionLog;
       if (!currentLog || currentLog === previousLog) {
         return;
+      }
+
+      if (party.level > previousLevel) {
+        const representativeCharacter = party.characters[0];
+        const equipSlotIncrease = representativeCharacter
+          ? Math.max(
+              0,
+              computeCharacterStats(representativeCharacter, party.level).maxEquipSlots
+                - computeCharacterStats(representativeCharacter, previousLevel).maxEquipSlots
+            )
+          : 0;
+
+        const levelUpMessage = equipSlotIncrease > 0
+          ? `${party.name} はレベルが${party.level}に上がった(装備枠が+${equipSlotIncrease}増えた)`
+          : `${party.name} はレベルが${party.level}に上がった`;
+        actions.addNotification(levelUpMessage);
       }
 
       const existingTimer = pendingNotificationTimersRef.current[index];
@@ -1326,6 +1344,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     });
 
     prevPartyLogsRef.current = state.parties.map((party) => party.lastExpeditionLog);
+    prevPartyLevelsRef.current = state.parties.map((party) => party.level);
   }, [state.parties, actions]);
 
   useEffect(() => () => {
