@@ -467,7 +467,9 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
 
 **Mode select (モード切替)**
 - Switch to `m.kemo`ケモの冒険 and `m.luna`ルナの冒険 . Default: `m.kemo`
-  - (Visual change)
+  - Description:
+    - `m.kemo` "通常のモードです"
+    - `m.luna` "敵が大幅に強くなります(少しだけ報酬がよくなります)"
 
 **Donation box (寄付箱)**
 - Display donated amount of gold of each god.
