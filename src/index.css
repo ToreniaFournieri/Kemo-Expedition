@@ -17,7 +17,7 @@
   --color-pane: 243 244 246;
   --color-hp-bar: 223 190 128;
   --color-hp-bar-mild: 232 181 104;
-  --color-hp-taken: 50 43 100;
+  --color-hp-taken: 255 237 145;
 }
 
 .theme-luna .text-blue-600 {
