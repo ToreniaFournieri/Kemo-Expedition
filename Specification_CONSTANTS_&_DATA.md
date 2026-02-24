@@ -173,13 +173,19 @@
 **d. bonus**
 - "d. 増加ボーナス説明 (重複有効)"
 
-| `d.` | Display |
-|---|----|
-| `d.accuracy-v`| 命中-v |
-| `d.evasion-v` | 回避-v |
-| `d.melee_NoA-v` | 近回数-v | 
-| `d.ranged_NoA-v` | 遠回数-v | 
-| `d.magical_NoA-v` | 魔回数-v |
+| `d.` | Display | 説明 |
+|---|----|---|
+| `d.ranged_attack | | |
+| `d.melee_attack` | | |
+| `d.magical_attack` | | |
+| `d.melee_NoA-v` | 近回数-v | |
+| `d.ranged_NoA-v` | 遠回数-v | |
+| `d.magical_NoA-v` | 魔回数-v | |
+| `d.physical_defense` | | |
+| `d.magical_defense` | | |
+| `d.accuracy-v`| 命中-v | |
+| `d.evasion-v` | 回避-v | |
+| `d.accuracy_potency` | 命中減衰 | |
 
 **e. bonus**
 - "e. 属性攻撃(重複有効)"
