@@ -5205,7 +5205,7 @@ function SettingTab({
                   {section.entries.map((entry, index) => (
                     <div key={`${section.id}-${entry.key}-${index}`} className="text-xs border-t border-gray-100 pt-1 first:border-t-0 first:pt-0">
                       <div className="text-gray-700 font-medium">{entry.label}</div>
-                      <div className="text-gray-500">{entry.description}</div>
+                      <div className="text-gray-500 whitespace-pre-line">{entry.description}</div>
                     </div>
                   ))}
                 </div>
