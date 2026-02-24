@@ -21,7 +21,7 @@ export function calculateExperience(
   enemyLevelFinal: number
 ): number {
   const rankMultiplier = getRankMultiplier(roomType);
-  const tierMultiplier = 5 ** Math.max(0, tier - 1);
+  const tierMultiplier = 3 ** Math.max(0, tier - 1);
   const overLevelPenalty = 0.5 ** Math.max(0, partyLevel - enemyLevelFinal);
   return baseExperience * rankMultiplier * tierMultiplier * overLevelPenalty;
 }
