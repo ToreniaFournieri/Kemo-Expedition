@@ -40,7 +40,9 @@
 | rare | レア | [R] |
 | mythic | 神魔レア | [M] |
  
-### 2.1 a. bonus ability
+### 2.1 Glossary 
+
+#### 2.1.1 a. bonus ability
 - "a. アビリティボーナス (重複なし、強化可能)"
 
 | `a.` ability | 表示 | 説明 |
@@ -116,7 +118,7 @@
 | `a.illusion`1 | 幻化1 | 自分が受ける最初の遠距離攻撃を無効化する |
 | `a.illusion`2 | 幻化2 | パーティーが受ける最初の遠距離攻撃を無効化する |
 
-**b. bonus**
+#### 2.1.2 b. bonus
 - "b. 基礎値ボーナス (重複有効)"
 
 | `b.` Key | 表示 | 説明 |
@@ -126,7 +128,7 @@
 | `b.intelligence+v` | 知+v | 基礎知性に v を加算（魔法火力に影響） |
 | `b.mind+v` | 精+v | 基礎精神に v を加算（HP/魔防に影響） |
 
-**c. bonus**
+#### 2.1.3 c. bonus
 - "c. 固定ボーナス (同一名ボーナスは重複無効)"
 
 | `c.` Key | 表示 | 説明 |
@@ -170,7 +172,7 @@
 | `c.grimoire_x1.x` | 書x1.x | 魔導書カテゴリ装備の効果が 1.x 倍  |
 | `c.catalyst_x1.x` | 媒x1.x | 触媒カテゴリ装備の効果が 1.x 倍  |
 
-**d. bonus**
+#### 2.1.4 d. bonus
 - "d. 増加ボーナス説明 (重複有効)"
 
 | `d.` | Display | 説明 |
@@ -197,22 +199,7 @@
 | `d.elemental_offense_attribute`| 攻撃属性 | 攻撃属性は、炎属性、氷属性、雷属性、無属性から成り立つ。最も属性の倍率が高い属性1つが攻撃属性として採用される。その属性倍率が与えるダメージに掛かる |
 | `d.elemental_defense_attribute`| 属性耐性 | 敵の属性攻撃に対しての耐性。この耐性値が低ければ低いほどその属性攻撃に対して受けるダメージが減る |
 
-
-| `d.` | Display | 説明 |
-|---|----|---|
-| `d.ranged_attack | | |
-| `d.melee_attack` | | |
-| `d.magical_attack` | | |
-| `d.melee_NoA-v` | 近回数-v | |
-| `d.ranged_NoA-v` | 遠回数-v | |
-| `d.magical_NoA-v` | 魔回数-v | |
-| `d.physical_defense` | | |
-| `d.magical_defense` | | |
-| `d.accuracy-v`| 命中-v | |
-| `d.evasion-v` | 回避-v | |
-| `d.accuracy_potency` | 命中減衰 | |
-
-**e. bonus**
+#### 2.1.5 e. bonus
 - "e. 属性攻撃(重複有効)"
 - "攻撃時に属性を持つことがあります。 複数の属性を持つ武器を装備した場合は、その属性の威力増加値が高いものが優先されます。(威力増加値が等しい場合は 雷>氷>炎 の順) "
 
