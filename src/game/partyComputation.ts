@@ -158,6 +158,26 @@ function getCharacterGrowthMultiplier(
   return growthMultipliers.reduce((prod, value) => prod * value, 1);
 }
 
+function getEffectiveLevel(level: number): number {
+  const growthTerms = [
+    { threshold: 10, exponent: 1.1 },
+    { threshold: 20, exponent: 1.2 },
+    { threshold: 30, exponent: 1.3 },
+    { threshold: 40, exponent: 1.4 },
+    { threshold: 50, exponent: 1.5 },
+    { threshold: 60, exponent: 1.6 },
+    { threshold: 70, exponent: 1.7 },
+    { threshold: 80, exponent: 1.8 },
+  ];
+
+  const scale = 1 + growthTerms.reduce(
+    (sum, { threshold, exponent }) => sum + Math.pow(Math.max(0, (level - threshold) / 33), exponent),
+    0,
+  );
+
+  return level * scale;
+}
+
 export function computePartyStats(party: Party): {
   partyStats: ComputedPartyStats;
   characterStats: ComputedCharacterStats[];
@@ -168,9 +188,10 @@ export function computePartyStats(party: Party): {
   const characterStats = applyDeityCharacterModifiers(party, baseCharacterStats);
 
   // Calculate party HP
-  // Party.d.HP = 100 + (Total sum of individual ((Item Bonuses of HP x its c.multiplier x enhancement + level x b.vitality) x (b.vitality + b.mind) / 20) x c.growth_xV)
+  // Party.d.HP = 100 + (Total sum of individual ((Item Bonuses of HP x enhancement multiplier x super rare multiplier x its c.multiplier + L_eff x b.vitality) x (b.vitality + b.mind) / 20) x c.growth_xV)
   let baseHp = 100;
   let bonusHp = 0;
+  const effectiveLevel = getEffectiveLevel(party.level);
 
   for (const character of party.characters) {
     const stats = getCharacterBaseStats(character);
@@ -188,8 +209,8 @@ export function computePartyStats(party: Party): {
       }
     }
 
-    // Add level x vitality
-    const levelBonus = party.level * stats.vitality;
+    // Add L_eff x vitality
+    const levelBonus = effectiveLevel * stats.vitality;
 
     // Character's HP contribution
     bonusHp += ((itemHpBonus + levelBonus) * statMultiplier) * growthMultiplier;
