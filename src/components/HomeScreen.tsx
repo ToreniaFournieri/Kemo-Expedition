@@ -90,6 +90,8 @@ const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
 const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
 const AFK_MAX_ELAPSED_MS = 600 * 60 * 1000;
 const HEADER_HEIGHT_CLASS = 'pt-[108px]';
+type GameMode = 'm.kemo' | 'm.luna';
+const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
 const RACE_ICON_SOURCES = RACES
   .map((race) => race.icon)
   .filter((icon): icon is string => Boolean(icon))
@@ -1013,6 +1015,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const [selectedBestiaryDungeonId, setSelectedBestiaryDungeonId] = useState<number>(1);
   const [expandedBestiaryEnemies, setExpandedBestiaryEnemies] = useState<Record<number, boolean>>({});
   const [bestiaryScrollTop, setBestiaryScrollTop] = useState(0);
+  const [gameMode, setGameMode] = useState<GameMode>('m.kemo');
   const tabScrollPositionsRef = useRef<Partial<Record<Tab, number>>>({});
   const tabContentRef = useRef<HTMLDivElement | null>(null);
 
@@ -1042,6 +1045,25 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   useEffect(() => {
     preloadRaceIcons();
   }, []);
+
+  useEffect(() => {
+    try {
+      const savedMode = localStorage.getItem(GAME_MODE_STORAGE_KEY);
+      if (savedMode === 'm.kemo' || savedMode === 'm.luna') {
+        setGameMode(savedMode);
+      }
+    } catch (error) {
+      console.error('Failed to load game mode:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(GAME_MODE_STORAGE_KEY, gameMode);
+    } catch (error) {
+      console.error('Failed to persist game mode:', error);
+    }
+  }, [gameMode]);
 
   useEffect(() => {
     if (hasHydratedAfkRef.current) return;
@@ -1508,15 +1530,16 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const unreadDiaryBadgeLabel = unreadDiaryCount >= 11 ? '10+' : `${unreadDiaryCount}`;
   const envLabel = getEnvLabel();
   const versionLabel = envLabel ? `v0.3.1 (${envLabel})` : 'v0.3.1';
+  const gameTitle = gameMode === 'm.luna' ? 'ルナの冒険' : 'ケモの冒険';
 
   return (
-    <div className={`flex flex-col h-screen ${HEADER_HEIGHT_CLASS}`}>
+    <div className={`flex flex-col h-screen ${HEADER_HEIGHT_CLASS} ${gameMode === 'm.luna' ? 'theme-luna' : ''}`}>
       {/* Fixed Header */}
       <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-300 p-3 z-10">
         <div className="max-w-lg mx-auto w-full">
           <div className="flex justify-between items-center gap-3">
             <div>
-              <h1 className="text-lg font-bold">ケモの冒険</h1>
+              <h1 className="text-lg font-bold">{gameTitle}</h1>
               <div className="text-xs text-gray-500">{versionLabel}</div>
             </div>
             <div className="flex items-center gap-2 text-right text-sm font-medium">
@@ -1671,6 +1694,8 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             onSetExpandedBestiaryEnemies={setExpandedBestiaryEnemies}
             bestiaryScrollTop={bestiaryScrollTop}
             onSetBestiaryScrollTop={setBestiaryScrollTop}
+            gameMode={gameMode}
+            onSetGameMode={setGameMode}
           />
         )}
       </div>
@@ -4631,6 +4656,8 @@ function SettingTab({
   onSetExpandedBestiaryEnemies,
   bestiaryScrollTop,
   onSetBestiaryScrollTop,
+  gameMode,
+  onSetGameMode,
 }: {
   gameState: GameState;
   deityDonations: Record<string, number>;
@@ -4652,6 +4679,8 @@ function SettingTab({
   onSetExpandedBestiaryEnemies: Dispatch<SetStateAction<Record<number, boolean>>>;
   bestiaryScrollTop: number;
   onSetBestiaryScrollTop: Dispatch<SetStateAction<number>>;
+  gameMode: GameMode;
+  onSetGameMode: Dispatch<SetStateAction<GameMode>>;
 }) {
   type DivineBureauPanelKey = 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'bestiary' | 'superRare' | 'gameSetting';
   const DIVINE_BUREAU_PANEL_STORAGE_KEY = 'kemo-expedition.divine-bureau.panel-expanded';
@@ -5450,6 +5479,32 @@ function SettingTab({
       <div className="bg-pane rounded-lg p-4 mb-4">
         {renderDivineBureauPanelHeader('gameSetting', 'ゲーム設定')}
         {divineBureauPanelExpanded.gameSetting && <div className="space-y-4 mt-3">
+          <div>
+            <div className="text-sm font-medium mb-2">モード切替</div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => onSetGameMode('m.kemo')}
+                className={`py-2 rounded border text-sm font-medium ${
+                  gameMode === 'm.kemo'
+                    ? 'bg-sub text-white border-sub'
+                    : 'bg-white text-gray-700 border-gray-300'
+                }`}
+              >
+                m.kemo
+              </button>
+              <button
+                onClick={() => onSetGameMode('m.luna')}
+                className={`py-2 rounded border text-sm font-medium ${
+                  gameMode === 'm.luna'
+                    ? 'bg-sub text-black border-sub'
+                    : 'bg-white text-gray-700 border-gray-300'
+                }`}
+              >
+                m.luna
+              </button>
+            </div>
+          </div>
+
           <div>
             <div className="text-sm font-medium mb-1">バックアップ（Export）</div>
             <button
