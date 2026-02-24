@@ -6,14 +6,14 @@
   --color-sub: 59 130 246;
   --color-accent: 234 88 12;
   --color-pane: 243 244 246;
-  --color-hp-bar: 147 197 253;
+  --color-hp-bar-mild: 147 197 253;
 }
 
 .theme-luna {
   --color-sub: 194 136 50;
   --color-accent: 12 60 234;
   --color-pane: 243 244 246;
-  --color-hp-bar: 232 181 104;
+  --color-hp-bar-mild: 232 181 104;
 }
 
 .theme-luna .text-blue-600 {
