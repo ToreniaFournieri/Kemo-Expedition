@@ -5343,6 +5343,7 @@ function SettingTab({
               <div className="text-xs text-gray-500 font-medium mb-1">{group.label}</div>
               {group.enemies.map(enemy => {
                 const displayEnemy = getDisplayEnemy(enemy, selectedBestiaryDungeon, group.floorNumber, group.groupType);
+                const enemyLevelFinal = selectedBestiaryDungeon.expLevel + (group.floorNumber - 1);
                 const enemyClass = ENEMY_CLASS_LABELS[displayEnemy.enemyClass] ?? '不明';
                 const enemyExpanded = !!expandedBestiaryEnemies[displayEnemy.id];
                 const defenseAmplifierPercent = displayEnemy.defenseAmplifier * 100;
@@ -5363,7 +5364,7 @@ function SettingTab({
                         </div>
                         <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                           <div>HP: {formatNumber(displayEnemy.hp)}</div>
-                          <div>経験値: {formatNumber(displayEnemy.experience)}</div>
+                          <div>レベル: {formatNumber(enemyLevelFinal)}</div>
                           {(() => {
                             const hasRangedAttack = hasEnemyAttack(displayEnemy.rangedAttack, displayEnemy.rangedNoA);
                             const hasMeleeAttack = hasEnemyAttack(displayEnemy.meleeAttack, displayEnemy.meleeNoA);
