@@ -1543,7 +1543,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const unreadDiaryBadgeLabel = unreadDiaryCount >= 11 ? '10+' : `${unreadDiaryCount}`;
   const envLabel = getEnvLabel();
   const versionLabel = envLabel ? `v0.3.1 (${envLabel})` : 'v0.3.1';
-  const gameTitle = gameMode === 'm.luna' ? 'ルナの冒険' : 'ケモの冒険';
+  const gameTitle = isLunaEnvironment ? 'ルナの冒険' : 'ケモの冒険';
 
   useEffect(() => {
     document.title = gameTitle;
