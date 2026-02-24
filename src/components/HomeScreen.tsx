@@ -5126,10 +5126,10 @@ function SettingTab({
               ルナの冒険
             </button>
           </div>
-          <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600 space-y-1">
-            <div>デフォルト: m.kemo（ケモの冒険）</div>
-            <div>m.kemo: 通常のモードです</div>
-            <div>m.luna: 敵が大幅に強くなります(少しだけ報酬がよくなります)</div>
+          <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600">
+            {gameMode === 'm.kemo'
+              ? '通常のモードです'
+              : '敵が大幅に強くなります(少しだけ報酬がよくなります)'}
           </div>
         </div>}
       </div>
