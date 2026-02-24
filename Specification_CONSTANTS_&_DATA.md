@@ -612,7 +612,7 @@
 
 | `x.luna_HP_mult` | `x.luna_atk_mult` | `x.luna_NoA_mult` | `x.luna_atk_amp_mult` | `x.luna_def_mult` | `x.luna_def_amp_mult` | `x.luna_enemy_level` |
 |-----|-----|-----|----|----|----|----|
-| x3 | x1.5 | x1.3 | x1.5 | x1.3 | x0.9 | +5 |
+| x4 | x1.6 | x1.3 | x1.6 | x1.4 | x0.9 | +2 |
 
 
 
