@@ -444,7 +444,8 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
 
   
 #### 8.7 Divine Bureau (神聖局)
-- All panes are folded as default and expandable, the condition is persisted and saved.
+- All panes are collapsed by default and expandable.
+- The expanded/collapsed state is persisted and saved.
 
 **Donation box (寄付箱)**
 - Display donated amount of gold of each god.
