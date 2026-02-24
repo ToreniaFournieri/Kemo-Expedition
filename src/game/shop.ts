@@ -60,7 +60,7 @@ export function getShopStockKey(now: Date, refreshCount: number): string {
 }
 
 export function getShopRefreshPrice(refreshCount: number): number {
-  return SHOP_REFRESH_BASE_PRICE * (1 + Math.max(0, refreshCount));
+  return SHOP_REFRESH_BASE_PRICE * (2 ** Math.max(0, refreshCount));
 }
 
 export function getShopItemPrice(itemId: number): number {
