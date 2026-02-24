@@ -4519,7 +4519,7 @@ function DiaryTab({
                             <div>
                               <div className="mb-0.5">自HP {formatNumber(entry.remainingPartyHP)} / {formatNumber(entry.maxPartyHP)}</div>
                               <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                                <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: '#93c5fd' }} />
+                                <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: 'rgb(var(--color-hp-bar))' }} />
                                 <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: '#b8edb2' }} />
                                 <div className="h-full" style={{ width: `${Math.min(100, takenRatio)}%`, backgroundColor: '#fcb786' }} />
                               </div>
@@ -4527,7 +4527,7 @@ function DiaryTab({
                             <div>
                               <div className="mb-0.5">敵HP {formatNumber(enemyRemainingAmount)} / {formatNumber(entry.enemyHP)}</div>
                               <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                                <div className="h-full" style={{ width: `${Math.min(100, enemyRemainingRatio)}%`, backgroundColor: '#93c5fd' }} />
+                                <div className="h-full" style={{ width: `${Math.min(100, enemyRemainingRatio)}%`, backgroundColor: 'rgb(var(--color-hp-bar))' }} />
                               </div>
                             </div>
                           </div>
@@ -5496,7 +5496,7 @@ function SettingTab({
                 onClick={() => onSetGameMode('m.luna')}
                 className={`py-2 rounded border text-sm font-medium ${
                   gameMode === 'm.luna'
-                    ? 'bg-sub text-black border-sub'
+                    ? 'bg-sub text-white border-sub'
                     : 'bg-white text-gray-700 border-gray-300'
                 }`}
               >

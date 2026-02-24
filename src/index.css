@@ -6,12 +6,14 @@
   --color-sub: 59 130 246;
   --color-accent: 234 88 12;
   --color-pane: 243 244 246;
+  --color-hp-bar: 147 197 253;
 }
 
 .theme-luna {
   --color-sub: 194 136 50;
   --color-accent: 12 60 234;
   --color-pane: 243 244 246;
+  --color-hp-bar: 223 190 128;
 }
 
 .theme-luna .text-blue-600 {
@@ -37,9 +39,5 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background-color: white;
-  color: black;
-}
-
-.theme-luna .bg-sub.text-white {
   color: black;
 }
