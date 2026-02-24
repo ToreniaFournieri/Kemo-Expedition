@@ -615,12 +615,12 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       },
       {
         "key": "d.ranged_NoA+v",
-        "label": "[遠回数+v]",
+        "label": "遠回数+v",
         "description": "遠距離攻撃の攻撃回数が増加する"
       },
       {
         "key": "d.magical_NoA+v",
-        "label": "[魔回数+v]",
+        "label": "魔回数+v",
         "description": "魔法攻撃の攻撃回数が増加する"
       },
       {
@@ -640,7 +640,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       },
       {
         "key": "d.melee_NoA+v",
-        "label": "[近回数+v]",
+        "label": "近回数+v",
         "description": "近接攻撃の攻撃回数が増加する"
       },
       {
