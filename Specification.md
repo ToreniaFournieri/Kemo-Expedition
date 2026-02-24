@@ -174,8 +174,24 @@
  
 ### 3.4 Party initialization
 - c.multiplier like `c.amulet_x1.3` applies only for individual character's equipments. 
-- Party.`d.HP`: 100 + (Total sum of individual ((Item Bonuses of HP x enhancement multiplier x super rare multiplier x its c.multiplier + level x `b.vitality` ) x (`b.vitality`  + `b.mind`) / 20) x `c.growth_xV` )
+- Party.`d.HP`: 100 + (Total sum of individual ((Item Bonuses of HP x enhancement multiplier x super rare multiplier x its c.multiplier + `L_eff` x `b.vitality` ) x (`b.vitality`  + `b.mind`) / 20) x `c.growth_xV` )
   - If character has c.growth_x1.6 and c.growth_x1.3, then 1.6 x 1.3 -> 2.08
+
+```
+`L_eff` =
+  level * (
+    1
+    + max(0, (level - 10)/33)^1.1
+    + max(0, (level - 20)/33)^1.2
+    + max(0, (level - 30)/33)^1.3
+    + max(0, (level - 40)/33)^1.4
+    + max(0, (level - 50)/33)^1.5
+    + max(0, (level - 60)/33)^1.6
+    + max(0, (level - 70)/33)^1.7
+    + max(0, (level - 80)/33)^1.8
+  )
+```
+
 - party.`f.party.offense_amplifier`(phase: phase):
   - If phase is LONG or CLOSE:
 	- If party.`a.command`1, multiply x1.3
