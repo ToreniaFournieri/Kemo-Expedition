@@ -1300,11 +1300,13 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       const previousLog = prevPartyLogsRef.current[index] ?? null;
       const previousLevel = prevPartyLevelsRef.current[index] ?? party.level;
       const currentLog = party.lastExpeditionLog;
-      if (!currentLog || currentLog === previousLog) {
+      const hasNewLog = !!currentLog && currentLog !== previousLog;
+      const hasLevelUp = party.level > previousLevel;
+      if (!hasNewLog && !hasLevelUp) {
         return;
       }
 
-      if (party.level > previousLevel) {
+      if (hasLevelUp) {
         const representativeCharacter = party.characters[0];
         const equipSlotIncrease = representativeCharacter
           ? Math.max(
@@ -1320,27 +1322,29 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         actions.addNotification(levelUpMessage);
       }
 
-      const existingTimer = pendingNotificationTimersRef.current[index];
-      if (existingTimer) {
-        window.clearTimeout(existingTimer);
-      }
-
-      // Delay reward notifications until exploration visually finishes.
-      pendingNotificationTimersRef.current[index] = window.setTimeout(() => {
-        for (const item of currentLog.rewards) {
-          const isSuperRare = item.superRare > 0;
-          const itemName = getItemDisplayName(item);
-          const rarity = getItemRarityById(item.id);
-          actions.addNotification(
-            `${party.name}:${itemName}を入手！`,
-            rarity === 'rare' || rarity === 'mythic' || isSuperRare ? 'rare' : 'normal',
-            'item',
-            undefined,
-            { rarity, isSuperRareItem: isSuperRare }
-          );
+      if (hasNewLog && currentLog) {
+        const existingTimer = pendingNotificationTimersRef.current[index];
+        if (existingTimer) {
+          window.clearTimeout(existingTimer);
         }
-        delete pendingNotificationTimersRef.current[index];
-      }, EXPLORING_PROGRESS_TOTAL_STEPS * EXPLORING_PROGRESS_STEP_MS);
+
+        // Delay reward notifications until exploration visually finishes.
+        pendingNotificationTimersRef.current[index] = window.setTimeout(() => {
+          for (const item of currentLog.rewards) {
+            const isSuperRare = item.superRare > 0;
+            const itemName = getItemDisplayName(item);
+            const rarity = getItemRarityById(item.id);
+            actions.addNotification(
+              `${party.name}:${itemName}を入手！`,
+              rarity === 'rare' || rarity === 'mythic' || isSuperRare ? 'rare' : 'normal',
+              'item',
+              undefined,
+              { rarity, isSuperRareItem: isSuperRare }
+            );
+          }
+          delete pendingNotificationTimersRef.current[index];
+        }, EXPLORING_PROGRESS_TOTAL_STEPS * EXPLORING_PROGRESS_STEP_MS);
+      }
     });
 
     prevPartyLogsRef.current = state.parties.map((party) => party.lastExpeditionLog);

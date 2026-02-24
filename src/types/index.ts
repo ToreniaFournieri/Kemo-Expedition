@@ -249,6 +249,7 @@ export interface Party {
   expeditionDepthLimit: ExpeditionDepthLimit;
   currentHp: number;
   pendingProfit: number;
+  expeditionRewardsPending: boolean;
   deityGold: number;
   lastExpeditionLog: ExpeditionLog | null;
   pendingDiaryLog: DiaryLog | null;
