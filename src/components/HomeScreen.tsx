@@ -2216,6 +2216,10 @@ function PartyTab({
   }, [selectedCharacter, editingCharacter]);
 
   const normalizedCurrentDeityName = normalizeDeityName((party.deity.name ?? '').trim());
+  const xpToNextLevel = party.level < MAX_LEVEL ? Math.ceil(getXpToNextLevel(party.level)) : 0;
+  const xpProgressPercent = xpToNextLevel > 0
+    ? Math.min(100, Math.round((party.experience / xpToNextLevel) * 100))
+    : 100;
 
   const handleBaseStatHelpToggle = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -2314,7 +2318,9 @@ function PartyTab({
 
       <div className="mb-3 text-sm flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className="text-gray-600">PTレベル: {formatNumber(party.level)}, 経験値: {formatNumber(party.experience)}/{party.level < MAX_LEVEL ? formatNumber(Math.ceil(getXpToNextLevel(party.level))) : '（レベル上限）'}</div>
+          <div className="text-gray-600">
+            PTレベル: {formatNumber(party.level)}, HP {formatNumber(Math.floor(partyStats.hp))}, 経験値: {party.level < MAX_LEVEL ? `${formatNumber(xpProgressPercent)}% ( ${formatNumber(party.experience)})` : `100% ( ${formatNumber(party.experience)})`}
+          </div>
           <div className="font-medium mt-1">{party.deity.name} (ランク{getDeityRank(deityDonations[normalizedCurrentDeityName] ?? 0)})</div>
           <div className="text-xs text-gray-600 mt-1">効果:{getDeityEffectDescription(party.deity.name, deityDonations[normalizedCurrentDeityName] ?? 0)}</div>
         </div>
