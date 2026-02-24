@@ -595,7 +595,7 @@
 
 #### 2.4.1 Expedition
 - `x.expedition` list
-  - If `m.luna`, `x_exp_tier` =  min(`x_exp_tier` +2, 8)
+  - If `m.luna`, `x_exp_tier` =  min(`x_exp_tier` +1 , 8)
 
 | `x.exp_level` | `x.expediton` | short word | `x.exp_HP_mult` | `x.exp_atk_mult` | `x.exp_NoA_mult` | `x.exp_atk_amp_mult` | `x.exp_def_mult` | `x.exp_def_amp_mult` | `x.exp_tier` | lore |
 |------|-----|-----|-----|----|----|----|----|----|----|----|
@@ -722,7 +722,6 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 - `f.elemental_offense_attribute` :  not scale
 - `f.elemental_resistance_attribute` : not scale
 - `f.penet_multiplier`: not scale
-- `d.experience`: master value x `x.exp_mult` x (If Elite, 2.0. Else if Boss, 5.0. Else 1.0)
 
 #### 2.4.3 Base data structure (enemy)
 
