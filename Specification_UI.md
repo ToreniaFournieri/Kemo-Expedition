@@ -471,6 +471,8 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
     - `m.kemo` "通常のモードです"
     - `m.luna` "敵が大幅に強くなります(少しだけ報酬がよくなります)"
 
+  - If Environment is `/luna/`, Set `m.kemo` and cannot be changed.
+
 **Donation box (寄付箱)**
 - Display donated amount of gold of each god.
 
