@@ -5171,7 +5171,18 @@ function SettingTab({
             {filteredGlossarySections.map((section) => (
               <div key={section.id} className="bg-white rounded p-2 border border-gray-200">
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <div className="text-xs text-gray-600 font-medium">{section.subtitle}</div>
+                  <div className="text-xs leading-tight">
+                    {(() => {
+                      const suffixMatch = section.subtitle.match(/\(([^)]*)\)\s*$/);
+                      const titleText = section.subtitle.replace(/\s*\([^)]*\)\s*$/, '');
+                      return (
+                        <>
+                          <span className="font-semibold text-gray-700">{titleText}</span>
+                          {suffixMatch && <span className="text-gray-500"> {suffixMatch[0]}</span>}
+                        </>
+                      );
+                    })()}
+                  </div>
                   <div className="flex items-center gap-1 shrink-0">
                     {(['A', 'B', 'C', 'D'] as const).map((tab) => (
                       <button
