@@ -403,192 +403,192 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
     "entries": [
       {
         "key": "c.melee_attack+v",
-        "label": "近攻+v%",
+        "label": "[近攻+v%]",
         "description": "近接攻撃の最終ダメージを v% 乗算強化する"
       },
       {
         "key": "c.ranged_attack+v",
-        "label": "遠攻+v%",
+        "label": "[遠攻+v%]",
         "description": "遠距離攻撃の最終ダメージを v% 乗算強化する"
       },
       {
         "key": "c.magical_attack+v",
-        "label": "魔攻+v%",
+        "label": "[魔攻+v%]",
         "description": "魔法攻撃の最終ダメージを v% 乗算強化する"
       },
       {
         "key": "c.physical_defense+v",
-        "label": "物防+v%",
+        "label": "[物防+v%]",
         "description": "物理防御の最終値を v% 乗算強化する"
       },
       {
         "key": "c.magical_defense+v",
-        "label": "魔防+v%",
+        "label": "[魔防+v%]",
         "description": "魔法防御の最終値を v% 乗算強化する"
       },
       {
         "key": "c.melee_NoA+v",
-        "label": "近回数+v",
+        "label": "[近回数+v]",
         "description": "近接攻撃回数が v 回増える"
       },
       {
         "key": "c.ranged_NoA+v",
-        "label": "遠回数+v",
+        "label": "[遠回数+v]",
         "description": "遠距離攻撃回数が v 回増える"
       },
       {
         "key": "c.magical_NoA+v",
-        "label": "魔回数+v",
+        "label": "[魔回数+v]",
         "description": "魔法攻撃回数が v 回増える"
       },
       {
         "key": "c.accuracy+v",
-        "label": "命中+v*1000",
+        "label": "[命中+v]",
         "description": "値が多いほどより多くの攻撃が命中するようになる"
       },
       {
         "key": "c.evasion+v",
-        "label": "回避+v*1000",
+        "label": "[回避+v]",
         "description": "値が多いほどより多くの攻撃を回避するようになる"
       },
       {
         "key": "c.equip_slot+v",
-        "label": "装備+v",
+        "label": "[装備+v]",
         "description": "装備スロット数が v 増える"
       },
       {
         "key": "c.grit+v",
-        "label": "根性+v",
+        "label": "[根性+v]",
         "description": "近接攻撃の装備が出来るようになる。近接攻撃回数が　v 回増える"
       },
       {
         "key": "c.pursuit+v",
-        "label": "追撃+v",
+        "label": "[追撃+v]",
         "description": "遠距離攻撃の装備が出来るようになる。遠距離攻撃回数が　v 回増える"
       },
       {
         "key": "c.caster+v",
-        "label": "術者+v",
+        "label": "[術者+v]",
         "description": "魔法攻撃の装備が出来るようになる。魔法攻撃回数が　v 回増える"
       },
       {
         "key": "c.penet+v",
-        "label": "貫通+v*100%",
+        "label": "[貫通+v]",
         "description": "敵の防御力を　v*100% 分無視する"
       },
       {
         "key": "c.growth_xV",
-        "label": "成長V倍",
+        "label": "[成長V倍]",
         "description": "キャラクター個人のHP基礎値及びアイテムHP増加値V倍"
       },
       {
         "key": "c.physical_attack+v",
-        "label": "物攻+v%",
+        "label": "[物攻+v%]",
         "description": "遠距離攻撃・近距離攻撃の最終ダメージを v% 乗算強化する"
       },
       {
         "key": "c.physical_offense_multiplier_xV",
-        "label": "物攻撃V倍",
+        "label": "[物攻撃V倍]",
         "description": "遠距離攻撃・近接攻撃がV倍"
       },
       {
         "key": "c.magical_offense_multiplier_xV",
-        "label": "魔攻撃V倍",
+        "label": "[魔攻撃V倍]",
         "description": "魔法攻撃がV倍"
       },
       {
         "key": "c.physical_defense_multiplier_xV",
-        "label": "物防xV",
+        "label": "[物防xV]",
         "description": "物理防御力がV倍(少ないほうが攻撃に強い)"
       },
       {
         "key": "c.magical_defense_multiplier_xV",
-        "label": "魔防xV",
+        "label": "[魔防xV]",
         "description": "魔法防御力がV倍(少ないほうが攻撃に強い)"
       },
       {
         "key": "c.fire_defense_multiplier_xV",
-        "label": "炎防xV",
+        "label": "[炎防xV]",
         "description": "炎属性耐性がV倍(少ないほうが攻撃に強い)"
       },
       {
         "key": "c.ice_defense_multiplier_xV",
-        "label": "氷防xV",
+        "label": "[氷防xV]",
         "description": "氷属性耐性がV倍(少ないほうが攻撃に強い)"
       },
       {
         "key": "c.thunder_defense_multiplier_xV",
-        "label": "雷防xV",
+        "label": "[雷防xV]",
         "description": "雷属性耐性がV倍(少ないほうが攻撃に強い)"
       },
       {
         "key": "c.upgrade_V",
-        "label": "V強化+1",
+        "label": "[V強化+1]",
         "description": "アビリティ:V が1段階強化する"
       },
       {
         "key": "c.antagonism",
-        "label": "⚠️敵対",
+        "label": "[⚠️敵対]",
         "description": "味方を攻撃するようになる"
       },
       {
         "key": "c.armor_x1.x",
-        "label": "鎧x1.x",
+        "label": "[鎧x1.x]",
         "description": "鎧カテゴリ装備の効果が 1.x 倍"
       },
       {
         "key": "c.robe_x1.x",
-        "label": "衣x1.x",
+        "label": "[衣x1.x]",
         "description": "法衣カテゴリ装備の効果が 1.x 倍"
       },
       {
         "key": "c.shield_x1.x",
-        "label": "盾x1.x",
+        "label": "[盾x1.x]",
         "description": "盾カテゴリ装備の効果が 1.x 倍"
       },
       {
         "key": "c.sword_x1.x",
-        "label": "剣x1.x",
+        "label": "[剣x1.x]",
         "description": "剣カテゴリ装備の効果が 1.x 倍"
       },
       {
         "key": "c.katana_x1.x",
-        "label": "刀x1.x",
+        "label": "[刀x1.x]",
         "description": "刀カテゴリ装備の効果が 1.x 倍"
       },
       {
         "key": "c.gauntlet_x1.x",
-        "label": "手x1.x",
+        "label": "[手x1.x]",
         "description": "籠手カテゴリ装備の効果が 1.x 倍"
       },
       {
         "key": "c.arrow_x1.x",
-        "label": "矢x1.x",
+        "label": "[矢x1.x]",
         "description": "矢カテゴリ装備の効果が 1.x 倍"
       },
       {
         "key": "c.bolt_x1.x",
-        "label": "ボx1.x",
+        "label": "[ボx1.x]",
         "description": "ボルトカテゴリ装備の効果が 1.x 倍"
       },
       {
         "key": "c.archery_x1.x",
-        "label": "弓x1.x",
+        "label": "[弓x1.x]",
         "description": "弓カテゴリ装備の効果が 1.x 倍"
       },
       {
         "key": "c.wand_x1.x",
-        "label": "杖x1.x",
+        "label": "[杖x1.x]",
         "description": "杖カテゴリ装備の効果が 1.x 倍"
       },
       {
         "key": "c.grimoire_x1.x",
-        "label": "書x1.x",
+        "label": "[書x1.x]",
         "description": "魔導書カテゴリ装備の効果が 1.x 倍"
       },
       {
         "key": "c.catalyst_x1.x",
-        "label": "媒x1.x",
+        "label": "[媒x1.x]",
         "description": "触媒カテゴリ装備の効果が 1.x 倍"
       }
     ]
@@ -615,12 +615,12 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       },
       {
         "key": "d.ranged_NoA+v",
-        "label": "遠回数+v",
+        "label": "[遠回数+v]",
         "description": "遠距離攻撃の攻撃回数が増加する"
       },
       {
         "key": "d.magical_NoA+v",
-        "label": "魔回数+v",
+        "label": "[魔回数+v]",
         "description": "魔法攻撃の攻撃回数が増加する"
       },
       {
@@ -640,7 +640,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       },
       {
         "key": "d.melee_NoA+v",
-        "label": "近回数+v",
+        "label": "[近回数+v]",
         "description": "近接攻撃の攻撃回数が増加する"
       },
       {
