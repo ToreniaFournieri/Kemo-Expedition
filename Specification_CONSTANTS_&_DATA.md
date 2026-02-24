@@ -595,8 +595,9 @@
 
 #### 2.4.1 Expedition
 - `x.expedition` list
+  - If `m.luna`, `x_exp_tier` =  min(`x_exp_tier` +2, 8)
 
-| `x.exp_level` | `x.expediton` | short word | `x.exp_HP_mult` | `x.exp_atk_mult` | `x.exp_NoA_mult` | `x.exp_atk_amp_mult` | `x.exp_def_mult` | `x.exp_def_amp_mult` | drop item tier | lore |
+| `x.exp_level` | `x.expediton` | short word | `x.exp_HP_mult` | `x.exp_atk_mult` | `x.exp_NoA_mult` | `x.exp_atk_amp_mult` | `x.exp_def_mult` | `x.exp_def_amp_mult` | `x.exp_tier` | lore |
 |------|-----|-----|-----|----|----|----|----|----|----|----|
 | 1 | ケイナイアン平原(Caninian Plains) | 原 | x1 | x1 | x1 | x1 | x1 | x1 | 1 |  |
 | 8 | ルピニアンの断崖(Lupinian Crag) | 崖 | x4 | x2 | x2 | x1.5 | x2 | x0.8 | 2 | |
