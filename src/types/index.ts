@@ -395,6 +395,8 @@ export interface ExpeditionEnemyMultipliers {
 // Dungeon Types
 export interface Dungeon {
   id: number;
+  tier: number;
+  expLevel: number;
   name: string;
   enemyPoolIds: number[];
   bossId: number;

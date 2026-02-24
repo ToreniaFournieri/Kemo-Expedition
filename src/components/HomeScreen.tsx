@@ -12,7 +12,7 @@ import { getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { applyEnemyEncounterScaling } from '../game/enemyScaling';
 import { DEITY_OPTIONS, getDeityEffectDescription, getDeityRank, getNextDonationThreshold, normalizeDeityName } from '../game/deity';
-import { LEVEL_EXP } from '../game/partyLevel';
+import { getXpToNextLevel } from '../game/partyLevel';
 import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../game/environment';
 import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, getShopRefreshPrice, getNextShopRefreshDate, countElapsedShopRefreshes } from '../game/shop';
 import { getBaseMultiplier } from '../game/baseMultiplier';
@@ -2291,7 +2291,7 @@ function PartyTab({
 
       <div className="mb-3 text-sm flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className="text-gray-600">PTレベル: {formatNumber(party.level)}, 経験値: {formatNumber(party.experience)}/{party.level < MAX_LEVEL ? formatNumber(LEVEL_EXP[party.level]) : '（レベル上限）'}</div>
+          <div className="text-gray-600">PTレベル: {formatNumber(party.level)}, 経験値: {formatNumber(party.experience)}/{party.level < MAX_LEVEL ? formatNumber(Math.ceil(getXpToNextLevel(party.level))) : '（レベル上限）'}</div>
           <div className="font-medium mt-1">{party.deity.name} (ランク{getDeityRank(deityDonations[normalizedCurrentDeityName] ?? 0)})</div>
           <div className="text-xs text-gray-600 mt-1">効果:{getDeityEffectDescription(party.deity.name, deityDonations[normalizedCurrentDeityName] ?? 0)}</div>
         </div>

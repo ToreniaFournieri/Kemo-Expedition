@@ -65,7 +65,7 @@ import {
   addRecoveredItemsToLootProgress,
   unlockAvailableLootGates,
 } from '../game/lootGate';
-import { LEVEL_EXP } from '../game/partyLevel';
+import { calculateExperience, getXpToNextLevel } from '../game/partyLevel';
 import { MAX_LEVEL } from '../types';
 import { createEnvironmentStorageKey } from '../game/environment';
 import { computeCharacterStats } from '../game/characterComputation';
@@ -1177,7 +1177,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             };
 
             if (battleResult.outcome === 'victory') {
-              totalExp += enemy.experience;
+              const enemyLevelFinal = dungeon.expLevel + (floor.floorNumber - 1);
+              totalExp += calculateExperience(
+                enemy.experience,
+                roomDef.type,
+                dungeon.tier,
+                currentParty.level,
+                enemyLevelFinal
+              );
 
               const unlockActorName = getUnlockActorName(currentParty);
               const hasUnlock = !!unlockActorName;
@@ -1295,11 +1302,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         DUNGEONS.length
       );
 
-      // Update level
-      let newExp = currentParty.experience + totalExp;
+      const totalExpGain = Math.ceil(totalExp);
+
+      // Update level and xp_current (overflow XP is discarded on level-up)
+      let newExp = currentParty.experience + totalExpGain;
       let newLevel = currentParty.level;
-      while (newLevel < MAX_LEVEL && newExp >= LEVEL_EXP[newLevel]) {
-        newLevel++;
+      if (newLevel < MAX_LEVEL && newExp >= getXpToNextLevel(newLevel)) {
+        newLevel += 1;
+        newExp = 0;
       }
 
       const finalRemainingPartyHP = entries.length > 0
@@ -1310,7 +1320,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const log: ExpeditionLog = {
         dungeonId: dungeon.id,
         dungeonName: dungeon.name,
-        totalExperience: totalExp,
+        totalExperience: totalExpGain,
         totalRooms: dungeon.floors.reduce((sum, f) => sum + f.rooms.length, 0),
         completedRooms: entries.length,
         finalOutcome,
