@@ -1545,6 +1545,10 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const versionLabel = envLabel ? `v0.3.1 (${envLabel})` : 'v0.3.1';
   const gameTitle = gameMode === 'm.luna' ? 'ルナの冒険' : 'ケモの冒険';
 
+  useEffect(() => {
+    document.title = gameTitle;
+  }, [gameTitle]);
+
   return (
     <div className={`flex flex-col h-screen ${HEADER_HEIGHT_CLASS} ${gameMode === 'm.luna' ? 'theme-luna' : ''}`}>
       {/* Fixed Header */}
