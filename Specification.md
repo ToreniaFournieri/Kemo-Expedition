@@ -295,8 +295,9 @@ PT3: 貯金額: 10G
 - @Specification_UI.md
 
 ## 9. Environment
-**Branch:** `main` → `/dev/`, `qa` → `/qa/`.
-**Environment:** `/dev/` = 開発機, `/qa/` = αテスト; display the environment label in the version line.
+**Branch:** `main` → `/dev/`, `qa` → `/qa/`, `luna` → `/luna`
+**Environment:** `/dev/` = 開発機, `/qa/` = αテスト, `/luna/` = αテスト(luna); display the environment label in the version line.
+**Special mod:** If `/luna/`, game mode is `m.luna` and cannot be changed. 
 **Save Data Isolation:** Save data must be namespaced per environment (`/dev/` and `/qa/`) and never shared between them.
 
 ## 10. CHANGELOG
