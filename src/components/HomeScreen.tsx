@@ -5167,40 +5167,41 @@ function SettingTab({
       <div className="bg-pane rounded-lg p-4 mb-4">
         {renderDivineBureauPanelHeader('glossary', '用語集')}
         {divineBureauPanelExpanded.glossary && (
-          <div className="space-y-3 mt-3 max-h-96 overflow-y-auto pr-1">
+          <>
+          <div className="flex justify-end items-center gap-1 mt-3 mb-3">
+            <span className="text-xs text-gray-500">分類</span>
+            {(['A', 'B', 'C', 'D'] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setGlossaryTab(tab)}
+                className={`text-xs px-2 py-0.5 border rounded ${
+                  glossaryTab === tab
+                    ? 'bg-sub text-white border-sub'
+                    : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          <div className="space-y-3 pr-1">
             {filteredGlossarySections.map((section) => (
               <div key={section.id} className="bg-white rounded p-2 border border-gray-200">
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <div className="text-xs leading-tight">
-                    {(() => {
-                      const suffixMatch = section.subtitle.match(/\(([^)]*)\)\s*$/);
-                      const titleText = section.subtitle.replace(/\s*\([^)]*\)\s*$/, '');
-                      return (
-                        <>
-                          <span className="font-semibold text-gray-700">{titleText}</span>
-                          {suffixMatch && <span className="text-gray-500"> {suffixMatch[0]}</span>}
-                        </>
-                      );
-                    })()}
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    {(['A', 'B', 'C', 'D'] as const).map((tab) => (
-                      <button
-                        key={tab}
-                        type="button"
-                        onClick={() => setGlossaryTab(tab)}
-                        className={`text-xs px-2 py-0.5 border rounded ${
-                          glossaryTab === tab
-                            ? 'bg-sub text-white border-sub'
-                            : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
-                        }`}
-                      >
-                        {tab}
-                      </button>
-                    ))}
-                  </div>
+                <div className="text-xs leading-tight mb-2">
+                  {(() => {
+                    const suffixMatch = section.subtitle.match(/\(([^)]*)\)\s*$/);
+                    const titleText = section.subtitle.replace(/\s*\([^)]*\)\s*$/, '');
+                    return (
+                      <>
+                        <span className="font-semibold text-gray-700">{titleText}</span>
+                        {suffixMatch && <span className="text-gray-500"> {suffixMatch[0]}</span>}
+                      </>
+                    );
+                  })()}
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 max-h-72 overflow-y-auto pr-1">
                   {section.entries.map((entry, index) => (
                     <div key={`${section.id}-${entry.key}-${index}`} className="text-xs border-t border-gray-100 pt-1 first:border-t-0 first:pt-0">
                       <div className="text-gray-700 font-medium">{entry.label}</div>
@@ -5211,6 +5212,7 @@ function SettingTab({
               </div>
             ))}
           </div>
+          </>
         )}
       </div>
 
