@@ -9,9 +9,29 @@
 }
 
 .theme-luna {
-  --color-sub: 246 171 59;
+  --color-sub: 194 136 50;
   --color-accent: 12 60 234;
   --color-pane: 243 244 246;
+}
+
+.theme-luna .text-blue-600 {
+  color: rgb(var(--color-sub));
+}
+
+.theme-luna .bg-blue-50 {
+  background-color: rgb(var(--color-sub) / 0.12);
+}
+
+.theme-luna .bg-blue-100 {
+  background-color: rgb(var(--color-sub) / 0.2);
+}
+
+.theme-luna .bg-blue-500 {
+  background-color: rgb(var(--color-sub));
+}
+
+.theme-luna .hover\:bg-blue-600:hover {
+  background-color: rgb(var(--color-sub) / 0.9);
 }
 
 body {
