@@ -538,7 +538,7 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
     - 超レア残り remaining / initial counts
   - Button (超レア報酬初期化): Initialize `g.superRare_bag` 
 
-**Item Comedium (アイテム図鑑)**
+**Item Compendium (アイテム図鑑)**
 - The Item Compendium acts as a global reference for all items within the game. Unlike the Inventory, it displays the base potential of every item, regardless of ownership status.
 - View Settings:
   - Visibility: Shows all items in the database (including undiscovered items).
