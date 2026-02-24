@@ -1016,6 +1016,8 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const [expandedBestiaryEnemies, setExpandedBestiaryEnemies] = useState<Record<number, boolean>>({});
   const [bestiaryScrollTop, setBestiaryScrollTop] = useState(0);
   const [gameMode, setGameMode] = useState<GameMode>('m.kemo');
+  const currentEnv = getEnvironmentId();
+  const isLunaEnvironment = currentEnv === 'luna';
   const tabScrollPositionsRef = useRef<Partial<Record<Tab, number>>>({});
   const tabContentRef = useRef<HTMLDivElement | null>(null);
 
@@ -1047,6 +1049,11 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   }, []);
 
   useEffect(() => {
+    if (isLunaEnvironment) {
+      setGameMode('m.luna');
+      return;
+    }
+
     try {
       const savedMode = localStorage.getItem(GAME_MODE_STORAGE_KEY);
       if (savedMode === 'm.kemo' || savedMode === 'm.luna') {
@@ -1055,15 +1062,21 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     } catch (error) {
       console.error('Failed to load game mode:', error);
     }
-  }, []);
+  }, [isLunaEnvironment]);
 
   useEffect(() => {
+    const modeToPersist: GameMode = isLunaEnvironment ? 'm.luna' : gameMode;
+    if (isLunaEnvironment && gameMode !== 'm.luna') {
+      setGameMode('m.luna');
+      return;
+    }
+
     try {
-      localStorage.setItem(GAME_MODE_STORAGE_KEY, gameMode);
+      localStorage.setItem(GAME_MODE_STORAGE_KEY, modeToPersist);
     } catch (error) {
       console.error('Failed to persist game mode:', error);
     }
-  }, [gameMode]);
+  }, [gameMode, isLunaEnvironment]);
 
   useEffect(() => {
     if (hasHydratedAfkRef.current) return;
@@ -1696,6 +1709,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             onSetBestiaryScrollTop={setBestiaryScrollTop}
             gameMode={gameMode}
             onSetGameMode={setGameMode}
+            isLunaEnvironment={isLunaEnvironment}
           />
         )}
       </div>
@@ -4658,6 +4672,7 @@ function SettingTab({
   onSetBestiaryScrollTop,
   gameMode,
   onSetGameMode,
+  isLunaEnvironment,
 }: {
   gameState: GameState;
   deityDonations: Record<string, number>;
@@ -4681,6 +4696,7 @@ function SettingTab({
   onSetBestiaryScrollTop: Dispatch<SetStateAction<number>>;
   gameMode: GameMode;
   onSetGameMode: Dispatch<SetStateAction<GameMode>>;
+  isLunaEnvironment: boolean;
 }) {
   type DivineBureauPanelKey = 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'bestiary' | 'superRare' | 'gameSetting';
   const DIVINE_BUREAU_PANEL_STORAGE_KEY = 'kemo-expedition.divine-bureau.panel-expanded';
@@ -4706,6 +4722,7 @@ function SettingTab({
 
   const versionTag = 'v0.3.1';
   const currentEnv = getEnvironmentId();
+  const modeSelectionLocked = isLunaEnvironment;
 
   useEffect(() => {
     try {
@@ -5112,30 +5129,34 @@ function SettingTab({
         {divineBureauPanelExpanded.modeSelect && <div className="mt-3">
           <div className="grid grid-cols-2 gap-2">
             <button
-              onClick={() => onSetGameMode('m.kemo')}
+              onClick={() => !modeSelectionLocked && onSetGameMode('m.kemo')}
+              disabled={modeSelectionLocked}
               className={`py-2 rounded border text-sm font-medium ${
                 gameMode === 'm.kemo'
                   ? 'bg-sub text-white border-sub'
                   : 'bg-white text-gray-700 border-gray-300'
-              }`}
+              } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
             >
               ケモの冒険
             </button>
             <button
-              onClick={() => onSetGameMode('m.luna')}
+              onClick={() => !modeSelectionLocked && onSetGameMode('m.luna')}
+              disabled={modeSelectionLocked}
               className={`py-2 rounded border text-sm font-medium ${
                 gameMode === 'm.luna'
                   ? 'bg-sub text-white border-sub'
                   : 'bg-white text-gray-700 border-gray-300'
-              }`}
+              } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
             >
               ルナの冒険
             </button>
           </div>
           <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600">
-            {gameMode === 'm.kemo'
-              ? '通常のモードです'
-              : '敵が大幅に強くなります(少しだけ報酬がよくなります)'}
+            {modeSelectionLocked
+              ? 'Luna環境では m.luna 固定です'
+              : gameMode === 'm.kemo'
+                ? '通常のモードです'
+                : '敵が大幅に強くなります(少しだけ報酬がよくなります)'}
           </div>
         </div>}
       </div>
