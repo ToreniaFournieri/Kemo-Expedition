@@ -4623,7 +4623,18 @@ function SettingTab({
   bestiaryScrollTop: number;
   onSetBestiaryScrollTop: Dispatch<SetStateAction<number>>;
 }) {
+  type DivineBureauPanelKey = 'donation' | 'clairvoyance' | 'bestiary' | 'superRare' | 'gameSetting';
+  const DIVINE_BUREAU_PANEL_STORAGE_KEY = 'kemo-expedition.divine-bureau.panel-expanded';
+  const defaultDivineBureauPanelState: Record<DivineBureauPanelKey, boolean> = {
+    donation: false,
+    clairvoyance: false,
+    bestiary: false,
+    superRare: false,
+    gameSetting: false,
+  };
+
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [divineBureauPanelExpanded, setDivineBureauPanelExpanded] = useState<Record<DivineBureauPanelKey, boolean>>(defaultDivineBureauPanelState);
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const [compendiumCategory, setCompendiumCategory] = useState<string>('armor');
   const [compendiumRarityFilter, setCompendiumRarityFilter] = useState<RarityFilter>('all');
@@ -4632,6 +4643,49 @@ function SettingTab({
 
   const versionTag = 'v0.3.0';
   const currentEnv = getEnvironmentId();
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(DIVINE_BUREAU_PANEL_STORAGE_KEY);
+      if (!saved) return;
+      const parsed = JSON.parse(saved) as Partial<Record<DivineBureauPanelKey, boolean>>;
+      setDivineBureauPanelExpanded({
+        donation: parsed.donation === true,
+        clairvoyance: parsed.clairvoyance === true,
+        bestiary: parsed.bestiary === true,
+        superRare: parsed.superRare === true,
+        gameSetting: parsed.gameSetting === true,
+      });
+    } catch (error) {
+      console.error('Failed to load Divine Bureau panel state:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(DIVINE_BUREAU_PANEL_STORAGE_KEY, JSON.stringify(divineBureauPanelExpanded));
+    } catch (error) {
+      console.error('Failed to persist Divine Bureau panel state:', error);
+    }
+  }, [divineBureauPanelExpanded]);
+
+  const toggleDivineBureauPanel = (panelKey: DivineBureauPanelKey) => {
+    setDivineBureauPanelExpanded((prev) => ({ ...prev, [panelKey]: !prev[panelKey] }));
+  };
+
+  const renderDivineBureauPanelHeader = (panelKey: DivineBureauPanelKey, title: string) => {
+    const expanded = divineBureauPanelExpanded[panelKey];
+    return (
+      <button
+        type="button"
+        onClick={() => toggleDivineBureauPanel(panelKey)}
+        className="w-full flex items-center justify-between text-sm font-medium"
+      >
+        <span>{title}</span>
+        <span className={`text-xs text-gray-500 transform transition-transform ${expanded ? 'rotate-180' : ''}`}>▼</span>
+      </button>
+    );
+  };
 
   const getBackupFileName = (): string => {
     const now = new Date();
@@ -4972,8 +5026,8 @@ function SettingTab({
   return (
     <div>
       <div className="bg-pane rounded-lg p-4 mb-4">
-        <div className="text-sm font-medium mb-3">1. 寄付箱</div>
-        <div className="bg-white rounded p-2 text-sm space-y-1">
+        {renderDivineBureauPanelHeader('donation', '寄付箱')}
+        {divineBureauPanelExpanded.donation && <div className="bg-white rounded p-2 text-sm space-y-1 mt-3">
           <div className="flex items-center justify-between gap-3 text-xs text-gray-500 border-b border-gray-100 pb-1 mb-1">
             <span>神格</span>
             <span>寄付額</span>
@@ -4988,11 +5042,12 @@ function SettingTab({
           ) : (
             <div className="text-gray-500">まだ寄付の記録がありません</div>
           )}
-        </div>
+        </div>}
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4">
-        <div className="text-sm font-medium mb-3">2. 未来視</div>
+        {renderDivineBureauPanelHeader('clairvoyance', '未来視')}
+        {divineBureauPanelExpanded.clairvoyance && <>
 
         <div className="mb-4 border-b border-gray-200 pb-4">
           <div className="text-xs text-gray-600 font-medium mb-2">通常報酬 (Normal reward)</div>
@@ -5090,6 +5145,7 @@ function SettingTab({
             超レア報酬初期化
           </button>
         </div>
+        </>}
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4">
@@ -5166,8 +5222,9 @@ function SettingTab({
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4">
-        <div className="text-sm font-medium mb-3">4. 敵キャラクター図鑑</div>
-        <div className="flex gap-1 mb-3 overflow-x-auto pb-1">
+        {renderDivineBureauPanelHeader('bestiary', '敵キャラクター図鑑')}
+        {divineBureauPanelExpanded.bestiary && <>
+        <div className="flex gap-1 mt-3 mb-3 overflow-x-auto pb-1">
           {DUNGEONS.map(dungeon => (
             <button
               key={dungeon.id}
@@ -5266,11 +5323,13 @@ function SettingTab({
             </div>
           ))}
         </div>
+        </>}
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4">
-        <div className="text-sm font-medium mb-3">5. 超レア一覧</div>
-        <div className="text-xs text-gray-500 mb-2">Super Rare List (超レア一覧)</div>
+        {renderDivineBureauPanelHeader('superRare', '超レア一覧')}
+        {divineBureauPanelExpanded.superRare && <>
+        <div className="text-xs text-gray-500 mt-3 mb-2">Super Rare List (超レア一覧)</div>
         <div className="bg-white rounded p-2 text-sm space-y-1 max-h-72 overflow-y-auto">
           {SUPER_RARE_TITLES.filter(title => title.value > 0).map(title => {
             const uniqueBonus = formatBonuses(title.bonuses ?? [], { defenseMultiplierStyle: 'friendly' });
@@ -5285,13 +5344,14 @@ function SettingTab({
             );
           })}
         </div>
+        </>}
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4">
-        <div className="text-sm font-medium mb-3">6. ゲーム設定</div>
-        <div className="space-y-4">
+        {renderDivineBureauPanelHeader('gameSetting', 'ゲーム設定')}
+        {divineBureauPanelExpanded.gameSetting && <div className="space-y-4 mt-3">
           <div>
-            <div className="text-sm font-medium mb-1">6.1 バックアップ（Export）</div>
+            <div className="text-sm font-medium mb-1">バックアップ（Export）</div>
             <button
               onClick={handleExportBackup}
               className="w-full py-2 bg-sub text-white rounded font-medium"
@@ -5301,7 +5361,7 @@ function SettingTab({
           </div>
 
           <div>
-            <div className="text-sm font-medium mb-1">6.2 インポート（Import）</div>
+            <div className="text-sm font-medium mb-1">インポート（Import）</div>
             <input
               ref={importInputRef}
               type="file"
@@ -5318,7 +5378,7 @@ function SettingTab({
           </div>
 
           <div>
-            <div className="text-sm font-medium mb-1">6.3 フルリセット（Reset）</div>
+            <div className="text-sm font-medium mb-1">フルリセット（Reset）</div>
             {!showResetConfirm ? (
               <button onClick={() => setShowResetConfirm(true)} className="w-full py-2 bg-accent text-white rounded font-medium">ゲームをリセット</button>
             ) : (
@@ -5331,7 +5391,7 @@ function SettingTab({
               </div>
             )}
           </div>
-        </div>
+        </div>}
       </div>
     </div>
   );
