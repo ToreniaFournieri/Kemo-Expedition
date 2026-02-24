@@ -608,6 +608,15 @@
 | 48 | レポリアンの庭園(Leporian Garden) | 園 | x4,096 | x64 | x7 | x2.6 | x64 | x0.26 | 7 |  |
 | 56 | セルヴィンの谷(Cervin Vale) | 谷 | x16,384 | x128 | x8 | x2.7 | x128 | x0.21 | 8 |  |
 
+- `x.luna_mode_mult`
+  - If `m.luna`, apllpy them. otherwise, remains as x1.0.
+
+| `x.luna_HP_mult` | `x.luna_atk_mult` | `x.luna_NoA_mult` | `x.luna_atk_amp_mult` | `x.luna_def_mult` | `x.luna_def_amp_mult` | `x.luna_enemy_level` |
+|-----|-----|-----|----|----|----|----|
+| x3 | x1.5 | x2.0 | x1.5 | x1.3 | x0.9 | +8 |
+
+
+
 - **Enemy entity distribution** for each `x.expediton`
 
 | Entity Type | Unique Count | Mapping | Drop Quality | Memo |
