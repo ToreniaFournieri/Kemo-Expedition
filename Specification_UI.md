@@ -539,12 +539,10 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
   - Button (超レア報酬初期化): Initialize `g.superRare_bag`
 
 
-**Gaming Glossary (ゲーム用語集)** 
-- Explains in game word and its meaning.
-
-
-- c. bonuses list
-  - **`c.` ボーナス一覧(表示名・説明)** @Specification_CONSTANTS_&_DATA.md
+**Glossary (用語集)** 
+- list and its descrpition is here:
+  - @Specification_CONSTANTS_&_DATA.md
+  - 2.1.1 a. bonus ability, 2.1.2 b. bonus, 2.1.3 c. bonus, 2.1.4 d. bonus
 
 
 
