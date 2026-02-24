@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, type ChangeEvent, type Dispatch, type MouseEvent, type SetStateAction } from 'react';
 import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, getVariantKey, MAX_LEVEL } from '../types';
 import { computePartyStats } from '../game/partyComputation';
-import { DUNGEONS } from '../data/dungeons';
+import { DUNGEONS, getEffectiveExpeditionTier, getExpeditionEnemyMultipliersForTier } from '../data/dungeons';
 import { RACES } from '../data/races';
 import { CLASSES, CLASS_SHORT_NAMES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
@@ -5096,7 +5096,13 @@ function SettingTab({
     groupType: 'boss' | 'elite' | 'normal'
   ): EnemyDef => {
     const roomType = groupType === 'boss' ? 'battle_Boss' : groupType === 'elite' ? 'battle_Elite' : 'battle_Normal';
-    return applyEnemyEncounterScaling(enemy, dungeon, floorNumber, roomType);
+    const effectiveTier = getEffectiveExpeditionTier(dungeon.id, gameMode === 'm.luna');
+    const effectiveDungeon = {
+      ...dungeon,
+      tier: effectiveTier,
+      enemyMultipliers: getExpeditionEnemyMultipliersForTier(effectiveTier),
+    };
+    return applyEnemyEncounterScaling(enemy, effectiveDungeon, floorNumber, roomType);
   };
 
   return (
