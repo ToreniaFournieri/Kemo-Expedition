@@ -7,9 +7,10 @@ function getPathname(): string {
 
 export function getEnvironmentId(): EnvironmentId {
   const pathname = getPathname();
-  if (pathname.includes('/dev/')) return 'dev';
-  if (pathname.includes('/qa/')) return 'qa';
-  if (pathname.includes('/luna/')) return 'luna';
+  const normalizedPath = pathname.endsWith('/') ? pathname : `${pathname}/`;
+  if (normalizedPath.includes('/dev/')) return 'dev';
+  if (normalizedPath.includes('/qa/')) return 'qa';
+  if (normalizedPath.includes('/luna/')) return 'luna';
   return 'default';
 }
 
