@@ -543,7 +543,7 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
 - list and its descrpition is here:
   - @Specification_CONSTANTS_&_DATA.md
   - 2.1.1 a. bonus ability, 2.1.2 b. bonus, 2.1.3 c. bonus, 2.1.4 d. bonus
-
+- Glossary tabs: A, B, C, D. Default: A
 
 
 **Item Compendium (アイテム図鑑)**
