@@ -193,13 +193,13 @@ export function getExpeditionTier(dungeonId: number): number {
 }
 
 export const LUNA_MODE_MULTIPLIERS = {
-  hp: 3,
-  attack: 1.5,
+  hp: 4,
+  attack: 1.6,
   noa: 1.3,
-  attackAmplifier: 1.5,
-  defense: 1.3,
+  attackAmplifier: 1.6,
+  defense: 1.4,
   defenseAmplifier: 0.9,
-  enemyLevel: 5,
+  enemyLevel: 2,
 } as const;
 
 export function getEffectiveExpeditionTier(dungeonId: number, _isLunaMode: boolean): number {
