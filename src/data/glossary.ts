@@ -220,12 +220,12 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.resurrect1",
         "label": "再起1",
-        "description": "自分が受けた致命ダメージをHP1残して耐える"
+        "description": "自分が受けた致命ダメージをHP 1残して耐える"
       },
       {
         "key": "a.resurrect2",
         "label": "再起2",
-        "description": "自分が受けた致命ダメージをHP **1%** 残して耐える(1回のみ)"
+        "description": "自分が受けた致命ダメージをHP 1%残して耐える(1回のみ)"
       },
       {
         "key": "a.rage1",
@@ -474,7 +474,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "c.penet+v",
         "label": "[貫通+v]",
-        "description": "敵の防御力を　v*100% 分無視する"
+        "description": "敵の防御力を v% 分無視する"
       },
       {
         "key": "c.growth_xV",
@@ -524,7 +524,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "c.upgrade_V",
         "label": "[V強化+1]",
-        "description": "アビリティ:V が1段階強化する"
+        "description": "アビリティ:V を1段階強化する"
       },
       {
         "key": "c.antagonism",
@@ -611,7 +611,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "d.magical_attack",
         "label": "魔攻+v",
-        "description": "魔法攻撃力加算。敵の魔法防御力をコア得るとダメージが与えられる"
+        "description": "魔法攻撃力加算。敵の魔法防御力を超えるとダメージが与えられる"
       },
       {
         "key": "d.ranged_NoA+v",
@@ -622,6 +622,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "key": "d.magical_NoA+v",
         "label": "魔回数+v",
         "description": "魔法攻撃の攻撃回数が増加する"
+      },
+      {
+        "key": "d.melee_NoA+v",
+        "label": "近回数+v",
+        "description": "近接攻撃の攻撃回数が増加する"
       },
       {
         "key": "d.ranged_offense_amplifier",
@@ -636,12 +641,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "d.melee_offense_amplifier",
         "label": "近接攻撃倍率",
-        "description": "近接離攻撃で与えるダメージの倍率。(近接攻撃力- 敵の物理防御力)にこの倍数が掛かる"
-      },
-      {
-        "key": "d.melee_NoA+v",
-        "label": "近回数+v",
-        "description": "近接攻撃の攻撃回数が増加する"
+        "description": "近接攻撃で与えるダメージの倍率。(近接攻撃力- 敵の物理防御力)にこの倍数が掛かる"
       },
       {
         "key": "d.physical_defense",
