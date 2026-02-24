@@ -220,7 +220,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.resurrect1",
         "label": "再起1",
-        "description": "自分が受けた致命ダメージをHP 1残して耐える"
+        "description": "自分が受けた致命ダメージをHP 1残して耐える(1回のみ)"
       },
       {
         "key": "a.resurrect2",
