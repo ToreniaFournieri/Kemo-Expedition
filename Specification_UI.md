@@ -26,9 +26,9 @@
       - Pane / card background: Gray
       - Page background: White
     - Sub color (~30%):
-      - Green-Yellow `#E6E600` (information, selection, links)
+      - Dark-Yellow `#706901` (information, selection, links)
     - Accent color (~5%):
-      - Violet / Indigo (important actions, warnings, highlights)
+      - Violet `#470161` (important actions, warnings, highlights)
         
 ### 8.1 Notification Logic & Display
 **Visual & Overlay (Toast)**
