@@ -47,7 +47,7 @@
 
 #### 3.3.1 Level and slots
 - Experience and level are party-wide. Characters do not have individual levels; all level-based effects reference Party level.
-- max_level: 29. (current version restriction)
+- max_level: 39. (current version restriction)
 
 - Equipment slots for individual character
 	-`maximum_equipped_item`= base slots + class_bonuses (`c.equip_slot+1`, `c.equip_slot+2` )
