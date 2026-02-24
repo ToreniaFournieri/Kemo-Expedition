@@ -609,7 +609,7 @@
 | 56 | セルヴィンの谷(Cervin Vale) | 谷 | x16,384 | x128 | x8 | x2.7 | x128 | x0.21 | 8 |  |
 
 - `x.luna_mode_mult`
-  - If `m.luna`, apllpy them. otherwise, remains as x1.0.
+  - If `m.luna`, apllpy them. 
 
 | `x.luna_HP_mult` | `x.luna_atk_mult` | `x.luna_NoA_mult` | `x.luna_atk_amp_mult` | `x.luna_def_mult` | `x.luna_def_amp_mult` | `x.luna_enemy_level` |
 |-----|-----|-----|----|----|----|----|
