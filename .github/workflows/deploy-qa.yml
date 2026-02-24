@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Deploy Pages (qa environment)
 
 on:
   workflow_dispatch:
