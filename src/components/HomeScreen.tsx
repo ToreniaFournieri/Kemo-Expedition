@@ -37,7 +37,7 @@ interface HomeScreenProps {
     selectParty: (partyIndex: number) => void;
     selectDungeon: (partyIndex: number, dungeonId: number) => void;
     setExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
-    runExpedition: (partyIndex: number) => void;
+    runExpedition: (partyIndex: number, isLunaMode?: boolean) => void;
     finalizeDiaryLog: (partyIndex: number) => void;
     updatePartyDeity: (partyIndex: number, deityName: string) => void;
     healPartyHp: (partyIndex: number, amount: number) => void;
@@ -55,7 +55,7 @@ interface HomeScreenProps {
     markDiaryLogSeen: (logId: string) => void;
     markAllDiaryLogsSeen: () => void;
     updateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
-    simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean) => void;
+    simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean, isLunaMode?: boolean) => void;
     resetGame: () => void;
     importGameState: (state: GameState) => void;
     resetCommonBags: () => void;
@@ -1170,7 +1170,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     // Long background spans should be simulated inside the reducer so each expedition
     // phase reads the latest pending profit / HP values instead of stale render snapshots.
     if (elapsedMs >= 60_000) {
-      actions.simulateAfk(elapsedMs, autoRepeatEnabled);
+      actions.simulateAfk(elapsedMs, autoRepeatEnabled, gameMode === 'm.luna');
       setPartyCycles((prev) => {
         const resetAt = now;
         const next: Record<number, PartyCycleRuntime> = {};
@@ -1257,7 +1257,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             } else if (updated.state === '待機中') {
               updated.durationMs = 1000;
             } else if (updated.state === '移動中') {
-              actions.runExpedition(partyIndex);
+              actions.runExpedition(partyIndex, gameMode === 'm.luna');
               updated.state = '探索中';
               updated.durationMs = getExplorationDurationMs();
             } else if (updated.state === '探索中') {
