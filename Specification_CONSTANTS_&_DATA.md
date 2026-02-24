@@ -595,7 +595,6 @@
 
 #### 2.4.1 Expedition
 - `x.expedition` list
-  - If `m.luna`, `x_exp_tier` =  min(`x_exp_tier` +1 , 8)
 
 | `x.exp_level` | `x.expediton` | short word | `x.exp_HP_mult` | `x.exp_atk_mult` | `x.exp_NoA_mult` | `x.exp_atk_amp_mult` | `x.exp_def_mult` | `x.exp_def_amp_mult` | `x.exp_tier` | lore |
 |------|-----|-----|-----|----|----|----|----|----|----|----|
@@ -613,7 +612,7 @@
 
 | `x.luna_HP_mult` | `x.luna_atk_mult` | `x.luna_NoA_mult` | `x.luna_atk_amp_mult` | `x.luna_def_mult` | `x.luna_def_amp_mult` | `x.luna_enemy_level` |
 |-----|-----|-----|----|----|----|----|
-| x3 | x1.5 | x2.0 | x1.5 | x1.3 | x0.9 | +8 |
+| x3 | x1.5 | x1.3 | x1.5 | x1.3 | x0.9 | +8 |
 
 
 
