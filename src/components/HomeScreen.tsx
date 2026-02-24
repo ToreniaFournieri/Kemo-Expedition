@@ -4682,9 +4682,10 @@ function SettingTab({
   gameMode: GameMode;
   onSetGameMode: Dispatch<SetStateAction<GameMode>>;
 }) {
-  type DivineBureauPanelKey = 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'bestiary' | 'superRare' | 'gameSetting';
+  type DivineBureauPanelKey = 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'bestiary' | 'superRare' | 'gameSetting';
   const DIVINE_BUREAU_PANEL_STORAGE_KEY = 'kemo-expedition.divine-bureau.panel-expanded';
   const defaultDivineBureauPanelState: Record<DivineBureauPanelKey, boolean> = {
+    modeSelect: false,
     donation: false,
     clairvoyance: false,
     glossary: false,
@@ -4712,6 +4713,7 @@ function SettingTab({
       if (!saved) return;
       const parsed = JSON.parse(saved) as Partial<Record<DivineBureauPanelKey, boolean>>;
       setDivineBureauPanelExpanded({
+        modeSelect: parsed.modeSelect === true,
         donation: parsed.donation === true,
         clairvoyance: parsed.clairvoyance === true,
         glossary: parsed.glossary === true,
@@ -5100,6 +5102,39 @@ function SettingTab({
   return (
     <div>
       <div className="bg-pane rounded-lg p-4 mb-4">
+        {renderDivineBureauPanelHeader('modeSelect', 'モード切替')}
+        {divineBureauPanelExpanded.modeSelect && <div className="mt-3">
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => onSetGameMode('m.kemo')}
+              className={`py-2 rounded border text-sm font-medium ${
+                gameMode === 'm.kemo'
+                  ? 'bg-sub text-white border-sub'
+                  : 'bg-white text-gray-700 border-gray-300'
+              }`}
+            >
+              ケモの冒険
+            </button>
+            <button
+              onClick={() => onSetGameMode('m.luna')}
+              className={`py-2 rounded border text-sm font-medium ${
+                gameMode === 'm.luna'
+                  ? 'bg-sub text-white border-sub'
+                  : 'bg-white text-gray-700 border-gray-300'
+              }`}
+            >
+              ルナの冒険
+            </button>
+          </div>
+          <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600 space-y-1">
+            <div>デフォルト: m.kemo（ケモの冒険）</div>
+            <div>m.kemo: 通常のモードです</div>
+            <div>m.luna: 敵が大幅に強くなります(少しだけ報酬がよくなります)</div>
+          </div>
+        </div>}
+      </div>
+
+      <div className="bg-pane rounded-lg p-4 mb-4">
         {renderDivineBureauPanelHeader('donation', '寄付箱')}
         {divineBureauPanelExpanded.donation && <div className="bg-white rounded p-2 text-sm space-y-1 mt-3">
           <div className="flex items-center justify-between gap-3 text-xs text-gray-500 border-b border-gray-100 pb-1 mb-1">
@@ -5479,32 +5514,6 @@ function SettingTab({
       <div className="bg-pane rounded-lg p-4 mb-4">
         {renderDivineBureauPanelHeader('gameSetting', 'ゲーム設定')}
         {divineBureauPanelExpanded.gameSetting && <div className="space-y-4 mt-3">
-          <div>
-            <div className="text-sm font-medium mb-2">モード切替</div>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => onSetGameMode('m.kemo')}
-                className={`py-2 rounded border text-sm font-medium ${
-                  gameMode === 'm.kemo'
-                    ? 'bg-sub text-white border-sub'
-                    : 'bg-white text-gray-700 border-gray-300'
-                }`}
-              >
-                m.kemo
-              </button>
-              <button
-                onClick={() => onSetGameMode('m.luna')}
-                className={`py-2 rounded border text-sm font-medium ${
-                  gameMode === 'm.luna'
-                    ? 'bg-sub text-white border-sub'
-                    : 'bg-white text-gray-700 border-gray-300'
-                }`}
-              >
-                m.luna
-              </button>
-            </div>
-          </div>
-
           <div>
             <div className="text-sm font-medium mb-1">バックアップ（Export）</div>
             <button
