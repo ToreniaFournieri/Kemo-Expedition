@@ -466,7 +466,7 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
 - The expanded/collapsed state is persisted and saved.
 
 **Mode select (モード切替)**
-- Switch to `m.kemo`ケモの冒険 and `m.luna`ルナの冒険 . Default: `m.kemo`
+- Switch to `m.kemo`ケモ and `m.luna`ルナ . Default: `m.kemo`
   - Description:
     - `m.kemo` "通常のモードです"
     - `m.luna` "敵が大幅に強くなります(少しだけ報酬がよくなります)"
