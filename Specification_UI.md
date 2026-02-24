@@ -26,7 +26,7 @@
       - Pane / card background: Gray
       - Page background: White
     - Sub color (~30%):
-      - Dark-Yellow `#706901` (information, selection, links)
+      - Dark-Yellow `#a69c07` (information, selection, links)
     - Accent color (~5%):
       - Violet `#470161` (important actions, warnings, highlights)
         
