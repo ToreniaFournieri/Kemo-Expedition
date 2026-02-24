@@ -7,6 +7,7 @@ import { CLASSES, CLASS_SHORT_NAMES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
 import { LINEAGES } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS, getSuperRareBonuses } from '../data/items';
+import { GLOSSARY_SECTIONS } from '../data/glossary';
 import { getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { applyEnemyEncounterScaling } from '../game/enemyScaling';
@@ -4623,11 +4624,12 @@ function SettingTab({
   bestiaryScrollTop: number;
   onSetBestiaryScrollTop: Dispatch<SetStateAction<number>>;
 }) {
-  type DivineBureauPanelKey = 'donation' | 'clairvoyance' | 'itemCompendium' | 'bestiary' | 'superRare' | 'gameSetting';
+  type DivineBureauPanelKey = 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'bestiary' | 'superRare' | 'gameSetting';
   const DIVINE_BUREAU_PANEL_STORAGE_KEY = 'kemo-expedition.divine-bureau.panel-expanded';
   const defaultDivineBureauPanelState: Record<DivineBureauPanelKey, boolean> = {
     donation: false,
     clairvoyance: false,
+    glossary: false,
     itemCompendium: false,
     bestiary: false,
     superRare: false,
@@ -4653,6 +4655,7 @@ function SettingTab({
       setDivineBureauPanelExpanded({
         donation: parsed.donation === true,
         clairvoyance: parsed.clairvoyance === true,
+        glossary: parsed.glossary === true,
         itemCompendium: parsed.itemCompendium === true,
         bestiary: parsed.bestiary === true,
         superRare: parsed.superRare === true,
@@ -5148,6 +5151,32 @@ function SettingTab({
           </button>
         </div>
         </>}
+      </div>
+
+      <div className="bg-pane rounded-lg p-4 mb-4">
+        {renderDivineBureauPanelHeader('glossary', 'Glossary (用語集)')}
+        {divineBureauPanelExpanded.glossary && (
+          <div className="space-y-3 mt-3 max-h-96 overflow-y-auto pr-1">
+            {GLOSSARY_SECTIONS.map((section) => (
+              <div key={section.id} className="bg-white rounded p-2 border border-gray-200">
+                <div className="text-xs text-gray-600 font-medium">{section.heading}</div>
+                <div className="text-xs text-gray-500 mb-2">{section.subtitle}</div>
+                <div className="space-y-1">
+                  {section.entries.map((entry, index) => (
+                    <div key={`${section.id}-${entry.key}-${index}`} className="text-xs border-t border-gray-100 pt-1 first:border-t-0 first:pt-0">
+                      <div className="text-gray-700">
+                        <span className="font-mono text-[11px] text-sub">{entry.key}</span>
+                        <span className="mx-1">/</span>
+                        <span className="font-medium">{entry.label}</span>
+                      </div>
+                      <div className="text-gray-500">{entry.description}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4">
