@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, type ChangeEvent, type Dispatch, type MouseEvent, type SetStateAction } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, getVariantKey } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, getVariantKey, MAX_LEVEL } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { DUNGEONS } from '../data/dungeons';
 import { RACES } from '../data/races';
@@ -2291,7 +2291,7 @@ function PartyTab({
 
       <div className="mb-3 text-sm flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <div className="text-gray-600">PTレベル: {formatNumber(party.level)}, 経験値: {formatNumber(party.experience)}/{party.level < 29 ? formatNumber(LEVEL_EXP[party.level]) : '（レベル上限）'}</div>
+          <div className="text-gray-600">PTレベル: {formatNumber(party.level)}, 経験値: {formatNumber(party.experience)}/{party.level < MAX_LEVEL ? formatNumber(LEVEL_EXP[party.level]) : '（レベル上限）'}</div>
           <div className="font-medium mt-1">{party.deity.name} (ランク{getDeityRank(deityDonations[normalizedCurrentDeityName] ?? 0)})</div>
           <div className="text-xs text-gray-600 mt-1">効果:{getDeityEffectDescription(party.deity.name, deityDonations[normalizedCurrentDeityName] ?? 0)}</div>
         </div>

@@ -66,6 +66,7 @@ import {
   unlockAvailableLootGates,
 } from '../game/lootGate';
 import { LEVEL_EXP } from '../game/partyLevel';
+import { MAX_LEVEL } from '../types';
 import { createEnvironmentStorageKey } from '../game/environment';
 import { computeCharacterStats } from '../game/characterComputation';
 import {
@@ -1297,7 +1298,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       // Update level
       let newExp = currentParty.experience + totalExp;
       let newLevel = currentParty.level;
-      while (newLevel < 29 && newExp >= LEVEL_EXP[newLevel]) {
+      while (newLevel < MAX_LEVEL && newExp >= LEVEL_EXP[newLevel]) {
         newLevel++;
       }
 
