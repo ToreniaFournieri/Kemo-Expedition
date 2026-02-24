@@ -536,7 +536,17 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
   - superRare_bag (称号超レア称号付与 抽選確率):
     - 超レア称号抽選: remaining / total counts
     - 超レア残り remaining / initial counts
-  - Button (超レア報酬初期化): Initialize `g.superRare_bag` 
+  - Button (超レア報酬初期化): Initialize `g.superRare_bag`
+
+
+**Gaming Glossary (ゲーム用語集)** 
+- Explains in game word and its meaning.
+
+
+- c. bonuses list
+  - **`c.` ボーナス一覧(表示名・説明)** @Specification_CONSTANTS_&_DATA.md
+
+
 
 **Item Compendium (アイテム図鑑)**
 - The Item Compendium acts as a global reference for all items within the game. Unlike the Inventory, it displays the base potential of every item, regardless of ownership status.
