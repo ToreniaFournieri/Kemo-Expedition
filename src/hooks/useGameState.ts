@@ -416,6 +416,7 @@ function loadSavedState(): GameState | null {
           }
           party.expeditionDepthLimit = getExpeditionDepthLimitWithDefault(party.expeditionDepthLimit);
           if (typeof party.pendingProfit !== 'number') party.pendingProfit = 0;
+          if (typeof party.expeditionRewardsPending !== 'boolean') party.expeditionRewardsPending = false;
           if (typeof party.deityGold !== 'number') party.deityGold = 0;
           party.expeditionStats = getExpeditionStatsWithDefaults(party.expeditionStats);
 
@@ -484,6 +485,7 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
     ...party,
     currentHp: partyStats.hp,
     pendingProfit: 0,
+    expeditionRewardsPending: false,
     deityGold: 0,
     expeditionStats: getExpeditionStatsWithDefaults(party.expeditionStats),
   };
@@ -523,6 +525,7 @@ function createInitialParty() {
     expeditionDepthLimit: 'all',
     currentHp: 0,
     pendingProfit: 0,
+    expeditionRewardsPending: false,
     deityGold: 0,
     lastExpeditionLog: null,
     pendingDiaryLog: null,
@@ -570,6 +573,7 @@ function createSecondParty() {
     expeditionDepthLimit: 'all',
     currentHp: 0,
     pendingProfit: 0,
+    expeditionRewardsPending: false,
     deityGold: 0,
     lastExpeditionLog: null,
     pendingDiaryLog: null,
@@ -1304,14 +1308,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const totalExpGain = Math.ceil(totalExp);
 
-      // Update level and xp_current (overflow XP is discarded on level-up)
-      let newExp = currentParty.experience + totalExpGain;
-      let newLevel = currentParty.level;
-      if (newLevel < MAX_LEVEL && newExp >= getXpToNextLevel(newLevel)) {
-        newLevel += 1;
-        newExp = 0;
-      }
-
       const finalRemainingPartyHP = entries.length > 0
         ? entries[entries.length - 1].remainingPartyHP
         : currentHp;
@@ -1362,8 +1358,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const updatedParties = [...state.parties];
       updatedParties[action.partyIndex] = {
         ...currentParty,
-        level: newLevel,
-        experience: newExp,
+        expeditionRewardsPending: true,
         lootGateProgress: nextLootGateProgress,
         lootGateStatus: nextLootGateStatus,
         lastExpeditionLog: log,
@@ -1394,12 +1389,29 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'FINALIZE_DIARY_LOG': {
       const party = state.parties[action.partyIndex];
-      if (!party || !party.pendingDiaryLog) return state;
+      if (!party) return state;
 
-      const nextDiaryLogs = [party.pendingDiaryLog, ...(party.diaryLogs ?? [])].slice(0, 10);
+      const pendingDiaryLog = party.pendingDiaryLog;
+      const nextDiaryLogs = pendingDiaryLog
+        ? [pendingDiaryLog, ...(party.diaryLogs ?? [])].slice(0, 10)
+        : party.diaryLogs;
+
+      let nextLevel = party.level;
+      let nextExperience = party.experience;
+      if (party.expeditionRewardsPending && party.lastExpeditionLog) {
+        nextExperience += party.lastExpeditionLog.totalExperience;
+        if (nextLevel < MAX_LEVEL && nextExperience >= getXpToNextLevel(nextLevel)) {
+          nextLevel += 1;
+          nextExperience = 0;
+        }
+      }
+
       const updatedParties = [...state.parties];
       updatedParties[action.partyIndex] = {
         ...party,
+        level: nextLevel,
+        experience: nextExperience,
+        expeditionRewardsPending: false,
         pendingDiaryLog: null,
         diaryLogs: nextDiaryLogs,
         hasUnreadDiary: nextDiaryLogs.some((diaryLog) => !diaryLog.isRead),
