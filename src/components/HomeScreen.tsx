@@ -3588,7 +3588,7 @@ function ExpeditionTab({
                                 <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
                                   <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: 'rgb(var(--color-hp-bar-mild))' }} />
                                   <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: '#b8edb2' }} />
-                                  <div className="h-full" style={{ width: `${Math.min(100, takenRatio)}%`, backgroundColor: '#fcb786' }} />
+                                  <div className="h-full" style={{ width: `${Math.min(100, takenRatio)}%`, backgroundColor: 'rgb(var(--color-hp-taken))' }} />
                                 </div>
                               </div>
                               <div>
@@ -4521,7 +4521,7 @@ function DiaryTab({
                               <div className="flex h-2 w-full overflow-hidden rounded-full bg-slate-100">
                                 <div className="h-full" style={{ width: `${Math.min(100, remainingRatio)}%`, backgroundColor: 'rgb(var(--color-hp-bar-mild))' }} />
                                 <div className="h-full" style={{ width: `${Math.min(100, healRatio)}%`, backgroundColor: '#b8edb2' }} />
-                                <div className="h-full" style={{ width: `${Math.min(100, takenRatio)}%`, backgroundColor: '#fcb786' }} />
+                                <div className="h-full" style={{ width: `${Math.min(100, takenRatio)}%`, backgroundColor: 'rgb(var(--color-hp-taken))' }} />
                               </div>
                             </div>
                             <div>
