@@ -87,7 +87,7 @@
     - Tier 2 expedition (base enemy level = 8), floor 3 (add +2): `x.enemy_level_final` = 8 + 2 = 10
 
 - Multipliers
-  - Tier multiplier: `x.exp_experience_mult` = 5 ^(`x.tier` - 1)
+  - Tier multiplier: `x.exp_experience_mult` = 3 ^(`x.tier` - 1)
   - Rank multiplier:
     - `x.mult_rank` = 1.0 (Normal)
     - `x.mult_rank` = 1.5 (Elite)
