@@ -36,8 +36,8 @@
   - 3 Tier-1 common items of each item type.
 
 - Party initial state.
-  - level: 1
-  - experience: 0
+  - `PartyLevel`: 1
+  - `xp_current`: 0
   - Gold: 200G
   - Auto-sell: none
   - state: 待機中
@@ -67,8 +67,40 @@
 | 42 | 10 |
 | 49 | 11 |
 
-
 - Base status update: add (b.) modifiers. (ex. `b.vitality` = 10(from race) + `b.vitality+2` -> 12
+
+**Experience and level and experience point**
+- Each party has its own `PartyLevel` and `xp_current`.
+- Experience point to next is calculated like this:
+  - `f.XP_to_next`(level: ) = 100 x (1.259)^(level -1)
+- When the party levels up:
+  - `PartyLevel` += 1
+  - `xp_current` = 0
+  - Any overflow XP is discarded.
+
+- Experience calculation:
+  - Each expedition has a `x.tier` (1–8) with a base `x.enemy_level`.
+  - Each expedition has 6 `xfloor`s, and each `x.floor` adds to the base enemy level:
+  - `x.enemy_level_final` = `x.enemy_level` + (`x.floor` - 1 )
+  - Enemy level is used only for experience calculation. 
+  - Example:
+    - Tier 2 expedition (base enemy level = 8), floor 3 (add +2): `x.enemy_level_final` = 8 + 2 = 10
+
+- Multipliers
+  - Tier multiplier: `x.exp_experience_mult` = 5 ^(`x.tier` - 1)
+  - Rank multiplier:
+    - `x.mult_rank` = 1.0 (Normal)
+    - `x.mult_rank` = 1.5 (Elite)
+    - `x.mult_rank` = 3.0 (Boss)
+  - Over-level penalty:
+    - `x.experience_penalty` = (1/2) ^ max(0, `PartyLevel` - `x.enemy_level_final`)
+
+- Total gained XP:
+  - `f.calculate_experience` = `d.experience` x `x.mult_rank` x `x.exp_experience_mult` x `x.experience_penalty`
+  - the XP is accumulated as float and ceiled once at the end of an `x.expedition` when applied to `xp_current`. 
+
+
+
 
 #### 3.3.2 Multiplier and Functions
 
