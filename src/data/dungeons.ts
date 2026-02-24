@@ -195,7 +195,12 @@ export function getExpeditionTier(dungeonId: number): number {
 export function getEffectiveExpeditionTier(dungeonId: number, isLunaMode: boolean): number {
   const tier = getExpeditionTier(dungeonId);
   if (!isLunaMode) return tier;
-  return Math.min(tier + 2, 8);
+  return Math.min(tier + 1, 8);
+}
+
+export function getEffectiveDungeonExpLevel(dungeon: Dungeon, effectiveTier: number): number {
+  const tierDelta = Math.max(0, effectiveTier - dungeon.tier);
+  return dungeon.expLevel + (tierDelta * 8);
 }
 
 // Get expedition multiplier for enemy stat scaling
