@@ -25,7 +25,7 @@ import {
 import { computePartyStats } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
 import { applyEnemyEncounterScaling, getRoomMultiplier } from '../game/enemyScaling';
-import { DUNGEONS, getDungeonById, getEffectiveExpeditionTier, getExpeditionEnemyMultipliersForTier } from '../data/dungeons';
+import { DUNGEONS, getDungeonById, getEffectiveEnemyLevel, getEffectiveEnemyMultipliers, getEffectiveExpeditionTier } from '../data/dungeons';
 import { CLASS_SHORT_NAMES } from '../data/classes';
 import { getEnemiesByPool, getElitesByPool, getBossEnemy, getEnemyDropCandidates } from '../data/enemies';
 import {
@@ -1146,7 +1146,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             const effectiveDungeon = {
               ...dungeon,
               tier: effectiveTier,
-              enemyMultipliers: getExpeditionEnemyMultipliersForTier(effectiveTier),
+              enemyMultipliers: getEffectiveEnemyMultipliers(dungeon, !!action.isLunaMode),
             };
             const enemy = applyEnemyEncounterScaling(baseEnemy, effectiveDungeon, floor.floorNumber, roomDef.type);
 
@@ -1190,7 +1190,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             };
 
             if (battleResult.outcome === 'victory') {
-              const enemyLevelFinal = dungeon.expLevel + (floor.floorNumber - 1);
+              const enemyLevelFinal = getEffectiveEnemyLevel(dungeon.expLevel, floor.floorNumber, !!action.isLunaMode);
               totalExp += calculateExperience(
                 enemy.experience,
                 roomDef.type,

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, type ChangeEvent, type Dispatch, type MouseEvent, type SetStateAction } from 'react';
 import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, getVariantKey, MAX_LEVEL } from '../types';
 import { computePartyStats } from '../game/partyComputation';
-import { DUNGEONS, getEffectiveExpeditionTier, getExpeditionEnemyMultipliersForTier } from '../data/dungeons';
+import { DUNGEONS, getEffectiveEnemyLevel, getEffectiveEnemyMultipliers, getEffectiveExpeditionTier } from '../data/dungeons';
 import { RACES } from '../data/races';
 import { CLASSES, CLASS_SHORT_NAMES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
@@ -5100,7 +5100,7 @@ function SettingTab({
     const effectiveDungeon = {
       ...dungeon,
       tier: effectiveTier,
-      enemyMultipliers: getExpeditionEnemyMultipliersForTier(effectiveTier),
+      enemyMultipliers: getEffectiveEnemyMultipliers(dungeon, gameMode === 'm.luna'),
     };
     return applyEnemyEncounterScaling(enemy, effectiveDungeon, floorNumber, roomType);
   };
@@ -5423,7 +5423,7 @@ function SettingTab({
               <div className="text-xs text-gray-500 font-medium mb-1">{group.label}</div>
               {group.enemies.map(enemy => {
                 const displayEnemy = getDisplayEnemy(enemy, selectedBestiaryDungeon, group.floorNumber, group.groupType);
-                const enemyLevelFinal = selectedBestiaryDungeon.expLevel + (group.floorNumber - 1);
+                const enemyLevelFinal = getEffectiveEnemyLevel(selectedBestiaryDungeon.expLevel, group.floorNumber, gameMode === 'm.luna');
                 const enemyClass = ENEMY_CLASS_LABELS[displayEnemy.enemyClass] ?? '不明';
                 const enemyExpanded = !!expandedBestiaryEnemies[displayEnemy.id];
                 const defenseAmplifierPercent = displayEnemy.defenseAmplifier * 100;
