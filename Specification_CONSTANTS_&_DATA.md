@@ -87,8 +87,8 @@
 | `a.null-counter`3 | 反撃無効化3 | 反撃を無効化する(3回まで) |
 | `a.seeker`1 | 探究者1 | 魔導書の効果増加(レベル毎に0.25%) |
 | `a.seeker`2 | 探究者2 | 魔導書の効果増加(レベル毎に0.35%) |
-| `a.resurrect`1 | 再起1 | 自分が受けた致命ダメージをHP1残して耐える |
-| `a.resurrect`2 | 再起2 | 自分が受けた致命ダメージをHP **1%** 残して耐える(1回のみ) |
+| `a.resurrect`1 | 再起1 | 自分が受けた致命ダメージをHP 1残して耐える |
+| `a.resurrect`2 | 再起2 | 自分が受けた致命ダメージをHP 1%残して耐える(1回のみ) |
 | `a.rage`1 | 闘志1 | 物理/魔法攻撃倍率増大(受けたダメージ1%につき1%増) |
 | `a.rage`2 | 闘志2 | 物理/魔法攻撃倍率増大(受けたダメージ1%につき1.2%増) |
 | `a.re-counter`1 | 再反撃1 | 敵から反撃に対して、反撃する(攻撃回数半減) |
@@ -147,17 +147,17 @@
 | `c.grit+v` | [根性+v] | 近接攻撃の装備が出来るようになる。近接攻撃回数が　v 回増える |
 | `c.pursuit+v` | [追撃+v] | 遠距離攻撃の装備が出来るようになる。遠距離攻撃回数が　v 回増える |
 | `c.caster+v` | [術者+v] | 魔法攻撃の装備が出来るようになる。魔法攻撃回数が　v 回増える |
-| `c.penet+v` | [貫通+v] | 敵の防御力を　v*100% 分無視する |
+| `c.penet+v` | [貫通+v] | 敵の防御力を v% 分無視する |
 | `c.growth_xV` | [成長V倍] | キャラクター個人のHP基礎値及びアイテムHP増加値V倍 |
 | `c.physical_attack+v` | [物攻+v%] | 遠距離攻撃・近距離攻撃の最終ダメージを v% 乗算強化する |
-| `c.physical_offense_multiplier_xV` | [物攻撃V倍] | 遠距離攻撃・近接攻撃がV倍 |
-| `c.magical_offense_multiplier_xV` | [魔攻撃V倍] | 魔法攻撃がV倍 |
-| `c.physical_defense_multiplier_xV` | [物防xV] | 物理防御力がV倍(少ないほうが攻撃に強い) |
-| `c.magical_defense_multiplier_xV` | [魔防xV] | 魔法防御力がV倍(少ないほうが攻撃に強い) |
+| `c.physical_offense_multiplier_xV` | [物攻撃V倍] | 遠距離攻撃・近接攻撃倍率がV倍 |
+| `c.magical_offense_multiplier_xV` | [魔攻撃V倍] | 魔法攻撃倍率がV倍 |
+| `c.physical_defense_multiplier_xV` | [物防xV] | 物理防御倍率がV倍(少ないほうが攻撃に強い) |
+| `c.magical_defense_multiplier_xV` | [魔防xV] | 魔法防御倍率がV倍(少ないほうが攻撃に強い) |
 | `c.fire_defense_multiplier_xV` | [炎防xV] |  炎属性耐性がV倍(少ないほうが攻撃に強い) |
 | `c.ice_defense_multiplier_xV` | [氷防xV] |  氷属性耐性がV倍(少ないほうが攻撃に強い) |
 | `c.thunder_defense_multiplier_xV` | [雷防xV] |  雷属性耐性がV倍(少ないほうが攻撃に強い) |
-| `c.upgrade_V` | [V強化+1] | アビリティ:V が1段階強化する |
+| `c.upgrade_V` | [V強化+1] | アビリティ:V を1段階強化する |
 | `c.antagonism` | [⚠️敵対] | 味方を攻撃するようになる |
 | `c.armor_x1.x` | [鎧x1.x] | 鎧カテゴリ装備の効果が 1.x 倍  |
 | `c.robe_x1.x` | [衣x1.x]| 法衣カテゴリ装備の効果が 1.x 倍  |
@@ -179,13 +179,13 @@
 |---|----|---|
 | `d.ranged_attack` | 遠攻+v | 遠距離攻撃力に加算。敵の物理防御力を超えるとダメージを与えられる |
 | `d.melee_attack` | 近攻+v | 近接攻撃力に加算。敵の物理防御力を超えるとダメージを与えられる |
-| `d.magical_attack` | 魔攻+v | 魔法攻撃力加算。敵の魔法防御力をコア得るとダメージが与えられる |
+| `d.magical_attack` | 魔攻+v | 魔法攻撃力加算。敵の魔法防御力を超えるとダメージが与えられる |
 | `d.ranged_NoA+v` | 遠回数+v | 遠距離攻撃の攻撃回数が増加する |
 | `d.magical_NoA+v` | 魔回数+v | 魔法攻撃の攻撃回数が増加する |
-| `d.ranged_offense_amplifier`| 遠距離攻撃倍率 | 遠距離攻撃で与えるダメージの倍率。(遠距離攻撃力- 敵の物理防御力)にこの倍数が掛かる |
-| `d.magical_offense_amplifier`| 魔法攻撃倍率 | 魔法攻撃で与えるダメージの倍率。(魔法攻撃力- 敵の魔法防御力)にこの倍数が掛かる |
-| `d.melee_offense_amplifier`| 近接攻撃倍率 | 近接離攻撃で与えるダメージの倍率。(近接攻撃力- 敵の物理防御力)にこの倍数が掛かる  |
 | `d.melee_NoA+v` | 近回数+v | 近接攻撃の攻撃回数が増加する　 |
+| `d.ranged_offense_amplifier`| 遠距離攻撃倍率 | 遠距離攻撃で与えるダメージの倍率。(遠距離攻撃力- 敵の物理防御力)にこの倍率が掛かる |
+| `d.magical_offense_amplifier`| 魔法攻撃倍率 | 魔法攻撃で与えるダメージの倍率。(魔法攻撃力- 敵の魔法防御力)にこの倍率が掛かる |
+| `d.melee_offense_amplifier`| 近接攻撃倍率 | 近接離攻撃で与えるダメージの倍率。(近接攻撃力- 敵の物理防御力)にこの倍率が掛かる  |
 | `d.physical_defense` | 物防+v | 物理防御力に加算。敵の遠距離攻撃力/近接攻撃力からこの値分引いた値がダメージの基準 |
 | `d.magical_defense` | 魔防+v | 魔法防御力に加算。敵の魔法攻撃力からこの値分引いた値がダメージの基準   |
 | `d.physical_defense_amplifier`| 物理耐性 | 物理耐性値が低かれば低いほど遠距離攻撃/近接攻撃のダメージを受けなくなる。(近接攻撃力- 敵の物理防御力)にこの倍数が掛かる |
