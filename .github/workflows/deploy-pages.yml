@@ -1,0 +1,104 @@
+name: Deploy Pages (all environments)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Build all environment artifacts
+        run: |
+          set -euo pipefail
+
+          mkdir -p site
+
+          build_env() {
+            env_name="$1"
+            branch_name="$2"
+            title_text="$3"
+            link_text="$4"
+
+            worktree_path="../kemo-${env_name}"
+            target_branch="${branch_name}"
+
+            if git ls-remote --exit-code --heads origin "${branch_name}" >/dev/null 2>&1; then
+              git fetch origin "${branch_name}"
+            else
+              echo "Remote ${branch_name} branch not found; using main build for /${env_name}/ fallback."
+              git fetch origin main
+              target_branch="main"
+            fi
+
+            git worktree add "${worktree_path}" "origin/${target_branch}"
+
+            npm ci --prefix "${worktree_path}"
+            npm run build --prefix "${worktree_path}"
+
+            mkdir -p "site/${env_name}"
+            cp -R "${worktree_path}/dist/." "site/${env_name}/"
+
+            git worktree remove "${worktree_path}" --force
+          }
+
+          build_env dev main '開発環境' '開発環境'
+          build_env qa qa 'αテスト' 'αテスト'
+          build_env luna luna 'αテスト(luna)' 'αテスト(luna)'
+
+          cat > site/index.html <<'HTML'
+          <!doctype html>
+          <html lang="ja">
+            <head>
+              <meta charset="UTF-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+              <title>Kemo Expedition</title>
+            </head>
+            <body>
+              <h1>Kemo Expedition Environments</h1>
+              <ul>
+                <li><a href="./dev/">開発環境 (dev)</a></li>
+                <li><a href="./qa/">αテスト (qa)</a></li>
+                <li><a href="./luna/">αテスト(luna)</a></li>
+              </ul>
+            </body>
+          </html>
+          HTML
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './site'
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
