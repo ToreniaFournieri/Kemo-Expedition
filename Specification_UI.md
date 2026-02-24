@@ -62,7 +62,7 @@
 - Always fixed at the top.
 - Displays:
   - (Game title) + version + (env)
-    - Game title label: `m.kemo` = ケモの冒険, `m.luna` = "ルナの冒険"
+    - Game title label: default: ケモの冒険, if `/luna/` environment: "ルナの冒険".
 	- env label by URL subpath const getEnvLabel = () => {
   const p = window.location.pathname; // e.g. "/Kemo-Expedition/dev/..."
   if (p.includes("/dev/")) return "開発環境";
