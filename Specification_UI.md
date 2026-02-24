@@ -26,7 +26,7 @@
       - Pane / card background: Gray
       - Page background: White
     - Sub color (~30%):
-      - Yellow-Orange `#f6ab3b` (information, selection, links)
+      - Yellow-Orange `#c28832` (information, selection, links)
     - Accent color (~5%):
       - Blue `#0c3cea`  (important actions, warnings, highlights)
         
