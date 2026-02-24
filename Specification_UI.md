@@ -42,6 +42,9 @@
 		- Positive Change: 物防 24 → 52 (Normal style, Bold text)
 		- Negative Change: 近攻 120 → 84 (Normal style, Normal weight text)
 
+ - Level up
+   - Example: "PT1 はレベルが12に上がった(装備枠が+1増えた)"
+   - Example: "PT1 はレベルが13に上がった"
 
 ### 8.2 Header
 - Always fixed at the top.
