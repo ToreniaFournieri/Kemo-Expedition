@@ -31,16 +31,6 @@
 | `c.accuracy+v` | [命中+(v*1000)] | `c.accuracy+0.001` -> [命中+1] |
 | `c.evasion+v` | [回避+(v*1000)] | `c.evasion-3` [回避-3]  |
 
-d. bonus (stackable)
-
-| `d.` | Display |
-|---|----|
-|`d.accuracy-v`| 命中-v |
-|`d.evasion-v` | 回避-v |
-| `d.melee_NoA-v` | 近回数-v | 
-| `d.ranged_NoA-v` | 遠回数-v | 
-| `d.magical_NoA-v` | 魔回数-v |
-
 - Translation
 
 | name | Japanese | short word |
@@ -50,63 +40,8 @@ d. bonus (stackable)
 | rare | レア | [R] |
 | mythic | 神魔レア | [M] |
 
-**`c.` ボーナス一覧(表示名・説明)**
-- "c. ボーナス説明 (同一名ボーナスは重複無効)"
-- "b. ボーナス説明 (重複有効)"
-
-| `c.` Key | 表示 | 説明 |
-|--------|------|------|
-| `c.melee_attack+v` | 近攻+v% | 近接攻撃の最終ダメージを v% 乗算強化する|
-| `c.ranged_attack+v` | 遠攻+v% | 遠距離攻撃の最終ダメージを v% 乗算強化する |
-| `c.magical_attack+v` | 魔攻+v% | 魔法攻撃の最終ダメージを v% 乗算強化する |
-| `c.physical_defense+v` | 物防+v% | 物理防御の最終値を v% 乗算強化する |
-| `c.magical_defense+v` | 魔防+v% | 魔法防御の最終値を v% 乗算強化する |
-| `c.melee_NoA+v` | 近回数+v | 近接攻撃回数が v 回増える |
-| `c.ranged_NoA+v` | 遠回数+v | 遠距離攻撃回数が v 回増える |
-| `c.magical_NoA+v` | 魔回数+v | 魔法攻撃回数が v 回増える |
-| `c.accuracy+v` | 命中+v*1000 | 値が多いほどより多くの攻撃が命中するようになる |
-| `c.evasion+v` | 回避+v*1000 | 値が多いほどより多くの攻撃を回避するようになる |
-| `c.equip_slot+v` | 装備+v | 装備スロット数が v 増える |
-| `c.grit+v` | 根性+v | 近接攻撃の装備が出来るようになる。近接攻撃回数が　v 回増える |
-| `c.pursuit+v` | 追撃+v | 遠距離攻撃の装備が出来るようになる。遠距離攻撃回数が　v 回増える |
-| `c.caster+v` | 術者+v | 魔法攻撃の装備が出来るようになる。魔法攻撃回数が　v 回増える |
-| `c.penet+v` | 貫通+v*100% | 敵の防御力を　v*100% 分無視する |
-| `b.vitality+v` | 体+v | 基礎体力に v を加算（HP/物防に影響） |
-| `b.strength+v` | 力+v | 基礎筋力に v を加算（近接火力に影響） |
-| `b.intelligence+v` | 知+v | 基礎知性に v を加算（魔法火力に影響） |
-| `b.mind+v` | 精+v | 基礎精神に v を加算（HP/魔防に影響） |
-| `c.growth_xV` | 成長V倍 | キャラクター個人のHP基礎値及びアイテムHP増加値V倍 |
-| `c.physical_attack+v` | 物攻+v% | 遠距離攻撃・近距離攻撃の最終ダメージを v% 乗算強化する |
-| `c.physical_offense_multiplier_xV` | 物攻撃V倍 | 遠距離攻撃・近接攻撃がV倍 |
-| `c.magical_offense_multiplier_xV` | 魔攻撃V倍 | 魔法攻撃がV倍 |
-| `c.physical_defense_multiplier_xV` | 物防xV | 物理防御力がV倍(少ないほうが攻撃に強い) |
-| `c.magical_defense_multiplier_xV` | 魔防xV | 魔法防御力がV倍(少ないほうが攻撃に強い) |
-| `c.fire_defense_multiplier_xV` | 炎防xV |  炎属性耐性がV倍(少ないほうが攻撃に強い) |
-| `c.ice_defense_multiplier_xV` | 氷防xV |  氷属性耐性がV倍(少ないほうが攻撃に強い) |
-| `c.thunder_defense_multiplier_xV` | 雷防xV |  雷属性耐性がV倍(少ないほうが攻撃に強い) |
-| `c.upgrade_V` | V強化+1 | アビリティ:V が1段階強化する |
-| `c.antagonism` | ⚠️敵対 | 味方を攻撃するようになる |
-
----
-
-**`c.` 装備カテゴリ倍率（乗算ボーナス）**
-
-| `c.` Key | 表示 | 説明 |
-|---------|------|------|
-| `c.armor_x1.x` | 鎧x1.x | 鎧カテゴリ装備の効果が 1.x 倍  |
-| `c.robe_x1.x` | 衣x1.x | 法衣カテゴリ装備の効果が 1.x 倍  |
-| `c.shield_x1.x` | 盾x1.x | 盾カテゴリ装備の効果が 1.x 倍  |
-| `c.sword_x1.x` | 剣x1.x | 剣カテゴリ装備の効果が 1.x 倍  |
-| `c.katana_x1.x` | 刀x1.x | 刀カテゴリ装備の効果が 1.x 倍  |
-| `c.gauntlet_x1.x` | 手x1.x | 籠手カテゴリ装備の効果が 1.x 倍  |
-| `c.arrow_x1.x` | 矢x1.x | 矢カテゴリ装備の効果が 1.x 倍  |
-| `c.bolt_x1.x` | ボx1.x | ボルトカテゴリ装備の効果が 1.x 倍  |
-| `c.archery_x1.x` | 弓x1.x | 弓カテゴリ装備の効果が 1.x 倍  |
-| `c.wand_x1.x` | 杖x1.x | 杖カテゴリ装備の効果が 1.x 倍  |
-| `c.grimoire_x1.x` | 書x1.x | 魔導書カテゴリ装備の効果が 1.x 倍  |
-| `c.catalyst_x1.x` | 媒x1.x | 触媒カテゴリ装備の効果が 1.x 倍  |
-
-**`a.*` Ability List (Japanese)**
+**a. bonus ability**
+- "a. アビリティボーナス (重複なし、強化可能)"
 
 | `a.` ability | 表示 | 説明 |
 |----|----|----|
@@ -181,9 +116,73 @@ d. bonus (stackable)
 | `a.illusion`1 | 幻化1 | 自分が受ける最初の遠距離攻撃を無効化する |
 | `a.illusion`2 | 幻化2 | パーティーが受ける最初の遠距離攻撃を無効化する |
 
+**b. bonus**
+- "b. 基礎値ボーナス (重複有効)"
 
-**e. 属性攻撃(重複有効)**
+| `b.` Key | 表示 | 説明 |
+|--------|------|------|
+| `b.vitality+v` | 体+v | 基礎体力に v を加算（HP/物防に影響） |
+| `b.strength+v` | 力+v | 基礎筋力に v を加算（近接火力に影響） |
+| `b.intelligence+v` | 知+v | 基礎知性に v を加算（魔法火力に影響） |
+| `b.mind+v` | 精+v | 基礎精神に v を加算（HP/魔防に影響） |
 
+**c. bonus**
+- "c. 固定ボーナス (同一名ボーナスは重複無効)"
+
+| `c.` Key | 表示 | 説明 |
+|--------|------|------|
+| `c.melee_attack+v` | 近攻+v% | 近接攻撃の最終ダメージを v% 乗算強化する|
+| `c.ranged_attack+v` | 遠攻+v% | 遠距離攻撃の最終ダメージを v% 乗算強化する |
+| `c.magical_attack+v` | 魔攻+v% | 魔法攻撃の最終ダメージを v% 乗算強化する |
+| `c.physical_defense+v` | 物防+v% | 物理防御の最終値を v% 乗算強化する |
+| `c.magical_defense+v` | 魔防+v% | 魔法防御の最終値を v% 乗算強化する |
+| `c.melee_NoA+v` | 近回数+v | 近接攻撃回数が v 回増える |
+| `c.ranged_NoA+v` | 遠回数+v | 遠距離攻撃回数が v 回増える |
+| `c.magical_NoA+v` | 魔回数+v | 魔法攻撃回数が v 回増える |
+| `c.accuracy+v` | 命中+v*1000 | 値が多いほどより多くの攻撃が命中するようになる |
+| `c.evasion+v` | 回避+v*1000 | 値が多いほどより多くの攻撃を回避するようになる |
+| `c.equip_slot+v` | 装備+v | 装備スロット数が v 増える |
+| `c.grit+v` | 根性+v | 近接攻撃の装備が出来るようになる。近接攻撃回数が　v 回増える |
+| `c.pursuit+v` | 追撃+v | 遠距離攻撃の装備が出来るようになる。遠距離攻撃回数が　v 回増える |
+| `c.caster+v` | 術者+v | 魔法攻撃の装備が出来るようになる。魔法攻撃回数が　v 回増える |
+| `c.penet+v` | 貫通+v*100% | 敵の防御力を　v*100% 分無視する |
+| `c.growth_xV` | 成長V倍 | キャラクター個人のHP基礎値及びアイテムHP増加値V倍 |
+| `c.physical_attack+v` | 物攻+v% | 遠距離攻撃・近距離攻撃の最終ダメージを v% 乗算強化する |
+| `c.physical_offense_multiplier_xV` | 物攻撃V倍 | 遠距離攻撃・近接攻撃がV倍 |
+| `c.magical_offense_multiplier_xV` | 魔攻撃V倍 | 魔法攻撃がV倍 |
+| `c.physical_defense_multiplier_xV` | 物防xV | 物理防御力がV倍(少ないほうが攻撃に強い) |
+| `c.magical_defense_multiplier_xV` | 魔防xV | 魔法防御力がV倍(少ないほうが攻撃に強い) |
+| `c.fire_defense_multiplier_xV` | 炎防xV |  炎属性耐性がV倍(少ないほうが攻撃に強い) |
+| `c.ice_defense_multiplier_xV` | 氷防xV |  氷属性耐性がV倍(少ないほうが攻撃に強い) |
+| `c.thunder_defense_multiplier_xV` | 雷防xV |  雷属性耐性がV倍(少ないほうが攻撃に強い) |
+| `c.upgrade_V` | V強化+1 | アビリティ:V が1段階強化する |
+| `c.antagonism` | ⚠️敵対 | 味方を攻撃するようになる |
+| `c.armor_x1.x` | 鎧x1.x | 鎧カテゴリ装備の効果が 1.x 倍  |
+| `c.robe_x1.x` | 衣x1.x | 法衣カテゴリ装備の効果が 1.x 倍  |
+| `c.shield_x1.x` | 盾x1.x | 盾カテゴリ装備の効果が 1.x 倍  |
+| `c.sword_x1.x` | 剣x1.x | 剣カテゴリ装備の効果が 1.x 倍  |
+| `c.katana_x1.x` | 刀x1.x | 刀カテゴリ装備の効果が 1.x 倍  |
+| `c.gauntlet_x1.x` | 手x1.x | 籠手カテゴリ装備の効果が 1.x 倍  |
+| `c.arrow_x1.x` | 矢x1.x | 矢カテゴリ装備の効果が 1.x 倍  |
+| `c.bolt_x1.x` | ボx1.x | ボルトカテゴリ装備の効果が 1.x 倍  |
+| `c.archery_x1.x` | 弓x1.x | 弓カテゴリ装備の効果が 1.x 倍  |
+| `c.wand_x1.x` | 杖x1.x | 杖カテゴリ装備の効果が 1.x 倍  |
+| `c.grimoire_x1.x` | 書x1.x | 魔導書カテゴリ装備の効果が 1.x 倍  |
+| `c.catalyst_x1.x` | 媒x1.x | 触媒カテゴリ装備の効果が 1.x 倍  |
+
+**d. bonus**
+- "d. 増加ボーナス説明 (重複有効)"
+
+| `d.` | Display |
+|---|----|
+| `d.accuracy-v`| 命中-v |
+| `d.evasion-v` | 回避-v |
+| `d.melee_NoA-v` | 近回数-v | 
+| `d.ranged_NoA-v` | 遠回数-v | 
+| `d.magical_NoA-v` | 魔回数-v |
+
+**e. bonus**
+- "e. 属性攻撃(重複有効)"
 - "攻撃時に属性を持つことがあります。 複数の属性を持つ武器を装備した場合は、その属性の威力増加値が高いものが優先されます。(威力増加値が等しい場合は 雷>氷>炎 の順) "
 
 | `e.` Key | 表示 | 説明 |
