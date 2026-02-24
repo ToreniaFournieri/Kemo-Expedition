@@ -5360,11 +5360,11 @@ function SettingTab({
                       <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
                         <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                           <div>ID: {displayEnemy.id}</div>
-                          <div>クラス: {enemyClass}</div>
+                          <div>レベル: {formatNumber(enemyLevelFinal)}</div>
                         </div>
                         <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                           <div>HP: {formatNumber(displayEnemy.hp)}</div>
-                          <div>レベル: {formatNumber(enemyLevelFinal)}</div>
+                          <div>クラス: {enemyClass}</div>
                           {(() => {
                             const hasRangedAttack = hasEnemyAttack(displayEnemy.rangedAttack, displayEnemy.rangedNoA);
                             const hasMeleeAttack = hasEnemyAttack(displayEnemy.meleeAttack, displayEnemy.meleeNoA);
