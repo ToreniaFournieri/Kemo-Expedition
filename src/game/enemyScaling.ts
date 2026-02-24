@@ -13,7 +13,6 @@ export function applyEnemyEncounterScaling(
 ): EnemyDef {
   const roomMultipliers = getFloorRoomMultipliers(floorNumber, roomType);
   const expeditionMult = dungeon.enemyMultipliers;
-  const enemyTypeExperienceMultiplier = roomType === 'battle_Boss' ? 5 : roomType === 'battle_Elite' ? 2 : 1;
 
   return {
     ...enemy,
@@ -30,6 +29,6 @@ export function applyEnemyEncounterScaling(
     physicalDefense: Math.floor(enemy.physicalDefense * expeditionMult.defense * roomMultipliers.defense),
     magicalDefense: Math.floor(enemy.magicalDefense * expeditionMult.defense * roomMultipliers.defense),
     defenseAmplifier: enemy.defenseAmplifier * expeditionMult.defenseAmplifier * roomMultipliers.defenseAmplifier,
-    experience: Math.floor(enemy.experience * expeditionMult.experience * enemyTypeExperienceMultiplier),
+    experience: enemy.experience,
   };
 }

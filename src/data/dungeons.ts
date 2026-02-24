@@ -77,6 +77,8 @@ export const DUNGEONS: Dungeon[] = [
   // Tier 1: ケイナイアン平原 (Caninian Plains)
   {
     id: 1,
+    tier: 1,
+    expLevel: 1,
     name: 'ケイナイアン平原',
     enemyPoolIds: [1],
     bossId: 101,
@@ -87,6 +89,8 @@ export const DUNGEONS: Dungeon[] = [
   // Tier 2: ルピニアンの断崖 (Lupinian Crag)
   {
     id: 2,
+    tier: 2,
+    expLevel: 8,
     name: 'ルピニアンの断崖',
     enemyPoolIds: [2],
     bossId: 201,
@@ -97,6 +101,8 @@ export const DUNGEONS: Dungeon[] = [
   // Tier 3: ヴァルピニアンの樹林帯 (Vulpinian Taiga)
   {
     id: 3,
+    tier: 3,
+    expLevel: 16,
     name: 'ヴァルピニアンの樹林帯',
     enemyPoolIds: [3],
     bossId: 301,
@@ -107,6 +113,8 @@ export const DUNGEONS: Dungeon[] = [
   // Tier 4: ウルサンの霊峰 (Ursan Peaks)
   {
     id: 4,
+    tier: 4,
+    expLevel: 24,
     name: 'ウルサンの霊峰',
     enemyPoolIds: [4],
     bossId: 401,
@@ -117,6 +125,8 @@ export const DUNGEONS: Dungeon[] = [
   // Tier 5: フェリディアンの茂み (Felidian Grove)
   {
     id: 5,
+    tier: 5,
+    expLevel: 32,
     name: 'フェリディアンの茂み',
     enemyPoolIds: [5],
     bossId: 501,
@@ -127,6 +137,8 @@ export const DUNGEONS: Dungeon[] = [
   // Tier 6: マステリドの巣穴 (Mustelid Burrow)
   {
     id: 6,
+    tier: 6,
+    expLevel: 40,
     name: 'マステリドの巣穴',
     enemyPoolIds: [6],
     bossId: 601,
@@ -137,6 +149,8 @@ export const DUNGEONS: Dungeon[] = [
   // Tier 7: レポリアンの庭園 (Leporian Garden)
   {
     id: 7,
+    tier: 7,
+    expLevel: 48,
     name: 'レポリアンの庭園',
     enemyPoolIds: [7],
     bossId: 701,
@@ -147,6 +161,8 @@ export const DUNGEONS: Dungeon[] = [
   // Tier 8: セルヴィンの谷 (Cervin Vale)
   {
     id: 8,
+    tier: 8,
+    expLevel: 56,
     name: 'セルヴィンの谷',
     enemyPoolIds: [8],
     bossId: 801,
@@ -173,7 +189,7 @@ export function getFloorRoomMultipliers(floorNumber: number, roomType: RoomType)
 
 // Get expedition tier (1-8) from dungeon id
 export function getExpeditionTier(dungeonId: number): number {
-  return dungeonId; // dungeon id corresponds to tier
+  return getDungeonById(dungeonId)?.tier ?? 1;
 }
 
 // Get expedition multiplier for enemy stat scaling
