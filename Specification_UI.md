@@ -357,11 +357,11 @@ PT2...
 | 80–99 | 「待ってたよ。あんたには特別な品も回してるんだ。……他の客には内緒だぜ？」 |
 
 **Paid Refresh (有償洗替):**  
-  - **Cost:** `2,000G × (1 + refresh_count)`  
+  - **Cost:** `2,000G × 2 ^ (refresh_count - 1)`  
     - Example:  
       - 1st use: 2,000G  
       - 2nd use: 4,000G  
-      - 3rd use: 6,000G  
+      - 3rd use: 8,000G  
 
 
 **Lineup**
