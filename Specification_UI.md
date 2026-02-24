@@ -597,7 +597,8 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
 - UI Behavior:
   - Interaction:
     - Tap Enemy name, Opens detailed enemy status (same logic as battle). Including drop items.
-    - If enemy has no attack values, not show the corresponding values. 
+    - If enemy has no attack values, not show the corresponding values.
+    - Respect `m.luna` mode.
 
 ```
 (column 1)              (column 2)
