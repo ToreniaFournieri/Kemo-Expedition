@@ -3349,15 +3349,18 @@ function PartyTab({
           const nextMagicalDefense = Math.round(nextStats.magicalDefense);
           const physicalDefenseDelta = nextPhysicalDefense - currentPhysicalDefense;
           const magicalDefenseDelta = nextMagicalDefense - currentMagicalDefense;
+          const displaySignMultiplier = displayItem.isEquipped ? -1 : 1;
+          const displayedPhysicalDefenseDelta = physicalDefenseDelta * displaySignMultiplier;
+          const displayedMagicalDefenseDelta = magicalDefenseDelta * displaySignMultiplier;
 
           if (physicalDefenseDelta === 0 && magicalDefenseDelta === 0) return statsText;
 
           let nextStatsText = statsText;
-          if (physicalDefenseDelta !== 0) {
-            nextStatsText = nextStatsText.replace(/物防\+[\d,]+/, `物防${physicalDefenseDelta >= 0 ? '+' : ''}${formatNumber(physicalDefenseDelta)}`);
+          if (displayedPhysicalDefenseDelta !== 0) {
+            nextStatsText = nextStatsText.replace(/物防\+[\d,]+/, `物防${displayedPhysicalDefenseDelta >= 0 ? '+' : ''}${formatNumber(displayedPhysicalDefenseDelta)}`);
           }
-          if (magicalDefenseDelta !== 0) {
-            nextStatsText = nextStatsText.replace(/魔防\+[\d,]+/, `魔防${magicalDefenseDelta >= 0 ? '+' : ''}${formatNumber(magicalDefenseDelta)}`);
+          if (displayedMagicalDefenseDelta !== 0) {
+            nextStatsText = nextStatsText.replace(/魔防\+[\d,]+/, `魔防${displayedMagicalDefenseDelta >= 0 ? '+' : ''}${formatNumber(displayedMagicalDefenseDelta)}`);
           }
           return nextStatsText;
         };
