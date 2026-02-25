@@ -3354,16 +3354,10 @@ function PartyTab({
 
           let nextStatsText = statsText;
           if (physicalDefenseDelta !== 0) {
-            nextStatsText = nextStatsText.replace(/物防\+([\d,]+)/, (_match, value: string) => {
-              const currentValue = parseInt(value.replace(/,/g, ''), 10);
-              return `物防+${formatNumber(currentValue + physicalDefenseDelta)}`;
-            });
+            nextStatsText = nextStatsText.replace(/物防\+[\d,]+/, `物防${physicalDefenseDelta >= 0 ? '+' : ''}${formatNumber(physicalDefenseDelta)}`);
           }
           if (magicalDefenseDelta !== 0) {
-            nextStatsText = nextStatsText.replace(/魔防\+([\d,]+)/, (_match, value: string) => {
-              const currentValue = parseInt(value.replace(/,/g, ''), 10);
-              return `魔防+${formatNumber(currentValue + magicalDefenseDelta)}`;
-            });
+            nextStatsText = nextStatsText.replace(/魔防\+[\d,]+/, `魔防${magicalDefenseDelta >= 0 ? '+' : ''}${formatNumber(magicalDefenseDelta)}`);
           }
           return nextStatsText;
         };
