@@ -1773,33 +1773,38 @@ function PartyTab({
   const selectedIaigiriLevel = selectedStats.abilities.find(a => a.id === 'iaigiri')?.level ?? 0;
   const selectedIaigiriMultiplier = selectedIaigiriLevel >= 3 ? 3.0 : selectedIaigiriLevel >= 2 ? 2.5 : selectedIaigiriLevel >= 1 ? 2.0 : 1.0;
   const selectedEffectiveAccuracyBonus = getEffectiveAccuracyBonus(selectedStats.accuracyBonus, selectedStats.abilities);
+  const selectedPhysicalDefenseResist = Math.max(0.01, selectedStats.physicalDefenseAmplifier + selectedStats.deityDefenseAmplifierBonus.physical);
+  const selectedMagicalDefenseResist = Math.max(0.01, selectedStats.magicalDefenseAmplifier + selectedStats.deityDefenseAmplifierBonus.magical);
+  const selectedMeleeAttackAmp = ((selectedIaigiriLevel > 0
+    ? selectedIaigiriMultiplier * (1 + selectedStats.meleeAttackCBonus + getOffenseMultiplierSum(equippedItems, 'melee', selectedStats.offenseCBonusNames)) * selectedStats.physicalOffenseMultiplier
+    : (1 + selectedStats.meleeAttackCBonus + getOffenseMultiplierSum(equippedItems, 'melee', selectedStats.offenseCBonusNames) + selectedStats.physicalAttackCBonus) * selectedStats.physicalOffenseMultiplier
+  ) + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.strength);
+  const selectedRangedAttackAmp = ((selectedIaigiriLevel > 0
+    ? selectedIaigiriMultiplier * (1 + selectedStats.rangedAttackCBonus + getOffenseMultiplierSum(equippedItems, 'ranged', selectedStats.offenseCBonusNames)) * selectedStats.physicalOffenseMultiplier
+    : (1 + selectedStats.rangedAttackCBonus + getOffenseMultiplierSum(equippedItems, 'ranged', selectedStats.offenseCBonusNames) + selectedStats.physicalAttackCBonus) * selectedStats.physicalOffenseMultiplier
+  ) + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.strength);
+  const selectedMagicalAttackAmp = (((1 + selectedStats.magicalAttackCBonus + getOffenseMultiplierSum(equippedItems, 'magical', selectedStats.offenseCBonusNames)) * selectedStats.magicalOffenseMultiplier) + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.intelligence);
   const combatTotals = {
     vitality: selectedStats.baseStats.vitality,
     strength: selectedStats.baseStats.strength,
     intelligence: selectedStats.baseStats.intelligence,
     mind: selectedStats.baseStats.mind,
-    meleeAtk: Math.floor(selectedStats.meleeAttack),
-    rangedAtk: Math.floor(selectedStats.rangedAttack),
-    magicalAtk: Math.floor(selectedStats.magicalAttack),
+    meleeAtk: Math.floor(selectedStats.meleeAttack * selectedMeleeAttackAmp),
+    rangedAtk: Math.floor(selectedStats.rangedAttack * selectedRangedAttackAmp),
+    magicalAtk: Math.floor(selectedStats.magicalAttack * selectedMagicalAttackAmp),
     meleeNoA: selectedStats.meleeNoA,
     rangedNoA: selectedStats.rangedNoA,
     magicalNoA: selectedStats.magicalNoA,
-    physDef: Math.floor(selectedStats.physicalDefense),
-    magDef: Math.floor(selectedStats.magicalDefense),
-    physicalDefenseResistPercent: Math.round(Math.max(0.01, selectedStats.physicalDefenseAmplifier + selectedStats.deityDefenseAmplifierBonus.physical) * 100),
-    magicalDefenseResistPercent: Math.round(Math.max(0.01, selectedStats.magicalDefenseAmplifier + selectedStats.deityDefenseAmplifierBonus.magical) * 100),
+    physDef: Math.floor(selectedStats.physicalDefense / selectedPhysicalDefenseResist),
+    magDef: Math.floor(selectedStats.magicalDefense / selectedMagicalDefenseResist),
+    physicalDefenseResistPercent: Math.round(selectedPhysicalDefenseResist * 100),
+    magicalDefenseResistPercent: Math.round(selectedMagicalDefenseResist * 100),
     fireDefenseResistPercent: Math.round(Math.max(0.01, selectedStats.elementalDefenseMultipliers.fire) * 100),
     iceDefenseResistPercent: Math.round(Math.max(0.01, selectedStats.elementalDefenseMultipliers.ice) * 100),
     thunderDefenseResistPercent: Math.round(Math.max(0.01, selectedStats.elementalDefenseMultipliers.thunder) * 100),
-    meleeAttackAmp: ((selectedIaigiriLevel > 0
-      ? selectedIaigiriMultiplier * (1 + selectedStats.meleeAttackCBonus + getOffenseMultiplierSum(equippedItems, 'melee', selectedStats.offenseCBonusNames)) * selectedStats.physicalOffenseMultiplier
-      : (1 + selectedStats.meleeAttackCBonus + getOffenseMultiplierSum(equippedItems, 'melee', selectedStats.offenseCBonusNames) + selectedStats.physicalAttackCBonus) * selectedStats.physicalOffenseMultiplier
-    ) + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.strength),
-    rangedAttackAmp: ((selectedIaigiriLevel > 0
-      ? selectedIaigiriMultiplier * (1 + selectedStats.rangedAttackCBonus + getOffenseMultiplierSum(equippedItems, 'ranged', selectedStats.offenseCBonusNames)) * selectedStats.physicalOffenseMultiplier
-      : (1 + selectedStats.rangedAttackCBonus + getOffenseMultiplierSum(equippedItems, 'ranged', selectedStats.offenseCBonusNames) + selectedStats.physicalAttackCBonus) * selectedStats.physicalOffenseMultiplier
-    ) + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.strength),
-    magicalAttackAmp: (((1 + selectedStats.magicalAttackCBonus + getOffenseMultiplierSum(equippedItems, 'magical', selectedStats.offenseCBonusNames)) * selectedStats.magicalOffenseMultiplier) + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.intelligence),
+    meleeAttackAmp: selectedMeleeAttackAmp,
+    rangedAttackAmp: selectedRangedAttackAmp,
+    magicalAttackAmp: selectedMagicalAttackAmp,
     accuracy: Math.round(selectedEffectiveAccuracyBonus * 1000),
     evasion: Math.round(selectedStats.evasionBonus * 1000),
     hp: Math.floor(partyStats.hp),
