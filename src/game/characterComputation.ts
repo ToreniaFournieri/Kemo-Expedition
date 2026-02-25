@@ -502,34 +502,34 @@ export function computeCharacterStats(
       rangedAttack += Math.round(item.rangedAttack * multiplier);
     }
     if (item.rangedNoA) {
-      // Positive NoA scales with enhancement; negative penalties stay fixed
-      if (item.rangedNoA > 0) {
-        rangedNoA += item.rangedNoA * multiplier;
-      } else {
-        rangedNoA += item.rangedNoA;
-      }
+      // Round each item contribution individually.
+      // Positive NoA scales with enhancement; negative penalties stay fixed.
+      const rangedNoAContribution = item.rangedNoA > 0
+        ? Math.round(item.rangedNoA * multiplier)
+        : item.rangedNoA;
+      rangedNoA += rangedNoAContribution;
     }
     if (item.magicalAttack) {
       magicalAttack += Math.round(item.magicalAttack * multiplier);
     }
     if (item.magicalNoA) {
-      // Catalyst magical_NoA scales with enhancement
-      if (item.magicalNoA > 0) {
-        magicalNoA += item.magicalNoA * multiplier;
-      } else {
-        magicalNoA += item.magicalNoA;
-      }
+      // Round each item contribution individually.
+      // Catalyst magical_NoA scales with enhancement.
+      const magicalNoAContribution = item.magicalNoA > 0
+        ? Math.round(item.magicalNoA * multiplier)
+        : item.magicalNoA;
+      magicalNoA += magicalNoAContribution;
     }
     if (item.meleeAttack) {
       meleeAttack += Math.round(item.meleeAttack * multiplier);
     }
     if (item.meleeNoA) {
-      // Positive NoA (gauntlet) scales with enhancement; negative (katana) stays fixed
-      if (item.meleeNoA > 0) {
-        meleeNoA += item.meleeNoA * multiplier;
-      } else {
-        meleeNoA += item.meleeNoA;
-      }
+      // Round each item contribution individually.
+      // Positive NoA (gauntlet) scales with enhancement; negative (katana) stays fixed.
+      const meleeNoAContribution = item.meleeNoA > 0
+        ? Math.round(item.meleeNoA * multiplier)
+        : item.meleeNoA;
+      meleeNoA += meleeNoAContribution;
     }
     if (item.meleeNoABonus) {
       if (item.meleeNoABonus < 0) {
