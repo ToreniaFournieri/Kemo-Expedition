@@ -143,9 +143,9 @@
   - *note: `c.ranged_NoA+v`, `c.magical_NoA+v`, `c.melee_NoA+v`  Only one single bonuses(c.) of the **exact** same name applies.  
 
 - character.`f.attack`:
-  - `d.ranged_attack`= Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier
-  - `d.melee_attack`= Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier
-  - `d.magical_attack`= Item Bonuses x enhancement multiplier x super rare multiplier x its c.multiplier
+  - `d.ranged_attack`= Item Bonuses of {(`d.ranged_attack` x enhancement multiplier x super rare multiplier x its c.multiplier), round off}
+  - `d.melee_attack`= Item Bonuses of {(`d.melee_attack` x enhancement multiplier x super rare multiplier x its c.multiplier), round off}
+  - `d.magical_attack`= Item Bonuses of of {(`d.magical_attack`  x enhancement multiplier x super rare multiplier x its c.multiplier), round off}
 
 - character.`f.offense_amplifier` (phase: )
   - If phase is LONG or CLOSE,
@@ -161,9 +161,9 @@
 
 - character .`f.defense` (phase: ):
   - If phase is LONG or CLOSE:
-  	- `d.physical_defense`: Item Bonuses of Physical defense x enhancement multiplier x super rare multiplier x its c.multiplier
+  	- `d.physical_defense`: Item Bonuses of {(Physical defense x enhancement multiplier x super rare multiplier x its c.multiplier), round off}
   - If phase is MID:
-  	- `d.magical_defense`: Item Bonuses of Magical defense x enhancement multiplier x super rare multiplier x its c.multiplier
+  	- `d.magical_defense`: Item Bonuses of {(Magical defense x enhancement multiplier x super rare multiplier x its c.multiplier), round off}
 
 - character.`f.defense_amplifier` (phase: )
   - If phase is LONG or CLOSE
