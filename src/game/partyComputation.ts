@@ -198,14 +198,15 @@ export function computePartyStats(party: Party): {
     const statMultiplier = (stats.vitality + stats.mind) / 20;
     const growthMultiplier = getCharacterGrowthMultiplier(character);
 
-    // Sum item HP bonuses with multipliers (category + enhancement)
+    // Sum item HP bonuses with multipliers (category + enhancement),
+    // rounding each item contribution individually.
     let itemHpBonus = 0;
     for (const item of character.equipment) {
       if (item && item.partyHP) {
         const categoryMult = getCharacterMultiplier(character, item.category);
         const enhanceMult = getItemEnhancementMultiplier(item);
         const baseMult = item.baseMultiplier ?? 1;
-        itemHpBonus += item.partyHP * categoryMult * enhanceMult * baseMult;
+        itemHpBonus += Math.round(item.partyHP * categoryMult * enhanceMult * baseMult);
       }
     }
 
