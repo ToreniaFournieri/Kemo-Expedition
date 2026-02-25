@@ -3326,7 +3326,7 @@ function PartyTab({
           }
         };
 
-        const getProjectedDefenseDeltaText = (displayItem: DisplayItem): string | null => {
+        const applyProjectedDefenseToStatsText = (displayItem: DisplayItem, statsText: string): string => {
           const currentPhysicalDefense = Math.round(stats.physicalDefense);
           const currentMagicalDefense = Math.round(stats.magicalDefense);
 
@@ -3341,7 +3341,7 @@ function PartyTab({
             targetItem = targetSlotIndex !== null ? displayItem.item : null;
           }
 
-          if (targetSlotIndex === null) return null;
+          if (targetSlotIndex === null) return statsText;
 
           const nextCharacter = replaceCharacterEquipment(char, targetSlotIndex, targetItem);
           const nextStats = computeCharacterStats(nextCharacter, party.level);
@@ -3350,16 +3350,16 @@ function PartyTab({
           const physicalDefenseDelta = nextPhysicalDefense - currentPhysicalDefense;
           const magicalDefenseDelta = nextMagicalDefense - currentMagicalDefense;
 
-          if (physicalDefenseDelta === 0 && magicalDefenseDelta === 0) return null;
+          if (physicalDefenseDelta === 0 && magicalDefenseDelta === 0) return statsText;
 
-          const parts: string[] = [];
+          let nextStatsText = statsText;
           if (physicalDefenseDelta !== 0) {
-            parts.push(`物防${physicalDefenseDelta > 0 ? '+' : ''}${formatNumber(physicalDefenseDelta)}`);
+            nextStatsText = nextStatsText.replace(/物防\+[\d,]+/, `物防${physicalDefenseDelta >= 0 ? '+' : ''}${formatNumber(physicalDefenseDelta)}`);
           }
           if (magicalDefenseDelta !== 0) {
-            parts.push(`魔防${magicalDefenseDelta > 0 ? '+' : ''}${formatNumber(magicalDefenseDelta)}`);
+            nextStatsText = nextStatsText.replace(/魔防\+[\d,]+/, `魔防${magicalDefenseDelta >= 0 ? '+' : ''}${formatNumber(magicalDefenseDelta)}`);
           }
-          return ` [装備反映:${parts.join(', ')}]`;
+          return nextStatsText;
         };
 
         const filteredDisplayItems = displayItems.filter(displayItem =>
@@ -3470,7 +3470,7 @@ function PartyTab({
                       {displayItem.isEquipped && <RaceIcon race={race} className="h-4 w-4 inline-block mr-1 align-text-bottom" />}
                       <span className="font-medium">{getItemDisplayName(displayItem.item)}</span>
                       {!displayItem.isEquipped && <span className="text-xs text-gray-500"> x{displayItem.count}</span>}
-                      <span className="text-xs text-gray-400"> {getRarityShortLabel(displayItem.item.id)} {getItemStats(displayItem.item, getCharacterCategoryMultiplier(char, displayItem.item.category), hpDisplayMultiplier)}{getProjectedDefenseDeltaText(displayItem)}</span>
+                      <span className="text-xs text-gray-400"> {getRarityShortLabel(displayItem.item.id)} {applyProjectedDefenseToStatsText(displayItem, getItemStats(displayItem.item, getCharacterCategoryMultiplier(char, displayItem.item.category), hpDisplayMultiplier))}</span>
                     </span>
                   </div>
                 </button>
