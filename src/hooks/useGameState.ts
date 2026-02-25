@@ -25,6 +25,7 @@ import {
 import { computePartyStats } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
 import { applyEnemyEncounterScaling, getRoomMultiplier } from '../game/enemyScaling';
+import { replaceCharacterEquipment } from '../game/equipment';
 import { DUNGEONS, getDungeonById, getEffectiveEnemyLevel, getEffectiveEnemyMultipliers, getEffectiveExpeditionTier } from '../data/dungeons';
 import { CLASS_SHORT_NAMES } from '../data/classes';
 import { getEnemiesByPool, getElitesByPool, getBossEnemy, getEnemyDropCandidates } from '../data/enemies';
@@ -1513,11 +1514,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (charIndex === -1) return state;
 
       const character = currentParty.characters[charIndex];
-      const newEquipment = [...character.equipment];
       let newInventory = { ...state.global.inventory };
 
       // Add old item back to inventory
-      const oldItem = newEquipment[action.slotIndex];
+      const oldItem = character.equipment[action.slotIndex];
       if (oldItem) {
         const oldKey = getVariantKey(oldItem);
         const existing = newInventory[oldKey];
@@ -1533,16 +1533,27 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         const variant = newInventory[action.itemKey];
         if (variant && variant.count > 0) {
           newInventory = removeItemFromInventory(newInventory, action.itemKey);
-          newEquipment[action.slotIndex] = { ...variant.item };
-        } else {
-          newEquipment[action.slotIndex] = null;
+          const equippedCharacter = replaceCharacterEquipment(character, action.slotIndex, { ...variant.item });
+          const newCharacters = [...currentParty.characters];
+          newCharacters[charIndex] = equippedCharacter;
+
+          const updatedParties = [...state.parties];
+          updatedParties[state.selectedPartyIndex] = {
+            ...currentParty,
+            characters: newCharacters
+          };
+
+          return {
+            ...state,
+            parties: updatedParties,
+            global: { ...state.global, inventory: newInventory },
+          };
         }
-      } else {
-        newEquipment[action.slotIndex] = null;
       }
 
+      const unequippedCharacter = replaceCharacterEquipment(character, action.slotIndex, null);
       const newCharacters = [...currentParty.characters];
-      newCharacters[charIndex] = { ...character, equipment: newEquipment };
+      newCharacters[charIndex] = unequippedCharacter;
 
       const updatedParties = [...state.parties];
       updatedParties[state.selectedPartyIndex] = {
