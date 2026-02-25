@@ -407,7 +407,7 @@ function getNextGoalText(party: Party): string | null {
 
 // Helper to format item stats
 
-function getItemStats(item: Item, categoryMultiplier: number = 1): string {
+function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultiplier: number = 1): string {
   const enhancementMultiplier = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
   const superRareMultiplier = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
   const baseMultiplier = item.baseMultiplier ?? 1;
@@ -471,7 +471,9 @@ function getItemStats(item: Item, categoryMultiplier: number = 1): string {
     stats.push(`魔防+${Math.round(item.magicalDefense * multiplier)}`);
     if (multiplierPercent) stats.push(formatBracket('魔防', multiplierPercent, '%'));
   }
-  if (item.partyHP) stats.push(`HP+${Math.floor(item.partyHP * multiplier)}`);
+  if (item.partyHP) {
+    stats.push(`HP+${Math.round(item.partyHP * multiplier * hpScaleMultiplier)}`);
+  }
   if (item.accuracyBonus) stats.push(formatBracket('命中', Math.round(item.accuracyBonus * 1000)));
   if (item.evasionBonus) stats.push(`回避${formatSigned(Math.round(item.evasionBonus * 1000))}`);
   if (item.vitalityBonus) stats.push(`体力+${item.vitalityBonus}`);
@@ -2097,6 +2099,7 @@ function PartyTab({
 
   const char = selectedChar;
   const stats = characterStats[selectedCharacter];
+  const hpDisplayMultiplier = ((stats.baseStats.vitality + stats.baseStats.mind) / 20) * getCharacterGrowthMultiplier(char);
   const race = RACES.find(r => r.id === char.raceId)!;
   const mainClass = CLASSES.find(c => c.id === char.mainClassId)!;
   const subClass = CLASSES.find(c => c.id === char.subClassId)!;
@@ -3222,7 +3225,7 @@ function PartyTab({
                   <div className="flex justify-between items-center">
                     <span>
                       <span className="font-medium">{getItemDisplayName(item)}</span>
-                      <span className="text-xs text-gray-500"> {getRarityShortLabel(item.id)} {getItemStats(item, getCharacterCategoryMultiplier(char, item.category))}</span>
+                      <span className="text-xs text-gray-500"> {getRarityShortLabel(item.id)} {getItemStats(item, getCharacterCategoryMultiplier(char, item.category), hpDisplayMultiplier)}</span>
                     </span>
                     <span className="text-xs text-gray-400">
                       [{CATEGORY_NAMES[item.category]}]
@@ -3405,7 +3408,7 @@ function PartyTab({
                       {displayItem.isEquipped && <RaceIcon race={race} className="h-4 w-4 inline-block mr-1 align-text-bottom" />}
                       <span className="font-medium">{getItemDisplayName(displayItem.item)}</span>
                       {!displayItem.isEquipped && <span className="text-xs text-gray-500"> x{displayItem.count}</span>}
-                      <span className="text-xs text-gray-400"> {getRarityShortLabel(displayItem.item.id)} {getItemStats(displayItem.item, getCharacterCategoryMultiplier(char, displayItem.item.category))}</span>
+                      <span className="text-xs text-gray-400"> {getRarityShortLabel(displayItem.item.id)} {getItemStats(displayItem.item, getCharacterCategoryMultiplier(char, displayItem.item.category), hpDisplayMultiplier)}</span>
                     </span>
                   </div>
                 </button>
