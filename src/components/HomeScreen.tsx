@@ -1528,6 +1528,27 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     return 5000;
   };
 
+  const notifyExpeditionRewardsIfNeeded = (party: Party, partyIndex: number) => {
+    const currentLog = party.lastExpeditionLog;
+    if (!currentLog || currentLog.rewards.length <= 0) return;
+    if (notifiedRewardLogRef.current[partyIndex] === currentLog) return;
+
+    for (const item of currentLog.rewards) {
+      const isSuperRare = item.superRare > 0;
+      const itemName = getItemDisplayName(item);
+      const rarity = getItemRarityById(item.id);
+      actions.addNotification(
+        `${party.name}:${itemName}を入手！`,
+        rarity === 'rare' || rarity === 'mythic' || isSuperRare ? 'rare' : 'normal',
+        'item',
+        undefined,
+        { rarity, isSuperRareItem: isSuperRare }
+      );
+    }
+
+    notifiedRewardLogRef.current[partyIndex] = currentLog;
+  };
+
   const triggerSortie = (partyIndex: number) => {
     const cycle = partyCycles[partyIndex];
     const party = state.parties[partyIndex];
@@ -1553,6 +1574,10 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       } else {
         actions.addNotification(`${party.name} は神の緊急動員に憤りながらも出撃した`);
       }
+    }
+
+    if (cycle?.state === '売却中') {
+      notifyExpeditionRewardsIfNeeded(party, partyIndex);
     }
 
     actions.clearPendingProfit(partyIndex);
