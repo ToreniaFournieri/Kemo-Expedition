@@ -4091,6 +4091,11 @@ function InventoryTab({
           slotIndex,
           characterName: character.name,
           raceId: character.raceId,
+          categoryMultiplier: getCharacterCategoryMultiplier(character, item.category),
+          hpScaleMultiplier: (() => {
+            const characterStats = computeCharacterStats(character, party.level);
+            return ((characterStats.baseStats.vitality + characterStats.baseStats.mind) / 20) * getCharacterGrowthMultiplier(character);
+          })(),
         }];
       })
     )
@@ -4256,7 +4261,7 @@ function InventoryTab({
                   </span>
                 </div>
                 <div className="mt-0.5 text-xs leading-tight text-gray-400">
-                  {getRarityShortLabel(entry.equipped.item.id)} {getItemStats(entry.equipped.item)}
+                  {getRarityShortLabel(entry.equipped.item.id)} {getItemStats(entry.equipped.item, entry.equipped.categoryMultiplier, entry.equipped.hpScaleMultiplier)}
                 </div>
               </div>
             );
