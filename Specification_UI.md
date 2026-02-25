@@ -225,7 +225,12 @@ displays [遠距離攻撃:矢,ボ,弓]
 - Inventory pane shows at least 10 items
 - Equipped item: The name and status are left-aligned, item type is right-aligned on **the same line**.
 
-**4. Image of inventory pane transaction at equipment management**
+**4. Inventory in party tab respects `item_category_x1.x` amplifier**
+- If a character has a category amplifier (e.g., 刀 x2.2 / with `c.katana_x1.4`, `c.katana_x1.3`, `c.katana_x1.2`, internally 2.184), the item’s displayed stats already include this multiplier.
+  - Example: "宿った石刃の太刀 [1C] shows 近攻 +96" in the character equipment pane in Party tab, even though its value is "近攻 +44" in Inventory tab, because the katana category multiplier is applied.
+
+
+**5. Image of inventory pane transaction at equipment management**
 
 ```
 宿ったロングソード x2 [C] 近攻+31
