@@ -3351,17 +3351,15 @@ function PartyTab({
           const nextMagicalDefense = Math.round(nextStats.magicalDefense);
           const physicalDefenseDelta = nextPhysicalDefense - currentPhysicalDefense;
           const magicalDefenseDelta = nextMagicalDefense - currentMagicalDefense;
-          const displayPhysicalDefenseDelta = displayItem.isEquipped ? Math.abs(physicalDefenseDelta) : physicalDefenseDelta;
-          const displayMagicalDefenseDelta = displayItem.isEquipped ? Math.abs(magicalDefenseDelta) : magicalDefenseDelta;
 
-          if (displayPhysicalDefenseDelta === 0 && displayMagicalDefenseDelta === 0) return statsText;
+          if (physicalDefenseDelta === 0 && magicalDefenseDelta === 0) return statsText;
 
           let nextStatsText = statsText;
-          if (displayPhysicalDefenseDelta !== 0) {
-            nextStatsText = nextStatsText.replace(/物防\+[\d,]+/, `物防${displayPhysicalDefenseDelta >= 0 ? '+' : ''}${formatNumber(displayPhysicalDefenseDelta)}`);
+          if (physicalDefenseDelta !== 0) {
+            nextStatsText = nextStatsText.replace(/物防\+[\d,]+/, `物防${physicalDefenseDelta >= 0 ? '+' : ''}${formatNumber(physicalDefenseDelta)}`);
           }
-          if (displayMagicalDefenseDelta !== 0) {
-            nextStatsText = nextStatsText.replace(/魔防\+[\d,]+/, `魔防${displayMagicalDefenseDelta >= 0 ? '+' : ''}${formatNumber(displayMagicalDefenseDelta)}`);
+          if (magicalDefenseDelta !== 0) {
+            nextStatsText = nextStatsText.replace(/魔防\+[\d,]+/, `魔防${magicalDefenseDelta >= 0 ? '+' : ''}${formatNumber(magicalDefenseDelta)}`);
           }
           return nextStatsText;
         };
