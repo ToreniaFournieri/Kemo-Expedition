@@ -410,8 +410,28 @@ function getNextGoalText(party: Party): string | null {
 function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultiplier: number = 1): string {
   const enhancementMultiplier = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
   const superRareMultiplier = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
+  const selfCategoryBonusTypeByItemCategory: Partial<Record<ItemCategory, BonusType>> = {
+    sword: 'sword_multiplier',
+    katana: 'katana_multiplier',
+    archery: 'archery_multiplier',
+    armor: 'armor_multiplier',
+    gauntlet: 'gauntlet_multiplier',
+    wand: 'wand_multiplier',
+    robe: 'robe_multiplier',
+    shield: 'shield_multiplier',
+    bolt: 'bolt_multiplier',
+    grimoire: 'grimoire_multiplier',
+    catalyst: 'catalyst_multiplier',
+    arrow: 'arrow_multiplier',
+  };
+  const selfCategoryBonusType = selfCategoryBonusTypeByItemCategory[item.category];
+  const selfCategoryMultiplier = selfCategoryBonusType
+    ? getSuperRareBonuses(item.superRare)
+      .filter((bonus) => bonus.type === selfCategoryBonusType)
+      .reduce((total, bonus) => total * bonus.value, 1)
+    : 1;
   const baseMultiplier = item.baseMultiplier ?? 1;
-  const multiplier = enhancementMultiplier * superRareMultiplier * baseMultiplier * categoryMultiplier;
+  const multiplier = enhancementMultiplier * superRareMultiplier * baseMultiplier * categoryMultiplier * selfCategoryMultiplier;
   const superRareUniqueBonusText = formatBonuses(
     SUPER_RARE_TITLES.find((title) => title.value === item.superRare)?.bonuses ?? [],
     { defenseMultiplierStyle: 'friendly' }
