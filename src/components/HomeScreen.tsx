@@ -435,16 +435,17 @@ function getItemStats(item: Item, categoryMultiplier: number = 1): string {
     value > 0 ? formatBracket(label, value) : `${label}${formatSigned(value)}`;
 
   const stats: string[] = [];
+  // Match displayed item values with runtime stat computation (rounded, not floored).
   if (item.meleeAttack) {
-    stats.push(`近攻+${Math.floor(item.meleeAttack * multiplier)}`);
+    stats.push(`近攻+${Math.round(item.meleeAttack * multiplier)}`);
     if (item.category === 'sword' && multiplierPercent) stats.push(formatBracket('近攻撃', multiplierPercent, '%'));
   }
   if (item.rangedAttack) {
-    stats.push(`遠攻+${Math.floor(item.rangedAttack * multiplier)}`);
+    stats.push(`遠攻+${Math.round(item.rangedAttack * multiplier)}`);
     if (item.category === 'arrow' && multiplierPercent) stats.push(formatBracket('遠攻撃', multiplierPercent, '%'));
   }
   if (item.magicalAttack) {
-    stats.push(`魔攻+${Math.floor(item.magicalAttack * multiplier)}`);
+    stats.push(`魔攻+${Math.round(item.magicalAttack * multiplier)}`);
     if (item.category === 'wand' && multiplierPercent) stats.push(formatBracket('魔攻撃', multiplierPercent, '%'));
   }
   if (item.meleeNoA || item.meleeNoABonus) {
@@ -463,11 +464,11 @@ function getItemStats(item: Item, categoryMultiplier: number = 1): string {
     if (item.magicalNoABonus) stats.push(formatFixedNoA('魔回数', item.magicalNoABonus));
   }
   if (item.physicalDefense) {
-    stats.push(`物防+${Math.floor(item.physicalDefense * multiplier)}`);
+    stats.push(`物防+${Math.round(item.physicalDefense * multiplier)}`);
     if (multiplierPercent) stats.push(formatBracket('物防', multiplierPercent, '%'));
   }
   if (item.magicalDefense) {
-    stats.push(`魔防+${Math.floor(item.magicalDefense * multiplier)}`);
+    stats.push(`魔防+${Math.round(item.magicalDefense * multiplier)}`);
     if (multiplierPercent) stats.push(formatBracket('魔防', multiplierPercent, '%'));
   }
   if (item.partyHP) stats.push(`HP+${Math.floor(item.partyHP * multiplier)}`);
