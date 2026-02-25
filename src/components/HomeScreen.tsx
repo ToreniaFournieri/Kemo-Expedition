@@ -493,10 +493,9 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
   }
   if (item.partyHP) {
     // Match computePartyStats HP contribution order:
-    // 1) Round each item HP bonus after category/enhancement/base multipliers.
-    // 2) Apply per-character stat/growth scaling for display.
-    const roundedItemHp = Math.round(item.partyHP * multiplier);
-    stats.push(`HP+${Math.round(roundedItemHp * hpScaleMultiplier)}`);
+    // Round each item HP bonus after category/enhancement/base/stat/growth multipliers.
+    const roundedItemHp = Math.round(item.partyHP * multiplier * hpScaleMultiplier);
+    stats.push(`HP+${roundedItemHp}`);
   }
   if (item.accuracyBonus) stats.push(formatBracket('命中', Math.round(item.accuracyBonus * 1000)));
   if (item.evasionBonus) stats.push(`回避${formatSigned(Math.round(item.evasionBonus * 1000))}`);
@@ -2269,13 +2268,13 @@ function PartyTab({
 
   const hpStatMultiplier = (stats.baseStats.vitality + stats.baseStats.mind) / 20;
   const hpGrowthMultiplier = getCharacterGrowthMultiplier(char);
-  const hpBaseIncrease = party.level * stats.baseStats.vitality * hpStatMultiplier * hpGrowthMultiplier;
+  const hpBaseIncrease = Math.round(party.level * stats.baseStats.vitality * hpStatMultiplier * hpGrowthMultiplier);
   const hpItemIncrease = char.equipment.reduce((total, item) => {
     if (!item?.partyHP) return total;
     const categoryMultiplier = getCharacterCategoryMultiplier(char, item.category);
     const itemMultiplier = getEnhancementAndSuperRareMultiplier(item);
     const baseMultiplier = item.baseMultiplier ?? 1;
-    return total + (item.partyHP * categoryMultiplier * itemMultiplier * baseMultiplier * hpStatMultiplier * hpGrowthMultiplier);
+    return total + Math.round(item.partyHP * categoryMultiplier * itemMultiplier * baseMultiplier * hpStatMultiplier * hpGrowthMultiplier);
   }, 0);
 
   const availableCategoryGroups = getAvailableCategoryGroups(char);

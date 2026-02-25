@@ -188,7 +188,13 @@ export function computePartyStats(party: Party): {
   const characterStats = applyDeityCharacterModifiers(party, baseCharacterStats);
 
   // Calculate party HP
-  // Party.d.HP = 100 + (Total sum of individual ((Item Bonuses of HP x enhancement multiplier x super rare multiplier x its c.multiplier + L_eff x b.vitality) x (b.vitality + b.mind) / 20) x c.growth_xV)
+  // Party.d.HP =
+  //   100
+  //   + (Total sum of individual (
+  //       Item Bonuses of {((HP x enhancement multiplier x super rare multiplier x its c.multiplier)
+  //         x (b.vitality + b.mind) / 20 x c.growth_xV), round off}
+  //       + {(L_eff x b.vitality x (b.vitality + b.mind) / 20 x c.growth_xV), round off}
+  //     ))
   let baseHp = 100;
   let bonusHp = 0;
   const effectiveLevel = getEffectiveLevel(party.level);
@@ -198,7 +204,7 @@ export function computePartyStats(party: Party): {
     const statMultiplier = (stats.vitality + stats.mind) / 20;
     const growthMultiplier = getCharacterGrowthMultiplier(character);
 
-    // Sum item HP bonuses with multipliers (category + enhancement),
+    // Sum item HP bonuses with full per-character HP scaling,
     // rounding each item contribution individually.
     let itemHpBonus = 0;
     for (const item of character.equipment) {
@@ -206,15 +212,15 @@ export function computePartyStats(party: Party): {
         const categoryMult = getCharacterMultiplier(character, item.category);
         const enhanceMult = getItemEnhancementMultiplier(item);
         const baseMult = item.baseMultiplier ?? 1;
-        itemHpBonus += Math.round(item.partyHP * categoryMult * enhanceMult * baseMult);
+        itemHpBonus += Math.round(item.partyHP * categoryMult * enhanceMult * baseMult * statMultiplier * growthMultiplier);
       }
     }
 
-    // Add L_eff x vitality
-    const levelBonus = effectiveLevel * stats.vitality;
+    // Add rounded L_eff contribution.
+    const levelBonus = Math.round(effectiveLevel * stats.vitality * statMultiplier * growthMultiplier);
 
     // Character's HP contribution
-    bonusHp += ((itemHpBonus + levelBonus) * statMultiplier) * growthMultiplier;
+    bonusHp += itemHpBonus + levelBonus;
   }
 
   // Collect all party abilities
