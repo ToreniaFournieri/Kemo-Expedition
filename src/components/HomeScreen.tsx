@@ -1576,7 +1576,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       }
     }
 
-    if (cycle?.state === '売却中') {
+    if (cycle) {
       notifyExpeditionRewardsIfNeeded(party, partyIndex);
     }
 
