@@ -77,7 +77,7 @@ type Tab = 'party' | 'expedition' | 'base' | 'diary' | 'setting';
 type BaseSubTab = 'inventory' | 'shop' | 'workshop' | 'altar';
 
 
-type PartyCycleState = '休息中' | '宴会中' | '睡眠中' | '祈り中' | '待機中' | '移動中' | '探索中' | '帰還中';
+type PartyCycleState = '休息中' | '売却中' | '宴会中' | '睡眠中' | '祈り中' | '待機中' | '移動中' | '探索中' | '帰還中';
 
 interface PartyCycleRuntime {
   state: PartyCycleState;
@@ -1054,7 +1054,8 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const prevPartyLevelsRef = useRef(state.parties.map((party) => party.level));
   const prevShopPurchasesRef = useRef(state.global.shopPurchases);
   const prevInventoryRef = useRef(state.global.inventory);
-  const pendingNotificationTimersRef = useRef<Record<number, number>>({});
+  const notifiedRewardLogRef = useRef<Array<Party['lastExpeditionLog'] | null>>(state.parties.map(() => null));
+  const prevPartyCycleStateRef = useRef<Array<PartyCycleState | null>>(state.parties.map(() => null));
   const hasHydratedAfkRef = useRef(false);
   const pendingAfkSimulationRef = useRef(true);
   const lastCheckpointAtRef = useRef(Date.now());
@@ -1246,9 +1247,15 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
           const { partyStats: partyRuntimeStats } = computePartyStats(party);
           if (party.currentHp < partyRuntimeStats.hp) actions.healPartyHp(partyIndex, Math.max(1, Math.floor(partyRuntimeStats.hp * 0.01)));
           if (party.currentHp >= partyRuntimeStats.hp) {
-            updated.state = party.pendingProfit > 0 ? '宴会中' : '睡眠中';
+            const hasTrophy = (party.lastExpeditionLog?.rewards.length ?? 0) > 0;
+            if (hasTrophy) {
+              updated.state = '売却中';
+              updated.durationMs = 5000;
+            } else {
+              updated.state = party.pendingProfit > 0 ? '宴会中' : '睡眠中';
+              updated.durationMs = updated.state === '宴会中' ? 5000 : 10000;
+            }
             updated.stateStartedAt = simulationNow;
-            updated.durationMs = updated.state === '宴会中' ? 5000 : 10000;
           }
         }
 
@@ -1257,7 +1264,10 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
           updated.stateStartedAt += updated.durationMs;
           stateElapsedMs -= updated.durationMs;
 
-            if (updated.state === '宴会中') {
+            if (updated.state === '売却中') {
+              updated.state = '宴会中';
+              updated.durationMs = 5000;
+            } else if (updated.state === '宴会中') {
               const baseSpend = Math.floor((party.pendingProfit * (33 + Math.random() * 34)) / 100);
               const squanderLevel = getPartyAbilityLevel(party, 'squander');
               const squanderMultiplier = squanderLevel >= 2 ? 2 : squanderLevel >= 1 ? 1.5 : 1;
@@ -1357,7 +1367,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     };
   }, [processTimeCheckpoint]);
 
-  // Item drop notifications after expedition
+  // Item gain notifications after selling phase
   useEffect(() => {
     state.parties.forEach((party, index) => {
       const previousLog = prevPartyLogsRef.current[index] ?? null;
@@ -1365,9 +1375,6 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       const currentLog = party.lastExpeditionLog;
       const hasNewLog = !!currentLog && currentLog !== previousLog;
       const hasLevelUp = party.level > previousLevel;
-      if (!hasNewLog && !hasLevelUp) {
-        return;
-      }
 
       if (hasLevelUp) {
         const representativeCharacter = party.characters[0];
@@ -1385,40 +1392,50 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         actions.addNotification(levelUpMessage);
       }
 
-      if (hasNewLog && currentLog) {
-        const existingTimer = pendingNotificationTimersRef.current[index];
-        if (existingTimer) {
-          window.clearTimeout(existingTimer);
-        }
+      const cycle = partyCycles[index];
+      const cycleState = cycle?.state ?? null;
+      const sellingFinished = cycleState !== '売却中';
+      const canAnnounceGains = cycleState !== '探索中' && cycleState !== '帰還中' && cycleState !== '休息中' && cycleState !== '売却中';
+      const hasRewardsToNotify = (currentLog?.rewards.length ?? 0) > 0;
+      const isAlreadyNotified = notifiedRewardLogRef.current[index] === currentLog;
+      const justFinishedSelling = prevPartyCycleStateRef.current[index] === '売却中' && cycleState !== '売却中';
 
-        // Delay reward notifications until exploration visually finishes.
-        pendingNotificationTimersRef.current[index] = window.setTimeout(() => {
-          for (const item of currentLog.rewards) {
-            const isSuperRare = item.superRare > 0;
-            const itemName = getItemDisplayName(item);
-            const rarity = getItemRarityById(item.id);
-            actions.addNotification(
-              `${party.name}:${itemName}を入手！`,
-              rarity === 'rare' || rarity === 'mythic' || isSuperRare ? 'rare' : 'normal',
-              'item',
-              undefined,
-              { rarity, isSuperRareItem: isSuperRare }
-            );
-          }
-          delete pendingNotificationTimersRef.current[index];
-        }, EXPLORING_PROGRESS_TOTAL_STEPS * EXPLORING_PROGRESS_STEP_MS);
+      if (hasRewardsToNotify && sellingFinished && canAnnounceGains && (hasNewLog || justFinishedSelling) && !isAlreadyNotified && currentLog) {
+        for (const item of currentLog.rewards) {
+          const isSuperRare = item.superRare > 0;
+          const itemName = getItemDisplayName(item);
+          const rarity = getItemRarityById(item.id);
+          actions.addNotification(
+            `${party.name}:${itemName}を入手！`,
+            rarity === 'rare' || rarity === 'mythic' || isSuperRare ? 'rare' : 'normal',
+            'item',
+            undefined,
+            { rarity, isSuperRareItem: isSuperRare }
+          );
+        }
+        notifiedRewardLogRef.current[index] = currentLog;
+      }
+
+      if (hasNewLog && !hasRewardsToNotify) {
+        notifiedRewardLogRef.current[index] = currentLog;
       }
     });
 
     prevPartyLogsRef.current = state.parties.map((party) => party.lastExpeditionLog);
     prevPartyLevelsRef.current = state.parties.map((party) => party.level);
-  }, [state.parties, actions]);
+    prevPartyCycleStateRef.current = state.parties.map((_, index) => partyCycles[index]?.state ?? null);
+  }, [state.parties, partyCycles, actions]);
 
-  useEffect(() => () => {
-    Object.values(pendingNotificationTimersRef.current).forEach((timerId) => {
-      window.clearTimeout(timerId);
-    });
-  }, []);
+  useEffect(() => {
+    notifiedRewardLogRef.current = notifiedRewardLogRef.current.slice(0, state.parties.length);
+    while (notifiedRewardLogRef.current.length < state.parties.length) {
+      notifiedRewardLogRef.current.push(null);
+    }
+    prevPartyCycleStateRef.current = prevPartyCycleStateRef.current.slice(0, state.parties.length);
+    while (prevPartyCycleStateRef.current.length < state.parties.length) {
+      prevPartyCycleStateRef.current.push(null);
+    }
+  }, [state.parties.length]);
 
   useEffect(() => {
     const newlyPurchasedItemIds: number[] = [];
