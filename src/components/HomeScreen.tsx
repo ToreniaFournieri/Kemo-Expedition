@@ -1248,7 +1248,8 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
           if (party.currentHp < partyRuntimeStats.hp) actions.healPartyHp(partyIndex, Math.max(1, Math.floor(partyRuntimeStats.hp * 0.01)));
           if (party.currentHp >= partyRuntimeStats.hp) {
             const hasTrophy = (party.lastExpeditionLog?.rewards.length ?? 0) > 0;
-            if (hasTrophy) {
+            const hasAutoSellItem = (party.lastExpeditionLog?.autoSellProfit ?? 0) > 0;
+            if (hasTrophy || hasAutoSellItem) {
               updated.state = '売却中';
               updated.durationMs = 5000;
             } else {
