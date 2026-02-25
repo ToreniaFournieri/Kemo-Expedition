@@ -19,6 +19,7 @@ import { getBaseMultiplier } from '../game/baseMultiplier';
 import { computeCharacterStats } from '../game/characterComputation';
 import { serializeGameState } from '../game/saveCodec';
 import { getBagEntryTickets, getBagTicketTotal } from '../game/bags';
+import { replaceCharacterEquipment } from '../game/equipment';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -2052,21 +2053,23 @@ function PartyTab({
     setSelectingSlot(selectingSlot === slotIndex ? null : slotIndex);
   };
 
-  // Handle inventory item tap with auto-equip support
-  const handleInventoryItemTap = (itemKey: string) => {
-    // If a slot is selected, equip to that slot
-    if (selectingSlot !== null) {
-      onEquipItem(char.id, selectingSlot, itemKey);
-      setSelectingSlot(null);
-      return;
-    }
+  const getEquipTargetSlotIndex = (): number | null => {
+    if (selectingSlot !== null) return selectingSlot;
 
-    // Auto-equip: find first empty slot
     const emptySlotIndex = Array.from({ length: stats.maxEquipSlots })
       .findIndex((_, i) => !char.equipment[i]);
 
-    if (emptySlotIndex !== -1) {
-      onEquipItem(char.id, emptySlotIndex, itemKey);
+    return emptySlotIndex !== -1 ? emptySlotIndex : null;
+  };
+
+  // Handle inventory item tap with auto-equip support
+  const handleInventoryItemTap = (itemKey: string) => {
+    const targetSlotIndex = getEquipTargetSlotIndex();
+    if (targetSlotIndex === null) return;
+
+    onEquipItem(char.id, targetSlotIndex, itemKey);
+    if (selectingSlot !== null) {
+      setSelectingSlot(null);
     }
   };
 
@@ -3304,6 +3307,42 @@ function PartyTab({
           }
         };
 
+        const getProjectedDefenseDeltaText = (displayItem: DisplayItem): string | null => {
+          const currentPhysicalDefense = Math.round(stats.physicalDefense);
+          const currentMagicalDefense = Math.round(stats.magicalDefense);
+
+          let targetSlotIndex: number | null = null;
+          let targetItem: Item | null = null;
+
+          if (displayItem.isEquipped && displayItem.slotIndex !== undefined) {
+            targetSlotIndex = displayItem.slotIndex;
+            targetItem = null;
+          } else {
+            targetSlotIndex = getEquipTargetSlotIndex();
+            targetItem = targetSlotIndex !== null ? displayItem.item : null;
+          }
+
+          if (targetSlotIndex === null) return null;
+
+          const nextCharacter = replaceCharacterEquipment(char, targetSlotIndex, targetItem);
+          const nextStats = computeCharacterStats(nextCharacter, party.level);
+          const nextPhysicalDefense = Math.round(nextStats.physicalDefense);
+          const nextMagicalDefense = Math.round(nextStats.magicalDefense);
+          const physicalDefenseDelta = nextPhysicalDefense - currentPhysicalDefense;
+          const magicalDefenseDelta = nextMagicalDefense - currentMagicalDefense;
+
+          if (physicalDefenseDelta === 0 && magicalDefenseDelta === 0) return null;
+
+          const parts: string[] = [];
+          if (physicalDefenseDelta !== 0) {
+            parts.push(`物防${physicalDefenseDelta > 0 ? '+' : ''}${formatNumber(physicalDefenseDelta)}`);
+          }
+          if (magicalDefenseDelta !== 0) {
+            parts.push(`魔防${magicalDefenseDelta > 0 ? '+' : ''}${formatNumber(magicalDefenseDelta)}`);
+          }
+          return ` [装備反映:${parts.join(', ')}]`;
+        };
+
         const filteredDisplayItems = displayItems.filter(displayItem =>
           matchesRarityFilter(displayItem.item.id, partyRarityFilter) &&
           (!partySuperRareOnly || displayItem.item.superRare >= 1)
@@ -3412,7 +3451,7 @@ function PartyTab({
                       {displayItem.isEquipped && <RaceIcon race={race} className="h-4 w-4 inline-block mr-1 align-text-bottom" />}
                       <span className="font-medium">{getItemDisplayName(displayItem.item)}</span>
                       {!displayItem.isEquipped && <span className="text-xs text-gray-500"> x{displayItem.count}</span>}
-                      <span className="text-xs text-gray-400"> {getRarityShortLabel(displayItem.item.id)} {getItemStats(displayItem.item, getCharacterCategoryMultiplier(char, displayItem.item.category), hpDisplayMultiplier)}</span>
+                      <span className="text-xs text-gray-400"> {getRarityShortLabel(displayItem.item.id)} {getItemStats(displayItem.item, getCharacterCategoryMultiplier(char, displayItem.item.category), hpDisplayMultiplier)}{getProjectedDefenseDeltaText(displayItem)}</span>
                     </span>
                   </div>
                 </button>
