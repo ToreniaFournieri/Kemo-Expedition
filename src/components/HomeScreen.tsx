@@ -3327,6 +3327,8 @@ function PartyTab({
         };
 
         const applyProjectedDefenseToStatsText = (displayItem: DisplayItem, statsText: string): string => {
+          if (displayItem.isEquipped) return statsText;
+
           const currentPhysicalDefense = Math.round(stats.physicalDefense);
           const currentMagicalDefense = Math.round(stats.magicalDefense);
 
