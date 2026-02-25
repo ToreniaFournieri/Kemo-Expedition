@@ -204,8 +204,15 @@
  
 ### 3.4 Party initialization
 - c.multiplier like `c.amulet_x1.3` applies only for individual character's equipments. 
-- Party.`d.HP`: 100 + (Total sum of individual ((Item Bonuses of {(HP x enhancement multiplier x super rare multiplier x its c.multiplier ), round off} + `L_eff` x `b.vitality` ) x (`b.vitality`  + `b.mind`) / 20) x `c.growth_xV` )
-  - If character has c.growth_x1.6 and c.growth_x1.3, then 1.6 x 1.3 -> 2.08
+
+```
+Party.`d.HP` =
+  100
+  + (Total sum of individual (Item Bonuses of {((HP x enhancement multiplier x super rare multiplier x its c.multiplier ) x (`b.vitality` + `b.mind`) / 20 x `c.growth_xV`) , round off}
+  + {(`L_eff` x `b.vitality` x (`b.vitality`  + `b.mind`) / 20 x `c.growth_xV`), round off}
+```
+
+- If character has c.growth_x1.6 and c.growth_x1.3, then 1.6 x 1.3 -> 2.08
 
 ```
 `L_eff` =
