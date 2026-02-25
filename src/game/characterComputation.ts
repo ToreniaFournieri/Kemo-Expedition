@@ -499,7 +499,7 @@ export function computeCharacterStats(
     const multiplier = seekerCategoryMultiplier * enhanceMult * baseMult;
 
     if (item.rangedAttack) {
-      rangedAttack += item.rangedAttack * multiplier;
+      rangedAttack += Math.round(item.rangedAttack * multiplier);
     }
     if (item.rangedNoA) {
       // Positive NoA scales with enhancement; negative penalties stay fixed
@@ -510,7 +510,7 @@ export function computeCharacterStats(
       }
     }
     if (item.magicalAttack) {
-      magicalAttack += item.magicalAttack * multiplier;
+      magicalAttack += Math.round(item.magicalAttack * multiplier);
     }
     if (item.magicalNoA) {
       // Catalyst magical_NoA scales with enhancement
@@ -521,7 +521,7 @@ export function computeCharacterStats(
       }
     }
     if (item.meleeAttack) {
-      meleeAttack += item.meleeAttack * multiplier;
+      meleeAttack += Math.round(item.meleeAttack * multiplier);
     }
     if (item.meleeNoA) {
       // Positive NoA (gauntlet) scales with enhancement; negative (katana) stays fixed
@@ -639,10 +639,10 @@ export function computeCharacterStats(
     const baseMult = item.baseMultiplier ?? 1;
     const multiplier = seekerCategoryMultiplier * enhanceMult * baseMult;
     if (item.physicalDefense) {
-      physicalDefense += item.physicalDefense * multiplier;
+      physicalDefense += Math.round(item.physicalDefense * multiplier);
     }
     if (item.magicalDefense) {
-      magicalDefense += item.magicalDefense * multiplier;
+      magicalDefense += Math.round(item.magicalDefense * multiplier);
     }
   }
 
@@ -707,8 +707,8 @@ export function computeCharacterStats(
     rangedNoA,
     magicalNoA,
     meleeNoA,
-    physicalDefense: Math.floor(physicalDefense),
-    magicalDefense: Math.floor(magicalDefense),
+    physicalDefense,
+    magicalDefense,
     physicalDefenseAmplifier,
     magicalDefenseAmplifier,
     maxEquipSlots,
