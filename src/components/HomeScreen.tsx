@@ -19,7 +19,6 @@ import { getBaseMultiplier } from '../game/baseMultiplier';
 import { computeCharacterStats } from '../game/characterComputation';
 import { serializeGameState } from '../game/saveCodec';
 import { getBagEntryTickets, getBagTicketTotal } from '../game/bags';
-import { replaceCharacterEquipment } from '../game/equipment';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -3327,43 +3326,14 @@ function PartyTab({
         };
 
         const applyProjectedDefenseToStatsText = (displayItem: DisplayItem, statsText: string): string => {
-          if (displayItem.isEquipped) return statsText;
+          if (!displayItem.isEquipped) return statsText;
 
-          const currentPhysicalDefense = Math.round(stats.physicalDefense);
-          const currentMagicalDefense = Math.round(stats.magicalDefense);
+          const reverseSignedStat = (textValue: string, label: '物防' | '魔防') => {
+            const regex = new RegExp(`${label}([+-])(\\d[\\d,]*)`);
+            return textValue.replace(regex, (_, sign: string, value: string) => `${label}${sign === '+' ? '-' : '+'}${value}`);
+          };
 
-          let targetSlotIndex: number | null = null;
-          let targetItem: Item | null = null;
-
-          if (displayItem.isEquipped && displayItem.slotIndex !== undefined) {
-            targetSlotIndex = displayItem.slotIndex;
-            targetItem = null;
-          } else {
-            targetSlotIndex = getEquipTargetSlotIndex();
-            targetItem = targetSlotIndex !== null ? displayItem.item : null;
-          }
-
-          if (targetSlotIndex === null) return statsText;
-
-          const nextCharacter = replaceCharacterEquipment(char, targetSlotIndex, targetItem);
-          const nextStats = computeCharacterStats(nextCharacter, party.level);
-          const nextPhysicalDefense = Math.round(nextStats.physicalDefense);
-          const nextMagicalDefense = Math.round(nextStats.magicalDefense);
-          const physicalDefenseDelta = nextPhysicalDefense - currentPhysicalDefense;
-          const magicalDefenseDelta = nextMagicalDefense - currentMagicalDefense;
-          const displayPhysicalDefenseDelta = displayItem.isEquipped ? Math.abs(physicalDefenseDelta) : physicalDefenseDelta;
-          const displayMagicalDefenseDelta = displayItem.isEquipped ? Math.abs(magicalDefenseDelta) : magicalDefenseDelta;
-
-          if (displayPhysicalDefenseDelta === 0 && displayMagicalDefenseDelta === 0) return statsText;
-
-          let nextStatsText = statsText;
-          if (displayPhysicalDefenseDelta !== 0) {
-            nextStatsText = nextStatsText.replace(/物防\+[\d,]+/, `物防${displayPhysicalDefenseDelta >= 0 ? '+' : ''}${formatNumber(displayPhysicalDefenseDelta)}`);
-          }
-          if (displayMagicalDefenseDelta !== 0) {
-            nextStatsText = nextStatsText.replace(/魔防\+[\d,]+/, `魔防${displayMagicalDefenseDelta >= 0 ? '+' : ''}${formatNumber(displayMagicalDefenseDelta)}`);
-          }
-          return nextStatsText;
+          return reverseSignedStat(reverseSignedStat(statsText, '物防'), '魔防');
         };
 
         const filteredDisplayItems = displayItems.filter(displayItem =>
