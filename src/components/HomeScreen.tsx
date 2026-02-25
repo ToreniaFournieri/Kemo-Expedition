@@ -407,9 +407,9 @@ function getNextGoalText(party: Party): string | null {
 
 // Helper to format item stats
 
-function getItemStats(item: Item): string {
-  const multiplier = (ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1) *
-    (SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1);
+function getItemStats(item: Item, categoryMultiplier: number = 1): string {
+  const multiplier = ((ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1) *
+    (SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1)) * categoryMultiplier;
   const superRareUniqueBonusText = formatBonuses(
     SUPER_RARE_TITLES.find((title) => title.value === item.superRare)?.bonuses ?? [],
     { defenseMultiplierStyle: 'friendly' }
@@ -3213,7 +3213,7 @@ function PartyTab({
                   <div className="flex justify-between items-center">
                     <span>
                       <span className="font-medium">{getItemDisplayName(item)}</span>
-                      <span className="text-xs text-gray-500"> {getRarityShortLabel(item.id)} {getItemStats(item)}</span>
+                      <span className="text-xs text-gray-500"> {getRarityShortLabel(item.id)} {getItemStats(item, getCharacterCategoryMultiplier(char, item.category))}</span>
                     </span>
                     <span className="text-xs text-gray-400">
                       [{CATEGORY_NAMES[item.category]}]
@@ -3396,7 +3396,7 @@ function PartyTab({
                       {displayItem.isEquipped && <RaceIcon race={race} className="h-4 w-4 inline-block mr-1 align-text-bottom" />}
                       <span className="font-medium">{getItemDisplayName(displayItem.item)}</span>
                       {!displayItem.isEquipped && <span className="text-xs text-gray-500"> x{displayItem.count}</span>}
-                      <span className="text-xs text-gray-400"> {getRarityShortLabel(displayItem.item.id)} {getItemStats(displayItem.item)}</span>
+                      <span className="text-xs text-gray-400"> {getRarityShortLabel(displayItem.item.id)} {getItemStats(displayItem.item, getCharacterCategoryMultiplier(char, displayItem.item.category))}</span>
                     </span>
                   </div>
                 </button>
