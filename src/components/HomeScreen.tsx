@@ -433,18 +433,23 @@ function getItemStats(item: Item, categoryMultiplier: number = 1): string {
     `[${label}${formatSigned(value, suffix)}]`;
   const formatFixedNoA = (label: string, value: number): string =>
     value > 0 ? formatBracket(label, value) : `${label}${formatSigned(value)}`;
+  const formatRuntimeLikeFlatStat = (value: number): number => {
+    if (value > 0) return Math.ceil(value);
+    if (value < 0) return Math.floor(value);
+    return 0;
+  };
 
   const stats: string[] = [];
   if (item.meleeAttack) {
-    stats.push(`近攻+${Math.floor(item.meleeAttack * multiplier)}`);
+    stats.push(`近攻+${formatRuntimeLikeFlatStat(item.meleeAttack * multiplier)}`);
     if (item.category === 'sword' && multiplierPercent) stats.push(formatBracket('近攻撃', multiplierPercent, '%'));
   }
   if (item.rangedAttack) {
-    stats.push(`遠攻+${Math.floor(item.rangedAttack * multiplier)}`);
+    stats.push(`遠攻+${formatRuntimeLikeFlatStat(item.rangedAttack * multiplier)}`);
     if (item.category === 'arrow' && multiplierPercent) stats.push(formatBracket('遠攻撃', multiplierPercent, '%'));
   }
   if (item.magicalAttack) {
-    stats.push(`魔攻+${Math.floor(item.magicalAttack * multiplier)}`);
+    stats.push(`魔攻+${formatRuntimeLikeFlatStat(item.magicalAttack * multiplier)}`);
     if (item.category === 'wand' && multiplierPercent) stats.push(formatBracket('魔攻撃', multiplierPercent, '%'));
   }
   if (item.meleeNoA || item.meleeNoABonus) {
@@ -463,14 +468,14 @@ function getItemStats(item: Item, categoryMultiplier: number = 1): string {
     if (item.magicalNoABonus) stats.push(formatFixedNoA('魔回数', item.magicalNoABonus));
   }
   if (item.physicalDefense) {
-    stats.push(`物防+${Math.floor(item.physicalDefense * multiplier)}`);
+    stats.push(`物防+${formatRuntimeLikeFlatStat(item.physicalDefense * multiplier)}`);
     if (multiplierPercent) stats.push(formatBracket('物防', multiplierPercent, '%'));
   }
   if (item.magicalDefense) {
-    stats.push(`魔防+${Math.floor(item.magicalDefense * multiplier)}`);
+    stats.push(`魔防+${formatRuntimeLikeFlatStat(item.magicalDefense * multiplier)}`);
     if (multiplierPercent) stats.push(formatBracket('魔防', multiplierPercent, '%'));
   }
-  if (item.partyHP) stats.push(`HP+${Math.floor(item.partyHP * multiplier)}`);
+  if (item.partyHP) stats.push(`HP+${formatRuntimeLikeFlatStat(item.partyHP * multiplier)}`);
   if (item.accuracyBonus) stats.push(formatBracket('命中', Math.round(item.accuracyBonus * 1000)));
   if (item.evasionBonus) stats.push(`回避${formatSigned(Math.round(item.evasionBonus * 1000))}`);
   if (item.vitalityBonus) stats.push(`体力+${item.vitalityBonus}`);
