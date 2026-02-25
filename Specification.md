@@ -255,7 +255,7 @@ Party.`d.HP` =
 | State | Logic | Duration | Move to |
 |-------|-------|----------|---------|
 | 休息中  | at home, heal +1% MaxHP / sec until full | - | 売却中 or 宴会中 |
-| 売却中 | at home, Sell auto-sell items to shop owners. and officially gain items (notification of item gains at the end of 売却中 state.). If they have no toprohy, skip this state. | 5 seconds | 宴会中 |
+| 売却中 | at home, Sell auto-sell items to shop owners. and officially gain items (notification of item gains at the end of 売却中 state.). If they have no toprohy nor auto-sell items, skip this state. | 5 seconds | 宴会中 |
 | 宴会中 | at home, spend 33–67% of previous expedition profit (auto-sell gold), duration 5 sec (skip if profit = 0). If party has `a.squander`2 ability, x2.0 the gold spent on feasting. Else if party has `a.squander`1 ability, x1.5 the gold spent on feasting.  (but not exceed its max profit).  Notification : Without Squander: PT1は25Gお金を使った/With Squander: PT1 君主トムは贅沢に50G使った | 5 seconds | 睡眠中 |
 | 睡眠中 | at home. | 10 seconds | 祈り中 |
 | 祈り中 | at home, donate 10–33% of previous expedition profit, if party has `a.tithe`2, Adds +15% of expedition profit to donation, else if party has `a.tithe`1, Adds +10% of expedition profit to donation. remaining profits to global gold wallet.if profit = 0 → donate 0G, but still pray). The deity earns that amount of gold (keep record internally, later vision it may use this gold for something). Notification: Without Tithe: PT1は10G神に捧げ、30Gを貯金した/With Tithe: PT1 巡礼者ブラザは祈りと共に12G神に捧げて、28Gを貯金した/ Without Gold: (no notification) | 5 seconds | 待機中 or 移動中 |
