@@ -408,13 +408,14 @@ function getNextGoalText(party: Party): string | null {
 // Helper to format item stats
 
 function getItemStats(item: Item, categoryMultiplier: number = 1): string {
-  const multiplier = ((ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1) *
-    (SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1)) * categoryMultiplier;
+  const enhancementMultiplier = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
+  const superRareMultiplier = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
+  const baseMultiplier = item.baseMultiplier ?? 1;
+  const multiplier = enhancementMultiplier * superRareMultiplier * baseMultiplier * categoryMultiplier;
   const superRareUniqueBonusText = formatBonuses(
     SUPER_RARE_TITLES.find((title) => title.value === item.superRare)?.bonuses ?? [],
     { defenseMultiplierStyle: 'friendly' }
   );
-  const baseMultiplier = item.baseMultiplier ?? 1;
   const multiplierPercent = Math.round((baseMultiplier - 1) * 100);
   const formatDecimal = (value: number): string => {
     const rounded = Math.round(value * 100) / 100;
