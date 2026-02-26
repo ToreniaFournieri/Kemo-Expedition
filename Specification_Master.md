@@ -725,7 +725,7 @@
 # 2.2 Mythic rare item from gods
 
 | Drop by | Item type     | Japanese name |
-|--------|---------------|---------------------------|
+|--------|---------------|-------------|
 | Seiran | `i.grimoire`    | 再生の聖典 |
 | Seiran | `i.robe`        | 甦生の法衣 |
 | Garv   | `i.katana`      | 血脈断ちの刀 |
@@ -749,7 +749,7 @@
 | Noctyra| `i.bolt`        | 虚無穿つ矢 |
 | Noctyra| `i.katana`      | 絶滅の刀 |
 | Eris   | `i.grimoire`    | 争乱の書 |
-| Eris   | `i.wand`        | 乱調の魔杖 ||
+| Eris   | `i.wand`        | 乱調の魔杖 |
 
 
 # 3. Potential default name 
