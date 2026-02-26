@@ -1,4 +1,4 @@
-import { DUNGEONS, getDungeonById, getEffectiveEnemyMultipliers, getEffectiveExpeditionTier } from '../data/dungeons';
+import { DUNGEONS, getDungeonById, getEffectiveEnemyMultipliers, getExpeditionEnemyMultipliersForTier } from '../data/dungeons';
 import { getEnemiesByPool } from '../data/enemies';
 import { GodEnemyProfile } from '../data/dropTables';
 import { EnemyDef } from '../types';
@@ -21,11 +21,19 @@ export function buildGodRuntimeEnemy(profile: GodEnemyProfile, isLunaMode: boole
     ?? null;
   if (!baseEnemy || !dungeon) return null;
 
-  const effectiveTier = getEffectiveExpeditionTier(dungeon.id, isLunaMode);
+  const effectiveTier = profile.tier;
+  const tierMultipliers = getExpeditionEnemyMultipliersForTier(profile.tier);
   const effectiveDungeon = {
     ...dungeon,
     tier: effectiveTier,
-    enemyMultipliers: getEffectiveEnemyMultipliers(dungeon, isLunaMode),
+    enemyMultipliers: getEffectiveEnemyMultipliers(
+      {
+        ...dungeon,
+        tier: effectiveTier,
+        enemyMultipliers: tierMultipliers,
+      },
+      isLunaMode
+    ),
   };
 
   const scaledEnemy = applyEnemyEncounterScaling(baseEnemy, effectiveDungeon, 6, 'battle_Boss', {
