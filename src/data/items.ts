@@ -1,5 +1,5 @@
 import { ItemDef, EnhancementTitle, SuperRareTitle, ItemCategory, ElementalOffense, Bonus } from '../types';
-import { MYTHIC_DROP_POOLS } from './dropTables';
+import { GOD_MYTHIC_DROPS, MYTHIC_DROP_POOLS } from './dropTables';
 
 // ============================================================
 // Enhancement & Super Rare title tables
@@ -776,7 +776,8 @@ function createItem(
   tier: number,
   rarity: Rarity,
   template: ItemTemplate,
-  variantIndex?: number
+  variantIndex?: number,
+  forcedName?: string
 ): ItemDef | null {
   const basePower = TIER_BASE_POWER[tier - 1];
   const typeAmplifier = TYPE_AMPLIFIERS[template.category];
@@ -792,7 +793,7 @@ function createItem(
   const noaBasePower = TIER_NOA_BASE_POWER[tier - 1];
   const elementalBonus = TIER_ELEMENTAL_BONUS[tier - 1] ?? 0;
 
-  const masterName = getMasterItemName(tier, rarity, template.category, variantIndex);
+  const masterName = forcedName ?? getMasterItemName(tier, rarity, template.category, variantIndex);
   const name = ITEM_NAME_OVERRIDES[id] ?? masterName;
   if (!name) return null;
 
@@ -904,7 +905,7 @@ function createItem(
     rareSubtleMods.forEach((mod, index) => applyVariantMod(mod, index));
   }
 
-  if (rarity === 'bossRare') {
+  if (rarity === 'bossRare' || rarity === 'mythicRare') {
     applyVariantMod(template.variant1Mod, 0);
     applyVariantMod(template.variant2Mod, 1);
     applyVariantMod(template.variant3Mod || template.variant1Mod, 2);
@@ -950,7 +951,7 @@ function generateItems(): ItemDef[] {
       if (item) items.push(item);
     }
 
-    // Mythic items (2~3 per tier based on boss drop tables)
+    // Boss rare items (2~3 per tier based on boss drop tables)
     const mythicCategories = MYTHIC_DROP_POOLS[tier] ?? [];
     mythicCategories.forEach((category, index) => {
       const template = ITEM_TEMPLATE_BY_CATEGORY[category];
@@ -959,6 +960,14 @@ function generateItems(): ItemDef[] {
       if (item) items.push(item);
     });
   }
+
+  // Mythic rare items from gods (2.2)
+  GOD_MYTHIC_DROPS.forEach((drop, index) => {
+    const template = ITEM_TEMPLATE_BY_CATEGORY[drop.category];
+    const id = 8500 + index + 1;
+    const item = createItem(id, 8, 'mythicRare', template, undefined, drop.name);
+    if (item) items.push(item);
+  });
 
   return items;
 }
