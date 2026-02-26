@@ -36,6 +36,14 @@ export const GOD_ENEMY_PROFILES: GodEnemyProfile[] = [
   { tier: 8, level: 68, name: 'Eris', title: 'Goddess of Discord', displayName: 'エリス 不和の神', enemyClass: 'pilgrim', representFor: '-', abilities: [{ id: 'momentum', level: 2 }, { id: 'resonance', level: 4 }, { id: 'stealth', level: 1 }], dropItemTier: 8, dropItemCategories: ['grimoire', 'wand'], expedition: '(not yet)' },
 ];
 
+export function getGodProfileForDungeon(dungeonId: number, dungeonName: string): GodEnemyProfile | undefined {
+  const byExpeditionName = GOD_ENEMY_PROFILES.find((god) => god.expedition === dungeonName);
+  if (byExpeditionName) return byExpeditionName;
+
+  // Fallback for legacy saves where dungeon names may differ from the latest localized names.
+  return GOD_ENEMY_PROFILES[dungeonId - 1];
+}
+
 export const MYTHIC_DROP_POOLS: Record<number, ItemCategory[]> = {
   1: ['sword', 'grimoire'],
   2: ['armor', 'arrow'],
