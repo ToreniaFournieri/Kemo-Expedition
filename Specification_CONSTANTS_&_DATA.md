@@ -285,7 +285,7 @@
 | 0 | no item | 99 |
 | 1 | win | 1 |
 
-- `g.elite_rare_reward_bag_default` table
+- `g.boss_rare_reward_bag_default` table
  
 | ID | title | tickets |
 |-----|---------|------|
