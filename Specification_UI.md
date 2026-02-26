@@ -391,14 +391,14 @@ PT2...
 |---|---|
 | 0–19 | 5 Common |
 | 20–39 | 1 Uncommon, 4 Common |
-| 40–79 | 1 Rare, 2 Uncommon, 2 Common |
-| 80–99 | 1 Mythic, 2 Rare, 2 Uncommon |
+| 40–79 | 1 Elite rare, 2 Uncommon, 2 Common |
+| 80–99 | 1 Boss rare, 2 Elite rare, 2 Uncommon |
 
 ### Display (rarity color)
 - Common: non-bold  
 - Uncommon: **bold**  
-- Rare: Sub color (blue)  
-- Mythic: Accent color (dark orange)
+- Elite rare: Sub color (blue)  
+- Boss rare: Accent color (dark orange)
 
 **Mystery enhancement (same as item drop logic)**
 - When the player selects an item to buy, roll:
@@ -440,7 +440,7 @@ PT2...
 		- Stock: One per Super Rare title (no duplicates)
 
 #### 8.6 Diary
-- When a party was defeated, got mythic item, and acquiring super rare item, the diary updates. 
+- When a party was defeated, got boss rare or mythic rare item, and acquiring super rare item, the diary updates. 
 - It keeps 10 battle logs. First, it is collapsed and expand to see the detail. (Same as 結果 log in expedition. )
 - Top record is latest (default position) and bottom is older logs. 
 
@@ -449,21 +449,21 @@ PT2...
 日誌記録設定                 ▼
 
 超レア通知 (pull down list)全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default: 全て)
+エリートレア通知 (pull down list) 全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default:恐ろしい以上)
+ボスレア通知  (pull down list)全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default: 全て)
 神魔レア通知  (pull down list)全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default: 全て)
-レア通知 (pull down list) 全て, 名工以上, 魔性以上, 宿った以上, 伝説以上, 恐ろしい以上, 究極, なし (Default:恐ろしい以上)
 敗北通知 あり/なし
 ```
 
 - Title of dirary 
 ```
 (Left-Aligned)         (Right-aligned)
-line1: [PT2]神魔レア(秘奥真理の書) 獲得      ▼
+line1: [PT2]ボスレア(秘奥真理の書) 獲得      ▼
 line2 gray text: ケイナイアン平原      02/12 20:28
 (Left-Aligned)         (Right-aligned)
 line 1: [PT1] 敗北の記録           ▼
 line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
 ```
-
 
   
 #### 8.7 Divine Bureau (神聖局)
@@ -547,10 +547,13 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
   - uncommon reward_bag (アンコモン抽選確率):  
     - 報酬抽選: remaining / total counts 
     - 当たり残り remaining
-  - rare reward_bag (レア抽選確率):  
+  - elite rare reward_bag (エリートレア抽選確率):  
     - 報酬抽選: remaining / total counts 
     - 当たり残り remaining
-  - mythic reward_bag (神魔レア抽選抽選確率):  
+  - boss rare reward_bag (ボスレア抽選確率):  
+    - 報酬抽選: remaining / total counts 
+    - 当たり残り remaining
+  - mythic rare reward_bag (神魔レア抽選抽選確率):  
     - 報酬抽選: remaining / total counts 
     - 当たり残り remaining
   -	enhancement_bag (称号付与 抽選確率): 
@@ -561,7 +564,7 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
     - 伝説の残り remaining / initial counts
     - 恐ろしい残り remaining / initial counts
     - 究極の残り remaining / initial counts
-  - Button (固有報酬初期化): Initialize `g.common_reward_bag`, `g.uncommon_reward_bag`, `g.rare_reward_bag`, `g.mythic_reward_bag`  and `g.enhancement_bag` 
+  - Button (固有報酬初期化): Initialize `g.common_reward_bag`, `g.uncommon_reward_bag`, `g.elite_rare_reward_bag`, `g.boss_rare_reward_bag`  , `g.mythic_rare_reward_bag`  and `g.enhancement_bag` 
 
   **Super rare reward (超レア報酬)**
   - superRare_bag (称号超レア称号付与 抽選確率):
