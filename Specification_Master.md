@@ -722,6 +722,36 @@
 |8|elite rare|`i.katana`|時界断絶の王太刀|
 |8|boss rare|`i.katana`|終焉ノ太刀・時玻璃|
 
+# 2.2 Mythic rare item from gods
+
+| Drop by | Item type     | Japanese name |
+|--------|---------------|---------------------------|
+| Seiran | `i.grimoire`    | 再生の聖典 |
+| Seiran | `i.robe`        | 甦生の法衣 |
+| Garv   | `i.katana`      | 血脈断ちの刀 |
+| Garv   | `i.shield`      | 堅忍の護盾 |
+| Kyōen  | `i.archery`     | 狡猾なる長弓 |
+| Kyōen  | `i.bolt`        | 虚影貫きの矢 |
+| Dolvar | `i.armor`       | 不壊の重装 |
+| Dolvar | `i.gauntlet`    | 鉄城の篭手 |
+| Miora  | `i.sword`       | 芽吹きの剣 |
+| Miora  | `i.catalyst`    | 生命循環の触媒 |
+| Rondel | `i.wand`        | 共鳴導く魔杖 |
+| Rondel | `i.arrow`       | 反響する魔矢 |
+| Lira   | `i.arrow`       | 精密射の矢 |
+| Lira   | `i.archery`     | 千里照準の弓 |
+| Forne  | `i.armor`       | 宿命纏いの鎧 |
+| Forne  | `i.robe`        | 運命編みの外套 |
+| Skuva  | `i.shield`      | 夕闇の円盾 |
+| Skuva  | `i.catalyst`    | 薄暮の触媒 |
+| Tanue  | `i.sword`       | 幻映の剣 |
+| Tanue  | `i.gauntlet`    | 迷彩の篭手 |
+| Noctyra| `i.bolt`        | 虚無穿つ矢 |
+| Noctyra| `i.katana`      | 絶滅の刀 |
+| Eris   | `i.grimoire`    | 争乱の書 |
+| Eris   | `i.wand`        | 乱調の魔杖 ||
+
+
 # 3. Potential default name 
 
 | race (English key) | potential name |
