@@ -3664,7 +3664,8 @@ function ExpeditionTab({
             Math.floor(cycleElapsedMs / EXPLORING_PROGRESS_STEP_MS) * (100 / EXPLORING_PROGRESS_TOTAL_STEPS),
           )
           : Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100);
-        const isSortieDisabled = !!selectedDungeonGate?.locked || party.currentHp <= 0 || partyStats.hp <= 0;
+        const hpForSortieCheck = cycle.state === '探索中' ? displayedHp : party.currentHp;
+        const isSortieDisabled = !!selectedDungeonGate?.locked || hpForSortieCheck <= 0 || partyStats.hp <= 0;
         const canTriggerGodsBattle =
           isGodsBattleAvailable(party, party.selectedDungeonId)
           || (
