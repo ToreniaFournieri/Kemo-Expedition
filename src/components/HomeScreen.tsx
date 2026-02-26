@@ -417,10 +417,18 @@ function getNextGoalText(party: Party): string | null {
     return `次の目標: ${currentDungeon.name} 6F-4の解放: エリートレアアイテム(持ち帰り) ${rareCollected}/${bossRequired}（現在）`;
   }
 
+  const godsRequired = ENTRY_GATE_REQUIRED;
+  const bossRareCollected = getLootCollectionCount(party, currentDungeon.id, 'bossRare');
+  const godsUnlocked = bossRareCollected >= godsRequired;
+  if (!godsUnlocked) {
+    const waitingGod = GOD_ENEMY_PROFILES.find((god) => god.expedition === currentDungeon.name);
+    const waitingGodName = waitingGod?.displayName ?? '神魔';
+    return `特殊目標: ${currentDungeon.name}のボスレアアイテム ${bossRareCollected}/${godsRequired} で神魔${waitingGodName}戦`;
+  }
+
   const nextDungeon = DUNGEONS.find(d => d.id === currentDungeon.id + 1);
   if (nextDungeon) {
     const entryRequired = ENTRY_GATE_REQUIRED;
-    const bossRareCollected = getLootCollectionCount(party, currentDungeon.id, 'bossRare');
     const entryUnlocked = isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id)) || bossRareCollected >= entryRequired;
     if (!entryUnlocked) {
       return `次の目標: ${nextDungeon.name}の解放: ${currentDungeon.name}のボスレアアイテム(持ち帰り) ${bossRareCollected}/${entryRequired}（現在）`;
@@ -5776,6 +5784,7 @@ function SettingTab({
                       </>
                     )}
                     <div>アビリティ: {formatAbilitiesWithLevels(god.abilities.map((ability) => ability.id), god.abilities)}</div>
+                    <div>待機探検地: {god.expedition}</div>
                     <div className="pt-1">ドロップ候補: {getGodDropCandidates(god.name)}</div>
                   </div>
                 )}
