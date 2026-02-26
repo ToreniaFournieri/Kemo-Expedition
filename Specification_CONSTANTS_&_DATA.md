@@ -675,20 +675,20 @@
 
 - **Gods (神魔):**
 
-| Teir | Name | Title | Class | Represent for | + ability | Drop item tier | Drop item category |
-|-|-|-|-|-|-|-|-|
-| 3 | Seiran | God of Restoration | Pilgrim | Caninian | `a.resurrect`2  | 3 | `i.grimoire`, `i.robe`|
-| 4 | Garv | God of Attrition | Samurai | Lupinian | `a.rage`2, `a.re-counter`2 | 4 | `i.katana`, `i.shield` |
-| 5 | Kyōen | God of Cunning | Rougue | Vulpinian | `a.momentum`2 | 5 |  `i.archery`, `i.bolt` |
-| 6 | Dolvar | God of Fortification | Fighter | Ursan | `a.cyborgization`2 | 6 | `i.armor`, `i.gauntlet` |
-| 7 | Miora | Goddess of Fertility | Sage | Felidian | `a.firststrike`2 | 7 | `i.sword`, `i.catalyst` |
-| 7 | Rondel | God of Resonance | Wizard | Mustelid | `a.resonance`4 | 7 | `i.wand`, `i.arrow` |
-| 8 | Lira | Goddess of Precision | Ranger | Leporian | `a.composure`2 | 8 | `i.arrow`, `i.archery` |
-| 8 | Forne | God of Fate | Lord | Cervin | `a.focus`2 | 8 | `i.armor`, `i.robe` |
-| 8 | Skuva | God of Dusk | Ninja | Murid | `a.stealth`1 | 8 | `i.sheild`,`i.catalyst` |
-| 8 | Tanue | Goddess of Mirage | Duelist | Procyonian | `a.illusion`1 | 8 | `i.sword`, `i.gauntlet` |
-| 8 | Noctyra | God of Oblivion | Samurai | - | `a.rage`2, `a.firststrike`2 | 8 | `i.bolt`, `i.katana` |
-| 8 | Eris | Goddess of discord | Pilgrim | - | `a.momentum`2, `a.resonance`4, `a.stealth`1 | 8 | `i.grimoire`, `i.wand` |
+| Teir | Name | Title | Display name | Class | Represent for | + ability | Drop item tier | Drop item category |
+|-|-|-|-|-|-|-|-|-|
+| 3 | Seiran | God of Restoration | セイラン 再生の神 | Pilgrim | Caninian | `a.resurrect`2  | 3 | `i.grimoire`, `i.robe`|
+| 4 | Garv | God of Attrition | ガーヴ 消耗の神 | Samurai | Lupinian | `a.rage`2, `a.re-counter`2 | 4 | `i.katana`, `i.shield` |
+| 5 | Kyōen | God of Cunning | キョウエン 狡猾の神 | Rougue | Vulpinian | `a.momentum`2 | 5 |  `i.archery`, `i.bolt` |
+| 6 | Dolvar | God of Fortification | ドルヴァ 防備の神 | Fighter | Ursan | `a.cyborgization`2 | 6 | `i.armor`, `i.gauntlet` |
+| 7 | Miora | Goddess of Fertility | ミオラ 豊穣の女神  | Sage | Felidian | `a.firststrike`2 | 7 | `i.sword`, `i.catalyst` |
+| 7 | Rondel | God of Resonance | ロンデル 共鳴の神 | Wizard | Mustelid | `a.resonance`4 | 7 | `i.wand`, `i.arrow` |
+| 8 | Lira | Goddess of Precision | リラ 精密の女神 | Ranger | Leporian | `a.composure`2 | 8 | `i.arrow`, `i.archery` |
+| 8 | Forne | God of Fate | フォルネ 運命の神 | Lord | Cervin | `a.focus`2 | 8 | `i.armor`, `i.robe` |
+| 8 | Skuva | God of Dusk | スクヴァ 黄昏の神 | Ninja | Murid | `a.stealth`1 | 8 | `i.sheild`,`i.catalyst` |
+| 8 | Tanue | Goddess of Mirage | タヌエ 幻影の神  | Duelist | Procyonian | `a.illusion`1 | 8 | `i.sword`, `i.gauntlet` |
+| 8 | Noctyra | God of Oblivion | ノクティラ 忘却されし神 | Samurai | - | `a.rage`2, `a.firststrike`2 | 8 | `i.bolt`, `i.katana` |
+| 8 | Eris | Goddess of discord | エリス 不和の神 | Pilgrim | - | `a.momentum`2, `a.resonance`4, `a.stealth`1 | 8 | `i.grimoire`, `i.wand` |
 
 #### 2.4.2 Enemy structure (in battle)
 - id: int
