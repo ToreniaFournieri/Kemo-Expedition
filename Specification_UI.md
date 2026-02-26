@@ -297,7 +297,7 @@ PT1ルピニアンの断崖踏破▼
 HP (HP bar, blue)    移動中(state progress bar)
 ルピニアンの断崖(pull down list)  出撃
 探索深度　　全て
-次の目標: ルピニアンの断崖の神魔レアアイテム 0/1 でヴァルピニアンの樹林帯 開放
+次の目標: ルピニアンの断崖の神魔レアアイテム 0/1 でヴァルンの樹林帯 開放
 Lv: 29 | 再生の神 | +2,856EXP | +134G
 
 PT2...
@@ -479,7 +479,7 @@ line1: [PT2]ボスレア(秘奥真理の書) 獲得      ▼
 line2 gray text: ケイナイアン平原      02/12 20:28
 (Left-Aligned)         (Right-aligned)
 line 1: [PT1] 敗北の記録           ▼
-line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
+line  gray text2: ヴァルンの樹林帯      02/12 20:28
 ```
 
   
