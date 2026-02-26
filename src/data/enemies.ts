@@ -17,11 +17,11 @@ type EnemyTemplate = {
 
 function getBossMythicDropId(tier: number, seed: number): number {
   const categories = MYTHIC_DROP_POOLS[tier] ?? [];
-  const mythicItems = getItemsByTierAndRarity(tier, 'mythic');
-  const options = categories.flatMap(category => mythicItems.filter(item => item.category === category));
+  const bossRareItems = getItemsByTierAndRarity(tier, 'bossRare');
+  const options = categories.flatMap(category => bossRareItems.filter(item => item.category === category));
 
   if (options.length === 0) {
-    return mythicItems[seed % mythicItems.length]?.id ?? tier * 1000 + 300 + 1;
+    return bossRareItems[seed % bossRareItems.length]?.id ?? tier * 1000 + 300 + 1;
   }
 
   return options[seed % options.length].id;
@@ -522,7 +522,7 @@ function createEnemyFromTemplate(
   const defenseScale = template.defenseMod;
 
   // Calculate drop item ID based on enemy type
-  // Normal enemies drop uncommon items, elite drop rare, boss drop rare
+  // Normal enemies drop uncommon items, elite drop elite eliteRare, boss drop elite eliteRare
   let dropItemId: number;
   if (type === 'normal') {
     // Uncommon items: tier*1000 + 200 + (1..24), 24 per tier
@@ -531,7 +531,7 @@ function createEnemyFromTemplate(
     // Rare items: tier*1000 + 300 + (1..12), 12 per tier
     dropItemId = tier * 1000 + 300 + (id % 12) + 1;
   } else {
-    // Boss: mythic items (per boss drop tables)
+    // Boss: boss eliteRare items (per boss drop tables)
     dropItemId = getBossMythicDropId(tier, id);
   }
 
@@ -687,8 +687,8 @@ export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
   const tier = enemy.spawnTier || getTierFromEnemy(enemy.id);
   const common = getItemsByTierAndRarity(tier, 'common');
   const uncommon = getItemsByTierAndRarity(tier, 'uncommon');
-  const rare = getItemsByTierAndRarity(tier, 'rare');
-  const mythic = getItemsByTierAndRarity(tier, 'mythic');
+  const eliteRare = getItemsByTierAndRarity(tier, 'eliteRare');
+  const bossRare = getItemsByTierAndRarity(tier, 'bossRare');
 
   const classUncommonCategories: Record<EnemyClassId, [ItemCategory, ItemCategory]> = {
     fighter: ['sword', 'gauntlet'],
@@ -772,33 +772,33 @@ export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
   if (enemy.type === 'elite') {
     const drops: ItemDef[] = [];
     const floor = Math.max(1, Math.min(5, (enemy.id % 1000) - 50));
-    const rareCats = eliteRareByFloor[floor] ?? ['sword', 'armor'];
-    const rarePicks = rareCats
-      .map((category, index) => pickByCategory(rare, category, enemy.id + index, drops.map(item => item.id)))
+    const eliteRareCats = eliteRareByFloor[floor] ?? ['sword', 'armor'];
+    const eliteRarePicks = eliteRareCats
+      .map((category, index) => pickByCategory(eliteRare, category, enemy.id + index, drops.map(item => item.id)))
       .filter((item): item is ItemDef => item !== undefined);
-    drops.push(...rarePicks);
+    drops.push(...eliteRarePicks);
 
-    const uncommonPick = pickByCategory(uncommon, rareCats[0], enemy.id + 3) ?? pickAny(uncommon, 1, enemy.id + 3)[0];
+    const uncommonPick = pickByCategory(uncommon, eliteRareCats[0], enemy.id + 3) ?? pickAny(uncommon, 1, enemy.id + 3)[0];
     if (uncommonPick) drops.push(uncommonPick);
 
-    const commonCount = rarePicks.length >= 3 ? 1 : 2;
+    const commonCount = eliteRarePicks.length >= 3 ? 1 : 2;
     drops.push(...pickAny(common, commonCount, enemy.id + 4));
     return drops.slice(0, 5);
   }
 
   const drops: ItemDef[] = [];
-  const mythicCats = bossMythicByTier[tier] ?? ['sword', 'grimoire'];
-  const mythic1 = pickByCategory(mythic, mythicCats[0], enemy.id) ?? pickAny(mythic, 1, enemy.id)[0];
-  const mythic2 = pickByCategory(mythic, mythicCats[1] ?? mythicCats[0], enemy.id + 1, mythic1 ? [mythic1.id] : [])
-    ?? pickAny(mythic, 1, enemy.id + 1, mythic1 ? [mythic1.id] : [])[0];
-  if (mythic1) drops.push(mythic1);
-  if (mythic2) drops.push(mythic2);
+  const bossRareCats = bossMythicByTier[tier] ?? ['sword', 'grimoire'];
+  const bossRare1 = pickByCategory(bossRare, bossRareCats[0], enemy.id) ?? pickAny(bossRare, 1, enemy.id)[0];
+  const bossRare2 = pickByCategory(bossRare, bossRareCats[1] ?? bossRareCats[0], enemy.id + 1, bossRare1 ? [bossRare1.id] : [])
+    ?? pickAny(bossRare, 1, enemy.id + 1, bossRare1 ? [bossRare1.id] : [])[0];
+  if (bossRare1) drops.push(bossRare1);
+  if (bossRare2) drops.push(bossRare2);
 
-  const rare1 = pickByCategory(rare, mythicCats[0], enemy.id + 2) ?? pickAny(rare, 1, enemy.id + 2)[0];
-  const rare2 = pickByCategory(rare, mythicCats[1] ?? mythicCats[0], enemy.id + 3, rare1 ? [rare1.id] : [])
-    ?? pickAny(rare, 1, enemy.id + 3, rare1 ? [rare1.id] : [])[0];
-  if (rare1) drops.push(rare1);
-  if (rare2) drops.push(rare2);
+  const eliteRare1 = pickByCategory(eliteRare, bossRareCats[0], enemy.id + 2) ?? pickAny(eliteRare, 1, enemy.id + 2)[0];
+  const eliteRare2 = pickByCategory(eliteRare, bossRareCats[1] ?? bossRareCats[0], enemy.id + 3, eliteRare1 ? [eliteRare1.id] : [])
+    ?? pickAny(eliteRare, 1, enemy.id + 3, eliteRare1 ? [eliteRare1.id] : [])[0];
+  if (eliteRare1) drops.push(eliteRare1);
+  if (eliteRare2) drops.push(eliteRare2);
 
   drops.push(...pickAny(common, 1, enemy.id + 4));
   return drops.slice(0, 5);

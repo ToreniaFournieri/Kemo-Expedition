@@ -24,13 +24,18 @@ const UNCOMMON_REWARD_BAG_DEFAULT: WeightedBagEntry[] = [
   { id: 1, tickets: 1 },
 ];
 
-const RARE_REWARD_BAG_DEFAULT: WeightedBagEntry[] = [
+const ELITE_RARE_REWARD_BAG_DEFAULT: WeightedBagEntry[] = [
   { id: 0, tickets: 99 },
   { id: 1, tickets: 1 },
 ];
 
-const MYTHIC_REWARD_BAG_DEFAULT: WeightedBagEntry[] = [
+const BOSS_RARE_REWARD_BAG_DEFAULT: WeightedBagEntry[] = [
   { id: 0, tickets: 99 },
+  { id: 1, tickets: 1 },
+];
+
+const MYTHIC_RARE_REWARD_BAG_DEFAULT: WeightedBagEntry[] = [
+  { id: 0, tickets: 49 },
   { id: 1, tickets: 1 },
 ];
 
@@ -66,8 +71,9 @@ const BAG_DEFAULT_CREATORS = {
   commonRewardBag: () => createBagFromEntries(COMMON_REWARD_BAG_DEFAULT),
   commonEnhancementBag: () => createBagFromEntries(COMMON_ENHANCEMENT_BAG_DEFAULT),
   uncommonRewardBag: () => createBagFromEntries(UNCOMMON_REWARD_BAG_DEFAULT),
-  rareRewardBag: () => createBagFromEntries(RARE_REWARD_BAG_DEFAULT),
-  mythicRewardBag: () => createBagFromEntries(MYTHIC_REWARD_BAG_DEFAULT),
+  eliteRareRewardBag: () => createBagFromEntries(ELITE_RARE_REWARD_BAG_DEFAULT),
+  bossRareRewardBag: () => createBagFromEntries(BOSS_RARE_REWARD_BAG_DEFAULT),
+  mythicRareRewardBag: () => createBagFromEntries(MYTHIC_RARE_REWARD_BAG_DEFAULT),
   enhancementBag: () => createBagFromEntries(ENHANCEMENT_BAG_DEFAULT),
   superRareBag: () => createBagFromEntries(SUPER_RARE_BAG_DEFAULT),
   physicalThreatBag: () => createBagFromEntries(PHYSICAL_THREAT_WEIGHT_BAG_DEFAULT),
@@ -105,8 +111,9 @@ export function normalizeGameBags(bags: GameBags): GameBags {
     commonRewardBag: normalizeBagForType(bags.commonRewardBag, 'commonRewardBag'),
     commonEnhancementBag: normalizeBagForType(bags.commonEnhancementBag, 'commonEnhancementBag'),
     uncommonRewardBag: normalizeBagForType(bags.uncommonRewardBag, 'uncommonRewardBag'),
-    rareRewardBag: normalizeBagForType(bags.rareRewardBag, 'rareRewardBag'),
-    mythicRewardBag: normalizeBagForType(bags.mythicRewardBag, 'mythicRewardBag'),
+    eliteRareRewardBag: normalizeBagForType(bags.eliteRareRewardBag, 'eliteRareRewardBag'),
+    bossRareRewardBag: normalizeBagForType(bags.bossRareRewardBag, 'bossRareRewardBag'),
+    mythicRareRewardBag: normalizeBagForType(bags.mythicRareRewardBag, 'mythicRareRewardBag'),
     enhancementBag: normalizeBagForType(bags.enhancementBag, 'enhancementBag'),
     superRareBag: normalizeBagForType(bags.superRareBag, 'superRareBag'),
     physicalThreatBag: normalizeBagForType(bags.physicalThreatBag, 'physicalThreatBag'),
@@ -126,12 +133,16 @@ export function createUncommonRewardBag(): RandomBag {
   return BAG_DEFAULT_CREATORS.uncommonRewardBag();
 }
 
-export function createRareRewardBag(): RandomBag {
-  return BAG_DEFAULT_CREATORS.rareRewardBag();
+export function createEliteRareRewardBag(): RandomBag {
+  return BAG_DEFAULT_CREATORS.eliteRareRewardBag();
 }
 
-export function createMythicRewardBag(): RandomBag {
-  return BAG_DEFAULT_CREATORS.mythicRewardBag();
+export function createBossRareRewardBag(): RandomBag {
+  return BAG_DEFAULT_CREATORS.bossRareRewardBag();
+}
+
+export function createMythicRareRewardBag(): RandomBag {
+  return BAG_DEFAULT_CREATORS.mythicRareRewardBag();
 }
 
 export function createEnhancementBag(): RandomBag {
@@ -155,8 +166,9 @@ export function initializeBags(): GameBags {
     commonRewardBag: createCommonRewardBag(),
     commonEnhancementBag: createCommonEnhancementBag(),
     uncommonRewardBag: createUncommonRewardBag(),
-    rareRewardBag: createRareRewardBag(),
-    mythicRewardBag: createMythicRewardBag(),
+    eliteRareRewardBag: createEliteRareRewardBag(),
+    bossRareRewardBag: createBossRareRewardBag(),
+    mythicRareRewardBag: createMythicRareRewardBag(),
     enhancementBag: createEnhancementBag(),
     superRareBag: createSuperRareBag(),
     physicalThreatBag: createPhysicalThreatBag(),

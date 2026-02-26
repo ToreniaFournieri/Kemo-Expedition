@@ -105,7 +105,7 @@ export function getSuperRareBonuses(value: number): Bonus[] {
 // ============================================================
 // Item generation types
 // ============================================================
-type Rarity = 'common' | 'uncommon' | 'rare' | 'mythic';
+type Rarity = 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare';
 
 type ItemVariantMod = {
   partyHP?: number;
@@ -171,8 +171,9 @@ const TYPE_AMPLIFIERS: Record<ItemCategory, number> = {
 const RARITY_AMPLIFIERS: Record<Rarity, number> = {
   common: 1.0,
   uncommon: 1.2,
-  rare: 1.6,
-  mythic: 2.4,
+  eliteRare: 1.6,
+  bossRare: 2.4,
+  mythicRare: 3.0,
 };
 
 const SUBTLE_POWER_MULTIPLIERS = [0.2, 0.27, 0.34] as const;
@@ -209,7 +210,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
       sword: ['黒曜石の短剣', '牙のナイフ'],
       wand: ['精霊樹の杖'],
     },
-    rare: {
+    eliteRare: {
       archery: ['古代樹の長弓'],
       armor: ['角骨の鎧'],
       arrow: ['雷打ち石の矢'],
@@ -223,7 +224,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
       sword: ['原始の石剣'],
       wand: ['星木の杖'],
     },
-    mythic: {
+    bossRare: {
       bolt: ['始まりの雷牙弩矢'],
       gauntlet: ['原初獣王の覇拳'],
       grimoire: ['原初契約の石板'],
@@ -261,7 +262,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
       sword: ['黒曜石の石刃', '磨石の石剣'],
       wand: ['風刻みの石杖'],
     },
-    rare: {
+    eliteRare: {
       archery: ['断崖狩人の戦弓'],
       armor: ['岩王の石甲'],
       arrow: ['風哭きの石矢'],
@@ -275,7 +276,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
       sword: ['裂風の黒曜石剣'],
       wand: ['嵐紋の霊石杖'],
     },
-    mythic: {
+    bossRare: {
       archery: ['天裂きの断崖戦弓'],
       armor: ['風哭きの岩王鎧'],
       arrow: ['天裂きの断崖神矢'],
@@ -314,7 +315,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
       sword: ['狐紋の青銅剣', '霧鍛えの青銅剣'],
       wand: ['幻導の青銅杖'],
     },
-    rare: {
+    eliteRare: {
       archery: ['霧裂きの戦弓'],
       armor: ['樹霧守護の青銅鎧'],
       arrow: ['幻貫の青銅矢'],
@@ -328,7 +329,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
       sword: ['幻断の青銅剣'],
       wand: ['幻導の青銅霊杖'],
     },
-    mythic: {
+    bossRare: {
       bolt: ['霧界穿ちの幻王弩矢'],
       gauntlet: ['幻樹王の霊拳'],
       grimoire: ['森幻王の禁呪書'],
@@ -366,7 +367,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
       sword: ['鍛冶師の鉄剣', '火入れの鉄刃'],
       wand: ['霊炉導きの鉄杖'],
     },
-    rare: {
+    eliteRare: {
       archery: ['火山連射の戦弓'],
       armor: ['火山守護の鉄甲'],
       arrow: ['溶鉄穿ちの矢'],
@@ -380,7 +381,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
       sword: ['霊峰鍛えの鉄剣'],
       wand: ['霊炉核の鉄霊杖'],
     },
-    mythic: {
+    bossRare: {
       armor: ['鉄王の霊峰鎧'],
       bolt: ['火山神鋼の裁断弩矢'],
       gauntlet: ['溶岩心臓の王拳'],
@@ -417,7 +418,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
       sword: ['月鋼細工の剣', '聖域鍛えの剣'],
       wand: ['月導の霊杖'],
     },
-    rare: {
+    eliteRare: {
       archery: ['光苔嵐の戦弓'],
       armor: ['月庭守護の霊鎧'],
       arrow: ['瞬撃の月鋼矢'],
@@ -431,7 +432,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
       sword: ['聖月王の光剣'],
       wand: ['月輝霊核の魔杖'],
     },
-    mythic: {
+    bossRare: {
       archery: ['聖域王の光速弓'],
       bolt: ['月光閃雷の神速弩矢'],
       gauntlet: ['月界王の神威拳'],
@@ -468,7 +469,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
       sword: ['合金鍛えの小剣', '歯車刻みの短剣'],
       wand: ['触媒増幅の魔杖'],
     },
-    rare: {
+    eliteRare: {
       archery: ['自動滑車の連射弓'],
       armor: ['耐毒圧の迷宮機甲'],
       arrow: ['貫壁の精密合金矢'],
@@ -482,7 +483,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
       sword: ['銅迷宮王の合金剣'],
       wand: ['主機核導きの霊杖'],
     },
-    mythic: {
+    bossRare: {
       armor: ['主機核装甲・アルケミトロン'],
       bolt: ['迷宮中枢破壊の原初弩矢'],
       catalyst: ['深層反応炉の原初触媒'],
@@ -520,7 +521,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
       sword: ['天鋼精鍛の剣', '風紋刻みの剣'],
       wand: ['天導の霊杖'],
     },
-    rare: {
+    eliteRare: {
       archery: ['風輪嵐の戦弓'],
       armor: ['天空守護の天鋼鎧'],
       arrow: ['天裂きの鋼矢'],
@@ -534,7 +535,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
       sword: ['高天王の霊剣'],
       wand: ['天輝霊核の魔杖'],
     },
-    mythic: {
+    bossRare: {
       armor: ['浮島王の天鋼鎧'],
       bolt: ['高天裁断の王雷弩矢'],
       gauntlet: ['天界王の審判拳'],
@@ -572,7 +573,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
       sword: ['時玻璃精鍛の剣', '次元紋刻みの剣'],
       wand: ['時導の霊杖'],
     },
-    rare: {
+    eliteRare: {
       archery: ['層界嵐の戦弓'],
       armor: ['玻璃守護の王鎧'],
       arrow: ['終焉穿ちの結晶矢'],
@@ -586,7 +587,7 @@ const MASTER_ITEM_NAMES: MasterItemNameTable = {
       sword: ['時界王の霊剣'],
       wand: ['時晶霊核の魔杖'],
     },
-    mythic: {
+    bossRare: {
       bolt: ['次元律動の終極弩矢'],
       catalyst: ['次元律動の原初触媒'],
       gauntlet: ['次元王の終焉拳'],
@@ -751,8 +752,8 @@ function calculateNoA(basePower: number, amplifier: number): number {
 }
 
 function getMultiplierTier(tier: number, rarity: Rarity): number | null {
-  if (rarity === 'mythic') return null;
-  const bonus = rarity === 'rare' ? 2 : rarity === 'uncommon' ? 1 : 0;
+  if (rarity === 'bossRare' || rarity === 'mythicRare') return null;
+  const bonus = rarity === 'eliteRare' ? 2 : rarity === 'uncommon' ? 1 : 0;
   return Math.min(tier + bonus, TIER_TARGET_MULTIPLIERS.length);
 }
 
@@ -898,12 +899,12 @@ function createItem(
     applyVariantMod(variantIndex === 0 ? template.variant1Mod : template.variant2Mod, variantIndex);
   }
 
-  if (rarity === 'rare') {
+  if (rarity === 'eliteRare') {
     const rareSubtleMods = getRareSubtleMods(template, tier);
     rareSubtleMods.forEach((mod, index) => applyVariantMod(mod, index));
   }
 
-  if (rarity === 'mythic') {
+  if (rarity === 'bossRare') {
     applyVariantMod(template.variant1Mod, 0);
     applyVariantMod(template.variant2Mod, 1);
     applyVariantMod(template.variant3Mod || template.variant1Mod, 2);
@@ -945,7 +946,7 @@ function generateItems(): ItemDef[] {
     for (let i = 0; i < ITEM_TEMPLATES.length; i++) {
       const template = ITEM_TEMPLATES[i];
       const id = tier * 1000 + 300 + i + 1; // T3CC format
-      const item = createItem(id, tier, 'rare', template);
+      const item = createItem(id, tier, 'eliteRare', template);
       if (item) items.push(item);
     }
 
@@ -954,7 +955,7 @@ function generateItems(): ItemDef[] {
     mythicCategories.forEach((category, index) => {
       const template = ITEM_TEMPLATE_BY_CATEGORY[category];
       const id = tier * 1000 + 400 + index + 1; // T4CC format
-      const item = createItem(id, tier, 'mythic', template);
+      const item = createItem(id, tier, 'bossRare', template);
       if (item) items.push(item);
     });
   }
@@ -977,7 +978,7 @@ export function getItemsByTier(tier: number): ItemDef[] {
 // Item lookup by tier and rarity
 export function getItemsByTierAndRarity(tier: number, rarity: Rarity): ItemDef[] {
   const tierBase = tier * 1000;
-  const rarityBase = { common: 100, uncommon: 200, rare: 300, mythic: 400 }[rarity];
+  const rarityBase = { common: 100, uncommon: 200, eliteRare: 300, bossRare: 400, mythicRare: 500 }[rarity];
   return ITEMS.filter(i => i.id >= tierBase + rarityBase && i.id < tierBase + rarityBase + 100);
 }
 
