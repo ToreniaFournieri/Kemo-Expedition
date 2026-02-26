@@ -282,7 +282,7 @@ displays [遠距離攻撃:矢,ボ,弓]
 ```   
 
 #### 8.4 Expedition
-- If 自動周回 is ON, it repeats repart to the dungeon **every 5 seconds** (for this version). Default is OFF.
+- If 自動周回 is ON, it repeats repart to the dungeon. Default is OFF.
 
 - **Expedition Depth Limit (探索深度)**
   - Players can set a depth limit; when the party reaches the selected floor, it stops the expedition and returns home automatically.
@@ -312,6 +312,23 @@ PT2...
     - Tapping the quick summary shows a `f.list_of_rooms`.
     - Tapping a room opens the `f.battle_logs`.
   - 次の目標: show next Loot-Gate condition. 
+
+- **Gods Battle (神魔戦)**
+  - Loot Gate Condition: Collect 1 Boss rare items in dungeons to unlock Gods Battle.
+  - UI / Trigger:
+    - When the condition is met, the 「出撃」(Deploy) button changes to 「神魔戦」(Gods Battle).
+    - The player must manually press the 「神魔戦」 button to start the special battle.
+    - Gods Battle cannot be triggered during Auto-Run (自動周回).
+  - Battle Rules:
+    - The normal boss is replaced by a God (a highly formidable enemy)
+  - Outcome Handling:
+    - **On Victory**
+      - The button reverts from 「神魔戦」 → 「出撃」.
+      - The Loot Gate counter resets to 0 Mythic items collected.
+      - The player can repeat the cycle.
+    - **On Defeat**
+      - The 「神魔戦」 button remains available.
+      - The player may retry the Gods Battle without re-collecting Boss rare items.
 
 #### 8.5 Base(拠点)
 - It has two tabs inside Base tab. Inventory(所持品), Shop(お店), Workshop(工房), Altar(祭壇). (same visual UI as List of party (PT1, PT2...) tab in Party tab)
