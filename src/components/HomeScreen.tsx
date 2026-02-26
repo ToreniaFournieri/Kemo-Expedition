@@ -189,33 +189,36 @@ function buildAfkSummaryNotification(stats: {
   return [summaryParts.join('/'), financeParts.join(', ')].filter(Boolean).join(' ');
 }
 
-type ItemRarity = 'common' | 'uncommon' | 'rare' | 'mythic';
+type ItemRarity = 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare';
 type RarityFilter = 'all' | ItemRarity;
 
 const RARITY_SHORT_CODES: Record<ItemRarity, string> = {
   common: 'C',
   uncommon: 'U',
-  rare: 'R',
-  mythic: 'M',
+  eliteRare: 'E',
+  bossRare: 'B',
+  mythicRare: 'M',
 };
 
 const RARITY_FILTER_LABELS: Record<RarityFilter, string> = {
   all: 'ALL',
   common: 'C',
   uncommon: 'U',
-  rare: 'R',
-  mythic: 'M',
+  eliteRare: 'E',
+  bossRare: 'B',
+  mythicRare: 'M',
 };
 
 const RARITY_FILTER_NOTES: Record<RarityFilter, string> = {
   all: '全て',
   common: '通常',
   uncommon: 'アンコモン',
-  rare: 'レア',
-  mythic: '神魔レア',
+  eliteRare: 'エリートレア',
+  bossRare: 'ボスレア',
+  mythicRare: '神魔レア',
 };
 
-const RARITY_FILTER_OPTIONS: RarityFilter[] = ['all', 'common', 'uncommon', 'rare', 'mythic'];
+const RARITY_FILTER_OPTIONS: RarityFilter[] = ['all', 'common', 'uncommon', 'eliteRare', 'bossRare', 'mythicRare'];
 
 const DIARY_THRESHOLD_OPTIONS: Array<{ value: DiaryRarityThreshold; label: string }> = [
   { value: 'all', label: '全て' },
@@ -279,8 +282,9 @@ function formatAutoSellSummary(autoSellProfit: number, autoSellMultiplier?: numb
 
 function getItemRarityById(itemId: number): ItemRarity {
   const rarityCode = itemId % 1000;
-  if (rarityCode >= 400) return 'mythic';
-  if (rarityCode >= 300) return 'rare';
+  if (rarityCode >= 500) return 'mythicRare';
+  if (rarityCode >= 400) return 'bossRare';
+  if (rarityCode >= 300) return 'eliteRare';
   if (rarityCode >= 200) return 'uncommon';
   return 'common';
 }
@@ -298,20 +302,23 @@ function matchesRarityFilter(itemId: number, filter: RarityFilter): boolean {
 
 function getRarityTextClass(rarity: ItemRarity, isSuperRare: boolean): string {
   if (isSuperRare) return 'text-orange-700 font-bold';
-  if (rarity === 'rare') return 'text-blue-600';
-  if (rarity === 'mythic') return 'text-orange-700';
+  if (rarity === 'eliteRare') return 'text-sub';
+  if (rarity === 'bossRare') return 'text-accent';
+  if (rarity === 'mythicRare') return 'text-accent font-bold';
   return 'text-black';
 }
 
 function getRewardTextClass(rarity?: ItemRarity, isSuperRare?: boolean): string {
-  if (isSuperRare) return 'text-orange-700';
-  if (rarity === 'mythic') return 'text-orange-700';
-  if (rarity === 'rare') return 'text-blue-600';
+  if (isSuperRare) return 'text-accent';
+  if (rarity === 'mythicRare') return 'text-accent';
+  if (rarity === 'bossRare') return 'text-accent';
+  if (rarity === 'eliteRare') return 'text-sub';
   return 'text-black';
 }
 
 function getRewardFontWeightClass(rarity: ItemRarity, isSuperRare: boolean): string {
   if (isSuperRare) return 'font-bold';
+  if (rarity === 'mythicRare') return 'font-bold';
   return rarity === 'common' ? 'font-normal' : 'font-medium';
 }
 
@@ -359,7 +366,7 @@ function getDungeonEntryGateState(
   const previousDungeon = DUNGEONS.find(d => d.id === dungeon.id - 1);
   const previousDungeonName = previousDungeon?.name ?? '前回の探検地';
   const required = ENTRY_GATE_REQUIRED;
-  const collected = getLootCollectionCount(party, dungeon.id - 1, 'mythic');
+  const collected = getLootCollectionCount(party, dungeon.id - 1, 'bossRare');
   const unlocked = isLootGateUnlocked(party, getEntryGateKey(dungeon.id)) || collected >= required;
 
   return {
@@ -387,16 +394,16 @@ function getNextGoalText(party: Party): string | null {
   }
 
   const bossRequired = BOSS_GATE_REQUIRED;
-  const rareCollected = getLootCollectionCount(party, tier, 'rare');
+  const rareCollected = getLootCollectionCount(party, tier, 'eliteRare');
   const bossUnlocked = isLootGateUnlocked(party, getBossGateKey(currentDungeon.id)) || rareCollected >= bossRequired;
   if (!bossUnlocked) {
-    return `次の目標: ${currentDungeon.name} 6F-4の解放: レアアイテム(持ち帰り) ${rareCollected}/${bossRequired}（現在）`;
+    return `次の目標: ${currentDungeon.name} 6F-4の解放: エリートレアアイテム(持ち帰り) ${rareCollected}/${bossRequired}（現在）`;
   }
 
   const nextDungeon = DUNGEONS.find(d => d.id === currentDungeon.id + 1);
   if (nextDungeon) {
     const entryRequired = ENTRY_GATE_REQUIRED;
-    const mythicCollected = getLootCollectionCount(party, currentDungeon.id, 'mythic');
+    const mythicCollected = getLootCollectionCount(party, currentDungeon.id, 'bossRare');
     const entryUnlocked = isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id)) || mythicCollected >= entryRequired;
     if (!entryUnlocked) {
       return `次の目標: ${nextDungeon.name}の解放: ${currentDungeon.name}の神魔レアアイテム(持ち帰り) ${mythicCollected}/${entryRequired}（現在）`;
@@ -1408,7 +1415,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
           const rarity = getItemRarityById(item.id);
           actions.addNotification(
             `${party.name}:${itemName}を入手！`,
-            rarity === 'rare' || rarity === 'mythic' || isSuperRare ? 'rare' : 'normal',
+            rarity === 'eliteRare' || rarity === 'bossRare' || isSuperRare ? 'rare' : 'normal',
             'item',
             undefined,
             { rarity, isSuperRareItem: isSuperRare }
@@ -1539,7 +1546,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       const rarity = getItemRarityById(item.id);
       actions.addNotification(
         `${party.name}:${itemName}を入手！`,
-        rarity === 'rare' || rarity === 'mythic' || isSuperRare ? 'rare' : 'normal',
+        rarity === 'eliteRare' || rarity === 'bossRare' || isSuperRare ? 'rare' : 'normal',
         'item',
         undefined,
         { rarity, isSuperRareItem: isSuperRare }
@@ -4004,10 +4011,10 @@ function ShopTab({
     const rarity = getItemRarityById(baseItemId);
     const rarityClass = isSoldOut
       ? 'text-gray-400'
-      : rarity === 'mythic'
-        ? 'text-orange-700'
-        : rarity === 'rare'
-          ? 'text-blue-600'
+      : rarity === 'bossRare'
+        ? 'text-accent'
+        : rarity === 'eliteRare'
+          ? 'text-sub'
           : rarity === 'uncommon'
             ? 'font-bold text-gray-900'
             : 'text-gray-900 font-normal';
@@ -4388,27 +4395,27 @@ function DiaryTab({
     .sort((a, b) => b.createdAt - a.createdAt)
     .slice(0, 10);
 
-  const getDiaryTitle = (triggers: Array<'defeat' | 'rare' | 'mythic' | 'superRare'>) => {
+  const getDiaryTitle = (triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'superRare'>) => {
     if (triggers.includes('defeat') && triggers.length === 1) return '敗北の記録';
     if (triggers.includes('superRare')) return '超レア獲得の記録';
-    if (triggers.includes('mythic')) return '神魔レア獲得の記録';
-    if (triggers.includes('rare')) return 'レア獲得の記録';
+    if (triggers.includes('bossRare')) return '神魔レア獲得の記録';
+    if (triggers.includes('eliteRare')) return 'エリートレア獲得の記録';
     return '特別記録';
   };
 
 
   const getDiaryHeadline = (
     partyName: string,
-    triggers: Array<'defeat' | 'rare' | 'mythic' | 'superRare'>,
+    triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'superRare'>,
     rewards: Item[]
   ) => {
     if (triggers.includes('defeat') && triggers.length === 1) {
       return `[${partyName}] 敗北の記録`;
     }
 
-    if (triggers.includes('superRare') || triggers.includes('mythic')) {
+    if (triggers.includes('superRare') || triggers.includes('bossRare')) {
       const rewardNames = rewards
-        .filter((item) => item.superRare > 0 || getItemRarityById(item.id) === 'mythic')
+        .filter((item) => item.superRare > 0 || getItemRarityById(item.id) === 'bossRare')
         .map((item) => getItemDisplayName(item))
         .join('、');
       const triggerPrefix = triggers.includes('superRare') ? '超レア' : '神魔レア';
@@ -4417,12 +4424,12 @@ function DiaryTab({
         : `[${partyName}] ${triggerPrefix}獲得`;
     }
 
-    if (triggers.includes('rare')) {
+    if (triggers.includes('eliteRare')) {
       const rewardNames = rewards
-        .filter((item) => getItemRarityById(item.id) === 'rare')
+        .filter((item) => getItemRarityById(item.id) === 'eliteRare')
         .map((item) => getItemDisplayName(item))
         .join('、');
-      return rewardNames ? `[${partyName}] レア(${rewardNames}) 獲得` : `[${partyName}] レア獲得`;
+      return rewardNames ? `[${partyName}] エリートレア(${rewardNames}) 獲得` : `[${partyName}] エリートレア獲得`;
     }
 
     return `[${partyName}] ${getDiaryTitle(triggers)}`;
@@ -4485,7 +4492,7 @@ function DiaryTab({
                     </select>
                   </label>
                   <label className="flex items-center justify-between gap-2">
-                    <span>レア通知</span>
+                    <span>エリートレア通知</span>
                     <select
                       value={settings.rareThreshold}
                       onChange={(event) => onUpdateDiarySettings(partyIndex, { rareThreshold: parseDiaryThreshold(event.target.value) })}
@@ -4533,7 +4540,7 @@ function DiaryTab({
         const log = diaryLog.expeditionLog;
         const specialRewards = log.rewards.filter((item) => {
           const rarity = getItemRarityById(item.id);
-          return rarity === 'mythic' || item.superRare > 0;
+          return rarity === 'bossRare' || rarity === 'mythicRare' || item.superRare > 0;
         });
         return (
           <div key={diaryLog.id} className="bg-pane rounded-lg p-3">
@@ -4961,8 +4968,9 @@ function SettingTab({
           'commonRewardBag',
           'commonEnhancementBag',
           'uncommonRewardBag',
-          'rareRewardBag',
-          'mythicRewardBag',
+          'eliteRareRewardBag',
+          'bossRareRewardBag',
+          'mythicRareRewardBag',
           'enhancementBag',
           'superRareBag',
           'physicalThreatBag',
@@ -5047,10 +5055,12 @@ function SettingTab({
   const uniqueRewardTotal = 100;
   const uncommonRewardRemaining = getBagTicketTotal(bags.uncommonRewardBag);
   const uncommonRewardWins = getBagEntryTickets(bags.uncommonRewardBag, 1);
-  const rareRewardRemaining = getBagTicketTotal(bags.rareRewardBag);
-  const rareRewardWins = getBagEntryTickets(bags.rareRewardBag, 1);
-  const mythicRewardRemaining = getBagTicketTotal(bags.mythicRewardBag);
-  const mythicRewardWins = getBagEntryTickets(bags.mythicRewardBag, 1);
+  const eliteRareRewardRemaining = getBagTicketTotal(bags.eliteRareRewardBag);
+  const eliteRareRewardWins = getBagEntryTickets(bags.eliteRareRewardBag, 1);
+  const bossRareRewardRemaining = getBagTicketTotal(bags.bossRareRewardBag);
+  const bossRareRewardWins = getBagEntryTickets(bags.bossRareRewardBag, 1);
+  const mythicRareRewardRemaining = getBagTicketTotal(bags.mythicRareRewardBag);
+  const mythicRareRewardWins = getBagEntryTickets(bags.mythicRareRewardBag, 1);
 
   const enhancementTotal = 5490 + (ENHANCEMENT_TITLES.reduce((sum, t) => sum + (t.value === 0 ? 0 : t.tickets), 0));
   const enhancementRemaining = getBagTicketTotal(bags.enhancementBag);
@@ -5358,18 +5368,26 @@ function SettingTab({
           </div>
 
           <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">rare_reward_bag (レア抽選確率)</div>
+            <div className="text-xs text-gray-500 mb-1">elite_rare_reward_bag (エリートレア抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>報酬抽選</span><span>{formatNumber(rareRewardRemaining)} / {formatNumber(uniqueRewardTotal)}</span></div>
-              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{formatNumber(rareRewardWins)}</span></div>
+              <div className="flex justify-between"><span>報酬抽選</span><span>{formatNumber(eliteRareRewardRemaining)} / {formatNumber(uniqueRewardTotal)}</span></div>
+              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{formatNumber(eliteRareRewardWins)}</span></div>
             </div>
           </div>
 
           <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">mythic_reward_bag (神魔レア抽選確率)</div>
+            <div className="text-xs text-gray-500 mb-1">boss_rare_reward_bag (ボスレア抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>報酬抽選</span><span>{formatNumber(mythicRewardRemaining)} / {formatNumber(uniqueRewardTotal)}</span></div>
-              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{formatNumber(mythicRewardWins)}</span></div>
+              <div className="flex justify-between"><span>報酬抽選</span><span>{formatNumber(bossRareRewardRemaining)} / {formatNumber(uniqueRewardTotal)}</span></div>
+              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{formatNumber(bossRareRewardWins)}</span></div>
+            </div>
+          </div>
+
+          <div className="mb-2">
+            <div className="text-xs text-gray-500 mb-1">mythic_rare_reward_bag (神魔レア抽選確率)</div>
+            <div className="bg-white rounded p-2 text-sm space-y-1">
+              <div className="flex justify-between"><span>報酬抽選</span><span>{formatNumber(mythicRareRewardRemaining)} / 50</span></div>
+              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{formatNumber(mythicRareRewardWins)}</span></div>
             </div>
           </div>
 

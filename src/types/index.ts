@@ -282,7 +282,7 @@ export type ExpeditionDepthLimit =
 export interface DiaryLog {
   id: string;
   expeditionLog: ExpeditionLog;
-  triggers: Array<'defeat' | 'rare' | 'mythic' | 'superRare'>;
+  triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'superRare'>;
   createdAt: number;
   isRead: boolean;
 }
@@ -459,8 +459,9 @@ export interface GameBags {
   commonRewardBag: RandomBag;      // For normal rooms (90 no item, 10 win)
   commonEnhancementBag: RandomBag; // For normal rooms enhancement
   uncommonRewardBag: RandomBag;    // For uncommon rewards (99 no item, 1 win)
-  rareRewardBag: RandomBag;        // For rare rewards (99 no item, 1 win)
-  mythicRewardBag: RandomBag;      // For mythic rewards (99 no item, 1 win)
+  eliteRareRewardBag: RandomBag;        // For elite rare rewards (99 no item, 1 win)
+  bossRareRewardBag: RandomBag;      // For boss rare rewards (99 no item, 1 win)
+  mythicRareRewardBag: RandomBag;    // For mythic rare rewards (49 no item, 1 win)
   enhancementBag: RandomBag;       // For unique rewards enhancement
   superRareBag: RandomBag;
   physicalThreatBag: RandomBag;
@@ -555,7 +556,7 @@ export const MAX_LEVEL = 39;
 // Notification Types
 export type NotificationStyle = 'normal' | 'rare';
 export type NotificationCategory = 'item' | 'stat';
-export type ItemRarity = 'common' | 'uncommon' | 'rare' | 'mythic';
+export type ItemRarity = 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare';
 
 export interface GameNotification {
   id: string;

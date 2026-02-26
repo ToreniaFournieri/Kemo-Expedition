@@ -1,6 +1,6 @@
 import { Item, Party } from '../types';
 
-export type GateRarity = 'uncommon' | 'rare' | 'mythic';
+export type GateRarity = 'uncommon' | 'eliteRare' | 'bossRare';
 
 export const ELITE_GATE_REQUIREMENTS: Record<number, number> = {
   1: 3,
@@ -40,8 +40,8 @@ export function isLootGateUnlocked(party: Pick<Party, 'lootGateStatus'>, gateKey
 
 export function getItemRarityForLootGate(itemId: number): GateRarity | null {
   const rarityCode = itemId % 1000;
-  if (rarityCode >= 400) return 'mythic';
-  if (rarityCode >= 300) return 'rare';
+  if (rarityCode >= 400) return 'bossRare';
+  if (rarityCode >= 300) return 'eliteRare';
   if (rarityCode >= 200) return 'uncommon';
   return null;
 }
@@ -74,14 +74,14 @@ export function unlockAvailableLootGates(
       }
     }
 
-    const rareCount = progress[getLootCollectionKey(dungeonId, 'rare')] ?? 0;
-    if (rareCount >= BOSS_GATE_REQUIRED) {
+    const eliteRareCount = progress[getLootCollectionKey(dungeonId, 'eliteRare')] ?? 0;
+    if (eliteRareCount >= BOSS_GATE_REQUIRED) {
       nextStatus[getBossGateKey(dungeonId)] = true;
     }
 
     if (dungeonId > 1) {
-      const previousMythic = progress[getLootCollectionKey(dungeonId - 1, 'mythic')] ?? 0;
-      if (previousMythic >= ENTRY_GATE_REQUIRED) {
+      const previousBossRare = progress[getLootCollectionKey(dungeonId - 1, 'bossRare')] ?? 0;
+      if (previousBossRare >= ENTRY_GATE_REQUIRED) {
         nextStatus[getEntryGateKey(dungeonId)] = true;
       }
     }
