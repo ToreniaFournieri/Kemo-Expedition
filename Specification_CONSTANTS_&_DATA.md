@@ -612,6 +612,14 @@
 | 7 | 7 | 48 | レポリアンの庭園(Leporian Garden) | 園 | x4,096 | x64 | x7 | x2.6 | x64 | x0.26 |
 | 8 | 8 | 56 | セルヴィンの谷(Cervin Vale) | 谷 | x16,384 | x128 | x8 | x2.7 | x128 | x0.21 |
 
+
+- `x.gods_mult`
+  - If enemy is god, apllpy them. 
+
+| `x.god_HP_mult` | `x.god_atk_mult` | `x.god_NoA_mult` | `x.god_atk_amp_mult` | `x.god_def_mult` | `x.god_def_amp_mult` |
+|-----|-----|-----|----|----|----|
+| x2.0 | x1.5 | x2.0 | x1.6 | x1.5 | x0.8 |
+
 - `x.luna_mode_mult`
   - If `m.luna`, apllpy them. 
 
