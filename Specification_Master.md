@@ -724,32 +724,33 @@
 
 # 2.2 Mythic rare item from gods
 
-| Drop by | Item type     | Japanese name |
-|--------|---------------|-------------|
-| Seiran | `i.grimoire`    | 再生の聖典 |
-| Seiran | `i.robe`        | 甦生の法衣 |
-| Garv   | `i.katana`      | 血脈断ちの刀 |
-| Garv   | `i.shield`      | 堅忍の護盾 |
-| Kyōen  | `i.archery`     | 狡猾なる長弓 |
-| Kyōen  | `i.bolt`        | 虚影貫きの矢 |
-| Dolvar | `i.armor`       | 不壊の重装 |
-| Dolvar | `i.gauntlet`    | 鉄城の篭手 |
-| Miora  | `i.sword`       | 芽吹きの剣 |
-| Miora  | `i.catalyst`    | 生命循環の触媒 |
-| Rondel | `i.wand`        | 共鳴導く魔杖 |
-| Rondel | `i.arrow`       | 反響する魔矢 |
-| Lira   | `i.arrow`       | 精密射の矢 |
-| Lira   | `i.archery`     | 千里照準の弓 |
-| Forne  | `i.armor`       | 宿命纏いの鎧 |
-| Forne  | `i.robe`        | 運命編みの外套 |
-| Skuva  | `i.shield`      | 夕闇の円盾 |
-| Skuva  | `i.catalyst`    | 薄暮の触媒 |
-| Tanue  | `i.sword`       | 幻映の剣 |
-| Tanue  | `i.gauntlet`    | 迷彩の篭手 |
-| Noctyra| `i.bolt`        | 虚無穿つ矢 |
-| Noctyra| `i.katana`      | 絶滅の刀 |
-| Eris   | `i.grimoire`    | 争乱の書 |
-| Eris   | `i.wand`        | 乱調の魔杖 |
+| Drop by | Item type     | name | unique ability |
+|--------|---------------|-------------| ------|
+| Seiran | `i.grimoire`    | 再生の聖典 | `c.unlock_Caninian_ability` |
+| Seiran | `i.robe`        | 甦生の法衣 | `c.unlock_Caninian_ability` |
+| Garv   | `i.katana`      | 血脈断ちの刀 | `c.unlock_Lupinian_ability` |
+| Garv   | `i.shield`      | 堅忍の護盾 | `c.unlock_Lupinian_ability` |
+| Kyōen  | `i.archery`     | 狡猾なる長弓 | `c.unlock_Vulpinian_ability` |
+| Kyōen  | `i.bolt`        | 虚影貫きの矢 | `c.unlock_Vulpinian_ability` |
+| Dolvar | `i.armor`       | 不壊の重装 | `c.unlock_Ursan_ability` |
+| Dolvar | `i.gauntlet`    | 鉄城の篭手 | `c.unlock_Ursan_ability` |
+| Miora  | `i.sword`       | 芽吹きの剣 | `c.unlock_Felidian_ability` |
+| Miora  | `i.catalyst`    | 生命循環の触媒 | `c.unlock_Felidian_ability` |
+| Rondel | `i.wand`        | 共鳴導く魔杖 | `c.unlock_Mustelid_ability` |
+| Rondel | `i.arrow`       | 反響する魔矢 | `c.unlock_Mustelid_ability` |
+| Lira   | `i.arrow`       | 精密射の矢 | `c.unlock_Leporian_ability` |
+| Lira   | `i.archery`     | 千里照準の弓 | `c.unlock_Leporian_ability` |
+| Forne  | `i.armor`       | 宿命纏いの鎧 | `c.unlock_Cervin_ability` |
+| Forne  | `i.robe`        | 運命編みの外套 | `c.unlock_Cervin_ability` |
+| Skuva  | `i.shield`      | 夕闇の円盾 | `c.unlock_Murid_ability` |
+| Skuva  | `i.catalyst`    | 薄暮の触媒 | `c.unlock_Murid_ability` |
+| Tanue  | `i.sword`       | 幻映の剣 | `c.unlock_Procyonian_ability` |
+| Tanue  | `i.gauntlet`    | 迷彩の篭手 | `c.unlock_Procyonian_ability` |
+| Noctyra| `i.bolt`        | 虚無穿つ矢 | |
+| Noctyra| `i.katana`      | 絶滅の刀 | |
+| Eris   | `i.grimoire`    | 争乱の書 | |
+| Eris   | `i.wand`        | 乱調の魔杖 | |
+
 
 
 # 3. Potential default name 
