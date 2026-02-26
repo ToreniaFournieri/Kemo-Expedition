@@ -13,7 +13,7 @@ import { CLASSES, CLASS_SHORT_NAMES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
 import { LINEAGES } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS, getSuperRareBonuses } from '../data/items';
-import { GOD_ENEMY_PROFILES } from '../data/dropTables';
+import { GOD_ENEMY_PROFILES, GOD_MYTHIC_DROPS } from '../data/dropTables';
 import { GLOSSARY_SECTIONS } from '../data/glossary';
 import { getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
@@ -5344,6 +5344,13 @@ function SettingTab({
     };
   };
 
+  const getGodDropCandidates = (godName: string): string => {
+    const drops = GOD_MYTHIC_DROPS
+      .filter((drop) => drop.dropBy === godName)
+      .map((drop) => `${getRarityShortLabel(drop.tier * 1000 + 500)}${drop.name}`);
+    return drops.length > 0 ? drops.join(' / ') : 'なし';
+  };
+
   return (
     <div>
       <div className="bg-pane rounded-lg p-4 mb-4">
@@ -5673,49 +5680,48 @@ function SettingTab({
             const godBestiaryId = 900000 + index;
             const godExpanded = !!expandedBestiaryEnemies[godBestiaryId];
             const godRuntimeEnemy = getGodRuntimeEnemy(god.tier, god.enemyClass);
-            const godDefenseAmplifierPercent = (godRuntimeEnemy?.defenseAmplifier ?? 1) * 100;
+            const godClassShortName = CLASS_SHORT_NAMES[god.enemyClass];
             return (
               <div key={god.name} className="mt-2 border border-gray-100 rounded bg-white">
                 <button
                   onClick={() => onSetExpandedBestiaryEnemies(prev => ({ ...prev, [godBestiaryId]: !godExpanded }))}
                   className="w-full text-left px-2 py-1 text-sm flex justify-between items-center"
                 >
-                  <span>{god.displayName}</span>
+                  <span>{godClassShortName ? `${god.displayName}(${godClassShortName})` : god.displayName}</span>
                   <span className="text-xs text-gray-500">{godExpanded ? '▲' : '▼'}</span>
                 </button>
                 {godExpanded && (
                   <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                      <div>Tier: {god.tier}</div>
-                      <div>レベル(Exp): {god.level}</div>
-                      <div>クラス: {ENEMY_CLASS_LABELS[god.enemyClass] ?? god.enemyClass}</div>
-                      <div>ID: {god.name}</div>
-                      <div>代表: {god.representFor}</div>
-                    </div>
-                    <div>能力: {god.abilities.map((ability) => `${ability.id}${ability.level}`).join(', ')}</div>
+                    <div>ID: {godRuntimeEnemy ? godRuntimeEnemy.id : god.name}</div>
+                    <div>レベル: {formatNumber(god.level)}</div>
+                    <div>HP: {formatNumber(godRuntimeEnemy?.hp ?? 0)}</div>
+                    <div>クラス: {ENEMY_CLASS_LABELS[god.enemyClass] ?? god.enemyClass}</div>
                     {godRuntimeEnemy && (
                       <>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                          <div>HP: {formatNumber(godRuntimeEnemy.hp)}</div>
-                          <div>防御補正: {godDefenseAmplifierPercent.toFixed(0)}%</div>
-                        </div>
-                        <div className="space-y-1">
-                          {hasEnemyAttack(godRuntimeEnemy.rangedAttack, godRuntimeEnemy.rangedNoA) && (
-                            <div>{formatEnemyAttackLine('遠隔', godRuntimeEnemy.rangedAttack, godRuntimeEnemy.rangedNoA, godRuntimeEnemy.rangedAttackAmplifier)}</div>
-                          )}
-                          {hasEnemyAttack(godRuntimeEnemy.meleeAttack, godRuntimeEnemy.meleeNoA) && (
-                            <div>{formatEnemyAttackLine('近接', godRuntimeEnemy.meleeAttack, godRuntimeEnemy.meleeNoA, godRuntimeEnemy.meleeAttackAmplifier)}</div>
-                          )}
-                          {hasEnemyAttack(godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA) && (
-                            <div>{formatEnemyAttackLine('魔法', godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA, godRuntimeEnemy.magicalAttackAmplifier)}</div>
-                          )}
-                        </div>
-                        <div>{formatEnemyDefenseLine('物防', godRuntimeEnemy.physicalDefense, godDefenseAmplifierPercent)}</div>
-                        <div>{formatEnemyDefenseLine('魔防', godRuntimeEnemy.magicalDefense, godDefenseAmplifierPercent)}</div>
+                        {hasEnemyAttack(godRuntimeEnemy.rangedAttack, godRuntimeEnemy.rangedNoA) && (
+                          <div>{formatEnemyAttackLine('遠距離攻撃', godRuntimeEnemy.rangedAttack, godRuntimeEnemy.rangedNoA, godRuntimeEnemy.rangedAttackAmplifier)}</div>
+                        )}
+                        <div>属性: {ENEMY_ELEMENT_LABELS[godRuntimeEnemy.elementalOffense] ?? '無'} (x1.0)</div>
+                        {hasEnemyAttack(godRuntimeEnemy.meleeAttack, godRuntimeEnemy.meleeNoA) && (
+                          <div>{formatEnemyAttackLine('近接攻撃', godRuntimeEnemy.meleeAttack, godRuntimeEnemy.meleeNoA, godRuntimeEnemy.meleeAttackAmplifier)}</div>
+                        )}
+                        <div>{formatEnemyDefenseLine('物理防御', godRuntimeEnemy.physicalDefense, godRuntimeEnemy.defenseAmplifier * 100)}</div>
+                        {(hasEnemyAttack(godRuntimeEnemy.rangedAttack, godRuntimeEnemy.rangedNoA) || hasEnemyAttack(godRuntimeEnemy.meleeAttack, godRuntimeEnemy.meleeNoA)) && (
+                          <div>物理命中率: 100% (減衰: x{(0.90 + godRuntimeEnemy.accuracyBonus).toFixed(3)})</div>
+                        )}
+                        <div>{formatEnemyDefenseLine('魔法防御', godRuntimeEnemy.magicalDefense, godRuntimeEnemy.defenseAmplifier * 100)}</div>
+                        <div>回避: {formatNumber(Math.round(godRuntimeEnemy.evasionBonus * 1000))}</div>
+                        {hasEnemyAttack(godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA) && (
+                          <div>{formatEnemyAttackLine('魔法攻撃', godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA, godRuntimeEnemy.magicalAttackAmplifier)}</div>
+                        )}
                         <div>{formatEnemyElementalResistanceLine(godRuntimeEnemy)}</div>
+                        {hasEnemyAttack(godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA) && (
+                          <div>魔法命中率: 100% (減衰: x{(0.90 + godRuntimeEnemy.accuracyBonus).toFixed(3)})</div>
+                        )}
                       </>
                     )}
-                    <div>ドロップ: Tier {god.dropItemTier} ({god.dropItemCategories.join(', ')})</div>
+                    <div>アビリティ: {god.abilities.length > 0 ? god.abilities.map((ability) => ABILITY_NAMES[ability.id] ?? ability.id).join(', ') : 'なし'}</div>
+                    <div className="pt-1">ドロップ候補: {getGodDropCandidates(god.name)}</div>
                   </div>
                 )}
               </div>
