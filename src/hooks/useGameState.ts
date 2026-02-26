@@ -712,23 +712,64 @@ function getGodShortName(displayName: string): string {
 function createGodEnemy(enemy: EnemyDef, dungeonName: string): EnemyDef {
   const godProfile = GOD_ENEMY_PROFILES.find((god) => god.expedition === dungeonName);
   const godName = godProfile ? getGodShortName(godProfile.displayName) : enemy.name;
+
+  if (!godProfile) {
+    return {
+      ...enemy,
+      name: `神魔 ${godName}`,
+      hp: Math.max(1, Math.floor(enemy.hp * 2.6)),
+      rangedAttack: Math.max(0, Math.floor(enemy.rangedAttack * 1.7)),
+      magicalAttack: Math.max(0, Math.floor(enemy.magicalAttack * 1.7)),
+      meleeAttack: Math.max(0, Math.floor(enemy.meleeAttack * 1.7)),
+      rangedNoA: Math.max(1, Math.ceil(enemy.rangedNoA * 1.2)),
+      magicalNoA: Math.max(1, Math.ceil(enemy.magicalNoA * 1.2)),
+      meleeNoA: Math.max(1, Math.ceil(enemy.meleeNoA * 1.2)),
+      rangedAttackAmplifier: enemy.rangedAttackAmplifier * 1.25,
+      magicalAttackAmplifier: enemy.magicalAttackAmplifier * 1.25,
+      meleeAttackAmplifier: enemy.meleeAttackAmplifier * 1.25,
+      physicalDefense: Math.max(0, Math.floor(enemy.physicalDefense * 1.6)),
+      magicalDefense: Math.max(0, Math.floor(enemy.magicalDefense * 1.6)),
+      defenseAmplifier: enemy.defenseAmplifier * 1.15,
+      experience: Math.floor(enemy.experience * 2.2),
+    };
+  }
+
+  const runtimeGodEnemy = getEnemiesByPool(godProfile.tier)
+    .sort((a, b) => a.id - b.id)
+    .find((candidate) => candidate.enemyClass === godProfile.enemyClass);
+
+  if (!runtimeGodEnemy) {
+    return {
+      ...enemy,
+      name: `神魔 ${godName}`,
+      enemyClass: godProfile.enemyClass,
+      abilities: godProfile.abilities.map((ability) => ability.id),
+    };
+  }
+
   return {
     ...enemy,
+    enemyClass: runtimeGodEnemy.enemyClass,
+    abilities: godProfile.abilities.map((ability) => ability.id),
     name: `神魔 ${godName}`,
-    hp: Math.max(1, Math.floor(enemy.hp * 2.6)),
-    rangedAttack: Math.max(0, Math.floor(enemy.rangedAttack * 1.7)),
-    magicalAttack: Math.max(0, Math.floor(enemy.magicalAttack * 1.7)),
-    meleeAttack: Math.max(0, Math.floor(enemy.meleeAttack * 1.7)),
-    rangedNoA: Math.max(1, Math.ceil(enemy.rangedNoA * 1.2)),
-    magicalNoA: Math.max(1, Math.ceil(enemy.magicalNoA * 1.2)),
-    meleeNoA: Math.max(1, Math.ceil(enemy.meleeNoA * 1.2)),
-    rangedAttackAmplifier: enemy.rangedAttackAmplifier * 1.25,
-    magicalAttackAmplifier: enemy.magicalAttackAmplifier * 1.25,
-    meleeAttackAmplifier: enemy.meleeAttackAmplifier * 1.25,
-    physicalDefense: Math.max(0, Math.floor(enemy.physicalDefense * 1.6)),
-    magicalDefense: Math.max(0, Math.floor(enemy.magicalDefense * 1.6)),
-    defenseAmplifier: enemy.defenseAmplifier * 1.15,
-    experience: Math.floor(enemy.experience * 2.2),
+    accuracyBonus: runtimeGodEnemy.accuracyBonus,
+    evasionBonus: runtimeGodEnemy.evasionBonus,
+    hp: runtimeGodEnemy.hp,
+    rangedAttack: runtimeGodEnemy.rangedAttack,
+    rangedNoA: runtimeGodEnemy.rangedNoA,
+    magicalAttack: runtimeGodEnemy.magicalAttack,
+    magicalNoA: runtimeGodEnemy.magicalNoA,
+    meleeAttack: runtimeGodEnemy.meleeAttack,
+    meleeNoA: runtimeGodEnemy.meleeNoA,
+    rangedAttackAmplifier: runtimeGodEnemy.rangedAttackAmplifier,
+    magicalAttackAmplifier: runtimeGodEnemy.magicalAttackAmplifier,
+    meleeAttackAmplifier: runtimeGodEnemy.meleeAttackAmplifier,
+    physicalDefense: runtimeGodEnemy.physicalDefense,
+    magicalDefense: runtimeGodEnemy.magicalDefense,
+    elementalOffense: runtimeGodEnemy.elementalOffense,
+    elementalResistance: runtimeGodEnemy.elementalResistance,
+    defenseAmplifier: runtimeGodEnemy.defenseAmplifier,
+    experience: runtimeGodEnemy.experience,
   };
 }
 
