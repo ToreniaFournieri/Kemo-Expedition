@@ -45,7 +45,7 @@ interface HomeScreenProps {
     selectParty: (partyIndex: number) => void;
     selectDungeon: (partyIndex: number, dungeonId: number) => void;
     setExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
-    runExpedition: (partyIndex: number, isLunaMode?: boolean) => void;
+    runExpedition: (partyIndex: number, isLunaMode?: boolean, triggerGodsBattle?: boolean) => void;
     finalizeDiaryLog: (partyIndex: number) => void;
     updatePartyDeity: (partyIndex: number, deityName: string) => void;
     healPartyHp: (partyIndex: number, amount: number) => void;
@@ -1333,7 +1333,9 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             } else if (updated.state === '待機中') {
               updated.durationMs = 1000;
             } else if (updated.state === '移動中') {
-              actions.runExpedition(partyIndex, gameMode === 'm.luna');
+              const triggerGodsBattle = pendingGodsBattleByPartyRef.current[partyIndex] === true;
+              pendingGodsBattleByPartyRef.current[partyIndex] = false;
+              actions.runExpedition(partyIndex, gameMode === 'm.luna', triggerGodsBattle);
               updated.state = '探索中';
               updated.durationMs = getExplorationDurationMs();
             } else if (updated.state === '探索中') {
@@ -1573,7 +1575,9 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     notifiedRewardLogRef.current[partyIndex] = currentLog;
   };
 
-  const triggerSortie = (partyIndex: number) => {
+  const pendingGodsBattleByPartyRef = useRef<Record<number, boolean>>({});
+
+  const triggerSortie = (partyIndex: number, triggerGodsBattle: boolean = false) => {
     const cycle = partyCycles[partyIndex];
     const party = state.parties[partyIndex];
     if (!party) return;
@@ -1604,6 +1608,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       notifyExpeditionRewardsIfNeeded(party, partyIndex);
     }
 
+    pendingGodsBattleByPartyRef.current[partyIndex] = triggerGodsBattle && !isAutoRepeatEnabled;
     actions.clearPendingProfit(partyIndex);
     transitionTo(partyIndex, '移動中', getPartyTravelDurationMs(party));
   };
@@ -1750,6 +1755,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             onSetExpeditionDepthLimit={actions.setExpeditionDepthLimit}
             partyCycles={partyCycles}
             onTriggerSortie={triggerSortie}
+            isAutoRepeatEnabled={isAutoRepeatEnabled}
             expandedLogParty={expeditionExpandedLogParty}
             setExpandedLogParty={setExpeditionExpandedLogParty}
             expandedRoom={expeditionExpandedRoom}
@@ -3566,12 +3572,14 @@ function ExpeditionTab({
   setExpandedLogParty,
   expandedRoom,
   setExpandedRoom,
+  isAutoRepeatEnabled,
 }: {
   state: GameState;
   onSelectDungeon: (partyIndex: number, dungeonId: number) => void;
   onSetExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
   partyCycles: Record<number, PartyCycleRuntime>;
-  onTriggerSortie: (partyIndex: number) => void;
+  onTriggerSortie: (partyIndex: number, triggerGodsBattle?: boolean) => void;
+  isAutoRepeatEnabled: boolean;
   expandedLogParty: number | null;
   setExpandedLogParty: Dispatch<SetStateAction<number | null>>;
   expandedRoom: { partyIndex: number; roomIndex: number } | null;
@@ -3632,6 +3640,8 @@ function ExpeditionTab({
           )
           : Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100);
         const isSortieDisabled = !!selectedDungeonGate?.locked || party.currentHp <= 0 || partyStats.hp <= 0;
+        const godsBattleUnlocked = getLootCollectionCount(party, party.selectedDungeonId, 'bossRare') >= ENTRY_GATE_REQUIRED;
+        const canTriggerGodsBattle = godsBattleUnlocked && !isAutoRepeatEnabled;
 
         return (
           <div key={partyIndex} className="bg-pane rounded-lg p-4">
@@ -3676,7 +3686,7 @@ function ExpeditionTab({
                       <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </select>
-                  <button onClick={() => onTriggerSortie(partyIndex)} disabled={isSortieDisabled} className={`px-3 py-2 text-white rounded font-medium text-sm leading-none whitespace-nowrap ${isSortieDisabled ? 'bg-gray-400 cursor-not-allowed' : 'bg-sub hover:bg-blue-600'}`}>出撃</button>
+                  <button onClick={() => onTriggerSortie(partyIndex, canTriggerGodsBattle)} disabled={isSortieDisabled} className={`px-3 py-2 text-white rounded font-medium text-sm leading-none whitespace-nowrap ${isSortieDisabled ? 'bg-gray-400 cursor-not-allowed' : 'bg-sub hover:bg-blue-600'}`}>{canTriggerGodsBattle ? '神魔戦' : '出撃'}</button>
                 </div>
                 {['帰還中', '待機中'].includes(cycle.state) && party.currentHp <= 0 && (
                   <div className="text-xs text-accent">HPが0のため出撃できません。休息で回復してください。</div>
