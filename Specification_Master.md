@@ -606,7 +606,6 @@
 |1|uncommon|`i.gauntlet`|黒曜石縁のガントレット|
 |1|rare|`i.gauntlet`|原始骨格の戦闘籠手|
 |1|mythic|`i.gauntlet`|原初獣王の覇拳|
-
 |1|common|`i.bolt`|石芯の弩矢|
 |1|uncommon|`i.bolt`|黒曜尖石の弩矢|
 |1|uncommon|`i.bolt`|骨鏃仕込みの弩矢|
