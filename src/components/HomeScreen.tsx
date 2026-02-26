@@ -5692,32 +5692,55 @@ function SettingTab({
                 </button>
                 {godExpanded && (
                   <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
-                    <div>ID: {godRuntimeEnemy ? godRuntimeEnemy.id : god.name}</div>
-                    <div>レベル: {formatNumber(god.level)}</div>
-                    <div>HP: {formatNumber(godRuntimeEnemy?.hp ?? 0)}</div>
-                    <div>クラス: {ENEMY_CLASS_LABELS[god.enemyClass] ?? god.enemyClass}</div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                      <div>ID: {godRuntimeEnemy ? godRuntimeEnemy.id : god.name}</div>
+                      <div>レベル: {formatNumber(god.level)}</div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                      <div>HP: {formatNumber(godRuntimeEnemy?.hp ?? 0)}</div>
+                      <div>クラス: {ENEMY_CLASS_LABELS[god.enemyClass] ?? god.enemyClass}</div>
+                    </div>
                     {godRuntimeEnemy && (
                       <>
-                        {hasEnemyAttack(godRuntimeEnemy.rangedAttack, godRuntimeEnemy.rangedNoA) && (
-                          <div>{formatEnemyAttackLine('遠距離攻撃', godRuntimeEnemy.rangedAttack, godRuntimeEnemy.rangedNoA, godRuntimeEnemy.rangedAttackAmplifier)}</div>
-                        )}
-                        <div>属性: {ENEMY_ELEMENT_LABELS[godRuntimeEnemy.elementalOffense] ?? '無'} (x1.0)</div>
-                        {hasEnemyAttack(godRuntimeEnemy.meleeAttack, godRuntimeEnemy.meleeNoA) && (
-                          <div>{formatEnemyAttackLine('近接攻撃', godRuntimeEnemy.meleeAttack, godRuntimeEnemy.meleeNoA, godRuntimeEnemy.meleeAttackAmplifier)}</div>
-                        )}
-                        <div>{formatEnemyDefenseLine('物理防御', godRuntimeEnemy.physicalDefense, godRuntimeEnemy.defenseAmplifier * 100)}</div>
-                        {(hasEnemyAttack(godRuntimeEnemy.rangedAttack, godRuntimeEnemy.rangedNoA) || hasEnemyAttack(godRuntimeEnemy.meleeAttack, godRuntimeEnemy.meleeNoA)) && (
-                          <div>物理命中率: 100% (減衰: x{(0.90 + godRuntimeEnemy.accuracyBonus).toFixed(3)})</div>
-                        )}
-                        <div>{formatEnemyDefenseLine('魔法防御', godRuntimeEnemy.magicalDefense, godRuntimeEnemy.defenseAmplifier * 100)}</div>
-                        <div>回避: {formatNumber(Math.round(godRuntimeEnemy.evasionBonus * 1000))}</div>
-                        {hasEnemyAttack(godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA) && (
-                          <div>{formatEnemyAttackLine('魔法攻撃', godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA, godRuntimeEnemy.magicalAttackAmplifier)}</div>
-                        )}
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                          {(() => {
+                            const hasRangedAttack = hasEnemyAttack(godRuntimeEnemy.rangedAttack, godRuntimeEnemy.rangedNoA);
+                            const hasMeleeAttack = hasEnemyAttack(godRuntimeEnemy.meleeAttack, godRuntimeEnemy.meleeNoA);
+                            const hasMagicalAttack = hasEnemyAttack(godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA);
+                            const hasPhysicalAttack = hasRangedAttack || hasMeleeAttack;
+                            const decay = (0.90 + godRuntimeEnemy.accuracyBonus).toFixed(3);
+                            const defenseAmplifierPercent = godRuntimeEnemy.defenseAmplifier * 100;
+
+                            const offenseRows: string[] = [];
+                            if (hasRangedAttack) {
+                              offenseRows.push(formatEnemyAttackLine('遠距離攻撃', godRuntimeEnemy.rangedAttack, godRuntimeEnemy.rangedNoA, godRuntimeEnemy.rangedAttackAmplifier));
+                            }
+                            if (hasMeleeAttack) {
+                              offenseRows.push(formatEnemyAttackLine('近接攻撃', godRuntimeEnemy.meleeAttack, godRuntimeEnemy.meleeNoA, godRuntimeEnemy.meleeAttackAmplifier));
+                            }
+                            if (hasPhysicalAttack) {
+                              offenseRows.push(`物理命中率: 100% (減衰: x${decay})`);
+                            }
+                            if (hasMagicalAttack) {
+                              offenseRows.push(formatEnemyAttackLine('魔法攻撃', godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA, godRuntimeEnemy.magicalAttackAmplifier));
+                              offenseRows.push(`魔法命中率: 100% (減衰: x${decay})`);
+                            }
+
+                            const defenseRows: string[] = [
+                              `属性: ${ENEMY_ELEMENT_LABELS[godRuntimeEnemy.elementalOffense] ?? '無'} (x1.0)`,
+                              formatEnemyDefenseLine('物理防御', godRuntimeEnemy.physicalDefense, defenseAmplifierPercent),
+                              formatEnemyDefenseLine('魔法防御', godRuntimeEnemy.magicalDefense, defenseAmplifierPercent),
+                              `回避: ${formatNumber(Math.round(godRuntimeEnemy.evasionBonus * 1000))}`,
+                            ];
+
+                            const rowCount = Math.max(offenseRows.length, defenseRows.length);
+                            return Array.from({ length: rowCount }).flatMap((_, index) => [
+                              <div key={`god-off-${index}`}>{offenseRows[index] ?? ''}</div>,
+                              <div key={`god-def-${index}`}>{defenseRows[index] ?? ''}</div>,
+                            ]);
+                          })()}
+                        </div>
                         <div>{formatEnemyElementalResistanceLine(godRuntimeEnemy)}</div>
-                        {hasEnemyAttack(godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA) && (
-                          <div>魔法命中率: 100% (減衰: x{(0.90 + godRuntimeEnemy.accuracyBonus).toFixed(3)})</div>
-                        )}
                       </>
                     )}
                     <div>アビリティ: {god.abilities.length > 0 ? god.abilities.map((ability) => ABILITY_NAMES[ability.id] ?? ability.id).join(', ') : 'なし'}</div>
