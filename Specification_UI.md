@@ -315,7 +315,7 @@ PT2...
 
 - **Gods Battle (神魔戦)**
   - Loot Gate Condition: Collect 1 Boss rare items in dungeons to unlock Gods Battle.
-    - "特殊目標: ルピニアンの断崖のボスレアアイテム 0/1 で神魔戦"
+    - "特殊目標: `x.expedition`のボスレアアイテム 0/1 で神魔`godname`戦"
   - UI / Trigger:
     - When the condition is met, the 「出撃」(Deploy) button changes to 「神魔戦」(Gods Battle).
     - The player must manually press the 「神魔戦」 button to start the special battle.
