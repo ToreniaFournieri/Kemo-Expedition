@@ -132,7 +132,7 @@ const EXPEDITION_2_BOSS: EnemyTemplate = {
 };
 
 // ============================================================
-// Expedition 3: ヴァルピニアンの樹林帯(Vulpinian Taiga)
+// Expedition 3: ヴァルンの樹林帯(Vulpinian Taiga)
 // ============================================================
 const EXPEDITION_3_NORMALS: EnemyTemplate[] = [
   { name: '青銅槍の狐兵', hpMod: 1.0, attackType: 'melee', attackMod: 1.0, defenseMod: 1.0 },
@@ -236,7 +236,7 @@ const EXPEDITION_4_BOSS: EnemyTemplate = {
 };
 
 // ============================================================
-// Expedition 5: フェリディアンの茂み(Felidian Grove)
+// Expedition 5: フェリディの茂み(Felidian Grove)
 // ============================================================
 const EXPEDITION_5_NORMALS: EnemyTemplate[] = [
   { name: '月光鎧の猫兵', hpMod: 1.0, attackType: 'magical', attackMod: 1.0, defenseMod: 1.0 },

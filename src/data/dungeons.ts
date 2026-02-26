@@ -98,12 +98,12 @@ export const DUNGEONS: Dungeon[] = [
     floors: createFloors(2, 201),
   },
 
-  // Tier 3: ヴァルピニアンの樹林帯 (Vulpinian Taiga)
+  // Tier 3: ヴァルンの樹林帯 (Vulpinian Taiga)
   {
     id: 3,
     tier: 3,
     expLevel: 16,
-    name: 'ヴァルピニアンの樹林帯',
+    name: 'ヴァルンの樹林帯',
     enemyPoolIds: [3],
     bossId: 301,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[2],
@@ -122,12 +122,12 @@ export const DUNGEONS: Dungeon[] = [
     floors: createFloors(4, 401),
   },
 
-  // Tier 5: フェリディアンの茂み (Felidian Grove)
+  // Tier 5: フェリディの茂み (Felidian Grove)
   {
     id: 5,
     tier: 5,
     expLevel: 32,
-    name: 'フェリディアンの茂み',
+    name: 'フェリディの茂み',
     enemyPoolIds: [5],
     bossId: 501,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[4],
