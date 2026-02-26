@@ -37,8 +37,9 @@
 |----|-----|---|
 | common | 通常 | [C] |
 | uncommon | アンコモン | [U] |
-| rare | レア | [R] |
-| mythic | 神魔レア | [M] |
+| elite rare | エリートレア | [E] |
+| boss rare | ボスレア | [B] |　
+| mythic rare | 神魔レア | [M] |
  
 ### 2.1 Glossary 
 
@@ -232,7 +233,7 @@
   - characters slots
 
 **Bag Randomization:** 
-- There are weighted bags (g.*_bag) that control probabilistic randomness: `g.common_reward_bag`, `g.common_enhancement_bag`, `g.uncommon_reward_bag`, `g.rare_reward_bag`, `g.mythic_reward_bag`, `g.enhancement_bag`, `g.superRare_bag`, `g.physical_threat_weight_bag`, and `g.magical_threat_weight_bag`
+- There are weighted bags (g.*_bag) that control probabilistic randomness: `g.common_reward_bag`, `g.common_enhancement_bag`, `g.uncommon_reward_bag`, `g.elite_rare_reward_bag`, `g.boss_rare_reward_bag`, `g.mythic_rare_reward_bag`, `g.enhancement_bag`, `g.superRare_bag`, `g.physical_threat_weight_bag`, and `g.magical_threat_weight_bag`
   - All bags persist in save data and are not reset per battle or per expedition.
   - Bags are reset only when: explicitly reset, or automatically reset when the bag becomes empty (total_tickets == 0).
 	
@@ -268,9 +269,7 @@
 | ID | title | tickets |
 |-----|---------|------|
 | 0 | no item | 90 |
-| 1 | win | 10 |
-
-  
+| 1 | win | 10 |  
 
 - `g.uncommon_reward_bag_default` table
  
@@ -279,20 +278,26 @@
 | 0 | no item | 99 |
 | 1 | win | 1 |
 
-- `g.rare_reward_bag_default` table
+- `g.elite_rare_reward_bag_default` table
  
 | ID | title | tickets |
 |-----|---------|------|
 | 0 | no item | 99 |
 | 1 | win | 1 |
 
-- `g.mythic_reward_bag_default` table
+- `g.elite_rare_reward_bag_default` table
  
 | ID | title | tickets |
 |-----|---------|------|
 | 0 | no item | 99 |
 | 1 | win | 1 |
 
+- `g.mythic_rare_reward_bag_default` table
+
+| ID | title | tickets |
+|-----|---------|------|
+| 0 | no item | 49 |
+| 1 | win | 1 |
 
 **enhancement title**
 
@@ -621,25 +626,26 @@
 | Entity Type | Unique Count | Mapping | Drop Quality | Memo |
 |-----|-----|-----|-----|----|
 | Normal |30 | 5 per Floor Pool (Pools 1–6) | 3 Common, 2 Uncommon |  They provide consistent Uncommon drops and thematic flavor.|
-| Elite | 5 | 1 per Floor ( `x.floor` 1–5, `x.room` 4) | 2 ~ 3 Rare, 1 Uncommon, 2 ~ 1 Common | Floor-end guardians serving as "Mechanical Gates." They drop Rare items and test specific build capabilities. |
-| Boss | 1 | `x.floor` 6, `x.room` 4 (Final) | 2 ~ 3 Mythic , 1 ~ 2 Rare, 1 Common (5 in total) | A "Total Power" check and the exclusive source of Mythic rewards. |
+| Elite | 5 | 1 per Floor ( `x.floor` 1–5, `x.room` 4) | 2 ~ 3 Elite rare, 1 Uncommon, 2 ~ 1 Common | Floor-end guardians serving as "Mechanical Gates." They drop Rare items and test specific build capabilities. |
+| Boss | 1 | `x.floor` 6, `x.room` 4 (Final) | 2 ~ 3 Boss rare , 1 ~ 2 Elite rare, 1 Common (5 in total) | A "Total Power" check and the exclusive source of Boss rewards. |
+| God | - | `x.floor` 6, `x.room` 4 (Final) | 2 Mythic rare , 2 boss rare, 1 Common (5 in total) | Under special condition, replaced by "Boss". |
 
 - `x.expedition` layout overview:
 
 | `x.floor` | `x.room` | `x.room_type` | `x.floor_HP_mult` | `x.floor_atk_mult` | `x.floor_NoA_mult` | `x.floor_atk_amp_mult` | `x.floor_def_mult` | `x.floor_def_amp_mult` | `x.Spawn_pool`, drops | `x.key_concept` |
 |----|----|----|-----|-----|-----|-----|-----|-----|-----|-----|
 | 1 | 1-3 | `x.battle_Normal` | x1.0 | x1.0 | x1.0 | x1.00 | x1.0 | x1.0 | pool_1 | easy farming |
-| 1 | 4 | `x.battle_Elite` | x1.50 | x1.23 | x1.0 | x1.05 | x1.23 | x1.0 | fixed Elite. rare  `i.sword`, `i.armor` | Class:Rogue. Checks if you have equipped items properly. |
+| 1 | 4 | `x.battle_Elite` | x1.50 | x1.23 | x1.0 | x1.05 | x1.23 | x1.0 | fixed Elite. elite rare  `i.sword`, `i.armor` | Class:Rogue. Checks if you have equipped items properly. |
 | 2 | 1-3 | `x.battle_Normal` | x1.25 | x1.10 | x1.0 | x1.02 | x1.10 | x0.97 | pool_2 | |
-| 2 | 4 | `x.battle_Elite` | x1.85 | x1.34 | x1.0 | x1.09 | x1.34 | x0.97 | fixed Elite. rare  `i.shield`, `i.robe` | Class:Fighter. Checks if you have equipped enough offensive items. |
+| 2 | 4 | `x.battle_Elite` | x1.85 | x1.34 | x1.0 | x1.09 | x1.34 | x0.97 | fixed Elite. elite rare  `i.shield`, `i.robe` | Class:Fighter. Checks if you have equipped enough offensive items. |
 | 3 | 1-3 | `x.battle_Normal` | x1.56 | x1.20 | x1.0 | x1.04 | x1.20 | x0.94 | pool_3  |  |
-| 3 | 4 | `x.battle_Elite` | x2.34 | x1.47 | x1.0 | x1.12 | x1.47 | x0.94 | fixed Elite. rare  `i.arrow`, `i.bolt`, `i.archery` | Class:Ranger. Check if you have enough physical defensive items. |
+| 3 | 4 | `x.battle_Elite` | x2.34 | x1.47 | x1.0 | x1.12 | x1.47 | x0.94 | fixed Elite. elite rare  `i.arrow`, `i.bolt`, `i.archery` | Class:Ranger. Check if you have enough physical defensive items. |
 | 4 | 1-3 | `x.battle_Normal` | x1.95 | x1.32 | x1.0 | x1.06 | x1.32 | x0.92 | pool_4 | |
-| 4 | 4 | `x.battle_Elite` | x3.43 | x1.61 | x1.0 | x1.14 | x1.61 | x0.92 | fixed Elite. rare  `i.gauntlet`, `i.katana` | Class:Duelist. Checks if you have archery or magic items. (kill it before his melee attacks) |
+| 4 | 4 | `x.battle_Elite` | x3.43 | x1.61 | x1.0 | x1.14 | x1.61 | x0.92 | fixed Elite. elite rare  `i.gauntlet`, `i.katana` | Class:Duelist. Checks if you have archery or magic items. (kill it before his melee attacks) |
 | 5 | 1-3 | `x.battle_Normal` | x2.44 | x1.44 | x1.0 | x1.07 | x1.44 | x0.89 | pool_5  | |
-| 5 | 4 | `x.battle_Elite` | x4.04 | x1.76 | x1.0 | x1.15 | x1.76 | x0.89 | fixed Elite. rare  `i.wand`, `i.grimoire`, `i.catalyst` | Class:Mage. Checks if you have equipped enough magical defensive items.  |
+| 5 | 4 | `x.battle_Elite` | x4.04 | x1.76 | x1.0 | x1.15 | x1.76 | x0.89 | fixed Elite. elite rare  `i.wand`, `i.grimoire`, `i.catalyst` | Class:Mage. Checks if you have equipped enough magical defensive items.  |
 | 6 | 1-3 | `x.battle_Normal` | x3.05 | x1.58 | x1.0 | x1.08 | x1.58 | x0.86 | pool_6 | |
-| 6 | 4 | `x.battle_Boss` | x6.10 | x2.24 | x1.0 | x1.20 | x2.24 | x0.86 | fixed Boss. mythic (see bellows) | Checks if you have enough tital power. |
+| 6 | 4 | `x.battle_Boss` | x6.10 | x2.24 | x1.0 | x1.20 | x2.24 | x0.86 | fixed Boss. boss rare (see bellows) | Checks if you have enough tital power. |
 
 - each pool has enemies with unique item drops. (*note:* common items are not specifically mentioned but are dropped.)
   
@@ -656,7 +662,7 @@
 
 - Boss:
 
-| `x.expedition` Tier | Boss unique ability | Class | Boss drop mythic item types |
+| `x.expedition` Tier | Boss unique ability | Class | Boss drop Boss rare item types |
 |---|---------|------|---|
 | 1 | `a.seeker`1 | Fighter | `i.sword` , `i.grimoire` |
 | 2 | `a.rage`1 | Ranger  | `i.armor` , `i.arrow` |
@@ -824,16 +830,19 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 |------|--------|
 | common | x1.0 |
 | uncommon | x1.2 |
-| rare | x1.6 |
-| mythic | x2.4 |
+| elite rare | x1.6 |
+| boss rare | x2.4 |
+| mythic rare | x3.6 |
 
 **Rarelity base**
+
 | Rarelity | Features |
 |------|--------|
 | common | base_power x `type_amplifier` x rarelity.amplifier, and base c.multiplier |
 | uncommon | base_power x `type_amplifier` x rarelity.amplifier + **one subtle_power`d.` or `c.` bonus**, base c.multiplier +1 tier upgrade(ecept penalty) |
-| rare | base_power x `type_amplifier` x rarelity.amplifier + **two** subtle_power`d.`, **`e.`**, or `c.` bonus, base c.multiplier +2 tier upgrade(ecept penalty) |
-| mythic | base_power x `type_amplifier` x rarelity.amplifier + **three** subtle_power`d.`, `e.`, or `c.` bonus, one **`b.` bonus**, but **no base c.multiplier** |
+| elite rare | base_power x `type_amplifier` x rarelity.amplifier + **two** subtle_power`d.`, **`e.`**, or `c.` bonus, base c.multiplier +2 tier upgrade(ecept penalty) |
+| boss rare | base_power x `type_amplifier` x rarelity.amplifier + **three** subtle_power`d.`, `e.`, or `c.` bonus, one **`b.` bonus**, but **no base c.multiplier** |
+| mythic rare | base_power x `type_amplifier` x rarelity.amplifier + **all** subtle_power`d.`, `e.`, or `c.` bonus, one `b.` bonus**, but no base c.multiplier |
 
 *Note:* subtle_power: x0.20 ~ x0.34 of base_power x `type_amplifier` x rarelity.amplifier value.
 
@@ -852,8 +861,9 @@ Tier 5 common `i.arrow`: `d.ranged_attack` +41, `c.ranged_attack+0.08`
 **Item Variation Hierarchy**
 - Common (12 variations per tier): 1 standard version of every item type.
 - Uncommon (24 variations per tier): 2 specialized versions of every item type.
-- Rare ( 12 variations per tier): 1 version of every item type. 
-- Mythic (2~3 variations per tier)
+- Elite rare ( 12 variations per tier): 1 version of every item type. 
+- Boss rare (2~3 variations per tier)
+- Mythic rare (total 12 items)
 
 #### 2.5.4 Item stacking
 - Items are stacked based on their unique combination of (superRare title, enhancement title, and base item ID). The default `max_stack` is 99.
