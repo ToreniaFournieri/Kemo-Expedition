@@ -965,7 +965,7 @@ function generateItems(): ItemDef[] {
   GOD_MYTHIC_DROPS.forEach((drop, index) => {
     const template = ITEM_TEMPLATE_BY_CATEGORY[drop.category];
     const id = 8500 + index + 1;
-    const item = createItem(id, 8, 'mythicRare', template, undefined, drop.name);
+    const item = createItem(id, drop.tier, 'mythicRare', template, undefined, drop.name);
     if (item) items.push(item);
   });
 
