@@ -296,8 +296,18 @@ function getItemRarityById(itemId: number): ItemRarity {
   return 'common';
 }
 
-function getRarityShortLabel(itemId: number): string {
+const MYTHIC_TIER_BY_NAME = new Map(GOD_MYTHIC_DROPS.map((drop) => [drop.name, drop.tier]));
+
+function getDisplayTier(itemId: number, itemName?: string): number {
   const tier = Math.floor(itemId / 1000);
+  if (getItemRarityById(itemId) === 'mythicRare' && itemName) {
+    return MYTHIC_TIER_BY_NAME.get(itemName) ?? tier;
+  }
+  return tier;
+}
+
+function getRarityShortLabel(itemId: number, itemName?: string): string {
+  const tier = getDisplayTier(itemId, itemName);
   const rarityCode = RARITY_SHORT_CODES[getItemRarityById(itemId)];
   return `[${tier}${rarityCode}]`;
 }
@@ -3308,7 +3318,7 @@ function PartyTab({
                   <div className="flex justify-between items-center">
                     <span>
                       <span className="font-medium">{getItemDisplayName(item)}</span>
-                      <span className="text-xs text-gray-500"> {getRarityShortLabel(item.id)} {getItemStats(item, getCharacterCategoryMultiplier(char, item.category), hpDisplayMultiplier)}</span>
+                      <span className="text-xs text-gray-500"> {getRarityShortLabel(item.id, item.name)} {getItemStats(item, getCharacterCategoryMultiplier(char, item.category), hpDisplayMultiplier)}</span>
                     </span>
                     <span className="text-xs text-gray-400">
                       [{CATEGORY_NAMES[item.category]}]
@@ -3530,7 +3540,7 @@ function PartyTab({
                       {displayItem.isEquipped && <RaceIcon race={race} className="h-4 w-4 inline-block mr-1 align-text-bottom" />}
                       <span className="font-medium">{getItemDisplayName(displayItem.item)}</span>
                       {!displayItem.isEquipped && <span className="text-xs text-gray-500"> x{displayItem.count}</span>}
-                      <span className="text-xs text-gray-400"> {getRarityShortLabel(displayItem.item.id)} {applyProjectedDefenseToStatsText(displayItem, getItemStats(displayItem.item, getCharacterCategoryMultiplier(char, displayItem.item.category), hpDisplayMultiplier))}</span>
+                      <span className="text-xs text-gray-400"> {getRarityShortLabel(displayItem.item.id, displayItem.item.name)} {applyProjectedDefenseToStatsText(displayItem, getItemStats(displayItem.item, getCharacterCategoryMultiplier(char, displayItem.item.category), hpDisplayMultiplier))}</span>
                     </span>
                   </div>
                 </button>
@@ -4082,7 +4092,7 @@ function ShopTab({
                   </span>
                 </div>
                 <div className={`mt-0.5 text-xs leading-tight ${entry.isSoldOut ? 'text-gray-300' : 'text-gray-400'}`}>
-                  {getRarityShortLabel(entry.item.id)} {getItemStats(entry.item)}
+                  {getRarityShortLabel(entry.item.id, entry.item.name)} {getItemStats(entry.item)}
                 </div>
               </div>
               <button
@@ -4298,7 +4308,7 @@ function InventoryTab({
                     </button>
                   </div>
                   <div className="mt-0.5 text-xs leading-tight text-gray-400">
-                    {getRarityShortLabel(item.id)} {getItemStats(item)}
+                    {getRarityShortLabel(item.id, item.name)} {getItemStats(item)}
                   </div>
                 </div>
               );
@@ -4321,7 +4331,7 @@ function InventoryTab({
                   </span>
                 </div>
                 <div className="mt-0.5 text-xs leading-tight text-gray-400">
-                  {getRarityShortLabel(entry.equipped.item.id)} {getItemStats(entry.equipped.item, entry.equipped.categoryMultiplier, entry.equipped.hpScaleMultiplier)}
+                  {getRarityShortLabel(entry.equipped.item.id, entry.equipped.item.name)} {getItemStats(entry.equipped.item, entry.equipped.categoryMultiplier, entry.equipped.hpScaleMultiplier)}
                 </div>
               </div>
             );
@@ -4355,7 +4365,7 @@ function InventoryTab({
                     </button>
                   </div>
                   <div className="mt-0.5 text-xs leading-tight text-gray-400">
-                    {getRarityShortLabel(variant.item.id)} {getItemStats(variant.item)}
+                    {getRarityShortLabel(variant.item.id, variant.item.name)} {getItemStats(variant.item)}
                   </div>
                 </div>
               ))}
@@ -5644,7 +5654,7 @@ function SettingTab({
                 >
                   <span>
                     <span className="text-black">{item.name}</span>
-                    <span className="text-gray-500"> {getRarityShortLabel(item.id)} {getItemStats(baseItem)}</span>
+                    <span className="text-gray-500"> {getRarityShortLabel(item.id, item.name)} {getItemStats(baseItem)}</span>
                   </span>
                   <span className="text-xs text-gray-500">{expanded ? '▲' : '▼'}</span>
                 </button>
@@ -5828,7 +5838,7 @@ function SettingTab({
                         </div>
                         <div>{formatEnemyElementalResistanceLine(displayEnemy)}</div>
                         <div>アビリティ: {formatAbilitiesWithLevels(displayEnemy.abilities)}</div>
-                        <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id)}${item.name}`).join(' / ')}</div>
+                        <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id, item.name)}${item.name}`).join(' / ')}</div>
                       </div>
                     )}
                   </div>
