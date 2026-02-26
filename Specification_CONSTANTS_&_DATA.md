@@ -675,7 +675,7 @@
 
 - **Gods (神魔):**
 
-| Teir | level | Name | Title | Display name | Class | Represent for | + ability | Drop item tier | Drop item category |
+| `x.exp_tier` | level | Name | Title | Display name | Class | Represent for | + ability | Drop item tier | Drop item category |
 |-|-|-|-|-|-|-|-|-|-|
 | 3 | 26 | Seiran | God of Restoration | セイラン 再生の神 | Pilgrim | Caninian | `a.resurrect`2  | 3 | `i.grimoire`, `i.robe`|
 | 4 | 34 | Garv | God of Attrition | ガーヴ 消耗の神 | Samurai | Lupinian | `a.rage`2, `a.re-counter`2 | 4 | `i.katana`, `i.shield` |
