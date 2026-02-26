@@ -297,7 +297,7 @@ PT1ルピニアンの断崖踏破▼
 HP (HP bar, blue)    移動中(state progress bar)
 ルピニアンの断崖(pull down list)  出撃
 探索深度　　全て
-次の目標: ルピニアンの断崖の神魔レアアイテム 0/1 でヴァルンの樹林帯 開放
+次の目標: ルピニアンの断崖のボスレアアイテム 0/1 でヴァルンの樹林帯 開放
 Lv: 29 | 再生の神 | +2,856EXP | +134G
 
 PT2...
@@ -315,6 +315,7 @@ PT2...
 
 - **Gods Battle (神魔戦)**
   - Loot Gate Condition: Collect 1 Boss rare items in dungeons to unlock Gods Battle.
+    - "特殊目標: ルピニアンの断崖のボスレアアイテム 0/1 で神魔戦"
   - UI / Trigger:
     - When the condition is met, the 「出撃」(Deploy) button changes to 「神魔戦」(Gods Battle).
     - The player must manually press the 「神魔戦」 button to start the special battle.
