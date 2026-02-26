@@ -439,13 +439,7 @@ function getNextGoalText(party: Party): string | null {
 }
 
 function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
-  const godsBattleUnlocked = getLootCollectionCount(party, dungeonId, 'bossRare') >= ENTRY_GATE_REQUIRED;
-  if (!godsBattleUnlocked) return false;
-
-  const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === dungeonId + 1);
-  if (!nextDungeon) return true;
-
-  return isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id));
+  return getLootCollectionCount(party, dungeonId, 'bossRare') >= ENTRY_GATE_REQUIRED;
 }
 
 // Helper to format item stats
@@ -1626,7 +1620,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       notifyExpeditionRewardsIfNeeded(party, partyIndex);
     }
 
-    pendingGodsBattleByPartyRef.current[partyIndex] = triggerGodsBattle && !isAutoRepeatEnabled;
+    pendingGodsBattleByPartyRef.current[partyIndex] = triggerGodsBattle;
     actions.clearPendingProfit(partyIndex);
     transitionTo(partyIndex, '移動中', getPartyTravelDurationMs(party));
   };
@@ -1773,7 +1767,6 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             onSetExpeditionDepthLimit={actions.setExpeditionDepthLimit}
             partyCycles={partyCycles}
             onTriggerSortie={triggerSortie}
-            isAutoRepeatEnabled={isAutoRepeatEnabled}
             expandedLogParty={expeditionExpandedLogParty}
             setExpandedLogParty={setExpeditionExpandedLogParty}
             expandedRoom={expeditionExpandedRoom}
@@ -3590,14 +3583,12 @@ function ExpeditionTab({
   setExpandedLogParty,
   expandedRoom,
   setExpandedRoom,
-  isAutoRepeatEnabled,
 }: {
   state: GameState;
   onSelectDungeon: (partyIndex: number, dungeonId: number) => void;
   onSetExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
   partyCycles: Record<number, PartyCycleRuntime>;
   onTriggerSortie: (partyIndex: number, triggerGodsBattle?: boolean) => void;
-  isAutoRepeatEnabled: boolean;
   expandedLogParty: number | null;
   setExpandedLogParty: Dispatch<SetStateAction<number | null>>;
   expandedRoom: { partyIndex: number; roomIndex: number } | null;
@@ -3658,7 +3649,7 @@ function ExpeditionTab({
           )
           : Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100);
         const isSortieDisabled = !!selectedDungeonGate?.locked || party.currentHp <= 0 || partyStats.hp <= 0;
-        const canTriggerGodsBattle = isGodsBattleAvailable(party, party.selectedDungeonId) && !isAutoRepeatEnabled;
+        const canTriggerGodsBattle = isGodsBattleAvailable(party, party.selectedDungeonId);
 
         return (
           <div key={partyIndex} className="bg-pane rounded-lg p-4">

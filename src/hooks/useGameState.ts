@@ -97,13 +97,7 @@ const MAGIC_CATEGORIES = new Set<Item['category']>(['wand', 'grimoire', 'catalys
 
 
 function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
-  const godsBattleUnlocked = getLootCollectionCount(party, dungeonId, 'bossRare') >= ENTRY_GATE_REQUIRED;
-  if (!godsBattleUnlocked) return false;
-
-  const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === dungeonId + 1);
-  if (!nextDungeon) return true;
-
-  return isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id));
+  return getLootCollectionCount(party, dungeonId, 'bossRare') >= ENTRY_GATE_REQUIRED;
 }
 
 
