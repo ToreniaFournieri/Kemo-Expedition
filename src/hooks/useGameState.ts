@@ -1355,7 +1355,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (hasSuperRareMatch) {
         diaryTriggers.push('superRare');
       } else {
-        if (hasBossMatch || hasMythicMatch) diaryTriggers.push('bossRare');
+        if (hasMythicMatch) diaryTriggers.push('mythicRare');
+        if (hasBossMatch) diaryTriggers.push('bossRare');
         if (hasRareMatch) diaryTriggers.push('eliteRare');
       }
 

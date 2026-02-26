@@ -4395,10 +4395,11 @@ function DiaryTab({
     .sort((a, b) => b.createdAt - a.createdAt)
     .slice(0, 10);
 
-  const getDiaryTitle = (triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'superRare'>) => {
+  const getDiaryTitle = (triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare'>) => {
     if (triggers.includes('defeat') && triggers.length === 1) return '敗北の記録';
     if (triggers.includes('superRare')) return '超レア獲得の記録';
-    if (triggers.includes('bossRare')) return '神魔レア獲得の記録';
+    if (triggers.includes('mythicRare')) return '神魔レア獲得の記録';
+    if (triggers.includes('bossRare')) return 'ボスレア獲得の記録';
     if (triggers.includes('eliteRare')) return 'エリートレア獲得の記録';
     return '特別記録';
   };
@@ -4406,19 +4407,27 @@ function DiaryTab({
 
   const getDiaryHeadline = (
     partyName: string,
-    triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'superRare'>,
+    triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare'>,
     rewards: Item[]
   ) => {
     if (triggers.includes('defeat') && triggers.length === 1) {
       return `[${partyName}] 敗北の記録`;
     }
 
-    if (triggers.includes('superRare') || triggers.includes('bossRare')) {
+    if (triggers.includes('superRare') || triggers.includes('mythicRare') || triggers.includes('bossRare')) {
       const rewardNames = rewards
-        .filter((item) => item.superRare > 0 || getItemRarityById(item.id) === 'bossRare' || getItemRarityById(item.id) === 'mythicRare')
+        .filter((item) => {
+          if (triggers.includes('superRare')) return item.superRare > 0;
+          if (triggers.includes('mythicRare')) return getItemRarityById(item.id) === 'mythicRare';
+          return getItemRarityById(item.id) === 'bossRare';
+        })
         .map((item) => getItemDisplayName(item))
         .join('、');
-      const triggerPrefix = triggers.includes('superRare') ? '超レア' : '神魔レア';
+      const triggerPrefix = triggers.includes('superRare')
+        ? '超レア'
+        : triggers.includes('mythicRare')
+          ? '神魔レア'
+          : 'ボスレア';
       return rewardNames
         ? `[${partyName}] ${triggerPrefix}(${rewardNames}) 獲得`
         : `[${partyName}] ${triggerPrefix}獲得`;
