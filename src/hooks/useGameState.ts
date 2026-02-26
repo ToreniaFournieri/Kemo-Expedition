@@ -62,6 +62,7 @@ import {
   getEliteGateKey,
   getBossGateKey,
   getLootCollectionCount,
+  getLootCollectionKey,
   isLootGateUnlocked,
   addRecoveredItemsToLootProgress,
   unlockAvailableLootGates,
@@ -632,7 +633,7 @@ type GameAction =
   | { type: 'SELECT_DUNGEON'; partyIndex: number; dungeonId: number }
   | { type: 'SET_EXPEDITION_DEPTH_LIMIT'; partyIndex: number; depthLimit: ExpeditionDepthLimit }
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
-  | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; isLunaMode?: boolean }
+  | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; isLunaMode?: boolean; triggerGodsBattle?: boolean }
   | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number }
   | { type: 'HEAL_PARTY_HP'; partyIndex: number; amount: number }
   | { type: 'CLEAR_PENDING_PROFIT'; partyIndex: number }
@@ -696,6 +697,27 @@ function selectEnemyForRoom(
 
   const randomIndex = Math.floor(Math.random() * enemies.length);
   return enemies[randomIndex];
+}
+
+function createGodEnemy(enemy: EnemyDef): EnemyDef {
+  return {
+    ...enemy,
+    name: `神魔 ${enemy.name}`,
+    hp: Math.max(1, Math.floor(enemy.hp * 2.6)),
+    rangedAttack: Math.max(0, Math.floor(enemy.rangedAttack * 1.7)),
+    magicalAttack: Math.max(0, Math.floor(enemy.magicalAttack * 1.7)),
+    meleeAttack: Math.max(0, Math.floor(enemy.meleeAttack * 1.7)),
+    rangedNoA: Math.max(1, Math.ceil(enemy.rangedNoA * 1.2)),
+    magicalNoA: Math.max(1, Math.ceil(enemy.magicalNoA * 1.2)),
+    meleeNoA: Math.max(1, Math.ceil(enemy.meleeNoA * 1.2)),
+    rangedAttackAmplifier: enemy.rangedAttackAmplifier * 1.25,
+    magicalAttackAmplifier: enemy.magicalAttackAmplifier * 1.25,
+    meleeAttackAmplifier: enemy.meleeAttackAmplifier * 1.25,
+    physicalDefense: Math.max(0, Math.floor(enemy.physicalDefense * 1.6)),
+    magicalDefense: Math.max(0, Math.floor(enemy.magicalDefense * 1.6)),
+    defenseAmplifier: enemy.defenseAmplifier * 1.15,
+    experience: Math.floor(enemy.experience * 2.2),
+  };
 }
 
 function getItemRarityById(itemId: number): 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare' {
@@ -1033,6 +1055,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const currentParty = state.parties[action.partyIndex];
       const dungeon = getDungeonById(currentParty.selectedDungeonId);
       if (!dungeon) return state;
+      const godsBattleTriggerUnlocked = getLootCollectionCount(currentParty, dungeon.id, 'bossRare') >= ENTRY_GATE_REQUIRED;
+      const isGodsBattle = action.triggerGodsBattle === true && godsBattleTriggerUnlocked;
       const { partyStats } = computePartyStats(currentParty);
       const persistedCurrentHp = currentParty.currentHp ?? partyStats.hp;
       if (persistedCurrentHp <= 0 || partyStats.hp <= 0) {
@@ -1155,7 +1179,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               tier: effectiveTier,
               enemyMultipliers: getEffectiveEnemyMultipliers(dungeon, !!action.isLunaMode),
             };
-            const enemy = applyEnemyEncounterScaling(baseEnemy, effectiveDungeon, floor.floorNumber, roomDef.type);
+            let enemy = applyEnemyEncounterScaling(baseEnemy, effectiveDungeon, floor.floorNumber, roomDef.type);
+            if (isGodsBattle && roomDef.type === 'battle_Boss') {
+              enemy = createGodEnemy(enemy);
+            }
 
             // Pass currentHp to maintain HP persistence during expedition
             const battleResult = executeBattle(currentParty, enemy, bags, currentHp);
@@ -1177,7 +1204,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             // Room type suffix for display
             let roomSuffix = '';
             if (roomDef.type === 'battle_Elite') roomSuffix = ' (ELITE)';
-            if (roomDef.type === 'battle_Boss') roomSuffix = ' (BOSS)';
+            if (roomDef.type === 'battle_Boss') roomSuffix = isGodsBattle ? ' (神魔戦)' : ' (BOSS)';
 
             const entry: ExpeditionLogEntry = {
               room: roomCounter,
@@ -1312,9 +1339,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const finalAutoSellProfit = isDefeat ? 0 : totalAutoSellProfit;
       const finalGold = isDefeat ? state.global.gold : (currentGold - finalAutoSellProfit);
 
-      const nextLootGateProgress = isDefeat
+      const nextLootGateProgressBase = isDefeat
         ? currentParty.lootGateProgress
         : addRecoveredItemsToLootProgress(currentParty.lootGateProgress ?? {}, recoveredItems);
+      const nextLootGateProgress = { ...(nextLootGateProgressBase ?? {}) };
+      if (isGodsBattle && finalOutcome === 'victory') {
+        nextLootGateProgress[getLootCollectionKey(dungeon.id, 'bossRare')] = 0;
+      }
       const nextLootGateStatus = unlockAvailableLootGates(
         currentParty.lootGateStatus ?? {},
         nextLootGateProgress,
@@ -2130,8 +2161,8 @@ export function useGameState() {
       dispatch({ type: 'UPDATE_PARTY_DEITY', partyIndex, deityName });
     }, []),
 
-    runExpedition: useCallback((partyIndex: number, isLunaMode: boolean = false) => {
-      dispatch({ type: 'RUN_EXPEDITION', partyIndex, isLunaMode });
+    runExpedition: useCallback((partyIndex: number, isLunaMode: boolean = false, triggerGodsBattle: boolean = false) => {
+      dispatch({ type: 'RUN_EXPEDITION', partyIndex, isLunaMode, triggerGodsBattle });
     }, []),
 
     finalizeDiaryLog: useCallback((partyIndex: number) => {
