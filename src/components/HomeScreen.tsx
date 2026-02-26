@@ -5620,18 +5620,33 @@ function SettingTab({
           }}
         >
           <div className="text-xs text-gray-500">{isGodBestiaryTab ? '神魔' : selectedBestiaryDungeon.name}</div>
-          {isGodBestiaryTab && godBestiaryRows.map((god) => (
-            <div key={god.name} className="bg-white rounded border border-gray-200 p-2 text-xs text-gray-700 space-y-1">
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                <span className="font-medium text-sm text-gray-900">{god.name}</span>
-                <span className="text-gray-500">Tier {god.tier}</span>
-                <span className="text-gray-500">{god.title}</span>
+          {isGodBestiaryTab && godBestiaryRows.map((god, index) => {
+            const godBestiaryId = 900000 + index;
+            const godExpanded = !!expandedBestiaryEnemies[godBestiaryId];
+            return (
+              <div key={god.name} className="mt-2 border border-gray-100 rounded bg-white">
+                <button
+                  onClick={() => onSetExpandedBestiaryEnemies(prev => ({ ...prev, [godBestiaryId]: !godExpanded }))}
+                  className="w-full text-left px-2 py-1 text-sm flex justify-between items-center"
+                >
+                  <span>{god.displayName}</span>
+                  <span className="text-xs text-gray-500">{godExpanded ? '▲' : '▼'}</span>
+                </button>
+                {godExpanded && (
+                  <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                      <div>Tier: {god.tier}</div>
+                      <div>クラス: {ENEMY_CLASS_LABELS[god.enemyClass] ?? god.enemyClass}</div>
+                      <div>ID: {god.name}</div>
+                      <div>代表: {god.representFor}</div>
+                    </div>
+                    <div>能力: {god.abilities.map((ability) => `${ability.id}${ability.level}`).join(', ')}</div>
+                    <div>ドロップ: Tier {god.dropItemTier} ({god.dropItemCategories.join(', ')})</div>
+                  </div>
+                )}
               </div>
-              <div>クラス: {ENEMY_CLASS_LABELS[god.enemyClass] ?? god.enemyClass} / 代表: {god.representFor}</div>
-              <div>能力: {god.abilities.map((ability) => `${ability.id}${ability.level}`).join(', ')}</div>
-              <div>ドロップ: Tier {god.dropItemTier} ({god.dropItemCategories.join(', ')})</div>
-            </div>
-          ))}
+            );
+          })}
           {!isGodBestiaryTab && selectedBestiaryGroups.map(group => (
             <div key={group.key} className="bg-white rounded border border-gray-200 p-2">
               <div className="text-xs text-gray-500 font-medium mb-1">{group.label}</div>
