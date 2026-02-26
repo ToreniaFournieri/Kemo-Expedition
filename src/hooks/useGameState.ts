@@ -96,6 +96,17 @@ const RANGED_CATEGORIES = new Set<Item['category']>(['arrow', 'bolt', 'archery']
 const MAGIC_CATEGORIES = new Set<Item['category']>(['wand', 'grimoire', 'catalyst']);
 
 
+function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
+  const godsBattleUnlocked = getLootCollectionCount(party, dungeonId, 'bossRare') >= ENTRY_GATE_REQUIRED;
+  if (!godsBattleUnlocked) return false;
+
+  const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === dungeonId + 1);
+  if (!nextDungeon) return true;
+
+  return isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id));
+}
+
+
 function applyShopIntimacyDecay(global: GameState['global'], now: Date): GameState['global'] {
   const elapsedRefreshes = countElapsedShopRefreshes(global.shopIntimacyLastDecayAt, now);
   if (elapsedRefreshes <= 0) {
@@ -1055,8 +1066,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const currentParty = state.parties[action.partyIndex];
       const dungeon = getDungeonById(currentParty.selectedDungeonId);
       if (!dungeon) return state;
-      const godsBattleTriggerUnlocked = getLootCollectionCount(currentParty, dungeon.id, 'bossRare') >= ENTRY_GATE_REQUIRED;
-      const isGodsBattle = action.triggerGodsBattle === true && godsBattleTriggerUnlocked;
+      const isGodsBattle = action.triggerGodsBattle === true && isGodsBattleAvailable(currentParty, dungeon.id);
       const { partyStats } = computePartyStats(currentParty);
       const persistedCurrentHp = currentParty.currentHp ?? partyStats.hp;
       if (persistedCurrentHp <= 0 || partyStats.hp <= 0) {

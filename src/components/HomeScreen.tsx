@@ -417,8 +417,17 @@ function getNextGoalText(party: Party): string | null {
     return `次の目標: ${currentDungeon.name} 6F-4の解放: エリートレアアイテム(持ち帰り) ${rareCollected}/${bossRequired}（現在）`;
   }
 
-  const godsRequired = ENTRY_GATE_REQUIRED;
+  const nextDungeon = DUNGEONS.find(d => d.id === currentDungeon.id + 1);
+  const entryRequired = ENTRY_GATE_REQUIRED;
   const bossRareCollected = getLootCollectionCount(party, currentDungeon.id, 'bossRare');
+  if (nextDungeon) {
+    const entryUnlocked = isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id)) || bossRareCollected >= entryRequired;
+    if (!entryUnlocked) {
+      return `次の目標: ${nextDungeon.name}の解放: ${currentDungeon.name}のボスレアアイテム(持ち帰り) ${bossRareCollected}/${entryRequired}（現在）`;
+    }
+  }
+
+  const godsRequired = ENTRY_GATE_REQUIRED;
   const godsUnlocked = bossRareCollected >= godsRequired;
   if (!godsUnlocked) {
     const waitingGod = GOD_ENEMY_PROFILES.find((god) => god.expedition === currentDungeon.name);
@@ -426,16 +435,17 @@ function getNextGoalText(party: Party): string | null {
     return `特殊目標: ${currentDungeon.name}のボスレアアイテム ${bossRareCollected}/${godsRequired} で神魔${waitingGodName}戦`;
   }
 
-  const nextDungeon = DUNGEONS.find(d => d.id === currentDungeon.id + 1);
-  if (nextDungeon) {
-    const entryRequired = ENTRY_GATE_REQUIRED;
-    const entryUnlocked = isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id)) || bossRareCollected >= entryRequired;
-    if (!entryUnlocked) {
-      return `次の目標: ${nextDungeon.name}の解放: ${currentDungeon.name}のボスレアアイテム(持ち帰り) ${bossRareCollected}/${entryRequired}（現在）`;
-    }
-  }
-
   return null;
+}
+
+function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
+  const godsBattleUnlocked = getLootCollectionCount(party, dungeonId, 'bossRare') >= ENTRY_GATE_REQUIRED;
+  if (!godsBattleUnlocked) return false;
+
+  const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === dungeonId + 1);
+  if (!nextDungeon) return true;
+
+  return isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id));
 }
 
 // Helper to format item stats
@@ -3648,8 +3658,7 @@ function ExpeditionTab({
           )
           : Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100);
         const isSortieDisabled = !!selectedDungeonGate?.locked || party.currentHp <= 0 || partyStats.hp <= 0;
-        const godsBattleUnlocked = getLootCollectionCount(party, party.selectedDungeonId, 'bossRare') >= ENTRY_GATE_REQUIRED;
-        const canTriggerGodsBattle = godsBattleUnlocked && !isAutoRepeatEnabled;
+        const canTriggerGodsBattle = isGodsBattleAvailable(party, party.selectedDungeonId) && !isAutoRepeatEnabled;
 
         return (
           <div key={partyIndex} className="bg-pane rounded-lg p-4">
