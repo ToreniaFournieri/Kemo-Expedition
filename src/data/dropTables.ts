@@ -9,6 +9,7 @@ export type GodMythicDrop = {
 
 export type GodEnemyProfile = {
   tier: number;
+  level: number;
   name: string;
   title: string;
   displayName: string;
@@ -20,18 +21,18 @@ export type GodEnemyProfile = {
 };
 
 export const GOD_ENEMY_PROFILES: GodEnemyProfile[] = [
-  { tier: 3, name: 'Seiran', title: 'God of Restoration', displayName: 'セイラン 再生の神', enemyClass: 'pilgrim', representFor: 'Caninian', abilities: [{ id: 'resurrect', level: 2 }], dropItemTier: 3, dropItemCategories: ['grimoire', 'robe'] },
-  { tier: 4, name: 'Garv', title: 'God of Attrition', displayName: 'ガーヴ 消耗の神', enemyClass: 'samurai', representFor: 'Lupinian', abilities: [{ id: 'rage', level: 2 }, { id: 're_counter', level: 2 }], dropItemTier: 4, dropItemCategories: ['katana', 'shield'] },
-  { tier: 5, name: 'Kyōen', title: 'God of Cunning', displayName: 'キョウエン 狡猾の神', enemyClass: 'rogue', representFor: 'Vulpinian', abilities: [{ id: 'momentum', level: 2 }], dropItemTier: 5, dropItemCategories: ['archery', 'bolt'] },
-  { tier: 6, name: 'Dolvar', title: 'God of Fortification', displayName: 'ドルヴァ 防備の神', enemyClass: 'fighter', representFor: 'Ursan', abilities: [{ id: 'cyborgization', level: 2 }], dropItemTier: 6, dropItemCategories: ['armor', 'gauntlet'] },
-  { tier: 7, name: 'Miora', title: 'Goddess of Fertility', displayName: 'ミオラ 豊穣の女神', enemyClass: 'sage', representFor: 'Felidian', abilities: [{ id: 'first_strike', level: 2 }], dropItemTier: 7, dropItemCategories: ['sword', 'catalyst'] },
-  { tier: 7, name: 'Rondel', title: 'God of Resonance', displayName: 'ロンデル 共鳴の神', enemyClass: 'wizard', representFor: 'Mustelid', abilities: [{ id: 'resonance', level: 4 }], dropItemTier: 7, dropItemCategories: ['wand', 'arrow'] },
-  { tier: 8, name: 'Lira', title: 'Goddess of Precision', displayName: 'リラ 精密の女神', enemyClass: 'ranger', representFor: 'Leporian', abilities: [{ id: 'composure', level: 2 }], dropItemTier: 8, dropItemCategories: ['arrow', 'archery'] },
-  { tier: 8, name: 'Forne', title: 'God of Fate', displayName: 'フォルネ 運命の神', enemyClass: 'lord', representFor: 'Cervin', abilities: [{ id: 'focus', level: 2 }], dropItemTier: 8, dropItemCategories: ['armor', 'robe'] },
-  { tier: 8, name: 'Skuva', title: 'God of Dusk', displayName: 'スクヴァ 黄昏の神', enemyClass: 'ninja', representFor: 'Murid', abilities: [{ id: 'stealth', level: 1 }], dropItemTier: 8, dropItemCategories: ['shield', 'catalyst'] },
-  { tier: 8, name: 'Tanue', title: 'Goddess of Mirage', displayName: 'タヌエ 幻影の神', enemyClass: 'duelist', representFor: 'Procyonian', abilities: [{ id: 'illusion', level: 1 }], dropItemTier: 8, dropItemCategories: ['sword', 'gauntlet'] },
-  { tier: 8, name: 'Noctyra', title: 'God of Oblivion', displayName: 'ノクティラ 忘却されし神', enemyClass: 'samurai', representFor: '-', abilities: [{ id: 'rage', level: 2 }, { id: 'first_strike', level: 2 }], dropItemTier: 8, dropItemCategories: ['bolt', 'katana'] },
-  { tier: 8, name: 'Eris', title: 'Goddess of Discord', displayName: 'エリス 不和の神', enemyClass: 'pilgrim', representFor: '-', abilities: [{ id: 'momentum', level: 2 }, { id: 'resonance', level: 4 }, { id: 'stealth', level: 1 }], dropItemTier: 8, dropItemCategories: ['grimoire', 'wand'] },
+  { tier: 3, level: 26, name: 'Seiran', title: 'God of Restoration', displayName: 'セイラン 再生の神', enemyClass: 'pilgrim', representFor: 'Caninian', abilities: [{ id: 'resurrect', level: 2 }], dropItemTier: 3, dropItemCategories: ['grimoire', 'robe'] },
+  { tier: 4, level: 34, name: 'Garv', title: 'God of Attrition', displayName: 'ガーヴ 消耗の神', enemyClass: 'samurai', representFor: 'Lupinian', abilities: [{ id: 'rage', level: 2 }, { id: 're_counter', level: 2 }], dropItemTier: 4, dropItemCategories: ['katana', 'shield'] },
+  { tier: 5, level: 41, name: 'Kyōen', title: 'God of Cunning', displayName: 'キョウエン 狡猾の神', enemyClass: 'rogue', representFor: 'Vulpinian', abilities: [{ id: 'momentum', level: 2 }], dropItemTier: 5, dropItemCategories: ['archery', 'bolt'] },
+  { tier: 6, level: 49, name: 'Dolvar', title: 'God of Fortification', displayName: 'ドルヴァ 防備の神', enemyClass: 'fighter', representFor: 'Ursan', abilities: [{ id: 'cyborgization', level: 2 }], dropItemTier: 6, dropItemCategories: ['armor', 'gauntlet'] },
+  { tier: 7, level: 58, name: 'Miora', title: 'Goddess of Fertility', displayName: 'ミオラ 豊穣の女神', enemyClass: 'sage', representFor: 'Felidian', abilities: [{ id: 'first_strike', level: 2 }], dropItemTier: 7, dropItemCategories: ['sword', 'catalyst'] },
+  { tier: 7, level: 59, name: 'Rondel', title: 'God of Resonance', displayName: 'ロンデル 共鳴の神', enemyClass: 'wizard', representFor: 'Mustelid', abilities: [{ id: 'resonance', level: 4 }], dropItemTier: 7, dropItemCategories: ['wand', 'arrow'] },
+  { tier: 8, level: 65, name: 'Lira', title: 'Goddess of Precision', displayName: 'リラ 精密の女神', enemyClass: 'ranger', representFor: 'Leporian', abilities: [{ id: 'composure', level: 2 }], dropItemTier: 8, dropItemCategories: ['arrow', 'archery'] },
+  { tier: 8, level: 65, name: 'Forne', title: 'God of Fate', displayName: 'フォルネ 運命の神', enemyClass: 'lord', representFor: 'Cervin', abilities: [{ id: 'focus', level: 2 }], dropItemTier: 8, dropItemCategories: ['armor', 'robe'] },
+  { tier: 8, level: 65, name: 'Skuva', title: 'God of Dusk', displayName: 'スクヴァ 黄昏の神', enemyClass: 'ninja', representFor: 'Murid', abilities: [{ id: 'stealth', level: 1 }], dropItemTier: 8, dropItemCategories: ['shield', 'catalyst'] },
+  { tier: 8, level: 65, name: 'Tanue', title: 'Goddess of Mirage', displayName: 'タヌエ 幻影の神', enemyClass: 'duelist', representFor: 'Procyonian', abilities: [{ id: 'illusion', level: 1 }], dropItemTier: 8, dropItemCategories: ['sword', 'gauntlet'] },
+  { tier: 8, level: 68, name: 'Noctyra', title: 'God of Oblivion', displayName: 'ノクティラ 忘却されし神', enemyClass: 'samurai', representFor: '-', abilities: [{ id: 'rage', level: 2 }, { id: 'first_strike', level: 2 }], dropItemTier: 8, dropItemCategories: ['bolt', 'katana'] },
+  { tier: 8, level: 68, name: 'Eris', title: 'Goddess of Discord', displayName: 'エリス 不和の神', enemyClass: 'pilgrim', representFor: '-', abilities: [{ id: 'momentum', level: 2 }, { id: 'resonance', level: 4 }, { id: 'stealth', level: 1 }], dropItemTier: 8, dropItemCategories: ['grimoire', 'wand'] },
 ];
 
 export const MYTHIC_DROP_POOLS: Record<number, ItemCategory[]> = {

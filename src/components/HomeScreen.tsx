@@ -1,7 +1,13 @@
 import { useState, useEffect, useRef, useCallback, type ChangeEvent, type Dispatch, type MouseEvent, type SetStateAction } from 'react';
 import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, getVariantKey, MAX_LEVEL } from '../types';
 import { computePartyStats } from '../game/partyComputation';
-import { DUNGEONS, getEffectiveEnemyLevel, getEffectiveEnemyMultipliers, getEffectiveExpeditionTier } from '../data/dungeons';
+import {
+  DUNGEONS,
+  getEffectiveEnemyLevel,
+  getEffectiveEnemyMultipliers,
+  getEffectiveExpeditionTier,
+  getExpeditionEnemyMultipliersForTier,
+} from '../data/dungeons';
 import { RACES } from '../data/races';
 import { CLASSES, CLASS_SHORT_NAMES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
@@ -5295,6 +5301,49 @@ function SettingTab({
     return applyEnemyEncounterScaling(enemy, effectiveDungeon, floorNumber, roomType);
   };
 
+  const getGodRuntimeEnemy = (tier: number, enemyClass: EnemyDef['enemyClass']): EnemyDef | null => {
+    const baseEnemy = ENEMIES.find((enemy) =>
+      enemy.type === 'normal' && enemy.spawnTier === tier && enemy.enemyClass === enemyClass,
+    );
+    if (!baseEnemy) return null;
+
+    const tierMultiplier = getExpeditionEnemyMultipliersForTier(tier);
+    const modeMultiplier = gameMode === 'm.luna'
+      ? {
+        hp: 1.7,
+        attack: 1.5,
+        noa: 1.5,
+        attackAmplifier: 1.0,
+        defense: 1.4,
+        defenseAmplifier: 0.9,
+      }
+      : {
+        hp: 1,
+        attack: 1,
+        noa: 1,
+        attackAmplifier: 1,
+        defense: 1,
+        defenseAmplifier: 1,
+      };
+
+    return {
+      ...baseEnemy,
+      hp: Math.floor(baseEnemy.hp * tierMultiplier.hp * modeMultiplier.hp),
+      rangedAttack: Math.floor(baseEnemy.rangedAttack * tierMultiplier.attack * modeMultiplier.attack),
+      magicalAttack: Math.floor(baseEnemy.magicalAttack * tierMultiplier.attack * modeMultiplier.attack),
+      meleeAttack: Math.floor(baseEnemy.meleeAttack * tierMultiplier.attack * modeMultiplier.attack),
+      rangedNoA: Math.floor(baseEnemy.rangedNoA * tierMultiplier.noa * modeMultiplier.noa),
+      magicalNoA: Math.floor(baseEnemy.magicalNoA * tierMultiplier.noa * modeMultiplier.noa),
+      meleeNoA: Math.floor(baseEnemy.meleeNoA * tierMultiplier.noa * modeMultiplier.noa),
+      rangedAttackAmplifier: baseEnemy.rangedAttackAmplifier * tierMultiplier.attackAmplifier * modeMultiplier.attackAmplifier,
+      magicalAttackAmplifier: baseEnemy.magicalAttackAmplifier * tierMultiplier.attackAmplifier * modeMultiplier.attackAmplifier,
+      meleeAttackAmplifier: baseEnemy.meleeAttackAmplifier * tierMultiplier.attackAmplifier * modeMultiplier.attackAmplifier,
+      physicalDefense: Math.floor(baseEnemy.physicalDefense * tierMultiplier.defense * modeMultiplier.defense),
+      magicalDefense: Math.floor(baseEnemy.magicalDefense * tierMultiplier.defense * modeMultiplier.defense),
+      defenseAmplifier: baseEnemy.defenseAmplifier * tierMultiplier.defenseAmplifier * modeMultiplier.defenseAmplifier,
+    };
+  };
+
   return (
     <div>
       <div className="bg-pane rounded-lg p-4 mb-4">
@@ -5623,6 +5672,8 @@ function SettingTab({
           {isGodBestiaryTab && godBestiaryRows.map((god, index) => {
             const godBestiaryId = 900000 + index;
             const godExpanded = !!expandedBestiaryEnemies[godBestiaryId];
+            const godRuntimeEnemy = getGodRuntimeEnemy(god.tier, god.enemyClass);
+            const godDefenseAmplifierPercent = (godRuntimeEnemy?.defenseAmplifier ?? 1) * 100;
             return (
               <div key={god.name} className="mt-2 border border-gray-100 rounded bg-white">
                 <button
@@ -5636,11 +5687,34 @@ function SettingTab({
                   <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                       <div>Tier: {god.tier}</div>
+                      <div>レベル(Exp): {god.level}</div>
                       <div>クラス: {ENEMY_CLASS_LABELS[god.enemyClass] ?? god.enemyClass}</div>
                       <div>ID: {god.name}</div>
                       <div>代表: {god.representFor}</div>
                     </div>
                     <div>能力: {god.abilities.map((ability) => `${ability.id}${ability.level}`).join(', ')}</div>
+                    {godRuntimeEnemy && (
+                      <>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                          <div>HP: {formatNumber(godRuntimeEnemy.hp)}</div>
+                          <div>防御補正: {godDefenseAmplifierPercent.toFixed(0)}%</div>
+                        </div>
+                        <div className="space-y-1">
+                          {hasEnemyAttack(godRuntimeEnemy.rangedAttack, godRuntimeEnemy.rangedNoA) && (
+                            <div>{formatEnemyAttackLine('遠隔', godRuntimeEnemy.rangedAttack, godRuntimeEnemy.rangedNoA, godRuntimeEnemy.rangedAttackAmplifier)}</div>
+                          )}
+                          {hasEnemyAttack(godRuntimeEnemy.meleeAttack, godRuntimeEnemy.meleeNoA) && (
+                            <div>{formatEnemyAttackLine('近接', godRuntimeEnemy.meleeAttack, godRuntimeEnemy.meleeNoA, godRuntimeEnemy.meleeAttackAmplifier)}</div>
+                          )}
+                          {hasEnemyAttack(godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA) && (
+                            <div>{formatEnemyAttackLine('魔法', godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA, godRuntimeEnemy.magicalAttackAmplifier)}</div>
+                          )}
+                        </div>
+                        <div>{formatEnemyDefenseLine('物防', godRuntimeEnemy.physicalDefense, godDefenseAmplifierPercent)}</div>
+                        <div>{formatEnemyDefenseLine('魔防', godRuntimeEnemy.magicalDefense, godDefenseAmplifierPercent)}</div>
+                        <div>{formatEnemyElementalResistanceLine(godRuntimeEnemy)}</div>
+                      </>
+                    )}
                     <div>ドロップ: Tier {god.dropItemTier} ({god.dropItemCategories.join(', ')})</div>
                   </div>
                 )}
