@@ -5687,7 +5687,7 @@ function SettingTab({
                   onClick={() => onSetExpandedBestiaryEnemies(prev => ({ ...prev, [godBestiaryId]: !godExpanded }))}
                   className="w-full text-left px-2 py-1 text-sm flex justify-between items-center"
                 >
-                  <span>{godClassShortName ? `${god.displayName}(${godClassShortName})` : god.displayName}</span>
+                  <span>{renderEnemyNameWithMutedClass(godClassShortName ? `${god.displayName}(${godClassShortName})` : god.displayName)}</span>
                   <span className="text-xs text-gray-500">{godExpanded ? '▲' : '▼'}</span>
                 </button>
                 {godExpanded && (
