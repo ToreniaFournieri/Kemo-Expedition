@@ -1406,20 +1406,12 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         processTimeCheckpoint();
       }
     };
-    const handleUserAction = () => {
-      processTimeCheckpoint();
-    };
-
     window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleVisibility);
-    window.addEventListener('pointerdown', handleUserAction);
-    window.addEventListener('keydown', handleUserAction);
 
     return () => {
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibility);
-      window.removeEventListener('pointerdown', handleUserAction);
-      window.removeEventListener('keydown', handleUserAction);
     };
   }, [processTimeCheckpoint]);
 
