@@ -1244,6 +1244,8 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     });
   }, [actions, state.parties]);
 
+  const pendingGodsBattleByPartyRef = useRef<Record<number, boolean>>({});
+
   const processTimeCheckpoint = useCallback((now: number = Date.now()) => {
     const parties = latestPartiesRef.current;
     const autoRepeatEnabled = autoRepeatEnabledRef.current;
@@ -1602,7 +1604,6 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     notifiedRewardLogRef.current[partyIndex] = currentLog;
   };
 
-  const pendingGodsBattleByPartyRef = useRef<Record<number, boolean>>({});
 
   const triggerSortie = (partyIndex: number, triggerGodsBattle: boolean = false) => {
     const cycle = partyCycles[partyIndex];
@@ -3664,7 +3665,12 @@ function ExpeditionTab({
           )
           : Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100);
         const isSortieDisabled = !!selectedDungeonGate?.locked || party.currentHp <= 0 || partyStats.hp <= 0;
-        const canTriggerGodsBattle = isGodsBattleAvailable(party, party.selectedDungeonId);
+        const canTriggerGodsBattle =
+          isGodsBattleAvailable(party, party.selectedDungeonId)
+          || (
+            cycle.state === '探索中'
+            && party.lastExpeditionLog?.entries.some((entry) => entry.enemyName.includes('(神魔戦)')) === true
+          );
 
         return (
           <div key={partyIndex} className="bg-pane rounded-lg p-4">
