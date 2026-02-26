@@ -29,7 +29,7 @@ import { replaceCharacterEquipment } from '../game/equipment';
 import { DUNGEONS, getDungeonById, getEffectiveEnemyLevel, getEffectiveEnemyMultipliers, getEffectiveExpeditionTier } from '../data/dungeons';
 import { CLASS_SHORT_NAMES } from '../data/classes';
 import { getEnemiesByPool, getElitesByPool, getBossEnemy, getEnemyDropCandidates } from '../data/enemies';
-import { GOD_ENEMY_PROFILES } from '../data/dropTables';
+import { getGodProfileForDungeon } from '../data/dropTables';
 import {
   drawFromBag,
   refillBagIfEmpty,
@@ -709,8 +709,8 @@ function getGodShortName(displayName: string): string {
   return displayName.split(' ')[0] ?? displayName;
 }
 
-function createGodEnemy(enemy: EnemyDef, dungeonName: string): EnemyDef {
-  const godProfile = GOD_ENEMY_PROFILES.find((god) => god.expedition === dungeonName);
+function createGodEnemy(enemy: EnemyDef, dungeonId: number, dungeonName: string): EnemyDef {
+  const godProfile = getGodProfileForDungeon(dungeonId, dungeonName);
   const godName = godProfile ? getGodShortName(godProfile.displayName) : enemy.name;
 
   if (!godProfile) {
@@ -1233,7 +1233,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             };
             let enemy = applyEnemyEncounterScaling(baseEnemy, effectiveDungeon, floor.floorNumber, roomDef.type);
             if (isGodsBattle && roomDef.type === 'battle_Boss') {
-              enemy = createGodEnemy(enemy, dungeon.name);
+              enemy = createGodEnemy(enemy, dungeon.id, dungeon.name);
             }
 
             // Pass currentHp to maintain HP persistence during expedition

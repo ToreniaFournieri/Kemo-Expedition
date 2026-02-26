@@ -13,7 +13,7 @@ import { CLASSES, CLASS_SHORT_NAMES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
 import { LINEAGES } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS, getSuperRareBonuses } from '../data/items';
-import { GOD_ENEMY_PROFILES, GOD_MYTHIC_DROPS } from '../data/dropTables';
+import { GOD_ENEMY_PROFILES, GOD_MYTHIC_DROPS, getGodProfileForDungeon } from '../data/dropTables';
 import { GLOSSARY_SECTIONS } from '../data/glossary';
 import { getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
@@ -445,7 +445,7 @@ function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | n
     if (shouldDelayNextSpecialGoal(party, cycleState)) {
       return null;
     }
-    const waitingGod = GOD_ENEMY_PROFILES.find((god) => god.expedition === currentDungeon.name);
+    const waitingGod = getGodProfileForDungeon(currentDungeon.id, currentDungeon.name);
     const waitingGodName = waitingGod ? getGodShortName(waitingGod.displayName) : '神魔';
     return `特殊目標: ${currentDungeon.name}のボスレアアイテム ${bossRareCollected}/${godsRequired} で神魔${waitingGodName}戦`;
   }
