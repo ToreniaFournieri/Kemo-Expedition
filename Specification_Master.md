@@ -323,18 +323,18 @@
 |1|uncommon|`i.wand`|精霊樹の杖|
 |1|uncommon|`i.grimoire`|洞窟壁画の呪頁|
 |1|uncommon|`i.catalyst`|琥珀粉の触媒|
-|1|rare|`i.sword`|原始の石剣|
-|1|rare|`i.armor`|角骨の鎧|
-|1|rare|`i.robe`|月苔の法衣|
-|1|rare|`i.shield `|巨木の円盾|
-|1|rare|`i.arrow`|雷打ち石の矢|
-|1|rare|`i.archery`|古代樹の長弓|
-|1|rare|`i.wand`|星木の杖|
-|1|rare|`i.grimoire`|獣血の呪典|
-|1|rare|`i.catalyst`|三色灰の触媒|
-|1|mythic|`i.sword`|始まりの牙剣|
-|1|mythic|`i.grimoire`|原初契約の石板|
-|1|mythic|`i.shield `|大地の心臓殻盾|
+|1|elite rare|`i.sword`|原始の石剣|
+|1|elite rare|`i.armor`|角骨の鎧|
+|1|elite rare|`i.robe`|月苔の法衣|
+|1|elite rare|`i.shield `|巨木の円盾|
+|1|elite rare|`i.arrow`|雷打ち石の矢|
+|1|elite rare|`i.archery`|古代樹の長弓|
+|1|elite rare|`i.wand`|星木の杖|
+|1|elite rare|`i.grimoire`|獣血の呪典|
+|1|elite rare|`i.catalyst`|三色灰の触媒|
+|1|boss rare|`i.sword`|始まりの牙剣|
+|1|boss rare|`i.grimoire`|原初契約の石板|
+|1|boss rare|`i.shield `|大地の心臓殻盾|
 |2|common|`i.sword`|石刃の短剣|
 |2|common|`i.sword`|欠け石の石剣|
 |2|common|`i.sword`|削片の石斧|
@@ -361,18 +361,18 @@
 |2|uncommon|`i.wand`|風刻みの石杖|
 |2|uncommon|`i.grimoire`|断崖壁画の呪典|
 |2|uncommon|`i.catalyst`|磁石砂の触媒|
-|2|rare|`i.sword`|裂風の黒曜石剣|
-|2|rare|`i.armor`|岩王の石甲|
-|2|rare|`i.robe`|断崖司祭の法衣|
-|2|rare|`i.shield `|断崖守護の巨盾|
-|2|rare|`i.arrow`|風哭きの石矢|
-|2|rare|`i.archery`|断崖狩人の戦弓|
-|2|rare|`i.wand`|嵐紋の霊石杖|
-|2|rare|`i.grimoire`|風刻岩の秘呪書|
-|2|rare|`i.catalyst`|嵐灰の触媒|
-|2|mythic|`i.sword`|断崖王の黒曜大剣|
-|2|mythic|`i.armor`|風哭きの岩王鎧|
-|2|mythic|`i.archery`|天裂きの断崖戦弓|
+|2|elite rare|`i.sword`|裂風の黒曜石剣|
+|2|elite rare|`i.armor`|岩王の石甲|
+|2|elite rare|`i.robe`|断崖司祭の法衣|
+|2|elite rare|`i.shield `|断崖守護の巨盾|
+|2|elite rare|`i.arrow`|風哭きの石矢|
+|2|elite rare|`i.archery`|断崖狩人の戦弓|
+|2|elite rare|`i.wand`|嵐紋の霊石杖|
+|2|elite rare|`i.grimoire`|風刻岩の秘呪書|
+|2|elite rare|`i.catalyst`|嵐灰の触媒|
+|2|boss rare|`i.sword`|断崖王の黒曜大剣|
+|2|boss rare|`i.armor`|風哭きの岩王鎧|
+|2|boss rare|`i.archery`|天裂きの断崖戦弓|
 |3|common|`i.sword`|青銅の短剣|
 |3|common|`i.sword`|青銅の片刃剣|
 |3|common|`i.sword`|青銅の直剣|
@@ -399,18 +399,18 @@
 |3|uncommon|`i.wand`|幻導の青銅杖|
 |3|uncommon|`i.grimoire`|幻霧の秘呪書|
 |3|uncommon|`i.catalyst`|霧精粉の触媒|
-|3|rare|`i.sword`|幻断の青銅剣|
-|3|rare|`i.armor`|樹霧守護の青銅鎧|
-|3|rare|`i.robe`|霧林司祭の法衣|
-|3|rare|`i.shield `|幻樹の青銅大盾|
-|3|rare|`i.arrow`|幻貫の青銅矢|
-|3|rare|`i.archery`|霧裂きの戦弓|
-|3|rare|`i.wand`|幻導の青銅霊杖|
-|3|rare|`i.grimoire`|樹霧幻術大全|
-|3|rare|`i.catalyst`|幻晶核の触媒|
-|3|mythic|`i.sword`|幻樹王の青銅剣|
-|3|mythic|`i.robe`|霧界支配の法衣|
-|3|mythic|`i.grimoire`|森幻王の禁呪書|
+|3|elite rare|`i.sword`|幻断の青銅剣|
+|3|elite rare|`i.armor`|樹霧守護の青銅鎧|
+|3|elite rare|`i.robe`|霧林司祭の法衣|
+|3|elite rare|`i.shield `|幻樹の青銅大盾|
+|3|elite rare|`i.arrow`|幻貫の青銅矢|
+|3|elite rare|`i.archery`|霧裂きの戦弓|
+|3|elite rare|`i.wand`|幻導の青銅霊杖|
+|3|elite rare|`i.grimoire`|樹霧幻術大全|
+|3|elite rare|`i.catalyst`|幻晶核の触媒|
+|3|boss rare|`i.sword`|幻樹王の青銅剣|
+|3|boss rare|`i.robe`|霧界支配の法衣|
+|3|boss rare|`i.grimoire`|森幻王の禁呪書|
 |4|common|`i.sword`|鉄の短剣|
 |4|common|`i.sword`|鍛鉄の片刃剣|
 |4|common|`i.sword`|粗鍛えの鉄剣|
@@ -437,18 +437,18 @@
 |4|uncommon|`i.wand`|霊炉導きの鉄杖|
 |4|uncommon|`i.grimoire`|鍛炉秘伝の呪典|
 |4|uncommon|`i.catalyst`|熔核粉の触媒|
-|4|rare|`i.sword`|霊峰鍛えの鉄剣|
-|4|rare|`i.armor`|火山守護の鉄甲|
-|4|rare|`i.robe`|炉霊司祭の法衣|
-|4|rare|`i.shield `|霊峰の溶鉄大盾|
-|4|rare|`i.arrow`|溶鉄穿ちの矢|
-|4|rare|`i.archery`|火山連射の戦弓|
-|4|rare|`i.wand`|霊炉核の鉄霊杖|
-|4|rare|`i.grimoire`|霊峰鍛呪大全|
-|4|rare|`i.catalyst`|火成核の触媒|
-|4|mythic|`i.katana`|霊峰秘伝・溶鉄ノ太刀|
-|4|mythic|`i.armor`|鉄王の霊峰鎧|
-|4|mythic|`i.shield `|溶岩心臓の王盾|
+|4|elite rare|`i.sword`|霊峰鍛えの鉄剣|
+|4|elite rare|`i.armor`|火山守護の鉄甲|
+|4|elite rare|`i.robe`|炉霊司祭の法衣|
+|4|elite rare|`i.shield `|霊峰の溶鉄大盾|
+|4|elite rare|`i.arrow`|溶鉄穿ちの矢|
+|4|elite rare|`i.archery`|火山連射の戦弓|
+|4|elite rare|`i.wand`|霊炉核の鉄霊杖|
+|4|elite rare|`i.grimoire`|霊峰鍛呪大全|
+|4|elite rare|`i.catalyst`|火成核の触媒|
+|4|boss rare|`i.katana`|霊峰秘伝・溶鉄ノ太刀|
+|4|boss rare|`i.armor`|鉄王の霊峰鎧|
+|4|boss rare|`i.shield `|溶岩心臓の王盾|
 |5|common|`i.sword`|月鋼の短剣|
 |5|common|`i.sword`|燐鋼の片刃剣|
 |5|common|`i.sword`|遺跡鋼の直剣|
@@ -475,18 +475,18 @@
 |5|uncommon|`i.wand`|月導の霊杖|
 |5|uncommon|`i.grimoire`|月影秘儀書|
 |5|uncommon|`i.catalyst`|燐精核の触媒|
-|5|rare|`i.sword`|聖月王の光剣|
-|5|rare|`i.armor`|月庭守護の霊鎧|
-|5|rare|`i.robe`|燐界司祭の聖衣|
-|5|rare|`i.shield `|月影の聖域大盾|
-|5|rare|`i.arrow`|瞬撃の月鋼矢|
-|5|rare|`i.archery`|光苔嵐の戦弓|
-|5|rare|`i.wand`|月輝霊核の魔杖|
-|5|rare|`i.grimoire`|聖茂幻術大全|
-|5|rare|`i.catalyst`|燐界核の触媒|
-|5|mythic|`i.bolt`|月光閃雷の神速弩矢|
-|5|mythic|`i.archery`|聖域王の光速弓|
-|5|mythic|`i.robe`|月界支配の聖衣|
+|5|elite rare|`i.sword`|聖月王の光剣|
+|5|elite rare|`i.armor`|月庭守護の霊鎧|
+|5|elite rare|`i.robe`|燐界司祭の聖衣|
+|5|elite rare|`i.shield `|月影の聖域大盾|
+|5|elite rare|`i.arrow`|瞬撃の月鋼矢|
+|5|elite rare|`i.archery`|光苔嵐の戦弓|
+|5|elite rare|`i.wand`|月輝霊核の魔杖|
+|5|elite rare|`i.grimoire`|聖茂幻術大全|
+|5|elite rare|`i.catalyst`|燐界核の触媒|
+|5|boss rare|`i.bolt`|月光閃雷の神速弩矢|
+|5|boss rare|`i.archery`|聖域王の光速弓|
+|5|boss rare|`i.robe`|月界支配の聖衣|
 |6|common|`i.sword`|銅合金の短剣|
 |6|common|`i.sword`|蒸気焼入れの短剣|
 |6|common|`i.sword`|歯車刃の小剣|
@@ -513,18 +513,18 @@
 |6|uncommon|`i.wand`|触媒増幅の魔杖|
 |6|uncommon|`i.grimoire`|迷宮制御の秘呪書|
 |6|uncommon|`i.catalyst`|中和強化触媒|
-|6|rare|`i.sword`|銅迷宮王の合金剣|
-|6|rare|`i.armor`|耐毒圧の迷宮機甲|
-|6|rare|`i.robe`|深層制御の法衣|
-|6|rare|`i.shield `|迷宮中枢の機械大盾|
-|6|rare|`i.arrow`|貫壁の精密合金矢|
-|6|rare|`i.archery`|自動滑車の連射弓|
-|6|rare|`i.wand`|主機核導きの霊杖|
-|6|rare|`i.grimoire`|迷宮制御中枢書|
-|6|rare|`i.catalyst`|完全中和の触媒核|
-|6|mythic|`i.catalyst`|深層反応炉の原初触媒|
-|6|mythic|`i.grimoire`|銅迷宮の設計原典|
-|6|mythic|`i.armor`|主機核装甲・アルケミトロン|
+|6|elite rare|`i.sword`|銅迷宮王の合金剣|
+|6|elite rare|`i.armor`|耐毒圧の迷宮機甲|
+|6|elite rare|`i.robe`|深層制御の法衣|
+|6|elite rare|`i.shield `|迷宮中枢の機械大盾|
+|6|elite rare|`i.arrow`|貫壁の精密合金矢|
+|6|elite rare|`i.archery`|自動滑車の連射弓|
+|6|elite rare|`i.wand`|主機核導きの霊杖|
+|6|elite rare|`i.grimoire`|迷宮制御中枢書|
+|6|elite rare|`i.catalyst`|完全中和の触媒核|
+|6|boss rare|`i.catalyst`|深層反応炉の原初触媒|
+|6|boss rare|`i.grimoire`|銅迷宮の設計原典|
+|6|boss rare|`i.armor`|主機核装甲・アルケミトロン|
 |7|common|`i.sword`|天鋼の短剣|
 |7|common|`i.sword`|風鍛えの片刃剣|
 |7|common|`i.sword`|雲鋼の直剣|
@@ -551,18 +551,18 @@
 |7|uncommon|`i.wand`|天導の霊杖|
 |7|uncommon|`i.grimoire`|風律の秘呪書|
 |7|uncommon|`i.catalyst`|高天触媒核|
-|7|rare|`i.sword`|高天王の霊剣|
-|7|rare|`i.armor`|天空守護の天鋼鎧|
-|7|rare|`i.robe`|天庭司祭の聖衣|
-|7|rare|`i.shield `|雲界守護の王盾|
-|7|rare|`i.arrow`|天裂きの鋼矢|
-|7|rare|`i.archery`|風輪嵐の戦弓|
-|7|rare|`i.wand`|天輝霊核の魔杖|
-|7|rare|`i.grimoire`|高天律法大全|
-|7|rare|`i.catalyst`|天空安定の触媒核|
-|7|mythic|`i.sword`|天界王剣アストレア|
-|7|mythic|`i.armor`|浮島王の天鋼鎧|
-|7|mythic|`i.grimoire`|高天統治の禁呪書|
+|7|elite rare|`i.sword`|高天王の霊剣|
+|7|elite rare|`i.armor`|天空守護の天鋼鎧|
+|7|elite rare|`i.robe`|天庭司祭の聖衣|
+|7|elite rare|`i.shield `|雲界守護の王盾|
+|7|elite rare|`i.arrow`|天裂きの鋼矢|
+|7|elite rare|`i.archery`|風輪嵐の戦弓|
+|7|elite rare|`i.wand`|天輝霊核の魔杖|
+|7|elite rare|`i.grimoire`|高天律法大全|
+|7|elite rare|`i.catalyst`|天空安定の触媒核|
+|7|boss rare|`i.sword`|天界王剣アストレア|
+|7|boss rare|`i.armor`|浮島王の天鋼鎧|
+|7|boss rare|`i.grimoire`|高天統治の禁呪書|
 |8|common|`i.sword`|玻璃鋼の短剣|
 |8|common|`i.sword`|時晶鍛えの片刃剣|
 |8|common|`i.sword`|次元鋼の直剣|
@@ -589,138 +589,138 @@
 |8|uncommon|`i.wand`|時導の霊杖|
 |8|uncommon|`i.grimoire`|終焉律法の秘呪書|
 |8|uncommon|`i.catalyst`|次元安定の触媒核|
-|8|rare|`i.sword`|時界王の霊剣|
-|8|rare|`i.armor`|玻璃守護の王鎧|
-|8|rare|`i.robe`|無限層司祭の聖衣|
-|8|rare|`i.shield `|次元守護の王盾|
-|8|rare|`i.arrow`|終焉穿ちの結晶矢|
-|8|rare|`i.archery`|層界嵐の戦弓|
-|8|rare|`i.wand`|時晶霊核の魔杖|
-|8|rare|`i.grimoire`|時玻璃終章大全|
-|8|rare|`i.catalyst`|完全安定の触媒核|
-|8|mythic|`i.katana`|終焉ノ太刀・時玻璃|
-|8|mythic|`i.grimoire`|不死超越の最終魔導書|
-|8|mythic|`i.catalyst`|次元律動の原初触媒|
+|8|elite rare|`i.sword`|時界王の霊剣|
+|8|elite rare|`i.armor`|玻璃守護の王鎧|
+|8|elite rare|`i.robe`|無限層司祭の聖衣|
+|8|elite rare|`i.shield `|次元守護の王盾|
+|8|elite rare|`i.arrow`|終焉穿ちの結晶矢|
+|8|elite rare|`i.archery`|層界嵐の戦弓|
+|8|elite rare|`i.wand`|時晶霊核の魔杖|
+|8|elite rare|`i.grimoire`|時玻璃終章大全|
+|8|elite rare|`i.catalyst`|完全安定の触媒核|
+|8|boss rare|`i.katana`|終焉ノ太刀・時玻璃|
+|8|boss rare|`i.grimoire`|不死超越の最終魔導書|
+|8|boss rare|`i.catalyst`|次元律動の原初触媒|
 |1|common|`i.gauntlet`|骨のガントレット|
 |1|uncommon|`i.gauntlet`|獣皮縫いのガントレット|
 |1|uncommon|`i.gauntlet`|黒曜石縁のガントレット|
-|1|rare|`i.gauntlet`|原始骨格の戦闘籠手|
-|1|mythic|`i.gauntlet`|原初獣王の覇拳|
+|1|elite rare|`i.gauntlet`|原始骨格の戦闘籠手|
+|1|boss rare|`i.gauntlet`|原初獣王の覇拳|
 |1|common|`i.bolt`|石芯の弩矢|
 |1|uncommon|`i.bolt`|黒曜尖石の弩矢|
 |1|uncommon|`i.bolt`|骨鏃仕込みの弩矢|
-|1|rare|`i.bolt`|雷打ち石の弩矢|
-|1|mythic|`i.bolt`|始まりの雷牙弩矢|
+|1|elite rare|`i.bolt`|雷打ち石の弩矢|
+|1|boss rare|`i.bolt`|始まりの雷牙弩矢|
 |2|common|`i.gauntlet`|剥片石のガントレット|
 |2|uncommon|`i.gauntlet`|磨石縁のガントレット|
 |2|uncommon|`i.gauntlet`|黒岩補強のガントレット|
-|2|rare|`i.gauntlet`|断崖砕きの戦闘籠手|
-|2|mythic|`i.gauntlet`|断崖王の巨拳|
+|2|elite rare|`i.gauntlet`|断崖砕きの戦闘籠手|
+|2|boss rare|`i.gauntlet`|断崖王の巨拳|
 |2|common|`i.bolt`|尖頭石の弩矢|
 |2|uncommon|`i.bolt`|黒曜尖石の重弩矢|
 |2|uncommon|`i.bolt`|磁石砂仕込みの弩矢|
-|2|rare|`i.bolt`|風哭きの裂風弩矢|
-|2|mythic|`i.bolt`|天裂きの断崖神弩矢|
+|2|elite rare|`i.bolt`|風哭きの裂風弩矢|
+|2|boss rare|`i.bolt`|天裂きの断崖神弩矢|
 |3|common|`i.gauntlet`|青銅縁のガントレット|
 |3|uncommon|`i.gauntlet`|狐紋刻みの青銅籠手|
 |3|uncommon|`i.gauntlet`|霧鍛えの青銅籠手|
-|3|rare|`i.gauntlet`|幻断の戦闘籠手|
-|3|mythic|`i.gauntlet`|幻樹王の霊拳|
+|3|elite rare|`i.gauntlet`|幻断の戦闘籠手|
+|3|boss rare|`i.gauntlet`|幻樹王の霊拳|
 |3|common|`i.bolt`|青銅芯の弩矢|
 |3|uncommon|`i.bolt`|幻裂きの青銅弩矢|
 |3|uncommon|`i.bolt`|霧研ぎの精密弩矢|
-|3|rare|`i.bolt`|幻貫の重弩矢|
-|3|mythic|`i.bolt`|霧界穿ちの幻王弩矢|
+|3|elite rare|`i.bolt`|幻貫の重弩矢|
+|3|boss rare|`i.bolt`|霧界穿ちの幻王弩矢|
 |4|common|`i.gauntlet`|鍛鉄のガントレット|
 |4|uncommon|`i.gauntlet`|火入れ鉄の戦闘籠手|
 |4|uncommon|`i.gauntlet`|霊峰鍛冶の籠手|
-|4|rare|`i.gauntlet`|溶鉄砕きの重籠手|
-|4|mythic|`i.gauntlet`|溶岩心臓の王拳|
+|4|elite rare|`i.gauntlet`|溶鉄砕きの重籠手|
+|4|boss rare|`i.gauntlet`|溶岩心臓の王拳|
 |4|common|`i.bolt`|鉄芯の弩矢|
 |4|uncommon|`i.bolt`|火花裂きの鉄弩矢|
 |4|uncommon|`i.bolt`|焼入れ鉄の重弩矢|
-|4|rare|`i.bolt`|溶鉄穿ちの重弩矢|
-|4|mythic|`i.bolt`|火山神鋼の裁断弩矢|
+|4|elite rare|`i.bolt`|溶鉄穿ちの重弩矢|
+|4|boss rare|`i.bolt`|火山神鋼の裁断弩矢|
 |5|common|`i.gauntlet`|月鋼縁のガントレット|
 |5|uncommon|`i.gauntlet`|燐鋼鍛えの籠手|
 |5|uncommon|`i.gauntlet`|聖域刻印の月鋼籠手|
-|5|rare|`i.gauntlet`|聖月守護の霊拳|
-|5|mythic|`i.gauntlet`|月界王の神威拳|
+|5|elite rare|`i.gauntlet`|聖月守護の霊拳|
+|5|boss rare|`i.gauntlet`|月界王の神威拳|
 |5|common|`i.bolt`|月鋼芯の弩矢|
 |5|uncommon|`i.bolt`|閃撃の月鋼弩矢|
 |5|uncommon|`i.bolt`|燐鋼精錬の重弩矢|
-|5|rare|`i.bolt`|瞬撃の月鋼神速弩矢|
-|5|mythic|`i.bolt`|月光閃雷の神速弩矢|
+|5|elite rare|`i.bolt`|瞬撃の月鋼神速弩矢|
+|5|boss rare|`i.bolt`|月光閃雷の神速弩矢|
 |6|common|`i.gauntlet`|銅合金のガントレット|
 |6|uncommon|`i.gauntlet`|歯車補助の戦闘籠手|
 |6|uncommon|`i.gauntlet`|耐圧配管の機械籠手|
-|6|rare|`i.gauntlet`|迷宮粉砕の機装拳|
-|6|mythic|`i.gauntlet`|主機核装拳・アルケミトロン|
+|6|elite rare|`i.gauntlet`|迷宮粉砕の機装拳|
+|6|boss rare|`i.gauntlet`|主機核装拳・アルケミトロン|
 |6|common|`i.bolt`|鋼芯銅合金の弩矢|
 |6|uncommon|`i.bolt`|貫孔加工の精密弩矢|
 |6|uncommon|`i.bolt`|滑車補助の高速弩矢|
-|6|rare|`i.bolt`|貫壁の合金重弩矢|
-|6|mythic|`i.bolt`|迷宮中枢破壊の原初弩矢|
+|6|elite rare|`i.bolt`|貫壁の合金重弩矢|
+|6|boss rare|`i.bolt`|迷宮中枢破壊の原初弩矢|
 |7|common|`i.gauntlet`|天鋼縁のガントレット|
 |7|uncommon|`i.gauntlet`|風紋刻みの戦闘籠手|
 |7|uncommon|`i.gauntlet`|浮島守護の天鋼籠手|
-|7|rare|`i.gauntlet`|天空砕きの霊拳|
-|7|mythic|`i.gauntlet`|天界王の審判拳|
+|7|elite rare|`i.gauntlet`|天空砕きの霊拳|
+|7|boss rare|`i.gauntlet`|天界王の審判拳|
 |7|common|`i.bolt`|風切り鋼芯の弩矢|
 |7|uncommon|`i.bolt`|旋風穿ちの鋼弩矢|
 |7|uncommon|`i.bolt`|高天鍛えの精密弩矢|
-|7|rare|`i.bolt`|天裂きの神速弩矢|
-|7|mythic|`i.bolt`|高天裁断の王雷弩矢|
+|7|elite rare|`i.bolt`|天裂きの神速弩矢|
+|7|boss rare|`i.bolt`|高天裁断の王雷弩矢|
 |8|common|`i.gauntlet`|玻璃鋼縁のガントレット|
 |8|uncommon|`i.gauntlet`|次元紋刻みの籠手|
 |8|uncommon|`i.gauntlet`|時晶精鍛の戦闘籠手|
-|8|rare|`i.gauntlet`|時界粉砕の霊拳|
-|8|mythic|`i.gauntlet`|次元王の終焉拳|
+|8|elite rare|`i.gauntlet`|時界粉砕の霊拳|
+|8|boss rare|`i.gauntlet`|次元王の終焉拳|
 |8|common|`i.bolt`|時断結晶芯の弩矢|
 |8|uncommon|`i.bolt`|層界穿ちの結晶弩矢|
 |8|uncommon|`i.bolt`|次元鋼精錬の弩矢|
-|8|rare|`i.bolt`|終焉穿ちの王弩矢|
-|8|mythic|`i.bolt`|次元律動の終極弩矢|
+|8|elite rare|`i.bolt`|終焉穿ちの王弩矢|
+|8|boss rare|`i.bolt`|次元律動の終極弩矢|
 |1|common|`i.katana`|石刃の太刀|
 |1|uncommon|`i.katana`|黒曜石縁の太刀|
 |1|uncommon|`i.katana`|獣骨柄の太刀|
-|1|rare|`i.katana`|原始の戦太刀|
-|1|mythic|`i.katana`|原初獣王の覇刀|
+|1|elite rare|`i.katana`|原始の戦太刀|
+|1|boss rare|`i.katana`|原初獣王の覇刀|
 |2|common|`i.katana`|剥片石の太刀|
 |2|uncommon|`i.katana`|磨石鍛えの太刀|
 |2|uncommon|`i.katana`|黒岩鍛えの太刀|
-|2|rare|`i.katana`|断崖砕きの大太刀|
-|2|mythic|`i.katana`|断崖王の断風太刀|
+|2|elite rare|`i.katana`|断崖砕きの大太刀|
+|2|boss rare|`i.katana`|断崖王の断風太刀|
 |3|common|`i.katana`|青銅の太刀|
 |3|uncommon|`i.katana`|狐紋刻みの青銅太刀|
 |3|uncommon|`i.katana`|霧鍛えの青銅太刀|
-|3|rare|`i.katana`|幻断の青銅大太刀|
-|3|mythic|`i.katana`|幻樹王の霊太刀|
+|3|elite rare|`i.katana`|幻断の青銅大太刀|
+|3|boss rare|`i.katana`|幻樹王の霊太刀|
 |4|common|`i.katana`|鍛鉄の太刀|
 |4|uncommon|`i.katana`|火入れ鍛鉄の太刀|
 |4|uncommon|`i.katana`|霊峰鍛冶の太刀|
-|4|rare|`i.katana`|溶鉄砕きの大太刀|
-|4|mythic|`i.katana`|霊峰秘伝・溶鉄ノ太刀|
+|4|elite rare|`i.katana`|溶鉄砕きの大太刀|
+|4|boss rare|`i.katana`|霊峰秘伝・溶鉄ノ太刀|
 |5|common|`i.katana`|月鋼の太刀|
 |5|uncommon|`i.katana`|燐鋼鍛えの太刀|
 |5|uncommon|`i.katana`|聖域刻印の月鋼太刀|
-|5|rare|`i.katana`|聖月王の光太刀|
-|5|mythic|`i.katana`|月界王の神光太刀|
+|5|elite rare|`i.katana`|聖月王の光太刀|
+|5|boss rare|`i.katana`|月界王の神光太刀|
 |6|common|`i.katana`|銅合金の太刀|
 |6|uncommon|`i.katana`|歯車補助の合金太刀|
 |6|uncommon|`i.katana`|耐圧配管の機装太刀|
-|6|rare|`i.katana`|迷宮斬りの機装太刀|
-|6|mythic|`i.katana`|主機核斬装・アルケミブレード|
+|6|elite rare|`i.katana`|迷宮斬りの機装太刀|
+|6|boss rare|`i.katana`|主機核斬装・アルケミブレード|
 |7|common|`i.katana`|天鋼の太刀|
 |7|uncommon|`i.katana`|風紋刻みの天鋼太刀|
 |7|uncommon|`i.katana`|浮島鍛冶の霊太刀|
-|7|rare|`i.katana`|天空断ちの王太刀|
-|7|mythic|`i.katana`|天界王剣・蒼天ノ太刀|
+|7|elite rare|`i.katana`|天空断ちの王太刀|
+|7|boss rare|`i.katana`|天界王剣・蒼天ノ太刀|
 |8|common|`i.katana`|玻璃鋼の太刀|
 |8|uncommon|`i.katana`|次元紋刻みの太刀|
 |8|uncommon|`i.katana`|時晶精鍛の霊太刀|
-|8|rare|`i.katana`|時界断絶の王太刀|
-|8|mythic|`i.katana`|終焉ノ太刀・時玻璃|
+|8|elite rare|`i.katana`|時界断絶の王太刀|
+|8|boss rare|`i.katana`|終焉ノ太刀・時玻璃|
 
 # 3. Potential default name 
 
