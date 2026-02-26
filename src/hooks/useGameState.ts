@@ -85,6 +85,7 @@ import {
 
 const BUILD_NUMBER = 1;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
+const AFK_MAX_SIMULATION_MS = 600 * 60 * 1000;
 
 const DEFAULT_DIARY_SETTINGS: DiarySettings = {
   superRareThreshold: 'all',
@@ -1950,7 +1951,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SIMULATE_AFK': {
       if (!action.isAutoRepeatEnabled) return state;
 
-      const cappedElapsedMs = Math.max(0, Math.min(action.elapsedMs, 60 * 60 * 1000));
+      const cappedElapsedMs = Math.max(0, Math.min(action.elapsedMs, AFK_MAX_SIMULATION_MS));
       if (cappedElapsedMs < 1000) return state;
 
       const approxCycleDurationMs = 44_000;
