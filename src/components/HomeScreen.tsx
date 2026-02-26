@@ -388,7 +388,7 @@ function getDungeonEntryGateState(
 
   return {
     locked: !unlocked,
-    gateText: `🔒 解放条件: ${previousDungeonName}の神魔レアアイテム(持ち帰り) ${collected}/${required}`,
+    gateText: `🔒 解放条件: ${previousDungeonName}のボスレアアイテム(持ち帰り) ${collected}/${required}`,
   };
 }
 
@@ -420,10 +420,10 @@ function getNextGoalText(party: Party): string | null {
   const nextDungeon = DUNGEONS.find(d => d.id === currentDungeon.id + 1);
   if (nextDungeon) {
     const entryRequired = ENTRY_GATE_REQUIRED;
-    const mythicCollected = getLootCollectionCount(party, currentDungeon.id, 'bossRare');
-    const entryUnlocked = isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id)) || mythicCollected >= entryRequired;
+    const bossRareCollected = getLootCollectionCount(party, currentDungeon.id, 'bossRare');
+    const entryUnlocked = isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id)) || bossRareCollected >= entryRequired;
     if (!entryUnlocked) {
-      return `次の目標: ${nextDungeon.name}の解放: ${currentDungeon.name}の神魔レアアイテム(持ち帰り) ${mythicCollected}/${entryRequired}（現在）`;
+      return `次の目標: ${nextDungeon.name}の解放: ${currentDungeon.name}のボスレアアイテム(持ち帰り) ${bossRareCollected}/${entryRequired}（現在）`;
     }
   }
 

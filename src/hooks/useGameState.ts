@@ -1115,7 +1115,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   remainingPartyHP: currentHp,
                   maxPartyHP: partyStats.hp,
                   details: [],
-                  gateInfo: `${prevDungeonName}の神魔レアアイテム(持ち帰り) ${currentCollected}/${gateRequired}（判定時）`,
+                  gateInfo: `${prevDungeonName}のボスレアアイテム(持ち帰り) ${currentCollected}/${gateRequired}（判定時）`,
                 };
                 entries.push(gateEntry);
                 finalOutcome = 'return';
