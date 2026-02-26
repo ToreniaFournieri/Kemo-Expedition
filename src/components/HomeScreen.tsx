@@ -5351,6 +5351,18 @@ function SettingTab({
     return drops.length > 0 ? drops.join(' / ') : 'なし';
   };
 
+  const formatAbilitiesWithLevels = (
+    abilities: string[],
+    abilityLevels?: Array<{ id: string; level: number }>,
+  ): string => {
+    if (abilities.length === 0) return 'なし';
+
+    const levelMap = new Map((abilityLevels ?? []).map((ability) => [ability.id, ability.level]));
+    return abilities
+      .map((abilityId) => `${ABILITY_NAMES[abilityId] ?? abilityId}${levelMap.get(abilityId) ?? 1}`)
+      .join(', ');
+  };
+
   return (
     <div>
       <div className="bg-pane rounded-lg p-4 mb-4">
@@ -5743,7 +5755,7 @@ function SettingTab({
                         <div>{formatEnemyElementalResistanceLine(godRuntimeEnemy)}</div>
                       </>
                     )}
-                    <div>アビリティ: {god.abilities.length > 0 ? god.abilities.map((ability) => ABILITY_NAMES[ability.id] ?? ability.id).join(', ') : 'なし'}</div>
+                    <div>アビリティ: {formatAbilitiesWithLevels(god.abilities.map((ability) => ability.id), god.abilities)}</div>
                     <div className="pt-1">ドロップ候補: {getGodDropCandidates(god.name)}</div>
                   </div>
                 )}
@@ -5815,7 +5827,7 @@ function SettingTab({
                           })()}
                         </div>
                         <div>{formatEnemyElementalResistanceLine(displayEnemy)}</div>
-                        <div>アビリティ: {displayEnemy.abilities.length > 0 ? displayEnemy.abilities.map(a => ABILITY_NAMES[a] ?? a).join(', ') : 'なし'}</div>
+                        <div>アビリティ: {formatAbilitiesWithLevels(displayEnemy.abilities)}</div>
                         <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id)}${item.name}`).join(' / ')}</div>
                       </div>
                     )}
