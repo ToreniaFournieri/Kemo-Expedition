@@ -84,6 +84,7 @@ const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
 
 const DEFAULT_DIARY_SETTINGS: DiarySettings = {
   superRareThreshold: 'all',
+  bossThreshold: 'all',
   mythicThreshold: 'all',
   rareThreshold: 5,
   notifyDefeat: true,
@@ -1344,7 +1345,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const diarySettings = getDiarySettingsWithDefaults(currentParty.diarySettings);
       const hasSuperRareMatch = finalRewards.some((item) => item.superRare > 0 && matchesDiaryThreshold(item, diarySettings.superRareThreshold));
-      const hasMythicMatch = finalRewards.some((item) => getItemRarityCode(item) === 'bossRare' && matchesDiaryThreshold(item, diarySettings.mythicThreshold));
+      const hasBossMatch = finalRewards.some((item) => getItemRarityCode(item) === 'bossRare' && matchesDiaryThreshold(item, diarySettings.bossThreshold));
+      const hasMythicMatch = finalRewards.some((item) => getItemRarityCode(item) === 'mythicRare' && matchesDiaryThreshold(item, diarySettings.mythicThreshold));
       const hasRareMatch = finalRewards.some((item) => getItemRarityCode(item) === 'eliteRare' && matchesDiaryThreshold(item, diarySettings.rareThreshold));
 
       const diaryTriggers: DiaryLog['triggers'] = [];
@@ -1353,7 +1355,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (hasSuperRareMatch) {
         diaryTriggers.push('superRare');
       } else {
-        if (hasMythicMatch) diaryTriggers.push('bossRare');
+        if (hasBossMatch || hasMythicMatch) diaryTriggers.push('bossRare');
         if (hasRareMatch) diaryTriggers.push('eliteRare');
       }
 

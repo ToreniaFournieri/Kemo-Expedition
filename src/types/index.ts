@@ -291,6 +291,7 @@ export type DiaryRarityThreshold = 'all' | 1 | 2 | 3 | 4 | 5 | 6 | 'none';
 
 export interface DiarySettings {
   superRareThreshold: DiaryRarityThreshold;
+  bossThreshold: DiaryRarityThreshold;
   mythicThreshold: DiaryRarityThreshold;
   rareThreshold: DiaryRarityThreshold;
   notifyDefeat: boolean;

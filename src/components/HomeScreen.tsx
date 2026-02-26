@@ -4415,7 +4415,7 @@ function DiaryTab({
 
     if (triggers.includes('superRare') || triggers.includes('bossRare')) {
       const rewardNames = rewards
-        .filter((item) => item.superRare > 0 || getItemRarityById(item.id) === 'bossRare')
+        .filter((item) => item.superRare > 0 || getItemRarityById(item.id) === 'bossRare' || getItemRarityById(item.id) === 'mythicRare')
         .map((item) => getItemDisplayName(item))
         .join('、');
       const triggerPrefix = triggers.includes('superRare') ? '超レア' : '神魔レア';
@@ -4480,18 +4480,6 @@ function DiaryTab({
                     </select>
                   </label>
                   <label className="flex items-center justify-between gap-2">
-                    <span>神魔レア通知</span>
-                    <select
-                      value={settings.mythicThreshold}
-                      onChange={(event) => onUpdateDiarySettings(partyIndex, { mythicThreshold: parseDiaryThreshold(event.target.value) })}
-                      className="rounded border border-gray-300 bg-white px-2 py-1"
-                    >
-                      {DIARY_THRESHOLD_OPTIONS.map((option) => (
-                        <option key={`my-${option.value}`} value={option.value}>{option.label}</option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="flex items-center justify-between gap-2">
                     <span>エリートレア通知</span>
                     <select
                       value={settings.rareThreshold}
@@ -4500,6 +4488,30 @@ function DiaryTab({
                     >
                       {DIARY_THRESHOLD_OPTIONS.map((option) => (
                         <option key={`ra-${option.value}`} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="flex items-center justify-between gap-2">
+                    <span>ボスレア通知</span>
+                    <select
+                      value={settings.bossThreshold}
+                      onChange={(event) => onUpdateDiarySettings(partyIndex, { bossThreshold: parseDiaryThreshold(event.target.value) })}
+                      className="rounded border border-gray-300 bg-white px-2 py-1"
+                    >
+                      {DIARY_THRESHOLD_OPTIONS.map((option) => (
+                        <option key={`bo-${option.value}`} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="flex items-center justify-between gap-2">
+                    <span>神魔レア通知</span>
+                    <select
+                      value={settings.mythicThreshold}
+                      onChange={(event) => onUpdateDiarySettings(partyIndex, { mythicThreshold: parseDiaryThreshold(event.target.value) })}
+                      className="rounded border border-gray-300 bg-white px-2 py-1"
+                    >
+                      {DIARY_THRESHOLD_OPTIONS.map((option) => (
+                        <option key={`my-${option.value}`} value={option.value}>{option.label}</option>
                       ))}
                     </select>
                   </label>
