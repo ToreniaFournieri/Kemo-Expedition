@@ -675,20 +675,20 @@
 
 - **Gods (神魔):**
 
-| Name | Title | Class | Represent for | + ability | Drop item tier | Drop item category |
-|-|-|-|-|-|-|-|
-| Seiran | God of Restoration | Pilgrim | Caninian | `a.resurrect`2  | 3 | `i.grimoire`, `i.robe`|
-| Garv | God of Attrition | Samurai | Lupinian | `a.rage`2, `a.re-counter`2 | 4 | `i.katana`, `i.shield` |
-| Kyōen | God of Cunning | Rougue | Vulpinian | `a.momentum`2 | 5 |  `i.archery`, `i.bolt` |
-| Dolvar | God of Fortification | Fighter | Ursan | `a.cyborgization`2 | 6 | `i.armor`, `i.gauntlet` |
-| Miora | Goddess of Fertility | Sage | Felidian | `a.firststrike`2 | 7 | `i.sword`, `i.catalyst` |
-| Rondel | God of Resonance | Wizard | Mustelid | `a.resonance`4 | 7 | `i.wand`, `i.arrow` |
-| Lira | Goddess of Precision | Ranger | Leporian | `a.composure`2 | 8 | `i.arrow`, `i.archery` |
-| Forne | God of Fate | Lord | Cervin | `a.focus`2 | 8 | `i.armor`, `i.robe` |
-| Skuva | God of Dusk | Ninja | Murid | `a.stealth`1 | 8 | `i.sheild`,`i.catalyst` |
-| Tanue | Goddess of Mirage | Duelist | Procyonian | `a.illusion`1 | 8 | `i.sword`, `i.gauntlet` |
-| Noctyra | God of Oblivion | Samurai | - | `a.rage`2, `a.firststrike`2 | 8 | `i.bolt`, `i.katana` |
-| Eris | Goddess of discord | Pilgrim | - | `a.momentum`2, `a.resonance`4, `a.stealth`1 | 8 | `i.grimoire`, `i.wand` |
+| Teir | Name | Title | Class | Represent for | + ability | Drop item tier | Drop item category |
+|-|-|-|-|-|-|-|-|
+| 3 | Seiran | God of Restoration | Pilgrim | Caninian | `a.resurrect`2  | 3 | `i.grimoire`, `i.robe`|
+| 4 | Garv | God of Attrition | Samurai | Lupinian | `a.rage`2, `a.re-counter`2 | 4 | `i.katana`, `i.shield` |
+| 5 | Kyōen | God of Cunning | Rougue | Vulpinian | `a.momentum`2 | 5 |  `i.archery`, `i.bolt` |
+| 6 | Dolvar | God of Fortification | Fighter | Ursan | `a.cyborgization`2 | 6 | `i.armor`, `i.gauntlet` |
+| 7 | Miora | Goddess of Fertility | Sage | Felidian | `a.firststrike`2 | 7 | `i.sword`, `i.catalyst` |
+| 7 | Rondel | God of Resonance | Wizard | Mustelid | `a.resonance`4 | 7 | `i.wand`, `i.arrow` |
+| 8 | Lira | Goddess of Precision | Ranger | Leporian | `a.composure`2 | 8 | `i.arrow`, `i.archery` |
+| 8 | Forne | God of Fate | Lord | Cervin | `a.focus`2 | 8 | `i.armor`, `i.robe` |
+| 8 | Skuva | God of Dusk | Ninja | Murid | `a.stealth`1 | 8 | `i.sheild`,`i.catalyst` |
+| 8 | Tanue | Goddess of Mirage | Duelist | Procyonian | `a.illusion`1 | 8 | `i.sword`, `i.gauntlet` |
+| 8 | Noctyra | God of Oblivion | Samurai | - | `a.rage`2, `a.firststrike`2 | 8 | `i.bolt`, `i.katana` |
+| 8 | Eris | Goddess of discord | Pilgrim | - | `a.momentum`2, `a.resonance`4, `a.stealth`1 | 8 | `i.grimoire`, `i.wand` |
 
 #### 2.4.2 Enemy structure (in battle)
 - id: int
