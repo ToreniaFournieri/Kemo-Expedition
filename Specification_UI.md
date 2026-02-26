@@ -597,9 +597,9 @@ line  gray text2: ヴァルピニアンの樹林帯      02/12 20:28
 
 **Bestiary (敵キャラクター図鑑)**
 - A comprehensive record of all threats encountered (or to be encountered) during expeditions.
-- Expedition category tabs: 原, 崖, 樹, 峰, 茂, 巣, 園, 谷
+- Expedition category tabs: 原, 崖, 樹, 峰, 茂, 巣, 園, 谷, 神
   - Each letter represents for corresponding expedition. And tap to show the enemy list of it. 
-
+  - Gods are listed in "神" tab.
 - Categorize by floor (`x.Spawn_pool`) and is reverse order of rooms (Boss first, then floor6 Normal enemies, floor 5 elite and floor 5 normal enemies…
 
 - Enemy name: List of specific enemies found within that expedition.
