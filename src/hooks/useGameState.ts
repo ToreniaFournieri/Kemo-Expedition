@@ -730,7 +730,7 @@ function createGodEnemy(enemy: EnemyDef, dungeonId: number, dungeonName: string,
   if (!godProfile) {
     return {
       ...enemy,
-      name: `神魔 ${godName}`,
+      name: godName,
       hp: Math.max(1, Math.floor(enemy.hp * 2.6)),
       rangedAttack: Math.max(0, Math.floor(enemy.rangedAttack * 1.7)),
       magicalAttack: Math.max(0, Math.floor(enemy.magicalAttack * 1.7)),
@@ -753,7 +753,7 @@ function createGodEnemy(enemy: EnemyDef, dungeonId: number, dungeonName: string,
   if (!runtimeGodEnemy) {
     return {
       ...enemy,
-      name: `神魔 ${godName}`,
+      name: godName,
       enemyClass: godProfile.enemyClass,
       abilities: godProfile.abilities.map((ability) => ability.id),
       dropItemId: getGodMythicDropId(godProfile.dropItemTier, godProfile.dropItemCategories, enemy.id),

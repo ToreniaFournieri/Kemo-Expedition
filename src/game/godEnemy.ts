@@ -42,7 +42,7 @@ export function buildGodRuntimeEnemy(profile: GodEnemyProfile, isLunaMode: boole
 
   return {
     ...scaledEnemy,
-    name: `神魔 ${getGodShortName(profile.displayName)}`,
+    name: getGodShortName(profile.displayName),
     enemyClass: profile.enemyClass,
     abilities: profile.abilities.map((ability) => ability.id),
   };
