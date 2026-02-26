@@ -492,16 +492,16 @@
 
 |races | default ability　| unlock ability | unclock condition | bonus | 体,力,知,精 | memo |
 |-----|-------|------|--------|--------|-----------|----------|
-|ケイナイアン(Caninian) |  `a.seeker`1 | `a.resurrect`1 | 原攻略 | `c.shield_x1.3`, `c.archery_x1.1` |10,10,10,10| 🐶Dog |
-|ルピニアン(Lupinian) | `a.rage`1 | `a.re-counter`1 | 崖攻略 | `c.equip_slot+1`, `c.katana_x1.3`  |10,12,8,7| 🐺Wolf |
-|ヴァルピニアン(Vulpinian) | `a.momentum`1 | `a.cunning`1 | 樹攻略 |`c.equip_slot+1`, `c.sword_x1.3`, `c.grimoire_x1.2` |11,10,12,8| 🦊Fox |
-|ウルサン(Ursan) | `a.bulwark`1 | `a.cyborgization`1 | 峰攻略 |`c.equip_slot+2`, `c.catalyst_x1.2` |13,11,**7**,7| 🐻Bear |
-|フェリディアン(Felidian)  | `a.first-strike`1 | `a.covering-fire`1 | 茂攻略 |`c.robe_x1.3` |9,9,10,12| 😺Cat |
-|マステリド(Mustelid) | `a.resonance`1 | `a.peddler`1 | 巣攻略 | `c.gauntlet_x1.3`, `c.arrow_x1.3` |10,10,9,11| 🦡Ferret |
-|レポリアン(Leporian) | `a.composure`1 | `a.magical-counter`1 | 園攻略 | `c.archery_x1.3`,  `c.armor_x1.3` |9,8,11,10| 🐰Rabbit |
-|セルヴィン(Cervin)  | `a.focus`1 | `a.prophecy`1 | 谷攻略 |`c.wand_x1.3`, `c.shield_x1.2` |8,7,13,10| 🦌Deer |
-|ミュリッド(Murid) | `a.stealth`1 | (none) | (none) |`c.penet+0.10`, `c.bolt_x1.3`  |9,8,10,10| 🐭Mouse |
-|プロキオニアン(Procyonian) | `a.illusion`1 | (none) | (none) |`c.equip_slot+1`, `c.grimoire_x1.3`  |9,8,10,6| 🦝Tanuki |
+|ケイナイアン(Caninian) |  `a.seeker`1 | `a.resurrect`1 | `c.unlock_Caninian_ability` | `c.shield_x1.3`, `c.archery_x1.1` |10,10,10,10| 🐶Dog |
+|ルピニアン(Lupinian) | `a.rage`1 | `a.re-counter`1 | `c.unlock_Caninian_ability` | `c.equip_slot+1`, `c.katana_x1.3`  |10,12,8,7| 🐺Wolf |
+|ヴァルピニアン(Vulpinian) | `a.momentum`1 | `a.cunning`1 | `c.unlock_Vulpinian_ability` |`c.equip_slot+1`, `c.sword_x1.3`, `c.grimoire_x1.2` |11,10,12,8| 🦊Fox |
+|ウルサン(Ursan) | `a.bulwark`1 | `a.cyborgization`1 | `c.unlock_Ursan_ability` |`c.equip_slot+2`, `c.catalyst_x1.2` |13,11,**7**,7| 🐻Bear |
+|フェリディアン(Felidian)  | `a.first-strike`1 | `a.covering-fire`1 | `c.unlock_Felidian_ability` |`c.robe_x1.3` |9,9,10,12| 😺Cat |
+|マステリド(Mustelid) | `a.resonance`1 | `a.peddler`1 | `c.unlock_Mustelid_ability`  | `c.gauntlet_x1.3`, `c.arrow_x1.3` |10,10,9,11| 🦡Ferret |
+|レポリアン(Leporian) | `a.composure`1 | `a.magical-counter`1 | `c.unlock_Leporian_ability` | `c.archery_x1.3`,  `c.armor_x1.3` |9,8,11,10| 🐰Rabbit |
+|セルヴィン(Cervin)  | `a.focus`1 | `a.prophecy`1 | `c.unlock_Cervin_ability` |`c.wand_x1.3`, `c.shield_x1.2` |8,7,13,10| 🦌Deer |
+|ミュリッド(Murid) | `a.stealth`1 | (none) | `c.unlock_Murid_ability` |`c.penet+0.10`, `c.bolt_x1.3`  |9,8,10,10| 🐭Mouse |
+|プロキオニアン(Procyonian) | `a.illusion`1 | (none) | `c.unlock_Procyonian_ability` |`c.equip_slot+1`, `c.grimoire_x1.3`  |9,8,10,6| 🦝Tanuki |
 
 - note: 未来視はパーティ単位で管理する方針に　神聖局で、セルヴィンがいる場合に表示可能、またコストを払ってリセットも可能に(詳細は今後検討)
 
