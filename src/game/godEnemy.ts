@@ -28,7 +28,9 @@ export function buildGodRuntimeEnemy(profile: GodEnemyProfile, isLunaMode: boole
     enemyMultipliers: getEffectiveEnemyMultipliers(dungeon, isLunaMode),
   };
 
-  const scaledEnemy = applyEnemyEncounterScaling(baseEnemy, effectiveDungeon, 6, 'battle_Boss');
+  const scaledEnemy = applyEnemyEncounterScaling(baseEnemy, effectiveDungeon, 6, 'battle_Boss', {
+    isGodEnemy: true
+  });
 
   return {
     ...scaledEnemy,
