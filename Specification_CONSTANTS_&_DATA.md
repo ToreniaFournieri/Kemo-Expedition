@@ -682,7 +682,7 @@
 | 8 | `a.focus`1 | Ninjya | `i.katana`, `i.bolt`, `i.grimoire`  |
 
 - **Gods (神魔):**
-  - Status cauculation: master value is `x.exp_tier`. not using `x.exp_id`'s `x.exp_tier`.
+  - Status calculation: master value is `x.exp_tier`. not using `x.exp_id`'s `x.exp_tier`.
 
 | `x.exp_tier` | level | Name | Title | Display name | Class | Represent for | + ability | Drop item tier | Drop item category | `x.exp_id` |
 |-|-|-|-|-|-|-|-|-|-|-|
