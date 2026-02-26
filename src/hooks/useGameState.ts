@@ -31,6 +31,7 @@ import { DUNGEONS, getDungeonById, getEffectiveEnemyLevel, getEffectiveEnemyMult
 import { CLASS_SHORT_NAMES } from '../data/classes';
 import { getEnemiesByPool, getElitesByPool, getBossEnemy, getEnemyDropCandidates } from '../data/enemies';
 import { getGodProfileForDungeon } from '../data/dropTables';
+import { buildGodRuntimeEnemy } from '../game/godEnemy';
 import {
   drawFromBag,
   refillBagIfEmpty,
@@ -721,7 +722,7 @@ function getGodMythicDropId(dropItemTier: number, categories: [ItemCategory, Ite
   return options[seed % options.length].id;
 }
 
-function createGodEnemy(enemy: EnemyDef, dungeonId: number, dungeonName: string): EnemyDef {
+function createGodEnemy(enemy: EnemyDef, dungeonId: number, dungeonName: string, isLunaMode: boolean): EnemyDef {
   const godProfile = getGodProfileForDungeon(dungeonId, dungeonName);
   const godName = godProfile ? getGodShortName(godProfile.displayName) : enemy.name;
 
@@ -746,9 +747,7 @@ function createGodEnemy(enemy: EnemyDef, dungeonId: number, dungeonName: string)
     };
   }
 
-  const runtimeGodEnemy = getEnemiesByPool(godProfile.tier)
-    .sort((a, b) => a.id - b.id)
-    .find((candidate) => candidate.enemyClass === godProfile.enemyClass);
+  const runtimeGodEnemy = buildGodRuntimeEnemy(godProfile, isLunaMode);
 
   if (!runtimeGodEnemy) {
     return {
@@ -756,32 +755,18 @@ function createGodEnemy(enemy: EnemyDef, dungeonId: number, dungeonName: string)
       name: `神魔 ${godName}`,
       enemyClass: godProfile.enemyClass,
       abilities: godProfile.abilities.map((ability) => ability.id),
+      dropItemId: getGodMythicDropId(godProfile.dropItemTier, godProfile.dropItemCategories, enemy.id),
     };
   }
 
   return {
     ...enemy,
-    enemyClass: runtimeGodEnemy.enemyClass,
-    abilities: godProfile.abilities.map((ability) => ability.id),
-    name: `神魔 ${godName}`,
-    accuracyBonus: runtimeGodEnemy.accuracyBonus,
-    evasionBonus: runtimeGodEnemy.evasionBonus,
-    hp: runtimeGodEnemy.hp,
-    rangedAttack: runtimeGodEnemy.rangedAttack,
-    rangedNoA: runtimeGodEnemy.rangedNoA,
-    magicalAttack: runtimeGodEnemy.magicalAttack,
-    magicalNoA: runtimeGodEnemy.magicalNoA,
-    meleeAttack: runtimeGodEnemy.meleeAttack,
-    meleeNoA: runtimeGodEnemy.meleeNoA,
-    rangedAttackAmplifier: runtimeGodEnemy.rangedAttackAmplifier,
-    magicalAttackAmplifier: runtimeGodEnemy.magicalAttackAmplifier,
-    meleeAttackAmplifier: runtimeGodEnemy.meleeAttackAmplifier,
-    physicalDefense: runtimeGodEnemy.physicalDefense,
-    magicalDefense: runtimeGodEnemy.magicalDefense,
-    elementalOffense: runtimeGodEnemy.elementalOffense,
-    elementalResistance: runtimeGodEnemy.elementalResistance,
-    defenseAmplifier: runtimeGodEnemy.defenseAmplifier,
-    experience: runtimeGodEnemy.experience,
+    ...runtimeGodEnemy,
+    id: enemy.id,
+    type: enemy.type,
+    spawnTier: enemy.spawnTier,
+    spawnPool: enemy.spawnPool,
+    poolId: enemy.poolId,
     dropItemId: getGodMythicDropId(godProfile.dropItemTier, godProfile.dropItemCategories, enemy.id),
   };
 }
@@ -1246,7 +1231,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             };
             let enemy = applyEnemyEncounterScaling(baseEnemy, effectiveDungeon, floor.floorNumber, roomDef.type);
             if (isGodsBattle && roomDef.type === 'battle_Boss') {
-              enemy = createGodEnemy(enemy, dungeon.id, dungeon.name);
+              enemy = createGodEnemy(enemy, dungeon.id, dungeon.name, !!action.isLunaMode);
             }
 
             // Pass currentHp to maintain HP persistence during expedition
