@@ -29,6 +29,7 @@ import { replaceCharacterEquipment } from '../game/equipment';
 import { DUNGEONS, getDungeonById, getEffectiveEnemyLevel, getEffectiveEnemyMultipliers, getEffectiveExpeditionTier } from '../data/dungeons';
 import { CLASS_SHORT_NAMES } from '../data/classes';
 import { getEnemiesByPool, getElitesByPool, getBossEnemy, getEnemyDropCandidates } from '../data/enemies';
+import { GOD_ENEMY_PROFILES } from '../data/dropTables';
 import {
   drawFromBag,
   refillBagIfEmpty,
@@ -704,10 +705,16 @@ function selectEnemyForRoom(
   return enemies[randomIndex];
 }
 
-function createGodEnemy(enemy: EnemyDef): EnemyDef {
+function getGodShortName(displayName: string): string {
+  return displayName.split(' ')[0] ?? displayName;
+}
+
+function createGodEnemy(enemy: EnemyDef, dungeonName: string): EnemyDef {
+  const godProfile = GOD_ENEMY_PROFILES.find((god) => god.expedition === dungeonName);
+  const godName = godProfile ? getGodShortName(godProfile.displayName) : enemy.name;
   return {
     ...enemy,
-    name: `神魔 ${enemy.name}`,
+    name: `神魔 ${godName}`,
     hp: Math.max(1, Math.floor(enemy.hp * 2.6)),
     rangedAttack: Math.max(0, Math.floor(enemy.rangedAttack * 1.7)),
     magicalAttack: Math.max(0, Math.floor(enemy.magicalAttack * 1.7)),
@@ -1185,7 +1192,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             };
             let enemy = applyEnemyEncounterScaling(baseEnemy, effectiveDungeon, floor.floorNumber, roomDef.type);
             if (isGodsBattle && roomDef.type === 'battle_Boss') {
-              enemy = createGodEnemy(enemy);
+              enemy = createGodEnemy(enemy, dungeon.name);
             }
 
             // Pass currentHp to maintain HP persistence during expedition

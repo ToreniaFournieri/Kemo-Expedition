@@ -392,7 +392,19 @@ function getDungeonEntryGateState(
   };
 }
 
-function getNextGoalText(party: Party): string | null {
+function getGodShortName(displayName: string): string {
+  return displayName.split(' ')[0] ?? displayName;
+}
+
+function shouldDelayNextSpecialGoal(party: Party, cycleState?: PartyCycleState): boolean {
+  if (cycleState !== '探索中') return false;
+  const log = party.lastExpeditionLog;
+  if (!log || log.finalOutcome !== 'victory') return false;
+  const lastEntry = log.entries[log.entries.length - 1];
+  return lastEntry?.roomType === 'battle_Boss' && lastEntry.enemyName.includes('(神魔戦)');
+}
+
+function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | null {
   const currentDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
   if (!currentDungeon || !currentDungeon.floors) return null;
 
@@ -430,8 +442,11 @@ function getNextGoalText(party: Party): string | null {
   const godsRequired = ENTRY_GATE_REQUIRED;
   const godsUnlocked = bossRareCollected >= godsRequired;
   if (!godsUnlocked) {
+    if (shouldDelayNextSpecialGoal(party, cycleState)) {
+      return null;
+    }
     const waitingGod = GOD_ENEMY_PROFILES.find((god) => god.expedition === currentDungeon.name);
-    const waitingGodName = waitingGod?.displayName ?? '神魔';
+    const waitingGodName = waitingGod ? getGodShortName(waitingGod.displayName) : '神魔';
     return `特殊目標: ${currentDungeon.name}のボスレアアイテム ${bossRareCollected}/${godsRequired} で神魔${waitingGodName}戦`;
   }
 
@@ -3699,7 +3714,7 @@ function ExpeditionTab({
                 {['帰還中', '待機中'].includes(cycle.state) && party.currentHp <= 0 && (
                   <div className="text-xs text-accent">HPが0のため出撃できません。休息で回復してください。</div>
                 )}
-                {getNextGoalText(party) && <div className="text-sm text-gray-700">{getNextGoalText(party)}</div>}
+                {getNextGoalText(party, cycle.state) && <div className="text-sm text-gray-700">{getNextGoalText(party, cycle.state)}</div>}
               </div>
             )}
 
