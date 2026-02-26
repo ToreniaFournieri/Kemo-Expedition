@@ -2,6 +2,7 @@ import { useReducer, useCallback, useEffect, useState } from 'react';
 import {
   GameState,
   Item,
+  ItemCategory,
   Character,
   Party,
   RaceId,
@@ -47,7 +48,7 @@ import {
   BagType,
   normalizeGameBags,
 } from '../game/bags';
-import { getItemById, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
+import { getItemById, getItemsByTierAndRarity, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { getItemDisplayName } from '../game/gameState';
 import { getDeityKey, getEffectiveDeityTier, normalizeDeityName } from '../game/deity';
@@ -709,6 +710,17 @@ function getGodShortName(displayName: string): string {
   return displayName.split(' ')[0] ?? displayName;
 }
 
+function getGodMythicDropId(dropItemTier: number, categories: [ItemCategory, ItemCategory], seed: number): number {
+  const mythicItems = getItemsByTierAndRarity(dropItemTier, 'mythicRare');
+  const options = categories.flatMap((category) => mythicItems.filter((item) => item.category === category));
+
+  if (options.length === 0) {
+    return mythicItems[seed % mythicItems.length]?.id ?? 8501;
+  }
+
+  return options[seed % options.length].id;
+}
+
 function createGodEnemy(enemy: EnemyDef, dungeonId: number, dungeonName: string): EnemyDef {
   const godProfile = getGodProfileForDungeon(dungeonId, dungeonName);
   const godName = godProfile ? getGodShortName(godProfile.displayName) : enemy.name;
@@ -770,6 +782,7 @@ function createGodEnemy(enemy: EnemyDef, dungeonId: number, dungeonName: string)
     elementalResistance: runtimeGodEnemy.elementalResistance,
     defenseAmplifier: runtimeGodEnemy.defenseAmplifier,
     experience: runtimeGodEnemy.experience,
+    dropItemId: getGodMythicDropId(godProfile.dropItemTier, godProfile.dropItemCategories, enemy.id),
   };
 }
 

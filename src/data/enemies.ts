@@ -1,6 +1,6 @@
 import { EnemyDef, EnemyType, EnemyClassId, ElementalOffense, ElementalResistance, ItemDef, AbilityId, ItemCategory } from '../types';
 import { MYTHIC_DROP_POOLS } from './dropTables';
-import { getItemsByTierAndRarity } from './items';
+import { getItemById, getItemsByTierAndRarity } from './items';
 
 // ============================================================
 // EnemyTemplate type - compact format for defining enemies
@@ -689,6 +689,7 @@ export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
   const uncommon = getItemsByTierAndRarity(tier, 'uncommon');
   const eliteRare = getItemsByTierAndRarity(tier, 'eliteRare');
   const bossRare = getItemsByTierAndRarity(tier, 'bossRare');
+  const mythicRare = getItemsByTierAndRarity(tier, 'mythicRare');
 
   const classUncommonCategories: Record<EnemyClassId, [ItemCategory, ItemCategory]> = {
     fighter: ['sword', 'gauntlet'],
@@ -784,6 +785,23 @@ export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
     const commonCount = eliteRarePicks.length >= 3 ? 1 : 2;
     drops.push(...pickAny(common, commonCount, enemy.id + 4));
     return drops.slice(0, 5);
+  }
+
+  if (enemy.type === 'boss' && enemy.dropItemId && enemy.dropItemId % 1000 >= 500) {
+    const mythicItem = getItemById(enemy.dropItemId);
+    if (mythicItem) {
+      const drops: ItemDef[] = [mythicItem];
+      const mythicCats = bossMythicByTier[tier] ?? ['sword', 'grimoire'];
+      const mythicExtra = pickByCategory(mythicRare, mythicCats[0], enemy.id + 1, [mythicItem.id])
+        ?? pickAny(mythicRare, 1, enemy.id + 1, [mythicItem.id])[0];
+      if (mythicExtra) drops.push(mythicExtra);
+
+      const eliteRareFallback = pickByCategory(eliteRare, mythicCats[0], enemy.id + 2) ?? pickAny(eliteRare, 1, enemy.id + 2)[0];
+      if (eliteRareFallback) drops.push(eliteRareFallback);
+
+      drops.push(...pickAny(common, Math.max(0, 5 - drops.length), enemy.id + 3));
+      return drops.slice(0, 5);
+    }
   }
 
   const drops: ItemDef[] = [];
