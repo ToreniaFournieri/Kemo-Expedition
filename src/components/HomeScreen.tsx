@@ -7,6 +7,7 @@ import { CLASSES, CLASS_SHORT_NAMES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
 import { LINEAGES } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS, getSuperRareBonuses } from '../data/items';
+import { GOD_ENEMY_PROFILES } from '../data/dropTables';
 import { GLOSSARY_SECTIONS } from '../data/glossary';
 import { getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
@@ -5152,7 +5153,15 @@ function SettingTab({
     6: '巣',
     7: '園',
     8: '谷',
+    9: '神',
   };
+
+  const BESTIARY_SPECIAL_DUNGEON_ID_GODS = 9;
+  const isGodBestiaryTab = selectedBestiaryDungeonId === BESTIARY_SPECIAL_DUNGEON_ID_GODS;
+  const bestiaryTabOptions = [
+    ...DUNGEONS.map((dungeon) => ({ id: dungeon.id, name: dungeon.name })),
+    { id: BESTIARY_SPECIAL_DUNGEON_ID_GODS, name: '神魔' },
+  ];
 
   const selectedBestiaryDungeon = DUNGEONS.find(d => d.id === selectedBestiaryDungeonId) ?? DUNGEONS[0];
 
@@ -5217,6 +5226,10 @@ function SettingTab({
         return groups;
       })
     : [];
+
+  const godBestiaryRows = GOD_ENEMY_PROFILES
+    .slice()
+    .sort((a, b) => (a.tier - b.tier) || a.name.localeCompare(b.name));
 
   const formatEnemyAttackLine = (label: string, attack: number, noA: number, amplifier: number) =>
     `${label}: ${formatNumber(attack)} x ${formatNumber(noA)}回 (x${amplifier.toFixed(2)})`;
@@ -5583,7 +5596,7 @@ function SettingTab({
         {renderDivineBureauPanelHeader('bestiary', '敵キャラクター図鑑')}
         {divineBureauPanelExpanded.bestiary && <>
         <div className="flex gap-1 mt-3 mb-3 overflow-x-auto pb-1">
-          {DUNGEONS.map(dungeon => (
+          {bestiaryTabOptions.map(dungeon => (
             <button
               key={dungeon.id}
               onClick={() => onSetSelectedBestiaryDungeonId(dungeon.id)}
@@ -5606,8 +5619,20 @@ function SettingTab({
             onSetBestiaryScrollTop(currentScrollTop);
           }}
         >
-          <div className="text-xs text-gray-500">{selectedBestiaryDungeon.name}</div>
-          {selectedBestiaryGroups.map(group => (
+          <div className="text-xs text-gray-500">{isGodBestiaryTab ? '神魔' : selectedBestiaryDungeon.name}</div>
+          {isGodBestiaryTab && godBestiaryRows.map((god) => (
+            <div key={god.name} className="bg-white rounded border border-gray-200 p-2 text-xs text-gray-700 space-y-1">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span className="font-medium text-sm text-gray-900">{god.name}</span>
+                <span className="text-gray-500">Tier {god.tier}</span>
+                <span className="text-gray-500">{god.title}</span>
+              </div>
+              <div>クラス: {ENEMY_CLASS_LABELS[god.enemyClass] ?? god.enemyClass} / 代表: {god.representFor}</div>
+              <div>能力: {god.abilities.map((ability) => `${ability.id}${ability.level}`).join(', ')}</div>
+              <div>ドロップ: Tier {god.dropItemTier} ({god.dropItemCategories.join(', ')})</div>
+            </div>
+          ))}
+          {!isGodBestiaryTab && selectedBestiaryGroups.map(group => (
             <div key={group.key} className="bg-white rounded border border-gray-200 p-2">
               <div className="text-xs text-gray-500 font-medium mb-1">{group.label}</div>
               {group.enemies.map(enemy => {
