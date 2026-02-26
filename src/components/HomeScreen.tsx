@@ -6,7 +6,6 @@ import {
   getEffectiveEnemyLevel,
   getEffectiveEnemyMultipliers,
   getEffectiveExpeditionTier,
-  getExpeditionEnemyMultipliersForTier,
 } from '../data/dungeons';
 import { RACES } from '../data/races';
 import { CLASSES, CLASS_SHORT_NAMES } from '../data/classes';
@@ -18,6 +17,7 @@ import { GLOSSARY_SECTIONS } from '../data/glossary';
 import { getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { applyEnemyEncounterScaling } from '../game/enemyScaling';
+import { buildGodRuntimeEnemy } from '../game/godEnemy';
 import { DEITY_OPTIONS, getDeityEffectDescription, getDeityRank, getNextDonationThreshold, normalizeDeityName } from '../game/deity';
 import { getXpToNextLevel } from '../game/partyLevel';
 import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../game/environment';
@@ -5356,48 +5356,8 @@ function SettingTab({
     return applyEnemyEncounterScaling(enemy, effectiveDungeon, floorNumber, roomType);
   };
 
-  const getGodRuntimeEnemy = (tier: number, enemyClass: EnemyDef['enemyClass']): EnemyDef | null => {
-    const baseEnemy = ENEMIES.find((enemy) =>
-      enemy.type === 'normal' && enemy.spawnTier === tier && enemy.enemyClass === enemyClass,
-    );
-    if (!baseEnemy) return null;
-
-    const tierMultiplier = getExpeditionEnemyMultipliersForTier(tier);
-    const modeMultiplier = gameMode === 'm.luna'
-      ? {
-        hp: 1.7,
-        attack: 1.5,
-        noa: 1.5,
-        attackAmplifier: 1.0,
-        defense: 1.4,
-        defenseAmplifier: 0.9,
-      }
-      : {
-        hp: 1,
-        attack: 1,
-        noa: 1,
-        attackAmplifier: 1,
-        defense: 1,
-        defenseAmplifier: 1,
-      };
-
-    return {
-      ...baseEnemy,
-      hp: Math.floor(baseEnemy.hp * tierMultiplier.hp * modeMultiplier.hp),
-      rangedAttack: Math.floor(baseEnemy.rangedAttack * tierMultiplier.attack * modeMultiplier.attack),
-      magicalAttack: Math.floor(baseEnemy.magicalAttack * tierMultiplier.attack * modeMultiplier.attack),
-      meleeAttack: Math.floor(baseEnemy.meleeAttack * tierMultiplier.attack * modeMultiplier.attack),
-      rangedNoA: Math.floor(baseEnemy.rangedNoA * tierMultiplier.noa * modeMultiplier.noa),
-      magicalNoA: Math.floor(baseEnemy.magicalNoA * tierMultiplier.noa * modeMultiplier.noa),
-      meleeNoA: Math.floor(baseEnemy.meleeNoA * tierMultiplier.noa * modeMultiplier.noa),
-      rangedAttackAmplifier: baseEnemy.rangedAttackAmplifier * tierMultiplier.attackAmplifier * modeMultiplier.attackAmplifier,
-      magicalAttackAmplifier: baseEnemy.magicalAttackAmplifier * tierMultiplier.attackAmplifier * modeMultiplier.attackAmplifier,
-      meleeAttackAmplifier: baseEnemy.meleeAttackAmplifier * tierMultiplier.attackAmplifier * modeMultiplier.attackAmplifier,
-      physicalDefense: Math.floor(baseEnemy.physicalDefense * tierMultiplier.defense * modeMultiplier.defense),
-      magicalDefense: Math.floor(baseEnemy.magicalDefense * tierMultiplier.defense * modeMultiplier.defense),
-      defenseAmplifier: baseEnemy.defenseAmplifier * tierMultiplier.defenseAmplifier * modeMultiplier.defenseAmplifier,
-    };
-  };
+  const getGodRuntimeEnemy = (god: (typeof GOD_ENEMY_PROFILES)[number]): EnemyDef | null =>
+    buildGodRuntimeEnemy(god, gameMode === 'm.luna');
 
   const getGodDropCandidates = (godName: string): string => {
     const drops = GOD_MYTHIC_DROPS
@@ -5746,7 +5706,7 @@ function SettingTab({
           {isGodBestiaryTab && godBestiaryRows.map((god, index) => {
             const godBestiaryId = 900000 + index;
             const godExpanded = !!expandedBestiaryEnemies[godBestiaryId];
-            const godRuntimeEnemy = getGodRuntimeEnemy(god.tier, god.enemyClass);
+            const godRuntimeEnemy = getGodRuntimeEnemy(god);
             const godClassShortName = CLASS_SHORT_NAMES[god.enemyClass];
             return (
               <div key={god.name} className="mt-2 border border-gray-100 rounded bg-white">
