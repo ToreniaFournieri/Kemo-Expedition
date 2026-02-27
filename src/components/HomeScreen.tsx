@@ -488,6 +488,7 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
     SUPER_RARE_TITLES.find((title) => title.value === item.superRare)?.bonuses ?? [],
     { defenseMultiplierStyle: 'friendly' }
   );
+  const itemUniqueBonusText = formatBonuses(item.bonuses ?? [], { defenseMultiplierStyle: 'friendly' });
   const multiplierPercent = Math.round((baseMultiplier - 1) * 100);
   const formatDecimal = (value: number): string => {
     const rounded = Math.round(value * 100) / 100;
@@ -561,6 +562,7 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
     const elementalPercent = Math.round((item.elementalOffenseBonus ?? 0) * 100);
     stats.push(`${elem}属性+${elementalPercent}%`);
   }
+  if (itemUniqueBonusText) stats.push(`[${itemUniqueBonusText}]`);
   if (superRareUniqueBonusText) stats.push(`[超:${superRareUniqueBonusText}]`);
   return stats.join(' ');
 }
@@ -840,16 +842,29 @@ function formatDefenseMultiplierBonus(label: string, value: number): string {
 }
 
 const UNLOCK_ABILITY_BONUS_LABELS: Partial<Record<BonusType, string>> = {
-  unlock_caninian_ability: '[🐶解放]',
-  unlock_lupinian_ability: '[🐺解放]',
-  unlock_vulpinian_ability: '[🦊解放]',
-  unlock_ursan_ability: '[🐻解放]',
-  unlock_felidian_ability: '[😺解放]',
-  unlock_mustelid_ability: '[🦡解放]',
-  unlock_leporian_ability: '[🐰解放]',
-  unlock_cervin_ability: '[🦌解放]',
-  unlock_murid_ability: '[🐭解放]',
-  unlock_procyonian_ability: '[🦝解放]',
+  unlock_caninian_ability: '🐶解放',
+  unlock_lupinian_ability: '🐺解放',
+  unlock_vulpinian_ability: '🦊解放',
+  unlock_ursan_ability: '🐻解放',
+  unlock_felidian_ability: '😺解放',
+  unlock_mustelid_ability: '🦡解放',
+  unlock_leporian_ability: '🐰解放',
+  unlock_cervin_ability: '🦌解放',
+  unlock_murid_ability: '🐭解放',
+  unlock_procyonian_ability: '🦝解放',
+};
+
+const UNLOCK_BONUS_BY_RACE: Partial<Record<RaceId, BonusType>> = {
+  caninian: 'unlock_caninian_ability',
+  lupinian: 'unlock_lupinian_ability',
+  vulpinian: 'unlock_vulpinian_ability',
+  ursan: 'unlock_ursan_ability',
+  felidian: 'unlock_felidian_ability',
+  mustelid: 'unlock_mustelid_ability',
+  leporian: 'unlock_leporian_ability',
+  cervin: 'unlock_cervin_ability',
+  murid: 'unlock_murid_ability',
+  procyonian: 'unlock_procyonian_ability',
 };
 
 function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'raw' | 'friendly' }): string {
@@ -1904,6 +1919,11 @@ function PartyTab({
 
   // Calculate current stats for notification: HP is party-wide, others are per selected character
   const selectedStats = characterStats[selectedCharacter];
+  const selectedRace = RACES.find((race) => race.id === selectedChar.raceId);
+  const selectedRaceUnlockBonusType = UNLOCK_BONUS_BY_RACE[selectedChar.raceId];
+  const isSelectedRaceUnlockConditionActive = selectedRaceUnlockBonusType
+    ? equippedItems.some((item) => (item.bonuses ?? []).some((bonus) => bonus.type === selectedRaceUnlockBonusType))
+    : false;
   const selectedIaigiriLevel = selectedStats.abilities.find(a => a.id === 'iaigiri')?.level ?? 0;
   const selectedIaigiriMultiplier = selectedIaigiriLevel >= 3 ? 3.0 : selectedIaigiriLevel >= 2 ? 2.5 : selectedIaigiriLevel >= 1 ? 2.0 : 1.0;
   const selectedEffectiveAccuracyBonus = getEffectiveAccuracyBonus(selectedStats.accuracyBonus, selectedStats.abilities);
@@ -1946,6 +1966,9 @@ function PartyTab({
     hp: Math.floor(partyStats.hp),
     elementalOffense: selectedStats.elementalOffense,
     elementalOffensePercent: Math.round((selectedStats.elementalOffenseValue - 1) * 100),
+    unlockRaceName: selectedRace?.name ?? '',
+    unlockAbilityName: selectedRace?.unlockAbility?.name ?? '',
+    unlockConditionActive: isSelectedRaceUnlockConditionActive,
   };
 
   const prevStatsRef = useRef<typeof combatTotals | null>(null);
@@ -2133,6 +2156,19 @@ function PartyTab({
         });
       });
 
+      if (
+        combatTotals.unlockRaceName &&
+        combatTotals.unlockAbilityName &&
+        combatTotals.unlockConditionActive !== prev.unlockConditionActive
+      ) {
+        changes.push({
+          message: combatTotals.unlockConditionActive
+            ? `${combatTotals.unlockRaceName}の${combatTotals.unlockAbilityName}アビリティが解放されました`
+            : `${combatTotals.unlockRaceName}の${combatTotals.unlockAbilityName}アビリティがロックされました`,
+          isPositive: combatTotals.unlockConditionActive,
+        });
+      }
+
       // Send all stat notifications at once (clears previous stat notifications)
       if (changes.length > 0) {
         onAddStatNotifications(changes);
@@ -2148,6 +2184,7 @@ function PartyTab({
       combatTotals.meleeAttackAmp, combatTotals.rangedAttackAmp, combatTotals.magicalAttackAmp,
       combatTotals.accuracy, combatTotals.evasion,
       combatTotals.elementalOffense, combatTotals.elementalOffensePercent,
+      combatTotals.unlockRaceName, combatTotals.unlockAbilityName, combatTotals.unlockConditionActive,
       onAddStatNotifications, selectedCharacter, selectedPartyIndex]);
   const [pendingEdits, setPendingEdits] = useState<Partial<Character> | null>(null);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
