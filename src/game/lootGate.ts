@@ -12,6 +12,7 @@ export const ELITE_GATE_REQUIREMENTS: Record<number, number> = {
 
 export const ENTRY_GATE_REQUIRED = 1;
 export const BOSS_GATE_REQUIRED = 3;
+export const GODS_BATTLE_REQUIRED = 10;
 
 export function getLootCollectionKey(tier: number, rarity: GateRarity): string {
   return `${tier}:${rarity}`;

@@ -31,6 +31,7 @@ import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
   BOSS_GATE_REQUIRED,
+  GODS_BATTLE_REQUIRED,
   getEntryGateKey,
   getEliteGateKey,
   getBossGateKey,
@@ -477,7 +478,7 @@ function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | n
     }
   }
 
-  const godsRequired = ENTRY_GATE_REQUIRED;
+  const godsRequired = GODS_BATTLE_REQUIRED;
   const godsUnlocked = bossRareCollected >= godsRequired;
   if (!godsUnlocked) {
     if (shouldDelayNextSpecialGoal(party, cycleState)) {
@@ -492,7 +493,7 @@ function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | n
 }
 
 function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
-  return getLootCollectionCount(party, dungeonId, 'bossRare') >= ENTRY_GATE_REQUIRED;
+  return getLootCollectionCount(party, dungeonId, 'bossRare') >= GODS_BATTLE_REQUIRED;
 }
 
 // Helper to format item stats
