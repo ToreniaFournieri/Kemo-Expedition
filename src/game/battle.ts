@@ -1395,6 +1395,28 @@ export function executeBattle(
           result = calculateCharacterFriendlyFireDamage(phase, cs, selected, partyStats, partyHp, noAMultiplier);
           if (result.damage > 0) {
             partyHp -= result.damage;
+
+            const triggeredResurrect = (
+              partyHp <= 0
+              && hasResurrect(selected)
+              && !consumedResurrectCharacterIds.has(selected.characterId)
+            );
+
+            if (triggeredResurrect) {
+              const resurrectLevel = getResurrectLevel(selected);
+              partyHp = resurrectLevel >= 2
+                ? Math.max(1, Math.ceil(partyStats.hp * 0.01))
+                : 1;
+              consumedResurrectCharacterIds.add(selected.characterId);
+
+              const resurrectedChar = party.characters.find(c => c.id === selected.characterId);
+              log.push({
+                phase,
+                actor: 'character',
+                characterId: selected.characterId,
+                action: `${resurrectedChar?.name ?? '???'} は致命ダメージを食いしばって耐えた！`,
+              });
+            }
           }
         } else {
           result = calculateCharacterDamage(phase, cs, char, enemy, partyStats, partyHp, noAMultiplier);
