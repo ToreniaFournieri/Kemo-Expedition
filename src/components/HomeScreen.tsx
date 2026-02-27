@@ -100,6 +100,7 @@ const AFK_MAX_ELAPSED_MS = 600 * 60 * 1000;
 const HEADER_HEIGHT_CLASS = 'pt-[108px]';
 type GameMode = 'm.kemo' | 'm.luna';
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
+const APP_VERSION = `v${__APP_VERSION__}`;
 const RACE_ICON_SOURCES = RACES
   .map((race) => race.icon)
   .filter((icon): icon is string => Boolean(icon))
@@ -1729,7 +1730,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const hasUnreadDiary = unreadDiaryCount > 0;
   const unreadDiaryBadgeLabel = unreadDiaryCount >= 11 ? '10+' : `${unreadDiaryCount}`;
   const envLabel = getEnvLabel();
-  const versionLabel = envLabel ? `v0.3.1 (${envLabel})` : 'v0.3.1';
+  const versionLabel = envLabel ? `${APP_VERSION} (${envLabel})` : APP_VERSION;
   const gameTitle = isLunaEnvironment ? 'ルナの冒険' : 'ケモの冒険';
 
   useEffect(() => {
@@ -5021,7 +5022,7 @@ function SettingTab({
   const [expandedCompendiumItems, setExpandedCompendiumItems] = useState<Record<number, boolean>>({});
   const bestiaryListRef = useRef<HTMLDivElement | null>(null);
 
-  const versionTag = 'v0.3.1';
+  const versionTag = APP_VERSION;
   const currentEnv = getEnvironmentId();
   const modeSelectionLocked = isLunaEnvironment;
 
