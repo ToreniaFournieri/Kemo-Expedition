@@ -644,7 +644,7 @@
 |-----|-----|-----|----|----|----|----|
 | x4 | x1.6 | x1.3 | x1.6 | x1.4 | x0.9 | +2 |
 
-- Suppliment info for human: Tier 1–11 expedition multiplier table
+- Note: Tier 1–11 expedition multiplier table, result of these math calculations
 
 | Tier | exp_HP_mult | exp_atk_mult | exp_atk_amp_mult | exp_NoA_mult | exp_def_mult | exp_def_amp_mult |
 |------|------------|--------------|------------------|-------------|--------------|------------------|
