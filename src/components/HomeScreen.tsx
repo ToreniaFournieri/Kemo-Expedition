@@ -927,7 +927,7 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
     } else if (b.type === 'caster') {
       parts.push(`術者+${b.value}`);
     } else if (b.type === 'penet') {
-      parts.push(`貫通${Math.round(b.value * 100)}%`);
+      parts.push(`貫通+${Math.round(b.value * 100)}`);
     } else if (b.type === 'pursuit') {
       parts.push(`追撃+${b.value}`);
     } else if (b.type === 'antagonism') {
@@ -2002,6 +2002,7 @@ function PartyTab({
     magicalAttackAmp: selectedMagicalAttackAmp,
     accuracy: Math.round(selectedEffectiveAccuracyBonus * 1000),
     evasion: Math.round(selectedStats.evasionBonus * 1000),
+    penet: Math.round(selectedStats.penetMultiplier * 100),
     hp: Math.floor(partyStats.hp),
     elementalOffense: selectedStats.elementalOffense,
     elementalOffensePercent: Math.round((selectedStats.elementalOffenseValue - 1) * 100),
@@ -2163,6 +2164,10 @@ function PartyTab({
         const isPositive = combatTotals.evasion > prev.evasion;
         changes.push({ message: `回避 ${prev.evasion >= 0 ? '+' : ''}${formatNumber(prev.evasion)} → ${combatTotals.evasion >= 0 ? '+' : ''}${formatNumber(combatTotals.evasion)}`, isPositive });
       }
+      if (combatTotals.penet !== prev.penet) {
+        const isPositive = combatTotals.penet > prev.penet;
+        changes.push({ message: `貫通 ${formatNumber(prev.penet)} → ${formatNumber(combatTotals.penet)}`, isPositive });
+      }
       const elementalLabels: Record<Exclude<ElementalOffense, 'none'>, string> = {
         fire: '火',
         ice: '氷',
@@ -2221,7 +2226,7 @@ function PartyTab({
       combatTotals.rangedAtk, combatTotals.rangedNoA,
       combatTotals.magicalAtk, combatTotals.magicalNoA,
       combatTotals.meleeAttackAmp, combatTotals.rangedAttackAmp, combatTotals.magicalAttackAmp,
-      combatTotals.accuracy, combatTotals.evasion,
+      combatTotals.accuracy, combatTotals.evasion, combatTotals.penet,
       combatTotals.elementalOffense, combatTotals.elementalOffensePercent,
       combatTotals.unlockRaceName, combatTotals.unlockAbilityName, combatTotals.unlockConditionActive,
       onAddStatNotifications, selectedCharacter, selectedPartyIndex]);
@@ -3071,6 +3076,15 @@ function PartyTab({
                       '※敵の命中減衰率を値分、減少させます(攻撃回数が多いほど回避しやすくなります)',
                     ],
                   },
+                  {
+                    key: 'penetration',
+                    text: `貫通:+${formatNumber(Math.round(stats.penetMultiplier * 100))}`,
+                    helpTitle: '貫通',
+                    helpLines: [
+                      `貫通: +${formatNumber(Math.round(stats.penetMultiplier * 100))}`,
+                      `敵の防御力を ${Math.round(stats.penetMultiplier * 100)}% 分無視する`,
+                    ],
+                  },
                 ];
 
                 // Pad offense lines to match defense lines count
@@ -3275,7 +3289,7 @@ function PartyTab({
                     if (key === 'physical_defense') helpRows.push({ label, description: '物理耐性を強化する' });
                     if (key === 'magical_defense') helpRows.push({ label, description: '魔法耐性を強化する' });
                   } else if (key === 'penet') {
-                    const label = `${addNames[key]}+${Math.round(val * 100)}%`;
+                    const label = `${addNames[key]}+${Math.round(val * 100)}`;
                     parts.push(label);
                     helpRows.push({ label, description: `敵の防御力を ${Math.round(val * 100)}% 分無視する` });
                   } else if (key === 'accuracy') {
