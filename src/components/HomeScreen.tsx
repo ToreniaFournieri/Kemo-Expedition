@@ -839,6 +839,19 @@ function formatDefenseMultiplierBonus(label: string, value: number): string {
   return `${label}x${rounded.toFixed(2)}`;
 }
 
+const UNLOCK_ABILITY_BONUS_LABELS: Partial<Record<BonusType, string>> = {
+  unlock_caninian_ability: '[🐶解放]',
+  unlock_lupinian_ability: '[🐺解放]',
+  unlock_vulpinian_ability: '[🦊解放]',
+  unlock_ursan_ability: '[🐻解放]',
+  unlock_felidian_ability: '[😺解放]',
+  unlock_mustelid_ability: '[🦡解放]',
+  unlock_leporian_ability: '[🐰解放]',
+  unlock_cervin_ability: '[🦌解放]',
+  unlock_murid_ability: '[🐭解放]',
+  unlock_procyonian_ability: '[🦝解放]',
+};
+
 function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'raw' | 'friendly' }): string {
   const defenseMultiplierStyle = options?.defenseMultiplierStyle ?? 'raw';
   const parts: string[] = [];
@@ -933,6 +946,8 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
       parts.push(`${name}強化+${b.value}`);
     } else if (b.type === 'unimplemented_bonus') {
       parts.push(`(${b.unimplementedLabel || '未実装ボーナス'})`);
+    } else if (b.type in UNLOCK_ABILITY_BONUS_LABELS) {
+      parts.push(UNLOCK_ABILITY_BONUS_LABELS[b.type as BonusType] ?? '[解放]');
     }
   }
   return parts.join(', ');

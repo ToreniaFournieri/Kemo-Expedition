@@ -532,6 +532,56 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "味方を攻撃するようになる"
       },
       {
+        "key": "c.unlock_caninian_ability",
+        "label": "[(🐶)解放]",
+        "description": "(🐶, ケイナイアン)のもう一つのアビリティ(再起)が解放されます"
+      },
+      {
+        "key": "c.unlock_lupinian_ability",
+        "label": "[(🐺)解放]",
+        "description": "(🐺, ルピニアン)のもう一つのアビリティ(再反撃)が解放されます"
+      },
+      {
+        "key": "c.unlock_vulpinian_ability",
+        "label": "[(🦊)解放]",
+        "description": "(🦊, ヴァルピニアン)のもう一つのアビリティ(狡猾)が解放されます"
+      },
+      {
+        "key": "c.unlock_ursan_ability",
+        "label": "[(🐻)解放]",
+        "description": "(🐻, ウルサン)のもう一つのアビリティ(サイボーグ化1)が解放されます"
+      },
+      {
+        "key": "c.unlock_felidian_ability",
+        "label": "[(😺)解放]",
+        "description": "(😺, フェリディアン)のもう一つのアビリティ(援護射撃)が解放されます"
+      },
+      {
+        "key": "c.unlock_mustelid_ability",
+        "label": "[(🦡)解放]",
+        "description": "(🦡, マステリド)のもう一つのアビリティ(行商)が解放されます"
+      },
+      {
+        "key": "c.unlock_leporian_ability",
+        "label": "[(🐰)解放]",
+        "description": "(🐰, レポリアン)のもう一つのアビリティ(魔法反撃)が解放されます"
+      },
+      {
+        "key": "c.unlock_cervin_ability",
+        "label": "[(🦌)解放]",
+        "description": "(🦌, セルヴィン)のもう一つのアビリティ(予言1)が解放されます"
+      },
+      {
+        "key": "c.unlock_murid_ability",
+        "label": "[(🐭)解放]",
+        "description": "(🐭, ミュリッド)のもう一つのアビリティ(未設定)が解放されます"
+      },
+      {
+        "key": "c.unlock_procyonian_ability",
+        "label": "[(🦝)解放]",
+        "description": "(🦝, プロキオニアン)のもう一つのアビリティ(未設定)が解放されます"
+      },
+      {
         "key": "c.armor_x1.x",
         "label": "[鎧x1.x]",
         "description": "鎧カテゴリ装備の効果が 1.x 倍"
