@@ -172,7 +172,7 @@
 | `c.wand_x1.x` | [杖x1.x] | 杖カテゴリ装備の効果が 1.x 倍  |
 | `c.grimoire_x1.x` | [書x1.x] | 魔導書カテゴリ装備の効果が 1.x 倍  |
 | `c.catalyst_x1.x` | [媒x1.x] | 触媒カテゴリ装備の効果が 1.x 倍  |
-| `c.unlock_(race)_ability` | [(race)解放] | (race)のもう一つのアビリティ(unlock ability name)が解放されます　|
+| `c.unlock_(race)_ability` | [(race icon)解放] | (race icon, race name)のもう一つのアビリティ(unlock ability name)が解放されます　|
 
 #### 2.1.4 d. bonus
 - "d. 増加ボーナス説明 (重複有効)"
