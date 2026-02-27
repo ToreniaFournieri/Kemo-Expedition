@@ -3926,6 +3926,7 @@ function ExpeditionTab({
                             <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
                               <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
                               {entry.details.map((log, j) => {
+                                const isResurrectLog = log.action.includes('は致命ダメージを食いしばって耐えた！');
                                 const isPhaseAction = log.actor !== 'deity' && log.actor !== 'effect';
                                 const previousLog = j > 0 ? entry.details[j - 1] : undefined;
                                 const isStealthEffectLog = log.actor === 'effect' && (log.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || log.action.includes('への攻撃はすべて幻だった！'));
@@ -3937,7 +3938,7 @@ function ExpeditionTab({
                                 const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousContinuesCurrentPhase || previousLog.phase !== log.phase);
                                 const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
                                 const phaseLabel = isPhaseAction
-                                  ? (log.isCounter ? '-' : `${log.initiativeRoll ?? '?'}`)
+                                  ? (log.isCounter || isResurrectLog ? '-' : `${log.initiativeRoll ?? '?'}`)
                                   : log.actor === 'deity' ? '末' : (isStealthEffectLog || isCounterNegationEffectLog) ? '-' : '効';
                                 const phaseHeader = log.phase === 'long'
                                   ? '遠距離攻撃フェーズ'
@@ -3962,7 +3963,11 @@ function ExpeditionTab({
                                 if (log.actor === 'effect') {
                                   actionText = log.action;
                                 } else if (isEnemy) {
-                                  actionText = allMissed ? `敵が${log.action.replace('！', 'したが外れた！')}` : `敵が${log.action}`;
+                                  if (isResurrectLog) {
+                                    actionText = `敵${log.action}`;
+                                  } else {
+                                    actionText = allMissed ? `敵が${log.action.replace('！', 'したが外れた！')}` : `敵が${log.action}`;
+                                  }
                                 } else {
                                   actionText = allMissed ? `${log.action.replace(/ の.*$/, '')} の攻撃は外れた！` : log.action;
                                 }
@@ -3978,10 +3983,25 @@ function ExpeditionTab({
                                 const actionDisplay = resonanceMatch && !allMissed
                                   ? actionText.replace(/\(共鳴\+\d+%\)$/, '')
                                   : actionText;
+                                const shouldRenderResurrectBeforeHeader = isResurrectLog && shouldShowPhaseHeader;
 
                                 return (
                                   <div key={j}>
+                                    {shouldRenderResurrectBeforeHeader && (
+                                      <div className="flex justify-between text-gray-600">
+                                        <span>
+                                          <span className="text-gray-400">[{phaseLabel}]</span>{' '}
+                                          {actionDisplay}
+                                          {log.note && <span className="text-gray-400"> {log.note}</span>}
+                                          {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
+                                        </span>
+                                        {log.damage !== undefined && log.damage > 0 && (
+                                          <span className={isEnemy ? 'text-accent' : 'text-sub'}>({emoji} {formatNumber(log.damage)})</span>
+                                        )}
+                                      </div>
+                                    )}
                                     {shouldShowPhaseHeader && <div className="text-gray-400">({phaseHeader})</div>}
+                                    {(!isResurrectLog || !shouldRenderResurrectBeforeHeader) && (
                                     <div className={`flex justify-between text-gray-600 ${shouldShowEndPhaseSpacer ? 'mt-1' : ''}`}>
                                       <span>
                                         <span className="text-gray-400">[{phaseLabel}]</span>{' '}
@@ -3993,6 +4013,7 @@ function ExpeditionTab({
                                         <span className={isEnemy ? 'text-accent' : 'text-sub'}>({emoji} {formatNumber(log.damage)})</span>
                                       )}
                                     </div>
+                                    )}
                                   </div>
                                 );
                               })}
@@ -4885,6 +4906,7 @@ function DiaryTab({
                           <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
                             <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
                             {entry.details.map((battleLog, j) => {
+                              const isResurrectLog = battleLog.action.includes('は致命ダメージを食いしばって耐えた！');
                               const isPhaseAction = battleLog.actor !== 'deity' && battleLog.actor !== 'effect';
                               const previousLog = j > 0 ? entry.details[j - 1] : undefined;
                               const isStealthEffectLog = battleLog.actor === 'effect' && (battleLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || battleLog.action.includes('への攻撃はすべて幻だった！'));
@@ -4896,7 +4918,7 @@ function DiaryTab({
                               const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousContinuesCurrentPhase || previousLog.phase !== battleLog.phase);
                               const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
                               const phaseLabel = isPhaseAction
-                                ? (battleLog.isCounter ? '-' : `${battleLog.initiativeRoll ?? '?'}`)
+                                ? (battleLog.isCounter || isResurrectLog ? '-' : `${battleLog.initiativeRoll ?? '?'}`)
                                 : battleLog.actor === 'deity' ? '末' : (isStealthEffectLog || isCounterNegationEffectLog) ? '-' : '効';
                               const phaseHeader = battleLog.phase === 'long'
                                 ? '遠距離攻撃フェーズ'
@@ -4929,7 +4951,9 @@ function DiaryTab({
                               if (battleLog.actor === 'effect') {
                                 actionText = battleLog.action;
                               } else if (isEnemy) {
-                                if (allMissed) {
+                                if (isResurrectLog) {
+                                  actionText = `敵${battleLog.action}`;
+                                } else if (allMissed) {
                                   actionText = `敵が${battleLog.action.replace('！', 'したが外れた！')}`;
                                 } else {
                                   actionText = `敵が${battleLog.action}`;
@@ -4954,10 +4978,27 @@ function DiaryTab({
                               const actionDisplay = resonanceMatch && !allMissed
                                 ? actionText.replace(/\(共鳴\+\d+%\)$/, '')
                                 : actionText;
+                              const shouldRenderResurrectBeforeHeader = isResurrectLog && shouldShowPhaseHeader;
 
                               return (
                                 <div key={j}>
+                                  {shouldRenderResurrectBeforeHeader && (
+                                    <div className="flex justify-between text-gray-600"> 
+                                      <span>
+                                        <span className="text-gray-400">[{phaseLabel}]</span>{' '}
+                                        {actionDisplay}
+                                        {battleLog.note && <span className="text-gray-400"> {battleLog.note}</span>}
+                                        {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
+                                      </span>
+                                      {battleLog.damage !== undefined && battleLog.damage > 0 && (
+                                        <span className={isEnemy ? 'text-accent' : 'text-sub'}>
+                                          ({emoji} {formatNumber(battleLog.damage)})
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
                                   {shouldShowPhaseHeader && <div className="text-gray-400">({phaseHeader})</div>}
+                                  {(!isResurrectLog || !shouldRenderResurrectBeforeHeader) && (
                                   <div className={`flex justify-between text-gray-600 ${shouldShowEndPhaseSpacer ? 'mt-1' : ''}`}>
                                     <span>
                                       <span className="text-gray-400">[{phaseLabel}]</span>{' '}
@@ -4971,6 +5012,7 @@ function DiaryTab({
                                       </span>
                                     )}
                                   </div>
+                                  )}
                                 </div>
                               );
                             })}
