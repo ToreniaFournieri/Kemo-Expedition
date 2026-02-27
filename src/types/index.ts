@@ -126,6 +126,11 @@ export interface Ability {
   description: string;
 }
 
+export interface EnemyAbility {
+  id: AbilityId;
+  level: number;
+}
+
 // Base Stats
 export interface BaseStats {
   vitality: number;
@@ -350,7 +355,7 @@ export interface EnemyDef {
   poolId: number;
   name: string;
   enemyClass: EnemyClassId;
-  abilities: AbilityId[];
+  abilities: EnemyAbility[];
   accuracyBonus: number;
   evasionBonus: number;
   hp: number;

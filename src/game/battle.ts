@@ -44,10 +44,12 @@ function getCharacterRageAmplifier(charStats: ComputedCharacterStats, partyHp: n
 }
 
 function getEnemyRageAmplifier(enemy: EnemyDef, enemyHp: number): number {
-  if (!enemy.abilities.includes('rage')) return 1.0;
+  const rageLevel = getEnemyAbilityLevel(enemy, 'rage');
+  if (rageLevel <= 0) return 1.0;
   if (enemy.hp <= 0) return 1.0;
   const hpRatio = Math.max(0, Math.min(1, enemyHp / enemy.hp));
-  return Math.min(2.0, 1.0 + (1.0 - hpRatio));
+  const multiplierPerDamageRate = rageLevel >= 2 ? 1.2 : 1.0;
+  return Math.min(2.0, 1.0 + (multiplierPerDamageRate * (1.0 - hpRatio)));
 }
 
 function toRageBonusPercent(rageAmplifier: number): number {
@@ -536,7 +538,7 @@ function calculateCharacterDamage(
   const enemyEvasion = enemy.evasionBonus;
 
   const actorFocusLevel = charStats.abilities.find(a => a.id === 'focus')?.level ?? 0;
-  const enemyDeflectionLevel = enemy.abilities.includes('deflection') ? 1 : 0;
+  const enemyDeflectionLevel = getEnemyAbilityLevel(enemy, 'deflection');
 
   let hits = 0;
   let damage = 0;
@@ -567,7 +569,7 @@ function rollInitiative(firstStrikeLevel: number): number {
 }
 
 function getEnemyFirstStrikeLevel(enemy: EnemyDef): number {
-  return enemy.abilities.includes('first_strike') ? 1 : 0;
+  return getEnemyAbilityLevel(enemy, 'first_strike');
 }
 
 function getDeflectionLevel(charStats: ComputedCharacterStats): number {
@@ -575,7 +577,11 @@ function getDeflectionLevel(charStats: ComputedCharacterStats): number {
 }
 
 function getEnemyFocusLevel(enemy: EnemyDef): number {
-  return enemy.abilities.includes('focus') ? 1 : 0;
+  return getEnemyAbilityLevel(enemy, 'focus');
+}
+
+function getEnemyAbilityLevel(enemy: EnemyDef, abilityId: AbilityId): number {
+  return enemy.abilities.find(a => a.id === abilityId)?.level ?? 0;
 }
 
 function createNullCounterPool(characterStats: ComputedCharacterStats[]): Map<number, number> {
@@ -610,11 +616,19 @@ function consumeNullCounter(
 }
 
 function enemyHasCounter(enemy: EnemyDef): boolean {
-  return enemy.abilities.includes('counter');
+  return getEnemyAbilityLevel(enemy, 'counter') > 0;
 }
 
 function enemyHasReAttack(enemy: EnemyDef): boolean {
-  return enemy.abilities.includes('re_attack');
+  return getEnemyAbilityLevel(enemy, 're_attack') > 0;
+}
+
+function getEnemyReAttackNoAMultiplier(enemy: EnemyDef): number {
+  const level = getEnemyAbilityLevel(enemy, 're_attack');
+  if (level <= 0) return 0;
+  if (level >= 3) return 1.0;
+  if (level === 2) return 0.7;
+  return 0.5;
 }
 
 function hasCounter(charStats: ComputedCharacterStats, phase: BattlePhase): boolean {
@@ -671,7 +685,7 @@ function getCoveringFireNoAMultiplier(charStats: ComputedCharacterStats): number
 }
 
 function enemyHasReCounter(enemy: EnemyDef): boolean {
-  return enemy.abilities.includes('re_counter');
+  return getEnemyAbilityLevel(enemy, 're_counter') > 0;
 }
 
 // Hit detection functions are available for future use when implementing
@@ -860,7 +874,7 @@ export function executeBattle(
     }
 
     const reCounterNoAMultiplier = getReCounterNoAMultiplier(targetCharStats);
-    if (partyHp <= 0 || enemyHp <= 0 || !targetChar || reCounterNoAMultiplier <= 0 || enemy.abilities.includes('null_counter')) {
+    if (partyHp <= 0 || enemyHp <= 0 || !targetChar || reCounterNoAMultiplier <= 0 || getEnemyAbilityLevel(enemy, 'null_counter') > 0) {
       return;
     }
 
@@ -982,8 +996,7 @@ export function executeBattle(
           const attacksByTarget = new Map<number, { hitDamages: number[]; totalAttempts: number; charStats: ComputedCharacterStats }>();
           const enemyAccuracyPotency = 1.0;
           const enemyAccuracyBonus = enemy.accuracyBonus;
-          const enemyResonanceLevel = enemy.abilities.includes('resonance') ? 1 : 0;
-          // Nth hit is counted per attack sequence; re-attacks/counters do not inherit prior hit decay.
+          const enemyResonanceLevel = getEnemyAbilityLevel(enemy, 'resonance');
           let enemyHitIndex = 1;
           let enemySuccessfulHits = 0;
 
@@ -1127,7 +1140,7 @@ export function executeBattle(
               phase === 'mid'
               && appliedDamage > 0
               && getMagicalCounterNoAMultiplier(attack.charStats) > 0
-              && !enemy.abilities.includes('null_counter')
+              && getEnemyAbilityLevel(enemy, 'null_counter') <= 0
             ) {
               magicalCounterCandidates.set(charId, attack.charStats);
             }
@@ -1135,7 +1148,7 @@ export function executeBattle(
             if (partyHp <= 0 || enemyHp <= 0) continue;
             if (appliedDamage <= 0 || !hasCounter(attack.charStats, phase)) continue;
 
-            if (enemy.abilities.includes('null_counter')) {
+            if (getEnemyAbilityLevel(enemy, 'null_counter') > 0) {
               log.push({
                 phase,
                 actor: 'effect',
@@ -1294,10 +1307,10 @@ export function executeBattle(
 
         runEnemyAttack(noA, false);
         if (enemyHasReAttack(enemy) && enemyHp > 0 && partyHp > 0) {
-          runEnemyAttack(Math.ceil(noA * 0.5), true);
+          runEnemyAttack(Math.ceil(noA * getEnemyReAttackNoAMultiplier(enemy)), true);
         }
 
-        if (phase === 'mid' && enemyHp > 0 && partyHp > 0 && !enemy.abilities.includes('null_counter')) {
+        if (phase === 'mid' && enemyHp > 0 && partyHp > 0 && getEnemyAbilityLevel(enemy, 'null_counter') <= 0) {
           for (const [charId, magicalCounterStats] of magicalCounterCandidates) {
             if (enemyHp <= 0 || partyHp <= 0) break;
 

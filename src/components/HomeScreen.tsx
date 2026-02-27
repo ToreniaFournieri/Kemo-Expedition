@@ -5465,14 +5465,12 @@ function SettingTab({
   };
 
   const formatAbilitiesWithLevels = (
-    abilities: string[],
-    abilityLevels?: Array<{ id: string; level: number }>,
+    abilities: Array<{ id: string; level: number }>,
   ): string => {
     if (abilities.length === 0) return 'なし';
 
-    const levelMap = new Map((abilityLevels ?? []).map((ability) => [ability.id, ability.level]));
     return abilities
-      .map((abilityId) => `${ABILITY_NAMES[abilityId] ?? abilityId}${levelMap.get(abilityId) ?? 1}`)
+      .map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${ability.level}`)
       .join(', ');
   };
 
@@ -5868,7 +5866,7 @@ function SettingTab({
                         <div>{formatEnemyElementalResistanceLine(godRuntimeEnemy)}</div>
                       </>
                     )}
-                    <div>アビリティ: {formatAbilitiesWithLevels(god.abilities.map((ability) => ability.id), god.abilities)}</div>
+                    <div>アビリティ: {formatAbilitiesWithLevels(god.abilities)}</div>
                     <div>待機探検地: {god.expedition}</div>
                     <div className="pt-1">ドロップ候補: {getGodDropCandidates(god.name)}</div>
                   </div>

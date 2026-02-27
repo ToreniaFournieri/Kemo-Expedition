@@ -756,7 +756,7 @@ function createGodEnemy(enemy: EnemyDef, dungeonId: number, dungeonName: string,
       ...enemy,
       name: godName,
       enemyClass: godProfile.enemyClass,
-      abilities: godProfile.abilities.map((ability) => ability.id),
+      abilities: godProfile.abilities,
       dropItemId: getGodMythicDropId(godProfile.dropItemTier, godProfile.dropItemCategories, enemy.id),
     };
   }
