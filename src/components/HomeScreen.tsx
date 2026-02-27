@@ -98,6 +98,7 @@ const EXPLORING_PROGRESS_STEP_MS = 1000;
 const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
 const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
 const AFK_MAX_ELAPSED_MS = 600 * 60 * 1000;
+const AFK_BACKGROUND_CHUNK_MS = 120 * 1000;
 const HEADER_HEIGHT_CLASS = 'pt-[108px]';
 type GameMode = 'm.kemo' | 'm.luna';
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
@@ -1181,6 +1182,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const lastCheckpointAtRef = useRef(Date.now());
   const latestPartiesRef = useRef(state.parties);
   const autoRepeatEnabledRef = useRef(isAutoRepeatEnabled);
+  const [pendingAfkMs, setPendingAfkMs] = useState(0);
 
   useEffect(() => {
     latestPartiesRef.current = state.parties;
@@ -1287,6 +1289,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   }, [isAutoRepeatEnabled, partyCycles]);
 
   useEffect(() => {
+    if (pendingAfkMs > 0) return;
     if (!shouldShowAfkSummaryRef.current) return;
     const baselineStats = afkSummaryBaselineRef.current;
     if (!baselineStats) return;
@@ -1311,7 +1314,22 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
 
       actions.addNotification(`PT${partyIndex + 1}: ${body}`);
     });
-  }, [actions, state.parties]);
+  }, [actions, pendingAfkMs, state.parties]);
+
+  useEffect(() => {
+    if (pendingAfkMs <= 0) return;
+
+    const timerId = window.setTimeout(() => {
+      const autoRepeatEnabled = autoRepeatEnabledRef.current;
+      const chunkElapsedMs = Math.min(pendingAfkMs, AFK_BACKGROUND_CHUNK_MS);
+      actions.simulateAfk(chunkElapsedMs, autoRepeatEnabled, gameMode === 'm.luna');
+      setPendingAfkMs((prev) => Math.max(0, prev - chunkElapsedMs));
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [actions, gameMode, pendingAfkMs]);
 
   const pendingGodsBattleByPartyRef = useRef<Record<number, boolean>>({});
 
@@ -1334,7 +1352,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     // Long background spans should be simulated inside the reducer so each expedition
     // phase reads the latest pending profit / HP values instead of stale render snapshots.
     if (elapsedMs >= 60_000) {
-      actions.simulateAfk(elapsedMs, autoRepeatEnabled, gameMode === 'm.luna');
+      setPendingAfkMs((prev) => Math.min(AFK_MAX_ELAPSED_MS, prev + elapsedMs));
       setPartyCycles((prev) => {
         const resetAt = now;
         const next: Record<number, PartyCycleRuntime> = {};
