@@ -3078,10 +3078,10 @@ function PartyTab({
                   },
                   {
                     key: 'penetration',
-                    text: `貫通:+${formatNumber(Math.round(stats.penetMultiplier * 100))}`,
+                    text: `貫通:+${formatNumber(Math.round(stats.penetMultiplier * 100))}%`,
                     helpTitle: '貫通',
                     helpLines: [
-                      `貫通: +${formatNumber(Math.round(stats.penetMultiplier * 100))}`,
+                      `貫通: +${formatNumber(Math.round(stats.penetMultiplier * 100))}%`,
                       `敵の防御力を ${Math.round(stats.penetMultiplier * 100)}% 分無視する`,
                     ],
                   },
