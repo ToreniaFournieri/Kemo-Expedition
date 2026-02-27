@@ -316,7 +316,7 @@ PT2...
   - 次の目標: show next Loot-Gate condition. 
 
 - **Gods Battle (神魔戦)**
-  - Loot Gate Condition: Collect 1 Boss rare items in dungeons to unlock Gods Battle.
+  - Loot Gate Condition: Collect 10 Boss rare items in dungeons to unlock Gods Battle.
     - "特殊目標: `x.expedition`のボスレアアイテム 0/1 で神魔`godname`戦"
   - UI / Trigger:
     - When the condition is met, the 「出撃」(Deploy) button changes to 「神魔戦」(Gods Battle).
