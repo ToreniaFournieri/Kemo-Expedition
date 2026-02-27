@@ -316,7 +316,7 @@ PT2...
   - 次の目標: show next Loot-Gate condition. 
 
 - **Gods Battle (神魔戦)**
-  - Loot Gate Condition: Collect 10 Boss rare items in dungeons to unlock Gods Battle.
+  - Loot Gate Condition: Collect 10 Boss rare items in dungeons to unlock Gods Battle. (If it is /dev/ environment, 1 Boss rare items instead)
     - "特殊目標: `x.expedition`のボスレアアイテム 0/1 で神魔`godname`戦"
   - UI / Trigger:
     - When the condition is met, the 「出撃」(Deploy) button changes to 「神魔戦」(Gods Battle).
@@ -331,7 +331,7 @@ PT2...
       - The player can repeat the cycle.
     - **On Defeat**
       - The 「神魔戦」 button remains available.
-      - The player may retry the Gods Battle without re-collecting Boss rare items.
+      - The player may retry the Gods Battle without re-collecting Boss rare items. 
 
 #### 8.5 Base(拠点)
 - It has two tabs inside Base tab. Inventory(所持品), Shop(お店), Workshop(工房), Altar(祭壇). (same visual UI as List of party (PT1, PT2...) tab in Party tab)
