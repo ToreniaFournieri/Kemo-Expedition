@@ -53,6 +53,8 @@
     - Multi-line Trigger: If an equipment change affects multiple stats, each stat change generates its own notification block. Same clculatuon and display logic of status.  
 		- Positive Change: 物防 24 → 52 (Normal style, Bold text)
 		- Negative Change: 近攻 120 → 84 (Normal style, Normal weight text)
+  - unlock ability. if character gains `c.unlock_(race)_ability`, and the race matches woth his race, notification like: "ケイナイアンの再起アビリティが解放されました"
+    - lost its unlock conditon: "ケイナイアンの再起アビリティがロックされました"
 
  - Level up
    - Example: "PT1 はレベルが12に上がった(装備枠が+1増えた)" with expanded equipment slot
