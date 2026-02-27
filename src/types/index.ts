@@ -89,6 +89,16 @@ export type BonusType =
   | 'growth_xV'
   | 'upgrade_V'
   | 'ability_upgrade'
+  | 'unlock_caninian_ability'
+  | 'unlock_lupinian_ability'
+  | 'unlock_vulpinian_ability'
+  | 'unlock_ursan_ability'
+  | 'unlock_felidian_ability'
+  | 'unlock_mustelid_ability'
+  | 'unlock_leporian_ability'
+  | 'unlock_cervin_ability'
+  | 'unlock_murid_ability'
+  | 'unlock_procyonian_ability'
   | 'unimplemented_bonus'
   // Abilities
   | 'ability';
@@ -134,6 +144,7 @@ export interface ItemDef {
   id: number;
   category: ItemCategory;
   name: string;
+  bonuses?: Bonus[];
   baseMultiplier?: number;
   meleeAttack?: number;
   meleeNoA?: number;
