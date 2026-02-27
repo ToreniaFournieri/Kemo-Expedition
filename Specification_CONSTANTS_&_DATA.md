@@ -613,19 +613,22 @@
 | 7 | 7 | 48 | レポリアンの庭園(Leporian Garden) | 園 |
 | 8 | 8 | 56 | セルヴィンの谷(Cervin Vale) | 谷 |
 
-- Strength of enemy table
+- Strength of enemy by expeditions and floors. 
+  - n = `x.exp_tier`
 
-| `x.exp_tier` | `x.exp_HP_mult` | `x.exp_atk_mult` | `x.exp_NoA_mult` | `x.exp_atk_amp_mult` | `x.exp_def_mult` | `x.exp_def_amp_mult` |
-|---|----|-----|-----|----|----|-----|
-| 1 | x1 | x1 | x1 | x1 | x1 | x1 |
-| 2 | x4 | x2 | x2 | x1.5 | x2 | x0.8 |
-| 3 | x16 | x4 | x3 | x1.9 | x4 | x0.64 |
-| 4 | x64 | x8 | x4 | x2.2 | x8 | x0.51 |
-| 5 | x256 | x16 | x5 | x2.4 | x16 | x0.41 |
-| 6 | x1,024 | x32 | x6 | x2.5 | x32 | x0.33 |
-| 7 | x4,096 | x64 | x7 | x2.6 | x64 | x0.26 |
-| 8 | x16,384 | x128 | x8 | x2.7 | x128 | x0.21 |
-
+  - `x.exp_HP_mult`(1)=1, `x.exp_HP_mult`(n)=  `x.exp_HP_mult`(n-1)*(4 - 0.3*(n -2))
+  - `x.exp_atk_mult`(1)=1, `x.exp_atk_mult`(n)= `x.exp_atk_mult`(n-1)*(2 - 0.1*(n -2))
+  - `x.exp_atk_amp_mult`(1)=1, `x.exp_atk_amp_mult`(n)= `x.exp_atk_amp_mult`(n-1)*(1.40 - 0.4 *(n -2))
+  - `x.exp_NoA_mult`(1)=1, `x.exp_NoA_mult`(n)= `x.exp_NoA_mult`(n-1) + (1.0 -
+  0.1 * (n - 2))
+  - `x.exp_def_mult`(1)=1, `x.exp_def_mult`(n)= `x.exp_def_mult`(n-1)*(2 - 0.1 * (n -2)
+  - `x.exp_def_amp_mult`(1)=1, `x.exp_def_amp_mult`(n)= 0.90^(n-1)
+  - `x.floor_HP_mult`: 1.149^(`x.floor`-1)*(Notmal:1, Elite:1.5, Boss:2.0)
+  - `x.floor_atk_mult`: 1.0845^(`x.floor`-1)*(Normal:1, Elite:1.2, Boss:1.5)
+  - `x.floor_atk_amp_mult`: 1.03^(`x.floor`-1) *(Normal:1, Elite:1.02, Boss:1.05)
+  - `x.floor_NoA_mult`: 1.05^(`x.floor`-1)
+  - `x.floor_def_mult`: 1.0845^(`x.floor`-1)*(Normal:1, Elite:1.2, Boss:1.5)
+  - `x.floor_def_amp_mult`: 0.97^(`x.floor`-1)
 
 - `x.gods_mult`
   - If enemy is god, apllpy them. 
@@ -654,20 +657,20 @@
 
 - `x.expedition` layout overview:
 
-| `x.floor` | `x.room` | `x.room_type` | `x.floor_HP_mult` | `x.floor_atk_mult` | `x.floor_NoA_mult` | `x.floor_atk_amp_mult` | `x.floor_def_mult` | `x.floor_def_amp_mult` | `x.Spawn_pool`, drops | `x.key_concept` |
-|----|----|----|-----|-----|-----|-----|-----|-----|-----|-----|
-| 1 | 1-3 | `x.battle_Normal` | x1.0 | x1.0 | x1.0 | x1.00 | x1.0 | x1.0 | pool_1 | easy farming |
-| 1 | 4 | `x.battle_Elite` | x1.50 | x1.23 | x1.0 | x1.05 | x1.23 | x1.0 | fixed Elite. elite rare  `i.sword`, `i.armor` | Class:Rogue. Checks if you have equipped items properly. |
-| 2 | 1-3 | `x.battle_Normal` | x1.25 | x1.10 | x1.0 | x1.02 | x1.10 | x0.97 | pool_2 | |
-| 2 | 4 | `x.battle_Elite` | x1.85 | x1.34 | x1.0 | x1.09 | x1.34 | x0.97 | fixed Elite. elite rare  `i.shield`, `i.robe` | Class:Fighter. Checks if you have equipped enough offensive items. |
-| 3 | 1-3 | `x.battle_Normal` | x1.56 | x1.20 | x1.0 | x1.04 | x1.20 | x0.94 | pool_3  |  |
-| 3 | 4 | `x.battle_Elite` | x2.34 | x1.47 | x1.0 | x1.12 | x1.47 | x0.94 | fixed Elite. elite rare  `i.arrow`, `i.bolt`, `i.archery` | Class:Ranger. Check if you have enough physical defensive items. |
-| 4 | 1-3 | `x.battle_Normal` | x1.95 | x1.32 | x1.0 | x1.06 | x1.32 | x0.92 | pool_4 | |
-| 4 | 4 | `x.battle_Elite` | x3.43 | x1.61 | x1.0 | x1.14 | x1.61 | x0.92 | fixed Elite. elite rare  `i.gauntlet`, `i.katana` | Class:Duelist. Checks if you have archery or magic items. (kill it before his melee attacks) |
-| 5 | 1-3 | `x.battle_Normal` | x2.44 | x1.44 | x1.0 | x1.07 | x1.44 | x0.89 | pool_5  | |
-| 5 | 4 | `x.battle_Elite` | x4.04 | x1.76 | x1.0 | x1.15 | x1.76 | x0.89 | fixed Elite. elite rare  `i.wand`, `i.grimoire`, `i.catalyst` | Class:Mage. Checks if you have equipped enough magical defensive items.  |
-| 6 | 1-3 | `x.battle_Normal` | x3.05 | x1.58 | x1.0 | x1.08 | x1.58 | x0.86 | pool_6 | |
-| 6 | 4 | `x.battle_Boss` | x6.10 | x2.24 | x1.0 | x1.20 | x2.24 | x0.86 | fixed Boss. boss rare (see bellows) | Checks if you have enough tital power. |
+| `x.floor` | `x.room` | `x.room_type` | `x.Spawn_pool`, drops | `x.key_concept` |
+|----|----|----|-----|-----|
+| 1 | 1-3 | `x.battle_Normal` | pool_1 | easy farming |
+| 1 | 4 | `x.battle_Elite` | fixed Elite. elite rare  `i.sword`, `i.armor` | Class:Rogue. Checks if you have equipped items properly. |
+| 2 | 1-3 | `x.battle_Normal` | pool_2 | |
+| 2 | 4 | `x.battle_Elite` | fixed Elite. elite rare  `i.shield`, `i.robe` | Class:Fighter. Checks if you have equipped enough offensive items. |
+| 3 | 1-3 | `x.battle_Normal` | pool_3 |  |
+| 3 | 4 | `x.battle_Elite` | fixed Elite. elite rare  `i.arrow`, `i.bolt`, `i.archery` | Class:Ranger. Check if you have enough physical defensive items. |
+| 4 | 1-3 | `x.battle_Normal` | pool_4 | |
+| 4 | 4 | `x.battle_Elite` | fixed Elite. elite rare  `i.gauntlet`, `i.katana` | Class:Duelist. Checks if you have archery or magic items. (kill it before his melee attacks) |
+| 5 | 1-3 | `x.battle_Normal` | pool_5  | |
+| 5 | 4 | `x.battle_Elite` | fixed Elite. elite rare  `i.wand`, `i.grimoire`, `i.catalyst` | Class:Mage. Checks if you have equipped enough magical defensive items.  |
+| 6 | 1-3 | `x.battle_Normal` | pool_6 | |
+| 6 | 4 | `x.battle_Boss` | fixed Boss. boss rare (see bellows) | Checks if you have enough tital power. |
 
 - each pool has enemies with unique item drops. (*note:* common items are not specifically mentioned but are dropped.)
   
