@@ -2,49 +2,73 @@ import { Dungeon, ExpeditionEnemyMultipliers, FloorDef, RoomType } from '../type
 
 type CombatMultipliers = NonNullable<FloorDef['multipliers']>;
 
-const FLOOR_ROOM_MULTIPLIERS: Record<number, Record<RoomType, CombatMultipliers>> = {
-  1: {
+const round2 = (value: number): number => Number(value.toFixed(2));
+
+function buildFloorRoomMultipliers(maxFloor: number): Record<number, Record<RoomType, CombatMultipliers>> {
+  const roomTypeMultipliers: Record<RoomType, CombatMultipliers> = {
     battle_Normal: { hp: 1.0, attack: 1.0, noa: 1.0, attackAmplifier: 1.0, defense: 1.0, defenseAmplifier: 1.0 },
-    battle_Elite: { hp: 1.50, attack: 1.23, noa: 1.0, attackAmplifier: 1.05, defense: 1.23, defenseAmplifier: 1.0 },
-    battle_Boss: { hp: 6.10, attack: 2.24, noa: 1.0, attackAmplifier: 1.20, defense: 2.24, defenseAmplifier: 0.86 },
-  },
-  2: {
-    battle_Normal: { hp: 1.25, attack: 1.10, noa: 1.0, attackAmplifier: 1.02, defense: 1.10, defenseAmplifier: 0.97 },
-    battle_Elite: { hp: 1.85, attack: 1.34, noa: 1.0, attackAmplifier: 1.09, defense: 1.34, defenseAmplifier: 0.97 },
-    battle_Boss: { hp: 6.10, attack: 2.24, noa: 1.0, attackAmplifier: 1.20, defense: 2.24, defenseAmplifier: 0.86 },
-  },
-  3: {
-    battle_Normal: { hp: 1.56, attack: 1.20, noa: 1.0, attackAmplifier: 1.04, defense: 1.20, defenseAmplifier: 0.94 },
-    battle_Elite: { hp: 2.34, attack: 1.47, noa: 1.0, attackAmplifier: 1.12, defense: 1.47, defenseAmplifier: 0.94 },
-    battle_Boss: { hp: 6.10, attack: 2.24, noa: 1.0, attackAmplifier: 1.20, defense: 2.24, defenseAmplifier: 0.86 },
-  },
-  4: {
-    battle_Normal: { hp: 1.95, attack: 1.32, noa: 1.0, attackAmplifier: 1.06, defense: 1.32, defenseAmplifier: 0.92 },
-    battle_Elite: { hp: 3.43, attack: 1.61, noa: 1.0, attackAmplifier: 1.14, defense: 1.61, defenseAmplifier: 0.92 },
-    battle_Boss: { hp: 6.10, attack: 2.24, noa: 1.0, attackAmplifier: 1.20, defense: 2.24, defenseAmplifier: 0.86 },
-  },
-  5: {
-    battle_Normal: { hp: 2.44, attack: 1.44, noa: 1.0, attackAmplifier: 1.07, defense: 1.44, defenseAmplifier: 0.89 },
-    battle_Elite: { hp: 4.04, attack: 1.76, noa: 1.0, attackAmplifier: 1.15, defense: 1.76, defenseAmplifier: 0.89 },
-    battle_Boss: { hp: 6.10, attack: 2.24, noa: 1.0, attackAmplifier: 1.20, defense: 2.24, defenseAmplifier: 0.86 },
-  },
-  6: {
-    battle_Normal: { hp: 3.05, attack: 1.58, noa: 1.0, attackAmplifier: 1.08, defense: 1.58, defenseAmplifier: 0.86 },
-    battle_Elite: { hp: 6.10, attack: 2.24, noa: 1.0, attackAmplifier: 1.20, defense: 2.24, defenseAmplifier: 0.86 },
-    battle_Boss: { hp: 6.10, attack: 2.24, noa: 1.0, attackAmplifier: 1.20, defense: 2.24, defenseAmplifier: 0.86 },
-  },
-};
+    battle_Elite: { hp: 1.5, attack: 1.2, noa: 1.0, attackAmplifier: 1.02, defense: 1.2, defenseAmplifier: 1.0 },
+    battle_Boss: { hp: 2.0, attack: 1.5, noa: 1.0, attackAmplifier: 1.05, defense: 1.5, defenseAmplifier: 1.0 },
+  };
+
+  return Array.from({ length: maxFloor }, (_, index) => {
+    const floorNumber = index + 1;
+    const base = {
+      hp: Math.pow(1.149, floorNumber - 1),
+      attack: Math.pow(1.0845, floorNumber - 1),
+      noa: Math.pow(1.05, floorNumber - 1),
+      attackAmplifier: Math.pow(1.03, floorNumber - 1),
+      defense: Math.pow(1.0845, floorNumber - 1),
+      defenseAmplifier: Math.pow(0.97, floorNumber - 1),
+    };
+
+    const roomMultipliers = Object.fromEntries(
+      (Object.entries(roomTypeMultipliers) as [RoomType, CombatMultipliers][]).map(([roomType, roomMult]) => [
+        roomType,
+        {
+          hp: round2(base.hp * roomMult.hp),
+          attack: round2(base.attack * roomMult.attack),
+          noa: round2(base.noa * roomMult.noa),
+          attackAmplifier: round2(base.attackAmplifier * roomMult.attackAmplifier),
+          defense: round2(base.defense * roomMult.defense),
+          defenseAmplifier: round2(base.defenseAmplifier * roomMult.defenseAmplifier),
+        },
+      ])
+    ) as Record<RoomType, CombatMultipliers>;
+
+    return [floorNumber, roomMultipliers] as const;
+  }).reduce<Record<number, Record<RoomType, CombatMultipliers>>>((acc, [floorNumber, multipliers]) => {
+    acc[floorNumber] = multipliers;
+    return acc;
+  }, {});
+}
+
+const FLOOR_ROOM_MULTIPLIERS = buildFloorRoomMultipliers(6);
+
+function buildExpeditionEnemyMultipliers(maxTier: number): ExpeditionEnemyMultipliers[] {
+  const multipliers: ExpeditionEnemyMultipliers[] = [
+    { hp: 1, attack: 1, noa: 1, attackAmplifier: 1, defense: 1, defenseAmplifier: 1, experience: 1 },
+  ];
+
+  for (let tier = 2; tier <= maxTier; tier += 1) {
+    const prev = multipliers[tier - 2];
+    multipliers.push({
+      hp: round2(prev.hp * (4 - 0.3 * (tier - 2))),
+      attack: round2(prev.attack * (2 - 0.1 * (tier - 2))),
+      noa: round2(prev.noa + (1 - 0.1 * (tier - 2))),
+      attackAmplifier: round2(prev.attackAmplifier * (1.4 - 0.04 * (tier - 2))),
+      defense: round2(prev.defense * (2 - 0.1 * (tier - 2))),
+      defenseAmplifier: round2(Math.pow(0.9, tier - 1)),
+      experience: round2(prev.experience * (4 - 0.3 * (tier - 2))),
+    });
+  }
+
+  return multipliers;
+}
 
 // Expedition enemy multipliers (Specification 2.3.1)
 export const EXPEDITION_ENEMY_MULTIPLIERS: ExpeditionEnemyMultipliers[] = [
-  { hp: 1, attack: 1, noa: 1, attackAmplifier: 1, defense: 1, defenseAmplifier: 1, experience: 1 },
-  { hp: 4, attack: 2, noa: 2, attackAmplifier: 1.5, defense: 2, defenseAmplifier: 0.8, experience: 4 },
-  { hp: 16, attack: 4, noa: 3, attackAmplifier: 1.9, defense: 4, defenseAmplifier: 0.64, experience: 16 },
-  { hp: 64, attack: 8, noa: 4, attackAmplifier: 2.2, defense: 8, defenseAmplifier: 0.51, experience: 64 },
-  { hp: 256, attack: 16, noa: 5, attackAmplifier: 2.4, defense: 16, defenseAmplifier: 0.41, experience: 256 },
-  { hp: 1024, attack: 32, noa: 6, attackAmplifier: 2.5, defense: 32, defenseAmplifier: 0.33, experience: 1024 },
-  { hp: 4096, attack: 64, noa: 7, attackAmplifier: 2.6, defense: 64, defenseAmplifier: 0.26, experience: 4096 },
-  { hp: 16384, attack: 128, noa: 8, attackAmplifier: 2.7, defense: 128, defenseAmplifier: 0.21, experience: 16384 },
+  ...buildExpeditionEnemyMultipliers(8),
 ];
 
 // Create floor structure for a dungeon
