@@ -1,10 +1,11 @@
-import { AbilityId, EnemyClassId, ItemCategory } from '../types';
+import { AbilityId, Bonus, EnemyClassId, ItemCategory } from '../types';
 
 export type GodMythicDrop = {
   dropBy: string;
   tier: number;
   category: ItemCategory;
   name: string;
+  bonuses?: Bonus[];
 };
 
 export type GodEnemyProfile = {
@@ -60,26 +61,26 @@ export const MYTHIC_DROP_POOLS: Record<number, ItemCategory[]> = {
 };
 
 export const GOD_MYTHIC_DROPS: GodMythicDrop[] = [
-  { dropBy: 'Seiran', tier: 3, category: 'grimoire', name: '再生の聖典' },
-  { dropBy: 'Seiran', tier: 3, category: 'robe', name: '甦生の法衣' },
-  { dropBy: 'Garv', tier: 4, category: 'katana', name: '血脈断ちの刀' },
-  { dropBy: 'Garv', tier: 4, category: 'shield', name: '堅忍の護盾' },
-  { dropBy: 'Kyōen', tier: 5, category: 'archery', name: '狡猾なる長弓' },
-  { dropBy: 'Kyōen', tier: 5, category: 'bolt', name: '虚影貫きの矢' },
-  { dropBy: 'Dolvar', tier: 6, category: 'armor', name: '不壊の重装' },
-  { dropBy: 'Dolvar', tier: 6, category: 'gauntlet', name: '鉄城の篭手' },
-  { dropBy: 'Miora', tier: 7, category: 'sword', name: '芽吹きの剣' },
-  { dropBy: 'Miora', tier: 7, category: 'catalyst', name: '生命循環の触媒' },
-  { dropBy: 'Rondel', tier: 7, category: 'wand', name: '共鳴導く魔杖' },
-  { dropBy: 'Rondel', tier: 7, category: 'arrow', name: '反響する魔矢' },
-  { dropBy: 'Lira', tier: 8, category: 'arrow', name: '精密射の矢' },
-  { dropBy: 'Lira', tier: 8, category: 'archery', name: '千里照準の弓' },
-  { dropBy: 'Forne', tier: 8, category: 'armor', name: '宿命纏いの鎧' },
-  { dropBy: 'Forne', tier: 8, category: 'robe', name: '運命編みの外套' },
-  { dropBy: 'Skuva', tier: 8, category: 'shield', name: '夕闇の円盾' },
-  { dropBy: 'Skuva', tier: 8, category: 'catalyst', name: '薄暮の触媒' },
-  { dropBy: 'Tanue', tier: 8, category: 'sword', name: '幻映の剣' },
-  { dropBy: 'Tanue', tier: 8, category: 'gauntlet', name: '迷彩の篭手' },
+  { dropBy: 'Seiran', tier: 3, category: 'grimoire', name: '再生の聖典', bonuses: [{ type: 'unlock_caninian_ability', value: 1 }] },
+  { dropBy: 'Seiran', tier: 3, category: 'robe', name: '甦生の法衣', bonuses: [{ type: 'unlock_caninian_ability', value: 1 }] },
+  { dropBy: 'Garv', tier: 4, category: 'katana', name: '血脈断ちの刀', bonuses: [{ type: 'unlock_lupinian_ability', value: 1 }] },
+  { dropBy: 'Garv', tier: 4, category: 'shield', name: '堅忍の護盾', bonuses: [{ type: 'unlock_lupinian_ability', value: 1 }] },
+  { dropBy: 'Kyōen', tier: 5, category: 'archery', name: '狡猾なる長弓', bonuses: [{ type: 'unlock_vulpinian_ability', value: 1 }] },
+  { dropBy: 'Kyōen', tier: 5, category: 'bolt', name: '虚影貫きの矢', bonuses: [{ type: 'unlock_vulpinian_ability', value: 1 }] },
+  { dropBy: 'Dolvar', tier: 6, category: 'armor', name: '不壊の重装', bonuses: [{ type: 'unlock_ursan_ability', value: 1 }] },
+  { dropBy: 'Dolvar', tier: 6, category: 'gauntlet', name: '鉄城の篭手', bonuses: [{ type: 'unlock_ursan_ability', value: 1 }] },
+  { dropBy: 'Miora', tier: 7, category: 'sword', name: '芽吹きの剣', bonuses: [{ type: 'unlock_felidian_ability', value: 1 }] },
+  { dropBy: 'Miora', tier: 7, category: 'catalyst', name: '生命循環の触媒', bonuses: [{ type: 'unlock_felidian_ability', value: 1 }] },
+  { dropBy: 'Rondel', tier: 7, category: 'wand', name: '共鳴導く魔杖', bonuses: [{ type: 'unlock_mustelid_ability', value: 1 }] },
+  { dropBy: 'Rondel', tier: 7, category: 'arrow', name: '反響する魔矢', bonuses: [{ type: 'unlock_mustelid_ability', value: 1 }] },
+  { dropBy: 'Lira', tier: 8, category: 'arrow', name: '精密射の矢', bonuses: [{ type: 'unlock_leporian_ability', value: 1 }] },
+  { dropBy: 'Lira', tier: 8, category: 'archery', name: '千里照準の弓', bonuses: [{ type: 'unlock_leporian_ability', value: 1 }] },
+  { dropBy: 'Forne', tier: 8, category: 'armor', name: '宿命纏いの鎧', bonuses: [{ type: 'unlock_cervin_ability', value: 1 }] },
+  { dropBy: 'Forne', tier: 8, category: 'robe', name: '運命編みの外套', bonuses: [{ type: 'unlock_cervin_ability', value: 1 }] },
+  { dropBy: 'Skuva', tier: 8, category: 'shield', name: '夕闇の円盾', bonuses: [{ type: 'unlock_murid_ability', value: 1 }] },
+  { dropBy: 'Skuva', tier: 8, category: 'catalyst', name: '薄暮の触媒', bonuses: [{ type: 'unlock_murid_ability', value: 1 }] },
+  { dropBy: 'Tanue', tier: 8, category: 'sword', name: '幻映の剣', bonuses: [{ type: 'unlock_procyonian_ability', value: 1 }] },
+  { dropBy: 'Tanue', tier: 8, category: 'gauntlet', name: '迷彩の篭手', bonuses: [{ type: 'unlock_procyonian_ability', value: 1 }] },
   { dropBy: 'Noctyra', tier: 8, category: 'bolt', name: '虚無穿つ矢' },
   { dropBy: 'Noctyra', tier: 8, category: 'katana', name: '絶滅の刀' },
   { dropBy: 'Eris', tier: 8, category: 'grimoire', name: '争乱の書' },

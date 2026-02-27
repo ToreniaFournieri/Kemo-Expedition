@@ -6,6 +6,7 @@ import {
   BonusType,
   Ability,
   AbilityId,
+  RaceId,
   Item,
   ItemCategory,
   ElementalOffense,
@@ -77,6 +78,7 @@ interface BonusCollection {
     ice: number;
   };
   offenseCBonusNames: Set<string>;
+  unlockedRaceAbilities: Set<RaceId>;
   antagonism: boolean;
 }
 
@@ -119,6 +121,31 @@ function getUniqueCBonusSum(
   }
 
   return bonusSum;
+}
+
+
+const RACE_UNLOCK_ABILITY_IDS: Partial<Record<RaceId, AbilityId>> = {
+  caninian: 'resurrect',
+  lupinian: 're_counter',
+  vulpinian: 'cunning',
+  ursan: 'cyborgization',
+  felidian: 'covering_fire',
+  mustelid: 'peddler',
+  leporian: 'magical_counter',
+  cervin: 'prophecy',
+};
+
+function collectRaceBonuses(raceId: RaceId, raceBonuses: Bonus[], collection: BonusCollection): void {
+  const unlockAbilityId = RACE_UNLOCK_ABILITY_IDS[raceId];
+  const isUnlockAbilityEnabled = collection.unlockedRaceAbilities.has(raceId);
+
+  const applicableBonuses = raceBonuses.filter((bonus) => {
+    if (bonus.type !== 'ability') return true;
+    if (!unlockAbilityId || bonus.abilityId !== unlockAbilityId) return true;
+    return isUnlockAbilityEnabled;
+  });
+
+  collectBonuses(applicableBonuses, collection);
 }
 
 const SUBCLASS_ALLOWED_ABILITY_IDS = new Set<AbilityId>(['unlock']);
@@ -244,6 +271,36 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
             collection.evasion += bonus.value;
           }
         }
+        break;
+      case 'unlock_caninian_ability':
+        collection.unlockedRaceAbilities.add('caninian');
+        break;
+      case 'unlock_lupinian_ability':
+        collection.unlockedRaceAbilities.add('lupinian');
+        break;
+      case 'unlock_vulpinian_ability':
+        collection.unlockedRaceAbilities.add('vulpinian');
+        break;
+      case 'unlock_ursan_ability':
+        collection.unlockedRaceAbilities.add('ursan');
+        break;
+      case 'unlock_felidian_ability':
+        collection.unlockedRaceAbilities.add('felidian');
+        break;
+      case 'unlock_mustelid_ability':
+        collection.unlockedRaceAbilities.add('mustelid');
+        break;
+      case 'unlock_leporian_ability':
+        collection.unlockedRaceAbilities.add('leporian');
+        break;
+      case 'unlock_cervin_ability':
+        collection.unlockedRaceAbilities.add('cervin');
+        break;
+      case 'unlock_murid_ability':
+        collection.unlockedRaceAbilities.add('murid');
+        break;
+      case 'unlock_procyonian_ability':
+        collection.unlockedRaceAbilities.add('procyonian');
         break;
       case 'ability':
         if (bonus.abilityId) {
@@ -404,11 +461,12 @@ export function computeCharacterStats(
       ice: 0,
     },
     offenseCBonusNames: new Set<string>(),
+    unlockedRaceAbilities: new Set<RaceId>(),
     antagonism: false,
   };
 
   // Collect bonuses from all sources
-  collectBonuses(race.bonuses, collection);
+  collectRaceBonuses(race.id, race.bonuses, collection);
   collectBonuses(mainClass.mainSubBonuses, collection);
   if (isMasterClass) {
     collectBonuses(mainClass.masterBonuses, collection);
@@ -429,8 +487,22 @@ export function computeCharacterStats(
   const equipSlotBonus = collection.equipSlotBonusTotal;
   let maxEquipSlots = baseSlots + equipSlotBonus;
 
-  // Collect Super Rare bonuses from currently active slots before deriving b.* stats.
+  // Collect item-provided unlock bonuses and Super Rare bonuses from currently active slots
+  // before deriving b.* stats.
   const initialEquippedItems = character.equipment.slice(0, maxEquipSlots).filter((item): item is Item => item != null);
+  for (const item of initialEquippedItems) {
+    if (item.bonuses) {
+      collectBonuses(item.bonuses, collection);
+    }
+  }
+
+  if (race.unlockAbility && collection.unlockedRaceAbilities.has(race.id)) {
+    collectBonuses(
+      race.bonuses.filter((bonus) => bonus.type === 'ability' && bonus.abilityId === RACE_UNLOCK_ABILITY_IDS[race.id]),
+      collection,
+    );
+  }
+
   for (const item of initialEquippedItems) {
     collectBonuses(getSuperRareBonuses(item.superRare), collection);
   }

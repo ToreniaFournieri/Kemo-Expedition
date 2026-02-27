@@ -966,7 +966,12 @@ function generateItems(): ItemDef[] {
     const template = ITEM_TEMPLATE_BY_CATEGORY[drop.category];
     const id = 8500 + index + 1;
     const item = createItem(id, drop.tier, 'mythicRare', template, undefined, drop.name);
-    if (item) items.push(item);
+    if (item) {
+      if (drop.bonuses) {
+        item.bonuses = drop.bonuses;
+      }
+      items.push(item);
+    }
   });
 
   return items;
