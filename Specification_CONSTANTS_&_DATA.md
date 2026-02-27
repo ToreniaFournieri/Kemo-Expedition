@@ -618,7 +618,7 @@
 
   - `x.exp_HP_mult`(1)=1, `x.exp_HP_mult`(n)=  `x.exp_HP_mult`(n-1)*(4 - 0.3*(n -2))
   - `x.exp_atk_mult`(1)=1, `x.exp_atk_mult`(n)= `x.exp_atk_mult`(n-1)*(2 - 0.1*(n -2))
-  - `x.exp_atk_amp_mult`(1)=1, `x.exp_atk_amp_mult`(n)= `x.exp_atk_amp_mult`(n-1)*(1.40 - 0.4 *(n -2))
+  - `x.exp_atk_amp_mult`(1)=1, `x.exp_atk_amp_mult`(n)= `x.exp_atk_amp_mult`(n-1)*(1.40 - 0.04 *(n -2))
   - `x.exp_NoA_mult`(1)=1, `x.exp_NoA_mult`(n)= `x.exp_NoA_mult`(n-1) + (1.0 -
   0.1 * (n - 2))
   - `x.exp_def_mult`(1)=1, `x.exp_def_mult`(n)= `x.exp_def_mult`(n-1)*(2 - 0.1 * (n -2)
@@ -771,7 +771,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 - `d.HP` : master value x `x.exp_HP_mult` x `x.floor_HP_mult` x `x.god_HP_mult` x `x.luna_HP_mult`
 - `f.attack` :  master value x `x.exp_atk_mult` x `x.floor_atk_mult` x `x.god_atk_mult` x `x.luna_atk_mult`
 - `f.NoA` :  master value x `x.exp_NoA_mult` x `x.floor_NoA_mult` x `x.god_NoA_mult` x `x.luna_NoA_mult` 
-- `f.offense_amplifier` :  master value x `x.exp_atk_amp_mult` x `x.floor_atk_amp_mult` x  `x.god_atk_amp_mult`
+- `f.offense_amplifier` :  master value x `x.exp_atk_amp_mult` x `x.floor_atk_amp_mult` x `x.luna_atk_amp_mult` `x.god_atk_amp_mult`
 - `f.defense` :  master value x `x.exp_def_mult`  x `x.floor_def_mult` x `x.god_def_mult`  x `x.luna_def_mult` 
 - `f.defense_amplifier` : 1.0 x `x.exp_def_amp_mult` x `x.floor_def_amp_mult` x `x.god_def_amp_mult`x `x.luna_def_amp_mult`  //for physical and magical defense
 - `f.elemental_offense_attribute` :  not scale
