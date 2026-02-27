@@ -265,7 +265,7 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 
 - **Covering fire:** IF actor.`a.covering-fire` and the actor's successful hit is only one and phase is CLOSE, `f.covering-fire`(actor:covering fire actor.party.character , opponent:opponent)
 
-- *Note:* (for enemy attacks) Nth_hit is global for all actor attacks in the phase (not per-target)
+- *Note:*  Nth_hit is per action based (not per-target)
 
 ### 6.4 Post battle
 
