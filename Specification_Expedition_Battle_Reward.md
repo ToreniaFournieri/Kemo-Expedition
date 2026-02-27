@@ -208,7 +208,6 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
   - chance = clamp(0.0, baseChance, 1.0) x (decay ^ (Nth_hit - 1))
     - Note: Nth_hit starts at 1 for the first strike.
     - Note: Nth_hit counts indevisually and not share with normal attack, re-attack and counter. (Nth_hit is reset per attack sequence)
-      
   - Roll: Return Random(0, 1.0) <= chance
  
 
@@ -217,10 +216,10 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
     - `a.counter`2: actor.`f.NoA` x 1.0, round up
     - `a.counter`3: actor.`f.NoA` x 1.5, round up
     - Counter triggers immediately after damage resolution, regardless of turn order modifiers.
-    - IF actor.`a.counter` and (opponent or party member have available `a.null-counter`), displays log like : “巡礼者ブラザの反撃無効化により、二枚爪の黒豹のカウンターは防がれた！”. Reduce null-counter counter. (note: `a.null-counter`1 can disable once in battle,  `a.null-counter`2 can disable twice in battle, `a.null-counter`3 can disable three times in battle. if the null-counter is 0, the `a.null-counter` is disable in this battle. )
+    - IF actor.`a.counter` and (opponent or opponent.party.character have available `a.null-counter`), displays log like : “巡礼者ブラザの反撃無効化により、二枚爪の黒豹のカウンターは防がれた！”. Reduce null-counter counter. (note: `a.null-counter`1 can disable once in battle,  `a.null-counter`2 can disable twice in battle, `a.null-counter`3 can disable three times in battle. if the null-counter is 0, the `a.null-counter` is disable in this battle. )
     - *note:* if opponent is character, then check party.`a.null-counter`. if at least one party member has available `a.null-counter`, nagete the counter attack.
 
-- **`f.re-counter`(actor: , opponent: ,phase: ) :** IF actor.`a.re-counter` and (opponent or party members have not `a.null-counter`), the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
+- **`f.re-counter`(actor: , opponent: ,phase: ) :** IF actor.`a.re-counter` and (opponent or opponent.party.character have not `a.null-counter`), the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
   	- `a.re-counter`1:   actor.`f.NoA` x 0.5, round up
   	- `a.re-counter`2:   actor.`f.NoA` x 1.0
     - Re Counter triggers immediately after damage resolution, regardless of turn order modifiers.
