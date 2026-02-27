@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, type ChangeEvent, type Dispatch, type MouseEvent, type SetStateAction } from 'react';
+import { useState, useEffect, useRef, useCallback, type ChangeEvent, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
 import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, getVariantKey, MAX_LEVEL } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import {
@@ -174,6 +174,43 @@ function RaceIcon({ race, className = "h-8 w-8" }: { race: Race; className?: str
   }
 
   return <span className={className}>{race.emoji}</span>;
+}
+
+const RACE_ICON_BY_EMOJI: Record<string, string | undefined> = Object.fromEntries(
+  RACES.map((race) => [race.emoji, race.icon])
+);
+
+function renderTextWithRaceIcons(text: string, iconClassName = 'h-3.5 w-3.5'): ReactNode {
+  if (!text) return text;
+
+  const emojiPattern = Object.keys(RACE_ICON_BY_EMOJI)
+    .map((emoji) => emoji.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('|');
+
+  if (!emojiPattern) return text;
+
+  const regex = new RegExp(`(${emojiPattern})`, 'g');
+  const parts = text.split(regex);
+
+  return parts.map((part, index) => {
+    const iconPath = RACE_ICON_BY_EMOJI[part];
+    if (!iconPath) {
+      return part;
+    }
+
+    const iconSrc = iconPath.startsWith('/')
+      ? `${import.meta.env.BASE_URL}${iconPath.replace(/^\//, '')}`
+      : iconPath;
+
+    return (
+      <img
+        key={`icon-${index}`}
+        src={iconSrc}
+        alt="race icon"
+        className={`${iconClassName} inline-block align-text-bottom`}
+      />
+    );
+  });
 }
 
 function buildAfkSummaryNotification(stats: {
@@ -3395,7 +3432,7 @@ function PartyTab({
                   <div className="flex justify-between items-center">
                     <span>
                       <span className="font-medium">{getItemDisplayName(item)}</span>
-                      <span className="text-xs text-gray-500"> {getRarityShortLabel(item.id, item.name)} {getItemStats(item, getCharacterCategoryMultiplier(char, item.category), hpDisplayMultiplier)}</span>
+                      <span className="text-xs text-gray-500"> {getRarityShortLabel(item.id, item.name)} {renderTextWithRaceIcons(getItemStats(item, getCharacterCategoryMultiplier(char, item.category), hpDisplayMultiplier))}</span>
                     </span>
                     <span className="text-xs text-gray-400">
                       [{CATEGORY_NAMES[item.category]}]
@@ -3617,7 +3654,7 @@ function PartyTab({
                       {displayItem.isEquipped && <RaceIcon race={race} className="h-4 w-4 inline-block mr-1 align-text-bottom" />}
                       <span className="font-medium">{getItemDisplayName(displayItem.item)}</span>
                       {!displayItem.isEquipped && <span className="text-xs text-gray-500"> x{displayItem.count}</span>}
-                      <span className="text-xs text-gray-400"> {getRarityShortLabel(displayItem.item.id, displayItem.item.name)} {applyProjectedDefenseToStatsText(displayItem, getItemStats(displayItem.item, getCharacterCategoryMultiplier(char, displayItem.item.category), hpDisplayMultiplier))}</span>
+                      <span className="text-xs text-gray-400"> {getRarityShortLabel(displayItem.item.id, displayItem.item.name)} {renderTextWithRaceIcons(applyProjectedDefenseToStatsText(displayItem, getItemStats(displayItem.item, getCharacterCategoryMultiplier(char, displayItem.item.category), hpDisplayMultiplier)))}</span>
                     </span>
                   </div>
                 </button>
@@ -4182,7 +4219,7 @@ function ShopTab({
                   </span>
                 </div>
                 <div className={`mt-0.5 text-xs leading-tight ${entry.isSoldOut ? 'text-gray-300' : 'text-gray-400'}`}>
-                  {getRarityShortLabel(entry.item.id, entry.item.name)} {getItemStats(entry.item)}
+                  {getRarityShortLabel(entry.item.id, entry.item.name)} {renderTextWithRaceIcons(getItemStats(entry.item))}
                 </div>
               </div>
               <button
@@ -4398,7 +4435,7 @@ function InventoryTab({
                     </button>
                   </div>
                   <div className="mt-0.5 text-xs leading-tight text-gray-400">
-                    {getRarityShortLabel(item.id, item.name)} {getItemStats(item)}
+                    {getRarityShortLabel(item.id, item.name)} {renderTextWithRaceIcons(getItemStats(item))}
                   </div>
                 </div>
               );
@@ -4421,7 +4458,7 @@ function InventoryTab({
                   </span>
                 </div>
                 <div className="mt-0.5 text-xs leading-tight text-gray-400">
-                  {getRarityShortLabel(entry.equipped.item.id, entry.equipped.item.name)} {getItemStats(entry.equipped.item, entry.equipped.categoryMultiplier, entry.equipped.hpScaleMultiplier)}
+                  {getRarityShortLabel(entry.equipped.item.id, entry.equipped.item.name)} {renderTextWithRaceIcons(getItemStats(entry.equipped.item, entry.equipped.categoryMultiplier, entry.equipped.hpScaleMultiplier))}
                 </div>
               </div>
             );
@@ -4455,7 +4492,7 @@ function InventoryTab({
                     </button>
                   </div>
                   <div className="mt-0.5 text-xs leading-tight text-gray-400">
-                    {getRarityShortLabel(variant.item.id, variant.item.name)} {getItemStats(variant.item)}
+                    {getRarityShortLabel(variant.item.id, variant.item.name)} {renderTextWithRaceIcons(getItemStats(variant.item))}
                   </div>
                 </div>
               ))}
@@ -5633,8 +5670,8 @@ function SettingTab({
                 <div className="space-y-1 max-h-72 overflow-y-auto pr-1">
                   {section.entries.map((entry, index) => (
                     <div key={`${section.id}-${entry.key}-${index}`} className="text-xs border-t border-gray-100 pt-1 first:border-t-0 first:pt-0">
-                      <div className="text-gray-700 font-medium">{entry.label}</div>
-                      <div className="text-gray-500 whitespace-pre-line">{entry.description}</div>
+                      <div className="text-gray-700 font-medium">{renderTextWithRaceIcons(entry.label)}</div>
+                      <div className="text-gray-500 whitespace-pre-line">{renderTextWithRaceIcons(entry.description)}</div>
                     </div>
                   ))}
                 </div>
@@ -5704,7 +5741,7 @@ function SettingTab({
                 >
                   <span>
                     <span className="text-black">{item.name}</span>
-                    <span className="text-gray-500"> {getRarityShortLabel(item.id, item.name)} {getItemStats(baseItem)}</span>
+                    <span className="text-gray-500"> {getRarityShortLabel(item.id, item.name)} {renderTextWithRaceIcons(getItemStats(baseItem))}</span>
                   </span>
                   <span className="text-xs text-gray-500">{expanded ? '▲' : '▼'}</span>
                 </button>
