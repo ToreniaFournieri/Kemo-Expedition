@@ -645,7 +645,13 @@ export function computeCharacterStats(
         }
       }
     }
-    if (item.penetBonus) collection.penet += item.penetBonus;
+    if (item.penetBonus) {
+      const bonusName = `c.penet+${formatCBonusValue(item.penetBonus)}`;
+      if (!collection.uniqueCAdditiveBonusNames.has(bonusName)) {
+        collection.uniqueCAdditiveBonusNames.add(bonusName);
+        collection.penet += item.penetBonus;
+      }
+    }
 
     if (item.elementalOffense && item.elementalOffense !== 'none') {
       elementalOffenseTotals[item.elementalOffense] += item.elementalOffenseBonus ?? 0;
