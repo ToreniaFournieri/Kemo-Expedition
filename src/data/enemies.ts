@@ -1,4 +1,4 @@
-import { EnemyDef, EnemyType, EnemyClassId, ElementalOffense, ElementalResistance, ItemDef, AbilityId, ItemCategory } from '../types';
+import { EnemyDef, EnemyType, EnemyClassId, ElementalOffense, ElementalResistance, ItemDef, AbilityId, ItemCategory, EnemyAbility } from '../types';
 import { MYTHIC_DROP_POOLS } from './dropTables';
 import { getItemById, getItemsByTierAndRarity } from './items';
 
@@ -466,7 +466,7 @@ const EXPEDITION_DATA: {
 // ============================================================
 type EnemyClassBase = {
   hp: number;
-  abilities: AbilityId[];
+  abilities: EnemyAbility[];
   accuracyBonus: number;
   evasionBonus: number;
   rangedAttack: number;
@@ -483,17 +483,21 @@ type EnemyClassBase = {
   experience: number;
 };
 
+function levelOneAbilities(abilityIds: AbilityId[]): EnemyAbility[] {
+  return abilityIds.map((id) => ({ id, level: 1 }));
+}
+
 const ENEMY_CLASS_BASES: Record<EnemyClassId, EnemyClassBase> = {
-  fighter: { hp: 63, abilities: [], accuracyBonus: 0.0, evasionBonus: 0.02, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 32, meleeNoA: 2, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0, physicalDefense: 13, magicalDefense: 10, experience: 5 },
-  duelist: { hp: 50, abilities: ['counter'], accuracyBonus: 0.01, evasionBonus: 0.01, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 40, meleeNoA: 4, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.2, physicalDefense: 10, magicalDefense: 10, experience: 5 },
-  ninja: { hp: 46, abilities: ['re_attack'], accuracyBonus: 0.0, evasionBonus: 0.04, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 48, meleeNoA: 4, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.2, physicalDefense: 9, magicalDefense: 8, experience: 7 },
-  samurai: { hp: 40, abilities: ['iaigiri'], accuracyBonus: -0.05, evasionBonus: -0.01, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 75, meleeNoA: 1, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.3, physicalDefense: 8, magicalDefense: 8, experience: 4 },
-  lord: { hp: 58, abilities: [], accuracyBonus: 0.0, evasionBonus: 0.0, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 32, meleeNoA: 4, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.1, physicalDefense: 12, magicalDefense: 12, experience: 8 },
-  ranger: { hp: 44, abilities: [], accuracyBonus: 0.03, evasionBonus: 0.01, rangedAttack: 28, rangedNoA: 4, magicalAttack: 0, magicalNoA: 0, meleeAttack: 0, meleeNoA: 0, rangedAttackAmplifier: 1.2, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0, physicalDefense: 9, magicalDefense: 8, experience: 6 },
-  wizard: { hp: 27, abilities: ['resonance'], accuracyBonus: 0.0, evasionBonus: -0.015, rangedAttack: 0, rangedNoA: 0, magicalAttack: 40, magicalNoA: 2, meleeAttack: 0, meleeNoA: 0, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.0, physicalDefense: 4, magicalDefense: 12, experience: 4 },
-  sage: { hp: 47, abilities: [], accuracyBonus: 0.0, evasionBonus: 0.0, rangedAttack: 0, rangedNoA: 0, magicalAttack: 20, magicalNoA: 4, meleeAttack: 0, meleeNoA: 0, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.0, physicalDefense: 9, magicalDefense: 13, experience: 4 },
-  rogue: { hp: 40, abilities: ['deflection', 'first_strike'], accuracyBonus: 0.06, evasionBonus: 0.06, rangedAttack: 20, rangedNoA: 4, magicalAttack: 0, magicalNoA: 0, meleeAttack: 20, meleeNoA: 4, rangedAttackAmplifier: 1.2, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0, physicalDefense: 8, magicalDefense: 8, experience: 4 },
-  pilgrim: { hp: 62, abilities: ['null_counter'], accuracyBonus: 0.0, evasionBonus: 0.02, rangedAttack: 0, rangedNoA: 0, magicalAttack: 20, magicalNoA: 2, meleeAttack: 32, meleeNoA: 2, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.2, physicalDefense: 11, magicalDefense: 11, experience: 3 },
+  fighter: { hp: 63, abilities: levelOneAbilities([]), accuracyBonus: 0.0, evasionBonus: 0.02, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 32, meleeNoA: 2, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0, physicalDefense: 13, magicalDefense: 10, experience: 5 },
+  duelist: { hp: 50, abilities: levelOneAbilities(['counter']), accuracyBonus: 0.01, evasionBonus: 0.01, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 40, meleeNoA: 4, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.2, physicalDefense: 10, magicalDefense: 10, experience: 5 },
+  ninja: { hp: 46, abilities: levelOneAbilities(['re_attack']), accuracyBonus: 0.0, evasionBonus: 0.04, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 48, meleeNoA: 4, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.2, physicalDefense: 9, magicalDefense: 8, experience: 7 },
+  samurai: { hp: 40, abilities: levelOneAbilities(['iaigiri']), accuracyBonus: -0.05, evasionBonus: -0.01, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 75, meleeNoA: 1, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.3, physicalDefense: 8, magicalDefense: 8, experience: 4 },
+  lord: { hp: 58, abilities: levelOneAbilities([]), accuracyBonus: 0.0, evasionBonus: 0.0, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 32, meleeNoA: 4, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.1, physicalDefense: 12, magicalDefense: 12, experience: 8 },
+  ranger: { hp: 44, abilities: levelOneAbilities([]), accuracyBonus: 0.03, evasionBonus: 0.01, rangedAttack: 28, rangedNoA: 4, magicalAttack: 0, magicalNoA: 0, meleeAttack: 0, meleeNoA: 0, rangedAttackAmplifier: 1.2, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0, physicalDefense: 9, magicalDefense: 8, experience: 6 },
+  wizard: { hp: 27, abilities: levelOneAbilities(['resonance']), accuracyBonus: 0.0, evasionBonus: -0.015, rangedAttack: 0, rangedNoA: 0, magicalAttack: 40, magicalNoA: 2, meleeAttack: 0, meleeNoA: 0, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.0, physicalDefense: 4, magicalDefense: 12, experience: 4 },
+  sage: { hp: 47, abilities: levelOneAbilities([]), accuracyBonus: 0.0, evasionBonus: 0.0, rangedAttack: 0, rangedNoA: 0, magicalAttack: 20, magicalNoA: 4, meleeAttack: 0, meleeNoA: 0, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.0, physicalDefense: 9, magicalDefense: 13, experience: 4 },
+  rogue: { hp: 40, abilities: levelOneAbilities(['deflection', 'first_strike']), accuracyBonus: 0.06, evasionBonus: 0.06, rangedAttack: 20, rangedNoA: 4, magicalAttack: 0, magicalNoA: 0, meleeAttack: 20, meleeNoA: 4, rangedAttackAmplifier: 1.2, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0, physicalDefense: 8, magicalDefense: 8, experience: 4 },
+  pilgrim: { hp: 62, abilities: levelOneAbilities(['null_counter']), accuracyBonus: 0.0, evasionBonus: 0.02, rangedAttack: 0, rangedNoA: 0, magicalAttack: 20, magicalNoA: 2, meleeAttack: 32, meleeNoA: 2, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.2, physicalDefense: 11, magicalDefense: 11, experience: 3 },
 };
 
 // ============================================================
@@ -511,8 +515,18 @@ function createEnemyFromTemplate(
 ): EnemyDef {
   const classBase = ENEMY_CLASS_BASES[enemyClass];
   const enemyTypeExpMult = type === 'elite' ? 2.0 : type === 'boss' ? 5.0 : 1.0;
-  const enemyAbilities = Array.from(new Set([...classBase.abilities, ...extraAbilities]));
-  const hasCyborgization = enemyAbilities.includes('cyborgization');
+  const enemyAbilitiesById = new Map<AbilityId, EnemyAbility>();
+  for (const ability of classBase.abilities) {
+    enemyAbilitiesById.set(ability.id, ability);
+  }
+  for (const abilityId of extraAbilities) {
+    const existing = enemyAbilitiesById.get(abilityId);
+    if (!existing || existing.level < 1) {
+      enemyAbilitiesById.set(abilityId, { id: abilityId, level: 1 });
+    }
+  }
+  const enemyAbilities = Array.from(enemyAbilitiesById.values());
+  const hasCyborgization = enemyAbilities.some((ability) => ability.id === 'cyborgization');
   const accuracyBonus = classBase.accuracyBonus + (hasCyborgization ? 0.03 : 0);
   const evasionBonus = classBase.evasionBonus + (hasCyborgization ? -0.02 : 0);
 
