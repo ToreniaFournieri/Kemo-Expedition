@@ -721,8 +721,28 @@ export function executeBattle(
   const log: BattleLogEntry[] = [];
   const remainingNullCounterByCharacterId = createNullCounterPool(characterStats);
   const consumedResurrectCharacterIds = new Set<number>();
+  let consumedEnemyResurrect = false;
   const consumedIllusionCharacterIds = new Set<number>();
   let consumedPartyIllusion = false;
+
+  const triggerEnemyResurrect = (phase: BattlePhase, initiativeRoll?: number): void => {
+    if (enemyHp > 0 || consumedEnemyResurrect) return;
+
+    const resurrectLevel = getEnemyAbilityLevel(enemy, 'resurrect');
+    if (resurrectLevel <= 0) return;
+
+    enemyHp = resurrectLevel >= 2
+      ? Math.max(1, Math.ceil(enemy.hp * 0.01))
+      : 1;
+    consumedEnemyResurrect = true;
+
+    log.push({
+      phase,
+      initiativeRoll,
+      actor: 'enemy',
+      action: `${enemy.name} は致命ダメージを食いしばって耐えた！`,
+    });
+  };
 
   const createPartyEffectEntry = (
     classId: 'fighter' | 'lord' | 'sage',
@@ -885,6 +905,7 @@ export function executeBattle(
 
     if (reCounterResult.damage > 0) {
       enemyHp -= reCounterResult.damage;
+      triggerEnemyResurrect('close', initiativeRoll);
     }
 
     const characterReCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(targetCharStats, partyHp, partyStats.hp));
@@ -927,6 +948,7 @@ export function executeBattle(
 
       if (coveringFireResult.damage > 0) {
         enemyHp -= coveringFireResult.damage;
+        triggerEnemyResurrect(phase, initiativeRoll);
       }
 
       const coverFireRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(coverCharStats, partyHp, partyStats.hp));
@@ -1173,6 +1195,7 @@ export function executeBattle(
 
             if (counterResult.damage > 0) {
               enemyHp -= counterResult.damage;
+              triggerEnemyResurrect(phase, turn.roll);
             }
 
             const counterType = phase === 'mid' ? '魔法反撃' : '反撃';
@@ -1325,6 +1348,7 @@ export function executeBattle(
 
             if (magicalCounterResult.damage > 0) {
               enemyHp -= magicalCounterResult.damage;
+              triggerEnemyResurrect(phase, turn.roll);
             }
 
             const resonanceLogText = getResonanceLogText('mid', magicalCounterStats.abilities, magicalCounterResult.hits);
@@ -1376,6 +1400,7 @@ export function executeBattle(
           result = calculateCharacterDamage(phase, cs, char, enemy, partyStats, partyHp, noAMultiplier);
           if (result.damage > 0) {
             enemyHp -= result.damage;
+            triggerEnemyResurrect(phase, turn.roll);
           }
         }
 
