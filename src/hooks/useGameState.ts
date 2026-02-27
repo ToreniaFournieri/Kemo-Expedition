@@ -61,7 +61,7 @@ import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
   BOSS_GATE_REQUIRED,
-  GODS_BATTLE_REQUIRED,
+  getGodsBattleRequired,
   getEntryGateKey,
   getEliteGateKey,
   getBossGateKey,
@@ -73,7 +73,7 @@ import {
 } from '../game/lootGate';
 import { calculateExperience, getXpToNextLevel } from '../game/partyLevel';
 import { MAX_LEVEL } from '../types';
-import { createEnvironmentStorageKey } from '../game/environment';
+import { createEnvironmentStorageKey, getEnvironmentId } from '../game/environment';
 import { computeCharacterStats } from '../game/characterComputation';
 import {
   getShopItemPrice,
@@ -102,7 +102,7 @@ const MAGIC_CATEGORIES = new Set<Item['category']>(['wand', 'grimoire', 'catalys
 
 
 function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
-  return getLootCollectionCount(party, dungeonId, 'bossRare') >= GODS_BATTLE_REQUIRED;
+  return getLootCollectionCount(party, dungeonId, 'bossRare') >= getGodsBattleRequired(getEnvironmentId());
 }
 
 
