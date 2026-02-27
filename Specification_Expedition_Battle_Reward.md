@@ -247,44 +247,26 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 - Actions are resolved in descending order of roll result.
 - Tie-breaker: Enemy > Front row party members > Last row party member.
 
-**Enemy action**
-- Enemy always moves first.
-- `f.NoA` times, get `f.targeting` -> target character
+**Actor action**
+
+- `f.NoA` times, get `f.targeting` -> opponent. 
   	- If `f.hit_detection`(actor: , opponent: ,Nth_hit: the current hit index), current party.`d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
-- If current party.`d.HP` =< 0, if character.`a.resurrect`1, set `d.HP` = 1 and disable `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat.
-- If current party.`d.HP` =< 0, if character.`a.resurrect`2, set `d.HP` = 1% of (party.max_HP) and disable `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat. 
-- If (phase is LONG) and (character.`a.illusion`1) and (the `a.illusion` is enable), treats all incoming attack as miss hits, disable `a.illusion` for this battle. log "ポンタへの攻撃はすべて幻だった！".
-- If (phase is LONG) and (party.character.`a.illusion`2) and (the `a.illusion` is enable), treats all incoming attack as miss hits, disable `a.illusion` for this battle. log "nameへの攻撃はすべて幻だった！".
+- If current opponent .`d.HP` =< 0, if opponent.`a.resurrect`1, set `d.HP` = 1 and disable `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat.
+- If current opponent.`d.HP` =< 0, if character.`a.resurrect`2, set opponent.`d.HP` = 1% of (opponent.max_HP) and disable the `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat. 
+- If (phase is LONG) and (opponent.`a.illusion`1) and (the `a.illusion` is enable), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. log "ポンタへの攻撃はすべて幻だった！".
+- If (phase is LONG) and (opponent.party.character.`a.illusion`2) and (the `a.illusion` is enable), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. log "nameへの攻撃はすべて幻だった！".
 
-- **Coutner:** `f.counter`(actor:enemy , opponent:character ,phase: )
-  - **Re-counter** If opponent.`a.re-counter`, `f.re-counter`(actor:character , opponent:enemy ,phase: )
-- **Re-attack**: IF enemy.`a.re-attack`, the enemy attacks to characters. (using f.hit_detection, f.damage_calculation)
-   	- `a.re-attack`1: One attack and character.`f.NoA` x 0.5, round up
-  	- `a.re-attack`2: One attack and character.`f.NoA` x 0.7, round up
-  	- `a.re-attack`3: One attack and character.`f.NoA` x 1.0
-- **Magical counter:** If opponent.`a.magical-counter` and phase is MID, `f.magical-counter`(actor:character , opponent:enemy ,phase: )
+- **Coutner:** `f.counter`(actor:actor , opponent:opponent ,phase: )
+  - **Re-counter** If opponent.`a.re-counter`, `f.re-counter`(actor:opponent , opponent:actor ,phase: )
+- **Re-attack**: IF actor.`a.re-attack`, the actor attacks to opponent. (using f.hit_detection, f.damage_calculation)
+   	- `a.re-attack`1: One attack and actor.`f.NoA` x 0.5, round up
+  	- `a.re-attack`2: One attack and actor.`f.NoA` x 0.7, round up
+  	- `a.re-attack`3: One attack and actor.`f.NoA` x 1.0
+- **Magical counter:** If opponent.`a.magical-counter` and phase is MID, `f.magical-counter`(actor:opponent, opponent:actor ,phase: )
 
-- *Note:* Nth_hit is global for all enemy attacks in the phase (not per-target)
+- **Covering fire:** IF actor.`a.covering-fire` and the actor's successful hit is only one and phase is CLOSE, `f.covering-fire`(actor:covering fire actor.party.character , opponent:opponent)
 
-
-**Player action**
-- Each party member act if he has corresponding damage source in the phase. 
-
-- `f.NoA` times -> enemy
-	- If `f.hit_detection`(actor: , opponent: ,Nth_hit: the current hit index), current enemy.`d.HP` -= `f.damage_calculation` (actor: character, opponent: enemy, phase: phase)
-
-- **Coutner:** `f.counter`(actor:character , opponent: enemy , phase:  )
-   - **Re-counter** If opponent.`a.re-counter`, `f.re-counter`(actor:enemy , opponent:character ,phase: )
-
-- **Re-attack:** IF character.`a.re-attack`, the character attacks to enemy. (using `f.hit_detection`, `f.damage_calculation`)
-  	- `a.re-attack`1: One attack and character.`f.NoA` x 0.5, round up
-  	- `a.re-attack`2: **Two** attack and character.`f.NoA` x 0.5, round up
-  	- `a.re-attack`3: **Two** attack and character.`f.NoA` x 1.0
-
-- **Covering fire:** IF character.`a.covering-fire` and the actor's successful hit is only one and phase is CLOSE, `f.covering-fire`(actor:covering fire character , opponent:enemy)
-
-- If enemy.`d.HP` =< 0, Victory.
-
+- *Note:* (for enemy attacks) Nth_hit is global for all actor attacks in the phase (not per-target)
 
 ### 6.4 Post battle
 
