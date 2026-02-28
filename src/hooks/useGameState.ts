@@ -409,7 +409,7 @@ function loadSavedState(): GameState | null {
             party.id = index + 1;
           }
           if (!party.deity) {
-            party.deity = createInitialDeity('God of Restoration');
+            party.deity = createInitialDeity('Goddess of Restoration');
           }
           party.deity.name = normalizeDeityName(party.deity.name);
           if (typeof party.level !== 'number') party.level = 1;
@@ -534,7 +534,7 @@ function createInitialParty() {
     experience: 0,
     lootGateProgress: {},
     lootGateStatus: {},
-    deity: createInitialDeity('God of Restoration'),
+    deity: createInitialDeity('Goddess of Restoration'),
     characters,
     selectedDungeonId: 1,
     expeditionDepthLimit: 'all',
@@ -582,7 +582,7 @@ function createSecondParty() {
     experience: 0,
     lootGateProgress: {},
     lootGateStatus: {},
-    deity: createInitialDeity('God of Evasion'),
+    deity: createInitialDeity('God of Dusk'),
     characters,
     selectedDungeonId: 1,
     expeditionDepthLimit: 'all',
@@ -810,7 +810,8 @@ function resolveEnemyRewards(
   currentGold: number,
   hasUnlock: boolean,
   isLunaMode: boolean,
-  autoSellMultiplier: number
+  autoSellMultiplier: number,
+  extraRewardRolls: number = 0
 ): {
   bags: GameState['bags'];
   inventory: InventoryRecord;
@@ -851,7 +852,7 @@ function resolveEnemyRewards(
 
     let gotReward = rewardTicket === 1;
 
-    const bonusRollCount = (hasUnlock ? 1 : 0) + (isLunaMode ? 1 : 0);
+    const bonusRollCount = (hasUnlock ? 1 : 0) + (isLunaMode ? 1 : 0) + Math.max(0, extraRewardRolls);
     for (let rollIndex = 0; rollIndex < bonusRollCount; rollIndex++) {
       bags = refillBagIfEmpty(bags, rewardBagType);
       const { ticket: bonusTicket, newBag } = drawFromBag(bags[rewardBagType]);
@@ -939,9 +940,15 @@ function getPartyAbilityLevel(party: Party, abilityId: string): number {
 
 function getPartyCunningMultiplier(party: Party): number {
   const cunningLevel = getPartyAbilityLevel(party, 'cunning');
-  if (cunningLevel >= 2) return 1.3;
-  if (cunningLevel >= 1) return 1.2;
-  return 1;
+  const abilityMultiplier = cunningLevel >= 2 ? 1.3 : cunningLevel >= 1 ? 1.2 : 1;
+
+  const deityKey = getDeityKey(party.deity.name);
+  const deityTier = getEffectiveDeityTier(party.deityGold ?? 0);
+  const deityMultiplier = deityKey === 'God of Cunning'
+    ? Math.min(1, 0.5 + 0.01 * deityTier)
+    : 1;
+
+  return abilityMultiplier * deityMultiplier;
 }
 
 function getUnlockActorName(party: Party): string | undefined {
@@ -1001,9 +1008,9 @@ function applyPeriodicDeityHpEffect(
 
   const deityKey = getDeityKey(deityName);
   const effectiveTier = getEffectiveDeityTier(totalDonatedGold);
-  if (deityKey === 'God of Restoration') {
+  if (deityKey === 'Goddess of Restoration') {
     const missingHp = maxHp - currentHp;
-    const healAmount = Math.floor(missingHp * Math.min(0.3, Math.max(0.2, 0.2 + 0.005 * effectiveTier)));
+    const healAmount = Math.floor(missingHp * (0.2 + 0.001 * effectiveTier));
     return {
       hp: Math.min(maxHp, currentHp + healAmount),
       healAmount: healAmount > 0 ? healAmount : undefined,
@@ -1011,7 +1018,7 @@ function applyPeriodicDeityHpEffect(
   }
 
   if (deityKey === 'God of Attrition') {
-    const hpLossPct = Math.max(0.03, 0.05 - 0.001 * effectiveTier);
+    const hpLossPct = 0.05;
     const nextHp = Math.max(1, Math.floor(currentHp * (1 - hpLossPct)));
     const attritionAmount = Math.max(0, currentHp - nextHp);
     return {
@@ -1029,11 +1036,11 @@ function buildDeityEffectLogEntry(
   attritionAmount?: number
 ): BattleLogEntry | null {
   const deityKey = getDeityKey(deityName);
-  if (deityKey === 'God of Restoration' && healAmount && healAmount > 0) {
+  if (deityKey === 'Goddess of Restoration' && healAmount && healAmount > 0) {
     return {
       phase: 'long',
       actor: 'deity',
-      action: '再生の神の効果！',
+      action: '再生の女神の効果！',
       note: `(HP回復+${healAmount})`,
     };
   }
@@ -1295,7 +1302,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 currentGold,
                 hasUnlock,
                 !!action.isLunaMode,
-                autoSellMultiplier
+                autoSellMultiplier,
+                getDeityKey(currentParty.deity.name) === 'Goddess of Discord' ? 1 : 0
               );
               bags = rewardResult.bags;
               currentInventory = rewardResult.inventory;

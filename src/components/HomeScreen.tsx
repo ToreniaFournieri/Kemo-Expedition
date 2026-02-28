@@ -18,7 +18,7 @@ import { getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { applyEnemyEncounterScaling } from '../game/enemyScaling';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
-import { DEITY_OPTIONS, getDeityEffectDescription, getDeityRank, getNextDonationThreshold, normalizeDeityName } from '../game/deity';
+import { DEITY_OPTIONS, getDeityEffectDescription, getDeityRank, getNextDonationThreshold, getDeityStateDurationMultiplier, normalizeDeityName } from '../game/deity';
 import { getXpToNextLevel } from '../game/partyLevel';
 import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../game/environment';
 import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, getShopRefreshPrice, getNextShopRefreshDate, countElapsedShopRefreshes } from '../game/shop';
@@ -120,9 +120,9 @@ function preloadRaceIcons(): void {
   });
 }
 
-function getExplorationDurationMs(entryCount?: number): number {
+function getExplorationDurationMs(entryCount?: number, durationMultiplier: number = 1): number {
   const exploredSteps = Math.max(1, Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, entryCount ?? EXPLORING_PROGRESS_TOTAL_STEPS));
-  return exploredSteps * EXPLORING_PROGRESS_STEP_MS;
+  return Math.floor(exploredSteps * EXPLORING_PROGRESS_STEP_MS * durationMultiplier);
 }
 
 function getExpeditionOutcomeLabel(outcome: 'victory' | 'return' | 'defeat' | 'retreat'): string {
@@ -1459,7 +1459,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
 
         if (updated.state === '探索中') {
           const exploredRooms = party.lastExpeditionLog?.entries.length;
-          updated.durationMs = getExplorationDurationMs(exploredRooms);
+          updated.durationMs = getExplorationDurationMs(exploredRooms, getPartyStateDurationMultiplier(party, 'explore'));
         }
 
         if (updated.state === '休息中') {
@@ -1470,10 +1470,10 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             const hasAutoSellItem = (party.lastExpeditionLog?.autoSellProfit ?? 0) > 0;
             if (hasTrophy || hasAutoSellItem) {
               updated.state = '売却中';
-              updated.durationMs = 5000;
+              updated.durationMs = getStateDurationMs(party, 'sell');
             } else {
               updated.state = party.pendingProfit > 0 ? '宴会中' : '睡眠中';
-              updated.durationMs = updated.state === '宴会中' ? 5000 : 10000;
+              updated.durationMs = updated.state === '宴会中' ? getStateDurationMs(party, 'feast') : getStateDurationMs(party, 'sleep');
             }
             updated.stateStartedAt = simulationNow;
           }
@@ -1486,7 +1486,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
 
             if (updated.state === '売却中') {
               updated.state = '宴会中';
-              updated.durationMs = 5000;
+              updated.durationMs = getStateDurationMs(party, 'feast');
             } else if (updated.state === '宴会中') {
               const baseSpend = Math.floor((party.pendingProfit * (33 + Math.random() * 34)) / 100);
               const squanderLevel = getPartyAbilityLevel(party, 'squander');
@@ -1502,10 +1502,10 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
               }
               actions.spendPendingProfit(partyIndex, spend);
               updated.state = '睡眠中';
-              updated.durationMs = 10000;
+              updated.durationMs = getStateDurationMs(party, 'sleep');
             } else if (updated.state === '睡眠中') {
               updated.state = '祈り中';
-              updated.durationMs = 5000;
+              updated.durationMs = getStateDurationMs(party, 'pray');
             } else if (updated.state === '祈り中') {
               const donationRate = 10 + Math.random() * 23;
               const baseDonation = Math.floor((party.pendingProfit * donationRate) / 100);
@@ -1532,7 +1532,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
               pendingGodsBattleByPartyRef.current[partyIndex] = false;
               actions.runExpedition(partyIndex, gameModeRef.current === 'm.luna', triggerGodsBattle);
               updated.state = '探索中';
-              updated.durationMs = getExplorationDurationMs();
+              updated.durationMs = getExplorationDurationMs(undefined, getPartyStateDurationMultiplier(party, 'explore'));
             } else if (updated.state === '探索中') {
               actions.finalizeDiaryLog(partyIndex);
               updated.state = '帰還中';
@@ -1732,6 +1732,16 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         .reduce((abilityMax, ability) => Math.max(abilityMax, ability.level), 0);
       return Math.max(maxLevel, level);
     }, 0);
+  };
+
+  const getPartyStateDurationMultiplier = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'sleep' | 'pray' | 'explore'): number => {
+    const deityGold = state.global.deityDonations[normalizeDeityName(party.deity.name)] ?? party.deityGold ?? 0;
+    return getDeityStateDurationMultiplier(party.deity.name, deityGold, cycleState);
+  };
+
+  const getStateDurationMs = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'sleep' | 'pray'): number => {
+    const base = cycleState === 'rest' ? 1000 : cycleState === 'sleep' ? 10000 : 5000;
+    return Math.floor(base * getPartyStateDurationMultiplier(party, cycleState));
   };
 
   const getPartyTravelDurationMs = (party: Party): number => {
