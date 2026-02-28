@@ -1019,8 +1019,12 @@ function getRaceBonusesForSelection(race: Race, unlockAbilityActive = false): Bo
     return race.bonuses as Bonus[];
   }
 
+  const normalizedUnlockAbilityId = race.unlockAbility.id
+    .replace(/^a\./, '')
+    .replace(/-/g, '_');
+
   return (race.bonuses as Bonus[]).filter(
-    (bonus) => bonus.type !== 'ability' || bonus.abilityId !== race.unlockAbility?.id,
+    (bonus) => bonus.type !== 'ability' || bonus.abilityId !== normalizedUnlockAbilityId,
   );
 }
 
@@ -2827,10 +2831,17 @@ function PartyTab({
             <div>
               <label className="block text-gray-500">種族</label>
               <div className="mt-2 max-h-40 overflow-y-auto rounded border border-gray-200 bg-white">
-                {RACES.map((race) => {
+                {(() => {
+                  const selectedRaceId = pendingEdits?.raceId ?? char.raceId;
+                  const orderedRaces = [
+                    ...RACES.filter((race) => race.id === selectedRaceId),
+                    ...RACES.filter((race) => race.id !== selectedRaceId),
+                  ];
+
+                  return orderedRaces.map((race) => {
                   const s = race.stats;
                   const bonusText = formatBonuses(getRaceBonusesForSelection(race));
-                  const isSelectedRace = (pendingEdits?.raceId ?? char.raceId) === race.id;
+                  const isSelectedRace = selectedRaceId === race.id;
 
                   return (
                     <button
@@ -2838,7 +2849,7 @@ function PartyTab({
                       type="button"
                       onClick={() => handleRaceChange(race.id)}
                       className={`w-full px-2 py-1.5 text-left border-b border-gray-100 last:border-b-0 text-xs ${
-                        isSelectedRace ? 'bg-sub/10' : 'hover:bg-gray-50'
+                        isSelectedRace ? 'bg-sub/10 font-semibold' : 'hover:bg-gray-50'
                       }`}
                     >
                       <span className="flex items-start gap-2">
@@ -2850,7 +2861,8 @@ function PartyTab({
                       </span>
                     </button>
                   );
-                })}
+                  });
+                })()}
               </div>
             </div>
             <div>
