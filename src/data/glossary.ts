@@ -507,6 +507,51 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "魔法防御力がV倍(少ないほうが攻撃に強い)"
       },
       {
+        "key": "c.deity_physical_attack_xV",
+        "label": "[天物攻xV]",
+        "description": "遠距離攻撃・近接攻撃のダメージを V倍する"
+      },
+      {
+        "key": "c.deity_magical_attack_xV",
+        "label": "[天魔攻xV]",
+        "description": "魔法攻撃のダメージを V倍する"
+      },
+      {
+        "key": "c.deity_physical_defense_x2/3",
+        "label": "[天物防2/3]",
+        "description": "物理防御倍率が2/3倍(少ないほうが攻撃に強い)"
+      },
+      {
+        "key": "c.deity_pysical_defense_xV",
+        "label": "[天物防xV]",
+        "description": "物理防御倍率がV倍(少ないほうが攻撃に強い)"
+      },
+      {
+        "key": "c.deity_magical_defense_x2/3",
+        "label": "[天魔防2/3]",
+        "description": "魔法防御倍率が2/3倍(少ないほうが攻撃に強い)"
+      },
+      {
+        "key": "c.deity_magical_defense_xV",
+        "label": "[天魔防xV]",
+        "description": "魔法防御倍率がV倍(少ないほうが攻撃に強い)"
+      },
+      {
+        "key": "c.deity_move_first+1",
+        "label": "[天速度+1]",
+        "description": "行動速度の決定値に+1する(より早くなる)"
+      },
+      {
+        "key": "c.deity_accuracy+v",
+        "label": "[天命中+v]",
+        "description": "値が多いほどより多くの攻撃が命中するようになる"
+      },
+      {
+        "key": "c.deity_evasion+v",
+        "label": "[天回避+v]",
+        "description": "値が多いほどより多くの攻撃を回避するようになる"
+      },
+      {
         "key": "c.fire_defense_multiplier_xV",
         "label": "[炎防xV]",
         "description": "炎属性耐性がV倍(少ないほうが攻撃に強い)"

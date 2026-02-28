@@ -278,8 +278,10 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
         }
         break;
       case 'accuracy':
+      case 'deity_accuracy':
         {
-          const bonusName = `c.accuracy+${formatCBonusValue(bonus.value)}`;
+          const bonusPrefix = bonus.type === 'deity_accuracy' ? 'c.deity_accuracy' : 'c.accuracy';
+          const bonusName = `${bonusPrefix}+${formatCBonusValue(bonus.value)}`;
           const appliedCount = collection.cAccuracyBonusCounts.get(bonusName) ?? 0;
           if (appliedCount < 1) {
             collection.cAccuracyBonusCounts.set(bonusName, appliedCount + 1);
@@ -288,6 +290,7 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
         }
         break;
       case 'evasion':
+      case 'deity_evasion':
         {
           // c.evasion is unique by name, but penalty-side d.evasion values are stackable.
           if (bonus.value < 0) {
@@ -295,7 +298,8 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
             break;
           }
 
-          const bonusName = `c.evasion+${formatCBonusValue(bonus.value)}`;
+          const bonusPrefix = bonus.type === 'deity_evasion' ? 'c.deity_evasion' : 'c.evasion';
+          const bonusName = `${bonusPrefix}+${formatCBonusValue(bonus.value)}`;
           if (!collection.uniqueEvasionBonusNames.has(bonusName)) {
             collection.uniqueEvasionBonusNames.add(bonusName);
             collection.evasion += bonus.value;
@@ -388,11 +392,13 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
         break;
       case 'physical_offense_multiplier_xV':
       case 'magical_offense_multiplier_xV':
+      case 'deity_physical_attack_xV':
+      case 'deity_magical_attack_xV':
         {
           const bonusName = `c.${bonus.type}_${formatCBonusValue(bonus.value)}`;
           if (collection.offenseCBonusNames.has(bonusName)) break;
           collection.offenseCBonusNames.add(bonusName);
-          if (bonus.type === 'physical_offense_multiplier_xV') {
+          if (bonus.type === 'physical_offense_multiplier_xV' || bonus.type === 'deity_physical_attack_xV') {
             collection.physicalOffenseMultiplier *= bonus.value;
           } else {
             collection.magicalOffenseMultiplier *= bonus.value;
@@ -401,6 +407,11 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
         break;
       case 'physical_defense_multiplier_xV':
       case 'magical_defense_multiplier_xV':
+      case 'deity_physical_defense_x2/3':
+      case 'deity_physical_defense_xV':
+      case 'deity_pysical_defense_xV':
+      case 'deity_magical_defense_x2/3':
+      case 'deity_magical_defense_xV':
       case 'fire_defense_multiplier_xV':
       case 'ice_defense_multiplier_xV':
       case 'thunder_defense_multiplier_xV':
@@ -408,9 +419,18 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
           const bonusName = `c.${bonus.type}_${formatCBonusValue(bonus.value)}`;
           if (collection.offenseCBonusNames.has(bonusName)) break;
           collection.offenseCBonusNames.add(bonusName);
-          if (bonus.type === 'physical_defense_multiplier_xV') {
+          if (
+            bonus.type === 'physical_defense_multiplier_xV'
+            || bonus.type === 'deity_physical_defense_x2/3'
+            || bonus.type === 'deity_physical_defense_xV'
+            || bonus.type === 'deity_pysical_defense_xV'
+          ) {
             collection.physicalDefenseMultiplier *= bonus.value;
-          } else if (bonus.type === 'magical_defense_multiplier_xV') {
+          } else if (
+            bonus.type === 'magical_defense_multiplier_xV'
+            || bonus.type === 'deity_magical_defense_x2/3'
+            || bonus.type === 'deity_magical_defense_xV'
+          ) {
             collection.magicalDefenseMultiplier *= bonus.value;
           } else if (bonus.type === 'fire_defense_multiplier_xV') {
             collection.elementalDefenseMultipliers.fire *= bonus.value;
@@ -419,6 +439,16 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
           } else {
             collection.elementalDefenseMultipliers.thunder *= bonus.value;
           }
+        }
+        break;
+      case 'deity_move_first':
+        if (bonus.value > 0) {
+          const bonusName = `c.deity_move_first+${formatCBonusValue(bonus.value)}`;
+          if (collection.uniqueCAdditiveBonusNames.has(bonusName)) break;
+          collection.uniqueCAdditiveBonusNames.add(bonusName);
+
+          const currentLevel = collection.abilities.get('first_strike') ?? 0;
+          collection.abilities.set('first_strike', currentLevel + bonus.value);
         }
         break;
       case 'fire_offense':
