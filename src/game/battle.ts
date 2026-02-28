@@ -1473,7 +1473,10 @@ export function executeBattle(
           }
         } else {
           result = calculateCharacterDamage(phase, cs, char, enemy, partyStats, partyHp, noAMultiplier);
-          if (isIllusionActive(phase, getEnemyAbilityLevel(enemy, 'illusion') > 0, 'enemy', consumedIllusionStateIds)) {
+          if (
+            result.totalAttempts > 0
+            && isIllusionActive(phase, getEnemyAbilityLevel(enemy, 'illusion') > 0, 'enemy', consumedIllusionStateIds)
+          ) {
             consumedIllusionStateIds.add('enemy');
             result.damage = 0;
             result.hits = 0;
