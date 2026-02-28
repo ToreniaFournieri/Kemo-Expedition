@@ -330,6 +330,7 @@ interface CharacterAttackResult {
   damage: number;
   totalAttempts: number;
   hits: number;
+  wasNegatedByEnemyIllusion?: boolean;
 }
 
 
@@ -724,6 +725,7 @@ export function executeBattle(
   let consumedEnemyResurrect = false;
   const consumedIllusionCharacterIds = new Set<number>();
   let consumedPartyIllusion = false;
+  let consumedEnemyIllusion = false;
 
   const triggerEnemyResurrect = (phase: BattlePhase, initiativeRoll?: number): void => {
     if (enemyHp > 0 || consumedEnemyResurrect) return;
@@ -950,6 +952,13 @@ export function executeBattle(
       const coveringFireResult = calculateCharacterDamage('long', coverCharStats, coverChar, enemy, partyStats, partyHp, coveringFireNoAMultiplier);
       if (coveringFireResult.totalAttempts <= 0) continue;
 
+      if (!consumedEnemyIllusion && getEnemyAbilityLevel(enemy, 'illusion') > 0) {
+        consumedEnemyIllusion = true;
+        coveringFireResult.damage = 0;
+        coveringFireResult.hits = 0;
+        coveringFireResult.wasNegatedByEnemyIllusion = true;
+      }
+
       const coveringFireDealtDamage = coveringFireResult.damage > 0;
       if (coveringFireDealtDamage) {
         enemyHp -= coveringFireResult.damage;
@@ -971,8 +980,17 @@ export function executeBattle(
           ? coverFireMomentumBonusPercent
           : undefined,
         isCounter: true,
+        wasNegated: coveringFireResult.wasNegatedByEnemyIllusion || undefined,
         elementalOffense: coverCharStats.elementalOffense,
       });
+
+      if (coveringFireResult.wasNegatedByEnemyIllusion) {
+        log.push({
+          phase,
+          actor: 'effect',
+          action: `${enemy.name} への攻撃はすべて幻だった！`,
+        });
+      }
 
       if (coveringFireDealtDamage) {
         triggerEnemyResurrect(phase, initiativeRoll);
@@ -1436,6 +1454,12 @@ export function executeBattle(
           }
         } else {
           result = calculateCharacterDamage(phase, cs, char, enemy, partyStats, partyHp, noAMultiplier);
+          if (phase === 'long' && !consumedEnemyIllusion && getEnemyAbilityLevel(enemy, 'illusion') > 0) {
+            consumedEnemyIllusion = true;
+            result.damage = 0;
+            result.hits = 0;
+            result.wasNegatedByEnemyIllusion = true;
+          }
           if (result.damage > 0) {
             enemyHp -= result.damage;
           }
@@ -1468,8 +1492,17 @@ export function executeBattle(
             ? characterAttackMomentumBonusPercent
             : undefined,
           isReAttack: isReAttack || undefined,
+          wasNegated: result.wasNegatedByEnemyIllusion || undefined,
           elementalOffense: cs.elementalOffense,
         });
+
+        if (!isAntagonism && result.wasNegatedByEnemyIllusion) {
+          log.push({
+            phase,
+            actor: 'effect',
+            action: `${enemy.name} への攻撃はすべて幻だった！`,
+          });
+        }
 
         if (!isAntagonism && result.damage > 0) {
           triggerEnemyResurrect(phase, turn.roll);
