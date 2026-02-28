@@ -10,11 +10,12 @@
 | `d.` | **D**uel Status (Current combat values). the bonus is stackable. |
 | `e.` | **E**lemental Offense Attribute |
 | `f.` | **F**unction (Logic/Calculated value) |
-| `g.` | Ba**g** Randomization |
+
 | `i.` | **I**tem Category |
 | `p.` | **P**arty/Expedition Instance Data |
 | `r.` | Elemental **R**esistance Attribute |
 | `s.` | Item **S**tate |
+| `t.` | **T**etris like bag Randomization |
 | `x.` | E**x**pedition |
 
 
@@ -247,7 +248,7 @@
   - characters slots
 
 **Bag Randomization:** 
-- There are weighted bags (g.*_bag) that control probabilistic randomness: `g.common_reward_bag`, `g.common_enhancement_bag`, `g.uncommon_reward_bag`, `g.elite_rare_reward_bag`, `g.boss_rare_reward_bag`, `g.mythic_rare_reward_bag`, `g.enhancement_bag`, `g.superRare_bag`, `g.physical_threat_weight_bag`, and `g.magical_threat_weight_bag`
+- There are weighted bags (g.*_bag) that control probabilistic randomness: `t.common_reward_bag`, `t.common_enhancement_bag`, `t.uncommon_reward_bag`, `t.elite_rare_reward_bag`, `t.boss_rare_reward_bag`, `t.mythic_rare_reward_bag`, `t.enhancement_bag`, `t.superRare_bag`, `t.physical_threat_weight_bag`, and `t.magical_threat_weight_bag`
   - All bags persist in save data and are not reset per battle or per expedition.
   - Bags are reset only when: explicitly reset, or automatically reset when the bag becomes empty (total_tickets == 0).
 	
@@ -256,8 +257,8 @@
   - Each entry is { ID, tickets }.
   - Bag iteration order is stable (e.g., ascending ID).
     - Examples:
-      - `g.common_reward_bag` = { { ID: 0, tickets: 90 }, { ID: 1, tickets: 10 },  }
-      - `g.superRare_bag` = { { ID: 0, tickets: 399920 }, { ID: 1, tickets: 1 }, { ID: 2, tickets: 1 }, ... , { ID: 80, tickets: 1 } }
+      - `t.common_reward_bag` = { { ID: 0, tickets: 90 }, { ID: 1, tickets: 10 },  }
+      - `t.superRare_bag` = { { ID: 0, tickets: 399920 }, { ID: 1, tickets: 1 }, { ID: 2, tickets: 1 }, ... , { ID: 80, tickets: 1 } }
 
 - `f.pop_from_weighted_bag`(bag_key: g.*)
   - Get bag by bag_key.
@@ -273,40 +274,40 @@
   - Bags reset only by either:
 	- Explicit reset 
 	- Automatic reset when total == 0 (bag is empty)
-  - Reset: the bag is initialized from `g.(bagname)_default`.
-    - example: `g.physical_threat_weight_bag` is initialized from `g.physical_threat_weight_bag_default`.
+  - Reset: the bag is initialized from `t.(bagname)_default`.
+    - example: `t.physical_threat_weight_bag` is initialized from `t.physical_threat_weight_bag_default`.
 
 **reward list**
 
-- `g.common_reward_bag_default` table
+- `t.common_reward_bag_default` table
 
 | ID | title | tickets |
 |-----|---------|------|
 | 0 | no item | 90 |
 | 1 | win | 10 |  
 
-- `g.uncommon_reward_bag_default` table
+- `t.uncommon_reward_bag_default` table
  
 | ID | title | tickets |
 |-----|---------|------|
 | 0 | no item | 99 |
 | 1 | win | 1 |
 
-- `g.elite_rare_reward_bag_default` table
+- `t.elite_rare_reward_bag_default` table
  
 | ID | title | tickets |
 |-----|---------|------|
 | 0 | no item | 99 |
 | 1 | win | 1 |
 
-- `g.boss_rare_reward_bag_default` table
+- `t.boss_rare_reward_bag_default` table
  
 | ID | title | tickets |
 |-----|---------|------|
 | 0 | no item | 99 |
 | 1 | win | 1 |
 
-- `g.mythic_rare_reward_bag_default` table
+- `t.mythic_rare_reward_bag_default` table
 
 | ID | title | tickets |
 |-----|---------|------|
@@ -327,7 +328,7 @@
 | 5 | 恐ろしい | x3.50 |
 | 6 | 究極の | x5.00 |
 
-- `g.common_enhancement_bag_default` table
+- `t.common_enhancement_bag_default` table
 
 | ID | title | tickets |
 |-----|---------|------|
@@ -339,7 +340,7 @@
 | 5 | 恐ろしい | 4 |
 | 6 | 究極の | 1 |
 
-- `g.enhancement_bag_default` table
+- `t.enhancement_bag_default` table
  
 | ID | title | tickets |
 |-----|---------|------|
@@ -436,7 +437,7 @@
 | 79 | 災いもたらす | `c.growth_x0.9`成長0.9倍, `c.magical_offense_multiplier_x1.5`魔攻撃1.5倍 |
 | 80 | 呪われし | `c.antagonism`⚠️敵対, `c.growth_x1.8`成長1.8倍 |
 
-- `g.superRare_bag_default` table
+- `t.superRare_bag_default` table
 
 | ID | tickets | multiplier |
 |-----|------|-----|
@@ -447,7 +448,7 @@
 | 80 | 1 | x2.0 |
 
 **Threat weight**
-- `g.physical_threat_weight_bag_default`
+- `t.physical_threat_weight_bag_default`
   - ID = row
 
 | ID | tickets |
@@ -459,7 +460,7 @@
 | 5 | 1 |
 | 6 | 1 |
 
-- `g.magical_threat_weight_bag_default` 
+- `t.magical_threat_weight_bag_default` 
 
 | ID | tickets |
 |---|----|
