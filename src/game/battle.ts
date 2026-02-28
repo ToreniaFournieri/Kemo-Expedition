@@ -749,7 +749,7 @@ export function executeBattle(
 
     log.push({
       phase: 'long',
-      actor: 'deity',
+      actor: 'effect',
       action: '不和の神の効果！',
       note: `([⚠️敵対]${targetName}が仲違いした)`,
     });
