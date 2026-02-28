@@ -2833,35 +2833,39 @@ function PartyTab({
               <div className="mt-2 max-h-40 overflow-y-auto rounded border border-gray-200 bg-white">
                 {(() => {
                   const selectedRaceId = pendingEdits?.raceId ?? char.raceId;
-                  const orderedRaces = [
-                    ...RACES.filter((race) => race.id === selectedRaceId),
-                    ...RACES.filter((race) => race.id !== selectedRaceId),
-                  ];
+                  const selectedRace = RACES.find((race) => race.id === selectedRaceId) ?? RACES[0];
+                  const otherRaces = RACES.filter((race) => race.id !== selectedRace.id);
 
-                  return orderedRaces.map((race) => {
-                  const s = race.stats;
-                  const bonusText = formatBonuses(getRaceBonusesForSelection(race));
-                  const isSelectedRace = selectedRaceId === race.id;
+                  const renderRaceOption = (race: Race, isSelectedRace: boolean, extraClassName = '') => {
+                    const s = race.stats;
+                    const bonusText = formatBonuses(getRaceBonusesForSelection(race));
+
+                    return (
+                      <button
+                        key={`race-image-${race.id}`}
+                        type="button"
+                        onClick={() => handleRaceChange(race.id)}
+                        className={`w-full px-2 py-1.5 text-left border-b border-gray-100 last:border-b-0 text-xs ${
+                          isSelectedRace ? 'bg-sub/10 font-semibold' : 'hover:bg-gray-50'
+                        } ${extraClassName}`}
+                      >
+                        <span className="flex items-start gap-2">
+                          <RaceIcon race={race} className="h-4 w-4 mt-0.5 shrink-0" />
+                          <span>
+                            <span className="text-gray-800">{race.name}</span>
+                            <span className="text-gray-500"> | 体{s.vitality},力{s.strength},知{s.intelligence},精{s.mind} | {bonusText}</span>
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  };
 
                   return (
-                    <button
-                      key={`race-image-${race.id}`}
-                      type="button"
-                      onClick={() => handleRaceChange(race.id)}
-                      className={`w-full px-2 py-1.5 text-left border-b border-gray-100 last:border-b-0 text-xs ${
-                        isSelectedRace ? 'bg-sub/10 font-semibold' : 'hover:bg-gray-50'
-                      }`}
-                    >
-                      <span className="flex items-start gap-2">
-                        <RaceIcon race={race} className="h-4 w-4 mt-0.5 shrink-0" />
-                        <span>
-                          <span className="text-gray-800">{race.name}</span>
-                          <span className="text-gray-500"> | 体{s.vitality},力{s.strength},知{s.intelligence},精{s.mind} | {bonusText}</span>
-                        </span>
-                      </span>
-                    </button>
+                    <>
+                      {renderRaceOption(selectedRace, true, 'sticky top-0 z-10 border-b border-gray-200')}
+                      {otherRaces.map((race) => renderRaceOption(race, false))}
+                    </>
                   );
-                  });
                 })()}
               </div>
             </div>
