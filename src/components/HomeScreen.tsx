@@ -1026,6 +1026,16 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
   return parts.join(', ');
 }
 
+function getRaceBonusesForSelection(race: Race, unlockConditionActive: boolean): Bonus[] {
+  if (!race.unlockAbility || unlockConditionActive) {
+    return race.bonuses as Bonus[];
+  }
+
+  return (race.bonuses as Bonus[]).filter(
+    (bonus) => bonus.type !== 'ability' || bonus.abilityId !== race.unlockAbility?.id,
+  );
+}
+
 const PREDISPOSITION_SHORT_NAMES: Record<string, string> = {
   sturdy: '頑',
   agile: '俊',
@@ -2837,7 +2847,11 @@ function PartyTab({
               >
                 {RACES.map(r => {
                   const s = r.stats;
-                  const bonusText = formatBonuses(r.bonuses as Bonus[]);
+                  const unlockBonusType = UNLOCK_BONUS_BY_RACE[r.id];
+                  const unlockConditionActive = unlockBonusType
+                    ? equippedItems.some((item) => (item.bonuses ?? []).some((bonus) => bonus.type === unlockBonusType))
+                    : false;
+                  const bonusText = formatBonuses(getRaceBonusesForSelection(r, unlockConditionActive));
                   return (
                     <option key={r.id} value={r.id}>
                       {r.emoji}{r.name} | 体{s.vitality},力{s.strength},知{s.intelligence},精{s.mind} | {bonusText}
