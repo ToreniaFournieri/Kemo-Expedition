@@ -2002,6 +2002,14 @@ function PartyTab({
   const selectedIaigiriLevel = selectedStats.abilities.find(a => a.id === 'iaigiri')?.level ?? 0;
   const selectedIaigiriMultiplier = selectedIaigiriLevel >= 3 ? 3.0 : selectedIaigiriLevel >= 2 ? 2.5 : selectedIaigiriLevel >= 1 ? 2.0 : 1.0;
   const selectedEffectiveAccuracyBonus = getEffectiveAccuracyBonus(selectedStats.accuracyBonus, selectedStats.abilities);
+  const selectedAbilityLevels = selectedStats.abilities.reduce<Record<string, number>>((acc, ability) => {
+    acc[ability.id] = Math.max(acc[ability.id] ?? 0, ability.level);
+    return acc;
+  }, {});
+  const selectedAbilityLevelSignature = Object.entries(selectedAbilityLevels)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([id, level]) => `${id}:${level}`)
+    .join('|');
   const selectedPhysicalDefenseResist = Math.max(0.01, selectedStats.physicalDefenseAmplifier + selectedStats.deityDefenseAmplifierBonus.physical);
   const selectedMagicalDefenseResist = Math.max(0.01, selectedStats.magicalDefenseAmplifier + selectedStats.deityDefenseAmplifierBonus.magical);
   const selectedMeleeAttackAmp = ((selectedIaigiriLevel > 0
@@ -2045,6 +2053,7 @@ function PartyTab({
     unlockRaceName: selectedRace?.name ?? '',
     unlockAbilityName: selectedRace?.unlockAbility?.name ?? '',
     unlockConditionActive: isSelectedRaceUnlockConditionActive,
+    abilityLevels: selectedAbilityLevels,
   };
 
   const prevStatsRef = useRef<typeof combatTotals | null>(null);
@@ -2249,6 +2258,21 @@ function PartyTab({
         });
       }
 
+      const changedAbilityIds = new Set([
+        ...Object.keys(prev.abilityLevels),
+        ...Object.keys(combatTotals.abilityLevels),
+      ]);
+      changedAbilityIds.forEach((abilityId) => {
+        const previousLevel = prev.abilityLevels[abilityId] ?? 0;
+        const currentLevel = combatTotals.abilityLevels[abilityId] ?? 0;
+        if (previousLevel === currentLevel) return;
+        const abilityName = ABILITY_NAMES[abilityId] ?? abilityId;
+        changes.push({
+          message: `${abilityName}アビリティレベル ${previousLevel} → ${currentLevel}`,
+          isPositive: currentLevel > previousLevel,
+        });
+      });
+
       // Send all stat notifications at once (clears previous stat notifications)
       if (changes.length > 0) {
         onAddStatNotifications(changes);
@@ -2265,6 +2289,7 @@ function PartyTab({
       combatTotals.accuracy, combatTotals.evasion, combatTotals.penet,
       combatTotals.elementalOffense, combatTotals.elementalOffensePercent,
       combatTotals.unlockRaceName, combatTotals.unlockAbilityName, combatTotals.unlockConditionActive,
+      selectedAbilityLevelSignature,
       onAddStatNotifications, selectedCharacter, selectedPartyIndex]);
   const [pendingEdits, setPendingEdits] = useState<Partial<Character> | null>(null);
   const [showEditConfirm, setShowEditConfirm] = useState(false);
