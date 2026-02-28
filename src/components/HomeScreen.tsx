@@ -1015,7 +1015,7 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
 }
 
 function getRaceBonusesForSelection(race: Race, unlockConditionActive: boolean): Bonus[] {
-  if (!race.unlockAbility || unlockConditionActive) {
+  if (!race.unlockAbility || !unlockConditionActive) {
     return race.bonuses as Bonus[];
   }
 
