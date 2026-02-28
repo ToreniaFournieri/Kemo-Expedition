@@ -2846,7 +2846,7 @@ function PartyTab({
                         type="button"
                         onClick={() => handleRaceChange(race.id)}
                         className={`w-full px-2 py-1.5 text-left border-b border-gray-100 last:border-b-0 text-xs ${
-                          isSelectedRace ? 'bg-sub/10 font-semibold' : 'hover:bg-gray-50'
+                          isSelectedRace ? 'bg-white font-semibold' : 'hover:bg-gray-50'
                         } ${extraClassName}`}
                       >
                         <span className="flex items-start gap-2">
