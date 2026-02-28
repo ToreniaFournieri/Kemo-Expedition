@@ -23,7 +23,7 @@ import { getXpToNextLevel } from '../game/partyLevel';
 import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../game/environment';
 import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, getShopRefreshPrice, getNextShopRefreshDate, countElapsedShopRefreshes } from '../game/shop';
 import { getBaseMultiplier } from '../game/baseMultiplier';
-import { computeCharacterStats } from '../game/characterComputation';
+import { computeCharacterStats, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
 import { serializeGameState } from '../game/saveCodec';
 import { getBagEntryTickets, getBagTicketTotal } from '../game/bags';
 import { replaceCharacterEquipment } from '../game/equipment';
@@ -912,18 +912,6 @@ const UNLOCK_ABILITY_BONUS_LABELS: Partial<Record<BonusType, string>> = {
   unlock_procyonian_ability: '🦝解放',
 };
 
-const UNLOCK_BONUS_BY_RACE: Partial<Record<RaceId, BonusType>> = {
-  caninian: 'unlock_caninian_ability',
-  lupinian: 'unlock_lupinian_ability',
-  vulpinian: 'unlock_vulpinian_ability',
-  ursan: 'unlock_ursan_ability',
-  felidian: 'unlock_felidian_ability',
-  mustelid: 'unlock_mustelid_ability',
-  leporian: 'unlock_leporian_ability',
-  cervin: 'unlock_cervin_ability',
-  murid: 'unlock_murid_ability',
-  procyonian: 'unlock_procyonian_ability',
-};
 
 function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'raw' | 'friendly' }): string {
   const defenseMultiplierStyle = options?.defenseMultiplierStyle ?? 'raw';
@@ -2001,14 +1989,12 @@ function PartyTab({
   const [draggingCharacterIndex, setDraggingCharacterIndex] = useState<number | null>(null);
   const selectedChar = party.characters[selectedCharacter];
   const equippedItems = selectedChar.equipment.filter((item): item is Item => item != null);
+  const unlockedRaceAbilities = getUnlockedRaceAbilitiesFromBonuses(equippedItems.flatMap((item) => item.bonuses ?? []));
 
   // Calculate current stats for notification: HP is party-wide, others are per selected character
   const selectedStats = characterStats[selectedCharacter];
   const selectedRace = RACES.find((race) => race.id === selectedChar.raceId);
-  const selectedRaceUnlockBonusType = UNLOCK_BONUS_BY_RACE[selectedChar.raceId];
-  const isSelectedRaceUnlockConditionActive = selectedRaceUnlockBonusType
-    ? equippedItems.some((item) => (item.bonuses ?? []).some((bonus) => bonus.type === selectedRaceUnlockBonusType))
-    : false;
+  const isSelectedRaceUnlockConditionActive = unlockedRaceAbilities.has(selectedChar.raceId);
   const selectedIaigiriLevel = selectedStats.abilities.find(a => a.id === 'iaigiri')?.level ?? 0;
   const selectedIaigiriMultiplier = selectedIaigiriLevel >= 3 ? 3.0 : selectedIaigiriLevel >= 2 ? 2.5 : selectedIaigiriLevel >= 1 ? 2.0 : 1.0;
   const selectedEffectiveAccuracyBonus = getEffectiveAccuracyBonus(selectedStats.accuracyBonus, selectedStats.abilities);
@@ -2847,10 +2833,7 @@ function PartyTab({
               >
                 {RACES.map(r => {
                   const s = r.stats;
-                  const unlockBonusType = UNLOCK_BONUS_BY_RACE[r.id];
-                  const unlockConditionActive = unlockBonusType
-                    ? equippedItems.some((item) => (item.bonuses ?? []).some((bonus) => bonus.type === unlockBonusType))
-                    : false;
+                  const unlockConditionActive = unlockedRaceAbilities.has(r.id);
                   const bonusText = formatBonuses(getRaceBonusesForSelection(r, unlockConditionActive));
                   return (
                     <option key={r.id} value={r.id}>
