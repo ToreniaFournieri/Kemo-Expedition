@@ -1169,7 +1169,27 @@ function sortInventoryItems(items: [string, InventoryVariant][]): [string, Inven
   });
 }
 
+
+function getInitialGameMode(isLunaEnvironment: boolean): GameMode {
+  if (isLunaEnvironment) return 'm.luna';
+
+  if (typeof window === 'undefined') return 'm.kemo';
+
+  try {
+    const savedMode = localStorage.getItem(GAME_MODE_STORAGE_KEY);
+    if (savedMode === 'm.kemo' || savedMode === 'm.luna') {
+      return savedMode;
+    }
+  } catch (error) {
+    console.error('Failed to load initial game mode:', error);
+  }
+
+  return 'm.kemo';
+}
+
 export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
+  const currentEnv = getEnvironmentId();
+  const isLunaEnvironment = currentEnv === 'luna';
   const [activeTab, setActiveTab] = useState<Tab>('expedition');
   const [activeBaseSubTab, setActiveBaseSubTab] = useState<BaseSubTab>('inventory');
   const [selectedCharacter, setSelectedCharacter] = useState<number>(0);
@@ -1184,9 +1204,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const [selectedBestiaryDungeonId, setSelectedBestiaryDungeonId] = useState<number>(1);
   const [expandedBestiaryEnemies, setExpandedBestiaryEnemies] = useState<Record<number, boolean>>({});
   const [bestiaryScrollTop, setBestiaryScrollTop] = useState(0);
-  const [gameMode, setGameMode] = useState<GameMode>('m.kemo');
-  const currentEnv = getEnvironmentId();
-  const isLunaEnvironment = currentEnv === 'luna';
+  const [gameMode, setGameMode] = useState<GameMode>(() => getInitialGameMode(isLunaEnvironment));
   const tabScrollPositionsRef = useRef<Partial<Record<Tab, number>>>({});
   const tabContentRef = useRef<HTMLDivElement | null>(null);
 
