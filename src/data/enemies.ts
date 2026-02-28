@@ -612,7 +612,7 @@ function generateEnemies(): EnemyDef[] {
   };
 
   const bossUniqueAbilitiesByTier: Record<number, AbilityId[]> = {
-    1: ['seeker', 'illusion'],
+    1: ['seeker', 'illusion', 're_counter', 'stealth'],
     2: ['rage'],
     3: ['momentum'],
     4: ['cyborgization'],
