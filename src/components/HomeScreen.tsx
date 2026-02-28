@@ -1220,6 +1220,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const lastCheckpointAtRef = useRef(Date.now());
   const latestPartiesRef = useRef(state.parties);
   const autoRepeatEnabledRef = useRef(isAutoRepeatEnabled);
+  const gameModeRef = useRef(gameMode);
   const [pendingAfkMs, setPendingAfkMs] = useState(0);
 
   useEffect(() => {
@@ -1229,6 +1230,10 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   useEffect(() => {
     autoRepeatEnabledRef.current = isAutoRepeatEnabled;
   }, [isAutoRepeatEnabled]);
+
+  useEffect(() => {
+    gameModeRef.current = gameMode;
+  }, [gameMode]);
   const afkSummaryBaselineRef = useRef<Array<{ victories: number; retreats: number; defeats: number; donatedGold: number; savedGold: number }> | null>(null);
   const shouldShowAfkSummaryRef = useRef(false);
   const { partyStats, characterStats } = computePartyStats(currentParty);
@@ -1489,7 +1494,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             } else if (updated.state === '移動中') {
               const triggerGodsBattle = pendingGodsBattleByPartyRef.current[partyIndex] === true;
               pendingGodsBattleByPartyRef.current[partyIndex] = false;
-              actions.runExpedition(partyIndex, gameMode === 'm.luna', triggerGodsBattle);
+              actions.runExpedition(partyIndex, gameModeRef.current === 'm.luna', triggerGodsBattle);
               updated.state = '探索中';
               updated.durationMs = getExplorationDurationMs();
             } else if (updated.state === '探索中') {
