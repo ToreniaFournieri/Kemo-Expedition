@@ -141,7 +141,7 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 
 **Row-based modifier** 
 - Targeting selects a character only to determine defense, row potency, abilities (counter). All damage resolved against a character is applied to `d.HP`.
-  - The threat weight table defines how many tickets of each row index are placed into `g.threat_weight_bag`.
+  - The threat weight table defines how many tickets of each row index are placed into `t.threat_weight_bag`.
 
 |row | Physical Threat weight |
 |---|---|
@@ -162,18 +162,18 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 |6|1|
 
 
-- `g.physical_threat_weight_bag` and `g.magical_threat_weight_bag`  Threat Weight (Passive Targeting) 
+- `t.physical_threat_weight_bag` and `t.magical_threat_weight_bag`  Threat Weight (Passive Targeting) 
   - A numerical value assigned to a unit based on their row position that determines the size of their "slice" in the enemy's targeting pool.
 
 - `f.targeting`:
   - If actor.`c.antagonism`, target is opposite. (character -> character. enemy -> enemy)
-  - If phase is LONG or CLOSE, Gets one ticket from `g.physical_threat_weight_bag`.
+  - If phase is LONG or CLOSE, Gets one ticket from `t.physical_threat_weight_bag`.
     - `a.bulwark`1 or `a.bulwark`2 redirect 
 	  if (`a.bulwark`1 and phase is LONG) or (`a.bulwark`2 and phase is (LONG or CLOSE)):
 	      flont_character = party.unit_in_front_of(t)    // the unit directly ahead of selected character (one row closer to enemy)
 	      if flont_character != null and flont_character.has(a.bulwark):
 	          return flont_character
-  - If phase is MID, Gets one ticket from `g.magical_threat_weight_bag`. 
+  - If phase is MID, Gets one ticket from `t.magical_threat_weight_bag`. 
     - Bag contains numbers [1,2,3,4,5,6]
     - The drawn number corresponds to row index (1–6).
     - The character currently occupying that row is selected as the target.
@@ -300,21 +300,21 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 
 - For every item listed in the enemy's potential drop items,
   - If the item is common,
-    - Get one ticket from `g.common_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord`.
-	- If `g.reward_bag`.value = '1', then get one ticket from `g.common_enhancement_bag`.
-    - If `g.enhancement_bag`.value >= 1, then get one ticket from `g.superRare_bag`.
+    - Get one ticket from `t.common_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord` or `God of Oblivion`.
+	- If `t.reward_bag`.value = '1', then get one ticket from `t.common_enhancement_bag`.
+    - If `t.enhancement_bag`.value >= 1, then get one ticket from `t.superRare_bag`.
   - If the item is uncommon,
-    - Gets one ticket from `g.uncommon_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord`.
-    - If `g.uncommon_reward_bag`.value = '1', then get one ticket from `g.enhancement_bag`.
-    - If `g.enhancement_bag`.value >= 1, then get one ticket from `g.superRare_bag`.
+    - Gets one ticket from `t.uncommon_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord` or `God of Oblivion`.
+    - If `t.uncommon_reward_bag`.value = '1', then get one ticket from `t.enhancement_bag`.
+    - If `t.enhancement_bag`.value >= 1, then get one ticket from `t.superRare_bag`.
   - If the item is rare,
-    - Gets one ticket from `g.rare_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord`.
-    - If `g.rare_reward_bag`.value = '1', then get one ticket from `g.enhancement_bag`.
-    - If `g.enhancement_bag`.value >= 1, then get one ticket from `g.superRare_bag`.
+    - Gets one ticket from `t.rare_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord` or `God of Oblivion`. 
+    - If `t.rare_reward_bag`.value = '1', then get one ticket from `t.enhancement_bag`.
+    - If `t.enhancement_bag`.value >= 1, then get one ticket from `t.superRare_bag`.
   - If the item is mythic,
-    - Gets one ticket from `g.mythic_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord`. 
-    - If `g.rare_mythic_bag`.value = '1', then get one ticket from `g.enhancement_bag`.
-    - If `g.enhancement_bag`.value >= 1, then get one ticket from `g.superRare_bag`.
+    - Gets one ticket from `t.mythic_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord` or or `God of Oblivion`.
+    - If `t.rare_mythic_bag`.value = '1', then get one ticket from `t.enhancement_bag`.
+    - If `t.enhancement_bag`.value >= 1, then get one ticket from `t.superRare_bag`.
 
   - Combines them into one item.
 
