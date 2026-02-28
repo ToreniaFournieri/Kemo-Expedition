@@ -4678,6 +4678,14 @@ function DiaryTab({
       return rewardNames ? `[${partyName}] エリートレア(${rewardNames}) 獲得` : `[${partyName}] エリートレア獲得`;
     }
 
+    const fallbackBossNames = rewards
+      .filter((item) => getItemRarityById(item.id) === 'bossRare')
+      .map((item) => getItemDisplayName(item))
+      .join('、');
+    if (fallbackBossNames) {
+      return `[${partyName}] ボスレア(${fallbackBossNames}) 獲得`;
+    }
+
     return `[${partyName}] ${getDiaryTitle(triggers)}`;
   };
 
