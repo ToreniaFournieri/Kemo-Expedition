@@ -15,7 +15,7 @@ import { getClassById } from '../data/classes';
 import { getPredispositionById } from '../data/predispositions';
 import { getLineageById } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, getSuperRareBonuses } from '../data/items';
-import { applyDeityCharacterModifiers } from './deity';
+import { applyDeityCharacterModifiers, getDeityElementalResistanceModifier, getDeityPartyHpMultiplier } from './deity';
 
 // Get enhancement and super rare multiplier for an item
 function getItemEnhancementMultiplier(item: Item): number {
@@ -270,13 +270,15 @@ export function computePartyStats(party: Party): {
   const magicalDefenseAmplifier = mBarrierLevel >= 3 ? 1 / 2 : mBarrierLevel === 2 ? 3 / 5 : mBarrierLevel === 1 ? 2 / 3 : 1.0;
 
   // Elemental resistance (always 1.0 in current version)
+  const deityElementalModifier = getDeityElementalResistanceModifier(party.deity.name);
   const elementalResistance: Record<ElementalResistance, number> = {
-    fire: 1.0,
-    thunder: 1.0,
-    ice: 1.0,
+    fire: deityElementalModifier.fire,
+    thunder: deityElementalModifier.thunder,
+    ice: deityElementalModifier.ice,
   };
 
-  const totalHp = Math.floor(baseHp + bonusHp);
+  const deityHpMultiplier = getDeityPartyHpMultiplier(party.deity.name, party.deityGold ?? 0);
+  const totalHp = Math.floor((baseHp + bonusHp) * deityHpMultiplier);
 
   return {
     partyStats: {

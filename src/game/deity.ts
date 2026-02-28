@@ -1,12 +1,18 @@
 import { Ability, ComputedCharacterStats, Party } from '../types';
 
 export const DEITY_OPTIONS = [
-  { key: 'God of Restoration', name: '再生の神' },
+  { key: 'Goddess of Restoration', name: '再生の女神' },
   { key: 'God of Attrition', name: '消耗の神' },
+  { key: 'God of Cunning', name: '狡猾の神' },
   { key: 'God of Fortification', name: '防備の神' },
-  { key: 'God of Precision', name: '命中の神' },
-  { key: 'God of Evasion', name: '回避の神' },
+  { key: 'Goddess of Fertility', name: '豊穣の女神' },
   { key: 'God of Resonance', name: '共鳴の神' },
+  { key: 'Goddess of Precision', name: '精密の女神' },
+  { key: 'God of Fate', name: '運命の神' },
+  { key: 'God of Dusk', name: '黄昏の神' },
+  { key: 'Goddess of Mirage', name: '幻影の女神' },
+  { key: 'God of Oblivion', name: '忘却されし神' },
+  { key: 'Goddess of Discord', name: '不和の神' },
 ] as const;
 
 export type DeityKey = typeof DEITY_OPTIONS[number]['key'];
@@ -26,10 +32,13 @@ const DEITY_KEY_BY_NAME: Record<string, DeityKey> = DEITY_OPTIONS.reduce((acc, d
 
 // Backward compatibility for older save data.
 DEITY_KEY_BY_NAME['反響の神'] = 'God of Resonance';
+DEITY_KEY_BY_NAME['再生の神'] = 'Goddess of Restoration';
+DEITY_KEY_BY_NAME['命中の神'] = 'Goddess of Precision';
+DEITY_KEY_BY_NAME['回避の神'] = 'God of Dusk';
+DEITY_KEY_BY_NAME['God of Restoration'] = 'Goddess of Restoration';
+DEITY_KEY_BY_NAME['God of Precision'] = 'Goddess of Precision';
+DEITY_KEY_BY_NAME['God of Evasion'] = 'God of Dusk';
 
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value));
-}
 
 export function getDonationTier(totalDonatedGold: number): number {
   const safeDonation = Math.max(0, totalDonatedGold);
@@ -85,31 +94,49 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
   const deityKey = getDeityKey(name);
   const effectiveTier = getEffectiveDeityTier(totalDonatedGold);
   switch (deityKey) {
-    case 'God of Restoration': {
-      const healMissingPct = clamp(0.2 + 0.005 * effectiveTier, 0.2, 0.3);
-      return `4部屋毎に減少HPの${Math.round(healMissingPct * 100)}%を回復する`;
+    case 'Goddess of Restoration': {
+      const healMissingPct = 0.2 + 0.001 * effectiveTier;
+      return `4部屋毎に減少HPの${Math.round(healMissingPct * 100)}%を回復する。睡眠時間x1.50`;
     }
     case 'God of Attrition': {
-      const attackBonus = 20 + 0.5 * effectiveTier;
-      const hpLossPct = Math.max(0.05 - 0.001 * effectiveTier, 0.03);
-      return `全員の与ダメージ補正+${attackBonus.toFixed(1)}%。4部屋毎に残りHPの${(hpLossPct * 100).toFixed(1)}%を失う`;
+      const attackMult = 1.2 + 0.01 * effectiveTier;
+      return `全員に[物理攻撃x${attackMult.toFixed(2)}]。4部屋毎に残りHPの5%を失う`;
+    }
+    case 'God of Cunning': {
+      const autoSellMultiplier = Math.min(1, 0.5 + 0.01 * effectiveTier);
+      return `全員に[魔法防御x2/3]。自動売却ゴールドx${autoSellMultiplier.toFixed(2)}`;
     }
     case 'God of Fortification': {
-      const defenseBonus = clamp(10 + 0.2 * effectiveTier, 10, 20);
-      return `全員の被ダメージ補正-${defenseBonus.toFixed(1)}%（物理/魔法）`;
+      const restDuration = Math.max(1, 1.5 - 0.01 * effectiveTier);
+      return `全員に[物理防御x2/3]。休息時間が延びる(x${restDuration.toFixed(2)})`;
     }
-    case 'God of Precision': {
-      const accuracyBonus = clamp(0.02 + 0.0005 * effectiveTier, 0.02, 0.035);
-      const evasionPenalty = clamp(-0.005 - 0.0002 * effectiveTier, -0.01, -0.005);
-      return `全員の[命中+${(accuracyBonus * 1000).toFixed(1)}]、[回避${(evasionPenalty * 1000).toFixed(1)}]`;
+    case 'Goddess of Fertility': {
+      const feastDuration = Math.max(1, 1.5 - 0.01 * effectiveTier);
+      return `全員に[先制+1]。宴会時間が延びる(x${feastDuration.toFixed(2)})`;
     }
-    case 'God of Evasion': {
-      const evasionBonus = clamp(0.015 + 0.0006 * effectiveTier, 0.015, 0.03);
-      return `全員の[回避+${(evasionBonus * 1000).toFixed(1)}]`;
+    case 'Goddess of Precision': {
+      const accuracyBonus = 0.015 + 0.001 * effectiveTier;
+      return `全員の[命中+${(accuracyBonus * 1000).toFixed(1)}][回避-5.0]。探索時間x1.50`;
+    }
+    case 'God of Fate': {
+      const prayDuration = Math.max(1, 1.5 - 0.01 * effectiveTier);
+      return `祈り時間が延びる(x${prayDuration.toFixed(2)})`;
+    }
+    case 'God of Dusk': {
+      const evasionBonus = 0.015 + 0.001 * effectiveTier;
+      const sellDuration = Math.max(1, 1.5 - 0.01 * effectiveTier);
+      return `全員の[回避+${(evasionBonus * 1000).toFixed(1)}][魔法防御x0.90]。売却時間が延びる(x${sellDuration.toFixed(2)})`;
+    }
+    case 'Goddess of Mirage': {
+      const magicalAttack = 1.2 + 0.01 * effectiveTier;
+      return `全員に[魔法攻撃x${magicalAttack.toFixed(2)}][物理防御x0.90]`;
     }
     case 'God of Resonance': {
-      const resonanceUpgradeTiers = 1 + Math.floor(effectiveTier / 5);
-      return `全員の共鳴を${resonanceUpgradeTiers}段階強化し、[魔防-5%](魔法攻撃に弱くなります)`;
+      const hpMultiplier = 0.9 + 0.002 * effectiveTier;
+      return `全員の共鳴を1段階強化。共鳴が遠距離攻撃にも適用。[魔法防御x0.90][HPx${hpMultiplier.toFixed(3)}]`;
+    }
+    case 'Goddess of Discord': {
+      return '戦闘開始時、ランダム1名に[antagonism]。追加報酬抽選+1回';
     }
     default:
       return '効果なし';
@@ -132,40 +159,101 @@ export function applyDeityCharacterModifiers(
       case 'God of Attrition':
         return {
           ...stats,
-          deityOffenseAmplifierBonus: stats.deityOffenseAmplifierBonus + (20 + 0.5 * effectiveTier) / 100,
+          deityOffenseAmplifierBonus: stats.deityOffenseAmplifierBonus + (1.2 + 0.01 * effectiveTier) - 1,
         };
-      case 'God of Fortification': {
-        const defenseBonus = clamp(10 + 0.2 * effectiveTier, 10, 20) / 100;
+      case 'God of Cunning':
         return {
           ...stats,
           deityDefenseAmplifierBonus: {
-            physical: stats.deityDefenseAmplifierBonus.physical - defenseBonus,
-            magical: stats.deityDefenseAmplifierBonus.magical - defenseBonus,
+            physical: stats.deityDefenseAmplifierBonus.physical,
+            magical: stats.deityDefenseAmplifierBonus.magical - (1 - 2 / 3),
           },
         };
-      }
-      case 'God of Precision':
+      case 'God of Fortification':
         return {
           ...stats,
-          accuracyBonus: stats.accuracyBonus + clamp(0.02 + 0.0005 * effectiveTier, 0.02, 0.035),
-          evasionBonus: stats.evasionBonus + clamp(-0.005 - 0.0002 * effectiveTier, -0.01, -0.005),
+          deityDefenseAmplifierBonus: {
+            physical: stats.deityDefenseAmplifierBonus.physical - (1 - 2 / 3),
+            magical: stats.deityDefenseAmplifierBonus.magical,
+          },
         };
-      case 'God of Evasion':
+      case 'Goddess of Fertility': {
+        const firstStrike = stats.abilities.find((ability) => ability.id === 'first_strike');
         return {
           ...stats,
-          evasionBonus: stats.evasionBonus + clamp(0.015 + 0.0006 * effectiveTier, 0.015, 0.03),
+          abilities: firstStrike
+            ? stats.abilities.map((ability) => (
+              ability.id === 'first_strike'
+                ? { ...ability, level: ability.level + 1, name: `先制攻撃${ability.level + 1}` }
+                : ability
+            ))
+            : [...stats.abilities, { id: 'first_strike', level: 1, name: '先制攻撃1', description: '' }],
+        };
+      }
+      case 'Goddess of Precision':
+        return {
+          ...stats,
+          accuracyBonus: stats.accuracyBonus + (0.015 + 0.001 * effectiveTier),
+          evasionBonus: stats.evasionBonus - 0.005,
+        };
+      case 'God of Dusk':
+        return {
+          ...stats,
+          evasionBonus: stats.evasionBonus + (0.015 + 0.001 * effectiveTier),
+          deityDefenseAmplifierBonus: {
+            physical: stats.deityDefenseAmplifierBonus.physical,
+            magical: stats.deityDefenseAmplifierBonus.magical + 0.1,
+          },
         };
       case 'God of Resonance':
         return {
           ...stats,
           deityDefenseAmplifierBonus: {
             physical: stats.deityDefenseAmplifierBonus.physical,
-            magical: stats.deityDefenseAmplifierBonus.magical - clamp(-5 + effectiveTier, -5, 0) / 100,
+            magical: stats.deityDefenseAmplifierBonus.magical + 0.1,
           },
-          abilities: upgradeResonanceAbility(stats.abilities, 1 + Math.floor(effectiveTier / 5)),
+          abilities: upgradeResonanceAbility(stats.abilities, 1),
+        };
+      case 'Goddess of Mirage':
+        return {
+          ...stats,
+          deityOffenseAmplifierBonus: stats.deityOffenseAmplifierBonus + (1.2 + 0.01 * effectiveTier) - 1,
+          deityDefenseAmplifierBonus: {
+            physical: stats.deityDefenseAmplifierBonus.physical + 0.1,
+            magical: stats.deityDefenseAmplifierBonus.magical,
+          },
         };
       default:
         return stats;
     }
   });
+}
+
+export function getDeityStateDurationMultiplier(name: string, totalDonatedGold = 0, state: 'rest' | 'sell' | 'feast' | 'sleep' | 'pray' | 'explore'): number {
+  const deityKey = getDeityKey(name);
+  const effectiveTier = getEffectiveDeityTier(totalDonatedGold);
+  if (!deityKey) return 1;
+
+  if (state === 'sleep' && deityKey === 'Goddess of Restoration') return 1.5;
+  if (state === 'rest' && deityKey === 'God of Fortification') return Math.max(1, 1.5 - 0.01 * effectiveTier);
+  if (state === 'sell' && deityKey === 'God of Dusk') return Math.max(1, 1.5 - 0.01 * effectiveTier);
+  if (state === 'feast' && deityKey === 'Goddess of Fertility') return Math.max(1, 1.5 - 0.01 * effectiveTier);
+  if (state === 'pray' && deityKey === 'God of Fate') return Math.max(1, 1.5 - 0.01 * effectiveTier);
+  if (state === 'explore' && deityKey === 'Goddess of Precision') return 1.5;
+  return 1;
+}
+
+export function getDeityPartyHpMultiplier(name: string, totalDonatedGold = 0): number {
+  const deityKey = getDeityKey(name);
+  if (deityKey !== 'God of Resonance') return 1;
+  const effectiveTier = getEffectiveDeityTier(totalDonatedGold);
+  return 0.9 + 0.002 * effectiveTier;
+}
+
+export function getDeityElementalResistanceModifier(name: string): { fire: number; thunder: number; ice: number } {
+  const deityKey = getDeityKey(name);
+  if (deityKey === 'Goddess of Restoration') return { fire: 1, thunder: 1, ice: 1.5 };
+  if (deityKey === 'God of Fortification') return { fire: 1, thunder: 1.5, ice: 1 };
+  if (deityKey === 'Goddess of Fertility') return { fire: 1.5, thunder: 1, ice: 1 };
+  return { fire: 1, thunder: 1, ice: 1 };
 }
