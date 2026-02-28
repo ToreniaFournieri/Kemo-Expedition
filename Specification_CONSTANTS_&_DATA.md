@@ -583,28 +583,17 @@
 
 - Characters do not have individual HP. Each character contributes total HP. 
 
-#### 2.3.3 Deity list
-
-| God | Name  | effect (Rank 1) | 説明　|
-|-----|-----|----|---|
-|`God of Restoration`| 再生の神 |At the end of every 4th room,  Heal 20% of missing HP | |
-|`God of Attrition`| 消耗の神 | Add `c.melee_attack+20`, `c.ranged_attack+20`, and `c.magical_attack+20` to each party member. At the end of every 4th room, reduce 5% of remaining HP.| |
-|`God of Fortification` | 防備の神 | Add `c.physical_defense+10`, `c.magical_defense+10` to each party member.| |
-|`God of Precision`| 命中の神 | Add `c.accuracy+0.020` and `c.evasion-0.005` to each party member.| |
-|`God of Evasion`| 回避の神 | Add `c.evasion+0.015` to each party member.| |
-|`God of Resonance`| 共鳴の神 | Upgrade all `a.resonance` values by +1 tier. Add `c.magical_defense-5`to each party member.| 全員の共鳴を1段階強化し、[魔防-5%](魔法攻撃に弱くなります) |
-
-- Religions
+#### 2.3.3 Religions lists
 
 | God | Name | Effect | Scaling of rank up |
 |-|-|-|-|
-| Goddess of Restoration | 再生の女神 | At the end of every 4th room,  Heal 20% of missing HP, longer sleep 睡眠中, weak against ice | +0.5% Heal per rank |
-| God of Attrition | 消耗の神 |  Add `c.melee_attack+20`, `c.ranged_attack+20`, and `c.magical_attack+20` to each party member. At the end of every 4th room, reduce 5% of remaining HP.|  |
-| God of Cunning | 狡猾の神 | +magical defense, sustain intimacy, abscond (lower saving money) | |
-| God of Fortification | 防備の神 |  +physical defense, longer healing 休息中, weak against thunder | |
-| Goddess of Fertility | 豊穣の女神 |  move +1 faster, longer fest 宴会中, weak against fire | |
-| God of Resonance | 共鳴の神 |  resonance, resonance works ranged attack too, -HP | |
-| Goddess of Precision | 精密の女神 |  +accuracy, -evasion, longer 探索中 | |
+| Goddess of Restoration | 再生の女神 | At the end of every 4th room,  Heal 20% of missing HP, longer sleep 睡眠中 by x1.5, weak against ice (x1.5) | +0.1% Heal per rank |
+| God of Attrition | 消耗の神 |  Add `c.deity_physical_attack_x1.20` to each party member. At the end of every 4th room, reduce 5% of remaining HP.| +0.01 to `c.diety+attack_x1.20` per rank |
+| God of Cunning | 狡猾の神 | Add `c.deity_magical_defense_x2/3` to each party member, abscond (lower saving money by x0.50) | saving money +0.01 to x0.50 per rank |
+| God of Fortification | 防備の神 |  Add `c.deity_physical_defense_x2/3` to each party member, longer healing 休息中 by x1.5, weak against thunder (x1.5) | healing time -0.01 to x1.5 per rank |
+| Goddess of Fertility | 豊穣の女神 |  Add `c.deity_move_first+1` to each party member, longer fest 宴会中 by 1.5, weak against fire (x1.5) | fest time -0.01 to x1.5 per rank  |
+| God of Resonance | 共鳴の神 |  Upgrade all `a.resonance` values by +1 tier to each party member, resonance works ranged attack too. Add `c.deity_magical_defense_x0.95` to each party member, Add `c.deity_HP_x0.900` to party | +0.2 to `a.resonance` bonus (round down), +0.002 to `c.deity_HP_x0.900` per rank |
+| Goddess of Precision | 精密の女神 |  Add `c.deity_accuracy+0.020, -evasion, longer 探索中 | |
 | God of Fate | 運命の神 |  alter future, longer praying 祈り中 | |
 | God of Dusk | 黄昏の神 |  +evasion, -magical defense, longer trading 売却中 | |
 | Goddess of Mirage | 幻影の女神 |  +more magical power, -lower physical defense  | |
