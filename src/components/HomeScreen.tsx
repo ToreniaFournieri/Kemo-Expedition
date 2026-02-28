@@ -36,6 +36,7 @@ import {
   getEliteGateKey,
   getBossGateKey,
   getLootCollectionCount,
+  getItemRarityForLootGate,
   isLootGateUnlocked,
 } from '../game/lootGate';
 
@@ -471,7 +472,7 @@ function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | n
 
   const nextDungeon = DUNGEONS.find(d => d.id === currentDungeon.id + 1);
   const entryRequired = ENTRY_GATE_REQUIRED;
-  const bossRareCollected = getLootCollectionCount(party, currentDungeon.id, 'bossRare');
+  const bossRareCollected = getDisplayedBossRareCount(party, currentDungeon.id, cycleState);
   if (nextDungeon) {
     const entryUnlocked = isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id)) || bossRareCollected >= entryRequired;
     if (!entryUnlocked) {
@@ -495,6 +496,23 @@ function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | n
 
 function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
   return getLootCollectionCount(party, dungeonId, 'bossRare') >= getGodsBattleRequired(getEnvironmentId());
+}
+
+function getDisplayedBossRareCount(party: Party, dungeonId: number, cycleState?: PartyCycleState): number {
+  const latestCount = getLootCollectionCount(party, dungeonId, 'bossRare');
+  if (cycleState !== '探索中') return latestCount;
+  const log = party.lastExpeditionLog;
+  if (!log || log.dungeonId !== dungeonId) return latestCount;
+
+  const newlyRecoveredBossRare = log.rewards.reduce((count, item) => {
+    const rarity = getItemRarityForLootGate(item.id);
+    if (rarity !== 'bossRare') return count;
+    const tier = Math.floor(item.id / 1000);
+    if (tier !== dungeonId) return count;
+    return count + 1;
+  }, 0);
+
+  return Math.max(0, latestCount - newlyRecoveredBossRare);
 }
 
 // Helper to format item stats
@@ -3782,11 +3800,8 @@ function ExpeditionTab({
         const hpForSortieCheck = cycle.state === '探索中' ? displayedHp : party.currentHp;
         const isSortieDisabled = !!selectedDungeonGate?.locked || hpForSortieCheck <= 0 || partyStats.hp <= 0;
         const canTriggerGodsBattle =
-          isGodsBattleAvailable(party, party.selectedDungeonId)
-          || (
-            cycle.state === '探索中'
-            && party.lastExpeditionLog?.entries.some((entry) => entry.enemyName.includes('(神魔戦)')) === true
-          );
+          cycle.state !== '探索中'
+          && isGodsBattleAvailable(party, party.selectedDungeonId);
 
         return (
           <div key={partyIndex} className="bg-pane rounded-lg p-4">
