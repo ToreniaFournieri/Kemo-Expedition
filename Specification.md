@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.3.2 - SPECIFICATION
+# KEMO EXPEDITION v0.3.3 - SPECIFICATION
 
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
@@ -316,7 +316,8 @@ PT3: 貯金額: 10G
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
-| **0.3.2** | God battle, unlock ability update |
+| **0.3.3** | Gods religion update |
+| 0.3.2 | God battle, unlock ability update |
 | 0.3.1 | Level and experience system update |
 | 0.3.0 | Super rare update |
 | 0.2.9 | Race ability update |
