@@ -30,6 +30,9 @@
 | `c.melee_NoA+v` | [近回数+v] | `c.melee_NoA-1` -> [近回数-1] |
 | `c.accuracy+v` | [命中+(v*1000)] | `c.accuracy+0.001` -> [命中+1] |
 | `c.evasion+v` | [回避+(v*1000)] | `c.evasion-3` [回避-3]  |
+| `c.deity_accuracy+v` | [天命中+(v*1000)] |  `c.deity_accuracy+0.001` -> [命中+1] |
+| `c.deity_evasion+v` | [天回避+(v*1000)] |　`c.deity_evasion-3` [回避-3]　|
+
 
 - Translation
 
@@ -173,6 +176,16 @@
 | `c.grimoire_x1.x` | [書x1.x] | 魔導書カテゴリ装備の効果が 1.x 倍  |
 | `c.catalyst_x1.x` | [媒x1.x] | 触媒カテゴリ装備の効果が 1.x 倍  |
 | `c.unlock_(race)_ability` | [(race icon)解放] | (race icon, race name)のもう一つのアビリティ(unlock ability name)が解放されます　|
+| `c.deity_physical_attack_xV` | [天物攻xV] | 遠距離攻撃・近接攻撃のダメージを V倍する |
+| `c.deity_magical_attack_xV` | [天魔攻xV] | 魔法攻撃のダメージを V倍する |
+| `c.deity_physical_defense_x2/3` | [天物防2/3] | 物理防御倍率が2/3倍(少ないほうが攻撃に強い)  |
+| `c.deity_pysical_defense_xV` | [天物防xV] | 物理防御倍率がV倍(少ないほうが攻撃に強い) |
+| `c.deity_magical_defense_x2/3` | [天魔防2/3] | 魔法防御倍率が2/3倍(少ないほうが攻撃に強い) |
+| `c.deity_magical_defense_xV` | [天魔防xV] | 魔法防御倍率がV倍(少ないほうが攻撃に強い) |
+| `c.deity_move_first+1` | [天速度+1] | 行動速度の決定値に+1する(より早くなる) |
+| `c.deity_accuracy+v` | [天命中+v] |  値が多いほどより多くの攻撃が命中するようになる |
+| `c.deity_evasion+v` | [天回避+v] |　値が多いほどより多くの攻撃を回避するようになる　|
+
 
 #### 2.1.4 d. bonus
 - "d. 増加ボーナス説明 (重複有効)"
