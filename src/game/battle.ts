@@ -78,8 +78,13 @@ function partyHasIllusionLevel(characterStats: ComputedCharacterStats[], require
   return characterStats.some(cs => getIllusionLevel(cs) >= requiredLevel);
 }
 
-function isIllusionActive(phase: BattlePhase, charStats: ComputedCharacterStats, consumedIllusionCharacterIds: Set<number>): boolean {
-  return phase === 'long' && hasIllusion(charStats) && !consumedIllusionCharacterIds.has(charStats.characterId);
+function isIllusionActive(
+  phase: BattlePhase,
+  hasIllusionAbility: boolean,
+  illusionStateId: string,
+  consumedIllusionStateIds: Set<string>,
+): boolean {
+  return phase === 'long' && hasIllusionAbility && !consumedIllusionStateIds.has(illusionStateId);
 }
 
 function isPartyIllusionActive(
@@ -723,9 +728,8 @@ export function executeBattle(
   const remainingNullCounterByCharacterId = createNullCounterPool(characterStats);
   const consumedResurrectCharacterIds = new Set<number>();
   let consumedEnemyResurrect = false;
-  const consumedIllusionCharacterIds = new Set<number>();
+  const consumedIllusionStateIds = new Set<string>();
   let consumedPartyIllusion = false;
-  let consumedEnemyIllusion = false;
 
   const triggerEnemyResurrect = (phase: BattlePhase, initiativeRoll?: number): void => {
     if (enemyHp > 0 || consumedEnemyResurrect) return;
@@ -824,10 +828,15 @@ export function executeBattle(
     let damage = 0;
     let appliedHits = 0;
     let avoidedByStealth = false;
-    const avoidedByIllusion = isIllusionActive('close', targetCharStats, consumedIllusionCharacterIds);
+    const avoidedByIllusion = isIllusionActive(
+      'close',
+      hasIllusion(targetCharStats),
+      `character:${targetCharStats.characterId}`,
+      consumedIllusionStateIds,
+    );
 
     if (avoidedByIllusion) {
-      consumedIllusionCharacterIds.add(targetCharStats.characterId);
+      consumedIllusionStateIds.add(`character:${targetCharStats.characterId}`);
     } else {
       for (let i = 0; i < hits; i++) {
         if (isStealthActive(targetCharStats, partyHp, partyStats.hp)) {
@@ -952,8 +961,8 @@ export function executeBattle(
       const coveringFireResult = calculateCharacterDamage('long', coverCharStats, coverChar, enemy, partyStats, partyHp, coveringFireNoAMultiplier);
       if (coveringFireResult.totalAttempts <= 0) continue;
 
-      if (!consumedEnemyIllusion && getEnemyAbilityLevel(enemy, 'illusion') > 0) {
-        consumedEnemyIllusion = true;
+      if (isIllusionActive('long', getEnemyAbilityLevel(enemy, 'illusion') > 0, 'enemy', consumedIllusionStateIds)) {
+        consumedIllusionStateIds.add('enemy');
         coveringFireResult.damage = 0;
         coveringFireResult.hits = 0;
         coveringFireResult.wasNegatedByEnemyIllusion = true;
@@ -1103,13 +1112,18 @@ export function executeBattle(
             let appliedDamage = 0;
             let avoidedByStealth = false;
             const avoidedByPartyIllusion = isPartyIllusionActive(phase, characterStats, consumedPartyIllusion);
-            const avoidedByIllusion = avoidedByPartyIllusion || isIllusionActive(phase, attack.charStats, consumedIllusionCharacterIds);
+            const avoidedByIllusion = avoidedByPartyIllusion || isIllusionActive(
+              phase,
+              hasIllusion(attack.charStats),
+              `character:${charId}`,
+              consumedIllusionStateIds,
+            );
 
             if (avoidedByIllusion) {
               if (avoidedByPartyIllusion) {
                 consumedPartyIllusion = true;
               } else {
-                consumedIllusionCharacterIds.add(charId);
+                consumedIllusionStateIds.add(`character:${charId}`);
               }
             } else {
               for (const hitDamage of attack.hitDamages) {
@@ -1280,13 +1294,18 @@ export function executeBattle(
             }
 
             const avoidedByPartyIllusionOnReCounter = isPartyIllusionActive(phase, characterStats, consumedPartyIllusion);
-            const avoidedReCounterByIllusion = avoidedByPartyIllusionOnReCounter || isIllusionActive(phase, attack.charStats, consumedIllusionCharacterIds);
+            const avoidedReCounterByIllusion = avoidedByPartyIllusionOnReCounter || isIllusionActive(
+              phase,
+              hasIllusion(attack.charStats),
+              `character:${charId}`,
+              consumedIllusionStateIds,
+            );
             const avoidedReCounterByStealth = !avoidedReCounterByIllusion && isStealthActive(attack.charStats, partyHp, partyStats.hp);
             if (avoidedReCounterByIllusion) {
               if (avoidedByPartyIllusionOnReCounter) {
                 consumedPartyIllusion = true;
               } else {
-                consumedIllusionCharacterIds.add(charId);
+                consumedIllusionStateIds.add(`character:${charId}`);
               }
               reCounterDamage = 0;
               reCounterHits = 0;
@@ -1454,8 +1473,8 @@ export function executeBattle(
           }
         } else {
           result = calculateCharacterDamage(phase, cs, char, enemy, partyStats, partyHp, noAMultiplier);
-          if (phase === 'long' && !consumedEnemyIllusion && getEnemyAbilityLevel(enemy, 'illusion') > 0) {
-            consumedEnemyIllusion = true;
+          if (isIllusionActive(phase, getEnemyAbilityLevel(enemy, 'illusion') > 0, 'enemy', consumedIllusionStateIds)) {
+            consumedIllusionStateIds.add('enemy');
             result.damage = 0;
             result.hits = 0;
             result.wasNegatedByEnemyIllusion = true;
