@@ -235,20 +235,20 @@
 #### 2.1.6 g. function
 - "g. 神、信仰"
 
-| `g.` Key | 表示 | 説明 |
-|--------|------|------|
+| `g.` Key | 表示 | 効果説明 | Lore |
+|--------|------|------|----|
 | `Goddess of Restoration` | 再生の女神 | 効果:4部屋毎に減少HPの20+α%を回復する。睡眠時間1.5倍。 |
 | `God of Attrition` | 消耗の神 | 効果:全員に物理攻撃1.25+α倍。4部屋毎に残りHPの5%を失う。 |
 | `God of Cunning` | 狡猾の神 | 効果:全員に魔法防御2/3倍。貯金額0.50+α倍。 |
 | `God of Fortification` | 防備の神 | 効果:全員に物理防御2/3倍。休憩時間1.5-α倍 |
 | `Goddess of Fertility` | 豊穣の女神 | 効果:全員に天速度+1(行動速度が速くなる)。宴会時間1.5-α倍。 |
-| `God of Resonance` | 共鳴の神 | Upgrade all `a.resonance` values by +1 tier to each party member, resonance works ranged attack too. Add `c.deity_magical_defense_x0.90` to each party member, Add `c.deity_HP_x0.900` to party | +0.2 to `a.resonance` bonus (round down), +0.002 to `c.deity_HP_x0.900` per rank |
-| `Goddess of Precision` | 精密の女神 | Add `c.deity_accuracy+0.015`, `c.deity_evasion-0.005` to each party member, longer 探索中 by 1.5 | +0.001 to `c.deity_accuracy+0.020` per rank |
-| `God of Fate` | 運命の神 | alter future, longer praying 祈り中 by 1.5 | praying time -0.01 to x1.5 per rank |
-| `God of Dusk` | 黄昏の神 | Add `c.deity_evasion+0.015`,  `c.deity_magical_defense_x0.90` to each party member, longer trading 売却中 by 1.5 | +0.001 to `c.deity_accuracy+0.020` per rank |
-| `Goddess of Mirage` | 幻影の女神 | Add `c.deity_magical_attack_x1.20` and `c.deity_pysical_defense_x0.90` to each party member | +0.01 to `c.deity_magical_attack_x1.20` per rank |
-| `God of Oblivion` | 忘却されし神 | (nothing) | |
-| `Goddess of Discord` 
+| `God of Resonance` | 共鳴の神 | 効果:全員の共鳴を1+α段階強化。共鳴が遠距離攻撃にも適用。魔法防御力0.90倍、HP0.90+α倍。 |
+| `Goddess of Precision` | 精密の女神 | 効果:全員の命中+15+α、回避-5。探索時間1.5倍。 |
+| `God of Fate` | 運命の神 | 効果:未来改変。祈り時間1.5-α倍。 |
+| `God of Dusk` | 黄昏の神 | 効果:全員の回避+15+α、魔法防御0.90倍。売却時間1.5倍 |
+| `Goddess of Mirage` | 幻影の女神 | 効果:全員に魔法攻撃1.2+α倍、物理防御0.90倍。 |
+| `God of Oblivion` | 忘却されし神 | 効果:なし。 |
+| `Goddess of Discord` | 不和の神 | 効果:戦闘開始時、ランダムな1名を⚠️敵対させる。追加報酬抽選+1回。
 
 
 
