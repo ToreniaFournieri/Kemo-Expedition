@@ -2842,6 +2842,33 @@ function PartyTab({
                   );
                 })}
               </select>
+              <div className="mt-2 max-h-40 overflow-y-auto rounded border border-gray-200 bg-white">
+                {RACES.map((race) => {
+                  const s = race.stats;
+                  const unlockConditionActive = unlockedRaceAbilities.has(race.id);
+                  const bonusText = formatBonuses(getRaceBonusesForSelection(race, unlockConditionActive));
+                  const isSelectedRace = (pendingEdits?.raceId ?? char.raceId) === race.id;
+
+                  return (
+                    <button
+                      key={`race-image-${race.id}`}
+                      type="button"
+                      onClick={() => handleRaceChange(race.id)}
+                      className={`w-full px-2 py-1.5 text-left border-b border-gray-100 last:border-b-0 text-xs ${
+                        isSelectedRace ? 'bg-sub/10' : 'hover:bg-gray-50'
+                      }`}
+                    >
+                      <span className="flex items-start gap-2">
+                        <RaceIcon race={race} className="h-4 w-4 mt-0.5 shrink-0" />
+                        <span>
+                          <span className="text-gray-800">{race.name}</span>
+                          <span className="text-gray-500"> | 体{s.vitality},力{s.strength},知{s.intelligence},精{s.mind} | {bonusText}</span>
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             <div>
               <label className="block text-gray-500">メインクラス</label>
