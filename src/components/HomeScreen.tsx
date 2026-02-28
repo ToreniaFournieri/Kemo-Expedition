@@ -23,7 +23,7 @@ import { getXpToNextLevel } from '../game/partyLevel';
 import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../game/environment';
 import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, getShopRefreshPrice, getNextShopRefreshDate, countElapsedShopRefreshes } from '../game/shop';
 import { getBaseMultiplier } from '../game/baseMultiplier';
-import { computeCharacterStats, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
+import { computeCharacterStats, getUnlockedRaceAbilitiesFromBonuses, RACE_UNLOCK_ABILITY_IDS } from '../game/characterComputation';
 import { serializeGameState } from '../game/saveCodec';
 import { getBagEntryTickets, getBagTicketTotal } from '../game/bags';
 import { replaceCharacterEquipment } from '../game/equipment';
@@ -1020,12 +1020,14 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
 }
 
 function getRaceBonusesForSelection(race: Race, unlockConditionActive: boolean): Bonus[] {
+  const unlockAbilityId = RACE_UNLOCK_ABILITY_IDS[race.id];
+
   if (!race.unlockAbility || !unlockConditionActive) {
     return race.bonuses as Bonus[];
   }
 
   return (race.bonuses as Bonus[]).filter(
-    (bonus) => bonus.type !== 'ability' || bonus.abilityId !== race.unlockAbility?.id,
+    (bonus) => bonus.type !== 'ability' || !unlockAbilityId || bonus.abilityId !== unlockAbilityId,
   );
 }
 
