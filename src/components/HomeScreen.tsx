@@ -168,12 +168,17 @@ function RaceIcon({ race, className = "h-8 w-8" }: { race: Race; className?: str
 
   if (iconSrc && !hasIconLoadError) {
     return (
-      <img
-        src={iconSrc}
-        alt={`${race.englishName} icon`}
-        className={`${className} object-contain`}
-        onError={() => setHasIconLoadError(true)}
-      />
+      <span className={`relative inline-flex items-center justify-center ${className}`}>
+        <img
+          src={iconSrc}
+          alt={`${race.englishName} icon`}
+          className="h-full w-full object-contain"
+          onError={() => setHasIconLoadError(true)}
+        />
+        <span className="absolute -bottom-1 -right-1 rounded-full bg-white/90 px-[2px] text-[0.6rem] leading-none shadow-sm" aria-hidden="true">
+          {race.emoji}
+        </span>
+      </span>
     );
   }
 
