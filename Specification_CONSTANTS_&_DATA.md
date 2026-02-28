@@ -594,6 +594,23 @@
 |`God of Evasion`| 回避の神 | Add `c.evasion+0.015` to each party member.| |
 |`God of Resonance`| 共鳴の神 | Upgrade all `a.resonance` values by +1 tier. Add `c.magical_defense-5`to each party member.| 全員の共鳴を1段階強化し、[魔防-5%](魔法攻撃に弱くなります) |
 
+- Religions
+
+| God | Name | Effect |
+|-|-|-|
+| God of Restoration | 再生の神 | heal ar every 4th room, longer sleep 睡眠中, weak against ice |
+| God of Attrition | 消耗の神 | more physical power, hurt at every 4th room|
+| God of Cunning | | +magical defense, sustain intimacy, abscond (lower saving money) |
+| God of Fortification | |  +physical defense, longer healing 休息中, weak against thunder |
+| Goddess of Fertility | |  move +1 faster, longer fest 宴会中, weak against fire |
+| God of Resonance | |  resonance, resonance works ranged attack too, -HP |
+| Goddess of Precision | |  +accuracy, -evasion, longer 探索中 |
+| God of Fate | |  alter future, longer praying 祈り中 |
+| God of Dusk | |  +evasion, -magical defense, longer trading 売却中 |
+| Goddess of Mirage | |  +more magical power, -lower physical defense  |
+| God of Oblivion | |  hurt |
+| Goddess of Discord | |  1 member got ⚠️antagonism, one more reward chance |
+
 
 ### 2.4 Expedition & Enemies
 - Expedition layout: The 6 `x.floor` spire. Each floor consists of 4 `x.room`s. the last room of the floor is Elite/Boss enemy battle, other rooms are Normal enemy battles.
