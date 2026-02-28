@@ -5724,7 +5724,7 @@ function SettingTab({
             donationRows.map(({ deityName, donationGold, rank, nextDonationThreshold }) => (
               <div key={deityName} className="flex items-center justify-between gap-3">
                 <span className="text-gray-700">{deityName}(ランク{rank})</span>
-                <span className="text-sub tabular-nums">{formatNumber(donationGold)}G <span className="text-xs text-gray-500">(次のランク {nextDonationThreshold !== null ? `${formatNumber(nextDonationThreshold)}G` : '到達済み'})</span></span>
+                <span className="text-sub tabular-nums">{formatNumber(donationGold)}G <span className="text-xs text-gray-500">(次{nextDonationThreshold !== null ? `${formatNumber(nextDonationThreshold)}G` : '到達済み'})</span></span>
               </div>
             ))
           ) : (
