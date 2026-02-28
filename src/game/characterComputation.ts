@@ -124,7 +124,7 @@ function getUniqueCBonusSum(
 }
 
 
-const RACE_UNLOCK_ABILITY_IDS: Partial<Record<RaceId, AbilityId>> = {
+export const RACE_UNLOCK_ABILITY_IDS: Partial<Record<RaceId, AbilityId>> = {
   caninian: 'resurrect',
   lupinian: 're_counter',
   vulpinian: 'cunning',
@@ -134,6 +134,36 @@ const RACE_UNLOCK_ABILITY_IDS: Partial<Record<RaceId, AbilityId>> = {
   leporian: 'magical_counter',
   cervin: 'prophecy',
 };
+
+export const RACE_UNLOCK_BONUS_BY_RACE: Partial<Record<RaceId, BonusType>> = {
+  caninian: 'unlock_caninian_ability',
+  lupinian: 'unlock_lupinian_ability',
+  vulpinian: 'unlock_vulpinian_ability',
+  ursan: 'unlock_ursan_ability',
+  felidian: 'unlock_felidian_ability',
+  mustelid: 'unlock_mustelid_ability',
+  leporian: 'unlock_leporian_ability',
+  cervin: 'unlock_cervin_ability',
+  murid: 'unlock_murid_ability',
+  procyonian: 'unlock_procyonian_ability',
+};
+
+const BONUS_UNLOCK_RACE_BY_TYPE = Object.fromEntries(
+  Object.entries(RACE_UNLOCK_BONUS_BY_RACE).map(([raceId, bonusType]) => [bonusType, raceId]),
+) as Partial<Record<BonusType, RaceId>>;
+
+export function getUnlockedRaceAbilitiesFromBonuses(bonuses: Bonus[]): Set<RaceId> {
+  const unlockedRaceAbilities = new Set<RaceId>();
+
+  for (const bonus of bonuses) {
+    const raceId = BONUS_UNLOCK_RACE_BY_TYPE[bonus.type];
+    if (raceId) {
+      unlockedRaceAbilities.add(raceId);
+    }
+  }
+
+  return unlockedRaceAbilities;
+}
 
 function collectRaceBonuses(raceId: RaceId, raceBonuses: Bonus[], collection: BonusCollection): void {
   const unlockAbilityId = RACE_UNLOCK_ABILITY_IDS[raceId];
