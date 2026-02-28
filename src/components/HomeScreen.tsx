@@ -1014,8 +1014,8 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
   return parts.join(', ');
 }
 
-function getRaceBonusesForSelection(race: Race, unlockConditionActive: boolean): Bonus[] {
-  if (!race.unlockAbility || !unlockConditionActive) {
+function getRaceBonusesForSelection(race: Race): Bonus[] {
+  if (!race.unlockAbility) {
     return race.bonuses as Bonus[];
   }
 
@@ -2833,8 +2833,7 @@ function PartyTab({
               >
                 {RACES.map(r => {
                   const s = r.stats;
-                  const unlockConditionActive = unlockedRaceAbilities.has(r.id);
-                  const bonusText = formatBonuses(getRaceBonusesForSelection(r, unlockConditionActive));
+                  const bonusText = formatBonuses(getRaceBonusesForSelection(r));
                   return (
                     <option key={r.id} value={r.id}>
                       {r.emoji}{r.name} | 体{s.vitality},力{s.strength},知{s.intelligence},精{s.mind} | {bonusText}
