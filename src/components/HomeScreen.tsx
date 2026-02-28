@@ -1318,7 +1318,9 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       const elapsedMs = Math.max(0, Math.min(Date.now() - checkpointAt, AFK_MAX_ELAPSED_MS));
       lastCheckpointAtRef.current = Date.now() - elapsedMs;
 
-      setIsAutoRepeatEnabled(parsed.autoRepeatEnabled === true);
+      const restoredAutoRepeat = parsed.autoRepeatEnabled === true;
+      autoRepeatEnabledRef.current = restoredAutoRepeat;
+      setIsAutoRepeatEnabled(restoredAutoRepeat);
       if (parsed.partyCycles && typeof parsed.partyCycles === 'object') {
         const restoredCycles: Record<number, PartyCycleRuntime> = {};
         Object.entries(parsed.partyCycles).forEach(([key, value]) => {
@@ -1861,6 +1863,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
                 onClick={() => {
                   setIsAutoRepeatEnabled((prev) => {
                     const nextEnabled = !prev;
+                    autoRepeatEnabledRef.current = nextEnabled;
                     if (nextEnabled) {
                       setPartyCycles((prevCycles) => {
                         const nextCycles = { ...prevCycles };
