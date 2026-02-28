@@ -17,7 +17,32 @@ export const DEITY_OPTIONS = [
 
 export type DeityKey = typeof DEITY_OPTIONS[number]['key'];
 
-const DONATION_THRESHOLDS = [0, 500, 1200, 2200, 3600, 5500, 8000, 11000, 14500, 18500, 23000] as const;
+const MIN_DEITY_RANK = 1;
+const MAX_DEITY_RANK = 10;
+const FIRST_RANK_UP_DONATION = 1000;
+
+function calculateRankUpDonations(): number[] {
+  const rankUpDonations: number[] = [];
+  let previousDonation = FIRST_RANK_UP_DONATION;
+
+  for (let rank = MIN_DEITY_RANK; rank < MAX_DEITY_RANK; rank++) {
+    if (rank === MIN_DEITY_RANK) {
+      rankUpDonations.push(previousDonation);
+      continue;
+    }
+
+    const nextDonation = Math.round((2.5 - 0.1 * rank) * previousDonation);
+    rankUpDonations.push(nextDonation);
+    previousDonation = nextDonation;
+  }
+
+  return rankUpDonations;
+}
+
+const DONATION_THRESHOLDS = [0, ...calculateRankUpDonations().reduce<number[]>((thresholds, donation) => {
+  thresholds.push((thresholds[thresholds.length - 1] ?? 0) + donation);
+  return thresholds;
+}, [])] as const;
 
 const DEITY_NAME_MAP: Record<DeityKey, string> = DEITY_OPTIONS.reduce((acc, deity) => {
   acc[deity.key] = deity.name;
@@ -52,17 +77,22 @@ export function getDonationTier(totalDonatedGold: number): number {
 }
 
 export function getDeityRank(totalDonatedGold: number): number {
-  return getDonationTier(totalDonatedGold) + 1;
+  return Math.min(MAX_DEITY_RANK, getDonationTier(totalDonatedGold) + 1);
 }
 
 export function getNextDonationThreshold(totalDonatedGold: number): number | null {
   const safeDonation = Math.max(0, totalDonatedGold);
-  const nextThreshold = DONATION_THRESHOLDS.find((threshold) => threshold > safeDonation);
-  return nextThreshold ?? null;
+  const currentTier = getDonationTier(safeDonation);
+  const nextThreshold = DONATION_THRESHOLDS[currentTier + 1];
+  if (nextThreshold === undefined) {
+    return null;
+  }
+
+  return Math.max(0, nextThreshold - safeDonation);
 }
 
 export function getEffectiveDeityTier(totalDonatedGold: number): number {
-  return Math.min(getDonationTier(totalDonatedGold), 10);
+  return Math.min(getDonationTier(totalDonatedGold), MAX_DEITY_RANK);
 }
 
 export function normalizeDeityName(name: string): string {
