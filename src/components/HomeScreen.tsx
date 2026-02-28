@@ -2826,26 +2826,10 @@ function PartyTab({
           <div className="space-y-2 text-sm">
             <div>
               <label className="block text-gray-500">種族</label>
-              <select
-                value={pendingEdits?.raceId ?? char.raceId}
-                onChange={(e) => handleRaceChange(e.target.value as Character['raceId'])}
-                className="w-full p-1 border rounded text-xs"
-              >
-                {RACES.map(r => {
-                  const s = r.stats;
-                  const bonusText = formatBonuses(getRaceBonusesForSelection(r));
-                  return (
-                    <option key={r.id} value={r.id}>
-                      {r.emoji}{r.name} | 体{s.vitality},力{s.strength},知{s.intelligence},精{s.mind} | {bonusText}
-                    </option>
-                  );
-                })}
-              </select>
               <div className="mt-2 max-h-40 overflow-y-auto rounded border border-gray-200 bg-white">
                 {RACES.map((race) => {
                   const s = race.stats;
-                  const unlockConditionActive = unlockedRaceAbilities.has(race.id);
-                  const bonusText = formatBonuses(getRaceBonusesForSelection(race, unlockConditionActive));
+                  const bonusText = formatBonuses(getRaceBonusesForSelection(race));
                   const isSelectedRace = (pendingEdits?.raceId ?? char.raceId) === race.id;
 
                   return (
