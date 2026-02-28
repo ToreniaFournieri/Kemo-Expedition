@@ -811,7 +811,7 @@ function resolveEnemyRewards(
   hasUnlock: boolean,
   isLunaMode: boolean,
   autoSellMultiplier: number,
-  extraRewardRolls: number = 0
+  hasGoddessOfDiscordBlessing: boolean = false
 ): {
   bags: GameState['bags'];
   inventory: InventoryRecord;
@@ -852,7 +852,10 @@ function resolveEnemyRewards(
 
     let gotReward = rewardTicket === 1;
 
-    const bonusRollCount = (hasUnlock ? 1 : 0) + (isLunaMode ? 1 : 0) + Math.max(0, extraRewardRolls);
+    const bonusRollCount =
+      (hasUnlock ? 1 : 0)
+      + (isLunaMode ? 1 : 0)
+      + (hasGoddessOfDiscordBlessing ? 1 : 0);
     for (let rollIndex = 0; rollIndex < bonusRollCount; rollIndex++) {
       bags = refillBagIfEmpty(bags, rewardBagType);
       const { ticket: bonusTicket, newBag } = drawFromBag(bags[rewardBagType]);
@@ -1303,7 +1306,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 hasUnlock,
                 !!action.isLunaMode,
                 autoSellMultiplier,
-                getDeityKey(currentParty.deity.name) === 'Goddess of Discord' ? 1 : 0
+                getDeityKey(currentParty.deity.name) === 'Goddess of Discord'
               );
               bags = rewardResult.bags;
               currentInventory = rewardResult.inventory;
