@@ -611,15 +611,15 @@ function generateEnemies(): EnemyDef[] {
     8: 'ninja',
   };
 
-  const bossUniqueAbilityByTier: Record<number, AbilityId> = {
-    1: 'seeker',
-    2: 'rage',
-    3: 'momentum',
-    4: 'cyborgization',
-    5: 'first_strike',
-    6: 'resonance',
-    7: 'composure',
-    8: 'focus',
+  const bossUniqueAbilitiesByTier: Record<number, AbilityId[]> = {
+    1: ['seeker', 'illusion'],
+    2: ['rage'],
+    3: ['momentum'],
+    4: ['cyborgization'],
+    5: ['first_strike'],
+    6: ['resonance'],
+    7: ['composure'],
+    8: ['focus'],
   };
 
   for (let tier = 1; tier <= 8; tier++) {
@@ -658,7 +658,7 @@ function generateEnemies(): EnemyDef[] {
         0,
         bossClassByTier[tier] ?? 'lord',
         0,
-        bossUniqueAbilityByTier[tier] ? [bossUniqueAbilityByTier[tier]] : [],
+        bossUniqueAbilitiesByTier[tier] ?? [],
       ),
     );
   }
