@@ -903,9 +903,9 @@ export function executeBattle(
       return;
     }
 
-    if (reCounterResult.damage > 0) {
+    const reCounterDealtDamage = reCounterResult.damage > 0;
+    if (reCounterDealtDamage) {
       enemyHp -= reCounterResult.damage;
-      triggerEnemyResurrect('close', initiativeRoll);
     }
 
     const characterReCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(targetCharStats, partyHp, partyStats.hp));
@@ -925,6 +925,10 @@ export function executeBattle(
       isCounter: true,
       elementalOffense: targetCharStats.elementalOffense,
     });
+
+    if (reCounterDealtDamage) {
+      triggerEnemyResurrect('close', initiativeRoll);
+    }
   };
 
   const triggerCoveringFire = (
@@ -946,9 +950,9 @@ export function executeBattle(
       const coveringFireResult = calculateCharacterDamage('long', coverCharStats, coverChar, enemy, partyStats, partyHp, coveringFireNoAMultiplier);
       if (coveringFireResult.totalAttempts <= 0) continue;
 
-      if (coveringFireResult.damage > 0) {
+      const coveringFireDealtDamage = coveringFireResult.damage > 0;
+      if (coveringFireDealtDamage) {
         enemyHp -= coveringFireResult.damage;
-        triggerEnemyResurrect(phase, initiativeRoll);
       }
 
       const coverFireRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(coverCharStats, partyHp, partyStats.hp));
@@ -969,6 +973,10 @@ export function executeBattle(
         isCounter: true,
         elementalOffense: coverCharStats.elementalOffense,
       });
+
+      if (coveringFireDealtDamage) {
+        triggerEnemyResurrect(phase, initiativeRoll);
+      }
 
       if (enemyHp <= 0) {
         break;
@@ -1193,9 +1201,9 @@ export function executeBattle(
             );
             if (counterResult.totalAttempts <= 0) continue;
 
-            if (counterResult.damage > 0) {
+            const counterDealtDamage = counterResult.damage > 0;
+            if (counterDealtDamage) {
               enemyHp -= counterResult.damage;
-              triggerEnemyResurrect(phase, turn.roll);
             }
 
             const counterType = phase === 'mid' ? '魔法反撃' : '反撃';
@@ -1218,6 +1226,10 @@ export function executeBattle(
               isCounter: true,
               elementalOffense: attack.charStats.elementalOffense,
             });
+
+            if (counterDealtDamage) {
+              triggerEnemyResurrect(phase, turn.roll);
+            }
 
             if (enemyHp <= 0) break;
 
@@ -1346,9 +1358,9 @@ export function executeBattle(
             const magicalCounterResult = calculateCharacterDamage('mid', magicalCounterStats, magicalCounterChar, enemy, partyStats, partyHp, magicalCounterNoAMultiplier);
             if (magicalCounterResult.totalAttempts <= 0) continue;
 
-            if (magicalCounterResult.damage > 0) {
+            const magicalCounterDealtDamage = magicalCounterResult.damage > 0;
+            if (magicalCounterDealtDamage) {
               enemyHp -= magicalCounterResult.damage;
-              triggerEnemyResurrect(phase, turn.roll);
             }
 
             const resonanceLogText = getResonanceLogText('mid', magicalCounterStats.abilities, magicalCounterResult.hits);
@@ -1370,6 +1382,10 @@ export function executeBattle(
               isCounter: true,
               elementalOffense: magicalCounterStats.elementalOffense,
             });
+
+            if (magicalCounterDealtDamage) {
+              triggerEnemyResurrect(phase, turn.roll);
+            }
           }
         }
 
@@ -1422,7 +1438,6 @@ export function executeBattle(
           result = calculateCharacterDamage(phase, cs, char, enemy, partyStats, partyHp, noAMultiplier);
           if (result.damage > 0) {
             enemyHp -= result.damage;
-            triggerEnemyResurrect(phase, turn.roll);
           }
         }
 
@@ -1455,6 +1470,10 @@ export function executeBattle(
           isReAttack: isReAttack || undefined,
           elementalOffense: cs.elementalOffense,
         });
+
+        if (!isAntagonism && result.damage > 0) {
+          triggerEnemyResurrect(phase, turn.roll);
+        }
 
         if (!isAntagonism && enemyHp > 0 && phase === 'close') {
           triggerEnemyCounter(cs, result.damage, enemyInitiativeRoll);
