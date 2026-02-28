@@ -82,6 +82,11 @@ export type BonusType =
   | 'physical_offense_multiplier_xV' | 'magical_offense_multiplier_xV'
   | 'physical_defense_multiplier_xV' | 'magical_defense_multiplier_xV'
   | 'fire_defense_multiplier_xV' | 'ice_defense_multiplier_xV' | 'thunder_defense_multiplier_xV'
+  // Deity c.* bonuses (future runtime hooks)
+  | 'deity_physical_attack_xV' | 'deity_magical_attack_xV'
+  | 'deity_physical_defense_x2/3' | 'deity_physical_defense_xV' | 'deity_pysical_defense_xV'
+  | 'deity_magical_defense_x2/3' | 'deity_magical_defense_xV'
+  | 'deity_move_first' | 'deity_accuracy' | 'deity_evasion'
   | 'fire_offense' | 'ice_offense' | 'thunder_offense'
   // Accuracy/Evasion bonuses
   | 'accuracy' | 'evasion'

@@ -775,6 +775,13 @@ const C_MULTIPLIER_HELP_DESCRIPTIONS: Record<string, string> = {
   fire_defense_multiplier_xV: '炎属性耐性が {value} 倍',
   ice_defense_multiplier_xV: '氷属性耐性が {value} 倍',
   thunder_defense_multiplier_xV: '雷属性耐性が {value} 倍',
+  deity_physical_attack_xV: '遠距離攻撃・近接攻撃のダメージが {value} 倍',
+  deity_magical_attack_xV: '魔法攻撃のダメージが {value} 倍',
+  "deity_physical_defense_x2/3": '物理防御倍率が 2/3 倍',
+  deity_physical_defense_xV: '物理防御倍率が {value} 倍',
+  deity_pysical_defense_xV: '物理防御倍率が {value} 倍',
+  "deity_magical_defense_x2/3": '魔法防御倍率が 2/3 倍',
+  deity_magical_defense_xV: '魔法防御倍率が {value} 倍',
 };
 
 const CATEGORY_TO_MULTIPLIER_BONUS: Record<ItemCategory, BonusType | null> = {
@@ -945,6 +952,14 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
     } else if (b.type === 'evasion') {
       const rounded = Math.round(b.value * 1000);
       parts.push(`回避${rounded >= 0 ? '+' : ''}${rounded}`);
+    } else if (b.type === 'deity_accuracy') {
+      const rounded = Math.round(b.value * 1000);
+      parts.push(`天命中${rounded >= 0 ? '+' : ''}${rounded}`);
+    } else if (b.type === 'deity_evasion') {
+      const rounded = Math.round(b.value * 1000);
+      parts.push(`天回避${rounded >= 0 ? '+' : ''}${rounded}`);
+    } else if (b.type === 'deity_move_first') {
+      parts.push(`天速度+${b.value}`);
     } else if (b.type === 'melee_attack') {
       parts.push(`近攻撃+${Math.round(b.value * 100)}%`);
     } else if (b.type === 'ranged_attack') {
@@ -963,10 +978,22 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
       parts.push(`氷攻+${Math.round(b.value * 100)}%`);
     } else if (b.type === 'thunder_offense') {
       parts.push(`雷攻+${Math.round(b.value * 100)}%`);
+    } else if (b.type === 'deity_physical_attack_xV') {
+      parts.push(`天物攻x${formatMultiplierValue(b.value)}`);
+    } else if (b.type === 'deity_magical_attack_xV') {
+      parts.push(`天魔攻x${formatMultiplierValue(b.value)}`);
     } else if (b.type === 'physical_offense_multiplier_xV') {
       parts.push(`物攻撃x${b.value.toFixed(2)}`);
     } else if (b.type === 'magical_offense_multiplier_xV') {
       parts.push(`魔攻撃x${b.value.toFixed(2)}`);
+    } else if (b.type === 'deity_physical_defense_x2/3') {
+      parts.push('天物防2/3');
+    } else if (b.type === 'deity_physical_defense_xV' || b.type === 'deity_pysical_defense_xV') {
+      parts.push(`天物防x${formatMultiplierValue(b.value)}`);
+    } else if (b.type === 'deity_magical_defense_x2/3') {
+      parts.push('天魔防2/3');
+    } else if (b.type === 'deity_magical_defense_xV') {
+      parts.push(`天魔防x${formatMultiplierValue(b.value)}`);
     } else if (b.type === 'physical_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
