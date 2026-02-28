@@ -1257,9 +1257,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             };
 
             const damageDealt = enemy.hp - Math.max(0, battleResult.enemyHp);
-            const damageTaken = battleResult.log
-              .filter(entry => entry.actor === 'enemy' && entry.damage !== undefined)
-              .reduce((sum, entry) => sum + (entry.damage ?? 0), 0);
+            const damageTaken = Math.max(0, currentHp - battleResult.partyHp);
 
             const enemyAttackValues = calculateEnemyAttackValues(enemy, partyStats);
 
