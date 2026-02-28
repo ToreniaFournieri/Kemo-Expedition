@@ -598,18 +598,18 @@
 
 | God | Name | Effect |
 |-|-|-|
-| God of Restoration | 再生の神 | heal ar every 4th room, longer sleep 睡眠中, weak against ice |
+| Goddess of Restoration | 再生の女神 | heal ar every 4th room, longer sleep 睡眠中, weak against ice |
 | God of Attrition | 消耗の神 | more physical power, hurt at every 4th room|
-| God of Cunning | | +magical defense, sustain intimacy, abscond (lower saving money) |
-| God of Fortification | |  +physical defense, longer healing 休息中, weak against thunder |
-| Goddess of Fertility | |  move +1 faster, longer fest 宴会中, weak against fire |
-| God of Resonance | |  resonance, resonance works ranged attack too, -HP |
-| Goddess of Precision | |  +accuracy, -evasion, longer 探索中 |
-| God of Fate | |  alter future, longer praying 祈り中 |
-| God of Dusk | |  +evasion, -magical defense, longer trading 売却中 |
-| Goddess of Mirage | |  +more magical power, -lower physical defense  |
-| God of Oblivion | |  hurt |
-| Goddess of Discord | |  1 member got ⚠️antagonism, one more reward chance |
+| God of Cunning | 狡猾の神 | +magical defense, sustain intimacy, abscond (lower saving money) |
+| God of Fortification | 防備の神 |  +physical defense, longer healing 休息中, weak against thunder |
+| Goddess of Fertility | 豊穣の女神 |  move +1 faster, longer fest 宴会中, weak against fire |
+| God of Resonance | 共鳴の神 |  resonance, resonance works ranged attack too, -HP |
+| Goddess of Precision | 精密の女神 |  +accuracy, -evasion, longer 探索中 |
+| God of Fate | 運命の神 |  alter future, longer praying 祈り中 |
+| God of Dusk | 黄昏の神 |  +evasion, -magical defense, longer trading 売却中 |
+| Goddess of Mirage | 幻影の女神 |  +more magical power, -lower physical defense  |
+| God of Oblivion | 忘却されし神 |  hurt |
+| Goddess of Discord | 不和の神 |  1 member got ⚠️antagonism, one more reward chance |
 
 
 ### 2.4 Expedition & Enemies
@@ -749,7 +749,7 @@
 
 | `x.exp_tier` | level | Name | Title | Display name | Class | Represent for | + ability | Drop item tier | Drop item category | `x.exp_id` |
 |-|-|-|-|-|-|-|-|-|-|-|
-| 3 | 26 | Seiran | God of Restoration | セイラン 再生の神 | Pilgrim | Caninian | `a.resurrect`2  | 3 | `i.grimoire`, `i.robe`| 1 |
+| 3 | 26 | Seiran | Goddess of Restoration | セイラン 再生の女神 | Pilgrim | Caninian | `a.resurrect`2  | 3 | `i.grimoire`, `i.robe`| 1 |
 | 4 | 34 | Garv | God of Attrition | ガーヴ 消耗の神 | Samurai | Lupinian | `a.rage`2, `a.re-counter`2 | 4 | `i.katana`, `i.shield` | 2 |
 | 5 | 41 | Kyōen | God of Cunning | キョウエン 狡猾の神 | Rougue | Vulpinian | `a.momentum`2 | 5 |  `i.archery`, `i.bolt` | 3 |
 | 6 | 49 | Dolvar | God of Fortification | ドルヴァ 防備の神 | Fighter | Ursan | `a.cyborgization`2 | 6 | `i.armor`, `i.gauntlet` | 4 |
@@ -758,7 +758,7 @@
 | 8 | 65 | Lira | Goddess of Precision | リラ 精密の女神 | Ranger | Leporian | `a.composure`2 | 8 | `i.arrow`, `i.archery` | 7 |
 | 8 | 65 | Forne | God of Fate | フォルネ 運命の神 | Lord | Cervin | `a.focus`2 | 8 | `i.armor`, `i.robe` | 8|
 | 8 | 65 | Skuva | God of Dusk | スクヴァ 黄昏の神 | Ninja | Murid | `a.stealth`1 | 8 | `i.sheild`,`i.catalyst` | 9 |
-| 8 | 65 | Tanue | Goddess of Mirage | タヌエ 幻影の神  | Duelist | Procyonian | `a.illusion`1 | 8 | `i.sword`, `i.gauntlet` | 10 |
+| 8 | 65 | Tanue | Goddess of Mirage | タヌエ 幻影の女神  | Duelist | Procyonian | `a.illusion`1 | 8 | `i.sword`, `i.gauntlet` | 10 |
 | 8 | 68 | Noctyra | God of Oblivion | ノクティラ 忘却されし神 | Samurai | - | `a.rage`2, `a.firststrike`2 | 8 | `i.bolt`, `i.katana` | 11 |
 | 8 | 68 | Eris | Goddess of discord | エリス 不和の神 | Pilgrim | - | `a.momentum`2, `a.resonance`4, `a.stealth`1 | 8 | `i.grimoire`, `i.wand` | 12 |
 
