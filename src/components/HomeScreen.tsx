@@ -65,7 +65,7 @@ interface HomeScreenProps {
     markDiaryLogSeen: (logId: string) => void;
     markAllDiaryLogsSeen: () => void;
     updateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
-    simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean, isLunaMode?: boolean) => void;
+    simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean, isLunaMode?: boolean, simulatedEndAt?: number) => void;
     resetGame: () => void;
     importGameState: (state: GameState) => void;
     resetCommonBags: () => void;
@@ -1222,6 +1222,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const autoRepeatEnabledRef = useRef(isAutoRepeatEnabled);
   const gameModeRef = useRef(gameMode);
   const [pendingAfkMs, setPendingAfkMs] = useState(0);
+  const afkSimulationAnchorRef = useRef<number | null>(null);
 
   useEffect(() => {
     latestPartiesRef.current = state.parties;
@@ -1365,7 +1366,9 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     const timerId = window.setTimeout(() => {
       const autoRepeatEnabled = autoRepeatEnabledRef.current;
       const chunkElapsedMs = Math.min(pendingAfkMs, AFK_BACKGROUND_CHUNK_MS);
-      actions.simulateAfk(chunkElapsedMs, autoRepeatEnabled, gameMode === 'm.luna');
+      const anchor = afkSimulationAnchorRef.current ?? Date.now();
+      const simulatedEndAt = anchor - pendingAfkMs + chunkElapsedMs;
+      actions.simulateAfk(chunkElapsedMs, autoRepeatEnabled, gameMode === 'm.luna', simulatedEndAt);
       setPendingAfkMs((prev) => Math.max(0, prev - chunkElapsedMs));
     }, 0);
 
@@ -1373,6 +1376,11 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
       window.clearTimeout(timerId);
     };
   }, [actions, gameMode, pendingAfkMs]);
+
+  useEffect(() => {
+    if (pendingAfkMs > 0) return;
+    afkSimulationAnchorRef.current = null;
+  }, [pendingAfkMs]);
 
   const pendingGodsBattleByPartyRef = useRef<Record<number, boolean>>({});
 
@@ -1395,6 +1403,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
     // Long background spans should be simulated inside the reducer so each expedition
     // phase reads the latest pending profit / HP values instead of stale render snapshots.
     if (elapsedMs >= 60_000) {
+      afkSimulationAnchorRef.current = now;
       setPendingAfkMs((prev) => Math.min(AFK_MAX_ELAPSED_MS, prev + elapsedMs));
       setPartyCycles((prev) => {
         const resetAt = now;
