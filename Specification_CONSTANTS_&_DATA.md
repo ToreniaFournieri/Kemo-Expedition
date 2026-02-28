@@ -587,7 +587,7 @@
 
 | God | Name  | effect (Rank 1) | 説明　|
 |-----|-----|----|---|
-|`God of Restoration`| 再生の神 | At the end of every 4th room,  Heal 20% of missing HP | |
+|`God of Restoration`| 再生の神 |At the end of every 4th room,  Heal 20% of missing HP | |
 |`God of Attrition`| 消耗の神 | Add `c.melee_attack+20`, `c.ranged_attack+20`, and `c.magical_attack+20` to each party member. At the end of every 4th room, reduce 5% of remaining HP.| |
 |`God of Fortification` | 防備の神 | Add `c.physical_defense+10`, `c.magical_defense+10` to each party member.| |
 |`God of Precision`| 命中の神 | Add `c.accuracy+0.020` and `c.evasion-0.005` to each party member.| |
@@ -596,20 +596,20 @@
 
 - Religions
 
-| God | Name | Effect |
-|-|-|-|
-| Goddess of Restoration | 再生の女神 | heal ar every 4th room, longer sleep 睡眠中, weak against ice |
-| God of Attrition | 消耗の神 | more physical power, hurt at every 4th room|
-| God of Cunning | 狡猾の神 | +magical defense, sustain intimacy, abscond (lower saving money) |
-| God of Fortification | 防備の神 |  +physical defense, longer healing 休息中, weak against thunder |
-| Goddess of Fertility | 豊穣の女神 |  move +1 faster, longer fest 宴会中, weak against fire |
-| God of Resonance | 共鳴の神 |  resonance, resonance works ranged attack too, -HP |
-| Goddess of Precision | 精密の女神 |  +accuracy, -evasion, longer 探索中 |
-| God of Fate | 運命の神 |  alter future, longer praying 祈り中 |
-| God of Dusk | 黄昏の神 |  +evasion, -magical defense, longer trading 売却中 |
-| Goddess of Mirage | 幻影の女神 |  +more magical power, -lower physical defense  |
-| God of Oblivion | 忘却されし神 |  hurt |
-| Goddess of Discord | 不和の神 |  1 member got ⚠️antagonism, one more reward chance |
+| God | Name | Effect | Scaling of rank up |
+|-|-|-|-|
+| Goddess of Restoration | 再生の女神 | At the end of every 4th room,  Heal 20% of missing HP, longer sleep 睡眠中, weak against ice | +0.5% Heal per rank |
+| God of Attrition | 消耗の神 |  Add `c.melee_attack+20`, `c.ranged_attack+20`, and `c.magical_attack+20` to each party member. At the end of every 4th room, reduce 5% of remaining HP.|  |
+| God of Cunning | 狡猾の神 | +magical defense, sustain intimacy, abscond (lower saving money) | |
+| God of Fortification | 防備の神 |  +physical defense, longer healing 休息中, weak against thunder | |
+| Goddess of Fertility | 豊穣の女神 |  move +1 faster, longer fest 宴会中, weak against fire | |
+| God of Resonance | 共鳴の神 |  resonance, resonance works ranged attack too, -HP | |
+| Goddess of Precision | 精密の女神 |  +accuracy, -evasion, longer 探索中 | |
+| God of Fate | 運命の神 |  alter future, longer praying 祈り中 | |
+| God of Dusk | 黄昏の神 |  +evasion, -magical defense, longer trading 売却中 | |
+| Goddess of Mirage | 幻影の女神 |  +more magical power, -lower physical defense  | |
+| God of Oblivion | 忘却されし神 |  hurt | |
+| Goddess of Discord | 不和の神 |  1 member got ⚠️antagonism, one more reward chance | |
 
 
 ### 2.4 Expedition & Enemies
