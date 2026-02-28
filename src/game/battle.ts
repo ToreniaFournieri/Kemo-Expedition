@@ -586,8 +586,26 @@ function getEnemyFocusLevel(enemy: EnemyDef): number {
   return getEnemyAbilityLevel(enemy, 'focus');
 }
 
+type AbilityLike = { id: AbilityId; level: number };
+
+function getAbilityLevelFromList(abilities: AbilityLike[], abilityId: AbilityId): number {
+  return abilities.find((ability) => ability.id === abilityId)?.level ?? 0;
+}
+
 function getEnemyAbilityLevel(enemy: EnemyDef, abilityId: AbilityId): number {
-  return enemy.abilities.find(a => a.id === abilityId)?.level ?? 0;
+  return getAbilityLevelFromList(enemy.abilities, abilityId);
+}
+
+function getCounterNoAMultiplierForLevel(level: number): number {
+  if (level <= 0) return 0;
+  if (level >= 3) return 1.5;
+  if (level === 2) return 1.0;
+  return 0.5;
+}
+
+function getTierTwoNoAMultiplierForLevel(level: number): number {
+  if (level <= 0) return 0;
+  return level >= 2 ? 1.0 : 0.5;
 }
 
 function createNullCounterPool(characterStats: ComputedCharacterStats[]): Map<number, number> {
@@ -621,10 +639,6 @@ function consumeNullCounter(
   remainingNullCounterByCharacterId.set(ownerCharacterId, remaining - 1);
 }
 
-function enemyHasCounter(enemy: EnemyDef): boolean {
-  return getEnemyAbilityLevel(enemy, 'counter') > 0;
-}
-
 function enemyHasReAttack(enemy: EnemyDef): boolean {
   return getEnemyAbilityLevel(enemy, 're_attack') > 0;
 }
@@ -644,11 +658,7 @@ function hasCounter(charStats: ComputedCharacterStats, phase: BattlePhase): bool
 }
 
 function getCounterNoAMultiplier(charStats: ComputedCharacterStats): number {
-  const level = getAbilityLevel(charStats, 'counter');
-  if (level <= 0) return 0;
-  if (level >= 3) return 1.5;
-  if (level === 2) return 1.0;
-  return 0.5;
+  return getCounterNoAMultiplierForLevel(getAbilityLevel(charStats, 'counter'));
 }
 
 
@@ -661,7 +671,7 @@ function hasResurrect(charStats: ComputedCharacterStats): boolean {
 }
 
 function getAbilityLevel(charStats: ComputedCharacterStats, abilityId: AbilityId): number {
-  return charStats.abilities.find(a => a.id === abilityId)?.level ?? 0;
+  return getAbilityLevelFromList(charStats.abilities, abilityId);
 }
 
 function getReAttackProfile(charStats: ComputedCharacterStats): { count: number; noAMultiplier: number } {
@@ -673,25 +683,23 @@ function getReAttackProfile(charStats: ComputedCharacterStats): { count: number;
 }
 
 function getReCounterNoAMultiplier(charStats: ComputedCharacterStats): number {
-  const level = getAbilityLevel(charStats, 're_counter');
-  if (level <= 0) return 0;
-  return level >= 2 ? 1.0 : 0.5;
+  return getTierTwoNoAMultiplierForLevel(getAbilityLevel(charStats, 're_counter'));
 }
 
 function getMagicalCounterNoAMultiplier(charStats: ComputedCharacterStats): number {
-  const level = getAbilityLevel(charStats, 'magical_counter');
-  if (level <= 0) return 0;
-  return level >= 2 ? 1.0 : 0.5;
+  return getTierTwoNoAMultiplierForLevel(getAbilityLevel(charStats, 'magical_counter'));
 }
 
 function getCoveringFireNoAMultiplier(charStats: ComputedCharacterStats): number {
-  const level = getAbilityLevel(charStats, 'covering_fire');
-  if (level <= 0) return 0;
-  return level >= 2 ? 1.0 : 0.5;
+  return getTierTwoNoAMultiplierForLevel(getAbilityLevel(charStats, 'covering_fire'));
 }
 
-function enemyHasReCounter(enemy: EnemyDef): boolean {
-  return getEnemyAbilityLevel(enemy, 're_counter') > 0;
+function getEnemyCounterNoAMultiplier(enemy: EnemyDef): number {
+  return getCounterNoAMultiplierForLevel(getEnemyAbilityLevel(enemy, 'counter'));
+}
+
+function getEnemyReCounterNoAMultiplier(enemy: EnemyDef): number {
+  return getTierTwoNoAMultiplierForLevel(getEnemyAbilityLevel(enemy, 're_counter'));
 }
 
 // Hit detection functions are available for future use when implementing
@@ -795,7 +803,8 @@ export function executeBattle(
   }
 
   const triggerEnemyCounter = (targetCharStats: ComputedCharacterStats, dealtDamage: number, initiativeRoll: number): void => {
-    if (dealtDamage <= 0 || !enemyHasCounter(enemy)) return;
+    const counterNoAMultiplier = getEnemyCounterNoAMultiplier(enemy);
+    if (dealtDamage <= 0 || counterNoAMultiplier <= 0) return;
 
     const nullifierStats = getAvailableNullCounterOwner(characterStats, remainingNullCounterByCharacterId);
     const nullifiedByParty = !!nullifierStats;
@@ -815,7 +824,7 @@ export function executeBattle(
     }
 
     const singleDamage = calculateSingleEnemyAttackDamage('close', enemy, partyStats, targetCharStats, enemyHp);
-    const attempts = Math.ceil(enemy.meleeNoA * 0.5);
+    const attempts = Math.ceil(getEnemyNoA('close', enemy) * counterNoAMultiplier);
     let hits = 0;
     for (let i = 1; i <= attempts; i++) {
       const didHit = hitDetection(1.0, enemy.accuracyBonus, targetCharStats.evasionBonus, i, 'close', getDeflectionLevel(targetCharStats), getEnemyFocusLevel(enemy));
@@ -1266,7 +1275,8 @@ export function executeBattle(
             if (enemyHp <= 0) break;
 
             const availableNullCounterStats = getAvailableNullCounterOwner(characterStats, remainingNullCounterByCharacterId);
-            if (partyHp <= 0 || !enemyHasReCounter(enemy) || availableNullCounterStats) {
+            const enemyReCounterNoAMultiplier = getEnemyReCounterNoAMultiplier(enemy);
+            if (partyHp <= 0 || enemyReCounterNoAMultiplier <= 0 || availableNullCounterStats) {
               if (availableNullCounterStats) {
                 const nullifier = party.characters.find(c => c.id === availableNullCounterStats.characterId);
                 consumeNullCounter(availableNullCounterStats.characterId, remainingNullCounterByCharacterId);
@@ -1279,7 +1289,7 @@ export function executeBattle(
               continue;
             }
 
-            const reCounterAttempts = Math.ceil(getEnemyNoA(phase, enemy) * 0.5);
+            const reCounterAttempts = Math.ceil(getEnemyNoA(phase, enemy) * enemyReCounterNoAMultiplier);
             if (reCounterAttempts <= 0) {
               continue;
             }
