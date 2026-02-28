@@ -660,7 +660,7 @@ type GameAction =
   | { type: 'MARK_DIARY_LOG_SEEN'; logId: string }
   | { type: 'MARK_ALL_DIARY_LOGS_SEEN' }
   | { type: 'UPDATE_DIARY_SETTINGS'; partyIndex: number; settings: Partial<DiarySettings> }
-  | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; isLunaMode?: boolean }
+  | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; isLunaMode?: boolean; simulatedEndAt?: number }
   | { type: 'RESET_GAME' }
   | { type: 'IMPORT_GAME_STATE'; state: GameState }
   | { type: 'RESET_COMMON_BAGS' }
@@ -1960,8 +1960,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (runCount <= 0) return state;
 
       let workingState = state;
-      const simulationStartAt = Date.now() - cappedElapsedMs;
-      const simulationEndAt = simulationStartAt + (runCount * approxCycleDurationMs);
+      const simulationEndAt = action.simulatedEndAt ?? Date.now();
+      const simulationStartAt = simulationEndAt - cappedElapsedMs;
       const partyTimestampStepMs = 1_000;
 
       for (let runIndex = 0; runIndex < runCount; runIndex++) {
@@ -2281,8 +2281,8 @@ export function useGameState() {
       dispatch({ type: 'UPDATE_DIARY_SETTINGS', partyIndex, settings });
     }, []),
 
-    simulateAfk: useCallback((elapsedMs: number, isAutoRepeatEnabled: boolean, isLunaMode: boolean = false) => {
-      dispatch({ type: 'SIMULATE_AFK', elapsedMs, isAutoRepeatEnabled, isLunaMode });
+    simulateAfk: useCallback((elapsedMs: number, isAutoRepeatEnabled: boolean, isLunaMode: boolean = false, simulatedEndAt?: number) => {
+      dispatch({ type: 'SIMULATE_AFK', elapsedMs, isAutoRepeatEnabled, isLunaMode, simulatedEndAt });
     }, []),
 
     resetGame: useCallback(() => {
