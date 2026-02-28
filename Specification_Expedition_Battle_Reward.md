@@ -299,19 +299,19 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 
 - For every item listed in the enemy's potential drop items,
   - If the item is common,
-    - Get one ticket from `g.common_reward_bag`. One more with `c.unlock`, One more with `m.luna`.
+    - Get one ticket from `g.common_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord`.
 	- If `g.reward_bag`.value = '1', then get one ticket from `g.common_enhancement_bag`.
     - If `g.enhancement_bag`.value >= 1, then get one ticket from `g.superRare_bag`.
   - If the item is uncommon,
-    - Gets one ticket from `g.uncommon_reward_bag`. One more with `c.unlock`, One more with `m.luna`.
+    - Gets one ticket from `g.uncommon_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord`.
     - If `g.uncommon_reward_bag`.value = '1', then get one ticket from `g.enhancement_bag`.
     - If `g.enhancement_bag`.value >= 1, then get one ticket from `g.superRare_bag`.
   - If the item is rare,
-    - Gets one ticket from `g.rare_reward_bag`. One more with `c.unlock`, One more with `m.luna`.
+    - Gets one ticket from `g.rare_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord`.
     - If `g.rare_reward_bag`.value = '1', then get one ticket from `g.enhancement_bag`.
     - If `g.enhancement_bag`.value >= 1, then get one ticket from `g.superRare_bag`.
   - If the item is mythic,
-    - Gets one ticket from `g.mythic_reward_bag`. One more with `c.unlock`, One more with `m.luna`.
+    - Gets one ticket from `g.mythic_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord`. 
     - If `g.rare_mythic_bag`.value = '1', then get one ticket from `g.enhancement_bag`.
     - If `g.enhancement_bag`.value >= 1, then get one ticket from `g.superRare_bag`.
 
