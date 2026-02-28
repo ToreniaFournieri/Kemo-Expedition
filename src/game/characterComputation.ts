@@ -860,7 +860,7 @@ function getAbilityName(id: AbilityId, level: number): string {
     deflection: '矢払い',
     null_counter: '反撃無効化',
     unlock: '解錠',
-    squander: '散財',
+    squander: '浪費',
     tithe: '十分の一税',
     seeker: '探究者',
     resurrect: '再起',

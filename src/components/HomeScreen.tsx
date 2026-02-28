@@ -723,7 +723,7 @@ const MULTIPLIER_LABELS: Record<string, string> = {
 };
 
 const ABILITY_NAMES: Record<string, string> = {
-  first_strike: '先手',
+  first_strike: '先制攻撃',
   covering_fire: '援護射撃',
   hunter: '狩人',
   defender: '守護者',
@@ -736,7 +736,7 @@ const ABILITY_NAMES: Record<string, string> = {
   deflection: '矢払い',
   unlock: '解錠',
   null_counter: '反撃無効化',
-  squander: '散財',
+  squander: '浪費',
   tithe: '十分の一税',
   seeker: '探究者',
   resurrect: '再起',
@@ -744,8 +744,8 @@ const ABILITY_NAMES: Record<string, string> = {
   re_counter: '再反撃',
   momentum: '気勢',
   cunning: '狡猾',
-  bulwark: '堅守',
-  cyborgization: '機械化',
+  bulwark: '壁',
+  cyborgization: 'サイボーグ化',
   peddler: '行商',
   composure: '平静',
   magical_counter: '魔法反撃',
