@@ -136,7 +136,7 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
       return `全員の共鳴を1段階強化。共鳴が遠距離攻撃にも適用。[魔法防御x0.90][HPx${hpMultiplier.toFixed(3)}]`;
     }
     case 'Goddess of Discord': {
-      return '戦闘開始時、ランダム1名に[antagonism]。追加報酬抽選+1回';
+      return '戦闘開始時、ランダム1名に[⚠️敵対]付与。追加報酬抽選+1回';
     }
     default:
       return '効果なし';

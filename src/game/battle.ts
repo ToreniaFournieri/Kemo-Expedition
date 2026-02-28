@@ -16,6 +16,7 @@ import {
 import { computePartyStats } from './partyComputation';
 import { getBaseMultiplier } from './baseMultiplier';
 import { drawFromBag, createPhysicalThreatBag, createMagicalThreatBag, getBagTicketTotal } from './bags';
+import { getDeityKey } from './deity';
 
 interface BattleContext {
   partyStats: ComputedPartyStats;
@@ -718,7 +719,8 @@ export function executeBattle(
   bags: GameBags,
   initialPartyHp?: number // Optional: for HP persistence during expedition
 ): BattleResult {
-  const { partyStats, characterStats } = computePartyStats(party);
+  const { partyStats, characterStats: computedCharacterStats } = computePartyStats(party);
+  let characterStats = computedCharacterStats;
 
   let ctx: BattleContext = {
     partyStats,
@@ -733,6 +735,31 @@ export function executeBattle(
   let partyHp = initialPartyHp !== undefined ? initialPartyHp : partyStats.hp;
   let enemyHp = enemy.hp;
   const log: BattleLogEntry[] = [];
+
+  if (getDeityKey(party.deity.name) === 'Goddess of Discord' && characterStats.length > 0) {
+    const targetIndex = Math.floor(Math.random() * characterStats.length);
+    const targetStats = characterStats[targetIndex];
+    const targetName = party.characters.find(c => c.id === targetStats.characterId)?.name ?? '???';
+
+    characterStats = characterStats.map((stats, index) => (
+      index === targetIndex
+        ? { ...stats, hasAntagonism: true }
+        : stats
+    ));
+
+    log.push({
+      phase: 'long',
+      actor: 'deity',
+      action: '不和の神の効果！',
+      note: `([⚠️敵対]${targetName}が仲違いした)`,
+    });
+
+    ctx = {
+      ...ctx,
+      characterStats,
+    };
+  }
+
   const remainingNullCounterByCharacterId = createNullCounterPool(characterStats);
   const consumedResurrectCharacterIds = new Set<number>();
   let consumedEnemyResurrect = false;
