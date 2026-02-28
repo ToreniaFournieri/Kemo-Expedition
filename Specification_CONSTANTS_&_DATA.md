@@ -247,7 +247,7 @@
 | `God of Fate` | 運命の神 | 効果:未来改変。祈り時間1.5-α倍。 | 未来を知る者はそれを変えてしまう。 |
 | `God of Dusk` | 黄昏の神 | 効果:全員の回避+15+α、魔法防御0.90倍。売却時間1.5倍 | 光と闇の境界で、最も多くの嘘が生まれる。 |
 | `Goddess of Mirage` | 幻影の女神 | 効果:全員に魔法攻撃1.2+α倍、物理防御0.90倍。 | 真実と幻想に違いはない。違いは込められた願いのみ。 |
-| `God of Oblivion` | 忘却されし神 | 効果:なし。 | 神の存在には、ただ一人の真なる信徒で足りる。 |
+| `God of Oblivion` | 忘却されし神 | 効果:なし。 (ランク10:追加報酬抽選+1回) | 神の存在には、ただ一人の真なる信徒で足りる。 |
 | `Goddess of Discord` | 不和の神 | 効果:戦闘開始時、ランダムな1名を⚠️敵対させる。追加報酬抽選+1回。| 調和は停滞である。混沌こそ昇華の源。 |
 
 
@@ -637,7 +637,7 @@
 | God of Fate | 運命の神 | alter future, longer praying 祈り中 by 1.5 | praying time -0.01 to x1.5 per rank |
 | God of Dusk | 黄昏の神 | Add `c.deity_evasion+0.015`,  `c.deity_magical_defense_x0.90` to each party member, longer trading 売却中 by 1.5 | +0.001 to `c.deity_accuracy+0.020` per rank |
 | Goddess of Mirage | 幻影の女神 | Add `c.deity_magical_attack_x1.20` and `c.deity_pysical_defense_x0.90` to each party member | +0.01 to `c.deity_magical_attack_x1.20` per rank |
-| God of Oblivion | 忘却されし神 | (nothing) | |
+| God of Oblivion | 忘却されし神 | (nothing) | at rank 10, one more additional reward chance |
 | Goddess of Discord | 不和の神 |  At the start of each battle,  1 randomly chosen member gets `c.antagonism`, one more additional reward chance | (none)  |
 
 
