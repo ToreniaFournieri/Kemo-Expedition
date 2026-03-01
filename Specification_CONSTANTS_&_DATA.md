@@ -240,6 +240,9 @@
 | `f.magical-counter` | 魔法反撃 | |
 | `f.covering-fire` | 援護射撃 | |
 | `f.reward` | 報酬計算 | |
+| `f.rarity_scaling`| レアリティの性能向上 | |
+| `f.super_rare_scaling`| 超レアの性能向上 | |
+
 
 #### 2.1.7 g. gods, religions
 - "g. 神、信仰"
