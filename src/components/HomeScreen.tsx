@@ -3201,7 +3201,8 @@ function PartyTab({
                     ],
                   });
                 }
-                if (hasMagical) {
+                const hasCastableMagic = stats.magicalAttack > 0 && stats.magicalNoA > 0;
+                if (hasCastableMagic) {
                   offenseLines.push({
                     key: 'magical-accuracy',
                     text: `魔法命中率: 100% (減衰: ${decayText})`,
@@ -3212,7 +3213,6 @@ function PartyTab({
                     ],
                   });
                 }
-                const hasCastableMagic = stats.magicalAttack > 0 && stats.magicalNoA > 0;
                 if (hasCastableMagic) {
                   const magicProfile = resolveMagicProfile({
                     style: 'multi-hit',
