@@ -244,7 +244,8 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
   - `a.first-strike`2, roll **3d3** (3~9)
   - `a.first-strike`1, roll **2d3** (2~6)
   - No `a.first-strike`, roll **1d3** (1~3)
-- Actions are resolved in descending order of roll result.
+-　If party.`Goddess of Fertility`, add +1 (cap the result at 9)
+-  Actions are resolved in descending order of roll result.
 - Tie-breaker: Enemy > Front row party members > Last row party member.
 
 **Actor action**
