@@ -858,7 +858,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "f.rarity_scaling",
         "label": "レアリティの性能向上",
-        "description": "レアリティ段階に応じた基礎性能補正。"
+        "description": "レアリティ段階に応じた基礎性能補正。\n| 称号 | 増加倍率 |\n|-----|------|\n| (none) | x1.00 |\n| 名工の | x1.33 |\n| 魔性の | x1.58 |\n| 宿った | x2.10 |\n| 伝説の | x2.75 |\n| 恐ろしい | x3.50 |\n| 究極の | x5.00 |"
       },
       {
         "key": "f.super_rare_scaling",
