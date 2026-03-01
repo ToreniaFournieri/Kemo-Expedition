@@ -393,14 +393,7 @@ PT2...
 
 
 **Price (per item, by tier)**
-- Tier 1: 100G  
-- Tier 2: 200G  
-- Tier 3: 400G  
-- Tier 4: 800G  
-- Tier 5: 1,600G  
-- Tier 6: 3,200G  
-- Tier 7: 6,400G  
-- Tier 8: 12,800G  
+- see `2.5.5 Item price`
 
 - Refresh timing
   - Shop lineup refreshes every 8 hours at **02:00, 10:00, 18:00** (local time).
