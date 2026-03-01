@@ -334,50 +334,11 @@ PT2...
       - The player may retry the Gods Battle without re-collecting Boss rare items. 
 
 #### 8.5 Base(拠点)
-- It has two tabs inside Base tab. Inventory(所持品), Shop(お店), Workshop(工房), Altar(祭壇). (same visual UI as List of party (PT1, PT2...) tab in Party tab)
+- It has two tabs inside Base tab. Shop(お店), Inventory(所持品) , Workshop(工房), Altar(祭壇). (same visual UI as List of party (PT1, PT2...) tab in Party tab)
+  - Default: Shop
   - not available for Workshop(工房), Altar(祭壇) in this version. (Gray out)
 	
-##### 8.5.1 Inventory(所持品)
-- Behavior:
-  - Notification pops up when acquiring a new item
-  - Newly acquired items are shown in bold
-  - Once displayed, text returns to normal
-- Item list:
-  - Stacked by item variant
-  - Shows state:`s.owned` items and **equiped items**.
-  - Filter button by rarelity (right-aligned): 全て表示, 通常のみ, アンコモンのみ, エリートレアのみ, ボスレアのみ, 神魔レアのみ: [ALL] [C] [U] [E] [B] [M] |超レア: ON/OFF
-    - IF player selects [M],   神魔レアのみ: [ALL] [C] [U] [E] [B] **[M]** 
-    - 超レア[ON/OFF] default: OFF, if ON, filter superRare >= 1.
-  - Inventory includes item category tabs:
-    - [耐久:鎧,衣,盾],[近距離攻撃:剣,刀,手],[遠距離攻撃:矢,ボ,弓],[魔法攻撃:杖,書,媒].
-    - Default: 鎧 or previously selected category. 
-    - Each box has two lines:
-      - First line, small and gray letters: 耐久
-      - Second line, current design: 鎧,衣,盾
-    - Only items matching the selected category are shown (filter)
-  - **Inventory Sort Logic (within category):**
-	- **Order:** Descending order by Priority.
-	- **Priority:**
-	   1. Base Item ID: Higher-tier base items (e.g., Mythril Sword > Iron Sword) appear first.
-	   2. Super Rare Title: Items with Super Rare titles are prioritized within their base item ID.
-	   3. Enhancement Tier: Among the same Item ID, higher enhancements (e.g., 究極の > 伝説の) appear higher
-       4. Equiped item (From PT1 row1, PT1 row2, ... , PT2 row6)
-  - Item Row: The name, count, and status are left-aligned, while the sell all button is right-aligned on the same line 
-    - ex. `s.owned`: 名工のロングソード x3 | 近攻+19     [全売却 39G]
-    - ex. `equipped`: [race icon] 名工のロングソード x1 | 近攻+19    PT1:name
-  - Sell all button(全売却): Sells all item, with a warning message, and Changes item state from `s.owned` to `s.sold`
-  - Inventory pane shows at least 10 items
-- Actions:
-  - Sell item stacks (except equipped items)
-  - Sold items disappear immediately
-
-- **Auto-sold list** (Collapsed by default; tap to expand)
-  - Sort and filter settings also apply to this list (displaying items with the state:`s.sold`)
-  - Item Row: The name, count, and status are left-aligned, while the Unlock button is right-aligned on the same line
-    - ex. 名工のロングソード x3 | 近攻+19     [解除]
-  - Unlock button(解除): Changes item state from `s.sold` to `s.notown`
-
-##### 8.5.2 Shop (お店)
+##### 8.5.1 Shop (お店)
 
 - **Function:** Sells items.
 - **Shop name:** フェリスのガラクタ屋 (Felis’s Junk Shop)
@@ -458,6 +419,47 @@ PT2...
 		- Examples of sold items: 探し求めた木の盾 x1, 渡り歩く木の盾 x1… (all Super Rare title variants)
 		- Price: 10,000G each
 		- Stock: One per Super Rare title (no duplicates)
+
+##### 8.5.2 Inventory(所持品)
+- Behavior:
+  - Notification pops up when acquiring a new item
+  - Newly acquired items are shown in bold
+  - Once displayed, text returns to normal
+- Item list:
+  - Stacked by item variant
+  - Shows state:`s.owned` items and **equiped items**.
+  - Filter button by rarelity (right-aligned): 全て表示, 通常のみ, アンコモンのみ, エリートレアのみ, ボスレアのみ, 神魔レアのみ: [ALL] [C] [U] [E] [B] [M] |超レア: ON/OFF
+    - IF player selects [M],   神魔レアのみ: [ALL] [C] [U] [E] [B] **[M]** 
+    - 超レア[ON/OFF] default: OFF, if ON, filter superRare >= 1.
+  - Inventory includes item category tabs:
+    - [耐久:鎧,衣,盾],[近距離攻撃:剣,刀,手],[遠距離攻撃:矢,ボ,弓],[魔法攻撃:杖,書,媒].
+    - Default: 鎧 or previously selected category. 
+    - Each box has two lines:
+      - First line, small and gray letters: 耐久
+      - Second line, current design: 鎧,衣,盾
+    - Only items matching the selected category are shown (filter)
+  - **Inventory Sort Logic (within category):**
+	- **Order:** Descending order by Priority.
+	- **Priority:**
+	   1. Base Item ID: Higher-tier base items (e.g., Mythril Sword > Iron Sword) appear first.
+	   2. Super Rare Title: Items with Super Rare titles are prioritized within their base item ID.
+	   3. Enhancement Tier: Among the same Item ID, higher enhancements (e.g., 究極の > 伝説の) appear higher
+       4. Equiped item (From PT1 row1, PT1 row2, ... , PT2 row6)
+  - Item Row: The name, count, and status are left-aligned, while the sell all button is right-aligned on the same line 
+    - ex. `s.owned`: 名工のロングソード x3 | 近攻+19     [全売却 39G]
+    - ex. `equipped`: [race icon] 名工のロングソード x1 | 近攻+19    PT1:name
+  - Sell all button(全売却): Sells all item, with a warning message, and Changes item state from `s.owned` to `s.sold`
+  - Inventory pane shows at least 10 items
+- Actions:
+  - Sell item stacks (except equipped items)
+  - Sold items disappear immediately
+
+- **Auto-sold list** (Collapsed by default; tap to expand)
+  - Sort and filter settings also apply to this list (displaying items with the state:`s.sold`)
+  - Item Row: The name, count, and status are left-aligned, while the Unlock button is right-aligned on the same line
+    - ex. 名工のロングソード x3 | 近攻+19     [解除]
+  - Unlock button(解除): Changes item state from `s.sold` to `s.notown`
+
 
 #### 8.6 Diary
 - When a party was defeated, got boss rare or mythic rare item, and acquiring super rare item, the diary updates. 
