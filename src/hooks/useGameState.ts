@@ -652,6 +652,7 @@ type GameAction =
   | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character> }
   | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number }
   | { type: 'SELL_STACK'; variantKey: string }
+  | { type: 'SELL_ALL_OWNED' }
   | { type: 'BUY_SHOP_ITEM'; itemId: number }
   | { type: 'REFRESH_SHOP_LINEUP' }
   | { type: 'SET_VARIANT_STATUS'; variantKey: string; status: 'notown' }
@@ -1786,7 +1787,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SELL_STACK': {
       const currentParty = state.parties[state.selectedPartyIndex];
       const variant = state.global.inventory[action.variantKey];
-      if (!variant || variant.count <= 0) return state;
+      if (!variant || variant.count <= 0 || variant.item.superRare >= 1) return state;
 
       const sellPrice = calculateSellPrice(variant.item) * variant.count;
 
@@ -1806,6 +1807,37 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         parties: updatedParties,
         global: { ...state.global, inventory: newInventory, gold: state.global.gold + sellPrice },
+      };
+    }
+
+    case 'SELL_ALL_OWNED': {
+      let totalSellPrice = 0;
+      const newInventory = { ...state.global.inventory };
+
+      const hasOwnedSuperRare = Object.values(state.global.inventory).some((variant) => (
+        variant.status === 'owned' && variant.count > 0 && variant.item.superRare >= 1
+      ));
+      if (hasOwnedSuperRare) return state;
+
+      for (const [variantKey, variant] of Object.entries(state.global.inventory)) {
+        if (variant.status !== 'owned' || variant.count <= 0) continue;
+        totalSellPrice += calculateSellPrice(variant.item) * variant.count;
+        newInventory[variantKey] = {
+          ...variant,
+          count: 0,
+          status: 'sold',
+        };
+      }
+
+      if (totalSellPrice <= 0) return state;
+
+      return {
+        ...state,
+        global: {
+          ...state.global,
+          inventory: newInventory,
+          gold: state.global.gold + totalSellPrice,
+        },
       };
     }
 
@@ -2269,6 +2301,10 @@ export function useGameState() {
 
     sellStack: useCallback((variantKey: string) => {
       dispatch({ type: 'SELL_STACK', variantKey });
+    }, []),
+
+    sellAllOwned: useCallback(() => {
+      dispatch({ type: 'SELL_ALL_OWNED' });
     }, []),
 
     buyShopItem: useCallback((itemId: number) => {
