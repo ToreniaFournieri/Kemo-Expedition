@@ -5935,18 +5935,21 @@ function SettingTab({
 
                     return (
                       <div key={entryKey} className="text-xs border-t border-gray-100 pt-1 first:border-t-0 first:pt-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="text-gray-700 font-medium">{renderTextWithRaceIcons(entry.label)}</div>
-                          {shouldCollapseEntry && (
-                            <button
-                              onClick={() => setExpandedGlossaryEntries((prev) => ({ ...prev, [entryKey]: !isEntryExpanded }))}
-                              className="text-[11px] text-gray-500 hover:text-gray-700"
-                              aria-label={isEntryExpanded ? `${entry.label}を折りたたむ` : `${entry.label}を展開する`}
-                            >
-                              {isEntryExpanded ? '▼' : '▲'}
-                            </button>
-                          )}
-                        </div>
+                        {shouldCollapseEntry ? (
+                          <button
+                            type="button"
+                            onClick={() => setExpandedGlossaryEntries((prev) => ({ ...prev, [entryKey]: !isEntryExpanded }))}
+                            className="w-full flex items-center justify-between gap-2 text-left"
+                            aria-label={isEntryExpanded ? `${entry.label}を折りたたむ` : `${entry.label}を展開する`}
+                          >
+                            <div className="text-gray-700 font-medium">{renderTextWithRaceIcons(entry.label)}</div>
+                            <span className="text-[11px] text-gray-500 hover:text-gray-700">{isEntryExpanded ? '▼' : '▲'}</span>
+                          </button>
+                        ) : (
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="text-gray-700 font-medium">{renderTextWithRaceIcons(entry.label)}</div>
+                          </div>
+                        )}
                         {isEntryExpanded && (
                           <>
                             <div className="text-gray-500 whitespace-pre-line">{renderTextWithRaceIcons(mainDescription)}</div>
