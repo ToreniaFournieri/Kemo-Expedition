@@ -1594,9 +1594,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'PROCESS_PENDING_PROFIT': {
       const currentParty = state.parties[action.partyIndex];
       if (!currentParty) return state;
-      const donation = Math.max(0, Math.floor(action.donation));
-      const deposit = Math.max(0, Math.floor(action.deposit));
-      const retainedProfit = Math.max(0, (currentParty.pendingProfit ?? 0) - donation - deposit);
+      const totalProfit = Math.max(0, Math.floor(currentParty.pendingProfit ?? 0));
+      const donation = Math.min(totalProfit, Math.max(0, Math.floor(action.donation)));
+      const deposit = Math.min(totalProfit - donation, Math.max(0, Math.floor(action.deposit)));
       const updatedParties = [...state.parties];
       const deityName = normalizeDeityName(currentParty.deity.name);
       const deityDonations = {
@@ -1605,7 +1605,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
       updatedParties[action.partyIndex] = {
         ...currentParty,
-        pendingProfit: retainedProfit,
+        pendingProfit: 0,
         deityGold: deityDonations[deityName],
         expeditionStats: {
           ...currentParty.expeditionStats,
