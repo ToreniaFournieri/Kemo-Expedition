@@ -230,6 +230,11 @@
 
 | `f.` Key | 表示 | 説明 |
 |--------|------|------|
+| `f.targeting` |
+`f.damage_calculation`
+`f.row-based_modifier`
+`f.hit_detection`
+`f.counter`
 
 
 #### 2.1.7 g. gods, religions
