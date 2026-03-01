@@ -5236,7 +5236,7 @@ function SettingTab({
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const [compendiumCategory, setCompendiumCategory] = useState<string>('armor');
   const [compendiumRarityFilter, setCompendiumRarityFilter] = useState<RarityFilter>('all');
-  const [glossaryTab, setGlossaryTab] = useState<'A' | 'B' | 'C' | 'D'>('A');
+  const [glossaryTab, setGlossaryTab] = useState<'A' | 'B' | 'C' | 'D' | 'G'>('A');
   const [expandedCompendiumItems, setExpandedCompendiumItems] = useState<Record<number, boolean>>({});
   const bestiaryListRef = useRef<HTMLDivElement | null>(null);
 
@@ -5496,11 +5496,12 @@ function SettingTab({
     .slice()
     .sort((a, b) => b.id - a.id);
 
-  const glossarySectionsByTab: Record<'A' | 'B' | 'C' | 'D', string> = {
+  const glossarySectionsByTab: Record<'A' | 'B' | 'C' | 'D' | 'G', string> = {
     A: 'a.',
     B: 'b.',
     C: 'c.',
     D: 'd.',
+    G: 'g.',
   };
   const filteredGlossarySections = GLOSSARY_SECTIONS.filter((section) =>
     section.heading.toLowerCase().includes(glossarySectionsByTab[glossaryTab])
@@ -5853,7 +5854,7 @@ function SettingTab({
           <>
           <div className="flex justify-end items-center gap-1 mt-3 mb-3">
             <span className="text-xs text-gray-500">分類</span>
-            {(['A', 'B', 'C', 'D'] as const).map((tab) => (
+            {(['A', 'B', 'C', 'D', 'G'] as const).map((tab) => (
               <button
                 key={tab}
                 type="button"
@@ -5885,12 +5886,27 @@ function SettingTab({
                   })()}
                 </div>
                 <div className="space-y-1 max-h-72 overflow-y-auto pr-1">
-                  {section.entries.map((entry, index) => (
-                    <div key={`${section.id}-${entry.key}-${index}`} className="text-xs border-t border-gray-100 pt-1 first:border-t-0 first:pt-0">
-                      <div className="text-gray-700 font-medium">{renderTextWithRaceIcons(entry.label)}</div>
-                      <div className="text-gray-500 whitespace-pre-line">{renderTextWithRaceIcons(entry.description)}</div>
-                    </div>
-                  ))}
+                  {section.entries.map((entry, index) => {
+                    const isGodGlossarySection = section.heading.toLowerCase().includes('2.1.7 g.');
+                    const descriptionLines = entry.description.split('\n');
+                    const mainDescription = descriptionLines[0] ?? '';
+                    const loreLines = descriptionLines.slice(1);
+
+                    return (
+                      <div key={`${section.id}-${entry.key}-${index}`} className="text-xs border-t border-gray-100 pt-1 first:border-t-0 first:pt-0">
+                        <div className="text-gray-700 font-medium">{renderTextWithRaceIcons(entry.label)}</div>
+                        <div className="text-gray-500 whitespace-pre-line">{renderTextWithRaceIcons(mainDescription)}</div>
+                        {isGodGlossarySection && loreLines.map((line, lineIndex) => (
+                          <div key={`${section.id}-${entry.key}-${index}-lore-${lineIndex}`} className="text-gray-500 italic whitespace-pre-line">
+                            {renderTextWithRaceIcons(line)}
+                          </div>
+                        ))}
+                        {!isGodGlossarySection && loreLines.length > 0 && (
+                          <div className="text-gray-500 whitespace-pre-line">{renderTextWithRaceIcons(loreLines.join('\n'))}</div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ))}
