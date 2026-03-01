@@ -22,6 +22,7 @@ import { DEITY_OPTIONS, getDeityEffectDescription, getDeityRank, getNextRankDona
 import { getXpToNextLevel } from '../game/partyLevel';
 import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../game/environment';
 import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, getShopRefreshPrice, getNextShopRefreshDate, countElapsedShopRefreshes } from '../game/shop';
+import { calculateItemSellPrice } from '../game/pricing';
 import { getBaseMultiplier } from '../game/baseMultiplier';
 import { computeCharacterStats, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
 import { serializeGameState } from '../game/saveCodec';
@@ -4597,10 +4598,7 @@ function InventoryTab({
           {combinedDisplayItems.map((entry) => {
             if (entry.type === 'owned') {
               const { item, count } = entry.variant;
-              const enhMult = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
-              const srMult = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
-              const baseMult = item.baseMultiplier ?? 1;
-              const sellPrice = Math.floor(10 * enhMult * srMult * baseMult) * count;
+              const sellPrice = calculateItemSellPrice(item) * count;
 
               return (
                 <div

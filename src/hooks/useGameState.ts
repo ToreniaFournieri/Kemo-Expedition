@@ -49,7 +49,7 @@ import {
   BagType,
   normalizeGameBags,
 } from '../game/bags';
-import { getItemById, getItemsByTierAndRarity, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
+import { getItemById, getItemsByTierAndRarity } from '../data/items';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { getItemDisplayName } from '../game/gameState';
 import { getDeityKey, getDeityRank, getEffectiveDeityTier, normalizeDeityName } from '../game/deity';
@@ -83,6 +83,7 @@ import {
   countElapsedShopRefreshes,
   getCurrentShopRefreshDate,
 } from '../game/shop';
+import { calculateItemSellPrice } from '../game/pricing';
 
 const BUILD_NUMBER = 1;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
@@ -216,9 +217,7 @@ function getItemRarityCode(item: Item): 'common' | 'uncommon' | 'eliteRare' | 'b
 
 // Helper to calculate sell price for an item
 function calculateSellPrice(item: Item, autoSellMultiplier: number = 1): number {
-  const enhMult = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
-  const srMult = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
-  return Math.floor(10 * enhMult * srMult * autoSellMultiplier);
+  return calculateItemSellPrice(item, autoSellMultiplier);
 }
 
 // Helper to add item to inventory (handles stacking and auto-sell)

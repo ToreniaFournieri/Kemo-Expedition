@@ -1,4 +1,5 @@
-const SHOP_BASE_PRICE = 100;
+import { getShopItemPrice as getTierShopItemPrice } from './pricing';
+
 const SHOP_REFRESH_BASE_PRICE = 2000;
 const SHOP_REFRESH_HOURS = [2, 10, 18] as const;
 
@@ -64,6 +65,5 @@ export function getShopRefreshPrice(refreshCount: number): number {
 }
 
 export function getShopItemPrice(itemId: number): number {
-  const tier = Math.max(1, Math.floor(itemId / 1000));
-  return SHOP_BASE_PRICE * (2 ** (tier - 1));
+  return getTierShopItemPrice(itemId);
 }
