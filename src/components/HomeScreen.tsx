@@ -5240,6 +5240,7 @@ function SettingTab({
   const [compendiumCategory, setCompendiumCategory] = useState<string>('armor');
   const [compendiumRarityFilter, setCompendiumRarityFilter] = useState<RarityFilter>('all');
   const [glossaryTab, setGlossaryTab] = useState<'A' | 'B' | 'C' | 'D' | 'F' | 'G'>('A');
+  const [expandedGlossaryEntries, setExpandedGlossaryEntries] = useState<Record<string, boolean>>({});
   const [expandedCompendiumItems, setExpandedCompendiumItems] = useState<Record<number, boolean>>({});
   const bestiaryListRef = useRef<HTMLDivElement | null>(null);
 
@@ -5920,7 +5921,10 @@ function SettingTab({
                 </div>
                 <div className="space-y-1 max-h-72 overflow-y-auto pr-1">
                   {section.entries.map((entry, index) => {
+                    const entryKey = `${section.id}-${entry.key}-${index}`;
                     const isGodGlossarySection = section.heading.toLowerCase().includes('2.1.7 g.');
+                    const shouldCollapseEntry = glossaryTab === 'F';
+                    const isEntryExpanded = !shouldCollapseEntry || expandedGlossaryEntries[entryKey] === true;
                     const descriptionLines = entry.description.split('\n');
                     const mainDescription = descriptionLines[0] ?? '';
                     const loreLines = descriptionLines.slice(1);
@@ -5930,45 +5934,60 @@ function SettingTab({
                     const glossaryTable = parseGlossaryTable(tableCandidateLines);
 
                     return (
-                      <div key={`${section.id}-${entry.key}-${index}`} className="text-xs border-t border-gray-100 pt-1 first:border-t-0 first:pt-0">
-                        <div className="text-gray-700 font-medium">{renderTextWithRaceIcons(entry.label)}</div>
-                        <div className="text-gray-500 whitespace-pre-line">{renderTextWithRaceIcons(mainDescription)}</div>
-                        {isGodGlossarySection && loreLines.map((line, lineIndex) => (
-                          <div key={`${section.id}-${entry.key}-${index}-lore-${lineIndex}`} className="text-gray-500 italic whitespace-pre-line">
-                            {renderTextWithRaceIcons(line)}
-                          </div>
-                        ))}
-                        {!isGodGlossarySection && lorePrefixLines.length > 0 && (
-                          <div className="text-gray-500 whitespace-pre-line">{renderTextWithRaceIcons(lorePrefixLines.join('\n'))}</div>
-                        )}
-                        {!isGodGlossarySection && glossaryTable && (
-                          <div className="mt-1 overflow-x-auto">
-                            <table className="min-w-full text-[11px] text-gray-600 border border-gray-200 rounded">
-                              <thead>
-                                <tr className="bg-gray-50">
-                                  {glossaryTable.headers.map((headerCell) => (
-                                    <th key={`${section.id}-${entry.key}-header-${headerCell}`} className="px-2 py-1 text-left font-medium border-b border-gray-200">
-                                      {renderTextWithRaceIcons(headerCell)}
-                                    </th>
-                                  ))}
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {glossaryTable.rows.map((row, rowIndex) => (
-                                  <tr key={`${section.id}-${entry.key}-row-${rowIndex}`} className="border-b border-gray-100 last:border-b-0">
-                                    {row.map((cell, cellIndex) => (
-                                      <td key={`${section.id}-${entry.key}-row-${rowIndex}-cell-${cellIndex}`} className="px-2 py-1 whitespace-nowrap">
-                                        {renderTextWithRaceIcons(cell)}
-                                      </td>
+                      <div key={entryKey} className="text-xs border-t border-gray-100 pt-1 first:border-t-0 first:pt-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="text-gray-700 font-medium">{renderTextWithRaceIcons(entry.label)}</div>
+                          {shouldCollapseEntry && (
+                            <button
+                              onClick={() => setExpandedGlossaryEntries((prev) => ({ ...prev, [entryKey]: !isEntryExpanded }))}
+                              className="text-[11px] text-gray-500 hover:text-gray-700"
+                              aria-label={isEntryExpanded ? `${entry.label}を折りたたむ` : `${entry.label}を展開する`}
+                            >
+                              {isEntryExpanded ? '▼' : '▲'}
+                            </button>
+                          )}
+                        </div>
+                        {isEntryExpanded && (
+                          <>
+                            <div className="text-gray-500 whitespace-pre-line">{renderTextWithRaceIcons(mainDescription)}</div>
+                            {isGodGlossarySection && loreLines.map((line, lineIndex) => (
+                              <div key={`${section.id}-${entry.key}-${index}-lore-${lineIndex}`} className="text-gray-500 italic whitespace-pre-line">
+                                {renderTextWithRaceIcons(line)}
+                              </div>
+                            ))}
+                            {!isGodGlossarySection && lorePrefixLines.length > 0 && (
+                              <div className="text-gray-500 whitespace-pre-line">{renderTextWithRaceIcons(lorePrefixLines.join('\n'))}</div>
+                            )}
+                            {!isGodGlossarySection && glossaryTable && (
+                              <div className="mt-1 overflow-x-auto">
+                                <table className="min-w-full text-[11px] text-gray-600 border border-gray-200 rounded">
+                                  <thead>
+                                    <tr className="bg-gray-50">
+                                      {glossaryTable.headers.map((headerCell) => (
+                                        <th key={`${section.id}-${entry.key}-header-${headerCell}`} className="px-2 py-1 text-left font-medium border-b border-gray-200">
+                                          {renderTextWithRaceIcons(headerCell)}
+                                        </th>
+                                      ))}
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {glossaryTable.rows.map((row, rowIndex) => (
+                                      <tr key={`${section.id}-${entry.key}-row-${rowIndex}`} className="border-b border-gray-100 last:border-b-0">
+                                        {row.map((cell, cellIndex) => (
+                                          <td key={`${section.id}-${entry.key}-row-${rowIndex}-cell-${cellIndex}`} className="px-2 py-1 whitespace-nowrap">
+                                            {renderTextWithRaceIcons(cell)}
+                                          </td>
+                                        ))}
+                                      </tr>
                                     ))}
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )}
-                        {!isGodGlossarySection && !glossaryTable && firstTableLineIndex < 0 && loreLines.length > 0 && (
-                          <div className="text-gray-500 whitespace-pre-line">{renderTextWithRaceIcons(loreLines.join('\n'))}</div>
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
+                            {!isGodGlossarySection && !glossaryTable && firstTableLineIndex < 0 && loreLines.length > 0 && (
+                              <div className="text-gray-500 whitespace-pre-line">{renderTextWithRaceIcons(loreLines.join('\n'))}</div>
+                            )}
+                          </>
                         )}
                       </div>
                     );
