@@ -895,7 +895,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "Goddess of Restoration",
         "label": "再生の女神",
-        "description": "効果:4部屋毎に減少HPの20+α%を回復する。睡眠時間1.5倍。\n生とは、繰り返される修正である。"
+        "description": "効果:4部屋毎に減少HPの20+α%を回復する。睡眠時間1.5倍。氷属性に弱い(1.5倍ダメージ増)\n生とは、繰り返される修正である。"
       },
       {
         "key": "God of Attrition",
@@ -910,12 +910,12 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "God of Fortification",
         "label": "防備の神",
-        "description": "効果:全員に物理防御2/3倍。休息時間1.5-α倍。\n平和を望むならば、戦に備えよ。"
+        "description": "効果:全員に物理防御2/3倍。休息時間1.5-α倍。雷属性に弱い(1.5倍ダメージ増)\n平和を望むならば、戦に備えよ。"
       },
       {
         "key": "Goddess of Fertility",
         "label": "豊穣の女神",
-        "description": "効果:全員に天速度+1(行動速度が速くなる)。宴会時間1.5-α倍。\n肥沃な土壌は、多くの穀肉を求むる。"
+        "description": "効果:全員に天速度+1(行動速度が速くなる)。宴会時間1.5-α倍。火属性に弱い(1.5倍ダメージ増)\n肥沃な土壌は、多くの穀肉を求むる。"
       },
       {
         "key": "God of Resonance",

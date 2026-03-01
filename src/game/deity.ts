@@ -126,7 +126,7 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
   switch (deityKey) {
     case 'Goddess of Restoration': {
       const healMissingPct = 0.2 + 0.001 * effectiveTier;
-      return `4部屋毎に減少HPの${Math.round(healMissingPct * 100)}%を回復する。睡眠時間1.50倍`;
+      return `4部屋毎に減少HPの${Math.round(healMissingPct * 100)}%を回復する。睡眠時間1.50倍。氷属性に弱い(1.5倍ダメージ増)`;
     }
     case 'God of Attrition': {
       const attackMult = 1.2 + 0.01 * effectiveTier;
@@ -138,11 +138,11 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
     }
     case 'God of Fortification': {
       const restDuration = Math.max(1, 1.5 - 0.01 * effectiveTier);
-      return `全員に物理防御2/3倍。休息時間${restDuration.toFixed(2)}倍`;
+      return `全員に物理防御2/3倍。休息時間${restDuration.toFixed(2)}倍。雷属性に弱い(1.5倍ダメージ増)`;
     }
     case 'Goddess of Fertility': {
       const feastDuration = Math.max(1, 1.5 - 0.01 * effectiveTier);
-      return `全員に先制+1。宴会時間${feastDuration.toFixed(2)}倍`;
+      return `全員に先制+1。宴会時間${feastDuration.toFixed(2)}倍。火属性に弱い(1.5倍ダメージ増)`;
     }
     case 'Goddess of Precision': {
       const accuracyBonus = 0.015 + 0.001 * effectiveTier;
