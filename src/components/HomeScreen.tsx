@@ -95,6 +95,7 @@ interface PartyCycleRuntime {
   state: PartyCycleState;
   stateStartedAt: number;
   durationMs: number;
+  isCurrentExpeditionGodsBattle?: boolean;
 }
 
 function rollPercentInclusive(min: number, max: number): number {
@@ -1340,6 +1341,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             state: runtime.state ?? '待機中',
             stateStartedAt,
             durationMs: typeof runtime.durationMs === 'number' ? runtime.durationMs : 1000,
+            isCurrentExpeditionGodsBattle: runtime.isCurrentExpeditionGodsBattle === true,
           };
         });
         setPartyCycles(restoredCycles);
@@ -1450,6 +1452,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             state: runtime?.state ?? '待機中',
             stateStartedAt: resetAt,
             durationMs: runtime?.durationMs ?? 1000,
+            isCurrentExpeditionGodsBattle: runtime?.isCurrentExpeditionGodsBattle === true,
           };
         });
         return next;
@@ -1548,13 +1551,16 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
               actions.runExpedition(partyIndex, gameModeRef.current === 'm.luna', triggerGodsBattle);
               updated.state = '探索中';
               updated.durationMs = getExplorationDurationMs(undefined, getPartyStateDurationMultiplier(party, 'explore'));
+              updated.isCurrentExpeditionGodsBattle = triggerGodsBattle;
             } else if (updated.state === '探索中') {
               actions.finalizeDiaryLog(partyIndex);
               updated.state = '帰還中';
               updated.durationMs = getPartyTravelDurationMs(party);
+              updated.isCurrentExpeditionGodsBattle = false;
             } else if (updated.state === '帰還中') {
               updated.state = '休息中';
               updated.durationMs = 1000;
+              updated.isCurrentExpeditionGodsBattle = false;
             }
 
             if (updated.state === '休息中') {
@@ -3973,9 +3979,9 @@ function ExpeditionTab({
           : Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100);
         const hpForSortieCheck = cycle.state === '探索中' ? displayedHp : party.currentHp;
         const isSortieDisabled = !!selectedDungeonGate?.locked || hpForSortieCheck <= 0 || partyStats.hp <= 0;
-        const canTriggerGodsBattle =
-          cycle.state !== '探索中'
-          && isGodsBattleAvailable(party, party.selectedDungeonId);
+        const canTriggerGodsBattle = cycle.state === '探索中'
+          ? cycle.isCurrentExpeditionGodsBattle === true
+          : isGodsBattleAvailable(party, party.selectedDungeonId);
 
         return (
           <div key={partyIndex} className="bg-pane rounded-lg p-4">
