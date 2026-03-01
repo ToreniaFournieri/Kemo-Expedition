@@ -59,6 +59,7 @@ interface HomeScreenProps {
     updateCharacter: (characterId: number, updates: Partial<Character>) => void;
     reorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
     sellStack: (variantKey: string) => void;
+    sellAllOwned: () => void;
     buyShopItem: (itemId: number) => void;
     refreshShopLineup: () => void;
     setVariantStatus: (variantKey: string, status: 'notown') => void;
@@ -1984,6 +1985,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
             shopIntimacy={state.global.shopIntimacy}
             shopIntimacyLastDecayAt={state.global.shopIntimacyLastDecayAt}
             onSellStack={actions.sellStack}
+            onSellAllOwned={actions.sellAllOwned}
             onSetVariantStatus={actions.setVariantStatus}
             onBuyShopItem={actions.buyShopItem}
             onRefreshShopLineup={actions.refreshShopLineup}
@@ -4196,6 +4198,7 @@ function BaseTab({
   shopIntimacy,
   shopIntimacyLastDecayAt,
   onSellStack,
+  onSellAllOwned,
   onSetVariantStatus,
   onBuyShopItem,
   onRefreshShopLineup,
@@ -4210,6 +4213,7 @@ function BaseTab({
   shopIntimacy: number;
   shopIntimacyLastDecayAt: number;
   onSellStack: (variantKey: string) => void;
+  onSellAllOwned: () => void;
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
   onBuyShopItem: (itemId: number) => void;
   onRefreshShopLineup: () => void;
@@ -4252,6 +4256,7 @@ function BaseTab({
           inventory={inventory}
           parties={parties}
           onSellStack={onSellStack}
+          onSellAllOwned={onSellAllOwned}
           onSetVariantStatus={onSetVariantStatus}
         />
       ) : activeSubTab === 'shop' ? (
@@ -4452,11 +4457,13 @@ function InventoryTab({
   inventory,
   parties,
   onSellStack,
+  onSellAllOwned,
   onSetVariantStatus,
 }: {
   inventory: InventoryRecord;
   parties: Party[];
   onSellStack: (variantKey: string) => void;
+  onSellAllOwned: () => void;
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
 }) {
   const [showSold, setShowSold] = useState(false);
@@ -4473,6 +4480,10 @@ function InventoryTab({
       (!inventorySuperRareOnly || v.item.superRare >= 1)
     )
   );
+  const totalSellAllPrice = allOwnedItems.reduce((sum, [, variant]) => (
+    sum + calculateItemSellPrice(variant.item) * variant.count
+  ), 0);
+  const superRareOwnedItems = allOwnedItems.filter(([, variant]) => variant.item.superRare >= 1);
 
   const equippedItems = parties.flatMap((party, partyIndex) =>
     party.characters.flatMap((character, rowIndex) =>
@@ -4550,6 +4561,27 @@ function InventoryTab({
           {filteredOwnedItems.reduce((sum, [, v]) => sum + v.count, 0)}個
         </div>
         <div className="flex justify-end items-center gap-1">
+          <button
+            onClick={() => {
+              if (allOwnedItems.length === 0) return;
+              const superRareWarning = superRareOwnedItems.length > 0
+                ? `\n⚠ 超レア付きアイテム ${superRareOwnedItems.length}種類も売却されます。`
+                : '';
+              const shouldSellAll = window.confirm(
+                `所持中アイテムを全て売却します。${superRareWarning}\n合計 ${formatNumber(totalSellAllPrice)}G を獲得します。\n本当に実行しますか？`
+              );
+              if (!shouldSellAll) return;
+              onSellAllOwned();
+            }}
+            disabled={allOwnedItems.length === 0}
+            className={`text-xs px-2 py-0.5 border rounded ${
+              allOwnedItems.length > 0
+                ? 'bg-accent text-white border-accent hover:bg-accent/90'
+                : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+            }`}
+          >
+            全売却 {formatNumber(totalSellAllPrice)}G
+          </button>
           <span className="text-xs text-gray-500">{RARITY_FILTER_NOTES[inventoryRarityFilter]}</span>
           {RARITY_FILTER_OPTIONS.map(filter => (
             <button
@@ -4626,8 +4658,11 @@ function InventoryTab({
                     </div>
                     <button
                       onClick={() => {
+                        const superRareWarning = item.superRare >= 1
+                          ? '\n⚠ 超レア付きアイテムです。本当に売却しますか？'
+                          : '';
                         const shouldSell = window.confirm(
-                          `「${getItemDisplayName(item)} x${formatNumber(count)}」を全売却します。\n${formatNumber(sellPrice)}Gを獲得します。よろしいですか？`
+                          `「${getItemDisplayName(item)} x${formatNumber(count)}」を全売却します。\n${formatNumber(sellPrice)}Gを獲得します。よろしいですか？${superRareWarning}`
                         );
                         if (!shouldSell) return;
                         onSellStack(entry.key);
