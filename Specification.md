@@ -259,10 +259,10 @@ Party.`d.HP` =
 | 宴会中 | at home, skip if current_profit = 0).  | 5 seconds | 睡眠中 | `Goddess of Fertility` |
 | 睡眠中 | at home. | 10 seconds | 祈り中 |
 | 祈り中 | at home. Party members donate money to their deity. | 5 seconds | 待機中 or 移動中 |
-| 待機中 | at home, only when 自動周回 = OFF (idle state) | - | - |
-| 移動中 | home → dungeon, duration 5 sec. If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | 5 seconds | 探索中 | `a.peddler` |
-| 探索中 | in dungeon, advance 1 room / sec, update HP per room; if HP < 30% MaxHP → retreat. At the end of this state, update this {ルピニアンの断崖踏破} part ) | 1 second per room | 帰還中 | `Goddess of Precision` |
-| 帰還中 | dungeon → home, duration 5 sec.  If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | 5 seconds | 休息中 | 
+| 待機中 | at home. only when 自動周回 = OFF (idle state) | - | - |
+| 移動中 | home → dungeon, If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | 5 seconds | 探索中 | `a.peddler` |
+| 探索中 | in dungeon. if HP < 30% MaxHP → retreat. At the end of this state, update this {ルピニアンの断崖踏破} part ) | 1 second per room | 帰還中 | `Goddess of Precision` |
+| 帰還中 | dungeon → home,If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | 5 seconds | 休息中 | 
 
 - Profit usuage:
   - At: 休息中:
