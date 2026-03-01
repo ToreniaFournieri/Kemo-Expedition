@@ -276,7 +276,7 @@
 | Key | style | element | name | description |
 |-|-|-|-|-|
 | `arcane_arrows` | `multi-hit` | `e.none` | アルカナアロー | 無属性の基本魔法攻撃 |
-| `flame_bolts` | `multi-hit` | `e.fire` < 1.5 | フレイムボルト | 火属性基本魔法(火属性50%未満) |
+| `fire_lance` | `multi-hit` | `e.fire` < 1.5 | ファイアランス | 火属性基本魔法(火属性50%未満) |
 | `frost_needles` | `multi-hit` | `e.ice` < 1.5 | フロストニードル | 氷属性基本魔法(氷属性50%未満) |
 | `thunder_bolts` | `multi-hit` | `e.thunder` < 1.5 | サンダーボルト | 雷属性基本魔法(雷属性50%未満) |
 | `hellfire_volley` | `multi-hit` | `e.fire` >= 1.5 | ヘルファイア | 火属性上位魔法(火属性50%以上) |
