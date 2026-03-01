@@ -285,8 +285,9 @@
 | `astral_flare` | `area_burst` | `e.none` | アストラルフレア | 無属性範囲魔法攻撃(ヒット数は1固定) |
 | `pyroclasm` | `area_burst` | `e.fire`  | パイロクラスム | 火属性範囲魔法攻撃(ヒット数は1固定) |
 | `glacial_burst` | `area_burst` | `e.ice`  | グレイシャルバースト | 氷属性範囲魔法攻撃(ヒット数は1固定) |
-| `tempest_nova` |`area_burst` | `e.thunder` | テンペストノヴァ | 雷属性範囲魔法攻撃(ヒット数は1固定) |
-
+| `tempest_nova` | `area_burst` | `e.thunder` | テンペストノヴァ | 雷属性範囲魔法攻撃(ヒット数は1固定) |
+| `tempest_nova` | `area_burst` | `e.thunder` | テンペストノヴァ | 雷属性範囲魔法攻撃(ヒット数は1固定) |
+| `gravity_well` | `percentage_damage` | `e.none` | グラビティウェル | 魔法攻撃回数が20回以上の場合発動。相手の残HPの2/5の固定ダメージ(魔法防御力無視) |
 
 ### 2.2 Global constants
 
