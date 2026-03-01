@@ -401,6 +401,14 @@ function loadSavedState(): GameState | null {
           ? parsed.global.shopIntimacyLastDecayAt
           : Date.now();
 
+        const defaultParties = createDefaultParties();
+        if (!Array.isArray(parsed.parties)) {
+          parsed.parties = [];
+        }
+        while (parsed.parties.length < defaultParties.length) {
+          parsed.parties.push(defaultParties[parsed.parties.length]);
+        }
+
         // Process all parties (whether single or array)
         const partiesToProcess = parsed.parties ?? [];
         for (const [index, party] of partiesToProcess.entries()) {
@@ -600,6 +608,57 @@ function createSecondParty() {
   return initializePartyRuntimeState(party);
 }
 
+function createThirdParty() {
+  const defaultSetup = [
+    { race: 'procyonian', main: 'fighter', sub: 'duelist', pred: 'persistent', lineage: 'steel_oath', name: 'イヌカイ' },
+    { race: 'mustelid', main: 'duelist', sub: 'rogue', pred: 'dexterous', lineage: 'breaking_hand', name: 'テン' },
+    { race: 'caninian', main: 'lord', sub: 'fighter', pred: 'chivalric', lineage: 'unmoving', name: 'ガルド' },
+    { race: 'lupinian', main: 'ranger', sub: 'samurai', pred: 'shikon', lineage: 'far_sight', name: 'ハウル' },
+    { race: 'felidian', main: 'sage', sub: 'wizard', pred: 'brilliant', lineage: 'guiding_thought', name: 'ミィ' },
+    { race: 'ursan', main: 'pilgrim', sub: 'lord', pred: 'sturdy', lineage: 'hidden_principles', name: 'クマロク' },
+  ];
+
+  const characters: Character[] = defaultSetup.map((setup, i) => ({
+    id: i + 201,
+    name: setup.name,
+    raceId: setup.race as RaceId,
+    mainClassId: setup.main as ClassId,
+    subClassId: setup.sub as ClassId,
+    predispositionId: setup.pred as PredispositionId,
+    lineageId: setup.lineage as LineageId,
+    equipment: [],
+  }));
+
+  const party: Party = {
+    id: 3,
+    name: 'PT3',
+    level: 1,
+    experience: 0,
+    lootGateProgress: {},
+    lootGateStatus: {},
+    deity: createInitialDeity('Goddess of Mirage'),
+    characters,
+    selectedDungeonId: 1,
+    expeditionDepthLimit: 'all',
+    currentHp: 0,
+    pendingProfit: 0,
+    expeditionRewardsPending: false,
+    deityGold: 0,
+    lastExpeditionLog: null,
+    pendingDiaryLog: null,
+    diaryLogs: [],
+    hasUnreadDiary: false,
+    diarySettings: getDiarySettingsWithDefaults(undefined),
+    expeditionStats: getExpeditionStatsWithDefaults(null),
+  };
+
+  return initializePartyRuntimeState(party);
+}
+
+function createDefaultParties(): Party[] {
+  return [createInitialParty(), createSecondParty(), createThirdParty()];
+}
+
 function createInitialState(): GameState {
   // Try to load saved state first
   const savedState = loadSavedState();
@@ -619,7 +678,7 @@ function createInitialState(): GameState {
       shopIntimacy: 0,
       shopIntimacyLastDecayAt: Date.now(),
     },
-    parties: [createInitialParty(), createSecondParty()],
+    parties: createDefaultParties(),
     selectedPartyIndex: 0,
     bags: {
       commonRewardBag: createCommonRewardBag(),
@@ -2104,7 +2163,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           shopIntimacy: 0,
           shopIntimacyLastDecayAt: Date.now(),
         },
-        parties: [createInitialParty(), createSecondParty()],
+        parties: createDefaultParties(),
         selectedPartyIndex: 0,
         bags: {
           commonRewardBag: createCommonRewardBag(),
@@ -2129,6 +2188,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         level: typeof party.level === 'number' ? party.level : 1,
         experience: typeof party.experience === 'number' ? party.experience : 0,
       }));
+      const defaultParties = createDefaultParties();
+      while (normalizedParties.length < defaultParties.length) {
+        normalizedParties.push(defaultParties[normalizedParties.length]);
+      }
       const normalizedSelectedPartyIndex = Math.min(
         Math.max(0, hydrated.selectedPartyIndex),
         Math.max(0, normalizedParties.length - 1),
