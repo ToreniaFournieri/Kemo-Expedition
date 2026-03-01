@@ -1059,11 +1059,14 @@ inventory = {
 
 #### 2.5.5 Item selling price
 
-- Calculation 
-  - n = 1
+- Selling price calculation 
+  - `item_tier` = 1-8
   - `enhancement`: 0-6
   - `super_rare`:0 or 1
   - Selling_price(1)= 5 * 1.25^(`enhancement` -1) * 1,000 ^ (`super_rare`)
-  - Selling_price(n)= Selling_price(n-1) * (1.30 - 0.02 *n )
-  - Cap at n = 8
+  - Selling_price(`item_tier`)= Selling_price(`item_tier`-1) * (1.30 - 0.02 *`item_tier` )
 
+- Purchesing price in Felis's Junk shop. 
+  - `item_tier` = 1-8
+  - Selling_price(1)= 200
+  - Selling_price(`item_tier`)= Selling_price(`item_tier`-1) * (1.50 - 0.02 *`item_tier` )
