@@ -3211,6 +3211,9 @@ function PartyTab({
                       `命中減衰率: ${decayText} ※2回目以降の命中率にはこの値が掛かります`,
                     ],
                   });
+                }
+                const hasCastableMagic = stats.magicalAttack > 0 && stats.magicalNoA > 0;
+                if (hasCastableMagic) {
                   const magicProfile = resolveMagicProfile({
                     style: 'multi-hit',
                     elementalOffense: stats.elementalOffense,
