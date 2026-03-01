@@ -3453,8 +3453,21 @@ function PartyTab({
                 melee_attack: '近攻撃', ranged_attack: '遠攻撃', magical_attack: '魔攻撃', physical_attack: '物攻撃',
                 physical_defense: '物防', magical_defense: '魔防' 
               };
+              const hiddenBonusDisplayKeys = new Set([
+                'evasion',
+                'penet',
+                'physical_attack',
+                'magical_attack',
+                'physical_defense',
+                'magical_defense',
+                'physical_offense_multiplier_xV',
+                'magical_offense_multiplier_xV',
+                'physical_defense_multiplier_xV',
+                'magical_defense_multiplier_xV',
+              ]);
 
               for (const [key, val] of Object.entries(multipliers)) {
+                if (hiddenBonusDisplayKeys.has(key)) continue;
                 if (val !== 1) {
                   const effectiveMultiplier = key === 'grimoire' ? val * seekerMultiplier : val;
                   const formattedMultiplier = key === 'grimoire'
@@ -3472,6 +3485,7 @@ function PartyTab({
                 }
               }
               for (const [key, val] of Object.entries(additive)) {
+                if (hiddenBonusDisplayKeys.has(key)) continue;
                 if (val !== 0) {
                   if (key === 'melee_attack' || key === 'ranged_attack' || key === 'magical_attack' || key === 'physical_attack') {
                     const label = `${addNames[key]}+${Math.round(val * 100)}%`;
