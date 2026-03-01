@@ -801,6 +801,73 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
     ]
   },
   {
+    "id": "2-1-6",
+    "heading": "2.1.6 f. function",
+    "subtitle": "f. 機能 ゲームの仕組み",
+    "entries": [
+      {
+        "key": "f.targeting",
+        "label": "ターゲッティング",
+        "description": "攻撃対象の選択ルール。遠距離フェーズ/近距離フェーズは\n隊列1:16,隊列2:8,隊列3:4,隊列4:2、隊列5:1,隊列6:1\n魔法フェーズは隊列に依存せずに抽選される。\n選択対象はBOX抽選方式であり、その抽選内容は戦闘を超えて引き継がれる。BOXが空になるとまた新規に補充される。そのため、隊列5に物理攻撃を3回以上狙われる可能性は、敵が32回攻撃では決して発生しない。"
+      },
+      {
+        "key": "f.damage_calculation",
+        "label": "ダメージ計算",
+        "description": "ダメージは`攻撃力-防御力(貫通減算) × 各種倍率`で計算される。各種倍率とは属性倍率、耐性倍率、共鳴、怒り、勢い、パーティ補正などである。"
+      },
+      {
+        "key": "f.row-based_modifier",
+        "label": "隊列補正",
+        "description": "隊列に応じた補正。主にターゲティング重み・命中減衰係数・防御判定時の参照対象を定義する。敵側は固定値扱い、プレイヤー側のみ行補正を受ける。"
+      },
+      {
+        "key": "f.hit_detection",
+        "label": "命中減衰",
+        "description": "命中判定。用い、多段の後続ヒットほど命中率が減衰する。行動単位で計算され、通常攻撃・連撃・反撃系で減衰は引き継がれない。"
+      },
+      {
+        "key": "f.counter",
+        "label": "反撃",
+        "description": "近距離フェーズで被弾後、条件を満たせば即時反撃する処理。`null-counter`で無効化可能。反撃回数は`a.counter`段階に応じて`f.NoA`を倍率変換する。"
+      },
+      {
+        "key": "f.re-counter",
+        "label": "再反撃",
+        "description": "反撃に対する再反撃処理。`a.re-counter`保有時に即時発動し、`null-counter`の無効化判定を受ける。発動後も通常の命中判定・ダメージ計算を行う。"
+      },
+      {
+        "key": "f.re-attack",
+        "label": "連撃",
+        "description": "攻撃後に追加攻撃を行う処理。`a.re-attack`条件を満たす場合、同一対象へ追撃し、各ヒットは通常どおり命中減衰とダメージ計算を適用する。"
+      },
+      {
+        "key": "f.magical-counter",
+        "label": "魔法反撃",
+        "description": "魔法攻撃トリガー専用の反撃処理。`a.magical-counter`段階に応じて`f.NoA`倍率を設定し、即時に魔法攻撃として解決する。"
+      },
+      {
+        "key": "f.covering-fire",
+        "label": "援護射撃",
+        "description": "味方行動に連動して発生する追撃処理。`a.covering-fire`保有かつ遠距離攻撃可能なユニットが同一対象へ即時射撃する。"
+      },
+      {
+        "key": "f.reward",
+        "label": "報酬計算",
+        "description": "戦闘結果に応じてアイテムの追加抽選の有無を算出する。通常1枚。解錠スキルで+1枚、神の加護により+1枚、ゲームモードルナで+1枚。"
+      },
+      {
+        "key": "f.rarity_scaling",
+        "label": "レアリティの性能向上",
+        "description": "レアリティ段階に応じた基礎性能補正。"
+      },
+      {
+        "key": "f.super_rare_scaling",
+        "label": "超レアの性能向上",
+        "description": "超レア専用の上位スケーリング。通常のレアリティ補正に追加で適用される特別係数・追加抽選枠・性能上限緩和を定義する。"
+      }
+    ]
+  },
+  {
     "id": "2-1-7",
     "heading": "2.1.7 g. gods, religions",
     "subtitle": "g. 神、信仰",
