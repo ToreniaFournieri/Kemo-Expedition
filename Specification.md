@@ -256,15 +256,40 @@ Party.`d.HP` =
 |-------|-------|----------|---------|---------|
 | 休息中  | at home, heal +1% MaxHP / sec until full | - | 売却中 or 宴会中 | `God of Fortification` |
 | 売却中 | at home, Sell auto-sell items to shop owners. and officially gain items (notification of item gains at the end of 売却中 state.). If they have no trophy nor auto-sell item, skip this state. | 5 seconds | 宴会中 | `God of Dusk` |
-| 宴会中 | at home, spend 33–67% of previous expedition profit (auto-sell gold), duration 5 sec (skip if profit = 0). If party has `a.squander`2 ability, x2.0 the gold spent on feasting. Else if party has `a.squander`1 ability, x1.5 the gold spent on feasting.  (but not exceed its max profit).  Notification : Without Squander: PT1は25Gお金を使った/With Squander: PT1 君主トムは贅沢に50G使った | 5 seconds | 睡眠中 | `Goddess of Fertility` |
+| 宴会中 | at home, skip if current_profit = 0).  | 5 seconds | 睡眠中 | `Goddess of Fertility` |
 | 睡眠中 | at home. | 10 seconds | 祈り中 |
-| 祈り中 | at home, donate 10–33% of previous expedition profit, if party has `a.tithe`2, Adds +15% of expedition profit to donation, else if party has `a.tithe`1, Adds +10% of expedition profit to donation. remaining profits to global gold wallet.if profit = 0 → donate 0G, but still pray). The deity earns that amount of gold (keep record internally, later vision it may use this gold for something). Notification: Without Tithe: PT1は10G神に捧げ、30Gを貯金した/With Tithe: PT1 巡礼者ブラザは祈りと共に12G神に捧げて、28Gを貯金した/ Without Gold: (no notification). If `God of Cunning`, add (21Gを着服した) | 5 seconds | 待機中 or 移動中 |
+| 祈り中 | at home. Party members donate money to their deity. | 5 seconds | 待機中 or 移動中 |
 | 待機中 | at home, only when 自動周回 = OFF (idle state) | - | - |
 | 移動中 | home → dungeon, duration 5 sec. If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | 5 seconds | 探索中 | `a.peddler` |
 | 探索中 | in dungeon, advance 1 room / sec, update HP per room; if HP < 30% MaxHP → retreat. At the end of this state, update this {ルピニアンの断崖踏破} part ) | 1 second per room | 帰還中 | `Goddess of Precision` |
 | 帰還中 | dungeon → home, duration 5 sec.  If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | 5 seconds | 休息中 | 
 
-- Player taps 出撃/一斉出撃
+- Profit usuage:
+  - At: 休息中:
+      - `current_profit` = 0
+  - At the end of 売却中:
+      - `current_profit` = Sum of (Auto-sell items)
+  - At the end of 宴会中:
+      - `current_profit` -= spending feast ( spend 33–67% of `current_profit` without `a.squander`, x1.5 spending with `a.squander`1, x2.0 spending with `a.squander`2. Not exceed current_profit )
+        - Notification :
+          - Without Squander: PT1は25Gお金を使った
+          - With Squander: PT1 君主トムは贅沢に50G使った
+  - At the end of 祈り中:
+      - `current_profit` -= donattion ( 10–33% of `current_profit` without `a.tithe`, if party has `a.tithe`2, Adds +15% , else if party has `a.tithe`1, Adds +10 )
+        -  Notification:
+          - Without Tithe: PT1は10G神に捧げ、30Gを貯金した
+          - With Tithe: PT1 巡礼者ブラザは祈りと共に12G神に捧げて、28Gを貯金した
+          - Without Gold: (no notification).
+          - If `God of Cunning`, add (21Gを着服した).   ex:PT1は10G神に捧げ、20Gを貯金した (20Gを着服した)
+      - `current_profit` -= embezzlement (if `God of Cunning`, 50% of `current_profit`. Else if, 0%)
+      - `savings` = `current_profit`, `current_profit` = 0
+  - If Pressing 出撃/神魔戦 button (and it is Available for sortie )
+      - `current_profit` -= embezzlement ( 100% of `current_profit`)
+        - Notification:
+          - Without embezzlement: PT1は神の緊急動員に憤りながらも出撃した
+          - With embezzlement: PT1は神の緊急動員に憤り、49Gを持ち逃げして出撃した
+
+- Player taps 出撃
   - If party is in 帰還中/ 待機中 / 休息中 / 売却中 / 宴会中 / 祈り中:
   - Immediately set state to 移動中
   - If they not gain items (not finished 売却中 state), immediately gain items and show notifications.
