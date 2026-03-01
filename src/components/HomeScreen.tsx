@@ -5991,8 +5991,10 @@ function SettingTab({
                     const shouldCollapseEntry = glossaryTab === 'F';
                     const isEntryExpanded = !shouldCollapseEntry || expandedGlossaryEntries[entryKey] === true;
                     const descriptionLines = entry.description.split('\n');
-                    const mainDescription = descriptionLines[0] ?? '';
-                    const loreLines = descriptionLines.slice(1);
+                    const hasStyleMetadata = descriptionLines[0]?.trim().startsWith('style:') ?? false;
+                    const visibleDescriptionLines = hasStyleMetadata ? descriptionLines.slice(1) : descriptionLines;
+                    const mainDescription = visibleDescriptionLines[0] ?? '';
+                    const loreLines = visibleDescriptionLines.slice(1);
                     const firstTableLineIndex = loreLines.findIndex((line) => line.trim().startsWith('|'));
                     const lorePrefixLines = firstTableLineIndex >= 0 ? loreLines.slice(0, firstTableLineIndex) : loreLines;
                     const tableCandidateLines = firstTableLineIndex >= 0 ? loreLines.slice(firstTableLineIndex) : [];
@@ -6051,9 +6053,6 @@ function SettingTab({
                                   );
                                 })}
                               </div>
-                            )}
-                            {!isGodGlossarySection && !glossaryTable && firstTableLineIndex < 0 && loreLines.length > 0 && (
-                              <div className="text-gray-500 whitespace-pre-line">{renderTextWithRaceIcons(loreLines.join('\n'))}</div>
                             )}
                           </>
                         )}
