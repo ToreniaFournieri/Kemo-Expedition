@@ -1218,7 +1218,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   const currentEnv = getEnvironmentId();
   const isLunaEnvironment = currentEnv === 'luna';
   const [activeTab, setActiveTab] = useState<Tab>('expedition');
-  const [activeBaseSubTab, setActiveBaseSubTab] = useState<BaseSubTab>('inventory');
+  const [activeBaseSubTab, setActiveBaseSubTab] = useState<BaseSubTab>('shop');
   const [selectedCharacter, setSelectedCharacter] = useState<number>(0);
   const [editingCharacter, setEditingCharacter] = useState<number | null>(null);
   const [isAutoRepeatEnabled, setIsAutoRepeatEnabled] = useState(false);
@@ -4204,8 +4204,8 @@ function BaseTab({
   onSetActiveSubTab: (tab: BaseSubTab) => void;
 }) {
   const baseSubTabs = [
-    { id: 'inventory' as const, label: '所持品', isAvailable: true },
     { id: 'shop' as const, label: 'お店', isAvailable: true },
+    { id: 'inventory' as const, label: '所持品', isAvailable: true },
     { id: 'workshop' as const, label: '工房', isAvailable: false },
     { id: 'altar' as const, label: '祭壇', isAvailable: false },
   ];
