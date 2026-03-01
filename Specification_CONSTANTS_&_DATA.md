@@ -272,6 +272,7 @@
   - max rank is 10.
 
 #### 2.1.8 m. magic
+- "m. 魔法攻撃 (装備によって唱える魔法の種類が変わる)"
 
 | Key | style | element | name | description |
 |-|-|-|-|-|
