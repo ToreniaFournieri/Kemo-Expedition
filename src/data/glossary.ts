@@ -957,13 +957,8 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
   {
     "id": "2-1-8",
     "heading": "2.1.8 m. magic",
-    "subtitle": "m. 魔法攻撃",
+    "subtitle": "m. 魔法攻撃 (装備によって唱える魔法の種類が変わる)",
     "entries": [
-      {
-        "key": "m.magic",
-        "label": "m. 魔法攻撃",
-        "description": "装備によって唱える魔法の種類が変わる。"
-      },
       {
         "key": "arcane_arrows",
         "label": "アルカナアロー",
