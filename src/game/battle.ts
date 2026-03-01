@@ -17,6 +17,7 @@ import { computePartyStats } from './partyComputation';
 import { getBaseMultiplier } from './baseMultiplier';
 import { drawFromBag, createPhysicalThreatBag, createMagicalThreatBag, getBagTicketTotal } from './bags';
 import { getDeityKey } from './deity';
+import { resolveMagicProfile } from './magic';
 
 interface BattleContext {
   partyStats: ComputedPartyStats;
@@ -1138,9 +1139,15 @@ export function executeBattle(
             if (enemyHp <= 0 || partyHp <= 0) break;
 
             const targetChar = party.characters.find(c => c.id === charId);
+            const magicProfile = resolveMagicProfile({
+              style: 'multi-hit',
+              elementalOffense: enemy.elementalOffense,
+              elementalOffenseValue: 1.0,
+              magicalNoA: attempts,
+            });
             const attackName = isReAttack
-              ? (phase === 'mid' ? '魔法連撃' : '連撃')
-              : (phase === 'mid' ? '魔法攻撃' : '攻撃');
+              ? (phase === 'mid' ? `${magicProfile.spellName}連撃` : '連撃')
+              : (phase === 'mid' ? `${magicProfile.spellName}` : '攻撃');
 
             const targetName = targetChar?.name ?? '???';
             let appliedHits = 0;
@@ -1175,7 +1182,7 @@ export function executeBattle(
             const resonanceActor = enemyResonanceLevel > 0
               ? { abilities: [{ id: 'resonance' as const, level: enemyResonanceLevel }] }
               : { abilities: [] };
-            const enemyResonanceLogText = getResonanceLogText(phase, resonanceActor.abilities, appliedHits);
+            const enemyResonanceLogText = getResonanceLogText(phase, resonanceActor.abilities, enemySuccessfulHits);
 
             const triggeredResurrect = (
               partyHp <= 0
@@ -1196,7 +1203,9 @@ export function executeBattle(
               phase,
               initiativeRoll: turn.roll,
               actor: 'enemy',
-              action: `${targetName} に${attackName}！${enemyResonanceLogText}`,
+              action: phase === 'mid'
+                ? `${targetName} に${attackName}が命中！${enemyResonanceLogText}`
+                : `${targetName} に${attackName}！${enemyResonanceLogText}`,
               damage: appliedDamage > 0 ? appliedDamage : undefined,
               hits: appliedHits,
               totalAttempts: attack.totalAttempts,
@@ -1525,9 +1534,15 @@ export function executeBattle(
 
         if (result.totalAttempts <= 0) return null;
 
+        const magicProfile = resolveMagicProfile({
+          style: 'multi-hit',
+          elementalOffense: cs.elementalOffense,
+          elementalOffenseValue: cs.elementalOffenseValue,
+          magicalNoA: result.totalAttempts,
+        });
         const attackType = isReAttack
-          ? (phase === 'mid' ? '魔法連撃' : '連撃')
-          : (phase === 'mid' ? '魔法攻撃' : '攻撃');
+          ? (phase === 'mid' ? `${magicProfile.spellName}連撃` : '連撃')
+          : (phase === 'mid' ? `${magicProfile.spellName}` : '攻撃');
         const resonanceLogText = getResonanceLogText(phase, cs.abilities, result.hits);
         const characterAttackRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(cs, partyHp, partyStats.hp));
         const characterAttackMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(cs, partyHp, partyStats.hp));
@@ -1540,8 +1555,10 @@ export function executeBattle(
           actor: 'character',
           characterId: cs.characterId,
           action: isAntagonism
-            ? `${char.name} は敵対状態！${antagonismTargetName} へ${attackType}！${resonanceLogText}`
-            : `${char.name} の${attackType}！${resonanceLogText}`,
+            ? `${char.name} は敵対状態！${antagonismTargetName} へ${phase === 'mid' ? `${attackType}を唱えた` : attackType}！${resonanceLogText}`
+            : phase === 'mid'
+              ? `${char.name} が${attackType}を唱えた！${resonanceLogText}`
+              : `${char.name} の${attackType}！${resonanceLogText}`,
           damage: result.damage,
           hits: result.hits,
           totalAttempts: result.totalAttempts,
