@@ -953,5 +953,17 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "効果:戦闘開始時、ランダムな1名を⚠️敵対させる。追加報酬抽選+1回。\n調和は停滞である。混沌こそ昇華の源。"
       }
     ]
+  },
+  {
+    "id": "2-1-8",
+    "heading": "2.1.8 m. magic",
+    "subtitle": "m. 魔法攻撃",
+    "entries": [
+      {
+        "key": "m.magic",
+        "label": "m. 魔法攻撃 (装備によって唱える魔法の種類が変わる)",
+        "description": "| Key | style | element | 詠唱魔法 | 効果 |\n|---|---|---|---|---|\n| arcane_arrows | multi-hit | e.none | アルカナアロー | 無属性の基本魔法攻撃 |\n| fire_lance | multi-hit | e.fire < 1.5 | ファイアランス | 火属性基本魔法(火属性50%未満) |\n| frost_needles | multi-hit | e.ice < 1.5 | フロストニードル | 氷属性基本魔法(氷属性50%未満) |\n| thunder_bolts | multi-hit | e.thunder < 1.5 | サンダーボルト | 雷属性基本魔法(雷属性50%未満) |\n| hellfire_volley | multi-hit | e.fire >= 1.5 | ヘルファイア | 火属性上位魔法(火属性50%以上) |\n| blizzard | multi-hit | e.ice >= 1.5 | ブリザード | 氷属性上位魔法(氷属性50%以上) |\n| lightning_barrage | multi-hit | e.thunder >= 1.5 | ライトニングバラージ | 雷属性上位魔法(雷属性50%以上) |\n| astral_flare | area_burst | e.none | アストラルフレア | 無属性範囲魔法攻撃(ヒット数は1固定) |\n| pyroclasm | area_burst | e.fire | パイロクラスム | 火属性範囲魔法攻撃(ヒット数は1固定) |\n| glacial_burst | area_burst | e.ice | グレイシャルバースト | 氷属性範囲魔法攻撃(ヒット数は1固定) |\n| tempest_nova | area_burst | e.thunder | テンペストノヴァ | 雷属性範囲魔法攻撃(ヒット数は1固定) |\n| gravity_well | percentage_damage | e.none | グラビティウェル | 魔法攻撃回数が20回以上の場合発動。相手の残HPの2/5の固定ダメージ(魔法防御力無視) |"
+      }
+    ]
   }
 ];

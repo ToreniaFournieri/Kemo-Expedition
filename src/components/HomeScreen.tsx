@@ -28,6 +28,7 @@ import { computeCharacterStats, getUnlockedRaceAbilitiesFromBonuses } from '../g
 import { serializeGameState } from '../game/saveCodec';
 import { getBagEntryTickets, getBagTicketTotal } from '../game/bags';
 import { replaceCharacterEquipment } from '../game/equipment';
+import { resolveMagicProfile } from '../game/magic';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -3205,6 +3206,22 @@ function PartyTab({
                     helpLines: [
                       '魔法命中率: 100% ※初回の命中率',
                       `命中減衰率: ${decayText} ※2回目以降の命中率にはこの値が掛かります`,
+                    ],
+                  });
+                  const magicProfile = resolveMagicProfile({
+                    style: 'multi-hit',
+                    elementalOffense: stats.elementalOffense,
+                    elementalOffenseValue: stats.elementalOffenseValue,
+                    magicalNoA: stats.magicalNoA,
+                  });
+                  offenseLines.push({
+                    key: 'magic-spell',
+                    text: `詠唱魔法: ${magicProfile.spellName}`,
+                    helpTitle: '詠唱魔法',
+                    helpLines: [
+                      `詠唱魔法: ${magicProfile.spellName}`,
+                      `スタイル: ${magicProfile.style}`,
+                      `効果: ${magicProfile.description}`,
                     ],
                   });
                 }
