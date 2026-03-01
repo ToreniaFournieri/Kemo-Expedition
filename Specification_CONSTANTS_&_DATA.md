@@ -274,7 +274,7 @@
 #### 2.1.8 m. magic
 - "m. 魔法攻撃 (装備によって唱える魔法の種類が変わる)"
 
-| Key | style | element | name | description |
+| Key | style | element | 詠唱魔法 | 効果 |
 |-|-|-|-|-|
 | `arcane_arrows` | `multi-hit` | `e.none` | アルカナアロー | 無属性の基本魔法攻撃 |
 | `fire_lance` | `multi-hit` | `e.fire` < 1.5 | ファイアランス | 火属性基本魔法(火属性50%未満) |
