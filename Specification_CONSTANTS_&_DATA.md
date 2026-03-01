@@ -1069,4 +1069,4 @@ inventory = {
 - Purchesing price in Felis's Junk shop. 
   - `item_tier` = 1-8
   - Selling_price(1)= 200
-  - Selling_price(`item_tier`)= Selling_price(`item_tier`-1) * (1.50 - 0.02 *`item_tier` )
+  - Selling_price(`item_tier`)= Selling_price(`item_tier`-1) * (2.50 - 0.12 *`item_tier` ) (round to the last two digits)
