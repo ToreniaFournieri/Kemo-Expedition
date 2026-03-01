@@ -261,7 +261,10 @@
 | `God of Oblivion` | 忘却されし神 | 効果:なし。 (ランク10:追加報酬抽選+1回) | 神の存在には、ただ一人の真なる信徒で足りる。 |
 | `Goddess of Discord` | 不和の神 | 効果:戦闘開始時、ランダムな1名を⚠️敵対させる。追加報酬抽選+1回。| 調和は停滞である。混沌こそ昇華の源。 |
 
-
+- **next-rank donation amount for gods**
+  - n is rank
+　- Donation(1) = 1,000 G, Donation(n) = (3.0 - 0.1 * n) * Donation(n-1) (round off)
+  - max rank is 10.
 
 ### 2.2 Global constants
 
