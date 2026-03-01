@@ -910,7 +910,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "God of Fortification",
         "label": "防備の神",
-        "description": "効果:全員に物理防御2/3倍。休憩時間1.5-α倍。\n平和を望むならば、戦に備えよ。"
+        "description": "効果:全員に物理防御2/3倍。休息時間1.5-α倍。\n平和を望むならば、戦に備えよ。"
       },
       {
         "key": "Goddess of Fertility",

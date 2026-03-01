@@ -138,7 +138,7 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
     }
     case 'God of Fortification': {
       const restDuration = Math.max(1, 1.5 - 0.01 * effectiveTier);
-      return `全員に物理防御2/3倍。休憩時間${restDuration.toFixed(2)}倍`;
+      return `全員に物理防御2/3倍。休息時間${restDuration.toFixed(2)}倍`;
     }
     case 'Goddess of Fertility': {
       const feastDuration = Math.max(1, 1.5 - 0.01 * effectiveTier);
