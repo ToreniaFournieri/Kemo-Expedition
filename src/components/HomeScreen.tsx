@@ -2463,6 +2463,10 @@ function PartyTab({
     });
   };
 
+  const displayedDeityName = editingDeity ? pendingDeityName : party.deity.name;
+  const normalizedDisplayedDeityName = normalizeDeityName(displayedDeityName);
+  const displayedDeityDonation = deityDonations[normalizedDisplayedDeityName] ?? 0;
+
   const getEquipSlotReductionCount = (edits: Partial<Character> | null): number => {
     const changedKeys = getChangedEditKeys(edits);
     if (changedKeys.length === 0) return 0;
@@ -2617,7 +2621,6 @@ function PartyTab({
     setShowBonusHelp(false);
   }, [selectedCharacter, editingCharacter]);
 
-  const normalizedCurrentDeityName = normalizeDeityName((party.deity.name ?? '').trim());
   const xpToNextLevel = party.level < MAX_LEVEL ? Math.ceil(getXpToNextLevel(party.level)) : 0;
   const xpProgressPercent = xpToNextLevel > 0
     ? Math.min(100, Math.round((party.experience / xpToNextLevel) * 100))
@@ -2723,8 +2726,8 @@ function PartyTab({
           <div className="text-gray-600">
             HP {formatNumber(Math.floor(partyStats.hp))}, レベル {formatNumber(party.level)} ({party.level < MAX_LEVEL ? `${formatNumber(xpProgressPercent)}%, ${formatNumber(party.experience)}` : `100%, ${formatNumber(party.experience)}`})
           </div>
-          <div className="font-medium mt-1">{party.deity.name} (ランク{getDeityRank(deityDonations[normalizedCurrentDeityName] ?? 0)})</div>
-          <div className="text-xs text-gray-600 mt-1">効果:{getDeityEffectDescription(party.deity.name, deityDonations[normalizedCurrentDeityName] ?? 0)}</div>
+          <div className="font-medium mt-1">{displayedDeityName} (ランク{getDeityRank(displayedDeityDonation)})</div>
+          <div className="text-xs text-gray-600 mt-1">効果:{getDeityEffectDescription(displayedDeityName, displayedDeityDonation)}</div>
         </div>
         {editingDeity ? (
           <div className="flex flex-col items-end gap-1">
