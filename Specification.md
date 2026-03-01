@@ -276,12 +276,12 @@ Party.`d.HP` =
           - With Squander: PT1 君主トムは贅沢に50G使った
   - At the end of 祈り中:
       - `current_profit` -= donattion ( 10–33% of `current_profit` without `a.tithe`, if party has `a.tithe`2, Adds +15% , else if party has `a.tithe`1, Adds +10 )
+      - `current_profit` -= embezzlement (if `God of Cunning`, 50% of `current_profit`. Else if, 0%)
         -  Notification:
           - Without Tithe: PT1は10G神に捧げ、30Gを貯金した
           - With Tithe: PT1 巡礼者ブラザは祈りと共に12G神に捧げて、28Gを貯金した
           - Without Gold: (no notification).
           - If `God of Cunning`, add (21Gを着服した).   ex:PT1は10G神に捧げ、20Gを貯金した (20Gを着服した)
-      - `current_profit` -= embezzlement (if `God of Cunning`, 50% of `current_profit`. Else if, 0%)
       - `savings` = `current_profit`, `current_profit` = 0
   - If Pressing 出撃/神魔戦 button (and it is Available for sortie )
       - `current_profit` -= embezzlement ( 100% of `current_profit`)
