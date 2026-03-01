@@ -134,7 +134,7 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
     }
     case 'God of Cunning': {
       const autoSellMultiplier = Math.min(1, 0.5 + 0.01 * effectiveTier);
-      return `全員に魔法防御2/3倍。貯金額${autoSellMultiplier.toFixed(2)}倍`;
+      return `全員に魔法防御2/3倍。貯金額${autoSellMultiplier.toFixed(2)}倍(着服する)`;
     }
     case 'God of Fortification': {
       const restDuration = Math.max(1, 1.5 - 0.01 * effectiveTier);
