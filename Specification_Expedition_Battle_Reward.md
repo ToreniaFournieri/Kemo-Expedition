@@ -300,19 +300,19 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 
 - For every item listed in the enemy's potential drop items,
   - If the item is common,
-    - Get one ticket from `t.common_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord` or `God of Oblivion`.
+    - Get one ticket from `t.common_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord` or `God of Oblivion`(rank 10 or more).
 	- If `t.reward_bag`.value = '1', then get one ticket from `t.common_enhancement_bag`.
     - If `t.enhancement_bag`.value >= 1, then get one ticket from `t.superRare_bag`.
   - If the item is uncommon,
-    - Gets one ticket from `t.uncommon_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord` or `God of Oblivion`.
+    - Gets one ticket from `t.uncommon_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord` or `God of Oblivion`(rank 10 or more).
     - If `t.uncommon_reward_bag`.value = '1', then get one ticket from `t.enhancement_bag`.
     - If `t.enhancement_bag`.value >= 1, then get one ticket from `t.superRare_bag`.
   - If the item is rare,
-    - Gets one ticket from `t.rare_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord` or `God of Oblivion`. 
+    - Gets one ticket from `t.rare_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord` or `God of Oblivion`(rank 10 or more).
     - If `t.rare_reward_bag`.value = '1', then get one ticket from `t.enhancement_bag`.
     - If `t.enhancement_bag`.value >= 1, then get one ticket from `t.superRare_bag`.
   - If the item is mythic,
-    - Gets one ticket from `t.mythic_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord` or or `God of Oblivion`.
+    - Gets one ticket from `t.mythic_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord` or `God of Oblivion`(rank 10 or more).
     - If `t.rare_mythic_bag`.value = '1', then get one ticket from `t.enhancement_bag`.
     - If `t.enhancement_bag`.value >= 1, then get one ticket from `t.superRare_bag`.
 
