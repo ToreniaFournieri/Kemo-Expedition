@@ -18,7 +18,7 @@ import { getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { applyEnemyEncounterScaling } from '../game/enemyScaling';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
-import { DEITY_OPTIONS, getDeityEffectDescription, getDeityRank, getNextRankDonationRequirement, getDeityStateDurationMultiplier, getEffectiveDeityTier, normalizeDeityName } from '../game/deity';
+import { DEITY_OPTIONS, getDeityEffectDescription, getDeityKey, getDeityRank, getNextRankDonationRequirement, getDeityStateDurationMultiplier, normalizeDeityName } from '../game/deity';
 import { getXpToNextLevel } from '../game/partyLevel';
 import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../game/environment';
 import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, getShopRefreshPrice, getNextShopRefreshDate, countElapsedShopRefreshes } from '../game/shop';
@@ -1750,12 +1750,11 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   };
 
   const getPrayerDepositMultiplier = (party: Party): number => {
-    const deityName = normalizeDeityName(party.deity.name);
-    if (deityName !== 'God of Cunning') return 1;
+    const deityKey = getDeityKey(party.deity.name);
+    if (deityKey !== 'God of Cunning') return 1;
 
-    const donationGold = state.global.deityDonations[deityName] ?? party.deityGold ?? 0;
-    const deityTier = getEffectiveDeityTier(donationGold);
-    return Math.min(1, 0.5 + 0.01 * deityTier);
+    // God of Cunning always embezzles exactly 50% of the remaining cycle profit.
+    return 0.5;
   };
 
   const getPartyStateDurationMultiplier = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'sleep' | 'pray' | 'explore'): number => {
