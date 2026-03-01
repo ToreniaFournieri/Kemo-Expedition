@@ -52,7 +52,7 @@ import {
 import { getItemById, getItemsByTierAndRarity, ENHANCEMENT_TITLES, SUPER_RARE_TITLES } from '../data/items';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { getItemDisplayName } from '../game/gameState';
-import { getDeityKey, getEffectiveDeityTier, normalizeDeityName } from '../game/deity';
+import { getDeityKey, getDeityRank, getEffectiveDeityTier, normalizeDeityName } from '../game/deity';
 import { RACES } from '../data/races';
 import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
@@ -811,7 +811,7 @@ function resolveEnemyRewards(
   hasUnlock: boolean,
   isLunaMode: boolean,
   autoSellMultiplier: number,
-  hasGoddessOfDiscordBlessing: boolean = false
+  hasExtraRewardRollBlessing: boolean = false
 ): {
   bags: GameState['bags'];
   inventory: InventoryRecord;
@@ -855,7 +855,7 @@ function resolveEnemyRewards(
     const bonusRollCount =
       (hasUnlock ? 1 : 0)
       + (isLunaMode ? 1 : 0)
-      + (hasGoddessOfDiscordBlessing ? 1 : 0);
+      + (hasExtraRewardRollBlessing ? 1 : 0);
     for (let rollIndex = 0; rollIndex < bonusRollCount; rollIndex++) {
       bags = refillBagIfEmpty(bags, rewardBagType);
       const { ticket: bonusTicket, newBag } = drawFromBag(bags[rewardBagType]);
@@ -1296,6 +1296,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               const unlockActorName = getUnlockActorName(currentParty);
               const hasUnlock = !!unlockActorName;
               const autoSellMultiplier = getPartyCunningMultiplier(currentParty);
+              const deityKey = getDeityKey(currentParty.deity.name);
+              const deityDonation =
+                state.global.deityDonations[normalizeDeityName(currentParty.deity.name)]
+                ?? currentParty.deityGold
+                ?? 0;
+              const hasExtraRewardRollBlessing = deityKey === 'Goddess of Discord'
+                || (deityKey === 'God of Oblivion' && getDeityRank(deityDonation) >= 10);
               const rewardResult = resolveEnemyRewards(
                 enemy,
                 bags,
@@ -1304,7 +1311,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 hasUnlock,
                 !!action.isLunaMode,
                 autoSellMultiplier,
-                getDeityKey(currentParty.deity.name) === 'Goddess of Discord'
+                hasExtraRewardRollBlessing
               );
               bags = rewardResult.bags;
               currentInventory = rewardResult.inventory;
