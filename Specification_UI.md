@@ -148,6 +148,14 @@ Left-aligned            Right-aligned
 守護者: パーティへの物理ダメージ × 3/5
 ```
 
+magic caster
+```
+Left-aligned            
+魔法攻撃:98 x 4回(x1.00) 
+魔法命中率: 100% (減衰: 90.1%) 
+詠唱魔法: サンダーボルト
+```
+
 #### 8.3.3 Character Edit Mode (selected member):
 **1. Contents**
 - Name [edit]
