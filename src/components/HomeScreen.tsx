@@ -18,7 +18,7 @@ import { getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { applyEnemyEncounterScaling } from '../game/enemyScaling';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
-import { DEITY_OPTIONS, getDeityEffectDescription, getDeityRank, getNextDonationThreshold, getDeityStateDurationMultiplier, normalizeDeityName } from '../game/deity';
+import { DEITY_OPTIONS, getDeityEffectDescription, getDeityRank, getNextRankDonationRequirement, getDeityStateDurationMultiplier, normalizeDeityName } from '../game/deity';
 import { getXpToNextLevel } from '../game/partyLevel';
 import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../game/environment';
 import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, getShopRefreshPrice, getNextShopRefreshDate, countElapsedShopRefreshes } from '../game/shop';
@@ -5488,7 +5488,7 @@ function SettingTab({
       deityName,
       donationGold,
       rank: donationGold > 0 ? getDeityRank(donationGold) : 1,
-      nextDonationThreshold: getNextDonationThreshold(donationGold),
+      nextRankDonationRequirement: getNextRankDonationRequirement(donationGold),
     }));
 
   const compendiumItems = ITEMS
@@ -5758,10 +5758,10 @@ function SettingTab({
             <span>寄付額</span>
           </div>
           {donationRows.length > 0 ? (
-            donationRows.map(({ deityName, donationGold, rank, nextDonationThreshold }) => (
+            donationRows.map(({ deityName, donationGold, rank, nextRankDonationRequirement }) => (
               <div key={deityName} className="flex items-center justify-between gap-3">
                 <span className="text-gray-700">{deityName}(ランク{rank})</span>
-                <span className="text-sub tabular-nums">{formatNumber(donationGold)}G <span className="text-xs text-gray-500">(次{nextDonationThreshold !== null ? `${formatNumber(nextDonationThreshold)}G` : '到達済み'})</span></span>
+                <span className="text-sub tabular-nums">{formatNumber(donationGold)}G <span className="text-xs text-gray-500">(次{nextRankDonationRequirement !== null ? `${formatNumber(nextRankDonationRequirement)}G` : '到達済み'})</span></span>
               </div>
             ))
           ) : (
