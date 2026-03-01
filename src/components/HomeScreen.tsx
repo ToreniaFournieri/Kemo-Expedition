@@ -5510,6 +5510,35 @@ function SettingTab({
     section.heading.toLowerCase().includes(glossarySectionsByTab[glossaryTab])
   );
 
+
+  type GlossaryTable = {
+  headers: string[];
+  rows: string[][];
+  };
+
+  const parseGlossaryTable = (lines: string[]): GlossaryTable | null => {
+  if (lines.length < 2) return null;
+  const headerLine = lines[0]?.trim();
+  const dividerLine = lines[1]?.trim();
+  if (!headerLine?.startsWith('|') || !headerLine.endsWith('|')) return null;
+  if (!dividerLine?.startsWith('|') || !dividerLine.endsWith('|')) return null;
+
+  const headers = headerLine.split('|').slice(1, -1).map((cell) => cell.trim());
+  const dividerCells = dividerLine.split('|').slice(1, -1).map((cell) => cell.trim());
+  if (headers.length === 0 || headers.length !== dividerCells.length) return null;
+  if (!dividerCells.every((cell) => /^:?-{3,}:?$/.test(cell))) return null;
+
+  const rows = lines
+    .slice(2)
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith('|') && line.endsWith('|'))
+    .map((line) => line.split('|').slice(1, -1).map((cell) => cell.trim()))
+    .filter((cells) => cells.length === headers.length);
+
+  if (rows.length === 0) return null;
+
+  return { headers, rows };
+  };
   const BESTIARY_TAB_LABELS: Record<number, string> = {
     1: '原',
     2: '崖',
@@ -5894,6 +5923,10 @@ function SettingTab({
                     const descriptionLines = entry.description.split('\n');
                     const mainDescription = descriptionLines[0] ?? '';
                     const loreLines = descriptionLines.slice(1);
+                    const firstTableLineIndex = loreLines.findIndex((line) => line.trim().startsWith('|'));
+                    const lorePrefixLines = firstTableLineIndex >= 0 ? loreLines.slice(0, firstTableLineIndex) : loreLines;
+                    const tableCandidateLines = firstTableLineIndex >= 0 ? loreLines.slice(firstTableLineIndex) : [];
+                    const glossaryTable = parseGlossaryTable(tableCandidateLines);
 
                     return (
                       <div key={`${section.id}-${entry.key}-${index}`} className="text-xs border-t border-gray-100 pt-1 first:border-t-0 first:pt-0">
@@ -5904,7 +5937,36 @@ function SettingTab({
                             {renderTextWithRaceIcons(line)}
                           </div>
                         ))}
-                        {!isGodGlossarySection && loreLines.length > 0 && (
+                        {!isGodGlossarySection && lorePrefixLines.length > 0 && (
+                          <div className="text-gray-500 whitespace-pre-line">{renderTextWithRaceIcons(lorePrefixLines.join('\n'))}</div>
+                        )}
+                        {!isGodGlossarySection && glossaryTable && (
+                          <div className="mt-1 overflow-x-auto">
+                            <table className="min-w-full text-[11px] text-gray-600 border border-gray-200 rounded">
+                              <thead>
+                                <tr className="bg-gray-50">
+                                  {glossaryTable.headers.map((headerCell) => (
+                                    <th key={`${section.id}-${entry.key}-header-${headerCell}`} className="px-2 py-1 text-left font-medium border-b border-gray-200">
+                                      {renderTextWithRaceIcons(headerCell)}
+                                    </th>
+                                  ))}
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {glossaryTable.rows.map((row, rowIndex) => (
+                                  <tr key={`${section.id}-${entry.key}-row-${rowIndex}`} className="border-b border-gray-100 last:border-b-0">
+                                    {row.map((cell, cellIndex) => (
+                                      <td key={`${section.id}-${entry.key}-row-${rowIndex}-cell-${cellIndex}`} className="px-2 py-1 whitespace-nowrap">
+                                        {renderTextWithRaceIcons(cell)}
+                                      </td>
+                                    ))}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                        {!isGodGlossarySection && !glossaryTable && firstTableLineIndex < 0 && loreLines.length > 0 && (
                           <div className="text-gray-500 whitespace-pre-line">{renderTextWithRaceIcons(loreLines.join('\n'))}</div>
                         )}
                       </div>
