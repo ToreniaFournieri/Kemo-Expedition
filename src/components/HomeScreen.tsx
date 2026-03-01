@@ -3064,18 +3064,15 @@ function PartyTab({
         ) : (
           <div className="space-y-1 text-sm">
             <div className="text-gray-500 relative inline-flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1">
-                <RaceIcon race={race} className="h-4 w-4" />
-                <span>{race.name} / {mainClass.name}({char.mainClassId === char.subClassId ? '師範' : subClass.name}) / {predisposition.name} / {lineage.name}</span>
-              </span>
               <button
                 type="button"
                 onPointerDown={(event) => event.stopPropagation()}
                 onClick={handleBaseStatHelpToggle}
-                className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-gray-400 text-[10px] leading-none text-gray-600 hover:bg-gray-100"
-                aria-label="基礎値ヘルプ"
+                className="inline-flex items-center gap-1 text-left hover:text-gray-700"
+                aria-label="基礎値ヘルプを表示"
               >
-                ?
+                <RaceIcon race={race} className="h-4 w-4" />
+                <span>{race.name} / {mainClass.name}({char.mainClassId === char.subClassId ? '師範' : subClass.name}) / {predisposition.name} / {lineage.name}</span>
               </button>
               {showBaseStatHelp && (
                 <div
