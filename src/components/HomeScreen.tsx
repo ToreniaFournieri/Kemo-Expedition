@@ -1516,14 +1516,17 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
               const titheBonusRate = titheLevel >= 2 ? 0.15 : titheLevel >= 1 ? 0.1 : 0;
               const titheBonus = Math.floor(party.pendingProfit * titheBonusRate);
               const donation = Math.min(party.pendingProfit, baseDonation + titheBonus);
-              const deposit = Math.max(0, party.pendingProfit - donation);
+              const rawDeposit = Math.max(0, party.pendingProfit - donation);
+              const deposit = Math.floor(rawDeposit * getPrayerDepositMultiplier(party));
+              const embezzled = Math.max(0, rawDeposit - deposit);
               actions.processPendingProfit(partyIndex, donation, deposit);
               if (donation > 0 || deposit > 0) {
+                const embezzledText = embezzled > 0 ? `（${formatNumber(embezzled)}Gを着服した）` : '';
                 if (titheLevel > 0) {
                   const pilgrimName = getPartyAbilityOwnerName(party, 'tithe') ?? '名無し';
-                  actions.addNotification(`${party.name} 巡礼者${pilgrimName}は祈りと共に${formatNumber(donation)}G神に捧げて、${formatNumber(deposit)}Gを貯金した`);
+                  actions.addNotification(`${party.name} 巡礼者${pilgrimName}は祈りと共に${formatNumber(donation)}G神に捧げて、${formatNumber(deposit)}Gを貯金した${embezzledText}`);
                 } else {
-                  actions.addNotification(`${party.name}は${formatNumber(donation)}G神に捧げ、${formatNumber(deposit)}Gを貯金した`);
+                  actions.addNotification(`${party.name}は${formatNumber(donation)}G神に捧げ、${formatNumber(deposit)}Gを貯金した${embezzledText}`);
                 }
               }
               updated.state = autoRepeatEnabled ? '移動中' : '待機中';
@@ -1735,6 +1738,15 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         .reduce((abilityMax, ability) => Math.max(abilityMax, ability.level), 0);
       return Math.max(maxLevel, level);
     }, 0);
+  };
+
+  const getPrayerDepositMultiplier = (party: Party): number => {
+    const deityName = normalizeDeityName(party.deity.name);
+    if (deityName !== 'God of Cunning') return 1;
+
+    const donationGold = state.global.deityDonations[deityName] ?? party.deityGold ?? 0;
+    const deityRank = getDeityRank(donationGold);
+    return Math.min(1, 0.5 + 0.01 * deityRank);
   };
 
   const getPartyStateDurationMultiplier = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'sleep' | 'pray' | 'explore'): number => {
