@@ -799,5 +799,72 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "敵の属性攻撃に対しての耐性。この耐性値が低ければ低いほどその属性攻撃に対して受けるダメージが減る"
       }
     ]
+  },
+  {
+    "id": "2-1-7",
+    "heading": "2.1.7 g. gods, religions",
+    "subtitle": "g. 神、信仰",
+    "entries": [
+      {
+        "key": "Goddess of Restoration",
+        "label": "再生の女神",
+        "description": "効果:4部屋毎に減少HPの20+α%を回復する。睡眠時間1.5倍。\n生とは、繰り返される修正である。"
+      },
+      {
+        "key": "God of Attrition",
+        "label": "消耗の神",
+        "description": "効果:全員に物理攻撃1.25+α倍。4部屋毎に残りHPの5%を失う。\nカジェルで戦え。カジェルが無くなれば、爪で戦え。爪が無くなれば、牙で戦え。"
+      },
+      {
+        "key": "God of Cunning",
+        "label": "狡猾の神",
+        "description": "効果:全員に魔法防御2/3倍。貯金額0.50+α倍。\n真実は力ではない。信じさせることが力である。"
+      },
+      {
+        "key": "God of Fortification",
+        "label": "防備の神",
+        "description": "効果:全員に物理防御2/3倍。休憩時間1.5-α倍。\n平和を望むならば、戦に備えよ。"
+      },
+      {
+        "key": "Goddess of Fertility",
+        "label": "豊穣の女神",
+        "description": "効果:全員に天速度+1(行動速度が速くなる)。宴会時間1.5-α倍。\n肥沃な土壌は、多くの穀肉を求むる。"
+      },
+      {
+        "key": "God of Resonance",
+        "label": "共鳴の神",
+        "description": "効果:全員の共鳴を1+α段階強化。共鳴が遠距離攻撃にも適用。魔法防御力0.90倍、HP0.90+α倍。\n語られぬ神は消える。響かぬ名は滅びる。"
+      },
+      {
+        "key": "Goddess of Precision",
+        "label": "精密の女神",
+        "description": "効果:全員の命中+15+α、回避-5。探索時間1.5倍。\n失敗の先には成功がある。"
+      },
+      {
+        "key": "God of Fate",
+        "label": "運命の神",
+        "description": "効果:未来改変。祈り時間1.5-α倍。\n未来を知る者はそれを変えてしまう。"
+      },
+      {
+        "key": "God of Dusk",
+        "label": "黄昏の神",
+        "description": "効果:全員の回避+15+α、魔法防御0.90倍。売却時間1.5倍。\n光と闇の境界で、最も多くの嘘が生まれる。"
+      },
+      {
+        "key": "Goddess of Mirage",
+        "label": "幻影の女神",
+        "description": "効果:全員に魔法攻撃1.2+α倍、物理防御0.90倍。\n真実と幻想に違いはない。違いは込められた願いのみ。"
+      },
+      {
+        "key": "God of Oblivion",
+        "label": "忘却されし神",
+        "description": "効果:なし。(ランク10:追加報酬抽選+1回)\n神の存在には、ただ一人の真なる信徒で足りる。"
+      },
+      {
+        "key": "Goddess of Discord",
+        "label": "不和の神",
+        "description": "効果:戦闘開始時、ランダムな1名を⚠️敵対させる。追加報酬抽選+1回。\n調和は停滞である。混沌こそ昇華の源。"
+      }
+    ]
   }
 ];
