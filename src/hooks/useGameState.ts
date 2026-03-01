@@ -952,8 +952,12 @@ function getPrayerDepositMultiplier(party: Party): number {
   const deityKey = getDeityKey(party.deity.name);
   if (deityKey !== 'God of Cunning') return 1;
 
-  const deityTier = getEffectiveDeityTier(party.deityGold ?? 0);
-  return Math.min(1, 0.5 + 0.01 * deityTier);
+  // God of Cunning embezzles exactly 50% of the remaining cycle profit.
+  return 0.5;
+}
+
+function rollPercentInclusive(min: number, max: number): number {
+  return min + Math.random() * (max - min + Number.EPSILON);
 }
 
 function getUnlockActorName(party: Party): string | undefined {
@@ -2029,7 +2033,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           if (!currentParty) continue;
 
           const pendingProfit = currentParty.pendingProfit ?? 0;
-          const baseSpend = Math.floor((pendingProfit * (33 + Math.random() * 34)) / 100);
+          const baseSpend = Math.floor((pendingProfit * rollPercentInclusive(33, 67)) / 100);
           const squanderLevel = getPartyAbilityLevel(currentParty, 'squander');
           const squanderMultiplier = squanderLevel >= 2 ? 2 : squanderLevel >= 1 ? 1.5 : 1;
           const spend = Math.min(pendingProfit, Math.floor(baseSpend * squanderMultiplier));
@@ -2039,7 +2043,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
           const afterSpend = workingState.parties[partyIndex];
           if (!afterSpend) continue;
-          const donationRate = 10 + Math.random() * 23;
+          const donationRate = rollPercentInclusive(10, 33);
           const baseDonation = Math.floor(((afterSpend.pendingProfit ?? 0) * donationRate) / 100);
           const titheLevel = getPartyAbilityLevel(afterSpend, 'tithe');
           const titheBonusRate = titheLevel >= 2 ? 0.15 : titheLevel >= 1 ? 0.1 : 0;

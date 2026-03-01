@@ -97,6 +97,10 @@ interface PartyCycleRuntime {
   durationMs: number;
 }
 
+function rollPercentInclusive(min: number, max: number): number {
+  return min + Math.random() * (max - min + Number.EPSILON);
+}
+
 const PARTY_CYCLE_TICK_MS = 100;
 const EXPLORING_PROGRESS_STEP_MS = 1000;
 const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
@@ -1485,6 +1489,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
         }
 
         let stateElapsedMs = Math.max(0, simulationNow - updated.stateStartedAt);
+        let cyclePendingProfit = Math.max(0, party.pendingProfit ?? 0);
         while (updated.state !== '休息中' && stateElapsedMs >= updated.durationMs) {
           updated.stateStartedAt += updated.durationMs;
           stateElapsedMs -= updated.durationMs;
@@ -1493,10 +1498,10 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
               updated.state = '宴会中';
               updated.durationMs = getStateDurationMs(party, 'feast');
             } else if (updated.state === '宴会中') {
-              const baseSpend = Math.floor((party.pendingProfit * (33 + Math.random() * 34)) / 100);
+              const baseSpend = Math.floor((cyclePendingProfit * rollPercentInclusive(33, 67)) / 100);
               const squanderLevel = getPartyAbilityLevel(party, 'squander');
               const squanderMultiplier = squanderLevel >= 2 ? 2 : squanderLevel >= 1 ? 1.5 : 1;
-              const spend = Math.min(party.pendingProfit, Math.floor(baseSpend * squanderMultiplier));
+              const spend = Math.min(cyclePendingProfit, Math.floor(baseSpend * squanderMultiplier));
               if (spend > 0) {
                 if (squanderLevel > 0) {
                   const lordName = getPartyAbilityOwnerName(party, 'squander') ?? '名無し';
@@ -1506,22 +1511,24 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
                 }
               }
               actions.spendPendingProfit(partyIndex, spend);
+              cyclePendingProfit = Math.max(0, cyclePendingProfit - spend);
               updated.state = '睡眠中';
               updated.durationMs = getStateDurationMs(party, 'sleep');
             } else if (updated.state === '睡眠中') {
               updated.state = '祈り中';
               updated.durationMs = getStateDurationMs(party, 'pray');
             } else if (updated.state === '祈り中') {
-              const donationRate = 10 + Math.random() * 23;
-              const baseDonation = Math.floor((party.pendingProfit * donationRate) / 100);
+              const donationRate = rollPercentInclusive(10, 33);
+              const baseDonation = Math.floor((cyclePendingProfit * donationRate) / 100);
               const titheLevel = getPartyAbilityLevel(party, 'tithe');
               const titheBonusRate = titheLevel >= 2 ? 0.15 : titheLevel >= 1 ? 0.1 : 0;
-              const titheBonus = Math.floor(party.pendingProfit * titheBonusRate);
-              const donation = Math.min(party.pendingProfit, baseDonation + titheBonus);
-              const rawDeposit = Math.max(0, party.pendingProfit - donation);
+              const titheBonus = Math.floor(cyclePendingProfit * titheBonusRate);
+              const donation = Math.min(cyclePendingProfit, baseDonation + titheBonus);
+              const rawDeposit = Math.max(0, cyclePendingProfit - donation);
               const deposit = Math.floor(rawDeposit * getPrayerDepositMultiplier(party));
               const embezzled = Math.max(0, rawDeposit - deposit);
               actions.processPendingProfit(partyIndex, donation, deposit);
+              cyclePendingProfit = 0;
               if (donation > 0 || deposit > 0) {
                 const embezzledText = embezzled > 0 ? `(${formatNumber(embezzled)}Gを着服した)` : '';
                 if (titheLevel > 0) {
@@ -1809,12 +1816,10 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
 
     const stolenProfit = Math.max(0, party.pendingProfit);
 
-    if (cycle?.state !== '待機中') {
-      if (stolenProfit > 0) {
-        actions.addNotification(`${party.name} は神の緊急動員に憤り、${formatNumber(stolenProfit)}Gを持ち逃げして出撃した`);
-      } else {
-        actions.addNotification(`${party.name} は神の緊急動員に憤りながらも出撃した`);
-      }
+    if (stolenProfit > 0) {
+      actions.addNotification(`${party.name}は神の緊急動員に憤り、${formatNumber(stolenProfit)}Gを持ち逃げして出撃した`);
+    } else {
+      actions.addNotification(`${party.name}は神の緊急動員に憤りながらも出撃した`);
     }
 
     if (cycle) {
