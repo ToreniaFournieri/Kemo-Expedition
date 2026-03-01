@@ -3169,27 +3169,27 @@ function PartyTab({
                 }
 
                 const baseDecay = 0.90 + getEffectiveAccuracyBonus(stats.accuracyBonus, stats.abilities);
-                const decayText = baseDecay.toFixed(3);
+                const decayText = `${(baseDecay * 100).toFixed(1)}%`;
                 const hasPhysicalAttacks = stats.rangedNoA > 0 || stats.meleeNoA > 0;
                 if (hasPhysicalAttacks) {
                   offenseLines.push({
                     key: 'physical-accuracy',
-                    text: `物理命中率: ${Math.round(stats.accuracyPotency * 100)}% (減衰: x${decayText})`,
+                    text: `物理命中率: ${Math.round(stats.accuracyPotency * 100)}% (減衰: ${decayText})`,
                     helpTitle: '物理命中率',
                     helpLines: [
                       `物理命中率: ${Math.round(stats.accuracyPotency * 100)}% ※初回の命中率`,
-                      `命中減衰率: x${decayText} ※2回目以降の命中率にはこの値が掛かります`,
+                      `命中減衰率: ${decayText} ※2回目以降の命中率にはこの値が掛かります`,
                     ],
                   });
                 }
                 if (hasMagical) {
                   offenseLines.push({
                     key: 'magical-accuracy',
-                    text: `魔法命中率: 100% (減衰: x${decayText})`,
+                    text: `魔法命中率: 100% (減衰: ${decayText})`,
                     helpTitle: '魔法命中率',
                     helpLines: [
                       '魔法命中率: 100% ※初回の命中率',
-                      `命中減衰率: x${decayText} ※2回目以降の命中率にはこの値が掛かります`,
+                      `命中減衰率: ${decayText} ※2回目以降の命中率にはこの値が掛かります`,
                     ],
                   });
                 }
@@ -6138,7 +6138,7 @@ function SettingTab({
                             const hasMeleeAttack = hasEnemyAttack(godRuntimeEnemy.meleeAttack, godRuntimeEnemy.meleeNoA);
                             const hasMagicalAttack = hasEnemyAttack(godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA);
                             const hasPhysicalAttack = hasRangedAttack || hasMeleeAttack;
-                            const decay = (0.90 + godRuntimeEnemy.accuracyBonus).toFixed(3);
+                            const decay = `${((0.90 + godRuntimeEnemy.accuracyBonus) * 100).toFixed(1)}%`;
                             const defenseAmplifierPercent = godRuntimeEnemy.defenseAmplifier * 100;
 
                             const offenseRows: string[] = [];
@@ -6149,11 +6149,11 @@ function SettingTab({
                               offenseRows.push(formatEnemyAttackLine('近接攻撃', godRuntimeEnemy.meleeAttack, godRuntimeEnemy.meleeNoA, godRuntimeEnemy.meleeAttackAmplifier));
                             }
                             if (hasPhysicalAttack) {
-                              offenseRows.push(`物理命中率: 100% (減衰: x${decay})`);
+                              offenseRows.push(`物理命中率: 100% (減衰: ${decay})`);
                             }
                             if (hasMagicalAttack) {
                               offenseRows.push(formatEnemyAttackLine('魔法攻撃', godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA, godRuntimeEnemy.magicalAttackAmplifier));
-                              offenseRows.push(`魔法命中率: 100% (減衰: x${decay})`);
+                              offenseRows.push(`魔法命中率: 100% (減衰: ${decay})`);
                             }
 
                             const defenseRows: string[] = [
@@ -6213,7 +6213,7 @@ function SettingTab({
                             const hasMeleeAttack = hasEnemyAttack(displayEnemy.meleeAttack, displayEnemy.meleeNoA);
                             const hasMagicalAttack = hasEnemyAttack(displayEnemy.magicalAttack, displayEnemy.magicalNoA);
                             const hasPhysicalAttack = hasRangedAttack || hasMeleeAttack;
-                            const decay = (0.90 + displayEnemy.accuracyBonus).toFixed(3);
+                            const decay = `${((0.90 + displayEnemy.accuracyBonus) * 100).toFixed(1)}%`;
 
                             const offenseRows: string[] = [];
                             if (hasRangedAttack) {
@@ -6223,11 +6223,11 @@ function SettingTab({
                               offenseRows.push(formatEnemyAttackLine('近接攻撃', displayEnemy.meleeAttack, displayEnemy.meleeNoA, displayEnemy.meleeAttackAmplifier));
                             }
                             if (hasPhysicalAttack) {
-                              offenseRows.push(`物理命中率: 100% (減衰: x${decay})`);
+                              offenseRows.push(`物理命中率: 100% (減衰: ${decay})`);
                             }
                             if (hasMagicalAttack) {
                               offenseRows.push(formatEnemyAttackLine('魔法攻撃', displayEnemy.magicalAttack, displayEnemy.magicalNoA, displayEnemy.magicalAttackAmplifier));
-                              offenseRows.push(`魔法命中率: 100% (減衰: x${decay})`);
+                              offenseRows.push(`魔法命中率: 100% (減衰: ${decay})`);
                             }
 
                             // Bestiary detail keeps the compact 4-line defense block.
