@@ -5239,7 +5239,7 @@ function SettingTab({
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const [compendiumCategory, setCompendiumCategory] = useState<string>('armor');
   const [compendiumRarityFilter, setCompendiumRarityFilter] = useState<RarityFilter>('all');
-  const [glossaryTab, setGlossaryTab] = useState<'A' | 'B' | 'C' | 'D' | 'G'>('A');
+  const [glossaryTab, setGlossaryTab] = useState<'A' | 'B' | 'C' | 'D' | 'F' | 'G'>('A');
   const [expandedCompendiumItems, setExpandedCompendiumItems] = useState<Record<number, boolean>>({});
   const bestiaryListRef = useRef<HTMLDivElement | null>(null);
 
@@ -5499,11 +5499,12 @@ function SettingTab({
     .slice()
     .sort((a, b) => b.id - a.id);
 
-  const glossarySectionsByTab: Record<'A' | 'B' | 'C' | 'D' | 'G', string> = {
+  const glossarySectionsByTab: Record<'A' | 'B' | 'C' | 'D' | 'F' | 'G', string> = {
     A: 'a.',
     B: 'b.',
     C: 'c.',
     D: 'd.',
+    F: 'f.',
     G: 'g.',
   };
   const filteredGlossarySections = GLOSSARY_SECTIONS.filter((section) =>
@@ -5886,7 +5887,7 @@ function SettingTab({
           <>
           <div className="flex justify-end items-center gap-1 mt-3 mb-3">
             <span className="text-xs text-gray-500">分類</span>
-            {(['A', 'B', 'C', 'D', 'G'] as const).map((tab) => (
+            {(['A', 'B', 'C', 'D', 'F', 'G'] as const).map((tab) => (
               <button
                 key={tab}
                 type="button"
