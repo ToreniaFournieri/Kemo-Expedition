@@ -80,7 +80,7 @@ export function getDeityRank(totalDonatedGold: number): number {
   return Math.min(MAX_DEITY_RANK, getDonationTier(totalDonatedGold) + 1);
 }
 
-export function getNextDonationThreshold(totalDonatedGold: number): number | null {
+export function getNextRankDonationRequirement(totalDonatedGold: number): number | null {
   const safeDonation = Math.max(0, totalDonatedGold);
   const currentTier = getDonationTier(safeDonation);
   const nextThreshold = DONATION_THRESHOLDS[currentTier + 1];
@@ -88,7 +88,7 @@ export function getNextDonationThreshold(totalDonatedGold: number): number | nul
     return null;
   }
 
-  return Math.max(0, nextThreshold - safeDonation);
+  return nextThreshold;
 }
 
 export function getEffectiveDeityTier(totalDonatedGold: number): number {
