@@ -31,7 +31,7 @@ function calculateRankUpDonations(): number[] {
       continue;
     }
 
-    const nextDonation = Math.round((2.5 - 0.1 * rank) * previousDonation);
+    const nextDonation = Math.round((3.0 - 0.1 * rank) * previousDonation);
     rankUpDonations.push(nextDonation);
     previousDonation = nextDonation;
   }
