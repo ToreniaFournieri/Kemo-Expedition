@@ -944,13 +944,15 @@ function getPartyCunningMultiplier(party: Party): number {
   const cunningLevel = getPartyAbilityLevel(party, 'cunning');
   const abilityMultiplier = cunningLevel >= 2 ? 1.3 : cunningLevel >= 1 ? 1.2 : 1;
 
-  const deityKey = getDeityKey(party.deity.name);
-  const deityTier = getEffectiveDeityTier(party.deityGold ?? 0);
-  const deityMultiplier = deityKey === 'God of Cunning'
-    ? Math.min(1, 0.5 + 0.01 * deityTier)
-    : 1;
+  return abilityMultiplier * getPrayerDepositMultiplier(party);
+}
 
-  return abilityMultiplier * deityMultiplier;
+function getPrayerDepositMultiplier(party: Party): number {
+  const deityKey = getDeityKey(party.deity.name);
+  if (deityKey !== 'God of Cunning') return 1;
+
+  const deityTier = getEffectiveDeityTier(party.deityGold ?? 0);
+  return Math.min(1, 0.5 + 0.01 * deityTier);
 }
 
 function getUnlockActorName(party: Party): string | undefined {
@@ -2010,7 +2012,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           const titheBonusRate = titheLevel >= 2 ? 0.15 : titheLevel >= 1 ? 0.1 : 0;
           const titheBonus = Math.floor((afterSpend.pendingProfit ?? 0) * titheBonusRate);
           const donation = Math.min(afterSpend.pendingProfit ?? 0, baseDonation + titheBonus);
-          const deposit = Math.max(0, (afterSpend.pendingProfit ?? 0) - donation);
+          const rawDeposit = Math.max(0, (afterSpend.pendingProfit ?? 0) - donation);
+          const deposit = Math.floor(rawDeposit * getPrayerDepositMultiplier(afterSpend));
           workingState = gameReducer(workingState, { type: 'PROCESS_PENDING_PROFIT', partyIndex, donation, deposit });
 
           const partyAfterProfit = workingState.parties[partyIndex];
