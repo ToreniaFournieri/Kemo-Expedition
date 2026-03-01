@@ -126,49 +126,49 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
   switch (deityKey) {
     case 'Goddess of Restoration': {
       const healMissingPct = 0.2 + 0.001 * effectiveTier;
-      return `4部屋毎に減少HPの${Math.round(healMissingPct * 100)}%を回復する。睡眠時間x1.50`;
+      return `4部屋毎に減少HPの${Math.round(healMissingPct * 100)}%を回復する。睡眠時間1.50倍`;
     }
     case 'God of Attrition': {
       const attackMult = 1.2 + 0.01 * effectiveTier;
-      return `全員に物理攻撃x${attackMult.toFixed(2)}。4部屋毎に残りHPの5%を失う`;
+      return `全員に物理攻撃${attackMult.toFixed(2)}倍。4部屋毎に残りHPの5%を失う`;
     }
     case 'God of Cunning': {
       const autoSellMultiplier = Math.min(1, 0.5 + 0.01 * effectiveTier);
-      return `全員に魔法防御x2/3。貯金額x${autoSellMultiplier.toFixed(2)}`;
+      return `全員に魔法防御2/3倍。貯金額${autoSellMultiplier.toFixed(2)}倍`;
     }
     case 'God of Fortification': {
-      return '全員に物理防御x2/3。休憩時間1.5-α倍';
+      const restDuration = Math.max(1, 1.5 - 0.01 * effectiveTier);
+      return `全員に物理防御2/3倍。休憩時間${restDuration.toFixed(2)}倍`;
     }
     case 'Goddess of Fertility': {
       const feastDuration = Math.max(1, 1.5 - 0.01 * effectiveTier);
-      return `全員に先制+1。宴会時間が延びる(x${feastDuration.toFixed(2)})`;
+      return `全員に先制+1。宴会時間${feastDuration.toFixed(2)}倍`;
     }
     case 'Goddess of Precision': {
       const accuracyBonus = 0.015 + 0.001 * effectiveTier;
-      return `全員の命中+${(accuracyBonus * 1000).toFixed(1)}、回避-5.0。探索時間x1.50`;
+      return `全員の命中+${(accuracyBonus * 1000).toFixed(0)}、回避-5。探索時間1.50倍`;
     }
     case 'God of Fate': {
       const prayDuration = Math.max(1, 1.5 - 0.01 * effectiveTier);
-      return `祈り時間が延びる(x${prayDuration.toFixed(2)})`;
+      return `未来改変。祈り時間${prayDuration.toFixed(2)}倍。`;
     }
     case 'God of Dusk': {
       const evasionBonus = 0.015 + 0.001 * effectiveTier;
-      const sellDuration = Math.max(1, 1.5 - 0.01 * effectiveTier);
-      return `全員の回避+${(evasionBonus * 1000).toFixed(1)}、魔法防御x0.90。売却時間が延びる(x${sellDuration.toFixed(2)})`;
+      return `全員の回避+${(evasionBonus * 1000).toFixed(0)}、魔法防御0.90倍。売却時間1.5倍。`;
     }
     case 'Goddess of Mirage': {
       const magicalAttack = 1.2 + 0.01 * effectiveTier;
-      return `全員に魔法攻撃x${magicalAttack.toFixed(2)}、物理防御x0.90`;
+      return `全員に魔法攻撃${magicalAttack.toFixed(2)}倍、物理防御0.90倍`;
     }
     case 'God of Resonance': {
       const hpMultiplier = 0.9 + 0.002 * effectiveTier;
-      return `全員の共鳴を1段階強化。共鳴が遠距離攻撃にも適用。魔法防御x0.90、HPx${hpMultiplier.toFixed(3)}`;
+      return `全員の共鳴を1段階強化。共鳴が遠距離攻撃にも適用。魔法防御0.90倍、HP${hpMultiplier.toFixed(2)}倍`;
     }
     case 'God of Oblivion': {
       return effectiveTier >= 10 ? 'なし。追加報酬抽選+1回' : 'なし。';
     }
     case 'Goddess of Discord': {
-      return '戦闘開始時、ランダム1名に⚠️敵対付与。追加報酬抽選+1回';
+      return '戦闘開始時、ランダムな1名を⚠️敵対させる。追加報酬抽選+1回。';
     }
     default:
       return '効果なし';
@@ -268,7 +268,7 @@ export function getDeityStateDurationMultiplier(name: string, totalDonatedGold =
 
   if (state === 'sleep' && deityKey === 'Goddess of Restoration') return 1.5;
   if (state === 'rest' && deityKey === 'God of Fortification') return Math.max(1, 1.5 - 0.01 * effectiveTier);
-  if (state === 'sell' && deityKey === 'God of Dusk') return Math.max(1, 1.5 - 0.01 * effectiveTier);
+  if (state === 'sell' && deityKey === 'God of Dusk') return 1.5;
   if (state === 'feast' && deityKey === 'Goddess of Fertility') return Math.max(1, 1.5 - 0.01 * effectiveTier);
   if (state === 'pray' && deityKey === 'God of Fate') return Math.max(1, 1.5 - 0.01 * effectiveTier);
   if (state === 'explore' && deityKey === 'Goddess of Precision') return 1.5;
