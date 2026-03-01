@@ -442,7 +442,7 @@ PT2...
     - ex. `s.owned`: 名工のロングソード x3 | 近攻+19     [全売却 39G]
     - ex. `equipped`: [race icon] 名工のロングソード x1 | 近攻+19    PT1:name
   - Sell all button(全売却): Sells all item, with a warning message, and Changes item state from `s.owned` to `s.sold`
-    - Super rare item sell warning: Show warning when player is going to sell super rare item.
+    - Super rare item sell block: when player is going to sell super rare item, it is not allowed: "超レア称号がついたアイテムは売却出来ません"
   - Inventory pane shows at least 10 items
 - Actions:
   - Sell item stacks (except equipped items)
