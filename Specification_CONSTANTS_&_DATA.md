@@ -271,6 +271,23 @@
 　- Donation(1) = 1,000 G, Donation(n) = (3.0 - 0.1 * n) * Donation(n-1) (round off)
   - max rank is 10.
 
+#### 2.1.8 m. magic
+
+| Key | style | element |  | name |
+|-|-|-|-|
+| `arcane_arrows` | `multi-hit` | `e.none` | アルカナアロー |
+| `flame_bolts` | `multi-hit` | `e.fire` < 1.5 | フレイムボルト |
+| `frost_needles` | `multi-hit` | `e.ice` < 1.5 | フロストニードル |
+| `thunder_bolts` | `multi-hit` | `e.thunder` < 1.5 | サンダーボルト |
+| `hellfire` | `multi-hit` | `e.fire` >= 1.5 | ヘルファイア |
+| `blizzard` | `multi-hit` | `e.ice` >= 1.5 | ブリザード |
+| `lightning_barrage` | `multi-hit` | `e.thunder` >= 1.5 | ライトニングバラージ |
+| `astral_flare` | `area_burst` | `e.none` | アストラルフレア |
+| `pyroclasm` | `area_burst` | `e.fire`  | パイロクラスム |
+| `glacial_burst` | `area_burst` | `e.ice`  | グレイシャルバースト |
+| `tempest_nova` |`area_burst` | `e.thunder` | テンペストノヴァ |
+
+
 ### 2.2 Global constants
 
 **Global structure**
