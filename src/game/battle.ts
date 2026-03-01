@@ -563,16 +563,14 @@ function getFirstStrikeLevel(charStats: ComputedCharacterStats): number {
   return charStats.abilities.find(a => a.id === 'first_strike')?.level ?? 0;
 }
 
-function rollInitiative(firstStrikeLevel: number): number {
+function rollInitiative(firstStrikeLevel: number, bonus = 0): number {
   const diceCount = firstStrikeLevel >= 3 ? 4 : firstStrikeLevel >= 2 ? 3 : firstStrikeLevel === 1 ? 2 : 1;
   let total = 0;
   for (let i = 0; i < diceCount; i++) {
     total += Math.floor(Math.random() * 3) + 1;
   }
-  if (firstStrikeLevel >= 3) {
-    return Math.min(9, total);
-  }
-  return total;
+
+  return Math.min(9, total + bonus);
 }
 
 function getEnemyFirstStrikeLevel(enemy: EnemyDef): number {
@@ -1048,12 +1046,13 @@ export function executeBattle(
   };
 
   const phases: BattlePhase[] = ['long', 'mid', 'close'];
+  const hasFertilityInitiativeBonus = getDeityKey(party.deity.name) === 'Goddess of Fertility';
 
   for (const phase of phases) {
     const enemyInitiativeRoll = rollInitiative(getEnemyFirstStrikeLevel(enemy));
     const characterInitiative = characterStats.map(cs => ({
       stats: cs,
-      roll: rollInitiative(getFirstStrikeLevel(cs)),
+      roll: rollInitiative(getFirstStrikeLevel(cs), hasFertilityInitiativeBonus ? 1 : 0),
     }));
 
     const initiativeByCharacter = new Map<number, number>(
