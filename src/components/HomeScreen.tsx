@@ -4108,7 +4108,7 @@ function ExpeditionTab({
                                 const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousContinuesCurrentPhase || previousLog.phase !== log.phase);
                                 const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
                                 const phaseLabel = isPhaseAction
-                                  ? (log.isCounter || isResurrectLog ? '-' : `${log.initiativeRoll ?? '?'}`)
+                                  ? (log.isCounter || isResurrectLog || log.isEnemyTargetHit ? '-' : `${log.initiativeRoll ?? '?'}`)
                                   : log.actor === 'deity' ? '末' : (isStealthEffectLog || isCounterNegationEffectLog) ? '-' : '効';
                                 const phaseHeader = log.phase === 'long'
                                   ? '遠距離攻撃フェーズ'
@@ -4135,6 +4135,8 @@ function ExpeditionTab({
                                 } else if (isEnemy) {
                                   if (isResurrectLog) {
                                     actionText = `敵${log.action}`;
+                                  } else if (log.isEnemyTargetHit) {
+                                    actionText = allMissed ? `${log.action.replace('命中！', 'への攻撃は外れた！')}` : log.action;
                                   } else {
                                     actionText = allMissed ? `敵が${log.action.replace('！', 'したが外れた！')}` : `敵が${log.action}`;
                                   }
@@ -5124,7 +5126,7 @@ function DiaryTab({
                               const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousContinuesCurrentPhase || previousLog.phase !== battleLog.phase);
                               const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
                               const phaseLabel = isPhaseAction
-                                ? (battleLog.isCounter || isResurrectLog ? '-' : `${battleLog.initiativeRoll ?? '?'}`)
+                                ? (battleLog.isCounter || isResurrectLog || battleLog.isEnemyTargetHit ? '-' : `${battleLog.initiativeRoll ?? '?'}`)
                                 : battleLog.actor === 'deity' ? '末' : (isStealthEffectLog || isCounterNegationEffectLog) ? '-' : '効';
                               const phaseHeader = battleLog.phase === 'long'
                                 ? '遠距離攻撃フェーズ'
@@ -5159,6 +5161,10 @@ function DiaryTab({
                               } else if (isEnemy) {
                                 if (isResurrectLog) {
                                   actionText = `敵${battleLog.action}`;
+                                } else if (battleLog.isEnemyTargetHit) {
+                                  actionText = allMissed
+                                    ? `${battleLog.action.replace('命中！', 'への攻撃は外れた！')}`
+                                    : battleLog.action;
                                 } else if (allMissed) {
                                   actionText = `敵が${battleLog.action.replace('！', 'したが外れた！')}`;
                                 } else {

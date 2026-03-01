@@ -1135,16 +1135,35 @@ export function executeBattle(
             }
           }
 
+          const magicProfile = resolveMagicProfile({
+            style: 'multi-hit',
+            elementalOffense: enemy.elementalOffense,
+            elementalOffenseValue: 1.0,
+            magicalNoA: attempts,
+          });
+          const resonanceActor = enemyResonanceLevel > 0
+            ? { abilities: [{ id: 'resonance' as const, level: enemyResonanceLevel }] }
+            : { abilities: [] };
+          const enemyResonanceLogText = getResonanceLogText(phase, resonanceActor.abilities, enemySuccessfulHits);
+
+          if (phase === 'mid') {
+            log.push({
+              phase,
+              initiativeRoll: turn.roll,
+              actor: 'enemy',
+              action: `${magicProfile.spellName}${isReAttack ? '連撃' : ''}を唱えた！${enemyResonanceLogText}`,
+              hits: enemySuccessfulHits,
+              totalAttempts: attempts,
+              rageBonusPercent: toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp)) || undefined,
+              isReAttack: isReAttack || undefined,
+              elementalOffense: enemy.elementalOffense,
+            });
+          }
+
           for (const [charId, attack] of attacksByTarget) {
             if (enemyHp <= 0 || partyHp <= 0) break;
 
             const targetChar = party.characters.find(c => c.id === charId);
-            const magicProfile = resolveMagicProfile({
-              style: 'multi-hit',
-              elementalOffense: enemy.elementalOffense,
-              elementalOffenseValue: 1.0,
-              magicalNoA: attempts,
-            });
             const attackName = isReAttack
               ? (phase === 'mid' ? `${magicProfile.spellName}連撃` : '連撃')
               : (phase === 'mid' ? `${magicProfile.spellName}` : '攻撃');
@@ -1179,10 +1198,6 @@ export function executeBattle(
               }
             }
 
-            const resonanceActor = enemyResonanceLevel > 0
-              ? { abilities: [{ id: 'resonance' as const, level: enemyResonanceLevel }] }
-              : { abilities: [] };
-            const enemyResonanceLogText = getResonanceLogText(phase, resonanceActor.abilities, enemySuccessfulHits);
 
             const triggeredResurrect = (
               partyHp <= 0
@@ -1204,14 +1219,15 @@ export function executeBattle(
               initiativeRoll: turn.roll,
               actor: 'enemy',
               action: phase === 'mid'
-                ? `${targetName} に${attackName}が命中！${enemyResonanceLogText}`
+                ? `${targetName} に命中！`
                 : `${targetName} に${attackName}！${enemyResonanceLogText}`,
               damage: appliedDamage > 0 ? appliedDamage : undefined,
               hits: appliedHits,
               totalAttempts: attack.totalAttempts,
               wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
-              rageBonusPercent: enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined,
+              rageBonusPercent: phase === 'mid' ? undefined : (enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined),
               isReAttack: isReAttack || undefined,
+              isEnemyTargetHit: phase === 'mid' ? true : undefined,
               elementalOffense: enemy.elementalOffense,
             });
 
