@@ -273,19 +273,19 @@
 
 #### 2.1.8 m. magic
 
-| Key | style | element |  | name |
-|-|-|-|-|
-| `arcane_arrows` | `multi-hit` | `e.none` | アルカナアロー |
-| `flame_bolts` | `multi-hit` | `e.fire` < 1.5 | フレイムボルト |
-| `frost_needles` | `multi-hit` | `e.ice` < 1.5 | フロストニードル |
-| `thunder_bolts` | `multi-hit` | `e.thunder` < 1.5 | サンダーボルト |
-| `hellfire` | `multi-hit` | `e.fire` >= 1.5 | ヘルファイア |
-| `blizzard` | `multi-hit` | `e.ice` >= 1.5 | ブリザード |
-| `lightning_barrage` | `multi-hit` | `e.thunder` >= 1.5 | ライトニングバラージ |
-| `astral_flare` | `area_burst` | `e.none` | アストラルフレア |
-| `pyroclasm` | `area_burst` | `e.fire`  | パイロクラスム |
-| `glacial_burst` | `area_burst` | `e.ice`  | グレイシャルバースト |
-| `tempest_nova` |`area_burst` | `e.thunder` | テンペストノヴァ |
+| Key | style | element | name | description |
+|-|-|-|-|-|
+| `arcane_arrows` | `multi-hit` | `e.none` | アルカナアロー | 無属性の基本魔法攻撃 |
+| `flame_bolts` | `multi-hit` | `e.fire` < 1.5 | フレイムボルト | 火属性基本魔法(火属性50%未満) |
+| `frost_needles` | `multi-hit` | `e.ice` < 1.5 | フロストニードル | 氷属性基本魔法(氷属性50%未満) |
+| `thunder_bolts` | `multi-hit` | `e.thunder` < 1.5 | サンダーボルト | 雷属性基本魔法(雷属性50%未満) |
+| `hellfire_volley` | `multi-hit` | `e.fire` >= 1.5 | ヘルファイア | 火属性上位魔法(火属性50%以上) |
+| `blizzard` | `multi-hit` | `e.ice` >= 1.5 | ブリザード | 氷属性上位魔法(氷属性50%以上) |
+| `lightning_barrage` | `multi-hit` | `e.thunder` >= 1.5 | ライトニングバラージ | 雷属性上位魔法(雷属性50%以上) |
+| `astral_flare` | `area_burst` | `e.none` | アストラルフレア | 無属性範囲魔法攻撃(ヒット数は1固定) |
+| `pyroclasm` | `area_burst` | `e.fire`  | パイロクラスム | 火属性範囲魔法攻撃(ヒット数は1固定) |
+| `glacial_burst` | `area_burst` | `e.ice`  | グレイシャルバースト | 氷属性範囲魔法攻撃(ヒット数は1固定) |
+| `tempest_nova` |`area_burst` | `e.thunder` | テンペストノヴァ | 雷属性範囲魔法攻撃(ヒット数は1固定) |
 
 
 ### 2.2 Global constants
