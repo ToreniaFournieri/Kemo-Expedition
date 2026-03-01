@@ -210,17 +210,7 @@ export function applyDeityCharacterModifiers(
           },
         };
       case 'Goddess of Fertility': {
-        const firstStrike = stats.abilities.find((ability) => ability.id === 'first_strike');
-        return {
-          ...stats,
-          abilities: firstStrike
-            ? stats.abilities.map((ability) => (
-              ability.id === 'first_strike'
-                ? { ...ability, level: ability.level + 1, name: `先制攻撃${ability.level + 1}` }
-                : ability
-            ))
-            : [...stats.abilities, { id: 'first_strike', level: 1, name: '先制攻撃1', description: '' }],
-        };
+        return stats;
       }
       case 'Goddess of Precision':
         return {
