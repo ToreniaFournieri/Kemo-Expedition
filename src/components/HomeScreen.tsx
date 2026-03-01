@@ -3189,7 +3189,9 @@ function PartyTab({
 
                 const baseDecay = 0.90 + getEffectiveAccuracyBonus(stats.accuracyBonus, stats.abilities);
                 const decayText = `${(baseDecay * 100).toFixed(1)}%`;
-                const hasPhysicalAttacks = stats.rangedNoA > 0 || stats.meleeNoA > 0;
+                const hasPhysicalAttacks =
+                  (stats.rangedAttack > 0 && stats.rangedNoA > 0) ||
+                  (stats.meleeAttack > 0 && stats.meleeNoA > 0);
                 if (hasPhysicalAttacks) {
                   offenseLines.push({
                     key: 'physical-accuracy',
