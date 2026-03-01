@@ -905,7 +905,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "God of Cunning",
         "label": "狡猾の神",
-        "description": "効果:全員に魔法防御2/3倍。貯金額0.50+α倍。\n真実は力ではない。信じさせることが力である。"
+        "description": "効果:全員に魔法防御2/3倍。貯金額0.50+α倍(着服する)。\n真実は力ではない。信じさせることが力である。"
       },
       {
         "key": "God of Fortification",
