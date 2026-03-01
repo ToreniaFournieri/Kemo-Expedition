@@ -230,12 +230,16 @@
 
 | `f.` Key | 表示 | 説明 |
 |--------|------|------|
-| `f.targeting` |
-`f.damage_calculation`
-`f.row-based_modifier`
-`f.hit_detection`
-`f.counter`
-
+| `f.targeting` | ターゲッティング | |
+| `f.damage_calculation` | ダメージ計算 | |
+| `f.row-based_modifier` | 隊列補正 | |
+| `f.hit_detection` | 命中減衰 | |
+| `f.counter` | 反撃 | |
+| `f.re-counter` | 再反撃 | |
+| `f.re-attack` | 連撃 | |
+| `f.magical-counter` | 魔法反撃 | |
+| `f.covering-fire` | 援護射撃 | |
+| `f.reward` | 報酬計算 | |
 
 #### 2.1.7 g. gods, religions
 - "g. 神、信仰"
