@@ -957,12 +957,67 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
   {
     "id": "2-1-8",
     "heading": "2.1.8 m. magic",
-    "subtitle": "m. 魔法攻撃",
+    "subtitle": "m. 魔法攻撃 (装備によって唱える魔法の種類が変わる)",
     "entries": [
       {
-        "key": "m.magic",
-        "label": "m. 魔法攻撃 (装備によって唱える魔法の種類が変わる)",
-        "description": "| 詠唱魔法 | 効果 |\n|---|---|\n| アルカナアロー | 無属性の基本魔法攻撃 |\n| ファイアランス | 火属性基本魔法(火属性50%未満) |\n| フロストニードル | 氷属性基本魔法(氷属性50%未満) |\n| サンダーボルト | 雷属性基本魔法(雷属性50%未満) |\n| ヘルファイア | 火属性上位魔法(火属性50%以上) |\n| ブリザード | 氷属性上位魔法(氷属性50%以上) |\n| ライトニングバラージ | 雷属性上位魔法(雷属性50%以上) |\n| アストラルフレア | 無属性範囲魔法攻撃(ヒット数は1固定) |\n| パイロクラスム | 火属性範囲魔法攻撃(ヒット数は1固定) |\n| グレイシャルバースト | 氷属性範囲魔法攻撃(ヒット数は1固定) |\n| テンペストノヴァ | 雷属性範囲魔法攻撃(ヒット数は1固定) |\n| グラビティウェル | 魔法攻撃回数が20回以上の場合発動。相手の残HPの2/5の固定ダメージ(魔法防御力無視) |"
+        "key": "arcane_arrows",
+        "label": "アルカナアロー",
+        "description": "style: multi-hit / element: e.none\n無属性の基本魔法攻撃"
+      },
+      {
+        "key": "fire_lance",
+        "label": "ファイアランス",
+        "description": "style: multi-hit / element: e.fire < 1.5\n火属性基本魔法(火属性50%未満)"
+      },
+      {
+        "key": "frost_needles",
+        "label": "フロストニードル",
+        "description": "style: multi-hit / element: e.ice < 1.5\n氷属性基本魔法(氷属性50%未満)"
+      },
+      {
+        "key": "thunder_bolts",
+        "label": "サンダーボルト",
+        "description": "style: multi-hit / element: e.thunder < 1.5\n雷属性基本魔法(雷属性50%未満)"
+      },
+      {
+        "key": "hellfire_volley",
+        "label": "ヘルファイア",
+        "description": "style: multi-hit / element: e.fire >= 1.5\n火属性上位魔法(火属性50%以上)"
+      },
+      {
+        "key": "blizzard",
+        "label": "ブリザード",
+        "description": "style: multi-hit / element: e.ice >= 1.5\n氷属性上位魔法(氷属性50%以上)"
+      },
+      {
+        "key": "lightning_barrage",
+        "label": "ライトニングバラージ",
+        "description": "style: multi-hit / element: e.thunder >= 1.5\n雷属性上位魔法(雷属性50%以上)"
+      },
+      {
+        "key": "astral_flare",
+        "label": "アストラルフレア",
+        "description": "style: area_burst / element: e.none\n無属性範囲魔法攻撃(ヒット数は1固定)"
+      },
+      {
+        "key": "pyroclasm",
+        "label": "パイロクラスム",
+        "description": "style: area_burst / element: e.fire\n火属性範囲魔法攻撃(ヒット数は1固定)"
+      },
+      {
+        "key": "glacial_burst",
+        "label": "グレイシャルバースト",
+        "description": "style: area_burst / element: e.ice\n氷属性範囲魔法攻撃(ヒット数は1固定)"
+      },
+      {
+        "key": "tempest_nova",
+        "label": "テンペストノヴァ",
+        "description": "style: area_burst / element: e.thunder\n雷属性範囲魔法攻撃(ヒット数は1固定)"
+      },
+      {
+        "key": "gravity_well",
+        "label": "グラビティウェル",
+        "description": "style: percentage_damage / element: e.none\n魔法攻撃回数が20回以上の場合発動。相手の残HPの2/5の固定ダメージ(魔法防御力無視)"
       }
     ]
   }
