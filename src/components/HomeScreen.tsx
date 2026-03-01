@@ -4148,7 +4148,7 @@ function ExpeditionTab({
                                   momentumDisplay,
                                 ].filter(Boolean);
                                 const compactHitDisplay = hitDisplay && extraSegments.length > 0
-                                  ? `(${hits}/${totalAttempts}回,${extraSegments.join(',')})`
+                                  ? `(${hits}/${totalAttempts}回, ${extraSegments.join(', ')})`
                                   : hitDisplay;
                                 const actionDisplay = resonanceMatch && !allMissed
                                   ? actionText.replace(/\(共鳴\+\d+%\)$/, '')
@@ -4158,29 +4158,25 @@ function ExpeditionTab({
                                 return (
                                   <div key={j}>
                                     {shouldRenderResurrectBeforeHeader && (
-                                      <div className="flex justify-between text-gray-600">
-                                        <span>
-                                          <span className="text-gray-400">[{phaseLabel}]</span>{' '}
-                                          {actionDisplay}
-                                          {log.note && <span className="text-gray-400"> {log.note}</span>}
-                                          {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
-                                        </span>
+                                      <div className="text-gray-600">
+                                        <span className="text-gray-400">[{phaseLabel}]</span>{' '}
+                                        {actionDisplay}
+                                        {log.note && <span className="text-gray-400"> {log.note}</span>}
+                                        {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                         {log.damage !== undefined && log.damage > 0 && (
-                                          <span className={isEnemy ? 'text-accent' : 'text-sub'}>({emoji} {formatNumber(log.damage)})</span>
+                                          <span className={isEnemy ? 'text-accent' : 'text-sub'}> ({emoji} {formatNumber(log.damage)})</span>
                                         )}
                                       </div>
                                     )}
                                     {shouldShowPhaseHeader && <div className="text-gray-400">({phaseHeader})</div>}
                                     {(!isResurrectLog || !shouldRenderResurrectBeforeHeader) && (
-                                    <div className={`flex justify-between text-gray-600 ${shouldShowEndPhaseSpacer ? 'mt-1' : ''}`}>
-                                      <span>
+                                    <div className={`text-gray-600 ${shouldShowEndPhaseSpacer ? 'mt-1' : ''}`}>
                                         <span className="text-gray-400">[{phaseLabel}]</span>{' '}
                                         {actionDisplay}
                                         {log.note && <span className="text-gray-400"> {log.note}</span>}
                                         {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
-                                      </span>
                                       {log.damage !== undefined && log.damage > 0 && (
-                                        <span className={isEnemy ? 'text-accent' : 'text-sub'}>({emoji} {formatNumber(log.damage)})</span>
+                                        <span className={isEnemy ? 'text-accent' : 'text-sub'}> ({emoji} {formatNumber(log.damage)})</span>
                                       )}
                                     </div>
                                     )}
@@ -5183,7 +5179,7 @@ function DiaryTab({
                                 momentumDisplay,
                               ].filter(Boolean);
                               const compactHitDisplay = hitDisplay && extraSegments.length > 0
-                                ? `(${hits}/${totalAttempts}回,${extraSegments.join(',')})`
+                                ? `(${hits}/${totalAttempts}回, ${extraSegments.join(', ')})`
                                 : hitDisplay;
                               const actionDisplay = resonanceMatch && !allMissed
                                 ? actionText.replace(/\(共鳴\+\d+%\)$/, '')
@@ -5193,32 +5189,28 @@ function DiaryTab({
                               return (
                                 <div key={j}>
                                   {shouldRenderResurrectBeforeHeader && (
-                                    <div className="flex justify-between text-gray-600"> 
-                                      <span>
-                                        <span className="text-gray-400">[{phaseLabel}]</span>{' '}
-                                        {actionDisplay}
-                                        {battleLog.note && <span className="text-gray-400"> {battleLog.note}</span>}
-                                        {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
-                                      </span>
+                                    <div className="text-gray-600"> 
+                                      <span className="text-gray-400">[{phaseLabel}]</span>{' '}
+                                      {actionDisplay}
+                                      {battleLog.note && <span className="text-gray-400"> {battleLog.note}</span>}
+                                      {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                       {battleLog.damage !== undefined && battleLog.damage > 0 && (
                                         <span className={isEnemy ? 'text-accent' : 'text-sub'}>
-                                          ({emoji} {formatNumber(battleLog.damage)})
+                                          {' '}({emoji} {formatNumber(battleLog.damage)})
                                         </span>
                                       )}
                                     </div>
                                   )}
                                   {shouldShowPhaseHeader && <div className="text-gray-400">({phaseHeader})</div>}
                                   {(!isResurrectLog || !shouldRenderResurrectBeforeHeader) && (
-                                  <div className={`flex justify-between text-gray-600 ${shouldShowEndPhaseSpacer ? 'mt-1' : ''}`}>
-                                    <span>
+                                  <div className={`text-gray-600 ${shouldShowEndPhaseSpacer ? 'mt-1' : ''}`}>
                                       <span className="text-gray-400">[{phaseLabel}]</span>{' '}
                                       {actionDisplay}
                                       {battleLog.note && <span className="text-gray-400"> {battleLog.note}</span>}
                                       {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
-                                    </span>
                                     {battleLog.damage !== undefined && battleLog.damage > 0 && (
                                       <span className={isEnemy ? 'text-accent' : 'text-sub'}>
-                                        ({emoji} {formatNumber(battleLog.damage)})
+                                        {' '}({emoji} {formatNumber(battleLog.damage)})
                                       </span>
                                     )}
                                   </div>
