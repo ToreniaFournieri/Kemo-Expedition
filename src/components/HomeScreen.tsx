@@ -4564,11 +4564,12 @@ function InventoryTab({
           <button
             onClick={() => {
               if (allOwnedItems.length === 0) return;
-              const superRareWarning = superRareOwnedItems.length > 0
-                ? `\n⚠ 超レア付きアイテム ${superRareOwnedItems.length}種類も売却されます。`
-                : '';
+              if (superRareOwnedItems.length > 0) {
+                window.alert('超レア称号がついたアイテムは売却出来ません');
+                return;
+              }
               const shouldSellAll = window.confirm(
-                `所持中アイテムを全て売却します。${superRareWarning}\n合計 ${formatNumber(totalSellAllPrice)}G を獲得します。\n本当に実行しますか？`
+                `所持中アイテムを全て売却します。\n合計 ${formatNumber(totalSellAllPrice)}G を獲得します。\n本当に実行しますか？`
               );
               if (!shouldSellAll) return;
               onSellAllOwned();
@@ -4658,11 +4659,12 @@ function InventoryTab({
                     </div>
                     <button
                       onClick={() => {
-                        const superRareWarning = item.superRare >= 1
-                          ? '\n⚠ 超レア付きアイテムです。本当に売却しますか？'
-                          : '';
+                        if (item.superRare >= 1) {
+                          window.alert('超レア称号がついたアイテムは売却出来ません');
+                          return;
+                        }
                         const shouldSell = window.confirm(
-                          `「${getItemDisplayName(item)} x${formatNumber(count)}」を全売却します。\n${formatNumber(sellPrice)}Gを獲得します。よろしいですか？${superRareWarning}`
+                          `「${getItemDisplayName(item)} x${formatNumber(count)}」を全売却します。\n${formatNumber(sellPrice)}Gを獲得します。よろしいですか？`
                         );
                         if (!shouldSell) return;
                         onSellStack(entry.key);

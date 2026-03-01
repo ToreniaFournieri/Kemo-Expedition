@@ -1787,7 +1787,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SELL_STACK': {
       const currentParty = state.parties[state.selectedPartyIndex];
       const variant = state.global.inventory[action.variantKey];
-      if (!variant || variant.count <= 0) return state;
+      if (!variant || variant.count <= 0 || variant.item.superRare >= 1) return state;
 
       const sellPrice = calculateSellPrice(variant.item) * variant.count;
 
@@ -1813,6 +1813,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'SELL_ALL_OWNED': {
       let totalSellPrice = 0;
       const newInventory = { ...state.global.inventory };
+
+      const hasOwnedSuperRare = Object.values(state.global.inventory).some((variant) => (
+        variant.status === 'owned' && variant.count > 0 && variant.item.superRare >= 1
+      ));
+      if (hasOwnedSuperRare) return state;
 
       for (const [variantKey, variant] of Object.entries(state.global.inventory)) {
         if (variant.status !== 'owned' || variant.count <= 0) continue;
