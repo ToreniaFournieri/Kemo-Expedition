@@ -393,7 +393,7 @@ PT2...
 
 
 **Price (per item, by tier)**
-- see `2.5.5 Item price`
+- see `2.5.5 Item price` @Specification_CONSTANTS_&_DATA.md
 
 - Refresh timing
   - Shop lineup refreshes every 8 hours at **02:00, 10:00, 18:00** (local time).
