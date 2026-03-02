@@ -41,6 +41,7 @@ function hydrateItem(item: Partial<Item>, keyHint?: string): Item {
   };
 }
 
+// SpecRef: 9 | Environment | serializeGameState
 export function serializeGameState(state: GameState): GameState {
   const compactInventory = Object.entries(state.global.inventory).reduce<InventoryRecord>((acc, [key, variant]) => {
     acc[key] = {
@@ -66,6 +67,7 @@ export function serializeGameState(state: GameState): GameState {
   };
 }
 
+// SpecRef: 9 | Environment | hydrateGameState
 export function hydrateGameState(state: GameState): GameState {
   const hydratedInventory = Object.entries(state.global.inventory).reduce<InventoryRecord>((acc, [key, variant]) => {
     const resolvedVariant: InventoryVariant = {

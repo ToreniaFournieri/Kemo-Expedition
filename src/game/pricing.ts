@@ -28,6 +28,7 @@ function getTierShopMultiplier(tier: number): number {
   return multiplier;
 }
 
+// SpecRef: 2.5.5 | Item selling price | calculateItemSellPrice
 export function calculateItemSellPrice(item: Item, autoSellMultiplier = 1): number {
   const tier = getItemTier(item.id);
   const superRareFlag = item.superRare > 0 ? 1 : 0;
@@ -36,6 +37,7 @@ export function calculateItemSellPrice(item: Item, autoSellMultiplier = 1): numb
   return Math.floor(rawPrice);
 }
 
+// SpecRef: 2.5.5 | Item selling price | getShopItemPrice
 export function getShopItemPrice(itemId: number): number {
   const tier = getItemTier(itemId);
   const rawPrice = 200 * getTierShopMultiplier(tier);

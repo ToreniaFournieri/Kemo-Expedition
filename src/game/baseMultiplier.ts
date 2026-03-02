@@ -49,6 +49,7 @@ function clampBaseValue(value: number): number {
   return Math.max(MIN_BASE_VALUE, Math.min(MAX_BASE_VALUE, Math.floor(value)));
 }
 
+// SpecRef: 3.3.2 | Multiplier and Functions | getBaseMultiplier
 export function getBaseMultiplier(baseValue: number, baseType: BaseMultiplierType): number {
   const clampedValue = clampBaseValue(baseValue);
   const table = baseType === 'attack' ? ATTACK_SCALE_TABLE : DEFENSE_SCALE_TABLE;

@@ -65,6 +65,7 @@ DEITY_KEY_BY_NAME['God of Precision'] = 'Goddess of Precision';
 DEITY_KEY_BY_NAME['God of Evasion'] = 'God of Dusk';
 
 
+// SpecRef: 2.3.3 | Religions lists | getDonationTier
 export function getDonationTier(totalDonatedGold: number): number {
   const safeDonation = Math.max(0, totalDonatedGold);
   let tier = 0;
@@ -76,10 +77,12 @@ export function getDonationTier(totalDonatedGold: number): number {
   return tier;
 }
 
+// SpecRef: 2.3.3 | Religions lists | getDeityRank
 export function getDeityRank(totalDonatedGold: number): number {
   return Math.min(MAX_DEITY_RANK, getDonationTier(totalDonatedGold) + 1);
 }
 
+// SpecRef: 2.3.3 | Religions lists | getNextRankDonationRequirement
 export function getNextRankDonationRequirement(totalDonatedGold: number): number | null {
   const safeDonation = Math.max(0, totalDonatedGold);
   const currentTier = getDonationTier(safeDonation);
@@ -91,14 +94,17 @@ export function getNextRankDonationRequirement(totalDonatedGold: number): number
   return nextThreshold;
 }
 
+// SpecRef: 2.3.3 | Religions lists | getEffectiveDeityTier
 export function getEffectiveDeityTier(totalDonatedGold: number): number {
   return Math.min(getDonationTier(totalDonatedGold), MAX_DEITY_RANK);
 }
 
+// SpecRef: 2.3.3 | Religions lists | normalizeDeityName
 export function normalizeDeityName(name: string): string {
   return DEITY_KEY_BY_NAME[name] ? DEITY_NAME_MAP[DEITY_KEY_BY_NAME[name]] : name;
 }
 
+// SpecRef: 2.3.3 | Religions lists | getDeityKey
 export function getDeityKey(name: string): DeityKey | null {
   return DEITY_KEY_BY_NAME[name] ?? null;
 }
@@ -120,6 +126,7 @@ function upgradeResonanceAbility(abilities: Ability[], upgradeTiers: number): Ab
   });
 }
 
+// SpecRef: 2.3.3 | Religions lists | getDeityEffectDescription
 export function getDeityEffectDescription(name: string, totalDonatedGold = 0): string {
   const deityKey = getDeityKey(name);
   const effectiveTier = getEffectiveDeityTier(totalDonatedGold);
@@ -175,6 +182,7 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
   }
 }
 
+// SpecRef: 2.3.3 | Religions lists | applyDeityCharacterModifiers
 export function applyDeityCharacterModifiers(
   party: Party,
   characterStats: ComputedCharacterStats[]
@@ -251,6 +259,7 @@ export function applyDeityCharacterModifiers(
   });
 }
 
+// SpecRef: 2.3.3 | Religions lists | getDeityStateDurationMultiplier
 export function getDeityStateDurationMultiplier(name: string, totalDonatedGold = 0, state: 'rest' | 'sell' | 'feast' | 'sleep' | 'pray' | 'explore'): number {
   const deityKey = getDeityKey(name);
   const effectiveTier = getEffectiveDeityTier(totalDonatedGold);
@@ -265,6 +274,7 @@ export function getDeityStateDurationMultiplier(name: string, totalDonatedGold =
   return 1;
 }
 
+// SpecRef: 2.3.3 | Religions lists | getDeityPartyHpMultiplier
 export function getDeityPartyHpMultiplier(name: string, totalDonatedGold = 0): number {
   const deityKey = getDeityKey(name);
   if (deityKey !== 'God of Resonance') return 1;
@@ -272,6 +282,7 @@ export function getDeityPartyHpMultiplier(name: string, totalDonatedGold = 0): n
   return 0.9 + 0.002 * effectiveTier;
 }
 
+// SpecRef: 2.3.3 | Religions lists | getDeityElementalResistanceModifier
 export function getDeityElementalResistanceModifier(name: string): { fire: number; thunder: number; ice: number } {
   const deityKey = getDeityKey(name);
   if (deityKey === 'Goddess of Restoration') return { fire: 1, thunder: 1, ice: 1.5 };

@@ -16,35 +16,43 @@ export const BOSS_GATE_REQUIRED = 3;
 export const GODS_BATTLE_REQUIRED = 10;
 const GODS_BATTLE_REQUIRED_DEV = 1;
 
+// SpecRef: 5.1 | "Loot-Gate" progression system | getGodsBattleRequired
 export function getGodsBattleRequired(env: EnvironmentId = getEnvironmentId()): number {
   return env === 'dev' ? GODS_BATTLE_REQUIRED_DEV : GODS_BATTLE_REQUIRED;
 }
 
+// SpecRef: 5.1 | "Loot-Gate" progression system | getLootCollectionKey
 export function getLootCollectionKey(tier: number, rarity: GateRarity): string {
   return `${tier}:${rarity}`;
 }
 
+// SpecRef: 5.1 | "Loot-Gate" progression system | getLootCollectionCount
 export function getLootCollectionCount(party: Pick<Party, 'lootGateProgress'>, tier: number, rarity: GateRarity): number {
   const key = getLootCollectionKey(tier, rarity);
   return party.lootGateProgress?.[key] ?? 0;
 }
 
+// SpecRef: 5.1 | "Loot-Gate" progression system | getEntryGateKey
 export function getEntryGateKey(dungeonId: number): number {
   return dungeonId * 1000 + 101;
 }
 
+// SpecRef: 5.1 | "Loot-Gate" progression system | getEliteGateKey
 export function getEliteGateKey(dungeonId: number, floorNumber: number): number {
   return dungeonId * 1000 + floorNumber * 10 + 4;
 }
 
+// SpecRef: 5.1 | "Loot-Gate" progression system | getBossGateKey
 export function getBossGateKey(dungeonId: number): number {
   return dungeonId * 1000 + 604;
 }
 
+// SpecRef: 5.1 | "Loot-Gate" progression system | isLootGateUnlocked
 export function isLootGateUnlocked(party: Pick<Party, 'lootGateStatus'>, gateKey: number): boolean {
   return Boolean(party.lootGateStatus?.[gateKey]);
 }
 
+// SpecRef: 5.1 | "Loot-Gate" progression system | getItemRarityForLootGate
 export function getItemRarityForLootGate(itemId: number): GateRarity | null {
   const rarityCode = itemId % 1000;
   if (rarityCode >= 400) return 'bossRare';
@@ -53,6 +61,7 @@ export function getItemRarityForLootGate(itemId: number): GateRarity | null {
   return null;
 }
 
+// SpecRef: 5.1 | "Loot-Gate" progression system | addRecoveredItemsToLootProgress
 export function addRecoveredItemsToLootProgress(currentProgress: Record<string, number>, recoveredItems: Item[]): Record<string, number> {
   const nextProgress = { ...currentProgress };
   for (const item of recoveredItems) {
@@ -65,6 +74,7 @@ export function addRecoveredItemsToLootProgress(currentProgress: Record<string, 
   return nextProgress;
 }
 
+// SpecRef: 5.1 | "Loot-Gate" progression system | unlockAvailableLootGates
 export function unlockAvailableLootGates(
   currentStatus: Record<number, boolean>,
   progress: Record<string, number>,

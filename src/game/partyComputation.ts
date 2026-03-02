@@ -178,6 +178,7 @@ function getEffectiveLevel(level: number): number {
   return level * scale;
 }
 
+// SpecRef: 2.3.2 | Party structure | computePartyStats
 export function computePartyStats(party: Party): {
   partyStats: ComputedPartyStats;
   characterStats: ComputedCharacterStats[];

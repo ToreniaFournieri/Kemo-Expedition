@@ -2247,6 +2247,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
   }
 }
 
+// SpecRef: 4.1 | Time-Based Progress Handling (Online + AFK) | useGameState
 export function useGameState() {
   const [state, dispatch] = useReducer(gameReducer, null, createInitialState);
   const [notifications, setNotifications] = useState<GameNotification[]>([]);
