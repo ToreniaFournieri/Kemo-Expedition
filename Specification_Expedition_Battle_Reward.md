@@ -120,11 +120,12 @@ left-alinged                                           right-aligned
 **functions of attack**
 
 - `f.resonance_amplifier`(actor: ,successful hit: n )
-  	If actor.`a.resonance`1, return 1.0 + (0.05 x (n - 1))   
-  	If actor.`a.resonance`2, return 1.0 + (0.08 x (n - 1))
-  	If actor.`a.resonance`3, return 1.0 + (0.11 x (n - 1))
-  	If actor.`a.resonance`4, return 1.0 + (0.13 x (n - 1))
-  	If actor.`a.resonance`5, return 1.0 + (0.15 x (n - 1))
+  - If (phase is MID) or (phase is LONG and party.`God of Resonance`),
+  	- If actor.`a.resonance`1, return 1.0 + (0.05 x (n - 1))   
+  	- If actor.`a.resonance`2, return 1.0 + (0.08 x (n - 1))
+  	- If actor.`a.resonance`3, return 1.0 + (0.11 x (n - 1))
+  	- If actor.`a.resonance`4, return 1.0 + (0.13 x (n - 1))
+  	- If actor.`a.resonance`5, return 1.0 + (0.15 x (n - 1))
     Else, return 1.0.
 
 - `f.damage_calculation`: (actor: , opponent: , phase: )
