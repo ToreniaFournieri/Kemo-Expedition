@@ -337,7 +337,33 @@ PT3: 貯金額: 10G
 **Special mod:** If `/luna/`, game mode is `m.luna` and cannot be changed. 
 **Save Data Isolation:** Save data must be namespaced per environment (`/dev/` and `/qa/`) and never shared between them.
 
-## 10. CHANGELOG
+## 10. Coding Rule: SpecRef Traceability
+- To ensure traceability between specification and implementation, developers must annotate relevant code blocks with SpecRef comments.
+
+### 10.1 Format (mandatory)
+
+```
+# SpecRef: <SectionID> | <SectionTitle> | <part>
+# SpecRef: <SectionID> | <SectionTitle> | <FunctionID>
+
+```
+
+### 10.2 Examples
+```
+# SpecRef: 8.5.1 | Shop (お店) | Paid Refresh (有償洗替)
+
+# SpecRef: 6.2 | Function of battle | f.hit_detection
+# SpecRef: 6.2 | Function of battle | f.targeting
+```
+
+### 10.3 Rules
+- SectionID must exactly match the specification heading number (e.g., 6.2).
+- FunctionID must exactly match the specification function identifier (e.g., f.hit_detection).
+- Place the SpecRef comment at the entry point of the implemented logic (function/method or main branch block).
+- If one code block implements multiple spec functions, add one SpecRef line per function.
+- When specification IDs or names change, corresponding SpecRef comments must be updated in the same change set.
+
+## 11. CHANGELOG
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
