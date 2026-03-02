@@ -152,6 +152,7 @@ const BONUS_UNLOCK_RACE_BY_TYPE = Object.fromEntries(
   Object.entries(RACE_UNLOCK_BONUS_BY_RACE).map(([raceId, bonusType]) => [bonusType, raceId]),
 ) as Partial<Record<BonusType, RaceId>>;
 
+// SpecRef: 3.3.2 | Multiplier and Functions | getUnlockedRaceAbilitiesFromBonuses
 export function getUnlockedRaceAbilitiesFromBonuses(bonuses: Bonus[]): Set<RaceId> {
   const unlockedRaceAbilities = new Set<RaceId>();
 
@@ -467,6 +468,7 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
   }
 }
 
+// SpecRef: 3.3.2 | Multiplier and Functions | computeCharacterStats
 export function computeCharacterStats(
   character: Character,
   partyLevel: number,

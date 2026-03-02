@@ -5,6 +5,7 @@ function getPathname(): string {
   return window.location.pathname;
 }
 
+// SpecRef: 9 | Environment | getEnvironmentId
 export function getEnvironmentId(): EnvironmentId {
   const pathname = getPathname();
   const normalizedPath = pathname.endsWith('/') ? pathname : `${pathname}/`;
@@ -14,6 +15,7 @@ export function getEnvironmentId(): EnvironmentId {
   return 'default';
 }
 
+// SpecRef: 9 | Environment | getEnvLabel
 export function getEnvLabel(): string {
   const env = getEnvironmentId();
   if (env === 'dev') return '開発環境';
@@ -22,6 +24,7 @@ export function getEnvLabel(): string {
   return '';
 }
 
+// SpecRef: 9 | Environment | createEnvironmentStorageKey
 export function createEnvironmentStorageKey(baseKey: string): string {
   return `${baseKey}:${getEnvironmentId()}`;
 }

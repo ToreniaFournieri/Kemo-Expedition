@@ -16,6 +16,7 @@ interface ResolveMagicProfileParams {
   magicalNoA?: number;
 }
 
+// SpecRef: 3.3.2 | Multiplier and Functions | resolveMagicProfile
 export function resolveMagicProfile({
   style = 'multi-hit',
   elementalOffense,

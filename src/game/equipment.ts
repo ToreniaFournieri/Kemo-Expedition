@@ -1,5 +1,6 @@
 import { Character, Item } from '../types';
 
+// SpecRef: 8.3.4 | Equipment management | replaceCharacterEquipment
 export function replaceCharacterEquipment(
   character: Character,
   slotIndex: number,

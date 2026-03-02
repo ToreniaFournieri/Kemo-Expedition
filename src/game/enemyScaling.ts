@@ -14,10 +14,12 @@ type EnemyScalingOptions = {
   isGodEnemy?: boolean;
 };
 
+// SpecRef: 6.1 | Encounter Rules | getRoomMultiplier
 export function getRoomMultiplier(floorNumber: number, roomType: RoomType, floorMultiplier: number): number {
   return getFloorRoomMultipliers(floorNumber, roomType).attack ?? floorMultiplier;
 }
 
+// SpecRef: 6.1 | Encounter Rules | applyEnemyEncounterScaling
 export function applyEnemyEncounterScaling(
   enemy: EnemyDef,
   dungeon: Dungeon,
