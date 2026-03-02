@@ -4185,25 +4185,33 @@ function ExpeditionTab({
                                 return (
                                   <div key={j}>
                                     {shouldRenderResurrectBeforeHeader && (
-                                      <div className="text-gray-600">
-                                        <span className="text-gray-400">[{phaseLabel}]</span>{' '}
-                                        {actionDisplay}
-                                        {log.note && <span className="text-gray-400"> {log.note}</span>}
-                                        {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
+                                      <div className="flex items-start justify-between gap-2 text-gray-600">
+                                        <span className="min-w-0">
+                                          <span className="text-gray-400">[{phaseLabel}]</span>{' '}
+                                          {actionDisplay}
+                                          {log.note && <span className="text-gray-400"> {log.note}</span>}
+                                          {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
+                                        </span>
                                         {log.damage !== undefined && log.damage > 0 && (
-                                          <span className={isEnemy ? 'text-accent' : 'text-sub'}> ({emoji} {formatNumber(log.damage)})</span>
+                                          <span className={`ml-auto shrink-0 whitespace-nowrap text-right ${isEnemy ? 'text-accent' : 'text-sub'}`}>
+                                            ({emoji} {formatNumber(log.damage)})
+                                          </span>
                                         )}
                                       </div>
                                     )}
                                     {shouldShowPhaseHeader && <div className="text-gray-400">({phaseHeader})</div>}
                                     {(!isResurrectLog || !shouldRenderResurrectBeforeHeader) && (
-                                    <div className={`text-gray-600 ${shouldShowEndPhaseSpacer ? 'mt-1' : ''}`}>
+                                    <div className={`flex items-start justify-between gap-2 text-gray-600 ${shouldShowEndPhaseSpacer ? 'mt-1' : ''}`}>
+                                      <span className="min-w-0">
                                         <span className="text-gray-400">[{phaseLabel}]</span>{' '}
                                         {actionDisplay}
                                         {log.note && <span className="text-gray-400"> {log.note}</span>}
                                         {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
+                                      </span>
                                       {log.damage !== undefined && log.damage > 0 && (
-                                        <span className={isEnemy ? 'text-accent' : 'text-sub'}> ({emoji} {formatNumber(log.damage)})</span>
+                                        <span className={`ml-auto shrink-0 whitespace-nowrap text-right ${isEnemy ? 'text-accent' : 'text-sub'}`}>
+                                          ({emoji} {formatNumber(log.damage)})
+                                        </span>
                                       )}
                                     </div>
                                     )}
@@ -5188,28 +5196,32 @@ function DiaryTab({
                               return (
                                 <div key={j}>
                                   {shouldRenderResurrectBeforeHeader && (
-                                    <div className="text-gray-600"> 
-                                      <span className="text-gray-400">[{phaseLabel}]</span>{' '}
-                                      {actionDisplay}
-                                      {battleLog.note && <span className="text-gray-400"> {battleLog.note}</span>}
-                                      {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
+                                    <div className="flex items-start justify-between gap-2 text-gray-600">
+                                      <span className="min-w-0">
+                                        <span className="text-gray-400">[{phaseLabel}]</span>{' '}
+                                        {actionDisplay}
+                                        {battleLog.note && <span className="text-gray-400"> {battleLog.note}</span>}
+                                        {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
+                                      </span>
                                       {battleLog.damage !== undefined && battleLog.damage > 0 && (
-                                        <span className={isEnemy ? 'text-accent' : 'text-sub'}>
-                                          {' '}({emoji} {formatNumber(battleLog.damage)})
+                                        <span className={`ml-auto shrink-0 whitespace-nowrap text-right ${isEnemy ? 'text-accent' : 'text-sub'}`}>
+                                          ({emoji} {formatNumber(battleLog.damage)})
                                         </span>
                                       )}
                                     </div>
                                   )}
                                   {shouldShowPhaseHeader && <div className="text-gray-400">({phaseHeader})</div>}
                                   {(!isResurrectLog || !shouldRenderResurrectBeforeHeader) && (
-                                  <div className={`text-gray-600 ${shouldShowEndPhaseSpacer ? 'mt-1' : ''}`}>
+                                  <div className={`flex items-start justify-between gap-2 text-gray-600 ${shouldShowEndPhaseSpacer ? 'mt-1' : ''}`}>
+                                    <span className="min-w-0">
                                       <span className="text-gray-400">[{phaseLabel}]</span>{' '}
                                       {actionDisplay}
                                       {battleLog.note && <span className="text-gray-400"> {battleLog.note}</span>}
                                       {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
+                                    </span>
                                     {battleLog.damage !== undefined && battleLog.damage > 0 && (
-                                      <span className={isEnemy ? 'text-accent' : 'text-sub'}>
-                                        {' '}({emoji} {formatNumber(battleLog.damage)})
+                                      <span className={`ml-auto shrink-0 whitespace-nowrap text-right ${isEnemy ? 'text-accent' : 'text-sub'}`}>
+                                        ({emoji} {formatNumber(battleLog.damage)})
                                       </span>
                                     )}
                                   </div>
