@@ -250,6 +250,7 @@ function calculateCharacterFriendlyFireDamage(
   target: ComputedCharacterStats,
   partyStats: ComputedPartyStats,
   partyHp: number,
+  partyDeityKey: string | null,
   noAMultiplier: number = 1.0
 ): CharacterAttackResult {
   let attack = 0;
@@ -319,13 +320,15 @@ function calculateCharacterFriendlyFireDamage(
   const actorFocusLevel = attacker.abilities.find(a => a.id === 'focus')?.level ?? 0;
   const targetDeflectionLevel = getDeflectionLevel(target);
   const resonance = attacker.abilities.find(a => a.id === 'resonance');
+  const canApplyResonance = phase === 'mid' || (phase === 'long' && partyDeityKey === 'God of Resonance');
 
   let hits = 0;
   let damage = 0;
   for (let i = 1; i <= noA; i++) {
     if (hitDetection(actorAccuracyPotency, attacker.accuracyBonus, target.evasionBonus, i, phase, targetDeflectionLevel, actorFocusLevel)) {
       hits += 1;
-      damage += Math.max(1, Math.floor(basePerHitDamage * getResonanceAmplifier(resonance?.level, hits)));
+      const resonanceAmplifier = canApplyResonance ? getResonanceAmplifier(resonance?.level, hits) : 1.0;
+      damage += Math.max(1, Math.floor(basePerHitDamage * resonanceAmplifier));
     }
   }
 
@@ -378,11 +381,11 @@ function getResonanceBonusPerHit(resonanceLevel: number | undefined): number {
 }
 
 function getResonanceLogText(
-  phase: BattlePhase,
   actorAbilities: Array<{ id: AbilityId; level: number }>,
-  successfulHits: number
+  successfulHits: number,
+  canApplyResonance: boolean
 ): string {
-  if (phase !== 'mid' || successfulHits <= 0) {
+  if (!canApplyResonance || successfulHits <= 0) {
     return '';
   }
 
@@ -435,6 +438,7 @@ function calculateCharacterDamage(
   enemy: EnemyDef,
   partyStats: ComputedPartyStats,
   partyHp: number,
+  partyDeityKey: string | null,
   noAMultiplier: number = 1.0 // For counter/re-attack, use 0.5
 ): CharacterAttackResult {
   let attack = 0;
@@ -526,6 +530,7 @@ function calculateCharacterDamage(
   }
 
   const resonance = charStats.abilities.find(a => a.id === 'resonance');
+  const canApplyResonance = phase === 'mid' || (phase === 'long' && partyDeityKey === 'God of Resonance');
 
   const elementalMultiplier = getElementalMultiplier(
     charStats.elementalOffense,
@@ -553,7 +558,8 @@ function calculateCharacterDamage(
   for (let i = 1; i <= noA; i++) {
     if (hitDetection(actorAccuracyPotency, charStats.accuracyBonus, enemyEvasion, i, phase, enemyDeflectionLevel, actorFocusLevel)) {
       hits++;
-      damage += Math.max(1, Math.floor(basePerHitDamage * getResonanceAmplifier(resonance?.level, hits)));
+      const resonanceAmplifier = canApplyResonance ? getResonanceAmplifier(resonance?.level, hits) : 1.0;
+      damage += Math.max(1, Math.floor(basePerHitDamage * resonanceAmplifier));
     }
   }
 
@@ -737,7 +743,9 @@ export function executeBattle(
   let enemyHp = enemy.hp;
   const log: BattleLogEntry[] = [];
 
-  if (getDeityKey(party.deity.name) === 'Goddess of Discord' && characterStats.length > 0) {
+  const partyDeityKey = getDeityKey(party.deity.name);
+
+  if (partyDeityKey === 'Goddess of Discord' && characterStats.length > 0) {
     const targetIndex = Math.floor(Math.random() * characterStats.length);
     const targetStats = characterStats[targetIndex];
     const targetName = party.characters.find(c => c.id === targetStats.characterId)?.name ?? '???';
@@ -946,7 +954,7 @@ export function executeBattle(
       return;
     }
 
-    const reCounterResult = calculateCharacterDamage('close', targetCharStats, targetChar, enemy, partyStats, partyHp, reCounterNoAMultiplier);
+    const reCounterResult = calculateCharacterDamage('close', targetCharStats, targetChar, enemy, partyStats, partyHp, partyDeityKey, reCounterNoAMultiplier);
     if (reCounterResult.totalAttempts <= 0) {
       return;
     }
@@ -995,7 +1003,7 @@ export function executeBattle(
       const coverChar = party.characters.find(c => c.id === coverCharStats.characterId);
       if (!coverChar) continue;
 
-      const coveringFireResult = calculateCharacterDamage('long', coverCharStats, coverChar, enemy, partyStats, partyHp, coveringFireNoAMultiplier);
+      const coveringFireResult = calculateCharacterDamage('long', coverCharStats, coverChar, enemy, partyStats, partyHp, partyDeityKey, coveringFireNoAMultiplier);
       if (coveringFireResult.totalAttempts <= 0) continue;
 
       if (isIllusionActive('long', getEnemyAbilityLevel(enemy, 'illusion') > 0, 'enemy', consumedIllusionStateIds)) {
@@ -1146,7 +1154,7 @@ export function executeBattle(
           const resonanceActor = enemyResonanceLevel > 0
             ? { abilities: [{ id: 'resonance' as const, level: enemyResonanceLevel }] }
             : { abilities: [] };
-          const enemyResonanceLogText = getResonanceLogText(phase, resonanceActor.abilities, enemySuccessfulHits);
+          const enemyResonanceLogText = getResonanceLogText(resonanceActor.abilities, enemySuccessfulHits, phase === 'mid');
 
           if (phase === 'mid') {
             log.push({
@@ -1291,6 +1299,7 @@ export function executeBattle(
               enemy,
               partyStats,
               partyHp,
+              partyDeityKey,
               getCounterNoAMultiplier(attack.charStats),
             );
             if (counterResult.totalAttempts <= 0) continue;
@@ -1301,7 +1310,7 @@ export function executeBattle(
             }
 
             const counterType = phase === 'mid' ? '魔法反撃' : '反撃';
-            const resonanceLogText = getResonanceLogText(phase, attack.charStats.abilities, counterResult.hits);
+            const resonanceLogText = getResonanceLogText(attack.charStats.abilities, counterResult.hits, phase === 'mid' || (phase === 'long' && partyDeityKey === 'God of Resonance'));
             const characterCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(attack.charStats, partyHp, partyStats.hp));
             const characterCounterMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(attack.charStats, partyHp, partyStats.hp));
             log.push({
@@ -1455,7 +1464,7 @@ export function executeBattle(
             const magicalCounterNoAMultiplier = getMagicalCounterNoAMultiplier(magicalCounterStats);
             if (magicalCounterNoAMultiplier <= 0) continue;
 
-            const magicalCounterResult = calculateCharacterDamage('mid', magicalCounterStats, magicalCounterChar, enemy, partyStats, partyHp, magicalCounterNoAMultiplier);
+            const magicalCounterResult = calculateCharacterDamage('mid', magicalCounterStats, magicalCounterChar, enemy, partyStats, partyHp, partyDeityKey, magicalCounterNoAMultiplier);
             if (magicalCounterResult.totalAttempts <= 0) continue;
 
             const magicalCounterDealtDamage = magicalCounterResult.damage > 0;
@@ -1463,7 +1472,7 @@ export function executeBattle(
               enemyHp -= magicalCounterResult.damage;
             }
 
-            const resonanceLogText = getResonanceLogText('mid', magicalCounterStats.abilities, magicalCounterResult.hits);
+            const resonanceLogText = getResonanceLogText(magicalCounterStats.abilities, magicalCounterResult.hits, true);
             const magicalCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(magicalCounterStats, partyHp, partyStats.hp));
             const magicalCounterMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(magicalCounterStats, partyHp, partyStats.hp));
             log.push({
@@ -1508,7 +1517,7 @@ export function executeBattle(
           ctx = newCtx;
           const selected = resolveEnemyTarget(targetRow, candidates, phase) ?? candidates[Math.floor(Math.random() * candidates.length)];
           antagonismTarget = selected;
-          result = calculateCharacterFriendlyFireDamage(phase, cs, selected, partyStats, partyHp, noAMultiplier);
+          result = calculateCharacterFriendlyFireDamage(phase, cs, selected, partyStats, partyHp, partyDeityKey, noAMultiplier);
           if (result.damage > 0) {
             partyHp -= result.damage;
 
@@ -1535,7 +1544,7 @@ export function executeBattle(
             }
           }
         } else {
-          result = calculateCharacterDamage(phase, cs, char, enemy, partyStats, partyHp, noAMultiplier);
+          result = calculateCharacterDamage(phase, cs, char, enemy, partyStats, partyHp, partyDeityKey, noAMultiplier);
           if (
             result.totalAttempts > 0
             && isIllusionActive(phase, getEnemyAbilityLevel(enemy, 'illusion') > 0, 'enemy', consumedIllusionStateIds)
@@ -1561,7 +1570,7 @@ export function executeBattle(
         const attackType = isReAttack
           ? (phase === 'mid' ? `${magicProfile.spellName}連撃` : '連撃')
           : (phase === 'mid' ? `${magicProfile.spellName}` : '攻撃');
-        const resonanceLogText = getResonanceLogText(phase, cs.abilities, result.hits);
+        const resonanceLogText = getResonanceLogText(cs.abilities, result.hits, phase === 'mid' || (phase === 'long' && partyDeityKey === 'God of Resonance'));
         const characterAttackRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(cs, partyHp, partyStats.hp));
         const characterAttackMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(cs, partyHp, partyStats.hp));
         const antagonismTargetName = antagonismTarget

@@ -169,7 +169,7 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
     }
     case 'God of Resonance': {
       const hpMultiplier = 0.9 + 0.002 * effectiveTier;
-      return `全員の共鳴を1段階強化。共鳴が遠距離攻撃にも適用。魔法防御0.90倍、HP${hpMultiplier.toFixed(2)}倍`;
+      return `全員の共鳴を1段階強化。共鳴は中距離攻撃だけでなく、遠距離攻撃にも適用。魔法防御0.90倍、HP${hpMultiplier.toFixed(2)}倍`;
     }
     case 'God of Oblivion': {
       return effectiveTier >= 10 ? 'なし。追加報酬抽選+1回' : 'なし。';

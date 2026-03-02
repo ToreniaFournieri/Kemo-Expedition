@@ -920,7 +920,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "God of Resonance",
         "label": "共鳴の神",
-        "description": "効果:全員の共鳴を1+α段階強化。共鳴が遠距離攻撃にも適用。魔法防御力0.90倍、HP0.90+α倍。\n語られぬ神は消える。響かぬ名は滅びる。"
+        "description": "効果:全員の共鳴を1+α段階強化。共鳴は中距離攻撃だけでなく、遠距離攻撃にも適用。魔法防御力0.90倍、HP0.90+α倍。\n語られぬ神は消える。響かぬ名は滅びる。"
       },
       {
         "key": "Goddess of Precision",
