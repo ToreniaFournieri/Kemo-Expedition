@@ -3990,7 +3990,10 @@ function ExpeditionTab({
           : cycle.state === '休息中'
           ? hpPercent
           : cycle.state === '探索中'
-          ? Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100)
+          ? Math.min(
+            100,
+            Math.floor(cycleElapsedMs / EXPLORING_PROGRESS_STEP_MS) * (100 / EXPLORING_PROGRESS_TOTAL_STEPS),
+          )
           : Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100);
         const hpForSortieCheck = cycle.state === '探索中' ? displayedHp : party.currentHp;
         const isSortieDisabled = !!selectedDungeonGate?.locked || hpForSortieCheck <= 0 || partyStats.hp <= 0;
