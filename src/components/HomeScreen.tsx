@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, type ChangeEvent, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, getVariantKey, MAX_LEVEL } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, getVariantKey, MAX_LEVEL } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import {
   DUNGEONS,
@@ -23,6 +23,7 @@ import { getXpToNextLevel } from '../game/partyLevel';
 import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../game/environment';
 import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, getShopRefreshPrice, getNextShopRefreshDate, countElapsedShopRefreshes } from '../game/shop';
 import { calculateItemSellPrice } from '../game/pricing';
+import { NotificationToast } from './NotificationToast';
 import { getBaseMultiplier } from '../game/baseMultiplier';
 import { computeCharacterStats, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
 import { serializeGameState } from '../game/saveCodec';
@@ -44,6 +45,9 @@ import {
 
 interface HomeScreenProps {
   state: GameState;
+  notifications: GameNotification[];
+  onDismissNotification: (id: string) => void;
+  onDismissAllNotifications: () => void;
   bags: GameBags;
   actions: {
     selectParty: (partyIndex: number) => void;
@@ -1222,7 +1226,14 @@ function getInitialGameMode(isLunaEnvironment: boolean): GameMode {
   return 'm.kemo';
 }
 
-export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
+export function HomeScreen({
+  state,
+  actions,
+  bags,
+  notifications,
+  onDismissNotification,
+  onDismissAllNotifications,
+}: HomeScreenProps) {
   const currentEnv = getEnvironmentId();
   const isLunaEnvironment = currentEnv === 'luna';
   const [activeTab, setActiveTab] = useState<Tab>('expedition');
@@ -1270,6 +1281,7 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
   useEffect(() => {
     gameModeRef.current = gameMode;
   }, [gameMode]);
+
   const afkSummaryBaselineRef = useRef<Array<{ victories: number; retreats: number; defeats: number; donatedGold: number; savedGold: number }> | null>(null);
   const shouldShowAfkSummaryRef = useRef(false);
   const { partyStats, characterStats } = computePartyStats(currentParty);
@@ -2041,6 +2053,12 @@ export function HomeScreen({ state, actions, bags }: HomeScreenProps) {
           />
         )}
       </div>
+
+      <NotificationToast
+        notifications={notifications}
+        onDismiss={onDismissNotification}
+        onDismissAll={onDismissAllNotifications}
+      />
     </div>
   );
 }
@@ -4495,6 +4513,7 @@ function ShopTab({
           </div>
         ))}
       </div>
+
     </div>
   );
 }
@@ -6393,6 +6412,7 @@ function SettingTab({
           </div>
         </div>}
       </div>
+
     </div>
   );
 }
