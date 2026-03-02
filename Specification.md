@@ -343,15 +343,15 @@ PT3: 貯金額: 10G
 ### 10.1 Format (mandatory)
 
 ```
-# SpecRef: <SectionID> | <SectionTitle> | <Anchor>
+// SpecRef: <SectionID> | <SectionTitle> | <Anchor>
 ```
 
 ### 10.2 Examples
 ```
-# SpecRef: 8.5.1 | Shop (お店) | Paid Refresh (有償洗替)
+// SpecRef: 8.5.1 | Shop (お店) | Paid Refresh (有償洗替)
 
-# SpecRef: 6.2 | Function of battle | f.hit_detection
-# SpecRef: 6.2 | Function of battle | f.targeting
+// SpecRef: 6.2 | Function of battle | f.hit_detection
+// SpecRef: 6.2 | Function of battle | f.targeting
 ```
 
 ### 10.3 Rules
