@@ -343,9 +343,7 @@ PT3: 貯金額: 10G
 ### 10.1 Format (mandatory)
 
 ```
-# SpecRef: <SectionID> | <SectionTitle> | <part>
-# SpecRef: <SectionID> | <SectionTitle> | <FunctionID>
-
+# SpecRef: <SectionID> | <SectionTitle> | <Anchor>
 ```
 
 ### 10.2 Examples
@@ -357,11 +355,12 @@ PT3: 貯金額: 10G
 ```
 
 ### 10.3 Rules
-- SectionID must exactly match the specification heading number (e.g., 6.2).
-- FunctionID must exactly match the specification function identifier (e.g., f.hit_detection).
-- Place the SpecRef comment at the entry point of the implemented logic (function/method or main branch block).
-- If one code block implements multiple spec functions, add one SpecRef line per function.
-- When specification IDs or names change, corresponding SpecRef comments must be updated in the same change set.
+- SectionID must exactly match the specification heading number (e.g., `6.2`).
+- Anchor must exactly match the corresponding identifier/name in the specification (e.g., `f.hit_detection`, `Paid Refresh (有償洗替)`).
+- Place the `SpecRef` comment at the entry point of the implemented logic (function/method or main branch block).
+- If one code block implements multiple spec items, add one `SpecRef` line per item.
+- When specification IDs/titles/anchors change, corresponding `SpecRef` comments must be updated in the same change set.
+
 
 ## 11. CHANGELOG
 
