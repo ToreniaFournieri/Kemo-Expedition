@@ -132,8 +132,9 @@ function preloadRaceIcons(): void {
   });
 }
 
-function getExplorationDurationMs(durationMultiplier: number = 1): number {
-  return Math.floor(EXPLORING_PROGRESS_TOTAL_STEPS * EXPLORING_PROGRESS_STEP_MS * durationMultiplier);
+function getExplorationDurationMs(entryCount?: number, durationMultiplier: number = 1): number {
+  const exploredSteps = Math.max(1, Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, entryCount ?? EXPLORING_PROGRESS_TOTAL_STEPS));
+  return Math.floor(exploredSteps * EXPLORING_PROGRESS_STEP_MS * durationMultiplier);
 }
 
 function getExpeditionOutcomeLabel(outcome: 'victory' | 'return' | 'defeat' | 'retreat'): string {
@@ -1481,7 +1482,8 @@ export function HomeScreen({
         const updated = { ...runtime };
 
         if (updated.state === '探索中') {
-          updated.durationMs = getExplorationDurationMs(getPartyStateDurationMultiplier(party, 'explore'));
+          const exploredRooms = party.lastExpeditionLog?.entries.length;
+          updated.durationMs = getExplorationDurationMs(exploredRooms, getPartyStateDurationMultiplier(party, 'explore'));
         }
 
         if (updated.state === '休息中') {
@@ -1560,7 +1562,7 @@ export function HomeScreen({
               pendingGodsBattleByPartyRef.current[partyIndex] = false;
               actions.runExpedition(partyIndex, gameModeRef.current === 'm.luna', triggerGodsBattle);
               updated.state = '探索中';
-              updated.durationMs = getExplorationDurationMs(getPartyStateDurationMultiplier(party, 'explore'));
+              updated.durationMs = getExplorationDurationMs(undefined, getPartyStateDurationMultiplier(party, 'explore'));
               updated.isCurrentExpeditionGodsBattle = triggerGodsBattle;
             } else if (updated.state === '探索中') {
               actions.finalizeDiaryLog(partyIndex);
@@ -3990,7 +3992,7 @@ function ExpeditionTab({
           : cycle.state === '探索中'
           ? Math.min(
             100,
-            Math.floor(cycleElapsedMs / Math.max(1, cycle.durationMs / EXPLORING_PROGRESS_TOTAL_STEPS)) * (100 / EXPLORING_PROGRESS_TOTAL_STEPS),
+            Math.floor(cycleElapsedMs / EXPLORING_PROGRESS_STEP_MS) * (100 / EXPLORING_PROGRESS_TOTAL_STEPS),
           )
           : Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100);
         const hpForSortieCheck = cycle.state === '探索中' ? displayedHp : party.currentHp;
