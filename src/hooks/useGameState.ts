@@ -1758,8 +1758,21 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let newEquipment = [...oldChar.equipment];
 
       if (nextMaxEquipSlots < oldMaxEquipSlots) {
+        // Keep as many equipped items as possible by compacting into the surviving slots first,
+        // then return only the overflow equipment to inventory.
+        const keptEquipment = newEquipment.slice(0, nextMaxEquipSlots);
+        const overflowCandidates = newEquipment.slice(nextMaxEquipSlots).filter((e): e is Item => e != null);
+
+        for (let i = 0; i < keptEquipment.length && overflowCandidates.length > 0; i++) {
+          if (keptEquipment[i] == null) {
+            keptEquipment[i] = overflowCandidates.shift() ?? null;
+          }
+        }
+
+        newEquipment = [...keptEquipment, ...Array.from({ length: newEquipment.length - nextMaxEquipSlots }, () => null)];
+
         newInventory = { ...state.global.inventory };
-        for (const item of oldChar.equipment.slice(nextMaxEquipSlots).filter((e): e is Item => e != null)) {
+        for (const item of overflowCandidates) {
           const key = getVariantKey(item);
           const existing = newInventory[key];
           if (existing) {
@@ -1767,9 +1780,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           } else {
             newInventory[key] = { item, count: 1, status: 'owned' };
           }
-        }
-        for (let i = nextMaxEquipSlots; i < newEquipment.length; i++) {
-          newEquipment[i] = null;
         }
       }
 
