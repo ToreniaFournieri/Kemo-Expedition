@@ -720,6 +720,31 @@ function getJewelSlotStatusText(item: Item, jewelKey: JewelKey, rank: number, ca
   return [cText, dText].filter(Boolean).join(' ');
 }
 
+function getJewelInventoryStatusText(jewelKey: JewelKey, rank: number): string {
+  const jewel = JEWEL_DEFS[jewelKey];
+  const cValue = getJewelCBonusValue(jewelKey, rank);
+  const cText = (() => {
+    if (jewel.cBonusType === 'physical_attack') return `[物攻撃+${Math.round(cValue * 100)}%]`;
+    if (jewel.cBonusType === 'magical_attack') return `[魔攻撃+${Math.round(cValue * 100)}%]`;
+    if (jewel.cBonusType === 'physical_defense') return `[物防+${Math.round(cValue * 100)}%]`;
+    if (jewel.cBonusType === 'magical_defense') return `[魔防+${Math.round(cValue * 100)}%]`;
+    if (jewel.cBonusType === 'accuracy') return `[命中+${Math.round(cValue * 1000)}]`;
+    if (jewel.cBonusType === 'evasion') return `[回避+${Math.round(cValue * 1000)}]`;
+    return '';
+  })();
+  const dText = jewel.dBaseBonuses.map((bonus) => {
+    const value = getJewelDRankValue(bonus.base, rank);
+    if (bonus.stat === 'meleeAttack') return `近攻+${value}`;
+    if (bonus.stat === 'rangedAttack') return `遠攻+${value}`;
+    if (bonus.stat === 'magicalAttack') return `魔攻+${value}`;
+    if (bonus.stat === 'physicalDefense') return `物防+${value}`;
+    if (bonus.stat === 'magicalDefense') return `魔防+${value}`;
+    return `HP+${value}`;
+  }).join(' ');
+
+  return [`[${jewel.short}${rank}]`, cText, dText].filter(Boolean).join(' ');
+}
+
 function getOffenseMultiplierSum(
   items: Item[],
   kind: 'melee' | 'ranged' | 'magical',
@@ -4910,8 +4935,11 @@ function InventoryTab({
             return (
               <div key={`${entry.jewelKey}:${entry.rank}`} className="px-2 py-1.5 rounded bg-pane">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm">[{jewelDef.short}{entry.rank}] {jewelDef.name}</span>
+                  <span className="text-sm">{jewelDef.name}</span>
                   <span className="text-xs text-gray-500">x{formatNumber(entry.count)}</span>
+                </div>
+                <div className="mt-0.5 text-xs leading-tight text-gray-400">
+                  {getJewelInventoryStatusText(entry.jewelKey, entry.rank)}
                 </div>
               </div>
             );
