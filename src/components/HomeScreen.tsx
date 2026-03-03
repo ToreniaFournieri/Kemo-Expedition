@@ -93,7 +93,7 @@ interface HomeScreenProps {
 }
 
 type Tab = 'party' | 'expedition' | 'base' | 'diary' | 'setting';
-type BaseSubTab = 'inventory' | 'shop' | 'workshop' | 'altar';
+type BaseSubTab = 'inventory' | 'shop' | 'jewelStore' | 'workshop' | 'altar';
 
 
 type PartyCycleState = '休息中' | '売却中' | '宴会中' | '睡眠中' | '祈り中' | '待機中' | '移動中' | '探索中' | '帰還中';
@@ -4394,6 +4394,7 @@ function BaseTab({
   const baseSubTabs = [
     { id: 'shop' as const, label: 'お店', isAvailable: true },
     { id: 'inventory' as const, label: '所持品', isAvailable: true },
+    { id: 'jewelStore' as const, label: '結晶店', isAvailable: true },
     { id: 'workshop' as const, label: '工房', isAvailable: false },
     { id: 'altar' as const, label: '祭壇', isAvailable: false },
   ];
@@ -4435,13 +4436,17 @@ function BaseTab({
           gold={gold}
           parties={parties}
           shopPurchases={shopPurchases}
-          jewelShopPurchases={jewelShopPurchases}
           shopRefreshCounts={shopRefreshCounts}
           shopIntimacy={shopIntimacy}
           shopIntimacyLastDecayAt={shopIntimacyLastDecayAt}
           onBuyShopItem={onBuyShopItem}
-          onBuyJewelShopItem={onBuyJewelShopItem}
           onRefreshShopLineup={onRefreshShopLineup}
+        />
+      ) : activeSubTab === 'jewelStore' ? (
+        <JewelStoreTab
+          gold={gold}
+          jewelShopPurchases={jewelShopPurchases}
+          onBuyJewelShopItem={onBuyJewelShopItem}
         />
       ) : (
         <div className="text-sm text-gray-600">この機能は次のバージョンで利用可能になります。</div>
@@ -4454,23 +4459,19 @@ function ShopTab({
   gold,
   parties,
   shopPurchases,
-  jewelShopPurchases,
   shopRefreshCounts,
   shopIntimacy,
   shopIntimacyLastDecayAt,
   onBuyShopItem,
-  onBuyJewelShopItem,
   onRefreshShopLineup,
 }: {
   gold: number;
   parties: Party[];
   shopPurchases: Record<string, number[]>;
-  jewelShopPurchases: Record<string, number>;
   shopRefreshCounts: Record<string, number>;
   shopIntimacy: number;
   shopIntimacyLastDecayAt: number;
   onBuyShopItem: (itemId: number) => void;
-  onBuyJewelShopItem: (jewelKey: JewelKey, rank: number) => void;
   onRefreshShopLineup: () => void;
 }) {
   const mustelidRace = RACES.find((race) => race.id === 'mustelid');
@@ -4522,16 +4523,6 @@ function ShopTab({
     const normalized = x - Math.floor(x);
     return Math.floor(normalized * highestDefeatedBossTier) + 1;
   };
-
-  const jewelEntries = (Object.keys(JEWEL_DEFS) as JewelKey[]).flatMap((jewelKey) => (
-    Array.from({ length: 8 }, (_, index) => {
-      const rank = index + 1;
-      const stockKey = `${jewelKey}:${rank}`;
-      const purchasedCount = jewelShopPurchases[stockKey] ?? 0;
-      const remainingStock = Math.max(0, 5 - purchasedCount);
-      return { jewelKey, rank, remainingStock, canBuy: remainingStock > 0 && gold >= 100 };
-    })
-  ));
 
   const shopItems = rarityPool.map((rarityBase, index) => {
     const tier = seededTierForIndex(index);
@@ -4638,40 +4629,67 @@ function ShopTab({
         ))}
       </div>
 
-      <div className="rounded border border-gray-200 bg-white p-3">
-        <div className="text-sm font-semibold text-sub">カリエスの狐彩堂</div>
-        <div className="mt-2 grid grid-cols-[auto,1fr] items-start gap-3">
-          <RaceIcon race={RACES.find((race) => race.id === 'vulpinian') ?? mustelidRace} className="h-10 w-10 self-center" />
-          <p className="text-sm text-gray-700">
-            お越し頂きありがとうございます。デバッグ用に宝石を用意しております。こちら、本番では自力でご用意いただく必要がございますことご理解ください。
-          </p>
-        </div>
-        <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-3">
-          {jewelEntries.map((entry) => (
-            <div key={`${entry.jewelKey}:${entry.rank}`} className="rounded border border-gray-200 px-2 py-1.5">
-              <div className="flex items-center justify-between gap-2 text-xs">
-                <span className="font-semibold text-gray-700">[{JEWEL_DEFS[entry.jewelKey].short}{entry.rank}] {JEWEL_DEFS[entry.jewelKey].displayName}</span>
-                <span className="text-gray-500">100G</span>
-              </div>
-              <div className="mt-1 flex items-center justify-between">
-                <span className="text-[11px] text-gray-500">在庫 {entry.remainingStock}/5</span>
-                <button
-                  onClick={() => onBuyJewelShopItem(entry.jewelKey, entry.rank)}
-                  disabled={!entry.canBuy}
-                  className={`rounded px-2 py-0.5 text-xs font-medium ${
-                    entry.canBuy
-                      ? 'bg-sub text-white hover:bg-sub/90'
-                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  }`}
-                >
-                  購入
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+    </div>
+  );
+}
 
+function JewelStoreTab({
+  gold,
+  jewelShopPurchases,
+  onBuyJewelShopItem,
+}: {
+  gold: number;
+  jewelShopPurchases: Record<string, number>;
+  onBuyJewelShopItem: (jewelKey: JewelKey, rank: number) => void;
+}) {
+  const shopkeeperRace = RACES.find((race) => race.id === 'vulpinian') ?? RACES.find((race) => race.id === 'mustelid');
+  if (!shopkeeperRace) {
+    return <div className="text-sm text-gray-600">結晶店の準備中です。</div>;
+  }
+
+  const jewelEntries = (Object.keys(JEWEL_DEFS) as JewelKey[]).flatMap((jewelKey) => (
+    Array.from({ length: 8 }, (_, index) => {
+      const rank = index + 1;
+      const stockKey = `${jewelKey}:${rank}`;
+      const purchasedCount = jewelShopPurchases[stockKey] ?? 0;
+      const remainingStock = Math.max(0, 5 - purchasedCount);
+      return { jewelKey, rank, remainingStock, canBuy: remainingStock > 0 && gold >= 100 };
+    })
+  ));
+
+  return (
+    <div className="rounded border border-gray-200 bg-white p-3">
+      <div className="text-sm font-semibold text-sub">カリエスの狐彩堂</div>
+      <div className="mt-2 grid grid-cols-[auto,1fr] items-start gap-3">
+        <RaceIcon race={shopkeeperRace} className="h-10 w-10 self-center" />
+        <p className="text-sm text-gray-700">
+          お越し頂きありがとうございます。デバッグ用に宝石を用意しております。こちら、本番では自力でご用意いただく必要がございますことご理解ください。
+        </p>
+      </div>
+      <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-3">
+        {jewelEntries.map((entry) => (
+          <div key={`${entry.jewelKey}:${entry.rank}`} className="rounded border border-gray-200 px-2 py-1.5">
+            <div className="flex items-center justify-between gap-2 text-xs">
+              <span className="font-semibold text-gray-700">[{JEWEL_DEFS[entry.jewelKey].short}{entry.rank}] {JEWEL_DEFS[entry.jewelKey].displayName}</span>
+              <span className="text-gray-500">100G</span>
+            </div>
+            <div className="mt-1 flex items-center justify-between">
+              <span className="text-[11px] text-gray-500">在庫 {entry.remainingStock}/5</span>
+              <button
+                onClick={() => onBuyJewelShopItem(entry.jewelKey, entry.rank)}
+                disabled={!entry.canBuy}
+                className={`rounded px-2 py-0.5 text-xs font-medium ${
+                  entry.canBuy
+                    ? 'bg-sub text-white hover:bg-sub/90'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                購入
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
