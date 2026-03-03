@@ -717,7 +717,7 @@ function getJewelSlotStatusText(item: Item, jewelKey: JewelKey, rank: number, ca
     if (bonus.stat === 'magicalDefense') return `魔防+${scaledValue}`;
     return `HP+${Math.round(value * multiplier * hpScaleMultiplier)}`;
   }).join(' ');
-  return [cText, dText].filter(Boolean).join(' ');
+  return [`[${jewel.short}${rank}]`, cText, dText].filter(Boolean).join(' ');
 }
 
 function getJewelInventoryStatusText(jewelKey: JewelKey, rank: number): string {
@@ -5002,7 +5002,7 @@ function InventoryTab({
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
                     {race && <RaceIcon race={race} className="h-4 w-4 shrink-0" />}
-                    <span className="text-sm truncate">{jewelDef.name}</span>
+                    <span className="text-sm truncate">{jewelDef.name} (装備先:{getItemDisplayName(entry.item)})</span>
                     <span className="text-xs text-gray-500 shrink-0">x1</span>
                   </div>
                   <span className="text-xs text-gray-500 shrink-0">PT{entry.partyIndex + 1}:{entry.characterName}</span>
