@@ -1093,6 +1093,7 @@ inventory = {
 #### 2.5.6 Jewel (結晶) 
 - A tier-scaled enhancement item that grants one c. bonus and fixed d. bonuses based on its rank.
 - category name "晶"
+ - `d.` bonuses are added to the item’s base stats before any scaling is applied. Therefore, both the enhancement multiplier and Super Rare multiplier also affect the added `d.` values.
 
 | `j.` Key | 正式名称　| 表示名 | 略称 | `c.` bonus  | `d.` base bonus |
 |-----------|-----------|------|----|----------------------------|---------|
