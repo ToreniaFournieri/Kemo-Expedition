@@ -388,7 +388,7 @@ PT2...
       - The player may retry the Gods Battle without re-collecting Boss rare items. 
 
 #### 8.5 Base(拠点)
-- It has two tabs inside Base tab. Shop(お店), Inventory(所持品) , Workshop(工房), Altar(祭壇). (same visual UI as List of party (PT1, PT2...) tab in Party tab)
+- It has two tabs inside Base tab. Shop(お店), Inventory(所持品), Jewel store(結晶店) , Workshop(工房), Altar(祭壇). (same visual UI as List of party (PT1, PT2...) tab in Party tab)
   - Default: Shop
   - not available for Workshop(工房), Altar(祭壇) in this version. (Gray out)
 	
@@ -458,15 +458,6 @@ PT2...
   - Intimacy is capped at **99**.
 
 
-- current version: **debug mode: OFF**, no debug items bellow:
-	- Dialogue: "とても珍しい品物が揃ってるよ。オラよくわかんねぇけど、売主がデバッグ用にって言ってた。"
-	  - The shop sells all 80 Super Rare title variants of a single base item.
-		- Base item: 木の盾 (ID: 1103)
-		- Enhancement: 0 (No enhancement)
-		- Examples of sold items: 探し求めた木の盾 x1, 渡り歩く木の盾 x1… (all Super Rare title variants)
-		- Price: 10,000G each
-		- Stock: One per Super Rare title (no duplicates)
-
 ##### 8.5.2 Inventory(所持品)
 - Behavior:
   - Notification pops up when acquiring a new item
@@ -507,6 +498,20 @@ PT2...
   - Item Row: The name, count, and status are left-aligned, while the Unlock button is right-aligned on the same line
     - ex. 名工のロングソード x3 | 近攻+19     [解除]
   - Unlock button(解除): Changes item state from `s.sold` to `s.notown`
+
+##### 8.5.3 Jewel store(結晶店)
+
+- **Function:** Sells items.
+- **Shop name:** カリエスの狐彩堂 (Caelis' Kosaidō)
+
+**Dialogue pane (UI)**
+- **Column 1:** Shop owner icon (Vulpinian icon)  
+- **Column 2:** Dialogue
+
+	- Dialogue: "やあやあ。デバッグ用に宝石を用意したよ。本番では自力で集めるんだよ？"
+	  - The shop sells all combination of jewels.
+		- Price: 100G each
+		- Stock: Five per jewels.
 
 
 #### 8.6 Diary
