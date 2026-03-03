@@ -595,7 +595,6 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
       : item.jewel.key === 'fort' || item.jewel.key === 'ward'
         ? Math.round(([13,12,11,9,8,7,6,5][item.jewel.rank - 1]))
         : Math.round(([8,7,6,5,4,3,2,1][item.jewel.rank - 1]));
-    stats.push(`[${jewel.short}${item.jewel.rank}]`);
     for (const d of jewel.dBaseBonuses) {
       const value = ((): number => {
         let v = d.base;
