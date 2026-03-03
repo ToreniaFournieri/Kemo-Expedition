@@ -3,6 +3,7 @@ import { BonusType, ItemCategory, JewelAttachment, JewelInventory, JewelKey } fr
 export interface JewelDef {
   key: JewelKey;
   name: string;
+  displayName: string;
   short: string;
   cBonusType: BonusType;
   dBaseBonuses: Array<{ stat: 'meleeAttack' | 'rangedAttack' | 'magicalAttack' | 'physicalDefense' | 'magicalDefense' | 'partyHP'; base: number }>;
@@ -10,27 +11,27 @@ export interface JewelDef {
 
 export const JEWEL_DEFS: Record<JewelKey, JewelDef> = {
   might: {
-    key: 'might', name: '剛力の結晶', short: '剛', cBonusType: 'physical_attack',
+    key: 'might', name: '剛力の結晶', displayName: '剛力', short: '剛', cBonusType: 'physical_attack',
     dBaseBonuses: [{ stat: 'meleeAttack', base: 12 }, { stat: 'rangedAttack', base: 9 }],
   },
   arcana: {
-    key: 'arcana', name: '魔導の結晶', short: '魔', cBonusType: 'magical_attack',
+    key: 'arcana', name: '魔導の結晶', displayName: '魔導', short: '魔', cBonusType: 'magical_attack',
     dBaseBonuses: [{ stat: 'magicalAttack', base: 6 }, { stat: 'partyHP', base: 3 }],
   },
   fort: {
-    key: 'fort', name: '堅牢の結晶', short: '堅', cBonusType: 'physical_defense',
+    key: 'fort', name: '堅牢の結晶', displayName: '堅牢', short: '堅', cBonusType: 'physical_defense',
     dBaseBonuses: [{ stat: 'physicalDefense', base: 6 }, { stat: 'partyHP', base: 6 }],
   },
   ward: {
-    key: 'ward', name: '障壁の結晶', short: '障', cBonusType: 'magical_defense',
+    key: 'ward', name: '障壁の結晶', displayName: '障壁', short: '障', cBonusType: 'magical_defense',
     dBaseBonuses: [{ stat: 'magicalDefense', base: 6 }, { stat: 'partyHP', base: 6 }],
   },
   shade: {
-    key: 'shade', name: '影走の結晶', short: '影', cBonusType: 'evasion',
+    key: 'shade', name: '影走の結晶', displayName: '影走', short: '影', cBonusType: 'evasion',
     dBaseBonuses: [{ stat: 'magicalDefense', base: 4 }, { stat: 'partyHP', base: 4 }],
   },
   focus: {
-    key: 'focus', name: '精密の結晶', short: '精', cBonusType: 'accuracy',
+    key: 'focus', name: '精密の結晶', displayName: '精密', short: '精', cBonusType: 'accuracy',
     dBaseBonuses: [{ stat: 'physicalDefense', base: 4 }, { stat: 'partyHP', base: 3 }],
   },
 };

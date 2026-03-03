@@ -3762,7 +3762,7 @@ function PartyTab({
                   <div className="mt-2 space-y-1 text-xs">
                     {allowedJewels.map((jewelKey) => (
                       <div key={jewelKey} className="flex items-center gap-1">
-                        <span className="w-5 font-semibold">{JEWEL_DEFS[jewelKey].short}:</span>
+                        <span className="w-10 font-semibold">{JEWEL_DEFS[jewelKey].displayName}:</span>
                         {Array.from({ length: 8 }).map((_, i) => {
                           const rank = i + 1;
                           const owned = getJewelOwnedCount(jewels, jewelKey, rank);
