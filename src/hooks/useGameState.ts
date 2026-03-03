@@ -84,6 +84,13 @@ import {
   getCurrentShopRefreshDate,
 } from '../game/shop';
 import { calculateItemSellPrice } from '../game/pricing';
+import {
+  addJewelToInventory,
+  createStarterJewelInventory,
+  getJewelOwnedCount,
+  isJewelAllowedForCategory,
+  removeJewelFromInventory,
+} from '../game/jewel';
 
 const BUILD_NUMBER = 1;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
@@ -371,6 +378,7 @@ function loadSavedState(): GameState | null {
             shopRefreshCounts: {},
             shopIntimacy: 0,
             shopIntimacyLastDecayAt: Date.now(),
+            jewels: createStarterJewelInventory(),
           };
         }
         if (Array.isArray(parsed.global.inventory)) {
@@ -400,6 +408,14 @@ function loadSavedState(): GameState | null {
         parsed.global.shopIntimacyLastDecayAt = typeof parsed.global.shopIntimacyLastDecayAt === 'number'
           ? parsed.global.shopIntimacyLastDecayAt
           : Date.now();
+
+        parsed.global.jewels = (parsed.global.jewels && typeof parsed.global.jewels === 'object')
+          ? Object.entries(parsed.global.jewels as Record<string, unknown>).reduce<Record<string, number>>((acc, [key, count]) => {
+              if (typeof count !== 'number' || count <= 0) return acc;
+              acc[key] = Math.floor(count);
+              return acc;
+            }, {})
+          : createStarterJewelInventory();
 
         const defaultParties = createDefaultParties();
         if (!Array.isArray(parsed.parties)) {
@@ -672,6 +688,7 @@ function createInitialState(): GameState {
     global: {
       gold: 200,
       inventory: createStarterInventory(),
+      jewels: createStarterJewelInventory(),
       deityDonations: {},
       shopPurchases: {},
       shopRefreshCounts: {},
@@ -708,6 +725,7 @@ type GameAction =
   | { type: 'PROCESS_PENDING_PROFIT'; partyIndex: number; donation: number; deposit: number }
   | { type: 'SPEND_PENDING_PROFIT'; partyIndex: number; amount: number }
   | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; itemKey: string | null }
+  | { type: 'ATTACH_JEWEL'; characterId: number; slotIndex: number; jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus'; rank: number }
   | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character> }
   | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number }
   | { type: 'SELL_STACK'; variantKey: string }
@@ -1690,6 +1708,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const character = currentParty.characters[charIndex];
       let newInventory = { ...state.global.inventory };
+      let newJewels = { ...state.global.jewels };
 
       // Add old item back to inventory
       const oldItem = character.equipment[action.slotIndex];
@@ -1701,6 +1720,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         } else {
           newInventory[oldKey] = { item: oldItem, count: 1, status: 'owned' };
         }
+        if (oldItem.jewel) {
+          newJewels = addJewelToInventory(newJewels, oldItem.jewel.key, oldItem.jewel.rank);
+        }
       }
 
       // Remove new item from inventory and equip
@@ -1708,7 +1730,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         const variant = newInventory[action.itemKey];
         if (variant && variant.count > 0) {
           newInventory = removeItemFromInventory(newInventory, action.itemKey);
-          const equippedCharacter = replaceCharacterEquipment(character, action.slotIndex, { ...variant.item });
+          const equippedCharacter = replaceCharacterEquipment(character, action.slotIndex, { ...variant.item, jewel: null });
           const newCharacters = [...currentParty.characters];
           newCharacters[charIndex] = equippedCharacter;
 
@@ -1721,7 +1743,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           return {
             ...state,
             parties: updatedParties,
-            global: { ...state.global, inventory: newInventory },
+            global: { ...state.global, inventory: newInventory, jewels: newJewels },
           };
         }
       }
@@ -1739,7 +1761,38 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         parties: updatedParties,
-        global: { ...state.global, inventory: newInventory },
+        global: { ...state.global, inventory: newInventory, jewels: newJewels },
+      };
+    }
+
+    case 'ATTACH_JEWEL': {
+      const currentParty = state.parties[state.selectedPartyIndex];
+      const charIndex = currentParty.characters.findIndex(c => c.id === action.characterId);
+      if (charIndex === -1) return state;
+      const character = currentParty.characters[charIndex];
+      const item = character.equipment[action.slotIndex];
+      if (!item) return state;
+      if (!isJewelAllowedForCategory(item.category, action.jewelKey)) return state;
+      if (getJewelOwnedCount(state.global.jewels, action.jewelKey, action.rank) <= 0) return state;
+
+      let newJewels = removeJewelFromInventory(state.global.jewels, action.jewelKey, action.rank);
+      if (item.jewel) {
+        newJewels = addJewelToInventory(newJewels, item.jewel.key, item.jewel.rank);
+      }
+      const replacedItem: Item = { ...item, jewel: { key: action.jewelKey, rank: action.rank } };
+      const newCharacters = [...currentParty.characters];
+      newCharacters[charIndex] = replaceCharacterEquipment(character, action.slotIndex, replacedItem);
+
+      const updatedParties = [...state.parties];
+      updatedParties[state.selectedPartyIndex] = {
+        ...currentParty,
+        characters: newCharacters,
+      };
+
+      return {
+        ...state,
+        parties: updatedParties,
+        global: { ...state.global, jewels: newJewels },
       };
     }
 
@@ -1752,6 +1805,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const newCharacters = [...currentParty.characters];
 
       let newInventory = state.global.inventory;
+      let newJewels = state.global.jewels;
       const nextCharacter = { ...oldChar, ...action.updates };
       const oldMaxEquipSlots = computeCharacterStats(oldChar, currentParty.level).maxEquipSlots;
       const nextMaxEquipSlots = computeCharacterStats(nextCharacter, currentParty.level).maxEquipSlots;
@@ -1772,6 +1826,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         newEquipment = [...keptEquipment, ...Array.from({ length: newEquipment.length - nextMaxEquipSlots }, () => null)];
 
         newInventory = { ...state.global.inventory };
+        newJewels = { ...newJewels };
         for (const item of overflowCandidates) {
           const key = getVariantKey(item);
           const existing = newInventory[key];
@@ -1780,6 +1835,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           } else {
             newInventory[key] = { item, count: 1, status: 'owned' };
           }
+          if (item.jewel) newJewels = addJewelToInventory(newJewels, item.jewel.key, item.jewel.rank);
         }
       }
 
@@ -1791,6 +1847,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       if (lostMeleeAptitude || lostRangedAptitude || lostMagicAptitude) {
         newInventory = { ...newInventory };
+        newJewels = { ...newJewels };
         for (let i = 0; i < newEquipment.length; i++) {
           const item = newEquipment[i];
           if (!item) continue;
@@ -1807,6 +1864,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           } else {
             newInventory[key] = { item, count: 1, status: 'owned' };
           }
+          if (item.jewel) newJewels = addJewelToInventory(newJewels, item.jewel.key, item.jewel.rank);
 
           newEquipment[i] = null;
         }
@@ -2167,6 +2225,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         global: {
           gold: 200,
           inventory: createStarterInventory(),
+          jewels: createStarterJewelInventory(),
           deityDonations: {},
           shopPurchases: {},
           shopRefreshCounts: {},
@@ -2368,6 +2427,10 @@ export function useGameState() {
 
     equipItem: useCallback((characterId: number, slotIndex: number, itemKey: string | null) => {
       dispatch({ type: 'EQUIP_ITEM', characterId, slotIndex, itemKey });
+    }, []),
+
+    attachJewel: useCallback((characterId: number, slotIndex: number, jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus', rank: number) => {
+      dispatch({ type: 'ATTACH_JEWEL', characterId, slotIndex, jewelKey, rank });
     }, []),
 
     updateCharacter: useCallback((characterId: number, updates: Partial<Character>) => {
