@@ -204,14 +204,22 @@ Left-aligned
     3. Super Rare Title: Items with Super Rare titles are prioritized within their base item ID.
     4. Enhancement Tier: Among the same Item ID, higher enhancements (e.g., 究極の > 伝説の) appear higher.
 
-- Enhancement equipment item by Jewel.
+**3. Jewel Enhancement — Equipment Integration**
+- Equipment items can be enhanced by attaching a Jewel (結晶).
+- Each item supports only the Jewel types allowed by its category.
+- Jewel effects apply only while the item is equipped.
+
+- Equipment List (Collapsed State)
+
 ```
 装備  4 / 4 スロット
 白銀英雄の鎧 [2B] 物防+79 魔防+25 HP+32 体力+1 [鎧] [鎧]  ▲
 名工の霧林司祭の法衣 [3E] 魔防+74 [魔防+8%] HP+47 回避+3 [法衣]　▲
 伝説の幻導の青銅杖 [3U] 魔攻+67 [魔攻撃+9%] 魔防+25 [魔防+9%] [ワンド]　▲
 ```
-↓when press the line of equipment item
+
+- Expanded State (When Selected)
+
 ```
 装備  4 / 4 スロット
 白銀英雄の鎧 [2B] 物防+85 魔防+25 HP+48 体力+1 [物防+8%] [鎧] ▼
@@ -221,11 +229,28 @@ Left-aligned
 名工の霧林司祭の法衣 [3E] 魔防+74 [魔防+8%] HP+47 回避+3 [法衣]　▲
 伝説の幻導の青銅杖 [3U] 魔攻+67 [魔攻撃+9%] 魔防+25 [魔防+9%] [ワンド]　▲
 ```
-note: available black, not owned gray out. equiped BOLD
 
-- If the equipment item removed to inventory, the jewel is back to inventory too. (the convination is only while equippped)
+- UI Rules
+  - ▼ = expanded
+  - ▲ = collapsed
+- Rank Display
+  - Black number → Jewel owned
+  - Gray number → Jewel not owned
+  - Bold number → Currently equipped Jewel rank
 
-**2. Inventory Pane:**
+- Behavior Rules
+  - Attachment
+    - Only one Jewel per equipment item.
+    - Jewel rank must exist in inventory.
+    - Attaching replaces existing Jewel (if any).
+  - Removal
+    - If the equipment is Unequipped (Moved to inventory)
+    - The attached Jewel automatically returns to inventory.
+  - Jewel effects are active only while the item is equipped.
+  - Combination is not permanent.
+
+
+**4. Inventory Pane:**
   - Always visible on the same screen at the bottom.
   - Stacked by item variant
   - Filter button by rarelity (right-aligned): 全て表示, 通常のみ, アンコモンのみ, レアのみ, 神魔レアのみ : [ALL] [C] [U] [R] [M] |超レア: ON/OFF
@@ -245,7 +270,7 @@ displays [遠距離攻撃:矢,ボ,弓]
     - Items in inventory matching the selected category are shown (filter)
     - Adds equipped items with icon in the list.
 
-**3. Inventory Sort Logic (within category):**
+**5. Inventory Sort Logic (within category):**
 - Order: Descending order by Priority.
 - Priority:
   1. Base Item ID: Higher-tier base items (e.g., Mythril Sword > Iron Sword) appear first.
@@ -256,12 +281,12 @@ displays [遠距離攻撃:矢,ボ,弓]
 - Inventory pane shows at least 10 items
 - Equipped item: The name and status are left-aligned, item type is right-aligned on **the same line**.
 
-**4. Inventory in party tab respects `item_category_x1.x` amplifier**
+**6. Inventory in party tab respects `item_category_x1.x` amplifier**
 - If a character has a category amplifier (e.g., 刀 x2.2 / with `c.katana_x1.4`, `c.katana_x1.3`, `c.katana_x1.2`, internally 2.184), the item’s displayed stats already include this multiplier.
   - Example: "宿った石刃の太刀 [1C] shows 近攻 +96" in the character equipment pane in Party tab, even though its value is "近攻 +44" in Inventory tab, because the katana category multiplier is applied.
 
 
-**5. Image of inventory pane transaction at equipment management**
+**7. Image of inventory pane transaction at equipment management**
 
 ```
 宿ったロングソード x2 [C] 近攻+31
