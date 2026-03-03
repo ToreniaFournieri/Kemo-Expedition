@@ -540,7 +540,7 @@ function getDisplayedBossRareCount(party: Party, dungeonId: number, cycleState?:
 
 // Helper to format item stats
 
-function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultiplier: number = 1): string {
+function getItemDisplayMultiplier(item: Item, categoryMultiplier: number = 1): number {
   const enhancementMultiplier = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
   const superRareMultiplier = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
   const selfCategoryBonusTypeByItemCategory: Partial<Record<ItemCategory, BonusType>> = {
@@ -564,7 +564,12 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
       .reduce((total, bonus) => total * bonus.value, 1)
     : 1;
   const baseMultiplier = item.baseMultiplier ?? 1;
-  const multiplier = enhancementMultiplier * superRareMultiplier * baseMultiplier * categoryMultiplier * selfCategoryMultiplier;
+  return enhancementMultiplier * superRareMultiplier * baseMultiplier * categoryMultiplier * selfCategoryMultiplier;
+}
+
+function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultiplier: number = 1): string {
+  const multiplier = getItemDisplayMultiplier(item, categoryMultiplier);
+  const baseMultiplier = item.baseMultiplier ?? 1;
   const superRareUniqueBonusText = formatBonuses(
     SUPER_RARE_TITLES.find((title) => title.value === item.superRare)?.bonuses ?? [],
     { defenseMultiplierStyle: 'friendly' }
@@ -605,17 +610,18 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
         ? Math.round(([13,12,11,9,8,7,6,5][item.jewel.rank - 1]))
         : Math.round(([8,7,6,5,4,3,2,1][item.jewel.rank - 1]));
     for (const d of jewel.dBaseBonuses) {
-      const value = ((): number => {
+      const rankValue = ((): number => {
         let v = d.base;
         for (let n = 2; n <= item.jewel!.rank; n++) v = Math.round(v * (1.4 - 0.03 * n));
         return v;
       })();
-      if (d.stat === 'meleeAttack' && !itemHasBaseStat.meleeAttack) stats.push(`近攻+${value}`);
-      if (d.stat === 'rangedAttack' && !itemHasBaseStat.rangedAttack) stats.push(`遠攻+${value}`);
-      if (d.stat === 'magicalAttack' && !itemHasBaseStat.magicalAttack) stats.push(`魔攻+${value}`);
-      if (d.stat === 'physicalDefense' && !itemHasBaseStat.physicalDefense) stats.push(`物防+${value}`);
-      if (d.stat === 'magicalDefense' && !itemHasBaseStat.magicalDefense) stats.push(`魔防+${value}`);
-      if (d.stat === 'partyHP' && !itemHasBaseStat.partyHP) stats.push(`HP+${Math.round(value * hpScaleMultiplier)}`);
+      const scaledValue = Math.round(rankValue * multiplier);
+      if (d.stat === 'meleeAttack' && !itemHasBaseStat.meleeAttack) stats.push(`近攻+${scaledValue}`);
+      if (d.stat === 'rangedAttack' && !itemHasBaseStat.rangedAttack) stats.push(`遠攻+${scaledValue}`);
+      if (d.stat === 'magicalAttack' && !itemHasBaseStat.magicalAttack) stats.push(`魔攻+${scaledValue}`);
+      if (d.stat === 'physicalDefense' && !itemHasBaseStat.physicalDefense) stats.push(`物防+${scaledValue}`);
+      if (d.stat === 'magicalDefense' && !itemHasBaseStat.magicalDefense) stats.push(`魔防+${scaledValue}`);
+      if (d.stat === 'partyHP' && !itemHasBaseStat.partyHP) stats.push(`HP+${Math.round(rankValue * multiplier * hpScaleMultiplier)}`);
     }
     if (jewel.cBonusType === 'physical_attack') stats.push(`[物攻撃+${cVal}%]`);
     if (jewel.cBonusType === 'magical_attack') stats.push(`[魔攻撃+${cVal}%]`);
@@ -688,8 +694,9 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
   }, '');
 }
 
-function getJewelSlotStatusText(jewelKey: JewelKey, rank: number, hpScaleMultiplier: number): string {
+function getJewelSlotStatusText(item: Item, jewelKey: JewelKey, rank: number, categoryMultiplier: number, hpScaleMultiplier: number): string {
   const jewel = JEWEL_DEFS[jewelKey];
+  const multiplier = getItemDisplayMultiplier(item, categoryMultiplier);
   const cValue = getJewelCBonusValue(jewelKey, rank);
   const cText = (() => {
     if (jewel.cBonusType === 'physical_attack') return `[物攻撃+${Math.round(cValue * 100)}%]`;
@@ -702,12 +709,13 @@ function getJewelSlotStatusText(jewelKey: JewelKey, rank: number, hpScaleMultipl
   })();
   const dText = jewel.dBaseBonuses.map((bonus) => {
     const value = getJewelDRankValue(bonus.base, rank);
-    if (bonus.stat === 'meleeAttack') return `近攻+${value}`;
-    if (bonus.stat === 'rangedAttack') return `遠攻+${value}`;
-    if (bonus.stat === 'magicalAttack') return `魔攻+${value}`;
-    if (bonus.stat === 'physicalDefense') return `物防+${value}`;
-    if (bonus.stat === 'magicalDefense') return `魔防+${value}`;
-    return `HP+${Math.round(value * hpScaleMultiplier)}`;
+    const scaledValue = Math.round(value * multiplier);
+    if (bonus.stat === 'meleeAttack') return `近攻+${scaledValue}`;
+    if (bonus.stat === 'rangedAttack') return `遠攻+${scaledValue}`;
+    if (bonus.stat === 'magicalAttack') return `魔攻+${scaledValue}`;
+    if (bonus.stat === 'physicalDefense') return `物防+${scaledValue}`;
+    if (bonus.stat === 'magicalDefense') return `魔防+${scaledValue}`;
+    return `HP+${Math.round(value * multiplier * hpScaleMultiplier)}`;
   }).join(' ');
   return [cText, dText].filter(Boolean).join(' ');
 }
@@ -3805,7 +3813,13 @@ function PartyTab({
                         })}
                         {item.jewel?.key === jewelKey && (
                           <span className="pl-1 text-gray-600">
-                            : {getJewelSlotStatusText(jewelKey, item.jewel.rank, hpDisplayMultiplier)}
+                            : {getJewelSlotStatusText(
+                              item,
+                              jewelKey,
+                              item.jewel.rank,
+                              getCharacterCategoryMultiplier(char, item.category),
+                              hpDisplayMultiplier
+                            )}
                           </span>
                         )}
                       </div>
