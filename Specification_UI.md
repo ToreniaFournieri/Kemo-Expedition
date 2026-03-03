@@ -433,8 +433,8 @@ PT2...
     - IF player selects [M],   神魔レアのみ: [ALL] [C] [U] [E] [B] **[M]** 
     - 超レア[ON/OFF] default: OFF, if ON, filter superRare >= 1.
   - Inventory includes item category tabs:
-    - [耐久:鎧,衣,盾],[近距離攻撃:剣,刀,手],[遠距離攻撃:矢,ボ,弓],[魔法攻撃:杖,書,媒].
-    - Default: 鎧 or previously selected category. 
+    - [機能:晶] [耐久:鎧,衣,盾],[近距離攻撃:剣,刀,手],[遠距離攻撃:矢,ボ,弓],[魔法攻撃:杖,書,媒].
+    - Default: 晶 or previously selected category. 
     - Each box has two lines:
       - First line, small and gray letters: 耐久
       - Second line, current design: 鎧,衣,盾
