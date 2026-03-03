@@ -3836,19 +3836,19 @@ function PartyTab({
                             </button>
                           );
                         })}
-                        {item.jewel?.key === jewelKey && (
-                          <span className="pl-1 text-gray-600">
-                            : {getJewelSlotStatusText(
-                              item,
-                              jewelKey,
-                              item.jewel.rank,
-                              getCharacterCategoryMultiplier(char, item.category),
-                              hpDisplayMultiplier
-                            )}
-                          </span>
-                        )}
                       </div>
                     ))}
+                    {item.jewel && (
+                      <div className="pt-1 text-gray-600">
+                        {getJewelSlotStatusText(
+                          item,
+                          item.jewel.key,
+                          item.jewel.rank,
+                          getCharacterCategoryMultiplier(char, item.category),
+                          hpDisplayMultiplier
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
