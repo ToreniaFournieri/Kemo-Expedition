@@ -1784,6 +1784,27 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const item = character.equipment[action.slotIndex];
       if (!item) return state;
       if (!isJewelAllowedForCategory(item.category, action.jewelKey)) return state;
+
+      const isRemovingCurrentJewel = item.jewel?.key === action.jewelKey && item.jewel.rank === action.rank;
+      if (isRemovingCurrentJewel) {
+        const newJewels = addJewelToInventory(state.global.jewels, action.jewelKey, action.rank);
+        const replacedItem: Item = { ...item, jewel: null };
+        const newCharacters = [...currentParty.characters];
+        newCharacters[charIndex] = replaceCharacterEquipment(character, action.slotIndex, replacedItem);
+
+        const updatedParties = [...state.parties];
+        updatedParties[state.selectedPartyIndex] = {
+          ...currentParty,
+          characters: newCharacters,
+        };
+
+        return {
+          ...state,
+          parties: updatedParties,
+          global: { ...state.global, jewels: newJewels },
+        };
+      }
+
       if (getJewelOwnedCount(state.global.jewels, action.jewelKey, action.rank) <= 0) return state;
 
       let newJewels = removeJewelFromInventory(state.global.jewels, action.jewelKey, action.rank);
