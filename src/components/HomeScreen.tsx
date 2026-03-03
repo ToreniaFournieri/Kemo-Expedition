@@ -4858,7 +4858,56 @@ function InventoryTab({
       return a.rank - b.rank;
     });
 
-  const totalJewelCount = jewelEntries.reduce((sum, entry) => sum + entry.count, 0);
+  const equippedJewels = parties.flatMap((party, partyIndex) =>
+    party.characters.flatMap((character) => {
+      const characterStats = computeCharacterStats(character, party.level);
+      const categoryMultiplierCache = new Map<ItemCategory, number>();
+      const hpScaleMultiplier = ((characterStats.baseStats.vitality + characterStats.baseStats.mind) / 20) * getCharacterGrowthMultiplier(character);
+
+      return character.equipment.slice(0, characterStats.maxEquipSlots).flatMap((item, slotIndex) => {
+        if (!item?.jewel) return [];
+
+        const categoryMultiplier = categoryMultiplierCache.get(item.category) ?? getCharacterCategoryMultiplier(character, item.category);
+        if (!categoryMultiplierCache.has(item.category)) {
+          categoryMultiplierCache.set(item.category, categoryMultiplier);
+        }
+
+        return [{
+          key: `equipped-jewel-${party.id}-${character.id}-${slotIndex}-${item.id}-${item.enhancement}-${item.superRare}-${item.jewel.key}-${item.jewel.rank}`,
+          item,
+          partyIndex,
+          characterName: character.name,
+          raceId: character.raceId,
+          jewelKey: item.jewel.key,
+          rank: item.jewel.rank,
+          categoryMultiplier,
+          hpScaleMultiplier,
+        }];
+      });
+    })
+  );
+
+  const combinedJewelEntries = [
+    ...jewelEntries.map((entry) => ({
+      key: `owned-jewel-${entry.jewelKey}-${entry.rank}`,
+      type: 'owned' as const,
+      ...entry,
+    })),
+    ...equippedJewels.map((entry) => ({
+      ...entry,
+      type: 'equipped' as const,
+    })),
+  ].sort((a, b) => {
+    if (a.jewelKey !== b.jewelKey) return a.jewelKey.localeCompare(b.jewelKey);
+    if (a.rank !== b.rank) return a.rank - b.rank;
+    if (a.type !== b.type) return a.type === 'owned' ? -1 : 1;
+    if (a.type === 'equipped' && b.type === 'equipped') {
+      return a.partyIndex - b.partyIndex;
+    }
+    return 0;
+  });
+
+  const totalJewelCount = jewelEntries.reduce((sum, entry) => sum + entry.count, 0) + equippedJewels.length;
 
   return (
     <div>
@@ -4930,16 +4979,36 @@ function InventoryTab({
 
       {/* Item list */}
       <div className="space-y-1 min-h-[364px] max-h-[26rem] overflow-y-auto mb-4">
-          {isJewelCategory && jewelEntries.map((entry) => {
+          {isJewelCategory && combinedJewelEntries.map((entry) => {
             const jewelDef = JEWEL_DEFS[entry.jewelKey];
+
+            if (entry.type === 'owned') {
+              return (
+                <div key={entry.key} className="px-2 py-1.5 rounded bg-pane">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm">{jewelDef.name}</span>
+                    <span className="text-xs text-gray-500">x{formatNumber(entry.count)}</span>
+                  </div>
+                  <div className="mt-0.5 text-xs leading-tight text-gray-400">
+                    {getJewelInventoryStatusText(entry.jewelKey, entry.rank)}
+                  </div>
+                </div>
+              );
+            }
+
+            const race = RACES.find((raceEntry) => raceEntry.id === entry.raceId);
             return (
-              <div key={`${entry.jewelKey}:${entry.rank}`} className="px-2 py-1.5 rounded bg-pane">
+              <div key={entry.key} className="px-2 py-1.5 rounded bg-pane">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm">{jewelDef.name}</span>
-                  <span className="text-xs text-gray-500">x{formatNumber(entry.count)}</span>
+                  <div className="flex items-center gap-2 min-w-0">
+                    {race && <RaceIcon race={race} className="h-4 w-4 shrink-0" />}
+                    <span className="text-sm truncate">{jewelDef.name}</span>
+                    <span className="text-xs text-gray-500 shrink-0">x1</span>
+                  </div>
+                  <span className="text-xs text-gray-500 shrink-0">PT{entry.partyIndex + 1}:{entry.characterName}</span>
                 </div>
                 <div className="mt-0.5 text-xs leading-tight text-gray-400">
-                  {getJewelInventoryStatusText(entry.jewelKey, entry.rank)}
+                  {getJewelSlotStatusText(entry.item, entry.jewelKey, entry.rank, entry.categoryMultiplier, entry.hpScaleMultiplier)}
                 </div>
               </div>
             );
@@ -5007,7 +5076,7 @@ function InventoryTab({
               </div>
             );
           })}
-          {isJewelCategory && jewelEntries.length === 0 && (
+          {isJewelCategory && combinedJewelEntries.length === 0 && (
             <div className="text-gray-400 text-sm text-center py-4">結晶を所持していません</div>
           )}
           {!isJewelCategory && combinedDisplayItems.length === 0 && (
