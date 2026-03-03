@@ -6,8 +6,10 @@ export interface JewelDef {
   displayName: string;
   short: string;
   cBonusType: BonusType;
-  dBaseBonuses: Array<{ stat: 'meleeAttack' | 'rangedAttack' | 'magicalAttack' | 'physicalDefense' | 'magicalDefense' | 'partyHP'; base: number }>;
+  dBaseBonuses: Array<{ stat: JewelDStat; base: number }>;
 }
+
+export type JewelDStat = 'meleeAttack' | 'rangedAttack' | 'magicalAttack' | 'physicalDefense' | 'magicalDefense' | 'partyHP';
 
 export const JEWEL_DEFS: Record<JewelKey, JewelDef> = {
   might: {
@@ -67,6 +69,12 @@ export function getJewelCBonusValue(key: JewelKey, rank: number): number {
   if (key === 'might' || key === 'arcana') return C_ATTACK_BY_RANK[idx] / 100;
   if (key === 'fort' || key === 'ward') return C_DEFENSE_BY_RANK[idx] / 100;
   return C_SUBTLE_BY_RANK[idx] / 1000;
+}
+
+export function getJewelDRankBonus(attachment: JewelAttachment | null | undefined, stat: JewelDStat): number {
+  if (!attachment) return 0;
+  const d = JEWEL_DEFS[attachment.key].dBaseBonuses.find((bonus) => bonus.stat === stat);
+  return d ? getJewelDRankValue(d.base, attachment.rank) : 0;
 }
 
 export function getJewelInventoryKey(key: JewelKey, rank: number): string {
