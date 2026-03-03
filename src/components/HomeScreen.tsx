@@ -3830,7 +3830,7 @@ function PartyTab({
                               key={rank}
                               onClick={() => onAttachJewel(char.id, slotIndex, jewelKey, rank)}
                               disabled={isDisabled}
-                              className={`${owned > 0 ? 'text-black' : 'text-gray-400'} ${isCurrent ? 'font-bold text-sub' : ''}`}
+                              className={`px-0.5 text-base leading-none ${owned > 0 ? 'text-black' : 'text-gray-400'} ${isCurrent ? 'font-bold text-sub' : ''}`}
                             >
                               {rank}
                             </button>
