@@ -3784,12 +3784,6 @@ function PartyTab({
                 </button>
                 {isExpanded && item && (
                   <div className="mt-2 space-y-1 text-xs">
-                    <div className="rounded border border-gray-200 bg-gray-50 px-2 py-1 text-[11px] leading-4 text-gray-600">
-                      <div>▲: collapsed / ▼: expanded</div>
-                      <div><span className="text-black">Black number</span>: Jewel owned</div>
-                      <div><span className="text-gray-400">Gray number</span>: Jewel not owned</div>
-                      <div><span className="font-bold text-sub">Sub color bold number</span>: Equipped Jewel rank (tap to remove)</div>
-                    </div>
                     {allowedJewels.map((jewelKey) => (
                       <div key={jewelKey} className="flex items-center gap-1">
                         <span className="w-10 font-semibold">{JEWEL_DEFS[jewelKey].displayName}:</span>
