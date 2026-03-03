@@ -236,7 +236,7 @@ Left-aligned
 - Rank Display
   - Black number → Jewel owned
   - Gray number → Jewel not owned
-  - Bold number → Currently equipped Jewel rank
+  - Sub color bold number → Currently equipped Jewel rank
 
 - Behavior Rules
   - Attachment
@@ -244,6 +244,7 @@ Left-aligned
     - Jewel rank must exist in inventory.
     - Attaching replaces existing Jewel (if any).
   - Removal
+    - Tap Sub color bold number to remove the jewel.
     - If the equipment is Unequipped (Moved to inventory)
     - The attached Jewel automatically returns to inventory.
   - Jewel effects are active only while the item is equipped.
