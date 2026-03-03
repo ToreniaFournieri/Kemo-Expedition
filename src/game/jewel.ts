@@ -95,12 +95,7 @@ export function isJewelAllowedForCategory(category: ItemCategory, key: JewelKey)
 }
 
 export function createStarterJewelInventory(): JewelInventory {
-  const inv: JewelInventory = {};
-  (Object.keys(JEWEL_DEFS) as JewelKey[]).forEach((key) => {
-    inv[getJewelInventoryKey(key, 1)] = 2;
-    inv[getJewelInventoryKey(key, 2)] = 1;
-  });
-  return inv;
+  return {};
 }
 
 export function jewelLabel(attachment: JewelAttachment | null | undefined): string {

@@ -68,6 +68,7 @@ interface HomeScreenProps {
     sellStack: (variantKey: string) => void;
     sellAllOwned: () => void;
     buyShopItem: (itemId: number) => void;
+    buyJewelShopItem: (jewelKey: JewelKey, rank: number) => void;
     refreshShopLineup: () => void;
     setVariantStatus: (variantKey: string, status: 'notown') => void;
     markItemsSeen: () => void;
@@ -2075,12 +2076,14 @@ export function HomeScreen({
             parties={state.parties}
             gold={state.global.gold}
             shopPurchases={state.global.shopPurchases}
+            jewelShopPurchases={state.global.jewelShopPurchases}
             shopRefreshCounts={state.global.shopRefreshCounts}
             shopIntimacy={state.global.shopIntimacy}
             shopIntimacyLastDecayAt={state.global.shopIntimacyLastDecayAt}
             onSellStack={actions.sellStack}
             onSetVariantStatus={actions.setVariantStatus}
             onBuyShopItem={actions.buyShopItem}
+            onBuyJewelShopItem={actions.buyJewelShopItem}
             onRefreshShopLineup={actions.refreshShopLineup}
             activeSubTab={activeBaseSubTab}
             onSetActiveSubTab={setActiveBaseSubTab}
@@ -4359,12 +4362,14 @@ function BaseTab({
   parties,
   gold,
   shopPurchases,
+  jewelShopPurchases,
   shopRefreshCounts,
   shopIntimacy,
   shopIntimacyLastDecayAt,
   onSellStack,
   onSetVariantStatus,
   onBuyShopItem,
+  onBuyJewelShopItem,
   onRefreshShopLineup,
   activeSubTab,
   onSetActiveSubTab,
@@ -4374,12 +4379,14 @@ function BaseTab({
   parties: Party[];
   gold: number;
   shopPurchases: Record<string, number[]>;
+  jewelShopPurchases: Record<string, number>;
   shopRefreshCounts: Record<string, number>;
   shopIntimacy: number;
   shopIntimacyLastDecayAt: number;
   onSellStack: (variantKey: string) => void;
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
   onBuyShopItem: (itemId: number) => void;
+  onBuyJewelShopItem: (jewelKey: JewelKey, rank: number) => void;
   onRefreshShopLineup: () => void;
   activeSubTab: BaseSubTab;
   onSetActiveSubTab: (tab: BaseSubTab) => void;
@@ -4428,10 +4435,12 @@ function BaseTab({
           gold={gold}
           parties={parties}
           shopPurchases={shopPurchases}
+          jewelShopPurchases={jewelShopPurchases}
           shopRefreshCounts={shopRefreshCounts}
           shopIntimacy={shopIntimacy}
           shopIntimacyLastDecayAt={shopIntimacyLastDecayAt}
           onBuyShopItem={onBuyShopItem}
+          onBuyJewelShopItem={onBuyJewelShopItem}
           onRefreshShopLineup={onRefreshShopLineup}
         />
       ) : (
@@ -4445,19 +4454,23 @@ function ShopTab({
   gold,
   parties,
   shopPurchases,
+  jewelShopPurchases,
   shopRefreshCounts,
   shopIntimacy,
   shopIntimacyLastDecayAt,
   onBuyShopItem,
+  onBuyJewelShopItem,
   onRefreshShopLineup,
 }: {
   gold: number;
   parties: Party[];
   shopPurchases: Record<string, number[]>;
+  jewelShopPurchases: Record<string, number>;
   shopRefreshCounts: Record<string, number>;
   shopIntimacy: number;
   shopIntimacyLastDecayAt: number;
   onBuyShopItem: (itemId: number) => void;
+  onBuyJewelShopItem: (jewelKey: JewelKey, rank: number) => void;
   onRefreshShopLineup: () => void;
 }) {
   const mustelidRace = RACES.find((race) => race.id === 'mustelid');
@@ -4509,6 +4522,16 @@ function ShopTab({
     const normalized = x - Math.floor(x);
     return Math.floor(normalized * highestDefeatedBossTier) + 1;
   };
+
+  const jewelEntries = (Object.keys(JEWEL_DEFS) as JewelKey[]).flatMap((jewelKey) => (
+    Array.from({ length: 8 }, (_, index) => {
+      const rank = index + 1;
+      const stockKey = `${jewelKey}:${rank}`;
+      const purchasedCount = jewelShopPurchases[stockKey] ?? 0;
+      const remainingStock = Math.max(0, 5 - purchasedCount);
+      return { jewelKey, rank, remainingStock, canBuy: remainingStock > 0 && gold >= 100 };
+    })
+  ));
 
   const shopItems = rarityPool.map((rarityBase, index) => {
     const tier = seededTierForIndex(index);
@@ -4613,6 +4636,40 @@ function ShopTab({
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="rounded border border-gray-200 bg-white p-3">
+        <div className="text-sm font-semibold text-sub">カリエスの狐彩堂</div>
+        <div className="mt-2 grid grid-cols-[auto,1fr] items-start gap-3">
+          <RaceIcon race={RACES.find((race) => race.id === 'vulpinian') ?? mustelidRace} className="h-10 w-10 self-center" />
+          <p className="text-sm text-gray-700">
+            お越し頂きありがとうございます。デバッグ用に宝石を用意しております。こちら、本番では自力でご用意いただく必要がございますことご理解ください。
+          </p>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-3">
+          {jewelEntries.map((entry) => (
+            <div key={`${entry.jewelKey}:${entry.rank}`} className="rounded border border-gray-200 px-2 py-1.5">
+              <div className="flex items-center justify-between gap-2 text-xs">
+                <span className="font-semibold text-gray-700">[{JEWEL_DEFS[entry.jewelKey].short}{entry.rank}] {JEWEL_DEFS[entry.jewelKey].displayName}</span>
+                <span className="text-gray-500">100G</span>
+              </div>
+              <div className="mt-1 flex items-center justify-between">
+                <span className="text-[11px] text-gray-500">在庫 {entry.remainingStock}/5</span>
+                <button
+                  onClick={() => onBuyJewelShopItem(entry.jewelKey, entry.rank)}
+                  disabled={!entry.canBuy}
+                  className={`rounded px-2 py-0.5 text-xs font-medium ${
+                    entry.canBuy
+                      ? 'bg-sub text-white hover:bg-sub/90'
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  購入
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
     </div>
