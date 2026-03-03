@@ -1089,3 +1089,65 @@ inventory = {
   - `item_tier` = 1-8
   - Selling_price(1)= 200
   - Selling_price(`item_tier`)= Selling_price(`item_tier`-1) * (2.50 - 0.12 *`item_tier` ) (round to the last two digits)
+
+#### 2.5.6 Jewel (結晶) 
+- A tier-scaled enhancement item that grants one c. bonus and fixed d. bonuses based on its rank.
+
+| `j.` Key | 表示名 | 略称 | `c.` bonus  | `d.` base bonus |
+|-----------|------------|----|----------------------------|---------|
+| `j.might` | 剛力の結晶 | 剛 | `c.physical_attack+v` | `d.melee_attack`12, `d.ranged_attack`9 |
+| `j.arcana` | 魔導の結晶 | 魔 | `c.magical_attack+v` | `d.magical_attack`6, `d.HP`3 |
+| `j.fort` | 堅牢の結晶 | 堅 | `c.physical_defense+v` | `d.physical_defense`6, `d.HP`6 |
+| `j.ward` | 障壁の結晶 | 障 | `c.magical_defense+v` | `d.magical_defense`6, `d.HP`6 |
+| `j.shade` | 影走の結晶 | 影 | `c.evasion+0.0v` | `d.magical_defense`4 , `d.HP`4  |
+| `j.focus` | 精密の結晶 | 精 | `c.accuracy+0.0v` | `d.physical_defense`4, `d.HP`3  |
+
+| Rank | `c.*_attack+v` | `c.*_defense+v` | `c.*+0.0v` |
+|------|---------|--------|--------|
+| 1 | 22 | 13 | 8 |
+| 2 | 21 | 12 | 7 |
+| 3 | 19 | 11 | 6 |
+| 4 | 18 | 9 | 5 |
+| 5 | 17 | 8 | 4 |
+| 6 | 16 | 7 | 3 |
+| 7 | 15 | 6 | 2 |
+| 8 | 14 | 5 | 1 |
+
+Rule:
+- D(1) = base
+- D(n) = D(n-1) * (1.40 - 0.03*n)
+- Rounded to nearest integer
+
+| Rank | Base 12 | Base 9 | Base 6 | Base 4 | Base 3 |
+|------|---------|--------|--------|--------|--------|
+| 1 | 12 | 9 | 6 | 4 | 3 |
+| 2 | 16 | 12 | 8 | 5 | 4 |
+| 3 | 21 | 16 | 10 | 7 | 5 |
+| 4 | 27 | 20 | 13 | 9 | 6 |
+| 5 | 34 | 25 | 16 | 11 | 8 |
+| 6 | 41 | 31 | 20 | 13 | 10 |
+| 7 | 49 | 37 | 24 | 15 | 12 |
+| 8 | 57 | 43 | 28 | 17 | 14 |
+
+- Item Type → Available Jewel
+
+| Item type | available jewel |
+|------|--------|
+| `i.armor` | `j.fort`, `j.ward`, `j.shade` |
+| `i.robe` | `j.fort`, `j.ward`, `j.focus` |
+| `i.shield` | `j.fort`, `j.ward`, `j.shade` |
+| `i.sword` | `j.might`, `j.fort`, `j.shade` |
+| `i.katana` | `j.might`, `j.ward`, `j.focus` |
+| `i.gauntlet` | `j.fort`, `j.ward`, `j.focus` |
+| `i.arrow` | `j.might`, `j.ward`, `j.shade` |
+| `i.bolt` | `j.might`, `j.fort`, `j.ward` |
+| `i.archery` | `j.fort`, `j.shade`, `j.focus` |
+| `i.wand` | `j.arcana`, `j.ward`, `j.shade` |
+| `i.grimoire` | `j.arcana`, `j.fort`, `j.focus` |
+| `i.catalyst` | `j.fort`, `j.ward`, `j.focus` |
+
+- Display
+```
+伝説の青銅縫いの鎧[精1]
+恐ろしい草編みの法衣[影2]
+```
