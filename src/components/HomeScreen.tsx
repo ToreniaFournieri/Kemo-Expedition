@@ -4934,7 +4934,7 @@ function InventoryTab({
             const jewelDef = JEWEL_DEFS[entry.jewelKey];
             return (
               <div key={`${entry.jewelKey}:${entry.rank}`} className="px-2 py-1.5 rounded bg-pane">
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
                   <span className="text-sm">{jewelDef.name}</span>
                   <span className="text-xs text-gray-500">x{formatNumber(entry.count)}</span>
                 </div>
