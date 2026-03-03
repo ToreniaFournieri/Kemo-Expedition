@@ -589,6 +589,14 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
     value > 0 ? formatBracket(label, value) : `${label}${formatSigned(value)}`;
 
   const stats: string[] = [];
+  const itemHasBaseStat = {
+    meleeAttack: Boolean(item.meleeAttack),
+    rangedAttack: Boolean(item.rangedAttack),
+    magicalAttack: Boolean(item.magicalAttack),
+    physicalDefense: Boolean(item.physicalDefense),
+    magicalDefense: Boolean(item.magicalDefense),
+    partyHP: Boolean(item.partyHP),
+  };
   if (item.jewel) {
     const jewel = JEWEL_DEFS[item.jewel.key];
     const cVal = item.jewel.key === 'might' || item.jewel.key === 'arcana'
@@ -602,12 +610,12 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
         for (let n = 2; n <= item.jewel!.rank; n++) v = Math.round(v * (1.4 - 0.03 * n));
         return v;
       })();
-      if (d.stat === 'meleeAttack') stats.push(`近攻+${value}`);
-      if (d.stat === 'rangedAttack') stats.push(`遠攻+${value}`);
-      if (d.stat === 'magicalAttack') stats.push(`魔攻+${value}`);
-      if (d.stat === 'physicalDefense') stats.push(`物防+${value}`);
-      if (d.stat === 'magicalDefense') stats.push(`魔防+${value}`);
-      if (d.stat === 'partyHP') stats.push(`HP+${Math.round(value * hpScaleMultiplier)}`);
+      if (d.stat === 'meleeAttack' && !itemHasBaseStat.meleeAttack) stats.push(`近攻+${value}`);
+      if (d.stat === 'rangedAttack' && !itemHasBaseStat.rangedAttack) stats.push(`遠攻+${value}`);
+      if (d.stat === 'magicalAttack' && !itemHasBaseStat.magicalAttack) stats.push(`魔攻+${value}`);
+      if (d.stat === 'physicalDefense' && !itemHasBaseStat.physicalDefense) stats.push(`物防+${value}`);
+      if (d.stat === 'magicalDefense' && !itemHasBaseStat.magicalDefense) stats.push(`魔防+${value}`);
+      if (d.stat === 'partyHP' && !itemHasBaseStat.partyHP) stats.push(`HP+${Math.round(value * hpScaleMultiplier)}`);
     }
     if (jewel.cBonusType === 'physical_attack') stats.push(`[物攻撃+${cVal}%]`);
     if (jewel.cBonusType === 'magical_attack') stats.push(`[魔攻撃+${cVal}%]`);
@@ -672,7 +680,12 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
   }
   if (itemUniqueBonusText) stats.push(`[${itemUniqueBonusText}]`);
   if (superRareUniqueBonusText) stats.push(`[超:${superRareUniqueBonusText}]`);
-  return stats.join(' ');
+  return stats.reduce((result, part, index) => {
+    if (index === 0) return part;
+    const previous = stats[index - 1];
+    if (previous.startsWith('[') && part.startsWith('[')) return `${result}${part}`;
+    return `${result} ${part}`;
+  }, '');
 }
 
 function getJewelSlotStatusText(jewelKey: JewelKey, rank: number, hpScaleMultiplier: number): string {
