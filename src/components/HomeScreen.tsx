@@ -28,7 +28,7 @@ import { getBaseMultiplier } from '../game/baseMultiplier';
 import { computeCharacterStats, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
 import { serializeGameState } from '../game/saveCodec';
 import { getBagEntryTickets, getBagTicketTotal } from '../game/bags';
-import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelOwnedCount } from '../game/jewel';
+import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRankValue, getJewelOwnedCount } from '../game/jewel';
 import { replaceCharacterEquipment } from '../game/equipment';
 import { resolveMagicProfile } from '../game/magic';
 import {
@@ -672,6 +672,30 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
   if (itemUniqueBonusText) stats.push(`[${itemUniqueBonusText}]`);
   if (superRareUniqueBonusText) stats.push(`[超:${superRareUniqueBonusText}]`);
   return stats.join(' ');
+}
+
+function getJewelSlotStatusText(jewelKey: JewelKey, rank: number, hpScaleMultiplier: number): string {
+  const jewel = JEWEL_DEFS[jewelKey];
+  const cValue = getJewelCBonusValue(jewelKey, rank);
+  const cText = (() => {
+    if (jewel.cBonusType === 'physical_attack') return `[物攻撃+${Math.round(cValue * 100)}%]`;
+    if (jewel.cBonusType === 'magical_attack') return `[魔攻撃+${Math.round(cValue * 100)}%]`;
+    if (jewel.cBonusType === 'physical_defense') return `[物防+${Math.round(cValue * 100)}%]`;
+    if (jewel.cBonusType === 'magical_defense') return `[魔防+${Math.round(cValue * 100)}%]`;
+    if (jewel.cBonusType === 'accuracy') return `[命中+${Math.round(cValue * 1000)}]`;
+    if (jewel.cBonusType === 'evasion') return `[回避+${Math.round(cValue * 1000)}]`;
+    return '';
+  })();
+  const dText = jewel.dBaseBonuses.map((bonus) => {
+    const value = getJewelDRankValue(bonus.base, rank);
+    if (bonus.stat === 'meleeAttack') return `近攻+${value}`;
+    if (bonus.stat === 'rangedAttack') return `遠攻+${value}`;
+    if (bonus.stat === 'magicalAttack') return `魔攻+${value}`;
+    if (bonus.stat === 'physicalDefense') return `物防+${value}`;
+    if (bonus.stat === 'magicalDefense') return `魔防+${value}`;
+    return `HP+${Math.round(value * hpScaleMultiplier)}`;
+  }).join(' ');
+  return [cText, dText].filter(Boolean).join(' ');
 }
 
 function getOffenseMultiplierSum(
@@ -3754,6 +3778,11 @@ function PartyTab({
                             </button>
                           );
                         })}
+                        {item.jewel?.key === jewelKey && (
+                          <span className="pl-1 text-gray-600">
+                            : {getJewelSlotStatusText(jewelKey, item.jewel.rank, hpDisplayMultiplier)}
+                          </span>
+                        )}
                       </div>
                     ))}
                   </div>
