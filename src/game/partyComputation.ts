@@ -16,7 +16,7 @@ import { getPredispositionById } from '../data/predispositions';
 import { getLineageById } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, getSuperRareBonuses } from '../data/items';
 import { applyDeityCharacterModifiers, getDeityElementalResistanceModifier, getDeityPartyHpMultiplier } from './deity';
-import { JEWEL_DEFS, getJewelDRankValue } from './jewel';
+import { getJewelDRankBonus } from './jewel';
 
 // Get enhancement and super rare multiplier for an item
 function getItemEnhancementMultiplier(item: Item): number {
@@ -216,10 +216,14 @@ export function computePartyStats(party: Party): {
         const baseMult = item.baseMultiplier ?? 1;
         itemHpBonus += Math.round(item.partyHP * categoryMult * enhanceMult * baseMult * statMultiplier * growthMultiplier);
       }
-      if (item?.jewel) {
-        const jewel = JEWEL_DEFS[item.jewel.key];
-        const hp = jewel.dBaseBonuses.find((b: { stat: string }) => b.stat === 'partyHP');
-        if (hp) itemHpBonus += Math.round(getJewelDRankValue(hp.base, item.jewel.rank) * statMultiplier * growthMultiplier);
+      if (item) {
+        const jewelPartyHP = getJewelDRankBonus(item.jewel, 'partyHP');
+        if (jewelPartyHP) {
+          const categoryMult = getCharacterMultiplier(character, item.category);
+          const enhanceMult = getItemEnhancementMultiplier(item);
+          const baseMult = item.baseMultiplier ?? 1;
+          itemHpBonus += Math.round(jewelPartyHP * categoryMult * enhanceMult * baseMult * statMultiplier * growthMultiplier);
+        }
       }
     }
 

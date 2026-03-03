@@ -1193,7 +1193,7 @@ const CATEGORY_GROUPS = [
 ];
 
 const INVENTORY_CATEGORY_GROUPS = [
-  { id: 'jewel', label: '機能', categories: ['jewel'] },
+  { id: 'jewel', label: '晶', categories: ['jewel'] },
   ...CATEGORY_GROUPS,
 ];
 

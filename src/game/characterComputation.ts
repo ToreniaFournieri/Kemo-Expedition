@@ -18,7 +18,7 @@ import { getPredispositionById } from '../data/predispositions';
 import { getLineageById } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, getSuperRareBonuses } from '../data/items';
 import { getBaseMultiplier } from './baseMultiplier';
-import { getJewelCBonusValue, getJewelDRankValue, JEWEL_DEFS } from './jewel';
+import { getJewelCBonusValue, getJewelDRankBonus, JEWEL_DEFS } from './jewel';
 
 // Get enhancement and super rare multiplier for an item
 function getItemEnhancementMultiplier(item: Item): number {
@@ -604,8 +604,6 @@ export function computeCharacterStats(
   let rangedNoA = 0;
   let magicalNoA = 0;
   let meleeNoA = 0;
-  let jewelPhysicalDefense = 0;
-  let jewelMagicalDefense = 0;
   const rangedNoAFixedBonuses = new Set<number>();
   const magicalNoAFixedBonuses = new Set<number>();
   const meleeNoAFixedBonuses = new Set<number>();
@@ -659,14 +657,6 @@ export function computeCharacterStats(
         }
       }
 
-      for (const d of cDef.dBaseBonuses) {
-        const value = getJewelDRankValue(d.base, item.jewel.rank);
-        if (d.stat === 'meleeAttack') meleeAttack += value;
-        if (d.stat === 'rangedAttack') rangedAttack += value;
-        if (d.stat === 'magicalAttack') magicalAttack += value;
-        if (d.stat === 'physicalDefense') jewelPhysicalDefense += value;
-        if (d.stat === 'magicalDefense') jewelMagicalDefense += value;
-      }
     }
     if (item.vitalityBonus) baseStats.vitality += item.vitalityBonus;
     if (item.strengthBonus) baseStats.strength += item.strengthBonus;
@@ -681,8 +671,9 @@ export function computeCharacterStats(
     const baseMult = item.baseMultiplier ?? 1;
     const multiplier = seekerCategoryMultiplier * enhanceMult * baseMult;
 
-    if (item.rangedAttack) {
-      rangedAttack += Math.round(item.rangedAttack * multiplier);
+    const itemRangedAttack = (item.rangedAttack ?? 0) + getJewelDRankBonus(item.jewel, 'rangedAttack');
+    if (itemRangedAttack) {
+      rangedAttack += Math.round(itemRangedAttack * multiplier);
     }
     if (item.rangedNoA) {
       // Round each item contribution individually.
@@ -692,8 +683,9 @@ export function computeCharacterStats(
         : item.rangedNoA;
       rangedNoA += rangedNoAContribution;
     }
-    if (item.magicalAttack) {
-      magicalAttack += Math.round(item.magicalAttack * multiplier);
+    const itemMagicalAttack = (item.magicalAttack ?? 0) + getJewelDRankBonus(item.jewel, 'magicalAttack');
+    if (itemMagicalAttack) {
+      magicalAttack += Math.round(itemMagicalAttack * multiplier);
     }
     if (item.magicalNoA) {
       // Round each item contribution individually.
@@ -703,8 +695,9 @@ export function computeCharacterStats(
         : item.magicalNoA;
       magicalNoA += magicalNoAContribution;
     }
-    if (item.meleeAttack) {
-      meleeAttack += Math.round(item.meleeAttack * multiplier);
+    const itemMeleeAttack = (item.meleeAttack ?? 0) + getJewelDRankBonus(item.jewel, 'meleeAttack');
+    if (itemMeleeAttack) {
+      meleeAttack += Math.round(itemMeleeAttack * multiplier);
     }
     if (item.meleeNoA) {
       // Round each item contribution individually.
@@ -827,16 +820,15 @@ export function computeCharacterStats(
     const enhanceMult = getItemEnhancementMultiplier(item);
     const baseMult = item.baseMultiplier ?? 1;
     const multiplier = seekerCategoryMultiplier * enhanceMult * baseMult;
-    if (item.physicalDefense) {
-      physicalDefense += Math.round(item.physicalDefense * multiplier);
+    const itemPhysicalDefense = (item.physicalDefense ?? 0) + getJewelDRankBonus(item.jewel, 'physicalDefense');
+    if (itemPhysicalDefense) {
+      physicalDefense += Math.round(itemPhysicalDefense * multiplier);
     }
-    if (item.magicalDefense) {
-      magicalDefense += Math.round(item.magicalDefense * multiplier);
+    const itemMagicalDefense = (item.magicalDefense ?? 0) + getJewelDRankBonus(item.jewel, 'magicalDefense');
+    if (itemMagicalDefense) {
+      magicalDefense += Math.round(itemMagicalDefense * multiplier);
     }
   }
-
-  physicalDefense += jewelPhysicalDefense;
-  magicalDefense += jewelMagicalDefense;
 
   physicalDefenseBonus = getUniqueCBonusSum(equippedItems, 'physical_defense', collection.physicalDefenseCBonuses);
   magicalDefenseBonus = getUniqueCBonusSum(equippedItems, 'magical_defense', collection.magicalDefenseCBonuses);
