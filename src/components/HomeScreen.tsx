@@ -1731,6 +1731,8 @@ export function HomeScreen({
 
   // Item gain notifications after selling phase
   useEffect(() => {
+    const suppressRewardNotificationsForAfk = pendingAfkMs > 0 || shouldShowAfkSummaryRef.current;
+
     state.parties.forEach((party, index) => {
       const previousLog = prevPartyLogsRef.current[index] ?? null;
       const previousLevel = prevPartyLevelsRef.current[index] ?? party.level;
@@ -1763,6 +1765,11 @@ export function HomeScreen({
       const justFinishedSelling = prevPartyCycleStateRef.current[index] === '売却中' && cycleState !== '売却中';
 
       if (hasRewardsToNotify && sellingFinished && canAnnounceGains && (hasNewLog || justFinishedSelling) && !isAlreadyNotified && currentLog) {
+        if (suppressRewardNotificationsForAfk) {
+          notifiedRewardLogRef.current[index] = currentLog;
+          return;
+        }
+
         for (const item of currentLog.rewards) {
           const isSuperRare = item.superRare > 0;
           const itemName = getItemDisplayName(item);
@@ -1786,7 +1793,7 @@ export function HomeScreen({
     prevPartyLogsRef.current = state.parties.map((party) => party.lastExpeditionLog);
     prevPartyLevelsRef.current = state.parties.map((party) => party.level);
     prevPartyCycleStateRef.current = state.parties.map((_, index) => partyCycles[index]?.state ?? null);
-  }, [state.parties, partyCycles, actions]);
+  }, [state.parties, partyCycles, actions, pendingAfkMs]);
 
   useEffect(() => {
     notifiedRewardLogRef.current = notifiedRewardLogRef.current.slice(0, state.parties.length);
