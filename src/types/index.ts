@@ -338,6 +338,7 @@ export interface GlobalState {
   inventory: InventoryRecord;
   deityDonations: Record<string, number>;
   shopPurchases: Record<string, number[]>;
+  jewelShopPurchases: Record<string, number>;
   shopRefreshCounts: Record<string, number>;
   shopIntimacy: number;
   shopIntimacyLastDecayAt: number;

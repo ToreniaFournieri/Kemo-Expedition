@@ -375,6 +375,7 @@ function loadSavedState(): GameState | null {
             inventory: migrateOldInventory(firstParty?.inventory ?? []),
             deityDonations: {},
             shopPurchases: {},
+            jewelShopPurchases: {},
             shopRefreshCounts: {},
             shopIntimacy: 0,
             shopIntimacyLastDecayAt: Date.now(),
@@ -392,6 +393,14 @@ function loadSavedState(): GameState | null {
               if (normalized.length > 0) {
                 acc[hourKey] = normalized;
               }
+              return acc;
+            }, {})
+          : {};
+
+        parsed.global.jewelShopPurchases = (parsed.global.jewelShopPurchases && typeof parsed.global.jewelShopPurchases === 'object')
+          ? Object.entries(parsed.global.jewelShopPurchases as Record<string, unknown>).reduce<Record<string, number>>((acc, [jewelStockKey, purchaseCount]) => {
+              if (typeof purchaseCount !== 'number' || purchaseCount <= 0) return acc;
+              acc[jewelStockKey] = Math.floor(purchaseCount);
               return acc;
             }, {})
           : {};
@@ -691,6 +700,7 @@ function createInitialState(): GameState {
       jewels: createStarterJewelInventory(),
       deityDonations: {},
       shopPurchases: {},
+      jewelShopPurchases: {},
       shopRefreshCounts: {},
       shopIntimacy: 0,
       shopIntimacyLastDecayAt: Date.now(),
@@ -731,6 +741,7 @@ type GameAction =
   | { type: 'SELL_STACK'; variantKey: string }
   | { type: 'SELL_ALL_OWNED' }
   | { type: 'BUY_SHOP_ITEM'; itemId: number }
+  | { type: 'BUY_JEWEL_SHOP_ITEM'; jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus'; rank: number }
   | { type: 'REFRESH_SHOP_LINEUP' }
   | { type: 'SET_VARIANT_STATUS'; variantKey: string; status: 'notown' }
   | { type: 'MARK_ITEMS_SEEN' }
@@ -2025,6 +2036,28 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
 
+    case 'BUY_JEWEL_SHOP_ITEM': {
+      const JEWEL_PRICE = 100;
+      const JEWEL_STOCK_LIMIT = 5;
+      const purchaseKey = `${action.jewelKey}:${Math.max(1, Math.min(8, Math.floor(action.rank)))}`;
+      const purchasedCount = state.global.jewelShopPurchases[purchaseKey] ?? 0;
+      if (state.global.gold < JEWEL_PRICE || purchasedCount >= JEWEL_STOCK_LIMIT) return state;
+
+      const rank = Math.max(1, Math.min(8, Math.floor(action.rank)));
+      return {
+        ...state,
+        global: {
+          ...state.global,
+          gold: state.global.gold - JEWEL_PRICE,
+          jewels: addJewelToInventory(state.global.jewels, action.jewelKey, rank),
+          jewelShopPurchases: {
+            ...state.global.jewelShopPurchases,
+            [purchaseKey]: purchasedCount + 1,
+          },
+        },
+      };
+    }
+
     case 'REFRESH_SHOP_LINEUP': {
       const now = new Date();
       const globalState = applyShopIntimacyDecay(state.global, now);
@@ -2228,6 +2261,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           jewels: createStarterJewelInventory(),
           deityDonations: {},
           shopPurchases: {},
+          jewelShopPurchases: {},
           shopRefreshCounts: {},
           shopIntimacy: 0,
           shopIntimacyLastDecayAt: Date.now(),
@@ -2451,6 +2485,10 @@ export function useGameState() {
 
     buyShopItem: useCallback((itemId: number) => {
       dispatch({ type: 'BUY_SHOP_ITEM', itemId });
+    }, []),
+
+    buyJewelShopItem: useCallback((jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus', rank: number) => {
+      dispatch({ type: 'BUY_JEWEL_SHOP_ITEM', jewelKey, rank });
     }, []),
 
     refreshShopLineup: useCallback(() => {
