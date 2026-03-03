@@ -1095,14 +1095,27 @@ inventory = {
 - category name "晶"
  - `d.` bonuses are added to the item’s base stats before any scaling is applied. Therefore, both the enhancement multiplier and Super Rare multiplier also affect the added `d.` values.
 
-| `j.` Key | 正式名称　| 表示名 | 略称 | `c.` bonus  | `d.` base bonus |
-|-----------|-----------|------|----|----------------------------|---------|
-| `j.might` | 剛力の結晶 | 剛力 | 剛 | `c.physical_attack+v` | `d.melee_attack`12, `d.ranged_attack`9 |
-| `j.arcana` | 魔導の結晶　| 魔導 | 魔 | `c.magical_attack+v` | `d.magical_attack`6, `d.HP`3 |
-| `j.fort` | 堅牢の結晶 | 堅牢 | 堅 | `c.physical_defense+v` | `d.physical_defense`6, `d.HP`6 |
-| `j.ward` | 障壁の結晶 | 障壁 | 障 | `c.magical_defense+v` | `d.magical_defense`6, `d.HP`6 |
-| `j.shade` | 影走の結晶 | 影走 | 影 | `c.evasion+0.0v` | `d.magical_defense`4 , `d.HP`4  |
-| `j.focus` | 精密の結晶 | 精密 | 精 | `c.accuracy+0.0v` | `d.physical_defense`4, `d.HP`3  |
+| `j.` Key |  表示名 | 略称 | `c.` bonus  | `d.` base bonus |
+|-----------|------|----|----------------------------|---------|
+| `j.might`  | 剛力 | 剛 | `c.physical_attack+v` | `d.melee_attack`12, `d.ranged_attack`9 |
+| `j.arcana` | 魔導 | 魔 | `c.magical_attack+v` | `d.magical_attack`6, `d.HP`3 |
+| `j.fort`  | 堅牢 | 堅 | `c.physical_defense+v` | `d.physical_defense`6, `d.HP`6 |
+| `j.ward`  | 障壁 | 障 | `c.magical_defense+v` | `d.magical_defense`6, `d.HP`6 |
+| `j.shade` | 影走 | 影 | `c.evasion+0.0v` | `d.magical_defense`4 , `d.HP`4  |
+| `j.focus`  | 精密 | 精 | `c.accuracy+0.0v` | `d.physical_defense`4, `d.HP`3  |
+
+| Rank | Tier Name |
+| ---- | --------- |
+| 1    | 素晶        |
+| 2    | 良晶        |
+| 3    | 雅晶        |
+| 4    | 煌晶        |
+| 5    | 碧晶        |
+| 6    | 紫晶        | 
+| 7    | 金晶        |
+| 8    | 王晶        |
+
+- Rank 5 `j.might`  is "剛力の碧晶"
 
 | Rank | `c.*_attack+v` | `c.*_defense+v` | `c.*+0.0v` |
 |------|---------|--------|--------|
@@ -1114,6 +1127,8 @@ inventory = {
 | 6 | 16 | 7 | 3 |
 | 7 | 15 | 6 | 2 |
 | 8 | 14 | 5 | 1 |
+
+
 
 Rule:
 - D(1) = base
