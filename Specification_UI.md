@@ -204,6 +204,27 @@ Left-aligned
     3. Super Rare Title: Items with Super Rare titles are prioritized within their base item ID.
     4. Enhancement Tier: Among the same Item ID, higher enhancements (e.g., 究極の > 伝説の) appear higher.
 
+- Enhancement equipment item by Jewel.
+```
+装備  4 / 4 スロット
+白銀英雄の鎧 [2B] 物防+79 魔防+25 HP+32 体力+1 [鎧] [鎧]  ▲
+名工の霧林司祭の法衣 [3E] 魔防+74 [魔防+8%] HP+47 回避+3 [法衣]　▲
+伝説の幻導の青銅杖 [3U] 魔攻+67 [魔攻撃+9%] 魔防+25 [魔防+9%] [ワンド]　▲
+```
+↓when press the line of equipment item
+```
+装備  4 / 4 スロット
+白銀英雄の鎧 [2B] 物防+85 魔防+25 HP+48 体力+1 [物防+8%] [鎧] ▼
+ 堅: 1 2 3 4 **5** 6 7 8  
+ 障: 1 2 3 4 5 6 7 8 
+ 影: 1 2 3 4 5 6 7 8 
+名工の霧林司祭の法衣 [3E] 魔防+74 [魔防+8%] HP+47 回避+3 [法衣]　▲
+伝説の幻導の青銅杖 [3U] 魔攻+67 [魔攻撃+9%] 魔防+25 [魔防+9%] [ワンド]　▲
+```
+note: available black, not owned gray out. equiped BOLD
+
+- If the equipment item removed to inventory, the jewel is back to inventory too. (the convination is only while equippped)
+
 **2. Inventory Pane:**
   - Always visible on the same screen at the bottom.
   - Stacked by item variant
