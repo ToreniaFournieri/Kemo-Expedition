@@ -1093,14 +1093,14 @@ inventory = {
 #### 2.5.6 Jewel (結晶) 
 - A tier-scaled enhancement item that grants one c. bonus and fixed d. bonuses based on its rank.
 
-| `j.` Key | 表示名 | 略称 | `c.` bonus  | `d.` base bonus |
-|-----------|------------|----|----------------------------|---------|
-| `j.might` | 剛力の結晶 | 剛 | `c.physical_attack+v` | `d.melee_attack`12, `d.ranged_attack`9 |
-| `j.arcana` | 魔導の結晶 | 魔 | `c.magical_attack+v` | `d.magical_attack`6, `d.HP`3 |
-| `j.fort` | 堅牢の結晶 | 堅 | `c.physical_defense+v` | `d.physical_defense`6, `d.HP`6 |
-| `j.ward` | 障壁の結晶 | 障 | `c.magical_defense+v` | `d.magical_defense`6, `d.HP`6 |
-| `j.shade` | 影走の結晶 | 影 | `c.evasion+0.0v` | `d.magical_defense`4 , `d.HP`4  |
-| `j.focus` | 精密の結晶 | 精 | `c.accuracy+0.0v` | `d.physical_defense`4, `d.HP`3  |
+| `j.` Key | 正式名称　| 表示名 | 略称 | `c.` bonus  | `d.` base bonus |
+|-----------|-----------|------|----|----------------------------|---------|
+| `j.might` | 剛力の結晶 | 剛力 | 剛 | `c.physical_attack+v` | `d.melee_attack`12, `d.ranged_attack`9 |
+| `j.arcana` | 魔導の結晶　| 魔導 | 魔 | `c.magical_attack+v` | `d.magical_attack`6, `d.HP`3 |
+| `j.fort` | 堅牢の結晶 | 堅牢 | 堅 | `c.physical_defense+v` | `d.physical_defense`6, `d.HP`6 |
+| `j.ward` | 障壁の結晶 | 障壁 | 障 | `c.magical_defense+v` | `d.magical_defense`6, `d.HP`6 |
+| `j.shade` | 影走の結晶 | 影走 | 影 | `c.evasion+0.0v` | `d.magical_defense`4 , `d.HP`4  |
+| `j.focus` | 精密の結晶 | 精密 | 精 | `c.accuracy+0.0v` | `d.physical_defense`4, `d.HP`3  |
 
 | Rank | `c.*_attack+v` | `c.*_defense+v` | `c.*+0.0v` |
 |------|---------|--------|--------|
