@@ -18,6 +18,7 @@ import { getPredispositionById } from '../data/predispositions';
 import { getLineageById } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, getSuperRareBonuses } from '../data/items';
 import { getBaseMultiplier } from './baseMultiplier';
+import { getJewelCBonusValue, getJewelDRankValue, JEWEL_DEFS } from './jewel';
 
 // Get enhancement and super rare multiplier for an item
 function getItemEnhancementMultiplier(item: Item): number {
@@ -603,6 +604,8 @@ export function computeCharacterStats(
   let rangedNoA = 0;
   let magicalNoA = 0;
   let meleeNoA = 0;
+  let jewelPhysicalDefense = 0;
+  let jewelMagicalDefense = 0;
   const rangedNoAFixedBonuses = new Set<number>();
   const magicalNoAFixedBonuses = new Set<number>();
   const meleeNoAFixedBonuses = new Set<number>();
@@ -619,6 +622,52 @@ export function computeCharacterStats(
   };
 
   for (const item of equippedItems) {
+
+    if (item.jewel) {
+      const cValue = getJewelCBonusValue(item.jewel.key, item.jewel.rank);
+      const cDef = JEWEL_DEFS[item.jewel.key];
+      if (cDef.cBonusType === 'physical_attack') {
+        const name = `c.physical_attack+${Math.round(cValue * 100)}`;
+        if (!collection.offenseCBonusNames.has(name)) {
+          collection.offenseCBonusNames.add(name);
+          collection.physicalAttackCBonus += cValue;
+        }
+      } else if (cDef.cBonusType === 'magical_attack') {
+        const name = `c.magical_attack+${Math.round(cValue * 100)}`;
+        if (!collection.offenseCBonusNames.has(name)) {
+          collection.offenseCBonusNames.add(name);
+          collection.magicalAttackCBonus += cValue;
+        }
+      } else if (cDef.cBonusType === 'physical_defense') {
+        const name = `c.physical_defense+${Math.round(cValue * 100)}`;
+        if (!collection.physicalDefenseCBonuses.has(name)) collection.physicalDefenseCBonuses.set(name, cValue);
+      } else if (cDef.cBonusType === 'magical_defense') {
+        const name = `c.magical_defense+${Math.round(cValue * 100)}`;
+        if (!collection.magicalDefenseCBonuses.has(name)) collection.magicalDefenseCBonuses.set(name, cValue);
+      } else if (cDef.cBonusType === 'accuracy') {
+        const name = `c.accuracy+${Math.round(cValue * 1000)}`;
+        const count = collection.cAccuracyBonusCounts.get(name) ?? 0;
+        if (count < 1) {
+          collection.cAccuracyBonusCounts.set(name, count + 1);
+          accuracyBonus += cValue;
+        }
+      } else if (cDef.cBonusType === 'evasion') {
+        const name = `c.evasion+${Math.round(cValue * 1000)}`;
+        if (!evasionBonusNames.has(name)) {
+          evasionBonusNames.add(name);
+          evasionBonus += cValue;
+        }
+      }
+
+      for (const d of cDef.dBaseBonuses) {
+        const value = getJewelDRankValue(d.base, item.jewel.rank);
+        if (d.stat === 'meleeAttack') meleeAttack += value;
+        if (d.stat === 'rangedAttack') rangedAttack += value;
+        if (d.stat === 'magicalAttack') magicalAttack += value;
+        if (d.stat === 'physicalDefense') jewelPhysicalDefense += value;
+        if (d.stat === 'magicalDefense') jewelMagicalDefense += value;
+      }
+    }
     if (item.vitalityBonus) baseStats.vitality += item.vitalityBonus;
     if (item.strengthBonus) baseStats.strength += item.strengthBonus;
     if (item.intelligenceBonus) baseStats.intelligence += item.intelligenceBonus;
@@ -785,6 +834,9 @@ export function computeCharacterStats(
       magicalDefense += Math.round(item.magicalDefense * multiplier);
     }
   }
+
+  physicalDefense += jewelPhysicalDefense;
+  magicalDefense += jewelMagicalDefense;
 
   physicalDefenseBonus = getUniqueCBonusSum(equippedItems, 'physical_defense', collection.physicalDefenseCBonuses);
   magicalDefenseBonus = getUniqueCBonusSum(equippedItems, 'magical_defense', collection.magicalDefenseCBonuses);

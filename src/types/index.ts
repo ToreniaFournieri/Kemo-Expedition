@@ -179,9 +179,19 @@ export interface ItemDef {
   penetBonus?: number;
 }
 
+export type JewelKey = 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus';
+
+export interface JewelAttachment {
+  key: JewelKey;
+  rank: number; // 1-8
+}
+
+export type JewelInventory = Record<string, number>;
+
 export interface Item extends ItemDef {
   enhancement: number; // 0-6
   superRare: number; // 0-80
+  jewel?: JewelAttachment | null;
   isNew?: boolean; // For highlighting newly acquired items
 }
 
@@ -331,6 +341,7 @@ export interface GlobalState {
   shopRefreshCounts: Record<string, number>;
   shopIntimacy: number;
   shopIntimacyLastDecayAt: number;
+  jewels: JewelInventory;
 }
 
 // Computed party stats for battle

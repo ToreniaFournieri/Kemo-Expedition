@@ -73,7 +73,7 @@
   - Use this specification's version
 ```
 (Left-aligned)             (Right-aligned)
-ケモの冒険　v0.2.3 (αテスト)        200G
+ケモの冒険　v0.4.0 (αテスト)        200G
 ```
 - Tab header (primary navigation):
   - Party

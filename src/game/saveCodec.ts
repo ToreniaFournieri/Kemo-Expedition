@@ -1,13 +1,14 @@
 import { getItemById } from '../data/items';
 import { GameState, InventoryRecord, InventoryVariant, Item } from '../types';
 
-type ItemReference = Pick<Item, 'id' | 'enhancement' | 'superRare'>;
+type ItemReference = Pick<Item, 'id' | 'enhancement' | 'superRare' | 'jewel'>;
 
 function toItemReference(item: Item): ItemReference {
   return {
     id: item.id,
     enhancement: item.enhancement,
     superRare: item.superRare,
+    jewel: item.jewel ?? null,
   };
 }
 
@@ -30,6 +31,7 @@ function hydrateItem(item: Partial<Item>, keyHint?: string): Item {
       ...(item as Item),
       enhancement,
       superRare,
+      jewel: item.jewel ?? null,
     };
   }
 
@@ -37,6 +39,7 @@ function hydrateItem(item: Partial<Item>, keyHint?: string): Item {
     ...baseItem,
     enhancement,
     superRare,
+    jewel: item.jewel ?? null,
     isNew: item.isNew,
   };
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, type ChangeEvent, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, getVariantKey, MAX_LEVEL } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import {
   DUNGEONS,
@@ -28,6 +28,7 @@ import { getBaseMultiplier } from '../game/baseMultiplier';
 import { computeCharacterStats, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
 import { serializeGameState } from '../game/saveCodec';
 import { getBagEntryTickets, getBagTicketTotal } from '../game/bags';
+import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelOwnedCount } from '../game/jewel';
 import { replaceCharacterEquipment } from '../game/equipment';
 import { resolveMagicProfile } from '../game/magic';
 import {
@@ -61,6 +62,7 @@ interface HomeScreenProps {
     processPendingProfit: (partyIndex: number, donation: number, deposit: number) => void;
     spendPendingProfit: (partyIndex: number, amount: number) => void;
     equipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
+    attachJewel: (characterId: number, slotIndex: number, jewelKey: JewelKey, rank: number) => void;
     updateCharacter: (characterId: number, updates: Partial<Character>) => void;
     reorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
     sellStack: (variantKey: string) => void;
@@ -586,6 +588,34 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
     value > 0 ? formatBracket(label, value) : `${label}${formatSigned(value)}`;
 
   const stats: string[] = [];
+  if (item.jewel) {
+    const jewel = JEWEL_DEFS[item.jewel.key];
+    const cVal = item.jewel.key === 'might' || item.jewel.key === 'arcana'
+      ? Math.round((['might','arcana'].includes(item.jewel.key) ? [22,21,19,18,17,16,15,14][item.jewel.rank - 1] : 0))
+      : item.jewel.key === 'fort' || item.jewel.key === 'ward'
+        ? Math.round(([13,12,11,9,8,7,6,5][item.jewel.rank - 1]))
+        : Math.round(([8,7,6,5,4,3,2,1][item.jewel.rank - 1]));
+    stats.push(`[${jewel.short}${item.jewel.rank}]`);
+    for (const d of jewel.dBaseBonuses) {
+      const value = ((): number => {
+        let v = d.base;
+        for (let n = 2; n <= item.jewel!.rank; n++) v = Math.round(v * (1.4 - 0.03 * n));
+        return v;
+      })();
+      if (d.stat === 'meleeAttack') stats.push(`近攻+${value}`);
+      if (d.stat === 'rangedAttack') stats.push(`遠攻+${value}`);
+      if (d.stat === 'magicalAttack') stats.push(`魔攻+${value}`);
+      if (d.stat === 'physicalDefense') stats.push(`物防+${value}`);
+      if (d.stat === 'magicalDefense') stats.push(`魔防+${value}`);
+      if (d.stat === 'partyHP') stats.push(`HP+${Math.round(value * hpScaleMultiplier)}`);
+    }
+    if (jewel.cBonusType === 'physical_attack') stats.push(`[物攻撃+${cVal}%]`);
+    if (jewel.cBonusType === 'magical_attack') stats.push(`[魔攻撃+${cVal}%]`);
+    if (jewel.cBonusType === 'physical_defense') stats.push(`[物防+${cVal}%]`);
+    if (jewel.cBonusType === 'magical_defense') stats.push(`[魔防+${cVal}%]`);
+    if (jewel.cBonusType === 'accuracy') stats.push(`[命中+${cVal}]`);
+    if (jewel.cBonusType === 'evasion') stats.push(`[回避+${cVal}]`);
+  }
   // Match displayed item values with runtime stat computation (rounded, not floored).
   if (item.meleeAttack) {
     stats.push(`近攻+${Math.round(item.meleeAttack * multiplier)}`);
@@ -1984,10 +2014,12 @@ export function HomeScreen({
             onUpdateCharacter={actions.updateCharacter}
             onReorderPartyCharacter={actions.reorderPartyCharacter}
             onEquipItem={actions.equipItem}
+            onAttachJewel={actions.attachJewel}
             onAddStatNotifications={actions.addStatNotifications}
             onSelectParty={actions.selectParty}
             onUpdatePartyDeity={actions.updatePartyDeity}
             inventory={state.global.inventory}
+            jewels={state.global.jewels}
             deityDonations={state.global.deityDonations}
           />
         )}
@@ -2084,10 +2116,12 @@ function PartyTab({
   onUpdateCharacter,
   onReorderPartyCharacter,
   onEquipItem,
+  onAttachJewel,
   onAddStatNotifications,
   onSelectParty,
   onUpdatePartyDeity,
   inventory,
+  jewels,
   deityDonations,
 }: {
   parties: Party[];
@@ -2102,10 +2136,12 @@ function PartyTab({
   onUpdateCharacter: (id: number, updates: Partial<Character>) => void;
   onReorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
   onEquipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
+  onAttachJewel: (characterId: number, slotIndex: number, jewelKey: JewelKey, rank: number) => void;
   onAddStatNotifications: (changes: Array<{ message: string; isPositive: boolean }>) => void;
   onSelectParty: (partyIndex: number) => void;
   onUpdatePartyDeity: (partyIndex: number, deityName: string) => void;
   inventory: InventoryRecord;
+  jewels: Record<string, number>;
   deityDonations: Record<string, number>;
 }) {
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
@@ -3678,29 +3714,53 @@ function PartyTab({
               if (a.item.superRare !== b.item.superRare) return b.item.superRare - a.item.superRare;
               return b.item.enhancement - a.item.enhancement;
             });
-            return slots.map(({ slotIndex, item }) => (
-              <button
-                key={slotIndex}
-                onClick={() => handleSlotTap(slotIndex)}
-                className={`w-full p-2 text-left border rounded text-sm bg-white ${
-                  selectingSlot === slotIndex ? 'border-sub' : 'border-gray-200'
-                }`}
-              >
-                {item ? (
-                  <div className="flex justify-between items-center">
-                    <span>
-                      <span className="font-medium">{getItemDisplayName(item)}</span>
-                      <span className="text-xs text-gray-500"> {getRarityShortLabel(item.id, item.name)} {renderTextWithRaceIcons(getItemStats(item, getCharacterCategoryMultiplier(char, item.category), hpDisplayMultiplier))}</span>
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      [{CATEGORY_NAMES[item.category]}]
-                    </span>
+            return slots.map(({ slotIndex, item }) => {
+              const isExpanded = selectingSlot === slotIndex;
+              const allowedJewels = item ? JEWELS_BY_ITEM_CATEGORY[item.category] : [];
+              return (
+              <div key={slotIndex} className={`w-full p-2 text-left border rounded text-sm bg-white ${isExpanded ? 'border-sub' : 'border-gray-200'}`}>
+                <button
+                  onClick={() => handleSlotTap(slotIndex)}
+                  className="w-full text-left"
+                >
+                  {item ? (
+                    <div className="flex justify-between items-center">
+                      <span>
+                        <span className="font-medium">{getItemDisplayName(item)}</span>
+                        <span className="text-xs text-gray-500"> {getRarityShortLabel(item.id, item.name)} {renderTextWithRaceIcons(getItemStats(item, getCharacterCategoryMultiplier(char, item.category), hpDisplayMultiplier))}</span>
+                      </span>
+                      <span className="text-xs text-gray-400">[{CATEGORY_NAMES[item.category]}] {isExpanded ? '▼' : '▲'}</span>
+                    </div>
+                  ) : (
+                    <span className="text-gray-400">空きスロット</span>
+                  )}
+                </button>
+                {isExpanded && item && (
+                  <div className="mt-2 space-y-1 text-xs">
+                    {allowedJewels.map((jewelKey) => (
+                      <div key={jewelKey} className="flex items-center gap-1">
+                        <span className="w-5 font-semibold">{JEWEL_DEFS[jewelKey].short}:</span>
+                        {Array.from({ length: 8 }).map((_, i) => {
+                          const rank = i + 1;
+                          const owned = getJewelOwnedCount(jewels, jewelKey, rank);
+                          const isCurrent = item.jewel?.key === jewelKey && item.jewel?.rank === rank;
+                          return (
+                            <button
+                              key={rank}
+                              onClick={() => onAttachJewel(char.id, slotIndex, jewelKey, rank)}
+                              disabled={owned <= 0}
+                              className={`${owned > 0 ? 'text-black' : 'text-gray-400'} ${isCurrent ? 'font-bold underline' : ''}`}
+                            >
+                              {rank}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ))}
                   </div>
-                ) : (
-                  <span className="text-gray-400">空きスロット</span>
                 )}
-              </button>
-            ));
+              </div>
+            );});
           })()}
         </div>
       </div>
