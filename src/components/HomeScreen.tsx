@@ -1191,6 +1191,13 @@ const CATEGORY_GROUPS = [
   { id: 'magic', label: '魔法攻撃', categories: ['wand', 'grimoire', 'catalyst'] },
 ];
 
+const INVENTORY_CATEGORY_GROUPS = [
+  { id: 'jewel', label: '機能', categories: ['jewel'] },
+  ...CATEGORY_GROUPS,
+];
+
+type InventoryCategory = ItemCategory | 'jewel';
+
 const MELEE_CATEGORIES = new Set<ItemCategory>(['sword', 'katana', 'gauntlet']);
 const RANGED_CATEGORIES = new Set<ItemCategory>(['arrow', 'bolt', 'archery']);
 const MAGIC_CATEGORIES = new Set<ItemCategory>(['wand', 'grimoire', 'catalyst']);
@@ -2064,6 +2071,7 @@ export function HomeScreen({
         {activeTab === 'base' && (
           <BaseTab
             inventory={state.global.inventory}
+            jewels={state.global.jewels}
             parties={state.parties}
             gold={state.global.gold}
             shopPurchases={state.global.shopPurchases}
@@ -4347,6 +4355,7 @@ function ExpeditionTab({
 
 function BaseTab({
   inventory,
+  jewels,
   parties,
   gold,
   shopPurchases,
@@ -4361,6 +4370,7 @@ function BaseTab({
   onSetActiveSubTab,
 }: {
   inventory: InventoryRecord;
+  jewels: Record<string, number>;
   parties: Party[];
   gold: number;
   shopPurchases: Record<string, number[]>;
@@ -4408,6 +4418,7 @@ function BaseTab({
       {activeSubTab === 'inventory' ? (
         <InventoryTab
           inventory={inventory}
+          jewels={jewels}
           parties={parties}
           onSellStack={onSellStack}
           onSetVariantStatus={onSetVariantStatus}
@@ -4609,24 +4620,28 @@ function ShopTab({
 }
 function InventoryTab({
   inventory,
+  jewels,
   parties,
   onSellStack,
   onSetVariantStatus,
 }: {
   inventory: InventoryRecord;
+  jewels: Record<string, number>;
   parties: Party[];
   onSellStack: (variantKey: string) => void;
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
 }) {
   const [showSold, setShowSold] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('armor');
+  const [selectedCategory, setSelectedCategory] = useState<InventoryCategory>('jewel');
   const [inventoryRarityFilter, setInventoryRarityFilter] = useState<RarityFilter>('all');
   const [inventorySuperRareOnly, setInventorySuperRareOnly] = useState(false);
+  const isJewelCategory = selectedCategory === 'jewel';
 
   // Separate owned and sold/notown items, filtered by category
   const allOwnedItems = Object.entries(inventory).filter(([, v]) => v.status === 'owned' && v.count > 0);
   const filteredOwnedItems = sortInventoryItems(
     allOwnedItems.filter(([, v]) =>
+      !isJewelCategory &&
       v.item.category === selectedCategory &&
       matchesRarityFilter(v.item.id, inventoryRarityFilter) &&
       (!inventorySuperRareOnly || v.item.superRare >= 1)
@@ -4637,6 +4652,7 @@ function InventoryTab({
       character.equipment.flatMap((item, slotIndex) => {
         if (!item) return [];
         if (
+          isJewelCategory ||
           item.category !== selectedCategory ||
           !matchesRarityFilter(item.id, inventoryRarityFilter) ||
           (inventorySuperRareOnly && item.superRare < 1)
@@ -4695,19 +4711,38 @@ function InventoryTab({
   const allSoldItems = Object.entries(inventory).filter(([, v]) => v.status === 'sold');
   const filteredSoldItems = sortInventoryItems(
     allSoldItems.filter(([, v]) =>
+      !isJewelCategory &&
       v.item.category === selectedCategory &&
       matchesRarityFilter(v.item.id, inventoryRarityFilter) &&
       (!inventorySuperRareOnly || v.item.superRare >= 1)
     )
   );
 
+  const jewelEntries = (Object.keys(JEWEL_DEFS) as JewelKey[])
+    .flatMap((jewelKey) => Array.from({ length: 8 }, (_, i) => {
+      const rank = i + 1;
+      const count = getJewelOwnedCount(jewels, jewelKey, rank);
+      return { jewelKey, rank, count };
+    }))
+    .filter((entry) => entry.count > 0)
+    .sort((a, b) => {
+      if (a.jewelKey !== b.jewelKey) return a.jewelKey.localeCompare(b.jewelKey);
+      return a.rank - b.rank;
+    });
+
+  const totalJewelCount = jewelEntries.reduce((sum, entry) => sum + entry.count, 0);
+
   return (
     <div>
       <div className="flex justify-between items-center mb-2 gap-2">
         <div className="text-sm text-gray-500">
-          {filteredOwnedItems.reduce((sum, [, v]) => sum + v.count, 0)}個
+          {isJewelCategory
+            ? `${formatNumber(totalJewelCount)}個`
+            : `${formatNumber(filteredOwnedItems.reduce((sum, [, v]) => sum + v.count, 0))}個`}
         </div>
         <div className="flex justify-end items-center gap-1">
+          {!isJewelCategory && (
+            <>
           <span className="text-xs text-gray-500">{RARITY_FILTER_NOTES[inventoryRarityFilter]}</span>
           {RARITY_FILTER_OPTIONS.map(filter => (
             <button
@@ -4734,19 +4769,21 @@ function InventoryTab({
           >
             {inventorySuperRareOnly ? 'ON' : 'OFF'}
           </button>
+            </>
+          )}
         </div>
       </div>
 
       {/* Category group tabs */}
       <div className="flex gap-1 mb-3 overflow-x-auto pb-1">
-        {CATEGORY_GROUPS.map(group => (
+        {INVENTORY_CATEGORY_GROUPS.map(group => (
           <div key={group.id} className="flex flex-col">
             <div className="text-xs text-gray-400 text-center mb-0.5">{group.label}</div>
             <div className="flex">
               {group.categories.map((cat, i) => (
                 <button
                   key={cat}
-                  onClick={() => setSelectedCategory(cat)}
+                  onClick={() => setSelectedCategory(cat as InventoryCategory)}
                   className={`px-2 py-1 text-sm ${
                     i === 0 ? 'rounded-l' : i === group.categories.length - 1 ? 'rounded-r' : ''
                   } ${
@@ -4755,7 +4792,7 @@ function InventoryTab({
                       : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                   }`}
                 >
-                  {CATEGORY_SHORT_NAMES[cat]}
+                  {cat === 'jewel' ? '晶' : CATEGORY_SHORT_NAMES[cat]}
                 </button>
               ))}
             </div>
@@ -4765,7 +4802,18 @@ function InventoryTab({
 
       {/* Item list */}
       <div className="space-y-1 min-h-[364px] max-h-[26rem] overflow-y-auto mb-4">
-          {combinedDisplayItems.map((entry) => {
+          {isJewelCategory && jewelEntries.map((entry) => {
+            const jewelDef = JEWEL_DEFS[entry.jewelKey];
+            return (
+              <div key={`${entry.jewelKey}:${entry.rank}`} className="px-2 py-1.5 rounded bg-pane">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm">[{jewelDef.short}{entry.rank}] {jewelDef.name}</span>
+                  <span className="text-xs text-gray-500">x{formatNumber(entry.count)}</span>
+                </div>
+              </div>
+            );
+          })}
+          {!isJewelCategory && combinedDisplayItems.map((entry) => {
             if (entry.type === 'owned') {
               const { item, count } = entry.variant;
               const sellPrice = calculateItemSellPrice(item) * count;
@@ -4828,13 +4876,16 @@ function InventoryTab({
               </div>
             );
           })}
-          {combinedDisplayItems.length === 0 && (
+          {isJewelCategory && jewelEntries.length === 0 && (
+            <div className="text-gray-400 text-sm text-center py-4">結晶を所持していません</div>
+          )}
+          {!isJewelCategory && combinedDisplayItems.length === 0 && (
             <div className="text-gray-400 text-sm text-center py-4">このカテゴリにアイテムがありません</div>
           )}
       </div>
 
       {/* Sold items management */}
-      {allSoldItems.length > 0 && (
+      {!isJewelCategory && allSoldItems.length > 0 && (
         <div className="border-t border-gray-200 pt-3">
           <button
             onClick={() => setShowSold(!showSold)}
