@@ -508,7 +508,7 @@ PT2...
 - **Column 1:** Shop owner icon (Vulpinian icon)  
 - **Column 2:** Dialogue
 
-	- Dialogue: "やあやあ。デバッグ用に宝石を用意したよ。本番では自力で集めるんだよ？"
+	- Dialogue: "お越し頂きありがとうございます。デバッグ用に宝石を用意しております。こちら、本番では自力でご用意いただく必要がございますことご理解ください。"
 	  - The shop sells all combination of jewels.
 		- Price: 100G each
 		- Stock: Five per jewels.
