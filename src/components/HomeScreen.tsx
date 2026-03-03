@@ -4984,8 +4984,10 @@ function InventoryTab({
               return (
                 <div key={entry.key} className="px-2 py-1.5 rounded bg-pane">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm">{getJewelNameByRank(entry.jewelKey, entry.rank)}</span>
-                    <span className="text-xs text-gray-500">x{formatNumber(entry.count)}</span>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-sm truncate">{getJewelNameByRank(entry.jewelKey, entry.rank)}</span>
+                      <span className="text-xs text-gray-500 shrink-0">x{formatNumber(entry.count)}</span>
+                    </div>
                   </div>
                   <div className="mt-0.5 text-xs leading-tight text-gray-400">
                     {getJewelInventoryStatusText(entry.jewelKey, entry.rank)}
