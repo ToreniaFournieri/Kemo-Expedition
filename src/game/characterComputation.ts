@@ -671,9 +671,13 @@ export function computeCharacterStats(
     const baseMult = item.baseMultiplier ?? 1;
     const multiplier = seekerCategoryMultiplier * enhanceMult * baseMult;
 
-    const itemRangedAttack = (item.rangedAttack ?? 0) + getJewelDRankBonus(item.jewel, 'rangedAttack');
+    const itemRangedAttack = item.rangedAttack ?? 0;
+    const jewelRangedAttack = getJewelDRankBonus(item.jewel, 'rangedAttack');
     if (itemRangedAttack) {
       rangedAttack += Math.round(itemRangedAttack * multiplier);
+    }
+    if (jewelRangedAttack) {
+      rangedAttack += Math.round(jewelRangedAttack * multiplier);
     }
     if (item.rangedNoA) {
       // Round each item contribution individually.
@@ -683,9 +687,13 @@ export function computeCharacterStats(
         : item.rangedNoA;
       rangedNoA += rangedNoAContribution;
     }
-    const itemMagicalAttack = (item.magicalAttack ?? 0) + getJewelDRankBonus(item.jewel, 'magicalAttack');
+    const itemMagicalAttack = item.magicalAttack ?? 0;
+    const jewelMagicalAttack = getJewelDRankBonus(item.jewel, 'magicalAttack');
     if (itemMagicalAttack) {
       magicalAttack += Math.round(itemMagicalAttack * multiplier);
+    }
+    if (jewelMagicalAttack) {
+      magicalAttack += Math.round(jewelMagicalAttack * multiplier);
     }
     if (item.magicalNoA) {
       // Round each item contribution individually.
@@ -695,9 +703,13 @@ export function computeCharacterStats(
         : item.magicalNoA;
       magicalNoA += magicalNoAContribution;
     }
-    const itemMeleeAttack = (item.meleeAttack ?? 0) + getJewelDRankBonus(item.jewel, 'meleeAttack');
+    const itemMeleeAttack = item.meleeAttack ?? 0;
+    const jewelMeleeAttack = getJewelDRankBonus(item.jewel, 'meleeAttack');
     if (itemMeleeAttack) {
       meleeAttack += Math.round(itemMeleeAttack * multiplier);
+    }
+    if (jewelMeleeAttack) {
+      meleeAttack += Math.round(jewelMeleeAttack * multiplier);
     }
     if (item.meleeNoA) {
       // Round each item contribution individually.
@@ -820,13 +832,21 @@ export function computeCharacterStats(
     const enhanceMult = getItemEnhancementMultiplier(item);
     const baseMult = item.baseMultiplier ?? 1;
     const multiplier = seekerCategoryMultiplier * enhanceMult * baseMult;
-    const itemPhysicalDefense = (item.physicalDefense ?? 0) + getJewelDRankBonus(item.jewel, 'physicalDefense');
+    const itemPhysicalDefense = item.physicalDefense ?? 0;
+    const jewelPhysicalDefense = getJewelDRankBonus(item.jewel, 'physicalDefense');
     if (itemPhysicalDefense) {
       physicalDefense += Math.round(itemPhysicalDefense * multiplier);
     }
-    const itemMagicalDefense = (item.magicalDefense ?? 0) + getJewelDRankBonus(item.jewel, 'magicalDefense');
+    if (jewelPhysicalDefense) {
+      physicalDefense += Math.round(jewelPhysicalDefense * multiplier);
+    }
+    const itemMagicalDefense = item.magicalDefense ?? 0;
+    const jewelMagicalDefense = getJewelDRankBonus(item.jewel, 'magicalDefense');
     if (itemMagicalDefense) {
       magicalDefense += Math.round(itemMagicalDefense * multiplier);
+    }
+    if (jewelMagicalDefense) {
+      magicalDefense += Math.round(jewelMagicalDefense * multiplier);
     }
   }
 
