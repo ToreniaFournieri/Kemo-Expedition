@@ -28,7 +28,7 @@ import { getBaseMultiplier } from '../game/baseMultiplier';
 import { computeCharacterStats, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
 import { serializeGameState } from '../game/saveCodec';
 import { getBagEntryTickets, getBagTicketTotal } from '../game/bags';
-import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRankValue, getJewelOwnedCount } from '../game/jewel';
+import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRankValue, getJewelNameByRank, getJewelOwnedCount } from '../game/jewel';
 import { replaceCharacterEquipment } from '../game/equipment';
 import { resolveMagicProfile } from '../game/magic';
 import {
@@ -4980,13 +4980,11 @@ function InventoryTab({
       {/* Item list */}
       <div className="space-y-1 min-h-[364px] max-h-[26rem] overflow-y-auto mb-4">
           {isJewelCategory && combinedJewelEntries.map((entry) => {
-            const jewelDef = JEWEL_DEFS[entry.jewelKey];
-
             if (entry.type === 'owned') {
               return (
                 <div key={entry.key} className="px-2 py-1.5 rounded bg-pane">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm">{jewelDef.name}</span>
+                    <span className="text-sm">{getJewelNameByRank(entry.jewelKey, entry.rank)}</span>
                     <span className="text-xs text-gray-500">x{formatNumber(entry.count)}</span>
                   </div>
                   <div className="mt-0.5 text-xs leading-tight text-gray-400">
@@ -5002,7 +5000,7 @@ function InventoryTab({
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
                     {race && <RaceIcon race={race} className="h-4 w-4 shrink-0" />}
-                    <span className="text-sm truncate">{jewelDef.name} (装備先:{getItemDisplayName(entry.item)})</span>
+                    <span className="text-sm truncate">{getJewelNameByRank(entry.jewelKey, entry.rank)} (装備先:{getItemDisplayName(entry.item)})</span>
                     <span className="text-xs text-gray-500 shrink-0">x1</span>
                   </div>
                   <span className="text-xs text-gray-500 shrink-0">PT{entry.partyIndex + 1}:{entry.characterName}</span>

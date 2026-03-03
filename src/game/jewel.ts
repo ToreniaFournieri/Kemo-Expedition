@@ -41,6 +41,7 @@ export const JEWEL_DEFS: Record<JewelKey, JewelDef> = {
 export const C_ATTACK_BY_RANK = [22, 21, 19, 18, 17, 16, 15, 14] as const;
 export const C_DEFENSE_BY_RANK = [13, 12, 11, 9, 8, 7, 6, 5] as const;
 export const C_SUBTLE_BY_RANK = [8, 7, 6, 5, 4, 3, 2, 1] as const;
+export const JEWEL_TIER_NAME_BY_RANK = ['素晶', '良晶', '雅晶', '煌晶', '碧晶', '紫晶', '金晶', '王晶'] as const;
 
 export const JEWELS_BY_ITEM_CATEGORY: Record<ItemCategory, JewelKey[]> = {
   armor: ['fort', 'ward', 'shade'],
@@ -79,6 +80,11 @@ export function getJewelDRankBonus(attachment: JewelAttachment | null | undefine
 
 export function getJewelInventoryKey(key: JewelKey, rank: number): string {
   return `${key}:${rank}`;
+}
+
+export function getJewelNameByRank(key: JewelKey, rank: number): string {
+  const idx = Math.max(0, Math.min(7, rank - 1));
+  return `${JEWEL_DEFS[key].displayName}の${JEWEL_TIER_NAME_BY_RANK[idx]}`;
 }
 
 export function getJewelOwnedCount(inv: JewelInventory, key: JewelKey, rank: number): number {
