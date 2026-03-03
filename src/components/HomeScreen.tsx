@@ -3997,9 +3997,6 @@ function ExpeditionTab({
           : cycle.state === '探索中'
           ? (Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, displayedEntries.length) / EXPLORING_PROGRESS_TOTAL_STEPS) * 100
           : Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100);
-        const explorationProgressLabel = cycle.state === '探索中'
-          ? `${Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, displayedEntries.length)}/${EXPLORING_PROGRESS_TOTAL_STEPS}`
-          : null;
         const hpForSortieCheck = cycle.state === '探索中' ? displayedHp : party.currentHp;
         const isSortieDisabled = !!selectedDungeonGate?.locked || hpForSortieCheck <= 0 || partyStats.hp <= 0;
         const canTriggerGodsBattle = cycle.state === '探索中'
@@ -4019,7 +4016,6 @@ function ExpeditionTab({
                 <div className="h-full bg-blue-500 transition-[width] duration-200" style={{ width: `${hpPercent}%` }} />
               </div>
               <span className="shrink-0">{cycle.state}</span>
-              {explorationProgressLabel && <span className="shrink-0 text-[11px] text-gray-500">{explorationProgressLabel}</span>}
               <div className="h-2 min-w-0 flex-1 rounded-full bg-gray-200 overflow-hidden">
                 <div
                   className={`h-full bg-sub ${cycle.state === '探索中' ? '' : 'transition-[width] duration-200'}`}
