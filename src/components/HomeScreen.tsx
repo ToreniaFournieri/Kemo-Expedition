@@ -594,13 +594,13 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
     value > 0 ? formatBracket(label, value) : `${label}${formatSigned(value)}`;
 
   const stats: string[] = [];
-  const itemHasBaseStat = {
-    meleeAttack: Boolean(item.meleeAttack),
-    rangedAttack: Boolean(item.rangedAttack),
-    magicalAttack: Boolean(item.magicalAttack),
-    physicalDefense: Boolean(item.physicalDefense),
-    magicalDefense: Boolean(item.magicalDefense),
-    partyHP: Boolean(item.partyHP),
+  const jewelDBonus = {
+    meleeAttack: 0,
+    rangedAttack: 0,
+    magicalAttack: 0,
+    physicalDefense: 0,
+    magicalDefense: 0,
+    partyHP: 0,
   };
   if (item.jewel) {
     const jewel = JEWEL_DEFS[item.jewel.key];
@@ -615,13 +615,7 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
         for (let n = 2; n <= item.jewel!.rank; n++) v = Math.round(v * (1.4 - 0.03 * n));
         return v;
       })();
-      const scaledValue = Math.round(rankValue * multiplier);
-      if (d.stat === 'meleeAttack' && !itemHasBaseStat.meleeAttack) stats.push(`近攻+${scaledValue}`);
-      if (d.stat === 'rangedAttack' && !itemHasBaseStat.rangedAttack) stats.push(`遠攻+${scaledValue}`);
-      if (d.stat === 'magicalAttack' && !itemHasBaseStat.magicalAttack) stats.push(`魔攻+${scaledValue}`);
-      if (d.stat === 'physicalDefense' && !itemHasBaseStat.physicalDefense) stats.push(`物防+${scaledValue}`);
-      if (d.stat === 'magicalDefense' && !itemHasBaseStat.magicalDefense) stats.push(`魔防+${scaledValue}`);
-      if (d.stat === 'partyHP' && !itemHasBaseStat.partyHP) stats.push(`HP+${Math.round(rankValue * multiplier * hpScaleMultiplier)}`);
+      jewelDBonus[d.stat] += rankValue;
     }
     if (jewel.cBonusType === 'physical_attack') stats.push(`[物攻撃+${cVal}%]`);
     if (jewel.cBonusType === 'magical_attack') stats.push(`[魔攻撃+${cVal}%]`);
@@ -631,16 +625,19 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
     if (jewel.cBonusType === 'evasion') stats.push(`[回避+${cVal}]`);
   }
   // Match displayed item values with runtime stat computation (rounded, not floored).
-  if (item.meleeAttack) {
-    stats.push(`近攻+${Math.round(item.meleeAttack * multiplier)}`);
+  const displayedMeleeAttack = (item.meleeAttack ?? 0) + jewelDBonus.meleeAttack;
+  if (displayedMeleeAttack) {
+    stats.push(`近攻+${Math.round(displayedMeleeAttack * multiplier)}`);
     if (item.category === 'sword' && multiplierPercent) stats.push(formatBracket('近攻撃', multiplierPercent, '%'));
   }
-  if (item.rangedAttack) {
-    stats.push(`遠攻+${Math.round(item.rangedAttack * multiplier)}`);
+  const displayedRangedAttack = (item.rangedAttack ?? 0) + jewelDBonus.rangedAttack;
+  if (displayedRangedAttack) {
+    stats.push(`遠攻+${Math.round(displayedRangedAttack * multiplier)}`);
     if (item.category === 'arrow' && multiplierPercent) stats.push(formatBracket('遠攻撃', multiplierPercent, '%'));
   }
-  if (item.magicalAttack) {
-    stats.push(`魔攻+${Math.round(item.magicalAttack * multiplier)}`);
+  const displayedMagicalAttack = (item.magicalAttack ?? 0) + jewelDBonus.magicalAttack;
+  if (displayedMagicalAttack) {
+    stats.push(`魔攻+${Math.round(displayedMagicalAttack * multiplier)}`);
     if (item.category === 'wand' && multiplierPercent) stats.push(formatBracket('魔攻撃', multiplierPercent, '%'));
   }
   if (item.meleeNoA || item.meleeNoABonus) {
@@ -658,19 +655,22 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
     if (baseNoA !== 0) stats.push(`魔回数${formatSigned(getScaledNoA(baseNoA))}`);
     if (item.magicalNoABonus) stats.push(formatFixedNoA('魔回数', item.magicalNoABonus));
   }
-  if (item.physicalDefense) {
-    stats.push(`物防+${Math.round(item.physicalDefense * multiplier)}`);
+  const displayedPhysicalDefense = (item.physicalDefense ?? 0) + jewelDBonus.physicalDefense;
+  if (displayedPhysicalDefense) {
+    stats.push(`物防+${Math.round(displayedPhysicalDefense * multiplier)}`);
     if (multiplierPercent) stats.push(formatBracket('物防', multiplierPercent, '%'));
   }
-  if (item.magicalDefense) {
-    stats.push(`魔防+${Math.round(item.magicalDefense * multiplier)}`);
+  const displayedMagicalDefense = (item.magicalDefense ?? 0) + jewelDBonus.magicalDefense;
+  if (displayedMagicalDefense) {
+    stats.push(`魔防+${Math.round(displayedMagicalDefense * multiplier)}`);
     if (multiplierPercent) stats.push(formatBracket('魔防', multiplierPercent, '%'));
   }
-  if (item.partyHP) {
+  const displayedPartyHp = (item.partyHP ? Math.round(item.partyHP * multiplier * hpScaleMultiplier) : 0)
+    + (jewelDBonus.partyHP ? Math.round(jewelDBonus.partyHP * multiplier * hpScaleMultiplier) : 0);
+  if (displayedPartyHp) {
     // Match computePartyStats HP contribution order:
-    // Round each item HP bonus after category/enhancement/base/stat/growth multipliers.
-    const roundedItemHp = Math.round(item.partyHP * multiplier * hpScaleMultiplier);
-    stats.push(`HP+${roundedItemHp}`);
+    // Round base and jewel HP contributions separately, then sum.
+    stats.push(`HP+${displayedPartyHp}`);
   }
   if (item.accuracyBonus) stats.push(formatBracket('命中', Math.round(item.accuracyBonus * 1000)));
   if (item.evasionBonus) stats.push(`回避${formatSigned(Math.round(item.evasionBonus * 1000))}`);
