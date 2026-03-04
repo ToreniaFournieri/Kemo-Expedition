@@ -2166,14 +2166,14 @@ export function HomeScreen({
       {/* Fixed Header */}
       <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-300 p-3 z-10">
         <div className="max-w-lg mx-auto w-full">
-          <div className="flex justify-between items-center gap-3">
+          <div className="flex justify-between items-end gap-3">
             <div>
-              <h1 className="text-lg font-bold">
-                {gameTitle}
-                <span className="ml-1 text-xs font-normal text-gray-500">{versionLabel}</span>
+              <h1 className="flex items-end gap-1 text-lg font-bold leading-none">
+                <span>{gameTitle}</span>
+                <span className="text-xs font-normal leading-none text-gray-500">{versionLabel}</span>
               </h1>
             </div>
-            <div className="flex items-center gap-2 text-right text-sm font-medium">
+            <div className="flex items-end gap-2 text-right text-sm font-medium leading-none">
               <span>{formatNumber(state.global.gold)}G</span>
               <button
                 onClick={() => {
