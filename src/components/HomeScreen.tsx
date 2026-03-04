@@ -4368,7 +4368,7 @@ function ExpeditionTab({
 
             <div className="mb-2 relative h-5 min-w-0 rounded-full bg-gray-200 overflow-hidden text-xs">
               <div
-                className={`absolute inset-y-0 left-0 bg-sub ${cycle.state === '探索中' ? '' : 'transition-[width] duration-200'}`}
+                className={`absolute inset-y-0 left-0 bg-sub/50 ${cycle.state === '探索中' ? '' : 'transition-[width] duration-200'}`}
                 style={{ width: `${progressPercent}%` }}
               />
               <div className="relative z-10 h-full flex items-center justify-center px-2 text-black">
