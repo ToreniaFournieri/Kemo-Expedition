@@ -545,6 +545,9 @@ line2 gray text: ケイナイアン平原      02/12 20:28
 (Left-Aligned)         (Right-aligned)
 line 1: [PT1] 敗北の記録           ▼
 line  gray text2: ヴァルンの樹林帯      02/12 20:28
+(Left-Aligned)         (Right-aligned)
+line 1: [PT1] サイドクエスト達成(散財1,000G)           
+line  gray text2: ウルサンの霊峰: 剛力の雅晶 を手に入れた     02/12 20:28
 ```
 
   
