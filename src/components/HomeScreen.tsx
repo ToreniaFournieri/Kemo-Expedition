@@ -4275,11 +4275,11 @@ function ExpeditionTab({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {[0, 1, 2, 3, 4, 5].map((partyIndex) => {
         const party = state.parties[partyIndex];
         if (!party) {
-          return <div key={partyIndex} className="bg-pane rounded-lg p-4"><div className="text-sm text-gray-400">PT{partyIndex + 1}: (未開放)</div></div>;
+          return <div key={partyIndex} className="bg-pane rounded-lg p-3"><div className="text-sm text-gray-400">PT{partyIndex + 1}: (未開放)</div></div>;
         }
 
         const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
@@ -4325,20 +4325,20 @@ function ExpeditionTab({
         const sideQuestText = getSideQuestText(party);
 
         return (
-          <div key={partyIndex} className="bg-pane rounded-lg p-4">
+          <div key={partyIndex} className="bg-pane rounded-lg p-3">
             <button
               onClick={() => {
                 const nextExpanded = isLogExpanded ? null : partyIndex;
                 setExpandedLogParty(nextExpanded);
                 setExpandedRoom(null);
               }}
-              className="w-full flex justify-between items-center text-sm mb-3"
+              className="w-full flex justify-between items-center text-sm mb-2"
             >
               <span><span className="font-bold text-black">{party.name}</span><span className="ml-2">{headlineDungeonName}</span><span className="ml-2 font-medium text-sub">{headlineState}</span></span>
               <span className={isLogExpanded ? 'transform transition-transform rotate-180' : ''}>▼</span>
             </button>
 
-            <div className="mb-3 flex items-center gap-2 text-xs text-gray-600">
+            <div className="mb-2 flex items-center gap-2 text-xs text-gray-600">
               <span className="shrink-0">HP</span>
               <div className="h-2 w-28 rounded-full bg-blue-100 overflow-hidden">
                 <div className="h-full bg-blue-500 transition-[width] duration-200" style={{ width: `${hpPercent}%` }} />
@@ -4353,14 +4353,14 @@ function ExpeditionTab({
             </div>
 
             {(nextGoalText || sideQuestText) && (
-              <div className="mb-3 space-y-1">
+              <div className="mb-2 space-y-1">
                 {nextGoalText && <div className="text-sm text-gray-700">{nextGoalText}</div>}
                 {sideQuestText && <div className="text-sm text-gray-700">{sideQuestText}</div>}
               </div>
             )}
 
             {isLogExpanded && (
-              <div className="space-y-2 mb-3">
+              <div className="space-y-2 mb-2">
                 <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 text-sm text-gray-700">
                   <select
                     value={party.selectedDungeonId}
