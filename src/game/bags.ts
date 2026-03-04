@@ -67,6 +67,11 @@ const MAGICAL_THREAT_WEIGHT_BAG_DEFAULT: WeightedBagEntry[] = [
   { id: 6, tickets: 2 },
 ];
 
+const SIDE_QUEST_BAG_DEFAULT: WeightedBagEntry[] = [
+  { id: 0, tickets: 99 * 12 },
+  ...Array.from({ length: 12 }, (_, i) => ({ id: i + 1, tickets: 1 })),
+];
+
 const BAG_DEFAULT_CREATORS = {
   commonRewardBag: () => createBagFromEntries(COMMON_REWARD_BAG_DEFAULT),
   commonEnhancementBag: () => createBagFromEntries(COMMON_ENHANCEMENT_BAG_DEFAULT),
@@ -78,6 +83,7 @@ const BAG_DEFAULT_CREATORS = {
   superRareBag: () => createBagFromEntries(SUPER_RARE_BAG_DEFAULT),
   physicalThreatBag: () => createBagFromEntries(PHYSICAL_THREAT_WEIGHT_BAG_DEFAULT),
   magicalThreatBag: () => createBagFromEntries(MAGICAL_THREAT_WEIGHT_BAG_DEFAULT),
+  sideQuestBag: () => createBagFromEntries(SIDE_QUEST_BAG_DEFAULT),
 } as const;
 
 export type BagType = keyof typeof BAG_DEFAULT_CREATORS;
@@ -120,6 +126,7 @@ export function normalizeGameBags(bags: GameBags): GameBags {
     superRareBag: normalizeBagForType(bags.superRareBag, 'superRareBag'),
     physicalThreatBag: normalizeBagForType(bags.physicalThreatBag, 'physicalThreatBag'),
     magicalThreatBag: normalizeBagForType(bags.magicalThreatBag, 'magicalThreatBag'),
+    sideQuestBag: normalizeBagForType(bags.sideQuestBag, 'sideQuestBag'),
   };
 }
 
@@ -173,6 +180,10 @@ export function createMagicalThreatBag(): RandomBag {
   return BAG_DEFAULT_CREATORS.magicalThreatBag();
 }
 
+export function createSideQuestBag(): RandomBag {
+  return BAG_DEFAULT_CREATORS.sideQuestBag();
+}
+
 // SpecRef: 7 | REWARD | initializeBags
 export function initializeBags(): GameBags {
   return {
@@ -186,6 +197,7 @@ export function initializeBags(): GameBags {
     superRareBag: createSuperRareBag(),
     physicalThreatBag: createPhysicalThreatBag(),
     magicalThreatBag: createMagicalThreatBag(),
+    sideQuestBag: createSideQuestBag(),
   };
 }
 

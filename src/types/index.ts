@@ -294,6 +294,16 @@ export interface Party {
     donatedGold: number;
     savedGold: number;
   };
+  sideQuest: SideQuestState | null;
+}
+
+export interface SideQuestState {
+  id: number;
+  type: string;
+  shortText: string;
+  target: number;
+  progress: number;
+  rolledTier: number;
 }
 
 export type ExpeditionDepthLimit =
@@ -501,6 +511,7 @@ export interface GameBags {
   superRareBag: RandomBag;
   physicalThreatBag: RandomBag;
   magicalThreatBag: RandomBag;
+  sideQuestBag: RandomBag;
 }
 
 // Enhancement/SuperRare Title

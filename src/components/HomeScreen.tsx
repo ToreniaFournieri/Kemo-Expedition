@@ -61,6 +61,9 @@ interface HomeScreenProps {
     clearPendingProfit: (partyIndex: number) => void;
     processPendingProfit: (partyIndex: number, donation: number, deposit: number) => void;
     spendPendingProfit: (partyIndex: number, amount: number) => void;
+    rollSideQuest: (partyIndex: number, rolledTier: number) => void;
+    cancelSideQuest: (partyIndex: number) => void;
+    advanceSideQuest: (partyIndex: number, amount: number) => void;
     equipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
     attachJewel: (characterId: number, slotIndex: number, jewelKey: JewelKey, rank: number) => void;
     updateCharacter: (characterId: number, updates: Partial<Character>) => void;
@@ -536,6 +539,15 @@ function getDisplayedBossRareCount(party: Party, dungeonId: number, cycleState?:
   }, 0);
 
   return Math.max(0, latestCount - newlyRecoveredBossRare);
+}
+
+
+function hasActiveLootGateCondition(party: Party, cycleState?: PartyCycleState): boolean {
+  return getNextGoalText(party, cycleState) !== null;
+}
+
+function getSideQuestAssignMessage(partyName: string, shortText: string): string {
+  return `${partyName}はサイドクエスト ${shortText} を受けた`;
 }
 
 // Helper to format item stats
@@ -1376,6 +1388,7 @@ export function HomeScreen({
   const prevInventoryRef = useRef(state.global.inventory);
   const notifiedRewardLogRef = useRef<Array<Party['lastExpeditionLog'] | null>>(state.parties.map(() => null));
   const prevPartyCycleStateRef = useRef<Array<PartyCycleState | null>>(state.parties.map(() => null));
+  const prevSideQuestRef = useRef(state.parties.map((party) => party.sideQuest));
   const hasHydratedAfkRef = useRef(false);
   const pendingAfkSimulationRef = useRef(true);
   const lastCheckpointAtRef = useRef(Date.now());
@@ -1641,10 +1654,12 @@ export function HomeScreen({
                 }
               }
               actions.spendPendingProfit(partyIndex, spend);
+              if (party.sideQuest?.type === 'q.squander' && spend > 0) actions.advanceSideQuest(partyIndex, spend);
               cyclePendingProfit = Math.max(0, cyclePendingProfit - spend);
               updated.state = '睡眠中';
               updated.durationMs = getStateDurationMs(party, 'sleep');
             } else if (updated.state === '睡眠中') {
+              if (party.sideQuest?.type === 'q.sleeping') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 60000)));
               updated.state = '祈り中';
               updated.durationMs = getStateDurationMs(party, 'pray');
             } else if (updated.state === '祈り中') {
@@ -1658,6 +1673,8 @@ export function HomeScreen({
               const deposit = Math.floor(rawDeposit * getPrayerDepositMultiplier(party));
               const embezzled = Math.max(0, rawDeposit - deposit);
               actions.processPendingProfit(partyIndex, donation, deposit);
+              if (party.sideQuest?.type === 'q.donation' && donation > 0) actions.advanceSideQuest(partyIndex, donation);
+              if (party.sideQuest?.type === 'q.embezzlement' && embezzled > 0) actions.advanceSideQuest(partyIndex, embezzled);
               cyclePendingProfit = 0;
               if (donation > 0 || deposit > 0) {
                 const embezzledText = embezzled > 0 ? `(${formatNumber(embezzled)}Gを着服した)` : '';
@@ -1675,6 +1692,9 @@ export function HomeScreen({
             } else if (updated.state === '移動中') {
               const triggerGodsBattle = pendingGodsBattleByPartyRef.current[partyIndex] === true;
               pendingGodsBattleByPartyRef.current[partyIndex] = false;
+              if (triggerGodsBattle && party.sideQuest) actions.cancelSideQuest(partyIndex);
+              if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 60000)));
+              if (party.sideQuest?.type === 'q.AFK' && !triggerGodsBattle) actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 60000)));
               actions.runExpedition(partyIndex, gameModeRef.current === 'm.luna', triggerGodsBattle);
               updated.state = '探索中';
               updated.durationMs = getExplorationDurationMs(undefined, getPartyStateDurationMultiplier(party, 'explore'));
@@ -1685,6 +1705,10 @@ export function HomeScreen({
               updated.durationMs = getPartyTravelDurationMs(party);
               updated.isCurrentExpeditionGodsBattle = false;
             } else if (updated.state === '帰還中') {
+              if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 60000)));
+              if (!party.sideQuest && !hasActiveLootGateCondition(party, updated.state)) {
+                actions.rollSideQuest(partyIndex, party.selectedDungeonId);
+              }
               updated.state = '休息中';
               updated.durationMs = 1000;
               updated.isCurrentExpeditionGodsBattle = false;
@@ -1738,6 +1762,25 @@ export function HomeScreen({
       const previousLevel = prevPartyLevelsRef.current[index] ?? party.level;
       const currentLog = party.lastExpeditionLog;
       const hasNewLog = !!currentLog && currentLog !== previousLog;
+      if (hasNewLog && currentLog && party.sideQuest) {
+        if (party.sideQuest.type === 'q.treasure_super_rare') {
+          const gained = currentLog.rewards.filter((item) => item.superRare > 0).length;
+          if (gained > 0) actions.advanceSideQuest(index, gained);
+        }
+        if (party.sideQuest.type === 'q.treasure_boss_rare') {
+          const gained = currentLog.rewards.filter((item) => getItemRarityById(item.id) === 'bossRare').length;
+          if (gained > 0) actions.advanceSideQuest(index, gained);
+        }
+        if (party.sideQuest.type === 'q.poor_kid' && (currentLog.rewards.length ?? 0) === 0) {
+          actions.advanceSideQuest(index, 1);
+        }
+        if (party.sideQuest.type === 'q.consecutive_wins' && currentLog.finalOutcome === 'victory') {
+          actions.advanceSideQuest(index, 1);
+        }
+        if (party.sideQuest.type === 'q.losers' && currentLog.finalOutcome === 'defeat') {
+          actions.advanceSideQuest(index, 1);
+        }
+      }
       const hasLevelUp = party.level > previousLevel;
 
       if (hasLevelUp) {
@@ -1794,6 +1837,20 @@ export function HomeScreen({
     prevPartyLevelsRef.current = state.parties.map((party) => party.level);
     prevPartyCycleStateRef.current = state.parties.map((_, index) => partyCycles[index]?.state ?? null);
   }, [state.parties, partyCycles, actions, pendingAfkMs]);
+
+  useEffect(() => {
+    state.parties.forEach((party, index) => {
+      const prevQuest = prevSideQuestRef.current[index] ?? null;
+      const nextQuest = party.sideQuest ?? null;
+      if (!prevQuest && nextQuest) {
+        actions.addNotification(getSideQuestAssignMessage(party.name, nextQuest.shortText));
+      }
+      if (prevQuest && !nextQuest) {
+        actions.addNotification(`${party.name}のサイドクエストが終了した`);
+      }
+    });
+    prevSideQuestRef.current = state.parties.map((party) => party.sideQuest);
+  }, [actions, state.parties]);
 
   useEffect(() => {
     notifiedRewardLogRef.current = notifiedRewardLogRef.current.slice(0, state.parties.length);
@@ -5673,7 +5730,7 @@ function SettingTab({
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const [compendiumCategory, setCompendiumCategory] = useState<string>('armor');
   const [compendiumRarityFilter, setCompendiumRarityFilter] = useState<RarityFilter>('all');
-  const [glossaryTab, setGlossaryTab] = useState<'A' | 'B' | 'C' | 'D' | 'F' | 'G' | 'M'>('A');
+  const [glossaryTab, setGlossaryTab] = useState<'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'M' | 'Q'>('A');
   const [expandedGlossaryEntries, setExpandedGlossaryEntries] = useState<Record<string, boolean>>({});
   const [expandedCompendiumItems, setExpandedCompendiumItems] = useState<Record<number, boolean>>({});
   const bestiaryListRef = useRef<HTMLDivElement | null>(null);
@@ -5934,14 +5991,16 @@ function SettingTab({
     .slice()
     .sort((a, b) => b.id - a.id);
 
-  const glossarySectionsByTab: Record<'A' | 'B' | 'C' | 'D' | 'F' | 'G' | 'M', string> = {
+  const glossarySectionsByTab: Record<'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'M' | 'Q', string> = {
     A: 'a.',
     B: 'b.',
     C: 'c.',
     D: 'd.',
+    E: 'e.',
     F: 'f.',
     G: 'g.',
     M: 'm.',
+    Q: 'q.',
   };
   const filteredGlossarySections = GLOSSARY_SECTIONS.filter((section) =>
     section.heading.toLowerCase().includes(glossarySectionsByTab[glossaryTab])
@@ -6323,7 +6382,7 @@ function SettingTab({
           <>
           <div className="flex justify-end items-center gap-1 mt-3 mb-3">
             <span className="text-xs text-gray-500">分類</span>
-            {(['A', 'B', 'C', 'D', 'F', 'G', 'M'] as const).map((tab) => (
+            {(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'M', 'Q'] as const).map((tab) => (
               <button
                 key={tab}
                 type="button"
