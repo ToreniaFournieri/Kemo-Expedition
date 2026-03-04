@@ -920,7 +920,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "God of Resonance",
         "label": "共鳴の神",
-        "description": "効果:全員の共鳴を1+α段階強化。共鳴は魔法攻撃だけでなく、遠距離攻撃にも適用。魔法防御力0.90倍、HP0.90+α倍。\n語られぬ神は消える。響かぬ名は滅びる。"
+        "description": "効果:全員の共鳴を1+α段階強化。共鳴は魔法攻撃だけでなく、遠距離攻撃にも適用。魔法防御力1.10倍、HP0.90+α倍。\n語られぬ神は消える。響かぬ名は滅びる。"
       },
       {
         "key": "Goddess of Precision",
@@ -935,12 +935,12 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "God of Dusk",
         "label": "黄昏の神",
-        "description": "効果:全員の回避+15+α、魔法防御0.90倍。売却時間1.5倍。\n光と闇の境界で、最も多くの嘘が生まれる。"
+        "description": "効果:全員の回避+15+α、魔法防御1.10倍。売却時間1.5倍。\n光と闇の境界で、最も多くの嘘が生まれる。"
       },
       {
         "key": "Goddess of Mirage",
         "label": "幻影の女神",
-        "description": "効果:全員に魔法攻撃1.2+α倍、物理防御0.90倍。\n真実と幻想に違いはない。違いは込められた願いのみ。"
+        "description": "効果:全員に魔法攻撃1.2+α倍、物理防御1.10倍。\n真実と幻想に違いはない。違いは込められた願いのみ。"
       },
       {
         "key": "God of Oblivion",
