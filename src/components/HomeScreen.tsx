@@ -4352,23 +4352,27 @@ function ExpeditionTab({
                 setExpandedLogParty(nextExpanded);
                 setExpandedRoom(null);
               }}
-              className="w-full flex justify-between items-center text-sm mb-2"
+              className="w-full flex justify-between items-center text-sm mb-2 gap-2"
             >
-              <span><span className="font-bold text-black">{party.name}</span><span className="ml-2">{headlineDungeonName}</span><span className="ml-2 font-medium text-sub">{headlineState}</span></span>
-              <span className={isLogExpanded ? 'transform transition-transform rotate-180' : ''}>▼</span>
+              <span className="min-w-0 flex items-center gap-2">
+                <span className="font-bold text-black shrink-0">{party.name}</span>
+                <span className="shrink-0 text-xs text-gray-600">HP</span>
+                <span className="h-2 w-20 rounded-full bg-blue-100 overflow-hidden shrink-0">
+                  <span className="block h-full bg-blue-500 transition-[width] duration-200" style={{ width: `${hpPercent}%` }} />
+                </span>
+                <span className="truncate">{headlineDungeonName}</span>
+                <span className="font-medium text-sub shrink-0">{headlineState}</span>
+              </span>
+              <span className={`shrink-0 ${isLogExpanded ? 'transform transition-transform rotate-180' : ''}`}>▼</span>
             </button>
 
-            <div className="mb-2 flex items-center gap-2 text-xs text-gray-600">
-              <span className="shrink-0">HP</span>
-              <div className="h-2 w-28 rounded-full bg-blue-100 overflow-hidden">
-                <div className="h-full bg-blue-500 transition-[width] duration-200" style={{ width: `${hpPercent}%` }} />
-              </div>
-              <span className="shrink-0">{cycle.state}</span>
-              <div className="h-2 min-w-0 flex-1 rounded-full bg-gray-200 overflow-hidden">
-                <div
-                  className={`h-full bg-sub ${cycle.state === '探索中' ? '' : 'transition-[width] duration-200'}`}
-                  style={{ width: `${progressPercent}%` }}
-                />
+            <div className="mb-2 relative h-5 min-w-0 rounded-full bg-gray-200 overflow-hidden text-xs">
+              <div
+                className={`absolute inset-y-0 left-0 bg-sub ${cycle.state === '探索中' ? '' : 'transition-[width] duration-200'}`}
+                style={{ width: `${progressPercent}%` }}
+              />
+              <div className="relative z-10 h-full flex items-center justify-center px-2 text-black">
+                {cycle.state}
               </div>
             </div>
 
