@@ -5730,7 +5730,7 @@ function SettingTab({
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const [compendiumCategory, setCompendiumCategory] = useState<string>('armor');
   const [compendiumRarityFilter, setCompendiumRarityFilter] = useState<RarityFilter>('all');
-  const [glossaryTab, setGlossaryTab] = useState<'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'M' | 'Q'>('A');
+  const [glossaryTab, setGlossaryTab] = useState<'A' | 'B' | 'C' | 'D' | 'F' | 'G' | 'M' | 'Q'>('A');
   const [expandedGlossaryEntries, setExpandedGlossaryEntries] = useState<Record<string, boolean>>({});
   const [expandedCompendiumItems, setExpandedCompendiumItems] = useState<Record<number, boolean>>({});
   const bestiaryListRef = useRef<HTMLDivElement | null>(null);
@@ -5991,12 +5991,11 @@ function SettingTab({
     .slice()
     .sort((a, b) => b.id - a.id);
 
-  const glossarySectionsByTab: Record<'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'M' | 'Q', string> = {
+  const glossarySectionsByTab: Record<'A' | 'B' | 'C' | 'D' | 'F' | 'G' | 'M' | 'Q', string> = {
     A: 'a.',
     B: 'b.',
     C: 'c.',
     D: 'd.',
-    E: 'e.',
     F: 'f.',
     G: 'g.',
     M: 'm.',
@@ -6382,7 +6381,7 @@ function SettingTab({
           <>
           <div className="flex justify-end items-center gap-1 mt-3 mb-3">
             <span className="text-xs text-gray-500">分類</span>
-            {(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'M', 'Q'] as const).map((tab) => (
+            {(['A', 'B', 'C', 'D', 'F', 'G', 'M', 'Q'] as const).map((tab) => (
               <button
                 key={tab}
                 type="button"
@@ -6415,13 +6414,20 @@ function SettingTab({
                 </div>
                 <div className="space-y-1 max-h-72 overflow-y-auto pr-1">
                   {section.entries.map((entry, index) => {
+                    const isSideQuestGlossarySection = section.heading.toLowerCase().includes('2.1.9 q.');
+                    if (isSideQuestGlossarySection && entry.key === 'q.none') {
+                      return null;
+                    }
                     const entryKey = `${section.id}-${entry.key}-${index}`;
                     const isGodGlossarySection = section.heading.toLowerCase().includes('2.1.7 g.');
                     const shouldCollapseEntry = glossaryTab === 'F';
                     const isEntryExpanded = !shouldCollapseEntry || expandedGlossaryEntries[entryKey] === true;
                     const descriptionLines = entry.description.split('\n');
-                    const hasStyleMetadata = descriptionLines[0]?.trim().startsWith('style:') ?? false;
-                    const visibleDescriptionLines = hasStyleMetadata ? descriptionLines.slice(1) : descriptionLines;
+                    const normalizedDescriptionLines = isSideQuestGlossarySection
+                      ? descriptionLines.filter((line) => !line.trim().startsWith('表示:')).filter((line) => line.trim().length > 0)
+                      : descriptionLines;
+                    const hasStyleMetadata = normalizedDescriptionLines[0]?.trim().startsWith('style:') ?? false;
+                    const visibleDescriptionLines = hasStyleMetadata ? normalizedDescriptionLines.slice(1) : normalizedDescriptionLines;
                     const mainDescription = visibleDescriptionLines[0] ?? '';
                     const loreLines = visibleDescriptionLines.slice(1);
                     const firstTableLineIndex = loreLines.findIndex((line) => line.trim().startsWith('|'));
