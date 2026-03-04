@@ -323,7 +323,9 @@ export type ExpeditionDepthLimit =
 export interface DiaryLog {
   id: string;
   expeditionLog: ExpeditionLog;
-  triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare'>;
+  triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'sideQuest'>;
+  sideQuestDetail?: string;
+  sideQuestLabel?: string;
   createdAt: number;
   isRead: boolean;
 }

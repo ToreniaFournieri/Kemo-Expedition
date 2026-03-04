@@ -91,6 +91,7 @@ import {
   getJewelOwnedCount,
   isJewelAllowedForCategory,
   removeJewelFromInventory,
+  getJewelNameByRank,
 } from '../game/jewel';
 
 const BUILD_NUMBER = 1;
@@ -455,6 +456,7 @@ function loadSavedState(): GameState | null {
           if (typeof party.hasUnreadDiary !== 'boolean') party.hasUnreadDiary = false;
           party.diaryLogs = party.diaryLogs.map((log: DiaryLog) => ({
             ...log,
+            triggers: Array.isArray(log.triggers) ? log.triggers : [],
             isRead: typeof log.isRead === 'boolean' ? log.isRead : !party.hasUnreadDiary,
           }));
           party.hasUnreadDiary = party.diaryLogs.some((log: DiaryLog) => !log.isRead);
@@ -1757,9 +1759,43 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         return { ...state, parties: updatedParties };
       }
 
-      updatedParties[action.partyIndex] = { ...currentParty, sideQuest: null };
       const jewelKeys = ['might', 'arcana', 'fort', 'ward', 'shade', 'focus'] as const;
       const key = jewelKeys[Math.floor(Math.random() * jewelKeys.length)];
+      const diaryCreatedAt = Date.now();
+      const dungeonName = DUNGEONS.find((dungeon) => dungeon.id === currentParty.selectedDungeonId)?.name ?? '';
+      const sideQuestLabel = currentParty.sideQuest.shortText.replace(/\(([^)]*)\)/, '$1');
+      const sideQuestDetail = `${dungeonName}: ${getJewelNameByRank(key, currentParty.sideQuest.rolledTier)} を手に入れた`;
+      const sideQuestDiaryLog: DiaryLog = {
+        id: `${diaryCreatedAt}-${Math.random().toString(36).slice(2, 8)}`,
+        expeditionLog: {
+          dungeonId: currentParty.selectedDungeonId,
+          dungeonName,
+          totalExperience: 0,
+          totalRooms: 0,
+          completedRooms: 0,
+          finalOutcome: 'return',
+          entries: [],
+          rewards: [],
+          autoSellProfit: 0,
+          remainingPartyHP: currentParty.currentHp,
+          maxPartyHP: currentParty.currentHp,
+        },
+        triggers: ['sideQuest'],
+        sideQuestLabel,
+        sideQuestDetail,
+        createdAt: diaryCreatedAt,
+        isRead: false,
+      };
+      const nextDiaryLogs: DiaryLog[] = [
+        sideQuestDiaryLog,
+        ...(currentParty.diaryLogs ?? []),
+      ].slice(0, 10);
+      updatedParties[action.partyIndex] = {
+        ...currentParty,
+        sideQuest: null,
+        diaryLogs: nextDiaryLogs,
+        hasUnreadDiary: true,
+      };
       return {
         ...state,
         parties: updatedParties,
