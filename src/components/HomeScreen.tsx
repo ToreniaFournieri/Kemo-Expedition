@@ -63,7 +63,7 @@ interface HomeScreenProps {
     spendPendingProfit: (partyIndex: number, amount: number) => void;
     rollSideQuest: (partyIndex: number, rolledTier: number) => void;
     cancelSideQuest: (partyIndex: number) => void;
-    advanceSideQuest: (partyIndex: number, amount: number) => void;
+    advanceSideQuest: (partyIndex: number, amount: number, simulatedAt?: number) => void;
     setSideQuestProgress: (partyIndex: number, progress: number) => void;
     equipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
     attachJewel: (characterId: number, slotIndex: number, jewelKey: JewelKey, rank: number) => void;
@@ -1688,7 +1688,7 @@ export function HomeScreen({
           if (party.currentHp >= partyRuntimeStats.hp) {
             if (party.sideQuest?.type === 'q.healing') {
               const restMinutes = Math.max(1, Math.floor((simulationNow - updated.stateStartedAt) / 60000));
-              actions.advanceSideQuest(partyIndex, restMinutes);
+              actions.advanceSideQuest(partyIndex, restMinutes, simulationNow);
             }
             const hasTrophy = (party.lastExpeditionLog?.rewards.length ?? 0) > 0;
             const hasAutoSellItem = (party.lastExpeditionLog?.autoSellProfit ?? 0) > 0;
@@ -1726,12 +1726,12 @@ export function HomeScreen({
                 }
               }
               actions.spendPendingProfit(partyIndex, spend);
-              if (party.sideQuest?.type === 'q.squander' && spend > 0) actions.advanceSideQuest(partyIndex, spend);
+              if (party.sideQuest?.type === 'q.squander' && spend > 0) actions.advanceSideQuest(partyIndex, spend, simulationNow);
               cyclePendingProfit = Math.max(0, cyclePendingProfit - spend);
               updated.state = '睡眠中';
               updated.durationMs = getStateDurationMs(party, 'sleep');
             } else if (updated.state === '睡眠中') {
-              if (party.sideQuest?.type === 'q.sleeping') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 60000)));
+              if (party.sideQuest?.type === 'q.sleeping') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 60000)), simulationNow);
               updated.state = '祈り中';
               updated.durationMs = getStateDurationMs(party, 'pray');
             } else if (updated.state === '祈り中') {
@@ -1745,8 +1745,8 @@ export function HomeScreen({
               const deposit = Math.floor(rawDeposit * getPrayerDepositMultiplier(party));
               const embezzled = Math.max(0, rawDeposit - deposit);
               actions.processPendingProfit(partyIndex, donation, deposit);
-              if (party.sideQuest?.type === 'q.donation' && donation > 0) actions.advanceSideQuest(partyIndex, donation);
-              if (party.sideQuest?.type === 'q.embezzlement' && embezzled > 0) actions.advanceSideQuest(partyIndex, embezzled);
+              if (party.sideQuest?.type === 'q.donation' && donation > 0) actions.advanceSideQuest(partyIndex, donation, simulationNow);
+              if (party.sideQuest?.type === 'q.embezzlement' && embezzled > 0) actions.advanceSideQuest(partyIndex, embezzled, simulationNow);
               cyclePendingProfit = 0;
               if (donation > 0 || deposit > 0) {
                 const embezzledText = embezzled > 0 ? `(${formatNumber(embezzled)}Gを着服した)` : '';
@@ -1768,8 +1768,8 @@ export function HomeScreen({
                 actions.cancelSideQuest(partyIndex);
                 actions.addNotification(`${party.name}のサイドクエストは神魔戦の開始で中止された`);
               }
-              if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 60000)));
-              if (party.sideQuest?.type === 'q.AFK' && !triggerGodsBattle) actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 60000)));
+              if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 60000)), simulationNow);
+              if (party.sideQuest?.type === 'q.AFK' && !triggerGodsBattle) actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 60000)), simulationNow);
               actions.runExpedition(partyIndex, gameModeRef.current === 'm.luna', triggerGodsBattle);
               updated.state = '探索中';
               updated.durationMs = getExplorationDurationMs(undefined, getPartyStateDurationMultiplier(party, 'explore'));
@@ -1780,7 +1780,7 @@ export function HomeScreen({
               updated.durationMs = getPartyTravelDurationMs(party);
               updated.isCurrentExpeditionGodsBattle = false;
             } else if (updated.state === '帰還中') {
-              if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 60000)));
+              if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 60000)), simulationNow);
               if (!party.sideQuest && !hasActiveLootGateCondition(party, updated.state)) {
                 actions.rollSideQuest(partyIndex, party.selectedDungeonId);
               }

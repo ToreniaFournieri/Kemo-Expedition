@@ -746,7 +746,7 @@ type GameAction =
   | { type: 'SPEND_PENDING_PROFIT'; partyIndex: number; amount: number }
   | { type: 'ROLL_SIDE_QUEST'; partyIndex: number; rolledTier: number }
   | { type: 'CANCEL_SIDE_QUEST'; partyIndex: number }
-  | { type: 'ADVANCE_SIDE_QUEST'; partyIndex: number; amount: number }
+  | { type: 'ADVANCE_SIDE_QUEST'; partyIndex: number; amount: number; simulatedAt?: number }
   | { type: 'SET_SIDE_QUEST_PROGRESS'; partyIndex: number; progress: number }
   | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; itemKey: string | null }
   | { type: 'ATTACH_JEWEL'; characterId: number; slotIndex: number; jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus'; rank: number }
@@ -1761,7 +1761,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const jewelKeys = ['might', 'arcana', 'fort', 'ward', 'shade', 'focus'] as const;
       const key = jewelKeys[Math.floor(Math.random() * jewelKeys.length)];
-      const diaryCreatedAt = Date.now();
+      const diaryCreatedAt = action.simulatedAt ?? Date.now();
       const dungeonName = DUNGEONS.find((dungeon) => dungeon.id === currentParty.selectedDungeonId)?.name ?? '';
       const sideQuestLabel = currentParty.sideQuest.shortText.replace(/\(([^)]*)\)/, '$1');
       const sideQuestDetail = `${dungeonName}: ${getJewelNameByRank(key, currentParty.sideQuest.rolledTier)} を手に入れた`;
@@ -2369,7 +2369,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           if (spend > 0) {
             workingState = gameReducer(workingState, { type: 'SPEND_PENDING_PROFIT', partyIndex, amount: spend });
             if (currentParty.sideQuest?.type === 'q.squander') {
-              workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: spend });
+              workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: spend, simulatedAt });
             }
           }
 
@@ -2387,10 +2387,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           workingState = gameReducer(workingState, { type: 'PROCESS_PENDING_PROFIT', partyIndex, donation, deposit });
 
           if (afterSpend.sideQuest?.type === 'q.donation' && donation > 0) {
-            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: donation });
+            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: donation, simulatedAt });
           }
           if (afterSpend.sideQuest?.type === 'q.embezzlement' && embezzled > 0) {
-            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: embezzled });
+            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: embezzled, simulatedAt });
           }
 
           const partyAfterProfit = workingState.parties[partyIndex];
@@ -2405,16 +2405,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           const travelMinutes = Math.max(1, Math.floor(travelDurationMs / 60000));
 
           if (partyAfterProfit.sideQuest?.type === 'q.sleeping') {
-            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: sleepMinutes });
+            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: sleepMinutes, simulatedAt });
           }
           if (partyAfterProfit.sideQuest?.type === 'q.exercise') {
-            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: travelMinutes * 2 });
+            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: travelMinutes * 2, simulatedAt });
           }
           if (partyAfterProfit.sideQuest?.type === 'q.healing' && restMinutes > 0) {
-            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: restMinutes });
+            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: restMinutes, simulatedAt });
           }
           if (partyAfterProfit.sideQuest?.type === 'q.AFK') {
-            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: travelMinutes });
+            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: travelMinutes, simulatedAt });
           }
 
           if (missingHp > 0) {
@@ -2428,27 +2428,27 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           if (afkProcessedParty.sideQuest.type === 'q.treasure_super_rare') {
             const gained = afkLog.rewards.filter((item) => item.superRare > 0).length;
             if (gained > 0) {
-              workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: gained });
+              workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: gained, simulatedAt });
             }
           }
           if (afkProcessedParty.sideQuest.type === 'q.treasure_boss_rare') {
             const gained = afkLog.rewards.filter((item) => getItemRarityById(item.id) === 'bossRare').length;
             if (gained > 0) {
-              workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: gained });
+              workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: gained, simulatedAt });
             }
           }
           if (afkProcessedParty.sideQuest.type === 'q.poor_kid' && (afkLog.rewards.length ?? 0) === 0) {
-            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1 });
+            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1, simulatedAt });
           }
           if (afkProcessedParty.sideQuest.type === 'q.consecutive_wins') {
             if (afkLog.finalOutcome === 'victory') {
-              workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1 });
+              workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1, simulatedAt });
             } else {
               workingState = gameReducer(workingState, { type: 'SET_SIDE_QUEST_PROGRESS', partyIndex, progress: 0 });
             }
           }
           if (afkProcessedParty.sideQuest.type === 'q.losers' && afkLog.finalOutcome === 'defeat') {
-            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1 });
+            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1, simulatedAt });
           }
 
           const postCycleParty = workingState.parties[partyIndex];
@@ -2718,8 +2718,8 @@ export function useGameState() {
       dispatch({ type: 'CANCEL_SIDE_QUEST', partyIndex });
     }, []),
 
-    advanceSideQuest: useCallback((partyIndex: number, amount: number) => {
-      dispatch({ type: 'ADVANCE_SIDE_QUEST', partyIndex, amount });
+    advanceSideQuest: useCallback((partyIndex: number, amount: number, simulatedAt?: number) => {
+      dispatch({ type: 'ADVANCE_SIDE_QUEST', partyIndex, amount, simulatedAt });
     }, []),
 
     setSideQuestProgress: useCallback((partyIndex: number, progress: number) => {
