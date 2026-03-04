@@ -121,7 +121,7 @@ const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.sleeping', 'q.exercise', 'q.heal
 const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
 const AFK_MAX_ELAPSED_MS = 600 * 60 * 1000;
 const AFK_BACKGROUND_CHUNK_MS = 120 * 1000;
-const HEADER_HEIGHT_CLASS = 'pt-[108px]';
+const HEADER_HEIGHT_CLASS = 'pt-[102px]';
 type GameMode = 'm.kemo' | 'm.luna';
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
 const APP_VERSION = `v${__APP_VERSION__}`;
@@ -2207,7 +2207,7 @@ export function HomeScreen({
           </div>
 
           {/* Tabs */}
-          <div className="flex mt-3 -mb-3 border-b border-gray-200">
+          <div className="flex mt-1.5 -mb-3 border-b border-gray-200">
             {tabs.map(tab => (
               <button
                 key={tab.id}
