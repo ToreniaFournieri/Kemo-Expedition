@@ -3940,7 +3940,7 @@ function PartyTab({
             {formatNumber(char.equipment.filter(e => e).length)} / {formatNumber(stats.maxEquipSlots)} スロット
           </span>
         </div>
-      <div className="space-y-2">
+      <div className="space-y-1">
         {(() => {
           // Build sorted list of equipment slots
           const slots = Array.from({ length: stats.maxEquipSlots }).map((_, i) => ({
@@ -4214,7 +4214,7 @@ function PartyTab({
                 </div>
               ))}
             </div>
-            <div className="space-y-1 min-h-[320px] max-h-96 overflow-y-auto">
+            <div className="space-y-0.5 min-h-[320px] max-h-96 overflow-y-auto">
               {filteredDisplayItems.map((displayItem) => (
                 <button
                   key={displayItem.key}
