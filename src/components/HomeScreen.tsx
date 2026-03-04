@@ -4321,6 +4321,8 @@ function ExpeditionTab({
         const canTriggerGodsBattle = cycle.state === '探索中'
           ? cycle.isCurrentExpeditionGodsBattle === true
           : isGodsBattleAvailable(party, party.selectedDungeonId);
+        const nextGoalText = getNextGoalText(party, cycle.state);
+        const sideQuestText = getSideQuestText(party);
 
         return (
           <div key={partyIndex} className="bg-pane rounded-lg p-4">
@@ -4349,6 +4351,13 @@ function ExpeditionTab({
                 />
               </div>
             </div>
+
+            {(nextGoalText || sideQuestText) && (
+              <div className="mb-3 space-y-1">
+                {nextGoalText && <div className="text-sm text-gray-700">{nextGoalText}</div>}
+                {sideQuestText && <div className="text-sm text-gray-700">{sideQuestText}</div>}
+              </div>
+            )}
 
             {isLogExpanded && (
               <div className="space-y-2 mb-3">
@@ -4383,8 +4392,6 @@ function ExpeditionTab({
                 {['帰還中', '待機中'].includes(cycle.state) && party.currentHp <= 0 && (
                   <div className="text-xs text-accent">HPが0のため出撃できません。休息で回復してください。</div>
                 )}
-                {getNextGoalText(party, cycle.state) && <div className="text-sm text-gray-700">{getNextGoalText(party, cycle.state)}</div>}
-                {getSideQuestText(party) && <div className="text-sm text-gray-700">{getSideQuestText(party)}</div>}
               </div>
             )}
 
