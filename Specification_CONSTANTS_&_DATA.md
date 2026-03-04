@@ -681,10 +681,10 @@
     - `f.defense`
 	    - `d.physical_defense`
 	    - `d.magical_defense`
-  	- `f.elemental_resistance_attribute` // 1.0 as default. 0.5 is strong, 2.0 is weak
-		- `r.fire`
-		- `r.ice`
-		- `r.thunder`
+  	- `f.elemental_resistance_attribute` 
+  		- `r.fire`
+  		- `r.ice`
+  		- `r.thunder`
   	- Equipment slots
 
 - Characters do not have individual HP. Each character contributes total HP. 
@@ -877,9 +877,9 @@
 - `f.defense`
 	- `d.physical_defense`
 	- `d.magical_defense`
-- `f.elemental_offense_attribute`  // 1.0 as default. 0.5 is weak, 2.0 is strong
+- `f.elemental_offense_attribute`
 	- Has only one type of `none`, `e.fire`, `e.ice`, or `e.thunder`
-- `f.elemental_resistance_attribute` // 1.0 as default. 0.5 is strong, 2.0 is weak
+- `f.elemental_resistance_attribute`
 	- `r.fire`
 	- `r.ice`
 	- `r.thunder`
