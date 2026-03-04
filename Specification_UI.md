@@ -395,7 +395,7 @@ PT2...
 #### 8.5 Base(拠点)
 - It has two tabs inside Base tab. Shop(お店), Inventory(所持品), Jewel store(結晶店) , Workshop(工房), Altar(祭壇). (same visual UI as List of party (PT1, PT2...) tab in Party tab)
   - Default: Shop
-  - not available for Workshop(工房), Altar(祭壇) in this version. (Gray out)
+  - not available for Jewel store(結晶店), Workshop(工房), Altar(祭壇) in this version. (Gray out)
 	
 ##### 8.5.1 Shop (お店)
 
