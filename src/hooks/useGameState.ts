@@ -99,6 +99,27 @@ const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
 const AFK_MAX_SIMULATION_MS = 600 * 60 * 1000;
 const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.sleeping', 'q.exercise', 'q.healing', 'q.AFK']);
 
+function formatSideQuestShortText(type: string, shortText: string, target: number): string {
+  const formatNumber = (value: number) => Math.floor(value).toLocaleString('en-US');
+  const valueByType: Partial<Record<string, string>> = {
+    'q.squander': `${formatNumber(target)}G`,
+    'q.sleeping': `${formatNumber(target)}分`,
+    'q.exercise': `${formatNumber(target)}分`,
+    'q.embezzlement': `${formatNumber(target)}G`,
+    'q.donation': `${formatNumber(target)}G`,
+    'q.healing': `${formatNumber(target)}分`,
+    'q.AFK': `${formatNumber(target)}分`,
+    'q.treasure_super_rare': `${formatNumber(target)}個`,
+    'q.treasure_boss_rare': `${formatNumber(target)}個`,
+    'q.poor_kid': `${formatNumber(target)}回`,
+    'q.consecutive_wins': `${formatNumber(target)}連`,
+    'q.losers': `${formatNumber(target)}回`,
+    'q.savings': `${formatNumber(target)}G`,
+  };
+
+  return `${shortText}(${valueByType[type] ?? formatNumber(target)})`;
+}
+
 const DEFAULT_DIARY_SETTINGS: DiarySettings = {
   superRareThreshold: 'all',
   bossThreshold: 'all',
@@ -1736,7 +1757,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         sideQuest: {
           id: ticket,
           type: def.type,
-          shortText: `${def.shortText}(${target})`,
+          shortText: formatSideQuestShortText(def.type, def.shortText, target),
           target: internalTarget,
           progress: 0,
           rolledTier: Math.max(1, Math.min(8, Math.floor(action.rolledTier))),
