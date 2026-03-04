@@ -126,6 +126,15 @@ type GameMode = 'm.kemo' | 'm.luna';
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
 const APP_VERSION = `v${__APP_VERSION__}`;
 
+function isIOSMobileSafari(): boolean {
+  if (typeof navigator === 'undefined') return false;
+
+  const userAgent = navigator.userAgent;
+  const isIOSDevice = /iP(hone|ad|od)/.test(userAgent);
+  const isWebKitSafari = /WebKit/.test(userAgent) && !/CriOS|FxiOS|EdgiOS|OPiOS|YaBrowser/.test(userAgent);
+  return isIOSDevice && isWebKitSafari;
+}
+
 function normalizeBattleLogNote(note?: string): string | undefined {
   if (!note) return note;
   return note.replace('パーティ攻撃力 ×', 'パーティ物理攻撃力 ×');
@@ -1447,6 +1456,7 @@ export function HomeScreen({
   onDismissNotification,
   onDismissAllNotifications,
 }: HomeScreenProps) {
+  const prefersDocumentScroll = isIOSMobileSafari();
   const currentEnv = getEnvironmentId();
   const isLunaEnvironment = currentEnv === 'luna';
   const [activeTab, setActiveTab] = useState<Tab>('expedition');
@@ -2010,11 +2020,18 @@ export function HomeScreen({
 
   useEffect(() => {
     const currentScrollTop = tabScrollPositionsRef.current[activeTab] ?? 0;
+    if (prefersDocumentScroll) {
+      window.scrollTo({ top: currentScrollTop, behavior: 'auto' });
+      return;
+    }
+
     tabContentRef.current?.scrollTo({ top: currentScrollTop, behavior: 'auto' });
-  }, [activeTab]);
+  }, [activeTab, prefersDocumentScroll]);
 
   const switchTab = (nextTab: Tab) => {
-    const currentScrollTop = tabContentRef.current?.scrollTop ?? 0;
+    const currentScrollTop = prefersDocumentScroll
+      ? window.scrollY
+      : tabContentRef.current?.scrollTop ?? 0;
     tabScrollPositionsRef.current[activeTab] = currentScrollTop;
     setActiveTab(nextTab);
   };
@@ -2162,7 +2179,7 @@ export function HomeScreen({
   }, [gameTitle]);
 
   return (
-    <div className={`flex flex-col h-screen ${HEADER_HEIGHT_CLASS} ${gameMode === 'm.luna' ? 'theme-luna' : ''}`}>
+    <div className={`flex flex-col ${prefersDocumentScroll ? 'min-h-screen' : 'h-screen'} ${HEADER_HEIGHT_CLASS} ${gameMode === 'm.luna' ? 'theme-luna' : ''}`}>
       {/* Fixed Header */}
       <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-300 px-3 py-2.5 z-10">
         <div className="max-w-lg mx-auto w-full">
@@ -2235,8 +2252,9 @@ export function HomeScreen({
       {/* Tab Content */}
       <div
         ref={tabContentRef}
-        className="flex-1 overflow-y-auto p-4"
+        className={prefersDocumentScroll ? 'p-4' : 'flex-1 overflow-y-auto p-4'}
         onScroll={() => {
+          if (prefersDocumentScroll) return;
           const currentScrollTop = tabContentRef.current?.scrollTop ?? 0;
           tabScrollPositionsRef.current[activeTab] = currentScrollTop;
         }}
