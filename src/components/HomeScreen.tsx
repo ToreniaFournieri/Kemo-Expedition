@@ -3948,8 +3948,12 @@ function PartyTab({
               return b.item.enhancement - a.item.enhancement;
             });
             return slots.map(({ slotIndex, item }) => {
-              const isExpanded = selectingSlot === slotIndex;
               const allowedJewels = item ? JEWELS_BY_ITEM_CATEGORY[item.category] : [];
+              const hasOwnedAllowedJewel = allowedJewels.some((jewelKey) =>
+                Array.from({ length: 8 }).some((_, i) => getJewelOwnedCount(jewels, jewelKey, i + 1) > 0)
+              );
+              const canExpandJewelPanel = !!item && (hasOwnedAllowedJewel || !!item.jewel);
+              const isExpanded = selectingSlot === slotIndex && canExpandJewelPanel;
               return (
               <div key={slotIndex} className={`w-full p-2 text-left border rounded text-sm bg-white ${isExpanded ? 'border-sub' : 'border-gray-200'}`}>
                 <button
@@ -3962,7 +3966,7 @@ function PartyTab({
                         <span className="font-medium">{getItemDisplayName(item)}</span>
                         <span className="text-xs text-gray-500"> {getRarityShortLabel(item.id, item.name)} {renderTextWithRaceIcons(getItemStats(item, getCharacterCategoryMultiplier(char, item.category), hpDisplayMultiplier))}</span>
                       </span>
-                      <span className="text-xs text-gray-400">[{CATEGORY_NAMES[item.category]}] {isExpanded ? '▼' : '▲'}</span>
+                      <span className="text-xs text-gray-400">[{CATEGORY_NAMES[item.category]}] {canExpandJewelPanel ? (isExpanded ? '▼' : '▲') : ''}</span>
                     </div>
                   ) : (
                     <span className="text-gray-400">空きスロット</span>
