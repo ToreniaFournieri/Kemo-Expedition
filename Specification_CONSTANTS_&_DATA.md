@@ -312,7 +312,7 @@
   - characters slots
 
 **Bag Randomization:** 
-- There are weighted bags (g.*_bag) that control probabilistic randomness: `t.common_reward_bag`, `t.common_enhancement_bag`, `t.uncommon_reward_bag`, `t.elite_rare_reward_bag`, `t.boss_rare_reward_bag`, `t.mythic_rare_reward_bag`, `t.enhancement_bag`, `t.superRare_bag`, `t.physical_threat_weight_bag`, and `t.magical_threat_weight_bag`
+- There are weighted bags (g.*_bag) that control probabilistic randomness: `t.common_reward_bag`, `t.common_enhancement_bag`, `t.uncommon_reward_bag`, `t.elite_rare_reward_bag`, `t.boss_rare_reward_bag`, `t.mythic_rare_reward_bag`, `t.enhancement_bag`, `t.superRare_bag`, `t.physical_threat_weight_bag`, `t.magical_threat_weight_bag`, and `t.side_quest_bag`
   - All bags persist in save data and are not reset per battle or per expedition.
   - Bags are reset only when: explicitly reset, or automatically reset when the bag becomes empty (total_tickets == 0).
 	
@@ -415,6 +415,13 @@
 | 4 | 伝説の | 15 |
 | 5 | 恐ろしい | 4 |
 | 6 | 究極の | 1 |
+
+- `t.side_quest_bag` ticket distribution
+  - If MAX_ID = 12:
+  - ID 0 (none): 99 × MAX_ID tickets → 99 × 12 = 1,188 tickets
+  - ID 1–12: 1 ticket each
+  - Total tickets: 1,188 + 12 = 1,200 tickets
+
 
 **superRare title** 
 
