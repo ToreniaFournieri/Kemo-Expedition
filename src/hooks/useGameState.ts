@@ -2450,6 +2450,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           if (afkProcessedParty.sideQuest.type === 'q.losers' && afkLog.finalOutcome === 'defeat') {
             workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1 });
           }
+
+          const postCycleParty = workingState.parties[partyIndex];
+          if (postCycleParty && !postCycleParty.sideQuest) {
+            workingState = gameReducer(workingState, {
+              type: 'ROLL_SIDE_QUEST',
+              partyIndex,
+              rolledTier: postCycleParty.selectedDungeonId,
+            });
+          }
         }
       }
 
