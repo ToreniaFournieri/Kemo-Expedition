@@ -97,6 +97,7 @@ import {
 const BUILD_NUMBER = 1;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
 const AFK_MAX_SIMULATION_MS = 600 * 60 * 1000;
+const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.sleeping', 'q.exercise', 'q.healing', 'q.AFK']);
 
 const DEFAULT_DIARY_SETTINGS: DiarySettings = {
   superRareThreshold: 'all',
@@ -471,6 +472,13 @@ function loadSavedState(): GameState | null {
           if (typeof party.deityGold !== 'number') party.deityGold = 0;
           party.expeditionStats = getExpeditionStatsWithDefaults(party.expeditionStats);
           if (typeof party.sideQuest === 'undefined') party.sideQuest = null;
+          if (party.sideQuest && TIME_BASED_SIDE_QUEST_TYPES.has(party.sideQuest.type) && party.sideQuest.target < 1000) {
+            party.sideQuest = {
+              ...party.sideQuest,
+              target: Math.max(1, Math.floor(party.sideQuest.target * 60)),
+              progress: Math.max(0, Math.floor(party.sideQuest.progress * 60)),
+            };
+          }
 
           const normalizedDeityName = normalizeDeityName(party.deity.name);
           if (typeof parsed.global.deityDonations[normalizedDeityName] !== 'number') {
@@ -1721,6 +1729,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const def = questById[ticket];
       if (!def) return { ...state, bags };
       const target = Math.floor(Math.random() * (def.max - def.min + 1)) + def.min;
+      const internalTarget = TIME_BASED_SIDE_QUEST_TYPES.has(def.type) ? target * 60 : target;
       const updatedParties = [...state.parties];
       updatedParties[action.partyIndex] = {
         ...currentParty,
@@ -1728,7 +1737,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           id: ticket,
           type: def.type,
           shortText: `${def.shortText}(${target})`,
-          target,
+          target: internalTarget,
           progress: 0,
           rolledTier: Math.max(1, Math.min(8, Math.floor(action.rolledTier))),
         },
@@ -2404,21 +2413,21 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           const sleepDurationMs = Math.floor(10000 * getDeityStateDurationMultiplier(partyAfterProfit.deity.name, partyAfterProfit.deityGold ?? 0, 'sleep'));
           const peddlerLevel = getPartyAbilityLevel(partyAfterProfit, 'peddler');
           const travelDurationMs = peddlerLevel >= 2 ? Math.floor((5000 * 3) / 5) : peddlerLevel >= 1 ? Math.floor((5000 * 2) / 3) : 5000;
-          const sleepMinutes = Math.max(1, Math.floor(sleepDurationMs / 60000));
-          const restMinutes = Math.max(1, Math.floor(missingHp > 0 ? (missingHp * 100) / Math.max(1, partyStats.hp) : 0));
-          const travelMinutes = Math.max(1, Math.floor(travelDurationMs / 60000));
+          const sleepSeconds = Math.max(1, Math.floor(sleepDurationMs / 1000));
+          const restSeconds = Math.max(1, Math.floor(missingHp > 0 ? (missingHp * 100) / Math.max(1, partyStats.hp) : 0) * 60);
+          const travelSeconds = Math.max(1, Math.floor(travelDurationMs / 1000));
 
           if (partyAfterProfit.sideQuest?.type === 'q.sleeping') {
-            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: sleepMinutes, simulatedAt });
+            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: sleepSeconds, simulatedAt });
           }
           if (partyAfterProfit.sideQuest?.type === 'q.exercise') {
-            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: travelMinutes * 2, simulatedAt });
+            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: travelSeconds * 2, simulatedAt });
           }
-          if (partyAfterProfit.sideQuest?.type === 'q.healing' && restMinutes > 0) {
-            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: restMinutes, simulatedAt });
+          if (partyAfterProfit.sideQuest?.type === 'q.healing' && restSeconds > 0) {
+            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: restSeconds, simulatedAt });
           }
           if (partyAfterProfit.sideQuest?.type === 'q.AFK') {
-            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: travelMinutes, simulatedAt });
+            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: travelSeconds, simulatedAt });
           }
 
           if (missingHp > 0) {
