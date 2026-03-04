@@ -5300,8 +5300,9 @@ function DiaryTab({
     .sort((a, b) => b.createdAt - a.createdAt)
     .slice(0, 10);
 
-  const getDiaryTitle = (triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare'>) => {
+  const getDiaryTitle = (triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'sideQuest'>) => {
     if (triggers.includes('defeat') && triggers.length === 1) return '敗北の記録';
+    if (triggers.includes('sideQuest')) return 'サイドクエスト達成';
     if (triggers.includes('superRare')) return '超レア獲得の記録';
     if (triggers.includes('mythicRare')) return '神魔レア獲得の記録';
     if (triggers.includes('bossRare')) return 'ボスレア獲得の記録';
@@ -5312,9 +5313,16 @@ function DiaryTab({
 
   const getDiaryHeadline = (
     partyName: string,
-    triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare'>,
-    rewards: Item[]
+    triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'sideQuest'>,
+    rewards: Item[],
+    sideQuestLabel?: string
   ) => {
+    if (triggers.includes('sideQuest')) {
+      return sideQuestLabel
+        ? `[${partyName}] サイドクエスト達成(${sideQuestLabel})`
+        : `[${partyName}] サイドクエスト達成`;
+    }
+
     if (triggers.includes('defeat') && triggers.length === 1) {
       return `[${partyName}] 敗北の記録`;
     }
@@ -5470,7 +5478,8 @@ function DiaryTab({
     <div className="space-y-3">
       {renderDiarySettings()}
       {diaryLogs.map((diaryLog) => {
-        const isExpanded = !!expandedLogs[diaryLog.id];
+        const isSideQuestLog = diaryLog.triggers.includes('sideQuest');
+        const isExpanded = isSideQuestLog ? false : !!expandedLogs[diaryLog.id];
         const log = diaryLog.expeditionLog;
         const specialRewards = log.rewards.filter((item) => {
           const rarity = getItemRarityById(item.id);
@@ -5480,6 +5489,10 @@ function DiaryTab({
           <div key={diaryLog.id} className="bg-pane rounded-lg p-3">
             <button
               onClick={() => {
+                if (isSideQuestLog) {
+                  if (!diaryLog.isRead) onOpenDiaryLog(diaryLog.id);
+                  return;
+                }
                 const nextExpanded = !isExpanded;
                 onSetExpandedLogs((prev) => ({ ...prev, [diaryLog.id]: nextExpanded }));
                 if (nextExpanded && !diaryLog.isRead) {
@@ -5490,13 +5503,13 @@ function DiaryTab({
             >
               <span className="flex items-start justify-between gap-2">
                 <span className={`pr-2 ${diaryLog.isRead ? 'font-normal text-gray-500' : 'font-medium text-gray-900'}`}>
-                  {getDiaryHeadline(diaryLog.partyName, diaryLog.triggers, log.rewards)}
+                  {getDiaryHeadline(diaryLog.partyName, diaryLog.triggers, log.rewards, diaryLog.sideQuestLabel)}
                 </span>
-                <span className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
+                {!isSideQuestLog && <span className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>}
               </span>
 
               <span className="mt-1 flex items-center justify-between gap-2 text-xs text-gray-400">
-                <span className="truncate">{log.dungeonName}</span>
+                <span className="truncate">{diaryLog.sideQuestDetail ?? log.dungeonName}</span>
                 <span className="whitespace-nowrap text-right">{formatDiaryTimestamp(diaryLog.createdAt)}</span>
               </span>
             </button>
