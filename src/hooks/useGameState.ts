@@ -1707,15 +1707,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         1: { type: 'q.squander', shortText: '散財', min: 500, max: 2000 },
         2: { type: 'q.sleeping', shortText: '安眠', min: 20, max: 60 },
         3: { type: 'q.exercise', shortText: '運動', min: 45, max: 150 },
-        4: { type: 'q.embezzlement', shortText: '横領', min: 250, max: 1000 },
+        4: { type: 'q.embezzlement', shortText: '横領', min: 100, max: 400 },
         5: { type: 'q.donation', shortText: '寄付', min: 400, max: 2000 },
         6: { type: 'q.healing', shortText: '治療', min: 60, max: 120 },
         7: { type: 'q.AFK', shortText: '放置', min: 180, max: 360 },
         8: { type: 'q.treasure_super_rare', shortText: '超レア獲得', min: 1, max: 2 },
-        9: { type: 'q.treasure_boss_rare', shortText: 'ボスレア獲得', min: 15, max: 45 },
+        9: { type: 'q.treasure_boss_rare', shortText: 'ボスレア獲得', min: 5, max: 15 },
         10: { type: 'q.poor_kid', shortText: '空振り', min: 100, max: 300 },
         11: { type: 'q.consecutive_wins', shortText: '連続踏破', min: 15, max: 60 },
         12: { type: 'q.losers', shortText: '敗北', min: 3, max: 6 },
+        13: { type: 'q.savings', shortText: '貯金', min: 800, max: 4000 },
       };
       const def = questById[ticket];
       if (!def) return { ...state, bags };
@@ -2388,6 +2389,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
           if (afterSpend.sideQuest?.type === 'q.donation' && donation > 0) {
             workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: donation, simulatedAt });
+          }
+          if (afterSpend.sideQuest?.type === 'q.savings' && deposit > 0) {
+            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: deposit, simulatedAt });
           }
           if (afterSpend.sideQuest?.type === 'q.embezzlement' && embezzled > 0) {
             workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: embezzled, simulatedAt });
