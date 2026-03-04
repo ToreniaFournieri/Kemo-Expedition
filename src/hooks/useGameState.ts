@@ -371,6 +371,23 @@ function migrateLegacyBag(
   return normalizeBagForType(fallbackFactory(), bagType);
 }
 
+function normalizeImportedBags(rawBags: unknown): GameState['bags'] {
+  const bags = (rawBags && typeof rawBags === 'object') ? (rawBags as Record<string, unknown>) : {};
+  return normalizeGameBags({
+    commonRewardBag: migrateLegacyBag(bags.commonRewardBag, createCommonRewardBag, 'commonRewardBag'),
+    commonEnhancementBag: migrateLegacyBag(bags.commonEnhancementBag, createCommonEnhancementBag, 'commonEnhancementBag'),
+    uncommonRewardBag: migrateLegacyBag(bags.uncommonRewardBag, createUncommonRewardBag, 'uncommonRewardBag'),
+    eliteRareRewardBag: migrateLegacyBag(bags.eliteRareRewardBag, createEliteRareRewardBag, 'eliteRareRewardBag'),
+    bossRareRewardBag: migrateLegacyBag(bags.bossRareRewardBag, createBossRareRewardBag, 'bossRareRewardBag'),
+    mythicRareRewardBag: migrateLegacyBag(bags.mythicRareRewardBag, createMythicRareRewardBag, 'mythicRareRewardBag'),
+    enhancementBag: migrateLegacyBag(bags.enhancementBag, createEnhancementBag, 'enhancementBag'),
+    superRareBag: migrateLegacyBag(bags.superRareBag, createSuperRareBag, 'superRareBag'),
+    physicalThreatBag: migrateLegacyBag(bags.physicalThreatBag, createPhysicalThreatBag, 'physicalThreatBag'),
+    magicalThreatBag: migrateLegacyBag(bags.magicalThreatBag, createMagicalThreatBag, 'magicalThreatBag'),
+    sideQuestBag: migrateLegacyBag(bags.sideQuestBag, createSideQuestBag, 'sideQuestBag'),
+  });
+}
+
 function loadSavedState(): GameState | null {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -2578,7 +2595,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...hydrated,
         parties: normalizedParties,
         selectedPartyIndex: normalizedSelectedPartyIndex,
-        bags: normalizeGameBags(hydrated.bags),
+        bags: normalizeImportedBags(hydrated.bags),
         buildNumber: BUILD_NUMBER,
       };
     }

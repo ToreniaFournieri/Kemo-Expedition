@@ -6017,6 +6017,7 @@ function SettingTab({
           'superRareBag',
           'physicalThreatBag',
           'magicalThreatBag',
+          'sideQuestBag',
         ];
         const missingBags = requiredBags.filter((bagKey) => !(bagKey in saveData.bags!));
         if (missingBags.length > 0) {
