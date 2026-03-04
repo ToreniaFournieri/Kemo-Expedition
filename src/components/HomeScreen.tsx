@@ -1446,7 +1446,7 @@ export function HomeScreen({
   const [isAutoRepeatEnabled, setIsAutoRepeatEnabled] = useState(false);
   const [partyCycles, setPartyCycles] = useState<Record<number, PartyCycleRuntime>>({});
   const [expeditionExpandedLogParty, setExpeditionExpandedLogParty] = useState<number | null>(null);
-  const [expeditionExpandedRoom, setExpeditionExpandedRoom] = useState<{ partyIndex: number; roomIndex: number } | null>(null);
+  const [expeditionExpandedRoom, setExpeditionExpandedRoom] = useState<{ partyIndex: number; roomIndex: number; latestRoomToken: string } | null>(null);
   const [diaryExpandedLogs, setDiaryExpandedLogs] = useState<Record<string, boolean>>({});
   const [diaryExpandedRooms, setDiaryExpandedRooms] = useState<Record<string, boolean>>({});
   const [diarySettingsExpanded, setDiarySettingsExpanded] = useState(false);
@@ -4255,8 +4255,8 @@ function ExpeditionTab({
   onTriggerSortie: (partyIndex: number, triggerGodsBattle?: boolean) => void;
   expandedLogParty: number | null;
   setExpandedLogParty: Dispatch<SetStateAction<number | null>>;
-  expandedRoom: { partyIndex: number; roomIndex: number } | null;
-  setExpandedRoom: Dispatch<SetStateAction<{ partyIndex: number; roomIndex: number } | null>>;
+  expandedRoom: { partyIndex: number; roomIndex: number; latestRoomToken: string } | null;
+  setExpandedRoom: Dispatch<SetStateAction<{ partyIndex: number; roomIndex: number; latestRoomToken: string } | null>>;
 }) {
   const getEstimatedStartHp = (entry: ExpeditionLogEntry) => {
     const healAmount = Math.max(0, entry.healAmount ?? 0);
@@ -4405,6 +4405,7 @@ function ExpeditionTab({
                     {[...displayedEntries].reverse().map((entry, i, arr) => {
                       const originalIndex = arr.length - 1 - i;
                       const latestVisibleRoomIndex = displayedEntries.length - 1;
+                      const latestRoomToken = `${currentLog.completedRooms}-${latestVisibleRoomIndex}-${displayedEntries[latestVisibleRoomIndex]?.room ?? -1}`;
                       const roomLabel = entry.floor && entry.roomInFloor
                         ? `${entry.floor}F-${entry.roomInFloor}`
                         : entry.room === currentLog.totalRooms + 1 ? 'BOSS' : entry.room.toString();
@@ -4418,16 +4419,19 @@ function ExpeditionTab({
                       const enemyTakenAmount = Math.min(entry.enemyHP, Math.max(0, entry.damageDealt));
                       const enemyRemainingAmount = Math.max(0, entry.enemyHP - enemyTakenAmount);
                       const enemyRemainingRatio = entry.enemyHP > 0 ? (enemyRemainingAmount / entry.enemyHP) * 100 : 0;
-                      const isManualExpandedRoom = expandedRoom?.partyIndex === partyIndex && expandedRoom?.roomIndex === originalIndex;
-                      const hasManualSelectionForParty = expandedRoom?.partyIndex === partyIndex;
+                      const isManualExpandedRoom = expandedRoom?.partyIndex === partyIndex && expandedRoom?.latestRoomToken === latestRoomToken && expandedRoom?.roomIndex === originalIndex;
+                      const hasManualSelectionForParty = expandedRoom?.partyIndex === partyIndex && expandedRoom?.latestRoomToken === latestRoomToken;
                       const isRoomExpanded = isManualExpandedRoom || (!hasManualSelectionForParty && originalIndex === latestVisibleRoomIndex);
 
                       return (
                         <div key={`${partyIndex}-${originalIndex}-${entry.room}`} className="bg-white rounded overflow-hidden">
-                          <button
-                            onClick={() => setExpandedRoom(isManualExpandedRoom ? null : { partyIndex, roomIndex: originalIndex })}
-                            className="w-full text-left p-2 text-xs"
-                          >
+                        <button
+                          onClick={() => setExpandedRoom(isManualExpandedRoom
+                            ? { partyIndex, roomIndex: -1, latestRoomToken }
+                            : { partyIndex, roomIndex: originalIndex, latestRoomToken }
+                          )}
+                          className="w-full text-left p-2 text-xs"
+                        >
                             <div className="flex justify-between items-center">
                               <span className="font-medium">{roomLabel}: {renderEnemyNameWithMutedClass(entry.enemyName)}</span>
                               <span className="flex items-center gap-2">
