@@ -319,6 +319,27 @@ PT2: 踏破1回 寄付金額: 10G, 貯金額:　30G
 PT3: 貯金額: 10G
 ```
 
+### 4.2 Side Quest
+**Trigger Condition**
+- Checked at the end of the **帰還中 (Returning)** state.
+- If the party:
+  - has **no active loot gate condition** (including God battle loot gates), and
+  - has **no active side quest**
+- then roll one ticket from `t.side_quest_bag`.
+
+**Assignment**
+- The selected side quest is assigned immediately after the **Returning** state ends.
+- Notification example:
+  - `PT1はサイドクエスト 治療 (2時間) を受けた。`
+
+**Cancellation**
+- If a **神魔戦 (God Battle)** begins, the current side quest is **cancelled**.
+
+**Reward**
+- On completion, the party receives **1 Jewel**.
+- The Jewel **Rank = `x.exp_tier`** of the expedition **at the time the side quest was rolled**.
+
+
 ## 5. EXPEDITION 
 - @Specification_Expedition_Battle_Reward.md
 
