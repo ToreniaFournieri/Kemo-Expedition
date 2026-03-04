@@ -43,7 +43,8 @@ EXP: `p.gained_experience` | 自動売却額: `p.auto-sell_profit`
 ```
 
 - `f.list_of_rooms`
-  - **Display Order:** Descending order (Boss room at the top, then Room N... down to Room 1). 
+  - **Display Order:** Descending order (Boss room at the top, then Room N... down to Room 1).
+  - As defalut, expands the latest room. 
   - Line 1:
     - X (Displays number of room. If it is the last room, displays BOSS.)
 	- `p.enemy_name`: Name of enemy.
