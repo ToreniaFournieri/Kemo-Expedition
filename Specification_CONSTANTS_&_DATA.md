@@ -13,6 +13,7 @@
 | `g.` | **G**ods, religions of their beliefs  |
 | `i.` | **I**tem Category |
 | `p.` | **P**arty/Expedition Instance Data |
+| `q.` | Side **q**uest |
 | `r.` | Elemental **R**esistance Attribute |
 | `s.` | Item **S**tate |
 | `t.` | **T**etris like bag Randomization |
@@ -289,6 +290,25 @@
 | `tempest_nova` | `area_burst` | `e.thunder` | テンペストノヴァ | 雷属性範囲魔法攻撃(ヒット数は1固定) |
 | `tempest_nova` | `area_burst` | `e.thunder` | テンペストノヴァ | 雷属性範囲魔法攻撃(ヒット数は1固定) |
 | `gravity_well` | `percentage_damage` | `e.none` | グラビティウェル | 魔法攻撃回数が20回以上の場合発動。相手の残HPの2/5の固定ダメージ(魔法防御力無視) |
+
+#### 2.1.9 q. side quest
+- "s. サイドクエスト (条件達成すると報酬として結晶が手に入る)"
+
+| ID | type | Short text | Display text format | value range |
+|--|--|---|---|---|
+| 0 | (none) | |  | |
+| 1 | `q.squander` | 散財(XXXG) | 宴会で XXXG 浪費する(0%, XXXG)　(神魔戦で中止) | 500 ~ 2,000 G |
+| 2 | `q.sleeping` | 安眠(X時間) | のべX時間X分寝る(0%, XX分)　(神魔戦で中止) | 20分 ~ 60分 |
+| 3 | `q.exercise` | 運動(XX分) | のべX分歩く(0%, XX分)　(神魔戦で中止) | 45分 ~ 150分 |
+| 4 | `q.embezzlement` | 横領(XXXG) | XXXG着服する(60%, XXXG)　(神魔戦で中止) | 250 ~ 1,000G |
+| 5 | `q.donation` | 寄付(XXXG) | 1,500G寄付する(10%, XXXG)　(神魔戦で中止) | 400 ~  2,000G |
+| 6 | `q.healing` | 治療(X時間) | のべ2時間治療を受ける (10%, XX分)　(神魔戦で中止) | 60分 ~ 120分 |
+| 7 | `q.AFK` | 放置(X時間) | 6時間神から干渉を受けない (10%, XX分)　(神魔戦で中止) | 180分 ~ 360分 |
+| 8 | `q.treasure_super_rare` | 超レアX個獲得 | 超レアを X個獲得する(0%, X個)　(神魔戦で中止) | 1 ~ 2 |
+| 9 | `q.treasure_boss_rare` | ボスレアXX個獲得 | ボスレアを XX個獲得する(0%, X個)　(神魔戦で中止) | 15 ~ 45 |
+| 10 | `q.poor_kid` | アイテム獲得空振り(XXX回) | XXX回アイテム獲得空振り(0%, X個)　(神魔戦で中止) | 100 ~ 300 |
+| 11 | `q.consecutive_wins` | 連続踏破(XX連続) | XX連続して踏破する(30%, XX連)　(神魔戦で中止) | 15 ~ 60 |
+| 12 | `q.losers` | 敗北(X回) | X回敗北する(0%, X回)　(神魔戦で中断) | 3 ~ 6 |
 
 ### 2.2 Global constants
 
@@ -1175,3 +1195,4 @@ Rule:
 伝説の青銅縫いの鎧[精1]
 恐ろしい草編みの法衣[影2]
 ```
+
