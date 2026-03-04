@@ -84,7 +84,7 @@
   - Enemy level `x.enemy_level_final` = `x.exp_level` + (`x.floor` - 1 )
   - Enemy level is used only for experience calculation. 
   - Example:
-    - Tier 2 expedition (base enemy level = 8), floor 3 (add +2): `x.enemy_level_final` = 8 + 2 = 10
+    - Tier 2 expedition (base enemy level = 7), floor 3 (add +2): `x.enemy_level_final` = 7 + 2 = 9
 
 - Multipliers
   - Tier multiplier: `x.exp_experience_mult` = 3 ^(`x.tier` - 1)
