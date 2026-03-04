@@ -415,6 +415,10 @@ function getRewardFontWeightClass(rarity: ItemRarity, isSuperRare: boolean): str
   return rarity === 'common' ? 'font-normal' : 'font-medium';
 }
 
+function getItemNameFontWeightClass(item: Item): string {
+  return item.superRare >= 1 ? 'font-bold' : 'font-normal';
+}
+
 function renderEntryReward(entry: ExpeditionLogEntry): JSX.Element | null {
   if (!entry.reward) return null;
 
@@ -3969,7 +3973,7 @@ function PartyTab({
                   {item ? (
                     <div className="flex justify-between items-center">
                       <span>
-                        <span className="font-medium">{getItemDisplayName(item)}</span>
+                        <span className={getItemNameFontWeightClass(item)}>{getItemDisplayName(item)}</span>
                         <span className="text-xs text-gray-500"> {getRarityShortLabel(item.id, item.name)} {renderTextWithRaceIcons(getItemStats(item, getCharacterCategoryMultiplier(char, item.category), hpDisplayMultiplier))}</span>
                       </span>
                       <span className="text-xs text-gray-400">[{CATEGORY_NAMES[item.category]}] {canExpandJewelPanel ? (isExpanded ? '▼' : '▲') : ''}</span>
@@ -4225,7 +4229,7 @@ function PartyTab({
                   <div className="flex justify-between items-center">
                     <span>
                       {displayItem.isEquipped && <RaceIcon race={race} className="h-4 w-4 inline-block mr-1 align-text-bottom" />}
-                      <span className="font-medium">{getItemDisplayName(displayItem.item)}</span>
+                      <span className={getItemNameFontWeightClass(displayItem.item)}>{getItemDisplayName(displayItem.item)}</span>
                       {!displayItem.isEquipped && <span className="text-xs text-gray-500"> x{displayItem.count}</span>}
                       <span className="text-xs text-gray-400"> {getRarityShortLabel(displayItem.item.id, displayItem.item.name)} {renderTextWithRaceIcons(applyProjectedDefenseToStatsText(displayItem, getItemStats(displayItem.item, getCharacterCategoryMultiplier(char, displayItem.item.category), hpDisplayMultiplier)))}</span>
                     </span>
@@ -5206,7 +5210,7 @@ function InventoryTab({
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <span className={`text-sm ${entry.variant.isNew ? 'font-bold' : 'font-normal'}`}>
+                      <span className={`text-sm ${getItemNameFontWeightClass(item)}`}>
                         {getItemDisplayName(item)}
                       </span>
                       <span className="text-xs text-gray-500">x{formatNumber(count)}</span>
@@ -5244,7 +5248,7 @@ function InventoryTab({
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
                     {race && <RaceIcon race={race} className="h-4 w-4 shrink-0" />}
-                    <span className="text-sm truncate">{getItemDisplayName(entry.equipped.item)}</span>
+                    <span className={`text-sm truncate ${getItemNameFontWeightClass(entry.equipped.item)}`}>{getItemDisplayName(entry.equipped.item)}</span>
                     <span className="text-xs text-gray-500 shrink-0">x1</span>
                   </div>
                   <span className="text-xs text-gray-500 shrink-0">
