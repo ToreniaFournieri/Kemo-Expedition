@@ -4454,7 +4454,7 @@ function BaseTab({
   const baseSubTabs = [
     { id: 'shop' as const, label: 'お店', isAvailable: true },
     { id: 'inventory' as const, label: '所持品', isAvailable: true },
-    { id: 'jewelStore' as const, label: '結晶店', isAvailable: true },
+    { id: 'jewelStore' as const, label: '結晶店', isAvailable: false },
     { id: 'workshop' as const, label: '工房', isAvailable: false },
     { id: 'altar' as const, label: '祭壇', isAvailable: false },
   ];
