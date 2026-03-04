@@ -764,7 +764,8 @@ type GameAction =
   | { type: 'IMPORT_GAME_STATE'; state: GameState }
   | { type: 'RESET_COMMON_BAGS' }
   | { type: 'RESET_UNIQUE_BAGS' }
-  | { type: 'RESET_SUPER_RARE_BAG' };
+  | { type: 'RESET_SUPER_RARE_BAG' }
+  | { type: 'RESET_SIDE_QUEST_BAG' };
 
 // Select enemy based on room type and pool
 function selectEnemyForRoom(
@@ -2457,6 +2458,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'RESET_SIDE_QUEST_BAG': {
+      return {
+        ...state,
+        bags: {
+          ...state.bags,
+          sideQuestBag: createSideQuestBag(),
+        },
+      };
+    }
+
     default:
       return state;
   }
@@ -2661,6 +2672,10 @@ export function useGameState() {
 
     resetSuperRareBag: useCallback(() => {
       dispatch({ type: 'RESET_SUPER_RARE_BAG' });
+    }, []),
+
+    resetSideQuestBag: useCallback(() => {
+      dispatch({ type: 'RESET_SIDE_QUEST_BAG' });
     }, []),
 
     addNotification,
