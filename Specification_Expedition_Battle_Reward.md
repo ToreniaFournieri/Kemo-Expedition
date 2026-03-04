@@ -7,7 +7,7 @@
 ### 5.1 "Loot-Gate" progression system
 - If the party fails to meet the entry requirements, the expedition ends before the Gate Room and they are returned to Home.
 
-| title | Gate `x.floor`,`x.room` | uncommon items from `x.room` |
+| title | Gate `x.floor`,`x.room` | condition |
 |----|----|----|
 | Entering | 1,1 | correct 1 boss rare item from previous expedition ( `x.expedition` -1 ), expect for the first expedition. |
 | 1st Elite gate | 1,4 | correct 3 uncommon items from this `x.expedition` |
@@ -16,6 +16,8 @@
 | 4th Elite gate | 4,4 | correct 30 uncommon items from this `x.expedition`  |
 | 5th Elite gate | 5,4 | correct 45 uncommon items from this `x.expedition`  |
 | Boss gate | 6,4 | correct 3 elite rare items from this `x.expedition` |
+| Gods battle gate | - | collect 10 Boss rare items in dungeons to unlock Gods Battle |
+| Side quest gate | - | it depends on side quest `q.` condition |
 
 
 ### 5.2 Logs
