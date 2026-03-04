@@ -137,15 +137,15 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
     }
     case 'God of Attrition': {
       const attackMult = 1.2 + 0.01 * effectiveTier;
-      return `全員に物理攻撃${attackMult.toFixed(2)}倍。4部屋毎に残りHPの5%を失う`;
+      return `全員に物理攻撃倍率${attackMult.toFixed(2)}倍。4部屋毎に残りHPの5%を失う。`;
     }
     case 'God of Cunning': {
       const autoSellMultiplier = Math.min(1, 0.5 + 0.01 * effectiveTier);
-      return `全員に魔法防御2/3倍。貯金額${autoSellMultiplier.toFixed(2)}倍(着服する)`;
+      return `全員に魔法防御倍率2/3倍。貯金額${autoSellMultiplier.toFixed(2)}倍(着服する)。`;
     }
     case 'God of Fortification': {
       const restDuration = Math.max(1, 1.5 - 0.01 * effectiveTier);
-      return `全員に物理防御2/3倍。休息時間${restDuration.toFixed(2)}倍。雷属性に弱い(1.5倍ダメージ増)`;
+      return `全員に物理防御倍率2/3倍。休息時間${restDuration.toFixed(2)}倍。雷属性に弱い(1.5倍ダメージ増)`;
     }
     case 'Goddess of Fertility': {
       const feastDuration = Math.max(1, 1.5 - 0.01 * effectiveTier);
@@ -161,15 +161,15 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
     }
     case 'God of Dusk': {
       const evasionBonus = 0.015 + 0.001 * effectiveTier;
-      return `全員の回避+${(evasionBonus * 1000).toFixed(0)}、魔法防御1.10倍。売却時間1.5倍。`;
+      return `全員の回避+${(evasionBonus * 1000).toFixed(0)}、魔法防御倍率1.10倍。売却時間1.5倍。`;
     }
     case 'Goddess of Mirage': {
       const magicalAttack = 1.2 + 0.01 * effectiveTier;
-      return `全員に魔法攻撃${magicalAttack.toFixed(2)}倍、物理防御1.10倍`;
+      return `全員に魔法攻撃倍率${magicalAttack.toFixed(2)}倍、物理防御倍率1.10倍。`;
     }
     case 'God of Resonance': {
       const hpMultiplier = 0.9 + 0.002 * effectiveTier;
-      return `全員の共鳴を1段階強化。共鳴は魔法攻撃だけでなく、遠距離攻撃にも適用。魔法防御1.10倍、HP${hpMultiplier.toFixed(2)}倍`;
+      return `全員の共鳴を1+α段階強化。共鳴は魔法攻撃だけでなく、遠距離攻撃にも適用。魔法防御倍率1.10倍、HP${hpMultiplier.toFixed(2)}倍。`;
     }
     case 'God of Oblivion': {
       return effectiveTier >= 10 ? 'なし。追加報酬抽選+1回' : 'なし。';
