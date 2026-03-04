@@ -125,6 +125,12 @@ const HEADER_HEIGHT_CLASS = 'pt-[108px]';
 type GameMode = 'm.kemo' | 'm.luna';
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
 const APP_VERSION = `v${__APP_VERSION__}`;
+
+function normalizeBattleLogNote(note?: string): string | undefined {
+  if (!note) return note;
+  return note.replace('パーティ攻撃力 ×', 'パーティ物理攻撃力 ×');
+}
+
 const RACE_ICON_SOURCES = RACES
   .map((race) => race.icon)
   .filter((icon): icon is string => Boolean(icon))
@@ -4536,7 +4542,7 @@ function ExpeditionTab({
                                         <span className="min-w-0">
                                           <span className="text-gray-400">[{phaseLabel}]</span>{' '}
                                           {actionDisplay}
-                                          {log.note && <span className="text-gray-400"> {log.note}</span>}
+                                          {normalizeBattleLogNote(log.note) && <span className="text-gray-400"> {normalizeBattleLogNote(log.note)}</span>}
                                           {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                         </span>
                                         {log.damage !== undefined && log.damage > 0 && (
@@ -4552,7 +4558,7 @@ function ExpeditionTab({
                                       <span className="min-w-0">
                                         <span className="text-gray-400">[{phaseLabel}]</span>{' '}
                                         {actionDisplay}
-                                        {log.note && <span className="text-gray-400"> {log.note}</span>}
+                                        {normalizeBattleLogNote(log.note) && <span className="text-gray-400"> {normalizeBattleLogNote(log.note)}</span>}
                                         {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                       </span>
                                       {log.damage !== undefined && log.damage > 0 && (
@@ -5748,7 +5754,7 @@ function DiaryTab({
                                       <span className="min-w-0">
                                         <span className="text-gray-400">[{phaseLabel}]</span>{' '}
                                         {actionDisplay}
-                                        {battleLog.note && <span className="text-gray-400"> {battleLog.note}</span>}
+                                        {normalizeBattleLogNote(battleLog.note) && <span className="text-gray-400"> {normalizeBattleLogNote(battleLog.note)}</span>}
                                         {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                       </span>
                                       {battleLog.damage !== undefined && battleLog.damage > 0 && (
@@ -5764,7 +5770,7 @@ function DiaryTab({
                                     <span className="min-w-0">
                                       <span className="text-gray-400">[{phaseLabel}]</span>{' '}
                                       {actionDisplay}
-                                      {battleLog.note && <span className="text-gray-400"> {battleLog.note}</span>}
+                                      {normalizeBattleLogNote(battleLog.note) && <span className="text-gray-400"> {normalizeBattleLogNote(battleLog.note)}</span>}
                                       {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                     </span>
                                     {battleLog.damage !== undefined && battleLog.damage > 0 && (
