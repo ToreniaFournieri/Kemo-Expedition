@@ -2168,8 +2168,10 @@ export function HomeScreen({
         <div className="max-w-lg mx-auto w-full">
           <div className="flex justify-between items-center gap-3">
             <div>
-              <h1 className="text-lg font-bold">{gameTitle}</h1>
-              <div className="text-xs text-gray-500">{versionLabel}</div>
+              <h1 className="text-lg font-bold">
+                {gameTitle}
+                <span className="ml-1 text-xs font-normal text-gray-500">{versionLabel}</span>
+              </h1>
             </div>
             <div className="flex items-center gap-2 text-right text-sm font-medium">
               <span>{formatNumber(state.global.gold)}G</span>
