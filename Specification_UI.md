@@ -659,7 +659,7 @@ line  gray text2: ヴァルンの樹林帯      02/12 20:28
 - list and its descrpition is here:
   - @Specification_CONSTANTS_&_DATA.md
   - 2.1.1 a. bonus ability, 2.1.2 b. bonus, 2.1.3 c. bonus, 2.1.4 d. bonus, 2.1.5, 2.1.6, 2.1.7, 2.1.8, 2.1.9
-- Glossary tabs: A, B, C, D, E, F, G, M, Q. Default: A
+- Glossary tabs: A, B, C, D, F, G, M, Q. Default: A
 
 
 **Item Compendium (アイテム図鑑)**
