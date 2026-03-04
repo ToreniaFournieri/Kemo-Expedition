@@ -535,11 +535,11 @@ function getSideQuestText(party: Party): string | null {
       current: `${formatNumber(clampedProgress)}G`,
     },
     'q.sleeping': {
-      text: `のべ${formatNumber(safeTarget)}分寝る`,
+      text: `${formatNumber(safeTarget)}分寝る`,
       current: `${formatNumber(clampedProgress)}分`,
     },
     'q.exercise': {
-      text: `のべ${formatNumber(safeTarget)}分歩く`,
+      text: `${formatNumber(safeTarget)}分歩く`,
       current: `${formatNumber(clampedProgress)}分`,
     },
     'q.embezzlement': {
@@ -551,7 +551,7 @@ function getSideQuestText(party: Party): string | null {
       current: `${formatNumber(clampedProgress)}G`,
     },
     'q.healing': {
-      text: `のべ${formatNumber(safeTarget)}分治療を受ける`,
+      text: `${formatNumber(safeTarget)}分治療を受ける`,
       current: `${formatNumber(clampedProgress)}分`,
     },
     'q.AFK': {
@@ -577,6 +577,10 @@ function getSideQuestText(party: Party): string | null {
     'q.losers': {
       text: `${formatNumber(safeTarget)}回敗北する`,
       current: `${formatNumber(clampedProgress)}回`,
+    },
+    'q.savings': {
+      text: `${formatNumber(safeTarget)}G貯金する`,
+      current: `${formatNumber(clampedProgress)}G`,
     },
   };
 
@@ -1746,6 +1750,7 @@ export function HomeScreen({
               const embezzled = Math.max(0, rawDeposit - deposit);
               actions.processPendingProfit(partyIndex, donation, deposit);
               if (party.sideQuest?.type === 'q.donation' && donation > 0) actions.advanceSideQuest(partyIndex, donation, simulationNow);
+              if (party.sideQuest?.type === 'q.savings' && deposit > 0) actions.advanceSideQuest(partyIndex, deposit, simulationNow);
               if (party.sideQuest?.type === 'q.embezzlement' && embezzled > 0) actions.advanceSideQuest(partyIndex, embezzled, simulationNow);
               cyclePendingProfit = 0;
               if (donation > 0 || deposit > 0) {

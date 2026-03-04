@@ -68,8 +68,8 @@ const MAGICAL_THREAT_WEIGHT_BAG_DEFAULT: WeightedBagEntry[] = [
 ];
 
 const SIDE_QUEST_BAG_DEFAULT: WeightedBagEntry[] = [
-  { id: 0, tickets: 99 * 12 },
-  ...Array.from({ length: 12 }, (_, i) => ({ id: i + 1, tickets: 1 })),
+  { id: 0, tickets: 99 * 13 },
+  ...Array.from({ length: 13 }, (_, i) => ({ id: i + 1, tickets: 1 })),
 ];
 
 const BAG_DEFAULT_CREATORS = {
