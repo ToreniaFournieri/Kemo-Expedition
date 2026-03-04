@@ -522,6 +522,15 @@ function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | n
   return null;
 }
 
+function getSideQuestText(party: Party): string | null {
+  if (!party.sideQuest) return null;
+  const { shortText, progress, target } = party.sideQuest;
+  const safeTarget = Math.max(1, target);
+  const clampedProgress = Math.max(0, Math.min(progress, safeTarget));
+  const percent = Math.floor((clampedProgress / safeTarget) * 100);
+  return `サイドクエスト: ${shortText} ${formatNumber(clampedProgress)}/${formatNumber(safeTarget)} (${percent}%)`;
+}
+
 function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
   return getLootCollectionCount(party, dungeonId, 'bossRare') >= getGodsBattleRequired(getEnvironmentId());
 }
@@ -4288,6 +4297,7 @@ function ExpeditionTab({
                   <div className="text-xs text-accent">HPが0のため出撃できません。休息で回復してください。</div>
                 )}
                 {getNextGoalText(party, cycle.state) && <div className="text-sm text-gray-700">{getNextGoalText(party, cycle.state)}</div>}
+                {getSideQuestText(party) && <div className="text-sm text-gray-700">{getSideQuestText(party)}</div>}
               </div>
             )}
 
