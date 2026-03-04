@@ -56,9 +56,12 @@
   - unlock ability. if character gains `c.unlock_(race)_ability`, and the race matches woth his race, notification like: "ケイナイアンの再起アビリティが解放されました"
     - lost its unlock conditon: "ケイナイアンの再起アビリティがロックされました"
 
- - Level up
-   - Example: "PT1 はレベルが12に上がった(装備枠が+1増えた)" with expanded equipment slot
-   - Example: "PT1 はレベルが13に上がった" 
+- Level up
+  - Example: "PT1 はレベルが12に上がった(装備枠が+1増えた)" with expanded equipment slot
+  - Example: "PT1 はレベルが13に上がった" 
+
+- Side quest
+  - Example: "PT1はサイドクエスト 治療 (2時間) を受けた"
 
 ### 8.2 Header
 - Always fixed at the top.
