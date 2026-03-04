@@ -716,7 +716,7 @@
 
 | `x.exp_id` | `x.exp_tier` | `x.exp_level` | `x.expediton` | short word |
 |---|------|-----|-----|-----|
-| 1 | 1 | ケイナイアン平原(Caninian Plains) | 原 | 
+| 1 | 1 | 1 | ケイナイアン平原(Caninian Plains) | 原 | 
 | 2 | 2 | 8 | ルピニアンの断崖(Lupinian Crag) | 崖 |
 | 3 | 3 | 16 | ヴァルンの樹林帯(Vulpinian Taiga) | 樹 |
 | 4 | 4 | 24 | ウルサンの霊峰(Ursan Peaks) | 峰 |
