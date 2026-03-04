@@ -330,7 +330,7 @@ PT3: 貯金額: 10G
 **Assignment**
 - The selected side quest is assigned immediately after the **Returning** state ends.
 - Notification example:
-  - `PT1はサイドクエスト 治療 (2時間) を受けた。`
+  - "PT1はサイドクエスト 治療 (2時間) を受けた"
 
 **Cancellation**
 - If a **神魔戦 (God Battle)** begins, the current side quest is **cancelled**.
