@@ -524,11 +524,68 @@ function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | n
 
 function getSideQuestText(party: Party): string | null {
   if (!party.sideQuest) return null;
-  const { shortText, progress, target } = party.sideQuest;
+  const { type, shortText, progress, target } = party.sideQuest;
   const safeTarget = Math.max(1, target);
   const clampedProgress = Math.max(0, Math.min(progress, safeTarget));
   const percent = Math.floor((clampedProgress / safeTarget) * 100);
-  return `サイドクエスト: ${shortText} ${formatNumber(clampedProgress)}/${formatNumber(safeTarget)} (${percent}%)`;
+
+  const progressByType: Record<string, { text: string; current: string }> = {
+    'q.squander': {
+      text: `宴会で${formatNumber(safeTarget)}G浪費する`,
+      current: `${formatNumber(clampedProgress)}G`,
+    },
+    'q.sleeping': {
+      text: `のべ${formatNumber(safeTarget)}分寝る`,
+      current: `${formatNumber(clampedProgress)}分`,
+    },
+    'q.exercise': {
+      text: `のべ${formatNumber(safeTarget)}分歩く`,
+      current: `${formatNumber(clampedProgress)}分`,
+    },
+    'q.embezzlement': {
+      text: `${formatNumber(safeTarget)}G着服する`,
+      current: `${formatNumber(clampedProgress)}G`,
+    },
+    'q.donation': {
+      text: `${formatNumber(safeTarget)}G寄付する`,
+      current: `${formatNumber(clampedProgress)}G`,
+    },
+    'q.healing': {
+      text: `のべ${formatNumber(safeTarget)}分治療を受ける`,
+      current: `${formatNumber(clampedProgress)}分`,
+    },
+    'q.AFK': {
+      text: `${formatNumber(safeTarget)}分神から干渉を受けない`,
+      current: `${formatNumber(clampedProgress)}分`,
+    },
+    'q.treasure_super_rare': {
+      text: `超レアを${formatNumber(safeTarget)}個獲得する`,
+      current: `${formatNumber(clampedProgress)}個`,
+    },
+    'q.treasure_boss_rare': {
+      text: `ボスレアを${formatNumber(safeTarget)}個獲得する`,
+      current: `${formatNumber(clampedProgress)}個`,
+    },
+    'q.poor_kid': {
+      text: `${formatNumber(safeTarget)}回アイテム獲得空振りする`,
+      current: `${formatNumber(clampedProgress)}回`,
+    },
+    'q.consecutive_wins': {
+      text: `${formatNumber(safeTarget)}連続して踏破する`,
+      current: `${formatNumber(clampedProgress)}連`,
+    },
+    'q.losers': {
+      text: `${formatNumber(safeTarget)}回敗北する`,
+      current: `${formatNumber(clampedProgress)}回`,
+    },
+  };
+
+  const display = progressByType[type] ?? {
+    text: shortText,
+    current: `${formatNumber(clampedProgress)}/${formatNumber(safeTarget)}`,
+  };
+
+  return `サイドクエスト: ${display.text} (${percent}%, ${display.current})`;
 }
 
 function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
