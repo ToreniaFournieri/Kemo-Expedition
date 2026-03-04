@@ -292,7 +292,7 @@
 | `gravity_well` | `percentage_damage` | `e.none` | グラビティウェル | 魔法攻撃回数が20回以上の場合発動。相手の残HPの2/5の固定ダメージ(魔法防御力無視) |
 
 #### 2.1.9 q. side quest
-- "s. サイドクエスト (条件達成すると報酬として結晶が手に入る)"
+- "q. サイドクエスト (条件達成すると報酬として結晶が手に入る)"
 
 | ID | type | Short text | Display text format | value range |
 |--|--|---|---|---|
