@@ -45,6 +45,7 @@ import {
   createSuperRareBag,
   createPhysicalThreatBag,
   createMagicalThreatBag,
+  createSideQuestBag,
   normalizeBagForType,
   BagType,
   normalizeGameBags,
@@ -366,6 +367,7 @@ function loadSavedState(): GameState | null {
           superRareBag: migrateLegacyBag(parsed.bags.superRareBag, createSuperRareBag, 'superRareBag'),
           physicalThreatBag: migrateLegacyBag(parsed.bags.physicalThreatBag, createPhysicalThreatBag, 'physicalThreatBag'),
           magicalThreatBag: migrateLegacyBag(parsed.bags.magicalThreatBag, createMagicalThreatBag, 'magicalThreatBag'),
+          sideQuestBag: migrateLegacyBag(parsed.bags.sideQuestBag, createSideQuestBag, 'sideQuestBag'),
         });
 
         if (!parsed.global) {
@@ -466,6 +468,7 @@ function loadSavedState(): GameState | null {
           if (typeof party.expeditionRewardsPending !== 'boolean') party.expeditionRewardsPending = false;
           if (typeof party.deityGold !== 'number') party.deityGold = 0;
           party.expeditionStats = getExpeditionStatsWithDefaults(party.expeditionStats);
+          if (typeof party.sideQuest === 'undefined') party.sideQuest = null;
 
           const normalizedDeityName = normalizeDeityName(party.deity.name);
           if (typeof parsed.global.deityDonations[normalizedDeityName] !== 'number') {
@@ -535,6 +538,7 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
     expeditionRewardsPending: false,
     deityGold: 0,
     expeditionStats: getExpeditionStatsWithDefaults(party.expeditionStats),
+    sideQuest: party.sideQuest ?? null,
   };
 }
 
@@ -580,6 +584,7 @@ function createInitialParty() {
     hasUnreadDiary: false,
     diarySettings: getDiarySettingsWithDefaults(undefined),
     expeditionStats: getExpeditionStatsWithDefaults(null),
+    sideQuest: null,
   };
 
   return initializePartyRuntimeState(party);
@@ -628,6 +633,7 @@ function createSecondParty() {
     hasUnreadDiary: false,
     diarySettings: getDiarySettingsWithDefaults(undefined),
     expeditionStats: getExpeditionStatsWithDefaults(null),
+    sideQuest: null,
   };
 
   return initializePartyRuntimeState(party);
@@ -675,6 +681,7 @@ function createThirdParty() {
     hasUnreadDiary: false,
     diarySettings: getDiarySettingsWithDefaults(undefined),
     expeditionStats: getExpeditionStatsWithDefaults(null),
+    sideQuest: null,
   };
 
   return initializePartyRuntimeState(party);
@@ -718,6 +725,7 @@ function createInitialState(): GameState {
       superRareBag: createSuperRareBag(),
       physicalThreatBag: createPhysicalThreatBag(),
       magicalThreatBag: createMagicalThreatBag(),
+      sideQuestBag: createSideQuestBag(),
     },
     buildNumber: BUILD_NUMBER,
   };
@@ -734,6 +742,9 @@ type GameAction =
   | { type: 'CLEAR_PENDING_PROFIT'; partyIndex: number }
   | { type: 'PROCESS_PENDING_PROFIT'; partyIndex: number; donation: number; deposit: number }
   | { type: 'SPEND_PENDING_PROFIT'; partyIndex: number; amount: number }
+  | { type: 'ROLL_SIDE_QUEST'; partyIndex: number; rolledTier: number }
+  | { type: 'CANCEL_SIDE_QUEST'; partyIndex: number }
+  | { type: 'ADVANCE_SIDE_QUEST'; partyIndex: number; amount: number }
   | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; itemKey: string | null }
   | { type: 'ATTACH_JEWEL'; characterId: number; slotIndex: number; jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus'; rank: number }
   | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character> }
@@ -1679,6 +1690,84 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+
+    case 'ROLL_SIDE_QUEST': {
+      const currentParty = state.parties[action.partyIndex];
+      if (!currentParty || currentParty.sideQuest) return state;
+      let bags = refillBagIfEmpty(state.bags, 'sideQuestBag');
+      const { ticket, newBag } = drawFromBag(bags.sideQuestBag);
+      bags = { ...bags, sideQuestBag: newBag };
+      if (ticket === 0) return { ...state, bags };
+
+      const questById: Record<number, { type: string; shortText: string; min: number; max: number }> = {
+        1: { type: 'q.squander', shortText: '散財', min: 500, max: 2000 },
+        2: { type: 'q.sleeping', shortText: '安眠', min: 20, max: 60 },
+        3: { type: 'q.exercise', shortText: '運動', min: 45, max: 150 },
+        4: { type: 'q.embezzlement', shortText: '横領', min: 250, max: 1000 },
+        5: { type: 'q.donation', shortText: '寄付', min: 400, max: 2000 },
+        6: { type: 'q.healing', shortText: '治療', min: 60, max: 120 },
+        7: { type: 'q.AFK', shortText: '放置', min: 180, max: 360 },
+        8: { type: 'q.treasure_super_rare', shortText: '超レア獲得', min: 1, max: 2 },
+        9: { type: 'q.treasure_boss_rare', shortText: 'ボスレア獲得', min: 15, max: 45 },
+        10: { type: 'q.poor_kid', shortText: '空振り', min: 100, max: 300 },
+        11: { type: 'q.consecutive_wins', shortText: '連続踏破', min: 15, max: 60 },
+        12: { type: 'q.losers', shortText: '敗北', min: 3, max: 6 },
+      };
+      const def = questById[ticket];
+      if (!def) return { ...state, bags };
+      const target = Math.floor(Math.random() * (def.max - def.min + 1)) + def.min;
+      const updatedParties = [...state.parties];
+      updatedParties[action.partyIndex] = {
+        ...currentParty,
+        sideQuest: {
+          id: ticket,
+          type: def.type,
+          shortText: `${def.shortText}(${target})`,
+          target,
+          progress: 0,
+          rolledTier: Math.max(1, Math.min(8, Math.floor(action.rolledTier))),
+        },
+      };
+      return { ...state, bags, parties: updatedParties };
+    }
+
+    case 'CANCEL_SIDE_QUEST': {
+      const currentParty = state.parties[action.partyIndex];
+      if (!currentParty || !currentParty.sideQuest) return state;
+      const updatedParties = [...state.parties];
+      updatedParties[action.partyIndex] = { ...currentParty, sideQuest: null };
+      return { ...state, parties: updatedParties };
+    }
+
+    case 'ADVANCE_SIDE_QUEST': {
+      const currentParty = state.parties[action.partyIndex];
+      if (!currentParty?.sideQuest) return state;
+      const gained = Math.max(0, Math.floor(action.amount));
+      if (gained <= 0) return state;
+
+      const nextProgress = currentParty.sideQuest.progress + gained;
+      const updatedParties = [...state.parties];
+      if (nextProgress < currentParty.sideQuest.target) {
+        updatedParties[action.partyIndex] = {
+          ...currentParty,
+          sideQuest: { ...currentParty.sideQuest, progress: nextProgress },
+        };
+        return { ...state, parties: updatedParties };
+      }
+
+      updatedParties[action.partyIndex] = { ...currentParty, sideQuest: null };
+      const jewelKeys = ['might', 'arcana', 'fort', 'ward', 'shade', 'focus'] as const;
+      const key = jewelKeys[Math.floor(Math.random() * jewelKeys.length)];
+      return {
+        ...state,
+        parties: updatedParties,
+        global: {
+          ...state.global,
+          jewels: addJewelToInventory(state.global.jewels, key, currentParty.sideQuest.rolledTier),
+        },
+      };
+    }
+
     case 'PROCESS_PENDING_PROFIT': {
       const currentParty = state.parties[action.partyIndex];
       if (!currentParty) return state;
@@ -2300,6 +2389,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           superRareBag: createSuperRareBag(),
           physicalThreatBag: createPhysicalThreatBag(),
           magicalThreatBag: createMagicalThreatBag(),
+          sideQuestBag: createSideQuestBag(),
         },
         buildNumber: BUILD_NUMBER,
       };
@@ -2352,6 +2442,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           bossRareRewardBag: createBossRareRewardBag(),
           mythicRareRewardBag: createMythicRareRewardBag(),
           enhancementBag: createEnhancementBag(),
+          sideQuestBag: createSideQuestBag(),
         },
       };
     }
@@ -2478,6 +2569,18 @@ export function useGameState() {
 
     spendPendingProfit: useCallback((partyIndex: number, amount: number) => {
       dispatch({ type: 'SPEND_PENDING_PROFIT', partyIndex, amount });
+    }, []),
+
+    rollSideQuest: useCallback((partyIndex: number, rolledTier: number) => {
+      dispatch({ type: 'ROLL_SIDE_QUEST', partyIndex, rolledTier });
+    }, []),
+
+    cancelSideQuest: useCallback((partyIndex: number) => {
+      dispatch({ type: 'CANCEL_SIDE_QUEST', partyIndex });
+    }, []),
+
+    advanceSideQuest: useCallback((partyIndex: number, amount: number) => {
+      dispatch({ type: 'ADVANCE_SIDE_QUEST', partyIndex, amount });
     }, []),
 
     equipItem: useCallback((characterId: number, slotIndex: number, itemKey: string | null) => {

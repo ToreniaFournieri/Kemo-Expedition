@@ -1021,4 +1021,77 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       }
     ]
   }
+  ,
+  {
+    "id": "2-1-9",
+    "heading": "2.1.9 q. side quest",
+    "subtitle": "q. サイドクエスト (条件達成すると報酬として結晶が手に入る)",
+    "entries": [
+      {
+        "key": "q.none",
+        "label": "なし",
+        "description": "表示: なし\n値域: なし"
+      },
+      {
+        "key": "q.squander",
+        "label": "散財(XXXG)",
+        "description": "表示: 宴会で XXXG 浪費する(0%, XXXG) (神魔戦で中止)\n値域: 500 ~ 2,000 G"
+      },
+      {
+        "key": "q.sleeping",
+        "label": "安眠(X時間)",
+        "description": "表示: のべX時間X分寝る(0%, XX分) (神魔戦で中止)\n値域: 20分 ~ 60分"
+      },
+      {
+        "key": "q.exercise",
+        "label": "運動(XX分)",
+        "description": "表示: のべX分歩く(0%, XX分) (神魔戦で中止)\n値域: 45分 ~ 150分"
+      },
+      {
+        "key": "q.embezzlement",
+        "label": "横領(XXXG)",
+        "description": "表示: XXXG着服する(60%, XXXG) (神魔戦で中止)\n値域: 250 ~ 1,000G"
+      },
+      {
+        "key": "q.donation",
+        "label": "寄付(XXXG)",
+        "description": "表示: 1,500G寄付する(10%, XXXG) (神魔戦で中止)\n値域: 400 ~ 2,000G"
+      },
+      {
+        "key": "q.healing",
+        "label": "治療(X時間)",
+        "description": "表示: のべ2時間治療を受ける (10%, XX分) (神魔戦で中止)\n値域: 60分 ~ 120分"
+      },
+      {
+        "key": "q.AFK",
+        "label": "放置(X時間)",
+        "description": "表示: 6時間神から干渉を受けない (10%, XX分) (神魔戦で中止)\n値域: 180分 ~ 360分"
+      },
+      {
+        "key": "q.treasure_super_rare",
+        "label": "超レアX個獲得",
+        "description": "表示: 超レアを X個獲得する(0%, X個) (神魔戦で中止)\n値域: 1 ~ 2"
+      },
+      {
+        "key": "q.treasure_boss_rare",
+        "label": "ボスレアXX個獲得",
+        "description": "表示: ボスレアを XX個獲得する(0%, X個) (神魔戦で中止)\n値域: 15 ~ 45"
+      },
+      {
+        "key": "q.poor_kid",
+        "label": "アイテム獲得空振り(XXX回)",
+        "description": "表示: XXX回アイテム獲得空振り(0%, X個) (神魔戦で中止)\n値域: 100 ~ 300"
+      },
+      {
+        "key": "q.consecutive_wins",
+        "label": "連続踏破(XX連続)",
+        "description": "表示: XX連続して踏破する(30%, XX連) (神魔戦で中止)\n値域: 15 ~ 60"
+      },
+      {
+        "key": "q.losers",
+        "label": "敗北(X回)",
+        "description": "表示: X回敗北する(0%, X回) (神魔戦で中断)\n値域: 3 ~ 6"
+      }
+    ]
+  }
 ];
