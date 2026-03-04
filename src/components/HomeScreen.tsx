@@ -4352,7 +4352,7 @@ function ExpeditionTab({
               </div>
             </div>
 
-            {isLogExpanded && (nextGoalText || sideQuestText) && (
+            {(nextGoalText || sideQuestText) && (
               <div className="mb-2 space-y-1">
                 {nextGoalText && <div className="text-sm text-gray-700">{nextGoalText}</div>}
                 {sideQuestText && <div className="text-sm text-gray-700">{sideQuestText}</div>}
