@@ -64,6 +64,7 @@ interface HomeScreenProps {
     rollSideQuest: (partyIndex: number, rolledTier: number) => void;
     cancelSideQuest: (partyIndex: number) => void;
     advanceSideQuest: (partyIndex: number, amount: number) => void;
+    setSideQuestProgress: (partyIndex: number, progress: number) => void;
     equipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
     attachJewel: (characterId: number, slotIndex: number, jewelKey: JewelKey, rank: number) => void;
     updateCharacter: (characterId: number, updates: Partial<Character>) => void;
@@ -1619,6 +1620,10 @@ export function HomeScreen({
           const { partyStats: partyRuntimeStats } = computePartyStats(party);
           if (party.currentHp < partyRuntimeStats.hp) actions.healPartyHp(partyIndex, Math.max(1, Math.floor(partyRuntimeStats.hp * 0.01)));
           if (party.currentHp >= partyRuntimeStats.hp) {
+            if (party.sideQuest?.type === 'q.healing') {
+              const restMinutes = Math.max(1, Math.floor((simulationNow - updated.stateStartedAt) / 60000));
+              actions.advanceSideQuest(partyIndex, restMinutes);
+            }
             const hasTrophy = (party.lastExpeditionLog?.rewards.length ?? 0) > 0;
             const hasAutoSellItem = (party.lastExpeditionLog?.autoSellProfit ?? 0) > 0;
             if (hasTrophy || hasAutoSellItem) {
@@ -1693,7 +1698,10 @@ export function HomeScreen({
             } else if (updated.state === '移動中') {
               const triggerGodsBattle = pendingGodsBattleByPartyRef.current[partyIndex] === true;
               pendingGodsBattleByPartyRef.current[partyIndex] = false;
-              if (triggerGodsBattle && party.sideQuest) actions.cancelSideQuest(partyIndex);
+              if (triggerGodsBattle && party.sideQuest) {
+                actions.cancelSideQuest(partyIndex);
+                actions.addNotification(`${party.name}のサイドクエストは神魔戦の開始で中止された`);
+              }
               if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 60000)));
               if (party.sideQuest?.type === 'q.AFK' && !triggerGodsBattle) actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 60000)));
               actions.runExpedition(partyIndex, gameModeRef.current === 'm.luna', triggerGodsBattle);
@@ -1775,8 +1783,12 @@ export function HomeScreen({
         if (party.sideQuest.type === 'q.poor_kid' && (currentLog.rewards.length ?? 0) === 0) {
           actions.advanceSideQuest(index, 1);
         }
-        if (party.sideQuest.type === 'q.consecutive_wins' && currentLog.finalOutcome === 'victory') {
-          actions.advanceSideQuest(index, 1);
+        if (party.sideQuest.type === 'q.consecutive_wins') {
+          if (currentLog.finalOutcome === 'victory') {
+            actions.advanceSideQuest(index, 1);
+          } else {
+            actions.setSideQuestProgress(index, 0);
+          }
         }
         if (party.sideQuest.type === 'q.losers' && currentLog.finalOutcome === 'defeat') {
           actions.advanceSideQuest(index, 1);
