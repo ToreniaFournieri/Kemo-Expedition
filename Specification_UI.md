@@ -623,7 +623,7 @@ line  gray text2: ヴァルンの樹林帯      02/12 20:28
     - 伝説の残り counts / initial counts
     - 恐ろしい残り counts / initial counts
     - 究極の残り counts / initial counts
-  - Button (通常報酬初期化): Initialize `g.common_reward_bag` and `g.common_enhancement_bag` 
+  - Button (通常報酬初期化): Initialize `t.common_reward_bag` and `t.common_enhancement_bag` 
 
   **Unieque reward (固有報酬)**
   - uncommon reward_bag (アンコモン抽選確率):  
@@ -646,14 +646,19 @@ line  gray text2: ヴァルンの樹林帯      02/12 20:28
     - 伝説の残り remaining / initial counts
     - 恐ろしい残り remaining / initial counts
     - 究極の残り remaining / initial counts
-  - Button (固有報酬初期化): Initialize `g.common_reward_bag`, `g.uncommon_reward_bag`, `g.elite_rare_reward_bag`, `g.boss_rare_reward_bag`  , `g.mythic_rare_reward_bag`  and `g.enhancement_bag` 
+  - Button (固有報酬初期化): Initialize `t.common_reward_bag`, `t.uncommon_reward_bag`, `t.elite_rare_reward_bag`, `t.boss_rare_reward_bag`  , `t.mythic_rare_reward_bag`  and `t.enhancement_bag` 
 
   **Super rare reward (超レア報酬)**
   - superRare_bag (称号超レア称号付与 抽選確率):
     - 超レア称号抽選: remaining / total counts
     - 超レア残り remaining / initial counts
-  - Button (超レア報酬初期化): Initialize `g.superRare_bag`
+  - Button (超レア報酬初期化): Initialize `t.superRare_bag`
 
+  **Side quest(サイドクエスト抽選)**
+  - side_quest_bag (サイドクエスト抽選確率)
+    - サイドクエスト抽選 remaining / total counts
+    - 当たり残り remaining / initial counts
+  - Button (サイドクエスト初期化): Initialize `t.side_quest_bag` 
 
 **Glossary (用語集)** 
 - list and its descrpition is here:
