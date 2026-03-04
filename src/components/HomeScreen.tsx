@@ -2168,9 +2168,9 @@ export function HomeScreen({
         <div className="max-w-lg mx-auto w-full">
           <div className="flex justify-between items-center gap-3">
             <div>
-              <h1 className="text-lg font-bold">
-                {gameTitle}
-                <span className="ml-1 text-xs font-normal text-gray-500">{versionLabel}</span>
+              <h1 className="flex items-center gap-1 text-lg font-bold">
+                <span>{gameTitle}</span>
+                <span className="text-xs font-normal text-gray-500">{versionLabel}</span>
               </h1>
             </div>
             <div className="flex items-center gap-2 text-right text-sm font-medium">
