@@ -117,6 +117,7 @@ function rollPercentInclusive(min: number, max: number): number {
 const PARTY_CYCLE_TICK_MS = 100;
 const EXPLORING_PROGRESS_STEP_MS = 1000;
 const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
+const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.sleeping', 'q.exercise', 'q.healing', 'q.AFK']);
 const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
 const AFK_MAX_ELAPSED_MS = 600 * 60 * 1000;
 const AFK_BACKGROUND_CHUNK_MS = 120 * 1000;
@@ -525,68 +526,71 @@ function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | n
 function getSideQuestText(party: Party): string | null {
   if (!party.sideQuest) return null;
   const { type, shortText, progress, target } = party.sideQuest;
+  const isTimeQuest = TIME_BASED_SIDE_QUEST_TYPES.has(type);
   const safeTarget = Math.max(1, target);
   const clampedProgress = Math.max(0, Math.min(progress, safeTarget));
+  const displayTarget = isTimeQuest ? Math.floor(safeTarget / 60) : safeTarget;
+  const displayProgress = isTimeQuest ? Math.floor(clampedProgress / 60) : clampedProgress;
   const percent = Math.floor((clampedProgress / safeTarget) * 100);
 
   const progressByType: Record<string, { text: string; current: string }> = {
     'q.squander': {
-      text: `宴会で${formatNumber(safeTarget)}G浪費する`,
-      current: `${formatNumber(clampedProgress)}G`,
+      text: `宴会で${formatNumber(displayTarget)}G浪費する`,
+      current: `${formatNumber(displayProgress)}G`,
     },
     'q.sleeping': {
-      text: `${formatNumber(safeTarget)}分寝る`,
-      current: `${formatNumber(clampedProgress)}分`,
+      text: `${formatNumber(displayTarget)}分寝る`,
+      current: `${formatNumber(displayProgress)}分`,
     },
     'q.exercise': {
-      text: `${formatNumber(safeTarget)}分歩く`,
-      current: `${formatNumber(clampedProgress)}分`,
+      text: `${formatNumber(displayTarget)}分歩く`,
+      current: `${formatNumber(displayProgress)}分`,
     },
     'q.embezzlement': {
-      text: `${formatNumber(safeTarget)}G着服する`,
-      current: `${formatNumber(clampedProgress)}G`,
+      text: `${formatNumber(displayTarget)}G着服する`,
+      current: `${formatNumber(displayProgress)}G`,
     },
     'q.donation': {
-      text: `${formatNumber(safeTarget)}G寄付する`,
-      current: `${formatNumber(clampedProgress)}G`,
+      text: `${formatNumber(displayTarget)}G寄付する`,
+      current: `${formatNumber(displayProgress)}G`,
     },
     'q.healing': {
-      text: `${formatNumber(safeTarget)}分治療を受ける`,
-      current: `${formatNumber(clampedProgress)}分`,
+      text: `${formatNumber(displayTarget)}分治療を受ける`,
+      current: `${formatNumber(displayProgress)}分`,
     },
     'q.AFK': {
-      text: `${formatNumber(safeTarget)}分神から干渉を受けない`,
-      current: `${formatNumber(clampedProgress)}分`,
+      text: `${formatNumber(displayTarget)}分神から干渉を受けない`,
+      current: `${formatNumber(displayProgress)}分`,
     },
     'q.treasure_super_rare': {
-      text: `超レアを${formatNumber(safeTarget)}個獲得する`,
-      current: `${formatNumber(clampedProgress)}個`,
+      text: `超レアを${formatNumber(displayTarget)}個獲得する`,
+      current: `${formatNumber(displayProgress)}個`,
     },
     'q.treasure_boss_rare': {
-      text: `ボスレアを${formatNumber(safeTarget)}個獲得する`,
-      current: `${formatNumber(clampedProgress)}個`,
+      text: `ボスレアを${formatNumber(displayTarget)}個獲得する`,
+      current: `${formatNumber(displayProgress)}個`,
     },
     'q.poor_kid': {
-      text: `${formatNumber(safeTarget)}回アイテム獲得空振りする`,
-      current: `${formatNumber(clampedProgress)}回`,
+      text: `${formatNumber(displayTarget)}回アイテム獲得空振りする`,
+      current: `${formatNumber(displayProgress)}回`,
     },
     'q.consecutive_wins': {
-      text: `${formatNumber(safeTarget)}連続して踏破する`,
-      current: `${formatNumber(clampedProgress)}連`,
+      text: `${formatNumber(displayTarget)}連続して踏破する`,
+      current: `${formatNumber(displayProgress)}連`,
     },
     'q.losers': {
-      text: `${formatNumber(safeTarget)}回敗北する`,
-      current: `${formatNumber(clampedProgress)}回`,
+      text: `${formatNumber(displayTarget)}回敗北する`,
+      current: `${formatNumber(displayProgress)}回`,
     },
     'q.savings': {
-      text: `${formatNumber(safeTarget)}G貯金する`,
-      current: `${formatNumber(clampedProgress)}G`,
+      text: `${formatNumber(displayTarget)}G貯金する`,
+      current: `${formatNumber(displayProgress)}G`,
     },
   };
 
   const display = progressByType[type] ?? {
     text: shortText,
-    current: `${formatNumber(clampedProgress)}/${formatNumber(safeTarget)}`,
+    current: `${formatNumber(displayProgress)}/${formatNumber(displayTarget)}`,
   };
 
   return `サイドクエスト: ${display.text} (${percent}%, ${display.current})`;
@@ -1691,8 +1695,8 @@ export function HomeScreen({
           if (party.currentHp < partyRuntimeStats.hp) actions.healPartyHp(partyIndex, Math.max(1, Math.floor(partyRuntimeStats.hp * 0.01)));
           if (party.currentHp >= partyRuntimeStats.hp) {
             if (party.sideQuest?.type === 'q.healing') {
-              const restMinutes = Math.max(1, Math.floor((simulationNow - updated.stateStartedAt) / 60000));
-              actions.advanceSideQuest(partyIndex, restMinutes, simulationNow);
+              const restSeconds = Math.max(1, Math.floor((simulationNow - updated.stateStartedAt) / 1000));
+              actions.advanceSideQuest(partyIndex, restSeconds, simulationNow);
             }
             const hasTrophy = (party.lastExpeditionLog?.rewards.length ?? 0) > 0;
             const hasAutoSellItem = (party.lastExpeditionLog?.autoSellProfit ?? 0) > 0;
@@ -1735,7 +1739,7 @@ export function HomeScreen({
               updated.state = '睡眠中';
               updated.durationMs = getStateDurationMs(party, 'sleep');
             } else if (updated.state === '睡眠中') {
-              if (party.sideQuest?.type === 'q.sleeping') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 60000)), simulationNow);
+              if (party.sideQuest?.type === 'q.sleeping') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
               updated.state = '祈り中';
               updated.durationMs = getStateDurationMs(party, 'pray');
             } else if (updated.state === '祈り中') {
@@ -1773,8 +1777,8 @@ export function HomeScreen({
                 actions.cancelSideQuest(partyIndex);
                 actions.addNotification(`${party.name}のサイドクエストは神魔戦の開始で中止された`);
               }
-              if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 60000)), simulationNow);
-              if (party.sideQuest?.type === 'q.AFK' && !triggerGodsBattle) actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 60000)), simulationNow);
+              if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
+              if (party.sideQuest?.type === 'q.AFK' && !triggerGodsBattle) actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
               actions.runExpedition(partyIndex, gameModeRef.current === 'm.luna', triggerGodsBattle);
               updated.state = '探索中';
               updated.durationMs = getExplorationDurationMs(undefined, getPartyStateDurationMultiplier(party, 'explore'));
@@ -1785,7 +1789,7 @@ export function HomeScreen({
               updated.durationMs = getPartyTravelDurationMs(party);
               updated.isCurrentExpeditionGodsBattle = false;
             } else if (updated.state === '帰還中') {
-              if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 60000)), simulationNow);
+              if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
               if (!party.sideQuest && !hasActiveLootGateCondition(party, updated.state)) {
                 actions.rollSideQuest(partyIndex, party.selectedDungeonId);
               }
