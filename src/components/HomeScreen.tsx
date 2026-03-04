@@ -4314,7 +4314,14 @@ function ExpeditionTab({
 
         return (
           <div key={partyIndex} className="bg-pane rounded-lg p-4">
-            <button onClick={() => setExpandedLogParty(isLogExpanded ? null : partyIndex)} className="w-full flex justify-between items-center text-sm mb-3">
+            <button
+              onClick={() => {
+                const nextExpanded = isLogExpanded ? null : partyIndex;
+                setExpandedLogParty(nextExpanded);
+                setExpandedRoom(null);
+              }}
+              className="w-full flex justify-between items-center text-sm mb-3"
+            >
               <span><span className="font-bold text-black">{party.name}</span><span className="ml-2">{headlineDungeonName}</span><span className="ml-2 font-medium text-sub">{headlineState}</span></span>
               <span className={isLogExpanded ? 'transform transition-transform rotate-180' : ''}>▼</span>
             </button>
@@ -4397,6 +4404,7 @@ function ExpeditionTab({
                   <div className="border-t border-gray-200 pt-2 space-y-2">
                     {[...displayedEntries].reverse().map((entry, i, arr) => {
                       const originalIndex = arr.length - 1 - i;
+                      const latestVisibleRoomIndex = displayedEntries.length - 1;
                       const roomLabel = entry.floor && entry.roomInFloor
                         ? `${entry.floor}F-${entry.roomInFloor}`
                         : entry.room === currentLog.totalRooms + 1 ? 'BOSS' : entry.room.toString();
@@ -4410,11 +4418,16 @@ function ExpeditionTab({
                       const enemyTakenAmount = Math.min(entry.enemyHP, Math.max(0, entry.damageDealt));
                       const enemyRemainingAmount = Math.max(0, entry.enemyHP - enemyTakenAmount);
                       const enemyRemainingRatio = entry.enemyHP > 0 ? (enemyRemainingAmount / entry.enemyHP) * 100 : 0;
-                      const isRoomExpanded = expandedRoom?.partyIndex === partyIndex && expandedRoom?.roomIndex === originalIndex;
+                      const isManualExpandedRoom = expandedRoom?.partyIndex === partyIndex && expandedRoom?.roomIndex === originalIndex;
+                      const hasManualSelectionForParty = expandedRoom?.partyIndex === partyIndex;
+                      const isRoomExpanded = isManualExpandedRoom || (!hasManualSelectionForParty && originalIndex === latestVisibleRoomIndex);
 
                       return (
                         <div key={`${partyIndex}-${originalIndex}-${entry.room}`} className="bg-white rounded overflow-hidden">
-                          <button onClick={() => setExpandedRoom(isRoomExpanded ? null : { partyIndex, roomIndex: originalIndex })} className="w-full text-left p-2 text-xs">
+                          <button
+                            onClick={() => setExpandedRoom(isManualExpandedRoom ? null : { partyIndex, roomIndex: originalIndex })}
+                            className="w-full text-left p-2 text-xs"
+                          >
                             <div className="flex justify-between items-center">
                               <span className="font-medium">{roomLabel}: {renderEnemyNameWithMutedClass(entry.enemyName)}</span>
                               <span className="flex items-center gap-2">
