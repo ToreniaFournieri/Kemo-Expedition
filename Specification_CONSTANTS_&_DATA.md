@@ -717,13 +717,13 @@
 | `x.exp_id` | `x.exp_tier` | `x.exp_level` | `x.expediton` | short word |
 |---|------|-----|-----|-----|
 | 1 | 1 | 1 | ケイナイアン平原(Caninian Plains) | 原 | 
-| 2 | 2 | 8 | ルピニアンの断崖(Lupinian Crag) | 崖 |
-| 3 | 3 | 16 | ヴァルンの樹林帯(Vulpinian Taiga) | 樹 |
-| 4 | 4 | 24 | ウルサンの霊峰(Ursan Peaks) | 峰 |
-| 5 | 5 | 32 | フェリディの茂み(Felidian Grove) | 茂 |
-| 6 | 6 | 40 | マステリドの巣穴(Mustelid Burrow) | 巣 |
-| 7 | 7 | 48 | レポリアンの庭園(Leporian Garden) | 園 |
-| 8 | 8 | 56 | セルヴィンの谷(Cervin Vale) | 谷 |
+| 2 | 2 | 7 | ルピニアンの断崖(Lupinian Crag) | 崖 |
+| 3 | 3 | 14 | ヴァルンの樹林帯(Vulpinian Taiga) | 樹 |
+| 4 | 4 | 21 | ウルサンの霊峰(Ursan Peaks) | 峰 |
+| 5 | 5 | 28 | フェリディの茂み(Felidian Grove) | 茂 |
+| 6 | 6 | 35 | マステリドの巣穴(Mustelid Burrow) | 巣 |
+| 7 | 7 | 42 | レポリアンの庭園(Leporian Garden) | 園 |
+| 8 | 8 | 49 | セルヴィンの谷(Cervin Vale) | 谷 |
 
 - Strength of enemy by expeditions and floors. 
   - n = `x.exp_tier`
