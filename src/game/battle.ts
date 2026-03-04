@@ -828,7 +828,7 @@ export function executeBattle(
 
   const partyEffects = [
     createPartyEffectEntry('fighter', 'defender', level => `守護者${level}`, level => `(パーティへの物理ダメージ × ${level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3'})`),
-    createPartyEffectEntry('lord', 'command', level => `指揮${level}`, level => `(パーティ物理攻撃力 × ${level >= 3 ? '2.0' : level === 2 ? '1.6' : '1.3'})`),
+    createPartyEffectEntry('lord', 'command', level => `指揮${level}`, level => `(パーティの物理攻撃力 × ${level >= 3 ? '2.0' : level === 2 ? '1.6' : '1.3'})`),
     createPartyEffectEntry('sage', 'm_barrier', level => `魔法障壁${level}`, level => `(パーティへの魔法ダメージ × ${level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3'})`),
   ];
 
