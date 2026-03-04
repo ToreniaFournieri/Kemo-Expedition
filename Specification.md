@@ -332,8 +332,12 @@ PT3: 貯金額: 10G
 - Notification example:
   - "PT1はサイドクエスト 治療 (2時間) を受けた"
 
+**AFK handling**
+- Respect this side quest progress while AFK mode.
+
 **Cancellation**
 - If a **神魔戦 (God Battle)** begins, the current side quest is **cancelled**.
+- State whether cancellation applies to all quest types equally and no side quest for the party.
 
 **Reward**
 - On completion, the party receives **1 Jewel**.
