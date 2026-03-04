@@ -53,7 +53,7 @@ import {
 import { getItemById, getItemsByTierAndRarity } from '../data/items';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { getItemDisplayName } from '../game/gameState';
-import { getDeityKey, getDeityRank, getEffectiveDeityTier, normalizeDeityName } from '../game/deity';
+import { getDeityKey, getDeityRank, getDeityStateDurationMultiplier, getEffectiveDeityTier, normalizeDeityName } from '../game/deity';
 import { RACES } from '../data/races';
 import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
@@ -745,6 +745,7 @@ type GameAction =
   | { type: 'ROLL_SIDE_QUEST'; partyIndex: number; rolledTier: number }
   | { type: 'CANCEL_SIDE_QUEST'; partyIndex: number }
   | { type: 'ADVANCE_SIDE_QUEST'; partyIndex: number; amount: number }
+  | { type: 'SET_SIDE_QUEST_PROGRESS'; partyIndex: number; progress: number }
   | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; itemKey: string | null }
   | { type: 'ATTACH_JEWEL'; characterId: number; slotIndex: number; jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus'; rank: number }
   | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character> }
@@ -1769,6 +1770,27 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'SET_SIDE_QUEST_PROGRESS': {
+      const currentParty = state.parties[action.partyIndex];
+      if (!currentParty?.sideQuest) return state;
+      const nextProgress = Math.max(0, Math.min(currentParty.sideQuest.target, Math.floor(action.progress)));
+      if (nextProgress === currentParty.sideQuest.progress) return state;
+
+      const updatedParties = [...state.parties];
+      updatedParties[action.partyIndex] = {
+        ...currentParty,
+        sideQuest: {
+          ...currentParty.sideQuest,
+          progress: nextProgress,
+        },
+      };
+
+      return {
+        ...state,
+        parties: updatedParties,
+      };
+    }
+
     case 'PROCESS_PENDING_PROFIT': {
       const currentParty = state.parties[action.partyIndex];
       if (!currentParty) return state;
@@ -2310,6 +2332,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           const spend = Math.min(pendingProfit, Math.floor(baseSpend * squanderMultiplier));
           if (spend > 0) {
             workingState = gameReducer(workingState, { type: 'SPEND_PENDING_PROFIT', partyIndex, amount: spend });
+            if (currentParty.sideQuest?.type === 'q.squander') {
+              workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: spend });
+            }
           }
 
           const afterSpend = workingState.parties[partyIndex];
@@ -2322,14 +2347,72 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           const donation = Math.min(afterSpend.pendingProfit ?? 0, baseDonation + titheBonus);
           const rawDeposit = Math.max(0, (afterSpend.pendingProfit ?? 0) - donation);
           const deposit = Math.floor(rawDeposit * getPrayerDepositMultiplier(afterSpend));
+          const embezzled = Math.max(0, rawDeposit - deposit);
           workingState = gameReducer(workingState, { type: 'PROCESS_PENDING_PROFIT', partyIndex, donation, deposit });
+
+          if (afterSpend.sideQuest?.type === 'q.donation' && donation > 0) {
+            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: donation });
+          }
+          if (afterSpend.sideQuest?.type === 'q.embezzlement' && embezzled > 0) {
+            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: embezzled });
+          }
 
           const partyAfterProfit = workingState.parties[partyIndex];
           if (!partyAfterProfit) continue;
           const { partyStats } = computePartyStats(partyAfterProfit);
           const missingHp = Math.max(0, partyStats.hp - (partyAfterProfit.currentHp ?? partyStats.hp));
+          const sleepDurationMs = Math.floor(10000 * getDeityStateDurationMultiplier(partyAfterProfit.deity.name, partyAfterProfit.deityGold ?? 0, 'sleep'));
+          const peddlerLevel = getPartyAbilityLevel(partyAfterProfit, 'peddler');
+          const travelDurationMs = peddlerLevel >= 2 ? Math.floor((5000 * 3) / 5) : peddlerLevel >= 1 ? Math.floor((5000 * 2) / 3) : 5000;
+          const sleepMinutes = Math.max(1, Math.floor(sleepDurationMs / 60000));
+          const restMinutes = Math.max(1, Math.floor(missingHp > 0 ? (missingHp * 100) / Math.max(1, partyStats.hp) : 0));
+          const travelMinutes = Math.max(1, Math.floor(travelDurationMs / 60000));
+
+          if (partyAfterProfit.sideQuest?.type === 'q.sleeping') {
+            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: sleepMinutes });
+          }
+          if (partyAfterProfit.sideQuest?.type === 'q.exercise') {
+            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: travelMinutes * 2 });
+          }
+          if (partyAfterProfit.sideQuest?.type === 'q.healing' && restMinutes > 0) {
+            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: restMinutes });
+          }
+          if (partyAfterProfit.sideQuest?.type === 'q.AFK') {
+            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: travelMinutes });
+          }
+
           if (missingHp > 0) {
             workingState = gameReducer(workingState, { type: 'HEAL_PARTY_HP', partyIndex, amount: missingHp });
+          }
+
+          const afkProcessedParty = workingState.parties[partyIndex];
+          const afkLog = afkProcessedParty?.lastExpeditionLog;
+          if (!afkProcessedParty?.sideQuest || !afkLog) continue;
+
+          if (afkProcessedParty.sideQuest.type === 'q.treasure_super_rare') {
+            const gained = afkLog.rewards.filter((item) => item.superRare > 0).length;
+            if (gained > 0) {
+              workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: gained });
+            }
+          }
+          if (afkProcessedParty.sideQuest.type === 'q.treasure_boss_rare') {
+            const gained = afkLog.rewards.filter((item) => getItemRarityById(item.id) === 'bossRare').length;
+            if (gained > 0) {
+              workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: gained });
+            }
+          }
+          if (afkProcessedParty.sideQuest.type === 'q.poor_kid' && (afkLog.rewards.length ?? 0) === 0) {
+            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1 });
+          }
+          if (afkProcessedParty.sideQuest.type === 'q.consecutive_wins') {
+            if (afkLog.finalOutcome === 'victory') {
+              workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1 });
+            } else {
+              workingState = gameReducer(workingState, { type: 'SET_SIDE_QUEST_PROGRESS', partyIndex, progress: 0 });
+            }
+          }
+          if (afkProcessedParty.sideQuest.type === 'q.losers' && afkLog.finalOutcome === 'defeat') {
+            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1 });
           }
         }
       }
@@ -2592,6 +2675,10 @@ export function useGameState() {
 
     advanceSideQuest: useCallback((partyIndex: number, amount: number) => {
       dispatch({ type: 'ADVANCE_SIDE_QUEST', partyIndex, amount });
+    }, []),
+
+    setSideQuestProgress: useCallback((partyIndex: number, progress: number) => {
+      dispatch({ type: 'SET_SIDE_QUEST_PROGRESS', partyIndex, progress });
     }, []),
 
     equipItem: useCallback((characterId: number, slotIndex: number, itemKey: string | null) => {
