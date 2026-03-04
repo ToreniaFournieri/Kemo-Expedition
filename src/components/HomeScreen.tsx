@@ -27,7 +27,7 @@ import { NotificationToast } from './NotificationToast';
 import { getBaseMultiplier } from '../game/baseMultiplier';
 import { computeCharacterStats, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
 import { serializeGameState } from '../game/saveCodec';
-import { getBagEntryTickets, getBagTicketTotal } from '../game/bags';
+import { createSideQuestBag, getBagEntryTickets, getBagTicketTotal } from '../game/bags';
 import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRankValue, getJewelNameByRank, getJewelOwnedCount } from '../game/jewel';
 import { replaceCharacterEquipment } from '../game/equipment';
 import { resolveMagicProfile } from '../game/magic';
@@ -84,6 +84,7 @@ interface HomeScreenProps {
     resetCommonBags: () => void;
     resetUniqueBags: () => void;
     resetSuperRareBag: () => void;
+    resetSideQuestBag: () => void;
     addNotification: (
       message: string,
       style?: NotificationStyle,
@@ -2225,6 +2226,7 @@ export function HomeScreen({
             onResetCommonBags={actions.resetCommonBags}
             onResetUniqueBags={actions.resetUniqueBags}
             onResetSuperRareBag={actions.resetSuperRareBag}
+            onResetSideQuestBag={actions.resetSideQuestBag}
             selectedBestiaryDungeonId={selectedBestiaryDungeonId}
             onSetSelectedBestiaryDungeonId={setSelectedBestiaryDungeonId}
             expandedBestiaryEnemies={expandedBestiaryEnemies}
@@ -5678,6 +5680,7 @@ function SettingTab({
   onResetCommonBags,
   onResetUniqueBags,
   onResetSuperRareBag,
+  onResetSideQuestBag,
   selectedBestiaryDungeonId,
   onSetSelectedBestiaryDungeonId,
   expandedBestiaryEnemies,
@@ -5702,6 +5705,7 @@ function SettingTab({
   onResetCommonBags: () => void;
   onResetUniqueBags: () => void;
   onResetSuperRareBag: () => void;
+  onResetSideQuestBag: () => void;
   selectedBestiaryDungeonId: number;
   onSetSelectedBestiaryDungeonId: Dispatch<SetStateAction<number>>;
   expandedBestiaryEnemies: Record<number, boolean>;
@@ -5962,6 +5966,11 @@ function SettingTab({
   const superRareRemaining = getBagTicketTotal(bags.superRareBag);
   const superRareInitial = SUPER_RARE_TITLES.filter(t => t.value > 0).reduce((sum, t) => sum + t.tickets, 0);
   const superRareHits = SUPER_RARE_TITLES.filter(t => t.value > 0).reduce((sum, t) => sum + getBagEntryTickets(bags.superRareBag, t.value), 0);
+  const sideQuestDefaultBag = createSideQuestBag();
+  const sideQuestTotal = getBagTicketTotal(sideQuestDefaultBag);
+  const sideQuestRemaining = getBagTicketTotal(bags.sideQuestBag);
+  const sideQuestInitial = sideQuestDefaultBag.entries.filter((entry) => entry.id > 0).reduce((sum, entry) => sum + entry.tickets, 0);
+  const sideQuestHits = bags.sideQuestBag.entries.filter((entry) => entry.id > 0).reduce((sum, entry) => sum + entry.tickets, 0);
 
   const donationByDeity = DEITY_OPTIONS.reduce<Record<string, number>>((totals, deity) => {
     const deityName = normalizeDeityName(deity.name);
@@ -6371,6 +6380,20 @@ function SettingTab({
             className="w-full py-2 bg-accent text-white rounded text-sm font-medium"
           >
             超レア報酬初期化
+          </button>
+
+          <div className="mt-2 mb-2">
+            <div className="text-xs text-gray-500 mb-1">side_quest_bag (サイドクエスト抽選確率)</div>
+            <div className="bg-white rounded p-2 text-sm space-y-1">
+              <div className="flex justify-between"><span>サイドクエスト抽選</span><span>{formatNumber(sideQuestRemaining)} / {formatNumber(sideQuestTotal)}</span></div>
+              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{formatNumber(sideQuestHits)} / {formatNumber(sideQuestInitial)}</span></div>
+            </div>
+          </div>
+          <button
+            onClick={() => confirmReset('サイドクエスト初期化', onResetSideQuestBag)}
+            className="w-full py-2 bg-sub text-white rounded text-sm font-medium"
+          >
+            サイドクエスト初期化
           </button>
         </div>
         </>}
