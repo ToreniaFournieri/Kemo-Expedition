@@ -6447,7 +6447,15 @@ function SettingTab({
                     const isEntryExpanded = !shouldCollapseEntry || expandedGlossaryEntries[entryKey] === true;
                     const descriptionLines = entry.description.split('\n');
                     const normalizedDescriptionLines = isSideQuestGlossarySection
-                      ? descriptionLines.filter((line) => !line.trim().startsWith('表示:')).filter((line) => line.trim().length > 0)
+                      ? descriptionLines
+                        .map((line) => {
+                          const trimmedLine = line.trim();
+                          if (!trimmedLine.startsWith('表示:')) {
+                            return line;
+                          }
+                          return trimmedLine.replace(/^表示:\s*/, '');
+                        })
+                        .filter((line) => line.trim().length > 0)
                       : descriptionLines;
                     const hasStyleMetadata = normalizedDescriptionLines[0]?.trim().startsWith('style:') ?? false;
                     const visibleDescriptionLines = hasStyleMetadata ? normalizedDescriptionLines.slice(1) : normalizedDescriptionLines;
