@@ -18,7 +18,7 @@
 
 ### 3.1 Randomness initialization
 -  `f.reset_weighted_bag`(bag_key: g.*)
-  - bags: `t.common_reward_bag`, `t.common_enhancement_bag`, `t.uncommon_reward_bag`, `t.rare_reward_bag`, `t.mythic_reward_bag`, `t.enhancement_bag`, `t.superRare_bag`, `t.physical_threat_weight_bag`, and `t.magical_threat_weight_bag`
+  - bags: `t.common_reward_bag`, `t.common_enhancement_bag`, `t.uncommon_reward_bag`, `t.rare_reward_bag`, `t.mythic_reward_bag`, `t.enhancement_bag`, `t.superRare_bag`, `t.physical_threat_weight_bag`, `t.magical_threat_weight_bag`, and `t.side_quest_bag`.
 
 
 ### 3.2 Initial setup
