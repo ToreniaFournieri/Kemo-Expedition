@@ -257,7 +257,7 @@ Party.`d.HP` =
 |-------|-------|----------|---------|
 | rest(休息中)  | at home | 売却中 or 宴会中 | `God of Fortification` |
 | sell(売却中) | at home, Sell auto-sell items to shop owners. and officially gain items (notification of item gains at the end of 売却中 state.). If they have no trophy nor auto-sell item, skip this state. | 宴会中 | `God of Dusk` |
-| feast(宴会中) | at home, skip if current_profit = 0).  | 睡眠中 | `Goddess of Fertility` |
+| feast(宴会中) | at home, skip if current_profit = 0). Skipped if the party’s total HP was below 30% of Max HP at the beginning of rest state. | 睡眠中 | `Goddess of Fertility` |
 | sleep(睡眠中) | at home. | 祈り中 |
 | pray(祈り中) | at home. Party members donate money to their deity. | 待機中 or 移動中 |
 | wait(待機中) | at home. only when 自動周回 = OFF (idle state) | - |
