@@ -20,7 +20,7 @@ export function getEnvLabel(): string {
   const env = getEnvironmentId();
   if (env === 'dev') return '開発環境';
   if (env === 'qa') return 'αテスト';
-  if (env === 'luna') return 'αテスト(luna)';
+  if (env === 'luna') return 'αテスト';
   return '';
 }
 
