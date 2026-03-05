@@ -1493,6 +1493,7 @@ export function HomeScreen({
   const gameModeRef = useRef(gameMode);
   const [pendingAfkMs, setPendingAfkMs] = useState(0);
   const afkSimulationAnchorRef = useRef<number | null>(null);
+  const afkRecoveryTotalMsRef = useRef(0);
 
   useEffect(() => {
     latestPartiesRef.current = state.parties;
@@ -1654,7 +1655,18 @@ export function HomeScreen({
   useEffect(() => {
     if (pendingAfkMs > 0) return;
     afkSimulationAnchorRef.current = null;
+    afkRecoveryTotalMsRef.current = 0;
   }, [pendingAfkMs]);
+
+  const afkRecoveryProgressPercent = pendingAfkMs > 0
+    ? Math.max(
+        0,
+        Math.min(
+          100,
+          ((afkRecoveryTotalMsRef.current - pendingAfkMs) / Math.max(1, afkRecoveryTotalMsRef.current)) * 100
+        )
+      )
+    : null;
 
   const pendingGodsBattleByPartyRef = useRef<Record<number, boolean>>({});
 
@@ -1678,7 +1690,11 @@ export function HomeScreen({
     // phase reads the latest pending profit / HP values instead of stale render snapshots.
     if (elapsedMs >= 60_000) {
       afkSimulationAnchorRef.current = now;
-      setPendingAfkMs((prev) => Math.min(AFK_MAX_ELAPSED_MS, prev + elapsedMs));
+      setPendingAfkMs((prev) => {
+        const next = Math.min(AFK_MAX_ELAPSED_MS, prev + elapsedMs);
+        afkRecoveryTotalMsRef.current = next;
+        return next;
+      });
       setPartyCycles((prev) => {
         const resetAt = now;
         const next: Record<number, PartyCycleRuntime> = {};
@@ -2289,6 +2305,7 @@ export function HomeScreen({
             onSelectDungeon={actions.selectDungeon}
             onSetExpeditionDepthLimit={actions.setExpeditionDepthLimit}
             partyCycles={partyCycles}
+            afkRecoveryProgressPercent={afkRecoveryProgressPercent}
             onTriggerSortie={triggerSortie}
             expandedLogParty={expeditionExpandedLogParty}
             setExpandedLogParty={setExpeditionExpandedLogParty}
@@ -4272,6 +4289,7 @@ function ExpeditionTab({
   onSelectDungeon,
   onSetExpeditionDepthLimit,
   partyCycles,
+  afkRecoveryProgressPercent,
   onTriggerSortie,
   expandedLogParty,
   setExpandedLogParty,
@@ -4282,6 +4300,7 @@ function ExpeditionTab({
   onSelectDungeon: (partyIndex: number, dungeonId: number) => void;
   onSetExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
   partyCycles: Record<number, PartyCycleRuntime>;
+  afkRecoveryProgressPercent: number | null;
   onTriggerSortie: (partyIndex: number, triggerGodsBattle?: boolean) => void;
   expandedLogParty: number | null;
   setExpandedLogParty: Dispatch<SetStateAction<number | null>>;
@@ -4329,13 +4348,14 @@ function ExpeditionTab({
           return displayedEntries[displayedEntries.length - 1].remainingPartyHP;
         })();
         const hpPercent = Math.min(100, Math.round((displayedHp / Math.max(1, partyStats.hp)) * 100));
-        const progressPercent = cycle.state === '待機中'
+        const progressPercent = afkRecoveryProgressPercent ?? (cycle.state === '待機中'
           ? 100
           : cycle.state === '休息中'
           ? hpPercent
           : cycle.state === '探索中'
           ? (Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, displayedEntries.length) / EXPLORING_PROGRESS_TOTAL_STEPS) * 100
-          : Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100);
+          : Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100));
+        const progressLabel = afkRecoveryProgressPercent !== null ? '復帰中' : cycle.state;
         const hpForSortieCheck = cycle.state === '探索中' ? displayedHp : party.currentHp;
         const isSortieDisabled = !!selectedDungeonGate?.locked || hpForSortieCheck <= 0 || partyStats.hp <= 0;
         const canTriggerGodsBattle = cycle.state === '探索中'
@@ -4372,7 +4392,7 @@ function ExpeditionTab({
                 style={{ width: `${progressPercent}%` }}
               />
               <div className="relative z-10 h-full flex items-center justify-center px-2 text-black">
-                {cycle.state}
+                {progressLabel}
               </div>
             </div>
 
