@@ -270,7 +270,7 @@ Party.`d.HP` =
   - At the end of 売却中:
       - `current_profit` = Sum of (Auto-sell items)
   - At the end of 宴会中:
-      - `current_profit` -= spending feast ( spend 33–67% of `current_profit` without `a.squander`, x1.5 spending with `a.squander`1, x2.0 spending with `a.squander`2. Not exceed current_profit )
+      - `current_profit` -= spending feast ( spend 33–67% of `current_profit` without `a.squander`, x1.3 spending with `a.squander`1, x1.5 spending with `a.squander`2. Not exceed current_profit )
         - Notification :
           - Without Squander: PT1は25Gお金を使った
           - With Squander: PT1 君主トムは贅沢に50G使った
