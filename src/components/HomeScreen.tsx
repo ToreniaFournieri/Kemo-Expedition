@@ -27,7 +27,7 @@ import { NotificationToast } from './NotificationToast';
 import { getBaseMultiplier } from '../game/baseMultiplier';
 import { computeCharacterStats, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
 import { serializeGameState } from '../game/saveCodec';
-import { createSideQuestBag, getBagEntryTickets, getBagTicketTotal } from '../game/bags';
+import { createSideQuestBag, createSleepinessPartyBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag } from '../game/bags';
 import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRankValue, getJewelNameByRank, getJewelOwnedCount } from '../game/jewel';
 import { replaceCharacterEquipment } from '../game/equipment';
 import { resolveMagicProfile } from '../game/magic';
@@ -6223,6 +6223,16 @@ function SettingTab({
   const sideQuestRemaining = getBagTicketTotal(bags.sideQuestBag);
   const sideQuestInitial = sideQuestDefaultBag.entries.filter((entry) => entry.id > 0).reduce((sum, entry) => sum + entry.tickets, 0);
   const sideQuestHits = bags.sideQuestBag.entries.filter((entry) => entry.id > 0).reduce((sum, entry) => sum + entry.tickets, 0);
+  const sleepinessDefaultBag = createSleepinessPartyBag();
+  const sleepinessInitialById = new Map(sleepinessDefaultBag.entries.map((entry) => [entry.id, entry.tickets]));
+  const sleepinessRows = gameState.parties.flatMap((party, partyIndex) => {
+    const bag = normalizeSleepinessPartyBag(party.sleepinessOfPartyBag);
+    return [
+      { partyLabel: party.name || `PT${partyIndex + 1}`, sleepinessLabel: '寝ない', remaining: getBagEntryTickets(bag, 0), initial: sleepinessInitialById.get(0) ?? 0 },
+      { partyLabel: party.name || `PT${partyIndex + 1}`, sleepinessLabel: '仮眠', remaining: getBagEntryTickets(bag, 1), initial: sleepinessInitialById.get(1) ?? 0 },
+      { partyLabel: party.name || `PT${partyIndex + 1}`, sleepinessLabel: '熟睡', remaining: getBagEntryTickets(bag, 2), initial: sleepinessInitialById.get(2) ?? 0 },
+    ];
+  });
 
   const donationByDeity = DEITY_OPTIONS.reduce<Record<string, number>>((totals, deity) => {
     const deityName = normalizeDeityName(deity.name);
@@ -6646,6 +6656,28 @@ function SettingTab({
           >
             サイドクエスト初期化
           </button>
+
+          <div className="mt-4">
+            <div className="text-xs text-gray-600 font-medium mb-2">sleepiness(眠気抽選)</div>
+            <div className="text-xs text-gray-500 mb-1">sleepiness_of_party_bag (眠気抽選確率)</div>
+            <div className="bg-white rounded p-2 text-sm">
+              <div className="text-xs text-gray-500 mb-2">0: no sleep 寝ない / 1: nap 仮眠 / 2: sound sleep 熟睡</div>
+              <div className="grid grid-cols-[1fr_1fr_auto] gap-x-2 gap-y-1 text-xs text-gray-500 border-b border-gray-100 pb-1 mb-1">
+                <span>パーティ</span>
+                <span>眠気度合い</span>
+                <span className="text-right">残り</span>
+              </div>
+              <div className="space-y-1">
+                {sleepinessRows.map((row, index) => (
+                  <div key={`${row.partyLabel}-${row.sleepinessLabel}-${index}`} className="grid grid-cols-[1fr_1fr_auto] gap-x-2">
+                    <span className="text-gray-700">{row.partyLabel}</span>
+                    <span className="text-gray-700">{row.sleepinessLabel}</span>
+                    <span className="text-right text-sub tabular-nums">{formatNumber(row.remaining)} / {formatNumber(row.initial)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
         </>}
       </div>
