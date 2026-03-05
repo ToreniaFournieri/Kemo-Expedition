@@ -115,8 +115,9 @@ function rollPercentInclusive(min: number, max: number): number {
 }
 
 const PARTY_CYCLE_TICK_MS = 100;
-const EXPLORING_PROGRESS_STEP_MS = 1000;
+const EXPLORING_PROGRESS_STEP_MS = 5000;
 const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
+const DEBUG_CYCLE_DURATION_SCALE = 0.2;
 const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.sleeping', 'q.exercise', 'q.healing', 'q.AFK']);
 const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
 const AFK_MAX_ELAPSED_MS = 600 * 60 * 1000;
@@ -125,6 +126,15 @@ const HEADER_HEIGHT_CLASS = 'pt-[118px]';
 type GameMode = 'm.kemo' | 'm.luna';
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
 const APP_VERSION = `v${__APP_VERSION__}`;
+
+function getCycleDurationScale(env: ReturnType<typeof getEnvironmentId>): number {
+  return env === 'dev' || env === 'qa' || env === 'luna' ? DEBUG_CYCLE_DURATION_SCALE : 1;
+}
+
+function getExpeditionTierDurationFactor(expTier: number): number {
+  const normalizedTier = Math.max(0, expTier);
+  return Math.pow(1.3 - (0.02 * normalizedTier), normalizedTier);
+}
 
 function isIOSMobileSafari(): boolean {
   if (typeof navigator === 'undefined') return false;
@@ -1728,8 +1738,19 @@ export function HomeScreen({
 
         if (updated.state === '休息中') {
           const { partyStats: partyRuntimeStats } = computePartyStats(party);
-          if (party.currentHp < partyRuntimeStats.hp) actions.healPartyHp(partyIndex, Math.max(1, Math.floor(partyRuntimeStats.hp * 0.01)));
-          if (party.currentHp >= partyRuntimeStats.hp) {
+          const restTickDurationMs = getStateDurationMs(party, 'rest');
+          const elapsedRestMs = Math.max(0, simulationNow - updated.stateStartedAt);
+          const restTickCount = Math.floor(elapsedRestMs / Math.max(1, restTickDurationMs));
+          const healPerTick = Math.max(1, Math.floor(partyRuntimeStats.hp * 0.01));
+          const projectedHp = Math.min(
+            partyRuntimeStats.hp,
+            party.currentHp + (restTickCount > 0 ? healPerTick * restTickCount : 0),
+          );
+          if (party.currentHp < partyRuntimeStats.hp && restTickCount > 0) {
+            actions.healPartyHp(partyIndex, healPerTick * restTickCount);
+            updated.stateStartedAt += restTickCount * restTickDurationMs;
+          }
+          if (projectedHp >= partyRuntimeStats.hp) {
             if (party.sideQuest?.type === 'q.healing') {
               const restSeconds = Math.max(1, Math.floor((simulationNow - updated.stateStartedAt) / 1000));
               actions.advanceSideQuest(partyIndex, restSeconds, simulationNow);
@@ -1803,7 +1824,7 @@ export function HomeScreen({
                 }
               }
               updated.state = autoRepeatEnabled ? '移動中' : '待機中';
-              updated.durationMs = updated.state === '移動中' ? getPartyTravelDurationMs(party) : 1000;
+              updated.durationMs = updated.state === '移動中' ? getPartyTravelDurationMs(party, 'move') : 1000;
             } else if (updated.state === '待機中') {
               updated.durationMs = 1000;
             } else if (updated.state === '移動中') {
@@ -1822,7 +1843,7 @@ export function HomeScreen({
             } else if (updated.state === '探索中') {
               actions.finalizeDiaryLog(partyIndex);
               updated.state = '帰還中';
-              updated.durationMs = getPartyTravelDurationMs(party);
+              updated.durationMs = getPartyTravelDurationMs(party, 'return');
               updated.isCurrentExpeditionGodsBattle = false;
             } else if (updated.state === '帰還中') {
               if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
@@ -1830,7 +1851,7 @@ export function HomeScreen({
                 actions.rollSideQuest(partyIndex, party.selectedDungeonId);
               }
               updated.state = '休息中';
-              updated.durationMs = 1000;
+              updated.durationMs = getStateDurationMs(party, 'rest');
               updated.isCurrentExpeditionGodsBattle = false;
             }
 
@@ -2091,15 +2112,29 @@ export function HomeScreen({
   };
 
   const getStateDurationMs = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'sleep' | 'pray'): number => {
-    const base = cycleState === 'rest' ? 1000 : cycleState === 'sleep' ? 10000 : 5000;
-    return Math.floor(base * getPartyStateDurationMultiplier(party, cycleState));
+    const durationScale = getCycleDurationScale(currentEnv);
+    const autoSellCount = Math.max(1, party.lastExpeditionLog?.autoSellCount ?? 1);
+    const baseSeconds = cycleState === 'rest'
+      ? 5
+      : cycleState === 'sell'
+        ? 5 * autoSellCount
+        : cycleState === 'feast'
+          ? 90
+          : cycleState === 'sleep'
+            ? 180
+            : 30;
+    return Math.max(100, Math.floor(baseSeconds * 1000 * durationScale * getPartyStateDurationMultiplier(party, cycleState)));
   };
 
-  const getPartyTravelDurationMs = (party: Party): number => {
+  const getPartyTravelDurationMs = (party: Party, travelState: 'move' | 'return'): number => {
+    const baseSeconds = travelState === 'move' ? 10 : 30;
+    const tierFactor = getExpeditionTierDurationFactor(party.selectedDungeonId);
+    const durationScale = getCycleDurationScale(currentEnv);
+    const baseDurationMs = baseSeconds * 1000 * tierFactor * durationScale;
     const peddlerLevel = getPartyAbilityLevel(party, 'peddler');
-    if (peddlerLevel >= 2) return Math.floor((5000 * 3) / 5);
-    if (peddlerLevel >= 1) return Math.floor((5000 * 2) / 3);
-    return 5000;
+    if (peddlerLevel >= 2) return Math.max(100, Math.floor((baseDurationMs * 3) / 5));
+    if (peddlerLevel >= 1) return Math.max(100, Math.floor((baseDurationMs * 2) / 3));
+    return Math.max(100, Math.floor(baseDurationMs));
   };
 
   const notifyExpeditionRewardsIfNeeded = (party: Party, partyIndex: number) => {
@@ -2155,7 +2190,7 @@ export function HomeScreen({
 
     pendingGodsBattleByPartyRef.current[partyIndex] = triggerGodsBattle;
     actions.clearPendingProfit(partyIndex);
-    transitionTo(partyIndex, '移動中', getPartyTravelDurationMs(party));
+    transitionTo(partyIndex, '移動中', getPartyTravelDurationMs(party, 'move'));
   };
 
   const prevActiveTabRef = useRef<Tab>(activeTab);
@@ -2220,7 +2255,7 @@ export function HomeScreen({
                         state.parties.forEach((_, partyIndex) => {
                           const runtime = nextCycles[partyIndex] ?? { state: '待機中' as PartyCycleState, stateStartedAt: Date.now(), durationMs: 1000 };
                           if (runtime.state === '待機中') {
-                            nextCycles[partyIndex] = { state: '移動中', stateStartedAt: Date.now(), durationMs: getPartyTravelDurationMs(state.parties[partyIndex]) };
+                            nextCycles[partyIndex] = { state: '移動中', stateStartedAt: Date.now(), durationMs: getPartyTravelDurationMs(state.parties[partyIndex], 'move') };
                           }
                         });
                         return nextCycles;

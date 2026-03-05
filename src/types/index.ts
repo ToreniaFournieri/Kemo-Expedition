@@ -567,6 +567,7 @@ export interface ExpeditionLog {
   entries: ExpeditionLogEntry[];
   rewards: Item[];
   autoSellProfit: number;
+  autoSellCount: number;
   autoSellMultiplier?: number;
   remainingPartyHP: number;
   maxPartyHP: number;

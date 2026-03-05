@@ -97,7 +97,18 @@ import {
 const BUILD_NUMBER = 1;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
 const AFK_MAX_SIMULATION_MS = 600 * 60 * 1000;
+const DEBUG_CYCLE_DURATION_SCALE = 0.2;
 const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.sleeping', 'q.exercise', 'q.healing', 'q.AFK']);
+
+function getCycleDurationScale(): number {
+  const env = getEnvironmentId();
+  return env === 'dev' || env === 'qa' || env === 'luna' ? DEBUG_CYCLE_DURATION_SCALE : 1;
+}
+
+function getExpeditionTierDurationFactor(expTier: number): number {
+  const normalizedTier = Math.max(0, expTier);
+  return Math.pow(1.3 - (0.02 * normalizedTier), normalizedTier);
+}
 
 function formatSideQuestShortText(type: string, shortText: string, target: number): string {
   const formatNumber = (value: number) => Math.floor(value).toLocaleString('en-US');
@@ -970,6 +981,7 @@ function resolveEnemyRewards(
   recoveredItems: Item[];
   rewardNames: string[];
   rewardLogEntries: { itemName: string; autoSellProfit?: number }[];
+  autoSellItemCount: number;
   highestRewardRarity?: 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare';
   hasSuperRareReward: boolean;
 } {
@@ -981,6 +993,7 @@ function resolveEnemyRewards(
   const recoveredItems: Item[] = [];
   const rewardNames: string[] = [];
   const rewardLogEntries: { itemName: string; autoSellProfit?: number }[] = [];
+  let autoSellItemCount = 0;
   let highestRewardRarity: 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare' | undefined;
   let hasSuperRareReward = false;
 
@@ -1039,6 +1052,8 @@ function resolveEnemyRewards(
       autoSellProfit: result.wasAutoSold ? result.autoSellProfit : undefined,
     });
 
+    if (result.wasAutoSold) autoSellItemCount += 1;
+
     if (!result.wasAutoSold) {
       rewards.push(newItem);
       rewardNames.push(itemName);
@@ -1058,6 +1073,7 @@ function resolveEnemyRewards(
     recoveredItems,
     rewardNames,
     rewardLogEntries,
+    autoSellItemCount,
     highestRewardRarity,
     hasSuperRareReward,
   };
@@ -1290,6 +1306,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let currentInventory = state.global.inventory;
       let currentGold = state.global.gold;
       let totalAutoSellProfit = 0;
+      let totalAutoSellItemCount = 0;
       let roomCounter = 0;
       let expeditionEnded = false;
 
@@ -1472,6 +1489,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               currentInventory = rewardResult.inventory;
               currentGold = rewardResult.gold;
               totalAutoSellProfit += rewardResult.autoSellProfit;
+              totalAutoSellItemCount += rewardResult.autoSellItemCount;
               rewards.push(...rewardResult.rewards);
               recoveredItems.push(...rewardResult.recoveredItems);
               if (rewardResult.rewardNames.length > 0) {
@@ -1560,6 +1578,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const finalInventory = isDefeat ? state.global.inventory : currentInventory;
       const finalRewards = isDefeat ? [] : rewards;
       const finalAutoSellProfit = isDefeat ? 0 : totalAutoSellProfit;
+      const finalAutoSellItemCount = isDefeat ? 0 : totalAutoSellItemCount;
       const finalGold = isDefeat ? state.global.gold : (currentGold - finalAutoSellProfit);
 
       const nextLootGateProgressBase = isDefeat
@@ -1592,6 +1611,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         entries,
         rewards: finalRewards,
         autoSellProfit: finalAutoSellProfit,
+        autoSellCount: finalAutoSellItemCount,
         autoSellMultiplier: expeditionAutoSellMultiplier > 1 ? expeditionAutoSellMultiplier : undefined,
         remainingPartyHP: finalRemainingPartyHP,
         maxPartyHP: partyStats.hp,
@@ -1826,6 +1846,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           entries: [],
           rewards: [],
           autoSellProfit: 0,
+          autoSellCount: 0,
           remainingPartyHP: currentParty.currentHp,
           maxPartyHP: currentParty.currentHp,
         },
@@ -2387,7 +2408,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const cappedElapsedMs = Math.max(0, Math.min(action.elapsedMs, AFK_MAX_SIMULATION_MS));
       if (cappedElapsedMs < 1000) return state;
 
-      const approxCycleDurationMs = 44_000;
+      const approxCycleDurationMs = Math.floor(460_000 * getCycleDurationScale());
       const runCount = Math.max(0, Math.floor(cappedElapsedMs / approxCycleDurationMs));
       if (runCount <= 0) return state;
 
@@ -2449,24 +2470,29 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           if (!partyAfterProfit) continue;
           const { partyStats } = computePartyStats(partyAfterProfit);
           const missingHp = Math.max(0, partyStats.hp - (partyAfterProfit.currentHp ?? partyStats.hp));
-          const sleepDurationMs = Math.floor(10000 * getDeityStateDurationMultiplier(partyAfterProfit.deity.name, partyAfterProfit.deityGold ?? 0, 'sleep'));
+          const cycleScale = getCycleDurationScale();
+          const sleepDurationMs = Math.floor(180000 * cycleScale * getDeityStateDurationMultiplier(partyAfterProfit.deity.name, partyAfterProfit.deityGold ?? 0, 'sleep'));
+          const tierFactor = getExpeditionTierDurationFactor(partyAfterProfit.selectedDungeonId);
           const peddlerLevel = getPartyAbilityLevel(partyAfterProfit, 'peddler');
-          const travelDurationMs = peddlerLevel >= 2 ? Math.floor((5000 * 3) / 5) : peddlerLevel >= 1 ? Math.floor((5000 * 2) / 3) : 5000;
+          const peddlerMultiplier = peddlerLevel >= 2 ? 3 / 5 : peddlerLevel >= 1 ? 2 / 3 : 1;
+          const moveDurationMs = Math.floor(10000 * cycleScale * tierFactor * peddlerMultiplier);
+          const returnDurationMs = Math.floor(30000 * cycleScale * tierFactor * peddlerMultiplier);
           const sleepSeconds = Math.max(1, Math.floor(sleepDurationMs / 1000));
-          const restSeconds = Math.max(1, Math.floor(missingHp > 0 ? (missingHp * 100) / Math.max(1, partyStats.hp) : 0) * 60);
-          const travelSeconds = Math.max(1, Math.floor(travelDurationMs / 1000));
+          const restSeconds = Math.max(1, Math.floor(missingHp > 0 ? ((missingHp * 100) / Math.max(1, partyStats.hp)) * 5 : 0));
+          const moveSeconds = Math.max(1, Math.floor(moveDurationMs / 1000));
+          const returnSeconds = Math.max(1, Math.floor(returnDurationMs / 1000));
 
           if (partyAfterProfit.sideQuest?.type === 'q.sleeping') {
             workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: sleepSeconds, simulatedAt });
           }
           if (partyAfterProfit.sideQuest?.type === 'q.exercise') {
-            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: travelSeconds * 2, simulatedAt });
+            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: moveSeconds + returnSeconds, simulatedAt });
           }
           if (partyAfterProfit.sideQuest?.type === 'q.healing' && restSeconds > 0) {
             workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: restSeconds, simulatedAt });
           }
           if (partyAfterProfit.sideQuest?.type === 'q.AFK') {
-            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: travelSeconds, simulatedAt });
+            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: moveSeconds, simulatedAt });
           }
 
           if (missingHp > 0) {
