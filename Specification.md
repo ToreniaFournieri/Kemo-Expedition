@@ -279,6 +279,12 @@ Party.`d.HP` =
 | explore(探索中) | 5 seconds per room (24 rooms in total)|
 | return(帰還中) | 30 seconds * (1.30 - 0.02 * `x.exp_tier` )^(`x.exp_tier`)  |
 
+- sleepiness from `t.sleepiness_of_party_bag` 
+  - 0 No sleep: The party skips the sleep state and continues the normal cycle.
+  - 1 Nap: The party enters a short sleep (light rest). ( x 1/5 sleep duration)
+  - 2 Sound sleep: The party enters a full sleep state. ( x1 sleep duration )
+
+
 
 - Profit usuage:
   - At: 休息中:
