@@ -255,29 +255,29 @@ Party.`d.HP` =
 
 | State | Logic | Move to | Durration modifilier |
 |-------|-------|----------|---------|
-| 休息中  | at home | 売却中 or 宴会中 | `God of Fortification` |
-| 売却中 | at home, Sell auto-sell items to shop owners. and officially gain items (notification of item gains at the end of 売却中 state.). If they have no trophy nor auto-sell item, skip this state. | 宴会中 | `God of Dusk` |
-| 宴会中 | at home, skip if current_profit = 0).  | 睡眠中 | `Goddess of Fertility` |
-| 睡眠中 | at home. | 祈り中 |
-| 祈り中 | at home. Party members donate money to their deity. | 待機中 or 移動中 |
-| 待機中 | at home. only when 自動周回 = OFF (idle state) | - |
-| 移動中 | home → dungeon, If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | 探索中 | `a.peddler` |
-| 探索中 | in dungeon. if HP < 30% MaxHP → retreat. At the end of this state, update this {ルピニアンの断崖踏破} part ) | 帰還中 | `Goddess of Precision` |
-| 帰還中 | dungeon → home,If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | 休息中 | 
+| rest(休息中)  | at home | 売却中 or 宴会中 | `God of Fortification` |
+| sell(売却中) | at home, Sell auto-sell items to shop owners. and officially gain items (notification of item gains at the end of 売却中 state.). If they have no trophy nor auto-sell item, skip this state. | 宴会中 | `God of Dusk` |
+| feast(宴会中) | at home, skip if current_profit = 0).  | 睡眠中 | `Goddess of Fertility` |
+| sleep(睡眠中) | at home. | 祈り中 |
+| pray(祈り中) | at home. Party members donate money to their deity. | 待機中 or 移動中 |
+| wait(待機中) | at home. only when 自動周回 = OFF (idle state) | - |
+| move(移動中) | home → dungeon, If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | 探索中 | `a.peddler` |
+| explore(探索中) | in dungeon. if HP < 30% MaxHP → retreat. At the end of this state, update this {ルピニアンの断崖踏破} part ) | 帰還中 | `Goddess of Precision` |
+| return(帰還中) | dungeon → home,If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | 休息中 | 
 
 - **Realtime Progress**
 - Debug Scaling: For debugging purposes, all durations are multiplied by **0.2** in the `/dev/`, `/qa/`, and `/luna/` environments.
 
 | State | Duration |
 |-------|-------|
-| 休息中  | heal +1% MaxHP / 5 sec until full |
-| 売却中 | 5 seconds per `auto-sell` items |
-| 宴会中 | 90 seconds |
-| 睡眠中 | 180 seconds |
-| 祈り中 | 30 seconds |
-| 移動中 | 10 seconds * (1.30 - 0.02 * `x.exp_tier` )^(`x.exp_tier`) | 
-| 探索中 | 5 seconds per room (24 rooms in total)|
-| 帰還中 | 30 seconds * (1.30 - 0.02 * `x.exp_tier` )^(`x.exp_tier`)  |
+| rest(休息中)  | heal +1% MaxHP / 5 sec until full |
+| sell(売却中) | 5 seconds per `auto-sell` items |
+| feast(宴会中) | 90 seconds |
+| sleep(睡眠中) | 180 seconds |
+| pray(祈り中) | 30 seconds |
+| move(移動中) | 10 seconds * (1.30 - 0.02 * `x.exp_tier` )^(`x.exp_tier`) | 
+| explore(探索中) | 5 seconds per room (24 rooms in total)|
+| return(帰還中) | 30 seconds * (1.30 - 0.02 * `x.exp_tier` )^(`x.exp_tier`)  |
 
 
 - Profit usuage:
