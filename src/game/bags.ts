@@ -72,6 +72,12 @@ const SIDE_QUEST_BAG_DEFAULT: WeightedBagEntry[] = [
   ...Array.from({ length: 13 }, (_, i) => ({ id: i + 1, tickets: 1 })),
 ];
 
+const SLEEPINESS_PARTY_BAG_DEFAULT: WeightedBagEntry[] = [
+  { id: 0, tickets: 9 },
+  { id: 1, tickets: 2 },
+  { id: 2, tickets: 1 },
+];
+
 const BAG_DEFAULT_CREATORS = {
   commonRewardBag: () => createBagFromEntries(COMMON_REWARD_BAG_DEFAULT),
   commonEnhancementBag: () => createBagFromEntries(COMMON_ENHANCEMENT_BAG_DEFAULT),
@@ -182,6 +188,28 @@ export function createMagicalThreatBag(): RandomBag {
 
 export function createSideQuestBag(): RandomBag {
   return BAG_DEFAULT_CREATORS.sideQuestBag();
+}
+
+export function createSleepinessPartyBag(): RandomBag {
+  return createBagFromEntries(SLEEPINESS_PARTY_BAG_DEFAULT);
+}
+
+export function normalizeSleepinessPartyBag(bag: RandomBag): RandomBag {
+  const currentById = new Map<number, number>();
+
+  for (const entry of bag.entries) {
+    if (!Number.isFinite(entry.id)) continue;
+    const id = Math.floor(entry.id);
+    const tickets = Math.max(0, Math.floor(entry.tickets));
+    currentById.set(id, (currentById.get(id) ?? 0) + tickets);
+  }
+
+  const normalizedEntries = SLEEPINESS_PARTY_BAG_DEFAULT.map((defaultEntry) => ({
+    id: defaultEntry.id,
+    tickets: currentById.get(defaultEntry.id) ?? 0,
+  }));
+
+  return { entries: normalizedEntries };
 }
 
 // SpecRef: 7 | REWARD | initializeBags
