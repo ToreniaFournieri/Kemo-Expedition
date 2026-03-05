@@ -1707,17 +1707,17 @@ export function HomeScreen({
         afkRecoveryTotalMsRef.current = next;
         return next;
       });
-      setPartyCycles((prev) => {
+      setPartyCycles(() => {
         const resetAt = now;
         const next: Record<number, PartyCycleRuntime> = {};
-        parties.forEach((_, partyIndex) => {
-          const runtime = prev[partyIndex];
+        parties.forEach((party, partyIndex) => {
+          const restartState: PartyCycleState = autoRepeatEnabled ? '移動中' : '待機中';
           next[partyIndex] = {
-            state: runtime?.state ?? '待機中',
+            state: restartState,
             stateStartedAt: resetAt,
-            durationMs: runtime?.durationMs ?? 1000,
-            isCurrentExpeditionGodsBattle: runtime?.isCurrentExpeditionGodsBattle === true,
-            skipFeastThisCycle: runtime?.skipFeastThisCycle === true,
+            durationMs: restartState === '移動中' ? getPartyTravelDurationMs(party, 'move') : 1000,
+            isCurrentExpeditionGodsBattle: false,
+            skipFeastThisCycle: false,
           };
         });
         return next;
