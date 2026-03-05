@@ -108,6 +108,7 @@ interface PartyCycleRuntime {
   stateStartedAt: number;
   durationMs: number;
   isCurrentExpeditionGodsBattle?: boolean;
+  skipFeastThisCycle?: boolean;
 }
 
 function rollPercentInclusive(min: number, max: number): number {
@@ -1715,6 +1716,7 @@ export function HomeScreen({
             stateStartedAt: resetAt,
             durationMs: runtime?.durationMs ?? 1000,
             isCurrentExpeditionGodsBattle: runtime?.isCurrentExpeditionGodsBattle === true,
+            skipFeastThisCycle: runtime?.skipFeastThisCycle === true,
           };
         });
         return next;
@@ -1761,10 +1763,12 @@ export function HomeScreen({
               updated.state = '売却中';
               updated.durationMs = getStateDurationMs(party, 'sell');
             } else {
-              updated.state = party.pendingProfit > 0 ? '宴会中' : '睡眠中';
+              const shouldSkipFeast = (party.pendingProfit ?? 0) <= 0 || updated.skipFeastThisCycle === true;
+              updated.state = shouldSkipFeast ? '睡眠中' : '宴会中';
               updated.durationMs = updated.state === '宴会中' ? getStateDurationMs(party, 'feast') : getStateDurationMs(party, 'sleep');
             }
             updated.stateStartedAt = simulationNow;
+            updated.skipFeastThisCycle = false;
           }
         }
 
@@ -1775,8 +1779,12 @@ export function HomeScreen({
           stateElapsedMs -= updated.durationMs;
 
             if (updated.state === '売却中') {
-              updated.state = '宴会中';
-              updated.durationMs = getStateDurationMs(party, 'feast');
+              const shouldSkipFeast = cyclePendingProfit <= 0 || updated.skipFeastThisCycle === true;
+              updated.state = shouldSkipFeast ? '睡眠中' : '宴会中';
+              updated.durationMs = getStateDurationMs(party, shouldSkipFeast ? 'sleep' : 'feast');
+              if (shouldSkipFeast) {
+                updated.skipFeastThisCycle = false;
+              }
             } else if (updated.state === '宴会中') {
               const baseSpend = Math.floor((cyclePendingProfit * rollPercentInclusive(33, 67)) / 100);
               const squanderLevel = getPartyAbilityLevel(party, 'squander');
@@ -1850,9 +1858,12 @@ export function HomeScreen({
               if (!party.sideQuest && !hasActiveLootGateCondition(party, updated.state)) {
                 actions.rollSideQuest(partyIndex, party.selectedDungeonId);
               }
+              const { partyStats: partyRuntimeStats } = computePartyStats(party);
+              const hpRatioAtRestStart = partyRuntimeStats.hp > 0 ? (party.currentHp / partyRuntimeStats.hp) : 0;
               updated.state = '休息中';
               updated.durationMs = getStateDurationMs(party, 'rest');
               updated.isCurrentExpeditionGodsBattle = false;
+              updated.skipFeastThisCycle = hpRatioAtRestStart < 0.3;
             }
 
             if (updated.state === '休息中') {

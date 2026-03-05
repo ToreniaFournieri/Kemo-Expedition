@@ -2431,11 +2431,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           const currentParty = workingState.parties[partyIndex];
           if (!currentParty) continue;
 
+          const { partyStats: restStartStats } = computePartyStats(currentParty);
+          const hpRatioAtRestStart = restStartStats.hp > 0 ? ((currentParty.currentHp ?? 0) / restStartStats.hp) : 0;
+          const shouldSkipFeast = (currentParty.pendingProfit ?? 0) <= 0 || hpRatioAtRestStart < 0.3;
           const pendingProfit = currentParty.pendingProfit ?? 0;
-          const baseSpend = Math.floor((pendingProfit * rollPercentInclusive(33, 67)) / 100);
+          const baseSpend = shouldSkipFeast ? 0 : Math.floor((pendingProfit * rollPercentInclusive(33, 67)) / 100);
           const squanderLevel = getPartyAbilityLevel(currentParty, 'squander');
           const squanderMultiplier = squanderLevel >= 2 ? 1.5 : squanderLevel >= 1 ? 1.3 : 1;
-          const spend = Math.min(pendingProfit, Math.floor(baseSpend * squanderMultiplier));
+          const spend = shouldSkipFeast ? 0 : Math.min(pendingProfit, Math.floor(baseSpend * squanderMultiplier));
           if (spend > 0) {
             workingState = gameReducer(workingState, { type: 'SPEND_PENDING_PROFIT', partyIndex, amount: spend });
             if (currentParty.sideQuest?.type === 'q.squander') {
