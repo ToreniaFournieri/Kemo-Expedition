@@ -150,9 +150,9 @@
 - character.`f.offense_amplifier` (phase: )
   - If phase is LONG or CLOSE,
     - If character.`a.iaigiri`, return v x sum of ( `c.melee_attack+v` or `c.ranged_attack+v`)　x `c.physical_offense_multiplier_xV` x `f.base_multiplier`(base_type: `b.strength`)
-      - `a.iaigiri`1: v = 2.0
-      - `a.iaigiri`2: v = 2.5
-      - `a.iaigiri`3: v = 3.0
+      - `a.iaigiri`1: v = 1.6
+      - `a.iaigiri`2: v = 1.8
+      - `a.iaigiri`3: v = 2.0
     - Else return 1.0 x sum of ( `c.melee_attack+v`, `c.ranged_attack+v` and `c.physical_attack+v` ) x `c.physical_offense_multiplier_xV` x `f.base_multiplier`(base_type: `b.strength`)
   		- ex. If chracter has `c.physical_offense_multiplier_x1.4` and `c.physical_offense_multiplier_x1.2`, 1.4 x 1.2 = 1.68.
   - If phase is MID,  return 1.0 x  sum of (`c.magical_attack+v` and `c.magical_attack+v` ) x `c.magical_offense_multiplier_xV` x `f.base_multiplier`(base_type: `b.intelligence`)
@@ -231,18 +231,18 @@ Party.`d.HP` =
 
 - party.`f.party.offense_amplifier`(phase: phase):
   - If phase is LONG or CLOSE:
-	- If party.`a.command`1, multiply x1.3
-    - If party.`a.command`2, multiply x1.6
-    - If party.`a.command`3, multiply x2.0
+	- If party.`a.command`1, back_row.member: multiply x1.2
+    - If party.`a.command`2, back_row.member:  multiply x1.35
+    - If party.`a.command`3, back_row.member:  multiply x2.43
 - party.`f.abilities_defense_amplifier`(phase: phase):
   - If phase is LONG or CLOSE:
-	- If party.`a.defender`1, multiply x2/3
-  	- If party.`a.defender`2, multiply x3/5
-  	- If party.`a.defender`3, multiply x1/2
+	- If party.`a.defender`1, back_row.member:  multiply x2/3
+  	- If party.`a.defender`2, back_row.member: multiply x3/5
+  	- If party.`a.defender`3, back_row.member: multiply x1/2
   - If phase is MID:
-    - If party.`a.m-barrier`1, multiply x2/3
-    - If party.`a.m-barrier`2, multiply x3/5
-    - If party.`a.m-barrier`3, multiply x1/2
+    - If party.`a.m-barrier`1, back_row.member: multiply x2/3
+    - If party.`a.m-barrier`2, back_row.member: multiply x3/5
+    - If party.`a.m-barrier`3, back_row.member: multiply x1/2
 
 
 
