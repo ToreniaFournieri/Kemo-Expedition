@@ -353,9 +353,8 @@ displays [遠距離攻撃:矢,ボ,弓]
           (Right-Aligned)
            [一斉出撃] 自動周回 ON/OFF
 
-PT1ルピニアンの断崖踏破▼
-(column 1)      (Column 2)
-HP (HP bar, blue)    移動中(state progress bar)
+PT1 HP (HP bar, blue) ルピニアンの断崖踏破▼
+移動中(background: state progress bar)
 次の目標: ルピニアンの断崖のボスレアアイテム 0/1 でヴァルンの樹林帯 開放
 
 ルピニアンの断崖(pull down list)  探索深度 全て 出撃
