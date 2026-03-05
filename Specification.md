@@ -260,7 +260,7 @@ Party.`d.HP` =
 | feast(宴会中) | at home, skip if current_profit = 0). Skipped if the party’s total HP was below 30% of Max HP at the beginning of rest state. | 睡眠中 | `Goddess of Fertility` |
 | sleep(睡眠中) | at home. | 祈り中 |
 | pray(祈り中) | at home. Party members donate money to their deity. | 待機中 or 移動中 |
-| wait(待機中) | at home. only when 自動周回 = OFF (idle state) | - |
+| idle(待機中) | at home. only when 自動周回 = OFF (idle state) | - |
 | move(移動中) | home → dungeon, If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | 探索中 | `a.peddler` |
 | explore(探索中) | in dungeon. if HP < 30% MaxHP → retreat. At the end of this state, update this {ルピニアンの断崖踏破} part ) | 帰還中 | `Goddess of Precision` |
 | return(帰還中) | dungeon → home,If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | 休息中 | 
