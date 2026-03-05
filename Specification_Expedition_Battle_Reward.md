@@ -80,9 +80,9 @@ left-alinged                                           right-aligned
 [距離<roll result>] 敵が　対象　に行動名！(N/M回)    (icon 数値 in dark orange)
 [距離<roll result>] 味方:行動主 の行動名！(N/M回)    (icon 数値　in Blue)
 
-[効] ウルフの 守護者！　(パーティへの物理ダメージ × 2/3)
-[効] ベアの 指揮！ (パーティの物理攻撃力 × 1.3)
-[効] ラビの 魔法障壁！ (パーティへの魔法ダメージ × 2/3)
+[効] ウルフの 守護者！　(後列にいる味方への物理ダメージ × 2/3)
+[効] ベアの 指揮！ (後列にいる味方の物理攻撃力 × 1.3)
+[効] ラビの 魔法障壁！ (後列にいる味方への魔法ダメージ × 2/3)
 [効] 不和の神の効果！ ([⚠️敵対]ゴンが仲違いした)
 
 (遠距離攻撃フェーズ)
@@ -134,11 +134,11 @@ left-alinged                                           right-aligned
 - `f.damage_calculation`: (actor: , opponent: , phase: )
 	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) ) x actor.`f.offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x opponent.`f.defense_amplifier` x party.`f.party.offense_amplifier` x `f.resonance_amplifier` x `f.rage_amplifier` x `f.momentum_amplifer` )
   - `f.rage_amplifier`:
-    - If actor has `a.rage`1, return min(2.0, 1.0 + (1 - (actor.current_HP / actor.max_HP)))
-    - If actor has `a.rage`2, return min(2.0, 1.0 + 1.2 x (1 - (actor.current_HP / actor.max_HP)))
+    - If actor has `a.rage`1, return min(2.0, 1.0 + 0.5 x (1 - (actor.current_HP / actor.max_HP)))
+    - If actor has `a.rage`2, return min(2.0, 1.0 + 0.6 x (1 - (actor.current_HP / actor.max_HP)))
   - `f.momentum_amplifer`:
-    - If actor has `a.momentum`1, return 1.5 - (1 - (actor.current_HP / actor.max_HP))
-    - If actor has `a.momentum`2, return 1.5 - (1 - 0.75 x (actor.current_HP / actor.max_HP))
+    - If actor has `a.momentum`1, return 1.25 - (1 - 0.5 x (actor.current_HP / actor.max_HP))
+    - If actor has `a.momentum`2, return 1.25 - (1 - 0.4 x (actor.current_HP / actor.max_HP))
   - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
 
   - If opponent.`a.stealth`1 and (opponent.current_HP / opponent.max_HP) <= 0.24, damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
