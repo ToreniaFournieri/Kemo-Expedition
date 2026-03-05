@@ -137,8 +137,8 @@ left-alinged                                           right-aligned
     - If actor has `a.rage`1, return min(2.0, 1.0 + 0.5 x (1 - (actor.current_HP / actor.max_HP)))
     - If actor has `a.rage`2, return min(2.0, 1.0 + 0.6 x (1 - (actor.current_HP / actor.max_HP)))
   - `f.momentum_amplifer`:
-    - If actor has `a.momentum`1, return 1.25 - (1 - 0.5 x (actor.current_HP / actor.max_HP))
-    - If actor has `a.momentum`2, return 1.25 - (1 - 0.4 x (actor.current_HP / actor.max_HP))
+     - If actor has `a.momentum`1, return 1.25 - (1 - (actor.current_HP / actor.max_HP)) x 0.5
+    - If actor has `a.momentum`2, return 1.25 - (1 - (actor.current_HP / actor.max_HP)) x 0.4
   - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
 
   - If opponent.`a.stealth`1 and (opponent.current_HP / opponent.max_HP) <= 0.24, damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
