@@ -6662,7 +6662,6 @@ function SettingTab({
             <div className="text-xs text-gray-600 font-medium mb-2">sleepiness(眠気抽選)</div>
             <div className="text-xs text-gray-500 mb-1">sleepiness_of_party_bag (眠気抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm">
-              <div className="text-xs text-gray-500 mb-2">0: no sleep 寝ない / 1: nap 仮眠 / 2: sound sleep 熟睡</div>
               <div className="grid grid-cols-[1fr_1fr_auto] gap-x-2 gap-y-1 text-xs text-gray-500 border-b border-gray-100 pb-1 mb-1">
                 <span>パーティ</span>
                 <span>眠気度合い</span>
