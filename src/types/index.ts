@@ -599,7 +599,7 @@ export const LEVEL_EQUIP_SLOTS: Record<number, number> = {
   49: 11,
 };
 
-export const MAX_LEVEL = 39;
+export const MAX_LEVEL = 49;
 
 // Notification Types
 export type NotificationStyle = 'normal' | 'rare';
