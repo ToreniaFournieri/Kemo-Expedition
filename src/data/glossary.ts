@@ -20,17 +20,17 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.defender1",
         "label": "守護者1",
-        "description": "自身より後列にいる味方が受ける物理ダメージを 2/3倍 にする"
+        "description": "自身より後列の味方への物理ダメージを 2/3倍"
       },
       {
         "key": "a.defender2",
         "label": "守護者2",
-        "description": "自身より後列にいる味方が受ける物理ダメージを 3/5倍 にする"
+        "description": "自身より後列の味方への物理ダメージを 3/5倍"
       },
       {
         "key": "a.defender3",
         "label": "守護者3",
-        "description": "自身より後列にいる味方が受ける物理ダメージを 1/2倍 にする"
+        "description": "自身より後列の味方への物理ダメージを 1/2倍"
       },
       {
         "key": "a.counter1",
@@ -80,17 +80,17 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.command1",
         "label": "指揮1",
-        "description": "自身より後列にいる味方が与える物理ダメージを 1.2倍 にする"
+        "description": "自身より後列の味方が与える物理ダメージを 1.2倍"
       },
       {
         "key": "a.command2",
         "label": "指揮2",
-        "description": "自身より後列にいる味方が与える物理ダメージを 1.35倍 にする"
+        "description": "自身より後列の味方が与える物理ダメージを 1.35倍"
       },
       {
         "key": "a.command3",
         "label": "指揮3",
-        "description": "自身より後列にいる味方が与える物理ダメージを 1.43倍 にする"
+        "description": "自身より後列の味方が与える物理ダメージを 1.43倍"
       },
       {
         "key": "a.squander1",
@@ -145,17 +145,17 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.m-barrier1",
         "label": "魔法障壁1",
-        "description": "自身より後列にいる味方が受ける魔法ダメージを 2/3倍 にする"
+        "description": "自身より後列の味方への魔法ダメージを 2/3倍"
       },
       {
         "key": "a.m-barrier2",
         "label": "魔法障壁2",
-        "description": "自身より後列にいる味方が受ける魔法ダメージを 3/5倍 にする"
+        "description": "自身より後列の味方への魔法ダメージを 3/5倍"
       },
       {
         "key": "a.m-barrier3",
         "label": "魔法障壁2",
-        "description": "自身より後列にいる味方が受ける魔法ダメージを 1/2倍 にする"
+        "description": "自身より後列の味方への魔法ダメージを 1/2倍"
       },
       {
         "key": "a.deflection1",
