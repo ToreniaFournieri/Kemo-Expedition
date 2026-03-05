@@ -864,9 +864,9 @@ export function executeBattle(
   };
 
   const partyEffects = [
-    createPartyEffectEntry('fighter', 'defender', level => `守護者${level}`, level => `(後列にいる味方への物理ダメージ × ${level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3'})`),
-    createPartyEffectEntry('lord', 'command', level => `指揮${level}`, level => `(後列にいる味方の物理攻撃力 × ${level >= 3 ? '2.43' : level === 2 ? '1.35' : '1.2'})`),
-    createPartyEffectEntry('sage', 'm_barrier', level => `魔法障壁${level}`, level => `(後列にいる味方への魔法ダメージ × ${level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3'})`),
+    createPartyEffectEntry('fighter', 'defender', level => `守護者${level}`, level => `(自身より後列にいる味方が受ける物理ダメージを ${level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3'}倍 にする)`),
+    createPartyEffectEntry('lord', 'command', level => `指揮${level}`, level => `(自身より後列にいる味方が与える物理ダメージを ${level >= 3 ? '2.43' : level === 2 ? '1.35' : '1.2'}倍 にする)`),
+    createPartyEffectEntry('sage', 'm_barrier', level => `魔法障壁${level}`, level => `(自身より後列にいる味方が受ける魔法ダメージを ${level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3'}倍 にする)`),
   ];
 
   for (const partyEffect of partyEffects) {
