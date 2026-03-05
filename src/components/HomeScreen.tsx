@@ -102,7 +102,49 @@ type Tab = 'party' | 'expedition' | 'base' | 'diary' | 'setting';
 type BaseSubTab = 'inventory' | 'shop' | 'jewelStore' | 'workshop' | 'altar';
 
 
-type PartyCycleState = '休息中' | '売却中' | '宴会中' | '睡眠中' | '祈り中' | '待機中' | '移動中' | '探索中' | '帰還中';
+type PartyCycleState = 'rest' | 'sell' | 'feast' | 'sleep' | 'pray' | 'idle' | 'move' | 'explore' | 'return';
+
+const PARTY_CYCLE_STATE_LABELS: Record<PartyCycleState, string> = {
+  rest: '休息中',
+  sell: '売却中',
+  feast: '宴会中',
+  sleep: '睡眠中',
+  pray: '祈り中',
+  idle: '待機中',
+  move: '移動中',
+  explore: '探索中',
+  return: '帰還中',
+};
+
+const LEGACY_PARTY_CYCLE_STATE_MAP: Record<string, PartyCycleState> = {
+  rest: 'rest',
+  sell: 'sell',
+  feast: 'feast',
+  sleep: 'sleep',
+  pray: 'pray',
+  idle: 'idle',
+  move: 'move',
+  explore: 'explore',
+  return: 'return',
+  '休息中': 'rest',
+  '売却中': 'sell',
+  '宴会中': 'feast',
+  '睡眠中': 'sleep',
+  '祈り中': 'pray',
+  '待機中': 'idle',
+  '移動中': 'move',
+  '探索中': 'explore',
+  '帰還中': 'return',
+};
+
+function toPartyCycleState(value: unknown): PartyCycleState {
+  if (typeof value !== 'string') return 'idle';
+  return LEGACY_PARTY_CYCLE_STATE_MAP[value] ?? 'idle';
+}
+
+function getPartyCycleStateLabel(state: PartyCycleState): string {
+  return PARTY_CYCLE_STATE_LABELS[state];
+}
 
 interface PartyCycleRuntime {
   state: PartyCycleState;
@@ -498,7 +540,7 @@ function getGodShortName(displayName: string): string {
 }
 
 function shouldDelayNextSpecialGoal(party: Party, cycleState?: PartyCycleState): boolean {
-  if (cycleState !== '探索中') return false;
+  if (cycleState !== 'explore') return false;
   const log = party.lastExpeditionLog;
   if (!log || log.finalOutcome !== 'victory') return false;
   const lastEntry = log.entries[log.entries.length - 1];
@@ -633,7 +675,7 @@ function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
 
 function getDisplayedBossRareCount(party: Party, dungeonId: number, cycleState?: PartyCycleState): number {
   const latestCount = getLootCollectionCount(party, dungeonId, 'bossRare');
-  if (cycleState !== '探索中') return latestCount;
+  if (cycleState !== 'explore') return latestCount;
   const log = party.lastExpeditionLog;
   if (!log || log.dungeonId !== dungeonId) return latestCount;
 
@@ -1587,7 +1629,7 @@ export function HomeScreen({
             ? runtime.stateStartedAt
             : Date.now() - Math.max(0, runtime.elapsedMs ?? 0);
           restoredCycles[Number(key)] = {
-            state: runtime.state ?? '待機中',
+            state: toPartyCycleState(runtime.state),
             stateStartedAt,
             durationMs: typeof runtime.durationMs === 'number' ? runtime.durationMs : 1000,
             isCurrentExpeditionGodsBattle: runtime.isCurrentExpeditionGodsBattle === true,
@@ -1711,11 +1753,11 @@ export function HomeScreen({
         const resetAt = now;
         const next: Record<number, PartyCycleRuntime> = {};
         parties.forEach((party, partyIndex) => {
-          const restartState: PartyCycleState = autoRepeatEnabled ? '移動中' : '待機中';
+          const restartState: PartyCycleState = autoRepeatEnabled ? 'move' : 'idle';
           next[partyIndex] = {
             state: restartState,
             stateStartedAt: resetAt,
-            durationMs: restartState === '移動中' ? getPartyTravelDurationMs(party, 'move') : 1000,
+            durationMs: restartState === 'move' ? getPartyTravelDurationMs(party, 'move') : 1000,
             isCurrentExpeditionGodsBattle: false,
             skipFeastThisCycle: false,
           };
@@ -1731,17 +1773,17 @@ export function HomeScreen({
     setPartyCycles((prev) => {
       const next = { ...prev };
       parties.forEach((party, partyIndex) => {
-        const runtime = next[partyIndex] ?? { state: '待機中' as PartyCycleState, stateStartedAt: simulationNow, durationMs: 1000 };
+        const runtime = next[partyIndex] ?? { state: 'idle' as PartyCycleState, stateStartedAt: simulationNow, durationMs: 1000 };
         const updated = { ...runtime };
         const { partyStats: partyRuntimeStats } = computePartyStats(party);
         const hpRatioAtRestStart = partyRuntimeStats.hp > 0 ? party.currentHp / partyRuntimeStats.hp : 1;
 
-        if (updated.state === '探索中') {
+        if (updated.state === 'explore') {
           const exploredRooms = party.lastExpeditionLog?.entries.length;
           updated.durationMs = getExplorationDurationMs(exploredRooms, getPartyStateDurationMultiplier(party, 'explore'));
         }
 
-        if (updated.state === '休息中') {
+        if (updated.state === 'rest') {
           const restTickDurationMs = getStateDurationMs(party, 'rest');
           const elapsedRestMs = Math.max(0, simulationNow - updated.stateStartedAt);
           const restTickCount = Math.floor(elapsedRestMs / Math.max(1, restTickDurationMs));
@@ -1762,18 +1804,18 @@ export function HomeScreen({
             const hasTrophy = (party.lastExpeditionLog?.rewards.length ?? 0) > 0;
             const hasAutoSellItem = (party.lastExpeditionLog?.autoSellProfit ?? 0) > 0;
             if (hasTrophy || hasAutoSellItem) {
-              updated.state = '売却中';
+              updated.state = 'sell';
               updated.durationMs = getStateDurationMs(party, 'sell');
             } else {
               const sleepDurationMs = getStateDurationMs(party, 'sleep');
               if (party.pendingProfit > 0) {
-                updated.state = '宴会中';
+                updated.state = 'feast';
                 updated.durationMs = getStateDurationMs(party, 'feast');
               } else if (party.currentSleepiness === 0 || sleepDurationMs <= 100) {
-                updated.state = '祈り中';
+                updated.state = 'pray';
                 updated.durationMs = getStateDurationMs(party, 'pray');
               } else {
-                updated.state = '睡眠中';
+                updated.state = 'sleep';
                 updated.durationMs = sleepDurationMs;
               }
             }
@@ -1784,18 +1826,18 @@ export function HomeScreen({
 
         let stateElapsedMs = Math.max(0, simulationNow - updated.stateStartedAt);
         let cyclePendingProfit = Math.max(0, party.pendingProfit ?? 0);
-        while (updated.state !== '休息中' && stateElapsedMs >= updated.durationMs) {
+        while (updated.state !== 'rest' && stateElapsedMs >= updated.durationMs) {
           updated.stateStartedAt += updated.durationMs;
           stateElapsedMs -= updated.durationMs;
 
-            if (updated.state === '売却中') {
+            if (updated.state === 'sell') {
               const shouldSkipFeast = cyclePendingProfit <= 0 || updated.skipFeastThisCycle === true;
-              updated.state = shouldSkipFeast ? '睡眠中' : '宴会中';
+              updated.state = shouldSkipFeast ? 'sleep' : 'feast';
               updated.durationMs = getStateDurationMs(party, shouldSkipFeast ? 'sleep' : 'feast');
               if (shouldSkipFeast) {
                 updated.skipFeastThisCycle = false;
               }
-            } else if (updated.state === '宴会中') {
+            } else if (updated.state === 'feast') {
               const baseSpend = Math.floor((cyclePendingProfit * rollPercentInclusive(33, 67)) / 100);
               const squanderLevel = getPartyAbilityLevel(party, 'squander');
               const squanderMultiplier = squanderLevel >= 2 ? 1.5 : squanderLevel >= 1 ? 1.3 : 1;
@@ -1813,17 +1855,17 @@ export function HomeScreen({
               cyclePendingProfit = Math.max(0, cyclePendingProfit - spend);
               const sleepDurationMs = getStateDurationMs(party, 'sleep');
               if (party.currentSleepiness === 0 || sleepDurationMs <= 100) {
-                updated.state = '祈り中';
+                updated.state = 'pray';
                 updated.durationMs = getStateDurationMs(party, 'pray');
               } else {
-                updated.state = '睡眠中';
+                updated.state = 'sleep';
                 updated.durationMs = sleepDurationMs;
               }
-            } else if (updated.state === '睡眠中') {
+            } else if (updated.state === 'sleep') {
               if (party.sideQuest?.type === 'q.sleeping' && updated.durationMs > 100) actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
-              updated.state = '祈り中';
+              updated.state = 'pray';
               updated.durationMs = getStateDurationMs(party, 'pray');
-            } else if (updated.state === '祈り中') {
+            } else if (updated.state === 'pray') {
               const donationRate = rollPercentInclusive(10, 33);
               const baseDonation = Math.floor((cyclePendingProfit * donationRate) / 100);
               const titheLevel = getPartyAbilityLevel(party, 'tithe');
@@ -1847,11 +1889,11 @@ export function HomeScreen({
                   actions.addNotification(`${party.name}は${formatNumber(donation)}G神に捧げ、${formatNumber(deposit)}Gを貯金した${embezzledText}`);
                 }
               }
-              updated.state = autoRepeatEnabled ? '移動中' : '待機中';
-              updated.durationMs = updated.state === '移動中' ? getPartyTravelDurationMs(party, 'move') : 1000;
-            } else if (updated.state === '待機中') {
+              updated.state = autoRepeatEnabled ? 'move' : 'idle';
+              updated.durationMs = updated.state === 'move' ? getPartyTravelDurationMs(party, 'move') : 1000;
+            } else if (updated.state === 'idle') {
               updated.durationMs = 1000;
-            } else if (updated.state === '移動中') {
+            } else if (updated.state === 'move') {
               const triggerGodsBattle = pendingGodsBattleByPartyRef.current[partyIndex] === true;
               pendingGodsBattleByPartyRef.current[partyIndex] = false;
               if (triggerGodsBattle && party.sideQuest) {
@@ -1861,27 +1903,27 @@ export function HomeScreen({
               if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
               if (party.sideQuest?.type === 'q.AFK' && !triggerGodsBattle) actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
               actions.runExpedition(partyIndex, gameModeRef.current === 'm.luna', triggerGodsBattle);
-              updated.state = '探索中';
+              updated.state = 'explore';
               updated.durationMs = getExplorationDurationMs(undefined, getPartyStateDurationMultiplier(party, 'explore'));
               updated.isCurrentExpeditionGodsBattle = triggerGodsBattle;
-            } else if (updated.state === '探索中') {
+            } else if (updated.state === 'explore') {
               actions.finalizeDiaryLog(partyIndex);
-              updated.state = '帰還中';
+              updated.state = 'return';
               updated.durationMs = getPartyTravelDurationMs(party, 'return');
               updated.isCurrentExpeditionGodsBattle = false;
-            } else if (updated.state === '帰還中') {
+            } else if (updated.state === 'return') {
               if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
               if (!party.sideQuest && !hasActiveLootGateCondition(party, updated.state)) {
                 actions.rollSideQuest(partyIndex, party.selectedDungeonId);
               }
               actions.rollPartySleepiness(partyIndex);
-              updated.state = '休息中';
+              updated.state = 'rest';
               updated.durationMs = getStateDurationMs(party, 'rest');
               updated.isCurrentExpeditionGodsBattle = false;
               updated.skipFeastThisCycle = hpRatioAtRestStart < 0.3;
             }
 
-            if (updated.state === '休息中') {
+            if (updated.state === 'rest') {
               updated.stateStartedAt = simulationNow;
               stateElapsedMs = 0;
             }
@@ -1972,11 +2014,11 @@ export function HomeScreen({
 
       const cycle = partyCycles[index];
       const cycleState = cycle?.state ?? null;
-      const sellingFinished = cycleState !== '売却中';
-      const canAnnounceGains = cycleState !== '探索中' && cycleState !== '帰還中' && cycleState !== '休息中' && cycleState !== '売却中';
+      const sellingFinished = cycleState !== 'sell';
+      const canAnnounceGains = cycleState !== 'explore' && cycleState !== 'return' && cycleState !== 'rest' && cycleState !== 'sell';
       const hasRewardsToNotify = (currentLog?.rewards.length ?? 0) > 0;
       const isAlreadyNotified = notifiedRewardLogRef.current[index] === currentLog;
-      const justFinishedSelling = prevPartyCycleStateRef.current[index] === '売却中' && cycleState !== '売却中';
+      const justFinishedSelling = prevPartyCycleStateRef.current[index] === 'sell' && cycleState !== 'sell';
 
       if (hasRewardsToNotify && sellingFinished && canAnnounceGains && (hasNewLog || justFinishedSelling) && !isAlreadyNotified && currentLog) {
         if (suppressRewardNotificationsForAfk) {
@@ -2204,7 +2246,7 @@ export function HomeScreen({
       return;
     }
 
-    if (cycle?.state === '探索中') {
+    if (cycle?.state === 'explore') {
       actions.addNotification(`${party.name} は探索中であり、その要請には従えない`);
       return;
     }
@@ -2223,7 +2265,7 @@ export function HomeScreen({
 
     pendingGodsBattleByPartyRef.current[partyIndex] = triggerGodsBattle;
     actions.clearPendingProfit(partyIndex);
-    transitionTo(partyIndex, '移動中', getPartyTravelDurationMs(party, 'move'));
+    transitionTo(partyIndex, 'move', getPartyTravelDurationMs(party, 'move'));
   };
 
   const prevActiveTabRef = useRef<Tab>(activeTab);
@@ -2286,9 +2328,9 @@ export function HomeScreen({
                       setPartyCycles((prevCycles) => {
                         const nextCycles = { ...prevCycles };
                         state.parties.forEach((_, partyIndex) => {
-                          const runtime = nextCycles[partyIndex] ?? { state: '待機中' as PartyCycleState, stateStartedAt: Date.now(), durationMs: 1000 };
-                          if (runtime.state === '待機中') {
-                            nextCycles[partyIndex] = { state: '移動中', stateStartedAt: Date.now(), durationMs: getPartyTravelDurationMs(state.parties[partyIndex], 'move') };
+                          const runtime = nextCycles[partyIndex] ?? { state: 'idle' as PartyCycleState, stateStartedAt: Date.now(), durationMs: 1000 };
+                          if (runtime.state === 'idle') {
+                            nextCycles[partyIndex] = { state: 'move', stateStartedAt: Date.now(), durationMs: getPartyTravelDurationMs(state.parties[partyIndex], 'move') };
                           }
                         });
                         return nextCycles;
@@ -4392,42 +4434,42 @@ function ExpeditionTab({
 
         const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
         const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
-        const cycle = partyCycles[partyIndex] ?? { state: '待機中', stateStartedAt: Date.now(), durationMs: 1000 };
+        const cycle = partyCycles[partyIndex] ?? { state: 'idle', stateStartedAt: Date.now(), durationMs: 1000 };
         const cycleElapsedMs = Math.max(0, Date.now() - cycle.stateStartedAt);
         const { partyStats } = computePartyStats(party);
         const isLogExpanded = expandedLogParty === partyIndex;
         const currentLog = party.lastExpeditionLog;
         const headlineDungeonName = currentLog?.dungeonName ?? selectedDungeon?.name;
-        const headlineState = cycle.state === '探索中'
-          ? '探索中'
+        const headlineState = cycle.state === 'explore'
+          ? getPartyCycleStateLabel('explore')
           : currentLog
             ? getExpeditionOutcomeLabel(currentLog.finalOutcome)
-            : cycle.state;
+            : getPartyCycleStateLabel(cycle.state);
 
         const displayedEntries = (() => {
           if (!currentLog) return [];
-          if (cycle.state !== '探索中') return currentLog.entries;
+          if (cycle.state !== 'explore') return currentLog.entries;
           const visibleCount = getExplorationVisibleRoomCount(cycleElapsedMs, cycle.durationMs, currentLog.entries.length);
           return currentLog.entries.slice(0, visibleCount);
         })();
 
         const displayedHp = (() => {
-          if (cycle.state !== '探索中' || !currentLog || currentLog.entries.length === 0) return party.currentHp;
+          if (cycle.state !== 'explore' || !currentLog || currentLog.entries.length === 0) return party.currentHp;
           if (displayedEntries.length === 0) return getEstimatedStartHp(currentLog.entries[0]);
           return displayedEntries[displayedEntries.length - 1].remainingPartyHP;
         })();
         const hpPercent = Math.min(100, Math.round((displayedHp / Math.max(1, partyStats.hp)) * 100));
-        const progressPercent = afkRecoveryProgressPercent ?? (cycle.state === '待機中'
+        const progressPercent = afkRecoveryProgressPercent ?? (cycle.state === 'idle'
           ? 100
-          : cycle.state === '休息中'
+          : cycle.state === 'rest'
           ? hpPercent
-          : cycle.state === '探索中'
+          : cycle.state === 'explore'
           ? (Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, displayedEntries.length) / EXPLORING_PROGRESS_TOTAL_STEPS) * 100
           : Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100));
-        const progressLabel = afkRecoveryProgressPercent !== null ? '復帰中' : cycle.state;
-        const hpForSortieCheck = cycle.state === '探索中' ? displayedHp : party.currentHp;
+        const progressLabel = afkRecoveryProgressPercent !== null ? '復帰中' : getPartyCycleStateLabel(cycle.state);
+        const hpForSortieCheck = cycle.state === 'explore' ? displayedHp : party.currentHp;
         const isSortieDisabled = !!selectedDungeonGate?.locked || hpForSortieCheck <= 0 || partyStats.hp <= 0;
-        const canTriggerGodsBattle = cycle.state === '探索中'
+        const canTriggerGodsBattle = cycle.state === 'explore'
           ? cycle.isCurrentExpeditionGodsBattle === true
           : isGodsBattleAvailable(party, party.selectedDungeonId);
         const nextGoalText = getNextGoalText(party, cycle.state);
@@ -4457,7 +4499,7 @@ function ExpeditionTab({
 
             <div className="mb-2 relative h-5 min-w-0 rounded-md bg-gray-200 overflow-hidden text-xs">
               <div
-                className={`absolute inset-y-0 left-0 bg-sub/20 ${cycle.state === '探索中' ? '' : 'transition-[width] duration-200'}`}
+                className={`absolute inset-y-0 left-0 bg-sub/20 ${cycle.state === 'explore' ? '' : 'transition-[width] duration-200'}`}
                 style={{ width: `${progressPercent}%` }}
               />
               <div className="relative z-10 h-full flex items-center justify-center px-2 text-black">
@@ -4502,7 +4544,7 @@ function ExpeditionTab({
                     {canTriggerGodsBattle ? '神魔戦' : '出撃'}
                   </button>
                 </div>
-                {['帰還中', '待機中'].includes(cycle.state) && party.currentHp <= 0 && (
+                {['return', 'idle'].includes(cycle.state) && party.currentHp <= 0 && (
                   <div className="text-xs text-accent">HPが0のため出撃できません。休息で回復してください。</div>
                 )}
               </div>
@@ -4511,14 +4553,14 @@ function ExpeditionTab({
             {currentLog && isLogExpanded && (
               <div className="border-t border-gray-200 pt-3">
                 <div className="space-y-2">
-                  {cycle.state !== '探索中' && (
+                  {cycle.state !== 'explore' && (
                     <div className="text-sm text-gray-500">
                       EXP: +{formatNumber(currentLog.totalExperience)}
                       {currentLog.autoSellProfit > 0 && <span> | {formatAutoSellSummary(currentLog.autoSellProfit, currentLog.autoSellMultiplier)}</span>}
                     </div>
                   )}
 
-                  {cycle.state !== '探索中' && currentLog.rewards.length > 0 && (
+                  {cycle.state !== 'explore' && currentLog.rewards.length > 0 && (
                     <div className="text-sm">
                       <span className="text-gray-500">獲得アイテム: </span>
                       {currentLog.rewards.map((item, i) => {
@@ -4700,7 +4742,7 @@ function ExpeditionTab({
                         </div>
                       );
                     })}
-                    {cycle.state === '探索中' && displayedEntries.length === 0 && (
+                    {cycle.state === 'explore' && displayedEntries.length === 0 && (
                       <div className="text-xs text-gray-500">探索進行中... 1部屋ずつログを更新中</div>
                     )}
                   </div>
