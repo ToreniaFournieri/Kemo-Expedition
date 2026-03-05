@@ -357,7 +357,7 @@ PT3: 貯金額: 10G
 
 **Reward**
 - On completion, the party receives **1 Jewel**.
-- The Jewel **Rank = `x.exp_tier`** of the expedition **at the time the side quest was rolled**.
+- The Jewel’s Rank is randomly selected between 1 and `x.exp_tier`, based on the expedition tier at the time the side quest was generated.
 
 
 ## 5. EXPEDITION 
