@@ -1733,6 +1733,8 @@ export function HomeScreen({
       parties.forEach((party, partyIndex) => {
         const runtime = next[partyIndex] ?? { state: '待機中' as PartyCycleState, stateStartedAt: simulationNow, durationMs: 1000 };
         const updated = { ...runtime };
+        const { partyStats: partyRuntimeStats } = computePartyStats(party);
+        const hpRatioAtRestStart = partyRuntimeStats.hp > 0 ? party.currentHp / partyRuntimeStats.hp : 1;
 
         if (updated.state === '探索中') {
           const exploredRooms = party.lastExpeditionLog?.entries.length;
@@ -1740,7 +1742,6 @@ export function HomeScreen({
         }
 
         if (updated.state === '休息中') {
-          const { partyStats: partyRuntimeStats } = computePartyStats(party);
           const restTickDurationMs = getStateDurationMs(party, 'rest');
           const elapsedRestMs = Math.max(0, simulationNow - updated.stateStartedAt);
           const restTickCount = Math.floor(elapsedRestMs / Math.max(1, restTickDurationMs));
