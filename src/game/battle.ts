@@ -183,7 +183,7 @@ function getTargetRow(ctx: BattleContext, phase: BattlePhase): { row: number; ne
 function calculateSingleEnemyAttackDamage(
   phase: BattlePhase,
   enemy: EnemyDef,
-  partyStats: ComputedPartyStats,
+  characterStats: ComputedCharacterStats[],
   targetCharStats: ComputedCharacterStats,
   enemyHp: number
 ): number {
@@ -219,7 +219,7 @@ function calculateSingleEnemyAttackDamage(
     ? 1.0
     : targetCharStats.elementalDefenseMultipliers[enemy.elementalOffense] ?? 1.0;
 
-  const partyDefenseAbilityAmplifier = getPartyDefenseAbilityAmplifier(phase, partyStats);
+  const partyDefenseAbilityAmplifier = getPartyDefenseAbilityAmplifier(phase, characterStats, targetCharStats.row);
   const rageAmplifier = getEnemyRageAmplifier(enemy, enemyHp);
   const rawDamage = (attack - defense) * amplifier * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier;
   const totalDamage = Math.max(1, rawDamage);
@@ -237,17 +237,51 @@ function getEnemyNoA(phase: BattlePhase, enemy: EnemyDef): number {
 }
 
 
-function getPartyDefenseAbilityAmplifier(phase: BattlePhase, partyStats: ComputedPartyStats): number {
-  if (phase === 'mid') {
-    return partyStats.defenseAmplifiers.magical;
+function getFrontRowAbilityLevel(
+  characterStats: ComputedCharacterStats[],
+  actorRow: number,
+  abilityId: 'defender' | 'command' | 'm_barrier',
+): number {
+  let bestLevel = 0;
+  for (const stats of characterStats) {
+    if (stats.row >= actorRow) continue;
+    const level = stats.abilities
+      .filter((ability) => ability.id === abilityId)
+      .reduce((maxLevel, ability) => Math.max(maxLevel, ability.level), 0);
+    bestLevel = Math.max(bestLevel, level);
   }
-  return partyStats.defenseAmplifiers.physical;
+  return bestLevel;
+}
+
+function getPartyOffenseAbilityAmplifier(
+  phase: BattlePhase,
+  characterStats: ComputedCharacterStats[],
+  actorRow: number,
+): number {
+  if (phase !== 'long' && phase !== 'close') return 1.0;
+  const commandLevel = getFrontRowAbilityLevel(characterStats, actorRow, 'command');
+  return commandLevel >= 3 ? 2.43 : commandLevel === 2 ? 1.35 : commandLevel === 1 ? 1.2 : 1.0;
+}
+
+function getPartyDefenseAbilityAmplifier(
+  phase: BattlePhase,
+  characterStats: ComputedCharacterStats[],
+  actorRow: number,
+): number {
+  if (phase === 'mid') {
+    const mBarrierLevel = getFrontRowAbilityLevel(characterStats, actorRow, 'm_barrier');
+    return mBarrierLevel >= 3 ? 1 / 2 : mBarrierLevel === 2 ? 3 / 5 : mBarrierLevel === 1 ? 2 / 3 : 1.0;
+  }
+
+  const defenderLevel = getFrontRowAbilityLevel(characterStats, actorRow, 'defender');
+  return defenderLevel >= 3 ? 1 / 2 : defenderLevel === 2 ? 3 / 5 : defenderLevel === 1 ? 2 / 3 : 1.0;
 }
 
 function calculateCharacterFriendlyFireDamage(
   phase: BattlePhase,
   attacker: ComputedCharacterStats,
   target: ComputedCharacterStats,
+  characterStats: ComputedCharacterStats[],
   partyStats: ComputedPartyStats,
   partyHp: number,
   partyDeityKey: string | null,
@@ -305,13 +339,14 @@ function calculateCharacterFriendlyFireDamage(
   const rageAmplifier = getCharacterRageAmplifier(attacker, partyHp, partyStats.hp);
   const momentumAmplifier = getCharacterMomentumAmplifier(attacker, partyHp, partyStats.hp);
 
+  const partyOffenseAmplifier = getPartyOffenseAbilityAmplifier(phase, characterStats, attacker.row);
   const basePerHitDamage = Math.max(1, Math.floor(
     (attack - effectiveDefense)
       * offenseAmplifier
       * attacker.elementalOffenseValue
       * elementalMultiplier
       * defenseAmplifier
-      * partyStats.offenseAmplifier
+      * partyOffenseAmplifier
       * rageAmplifier
       * momentumAmplifier
   ));
@@ -436,6 +471,7 @@ function calculateCharacterDamage(
   charStats: ComputedCharacterStats,
   character: Character,
   enemy: EnemyDef,
+  characterStats: ComputedCharacterStats[],
   partyStats: ComputedPartyStats,
   partyHp: number,
   partyDeityKey: string | null,
@@ -540,9 +576,10 @@ function calculateCharacterDamage(
   const rageAmplifier = getCharacterRageAmplifier(charStats, partyHp, partyStats.hp);
   const momentumAmplifier = getCharacterMomentumAmplifier(charStats, partyHp, partyStats.hp);
 
+  const partyOffenseAmplifier = getPartyOffenseAbilityAmplifier(phase, characterStats, charStats.row);
   const basePerHitDamage = Math.max(1, Math.floor(
     (attack - effectiveDefense) * offenseAmplifier * charStats.elementalOffenseValue *
-    elementalMultiplier * defenseAmplifier * partyStats.offenseAmplifier * rageAmplifier * momentumAmplifier
+    elementalMultiplier * defenseAmplifier * partyOffenseAmplifier * rageAmplifier * momentumAmplifier
   ));
 
   // All phases now use hit detection.
@@ -859,7 +896,7 @@ export function executeBattle(
       return;
     }
 
-    const singleDamage = calculateSingleEnemyAttackDamage('close', enemy, partyStats, targetCharStats, enemyHp);
+    const singleDamage = calculateSingleEnemyAttackDamage('close', enemy, characterStats, targetCharStats, enemyHp);
     const attempts = Math.ceil(getEnemyNoA('close', enemy) * counterNoAMultiplier);
     let hits = 0;
     for (let i = 1; i <= attempts; i++) {
@@ -954,7 +991,7 @@ export function executeBattle(
       return;
     }
 
-    const reCounterResult = calculateCharacterDamage('close', targetCharStats, targetChar, enemy, partyStats, partyHp, partyDeityKey, reCounterNoAMultiplier);
+    const reCounterResult = calculateCharacterDamage('close', targetCharStats, targetChar, enemy, characterStats, partyStats, partyHp, partyDeityKey, reCounterNoAMultiplier);
     if (reCounterResult.totalAttempts <= 0) {
       return;
     }
@@ -1003,7 +1040,7 @@ export function executeBattle(
       const coverChar = party.characters.find(c => c.id === coverCharStats.characterId);
       if (!coverChar) continue;
 
-      const coveringFireResult = calculateCharacterDamage('long', coverCharStats, coverChar, enemy, partyStats, partyHp, partyDeityKey, coveringFireNoAMultiplier);
+      const coveringFireResult = calculateCharacterDamage('long', coverCharStats, coverChar, enemy, characterStats, partyStats, partyHp, partyDeityKey, coveringFireNoAMultiplier);
       if (coveringFireResult.totalAttempts <= 0) continue;
 
       if (isIllusionActive('long', getEnemyAbilityLevel(enemy, 'illusion') > 0, 'enemy', consumedIllusionStateIds)) {
@@ -1136,7 +1173,7 @@ export function executeBattle(
               const resonanceAmplifier = phase === 'mid'
                 ? getResonanceAmplifier(enemyResonanceLevel, enemySuccessfulHits)
                 : 1.0;
-              const singleDamage = calculateSingleEnemyAttackDamage(phase, enemy, partyStats, targetCharStats, enemyHp);
+              const singleDamage = calculateSingleEnemyAttackDamage(phase, enemy, characterStats, targetCharStats, enemyHp);
               targetAttack.hitDamages.push(Math.max(1, Math.floor(singleDamage * resonanceAmplifier)));
             }
 
@@ -1297,6 +1334,7 @@ export function executeBattle(
               attack.charStats,
               attackChar,
               enemy,
+              characterStats,
               partyStats,
               partyHp,
               partyDeityKey,
@@ -1362,7 +1400,7 @@ export function executeBattle(
               const didHit = hitDetection(1.0, enemy.accuracyBonus, attack.charStats.evasionBonus, i, phase, getDeflectionLevel(attack.charStats), getEnemyFocusLevel(enemy));
               if (!didHit) continue;
               reCounterHits += 1;
-              reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, partyStats, attack.charStats, enemyHp);
+              reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, characterStats, attack.charStats, enemyHp);
             }
 
             const avoidedByPartyIllusionOnReCounter = isPartyIllusionActive(phase, characterStats, consumedPartyIllusion);
@@ -1464,7 +1502,7 @@ export function executeBattle(
             const magicalCounterNoAMultiplier = getMagicalCounterNoAMultiplier(magicalCounterStats);
             if (magicalCounterNoAMultiplier <= 0) continue;
 
-            const magicalCounterResult = calculateCharacterDamage('mid', magicalCounterStats, magicalCounterChar, enemy, partyStats, partyHp, partyDeityKey, magicalCounterNoAMultiplier);
+            const magicalCounterResult = calculateCharacterDamage('mid', magicalCounterStats, magicalCounterChar, enemy, characterStats, partyStats, partyHp, partyDeityKey, magicalCounterNoAMultiplier);
             if (magicalCounterResult.totalAttempts <= 0) continue;
 
             const magicalCounterDealtDamage = magicalCounterResult.damage > 0;
@@ -1517,7 +1555,7 @@ export function executeBattle(
           ctx = newCtx;
           const selected = resolveEnemyTarget(targetRow, candidates, phase) ?? candidates[Math.floor(Math.random() * candidates.length)];
           antagonismTarget = selected;
-          result = calculateCharacterFriendlyFireDamage(phase, cs, selected, partyStats, partyHp, partyDeityKey, noAMultiplier);
+          result = calculateCharacterFriendlyFireDamage(phase, cs, selected, characterStats, partyStats, partyHp, partyDeityKey, noAMultiplier);
           if (result.damage > 0) {
             partyHp -= result.damage;
 
@@ -1544,7 +1582,7 @@ export function executeBattle(
             }
           }
         } else {
-          result = calculateCharacterDamage(phase, cs, char, enemy, partyStats, partyHp, partyDeityKey, noAMultiplier);
+          result = calculateCharacterDamage(phase, cs, char, enemy, characterStats, partyStats, partyHp, partyDeityKey, noAMultiplier);
           if (
             result.totalAttempts > 0
             && isIllusionActive(phase, getEnemyAbilityLevel(enemy, 'illusion') > 0, 'enemy', consumedIllusionStateIds)
