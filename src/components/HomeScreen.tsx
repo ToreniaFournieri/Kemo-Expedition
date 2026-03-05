@@ -2197,7 +2197,7 @@ export function HomeScreen({
   return (
     <div className={`flex flex-col ${prefersDocumentScroll ? 'min-h-screen' : 'h-screen'} ${HEADER_HEIGHT_CLASS} ${gameMode === 'm.luna' ? 'theme-luna' : ''}`}>
       {/* Fixed Header */}
-      <div className="fixed top-0 left-0 right-0 z-10 border-b border-gray-300">
+      <div className="fixed top-0 left-0 right-0 z-30 border-b border-gray-300">
         <div className="absolute inset-0 bg-white" aria-hidden="true" />
         <div className="relative max-w-lg mx-auto w-full px-3 py-2.5 bg-white">
           <div className="flex justify-between items-center gap-3 min-h-[44px]">
