@@ -4366,7 +4366,7 @@ function ExpeditionTab({
               <span className={`shrink-0 ${isLogExpanded ? 'transform transition-transform rotate-180' : ''}`}>▼</span>
             </button>
 
-            <div className="mb-2 relative h-5 min-w-0 rounded-full bg-gray-200 overflow-hidden text-xs">
+            <div className="mb-2 relative h-5 min-w-0 rounded-md bg-gray-200 overflow-hidden text-xs">
               <div
                 className={`absolute inset-y-0 left-0 bg-sub/30 ${cycle.state === '探索中' ? '' : 'transition-[width] duration-200'}`}
                 style={{ width: `${progressPercent}%` }}
