@@ -403,7 +403,7 @@ function matchesRarityFilter(itemId: number, filter: RarityFilter): boolean {
 }
 
 function getRarityTextClass(rarity: ItemRarity, isSuperRare: boolean): string {
-  if (isSuperRare) return 'text-orange-700 font-bold';
+  if (isSuperRare) return 'text-accent font-bold';
   if (rarity === 'eliteRare') return 'text-sub';
   if (rarity === 'bossRare') return 'text-accent';
   if (rarity === 'mythicRare') return 'text-accent font-bold';
@@ -3284,7 +3284,7 @@ function PartyTab({
 
         {/* Edit confirmation dialog */}
         {editingCharacter === selectedCharacter && showEditConfirm && (
-          <div className="mb-3 p-3 bg-orange-50 border border-orange-200 rounded">
+          <div className="mb-3 p-3 rounded border border-accent/25 bg-accent/10">
             <ul className="text-sm text-accent space-y-1">
               {editConfirmWarnings.map((warning) => (
                 <li key={warning}>⚠️ {warning}</li>
@@ -4181,7 +4181,7 @@ function PartyTab({
                     {char.equipment[selectingSlot] && (
                       <button
                         onClick={() => { onEquipItem(char.id, selectingSlot, null); setSelectingSlot(null); }}
-                        className="text-xs text-accent px-2 py-1 border border-orange-300 rounded bg-white"
+                        className="text-xs text-accent px-2 py-1 border border-accent/40 rounded bg-white"
                       >
                         外す
                       </button>
@@ -4428,7 +4428,7 @@ function ExpeditionTab({
                   <button
                     onClick={() => onTriggerSortie(partyIndex, canTriggerGodsBattle)}
                     disabled={isSortieDisabled}
-                    className={`px-3 py-2 text-white rounded font-medium text-sm leading-none whitespace-nowrap ${isSortieDisabled ? 'bg-gray-400 cursor-not-allowed' : canTriggerGodsBattle ? 'bg-accent hover:bg-orange-700' : 'bg-sub hover:bg-blue-600'}`}
+                    className={`px-3 py-2 text-white rounded font-medium text-sm leading-none whitespace-nowrap ${isSortieDisabled ? 'bg-gray-400 cursor-not-allowed' : canTriggerGodsBattle ? 'bg-accent hover:bg-accent/90' : 'bg-sub hover:bg-sub/90'}`}
                   >
                     {canTriggerGodsBattle ? '神魔戦' : '出撃'}
                   </button>
@@ -4504,7 +4504,7 @@ function ExpeditionTab({
                             </div>
                             {(entry.gateInfo || entry.reward) && (
                               <div className="text-gray-500 mt-1 flex flex-wrap items-center gap-1">
-                                {entry.gateInfo && <span className="text-orange-700">解放条件: {entry.gateInfo}</span>}
+                                {entry.gateInfo && <span className="text-accent">解放条件: {entry.gateInfo}</span>}
                                 {renderEntryReward(entry)}
                               </div>
                             )}
@@ -5699,7 +5699,7 @@ function DiaryTab({
                           </div>
                           {(entry.gateInfo || entry.reward) && (
                             <div className="text-gray-500 mt-1 flex flex-wrap items-center gap-1">
-                              {entry.gateInfo && <span className="text-orange-700">解放条件: {entry.gateInfo}</span>}
+                              {entry.gateInfo && <span className="text-accent">解放条件: {entry.gateInfo}</span>}
                               {renderEntryReward(entry)}
                             </div>
                           )}
@@ -7030,7 +7030,7 @@ function SettingTab({
               <button onClick={() => setShowResetConfirm(true)} className="w-full py-2 bg-accent text-white rounded font-medium">ゲームをリセット</button>
             ) : (
               <div>
-                <div className="text-sm text-accent mb-2 p-2 bg-orange-50 rounded border border-orange-200">本当にリセットしますか？全てのデータが失われます。この操作は取り消せません。</div>
+                <div className="text-sm text-accent mb-2 p-2 bg-accent/10 rounded border border-accent/25">本当にリセットしますか？全てのデータが失われます。この操作は取り消せません。</div>
                 <div className="flex gap-2">
                   <button onClick={() => { onResetGame(); setShowResetConfirm(false); }} className="flex-1 py-2 bg-accent text-white rounded font-medium">リセット実行</button>
                   <button onClick={() => setShowResetConfirm(false)} className="flex-1 py-2 bg-gray-300 rounded font-medium">キャンセル</button>

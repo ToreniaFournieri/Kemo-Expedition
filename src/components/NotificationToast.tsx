@@ -60,7 +60,7 @@ function NotificationItem({ notification, onDismiss, onDismissAll }: Notificatio
         ? 'font-normal'
         : 'font-medium';
 
-  const nonItemColor = notification.style === 'rare' ? 'text-orange-600' : 'text-sub';
+  const nonItemColor = notification.style === 'rare' ? 'text-accent' : 'text-sub';
 
   return (
     <button
