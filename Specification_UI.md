@@ -662,6 +662,19 @@ line  gray text2: ウルサンの霊峰: 剛力の雅晶 を手に入れた     
     - 当たり残り remaining / initial counts
   - Button (サイドクエスト初期化): Initialize `t.side_quest_bag` 
 
+  **sleepiness(眠気抽選)**
+  - sleepiness_of_party_bag (眠気抽選確率)
+
+| パーティ | 眠気度合い | 残り |
+|-|-|-|
+| PT1 | 寝ない | 3 |
+| PT1 | 仮眠 | 2 |
+| PT1 | 熟睡 | 1 |
+| PT2 | 寝ない | 3 |
+...
+
+note: 0:no sleep 寝ない, 1:nap 仮眠, 2:sound sleep 熟睡
+
 **Glossary (用語集)** 
 - list and its descrpition is here:
   - @Specification_CONSTANTS_&_DATA.md
