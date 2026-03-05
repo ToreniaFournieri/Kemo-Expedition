@@ -265,6 +265,21 @@ Party.`d.HP` =
 | 探索中 | in dungeon. if HP < 30% MaxHP → retreat. At the end of this state, update this {ルピニアンの断崖踏破} part ) | 帰還中 | `Goddess of Precision` |
 | 帰還中 | dungeon → home,If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | 休息中 | 
 
+- **Realtime Progress**
+- Debug Scaling: For debugging purposes, all durations are multiplied by **0.2** in the `/dev/`, `/qa/`, and `/luna/` environments.
+
+| State | Duration |
+|-------|-------|
+| 休息中  | heal +1% MaxHP / 5 sec until full |
+| 売却中 | 5 seconds per `auto-sell` items |
+| 宴会中 | 90 seconds |
+| 睡眠中 | 180 seconds |
+| 祈り中 | 30 seconds |
+| 移動中 | 10 seconds * (1.30 - 0.02 * `x.exp_tier` )^(`x.exp_tier`) | 
+| 探索中 | 5 seconds per room (24 rooms in total)|
+| 帰還中 | 30 seconds * (1.30 - 0.02 * `x.exp_tier` )^(`x.exp_tier`)  |
+
+
 - Profit usuage:
   - At: 休息中:
       - `current_profit` = 0
