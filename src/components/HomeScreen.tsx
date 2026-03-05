@@ -1759,7 +1759,7 @@ export function HomeScreen({
             } else if (updated.state === '宴会中') {
               const baseSpend = Math.floor((cyclePendingProfit * rollPercentInclusive(33, 67)) / 100);
               const squanderLevel = getPartyAbilityLevel(party, 'squander');
-              const squanderMultiplier = squanderLevel >= 2 ? 2 : squanderLevel >= 1 ? 1.5 : 1;
+              const squanderMultiplier = squanderLevel >= 2 ? 1.5 : squanderLevel >= 1 ? 1.3 : 1;
               const spend = Math.min(cyclePendingProfit, Math.floor(baseSpend * squanderMultiplier));
               if (spend > 0) {
                 if (squanderLevel > 0) {

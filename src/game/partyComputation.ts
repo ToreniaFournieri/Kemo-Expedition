@@ -271,7 +271,7 @@ export function computePartyStats(party: Party): {
 
   // Calculate offense amplifier from command ability (main class: lord)
   const commandLevel = getBestMainClassAbilityLevel('lord', 'command');
-  const offenseAmplifier = commandLevel >= 3 ? 2.0 : commandLevel === 2 ? 1.6 : commandLevel === 1 ? 1.3 : 1.0;
+  const offenseAmplifier = commandLevel >= 3 ? 2.43 : commandLevel === 2 ? 1.35 : commandLevel === 1 ? 1.2 : 1.0;
 
   // Party-wide damage reduction abilities (main class: fighter/sage)
   const defenderLevel = getBestMainClassAbilityLevel('fighter', 'defender');

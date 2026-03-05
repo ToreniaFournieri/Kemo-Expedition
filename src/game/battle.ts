@@ -41,7 +41,7 @@ function getCharacterRageAmplifier(charStats: ComputedCharacterStats, partyHp: n
   if (rageLevel <= 0) return 1.0;
   if (maxPartyHp <= 0) return 1.0;
   const hpRatio = Math.max(0, Math.min(1, partyHp / maxPartyHp));
-  const multiplierPerDamageRate = rageLevel >= 2 ? 1.2 : 1.0;
+  const multiplierPerDamageRate = rageLevel >= 2 ? 0.6 : 0.5;
   return Math.min(2.0, 1.0 + (multiplierPerDamageRate * (1.0 - hpRatio)));
 }
 
@@ -50,7 +50,7 @@ function getEnemyRageAmplifier(enemy: EnemyDef, enemyHp: number): number {
   if (rageLevel <= 0) return 1.0;
   if (enemy.hp <= 0) return 1.0;
   const hpRatio = Math.max(0, Math.min(1, enemyHp / enemy.hp));
-  const multiplierPerDamageRate = rageLevel >= 2 ? 1.2 : 1.0;
+  const multiplierPerDamageRate = rageLevel >= 2 ? 0.6 : 0.5;
   return Math.min(2.0, 1.0 + (multiplierPerDamageRate * (1.0 - hpRatio)));
 }
 
@@ -147,9 +147,9 @@ function getCharacterMomentumAmplifier(charStats: ComputedCharacterStats, partyH
   if (maxPartyHp <= 0) return 1.0;
   const hpRatio = Math.max(0, Math.min(1, partyHp / maxPartyHp));
   if (momentumLevel >= 2) {
-    return 1.5 - ((1.0 - hpRatio) * 0.75);
+    return Math.max(0.01, 1.25 - ((1.0 - hpRatio) * 0.4));
   }
-  return Math.max(0.5, 1.5 - (1.0 - hpRatio));
+  return Math.max(0.01, 1.25 - ((1.0 - hpRatio) * 0.5));
 }
 
 function toMomentumBonusPercent(momentumAmplifier: number): number {
@@ -284,7 +284,7 @@ function calculateCharacterFriendlyFireDamage(
     : getBaseMultiplier(attacker.baseStats.strength, 'attack');
 
   const iaigiri = attacker.abilities.find(a => a.id === 'iaigiri');
-  const iaigiriMultiplier = iaigiri ? (iaigiri.level >= 3 ? 3.0 : iaigiri.level >= 2 ? 2.5 : 2.0) : 1.0;
+  const iaigiriMultiplier = iaigiri ? (iaigiri.level >= 3 ? 2.0 : iaigiri.level >= 2 ? 1.8 : 1.6) : 1.0;
   const phaseBonusSum = phase === 'mid'
     ? attacker.magicalAttackCBonus
     : (phase === 'long' ? attacker.rangedAttackCBonus : attacker.meleeAttackCBonus);
@@ -503,10 +503,10 @@ function calculateCharacterDamage(
   const iaigiri = charStats.abilities.find(a => a.id === 'iaigiri');
   const iaigiriMultiplier = iaigiri
     ? iaigiri.level >= 3
-      ? 3.0
+      ? 2.0
       : iaigiri.level >= 2
-        ? 2.5
-        : 2.0
+        ? 1.8
+        : 1.6
     : 1.0;
   const appliedOffenseBonusNames = new Set<string>(charStats.offenseCBonusNames);
   const meleeBonusSum = charStats.meleeAttackCBonus + getUniqueOffenseBonusSum('melee', appliedOffenseBonusNames);
@@ -827,9 +827,9 @@ export function executeBattle(
   };
 
   const partyEffects = [
-    createPartyEffectEntry('fighter', 'defender', level => `守護者${level}`, level => `(パーティへの物理ダメージ × ${level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3'})`),
-    createPartyEffectEntry('lord', 'command', level => `指揮${level}`, level => `(パーティの物理攻撃力 × ${level >= 3 ? '2.0' : level === 2 ? '1.6' : '1.3'})`),
-    createPartyEffectEntry('sage', 'm_barrier', level => `魔法障壁${level}`, level => `(パーティへの魔法ダメージ × ${level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3'})`),
+    createPartyEffectEntry('fighter', 'defender', level => `守護者${level}`, level => `(後列にいる味方への物理ダメージ × ${level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3'})`),
+    createPartyEffectEntry('lord', 'command', level => `指揮${level}`, level => `(後列にいる味方の物理攻撃力 × ${level >= 3 ? '2.43' : level === 2 ? '1.35' : '1.2'})`),
+    createPartyEffectEntry('sage', 'm_barrier', level => `魔法障壁${level}`, level => `(後列にいる味方への魔法ダメージ × ${level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3'})`),
   ];
 
   for (const partyEffect of partyEffects) {

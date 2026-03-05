@@ -2412,7 +2412,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           const pendingProfit = currentParty.pendingProfit ?? 0;
           const baseSpend = Math.floor((pendingProfit * rollPercentInclusive(33, 67)) / 100);
           const squanderLevel = getPartyAbilityLevel(currentParty, 'squander');
-          const squanderMultiplier = squanderLevel >= 2 ? 2 : squanderLevel >= 1 ? 1.5 : 1;
+          const squanderMultiplier = squanderLevel >= 2 ? 1.5 : squanderLevel >= 1 ? 1.3 : 1;
           const spend = Math.min(pendingProfit, Math.floor(baseSpend * squanderMultiplier));
           if (spend > 0) {
             workingState = gameReducer(workingState, { type: 'SPEND_PENDING_PROFIT', partyIndex, amount: spend });
