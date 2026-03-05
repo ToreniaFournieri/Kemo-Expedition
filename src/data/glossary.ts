@@ -20,17 +20,17 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.defender1",
         "label": "守護者1",
-        "description": "味方全体が受ける物理ダメージを 2/3倍 にする"
+        "description": "自身より後列にいる味方が受ける物理ダメージを 2/3倍 にする"
       },
       {
         "key": "a.defender2",
         "label": "守護者2",
-        "description": "味方全体が受ける物理ダメージを 3/5倍 にする"
+        "description": "自身より後列にいる味方が受ける物理ダメージを 3/5倍 にする"
       },
       {
         "key": "a.defender3",
         "label": "守護者3",
-        "description": "味方全体が受ける物理ダメージを 1/2倍 にする"
+        "description": "自身より後列にいる味方が受ける物理ダメージを 1/2倍 にする"
       },
       {
         "key": "a.counter1",
@@ -65,42 +65,42 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.iaigiri1",
         "label": "居合斬り1",
-        "description": "物理ダメージをx2.0倍する(攻撃回数が半減する)"
+        "description": "物理ダメージをx1.6倍する(攻撃回数が半減する)"
       },
       {
         "key": "a.iaigiri2",
         "label": "居合斬り2",
-        "description": "物理ダメージをx2.5倍する(攻撃回数を半減する)"
+        "description": "物理ダメージをx1.8倍する(攻撃回数を半減する)"
       },
       {
         "key": "a.iaigiri3",
         "label": "居合斬り3",
-        "description": "物理ダメージをx3.0倍する(攻撃回数は半減する)"
+        "description": "物理ダメージをx2.0倍する(攻撃回数は半減する)"
       },
       {
         "key": "a.command1",
         "label": "指揮1",
-        "description": "与える物理ダメージを 1.3倍 にする"
+        "description": "自身より後列にいる味方が与える物理ダメージを 1.2倍 にする"
       },
       {
         "key": "a.command2",
         "label": "指揮2",
-        "description": "与える物理ダメージを 1.6倍 にする"
+        "description": "自身より後列にいる味方が与える物理ダメージを 1.35倍 にする"
       },
       {
         "key": "a.command3",
         "label": "指揮3",
-        "description": "与える物理ダメージを 2.0倍 にする"
+        "description": "自身より後列にいる味方が与える物理ダメージを 1.43倍 にする"
       },
       {
         "key": "a.squander1",
         "label": "浪費1",
-        "description": "宴会で消費するゴールドが1.5倍になる"
+        "description": "宴会で消費するゴールドが1.3倍になる"
       },
       {
         "key": "a.squander2",
         "label": "浪費2",
-        "description": "宴会で消費するゴールドが2倍になる"
+        "description": "宴会で消費するゴールドが1.5倍になる"
       },
       {
         "key": "a.hunter1",
@@ -120,42 +120,42 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.resonance1",
         "label": "共鳴1",
-        "description": "魔法攻撃 1回毎に、全ヒットのダメージが +5% 増加する"
+        "description": "魔法攻撃 1回毎に、全ヒットのダメージが +4% 増加する"
       },
       {
         "key": "a.resonance2",
         "label": "共鳴2",
-        "description": "魔法攻撃 1回毎に、全ヒットのダメージが +8% 増加する"
+        "description": "魔法攻撃 1回毎に、全ヒットのダメージが +7% 増加する"
       },
       {
         "key": "a.resonance3",
         "label": "共鳴3",
-        "description": "魔法攻撃 1回毎に、全ヒットのダメージが +11% 増加する"
+        "description": "魔法攻撃 1回毎に、全ヒットのダメージが +9% 増加する"
       },
       {
         "key": "a.resonance4",
         "label": "共鳴4",
-        "description": "魔法攻撃 1回毎に、全ヒットのダメージが +13% 増加する"
+        "description": "魔法攻撃 1回毎に、全ヒットのダメージが +11% 増加する"
       },
       {
         "key": "a.resonance5",
         "label": "共鳴5",
-        "description": "魔法攻撃 1回毎に、全ヒットのダメージが +15% 増加する"
+        "description": "魔法攻撃 1回毎に、全ヒットのダメージが +12% 増加する"
       },
       {
         "key": "a.m-barrier1",
         "label": "魔法障壁1",
-        "description": "味方全体が受ける魔法ダメージを 2/3倍 にする"
+        "description": "自身より後列にいる味方が受ける魔法ダメージを 2/3倍 にする"
       },
       {
         "key": "a.m-barrier2",
         "label": "魔法障壁2",
-        "description": "味方全体が受ける魔法ダメージを 3/5倍 にする"
+        "description": "自身より後列にいる味方が受ける魔法ダメージを 3/5倍 にする"
       },
       {
         "key": "a.m-barrier3",
         "label": "魔法障壁2",
-        "description": "味方全体が受ける魔法ダメージを 1/2倍 にする"
+        "description": "自身より後列にいる味方が受ける魔法ダメージを 1/2倍 にする"
       },
       {
         "key": "a.deflection1",
@@ -230,12 +230,12 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.rage1",
         "label": "闘志1",
-        "description": "物理/魔法攻撃倍率増大(受けたダメージ1%につき1%増)"
+        "description": "物理/魔法攻撃倍率増大(受けたダメージ1%につき0.5%増)"
       },
       {
         "key": "a.rage2",
         "label": "闘志2",
-        "description": "物理/魔法攻撃倍率増大(受けたダメージ1%につき1.2%増)"
+        "description": "物理/魔法攻撃倍率増大(受けたダメージ1%につき0.6%増)"
       },
       {
         "key": "a.re-counter1",
@@ -250,12 +250,12 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.momentum1",
         "label": "気勢1",
-        "description": "物理/魔法攻撃倍率1.5倍(受けたダメージ1%につき1%減)"
+        "description": "物理/魔法攻撃倍率1.25倍(受けたダメージ1%につき0.5%減)"
       },
       {
         "key": "a.momentum2",
         "label": "気勢2",
-        "description": "物理/魔法攻撃倍率1.5倍(受けたダメージ1%につき0.75%減)"
+        "description": "物理/魔法攻撃倍率1.25倍(受けたダメージ1%につき0.4%減)"
       },
       {
         "key": "a.cunning1",
