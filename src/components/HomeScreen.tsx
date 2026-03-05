@@ -61,6 +61,7 @@ interface HomeScreenProps {
     clearPendingProfit: (partyIndex: number) => void;
     processPendingProfit: (partyIndex: number, donation: number, deposit: number) => void;
     spendPendingProfit: (partyIndex: number, amount: number) => void;
+    rollPartySleepiness: (partyIndex: number) => void;
     rollSideQuest: (partyIndex: number, rolledTier: number) => void;
     cancelSideQuest: (partyIndex: number) => void;
     advanceSideQuest: (partyIndex: number, amount: number, simulatedAt?: number) => void;
@@ -1761,8 +1762,17 @@ export function HomeScreen({
               updated.state = '売却中';
               updated.durationMs = getStateDurationMs(party, 'sell');
             } else {
-              updated.state = party.pendingProfit > 0 ? '宴会中' : '睡眠中';
-              updated.durationMs = updated.state === '宴会中' ? getStateDurationMs(party, 'feast') : getStateDurationMs(party, 'sleep');
+              const sleepDurationMs = getStateDurationMs(party, 'sleep');
+              if (party.pendingProfit > 0) {
+                updated.state = '宴会中';
+                updated.durationMs = getStateDurationMs(party, 'feast');
+              } else if (party.currentSleepiness === 0 || sleepDurationMs <= 100) {
+                updated.state = '祈り中';
+                updated.durationMs = getStateDurationMs(party, 'pray');
+              } else {
+                updated.state = '睡眠中';
+                updated.durationMs = sleepDurationMs;
+              }
             }
             updated.stateStartedAt = simulationNow;
           }
@@ -1793,10 +1803,16 @@ export function HomeScreen({
               actions.spendPendingProfit(partyIndex, spend);
               if (party.sideQuest?.type === 'q.squander' && spend > 0) actions.advanceSideQuest(partyIndex, spend, simulationNow);
               cyclePendingProfit = Math.max(0, cyclePendingProfit - spend);
-              updated.state = '睡眠中';
-              updated.durationMs = getStateDurationMs(party, 'sleep');
+              const sleepDurationMs = getStateDurationMs(party, 'sleep');
+              if (party.currentSleepiness === 0 || sleepDurationMs <= 100) {
+                updated.state = '祈り中';
+                updated.durationMs = getStateDurationMs(party, 'pray');
+              } else {
+                updated.state = '睡眠中';
+                updated.durationMs = sleepDurationMs;
+              }
             } else if (updated.state === '睡眠中') {
-              if (party.sideQuest?.type === 'q.sleeping') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
+              if (party.sideQuest?.type === 'q.sleeping' && updated.durationMs > 100) actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
               updated.state = '祈り中';
               updated.durationMs = getStateDurationMs(party, 'pray');
             } else if (updated.state === '祈り中') {
@@ -1850,6 +1866,7 @@ export function HomeScreen({
               if (!party.sideQuest && !hasActiveLootGateCondition(party, updated.state)) {
                 actions.rollSideQuest(partyIndex, party.selectedDungeonId);
               }
+              actions.rollPartySleepiness(partyIndex);
               updated.state = '休息中';
               updated.durationMs = getStateDurationMs(party, 'rest');
               updated.isCurrentExpeditionGodsBattle = false;
@@ -2111,6 +2128,12 @@ export function HomeScreen({
     return getDeityStateDurationMultiplier(party.deity.name, deityGold, cycleState);
   };
 
+  const getSleepDurationMultiplier = (party: Party): number => {
+    if (party.currentSleepiness === 1) return 1 / 5;
+    if (party.currentSleepiness === 2) return 1;
+    return 0;
+  };
+
   const getStateDurationMs = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'sleep' | 'pray'): number => {
     const durationScale = getCycleDurationScale(currentEnv);
     const autoSellCount = Math.max(1, party.lastExpeditionLog?.autoSellCount ?? 1);
@@ -2123,7 +2146,8 @@ export function HomeScreen({
           : cycleState === 'sleep'
             ? 180
             : 30;
-    return Math.max(100, Math.floor(baseSeconds * 1000 * durationScale * getPartyStateDurationMultiplier(party, cycleState)));
+    const sleepinessMultiplier = cycleState === 'sleep' ? getSleepDurationMultiplier(party) : 1;
+    return Math.max(100, Math.floor(baseSeconds * 1000 * durationScale * getPartyStateDurationMultiplier(party, cycleState) * sleepinessMultiplier));
   };
 
   const getPartyTravelDurationMs = (party: Party, travelState: 'move' | 'return'): number => {

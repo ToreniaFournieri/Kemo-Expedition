@@ -294,8 +294,12 @@ export interface Party {
     donatedGold: number;
     savedGold: number;
   };
+  sleepinessOfPartyBag: RandomBag;
+  currentSleepiness: SleepinessState;
   sideQuest: SideQuestState | null;
 }
+
+export type SleepinessState = 0 | 1 | 2;
 
 export interface SideQuestState {
   id: number;

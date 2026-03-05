@@ -5,6 +5,7 @@ import {
   ItemCategory,
   Character,
   Party,
+  SleepinessState,
   RaceId,
   ClassId,
   PredispositionId,
@@ -46,6 +47,8 @@ import {
   createPhysicalThreatBag,
   createMagicalThreatBag,
   createSideQuestBag,
+  createSleepinessPartyBag,
+  normalizeSleepinessPartyBag,
   normalizeBagForType,
   BagType,
   normalizeGameBags,
@@ -520,6 +523,8 @@ function loadSavedState(): GameState | null {
           if (typeof party.expeditionRewardsPending !== 'boolean') party.expeditionRewardsPending = false;
           if (typeof party.deityGold !== 'number') party.deityGold = 0;
           party.expeditionStats = getExpeditionStatsWithDefaults(party.expeditionStats);
+          party.sleepinessOfPartyBag = normalizeSleepinessPartyBag(party.sleepinessOfPartyBag ?? createSleepinessPartyBag());
+          party.currentSleepiness = normalizeSleepinessState(party.currentSleepiness);
           if (typeof party.sideQuest === 'undefined') party.sideQuest = null;
           if (party.sideQuest && TIME_BASED_SIDE_QUEST_TYPES.has(party.sideQuest.type) && party.sideQuest.target < 1000) {
             party.sideQuest = {
@@ -597,8 +602,38 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
     expeditionRewardsPending: false,
     deityGold: 0,
     expeditionStats: getExpeditionStatsWithDefaults(party.expeditionStats),
+    sleepinessOfPartyBag: normalizeSleepinessPartyBag(party.sleepinessOfPartyBag ?? createSleepinessPartyBag()),
+    currentSleepiness: normalizeSleepinessState(party.currentSleepiness),
     sideQuest: party.sideQuest ?? null,
   };
+}
+
+function normalizeSleepinessState(raw: unknown): SleepinessState {
+  if (raw === 1 || raw === 2) return raw;
+  return 0;
+}
+
+function drawPartySleepiness(party: Party): { party: Party; sleepiness: SleepinessState } {
+  const normalizedBag = normalizeSleepinessPartyBag(party.sleepinessOfPartyBag ?? createSleepinessPartyBag());
+  const totalTickets = normalizedBag.entries.reduce((sum, entry) => sum + Math.max(0, entry.tickets), 0);
+  const sourceBag = totalTickets > 0 ? normalizedBag : createSleepinessPartyBag();
+  const { ticket, newBag } = drawFromBag(sourceBag);
+  const sleepiness = normalizeSleepinessState(ticket);
+
+  return {
+    party: {
+      ...party,
+      sleepinessOfPartyBag: normalizeSleepinessPartyBag(newBag),
+      currentSleepiness: sleepiness,
+    },
+    sleepiness,
+  };
+}
+
+function getSleepDurationMultiplier(sleepiness: SleepinessState): number {
+  if (sleepiness === 1) return 1 / 5;
+  if (sleepiness === 2) return 1;
+  return 0;
 }
 
 function createInitialParty() {
@@ -643,6 +678,8 @@ function createInitialParty() {
     hasUnreadDiary: false,
     diarySettings: getDiarySettingsWithDefaults(undefined),
     expeditionStats: getExpeditionStatsWithDefaults(null),
+    sleepinessOfPartyBag: createSleepinessPartyBag(),
+    currentSleepiness: 0,
     sideQuest: null,
   };
 
@@ -692,6 +729,8 @@ function createSecondParty() {
     hasUnreadDiary: false,
     diarySettings: getDiarySettingsWithDefaults(undefined),
     expeditionStats: getExpeditionStatsWithDefaults(null),
+    sleepinessOfPartyBag: createSleepinessPartyBag(),
+    currentSleepiness: 0,
     sideQuest: null,
   };
 
@@ -740,6 +779,8 @@ function createThirdParty() {
     hasUnreadDiary: false,
     diarySettings: getDiarySettingsWithDefaults(undefined),
     expeditionStats: getExpeditionStatsWithDefaults(null),
+    sleepinessOfPartyBag: createSleepinessPartyBag(),
+    currentSleepiness: 0,
     sideQuest: null,
   };
 
@@ -801,6 +842,7 @@ type GameAction =
   | { type: 'CLEAR_PENDING_PROFIT'; partyIndex: number }
   | { type: 'PROCESS_PENDING_PROFIT'; partyIndex: number; donation: number; deposit: number }
   | { type: 'SPEND_PENDING_PROFIT'; partyIndex: number; amount: number }
+  | { type: 'ROLL_PARTY_SLEEPINESS'; partyIndex: number }
   | { type: 'ROLL_SIDE_QUEST'; partyIndex: number; rolledTier: number }
   | { type: 'CANCEL_SIDE_QUEST'; partyIndex: number }
   | { type: 'ADVANCE_SIDE_QUEST'; partyIndex: number; amount: number; simulatedAt?: number }
@@ -1760,6 +1802,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'ROLL_PARTY_SLEEPINESS': {
+      const currentParty = state.parties[action.partyIndex];
+      if (!currentParty) return state;
+
+      const { party: updatedParty } = drawPartySleepiness(currentParty);
+      const updatedParties = [...state.parties];
+      updatedParties[action.partyIndex] = updatedParty;
+
+      return {
+        ...state,
+        parties: updatedParties,
+      };
+    }
+
 
     case 'ROLL_SIDE_QUEST': {
       const currentParty = state.parties[action.partyIndex];
@@ -2468,21 +2524,34 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
           const partyAfterProfit = workingState.parties[partyIndex];
           if (!partyAfterProfit) continue;
+          const sleepinessResult = drawPartySleepiness(partyAfterProfit);
+          const partyAfterSleepinessRoll = sleepinessResult.party;
+          const sleepDurationMultiplier = getSleepDurationMultiplier(sleepinessResult.sleepiness);
+
+          if (partyAfterSleepinessRoll !== partyAfterProfit) {
+            const rolledParties = [...workingState.parties];
+            rolledParties[partyIndex] = partyAfterSleepinessRoll;
+            workingState = {
+              ...workingState,
+              parties: rolledParties,
+            };
+          }
+
           const { partyStats } = computePartyStats(partyAfterProfit);
           const missingHp = Math.max(0, partyStats.hp - (partyAfterProfit.currentHp ?? partyStats.hp));
           const cycleScale = getCycleDurationScale();
-          const sleepDurationMs = Math.floor(180000 * cycleScale * getDeityStateDurationMultiplier(partyAfterProfit.deity.name, partyAfterProfit.deityGold ?? 0, 'sleep'));
+          const sleepDurationMs = Math.floor(180000 * cycleScale * getDeityStateDurationMultiplier(partyAfterSleepinessRoll.deity.name, partyAfterSleepinessRoll.deityGold ?? 0, 'sleep') * sleepDurationMultiplier);
           const tierFactor = getExpeditionTierDurationFactor(partyAfterProfit.selectedDungeonId);
           const peddlerLevel = getPartyAbilityLevel(partyAfterProfit, 'peddler');
           const peddlerMultiplier = peddlerLevel >= 2 ? 3 / 5 : peddlerLevel >= 1 ? 2 / 3 : 1;
           const moveDurationMs = Math.floor(10000 * cycleScale * tierFactor * peddlerMultiplier);
           const returnDurationMs = Math.floor(30000 * cycleScale * tierFactor * peddlerMultiplier);
-          const sleepSeconds = Math.max(1, Math.floor(sleepDurationMs / 1000));
+          const sleepSeconds = sleepDurationMs > 0 ? Math.max(1, Math.floor(sleepDurationMs / 1000)) : 0;
           const restSeconds = Math.max(1, Math.floor(missingHp > 0 ? ((missingHp * 100) / Math.max(1, partyStats.hp)) * 5 : 0));
           const moveSeconds = Math.max(1, Math.floor(moveDurationMs / 1000));
           const returnSeconds = Math.max(1, Math.floor(returnDurationMs / 1000));
 
-          if (partyAfterProfit.sideQuest?.type === 'q.sleeping') {
+          if (partyAfterProfit.sideQuest?.type === 'q.sleeping' && sleepSeconds > 0) {
             workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: sleepSeconds, simulatedAt });
           }
           if (partyAfterProfit.sideQuest?.type === 'q.exercise') {
@@ -2608,6 +2677,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...party,
         level: typeof party.level === 'number' ? party.level : 1,
         experience: typeof party.experience === 'number' ? party.experience : 0,
+        sleepinessOfPartyBag: normalizeSleepinessPartyBag(party.sleepinessOfPartyBag ?? createSleepinessPartyBag()),
+        currentSleepiness: normalizeSleepinessState(party.currentSleepiness),
       }));
       const defaultParties = createDefaultParties();
       while (normalizedParties.length < defaultParties.length) {
@@ -2790,6 +2861,10 @@ export function useGameState() {
 
     rollSideQuest: useCallback((partyIndex: number, rolledTier: number) => {
       dispatch({ type: 'ROLL_SIDE_QUEST', partyIndex, rolledTier });
+    }, []),
+
+    rollPartySleepiness: useCallback((partyIndex: number) => {
+      dispatch({ type: 'ROLL_PARTY_SLEEPINESS', partyIndex });
     }, []),
 
     cancelSideQuest: useCallback((partyIndex: number) => {
