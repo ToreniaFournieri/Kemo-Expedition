@@ -333,7 +333,8 @@
   - characters slots
 
 **Bag Randomization:** 
-- There are weighted bags (g.*_bag) that control probabilistic randomness: `t.common_reward_bag`, `t.common_enhancement_bag`, `t.uncommon_reward_bag`, `t.elite_rare_reward_bag`, `t.boss_rare_reward_bag`, `t.mythic_rare_reward_bag`, `t.enhancement_bag`, `t.superRare_bag`, `t.physical_threat_weight_bag`, `t.magical_threat_weight_bag`, and `t.side_quest_bag`
+- There are weighted bags (g.*_bag) that control probabilistic randomness: `t.common_reward_bag`, `t.common_enhancement_bag`, `t.uncommon_reward_bag`, `t.elite_rare_reward_bag`, `t.boss_rare_reward_bag`, `t.mythic_rare_reward_bag`, `t.enhancement_bag`, `t.superRare_bag`, `t.physical_threat_weight_bag`, `t.magical_threat_weight_bag`, `t.side_quest_bag`, and
+`t.sleepiness_of_party_bag` for each party. 
   - All bags persist in save data and are not reset per battle or per expedition.
   - Bags are reset only when: explicitly reset, or automatically reset when the bag becomes empty (total_tickets == 0).
 	
@@ -443,6 +444,15 @@
   - ID 1–12: 1 ticket each
   - Total tickets: 1,188 + 12 = 1,200 tickets
 
+- `t.sleepiness_of_party_bag` 
+  - Each party maintains its own persistent bag. 
+  - At the start of a rest cycle, draw 1 ticket from the bag to determine the party’s sleep state.
+
+| sleepiness | ticket |
+|-|-|-|
+| 0 | 9 |
+| 1 | 2 |
+| 2 | 1 |
 
 **superRare title** 
 
