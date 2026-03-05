@@ -1809,10 +1809,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const jewelKeys = ['might', 'arcana', 'fort', 'ward', 'shade', 'focus'] as const;
       const key = jewelKeys[Math.floor(Math.random() * jewelKeys.length)];
+      const rewardRank = Math.floor(Math.random() * currentParty.sideQuest.rolledTier) + 1;
       const diaryCreatedAt = action.simulatedAt ?? Date.now();
       const dungeonName = DUNGEONS.find((dungeon) => dungeon.id === currentParty.selectedDungeonId)?.name ?? '';
       const sideQuestLabel = currentParty.sideQuest.shortText.replace(/\(([^)]*)\)/, '$1');
-      const sideQuestDetail = `${dungeonName}: ${getJewelNameByRank(key, currentParty.sideQuest.rolledTier)} を手に入れた`;
+      const sideQuestDetail = `${dungeonName}: ${getJewelNameByRank(key, rewardRank)} を手に入れた`;
       const sideQuestDiaryLog: DiaryLog = {
         id: `${diaryCreatedAt}-${Math.random().toString(36).slice(2, 8)}`,
         expeditionLog: {
@@ -1849,7 +1850,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         parties: updatedParties,
         global: {
           ...state.global,
-          jewels: addJewelToInventory(state.global.jewels, key, currentParty.sideQuest.rolledTier),
+          jewels: addJewelToInventory(state.global.jewels, key, rewardRank),
         },
       };
     }
