@@ -231,18 +231,19 @@ Party.`d.HP` =
 
 - party.`f.party.offense_amplifier`(phase: phase):
   - If phase is LONG or CLOSE:
-	- If party.`a.command`1, back_row.member: multiply x1.2
-    - If party.`a.command`2, back_row.member:  multiply x1.35
-    - If party.`a.command`3, back_row.member:  multiply x2.43
+    - If flont_row.member.`a.command`3: multiply x2.43
+	- If flont_row.member.`a.command`2: multiply x1.35
+    - If flont_row.member.`a.command`1: multiply x1.2
 - party.`f.abilities_defense_amplifier`(phase: phase):
   - If phase is LONG or CLOSE:
-	- If party.`a.defender`1, back_row.member:  multiply x2/3
-  	- If party.`a.defender`2, back_row.member: multiply x3/5
-  	- If party.`a.defender`3, back_row.member: multiply x1/2
+  	- If flont_row.member.`a.defender`3: multiply x1/2
+  	- If flont_row.member.`a.defender`2: multiply x3/5
+	- If flont_row.member.`a.defender`1: multiply x2/3
   - If phase is MID:
-    - If party.`a.m-barrier`1, back_row.member: multiply x2/3
-    - If party.`a.m-barrier`2, back_row.member: multiply x3/5
-    - If party.`a.m-barrier`3, back_row.member: multiply x1/2
+    - If flont_row.member.`a.m-barrier`3: multiply x1/2
+    - If flont_row.member.`a.m-barrier`2: multiply x3/5
+    - If flont_row.member.`a.m-barrier`1: multiply x2/3
+
 
 
 
