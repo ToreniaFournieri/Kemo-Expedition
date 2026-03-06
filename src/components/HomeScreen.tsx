@@ -1611,8 +1611,9 @@ export function HomeScreen({
     autoEquipmentEnabledRef.current = isAutoEquipmentEnabled;
   }, [isAutoEquipmentEnabled]);
 
-  const runAutoEquipment = useCallback((targetPartyIndexes?: number[]) => {
+  const runAutoEquipment = useCallback((targetPartyIndexes?: number[], targetCharacterIds?: Array<number | string>) => {
     const targetPartyIndexSet = targetPartyIndexes ? new Set(targetPartyIndexes) : null;
+    const targetCharacterIdSet = targetCharacterIds ? new Set(targetCharacterIds) : null;
     const simulatedInventory: InventoryRecord = { ...state.global.inventory };
     const slotNotifications = new Map<string, { message: string; startedFromEmpty: boolean }>();
     const setSlotNotification = (
@@ -1850,6 +1851,8 @@ export function HomeScreen({
       if (targetPartyIndexSet && !targetPartyIndexSet.has(partyIndex)) return;
 
       party.characters.forEach((character) => {
+        if (targetCharacterIdSet && !targetCharacterIdSet.has(character.id)) return;
+
         const priorities = AUTO_EQUIPMENT_PRIORITY_BY_CLASS[character.mainClassId] ?? AUTO_EQUIPMENT_PRIORITY_BY_CLASS.fighter;
         const { maxEquipSlots } = computeCharacterStats(character, party.level);
         const simulatedEquipmentSlots = Array.from({ length: maxEquipSlots }, (_, index) => character.equipment[index] ?? null);
@@ -2919,6 +2922,7 @@ export function HomeScreen({
             onAddStatNotifications={actions.addStatNotifications}
             onSelectParty={actions.selectParty}
             onUpdatePartyDeity={actions.updatePartyDeity}
+            onAutoEquipCharacter={(characterId) => runAutoEquipment([state.selectedPartyIndex], [characterId])}
             inventory={state.global.inventory}
             jewels={state.global.jewels}
             deityDonations={state.global.deityDonations}
@@ -3031,6 +3035,7 @@ function PartyTab({
   onAddStatNotifications,
   onSelectParty,
   onUpdatePartyDeity,
+  onAutoEquipCharacter,
   inventory,
   jewels,
   deityDonations,
@@ -3052,6 +3057,7 @@ function PartyTab({
   onAddStatNotifications: (changes: Array<{ message: string; isPositive: boolean }>) => void;
   onSelectParty: (partyIndex: number) => void;
   onUpdatePartyDeity: (partyIndex: number, deityName: string) => void;
+  onAutoEquipCharacter: (characterId: number) => void;
   inventory: InventoryRecord;
   jewels: Record<string, number>;
   deityDonations: Record<string, number>;
@@ -3466,6 +3472,26 @@ function PartyTab({
   const displayedDeityName = editingDeity ? pendingDeityName : party.deity.name;
   const normalizedDisplayedDeityName = normalizeDeityName(displayedDeityName);
   const displayedDeityDonation = deityDonations[normalizedDisplayedDeityName] ?? 0;
+  const equippedItemCount = char.equipment.filter((item) => item != null).length;
+  const hasNoEquipment = equippedItemCount === 0;
+
+  const handleRemoveAllEquipment = () => {
+    if (hasNoEquipment) return;
+    const shouldRemove = window.confirm('全ての装備を解除します。よろしいですか？');
+    if (!shouldRemove) return;
+
+    Array.from({ length: stats.maxEquipSlots }).forEach((_, slotIndex) => {
+      if (char.equipment[slotIndex]) {
+        onEquipItem(char.id, slotIndex, null);
+      }
+    });
+    setSelectingSlot(null);
+  };
+
+  const handleAutoEquipment = () => {
+    if (!hasNoEquipment) return;
+    onAutoEquipCharacter(char.id);
+  };
 
   const getEquipSlotReductionCount = (edits: Partial<Character> | null): number => {
     const changedKeys = getChangedEditKeys(edits);
@@ -4615,9 +4641,28 @@ function PartyTab({
       <div className="bg-pane rounded-lg p-4">
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm font-medium">装備</span>
-          <span className="text-xs text-gray-500">
-            {formatNumber(char.equipment.filter(e => e).length)} / {formatNumber(stats.maxEquipSlots)} スロット
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-gray-500">
+              {formatNumber(equippedItemCount)} / {formatNumber(stats.maxEquipSlots)} スロット
+            </span>
+            {hasNoEquipment ? (
+              <button
+                type="button"
+                onClick={handleAutoEquipment}
+                className="text-xs font-semibold text-sub hover:opacity-80"
+              >
+                自動装備*
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleRemoveAllEquipment}
+                className="text-xs font-semibold text-red-600 hover:opacity-80"
+              >
+                全装備解除
+              </button>
+            )}
+          </div>
         </div>
       <div className="space-y-1">
         {(() => {
