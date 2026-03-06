@@ -437,14 +437,15 @@ Party.`d.HP` =
 | 11 | `i.catalyst` |
 
 #### 3.6.2 Item selection within a category
-- When selecting an item from a valid category, auto-equipment chooses:
+- **Step1:** When selecting an item from a valid category, auto-equipment chooses:
   - the highest item tier which is available 
   - and, among those, the highest enhancement
   - Eligible items are limited to common items only.(and no Super rare item)
 - The item selection within the category:
 the highest tier and highest enhancement of common items.
  (excluding uncommon, elite rare, boss rare, mythic rare, and super rare items)
-- If a character equips two or more common items of the same category and tier, Replaces **one of** duplicate items with the highest-base-value alternative (uncommon, elite rare, boss rare and mythic rare) available in that category.
+- **Step2:** If a character equips two or more common items of the same category and tier, Only one common item of that category and tier is retained. All additional duplicates are replaced with the highest base-value alternatives available in the same category (uncommon, elite rare, boss rare and mythic rare).
+- This duplicate resolution (step2) is logically treated as part of the same auto-equipment calculation. 
 
 #### 3.6.3 Upgrading equipped items
 - If a party member already has an item equipped, and another eligible item of the same category exists with a higher enhancement, the equipped item is replaced.
