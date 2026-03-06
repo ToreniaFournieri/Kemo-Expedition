@@ -452,7 +452,7 @@ the highest tier and highest enhancement of common items.
 - Limit: maximum 1,800 minutes (30 hours) per catch-up simulation (current version).
 
 **Notification**
-- Format: 踏破N回/撤退M回/敗北X回 寄付金額: vG, 貯金額:　vG
+- Format: 踏破N回/帰還Y回/撤退M回/敗北X回 寄付金額: vG, 貯金額:　vG
 - If the value is 0, not display its text (if all zero, then no notification)
 
 ```
