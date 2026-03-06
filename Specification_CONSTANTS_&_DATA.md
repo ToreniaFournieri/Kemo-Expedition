@@ -720,6 +720,8 @@
 - Characters do not have individual HP. Each character contributes total HP. 
 
 #### 2.3.3 Religions lists
+- 信仰なし (None) may be selected by multiple parties.
+- All other religions are unique and can be assigned to only one party at a time.
 
 | God | Name | Effect | Scaling of rank up |
 |-|-|-|-|
