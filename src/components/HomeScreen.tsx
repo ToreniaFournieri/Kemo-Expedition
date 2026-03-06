@@ -4476,12 +4476,22 @@ function ExpeditionTab({
           return displayedEntries[displayedEntries.length - 1].remainingPartyHP;
         })();
         const hpPercent = Math.min(100, Math.round((displayedHp / Math.max(1, partyStats.hp)) * 100));
+        const sellProgressPercent = (() => {
+          if (cycle.state !== 'sell') return null;
+          const sellStepCount = Math.max(1, party.lastExpeditionLog?.autoSellCount ?? 1);
+          const rawSellProgress = Math.min(1, cycleElapsedMs / Math.max(1, cycle.durationMs));
+          const completedSteps = Math.min(sellStepCount, Math.floor(rawSellProgress * sellStepCount));
+          return (completedSteps / sellStepCount) * 100;
+        })();
+
         const progressPercent = afkRecoveryProgressPercent ?? (cycle.state === 'idle'
           ? 100
           : cycle.state === 'rest'
           ? hpPercent
           : cycle.state === 'explore'
           ? (Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, displayedEntries.length) / EXPLORING_PROGRESS_TOTAL_STEPS) * 100
+          : sellProgressPercent !== null
+          ? sellProgressPercent
           : Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100));
         const progressLabel = afkRecoveryProgressPercent !== null ? '復帰中' : getPartyCycleStateLabel(cycle.state);
         const hpForSortieCheck = cycle.state === 'explore' ? displayedHp : party.currentHp;
