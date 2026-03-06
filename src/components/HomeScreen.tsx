@@ -1745,6 +1745,44 @@ export function HomeScreen({
       return a.id - b.id;
     };
 
+    const getEnhancementAndSuperRareMultiplier = (item: Item): number => {
+      const enhancementMultiplier = ENHANCEMENT_TITLES.find((title) => title.value === item.enhancement)?.multiplier ?? 1;
+      const superRareMultiplier = SUPER_RARE_TITLES.find((title) => title.value === item.superRare)?.multiplier ?? 1;
+      return enhancementMultiplier * superRareMultiplier;
+    };
+
+    const getCoreConceptValue = (item: Item): number => {
+      const multiplier = getEnhancementAndSuperRareMultiplier(item);
+      switch (item.category) {
+        case 'armor':
+          return (item.physicalDefense ?? 0) * multiplier;
+        case 'robe':
+          return (item.magicalDefense ?? 0) * multiplier;
+        case 'shield':
+          return (item.partyHP ?? 0) * multiplier;
+        case 'sword':
+          return (item.meleeAttack ?? 0) * multiplier;
+        case 'katana':
+          return ((item.meleeAttack ?? 0) + (item.meleeNoABonus ?? 0)) * multiplier;
+        case 'gauntlet':
+          return (item.meleeNoA ?? 0) * multiplier;
+        case 'arrow':
+          return (item.rangedAttack ?? 0) * multiplier;
+        case 'bolt':
+          return ((item.rangedAttack ?? 0) + (item.rangedNoABonus ?? 0)) * multiplier;
+        case 'archery':
+          return (item.rangedNoA ?? 0) * multiplier;
+        case 'wand':
+          return (item.magicalAttack ?? 0) * multiplier;
+        case 'grimoire':
+          return ((item.magicalAttack ?? 0) + (item.magicalNoABonus ?? 0)) * multiplier;
+        case 'catalyst':
+          return (item.magicalNoA ?? 0) * multiplier;
+        default:
+          return 0;
+      }
+    };
+
     const getBestVariantKeyInCategory = (
       category: ItemCategory,
       memoryItemIds: Set<number>,
@@ -1756,8 +1794,6 @@ export function HomeScreen({
             variant.status !== 'owned'
             || variant.count <= 0
             || variant.item.category !== category
-            || variant.item.superRare >= 1
-            || getItemRarityById(variant.item.id) !== 'common'
           ) {
             return false;
           }
@@ -1772,6 +1808,9 @@ export function HomeScreen({
           return true;
         })
         .sort(([, a], [, b]) => {
+          const coreConceptDiff = getCoreConceptValue(b.item) - getCoreConceptValue(a.item);
+          if (coreConceptDiff !== 0) return coreConceptDiff;
+
           return compareItemsByTierAndEnhancement(b.item, a.item);
         });
 
