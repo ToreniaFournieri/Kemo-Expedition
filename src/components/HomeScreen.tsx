@@ -1652,8 +1652,13 @@ export function HomeScreen({
 
       party.characters.forEach((character) => {
         const priorities = AUTO_EQUIPMENT_PRIORITY_BY_CLASS[character.mainClassId] ?? AUTO_EQUIPMENT_PRIORITY_BY_CLASS.fighter;
-        const emptySlotIndexes = character.equipment
-          .map((item, index) => (item ? -1 : index))
+        const { maxEquipSlots } = computeCharacterStats(character, party.level);
+        const equippedSlots = Array.from({ length: maxEquipSlots }, (_, index) => ({
+          slotIndex: index,
+          item: character.equipment[index] ?? null,
+        }));
+        const emptySlotIndexes = equippedSlots
+          .map(({ item, slotIndex }) => (item ? -1 : slotIndex))
           .filter((index) => index >= 0);
 
         emptySlotIndexes.forEach((slotIndex, emptyIndex) => {
@@ -1670,7 +1675,7 @@ export function HomeScreen({
           }
         });
 
-        character.equipment.forEach((equippedItem, slotIndex) => {
+        equippedSlots.forEach(({ item: equippedItem, slotIndex }) => {
           if (!equippedItem) return;
           if (equippedItem.superRare >= 1 || getItemRarityById(equippedItem.id) !== 'common') return;
           const itemKey = getBestVariantKeyInCategory(equippedItem.category);
