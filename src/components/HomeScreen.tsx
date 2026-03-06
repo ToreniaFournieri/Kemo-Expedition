@@ -7404,7 +7404,7 @@ function SettingTab({
                     : 'bg-white text-gray-700 border-gray-300'
                 } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
-                m.kemo ケモ
+                ケモ
               </button>
               <button
                 onClick={() => onSetGameMode('m.luna')}
@@ -7414,7 +7414,7 @@ function SettingTab({
                     : 'bg-white text-gray-700 border-gray-300'
                 }`}
               >
-                m.luna ルナ
+                ルナ(高難度)
               </button>
             </div>
             <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600">
