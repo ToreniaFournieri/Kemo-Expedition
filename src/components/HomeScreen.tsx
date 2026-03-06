@@ -1619,6 +1619,18 @@ export function HomeScreen({
       }
     };
 
+    const getItemTier = (item: Item): number => Math.floor(item.id / 1000);
+
+    const compareItemsByTierAndEnhancement = (a: Item, b: Item): number => {
+      const tierDiff = getItemTier(a) - getItemTier(b);
+      if (tierDiff !== 0) return tierDiff;
+
+      const enhancementDiff = a.enhancement - b.enhancement;
+      if (enhancementDiff !== 0) return enhancementDiff;
+
+      return a.id - b.id;
+    };
+
     const getBestVariantKeyInCategory = (category: ItemCategory): string | null => {
       const options = Object.entries(simulatedInventory)
         .filter(([, variant]) => (
@@ -1629,11 +1641,7 @@ export function HomeScreen({
           && getItemRarityById(variant.item.id) === 'common'
         ))
         .sort(([, a], [, b]) => {
-          const tierA = Math.floor(a.item.id / 1000);
-          const tierB = Math.floor(b.item.id / 1000);
-          if (tierA !== tierB) return tierB - tierA;
-          if (a.item.enhancement !== b.item.enhancement) return b.item.enhancement - a.item.enhancement;
-          return b.item.id - a.item.id;
+          return compareItemsByTierAndEnhancement(b.item, a.item);
         });
 
       return options[0]?.[0] ?? null;
@@ -1669,7 +1677,7 @@ export function HomeScreen({
           if (!itemKey) return;
           const variant = simulatedInventory[itemKey];
           if (!variant) return;
-          if (variant.item.enhancement <= equippedItem.enhancement) return;
+          if (compareItemsByTierAndEnhancement(variant.item, equippedItem) <= 0) return;
 
           removeItemFromSimulatedInventory(itemKey);
           addItemToSimulatedInventory(equippedItem);
