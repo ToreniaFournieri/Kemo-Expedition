@@ -1518,7 +1518,7 @@ export function HomeScreen({
   const [activeBaseSubTab, setActiveBaseSubTab] = useState<BaseSubTab>('shop');
   const [selectedCharacter, setSelectedCharacter] = useState<number>(0);
   const [editingCharacter, setEditingCharacter] = useState<number | null>(null);
-  const [isAutoRepeatEnabled, setIsAutoRepeatEnabled] = useState(false);
+  const [isAutoRepeatEnabled, setIsAutoRepeatEnabled] = useState(true);
   const [partyCycles, setPartyCycles] = useState<Record<number, PartyCycleRuntime>>({});
   const [expeditionExpandedLogParty, setExpeditionExpandedLogParty] = useState<number | null>(null);
   const [expeditionExpandedRoom, setExpeditionExpandedRoom] = useState<{ partyIndex: number; roomIndex: number; latestRoomToken: string } | null>(null);
@@ -1557,6 +1557,28 @@ export function HomeScreen({
   useEffect(() => {
     autoRepeatEnabledRef.current = isAutoRepeatEnabled;
   }, [isAutoRepeatEnabled]);
+
+  const setAutoRepeatEnabled = useCallback((nextEnabled: boolean) => {
+    autoRepeatEnabledRef.current = nextEnabled;
+    setIsAutoRepeatEnabled(nextEnabled);
+    if (!nextEnabled) return;
+
+    setPartyCycles((prevCycles) => {
+      const nextCycles = { ...prevCycles };
+      const now = Date.now();
+      state.parties.forEach((party, partyIndex) => {
+        const runtime = nextCycles[partyIndex] ?? { state: 'idle' as PartyCycleState, stateStartedAt: now, durationMs: 1000 };
+        if (runtime.state === 'idle') {
+          nextCycles[partyIndex] = {
+            state: 'move',
+            stateStartedAt: now,
+            durationMs: getPartyTravelDurationMs(party, 'move'),
+          };
+        }
+      });
+      return nextCycles;
+    });
+  }, [state.parties]);
 
   useEffect(() => {
     gameModeRef.current = gameMode;
@@ -1618,9 +1640,8 @@ export function HomeScreen({
       const elapsedMs = Math.max(0, Math.min(Date.now() - checkpointAt, AFK_MAX_ELAPSED_MS));
       lastCheckpointAtRef.current = Date.now() - elapsedMs;
 
-      const restoredAutoRepeat = parsed.autoRepeatEnabled === true;
-      autoRepeatEnabledRef.current = restoredAutoRepeat;
-      setIsAutoRepeatEnabled(restoredAutoRepeat);
+      const restoredAutoRepeat = parsed.autoRepeatEnabled !== false;
+      setAutoRepeatEnabled(restoredAutoRepeat);
       if (parsed.partyCycles && typeof parsed.partyCycles === 'object') {
         const restoredCycles: Record<number, PartyCycleRuntime> = {};
         Object.entries(parsed.partyCycles).forEach(([key, value]) => {
@@ -1643,7 +1664,7 @@ export function HomeScreen({
     } finally {
       pendingAfkSimulationRef.current = false;
     }
-  }, []);
+  }, [setAutoRepeatEnabled]);
 
   useEffect(() => {
     if (pendingAfkSimulationRef.current) return;
@@ -2339,34 +2360,6 @@ export function HomeScreen({
             </div>
             <div className="flex items-center gap-2 text-right text-sm font-medium leading-none">
               <span>{formatNumber(state.global.gold)}G</span>
-              <button
-                onClick={() => {
-                  setIsAutoRepeatEnabled((prev) => {
-                    const nextEnabled = !prev;
-                    autoRepeatEnabledRef.current = nextEnabled;
-                    if (nextEnabled) {
-                      setPartyCycles((prevCycles) => {
-                        const nextCycles = { ...prevCycles };
-                        state.parties.forEach((_, partyIndex) => {
-                          const runtime = nextCycles[partyIndex] ?? { state: 'idle' as PartyCycleState, stateStartedAt: Date.now(), durationMs: 1000 };
-                          if (runtime.state === 'idle') {
-                            nextCycles[partyIndex] = { state: 'move', stateStartedAt: Date.now(), durationMs: getPartyTravelDurationMs(state.parties[partyIndex], 'move') };
-                          }
-                        });
-                        return nextCycles;
-                      });
-                    }
-                    return nextEnabled;
-                  });
-                }}
-                className={`rounded px-2 py-0.5 text-xs border ${
-                  isAutoRepeatEnabled
-                    ? 'bg-blue-50 border-sub text-sub'
-                    : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                自動進行{isAutoRepeatEnabled ? 'ON' : 'OFF'}
-              </button>
             </div>
           </div>
 
@@ -2502,6 +2495,8 @@ export function HomeScreen({
             gameMode={gameMode}
             onSetGameMode={setGameMode}
             isLunaEnvironment={isLunaEnvironment}
+            isAutoRepeatEnabled={isAutoRepeatEnabled}
+            onSetAutoRepeatEnabled={setAutoRepeatEnabled}
           />
         )}
       </div>
@@ -6023,6 +6018,8 @@ function SettingTab({
   gameMode,
   onSetGameMode,
   isLunaEnvironment,
+  isAutoRepeatEnabled,
+  onSetAutoRepeatEnabled,
 }: {
   gameState: GameState;
   deityDonations: Record<string, number>;
@@ -6048,6 +6045,8 @@ function SettingTab({
   gameMode: GameMode;
   onSetGameMode: Dispatch<SetStateAction<GameMode>>;
   isLunaEnvironment: boolean;
+  isAutoRepeatEnabled: boolean;
+  onSetAutoRepeatEnabled: (enabled: boolean) => void;
 }) {
   type DivineBureauPanelKey = 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'bestiary' | 'superRare' | 'gameSetting';
   const DIVINE_BUREAU_PANEL_STORAGE_KEY = 'kemo-expedition.divine-bureau.panel-expanded';
@@ -6561,43 +6560,6 @@ function SettingTab({
 
   return (
     <div>
-      <div className="bg-pane rounded-lg p-4 mb-4">
-        {renderDivineBureauPanelHeader('modeSelect', 'モード切替')}
-        {divineBureauPanelExpanded.modeSelect && <div className="mt-3">
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => !modeSelectionLocked && onSetGameMode('m.kemo')}
-              disabled={modeSelectionLocked}
-              className={`py-2 rounded border text-sm font-medium ${
-                gameMode === 'm.kemo'
-                  ? 'bg-sub text-white border-sub'
-                  : 'bg-white text-gray-700 border-gray-300'
-              } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
-            >
-              ケモ
-            </button>
-            <button
-              onClick={() => !modeSelectionLocked && onSetGameMode('m.luna')}
-              disabled={modeSelectionLocked}
-              className={`py-2 rounded border text-sm font-medium ${
-                gameMode === 'm.luna'
-                  ? 'bg-sub text-white border-sub'
-                  : 'bg-white text-gray-700 border-gray-300'
-              } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
-            >
-              ルナ
-            </button>
-          </div>
-          <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600">
-            {modeSelectionLocked
-              ? 'ゲームモードはluna固定で変更する事は出来ません'
-              : gameMode === 'm.kemo'
-                ? '通常のモードです'
-                : '敵が大幅に強くなります(少しだけ報酬がよくなります)'}
-          </div>
-        </div>}
-      </div>
-
       <div className="bg-pane rounded-lg p-4 mb-4">
         {renderDivineBureauPanelHeader('donation', '寄付箱')}
         {divineBureauPanelExpanded.donation && <div className="bg-white rounded p-2 text-sm space-y-1 mt-3">
@@ -7166,6 +7128,71 @@ function SettingTab({
           ))}
         </div>
         </>}
+      </div>
+
+      <div className="bg-pane rounded-lg p-4 mb-4">
+        {renderDivineBureauPanelHeader('modeSelect', 'モード切替')}
+        {divineBureauPanelExpanded.modeSelect && <div className="mt-3 space-y-4">
+          <div>
+            <div className="text-xs text-gray-600 font-medium mb-2">自動周回</div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => onSetAutoRepeatEnabled(true)}
+                className={`py-2 rounded border text-sm font-medium ${
+                  isAutoRepeatEnabled
+                    ? 'bg-sub text-white border-sub'
+                    : 'bg-white text-gray-700 border-gray-300'
+                }`}
+              >
+                自動周回 ON
+              </button>
+              <button
+                onClick={() => onSetAutoRepeatEnabled(false)}
+                className={`py-2 rounded border text-sm font-medium ${
+                  !isAutoRepeatEnabled
+                    ? 'bg-sub text-white border-sub'
+                    : 'bg-white text-gray-700 border-gray-300'
+                }`}
+              >
+                自動周回 OFF
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <div className="text-xs text-gray-600 font-medium mb-2">ゲームモード</div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => !modeSelectionLocked && onSetGameMode('m.kemo')}
+                disabled={modeSelectionLocked}
+                className={`py-2 rounded border text-sm font-medium ${
+                  gameMode === 'm.kemo'
+                    ? 'bg-sub text-white border-sub'
+                    : 'bg-white text-gray-700 border-gray-300'
+                } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
+              >
+                m.kemo ケモ
+              </button>
+              <button
+                onClick={() => onSetGameMode('m.luna')}
+                className={`py-2 rounded border text-sm font-medium ${
+                  gameMode === 'm.luna'
+                    ? 'bg-sub text-white border-sub'
+                    : 'bg-white text-gray-700 border-gray-300'
+                }`}
+              >
+                m.luna ルナ
+              </button>
+            </div>
+            <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600">
+              {modeSelectionLocked
+                ? 'ゲームモードは/luna/環境のためm.luna固定です（m.kemoは選択できません）'
+                : gameMode === 'm.kemo'
+                  ? '通常のモードです'
+                  : '敵が大幅に強くなります(報酬がよくなります)'}
+            </div>
+          </div>
+        </div>}
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4">
