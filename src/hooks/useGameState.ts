@@ -307,11 +307,12 @@ function getDeityDonationsWithDefaults(value: unknown): Record<string, number> {
 
 function getExpeditionStatsWithDefaults(value: unknown) {
   if (!value || typeof value !== 'object') {
-    return { victories: 0, retreats: 0, defeats: 0, donatedGold: 0, savedGold: 0 };
+    return { victories: 0, returns: 0, retreats: 0, defeats: 0, donatedGold: 0, savedGold: 0 };
   }
   const raw = value as Record<string, unknown>;
   return {
     victories: typeof raw.victories === 'number' ? raw.victories : 0,
+    returns: typeof raw.returns === 'number' ? raw.returns : 0,
     retreats: typeof raw.retreats === 'number' ? raw.retreats : 0,
     defeats: typeof raw.defeats === 'number' ? raw.defeats : 0,
     donatedGold: typeof raw.donatedGold === 'number' ? raw.donatedGold : 0,
@@ -1971,7 +1972,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         expeditionStats: {
           ...currentParty.expeditionStats,
           victories: currentParty.expeditionStats.victories + (finalOutcome === 'victory' ? 1 : 0),
-          retreats: currentParty.expeditionStats.retreats + ((finalOutcome === 'retreat' || finalOutcome === 'return') ? 1 : 0),
+          returns: currentParty.expeditionStats.returns + (finalOutcome === 'return' ? 1 : 0),
+          retreats: currentParty.expeditionStats.retreats + (finalOutcome === 'retreat' ? 1 : 0),
           defeats: currentParty.expeditionStats.defeats + (finalOutcome === 'defeat' ? 1 : 0),
         },
       };
