@@ -633,7 +633,7 @@ function getSideQuestText(party: Party): string | null {
       current: `${formatNumber(displayProgress)}分`,
     },
     'q.AFK': {
-      text: `${formatNumber(displayTarget)}分神から干渉を受けない`,
+      text: `${formatNumber(displayTarget)}分神から見放されている`,
       current: `${formatNumber(displayProgress)}分`,
     },
     'q.treasure_super_rare': {
