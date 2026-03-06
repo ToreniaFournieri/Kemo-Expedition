@@ -1092,6 +1092,8 @@ Tier 5 common `i.arrow`: `d.ranged_attack` +41, `c.ranged_attack+0.08`
   - Players can change an item’s status from `s.sold` to `s.notown`.
   - Sold items cannot be restored or refunded.
   - After a status reset, the variant can be collected in the inventory again.
+- **Overflow Handling**
+  - If the stack exceeds max_stack, the excess items are automatically sold. (treat as auto-sell item)
 
 #### 2.5.4 Item master definitions
 - id
