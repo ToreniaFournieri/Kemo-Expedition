@@ -4657,7 +4657,7 @@ function PartyTab({
               <button
                 type="button"
                 onClick={handleRemoveAllEquipment}
-                className="text-xs font-semibold text-red-600 hover:opacity-80"
+                className="text-xs font-semibold text-accent hover:opacity-80"
               >
                 全装備解除
               </button>
