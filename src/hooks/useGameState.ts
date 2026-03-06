@@ -56,7 +56,7 @@ import {
 import { getItemById, getItemsByTierAndRarity } from '../data/items';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { getItemDisplayName } from '../game/gameState';
-import { getDeityKey, getDeityRank, getDeityStateDurationMultiplier, getEffectiveDeityTier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
+import { getDeityKey, getDeityRank, getEffectiveDeityTier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { RACES } from '../data/races';
 import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
@@ -204,11 +204,6 @@ function getUnlockedStateFromEntries(entries: ExpeditionLogEntry[], initialUnloc
 function getCycleDurationScale(): number {
   const env = getEnvironmentId();
   return env === 'dev' || env === 'qa' || env === 'luna' ? DEBUG_CYCLE_DURATION_SCALE : 1;
-}
-
-function getExpeditionTierDurationFactor(expTier: number): number {
-  const normalizedTier = Math.max(0, expTier);
-  return Math.pow(1.3 - (0.02 * normalizedTier), normalizedTier);
 }
 
 function formatSideQuestShortText(type: string, shortText: string, target: number): string {
@@ -767,12 +762,6 @@ function drawPartySleepiness(party: Party): { party: Party; sleepiness: Sleepine
     },
     sleepiness,
   };
-}
-
-function getSleepDurationMultiplier(sleepiness: SleepinessState): number {
-  if (sleepiness === 1) return 1 / 5;
-  if (sleepiness === 2) return 1;
-  return 0;
 }
 
 function createInitialParty() {
@@ -2773,6 +2762,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (cappedElapsedMs < 1000) return state;
 
       const approxCycleDurationMs = Math.floor(460_000 * getCycleDurationScale());
+      const simulatedCycleSeconds = Math.max(1, Math.floor(approxCycleDurationMs / 1000));
       const runCount = Math.max(0, Math.floor(cappedElapsedMs / approxCycleDurationMs));
       if (runCount <= 0) return state;
 
@@ -2794,6 +2784,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
           const currentParty = workingState.parties[partyIndex];
           if (!currentParty) continue;
+
+          if (currentParty.sideQuest && TIME_BASED_SIDE_QUEST_TYPES.has(currentParty.sideQuest.type)) {
+            workingState = gameReducer(workingState, {
+              type: 'ADVANCE_SIDE_QUEST',
+              partyIndex,
+              amount: simulatedCycleSeconds,
+              simulatedAt,
+            });
+          }
 
           const { partyStats: restStartStats } = computePartyStats(currentParty);
           const hpRatioAtRestStart = restStartStats.hp > 0 ? ((currentParty.currentHp ?? 0) / restStartStats.hp) : 0;
@@ -2838,12 +2837,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           if (!partyAfterProfit) continue;
           const shouldSkipSleepForLowHp = hpRatioAtRestStart < 0.1;
           let partyAfterSleepinessRoll = partyAfterProfit;
-          let sleepDurationMultiplier = 0;
 
           if (!shouldSkipSleepForLowHp) {
             const sleepinessResult = drawPartySleepiness(partyAfterProfit);
             partyAfterSleepinessRoll = sleepinessResult.party;
-            sleepDurationMultiplier = getSleepDurationMultiplier(sleepinessResult.sleepiness);
 
             if (partyAfterSleepinessRoll !== partyAfterProfit) {
               const rolledParties = [...workingState.parties];
@@ -2857,30 +2854,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
           const { partyStats } = computePartyStats(partyAfterProfit);
           const missingHp = Math.max(0, partyStats.hp - (partyAfterProfit.currentHp ?? partyStats.hp));
-          const cycleScale = getCycleDurationScale();
-          const sleepDurationMs = Math.floor(180000 * cycleScale * getDeityStateDurationMultiplier(partyAfterSleepinessRoll.deity.name, partyAfterSleepinessRoll.deityGold ?? 0, 'sleep') * sleepDurationMultiplier);
-          const tierFactor = getExpeditionTierDurationFactor(partyAfterProfit.selectedDungeonId);
-          const peddlerLevel = getPartyAbilityLevel(partyAfterProfit, 'peddler');
-          const peddlerMultiplier = peddlerLevel >= 2 ? 3 / 5 : peddlerLevel >= 1 ? 2 / 3 : 1;
-          const moveDurationMs = Math.floor(10000 * cycleScale * tierFactor * peddlerMultiplier);
-          const returnDurationMs = Math.floor(30000 * cycleScale * tierFactor * peddlerMultiplier);
-          const sleepSeconds = sleepDurationMs > 0 ? Math.max(1, Math.floor(sleepDurationMs / 1000)) : 0;
-          const restSeconds = Math.max(1, Math.floor(missingHp > 0 ? ((missingHp * 100) / Math.max(1, partyStats.hp)) * 5 : 0));
-          const moveSeconds = Math.max(1, Math.floor(moveDurationMs / 1000));
-          const returnSeconds = Math.max(1, Math.floor(returnDurationMs / 1000));
-
-          if (partyAfterProfit.sideQuest?.type === 'q.sleeping' && sleepSeconds > 0) {
-            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: sleepSeconds, simulatedAt });
-          }
-          if (partyAfterProfit.sideQuest?.type === 'q.exercise') {
-            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: moveSeconds + returnSeconds, simulatedAt });
-          }
-          if (partyAfterProfit.sideQuest?.type === 'q.healing' && restSeconds > 0) {
-            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: restSeconds, simulatedAt });
-          }
-          if (partyAfterProfit.sideQuest?.type === 'q.AFK') {
-            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: moveSeconds, simulatedAt });
-          }
 
           if (missingHp > 0) {
             workingState = gameReducer(workingState, { type: 'HEAL_PARTY_HP', partyIndex, amount: missingHp });
