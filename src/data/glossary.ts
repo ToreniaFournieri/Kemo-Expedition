@@ -1065,7 +1065,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "q.AFK",
         "label": "放置",
-        "description": "神から干渉を受けない(神魔戦で中止) (180分 ~ 360分)"
+        "description": "神から見放されている(神魔戦で中止) (180分 ~ 360分)"
       },
       {
         "key": "q.treasure_super_rare",
