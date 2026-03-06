@@ -746,7 +746,7 @@ HP: 312                 クラス: 魔法使い
 
 - Switch to 自動周回: ON/OFF (Default:ON )
 
-- Switch to `m.kemo`ケモ and `m.luna`ルナ . Default: `m.kemo`
+- Switch to `m.kemo`ケモ and `m.luna`ルナ(高難度) . Default: `m.kemo`
   - Description:
     - `m.kemo` "通常のモードです"
     - `m.luna` "敵が大幅に強くなります(報酬がよくなります)"
