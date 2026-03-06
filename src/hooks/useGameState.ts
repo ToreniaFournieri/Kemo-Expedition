@@ -114,18 +114,35 @@ const PARTY_UNLOCK_BY_GOD_NAME: Record<string, number> = {
 
 const UNLOCKABLE_DEITY_BY_GOD_NAME: Record<string, string> = {
   Seiran: 'Goddess of Restoration',
+  'セイラン': 'Goddess of Restoration',
   Garv: 'God of Attrition',
+  'ガーヴ': 'God of Attrition',
   'Kyōen': 'God of Cunning',
+  'キョウエン': 'God of Cunning',
   Dolvar: 'God of Fortification',
+  'ドルヴァ': 'God of Fortification',
   Miora: 'Goddess of Fertility',
+  'ミオラ': 'Goddess of Fertility',
   Rondel: 'God of Resonance',
+  'ロンデル': 'God of Resonance',
   Lira: 'Goddess of Precision',
+  'リラ': 'Goddess of Precision',
   Forne: 'God of Fate',
+  'フォルネ': 'God of Fate',
   Skuva: 'God of Dusk',
+  'スクヴァ': 'God of Dusk',
   Tanue: 'Goddess of Mirage',
+  'タヌエ': 'Goddess of Mirage',
   Noctyra: 'God of Oblivion',
+  'ノクティラ': 'God of Oblivion',
   Eris: 'Goddess of Discord',
+  'エリス': 'Goddess of Discord',
 };
+
+function getGodNameFromLogEnemyName(enemyName: string): string {
+  const token = enemyName.split(' ')[0] ?? enemyName;
+  return token.replace(/\(.*?\)/g, '');
+}
 
 const DEFAULT_UNLOCKED_DEITIES: string[] = [];
 
@@ -170,7 +187,7 @@ function getUnlockedStateFromEntries(entries: ExpeditionLogEntry[], initialUnloc
   for (const entry of entries) {
     if (entry.outcome !== 'victory') continue;
     if (!entry.enemyName.includes('(神魔戦)')) continue;
-    const enemyName = entry.enemyName.split(' ')[0] ?? entry.enemyName;
+    const enemyName = getGodNameFromLogEnemyName(entry.enemyName);
     const unlockDeityName = UNLOCKABLE_DEITY_BY_GOD_NAME[enemyName];
     if (unlockDeityName) {
       unlockedDeities = ensureUnlockedDeity(unlockedDeities, unlockDeityName);
