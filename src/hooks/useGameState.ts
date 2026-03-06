@@ -150,6 +150,20 @@ function ensureUnlockedDeity(unlockedDeities: string[], deityName: string): stri
   return [...unlockedDeities, normalized];
 }
 
+function createUnlockedPartyWithAvailableDeity(defaultParty: Party, existingParties: Party[]): Party {
+  const normalizedDeityName = normalizeDeityName(defaultParty.deity.name);
+  if (isNoFaithDeity(normalizedDeityName)) return defaultParty;
+
+  const isUsedByOtherParty = existingParties.some((party) => normalizeDeityName(party.deity.name) === normalizedDeityName);
+  if (!isUsedByOtherParty) return defaultParty;
+
+  return {
+    ...defaultParty,
+    deity: createInitialDeity('None'),
+    deityGold: 0,
+  };
+}
+
 function getUnlockedStateFromEntries(entries: ExpeditionLogEntry[], initialUnlockedDeities: string[], initialPartySlots: number): { unlockedDeities: string[]; unlockedPartySlots: number } {
   let unlockedDeities = [...initialUnlockedDeities];
   let unlockedPartySlots = initialPartySlots;
@@ -628,7 +642,8 @@ function loadSavedState(): GameState | null {
 
         parsed.global.unlockedDeities = unlockedDeities;
         while (parsed.parties.length < unlockedPartySlots) {
-          parsed.parties.push(defaultParties[parsed.parties.length]);
+          const nextDefaultParty = createUnlockedPartyWithAvailableDeity(defaultParties[parsed.parties.length], parsed.parties);
+          parsed.parties.push(nextDefaultParty);
         }
         parsed.parties = parsed.parties.slice(0, unlockedPartySlots);
 
@@ -1965,7 +1980,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const defaultParties = createDefaultParties();
       const nextParties = [...updatedParties];
       while (nextParties.length < nextUnlockedPartySlots) {
-        nextParties.push(defaultParties[nextParties.length]);
+        const nextDefaultParty = createUnlockedPartyWithAvailableDeity(defaultParties[nextParties.length], nextParties);
+        nextParties.push(nextDefaultParty);
       }
 
       return {
@@ -2969,7 +2985,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         unlockedPartySlots = Math.max(unlockedPartySlots, unlockedState.unlockedPartySlots);
       }
       while (normalizedParties.length < unlockedPartySlots) {
-        normalizedParties.push(defaultParties[normalizedParties.length]);
+        const nextDefaultParty = createUnlockedPartyWithAvailableDeity(defaultParties[normalizedParties.length], normalizedParties);
+        normalizedParties.push(nextDefaultParty);
       }
       const trimmedParties = normalizedParties.slice(0, unlockedPartySlots);
       const normalizedSelectedPartyIndex = Math.min(
