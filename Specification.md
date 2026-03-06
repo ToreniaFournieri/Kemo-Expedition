@@ -26,14 +26,20 @@
 
 - Party initial condition.
   1. "ケモ", Caninian, 戦(君), Sturdy, House of the Unmoving
+     - equipment: `1104`, `1106`
   2. "ゴン", Vulpinian, 剣(侍), Chivalric, House of War Spirit
+     - equipment: `1104`
   3. "イタチ", Murid, 忍(盗), Persistent, House of the Breaking Hand
+     - equipment: `1104`
   4. "ロップ", Leporian, 狩(賢), Dexterous, House of Far Sight
+     - equipment: `1107`, `1108`, `1109`
   5. "ラス", Felidian, 賢(巡), Pursuing, House of Hidden Principles
+     - equipment: `1110`, `1111`, `1112` 
   6. "セルヴァ", Cervin, 魔(魔), Canny, House of Guiding Thought
+     - equipment: `1110`
 
 - Party initial inventory.
-  - 3 Tier-1 common items of each item type.
+  - 1 Tier-1 common items of each item type.
 
 - Party initial state.
   - `PartyLevel`: 1
