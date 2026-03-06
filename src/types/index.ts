@@ -289,6 +289,7 @@ export interface Party {
   diarySettings: DiarySettings;
   expeditionStats: {
     victories: number;
+    returns: number;
     retreats: number;
     defeats: number;
     donatedGold: number;

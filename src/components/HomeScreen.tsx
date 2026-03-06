@@ -319,6 +319,7 @@ function renderTextWithRaceIcons(text: string, iconClassName = 'h-3.5 w-3.5'): R
 
 function buildAfkSummaryNotification(stats: {
   victories: number;
+  returns: number;
   retreats: number;
   defeats: number;
   donatedGold: number;
@@ -326,6 +327,7 @@ function buildAfkSummaryNotification(stats: {
 }): string | null {
   const summaryParts: string[] = [];
   if (stats.victories > 0) summaryParts.push(`踏破${formatNumber(stats.victories)}回`);
+  if (stats.returns > 0) summaryParts.push(`帰還${formatNumber(stats.returns)}回`);
   if (stats.retreats > 0) summaryParts.push(`撤退${formatNumber(stats.retreats)}回`);
   if (stats.defeats > 0) summaryParts.push(`敗北${formatNumber(stats.defeats)}回`);
 
@@ -1728,7 +1730,7 @@ export function HomeScreen({
     gameModeRef.current = gameMode;
   }, [gameMode]);
 
-  const afkSummaryBaselineRef = useRef<Array<{ victories: number; retreats: number; defeats: number; donatedGold: number; savedGold: number }> | null>(null);
+  const afkSummaryBaselineRef = useRef<Array<{ victories: number; returns: number; retreats: number; defeats: number; donatedGold: number; savedGold: number }> | null>(null);
   const shouldShowAfkSummaryRef = useRef(false);
   const { partyStats, characterStats } = computePartyStats(currentParty);
 
@@ -1849,6 +1851,7 @@ export function HomeScreen({
 
       const stats = {
         victories: Math.max(0, party.expeditionStats.victories - baseline.victories),
+        returns: Math.max(0, party.expeditionStats.returns - baseline.returns),
         retreats: Math.max(0, party.expeditionStats.retreats - baseline.retreats),
         defeats: Math.max(0, party.expeditionStats.defeats - baseline.defeats),
         donatedGold: Math.max(0, party.expeditionStats.donatedGold - baseline.donatedGold),
