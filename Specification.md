@@ -434,7 +434,7 @@ Party.`d.HP` =
 - The item selection within the category:
 the highest tier and highest enhancement of common items.
  (excluding uncommon, elite rare, boss rare, mythic rare, and super rare items)
-- If a character equips two or more common items of the same category and tier, Replaces duplicate items with the highest-base-value alternative (uncommon, elite rare, boss rare and mythic rare) available in that category.
+- If a character equips two or more common items of the same category and tier, Replaces **one of** duplicate items with the highest-base-value alternative (uncommon, elite rare, boss rare and mythic rare) available in that category.
 
 #### 3.6.3 Upgrading equipped items
 - If a party member already has an item equipped, and another eligible item of the same category exists with a higher enhancement, the equipped item is replaced.
