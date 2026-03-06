@@ -1678,6 +1678,63 @@ export function HomeScreen({
 
     const getItemTier = (item: Item): number => Math.floor(item.id / 1000);
 
+    const formatCBonusValue = (value: number): string => (Math.round(value * 1000000) / 1000000).toString();
+
+    const formatDefenseBonusPercent = (value: number): string => {
+      const percent = Math.round(value * 1000) / 10;
+      return Number.isInteger(percent) ? `${percent}` : `${percent.toFixed(1)}`;
+    };
+
+    const ITEM_DIRECT_C_BONUS_TYPES = new Set([
+      'equip_slot', 'grit', 'caster', 'pursuit', 'penet', 'accuracy', 'growth_xV', 'upgrade_V',
+      'melee_attack', 'ranged_attack', 'magical_attack', 'physical_attack', 'physical_defense',
+      'magical_defense', 'physical_offense_multiplier_xV', 'magical_offense_multiplier_xV',
+      'physical_defense_multiplier_xV', 'magical_defense_multiplier_xV', 'fire_defense_multiplier_xV',
+      'ice_defense_multiplier_xV', 'thunder_defense_multiplier_xV',
+    ]);
+
+    const getItemCBonusSignatures = (item: Item): Set<string> => {
+      const bonusNames = new Set<string>();
+
+      for (const bonus of item.bonuses ?? []) {
+        if (!ITEM_DIRECT_C_BONUS_TYPES.has(bonus.type)) continue;
+        bonusNames.add(`c.${bonus.type}+${formatCBonusValue(bonus.value)}`);
+      }
+
+      const baseMultiplier = item.baseMultiplier ?? 1;
+      if (baseMultiplier !== 1) {
+        const offensePercent = Math.round((baseMultiplier - 1) * 1000) / 10;
+        if (item.meleeAttack || item.meleeNoA || item.meleeNoABonus) {
+          bonusNames.add(`c.melee_attack+${offensePercent}`);
+        }
+        if (item.rangedAttack || item.rangedNoA || item.rangedNoABonus) {
+          bonusNames.add(`c.ranged_attack+${offensePercent}`);
+        }
+        if (item.magicalAttack || item.magicalNoA || item.magicalNoABonus) {
+          bonusNames.add(`c.magical_attack+${offensePercent}`);
+        }
+        const defensePercent = formatDefenseBonusPercent(baseMultiplier - 1);
+        if (item.physicalDefense) {
+          bonusNames.add(`c.physical_defense+${defensePercent}`);
+        }
+        if (item.magicalDefense) {
+          bonusNames.add(`c.magical_defense+${defensePercent}`);
+        }
+      }
+
+      if (item.accuracyBonus) {
+        bonusNames.add(`c.accuracy+${formatCBonusValue(item.accuracyBonus)}`);
+      }
+      if ((item.evasionBonus ?? 0) > 0) {
+        bonusNames.add(`c.evasion+${formatCBonusValue(item.evasionBonus ?? 0)}`);
+      }
+      if (item.penetBonus) {
+        bonusNames.add(`c.penet+${formatCBonusValue(item.penetBonus)}`);
+      }
+
+      return bonusNames;
+    };
+
     const compareItemsByTierAndEnhancement = (a: Item, b: Item): number => {
       const tierDiff = getItemTier(a) - getItemTier(b);
       if (tierDiff !== 0) return tierDiff;
@@ -1688,15 +1745,32 @@ export function HomeScreen({
       return a.id - b.id;
     };
 
-    const getBestVariantKeyInCategory = (category: ItemCategory): string | null => {
+    const getBestVariantKeyInCategory = (
+      category: ItemCategory,
+      memoryItemIds: Set<number>,
+      memoryCBonusNames: Set<string>,
+    ): string | null => {
       const options = Object.entries(simulatedInventory)
-        .filter(([, variant]) => (
-          variant.status === 'owned'
-          && variant.count > 0
-          && variant.item.category === category
-          && variant.item.superRare < 1
-          && getItemRarityById(variant.item.id) === 'common'
-        ))
+        .filter(([, variant]) => {
+          if (
+            variant.status !== 'owned'
+            || variant.count <= 0
+            || variant.item.category !== category
+            || variant.item.superRare >= 1
+            || getItemRarityById(variant.item.id) !== 'common'
+          ) {
+            return false;
+          }
+
+          if (memoryItemIds.has(variant.item.id)) return false;
+
+          const cBonusNames = getItemCBonusSignatures(variant.item);
+          for (const bonusName of cBonusNames) {
+            if (memoryCBonusNames.has(bonusName)) return false;
+          }
+
+          return true;
+        })
         .sort(([, a], [, b]) => {
           return compareItemsByTierAndEnhancement(b.item, a.item);
         });
@@ -1734,12 +1808,16 @@ export function HomeScreen({
         const priorities = AUTO_EQUIPMENT_PRIORITY_BY_CLASS[character.mainClassId] ?? AUTO_EQUIPMENT_PRIORITY_BY_CLASS.fighter;
         const { maxEquipSlots } = computeCharacterStats(character, party.level);
         const simulatedEquipmentSlots = Array.from({ length: maxEquipSlots }, (_, index) => character.equipment[index] ?? null);
+        const memoryItemIds = new Set<number>();
+        const memoryCBonusNames = new Set<string>();
         const emptySlotIndexes = simulatedEquipmentSlots
           .map((item, slotIndex) => (item ? -1 : slotIndex))
           .filter((index) => index >= 0);
         const equippedCategoryCounts: Partial<Record<ItemCategory, number>> = {};
         simulatedEquipmentSlots.forEach((item) => {
           if (!item) return;
+          memoryItemIds.add(item.id);
+          getItemCBonusSignatures(item).forEach((bonusName) => memoryCBonusNames.add(bonusName));
           equippedCategoryCounts[item.category] = (equippedCategoryCounts[item.category] ?? 0) + 1;
         });
 
@@ -1747,7 +1825,7 @@ export function HomeScreen({
           const targetCategory = getNextMissingAutoEquipmentCategory(priorities, equippedCategoryCounts);
           if (!targetCategory) return;
 
-          const itemKey = getBestVariantKeyInCategory(targetCategory);
+          const itemKey = getBestVariantKeyInCategory(targetCategory, memoryItemIds, memoryCBonusNames);
           if (!itemKey) return;
 
           const variant = simulatedInventory[itemKey];
@@ -1756,6 +1834,8 @@ export function HomeScreen({
           equippedCategoryCounts[targetCategory] = (equippedCategoryCounts[targetCategory] ?? 0) + 1;
           removeItemFromSimulatedInventory(itemKey);
           simulatedEquipmentSlots[slotIndex] = variant.item;
+          memoryItemIds.add(variant.item.id);
+          getItemCBonusSignatures(variant.item).forEach((bonusName) => memoryCBonusNames.add(bonusName));
           actions.equipItem(character.id, slotIndex, itemKey, partyIndex);
           queueAutoEquipmentNotification(party.name, character.name, character.id, slotIndex, variant.item, null, partyIndex);
         });
@@ -1763,7 +1843,7 @@ export function HomeScreen({
         simulatedEquipmentSlots.forEach((equippedItem, slotIndex) => {
           if (!equippedItem) return;
           if (equippedItem.superRare >= 1 || getItemRarityById(equippedItem.id) !== 'common') return;
-          const itemKey = getBestVariantKeyInCategory(equippedItem.category);
+          const itemKey = getBestVariantKeyInCategory(equippedItem.category, new Set<number>(), new Set<string>());
           if (!itemKey) return;
           const variant = simulatedInventory[itemKey];
           if (!variant) return;
