@@ -1521,16 +1521,16 @@ function getInitialAutoEquipmentEnabled(): boolean {
 }
 
 const AUTO_EQUIPMENT_PRIORITY_BY_CLASS: Record<Character['mainClassId'], ItemCategory[]> = {
-  duelist: ['sword', 'gauntlet', 'armor', 'robe', 'katana'],
-  ninja: ['sword', 'gauntlet', 'armor', 'robe', 'katana'],
-  samurai: ['sword', 'gauntlet', 'armor', 'robe', 'katana'],
-  fighter: ['shield', 'armor', 'robe', 'sword', 'shield'],
-  lord: ['shield', 'armor', 'robe', 'sword', 'shield'],
-  rogue: ['arrow', 'archery', 'armor', 'robe', 'bolt'],
-  ranger: ['arrow', 'archery', 'armor', 'robe', 'bolt'],
-  wizard: ['wand', 'catalyst', 'armor', 'robe', 'grimoire'],
-  sage: ['wand', 'catalyst', 'armor', 'robe', 'grimoire'],
-  pilgrim: ['wand', 'catalyst', 'armor', 'robe', 'grimoire'],
+  duelist: ['sword', 'gauntlet', 'armor', 'robe', 'katana', 'armor', 'gauntlet', 'sword', 'armor', 'robe', 'sword'],
+  ninja: ['sword', 'gauntlet', 'armor', 'robe', 'katana', 'sword', 'gauntlet', 'sword', 'armor', 'robe', 'sword'],
+  samurai: ['sword', 'gauntlet', 'armor', 'robe', 'katana', 'katana', 'gauntlet', 'katana', 'armor', 'robe', 'katana'],
+  fighter: ['shield', 'armor', 'robe', 'sword', 'gauntlet', 'shield', 'armor', 'robe', 'armor', 'robe', 'shield'],
+  lord: ['shield', 'armor', 'robe', 'sword', 'gauntlet', 'shield', 'armor', 'robe', 'armor', 'robe', 'shield'],
+  rogue: ['arrow', 'archery', 'armor', 'robe', 'bolt', 'arrow', 'archery', 'bolt', 'armor', 'robe', 'arrow'],
+  ranger: ['arrow', 'archery', 'armor', 'robe', 'bolt', 'arrow', 'archery', 'bolt', 'armor', 'robe', 'arrow'],
+  wizard: ['wand', 'catalyst', 'armor', 'robe', 'grimoire', 'wand', 'catalyst', 'wand', 'armor', 'robe', 'wand'],
+  sage: ['wand', 'catalyst', 'armor', 'robe', 'grimoire', 'wand', 'catalyst', 'grimoire', 'armor', 'robe', 'catalyst'],
+  pilgrim: ['wand', 'catalyst', 'armor', 'robe', 'grimoire', 'wand', 'catalyst', 'grimoire', 'armor', 'robe', 'catalyst'],
 };
 
 export function HomeScreen({
@@ -1661,9 +1661,9 @@ export function HomeScreen({
           .map(({ item, slotIndex }) => (item ? -1 : slotIndex))
           .filter((index) => index >= 0);
 
-        emptySlotIndexes.forEach((slotIndex, emptyIndex) => {
+        emptySlotIndexes.forEach((slotIndex) => {
           for (let offset = 0; offset < priorities.length; offset += 1) {
-            const category = priorities[(emptyIndex + offset) % priorities.length];
+            const category = priorities[offset % priorities.length];
             const itemKey = getBestVariantKeyInCategory(category);
             if (!itemKey) continue;
             const variant = simulatedInventory[itemKey];
