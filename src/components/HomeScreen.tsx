@@ -1709,10 +1709,10 @@ export function HomeScreen({
           if (equippedItem.jewel) {
             actions.attachJewel(character.id, slotIndex, equippedItem.jewel.key, equippedItem.jewel.rank, partyIndex);
           }
-          const transferredJewelNote = equippedItem.jewel
-            ? `（${getJewelNameByRank(equippedItem.jewel.key, equippedItem.jewel.rank)}を引き継ぎ）`
-            : '';
-          notifications.push(`${party.name}${character.name}は ${getItemDisplayName(equippedItem)} を ${getItemDisplayName(variant.item)}に装備しなおした${transferredJewelNote}`);
+          const replacementItemDisplayName = equippedItem.jewel
+            ? getItemDisplayName({ ...variant.item, jewel: equippedItem.jewel })
+            : getItemDisplayName(variant.item);
+          notifications.push(`${party.name}${character.name}は ${getItemDisplayName(equippedItem)} を ${replacementItemDisplayName}に装備しなおした`);
         });
 
         const commonGroups = new Map<string, Array<{ slotIndex: number; item: Item }>>();
@@ -1748,10 +1748,10 @@ export function HomeScreen({
           if (duplicateItem.jewel) {
             actions.attachJewel(character.id, slotIndex, duplicateItem.jewel.key, duplicateItem.jewel.rank, partyIndex);
           }
-          const transferredJewelNote = duplicateItem.jewel
-            ? `（${getJewelNameByRank(duplicateItem.jewel.key, duplicateItem.jewel.rank)}を引き継ぎ）`
-            : '';
-          notifications.push(`${party.name}${character.name}は 重複していた${getItemDisplayName(duplicateItem)} を ${getItemDisplayName(variant.item)}に置き換えた${transferredJewelNote}`);
+          const replacementItemDisplayName = duplicateItem.jewel
+            ? getItemDisplayName({ ...variant.item, jewel: duplicateItem.jewel })
+            : getItemDisplayName(variant.item);
+          notifications.push(`${party.name}${character.name}は 重複していた${getItemDisplayName(duplicateItem)} を ${replacementItemDisplayName}に置き換えた`);
         });
       });
     });
