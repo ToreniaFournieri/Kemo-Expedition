@@ -66,8 +66,8 @@ interface HomeScreenProps {
     cancelSideQuest: (partyIndex: number) => void;
     advanceSideQuest: (partyIndex: number, amount: number, simulatedAt?: number) => void;
     setSideQuestProgress: (partyIndex: number, progress: number) => void;
-    equipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
-    attachJewel: (characterId: number, slotIndex: number, jewelKey: JewelKey, rank: number) => void;
+    equipItem: (characterId: number, slotIndex: number, itemKey: string | null, partyIndex?: number) => void;
+    attachJewel: (characterId: number, slotIndex: number, jewelKey: JewelKey, rank: number, partyIndex?: number) => void;
     updateCharacter: (characterId: number, updates: Partial<Character>) => void;
     reorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
     sellStack: (variantKey: string) => void;
@@ -1636,7 +1636,7 @@ export function HomeScreen({
       return options[0]?.[0] ?? null;
     };
 
-    state.parties.forEach((party) => {
+    state.parties.forEach((party, partyIndex) => {
       party.characters.forEach((character) => {
         const priorities = AUTO_EQUIPMENT_PRIORITY_BY_CLASS[character.mainClassId] ?? AUTO_EQUIPMENT_PRIORITY_BY_CLASS.fighter;
         const emptySlotIndexes = character.equipment
@@ -1651,7 +1651,7 @@ export function HomeScreen({
             const variant = simulatedInventory[itemKey];
             if (!variant) continue;
             removeItemFromSimulatedInventory(itemKey);
-            actions.equipItem(character.id, slotIndex, itemKey);
+            actions.equipItem(character.id, slotIndex, itemKey, partyIndex);
             notifications.push(`${party.name}${character.name}は ${getItemDisplayName(variant.item)} を装備した`);
             break;
           }
@@ -1669,9 +1669,9 @@ export function HomeScreen({
           removeItemFromSimulatedInventory(itemKey);
           addItemToSimulatedInventory(equippedItem);
 
-          actions.equipItem(character.id, slotIndex, itemKey);
+          actions.equipItem(character.id, slotIndex, itemKey, partyIndex);
           if (equippedItem.jewel) {
-            actions.attachJewel(character.id, slotIndex, equippedItem.jewel.key, equippedItem.jewel.rank);
+            actions.attachJewel(character.id, slotIndex, equippedItem.jewel.key, equippedItem.jewel.rank, partyIndex);
           }
           notifications.push(`${party.name}${character.name}は ${getItemDisplayName(equippedItem)} を ${getItemDisplayName(variant.item)}に装備しなおした`);
         });

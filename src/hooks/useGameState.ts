@@ -1111,8 +1111,8 @@ type GameAction =
   | { type: 'CANCEL_SIDE_QUEST'; partyIndex: number }
   | { type: 'ADVANCE_SIDE_QUEST'; partyIndex: number; amount: number; simulatedAt?: number }
   | { type: 'SET_SIDE_QUEST_PROGRESS'; partyIndex: number; progress: number }
-  | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; itemKey: string | null }
-  | { type: 'ATTACH_JEWEL'; characterId: number; slotIndex: number; jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus'; rank: number }
+  | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; itemKey: string | null; partyIndex?: number }
+  | { type: 'ATTACH_JEWEL'; characterId: number; slotIndex: number; jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus'; rank: number; partyIndex?: number }
   | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character> }
   | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number }
   | { type: 'SELL_STACK'; variantKey: string }
@@ -2271,7 +2271,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'EQUIP_ITEM': {
-      const currentParty = state.parties[state.selectedPartyIndex];
+      const targetPartyIndex = action.partyIndex ?? state.selectedPartyIndex;
+      const currentParty = state.parties[targetPartyIndex];
+      if (!currentParty) return state;
       const charIndex = currentParty.characters.findIndex(c => c.id === action.characterId);
       if (charIndex === -1) return state;
 
@@ -2304,7 +2306,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           newCharacters[charIndex] = equippedCharacter;
 
           const updatedParties = [...state.parties];
-          updatedParties[state.selectedPartyIndex] = {
+          updatedParties[targetPartyIndex] = {
             ...currentParty,
             characters: newCharacters
           };
@@ -2322,7 +2324,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       newCharacters[charIndex] = unequippedCharacter;
 
       const updatedParties = [...state.parties];
-      updatedParties[state.selectedPartyIndex] = {
+      updatedParties[targetPartyIndex] = {
         ...currentParty,
         characters: newCharacters
       };
@@ -2335,7 +2337,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'ATTACH_JEWEL': {
-      const currentParty = state.parties[state.selectedPartyIndex];
+      const targetPartyIndex = action.partyIndex ?? state.selectedPartyIndex;
+      const currentParty = state.parties[targetPartyIndex];
+      if (!currentParty) return state;
       const charIndex = currentParty.characters.findIndex(c => c.id === action.characterId);
       if (charIndex === -1) return state;
       const character = currentParty.characters[charIndex];
@@ -2351,7 +2355,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         newCharacters[charIndex] = replaceCharacterEquipment(character, action.slotIndex, replacedItem);
 
         const updatedParties = [...state.parties];
-        updatedParties[state.selectedPartyIndex] = {
+        updatedParties[targetPartyIndex] = {
           ...currentParty,
           characters: newCharacters,
         };
@@ -2374,7 +2378,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       newCharacters[charIndex] = replaceCharacterEquipment(character, action.slotIndex, replacedItem);
 
       const updatedParties = [...state.parties];
-      updatedParties[state.selectedPartyIndex] = {
+      updatedParties[targetPartyIndex] = {
         ...currentParty,
         characters: newCharacters,
       };
@@ -3195,12 +3199,12 @@ export function useGameState() {
       dispatch({ type: 'SET_SIDE_QUEST_PROGRESS', partyIndex, progress });
     }, []),
 
-    equipItem: useCallback((characterId: number, slotIndex: number, itemKey: string | null) => {
-      dispatch({ type: 'EQUIP_ITEM', characterId, slotIndex, itemKey });
+    equipItem: useCallback((characterId: number, slotIndex: number, itemKey: string | null, partyIndex?: number) => {
+      dispatch({ type: 'EQUIP_ITEM', characterId, slotIndex, itemKey, partyIndex });
     }, []),
 
-    attachJewel: useCallback((characterId: number, slotIndex: number, jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus', rank: number) => {
-      dispatch({ type: 'ATTACH_JEWEL', characterId, slotIndex, jewelKey, rank });
+    attachJewel: useCallback((characterId: number, slotIndex: number, jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus', rank: number, partyIndex?: number) => {
+      dispatch({ type: 'ATTACH_JEWEL', characterId, slotIndex, jewelKey, rank, partyIndex });
     }, []),
 
     updateCharacter: useCallback((characterId: number, updates: Partial<Character>) => {
