@@ -1693,15 +1693,12 @@ export function HomeScreen({
       party.characters.forEach((character) => {
         const priorities = AUTO_EQUIPMENT_PRIORITY_BY_CLASS[character.mainClassId] ?? AUTO_EQUIPMENT_PRIORITY_BY_CLASS.fighter;
         const { maxEquipSlots } = computeCharacterStats(character, party.level);
-        const equippedSlots = Array.from({ length: maxEquipSlots }, (_, index) => ({
-          slotIndex: index,
-          item: character.equipment[index] ?? null,
-        }));
-        const emptySlotIndexes = equippedSlots
-          .map(({ item, slotIndex }) => (item ? -1 : slotIndex))
+        const simulatedEquipmentSlots = Array.from({ length: maxEquipSlots }, (_, index) => character.equipment[index] ?? null);
+        const emptySlotIndexes = simulatedEquipmentSlots
+          .map((item, slotIndex) => (item ? -1 : slotIndex))
           .filter((index) => index >= 0);
         const equippedCategoryCounts: Partial<Record<ItemCategory, number>> = {};
-        equippedSlots.forEach(({ item }) => {
+        simulatedEquipmentSlots.forEach((item) => {
           if (!item) return;
           equippedCategoryCounts[item.category] = (equippedCategoryCounts[item.category] ?? 0) + 1;
         });
@@ -1718,11 +1715,12 @@ export function HomeScreen({
 
           equippedCategoryCounts[targetCategory] = (equippedCategoryCounts[targetCategory] ?? 0) + 1;
           removeItemFromSimulatedInventory(itemKey);
+          simulatedEquipmentSlots[slotIndex] = variant.item;
           actions.equipItem(character.id, slotIndex, itemKey, partyIndex);
           notifications.push(`${party.name}${character.name}は ${getItemDisplayName(variant.item)} を装備した`);
         });
 
-        equippedSlots.forEach(({ item: equippedItem, slotIndex }) => {
+        simulatedEquipmentSlots.forEach((equippedItem, slotIndex) => {
           if (!equippedItem) return;
           if (equippedItem.superRare >= 1 || getItemRarityById(equippedItem.id) !== 'common') return;
           const itemKey = getBestVariantKeyInCategory(equippedItem.category);
@@ -1733,6 +1731,10 @@ export function HomeScreen({
 
           removeItemFromSimulatedInventory(itemKey);
           addItemToSimulatedInventory(equippedItem);
+          const nextEquippedItem = equippedItem.jewel
+            ? { ...variant.item, jewel: equippedItem.jewel }
+            : variant.item;
+          simulatedEquipmentSlots[slotIndex] = nextEquippedItem;
 
           actions.equipItem(character.id, slotIndex, itemKey, partyIndex);
           if (equippedItem.jewel) {
@@ -1745,7 +1747,7 @@ export function HomeScreen({
         });
 
         const commonGroups = new Map<string, Array<{ slotIndex: number; item: Item }>>();
-        equippedSlots.forEach(({ item, slotIndex }) => {
+        simulatedEquipmentSlots.forEach((item, slotIndex) => {
           if (!item || item.superRare >= 1 || getItemRarityById(item.id) !== 'common') return;
           const key = `${item.category}:${getItemTier(item)}`;
           const group = commonGroups.get(key);
@@ -1771,6 +1773,10 @@ export function HomeScreen({
 
             removeItemFromSimulatedInventory(itemKey);
             addItemToSimulatedInventory(duplicateItem);
+            const nextEquippedItem = duplicateItem.jewel
+              ? { ...variant.item, jewel: duplicateItem.jewel }
+              : variant.item;
+            simulatedEquipmentSlots[slotIndex] = nextEquippedItem;
 
             actions.equipItem(character.id, slotIndex, itemKey, partyIndex);
             if (duplicateItem.jewel) {
