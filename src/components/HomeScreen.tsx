@@ -7354,7 +7354,7 @@ function SettingTab({
                   <span className={`text-xs font-semibold ${isAutoEquipmentEnabled ? 'text-sub' : 'text-gray-500'}`}>
                     {isAutoEquipmentEnabled ? 'ON' : 'OFF'}
                   </span>
-                  <span className={`relative h-6 w-11 rounded-full transition-colors ${isAutoEquipmentEnabled ? 'bg-sub' : 'bg-gray-300'}`}>
+                  <span className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${isAutoEquipmentEnabled ? 'bg-sub' : 'bg-gray-300'}`}>
                     <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${isAutoEquipmentEnabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
                   </span>
                 </span>
@@ -7374,7 +7374,7 @@ function SettingTab({
                   <span className={`text-xs font-semibold ${isAutoRepeatEnabled ? 'text-sub' : 'text-gray-500'}`}>
                     {isAutoRepeatEnabled ? 'ON' : 'OFF'}
                   </span>
-                  <span className={`relative h-6 w-11 rounded-full transition-colors ${isAutoRepeatEnabled ? 'bg-sub' : 'bg-gray-300'}`}>
+                  <span className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${isAutoRepeatEnabled ? 'bg-sub' : 'bg-gray-300'}`}>
                     <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${isAutoRepeatEnabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
                   </span>
                 </span>
