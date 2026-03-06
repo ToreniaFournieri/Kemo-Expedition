@@ -56,7 +56,7 @@ import {
 import { getItemById, getItemsByTierAndRarity } from '../data/items';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { getItemDisplayName } from '../game/gameState';
-import { getDeityKey, getDeityRank, getDeityStateDurationMultiplier, getEffectiveDeityTier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
+import { DEITY_OPTIONS, getDeityKey, getDeityRank, getDeityStateDurationMultiplier, getEffectiveDeityTier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { RACES } from '../data/races';
 import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
@@ -102,6 +102,73 @@ const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
 const AFK_MAX_SIMULATION_MS = 600 * 60 * 1000;
 const DEBUG_CYCLE_DURATION_SCALE = 0.2;
 const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.sleeping', 'q.exercise', 'q.healing', 'q.AFK']);
+
+const PARTY_UNLOCK_BY_GOD_NAME: Record<string, number> = {
+  Garv: 2,
+  'Kyōen': 3,
+  Dolvar: 4,
+  Miora: 5,
+  Rondel: 6,
+};
+
+const UNLOCKABLE_DEITY_BY_GOD_NAME: Record<string, string> = {
+  Seiran: 'Goddess of Restoration',
+  Garv: 'God of Attrition',
+  'Kyōen': 'God of Cunning',
+  Dolvar: 'God of Fortification',
+  Miora: 'Goddess of Fertility',
+  Rondel: 'God of Resonance',
+  Lira: 'Goddess of Precision',
+  Forne: 'God of Fate',
+  Skuva: 'God of Dusk',
+  Tanue: 'Goddess of Mirage',
+  Noctyra: 'God of Oblivion',
+  Eris: 'Goddess of Discord',
+};
+
+const DEFAULT_UNLOCKED_DEITIES = DEITY_OPTIONS
+  .map((deity) => normalizeDeityName(deity.name))
+  .filter((deityName) => !isNoFaithDeity(deityName));
+
+function normalizeUnlockedDeities(unlockedDeities: unknown): string[] {
+  if (!Array.isArray(unlockedDeities)) return [];
+  const seen = new Set<string>();
+  const normalized: string[] = [];
+  for (const deityName of unlockedDeities) {
+    if (typeof deityName !== 'string') continue;
+    const name = normalizeDeityName(deityName);
+    if (isNoFaithDeity(name) || seen.has(name)) continue;
+    seen.add(name);
+    normalized.push(name);
+  }
+  return normalized;
+}
+
+function ensureUnlockedDeity(unlockedDeities: string[], deityName: string): string[] {
+  const normalized = normalizeDeityName(deityName);
+  if (isNoFaithDeity(normalized) || unlockedDeities.includes(normalized)) return unlockedDeities;
+  return [...unlockedDeities, normalized];
+}
+
+function getUnlockedStateFromEntries(entries: ExpeditionLogEntry[], initialUnlockedDeities: string[], initialPartySlots: number): { unlockedDeities: string[]; unlockedPartySlots: number } {
+  let unlockedDeities = [...initialUnlockedDeities];
+  let unlockedPartySlots = initialPartySlots;
+
+  for (const entry of entries) {
+    if (entry.outcome !== 'victory') continue;
+    const enemyName = entry.enemyName.split(' ')[0] ?? entry.enemyName;
+    const unlockDeityName = UNLOCKABLE_DEITY_BY_GOD_NAME[enemyName];
+    if (unlockDeityName) {
+      unlockedDeities = ensureUnlockedDeity(unlockedDeities, unlockDeityName);
+    }
+    const unlockPartySlot = PARTY_UNLOCK_BY_GOD_NAME[enemyName];
+    if (unlockPartySlot) {
+      unlockedPartySlots = Math.max(unlockedPartySlots, unlockPartySlot);
+    }
+  }
+
+  return { unlockedDeities, unlockedPartySlots };
+}
 
 function getCycleDurationScale(): number {
   const env = getEnvironmentId();
@@ -430,6 +497,7 @@ function loadSavedState(): GameState | null {
             gold: firstParty?.gold ?? 200,
             inventory: migrateOldInventory(firstParty?.inventory ?? []),
             deityDonations: {},
+            unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
             shopPurchases: {},
             jewelShopPurchases: {},
             shopRefreshCounts: {},
@@ -442,6 +510,7 @@ function loadSavedState(): GameState | null {
           parsed.global.inventory = migrateOldInventory(parsed.global.inventory);
         }
         parsed.global.deityDonations = getDeityDonationsWithDefaults(parsed.global.deityDonations);
+        parsed.global.unlockedDeities = normalizeUnlockedDeities(parsed.global.unlockedDeities);
         parsed.global.shopPurchases = (parsed.global.shopPurchases && typeof parsed.global.shopPurchases === 'object')
           ? Object.entries(parsed.global.shopPurchases as Record<string, unknown>).reduce<Record<string, number[]>>((acc, [hourKey, itemIds]) => {
               if (!Array.isArray(itemIds)) return acc;
@@ -486,9 +555,13 @@ function loadSavedState(): GameState | null {
         if (!Array.isArray(parsed.parties)) {
           parsed.parties = [];
         }
-        while (parsed.parties.length < defaultParties.length) {
-          parsed.parties.push(defaultParties[parsed.parties.length]);
-        }
+        parsed.parties = parsed.parties.slice(0, defaultParties.length);
+
+        const initialUnlockedDeities = parsed.global.unlockedDeities.length > 0
+          ? parsed.global.unlockedDeities
+          : [...DEFAULT_UNLOCKED_DEITIES];
+        let unlockedDeities = [...initialUnlockedDeities];
+        let unlockedPartySlots = Math.max(1, Math.min(defaultParties.length, parsed.parties.length || 1));
 
         // Process all parties (whether single or array)
         const partiesToProcess = parsed.parties ?? [];
@@ -534,6 +607,17 @@ function loadSavedState(): GameState | null {
             };
           }
 
+          unlockedDeities = ensureUnlockedDeity(unlockedDeities, party.deity.name);
+
+          const allLogEntries: ExpeditionLogEntry[] = [
+            ...(party.lastExpeditionLog?.entries ?? []),
+            ...party.diaryLogs.flatMap((log: DiaryLog) => log.expeditionLog?.entries ?? []),
+            ...(party.pendingDiaryLog?.expeditionLog?.entries ?? []),
+          ];
+          const unlockedState = getUnlockedStateFromEntries(allLogEntries, unlockedDeities, unlockedPartySlots);
+          unlockedDeities = unlockedState.unlockedDeities;
+          unlockedPartySlots = Math.max(unlockedPartySlots, unlockedState.unlockedPartySlots);
+
           const normalizedDeityName = normalizeDeityName(party.deity.name);
           if (typeof parsed.global.deityDonations[normalizedDeityName] !== 'number') {
             parsed.global.deityDonations[normalizedDeityName] = party.deityGold;
@@ -541,6 +625,12 @@ function loadSavedState(): GameState | null {
           party.deityGold = parsed.global.deityDonations[normalizedDeityName] ?? 0;
 
         }
+
+        parsed.global.unlockedDeities = unlockedDeities;
+        while (parsed.parties.length < unlockedPartySlots) {
+          parsed.parties.push(defaultParties[parsed.parties.length]);
+        }
+        parsed.parties = parsed.parties.slice(0, unlockedPartySlots);
 
         return hydrateGameState(parsed as GameState);
       }
@@ -689,18 +779,17 @@ function createInitialParty() {
 }
 
 function createSecondParty() {
-  // Create a second test party with different setup
   const defaultSetup = [
-    { race: 'lupinian', main: 'samurai', sub: 'samurai', pred: 'chivalric', lineage: 'war_spirit', name: 'ウルフ' },
-    { race: 'ursan', main: 'lord', sub: 'fighter', pred: 'sturdy', lineage: 'unmoving', name: 'ベア' },
-    { race: 'felidian', main: 'pilgrim', sub: 'sage', pred: 'pursuing', lineage: 'hidden_principles', name: 'ニャン' },
-    { race: 'leporian', main: 'sage', sub: 'wizard', pred: 'brilliant', lineage: 'guiding_thought', name: 'ウサギ' },
-    { race: 'murid', main: 'rogue', sub: 'ninja', pred: 'dexterous', lineage: 'breaking_hand', name: 'ネズミ' },
-    { race: 'cervin', main: 'wizard', sub: 'sage', pred: 'canny', lineage: 'far_sight', name: 'シカ' },
+    { race: 'lupinian', main: 'samurai', sub: 'samurai', pred: 'chivalric', lineage: 'war_spirit', name: 'ルプ' },
+    { race: 'lupinian', main: 'fighter', sub: 'lord', pred: 'sturdy', lineage: 'unmoving', name: 'ガル' },
+    { race: 'lupinian', main: 'duelist', sub: 'ranger', pred: 'dexterous', lineage: 'far_sight', name: 'ヴォルフ' },
+    { race: 'lupinian', main: 'rogue', sub: 'ninja', pred: 'persistent', lineage: 'breaking_hand', name: 'ライカ' },
+    { race: 'lupinian', main: 'pilgrim', sub: 'sage', pred: 'pursuing', lineage: 'hidden_principles', name: 'フェン' },
+    { race: 'lupinian', main: 'wizard', sub: 'sage', pred: 'canny', lineage: 'guiding_thought', name: 'ノア' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
-    id: i + 101, // Different IDs for second party
+    id: i + 101,
     name: setup.name,
     raceId: setup.race as RaceId,
     mainClassId: setup.main as ClassId,
@@ -717,7 +806,7 @@ function createSecondParty() {
     experience: 0,
     lootGateProgress: {},
     lootGateStatus: {},
-    deity: createInitialDeity('God of Dusk'),
+    deity: createInitialDeity('God of Attrition'),
     characters,
     selectedDungeonId: 1,
     expeditionDepthLimit: 'all',
@@ -741,12 +830,12 @@ function createSecondParty() {
 
 function createThirdParty() {
   const defaultSetup = [
-    { race: 'procyonian', main: 'fighter', sub: 'duelist', pred: 'persistent', lineage: 'steel_oath', name: 'イヌカイ' },
-    { race: 'mustelid', main: 'duelist', sub: 'rogue', pred: 'dexterous', lineage: 'breaking_hand', name: 'テン' },
-    { race: 'caninian', main: 'lord', sub: 'fighter', pred: 'chivalric', lineage: 'unmoving', name: 'ガルド' },
-    { race: 'lupinian', main: 'ranger', sub: 'samurai', pred: 'shikon', lineage: 'far_sight', name: 'ハウル' },
-    { race: 'felidian', main: 'sage', sub: 'wizard', pred: 'brilliant', lineage: 'guiding_thought', name: 'ミィ' },
-    { race: 'ursan', main: 'pilgrim', sub: 'lord', pred: 'sturdy', lineage: 'hidden_principles', name: 'クマロク' },
+    { race: 'vulpinian', main: 'duelist', sub: 'samurai', pred: 'chivalric', lineage: 'war_spirit', name: 'キツネ' },
+    { race: 'vulpinian', main: 'rogue', sub: 'ninja', pred: 'persistent', lineage: 'breaking_hand', name: 'ヨウ' },
+    { race: 'vulpinian', main: 'ranger', sub: 'sage', pred: 'dexterous', lineage: 'far_sight', name: 'シュン' },
+    { race: 'vulpinian', main: 'lord', sub: 'fighter', pred: 'sturdy', lineage: 'unmoving', name: 'コン' },
+    { race: 'vulpinian', main: 'pilgrim', sub: 'sage', pred: 'pursuing', lineage: 'hidden_principles', name: 'ミコ' },
+    { race: 'vulpinian', main: 'wizard', sub: 'sage', pred: 'canny', lineage: 'guiding_thought', name: 'イナ' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
@@ -767,7 +856,157 @@ function createThirdParty() {
     experience: 0,
     lootGateProgress: {},
     lootGateStatus: {},
-    deity: createInitialDeity('Goddess of Mirage'),
+    deity: createInitialDeity('God of Cunning'),
+    characters,
+    selectedDungeonId: 1,
+    expeditionDepthLimit: 'all',
+    currentHp: 0,
+    pendingProfit: 0,
+    expeditionRewardsPending: false,
+    deityGold: 0,
+    lastExpeditionLog: null,
+    pendingDiaryLog: null,
+    diaryLogs: [],
+    hasUnreadDiary: false,
+    diarySettings: getDiarySettingsWithDefaults(undefined),
+    expeditionStats: getExpeditionStatsWithDefaults(null),
+    sleepinessOfPartyBag: createSleepinessPartyBag(),
+    currentSleepiness: 0,
+    sideQuest: null,
+  };
+
+  return initializePartyRuntimeState(party);
+}
+
+function createFourthParty() {
+  const defaultSetup = [
+    { race: 'ursan', main: 'fighter', sub: 'lord', pred: 'sturdy', lineage: 'unmoving', name: 'グロウ' },
+    { race: 'ursan', main: 'samurai', sub: 'fighter', pred: 'chivalric', lineage: 'war_spirit', name: 'バル' },
+    { race: 'ursan', main: 'duelist', sub: 'ranger', pred: 'dexterous', lineage: 'far_sight', name: 'ロア' },
+    { race: 'ursan', main: 'rogue', sub: 'ninja', pred: 'persistent', lineage: 'breaking_hand', name: 'グリズ' },
+    { race: 'ursan', main: 'sage', sub: 'pilgrim', pred: 'pursuing', lineage: 'hidden_principles', name: 'ウル' },
+    { race: 'ursan', main: 'wizard', sub: 'sage', pred: 'canny', lineage: 'guiding_thought', name: 'ドルト' },
+  ];
+
+  const characters: Character[] = defaultSetup.map((setup, i) => ({
+    id: i + 301,
+    name: setup.name,
+    raceId: setup.race as RaceId,
+    mainClassId: setup.main as ClassId,
+    subClassId: setup.sub as ClassId,
+    predispositionId: setup.pred as PredispositionId,
+    lineageId: setup.lineage as LineageId,
+    equipment: [],
+  }));
+
+  const party: Party = {
+    id: 4,
+    name: 'PT4',
+    level: 1,
+    experience: 0,
+    lootGateProgress: {},
+    lootGateStatus: {},
+    deity: createInitialDeity('God of Fortification'),
+    characters,
+    selectedDungeonId: 1,
+    expeditionDepthLimit: 'all',
+    currentHp: 0,
+    pendingProfit: 0,
+    expeditionRewardsPending: false,
+    deityGold: 0,
+    lastExpeditionLog: null,
+    pendingDiaryLog: null,
+    diaryLogs: [],
+    hasUnreadDiary: false,
+    diarySettings: getDiarySettingsWithDefaults(undefined),
+    expeditionStats: getExpeditionStatsWithDefaults(null),
+    sleepinessOfPartyBag: createSleepinessPartyBag(),
+    currentSleepiness: 0,
+    sideQuest: null,
+  };
+
+  return initializePartyRuntimeState(party);
+}
+
+function createFifthParty() {
+  const defaultSetup = [
+    { race: 'felidian', main: 'sage', sub: 'pilgrim', pred: 'pursuing', lineage: 'hidden_principles', name: 'ミャオ' },
+    { race: 'felidian', main: 'ranger', sub: 'sage', pred: 'dexterous', lineage: 'far_sight', name: 'ニル' },
+    { race: 'felidian', main: 'duelist', sub: 'samurai', pred: 'chivalric', lineage: 'war_spirit', name: 'フェル' },
+    { race: 'felidian', main: 'rogue', sub: 'ninja', pred: 'persistent', lineage: 'breaking_hand', name: 'シロ' },
+    { race: 'felidian', main: 'lord', sub: 'fighter', pred: 'sturdy', lineage: 'unmoving', name: 'カリン' },
+    { race: 'felidian', main: 'wizard', sub: 'sage', pred: 'canny', lineage: 'guiding_thought', name: 'ネイ' },
+  ];
+
+  const characters: Character[] = defaultSetup.map((setup, i) => ({
+    id: i + 401,
+    name: setup.name,
+    raceId: setup.race as RaceId,
+    mainClassId: setup.main as ClassId,
+    subClassId: setup.sub as ClassId,
+    predispositionId: setup.pred as PredispositionId,
+    lineageId: setup.lineage as LineageId,
+    equipment: [],
+  }));
+
+  const party: Party = {
+    id: 5,
+    name: 'PT5',
+    level: 1,
+    experience: 0,
+    lootGateProgress: {},
+    lootGateStatus: {},
+    deity: createInitialDeity('Goddess of Fertility'),
+    characters,
+    selectedDungeonId: 1,
+    expeditionDepthLimit: 'all',
+    currentHp: 0,
+    pendingProfit: 0,
+    expeditionRewardsPending: false,
+    deityGold: 0,
+    lastExpeditionLog: null,
+    pendingDiaryLog: null,
+    diaryLogs: [],
+    hasUnreadDiary: false,
+    diarySettings: getDiarySettingsWithDefaults(undefined),
+    expeditionStats: getExpeditionStatsWithDefaults(null),
+    sleepinessOfPartyBag: createSleepinessPartyBag(),
+    currentSleepiness: 0,
+    sideQuest: null,
+  };
+
+  return initializePartyRuntimeState(party);
+}
+
+function createSixthParty() {
+  const defaultSetup = [
+    { race: 'mustelid', main: 'wizard', sub: 'sage', pred: 'canny', lineage: 'guiding_thought', name: 'ミン' },
+    { race: 'mustelid', main: 'rogue', sub: 'ninja', pred: 'persistent', lineage: 'breaking_hand', name: 'トロ' },
+    { race: 'mustelid', main: 'duelist', sub: 'samurai', pred: 'chivalric', lineage: 'war_spirit', name: 'ネル' },
+    { race: 'mustelid', main: 'ranger', sub: 'sage', pred: 'dexterous', lineage: 'far_sight', name: 'マル' },
+    { race: 'mustelid', main: 'fighter', sub: 'lord', pred: 'sturdy', lineage: 'unmoving', name: 'タル' },
+    { race: 'mustelid', main: 'pilgrim', sub: 'sage', pred: 'pursuing', lineage: 'hidden_principles', name: 'リン' },
+  ];
+
+  const characters: Character[] = defaultSetup.map((setup, i) => ({
+    id: i + 501,
+    name: setup.name,
+    raceId: setup.race as RaceId,
+    mainClassId: setup.main as ClassId,
+    subClassId: setup.sub as ClassId,
+    predispositionId: setup.pred as PredispositionId,
+    lineageId: setup.lineage as LineageId,
+    equipment: [],
+  }));
+
+  const party: Party = {
+    id: 6,
+    name: 'PT6',
+    level: 1,
+    experience: 0,
+    lootGateProgress: {},
+    lootGateStatus: {},
+    deity: createInitialDeity('God of Resonance'),
     characters,
     selectedDungeonId: 1,
     expeditionDepthLimit: 'all',
@@ -790,7 +1029,7 @@ function createThirdParty() {
 }
 
 function createDefaultParties(): Party[] {
-  return [createInitialParty(), createSecondParty(), createThirdParty()];
+  return [createInitialParty(), createSecondParty(), createThirdParty(), createFourthParty(), createFifthParty(), createSixthParty()];
 }
 
 function createInitialState(): GameState {
@@ -808,13 +1047,14 @@ function createInitialState(): GameState {
       inventory: createStarterInventory(),
       jewels: createStarterJewelInventory(),
       deityDonations: {},
+      unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
       shopPurchases: {},
       jewelShopPurchases: {},
       shopRefreshCounts: {},
       shopIntimacy: 0,
       shopIntimacyLastDecayAt: Date.now(),
     },
-    parties: createDefaultParties(),
+    parties: [createInitialParty()],
     selectedPartyIndex: 0,
     bags: {
       commonRewardBag: createCommonRewardBag(),
@@ -1304,6 +1544,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'UPDATE_PARTY_DEITY': {
       const normalizedDeityName = normalizeDeityName(action.deityName);
+      const isUnlockedDeity = isNoFaithDeity(normalizedDeityName)
+        || normalizeUnlockedDeities(state.global.unlockedDeities).includes(normalizedDeityName);
+      if (!isUnlockedDeity) {
+        return state;
+      }
+
       const isUsedByOtherParty = !isNoFaithDeity(normalizedDeityName) && state.parties.some((party, index) =>
         index !== action.partyIndex && normalizeDeityName(party.deity.name) === normalizedDeityName
       );
@@ -1710,14 +1956,27 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         },
       };
 
+      let nextUnlockedDeities = normalizeUnlockedDeities(state.global.unlockedDeities);
+      let nextUnlockedPartySlots = state.parties.length;
+      const unlockedState = getUnlockedStateFromEntries(entries, nextUnlockedDeities, nextUnlockedPartySlots);
+      nextUnlockedDeities = unlockedState.unlockedDeities;
+      nextUnlockedPartySlots = Math.max(1, Math.min(6, unlockedState.unlockedPartySlots));
+
+      const defaultParties = createDefaultParties();
+      const nextParties = [...updatedParties];
+      while (nextParties.length < nextUnlockedPartySlots) {
+        nextParties.push(defaultParties[nextParties.length]);
+      }
+
       return {
         ...state,
         bags,
-        parties: updatedParties,
+        parties: nextParties,
         global: {
           ...state.global,
           inventory: finalInventory,
           gold: finalGold,
+          unlockedDeities: nextUnlockedDeities,
         },
       };
     }
@@ -2658,13 +2917,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           inventory: createStarterInventory(),
           jewels: createStarterJewelInventory(),
           deityDonations: {},
+          unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
           shopPurchases: {},
           jewelShopPurchases: {},
           shopRefreshCounts: {},
           shopIntimacy: 0,
           shopIntimacyLastDecayAt: Date.now(),
         },
-        parties: createDefaultParties(),
+        parties: [createInitialParty()],
         selectedPartyIndex: 0,
         bags: {
           commonRewardBag: createCommonRewardBag(),
@@ -2693,17 +2953,37 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         currentSleepiness: normalizeSleepinessState(party.currentSleepiness),
       }));
       const defaultParties = createDefaultParties();
-      while (normalizedParties.length < defaultParties.length) {
+      const normalizedUnlockedDeities = normalizeUnlockedDeities(hydrated.global.unlockedDeities);
+      const unlockedBase = normalizedUnlockedDeities.length > 0 ? normalizedUnlockedDeities : [...DEFAULT_UNLOCKED_DEITIES];
+      let unlockedDeities = [...unlockedBase];
+      let unlockedPartySlots = Math.max(1, Math.min(6, normalizedParties.length || 1));
+      for (const party of normalizedParties) {
+        unlockedDeities = ensureUnlockedDeity(unlockedDeities, party.deity.name);
+        const allEntries = [
+          ...(party.lastExpeditionLog?.entries ?? []),
+          ...party.diaryLogs.flatMap((log) => log.expeditionLog?.entries ?? []),
+          ...(party.pendingDiaryLog?.expeditionLog?.entries ?? []),
+        ];
+        const unlockedState = getUnlockedStateFromEntries(allEntries, unlockedDeities, unlockedPartySlots);
+        unlockedDeities = unlockedState.unlockedDeities;
+        unlockedPartySlots = Math.max(unlockedPartySlots, unlockedState.unlockedPartySlots);
+      }
+      while (normalizedParties.length < unlockedPartySlots) {
         normalizedParties.push(defaultParties[normalizedParties.length]);
       }
+      const trimmedParties = normalizedParties.slice(0, unlockedPartySlots);
       const normalizedSelectedPartyIndex = Math.min(
         Math.max(0, hydrated.selectedPartyIndex),
-        Math.max(0, normalizedParties.length - 1),
+        Math.max(0, trimmedParties.length - 1),
       );
 
       return {
         ...hydrated,
-        parties: normalizedParties,
+        global: {
+          ...hydrated.global,
+          unlockedDeities: unlockedDeities,
+        },
+        parties: trimmedParties,
         selectedPartyIndex: normalizedSelectedPartyIndex,
         bags: normalizeImportedBags(hydrated.bags),
         buildNumber: BUILD_NUMBER,

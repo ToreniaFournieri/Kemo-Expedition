@@ -353,6 +353,7 @@ export interface GlobalState {
   gold: number;
   inventory: InventoryRecord;
   deityDonations: Record<string, number>;
+  unlockedDeities: string[];
   shopPurchases: Record<string, number[]>;
   jewelShopPurchases: Record<string, number>;
   shopRefreshCounts: Record<string, number>;

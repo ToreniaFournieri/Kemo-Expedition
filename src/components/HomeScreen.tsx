@@ -2427,6 +2427,7 @@ export function HomeScreen({
             inventory={state.global.inventory}
             jewels={state.global.jewels}
             deityDonations={state.global.deityDonations}
+            unlockedDeities={state.global.unlockedDeities}
           />
         )}
 
@@ -2534,6 +2535,7 @@ function PartyTab({
   inventory,
   jewels,
   deityDonations,
+  unlockedDeities,
 }: {
   parties: Party[];
   selectedPartyIndex: number;
@@ -2554,6 +2556,7 @@ function PartyTab({
   inventory: InventoryRecord;
   jewels: Record<string, number>;
   deityDonations: Record<string, number>;
+  unlockedDeities: string[];
 }) {
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
   const [equipCategory, setEquipCategory] = useState('armor');
@@ -3259,6 +3262,9 @@ function PartyTab({
             >
               {DEITY_OPTIONS.map((deity) => {
                 const normalizedName = normalizeDeityName(deity.name);
+                const unlocked = isNoFaithDeity(normalizedName)
+                  || unlockedDeities.includes(normalizedName)
+                  || normalizeDeityName(party.deity.name) === normalizedName;
                 const inUseByOtherParty = !isNoFaithDeity(normalizedName) && parties.some((partyCandidate, index) =>
                   index !== selectedPartyIndex && normalizeDeityName(partyCandidate.deity.name) === normalizedName
                 );
@@ -3266,7 +3272,7 @@ function PartyTab({
                   <option
                     key={deity.key}
                     value={deity.name}
-                    disabled={inUseByOtherParty}
+                    disabled={!unlocked || inUseByOtherParty}
                   >
                     {deity.name}
                   </option>
