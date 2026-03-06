@@ -436,28 +436,37 @@ Party.`d.HP` =
 | 10 | `i.robe` |
 | 11 | `i.catalyst` |
 
-#### 3.6.2 Item selection within a category
-- **Step1:** Common item selection
-  - When selecting an item from a valid category, auto-equipment chooses:
-  - the highest item tier which is available 
-  - and, among those, the highest enhancement
-  - Eligible items are limited to common items only.(and no Super rare item)
-- The item selection within the category:
-the highest tier and highest enhancement of common items.
- (excluding uncommon, elite rare, boss rare, mythic rare, and super rare items)
-- **Step2:** Duplicate resolution
-  - If a character equips two or more common items of the same category and tier, Only one common item of that category and tier is retained. All additional duplicates are replaced with the highest base-value alternatives available in the same category (uncommon, elite rare, boss rare and mythic rare).
-- This duplicate resolution (step2) is logically treated as part of the same auto-equipment calculation. 
-- notification logic. 
-  - Pattern A - empty slot to equip item: PT2ニャンは 恐ろしい月鋼鏃の矢を装備した
-  - Pattern B - exist item to equip another item: PT2ニャンは 恐ろしい月鋼鏃の矢 を 魔性の瞬撃の月鋼矢に装備しなおした
+#### 3.6.2 Item selection from a specific item category
+- When auto-equipment selects items from a specific item category, the following procedure is used:
 
-  - note: empty slot to common item (step1) to rare item (step2) is treated as Pattern A. 
+1. **Initialize memory**
+   - Record the **item IDs** of all currently equipped items as **Memory A**.
+   - Record all **`c.*` bonus effects** provided by the currently equipped items as **Memory B**.
+
+2. **Search for a candidate item**
+   - From the inventory, search for the **highest base-value item** in the target item category.
+   - Exclude any item that satisfies either of the following conditions:
+     - Its **item ID** already exists in **Memory A**.
+     - Its **`c.*` bonus** already exists in **Memory B**.
+
+3. **Register the selected item**
+   - Add the selected item's **item ID** to **Memory A**.
+   - Add the selected item's **`c.*` bonus** to **Memory B**.
+
+4. **Repeat**
+   - Repeat Step 2 and Step 3 until all potential equipment slots for that item category have been evaluated or no eligible items remain.
+
+
 
 #### 3.6.3 Upgrading equipped items
 - If a party member already has an item equipped, and another eligible item of the same category exists with a higher enhancement, the equipped item is replaced.
 - Jewels socketed in the currently equipped item remain unchanged.
 - Only the equipment item itself is replaced.
+
+#### 3.6.4 notification 
+- notification logic. 
+  - empty slot to equip item: PT2ニャンは 恐ろしい月鋼鏃の矢を装備した
+  - exist item to equip another item: PT2ニャンは 恐ろしい月鋼鏃の矢 を 魔性の瞬撃の月鋼矢に装備しなおした 
 
 
 ## 4. Party State Machine
