@@ -152,6 +152,7 @@ interface PartyCycleRuntime {
   durationMs: number;
   isCurrentExpeditionGodsBattle?: boolean;
   skipFeastThisCycle?: boolean;
+  skipSleepThisCycle?: boolean;
 }
 
 function rollPercentInclusive(min: number, max: number): number {
@@ -1760,6 +1761,7 @@ export function HomeScreen({
             durationMs: restartState === 'move' ? getPartyTravelDurationMs(party, 'move') : 1000,
             isCurrentExpeditionGodsBattle: false,
             skipFeastThisCycle: false,
+            skipSleepThisCycle: false,
           };
         });
         return next;
@@ -1808,11 +1810,12 @@ export function HomeScreen({
               updated.durationMs = getStateDurationMs(party, 'sell');
             } else {
               const shouldSkipFeast = updated.skipFeastThisCycle === true || (party.pendingProfit ?? 0) <= 0;
+              const shouldSkipSleep = updated.skipSleepThisCycle === true;
               const sleepDurationMs = getStateDurationMs(party, 'sleep');
               if (!shouldSkipFeast) {
                 updated.state = 'feast';
                 updated.durationMs = getStateDurationMs(party, 'feast');
-              } else if (party.currentSleepiness === 0 || sleepDurationMs <= 100) {
+              } else if (shouldSkipSleep || party.currentSleepiness === 0 || sleepDurationMs <= 100) {
                 updated.state = 'pray';
                 updated.durationMs = getStateDurationMs(party, 'pray');
               } else {
@@ -1821,6 +1824,9 @@ export function HomeScreen({
               }
               if (shouldSkipFeast) {
                 updated.skipFeastThisCycle = false;
+              }
+              if (shouldSkipSleep) {
+                updated.skipSleepThisCycle = false;
               }
             }
             updated.stateStartedAt = simulationNow;
@@ -1856,13 +1862,17 @@ export function HomeScreen({
               actions.spendPendingProfit(partyIndex, spend);
               if (party.sideQuest?.type === 'q.squander' && spend > 0) actions.advanceSideQuest(partyIndex, spend, simulationNow);
               cyclePendingProfit = Math.max(0, cyclePendingProfit - spend);
+              const shouldSkipSleep = updated.skipSleepThisCycle === true;
               const sleepDurationMs = getStateDurationMs(party, 'sleep');
-              if (party.currentSleepiness === 0 || sleepDurationMs <= 100) {
+              if (shouldSkipSleep || party.currentSleepiness === 0 || sleepDurationMs <= 100) {
                 updated.state = 'pray';
                 updated.durationMs = getStateDurationMs(party, 'pray');
               } else {
                 updated.state = 'sleep';
                 updated.durationMs = sleepDurationMs;
+              }
+              if (shouldSkipSleep) {
+                updated.skipSleepThisCycle = false;
               }
             } else if (updated.state === 'sleep') {
               if (party.sideQuest?.type === 'q.sleeping' && updated.durationMs > 100) actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
@@ -1919,11 +1929,15 @@ export function HomeScreen({
               if (!party.sideQuest && !hasActiveLootGateCondition(party, updated.state)) {
                 actions.rollSideQuest(partyIndex, party.selectedDungeonId);
               }
-              actions.rollPartySleepiness(partyIndex);
+              const shouldSkipSleepForLowHp = hpRatioAtRestStart < 0.1;
+              if (!shouldSkipSleepForLowHp) {
+                actions.rollPartySleepiness(partyIndex);
+              }
               updated.state = 'rest';
               updated.durationMs = getStateDurationMs(party, 'rest');
               updated.isCurrentExpeditionGodsBattle = false;
               updated.skipFeastThisCycle = hpRatioAtRestStart < 0.3;
+              updated.skipSleepThisCycle = shouldSkipSleepForLowHp;
             }
 
             if (updated.state === 'rest') {
