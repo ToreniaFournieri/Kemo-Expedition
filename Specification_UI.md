@@ -343,15 +343,12 @@ displays [遠距離攻撃:矢,ボ,弓]
 ```   
 
 #### 8.4 Expedition
-- If 自動周回 is ON, it repeats repart to the dungeon. Default is OFF.
+- If 自動周回 is ON, it repeats repart to the dungeon.
 
 - **Expedition Depth Limit (探索深度)**
   - Players can set a depth limit; when the party reaches the selected floor, it stops the expedition and returns home automatically.
   - Selectable Options : 1F-3まで/2F-3まで/3F-3まで/4F-3まで/5F-3まで/ボス直前まで/全て (default: 全て)
 
-```
-          (Right-Aligned)
-           [一斉出撃] 自動周回 ON/OFF
 
 PT1 HP (HP bar, blue) ルピニアンの断崖踏破▼
 移動中(background: state progress bar)
@@ -561,14 +558,6 @@ line  gray text2: ウルサンの霊峰: 剛力の雅晶 を手に入れた     
 - All panes are collapsed by default and expandable.
 - The expanded/collapsed state is persisted and saved.
 
-**Mode select (モード切替)**
-- Switch to `m.kemo`ケモ and `m.luna`ルナ . Default: `m.kemo`
-  - Description:
-    - `m.kemo` "通常のモードです"
-    - `m.luna` "敵が大幅に強くなります(少しだけ報酬がよくなります)"
-
-  - If Environment is `/luna/`, Set `m.luna` and other option (`m.kemo`) is disabled.
-
 **Donation box (寄付箱)**
 - Display donated amount of gold of each god.
 
@@ -740,6 +729,19 @@ HP: 312                 クラス: 魔法使い
 
 **Super Rare List(超レア一覧)**
 - Display Super Rare list with its unique bonus.
+
+
+
+
+**Mode select (モード切替)**
+- Switch to 自動周回[ON] and 自動周回[OFF] (Default:ON )
+
+- Switch to `m.kemo`ケモ and `m.luna`ルナ . Default: `m.kemo`
+  - Description:
+    - `m.kemo` "通常のモードです"
+    - `m.luna` "敵が大幅に強くなります(報酬がよくなります)"
+
+  - If Environment is `/luna/`, Set `m.luna` and other option (`m.kemo`) is disabled.
 
 
 **Game Setting(ゲーム設定)**
