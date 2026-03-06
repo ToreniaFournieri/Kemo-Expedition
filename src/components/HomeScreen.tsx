@@ -6787,6 +6787,7 @@ function SettingTab({
                     const entryKey = `${section.id}-${entry.key}-${index}`;
                     const isGodGlossarySection = section.heading.toLowerCase().includes('2.1.7 g.');
                     const shouldCollapseEntry = glossaryTab === 'F';
+                    const useDefaultGlossaryTextColor = glossaryTab === 'F';
                     const isEntryExpanded = !shouldCollapseEntry || expandedGlossaryEntries[entryKey] === true;
                     const descriptionLines = entry.description.split('\n');
                     const normalizedDescriptionLines = isSideQuestGlossarySection
@@ -6828,20 +6829,20 @@ function SettingTab({
                         )}
                         {isEntryExpanded && (
                           <>
-                            <div className="text-gray-500 whitespace-pre-line">{renderTextWithRaceIcons(mainDescription)}</div>
+                            <div className={`${useDefaultGlossaryTextColor ? 'text-gray-700' : 'text-gray-500'} whitespace-pre-line`}>{renderTextWithRaceIcons(mainDescription)}</div>
                             {isGodGlossarySection && loreLines.map((line, lineIndex) => (
-                              <div key={`${section.id}-${entry.key}-${index}-lore-${lineIndex}`} className="text-gray-500 italic whitespace-pre-line">
+                              <div key={`${section.id}-${entry.key}-${index}-lore-${lineIndex}`} className={`${useDefaultGlossaryTextColor ? 'text-gray-700' : 'text-gray-500'} italic whitespace-pre-line`}>
                                 {renderTextWithRaceIcons(line)}
                               </div>
                             ))}
                             {!isGodGlossarySection && lorePrefixLines.length > 0 && (
-                              <div className="text-gray-500 whitespace-pre-line">{renderTextWithRaceIcons(lorePrefixLines.join('\n'))}</div>
+                              <div className={`${useDefaultGlossaryTextColor ? 'text-gray-700' : 'text-gray-500'} whitespace-pre-line`}>{renderTextWithRaceIcons(lorePrefixLines.join('\n'))}</div>
                             )}
                             {!isGodGlossarySection && glossaryTable && (
                               <div className="mt-1 rounded border border-gray-200 bg-white px-2 py-1">
                                 <table className="w-full table-fixed text-xs">
                                   <thead>
-                                    <tr className="border-b border-gray-100 text-gray-500">
+                                      <tr className={`border-b border-gray-100 ${useDefaultGlossaryTextColor ? 'text-gray-700' : 'text-gray-500'}`}>
                                       {glossaryTable.headers.map((header, headerIndex) => (
                                         <th
                                           key={`${section.id}-${entry.key}-table-header-${headerIndex}`}
@@ -6861,7 +6862,9 @@ function SettingTab({
                                           <td
                                             key={`${section.id}-${entry.key}-table-row-${rowIndex}-cell-${cellIndex}`}
                                             className={`py-1 align-top ${
-                                              cellIndex === row.length - 1 ? 'text-right tabular-nums text-sub' : 'text-left'
+                                              cellIndex === row.length - 1
+                                                ? `text-right tabular-nums ${useDefaultGlossaryTextColor ? 'text-gray-700' : 'text-sub'}`
+                                                : 'text-left'
                                             }`}
                                           >
                                             {renderTextWithRaceIcons(cell)}
