@@ -87,6 +87,9 @@
 
 - Header is always visible; tabs never cause full page reload.
 
+-IF 自動周回 is OFF, display "静止中" in the header (right-aligned: 200G 静止中) with Sub color
+ and tap "静止中", then 自動周回 is ON.
+
 ### 8.3 Party tab
 #### 8.3.1 Displays
 
