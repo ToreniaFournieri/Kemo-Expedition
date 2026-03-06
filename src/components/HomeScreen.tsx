@@ -1807,8 +1807,9 @@ export function HomeScreen({
               updated.state = 'sell';
               updated.durationMs = getStateDurationMs(party, 'sell');
             } else {
+              const shouldSkipFeast = updated.skipFeastThisCycle === true || (party.pendingProfit ?? 0) <= 0;
               const sleepDurationMs = getStateDurationMs(party, 'sleep');
-              if (party.pendingProfit > 0) {
+              if (!shouldSkipFeast) {
                 updated.state = 'feast';
                 updated.durationMs = getStateDurationMs(party, 'feast');
               } else if (party.currentSleepiness === 0 || sleepDurationMs <= 100) {
@@ -1818,9 +1819,11 @@ export function HomeScreen({
                 updated.state = 'sleep';
                 updated.durationMs = sleepDurationMs;
               }
+              if (shouldSkipFeast) {
+                updated.skipFeastThisCycle = false;
+              }
             }
             updated.stateStartedAt = simulationNow;
-            updated.skipFeastThisCycle = false;
           }
         }
 
