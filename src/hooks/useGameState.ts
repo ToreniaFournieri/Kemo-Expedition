@@ -169,6 +169,7 @@ function getUnlockedStateFromEntries(entries: ExpeditionLogEntry[], initialUnloc
 
   for (const entry of entries) {
     if (entry.outcome !== 'victory') continue;
+    if (!entry.enemyName.includes('(神魔戦)')) continue;
     const enemyName = entry.enemyName.split(' ')[0] ?? entry.enemyName;
     const unlockDeityName = UNLOCKABLE_DEITY_BY_GOD_NAME[enemyName];
     if (unlockDeityName) {
