@@ -1615,6 +1615,18 @@ export function HomeScreen({
     const targetPartyIndexSet = targetPartyIndexes ? new Set(targetPartyIndexes) : null;
     const simulatedInventory: InventoryRecord = { ...state.global.inventory };
     const slotNotifications = new Map<string, string>();
+    const setSlotNotification = (
+      partyName: string,
+      characterName: string,
+      characterId: string | number,
+      slotIndex: number,
+      partyIndex: number,
+      message: string,
+    ) => {
+      const notificationKey = `${partyIndex}:${characterId}:${slotIndex}`;
+      slotNotifications.set(notificationKey, `${partyName}${characterName}は ${message}`);
+    };
+
     const queueAutoEquipmentNotification = (
       partyName: string,
       characterName: string,
@@ -1623,8 +1635,14 @@ export function HomeScreen({
       item: Item,
       partyIndex: number,
     ) => {
-      const notificationKey = `${partyIndex}:${characterId}:${slotIndex}`;
-      slotNotifications.set(notificationKey, `${partyName}${characterName}は ${getItemDisplayName(item)} を装備した`);
+      setSlotNotification(
+        partyName,
+        characterName,
+        characterId,
+        slotIndex,
+        partyIndex,
+        `${getItemDisplayName(item)} を装備した`,
+      );
     };
 
     const addItemToSimulatedInventory = (item: Item) => {
@@ -1790,7 +1808,14 @@ export function HomeScreen({
             if (duplicateItem.jewel) {
               actions.attachJewel(character.id, slotIndex, duplicateItem.jewel.key, duplicateItem.jewel.rank, partyIndex);
             }
-            queueAutoEquipmentNotification(party.name, character.name, character.id, slotIndex, nextEquippedItem, partyIndex);
+            setSlotNotification(
+              party.name,
+              character.name,
+              character.id,
+              slotIndex,
+              partyIndex,
+              `重複していた${getItemDisplayName(duplicateItem)} を ${getItemDisplayName(nextEquippedItem)}に置き換えた`,
+            );
           });
         });
       });
