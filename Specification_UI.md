@@ -63,6 +63,10 @@
 - Side quest
   - Example: "PT1はサイドクエスト 治療 (2時間) を受けた"
 
+- Auto equipment:
+  - Example: "PT1ケモは 名工の木の胸当て を装備した"
+  - Example:　"PT3ガルドは 宿った鉄の短剣 を 伝説の鉄の短剣に装備しなおした"
+
 ### 8.2 Header
 - Always fixed at the top.
 - Displays:
