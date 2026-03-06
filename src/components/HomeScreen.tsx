@@ -1533,6 +1533,22 @@ const AUTO_EQUIPMENT_PRIORITY_BY_CLASS: Record<Character['mainClassId'], ItemCat
   pilgrim: ['wand', 'catalyst', 'armor', 'robe', 'grimoire', 'wand', 'catalyst', 'grimoire', 'armor', 'robe', 'catalyst'],
 };
 
+function getNextMissingAutoEquipmentCategory(
+  priorities: ItemCategory[],
+  equippedCategoryCounts: Partial<Record<ItemCategory, number>>,
+): ItemCategory | null {
+  const requiredCounts: Partial<Record<ItemCategory, number>> = {};
+
+  for (const category of priorities) {
+    requiredCounts[category] = (requiredCounts[category] ?? 0) + 1;
+    if ((equippedCategoryCounts[category] ?? 0) < (requiredCounts[category] ?? 0)) {
+      return category;
+    }
+  }
+
+  return priorities[priorities.length - 1] ?? null;
+}
+
 export function HomeScreen({
   state,
   actions,
@@ -1679,19 +1695,26 @@ export function HomeScreen({
         const emptySlotIndexes = equippedSlots
           .map(({ item, slotIndex }) => (item ? -1 : slotIndex))
           .filter((index) => index >= 0);
+        const equippedCategoryCounts: Partial<Record<ItemCategory, number>> = {};
+        equippedSlots.forEach(({ item }) => {
+          if (!item) return;
+          equippedCategoryCounts[item.category] = (equippedCategoryCounts[item.category] ?? 0) + 1;
+        });
 
         emptySlotIndexes.forEach((slotIndex) => {
-          for (let offset = 0; offset < priorities.length; offset += 1) {
-            const category = priorities[offset % priorities.length];
-            const itemKey = getBestVariantKeyInCategory(category);
-            if (!itemKey) continue;
-            const variant = simulatedInventory[itemKey];
-            if (!variant) continue;
-            removeItemFromSimulatedInventory(itemKey);
-            actions.equipItem(character.id, slotIndex, itemKey, partyIndex);
-            notifications.push(`${party.name}${character.name}は ${getItemDisplayName(variant.item)} を装備した`);
-            break;
-          }
+          const targetCategory = getNextMissingAutoEquipmentCategory(priorities, equippedCategoryCounts);
+          if (!targetCategory) return;
+
+          const itemKey = getBestVariantKeyInCategory(targetCategory);
+          if (!itemKey) return;
+
+          const variant = simulatedInventory[itemKey];
+          if (!variant) return;
+
+          equippedCategoryCounts[targetCategory] = (equippedCategoryCounts[targetCategory] ?? 0) + 1;
+          removeItemFromSimulatedInventory(itemKey);
+          actions.equipItem(character.id, slotIndex, itemKey, partyIndex);
+          notifications.push(`${party.name}${character.name}は ${getItemDisplayName(variant.item)} を装備した`);
         });
 
         equippedSlots.forEach(({ item: equippedItem, slotIndex }) => {
