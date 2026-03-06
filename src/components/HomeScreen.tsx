@@ -1879,12 +1879,13 @@ export function HomeScreen({
               updated.state = 'pray';
               updated.durationMs = getStateDurationMs(party, 'pray');
             } else if (updated.state === 'pray') {
+              const isNoFaith = isNoFaithDeity(party.deity.name);
               const donationRate = rollPercentInclusive(10, 33);
               const baseDonation = Math.floor((cyclePendingProfit * donationRate) / 100);
               const titheLevel = getPartyAbilityLevel(party, 'tithe');
-              const titheBonusRate = titheLevel >= 2 ? 0.15 : titheLevel >= 1 ? 0.1 : 0;
+              const titheBonusRate = isNoFaith ? 0 : (titheLevel >= 2 ? 0.15 : titheLevel >= 1 ? 0.1 : 0);
               const titheBonus = Math.floor(cyclePendingProfit * titheBonusRate);
-              const donation = Math.min(cyclePendingProfit, baseDonation + titheBonus);
+              const donation = isNoFaith ? 0 : Math.min(cyclePendingProfit, baseDonation + titheBonus);
               const rawDeposit = Math.max(0, cyclePendingProfit - donation);
               const deposit = Math.floor(rawDeposit * getPrayerDepositMultiplier(party));
               const embezzled = Math.max(0, rawDeposit - deposit);
@@ -1895,7 +1896,9 @@ export function HomeScreen({
               cyclePendingProfit = 0;
               if (donation > 0 || deposit > 0) {
                 const embezzledText = embezzled > 0 ? `(${formatNumber(embezzled)}Gを着服した)` : '';
-                if (titheLevel > 0) {
+                if (isNoFaith) {
+                  actions.addNotification(`${party.name}は ${formatNumber(deposit)}Gを貯金した${embezzledText}`);
+                } else if (titheLevel > 0) {
                   const pilgrimName = getPartyAbilityOwnerName(party, 'tithe') ?? '名無し';
                   actions.addNotification(`${party.name} 巡礼者${pilgrimName}は祈りと共に${formatNumber(donation)}G神に捧げて、${formatNumber(deposit)}Gを貯金した${embezzledText}`);
                 } else {
@@ -3221,8 +3224,11 @@ function PartyTab({
           <div className="text-gray-600">
             HP {formatNumber(Math.floor(partyStats.hp))}, レベル {formatNumber(party.level)} ({party.level < MAX_LEVEL ? `${formatNumber(xpProgressPercent)}%, ${formatNumber(party.experience)}` : `100%, ${formatNumber(party.experience)}`})
           </div>
-          <div className="font-medium mt-1">{displayedDeityName} (ランク{getDeityRank(displayedDeityDonation)})</div>
-          <div className="text-xs text-gray-600 mt-1">効果:{getDeityEffectDescription(displayedDeityName, displayedDeityDonation)}</div>
+          <div className="font-medium mt-1">
+            {displayedDeityName}
+            {!isNoFaithDeity(displayedDeityName) ? ` (ランク${getDeityRank(displayedDeityDonation)})` : ''}
+          </div>
+          <div className="text-xs text-gray-600 mt-1">効果:{isNoFaithDeity(displayedDeityName) ? 'なし' : getDeityEffectDescription(displayedDeityName, displayedDeityDonation)}</div>
         </div>
         {editingDeity ? (
           <div className="flex flex-col items-end gap-1">
@@ -6316,11 +6322,12 @@ function SettingTab({
   });
 
   const donationRows = Object.entries(donationByDeity)
+    .filter(([deityName]) => !isNoFaithDeity(deityName))
     .sort((a, b) => (b[1] - a[1]) || a[0].localeCompare(b[0], 'ja'))
     .map(([deityName, donationGold]) => ({
       deityName,
       donationGold,
-      rank: donationGold > 0 ? getDeityRank(donationGold) : 1,
+      rank: getDeityRank(donationGold),
       nextRankDonationRequirement: getNextRankDonationRequirement(donationGold),
     }));
 
