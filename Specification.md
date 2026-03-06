@@ -310,11 +310,21 @@ Party.`d.HP` =
 - Processing priority: Characters are processed sequentially in party order: PT1 Row1 → PT1 Row2 → … → PT1 Row6 → PT2 Row1 → PT2 Row2 → …
 
 #### 3.6.1 Equipping into empty slots
-- When a character has an empty equipment slot, auto-equipment selects an item category according to that class’s priority order, and repeats the same order as needed.
+- When a character has one or more empty equipment slots, auto-equipment selects an item category based on the class’s ideal equipment build order.
+- This order represents the target balance of equipment categories for that class.
+- The system checks the character’s current equipment and selects the earliest category in the order that is still missing.
+- In other words, auto-equipment attempts to move the character’s equipment composition closer to the ideal category balance defined by the class.
+
+- Example:
+  - If a Duelist already has two `i.sword` items equipped, the system evaluates the order and selects the next missing categories.
+  - If the 3rd and 4th slots are empty, the selected categories will be:
+    -	3rd slot → `i.gauntlet`
+    - 4th slot → `i.armor`
+  - because these are the earliest categories in the order that are not yet satisfied.
 
 - Duelist class:
 
-| Priority | item category |
+| order | item category |
 |-|-|
 | 1 | `i.sword` |
 | 2 | `i.gauntlet` |
@@ -330,7 +340,7 @@ Party.`d.HP` =
 
 -  Ninja class:
 
-| Priority | item category |
+| order | item category |
 |-|-|
 | 1 | `i.sword` |
 | 2 | `i.gauntlet` |
@@ -347,7 +357,7 @@ Party.`d.HP` =
 
 - Samurai class:
 
-| Priority | item category |
+| order | item category |
 |-|-|
 | 1 | `i.sword` |
 | 2 | `i.gauntlet` |
@@ -364,7 +374,7 @@ Party.`d.HP` =
 
 - Fighter/ Lord Class:
 
-| Priority | item category |
+| order | item category |
 |-|-|
 | 1 | `i.shield` |
 | 2 | `i.armor` |
@@ -380,7 +390,7 @@ Party.`d.HP` =
 
 - Rogue/ Ranger Class:
 
-| Priority | item category |
+| order | item category |
 |-|-|
 | 1 | `i.arrow` |
 | 2 | `i.archery` |
@@ -396,7 +406,7 @@ Party.`d.HP` =
 
 - Wizard Class:
 
-| Priority | item category |
+| order | item category |
 |-|-|
 | 1 | `i.wand` |
 | 2 | `i.catalyst` |
@@ -412,7 +422,7 @@ Party.`d.HP` =
 
 - Sage/ Pilgrim Class:
 
-| Priority | item category |
+| order | item category |
 |-|-|
 | 1 | `i.wand` |
 | 2 | `i.catalyst` |
