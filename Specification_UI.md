@@ -747,7 +747,7 @@ HP: 312                 クラス: 魔法使い
   - If Environment is `/luna/`, Set `m.luna` and other option (`m.kemo`) is disabled.
 
 
-**Game Setting(ゲーム設定)**
+**Backup and reset(バックアップ・リセット)**
   - 5.1 Backup (Export)
     - Allow the player to export the current save data as a file download.
     - File name format: `Kemo-Expedition_Backup_[version]_[env]_YYYYMMDD`
