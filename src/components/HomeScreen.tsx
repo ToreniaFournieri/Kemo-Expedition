@@ -1594,7 +1594,8 @@ export function HomeScreen({
     autoEquipmentEnabledRef.current = isAutoEquipmentEnabled;
   }, [isAutoEquipmentEnabled]);
 
-  const runAutoEquipment = useCallback(() => {
+  const runAutoEquipment = useCallback((targetPartyIndexes?: number[]) => {
+    const targetPartyIndexSet = targetPartyIndexes ? new Set(targetPartyIndexes) : null;
     const simulatedInventory: InventoryRecord = { ...state.global.inventory };
     const notifications: string[] = [];
 
@@ -1639,6 +1640,8 @@ export function HomeScreen({
     };
 
     state.parties.forEach((party, partyIndex) => {
+      if (targetPartyIndexSet && !targetPartyIndexSet.has(partyIndex)) return;
+
       party.characters.forEach((character) => {
         const priorities = AUTO_EQUIPMENT_PRIORITY_BY_CLASS[character.mainClassId] ?? AUTO_EQUIPMENT_PRIORITY_BY_CLASS.fighter;
         const emptySlotIndexes = character.equipment
@@ -1949,6 +1952,8 @@ export function HomeScreen({
 
     setPartyCycles((prev) => {
       const next = { ...prev };
+      const autoEquipmentPartyIndexes = new Set<number>();
+
       parties.forEach((party, partyIndex) => {
         const runtime = next[partyIndex] ?? {
           state: (autoRepeatEnabled ? 'move' : 'idle') as PartyCycleState,
@@ -2003,6 +2008,9 @@ export function HomeScreen({
               } else if (shouldSkipSleep || party.currentSleepiness === 0 || sleepDurationMs <= 100) {
                 updated.state = 'pray';
                 updated.durationMs = getStateDurationMs(party, 'pray');
+                if (autoEquipmentEnabledRef.current) {
+                  autoEquipmentPartyIndexes.add(partyIndex);
+                }
               } else {
                 updated.state = 'sleep';
                 updated.durationMs = sleepDurationMs;
@@ -2025,9 +2033,6 @@ export function HomeScreen({
           stateElapsedMs -= updated.durationMs;
 
             if (updated.state === 'sell') {
-              if (autoEquipmentEnabledRef.current) {
-                runAutoEquipment();
-              }
               const shouldSkipFeast = cyclePendingProfit <= 0 || updated.skipFeastThisCycle === true;
               updated.state = shouldSkipFeast ? 'sleep' : 'feast';
               updated.durationMs = getStateDurationMs(party, shouldSkipFeast ? 'sleep' : 'feast');
@@ -2055,6 +2060,9 @@ export function HomeScreen({
               if (shouldSkipSleep || party.currentSleepiness === 0 || sleepDurationMs <= 100) {
                 updated.state = 'pray';
                 updated.durationMs = getStateDurationMs(party, 'pray');
+                if (autoEquipmentEnabledRef.current) {
+                  autoEquipmentPartyIndexes.add(partyIndex);
+                }
               } else {
                 updated.state = 'sleep';
                 updated.durationMs = sleepDurationMs;
@@ -2066,6 +2074,9 @@ export function HomeScreen({
               if (party.sideQuest?.type === 'q.sleeping' && updated.durationMs > 100) actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
               updated.state = 'pray';
               updated.durationMs = getStateDurationMs(party, 'pray');
+              if (autoEquipmentEnabledRef.current) {
+                autoEquipmentPartyIndexes.add(partyIndex);
+              }
             } else if (updated.state === 'pray') {
               const isNoFaith = isNoFaithDeity(party.deity.name);
               const donationRate = rollPercentInclusive(10, 33);
@@ -2139,6 +2150,11 @@ export function HomeScreen({
 
         next[partyIndex] = updated;
       });
+
+      if (autoEquipmentPartyIndexes.size > 0) {
+        runAutoEquipment(Array.from(autoEquipmentPartyIndexes));
+      }
+
       return next;
     });
 
