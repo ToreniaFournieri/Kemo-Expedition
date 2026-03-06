@@ -1,6 +1,7 @@
 import { Ability, ComputedCharacterStats, Party } from '../types';
 
 export const DEITY_OPTIONS = [
+  { key: 'None', name: '信仰なし' },
   { key: 'Goddess of Restoration', name: '再生の女神' },
   { key: 'God of Attrition', name: '消耗の神' },
   { key: 'God of Cunning', name: '狡猾の神' },
@@ -14,6 +15,9 @@ export const DEITY_OPTIONS = [
   { key: 'God of Oblivion', name: '忘却されし神' },
   { key: 'Goddess of Discord', name: '不和の神' },
 ] as const;
+
+export const NO_FAITH_DEITY_NAME = '信仰なし';
+const NO_FAITH_DEITY_ALIASES = new Set([NO_FAITH_DEITY_NAME, 'None', 'none']);
 
 export type DeityKey = typeof DEITY_OPTIONS[number]['key'];
 
@@ -101,7 +105,14 @@ export function getEffectiveDeityTier(totalDonatedGold: number): number {
 
 // SpecRef: 2.3.3 | Religions lists | normalizeDeityName
 export function normalizeDeityName(name: string): string {
+  if (NO_FAITH_DEITY_ALIASES.has(name)) {
+    return NO_FAITH_DEITY_NAME;
+  }
   return DEITY_KEY_BY_NAME[name] ? DEITY_NAME_MAP[DEITY_KEY_BY_NAME[name]] : name;
+}
+
+export function isNoFaithDeity(name: string): boolean {
+  return normalizeDeityName(name) === NO_FAITH_DEITY_NAME;
 }
 
 // SpecRef: 2.3.3 | Religions lists | getDeityKey
