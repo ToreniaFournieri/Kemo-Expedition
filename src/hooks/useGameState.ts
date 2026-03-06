@@ -2506,12 +2506,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
           const afterSpend = workingState.parties[partyIndex];
           if (!afterSpend) continue;
+          const isNoFaith = isNoFaithDeity(afterSpend.deity.name);
           const donationRate = rollPercentInclusive(10, 33);
           const baseDonation = Math.floor(((afterSpend.pendingProfit ?? 0) * donationRate) / 100);
           const titheLevel = getPartyAbilityLevel(afterSpend, 'tithe');
-          const titheBonusRate = titheLevel >= 2 ? 0.15 : titheLevel >= 1 ? 0.1 : 0;
+          const titheBonusRate = isNoFaith ? 0 : (titheLevel >= 2 ? 0.15 : titheLevel >= 1 ? 0.1 : 0);
           const titheBonus = Math.floor((afterSpend.pendingProfit ?? 0) * titheBonusRate);
-          const donation = Math.min(afterSpend.pendingProfit ?? 0, baseDonation + titheBonus);
+          const donation = isNoFaith ? 0 : Math.min(afterSpend.pendingProfit ?? 0, baseDonation + titheBonus);
           const rawDeposit = Math.max(0, (afterSpend.pendingProfit ?? 0) - donation);
           const deposit = Math.floor(rawDeposit * getPrayerDepositMultiplier(afterSpend));
           const embezzled = Math.max(0, rawDeposit - deposit);
