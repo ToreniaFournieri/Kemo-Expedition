@@ -416,7 +416,7 @@ Party.`d.HP` =
 | 6 | `i.wand` |
 | 7 | `i.catalyst` |
 | 8 | `i.wand` |
-| 9 | `i.armor` |
+| 9 | `i.grimoire` |
 | 10 | `i.robe` |
 | 11 | `i.wand` |
 
@@ -432,7 +432,7 @@ Party.`d.HP` =
 | 6 | `i.wand` |
 | 7 | `i.catalyst` |
 | 8 | `i.grimoire` |
-| 9 | `i.armor` |
+| 9 | `i.wand` |
 | 10 | `i.robe` |
 | 11 | `i.catalyst` |
 
