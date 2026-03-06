@@ -1728,24 +1728,24 @@ export function HomeScreen({
           if (group.length < 2) return;
 
           const sortedGroup = [...group].sort((a, b) => compareItemsByTierAndEnhancement(b.item, a.item));
-          const duplicates = sortedGroup.slice(1);
+          const duplicateToReplace = sortedGroup[sortedGroup.length - 1];
+          if (!duplicateToReplace) return;
 
-          duplicates.forEach(({ slotIndex, item: duplicateItem }) => {
-            const itemKey = getBestAlternativeVariantKey(duplicateItem.category, getItemTier(duplicateItem));
-            if (!itemKey) return;
+          const { slotIndex, item: duplicateItem } = duplicateToReplace;
+          const itemKey = getBestAlternativeVariantKey(duplicateItem.category, getItemTier(duplicateItem));
+          if (!itemKey) return;
 
-            const variant = simulatedInventory[itemKey];
-            if (!variant) return;
+          const variant = simulatedInventory[itemKey];
+          if (!variant) return;
 
-            removeItemFromSimulatedInventory(itemKey);
-            addItemToSimulatedInventory(duplicateItem);
+          removeItemFromSimulatedInventory(itemKey);
+          addItemToSimulatedInventory(duplicateItem);
 
-            actions.equipItem(character.id, slotIndex, itemKey, partyIndex);
-            if (duplicateItem.jewel) {
-              actions.attachJewel(character.id, slotIndex, duplicateItem.jewel.key, duplicateItem.jewel.rank, partyIndex);
-            }
-            notifications.push(`${party.name}${character.name}は 重複していた${getItemDisplayName(duplicateItem)} を ${getItemDisplayName(variant.item)}に置き換えた`);
-          });
+          actions.equipItem(character.id, slotIndex, itemKey, partyIndex);
+          if (duplicateItem.jewel) {
+            actions.attachJewel(character.id, slotIndex, duplicateItem.jewel.key, duplicateItem.jewel.rank, partyIndex);
+          }
+          notifications.push(`${party.name}${character.name}は 重複していた${getItemDisplayName(duplicateItem)} を ${getItemDisplayName(variant.item)}に置き換えた`);
         });
       });
     });
