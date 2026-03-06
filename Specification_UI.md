@@ -349,7 +349,7 @@ displays [遠距離攻撃:矢,ボ,弓]
   - Players can set a depth limit; when the party reaches the selected floor, it stops the expedition and returns home automatically.
   - Selectable Options : 1F-3まで/2F-3まで/3F-3まで/4F-3まで/5F-3まで/ボス直前まで/全て (default: 全て)
 
-
+```
 PT1 HP (HP bar, blue) ルピニアンの断崖踏破▼
 移動中(background: state progress bar)
 次の目標: ルピニアンの断崖のボスレアアイテム 0/1 でヴァルンの樹林帯 開放
