@@ -2374,6 +2374,15 @@ export function HomeScreen({
             </div>
             <div className="flex items-center gap-2 text-right text-sm font-medium leading-none">
               <span>{formatNumber(state.global.gold)}G</span>
+              {!isAutoRepeatEnabled && (
+                <button
+                  type="button"
+                  onClick={() => setAutoRepeatEnabled(true)}
+                  className="text-sub hover:opacity-80"
+                >
+                  静止中
+                </button>
+              )}
             </div>
           </div>
 
