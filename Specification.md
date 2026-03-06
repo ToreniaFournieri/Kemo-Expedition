@@ -255,15 +255,15 @@ Party.`d.HP` =
 
 | State | Logic | Move to | Durration modifilier |
 |-------|-------|----------|---------|
-| rest(休息中)  | at home | 売却中 or 宴会中 | `God of Fortification` |
-| sell(売却中) | at home, Sell auto-sell items to shop owners. and officially gain items (notification of item gains at the end of 売却中 state.). If they have no trophy nor auto-sell item, skip this state. | 宴会中 | `God of Dusk` |
-| feast(宴会中) | at home, skip if current_profit = 0). Skipped if the party’s total HP was below 30% of Max HP at the beginning of rest state. | 睡眠中 | `Goddess of Fertility` |
-| sleep(睡眠中) | at home. | 祈り中 |
-| pray(祈り中) | at home. Party members donate money to their deity. | 待機中 or 移動中 |
+| rest(休息中)  | at home | sell or feast | `God of Fortification` |
+| sell(売却中) | at home, Sell auto-sell items to shop owners. and officially gain items (notification of item gains at the end of sell state.). If they have no trophy nor auto-sell item, skip this state. | feast | `God of Dusk` |
+| feast(宴会中) | at home, skip if current_profit = 0). Skipped if the party’s total HP was below 30% of Max HP at the beginning of rest state. | sleep | `Goddess of Fertility` |
+| sleep(睡眠中) | at home. skip if the party’s total HP was below 10% of Max HP at the beginning of rest state. (no draw a ticket from `t.sleepiness_of_party_bag`) | pray |
+| pray(祈り中) | at home. Party members donate money to their deity. | idle or move |
 | idle(待機中) | at home. only when 自動周回 = OFF (idle state) | - |
-| move(移動中) | home → dungeon, If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | 探索中 | `a.peddler` |
-| explore(探索中) | in dungeon. if HP < 30% MaxHP → retreat. At the end of this state, update this {ルピニアンの断崖踏破} part ) | 帰還中 | `Goddess of Precision` |
-| return(帰還中) | dungeon → home,If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | 休息中 | 
+| move(移動中) | home → dungeon, If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | explore | `a.peddler` |
+| explore(探索中) | in dungeon. if HP < 30% MaxHP → retreat. At the end of this state, update this {ルピニアンの断崖踏破} part ) | return | `Goddess of Precision` |
+| return(帰還中) | dungeon → home,If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | rest | 
 
 - **Realtime Progress**
 - Debug Scaling: For debugging purposes, all durations are multiplied by **0.2** in the `/dev/`, `/qa/`, and `/luna/` environments.
