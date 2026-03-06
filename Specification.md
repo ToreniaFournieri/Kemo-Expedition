@@ -312,7 +312,23 @@ Party.`d.HP` =
 #### 3.6.1 Equipping into empty slots
 - When a character has an empty equipment slot, auto-equipment selects an item category according to that class’s priority order, and repeats the same order as needed.
 
-- Duelist/ Ninja/ Samurai class:
+- Duelist class:
+
+| Priority | item category |
+|-|-|
+| 1 | `i.sword` |
+| 2 | `i.gauntlet` |
+| 3 | `i.armor` |
+| 4 | `i.robe` |
+| 5 | `i.katana` |
+| 6 | `i.armor` |
+| 7 | `i.gauntlet` |
+| 8 | `i.sword` |
+| 9 | `i.armor` |
+| 10 | `i.robe` |
+| 11 | `i.sword` |
+
+-  Ninja class:
 
 | Priority | item category |
 |-|-|
@@ -323,7 +339,28 @@ Party.`d.HP` =
 | 5 | `i.katana` |
 | 6 | `i.sword` |
 | 7 | `i.gauntlet` |
+| 8 | `i.sword` |
+| 9 | `i.armor` |
+| 10 | `i.robe` |
+| 11 | `i.sword` |
+
+
+- Samurai class:
+
+| Priority | item category |
+|-|-|
+| 1 | `i.sword` |
+| 2 | `i.gauntlet` |
+| 3 | `i.armor` |
+| 4 | `i.robe` |
+| 5 | `i.katana` |
+| 6 | `i.katana` |
+| 7 | `i.gauntlet` |
 | 8 | `i.katana` |
+| 9 | `i.armor` |
+| 10 | `i.robe` |
+| 11 | `i.katana` |
+
 
 - Fighter/ Lord Class:
 
@@ -337,6 +374,9 @@ Party.`d.HP` =
 | 6 | `i.shield` |
 | 7 | `i.armor` |
 | 8 | `i.robe` |
+| 9 | `i.armor` |
+| 10 | `i.robe` |
+| 11 | `i.shield` |
 
 - Rogue/ Ranger Class:
 
@@ -350,8 +390,27 @@ Party.`d.HP` =
 | 6 | `i.arrow` |
 | 7 | `i.archery` |
 | 8 | `i.bolt` |
+| 9 | `i.armor` |
+| 10 | `i.robe` |
+| 11 | `i.arrow` |
 
-- Wizard/ Sage/ Pilgrim Class:
+- Wizard Class:
+
+| Priority | item category |
+|-|-|
+| 1 | `i.wand` |
+| 2 | `i.catalyst` |
+| 3 | `i.armor` |
+| 4 | `i.robe` |
+| 5 | `i.grimoire` |
+| 6 | `i.wand` |
+| 7 | `i.catalyst` |
+| 8 | `i.wand` |
+| 9 | `i.armor` |
+| 10 | `i.robe` |
+| 11 | `i.wand` |
+
+- Sage/ Pilgrim Class:
 
 | Priority | item category |
 |-|-|
@@ -363,6 +422,9 @@ Party.`d.HP` =
 | 6 | `i.wand` |
 | 7 | `i.catalyst` |
 | 8 | `i.grimoire` |
+| 9 | `i.armor` |
+| 10 | `i.robe` |
+| 11 | `i.catalyst` |
 
 #### 3.6.2 Item selection within a category
 - When selecting an item from a valid category, auto-equipment chooses:
