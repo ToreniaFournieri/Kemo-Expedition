@@ -1915,6 +1915,7 @@ export function HomeScreen({
     : null;
 
   const pendingGodsBattleByPartyRef = useRef<Record<number, boolean>>({});
+  const afkQuestCarryMsRef = useRef<Record<number, number>>({});
 
   const processTimeCheckpoint = useCallback((now: number = Date.now()) => {
     const parties = latestPartiesRef.current;
@@ -1931,6 +1932,23 @@ export function HomeScreen({
       afkSummaryBaselineRef.current = parties.map((party) => ({ ...party.expeditionStats }));
       shouldShowAfkSummaryRef.current = true;
     }
+
+    parties.forEach((party, partyIndex) => {
+      if (party.sideQuest?.type !== 'q.AFK') {
+        afkQuestCarryMsRef.current[partyIndex] = 0;
+        return;
+      }
+
+      const carriedMs = afkQuestCarryMsRef.current[partyIndex] ?? 0;
+      const totalMs = carriedMs + elapsedMs;
+      const gainedSeconds = Math.floor(totalMs / 1000);
+      afkQuestCarryMsRef.current[partyIndex] = totalMs % 1000;
+
+      if (gainedSeconds > 0) {
+        const simulatedAt = lastCheckpointAtRef.current + elapsedMs;
+        actions.advanceSideQuest(partyIndex, gainedSeconds, simulatedAt);
+      }
+    });
 
     // Long background spans should be simulated inside the reducer so each expedition
     // phase reads the latest pending profit / HP values instead of stale render snapshots.
@@ -2129,7 +2147,6 @@ export function HomeScreen({
                 actions.addNotification(`${party.name}のサイドクエストは神魔戦の開始で中止された`);
               }
               if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
-              if (party.sideQuest?.type === 'q.AFK' && !triggerGodsBattle) actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
               actions.runExpedition(partyIndex, gameModeRef.current === 'm.luna', triggerGodsBattle);
               updated.state = 'explore';
               updated.durationMs = getExplorationDurationMs(undefined, getPartyStateDurationMultiplier(party, 'explore'));
