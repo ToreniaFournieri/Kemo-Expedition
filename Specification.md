@@ -24,7 +24,7 @@
 ### 3.2 Initial setup
 - Initial setup (or reset condition)
 
-- unlocked deity list: none (all of other deity is unlocked)
+- unlocked deity: none (all of other deity is unlocked)
 
 - PT1 Party initial condition.
   1. "ケモ", Caninian, 戦(君), Sturdy, House of the Unmoving
