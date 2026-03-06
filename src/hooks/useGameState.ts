@@ -56,7 +56,7 @@ import {
 import { getItemById, getItemsByTierAndRarity } from '../data/items';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { getItemDisplayName } from '../game/gameState';
-import { getDeityKey, getDeityRank, getDeityStateDurationMultiplier, getEffectiveDeityTier, normalizeDeityName } from '../game/deity';
+import { getDeityKey, getDeityRank, getDeityStateDurationMultiplier, getEffectiveDeityTier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { RACES } from '../data/races';
 import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
@@ -1302,7 +1302,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'UPDATE_PARTY_DEITY': {
       const normalizedDeityName = normalizeDeityName(action.deityName);
-      const isUsedByOtherParty = state.parties.some((party, index) =>
+      const isUsedByOtherParty = !isNoFaithDeity(normalizedDeityName) && state.parties.some((party, index) =>
         index !== action.partyIndex && normalizeDeityName(party.deity.name) === normalizedDeityName
       );
       if (isUsedByOtherParty) {

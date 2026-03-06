@@ -18,7 +18,7 @@ import { getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { applyEnemyEncounterScaling } from '../game/enemyScaling';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
-import { DEITY_OPTIONS, getDeityEffectDescription, getDeityKey, getDeityRank, getNextRankDonationRequirement, getDeityStateDurationMultiplier, normalizeDeityName } from '../game/deity';
+import { DEITY_OPTIONS, getDeityEffectDescription, getDeityKey, getDeityRank, getNextRankDonationRequirement, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { getXpToNextLevel } from '../game/partyLevel';
 import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../game/environment';
 import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, getShopRefreshPrice, getNextShopRefreshDate, countElapsedShopRefreshes } from '../game/shop';
@@ -3253,7 +3253,7 @@ function PartyTab({
             >
               {DEITY_OPTIONS.map((deity) => {
                 const normalizedName = normalizeDeityName(deity.name);
-                const inUseByOtherParty = parties.some((partyCandidate, index) =>
+                const inUseByOtherParty = !isNoFaithDeity(normalizedName) && parties.some((partyCandidate, index) =>
                   index !== selectedPartyIndex && normalizeDeityName(partyCandidate.deity.name) === normalizedName
                 );
                 return (
