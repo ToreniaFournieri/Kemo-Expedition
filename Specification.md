@@ -448,7 +448,9 @@ the highest tier and highest enhancement of common items.
 - **Step2:** Duplicate resolution
   - If a character equips two or more common items of the same category and tier, Only one common item of that category and tier is retained. All additional duplicates are replaced with the highest base-value alternatives available in the same category (uncommon, elite rare, boss rare and mythic rare).
 - This duplicate resolution (step2) is logically treated as part of the same auto-equipment calculation. 
-
+- notification logic. 
+  - empty slot to equip item: PT2ニャンは 恐ろしい月鋼鏃の矢を装備した
+  - exist item to equip another item: PT2ニャンは 恐ろしい月鋼鏃の矢 を 魔性の瞬撃の月鋼矢に装備しなおした
 #### 3.6.3 Upgrading equipped items
 - If a party member already has an item equipped, and another eligible item of the same category exists with a higher enhancement, the equipped item is replaced.
 - Jewels socketed in the currently equipped item remain unchanged.
