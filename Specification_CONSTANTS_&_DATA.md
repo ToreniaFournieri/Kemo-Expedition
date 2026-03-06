@@ -349,7 +349,7 @@
   - experience
   - lootGateProgress 
   - lootGateStatus
-  - deity // replacing deity reset character equipment slots. 
+  - deity 
   - characters slots
 
 **Bag Randomization:** 
@@ -723,6 +723,7 @@
 
 | God | Name | Effect | Scaling of rank up |
 |-|-|-|-|
+| none | 信仰なし | なし | (none) |
 | Goddess of Restoration | 再生の女神 | At the end of every 4th room,  Heal 20% of missing HP, longer sleep 睡眠中 by x1.5, weak against ice (x1.5) | +0.1% Heal per rank |
 | God of Attrition | 消耗の神 |  Add `c.deity_physical_attack_x1.20` to each party member. At the end of every 4th room, reduce 5% of remaining HP.| +0.01 to `c.diety+attack_x1.20` per rank |
 | God of Cunning | 狡猾の神 | Add `c.deity_magical_defense_x2/3` to each party member, abscond (lower saving money by x0.50) | saving money +0.01 to x0.50 per rank |
