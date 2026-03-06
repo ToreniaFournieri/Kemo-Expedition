@@ -778,9 +778,18 @@
 - `x.gods_mult`
   - If enemy is god, apllpy them. 
 
+- Normal mode
+
 | `x.god_HP_mult` | `x.god_atk_mult` | `x.god_NoA_mult` | `x.god_atk_amp_mult` | `x.god_def_mult` | `x.god_def_amp_mult` |
 |-----|-----|-----|----|----|----|
 | x2.0 | x1.5 | x2.0 | x1.6 | x1.5 | x0.8 |
+
+- debug mode (for /dev/ environment)
+
+| `x.god_HP_mult` | `x.god_atk_mult` | `x.god_NoA_mult` | `x.god_atk_amp_mult` | `x.god_def_mult` | `x.god_def_amp_mult` |
+|-----|-----|-----|----|----|----|
+| x0.3 | x0.3 | x0.5 | x0.4 | x0.3 | x1.0 |
+
 
 - `x.luna_mode_mult`
   - If `m.luna`, apllpy them. IF not, all x1.0.
