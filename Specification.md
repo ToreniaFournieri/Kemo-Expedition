@@ -324,19 +324,20 @@ Party.`d.HP` =
 
 
 - Profit usuage:
-  - At: 休息中:
+  - At: rest(休息中):
       - `current_profit` = 0
-  - At the end of 売却中:
+  - At the end of sell(売却中):
       - `current_profit` = Sum of (Auto-sell items)
-  - At the end of 宴会中:
+  - At the end of feast(宴会中):
       - `current_profit` -= spending feast ( spend 33–67% of `current_profit` without `a.squander`, x1.3 spending with `a.squander`1, x1.5 spending with `a.squander`2. Not exceed current_profit )
         - Notification :
           - Without Squander: PT1は25Gお金を使った
           - With Squander: PT1 君主トムは贅沢に50G使った
-  - At the end of 祈り中:
-      - `current_profit` -= donattion ( 10–33% of `current_profit` without `a.tithe`, if party has `a.tithe`2, Adds +15% , else if party has `a.tithe`1, Adds +10 )
+  - At the end of pray(祈り中):
+      - `current_profit` -= donattion ( 10–33% of `current_profit` without `a.tithe`, if party has `a.tithe`2, Adds +15% , else if party has `a.tithe`1, Adds +10, if deity = none, donation is 0. )
       - `current_profit` -= embezzlement (if `God of Cunning`, 50% of `current_profit`. Else if, 0%)
         -  Notification:
+          - deity = none: PT1は 43Gを貯金した
           - Without Tithe: PT1は10G神に捧げ、30Gを貯金した
           - With Tithe: PT1 巡礼者ブラザは祈りと共に12G神に捧げて、28Gを貯金した
           - Without Gold: (no notification).
