@@ -1614,7 +1614,36 @@ export function HomeScreen({
   const runAutoEquipment = useCallback((targetPartyIndexes?: number[]) => {
     const targetPartyIndexSet = targetPartyIndexes ? new Set(targetPartyIndexes) : null;
     const simulatedInventory: InventoryRecord = { ...state.global.inventory };
-    const notifications: string[] = [];
+    const slotNotifications = new Map<string, string>();
+    const setSlotNotification = (
+      partyName: string,
+      characterName: string,
+      characterId: string | number,
+      slotIndex: number,
+      partyIndex: number,
+      message: string,
+    ) => {
+      const notificationKey = `${partyIndex}:${characterId}:${slotIndex}`;
+      slotNotifications.set(notificationKey, `${partyName}${characterName}は ${message}`);
+    };
+
+    const queueAutoEquipmentNotification = (
+      partyName: string,
+      characterName: string,
+      characterId: string | number,
+      slotIndex: number,
+      item: Item,
+      partyIndex: number,
+    ) => {
+      setSlotNotification(
+        partyName,
+        characterName,
+        characterId,
+        slotIndex,
+        partyIndex,
+        `${getItemDisplayName(item)} を装備した`,
+      );
+    };
 
     const addItemToSimulatedInventory = (item: Item) => {
       const key = getVariantKey(item);
@@ -1717,7 +1746,7 @@ export function HomeScreen({
           removeItemFromSimulatedInventory(itemKey);
           simulatedEquipmentSlots[slotIndex] = variant.item;
           actions.equipItem(character.id, slotIndex, itemKey, partyIndex);
-          notifications.push(`${party.name}${character.name}は ${getItemDisplayName(variant.item)} を装備した`);
+          queueAutoEquipmentNotification(party.name, character.name, character.id, slotIndex, variant.item, partyIndex);
         });
 
         simulatedEquipmentSlots.forEach((equippedItem, slotIndex) => {
@@ -1740,10 +1769,7 @@ export function HomeScreen({
           if (equippedItem.jewel) {
             actions.attachJewel(character.id, slotIndex, equippedItem.jewel.key, equippedItem.jewel.rank, partyIndex);
           }
-          const replacementItemDisplayName = equippedItem.jewel
-            ? getItemDisplayName({ ...variant.item, jewel: equippedItem.jewel })
-            : getItemDisplayName(variant.item);
-          notifications.push(`${party.name}${character.name}は ${getItemDisplayName(equippedItem)} を ${replacementItemDisplayName}に装備しなおした`);
+          queueAutoEquipmentNotification(party.name, character.name, character.id, slotIndex, nextEquippedItem, partyIndex);
         });
 
         const commonGroups = new Map<string, Array<{ slotIndex: number; item: Item }>>();
@@ -1782,16 +1808,20 @@ export function HomeScreen({
             if (duplicateItem.jewel) {
               actions.attachJewel(character.id, slotIndex, duplicateItem.jewel.key, duplicateItem.jewel.rank, partyIndex);
             }
-            const replacementItemDisplayName = duplicateItem.jewel
-              ? getItemDisplayName({ ...variant.item, jewel: duplicateItem.jewel })
-              : getItemDisplayName(variant.item);
-            notifications.push(`${party.name}${character.name}は 重複していた${getItemDisplayName(duplicateItem)} を ${replacementItemDisplayName}に置き換えた`);
+            setSlotNotification(
+              party.name,
+              character.name,
+              character.id,
+              slotIndex,
+              partyIndex,
+              `重複していた${getItemDisplayName(duplicateItem)} を ${getItemDisplayName(nextEquippedItem)}に置き換えた`,
+            );
           });
         });
       });
     });
 
-    notifications.forEach((message) => {
+    slotNotifications.forEach((message) => {
       actions.addNotification(message, 'normal', 'item', true, {
         rarity: 'common',
         isSuperRareItem: false,
