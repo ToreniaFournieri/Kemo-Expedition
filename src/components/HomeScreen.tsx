@@ -1581,6 +1581,7 @@ export function HomeScreen({
   const [pendingAfkMs, setPendingAfkMs] = useState(0);
   const afkSimulationAnchorRef = useRef<number | null>(null);
   const afkRecoveryTotalMsRef = useRef(0);
+  const previousPendingAfkMsRef = useRef(0);
 
   useEffect(() => {
     latestPartiesRef.current = state.parties;
@@ -1957,6 +1958,16 @@ export function HomeScreen({
     afkSimulationAnchorRef.current = null;
     afkRecoveryTotalMsRef.current = 0;
   }, [pendingAfkMs]);
+
+  useEffect(() => {
+    const previousPendingAfkMs = previousPendingAfkMsRef.current;
+    previousPendingAfkMsRef.current = pendingAfkMs;
+
+    if (!autoEquipmentEnabledRef.current) return;
+    if (previousPendingAfkMs <= pendingAfkMs) return;
+
+    runAutoEquipment();
+  }, [pendingAfkMs, runAutoEquipment]);
 
   const afkRecoveryProgressPercent = pendingAfkMs > 0
     ? Math.max(
