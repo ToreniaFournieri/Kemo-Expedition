@@ -6391,51 +6391,7 @@ function SettingTab({
       }
 
       const saveData = source as Partial<GameState>;
-      const issues: string[] = [];
-
-      if (!Array.isArray(saveData.parties)) issues.push('parties が存在しない、または配列ではありません。');
-      if (!saveData.global || typeof saveData.global !== 'object') {
-        issues.push('global が存在しません。');
-      } else {
-        if (typeof saveData.global.gold !== 'number') issues.push('global.gold が存在しない、または数値ではありません。');
-        if (!saveData.global.inventory || typeof saveData.global.inventory !== 'object') issues.push('global.inventory が存在しません。');
-      }
-      if (!saveData.bags || typeof saveData.bags !== 'object') {
-        issues.push('bags が存在しません。');
-      } else {
-        const requiredBags: Array<keyof GameState['bags']> = [
-          'commonRewardBag',
-          'commonEnhancementBag',
-          'uncommonRewardBag',
-          'eliteRareRewardBag',
-          'bossRareRewardBag',
-          'mythicRareRewardBag',
-          'enhancementBag',
-          'superRareBag',
-          'physicalThreatBag',
-          'magicalThreatBag',
-          'sideQuestBag',
-        ];
-        const missingBags = requiredBags.filter((bagKey) => !(bagKey in saveData.bags!));
-        if (missingBags.length > 0) {
-          issues.push(`bags に不足があります: ${missingBags.join(', ')}`);
-        }
-      }
-      if (typeof saveData.selectedPartyIndex !== 'number') issues.push('selectedPartyIndex が存在しない、または数値ではありません。');
-      if (typeof saveData.buildNumber !== 'number') issues.push('buildNumber が存在しない、または数値ではありません。');
-
-      if (Array.isArray(saveData.parties)) {
-        if (saveData.parties.length === 0) {
-          issues.push('parties が空です。');
-        }
-        saveData.parties.forEach((party, index) => {
-          if (!party || typeof party !== 'object') {
-            issues.push(`party[${index}] が不正です。`);
-            return;
-          }
-          if (!Array.isArray(party.characters)) issues.push(`party[${index}].characters が存在しない、または配列ではありません。`);
-        });
-      }
+      const issues = validateImportedSaveData(saveData);
 
       if (parsed && typeof parsed === 'object' && 'meta' in parsed) {
         const meta = (parsed as { meta?: { version?: string; env?: string } }).meta;
@@ -6449,7 +6405,7 @@ function SettingTab({
 
       if (issues.length > 0) {
         const shouldContinue = window.confirm(
-          `検証時に注意事項が見つかりました:\n\n- ${issues.join('\n- ')}\n\nこのままインポートを適用しますか？`
+          `セーブデータ整合性チェックで注意事項が見つかりました:\n\n- ${issues.join('\n- ')}\n\nこのままインポートを適用しますか？`
         );
         if (!shouldContinue) return;
       }
@@ -6465,6 +6421,69 @@ function SettingTab({
       console.error(error);
       window.alert('インポート失敗: JSONの解析に失敗しました。');
     }
+  };
+
+  const validateImportedSaveData = (saveData: Partial<GameState>): string[] => {
+    const issues: string[] = [];
+
+    if (!Array.isArray(saveData.parties)) issues.push('parties が存在しない、または配列ではありません。');
+    if (!saveData.global || typeof saveData.global !== 'object') {
+      issues.push('global が存在しません。');
+    } else {
+      if (typeof saveData.global.gold !== 'number') issues.push('global.gold が存在しない、または数値ではありません。');
+      if (!saveData.global.inventory || typeof saveData.global.inventory !== 'object') issues.push('global.inventory が存在しません。');
+    }
+
+    if (!saveData.bags || typeof saveData.bags !== 'object') {
+      issues.push('bags が存在しません。');
+    } else {
+      const requiredBags: Array<keyof GameState['bags']> = [
+        'commonRewardBag',
+        'commonEnhancementBag',
+        'uncommonRewardBag',
+        'eliteRareRewardBag',
+        'bossRareRewardBag',
+        'mythicRareRewardBag',
+        'enhancementBag',
+        'superRareBag',
+        'physicalThreatBag',
+        'magicalThreatBag',
+        'sideQuestBag',
+      ];
+      const missingBags = requiredBags.filter((bagKey) => !(bagKey in saveData.bags!));
+      if (missingBags.length > 0) {
+        issues.push(`bags に不足があります: ${missingBags.join(', ')}`);
+      }
+    }
+
+    if (typeof saveData.selectedPartyIndex !== 'number') issues.push('selectedPartyIndex が存在しない、または数値ではありません。');
+    if (typeof saveData.buildNumber !== 'number') issues.push('buildNumber が存在しない、または数値ではありません。');
+
+    if (Array.isArray(saveData.parties)) {
+      if (saveData.parties.length === 0) {
+        issues.push('parties が空です。');
+      }
+
+      saveData.parties.forEach((party, index) => {
+        if (!party || typeof party !== 'object') {
+          issues.push(`party[${index}] が不正です。`);
+          return;
+        }
+
+        if (!Array.isArray(party.characters)) {
+          issues.push(`party[${index}].characters が存在しない、または配列ではありません。`);
+          return;
+        }
+
+        party.characters.forEach((character, characterIndex) => {
+          if (!character || typeof character !== 'object') {
+            issues.push(`party[${index}].characters[${characterIndex}] が不正です。`);
+          }
+        });
+      });
+    }
+
+    return issues;
   };
 
   useEffect(() => {
