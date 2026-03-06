@@ -354,7 +354,7 @@ Party.`d.HP` =
 
 #### 3.6.2 Item selection within a category
 - When selecting an item from a valid category, auto-equipment chooses:
-  - the highest item tier
+  - the highest item tier which is available 
   - and, among those, the highest enhancement
   - Eligible items are limited to common items only.(and no Super rare item)
 - The item selection within the category:
