@@ -305,6 +305,67 @@ Party.`d.HP` =
 | Defeating: `Eris` | `Goddess of discord` | none |
 
 
+### 3.6 AUTO equipment logic
+- If `m.auto_equipment` is ON, each party member automatically equips items and upgrades their equipment at the end of the Sell state.
+- Processing priority: Characters are processed sequentially in party order: PT1 Row1 → PT1 Row2 → … → PT1 Row6 → PT2 Row1 → PT2 Row2 → …
+
+#### 3.6.1 Equipping into empty slots
+- When a character has an empty equipment slot, auto-equipment selects an item category according to that class’s priority order, and repeats the same order as needed.
+
+- Duelist/ Ninja/ Samurai class:
+
+| Priority | item category |
+|-|-|
+| 1 | `i.sword` |
+| 2 | `i.gauntlet` |
+| 3 | `i.armor` |
+| 4 | `i.robe` |
+| 5 | `i.katana` |
+
+- Fighter/ Lord Class:
+
+| Priority | item category |
+|-|-|
+| 1 | `i.sword` |
+| 2 | `i.shield` |
+| 3 | `i.armor` |
+| 4 | `i.robe` |
+| 5 | `i.shield` |
+
+- Rogue/ Ranger Class:
+
+| Priority | item category |
+|-|-|
+| 1 | `i.arrow` |
+| 2 | `i.archery` |
+| 3 | `i.armor` |
+| 4 | `i.robe` |
+| 5 | `i.bolt` |
+
+- Wizard/ Sage/ Pilgrim Class:
+
+| Priority | item category |
+|-|-|
+| 1 | `i.wand` |
+| 2 | `i.catalyst` |
+| 3 | `i.armor` |
+| 4 | `i.robe` |
+| 5 | `i.grimoire` |
+
+#### 3.6.2 Item selection within a category
+- When selecting an item from a valid category, auto-equipment chooses:
+  - the highest item tier
+  - and, among those, the highest enhancement
+  - Eligible items are limited to common items only.(and no Super rare item)
+- The item selection within the category:
+the highest tier and highest enhancement of common items.
+ (excluding uncommon, elite rare, boss rare, mythic rare, and super rare items)
+
+#### 3.6.3 Upgrading equipped items
+- If a party member already has an item equipped, and another eligible item of the same category exists with a higher enhancement, the equipped item is replaced.
+- Jewels socketed in the currently equipped item remain unchanged.
+- Only the equipment item itself is replaced.
+
 
 ## 4. Party State Machine
 
