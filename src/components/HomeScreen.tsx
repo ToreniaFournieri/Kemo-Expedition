@@ -3433,7 +3433,12 @@ function PartyTab({
               onChange={(e) => setPendingDeityName(e.target.value)}
               className="text-sm border rounded px-3 py-1.5"
             >
-              {DEITY_OPTIONS.map((deity) => {
+              {DEITY_OPTIONS.filter((deity) => {
+                const normalizedName = normalizeDeityName(deity.name);
+                return isNoFaithDeity(normalizedName)
+                  || unlockedDeities.includes(normalizedName)
+                  || normalizeDeityName(party.deity.name) === normalizedName;
+              }).map((deity) => {
                 const normalizedName = normalizeDeityName(deity.name);
                 const unlocked = isNoFaithDeity(normalizedName)
                   || unlockedDeities.includes(normalizedName)
@@ -6505,14 +6510,22 @@ function SettingTab({
     ];
   });
 
+  const visibleDeityNames = new Set(
+    gameState.global.unlockedDeities
+      .map((deityName) => normalizeDeityName(deityName))
+      .filter((deityName) => !isNoFaithDeity(deityName))
+  );
+
   const donationByDeity = DEITY_OPTIONS.reduce<Record<string, number>>((totals, deity) => {
     const deityName = normalizeDeityName(deity.name);
+    if (!visibleDeityNames.has(deityName)) return totals;
     totals[deityName] = deityDonations[deityName] ?? 0;
     return totals;
   }, {});
 
   Object.entries(deityDonations).forEach(([deityName, donation]) => {
     const normalizedDeityName = normalizeDeityName(deityName);
+    if (!visibleDeityNames.has(normalizedDeityName)) return;
     donationByDeity[normalizedDeityName] = Math.max(donationByDeity[normalizedDeityName] ?? 0, donation);
   });
 
