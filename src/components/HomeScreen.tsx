@@ -7162,6 +7162,26 @@ function SettingTab({
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4">
+        {renderDivineBureauPanelHeader('superRare', '超レア一覧')}
+        {divineBureauPanelExpanded.superRare && <>
+        <div className="text-xs text-gray-500 mt-3 mb-2">Super Rare List (超レア一覧)</div>
+        <div className="bg-white rounded p-2 text-sm space-y-1 max-h-72 overflow-y-auto">
+          {SUPER_RARE_TITLES.filter(title => title.value > 0).map(title => {
+            const uniqueBonus = formatBonuses(title.bonuses ?? [], { defenseMultiplierStyle: 'friendly' });
+            return (
+              <div key={title.value} className="grid grid-cols-[auto,1fr] gap-x-2 border-b border-gray-100 last:border-b-0 py-1">
+                <div className="text-gray-500">{title.value}.</div>
+                <div>
+                  <div className="font-medium text-gray-700">{title.title}</div>
+                  <div className="text-xs text-sub">{uniqueBonus || 'なし'}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        </>}
+      </div>
+      <div className="bg-pane rounded-lg p-4 mb-4">
         {renderDivineBureauPanelHeader('modeSelect', 'モード切替')}
         {divineBureauPanelExpanded.modeSelect && <div className="mt-3 space-y-4">
           <div>
@@ -7224,27 +7244,6 @@ function SettingTab({
             </div>
           </div>
         </div>}
-      </div>
-
-      <div className="bg-pane rounded-lg p-4 mb-4">
-        {renderDivineBureauPanelHeader('superRare', '超レア一覧')}
-        {divineBureauPanelExpanded.superRare && <>
-        <div className="text-xs text-gray-500 mt-3 mb-2">Super Rare List (超レア一覧)</div>
-        <div className="bg-white rounded p-2 text-sm space-y-1 max-h-72 overflow-y-auto">
-          {SUPER_RARE_TITLES.filter(title => title.value > 0).map(title => {
-            const uniqueBonus = formatBonuses(title.bonuses ?? [], { defenseMultiplierStyle: 'friendly' });
-            return (
-              <div key={title.value} className="grid grid-cols-[auto,1fr] gap-x-2 border-b border-gray-100 last:border-b-0 py-1">
-                <div className="text-gray-500">{title.value}.</div>
-                <div>
-                  <div className="font-medium text-gray-700">{title.title}</div>
-                  <div className="text-xs text-sub">{uniqueBonus || 'なし'}</div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        </>}
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4">
