@@ -326,10 +326,10 @@ Party.`d.HP` =
 
 | Priority | item category |
 |-|-|
-| 1 | `i.sword` |
-| 2 | `i.shield` |
-| 3 | `i.armor` |
-| 4 | `i.robe` |
+| 1 | `i.shield` |
+| 2 | `i.armor` |
+| 3 | `i.robe` |
+| 4 | `i.sword` |
 | 5 | `i.shield` |
 
 - Rogue/ Ranger Class:
