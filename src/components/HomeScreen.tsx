@@ -1752,7 +1752,7 @@ export function HomeScreen({
     };
 
     const getCoreConceptValue = (item: Item): number => {
-      const multiplier = getEnhancementAndSuperRareMultiplier(item);
+      const multiplier = getEnhancementAndSuperRareMultiplier(item) * (item.baseMultiplier ?? 1);
       switch (item.category) {
         case 'armor':
           return (item.physicalDefense ?? 0) * multiplier;
@@ -1781,6 +1781,12 @@ export function HomeScreen({
         default:
           return 0;
       }
+    };
+
+    const compareItemsForAutoEquipment = (a: Item, b: Item): number => {
+      const coreConceptDiff = getCoreConceptValue(a) - getCoreConceptValue(b);
+      if (coreConceptDiff !== 0) return coreConceptDiff;
+      return compareItemsByTierAndEnhancement(a, b);
     };
 
     const getBestVariantKeyInCategory = (
@@ -1886,7 +1892,7 @@ export function HomeScreen({
           if (!itemKey) return;
           const variant = simulatedInventory[itemKey];
           if (!variant) return;
-          if (compareItemsByTierAndEnhancement(variant.item, equippedItem) <= 0) return;
+          if (compareItemsForAutoEquipment(variant.item, equippedItem) <= 0) return;
 
           removeItemFromSimulatedInventory(itemKey);
           addItemToSimulatedInventory(equippedItem);
@@ -1925,7 +1931,7 @@ export function HomeScreen({
         commonGroups.forEach((group) => {
           if (group.length < 2) return;
 
-          const sortedGroup = [...group].sort((a, b) => compareItemsByTierAndEnhancement(b.item, a.item));
+          const sortedGroup = [...group].sort((a, b) => compareItemsForAutoEquipment(b.item, a.item));
           const duplicatesToReplace = sortedGroup.slice(1);
 
           duplicatesToReplace.forEach(({ slotIndex, item: duplicateItem }) => {
