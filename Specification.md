@@ -306,7 +306,7 @@ Party.`d.HP` =
 
 
 ### 3.6 AUTO equipment logic
-- If `m.auto_equipment` is ON, each party member automatically equips items and upgrades their equipment at the end of the Sell state.
+- If `m.auto_equipment` is ON, each party member automatically equips items and upgrades their equipment at the begining of praying state.
 - Processing priority: Characters are processed sequentially in party order: PT1 Row1 → PT1 Row2 → … → PT1 Row6 → PT2 Row1 → PT2 Row2 → …
 
 #### 3.6.1 Equipping into empty slots
