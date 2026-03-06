@@ -748,7 +748,7 @@ function getSleepDurationMultiplier(sleepiness: SleepinessState): number {
 
 function createInitialParty() {
   const defaultSetup = [
-    { race: 'caninian', main: 'fighter', sub: 'lord', pred: 'sturdy', lineage: 'unmoving', name: 'ケモ', equipmentIds: [1104, 1106] },
+    { race: 'caninian', main: 'fighter', sub: 'lord', pred: 'sturdy', lineage: 'unmoving', name: 'ケモ', equipmentIds: [1101, 1103] },
     { race: 'vulpinian', main: 'duelist', sub: 'samurai', pred: 'chivalric', lineage: 'war_spirit', name: 'ゴン', equipmentIds: [1104] },
     { race: 'murid', main: 'ninja', sub: 'rogue', pred: 'persistent', lineage: 'breaking_hand', name: 'イタチ', equipmentIds: [1104] },
     { race: 'leporian', main: 'ranger', sub: 'sage', pred: 'dexterous', lineage: 'far_sight', name: 'ロップ', equipmentIds: [1107, 1108, 1109] },
