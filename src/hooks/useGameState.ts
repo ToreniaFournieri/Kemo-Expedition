@@ -572,9 +572,7 @@ function createStarterInventory(): InventoryRecord {
     1101, 1102, 1103, 1104, 1105, 1106,
     1107, 1108, 1109, 1110, 1111, 1112,
   ];
-  const starterItems: Item[] = starterItemIds.flatMap(id =>
-    Array.from({ length: 3 }, () => ({ ...getItemById(id)!, enhancement: 0, superRare: 0 }))
-  );
+  const starterItems: Item[] = starterItemIds.map((id) => ({ ...getItemById(id)!, enhancement: 0, superRare: 0 }));
 
   const inventory: InventoryRecord = {};
   for (const item of starterItems) {
@@ -638,12 +636,12 @@ function getSleepDurationMultiplier(sleepiness: SleepinessState): number {
 
 function createInitialParty() {
   const defaultSetup = [
-    { race: 'caninian', main: 'fighter', sub: 'lord', pred: 'sturdy', lineage: 'unmoving', name: 'ケモ' },
-    { race: 'vulpinian', main: 'duelist', sub: 'samurai', pred: 'chivalric', lineage: 'war_spirit', name: 'ゴン' },
-    { race: 'murid', main: 'ninja', sub: 'rogue', pred: 'persistent', lineage: 'breaking_hand', name: 'イタチ' },
-    { race: 'leporian', main: 'ranger', sub: 'sage', pred: 'dexterous', lineage: 'far_sight', name: 'ロップ' },
-    { race: 'felidian', main: 'sage', sub: 'pilgrim', pred: 'pursuing', lineage: 'hidden_principles', name: 'ラス' },
-    { race: 'cervin', main: 'wizard', sub: 'wizard', pred: 'canny', lineage: 'guiding_thought', name: 'セルヴァ' },
+    { race: 'caninian', main: 'fighter', sub: 'lord', pred: 'sturdy', lineage: 'unmoving', name: 'ケモ', equipmentIds: [1104, 1106] },
+    { race: 'vulpinian', main: 'duelist', sub: 'samurai', pred: 'chivalric', lineage: 'war_spirit', name: 'ゴン', equipmentIds: [1104] },
+    { race: 'murid', main: 'ninja', sub: 'rogue', pred: 'persistent', lineage: 'breaking_hand', name: 'イタチ', equipmentIds: [1104] },
+    { race: 'leporian', main: 'ranger', sub: 'sage', pred: 'dexterous', lineage: 'far_sight', name: 'ロップ', equipmentIds: [1107, 1108, 1109] },
+    { race: 'felidian', main: 'sage', sub: 'pilgrim', pred: 'pursuing', lineage: 'hidden_principles', name: 'ラス', equipmentIds: [1110, 1111, 1112] },
+    { race: 'cervin', main: 'wizard', sub: 'wizard', pred: 'canny', lineage: 'guiding_thought', name: 'セルヴァ', equipmentIds: [1110] },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
@@ -654,7 +652,11 @@ function createInitialParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
-    equipment: [],
+    equipment: setup.equipmentIds.map((itemId) => ({
+      ...getItemById(itemId)!,
+      enhancement: 0,
+      superRare: 0,
+    })),
   }));
 
   const party: Party = {
@@ -664,7 +666,7 @@ function createInitialParty() {
     experience: 0,
     lootGateProgress: {},
     lootGateStatus: {},
-    deity: createInitialDeity('Goddess of Restoration'),
+    deity: createInitialDeity('None'),
     characters,
     selectedDungeonId: 1,
     expeditionDepthLimit: 'all',
