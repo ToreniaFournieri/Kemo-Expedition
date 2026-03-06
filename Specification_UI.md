@@ -389,7 +389,14 @@ PT2...
       - The player can repeat the cycle.
     - **On Defeat**
       - The 「神魔戦」 button remains available.
-      - The player may retry the Gods Battle without re-collecting Boss rare items. 
+      - The player may retry the Gods Battle without re-collecting Boss rare items.
+
+
+- Unlocked party:
+
+```
+PT4: (未開放:キョウエン 狡猾の神 撃破で開放)
+```
 
 #### 8.5 Base(拠点)
 - It has two tabs inside Base tab. Shop(お店), Inventory(所持品), Jewel store(結晶店) , Workshop(工房), Altar(祭壇). (same visual UI as List of party (PT1, PT2...) tab in Party tab)
