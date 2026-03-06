@@ -28,7 +28,7 @@
 
 - PT1 Party initial condition.
   1. "ケモ", Caninian, 戦(君), Sturdy, House of the Unmoving
-     - equipment: `1104`, `1106`
+     - equipment: `1101`, `1103`
   2. "ゴン", Vulpinian, 剣(侍), Chivalric, House of War Spirit
      - equipment: `1104`
   3. "イタチ", Murid, 忍(盗), Persistent, House of the Breaking Hand
