@@ -321,6 +321,9 @@ Party.`d.HP` =
 | 3 | `i.armor` |
 | 4 | `i.robe` |
 | 5 | `i.katana` |
+| 6 | `i.sword` |
+| 7 | `i.gauntlet` |
+| 8 | `i.katana` |
 
 - Fighter/ Lord Class:
 
@@ -330,7 +333,10 @@ Party.`d.HP` =
 | 2 | `i.armor` |
 | 3 | `i.robe` |
 | 4 | `i.sword` |
-| 5 | `i.shield` |
+| 5 | `i.gauntlet` |
+| 6 | `i.shield` |
+| 7 | `i.armor` |
+| 8 | `i.robe` |
 
 - Rogue/ Ranger Class:
 
@@ -341,6 +347,9 @@ Party.`d.HP` =
 | 3 | `i.armor` |
 | 4 | `i.robe` |
 | 5 | `i.bolt` |
+| 6 | `i.arrow` |
+| 7 | `i.archery` |
+| 8 | `i.bolt` |
 
 - Wizard/ Sage/ Pilgrim Class:
 
@@ -351,6 +360,9 @@ Party.`d.HP` =
 | 3 | `i.armor` |
 | 4 | `i.robe` |
 | 5 | `i.grimoire` |
+| 6 | `i.wand` |
+| 7 | `i.catalyst` |
+| 8 | `i.grimoire` |
 
 #### 3.6.2 Item selection within a category
 - When selecting an item from a valid category, auto-equipment chooses:
