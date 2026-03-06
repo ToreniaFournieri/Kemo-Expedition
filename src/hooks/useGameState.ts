@@ -2292,17 +2292,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const character = currentParty.characters[charIndex];
       let newInventory = { ...state.global.inventory };
       let newJewels = { ...state.global.jewels };
+      let newGold = state.global.gold;
 
       // Add old item back to inventory
       const oldItem = character.equipment[action.slotIndex];
       if (oldItem) {
-        const oldKey = getVariantKey(oldItem);
-        const existing = newInventory[oldKey];
-        if (existing) {
-          newInventory[oldKey] = { ...existing, count: existing.count + 1, status: 'owned' };
-        } else {
-          newInventory[oldKey] = { item: oldItem, count: 1, status: 'owned' };
-        }
+        const addResult = addItemToInventory(newInventory, oldItem, newGold);
+        newInventory = addResult.inventory;
+        newGold = addResult.gold;
         if (oldItem.jewel) {
           newJewels = addJewelToInventory(newJewels, oldItem.jewel.key, oldItem.jewel.rank);
         }
@@ -2326,7 +2323,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           return {
             ...state,
             parties: updatedParties,
-            global: { ...state.global, inventory: newInventory, jewels: newJewels },
+            global: { ...state.global, gold: newGold, inventory: newInventory, jewels: newJewels },
           };
         }
       }
@@ -2344,7 +2341,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         parties: updatedParties,
-        global: { ...state.global, inventory: newInventory, jewels: newJewels },
+        global: { ...state.global, gold: newGold, inventory: newInventory, jewels: newJewels },
       };
     }
 
@@ -2412,6 +2409,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       let newInventory = state.global.inventory;
       let newJewels = state.global.jewels;
+      let newGold = state.global.gold;
       const nextCharacter = { ...oldChar, ...action.updates };
       const oldMaxEquipSlots = computeCharacterStats(oldChar, currentParty.level).maxEquipSlots;
       const nextMaxEquipSlots = computeCharacterStats(nextCharacter, currentParty.level).maxEquipSlots;
@@ -2434,13 +2432,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         newInventory = { ...state.global.inventory };
         newJewels = { ...newJewels };
         for (const item of overflowCandidates) {
-          const key = getVariantKey(item);
-          const existing = newInventory[key];
-          if (existing) {
-            newInventory[key] = { ...existing, count: existing.count + 1, status: 'owned' };
-          } else {
-            newInventory[key] = { item, count: 1, status: 'owned' };
-          }
+          const addResult = addItemToInventory(newInventory, item, newGold);
+          newInventory = addResult.inventory;
+          newGold = addResult.gold;
           if (item.jewel) newJewels = addJewelToInventory(newJewels, item.jewel.key, item.jewel.rank);
         }
       }
@@ -2463,13 +2457,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             || (lostMagicAptitude && MAGIC_CATEGORIES.has(item.category));
           if (!shouldRemove) continue;
 
-          const key = getVariantKey(item);
-          const existing = newInventory[key];
-          if (existing) {
-            newInventory[key] = { ...existing, count: existing.count + 1, status: 'owned' };
-          } else {
-            newInventory[key] = { item, count: 1, status: 'owned' };
-          }
+          const addResult = addItemToInventory(newInventory, item, newGold);
+          newInventory = addResult.inventory;
+          newGold = addResult.gold;
           if (item.jewel) newJewels = addJewelToInventory(newJewels, item.jewel.key, item.jewel.rank);
 
           newEquipment[i] = null;
@@ -2487,7 +2477,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         parties: updatedParties,
-        global: { ...state.global, inventory: newInventory },
+        global: { ...state.global, gold: newGold, inventory: newInventory },
       };
     }
 
