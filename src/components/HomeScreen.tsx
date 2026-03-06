@@ -7247,7 +7247,7 @@ function SettingTab({
       </div>
 
       <div className="bg-pane rounded-lg p-4 mb-4">
-        {renderDivineBureauPanelHeader('gameSetting', 'ゲーム設定')}
+        {renderDivineBureauPanelHeader('gameSetting', 'Backup and reset(バックアップ・リセット)')}
         {divineBureauPanelExpanded.gameSetting && <div className="space-y-4 mt-3">
           <div>
             <div className="text-sm font-medium mb-1">バックアップ（Export）</div>
