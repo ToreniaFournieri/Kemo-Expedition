@@ -51,6 +51,24 @@
 
 - PT2 initial condition (when unlocked)
   - deity: `God of Attrition`
+  - party member race: all Lupinian
+ 
+- PT3 initial condition (when unlocked)
+  - deity: `God of Cunning`
+  - party member race: all Vulpinian
+ 
+- PT4 initial condition (when unlocked)
+  - deity: `God of Fortification`
+  - party member race: all Ursan
+
+- PT5 initial condition (when unlocked)
+  - deity: `Goddess of Fertility`
+  - party member race: all Felidian
+
+- PT6 initial condition (when unlocked)
+  - deity: `God of Resonance`
+  - party member race: all Mustelid
+ 
 
 ### 3.3 Character initialization
 
