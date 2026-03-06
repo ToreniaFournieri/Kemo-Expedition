@@ -24,7 +24,7 @@
 ### 3.2 Initial setup
 - Initial setup (or reset condition)
 
-- Party initial condition.
+- PT1 Party initial condition.
   1. "ケモ", Caninian, 戦(君), Sturdy, House of the Unmoving
      - equipment: `1104`, `1106`
   2. "ゴン", Vulpinian, 剣(侍), Chivalric, House of War Spirit
@@ -49,6 +49,8 @@
   - state: idle
   - deity: none
 
+- PT2 initial condition (when unlocked)
+  - deity: `God of Attrition`
 
 ### 3.3 Character initialization
 
@@ -268,12 +270,12 @@ Party.`d.HP` =
    
 | Condition | Unlock Religions | Unlock party |
 |-----|-----|-----|
-| Defeating: `Seiran` | `Goddess of Restoration` | 2nd party |
-| Defeating: `Garv` | `God of Attrition` | 3rd party |
-| Defeating: `Kyōen` | `God of Cunning` | 4th party |
-| Defeating: `Dolvar` | `God of Fortification` | 5th party |
-| Defeating: `Miora` | `Goddess of Fertility` | 6th party |
-| Defeating: `Rondel` | `God of Resonance` | none |
+| Defeating: `Seiran` | `Goddess of Restoration` | none |
+| Defeating: `Garv` | `God of Attrition` | 2nd party |
+| Defeating: `Kyōen` | `God of Cunning` | 3rd party |
+| Defeating: `Dolvar` | `God of Fortification` | 4th party |
+| Defeating: `Miora` | `Goddess of Fertility` | 5th party |
+| Defeating: `Rondel` | `God of Resonance` | 6th party |
 | Defeating: `Lira` | `Goddess of Precision` | none |
 | Defeating: `Forne` | `God of Fate` | none |
 | Defeating: `Skuva` | `God of Dusk` | none |
