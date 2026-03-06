@@ -1664,17 +1664,22 @@ export function HomeScreen({
       return options[0]?.[0] ?? null;
     };
 
-    const getBestAlternativeVariantKey = (category: ItemCategory, tier: number): string | null => {
+    const getBestAlternativeVariantKey = (category: ItemCategory): string | null => {
       const options = Object.entries(simulatedInventory)
         .filter(([, variant]) => {
           if (variant.status !== 'owned' || variant.count <= 0 || variant.item.category !== category) return false;
-          if (getItemTier(variant.item) !== tier) return false;
           const rarity = getItemRarityById(variant.item.id);
           return rarity === 'uncommon' || rarity === 'eliteRare' || rarity === 'bossRare' || rarity === 'mythicRare';
         })
         .sort(([, a], [, b]) => {
+          const tierDiff = getItemTier(b.item) - getItemTier(a.item);
+          if (tierDiff !== 0) return tierDiff;
+
           const idDiff = b.item.id - a.item.id;
           if (idDiff !== 0) return idDiff;
+
+          const enhancementDiff = b.item.enhancement - a.item.enhancement;
+          if (enhancementDiff !== 0) return enhancementDiff;
 
           return compareItemsByTierAndEnhancement(b.item, a.item);
         });
@@ -1755,27 +1760,27 @@ export function HomeScreen({
           if (group.length < 2) return;
 
           const sortedGroup = [...group].sort((a, b) => compareItemsByTierAndEnhancement(b.item, a.item));
-          const duplicateToReplace = sortedGroup[sortedGroup.length - 1];
-          if (!duplicateToReplace) return;
+          const duplicatesToReplace = sortedGroup.slice(1);
 
-          const { slotIndex, item: duplicateItem } = duplicateToReplace;
-          const itemKey = getBestAlternativeVariantKey(duplicateItem.category, getItemTier(duplicateItem));
-          if (!itemKey) return;
+          duplicatesToReplace.forEach(({ slotIndex, item: duplicateItem }) => {
+            const itemKey = getBestAlternativeVariantKey(duplicateItem.category);
+            if (!itemKey) return;
 
-          const variant = simulatedInventory[itemKey];
-          if (!variant) return;
+            const variant = simulatedInventory[itemKey];
+            if (!variant) return;
 
-          removeItemFromSimulatedInventory(itemKey);
-          addItemToSimulatedInventory(duplicateItem);
+            removeItemFromSimulatedInventory(itemKey);
+            addItemToSimulatedInventory(duplicateItem);
 
-          actions.equipItem(character.id, slotIndex, itemKey, partyIndex);
-          if (duplicateItem.jewel) {
-            actions.attachJewel(character.id, slotIndex, duplicateItem.jewel.key, duplicateItem.jewel.rank, partyIndex);
-          }
-          const replacementItemDisplayName = duplicateItem.jewel
-            ? getItemDisplayName({ ...variant.item, jewel: duplicateItem.jewel })
-            : getItemDisplayName(variant.item);
-          notifications.push(`${party.name}${character.name}は 重複していた${getItemDisplayName(duplicateItem)} を ${replacementItemDisplayName}に置き換えた`);
+            actions.equipItem(character.id, slotIndex, itemKey, partyIndex);
+            if (duplicateItem.jewel) {
+              actions.attachJewel(character.id, slotIndex, duplicateItem.jewel.key, duplicateItem.jewel.rank, partyIndex);
+            }
+            const replacementItemDisplayName = duplicateItem.jewel
+              ? getItemDisplayName({ ...variant.item, jewel: duplicateItem.jewel })
+              : getItemDisplayName(variant.item);
+            notifications.push(`${party.name}${character.name}は 重複していた${getItemDisplayName(duplicateItem)} を ${replacementItemDisplayName}に置き換えた`);
+          });
         });
       });
     });
