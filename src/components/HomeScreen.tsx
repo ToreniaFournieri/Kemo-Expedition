@@ -1647,6 +1647,24 @@ export function HomeScreen({
       return options[0]?.[0] ?? null;
     };
 
+    const getBestAlternativeVariantKey = (category: ItemCategory, tier: number): string | null => {
+      const options = Object.entries(simulatedInventory)
+        .filter(([, variant]) => {
+          if (variant.status !== 'owned' || variant.count <= 0 || variant.item.category !== category) return false;
+          if (getItemTier(variant.item) !== tier) return false;
+          const rarity = getItemRarityById(variant.item.id);
+          return rarity === 'uncommon' || rarity === 'eliteRare' || rarity === 'bossRare' || rarity === 'mythicRare';
+        })
+        .sort(([, a], [, b]) => {
+          const idDiff = b.item.id - a.item.id;
+          if (idDiff !== 0) return idDiff;
+
+          return compareItemsByTierAndEnhancement(b.item, a.item);
+        });
+
+      return options[0]?.[0] ?? null;
+    };
+
     state.parties.forEach((party, partyIndex) => {
       if (targetPartyIndexSet && !targetPartyIndexSet.has(partyIndex)) return;
 
@@ -1692,6 +1710,42 @@ export function HomeScreen({
             actions.attachJewel(character.id, slotIndex, equippedItem.jewel.key, equippedItem.jewel.rank, partyIndex);
           }
           notifications.push(`${party.name}${character.name}は ${getItemDisplayName(equippedItem)} を ${getItemDisplayName(variant.item)}に装備しなおした`);
+        });
+
+        const commonGroups = new Map<string, Array<{ slotIndex: number; item: Item }>>();
+        equippedSlots.forEach(({ item, slotIndex }) => {
+          if (!item || item.superRare >= 1 || getItemRarityById(item.id) !== 'common') return;
+          const key = `${item.category}:${getItemTier(item)}`;
+          const group = commonGroups.get(key);
+          if (group) {
+            group.push({ slotIndex, item });
+          } else {
+            commonGroups.set(key, [{ slotIndex, item }]);
+          }
+        });
+
+        commonGroups.forEach((group) => {
+          if (group.length < 2) return;
+
+          const sortedGroup = [...group].sort((a, b) => compareItemsByTierAndEnhancement(b.item, a.item));
+          const duplicates = sortedGroup.slice(1);
+
+          duplicates.forEach(({ slotIndex, item: duplicateItem }) => {
+            const itemKey = getBestAlternativeVariantKey(duplicateItem.category, getItemTier(duplicateItem));
+            if (!itemKey) return;
+
+            const variant = simulatedInventory[itemKey];
+            if (!variant) return;
+
+            removeItemFromSimulatedInventory(itemKey);
+            addItemToSimulatedInventory(duplicateItem);
+
+            actions.equipItem(character.id, slotIndex, itemKey, partyIndex);
+            if (duplicateItem.jewel) {
+              actions.attachJewel(character.id, slotIndex, duplicateItem.jewel.key, duplicateItem.jewel.rank, partyIndex);
+            }
+            notifications.push(`${party.name}${character.name}は 重複していた${getItemDisplayName(duplicateItem)} を ${getItemDisplayName(variant.item)}に置き換えた`);
+          });
         });
       });
     });
