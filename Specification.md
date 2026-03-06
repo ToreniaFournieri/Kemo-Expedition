@@ -46,7 +46,8 @@
   - `xp_current`: 0
   - Gold: 200G
   - Auto-sell: none
-  - state: 待機中
+  - state: idle
+  - deity: none
 
 
 ### 3.3 Character initialization
