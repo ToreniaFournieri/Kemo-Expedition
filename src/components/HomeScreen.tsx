@@ -1528,9 +1528,9 @@ const AUTO_EQUIPMENT_PRIORITY_BY_CLASS: Record<Character['mainClassId'], ItemCat
   lord: ['shield', 'armor', 'robe', 'sword', 'gauntlet', 'shield', 'armor', 'robe', 'armor', 'robe', 'shield'],
   rogue: ['arrow', 'archery', 'armor', 'robe', 'bolt', 'arrow', 'archery', 'bolt', 'armor', 'robe', 'arrow'],
   ranger: ['arrow', 'archery', 'armor', 'robe', 'bolt', 'arrow', 'archery', 'bolt', 'armor', 'robe', 'arrow'],
-  wizard: ['wand', 'catalyst', 'armor', 'robe', 'grimoire', 'wand', 'catalyst', 'wand', 'armor', 'robe', 'wand'],
-  sage: ['wand', 'catalyst', 'armor', 'robe', 'grimoire', 'wand', 'catalyst', 'grimoire', 'armor', 'robe', 'catalyst'],
-  pilgrim: ['wand', 'catalyst', 'armor', 'robe', 'grimoire', 'wand', 'catalyst', 'grimoire', 'armor', 'robe', 'catalyst'],
+  wizard: ['wand', 'catalyst', 'armor', 'robe', 'grimoire', 'wand', 'catalyst', 'wand', 'grimoire', 'robe', 'wand'],
+  sage: ['wand', 'catalyst', 'armor', 'robe', 'grimoire', 'wand', 'catalyst', 'grimoire', 'wand', 'robe', 'catalyst'],
+  pilgrim: ['wand', 'catalyst', 'armor', 'robe', 'grimoire', 'wand', 'catalyst', 'grimoire', 'wand', 'robe', 'catalyst'],
 };
 
 function getNextMissingAutoEquipmentCategory(
