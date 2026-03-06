@@ -170,6 +170,7 @@ const AFK_BACKGROUND_CHUNK_MS = 120 * 1000;
 const HEADER_HEIGHT_CLASS = 'pt-[118px]';
 type GameMode = 'm.kemo' | 'm.luna';
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
+const AUTO_EQUIPMENT_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-auto-equipment');
 const APP_VERSION = `v${__APP_VERSION__}`;
 
 function getCycleDurationScale(env: ReturnType<typeof getEnvironmentId>): number {
@@ -1503,6 +1504,33 @@ function getInitialGameMode(isLunaEnvironment: boolean): GameMode {
   return 'm.kemo';
 }
 
+function getInitialAutoEquipmentEnabled(): boolean {
+  if (typeof window === 'undefined') return true;
+
+  try {
+    const saved = localStorage.getItem(AUTO_EQUIPMENT_STORAGE_KEY);
+    if (saved === 'on') return true;
+    if (saved === 'off') return false;
+  } catch (error) {
+    console.error('Failed to load initial auto equipment setting:', error);
+  }
+
+  return true;
+}
+
+const AUTO_EQUIPMENT_PRIORITY_BY_CLASS: Record<Character['mainClassId'], ItemCategory[]> = {
+  duelist: ['sword', 'gauntlet', 'armor', 'robe', 'katana'],
+  ninja: ['sword', 'gauntlet', 'armor', 'robe', 'katana'],
+  samurai: ['sword', 'gauntlet', 'armor', 'robe', 'katana'],
+  fighter: ['sword', 'shield', 'armor', 'robe', 'shield'],
+  lord: ['sword', 'shield', 'armor', 'robe', 'shield'],
+  rogue: ['arrow', 'archery', 'armor', 'robe', 'bolt'],
+  ranger: ['arrow', 'archery', 'armor', 'robe', 'bolt'],
+  wizard: ['wand', 'catalyst', 'armor', 'robe', 'grimoire'],
+  sage: ['wand', 'catalyst', 'armor', 'robe', 'grimoire'],
+  pilgrim: ['wand', 'catalyst', 'armor', 'robe', 'grimoire'],
+};
+
 export function HomeScreen({
   state,
   actions,
@@ -1529,6 +1557,7 @@ export function HomeScreen({
   const [expandedBestiaryEnemies, setExpandedBestiaryEnemies] = useState<Record<number, boolean>>({});
   const [bestiaryScrollTop, setBestiaryScrollTop] = useState(0);
   const [gameMode, setGameMode] = useState<GameMode>(() => getInitialGameMode(isLunaEnvironment));
+  const [isAutoEquipmentEnabled, setIsAutoEquipmentEnabled] = useState<boolean>(() => getInitialAutoEquipmentEnabled());
   const tabScrollPositionsRef = useRef<Partial<Record<Tab, number>>>({});
   const tabContentRef = useRef<HTMLDivElement | null>(null);
 
@@ -1545,6 +1574,7 @@ export function HomeScreen({
   const lastCheckpointAtRef = useRef(Date.now());
   const latestPartiesRef = useRef(state.parties);
   const autoRepeatEnabledRef = useRef(isAutoRepeatEnabled);
+  const autoEquipmentEnabledRef = useRef(isAutoEquipmentEnabled);
   const gameModeRef = useRef(gameMode);
   const [pendingAfkMs, setPendingAfkMs] = useState(0);
   const afkSimulationAnchorRef = useRef<number | null>(null);
@@ -1557,6 +1587,104 @@ export function HomeScreen({
   useEffect(() => {
     autoRepeatEnabledRef.current = isAutoRepeatEnabled;
   }, [isAutoRepeatEnabled]);
+
+  useEffect(() => {
+    autoEquipmentEnabledRef.current = isAutoEquipmentEnabled;
+  }, [isAutoEquipmentEnabled]);
+
+  const runAutoEquipment = useCallback(() => {
+    const simulatedInventory: InventoryRecord = { ...state.global.inventory };
+    const notifications: string[] = [];
+
+    const addItemToSimulatedInventory = (item: Item) => {
+      const key = getVariantKey(item);
+      const existing = simulatedInventory[key];
+      if (existing) {
+        simulatedInventory[key] = { ...existing, count: existing.count + 1, status: 'owned' };
+      } else {
+        simulatedInventory[key] = { item, count: 1, status: 'owned' };
+      }
+    };
+
+    const removeItemFromSimulatedInventory = (key: string) => {
+      const existing = simulatedInventory[key];
+      if (!existing || existing.count <= 0) return;
+      if (existing.count <= 1) {
+        delete simulatedInventory[key];
+      } else {
+        simulatedInventory[key] = { ...existing, count: existing.count - 1 };
+      }
+    };
+
+    const getBestVariantKeyInCategory = (category: ItemCategory): string | null => {
+      const options = Object.entries(simulatedInventory)
+        .filter(([, variant]) => (
+          variant.status === 'owned'
+          && variant.count > 0
+          && variant.item.category === category
+          && variant.item.superRare < 1
+          && getItemRarityById(variant.item.id) === 'common'
+        ))
+        .sort(([, a], [, b]) => {
+          const tierA = Math.floor(a.item.id / 1000);
+          const tierB = Math.floor(b.item.id / 1000);
+          if (tierA !== tierB) return tierB - tierA;
+          if (a.item.enhancement !== b.item.enhancement) return b.item.enhancement - a.item.enhancement;
+          return b.item.id - a.item.id;
+        });
+
+      return options[0]?.[0] ?? null;
+    };
+
+    state.parties.forEach((party) => {
+      party.characters.forEach((character) => {
+        const priorities = AUTO_EQUIPMENT_PRIORITY_BY_CLASS[character.mainClassId] ?? AUTO_EQUIPMENT_PRIORITY_BY_CLASS.fighter;
+        const emptySlotIndexes = character.equipment
+          .map((item, index) => (item ? -1 : index))
+          .filter((index) => index >= 0);
+
+        emptySlotIndexes.forEach((slotIndex, emptyIndex) => {
+          for (let offset = 0; offset < priorities.length; offset += 1) {
+            const category = priorities[(emptyIndex + offset) % priorities.length];
+            const itemKey = getBestVariantKeyInCategory(category);
+            if (!itemKey) continue;
+            const variant = simulatedInventory[itemKey];
+            if (!variant) continue;
+            removeItemFromSimulatedInventory(itemKey);
+            actions.equipItem(character.id, slotIndex, itemKey);
+            notifications.push(`${party.name}${character.name}は ${getItemDisplayName(variant.item)} を装備した`);
+            break;
+          }
+        });
+
+        character.equipment.forEach((equippedItem, slotIndex) => {
+          if (!equippedItem) return;
+          if (equippedItem.superRare >= 1 || getItemRarityById(equippedItem.id) !== 'common') return;
+          const itemKey = getBestVariantKeyInCategory(equippedItem.category);
+          if (!itemKey) return;
+          const variant = simulatedInventory[itemKey];
+          if (!variant) return;
+          if (variant.item.enhancement <= equippedItem.enhancement) return;
+
+          removeItemFromSimulatedInventory(itemKey);
+          addItemToSimulatedInventory(equippedItem);
+
+          actions.equipItem(character.id, slotIndex, itemKey);
+          if (equippedItem.jewel) {
+            actions.attachJewel(character.id, slotIndex, equippedItem.jewel.key, equippedItem.jewel.rank);
+          }
+          notifications.push(`${party.name}${character.name}は ${getItemDisplayName(equippedItem)} を ${getItemDisplayName(variant.item)}に装備しなおした`);
+        });
+      });
+    });
+
+    notifications.forEach((message) => {
+      actions.addNotification(message, 'normal', 'item', true, {
+        rarity: 'common',
+        isSuperRareItem: false,
+      });
+    });
+  }, [actions, state.global.inventory, state.parties]);
 
   const setAutoRepeatEnabled = useCallback((nextEnabled: boolean) => {
     autoRepeatEnabledRef.current = nextEnabled;
@@ -1637,6 +1765,14 @@ export function HomeScreen({
       console.error('Failed to persist game mode:', error);
     }
   }, [gameMode, isLunaEnvironment]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(AUTO_EQUIPMENT_STORAGE_KEY, isAutoEquipmentEnabled ? 'on' : 'off');
+    } catch (error) {
+      console.error('Failed to persist auto equipment setting:', error);
+    }
+  }, [isAutoEquipmentEnabled]);
 
   useEffect(() => {
     if (hasHydratedAfkRef.current) return;
@@ -1886,6 +2022,9 @@ export function HomeScreen({
           stateElapsedMs -= updated.durationMs;
 
             if (updated.state === 'sell') {
+              if (autoEquipmentEnabledRef.current) {
+                runAutoEquipment();
+              }
               const shouldSkipFeast = cyclePendingProfit <= 0 || updated.skipFeastThisCycle === true;
               updated.state = shouldSkipFeast ? 'sleep' : 'feast';
               updated.durationMs = getStateDurationMs(party, shouldSkipFeast ? 'sleep' : 'feast');
@@ -2531,6 +2670,8 @@ export function HomeScreen({
             isLunaEnvironment={isLunaEnvironment}
             isAutoRepeatEnabled={isAutoRepeatEnabled}
             onSetAutoRepeatEnabled={setAutoRepeatEnabled}
+            isAutoEquipmentEnabled={isAutoEquipmentEnabled}
+            onSetAutoEquipmentEnabled={setIsAutoEquipmentEnabled}
           />
         )}
       </div>
@@ -6062,6 +6203,8 @@ function SettingTab({
   isLunaEnvironment,
   isAutoRepeatEnabled,
   onSetAutoRepeatEnabled,
+  isAutoEquipmentEnabled,
+  onSetAutoEquipmentEnabled,
 }: {
   gameState: GameState;
   deityDonations: Record<string, number>;
@@ -6089,6 +6232,8 @@ function SettingTab({
   isLunaEnvironment: boolean;
   isAutoRepeatEnabled: boolean;
   onSetAutoRepeatEnabled: (enabled: boolean) => void;
+  isAutoEquipmentEnabled: boolean;
+  onSetAutoEquipmentEnabled: Dispatch<SetStateAction<boolean>>;
 }) {
   type DivineBureauPanelKey = 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'bestiary' | 'superRare' | 'gameSetting';
   const DIVINE_BUREAU_PANEL_STORAGE_KEY = 'kemo-expedition.divine-bureau.panel-expanded';
@@ -7195,6 +7340,32 @@ function SettingTab({
       <div className="bg-pane rounded-lg p-4 mb-4">
         {renderDivineBureauPanelHeader('modeSelect', 'モード切替')}
         {divineBureauPanelExpanded.modeSelect && <div className="mt-3 space-y-4">
+          <div>
+            <div className="text-xs text-gray-600 font-medium mb-2">自動装備</div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => onSetAutoEquipmentEnabled(true)}
+                className={`py-2 rounded border text-sm font-medium ${
+                  isAutoEquipmentEnabled
+                    ? 'bg-sub text-white border-sub'
+                    : 'bg-white text-gray-700 border-gray-300'
+                }`}
+              >
+                自動装備 ON
+              </button>
+              <button
+                onClick={() => onSetAutoEquipmentEnabled(false)}
+                className={`py-2 rounded border text-sm font-medium ${
+                  !isAutoEquipmentEnabled
+                    ? 'bg-sub text-white border-sub'
+                    : 'bg-white text-gray-700 border-gray-300'
+                }`}
+              >
+                自動装備 OFF
+              </button>
+            </div>
+          </div>
+
           <div>
             <div className="text-xs text-gray-600 font-medium mb-2">自動周回</div>
             <div className="grid grid-cols-2 gap-2">
