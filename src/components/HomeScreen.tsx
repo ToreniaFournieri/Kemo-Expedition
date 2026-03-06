@@ -1811,10 +1811,20 @@ export function HomeScreen({
     setPartyCycles((prev) => {
       const next = { ...prev };
       parties.forEach((party, partyIndex) => {
-        const runtime = next[partyIndex] ?? { state: 'idle' as PartyCycleState, stateStartedAt: simulationNow, durationMs: 1000 };
+        const runtime = next[partyIndex] ?? {
+          state: (autoRepeatEnabled ? 'move' : 'idle') as PartyCycleState,
+          stateStartedAt: simulationNow,
+          durationMs: autoRepeatEnabled ? getPartyTravelDurationMs(party, 'move') : 1000,
+        };
         const updated = { ...runtime };
         const { partyStats: partyRuntimeStats } = computePartyStats(party);
         const hpRatioAtRestStart = partyRuntimeStats.hp > 0 ? party.currentHp / partyRuntimeStats.hp : 1;
+
+        if (updated.state === 'idle' && autoRepeatEnabled) {
+          updated.state = 'move';
+          updated.durationMs = getPartyTravelDurationMs(party, 'move');
+          updated.stateStartedAt = simulationNow;
+        }
 
         if (updated.state === 'explore') {
           const exploredRooms = party.lastExpeditionLog?.entries.length;
