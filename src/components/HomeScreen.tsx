@@ -4651,7 +4651,7 @@ function PartyTab({
                 onClick={handleAutoEquipment}
                 className="text-xs font-semibold text-sub hover:opacity-80"
               >
-                自動装備*
+                自動装備
               </button>
             ) : (
               <button
