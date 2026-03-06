@@ -56,7 +56,7 @@ import {
 import { getItemById, getItemsByTierAndRarity } from '../data/items';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { getItemDisplayName } from '../game/gameState';
-import { DEITY_OPTIONS, getDeityKey, getDeityRank, getDeityStateDurationMultiplier, getEffectiveDeityTier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
+import { getDeityKey, getDeityRank, getDeityStateDurationMultiplier, getEffectiveDeityTier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { RACES } from '../data/races';
 import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
@@ -126,9 +126,7 @@ const UNLOCKABLE_DEITY_BY_GOD_NAME: Record<string, string> = {
   Eris: 'Goddess of Discord',
 };
 
-const DEFAULT_UNLOCKED_DEITIES = DEITY_OPTIONS
-  .map((deity) => normalizeDeityName(deity.name))
-  .filter((deityName) => !isNoFaithDeity(deityName));
+const DEFAULT_UNLOCKED_DEITIES: string[] = [];
 
 function normalizeUnlockedDeities(unlockedDeities: unknown): string[] {
   if (!Array.isArray(unlockedDeities)) return [];
