@@ -488,8 +488,10 @@ function loadSavedState(): GameState | null {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      // Validate it has required properties
-      if (parsed.parties && parsed.bags && parsed.buildNumber) {
+      // Validate it has required properties and migrate legacy saves.
+      const hasParties = Array.isArray(parsed?.parties);
+      const hasBags = parsed?.bags && typeof parsed.bags === 'object';
+      if (hasParties && hasBags) {
 
         parsed.bags = normalizeGameBags({
           commonRewardBag: migrateLegacyBag(parsed.bags.commonRewardBag, createCommonRewardBag, 'commonRewardBag'),
@@ -570,6 +572,9 @@ function loadSavedState(): GameState | null {
           parsed.parties = [];
         }
         parsed.parties = parsed.parties.slice(0, defaultParties.length);
+        const normalizedSelectedPartyIndex = typeof parsed.selectedPartyIndex === 'number'
+          ? Math.max(0, Math.min(Math.floor(parsed.selectedPartyIndex), Math.max(0, parsed.parties.length - 1)))
+          : 0;
 
         const initialUnlockedDeities = parsed.global.unlockedDeities.length > 0
           ? parsed.global.unlockedDeities
@@ -646,6 +651,8 @@ function loadSavedState(): GameState | null {
           parsed.parties.push(nextDefaultParty);
         }
         parsed.parties = parsed.parties.slice(0, unlockedPartySlots);
+        parsed.selectedPartyIndex = Math.max(0, Math.min(normalizedSelectedPartyIndex, Math.max(0, parsed.parties.length - 1)));
+        parsed.buildNumber = typeof parsed.buildNumber === 'number' ? parsed.buildNumber : 0;
 
         return hydrateGameState(parsed as GameState);
       }

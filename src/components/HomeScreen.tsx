@@ -1580,6 +1580,21 @@ export function HomeScreen({
     });
   }, [state.parties]);
 
+  const handleResetGame = useCallback(() => {
+    setAutoRepeatEnabled(true);
+    setPartyCycles({});
+    pendingAfkSimulationRef.current = false;
+    setPendingAfkMs(0);
+    afkSimulationAnchorRef.current = null;
+    afkRecoveryTotalMsRef.current = 0;
+    try {
+      localStorage.removeItem(AFK_RUNTIME_STORAGE_KEY);
+    } catch (error) {
+      console.error('Failed to clear AFK runtime state:', error);
+    }
+    actions.resetGame();
+  }, [actions, setAutoRepeatEnabled]);
+
   useEffect(() => {
     gameModeRef.current = gameMode;
   }, [gameMode]);
@@ -1640,8 +1655,7 @@ export function HomeScreen({
       const elapsedMs = Math.max(0, Math.min(Date.now() - checkpointAt, AFK_MAX_ELAPSED_MS));
       lastCheckpointAtRef.current = Date.now() - elapsedMs;
 
-      const restoredAutoRepeat = parsed.autoRepeatEnabled !== false;
-      setAutoRepeatEnabled(restoredAutoRepeat);
+      setAutoRepeatEnabled(true);
       if (parsed.partyCycles && typeof parsed.partyCycles === 'object') {
         const restoredCycles: Record<number, PartyCycleRuntime> = {};
         Object.entries(parsed.partyCycles).forEach(([key, value]) => {
@@ -2479,7 +2493,7 @@ export function HomeScreen({
             gameState={state}
             deityDonations={state.global.deityDonations}
             bags={bags}
-            onResetGame={actions.resetGame}
+            onResetGame={handleResetGame}
             onImportGameState={actions.importGameState}
             onAddNotification={actions.addNotification}
             onResetCommonBags={actions.resetCommonBags}
