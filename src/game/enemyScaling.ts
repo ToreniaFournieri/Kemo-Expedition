@@ -1,14 +1,49 @@
 import { Dungeon, EnemyDef, RoomType } from '../types';
 import { getFloorRoomMultipliers } from '../data/dungeons';
+import { getEnvironmentId } from './environment';
 
-const GOD_ENEMY_MULTIPLIERS = {
+type GodEnemyMultipliers = {
+  hp: number;
+  attack: number;
+  noa: number;
+  attackAmplifier: number;
+  defense: number;
+  defenseAmplifier: number;
+};
+
+const NORMAL_GOD_ENEMY_MULTIPLIERS: GodEnemyMultipliers = {
   hp: 2.0,
   attack: 1.5,
   noa: 2.0,
   attackAmplifier: 1.6,
   defense: 1.5,
   defenseAmplifier: 0.8,
-} as const;
+};
+
+const DEV_GOD_ENEMY_MULTIPLIERS: GodEnemyMultipliers = {
+  hp: 0.3,
+  attack: 0.3,
+  noa: 0.5,
+  attackAmplifier: 0.4,
+  defense: 0.3,
+  defenseAmplifier: 1.0,
+};
+
+const DEFAULT_MULTIPLIERS: GodEnemyMultipliers = {
+  hp: 1,
+  attack: 1,
+  noa: 1,
+  attackAmplifier: 1,
+  defense: 1,
+  defenseAmplifier: 1,
+};
+
+// SpecRef: 6.1 | Encounter Rules | getGodEnemyMultipliers
+export function getGodEnemyMultipliers(): GodEnemyMultipliers {
+  return getEnvironmentId() === 'dev'
+    ? DEV_GOD_ENEMY_MULTIPLIERS
+    : NORMAL_GOD_ENEMY_MULTIPLIERS;
+}
 
 type EnemyScalingOptions = {
   isGodEnemy?: boolean;
@@ -29,16 +64,7 @@ export function applyEnemyEncounterScaling(
 ): EnemyDef {
   const roomMultipliers = getFloorRoomMultipliers(floorNumber, roomType);
   const expeditionMult = dungeon.enemyMultipliers;
-  const godMult = options.isGodEnemy
-    ? GOD_ENEMY_MULTIPLIERS
-    : {
-      hp: 1,
-      attack: 1,
-      noa: 1,
-      attackAmplifier: 1,
-      defense: 1,
-      defenseAmplifier: 1,
-    };
+  const godMult = options.isGodEnemy ? getGodEnemyMultipliers() : DEFAULT_MULTIPLIERS;
 
   const finalMultipliers = {
     hp: expeditionMult.hp * roomMultipliers.hp * godMult.hp,
