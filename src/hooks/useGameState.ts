@@ -2527,17 +2527,23 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
           const partyAfterProfit = workingState.parties[partyIndex];
           if (!partyAfterProfit) continue;
-          const sleepinessResult = drawPartySleepiness(partyAfterProfit);
-          const partyAfterSleepinessRoll = sleepinessResult.party;
-          const sleepDurationMultiplier = getSleepDurationMultiplier(sleepinessResult.sleepiness);
+          const shouldSkipSleepForLowHp = hpRatioAtRestStart < 0.1;
+          let partyAfterSleepinessRoll = partyAfterProfit;
+          let sleepDurationMultiplier = 0;
 
-          if (partyAfterSleepinessRoll !== partyAfterProfit) {
-            const rolledParties = [...workingState.parties];
-            rolledParties[partyIndex] = partyAfterSleepinessRoll;
-            workingState = {
-              ...workingState,
-              parties: rolledParties,
-            };
+          if (!shouldSkipSleepForLowHp) {
+            const sleepinessResult = drawPartySleepiness(partyAfterProfit);
+            partyAfterSleepinessRoll = sleepinessResult.party;
+            sleepDurationMultiplier = getSleepDurationMultiplier(sleepinessResult.sleepiness);
+
+            if (partyAfterSleepinessRoll !== partyAfterProfit) {
+              const rolledParties = [...workingState.parties];
+              rolledParties[partyIndex] = partyAfterSleepinessRoll;
+              workingState = {
+                ...workingState,
+                parties: rolledParties,
+              };
+            }
           }
 
           const { partyStats } = computePartyStats(partyAfterProfit);
