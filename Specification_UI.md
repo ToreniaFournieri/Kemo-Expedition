@@ -206,7 +206,7 @@ Left-aligned
 - **Remove (Single-tap):** - Single-tap an **equipped item in inventory** and returns it to be unequipped item in inventory.
 - Status updates in real time
 - **remove_all_equipment(全装備解除):** Removes all equipped items from the character after displaying a warning message.
-- **auto_equipment*(自動装備):** This button is displayed only when the character has no equipment. When equipment is present, it is replaced by the remove_all_equipment button. Pressing it automatically equips suitable items.
+- **auto_equipment(自動装備):** This button is displayed only when the character has no equipment. When equipment is present, it is replaced by the remove_all_equipment button. Pressing it automatically equips suitable items.
 
 
 **2. Equipment Sort logic:**
