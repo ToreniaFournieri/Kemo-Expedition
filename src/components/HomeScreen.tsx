@@ -5693,7 +5693,7 @@ function InventoryTab({
             className="text-xs text-gray-500 flex items-center gap-1"
           >
             <span className={`transform transition-transform ${showSold ? 'rotate-180' : ''}`}>▼</span>
-            自動売却設定 ({allSoldItems.length}種類)
+            自動売却設定 ({filteredSoldItems.length}種類)
           </button>
           {showSold && (
             <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
