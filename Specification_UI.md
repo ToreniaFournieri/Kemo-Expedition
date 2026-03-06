@@ -205,6 +205,9 @@ Left-aligned
 - **Remove (Double-Tap):** - Double-tapping an item in a Character Slot removes it and returns it to the inventory.
 - **Remove (Single-tap):** - Single-tap an **equipped item in inventory** and returns it to be unequipped item in inventory.
 - Status updates in real time
+- **remove_all_equipment(全装備解除):** Removes all equipped items from the character after displaying a warning message.
+- **auto_equipment*(自動装備):** This button is displayed only when the character has no equipment. When equipment is present, it is replaced by the remove_all_equipment button. Pressing it automatically equips suitable items.
+
 
 **2. Equipment Sort logic:**
 - Order: Descending order by Priority.
@@ -222,7 +225,7 @@ Left-aligned
 - Equipment List (Collapsed State)
 
 ```
-装備  4 / 4 スロット
+装備  4 / 4 スロット 全装備解除
 白銀英雄の鎧 [2B] 物防+79 魔防+25 HP+32 体力+1 [鎧] [鎧]  ▲
 名工の霧林司祭の法衣 [3E] 魔防+74 [魔防+8%] HP+47 回避+3 [法衣]　▲
 伝説の幻導の青銅杖 [3U] 魔攻+67 [魔攻撃+9%] 魔防+25 [魔防+9%] [ワンド]　▲
@@ -231,7 +234,7 @@ Left-aligned
 - Expanded State (When Selected)
 
 ```
-装備  4 / 4 スロット
+装備  4 / 4 スロット 全装備解除
 白銀英雄の鎧 [2B] 物防+85 魔防+25 HP+48 体力+1 [物防+8%] [鎧] ▼
  堅牢: 1 2 3 4 **5** 6 7 8
  障壁: 1 2 3 4 5 6 7 8 
