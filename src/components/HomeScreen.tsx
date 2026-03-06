@@ -6838,29 +6838,39 @@ function SettingTab({
                               <div className="text-gray-500 whitespace-pre-line">{renderTextWithRaceIcons(lorePrefixLines.join('\n'))}</div>
                             )}
                             {!isGodGlossarySection && glossaryTable && (
-                              <div className="space-y-1 mt-1">
-                                {glossaryTable.rows.map((row, rowIndex) => {
-                                  const [titleCell, ...contentCells] = row;
-                                  const titleLabel = glossaryTable.headers[0] ?? '項目';
-                                  const contentLabel = glossaryTable.headers[1] ?? '内容';
-                                  const contentText = contentCells.join(' / ');
-
-                                  return (
-                                    <div
-                                      key={`${section.id}-${entry.key}-list-row-${rowIndex}`}
-                                      className="rounded border border-gray-200 bg-gray-50 px-2 py-1"
-                                    >
-                                      <div className="text-gray-700 font-medium">
-                                        <span className="text-gray-500">{titleLabel}: </span>
-                                        {renderTextWithRaceIcons(titleCell ?? '')}
-                                      </div>
-                                      <div className="text-gray-500 whitespace-pre-line">
-                                        <span className="text-gray-500">{contentLabel}: </span>
-                                        {renderTextWithRaceIcons(contentText)}
-                                      </div>
-                                    </div>
-                                  );
-                                })}
+                              <div className="mt-1 rounded border border-gray-200 bg-white px-2 py-1">
+                                <table className="w-full table-fixed text-xs">
+                                  <thead>
+                                    <tr className="border-b border-gray-100 text-gray-500">
+                                      {glossaryTable.headers.map((header, headerIndex) => (
+                                        <th
+                                          key={`${section.id}-${entry.key}-table-header-${headerIndex}`}
+                                          className={`py-1 font-medium ${
+                                            headerIndex === glossaryTable.headers.length - 1 ? 'text-right' : 'text-left'
+                                          }`}
+                                        >
+                                          {renderTextWithRaceIcons(header)}
+                                        </th>
+                                      ))}
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {glossaryTable.rows.map((row, rowIndex) => (
+                                      <tr key={`${section.id}-${entry.key}-table-row-${rowIndex}`} className="text-gray-700">
+                                        {row.map((cell, cellIndex) => (
+                                          <td
+                                            key={`${section.id}-${entry.key}-table-row-${rowIndex}-cell-${cellIndex}`}
+                                            className={`py-1 align-top ${
+                                              cellIndex === row.length - 1 ? 'text-right tabular-nums text-sub' : 'text-left'
+                                            }`}
+                                          >
+                                            {renderTextWithRaceIcons(cell)}
+                                          </td>
+                                        ))}
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
                               </div>
                             )}
                           </>
