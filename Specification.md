@@ -328,7 +328,7 @@ Party.`d.HP` =
 ### 4.1 Time-Based Progress Handling (Online + AFK)
 - The state machine is purely time-based: persist `state` and `state_started_at`, and on each update tick compute progress from `now - state_started_at`, applying any completed transitions to reach the latest state.
 - Update `state_started_at` **only when the party state changes** (on every state transition).
-- Limit: maximum 600 minutes per catch-up simulation (current version).
+- Limit: maximum 1,800 minutes (30 hours) per catch-up simulation (current version).
 
 **Notification**
 - Format: 踏破N回/撤退M回/敗北X回 寄付金額: vG, 貯金額:　vG
