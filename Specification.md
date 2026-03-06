@@ -260,6 +260,26 @@ Party.`d.HP` =
     - If flont_row_from_actor_member_has.`a.m-barrier`2: multiply x3/5
     - If flont_row_from_actor_member_has.`a.m-barrier`1: multiply x2/3
 
+### 3.5 Unlock party & Deity
+- Party & Deity unlock condition: Defeating corresponding gods.
+  - New party with new corresponding deity as default.
+  - max 6 parties.
+   
+| Condition | Unlock Religions | Unlock party |
+|-----|-----|-----|
+| Defeating: `Seiran` | `Goddess of Restoration` | 2nd party |
+| Defeating: `Garv` | `God of Attrition` | 3rd party |
+| Defeating: `Kyōen` | `God of Cunning` | 4th party |
+| Defeating: `Dolvar` | `God of Fortification` | 5th party |
+| Defeating: `Miora` | `Goddess of Fertility` | 6th party |
+| Defeating: `Rondel` | `God of Resonance` | none |
+| Defeating: `Lira` | `Goddess of Precision` | none |
+| Defeating: `Forne` | `God of Fate` | none |
+| Defeating: `Skuva` | `God of Dusk` | none |
+| Defeating: `Forne` | `God of Fate` | none |
+| Defeating: `Tanue` | `Goddess of Mirage` | none |
+| Defeating: `Noctyra` | `God of Oblivion` | none |
+| Defeating: `Eris` | `Goddess of discord` | none |
 
 
 
