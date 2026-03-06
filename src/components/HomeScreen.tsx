@@ -7340,56 +7340,46 @@ function SettingTab({
       <div className="bg-pane rounded-lg p-4 mb-4">
         {renderDivineBureauPanelHeader('modeSelect', 'モード切替')}
         {divineBureauPanelExpanded.modeSelect && <div className="mt-3 space-y-4">
-          <div>
-            <div className="text-xs text-gray-600 font-medium mb-2">自動装備</div>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => onSetAutoEquipmentEnabled(true)}
-                className={`py-2 rounded border text-sm font-medium ${
-                  isAutoEquipmentEnabled
-                    ? 'bg-sub text-white border-sub'
-                    : 'bg-white text-gray-700 border-gray-300'
-                }`}
-              >
-                自動装備 ON
-              </button>
-              <button
-                onClick={() => onSetAutoEquipmentEnabled(false)}
-                className={`py-2 rounded border text-sm font-medium ${
-                  !isAutoEquipmentEnabled
-                    ? 'bg-sub text-white border-sub'
-                    : 'bg-white text-gray-700 border-gray-300'
-                }`}
-              >
-                自動装備 OFF
-              </button>
-            </div>
-          </div>
+          <div className="space-y-2">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isAutoEquipmentEnabled}
+              onClick={() => onSetAutoEquipmentEnabled(!isAutoEquipmentEnabled)}
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">自動装備</span>
+                <span className="flex items-center gap-2">
+                  <span className={`text-xs font-semibold ${isAutoEquipmentEnabled ? 'text-sub' : 'text-gray-500'}`}>
+                    {isAutoEquipmentEnabled ? 'ON' : 'OFF'}
+                  </span>
+                  <span className={`relative h-6 w-11 rounded-full transition-colors ${isAutoEquipmentEnabled ? 'bg-sub' : 'bg-gray-300'}`}>
+                    <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${isAutoEquipmentEnabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                  </span>
+                </span>
+              </div>
+            </button>
 
-          <div>
-            <div className="text-xs text-gray-600 font-medium mb-2">自動周回</div>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => onSetAutoRepeatEnabled(true)}
-                className={`py-2 rounded border text-sm font-medium ${
-                  isAutoRepeatEnabled
-                    ? 'bg-sub text-white border-sub'
-                    : 'bg-white text-gray-700 border-gray-300'
-                }`}
-              >
-                自動周回 ON
-              </button>
-              <button
-                onClick={() => onSetAutoRepeatEnabled(false)}
-                className={`py-2 rounded border text-sm font-medium ${
-                  !isAutoRepeatEnabled
-                    ? 'bg-sub text-white border-sub'
-                    : 'bg-white text-gray-700 border-gray-300'
-                }`}
-              >
-                自動周回 OFF
-              </button>
-            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isAutoRepeatEnabled}
+              onClick={() => onSetAutoRepeatEnabled(!isAutoRepeatEnabled)}
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">自動周回</span>
+                <span className="flex items-center gap-2">
+                  <span className={`text-xs font-semibold ${isAutoRepeatEnabled ? 'text-sub' : 'text-gray-500'}`}>
+                    {isAutoRepeatEnabled ? 'ON' : 'OFF'}
+                  </span>
+                  <span className={`relative h-6 w-11 rounded-full transition-colors ${isAutoRepeatEnabled ? 'bg-sub' : 'bg-gray-300'}`}>
+                    <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${isAutoRepeatEnabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                  </span>
+                </span>
+              </div>
+            </button>
           </div>
 
           <div>
