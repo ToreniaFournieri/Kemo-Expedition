@@ -101,6 +101,7 @@ const BUILD_NUMBER = 1;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
 const AFK_MAX_SIMULATION_MS = 600 * 60 * 1000;
 const DEBUG_CYCLE_DURATION_SCALE = 0.2;
+const ITEM_MAX_STACK = 99;
 const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.sleeping', 'q.exercise', 'q.healing', 'q.AFK']);
 
 const PARTY_UNLOCK_BY_GOD_NAME: Record<string, number> = {
@@ -357,6 +358,17 @@ function addItemToInventory(
 
   // If this variant is marked as sold, auto-sell it
   if (existing?.status === 'sold') {
+    const sellPrice = calculateSellPrice(item, autoSellMultiplier);
+    return {
+      inventory,
+      gold: currentGold + sellPrice,
+      wasAutoSold: true,
+      autoSellProfit: sellPrice,
+    };
+  }
+
+  // Stack overflow handling: treat excess copies as auto-sell items.
+  if (existing?.status === 'owned' && existing.count >= ITEM_MAX_STACK) {
     const sellPrice = calculateSellPrice(item, autoSellMultiplier);
     return {
       inventory,
