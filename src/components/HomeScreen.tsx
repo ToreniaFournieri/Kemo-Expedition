@@ -1633,15 +1633,19 @@ export function HomeScreen({
       characterId: string | number,
       slotIndex: number,
       item: Item,
+      previousItem: Item | null,
       partyIndex: number,
     ) => {
+      const message = previousItem
+        ? `${getItemDisplayName(previousItem)} を ${getItemDisplayName(item)}に装備しなおした`
+        : `${getItemDisplayName(item)}を装備した`;
       setSlotNotification(
         partyName,
         characterName,
         characterId,
         slotIndex,
         partyIndex,
-        `${getItemDisplayName(item)} を装備した`,
+        message,
       );
     };
 
@@ -1746,7 +1750,7 @@ export function HomeScreen({
           removeItemFromSimulatedInventory(itemKey);
           simulatedEquipmentSlots[slotIndex] = variant.item;
           actions.equipItem(character.id, slotIndex, itemKey, partyIndex);
-          queueAutoEquipmentNotification(party.name, character.name, character.id, slotIndex, variant.item, partyIndex);
+          queueAutoEquipmentNotification(party.name, character.name, character.id, slotIndex, variant.item, null, partyIndex);
         });
 
         simulatedEquipmentSlots.forEach((equippedItem, slotIndex) => {
@@ -1769,7 +1773,15 @@ export function HomeScreen({
           if (equippedItem.jewel) {
             actions.attachJewel(character.id, slotIndex, equippedItem.jewel.key, equippedItem.jewel.rank, partyIndex);
           }
-          queueAutoEquipmentNotification(party.name, character.name, character.id, slotIndex, nextEquippedItem, partyIndex);
+          queueAutoEquipmentNotification(
+            party.name,
+            character.name,
+            character.id,
+            slotIndex,
+            nextEquippedItem,
+            equippedItem,
+            partyIndex,
+          );
         });
 
         const commonGroups = new Map<string, Array<{ slotIndex: number; item: Item }>>();
@@ -1808,13 +1820,14 @@ export function HomeScreen({
             if (duplicateItem.jewel) {
               actions.attachJewel(character.id, slotIndex, duplicateItem.jewel.key, duplicateItem.jewel.rank, partyIndex);
             }
-            setSlotNotification(
+            queueAutoEquipmentNotification(
               party.name,
               character.name,
               character.id,
               slotIndex,
+              nextEquippedItem,
+              duplicateItem,
               partyIndex,
-              `重複していた${getItemDisplayName(duplicateItem)} を ${getItemDisplayName(nextEquippedItem)}に置き換えた`,
             );
           });
         });
