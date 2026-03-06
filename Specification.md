@@ -53,6 +53,9 @@
 	-`maximum_equipped_item`= base slots + class_bonuses (`c.equip_slot+1`, `c.equip_slot+2` )
   	- Where class_bonuses is the sum of unique values from Main and Sub class. Example: If Main Class provides `c.equip_slot+2` and Sub Class provides `c.equip_slot+1`, class_bonuses is 3. If both provide `c.equip_slot+2`, bonus_sum is 2.
 
+
+- `f.equipment_slots`
+
 |level | base slots |
 |-----|-----------|
 | 1 | 1 |
