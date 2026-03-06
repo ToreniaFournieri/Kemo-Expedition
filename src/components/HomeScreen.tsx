@@ -1581,7 +1581,8 @@ export function HomeScreen({
   }, [state.parties]);
 
   const handleResetGame = useCallback(() => {
-    setAutoRepeatEnabled(true);
+    autoRepeatEnabledRef.current = true;
+    setIsAutoRepeatEnabled(true);
     setPartyCycles({});
     pendingAfkSimulationRef.current = false;
     setPendingAfkMs(0);
@@ -1593,7 +1594,7 @@ export function HomeScreen({
       console.error('Failed to clear AFK runtime state:', error);
     }
     actions.resetGame();
-  }, [actions, setAutoRepeatEnabled]);
+  }, [actions]);
 
   useEffect(() => {
     gameModeRef.current = gameMode;
