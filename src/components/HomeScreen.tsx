@@ -1614,17 +1614,26 @@ export function HomeScreen({
   const runAutoEquipment = useCallback((targetPartyIndexes?: number[]) => {
     const targetPartyIndexSet = targetPartyIndexes ? new Set(targetPartyIndexes) : null;
     const simulatedInventory: InventoryRecord = { ...state.global.inventory };
-    const slotNotifications = new Map<string, string>();
+    const slotNotifications = new Map<string, { message: string; startedFromEmpty: boolean }>();
     const setSlotNotification = (
       partyName: string,
       characterName: string,
       characterId: string | number,
       slotIndex: number,
       partyIndex: number,
-      message: string,
+      item: Item,
+      previousItem: Item | null,
     ) => {
       const notificationKey = `${partyIndex}:${characterId}:${slotIndex}`;
-      slotNotifications.set(notificationKey, `${partyName}${characterName}は ${message}`);
+      const existing = slotNotifications.get(notificationKey);
+      const startedFromEmpty = existing?.startedFromEmpty ?? previousItem == null;
+      const message = startedFromEmpty
+        ? `${getItemDisplayName(item)}を装備した`
+        : `${getItemDisplayName(previousItem!)} を ${getItemDisplayName(item)}に装備しなおした`;
+      slotNotifications.set(notificationKey, {
+        message: `${partyName}${characterName}は ${message}`,
+        startedFromEmpty,
+      });
     };
 
     const queueAutoEquipmentNotification = (
@@ -1636,16 +1645,14 @@ export function HomeScreen({
       previousItem: Item | null,
       partyIndex: number,
     ) => {
-      const message = previousItem
-        ? `${getItemDisplayName(previousItem)} を ${getItemDisplayName(item)}に装備しなおした`
-        : `${getItemDisplayName(item)}を装備した`;
       setSlotNotification(
         partyName,
         characterName,
         characterId,
         slotIndex,
         partyIndex,
-        message,
+        item,
+        previousItem,
       );
     };
 
@@ -1834,7 +1841,7 @@ export function HomeScreen({
       });
     });
 
-    slotNotifications.forEach((message) => {
+    slotNotifications.forEach(({ message }) => {
       actions.addNotification(message, 'normal', 'item', true, {
         rarity: 'common',
         isSuperRareItem: false,
