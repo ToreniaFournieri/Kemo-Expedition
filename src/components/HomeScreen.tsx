@@ -1697,6 +1697,63 @@ export function HomeScreen({
       return aJewel.key === bJewel.key && aJewel.rank === bJewel.rank;
     };
 
+    const getEquipmentEntityKey = (item: Item): string => {
+      const jewelSuffix = item.jewel ? `:${item.jewel.key}:${item.jewel.rank}` : '';
+      return `${getVariantKey(item)}${jewelSuffix}`;
+    };
+
+    const collectEquipmentDiff = (before: Array<Item | null>, after: Array<Item | null>) => {
+      const beforeCounts = new Map<string, { count: number; item: Item }>();
+      const afterCounts = new Map<string, { count: number; item: Item }>();
+
+      before.forEach((item) => {
+        if (!item) return;
+        const key = getEquipmentEntityKey(item);
+        const existing = beforeCounts.get(key);
+        if (existing) {
+          existing.count += 1;
+        } else {
+          beforeCounts.set(key, { count: 1, item });
+        }
+      });
+
+      after.forEach((item) => {
+        if (!item) return;
+        const key = getEquipmentEntityKey(item);
+        const existing = afterCounts.get(key);
+        if (existing) {
+          existing.count += 1;
+        } else {
+          afterCounts.set(key, { count: 1, item });
+        }
+      });
+
+      const removedItems: Item[] = [];
+      const addedItems: Item[] = [];
+      const allKeys = new Set([...beforeCounts.keys(), ...afterCounts.keys()]);
+
+      allKeys.forEach((key) => {
+        const beforeEntry = beforeCounts.get(key);
+        const afterEntry = afterCounts.get(key);
+        const beforeCount = beforeEntry?.count ?? 0;
+        const afterCount = afterEntry?.count ?? 0;
+
+        if (beforeCount > afterCount && beforeEntry) {
+          for (let i = 0; i < beforeCount - afterCount; i += 1) {
+            removedItems.push(beforeEntry.item);
+          }
+        }
+
+        if (afterCount > beforeCount && afterEntry) {
+          for (let i = 0; i < afterCount - beforeCount; i += 1) {
+            addedItems.push(afterEntry.item);
+          }
+        }
+      });
+
+      return { removedItems, addedItems };
+    };
+
     const addItemToSimulatedInventory = (item: Item) => {
       const key = getVariantKey(item);
       const existing = simulatedInventory[key];
@@ -2027,22 +2084,38 @@ export function HomeScreen({
         });
 
         if (autoEquipmentMode === 2 && memoryDEquipmentSlots) {
-          simulatedEquipmentSlots.forEach((equippedItem, slotIndex) => {
-            if (!equippedItem) return;
-
+          const hasSlotChange = simulatedEquipmentSlots.some((equippedItem, slotIndex) => {
             const previousItem = memoryDEquipmentSlots[slotIndex] ?? null;
-            if (areEquipmentEntitiesEqual(previousItem, equippedItem)) return;
+            return !areEquipmentEntitiesEqual(previousItem, equippedItem);
+          });
+          if (!hasSlotChange) return;
 
+          const { removedItems, addedItems } = collectEquipmentDiff(memoryDEquipmentSlots, simulatedEquipmentSlots);
+
+          const replacementCount = Math.min(removedItems.length, addedItems.length);
+          for (let index = 0; index < replacementCount; index += 1) {
             queueAutoEquipmentNotification(
               party.name,
               character.name,
               character.id,
-              slotIndex,
-              equippedItem,
-              previousItem,
+              index,
+              addedItems[index],
+              removedItems[index],
               partyIndex,
             );
-          });
+          }
+
+          for (let index = replacementCount; index < addedItems.length; index += 1) {
+            queueAutoEquipmentNotification(
+              party.name,
+              character.name,
+              character.id,
+              replacementCount * 1000 + index,
+              addedItems[index],
+              null,
+              partyIndex,
+            );
+          }
         }
       });
     });
