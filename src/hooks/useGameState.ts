@@ -78,6 +78,7 @@ import {
 import { calculateExperience, getXpToNextLevel } from '../game/partyLevel';
 import { MAX_LEVEL } from '../types';
 import { createEnvironmentStorageKey, getEnvironmentId } from '../game/environment';
+import { DIARY_LOG_RETENTION_LIMIT } from '../game/diary';
 import { computeCharacterStats } from '../game/characterComputation';
 import {
   getShopItemPrice,
@@ -667,11 +668,13 @@ function loadSavedState(): GameState | null {
           if (!Array.isArray(party.diaryLogs)) party.diaryLogs = [];
           if (typeof party.pendingDiaryLog === 'undefined') party.pendingDiaryLog = null;
           if (typeof party.hasUnreadDiary !== 'boolean') party.hasUnreadDiary = false;
-          party.diaryLogs = party.diaryLogs.map((log: DiaryLog) => ({
-            ...log,
-            triggers: Array.isArray(log.triggers) ? log.triggers : [],
-            isRead: typeof log.isRead === 'boolean' ? log.isRead : !party.hasUnreadDiary,
-          }));
+          party.diaryLogs = party.diaryLogs
+            .map((log: DiaryLog) => ({
+              ...log,
+              triggers: Array.isArray(log.triggers) ? log.triggers : [],
+              isRead: typeof log.isRead === 'boolean' ? log.isRead : !party.hasUnreadDiary,
+            }))
+            .slice(0, DIARY_LOG_RETENTION_LIMIT);
           party.hasUnreadDiary = party.diaryLogs.some((log: DiaryLog) => !log.isRead);
           party.diarySettings = getDiarySettingsWithDefaults(party.diarySettings);
           if (typeof party.currentHp !== 'number') {
@@ -2110,7 +2113,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...(unlockDiaryLog ? [unlockDiaryLog] : []),
         ...(pendingDiaryLog ? [pendingDiaryLog] : []),
         ...(party.diaryLogs ?? []),
-      ].slice(0, 24);
+      ].slice(0, DIARY_LOG_RETENTION_LIMIT);
 
       let nextLevel = party.level;
       let nextExperience = party.experience;
@@ -2321,7 +2324,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const nextDiaryLogs: DiaryLog[] = [
         sideQuestDiaryLog,
         ...(currentParty.diaryLogs ?? []),
-      ].slice(0, 24);
+      ].slice(0, DIARY_LOG_RETENTION_LIMIT);
       updatedParties[action.partyIndex] = {
         ...currentParty,
         sideQuest: null,

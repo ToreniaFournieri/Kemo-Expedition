@@ -1,0 +1,1 @@
+export const DIARY_LOG_RETENTION_LIMIT = 24;

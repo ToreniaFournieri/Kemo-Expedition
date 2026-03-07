@@ -21,6 +21,7 @@ import { buildGodRuntimeEnemy } from '../game/godEnemy';
 import { DEITY_OPTIONS, getDeityEffectDescription, getDeityKey, getDeityRank, getNextRankDonationRequirement, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { getXpToNextLevel } from '../game/partyLevel';
 import { createEnvironmentStorageKey, getEnvLabel, getEnvironmentId } from '../game/environment';
+import { DIARY_LOG_RETENTION_LIMIT } from '../game/diary';
 import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, getShopRefreshPrice, getNextShopRefreshDate, countElapsedShopRefreshes } from '../game/shop';
 import { calculateItemSellPrice } from '../game/pricing';
 import { NotificationToast } from './NotificationToast';
@@ -6111,7 +6112,7 @@ function DiaryTab({
       }))
     )
     .sort((a, b) => b.createdAt - a.createdAt)
-    .slice(0, 24);
+    .slice(0, DIARY_LOG_RETENTION_LIMIT);
 
   const getDiaryTitle = (triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'sideQuest' | 'unlock'>) => {
     if (triggers.includes('defeat') && triggers.length === 1) return '敗北の記録';
