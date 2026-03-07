@@ -168,6 +168,7 @@ const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.sleeping', 'q.exercise', 'q.heal
 const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
 const AFK_MAX_ELAPSED_MS = 1800 * 60 * 1000;
 const AFK_BACKGROUND_CHUNK_MS = 120 * 1000;
+
 const HEADER_HEIGHT_CLASS = 'pt-[118px]';
 type GameMode = 'm.kemo' | 'm.luna';
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
@@ -1600,6 +1601,7 @@ export function HomeScreen({
   const afkSimulationAnchorRef = useRef<number | null>(null);
   const afkRecoveryTotalMsRef = useRef(0);
   const previousPendingAfkMsRef = useRef(0);
+  const shouldRebuildPartyCyclesAfterAfkRef = useRef(false);
 
   useEffect(() => {
     latestPartiesRef.current = state.parties;
@@ -2189,6 +2191,28 @@ export function HomeScreen({
 
   useEffect(() => {
     if (pendingAfkMs > 0) return;
+
+    if (shouldRebuildPartyCyclesAfterAfkRef.current) {
+      const now = Date.now();
+      const autoRepeatEnabled = autoRepeatEnabledRef.current;
+      setPartyCycles(() => {
+        const next: Record<number, PartyCycleRuntime> = {};
+        latestPartiesRef.current.forEach((party, partyIndex) => {
+          const nextState: PartyCycleState = autoRepeatEnabled ? 'move' : 'idle';
+          next[partyIndex] = {
+            state: nextState,
+            stateStartedAt: now,
+            durationMs: nextState === 'move' ? getPartyTravelDurationMs(party, 'move') : 1000,
+            isCurrentExpeditionGodsBattle: false,
+            skipFeastThisCycle: false,
+            skipSleepThisCycle: false,
+          };
+        });
+        return next;
+      });
+      shouldRebuildPartyCyclesAfterAfkRef.current = false;
+    }
+
     afkSimulationAnchorRef.current = null;
     afkRecoveryTotalMsRef.current = 0;
   }, [pendingAfkMs]);
@@ -2258,22 +2282,7 @@ export function HomeScreen({
         afkRecoveryTotalMsRef.current = next;
         return next;
       });
-      setPartyCycles(() => {
-        const resetAt = now;
-        const next: Record<number, PartyCycleRuntime> = {};
-        parties.forEach((party, partyIndex) => {
-          const restartState: PartyCycleState = autoRepeatEnabled ? 'move' : 'idle';
-          next[partyIndex] = {
-            state: restartState,
-            stateStartedAt: resetAt,
-            durationMs: restartState === 'move' ? getPartyTravelDurationMs(party, 'move') : 1000,
-            isCurrentExpeditionGodsBattle: false,
-            skipFeastThisCycle: false,
-            skipSleepThisCycle: false,
-          };
-        });
-        return next;
-      });
+      shouldRebuildPartyCyclesAfterAfkRef.current = true;
       lastCheckpointAtRef.current = now;
       return;
     }
