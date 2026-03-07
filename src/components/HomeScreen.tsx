@@ -1865,6 +1865,28 @@ export function HomeScreen({
       return options[0]?.[0] ?? null;
     };
 
+    const compareMemoryCJewelPriority = (
+      a: { key: JewelKey; rank: number },
+      b: { key: JewelKey; rank: number },
+    ): number => {
+      const rankDiff = b.rank - a.rank;
+      if (rankDiff !== 0) return rankDiff;
+      return a.key.localeCompare(b.key);
+    };
+
+    const compareJewelAttachTarget = (a: Item, b: Item): number => {
+      const enhancementDiff = b.enhancement - a.enhancement;
+      if (enhancementDiff !== 0) return enhancementDiff;
+
+      const superRareDiff = b.superRare - a.superRare;
+      if (superRareDiff !== 0) return superRareDiff;
+
+      const coreConceptDiff = getCoreConceptValue(b) - getCoreConceptValue(a);
+      if (coreConceptDiff !== 0) return coreConceptDiff;
+
+      return compareItemsByTierAndEnhancement(b, a);
+    };
+
     state.parties.forEach((party, partyIndex) => {
       if (targetPartyIndexSet && !targetPartyIndexSet.has(partyIndex)) return;
 
@@ -1877,10 +1899,15 @@ export function HomeScreen({
         const priorities = AUTO_EQUIPMENT_PRIORITY_BY_CLASS[character.mainClassId] ?? AUTO_EQUIPMENT_PRIORITY_BY_CLASS.fighter;
         const { maxEquipSlots } = computeCharacterStats(character, party.level);
         const simulatedEquipmentSlots = Array.from({ length: maxEquipSlots }, (_, index) => character.equipment[index] ?? null);
+        const memoryCJewelsByCategory: Partial<Record<ItemCategory, Array<{ key: JewelKey; rank: number }>>> = {};
 
         if (autoEquipmentMode === 2) {
           simulatedEquipmentSlots.forEach((equippedItem, slotIndex) => {
             if (!equippedItem) return;
+            if (equippedItem.jewel) {
+              const currentCategoryJewels = memoryCJewelsByCategory[equippedItem.category] ?? [];
+              memoryCJewelsByCategory[equippedItem.category] = [...currentCategoryJewels, equippedItem.jewel];
+            }
             addItemToSimulatedInventory(equippedItem);
             actions.equipItem(character.id, slotIndex, null, partyIndex);
             simulatedEquipmentSlots[slotIndex] = null;
@@ -1945,6 +1972,31 @@ export function HomeScreen({
             equippedItem,
             partyIndex,
           );
+        });
+
+        Object.entries(memoryCJewelsByCategory).forEach(([category, jewels]) => {
+          if (!jewels || jewels.length <= 0) return;
+
+          const sortedJewels = [...jewels].sort(compareMemoryCJewelPriority);
+          const attachTargets = simulatedEquipmentSlots
+            .map((item, slotIndex) => ({ item, slotIndex }))
+            .filter((entry): entry is { item: Item; slotIndex: number } => !!entry.item && entry.item.category === category)
+            .sort((a, b) => compareJewelAttachTarget(a.item, b.item));
+
+          const categoryAllowedJewels = new Set(JEWELS_BY_ITEM_CATEGORY[category as ItemCategory] ?? []);
+
+          let jewelIndex = 0;
+          attachTargets.forEach(({ slotIndex, item }) => {
+            while (jewelIndex < sortedJewels.length && !categoryAllowedJewels.has(sortedJewels[jewelIndex].key)) {
+              jewelIndex += 1;
+            }
+            if (jewelIndex >= sortedJewels.length) return;
+
+            const jewel = sortedJewels[jewelIndex];
+            jewelIndex += 1;
+            simulatedEquipmentSlots[slotIndex] = { ...item, jewel };
+            actions.attachJewel(character.id, slotIndex, jewel.key, jewel.rank, partyIndex);
+          });
         });
       });
     });
