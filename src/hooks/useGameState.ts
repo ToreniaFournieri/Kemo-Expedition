@@ -2110,7 +2110,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...(unlockDiaryLog ? [unlockDiaryLog] : []),
         ...(pendingDiaryLog ? [pendingDiaryLog] : []),
         ...(party.diaryLogs ?? []),
-      ].slice(0, 10);
+      ].slice(0, 24);
 
       let nextLevel = party.level;
       let nextExperience = party.experience;
@@ -2321,7 +2321,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const nextDiaryLogs: DiaryLog[] = [
         sideQuestDiaryLog,
         ...(currentParty.diaryLogs ?? []),
-      ].slice(0, 10);
+      ].slice(0, 24);
       updatedParties[action.partyIndex] = {
         ...currentParty,
         sideQuest: null,

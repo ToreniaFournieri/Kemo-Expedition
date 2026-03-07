@@ -6111,7 +6111,7 @@ function DiaryTab({
       }))
     )
     .sort((a, b) => b.createdAt - a.createdAt)
-    .slice(0, 10);
+    .slice(0, 24);
 
   const getDiaryTitle = (triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'sideQuest' | 'unlock'>) => {
     if (triggers.includes('defeat') && triggers.length === 1) return '敗北の記録';
