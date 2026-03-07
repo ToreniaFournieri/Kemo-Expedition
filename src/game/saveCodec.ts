@@ -1,7 +1,14 @@
 import { getItemById } from '../data/items';
-import { GameState, InventoryRecord, InventoryVariant, Item } from '../types';
+import { GameState, InventoryRecord, InventoryVariant, Item, RandomBag, WeightedBagEntry } from '../types';
 
 type ItemReference = Pick<Item, 'id' | 'enhancement' | 'superRare' | 'jewel'>;
+type CompactBagEntry = [number, number];
+
+type PersistedBagEntry = WeightedBagEntry | CompactBagEntry;
+
+type PersistedRandomBag = Omit<RandomBag, 'entries'> & {
+  entries: PersistedBagEntry[];
+};
 
 function toItemReference(item: Item): ItemReference {
   return {
@@ -44,6 +51,36 @@ function hydrateItem(item: Partial<Item>, keyHint?: string): Item {
   };
 }
 
+function compactBagEntries(bag: RandomBag): PersistedRandomBag {
+  return {
+    ...bag,
+    entries: bag.entries.map((entry) => [entry.id, entry.tickets]),
+  };
+}
+
+function isCompactBagEntry(entry: PersistedBagEntry): entry is CompactBagEntry {
+  return Array.isArray(entry)
+    && entry.length >= 2
+    && typeof entry[0] === 'number'
+    && typeof entry[1] === 'number';
+}
+
+function hydrateBagEntries(bag: PersistedRandomBag | RandomBag): RandomBag {
+  return {
+    ...bag,
+    entries: bag.entries.reduce<WeightedBagEntry[]>((acc, entry) => {
+      if (isCompactBagEntry(entry)) {
+        acc.push({ id: entry[0], tickets: entry[1] });
+        return acc;
+      }
+      if (entry && typeof entry.id === 'number' && typeof entry.tickets === 'number') {
+        acc.push({ id: entry.id, tickets: entry.tickets });
+      }
+      return acc;
+    }, []),
+  };
+}
+
 // SpecRef: 9 | Environment | serializeGameState
 export function serializeGameState(state: GameState): GameState {
   const compactInventory = Object.entries(state.global.inventory).reduce<InventoryRecord>((acc, [key, variant]) => {
@@ -56,12 +93,26 @@ export function serializeGameState(state: GameState): GameState {
 
   return {
     ...state,
+    bags: {
+      commonRewardBag: compactBagEntries(state.bags.commonRewardBag) as RandomBag,
+      commonEnhancementBag: compactBagEntries(state.bags.commonEnhancementBag) as RandomBag,
+      uncommonRewardBag: compactBagEntries(state.bags.uncommonRewardBag) as RandomBag,
+      eliteRareRewardBag: compactBagEntries(state.bags.eliteRareRewardBag) as RandomBag,
+      bossRareRewardBag: compactBagEntries(state.bags.bossRareRewardBag) as RandomBag,
+      mythicRareRewardBag: compactBagEntries(state.bags.mythicRareRewardBag) as RandomBag,
+      enhancementBag: compactBagEntries(state.bags.enhancementBag) as RandomBag,
+      superRareBag: compactBagEntries(state.bags.superRareBag) as RandomBag,
+      physicalThreatBag: compactBagEntries(state.bags.physicalThreatBag) as RandomBag,
+      magicalThreatBag: compactBagEntries(state.bags.magicalThreatBag) as RandomBag,
+      sideQuestBag: compactBagEntries(state.bags.sideQuestBag) as RandomBag,
+    },
     global: {
       ...state.global,
       inventory: compactInventory,
     },
     parties: state.parties.map((party) => ({
       ...party,
+      sleepinessOfPartyBag: compactBagEntries(party.sleepinessOfPartyBag) as RandomBag,
       characters: party.characters.map((character) => ({
         ...character,
         equipment: character.equipment.map((item) => (item ? (toItemReference(item) as Item) : null)),
@@ -83,12 +134,26 @@ export function hydrateGameState(state: GameState): GameState {
 
   return {
     ...state,
+    bags: {
+      commonRewardBag: hydrateBagEntries(state.bags.commonRewardBag),
+      commonEnhancementBag: hydrateBagEntries(state.bags.commonEnhancementBag),
+      uncommonRewardBag: hydrateBagEntries(state.bags.uncommonRewardBag),
+      eliteRareRewardBag: hydrateBagEntries(state.bags.eliteRareRewardBag),
+      bossRareRewardBag: hydrateBagEntries(state.bags.bossRareRewardBag),
+      mythicRareRewardBag: hydrateBagEntries(state.bags.mythicRareRewardBag),
+      enhancementBag: hydrateBagEntries(state.bags.enhancementBag),
+      superRareBag: hydrateBagEntries(state.bags.superRareBag),
+      physicalThreatBag: hydrateBagEntries(state.bags.physicalThreatBag),
+      magicalThreatBag: hydrateBagEntries(state.bags.magicalThreatBag),
+      sideQuestBag: hydrateBagEntries(state.bags.sideQuestBag),
+    },
     global: {
       ...state.global,
       inventory: hydratedInventory,
     },
     parties: state.parties.map((party) => ({
       ...party,
+      sleepinessOfPartyBag: hydrateBagEntries(party.sleepinessOfPartyBag),
       characters: party.characters.map((character) => ({
         ...character,
         equipment: character.equipment.map((item) => (item ? hydrateItem(item) : null)),

@@ -97,6 +97,7 @@ import {
   removeJewelFromInventory,
   getJewelNameByRank,
 } from '../game/jewel';
+import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
 
 const BUILD_NUMBER = 1;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
@@ -589,7 +590,7 @@ function loadSavedState(): GameState | null {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      const parsed = JSON.parse(saved);
+      const parsed = JSON.parse(decodePersistedState(saved));
       // Validate it has required properties and migrate legacy saves.
       const hasParties = Array.isArray(parsed?.parties);
       const hasBags = parsed?.bags && typeof parsed.bags === 'object';
@@ -780,7 +781,8 @@ function loadSavedState(): GameState | null {
 
 function saveState(state: GameState): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeGameState(state)));
+    const payload = JSON.stringify(serializeGameState(state));
+    localStorage.setItem(STORAGE_KEY, encodePersistedState(payload));
 
   } catch (e) {
     console.error('Failed to save state:', e);
