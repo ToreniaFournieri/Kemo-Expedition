@@ -767,8 +767,6 @@ HP: 312                 クラス: 魔法使い
 
 **Mode select (モード切替)**
 
-- Switch to 自動装備: ON/OFF(Default:ON)
-
 - Switch to 自動周回: ON/OFF (Default:ON )
 
 - Switch to `m.kemo`ケモ and `m.luna`ルナ(高難度) . Default: `m.kemo`
