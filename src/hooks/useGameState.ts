@@ -106,10 +106,15 @@ const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.sleeping', 'q.exercise', 'q.heal
 
 const PARTY_UNLOCK_BY_GOD_NAME: Record<string, number> = {
   Garv: 2,
+  'ガーヴ': 2,
   'Kyōen': 3,
+  'キョウエン': 3,
   Dolvar: 4,
+  'ドルヴァ': 4,
   Miora: 5,
+  'ミオラ': 5,
   Rondel: 6,
+  'ロンデル': 6,
 };
 
 const UNLOCKABLE_DEITY_BY_GOD_NAME: Record<string, string> = {
