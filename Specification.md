@@ -324,8 +324,8 @@ Party.`d.HP` =
 - No other policy exist in this version.
 
 #### 3.6.1 Removes all equipment
+- Record the **jewels** of each item category as **Memory C**.
 - Remove all of its equipment. (this only works when `m.auto_equipment` is FULL)
-
 
 #### 3.6.2 Equipping into empty slots
 - When a character has one or more empty equipment slots, auto-equipment selects an item category based on the class’s ideal equipment build order.
@@ -336,7 +336,7 @@ Party.`d.HP` =
 - Example:
   - If a Duelist already has two `i.sword` items equipped, the system evaluates the order and selects the next missing categories.
   - If the 3rd and 4th slots are empty, the selected categories will be:
-    -	3rd slot → `i.gauntlet`
+    - 3rd slot → `i.gauntlet`
     - 4th slot → `i.armor`
   - because these are the earliest categories in the order that are not yet satisfied.
 
@@ -475,6 +475,10 @@ Party.`d.HP` =
 
 4. **Repeat**
    - Repeat Step 2 and Step 3 until all potential equipment slots for that item category have been evaluated or no eligible items remain.
+
+5. **Jewel allocation**
+   - If there is data in Memory C,
+   - Set Jewels to each item category, higher tier jewel to higher enhancement and super rare item.
 
 #### 3.6.3 Upgrading existing equipment
 - If a party member already has an item equipped, and another eligible item (same item ID) exists with a higher enhancement, the equipped item is replaced.
