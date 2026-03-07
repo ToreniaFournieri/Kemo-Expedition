@@ -1597,7 +1597,7 @@ export function HomeScreen({
   const [expandedBestiaryEnemies, setExpandedBestiaryEnemies] = useState<Record<number, boolean>>({});
   const [bestiaryScrollTop, setBestiaryScrollTop] = useState(0);
   const [gameMode, setGameMode] = useState<GameMode>(() => getInitialGameMode(isLunaEnvironment));
-  const [isAutoEquipmentEnabled, setIsAutoEquipmentEnabled] = useState<boolean>(() => getInitialAutoEquipmentEnabled());
+  const [isAutoEquipmentEnabled] = useState<boolean>(() => getInitialAutoEquipmentEnabled());
   const tabScrollPositionsRef = useRef<Partial<Record<Tab, number>>>({});
   const tabContentRef = useRef<HTMLDivElement | null>(null);
 
@@ -3050,8 +3050,6 @@ export function HomeScreen({
             isLunaEnvironment={isLunaEnvironment}
             isAutoRepeatEnabled={isAutoRepeatEnabled}
             onSetAutoRepeatEnabled={setAutoRepeatEnabled}
-            isAutoEquipmentEnabled={isAutoEquipmentEnabled}
-            onSetAutoEquipmentEnabled={setIsAutoEquipmentEnabled}
           />
         )}
       </div>
@@ -6664,8 +6662,6 @@ function SettingTab({
   isLunaEnvironment,
   isAutoRepeatEnabled,
   onSetAutoRepeatEnabled,
-  isAutoEquipmentEnabled,
-  onSetAutoEquipmentEnabled,
 }: {
   gameState: GameState;
   deityDonations: Record<string, number>;
@@ -6693,8 +6689,6 @@ function SettingTab({
   isLunaEnvironment: boolean;
   isAutoRepeatEnabled: boolean;
   onSetAutoRepeatEnabled: (enabled: boolean) => void;
-  isAutoEquipmentEnabled: boolean;
-  onSetAutoEquipmentEnabled: Dispatch<SetStateAction<boolean>>;
 }) {
   type DivineBureauPanelKey = 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'bestiary' | 'superRare' | 'gameSetting';
   const DIVINE_BUREAU_PANEL_STORAGE_KEY = 'kemo-expedition.divine-bureau.panel-expanded';
@@ -7842,26 +7836,6 @@ function SettingTab({
         {renderDivineBureauPanelHeader('modeSelect', 'モード切替')}
         {divineBureauPanelExpanded.modeSelect && <div className="mt-3 space-y-4">
           <div className="space-y-2">
-            <button
-              type="button"
-              role="switch"
-              aria-checked={isAutoEquipmentEnabled}
-              onClick={() => onSetAutoEquipmentEnabled(!isAutoEquipmentEnabled)}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">自動装備</span>
-                <span className="flex items-center gap-2">
-                  <span className={`text-xs font-semibold ${isAutoEquipmentEnabled ? 'text-sub' : 'text-gray-500'}`}>
-                    {isAutoEquipmentEnabled ? 'ON' : 'OFF'}
-                  </span>
-                  <span className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${isAutoEquipmentEnabled ? 'bg-sub' : 'bg-gray-300'}`}>
-                    <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${isAutoEquipmentEnabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
-                  </span>
-                </span>
-              </div>
-            </button>
-
             <button
               type="button"
               role="switch"
