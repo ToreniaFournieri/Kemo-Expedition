@@ -3468,21 +3468,7 @@ function PartyTab({
   const normalizedDisplayedDeityName = normalizeDeityName(displayedDeityName);
   const displayedDeityDonation = deityDonations[normalizedDisplayedDeityName] ?? 0;
   const equippedItemCount = char.equipment.filter((item) => item != null).length;
-  const hasNoEquipment = equippedItemCount === 0;
   const autoEquipmentMode = normalizeAutoEquipmentMode(char.autoEquipmentMode);
-
-  const handleRemoveAllEquipment = () => {
-    if (hasNoEquipment) return;
-    const shouldRemove = window.confirm('全ての装備を解除します。よろしいですか？');
-    if (!shouldRemove) return;
-
-    Array.from({ length: stats.maxEquipSlots }).forEach((_, slotIndex) => {
-      if (char.equipment[slotIndex]) {
-        onEquipItem(char.id, slotIndex, null);
-      }
-    });
-    setSelectingSlot(null);
-  };
 
   const handleAutoEquipmentModeCycle = () => {
     const nextMode = ((autoEquipmentMode + 1) % 3) as AutoEquipmentMode;
@@ -4684,15 +4670,6 @@ function PartyTab({
                 ?
               </button>
             </div>
-            {!hasNoEquipment && (
-              <button
-                type="button"
-                onClick={handleRemoveAllEquipment}
-                className="text-xs font-semibold text-accent hover:opacity-80"
-              >
-                全装備解除
-              </button>
-            )}
           </div>
         </div>
         {showAutoEquipmentHelp && autoEquipmentHelpPosition && (
