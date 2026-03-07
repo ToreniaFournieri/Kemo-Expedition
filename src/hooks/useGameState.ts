@@ -637,6 +637,17 @@ function loadSavedState(): GameState | null {
           party.expeditionDepthLimit = getExpeditionDepthLimitWithDefault(party.expeditionDepthLimit);
           if (typeof party.pendingProfit !== 'number') party.pendingProfit = 0;
           if (typeof party.expeditionRewardsPending !== 'boolean') party.expeditionRewardsPending = false;
+          if (!party.pendingUnlockState || typeof party.pendingUnlockState !== 'object') {
+            party.pendingUnlockState = null;
+          } else {
+            const deityNames = Array.isArray(party.pendingUnlockState.deityNames)
+              ? normalizeUnlockedDeities(party.pendingUnlockState.deityNames)
+              : [];
+            const partySlotCount = typeof party.pendingUnlockState.partySlotCount === 'number'
+              ? Math.max(1, Math.min(defaultParties.length, Math.floor(party.pendingUnlockState.partySlotCount)))
+              : 1;
+            party.pendingUnlockState = { deityNames, partySlotCount };
+          }
           if (typeof party.deityGold !== 'number') party.deityGold = 0;
           party.expeditionStats = getExpeditionStatsWithDefaults(party.expeditionStats);
           party.sleepinessOfPartyBag = normalizeSleepinessPartyBag(party.sleepinessOfPartyBag ?? createSleepinessPartyBag());
@@ -734,6 +745,7 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
     currentHp: partyStats.hp,
     pendingProfit: 0,
     expeditionRewardsPending: false,
+    pendingUnlockState: null,
     deityGold: 0,
     expeditionStats: getExpeditionStatsWithDefaults(party.expeditionStats),
     sleepinessOfPartyBag: normalizeSleepinessPartyBag(party.sleepinessOfPartyBag ?? createSleepinessPartyBag()),
@@ -803,6 +815,7 @@ function createInitialParty() {
     currentHp: 0,
     pendingProfit: 0,
     expeditionRewardsPending: false,
+    pendingUnlockState: null,
     deityGold: 0,
     lastExpeditionLog: null,
     pendingDiaryLog: null,
@@ -853,6 +866,7 @@ function createSecondParty() {
     currentHp: 0,
     pendingProfit: 0,
     expeditionRewardsPending: false,
+    pendingUnlockState: null,
     deityGold: 0,
     lastExpeditionLog: null,
     pendingDiaryLog: null,
@@ -903,6 +917,7 @@ function createThirdParty() {
     currentHp: 0,
     pendingProfit: 0,
     expeditionRewardsPending: false,
+    pendingUnlockState: null,
     deityGold: 0,
     lastExpeditionLog: null,
     pendingDiaryLog: null,
@@ -953,6 +968,7 @@ function createFourthParty() {
     currentHp: 0,
     pendingProfit: 0,
     expeditionRewardsPending: false,
+    pendingUnlockState: null,
     deityGold: 0,
     lastExpeditionLog: null,
     pendingDiaryLog: null,
@@ -1003,6 +1019,7 @@ function createFifthParty() {
     currentHp: 0,
     pendingProfit: 0,
     expeditionRewardsPending: false,
+    pendingUnlockState: null,
     deityGold: 0,
     lastExpeditionLog: null,
     pendingDiaryLog: null,
@@ -1053,6 +1070,7 @@ function createSixthParty() {
     currentHp: 0,
     pendingProfit: 0,
     expeditionRewardsPending: false,
+    pendingUnlockState: null,
     deityGold: 0,
     lastExpeditionLog: null,
     pendingDiaryLog: null,
@@ -1997,18 +2015,24 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         },
       };
 
-      let nextUnlockedDeities = normalizeUnlockedDeities(state.global.unlockedDeities);
-      let nextUnlockedPartySlots = state.parties.length;
-      const unlockedState = getUnlockedStateFromEntries(entries, nextUnlockedDeities, nextUnlockedPartySlots);
-      nextUnlockedDeities = unlockedState.unlockedDeities;
-      nextUnlockedPartySlots = Math.max(1, Math.min(6, unlockedState.unlockedPartySlots));
+      const currentUnlockedDeities = normalizeUnlockedDeities(state.global.unlockedDeities);
+      const currentUnlockedPartySlots = state.parties.length;
+      const unlockedState = getUnlockedStateFromEntries(entries, currentUnlockedDeities, currentUnlockedPartySlots);
+      const pendingUnlockState = (
+        unlockedState.unlockedDeities.length > currentUnlockedDeities.length
+        || unlockedState.unlockedPartySlots > currentUnlockedPartySlots
+      )
+        ? {
+            deityNames: unlockedState.unlockedDeities,
+            partySlotCount: Math.max(1, Math.min(6, unlockedState.unlockedPartySlots)),
+          }
+        : null;
 
-      const defaultParties = createDefaultParties();
       const nextParties = [...updatedParties];
-      while (nextParties.length < nextUnlockedPartySlots) {
-        const nextDefaultParty = createUnlockedPartyWithAvailableDeity(defaultParties[nextParties.length], nextParties);
-        nextParties.push(nextDefaultParty);
-      }
+      nextParties[action.partyIndex] = {
+        ...nextParties[action.partyIndex],
+        pendingUnlockState,
+      };
 
       return {
         ...state,
@@ -2018,7 +2042,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...state.global,
           inventory: finalInventory,
           gold: finalGold,
-          unlockedDeities: nextUnlockedDeities,
         },
       };
     }
@@ -2053,9 +2076,33 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         hasUnreadDiary: nextDiaryLogs.some((diaryLog) => !diaryLog.isRead),
       };
 
+      let nextGlobal = state.global;
+      const pendingUnlockState = party.pendingUnlockState;
+      if (pendingUnlockState) {
+        const nextUnlockedDeities = normalizeUnlockedDeities(pendingUnlockState.deityNames);
+        const nextUnlockedPartySlots = Math.max(1, Math.min(6, pendingUnlockState.partySlotCount));
+        const defaultParties = createDefaultParties();
+
+        while (updatedParties.length < nextUnlockedPartySlots) {
+          const nextDefaultParty = createUnlockedPartyWithAvailableDeity(defaultParties[updatedParties.length], updatedParties);
+          updatedParties.push(nextDefaultParty);
+        }
+
+        updatedParties[action.partyIndex] = {
+          ...updatedParties[action.partyIndex],
+          pendingUnlockState: null,
+        };
+
+        nextGlobal = {
+          ...state.global,
+          unlockedDeities: nextUnlockedDeities,
+        };
+      }
+
       return {
         ...state,
         parties: updatedParties,
+        global: nextGlobal,
       };
     }
 
