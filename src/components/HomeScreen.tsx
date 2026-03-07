@@ -6098,8 +6098,9 @@ function DiaryTab({
     .sort((a, b) => b.createdAt - a.createdAt)
     .slice(0, 10);
 
-  const getDiaryTitle = (triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'sideQuest'>) => {
+  const getDiaryTitle = (triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'sideQuest' | 'unlock'>) => {
     if (triggers.includes('defeat') && triggers.length === 1) return '敗北の記録';
+    if (triggers.includes('unlock')) return '解放の記録';
     if (triggers.includes('sideQuest')) return 'サイドクエスト達成';
     if (triggers.includes('superRare')) return '超レア獲得の記録';
     if (triggers.includes('mythicRare')) return '神魔レア獲得の記録';
@@ -6111,10 +6112,17 @@ function DiaryTab({
 
   const getDiaryHeadline = (
     partyName: string,
-    triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'sideQuest'>,
+    triggers: Array<'defeat' | 'eliteRare' | 'bossRare' | 'mythicRare' | 'superRare' | 'sideQuest' | 'unlock'>,
     rewards: Item[],
-    sideQuestLabel?: string
+    sideQuestLabel?: string,
+    unlockHeadline?: string
   ) => {
+    if (triggers.includes('unlock')) {
+      return unlockHeadline
+        ? `[${partyName}] ${unlockHeadline}`
+        : `[${partyName}] 解放の記録`;
+    }
+
     if (triggers.includes('sideQuest')) {
       return sideQuestLabel
         ? `[${partyName}] サイドクエスト達成(${sideQuestLabel})`
@@ -6301,13 +6309,13 @@ function DiaryTab({
             >
               <span className="flex items-start justify-between gap-2">
                 <span className={`pr-2 ${diaryLog.isRead ? 'font-normal text-gray-500' : 'font-medium text-gray-900'}`}>
-                  {getDiaryHeadline(diaryLog.partyName, diaryLog.triggers, log.rewards, diaryLog.sideQuestLabel)}
+                  {getDiaryHeadline(diaryLog.partyName, diaryLog.triggers, log.rewards, diaryLog.sideQuestLabel, diaryLog.unlockHeadline)}
                 </span>
                 {!isSideQuestLog && <span className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>}
               </span>
 
               <span className="mt-1 flex items-center justify-between gap-2 text-xs text-gray-400">
-                <span className="truncate">{diaryLog.sideQuestDetail ?? log.dungeonName}</span>
+                <span className="truncate">{diaryLog.unlockDetail ?? diaryLog.sideQuestDetail ?? log.dungeonName}</span>
                 <span className="whitespace-nowrap text-right">{formatDiaryTimestamp(diaryLog.createdAt)}</span>
               </span>
             </button>
