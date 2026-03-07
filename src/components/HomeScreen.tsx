@@ -6747,28 +6747,9 @@ function SettingTab({
         version: versionTag,
         env: currentEnv,
         exportedAt: new Date().toISOString(),
-      },
-      saveData: serializeGameState(gameState),
-    };
-    downloadBackupFile(
-      JSON.stringify(payload, null, 2),
-      getBackupFileName('json'),
-      'application/json',
-    );
-    onAddNotification('バックアップをエクスポートしました', 'normal', 'item', true);
-  };
-
-  const handleExportCompressedBackup = () => {
-    const serializedSaveData = JSON.stringify(serializeGameState(gameState));
-    const payload = {
-      meta: {
-        app: 'Kemo-Expedition',
-        version: versionTag,
-        env: currentEnv,
-        exportedAt: new Date().toISOString(),
         format: 'compressed-v1',
       },
-      saveDataCompressed: encodePersistedState(serializedSaveData),
+      saveDataCompressed: encodePersistedState(JSON.stringify(serializeGameState(gameState))),
     };
 
     downloadBackupFile(
@@ -6776,7 +6757,7 @@ function SettingTab({
       getBackupFileName('compressed'),
       'application/json',
     );
-    onAddNotification('圧縮バックアップをエクスポートしました', 'normal', 'item', true);
+    onAddNotification('バックアップをエクスポートしました', 'normal', 'item', true);
   };
 
   const handleImportFile = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -7901,15 +7882,6 @@ function SettingTab({
             >
               バックアップをダウンロード
             </button>
-            <button
-              onClick={handleExportCompressedBackup}
-              className="w-full mt-2 py-2 bg-sub text-white rounded font-medium"
-            >
-              圧縮バックアップをダウンロード
-            </button>
-            <div className="text-xs text-gray-600 mt-2">
-              圧縮形式はファイルサイズを小さくできます（拡張子: .kemoz）。
-            </div>
           </div>
 
           <div>
