@@ -1523,6 +1523,25 @@ function getInitialAutoEquipmentEnabled(): boolean {
   return true;
 }
 
+type AutoEquipmentMode = 0 | 1 | 2;
+
+const AUTO_EQUIPMENT_MODE_LABEL: Record<AutoEquipmentMode, string> = {
+  0: '手動',
+  1: '補助',
+  2: '完全自動',
+};
+
+const AUTO_EQUIPMENT_HELP_LINES = [
+  '手動: 装備の付け替えが自動で変わることはない',
+  '補助: 上位の通常称号の同一装備がある場合に置き換える。空きスロットがある際に装備する (祈りフェーズ開始時)',
+  '完全自動: 現在の装備をすべて見直し、最適な装備構成になるよう自動で再装備する (祈りフェーズ開始時)',
+];
+
+function normalizeAutoEquipmentMode(mode: Character['autoEquipmentMode']): AutoEquipmentMode {
+  if (mode === 1 || mode === 2) return mode;
+  return 0;
+}
+
 const AUTO_EQUIPMENT_PRIORITY_BY_CLASS: Record<Character['mainClassId'], ItemCategory[]> = {
   duelist: ['sword', 'gauntlet', 'armor', 'robe', 'katana', 'armor', 'gauntlet', 'sword', 'armor', 'robe', 'sword'],
   ninja: ['sword', 'gauntlet', 'armor', 'robe', 'katana', 'sword', 'gauntlet', 'sword', 'armor', 'robe', 'sword'],
@@ -1852,9 +1871,21 @@ export function HomeScreen({
       party.characters.forEach((character) => {
         if (targetCharacterIdSet && !targetCharacterIdSet.has(character.id)) return;
 
+        const autoEquipmentMode = normalizeAutoEquipmentMode(character.autoEquipmentMode);
+        if (autoEquipmentMode === 0) return;
+
         const priorities = AUTO_EQUIPMENT_PRIORITY_BY_CLASS[character.mainClassId] ?? AUTO_EQUIPMENT_PRIORITY_BY_CLASS.fighter;
         const { maxEquipSlots } = computeCharacterStats(character, party.level);
         const simulatedEquipmentSlots = Array.from({ length: maxEquipSlots }, (_, index) => character.equipment[index] ?? null);
+
+        if (autoEquipmentMode === 2) {
+          simulatedEquipmentSlots.forEach((equippedItem, slotIndex) => {
+            if (!equippedItem) return;
+            addItemToSimulatedInventory(equippedItem);
+            actions.equipItem(character.id, slotIndex, null, partyIndex);
+            simulatedEquipmentSlots[slotIndex] = null;
+          });
+        }
         const memoryItemIds = new Set<number>();
         const memoryCBonusNames = new Set<string>();
         const emptySlotIndexes = simulatedEquipmentSlots
@@ -1930,7 +1961,6 @@ export function HomeScreen({
     const previousPartyCount = prevPartyCountRef.current;
     prevPartyCountRef.current = state.parties.length;
 
-    if (!autoEquipmentEnabledRef.current) return;
     if (state.parties.length <= previousPartyCount) return;
 
     const newlyUnlockedPartyIndexes = Array.from(
@@ -2169,7 +2199,6 @@ export function HomeScreen({
     const previousPendingAfkMs = previousPendingAfkMsRef.current;
     previousPendingAfkMsRef.current = pendingAfkMs;
 
-    if (!autoEquipmentEnabledRef.current) return;
     if (previousPendingAfkMs <= pendingAfkMs) return;
 
     runAutoEquipment();
@@ -2295,9 +2324,7 @@ export function HomeScreen({
               } else if (shouldSkipSleep || party.currentSleepiness === 0 || sleepDurationMs <= 100) {
                 updated.state = 'pray';
                 updated.durationMs = getStateDurationMs(party, 'pray');
-                if (autoEquipmentEnabledRef.current) {
-                  autoEquipmentPartyIndexes.add(partyIndex);
-                }
+                autoEquipmentPartyIndexes.add(partyIndex);
               } else {
                 updated.state = 'sleep';
                 updated.durationMs = sleepDurationMs;
@@ -2347,9 +2374,7 @@ export function HomeScreen({
               if (shouldSkipSleep || party.currentSleepiness === 0 || sleepDurationMs <= 100) {
                 updated.state = 'pray';
                 updated.durationMs = getStateDurationMs(party, 'pray');
-                if (autoEquipmentEnabledRef.current) {
-                  autoEquipmentPartyIndexes.add(partyIndex);
-                }
+                autoEquipmentPartyIndexes.add(partyIndex);
               } else {
                 updated.state = 'sleep';
                 updated.durationMs = sleepDurationMs;
@@ -2361,9 +2386,7 @@ export function HomeScreen({
               if (party.sideQuest?.type === 'q.sleeping' && updated.durationMs > 100) actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
               updated.state = 'pray';
               updated.durationMs = getStateDurationMs(party, 'pray');
-              if (autoEquipmentEnabledRef.current) {
-                autoEquipmentPartyIndexes.add(partyIndex);
-              }
+              autoEquipmentPartyIndexes.add(partyIndex);
             } else if (updated.state === 'pray') {
               const isNoFaith = isNoFaithDeity(party.deity.name);
               const donationRate = rollPercentInclusive(10, 33);
@@ -2895,7 +2918,6 @@ export function HomeScreen({
             onAddStatNotifications={actions.addStatNotifications}
             onSelectParty={actions.selectParty}
             onUpdatePartyDeity={actions.updatePartyDeity}
-            onAutoEquipCharacter={(characterId) => runAutoEquipment([state.selectedPartyIndex], [characterId])}
             inventory={state.global.inventory}
             jewels={state.global.jewels}
             deityDonations={state.global.deityDonations}
@@ -3008,7 +3030,6 @@ function PartyTab({
   onAddStatNotifications,
   onSelectParty,
   onUpdatePartyDeity,
-  onAutoEquipCharacter,
   inventory,
   jewels,
   deityDonations,
@@ -3030,7 +3051,6 @@ function PartyTab({
   onAddStatNotifications: (changes: Array<{ message: string; isPositive: boolean }>) => void;
   onSelectParty: (partyIndex: number) => void;
   onUpdatePartyDeity: (partyIndex: number, deityName: string) => void;
-  onAutoEquipCharacter: (characterId: number) => void;
   inventory: InventoryRecord;
   jewels: Record<string, number>;
   deityDonations: Record<string, number>;
@@ -3346,6 +3366,8 @@ function PartyTab({
   const [showEditConfirm, setShowEditConfirm] = useState(false);
   const [showBaseStatHelp, setShowBaseStatHelp] = useState(false);
   const [baseStatHelpPosition, setBaseStatHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [showAutoEquipmentHelp, setShowAutoEquipmentHelp] = useState(false);
+  const [autoEquipmentHelpPosition, setAutoEquipmentHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const [activeStatusHelpKey, setActiveStatusHelpKey] = useState<string | null>(null);
   const [activeStatusHelpPosition, setActiveStatusHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const [editingDeity, setEditingDeity] = useState(false);
@@ -3447,6 +3469,7 @@ function PartyTab({
   const displayedDeityDonation = deityDonations[normalizedDisplayedDeityName] ?? 0;
   const equippedItemCount = char.equipment.filter((item) => item != null).length;
   const hasNoEquipment = equippedItemCount === 0;
+  const autoEquipmentMode = normalizeAutoEquipmentMode(char.autoEquipmentMode);
 
   const handleRemoveAllEquipment = () => {
     if (hasNoEquipment) return;
@@ -3461,9 +3484,33 @@ function PartyTab({
     setSelectingSlot(null);
   };
 
-  const handleAutoEquipment = () => {
-    if (!hasNoEquipment) return;
-    onAutoEquipCharacter(char.id);
+  const handleAutoEquipmentModeCycle = () => {
+    const nextMode = ((autoEquipmentMode + 1) % 3) as AutoEquipmentMode;
+    onUpdateCharacter(char.id, { autoEquipmentMode: nextMode });
+  };
+
+  const handleAutoEquipmentHelpToggle = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    if (showAutoEquipmentHelp) {
+      setShowAutoEquipmentHelp(false);
+      setAutoEquipmentHelpPosition(null);
+      return;
+    }
+
+    const triggerRect = event.currentTarget.getBoundingClientRect();
+    const viewportPadding = 12;
+    const tooltipWidth = Math.min(360, window.innerWidth - viewportPadding * 2);
+    const left = Math.min(
+      Math.max(triggerRect.left, viewportPadding),
+      window.innerWidth - viewportPadding - tooltipWidth,
+    );
+
+    setAutoEquipmentHelpPosition({
+      top: triggerRect.bottom + 8,
+      left,
+      width: tooltipWidth,
+    });
+    setShowAutoEquipmentHelp(true);
   };
 
   const getEquipSlotReductionCount = (edits: Partial<Character> | null): number => {
@@ -3618,6 +3665,8 @@ function PartyTab({
     setBaseStatHelpPosition(null);
     setActiveStatusHelpKey(null);
     setShowBonusHelp(false);
+    setShowAutoEquipmentHelp(false);
+    setAutoEquipmentHelpPosition(null);
   }, [selectedCharacter, editingCharacter]);
 
   const xpToNextLevel = party.level < MAX_LEVEL ? Math.ceil(getXpToNextLevel(party.level)) : 0;
@@ -4618,15 +4667,24 @@ function PartyTab({
             <span className="text-xs text-gray-500">
               {formatNumber(equippedItemCount)} / {formatNumber(stats.maxEquipSlots)} スロット
             </span>
-            {hasNoEquipment ? (
+            <div className="flex items-center gap-1">
               <button
                 type="button"
-                onClick={handleAutoEquipment}
+                onClick={handleAutoEquipmentModeCycle}
                 className="text-xs font-semibold text-sub hover:opacity-80"
               >
-                自動装備
+                {AUTO_EQUIPMENT_MODE_LABEL[autoEquipmentMode]}
               </button>
-            ) : (
+              <button
+                type="button"
+                onClick={handleAutoEquipmentHelpToggle}
+                className="h-5 w-5 rounded-full border border-gray-300 text-[10px] font-bold text-gray-600"
+                aria-label="自動装備モードの説明"
+              >
+                ?
+              </button>
+            </div>
+            {!hasNoEquipment && (
               <button
                 type="button"
                 onClick={handleRemoveAllEquipment}
@@ -4637,6 +4695,20 @@ function PartyTab({
             )}
           </div>
         </div>
+        {showAutoEquipmentHelp && autoEquipmentHelpPosition && (
+          <div
+            className="fixed z-20 rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-1"
+            style={{
+              top: autoEquipmentHelpPosition.top,
+              left: autoEquipmentHelpPosition.left,
+              width: autoEquipmentHelpPosition.width,
+            }}
+          >
+            {AUTO_EQUIPMENT_HELP_LINES.map((line) => (
+              <div key={line}>{line}</div>
+            ))}
+          </div>
+        )}
       <div className="space-y-1">
         {(() => {
           // Build sorted list of equipment slots
