@@ -462,10 +462,8 @@ Party.`d.HP` =
 4. **Repeat**
    - Repeat Step 2 and Step 3 until all potential equipment slots for that item category have been evaluated or no eligible items remain.
 
-
-
 #### 3.6.3 Upgrading equipped items
-- If a party member already has an item equipped, and another eligible item of the same category exists with a higher enhancement, the equipped item is replaced.
+- If a party member already has an item equipped, and another eligible item (same item ID) exists with a higher enhancement, the equipped item is replaced.
 - Jewels socketed in the currently equipped item remain unchanged.
 - Only the equipment item itself is replaced.
 
