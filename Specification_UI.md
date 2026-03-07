@@ -536,7 +536,7 @@ PT4: (未開放:キョウエン 狡猾の神 撃破で開放)
 
 #### 8.6 Diary
 - When a party was defeated, got boss rare or mythic rare item, and acquiring super rare item, the diary updates. 
-- It keeps 10 battle logs. First, it is collapsed and expand to see the detail. (Same as 結果 log in expedition. )
+- It keeps 24 entry. First, it is collapsed and expand to see the detail. (Same as 結果 log in expedition. )
 - Top record is latest (default position) and bottom is older logs. 
 
 - Setting. 
