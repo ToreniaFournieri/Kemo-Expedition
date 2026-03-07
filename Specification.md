@@ -324,7 +324,7 @@ Party.`d.HP` =
 - No other policy exist in this version.
 
 #### 3.6.1 Removes all equipment
-- Record the **jewels** of each item category as **Memory C**.
+- Record the **jewel** assignments of each equipped item category as **Memory C**.
 - Remove all of its equipment. (this only works when `m.auto_equipment` is FULL)
 
 #### 3.6.2 Equipping into empty slots
@@ -477,8 +477,8 @@ Party.`d.HP` =
    - Repeat Step 2 and Step 3 until all potential equipment slots for that item category have been evaluated or no eligible items remain.
 
 5. **Jewel allocation**
-   - If there is data in Memory C,
-   - Set Jewels to each item category, higher tier jewel to higher enhancement and super rare item.
+  - If Memory C contains recorded jewel data, jewels are reassigned by item category.
+  - Higher-tier jewels are preferentially assigned to items with higher enhancement values and to super rare items.
 
 #### 3.6.3 Upgrading existing equipment
 - If a party member already has an item equipped, and another eligible item (same item ID) exists with a higher enhancement, the equipped item is replaced.
