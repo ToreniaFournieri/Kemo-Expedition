@@ -826,7 +826,7 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
     ...party,
     characters: party.characters.map((character) => ({
       ...character,
-      autoEquipmentMode: character.autoEquipmentMode ?? 0,
+      autoEquipmentMode: character.autoEquipmentMode ?? 1,
     })),
     currentHp: partyStats.hp,
     pendingProfit: 0,
@@ -880,7 +880,7 @@ function createInitialParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
-    autoEquipmentMode: 0,
+    autoEquipmentMode: 1,
     equipment: setup.equipmentIds.map((itemId) => ({
       ...getItemById(itemId)!,
       enhancement: 0,
@@ -936,7 +936,7 @@ function createSecondParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
-    autoEquipmentMode: 0,
+    autoEquipmentMode: 1,
     equipment: [],
   }));
 
@@ -988,7 +988,7 @@ function createThirdParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
-    autoEquipmentMode: 0,
+    autoEquipmentMode: 1,
     equipment: [],
   }));
 
@@ -1040,7 +1040,7 @@ function createFourthParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
-    autoEquipmentMode: 0,
+    autoEquipmentMode: 1,
     equipment: [],
   }));
 
@@ -1092,7 +1092,7 @@ function createFifthParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
-    autoEquipmentMode: 0,
+    autoEquipmentMode: 1,
     equipment: [],
   }));
 
@@ -1144,7 +1144,7 @@ function createSixthParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
-    autoEquipmentMode: 0,
+    autoEquipmentMode: 1,
     equipment: [],
   }));
 

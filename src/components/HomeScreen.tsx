@@ -1538,8 +1538,8 @@ const AUTO_EQUIPMENT_HELP_LINES = [
 ];
 
 function normalizeAutoEquipmentMode(mode: Character['autoEquipmentMode']): AutoEquipmentMode {
-  if (mode === 1 || mode === 2) return mode;
-  return 0;
+  if (mode === 0 || mode === 2) return mode;
+  return 1;
 }
 
 const AUTO_EQUIPMENT_PRIORITY_BY_CLASS: Record<Character['mainClassId'], ItemCategory[]> = {
