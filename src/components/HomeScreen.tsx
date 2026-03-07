@@ -32,6 +32,7 @@ import { createSideQuestBag, createSleepinessPartyBag, getBagEntryTickets, getBa
 import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRankValue, getJewelNameByRank, getJewelOwnedCount } from '../game/jewel';
 import { replaceCharacterEquipment } from '../game/equipment';
 import { resolveMagicProfile } from '../game/magic';
+import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -6720,12 +6721,23 @@ function SettingTab({
     );
   };
 
-  const getBackupFileName = (): string => {
+  const getBackupFileName = (format: 'json' | 'compressed' = 'json'): string => {
     const now = new Date();
     const yyyy = now.getFullYear();
     const mm = `${now.getMonth() + 1}`.padStart(2, '0');
     const dd = `${now.getDate()}`.padStart(2, '0');
-    return `Kemo-Expedition_Backup_${versionTag}_${currentEnv}_${yyyy}${mm}${dd}.json`;
+    const extension = format === 'compressed' ? 'kemoz' : 'json';
+    return `Kemo-Expedition_Backup_${versionTag}_${currentEnv}_${yyyy}${mm}${dd}.${extension}`;
+  };
+
+  const downloadBackupFile = (content: string, fileName: string, mimeType: string) => {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = fileName;
+    anchor.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleExportBackup = () => {
@@ -6738,14 +6750,33 @@ function SettingTab({
       },
       saveData: serializeGameState(gameState),
     };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = getBackupFileName();
-    anchor.click();
-    URL.revokeObjectURL(url);
+    downloadBackupFile(
+      JSON.stringify(payload, null, 2),
+      getBackupFileName('json'),
+      'application/json',
+    );
     onAddNotification('バックアップをエクスポートしました', 'normal', 'item', true);
+  };
+
+  const handleExportCompressedBackup = () => {
+    const serializedSaveData = JSON.stringify(serializeGameState(gameState));
+    const payload = {
+      meta: {
+        app: 'Kemo-Expedition',
+        version: versionTag,
+        env: currentEnv,
+        exportedAt: new Date().toISOString(),
+        format: 'compressed-v1',
+      },
+      saveDataCompressed: encodePersistedState(serializedSaveData),
+    };
+
+    downloadBackupFile(
+      JSON.stringify(payload),
+      getBackupFileName('compressed'),
+      'application/json',
+    );
+    onAddNotification('圧縮バックアップをエクスポートしました', 'normal', 'item', true);
   };
 
   const handleImportFile = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -6756,9 +6787,11 @@ function SettingTab({
     try {
       const rawText = await file.text();
       const parsed = JSON.parse(rawText) as unknown;
-      const source = parsed && typeof parsed === 'object' && 'saveData' in parsed
-        ? (parsed as { saveData: unknown }).saveData
-        : parsed;
+      const source = parsed && typeof parsed === 'object' && 'saveDataCompressed' in parsed
+        ? JSON.parse(decodePersistedState((parsed as { saveDataCompressed: string }).saveDataCompressed)) as unknown
+        : parsed && typeof parsed === 'object' && 'saveData' in parsed
+          ? (parsed as { saveData: unknown }).saveData
+          : parsed;
 
       if (!source || typeof source !== 'object') {
         window.alert('インポート失敗: 保存データ形式が不正です。');
@@ -7868,6 +7901,15 @@ function SettingTab({
             >
               バックアップをダウンロード
             </button>
+            <button
+              onClick={handleExportCompressedBackup}
+              className="w-full mt-2 py-2 bg-sub text-white rounded font-medium"
+            >
+              圧縮バックアップをダウンロード
+            </button>
+            <div className="text-xs text-gray-600 mt-2">
+              圧縮形式はファイルサイズを小さくできます（拡張子: .kemoz）。
+            </div>
           </div>
 
           <div>
@@ -7875,7 +7917,7 @@ function SettingTab({
             <input
               ref={importInputRef}
               type="file"
-              accept="application/json,.json"
+              accept="application/json,.json,.kemoz"
               onChange={handleImportFile}
               className="hidden"
             />
