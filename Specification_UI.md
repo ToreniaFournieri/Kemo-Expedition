@@ -561,6 +561,14 @@ line  gray text2: ヴァルンの樹林帯      02/12 20:28
 (Left-Aligned)         (Right-aligned)
 line 1: [PT1] サイドクエスト達成(散財1,000G)           
 line  gray text2: ウルサンの霊峰: 剛力の雅晶 を手に入れた     02/12 20:28
+(Left-Aligned)         (Right-aligned)
+line 1: [PT1] セイラン 再生の女神撃破          ▼
+line  gray text2: 信仰:再生の女神 解禁     02/12 21:28
+(Left-Aligned)         (Right-aligned)
+line 1: [PT1] ガーヴ 消耗の神撃破          ▼
+line  gray text2: 信仰:消耗の神 解禁、PT2解放     02/12 21:28
+
+
 ```
 
   
