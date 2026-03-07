@@ -1789,12 +1789,6 @@ export function HomeScreen({
       }
     };
 
-    const compareItemsForAutoEquipment = (a: Item, b: Item): number => {
-      const coreConceptDiff = getCoreConceptValue(a) - getCoreConceptValue(b);
-      if (coreConceptDiff !== 0) return coreConceptDiff;
-      return compareItemsByTierAndEnhancement(a, b);
-    };
-
     const getBestVariantKeyInCategory = (
       category: ItemCategory,
       memoryItemIds: Set<number>,
@@ -1829,22 +1823,22 @@ export function HomeScreen({
       return options[0]?.[0] ?? null;
     };
 
-    const getBestAlternativeVariantKey = (category: ItemCategory): string | null => {
+    const getBestUpgradeVariantKeyForItem = (equippedItem: Item): string | null => {
       const options = Object.entries(simulatedInventory)
         .filter(([, variant]) => {
-          if (variant.status !== 'owned' || variant.count <= 0 || variant.item.category !== category) return false;
-          const rarity = getItemRarityById(variant.item.id);
-          return rarity === 'uncommon' || rarity === 'eliteRare' || rarity === 'bossRare' || rarity === 'mythicRare';
+          if (variant.status !== 'owned' || variant.count <= 0) return false;
+          if (variant.item.id !== equippedItem.id) return false;
+          return variant.item.enhancement > equippedItem.enhancement;
         })
         .sort(([, a], [, b]) => {
-          const tierDiff = getItemTier(b.item) - getItemTier(a.item);
-          if (tierDiff !== 0) return tierDiff;
-
-          const idDiff = b.item.id - a.item.id;
-          if (idDiff !== 0) return idDiff;
-
           const enhancementDiff = b.item.enhancement - a.item.enhancement;
           if (enhancementDiff !== 0) return enhancementDiff;
+
+          const coreConceptDiff = getCoreConceptValue(b.item) - getCoreConceptValue(a.item);
+          if (coreConceptDiff !== 0) return coreConceptDiff;
+
+          const superRareDiff = b.item.superRare - a.item.superRare;
+          if (superRareDiff !== 0) return superRareDiff;
 
           return compareItemsByTierAndEnhancement(b.item, a.item);
         });
@@ -1895,12 +1889,10 @@ export function HomeScreen({
 
         simulatedEquipmentSlots.forEach((equippedItem, slotIndex) => {
           if (!equippedItem) return;
-          if (equippedItem.superRare >= 1 || getItemRarityById(equippedItem.id) !== 'common') return;
-          const itemKey = getBestVariantKeyInCategory(equippedItem.category, new Set<number>(), new Set<string>());
+          const itemKey = getBestUpgradeVariantKeyForItem(equippedItem);
           if (!itemKey) return;
           const variant = simulatedInventory[itemKey];
           if (!variant) return;
-          if (compareItemsForAutoEquipment(variant.item, equippedItem) <= 0) return;
 
           removeItemFromSimulatedInventory(itemKey);
           addItemToSimulatedInventory(equippedItem);
@@ -1922,54 +1914,6 @@ export function HomeScreen({
             equippedItem,
             partyIndex,
           );
-        });
-
-        const commonGroups = new Map<string, Array<{ slotIndex: number; item: Item }>>();
-        simulatedEquipmentSlots.forEach((item, slotIndex) => {
-          if (!item || item.superRare >= 1 || getItemRarityById(item.id) !== 'common') return;
-          const key = `${item.category}:${getItemTier(item)}`;
-          const group = commonGroups.get(key);
-          if (group) {
-            group.push({ slotIndex, item });
-          } else {
-            commonGroups.set(key, [{ slotIndex, item }]);
-          }
-        });
-
-        commonGroups.forEach((group) => {
-          if (group.length < 2) return;
-
-          const sortedGroup = [...group].sort((a, b) => compareItemsForAutoEquipment(b.item, a.item));
-          const duplicatesToReplace = sortedGroup.slice(1);
-
-          duplicatesToReplace.forEach(({ slotIndex, item: duplicateItem }) => {
-            const itemKey = getBestAlternativeVariantKey(duplicateItem.category);
-            if (!itemKey) return;
-
-            const variant = simulatedInventory[itemKey];
-            if (!variant) return;
-
-            removeItemFromSimulatedInventory(itemKey);
-            addItemToSimulatedInventory(duplicateItem);
-            const nextEquippedItem = duplicateItem.jewel
-              ? { ...variant.item, jewel: duplicateItem.jewel }
-              : variant.item;
-            simulatedEquipmentSlots[slotIndex] = nextEquippedItem;
-
-            actions.equipItem(character.id, slotIndex, itemKey, partyIndex);
-            if (duplicateItem.jewel) {
-              actions.attachJewel(character.id, slotIndex, duplicateItem.jewel.key, duplicateItem.jewel.rank, partyIndex);
-            }
-            queueAutoEquipmentNotification(
-              party.name,
-              character.name,
-              character.id,
-              slotIndex,
-              nextEquippedItem,
-              duplicateItem,
-              partyIndex,
-            );
-          });
         });
       });
     });
