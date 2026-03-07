@@ -201,6 +201,45 @@ function getUnlockedStateFromEntries(entries: ExpeditionLogEntry[], initialUnloc
   return { unlockedDeities, unlockedPartySlots };
 }
 
+
+function getUnlockDiaryLog(
+  log: ExpeditionLog | null,
+  previousUnlockedDeities: string[],
+  previousPartySlots: number,
+  pendingUnlockState: NonNullable<Party['pendingUnlockState']>,
+  createdAt: number,
+): DiaryLog | null {
+  if (!log) return null;
+
+  const newDeityNames = normalizeUnlockedDeities(pendingUnlockState.deityNames)
+    .filter((deityName) => !previousUnlockedDeities.includes(deityName));
+  const unlockedPartySlot = pendingUnlockState.partySlotCount > previousPartySlots
+    ? pendingUnlockState.partySlotCount
+    : null;
+  if (newDeityNames.length === 0 && !unlockedPartySlot) return null;
+
+  const godVictoryEntry = [...log.entries]
+    .reverse()
+    .find((entry) => entry.outcome === 'victory' && entry.enemyName.includes('(神魔戦)'));
+
+  const godName = godVictoryEntry ? getGodNameFromLogEnemyName(godVictoryEntry.enemyName) : null;
+  const godProfile = godName ? getGodProfileForDungeon(log.dungeonId, log.dungeonName) : null;
+
+  const unlockDeityLabel = newDeityNames[0] ? `信仰:${normalizeDeityName(newDeityNames[0])} 解禁` : '';
+  const unlockPartyLabel = unlockedPartySlot ? `PT${unlockedPartySlot}解放` : '';
+  const unlockDetail = [unlockDeityLabel, unlockPartyLabel].filter(Boolean).join('、');
+
+  return {
+    id: `${createdAt}-${Math.random().toString(36).slice(2, 8)}`,
+    expeditionLog: log,
+    triggers: ['unlock'],
+    unlockHeadline: godProfile ? `${godProfile.displayName}撃破` : '神魔撃破',
+    unlockDetail,
+    createdAt,
+    isRead: false,
+  };
+}
+
 function getCycleDurationScale(): number {
   const env = getEnvironmentId();
   return env === 'dev' || env === 'qa' || env === 'luna' ? DEBUG_CYCLE_DURATION_SCALE : 1;
@@ -2051,9 +2090,22 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (!party) return state;
 
       const pendingDiaryLog = party.pendingDiaryLog;
-      const nextDiaryLogs = pendingDiaryLog
-        ? [pendingDiaryLog, ...(party.diaryLogs ?? [])].slice(0, 10)
-        : party.diaryLogs;
+      const pendingUnlockState = party.pendingUnlockState;
+      const createdAtBase = pendingDiaryLog?.createdAt ?? Date.now();
+      const unlockDiaryLog = pendingUnlockState
+        ? getUnlockDiaryLog(
+            party.lastExpeditionLog,
+            normalizeUnlockedDeities(state.global.unlockedDeities),
+            state.parties.length,
+            pendingUnlockState,
+            createdAtBase + 1,
+          )
+        : null;
+      const nextDiaryLogs = [
+        ...(unlockDiaryLog ? [unlockDiaryLog] : []),
+        ...(pendingDiaryLog ? [pendingDiaryLog] : []),
+        ...(party.diaryLogs ?? []),
+      ].slice(0, 10);
 
       let nextLevel = party.level;
       let nextExperience = party.experience;
@@ -2077,7 +2129,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
 
       let nextGlobal = state.global;
-      const pendingUnlockState = party.pendingUnlockState;
       if (pendingUnlockState) {
         const nextUnlockedDeities = normalizeUnlockedDeities(pendingUnlockState.deityNames);
         const nextUnlockedPartySlots = Math.max(1, Math.min(6, pendingUnlockState.partySlotCount));
