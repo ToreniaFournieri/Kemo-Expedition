@@ -313,6 +313,14 @@ Party.`d.HP` =
 - If `m.auto_equipment` is ON, each party member automatically equips items and upgrades their equipment at the begining of praying state.
 - Processing priority: Characters are processed sequentially in party order: PT1 Row1 → PT1 Row2 → … → PT1 Row6 → PT2 Row1 → PT2 Row2 → …
 
+- Policy:
+  - 3.6.1 Equipping into empty slots
+  - 3.6.2 Upgrading equipped items (within same item ID)
+- Item categories of already equipped items are not changed.
+- The system only fills empty slots or upgrades existing equipment without replacing it with a different item category.
+- No other policy exist in this version.
+  
+
 #### 3.6.1 Equipping into empty slots
 - When a character has one or more empty equipment slots, auto-equipment selects an item category based on the class’s ideal equipment build order.
 - This order represents the target balance of equipment categories for that class.
@@ -440,7 +448,7 @@ Party.`d.HP` =
 | 10 | `i.robe` |
 | 11 | `i.catalyst` |
 
-#### 3.6.2 Item selection from a specific item category
+- **Item selection from a specific item category**
 - When auto-equipment selects items from a specific item category, the following procedure is used:
 
 1. **Initialize memory**
@@ -462,12 +470,12 @@ Party.`d.HP` =
 4. **Repeat**
    - Repeat Step 2 and Step 3 until all potential equipment slots for that item category have been evaluated or no eligible items remain.
 
-#### 3.6.3 Upgrading equipped items
+#### 3.6.2 Upgrading equipped items
 - If a party member already has an item equipped, and another eligible item (same item ID) exists with a higher enhancement, the equipped item is replaced.
 - Jewels socketed in the currently equipped item remain unchanged.
 - Only the equipment item itself is replaced.
 
-#### 3.6.4 notification 
+#### 3.6.3 notification 
 - notification logic. 
   - empty slot to equip item: PT2ニャンは 恐ろしい月鋼鏃の矢を装備した
   - exist item to equip another item: PT2ニャンは 恐ろしい月鋼鏃の矢 を 魔性の瞬撃の月鋼矢に装備しなおした 
