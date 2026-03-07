@@ -327,6 +327,7 @@ Party.`d.HP` =
 - Record the **jewel** assignments of each equipped item category as **Memory C**.
 - Record the all of its equipment as **Memory D**.
 - Remove all of its equipment. (this only works when `m.auto_equipment` is FULL)
+- Exception: Super rare item is not removed by this process. 
 
 #### 3.6.2 Equipping into empty slots
 - When a character has one or more empty equipment slots, auto-equipment selects an item category based on the class’s ideal equipment build order.
@@ -485,6 +486,7 @@ Party.`d.HP` =
 - If a party member already has an item equipped, and another eligible item (same item ID) exists with a higher enhancement, the equipped item is replaced.
 - Jewels socketed in the currently equipped item remain unchanged.
 - Only the equipment item itself is replaced.
+- Super rare item is not replaced by this process. 
 
 #### 3.6.4 notification 
 - After the auto-equipment calculation:
