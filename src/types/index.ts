@@ -281,6 +281,10 @@ export interface Party {
   currentHp: number;
   pendingProfit: number;
   expeditionRewardsPending: boolean;
+  pendingUnlockState?: {
+    deityNames: string[];
+    partySlotCount: number;
+  } | null;
   deityGold: number;
   lastExpeditionLog: ExpeditionLog | null;
   pendingDiaryLog: DiaryLog | null;
