@@ -740,6 +740,12 @@ function loadSavedState(): GameState | null {
               progress: Math.max(0, Math.floor(party.sideQuest.progress * 60)),
             };
           }
+          if (Array.isArray(party.characters)) {
+            party.characters = party.characters.map((character: Character) => ({
+              ...character,
+              autoEquipmentMode: normalizeCharacterAutoEquipmentMode(character.autoEquipmentMode),
+            }));
+          }
 
           unlockedDeities = ensureUnlockedDeity(unlockedDeities, party.deity.name);
 
@@ -826,7 +832,7 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
     ...party,
     characters: party.characters.map((character) => ({
       ...character,
-      autoEquipmentMode: character.autoEquipmentMode ?? 1,
+      autoEquipmentMode: normalizeCharacterAutoEquipmentMode(character.autoEquipmentMode),
     })),
     currentHp: partyStats.hp,
     pendingProfit: 0,
@@ -843,6 +849,11 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
 function normalizeSleepinessState(raw: unknown): SleepinessState {
   if (raw === 1 || raw === 2) return raw;
   return 0;
+}
+
+function normalizeCharacterAutoEquipmentMode(raw: unknown): 0 | 1 | 2 {
+  if (raw === 0 || raw === 1 || raw === 2) return raw;
+  return 1;
 }
 
 function drawPartySleepiness(party: Party): { party: Party; sleepiness: SleepinessState } {
@@ -3146,7 +3157,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         const nextDefaultParty = createUnlockedPartyWithAvailableDeity(defaultParties[normalizedParties.length], normalizedParties);
         normalizedParties.push(nextDefaultParty);
       }
-      const trimmedParties = normalizedParties.slice(0, unlockedPartySlots);
+      const trimmedParties = normalizedParties.slice(0, unlockedPartySlots).map((party) => ({
+        ...party,
+        characters: party.characters.map((character) => ({
+          ...character,
+          autoEquipmentMode: normalizeCharacterAutoEquipmentMode(character.autoEquipmentMode),
+        })),
+      }));
       const normalizedSelectedPartyIndex = Math.min(
         Math.max(0, hydrated.selectedPartyIndex),
         Math.max(0, trimmedParties.length - 1),
