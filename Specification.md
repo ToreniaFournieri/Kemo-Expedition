@@ -310,18 +310,24 @@ Party.`d.HP` =
 
 
 ### 3.6 AUTO equipment logic
-- If `m.auto_equipment` is ON, each party member automatically equips items and upgrades their equipment at the begining of praying state.
-- Processing priority: Characters are processed sequentially in party order: PT1 Row1 → PT1 Row2 → … → PT1 Row6 → PT2 Row1 → PT2 Row2 → …
+- The behavior of automatic equipment is controlled by `m.auto_equipment`,  and upgrades their equipment at the begining of praying state.
+ 
+| Mode     | Description                                                                                                                |
+| -------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `OFF`  | No automatic equipment processing is performed. Characters keep their current equipment unless changed manually.           |
+| `SEMI` | Automatically **3.6.2 Fills empty slots** and **3.6.3 Upgrades existing equipment**  , but does **not remove currently equipped items**. |
+| `FULL` | Automatically **3.6.1 Removes all equipment**, **3.6.2 Fills empty slots** and **3.6.3 Upgrades existing equipment**. |                             |
 
-- Policy:
-  - 3.6.1 Equipping into empty slots
-  - 3.6.2 Upgrading equipped items (within same item ID)
+- Processing priority: Characters are processed sequentially in party order: PT1 Row1 → PT1 Row2 → … → PT1 Row6 → PT2 Row1 → PT2 Row2 → …
 - Item categories of already equipped items are not changed.
 - The system only fills empty slots or upgrades existing equipment without replacing it with a different item category.
 - No other policy exist in this version.
-  
 
-#### 3.6.1 Equipping into empty slots
+#### 3.6.1 Removes all equipment
+- Remove all of its equipment. (this only works when `m.auto_equipment` is FULL)
+
+
+#### 3.6.2 Equipping into empty slots
 - When a character has one or more empty equipment slots, auto-equipment selects an item category based on the class’s ideal equipment build order.
 - This order represents the target balance of equipment categories for that class.
 - The system checks the character’s current equipment and selects the earliest category in the order that is still missing.
@@ -470,12 +476,12 @@ Party.`d.HP` =
 4. **Repeat**
    - Repeat Step 2 and Step 3 until all potential equipment slots for that item category have been evaluated or no eligible items remain.
 
-#### 3.6.2 Upgrading equipped items
+#### 3.6.3 Upgrading existing equipment
 - If a party member already has an item equipped, and another eligible item (same item ID) exists with a higher enhancement, the equipped item is replaced.
 - Jewels socketed in the currently equipped item remain unchanged.
 - Only the equipment item itself is replaced.
 
-#### 3.6.3 notification 
+#### 3.6.4 notification 
 - notification logic. 
   - empty slot to equip item: PT2ニャンは 恐ろしい月鋼鏃の矢を装備した
   - exist item to equip another item: PT2ニャンは 恐ろしい月鋼鏃の矢 を 魔性の瞬撃の月鋼矢に装備しなおした 
