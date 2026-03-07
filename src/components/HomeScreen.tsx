@@ -2196,13 +2196,16 @@ export function HomeScreen({
     if (shouldRebuildPartyCyclesAfterAfkRef.current) {
       const now = Date.now();
       const autoRepeatEnabled = autoRepeatEnabledRef.current;
+      const currentEnv = getEnvironmentId();
+      const approxCycleDurationMs = Math.max(1, Math.floor(460_000 * getCycleDurationScale(currentEnv)));
+      const remainderMs = afkRecoveryTotalMsRef.current % approxCycleDurationMs;
       setPartyCycles(() => {
         const next: Record<number, PartyCycleRuntime> = {};
         latestPartiesRef.current.forEach((party, partyIndex) => {
           const nextState: PartyCycleState = autoRepeatEnabled ? 'move' : 'idle';
           next[partyIndex] = {
             state: nextState,
-            stateStartedAt: now,
+            stateStartedAt: now - remainderMs,
             durationMs: nextState === 'move' ? getPartyTravelDurationMs(party, 'move') : 1000,
             isCurrentExpeditionGodsBattle: false,
             skipFeastThisCycle: false,
