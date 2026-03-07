@@ -325,6 +325,7 @@ Party.`d.HP` =
 
 #### 3.6.1 Removes all equipment
 - Record the **jewel** assignments of each equipped item category as **Memory C**.
+- Record the all of its equipment as **Memory D**.
 - Remove all of its equipment. (this only works when `m.auto_equipment` is FULL)
 
 #### 3.6.2 Equipping into empty slots
@@ -477,7 +478,7 @@ Party.`d.HP` =
    - Repeat Step 2 and Step 3 until all potential equipment slots for that item category have been evaluated or no eligible items remain.
 
 5. **Jewel allocation**
-  - If Memory C contains recorded jewel data, jewels are reassigned by item category.
+  - If **Memory C** contains recorded jewel data, jewels are reassigned by item category.
   - Higher-tier jewels are preferentially assigned to items with higher enhancement values and to super rare items.
 
 #### 3.6.3 Upgrading existing equipment
@@ -486,6 +487,9 @@ Party.`d.HP` =
 - Only the equipment item itself is replaced.
 
 #### 3.6.4 notification 
+- After the auto-equipment calculation:
+  - If `m.auto_equipment` is `FULL`, recall **Memory** D and perform entity comparison with the newly equipped items.
+  - Only changed equipment is displayed in the notification.
 - notification logic. 
   - empty slot to equip item: PT2ニャンは 恐ろしい月鋼鏃の矢を装備した
   - exist item to equip another item: PT2ニャンは 恐ろしい月鋼鏃の矢 を 魔性の瞬撃の月鋼矢に装備しなおした 
