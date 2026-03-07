@@ -1582,6 +1582,7 @@ export function HomeScreen({
   const currentParty = state.parties[state.selectedPartyIndex];
   const prevPartyLogsRef = useRef(state.parties.map((party) => party.lastExpeditionLog));
   const prevPartyLevelsRef = useRef(state.parties.map((party) => party.level));
+  const prevPartyCountRef = useRef(state.parties.length);
   const prevShopPurchasesRef = useRef(state.global.shopPurchases);
   const prevInventoryRef = useRef(state.global.inventory);
   const notifiedRewardLogRef = useRef<Array<Party['lastExpeditionLog'] | null>>(state.parties.map(() => null));
@@ -1976,6 +1977,20 @@ export function HomeScreen({
       });
     });
   }, [actions, state.global.inventory, state.parties]);
+
+  useEffect(() => {
+    const previousPartyCount = prevPartyCountRef.current;
+    prevPartyCountRef.current = state.parties.length;
+
+    if (!autoEquipmentEnabledRef.current) return;
+    if (state.parties.length <= previousPartyCount) return;
+
+    const newlyUnlockedPartyIndexes = Array.from(
+      { length: state.parties.length - previousPartyCount },
+      (_, offset) => previousPartyCount + offset,
+    );
+    runAutoEquipment(newlyUnlockedPartyIndexes);
+  }, [runAutoEquipment, state.parties.length]);
 
   const setAutoRepeatEnabled = useCallback((nextEnabled: boolean) => {
     autoRepeatEnabledRef.current = nextEnabled;
