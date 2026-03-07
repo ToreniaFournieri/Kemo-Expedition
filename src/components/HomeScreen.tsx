@@ -1681,6 +1681,21 @@ export function HomeScreen({
       );
     };
 
+    const areEquipmentEntitiesEqual = (a: Item | null, b: Item | null): boolean => {
+      if (a == null && b == null) return true;
+      if (a == null || b == null) return false;
+
+      const isSameVariant = getVariantKey(a) === getVariantKey(b);
+      if (!isSameVariant) return false;
+
+      const aJewel = a.jewel;
+      const bJewel = b.jewel;
+      if (!aJewel && !bJewel) return true;
+      if (!aJewel || !bJewel) return false;
+
+      return aJewel.key === bJewel.key && aJewel.rank === bJewel.rank;
+    };
+
     const addItemToSimulatedInventory = (item: Item) => {
       const key = getVariantKey(item);
       const existing = simulatedInventory[key];
@@ -1899,6 +1914,9 @@ export function HomeScreen({
         const priorities = AUTO_EQUIPMENT_PRIORITY_BY_CLASS[character.mainClassId] ?? AUTO_EQUIPMENT_PRIORITY_BY_CLASS.fighter;
         const { maxEquipSlots } = computeCharacterStats(character, party.level);
         const simulatedEquipmentSlots = Array.from({ length: maxEquipSlots }, (_, index) => character.equipment[index] ?? null);
+        const memoryDEquipmentSlots = autoEquipmentMode === 2
+          ? simulatedEquipmentSlots.map((item) => (item ? { ...item } : null))
+          : null;
         const memoryCJewelsByCategory: Partial<Record<ItemCategory, Array<{ key: JewelKey; rank: number }>>> = {};
 
         if (autoEquipmentMode === 2) {
@@ -1942,7 +1960,9 @@ export function HomeScreen({
           memoryItemIds.add(variant.item.id);
           getItemCBonusSignatures(variant.item).forEach((bonusName) => memoryCBonusNames.add(bonusName));
           actions.equipItem(character.id, slotIndex, itemKey, partyIndex);
-          queueAutoEquipmentNotification(party.name, character.name, character.id, slotIndex, variant.item, null, partyIndex);
+          if (autoEquipmentMode !== 2) {
+            queueAutoEquipmentNotification(party.name, character.name, character.id, slotIndex, variant.item, null, partyIndex);
+          }
         });
 
         simulatedEquipmentSlots.forEach((equippedItem, slotIndex) => {
@@ -1963,15 +1983,17 @@ export function HomeScreen({
           if (equippedItem.jewel) {
             actions.attachJewel(character.id, slotIndex, equippedItem.jewel.key, equippedItem.jewel.rank, partyIndex);
           }
-          queueAutoEquipmentNotification(
-            party.name,
-            character.name,
-            character.id,
-            slotIndex,
-            nextEquippedItem,
-            equippedItem,
-            partyIndex,
-          );
+          if (autoEquipmentMode !== 2) {
+            queueAutoEquipmentNotification(
+              party.name,
+              character.name,
+              character.id,
+              slotIndex,
+              nextEquippedItem,
+              equippedItem,
+              partyIndex,
+            );
+          }
         });
 
         Object.entries(memoryCJewelsByCategory).forEach(([category, jewels]) => {
@@ -1998,6 +2020,25 @@ export function HomeScreen({
             actions.attachJewel(character.id, slotIndex, jewel.key, jewel.rank, partyIndex);
           });
         });
+
+        if (autoEquipmentMode === 2 && memoryDEquipmentSlots) {
+          simulatedEquipmentSlots.forEach((equippedItem, slotIndex) => {
+            if (!equippedItem) return;
+
+            const previousItem = memoryDEquipmentSlots[slotIndex] ?? null;
+            if (areEquipmentEntitiesEqual(previousItem, equippedItem)) return;
+
+            queueAutoEquipmentNotification(
+              party.name,
+              character.name,
+              character.id,
+              slotIndex,
+              equippedItem,
+              previousItem,
+              partyIndex,
+            );
+          });
+        }
       });
     });
 
