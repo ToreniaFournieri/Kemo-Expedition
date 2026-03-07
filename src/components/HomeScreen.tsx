@@ -1535,6 +1535,7 @@ const AUTO_EQUIPMENT_HELP_LINES = [
   '手動: 装備の付け替えが自動で変わることはない',
   '補助: 上位の通常称号の同一装備がある場合に置き換える。空きスロットがある際に装備する (祈りフェーズ開始時)',
   '完全自動: 現在の装備をすべて見直し、最適な装備構成になるよう自動で再装備する (祈りフェーズ開始時)',
+  '※超レア装備は置き換わる事はない',
 ];
 
 function normalizeAutoEquipmentMode(mode: Character['autoEquipmentMode']): AutoEquipmentMode {
@@ -1858,10 +1859,13 @@ export function HomeScreen({
     };
 
     const getBestUpgradeVariantKeyForItem = (equippedItem: Item): string | null => {
+      if (equippedItem.superRare > 0) return null;
+
       const options = Object.entries(simulatedInventory)
         .filter(([, variant]) => {
           if (variant.status !== 'owned' || variant.count <= 0) return false;
           if (variant.item.id !== equippedItem.id) return false;
+          if (variant.item.superRare > 0) return false;
           return variant.item.enhancement > equippedItem.enhancement;
         })
         .sort(([, a], [, b]) => {
@@ -1922,6 +1926,7 @@ export function HomeScreen({
         if (autoEquipmentMode === 2) {
           simulatedEquipmentSlots.forEach((equippedItem, slotIndex) => {
             if (!equippedItem) return;
+            if (equippedItem.superRare > 0) return;
             if (equippedItem.jewel) {
               const currentCategoryJewels = memoryCJewelsByCategory[equippedItem.category] ?? [];
               memoryCJewelsByCategory[equippedItem.category] = [...currentCategoryJewels, equippedItem.jewel];
