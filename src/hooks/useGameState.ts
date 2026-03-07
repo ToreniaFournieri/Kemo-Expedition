@@ -207,6 +207,39 @@ function getUnlockedStateFromEntries(entries: ExpeditionLogEntry[], initialUnloc
   return { unlockedDeities, unlockedPartySlots };
 }
 
+function enforceGlobalDiaryLogRetention(parties: Party[]): Party[] {
+  const allDiaryLogRefs = parties.flatMap((party, partyIndex) =>
+    (party.diaryLogs ?? []).map((log, logIndex) => ({
+      partyIndex,
+      logIndex,
+      createdAt: typeof log.createdAt === 'number' ? log.createdAt : 0,
+    }))
+  );
+
+  if (allDiaryLogRefs.length <= DIARY_LOG_RETENTION_LIMIT) {
+    return parties;
+  }
+
+  const keepKeys = new Set(
+    allDiaryLogRefs
+      .sort((a, b) => b.createdAt - a.createdAt || a.partyIndex - b.partyIndex || a.logIndex - b.logIndex)
+      .slice(0, DIARY_LOG_RETENTION_LIMIT)
+      .map(({ partyIndex, logIndex }) => `${partyIndex}:${logIndex}`)
+  );
+
+  return parties.map((party, partyIndex) => {
+    const nextDiaryLogs = (party.diaryLogs ?? []).filter((_, logIndex) => keepKeys.has(`${partyIndex}:${logIndex}`));
+    if (nextDiaryLogs.length === (party.diaryLogs ?? []).length) {
+      return party;
+    }
+    return {
+      ...party,
+      diaryLogs: nextDiaryLogs,
+      hasUnreadDiary: nextDiaryLogs.some((log) => !log.isRead),
+    };
+  });
+}
+
 
 function getUnlockDiaryLog(
   log: ExpeditionLog | null,
@@ -673,8 +706,7 @@ function loadSavedState(): GameState | null {
               ...log,
               triggers: Array.isArray(log.triggers) ? log.triggers : [],
               isRead: typeof log.isRead === 'boolean' ? log.isRead : !party.hasUnreadDiary,
-            }))
-            .slice(0, DIARY_LOG_RETENTION_LIMIT);
+            }));
           party.hasUnreadDiary = party.diaryLogs.some((log: DiaryLog) => !log.isRead);
           party.diarySettings = getDiarySettingsWithDefaults(party.diarySettings);
           if (typeof party.currentHp !== 'number') {
@@ -733,6 +765,7 @@ function loadSavedState(): GameState | null {
           parsed.parties.push(nextDefaultParty);
         }
         parsed.parties = parsed.parties.slice(0, unlockedPartySlots);
+        parsed.parties = enforceGlobalDiaryLogRetention(parsed.parties);
         parsed.selectedPartyIndex = Math.max(0, Math.min(normalizedSelectedPartyIndex, Math.max(0, parsed.parties.length - 1)));
         parsed.buildNumber = typeof parsed.buildNumber === 'number' ? parsed.buildNumber : 0;
 
@@ -2158,9 +2191,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         };
       }
 
+      const trimmedParties = enforceGlobalDiaryLogRetention(updatedParties);
+
       return {
         ...state,
-        parties: updatedParties,
+        parties: trimmedParties,
         global: nextGlobal,
       };
     }
@@ -2331,9 +2366,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         diaryLogs: nextDiaryLogs,
         hasUnreadDiary: true,
       };
+      const trimmedParties = enforceGlobalDiaryLogRetention(updatedParties);
       return {
         ...state,
-        parties: updatedParties,
+        parties: trimmedParties,
         global: {
           ...state.global,
           jewels: addJewelToInventory(state.global.jewels, key, rewardRank),
