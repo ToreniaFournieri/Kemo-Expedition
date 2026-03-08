@@ -376,7 +376,7 @@ displays [遠距離攻撃:矢,ボ,弓]
 
 ```
 PT1 HP (HP bar, blue) ルピニアンの断崖踏破▼
-移動中(background: state progress bar)
+移動中: flavor text (background: state progress bar)
 次の目標: ルピニアンの断崖のボスレアアイテム 0/1 でヴァルンの樹林帯 開放
 📜 1,110回アイテム獲得を空振りする(8%, 98回)
 
@@ -388,6 +388,17 @@ PT2...
 - Per party:
   - Currently selected dungeon with Loot-Gate conditions (ex. 2nd Elite Gate is locked: 2/6 Floor 2 Uncommons collected.)
   - List of available dungeons with Loot-Gate conditions
+	- **Flavor text**
+	  - The system selects flavor text from `@Specification_flavor_text.md`.
+	  - When determining eligibility, it checks the full party composition rather than only the front member.
+	  - Conditions may reference:
+	    - any party member’s race
+	    - any party member’s main class
+	    - any party member’s abilities
+	    - the party’s religion
+	    - other defined party-wide attributes
+	  - Therefore, every party member is a potential trigger source for flavor text selection.
+  
   - Expedition behavior:
     - Expedition resolves immediately
     - No loading scenes
