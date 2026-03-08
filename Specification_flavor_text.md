@@ -34,17 +34,7 @@
 | sell | none | name は selling item を磨いて少しでも高く売ろうとしている |
 | sell | none | name は売上袋にコインをしまい、次の品を取り出した |
 | sell | with ability. `a.cunning` | name は店主にselling item の価値を大袈裟にアピールしている( auto-sell price G) |
-| sleep | none | name はまどろみながら英気を養っている |
-| sleep | none | name は寝袋にくるまり静かに目を閉じた |
-| sleep | none | name は遠くの物音を聞きつつ浅い眠りに入った |
-| sleep | none | name は疲労に身を任せてすぐに眠りへ落ちた |
-| sleep | none | name は寝返りを打ちながらも体を休めている |
-| sleep | none | name は明日の冒険を思いながらうとうとしている |
-| sleep | none | name は火のぬくもりを感じつつ眠気に包まれた |
-| sleep | none | name はゆっくりと呼吸を整えて眠りについている |
-| sleep | none | name は夜風の音を子守歌にして目を閉じている |
-| sleep | none | name は毛布を引き寄せて安らかな時間を過ごしている |
-| sleep | with race.`Caninian` | name は 未知なる地の探検を夢の中で夢見ている |
+| sound_sleep | with race.`Caninian` | name は 未知なる地の探検を夢の中で夢見ている |
 | sound_sleep | none | name はぐっすり眠り、次の遠征に備えている |
 | sound_sleep | none | name は深い眠りの中で体力をしっかり回復している |
 | sound_sleep | none | name は穏やかな寝息を立てて安心しきっている |
