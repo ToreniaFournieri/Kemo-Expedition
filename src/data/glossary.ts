@@ -250,12 +250,12 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.momentum1",
         "label": "気勢1",
-        "description": "物理/魔法攻撃倍率1.25倍(受けたダメージ1%につき0.5%減)"
+        "description": "物理/魔法攻撃倍率1.25倍(受けたダメージ1%につき0.5%減)、収益の一部を着服する"
       },
       {
         "key": "a.momentum2",
         "label": "気勢2",
-        "description": "物理/魔法攻撃倍率1.25倍(受けたダメージ1%につき0.4%減)"
+        "description": "物理/魔法攻撃倍率1.25倍(受けたダメージ1%につき0.4%減)、収益の一部を着服する"
       },
       {
         "key": "a.cunning1",
@@ -1085,7 +1085,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "q.poor_kid",
         "label": "アイテム獲得空振り",
-        "description": "アイテム獲得空振り(神魔戦で中止) (100回 ~ 300回)"
+        "description": "アイテム獲得空振り(神魔戦で中止) (500回 ~ 1,500回)"
       },
       {
         "key": "q.consecutive_wins",
