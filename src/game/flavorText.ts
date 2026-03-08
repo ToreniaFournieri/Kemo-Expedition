@@ -1,4 +1,4 @@
-import type { ClassId, RaceId } from '../types';
+import type { AbilityId, ClassId, RaceId } from '../types';
 import { FLAVOR_CONDITIONS, FLAVOR_ENTRIES, FLAVOR_STATES, type FlavorCondition } from '../data/flavorTextRuntime';
 
 export type FlavorCycleState =
@@ -17,8 +17,12 @@ export type FlavorCycleState =
 interface FlavorContext {
   state: FlavorCycleState;
   hpRatio: number;
-  mainClassId: ClassId;
-  raceId: RaceId;
+  mainClassId?: ClassId;
+  raceId?: RaceId;
+  partyMainClassIds?: ReadonlyArray<ClassId>;
+  partyRaceIds?: ReadonlyArray<RaceId>;
+  partyAbilityIds?: ReadonlyArray<AbilityId>;
+  partyReligionName?: string;
   leaderName: string;
   seed: number;
   sellingItemName?: string;
@@ -34,6 +38,16 @@ function conditionSpecificity(condition: FlavorCondition): number {
 }
 
 function isConditionMatch(condition: FlavorCondition, context: FlavorContext): boolean {
+  const classIds = new Set<ClassId>([
+    ...(context.partyMainClassIds ?? []),
+    ...(context.mainClassId ? [context.mainClassId] : []),
+  ]);
+  const raceIds = new Set<RaceId>([
+    ...(context.partyRaceIds ?? []),
+    ...(context.raceId ? [context.raceId] : []),
+  ]);
+  const abilityIds = new Set<string>(context.partyAbilityIds ?? []);
+
   switch (condition.k) {
     case 'none':
       return true;
@@ -42,14 +56,39 @@ function isConditionMatch(condition: FlavorCondition, context: FlavorContext): b
     case 'hp_lt':
       return context.hpRatio < condition.v;
     case 'class_is':
-      return context.mainClassId === condition.v;
+      return classIds.has(condition.v as ClassId);
     case 'race_is':
-      return context.raceId === condition.v;
+      return raceIds.has(condition.v as RaceId);
     case 'raw':
-      return false;
+      return isRawConditionMatch(condition.v, {
+        partyAbilityIds: abilityIds,
+        partyReligionName: context.partyReligionName,
+      });
     default:
       return false;
   }
+}
+
+function isRawConditionMatch(
+  raw: string,
+  context: {
+    partyAbilityIds: ReadonlySet<string>;
+    partyReligionName?: string;
+  }
+): boolean {
+  const abilityMatch = raw.match(/with\s+ability\.\s*`([^`]+)`/i);
+  if (abilityMatch) {
+    const abilityToken = abilityMatch[1].trim();
+    const normalizedAbilityId = abilityToken.startsWith('a.') ? abilityToken.slice(2) : abilityToken;
+    return context.partyAbilityIds.has(normalizedAbilityId);
+  }
+
+  const religionMatch = raw.match(/with\s+religion\.\s*`([^`]+)`/i);
+  if (religionMatch) {
+    return context.partyReligionName === religionMatch[1].trim();
+  }
+
+  return false;
 }
 
 function normalizeFlavorText(text: string, context: FlavorContext): string {
