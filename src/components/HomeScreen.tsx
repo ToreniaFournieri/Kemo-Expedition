@@ -250,10 +250,10 @@ function getExplorationVisibleRoomCount(elapsedMs: number, durationMs: number, t
   );
 }
 
-function getExpeditionOutcomeLabel(outcome: 'victory' | 'return' | 'defeat' | 'retreat'): string {
-  if (outcome === 'victory') return '踏破';
-  if (outcome === 'return') return '帰還';
-  if (outcome === 'defeat') return '敗北';
+function getExpeditionOutcomeLabel(outcome: 'Clear' | 'Escape' | 'Defeat' | 'Retreat'): string {
+  if (outcome === 'Clear') return '踏破';
+  if (outcome === 'Escape') return '帰還';
+  if (outcome === 'Defeat') return '敗北';
   return '撤退';
 }
 
@@ -571,7 +571,7 @@ function getGodShortName(displayName: string): string {
 function shouldDelayNextSpecialGoal(party: Party, cycleState?: PartyCycleState): boolean {
   if (cycleState !== 'explore') return false;
   const log = party.lastExpeditionLog;
-  if (!log || log.finalOutcome !== 'victory') return false;
+  if (!log || log.finalOutcome !== 'Clear') return false;
   const lastEntry = log.entries[log.entries.length - 1];
   return lastEntry?.roomType === 'battle_Boss' && lastEntry.enemyName.includes('(神魔戦)');
 }
@@ -2733,13 +2733,13 @@ export function HomeScreen({
           actions.advanceSideQuest(index, 1);
         }
         if (party.sideQuest.type === 'q.consecutive_wins') {
-          if (currentLog.finalOutcome === 'victory') {
+          if (currentLog.finalOutcome === 'Clear') {
             actions.advanceSideQuest(index, 1);
           } else {
             actions.setSideQuestProgress(index, 0);
           }
         }
-        if (party.sideQuest.type === 'q.losers' && currentLog.finalOutcome === 'defeat') {
+        if (party.sideQuest.type === 'q.losers' && currentLog.finalOutcome === 'Defeat') {
           actions.advanceSideQuest(index, 1);
         }
       }

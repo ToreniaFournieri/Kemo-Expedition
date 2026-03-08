@@ -576,7 +576,7 @@ export interface ExpeditionLog {
   totalExperience: number;
   totalRooms: number;
   completedRooms: number;
-  finalOutcome: 'victory' | 'return' | 'defeat' | 'retreat';
+  finalOutcome: 'Clear' | 'Escape' | 'Retreat' | 'Defeat';
   entries: ExpeditionLogEntry[];
   rewards: Item[];
   autoSellProfit: number;

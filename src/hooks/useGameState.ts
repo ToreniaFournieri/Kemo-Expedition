@@ -1409,11 +1409,11 @@ function advanceAfkLogSideQuestProgress(state: GameState, partyIndex: number, si
         ? gameReducer(state, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1, simulatedAt })
         : state;
     case 'q.consecutive_wins':
-      return afkLog.finalOutcome === 'victory'
+      return afkLog.finalOutcome === 'Clear'
         ? gameReducer(state, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1, simulatedAt })
         : gameReducer(state, { type: 'SET_SIDE_QUEST_PROGRESS', partyIndex, progress: 0 });
     case 'q.losers':
-      return afkLog.finalOutcome === 'defeat'
+      return afkLog.finalOutcome === 'Defeat'
         ? gameReducer(state, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1, simulatedAt })
         : state;
     default:
@@ -1798,7 +1798,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const recoveredItems: Item[] = [];
       let totalExp = 0;
       let bags = state.bags;
-      let finalOutcome: 'victory' | 'return' | 'defeat' | 'retreat' = 'victory';
+      let finalOutcome: 'Clear' | 'Escape' | 'Defeat' | 'Retreat' = 'Clear';
       let currentInventory = state.global.inventory;
       let currentGold = state.global.gold;
       let totalAutoSellProfit = 0;
@@ -1849,7 +1849,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   gateInfo: `${prevDungeonName}のボスレアアイテム(持ち帰り) ${currentCollected}/${gateRequired}（判定時）`,
                 };
                 entries.push(gateEntry);
-                finalOutcome = 'return';
+                finalOutcome = 'Escape';
                 expeditionEnded = true;
                 break;
               }
@@ -1893,7 +1893,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   gateInfo: `${rarityLabel}(持ち帰り) ${currentCollected}/${gateRequired}（判定時）`,
                 };
                 entries.push(gateEntry);
-                finalOutcome = 'return';
+                finalOutcome = 'Escape';
                 expeditionEnded = true;
                 break;
               }
@@ -2025,7 +2025,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 && roomIndex === floor.rooms.length - 1;
 
               if (!isFinalBossRoom && isRetreatHpThresholdReached(currentHp, partyStats.hp)) {
-                finalOutcome = 'retreat';
+                finalOutcome = 'Retreat';
                 expeditionEnded = true;
                 entry.details.push({
                   phase: 'close',
@@ -2048,7 +2048,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   || (currentParty.expeditionDepthLimit === 'beforeBoss' && floor.floorNumber === 6 && roomIndex === 2);
 
                 if (reachedDepthLimit) {
-                  finalOutcome = 'return';
+                  finalOutcome = 'Escape';
                   expeditionEnded = true;
                   entry.details.push({
                     phase: 'close',
@@ -2059,12 +2059,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               }
             } else if (battleResult.outcome === 'defeat') {
               entries.push(entry);
-              finalOutcome = 'defeat';
+              finalOutcome = 'Defeat';
               expeditionEnded = true;
             } else {
               // Draw
               entries.push(entry);
-              finalOutcome = 'retreat';
+              finalOutcome = 'Retreat';
               expeditionEnded = true;
             }
           }
@@ -2072,7 +2072,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       }
 
       // On defeat: revert inventory and gold (no item rewards), but keep experience
-      const isDefeat = finalOutcome === 'defeat';
+      const isDefeat = finalOutcome === 'Defeat';
       const finalInventory = isDefeat ? state.global.inventory : currentInventory;
       const finalRewards = isDefeat ? [] : rewards;
       const finalAutoSellProfit = isDefeat ? 0 : totalAutoSellProfit;
@@ -2084,7 +2084,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ? currentParty.lootGateProgress
         : addRecoveredItemsToLootProgress(currentParty.lootGateProgress ?? {}, recoveredItems);
       const nextLootGateProgress = { ...(nextLootGateProgressBase ?? {}) };
-      if (isGodsBattle && finalOutcome === 'victory') {
+      if (isGodsBattle && finalOutcome === 'Clear') {
         nextLootGateProgress[getLootCollectionKey(dungeon.id, 'bossRare')] = 0;
       }
       const nextLootGateStatus = unlockAvailableLootGates(
@@ -2124,7 +2124,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const hasRareMatch = finalRewards.some((item) => getItemRarityCode(item) === 'eliteRare' && matchesDiaryThreshold(item, diarySettings.rareThreshold));
 
       const diaryTriggers: DiaryLog['triggers'] = [];
-      if (finalOutcome === 'defeat' && diarySettings.notifyDefeat) diaryTriggers.push('defeat');
+      if (finalOutcome === 'Defeat' && diarySettings.notifyDefeat) diaryTriggers.push('defeat');
 
       if (hasSuperRareMatch) {
         diaryTriggers.push('superRare');
@@ -2160,10 +2160,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         pendingProfit: finalAutoSellProfit,
         expeditionStats: {
           ...currentParty.expeditionStats,
-          victories: currentParty.expeditionStats.victories + (finalOutcome === 'victory' ? 1 : 0),
-          returns: currentParty.expeditionStats.returns + (finalOutcome === 'return' ? 1 : 0),
-          retreats: currentParty.expeditionStats.retreats + (finalOutcome === 'retreat' ? 1 : 0),
-          defeats: currentParty.expeditionStats.defeats + (finalOutcome === 'defeat' ? 1 : 0),
+          victories: currentParty.expeditionStats.victories + (finalOutcome === 'Clear' ? 1 : 0),
+          returns: currentParty.expeditionStats.returns + (finalOutcome === 'Escape' ? 1 : 0),
+          retreats: currentParty.expeditionStats.retreats + (finalOutcome === 'Retreat' ? 1 : 0),
+          defeats: currentParty.expeditionStats.defeats + (finalOutcome === 'Defeat' ? 1 : 0),
         },
       };
 
@@ -2414,7 +2414,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           totalExperience: 0,
           totalRooms: 0,
           completedRooms: 0,
-          finalOutcome: 'return',
+          finalOutcome: 'Escape',
           entries: [],
           rewards: [],
           autoSellProfit: 0,
