@@ -52,27 +52,27 @@
 | feast | none | name は温かなスープで冷えた体をほぐしている |
 | feast | none | name は食卓を囲み、明日の計画を練っている |
 | feast | none | name は最後の一口まで味わい尽くしている |
-| feast | with mainClass.`lord` | name は見栄を張って店を貸し切った |
-| feast | with mainClass.`rogue` | name は手品のように肉を切り分け、気づけば自分の皿を山盛りにしていた |
-| feast | with mainClass.`rogue` | name は店主の死角を突いて限定酒を確保し、仲間に得意げに注いだ |
-| feast | with mainClass.`rogue` | name は誰より早く焼き上がりを嗅ぎ取り、熱々の串をさらっていった |
-| feast | with mainClass.`rogue` | name は会話の隙に皿をすり替え、より豪華な一品を手に入れていた |
-| feast | with mainClass.`rogue` | name は軽口を飛ばしながら店員と打ち解け、裏メニューを引き出した |
-| feast | with mainClass.`rogue` | name は銀貨を弾いて賭けを始め、勝ち分で追加料理を注文した |
-| feast | with mainClass.`rogue` | name は一口ごとに味を見抜き、隠し香辛料まで言い当ててみせた |
-| feast | with mainClass.`rogue` | name は周囲の視線を散らしてから一番人気の皿を確保し、涼しい顔で頬張った |
-| feast | with mainClass.`rogue` | name は音もなく席を移って情報を拾い、戻る頃には次の獲物の話をしていた |
-| feast | with mainClass.`rogue` | name は乾杯の輪を渡り歩き、最終的に一番上等な酒の前へ落ち着いた |
-| feast | with mainClass.`lord` | name は給仕を呼び、最上級のワインを惜しみなく振る舞った |
-| feast | with mainClass.`lord` | name は山海の珍味を並べさせ、満足げに頷いている |
-| feast | with mainClass.`lord` | name は金貨の袋を卓上に置き、宴の延長を命じた |
-| feast | with mainClass.`lord` | name は楽師団まで招き入れ、華やかな夜を演出している |
-| feast | with mainClass.`lord` | name は一番高い樽酒を開けさせ、仲間へ次々と注いで回った |
-| feast | with mainClass.`lord` | name は豪奢な皿を追加させ、客席にどよめきを広げた |
-| feast | with mainClass.`lord` | name は宴席の全員分を払い、誇らしげに杯を掲げている |
-| feast | with mainClass.`lord` | name は店主に特別料理を求め、卓を王侯の晩餐へ変えた |
-| feast | with mainClass.`lord` | name は金細工の食器まで借り受け、贅沢の限りを尽くしている |
-| feast | with mainClass.`lord` | name は今宵は無礼講だと宣言し、豪勢な祝宴を主催した |
+| feast | with mainClass.`Lord` | name は見栄を張って店を貸し切った |
+| feast | with mainClass.`Rogue` | name は手品のように肉を切り分け、気づけば自分の皿を山盛りにしていた |
+| feast | with mainClass.`Rogue` | name は店主の死角を突いて限定酒を確保し、仲間に得意げに注いだ |
+| feast | with mainClass.`Rogue` | name は誰より早く焼き上がりを嗅ぎ取り、熱々の串をさらっていった |
+| feast | with mainClass.`Rogue` | name は会話の隙に皿をすり替え、より豪華な一品を手に入れていた |
+| feast | with mainClass.`Rogue` | name は軽口を飛ばしながら店員と打ち解け、裏メニューを引き出した |
+| feast | with mainClass.`Rogue` | name は銀貨を弾いて賭けを始め、勝ち分で追加料理を注文した |
+| feast | with mainClass.`Rogue` | name は一口ごとに味を見抜き、隠し香辛料まで言い当ててみせた |
+| feast | with mainClass.`Rogue` | name は周囲の視線を散らしてから一番人気の皿を確保し、涼しい顔で頬張った |
+| feast | with mainClass.`Rogue` | name は音もなく席を移って情報を拾い、戻る頃には次の獲物の話をしていた |
+| feast | with mainClass.`Rogue` | name は乾杯の輪を渡り歩き、最終的に一番上等な酒の前へ落ち着いた |
+| feast | with mainClass.`Lord` | name は給仕を呼び、最上級のワインを惜しみなく振る舞った |
+| feast | with mainClass.`Lord` | name は山海の珍味を並べさせ、満足げに頷いている |
+| feast | with mainClass.`Lord` | name は金貨の袋を卓上に置き、宴の延長を命じた |
+| feast | with mainClass.`Lord` | name は楽師団まで招き入れ、華やかな夜を演出している |
+| feast | with mainClass.`Lord` | name は一番高い樽酒を開けさせ、仲間へ次々と注いで回った |
+| feast | with mainClass.`Lord` | name は豪奢な皿を追加させ、客席にどよめきを広げた |
+| feast | with mainClass.`Lord` | name は宴席の全員分を払い、誇らしげに杯を掲げている |
+| feast | with mainClass.`Lord` | name は店主に特別料理を求め、卓を王侯の晩餐へ変えた |
+| feast | with mainClass.`Lord` | name は金細工の食器まで借り受け、贅沢の限りを尽くしている |
+| feast | with mainClass.`Lord` | name は今宵は無礼講だと宣言し、豪勢な祝宴を主催した |
 | sell | none | selling item を auto-sell price Gで売却交渉中 |
 | sell | none | name は selling item の値札を見て少し首をかしげた |
 | sell | none | name は売り場で selling item の相場を探っている |
