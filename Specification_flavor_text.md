@@ -305,6 +305,7 @@
 | nap_sleep | none | name は小休止の間に目元の疲れを取っている |
 | nap_sleep | none | name は眠気を断ち切るために短い仮眠を選んだ |
 | nap_sleep | none | name は立て直しのためにわずかな睡眠を取った |
+| outfit | none | 身支度を整えている |
 | pray | none | name は神々に無事の帰還を祈っている |
 | pray | none | name は胸の前で手を組み、静かに祈りを捧げている |
 | pray | none | name は灯りの前で旅の安全を願っている |
