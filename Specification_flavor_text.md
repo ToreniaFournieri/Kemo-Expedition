@@ -11,6 +11,16 @@
 | rest | none | name は温かい飲み物で体を内側から温めている |
 | rest | none | name は次の行動に備えて体力を温存している |
 | rest | none | name は静かな時間の中で気持ちを立て直している |
+| rest | `d.HP` > 70% of max HP | name は余力を感じつつ、穏やかに休息を取っている |
+| rest | `d.HP` > 70% of max HP | name は軽く肩を回しながら次の行動に備えている |
+| rest | `d.HP` > 70% of max HP | name は表情に余裕を残したまま焚き火を見つめている |
+| rest | `d.HP` > 70% of max HP | name は傷の少なさを確かめ、静かに体勢を整えている |
+| rest | `d.HP` > 70% of max HP | name は仲間と談笑しながら落ち着いて呼吸を整えている |
+| rest | `d.HP` > 70% of max HP | name は短い休息でも十分だと判断して周囲を見渡している |
+| rest | `d.HP` > 70% of max HP | name は荷物を整えつつ、余裕をもって英気を養っている |
+| rest | `d.HP` > 70% of max HP | name は疲労の少ない足取りで拠点の様子を確認している |
+| rest | `d.HP` > 70% of max HP | name は体力の充実を感じながら静かな時間を楽しんでいる |
+| rest | `d.HP` > 70% of max HP | name は次の遠征を思い描き、前向きに休んでいる |
 | rest | `d.HP` < 20% of max HP |  早く楽になりたいと願ったら医者から安楽死を勧められた| 
 | rest | `d.HP` < 5% of max HP (Serious injuries) | name は全身の激痛に耐えながら、かろうじて呼吸を整えている |
 | rest | `d.HP` < 5% of max HP (Serious injuries) | name は止血した包帯を押さえ、意識を手放さないよう踏ん張っている |
