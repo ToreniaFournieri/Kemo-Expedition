@@ -310,7 +310,7 @@ Party.`d.HP` =
 
 
 ### 3.6 AUTO equipment logic
-- The behavior of automatic equipment is controlled by `m.auto_equipment`,  and upgrades their equipment at the end of sleep state.
+- The behavior of automatic equipment is controlled by `m.auto_equipment`,  and upgrades their equipment at the end of **sound sleep** state.
  
 | Mode     | Description                                                                                                                |
 | -------- | -------------------------------------------------------------------------------------------------------------------------- |
