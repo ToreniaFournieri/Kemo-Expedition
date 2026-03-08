@@ -693,7 +693,7 @@ function getSideQuestText(party: Party): string | null {
     current: `${formatNumber(displayProgress)}/${formatNumber(displayTarget)}`,
   };
 
-  return `サイドクエスト: ${display.text} (${percent}%, ${display.current})`;
+  return `📜 ${display.text} (${percent}%, ${display.current})`;
 }
 
 function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
