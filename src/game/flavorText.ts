@@ -137,6 +137,11 @@ function pickMatchingMemberName(condition: FlavorCondition, context: FlavorConte
   const members = context.partyMembers;
   if (!members || members.length === 0) return context.leaderName;
 
+  if (condition.k === 'none') {
+    const normalizedSeed = Math.abs(Math.floor(context.seed));
+    return members[normalizedSeed % members.length]?.name ?? context.leaderName;
+  }
+
   if (condition.k === 'class_is') {
     return members.find((member) => member.mainClassId === (condition.v as ClassId))?.name ?? null;
   }
