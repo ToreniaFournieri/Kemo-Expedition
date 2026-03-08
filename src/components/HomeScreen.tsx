@@ -5244,7 +5244,7 @@ function ExpeditionTab({
         const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
         const cycle = partyCycles[partyIndex] ?? { state: 'idle', stateStartedAt: Date.now(), durationMs: 1000 };
         const cycleElapsedMs = Math.max(0, Date.now() - cycle.stateStartedAt);
-        const { partyStats } = computePartyStats(party);
+        const { partyStats, characterStats } = computePartyStats(party);
         const isLogExpanded = expandedLogParty === partyIndex;
         const currentLog = party.lastExpeditionLog;
         const headlineDungeonName = currentLog?.dungeonName ?? selectedDungeon?.name;
@@ -5304,6 +5304,15 @@ function ExpeditionTab({
             partyMainClassIds: party.characters.map((member) => member.mainClassId),
             partyRaceIds: party.characters.map((member) => member.raceId),
             partyAbilityIds: partyStats.abilities.map((ability) => ability.id),
+            partyMembers: party.characters.map((member) => {
+              const memberStats = characterStats.find((stats) => stats.characterId === member.id);
+              return {
+                name: member.name,
+                mainClassId: member.mainClassId,
+                raceId: member.raceId,
+                abilityIds: memberStats?.abilities.map((ability) => ability.id) ?? [],
+              };
+            }),
             partyReligionName: party.deity.name,
             leaderName: leader.name,
             seed: cycle.stateStartedAt + partyIndex * 131,
