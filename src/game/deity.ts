@@ -271,12 +271,12 @@ export function applyDeityCharacterModifiers(
 }
 
 // SpecRef: 2.3.3 | Religions lists | getDeityStateDurationMultiplier
-export function getDeityStateDurationMultiplier(name: string, totalDonatedGold = 0, state: 'rest' | 'sell' | 'feast' | 'sleep' | 'pray' | 'explore'): number {
+export function getDeityStateDurationMultiplier(name: string, totalDonatedGold = 0, state: 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'pray' | 'explore'): number {
   const deityKey = getDeityKey(name);
   const effectiveTier = getEffectiveDeityTier(totalDonatedGold);
   if (!deityKey) return 1;
 
-  if (state === 'sleep' && deityKey === 'Goddess of Restoration') return 1.5;
+  if ((state === 'sound_sleep' || state === 'nap_sleep') && deityKey === 'Goddess of Restoration') return 1.5;
   if (state === 'rest' && deityKey === 'God of Fortification') return Math.max(1, 1.5 - 0.01 * effectiveTier);
   if (state === 'sell' && deityKey === 'God of Dusk') return 1.5;
   if (state === 'feast' && deityKey === 'Goddess of Fertility') return Math.max(1, 1.5 - 0.01 * effectiveTier);
