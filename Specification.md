@@ -310,7 +310,7 @@ Party.`d.HP` =
 
 
 ### 3.6 AUTO equipment logic
-- The behavior of automatic equipment is controlled by `m.auto_equipment`,  and upgrades their equipment at the end of **sound sleep** state.
+- The behavior of automatic equipment is controlled by `m.auto_equipment`,  and upgrades their equipment at the end of **outfit** state.
  
 | Mode     | Description                                                                                                                |
 | -------- | -------------------------------------------------------------------------------------------------------------------------- |
@@ -507,8 +507,9 @@ Party.`d.HP` =
 |-------|-------|----------|---------|
 | rest(休息中)  | at home | sell or feast | `God of Fortification` |
 | sell(売却中) | at home, Sell auto-sell items to shop owners. and officially gain items (notification of item gains at the end of sell state.). If they have no trophy nor auto-sell item, skip this state. | feast | `God of Dusk` |
-| feast(宴会中) | at home, skip if current_profit = 0). Skipped if the party’s total HP was below 30% of Max HP at the beginning of rest state. | sleep | `Goddess of Fertility` |
-| sleep/ sound_sleep(熟睡中), nap_sleep(仮眠中) | at home. skip if the party’s total HP was below 10% of Max HP at the beginning of rest state. (no draw a ticket from `t.sleepiness_of_party_bag`) | pray |
+| feast(宴会中) | at home, skip if current_profit = 0). Skipped if the party’s total HP was below 30% of Max HP at the beginning of rest state. | sound_sleep or nap_sleep or pray | `Goddess of Fertility` |
+| sleep/ sound_sleep(熟睡中), nap_sleep(仮眠中) | at home. skip if the party’s total HP was below 10% of Max HP at the beginning of rest state. (no draw a ticket from `t.sleepiness_of_party_bag`) | outfit |
+| outfit(身支度中) | equipping items. skip if no nap_sleep or sound_sleep | pray |
 | pray(祈り中) | at home. Party members donate money to their deity. | idle or move |
 | idle(待機中) | at home. only when 自動周回 = OFF (idle state) | - |
 | move(移動中) | home → dungeon, If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | explore | `a.peddler` |
@@ -523,8 +524,9 @@ Party.`d.HP` =
 | rest(休息中)  | heal +1% MaxHP / 5 sec until full |
 | sell(売却中) | 5 seconds per `auto-sell` items |
 | feast(宴会中) | 90 seconds |
-| sound_sleep(熟睡中) | 180 seconds |
+| sound_sleep(熟睡中) | 120 seconds |
 | nap_sleep(仮眠中) | x 1/5 of sound sleep |
+| outfit(身支度中) | 60 seconds |
 | pray(祈り中) | 30 seconds |
 | move(移動中) | 10 seconds * (1.30 - 0.02 * `x.exp_tier` )^(`x.exp_tier`) | 
 | explore(探索中) | 5 seconds per room (24 rooms in total)|
