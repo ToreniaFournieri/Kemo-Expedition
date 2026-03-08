@@ -104,13 +104,14 @@ type Tab = 'party' | 'expedition' | 'base' | 'diary' | 'setting';
 type BaseSubTab = 'inventory' | 'shop' | 'jewelStore' | 'workshop' | 'altar';
 
 
-type PartyCycleState = 'rest' | 'sell' | 'feast' | 'sleep' | 'pray' | 'idle' | 'move' | 'explore' | 'return';
+type PartyCycleState = 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'pray' | 'idle' | 'move' | 'explore' | 'return';
 
 const PARTY_CYCLE_STATE_LABELS: Record<PartyCycleState, string> = {
   rest: '休息中',
   sell: '売却中',
   feast: '宴会中',
-  sleep: '睡眠中',
+  sound_sleep: '熟睡中',
+  nap_sleep: '仮眠中',
   pray: '祈り中',
   idle: '待機中',
   move: '移動中',
@@ -122,7 +123,9 @@ const LEGACY_PARTY_CYCLE_STATE_MAP: Record<string, PartyCycleState> = {
   rest: 'rest',
   sell: 'sell',
   feast: 'feast',
-  sleep: 'sleep',
+  sound_sleep: 'sound_sleep',
+  nap_sleep: 'nap_sleep',
+  sleep: 'sound_sleep',
   pray: 'pray',
   idle: 'idle',
   move: 'move',
@@ -131,7 +134,9 @@ const LEGACY_PARTY_CYCLE_STATE_MAP: Record<string, PartyCycleState> = {
   '休息中': 'rest',
   '売却中': 'sell',
   '宴会中': 'feast',
-  '睡眠中': 'sleep',
+  '睡眠中': 'sound_sleep',
+  '熟睡中': 'sound_sleep',
+  '仮眠中': 'nap_sleep',
   '祈り中': 'pray',
   '待機中': 'idle',
   '移動中': 'move',
@@ -1541,8 +1546,8 @@ const AUTO_EQUIPMENT_MODE_LABEL: Record<AutoEquipmentMode, string> = {
 
 const AUTO_EQUIPMENT_HELP_LINES = [
   '手動: 装備の付け替えが自動で変わることはない',
-  '補助: 上位の通常称号の同一装備がある場合に置き換える。空きスロットがある際に装備する (祈りフェーズ開始時)',
-  '一任: 装備選定を一任する。自身の判断で現在の装備をすべて見直し、最適な装備構成になるよう自動で再装備する (祈りフェーズ開始時)',
+  '補助: 上位の通常称号の同一装備がある場合に置き換える。空きスロットがある際に装備する (熟睡からの起床時)',
+  '一任: 装備選定を一任する。自身の判断で現在の装備をすべて見直し、最適な装備構成になるよう自動で再装備する (熟睡からの起床時)',
   '※超レア装備は置き換わる事はない',
 ];
 
@@ -2495,16 +2500,15 @@ export function HomeScreen({
             } else {
               const shouldSkipFeast = updated.skipFeastThisCycle === true || (party.pendingProfit ?? 0) <= 0;
               const shouldSkipSleep = updated.skipSleepThisCycle === true;
-              const sleepDurationMs = getStateDurationMs(party, 'sleep');
+              const sleepDurationMs = getStateDurationMs(party, party.currentSleepiness === 1 ? 'nap_sleep' : 'sound_sleep');
               if (!shouldSkipFeast) {
                 updated.state = 'feast';
                 updated.durationMs = getStateDurationMs(party, 'feast');
               } else if (shouldSkipSleep || party.currentSleepiness === 0 || sleepDurationMs <= 100) {
                 updated.state = 'pray';
                 updated.durationMs = getStateDurationMs(party, 'pray');
-                autoEquipmentPartyIndexes.add(partyIndex);
               } else {
-                updated.state = 'sleep';
+                updated.state = party.currentSleepiness === 1 ? 'nap_sleep' : 'sound_sleep';
                 updated.durationMs = sleepDurationMs;
               }
               if (shouldSkipFeast) {
@@ -2526,8 +2530,8 @@ export function HomeScreen({
 
             if (updated.state === 'sell') {
               const shouldSkipFeast = cyclePendingProfit <= 0 || updated.skipFeastThisCycle === true;
-              updated.state = shouldSkipFeast ? 'sleep' : 'feast';
-              updated.durationMs = getStateDurationMs(party, shouldSkipFeast ? 'sleep' : 'feast');
+              updated.state = shouldSkipFeast ? (party.currentSleepiness === 1 ? 'nap_sleep' : 'sound_sleep') : 'feast';
+              updated.durationMs = getStateDurationMs(party, shouldSkipFeast ? (party.currentSleepiness === 1 ? 'nap_sleep' : 'sound_sleep') : 'feast');
               if (shouldSkipFeast) {
                 updated.skipFeastThisCycle = false;
               }
@@ -2548,23 +2552,25 @@ export function HomeScreen({
               if (party.sideQuest?.type === 'q.squander' && spend > 0) actions.advanceSideQuest(partyIndex, spend, simulationNow);
               cyclePendingProfit = Math.max(0, cyclePendingProfit - spend);
               const shouldSkipSleep = updated.skipSleepThisCycle === true;
-              const sleepDurationMs = getStateDurationMs(party, 'sleep');
+              const sleepDurationMs = getStateDurationMs(party, party.currentSleepiness === 1 ? 'nap_sleep' : 'sound_sleep');
               if (shouldSkipSleep || party.currentSleepiness === 0 || sleepDurationMs <= 100) {
                 updated.state = 'pray';
                 updated.durationMs = getStateDurationMs(party, 'pray');
-                autoEquipmentPartyIndexes.add(partyIndex);
               } else {
-                updated.state = 'sleep';
+                updated.state = party.currentSleepiness === 1 ? 'nap_sleep' : 'sound_sleep';
                 updated.durationMs = sleepDurationMs;
               }
               if (shouldSkipSleep) {
                 updated.skipSleepThisCycle = false;
               }
-            } else if (updated.state === 'sleep') {
+            } else if (updated.state === 'sound_sleep' || updated.state === 'nap_sleep') {
+              const isSoundSleep = updated.state === 'sound_sleep';
               if (party.sideQuest?.type === 'q.sleeping' && updated.durationMs > 100) actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
               updated.state = 'pray';
               updated.durationMs = getStateDurationMs(party, 'pray');
-              autoEquipmentPartyIndexes.add(partyIndex);
+              if (isSoundSleep) {
+                autoEquipmentPartyIndexes.add(partyIndex);
+              }
             } else if (updated.state === 'pray') {
               const isNoFaith = isNoFaithDeity(party.deity.name);
               const donationRate = rollPercentInclusive(10, 33);
@@ -2885,18 +2891,12 @@ export function HomeScreen({
     return 0.5;
   };
 
-  const getPartyStateDurationMultiplier = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'sleep' | 'pray' | 'explore'): number => {
+  const getPartyStateDurationMultiplier = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'pray' | 'explore'): number => {
     const deityGold = state.global.deityDonations[normalizeDeityName(party.deity.name)] ?? party.deityGold ?? 0;
     return getDeityStateDurationMultiplier(party.deity.name, deityGold, cycleState);
   };
 
-  const getSleepDurationMultiplier = (party: Party): number => {
-    if (party.currentSleepiness === 1) return 1 / 5;
-    if (party.currentSleepiness === 2) return 1;
-    return 0;
-  };
-
-  const getStateDurationMs = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'sleep' | 'pray'): number => {
+  const getStateDurationMs = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'pray'): number => {
     const durationScale = getCycleDurationScale(currentEnv);
     const autoSellCount = Math.max(1, party.lastExpeditionLog?.autoSellCount ?? 1);
     const baseSeconds = cycleState === 'rest'
@@ -2905,11 +2905,12 @@ export function HomeScreen({
         ? 5 * autoSellCount
         : cycleState === 'feast'
           ? 90
-          : cycleState === 'sleep'
+          : cycleState === 'sound_sleep'
             ? 180
-            : 30;
-    const sleepinessMultiplier = cycleState === 'sleep' ? getSleepDurationMultiplier(party) : 1;
-    return Math.max(100, Math.floor(baseSeconds * 1000 * durationScale * getPartyStateDurationMultiplier(party, cycleState) * sleepinessMultiplier));
+            : cycleState === 'nap_sleep'
+              ? 36
+              : 30;
+    return Math.max(100, Math.floor(baseSeconds * 1000 * durationScale * getPartyStateDurationMultiplier(party, cycleState)));
   };
 
   const getPartyTravelDurationMs = (party: Party, travelState: 'move' | 'return'): number => {
