@@ -391,7 +391,8 @@ PT2...
 	- **Flavor text**
 	  - The system selects flavor text from `@Specification_flavor_text.md`.
 	  - When determining eligibility, it checks the full party composition rather than only the front member.
-	  - Conditions may reference:
+	  - The **speaker name** of the flavor text is resolved to the party member who satisfies the triggering condition (race, main class, or ability holder).
+      - Conditions may reference:
 	    - any party member’s race
 	    - any party member’s main class
 	    - any party member’s abilities
