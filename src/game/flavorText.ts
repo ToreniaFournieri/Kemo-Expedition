@@ -17,6 +17,8 @@ export type FlavorCycleState =
 interface FlavorContext {
   state: FlavorCycleState;
   hpRatio: number;
+  sortieSourceState?: 'rest' | 'feast' | 'sleep';
+  embezzlementGold?: number;
   mainClassId?: ClassId;
   raceId?: RaceId;
   partyMainClassIds?: ReadonlyArray<ClassId>;
@@ -39,7 +41,6 @@ const stateIdByName = new Map<string, number>(FLAVOR_STATES.map((state, index) =
 
 function conditionSpecificity(condition: FlavorCondition): number {
   if (condition.k === 'none') return 0;
-  if (condition.k === 'raw') return -1;
   return 1;
 }
 
@@ -71,6 +72,8 @@ function isConditionMatch(condition: FlavorCondition, context: FlavorContext): b
       return isRawConditionMatch(condition.v, {
         partyAbilityIds: abilityIds,
         partyReligionName: context.partyReligionName,
+        sortieSourceState: context.sortieSourceState,
+        embezzlementGold: context.embezzlementGold,
       });
     default:
       return false;
@@ -82,6 +85,8 @@ function isRawConditionMatch(
   context: {
     partyAbilityIds: ReadonlySet<string>;
     partyReligionName?: string;
+    sortieSourceState?: 'rest' | 'feast' | 'sleep';
+    embezzlementGold?: number;
   }
 ): boolean {
   const abilityMatch = raw.match(/with\s+ability\.\s*`([^`]+)`/i);
@@ -96,6 +101,16 @@ function isRawConditionMatch(
     return context.partyReligionName === religionMatch[1].trim();
   }
 
+  const sortieWhileStateWithEmbezzlementMatch = raw.match(/sortie\s+while\s+(sleep|feast|rest)\s+state\s+with\s+embezzlement\s*>\s*0\s*G/i);
+  if (sortieWhileStateWithEmbezzlementMatch) {
+    const sourceState = sortieWhileStateWithEmbezzlementMatch[1].toLowerCase() as 'sleep' | 'feast' | 'rest';
+    return context.sortieSourceState === sourceState && (context.embezzlementGold ?? 0) > 0;
+  }
+
+  if (/sortie\s+with\s+embezzlement\s*=\s*0\s*G/i.test(raw)) {
+    return (context.embezzlementGold ?? 0) === 0;
+  }
+
   return false;
 }
 
@@ -106,6 +121,7 @@ function normalizeFlavorText(text: string, context: FlavorContext): string {
     .replace(/name/g, speakerName)
     .replace(/selling item/g, context.sellingItemName ?? 'アイテム')
     .replace(/auto-sell price/g, context.autoSellPrice !== undefined ? `${context.autoSellPrice}` : '0')
+    .replace(/d\.embezzlement/g, `${Math.max(0, context.embezzlementGold ?? 0)}`)
     .replace(/\s+/g, ' ')
     .trim();
 }

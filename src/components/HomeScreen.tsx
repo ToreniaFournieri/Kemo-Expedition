@@ -164,6 +164,8 @@ interface PartyCycleRuntime {
   state: PartyCycleState;
   stateStartedAt: number;
   durationMs: number;
+  sortieSourceState?: 'rest' | 'feast' | 'sleep';
+  sortieEmbezzlementGold?: number;
   isCurrentExpeditionGodsBattle?: boolean;
   skipFeastThisCycle?: boolean;
   skipSleepThisCycle?: boolean;
@@ -2176,6 +2178,8 @@ export function HomeScreen({
             state: 'move',
             stateStartedAt: now,
             durationMs: getPartyTravelDurationMs(party, 'move'),
+            sortieSourceState: undefined,
+            sortieEmbezzlementGold: 0,
           };
         }
       });
@@ -2474,6 +2478,8 @@ export function HomeScreen({
           updated.state = 'move';
           updated.durationMs = getPartyTravelDurationMs(party, 'move');
           updated.stateStartedAt = simulationNow;
+          updated.sortieSourceState = undefined;
+          updated.sortieEmbezzlementGold = 0;
         }
 
         if (updated.state === 'explore') {
@@ -2614,6 +2620,10 @@ export function HomeScreen({
               }
               updated.state = autoRepeatEnabled ? 'move' : 'idle';
               updated.durationMs = updated.state === 'move' ? getPartyTravelDurationMs(party, 'move') : 1000;
+              if (updated.state === 'move') {
+                updated.sortieSourceState = undefined;
+                updated.sortieEmbezzlementGold = 0;
+              }
             } else if (updated.state === 'idle') {
               updated.durationMs = 1000;
             } else if (updated.state === 'move') {
@@ -2876,10 +2886,21 @@ export function HomeScreen({
     setActiveTab(nextTab);
   };
 
-  const transitionTo = (partyIndex: number, nextState: PartyCycleState, durationMs: number) => {
+  const transitionTo = (
+    partyIndex: number,
+    nextState: PartyCycleState,
+    durationMs: number,
+    sortieContext?: { sourceState?: 'rest' | 'feast' | 'sleep'; embezzlementGold?: number },
+  ) => {
     setPartyCycles((prev) => ({
       ...prev,
-      [partyIndex]: { state: nextState, stateStartedAt: Date.now(), durationMs },
+      [partyIndex]: {
+        state: nextState,
+        stateStartedAt: Date.now(),
+        durationMs,
+        sortieSourceState: sortieContext?.sourceState,
+        sortieEmbezzlementGold: Math.max(0, Math.floor(sortieContext?.embezzlementGold ?? 0)),
+      },
     }));
   };
 
@@ -3000,7 +3021,19 @@ export function HomeScreen({
 
     pendingGodsBattleByPartyRef.current[partyIndex] = triggerGodsBattle;
     actions.clearPendingProfit(partyIndex);
-    transitionTo(partyIndex, 'move', getPartyTravelDurationMs(party, 'move'));
+    transitionTo(
+      partyIndex,
+      'move',
+      getPartyTravelDurationMs(party, 'move'),
+      {
+        sourceState: cycle?.state === 'rest' || cycle?.state === 'feast'
+          ? cycle.state
+          : cycle?.state === 'sound_sleep' || cycle?.state === 'nap_sleep'
+            ? 'sleep'
+            : undefined,
+        embezzlementGold: stolenProfit,
+      },
+    );
   };
 
   const prevActiveTabRef = useRef<Tab>(activeTab);
@@ -5321,6 +5354,8 @@ function ExpeditionTab({
             seed: flavorSeed,
             sellingItemName: sellProgressState?.activeItem?.itemName,
             autoSellPrice: sellProgressState?.activeItem?.autoSellProfit,
+            sortieSourceState: cycle.sortieSourceState,
+            embezzlementGold: cycle.sortieEmbezzlementGold ?? 0,
           });
           return flavorText ? `${stateLabel}: ${flavorText}` : stateLabel;
         })();
