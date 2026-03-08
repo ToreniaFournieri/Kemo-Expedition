@@ -12,6 +12,16 @@
 | rest | none | name は次の行動に備えて体力を温存している |
 | rest | none | name は静かな時間の中で気持ちを立て直している |
 | rest | `d.HP` < 20% of max HP |  早く楽になりたいと願ったら医者から安楽死を勧められた| 
+| rest | `d.HP` < 20% of max HP | name は傷口を押さえながら浅く息を整えている |
+| rest | `d.HP` < 20% of max HP | name は震える手で包帯を巻き直している |
+| rest | `d.HP` < 20% of max HP | name は仲間の肩を借りてようやく座り込んだ |
+| rest | `d.HP` < 20% of max HP | name は痛みに耐えながら温かい湯を口にした |
+| rest | `d.HP` < 20% of max HP | name は荒い呼吸のまま焚き火の熱に身を寄せている |
+| rest | `d.HP` < 20% of max HP | name は立ち上がる力を蓄えるように目を閉じている |
+| rest | `d.HP` < 20% of max HP | name は手当てを受けつつ無言でうなずいた |
+| rest | `d.HP` < 20% of max HP | name は汗をぬぐいながら鼓動が落ち着くのを待っている |
+| rest | `d.HP` < 20% of max HP | name は今は生き延びることだけを考えて休んでいる |
+| rest | `d.HP` < 20% of max HP | name はかすかな回復の兆しに希望をつないでいる |
 | feast | none | nameはビールを追加で注文した |
 | feast | none | name は焼きたての料理を頬張って笑みをこぼした |
 | feast | none | name は香ばしい匂いに誘われて席についた |
