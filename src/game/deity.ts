@@ -271,7 +271,7 @@ export function applyDeityCharacterModifiers(
 }
 
 // SpecRef: 2.3.3 | Religions lists | getDeityStateDurationMultiplier
-export function getDeityStateDurationMultiplier(name: string, totalDonatedGold = 0, state: 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'pray' | 'explore'): number {
+export function getDeityStateDurationMultiplier(name: string, totalDonatedGold = 0, state: 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray' | 'explore'): number {
   const deityKey = getDeityKey(name);
   const effectiveTier = getEffectiveDeityTier(totalDonatedGold);
   if (!deityKey) return 1;
