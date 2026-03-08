@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.5.1 - SPECIFICATION
+# KEMO EXPEDITION v0.5.2 - SPECIFICATION
 
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
@@ -549,7 +549,7 @@ Party.`d.HP` =
           - With Squander: PT1 君主トムは贅沢に50G使った
   - At the end of pray(祈り中):
       - `current_profit` -= donattion ( 10–33% of `current_profit` without `a.tithe`, if party has `a.tithe`2, Adds +15% , else if party has `a.tithe`1, Adds +10, if deity = none, donation is 0. )
-      - `current_profit` -= embezzlement (if `God of Cunning`, 50% of `current_profit`. Else if, 0%)
+      - `current_profit` -= embezzlement (if `God of Cunning`, +50% of `current_profit`. if partymember.`a.momentum`, +10% of `current_profit`. Else if, 0%)
         -  Notification:
           - deity = none: PT1は 43Gを貯金した
           - Without Tithe: PT1は10G神に捧げ、30Gを貯金した
@@ -665,7 +665,8 @@ PT3: 貯金額: 10G
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
-| **0.5.1** | Ajusts auto equipment logic |
+| **0.5.2** | Fixed auto equipment logic, update side quest barance, especially embezzlement part logic. Refine AFK part. |
+| 0.5.1 | Ajusts auto equipment logic |
 | 0.5.0 | unlock for deities, religions . auto equipment update |
 | 0.4.1 | Cycle update |
 | 0.4.0 | Jewel update, side quest update (level cap to 49) |
