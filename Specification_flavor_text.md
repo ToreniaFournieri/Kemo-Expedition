@@ -1076,3 +1076,33 @@
 | return | none | 仲間と歩調を合わせて帰還している |
 | return | none | 長い行程を終えるべく歩いている |
 | return | none | 無事に戻ることを第一に進んでいる |
+| return | `d.HP` > 95% of max HP | name はほとんど無傷のまま、軽い足取りで拠点へ戻っている |
+| return | `d.HP` > 95% of max HP | name は余裕の笑みを浮かべ、戦果を語りながら帰還している |
+| return | `d.HP` > 95% of max HP | name は疲れを見せず、先頭に立って帰路を進んでいる |
+| return | `d.HP` > 95% of max HP | name は装備を整えたまま、警戒を保って拠点へ向かっている |
+| return | `d.HP` > 95% of max HP | name は次の任務さえ見据え、堂々と帰還している |
+| return | `d.HP` > 95% of max HP | name は息ひとつ乱さず、安定した歩調で戻っている |
+| return | `d.HP` > 95% of max HP | name は仲間を励ましつつ、余力十分で道を進んでいる |
+| return | `d.HP` > 95% of max HP | name は傷の少なさを確かめ、満ちた体力で帰っている |
+| return | `d.HP` > 95% of max HP | name はまだ戦える気配を残したまま、悠々と帰還している |
+| return | `d.HP` > 95% of max HP | name は遠征終わりとは思えぬ足取りで拠点へ向かっている |
+| return | `d.HP` < 30% of max HP | name は痛む体をかばいながら、慎重に帰路をたどっている |
+| return | `d.HP` < 30% of max HP | name は息を切らしつつも、拠点の灯りを頼りに進んでいる |
+| return | `d.HP` < 30% of max HP | name はふらつく足を踏みしめ、なんとか帰還を続けている |
+| return | `d.HP` < 30% of max HP | name は仲間の支えを受けながら、ゆっくり戻っている |
+| return | `d.HP` < 30% of max HP | name は止血した包帯を押さえ、無言で帰り道を進んでいる |
+| return | `d.HP` < 30% of max HP | name は一歩ごとに痛みに耐え、拠点を目指している |
+| return | `d.HP` < 30% of max HP | name は休み休み歩き、帰還だけを考えている |
+| return | `d.HP` < 30% of max HP | name は視界の揺れをこらえつつ、道を外さず戻っている |
+| return | `d.HP` < 30% of max HP | name は気力で体を動かし、遅れまいと帰路を急いでいる |
+| return | `d.HP` < 30% of max HP | name は消えかけた体力を振り絞り、ようやく帰還している |
+| return | `d.HP` = 0% of max HP (defeated) | name は力尽き、仲間に運ばれながら拠点へ収容されている |
+| return | `d.HP` = 0% of max HP (defeated) | name は意識を失ったまま、担架で静かに運ばれている |
+| return | `d.HP` = 0% of max HP (defeated) | name の装備だけが先に回収され、本人は救護班に託された |
+| return | `d.HP` = 0% of max HP (defeated) | name は戦線を離脱し、仲間の腕に支えられて帰還している |
+| return | `d.HP` = 0% of max HP (defeated) | name はその場で倒れ、救助隊によって拠点へ搬送された |
+| return | `d.HP` = 0% of max HP (defeated) | name は反応を失い、静まり返った隊列の中で運ばれている |
+| return | `d.HP` = 0% of max HP (defeated) | name は撤退の混乱の中で救い出され、帰還処置に入った |
+| return | `d.HP` = 0% of max HP (defeated) | name は倒れたまま動かず、仲間が交代で担いで戻っている |
+| return | `d.HP` = 0% of max HP (defeated) | name の呼吸はかすかで、緊急手当てを受けつつ運ばれている |
+| return | `d.HP` = 0% of max HP (defeated) | name は完全に戦闘不能となり、帰還後ただちに治療室へ送られる |
