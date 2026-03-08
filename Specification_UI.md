@@ -390,7 +390,6 @@ PT2...
   - List of available dungeons with Loot-Gate conditions
 	- **Flavor text**
 	  - The system selects flavor text from `@Specification_flavor_text.md`.
-	  - When determining eligibility, it checks the full party composition rather than only the front member.
 	  - The **speaker name** of the flavor text is resolved to the party member who satisfies the triggering condition (race, main class, or ability holder).
       - Conditions may reference:
 	    - any party member’s race
@@ -399,6 +398,10 @@ PT2...
 	    - the party’s religion
 	    - other defined party-wide attributes
 	  - Therefore, every party member is a potential trigger source for flavor text selection.
+	  - **Flavor text cycle update**
+	    - State types:
+	      - **Step-based states:** Flavor text is updated on each step progression (only `sell` and `explore`).
+	      - **Continuous states:** Flavor text refreshes every **15 seconds** (e.g., `rest`, `sleep`, `feast`, etc.).
   
   - Expedition behavior:
     - Expedition resolves immediately
