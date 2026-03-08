@@ -1641,6 +1641,7 @@ export function HomeScreen({
   const autoEquipmentEnabledRef = useRef(isAutoEquipmentEnabled);
   const gameModeRef = useRef(gameMode);
   const [pendingAfkMs, setPendingAfkMs] = useState(0);
+  const pendingAfkMsRef = useRef(0);
   const afkSimulationAnchorRef = useRef<number | null>(null);
   const afkRecoveryTotalMsRef = useRef(0);
   const previousPendingAfkMsRef = useRef(0);
@@ -2314,6 +2315,10 @@ export function HomeScreen({
   }, [isAutoRepeatEnabled, partyCycles]);
 
   useEffect(() => {
+    pendingAfkMsRef.current = pendingAfkMs;
+  }, [pendingAfkMs]);
+
+  useEffect(() => {
     if (pendingAfkMs > 0) return;
     if (!shouldShowAfkSummaryRef.current) return;
     const baselineStats = afkSummaryBaselineRef.current;
@@ -2423,11 +2428,6 @@ export function HomeScreen({
       actions.addNotification(`(Debug)前回の更新から ${formatNumber(elapsedSeconds)}秒経過`);
     }
 
-    if (elapsedMs >= 1000) {
-      afkSummaryBaselineRef.current = parties.map((party) => ({ ...party.expeditionStats }));
-      shouldShowAfkSummaryRef.current = true;
-    }
-
     parties.forEach((party, partyIndex) => {
       if (party.sideQuest?.type !== 'q.AFK') {
         afkQuestCarryMsRef.current[partyIndex] = 0;
@@ -2447,6 +2447,10 @@ export function HomeScreen({
     // Long background spans should be simulated inside the reducer so each expedition
     // phase reads the latest pending profit / HP values instead of stale render snapshots.
     if (elapsedMs >= 60_000) {
+      if (pendingAfkMsRef.current <= 0) {
+        afkSummaryBaselineRef.current = parties.map((party) => ({ ...party.expeditionStats }));
+        shouldShowAfkSummaryRef.current = true;
+      }
       afkSimulationAnchorRef.current = now;
       setPendingAfkMs((prev) => {
         const next = Math.min(AFK_MAX_ELAPSED_MS, prev + elapsedMs);
