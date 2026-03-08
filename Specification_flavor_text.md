@@ -1056,6 +1056,46 @@
 | move | none | 足音を抑えて静かに進んでいる |
 | move | none | 遅れないように速度を保っている |
 | move | none | 進行方向を確かめつつ前進している |
+| move | sortie while sleep state with embezzlement > 0 G | nameは神の緊急動員に憤り、d.embezzlementGを持ち逃げして出撃した |
+| move | sortie while sleep state with embezzlement > 0 G | name は寝ぼけ眼のまま命令に毒づき、d.embezzlementGを懐に隠して歩き出した |
+| move | sortie while sleep state with embezzlement > 0 G | name は毛布を引きずりながら、d.embezzlementGの重みだけはしっかり確かめて進軍している |
+| move | sortie while sleep state with embezzlement > 0 G | name は欠伸混じりに神への不満を漏らし、d.embezzlementGを持ったまま隊列に加わった |
+| move | sortie while sleep state with embezzlement > 0 G | name は半分眠った足取りで出撃しつつ、d.embezzlementGの袋だけは離さない |
+| move | sortie while sleep state with embezzlement > 0 G | name は夢の続きに未練を残しながらも、d.embezzlementGを抱えて前線へ向かう |
+| move | sortie while sleep state with embezzlement > 0 G | name はまぶたを擦って神命を恨み、d.embezzlementGを持ち逃げした罪悪感ごと進んでいる |
+| move | sortie while sleep state with embezzlement > 0 G | name は寝台から叩き起こされた怒りを胸に、d.embezzlementGを握って移動している |
+| move | sortie while sleep state with embezzlement > 0 G | name は寝息の名残を引きずったまま、d.embezzlementGを隠して渋々出撃した |
+| move | sortie while sleep state with embezzlement > 0 G | name は眠気と苛立ちを抱え、d.embezzlementGの持ち逃げを正当化しながら進んでいる |
+| move | sortie while feast state with embezzlement > 0 G | name は宴席を中断させた神命に腹を立て、d.embezzlementGを懐へ滑り込ませて出撃した |
+| move | sortie while feast state with embezzlement > 0 G | name は口いっぱいの料理を飲み込み、d.embezzlementGを持ち逃げして怒りの行軍を始めた |
+| move | sortie while feast state with embezzlement > 0 G | name は乾杯の途中で呼び出された恨みを込め、d.embezzlementGを握って歩いている |
+| move | sortie while feast state with embezzlement > 0 G | name は皿を置く音を荒げ、d.embezzlementGをくすねたまま前線へ急いだ |
+| move | sortie while feast state with embezzlement > 0 G | name はまだ肉の香りをまといながら、d.embezzlementGを持って不機嫌に移動している |
+| move | sortie while feast state with embezzlement > 0 G | name は神への文句を噛みしめ、d.embezzlementGの袋を揺らして隊列を進む |
+| move | sortie while feast state with embezzlement > 0 G | name は食後の余韻を奪われた怒りで、d.embezzlementGを隠して出撃を続けている |
+| move | sortie while feast state with embezzlement > 0 G | name はスプーンを投げ置き、d.embezzlementGを持ち逃げして戦地へ向かった |
+| move | sortie while feast state with embezzlement > 0 G | name は満腹のまま不満顔で進み、d.embezzlementGだけはしっかり守っている |
+| move | sortie while feast state with embezzlement > 0 G | name は宴を壊された報復として、d.embezzlementGを抱えて乱暴な足取りで出撃した |
+| move | sortie while rest state with embezzlement > 0 G | name は休息を断ち切る神命に苛立ち、d.embezzlementGを持ち逃げして立ち上がった |
+| move | sortie while rest state with embezzlement > 0 G | name は焚き火から引き剥がされた怒りを隠さず、d.embezzlementGを懐に入れて進んでいる |
+| move | sortie while rest state with embezzlement > 0 G | name はため息交じりに装備を背負い、d.embezzlementGを隠して渋々行軍を始めた |
+| move | sortie while rest state with embezzlement > 0 G | name は癒やしの時間を奪われた腹いせに、d.embezzlementGを確保して出撃した |
+| move | sortie while rest state with embezzlement > 0 G | name は休憩椅子を蹴って立ち上がり、d.embezzlementGを抱えたまま隊列へ戻った |
+| move | sortie while rest state with embezzlement > 0 G | name は静寂を破る出撃命令へ舌打ちし、d.embezzlementGとともに前進している |
+| move | sortie while rest state with embezzlement > 0 G | name は疲れた体に鞭打ちつつ、d.embezzlementGの袋を締めて歩き出した |
+| move | sortie while rest state with embezzlement > 0 G | name は神の気まぐれに抗議しながら、d.embezzlementGを持って移動している |
+| move | sortie while rest state with embezzlement > 0 G | name はひと息つく暇もなく、d.embezzlementGを懐へ隠して戦線へ向かった |
+| move | sortie while rest state with embezzlement > 0 G | name は休息の代償だと言い張り、d.embezzlementGを持ち逃げして不機嫌に進軍する |
+| move | sortie with embezzlement = 0 G | name は神の緊急動員に憤り、露骨に不満顔で出撃した |
+| move | sortie with embezzlement = 0 G | name は理不尽な命令に舌打ちし、荒い足取りで前線へ向かった |
+| move | sortie with embezzlement = 0 G | name は文句を飲み込めず、ぶつぶつと神への抗議を続けている |
+| move | sortie with embezzlement = 0 G | name は納得しないまま装備を担ぎ、不機嫌に隊列へ戻った |
+| move | sortie with embezzlement = 0 G | name は呼び出しの強引さに腹を立て、視線を険しくして進んでいる |
+| move | sortie with embezzlement = 0 G | name は休む間もなく命じられたことに怒り、肩をいからせて移動した |
+| move | sortie with embezzlement = 0 G | name は「また急か」と吐き捨て、反抗的な歩調で進軍している |
+| move | sortie with embezzlement = 0 G | name は神命への不平を隠さず、仲間にも苛立ちをにじませている |
+| move | sortie with embezzlement = 0 G | name は強制出撃への恨みを抱えたまま、黙々と前へ進んでいる |
+| move | sortie with embezzlement = 0 G | name は怒りで頬をこわばらせ、無言の抗議をしながら出撃した |
 | explore | none | 細かな痕跡を見逃さないよう調べている |
 | explore | none | 気になる場所に近づいて確認している |
 | explore | none | 新しい手がかりを探して歩き回っている |
