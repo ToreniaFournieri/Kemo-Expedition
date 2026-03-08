@@ -564,11 +564,11 @@ Party.`d.HP` =
           - With embezzlement: PT1は神の緊急動員に憤り、49Gを持ち逃げして出撃した
 
 - Player taps 出撃
-  - If party is in 帰還中/ 待機中 / 休息中 / 売却中 / 宴会中 / 祈り中:
-  - Immediately set state to 移動中
+  - If party is in return / idle / rest / sell / feast / sound_sleep / nap_sleep / pray state:
+  - Immediately set state to move state
   - If they not gain items (not finished 売却中 state), immediately gain items and show notifications.
   - Do not refill HP; dungeon starts with current HP. No squander, donation, nor remaining profits to the global wallet. The profit vanishes (The party menders would definitely not be happy with this players emergency sortie.)
-  - If party is already in 移動中 / 探索中 / 帰還中: ignore tap
+  - If party is already in explore state: ignore tap
   - If party Hp is 0 (just after defeated): ignore tap and show notification log:"random party.character は疲弊しており出撃を拒否した"
 
 
