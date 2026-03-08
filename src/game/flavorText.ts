@@ -61,6 +61,8 @@ function isConditionMatch(condition: FlavorCondition, context: FlavorContext): b
       return context.hpRatio > condition.v;
     case 'hp_lt':
       return context.hpRatio < condition.v;
+    case 'hp_eq':
+      return context.hpRatio === condition.v;
     case 'class_is':
       return classIds.has(condition.v as ClassId);
     case 'race_is':
