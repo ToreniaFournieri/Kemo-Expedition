@@ -587,7 +587,7 @@ Party.`d.HP` =
 
 **Notification**
 - Format: 踏破N回/帰還Y回/撤退M回/敗北X回 寄付金額: vG, 貯金額:　vG
-  - Key and label:Clears(踏破) / Escapes(帰還) / Retreats(撤退) / Defeats(敗北) 
+  - Key and label:Clear(踏破) / Escape(帰還) / Retreat(撤退) / Defeat(敗北) 
 - If the value is 0, not display its text (if all zero, then no notification)
 
 ```
