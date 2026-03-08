@@ -228,9 +228,9 @@ function preloadRaceIcons(): void {
   });
 }
 
-function getExplorationDurationMs(entryCount?: number, durationMultiplier: number = 1): number {
+function getExplorationDurationMs(entryCount?: number, durationMultiplier: number = 1, durationScale: number = 1): number {
   const exploredSteps = Math.max(1, Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, entryCount ?? EXPLORING_PROGRESS_TOTAL_STEPS));
-  return Math.floor(exploredSteps * EXPLORING_PROGRESS_STEP_MS * durationMultiplier);
+  return Math.floor(exploredSteps * EXPLORING_PROGRESS_STEP_MS * durationMultiplier * durationScale);
 }
 
 function getExplorationVisibleRoomCount(elapsedMs: number, durationMs: number, totalEntries: number): number {
@@ -2471,7 +2471,11 @@ export function HomeScreen({
 
         if (updated.state === 'explore') {
           const exploredRooms = party.lastExpeditionLog?.entries.length;
-          updated.durationMs = getExplorationDurationMs(exploredRooms, getPartyStateDurationMultiplier(party, 'explore'));
+          updated.durationMs = getExplorationDurationMs(
+            exploredRooms,
+            getPartyStateDurationMultiplier(party, 'explore'),
+            getCycleDurationScale(currentEnv),
+          );
         }
 
         if (updated.state === 'rest') {
@@ -2612,7 +2616,11 @@ export function HomeScreen({
               if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
               actions.runExpedition(partyIndex, gameModeRef.current === 'm.luna', triggerGodsBattle);
               updated.state = 'explore';
-              updated.durationMs = getExplorationDurationMs(undefined, getPartyStateDurationMultiplier(party, 'explore'));
+              updated.durationMs = getExplorationDurationMs(
+                undefined,
+                getPartyStateDurationMultiplier(party, 'explore'),
+                getCycleDurationScale(currentEnv),
+              );
               updated.isCurrentExpeditionGodsBattle = triggerGodsBattle;
             } else if (updated.state === 'explore') {
               actions.finalizeDiaryLog(partyIndex);
