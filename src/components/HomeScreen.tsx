@@ -170,6 +170,14 @@ const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk
 const AFK_MAX_ELAPSED_MS = 1800 * 60 * 1000;
 const AFK_BACKGROUND_CHUNK_MS = 120 * 1000;
 
+function getElapsedWholeSeconds(carriedMs: number, elapsedMs: number): { gainedSeconds: number; remainderMs: number } {
+  const totalMs = Math.max(0, carriedMs + elapsedMs);
+  return {
+    gainedSeconds: Math.floor(totalMs / 1000),
+    remainderMs: totalMs % 1000,
+  };
+}
+
 const HEADER_HEIGHT_CLASS = 'pt-[118px]';
 type GameMode = 'm.kemo' | 'm.luna';
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
@@ -2411,9 +2419,8 @@ export function HomeScreen({
       }
 
       const carriedMs = afkQuestCarryMsRef.current[partyIndex] ?? 0;
-      const totalMs = carriedMs + elapsedMs;
-      const gainedSeconds = Math.floor(totalMs / 1000);
-      afkQuestCarryMsRef.current[partyIndex] = totalMs % 1000;
+      const { gainedSeconds, remainderMs } = getElapsedWholeSeconds(carriedMs, elapsedMs);
+      afkQuestCarryMsRef.current[partyIndex] = remainderMs;
 
       if (gainedSeconds > 0) {
         const simulatedAt = lastCheckpointAtRef.current + elapsedMs;

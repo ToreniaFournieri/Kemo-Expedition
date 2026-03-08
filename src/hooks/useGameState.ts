@@ -1387,6 +1387,41 @@ function getItemRarityById(itemId: number): 'common' | 'uncommon' | 'eliteRare' 
   return 'common';
 }
 
+
+function advanceAfkLogSideQuestProgress(state: GameState, partyIndex: number, simulatedAt: number): GameState {
+  const party = state.parties[partyIndex];
+  const sideQuestType = party?.sideQuest?.type;
+  const afkLog = party?.lastExpeditionLog;
+  if (!sideQuestType || !afkLog) return state;
+
+  switch (sideQuestType) {
+    case 'q.treasure_super_rare': {
+      const gained = afkLog.rewards.filter((item) => item.superRare > 0).length;
+      return gained > 0 ? gameReducer(state, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: gained, simulatedAt }) : state;
+    }
+    case 'q.treasure_boss_rare': {
+      const gained = afkLog.rewards.filter((item) => getItemRarityById(item.id) === 'bossRare').length;
+      return gained > 0 ? gameReducer(state, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: gained, simulatedAt }) : state;
+    }
+    case 'q.poor_kid':
+      return (afkLog.rewards.length ?? 0) === 0
+        ? gameReducer(state, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1, simulatedAt })
+        : state;
+    case 'q.consecutive_wins':
+      return afkLog.finalOutcome === 'victory'
+        ? gameReducer(state, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1, simulatedAt })
+        : gameReducer(state, { type: 'SET_SIDE_QUEST_PROGRESS', partyIndex, progress: 0 });
+    case 'q.losers':
+      return afkLog.finalOutcome === 'defeat'
+        ? gameReducer(state, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1, simulatedAt })
+        : state;
+    default:
+      return state;
+  }
+}
+
+
+
 type RewardBagType = 'commonRewardBag' | 'uncommonRewardBag' | 'eliteRareRewardBag' | 'bossRareRewardBag' | 'mythicRareRewardBag';
 
 
@@ -3065,35 +3100,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             };
           }
 
-          const afkProcessedParty = workingState.parties[partyIndex];
-          const afkLog = afkProcessedParty?.lastExpeditionLog;
-          if (afkProcessedParty?.sideQuest && afkLog) {
-            if (afkProcessedParty.sideQuest.type === 'q.treasure_super_rare') {
-              const gained = afkLog.rewards.filter((item) => item.superRare > 0).length;
-              if (gained > 0) {
-                workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: gained, simulatedAt });
-              }
-            }
-            if (afkProcessedParty.sideQuest.type === 'q.treasure_boss_rare') {
-              const gained = afkLog.rewards.filter((item) => getItemRarityById(item.id) === 'bossRare').length;
-              if (gained > 0) {
-                workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: gained, simulatedAt });
-              }
-            }
-            if (afkProcessedParty.sideQuest.type === 'q.poor_kid' && (afkLog.rewards.length ?? 0) === 0) {
-              workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1, simulatedAt });
-            }
-            if (afkProcessedParty.sideQuest.type === 'q.consecutive_wins') {
-              if (afkLog.finalOutcome === 'victory') {
-                workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1, simulatedAt });
-              } else {
-                workingState = gameReducer(workingState, { type: 'SET_SIDE_QUEST_PROGRESS', partyIndex, progress: 0 });
-              }
-            }
-            if (afkProcessedParty.sideQuest.type === 'q.losers' && afkLog.finalOutcome === 'defeat') {
-              workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1, simulatedAt });
-            }
-          }
+          workingState = advanceAfkLogSideQuestProgress(workingState, partyIndex, simulatedAt);
 
           const postCycleParty = workingState.parties[partyIndex];
           if (postCycleParty && !postCycleParty.sideQuest) {
