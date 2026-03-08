@@ -62,18 +62,24 @@ function normalizeFlavorText(text: string, context: FlavorContext): string {
     .trim();
 }
 
+function formatConditionDebug(condition: FlavorCondition): string {
+  if (condition.k === 'none') return 'no condition';
+  if (condition.k === 'raw') return `raw: ${condition.v}`;
+  return `${condition.k}: ${condition.v}`;
+}
+
 export function getRuntimeFlavorText(context: FlavorContext): string | null {
   const stateId = stateIdByName.get(context.state);
   if (stateId === undefined) return null;
 
-  const matched: Array<{ text: string; specificity: number }> = [];
+  const matched: Array<{ text: string; specificity: number; condition: FlavorCondition }> = [];
   for (const [entryStateId, conditionId, text] of FLAVOR_ENTRIES) {
     if (entryStateId !== stateId) continue;
     const condition = FLAVOR_CONDITIONS[conditionId];
     if (!condition || !isConditionMatch(condition, context)) continue;
     const specificity = conditionSpecificity(condition);
     if (specificity < 0) continue;
-    matched.push({ text, specificity });
+    matched.push({ text, specificity, condition });
   }
 
   if (matched.length === 0) return null;
@@ -82,5 +88,6 @@ export function getRuntimeFlavorText(context: FlavorContext): string | null {
   const candidates = matched.filter((entry) => entry.specificity === bestSpecificity);
   const normalizedSeed = Math.abs(Math.floor(context.seed));
   const picked = candidates[normalizedSeed % candidates.length];
-  return normalizeFlavorText(picked.text, context);
+  const normalizedText = normalizeFlavorText(picked.text, context);
+  return `${normalizedText} (${formatConditionDebug(picked.condition)})`;
 }
