@@ -2179,7 +2179,7 @@ export function HomeScreen({
             stateStartedAt: now,
             durationMs: getPartyTravelDurationMs(party, 'move'),
             sortieSourceState: undefined,
-            sortieEmbezzlementGold: 0,
+            sortieEmbezzlementGold: undefined,
           };
         }
       });
@@ -2479,7 +2479,7 @@ export function HomeScreen({
           updated.durationMs = getPartyTravelDurationMs(party, 'move');
           updated.stateStartedAt = simulationNow;
           updated.sortieSourceState = undefined;
-          updated.sortieEmbezzlementGold = 0;
+          updated.sortieEmbezzlementGold = undefined;
         }
 
         if (updated.state === 'explore') {
@@ -2622,7 +2622,7 @@ export function HomeScreen({
               updated.durationMs = updated.state === 'move' ? getPartyTravelDurationMs(party, 'move') : 1000;
               if (updated.state === 'move') {
                 updated.sortieSourceState = undefined;
-                updated.sortieEmbezzlementGold = 0;
+                updated.sortieEmbezzlementGold = undefined;
               }
             } else if (updated.state === 'idle') {
               updated.durationMs = 1000;
@@ -2899,7 +2899,9 @@ export function HomeScreen({
         stateStartedAt: Date.now(),
         durationMs,
         sortieSourceState: sortieContext?.sourceState,
-        sortieEmbezzlementGold: Math.max(0, Math.floor(sortieContext?.embezzlementGold ?? 0)),
+        sortieEmbezzlementGold: sortieContext
+          ? Math.max(0, Math.floor(sortieContext.embezzlementGold ?? 0))
+          : undefined,
       },
     }));
   };
@@ -5355,7 +5357,7 @@ function ExpeditionTab({
             sellingItemName: sellProgressState?.activeItem?.itemName,
             autoSellPrice: sellProgressState?.activeItem?.autoSellProfit,
             sortieSourceState: cycle.sortieSourceState,
-            embezzlementGold: cycle.sortieEmbezzlementGold ?? 0,
+            embezzlementGold: cycle.sortieEmbezzlementGold,
           });
           return flavorText ? `${stateLabel}: ${flavorText}` : stateLabel;
         })();

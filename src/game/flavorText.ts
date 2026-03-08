@@ -39,8 +39,16 @@ interface FlavorContext {
 
 const stateIdByName = new Map<string, number>(FLAVOR_STATES.map((state, index) => [state, index]));
 
-function conditionSpecificity(condition: FlavorCondition): number {
+function isSortieConditionRaw(raw: string): boolean {
+  return /sortie\s+while\s+(sleep|feast|rest)\s+state\s+with\s+embezzlement\s*>\s*0\s*G/i.test(raw)
+    || /sortie\s+with\s+embezzlement\s*=\s*0\s*G/i.test(raw);
+}
+
+function conditionSpecificity(condition: FlavorCondition, context: FlavorContext): number {
   if (condition.k === 'none') return 0;
+  if (condition.k === 'raw' && isSortieConditionRaw(condition.v) && (context.sortieSourceState !== undefined || context.embezzlementGold !== undefined)) {
+    return 2;
+  }
   return 1;
 }
 
@@ -89,6 +97,7 @@ function isRawConditionMatch(
     embezzlementGold?: number;
   }
 ): boolean {
+  const isSortieActive = context.sortieSourceState !== undefined || context.embezzlementGold !== undefined;
   const abilityMatch = raw.match(/with\s+ability\.\s*`([^`]+)`/i);
   if (abilityMatch) {
     const abilityToken = abilityMatch[1].trim();
@@ -104,11 +113,11 @@ function isRawConditionMatch(
   const sortieWhileStateWithEmbezzlementMatch = raw.match(/sortie\s+while\s+(sleep|feast|rest)\s+state\s+with\s+embezzlement\s*>\s*0\s*G/i);
   if (sortieWhileStateWithEmbezzlementMatch) {
     const sourceState = sortieWhileStateWithEmbezzlementMatch[1].toLowerCase() as 'sleep' | 'feast' | 'rest';
-    return context.sortieSourceState === sourceState && (context.embezzlementGold ?? 0) > 0;
+    return isSortieActive && context.sortieSourceState === sourceState && (context.embezzlementGold ?? 0) > 0;
   }
 
   if (/sortie\s+with\s+embezzlement\s*=\s*0\s*G/i.test(raw)) {
-    return (context.embezzlementGold ?? 0) === 0;
+    return isSortieActive && (context.embezzlementGold ?? 0) === 0;
   }
 
   return false;
@@ -137,7 +146,7 @@ function pickFlavorSpeakerName(context: FlavorContext): string {
     if (entryStateId !== stateId) continue;
     const condition = FLAVOR_CONDITIONS[conditionId];
     if (!condition || !isConditionMatch(condition, context)) continue;
-    const specificity = conditionSpecificity(condition);
+    const specificity = conditionSpecificity(condition, context);
     if (specificity < 0) continue;
     const memberName = pickMatchingMemberName(condition, context);
     if (!memberName) continue;
@@ -195,7 +204,7 @@ export function getRuntimeFlavorText(context: FlavorContext): string | null {
     if (entryStateId !== stateId) continue;
     const condition = FLAVOR_CONDITIONS[conditionId];
     if (!condition || !isConditionMatch(condition, context)) continue;
-    const specificity = conditionSpecificity(condition);
+    const specificity = conditionSpecificity(condition, context);
     if (specificity < 0) continue;
     matched.push({ text, specificity, condition });
   }
