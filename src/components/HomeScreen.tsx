@@ -5330,12 +5330,12 @@ function ExpeditionTab({
               <span className={`shrink-0 ${isLogExpanded ? 'transform transition-transform rotate-180' : ''}`}>▼</span>
             </button>
 
-            <div className="mb-2 relative h-5 min-w-0 rounded-md bg-gray-200 overflow-hidden text-xs">
+            <div className="mb-2 relative h-5 min-w-0 rounded-md bg-gray-200 overflow-hidden text-[10px] leading-[10px]">
               <div
                 className={`absolute inset-y-0 left-0 bg-sub/20 ${cycle.state === 'explore' ? '' : 'transition-[width] duration-200'}`}
                 style={{ width: `${progressPercent}%` }}
               />
-              <div className="relative z-10 h-full flex items-center justify-center px-2 text-black">
+              <div className="relative z-10 h-full px-2 text-black text-center whitespace-normal break-words line-clamp-2 grid place-items-center">
                 {progressLabel}
               </div>
             </div>
