@@ -12,6 +12,16 @@
 | rest | none | name は次の行動に備えて体力を温存している |
 | rest | none | name は静かな時間の中で気持ちを立て直している |
 | rest | `d.HP` < 20% of max HP |  早く楽になりたいと願ったら医者から安楽死を勧められた| 
+| rest | `d.HP` < 5% of max HP (Serious injuries) | name は全身の激痛に耐えながら、かろうじて呼吸を整えている |
+| rest | `d.HP` < 5% of max HP (Serious injuries) | name は止血した包帯を押さえ、意識を手放さないよう踏ん張っている |
+| rest | `d.HP` < 5% of max HP (Serious injuries) | name は震える手で傷口を確認し、最小限の処置を続けている |
+| rest | `d.HP` < 5% of max HP (Serious injuries) | name は立ち上がる力も残らず、地面に身を預けて回復を待っている |
+| rest | `d.HP` < 5% of max HP (Serious injuries) | name は荒い呼吸の合間に、次の一歩だけを考えている |
+| rest | `d.HP` < 5% of max HP (Serious injuries) | name は仲間の肩を借りながら、痛みに顔をしかめて休んでいる |
+| rest | `d.HP` < 5% of max HP (Serious injuries) | name は深い傷の熱をこらえ、体温を失わないよう身を丸めている |
+| rest | `d.HP` < 5% of max HP (Serious injuries) | name は目を閉じると意識が遠のくため、必死にまぶたを開いている |
+| rest | `d.HP` < 5% of max HP (Serious injuries) | name は砕けた装備を外し、これ以上傷を広げないようじっとしている |
+| rest | `d.HP` < 5% of max HP (Serious injuries) | name は生還への執念だけを支えに、静かに痛みをやり過ごしている |
 | feast | none | nameはビールを追加で注文した |
 | feast | none | name は焼きたての料理を頬張って笑みをこぼした |
 | feast | none | name は香ばしい匂いに誘われて席についた |
