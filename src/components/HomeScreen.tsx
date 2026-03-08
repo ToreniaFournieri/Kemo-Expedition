@@ -5267,12 +5267,18 @@ function ExpeditionTab({
           return displayedEntries[displayedEntries.length - 1].remainingPartyHP;
         })();
         const hpPercent = Math.min(100, Math.round((displayedHp / Math.max(1, partyStats.hp)) * 100));
-        const sellProgressPercent = (() => {
+        const sellProgressState = (() => {
           if (cycle.state !== 'sell') return null;
-          const sellStepCount = Math.max(1, party.lastExpeditionLog?.autoSellCount ?? 1);
+          const autoSellItems = party.lastExpeditionLog?.autoSellItems ?? [];
+          const sellStepCount = Math.max(1, autoSellItems.length || party.lastExpeditionLog?.autoSellCount || 1);
           const rawSellProgress = Math.min(1, cycleElapsedMs / Math.max(1, cycle.durationMs));
           const completedSteps = Math.min(sellStepCount, Math.floor(rawSellProgress * sellStepCount));
-          return (completedSteps / sellStepCount) * 100;
+          const activeStep = Math.max(0, Math.min(sellStepCount - 1, completedSteps));
+          const activeItem = autoSellItems[Math.min(activeStep, Math.max(0, autoSellItems.length - 1))];
+          return {
+            percent: (completedSteps / sellStepCount) * 100,
+            activeItem,
+          };
         })();
 
         const progressPercent = afkRecoveryProgressPercent ?? (cycle.state === 'idle'
@@ -5281,8 +5287,8 @@ function ExpeditionTab({
           ? hpPercent
           : cycle.state === 'explore'
           ? (Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, displayedEntries.length) / EXPLORING_PROGRESS_TOTAL_STEPS) * 100
-          : sellProgressPercent !== null
-          ? sellProgressPercent
+          : sellProgressState !== null
+          ? sellProgressState.percent
           : Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100));
         const progressLabel = (() => {
           if (afkRecoveryProgressPercent !== null) return getPartyCycleStateLabel('reactivate');
@@ -5297,6 +5303,8 @@ function ExpeditionTab({
             raceId: leader.raceId,
             leaderName: leader.name,
             seed: cycle.stateStartedAt + partyIndex * 131,
+            sellingItemName: sellProgressState?.activeItem?.itemName,
+            autoSellPrice: sellProgressState?.activeItem?.autoSellProfit,
           });
           return flavorText ? `${stateLabel}: ${flavorText}` : stateLabel;
         })();

@@ -581,6 +581,7 @@ export interface ExpeditionLog {
   rewards: Item[];
   autoSellProfit: number;
   autoSellCount: number;
+  autoSellItems: { itemName: string; autoSellProfit: number }[];
   autoSellMultiplier?: number;
   remainingPartyHP: number;
   maxPartyHP: number;

@@ -21,6 +21,8 @@ interface FlavorContext {
   raceId: RaceId;
   leaderName: string;
   seed: number;
+  sellingItemName?: string;
+  autoSellPrice?: number;
 }
 
 const stateIdByName = new Map<string, number>(FLAVOR_STATES.map((state, index) => [state, index]));
@@ -50,10 +52,12 @@ function isConditionMatch(condition: FlavorCondition, context: FlavorContext): b
   }
 }
 
-function normalizeFlavorText(text: string, leaderName: string): string {
+function normalizeFlavorText(text: string, context: FlavorContext): string {
   return text
-    .replace(/name は/g, `${leaderName}は`)
-    .replace(/name/g, leaderName)
+    .replace(/name は/g, `${context.leaderName}は`)
+    .replace(/name/g, context.leaderName)
+    .replace(/selling item/g, context.sellingItemName ?? 'アイテム')
+    .replace(/auto-sell price/g, context.autoSellPrice !== undefined ? `${context.autoSellPrice}` : '0')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -78,5 +82,5 @@ export function getRuntimeFlavorText(context: FlavorContext): string | null {
   const candidates = matched.filter((entry) => entry.specificity === bestSpecificity);
   const normalizedSeed = Math.abs(Math.floor(context.seed));
   const picked = candidates[normalizedSeed % candidates.length];
-  return normalizeFlavorText(picked.text, context.leaderName);
+  return normalizeFlavorText(picked.text, context);
 }

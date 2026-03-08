@@ -1465,6 +1465,7 @@ function resolveEnemyRewards(
   autoSellItemCount: number;
   highestRewardRarity?: 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare';
   hasSuperRareReward: boolean;
+  autoSellItems: { itemName: string; autoSellProfit: number }[];
 } {
   let bags = currentBags;
   let inventory = currentInventory;
@@ -1474,6 +1475,7 @@ function resolveEnemyRewards(
   const recoveredItems: Item[] = [];
   const rewardNames: string[] = [];
   const rewardLogEntries: { itemName: string; autoSellProfit?: number }[] = [];
+  const autoSellItems: { itemName: string; autoSellProfit: number }[] = [];
   let autoSellItemCount = 0;
   let highestRewardRarity: 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare' | undefined;
   let hasSuperRareReward = false;
@@ -1533,7 +1535,10 @@ function resolveEnemyRewards(
       autoSellProfit: result.wasAutoSold ? result.autoSellProfit : undefined,
     });
 
-    if (result.wasAutoSold) autoSellItemCount += 1;
+    if (result.wasAutoSold) {
+      autoSellItemCount += 1;
+      autoSellItems.push({ itemName, autoSellProfit: result.autoSellProfit });
+    }
 
     if (!result.wasAutoSold) {
       rewards.push(newItem);
@@ -1557,6 +1562,7 @@ function resolveEnemyRewards(
     autoSellItemCount,
     highestRewardRarity,
     hasSuperRareReward,
+    autoSellItems,
   };
 }
 
@@ -1797,6 +1803,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let currentGold = state.global.gold;
       let totalAutoSellProfit = 0;
       let totalAutoSellItemCount = 0;
+      let totalAutoSellItems: { itemName: string; autoSellProfit: number }[] = [];
       let roomCounter = 0;
       let expeditionEnded = false;
 
@@ -1980,6 +1987,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               currentGold = rewardResult.gold;
               totalAutoSellProfit += rewardResult.autoSellProfit;
               totalAutoSellItemCount += rewardResult.autoSellItemCount;
+              totalAutoSellItems.push(...rewardResult.autoSellItems);
               rewards.push(...rewardResult.rewards);
               recoveredItems.push(...rewardResult.recoveredItems);
               if (rewardResult.rewardNames.length > 0) {
@@ -2070,6 +2078,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const finalAutoSellProfit = isDefeat ? 0 : totalAutoSellProfit;
       const finalAutoSellItemCount = isDefeat ? 0 : totalAutoSellItemCount;
       const finalGold = isDefeat ? state.global.gold : (currentGold - finalAutoSellProfit);
+      const finalAutoSellItems = isDefeat ? [] : totalAutoSellItems;
 
       const nextLootGateProgressBase = isDefeat
         ? currentParty.lootGateProgress
@@ -2102,6 +2111,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         rewards: finalRewards,
         autoSellProfit: finalAutoSellProfit,
         autoSellCount: finalAutoSellItemCount,
+        autoSellItems: finalAutoSellItems,
         autoSellMultiplier: expeditionAutoSellMultiplier > 1 ? expeditionAutoSellMultiplier : undefined,
         remainingPartyHP: finalRemainingPartyHP,
         maxPartyHP: partyStats.hp,
@@ -2409,6 +2419,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           rewards: [],
           autoSellProfit: 0,
           autoSellCount: 0,
+          autoSellItems: [],
           remainingPartyHP: currentParty.currentHp,
           maxPartyHP: currentParty.currentHp,
         },
