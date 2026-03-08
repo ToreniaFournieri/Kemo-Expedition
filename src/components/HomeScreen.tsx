@@ -33,6 +33,7 @@ import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRank
 import { replaceCharacterEquipment } from '../game/equipment';
 import { resolveMagicProfile } from '../game/magic';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
+import { getRuntimeFlavorText } from '../game/flavorText';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -5280,7 +5281,21 @@ function ExpeditionTab({
           : sellProgressPercent !== null
           ? sellProgressPercent
           : Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100));
-        const progressLabel = afkRecoveryProgressPercent !== null ? '復帰中' : getPartyCycleStateLabel(cycle.state);
+        const progressLabel = (() => {
+          if (afkRecoveryProgressPercent !== null) return '復帰中';
+          const stateLabel = getPartyCycleStateLabel(cycle.state);
+          const leader = party.characters[0];
+          if (!leader) return stateLabel;
+          const flavorText = getRuntimeFlavorText({
+            state: cycle.state,
+            hpRatio: Math.max(0, Math.min(1, displayedHp / Math.max(1, partyStats.hp))),
+            mainClassId: leader.mainClassId,
+            raceId: leader.raceId,
+            leaderName: leader.name,
+            seed: cycle.stateStartedAt + partyIndex * 131,
+          });
+          return flavorText ? `${stateLabel}: ${flavorText}` : stateLabel;
+        })();
         const hpForSortieCheck = cycle.state === 'explore' ? displayedHp : party.currentHp;
         const isSortieDisabled = !!selectedDungeonGate?.locked || hpForSortieCheck <= 0 || partyStats.hp <= 0;
         const canTriggerGodsBattle = cycle.state === 'explore'
