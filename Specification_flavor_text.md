@@ -1,4 +1,14 @@
 
+- Priority logic
+
+- **move state**
+  - condition: sortie > none. 
+
+- **return state**
+  - condition: defeat > retreat > other 
+
+- master
+
 | state | condition | flavor text |
 |-|-|-|
 | rest | none | 疲れを癒している |
