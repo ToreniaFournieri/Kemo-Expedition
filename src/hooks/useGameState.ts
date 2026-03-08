@@ -1,4 +1,4 @@
-import { useReducer, useCallback, useEffect, useState } from 'react';
+import { useReducer, useCallback, useEffect, useRef, useState } from 'react';
 import {
   GameState,
   Item,
@@ -102,6 +102,7 @@ import { decodePersistedState, encodePersistedState } from '../game/storageCompr
 const BUILD_NUMBER = 1;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
 const AFK_MAX_SIMULATION_MS = 600 * 60 * 1000;
+const STATE_SAVE_THROTTLE_MS = 5000;
 const DEBUG_CYCLE_DURATION_SCALE = 0.2;
 const ITEM_MAX_STACK = 99;
 const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.sleeping', 'q.exercise', 'q.healing', 'q.AFK']);
@@ -3286,11 +3287,64 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 export function useGameState() {
   const [state, dispatch] = useReducer(gameReducer, null, createInitialState);
   const [notifications, setNotifications] = useState<GameNotification[]>([]);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingSaveStateRef = useRef<GameState | null>(null);
+  const lastSavedAtRef = useRef(0);
 
-  // Save state to localStorage whenever it changes
+  const flushPendingSave = useCallback(() => {
+    if (!pendingSaveStateRef.current) return;
+    saveState(pendingSaveStateRef.current);
+    pendingSaveStateRef.current = null;
+    lastSavedAtRef.current = Date.now();
+  }, []);
+
+  // Save immediately for normal-paced play, while coalescing rapid update bursts (e.g. AFK recovery).
   useEffect(() => {
-    saveState(state);
-  }, [state]);
+    pendingSaveStateRef.current = state;
+
+    const now = Date.now();
+    const msSinceLastSave = now - lastSavedAtRef.current;
+
+    if (msSinceLastSave >= STATE_SAVE_THROTTLE_MS) {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+        saveTimeoutRef.current = null;
+      }
+      flushPendingSave();
+      return;
+    }
+
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    const delayMs = Math.max(0, STATE_SAVE_THROTTLE_MS - msSinceLastSave);
+    saveTimeoutRef.current = setTimeout(() => {
+      saveTimeoutRef.current = null;
+      flushPendingSave();
+    }, delayMs);
+  }, [state, flushPendingSave]);
+
+  useEffect(() => {
+    const flushOnHidden = () => {
+      if (document.visibilityState === 'hidden') {
+        flushPendingSave();
+      }
+    };
+
+    window.addEventListener('beforeunload', flushPendingSave);
+    document.addEventListener('visibilitychange', flushOnHidden);
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+        saveTimeoutRef.current = null;
+      }
+      window.removeEventListener('beforeunload', flushPendingSave);
+      document.removeEventListener('visibilitychange', flushOnHidden);
+      flushPendingSave();
+    };
+  }, [flushPendingSave]);
 
   // Add notification helper
   // For 'stat' category, dismiss previous stat notifications first
