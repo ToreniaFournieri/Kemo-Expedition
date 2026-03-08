@@ -2962,13 +2962,22 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           const { partyStats: restStartStats } = computePartyStats(currentParty);
           const hpRatioAtRestStart = restStartStats.hp > 0 ? ((currentParty.currentHp ?? 0) / restStartStats.hp) : 0;
           const shouldSkipFeast = (currentParty.pendingProfit ?? 0) <= 0 || hpRatioAtRestStart < 0.3;
-          const pendingProfit = currentParty.pendingProfit ?? 0;
+          let pendingProfit = currentParty.pendingProfit ?? 0;
           const baseSpend = shouldSkipFeast ? 0 : Math.floor((pendingProfit * rollPercentInclusive(33, 67)) / 100);
           const squanderLevel = getPartyAbilityLevel(currentParty, 'squander');
           const squanderMultiplier = squanderLevel >= 2 ? 1.5 : squanderLevel >= 1 ? 1.3 : 1;
           const spend = shouldSkipFeast ? 0 : Math.min(pendingProfit, Math.floor(baseSpend * squanderMultiplier));
           if (spend > 0) {
-            workingState = gameReducer(workingState, { type: 'SPEND_PENDING_PROFIT', partyIndex, amount: spend });
+            const updatedParties = [...workingState.parties];
+            updatedParties[partyIndex] = {
+              ...currentParty,
+              pendingProfit: Math.max(0, pendingProfit - spend),
+            };
+            workingState = {
+              ...workingState,
+              parties: updatedParties,
+            };
+            pendingProfit = Math.max(0, pendingProfit - spend);
             if (currentParty.sideQuest?.type === 'q.squander') {
               workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: spend, simulatedAt });
             }
@@ -2986,7 +2995,31 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           const rawDeposit = Math.max(0, (afterSpend.pendingProfit ?? 0) - donation);
           const deposit = Math.floor(rawDeposit * getPrayerDepositMultiplier(afterSpend));
           const embezzled = Math.max(0, rawDeposit - deposit);
-          workingState = gameReducer(workingState, { type: 'PROCESS_PENDING_PROFIT', partyIndex, donation, deposit });
+          const deityName = normalizeDeityName(afterSpend.deity.name);
+          const deityDonations = {
+            ...workingState.global.deityDonations,
+            [deityName]: (workingState.global.deityDonations[deityName] ?? 0) + donation,
+          };
+          const profitProcessedParties = [...workingState.parties];
+          profitProcessedParties[partyIndex] = {
+            ...afterSpend,
+            pendingProfit: 0,
+            deityGold: deityDonations[deityName],
+            expeditionStats: {
+              ...afterSpend.expeditionStats,
+              donatedGold: afterSpend.expeditionStats.donatedGold + donation,
+              savedGold: afterSpend.expeditionStats.savedGold + deposit,
+            },
+          };
+          workingState = {
+            ...workingState,
+            parties: profitProcessedParties,
+            global: {
+              ...workingState.global,
+              gold: workingState.global.gold + deposit,
+              deityDonations,
+            },
+          };
 
           if (afterSpend.sideQuest?.type === 'q.donation' && donation > 0) {
             workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: donation, simulatedAt });
@@ -3021,7 +3054,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           const missingHp = Math.max(0, partyStats.hp - (partyAfterProfit.currentHp ?? partyStats.hp));
 
           if (missingHp > 0) {
-            workingState = gameReducer(workingState, { type: 'HEAL_PARTY_HP', partyIndex, amount: missingHp });
+            const healedParties = [...workingState.parties];
+            healedParties[partyIndex] = {
+              ...partyAfterProfit,
+              currentHp: Math.min(partyStats.hp, (partyAfterProfit.currentHp ?? partyStats.hp) + missingHp),
+            };
+            workingState = {
+              ...workingState,
+              parties: healedParties,
+            };
           }
 
           const afkProcessedParty = workingState.parties[partyIndex];
