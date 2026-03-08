@@ -176,7 +176,6 @@ function rollPercentInclusive(min: number, max: number): number {
 const PARTY_CYCLE_TICK_MS = 100;
 const EXPLORING_PROGRESS_STEP_MS = 5000;
 const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
-const FLAVOR_TEXT_CONTINUOUS_REFRESH_MS = 15000;
 const DEBUG_CYCLE_DURATION_SCALE = 0.2;
 const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.sleeping', 'q.exercise', 'q.healing', 'q.AFK']);
 const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
@@ -5244,8 +5243,7 @@ function ExpeditionTab({
         const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
         const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
         const cycle = partyCycles[partyIndex] ?? { state: 'idle', stateStartedAt: Date.now(), durationMs: 1000 };
-        const nowMs = Date.now();
-        const cycleElapsedMs = Math.max(0, nowMs - cycle.stateStartedAt);
+        const cycleElapsedMs = Math.max(0, Date.now() - cycle.stateStartedAt);
         const { partyStats, characterStats } = computePartyStats(party);
         const isLogExpanded = expandedLogParty === partyIndex;
         const currentLog = party.lastExpeditionLog;
@@ -5317,19 +5315,7 @@ function ExpeditionTab({
             }),
             partyReligionName: party.deity.name,
             leaderName: leader.name,
-            seed: (() => {
-              if (cycle.state === 'explore') {
-                const exploreStep = Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, displayedEntries.length);
-                return cycle.stateStartedAt + (exploreStep * 997) + (partyIndex * 131);
-              }
-
-              if (cycle.state === 'sell') {
-                return cycle.stateStartedAt + (partyIndex * 131);
-              }
-
-              const refreshTick = Math.floor(nowMs / FLAVOR_TEXT_CONTINUOUS_REFRESH_MS);
-              return cycle.stateStartedAt + (refreshTick * 997) + (partyIndex * 131);
-            })(),
+            seed: cycle.stateStartedAt + partyIndex * 131,
             sellingItemName: sellProgressState?.activeItem?.itemName,
             autoSellPrice: sellProgressState?.activeItem?.autoSellProfit,
           });
