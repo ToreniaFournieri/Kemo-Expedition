@@ -33,7 +33,7 @@ import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRank
 import { replaceCharacterEquipment } from '../game/equipment';
 import { resolveMagicProfile } from '../game/magic';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
-import { getRuntimeFlavorText } from '../game/flavorText';
+import { getRuntimeFlavorText, type FlavorCycleState } from '../game/flavorText';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -105,7 +105,7 @@ type Tab = 'party' | 'expedition' | 'base' | 'diary' | 'setting';
 type BaseSubTab = 'inventory' | 'shop' | 'jewelStore' | 'workshop' | 'altar';
 
 
-type PartyCycleState = 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray' | 'idle' | 'move' | 'explore' | 'return';
+type PartyCycleState = 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray' | 'idle' | 'move' | 'explore' | 'return' | 'reactivate';
 
 const PARTY_CYCLE_STATE_LABELS: Record<PartyCycleState, string> = {
   rest: '休息中',
@@ -119,6 +119,7 @@ const PARTY_CYCLE_STATE_LABELS: Record<PartyCycleState, string> = {
   move: '移動中',
   explore: '探索中',
   return: '帰還中',
+  reactivate: '復帰中',
 };
 
 const LEGACY_PARTY_CYCLE_STATE_MAP: Record<string, PartyCycleState> = {
@@ -134,6 +135,7 @@ const LEGACY_PARTY_CYCLE_STATE_MAP: Record<string, PartyCycleState> = {
   move: 'move',
   explore: 'explore',
   return: 'return',
+  reactivate: 'reactivate',
   '休息中': 'rest',
   '売却中': 'sell',
   '宴会中': 'feast',
@@ -146,6 +148,7 @@ const LEGACY_PARTY_CYCLE_STATE_MAP: Record<string, PartyCycleState> = {
   '移動中': 'move',
   '探索中': 'explore',
   '帰還中': 'return',
+  '復帰中': 'reactivate',
 };
 
 function toPartyCycleState(value: unknown): PartyCycleState {
@@ -5282,12 +5285,13 @@ function ExpeditionTab({
           ? sellProgressPercent
           : Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100));
         const progressLabel = (() => {
-          if (afkRecoveryProgressPercent !== null) return '復帰中';
+          if (afkRecoveryProgressPercent !== null) return getPartyCycleStateLabel('reactivate');
           const stateLabel = getPartyCycleStateLabel(cycle.state);
+          if (cycle.state === 'reactivate') return stateLabel;
           const leader = party.characters[0];
           if (!leader) return stateLabel;
           const flavorText = getRuntimeFlavorText({
-            state: cycle.state,
+            state: cycle.state as FlavorCycleState,
             hpRatio: Math.max(0, Math.min(1, displayedHp / Math.max(1, partyStats.hp))),
             mainClassId: leader.mainClassId,
             raceId: leader.raceId,
