@@ -664,7 +664,7 @@ function getSideQuestText(party: Party): string | null {
       current: `${formatNumber(displayProgress)}個`,
     },
     'q.poor_kid': {
-      text: `${formatNumber(displayTarget)}回アイテム獲得空振りする(神魔戦で中止)`,
+      text: `${formatNumber(displayTarget)}回アイテム獲得空振りする`,
       current: `${formatNumber(displayProgress)}回`,
     },
     'q.consecutive_wins': {
