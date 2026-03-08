@@ -298,7 +298,7 @@ function formatSideQuestShortText(type: string, shortText: string, target: numbe
     'q.AFK': `${formatNumber(target)}分`,
     'q.treasure_super_rare': `${formatNumber(target)}個`,
     'q.treasure_boss_rare': `${formatNumber(target)}個`,
-    'q.poor_kid': `${formatNumber(target)}回`,
+    'q.poor_kid': `${formatNumber(target)}回アイテム獲得空振り`,
     'q.consecutive_wins': `${formatNumber(target)}連`,
     'q.losers': `${formatNumber(target)}回`,
     'q.savings': `${formatNumber(target)}G`,
@@ -1596,10 +1596,13 @@ function getPartyCunningMultiplier(party: Party): number {
 
 function getPrayerDepositMultiplier(party: Party): number {
   const deityKey = getDeityKey(party.deity.name);
-  if (deityKey !== 'God of Cunning') return 1;
+  const momentumLevel = getPartyAbilityLevel(party, 'momentum');
+  const embezzlementRate =
+    (deityKey === 'God of Cunning' ? 0.5 : 0)
+    + (momentumLevel > 0 ? 0.1 : 0);
 
-  // God of Cunning embezzles exactly 50% of the remaining cycle profit.
-  return 0.5;
+  // Embezzlement at pray end: God of Cunning +50%, Momentum (party has at least one) +10%.
+  return Math.max(0, 1 - embezzlementRate);
 }
 
 function rollPercentInclusive(min: number, max: number): number {
@@ -2338,7 +2341,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         7: { type: 'q.AFK', shortText: '放置', min: 180, max: 360 },
         8: { type: 'q.treasure_super_rare', shortText: '超レア獲得', min: 1, max: 2 },
         9: { type: 'q.treasure_boss_rare', shortText: 'ボスレア獲得', min: 5, max: 15 },
-        10: { type: 'q.poor_kid', shortText: '空振り', min: 100, max: 300 },
+        10: { type: 'q.poor_kid', shortText: 'アイテム獲得空振り', min: 500, max: 1500 },
         11: { type: 'q.consecutive_wins', shortText: '連続踏破', min: 15, max: 60 },
         12: { type: 'q.losers', shortText: '敗北', min: 3, max: 6 },
         13: { type: 'q.savings', shortText: '貯金', min: 800, max: 4000 },

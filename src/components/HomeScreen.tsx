@@ -664,7 +664,7 @@ function getSideQuestText(party: Party): string | null {
       current: `${formatNumber(displayProgress)}個`,
     },
     'q.poor_kid': {
-      text: `${formatNumber(displayTarget)}回アイテム獲得空振りする`,
+      text: `${formatNumber(displayTarget)}回アイテム獲得空振りする(神魔戦で中止)`,
       current: `${formatNumber(displayProgress)}回`,
     },
     'q.consecutive_wins': {
@@ -2893,10 +2893,13 @@ export function HomeScreen({
 
   const getPrayerDepositMultiplier = (party: Party): number => {
     const deityKey = getDeityKey(party.deity.name);
-    if (deityKey !== 'God of Cunning') return 1;
+    const momentumLevel = getPartyAbilityLevel(party, 'momentum');
+    const embezzlementRate =
+      (deityKey === 'God of Cunning' ? 0.5 : 0)
+      + (momentumLevel > 0 ? 0.1 : 0);
 
-    // God of Cunning always embezzles exactly 50% of the remaining cycle profit.
-    return 0.5;
+    // Embezzlement at pray end: God of Cunning +50%, Momentum (party has at least one) +10%.
+    return Math.max(0, 1 - embezzlementRate);
   };
 
   const getPartyStateDurationMultiplier = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'pray' | 'explore'): number => {
