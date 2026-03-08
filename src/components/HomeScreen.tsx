@@ -5296,6 +5296,9 @@ function ExpeditionTab({
           if (cycle.state === 'reactivate') return stateLabel;
           const leader = party.characters[0];
           if (!leader) return stateLabel;
+          const flavorSeed = cycle.state === 'rest'
+            ? Math.floor(Date.now() / 15_000) + partyIndex * 131
+            : cycle.stateStartedAt + partyIndex * 131;
           const flavorText = getRuntimeFlavorText({
             state: cycle.state as FlavorCycleState,
             hpRatio: Math.max(0, Math.min(1, displayedHp / Math.max(1, partyStats.hp))),
@@ -5315,7 +5318,7 @@ function ExpeditionTab({
             }),
             partyReligionName: party.deity.name,
             leaderName: leader.name,
-            seed: cycle.stateStartedAt + partyIndex * 131,
+            seed: flavorSeed,
             sellingItemName: sellProgressState?.activeItem?.itemName,
             autoSellPrice: sellProgressState?.activeItem?.autoSellProfit,
           });
