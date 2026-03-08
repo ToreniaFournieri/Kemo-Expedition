@@ -515,6 +515,7 @@ Party.`d.HP` =
 | move(移動中) | home → dungeon, If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | explore | `a.peddler` |
 | explore(探索中) | in dungeon. if HP < 30% MaxHP → retreat. At the end of this state, update this {ルピニアンの断崖踏破} part ) | return | `Goddess of Precision` |
 | return(帰還中) | dungeon → home,If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | rest | 
+| reactivate(復帰中) | Reactivating from AFK mode | - | - |
 
 - **Realtime Progress**
 - Debug Scaling: For debugging purposes, all durations are multiplied by **0.2** in the `/dev/`, `/qa/`, and `/luna/` environments.
