@@ -205,7 +205,7 @@ Left-aligned
 - **Remove (Double-Tap):** - Double-tapping an item in a Character Slot removes it and returns it to the inventory.
 - **Remove (Single-tap):** - Single-tap an **equipped item in inventory** and returns it to be unequipped item in inventory.
 - Status updates in real time
-- **three-state toggle(手動/補助/完全自動):** 　`m.auto_equipment` is controlled by a three-state toggle. This setting is configured per party member. Default: `1` SEMI
+- **three-state toggle(手動/補助/一任):** 　`m.auto_equipment` is controlled by a three-state toggle. This setting is configured per party member. Default: `1` SEMI
 
 The toggle cycles through the following modes:
 
@@ -213,14 +213,14 @@ The toggle cycles through the following modes:
 | ----- | -------- | ----- | 
 | `0`   | `OFF`  | 手動 |
 | `1`   | `SEMI` | 補助 | 
-| `2`   | `FULL` | 完全自動 |
+| `2`   | `FULL` | 一任 |
 
 - **?:** floating bubble for help:
 
 ```
  手動: 装備の付け替えが自動で変わることはない
  補助: 上位の通常称号の同一装備がある場合に置き換える。空きスロットがある際に装備する (祈りフェーズ開始時)
- 完全自動: 現在の装備をすべて見直し、最適な装備構成になるよう自動で再装備する (祈りフェーズ開始時)
+ 一任: 装備選定を一任する。自身の判断で現在の装備をすべて見直し、最適な装備構成になるよう自動で再装備する (祈りフェーズ開始時)
  ※超レア装備は置き換わる事はない
 ```
 
