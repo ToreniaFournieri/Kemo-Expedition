@@ -46,14 +46,10 @@ body {
   color: black;
 }
 
-.side-quest-theme-icon {
-  width: 24px;
-  height: 24px;
-  background-color: rgb(var(--color-sub));
-  mask-image: url(icon.png);
-  mask-size: contain;
-  mask-repeat: no-repeat;
-  mask-position: center;
+.side-quest-theme-icon {  
+  display: inline-block;
+  filter: grayscale(1) saturate(0) brightness(0.85) sepia(1) saturate(1200%) hue-rotate(350deg);
+  opacity: 0.8;
 }
 
 .theme-luna .side-quest-theme-icon {
