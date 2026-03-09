@@ -784,7 +784,7 @@
 |-----|-----|-----|----|----|----|
 | x2.0 | x1.5 | x2.0 | x1.6 | x1.5 | x0.8 |
 
-- debug mode (for /dev/ environment)
+- `debug mode for god battle`
 
 | `x.god_HP_mult` | `x.god_atk_mult` | `x.god_NoA_mult` | `x.god_atk_amp_mult` | `x.god_def_mult` | `x.god_def_amp_mult` |
 |-----|-----|-----|----|----|----|
