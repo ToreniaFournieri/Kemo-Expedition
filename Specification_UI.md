@@ -812,3 +812,31 @@ HP: 312                 クラス: 魔法使い
   - 5.3 Reset
     - Provide a Full Reset option that deletes all local save data.
     - Always show a strong warning and require confirmation before execution.
+
+**Debug pane(デバッグ)**
+ 
+- Clairvoyance: OFF/ON
+  - if OFF, disable `Clairvoyance (未来視)` as default. (it would unlock it by the game progress in the future update)
+- Speed of time: Real time / x5 boost / x20 hyper
+  - Default: x5 boost
+- Gods Battle condition: boss items require Normal / Simple(1)
+  - Default: Normal
+  - Simple: 1 boss rare item instead of actual setting
+- Gods Strength: Normal / `debug mode for god battle`
+  - Default: Normal
+- All religions OFF/ON
+  - Default: OFF
+  - if ON, unlock All religions. if back to OFF, only in game unlocked religions available. 
+- Party unlock +1 PT unlock
+  - if press the button, unlock one PT. 
+- Jewel shop open OFF/ON
+  - Default: OFF
+- Display flavor condition OFF/ON
+  - Default: OFF
+  - if ON, it displays condition at the end of flavor text. 
+- Display AFK duration OFF/ON
+  - Default: OFF
+  - If ON, notification  "(Debug)前回の更新から X秒経過" at the end of AFK calculation 
+
+
+
