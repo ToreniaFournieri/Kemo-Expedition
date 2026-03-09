@@ -9,6 +9,8 @@
   --color-hp-bar: 147 197 253;
   --color-hp-bar-mild: 147 197 253;
   --color-hp-taken: 252 183 134;
+  --side-quest-icon-filter: brightness(0) saturate(100%) invert(53%) sepia(98%) saturate(1624%) hue-rotate(199deg) brightness(99%) contrast(94%);
+  --side-quest-icon-opacity: 0.9;
 }
 
 .theme-luna {
@@ -18,6 +20,8 @@
   --color-hp-bar: 223 190 128;
   --color-hp-bar-mild: 232 181 104;
   --color-hp-taken: 255 237 145;
+  --side-quest-icon-filter: brightness(0) saturate(100%) invert(58%) sepia(48%) saturate(716%) hue-rotate(356deg) brightness(92%) contrast(90%);
+  --side-quest-icon-opacity: 0.9;
 }
 
 .theme-luna .text-blue-600 {
@@ -46,13 +50,8 @@ body {
   color: black;
 }
 
-.side-quest-theme-icon {  
+.side-quest-theme-icon {
   display: inline-block;
-  filter: grayscale(1) saturate(0) brightness(0.85) sepia(1) saturate(1200%) hue-rotate(350deg);
-  opacity: 0.8;
-}
-
-.theme-luna .side-quest-theme-icon {
-  filter: grayscale(1) saturate(0) brightness(0.85) sepia(1) saturate(1200%) hue-rotate(350deg);
-  opacity: 0.8;
+  filter: var(--side-quest-icon-filter);
+  opacity: var(--side-quest-icon-opacity);
 }
