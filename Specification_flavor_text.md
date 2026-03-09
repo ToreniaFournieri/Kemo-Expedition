@@ -1096,6 +1096,16 @@
 | move | sortie while rest state with embezzlement > 0 G | name は神の気まぐれに抗議しながら、d.embezzlementGを持って移動している |
 | move | sortie while rest state with embezzlement > 0 G | name はひと息つく暇もなく、d.embezzlementGを懐へ隠して戦線へ向かった |
 | move | sortie while rest state with embezzlement > 0 G | name は休息の代償だと言い張り、d.embezzlementGを持ち逃げして不機嫌に進軍する |
+| move | sortie while return state with embezzlement > 0 G | name は帰還直後の再出撃に憤り、d.embezzlementGを握り直して前線へ引き返した |
+| move | sortie while return state with embezzlement > 0 G | name は拠点の門を目前に命令を受け、d.embezzlementGを懐に隠して踵を返した |
+| move | sortie while return state with embezzlement > 0 G | name は安堵が怒りへ変わる中、d.embezzlementGを持ったまま再び行軍している |
+| move | sortie while return state with embezzlement > 0 G | name は報告前に呼び戻された苛立ちで、d.embezzlementGの袋を締めて出撃した |
+| move | sortie while return state with embezzlement > 0 G | name は帰路の疲労を抱えたまま、d.embezzlementGを確かめて無言で進んでいる |
+| move | sortie while return state with embezzlement > 0 G | name は帰還の達成感を奪われ、d.embezzlementGを持ち逃げして不満げに進軍した |
+| move | sortie while return state with embezzlement > 0 G | name は荷を降ろす間もなく、d.embezzlementGを隠して再出撃列へ合流した |
+| move | sortie while return state with embezzlement > 0 G | name は帰ってきた道を逆走しつつ、d.embezzlementGの重みで気を紛らわせている |
+| move | sortie while return state with embezzlement > 0 G | name は「またか」と吐き捨て、d.embezzlementGを抱えたまま前進を始めた |
+| move | sortie while return state with embezzlement > 0 G | name は帰還完了を取り消された怒りをにじませ、d.embezzlementGとともに戦地へ戻った |
 | move | sortie with embezzlement = 0 G | name は神の緊急動員に憤り、露骨に不満顔で出撃した |
 | move | sortie with embezzlement = 0 G | name は理不尽な命令に舌打ちし、荒い足取りで前線へ向かった |
 | move | sortie with embezzlement = 0 G | name は文句を飲み込めず、ぶつぶつと神への抗議を続けている |

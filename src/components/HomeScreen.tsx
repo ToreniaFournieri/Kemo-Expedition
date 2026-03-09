@@ -164,7 +164,7 @@ interface PartyCycleRuntime {
   state: PartyCycleState;
   stateStartedAt: number;
   durationMs: number;
-  sortieSourceState?: 'rest' | 'feast' | 'sleep';
+  sortieSourceState?: 'rest' | 'feast' | 'sleep' | 'return';
   sortieEmbezzlementGold?: number;
   isCurrentExpeditionGodsBattle?: boolean;
   skipFeastThisCycle?: boolean;
@@ -2906,7 +2906,7 @@ export function HomeScreen({
     partyIndex: number,
     nextState: PartyCycleState,
     durationMs: number,
-    sortieContext?: { sourceState?: 'rest' | 'feast' | 'sleep'; embezzlementGold?: number },
+    sortieContext?: { sourceState?: 'rest' | 'feast' | 'sleep' | 'return'; embezzlementGold?: number },
   ) => {
     setPartyCycles((prev) => ({
       ...prev,
@@ -3044,7 +3044,7 @@ export function HomeScreen({
       'move',
       getPartyTravelDurationMs(party, 'move'),
       {
-        sourceState: cycle?.state === 'rest' || cycle?.state === 'feast'
+        sourceState: cycle?.state === 'rest' || cycle?.state === 'feast' || cycle?.state === 'return'
           ? cycle.state
           : cycle?.state === 'sound_sleep' || cycle?.state === 'nap_sleep'
             ? 'sleep'
