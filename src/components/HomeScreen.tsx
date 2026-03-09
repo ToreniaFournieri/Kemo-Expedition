@@ -250,10 +250,10 @@ function getExplorationVisibleRoomCount(elapsedMs: number, durationMs: number, t
   );
 }
 
-function getExpeditionOutcomeLabel(outcome: 'Clear' | 'Escape' | 'Defeat' | 'Retreat'): string {
-  if (outcome === 'Clear') return '踏破';
-  if (outcome === 'Escape') return '帰還';
-  if (outcome === 'Defeat') return '敗北';
+function getExpeditionOutcomeLabel(outcome: 'Clear' | 'Escape' | 'Defeat' | 'Retreat' | string): string {
+  if (outcome === 'Clear' || outcome === 'victory') return '踏破';
+  if (outcome === 'Escape' || outcome === 'escape' || outcome === 'return') return '帰還';
+  if (outcome === 'Defeat' || outcome === 'defeat') return '敗北';
   return '撤退';
 }
 
