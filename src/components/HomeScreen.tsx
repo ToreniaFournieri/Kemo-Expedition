@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, type ChangeEvent, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import {
   DUNGEONS,
@@ -255,6 +255,15 @@ function getExpeditionOutcomeLabel(outcome: 'Clear' | 'Escape' | 'Defeat' | 'Ret
   if (outcome === 'Escape' || outcome === 'escape' || outcome === 'return') return '帰還';
   if (outcome === 'Defeat' || outcome === 'defeat') return '敗北';
   return '撤退';
+}
+
+function getReturnFlavorOutcome(log: ExpeditionLog | null | undefined): 'Defeat' | 'Wounded_Retreat' | 'Draw_Retreat' | 'Turned_Back' | 'Clear' | undefined {
+  if (!log) return undefined;
+  if (log.finalOutcome === 'Defeat') return 'Defeat';
+  if (log.finalOutcome === 'Escape') return 'Turned_Back';
+  if (log.entries.length > 0 && log.entries[log.entries.length - 1].outcome === 'draw') return 'Draw_Retreat';
+  if (log.finalOutcome === 'Retreat') return 'Wounded_Retreat';
+  return 'Clear';
 }
 
 function getEffectiveAccuracyBonus(accuracyBonus: number, abilities: ComputedCharacterStats['abilities']): number {
@@ -5344,6 +5353,7 @@ function ExpeditionTab({
           const flavorText = getRuntimeFlavorText({
             state: cycle.state as FlavorCycleState,
             hpRatio: Math.max(0, Math.min(1, displayedHp / Math.max(1, partyStats.hp))),
+            returnOutcome: cycle.state === 'return' ? getReturnFlavorOutcome(currentLog) : undefined,
             mainClassId: leader.mainClassId,
             raceId: leader.raceId,
             partyMainClassIds: party.characters.map((member) => member.mainClassId),

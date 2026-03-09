@@ -17,6 +17,7 @@ export type FlavorCycleState =
 interface FlavorContext {
   state: FlavorCycleState;
   hpRatio: number;
+  returnOutcome?: 'Defeat' | 'Wounded_Retreat' | 'Draw_Retreat' | 'Turned_Back' | 'Clear';
   sortieSourceState?: 'rest' | 'feast' | 'sleep';
   embezzlementGold?: number;
   mainClassId?: ClassId;
@@ -46,6 +47,8 @@ function isSortieConditionRaw(raw: string): boolean {
 
 function conditionSpecificity(condition: FlavorCondition, context: FlavorContext): number {
   if (condition.k === 'none') return 0;
+  if (condition.k === 'and') return 3;
+  if (condition.k === 'return_outcome_is') return 2;
   if (condition.k === 'raw' && isSortieConditionRaw(condition.v) && (context.sortieSourceState !== undefined || context.embezzlementGold !== undefined)) {
     return 2;
   }
@@ -72,6 +75,10 @@ function isConditionMatch(condition: FlavorCondition, context: FlavorContext): b
       return context.hpRatio < condition.v;
     case 'hp_eq':
       return context.hpRatio === condition.v;
+    case 'return_outcome_is':
+      return context.returnOutcome === condition.v;
+    case 'and':
+      return condition.v.every((sub) => isConditionMatch(sub as FlavorCondition, context));
     case 'class_is':
       return classIds.has(condition.v as ClassId);
     case 'race_is':
@@ -192,6 +199,7 @@ function pickMatchingMemberName(condition: FlavorCondition, context: FlavorConte
 function formatConditionDebug(condition: FlavorCondition): string {
   if (condition.k === 'none') return 'no condition';
   if (condition.k === 'raw') return `raw: ${condition.v}`;
+  if (condition.k === 'and') return `and: ${condition.v.map((part) => `${part.k}:${part.v}`).join('&')}`;
   return `${condition.k}: ${condition.v}`;
 }
 
