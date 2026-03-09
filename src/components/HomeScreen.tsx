@@ -343,18 +343,20 @@ function renderTextWithRaceIcons(text: string, iconClassName = 'h-3.5 w-3.5'): R
 }
 
 function buildAfkSummaryNotification(stats: {
-  victories: number;
-  returns: number;
-  retreats: number;
-  defeats: number;
+  Clear: number;
+  Turned_Back: number;
+  Draw_Retreat: number;
+  Wounded_Retreat: number;
+  Defeat: number;
   donatedGold: number;
   savedGold: number;
 }): string | null {
   const summaryParts: string[] = [];
-  if (stats.victories > 0) summaryParts.push(`踏破${formatNumber(stats.victories)}回`);
-  if (stats.returns > 0) summaryParts.push(`帰還${formatNumber(stats.returns)}回`);
-  if (stats.retreats > 0) summaryParts.push(`撤退${formatNumber(stats.retreats)}回`);
-  if (stats.defeats > 0) summaryParts.push(`敗北${formatNumber(stats.defeats)}回`);
+  if (stats.Clear > 0) summaryParts.push(`踏破${formatNumber(stats.Clear)}回`);
+  if (stats.Turned_Back > 0) summaryParts.push(`帰還${formatNumber(stats.Turned_Back)}回`);
+  if (stats.Draw_Retreat > 0) summaryParts.push(`引分${formatNumber(stats.Draw_Retreat)}回`);
+  if (stats.Wounded_Retreat > 0) summaryParts.push(`撤退${formatNumber(stats.Wounded_Retreat)}回`);
+  if (stats.Defeat > 0) summaryParts.push(`敗北${formatNumber(stats.Defeat)}回`);
 
   const financeParts: string[] = [];
   if (stats.donatedGold > 0) financeParts.push(`寄付金額: ${formatNumber(stats.donatedGold)}G`);
@@ -2208,7 +2210,7 @@ export function HomeScreen({
     gameModeRef.current = gameMode;
   }, [gameMode]);
 
-  const afkSummaryBaselineRef = useRef<Array<{ victories: number; returns: number; retreats: number; defeats: number; donatedGold: number; savedGold: number }> | null>(null);
+  const afkSummaryBaselineRef = useRef<Array<{ Clear: number; Turned_Back: number; Draw_Retreat: number; Wounded_Retreat: number; Defeat: number; donatedGold: number; savedGold: number }> | null>(null);
   const shouldShowAfkSummaryRef = useRef(false);
   const { partyStats, characterStats } = computePartyStats(currentParty);
 
@@ -2332,10 +2334,11 @@ export function HomeScreen({
       if (!baseline) return;
 
       const stats = {
-        victories: Math.max(0, party.expeditionStats.victories - baseline.victories),
-        returns: Math.max(0, party.expeditionStats.returns - baseline.returns),
-        retreats: Math.max(0, party.expeditionStats.retreats - baseline.retreats),
-        defeats: Math.max(0, party.expeditionStats.defeats - baseline.defeats),
+        Clear: Math.max(0, party.expeditionStats.Clear - baseline.Clear),
+        Turned_Back: Math.max(0, party.expeditionStats.Turned_Back - baseline.Turned_Back),
+        Draw_Retreat: Math.max(0, party.expeditionStats.Draw_Retreat - baseline.Draw_Retreat),
+        Wounded_Retreat: Math.max(0, party.expeditionStats.Wounded_Retreat - baseline.Wounded_Retreat),
+        Defeat: Math.max(0, party.expeditionStats.Defeat - baseline.Defeat),
         donatedGold: Math.max(0, party.expeditionStats.donatedGold - baseline.donatedGold),
         savedGold: Math.max(0, party.expeditionStats.savedGold - baseline.savedGold),
       };
