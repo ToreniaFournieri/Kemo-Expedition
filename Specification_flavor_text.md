@@ -1186,3 +1186,17 @@
 | return | Draw_Retreat | name は決め手を欠いた戦闘を切り上げ、慎重に帰還している |
 | return | Draw_Retreat | name は均衡が崩れぬと見て、被害拡大前に撤収した |
 | return | Draw_Retreat | name は勝敗なき離脱を受け止め、拠点での立て直しを急いでいる |
+
+
+
+
+### Expedition 1: ケイナイアン平原 (Caninian Plains)
+
+| Floor | Theme | Environment Concept | Atmosphere |
+|------|------|------|------|
+| 1 | Windy Prairie | Endless grassland with scattered rocks and grazing wildlife. Small beasts and minor spirits roam freely across the open plains. | Open, calm, natural |
+| 2 | Predator Territory | The plains become a hunting ground where predators stalk prey. Tracks, bones, and territorial marks appear throughout the tall grass. | Tense, watchful |
+| 3 | Ancient Grazing Fields | Massive herbivores roam ancient migration paths. Giant footprints and trampled grasslands reveal the presence of enormous beasts. | Heavy, primal |
+| 4 | Edge of the Clever Woods | Sparse trees and rocky rises appear. Intelligent creatures and ambush hunters begin to dominate this region. | Cunning, uneasy |
+| 5 | Marshland Basin | The plains sink into a wet basin where water gathers. Reeds, mud pools, and strange fungi grow in the damp soil. | Rotting, humid |
+| 6 | Primordial Plains | The deepest region of the plains where the strongest beasts roam. The land is quiet, vast, and dominated by ancient predators. | Ominous, dominant |
