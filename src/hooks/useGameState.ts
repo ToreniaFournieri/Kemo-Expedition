@@ -587,6 +587,25 @@ function normalizeImportedBags(rawBags: unknown): GameState['bags'] {
   });
 }
 
+function normalizeExpeditionFinalOutcome(rawOutcome: unknown): 'Clear' | 'Escape' | 'Retreat' | 'Defeat' {
+  if (rawOutcome === 'Clear' || rawOutcome === 'Escape' || rawOutcome === 'Retreat' || rawOutcome === 'Defeat') {
+    return rawOutcome;
+  }
+  if (rawOutcome === 'victory') return 'Clear';
+  if (rawOutcome === 'defeat') return 'Defeat';
+  if (rawOutcome === 'escape' || rawOutcome === 'return') return 'Escape';
+  if (rawOutcome === 'retreat') return 'Retreat';
+  return 'Retreat';
+}
+
+function normalizeExpeditionLog(log: ExpeditionLog | null | undefined): ExpeditionLog | null {
+  if (!log) return null;
+  return {
+    ...log,
+    finalOutcome: normalizeExpeditionFinalOutcome(log.finalOutcome),
+  };
+}
+
 function loadSavedState(): GameState | null {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -731,6 +750,18 @@ function loadSavedState(): GameState | null {
           }
           if (typeof party.deityGold !== 'number') party.deityGold = 0;
           party.expeditionStats = getExpeditionStatsWithDefaults(party.expeditionStats);
+          party.lastExpeditionLog = normalizeExpeditionLog(party.lastExpeditionLog);
+          if (party.pendingDiaryLog?.expeditionLog) {
+            party.pendingDiaryLog = {
+              ...party.pendingDiaryLog,
+              expeditionLog: normalizeExpeditionLog(party.pendingDiaryLog.expeditionLog),
+            };
+          }
+          party.diaryLogs = party.diaryLogs.map((log: DiaryLog) => (
+            log.expeditionLog
+              ? { ...log, expeditionLog: normalizeExpeditionLog(log.expeditionLog) }
+              : log
+          ));
           party.sleepinessOfPartyBag = normalizeSleepinessPartyBag(party.sleepinessOfPartyBag ?? createSleepinessPartyBag());
           party.currentSleepiness = normalizeSleepinessState(party.currentSleepiness);
           if (typeof party.sideQuest === 'undefined') party.sideQuest = null;
