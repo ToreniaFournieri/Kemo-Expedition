@@ -45,3 +45,12 @@ body {
   background-color: white;
   color: black;
 }
+
+.side-quest-theme-icon {
+  display: inline-block;
+  filter: grayscale(1) saturate(0) brightness(0.65) sepia(1) saturate(2200%) hue-rotate(193deg) brightness(0.95);
+}
+
+.theme-luna .side-quest-theme-icon {
+  filter: grayscale(1) saturate(0) brightness(0.6) sepia(1) saturate(2600%) hue-rotate(347deg) brightness(0.95);
+}

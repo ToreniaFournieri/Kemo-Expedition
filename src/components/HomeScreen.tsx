@@ -706,7 +706,7 @@ function getSideQuestText(party: Party): string | null {
     current: `${formatNumber(displayProgress)}/${formatNumber(displayTarget)}`,
   };
 
-  return `📜 ${display.text} (${percent}%, ${display.current})`;
+  return `${display.text} (${percent}%, ${display.current})`;
 }
 
 function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
@@ -5421,7 +5421,12 @@ function ExpeditionTab({
             {(nextGoalText || sideQuestText) && (
               <div className="mb-2 space-y-1">
                 {nextGoalText && <div className="text-xs text-gray-700">{nextGoalText}</div>}
-                {sideQuestText && <div className="text-xs text-gray-700">{sideQuestText}</div>}
+                {sideQuestText && (
+                  <div className="text-xs text-gray-700">
+                    <span className="side-quest-theme-icon" aria-hidden="true">📜</span>{' '}
+                    {sideQuestText}
+                  </div>
+                )}
               </div>
             )}
 
