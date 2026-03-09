@@ -18,7 +18,7 @@ interface FlavorContext {
   state: FlavorCycleState;
   hpRatio: number;
   returnOutcome?: 'Defeat' | 'Wounded_Retreat' | 'Draw_Retreat' | 'Turned_Back' | 'Clear';
-  sortieSourceState?: 'rest' | 'feast' | 'sleep';
+  sortieSourceState?: 'rest' | 'feast' | 'sleep' | 'return';
   embezzlementGold?: number;
   mainClassId?: ClassId;
   raceId?: RaceId;
@@ -41,7 +41,7 @@ interface FlavorContext {
 const stateIdByName = new Map<string, number>(FLAVOR_STATES.map((state, index) => [state, index]));
 
 function isSortieConditionRaw(raw: string): boolean {
-  return /sortie\s+while\s+(sleep|feast|rest)\s+state\s+with\s+embezzlement\s*>\s*0\s*G/i.test(raw)
+  return /sortie\s+while\s+(sleep|feast|rest|return)\s+state\s+with\s+embezzlement\s*>\s*0\s*G/i.test(raw)
     || /sortie\s+with\s+embezzlement\s*=\s*0\s*G/i.test(raw);
 }
 
@@ -100,7 +100,7 @@ function isRawConditionMatch(
   context: {
     partyAbilityIds: ReadonlySet<string>;
     partyReligionName?: string;
-    sortieSourceState?: 'rest' | 'feast' | 'sleep';
+    sortieSourceState?: 'rest' | 'feast' | 'sleep' | 'return';
     embezzlementGold?: number;
   }
 ): boolean {
@@ -117,9 +117,9 @@ function isRawConditionMatch(
     return context.partyReligionName === religionMatch[1].trim();
   }
 
-  const sortieWhileStateWithEmbezzlementMatch = raw.match(/sortie\s+while\s+(sleep|feast|rest)\s+state\s+with\s+embezzlement\s*>\s*0\s*G/i);
+  const sortieWhileStateWithEmbezzlementMatch = raw.match(/sortie\s+while\s+(sleep|feast|rest|return)\s+state\s+with\s+embezzlement\s*>\s*0\s*G/i);
   if (sortieWhileStateWithEmbezzlementMatch) {
-    const sourceState = sortieWhileStateWithEmbezzlementMatch[1].toLowerCase() as 'sleep' | 'feast' | 'rest';
+    const sourceState = sortieWhileStateWithEmbezzlementMatch[1].toLowerCase() as 'sleep' | 'feast' | 'rest' | 'return';
     return isSortieActive && context.sortieSourceState === sourceState && (context.embezzlementGold ?? 0) > 0;
   }
 
