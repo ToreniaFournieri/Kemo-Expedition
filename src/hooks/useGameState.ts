@@ -401,14 +401,15 @@ function getDeityDonationsWithDefaults(value: unknown): Record<string, number> {
 
 function getExpeditionStatsWithDefaults(value: unknown) {
   if (!value || typeof value !== 'object') {
-    return { victories: 0, returns: 0, retreats: 0, defeats: 0, donatedGold: 0, savedGold: 0 };
+    return { Clear: 0, Turned_Back: 0, Draw_Retreat: 0, Wounded_Retreat: 0, Defeat: 0, donatedGold: 0, savedGold: 0 };
   }
   const raw = value as Record<string, unknown>;
   return {
-    victories: typeof raw.victories === 'number' ? raw.victories : 0,
-    returns: typeof raw.returns === 'number' ? raw.returns : 0,
-    retreats: typeof raw.retreats === 'number' ? raw.retreats : 0,
-    defeats: typeof raw.defeats === 'number' ? raw.defeats : 0,
+    Clear: typeof raw.Clear === 'number' ? raw.Clear : (typeof raw.victories === 'number' ? raw.victories : 0),
+    Turned_Back: typeof raw.Turned_Back === 'number' ? raw.Turned_Back : (typeof raw.returns === 'number' ? raw.returns : 0),
+    Draw_Retreat: typeof raw.Draw_Retreat === 'number' ? raw.Draw_Retreat : (typeof raw.draws === 'number' ? raw.draws : 0),
+    Wounded_Retreat: typeof raw.Wounded_Retreat === 'number' ? raw.Wounded_Retreat : (typeof raw.retreats === 'number' ? raw.retreats : 0),
+    Defeat: typeof raw.Defeat === 'number' ? raw.Defeat : (typeof raw.defeats === 'number' ? raw.defeats : 0),
     donatedGold: typeof raw.donatedGold === 'number' ? raw.donatedGold : 0,
     savedGold: typeof raw.savedGold === 'number' ? raw.savedGold : 0,
   };
@@ -2191,10 +2192,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         pendingProfit: finalAutoSellProfit,
         expeditionStats: {
           ...currentParty.expeditionStats,
-          victories: currentParty.expeditionStats.victories + (finalOutcome === 'Clear' ? 1 : 0),
-          returns: currentParty.expeditionStats.returns + (finalOutcome === 'Escape' ? 1 : 0),
-          retreats: currentParty.expeditionStats.retreats + (finalOutcome === 'Retreat' ? 1 : 0),
-          defeats: currentParty.expeditionStats.defeats + (finalOutcome === 'Defeat' ? 1 : 0),
+          Clear: currentParty.expeditionStats.Clear + (finalOutcome === 'Clear' ? 1 : 0),
+          Turned_Back: currentParty.expeditionStats.Turned_Back + (finalOutcome === 'Escape' ? 1 : 0),
+          Draw_Retreat: currentParty.expeditionStats.Draw_Retreat + (entries.length > 0 && entries[entries.length - 1].outcome === 'draw' ? 1 : 0),
+          Wounded_Retreat: currentParty.expeditionStats.Wounded_Retreat + (finalOutcome === 'Retreat' && !(entries.length > 0 && entries[entries.length - 1].outcome === 'draw') ? 1 : 0),
+          Defeat: currentParty.expeditionStats.Defeat + (finalOutcome === 'Defeat' ? 1 : 0),
         },
       };
 

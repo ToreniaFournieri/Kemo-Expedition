@@ -293,10 +293,11 @@ export interface Party {
   hasUnreadDiary: boolean;
   diarySettings: DiarySettings;
   expeditionStats: {
-    victories: number;
-    returns: number;
-    retreats: number;
-    defeats: number;
+    Clear: number;
+    Turned_Back: number;
+    Draw_Retreat: number;
+    Wounded_Retreat: number;
+    Defeat: number;
     donatedGold: number;
     savedGold: number;
   };
