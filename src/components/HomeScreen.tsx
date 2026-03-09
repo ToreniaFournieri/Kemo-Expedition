@@ -5462,7 +5462,7 @@ function ExpeditionTab({
             )}
 
             {currentLog && isLogExpanded && (
-              <div className="border-t border-gray-200 pt-3">
+              <div className="mx-1 border-t border-gray-200 pt-3">
                 <div className="space-y-2">
                   {cycle.state !== 'explore' && (
                     <div className="text-sm text-gray-500">
