@@ -586,8 +586,11 @@ Party.`d.HP` =
 - Limit: maximum 1,800 minutes (30 hours) per catch-up simulation (current version).
 
 **Notification**
-- Format: 踏破N回/帰還Y回/撤退M回/敗北X回 寄付金額: vG, 貯金額:　vG
-  - Key and label:Clear(踏破) / Escape(帰還) / Retreat(撤退) / Defeat(敗北) 
+- Format: 踏破N回/帰還Y回/引分Z回/撤退M回/敗北X回 寄付金額: vG, 貯金額:　vG
+  - Key and label:Clear(踏破) / Turned_Back(帰還) / Draw_Retreat(引分) / Wounded_Retreat(撤退) / Defeat(敗北)
+    - Turned_back: Cannot continue because a requirement (loot gate conditiojn) isn’t met and must return home
+    - Draw_Retreat: the last room outcome is Draw
+    - Wonded_Retreat: Victory but If the party.`d.HP` <= 30% of max HP, back to home with trophies. (excpetion: the Final Boss room) 
 - If the value is 0, not display its text (if all zero, then no notification)
 
 ```
