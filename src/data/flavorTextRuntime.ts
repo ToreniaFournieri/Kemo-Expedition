@@ -6,6 +6,8 @@ export type FlavorCondition =
   | { k: 'hp_gt'; v: number }
   | { k: 'hp_lt'; v: number }
   | { k: 'hp_eq'; v: number }
+  | { k: 'return_outcome_is'; v: string }
+  | { k: 'and'; v: ReadonlyArray<{ k: 'return_outcome_is'; v: string } | { k: 'hp_gt'; v: number } | { k: 'hp_lt'; v: number } | { k: 'hp_eq'; v: number }> }
   | { k: 'class_is'; v: string }
   | { k: 'race_is'; v: string }
   | { k: 'raw'; v: string };
@@ -189,16 +191,33 @@ export const FLAVOR_CONDITIONS: readonly FlavorCondition[] = [
     "v": "sortie with embezzlement = 0 G"
   },
   {
-    "k": "hp_gt",
-    "v": 0.95
+    "k": "and",
+    "v": [
+      {
+        "k": "return_outcome_is",
+        "v": "Clear"
+      },
+      {
+        "k": "hp_gt",
+        "v": 0.95
+      }
+    ]
   },
   {
-    "k": "hp_lt",
-    "v": 0.3
+    "k": "return_outcome_is",
+    "v": "Wounded_Retreat"
   },
   {
-    "k": "hp_eq",
-    "v": 0
+    "k": "return_outcome_is",
+    "v": "Defeat"
+  },
+  {
+    "k": "return_outcome_is",
+    "v": "Turned_Back"
+  },
+  {
+    "k": "return_outcome_is",
+    "v": "Draw_Retreat"
   }
 ] as const;
 
@@ -5927,5 +5946,105 @@ export const FLAVOR_ENTRIES: ReadonlyArray<readonly [number, number, string]> = 
     10,
     43,
     "name は完全に戦闘不能となり、帰還後ただちに治療室へ送られる"
+  ],
+  [
+    10,
+    44,
+    "name は封印扉の前で足を止め、条件不足を悟って引き返している"
+  ],
+  [
+    10,
+    44,
+    "name は必要な戦利品が足りないと判断し、未練を残しつつ帰路についた"
+  ],
+  [
+    10,
+    44,
+    "name は進行条件を満たせず、地図を閉じて拠点への道を選んだ"
+  ],
+  [
+    10,
+    44,
+    "name は門番の刻印に拒まれ、静かに撤収を指示している"
+  ],
+  [
+    10,
+    44,
+    "name は先へ進む鍵がないと確認し、隊列を整えて戻っている"
+  ],
+  [
+    10,
+    44,
+    "name は探索継続を断念し、次回に備えて情報を持ち帰っている"
+  ],
+  [
+    10,
+    44,
+    "name は条件未達の報せを受け、焦らず帰還して準備を立て直す"
+  ],
+  [
+    10,
+    44,
+    "name は収集目標の不足を認め、危険を避けて帰還判断を下した"
+  ],
+  [
+    10,
+    44,
+    "name はこれ以上は無理だと見切り、必要素材を求めて戻っている"
+  ],
+  [
+    10,
+    44,
+    "name は進路を塞ぐ要件に阻まれ、次の挑戦へ備えて退いた"
+  ],
+  [
+    10,
+    45,
+    "name は決着のつかない戦いを終え、消耗を抑えて帰還している"
+  ],
+  [
+    10,
+    45,
+    "name は互いに譲らぬまま戦線を離れ、静かに拠点へ戻っている"
+  ],
+  [
+    10,
+    45,
+    "name は引き分けの痛み分けを受け入れ、隊列を崩さず帰路を進む"
+  ],
+  [
+    10,
+    45,
+    "name は勝機を得られぬまま時間切れとなり、体勢を保って撤いた"
+  ],
+  [
+    10,
+    45,
+    "name は相手を押し切れず、再戦を誓いながら退いている"
+  ],
+  [
+    10,
+    45,
+    "name は戦況が平行線のまま終わり、損耗管理を優先して戻った"
+  ],
+  [
+    10,
+    45,
+    "name は互角のまま刃を収め、次の機会へ力を温存している"
+  ],
+  [
+    10,
+    45,
+    "name は決め手を欠いた戦闘を切り上げ、慎重に帰還している"
+  ],
+  [
+    10,
+    45,
+    "name は均衡が崩れぬと見て、被害拡大前に撤収した"
+  ],
+  [
+    10,
+    45,
+    "name は勝敗なき離脱を受け止め、拠点での立て直しを急いでいる"
   ]
 ] as const;

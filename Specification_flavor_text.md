@@ -1126,33 +1126,53 @@
 | return | none | 仲間と歩調を合わせて帰還している |
 | return | none | 長い行程を終えるべく歩いている |
 | return | none | 無事に戻ることを第一に進んでいる |
-| return | `d.HP` > 95% of max HP | name はほとんど無傷のまま、軽い足取りで拠点へ戻っている |
-| return | `d.HP` > 95% of max HP | name は余裕の笑みを浮かべ、戦果を語りながら帰還している |
-| return | `d.HP` > 95% of max HP | name は疲れを見せず、先頭に立って帰路を進んでいる |
-| return | `d.HP` > 95% of max HP | name は装備を整えたまま、警戒を保って拠点へ向かっている |
-| return | `d.HP` > 95% of max HP | name は次の任務さえ見据え、堂々と帰還している |
-| return | `d.HP` > 95% of max HP | name は息ひとつ乱さず、安定した歩調で戻っている |
-| return | `d.HP` > 95% of max HP | name は仲間を励ましつつ、余力十分で道を進んでいる |
-| return | `d.HP` > 95% of max HP | name は傷の少なさを確かめ、満ちた体力で帰っている |
-| return | `d.HP` > 95% of max HP | name はまだ戦える気配を残したまま、悠々と帰還している |
-| return | `d.HP` > 95% of max HP | name は遠征終わりとは思えぬ足取りで拠点へ向かっている |
-| return | `d.HP` < 30% of max HP | name は痛む体をかばいながら、慎重に帰路をたどっている |
-| return | `d.HP` < 30% of max HP | name は息を切らしつつも、拠点の灯りを頼りに進んでいる |
-| return | `d.HP` < 30% of max HP | name はふらつく足を踏みしめ、なんとか帰還を続けている |
-| return | `d.HP` < 30% of max HP | name は仲間の支えを受けながら、ゆっくり戻っている |
-| return | `d.HP` < 30% of max HP | name は止血した包帯を押さえ、無言で帰り道を進んでいる |
-| return | `d.HP` < 30% of max HP | name は一歩ごとに痛みに耐え、拠点を目指している |
-| return | `d.HP` < 30% of max HP | name は休み休み歩き、帰還だけを考えている |
-| return | `d.HP` < 30% of max HP | name は視界の揺れをこらえつつ、道を外さず戻っている |
-| return | `d.HP` < 30% of max HP | name は気力で体を動かし、遅れまいと帰路を急いでいる |
-| return | `d.HP` < 30% of max HP | name は消えかけた体力を振り絞り、ようやく帰還している |
-| return | `d.HP` = 0% of max HP (defeated) | name は力尽き、仲間に運ばれながら拠点へ収容されている |
-| return | `d.HP` = 0% of max HP (defeated) | name は意識を失ったまま、担架で静かに運ばれている |
-| return | `d.HP` = 0% of max HP (defeated) | name の装備だけが先に回収され、本人は救護班に託された |
-| return | `d.HP` = 0% of max HP (defeated) | name は戦線を離脱し、仲間の腕に支えられて帰還している |
-| return | `d.HP` = 0% of max HP (defeated) | name はその場で倒れ、救助隊によって拠点へ搬送された |
-| return | `d.HP` = 0% of max HP (defeated) | name は反応を失い、静まり返った隊列の中で運ばれている |
-| return | `d.HP` = 0% of max HP (defeated) | name は撤退の混乱の中で救い出され、帰還処置に入った |
-| return | `d.HP` = 0% of max HP (defeated) | name は倒れたまま動かず、仲間が交代で担いで戻っている |
-| return | `d.HP` = 0% of max HP (defeated) | name の呼吸はかすかで、緊急手当てを受けつつ運ばれている |
-| return | `d.HP` = 0% of max HP (defeated) | name は完全に戦闘不能となり、帰還後ただちに治療室へ送られる |
+| return | Clear and `d.HP` > 95% of max HP | name はほとんど無傷のまま、軽い足取りで拠点へ戻っている |
+| return | Clear and `d.HP` > 95% of max HP | name は余裕の笑みを浮かべ、戦果を語りながら帰還している |
+| return | Clear and `d.HP` > 95% of max HP | name は疲れを見せず、先頭に立って帰路を進んでいる |
+| return | Clear and `d.HP` > 95% of max HP | name は装備を整えたまま、警戒を保って拠点へ向かっている |
+| return | Clear and `d.HP` > 95% of max HP | name は次の任務さえ見据え、堂々と帰還している |
+| return | Clear and `d.HP` > 95% of max HP | name は息ひとつ乱さず、安定した歩調で戻っている |
+| return | Clear and `d.HP` > 95% of max HP | name は仲間を励ましつつ、余力十分で道を進んでいる |
+| return | Clear and `d.HP` > 95% of max HP | name は傷の少なさを確かめ、満ちた体力で帰っている |
+| return | Clear and `d.HP` > 95% of max HP | name はまだ戦える気配を残したまま、悠々と帰還している |
+| return | Clear and `d.HP` > 95% of max HP | name は遠征終わりとは思えぬ足取りで拠点へ向かっている |
+| return | Wounded_Retreat | name は痛む体をかばいながら、慎重に帰路をたどっている |
+| return | Wounded_Retreat | name は息を切らしつつも、拠点の灯りを頼りに進んでいる |
+| return | Wounded_Retreat | name はふらつく足を踏みしめ、なんとか帰還を続けている |
+| return | Wounded_Retreat | name は仲間の支えを受けながら、ゆっくり戻っている |
+| return | Wounded_Retreat | name は止血した包帯を押さえ、無言で帰り道を進んでいる |
+| return | Wounded_Retreat | name は一歩ごとに痛みに耐え、拠点を目指している |
+| return | Wounded_Retreat | name は休み休み歩き、帰還だけを考えている |
+| return | Wounded_Retreat | name は視界の揺れをこらえつつ、道を外さず戻っている |
+| return | Wounded_Retreat | name は気力で体を動かし、遅れまいと帰路を急いでいる |
+| return | Wounded_Retreat | name は消えかけた体力を振り絞り、ようやく帰還している |
+| return | Defeat | name は力尽き、仲間に運ばれながら拠点へ収容されている |
+| return | Defeat | name は意識を失ったまま、担架で静かに運ばれている |
+| return | Defeat | name の装備だけが先に回収され、本人は救護班に託された |
+| return | Defeat | name は戦線を離脱し、仲間の腕に支えられて帰還している |
+| return | Defeat | name はその場で倒れ、救助隊によって拠点へ搬送された |
+| return | Defeat | name は反応を失い、静まり返った隊列の中で運ばれている |
+| return | Defeat | name は撤退の混乱の中で救い出され、帰還処置に入った |
+| return | Defeat | name は倒れたまま動かず、仲間が交代で担いで戻っている |
+| return | Defeat | name の呼吸はかすかで、緊急手当てを受けつつ運ばれている |
+| return | Defeat | name は完全に戦闘不能となり、帰還後ただちに治療室へ送られる |
+| return | Turned_Back | name は封印扉の前で足を止め、条件不足を悟って引き返している |
+| return | Turned_Back | name は必要な戦利品が足りないと判断し、未練を残しつつ帰路についた |
+| return | Turned_Back | name は進行条件を満たせず、地図を閉じて拠点への道を選んだ |
+| return | Turned_Back | name は門番の刻印に拒まれ、静かに撤収を指示している |
+| return | Turned_Back | name は先へ進む鍵がないと確認し、隊列を整えて戻っている |
+| return | Turned_Back | name は探索継続を断念し、次回に備えて情報を持ち帰っている |
+| return | Turned_Back | name は条件未達の報せを受け、焦らず帰還して準備を立て直す |
+| return | Turned_Back | name は収集目標の不足を認め、危険を避けて帰還判断を下した |
+| return | Turned_Back | name はこれ以上は無理だと見切り、必要素材を求めて戻っている |
+| return | Turned_Back | name は進路を塞ぐ要件に阻まれ、次の挑戦へ備えて退いた |
+| return | Draw_Retreat | name は決着のつかない戦いを終え、消耗を抑えて帰還している |
+| return | Draw_Retreat | name は互いに譲らぬまま戦線を離れ、静かに拠点へ戻っている |
+| return | Draw_Retreat | name は引き分けの痛み分けを受け入れ、隊列を崩さず帰路を進む |
+| return | Draw_Retreat | name は勝機を得られぬまま時間切れとなり、体勢を保って撤いた |
+| return | Draw_Retreat | name は相手を押し切れず、再戦を誓いながら退いている |
+| return | Draw_Retreat | name は戦況が平行線のまま終わり、損耗管理を優先して戻った |
+| return | Draw_Retreat | name は互角のまま刃を収め、次の機会へ力を温存している |
+| return | Draw_Retreat | name は決め手を欠いた戦闘を切り上げ、慎重に帰還している |
+| return | Draw_Retreat | name は均衡が崩れぬと見て、被害拡大前に撤収した |
+| return | Draw_Retreat | name は勝敗なき離脱を受け止め、拠点での立て直しを急いでいる |
