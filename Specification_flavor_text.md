@@ -5,7 +5,7 @@
   - condition: sortie > none. 
 
 - **return state**
-  - condition: Defeat > Retreat > Escape > Clear 
+  - condition: Defeat >  Wounded_Retreat > Draw_Retreat >  Turned_Back > Clear 
 
 - master
 
