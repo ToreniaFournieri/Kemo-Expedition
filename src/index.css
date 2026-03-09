@@ -48,11 +48,11 @@ body {
 
 .side-quest-theme-icon {
   display: inline-block;
-  filter: grayscale(1) saturate(0) brightness(0.85) sepia(1) saturate(1200%) hue-rotate(350deg) brightness(0.85);
+  filter: grayscale(1) saturate(0) brightness(0.85) sepia(1) saturate(1200%) hue-rotate(350deg);
   opacity: 0.8;
 }
 
 .theme-luna .side-quest-theme-icon {
-  filter: grayscale(1) saturate(0) brightness(0.85) sepia(1) saturate(1200%) hue-rotate(350deg) brightness(0.85);
+  filter: grayscale(1) saturate(0) brightness(0.85) sepia(1) saturate(1200%) hue-rotate(350deg);
   opacity: 0.8;
 }
