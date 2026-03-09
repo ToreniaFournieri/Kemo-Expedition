@@ -518,7 +518,10 @@ Party.`d.HP` =
 | reactivate(復帰中) | Reactivating from AFK mode | - | - |
 
 - **Realtime Progress**
-- Debug Scaling: For debugging purposes, all durations are multiplied by **0.2** in the `/dev/`, `/qa/`, and `/luna/` environments.
+- Debug Scaling:
+  - If `x5 boost` , all durations are multiplied by **0.2**.
+  - If `x20 boost` , all durations are multiplied by **0.05**.
+
 
 | State | Duration |
 |-------|-------|
