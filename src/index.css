@@ -52,5 +52,6 @@ body {
 }
 
 .theme-luna .side-quest-theme-icon {
-  filter: grayscale(1) saturate(0) brightness(0.7) sepia(1) saturate(1150%) hue-rotate(351deg) brightness(0.88);
+  filter: grayscale(1) saturate(0) brightness(0.68) sepia(1) saturate(320%) hue-rotate(350deg) brightness(0.74);
+  opacity: 0.88;
 }
