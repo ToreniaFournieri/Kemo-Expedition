@@ -208,14 +208,14 @@ body {
 
 .side-quest-theme-icon {
   display: inline-block;
-  color: currentColor;
-  font-variant-emoji: text;
+  filter: var(--sub-theme-emoji-filter);
+  opacity: var(--side-quest-icon-opacity);
 }
 
 .sub-theme-emoji-icon {
   display: inline-block;
-  color: currentColor;
-  font-variant-emoji: text;
+  filter: var(--sub-theme-emoji-filter);
+  opacity: var(--side-quest-icon-opacity);
 }
 
 
