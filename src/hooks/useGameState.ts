@@ -2205,7 +2205,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...currentParty.expeditionStats,
           Clear: currentParty.expeditionStats.Clear + (finalOutcome === 'Clear' ? 1 : 0),
           Turned_Back: currentParty.expeditionStats.Turned_Back + (finalOutcome === 'Escape' ? 1 : 0),
-          Draw_Retreat: currentParty.expeditionStats.Draw_Retreat + (entries.length > 0 && entries[entries.length - 1].outcome === 'draw' ? 1 : 0),
+          Draw_Retreat: currentParty.expeditionStats.Draw_Retreat + (finalOutcome === 'Retreat' && entries.length > 0 && entries[entries.length - 1].outcome === 'draw' ? 1 : 0),
           Wounded_Retreat: currentParty.expeditionStats.Wounded_Retreat + (finalOutcome === 'Retreat' && !(entries.length > 0 && entries[entries.length - 1].outcome === 'draw') ? 1 : 0),
           Defeat: currentParty.expeditionStats.Defeat + (finalOutcome === 'Defeat' ? 1 : 0),
         },
