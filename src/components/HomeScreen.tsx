@@ -110,6 +110,8 @@ type BaseSubTab = 'inventory' | 'shop' | 'jewelStore' | 'workshop' | 'altar';
 
 type PartyCycleState = 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray' | 'idle' | 'move' | 'explore' | 'return' | 'reactivate';
 
+const PARTY_EXPEDITION_SPLIT_MIN_WIDTH = 1100;
+
 const PARTY_CYCLE_STATE_LABELS: Record<PartyCycleState, string> = {
   rest: '休息中',
   sell: '売却中',
@@ -1639,6 +1641,9 @@ export function HomeScreen({
   const [editingCharacter, setEditingCharacter] = useState<number | null>(null);
   const [isAutoRepeatEnabled, setIsAutoRepeatEnabled] = useState(true);
   const [isExpeditionStatsDisplayEnabled, setIsExpeditionStatsDisplayEnabled] = useState(false);
+  const [isPartyExpeditionSplitViewEnabled, setIsPartyExpeditionSplitViewEnabled] = useState(
+    () => window.innerWidth >= PARTY_EXPEDITION_SPLIT_MIN_WIDTH,
+  );
   const [partyCycles, setPartyCycles] = useState<Record<number, PartyCycleRuntime>>({});
   const [expeditionExpandedLogParty, setExpeditionExpandedLogParty] = useState<number | null>(null);
   const [expeditionExpandedRoom, setExpeditionExpandedRoom] = useState<{ partyIndex: number; roomIndex: number; latestRoomToken: string } | null>(null);
@@ -1684,6 +1689,17 @@ export function HomeScreen({
   useEffect(() => {
     autoRepeatEnabledRef.current = isAutoRepeatEnabled;
   }, [isAutoRepeatEnabled]);
+
+  useEffect(() => {
+    const syncPartyExpeditionSplitView = () => {
+      setIsPartyExpeditionSplitViewEnabled(window.innerWidth >= PARTY_EXPEDITION_SPLIT_MIN_WIDTH);
+    };
+
+    window.addEventListener('resize', syncPartyExpeditionSplitView);
+    return () => {
+      window.removeEventListener('resize', syncPartyExpeditionSplitView);
+    };
+  }, []);
 
   useEffect(() => {
     try {
@@ -3158,6 +3174,8 @@ export function HomeScreen({
     document.title = gameTitle;
   }, [gameTitle]);
 
+  const isPartyExpeditionSplitView = isPartyExpeditionSplitViewEnabled && (activeTab === 'party' || activeTab === 'expedition');
+
   return (
     <div className={`flex flex-col ${prefersDocumentScroll ? 'min-h-screen' : 'h-screen'} ${HEADER_HEIGHT_CLASS} ${gameMode === 'm.luna' ? 'theme-luna' : ''}`}>
       {/* Fixed Header */}
@@ -3194,7 +3212,7 @@ export function HomeScreen({
                   switchTab(tab.id);
                 }}
                 className={`flex-1 py-2 text-sm font-medium relative ${
-                  activeTab === tab.id
+                  (activeTab === tab.id || (isPartyExpeditionSplitView && (tab.id === 'party' || tab.id === 'expedition')))
                     ? 'text-sub border-b-2 border-sub'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
@@ -3221,46 +3239,93 @@ export function HomeScreen({
           tabScrollPositionsRef.current[activeTab] = currentScrollTop;
         }}
       >
-        {activeTab === 'party' && (
-          <PartyTab
-            parties={state.parties}
-            selectedPartyIndex={state.selectedPartyIndex}
-            party={currentParty}
-            partyStats={partyStats}
-            characterStats={characterStats}
-            selectedCharacter={selectedCharacter}
-            setSelectedCharacter={setSelectedCharacter}
-            editingCharacter={editingCharacter}
-            setEditingCharacter={setEditingCharacter}
-            onUpdateCharacter={actions.updateCharacter}
-            onReorderPartyCharacter={actions.reorderPartyCharacter}
-            onEquipItem={actions.equipItem}
-            onAttachJewel={actions.attachJewel}
-            onAddStatNotifications={actions.addStatNotifications}
-            onSelectParty={actions.selectParty}
-            onUpdatePartyDeity={actions.updatePartyDeity}
-            inventory={state.global.inventory}
-            jewels={state.global.jewels}
-            deityDonations={state.global.deityDonations}
-            unlockedDeities={debugSettings.allReligionsEnabled ? DEITY_OPTIONS.map((deity) => normalizeDeityName(deity.name)).filter((name) => !isNoFaithDeity(name)) : state.global.unlockedDeities}
-          />
-        )}
+        {isPartyExpeditionSplitView ? (
+          <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+            <div>
+              <PartyTab
+                parties={state.parties}
+                selectedPartyIndex={state.selectedPartyIndex}
+                party={currentParty}
+                partyStats={partyStats}
+                characterStats={characterStats}
+                selectedCharacter={selectedCharacter}
+                setSelectedCharacter={setSelectedCharacter}
+                editingCharacter={editingCharacter}
+                setEditingCharacter={setEditingCharacter}
+                onUpdateCharacter={actions.updateCharacter}
+                onReorderPartyCharacter={actions.reorderPartyCharacter}
+                onEquipItem={actions.equipItem}
+                onAttachJewel={actions.attachJewel}
+                onAddStatNotifications={actions.addStatNotifications}
+                onSelectParty={actions.selectParty}
+                onUpdatePartyDeity={actions.updatePartyDeity}
+                inventory={state.global.inventory}
+                jewels={state.global.jewels}
+                deityDonations={state.global.deityDonations}
+                unlockedDeities={debugSettings.allReligionsEnabled ? DEITY_OPTIONS.map((deity) => normalizeDeityName(deity.name)).filter((name) => !isNoFaithDeity(name)) : state.global.unlockedDeities}
+              />
+            </div>
+            <div>
+              <ExpeditionTab
+                state={state}
+                onSelectDungeon={actions.selectDungeon}
+                onSetExpeditionDepthLimit={actions.setExpeditionDepthLimit}
+                onResetExpeditionStats={actions.resetExpeditionStats}
+                isExpeditionStatsDisplayEnabled={isExpeditionStatsDisplayEnabled}
+                partyCycles={partyCycles}
+                afkRecoveryProgressPercent={afkRecoveryProgressPercent}
+                onTriggerSortie={triggerSortie}
+                expandedLogParty={expeditionExpandedLogParty}
+                setExpandedLogParty={setExpeditionExpandedLogParty}
+                expandedRoom={expeditionExpandedRoom}
+                setExpandedRoom={setExpeditionExpandedRoom}
+              />
+            </div>
+          </div>
+        ) : (
+          <>
+            {activeTab === 'party' && (
+              <PartyTab
+                parties={state.parties}
+                selectedPartyIndex={state.selectedPartyIndex}
+                party={currentParty}
+                partyStats={partyStats}
+                characterStats={characterStats}
+                selectedCharacter={selectedCharacter}
+                setSelectedCharacter={setSelectedCharacter}
+                editingCharacter={editingCharacter}
+                setEditingCharacter={setEditingCharacter}
+                onUpdateCharacter={actions.updateCharacter}
+                onReorderPartyCharacter={actions.reorderPartyCharacter}
+                onEquipItem={actions.equipItem}
+                onAttachJewel={actions.attachJewel}
+                onAddStatNotifications={actions.addStatNotifications}
+                onSelectParty={actions.selectParty}
+                onUpdatePartyDeity={actions.updatePartyDeity}
+                inventory={state.global.inventory}
+                jewels={state.global.jewels}
+                deityDonations={state.global.deityDonations}
+                unlockedDeities={debugSettings.allReligionsEnabled ? DEITY_OPTIONS.map((deity) => normalizeDeityName(deity.name)).filter((name) => !isNoFaithDeity(name)) : state.global.unlockedDeities}
+              />
+            )}
 
-        {activeTab === 'expedition' && (
-          <ExpeditionTab
-            state={state}
-            onSelectDungeon={actions.selectDungeon}
-            onSetExpeditionDepthLimit={actions.setExpeditionDepthLimit}
-            onResetExpeditionStats={actions.resetExpeditionStats}
-            isExpeditionStatsDisplayEnabled={isExpeditionStatsDisplayEnabled}
-            partyCycles={partyCycles}
-            afkRecoveryProgressPercent={afkRecoveryProgressPercent}
-            onTriggerSortie={triggerSortie}
-            expandedLogParty={expeditionExpandedLogParty}
-            setExpandedLogParty={setExpeditionExpandedLogParty}
-            expandedRoom={expeditionExpandedRoom}
-            setExpandedRoom={setExpeditionExpandedRoom}
-          />
+            {activeTab === 'expedition' && (
+              <ExpeditionTab
+                state={state}
+                onSelectDungeon={actions.selectDungeon}
+                onSetExpeditionDepthLimit={actions.setExpeditionDepthLimit}
+                onResetExpeditionStats={actions.resetExpeditionStats}
+                isExpeditionStatsDisplayEnabled={isExpeditionStatsDisplayEnabled}
+                partyCycles={partyCycles}
+                afkRecoveryProgressPercent={afkRecoveryProgressPercent}
+                onTriggerSortie={triggerSortie}
+                expandedLogParty={expeditionExpandedLogParty}
+                setExpandedLogParty={setExpeditionExpandedLogParty}
+                expandedRoom={expeditionExpandedRoom}
+                setExpandedRoom={setExpeditionExpandedRoom}
+              />
+            )}
+          </>
         )}
 
         {activeTab === 'base' && (
