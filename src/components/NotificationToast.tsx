@@ -48,8 +48,8 @@ function NotificationItem({ notification, onDismiss, onDismissAll }: Notificatio
       : notification.rarity === 'bossRare' || notification.rarity === 'mythicRare'
         ? 'text-accent'
         : notification.rarity === 'common' || notification.rarity === 'uncommon'
-          ? 'text-black'
-          : 'text-black';
+          ? 'text-gray-800'
+          : 'text-gray-800';
 
   // For drop notifications: Super Rare overrides to bold dark orange.
   const fontWeight = isItem
@@ -66,6 +66,7 @@ function NotificationItem({ notification, onDismiss, onDismissAll }: Notificatio
     <button
       onClick={onDismissAll}
       className={`
+        notification-toast-item
         px-3 py-1.5 rounded-lg shadow-md cursor-pointer
         text-xs ${fontWeight} w-fit
         transition-opacity duration-300
