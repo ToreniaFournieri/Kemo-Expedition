@@ -4636,6 +4636,7 @@ function PartyTab({
                 type StatusLine = {
                   key: string;
                   text: string;
+                  renderedText?: ReactNode;
                   helpTitle?: string;
                   helpLines?: string[];
                 };
@@ -4747,14 +4748,21 @@ function PartyTab({
                 // Defense lines
                 const defenseAmpPhysical = Math.max(0.01, stats.physicalDefenseAmplifier + stats.deityDefenseAmplifierBonus.physical);
                 const defenseAmpMagical = Math.max(0.01, stats.magicalDefenseAmplifier + stats.deityDefenseAmplifierBonus.magical);
-                const elementName = stats.elementalOffense === 'fire' ? '🔥' :
+                const elementEmoji = stats.elementalOffense === 'fire' ? '🔥' :
                   stats.elementalOffense === 'thunder' ? '⚡' :
-                  stats.elementalOffense === 'ice' ? '❄️' : '無';
+                  stats.elementalOffense === 'ice' ? '❄️' : null;
 
                 const defenseLines: StatusLine[] = [
                   {
                     key: 'element',
-                    text: `属性:${elementName}(x${stats.elementalOffenseValue.toFixed(2)})`,
+                    text: `属性:${elementEmoji ?? '無'}(x${stats.elementalOffenseValue.toFixed(2)})`,
+                    renderedText: (
+                      <>
+                        属性:
+                        {elementEmoji ? <span className="sub-theme-emoji-icon" aria-hidden="true">{elementEmoji}</span> : '無'}
+                        (x{stats.elementalOffenseValue.toFixed(2)})
+                      </>
+                    ),
                     helpTitle: 'e. 属性攻撃(重複有効)',
                     helpLines: getElementalOffenseHelpLines(char, stats),
                   },
@@ -4835,7 +4843,7 @@ function PartyTab({
                                 }}
                                 className="text-left"
                               >
-                                {defenseLines[i]?.text}
+                                {defenseLines[i]?.renderedText ?? defenseLines[i]?.text}
                               </button>
                               {defenseLines[i] && activeStatusHelpKey === defenseLines[i].key && (
                                 <div
@@ -4851,7 +4859,7 @@ function PartyTab({
                               )}
                             </>
                           ) : (
-                            <span>{defenseLines[i]?.text}</span>
+                            <span>{defenseLines[i]?.renderedText ?? defenseLines[i]?.text}</span>
                           )}
                         </div>
                       </div>
