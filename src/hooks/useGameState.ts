@@ -886,7 +886,7 @@ function normalizeSleepinessState(raw: unknown): SleepinessState {
 
 function normalizeCharacterAutoEquipmentMode(raw: unknown): 0 | 1 | 2 {
   if (raw === 0 || raw === 1 || raw === 2) return raw;
-  return 2;
+  return 1;
 }
 
 function drawPartySleepiness(party: Party): { party: Party; sleepiness: SleepinessState } {
@@ -924,7 +924,7 @@ function createInitialParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
-    autoEquipmentMode: 2,
+    autoEquipmentMode: 1,
     equipment: setup.equipmentIds.map((itemId) => ({
       ...getItemById(itemId)!,
       enhancement: 0,
@@ -980,7 +980,7 @@ function createSecondParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
-    autoEquipmentMode: 2,
+    autoEquipmentMode: 1,
     equipment: [],
   }));
 
@@ -1032,7 +1032,7 @@ function createThirdParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
-    autoEquipmentMode: 2,
+    autoEquipmentMode: 1,
     equipment: [],
   }));
 
@@ -1084,7 +1084,7 @@ function createFourthParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
-    autoEquipmentMode: 2,
+    autoEquipmentMode: 1,
     equipment: [],
   }));
 
@@ -1136,7 +1136,7 @@ function createFifthParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
-    autoEquipmentMode: 2,
+    autoEquipmentMode: 1,
     equipment: [],
   }));
 
@@ -1188,7 +1188,7 @@ function createSixthParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
-    autoEquipmentMode: 2,
+    autoEquipmentMode: 1,
     equipment: [],
   }));
 
