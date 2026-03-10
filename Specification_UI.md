@@ -55,7 +55,7 @@
 
 **Notification Logic**
 - Item Drops
-	- When an item drops (exclude auto-sell items), it triggers the notification with Normal style. If the item is Super Rare, The style switchs to Rare style.
+	- When an item drops (exclude auto-sell items), it triggers the notification with Normal style. If the item is Super Rare, The style switchs to Rare style. No notification is displayed when the inventory count of that item is greater than 20.
     - displays party number like. ex: "PT1:名工の銅の籠手を入手"
 	- Logic: 伝説のショートソード triggers the rareStyle.
   	- Animation: animate-bounce (once) + animate-pulse (continuous).
