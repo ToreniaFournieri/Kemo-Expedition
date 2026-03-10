@@ -10,7 +10,7 @@
   --color-hp-bar-mild: 147 197 253;
   --color-hp-taken: 252 183 134;
   --color-hp-bar-empty: 226 232 240;
-  --side-quest-icon-filter: brightness(0) saturate(100%) invert(53%) sepia(98%) saturate(1624%) hue-rotate(199deg) brightness(99%) contrast(94%);
+  --sub-theme-emoji-filter: brightness(0) saturate(100%) invert(53%) sepia(98%) saturate(1624%) hue-rotate(199deg) brightness(99%) contrast(94%);
   --side-quest-icon-opacity: 0.9;
 }
 
@@ -22,7 +22,7 @@
   --color-hp-bar-mild: 232 181 104;
   --color-hp-taken: 255 237 145;
   --color-hp-bar-empty: 217 204 175;
-  --side-quest-icon-filter: brightness(0) saturate(100%) invert(58%) sepia(48%) saturate(716%) hue-rotate(356deg) brightness(92%) contrast(90%);
+  --sub-theme-emoji-filter: brightness(0) saturate(100%) invert(58%) sepia(48%) saturate(716%) hue-rotate(356deg) brightness(92%) contrast(90%);
   --side-quest-icon-opacity: 0.9;
 }
 
@@ -55,7 +55,7 @@
   --color-hp-bar-mild: 8 166 69;
   --color-hp-taken: 252 165 165;
   --color-hp-bar-empty: 209 213 219;
-  --side-quest-icon-filter: brightness(0) saturate(100%) invert(56%) sepia(71%) saturate(445%) hue-rotate(108deg) brightness(95%) contrast(89%);
+  --sub-theme-emoji-filter: brightness(0) saturate(100%) invert(56%) sepia(71%) saturate(445%) hue-rotate(108deg) brightness(95%) contrast(89%);
   --side-quest-icon-opacity: 0.9;
 }
 
@@ -208,13 +208,14 @@ body {
 
 .side-quest-theme-icon {
   display: inline-block;
-  filter: var(--side-quest-icon-filter);
+  filter: var(--sub-theme-emoji-filter);
   opacity: var(--side-quest-icon-opacity);
 }
 
 .sub-theme-emoji-icon {
   display: inline-block;
-  filter: var(--side-quest-icon-filter);
+  color: rgb(var(--color-sub));
+  filter: none;
   opacity: var(--side-quest-icon-opacity);
 }
 
