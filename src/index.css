@@ -46,6 +46,39 @@
   background-color: rgb(var(--color-sub) / 0.9);
 }
 
+
+.theme-laika {
+  --color-sub: 16 185 129;
+  --color-accent: 220 38 38;
+  --color-pane: 229 231 235;
+  --color-hp-bar: 110 231 183;
+  --color-hp-bar-mild: 110 231 183;
+  --color-hp-taken: 252 165 165;
+  --color-hp-bar-empty: 209 213 219;
+  --side-quest-icon-filter: brightness(0) saturate(100%) invert(56%) sepia(71%) saturate(445%) hue-rotate(108deg) brightness(95%) contrast(89%);
+  --side-quest-icon-opacity: 0.9;
+}
+
+.theme-laika .text-blue-600 {
+  color: rgb(var(--color-sub));
+}
+
+.theme-laika .bg-blue-50 {
+  background-color: rgb(var(--color-sub) / 0.12);
+}
+
+.theme-laika .bg-blue-100 {
+  background-color: rgb(var(--color-sub) / 0.2);
+}
+
+.theme-laika .bg-blue-500 {
+  background-color: rgb(var(--color-sub));
+}
+
+.theme-laika .hover\:bg-blue-600:hover {
+  background-color: rgb(var(--color-sub) / 0.9);
+}
+
 .theme-dark {
   color-scheme: dark;
   background-color: #111827;
@@ -151,6 +184,16 @@ body.app-dark {
   --color-hp-bar-mild: 170 141 93;
   --color-hp-taken: 133 114 85;
   --color-hp-bar-empty: 43 52 68;
+}
+
+.theme-laika.theme-dark {
+  --color-sub: 52 211 153;
+  --color-accent: 248 113 113;
+  --color-pane: 30 41 59;
+  --color-hp-bar: 52 211 153;
+  --color-hp-bar-mild: 45 212 191;
+  --color-hp-taken: 185 28 28;
+  --color-hp-bar-empty: 55 65 81;
 }
 
 .theme-dark .race-icon {
