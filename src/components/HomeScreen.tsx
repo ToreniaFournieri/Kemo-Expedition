@@ -1662,6 +1662,8 @@ export function HomeScreen({
   const [isAutoEquipmentEnabled] = useState<boolean>(() => getInitialAutoEquipmentEnabled());
   const tabScrollPositionsRef = useRef<Partial<Record<Tab, number>>>({});
   const tabContentRef = useRef<HTMLDivElement | null>(null);
+  const primarySplitTabContentRef = useRef<HTMLDivElement | null>(null);
+  const secondarySplitTabContentRef = useRef<HTMLDivElement | null>(null);
 
   const currentParty = state.parties[state.selectedPartyIndex];
   const prevPartyLogsRef = useRef(state.parties.map((party) => party.lastExpeditionLog));
@@ -2973,6 +2975,14 @@ export function HomeScreen({
   }, [state.global.shopPurchases, state.global.inventory, actions]);
 
   useEffect(() => {
+    if (isPartyExpeditionSplitViewEnabled) {
+      const expeditionScrollTop = tabScrollPositionsRef.current.expedition ?? 0;
+      const secondaryScrollTop = tabScrollPositionsRef.current[activeWideModeSecondaryTab] ?? 0;
+      primarySplitTabContentRef.current?.scrollTo({ top: expeditionScrollTop, behavior: 'auto' });
+      secondarySplitTabContentRef.current?.scrollTo({ top: secondaryScrollTop, behavior: 'auto' });
+      return;
+    }
+
     const currentScrollTop = tabScrollPositionsRef.current[activeTab] ?? 0;
     if (prefersDocumentScroll) {
       window.scrollTo({ top: currentScrollTop, behavior: 'auto' });
@@ -2980,20 +2990,26 @@ export function HomeScreen({
     }
 
     tabContentRef.current?.scrollTo({ top: currentScrollTop, behavior: 'auto' });
-  }, [activeTab, prefersDocumentScroll]);
+  }, [activeTab, activeWideModeSecondaryTab, isPartyExpeditionSplitViewEnabled, prefersDocumentScroll]);
 
   const switchTab = (nextTab: Tab) => {
-    const currentScrollTop = prefersDocumentScroll
-      ? window.scrollY
-      : tabContentRef.current?.scrollTop ?? 0;
-    tabScrollPositionsRef.current[activeTab] = currentScrollTop;
-
     if (isPartyExpeditionSplitViewEnabled) {
+      const expeditionScrollTop = primarySplitTabContentRef.current?.scrollTop ?? 0;
+      tabScrollPositionsRef.current.expedition = expeditionScrollTop;
+      const currentSecondaryScrollTop = secondarySplitTabContentRef.current?.scrollTop ?? 0;
+      tabScrollPositionsRef.current[activeWideModeSecondaryTab] = currentSecondaryScrollTop;
+
       if (nextTab === 'expedition') {
         return;
       }
       setActiveWideModeSecondaryTab(nextTab);
+      return;
     }
+
+    const currentScrollTop = prefersDocumentScroll
+      ? window.scrollY
+      : tabContentRef.current?.scrollTop ?? 0;
+    tabScrollPositionsRef.current[activeTab] = currentScrollTop;
 
     setActiveTab(nextTab);
   };
@@ -3364,22 +3380,36 @@ export function HomeScreen({
       {/* Tab Content */}
       <div
         ref={tabContentRef}
-        className={prefersDocumentScroll ? 'p-4' : 'flex-1 overflow-y-auto p-4'}
+        className={prefersDocumentScroll ? 'p-4' : `flex-1 p-4 ${isPartyExpeditionSplitViewEnabled ? 'overflow-hidden' : 'overflow-y-auto'}`}
         onScroll={() => {
-          if (prefersDocumentScroll) return;
+          if (prefersDocumentScroll || isPartyExpeditionSplitViewEnabled) return;
           const currentScrollTop = tabContentRef.current?.scrollTop ?? 0;
           tabScrollPositionsRef.current[activeTab] = currentScrollTop;
         }}
       >
         {isPartyExpeditionSplitView ? (
           <div
-            className="grid justify-center gap-4 items-start"
+            className="grid h-full justify-center gap-4 items-start"
             style={{ gridTemplateColumns: `repeat(2, minmax(0, ${TAB_PANEL_WIDTH_PX}px))` }}
           >
-            <div className="w-full min-w-0">
+            <div
+              ref={primarySplitTabContentRef}
+              className="h-full w-full min-w-0 overflow-y-auto"
+              onScroll={() => {
+                const currentScrollTop = primarySplitTabContentRef.current?.scrollTop ?? 0;
+                tabScrollPositionsRef.current.expedition = currentScrollTop;
+              }}
+            >
               {renderTabContent('expedition')}
             </div>
-            <div className="w-full min-w-0">
+            <div
+              ref={secondarySplitTabContentRef}
+              className="h-full w-full min-w-0 overflow-y-auto"
+              onScroll={() => {
+                const currentScrollTop = secondarySplitTabContentRef.current?.scrollTop ?? 0;
+                tabScrollPositionsRef.current[activeWideModeSecondaryTab] = currentScrollTop;
+              }}
+            >
               {renderTabContent(activeWideModeSecondaryTab)}
             </div>
           </div>
