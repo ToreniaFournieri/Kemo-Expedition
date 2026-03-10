@@ -1,4 +1,4 @@
-export type DebugTimeSpeed = 'realtime' | 'x5' | 'x20';
+export type DebugTimeSpeed = 'realtime' | 'x5' | 'x20' | 'x100';
 export type DebugGodsBattleCondition = 'normal' | 'simple1';
 export type DebugGodStrength = 'normal' | 'debug';
 
@@ -34,7 +34,7 @@ export function normalizeDebugSettings(raw: unknown): DebugSettings {
   const parsed = (raw && typeof raw === 'object') ? raw as Partial<DebugSettings> : {};
   return {
     clairvoyanceEnabled: parsed.clairvoyanceEnabled === true,
-    timeSpeed: parsed.timeSpeed === 'realtime' || parsed.timeSpeed === 'x20' || parsed.timeSpeed === 'x5' ? parsed.timeSpeed : 'x5',
+    timeSpeed: parsed.timeSpeed === 'realtime' || parsed.timeSpeed === 'x20' || parsed.timeSpeed === 'x100' || parsed.timeSpeed === 'x5' ? parsed.timeSpeed : 'x5',
     godsBattleCondition: parsed.godsBattleCondition === 'simple1' ? 'simple1' : 'normal',
     godStrength: parsed.godStrength === 'debug' ? 'debug' : 'normal',
     allReligionsEnabled: parsed.allReligionsEnabled === true,
@@ -67,5 +67,6 @@ export function saveDebugSettings(settings: DebugSettings): void {
 export function getTimeSpeedScale(settings: DebugSettings): number {
   if (settings.timeSpeed === 'realtime') return 1;
   if (settings.timeSpeed === 'x20') return 0.05;
+  if (settings.timeSpeed === 'x100') return 0.01;
   return 0.2;
 }
