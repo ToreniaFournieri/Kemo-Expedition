@@ -6,6 +6,7 @@ import { createEnvironmentStorageKey, getEnvironmentId } from './game/environmen
 const LOADING_MESSAGE = '下界にいる勇敢な冒険者達を捜索中…';
 const DARK_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-dark-mode');
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
+const THEME_SYNC_EVENT = 'kemo-expedition-theme-sync';
 
 function getInitialIsLunaMode() {
   if (typeof window === 'undefined') return false;
@@ -54,9 +55,11 @@ export default function App() {
     syncThemeState();
     mediaQuery.addEventListener('change', syncThemeState);
     window.addEventListener('storage', syncThemeState);
+    window.addEventListener(THEME_SYNC_EVENT, syncThemeState);
     return () => {
       mediaQuery.removeEventListener('change', syncThemeState);
       window.removeEventListener('storage', syncThemeState);
+      window.removeEventListener(THEME_SYNC_EVENT, syncThemeState);
     };
   }, []);
 

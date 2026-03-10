@@ -206,6 +206,7 @@ const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-
 const AUTO_EQUIPMENT_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-auto-equipment');
 const EXPEDITION_STATS_DISPLAY_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-expedition-stats-display');
 const DARK_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-dark-mode');
+const THEME_SYNC_EVENT = 'kemo-expedition-theme-sync';
 const APP_VERSION = `v${__APP_VERSION__}`;
 
 
@@ -1725,6 +1726,7 @@ export function HomeScreen({
   useEffect(() => {
     try {
       localStorage.setItem(DARK_MODE_STORAGE_KEY, darkModeSetting);
+      window.dispatchEvent(new Event(THEME_SYNC_EVENT));
     } catch (error) {
       console.error('Failed to save dark mode setting:', error);
     }
@@ -2381,6 +2383,7 @@ export function HomeScreen({
 
     try {
       localStorage.setItem(GAME_MODE_STORAGE_KEY, modeToPersist);
+      window.dispatchEvent(new Event(THEME_SYNC_EVENT));
     } catch (error) {
       console.error('Failed to persist game mode:', error);
     }
