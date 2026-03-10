@@ -9,6 +9,7 @@
   --color-hp-bar: 147 197 253;
   --color-hp-bar-mild: 147 197 253;
   --color-hp-taken: 252 183 134;
+  --color-hp-bar-empty: 226 232 240;
   --side-quest-icon-filter: brightness(0) saturate(100%) invert(53%) sepia(98%) saturate(1624%) hue-rotate(199deg) brightness(99%) contrast(94%);
   --side-quest-icon-opacity: 0.9;
 }
@@ -20,6 +21,7 @@
   --color-hp-bar: 223 190 128;
   --color-hp-bar-mild: 232 181 104;
   --color-hp-taken: 255 237 145;
+  --color-hp-bar-empty: 217 204 175;
   --side-quest-icon-filter: brightness(0) saturate(100%) invert(58%) sepia(48%) saturate(716%) hue-rotate(356deg) brightness(92%) contrast(90%);
   --side-quest-icon-opacity: 0.9;
 }
@@ -50,6 +52,7 @@
   color: rgb(229 231 235);
   --color-hp-bar-mild: 106 148 198;
   --color-hp-taken: 165 136 109;
+  --color-hp-bar-empty: 55 65 81;
 }
 
 html.app-dark,
