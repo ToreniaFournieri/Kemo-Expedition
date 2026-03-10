@@ -58,6 +58,7 @@ interface HomeScreenProps {
     selectParty: (partyIndex: number) => void;
     selectDungeon: (partyIndex: number, dungeonId: number) => void;
     setExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
+    resetExpeditionStats: (partyIndex: number) => void;
     runExpedition: (partyIndex: number, isLunaMode?: boolean, triggerGodsBattle?: boolean) => void;
     finalizeDiaryLog: (partyIndex: number) => void;
     updatePartyDeity: (partyIndex: number, deityName: string) => void;
@@ -3197,6 +3198,7 @@ export function HomeScreen({
             state={state}
             onSelectDungeon={actions.selectDungeon}
             onSetExpeditionDepthLimit={actions.setExpeditionDepthLimit}
+            onResetExpeditionStats={actions.resetExpeditionStats}
             partyCycles={partyCycles}
             afkRecoveryProgressPercent={afkRecoveryProgressPercent}
             onTriggerSortie={triggerSortie}
@@ -5269,6 +5271,7 @@ function ExpeditionTab({
   state,
   onSelectDungeon,
   onSetExpeditionDepthLimit,
+  onResetExpeditionStats,
   partyCycles,
   afkRecoveryProgressPercent,
   onTriggerSortie,
@@ -5280,6 +5283,7 @@ function ExpeditionTab({
   state: GameState;
   onSelectDungeon: (partyIndex: number, dungeonId: number) => void;
   onSetExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
+  onResetExpeditionStats: (partyIndex: number) => void;
   partyCycles: Record<number, PartyCycleRuntime>;
   afkRecoveryProgressPercent: number | null;
   onTriggerSortie: (partyIndex: number, triggerGodsBattle?: boolean) => void;
@@ -5518,6 +5522,16 @@ function ExpeditionTab({
                 {['return', 'idle'].includes(cycle.state) && party.currentHp <= 0 && (
                   <div className="text-xs text-accent">HPが0のため出撃できません。休息で回復してください。</div>
                 )}
+                <div className="text-xs text-gray-600">
+                  統計情報: 踏破{formatNumber(party.expeditionStats.Clear)}回/帰還{formatNumber(party.expeditionStats.Turned_Back)}回/引分{formatNumber(party.expeditionStats.Draw_Retreat)}回/撤退{formatNumber(party.expeditionStats.Wounded_Retreat)}回/敗北{formatNumber(party.expeditionStats.Defeat)}回 合計{formatNumber(party.expeditionStats.Clear + party.expeditionStats.Turned_Back + party.expeditionStats.Draw_Retreat + party.expeditionStats.Wounded_Retreat + party.expeditionStats.Defeat)}回
+                  <button
+                    type="button"
+                    onClick={() => onResetExpeditionStats(partyIndex)}
+                    className="ml-1 underline hover:text-accent"
+                  >
+                    リセット
+                  </button>
+                </div>
               </div>
             )}
 

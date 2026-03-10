@@ -1271,6 +1271,7 @@ type GameAction =
   | { type: 'SELECT_PARTY'; partyIndex: number }
   | { type: 'SELECT_DUNGEON'; partyIndex: number; dungeonId: number }
   | { type: 'SET_EXPEDITION_DEPTH_LIMIT'; partyIndex: number; depthLimit: ExpeditionDepthLimit }
+  | { type: 'RESET_EXPEDITION_STATS'; partyIndex: number }
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
   | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; isLunaMode?: boolean; triggerGodsBattle?: boolean }
   | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number }
@@ -1777,6 +1778,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       updatedParties[action.partyIndex] = {
         ...updatedParties[action.partyIndex],
         expeditionDepthLimit: action.depthLimit,
+      };
+      return { ...state, parties: updatedParties };
+    }
+
+    case 'RESET_EXPEDITION_STATS': {
+      const updatedParties = [...state.parties];
+      updatedParties[action.partyIndex] = {
+        ...updatedParties[action.partyIndex],
+        expeditionStats: getExpeditionStatsWithDefaults(null),
       };
       return { ...state, parties: updatedParties };
     }
@@ -3474,6 +3484,10 @@ export function useGameState() {
 
     setExpeditionDepthLimit: useCallback((partyIndex: number, depthLimit: ExpeditionDepthLimit) => {
       dispatch({ type: 'SET_EXPEDITION_DEPTH_LIMIT', partyIndex, depthLimit });
+    }, []),
+
+    resetExpeditionStats: useCallback((partyIndex: number) => {
+      dispatch({ type: 'RESET_EXPEDITION_STATS', partyIndex });
     }, []),
 
     updatePartyDeity: useCallback((partyIndex: number, deityName: string) => {
