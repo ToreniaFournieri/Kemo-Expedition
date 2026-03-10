@@ -36,7 +36,7 @@
       - Pane / card background: Gray
       - Page background: White
   - Sub color (~30%)
-    - Green `#06C750`
+    - Green `#08A645`
       (information, selection, links)
   - Accent color (~5%)
     - Crimson Red `#DC2626`
