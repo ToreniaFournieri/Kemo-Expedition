@@ -212,6 +212,12 @@ body {
   opacity: var(--side-quest-icon-opacity);
 }
 
+.sub-theme-emoji-icon {
+  display: inline-block;
+  filter: var(--side-quest-icon-filter);
+  opacity: var(--side-quest-icon-opacity);
+}
+
 
 #root {
   min-height: 100%;
