@@ -756,126 +756,6 @@
 | idle | none | name は剣の手入れをして気を紛らわせている |
 | idle | none | name は空いた時間に軽い準備運動をしている |
 | idle | none | name は何か起きる気配を待ちながら立っている |
-| explore | `x.exp_id`7 and `x.floor`1 | name は軌道を漂う残骸の隙間を縫い、古き星庭への進入路を探っている |
-| explore | `x.exp_id`7 and `x.floor`1 | name は砕けた外殻板に刻まれた紋章を読み、失われた守護艦の系譜を辿った |
-| explore | `x.exp_id`7 and `x.floor`1 | name は無音で回転する破片群を見上げ、接触を避ける星屑航路を選んでいる |
-| explore | `x.exp_id`7 and `x.floor`1 | name は凍てた配線束を手繰り、漂流機構の残る安全足場を確保した |
-| explore | `x.exp_id`7 and `x.floor`1 | name は虚空に瞬く警告灯を目印に、崩落帯を外して前進している |
-| explore | `x.exp_id`7 and `x.floor`1 | name は砕片に映る偽りの星明かりを見切り、幻惑の回廊を抜けていく |
-| explore | `x.exp_id`7 and `x.floor`1 | name は古い推進翼の影へ身を寄せ、流星塵の奔流が過ぎるのを待った |
-| explore | `x.exp_id`7 and `x.floor`1 | name は漂う機械骨格に祈り札を結び、静寂の軌道へ敬意を捧げている |
-| explore | `x.exp_id`7 and `x.floor`1 | name は裂けた観測窓の向こうに庭園の光を見つけ、進路の確信を深めた |
-| explore | `x.exp_id`7 and `x.floor`1 | name は金属塵の渦を杖で払い、失われた停泊帯への道筋を描いている |
-| explore | `x.exp_id`7 and `x.floor`2 | name は防衛基台の巡回光を避け、結界縁に沿う死角の通路を進んでいる |
-| explore | `x.exp_id`7 and `x.floor`2 | name は古代の発振塔へ耳を澄ませ、護りの律動が薄れる瞬間を読んだ |
-| explore | `x.exp_id`7 and `x.floor`2 | name は符号化された警戒紋を解き、封鎖線を乱さぬ通行順を整えている |
-| explore | `x.exp_id`7 and `x.floor`2 | name は碧い障壁に手をかざし、魔導電流の揺らぎから安全窓を測定した |
-| explore | `x.exp_id`7 and `x.floor`2 | name は沈黙する砲座の間を潜り、旧守備隊の補給路跡を見つけ出した |
-| explore | `x.exp_id`7 and `x.floor`2 | name は結界杭に絡む蔦を払い、再起動した監視眼の視線をかわしている |
-| explore | `x.exp_id`7 and `x.floor`2 | name は空間に走る薄い雷光を見抜き、感電域を仲間へ短く告げた |
-| explore | `x.exp_id`7 and `x.floor`2 | name は浮遊基盤の継ぎ目を踏み替え、防壁外周を円弧に迂回している |
-| explore | `x.exp_id`7 and `x.floor`2 | name は封印端末へ古語の祈詞を唱え、一時的な通行許可を引き出した |
-| explore | `x.exp_id`7 and `x.floor`2 | name は盾膜の明滅周期を記録し、次隊が通れる安定時間を残している |
-| explore | `x.exp_id`7 and `x.floor`3 | name は制御塔輪の中央で息を潜め、盾陣を統べる脈動音を読み解いている |
-| explore | `x.exp_id`7 and `x.floor`3 | name は空へ伸びる晶柱の位相を合わせ、暴走寸前の結界を鎮めた |
-| explore | `x.exp_id`7 and `x.floor`3 | name は自律機兵の巡回線を外し、塔間連絡橋を無音で渡っている |
-| explore | `x.exp_id`7 and `x.floor`3 | name は端末石板の欠損文字を補い、古代運用式の再現に成功した |
-| explore | `x.exp_id`7 and `x.floor`3 | name は余剰光を吸う導管へ魔力を流し、遮断寸前の回路を延命した |
-| explore | `x.exp_id`7 and `x.floor`3 | name は環状足場の崩れを飛び越え、制御核へ続く短路を切り開いている |
-| explore | `x.exp_id`7 and `x.floor`3 | name は塔頂の風見機に護符を結び、誤作動を呼ぶ逆流波を弱めた |
-| explore | `x.exp_id`7 and `x.floor`3 | name は青白い火花の雨を潜り、同期儀式の起点へ辿り着いた |
-| explore | `x.exp_id`7 and `x.floor`3 | name は守護紋が刻まれた床環を踏み、権限認証の古式を完了している |
-| explore | `x.exp_id`7 and `x.floor`3 | name は塔列の共鳴を聴き分け、崩壊を招く不協和帯を封じ込めた |
-| explore | `x.exp_id`7 and `x.floor`4 | name は半壊した接舷門の影に入り、内部生態区へ続く回廊を確保した |
-| explore | `x.exp_id`7 and `x.floor`4 | name は割れた隔壁に残る導光線を追い、生きた電力網の道を選んでいる |
-| explore | `x.exp_id`7 and `x.floor`4 | name は古扉の封鍵盤へ触れ、眠っていた開門機構を静かに起こした |
-| explore | `x.exp_id`7 and `x.floor`4 | name は損傷した案内像の指先を辿り、正規進入路の方角を定めた |
-| explore | `x.exp_id`7 and `x.floor`4 | name は通路床の重力乱れを測り、落下区画を避ける足順を示している |
-| explore | `x.exp_id`7 and `x.floor`4 | name は錆びた気密輪を押し開け、庭園側の湿った風を初めて受けた |
-| explore | `x.exp_id`7 and `x.floor`4 | name は接続梁に残る焦げ跡を見て、往時の戦闘記録を推定している |
-| explore | `x.exp_id`7 and `x.floor`4 | name は崩れた標識板を組み直し、退路喪失を防ぐ目印を残した |
-| explore | `x.exp_id`7 and `x.floor`4 | name は扉間の真空警報を解除し、隊列が通れる気圧を保っている |
-| explore | `x.exp_id`7 and `x.floor`4 | name は入口聖句を低く唱え、遺構に眠る守り手への礼を尽くした |
-| explore | `x.exp_id`7 and `x.floor`5 | name は浮遊果樹の枝を払って進み、香る花道の架け橋を渡っている |
-| explore | `x.exp_id`7 and `x.floor`5 | name は空庭を巡る水路の音を頼りに、中心島へ続く順路を見出した |
-| explore | `x.exp_id`7 and `x.floor`5 | name は揺れる天空橋の継ぎ目を締め、後続が渡れるよう補強している |
-| explore | `x.exp_id`7 and `x.floor`5 | name は花弁に宿る微光を集め、迷い霧を払う灯珠を作り上げた |
-| explore | `x.exp_id`7 and `x.floor`5 | name は果樹園に残る古い灌漑符を再起動し、枯れかけた区画へ水を通した |
-| explore | `x.exp_id`7 and `x.floor`5 | name は風に運ばれる鈴音を辿り、番人像の見守る静かな園路へ入った |
-| explore | `x.exp_id`7 and `x.floor`5 | name は花蜜に誘われる小精霊へ挨拶し、荒らさぬ通行を約して進んだ |
-| explore | `x.exp_id`7 and `x.floor`5 | name は漂島の縁で膝をつき、空へ張られた根脈網の健在を確かめている |
-| explore | `x.exp_id`7 and `x.floor`5 | name は光樹の梢に結界糸を結び、突風から橋道を守る支えを増やした |
-| explore | `x.exp_id`7 and `x.floor`5 | name は咲き誇る回廊に短い祈りを置き、失われた園丁たちへ黙礼した |
-| explore | `x.exp_id`7 and `x.floor`6 | name は天蓋の人工陽を仰ぎ、星庭核へ注ぐ生命光の流れを観測している |
-| explore | `x.exp_id`7 and `x.floor`6 | name は中央水路の澄流に触れ、循環機関がなお健在だと確信した |
-| explore | `x.exp_id`7 and `x.floor`6 | name は巨大な維生樹の根元で詠唱し、衰えた養分循環を再同期した |
-| explore | `x.exp_id`7 and `x.floor`6 | name は光輪制御盤の欠片を合わせ、失われた日照周期を復元している |
-| explore | `x.exp_id`7 and `x.floor`6 | name は聖池に映る星図を読み、庭園全域の均衡点を割り出した |
-| explore | `x.exp_id`7 and `x.floor`6 | name は天井渠の弁を調整し、乾いた区画へ命の水を行き渡らせた |
-| explore | `x.exp_id`7 and `x.floor`6 | name は眠る管理核へ掌を当て、古代管理者の承認印を呼び覚ました |
-| explore | `x.exp_id`7 and `x.floor`6 | name は光の花が開く周期を記し、崩壊予兆の監視網を整えている |
-| explore | `x.exp_id`7 and `x.floor`6 | name は静謐な祭壇で誓約を更新し、この空庭を守る意思を刻んだ |
-| explore | `x.exp_id`7 and `x.floor`6 | name は生命維持塔の共鳴を整え、庭園核の呼吸を安定域へ戻した |
-| explore | `x.exp_id`7 and `x.floor`1 | 軌道残骸の漂流速度が再計測され、安全通過に必要な待機間隔が更新された |
-| explore | `x.exp_id`7 and `x.floor`1 | 破断外殻の材質照合により、旧防衛艦区画の起源推定が補強された |
-| explore | `x.exp_id`7 and `x.floor`1 | 回転破片群の位相記録が進み、接触回避ルートの再現性が向上している |
-| explore | `x.exp_id`7 and `x.floor`1 | 漂流配線の通電痕から、局所重力制御が断続稼働中と判定された |
-| explore | `x.exp_id`7 and `x.floor`1 | 微細金属塵の濃度分布が整理され、防護布展張の優先帯域が確定した |
-| explore | `x.exp_id`7 and `x.floor`1 | 虚空反射光の解析により、幻視誘発域を避ける視線運用が標準化された |
-| explore | `x.exp_id`7 and `x.floor`1 | 旧停泊梁の残存強度試験が完了し、一時係留点として再利用可能と確認された |
-| explore | `x.exp_id`7 and `x.floor`1 | 警告灯の点滅周期観測で、残骸衝突予兆の検知精度が改善している |
-| explore | `x.exp_id`7 and `x.floor`1 | 断面符号の採取により、星庭外縁での航行禁止区画が再定義された |
-| explore | `x.exp_id`7 and `x.floor`1 | 漂流体同士の干渉音記録が蓄積され、無音接近時の危険判定が強化された |
-| explore | `x.exp_id`7 and `x.floor`2 | 結界外周の明滅周期が再校正され、通過可能窓の算出誤差が縮小した |
-| explore | `x.exp_id`7 and `x.floor`2 | 防衛基台の巡回軌道照合により、死角連結ルートの連続性が確認された |
-| explore | `x.exp_id`7 and `x.floor`2 | 発振塔の周波数偏差が観測され、遮蔽符運用の推奨時刻が更新された |
-| explore | `x.exp_id`7 and `x.floor`2 | 旧砲座区画の電位残留が検出され、接触禁止ラインが追加設定された |
-| explore | `x.exp_id`7 and `x.floor`2 | 封鎖紋章の解読進展により、一時開通手順の必要詠唱数が確定した |
-| explore | `x.exp_id`7 and `x.floor`2 | 監視眼の視野重複が図式化され、低被探知移動の成功率が上昇している |
-| explore | `x.exp_id`7 and `x.floor`2 | 盾膜縁の雷光発生域が再区分され、感電回避導線の運用が安定した |
-| explore | `x.exp_id`7 and `x.floor`2 | 浮遊基盤継ぎ目の疲労測定で、荷重分散歩行の上限値が定義された |
-| explore | `x.exp_id`7 and `x.floor`2 | 古語端末の応答履歴が蓄積され、認証失敗時の復帰手順が短縮された |
-| explore | `x.exp_id`7 and `x.floor`2 | 外周警戒線の再編記録が発見され、侵入検知網の盲点候補が抽出された |
-| explore | `x.exp_id`7 and `x.floor`3 | 制御塔輪の位相差解析が完了し、盾陣同期の不安定要因が特定された |
-| explore | `x.exp_id`7 and `x.floor`3 | 晶柱共鳴の閾値再測定で、暴走抑制に必要な魔力注入量が確定した |
-| explore | `x.exp_id`7 and `x.floor`3 | 自律機兵の巡回間隔記録により、塔間移動の最短安全窓が更新された |
-| explore | `x.exp_id`7 and `x.floor`3 | 欠損石板の文脈復元が進み、運用儀式の工程欠落が補完された |
-| explore | `x.exp_id`7 and `x.floor`3 | 導管温度の時系列監視で、過負荷発生前の予兆検知が可能となった |
-| explore | `x.exp_id`7 and `x.floor`3 | 環状足場の応力試験結果が共有され、崩落帯回避の基準線が統一された |
-| explore | `x.exp_id`7 and `x.floor`3 | 塔頂風見機の逆流観測により、雷火誘導リスクの抑制策が確立された |
-| explore | `x.exp_id`7 and `x.floor`3 | 同期儀式起点の位置誤差が補正され、遠隔再起動成功率が向上している |
-| explore | `x.exp_id`7 and `x.floor`3 | 権限認証環の刻印照合で、正規管理者系統の分岐が整理された |
-| explore | `x.exp_id`7 and `x.floor`3 | 塔列不協和帯の封止記録が再現され、連鎖停止手順の信頼性が高まった |
-| explore | `x.exp_id`7 and `x.floor`4 | 接舷門残骸の歪み計測により、安全開口の維持条件が再定義された |
-| explore | `x.exp_id`7 and `x.floor`4 | 隔壁導光線の追跡結果から、生態区への有効電力経路が可視化された |
-| explore | `x.exp_id`7 and `x.floor`4 | 封鍵盤の反応履歴解析で、開門時の警報連動条件が判明した |
-| explore | `x.exp_id`7 and `x.floor`4 | 損傷案内像の指向角復元により、正規導線の誤差範囲が縮小した |
-| explore | `x.exp_id`7 and `x.floor`4 | 通路重力乱流の観測蓄積で、落下事故回避手順が標準化された |
-| explore | `x.exp_id`7 and `x.floor`4 | 気密輪の腐食試験が進み、再封止可能な区画の優先順位が確定した |
-| explore | `x.exp_id`7 and `x.floor`4 | 接続梁焦げ跡の年代推定から、最終交戦時刻の仮説が更新された |
-| explore | `x.exp_id`7 and `x.floor`4 | 退路標識の再配置効果検証で、迷走率低下が統計的に確認された |
-| explore | `x.exp_id`7 and `x.floor`4 | 真空警報系の冗長化試験が完了し、通行維持時間の延長が達成された |
-| explore | `x.exp_id`7 and `x.floor`4 | 入口聖句の音韻照合により、守護機構の非敵対認証率が上昇している |
-| explore | `x.exp_id`7 and `x.floor`5 | 浮遊果樹帯の枝荷重測定で、橋道上空の通行安全域が再設定された |
-| explore | `x.exp_id`7 and `x.floor`5 | 水路流量の連続観測により、中心島への安定補給線が確立された |
-| explore | `x.exp_id`7 and `x.floor`5 | 天空橋継ぎ目の補修記録が蓄積され、維持管理周期が短縮された |
-| explore | `x.exp_id`7 and `x.floor`5 | 花弁微光の粒度分析で、迷い霧散開に有効な照度条件が判明した |
-| explore | `x.exp_id`7 and `x.floor`5 | 灌漑符の再起動試験結果から、枯損区画の回復速度が改善している |
-| explore | `x.exp_id`7 and `x.floor`5 | 鈴音伝播の遅延測定により、番人像監視域の境界線が明確化された |
-| explore | `x.exp_id`7 and `x.floor`5 | 小精霊出現分布の更新で、非干渉通行に適した時間帯が抽出された |
-| explore | `x.exp_id`7 and `x.floor`5 | 漂島根脈網の張力評価が進み、崩落予兆の早期検知率が向上した |
-| explore | `x.exp_id`7 and `x.floor`5 | 光樹結界糸の耐風試験で、突風時の橋道損傷率が低減された |
-| explore | `x.exp_id`7 and `x.floor`5 | 旧園丁碑文の読解成果により、庭区画ごとの保全規範が復元された |
-| explore | `x.exp_id`7 and `x.floor`6 | 人工陽制御の照度変動監視で、生命光供給の安定条件が定式化された |
-| explore | `x.exp_id`7 and `x.floor`6 | 中央水路の循環効率計測により、維持機関の劣化率推定が更新された |
-| explore | `x.exp_id`7 and `x.floor`6 | 維生樹根系の養分流解析で、再同期儀式の有効区画が拡張された |
-| explore | `x.exp_id`7 and `x.floor`6 | 光輪制御盤の欠片照合が進み、日照周期復元の精度が改善している |
-| explore | `x.exp_id`7 and `x.floor`6 | 聖池星図の座標補正により、庭園均衡点の特定誤差が縮小した |
-| explore | `x.exp_id`7 and `x.floor`6 | 天井渠弁の開閉履歴解析で、水供給偏在の是正手順が確立された |
-| explore | `x.exp_id`7 and `x.floor`6 | 管理核応答波形の記録蓄積により、承認再取得の成功率が上昇した |
-| explore | `x.exp_id`7 and `x.floor`6 | 光花開花周期の長期観測で、崩壊予兆監視モデルの信頼性が高まった |
-| explore | `x.exp_id`7 and `x.floor`6 | 祭壇誓約文の再翻訳結果から、保全命令系統の優先順位が再整理された |
-| explore | `x.exp_id`7 and `x.floor`6 | 生命維持塔共鳴の再調律検証で、庭園核の安定運転時間が延伸した |
 | move | none | name は次の目的地へ移動している |
 | move | none | name は足場を確かめながら慎重に進んでいる |
 | move | none | name は地図と方角を見比べながら歩いている |
@@ -1366,246 +1246,6 @@
 | explore | `x.exp_id`4 and `x.floor`6 | 峰壁旗穴の間隔規格化により、守護団編成基準の推定誤差が縮小した |
 | explore | `x.exp_id`4 and `x.floor`6 | 外輪石の境界標識再接合で、禁域管理線の連続性が回復している |
 | explore | `x.exp_id`4 and `x.floor`6 | 暁風時の祭場微振動記録が蓄積され、高所滞在上限の判断精度が改善した |
-| explore | `x.exp_id`8 and `x.floor`1 | name は峡谷の薄霧に紛れた結界紋を見抜き、谷門の正しい通行路を選び取った |
-| explore | `x.exp_id`8 and `x.floor`1 | name は断崖に走る古い導線をたどり、見えざる障壁の脈動を確かめている |
-| explore | `x.exp_id`8 and `x.floor`1 | name は見張り碑に触れて敬礼し、Cervinの哨戒網へ干渉せぬよう進んでいる |
-| explore | `x.exp_id`8 and `x.floor`1 | name は風に混じる警告鐘の余韻を聞き分け、禁足域の縁を静かに迂回した |
-| explore | `x.exp_id`8 and `x.floor`1 | name は谷壁の水晶片に映る光符を読み、正門を開く位相の刻を待っている |
-| explore | `x.exp_id`8 and `x.floor`1 | name は巡礼路に残る蹄印を追い、番人たちが許した安全帯を踏みしめた |
-| explore | `x.exp_id`8 and `x.floor`1 | name は夜露を帯びた祈祷札を拾い、守護者の誓約が今も生きると知った |
-| explore | `x.exp_id`8 and `x.floor`1 | name は崖間を渡る細道で息を潜め、静かな監視眼の気配を受け流している |
-| explore | `x.exp_id`8 and `x.floor`1 | name は谷門上の星見窓を見上げ、入谷許可を示す光の合図を待ち受けた |
-| explore | `x.exp_id`8 and `x.floor`1 | name は薄青い防壁の揺らぎを観測し、侵入者と巡礼者を分ける境を見定めた |
-| explore | `x.exp_id`8 and `x.floor`2 | name は水晶塔群の共鳴音を記録し、天測信号の流れが乱れていないか確かめた |
-| explore | `x.exp_id`8 and `x.floor`2 | name は結晶柱の影角を測り、時辰ごとに変わる観測窓の開閉を読み解いている |
-| explore | `x.exp_id`8 and `x.floor`2 | name は霧中に浮かぶ微光粒を追跡し、予見機構へ注ぐ星塵導路を特定した |
-| explore | `x.exp_id`8 and `x.floor`2 | name は観測台の祭文を解読し、触れてよい結晶と禁触結晶を判別している |
-| explore | `x.exp_id`8 and `x.floor`2 | name は風鈴めく警報子の震えから、感知網が捉える死角の幅を割り出した |
-| explore | `x.exp_id`8 and `x.floor`2 | name は水晶根元の紋環を照合し、信号増幅塔の巡回順路を仲間へ示した |
-| explore | `x.exp_id`8 and `x.floor`2 | name は星図盤へ方位針を合わせ、予測演算に使われる基準軸を再確認した |
-| explore | `x.exp_id`8 and `x.floor`2 | name は稜線を渡る閃光周期を数え、警戒が緩むわずかな刻限を掴んでいる |
-| explore | `x.exp_id`8 and `x.floor`2 | name は結晶面に映る己の残像を避け、認証を誤作動させぬ歩調で進んだ |
-| explore | `x.exp_id`8 and `x.floor`2 | name は天穹へ伸びる塔列を見渡し、谷の意志そのもののような精密さに息をのんだ |
-| explore | `x.exp_id`8 and `x.floor`3 | name は回転環の軋みを聞き分け、同期ずれを起こした調整台を先に外した |
-| explore | `x.exp_id`8 and `x.floor`3 | name は黄銅の指標輪に刻まれた暦式をなぞり、天球周期との誤差を点検している |
-| explore | `x.exp_id`8 and `x.floor`3 | name は段状テラスの観測鏡を磨き、未来演算へ注ぐ星光束を澄ませた |
-| explore | `x.exp_id`8 and `x.floor`3 | name は校正杖を地に立て、時流の揺らぎが許容域に収まるのを待っている |
-| explore | `x.exp_id`8 and `x.floor`3 | name は環座標に合わせて陣標を動かし、予知儀の焦点をゆっくり結び直した |
-| explore | `x.exp_id`8 and `x.floor`3 | name は高台の風見晶から流速を読み、演算陣へ混入する乱流を遮断した |
-| explore | `x.exp_id`8 and `x.floor`3 | name は補助環へ魔力を分配し、主輪の共振が暴走しないよう制御している |
-| explore | `x.exp_id`8 and `x.floor`3 | name は星読官の古手帳を開き、同位相日に残された警句を照合した |
-| explore | `x.exp_id`8 and `x.floor`3 | name は揺れる計測針を指先で止め、時界の段差が生む誤算を修正している |
-| explore | `x.exp_id`8 and `x.floor`3 | name は光環が重なる瞬間を見届け、予見系が再同期した兆しを記録した |
-| explore | `x.exp_id`8 and `x.floor`4 | name は書架回廊の封蝋紐を解き、百年分の予測録から欠頁を探し出した |
-| explore | `x.exp_id`8 and `x.floor`4 | name は記録水晶に残る囁きを採譜し、分岐年表の改訂痕を突き止めている |
-| explore | `x.exp_id`8 and `x.floor`4 | name は分類印章を照合し、禁書区へ誤って踏み入らぬ導線を組み立てた |
-| explore | `x.exp_id`8 and `x.floor`4 | name は索引卓の浮遊札を追い、失われた未来断章の所在を絞り込んでいる |
-| explore | `x.exp_id`8 and `x.floor`4 | name は保存庫の温湿符を調整し、脆い羊皮予言書の劣化を食い止めた |
-| explore | `x.exp_id`8 and `x.floor`4 | name は学僧の注記余白を読み、封印門異常が初めて記された夜を特定した |
-| explore | `x.exp_id`8 and `x.floor`4 | name は年代棚の配列癖を見抜き、改竄された冊子だけを静かに抜き取った |
-| explore | `x.exp_id`8 and `x.floor`4 | name は知恵灯の明滅規則を解読し、閲覧許可を示す光階梯を昇っている |
-| explore | `x.exp_id`8 and `x.floor`4 | name は書記官像の視線を避け、自動監査術式を起こさぬ歩幅で移動した |
-| explore | `x.exp_id`8 and `x.floor`4 | name は折り畳まれた星図写本を広げ、封域周辺で増える異常波形を確認した |
-| explore | `x.exp_id`8 and `x.floor`5 | name は黒曜の封環へ耳を当て、地の底から滲む異界の脈動を聞き取った |
-| explore | `x.exp_id`8 and `x.floor`5 | name は拘束鎖の符節を点検し、劣化した連結部へ補助刻印を施している |
-| explore | `x.exp_id`8 and `x.floor`5 | name は監視祭壇の燭火色を見て、封印圧が揺らぐ前兆域を割り出した |
-| explore | `x.exp_id`8 and `x.floor`5 | name は奈落縁の観測孔を覗き、理外の囁きが届く周期を記録している |
-| explore | `x.exp_id`8 and `x.floor`5 | name は抑制陣の欠けた節点へ魔粉を撒き、漏出する歪光を一時的に塞いだ |
-| explore | `x.exp_id`8 and `x.floor`5 | name は封門前の誓約碑を再起動し、守護手順の最終条文を唱和している |
-| explore | `x.exp_id`8 and `x.floor`5 | name は結界杭の傾きを直し、次の震動波に備えて支持網を補強した |
-| explore | `x.exp_id`8 and `x.floor`5 | name は暗闇に浮く裂け目光を測距し、門外存在の接近速度を推算している |
-| explore | `x.exp_id`8 and `x.floor`5 | name は退避鐘の試鳴を済ませ、崩壊時の避難導線を仲間へ叩き込んだ |
-| explore | `x.exp_id`8 and `x.floor`5 | name は封鎖輪が重なる静寂の中心で、祈りと計算を同時に積み上げている |
-| explore | `x.exp_id`8 and `x.floor`6 | name は聖域中枢の予見機関へ接続し、無数の未来枝から破滅線を刈り取っている |
-| explore | `x.exp_id`8 and `x.floor`6 | name は水銀めく演算鏡に手をかざし、封印維持に最適な介入時刻を選定した |
-| explore | `x.exp_id`8 and `x.floor`6 | name は浮遊環廊の星紋を踏み、視えすぎる未来から心を守る詠唱を続けた |
-| explore | `x.exp_id`8 and `x.floor`6 | name は高座の光繭へ記録鍵を差し込み、次世代へ継ぐ予兆データを封入した |
-| explore | `x.exp_id`8 and `x.floor`6 | name は天蓋儀の回転位相を微調整し、監視網の盲点が生まれる秒差を潰した |
-| explore | `x.exp_id`8 and `x.floor`6 | name は未来図廊に走る赤線を追い、封門崩壊へ至る連鎖要因を摘み取っている |
-| explore | `x.exp_id`8 and `x.floor`6 | name は静謐なる祭壇で誓句を更新し、Cervinの守望契約を新たな時代へ繋いだ |
-| explore | `x.exp_id`8 and `x.floor`6 | name は予見核の唸りを鎮め、過負荷で裂ける可能性世界を縫い合わせている |
-| explore | `x.exp_id`8 and `x.floor`6 | name は天測窓に群れる流星符を読み、次の百年に訪れる危機群を分類した |
-| explore | `x.exp_id`8 and `x.floor`6 | name は聖堂最奥の光輪陣で膝をつき、世界を守るためのただ一つの選択を刻んだ |
-| explore | `x.exp_id`8 and `x.floor`1 | 峡谷の薄霧に紛れた結界紋を見抜き、谷門の正しい通行路が選定された |
-| explore | `x.exp_id`8 and `x.floor`1 | 断崖に走る古い導線が追跡され、見えざる障壁の脈動周期が確認された |
-| explore | `x.exp_id`8 and `x.floor`1 | 見張り碑への敬礼手順が実施され、哨戒網への干渉回避が維持された |
-| explore | `x.exp_id`8 and `x.floor`1 | 風に混じる警告鐘の余韻解析で、禁足域縁辺の安全迂回路が確保された |
-| explore | `x.exp_id`8 and `x.floor`1 | 谷壁水晶片に映る光符が解読され、正門開放位相の待機刻が確定した |
-| explore | `x.exp_id`8 and `x.floor`1 | 巡礼路の蹄印追跡により、番人承認済みの安全帯が再確認された |
-| explore | `x.exp_id`8 and `x.floor`1 | 夜露を帯びた祈祷札の回収から、守護誓約が現代まで継続していると判明した |
-| explore | `x.exp_id`8 and `x.floor`1 | 崖間細道での監視眼気配観測により、潜行時の呼吸間隔基準が更新された |
-| explore | `x.exp_id`8 and `x.floor`1 | 谷門上の星見窓観察結果から、入谷許可を示す光合図の発火順が記録された |
-| explore | `x.exp_id`8 and `x.floor`1 | 薄青い防壁揺らぎの時系列化で、巡礼者判別境界の判定精度が向上した |
-| explore | `x.exp_id`8 and `x.floor`2 | 水晶塔群の共鳴音記録が進み、天測信号流の乱調検出閾値が再設定された |
-| explore | `x.exp_id`8 and `x.floor`2 | 結晶柱影角の連続測定により、時辰別観測窓の開閉表が更新された |
-| explore | `x.exp_id`8 and `x.floor`2 | 霧中微光粒の追跡で、予見機構へ注ぐ星塵導路の分岐図が完成した |
-| explore | `x.exp_id`8 and `x.floor`2 | 観測台祭文の再解読から、禁触結晶識別規則の誤記が修正された |
-| explore | `x.exp_id`8 and `x.floor`2 | 風鈴型警報子の振幅解析により、感知網死角幅の算定誤差が縮小した |
-| explore | `x.exp_id`8 and `x.floor`2 | 水晶根元紋環の照合結果が反映され、信号増幅塔の巡回順路が最適化された |
-| explore | `x.exp_id`8 and `x.floor`2 | 星図盤への方位針再較正で、予測演算基準軸の偏差が解消された |
-| explore | `x.exp_id`8 and `x.floor`2 | 稜線を渡る閃光周期の統計化により、警戒緩和刻限の抽出精度が改善した |
-| explore | `x.exp_id`8 and `x.floor`2 | 結晶面残像干渉の回避試験で、認証誤作動発生率が有意に低下した |
-| explore | `x.exp_id`8 and `x.floor`2 | 天穹へ伸びる塔列の俯瞰記録から、谷全体制御網の冗長性が確認された |
-| explore | `x.exp_id`8 and `x.floor`3 | 回転環軋みの音響診断で、同期ずれ調整台の優先除外順が確立された |
-| explore | `x.exp_id`8 and `x.floor`3 | 黄銅指標輪の暦式照合により、天球周期との誤差補正式が更新された |
-| explore | `x.exp_id`8 and `x.floor`3 | 段状テラス観測鏡の清浄化後、未来演算へ注ぐ星光束の散乱率が低減した |
-| explore | `x.exp_id`8 and `x.floor`3 | 校正杖基準点の再固定により、時流揺らぎ判定の許容域が再定義された |
-| explore | `x.exp_id`8 and `x.floor`3 | 環座標に連動した陣標移設で、予知儀焦点の収束時間が短縮された |
-| explore | `x.exp_id`8 and `x.floor`3 | 高台風見晶の流速記録蓄積から、演算陣乱流遮断手順が標準化された |
-| explore | `x.exp_id`8 and `x.floor`3 | 補助環への魔力再配分試験で、主輪共振暴走の発生確率が抑制された |
-| explore | `x.exp_id`8 and `x.floor`3 | 星読官古手帳の照合結果により、同位相日における警戒項目が増補された |
-| explore | `x.exp_id`8 and `x.floor`3 | 計測針制動操作の再現実験で、時界段差由来の誤算補正精度が向上した |
-| explore | `x.exp_id`8 and `x.floor`3 | 光環重複瞬間の観測蓄積から、予見系再同期判定の信頼度が上方修正された |
-| explore | `x.exp_id`8 and `x.floor`4 | 書架回廊の封蝋紐再点検により、百年分予測録の欠頁位置が特定された |
-| explore | `x.exp_id`8 and `x.floor`4 | 記録水晶の残響採譜結果から、分岐年表改訂痕の時期が絞り込まれた |
-| explore | `x.exp_id`8 and `x.floor`4 | 分類印章照合の徹底で、禁書区誤進入を防ぐ導線規程が改定された |
-| explore | `x.exp_id`8 and `x.floor`4 | 索引卓浮遊札の追跡統合により、未来断章所在候補が高精度で抽出された |
-| explore | `x.exp_id`8 and `x.floor`4 | 保存庫温湿符の再調整により、羊皮予言書の劣化進行率が抑制された |
-| explore | `x.exp_id`8 and `x.floor`4 | 学僧注記余白の年代比定で、封印門異常初報の夜刻が確定した |
-| explore | `x.exp_id`8 and `x.floor`4 | 年代棚配列癖の解析により、改竄冊子抽出アルゴリズムが補強された |
-| explore | `x.exp_id`8 and `x.floor`4 | 知恵灯明滅規則の解読進展で、閲覧許可光階梯の認証時間が短縮された |
-| explore | `x.exp_id`8 and `x.floor`4 | 書記官像監査術式の回避手順化により、自動警報発生件数が減少した |
-| explore | `x.exp_id`8 and `x.floor`4 | 星図写本の再展開測読で、封域周辺異常波形の増勢傾向が確認された |
-| explore | `x.exp_id`8 and `x.floor`5 | 黒曜封環への音響聴診により、異界脈動の増幅周期が数値化された |
-| explore | `x.exp_id`8 and `x.floor`5 | 拘束鎖符節の点検結果が反映され、劣化連結部への補助刻印が完了した |
-| explore | `x.exp_id`8 and `x.floor`5 | 監視祭壇燭火色の連続監視で、封印圧揺動の前兆域が早期検知された |
-| explore | `x.exp_id`8 and `x.floor`5 | 奈落縁観測孔からの記録蓄積により、理外囁き到達周期が確立された |
-| explore | `x.exp_id`8 and `x.floor`5 | 抑制陣欠損節点への魔粉補填で、歪光漏出量が一時的に低減した |
-| explore | `x.exp_id`8 and `x.floor`5 | 封門前誓約碑の再起動を通じ、守護手順最終条文の伝承が更新された |
-| explore | `x.exp_id`8 and `x.floor`5 | 結界杭傾斜の補正作業により、次期震動波への支持網耐性が向上した |
-| explore | `x.exp_id`8 and `x.floor`5 | 暗闇に浮く裂け目光の測距解析で、門外存在接近速度の推算幅が縮小した |
-| explore | `x.exp_id`8 and `x.floor`5 | 退避鐘試鳴と訓練導線照合により、崩壊時避難の完了時間が短縮された |
-| explore | `x.exp_id`8 and `x.floor`5 | 封鎖輪重複域の静穏観測で、祈祷同期時の安定係数が上方更新された |
-| explore | `x.exp_id`8 and `x.floor`6 | 聖域中枢予見機関の再演算で、破滅線候補群の除外優先度が再編成された |
-| explore | `x.exp_id`8 and `x.floor`6 | 水銀状演算鏡の介入試験により、封印維持最適時刻の推定誤差が低減した |
-| explore | `x.exp_id`8 and `x.floor`6 | 浮遊環廊星紋の踏査記録から、過剰予見時の精神防護詠唱が標準化された |
-| explore | `x.exp_id`8 and `x.floor`6 | 高座光繭への記録鍵封入で、次世代継承用予兆データの完全性が検証された |
-| explore | `x.exp_id`8 and `x.floor`6 | 天蓋儀回転位相の微調整結果が反映され、監視網盲点秒差が解消された |
-| explore | `x.exp_id`8 and `x.floor`6 | 未来図廊赤線群の追跡解析により、封門崩壊連鎖要因の優先遮断順が確立した |
-| explore | `x.exp_id`8 and `x.floor`6 | 静謐祭壇での誓句更新記録が承認され、守望契約の時代継承が完了した |
-| explore | `x.exp_id`8 and `x.floor`6 | 予見核唸動の鎮静処置により、可能性世界裂断リスクが抑制された |
-| explore | `x.exp_id`8 and `x.floor`6 | 天測窓流星符の連続読解で、次百年危機群の分類精度が向上した |
-| explore | `x.exp_id`8 and `x.floor`6 | 聖堂最奥光輪陣の誓約記録により、世界防衛選択の意思決定根拠が保存された |
-| explore | `x.exp_id`6 and `x.floor`1 | name は土壁を支える木枠を叩き、崩落の気配を聞き分けながら先へ進んでいる |
-| explore | `x.exp_id`6 and `x.floor`1 | name は掘削灯の淡い明かりを頼りに、細い坑道へ身を滑り込ませた |
-| explore | `x.exp_id`6 and `x.floor`1 | name は古びた歯車付きの扉を押し開き、地下工房の入口を見つけている |
-| explore | `x.exp_id`6 and `x.floor`1 | name は梁に刻まれた職工印を読み、巣穴網の主導坑を割り出した |
-| explore | `x.exp_id`6 and `x.floor`1 | name は湿った土に残る台車の轍を追い、稼働区画への道を確かめた |
-| explore | `x.exp_id`6 and `x.floor`1 | name は縄巻き昇降機の軋みを確かめ、荷揚げ坑の深さを見積もっている |
-| explore | `x.exp_id`6 and `x.floor`1 | name は壁龕の小さな灯炉へ火を移し、退路の目印を丁寧に残した |
-| explore | `x.exp_id`6 and `x.floor`1 | name は素掘りの横穴に耳を当て、遠くで回る機械音の方角を掴んだ |
-| explore | `x.exp_id`6 and `x.floor`1 | name は木製支柱の継ぎ目を結び直し、隊が安全に通れる幅を整えている |
-| explore | `x.exp_id`6 and `x.floor`1 | name は地の底へ吹く冷気を感じ、より深い工業層の気配へ歩を進めた |
-| explore | `x.exp_id`6 and `x.floor`2 | name は連なる巨歯車の噛み合いを見極め、停止域の隙間を渡っている |
-| explore | `x.exp_id`6 and `x.floor`2 | name は鉄の回廊を走る搬送帯を避け、反対流の保守路へ回り込んだ |
-| explore | `x.exp_id`6 and `x.floor`2 | name は油煙まじりの風に顔布を当て、駆動炉の脈動を数えて進んでいる |
-| explore | `x.exp_id`6 and `x.floor`2 | name は点検盤の刻印を読み、動力弁が開く周期を仲間へ伝えた |
-| explore | `x.exp_id`6 and `x.floor`2 | name は鎖吊り足場の揺れを鎮め、歯車井を跨ぐ安全帯を張っている |
-| explore | `x.exp_id`6 and `x.floor`2 | name は鋼梁に残る火花痕を追い、工兵隊の主動線を割り出した |
-| explore | `x.exp_id`6 and `x.floor`2 | name は摩耗した手摺を握り、機械迷宮の中心軸へ慎重に降りた |
-| explore | `x.exp_id`6 and `x.floor`2 | name は唸る軸受の音階を聞き分け、故障寸前の区画を先に迂回した |
-| explore | `x.exp_id`6 and `x.floor`2 | name は古い搬入口の封蝋を剥がし、未踏の整備通路を開いている |
-| explore | `x.exp_id`6 and `x.floor`2 | name は黄銅の監督鐘に触れ、休むことなき工都の記憶へ短く黙礼した |
-| explore | `x.exp_id`6 and `x.floor`3 | name は蒸気管の継手から漏れる白煙を避け、耐熱路へ体を寄せて進んだ |
-| explore | `x.exp_id`6 and `x.floor`3 | name は圧力計の針を読み、噴出が静まる瞬間に交差路を駆け抜けている |
-| explore | `x.exp_id`6 and `x.floor`3 | name は熱で歪む格子床へ散水し、隊列が崩れぬ足場を確保した |
-| explore | `x.exp_id`6 and `x.floor`3 | name は蒸気弁輪の回転数を数え、安全に降圧できる操作順を整えた |
-| explore | `x.exp_id`6 and `x.floor`3 | name は赤熱する送気管の下を屈み、火傷を避けて配管森を抜けている |
-| explore | `x.exp_id`6 and `x.floor`3 | name は管壁の霜と露を見比べ、冷却路と高圧路の境目を見抜いた |
-| explore | `x.exp_id`6 and `x.floor`3 | name は吐き出し口の轟音に合図を重ね、仲間の移動タイミングを揃えている |
-| explore | `x.exp_id`6 and `x.floor`3 | name は工具祠に残る油布を拾い、熱気から喉を守る覆いに仕立てた |
-| explore | `x.exp_id`6 and `x.floor`3 | name は天井を走る主管の振動を追い、機関核へ続く主幹線を辿っている |
-| explore | `x.exp_id`6 and `x.floor`3 | name は白い蒸気の帳を裂き、灼ける工区の奥へ覚悟を固めて踏み込んだ |
-| explore | `x.exp_id`6 and `x.floor`4 | name は巨時計の振り子が刻む間隙を読み、時罠の回廊を渡っている |
-| explore | `x.exp_id`6 and `x.floor`4 | name は砂時計塔の逆流する砂を見て、歪んだ時相の中心を見定めた |
-| explore | `x.exp_id`6 and `x.floor`4 | name は連接する秒針橋の歩幅を合わせ、ずれる床板を外して進んでいる |
-| explore | `x.exp_id`6 and `x.floor`4 | name は刻印盤に残る実験式を読み、時間偏差の安全域を割り出した |
-| explore | `x.exp_id`6 and `x.floor`4 | name は遅れて響く足音に眉を寄せ、因果がねじれる区画を静かに迂回した |
-| explore | `x.exp_id`6 and `x.floor`4 | name は振り子室の共鳴を止める楔を打ち、崩れる時間鎖を辛うじて繋いだ |
-| explore | `x.exp_id`6 and `x.floor`4 | name は時計職工の肖像へ灯を掲げ、禁じられた研究への敬意を払っている |
-| explore | `x.exp_id`6 and `x.floor`4 | name は時刻符の並びを正し、戻れぬ分岐へ迷い込まぬ導線を整えた |
-| explore | `x.exp_id`6 and `x.floor`4 | name は止まった大鐘の縁をなぞり、一度消えた鐘声の余韻を聞き取った |
-| explore | `x.exp_id`6 and `x.floor`4 | name は瞬きほどの欠落時間を越え、工房最奥の封扉へ手を伸ばしている |
-| explore | `x.exp_id`6 and `x.floor`5 | name は闇に浮かぶ時環機の輪郭を見上げ、脈動する炉心光を測っている |
-| explore | `x.exp_id`6 and `x.floor`5 | name は回転環を繋ぐ導力柱を調べ、暴走を抑える封止順を探り当てた |
-| explore | `x.exp_id`6 and `x.floor`5 | name は古い起動詠式を口ずさみ、眠れる機関に触れぬよう歩を進めた |
-| explore | `x.exp_id`6 and `x.floor`5 | name は床に刻まれた同心円陣を辿り、供給路と排熱路の差を見抜いている |
-| explore | `x.exp_id`6 and `x.floor`5 | name は軋む懸架橋の鎖を締め直し、時環炉を跨ぐ退避線を確保した |
-| explore | `x.exp_id`6 and `x.floor`5 | name は青白い放電を避雷環へ流し、隊の装具を守りながら前進している |
-| explore | `x.exp_id`6 and `x.floor`5 | name は試験台に残る焦げ跡を読み、失敗実験の爆ぜる癖を記録した |
-| explore | `x.exp_id`6 and `x.floor`5 | name は機関祭壇へ小さな歯車を供え、工匠たちの執念へ祈りを捧げた |
-| explore | `x.exp_id`6 and `x.floor`5 | name は鈍く唸る核心部の周期を数え、次の開放窓で深部へ降りる構えを取った |
-| explore | `x.exp_id`6 and `x.floor`5 | name は時を噛む巨環の影を潜り、封じられた最終層への扉を押し開いた |
-| explore | `x.exp_id`6 and `x.floor`6 | name は土中に横たわる星船の外殻へ触れ、冷えた異邦金属の脈を感じている |
-| explore | `x.exp_id`6 and `x.floor`6 | name は砕けた船体通路を照らし、世代船居住区の標識を読み解いた |
-| explore | `x.exp_id`6 and `x.floor`6 | name は無音の炉心室で息を潜め、眠る反応塔の封印鍵を確かめている |
-| explore | `x.exp_id`6 and `x.floor`6 | name は星図投影盤の欠片を集め、失われた航路の終点を辿った |
-| explore | `x.exp_id`6 and `x.floor`6 | name は裂断された艦橋窓から闇を仰ぎ、忘れられた星戦の残光を想った |
-| explore | `x.exp_id`6 and `x.floor`6 | name は休眠端末に残る警告灯を見つめ、K9の最終命令文を静かに記録した |
-| explore | `x.exp_id`6 and `x.floor`6 | name は異形合金の隔壁を叩き、共鳴で生体区画の空洞を割り出している |
-| explore | `x.exp_id`6 and `x.floor`6 | name は船底へ垂れる根の束を払い、地底と宇宙遺産が繋がる継ぎ目を見つけた |
-| explore | `x.exp_id`6 and `x.floor`6 | name は封鎖ハッチの紋章へ灯を掲げ、滅びた乗員たちへ鎮魂の礼を捧げた |
-| explore | `x.exp_id`6 and `x.floor`6 | name は沈黙する巨大艦の心臓部へ踏み入り、星々に遺された誓いを胸に刻んだ |
-| explore | `x.exp_id`6 and `x.floor`1 | 木枠補強された初層坑道の健全区画が特定され、安全進行線が更新された |
-| explore | `x.exp_id`6 and `x.floor`1 | 掘削灯台座の分布解析により、主導坑へ至る導光規則が復元された |
-| explore | `x.exp_id`6 and `x.floor`1 | 歯車扉群の開閉痕比較で、工房入口の稼働優先順位が推定された |
-| explore | `x.exp_id`6 and `x.floor`1 | 職工印の系統照合が進み、巣穴拡張期の施工班編成が補完された |
-| explore | `x.exp_id`6 and `x.floor`1 | 台車轍の深度差から、重量物搬入路と生活導線の分離が確認された |
-| explore | `x.exp_id`6 and `x.floor`1 | 縄巻き昇降機の摩耗角測定で、縦坑利用頻度の時期変動が抽出された |
-| explore | `x.exp_id`6 and `x.floor`1 | 壁龕灯炉の煤層分析により、夜間作業区画の境界が再構築された |
-| explore | `x.exp_id`6 and `x.floor`1 | 横穴音響の反響測定で、稼働機械群の方位推定精度が向上している |
-| explore | `x.exp_id`6 and `x.floor`1 | 木製支柱継手の補修痕比較から、崩落危険帯の再設定が完了した |
-| explore | `x.exp_id`6 and `x.floor`1 | 地底冷気流の追跡により、下層工業区画へ接続する通風軸が特定された |
-| explore | `x.exp_id`6 and `x.floor`2 | 巨歯車列の位相記録が蓄積され、停止窓通過の安全手順が標準化された |
-| explore | `x.exp_id`6 and `x.floor`2 | 搬送帯流向の再測量で、逆流側保守路への侵入効率が改善した |
-| explore | `x.exp_id`6 and `x.floor`2 | 駆動炉脈動の周期同定により、油煙高濃度帯の滞在上限が更新された |
-| explore | `x.exp_id`6 and `x.floor`2 | 点検盤刻印の読解進展で、動力弁開閉の予測誤差が縮小した |
-| explore | `x.exp_id`6 and `x.floor`2 | 鎖吊り足場の荷重試験結果から、歯車井横断時の隊列規定が改訂された |
-| explore | `x.exp_id`6 and `x.floor`2 | 鋼梁火花痕の時系列比較で、工兵主動線の再現精度が向上した |
-| explore | `x.exp_id`6 and `x.floor`2 | 手摺摩耗分布の偏差解析により、中心軸への最短降下路が確立された |
-| explore | `x.exp_id`6 and `x.floor`2 | 軸受異音の音階分類で、故障予兆区画の回避判断が迅速化された |
-| explore | `x.exp_id`6 and `x.floor`2 | 搬入口封蝋の材質照合が進み、未踏整備通路の年代層が明確化された |
-| explore | `x.exp_id`6 and `x.floor`2 | 監督鐘の残響測定により、機械区全域の伝令到達範囲が再推定された |
-| explore | `x.exp_id`6 and `x.floor`3 | 蒸気管漏洩点の地図化により、耐熱進行路の更新精度が向上した |
-| explore | `x.exp_id`6 and `x.floor`3 | 圧力計針動の連続観測で、噴出静穏窓の発生周期が確定した |
-| explore | `x.exp_id`6 and `x.floor`3 | 格子床熱歪みの補正計算が進み、隊列崩壊リスクが低減された |
-| explore | `x.exp_id`6 and `x.floor`3 | 蒸気弁輪回転数の比較解析で、安全降圧手順の標準化が完了した |
-| explore | `x.exp_id`6 and `x.floor`3 | 送気主管下の温度勾配測定により、低被熱帯の選定が最適化された |
-| explore | `x.exp_id`6 and `x.floor`3 | 管壁結露分布の照合から、冷却路と高圧路の境界線が再描画された |
-| explore | `x.exp_id`6 and `x.floor`3 | 吐出口轟音周期の同期化で、交差路通過合図の成功率が上昇した |
-| explore | `x.exp_id`6 and `x.floor`3 | 工具祠遺留物の材質分析により、耐熱装備の供給体系が補完された |
-| explore | `x.exp_id`6 and `x.floor`3 | 天井主管振動の位相追跡で、機関核接続主幹線の推定誤差が縮小した |
-| explore | `x.exp_id`6 and `x.floor`3 | 蒸気幕密度の時系列記録が蓄積され、高危険工区の通過閾値が明確化された |
-| explore | `x.exp_id`6 and `x.floor`4 | 巨時計振り子の偏差観測により、時罠回廊の安全間隙が再定義された |
-| explore | `x.exp_id`6 and `x.floor`4 | 砂時計塔逆流粒度の解析で、時相乱流中心の座標が更新された |
-| explore | `x.exp_id`6 and `x.floor`4 | 秒針橋の位相同期試験が成功し、可動床板区画の突破率が向上した |
-| explore | `x.exp_id`6 and `x.floor`4 | 刻印盤実験式の再読解で、時間偏差安全域の算定精度が補強された |
-| explore | `x.exp_id`6 and `x.floor`4 | 遅延反響足音の記録比較により、因果攪乱帯の輪郭が可視化された |
-| explore | `x.exp_id`6 and `x.floor`4 | 振り子室共鳴抑制楔の再設置で、時間鎖崩壊区画の拡大が抑えられた |
-| explore | `x.exp_id`6 and `x.floor`4 | 時計職工肖像銘の照合が進み、禁制研究班の系譜が整理された |
-| explore | `x.exp_id`6 and `x.floor`4 | 時刻符列の再配列で、不可逆分岐への誤進入率が有意に低下した |
-| explore | `x.exp_id`6 and `x.floor`4 | 停止大鐘の金属疲労検査により、再共鳴実験の許容閾値が確定した |
-| explore | `x.exp_id`6 and `x.floor`4 | 欠落時間帯の観測蓄積で、最奥封扉の開放窓予測が実用段階へ達した |
-| explore | `x.exp_id`6 and `x.floor`5 | 時環機輪郭の再測量により、炉心出力変動の監視精度が向上した |
-| explore | `x.exp_id`6 and `x.floor`5 | 導力柱連結図の復元が進み、暴走抑止封止順が確証された |
-| explore | `x.exp_id`6 and `x.floor`5 | 起動詠式断片の照合で、休眠機関誤起動リスクが低減した |
-| explore | `x.exp_id`6 and `x.floor`5 | 同心円陣の配線再解析により、供給路と排熱路の分離精度が改善した |
-| explore | `x.exp_id`6 and `x.floor`5 | 懸架橋鎖節の応力点検結果から、退避線維持時間が上方修正された |
-| explore | `x.exp_id`6 and `x.floor`5 | 放電路の誘導試験で、装具損耗を抑える避雷運用が定式化された |
-| explore | `x.exp_id`6 and `x.floor`5 | 試験台焦痕の熱履歴比較により、失敗実験の暴発条件が抽出された |
-| explore | `x.exp_id`6 and `x.floor`5 | 機関祭壇供物痕の分析が進み、工匠儀礼と運転手順の連動が裏付けられた |
-| explore | `x.exp_id`6 and `x.floor`5 | 核心部唸動周期の長期記録で、深部開放窓の予測誤差が縮小した |
-| explore | `x.exp_id`6 and `x.floor`5 | 巨環陰影の移動計測により、最終層封扉への安全接近路が確立された |
-| explore | `x.exp_id`6 and `x.floor`6 | 星船外殻合金の組成同定により、地上文明系統外技術の存在が再確認された |
-| explore | `x.exp_id`6 and `x.floor`6 | 破断通路標識の解読進展で、世代船居住区の区画図復元が進んだ |
-| explore | `x.exp_id`6 and `x.floor`6 | 炉心室封印鍵の形状照合から、反応塔起動権限階層が推定された |
-| explore | `x.exp_id`6 and `x.floor`6 | 星図投影片の接合で、失航時に選択された最終航路候補が抽出された |
-| explore | `x.exp_id`6 and `x.floor`6 | 艦橋窓破断面の衝撃解析により、交戦時の主被弾方向が特定された |
-| explore | `x.exp_id`6 and `x.floor`6 | 休眠端末警告灯ログの復旧で、K9最終命令文の断章が保全された |
-| explore | `x.exp_id`6 and `x.floor`6 | 異形合金隔壁の共鳴試験により、生体区画空洞の位置推定が高精度化した |
-| explore | `x.exp_id`6 and `x.floor`6 | 船底根系侵入の層序比較から、地底生態圏との接続年代が再評価された |
-| explore | `x.exp_id`6 and `x.floor`6 | 封鎖ハッチ紋章群の照合が進み、乗員階級と避難優先規則が補完された |
-| explore | `x.exp_id`6 and `x.floor`6 | 巨大艦心臓部の静音振動記録が蓄積され、残留動力の監視体制が強化された |
 | explore | `x.exp_id`5 and `x.floor`1 | name は月光に濡れる苔道へ足を乗せ、白花が示す巡礼路を静かに辿っている |
 | explore | `x.exp_id`5 and `x.floor`1 | name は樹冠の隙から落ちる銀の光を頼りに、迷いの小径を見極めた |
 | explore | `x.exp_id`5 and `x.floor`1 | name は梢で揺れる風鈴草の音を聞き、精霊が眠る方角へ歩を進めている |
@@ -1726,6 +1366,366 @@
 | explore | `x.exp_id`5 and `x.floor`6 | 月庁舎柱列の寸法照合で、議場儀礼動線の再現精度が改善した |
 | explore | `x.exp_id`5 and `x.floor`6 | 白石街図盤の欠損補間により、居住区画復元図の信頼区間が縮小した |
 | explore | `x.exp_id`5 and `x.floor`6 | 宮前庭祭祀面の微振動記録が蓄積され、守護誓約域の境界判定が安定化した |
+| explore | `x.exp_id`6 and `x.floor`1 | name は土壁を支える木枠を叩き、崩落の気配を聞き分けながら先へ進んでいる |
+| explore | `x.exp_id`6 and `x.floor`1 | name は掘削灯の淡い明かりを頼りに、細い坑道へ身を滑り込ませた |
+| explore | `x.exp_id`6 and `x.floor`1 | name は古びた歯車付きの扉を押し開き、地下工房の入口を見つけている |
+| explore | `x.exp_id`6 and `x.floor`1 | name は梁に刻まれた職工印を読み、巣穴網の主導坑を割り出した |
+| explore | `x.exp_id`6 and `x.floor`1 | name は湿った土に残る台車の轍を追い、稼働区画への道を確かめた |
+| explore | `x.exp_id`6 and `x.floor`1 | name は縄巻き昇降機の軋みを確かめ、荷揚げ坑の深さを見積もっている |
+| explore | `x.exp_id`6 and `x.floor`1 | name は壁龕の小さな灯炉へ火を移し、退路の目印を丁寧に残した |
+| explore | `x.exp_id`6 and `x.floor`1 | name は素掘りの横穴に耳を当て、遠くで回る機械音の方角を掴んだ |
+| explore | `x.exp_id`6 and `x.floor`1 | name は木製支柱の継ぎ目を結び直し、隊が安全に通れる幅を整えている |
+| explore | `x.exp_id`6 and `x.floor`1 | name は地の底へ吹く冷気を感じ、より深い工業層の気配へ歩を進めた |
+| explore | `x.exp_id`6 and `x.floor`2 | name は連なる巨歯車の噛み合いを見極め、停止域の隙間を渡っている |
+| explore | `x.exp_id`6 and `x.floor`2 | name は鉄の回廊を走る搬送帯を避け、反対流の保守路へ回り込んだ |
+| explore | `x.exp_id`6 and `x.floor`2 | name は油煙まじりの風に顔布を当て、駆動炉の脈動を数えて進んでいる |
+| explore | `x.exp_id`6 and `x.floor`2 | name は点検盤の刻印を読み、動力弁が開く周期を仲間へ伝えた |
+| explore | `x.exp_id`6 and `x.floor`2 | name は鎖吊り足場の揺れを鎮め、歯車井を跨ぐ安全帯を張っている |
+| explore | `x.exp_id`6 and `x.floor`2 | name は鋼梁に残る火花痕を追い、工兵隊の主動線を割り出した |
+| explore | `x.exp_id`6 and `x.floor`2 | name は摩耗した手摺を握り、機械迷宮の中心軸へ慎重に降りた |
+| explore | `x.exp_id`6 and `x.floor`2 | name は唸る軸受の音階を聞き分け、故障寸前の区画を先に迂回した |
+| explore | `x.exp_id`6 and `x.floor`2 | name は古い搬入口の封蝋を剥がし、未踏の整備通路を開いている |
+| explore | `x.exp_id`6 and `x.floor`2 | name は黄銅の監督鐘に触れ、休むことなき工都の記憶へ短く黙礼した |
+| explore | `x.exp_id`6 and `x.floor`3 | name は蒸気管の継手から漏れる白煙を避け、耐熱路へ体を寄せて進んだ |
+| explore | `x.exp_id`6 and `x.floor`3 | name は圧力計の針を読み、噴出が静まる瞬間に交差路を駆け抜けている |
+| explore | `x.exp_id`6 and `x.floor`3 | name は熱で歪む格子床へ散水し、隊列が崩れぬ足場を確保した |
+| explore | `x.exp_id`6 and `x.floor`3 | name は蒸気弁輪の回転数を数え、安全に降圧できる操作順を整えた |
+| explore | `x.exp_id`6 and `x.floor`3 | name は赤熱する送気管の下を屈み、火傷を避けて配管森を抜けている |
+| explore | `x.exp_id`6 and `x.floor`3 | name は管壁の霜と露を見比べ、冷却路と高圧路の境目を見抜いた |
+| explore | `x.exp_id`6 and `x.floor`3 | name は吐き出し口の轟音に合図を重ね、仲間の移動タイミングを揃えている |
+| explore | `x.exp_id`6 and `x.floor`3 | name は工具祠に残る油布を拾い、熱気から喉を守る覆いに仕立てた |
+| explore | `x.exp_id`6 and `x.floor`3 | name は天井を走る主管の振動を追い、機関核へ続く主幹線を辿っている |
+| explore | `x.exp_id`6 and `x.floor`3 | name は白い蒸気の帳を裂き、灼ける工区の奥へ覚悟を固めて踏み込んだ |
+| explore | `x.exp_id`6 and `x.floor`4 | name は巨時計の振り子が刻む間隙を読み、時罠の回廊を渡っている |
+| explore | `x.exp_id`6 and `x.floor`4 | name は砂時計塔の逆流する砂を見て、歪んだ時相の中心を見定めた |
+| explore | `x.exp_id`6 and `x.floor`4 | name は連接する秒針橋の歩幅を合わせ、ずれる床板を外して進んでいる |
+| explore | `x.exp_id`6 and `x.floor`4 | name は刻印盤に残る実験式を読み、時間偏差の安全域を割り出した |
+| explore | `x.exp_id`6 and `x.floor`4 | name は遅れて響く足音に眉を寄せ、因果がねじれる区画を静かに迂回した |
+| explore | `x.exp_id`6 and `x.floor`4 | name は振り子室の共鳴を止める楔を打ち、崩れる時間鎖を辛うじて繋いだ |
+| explore | `x.exp_id`6 and `x.floor`4 | name は時計職工の肖像へ灯を掲げ、禁じられた研究への敬意を払っている |
+| explore | `x.exp_id`6 and `x.floor`4 | name は時刻符の並びを正し、戻れぬ分岐へ迷い込まぬ導線を整えた |
+| explore | `x.exp_id`6 and `x.floor`4 | name は止まった大鐘の縁をなぞり、一度消えた鐘声の余韻を聞き取った |
+| explore | `x.exp_id`6 and `x.floor`4 | name は瞬きほどの欠落時間を越え、工房最奥の封扉へ手を伸ばしている |
+| explore | `x.exp_id`6 and `x.floor`5 | name は闇に浮かぶ時環機の輪郭を見上げ、脈動する炉心光を測っている |
+| explore | `x.exp_id`6 and `x.floor`5 | name は回転環を繋ぐ導力柱を調べ、暴走を抑える封止順を探り当てた |
+| explore | `x.exp_id`6 and `x.floor`5 | name は古い起動詠式を口ずさみ、眠れる機関に触れぬよう歩を進めた |
+| explore | `x.exp_id`6 and `x.floor`5 | name は床に刻まれた同心円陣を辿り、供給路と排熱路の差を見抜いている |
+| explore | `x.exp_id`6 and `x.floor`5 | name は軋む懸架橋の鎖を締め直し、時環炉を跨ぐ退避線を確保した |
+| explore | `x.exp_id`6 and `x.floor`5 | name は青白い放電を避雷環へ流し、隊の装具を守りながら前進している |
+| explore | `x.exp_id`6 and `x.floor`5 | name は試験台に残る焦げ跡を読み、失敗実験の爆ぜる癖を記録した |
+| explore | `x.exp_id`6 and `x.floor`5 | name は機関祭壇へ小さな歯車を供え、工匠たちの執念へ祈りを捧げた |
+| explore | `x.exp_id`6 and `x.floor`5 | name は鈍く唸る核心部の周期を数え、次の開放窓で深部へ降りる構えを取った |
+| explore | `x.exp_id`6 and `x.floor`5 | name は時を噛む巨環の影を潜り、封じられた最終層への扉を押し開いた |
+| explore | `x.exp_id`6 and `x.floor`6 | name は土中に横たわる星船の外殻へ触れ、冷えた異邦金属の脈を感じている |
+| explore | `x.exp_id`6 and `x.floor`6 | name は砕けた船体通路を照らし、世代船居住区の標識を読み解いた |
+| explore | `x.exp_id`6 and `x.floor`6 | name は無音の炉心室で息を潜め、眠る反応塔の封印鍵を確かめている |
+| explore | `x.exp_id`6 and `x.floor`6 | name は星図投影盤の欠片を集め、失われた航路の終点を辿った |
+| explore | `x.exp_id`6 and `x.floor`6 | name は裂断された艦橋窓から闇を仰ぎ、忘れられた星戦の残光を想った |
+| explore | `x.exp_id`6 and `x.floor`6 | name は休眠端末に残る警告灯を見つめ、K9の最終命令文を静かに記録した |
+| explore | `x.exp_id`6 and `x.floor`6 | name は異形合金の隔壁を叩き、共鳴で生体区画の空洞を割り出している |
+| explore | `x.exp_id`6 and `x.floor`6 | name は船底へ垂れる根の束を払い、地底と宇宙遺産が繋がる継ぎ目を見つけた |
+| explore | `x.exp_id`6 and `x.floor`6 | name は封鎖ハッチの紋章へ灯を掲げ、滅びた乗員たちへ鎮魂の礼を捧げた |
+| explore | `x.exp_id`6 and `x.floor`6 | name は沈黙する巨大艦の心臓部へ踏み入り、星々に遺された誓いを胸に刻んだ |
+| explore | `x.exp_id`6 and `x.floor`1 | 木枠補強された初層坑道の健全区画が特定され、安全進行線が更新された |
+| explore | `x.exp_id`6 and `x.floor`1 | 掘削灯台座の分布解析により、主導坑へ至る導光規則が復元された |
+| explore | `x.exp_id`6 and `x.floor`1 | 歯車扉群の開閉痕比較で、工房入口の稼働優先順位が推定された |
+| explore | `x.exp_id`6 and `x.floor`1 | 職工印の系統照合が進み、巣穴拡張期の施工班編成が補完された |
+| explore | `x.exp_id`6 and `x.floor`1 | 台車轍の深度差から、重量物搬入路と生活導線の分離が確認された |
+| explore | `x.exp_id`6 and `x.floor`1 | 縄巻き昇降機の摩耗角測定で、縦坑利用頻度の時期変動が抽出された |
+| explore | `x.exp_id`6 and `x.floor`1 | 壁龕灯炉の煤層分析により、夜間作業区画の境界が再構築された |
+| explore | `x.exp_id`6 and `x.floor`1 | 横穴音響の反響測定で、稼働機械群の方位推定精度が向上している |
+| explore | `x.exp_id`6 and `x.floor`1 | 木製支柱継手の補修痕比較から、崩落危険帯の再設定が完了した |
+| explore | `x.exp_id`6 and `x.floor`1 | 地底冷気流の追跡により、下層工業区画へ接続する通風軸が特定された |
+| explore | `x.exp_id`6 and `x.floor`2 | 巨歯車列の位相記録が蓄積され、停止窓通過の安全手順が標準化された |
+| explore | `x.exp_id`6 and `x.floor`2 | 搬送帯流向の再測量で、逆流側保守路への侵入効率が改善した |
+| explore | `x.exp_id`6 and `x.floor`2 | 駆動炉脈動の周期同定により、油煙高濃度帯の滞在上限が更新された |
+| explore | `x.exp_id`6 and `x.floor`2 | 点検盤刻印の読解進展で、動力弁開閉の予測誤差が縮小した |
+| explore | `x.exp_id`6 and `x.floor`2 | 鎖吊り足場の荷重試験結果から、歯車井横断時の隊列規定が改訂された |
+| explore | `x.exp_id`6 and `x.floor`2 | 鋼梁火花痕の時系列比較で、工兵主動線の再現精度が向上した |
+| explore | `x.exp_id`6 and `x.floor`2 | 手摺摩耗分布の偏差解析により、中心軸への最短降下路が確立された |
+| explore | `x.exp_id`6 and `x.floor`2 | 軸受異音の音階分類で、故障予兆区画の回避判断が迅速化された |
+| explore | `x.exp_id`6 and `x.floor`2 | 搬入口封蝋の材質照合が進み、未踏整備通路の年代層が明確化された |
+| explore | `x.exp_id`6 and `x.floor`2 | 監督鐘の残響測定により、機械区全域の伝令到達範囲が再推定された |
+| explore | `x.exp_id`6 and `x.floor`3 | 蒸気管漏洩点の地図化により、耐熱進行路の更新精度が向上した |
+| explore | `x.exp_id`6 and `x.floor`3 | 圧力計針動の連続観測で、噴出静穏窓の発生周期が確定した |
+| explore | `x.exp_id`6 and `x.floor`3 | 格子床熱歪みの補正計算が進み、隊列崩壊リスクが低減された |
+| explore | `x.exp_id`6 and `x.floor`3 | 蒸気弁輪回転数の比較解析で、安全降圧手順の標準化が完了した |
+| explore | `x.exp_id`6 and `x.floor`3 | 送気主管下の温度勾配測定により、低被熱帯の選定が最適化された |
+| explore | `x.exp_id`6 and `x.floor`3 | 管壁結露分布の照合から、冷却路と高圧路の境界線が再描画された |
+| explore | `x.exp_id`6 and `x.floor`3 | 吐出口轟音周期の同期化で、交差路通過合図の成功率が上昇した |
+| explore | `x.exp_id`6 and `x.floor`3 | 工具祠遺留物の材質分析により、耐熱装備の供給体系が補完された |
+| explore | `x.exp_id`6 and `x.floor`3 | 天井主管振動の位相追跡で、機関核接続主幹線の推定誤差が縮小した |
+| explore | `x.exp_id`6 and `x.floor`3 | 蒸気幕密度の時系列記録が蓄積され、高危険工区の通過閾値が明確化された |
+| explore | `x.exp_id`6 and `x.floor`4 | 巨時計振り子の偏差観測により、時罠回廊の安全間隙が再定義された |
+| explore | `x.exp_id`6 and `x.floor`4 | 砂時計塔逆流粒度の解析で、時相乱流中心の座標が更新された |
+| explore | `x.exp_id`6 and `x.floor`4 | 秒針橋の位相同期試験が成功し、可動床板区画の突破率が向上した |
+| explore | `x.exp_id`6 and `x.floor`4 | 刻印盤実験式の再読解で、時間偏差安全域の算定精度が補強された |
+| explore | `x.exp_id`6 and `x.floor`4 | 遅延反響足音の記録比較により、因果攪乱帯の輪郭が可視化された |
+| explore | `x.exp_id`6 and `x.floor`4 | 振り子室共鳴抑制楔の再設置で、時間鎖崩壊区画の拡大が抑えられた |
+| explore | `x.exp_id`6 and `x.floor`4 | 時計職工肖像銘の照合が進み、禁制研究班の系譜が整理された |
+| explore | `x.exp_id`6 and `x.floor`4 | 時刻符列の再配列で、不可逆分岐への誤進入率が有意に低下した |
+| explore | `x.exp_id`6 and `x.floor`4 | 停止大鐘の金属疲労検査により、再共鳴実験の許容閾値が確定した |
+| explore | `x.exp_id`6 and `x.floor`4 | 欠落時間帯の観測蓄積で、最奥封扉の開放窓予測が実用段階へ達した |
+| explore | `x.exp_id`6 and `x.floor`5 | 時環機輪郭の再測量により、炉心出力変動の監視精度が向上した |
+| explore | `x.exp_id`6 and `x.floor`5 | 導力柱連結図の復元が進み、暴走抑止封止順が確証された |
+| explore | `x.exp_id`6 and `x.floor`5 | 起動詠式断片の照合で、休眠機関誤起動リスクが低減した |
+| explore | `x.exp_id`6 and `x.floor`5 | 同心円陣の配線再解析により、供給路と排熱路の分離精度が改善した |
+| explore | `x.exp_id`6 and `x.floor`5 | 懸架橋鎖節の応力点検結果から、退避線維持時間が上方修正された |
+| explore | `x.exp_id`6 and `x.floor`5 | 放電路の誘導試験で、装具損耗を抑える避雷運用が定式化された |
+| explore | `x.exp_id`6 and `x.floor`5 | 試験台焦痕の熱履歴比較により、失敗実験の暴発条件が抽出された |
+| explore | `x.exp_id`6 and `x.floor`5 | 機関祭壇供物痕の分析が進み、工匠儀礼と運転手順の連動が裏付けられた |
+| explore | `x.exp_id`6 and `x.floor`5 | 核心部唸動周期の長期記録で、深部開放窓の予測誤差が縮小した |
+| explore | `x.exp_id`6 and `x.floor`5 | 巨環陰影の移動計測により、最終層封扉への安全接近路が確立された |
+| explore | `x.exp_id`6 and `x.floor`6 | 星船外殻合金の組成同定により、地上文明系統外技術の存在が再確認された |
+| explore | `x.exp_id`6 and `x.floor`6 | 破断通路標識の解読進展で、世代船居住区の区画図復元が進んだ |
+| explore | `x.exp_id`6 and `x.floor`6 | 炉心室封印鍵の形状照合から、反応塔起動権限階層が推定された |
+| explore | `x.exp_id`6 and `x.floor`6 | 星図投影片の接合で、失航時に選択された最終航路候補が抽出された |
+| explore | `x.exp_id`6 and `x.floor`6 | 艦橋窓破断面の衝撃解析により、交戦時の主被弾方向が特定された |
+| explore | `x.exp_id`6 and `x.floor`6 | 休眠端末警告灯ログの復旧で、K9最終命令文の断章が保全された |
+| explore | `x.exp_id`6 and `x.floor`6 | 異形合金隔壁の共鳴試験により、生体区画空洞の位置推定が高精度化した |
+| explore | `x.exp_id`6 and `x.floor`6 | 船底根系侵入の層序比較から、地底生態圏との接続年代が再評価された |
+| explore | `x.exp_id`6 and `x.floor`6 | 封鎖ハッチ紋章群の照合が進み、乗員階級と避難優先規則が補完された |
+| explore | `x.exp_id`6 and `x.floor`6 | 巨大艦心臓部の静音振動記録が蓄積され、残留動力の監視体制が強化された |
+| explore | `x.exp_id`7 and `x.floor`1 | name は軌道を漂う残骸の隙間を縫い、古き星庭への進入路を探っている |
+| explore | `x.exp_id`7 and `x.floor`1 | name は砕けた外殻板に刻まれた紋章を読み、失われた守護艦の系譜を辿った |
+| explore | `x.exp_id`7 and `x.floor`1 | name は無音で回転する破片群を見上げ、接触を避ける星屑航路を選んでいる |
+| explore | `x.exp_id`7 and `x.floor`1 | name は凍てた配線束を手繰り、漂流機構の残る安全足場を確保した |
+| explore | `x.exp_id`7 and `x.floor`1 | name は虚空に瞬く警告灯を目印に、崩落帯を外して前進している |
+| explore | `x.exp_id`7 and `x.floor`1 | name は砕片に映る偽りの星明かりを見切り、幻惑の回廊を抜けていく |
+| explore | `x.exp_id`7 and `x.floor`1 | name は古い推進翼の影へ身を寄せ、流星塵の奔流が過ぎるのを待った |
+| explore | `x.exp_id`7 and `x.floor`1 | name は漂う機械骨格に祈り札を結び、静寂の軌道へ敬意を捧げている |
+| explore | `x.exp_id`7 and `x.floor`1 | name は裂けた観測窓の向こうに庭園の光を見つけ、進路の確信を深めた |
+| explore | `x.exp_id`7 and `x.floor`1 | name は金属塵の渦を杖で払い、失われた停泊帯への道筋を描いている |
+| explore | `x.exp_id`7 and `x.floor`2 | name は防衛基台の巡回光を避け、結界縁に沿う死角の通路を進んでいる |
+| explore | `x.exp_id`7 and `x.floor`2 | name は古代の発振塔へ耳を澄ませ、護りの律動が薄れる瞬間を読んだ |
+| explore | `x.exp_id`7 and `x.floor`2 | name は符号化された警戒紋を解き、封鎖線を乱さぬ通行順を整えている |
+| explore | `x.exp_id`7 and `x.floor`2 | name は碧い障壁に手をかざし、魔導電流の揺らぎから安全窓を測定した |
+| explore | `x.exp_id`7 and `x.floor`2 | name は沈黙する砲座の間を潜り、旧守備隊の補給路跡を見つけ出した |
+| explore | `x.exp_id`7 and `x.floor`2 | name は結界杭に絡む蔦を払い、再起動した監視眼の視線をかわしている |
+| explore | `x.exp_id`7 and `x.floor`2 | name は空間に走る薄い雷光を見抜き、感電域を仲間へ短く告げた |
+| explore | `x.exp_id`7 and `x.floor`2 | name は浮遊基盤の継ぎ目を踏み替え、防壁外周を円弧に迂回している |
+| explore | `x.exp_id`7 and `x.floor`2 | name は封印端末へ古語の祈詞を唱え、一時的な通行許可を引き出した |
+| explore | `x.exp_id`7 and `x.floor`2 | name は盾膜の明滅周期を記録し、次隊が通れる安定時間を残している |
+| explore | `x.exp_id`7 and `x.floor`3 | name は制御塔輪の中央で息を潜め、盾陣を統べる脈動音を読み解いている |
+| explore | `x.exp_id`7 and `x.floor`3 | name は空へ伸びる晶柱の位相を合わせ、暴走寸前の結界を鎮めた |
+| explore | `x.exp_id`7 and `x.floor`3 | name は自律機兵の巡回線を外し、塔間連絡橋を無音で渡っている |
+| explore | `x.exp_id`7 and `x.floor`3 | name は端末石板の欠損文字を補い、古代運用式の再現に成功した |
+| explore | `x.exp_id`7 and `x.floor`3 | name は余剰光を吸う導管へ魔力を流し、遮断寸前の回路を延命した |
+| explore | `x.exp_id`7 and `x.floor`3 | name は環状足場の崩れを飛び越え、制御核へ続く短路を切り開いている |
+| explore | `x.exp_id`7 and `x.floor`3 | name は塔頂の風見機に護符を結び、誤作動を呼ぶ逆流波を弱めた |
+| explore | `x.exp_id`7 and `x.floor`3 | name は青白い火花の雨を潜り、同期儀式の起点へ辿り着いた |
+| explore | `x.exp_id`7 and `x.floor`3 | name は守護紋が刻まれた床環を踏み、権限認証の古式を完了している |
+| explore | `x.exp_id`7 and `x.floor`3 | name は塔列の共鳴を聴き分け、崩壊を招く不協和帯を封じ込めた |
+| explore | `x.exp_id`7 and `x.floor`4 | name は半壊した接舷門の影に入り、内部生態区へ続く回廊を確保した |
+| explore | `x.exp_id`7 and `x.floor`4 | name は割れた隔壁に残る導光線を追い、生きた電力網の道を選んでいる |
+| explore | `x.exp_id`7 and `x.floor`4 | name は古扉の封鍵盤へ触れ、眠っていた開門機構を静かに起こした |
+| explore | `x.exp_id`7 and `x.floor`4 | name は損傷した案内像の指先を辿り、正規進入路の方角を定めた |
+| explore | `x.exp_id`7 and `x.floor`4 | name は通路床の重力乱れを測り、落下区画を避ける足順を示している |
+| explore | `x.exp_id`7 and `x.floor`4 | name は錆びた気密輪を押し開け、庭園側の湿った風を初めて受けた |
+| explore | `x.exp_id`7 and `x.floor`4 | name は接続梁に残る焦げ跡を見て、往時の戦闘記録を推定している |
+| explore | `x.exp_id`7 and `x.floor`4 | name は崩れた標識板を組み直し、退路喪失を防ぐ目印を残した |
+| explore | `x.exp_id`7 and `x.floor`4 | name は扉間の真空警報を解除し、隊列が通れる気圧を保っている |
+| explore | `x.exp_id`7 and `x.floor`4 | name は入口聖句を低く唱え、遺構に眠る守り手への礼を尽くした |
+| explore | `x.exp_id`7 and `x.floor`5 | name は浮遊果樹の枝を払って進み、香る花道の架け橋を渡っている |
+| explore | `x.exp_id`7 and `x.floor`5 | name は空庭を巡る水路の音を頼りに、中心島へ続く順路を見出した |
+| explore | `x.exp_id`7 and `x.floor`5 | name は揺れる天空橋の継ぎ目を締め、後続が渡れるよう補強している |
+| explore | `x.exp_id`7 and `x.floor`5 | name は花弁に宿る微光を集め、迷い霧を払う灯珠を作り上げた |
+| explore | `x.exp_id`7 and `x.floor`5 | name は果樹園に残る古い灌漑符を再起動し、枯れかけた区画へ水を通した |
+| explore | `x.exp_id`7 and `x.floor`5 | name は風に運ばれる鈴音を辿り、番人像の見守る静かな園路へ入った |
+| explore | `x.exp_id`7 and `x.floor`5 | name は花蜜に誘われる小精霊へ挨拶し、荒らさぬ通行を約して進んだ |
+| explore | `x.exp_id`7 and `x.floor`5 | name は漂島の縁で膝をつき、空へ張られた根脈網の健在を確かめている |
+| explore | `x.exp_id`7 and `x.floor`5 | name は光樹の梢に結界糸を結び、突風から橋道を守る支えを増やした |
+| explore | `x.exp_id`7 and `x.floor`5 | name は咲き誇る回廊に短い祈りを置き、失われた園丁たちへ黙礼した |
+| explore | `x.exp_id`7 and `x.floor`6 | name は天蓋の人工陽を仰ぎ、星庭核へ注ぐ生命光の流れを観測している |
+| explore | `x.exp_id`7 and `x.floor`6 | name は中央水路の澄流に触れ、循環機関がなお健在だと確信した |
+| explore | `x.exp_id`7 and `x.floor`6 | name は巨大な維生樹の根元で詠唱し、衰えた養分循環を再同期した |
+| explore | `x.exp_id`7 and `x.floor`6 | name は光輪制御盤の欠片を合わせ、失われた日照周期を復元している |
+| explore | `x.exp_id`7 and `x.floor`6 | name は聖池に映る星図を読み、庭園全域の均衡点を割り出した |
+| explore | `x.exp_id`7 and `x.floor`6 | name は天井渠の弁を調整し、乾いた区画へ命の水を行き渡らせた |
+| explore | `x.exp_id`7 and `x.floor`6 | name は眠る管理核へ掌を当て、古代管理者の承認印を呼び覚ました |
+| explore | `x.exp_id`7 and `x.floor`6 | name は光の花が開く周期を記し、崩壊予兆の監視網を整えている |
+| explore | `x.exp_id`7 and `x.floor`6 | name は静謐な祭壇で誓約を更新し、この空庭を守る意思を刻んだ |
+| explore | `x.exp_id`7 and `x.floor`6 | name は生命維持塔の共鳴を整え、庭園核の呼吸を安定域へ戻した |
+| explore | `x.exp_id`7 and `x.floor`1 | 軌道残骸の漂流速度が再計測され、安全通過に必要な待機間隔が更新された |
+| explore | `x.exp_id`7 and `x.floor`1 | 破断外殻の材質照合により、旧防衛艦区画の起源推定が補強された |
+| explore | `x.exp_id`7 and `x.floor`1 | 回転破片群の位相記録が進み、接触回避ルートの再現性が向上している |
+| explore | `x.exp_id`7 and `x.floor`1 | 漂流配線の通電痕から、局所重力制御が断続稼働中と判定された |
+| explore | `x.exp_id`7 and `x.floor`1 | 微細金属塵の濃度分布が整理され、防護布展張の優先帯域が確定した |
+| explore | `x.exp_id`7 and `x.floor`1 | 虚空反射光の解析により、幻視誘発域を避ける視線運用が標準化された |
+| explore | `x.exp_id`7 and `x.floor`1 | 旧停泊梁の残存強度試験が完了し、一時係留点として再利用可能と確認された |
+| explore | `x.exp_id`7 and `x.floor`1 | 警告灯の点滅周期観測で、残骸衝突予兆の検知精度が改善している |
+| explore | `x.exp_id`7 and `x.floor`1 | 断面符号の採取により、星庭外縁での航行禁止区画が再定義された |
+| explore | `x.exp_id`7 and `x.floor`1 | 漂流体同士の干渉音記録が蓄積され、無音接近時の危険判定が強化された |
+| explore | `x.exp_id`7 and `x.floor`2 | 結界外周の明滅周期が再校正され、通過可能窓の算出誤差が縮小した |
+| explore | `x.exp_id`7 and `x.floor`2 | 防衛基台の巡回軌道照合により、死角連結ルートの連続性が確認された |
+| explore | `x.exp_id`7 and `x.floor`2 | 発振塔の周波数偏差が観測され、遮蔽符運用の推奨時刻が更新された |
+| explore | `x.exp_id`7 and `x.floor`2 | 旧砲座区画の電位残留が検出され、接触禁止ラインが追加設定された |
+| explore | `x.exp_id`7 and `x.floor`2 | 封鎖紋章の解読進展により、一時開通手順の必要詠唱数が確定した |
+| explore | `x.exp_id`7 and `x.floor`2 | 監視眼の視野重複が図式化され、低被探知移動の成功率が上昇している |
+| explore | `x.exp_id`7 and `x.floor`2 | 盾膜縁の雷光発生域が再区分され、感電回避導線の運用が安定した |
+| explore | `x.exp_id`7 and `x.floor`2 | 浮遊基盤継ぎ目の疲労測定で、荷重分散歩行の上限値が定義された |
+| explore | `x.exp_id`7 and `x.floor`2 | 古語端末の応答履歴が蓄積され、認証失敗時の復帰手順が短縮された |
+| explore | `x.exp_id`7 and `x.floor`2 | 外周警戒線の再編記録が発見され、侵入検知網の盲点候補が抽出された |
+| explore | `x.exp_id`7 and `x.floor`3 | 制御塔輪の位相差解析が完了し、盾陣同期の不安定要因が特定された |
+| explore | `x.exp_id`7 and `x.floor`3 | 晶柱共鳴の閾値再測定で、暴走抑制に必要な魔力注入量が確定した |
+| explore | `x.exp_id`7 and `x.floor`3 | 自律機兵の巡回間隔記録により、塔間移動の最短安全窓が更新された |
+| explore | `x.exp_id`7 and `x.floor`3 | 欠損石板の文脈復元が進み、運用儀式の工程欠落が補完された |
+| explore | `x.exp_id`7 and `x.floor`3 | 導管温度の時系列監視で、過負荷発生前の予兆検知が可能となった |
+| explore | `x.exp_id`7 and `x.floor`3 | 環状足場の応力試験結果が共有され、崩落帯回避の基準線が統一された |
+| explore | `x.exp_id`7 and `x.floor`3 | 塔頂風見機の逆流観測により、雷火誘導リスクの抑制策が確立された |
+| explore | `x.exp_id`7 and `x.floor`3 | 同期儀式起点の位置誤差が補正され、遠隔再起動成功率が向上している |
+| explore | `x.exp_id`7 and `x.floor`3 | 権限認証環の刻印照合で、正規管理者系統の分岐が整理された |
+| explore | `x.exp_id`7 and `x.floor`3 | 塔列不協和帯の封止記録が再現され、連鎖停止手順の信頼性が高まった |
+| explore | `x.exp_id`7 and `x.floor`4 | 接舷門残骸の歪み計測により、安全開口の維持条件が再定義された |
+| explore | `x.exp_id`7 and `x.floor`4 | 隔壁導光線の追跡結果から、生態区への有効電力経路が可視化された |
+| explore | `x.exp_id`7 and `x.floor`4 | 封鍵盤の反応履歴解析で、開門時の警報連動条件が判明した |
+| explore | `x.exp_id`7 and `x.floor`4 | 損傷案内像の指向角復元により、正規導線の誤差範囲が縮小した |
+| explore | `x.exp_id`7 and `x.floor`4 | 通路重力乱流の観測蓄積で、落下事故回避手順が標準化された |
+| explore | `x.exp_id`7 and `x.floor`4 | 気密輪の腐食試験が進み、再封止可能な区画の優先順位が確定した |
+| explore | `x.exp_id`7 and `x.floor`4 | 接続梁焦げ跡の年代推定から、最終交戦時刻の仮説が更新された |
+| explore | `x.exp_id`7 and `x.floor`4 | 退路標識の再配置効果検証で、迷走率低下が統計的に確認された |
+| explore | `x.exp_id`7 and `x.floor`4 | 真空警報系の冗長化試験が完了し、通行維持時間の延長が達成された |
+| explore | `x.exp_id`7 and `x.floor`4 | 入口聖句の音韻照合により、守護機構の非敵対認証率が上昇している |
+| explore | `x.exp_id`7 and `x.floor`5 | 浮遊果樹帯の枝荷重測定で、橋道上空の通行安全域が再設定された |
+| explore | `x.exp_id`7 and `x.floor`5 | 水路流量の連続観測により、中心島への安定補給線が確立された |
+| explore | `x.exp_id`7 and `x.floor`5 | 天空橋継ぎ目の補修記録が蓄積され、維持管理周期が短縮された |
+| explore | `x.exp_id`7 and `x.floor`5 | 花弁微光の粒度分析で、迷い霧散開に有効な照度条件が判明した |
+| explore | `x.exp_id`7 and `x.floor`5 | 灌漑符の再起動試験結果から、枯損区画の回復速度が改善している |
+| explore | `x.exp_id`7 and `x.floor`5 | 鈴音伝播の遅延測定により、番人像監視域の境界線が明確化された |
+| explore | `x.exp_id`7 and `x.floor`5 | 小精霊出現分布の更新で、非干渉通行に適した時間帯が抽出された |
+| explore | `x.exp_id`7 and `x.floor`5 | 漂島根脈網の張力評価が進み、崩落予兆の早期検知率が向上した |
+| explore | `x.exp_id`7 and `x.floor`5 | 光樹結界糸の耐風試験で、突風時の橋道損傷率が低減された |
+| explore | `x.exp_id`7 and `x.floor`5 | 旧園丁碑文の読解成果により、庭区画ごとの保全規範が復元された |
+| explore | `x.exp_id`7 and `x.floor`6 | 人工陽制御の照度変動監視で、生命光供給の安定条件が定式化された |
+| explore | `x.exp_id`7 and `x.floor`6 | 中央水路の循環効率計測により、維持機関の劣化率推定が更新された |
+| explore | `x.exp_id`7 and `x.floor`6 | 維生樹根系の養分流解析で、再同期儀式の有効区画が拡張された |
+| explore | `x.exp_id`7 and `x.floor`6 | 光輪制御盤の欠片照合が進み、日照周期復元の精度が改善している |
+| explore | `x.exp_id`7 and `x.floor`6 | 聖池星図の座標補正により、庭園均衡点の特定誤差が縮小した |
+| explore | `x.exp_id`7 and `x.floor`6 | 天井渠弁の開閉履歴解析で、水供給偏在の是正手順が確立された |
+| explore | `x.exp_id`7 and `x.floor`6 | 管理核応答波形の記録蓄積により、承認再取得の成功率が上昇した |
+| explore | `x.exp_id`7 and `x.floor`6 | 光花開花周期の長期観測で、崩壊予兆監視モデルの信頼性が高まった |
+| explore | `x.exp_id`7 and `x.floor`6 | 祭壇誓約文の再翻訳結果から、保全命令系統の優先順位が再整理された |
+| explore | `x.exp_id`7 and `x.floor`6 | 生命維持塔共鳴の再調律検証で、庭園核の安定運転時間が延伸した |
+| explore | `x.exp_id`8 and `x.floor`1 | name は峡谷の薄霧に紛れた結界紋を見抜き、谷門の正しい通行路を選び取った |
+| explore | `x.exp_id`8 and `x.floor`1 | name は断崖に走る古い導線をたどり、見えざる障壁の脈動を確かめている |
+| explore | `x.exp_id`8 and `x.floor`1 | name は見張り碑に触れて敬礼し、Cervinの哨戒網へ干渉せぬよう進んでいる |
+| explore | `x.exp_id`8 and `x.floor`1 | name は風に混じる警告鐘の余韻を聞き分け、禁足域の縁を静かに迂回した |
+| explore | `x.exp_id`8 and `x.floor`1 | name は谷壁の水晶片に映る光符を読み、正門を開く位相の刻を待っている |
+| explore | `x.exp_id`8 and `x.floor`1 | name は巡礼路に残る蹄印を追い、番人たちが許した安全帯を踏みしめた |
+| explore | `x.exp_id`8 and `x.floor`1 | name は夜露を帯びた祈祷札を拾い、守護者の誓約が今も生きると知った |
+| explore | `x.exp_id`8 and `x.floor`1 | name は崖間を渡る細道で息を潜め、静かな監視眼の気配を受け流している |
+| explore | `x.exp_id`8 and `x.floor`1 | name は谷門上の星見窓を見上げ、入谷許可を示す光の合図を待ち受けた |
+| explore | `x.exp_id`8 and `x.floor`1 | name は薄青い防壁の揺らぎを観測し、侵入者と巡礼者を分ける境を見定めた |
+| explore | `x.exp_id`8 and `x.floor`2 | name は水晶塔群の共鳴音を記録し、天測信号の流れが乱れていないか確かめた |
+| explore | `x.exp_id`8 and `x.floor`2 | name は結晶柱の影角を測り、時辰ごとに変わる観測窓の開閉を読み解いている |
+| explore | `x.exp_id`8 and `x.floor`2 | name は霧中に浮かぶ微光粒を追跡し、予見機構へ注ぐ星塵導路を特定した |
+| explore | `x.exp_id`8 and `x.floor`2 | name は観測台の祭文を解読し、触れてよい結晶と禁触結晶を判別している |
+| explore | `x.exp_id`8 and `x.floor`2 | name は風鈴めく警報子の震えから、感知網が捉える死角の幅を割り出した |
+| explore | `x.exp_id`8 and `x.floor`2 | name は水晶根元の紋環を照合し、信号増幅塔の巡回順路を仲間へ示した |
+| explore | `x.exp_id`8 and `x.floor`2 | name は星図盤へ方位針を合わせ、予測演算に使われる基準軸を再確認した |
+| explore | `x.exp_id`8 and `x.floor`2 | name は稜線を渡る閃光周期を数え、警戒が緩むわずかな刻限を掴んでいる |
+| explore | `x.exp_id`8 and `x.floor`2 | name は結晶面に映る己の残像を避け、認証を誤作動させぬ歩調で進んだ |
+| explore | `x.exp_id`8 and `x.floor`2 | name は天穹へ伸びる塔列を見渡し、谷の意志そのもののような精密さに息をのんだ |
+| explore | `x.exp_id`8 and `x.floor`3 | name は回転環の軋みを聞き分け、同期ずれを起こした調整台を先に外した |
+| explore | `x.exp_id`8 and `x.floor`3 | name は黄銅の指標輪に刻まれた暦式をなぞり、天球周期との誤差を点検している |
+| explore | `x.exp_id`8 and `x.floor`3 | name は段状テラスの観測鏡を磨き、未来演算へ注ぐ星光束を澄ませた |
+| explore | `x.exp_id`8 and `x.floor`3 | name は校正杖を地に立て、時流の揺らぎが許容域に収まるのを待っている |
+| explore | `x.exp_id`8 and `x.floor`3 | name は環座標に合わせて陣標を動かし、予知儀の焦点をゆっくり結び直した |
+| explore | `x.exp_id`8 and `x.floor`3 | name は高台の風見晶から流速を読み、演算陣へ混入する乱流を遮断した |
+| explore | `x.exp_id`8 and `x.floor`3 | name は補助環へ魔力を分配し、主輪の共振が暴走しないよう制御している |
+| explore | `x.exp_id`8 and `x.floor`3 | name は星読官の古手帳を開き、同位相日に残された警句を照合した |
+| explore | `x.exp_id`8 and `x.floor`3 | name は揺れる計測針を指先で止め、時界の段差が生む誤算を修正している |
+| explore | `x.exp_id`8 and `x.floor`3 | name は光環が重なる瞬間を見届け、予見系が再同期した兆しを記録した |
+| explore | `x.exp_id`8 and `x.floor`4 | name は書架回廊の封蝋紐を解き、百年分の予測録から欠頁を探し出した |
+| explore | `x.exp_id`8 and `x.floor`4 | name は記録水晶に残る囁きを採譜し、分岐年表の改訂痕を突き止めている |
+| explore | `x.exp_id`8 and `x.floor`4 | name は分類印章を照合し、禁書区へ誤って踏み入らぬ導線を組み立てた |
+| explore | `x.exp_id`8 and `x.floor`4 | name は索引卓の浮遊札を追い、失われた未来断章の所在を絞り込んでいる |
+| explore | `x.exp_id`8 and `x.floor`4 | name は保存庫の温湿符を調整し、脆い羊皮予言書の劣化を食い止めた |
+| explore | `x.exp_id`8 and `x.floor`4 | name は学僧の注記余白を読み、封印門異常が初めて記された夜を特定した |
+| explore | `x.exp_id`8 and `x.floor`4 | name は年代棚の配列癖を見抜き、改竄された冊子だけを静かに抜き取った |
+| explore | `x.exp_id`8 and `x.floor`4 | name は知恵灯の明滅規則を解読し、閲覧許可を示す光階梯を昇っている |
+| explore | `x.exp_id`8 and `x.floor`4 | name は書記官像の視線を避け、自動監査術式を起こさぬ歩幅で移動した |
+| explore | `x.exp_id`8 and `x.floor`4 | name は折り畳まれた星図写本を広げ、封域周辺で増える異常波形を確認した |
+| explore | `x.exp_id`8 and `x.floor`5 | name は黒曜の封環へ耳を当て、地の底から滲む異界の脈動を聞き取った |
+| explore | `x.exp_id`8 and `x.floor`5 | name は拘束鎖の符節を点検し、劣化した連結部へ補助刻印を施している |
+| explore | `x.exp_id`8 and `x.floor`5 | name は監視祭壇の燭火色を見て、封印圧が揺らぐ前兆域を割り出した |
+| explore | `x.exp_id`8 and `x.floor`5 | name は奈落縁の観測孔を覗き、理外の囁きが届く周期を記録している |
+| explore | `x.exp_id`8 and `x.floor`5 | name は抑制陣の欠けた節点へ魔粉を撒き、漏出する歪光を一時的に塞いだ |
+| explore | `x.exp_id`8 and `x.floor`5 | name は封門前の誓約碑を再起動し、守護手順の最終条文を唱和している |
+| explore | `x.exp_id`8 and `x.floor`5 | name は結界杭の傾きを直し、次の震動波に備えて支持網を補強した |
+| explore | `x.exp_id`8 and `x.floor`5 | name は暗闇に浮く裂け目光を測距し、門外存在の接近速度を推算している |
+| explore | `x.exp_id`8 and `x.floor`5 | name は退避鐘の試鳴を済ませ、崩壊時の避難導線を仲間へ叩き込んだ |
+| explore | `x.exp_id`8 and `x.floor`5 | name は封鎖輪が重なる静寂の中心で、祈りと計算を同時に積み上げている |
+| explore | `x.exp_id`8 and `x.floor`6 | name は聖域中枢の予見機関へ接続し、無数の未来枝から破滅線を刈り取っている |
+| explore | `x.exp_id`8 and `x.floor`6 | name は水銀めく演算鏡に手をかざし、封印維持に最適な介入時刻を選定した |
+| explore | `x.exp_id`8 and `x.floor`6 | name は浮遊環廊の星紋を踏み、視えすぎる未来から心を守る詠唱を続けた |
+| explore | `x.exp_id`8 and `x.floor`6 | name は高座の光繭へ記録鍵を差し込み、次世代へ継ぐ予兆データを封入した |
+| explore | `x.exp_id`8 and `x.floor`6 | name は天蓋儀の回転位相を微調整し、監視網の盲点が生まれる秒差を潰した |
+| explore | `x.exp_id`8 and `x.floor`6 | name は未来図廊に走る赤線を追い、封門崩壊へ至る連鎖要因を摘み取っている |
+| explore | `x.exp_id`8 and `x.floor`6 | name は静謐なる祭壇で誓句を更新し、Cervinの守望契約を新たな時代へ繋いだ |
+| explore | `x.exp_id`8 and `x.floor`6 | name は予見核の唸りを鎮め、過負荷で裂ける可能性世界を縫い合わせている |
+| explore | `x.exp_id`8 and `x.floor`6 | name は天測窓に群れる流星符を読み、次の百年に訪れる危機群を分類した |
+| explore | `x.exp_id`8 and `x.floor`6 | name は聖堂最奥の光輪陣で膝をつき、世界を守るためのただ一つの選択を刻んだ |
+| explore | `x.exp_id`8 and `x.floor`1 | 峡谷の薄霧に紛れた結界紋を見抜き、谷門の正しい通行路が選定された |
+| explore | `x.exp_id`8 and `x.floor`1 | 断崖に走る古い導線が追跡され、見えざる障壁の脈動周期が確認された |
+| explore | `x.exp_id`8 and `x.floor`1 | 見張り碑への敬礼手順が実施され、哨戒網への干渉回避が維持された |
+| explore | `x.exp_id`8 and `x.floor`1 | 風に混じる警告鐘の余韻解析で、禁足域縁辺の安全迂回路が確保された |
+| explore | `x.exp_id`8 and `x.floor`1 | 谷壁水晶片に映る光符が解読され、正門開放位相の待機刻が確定した |
+| explore | `x.exp_id`8 and `x.floor`1 | 巡礼路の蹄印追跡により、番人承認済みの安全帯が再確認された |
+| explore | `x.exp_id`8 and `x.floor`1 | 夜露を帯びた祈祷札の回収から、守護誓約が現代まで継続していると判明した |
+| explore | `x.exp_id`8 and `x.floor`1 | 崖間細道での監視眼気配観測により、潜行時の呼吸間隔基準が更新された |
+| explore | `x.exp_id`8 and `x.floor`1 | 谷門上の星見窓観察結果から、入谷許可を示す光合図の発火順が記録された |
+| explore | `x.exp_id`8 and `x.floor`1 | 薄青い防壁揺らぎの時系列化で、巡礼者判別境界の判定精度が向上した |
+| explore | `x.exp_id`8 and `x.floor`2 | 水晶塔群の共鳴音記録が進み、天測信号流の乱調検出閾値が再設定された |
+| explore | `x.exp_id`8 and `x.floor`2 | 結晶柱影角の連続測定により、時辰別観測窓の開閉表が更新された |
+| explore | `x.exp_id`8 and `x.floor`2 | 霧中微光粒の追跡で、予見機構へ注ぐ星塵導路の分岐図が完成した |
+| explore | `x.exp_id`8 and `x.floor`2 | 観測台祭文の再解読から、禁触結晶識別規則の誤記が修正された |
+| explore | `x.exp_id`8 and `x.floor`2 | 風鈴型警報子の振幅解析により、感知網死角幅の算定誤差が縮小した |
+| explore | `x.exp_id`8 and `x.floor`2 | 水晶根元紋環の照合結果が反映され、信号増幅塔の巡回順路が最適化された |
+| explore | `x.exp_id`8 and `x.floor`2 | 星図盤への方位針再較正で、予測演算基準軸の偏差が解消された |
+| explore | `x.exp_id`8 and `x.floor`2 | 稜線を渡る閃光周期の統計化により、警戒緩和刻限の抽出精度が改善した |
+| explore | `x.exp_id`8 and `x.floor`2 | 結晶面残像干渉の回避試験で、認証誤作動発生率が有意に低下した |
+| explore | `x.exp_id`8 and `x.floor`2 | 天穹へ伸びる塔列の俯瞰記録から、谷全体制御網の冗長性が確認された |
+| explore | `x.exp_id`8 and `x.floor`3 | 回転環軋みの音響診断で、同期ずれ調整台の優先除外順が確立された |
+| explore | `x.exp_id`8 and `x.floor`3 | 黄銅指標輪の暦式照合により、天球周期との誤差補正式が更新された |
+| explore | `x.exp_id`8 and `x.floor`3 | 段状テラス観測鏡の清浄化後、未来演算へ注ぐ星光束の散乱率が低減した |
+| explore | `x.exp_id`8 and `x.floor`3 | 校正杖基準点の再固定により、時流揺らぎ判定の許容域が再定義された |
+| explore | `x.exp_id`8 and `x.floor`3 | 環座標に連動した陣標移設で、予知儀焦点の収束時間が短縮された |
+| explore | `x.exp_id`8 and `x.floor`3 | 高台風見晶の流速記録蓄積から、演算陣乱流遮断手順が標準化された |
+| explore | `x.exp_id`8 and `x.floor`3 | 補助環への魔力再配分試験で、主輪共振暴走の発生確率が抑制された |
+| explore | `x.exp_id`8 and `x.floor`3 | 星読官古手帳の照合結果により、同位相日における警戒項目が増補された |
+| explore | `x.exp_id`8 and `x.floor`3 | 計測針制動操作の再現実験で、時界段差由来の誤算補正精度が向上した |
+| explore | `x.exp_id`8 and `x.floor`3 | 光環重複瞬間の観測蓄積から、予見系再同期判定の信頼度が上方修正された |
+| explore | `x.exp_id`8 and `x.floor`4 | 書架回廊の封蝋紐再点検により、百年分予測録の欠頁位置が特定された |
+| explore | `x.exp_id`8 and `x.floor`4 | 記録水晶の残響採譜結果から、分岐年表改訂痕の時期が絞り込まれた |
+| explore | `x.exp_id`8 and `x.floor`4 | 分類印章照合の徹底で、禁書区誤進入を防ぐ導線規程が改定された |
+| explore | `x.exp_id`8 and `x.floor`4 | 索引卓浮遊札の追跡統合により、未来断章所在候補が高精度で抽出された |
+| explore | `x.exp_id`8 and `x.floor`4 | 保存庫温湿符の再調整により、羊皮予言書の劣化進行率が抑制された |
+| explore | `x.exp_id`8 and `x.floor`4 | 学僧注記余白の年代比定で、封印門異常初報の夜刻が確定した |
+| explore | `x.exp_id`8 and `x.floor`4 | 年代棚配列癖の解析により、改竄冊子抽出アルゴリズムが補強された |
+| explore | `x.exp_id`8 and `x.floor`4 | 知恵灯明滅規則の解読進展で、閲覧許可光階梯の認証時間が短縮された |
+| explore | `x.exp_id`8 and `x.floor`4 | 書記官像監査術式の回避手順化により、自動警報発生件数が減少した |
+| explore | `x.exp_id`8 and `x.floor`4 | 星図写本の再展開測読で、封域周辺異常波形の増勢傾向が確認された |
+| explore | `x.exp_id`8 and `x.floor`5 | 黒曜封環への音響聴診により、異界脈動の増幅周期が数値化された |
+| explore | `x.exp_id`8 and `x.floor`5 | 拘束鎖符節の点検結果が反映され、劣化連結部への補助刻印が完了した |
+| explore | `x.exp_id`8 and `x.floor`5 | 監視祭壇燭火色の連続監視で、封印圧揺動の前兆域が早期検知された |
+| explore | `x.exp_id`8 and `x.floor`5 | 奈落縁観測孔からの記録蓄積により、理外囁き到達周期が確立された |
+| explore | `x.exp_id`8 and `x.floor`5 | 抑制陣欠損節点への魔粉補填で、歪光漏出量が一時的に低減した |
+| explore | `x.exp_id`8 and `x.floor`5 | 封門前誓約碑の再起動を通じ、守護手順最終条文の伝承が更新された |
+| explore | `x.exp_id`8 and `x.floor`5 | 結界杭傾斜の補正作業により、次期震動波への支持網耐性が向上した |
+| explore | `x.exp_id`8 and `x.floor`5 | 暗闇に浮く裂け目光の測距解析で、門外存在接近速度の推算幅が縮小した |
+| explore | `x.exp_id`8 and `x.floor`5 | 退避鐘試鳴と訓練導線照合により、崩壊時避難の完了時間が短縮された |
+| explore | `x.exp_id`8 and `x.floor`5 | 封鎖輪重複域の静穏観測で、祈祷同期時の安定係数が上方更新された |
+| explore | `x.exp_id`8 and `x.floor`6 | 聖域中枢予見機関の再演算で、破滅線候補群の除外優先度が再編成された |
+| explore | `x.exp_id`8 and `x.floor`6 | 水銀状演算鏡の介入試験により、封印維持最適時刻の推定誤差が低減した |
+| explore | `x.exp_id`8 and `x.floor`6 | 浮遊環廊星紋の踏査記録から、過剰予見時の精神防護詠唱が標準化された |
+| explore | `x.exp_id`8 and `x.floor`6 | 高座光繭への記録鍵封入で、次世代継承用予兆データの完全性が検証された |
+| explore | `x.exp_id`8 and `x.floor`6 | 天蓋儀回転位相の微調整結果が反映され、監視網盲点秒差が解消された |
+| explore | `x.exp_id`8 and `x.floor`6 | 未来図廊赤線群の追跡解析により、封門崩壊連鎖要因の優先遮断順が確立した |
+| explore | `x.exp_id`8 and `x.floor`6 | 静謐祭壇での誓句更新記録が承認され、守望契約の時代継承が完了した |
+| explore | `x.exp_id`8 and `x.floor`6 | 予見核唸動の鎮静処置により、可能性世界裂断リスクが抑制された |
+| explore | `x.exp_id`8 and `x.floor`6 | 天測窓流星符の連続読解で、次百年危機群の分類精度が向上した |
+| explore | `x.exp_id`8 and `x.floor`6 | 聖堂最奥光輪陣の誓約記録により、世界防衛選択の意思決定根拠が保存された |
 | sound_sleep | with mainClass.`Fighter` | name は鎧を外したまま深く眠り、戦場の緊張を静かに解いている |
 | sound_sleep | with mainClass.`Fighter` | name は盾を抱くようにして熟睡し、守る意志を休息に変えている |
 | sound_sleep | with mainClass.`Fighter` | name は規則正しい寝息で体幹の疲労をじっくり回復している |
