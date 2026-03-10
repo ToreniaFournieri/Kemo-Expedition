@@ -2482,6 +2482,7 @@ export function HomeScreen({
     }
 
     const simulationNow = lastCheckpointAtRef.current + elapsedMs;
+    const suppressCycleNotificationsForAfk = pendingAfkMsRef.current > 0 || shouldShowAfkSummaryRef.current;
 
     setPartyCycles((prev) => {
       const next = { ...prev };
@@ -2583,11 +2584,13 @@ export function HomeScreen({
               const squanderMultiplier = squanderLevel >= 2 ? 1.5 : squanderLevel >= 1 ? 1.3 : 1;
               const spend = Math.min(cyclePendingProfit, Math.floor(baseSpend * squanderMultiplier));
               if (spend > 0) {
-                if (squanderLevel > 0) {
-                  const lordName = getPartyAbilityOwnerName(party, 'squander') ?? '名無し';
-                  actions.addNotification(`${party.name} 君主${lordName}は贅沢に${formatNumber(spend)}G使った`);
-                } else {
-                  actions.addNotification(`${party.name}は${formatNumber(spend)}Gお金を使った`);
+                if (!suppressCycleNotificationsForAfk) {
+                  if (squanderLevel > 0) {
+                    const lordName = getPartyAbilityOwnerName(party, 'squander') ?? '名無し';
+                    actions.addNotification(`${party.name} 君主${lordName}は贅沢に${formatNumber(spend)}G使った`);
+                  } else {
+                    actions.addNotification(`${party.name}は${formatNumber(spend)}Gお金を使った`);
+                  }
                 }
               }
               actions.spendPendingProfit(partyIndex, spend);
@@ -2632,13 +2635,15 @@ export function HomeScreen({
               cyclePendingProfit = 0;
               if (donation > 0 || deposit > 0) {
                 const embezzledText = embezzled > 0 ? `(${formatNumber(embezzled)}Gを着服した)` : '';
-                if (isNoFaith) {
-                  actions.addNotification(`${party.name}は ${formatNumber(deposit)}Gを貯金した${embezzledText}`);
-                } else if (titheLevel > 0) {
-                  const pilgrimName = getPartyAbilityOwnerName(party, 'tithe') ?? '名無し';
-                  actions.addNotification(`${party.name} 巡礼者${pilgrimName}は祈りと共に${formatNumber(donation)}G神に捧げて、${formatNumber(deposit)}Gを貯金した${embezzledText}`);
-                } else {
-                  actions.addNotification(`${party.name}は${formatNumber(donation)}G神に捧げ、${formatNumber(deposit)}Gを貯金した${embezzledText}`);
+                if (!suppressCycleNotificationsForAfk) {
+                  if (isNoFaith) {
+                    actions.addNotification(`${party.name}は ${formatNumber(deposit)}Gを貯金した${embezzledText}`);
+                  } else if (titheLevel > 0) {
+                    const pilgrimName = getPartyAbilityOwnerName(party, 'tithe') ?? '名無し';
+                    actions.addNotification(`${party.name} 巡礼者${pilgrimName}は祈りと共に${formatNumber(donation)}G神に捧げて、${formatNumber(deposit)}Gを貯金した${embezzledText}`);
+                  } else {
+                    actions.addNotification(`${party.name}は${formatNumber(donation)}G神に捧げ、${formatNumber(deposit)}Gを貯金した${embezzledText}`);
+                  }
                 }
               }
               updated.state = autoRepeatEnabled ? 'move' : 'idle';
@@ -2654,7 +2659,9 @@ export function HomeScreen({
               pendingGodsBattleByPartyRef.current[partyIndex] = false;
               if (triggerGodsBattle && party.sideQuest) {
                 actions.cancelSideQuest(partyIndex);
-                actions.addNotification(`${party.name}のサイドクエストは神魔戦の開始で中止された`);
+                if (!suppressCycleNotificationsForAfk) {
+                  actions.addNotification(`${party.name}のサイドクエストは神魔戦の開始で中止された`);
+                }
               }
               if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
               actions.runExpedition(partyIndex, gameModeRef.current === 'm.luna', triggerGodsBattle);
