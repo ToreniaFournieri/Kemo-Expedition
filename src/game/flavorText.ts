@@ -20,6 +20,8 @@ interface FlavorContext {
   returnOutcome?: 'Defeat' | 'Wounded_Retreat' | 'Draw_Retreat' | 'Turned_Back' | 'Clear';
   sortieSourceState?: 'rest' | 'feast' | 'sleep' | 'return';
   embezzlementGold?: number;
+  expeditionId?: number;
+  floor?: number;
   mainClassId?: ClassId;
   raceId?: RaceId;
   partyMainClassIds?: ReadonlyArray<ClassId>;
@@ -56,6 +58,7 @@ function conditionSpecificity(condition: FlavorCondition, context: FlavorContext
   if (condition.k === 'raw' && isSortieConditionRaw(condition.v) && (context.sortieSourceState !== undefined || context.embezzlementGold !== undefined)) {
     return 2;
   }
+  if (condition.k === 'exp_floor_is') return 2;
   return 1;
 }
 
@@ -87,6 +90,8 @@ function isConditionMatch(condition: FlavorCondition, context: FlavorContext): b
       return classIds.has(condition.v as ClassId);
     case 'race_is':
       return raceIds.has(condition.v as RaceId);
+    case 'exp_floor_is':
+      return context.expeditionId === condition.v.expId && context.floor === condition.v.floor;
     case 'raw':
       return isRawConditionMatch(condition.v, {
         partyAbilityIds: abilityIds,
