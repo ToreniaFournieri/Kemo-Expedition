@@ -508,8 +508,8 @@ Party.`d.HP` =
 | rest(休息中)  | at home | sell or feast | `God of Fortification` |
 | sell(売却中) | at home, Sell auto-sell items to shop owners. and officially gain items (notification of item gains at the end of sell state.). If they have no trophy nor auto-sell item, skip this state. | feast | `God of Dusk` |
 | feast(宴会中) | at home, skip if current_profit = 0). Skipped if the party’s total HP was below 30% of Max HP at the beginning of rest state. | sound_sleep or nap_sleep or pray | `Goddess of Fertility` |
-| sleep/ sound_sleep(熟睡中), nap_sleep(仮眠中) | at home. skip if the party’s total HP was below 10% of Max HP at the beginning of rest state. (no draw a ticket from `t.sleepiness_of_party_bag`) | outfit |
-| outfit(身支度中) | equipping items. skip if no nap_sleep or sound_sleep | pray |
+| sleep/ sound_sleep(熟睡中), nap_sleep(仮眠中) | at home. skip if the party’s total HP was below 10% of Max HP at the beginning of rest state. (no draw a ticket from `t.sleepiness_of_party_bag`) | sound sleep:outfit, nap_sleep:pray |
+| outfit(身支度中) | equipping items. skip if no sound_sleep | pray |
 | pray(祈り中) | at home. Party members donate money to their deity. | idle or move |
 | idle(待機中) | at home. only when 自動周回 = OFF (idle state) | - |
 | move(移動中) | home → dungeon, If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | explore | `a.peddler` |
