@@ -2656,8 +2656,13 @@ export function HomeScreen({
               }
             } else if (updated.state === 'sound_sleep' || updated.state === 'nap_sleep') {
               if (party.sideQuest?.type === 'q.sleeping' && updated.durationMs > 100) actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
-              updated.state = 'outfit';
-              updated.durationMs = getStateDurationMs(party, 'outfit');
+              if (updated.state === 'sound_sleep') {
+                updated.state = 'outfit';
+                updated.durationMs = getStateDurationMs(party, 'outfit');
+              } else {
+                updated.state = 'pray';
+                updated.durationMs = getStateDurationMs(party, 'pray');
+              }
             } else if (updated.state === 'outfit') {
               updated.state = 'pray';
               updated.durationMs = getStateDurationMs(party, 'pray');
