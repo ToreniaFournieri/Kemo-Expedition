@@ -90,6 +90,8 @@
   - Divine Bureau: 神聖局
 
 - If wide mode (two tabs) is on, it displays Expedition (always visible) and other tabs player selects.
+  - One tabs width: 500 width.
+  - Threshold: 1024 width, then two tabs mode.
 
 - Header is always visible; tabs never cause full page reload.
 
