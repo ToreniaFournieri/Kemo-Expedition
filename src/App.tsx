@@ -28,16 +28,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-white text-black">
-      <div className="max-w-lg mx-auto">
-        <HomeScreen
-          state={state}
-          actions={actions}
-          bags={bags}
-          notifications={notifications}
-          onDismissNotification={actions.dismissNotification}
-          onDismissAllNotifications={actions.dismissAllNotifications}
-        />
-      </div>
+      <HomeScreen
+        state={state}
+        actions={actions}
+        bags={bags}
+        notifications={notifications}
+        onDismissNotification={actions.dismissNotification}
+        onDismissAllNotifications={actions.dismissAllNotifications}
+      />
     </div>
   );
 }
