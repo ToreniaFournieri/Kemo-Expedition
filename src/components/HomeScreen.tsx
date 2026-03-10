@@ -1679,7 +1679,11 @@ export function HomeScreen({
     });
   }, []);
 
-  const runAutoEquipment = useCallback((targetPartyIndexes?: number[], targetCharacterIds?: Array<number | string>) => {
+  const runAutoEquipment = useCallback((
+    targetPartyIndexes?: number[],
+    targetCharacterIds?: Array<number | string>,
+    options?: { suppressNotifications?: boolean },
+  ) => {
     const targetPartyIndexSet = targetPartyIndexes ? new Set(targetPartyIndexes) : null;
     const targetCharacterIdSet = targetCharacterIds ? new Set(targetCharacterIds) : null;
     const simulatedInventory: InventoryRecord = { ...state.global.inventory };
@@ -2163,6 +2167,8 @@ export function HomeScreen({
       });
     });
 
+    if (options?.suppressNotifications) return;
+
     slotNotifications.forEach(({ message }) => {
       actions.addNotification(message, 'normal', 'item', true, {
         rarity: 'common',
@@ -2421,7 +2427,7 @@ export function HomeScreen({
 
     if (previousPendingAfkMs <= pendingAfkMs) return;
 
-    runAutoEquipment();
+    runAutoEquipment(undefined, undefined, { suppressNotifications: true });
   }, [pendingAfkMs, runAutoEquipment]);
 
   const afkRecoveryProgressPercent = pendingAfkMs > 0
@@ -2704,7 +2710,11 @@ export function HomeScreen({
       });
 
       if (autoEquipmentPartyIndexes.size > 0) {
-        runAutoEquipment(Array.from(autoEquipmentPartyIndexes));
+        runAutoEquipment(
+          Array.from(autoEquipmentPartyIndexes),
+          undefined,
+          { suppressNotifications: suppressCycleNotificationsForAfk },
+        );
       }
 
       return next;
