@@ -50,6 +50,11 @@
   color: rgb(229 231 235);
 }
 
+html.app-dark,
+body.app-dark {
+  background-color: #020617;
+}
+
 .theme-dark .bg-white {
   background-color: rgb(31 41 55);
 }
@@ -65,6 +70,23 @@
 
 .theme-dark .bg-pane {
   background-color: rgb(17 24 39);
+}
+
+.theme-dark .bg-gray-50 {
+  background-color: rgb(15 23 42);
+}
+
+.theme-dark .bg-gray-100 {
+  background-color: rgb(30 41 59);
+}
+
+.theme-dark .bg-gray-200 {
+  background-color: rgb(51 65 85);
+}
+
+.theme-dark .hover\:bg-gray-50:hover,
+.theme-dark .hover\:bg-gray-100:hover {
+  background-color: rgb(30 41 59);
 }
 
 .theme-dark .text-black {
@@ -90,6 +112,10 @@
 .theme-dark .border-gray-200,
 .theme-dark .border-gray-100 {
   border-color: rgb(75 85 99);
+}
+
+.theme-dark .race-icon {
+  filter: brightness(0) invert(1);
 }
 
 body {
