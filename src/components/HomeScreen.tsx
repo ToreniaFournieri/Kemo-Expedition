@@ -3415,10 +3415,10 @@ export function HomeScreen({
                 onClick={() => {
                   switchTab(tab.id);
                 }}
-                className={`flex-1 py-2 text-sm font-medium relative ${
+                className={`flex-1 py-2 text-sm font-medium relative transition-colors ${
                   ((isPartyExpeditionSplitView && (tab.id === 'expedition' || tab.id === activeWideModeSecondaryTab)) || (!isPartyExpeditionSplitView && activeTab === tab.id))
-                    ? 'text-sub border-b-2 border-sub'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? 'text-sub border-b-2 border-sub bg-blue-50/70'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100/70'
                 }`}
               >
                 {tab.label}
@@ -4213,11 +4213,11 @@ function PartyTab({
                 setPendingDeityName(parties[partyIndex].deity.name);
               }}
               disabled={!isAvailable}
-              className={`flex-1 py-2 text-sm font-medium ${
+              className={`flex-1 py-2 text-sm font-medium transition-colors ${
                 isSelected
-                  ? 'text-sub border-b-2 border-sub'
+                  ? 'text-sub border-b-2 border-sub bg-blue-50/70'
                   : isAvailable
-                  ? 'text-gray-700 hover:text-gray-900'
+                  ? 'text-gray-700 hover:text-gray-900 hover:bg-gray-100/70'
                   : 'text-gray-300 cursor-not-allowed'
               }`}
             >
@@ -4366,8 +4366,8 @@ function PartyTab({
                 setDraggingCharacterIndex(null);
               }}
               onClick={() => { setSelectedCharacter(i); setSelectingSlot(null); }}
-              className={`flex-shrink-0 p-2 rounded-lg border ${
-                i === selectedCharacter ? 'border-sub bg-blue-50' : 'border-gray-200'
+              className={`flex-shrink-0 p-2 rounded-lg border transition-colors ${
+                i === selectedCharacter ? 'border-sub bg-blue-50' : 'border-gray-200 hover:bg-gray-50/70'
               } ${draggingCharacterIndex === i ? 'opacity-70 border-sub' : ''}`}
               data-party-character-index={i}
             >
