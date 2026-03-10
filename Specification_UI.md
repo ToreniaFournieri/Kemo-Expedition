@@ -382,7 +382,7 @@ PT1 HP (HP bar, blue) ルピニアンの断崖踏破▼
 
 ルピニアンの断崖(pull down list)  探索深度 全て 出撃
 (Left-Aligned)                           (Right-Aligned)
-統計情報: 踏破U/帰還V/引分W/撤退X/敗北Y 合計 Z回    リセット
+踏破U/帰還V/引分W/撤退X/敗北Y 合計 Z回    リセット
 EXP: L489 | 自動売却額: 134G
 
 PT2...
