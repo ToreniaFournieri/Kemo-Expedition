@@ -791,6 +791,9 @@ HP: 312                 クラス: 魔法使い
 
 **Mode select (モード切替)**
 
+- ダークモード OFF/ON/システム
+    - Dark mode setting
+
 - Switch to 自動周回: ON/OFF (Default:ON )
 
 - Switch to 統計情報表示: ON/OFF (Default:OFF)
