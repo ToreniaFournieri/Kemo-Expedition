@@ -69,6 +69,7 @@
 
 ### 8.2 Header
 - Always fixed at the top.
+  - width: ~ 500 width.
 - Displays:
   - (Game title) + version + (env)
     - Game title label: default: ケモの冒険, if `/luna/` environment: "ルナの冒険".
