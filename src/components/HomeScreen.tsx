@@ -5579,7 +5579,7 @@ function ExpeditionTab({
                 {isExpeditionStatsDisplayEnabled && (
                   <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
                     <span>
-                      統計情報: 踏破{formatNumber(displayedExpeditionStats.Clear)}/帰還{formatNumber(displayedExpeditionStats.Turned_Back)}/引分{formatNumber(displayedExpeditionStats.Draw_Retreat)}/撤退{formatNumber(displayedExpeditionStats.Wounded_Retreat)}/敗北{formatNumber(displayedExpeditionStats.Defeat)} 合計 {formatNumber(displayedExpeditionStats.Clear + displayedExpeditionStats.Turned_Back + displayedExpeditionStats.Draw_Retreat + displayedExpeditionStats.Wounded_Retreat + displayedExpeditionStats.Defeat)}回
+                      踏破{formatNumber(displayedExpeditionStats.Clear)}/帰還{formatNumber(displayedExpeditionStats.Turned_Back)}/引分{formatNumber(displayedExpeditionStats.Draw_Retreat)}/撤退{formatNumber(displayedExpeditionStats.Wounded_Retreat)}/敗北{formatNumber(displayedExpeditionStats.Defeat)} 合計 {formatNumber(displayedExpeditionStats.Clear + displayedExpeditionStats.Turned_Back + displayedExpeditionStats.Draw_Retreat + displayedExpeditionStats.Wounded_Retreat + displayedExpeditionStats.Defeat)}回
                     </span>
                     <button
                       type="button"
