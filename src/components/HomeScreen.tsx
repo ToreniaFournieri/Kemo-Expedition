@@ -198,6 +198,7 @@ const HEADER_HEIGHT_CLASS = 'pt-[118px]';
 type GameMode = 'm.kemo' | 'm.luna';
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
 const AUTO_EQUIPMENT_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-auto-equipment');
+const EXPEDITION_STATS_DISPLAY_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-expedition-stats-display');
 const APP_VERSION = `v${__APP_VERSION__}`;
 
 
@@ -1620,6 +1621,7 @@ export function HomeScreen({
   const [selectedCharacter, setSelectedCharacter] = useState<number>(0);
   const [editingCharacter, setEditingCharacter] = useState<number | null>(null);
   const [isAutoRepeatEnabled, setIsAutoRepeatEnabled] = useState(true);
+  const [isExpeditionStatsDisplayEnabled, setIsExpeditionStatsDisplayEnabled] = useState(false);
   const [partyCycles, setPartyCycles] = useState<Record<number, PartyCycleRuntime>>({});
   const [expeditionExpandedLogParty, setExpeditionExpandedLogParty] = useState<number | null>(null);
   const [expeditionExpandedRoom, setExpeditionExpandedRoom] = useState<{ partyIndex: number; roomIndex: number; latestRoomToken: string } | null>(null);
@@ -1665,6 +1667,25 @@ export function HomeScreen({
   useEffect(() => {
     autoRepeatEnabledRef.current = isAutoRepeatEnabled;
   }, [isAutoRepeatEnabled]);
+
+  useEffect(() => {
+    try {
+      const savedExpeditionStatsDisplay = localStorage.getItem(EXPEDITION_STATS_DISPLAY_STORAGE_KEY);
+      if (savedExpeditionStatsDisplay === 'on' || savedExpeditionStatsDisplay === 'off') {
+        setIsExpeditionStatsDisplayEnabled(savedExpeditionStatsDisplay === 'on');
+      }
+    } catch (error) {
+      console.error('Failed to load expedition stats display setting:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(EXPEDITION_STATS_DISPLAY_STORAGE_KEY, isExpeditionStatsDisplayEnabled ? 'on' : 'off');
+    } catch (error) {
+      console.error('Failed to persist expedition stats display setting:', error);
+    }
+  }, [isExpeditionStatsDisplayEnabled]);
 
   useEffect(() => {
     autoEquipmentEnabledRef.current = isAutoEquipmentEnabled;
@@ -3209,6 +3230,7 @@ export function HomeScreen({
             onSelectDungeon={actions.selectDungeon}
             onSetExpeditionDepthLimit={actions.setExpeditionDepthLimit}
             onResetExpeditionStats={actions.resetExpeditionStats}
+            isExpeditionStatsDisplayEnabled={isExpeditionStatsDisplayEnabled}
             partyCycles={partyCycles}
             afkRecoveryProgressPercent={afkRecoveryProgressPercent}
             onTriggerSortie={triggerSortie}
@@ -3278,6 +3300,8 @@ export function HomeScreen({
             isLunaEnvironment={isLunaEnvironment}
             isAutoRepeatEnabled={isAutoRepeatEnabled}
             onSetAutoRepeatEnabled={setAutoRepeatEnabled}
+            isExpeditionStatsDisplayEnabled={isExpeditionStatsDisplayEnabled}
+            onSetExpeditionStatsDisplayEnabled={setIsExpeditionStatsDisplayEnabled}
             debugSettings={debugSettings}
             onUpdateDebugSettings={updateDebugSettings}
             partyCount={state.parties.length}
@@ -5282,6 +5306,7 @@ function ExpeditionTab({
   onSelectDungeon,
   onSetExpeditionDepthLimit,
   onResetExpeditionStats,
+  isExpeditionStatsDisplayEnabled,
   partyCycles,
   afkRecoveryProgressPercent,
   onTriggerSortie,
@@ -5294,6 +5319,7 @@ function ExpeditionTab({
   onSelectDungeon: (partyIndex: number, dungeonId: number) => void;
   onSetExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
   onResetExpeditionStats: (partyIndex: number) => void;
+  isExpeditionStatsDisplayEnabled: boolean;
   partyCycles: Record<number, PartyCycleRuntime>;
   afkRecoveryProgressPercent: number | null;
   onTriggerSortie: (partyIndex: number, triggerGodsBattle?: boolean) => void;
@@ -5532,18 +5558,20 @@ function ExpeditionTab({
                 {['return', 'idle'].includes(cycle.state) && party.currentHp <= 0 && (
                   <div className="text-xs text-accent">HPが0のため出撃できません。休息で回復してください。</div>
                 )}
-                <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
-                  <span>
-                    統計情報: 踏破{formatNumber(party.expeditionStats.Clear)}/帰還{formatNumber(party.expeditionStats.Turned_Back)}/引分{formatNumber(party.expeditionStats.Draw_Retreat)}/撤退{formatNumber(party.expeditionStats.Wounded_Retreat)}/敗北{formatNumber(party.expeditionStats.Defeat)} 合計 {formatNumber(party.expeditionStats.Clear + party.expeditionStats.Turned_Back + party.expeditionStats.Draw_Retreat + party.expeditionStats.Wounded_Retreat + party.expeditionStats.Defeat)}回
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => onResetExpeditionStats(partyIndex)}
-                    className="shrink-0 underline hover:text-accent"
-                  >
-                    リセット
-                  </button>
-                </div>
+                {isExpeditionStatsDisplayEnabled && (
+                  <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
+                    <span>
+                      統計情報: 踏破{formatNumber(party.expeditionStats.Clear)}/帰還{formatNumber(party.expeditionStats.Turned_Back)}/引分{formatNumber(party.expeditionStats.Draw_Retreat)}/撤退{formatNumber(party.expeditionStats.Wounded_Retreat)}/敗北{formatNumber(party.expeditionStats.Defeat)} 合計 {formatNumber(party.expeditionStats.Clear + party.expeditionStats.Turned_Back + party.expeditionStats.Draw_Retreat + party.expeditionStats.Wounded_Retreat + party.expeditionStats.Defeat)}回
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => onResetExpeditionStats(partyIndex)}
+                      className="shrink-0 underline hover:text-accent"
+                    >
+                      リセット
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -6993,6 +7021,8 @@ function SettingTab({
   isLunaEnvironment,
   isAutoRepeatEnabled,
   onSetAutoRepeatEnabled,
+  isExpeditionStatsDisplayEnabled,
+  onSetExpeditionStatsDisplayEnabled,
   debugSettings,
   onUpdateDebugSettings,
   partyCount,
@@ -7024,6 +7054,8 @@ function SettingTab({
   isLunaEnvironment: boolean;
   isAutoRepeatEnabled: boolean;
   onSetAutoRepeatEnabled: (enabled: boolean) => void;
+  isExpeditionStatsDisplayEnabled: boolean;
+  onSetExpeditionStatsDisplayEnabled: (enabled: boolean) => void;
   debugSettings: DebugSettings;
   onUpdateDebugSettings: (updates: Partial<DebugSettings>) => void;
   partyCount: number;
@@ -8192,6 +8224,28 @@ function SettingTab({
                   </span>
                   <span className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${isAutoRepeatEnabled ? 'bg-sub' : 'bg-gray-300'}`}>
                     <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${isAutoRepeatEnabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                  </span>
+                </span>
+              </div>
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isExpeditionStatsDisplayEnabled}
+              onClick={() => onSetExpeditionStatsDisplayEnabled(!isExpeditionStatsDisplayEnabled)}
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">統計情報表示</span>
+                <span className="flex items-center gap-2">
+                  <span className={`text-xs font-semibold ${isExpeditionStatsDisplayEnabled ? 'text-sub' : 'text-gray-500'}`}>
+                    {isExpeditionStatsDisplayEnabled ? 'ON' : 'OFF'}
+                  </span>
+                  <span className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${isExpeditionStatsDisplayEnabled ? 'bg-sub' : 'bg-gray-300'}`}>
+                    <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${isExpeditionStatsDisplayEnabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
                   </span>
                 </span>
               </div>
