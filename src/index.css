@@ -48,11 +48,11 @@
 
 
 .theme-laika {
-  --color-sub: 6 199 80;
+  --color-sub: 8 166 69;
   --color-accent: 220 38 38;
   --color-pane: 229 231 235;
-  --color-hp-bar: 6 199 80;
-  --color-hp-bar-mild: 6 199 80;
+  --color-hp-bar: 8 166 69;
+  --color-hp-bar-mild: 8 166 69;
   --color-hp-taken: 252 165 165;
   --color-hp-bar-empty: 209 213 219;
   --side-quest-icon-filter: brightness(0) saturate(100%) invert(56%) sepia(71%) saturate(445%) hue-rotate(108deg) brightness(95%) contrast(89%);
@@ -187,11 +187,11 @@ body.app-dark {
 }
 
 .theme-laika.theme-dark {
-  --color-sub: 6 199 80;
+  --color-sub: 8 166 69;
   --color-accent: 220 38 38;
   --color-pane: 30 41 59;
-  --color-hp-bar: 6 199 80;
-  --color-hp-bar-mild: 6 199 80;
+  --color-hp-bar: 8 166 69;
+  --color-hp-bar-mild: 8 166 69;
   --color-hp-taken: 185 28 28;
   --color-hp-bar-empty: 55 65 81;
 }
