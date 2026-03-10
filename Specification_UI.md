@@ -83,11 +83,11 @@
 ケモの冒険　v0.4.0 (αテスト)        200G
 ```
 - Tab header (primary navigation):
-  - Expedition
-  - Party
-  - Base
-  - Diary
-  - Divine Bureau
+  - Expedition: 探索
+  - Party: パーティ
+  - Base: 拠点
+  - Diary: 日誌
+  - Divine Bureau: 神聖局
 
 - If wide mode (two tabs) is on, it displays Expedition (always visible) and other tabs player selects.
 
