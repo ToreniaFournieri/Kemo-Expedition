@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.5.2 - SPECIFICATION
+# KEMO EXPEDITION v0.5.3 - SPECIFICATION
 
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
@@ -675,7 +675,8 @@ PT3: 貯金額: 10G
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
-| **0.5.2** | Flavor text update. Fixed auto equipment logic, update side quest barance, especially embezzlement part logic. Refine AFK part. |
+| **0.5.3** | Two tabs mode. |
+| 0.5.2 | Flavor text update. Fixed auto equipment logic, update side quest barance, especially embezzlement part logic. Refine AFK part. |
 | 0.5.1 | Ajusts auto equipment logic |
 | 0.5.0 | unlock for deities, religions . auto equipment update |
 | 0.4.1 | Cycle update |
