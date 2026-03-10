@@ -1126,6 +1126,126 @@
 | explore | `x.exp_id`3 and `x.floor`6 | 白狐像群の向き一致から、祈祷時の巡礼動線が復元されている |
 | explore | `x.exp_id`3 and `x.floor`6 | 梢雪の落下分布が境界指標と合致し、禁触区画の再設定が完了した |
 | explore | `x.exp_id`3 and `x.floor`6 | 聖庭外周の碑片整理で、評議場末期の防衛改修記録が補強された |
+| explore | `x.exp_id`4 and `x.floor`1 | name は巨岩の門柱に刻まれた熊紋へ手を当て、古き関門の誓いを確かめている |
+| explore | `x.exp_id`4 and `x.floor`1 | name は狭い峠道に残る盾列の跡を追い、守備隊の布陣線を読み解いた |
+| explore | `x.exp_id`4 and `x.floor`1 | name は山風に軋む鉄門の鎖を整え、退路を閉ざさぬよう進路を選んでいる |
+| explore | `x.exp_id`4 and `x.floor`1 | name は岩壁の見張り窓へ視線を巡らせ、伏兵が潜む死角を先に潰した |
+| explore | `x.exp_id`4 and `x.floor`1 | name は崩れた防壁石を乗り越え、熊族が築いた外郭路へ静かに足を踏み入れた |
+| explore | `x.exp_id`4 and `x.floor`1 | name は門前に散る槍片を拾い、最初の防衛戦が激戦だったと仲間へ告げた |
+| explore | `x.exp_id`4 and `x.floor`1 | name は関門脇の狼煙台を確かめ、合図が届く高所線を地図へ刻んでいる |
+| explore | `x.exp_id`4 and `x.floor`1 | name は石畳の摩耗を見て、補給隊が往来した古道の太さを測り取った |
+| explore | `x.exp_id`4 and `x.floor`1 | name は山門を抜ける突風へ身を伏せ、弓射線を避ける低姿勢で進んでいる |
+| explore | `x.exp_id`4 and `x.floor`1 | name は防壁の影に残る祈祷印をなぞり、峠守たちの加護が続くと信じた |
+| explore | `x.exp_id`4 and `x.floor`2 | name は尾根の監視塔を見上げ、谷を渡る視界線の重なりを数えている |
+| explore | `x.exp_id`4 and `x.floor`2 | name は崩れた階段を這い上がり、見張り台から侵入路の全景を掴んだ |
+| explore | `x.exp_id`4 and `x.floor`2 | name は塔壁に刻まれた交代刻印を読み、巡回の間隙へ歩調を合わせた |
+| explore | `x.exp_id`4 and `x.floor`2 | name は稜線を叩く風音を聞き分け、警鐘に紛れる足音を消して進んでいる |
+| explore | `x.exp_id`4 and `x.floor`2 | name は見張り火皿の煤を払い、かつての警戒網が生きた証を確かめた |
+| explore | `x.exp_id`4 and `x.floor`2 | name は塔同士を結ぶ旗索の残骸を辿り、連絡路の順序を復元している |
+| explore | `x.exp_id`4 and `x.floor`2 | name は断崖際の哨戒路を避け、雲影に紛れる内側の石道へ回り込んだ |
+| explore | `x.exp_id`4 and `x.floor`2 | name は矢狭間越しに谷底を覗き、奇襲を受けにくい隊列へ組み替えた |
+| explore | `x.exp_id`4 and `x.floor`2 | name は塔門に刺さる古矢を抜き、厳戒の記憶を胸に進軍速度を抑えている |
+| explore | `x.exp_id`4 and `x.floor`2 | name は稜線の石像へ一礼し、峰を守る監視兵の魂へ無事を祈った |
+| explore | `x.exp_id`4 and `x.floor`3 | name は山腹を裂く壕線へ降り、鉄盾の列が残した防衛帯を踏査している |
+| explore | `x.exp_id`4 and `x.floor`3 | name は泥に沈んだ槍柄を引き上げ、退かぬ誓いがここにあったと悟った |
+| explore | `x.exp_id`4 and `x.floor`3 | name は土塁の切れ目を見つけ、突撃路と退避路の交点を丁寧に記録した |
+| explore | `x.exp_id`4 and `x.floor`3 | name は壕底の足場板を叩いて確かめ、崩落を避ける進路を選び取っている |
+| explore | `x.exp_id`4 and `x.floor`3 | name は錆びた旗杭の向きを読み、当時の主戦軸を仲間へ示している |
+| explore | `x.exp_id`4 and `x.floor`3 | name は防柵に絡む鎖を外し、隊が通れる幅へ通路を広げた |
+| explore | `x.exp_id`4 and `x.floor`3 | name は壕上の岩陰で息を潜め、落石罠の合図線を慎重に切り分けた |
+| explore | `x.exp_id`4 and `x.floor`3 | name は折れた角笛を拾い、反攻の号令が響いた刻を想像している |
+| explore | `x.exp_id`4 and `x.floor`3 | name は土煙に埋もれた胸当てを払い、守備兵の紋章を静かに弔った |
+| explore | `x.exp_id`4 and `x.floor`3 | name は壕路の分岐へ印石を置き、後続が迷わぬ導線を整えている |
+| explore | `x.exp_id`4 and `x.floor`4 | name は赤く脈打つ地割れを跨ぎ、灼熱の炉野に続く細道を探っている |
+| explore | `x.exp_id`4 and `x.floor`4 | name は噴気孔の周期を数え、炎柱が収まる瞬間だけを狙って渡った |
+| explore | `x.exp_id`4 and `x.floor`4 | name は溶岩流の縁で熱歪みを見切り、幻の足場を避けて前進している |
+| explore | `x.exp_id`4 and `x.floor`4 | name は焦げた岩棚へ護符を打ち、熱風で散らぬ目印を残した |
+| explore | `x.exp_id`4 and `x.floor`4 | name は硫の匂いに顔布を締め、息継ぎできる風洞へ隊を導いている |
+| explore | `x.exp_id`4 and `x.floor`4 | name は灼けた鎖橋のたわみを測り、荷重を分散して慎重に越えた |
+| explore | `x.exp_id`4 and `x.floor`4 | name は火口壁に残る鍛冶印を見つけ、炉神へ捧げた古儀式を思い出した |
+| explore | `x.exp_id`4 and `x.floor`4 | name は灰の舞う斜面へ低く構え、視界を奪う熱霞の中を進んでいる |
+| explore | `x.exp_id`4 and `x.floor`4 | name はマグマ脈の明滅を読み、最も揺れの少ない岩路へ回り込んだ |
+| explore | `x.exp_id`4 and `x.floor`4 | name は炎影に揺れる熊像へ祈り、灼熱を越える胆力を奮い立たせた |
+| explore | `x.exp_id`4 and `x.floor`5 | name は山腹深くの大鍛炉跡へ入り、巨槌台に刻まれた工房紋を確かめた |
+| explore | `x.exp_id`4 and `x.floor`5 | name は溶岩導水路の分岐を調べ、炉床へ熱を送る古機構を復元している |
+| explore | `x.exp_id`4 and `x.floor`5 | name は黒鉄の金床に手を置き、英雄武具が鍛たれた残熱を感じ取った |
+| explore | `x.exp_id`4 and `x.floor`5 | name は吊り鎖だらけの作業廊を進み、崩れた炉橋の安全帯を張っている |
+| explore | `x.exp_id`4 and `x.floor`5 | name は煤けた銘板を磨き、名匠たちの連名を仲間へ読み上げた |
+| explore | `x.exp_id`4 and `x.floor`5 | name は鍛造床に残る槌痕の間隔を測り、工房ごとの技法差を見抜いている |
+| explore | `x.exp_id`4 and `x.floor`5 | name は炉室を巡る送風孔を塞ぎ、逆噴気を防いで進路を確保した |
+| explore | `x.exp_id`4 and `x.floor`5 | name は割れた坩堝片を拾い、神鉄精錬が行われた証を袋へ収めた |
+| explore | `x.exp_id`4 and `x.floor`5 | name は工房祭壇の灰を払って、鍛冶神へ無事帰還の願を捧げている |
+| explore | `x.exp_id`4 and `x.floor`5 | name は赤光を反す炉天井を見上げ、次の崩落音が来る前に歩を速めた |
+| explore | `x.exp_id`4 and `x.floor`6 | name は天を仰ぐ聖鍛峰へ辿り着き、巨炉祭壇の前で息を整えている |
+| explore | `x.exp_id`4 and `x.floor`6 | name は風雪に晒された熊神像を拭い、峰を守る古誓へ静かに頭を垂れた |
+| explore | `x.exp_id`4 and `x.floor`6 | name は祭壇柱の鍛造文様を読み、王工たちの系譜を辿っている |
+| explore | `x.exp_id`4 and `x.floor`6 | name は峰上回廊のひび割れを跨ぎ、聖火台へ続く巡礼路を見定めた |
+| explore | `x.exp_id`4 and `x.floor`6 | name は雲海を渡る鐘音に耳を澄まし、儀礼開始の合図を探っている |
+| explore | `x.exp_id`4 and `x.floor`6 | name は風化した供物台へ鍛鉄片を置き、戦匠たちの魂へ敬意を示した |
+| explore | `x.exp_id`4 and `x.floor`6 | name は星光を映す炉皿の縁をなぞり、天火を招く古式の配置を確かめた |
+| explore | `x.exp_id`4 and `x.floor`6 | name は峰壁の旗穴を数え、守護団の布陣規模を推定している |
+| explore | `x.exp_id`4 and `x.floor`6 | name は祭場を巡る石輪に印を結び、禁域へ踏み込まぬ境界を整えた |
+| explore | `x.exp_id`4 and `x.floor`6 | name は暁の風に外套を翻し、聖なる鍛炉の頂で次の一歩を誓った |
+| explore | `x.exp_id`4 and `x.floor`1 | 巨岩門柱の熊紋刻印は風化しつつも判読可能で、外郭防衛線の年代推定が進んだ |
+| explore | `x.exp_id`4 and `x.floor`1 | 石門蝶番の摩耗方向から、関門開閉頻度と補給通行量の相関が確認された |
+| explore | `x.exp_id`4 and `x.floor`1 | 防壁上の矢狭間間隔計測により、対谷射線の重複域が地図化された |
+| explore | `x.exp_id`4 and `x.floor`1 | 門前石畳の沈下分布が重装輸送路を示し、進軍導線の再現性が向上した |
+| explore | `x.exp_id`4 and `x.floor`1 | 狼煙台基壇の煤層分析から、外敵接近時の信号運用周期が抽出された |
+| explore | `x.exp_id`4 and `x.floor`1 | 防壁内側の祈祷印配置は守護儀礼と一致し、精神防衛網の構造が補強された |
+| explore | `x.exp_id`4 and `x.floor`1 | 崩落石材の刻印照合で、門郭補修に複数工房が関与した事実が裏付けられた |
+| explore | `x.exp_id`4 and `x.floor`1 | 風路観測により関門通過時の聴覚死角が判明し、潜行手順が更新された |
+| explore | `x.exp_id`4 and `x.floor`1 | 門塔階段の踏耗差比較で、哨戒班と工兵班の移動経路が分離推定された |
+| explore | `x.exp_id`4 and `x.floor`1 | 峠側石垣の継ぎ目補修痕から、最終防衛期の急造改修記録が復元された |
+| explore | `x.exp_id`4 and `x.floor`2 | 稜線監視塔の視界重畳解析で、谷道監視網の盲点区画が特定された |
+| explore | `x.exp_id`4 and `x.floor`2 | 塔内交代刻印の時系列整理により、哨戒間隔の季節変動が抽出された |
+| explore | `x.exp_id`4 and `x.floor`2 | 旗索固定環の残存位置から、緊急連絡方向の優先順位が再構築された |
+| explore | `x.exp_id`4 and `x.floor`2 | 風鳴りと警鐘共鳴の周波数分離で、偽警報判定精度が改善している |
+| explore | `x.exp_id`4 and `x.floor`2 | 塔門古矢の材質比較により、交戦相手勢力の装備系統が追加同定された |
+| explore | `x.exp_id`4 and `x.floor`2 | 断崖哨戒路の足場幅測定で、重装巡回と軽装伝令の導線差が確認された |
+| explore | `x.exp_id`4 and `x.floor`2 | 火皿煤層の堆積厚から、夜間警戒強化期の持続日数が推定された |
+| explore | `x.exp_id`4 and `x.floor`2 | 見張り窓の開口角補正で、対上昇侵入の監視効率が定量化された |
+| explore | `x.exp_id`4 and `x.floor`2 | 塔外石像の配置は方位儀礼を示し、監視任務の誓約構文が解読された |
+| explore | `x.exp_id`4 and `x.floor`2 | 雲霧流の記録蓄積により、稜線潜行の適正時刻帯が更新された |
+| explore | `x.exp_id`4 and `x.floor`3 | 壕線断面の再測量で、防衛深度と兵站支援路の連動設計が確認された |
+| explore | `x.exp_id`4 and `x.floor`3 | 錆盾列の間隔解析により、近接阻止陣形の標準配置が復元された |
+| explore | `x.exp_id`4 and `x.floor`3 | 壕底足場板の腐朽度比較から、最終使用期の降雨条件が推定された |
+| explore | `x.exp_id`4 and `x.floor`3 | 土塁切れ目の堆積差が反撃路候補を示し、機動迂回計画が再評価された |
+| explore | `x.exp_id`4 and `x.floor`3 | 防柵鎖節の破断面検査で、破壊時の衝撃方向が高精度で特定された |
+| explore | `x.exp_id`4 and `x.floor`3 | 角笛残片の音孔配列比較から、号令系統の階梯構造が補完された |
+| explore | `x.exp_id`4 and `x.floor`3 | 壕上落石罠の索線痕追跡で、起動位置の安全回避帯が確定した |
+| explore | `x.exp_id`4 and `x.floor`3 | 胸甲紋章群の照合が進み、守備連隊の編成規模推定が上方修正された |
+| explore | `x.exp_id`4 and `x.floor`3 | 壕路分岐への標識石再配置で、後続隊の迷走率が有意に低下した |
+| explore | `x.exp_id`4 and `x.floor`3 | 土煙粒度の地層比較から、戦闘期における重踏圧区画が抽出された |
+| explore | `x.exp_id`4 and `x.floor`4 | 地割れ熱流の時系列観測で、炉野横断の安全窓が再定義された |
+| explore | `x.exp_id`4 and `x.floor`4 | 噴気孔周期の同期解析により、炎柱連鎖発生域の予測精度が向上した |
+| explore | `x.exp_id`4 and `x.floor`4 | 溶岩縁の熱歪み補正が進み、視覚誤認による転落件数が抑制された |
+| explore | `x.exp_id`4 and `x.floor`4 | 焦岩面への耐熱標識再設置で、退避導線の視認性が恒常化された |
+| explore | `x.exp_id`4 and `x.floor`4 | 硫気濃度分布図の更新により、呼吸保護具交換時刻が最適化された |
+| explore | `x.exp_id`4 and `x.floor`4 | 鎖橋たわみの荷重試験結果から、隊列通過順序の規定が改訂された |
+| explore | `x.exp_id`4 and `x.floor`4 | 火口壁鍛冶印の位置一致が確認され、炉神儀礼圏の境界が再構築された |
+| explore | `x.exp_id`4 and `x.floor`4 | 灰流風向の記録蓄積で、熱霞下の視程補助手順が標準化された |
+| explore | `x.exp_id`4 and `x.floor`4 | マグマ脈明滅の同期帯抽出により、低揺動岩路の選定精度が上がった |
+| explore | `x.exp_id`4 and `x.floor`4 | 炎影領域の像差検証で、錯視進入リスクの高い区画が明示された |
+| explore | `x.exp_id`4 and `x.floor`5 | 大鍛炉主室の平面復元により、工房区画と祭祀区画の機能分離が判明した |
+| explore | `x.exp_id`4 and `x.floor`5 | 溶岩導水路の勾配再計測で、炉床加熱効率の設計思想が再確認された |
+| explore | `x.exp_id`4 and `x.floor`5 | 金床表面の槌痕密度比較から、用途別鍛造台の役割分担が推定された |
+| explore | `x.exp_id`4 and `x.floor`5 | 作業廊吊り鎖の応力痕解析で、運搬機構の最大荷重が算定された |
+| explore | `x.exp_id`4 and `x.floor`5 | 煤化銘板の接合進展により、名匠連盟の継承系譜が補完された |
+| explore | `x.exp_id`4 and `x.floor`5 | 鍛造床打刻間隔の統計処理で、工房ごとの工程時間差が可視化された |
+| explore | `x.exp_id`4 and `x.floor`5 | 送風孔逆流試験の結果、炉室通過時の停止閾値が厳格化された |
+| explore | `x.exp_id`4 and `x.floor`5 | 坩堝片成分の再分析により、神鉄精錬工程の温度帯が上方補正された |
+| explore | `x.exp_id`4 and `x.floor`5 | 工房祭壇灰層の年代比定が進み、鍛冶儀礼の継続期間が明確化された |
+| explore | `x.exp_id`4 and `x.floor`5 | 炉天井亀裂の伸長監視で、崩落予兆区画の封鎖判断が迅速化された |
+| explore | `x.exp_id`4 and `x.floor`6 | 聖鍛峰祭場の軸線復元により、天体観測と儀礼導線の一致が確認された |
+| explore | `x.exp_id`4 and `x.floor`6 | 熊神像表面の風化差比較で、補修祭の実施周期が統計的に抽出された |
+| explore | `x.exp_id`4 and `x.floor`6 | 祭壇柱鍛造文様の照合から、王工系譜の分岐年代が再整理された |
+| explore | `x.exp_id`4 and `x.floor`6 | 峰上回廊亀裂の変位観測により、巡礼路通行可能帯が更新された |
+| explore | `x.exp_id`4 and `x.floor`6 | 雲海鐘音の到達時間差測定で、儀礼開始合図の伝播範囲が推定された |
+| explore | `x.exp_id`4 and `x.floor`6 | 供物台残渣の材質分析が進み、戦匠奉納品の分類体系が拡張された |
+| explore | `x.exp_id`4 and `x.floor`6 | 炉皿反射角の再計測で、天火招来儀式の配置精度が補強された |
+| explore | `x.exp_id`4 and `x.floor`6 | 峰壁旗穴の間隔規格化により、守護団編成基準の推定誤差が縮小した |
+| explore | `x.exp_id`4 and `x.floor`6 | 外輪石の境界標識再接合で、禁域管理線の連続性が回復している |
+| explore | `x.exp_id`4 and `x.floor`6 | 暁風時の祭場微振動記録が蓄積され、高所滞在上限の判断精度が改善した |
 | sound_sleep | with mainClass.`Fighter` | name は鎧を外したまま深く眠り、戦場の緊張を静かに解いている |
 | sound_sleep | with mainClass.`Fighter` | name は盾を抱くようにして熟睡し、守る意志を休息に変えている |
 | sound_sleep | with mainClass.`Fighter` | name は規則正しい寝息で体幹の疲労をじっくり回復している |
