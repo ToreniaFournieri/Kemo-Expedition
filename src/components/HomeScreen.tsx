@@ -3220,13 +3220,16 @@ export function HomeScreen({
     );
   };
 
-  const prevActiveTabRef = useRef<Tab>(activeTab);
+  const isDiaryTabVisible = isPartyExpeditionSplitViewEnabled
+    ? activeWideModeSecondaryTab === 'diary'
+    : activeTab === 'diary';
+  const prevDiaryTabVisibleRef = useRef(isDiaryTabVisible);
   useEffect(() => {
-    if (prevActiveTabRef.current === 'diary' && activeTab !== 'diary') {
+    if (prevDiaryTabVisibleRef.current && !isDiaryTabVisible) {
       actions.markAllDiaryLogsSeen();
     }
-    prevActiveTabRef.current = activeTab;
-  }, [activeTab, actions]);
+    prevDiaryTabVisibleRef.current = isDiaryTabVisible;
+  }, [isDiaryTabVisible, actions]);
 
   useEffect(() => {
     if (activeTab !== 'base' || activeBaseSubTab !== 'inventory') return;
