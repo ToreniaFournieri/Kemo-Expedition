@@ -788,6 +788,9 @@ HP: 312                 クラス: 魔法使い
 
 - Switch to 自動周回: ON/OFF (Default:ON )
 
+- Switch to 統計情報表示: ON/OFF (Default:OFF)
+  - If ON, Show statistic line of Party pane in Expedition tab.
+
 - Switch to `m.kemo`ケモ and `m.luna`ルナ(高難度) . Default: `m.kemo`
   - Description:
     - `m.kemo` "通常のモードです"
