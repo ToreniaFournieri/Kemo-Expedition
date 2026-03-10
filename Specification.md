@@ -675,7 +675,7 @@ PT3: 貯金額: 10G
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
-| **0.5.3** | Two tabs mode. |
+| **0.5.3** | Two tabs mode. Dark mode, Laika mode |
 | 0.5.2 | Flavor text update. Fixed auto equipment logic, update side quest barance, especially embezzlement part logic. Refine AFK part. |
 | 0.5.1 | Ajusts auto equipment logic |
 | 0.5.0 | unlock for deities, religions . auto equipment update |
