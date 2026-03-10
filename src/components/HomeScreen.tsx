@@ -3165,11 +3165,11 @@ export function HomeScreen({
   }, [activeTab, activeBaseSubTab, state.global.inventory, actions]);
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: 'expedition', label: 'Expedition: 探索' },
-    { id: 'party', label: 'Party: パーティ' },
-    { id: 'base', label: 'Base: 拠点' },
-    { id: 'diary', label: 'Diary: 日誌' },
-    { id: 'setting', label: 'Divine Bureau: 神聖局' },
+    { id: 'expedition', label: '探索' },
+    { id: 'party', label: 'パーティ' },
+    { id: 'base', label: '拠点' },
+    { id: 'diary', label: '日誌' },
+    { id: 'setting', label: '神聖局' },
   ];
 
   const unreadDiaryCount = state.parties.reduce((count, party) => (
