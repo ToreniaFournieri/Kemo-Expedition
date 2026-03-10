@@ -822,7 +822,7 @@ HP: 312                 クラス: 魔法使い
 - Gods Battle condition: boss items require Normal / Simple(1)
   - Default: Normal
   - Simple: 1 boss rare item instead of actual setting
-- Gods Strength: Normal / `debug mode for god battle`
+- Gods Strength: Normal / Very Weak `debug mode for god battle`
   - Default: Normal
 - All religions OFF/ON
   - Default: OFF
