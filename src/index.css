@@ -54,10 +54,25 @@
   background-color: rgb(31 41 55);
 }
 
+.theme-dark [class*='bg-white/'] {
+  background-color: rgb(30 41 59 / 0.92);
+}
+
+.theme-dark .notification-toast-item {
+  border: 1px solid rgb(71 85 105);
+  box-shadow: 0 8px 24px rgb(2 6 23 / 0.45);
+}
+
 .theme-dark .bg-pane {
   background-color: rgb(17 24 39);
 }
 
+.theme-dark .text-black {
+  color: rgb(229 231 235);
+}
+
+.theme-dark .text-gray-900,
+.theme-dark .text-gray-800,
 .theme-dark .text-gray-700 {
   color: rgb(229 231 235);
 }
@@ -65,6 +80,10 @@
 .theme-dark .text-gray-600,
 .theme-dark .text-gray-500 {
   color: rgb(156 163 175);
+}
+
+.theme-dark .text-gray-400 {
+  color: rgb(148 163 184);
 }
 
 .theme-dark .border-gray-300,
