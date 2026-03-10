@@ -111,7 +111,7 @@ type BaseSubTab = 'inventory' | 'shop' | 'jewelStore' | 'workshop' | 'altar';
 
 type PartyCycleState = 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray' | 'idle' | 'move' | 'explore' | 'return' | 'reactivate';
 
-const PARTY_EXPEDITION_SPLIT_MIN_WIDTH = 1100;
+const PARTY_EXPEDITION_SPLIT_MIN_WIDTH = 1024;
 const WIDE_MODE_DEFAULT_SECONDARY_TAB: WideModeSecondaryTab = 'party';
 
 const PARTY_CYCLE_STATE_LABELS: Record<PartyCycleState, string> = {
@@ -3312,7 +3312,7 @@ export function HomeScreen({
       {/* Fixed Header */}
       <div className="fixed top-0 left-0 right-0 z-30 border-b border-gray-300">
         <div className="absolute inset-0 bg-white" aria-hidden="true" />
-        <div className="relative max-w-lg mx-auto w-full px-3 py-2.5 bg-white">
+        <div className="relative mx-auto w-full max-w-6xl px-3 py-2.5 bg-white">
           <div className="flex justify-between items-center gap-3 min-h-[44px]">
             <div>
               <h1 className="flex items-center gap-1 text-lg font-bold">
