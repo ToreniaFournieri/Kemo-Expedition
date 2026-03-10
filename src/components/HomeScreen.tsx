@@ -201,9 +201,11 @@ function getElapsedWholeSeconds(carriedMs: number, elapsedMs: number): { gainedS
 
 const HEADER_HEIGHT_CLASS = 'pt-[118px]';
 type GameMode = 'm.kemo' | 'm.luna';
+type DarkModeSetting = 'off' | 'on' | 'system';
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
 const AUTO_EQUIPMENT_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-auto-equipment');
 const EXPEDITION_STATS_DISPLAY_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-expedition-stats-display');
+const DARK_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-dark-mode');
 const APP_VERSION = `v${__APP_VERSION__}`;
 
 
@@ -1578,6 +1580,21 @@ function getInitialAutoEquipmentEnabled(): boolean {
   return true;
 }
 
+function getInitialDarkModeSetting(): DarkModeSetting {
+  if (typeof window === 'undefined') return 'system';
+
+  try {
+    const saved = localStorage.getItem(DARK_MODE_STORAGE_KEY);
+    if (saved === 'off' || saved === 'on' || saved === 'system') {
+      return saved;
+    }
+  } catch (error) {
+    console.error('Failed to load initial dark mode setting:', error);
+  }
+
+  return 'system';
+}
+
 type AutoEquipmentMode = 0 | 1 | 2;
 
 const AUTO_EQUIPMENT_MODE_LABEL: Record<AutoEquipmentMode, string> = {
@@ -1658,6 +1675,8 @@ export function HomeScreen({
   const [expandedBestiaryEnemies, setExpandedBestiaryEnemies] = useState<Record<number, boolean>>({});
   const [bestiaryScrollTop, setBestiaryScrollTop] = useState(0);
   const [gameMode, setGameMode] = useState<GameMode>(() => getInitialGameMode(isLunaEnvironment));
+  const [darkModeSetting, setDarkModeSetting] = useState<DarkModeSetting>(() => getInitialDarkModeSetting());
+  const [isSystemDarkMode, setIsSystemDarkMode] = useState(false);
   const [debugSettings, setDebugSettings] = useState<DebugSettings>(() => getDebugSettings());
   const [isAutoEquipmentEnabled] = useState<boolean>(() => getInitialAutoEquipmentEnabled());
   const tabScrollPositionsRef = useRef<Partial<Record<Tab, number>>>({});
@@ -1687,6 +1706,31 @@ export function HomeScreen({
   const afkRecoveryTotalMsRef = useRef(0);
   const previousPendingAfkMsRef = useRef(0);
   const shouldRebuildPartyCyclesAfterAfkRef = useRef(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (event: MediaQueryListEvent) => {
+      setIsSystemDarkMode(event.matches);
+    };
+
+    setIsSystemDarkMode(mediaQuery.matches);
+    mediaQuery.addEventListener('change', handleChange);
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(DARK_MODE_STORAGE_KEY, darkModeSetting);
+    } catch (error) {
+      console.error('Failed to save dark mode setting:', error);
+    }
+  }, [darkModeSetting]);
+
+  const isDarkModeEnabled = darkModeSetting === 'on' || (darkModeSetting === 'system' && isSystemDarkMode);
 
   useEffect(() => {
     latestPartiesRef.current = state.parties;
@@ -3311,6 +3355,8 @@ export function HomeScreen({
         onSetBestiaryScrollTop={setBestiaryScrollTop}
         gameMode={gameMode}
         onSetGameMode={setGameMode}
+        darkModeSetting={darkModeSetting}
+        onSetDarkModeSetting={setDarkModeSetting}
         isLunaEnvironment={isLunaEnvironment}
         isAutoRepeatEnabled={isAutoRepeatEnabled}
         onSetAutoRepeatEnabled={setAutoRepeatEnabled}
@@ -3325,7 +3371,7 @@ export function HomeScreen({
   };
 
   return (
-    <div className={`flex flex-col ${prefersDocumentScroll ? 'min-h-screen' : 'h-screen'} ${HEADER_HEIGHT_CLASS} ${gameMode === 'm.luna' ? 'theme-luna' : ''}`}>
+    <div className={`flex flex-col ${prefersDocumentScroll ? 'min-h-screen' : 'h-screen'} ${HEADER_HEIGHT_CLASS} ${gameMode === 'm.luna' ? 'theme-luna' : ''} ${isDarkModeEnabled ? 'theme-dark' : ''}`}>
       {/* Fixed Header */}
       <div className="fixed top-0 left-0 right-0 z-30 border-b border-gray-300">
         <div className="absolute inset-0 bg-white" aria-hidden="true" />
@@ -7129,6 +7175,8 @@ function SettingTab({
   onSetBestiaryScrollTop,
   gameMode,
   onSetGameMode,
+  darkModeSetting,
+  onSetDarkModeSetting,
   isLunaEnvironment,
   isAutoRepeatEnabled,
   onSetAutoRepeatEnabled,
@@ -7162,6 +7210,8 @@ function SettingTab({
   onSetBestiaryScrollTop: Dispatch<SetStateAction<number>>;
   gameMode: GameMode;
   onSetGameMode: Dispatch<SetStateAction<GameMode>>;
+  darkModeSetting: DarkModeSetting;
+  onSetDarkModeSetting: Dispatch<SetStateAction<DarkModeSetting>>;
   isLunaEnvironment: boolean;
   isAutoRepeatEnabled: boolean;
   onSetAutoRepeatEnabled: (enabled: boolean) => void;
@@ -8398,6 +8448,32 @@ function SettingTab({
                 </span>
               </div>
             </button>
+          </div>
+
+          <div>
+            <div className="text-xs text-gray-600 font-medium mb-2">ダークモード</div>
+            <div className="grid grid-cols-3 gap-2">
+              {(['off', 'on', 'system'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => onSetDarkModeSetting(mode)}
+                  className={`py-2 rounded border text-sm font-medium ${
+                    darkModeSetting === mode
+                      ? 'bg-sub text-white border-sub'
+                      : 'bg-white text-gray-700 border-gray-300'
+                  }`}
+                >
+                  {mode === 'off' ? 'OFF' : mode === 'on' ? 'ON' : 'システム'}
+                </button>
+              ))}
+            </div>
+            <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600">
+              {darkModeSetting === 'system'
+                ? '端末の表示設定に追従します'
+                : darkModeSetting === 'on'
+                  ? '常にダークモードで表示します'
+                  : '常にライトモードで表示します'}
+            </div>
           </div>
 
           <div>

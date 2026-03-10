@@ -44,6 +44,35 @@
   background-color: rgb(var(--color-sub) / 0.9);
 }
 
+.theme-dark {
+  color-scheme: dark;
+  background-color: #111827;
+  color: rgb(229 231 235);
+}
+
+.theme-dark .bg-white {
+  background-color: rgb(31 41 55);
+}
+
+.theme-dark .bg-pane {
+  background-color: rgb(17 24 39);
+}
+
+.theme-dark .text-gray-700 {
+  color: rgb(229 231 235);
+}
+
+.theme-dark .text-gray-600,
+.theme-dark .text-gray-500 {
+  color: rgb(156 163 175);
+}
+
+.theme-dark .border-gray-300,
+.theme-dark .border-gray-200,
+.theme-dark .border-gray-100 {
+  border-color: rgb(75 85 99);
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background-color: white;
