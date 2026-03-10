@@ -1,6 +1,6 @@
 import { Dungeon, EnemyDef, RoomType } from '../types';
 import { getFloorRoomMultipliers } from '../data/dungeons';
-import { getEnvironmentId } from './environment';
+import { getDebugSettings } from './debugSettings';
 
 type GodEnemyMultipliers = {
   hp: number;
@@ -20,15 +20,6 @@ const NORMAL_GOD_ENEMY_MULTIPLIERS: GodEnemyMultipliers = {
   defenseAmplifier: 0.8,
 };
 
-const DEV_GOD_ENEMY_MULTIPLIERS: GodEnemyMultipliers = {
-  hp: 0.3,
-  attack: 0.3,
-  noa: 0.5,
-  attackAmplifier: 0.4,
-  defense: 0.3,
-  defenseAmplifier: 1.0,
-};
-
 const DEFAULT_MULTIPLIERS: GodEnemyMultipliers = {
   hp: 1,
   attack: 1,
@@ -39,9 +30,18 @@ const DEFAULT_MULTIPLIERS: GodEnemyMultipliers = {
 };
 
 // SpecRef: 6.1 | Encounter Rules | getGodEnemyMultipliers
+const DEBUG_GOD_ENEMY_MULTIPLIERS: GodEnemyMultipliers = {
+  hp: 0.3,
+  attack: 0.3,
+  noa: 0.5,
+  attackAmplifier: 0.4,
+  defense: 0.3,
+  defenseAmplifier: 1.0,
+};
+
 export function getGodEnemyMultipliers(): GodEnemyMultipliers {
-  return getEnvironmentId() === 'dev'
-    ? DEV_GOD_ENEMY_MULTIPLIERS
+  return getDebugSettings().godStrength === 'debug'
+    ? DEBUG_GOD_ENEMY_MULTIPLIERS
     : NORMAL_GOD_ENEMY_MULTIPLIERS;
 }
 

@@ -1,0 +1,71 @@
+export type DebugTimeSpeed = 'realtime' | 'x5' | 'x20';
+export type DebugGodsBattleCondition = 'normal' | 'simple1';
+export type DebugGodStrength = 'normal' | 'debug';
+
+export interface DebugSettings {
+  clairvoyanceEnabled: boolean;
+  timeSpeed: DebugTimeSpeed;
+  godsBattleCondition: DebugGodsBattleCondition;
+  godStrength: DebugGodStrength;
+  allReligionsEnabled: boolean;
+  jewelShopOpen: boolean;
+  displayFlavorCondition: boolean;
+  displayAfkDuration: boolean;
+}
+
+const DEBUG_SETTINGS_STORAGE_KEY = 'kemo-expedition.debug-settings';
+
+export const DEFAULT_DEBUG_SETTINGS: DebugSettings = {
+  clairvoyanceEnabled: false,
+  timeSpeed: 'x5',
+  godsBattleCondition: 'normal',
+  godStrength: 'normal',
+  allReligionsEnabled: false,
+  jewelShopOpen: false,
+  displayFlavorCondition: false,
+  displayAfkDuration: false,
+};
+
+function canUseStorage(): boolean {
+  return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
+}
+
+export function normalizeDebugSettings(raw: unknown): DebugSettings {
+  const parsed = (raw && typeof raw === 'object') ? raw as Partial<DebugSettings> : {};
+  return {
+    clairvoyanceEnabled: parsed.clairvoyanceEnabled === true,
+    timeSpeed: parsed.timeSpeed === 'realtime' || parsed.timeSpeed === 'x20' || parsed.timeSpeed === 'x5' ? parsed.timeSpeed : 'x5',
+    godsBattleCondition: parsed.godsBattleCondition === 'simple1' ? 'simple1' : 'normal',
+    godStrength: parsed.godStrength === 'debug' ? 'debug' : 'normal',
+    allReligionsEnabled: parsed.allReligionsEnabled === true,
+    jewelShopOpen: parsed.jewelShopOpen === true,
+    displayFlavorCondition: parsed.displayFlavorCondition === true,
+    displayAfkDuration: parsed.displayAfkDuration === true,
+  };
+}
+
+export function getDebugSettings(): DebugSettings {
+  if (!canUseStorage()) return DEFAULT_DEBUG_SETTINGS;
+  try {
+    const saved = window.localStorage.getItem(DEBUG_SETTINGS_STORAGE_KEY);
+    if (!saved) return DEFAULT_DEBUG_SETTINGS;
+    return normalizeDebugSettings(JSON.parse(saved));
+  } catch {
+    return DEFAULT_DEBUG_SETTINGS;
+  }
+}
+
+export function saveDebugSettings(settings: DebugSettings): void {
+  if (!canUseStorage()) return;
+  try {
+    window.localStorage.setItem(DEBUG_SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+  } catch {
+    // noop
+  }
+}
+
+export function getTimeSpeedScale(settings: DebugSettings): number {
+  if (settings.timeSpeed === 'realtime') return 1;
+  if (settings.timeSpeed === 'x20') return 0.05;
+  return 0.2;
+}

@@ -321,7 +321,7 @@ const MAGIC_CATEGORIES = new Set<Item['category']>(['wand', 'grimoire', 'catalys
 
 
 function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
-  return getLootCollectionCount(party, dungeonId, 'bossRare') >= getGodsBattleRequired(getEnvironmentId());
+  return getLootCollectionCount(party, dungeonId, 'bossRare') >= getGodsBattleRequired();
 }
 
 
@@ -1303,7 +1303,8 @@ type GameAction =
   | { type: 'RESET_COMMON_BAGS' }
   | { type: 'RESET_UNIQUE_BAGS' }
   | { type: 'RESET_SUPER_RARE_BAG' }
-  | { type: 'RESET_SIDE_QUEST_BAG' };
+  | { type: 'RESET_SIDE_QUEST_BAG' }
+  | { type: 'UNLOCK_PARTY_SLOT' };
 
 // Select enemy based on room type and pool
 function selectEnemyForRoom(
@@ -3278,6 +3279,17 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+
+    case 'UNLOCK_PARTY_SLOT': {
+      if (state.parties.length >= 6) return state;
+      const defaultParties = createDefaultParties();
+      const nextDefaultParty = createUnlockedPartyWithAvailableDeity(defaultParties[state.parties.length], state.parties);
+      return {
+        ...state,
+        parties: [...state.parties, nextDefaultParty],
+      };
+    }
+
     case 'RESET_COMMON_BAGS': {
       return {
         ...state,
@@ -3594,6 +3606,10 @@ export function useGameState() {
 
     resetSideQuestBag: useCallback(() => {
       dispatch({ type: 'RESET_SIDE_QUEST_BAG' });
+    }, []),
+
+    unlockPartySlot: useCallback(() => {
+      dispatch({ type: 'UNLOCK_PARTY_SLOT' });
     }, []),
 
     addNotification,

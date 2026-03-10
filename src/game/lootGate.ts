@@ -1,5 +1,5 @@
 import { Item, Party } from '../types';
-import { EnvironmentId, getEnvironmentId } from './environment';
+import { getDebugSettings } from './debugSettings';
 
 export type GateRarity = 'uncommon' | 'eliteRare' | 'bossRare';
 
@@ -14,11 +14,11 @@ export const ELITE_GATE_REQUIREMENTS: Record<number, number> = {
 export const ENTRY_GATE_REQUIRED = 1;
 export const BOSS_GATE_REQUIRED = 3;
 export const GODS_BATTLE_REQUIRED = 10;
-const GODS_BATTLE_REQUIRED_DEV = 1;
 
 // SpecRef: 5.1 | "Loot-Gate" progression system | getGodsBattleRequired
-export function getGodsBattleRequired(env: EnvironmentId = getEnvironmentId()): number {
-  return env === 'dev' ? GODS_BATTLE_REQUIRED_DEV : GODS_BATTLE_REQUIRED;
+export function getGodsBattleRequired(): number {
+  const settings = getDebugSettings();
+  return settings.godsBattleCondition === 'simple1' ? 1 : GODS_BATTLE_REQUIRED;
 }
 
 // SpecRef: 5.1 | "Loot-Gate" progression system | getLootCollectionKey
