@@ -812,7 +812,7 @@ HP: 312                 クラス: 魔法使い
 - Switch to 統計情報表示: ON/OFF (Default:OFF)
   - If ON, Show statistic line of Party pane in Expedition tab.
 
-- Switch to ケモ、ルナ(高難度)、 ライカ(制限)
+- Switch to ケモ、ルナ(高難度)、 ライカ(原点)
   - ケモ: `m.kemo`, ルナ:`m.luna`, ライカ:`m.laika`
   - Default: `m.kemo`
   - Description:
