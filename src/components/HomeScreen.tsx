@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, type ChangeEvent, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
+import { Fragment, useState, useEffect, useRef, useCallback, type ChangeEvent, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
 import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import {
@@ -7752,19 +7752,28 @@ function SettingTab({
     ice: '氷',
   };
 
-  const formatEnemyElementalResistanceLine = (enemy: EnemyDef): string => {
+  const renderEnemyElementalResistanceLine = (enemy: EnemyDef): JSX.Element => {
     const resistanceOrder: Array<{ key: 'fire' | 'ice' | 'thunder'; emoji: string }> = [
       { key: 'fire', emoji: '🔥' },
       { key: 'ice', emoji: '❄️' },
       { key: 'thunder', emoji: '⚡' },
     ];
 
-    const parts = resistanceOrder.map(({ key, emoji }) => {
-      const value = enemy.elementalResistance[key] ?? 1;
-      return `${emoji}${Math.round(value * 100)}%`;
-    });
-
-    return `属性耐性: ${parts.join(',')}`;
+    return (
+      <>
+        属性耐性:{' '}
+        {resistanceOrder.map(({ key, emoji }, index) => {
+          const value = enemy.elementalResistance[key] ?? 1;
+          return (
+            <Fragment key={key}>
+              {index > 0 ? ',' : ''}
+              <span className="sub-theme-emoji-icon" aria-hidden="true">{emoji}</span>
+              {Math.round(value * 100)}%
+            </Fragment>
+          );
+        })}
+      </>
+    );
   };
 
   const getEnemyDisplayNameWithClass = (enemy: EnemyDef): string => {
@@ -8304,7 +8313,7 @@ function SettingTab({
                             ]);
                           })()}
                         </div>
-                        <div>{formatEnemyElementalResistanceLine(godRuntimeEnemy)}</div>
+                        <div>{renderEnemyElementalResistanceLine(godRuntimeEnemy)}</div>
                       </>
                     )}
                     <div>アビリティ: {formatAbilitiesWithLevels(god.abilities)}</div>
@@ -8379,7 +8388,7 @@ function SettingTab({
                             ]);
                           })()}
                         </div>
-                        <div>{formatEnemyElementalResistanceLine(displayEnemy)}</div>
+                        <div>{renderEnemyElementalResistanceLine(displayEnemy)}</div>
                         <div>アビリティ: {formatAbilitiesWithLevels(displayEnemy.abilities)}</div>
                         <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id, item.name)}${item.name}`).join(' / ')}</div>
                       </div>
