@@ -7085,7 +7085,11 @@ function SettingTab({
   onPartyUnlock: () => void;
 }) {
   type DivineBureauPanelKey = 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'bestiary' | 'superRare' | 'gameSetting' | 'debug';
+  type GlossaryTabKey = 'A' | 'B' | 'C' | 'D' | 'F' | 'G' | 'M' | 'Q';
   const DIVINE_BUREAU_PANEL_STORAGE_KEY = 'kemo-expedition.divine-bureau.panel-expanded';
+  const GLOSSARY_TAB_STORAGE_KEY = 'kemo-expedition.divine-bureau.glossary-tab';
+  const GLOSSARY_EXPANDED_STORAGE_KEY = 'kemo-expedition.divine-bureau.glossary-expanded-entries';
+  const GLOSSARY_TABS: readonly GlossaryTabKey[] = ['A', 'B', 'C', 'D', 'F', 'G', 'M', 'Q'];
   const defaultDivineBureauPanelState: Record<DivineBureauPanelKey, boolean> = {
     modeSelect: false,
     donation: false,
@@ -7103,7 +7107,7 @@ function SettingTab({
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const [compendiumCategory, setCompendiumCategory] = useState<string>('armor');
   const [compendiumRarityFilter, setCompendiumRarityFilter] = useState<RarityFilter>('all');
-  const [glossaryTab, setGlossaryTab] = useState<'A' | 'B' | 'C' | 'D' | 'F' | 'G' | 'M' | 'Q'>('A');
+  const [glossaryTab, setGlossaryTab] = useState<GlossaryTabKey>('A');
   const [expandedGlossaryEntries, setExpandedGlossaryEntries] = useState<Record<string, boolean>>({});
   const [expandedCompendiumItems, setExpandedCompendiumItems] = useState<Record<number, boolean>>({});
   const bestiaryListRef = useRef<HTMLDivElement | null>(null);
@@ -7140,6 +7144,39 @@ function SettingTab({
       console.error('Failed to persist Divine Bureau panel state:', error);
     }
   }, [divineBureauPanelExpanded]);
+
+  useEffect(() => {
+    try {
+      const savedGlossaryTab = localStorage.getItem(GLOSSARY_TAB_STORAGE_KEY);
+      if (savedGlossaryTab && GLOSSARY_TABS.includes(savedGlossaryTab as GlossaryTabKey)) {
+        setGlossaryTab(savedGlossaryTab as GlossaryTabKey);
+      }
+
+      const savedExpandedEntries = localStorage.getItem(GLOSSARY_EXPANDED_STORAGE_KEY);
+      if (savedExpandedEntries) {
+        const parsedExpandedEntries = JSON.parse(savedExpandedEntries) as Record<string, boolean>;
+        setExpandedGlossaryEntries(parsedExpandedEntries);
+      }
+    } catch (error) {
+      console.error('Failed to load glossary view state:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(GLOSSARY_TAB_STORAGE_KEY, glossaryTab);
+    } catch (error) {
+      console.error('Failed to persist glossary tab state:', error);
+    }
+  }, [glossaryTab]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(GLOSSARY_EXPANDED_STORAGE_KEY, JSON.stringify(expandedGlossaryEntries));
+    } catch (error) {
+      console.error('Failed to persist glossary expanded entries:', error);
+    }
+  }, [expandedGlossaryEntries]);
 
   const toggleDivineBureauPanel = (panelKey: DivineBureauPanelKey) => {
     setDivineBureauPanelExpanded((prev) => ({ ...prev, [panelKey]: !prev[panelKey] }));
@@ -7810,7 +7847,7 @@ function SettingTab({
           <>
           <div className="flex justify-end items-center gap-1 mt-3 mb-3">
             <span className="text-xs text-gray-500">分類</span>
-            {(['A', 'B', 'C', 'D', 'F', 'G', 'M', 'Q'] as const).map((tab) => (
+            {GLOSSARY_TABS.map((tab) => (
               <button
                 key={tab}
                 type="button"
