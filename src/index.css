@@ -214,8 +214,7 @@ body {
 
 .sub-theme-emoji-icon {
   display: inline-block;
-  color: rgb(var(--color-sub));
-  filter: none;
+  filter: var(--sub-theme-emoji-filter);
   opacity: var(--side-quest-icon-opacity);
 }
 
