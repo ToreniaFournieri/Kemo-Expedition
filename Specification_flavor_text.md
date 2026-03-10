@@ -1006,6 +1006,126 @@
 | explore | `x.exp_id`2 and `x.floor`6 | 床亀裂の石脈評価により、安全に主壇へ至る線が確保された |
 | explore | `x.exp_id`2 and `x.floor`6 | 壁画の狼紋が高頻度で出現し、守護獣信仰の中核性が確認された |
 | explore | `x.exp_id`2 and `x.floor`6 | 祈りの間の遺留痕が整理され、終末期まで礼式が継続した可能性が高まった |
+| explore | `x.exp_id`3 and `x.floor`1 | name は雪を払って針葉の枝を潜り、白銀の獣道を静かにたどっている |
+| explore | `x.exp_id`3 and `x.floor`1 | name は凍った下草を杖先で確かめ、沈み雪を避ける歩幅を刻んだ |
+| explore | `x.exp_id`3 and `x.floor`1 | name は松の幹に残る擦り痕を読み、冬毛の群れが通る方角を示した |
+| explore | `x.exp_id`3 and `x.floor`1 | name は吐息を白く曳きながら、風下へ伸びる細道に耳を澄ませている |
+| explore | `x.exp_id`3 and `x.floor`1 | name は霜に埋もれた境石を掘り起こし、古い狩路の起点を見つけた |
+| explore | `x.exp_id`3 and `x.floor`1 | name は雪明かりで樹間の陰を測り、伏せ身で抜ける安全帯を選んでいる |
+| explore | `x.exp_id`3 and `x.floor`1 | name は凍枝の鳴る高さを見比べ、重雪で折れやすい林冠を避けた |
+| explore | `x.exp_id`3 and `x.floor`1 | name は狐火めいた燐光を遠目に捉え、迷い森へ入らぬよう印を付けた |
+| explore | `x.exp_id`3 and `x.floor`1 | name は獣脂の匂いが残る幹を確かめ、昨夜の巡回圏を地図へ刻んでいる |
+| explore | `x.exp_id`3 and `x.floor`1 | name は白樺の裂け目から樹液氷を採り、凍傷避けの手当てを整えた |
+| explore | `x.exp_id`3 and `x.floor`2 | name は雪面の細い縄跡を見つけ、狩人が張った罠列の端を特定した |
+| explore | `x.exp_id`3 and `x.floor`2 | name は樹上見張り台の影を数え、視線が交わらない進路を選んでいる |
+| explore | `x.exp_id`3 and `x.floor`2 | name は撒かれた灰の筋を読み取り、足音を消す回り道へ仲間を導いた |
+| explore | `x.exp_id`3 and `x.floor`2 | name は枝先の鈴罠を息で揺らし、鳴らさず解ける張力を見極めた |
+| explore | `x.exp_id`3 and `x.floor`2 | name は雪庇の裏に伏せ、巡回する猟手の合図笛を聞き分けている |
+| explore | `x.exp_id`3 and `x.floor`2 | name は皮紐で結ばれた警戒符を外し、気付かれぬ道筋を再構成した |
+| explore | `x.exp_id`3 and `x.floor`2 | name は矢羽の落ちる向きを追って、待ち伏せ角度の死角へ滑り込んだ |
+| explore | `x.exp_id`3 and `x.floor`2 | name は松脂の焦げ跡を拾い、狩場境界を示す夜火の位置を記した |
+| explore | `x.exp_id`3 and `x.floor`2 | name は狐皮で覆われた落とし戸を見破り、踏み抜き地帯を大きく迂回した |
+| explore | `x.exp_id`3 and `x.floor`2 | name は風向きと足跡の乱れから、追跡班が戻る時刻を読み当てた |
+| explore | `x.exp_id`3 and `x.floor`3 | name は煙突から昇る細煙を見つめ、隠れ里がまだ息づく証に目を細めた |
+| explore | `x.exp_id`3 and `x.floor`3 | name は雪冠の丸太家屋を巡り、灯籠道に刻まれた家紋を写し取っている |
+| explore | `x.exp_id`3 and `x.floor`3 | name は凍った井戸枠の祈り札を直し、冬越しの無事をそっと願った |
+| explore | `x.exp_id`3 and `x.floor`3 | name は干し肉棚の残り香から、住民が急ぎ避難した時期を見極めた |
+| explore | `x.exp_id`3 and `x.floor`3 | name は雪に半ば埋もれた神楽面を拾い、祭礼の名残を丁重に包んだ |
+| explore | `x.exp_id`3 and `x.floor`3 | name は戸板の傷筋をなぞり、襲撃時の進入路を静かに復元している |
+| explore | `x.exp_id`3 and `x.floor`3 | name は凍土の倉に残る穀印を調べ、里の備蓄規模を記録へ残した |
+| explore | `x.exp_id`3 and `x.floor`3 | name は雪灯の並びを読み解き、吹雪時に使う避難導線を再確認した |
+| explore | `x.exp_id`3 and `x.floor`3 | name は木橋下の護符結びを解き、よそ者除けの結界を丁寧に迂回した |
+| explore | `x.exp_id`3 and `x.floor`3 | name は炉端石の温もりを測り、先行隊との時差を慎重に見積もっている |
+| explore | `x.exp_id`3 and `x.floor`4 | name は凍湖の白い平面に膝をつき、氷鳴りの間隔から厚みを測っている |
+| explore | `x.exp_id`3 and `x.floor`4 | name は吹雪で隠れた割れ目を杖で探り、安全な渡湖線を引き直した |
+| explore | `x.exp_id`3 and `x.floor`4 | name は風紋の向きを追って、薄氷が広がる危険帯を先に外した |
+| explore | `x.exp_id`3 and `x.floor`4 | name は氷下に揺れる影を見定め、群泳獣の通路を横切らぬ角度を選んだ |
+| explore | `x.exp_id`3 and `x.floor`4 | name は岸辺の石杭を掘り出し、冬だけ現れる渡り道の目印を確認した |
+| explore | `x.exp_id`3 and `x.floor`4 | name は裂氷音が重なる方位を聞き取り、停止すべき区画を即座に告げた |
+| explore | `x.exp_id`3 and `x.floor`4 | name は雪煙に消える対岸灯を見つけ、進路を北尾根へ微修正している |
+| explore | `x.exp_id`3 and `x.floor`4 | name は氷晶に映る月輪を頼りに、帰路標を失わぬよう印を刻んだ |
+| explore | `x.exp_id`3 and `x.floor`4 | name は裂けた漁網の位置を記録し、落氷が頻発する帯を地図へ追記した |
+| explore | `x.exp_id`3 and `x.floor`4 | name は凍結した舟着きを見つけ、かつての湖上交易路に思いを巡らせた |
+| explore | `x.exp_id`3 and `x.floor`5 | name は青白く光る氷晶柱の間を進み、反射迷路の規則を確かめている |
+| explore | `x.exp_id`3 and `x.floor`5 | name は洞壁の霜紋を指でなぞり、魔力が濃い流脈の曲がりを読んだ |
+| explore | `x.exp_id`3 and `x.floor`5 | name は結晶音の反響差を測り、崩れやすい空洞を先に封鎖した |
+| explore | `x.exp_id`3 and `x.floor`5 | name は氷底に眠る古骨を避け、聖域を穢さぬ迂回線を仲間へ示した |
+| explore | `x.exp_id`3 and `x.floor`5 | name は蒼光を返す鉱脈を見つけ、道標として使える稜線を刻んでいる |
+| explore | `x.exp_id`3 and `x.floor`5 | name は結露が凍る速さを確かめ、長居できる区画の限界を算出した |
+| explore | `x.exp_id`3 and `x.floor`5 | name は氷花が咲く裂け目に耳を寄せ、奥層の風道を静かに聞き取った |
+| explore | `x.exp_id`3 and `x.floor`5 | name は晶洞の天井に吊る霜柱を見上げ、接触を避ける低姿勢で進んだ |
+| explore | `x.exp_id`3 and `x.floor`5 | name は青光に紛れる幻影を見破り、本物の通路だけを白墨で示した |
+| explore | `x.exp_id`3 and `x.floor`5 | name は凍土祭壇の欠片を拾い、結晶信仰の古語を記録帳へ写した |
+| explore | `x.exp_id`3 and `x.floor`6 | name は降りしきる雪の静寂で歩を緩め、古き長老庭へ一礼して入った |
+| explore | `x.exp_id`3 and `x.floor`6 | name は石標に刻まれた狐印を拭い、評議の席順を慎ましく読み解いた |
+| explore | `x.exp_id`3 and `x.floor`6 | name は御神木の根元で風の詞を聞き、失われた盟約の断章を拾っている |
+| explore | `x.exp_id`3 and `x.floor`6 | name は雪に埋もれた座石を掘り出し、供物の並べ方を古式どおり整えた |
+| explore | `x.exp_id`3 and `x.floor`6 | name は祈念杭の傾きを正し、結界線がまだ生きていることを確かめた |
+| explore | `x.exp_id`3 and `x.floor`6 | name は聖庭を巡る足跡の疎密から、守り手が交替する時刻を推し量った |
+| explore | `x.exp_id`3 and `x.floor`6 | name は氷結した香炉を温め、淡い煙で方位を読む古儀を再現している |
+| explore | `x.exp_id`3 and `x.floor`6 | name は長老碑の欠けた一文を継ぎ、冬盟の誓いが続いた証を見いだした |
+| explore | `x.exp_id`3 and `x.floor`6 | name は梢を渡る雪片の舞いから、聖域に触れてはならぬ境を見極めた |
+| explore | `x.exp_id`3 and `x.floor`6 | name は白狐像へ小枝を供え、この森を守る誓約に静かに頭を垂れた |
+| explore | `x.exp_id`3 and `x.floor`1 | 深雪の針葉林では獣道が細く続き、白い静けさの中で進路が慎重に定められた |
+| explore | `x.exp_id`3 and `x.floor`1 | 樹冠から落ちる粉雪が視界を曇らせ、足場確認を優先する運用へ切り替えられた |
+| explore | `x.exp_id`3 and `x.floor`1 | 凍てた境石が掘り当てられ、古い森路の輪郭が探索図へ再記録された |
+| explore | `x.exp_id`3 and `x.floor`1 | 松脂の匂いが濃い帯は野獣巡回圏と判断され、風下迂回が徹底されている |
+| explore | `x.exp_id`3 and `x.floor`1 | 雪面反射で遠近感が狂いやすく、隊列間隔の固定規定が強化された |
+| explore | `x.exp_id`3 and `x.floor`1 | 枝鳴りの高さ差から重雪域が推定され、倒木危険帯の外周が更新された |
+| explore | `x.exp_id`3 and `x.floor`1 | 薄い燐光が見える区画は迷い現象の兆候とされ、目印杭の追加が実施された |
+| explore | `x.exp_id`3 and `x.floor`1 | 凍傷予防の小休止間隔が見直され、長時間行軍時の損耗が抑制された |
+| explore | `x.exp_id`3 and `x.floor`1 | 獣毛の付着点分布から、夜間の移動流向が高精度で推定されている |
+| explore | `x.exp_id`3 and `x.floor`1 | 白樺林の風裏を使う進行法が定着し、体温低下率の改善が報告された |
+| explore | `x.exp_id`3 and `x.floor`2 | 狩人道には擬装罠が密集し、踏査は先端検知を伴う低速運用へ移行した |
+| explore | `x.exp_id`3 and `x.floor`2 | 樹上見張り台の視線重複が解析され、無露見で抜ける時間窓が設定された |
+| explore | `x.exp_id`3 and `x.floor`2 | 枝先鈴罠の共鳴範囲が測定され、接近時の無音解除手順が標準化された |
+| explore | `x.exp_id`3 and `x.floor`2 | 足跡に混ざる灰散布は追跡攪乱策と判明し、逆算読図の精度が向上した |
+| explore | `x.exp_id`3 and `x.floor`2 | 落とし戸の偽装材質が共有され、雪下空洞を避ける迂回路網が拡張された |
+| explore | `x.exp_id`3 and `x.floor`2 | 合図笛の節回しが採譜され、巡回班の交代周期が見える化された |
+| explore | `x.exp_id`3 and `x.floor`2 | 矢羽落下の偏りから伏撃角度が再現され、死角進行の成功率が高まった |
+| explore | `x.exp_id`3 and `x.floor`2 | 樹皮刻印の更新時期が比較され、最近稼働した狩場境が限定された |
+| explore | `x.exp_id`3 and `x.floor`2 | 風向固定の匂い対策により、追尾獣への被発見率低下が維持されている |
+| explore | `x.exp_id`3 and `x.floor`2 | 罠列の空白区画が洗い出され、安全通過の基準線として全隊へ共有された |
+| explore | `x.exp_id`3 and `x.floor`3 | 雪屋根の集落遺構が確認され、冬適応型の生活動線が体系的に記録された |
+| explore | `x.exp_id`3 and `x.floor`3 | 灯籠道の配列復元により、吹雪時の避難誘導設計が再現されつつある |
+| explore | `x.exp_id`3 and `x.floor`3 | 井戸縁の祈札群が保全され、共同体の守護儀礼が継続していたと裏付けられた |
+| explore | `x.exp_id`3 and `x.floor`3 | 倉印の残存率から、急退避時の備蓄搬出優先順位が推定された |
+| explore | `x.exp_id`3 and `x.floor`3 | 戸板の斬痕方向が一致し、襲撃主力の進入線が一本化されていると判定された |
+| explore | `x.exp_id`3 and `x.floor`3 | 神楽面の散布範囲が整理され、祭礼場崩壊の時系列が更新された |
+| explore | `x.exp_id`3 and `x.floor`3 | 木橋下の護符結びは外来除け機能を持ち、回避導線の再設定が行われた |
+| explore | `x.exp_id`3 and `x.floor`3 | 炉端石の温度差測定により、先行調査隊との時間差が精密化された |
+| explore | `x.exp_id`3 and `x.floor`3 | 路地の雪踏み密度から、住民集合地点の候補が段階的に絞り込まれた |
+| explore | `x.exp_id`3 and `x.floor`3 | 屋根雪落下帯の監視強化で、市街通過時の負傷率が抑制されている |
+| explore | `x.exp_id`3 and `x.floor`4 | 凍湖横断は氷厚観測を前提とし、停止合図の閾値が再定義された |
+| explore | `x.exp_id`3 and `x.floor`4 | 風紋と亀裂線の相関解析で、薄氷危険帯の地図精度が向上した |
+| explore | `x.exp_id`3 and `x.floor`4 | 裂氷音の周波数分類が進み、崩断前兆の早期検知が可能となった |
+| explore | `x.exp_id`3 and `x.floor`4 | 岸杭の埋没深度比較から、季節ごとの安全渡湖線が再構築された |
+| explore | `x.exp_id`3 and `x.floor`4 | 雪煙で消える対岸灯は方位誤認を誘発し、補助羅針運用が義務化された |
+| explore | `x.exp_id`3 and `x.floor`4 | 氷下影の移動流が記録され、群泳獣との交差回避計画が更新された |
+| explore | `x.exp_id`3 and `x.floor`4 | 漁網残骸の位置一致から、落氷頻発区画の境界が確定した |
+| explore | `x.exp_id`3 and `x.floor`4 | 月光反射で生じる視差対策として、隊列内標識の色規定が改訂された |
+| explore | `x.exp_id`3 and `x.floor`4 | 凍舟着き場の遺構確認により、旧交易路の補給点候補が復元された |
+| explore | `x.exp_id`3 and `x.floor`4 | 横風強度の蓄積値を基に、渡湖可否の判断基準が厳格化された |
+| explore | `x.exp_id`3 and `x.floor`5 | 晶洞内の反射迷路は方位喪失を招きやすく、標識連結法が強化された |
+| explore | `x.exp_id`3 and `x.floor`5 | 霜紋の成長方向が魔力流脈と一致し、進行可能帯の推定精度が上がった |
+| explore | `x.exp_id`3 and `x.floor`5 | 結晶共鳴音の分布図作成で、崩落予兆区画の監視密度が増強された |
+| explore | `x.exp_id`3 and `x.floor`5 | 氷底古骨の周辺は禁足扱いとなり、聖域保全を伴う迂回導線が設定された |
+| explore | `x.exp_id`3 and `x.floor`5 | 蒼光鉱脈の連なりが道標化され、往復経路の再現性が改善している |
+| explore | `x.exp_id`3 and `x.floor`5 | 低温滞在限界の再評価により、探索と退避の切替時刻が前倒しされた |
+| explore | `x.exp_id`3 and `x.floor`5 | 霜柱落下の危険評価が更新され、通過時の姿勢規定が低位化された |
+| explore | `x.exp_id`3 and `x.floor`5 | 幻影発生域の色差検証で、偽通路誤進入の件数が有意に減少した |
+| explore | `x.exp_id`3 and `x.floor`5 | 凍土祭壇片の読解が進み、結晶信仰圏の儀礼語彙が新規登録された |
+| explore | `x.exp_id`3 and `x.floor`5 | 洞気流の脈動観測から、奥層と外縁を結ぶ風道網が推定された |
+| explore | `x.exp_id`3 and `x.floor`6 | 聖庭石標群の配置復元により、長老評議の座次秩序が再確認された |
+| explore | `x.exp_id`3 and `x.floor`6 | 御神木周辺の風音記録が蓄積され、境界結界の活性周期が推定された |
+| explore | `x.exp_id`3 and `x.floor`6 | 供物座石の痕跡比較から、季節儀礼の実施頻度が上方修正された |
+| explore | `x.exp_id`3 and `x.floor`6 | 祈念杭の傾斜補正で、外縁結界線の連続性が部分的に回復した |
+| explore | `x.exp_id`3 and `x.floor`6 | 足跡疎密の解析により、守り手の交替時間帯が統計的に抽出された |
+| explore | `x.exp_id`3 and `x.floor`6 | 香炉煙の流線追跡で、聖域内の安定進行路が高精度で示された |
+| explore | `x.exp_id`3 and `x.floor`6 | 長老碑の欠文接合が進み、冬盟誓約の継承系譜が再構築された |
+| explore | `x.exp_id`3 and `x.floor`6 | 白狐像群の向き一致から、祈祷時の巡礼動線が復元されている |
+| explore | `x.exp_id`3 and `x.floor`6 | 梢雪の落下分布が境界指標と合致し、禁触区画の再設定が完了した |
+| explore | `x.exp_id`3 and `x.floor`6 | 聖庭外周の碑片整理で、評議場末期の防衛改修記録が補強された |
 | sound_sleep | with mainClass.`Fighter` | name は鎧を外したまま深く眠り、戦場の緊張を静かに解いている |
 | sound_sleep | with mainClass.`Fighter` | name は盾を抱くようにして熟睡し、守る意志を休息に変えている |
 | sound_sleep | with mainClass.`Fighter` | name は規則正しい寝息で体幹の疲労をじっくり回復している |
