@@ -309,19 +309,23 @@ left-alinged                                           right-aligned
   - If the item is common,
     - Get one ticket from `t.common_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord` or `God of Oblivion`(rank 10 or more).
 	- If `t.reward_bag`.value = '1', then get one ticket from `t.common_enhancement_bag`.
-    - If `t.enhancement_bag`.value >= 1, then get one ticket from `t.superRare_bag`.
+      - If (mode is `m.laika`) and `t.enhancement_bag`.value >= 5, then treats `t.enhancement_bag`.value as 4.
+    - If `t.enhancement_bag`.value >= 1 and ( mode is not `m.laika`), then get one ticket from `t.superRare_bag`.
   - If the item is uncommon,
     - Gets one ticket from `t.uncommon_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord` or `God of Oblivion`(rank 10 or more).
     - If `t.uncommon_reward_bag`.value = '1', then get one ticket from `t.enhancement_bag`.
-    - If `t.enhancement_bag`.value >= 1, then get one ticket from `t.superRare_bag`.
+      - If (mode is `m.laika`) and `t.enhancement_bag`.value >= 5, then treats `t.enhancement_bag`.value as 4.   
+    - If `t.enhancement_bag`.value >= 1 and ( mode is not `m.laika`), then get one ticket from `t.superRare_bag`.
   - If the item is rare,
     - Gets one ticket from `t.rare_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord` or `God of Oblivion`(rank 10 or more).
     - If `t.rare_reward_bag`.value = '1', then get one ticket from `t.enhancement_bag`.
-    - If `t.enhancement_bag`.value >= 1, then get one ticket from `t.superRare_bag`.
+      - If (mode is `m.laika`) and `t.enhancement_bag`.value >= 5, then treats `t.enhancement_bag`.value as 4.
+    - If `t.enhancement_bag`.value >= 1 and ( mode is not `m.laika`), then get one ticket from `t.superRare_bag`.
   - If the item is mythic,
     - Gets one ticket from `t.mythic_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord` or `God of Oblivion`(rank 10 or more).
     - If `t.rare_mythic_bag`.value = '1', then get one ticket from `t.enhancement_bag`.
-    - If `t.enhancement_bag`.value >= 1, then get one ticket from `t.superRare_bag`.
+      - If (mode is `m.laika`) and `t.enhancement_bag`.value >= 5, then treats `t.enhancement_bag`.value as 4.
+    - If `t.enhancement_bag`.value >= 1 and ( mode is not `m.laika`), then get one ticket from `t.superRare_bag`.
 
   - Combines them into one item.
 
