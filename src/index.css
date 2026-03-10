@@ -86,6 +86,10 @@ body.app-dark {
   background-color: rgb(51 65 85);
 }
 
+.theme-dark .bg-slate-100 {
+  background-color: rgb(51 65 85);
+}
+
 
 .theme-dark .bg-blue-50 {
   background-color: rgb(var(--color-sub) / 0.2);
