@@ -312,7 +312,7 @@ function RaceIcon({ race, className = "h-8 w-8" }: { race: Race; className?: str
       <img
         src={iconSrc}
         alt={`${race.englishName} icon`}
-        className={`${className} object-contain`}
+        className={`${className} race-icon object-contain`}
         onError={() => setHasIconLoadError(true)}
       />
     );
@@ -1731,6 +1731,16 @@ export function HomeScreen({
   }, [darkModeSetting]);
 
   const isDarkModeEnabled = darkModeSetting === 'on' || (darkModeSetting === 'system' && isSystemDarkMode);
+
+  useEffect(() => {
+    document.body.classList.toggle('app-dark', isDarkModeEnabled);
+    document.documentElement.classList.toggle('app-dark', isDarkModeEnabled);
+
+    return () => {
+      document.body.classList.remove('app-dark');
+      document.documentElement.classList.remove('app-dark');
+    };
+  }, [isDarkModeEnabled]);
 
   useEffect(() => {
     latestPartiesRef.current = state.parties;
