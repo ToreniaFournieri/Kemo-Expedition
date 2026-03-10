@@ -232,6 +232,7 @@ function formatConditionDebug(condition: FlavorCondition): string {
   if (condition.k === 'none') return 'no condition';
   if (condition.k === 'raw') return `raw: ${condition.v}`;
   if (condition.k === 'and') return `and: ${condition.v.map((part) => `${part.k}:${part.v}`).join('&')}`;
+  if (condition.k === 'exp_floor_is') return `exp_floor_is: exp=${condition.v.expId}, floor=${condition.v.floor}`;
   return `${condition.k}: ${condition.v}`;
 }
 
