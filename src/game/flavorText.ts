@@ -36,6 +36,10 @@ interface FlavorContext {
   seed: number;
   sellingItemName?: string;
   autoSellPrice?: number;
+  debug?: {
+    displayCondition?: boolean;
+    allReligionsEnabled?: boolean;
+  };
 }
 
 const stateIdByName = new Map<string, number>(FLAVOR_STATES.map((state, index) => [state, index]));
@@ -89,6 +93,7 @@ function isConditionMatch(condition: FlavorCondition, context: FlavorContext): b
         partyReligionName: context.partyReligionName,
         sortieSourceState: context.sortieSourceState,
         embezzlementGold: context.embezzlementGold,
+        debug: context.debug,
       });
     default:
       return false;
@@ -102,6 +107,9 @@ function isRawConditionMatch(
     partyReligionName?: string;
     sortieSourceState?: 'rest' | 'feast' | 'sleep' | 'return';
     embezzlementGold?: number;
+    debug?: {
+      allReligionsEnabled?: boolean;
+    };
   }
 ): boolean {
   const isSortieActive = context.sortieSourceState !== undefined || context.embezzlementGold !== undefined;
@@ -114,6 +122,7 @@ function isRawConditionMatch(
 
   const religionMatch = raw.match(/with\s+religion\.\s*`([^`]+)`/i);
   if (religionMatch) {
+    if (context.debug?.allReligionsEnabled) return true;
     return context.partyReligionName === religionMatch[1].trim();
   }
 
@@ -224,5 +233,8 @@ export function getRuntimeFlavorText(context: FlavorContext): string | null {
   const normalizedSeed = Math.abs(Math.floor(context.seed));
   const picked = candidates[normalizedSeed % candidates.length];
   const normalizedText = normalizeFlavorText(picked.text, context);
-  return `${normalizedText} (${formatConditionDebug(picked.condition)})`;
+  if (context.debug?.displayCondition) {
+    return `${normalizedText} (${formatConditionDebug(picked.condition)})`;
+  }
+  return normalizedText;
 }

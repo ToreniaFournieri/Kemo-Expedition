@@ -34,6 +34,7 @@ import { replaceCharacterEquipment } from '../game/equipment';
 import { resolveMagicProfile } from '../game/magic';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
 import { getRuntimeFlavorText, type FlavorCycleState } from '../game/flavorText';
+import { DebugSettings, getDebugSettings, saveDebugSettings, getTimeSpeedScale } from '../game/debugSettings';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -90,6 +91,7 @@ interface HomeScreenProps {
     resetUniqueBags: () => void;
     resetSuperRareBag: () => void;
     resetSideQuestBag: () => void;
+    unlockPartySlot: () => void;
     addNotification: (
       message: string,
       style?: NotificationStyle,
@@ -178,7 +180,6 @@ function rollPercentInclusive(min: number, max: number): number {
 const PARTY_CYCLE_TICK_MS = 100;
 const EXPLORING_PROGRESS_STEP_MS = 5000;
 const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
-const DEBUG_CYCLE_DURATION_SCALE = 0.2;
 const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.sleeping', 'q.exercise', 'q.healing', 'q.AFK']);
 const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
 const AFK_MAX_ELAPSED_MS = 1800 * 60 * 1000;
@@ -198,9 +199,6 @@ const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-
 const AUTO_EQUIPMENT_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-auto-equipment');
 const APP_VERSION = `v${__APP_VERSION__}`;
 
-function getCycleDurationScale(env: ReturnType<typeof getEnvironmentId>): number {
-  return env === 'dev' || env === 'qa' || env === 'luna' ? DEBUG_CYCLE_DURATION_SCALE : 1;
-}
 
 function getExpeditionTierDurationFactor(expTier: number): number {
   const normalizedTier = Math.max(0, expTier);
@@ -622,7 +620,7 @@ function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | n
     }
   }
 
-  const godsRequired = getGodsBattleRequired(getEnvironmentId());
+  const godsRequired = getGodsBattleRequired();
   const godsUnlocked = bossRareCollected >= godsRequired;
   if (!godsUnlocked) {
     if (shouldDelayNextSpecialGoal(party, cycleState)) {
@@ -710,7 +708,7 @@ function getSideQuestText(party: Party): string | null {
 }
 
 function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
-  return getLootCollectionCount(party, dungeonId, 'bossRare') >= getGodsBattleRequired(getEnvironmentId());
+  return getLootCollectionCount(party, dungeonId, 'bossRare') >= getGodsBattleRequired();
 }
 
 function getDisplayedBossRareCount(party: Party, dungeonId: number, cycleState?: PartyCycleState): number {
@@ -1631,6 +1629,7 @@ export function HomeScreen({
   const [expandedBestiaryEnemies, setExpandedBestiaryEnemies] = useState<Record<number, boolean>>({});
   const [bestiaryScrollTop, setBestiaryScrollTop] = useState(0);
   const [gameMode, setGameMode] = useState<GameMode>(() => getInitialGameMode(isLunaEnvironment));
+  const [debugSettings, setDebugSettings] = useState<DebugSettings>(() => getDebugSettings());
   const [isAutoEquipmentEnabled] = useState<boolean>(() => getInitialAutoEquipmentEnabled());
   const tabScrollPositionsRef = useRef<Partial<Record<Tab, number>>>({});
   const tabContentRef = useRef<HTMLDivElement | null>(null);
@@ -1669,6 +1668,15 @@ export function HomeScreen({
   useEffect(() => {
     autoEquipmentEnabledRef.current = isAutoEquipmentEnabled;
   }, [isAutoEquipmentEnabled]);
+
+
+  const updateDebugSettings = useCallback((updates: Partial<DebugSettings>) => {
+    setDebugSettings((prev) => {
+      const next = { ...prev, ...updates };
+      saveDebugSettings(next);
+      return next;
+    });
+  }, []);
 
   const runAutoEquipment = useCallback((targetPartyIndexes?: number[], targetCharacterIds?: Array<number | string>) => {
     const targetPartyIndexSet = targetPartyIndexes ? new Set(targetPartyIndexes) : null;
@@ -2382,8 +2390,7 @@ export function HomeScreen({
     if (shouldRebuildPartyCyclesAfterAfkRef.current) {
       const now = Date.now();
       const autoRepeatEnabled = autoRepeatEnabledRef.current;
-      const currentEnv = getEnvironmentId();
-      const approxCycleDurationMs = Math.max(1, Math.floor(460_000 * getCycleDurationScale(currentEnv)));
+      const approxCycleDurationMs = Math.max(1, Math.floor(460_000 * getTimeSpeedScale(debugSettings)));
       const remainderMs = afkRecoveryTotalMsRef.current % approxCycleDurationMs;
       setPartyCycles(() => {
         const next: Record<number, PartyCycleRuntime> = {};
@@ -2435,7 +2442,7 @@ export function HomeScreen({
     const elapsedMs = Math.max(0, Math.min(now - lastCheckpointAtRef.current, AFK_MAX_ELAPSED_MS));
     if (elapsedMs < PARTY_CYCLE_TICK_MS) return;
 
-    if (elapsedMs > 60_000) {
+    if (debugSettings.displayAfkDuration && elapsedMs > 60_000) {
       const elapsedSeconds = Math.floor(elapsedMs / 1000);
       actions.addNotification(`(Debug)前回の更新から ${formatNumber(elapsedSeconds)}秒経過`);
     }
@@ -2503,7 +2510,7 @@ export function HomeScreen({
           updated.durationMs = getExplorationDurationMs(
             exploredRooms,
             getPartyStateDurationMultiplier(party, 'explore'),
-            getCycleDurationScale(currentEnv),
+            getTimeSpeedScale(debugSettings),
           );
         }
 
@@ -2655,7 +2662,7 @@ export function HomeScreen({
               updated.durationMs = getExplorationDurationMs(
                 undefined,
                 getPartyStateDurationMultiplier(party, 'explore'),
-                getCycleDurationScale(currentEnv),
+                getTimeSpeedScale(debugSettings),
               );
               updated.isCurrentExpeditionGodsBattle = triggerGodsBattle;
             } else if (updated.state === 'explore') {
@@ -2957,7 +2964,7 @@ export function HomeScreen({
   };
 
   const getStateDurationMs = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray'): number => {
-    const durationScale = getCycleDurationScale(currentEnv);
+    const durationScale = getTimeSpeedScale(debugSettings);
     const autoSellCount = Math.max(1, party.lastExpeditionLog?.autoSellCount ?? 1);
     const baseSeconds = cycleState === 'rest'
       ? 5
@@ -2978,7 +2985,7 @@ export function HomeScreen({
   const getPartyTravelDurationMs = (party: Party, travelState: 'move' | 'return'): number => {
     const baseSeconds = travelState === 'move' ? 10 : 30;
     const tierFactor = getExpeditionTierDurationFactor(party.selectedDungeonId);
-    const durationScale = getCycleDurationScale(currentEnv);
+    const durationScale = getTimeSpeedScale(debugSettings);
     const baseDurationMs = baseSeconds * 1000 * tierFactor * durationScale;
     const peddlerLevel = getPartyAbilityLevel(party, 'peddler');
     if (peddlerLevel >= 2) return Math.max(100, Math.floor((baseDurationMs * 3) / 5));
@@ -3174,7 +3181,7 @@ export function HomeScreen({
             inventory={state.global.inventory}
             jewels={state.global.jewels}
             deityDonations={state.global.deityDonations}
-            unlockedDeities={state.global.unlockedDeities}
+            unlockedDeities={debugSettings.allReligionsEnabled ? DEITY_OPTIONS.map((deity) => normalizeDeityName(deity.name)).filter((name) => !isNoFaithDeity(name)) : state.global.unlockedDeities}
           />
         )}
 
@@ -3211,6 +3218,7 @@ export function HomeScreen({
             onRefreshShopLineup={actions.refreshShopLineup}
             activeSubTab={activeBaseSubTab}
             onSetActiveSubTab={setActiveBaseSubTab}
+            debugSettings={debugSettings}
           />
         )}
 
@@ -3251,6 +3259,10 @@ export function HomeScreen({
             isLunaEnvironment={isLunaEnvironment}
             isAutoRepeatEnabled={isAutoRepeatEnabled}
             onSetAutoRepeatEnabled={setAutoRepeatEnabled}
+            debugSettings={debugSettings}
+            onUpdateDebugSettings={updateDebugSettings}
+            partyCount={state.parties.length}
+            onPartyUnlock={actions.unlockPartySlot}
           />
         )}
       </div>
@@ -5375,6 +5387,10 @@ function ExpeditionTab({
             autoSellPrice: sellProgressState?.activeItem?.autoSellProfit,
             sortieSourceState: cycle.sortieSourceState,
             embezzlementGold: cycle.sortieEmbezzlementGold,
+            debug: {
+              displayCondition: getDebugSettings().displayFlavorCondition,
+              allReligionsEnabled: getDebugSettings().allReligionsEnabled,
+            },
           });
           return flavorText ? `${stateLabel}: ${flavorText}` : stateLabel;
         })();
@@ -5689,6 +5705,7 @@ function BaseTab({
   onRefreshShopLineup,
   activeSubTab,
   onSetActiveSubTab,
+  debugSettings,
 }: {
   inventory: InventoryRecord;
   jewels: Record<string, number>;
@@ -5706,11 +5723,12 @@ function BaseTab({
   onRefreshShopLineup: () => void;
   activeSubTab: BaseSubTab;
   onSetActiveSubTab: (tab: BaseSubTab) => void;
+  debugSettings: DebugSettings;
 }) {
   const baseSubTabs = [
     { id: 'shop' as const, label: 'お店', isAvailable: true },
     { id: 'inventory' as const, label: '所持品', isAvailable: true },
-    { id: 'jewelStore' as const, label: '結晶店', isAvailable: false },
+    { id: 'jewelStore' as const, label: '結晶店', isAvailable: debugSettings.jewelShopOpen },
     { id: 'workshop' as const, label: '工房', isAvailable: false },
     { id: 'altar' as const, label: '祭壇', isAvailable: false },
   ];
@@ -6910,6 +6928,10 @@ function SettingTab({
   isLunaEnvironment,
   isAutoRepeatEnabled,
   onSetAutoRepeatEnabled,
+  debugSettings,
+  onUpdateDebugSettings,
+  partyCount,
+  onPartyUnlock,
 }: {
   gameState: GameState;
   deityDonations: Record<string, number>;
@@ -6937,8 +6959,12 @@ function SettingTab({
   isLunaEnvironment: boolean;
   isAutoRepeatEnabled: boolean;
   onSetAutoRepeatEnabled: (enabled: boolean) => void;
+  debugSettings: DebugSettings;
+  onUpdateDebugSettings: (updates: Partial<DebugSettings>) => void;
+  partyCount: number;
+  onPartyUnlock: () => void;
 }) {
-  type DivineBureauPanelKey = 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'bestiary' | 'superRare' | 'gameSetting';
+  type DivineBureauPanelKey = 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'bestiary' | 'superRare' | 'gameSetting' | 'debug';
   const DIVINE_BUREAU_PANEL_STORAGE_KEY = 'kemo-expedition.divine-bureau.panel-expanded';
   const defaultDivineBureauPanelState: Record<DivineBureauPanelKey, boolean> = {
     modeSelect: false,
@@ -6949,6 +6975,7 @@ function SettingTab({
     bestiary: false,
     superRare: false,
     gameSetting: false,
+    debug: true,
   };
 
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -6979,6 +7006,7 @@ function SettingTab({
         bestiary: parsed.bestiary === true,
         superRare: parsed.superRare === true,
         gameSetting: parsed.gameSetting === true,
+        debug: parsed.debug === true,
       });
     } catch (error) {
       console.error('Failed to load Divine Bureau panel state:', error);
@@ -7512,7 +7540,9 @@ function SettingTab({
 
       <div className="bg-pane rounded-lg p-4 mb-4">
         {renderDivineBureauPanelHeader('clairvoyance', '未来視')}
-        {divineBureauPanelExpanded.clairvoyance && <>
+        {!debugSettings.clairvoyanceEnabled ? (
+          <div className="mt-3 text-sm text-gray-500">デバッグ設定でClairvoyanceをONにすると表示されます。</div>
+        ) : divineBureauPanelExpanded.clairvoyance && <>
 
         <div className="mb-4 border-b border-gray-200 pb-4">
           <div className="text-xs text-gray-600 font-medium mb-2">通常報酬 (Normal reward)</div>
@@ -8138,6 +8168,28 @@ function SettingTab({
                   : '敵が大幅に強くなります(報酬がよくなります)'}
             </div>
           </div>
+        </div>}
+      </div>
+
+      <div className="bg-pane rounded-lg p-4 mb-4">
+        {renderDivineBureauPanelHeader('debug', 'デバッグ')}
+        {divineBureauPanelExpanded.debug && <div className="space-y-3 mt-3 text-sm">
+          <button type="button" onClick={() => onUpdateDebugSettings({ clairvoyanceEnabled: !debugSettings.clairvoyanceEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">Clairvoyance: {debugSettings.clairvoyanceEnabled ? 'ON' : 'OFF'}</button>
+          <div className="bg-white rounded border p-2">
+            <div className="text-xs text-gray-500 mb-1">Speed of time</div>
+            <div className="flex gap-2">
+              <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'realtime' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'realtime' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>Real time</button>
+              <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'x5' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'x5' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x5 boost</button>
+              <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'x20' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'x20' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x20 hyper</button>
+            </div>
+          </div>
+          <button type="button" onClick={() => onUpdateDebugSettings({ godsBattleCondition: debugSettings.godsBattleCondition === 'normal' ? 'simple1' : 'normal' })} className="w-full rounded border bg-white px-3 py-2 text-left">Gods Battle condition: {debugSettings.godsBattleCondition === 'simple1' ? 'Simple(1)' : 'Normal'}</button>
+          <button type="button" onClick={() => onUpdateDebugSettings({ godStrength: debugSettings.godStrength === 'normal' ? 'debug' : 'normal' })} className="w-full rounded border bg-white px-3 py-2 text-left">Gods Strength: {debugSettings.godStrength === 'debug' ? 'debug mode for god battle' : 'Normal'}</button>
+          <button type="button" onClick={() => onUpdateDebugSettings({ allReligionsEnabled: !debugSettings.allReligionsEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">All religions: {debugSettings.allReligionsEnabled ? 'ON' : 'OFF'}</button>
+          <button type="button" disabled={partyCount >= 6} onClick={onPartyUnlock} className="w-full rounded border bg-white px-3 py-2 text-left disabled:opacity-50">Party unlock +1 PT unlock ({partyCount}/6)</button>
+          <button type="button" onClick={() => onUpdateDebugSettings({ jewelShopOpen: !debugSettings.jewelShopOpen })} className="w-full rounded border bg-white px-3 py-2 text-left">Jewel shop open: {debugSettings.jewelShopOpen ? 'ON' : 'OFF'}</button>
+          <button type="button" onClick={() => onUpdateDebugSettings({ displayFlavorCondition: !debugSettings.displayFlavorCondition })} className="w-full rounded border bg-white px-3 py-2 text-left">Display flavor condition: {debugSettings.displayFlavorCondition ? 'ON' : 'OFF'}</button>
+          <button type="button" onClick={() => onUpdateDebugSettings({ displayAfkDuration: !debugSettings.displayAfkDuration })} className="w-full rounded border bg-white px-3 py-2 text-left">Display AFK duration: {debugSettings.displayAfkDuration ? 'ON' : 'OFF'}</button>
         </div>}
       </div>
 
