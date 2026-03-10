@@ -7538,11 +7538,9 @@ function SettingTab({
         </div>}
       </div>
 
-      <div className="bg-pane rounded-lg p-4 mb-4">
+      {debugSettings.clairvoyanceEnabled && <div className="bg-pane rounded-lg p-4 mb-4">
         {renderDivineBureauPanelHeader('clairvoyance', '未来視')}
-        {!debugSettings.clairvoyanceEnabled ? (
-          <div className="mt-3 text-sm text-gray-500">デバッグ設定でClairvoyanceをONにすると表示されます。</div>
-        ) : divineBureauPanelExpanded.clairvoyance && <>
+        {divineBureauPanelExpanded.clairvoyance && <>
 
         <div className="mb-4 border-b border-gray-200 pb-4">
           <div className="text-xs text-gray-600 font-medium mb-2">通常報酬 (Normal reward)</div>
@@ -7684,7 +7682,7 @@ function SettingTab({
           </div>
         </div>
         </>}
-      </div>
+      </div>}
 
       <div className="bg-pane rounded-lg p-4 mb-4">
         {renderDivineBureauPanelHeader('glossary', '用語集')}
