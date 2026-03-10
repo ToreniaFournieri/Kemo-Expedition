@@ -1,5 +1,5 @@
 
-### Expedition 1: Caninian Plains
+### `x.exp_id`1: Caninian Plains
 
 | Floor | Theme | Environment Concept | Atmosphere |
 |------|------|------|------|
@@ -10,7 +10,7 @@
 | 5 | Marshland Basin | The plains sink into a wet basin where water gathers. Reeds, mud pools, and strange fungi grow in the damp soil. | Rotting, humid |
 | 6 | Ruins of the Forgotten City | Beneath the grasslands lie the remains of an ancient high-technology city. Broken towers, buried roads, and derelict structures are slowly reclaimed by nature. Moss, vines, and soil cover the silent ruins of a civilization long lost. | Quiet, melancholic, post-apocalyptic |
 
-### Expedition 2: Lupinian Crag
+### `x.exp_id`2: Lupinian Crag
 
 | Floor | Theme | Environment Concept | Atmosphere |
 |------|------|------|------|
@@ -21,7 +21,7 @@
 | 5 | Wind-Carved Ravines | Deep chasms and narrow stone corridors carved by centuries of wind. The cliffs echo with constant howling gusts. | Harsh, relentless |
 | 6 | Weathered Stone Temple | At the highest plateau stands an ancient temple carved from pale stone. Its pillars are cracked, statues worn by wind and time, and moss covers forgotten carvings. | Sacred, solemn, ancient |
 
-### Expedition 3: Vulpinian Taiga
+### `x.exp_id`3: Vulpinian Taiga
 
 | Floor | Theme | Environment Concept | Atmosphere |
 |------|------|------|------|
@@ -32,7 +32,7 @@
 | 5 | Crystal Ice Cavern | Beneath the frozen earth lies a cavern filled with massive crystal formations. Ice and mineral crystals reflect faint blue light through the cave. | Mysterious, otherworldly |
 | 6 | Sacred Court of the Vulpine Elders | A hidden clearing deep in the forest where ancient fox leaders once gathered. Snow falls silently between towering trees and ancient stone markers. | Sacred, solemn |
 
-### Expedition 4: Ursan Peaks
+### `x.exp_id`4: Ursan Peaks
 
 | Floor | Theme | Environment Concept | Atmosphere |
 |------|------|------|------|
@@ -43,7 +43,7 @@
 | 5 | Heart of the Great Furnace | A colossal forge chamber carved inside the mountain where magma once powered the legendary Ursan smithing halls. Giant anvils and forge platforms remain around glowing magma channels. | Ancient, powerful |
 | 6 | Sacred Forge Summit | At the highest peak stands a monumental forge-temple open to the sky. Bear statues, furnace altars, and weathered stone pillars honor the Ursan warrior-smiths. | Majestic, solemn |
 
-### Expedition 5: Felidian Grove
+### `x.exp_id`5: Felidian Grove
 
 | Floor | Theme | Environment Concept | Atmosphere |
 |------|------|------|------|
@@ -54,7 +54,7 @@
 | 5 | Twilight Shrine District | Ancient shrines and ceremonial courtyards stand beneath towering trees. Moonlit rituals were once held here between light and shadow. | Reverent, solemn |
 | 6 | Felidian Moon Capital | A hidden city deep within the grove. Organized districts, elegant stone streets, and moonlit plazas reveal a thriving Felidian capital protected by the forest. | Refined, orderly |
 
-### Expedition 6: Mustelid Burrow
+### `x.exp_id`6: Mustelid Burrow
 
 | Floor | Theme | Environment Concept | Atmosphere |
 |------|------|------|------|
@@ -66,7 +66,7 @@
 | 6 | K9 Trans-Stella Wreck | Beneath the burrow lies the shattered hull of an ancient interstellar generation ship. Strange alloys, silent reactors, and dormant systems reveal the lost K9 technology from a forgotten war among the stars. | Ancient, ominous |
 
 
-### Expedition 7: Leporian Garden
+### `x.exp_id`7: Leporian Garden
 
 | Floor | Theme | Environment Concept | Atmosphere |
 |------|------|------|------|
@@ -77,7 +77,7 @@
 | 5 | Floating Garden District | Inside the shield lies a vast floating garden of orchards, flowering trees, and sky bridges connecting drifting islands. | Bright, peaceful |
 | 6 | Celestial Garden Core | The central biosphere chamber sustaining the floating habitat. Artificial sunlight, water channels, and ancient life-support systems maintain the sky ecosystem. | Majestic, serene |
 
-### Expedition 8: Cervin Vale
+### `x.exp_id`8: Cervin Vale
 
 | Floor | Theme | Environment Concept | Atmosphere |
 |------|------|------|------|
