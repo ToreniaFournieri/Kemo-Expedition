@@ -730,6 +730,23 @@ function getDisplayedBossRareCount(party: Party, dungeonId: number, cycleState?:
   return Math.max(0, latestCount - newlyRecoveredBossRare);
 }
 
+function getDisplayedExpeditionStats(party: Party, cycleState?: PartyCycleState): Party['expeditionStats'] {
+  const latestStats = party.expeditionStats;
+  if (cycleState !== 'explore') return latestStats;
+
+  const returnOutcome = getReturnFlavorOutcome(party.lastExpeditionLog);
+  if (!returnOutcome) return latestStats;
+
+  return {
+    ...latestStats,
+    Clear: Math.max(0, latestStats.Clear - (returnOutcome === 'Clear' ? 1 : 0)),
+    Turned_Back: Math.max(0, latestStats.Turned_Back - (returnOutcome === 'Turned_Back' ? 1 : 0)),
+    Draw_Retreat: Math.max(0, latestStats.Draw_Retreat - (returnOutcome === 'Draw_Retreat' ? 1 : 0)),
+    Wounded_Retreat: Math.max(0, latestStats.Wounded_Retreat - (returnOutcome === 'Wounded_Retreat' ? 1 : 0)),
+    Defeat: Math.max(0, latestStats.Defeat - (returnOutcome === 'Defeat' ? 1 : 0)),
+  };
+}
+
 
 function hasActiveLootGateCondition(party: Party, cycleState?: PartyCycleState): boolean {
   return getNextGoalText(party, cycleState) !== null;
@@ -5460,6 +5477,7 @@ function ExpeditionTab({
           : isGodsBattleAvailable(party, party.selectedDungeonId);
         const nextGoalText = getNextGoalText(party, cycle.state);
         const sideQuestText = getSideQuestText(party);
+        const displayedExpeditionStats = getDisplayedExpeditionStats(party, cycle.state);
 
         return (
           <div key={partyIndex} className="bg-pane rounded-lg p-2">
@@ -5561,7 +5579,7 @@ function ExpeditionTab({
                 {isExpeditionStatsDisplayEnabled && (
                   <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
                     <span>
-                      統計情報: 踏破{formatNumber(party.expeditionStats.Clear)}/帰還{formatNumber(party.expeditionStats.Turned_Back)}/引分{formatNumber(party.expeditionStats.Draw_Retreat)}/撤退{formatNumber(party.expeditionStats.Wounded_Retreat)}/敗北{formatNumber(party.expeditionStats.Defeat)} 合計 {formatNumber(party.expeditionStats.Clear + party.expeditionStats.Turned_Back + party.expeditionStats.Draw_Retreat + party.expeditionStats.Wounded_Retreat + party.expeditionStats.Defeat)}回
+                      統計情報: 踏破{formatNumber(displayedExpeditionStats.Clear)}/帰還{formatNumber(displayedExpeditionStats.Turned_Back)}/引分{formatNumber(displayedExpeditionStats.Draw_Retreat)}/撤退{formatNumber(displayedExpeditionStats.Wounded_Retreat)}/敗北{formatNumber(displayedExpeditionStats.Defeat)} 合計 {formatNumber(displayedExpeditionStats.Clear + displayedExpeditionStats.Turned_Back + displayedExpeditionStats.Draw_Retreat + displayedExpeditionStats.Wounded_Retreat + displayedExpeditionStats.Defeat)}回
                     </span>
                     <button
                       type="button"
