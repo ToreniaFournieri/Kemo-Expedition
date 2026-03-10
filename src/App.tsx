@@ -60,6 +60,18 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+
+    document.body.classList.toggle('app-dark', isDarkModeEnabled);
+    document.documentElement.classList.toggle('app-dark', isDarkModeEnabled);
+
+    return () => {
+      document.body.classList.remove('app-dark');
+      document.documentElement.classList.remove('app-dark');
+    };
+  }, [isDarkModeEnabled]);
+
   const appThemeClasses = `${isLunaMode ? 'theme-luna' : ''} ${isDarkModeEnabled ? 'theme-dark' : ''}`;
 
   useEffect(() => {

@@ -144,6 +144,14 @@ body.app-dark {
   border-color: rgb(75 85 99);
 }
 
+
+.theme-luna.theme-dark {
+  --color-hp-bar: 170 141 93;
+  --color-hp-bar-mild: 170 141 93;
+  --color-hp-taken: 133 114 85;
+  --color-hp-bar-empty: 43 52 68;
+}
+
 .theme-dark .race-icon {
   filter: brightness(0) invert(1);
 }
@@ -158,4 +166,10 @@ body {
   display: inline-block;
   filter: var(--side-quest-icon-filter);
   opacity: var(--side-quest-icon-opacity);
+}
+
+
+#root {
+  min-height: 100%;
+  background-color: inherit;
 }
