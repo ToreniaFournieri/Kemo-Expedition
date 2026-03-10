@@ -29,6 +29,18 @@
       - Yellow-Orange `#c28832` (information, selection, links)
     - Accent color (~5%):
       - Blue `#0c3cea`  (important actions, warnings, highlights)
+     
+  - `m.laika` mode:
+    - Base colors:
+      - Text: Black
+      - Pane / card background: Gray
+      - Page background: White
+  - Sub color (~30%)
+    - Emerald Green `#10B981`
+      (information, selection, links)
+  - Accent color (~5%)
+    - Crimson Red `#DC2626`
+      (important actions, warnings, highlights)
         
 ### 8.1 Notification Logic & Display
 **Visual & Overlay (Toast)**
@@ -800,10 +812,13 @@ HP: 312                 クラス: 魔法使い
 - Switch to 統計情報表示: ON/OFF (Default:OFF)
   - If ON, Show statistic line of Party pane in Expedition tab.
 
-- Switch to `m.kemo`ケモ and `m.luna`ルナ(高難度) . Default: `m.kemo`
+- Switch to ケモ、ルナ(高難度)、 ライカ(制限)
+  - ケモ: `m.kemo`, ルナ:`m.luna`, ライカ:`m.laika`
+  - Default: `m.kemo`
   - Description:
     - `m.kemo` "通常のモードです"
     - `m.luna` "敵が大幅に強くなります(報酬がよくなります)"
+    - `m.laika` "超レアが存在しません。通常称号は伝説までしか出ません"
 
   - If Environment is `/luna/`, Set `m.luna` and other option (`m.kemo`) is disabled.
 
