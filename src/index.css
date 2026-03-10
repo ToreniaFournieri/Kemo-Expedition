@@ -146,6 +146,7 @@ body.app-dark {
 
 
 .theme-luna.theme-dark {
+  --color-accent: 96 165 250;
   --color-hp-bar: 170 141 93;
   --color-hp-bar-mild: 170 141 93;
   --color-hp-taken: 133 114 85;
