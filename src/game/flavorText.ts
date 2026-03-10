@@ -181,21 +181,36 @@ function pickFlavorSpeakerName(context: FlavorContext): string {
   return candidates[normalizedSeed % candidates.length].memberName;
 }
 
+function pickSeededMemberName(
+  members: ReadonlyArray<{ name: string }>,
+  seed: number,
+  fallbackName: string,
+): string {
+  if (members.length === 0) return fallbackName;
+  const normalizedSeed = Math.abs(Math.floor(seed));
+  return members[normalizedSeed % members.length]?.name ?? fallbackName;
+}
+
 function pickMatchingMemberName(condition: FlavorCondition, context: FlavorContext): string | null {
   const members = context.partyMembers;
   if (!members || members.length === 0) return context.leaderName;
 
   if (condition.k === 'none') {
-    const normalizedSeed = Math.abs(Math.floor(context.seed));
-    return members[normalizedSeed % members.length]?.name ?? context.leaderName;
+    return pickSeededMemberName(members, context.seed, context.leaderName);
   }
 
   if (condition.k === 'class_is') {
-    return members.find((member) => member.mainClassId === (condition.v as ClassId))?.name ?? null;
+    const matchedMembers = members.filter((member) => member.mainClassId === (condition.v as ClassId));
+    return matchedMembers.length > 0
+      ? pickSeededMemberName(matchedMembers, context.seed, context.leaderName)
+      : null;
   }
 
   if (condition.k === 'race_is') {
-    return members.find((member) => member.raceId === (condition.v as RaceId))?.name ?? null;
+    const matchedMembers = members.filter((member) => member.raceId === (condition.v as RaceId));
+    return matchedMembers.length > 0
+      ? pickSeededMemberName(matchedMembers, context.seed, context.leaderName)
+      : null;
   }
 
   if (condition.k === 'raw') {
@@ -203,11 +218,14 @@ function pickMatchingMemberName(condition: FlavorCondition, context: FlavorConte
     if (abilityMatch) {
       const abilityToken = abilityMatch[1].trim();
       const normalizedAbilityId = (abilityToken.startsWith('a.') ? abilityToken.slice(2) : abilityToken) as AbilityId;
-      return members.find((member) => member.abilityIds.includes(normalizedAbilityId))?.name ?? null;
+      const matchedMembers = members.filter((member) => member.abilityIds.includes(normalizedAbilityId));
+      return matchedMembers.length > 0
+        ? pickSeededMemberName(matchedMembers, context.seed, context.leaderName)
+        : null;
     }
   }
 
-  return context.leaderName;
+  return pickSeededMemberName(members, context.seed, context.leaderName);
 }
 
 function formatConditionDebug(condition: FlavorCondition): string {
