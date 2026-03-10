@@ -5288,7 +5288,7 @@ function ExpeditionTab({
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1.5">
       {[0, 1, 2, 3, 4, 5].map((partyIndex) => {
         const party = state.parties[partyIndex];
         if (!party) {
@@ -5300,7 +5300,7 @@ function ExpeditionTab({
             5: '未開放:ロンデル 共鳴の神 撃破で開放',
           };
           const lockedPartyText = lockedPartyUnlockTextByIndex[partyIndex] ?? '未開放';
-          return <div key={partyIndex} className="bg-pane rounded-lg p-3"><div className="text-sm text-gray-400">PT{partyIndex + 1}: ({lockedPartyText})</div></div>;
+          return <div key={partyIndex} className="bg-pane rounded-lg p-2"><div className="text-xs text-gray-400">PT{partyIndex + 1}: ({lockedPartyText})</div></div>;
         }
 
         const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
@@ -5415,19 +5415,19 @@ function ExpeditionTab({
         const sideQuestText = getSideQuestText(party);
 
         return (
-          <div key={partyIndex} className="bg-pane rounded-lg p-3">
+          <div key={partyIndex} className="bg-pane rounded-lg p-2">
             <button
               onClick={() => {
                 const nextExpanded = isLogExpanded ? null : partyIndex;
                 setExpandedLogParty(nextExpanded);
                 setExpandedRoom(null);
               }}
-              className="w-full flex justify-between items-center text-sm mb-2 gap-2"
+              className="w-full flex justify-between items-center text-xs mb-1 gap-1.5"
             >
-              <span className="min-w-0 flex items-center gap-2">
+              <span className="min-w-0 flex items-center gap-1.5">
                 <span className="font-bold text-black shrink-0">{party.name}</span>
                 <span className="shrink-0 text-xs text-gray-600">HP</span>
-                <span className="h-2 w-20 rounded-full bg-blue-100 overflow-hidden shrink-0">
+                <span className="h-2 w-14 rounded-full bg-blue-100 overflow-hidden shrink-0">
                   <span className="block h-full bg-blue-500 transition-[width] duration-200" style={{ width: `${hpPercent}%` }} />
                 </span>
                 <span className="truncate">{headlineDungeonName}</span>
@@ -5436,21 +5436,21 @@ function ExpeditionTab({
               <span className={`shrink-0 ${isLogExpanded ? 'transform transition-transform rotate-180' : ''}`}>▼</span>
             </button>
 
-            <div className="mb-2 relative min-h-5 min-w-0 rounded-md bg-gray-200 overflow-hidden text-xs">
+            <div className="mb-1 relative min-h-4 min-w-0 rounded-md bg-gray-200 overflow-hidden text-[11px]">
               <div
                 className={`absolute inset-y-0 left-0 bg-sub/20 ${cycle.state === 'explore' ? '' : 'transition-[width] duration-200'}`}
                 style={{ width: `${progressPercent}%` }}
               />
-              <div className="relative z-10 min-h-8 px-2 py-0.5 text-black text-center whitespace-normal break-words leading-tight line-clamp-2 grid place-items-center">
+              <div className="relative z-10 min-h-6 px-1.5 py-0 text-black text-center truncate leading-tight grid place-items-center">
                 {progressLabel}
               </div>
             </div>
 
             {(nextGoalText || sideQuestText) && (
-              <div className="mb-2 space-y-1">
-                {nextGoalText && <div className="text-xs text-gray-700">{nextGoalText}</div>}
+              <div className="mb-1 space-y-0.5">
+                {nextGoalText && <div className="text-[11px] text-gray-700 truncate">{nextGoalText}</div>}
                 {sideQuestText && (
-                  <div className="text-xs text-gray-700">
+                  <div className="text-[11px] text-gray-700 truncate">
                     <span className="side-quest-theme-icon" aria-hidden="true">📜</span>{' '}
                     {sideQuestText}
                   </div>
