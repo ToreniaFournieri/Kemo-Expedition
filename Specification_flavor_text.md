@@ -766,126 +766,126 @@
 | move | none | name は荒れた地面を踏みしめて進んでいる |
 | move | none | name は視界の開けた先を目指して歩いている |
 | move | none | name は立ち止まらず一定の速度で進軍している |
-| explore | `x.exp_id`1 and `x.floor`1 | name は風に揺れる草原をかき分け、散らばる岩陰を順に確かめている |
-| explore | `x.exp_id`1 and `x.floor`1 | name は遠くで草を食む獣の群れを横目に、足場の起伏を慎重に読んでいる |
-| explore | `x.exp_id`1 and `x.floor`1 | name は開けた平原の風向きを見て、精霊の気配が濃い方角へ進んでいる |
-| explore | `x.exp_id`1 and `x.floor`1 | name は草丈の低い道を選び、小型獣の通り道に残る新しい痕跡を追っている |
-| explore | `x.exp_id`1 and `x.floor`1 | name は点在する岩を目印に、見通しの良い位置を取りながら探索している |
-| explore | `x.exp_id`1 and `x.floor`1 | name は穏やかな風音に紛れる異音を拾おうと、耳を澄ませて立ち止まった |
-| explore | `x.exp_id`1 and `x.floor`1 | name は草原に走る獣道をたどり、平地の先にある浅い窪地を調べている |
-| explore | `x.exp_id`1 and `x.floor`1 | name は陽光を受けて波打つ草海の中で、危険の少ない進路を探している |
-| explore | `x.exp_id`1 and `x.floor`1 | name は開放的な景色に油断せず、岩場の影へ一歩ずつ視線を送っている |
-| explore | `x.exp_id`1 and `x.floor`1 | name は自然の静けさを確かめながら、平原の境目に残る細い踏み跡を記録した |
-| explore | `x.exp_id`1 and `x.floor`2 | name は背の高い草に残る血の筋を追い、捕食者の巡回路を慎重に外して進んでいる |
-| explore | `x.exp_id`1 and `x.floor`2 | name は骨片が散る獣道の分岐で足を止め、どの縄張りに踏み込んだかを見極めている |
-| explore | `x.exp_id`1 and `x.floor`2 | name は土に刻まれた爪痕の向きを読み、待ち伏せを避けるように風下へ回り込んだ |
-| explore | `x.exp_id`1 and `x.floor`2 | name は低く身をかがめ、捕食者の唸り声が遠ざかる瞬間を狙って草地を横切っている |
-| explore | `x.exp_id`1 and `x.floor`2 | name は荒く抉れた地面を指でなぞり、つい先ほど行われた狩りの跡を確認している |
-| explore | `x.exp_id`1 and `x.floor`2 | name は獣臭の濃い風に顔をしかめつつ、骨の山を避ける安全な迂回路を探している |
-| explore | `x.exp_id`1 and `x.floor`2 | name は倒れた灌木に残る牙の跡を見て、この一帯が明確な縄張りだと仲間へ合図した |
-| explore | `x.exp_id`1 and `x.floor`2 | name は草陰で息を潜め、獲物を追う影が通り過ぎるまで微動だにせず待っている |
-| explore | `x.exp_id`1 and `x.floor`2 | name は点々と続く蹄と足跡の交差を記録し、狩る者と狩られる者の流れを読んでいる |
-| explore | `x.exp_id`1 and `x.floor`2 | name は警戒の合図を小声で回し、視界の悪い草むらを槍先で払いながら前進した |
-| explore | `x.exp_id`1 and `x.floor`3 | name は巨大な足跡に溜まった雨水を見下ろし、古い移動路の方向を地図に写している |
-| explore | `x.exp_id`1 and `x.floor`3 | name は踏み潰された草原の幅を測り、群れの規模が想像以上だと息をのんだ |
-| explore | `x.exp_id`1 and `x.floor`3 | name は地鳴りのような足音を聞き分け、進路上の巨獣と距離を保つよう隊列を修正した |
-| explore | `x.exp_id`1 and `x.floor`3 | name は泥に沈んだ古い角の欠片を拾い、太古から続く回遊の証として袋へ収めた |
-| explore | `x.exp_id`1 and `x.floor`3 | name は草が一方向に倒れた帯をたどり、巨大草食獣が通ったばかりの道を横切っている |
-| explore | `x.exp_id`1 and `x.floor`3 | name は遠雷に似た鳴き声へ耳を向け、群れを刺激しない静かな通過路を選んでいる |
-| explore | `x.exp_id`1 and `x.floor`3 | name は抉れた土手を登り、見渡しの利く高所から古い回遊線の合流点を確認した |
-| explore | `x.exp_id`1 and `x.floor`3 | name は踏圧で硬くなった地面を杖で叩き、この先の足場強度を確かめながら進んでいる |
-| explore | `x.exp_id`1 and `x.floor`3 | name は巨体が擦った岩肌の跡に触れ、ここが長く使われた移動回廊だと判断した |
-| explore | `x.exp_id`1 and `x.floor`3 | name は視界を埋める巨大な背中の群れを避け、風上から静かに迂回している |
-| explore | `x.exp_id`1 and `x.floor`4 | name は疎林の影を渡る気配を追い、待ち伏せに適した岩棚を先に押さえている |
-| explore | `x.exp_id`1 and `x.floor`4 | name は木肌に刻まれた合図傷を読み、知性ある狩人の連携範囲を見抜こうとしている |
-| explore | `x.exp_id`1 and `x.floor`4 | name は枝葉の揺れ方の不自然さを察し、わざと開けた道を外れて側面へ回り込んだ |
-| explore | `x.exp_id`1 and `x.floor`4 | name は岩陰ごとに短く停止し、弓を引く音にも似た微かな軋みへ神経を尖らせている |
-| explore | `x.exp_id`1 and `x.floor`4 | name は地面の小石配置を観察し、直前に誰かが踏み替えた見張り位置を割り出した |
-| explore | `x.exp_id`1 and `x.floor`4 | name は木立の隙間に残る視線を感じ、囮にならぬよう隊の間隔を詰め直している |
-| explore | `x.exp_id`1 and `x.floor`4 | name は高低差のある岩場を使い、包囲されにくい立体的な進路を選択した |
-| explore | `x.exp_id`1 and `x.floor`4 | name は落ち葉に混じる加工縄の切れ端を拾い、罠師が近いことを仲間に伝えている |
-| explore | `x.exp_id`1 and `x.floor`4 | name は樹上の見張りを想定して頭上も警戒し、枝の重なりを避けて静かに歩を進めた |
-| explore | `x.exp_id`1 and `x.floor`4 | name は湿った土に残る軽い足跡を追跡し、伏兵の退路になりそうな尾根筋を封じている |
-| explore | `x.exp_id`1 and `x.floor`5 | name は泥に沈む靴を引き上げながら、葦の切れ目に続く浅瀬の道を探っている |
-| explore | `x.exp_id`1 and `x.floor`5 | name は淀んだ水面に浮く胞子膜を避け、腐敗臭の薄い風上側へ進路を寄せた |
-| explore | `x.exp_id`1 and `x.floor`5 | name はぬかるみに残る泡の弾け方を見て、足を取られる危険地帯を地図へ記した |
-| explore | `x.exp_id`1 and `x.floor`5 | name は水際の茸を棒で払い、毒性の高い胞子雲が広がる前に距離を取っている |
-| explore | `x.exp_id`1 and `x.floor`5 | name は腐木に張る苔を手掛かりに、沈み込みの少ない古い獣道をたどっている |
-| explore | `x.exp_id`1 and `x.floor`5 | name は膝下まで浸かる濁水の温度差を確かめ、湧き出しの位置から安全域を読んだ |
-| explore | `x.exp_id`1 and `x.floor`5 | name は湿地に響く羽音へ視線を巡らせ、吸血虫の群れを避ける煙草束を準備した |
-| explore | `x.exp_id`1 and `x.floor`5 | name は泥炭の割れ目へ石を投げ、底なし沼かどうかを確かめてから一歩を踏み出した |
-| explore | `x.exp_id`1 and `x.floor`5 | name は朽ちた杭列を発見し、かつて人が通した排水路の名残に沿って進んでいる |
-| explore | `x.exp_id`1 and `x.floor`5 | name は湿った外套を絞りつつ、黴の匂いが濃い区画を避けて高まりへ退避した |
-| explore | `x.exp_id`1 and `x.floor`6 | name は草に埋もれた舗装路を払い出し、忘れられた都市区画の境界線を確認している |
-| explore | `x.exp_id`1 and `x.floor`6 | name は崩れた塔の骨組みを見上げ、蔦に覆われた高架通路の通行可否を見極めている |
-| explore | `x.exp_id`1 and `x.floor`6 | name は土中から露出した金属板を叩き、空洞の下に残る旧施設を探っている |
-| explore | `x.exp_id`1 and `x.floor`6 | name は割れた標識の文字を読み取り、都市機能区の古い導線を地図へ復元した |
-| explore | `x.exp_id`1 and `x.floor`6 | name は苔むした配線溝をたどり、沈黙した機械群へ続く制御区画を探している |
-| explore | `x.exp_id`1 and `x.floor`6 | name は半ば土に呑まれた扉を掘り起こし、封鎖区画へ入るための取っ手を露出させた |
-| explore | `x.exp_id`1 and `x.floor`6 | name は崩落した居住棟の壁画を見て、繁栄していた時代の名残に静かに息をついた |
-| explore | `x.exp_id`1 and `x.floor`6 | name は雨水が落ちる音の反響を頼りに、地下へ続く無事な昇降路を見つけ出している |
-| explore | `x.exp_id`1 and `x.floor`6 | name は根に裂かれた管路の断面を調べ、まだ生きている動力網の気配を探った |
-| explore | `x.exp_id`1 and `x.floor`6 | name は瓦礫の間で光る古い合金片を拾い、失われた文明の痕跡を慎重に袋へ収めた |
-| explore | `x.exp_id`1 and `x.floor`1 | 風に押し倒された草の筋が、平原を横切る古い獣道を示している |
-| explore | `x.exp_id`1 and `x.floor`1 | 小石の転がる乾いた斜面の先に、見晴らしの良い観測地点が見つかった |
-| explore | `x.exp_id`1 and `x.floor`1 | 草波の切れ間から浅い窪地が現れ、休息した獣の痕跡が残っている |
-| explore | `x.exp_id`1 and `x.floor`1 | 南から吹く風が匂いを運び、精霊の気配が濃い区画が浮かび上がった |
-| explore | `x.exp_id`1 and `x.floor`1 | 岩陰ごとに地形を照合し、安全に進める直線ルートが地図へ記録された |
-| explore | `x.exp_id`1 and `x.floor`1 | 草丈の低い帯が続き、移動負荷の少ない進路として採用された |
-| explore | `x.exp_id`1 and `x.floor`1 | 遠くの群れの動きが穏やかで、周辺に大型脅威がいないことが確認できる |
-| explore | `x.exp_id`1 and `x.floor`1 | 風音に紛れる微かな羽ばたきから、小型生物の生息域が推定された |
-| explore | `x.exp_id`1 and `x.floor`1 | 日差しの角度を利用して岩の影を渡り、熱疲労を抑えた探索が続いている |
-| explore | `x.exp_id`1 and `x.floor`1 | 平原の境目に残る細い踏み跡が、次層へ繋がる有力な導線として残された |
-| explore | `x.exp_id`1 and `x.floor`2 | 草むらに散る骨片の白さが新しく、捕食圏の中心が近いことを告げている |
-| explore | `x.exp_id`1 and `x.floor`2 | 爪痕の深い樹皮が連続し、縄張り境界線が扇状に広がっている |
-| explore | `x.exp_id`1 and `x.floor`2 | 血痕の乾き具合から狩りの時刻が割り出され、遭遇率の高い時間帯が避けられた |
-| explore | `x.exp_id`1 and `x.floor`2 | 低い唸り声の反響で谷筋の密度が読まれ、待ち伏せ地点が地図にマークされた |
-| explore | `x.exp_id`1 and `x.floor`2 | 蹄跡と肉食獣の足跡が交差し、追跡経路の重なる危険帯が明確になった |
-| explore | `x.exp_id`1 and `x.floor`2 | 倒木の裂け目に残る牙傷から、この区画の主の体格が推定されている |
-| explore | `x.exp_id`1 and `x.floor`2 | 風下の低地は獣臭が濃く、監視を厚くしたうえで短時間通過が選択された |
-| explore | `x.exp_id`1 and `x.floor`2 | 草の倒れ方が不自然に途切れ、伏せた捕食者の潜伏線が洗い出された |
-| explore | `x.exp_id`1 and `x.floor`2 | 地面の抉れ方から複数個体の争い跡が判明し、迂回路の優先度が上がった |
-| explore | `x.exp_id`1 and `x.floor`2 | 視界の利かない高草地帯は槍先で払いながら進む運用に切り替えられた |
-| explore | `x.exp_id`1 and `x.floor`3 | 巨大な足跡の間隔が一定で、太古の回遊路が今も維持されていると分かる |
-| explore | `x.exp_id`1 and `x.floor`3 | 踏圧で固まった地表が帯状に続き、重量級の群れが定期通過している証拠となった |
-| explore | `x.exp_id`1 and `x.floor`3 | 地鳴りに似た振動周期が計測され、群れ接近の予兆として共有された |
-| explore | `x.exp_id`1 and `x.floor`3 | 擦り減った岩肌の高さから、通過する巨獣の肩高が記録されている |
-| explore | `x.exp_id`1 and `x.floor`3 | 草原を横切る広い倒伏帯が現れ、回遊本線への合流点が特定された |
-| explore | `x.exp_id`1 and `x.floor`3 | 古い角の破片と新しい糞痕が同時に見つかり、長期利用地であることが裏付けられた |
-| explore | `x.exp_id`1 and `x.floor`3 | 見晴らしの良い土手上から群れの進行方向を観測し、安全な横断窓が算出された |
-| explore | `x.exp_id`1 and `x.floor`3 | 遠雷のような鳴き声が連鎖し、群れ内の連絡距離の長さに緊張が走る |
-| explore | `x.exp_id`1 and `x.floor`3 | 泥濘に残る深い沈み込みが、足場崩落の危険区画を示している |
-| explore | `x.exp_id`1 and `x.floor`3 | 風上側へ回ることで匂い検知を避け、巨体群との不要接触が回避された |
-| explore | `x.exp_id`1 and `x.floor`4 | まばらな樹林と岩棚の重なりが、待ち伏せに適した死角を多数生んでいる |
-| explore | `x.exp_id`1 and `x.floor`4 | 木肌の刻み印に規則性があり、知性ある勢力の合図網が機能していると判明した |
-| explore | `x.exp_id`1 and `x.floor`4 | 枝葉の揺れが風向と一致せず、監視者の移動経路が逆算されている |
-| explore | `x.exp_id`1 and `x.floor`4 | 小石の配置変化から直近の足運びが特定され、警戒線の幅が更新された |
-| explore | `x.exp_id`1 and `x.floor`4 | 樹上視点を前提に進路を組み直し、頭上の射線を切るルートが採択された |
-| explore | `x.exp_id`1 and `x.floor`4 | 乾いた枝の折れ位置が低く、伏兵が低姿勢で潜む傾向が共有されている |
-| explore | `x.exp_id`1 and `x.floor`4 | 岩陰ごとの停止観測により、連携包囲に使われる導線が一本ずつ潰された |
-| explore | `x.exp_id`1 and `x.floor`4 | 加工縄の繊維片が見つかり、罠設置班の活動域が明確化された |
-| explore | `x.exp_id`1 and `x.floor`4 | 尾根筋の狭路は退路封鎖に使われやすく、先行偵察の比重が引き上げられた |
-| explore | `x.exp_id`1 and `x.floor`4 | 稜線の逆光を避ける移動でシルエット露出を抑え、被発見率が下げられている |
-| explore | `x.exp_id`1 and `x.floor`5 | 葦原の切れ目に浅い流路が続き、沈みにくい渡渉帯として利用可能と判断された |
-| explore | `x.exp_id`1 and `x.floor`5 | 泥炭地の気泡発生が活発で、踏み抜き危険区画の外周が更新されている |
-| explore | `x.exp_id`1 and `x.floor`5 | 腐敗臭の濃淡を追うことで換気のある高まりが見つかり、休止点候補に加わった |
-| explore | `x.exp_id`1 and `x.floor`5 | 水面に浮く胞子膜が厚く、呼吸器対策を優先する運用へ切り替えられた |
-| explore | `x.exp_id`1 and `x.floor`5 | 朽木に広がる菌糸の色差から、毒性の高い茸群の分布線が特定された |
-| explore | `x.exp_id`1 and `x.floor`5 | 湧水の温度差が明瞭で、ぬかるみ深度の低い帯が安全路として確保された |
-| explore | `x.exp_id`1 and `x.floor`5 | 吸血虫の密集域は煙で散らし、視界確保を優先した短距離移動が選ばれている |
-| explore | `x.exp_id`1 and `x.floor`5 | 沈下した杭列の並びから、旧排水設備の走向が読み取られている |
-| explore | `x.exp_id`1 and `x.floor`5 | 黴の強い窪地を外して尾根寄りを進み、装備腐食の進行を抑えている |
-| explore | `x.exp_id`1 and `x.floor`5 | 泥のはね返り高さを計測し、荷重配分を変えた通過手順が全体に共有された |
-| explore | `x.exp_id`1 and `x.floor`6 | 草に埋もれた舗装路の継ぎ目が現れ、旧市街区画の輪郭が再構築されつつある |
-| explore | `x.exp_id`1 and `x.floor`6 | 崩落塔の骨組み越しに高架導線が見え、上層移動網の残存が確認された |
-| explore | `x.exp_id`1 and `x.floor`6 | 土中露出した合金板の響きが空洞を示し、地下施設の存在が裏付けられた |
-| explore | `x.exp_id`1 and `x.floor`6 | 風化した標識文字が解読され、機能区分ごとの進入優先度が整理された |
-| explore | `x.exp_id`1 and `x.floor`6 | 苔に覆われた配線溝が連続し、制御中枢へ向かう可能性線が抽出された |
-| explore | `x.exp_id`1 and `x.floor`6 | 半没した隔壁の取手が掘り出され、閉鎖区画へのアクセス手段が確保された |
-| explore | `x.exp_id`1 and `x.floor`6 | 居住棟の壁面意匠が残り、文明期の生活圏がこの層まで広がっていたと分かる |
-| explore | `x.exp_id`1 and `x.floor`6 | 雨音の反響差を使った測位で、崩落していない昇降路候補が絞り込まれた |
-| explore | `x.exp_id`1 and `x.floor`6 | 根に裂かれた管路の断面に微かな熱が残り、動力網の一部生存が示唆されている |
-| explore | `x.exp_id`1 and `x.floor`6 | 瓦礫中の古い合金片が回収され、失われた技術系譜の手掛かりとして保管された |
+| explore | `x.exp_id`1 and `x.floor`1 | name は風渡る草原で古き道標石を見つけ、旅の祝福を祈りつつ進んでいる |
+| explore | `x.exp_id`1 and `x.floor`1 | name は陽光にきらめく草海のうねりを読み、精霊が囁く方角へ足を向けた |
+| explore | `x.exp_id`1 and `x.floor`1 | name は岩陰に咲く小さな守り花を見つけ、この地の加護が残ると確かめている |
+| explore | `x.exp_id`1 and `x.floor`1 | name は獣道に残るひづめ跡をなぞり、平穏を守る巡礼路を探している |
+| explore | `x.exp_id`1 and `x.floor`1 | name は草の梢に揺れる羽飾りを拾い、先人の旅団の痕跡として記録した |
+| explore | `x.exp_id`1 and `x.floor`1 | name は遠い丘の石碑へ目を凝らし、古詩に詠まれた境界を見定めている |
+| explore | `x.exp_id`1 and `x.floor`1 | name は澄んだ風音に耳を澄ませ、精霊獣の通る静かな回廊を選び取った |
+| explore | `x.exp_id`1 and `x.floor`1 | name は草葉の露を指で払い、夜明けに刻まれた新しい足跡を追っている |
+| explore | `x.exp_id`1 and `x.floor`1 | name は開けた空の下で祈り札を結び、邪気を避ける進路を整えている |
+| explore | `x.exp_id`1 and `x.floor`1 | name は平原の果てに揺らぐ蜃気楼を見据え、幻惑に呑まれぬよう歩を進めた |
+| explore | `x.exp_id`1 and `x.floor`2 | name は赤黒い土に刻まれた爪痕を読み、魔獣の縄張りを慎重に外している |
+| explore | `x.exp_id`1 and `x.floor`2 | name は骨の散る獣道で短く祈詞を唱え、荒ぶる気配を鎮めながら進んだ |
+| explore | `x.exp_id`1 and `x.floor`2 | name は風下へ回り込み、狩りを司る獣王の眷属に見つからぬ道を選んでいる |
+| explore | `x.exp_id`1 and `x.floor`2 | name は倒木に残る牙の痕へ手を当て、この地の掟を仲間へ静かに伝えた |
+| explore | `x.exp_id`1 and `x.floor`2 | name は草陰で気配を殺し、唸り声が遠ざかる刻を待って一気に駆け抜けた |
+| explore | `x.exp_id`1 and `x.floor`2 | name は裂かれた地面の血痕を見つめ、つい先ほどの死闘を読み解いている |
+| explore | `x.exp_id`1 and `x.floor`2 | name は獣臭まじりの風に眉をひそめ、呪除け香を焚いて進路を確保した |
+| explore | `x.exp_id`1 and `x.floor`2 | name は蹄跡と爪跡の交差を地図へ写し、狩る者と狩られる者の流れを掴んだ |
+| explore | `x.exp_id`1 and `x.floor`2 | name は槍先で高草を払い、伏せる影を暴くように一歩ずつ前進している |
+| explore | `x.exp_id`1 and `x.floor`2 | name は月の紋を刻んだ護符を握り、牙の領域を越える覚悟を固めた |
+| explore | `x.exp_id`1 and `x.floor`3 | name は湖のように雨を湛えた巨獣の足跡を見下ろし、太古の回遊路を辿っている |
+| explore | `x.exp_id`1 and `x.floor`3 | name は踏み伏せられた草原の幅を測り、古の巨躯が今も息づくと知った |
+| explore | `x.exp_id`1 and `x.floor`3 | name は地鳴りめく鼓動を聞き分け、巨獣の群れと距離を取る陣形へ組み替えた |
+| explore | `x.exp_id`1 and `x.floor`3 | name は泥に埋もれた角片を拾い、太古の王獣の証として袋へ収めている |
+| explore | `x.exp_id`1 and `x.floor`3 | name は草が倒れた帯を追い、星巡りのように続く獣群の道を横切った |
+| explore | `x.exp_id`1 and `x.floor`3 | name は雷鳴に似た遠吠えへ耳を澄ませ、群れを刺激せぬ静路を選んでいる |
+| explore | `x.exp_id`1 and `x.floor`3 | name は抉れた土手を登り、見晴らしの高みから回遊線の結び目を見定めた |
+| explore | `x.exp_id`1 and `x.floor`3 | name は杖で地を叩いて足場を確かめ、巨体の通り道を慎重に渡っている |
+| explore | `x.exp_id`1 and `x.floor`3 | name は岩肌の擦過痕に触れ、この谷が王獣の古き回廊だと悟った |
+| explore | `x.exp_id`1 and `x.floor`3 | name は風上から静かに迂回し、視界を埋める群れに気取られず進んだ |
+| explore | `x.exp_id`1 and `x.floor`4 | name は疎林の影を渡る気配を追い、狩人たちの見張り座を先に押さえている |
+| explore | `x.exp_id`1 and `x.floor`4 | name は木肌の刻印を読み、森の民が残した合図網の境を見抜こうとしている |
+| explore | `x.exp_id`1 and `x.floor`4 | name は不自然な枝揺れを察し、囮道を外れて側面の獣径へ回り込んだ |
+| explore | `x.exp_id`1 and `x.floor`4 | name は岩陰ごとに息を潜め、弦鳴りに似た軋みへ神経を研ぎ澄ませている |
+| explore | `x.exp_id`1 and `x.floor`4 | name は小石の並びを見て、見張りが入れ替わった直後の足取りを割り出した |
+| explore | `x.exp_id`1 and `x.floor`4 | name は木立の隙間に刺さる視線を感じ、隊の間隔を詰めて奇襲を防いでいる |
+| explore | `x.exp_id`1 and `x.floor`4 | name は高低差ある岩場を使い、包囲されにくい立体の進路を選び取った |
+| explore | `x.exp_id`1 and `x.floor`4 | name は落ち葉に紛れた罠縄の繊維を拾い、罠師の活動域を仲間へ告げた |
+| explore | `x.exp_id`1 and `x.floor`4 | name は尾根筋の狭路を避け、退路を失わぬよう樹間の小道へ降りている |
+| explore | `x.exp_id`1 and `x.floor`4 | name は逆光の稜線を離れ、月影に溶けるように潜行を続けている |
+| explore | `x.exp_id`1 and `x.floor`5 | name は葦の切れ目を流れる浅瀬を見つけ、沈まぬ渡り道として印を結んだ |
+| explore | `x.exp_id`1 and `x.floor`5 | name は泥炭の泡立ちを見極め、踏み抜く沼域を避ける細道を選んでいる |
+| explore | `x.exp_id`1 and `x.floor`5 | name は腐葉の匂いの薄い高まりを探し、休息に足る乾いた島を確保した |
+| explore | `x.exp_id`1 and `x.floor`5 | name は水面を覆う胞子膜を見て口布を固く締め、瘴気への備えを整えた |
+| explore | `x.exp_id`1 and `x.floor`5 | name は朽木に這う菌糸の色を読み、毒茸の群生帯を大きく迂回している |
+| explore | `x.exp_id`1 and `x.floor`5 | name は湧水の温みを辿り、ぬかるみの浅い帯を安全路として仲間に示した |
+| explore | `x.exp_id`1 and `x.floor`5 | name は吸血虫の群れへ燻煙玉を投げ、視界を守りながら短距離で進んだ |
+| explore | `x.exp_id`1 and `x.floor`5 | name は沈んだ杭列を見つけ、失われた堤道の名残を道標として活かしている |
+| explore | `x.exp_id`1 and `x.floor`5 | name は黴の濃い窪地を外し、装備を蝕む湿気から仲間を守って進んだ |
+| explore | `x.exp_id`1 and `x.floor`5 | name は泥はねの高さを見て荷重を配り直し、沼渡りの手順を全員に共有した |
+| explore | `x.exp_id`1 and `x.floor`6 | name は草に埋もれた石畳を払い、滅びた古都の大路をひと筋ずつ辿っている |
+| explore | `x.exp_id`1 and `x.floor`6 | name は崩れ塔の骨格越しに空中回廊の跡を見つけ、上層への道筋を読んだ |
+| explore | `x.exp_id`1 and `x.floor`6 | name は地中から覗く封印板に耳を当て、地下聖域の空洞を見抜いている |
+| explore | `x.exp_id`1 and `x.floor`6 | name は風化した石標の古語を解き、禁域と祈殿の境を丁寧に切り分けた |
+| explore | `x.exp_id`1 and `x.floor`6 | name は苔むす導水溝をたどり、王都中枢へ続く巡礼路の名残を探っている |
+| explore | `x.exp_id`1 and `x.floor`6 | name は半ば埋もれた青銅の取手を掘り出し、閉ざされた祭室への口を開いた |
+| explore | `x.exp_id`1 and `x.floor`6 | name は宮壁の浮彫に触れ、栄華の時代に捧げられた祈りの形を読み取った |
+| explore | `x.exp_id`1 and `x.floor`6 | name は反響する足音を数え、崩れていない螺旋階の位置を慎重に絞っている |
+| explore | `x.exp_id`1 and `x.floor`6 | name は樹根に裂かれた石管の温みを感じ、今なお息づく霊脈の流れを知った |
+| explore | `x.exp_id`1 and `x.floor`6 | name は瓦礫に眠る古い護符片を拾い、失われた王朝の記憶として保管した |
+| explore | `x.exp_id`1 and `x.floor`1 | 風渡る草原で道標石が見つかり、旅人を守る古い加護が息づいている |
+| explore | `x.exp_id`1 and `x.floor`1 | 陽光に揺れる草海のうねりが、精霊の通り道を示すように連なっていた |
+| explore | `x.exp_id`1 and `x.floor`1 | 岩陰に咲く守り花が点在し、この層が穏やかな祝福に包まれていると分かる |
+| explore | `x.exp_id`1 and `x.floor`1 | 獣道の新しいひづめ跡が続き、巡礼路へ重なる安全な進路が特定された |
+| explore | `x.exp_id`1 and `x.floor`1 | 草葉の露に残る微細な乱れから、夜明け直後の通行が推定されている |
+| explore | `x.exp_id`1 and `x.floor`1 | 古詩に記された境界石が確認され、平原の区画認識が更新された |
+| explore | `x.exp_id`1 and `x.floor`1 | 風音に混じる低い唄声が観測され、精霊獣の回廊が共有地図へ追記された |
+| explore | `x.exp_id`1 and `x.floor`1 | 蜃気楼の揺らぎが視線を誘うため、幻惑対策を前提に隊列が組み直された |
+| explore | `x.exp_id`1 and `x.floor`1 | 開けた地形ほど影が薄く、見張り役の配置密度が引き上げられている |
+| explore | `x.exp_id`1 and `x.floor`1 | 小さな羽飾りの遺物が回収され、先人旅団の通過記録として保管された |
+| explore | `x.exp_id`1 and `x.floor`2 | 赤黒い土に深い爪痕が残り、魔獣の縄張り線が明確に引かれている |
+| explore | `x.exp_id`1 and `x.floor`2 | 骨片の散る分岐が続き、狩り場の重なりを避ける迂回路運用に切り替えられた |
+| explore | `x.exp_id`1 and `x.floor`2 | 風下移動を徹底することで、獣王眷属への被発見率が抑えられている |
+| explore | `x.exp_id`1 and `x.floor`2 | 倒木に残る牙痕の新しさから、直近で大型個体が巡回したと判断された |
+| explore | `x.exp_id`1 and `x.floor`2 | 高草の陰は視界を奪うため、槍先で払う前進手順が全体へ共有された |
+| explore | `x.exp_id`1 and `x.floor`2 | 血痕の乾き具合が浅く、つい先ほどの死闘痕が残る危険帯と見なされている |
+| explore | `x.exp_id`1 and `x.floor`2 | 交差する蹄跡と爪跡が記録され、捕食と逃走の流れが図示された |
+| explore | `x.exp_id`1 and `x.floor`2 | 呪除け香の使用で獣臭の濃い区画を突破し、隊の動揺が抑えられた |
+| explore | `x.exp_id`1 and `x.floor`2 | 唸り声の反響方向が分析され、待ち伏せを避ける静路が再設定された |
+| explore | `x.exp_id`1 and `x.floor`2 | 護符消費を前提にした短時間侵入へ改められ、被害拡大が抑制されている |
+| explore | `x.exp_id`1 and `x.floor`3 | 湖のような足跡が連続し、太古の王獣回廊が現役であると裏付けられた |
+| explore | `x.exp_id`1 and `x.floor`3 | 踏み伏せられた草原の幅から、群れ規模が従来想定を上回ると判明した |
+| explore | `x.exp_id`1 and `x.floor`3 | 地鳴りめく振動周期が共有され、接近兆候の早期察知体制が強化された |
+| explore | `x.exp_id`1 and `x.floor`3 | 角片と新しい足跡が同時に見つかり、長期回遊地であることが補強された |
+| explore | `x.exp_id`1 and `x.floor`3 | 倒伏帯の向きが揃い、獣群の主流動線が一本化されていると分かる |
+| explore | `x.exp_id`1 and `x.floor`3 | 雷鳴に似る遠吠えが連鎖し、群れ内連絡の広さに警戒が高まった |
+| explore | `x.exp_id`1 and `x.floor`3 | 高所観測で回遊線の合流点が特定され、安全横断窓が再計算された |
+| explore | `x.exp_id`1 and `x.floor`3 | 地盤を叩く確認手順により、崩れやすい帯の外周が更新されている |
+| explore | `x.exp_id`1 and `x.floor`3 | 岩肌の擦過痕が広範囲に残り、巨躯通行の頻度が高い区画と判定された |
+| explore | `x.exp_id`1 and `x.floor`3 | 風上迂回を徹底した運用で、王獣群との不要接触が回避された |
+| explore | `x.exp_id`1 and `x.floor`4 | 疎林と岩棚の重なりが多く、待ち伏せに適した死角が密集している |
+| explore | `x.exp_id`1 and `x.floor`4 | 木肌の刻印に規則性があり、森の狩人による合図網が機能していると判明した |
+| explore | `x.exp_id`1 and `x.floor`4 | 枝揺れが風向と合致せず、監視者の移動路が逆算されている |
+| explore | `x.exp_id`1 and `x.floor`4 | 小石の配置変化から見張り交代が推測され、警戒線幅が更新された |
+| explore | `x.exp_id`1 and `x.floor`4 | 樹上射線を切る進路へ改めることで、頭上奇襲の危険が軽減された |
+| explore | `x.exp_id`1 and `x.floor`4 | 低位置で折れた枝が多く、伏兵が低姿勢で潜む傾向が共有されている |
+| explore | `x.exp_id`1 and `x.floor`4 | 岩陰ごとの停止観測で、連携包囲に使われる導線が順次潰された |
+| explore | `x.exp_id`1 and `x.floor`4 | 罠縄の繊維片が回収され、罠師活動域の地図精度が引き上げられた |
+| explore | `x.exp_id`1 and `x.floor`4 | 尾根筋の狭路は退路封鎖に使われやすく、先行偵察比率が上げられている |
+| explore | `x.exp_id`1 and `x.floor`4 | 逆光稜線を避ける潜行で輪郭露出が抑えられ、被発見率が低下した |
+| explore | `x.exp_id`1 and `x.floor`5 | 葦原の切れ目に浅瀬が続き、沈みにくい渡り道として活用可能と判断された |
+| explore | `x.exp_id`1 and `x.floor`5 | 泥炭の泡立ちが活発で、踏み抜き危険帯の外周線が更新されている |
+| explore | `x.exp_id`1 and `x.floor`5 | 腐葉臭の薄い高まりが見つかり、休止点候補として登録された |
+| explore | `x.exp_id`1 and `x.floor`5 | 水面の胞子膜が厚く、口布と解毒薬を優先する運用へ切り替えられた |
+| explore | `x.exp_id`1 and `x.floor`5 | 菌糸色の差異から毒茸群の分布線が特定され、迂回路が再設定された |
+| explore | `x.exp_id`1 and `x.floor`5 | 湧水温度の偏りが明瞭で、ぬかるみの浅い帯が安全路として確保された |
+| explore | `x.exp_id`1 and `x.floor`5 | 吸血虫密集域は燻煙で散らし、短距離移動を重ねる方針が採択された |
+| explore | `x.exp_id`1 and `x.floor`5 | 沈下杭列の並びから、失われた堤道の走向が読み取られている |
+| explore | `x.exp_id`1 and `x.floor`5 | 黴の濃い窪地を外す運用で、装備腐食の進行が抑制された |
+| explore | `x.exp_id`1 and `x.floor`5 | 泥はね高さの計測結果を反映し、荷重配分手順が全体に共有された |
+| explore | `x.exp_id`1 and `x.floor`6 | 草に埋もれた石畳が現れ、滅びた古都区画の輪郭が再構築されつつある |
+| explore | `x.exp_id`1 and `x.floor`6 | 崩れ塔越しに空中回廊跡が確認され、上層導線の残存が裏付けられた |
+| explore | `x.exp_id`1 and `x.floor`6 | 地中露出した封印板の反響が空洞を示し、地下聖域の存在が補強された |
+| explore | `x.exp_id`1 and `x.floor`6 | 風化石標の古語が解読され、禁域ごとの進入優先度が整理された |
+| explore | `x.exp_id`1 and `x.floor`6 | 苔むす導水溝が連続し、王都中枢へ向かう巡礼路候補が抽出された |
+| explore | `x.exp_id`1 and `x.floor`6 | 半没した青銅取手が掘り出され、閉鎖祭室へのアクセスが確保された |
+| explore | `x.exp_id`1 and `x.floor`6 | 宮壁の浮彫意匠が残り、往時の祈礼文化がこの層まで広がっていたと分かる |
+| explore | `x.exp_id`1 and `x.floor`6 | 反響差を使った測位で、崩れていない螺旋階候補が絞り込まれた |
+| explore | `x.exp_id`1 and `x.floor`6 | 樹根に裂かれた石管に微かな温みが残り、霊脈の一部生存が示唆されている |
+| explore | `x.exp_id`1 and `x.floor`6 | 瓦礫中の古い護符片が回収され、失われた王朝史の手掛かりとして保管された |
 | sound_sleep | with mainClass.`Fighter` | name は鎧を外したまま深く眠り、戦場の緊張を静かに解いている |
 | sound_sleep | with mainClass.`Fighter` | name は盾を抱くようにして熟睡し、守る意志を休息に変えている |
 | sound_sleep | with mainClass.`Fighter` | name は規則正しい寝息で体幹の疲労をじっくり回復している |
