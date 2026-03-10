@@ -5362,10 +5362,15 @@ function ExpeditionTab({
           const flavorSeed = cycle.state === 'rest'
             ? Math.floor(Date.now() / 15_000) + partyIndex * 131
             : cycle.stateStartedAt + partyIndex * 131;
+          const currentDisplayedEntry = displayedEntries.length > 0
+            ? displayedEntries[displayedEntries.length - 1]
+            : null;
           const flavorText = getRuntimeFlavorText({
             state: cycle.state as FlavorCycleState,
             hpRatio: Math.max(0, Math.min(1, displayedHp / Math.max(1, partyStats.hp))),
             returnOutcome: cycle.state === 'return' ? getReturnFlavorOutcome(currentLog) : undefined,
+            expeditionId: cycle.state === 'explore' ? currentLog?.dungeonId : undefined,
+            floor: cycle.state === 'explore' ? currentDisplayedEntry?.floor : undefined,
             mainClassId: leader.mainClassId,
             raceId: leader.raceId,
             partyMainClassIds: party.characters.map((member) => member.mainClassId),
