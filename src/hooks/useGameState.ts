@@ -1267,13 +1267,15 @@ function createInitialState(): GameState {
   };
 }
 
+type GameMode = 'm.kemo' | 'm.luna' | 'm.laika';
+
 type GameAction =
   | { type: 'SELECT_PARTY'; partyIndex: number }
   | { type: 'SELECT_DUNGEON'; partyIndex: number; dungeonId: number }
   | { type: 'SET_EXPEDITION_DEPTH_LIMIT'; partyIndex: number; depthLimit: ExpeditionDepthLimit }
   | { type: 'RESET_EXPEDITION_STATS'; partyIndex: number }
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
-  | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; isLunaMode?: boolean; triggerGodsBattle?: boolean }
+  | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; gameMode?: GameMode; triggerGodsBattle?: boolean }
   | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number }
   | { type: 'HEAL_PARTY_HP'; partyIndex: number; amount: number }
   | { type: 'CLEAR_PENDING_PROFIT'; partyIndex: number }
@@ -1298,7 +1300,7 @@ type GameAction =
   | { type: 'MARK_DIARY_LOG_SEEN'; logId: string }
   | { type: 'MARK_ALL_DIARY_LOGS_SEEN' }
   | { type: 'UPDATE_DIARY_SETTINGS'; partyIndex: number; settings: Partial<DiarySettings> }
-  | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; isLunaMode?: boolean; simulatedEndAt?: number }
+  | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: GameMode; simulatedEndAt?: number }
   | { type: 'RESET_GAME' }
   | { type: 'IMPORT_GAME_STATE'; state: GameState }
   | { type: 'RESET_COMMON_BAGS' }
@@ -1484,7 +1486,7 @@ function resolveEnemyRewards(
   currentInventory: InventoryRecord,
   currentGold: number,
   hasUnlock: boolean,
-  isLunaMode: boolean,
+  gameMode: GameMode,
   autoSellMultiplier: number,
   hasExtraRewardRollBlessing: boolean = false
 ): {
@@ -1533,7 +1535,7 @@ function resolveEnemyRewards(
 
     const bonusRollCount =
       (hasUnlock ? 1 : 0)
-      + (isLunaMode ? 1 : 0)
+      + (gameMode === 'm.luna' ? 1 : 0)
       + (hasExtraRewardRollBlessing ? 1 : 0);
     for (let rollIndex = 0; rollIndex < bonusRollCount; rollIndex++) {
       bags = refillBagIfEmpty(bags, rewardBagType);
@@ -1548,15 +1550,17 @@ function resolveEnemyRewards(
     const { ticket: enhVal, newBag: newEnhBag } = drawFromBag(bags[enhancementBagType]);
     bags = { ...bags, [enhancementBagType]: newEnhBag };
 
+    const normalizedEnhancement = gameMode === 'm.laika' && enhVal >= 5 ? 4 : enhVal;
+
     let srVal = 0;
-    if (enhVal >= 1) {
+    if (normalizedEnhancement >= 1 && gameMode !== 'm.laika') {
       bags = refillBagIfEmpty(bags, 'superRareBag');
       const { ticket: drawnSrVal, newBag: newSRBag } = drawFromBag(bags.superRareBag);
       bags = { ...bags, superRareBag: newSRBag };
       srVal = drawnSrVal;
     }
 
-    const newItem: Item = { ...baseItem, enhancement: enhVal, superRare: srVal };
+    const newItem: Item = { ...baseItem, enhancement: normalizedEnhancement, superRare: srVal };
     const itemName = getItemDisplayName(newItem);
     const result = addItemToInventory(inventory, newItem, gold, autoSellMultiplier);
     recoveredItems.push(newItem);
@@ -1825,6 +1829,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'RUN_EXPEDITION': {
+      const gameMode = action.gameMode ?? 'm.kemo';
       const currentParty = state.parties[action.partyIndex];
       const dungeon = getDungeonById(currentParty.selectedDungeonId);
       if (!dungeon) return state;
@@ -1947,15 +1952,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             if (!baseEnemy) continue;
 
             const roomMultiplier = getRoomMultiplier(floor.floorNumber, roomDef.type, floor.multiplier);
-            const effectiveTier = getEffectiveExpeditionTier(dungeon.id, !!action.isLunaMode);
+            const effectiveTier = getEffectiveExpeditionTier(dungeon.id, gameMode === 'm.luna');
             const effectiveDungeon = {
               ...dungeon,
               tier: effectiveTier,
-              enemyMultipliers: getEffectiveEnemyMultipliers(dungeon, !!action.isLunaMode),
+              enemyMultipliers: getEffectiveEnemyMultipliers(dungeon, gameMode === 'm.luna'),
             };
             let enemy = applyEnemyEncounterScaling(baseEnemy, effectiveDungeon, floor.floorNumber, roomDef.type);
             if (isGodsBattle && roomDef.type === 'battle_Boss') {
-              enemy = createGodEnemy(enemy, dungeon.id, dungeon.name, !!action.isLunaMode);
+              enemy = createGodEnemy(enemy, dungeon.id, dungeon.name, gameMode === 'm.luna');
             }
 
             // Pass currentHp to maintain HP persistence during expedition
@@ -1996,7 +2001,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             };
 
             if (battleResult.outcome === 'victory') {
-              const enemyLevelFinal = getEffectiveEnemyLevel(dungeon.expLevel, floor.floorNumber, !!action.isLunaMode);
+              const enemyLevelFinal = getEffectiveEnemyLevel(dungeon.expLevel, floor.floorNumber, gameMode === 'm.luna');
               totalExp += calculateExperience(
                 enemy.experience,
                 roomDef.type,
@@ -2021,7 +2026,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 currentInventory,
                 currentGold,
                 hasUnlock,
-                !!action.isLunaMode,
+                gameMode,
                 autoSellMultiplier,
                 hasExtraRewardRollBlessing
               );
@@ -3015,6 +3020,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'SIMULATE_AFK': {
+      const gameMode = action.gameMode ?? 'm.kemo';
       if (!action.isAutoRepeatEnabled) return state;
 
       const cappedElapsedMs = Math.max(0, Math.min(action.elapsedMs, AFK_MAX_SIMULATION_MS));
@@ -3038,7 +3044,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             cycleCompletedAt + (partyIndex * partyTimestampStepMs)
           );
 
-          workingState = gameReducer(workingState, { type: 'RUN_EXPEDITION', partyIndex, simulatedAt, isLunaMode: action.isLunaMode });
+          workingState = gameReducer(workingState, { type: 'RUN_EXPEDITION', partyIndex, simulatedAt, gameMode });
           workingState = gameReducer(workingState, { type: 'FINALIZE_DIARY_LOG', partyIndex });
 
           const currentParty = workingState.parties[partyIndex];
@@ -3494,8 +3500,8 @@ export function useGameState() {
       dispatch({ type: 'UPDATE_PARTY_DEITY', partyIndex, deityName });
     }, []),
 
-    runExpedition: useCallback((partyIndex: number, isLunaMode: boolean = false, triggerGodsBattle: boolean = false) => {
-      dispatch({ type: 'RUN_EXPEDITION', partyIndex, isLunaMode, triggerGodsBattle });
+    runExpedition: useCallback((partyIndex: number, gameMode: GameMode = 'm.kemo', triggerGodsBattle: boolean = false) => {
+      dispatch({ type: 'RUN_EXPEDITION', partyIndex, gameMode, triggerGodsBattle });
     }, []),
 
     finalizeDiaryLog: useCallback((partyIndex: number) => {
@@ -3594,8 +3600,8 @@ export function useGameState() {
       dispatch({ type: 'UPDATE_DIARY_SETTINGS', partyIndex, settings });
     }, []),
 
-    simulateAfk: useCallback((elapsedMs: number, isAutoRepeatEnabled: boolean, isLunaMode: boolean = false, simulatedEndAt?: number) => {
-      dispatch({ type: 'SIMULATE_AFK', elapsedMs, isAutoRepeatEnabled, isLunaMode, simulatedEndAt });
+    simulateAfk: useCallback((elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode: GameMode = 'm.kemo', simulatedEndAt?: number) => {
+      dispatch({ type: 'SIMULATE_AFK', elapsedMs, isAutoRepeatEnabled, gameMode, simulatedEndAt });
     }, []),
 
     resetGame: useCallback(() => {

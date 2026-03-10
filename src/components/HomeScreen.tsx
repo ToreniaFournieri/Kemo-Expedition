@@ -59,7 +59,7 @@ interface HomeScreenProps {
     selectDungeon: (partyIndex: number, dungeonId: number) => void;
     setExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
     resetExpeditionStats: (partyIndex: number) => void;
-    runExpedition: (partyIndex: number, isLunaMode?: boolean, triggerGodsBattle?: boolean) => void;
+    runExpedition: (partyIndex: number, gameMode?: GameMode, triggerGodsBattle?: boolean) => void;
     finalizeDiaryLog: (partyIndex: number) => void;
     updatePartyDeity: (partyIndex: number, deityName: string) => void;
     healPartyHp: (partyIndex: number, amount: number) => void;
@@ -85,7 +85,7 @@ interface HomeScreenProps {
     markDiaryLogSeen: (logId: string) => void;
     markAllDiaryLogsSeen: () => void;
     updateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
-    simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean, isLunaMode?: boolean, simulatedEndAt?: number) => void;
+    simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode?: GameMode, simulatedEndAt?: number) => void;
     resetGame: () => void;
     importGameState: (state: GameState) => void;
     resetCommonBags: () => void;
@@ -200,7 +200,7 @@ function getElapsedWholeSeconds(carriedMs: number, elapsedMs: number): { gainedS
 }
 
 const HEADER_HEIGHT_CLASS = 'pt-[118px]';
-type GameMode = 'm.kemo' | 'm.luna';
+type GameMode = 'm.kemo' | 'm.luna' | 'm.laika';
 type DarkModeSetting = 'off' | 'on' | 'system';
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
 const AUTO_EQUIPMENT_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-auto-equipment');
@@ -1556,7 +1556,7 @@ function getInitialGameMode(isLunaEnvironment: boolean): GameMode {
 
   try {
     const savedMode = localStorage.getItem(GAME_MODE_STORAGE_KEY);
-    if (savedMode === 'm.kemo' || savedMode === 'm.luna') {
+    if (savedMode === 'm.kemo' || savedMode === 'm.luna' || savedMode === 'm.laika') {
       return savedMode;
     }
   } catch (error) {
@@ -2364,7 +2364,7 @@ export function HomeScreen({
 
     try {
       const savedMode = localStorage.getItem(GAME_MODE_STORAGE_KEY);
-      if (savedMode === 'm.kemo' || savedMode === 'm.luna') {
+      if (savedMode === 'm.kemo' || savedMode === 'm.luna' || savedMode === 'm.laika') {
         setGameMode(savedMode);
       }
     } catch (error) {
@@ -2496,7 +2496,7 @@ export function HomeScreen({
       const chunkElapsedMs = Math.min(pendingAfkMs, AFK_BACKGROUND_CHUNK_MS);
       const anchor = afkSimulationAnchorRef.current ?? Date.now();
       const simulatedEndAt = anchor - pendingAfkMs + chunkElapsedMs;
-      actions.simulateAfk(chunkElapsedMs, autoRepeatEnabled, gameMode === 'm.luna', simulatedEndAt);
+      actions.simulateAfk(chunkElapsedMs, autoRepeatEnabled, gameMode, simulatedEndAt);
       setPendingAfkMs((prev) => Math.max(0, prev - chunkElapsedMs));
     }, 0);
 
@@ -2790,7 +2790,7 @@ export function HomeScreen({
                 }
               }
               if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
-              actions.runExpedition(partyIndex, gameModeRef.current === 'm.luna', triggerGodsBattle);
+              actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle);
               updated.state = 'explore';
               updated.durationMs = getExplorationDurationMs(
                 undefined,
@@ -3381,7 +3381,7 @@ export function HomeScreen({
   };
 
   return (
-    <div className={`flex flex-col ${prefersDocumentScroll ? 'min-h-screen' : 'h-screen'} ${HEADER_HEIGHT_CLASS} ${gameMode === 'm.luna' ? 'theme-luna' : ''} ${isDarkModeEnabled ? 'theme-dark' : ''}`}>
+    <div className={`flex flex-col ${prefersDocumentScroll ? 'min-h-screen' : 'h-screen'} ${HEADER_HEIGHT_CLASS} ${gameMode === 'm.luna' ? 'theme-luna' : gameMode === 'm.laika' ? 'theme-laika' : ''} ${isDarkModeEnabled ? 'theme-dark' : ''}`}>
       {/* Fixed Header */}
       <div className="fixed top-0 left-0 right-0 z-30 border-b border-gray-300">
         <div className="absolute inset-0 bg-white" aria-hidden="true" />
@@ -8488,7 +8488,7 @@ function SettingTab({
 
           <div>
             <div className="text-xs text-gray-600 font-medium mb-2">ゲームモード</div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <button
                 onClick={() => !modeSelectionLocked && onSetGameMode('m.kemo')}
                 disabled={modeSelectionLocked}
@@ -8510,13 +8510,26 @@ function SettingTab({
               >
                 ルナ(高難度)
               </button>
+              <button
+                onClick={() => !modeSelectionLocked && onSetGameMode('m.laika')}
+                disabled={modeSelectionLocked}
+                className={`py-2 rounded border text-sm font-medium ${
+                  gameMode === 'm.laika'
+                    ? 'bg-sub text-white border-sub'
+                    : 'bg-white text-gray-700 border-gray-300'
+                } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
+              >
+                ライカ(制限)
+              </button>
             </div>
             <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600">
               {modeSelectionLocked
                 ? 'ゲームモードは/luna/環境のためm.luna固定です（m.kemoは選択できません）'
                 : gameMode === 'm.kemo'
                   ? '通常のモードです'
-                  : '敵が大幅に強くなります(報酬がよくなります)'}
+                  : gameMode === 'm.luna'
+                    ? '敵が大幅に強くなります(報酬がよくなります)'
+                    : '超レアが存在しません。通常称号は伝説までしか出ません'}
             </div>
           </div>
         </div>}
