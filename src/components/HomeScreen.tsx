@@ -5457,7 +5457,18 @@ function ExpeditionTab({
 
             {(nextGoalText || sideQuestText) && (
               <div className="mb-1 space-y-0.5">
-                {nextGoalText && <div className="text-[11px] text-gray-700 truncate">{nextGoalText}</div>}
+                {nextGoalText && (
+                  <div
+                    className="text-[11px] text-gray-700 overflow-hidden break-words"
+                    style={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                    }}
+                  >
+                    {nextGoalText}
+                  </div>
+                )}
                 {sideQuestText && (
                   <div className="text-[11px] text-gray-700 truncate">
                     <span className="side-quest-theme-icon" aria-hidden="true">📜</span>{' '}
