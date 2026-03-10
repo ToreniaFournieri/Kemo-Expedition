@@ -112,6 +112,7 @@ type BaseSubTab = 'inventory' | 'shop' | 'jewelStore' | 'workshop' | 'altar';
 type PartyCycleState = 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray' | 'idle' | 'move' | 'explore' | 'return' | 'reactivate';
 
 const PARTY_EXPEDITION_SPLIT_MIN_WIDTH = 1024;
+const TAB_PANEL_WIDTH_PX = 500;
 const WIDE_MODE_DEFAULT_SECONDARY_TAB: WideModeSecondaryTab = 'party';
 
 const PARTY_CYCLE_STATE_LABELS: Record<PartyCycleState, string> = {
@@ -3371,16 +3372,21 @@ export function HomeScreen({
         }}
       >
         {isPartyExpeditionSplitView ? (
-          <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
-            <div>
+          <div
+            className="grid justify-center gap-4 items-start"
+            style={{ gridTemplateColumns: `repeat(2, minmax(0, ${TAB_PANEL_WIDTH_PX}px))` }}
+          >
+            <div className="w-full min-w-0">
               {renderTabContent('expedition')}
             </div>
-            <div>
+            <div className="w-full min-w-0">
               {renderTabContent(activeWideModeSecondaryTab)}
             </div>
           </div>
         ) : (
-          renderTabContent(activeTab)
+          <div className="mx-auto w-full max-w-[500px]">
+            {renderTabContent(activeTab)}
+          </div>
         )}
       </div>
 
