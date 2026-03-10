@@ -886,6 +886,126 @@
 | explore | `x.exp_id`1 and `x.floor`6 | 反響差を使った測位で、崩れていない螺旋階候補が絞り込まれた |
 | explore | `x.exp_id`1 and `x.floor`6 | 樹根に裂かれた石管に微かな温みが残り、霊脈の一部生存が示唆されている |
 | explore | `x.exp_id`1 and `x.floor`6 | 瓦礫中の古い護符片が回収され、失われた王朝史の手掛かりとして保管された |
+| explore | `x.exp_id`2 and `x.floor`1 | name は岩だらけの山裾で足場を選び、崩れやすい斜面を慎重に登っている |
+| explore | `x.exp_id`2 and `x.floor`1 | name は砕けた礫の音を殺しながら、風に削られた細道を一歩ずつ進んだ |
+| explore | `x.exp_id`2 and `x.floor`1 | name は山肌に刻まれた古い道標を見つけ、かつての巡礼路を辿っている |
+| explore | `x.exp_id`2 and `x.floor`1 | name は脆い岩棚を杖で叩いて確かめ、落石帯を避ける進路を選んでいる |
+| explore | `x.exp_id`2 and `x.floor`1 | name は谷から吹き上がる乾いた風を読み、安定した稜線側へ回り込んだ |
+| explore | `x.exp_id`2 and `x.floor`1 | name は裂け目に残る獣毛を摘み取り、山獣の通り道を地図へ書き込んでいる |
+| explore | `x.exp_id`2 and `x.floor`1 | name は崩れた石段の痕を見つけ、この山が古道で結ばれていたと悟った |
+| explore | `x.exp_id`2 and `x.floor`1 | name は岩陰に身を寄せて落石の間を見極め、短い合図で仲間を導いた |
+| explore | `x.exp_id`2 and `x.floor`1 | name は高みの白い鷹影を追い、獣の少ない上風側のルートを確保している |
+| explore | `x.exp_id`2 and `x.floor`1 | name は擦り減った登攀杭を見つめ、先人の苦難を胸に歩幅を整えた |
+| explore | `x.exp_id`2 and `x.floor`2 | name は断崖の爪痕をなぞり、山の捕食者が巡る狩場の境を見極めている |
+| explore | `x.exp_id`2 and `x.floor`2 | name は骨片が散る棚道で呼吸を殺し、見張る獣影の死角を渡っている |
+| explore | `x.exp_id`2 and `x.floor`2 | name は風下へ身を伏せ、崖上を巡る狩人獣に匂いを悟られぬよう進んだ |
+| explore | `x.exp_id`2 and `x.floor`2 | name は岩壁に残る牙研ぎ痕を見て、縄張り争いの激しさを仲間へ告げた |
+| explore | `x.exp_id`2 and `x.floor`2 | name は裂けた外套布を拾い、旅人を襲った伏撃地点を推定している |
+| explore | `x.exp_id`2 and `x.floor`2 | name は落差の大きい崖路を避け、追跡されにくい横穴沿いへ迂回した |
+| explore | `x.exp_id`2 and `x.floor`2 | name は獣臭混じりの突風を受け、護符を結び直して警戒線を上げている |
+| explore | `x.exp_id`2 and `x.floor`2 | name は鷲の鳴き交わしを聞き分け、上層からの急襲に備えて陣形を縮めた |
+| explore | `x.exp_id`2 and `x.floor`2 | name は崖下の暗がりで光る目を確認し、松明を覆って気配を断っている |
+| explore | `x.exp_id`2 and `x.floor`2 | name は石灰色の急斜へ爪先を掛け、獣道と交差しない脇道を選び取った |
+| explore | `x.exp_id`2 and `x.floor`3 | name は断崖に隠れた木造家屋を見つけ、荒らされた集落跡へ足を踏み入れた |
+| explore | `x.exp_id`2 and `x.floor`3 | name は切れた縄橋の端を握り、急襲の夜に断たれた逃走路を想像している |
+| explore | `x.exp_id`2 and `x.floor`3 | name は崩れた戸口の刻印を拭い、住民が守った家紋を静かに記録した |
+| explore | `x.exp_id`2 and `x.floor`3 | name は炉に残る灰の冷たさを確かめ、放棄から日が浅いと読み取っている |
+| explore | `x.exp_id`2 and `x.floor`3 | name は山霧に消える足跡を追い、略奪団の撤退路を尾根側へ辿った |
+| explore | `x.exp_id`2 and `x.floor`3 | name は倒れた見張り柱を起こし、村路に潜む死角を仲間へ示している |
+| explore | `x.exp_id`2 and `x.floor`3 | name は戸棚に残る祈り札を見つけ、守護の誓いが破られた痕に目を伏せた |
+| explore | `x.exp_id`2 and `x.floor`3 | name は軋む板廊下を渡り、崖間に張られた廃索道の先を探っている |
+| explore | `x.exp_id`2 and `x.floor`3 | name は石垣裏の隠し貯蔵庫を開け、急場で捨てられた生活具を確認した |
+| explore | `x.exp_id`2 and `x.floor`3 | name は鐘楼跡で風鈴の欠片を拾い、失われた村の静けさに耳を澄ませた |
+| explore | `x.exp_id`2 and `x.floor`4 | name は崩れた監視塔の螺旋階を登り、山路を睨む盗賊の視界を測っている |
+| explore | `x.exp_id`2 and `x.floor`4 | name は矢傷だらけの胸壁に触れ、往来を襲う無法者の戦跡を読み解いた |
+| explore | `x.exp_id`2 and `x.floor`4 | name は見張り鐘の台座を調べ、警報網がまだ一部機能すると突き止めた |
+| explore | `x.exp_id`2 and `x.floor`4 | name は砦門の焼け痕を辿り、強襲で奪われた関所の末路を見つめている |
+| explore | `x.exp_id`2 and `x.floor`4 | name は隠し矢座の裂け目を覗き、峠道を狙う射線を仲間へ共有した |
+| explore | `x.exp_id`2 and `x.floor`4 | name は崩落した兵舎床を跨ぎ、略奪品が運び出された倉路を追っている |
+| explore | `x.exp_id`2 and `x.floor`4 | name は塔上の旗杭を見上げ、幾度も主を変えた血塗られた拠点を悟った |
+| explore | `x.exp_id`2 and `x.floor`4 | name は石畳に残る蹄鉄痕を数え、山賊隊の規模をおおよそ割り出している |
+| explore | `x.exp_id`2 and `x.floor`4 | name は崖縁の抜け道を押さえ、包囲されぬよう退路を先に確保した |
+| explore | `x.exp_id`2 and `x.floor`4 | name は塔影に潜み、巡回の切れ目で関門跡を無音のまま突破した |
+| explore | `x.exp_id`2 and `x.floor`5 | name は風に削られた深い峡谷で、唸る気流を読んで足を進めている |
+| explore | `x.exp_id`2 and `x.floor`5 | name は狭い石回廊の反響を測り、崩落を招かぬ歩調へ整えた |
+| explore | `x.exp_id`2 and `x.floor`5 | name は横殴りの砂塵から目を守り、刻まれた裂谷の底へ降りている |
+| explore | `x.exp_id`2 and `x.floor`5 | name は細い岩橋に身を伏せ、突風の止む瞬間だけを選んで渡った |
+| explore | `x.exp_id`2 and `x.floor`5 | name は風鳴りに混じる笛音を聞き、迷わせる自然の残響を切り分けている |
+| explore | `x.exp_id`2 and `x.floor`5 | name は磨かれた岩肌を手探りし、風蝕洞へ続く避難路を見つけ出した |
+| explore | `x.exp_id`2 and `x.floor`5 | name は谷底の渦風を避けるため、斜めの亀裂帯を鎖で進んでいる |
+| explore | `x.exp_id`2 and `x.floor`5 | name は砂礫に埋もれた石碑を掘り、古い峠道の境界文を読み上げた |
+| explore | `x.exp_id`2 and `x.floor`5 | name は白く乾いた骨片を見つめ、風葬の地であることを慎重に告げた |
+| explore | `x.exp_id`2 and `x.floor`5 | name は裂谷を渡る綱杭を打ち直し、後続隊が安全に越えられるよう整えた |
+| explore | `x.exp_id`2 and `x.floor`6 | name は蒼白の石で築かれた古神殿へ至り、風化した柱列の間を進んでいる |
+| explore | `x.exp_id`2 and `x.floor`6 | name は欠けた神像の面差しを拭い、忘れられた誓約の文字を読み取った |
+| explore | `x.exp_id`2 and `x.floor`6 | name は祭壇に積もる苔を払って、時を越えた祈祷痕を確かめている |
+| explore | `x.exp_id`2 and `x.floor`6 | name は割れた天蓋から差す光を追い、主殿へ続く聖路を見定めた |
+| explore | `x.exp_id`2 and `x.floor`6 | name は風に鳴る石鈴を聞き、神殿守護の機構がまだ眠ると悟っている |
+| explore | `x.exp_id`2 and `x.floor`6 | name は回廊の浮彫に指を這わせ、古き山民の祈りの系譜を辿った |
+| explore | `x.exp_id`2 and `x.floor`6 | name は半壊した香炉を起こし、祭儀再開の道筋を静かに整えている |
+| explore | `x.exp_id`2 and `x.floor`6 | name は聖堂床の亀裂を跨ぎ、崩れぬ石脈を選んで中心壇へ向かった |
+| explore | `x.exp_id`2 and `x.floor`6 | name は色褪せた壁画の狼紋を見つめ、この地の守護伝承を胸に刻んだ |
+| explore | `x.exp_id`2 and `x.floor`6 | name は祈りの間で短く黙礼し、風と時に耐えた神意へ敬意を捧げた |
+| explore | `x.exp_id`2 and `x.floor`1 | 山裾の礫斜面は不安定で、進路は岩質ごとの荷重分散で維持されている |
+| explore | `x.exp_id`2 and `x.floor`1 | 風化した細道の連続により、転落防止の間隔管理が最優先へ引き上げられた |
+| explore | `x.exp_id`2 and `x.floor`1 | 古い道標石が点在し、かつて巡礼路として機能した痕跡が確認された |
+| explore | `x.exp_id`2 and `x.floor`1 | 脆い岩棚は打音検査で判別され、落石帯を外す迂回線が再設定された |
+| explore | `x.exp_id`2 and `x.floor`1 | 谷風の流向差が明瞭で、安定した稜線側ルートの有効性が補強された |
+| explore | `x.exp_id`2 and `x.floor`1 | 裂け目周辺の獣毛採取により、山獣通行帯の地図精度が向上している |
+| explore | `x.exp_id`2 and `x.floor`1 | 崩れ石段の残存幅から、古道網が現在の登攀路に重なると推定された |
+| explore | `x.exp_id`2 and `x.floor`1 | 落石間隔の観測結果が共有され、停止判断の統一手順が整備された |
+| explore | `x.exp_id`2 and `x.floor`1 | 上空の猛禽行動を指標化し、獣接触の少ない上風側誘導が機能している |
+| explore | `x.exp_id`2 and `x.floor`1 | 旧登攀杭の劣化が進み、補助索の常時展張が安全条件として固定された |
+| explore | `x.exp_id`2 and `x.floor`2 | 断崖の爪痕分布から、捕食者の巡回境界が複層化していると判定された |
+| explore | `x.exp_id`2 and `x.floor`2 | 骨片密度の高い棚道は待ち伏せ危険帯とされ、通過時間が短縮運用へ改められた |
+| explore | `x.exp_id`2 and `x.floor`2 | 風下潜行の徹底で、嗅覚追跡による接敵頻度が有意に低下している |
+| explore | `x.exp_id`2 and `x.floor`2 | 岩壁の牙研ぎ痕が新しく、縄張り争いの活発化が確認された |
+| explore | `x.exp_id`2 and `x.floor`2 | 破れた旅装備の散在により、伏撃常習地点の再警戒が指示された |
+| explore | `x.exp_id`2 and `x.floor`2 | 高低差の大きい崖路を外す方針で、追尾戦への移行リスクが抑制された |
+| explore | `x.exp_id`2 and `x.floor`2 | 獣臭を伴う突風発生域が整理され、護符使用の優先区画が更新された |
+| explore | `x.exp_id`2 and `x.floor`2 | 猛禽の鳴き交わし解析により、上層接近の前兆検知精度が強化された |
+| explore | `x.exp_id`2 and `x.floor`2 | 崖下の反射光観測で潜伏個体が確認され、灯火遮蔽手順が標準化された |
+| explore | `x.exp_id`2 and `x.floor`2 | 急斜横断の足場評価を反映し、獣道交差を避ける脇路が常用化された |
+| explore | `x.exp_id`2 and `x.floor`3 | 断崖間の廃村構造が確認され、襲撃後に放棄された生活圏の全体像が判明した |
+| explore | `x.exp_id`2 and `x.floor`3 | 断裂した縄橋位置から、急襲時の退避線が寸断された経緯が裏付けられた |
+| explore | `x.exp_id`2 and `x.floor`3 | 家紋刻印の残存率が高く、住民共同体の結束痕跡が記録された |
+| explore | `x.exp_id`2 and `x.floor`3 | 炉灰温度の調査で放棄時期が比較的新しいと推定されている |
+| explore | `x.exp_id`2 and `x.floor`3 | 霧中の足跡連続から、略奪団が尾根側へ撤退した線が有力となった |
+| explore | `x.exp_id`2 and `x.floor`3 | 倒壊見張り柱の再配置で、集落内死角の把握精度が大幅に向上した |
+| explore | `x.exp_id`2 and `x.floor`3 | 戸棚内の祈り札群が回収され、守護儀礼が日常化していた証拠となった |
+| explore | `x.exp_id`2 and `x.floor`3 | 廃索道の荷重試験結果により、限定的な横断利用が可能と判定された |
+| explore | `x.exp_id`2 and `x.floor`3 | 隠し貯蔵庫の残置物から、避難準備の途中で襲撃を受けた可能性が高まった |
+| explore | `x.exp_id`2 and `x.floor`3 | 鐘楼破片の分布から、警鐘機能が意図的に破壊されたと分析されている |
+| explore | `x.exp_id`2 and `x.floor`4 | 監視塔の残階段が接続し、山路全域を監督した視界網の規模が判明した |
+| explore | `x.exp_id`2 and `x.floor`4 | 胸壁の矢傷密度が高く、長期にわたる往来襲撃拠点であったと裏付けられた |
+| explore | `x.exp_id`2 and `x.floor`4 | 見張り鐘台座の機構痕から、警報連鎖が部分的に稼働可能と判定された |
+| explore | `x.exp_id`2 and `x.floor`4 | 砦門の焼損痕解析により、強襲時の突破方向が特定された |
+| explore | `x.exp_id`2 and `x.floor`4 | 隠し矢座の射線復元で、峠道封鎖運用の詳細が再現されつつある |
+| explore | `x.exp_id`2 and `x.floor`4 | 兵舎床下の搬出痕から、略奪品が系統的に移送された記録が補強された |
+| explore | `x.exp_id`2 and `x.floor`4 | 旗杭交換痕が複数確認され、勢力交代の頻度が高かったと推定された |
+| explore | `x.exp_id`2 and `x.floor`4 | 蹄鉄痕数の統計により、山賊隊の常駐規模が上方修正された |
+| explore | `x.exp_id`2 and `x.floor`4 | 崖縁抜け道の先行確保で、包囲時の退避成功率が改善している |
+| explore | `x.exp_id`2 and `x.floor`4 | 巡回間隔の観測蓄積により、無音突破に適した時間窓が標準化された |
+| explore | `x.exp_id`2 and `x.floor`5 | 風蝕峡谷の気流は周期変動が大きく、移動は風止み窓依存へ再編された |
+| explore | `x.exp_id`2 and `x.floor`5 | 石回廊の反響特性が共有され、崩落誘発を避ける歩調制御が徹底された |
+| explore | `x.exp_id`2 and `x.floor`5 | 砂塵横圧の観測値から、遮眼具と隊列間隔の規定が引き上げられた |
+| explore | `x.exp_id`2 and `x.floor`5 | 細岩橋の通行は突風待機前提となり、単独横断が禁止運用へ変更された |
+| explore | `x.exp_id`2 and `x.floor`5 | 風鳴りに混ざる残響解析で、錯聴誘導域の地図化が進んでいる |
+| explore | `x.exp_id`2 and `x.floor`5 | 風蝕洞の連結が確認され、緊急退避路の候補網が拡張された |
+| explore | `x.exp_id`2 and `x.floor`5 | 谷底渦風を外す斜行ルートが定着し、転倒事故率の低下が報告された |
+| explore | `x.exp_id`2 and `x.floor`5 | 砂礫下の境界碑文が復元され、古峠道の管理範囲が再定義された |
+| explore | `x.exp_id`2 and `x.floor`5 | 乾骨分布と祭祀痕が一致し、風葬文化圏としての性格が補強された |
+| explore | `x.exp_id`2 and `x.floor`5 | 綱杭再整備の効果で、後続隊の裂谷横断時間が短縮されている |
+| explore | `x.exp_id`2 and `x.floor`6 | 蒼白石造の神殿群が残存し、高地祭祀圏の中心遺構と確認された |
+| explore | `x.exp_id`2 and `x.floor`6 | 欠損神像の銘文解読で、古誓約体系の断片が新たに記録された |
+| explore | `x.exp_id`2 and `x.floor`6 | 苔下の祭壇痕から、長期にわたる継続祈祷の存在が裏付けられた |
+| explore | `x.exp_id`2 and `x.floor`6 | 破天蓋からの採光線が主殿導線と一致し、儀礼設計の意図が示された |
+| explore | `x.exp_id`2 and `x.floor`6 | 風鳴石鈴の応答により、守護機構の一部が休眠状態で残ると推定された |
+| explore | `x.exp_id`2 and `x.floor`6 | 回廊浮彫の連続性が確認され、山民信仰の系譜再構築が進展している |
+| explore | `x.exp_id`2 and `x.floor`6 | 半壊香炉群の配置復元で、祭儀動線の再現精度が向上した |
+| explore | `x.exp_id`2 and `x.floor`6 | 床亀裂の石脈評価により、安全に主壇へ至る線が確保された |
+| explore | `x.exp_id`2 and `x.floor`6 | 壁画の狼紋が高頻度で出現し、守護獣信仰の中核性が確認された |
+| explore | `x.exp_id`2 and `x.floor`6 | 祈りの間の遺留痕が整理され、終末期まで礼式が継続した可能性が高まった |
 | sound_sleep | with mainClass.`Fighter` | name は鎧を外したまま深く眠り、戦場の緊張を静かに解いている |
 | sound_sleep | with mainClass.`Fighter` | name は盾を抱くようにして熟睡し、守る意志を休息に変えている |
 | sound_sleep | with mainClass.`Fighter` | name は規則正しい寝息で体幹の疲労をじっくり回復している |
