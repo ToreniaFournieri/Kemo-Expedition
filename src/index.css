@@ -48,6 +48,8 @@
   color-scheme: dark;
   background-color: #111827;
   color: rgb(229 231 235);
+  --color-hp-bar-mild: 106 148 198;
+  --color-hp-taken: 165 136 109;
 }
 
 html.app-dark,
