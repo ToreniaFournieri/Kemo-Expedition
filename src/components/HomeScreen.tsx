@@ -5340,6 +5340,8 @@ function ExpeditionTab({
           const activeItem = autoSellItems[Math.min(activeStep, Math.max(0, autoSellItems.length - 1))];
           return {
             percent: (completedSteps / sellStepCount) * 100,
+            completedSteps,
+            activeStep,
             activeItem,
           };
         })();
@@ -5359,9 +5361,14 @@ function ExpeditionTab({
           if (cycle.state === 'reactivate') return stateLabel;
           const leader = party.characters[0];
           if (!leader) return stateLabel;
+          const flavorStepOffset = cycle.state === 'explore'
+            ? displayedEntries.length
+            : cycle.state === 'sell'
+            ? sellProgressState?.completedSteps ?? 0
+            : 0;
           const flavorSeed = cycle.state === 'rest'
             ? Math.floor(Date.now() / 15_000) + partyIndex * 131
-            : cycle.stateStartedAt + partyIndex * 131;
+            : cycle.stateStartedAt + partyIndex * 131 + flavorStepOffset;
           const currentDisplayedEntry = displayedEntries.length > 0
             ? displayedEntries[displayedEntries.length - 1]
             : null;
