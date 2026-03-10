@@ -766,15 +766,16 @@
 | move | none | name は荒れた地面を踏みしめて進んでいる |
 | move | none | name は視界の開けた先を目指して歩いている |
 | move | none | name は立ち止まらず一定の速度で進軍している |
-| explore | none | name は未知の領域を慎重に探索している |
-| explore | none | name は壁や床の痕跡を細かく調べている |
-| explore | none | name は怪しい物音のする方向へ歩み寄っている |
-| explore | none | name は足跡を追って新しい道を見つけようとしている |
-| explore | none | name は隠し通路の気配を探っている |
-| explore | none | name は地形の特徴を記録しながら進んでいる |
-| explore | none | name は罠の兆候がないか入念に確認している |
-| explore | none | name は光の届かない場所にも目を凝らしている |
-| explore | none | name は手がかりを求めて周囲を見渡している |
+| explore | `x.exp_id`1 and `x.floor`1 | name は風に揺れる草原をかき分け、散らばる岩陰を順に確かめている |
+| explore | `x.exp_id`1 and `x.floor`1 | name は遠くで草を食む獣の群れを横目に、足場の起伏を慎重に読んでいる |
+| explore | `x.exp_id`1 and `x.floor`1 | name は開けた平原の風向きを見て、精霊の気配が濃い方角へ進んでいる |
+| explore | `x.exp_id`1 and `x.floor`1 | name は草丈の低い道を選び、小型獣の通り道に残る新しい痕跡を追っている |
+| explore | `x.exp_id`1 and `x.floor`1 | name は点在する岩を目印に、見通しの良い位置を取りながら探索している |
+| explore | `x.exp_id`1 and `x.floor`1 | name は穏やかな風音に紛れる異音を拾おうと、耳を澄ませて立ち止まった |
+| explore | `x.exp_id`1 and `x.floor`1 | name は草原に走る獣道をたどり、平地の先にある浅い窪地を調べている |
+| explore | `x.exp_id`1 and `x.floor`1 | name は陽光を受けて波打つ草海の中で、危険の少ない進路を探している |
+| explore | `x.exp_id`1 and `x.floor`1 | name は開放的な景色に油断せず、岩場の影へ一歩ずつ視線を送っている |
+| explore | `x.exp_id`1 and `x.floor`1 | name は自然の静けさを確かめながら、平原の境目に残る細い踏み跡を記録した |
 | sound_sleep | with mainClass.`Fighter` | name は鎧を外したまま深く眠り、戦場の緊張を静かに解いている |
 | sound_sleep | with mainClass.`Fighter` | name は盾を抱くようにして熟睡し、守る意志を休息に変えている |
 | sound_sleep | with mainClass.`Fighter` | name は規則正しい寝息で体幹の疲労をじっくり回復している |
@@ -975,7 +976,6 @@
 | nap_sleep | with mainClass.`Pilgrim` | name は小さく息を整え、わずかな睡眠で足取りを軽くした |
 | nap_sleep | with mainClass.`Pilgrim` | name は仲間の物音で目覚め、微笑みとともに頷いた |
 | nap_sleep | with mainClass.`Pilgrim` | name は短い休息の後、感謝の言葉を口にしている |
-| explore | none | name は未知への好奇心を胸に調査を続けている |
 | return | none | name は戦利品を抱えて拠点へ戻っている |
 | return | none | name は疲れた足取りながらも帰路を急いでいる |
 | return | none | name は今日の成果を確かめつつ歩いている |
@@ -1116,16 +1116,6 @@
 | move | sortie with embezzlement = 0 G | name は神命への不平を隠さず、仲間にも苛立ちをにじませている |
 | move | sortie with embezzlement = 0 G | name は強制出撃への恨みを抱えたまま、黙々と前へ進んでいる |
 | move | sortie with embezzlement = 0 G | name は怒りで頬をこわばらせ、無言の抗議をしながら出撃した |
-| explore | none | 細かな痕跡を見逃さないよう調べている |
-| explore | none | 気になる場所に近づいて確認している |
-| explore | none | 新しい手がかりを探して歩き回っている |
-| explore | none | 物陰まで丁寧に目を配っている |
-| explore | none | 地図にない通路がないか探っている |
-| explore | none | 気配の変化に注意して調査している |
-| explore | none | 見落としがないよう慎重に進んでいる |
-| explore | none | 周辺の構造を把握しながら探索している |
-| explore | none | 違和感のある地点を重点的に調べている |
-| explore | none | 未確認のエリアを一つずつ確認している |
 | return | none | 帰路の安全を確かめながら進んでいる |
 | return | none | 目的を果たして拠点へ向かっている |
 | return | none | 慎重な足取りで帰還を続けている |
