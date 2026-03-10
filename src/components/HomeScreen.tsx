@@ -5522,12 +5522,14 @@ function ExpeditionTab({
                 {['return', 'idle'].includes(cycle.state) && party.currentHp <= 0 && (
                   <div className="text-xs text-accent">HPが0のため出撃できません。休息で回復してください。</div>
                 )}
-                <div className="text-xs text-gray-600">
-                  統計情報: 踏破{formatNumber(party.expeditionStats.Clear)}回/帰還{formatNumber(party.expeditionStats.Turned_Back)}回/引分{formatNumber(party.expeditionStats.Draw_Retreat)}回/撤退{formatNumber(party.expeditionStats.Wounded_Retreat)}回/敗北{formatNumber(party.expeditionStats.Defeat)}回 合計{formatNumber(party.expeditionStats.Clear + party.expeditionStats.Turned_Back + party.expeditionStats.Draw_Retreat + party.expeditionStats.Wounded_Retreat + party.expeditionStats.Defeat)}回
+                <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
+                  <span>
+                    統計情報: 踏破{formatNumber(party.expeditionStats.Clear)}/帰還{formatNumber(party.expeditionStats.Turned_Back)}/引分{formatNumber(party.expeditionStats.Draw_Retreat)}/撤退{formatNumber(party.expeditionStats.Wounded_Retreat)}/敗北{formatNumber(party.expeditionStats.Defeat)} 合計 {formatNumber(party.expeditionStats.Clear + party.expeditionStats.Turned_Back + party.expeditionStats.Draw_Retreat + party.expeditionStats.Wounded_Retreat + party.expeditionStats.Defeat)}回
+                  </span>
                   <button
                     type="button"
                     onClick={() => onResetExpeditionStats(partyIndex)}
-                    className="ml-1 underline hover:text-accent"
+                    className="shrink-0 underline hover:text-accent"
                   >
                     リセット
                   </button>
