@@ -396,17 +396,35 @@ Party.`d.HP` =
 
 | order | item category |
 |-|-|
-| 1 | `i.shield` |
+| 1 | `i.armor` |
+| 2 | `i.melee` |
+| 3 | `i.robe` |
+| 4 | `i.gauntlet` |
+| 5 | `i.melee` |
+| 6 | `i.shield` |
+| 7 | `i.armor` |
+| 8 | `i.robe` |
+| 9 | `i.melee` |
+| 10 | `i.shield` |
+| 11 | `i.melee` |
+
+- Lord Class:
+
+| order | item category |
+|-|-|
+| 1 | `i.melee` |
 | 2 | `i.armor` |
 | 3 | `i.robe` |
 | 4 | `i.melee` |
 | 5 | `i.gauntlet` |
-| 6 | `i.shield` |
+| 6 | `i.melee` |
 | 7 | `i.armor` |
 | 8 | `i.robe` |
-| 9 | `i.armor` |
-| 10 | `i.robe` |
-| 11 | `i.shield` |
+| 9 | `i.melee` |
+| 10 | `i.shield` |
+| 11 | `i.melee` |
+| 11 | `i.gauntlet` |
+
 
 - Rogue/ Ranger Class:
 
