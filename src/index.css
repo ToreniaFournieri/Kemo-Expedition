@@ -203,7 +203,7 @@ body.app-dark {
 }
 
 .theme-dark .race-icon {
-  filter: brightness(0) invert(1);
+  filter: brightness(0) invert(0.82);
 }
 
 body {
