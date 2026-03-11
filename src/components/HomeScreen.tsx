@@ -3949,6 +3949,7 @@ function PartyTab({
   const displayedDeityName = editingDeity ? pendingDeityName : party.deity.name;
   const normalizedDisplayedDeityName = normalizeDeityName(displayedDeityName);
   const displayedDeityDonation = deityDonations[normalizedDisplayedDeityName] ?? 0;
+  const hasUnlockedReligions = unlockedDeities.length > 0;
   const equippedItemCount = char.equipment.filter((item) => item != null).length;
   const autoEquipmentMode = normalizeAutoEquipmentMode(char.autoEquipmentMode);
 
@@ -4242,13 +4243,17 @@ function PartyTab({
           <div className="text-gray-600">
             HP {formatNumber(Math.floor(partyStats.hp))}, レベル {formatNumber(party.level)} ({party.level < MAX_LEVEL ? `${formatNumber(xpProgressPercent)}%, ${formatNumber(party.experience)}` : `100%, ${formatNumber(party.experience)}`})
           </div>
-          <div className="font-medium mt-1">
-            {displayedDeityName}
-            {!isNoFaithDeity(displayedDeityName) ? ` (ランク${getDeityRank(displayedDeityDonation)})` : ''}
-          </div>
-          <div className="text-xs text-gray-600 mt-1">効果:{isNoFaithDeity(displayedDeityName) ? 'なし' : getDeityEffectDescription(displayedDeityName, displayedDeityDonation)}</div>
+          {hasUnlockedReligions && (
+            <>
+              <div className="font-medium mt-1">
+                {displayedDeityName}
+                {!isNoFaithDeity(displayedDeityName) ? ` (ランク${getDeityRank(displayedDeityDonation)})` : ''}
+              </div>
+              <div className="text-xs text-gray-600 mt-1">効果:{isNoFaithDeity(displayedDeityName) ? 'なし' : getDeityEffectDescription(displayedDeityName, displayedDeityDonation)}</div>
+            </>
+          )}
         </div>
-        {editingDeity ? (
+        {hasUnlockedReligions && editingDeity ? (
           <div className="flex flex-col items-end gap-1">
             <div className="flex items-center gap-2">
               <button
@@ -4300,7 +4305,7 @@ function PartyTab({
               })}
             </select>
           </div>
-        ) : (
+        ) : hasUnlockedReligions ? (
           <button
             onClick={() => {
               setPendingDeityName(party.deity.name);
@@ -4310,10 +4315,10 @@ function PartyTab({
           >
             編集
           </button>
-        )}
+        ) : null}
       </div>
 
-      {editingDeity && (
+      {hasUnlockedReligions && editingDeity && (
         <div className="mb-3 text-xs text-gray-500">
           キャラクターアイコン長押しで隊列変更
         </div>
