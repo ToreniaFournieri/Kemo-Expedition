@@ -120,6 +120,7 @@
   PT1    PT2    PT3    PT4    PT5     PT6
 ```
 - Name of deity. Editable, but not duplication. If one deity already assgined to another PT, the deity is not selectable.
+- IF none of religion is unlocked, hide Deity part and 編集 button. 
 
 ```
 (Left-Aligned)                         (Right-Aligned)
