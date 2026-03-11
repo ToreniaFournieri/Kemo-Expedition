@@ -6554,6 +6554,11 @@ function InventoryTab({
       </div>
 
       {/* Item list */}
+      {isJewelCategory && (
+        <div className="mb-2 text-xs text-gray-500">
+          結晶はパーティタブのキャラクターの装備一覧より、装備に結晶を装着することができます
+        </div>
+      )}
       <div className="space-y-1 min-h-[364px] max-h-[26rem] overflow-y-auto mb-4">
           {isJewelCategory && combinedJewelEntries.map((entry) => {
             if (entry.type === 'owned') {
