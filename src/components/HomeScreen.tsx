@@ -3161,6 +3161,10 @@ export function HomeScreen({
     if (notifiedRewardLogRef.current[partyIndex] === currentLog) return;
 
     for (const item of currentLog.rewards) {
+      const variantKey = getVariantKey(item);
+      const inventoryCount = state.global.inventory[variantKey]?.count ?? 0;
+      if (inventoryCount > 20) continue;
+
       const isSuperRare = item.superRare > 0;
       const itemName = getItemDisplayName(item);
       const rarity = getItemRarityById(item.id);
