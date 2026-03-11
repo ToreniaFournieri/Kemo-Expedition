@@ -229,6 +229,23 @@ function normalizeBattleLogNote(note?: string): string | undefined {
   return note.replace('パーティ攻撃力 ×', 'パーティ物理攻撃力 ×');
 }
 
+function renderSubThemeEmojiText(text?: string): ReactNode {
+  if (!text) return text;
+  const segments = text.split('⚠️');
+  if (segments.length <= 1) return text;
+
+  return (
+    <>
+      {segments.map((segment, index) => (
+        <Fragment key={`warning-emoji-segment-${index}`}>
+          {index > 0 && <span className="sub-theme-emoji-icon" aria-hidden="true">⚠️</span>}
+          {segment}
+        </Fragment>
+      ))}
+    </>
+  );
+}
+
 const RACE_ICON_SOURCES = RACES
   .map((race) => race.icon)
   .filter((icon): icon is string => Boolean(icon))
@@ -4452,7 +4469,7 @@ function PartyTab({
           <div className="mb-3 p-3 rounded border border-accent/25 bg-accent/10">
             <ul className="text-sm text-accent space-y-1">
               {editConfirmWarnings.map((warning) => (
-                <li key={warning}>⚠️ {warning}</li>
+                <li key={warning}><span className="sub-theme-emoji-icon" aria-hidden="true">⚠️</span>{' '}{warning}</li>
               ))}
             </ul>
           </div>
@@ -5923,7 +5940,7 @@ function ExpeditionTab({
                                         <span className="min-w-0">
                                           <span className="text-gray-400">[{phaseLabel}]</span>{' '}
                                           {actionDisplay}
-                                          {normalizeBattleLogNote(log.note) && <span className="text-gray-400"> {normalizeBattleLogNote(log.note)}</span>}
+                                          {normalizeBattleLogNote(log.note) && <span className="text-gray-400"> {renderSubThemeEmojiText(normalizeBattleLogNote(log.note))}</span>}
                                           {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                         </span>
                                         {log.damage !== undefined && log.damage > 0 && (
@@ -5939,7 +5956,7 @@ function ExpeditionTab({
                                       <span className="min-w-0">
                                         <span className="text-gray-400">[{phaseLabel}]</span>{' '}
                                         {actionDisplay}
-                                        {normalizeBattleLogNote(log.note) && <span className="text-gray-400"> {normalizeBattleLogNote(log.note)}</span>}
+                                        {normalizeBattleLogNote(log.note) && <span className="text-gray-400"> {renderSubThemeEmojiText(normalizeBattleLogNote(log.note))}</span>}
                                         {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                       </span>
                                       {log.damage !== undefined && log.damage > 0 && (
@@ -7157,7 +7174,7 @@ function DiaryTab({
                                       <span className="min-w-0">
                                         <span className="text-gray-400">[{phaseLabel}]</span>{' '}
                                         {actionDisplay}
-                                        {normalizeBattleLogNote(battleLog.note) && <span className="text-gray-400"> {normalizeBattleLogNote(battleLog.note)}</span>}
+                                        {normalizeBattleLogNote(battleLog.note) && <span className="text-gray-400"> {renderSubThemeEmojiText(normalizeBattleLogNote(battleLog.note))}</span>}
                                         {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                       </span>
                                       {battleLog.damage !== undefined && battleLog.damage > 0 && (
@@ -7173,7 +7190,7 @@ function DiaryTab({
                                     <span className="min-w-0">
                                       <span className="text-gray-400">[{phaseLabel}]</span>{' '}
                                       {actionDisplay}
-                                      {normalizeBattleLogNote(battleLog.note) && <span className="text-gray-400"> {normalizeBattleLogNote(battleLog.note)}</span>}
+                                      {normalizeBattleLogNote(battleLog.note) && <span className="text-gray-400"> {renderSubThemeEmojiText(normalizeBattleLogNote(battleLog.note))}</span>}
                                       {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                     </span>
                                     {battleLog.damage !== undefined && battleLog.damage > 0 && (
