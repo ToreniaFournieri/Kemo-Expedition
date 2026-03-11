@@ -85,7 +85,7 @@ interface HomeScreenProps {
     markDiaryLogSeen: (logId: string) => void;
     markAllDiaryLogsSeen: () => void;
     updateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
-    simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode?: GameMode, simulatedEndAt?: number) => void;
+    simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode?: GameMode, simulatedEndAt?: number, cycleDurationScale?: number) => void;
     resetGame: () => void;
     importGameState: (state: GameState) => void;
     resetCommonBags: () => void;
@@ -2543,14 +2543,20 @@ export function HomeScreen({
       const chunkElapsedMs = Math.min(pendingAfkMs, AFK_BACKGROUND_CHUNK_MS);
       const anchor = afkSimulationAnchorRef.current ?? Date.now();
       const simulatedEndAt = anchor - pendingAfkMs + chunkElapsedMs;
-      actions.simulateAfk(chunkElapsedMs, autoRepeatEnabled, gameMode, simulatedEndAt);
+      actions.simulateAfk(
+        chunkElapsedMs,
+        autoRepeatEnabled,
+        gameMode,
+        simulatedEndAt,
+        getTimeSpeedScale(debugSettings),
+      );
       setPendingAfkMs((prev) => Math.max(0, prev - chunkElapsedMs));
     }, 0);
 
     return () => {
       window.clearTimeout(timerId);
     };
-  }, [actions, gameMode, pendingAfkMs]);
+  }, [actions, debugSettings, gameMode, pendingAfkMs]);
 
   useEffect(() => {
     if (pendingAfkMs > 0) return;
