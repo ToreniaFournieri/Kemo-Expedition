@@ -353,7 +353,7 @@ function renderTextWithRaceIcons(text: string, iconClassName = 'h-3.5 w-3.5'): R
         key={`icon-${index}`}
         src={iconSrc}
         alt="race icon"
-        className={`${iconClassName} inline-block align-text-bottom`}
+        className={`${iconClassName} race-icon inline-block align-text-bottom object-contain`}
       />
     );
   });
