@@ -5928,7 +5928,7 @@ function ExpeditionTab({
                                         </span>
                                         {log.damage !== undefined && log.damage > 0 && (
                                           <span className={`ml-auto shrink-0 whitespace-nowrap text-right ${isEnemy ? 'text-accent' : 'text-sub'}`}>
-                                            (<span className="sub-theme-emoji-icon" aria-hidden="true">{emoji}</span>{' '}{formatNumber(log.damage)})
+                                            (<span className={isEnemy ? 'accent-theme-emoji-icon' : 'sub-theme-emoji-icon'} aria-hidden="true">{emoji}</span>{' '}{formatNumber(log.damage)})
                                           </span>
                                         )}
                                       </div>
@@ -5944,7 +5944,7 @@ function ExpeditionTab({
                                       </span>
                                       {log.damage !== undefined && log.damage > 0 && (
                                         <span className={`ml-auto shrink-0 whitespace-nowrap text-right ${isEnemy ? 'text-accent' : 'text-sub'}`}>
-                                          (<span className="sub-theme-emoji-icon" aria-hidden="true">{emoji}</span>{' '}{formatNumber(log.damage)})
+                                          (<span className={isEnemy ? 'accent-theme-emoji-icon' : 'sub-theme-emoji-icon'} aria-hidden="true">{emoji}</span>{' '}{formatNumber(log.damage)})
                                         </span>
                                       )}
                                     </div>
@@ -7167,7 +7167,7 @@ function DiaryTab({
                                       </span>
                                       {battleLog.damage !== undefined && battleLog.damage > 0 && (
                                         <span className={`ml-auto shrink-0 whitespace-nowrap text-right ${isEnemy ? 'text-accent' : 'text-sub'}`}>
-                                          (<span className="sub-theme-emoji-icon" aria-hidden="true">{emoji}</span>{' '}{formatNumber(battleLog.damage)})
+                                          (<span className={isEnemy ? 'accent-theme-emoji-icon' : 'sub-theme-emoji-icon'} aria-hidden="true">{emoji}</span>{' '}{formatNumber(battleLog.damage)})
                                         </span>
                                       )}
                                     </div>
@@ -7183,7 +7183,7 @@ function DiaryTab({
                                     </span>
                                     {battleLog.damage !== undefined && battleLog.damage > 0 && (
                                       <span className={`ml-auto shrink-0 whitespace-nowrap text-right ${isEnemy ? 'text-accent' : 'text-sub'}`}>
-                                        (<span className="sub-theme-emoji-icon" aria-hidden="true">{emoji}</span>{' '}{formatNumber(battleLog.damage)})
+                                        (<span className={isEnemy ? 'accent-theme-emoji-icon' : 'sub-theme-emoji-icon'} aria-hidden="true">{emoji}</span>{' '}{formatNumber(battleLog.damage)})
                                       </span>
                                     )}
                                   </div>

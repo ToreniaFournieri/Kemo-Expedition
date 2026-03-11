@@ -12,6 +12,7 @@
   --color-heal-bar: 184 237 178;
   --color-hp-bar-empty: 226 232 240;
   --sub-theme-emoji-filter: brightness(0) saturate(100%) invert(69%) sepia(94%) saturate(1800%) hue-rotate(194deg) brightness(75%) contrast(95%);
+  --accent-theme-emoji-filter: brightness(0) saturate(100%) invert(43%) sepia(90%) saturate(2064%) hue-rotate(8deg) brightness(98%) contrast(92%);
   --side-quest-icon-opacity: 0.9;
 }
 
@@ -25,6 +26,7 @@
   --color-heal-bar: 184 237 178;
   --color-hp-bar-empty: 217 204 175;
   --sub-theme-emoji-filter: brightness(0) saturate(100%) invert(58%) sepia(48%) saturate(716%) hue-rotate(356deg) brightness(92%) contrast(90%);
+  --accent-theme-emoji-filter: brightness(0) saturate(100%) invert(32%) sepia(87%) saturate(2961%) hue-rotate(223deg) brightness(95%) contrast(91%);
   --side-quest-icon-opacity: 0.9;
 }
 
@@ -59,6 +61,7 @@
   --color-heal-bar: 184 237 178;
   --color-hp-bar-empty: 209 213 219;
   --sub-theme-emoji-filter: brightness(0) saturate(100%) invert(56%) sepia(71%) saturate(445%) hue-rotate(108deg) brightness(95%) contrast(89%);
+  --accent-theme-emoji-filter: brightness(0) saturate(100%) invert(19%) sepia(87%) saturate(5198%) hue-rotate(354deg) brightness(98%) contrast(88%);
   --side-quest-icon-opacity: 0.9;
 }
 
@@ -184,6 +187,7 @@ body.app-dark {
 
 .theme-luna.theme-dark {
   --color-accent: 96 165 250;
+  --accent-theme-emoji-filter: brightness(0) saturate(100%) invert(67%) sepia(56%) saturate(2024%) hue-rotate(188deg) brightness(102%) contrast(96%);
   --color-hp-bar: 170 141 93;
   --color-hp-bar-mild: 170 141 93;
   --color-hp-taken: 133 114 85;
@@ -221,6 +225,12 @@ body {
 .sub-theme-emoji-icon {
   display: inline-block;
   filter: var(--sub-theme-emoji-filter);
+  opacity: var(--side-quest-icon-opacity);
+}
+
+.accent-theme-emoji-icon {
+  display: inline-block;
+  filter: var(--accent-theme-emoji-filter);
   opacity: var(--side-quest-icon-opacity);
 }
 
