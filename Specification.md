@@ -464,7 +464,12 @@ Party.`d.HP` =
    - Record all **`c.*` bonus effects** provided by the currently equipped items as **Memory B**.
 
 2. **Search for a candidate item**
-   - From the inventory, search for the **highest `core concept` value item** in the target item category.
+   - **`i.gauntlet` `i.archery` `i.catalyst` item category:**
+     - From the inventory, search for the **highest (`core concept` + `c.N_NoA+X`) value item** in the target item category.
+     - `core concept` is in 2.5.1 Item category @Specification_CONSTANTS_&_DATA.md
+     - the value is including enhancement, super rare multiplier calculation.
+   - **Other item category:**
+     - From the inventory, search for the **highest `core concept` value item** in the target item category.
      - `core concept` is in 2.5.1 Item category @Specification_CONSTANTS_&_DATA.md
      - the value is including enhancement, super rare multiplier calculation.
    - Exclude any item that satisfies either of the following conditions:
