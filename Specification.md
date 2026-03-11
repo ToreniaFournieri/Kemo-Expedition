@@ -346,50 +346,50 @@ Party.`d.HP` =
 
 | order | item category |
 |-|-|
-| 1 | `i.sword` |
+| 1 | `i.melee` |
 | 2 | `i.gauntlet` |
 | 3 | `i.armor` |
 | 4 | `i.robe` |
-| 5 | `i.katana` |
+| 5 | `i.melee` |
 | 6 | `i.armor` |
 | 7 | `i.gauntlet` |
-| 8 | `i.sword` |
+| 8 | `i.melee` |
 | 9 | `i.armor` |
 | 10 | `i.robe` |
-| 11 | `i.sword` |
+| 11 | `i.melee` |
 
 -  Ninja class:
 
 | order | item category |
 |-|-|
-| 1 | `i.sword` |
+| 1 | `i.melee` |
 | 2 | `i.gauntlet` |
 | 3 | `i.armor` |
 | 4 | `i.robe` |
-| 5 | `i.katana` |
-| 6 | `i.sword` |
+| 5 | `i.melee` |
+| 6 | `i.melee` |
 | 7 | `i.gauntlet` |
-| 8 | `i.sword` |
+| 8 | `i.melee` |
 | 9 | `i.armor` |
 | 10 | `i.robe` |
-| 11 | `i.sword` |
+| 11 | `i.melee` |
 
 
 - Samurai class:
 
 | order | item category |
 |-|-|
-| 1 | `i.sword` |
+| 1 | `i.melee` |
 | 2 | `i.gauntlet` |
 | 3 | `i.armor` |
 | 4 | `i.robe` |
-| 5 | `i.katana` |
-| 6 | `i.katana` |
+| 5 | `i.melee` |
+| 6 | `i.melee` |
 | 7 | `i.gauntlet` |
-| 8 | `i.katana` |
+| 8 | `i.melee` |
 | 9 | `i.armor` |
 | 10 | `i.robe` |
-| 11 | `i.katana` |
+| 11 | `i.melee` |
 
 
 - Fighter/ Lord Class:
@@ -412,47 +412,47 @@ Party.`d.HP` =
 
 | order | item category |
 |-|-|
-| 1 | `i.arrow` |
+| 1 | `i.ranged` |
 | 2 | `i.archery` |
 | 3 | `i.armor` |
 | 4 | `i.robe` |
-| 5 | `i.bolt` |
+| 5 | `i.ranged` |
 | 6 | `i.arrow` |
 | 7 | `i.archery` |
-| 8 | `i.bolt` |
+| 8 | `i.ranged` |
 | 9 | `i.armor` |
 | 10 | `i.robe` |
-| 11 | `i.arrow` |
+| 11 | `i.ranged` |
 
 - Wizard Class:
 
 | order | item category |
 |-|-|
-| 1 | `i.wand` |
+| 1 | `i.magic`  |
 | 2 | `i.catalyst` |
 | 3 | `i.armor` |
 | 4 | `i.robe` |
-| 5 | `i.grimoire` |
-| 6 | `i.wand` |
+| 5 | `i.magic`  |
+| 6 | `i.magic`  |
 | 7 | `i.catalyst` |
-| 8 | `i.wand` |
-| 9 | `i.grimoire` |
+| 8 | `i.magic`  |
+| 9 | `i.magic`  |
 | 10 | `i.robe` |
-| 11 | `i.wand` |
+| 11 | `i.magic`  |
 
 - Sage/ Pilgrim Class:
 
 | order | item category |
 |-|-|
-| 1 | `i.wand` |
+| 1 | `i.magic`  |
 | 2 | `i.catalyst` |
 | 3 | `i.armor` |
 | 4 | `i.robe` |
-| 5 | `i.grimoire` |
-| 6 | `i.wand` |
+| 5 | `i.magic`  |
+| 6 | `i.magic`  |
 | 7 | `i.catalyst` |
-| 8 | `i.grimoire` |
-| 9 | `i.wand` |
+| 8 | `i.magic`  |
+| 9 | `i.magic`  |
 | 10 | `i.robe` |
 | 11 | `i.catalyst` |
 
@@ -469,6 +469,7 @@ Party.`d.HP` =
      - `core concept` is in 2.5.1 Item category @Specification_CONSTANTS_&_DATA.md
      - the value is including enhancement, super rare multiplier calculation.
    - **Other item category:**
+     - If the specified category is a group item category, expand it into its constituent item categories. Items from any of the included categories may be selected.
      - From the inventory, search for the **highest `core concept` value item** in the target item category.
      - `core concept` is in 2.5.1 Item category @Specification_CONSTANTS_&_DATA.md
      - the value is including enhancement, super rare multiplier calculation.
