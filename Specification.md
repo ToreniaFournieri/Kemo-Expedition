@@ -384,12 +384,12 @@ Party.`d.HP` =
 | 3 | `i.armor` |
 | 4 | `i.robe` |
 | 5 | `i.melee` |
-| 6 | `i.melee` |
-| 7 | `i.gauntlet` |
+| 6 | `i.gauntlet` |
+| 7 | `i.melee` |
 | 8 | `i.melee` |
 | 9 | `i.armor` |
 | 10 | `i.robe` |
-| 11 | `i.melee` |
+| 11 | `i.gauntlet` |
 
 
 - Fighter/ Lord Class:
