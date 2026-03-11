@@ -542,7 +542,8 @@ PT4: (未開放:キョウエン 狡猾の神 撃破で開放)
     - If no jewel has been obtained (`hasFirstJewel: false`):
       - [耐久:鎧,衣,盾],[近距離攻撃:剣,刀,手],[遠距離攻撃:矢,ボ,弓],[魔法攻撃:杖,書,媒].  Default: 鎧 or previously selected category. 
     - If a jewel has been obtained (`hasFirstJewel: true`):
-	  - [機能:晶] [耐久:鎧,衣,盾],[近距離攻撃:剣,刀,手],[遠距離攻撃:矢,ボ,弓],[魔法攻撃:杖,書,媒]. Default: 晶 or previously selected category. 
+	  - [機能:晶] [耐久:鎧,衣,盾],[近距離攻撃:剣,刀,手],[遠距離攻撃:矢,ボ,弓],[魔法攻撃:杖,書,媒]. Default: 晶 or previously selected category.
+      - Text display when [晶] selected:  "結晶はパーティタブのキャラクターの装備一覧より、装備に結晶を装着することができます"
     - Each box has two lines:
       - First line, small and gray letters: 耐久
       - Second line, current design: 鎧,衣,盾
