@@ -981,6 +981,8 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 #### 2.5.1 Item category 
 
+- Item category
+
 |category | name | short name| core concept |
 |-----|----|----|-----------|
 |`i.armor` | 鎧 | 鎧 | + `d.physical_defense` |
@@ -995,6 +997,14 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 |`i.wand` | ワンド | 杖 | + `d.magical_attack` |
 |`i.grimoire` | 魔導書 | 書 | + `d.magical_attack`, - `d.magical_NoA`  |
 |`i.catalyst` | 触媒 | 媒 | + `d.magical_NoA`  |
+
+- Group Item category
+
+|category | name | short name |
+|-----|----|----|
+|`i.ranged` | 遠距離武器 | 遠 |
+|`i.magic` | 魔法武器 | 魔 |
+|`i.melee` | 近接武器 | 近 |
 
 - *note:* item might have multiple bonus. sword may have `d.HP` but subtle value.
 
