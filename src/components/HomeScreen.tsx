@@ -1627,7 +1627,7 @@ function normalizeAutoEquipmentMode(mode: Character['autoEquipmentMode']): AutoE
 const AUTO_EQUIPMENT_PRIORITY_BY_CLASS: Record<Character['mainClassId'], AutoEquipmentTargetCategory[]> = {
   duelist: ['i.melee', 'gauntlet', 'armor', 'robe', 'i.melee', 'armor', 'gauntlet', 'i.melee', 'armor', 'robe', 'i.melee'],
   ninja: ['i.melee', 'gauntlet', 'armor', 'robe', 'i.melee', 'i.melee', 'gauntlet', 'i.melee', 'armor', 'robe', 'i.melee'],
-  samurai: ['i.melee', 'gauntlet', 'armor', 'robe', 'i.melee', 'i.melee', 'gauntlet', 'i.melee', 'armor', 'robe', 'i.melee'],
+  samurai: ['i.melee', 'gauntlet', 'armor', 'robe', 'i.melee', 'gauntlet', 'i.melee', 'i.melee', 'armor', 'robe', 'gauntlet'],
   fighter: ['shield', 'armor', 'robe', 'i.melee', 'gauntlet', 'shield', 'armor', 'robe', 'armor', 'robe', 'shield'],
   lord: ['shield', 'armor', 'robe', 'i.melee', 'gauntlet', 'shield', 'armor', 'robe', 'armor', 'robe', 'shield'],
   rogue: ['i.ranged', 'archery', 'armor', 'robe', 'i.ranged', 'arrow', 'archery', 'i.ranged', 'armor', 'robe', 'i.ranged'],
