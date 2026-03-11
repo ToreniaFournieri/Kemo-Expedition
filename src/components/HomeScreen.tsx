@@ -1611,33 +1611,50 @@ const AUTO_EQUIPMENT_HELP_LINES = [
   '※超レア装備は置き換わる事はない',
 ];
 
+type AutoEquipmentTargetCategory = ItemCategory | 'i.melee' | 'i.ranged' | 'i.magic';
+
+const AUTO_EQUIPMENT_GROUP_CATEGORIES: Record<Exclude<AutoEquipmentTargetCategory, ItemCategory>, ItemCategory[]> = {
+  'i.melee': ['sword', 'katana'],
+  'i.ranged': ['arrow', 'bolt'],
+  'i.magic': ['wand', 'grimoire'],
+};
+
 function normalizeAutoEquipmentMode(mode: Character['autoEquipmentMode']): AutoEquipmentMode {
   if (mode === 0 || mode === 2) return mode;
   return 1;
 }
 
-const AUTO_EQUIPMENT_PRIORITY_BY_CLASS: Record<Character['mainClassId'], ItemCategory[]> = {
-  duelist: ['sword', 'gauntlet', 'armor', 'robe', 'katana', 'armor', 'gauntlet', 'sword', 'armor', 'robe', 'sword'],
-  ninja: ['sword', 'gauntlet', 'armor', 'robe', 'katana', 'sword', 'gauntlet', 'sword', 'armor', 'robe', 'sword'],
-  samurai: ['sword', 'gauntlet', 'armor', 'robe', 'katana', 'katana', 'gauntlet', 'katana', 'armor', 'robe', 'katana'],
+const AUTO_EQUIPMENT_PRIORITY_BY_CLASS: Record<Character['mainClassId'], AutoEquipmentTargetCategory[]> = {
+  duelist: ['i.melee', 'gauntlet', 'armor', 'robe', 'i.melee', 'armor', 'gauntlet', 'i.melee', 'armor', 'robe', 'i.melee'],
+  ninja: ['i.melee', 'gauntlet', 'armor', 'robe', 'i.melee', 'i.melee', 'gauntlet', 'i.melee', 'armor', 'robe', 'i.melee'],
+  samurai: ['i.melee', 'gauntlet', 'armor', 'robe', 'i.melee', 'i.melee', 'gauntlet', 'i.melee', 'armor', 'robe', 'i.melee'],
   fighter: ['shield', 'armor', 'robe', 'sword', 'gauntlet', 'shield', 'armor', 'robe', 'armor', 'robe', 'shield'],
   lord: ['shield', 'armor', 'robe', 'sword', 'gauntlet', 'shield', 'armor', 'robe', 'armor', 'robe', 'shield'],
-  rogue: ['arrow', 'archery', 'armor', 'robe', 'bolt', 'arrow', 'archery', 'bolt', 'armor', 'robe', 'arrow'],
-  ranger: ['arrow', 'archery', 'armor', 'robe', 'bolt', 'arrow', 'archery', 'bolt', 'armor', 'robe', 'arrow'],
-  wizard: ['wand', 'catalyst', 'armor', 'robe', 'grimoire', 'wand', 'catalyst', 'wand', 'grimoire', 'robe', 'wand'],
-  sage: ['wand', 'catalyst', 'armor', 'robe', 'grimoire', 'wand', 'catalyst', 'grimoire', 'wand', 'robe', 'catalyst'],
-  pilgrim: ['wand', 'catalyst', 'armor', 'robe', 'grimoire', 'wand', 'catalyst', 'grimoire', 'wand', 'robe', 'catalyst'],
+  rogue: ['i.ranged', 'archery', 'armor', 'robe', 'i.ranged', 'arrow', 'archery', 'i.ranged', 'armor', 'robe', 'i.ranged'],
+  ranger: ['i.ranged', 'archery', 'armor', 'robe', 'i.ranged', 'arrow', 'archery', 'i.ranged', 'armor', 'robe', 'i.ranged'],
+  wizard: ['i.magic', 'catalyst', 'armor', 'robe', 'i.magic', 'i.magic', 'catalyst', 'i.magic', 'i.magic', 'robe', 'i.magic'],
+  sage: ['i.magic', 'catalyst', 'armor', 'robe', 'i.magic', 'i.magic', 'catalyst', 'i.magic', 'i.magic', 'robe', 'catalyst'],
+  pilgrim: ['i.magic', 'catalyst', 'armor', 'robe', 'i.magic', 'i.magic', 'catalyst', 'i.magic', 'i.magic', 'robe', 'catalyst'],
 };
 
 function getNextMissingAutoEquipmentCategory(
-  priorities: ItemCategory[],
+  priorities: AutoEquipmentTargetCategory[],
   equippedCategoryCounts: Partial<Record<ItemCategory, number>>,
-): ItemCategory | null {
-  const requiredCounts: Partial<Record<ItemCategory, number>> = {};
+): AutoEquipmentTargetCategory | null {
+  const requiredCounts: Partial<Record<AutoEquipmentTargetCategory, number>> = {};
+
+  const getEquippedCountForTargetCategory = (targetCategory: AutoEquipmentTargetCategory): number => {
+    if (targetCategory in AUTO_EQUIPMENT_GROUP_CATEGORIES) {
+      return AUTO_EQUIPMENT_GROUP_CATEGORIES[targetCategory as keyof typeof AUTO_EQUIPMENT_GROUP_CATEGORIES]
+        .reduce((sum, category) => sum + (equippedCategoryCounts[category] ?? 0), 0);
+    }
+
+    return equippedCategoryCounts[targetCategory as ItemCategory] ?? 0;
+  };
 
   for (const category of priorities) {
     requiredCounts[category] = (requiredCounts[category] ?? 0) + 1;
-    if ((equippedCategoryCounts[category] ?? 0) < (requiredCounts[category] ?? 0)) {
+    if (getEquippedCountForTargetCategory(category) < (requiredCounts[category] ?? 0)) {
       return category;
     }
   }
@@ -2058,25 +2075,29 @@ export function HomeScreen({
       }
     };
 
-    const getAutoEquipmentSelectionValue = (item: Item): number => {
+    const getAutoEquipmentSelectionValue = (item: Item, targetCategory: AutoEquipmentTargetCategory): number => {
       const coreConceptValue = getCoreConceptValue(item);
-      if (item.category === 'gauntlet' || item.category === 'archery' || item.category === 'catalyst') {
+      if (targetCategory === 'gauntlet' || targetCategory === 'archery' || targetCategory === 'catalyst') {
         return coreConceptValue + getNoAFixedBonusValue(item);
       }
       return coreConceptValue;
     };
 
     const getBestVariantKeyInCategory = (
-      category: ItemCategory,
+      targetCategory: AutoEquipmentTargetCategory,
       memoryItemIds: Set<number>,
       memoryCBonusNames: Set<string>,
     ): string | null => {
+      const targetCategories = targetCategory in AUTO_EQUIPMENT_GROUP_CATEGORIES
+        ? AUTO_EQUIPMENT_GROUP_CATEGORIES[targetCategory as keyof typeof AUTO_EQUIPMENT_GROUP_CATEGORIES]
+        : [targetCategory as ItemCategory];
+
       const options = Object.entries(simulatedInventory)
         .filter(([, variant]) => {
           if (
             variant.status !== 'owned'
             || variant.count <= 0
-            || variant.item.category !== category
+            || !targetCategories.includes(variant.item.category)
           ) {
             return false;
           }
@@ -2091,7 +2112,8 @@ export function HomeScreen({
           return true;
         })
         .sort(([, a], [, b]) => {
-          const selectionValueDiff = getAutoEquipmentSelectionValue(b.item) - getAutoEquipmentSelectionValue(a.item);
+          const selectionValueDiff = getAutoEquipmentSelectionValue(b.item, targetCategory)
+            - getAutoEquipmentSelectionValue(a.item, targetCategory);
           if (selectionValueDiff !== 0) return selectionValueDiff;
 
           return compareItemsByTierAndEnhancement(b.item, a.item);
@@ -2201,7 +2223,7 @@ export function HomeScreen({
           const variant = simulatedInventory[itemKey];
           if (!variant) return;
 
-          equippedCategoryCounts[targetCategory] = (equippedCategoryCounts[targetCategory] ?? 0) + 1;
+          equippedCategoryCounts[variant.item.category] = (equippedCategoryCounts[variant.item.category] ?? 0) + 1;
           removeItemFromSimulatedInventory(itemKey);
           simulatedEquipmentSlots[slotIndex] = variant.item;
           memoryItemIds.add(variant.item.id);
