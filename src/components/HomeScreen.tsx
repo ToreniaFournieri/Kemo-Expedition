@@ -326,18 +326,12 @@ const RACE_ICON_BY_EMOJI: Record<string, string | undefined> = Object.fromEntrie
   RACES.map((race) => [race.emoji, race.icon])
 );
 
-const FILTERED_TEXT_EMOJIS = ['⚠️', '⚠'];
-
 function renderTextWithRaceIcons(text: string, iconClassName = 'h-3.5 w-3.5'): ReactNode {
   if (!text) return text;
 
-  const raceEmojiPattern = Object.keys(RACE_ICON_BY_EMOJI)
+  const emojiPattern = Object.keys(RACE_ICON_BY_EMOJI)
     .map((emoji) => emoji.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
     .join('|');
-  const filteredEmojiPattern = FILTERED_TEXT_EMOJIS
-    .map((emoji) => emoji.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
-    .join('|');
-  const emojiPattern = [raceEmojiPattern, filteredEmojiPattern].filter(Boolean).join('|');
 
   if (!emojiPattern) return text;
 
@@ -347,17 +341,7 @@ function renderTextWithRaceIcons(text: string, iconClassName = 'h-3.5 w-3.5'): R
   return parts.map((part, index) => {
     const iconPath = RACE_ICON_BY_EMOJI[part];
     if (!iconPath) {
-      if (!FILTERED_TEXT_EMOJIS.includes(part)) return part;
-
-      return (
-        <span
-          key={`emoji-${index}`}
-          className="sub-theme-emoji-icon"
-          aria-hidden="true"
-        >
-          {part}
-        </span>
-      );
+      return part;
     }
 
     const iconSrc = iconPath.startsWith('/')
