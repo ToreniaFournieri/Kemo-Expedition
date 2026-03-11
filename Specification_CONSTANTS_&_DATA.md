@@ -1000,11 +1000,11 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 - Group Item category
 
-|category | name | short name |
-|-----|----|----|
-|`i.ranged` | 遠距離武器 | 遠 |
-|`i.magic` | 魔法武器 | 魔 |
-|`i.melee` | 近接武器 | 近 |
+|category | name | short name | Included Item Categorie |
+|-----|----|----|----|
+|`i.ranged` | 遠距離武器 | 遠 | `i.arrow`, `i.bolt` |
+|`i.magic` | 魔法武器 | 魔 | `i.wand`, `i.grimoire` |
+|`i.melee` | 近接武器 | 近 | `i.sword`, `i.katana` |
 
 - *note:* item might have multiple bonus. sword may have `d.HP` but subtle value.
 
