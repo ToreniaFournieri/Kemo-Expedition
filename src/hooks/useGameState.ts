@@ -1457,6 +1457,30 @@ function advanceAfkLogSideQuestProgress(state: GameState, partyIndex: number, si
   }
 }
 
+function getApproxAfkTimeQuestProgressPerCycle(party: Party, approxCycleDurationMs: number): number {
+  if (!party.sideQuest || !TIME_BASED_SIDE_QUEST_TYPES.has(party.sideQuest.type)) return 0;
+
+  const cycleSeconds = Math.max(1, Math.floor(approxCycleDurationMs / 1000));
+  const baseRestSeconds = 5;
+  const baseMoveSeconds = 10;
+  const baseReturnSeconds = 30;
+  const sleepiness = normalizeSleepinessState(party.currentSleepiness ?? 2);
+  const baseSleepSeconds = sleepiness === 2 ? 120 : sleepiness === 1 ? 24 : 0;
+
+  switch (party.sideQuest.type) {
+    case 'q.healing':
+      return baseRestSeconds;
+    case 'q.exercise':
+      return baseMoveSeconds + baseReturnSeconds;
+    case 'q.sleeping':
+      return baseSleepSeconds;
+    case 'q.AFK':
+      return cycleSeconds;
+    default:
+      return 0;
+  }
+}
+
 
 
 type RewardBagType = 'commonRewardBag' | 'uncommonRewardBag' | 'eliteRareRewardBag' | 'bossRareRewardBag' | 'mythicRareRewardBag';
@@ -1647,10 +1671,6 @@ function getPrayerDepositMultiplier(party: Party): number {
 
   // Embezzlement at pray end: God of Cunning +50%, Momentum (party has at least one) +10%.
   return Math.max(0, 1 - embezzlementRate);
-}
-
-function rollPercentInclusive(min: number, max: number): number {
-  return min + Math.random() * (max - min + Number.EPSILON);
 }
 
 function getUnlockActorName(party: Party): string | undefined {
@@ -3028,7 +3048,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const resolvedCycleDurationScale = Math.max(0.001, action.cycleDurationScale ?? getCycleDurationScale());
       const approxCycleDurationMs = Math.max(1, Math.floor(460_000 * resolvedCycleDurationScale));
-      const simulatedCycleSeconds = Math.max(1, Math.floor(approxCycleDurationMs / 1000));
       const runCount = Math.max(0, Math.floor(cappedElapsedMs / approxCycleDurationMs));
       if (runCount <= 0) return state;
 
@@ -3052,118 +3071,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           if (!currentParty) continue;
 
           if (currentParty.sideQuest && TIME_BASED_SIDE_QUEST_TYPES.has(currentParty.sideQuest.type)) {
-            workingState = gameReducer(workingState, {
-              type: 'ADVANCE_SIDE_QUEST',
-              partyIndex,
-              amount: simulatedCycleSeconds,
-              simulatedAt,
-            });
-          }
-
-          const { partyStats: restStartStats } = computePartyStats(currentParty);
-          const hpRatioAtRestStart = restStartStats.hp > 0 ? ((currentParty.currentHp ?? 0) / restStartStats.hp) : 0;
-          const shouldSkipFeast = (currentParty.pendingProfit ?? 0) <= 0 || hpRatioAtRestStart < 0.3;
-          let pendingProfit = currentParty.pendingProfit ?? 0;
-          const baseSpend = shouldSkipFeast ? 0 : Math.floor((pendingProfit * rollPercentInclusive(33, 67)) / 100);
-          const squanderLevel = getPartyAbilityLevel(currentParty, 'squander');
-          const squanderMultiplier = squanderLevel >= 2 ? 1.5 : squanderLevel >= 1 ? 1.3 : 1;
-          const spend = shouldSkipFeast ? 0 : Math.min(pendingProfit, Math.floor(baseSpend * squanderMultiplier));
-          if (spend > 0) {
-            const updatedParties = [...workingState.parties];
-            updatedParties[partyIndex] = {
-              ...currentParty,
-              pendingProfit: Math.max(0, pendingProfit - spend),
-            };
-            workingState = {
-              ...workingState,
-              parties: updatedParties,
-            };
-            pendingProfit = Math.max(0, pendingProfit - spend);
-            if (currentParty.sideQuest?.type === 'q.squander') {
-              workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: spend, simulatedAt });
+            const approximateProgress = getApproxAfkTimeQuestProgressPerCycle(currentParty, approxCycleDurationMs);
+            if (approximateProgress > 0) {
+              workingState = gameReducer(workingState, {
+                type: 'ADVANCE_SIDE_QUEST',
+                partyIndex,
+                amount: approximateProgress,
+                simulatedAt,
+              });
             }
-          }
-
-          const afterSpend = workingState.parties[partyIndex];
-          if (!afterSpend) continue;
-          const isNoFaith = isNoFaithDeity(afterSpend.deity.name);
-          const donationRate = rollPercentInclusive(10, 33);
-          const baseDonation = Math.floor(((afterSpend.pendingProfit ?? 0) * donationRate) / 100);
-          const titheLevel = getPartyAbilityLevel(afterSpend, 'tithe');
-          const titheBonusRate = isNoFaith ? 0 : (titheLevel >= 2 ? 0.15 : titheLevel >= 1 ? 0.1 : 0);
-          const titheBonus = Math.floor((afterSpend.pendingProfit ?? 0) * titheBonusRate);
-          const donation = isNoFaith ? 0 : Math.min(afterSpend.pendingProfit ?? 0, baseDonation + titheBonus);
-          const rawDeposit = Math.max(0, (afterSpend.pendingProfit ?? 0) - donation);
-          const deposit = Math.floor(rawDeposit * getPrayerDepositMultiplier(afterSpend));
-          const embezzled = Math.max(0, rawDeposit - deposit);
-          const deityName = normalizeDeityName(afterSpend.deity.name);
-          const deityDonations = {
-            ...workingState.global.deityDonations,
-            [deityName]: (workingState.global.deityDonations[deityName] ?? 0) + donation,
-          };
-          const profitProcessedParties = [...workingState.parties];
-          profitProcessedParties[partyIndex] = {
-            ...afterSpend,
-            pendingProfit: 0,
-            deityGold: deityDonations[deityName],
-            expeditionStats: {
-              ...afterSpend.expeditionStats,
-              donatedGold: afterSpend.expeditionStats.donatedGold + donation,
-              savedGold: afterSpend.expeditionStats.savedGold + deposit,
-            },
-          };
-          workingState = {
-            ...workingState,
-            parties: profitProcessedParties,
-            global: {
-              ...workingState.global,
-              gold: workingState.global.gold + deposit,
-              deityDonations,
-            },
-          };
-
-          if (afterSpend.sideQuest?.type === 'q.donation' && donation > 0) {
-            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: donation, simulatedAt });
-          }
-          if (afterSpend.sideQuest?.type === 'q.savings' && deposit > 0) {
-            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: deposit, simulatedAt });
-          }
-          if (afterSpend.sideQuest?.type === 'q.embezzlement' && embezzled > 0) {
-            workingState = gameReducer(workingState, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: embezzled, simulatedAt });
-          }
-
-          const partyAfterProfit = workingState.parties[partyIndex];
-          if (!partyAfterProfit) continue;
-          const shouldSkipSleepForLowHp = hpRatioAtRestStart < 0.1;
-          let partyAfterSleepinessRoll = partyAfterProfit;
-
-          if (!shouldSkipSleepForLowHp) {
-            const sleepinessResult = drawPartySleepiness(partyAfterProfit);
-            partyAfterSleepinessRoll = sleepinessResult.party;
-
-            if (partyAfterSleepinessRoll !== partyAfterProfit) {
-              const rolledParties = [...workingState.parties];
-              rolledParties[partyIndex] = partyAfterSleepinessRoll;
-              workingState = {
-                ...workingState,
-                parties: rolledParties,
-              };
-            }
-          }
-
-          const { partyStats } = computePartyStats(partyAfterProfit);
-          const missingHp = Math.max(0, partyStats.hp - (partyAfterProfit.currentHp ?? partyStats.hp));
-
-          if (missingHp > 0) {
-            const healedParties = [...workingState.parties];
-            healedParties[partyIndex] = {
-              ...partyAfterProfit,
-              currentHp: Math.min(partyStats.hp, (partyAfterProfit.currentHp ?? partyStats.hp) + missingHp),
-            };
-            workingState = {
-              ...workingState,
-              parties: healedParties,
-            };
           }
 
           workingState = advanceAfkLogSideQuestProgress(workingState, partyIndex, simulatedAt);
