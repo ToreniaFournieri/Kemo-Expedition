@@ -6324,10 +6324,22 @@ function InventoryTab({
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
 }) {
   const [showSold, setShowSold] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<InventoryCategory>('jewel');
+  const hasOwnedJewels = Object.values(jewels).some((count) => count > 0);
+  const hasEquippedJewels = parties.some((party) =>
+    party.characters.some((character) => character.equipment.some((item) => !!item?.jewel))
+  );
+  const hasFirstJewel = hasOwnedJewels || hasEquippedJewels;
+  const [selectedCategory, setSelectedCategory] = useState<InventoryCategory>(() => (hasFirstJewel ? 'jewel' : 'armor'));
   const [inventoryRarityFilter, setInventoryRarityFilter] = useState<RarityFilter>('all');
   const [inventorySuperRareOnly, setInventorySuperRareOnly] = useState(false);
+  const categoryGroups = hasFirstJewel ? INVENTORY_CATEGORY_GROUPS : CATEGORY_GROUPS;
   const isJewelCategory = selectedCategory === 'jewel';
+
+  useEffect(() => {
+    if (!hasFirstJewel && selectedCategory === 'jewel') {
+      setSelectedCategory('armor');
+    }
+  }, [hasFirstJewel, selectedCategory]);
 
   // Separate owned and sold/notown items, filtered by category
   const allOwnedItems = Object.entries(inventory).filter(([, v]) => v.status === 'owned' && v.count > 0);
@@ -6517,7 +6529,7 @@ function InventoryTab({
 
       {/* Category group tabs */}
       <div className="flex gap-1 mb-3 overflow-x-auto pb-1">
-        {INVENTORY_CATEGORY_GROUPS.map(group => (
+        {categoryGroups.map(group => (
           <div key={group.id} className="flex flex-col">
             <div className="text-xs text-gray-400 text-center mb-0.5">{group.label}</div>
             <div className="flex">
