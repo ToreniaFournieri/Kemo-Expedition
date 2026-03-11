@@ -392,7 +392,7 @@ Party.`d.HP` =
 | 11 | `i.gauntlet` |
 
 
-- Fighter/ Lord Class:
+- Fighter Class:
 
 | order | item category |
 |-|-|
