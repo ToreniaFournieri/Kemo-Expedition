@@ -2609,6 +2609,10 @@ export function HomeScreen({
 
   const pendingGodsBattleByPartyRef = useRef<Record<number, boolean>>({});
   const afkQuestCarryMsRef = useRef<Record<number, number>>({});
+  const getScaledSideQuestSeconds = useCallback((durationMs: number) => {
+    const timeSpeedScale = Math.max(0.001, getTimeSpeedScale(debugSettings));
+    return Math.max(1, Math.floor((durationMs / timeSpeedScale) / 1000));
+  }, [debugSettings]);
 
   const processTimeCheckpoint = useCallback((now: number = Date.now()) => {
     const parties = latestPartiesRef.current;
@@ -2621,6 +2625,8 @@ export function HomeScreen({
       actions.addNotification(`(Debug)前回の更新から ${formatNumber(elapsedSeconds)}秒経過`);
     }
 
+    const timeSpeedScale = Math.max(0.001, getTimeSpeedScale(debugSettings));
+
     parties.forEach((party, partyIndex) => {
       if (party.sideQuest?.type !== 'q.AFK') {
         afkQuestCarryMsRef.current[partyIndex] = 0;
@@ -2628,7 +2634,8 @@ export function HomeScreen({
       }
 
       const carriedMs = afkQuestCarryMsRef.current[partyIndex] ?? 0;
-      const { gainedSeconds, remainderMs } = getElapsedWholeSeconds(carriedMs, elapsedMs);
+      const simulatedElapsedMs = elapsedMs / timeSpeedScale;
+      const { gainedSeconds, remainderMs } = getElapsedWholeSeconds(carriedMs, simulatedElapsedMs);
       afkQuestCarryMsRef.current[partyIndex] = remainderMs;
 
       if (gainedSeconds > 0) {
@@ -2704,7 +2711,7 @@ export function HomeScreen({
           }
           if (projectedHp >= partyRuntimeStats.hp) {
             if (party.sideQuest?.type === 'q.healing') {
-              const restSeconds = Math.max(1, Math.floor((simulationNow - updated.stateStartedAt) / 1000));
+              const restSeconds = getScaledSideQuestSeconds(simulationNow - updated.stateStartedAt);
               actions.advanceSideQuest(partyIndex, restSeconds, simulationNow);
             }
             const hasTrophy = (party.lastExpeditionLog?.rewards.length ?? 0) > 0;
@@ -2784,7 +2791,7 @@ export function HomeScreen({
                 updated.skipSleepThisCycle = false;
               }
             } else if (updated.state === 'sound_sleep' || updated.state === 'nap_sleep') {
-              if (party.sideQuest?.type === 'q.sleeping' && updated.durationMs > 100) actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
+              if (party.sideQuest?.type === 'q.sleeping' && updated.durationMs > 100) actions.advanceSideQuest(partyIndex, getScaledSideQuestSeconds(updated.durationMs), simulationNow);
               if (updated.state === 'sound_sleep') {
                 updated.state = 'outfit';
                 updated.durationMs = getStateDurationMs(party, 'outfit');
@@ -2842,7 +2849,7 @@ export function HomeScreen({
                   actions.addNotification(`${party.name}のサイドクエストは神魔戦の開始で中止された`);
                 }
               }
-              if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
+              if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, getScaledSideQuestSeconds(updated.durationMs), simulationNow);
               actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle);
               updated.state = 'explore';
               updated.durationMs = getExplorationDurationMs(
@@ -2857,7 +2864,7 @@ export function HomeScreen({
               updated.durationMs = getPartyTravelDurationMs(party, 'return');
               updated.isCurrentExpeditionGodsBattle = false;
             } else if (updated.state === 'return') {
-              if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, Math.max(1, Math.floor(updated.durationMs / 1000)), simulationNow);
+              if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, getScaledSideQuestSeconds(updated.durationMs), simulationNow);
               if (!party.sideQuest && !hasActiveLootGateCondition(party, updated.state)) {
                 actions.rollSideQuest(partyIndex, party.selectedDungeonId);
               }
