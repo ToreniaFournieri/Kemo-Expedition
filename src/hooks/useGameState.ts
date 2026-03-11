@@ -1300,7 +1300,7 @@ type GameAction =
   | { type: 'MARK_DIARY_LOG_SEEN'; logId: string }
   | { type: 'MARK_ALL_DIARY_LOGS_SEEN' }
   | { type: 'UPDATE_DIARY_SETTINGS'; partyIndex: number; settings: Partial<DiarySettings> }
-  | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: GameMode; simulatedEndAt?: number }
+  | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: GameMode; simulatedEndAt?: number; cycleDurationScale?: number }
   | { type: 'RESET_GAME' }
   | { type: 'IMPORT_GAME_STATE'; state: GameState }
   | { type: 'RESET_COMMON_BAGS' }
@@ -3026,7 +3026,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const cappedElapsedMs = Math.max(0, Math.min(action.elapsedMs, AFK_MAX_SIMULATION_MS));
       if (cappedElapsedMs < 1000) return state;
 
-      const approxCycleDurationMs = Math.floor(460_000 * getCycleDurationScale());
+      const resolvedCycleDurationScale = Math.max(0.001, action.cycleDurationScale ?? getCycleDurationScale());
+      const approxCycleDurationMs = Math.max(1, Math.floor(460_000 * resolvedCycleDurationScale));
       const simulatedCycleSeconds = Math.max(1, Math.floor(approxCycleDurationMs / 1000));
       const runCount = Math.max(0, Math.floor(cappedElapsedMs / approxCycleDurationMs));
       if (runCount <= 0) return state;
@@ -3600,8 +3601,8 @@ export function useGameState() {
       dispatch({ type: 'UPDATE_DIARY_SETTINGS', partyIndex, settings });
     }, []),
 
-    simulateAfk: useCallback((elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode: GameMode = 'm.kemo', simulatedEndAt?: number) => {
-      dispatch({ type: 'SIMULATE_AFK', elapsedMs, isAutoRepeatEnabled, gameMode, simulatedEndAt });
+    simulateAfk: useCallback((elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode: GameMode = 'm.kemo', simulatedEndAt?: number, cycleDurationScale?: number) => {
+      dispatch({ type: 'SIMULATE_AFK', elapsedMs, isAutoRepeatEnabled, gameMode, simulatedEndAt, cycleDurationScale });
     }, []),
 
     resetGame: useCallback(() => {
