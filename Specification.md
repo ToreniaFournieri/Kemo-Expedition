@@ -399,7 +399,7 @@ Party.`d.HP` =
 | 1 | `i.shield` |
 | 2 | `i.armor` |
 | 3 | `i.robe` |
-| 4 | `i.sword` |
+| 4 | `i.melee` |
 | 5 | `i.gauntlet` |
 | 6 | `i.shield` |
 | 7 | `i.armor` |
