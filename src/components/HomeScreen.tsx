@@ -4452,10 +4452,7 @@ function PartyTab({
           <div className="mb-3 p-3 rounded border border-accent/25 bg-accent/10">
             <ul className="text-sm text-accent space-y-1">
               {editConfirmWarnings.map((warning) => (
-                <li key={warning}>
-                  <span className="sub-theme-emoji-icon" aria-hidden="true">⚠️</span>{' '}
-                  {warning}
-                </li>
+                <li key={warning}>⚠️ {warning}</li>
               ))}
             </ul>
           </div>
