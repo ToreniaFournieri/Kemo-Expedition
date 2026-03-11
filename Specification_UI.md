@@ -852,6 +852,7 @@ HP: 312                 クラス: 魔法使い
   - if OFF, disable `Clairvoyance (未来視)` as default. (it would unlock it by the game progress in the future update)
 - Speed of time: Real time / x5 boost / x20 hyper / x100 Ultra
   - Default: x5 boost
+  - affects side quest duration. 
 - Gods Battle condition: boss items require Normal / Simple(1)
   - Default: Normal
   - Simple: 1 boss rare item instead of actual setting
