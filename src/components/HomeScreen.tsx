@@ -2044,6 +2044,28 @@ export function HomeScreen({
       }
     };
 
+    const getNoAFixedBonusValue = (item: Item): number => {
+      const multiplier = getEnhancementAndSuperRareMultiplier(item) * (item.baseMultiplier ?? 1);
+      switch (item.category) {
+        case 'gauntlet':
+          return (item.meleeNoABonus ?? 0) * multiplier;
+        case 'archery':
+          return (item.rangedNoABonus ?? 0) * multiplier;
+        case 'catalyst':
+          return (item.magicalNoABonus ?? 0) * multiplier;
+        default:
+          return 0;
+      }
+    };
+
+    const getAutoEquipmentSelectionValue = (item: Item): number => {
+      const coreConceptValue = getCoreConceptValue(item);
+      if (item.category === 'gauntlet' || item.category === 'archery' || item.category === 'catalyst') {
+        return coreConceptValue + getNoAFixedBonusValue(item);
+      }
+      return coreConceptValue;
+    };
+
     const getBestVariantKeyInCategory = (
       category: ItemCategory,
       memoryItemIds: Set<number>,
@@ -2069,8 +2091,8 @@ export function HomeScreen({
           return true;
         })
         .sort(([, a], [, b]) => {
-          const coreConceptDiff = getCoreConceptValue(b.item) - getCoreConceptValue(a.item);
-          if (coreConceptDiff !== 0) return coreConceptDiff;
+          const selectionValueDiff = getAutoEquipmentSelectionValue(b.item) - getAutoEquipmentSelectionValue(a.item);
+          if (selectionValueDiff !== 0) return selectionValueDiff;
 
           return compareItemsByTierAndEnhancement(b.item, a.item);
         });
