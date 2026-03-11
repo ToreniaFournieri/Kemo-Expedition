@@ -9,6 +9,7 @@
   --color-hp-bar: 147 197 253;
   --color-hp-bar-mild: 147 197 253;
   --color-hp-taken: 252 183 134;
+  --color-heal-bar: 184 237 178;
   --color-hp-bar-empty: 226 232 240;
   --sub-theme-emoji-filter: brightness(0) saturate(100%) invert(69%) sepia(94%) saturate(1800%) hue-rotate(194deg) brightness(75%) contrast(95%);
   --side-quest-icon-opacity: 0.9;
@@ -21,6 +22,7 @@
   --color-hp-bar: 223 190 128;
   --color-hp-bar-mild: 232 181 104;
   --color-hp-taken: 255 237 145;
+  --color-heal-bar: 184 237 178;
   --color-hp-bar-empty: 217 204 175;
   --sub-theme-emoji-filter: brightness(0) saturate(100%) invert(58%) sepia(48%) saturate(716%) hue-rotate(356deg) brightness(92%) contrast(90%);
   --side-quest-icon-opacity: 0.9;
@@ -54,6 +56,7 @@
   --color-hp-bar: 8 166 69;
   --color-hp-bar-mild: 8 166 69;
   --color-hp-taken: 252 165 165;
+  --color-heal-bar: 184 237 178;
   --color-hp-bar-empty: 209 213 219;
   --sub-theme-emoji-filter: brightness(0) saturate(100%) invert(56%) sepia(71%) saturate(445%) hue-rotate(108deg) brightness(95%) contrast(89%);
   --side-quest-icon-opacity: 0.9;
@@ -85,6 +88,7 @@
   color: rgb(229 231 235);
   --color-hp-bar-mild: 106 148 198;
   --color-hp-taken: 165 136 109;
+  --color-heal-bar: 94 140 91;
   --color-hp-bar-empty: 55 65 81;
 }
 
@@ -183,6 +187,7 @@ body.app-dark {
   --color-hp-bar: 170 141 93;
   --color-hp-bar-mild: 170 141 93;
   --color-hp-taken: 133 114 85;
+  --color-heal-bar: 112 138 88;
   --color-hp-bar-empty: 43 52 68;
 }
 
@@ -193,6 +198,7 @@ body.app-dark {
   --color-hp-bar: 8 166 69;
   --color-hp-bar-mild: 8 166 69;
   --color-hp-taken: 185 28 28;
+  --color-heal-bar: 72 130 89;
   --color-hp-bar-empty: 55 65 81;
 }
 
