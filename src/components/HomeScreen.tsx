@@ -7957,7 +7957,7 @@ function SettingTab({
       tier: effectiveTier,
       enemyMultipliers: getEffectiveEnemyMultipliers(dungeon, gameMode === 'm.luna'),
     };
-    return applyEnemyEncounterScaling(enemy, effectiveDungeon, floorNumber, roomType);
+    return applyEnemyEncounterScaling(enemy, effectiveDungeon, floorNumber, roomType, { isLunaMode: gameMode === 'm.luna' });
   };
 
   const getGodRuntimeEnemy = (god: (typeof GOD_ENEMY_PROFILES)[number]): EnemyDef | null =>
@@ -8479,7 +8479,12 @@ function SettingTab({
               <div className="text-xs text-gray-500 font-medium mb-1">{group.label}</div>
               {group.enemies.map(enemy => {
                 const displayEnemy = getDisplayEnemy(enemy, selectedBestiaryDungeon, group.floorNumber, group.groupType);
-                const enemyLevelFinal = getEffectiveEnemyLevel(selectedBestiaryDungeon.expLevel, group.floorNumber, gameMode === 'm.luna');
+                const roomType = group.groupType === 'boss'
+                  ? 'battle_Boss'
+                  : group.groupType === 'elite'
+                    ? 'battle_Elite'
+                    : 'battle_Normal';
+                const enemyLevelFinal = getEffectiveEnemyLevel(selectedBestiaryDungeon.expLevel, group.floorNumber, roomType, gameMode === 'm.luna');
                 const enemyClass = ENEMY_CLASS_LABELS[displayEnemy.enemyClass] ?? '不明';
                 const enemyExpanded = !!expandedBestiaryEnemies[displayEnemy.id];
                 const defenseAmplifierPercent = displayEnemy.defenseAmplifier * 100;

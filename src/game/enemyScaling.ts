@@ -1,5 +1,5 @@
 import { Dungeon, EnemyDef, RoomType } from '../types';
-import { getFloorRoomMultipliers } from '../data/dungeons';
+import { LUNA_MODE_MULTIPLIERS, getEnemyLevelForRoom, getEnemyMultipliersForLevel } from '../data/dungeons';
 import { getDebugSettings } from './debugSettings';
 
 type GodEnemyMultipliers = {
@@ -47,11 +47,20 @@ export function getGodEnemyMultipliers(): GodEnemyMultipliers {
 
 type EnemyScalingOptions = {
   isGodEnemy?: boolean;
+  isLunaMode?: boolean;
 };
 
 // SpecRef: 6.1 | Encounter Rules | getRoomMultiplier
-export function getRoomMultiplier(floorNumber: number, roomType: RoomType, floorMultiplier: number): number {
-  return getFloorRoomMultipliers(floorNumber, roomType).attack ?? floorMultiplier;
+export function getRoomMultiplier(
+  dungeonExpLevel: number,
+  floorNumber: number,
+  roomType: RoomType,
+  floorMultiplier: number,
+  isLunaMode: boolean = false,
+): number {
+  const enemyLevel = getEnemyLevelForRoom(dungeonExpLevel, floorNumber, roomType);
+  const effectiveEnemyLevel = enemyLevel + (isLunaMode ? LUNA_MODE_MULTIPLIERS.enemyLevel : 0);
+  return getEnemyMultipliersForLevel(effectiveEnemyLevel).attack ?? floorMultiplier;
 }
 
 // SpecRef: 6.1 | Encounter Rules | applyEnemyEncounterScaling
@@ -62,17 +71,18 @@ export function applyEnemyEncounterScaling(
   roomType: RoomType,
   options: EnemyScalingOptions = {}
 ): EnemyDef {
-  const roomMultipliers = getFloorRoomMultipliers(floorNumber, roomType);
-  const expeditionMult = dungeon.enemyMultipliers;
+  const roomEnemyLevel = getEnemyLevelForRoom(dungeon.expLevel, floorNumber, roomType);
+  const effectiveEnemyLevel = roomEnemyLevel + (options.isLunaMode ? LUNA_MODE_MULTIPLIERS.enemyLevel : 0);
+  const expeditionMult = getEnemyMultipliersForLevel(effectiveEnemyLevel);
   const godMult = options.isGodEnemy ? getGodEnemyMultipliers() : DEFAULT_MULTIPLIERS;
 
   const finalMultipliers = {
-    hp: expeditionMult.hp * roomMultipliers.hp * godMult.hp,
-    attack: expeditionMult.attack * roomMultipliers.attack * godMult.attack,
-    noa: expeditionMult.noa * roomMultipliers.noa * godMult.noa,
-    attackAmplifier: expeditionMult.attackAmplifier * roomMultipliers.attackAmplifier * godMult.attackAmplifier,
-    defense: expeditionMult.defense * roomMultipliers.defense * godMult.defense,
-    defenseAmplifier: expeditionMult.defenseAmplifier * roomMultipliers.defenseAmplifier * godMult.defenseAmplifier,
+    hp: expeditionMult.hp * godMult.hp,
+    attack: expeditionMult.attack * godMult.attack,
+    noa: expeditionMult.noa * godMult.noa,
+    attackAmplifier: expeditionMult.attackAmplifier * godMult.attackAmplifier,
+    defense: expeditionMult.defense * godMult.defense,
+    defenseAmplifier: expeditionMult.defenseAmplifier * godMult.defenseAmplifier,
   };
 
   return {
