@@ -7,8 +7,8 @@ const round2 = (value: number): number => Number(value.toFixed(2));
 function buildFloorRoomMultipliers(maxFloor: number): Record<number, Record<RoomType, CombatMultipliers>> {
   const roomTypeMultipliers: Record<RoomType, CombatMultipliers> = {
     battle_Normal: { hp: 1.0, attack: 1.0, noa: 1.0, attackAmplifier: 1.0, defense: 1.0, defenseAmplifier: 1.0 },
-    battle_Elite: { hp: 1.5, attack: 1.2, noa: 1.0, attackAmplifier: 1.02, defense: 1.2, defenseAmplifier: 1.0 },
-    battle_Boss: { hp: 2.0, attack: 1.5, noa: 1.0, attackAmplifier: 1.05, defense: 1.5, defenseAmplifier: 1.0 },
+    battle_Elite: { hp: 1.3, attack: 1.2, noa: 1.0, attackAmplifier: 1.02, defense: 1.2, defenseAmplifier: 1.0 },
+    battle_Boss: { hp: 1.69, attack: 1.45, noa: 1.0, attackAmplifier: 1.05, defense: 1.45, defenseAmplifier: 1.0 },
   };
 
   return Array.from({ length: maxFloor }, (_, index) => {
@@ -52,14 +52,19 @@ function buildExpeditionEnemyMultipliers(maxTier: number): ExpeditionEnemyMultip
 
   for (let tier = 2; tier <= maxTier; tier += 1) {
     const prev = multipliers[tier - 2];
+    const hpMultiplier = 3 - 0.13 * (tier - 2);
+    const attackMultiplier = 1.8 - 0.047 * (tier - 2) - Math.max(0, 0.021 * (tier - 6));
+    const attackAmplifierMultiplier = 1.3 - 0.015 * (tier - 2) - Math.max(0, 0.008 * (tier - 6));
+    const noaIncrease = Math.max(0.1, 1 - 0.1 * (tier - 2));
+    const defenseMultiplier = 2 - 0.072 * (tier - 2) - Math.max(0, 0.007 * (tier - 6));
     multipliers.push({
-      hp: round2(prev.hp * (4 - 0.3 * (tier - 2))),
-      attack: round2(prev.attack * (2 - 0.1 * (tier - 2))),
-      noa: round2(prev.noa + (1 - 0.1 * (tier - 2))),
-      attackAmplifier: round2(prev.attackAmplifier * (1.4 - 0.04 * (tier - 2))),
-      defense: round2(prev.defense * (2 - 0.1 * (tier - 2))),
-      defenseAmplifier: round2(Math.pow(0.9, tier - 1)),
-      experience: round2(prev.experience * (4 - 0.3 * (tier - 2))),
+      hp: round2(prev.hp * hpMultiplier),
+      attack: round2(prev.attack * attackMultiplier),
+      noa: round2(prev.noa + noaIncrease),
+      attackAmplifier: round2(prev.attackAmplifier * attackAmplifierMultiplier),
+      defense: round2(prev.defense * defenseMultiplier),
+      defenseAmplifier: round2(Math.pow(0.9, tier - 1) + 0.01 * Math.max(0, tier - 6)),
+      experience: round2(prev.experience * hpMultiplier),
     });
   }
 
