@@ -434,6 +434,7 @@
 | 5 | 恐ろしい | x3.50 |
 | 6 | 究極の | x5.00 |
 
+
 - `t.common_enhancement_bag_default` table
 
 | ID | title | tickets |
@@ -761,19 +762,20 @@
 - Strength of enemy by expeditions and floors. 
   - n = `x.exp_tier`
 
-  - `x.exp_HP_mult`(1)=1, `x.exp_HP_mult`(n)=  `x.exp_HP_mult`(n-1)*(4 - 0.3*(n -2))
-  - `x.exp_atk_mult`(1)=1, `x.exp_atk_mult`(n)= `x.exp_atk_mult`(n-1)*(2 - 0.1*(n -2))
-  - `x.exp_atk_amp_mult`(1)=1, `x.exp_atk_amp_mult`(n)= `x.exp_atk_amp_mult`(n-1)*(1.40 - 0.04 *(n -2))
-  - `x.exp_NoA_mult`(1)=1, `x.exp_NoA_mult`(n)= `x.exp_NoA_mult`(n-1) + (1.0 -
-  0.1 * (n - 2))
-  - `x.exp_def_mult`(1)=1, `x.exp_def_mult`(n)= `x.exp_def_mult`(n-1)*(2 - 0.1 * (n -2)
-  - `x.exp_def_amp_mult`(1)=1, `x.exp_def_amp_mult`(n)= 0.90^(n-1)
-  - `x.floor_HP_mult`: 1.149^(`x.floor`-1)*(Notmal:1, Elite:1.5, Boss:2.0)
-  - `x.floor_atk_mult`: 1.0845^(`x.floor`-1)*(Normal:1, Elite:1.2, Boss:1.5)
+  - `x.exp_HP_mult`(1)=1, `x.exp_HP_mult`(n)=  `x.exp_HP_mult`(n-1)*(3 - 0.13*(n -2))
+  - `x.exp_atk_mult`(1)=1, `x.exp_atk_mult`(n)= `x.exp_atk_mult`(n-1)*(1.8 - 0.047*(n -2) - max(0, 0.021* (n - 6)) )
+  - `x.exp_atk_amp_mult`(1)=1, `x.exp_atk_amp_mult`(n)= `x.exp_atk_amp_mult`(n-1)*(1.30 - 0.015 *(n -2)  - max(0, 0.008* (n - 6))  )
+  - `x.exp_NoA_mult`(1)=1, `x.exp_NoA_mult`(n)= `x.exp_NoA_mult`(n-1) + max(0.1 ,(1.0 -
+  0.1 * (n - 2)))
+  - `x.exp_def_mult`(1)=1, `x.exp_def_mult`(n)= `x.exp_def_mult`(n-1)*(2 - 0.072 * (n -2) - max(0, 0.007* (n - 6))  )
+  - `x.exp_def_amp_mult`(1)=1, `x.exp_def_amp_mult`(n)= 0.90^(n-1) + 0.01 * max(0, (n-6))
+  - `x.floor_HP_mult`: 1.149^(`x.floor`-1)*(Notmal:1, Elite:1.3, Boss:1.69)
+  - `x.floor_atk_mult`: 1.0845^(`x.floor`-1)*(Normal:1, Elite:1.2, Boss:1.45)
   - `x.floor_atk_amp_mult`: 1.03^(`x.floor`-1) *(Normal:1, Elite:1.02, Boss:1.05)
   - `x.floor_NoA_mult`: 1.05^(`x.floor`-1)
-  - `x.floor_def_mult`: 1.0845^(`x.floor`-1)*(Normal:1, Elite:1.2, Boss:1.5)
+  - `x.floor_def_mult`: 1.0845^(`x.floor`-1)*(Normal:1, Elite:1.2, Boss:1.45)
   - `x.floor_def_amp_mult`: 0.97^(`x.floor`-1)
+
 
 - `x.gods_mult`
   - If enemy is god, apllpy them. 
@@ -798,21 +800,26 @@
 |-----|-----|-----|----|----|----|----|
 | x4 | x1.6 | x1.3 | x1.6 | x1.4 | x0.9 | +2 |
 
-- Note: Tier 1–11 expedition multiplier table, result of these math calculations
+- Note: Tier 1–15 expedition multiplier table, result of these math calculations
 
 | Tier | exp_HP_mult | exp_atk_mult | exp_atk_amp_mult | exp_NoA_mult | exp_def_mult | exp_def_amp_mult |
 |------|------------|--------------|------------------|-------------|--------------|------------------|
 | 1 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| 2 | 4.00 | 2.00 | 1.40 | 2.00 | 2.00 | 0.90 |
-| 3 | 14.80 | 3.80 | 1.90 | 2.90 | 3.80 | 0.81 |
-| 4 | 51.80 | 6.84 | 2.51 | 3.70 | 6.84 | 0.73 |
-| 5 | 170.94 | 11.63 | 3.22 | 4.40 | 11.63 | 0.66 |
-| 6 | 529.91 | 18.60 | 3.99 | 5.00 | 18.60 | 0.59 |
-| 7 | 1536.75 | 27.91 | 4.79 | 5.50 | 27.91 | 0.53 |
-| 8 | 4149.23 | 39.07 | 5.55 | 5.90 | 39.07 | 0.48 |
-| 9 | 10373.07 | 50.79 | 6.22 | 6.20 | 50.79 | 0.43 |
-| 10 | 23858.05 | 60.95 | 6.71 | 6.40 | 60.95 | 0.39 |
-| 11 | 31015.47 | 67.04 | 6.98 | 6.50 | 67.04 | 0.35 |
+| 2 | 3.00 | 1.80 | 1.30 | 2.00 | 2.00 | 0.90 |
+| 3 | 8.61 | 3.16 | 1.67 | 2.90 | 3.86 | 0.81 |
+| 4 | 23.59 | 5.38 | 2.12 | 3.70 | 7.16 | 0.73 |
+| 5 | 61.57 | 8.93 | 2.66 | 4.40 | 12.77 | 0.66 |
+| 6 | 152.69 | 14.39 | 3.30 | 5.00 | 21.85 | 0.59 |
+| 7 | 358.82 | 22.22 | 4.02 | 5.50 | 35.67 | 0.54 |
+| 8 | 796.58 | 32.79 | 4.80 | 5.90 | 55.43 | 0.50 |
+| 9 | 1664.85 | 46.17 | 5.62 | 6.20 | 81.76 | 0.46 |
+| 10 | 3263.11 | 61.87 | 6.45 | 6.40 | 114.15 | 0.43 |
+| 11 | 5971.50 | 78.70 | 7.25 | 6.50 | 150.33 | 0.40 |
+| 12 | 10151.55 | 94.75 | 7.99 | 6.60 | 186.11 | 0.37 |
+| 13 | 15937.93 | 107.63 | 8.63 | 6.70 | 215.70 | 0.35 |
+| 14 | 22950.62 | 114.95 | 9.11 | 6.80 | 232.96 | 0.33 |
+| 15 | 30065.31 | 114.95 | 9.41 | 6.90 | 233.19 | 0.32 |
+
 
 | Floor | Room | Type | HP_mult | ATK_mult | ATK_AMP_mult | NoA_mult | DEF_mult | DEF_AMP_mult |
 |------|------|------|--------|----------|--------------|----------|----------|--------------|
@@ -1010,18 +1017,34 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 #### 2.5.2 Item list
 
-|Tier| base_power | multiplier for　鎧, 衣, 剣, 矢, 杖 | plus for 盾 | base_power (NoA) for 手, 弓, 媒 | fixed NoA for 手, 弓, 媒 |penalty for 刀, ボ, 書| elemental v |
-|----|------------|--------|-----------|--------|--------|-------|----|
-| 1 | 12 | `c.target_status+0.13` | `c.evasion+0.013` | 0.8 | `c.N_NoA+1` | `d.evasion-0.001`, `d.N_NoA-1.0` | `e.element+0.15` |
-| 2 | 18 | `c.target_status+0.12` | `c.evasion+0.012` | 0.7 | `c.N_NoA+2` | `d.evasion-0.002`, `d.N_NoA-1.2` | `e.element+0.14` |
-| 3 | 27 | `c.target_status+0.11` | `c.evasion+0.011` | 0.6 | `c.N_NoA+3` | `d.evasion-0.003`, `d.N_NoA-1.4` | `e.element+0.13` |
-| 4 | 41 | `c.target_status+0.09` | `c.evasion+0.009` | 0.5 | `c.N_NoA+4` | `d.evasion-0.004`, `d.N_NoA-1.6` | `e.element+0.12` |
-| 5 | 61 | `c.target_status+0.08` | `c.evasion+0.008` | 0.4 | `c.N_NoA+5` | `d.evasion-0.005`, `d.N_NoA-1.8` | `e.element+0.11` |
-| 6 | 91 | `c.target_status+0.07` | `c.evasion+0.007` | 0.3 | `c.N_NoA+6` | `d.evasion-0.006`, `d.N_NoA-2.0` | `e.element+0.09` |
-| 7 | 137 | `c.target_status+0.06` | `c.evasion+0.006` | 0.2 | `c.N_NoA+7` | `d.evasion-0.007`, `d.N_NoA-2.2` | `e.element+0.08` |
-| 8 | 205 | `c.target_status+0.05` | `c.evasion+0.005` | 0.1 | `c.N_NoA+8` | `d.evasion-0.008`, `d.N_NoA-2.4` | `e.element+0.07` |
-| 9 | - | `c.target_status+0.04` | `c.evasion+0.004` | 0.1 | `c.N_NoA+9` | - | `e.element+0.06` |
-| 10 | - | `c.target_status+0.03` | `c.evasion+0.003` | 0.1 | `c.N_NoA+10` | - | `e.element+0.05` |
+- base_power(1) = 12, base_power(n) = base_power(n-1) x (1.50 - 0.02 x n) round off
+- base_NoA_power(n) = 0.9 - 0.1 x n
+
+
+| Tier | base_power | base_NoA_power |
+|------|------------|----|
+| 1 | 12 | 0.8 |
+| 2 | 18 | 0.7 |
+| 3 | 26 | 0.6 |
+| 4 | 37 | 0.5 |
+| 5 | 52 | 0.4 |
+| 6 | 72 | 0.3 |
+| 7 | 98 | 0.2 |
+| 8 | 131 | 0.1 |
+
+
+|Tier | multiplier for　鎧, 衣, 剣, 矢, 杖 | plus for 盾 | fixed NoA for 手, 弓, 媒 |penalty for 刀, ボ, 書| elemental v |
+|------|--------|-----------|--------|--------|------|
+| 1 | `c.target_status+0.13` | `c.evasion+0.013` | `c.N_NoA+1` | `d.evasion-0.001`, `d.N_NoA-1.0` | `e.element+0.15` |
+| 2 | `c.target_status+0.12` | `c.evasion+0.012` | `c.N_NoA+2` | `d.evasion-0.002`, `d.N_NoA-1.2` | `e.element+0.14` |
+| 3 | `c.target_status+0.11` | `c.evasion+0.011` | `c.N_NoA+3` | `d.evasion-0.003`, `d.N_NoA-1.4` | `e.element+0.13` |
+| 4 | `c.target_status+0.09` | `c.evasion+0.009` | `c.N_NoA+4` | `d.evasion-0.004`, `d.N_NoA-1.6` | `e.element+0.12` |
+| 5 | `c.target_status+0.08` | `c.evasion+0.008` | `c.N_NoA+5` | `d.evasion-0.005`, `d.N_NoA-1.8` | `e.element+0.11` |
+| 6 | `c.target_status+0.07` | `c.evasion+0.007` | `c.N_NoA+6` | `d.evasion-0.006`, `d.N_NoA-2.0` | `e.element+0.09` |
+| 7 | `c.target_status+0.06` | `c.evasion+0.006` | `c.N_NoA+7` | `d.evasion-0.007`, `d.N_NoA-2.2` | `e.element+0.08` |
+| 8 | `c.target_status+0.05` | `c.evasion+0.005` | `c.N_NoA+8` | `d.evasion-0.008`, `d.N_NoA-2.4` | `e.element+0.07` |
+| 9 | `c.target_status+0.04` | `c.evasion+0.004` | `c.N_NoA+9` | - | `e.element+0.06` |
+| 10 | `c.target_status+0.03` | `c.evasion+0.003` | `c.N_NoA+10` | - | `e.element+0.05` |
 
 -　Tier 9 and 10 are Multiplier-Only Tiers. (Unccommon/Rare item upgared reference)
 
@@ -1048,25 +1071,26 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 |`i.armor` | x1.0 |
 |`i.robe` | x1.0 |
 |`i.shield` | x1.0 |
-|`i.sword` | x1.2 |
-|`i.katana` | x1.8 |
+|`i.sword` | x1.1 |
+|`i.katana` | x1.43 |
 |`i.gauntlet` | x1.0 |
-|`i.arrow` | x0.67 |
-|`i.bolt` | x1.00 |
+|`i.arrow` | x0.85 |
+|`i.bolt` | x1.11 |
 |`i.archery` | x1.0 | 
-|`i.wand` | x0.5 |
-|`i.grimoire` | x0.75 |
+|`i.wand` | x0.75 |
+|`i.grimoire` | x0.98 |
 |`i.catalyst` | x1.0 |
+
 
 **rarelity.amplifier of base_power**
 
 | Rarelity | `rarelity.amplifier` |
 |------|--------|
 | common | x1.0 |
-| uncommon | x1.2 |
-| elite rare | x1.6 |
-| boss rare | x2.4 |
-| mythic rare | x3.6 |
+| uncommon | x1.40 |
+| elite rare | 1.89 |
+| boss rare | x2.46 |
+| mythic rare | x3.07 |
 
 **Rarelity base**
 
