@@ -3085,6 +3085,18 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           workingState = advanceAfkLogSideQuestProgress(workingState, partyIndex, simulatedAt);
 
           const postCycleParty = workingState.parties[partyIndex];
+          if (postCycleParty) {
+            const { partyStats: postCycleStats } = computePartyStats(postCycleParty);
+            const missingHp = Math.max(0, postCycleStats.hp - (postCycleParty.currentHp ?? 0));
+            if (missingHp > 0) {
+              workingState = gameReducer(workingState, {
+                type: 'HEAL_PARTY_HP',
+                partyIndex,
+                amount: missingHp,
+              });
+            }
+          }
+
           if (postCycleParty && !postCycleParty.sideQuest) {
             workingState = gameReducer(workingState, {
               type: 'ROLL_SIDE_QUEST',
