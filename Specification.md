@@ -33,7 +33,7 @@
      - equipment: `1104`, `1104`
   3. "イタチ", Murid, 忍(盗), Persistent, House of the Breaking Hand
      - equipment: `1104`
-  4. "ロップ", Leporian, 狩(賢), Dexterous, House of Far Sight
+  4. "ロップ", Leporian, 狩(賢), Shikon, House of Far Sight
      - equipment: `1107`, `1108`, `1109`
   5. "ラス", Felidian, 賢(巡), Pursuing, House of Hidden Principles
      - equipment: `1110`, `1111`, `1112` 
