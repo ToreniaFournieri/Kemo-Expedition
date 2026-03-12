@@ -1904,7 +1904,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   floor: floor.floorNumber,
                   roomInFloor: roomIndex + 1,
                   roomType: roomDef.type,
-                  floorMultiplier: getRoomMultiplier(floor.floorNumber, roomDef.type, floor.multiplier),
+                  floorMultiplier: getRoomMultiplier(dungeon.expLevel, floor.floorNumber, roomDef.type, floor.multiplier, gameMode === 'm.luna'),
                   enemyName: '[扉が封印されている]',
                   enemyHP: 0,
                   enemyAttackValues: '',
@@ -1948,7 +1948,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   floor: floor.floorNumber,
                   roomInFloor: roomIndex + 1,
                   roomType: roomDef.type,
-                  floorMultiplier: getRoomMultiplier(floor.floorNumber, roomDef.type, floor.multiplier),
+                  floorMultiplier: getRoomMultiplier(dungeon.expLevel, floor.floorNumber, roomDef.type, floor.multiplier, gameMode === 'm.luna'),
                   enemyName: '[扉が封印されている]',
                   enemyHP: 0,
                   enemyAttackValues: '',
@@ -1971,14 +1971,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             const baseEnemy = selectEnemyForRoom(roomDef.type, roomDef.poolId, roomDef.bossId, floor.floorNumber, roomIndex);
             if (!baseEnemy) continue;
 
-            const roomMultiplier = getRoomMultiplier(floor.floorNumber, roomDef.type, floor.multiplier);
+            const roomMultiplier = getRoomMultiplier(dungeon.expLevel, floor.floorNumber, roomDef.type, floor.multiplier, gameMode === 'm.luna');
             const effectiveTier = getEffectiveExpeditionTier(dungeon.id, gameMode === 'm.luna');
             const effectiveDungeon = {
               ...dungeon,
               tier: effectiveTier,
               enemyMultipliers: getEffectiveEnemyMultipliers(dungeon, gameMode === 'm.luna'),
             };
-            let enemy = applyEnemyEncounterScaling(baseEnemy, effectiveDungeon, floor.floorNumber, roomDef.type);
+            let enemy = applyEnemyEncounterScaling(baseEnemy, effectiveDungeon, floor.floorNumber, roomDef.type, { isLunaMode: gameMode === 'm.luna' });
             if (isGodsBattle && roomDef.type === 'battle_Boss') {
               enemy = createGodEnemy(enemy, dungeon.id, dungeon.name, gameMode === 'm.luna');
             }
@@ -2021,7 +2021,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             };
 
             if (battleResult.outcome === 'victory') {
-              const enemyLevelFinal = getEffectiveEnemyLevel(dungeon.expLevel, floor.floorNumber, gameMode === 'm.luna');
+              const enemyLevelFinal = getEffectiveEnemyLevel(dungeon.expLevel, floor.floorNumber, roomDef.type, gameMode === 'm.luna');
               totalExp += calculateExperience(
                 enemy.experience,
                 roomDef.type,

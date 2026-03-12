@@ -4,6 +4,56 @@ type CombatMultipliers = NonNullable<FloorDef['multipliers']>;
 
 const round2 = (value: number): number => Number(value.toFixed(2));
 
+const MIN_ENEMY_LEVEL = 1;
+const MAX_ENEMY_LEVEL = 99;
+
+const clampEnemyLevel = (enemyLevel: number): number =>
+  Math.max(MIN_ENEMY_LEVEL, Math.min(MAX_ENEMY_LEVEL, enemyLevel));
+
+const applyEnemyLevelGrowth = (
+  enemyLevel: number,
+  base: number,
+  firstSoftCapStart: number,
+  firstSoftCapPenalty: number,
+  secondSoftCapStart: number,
+  secondSoftCapPenalty: number,
+): number => {
+  const n = clampEnemyLevel(enemyLevel);
+  const growth = base
+    - Math.max(0, firstSoftCapPenalty * (n - firstSoftCapStart))
+    - Math.max(0, secondSoftCapPenalty * (n - secondSoftCapStart));
+  return Math.pow(growth, n);
+};
+
+function getEnemyLevelOffset(floorNumber: number, roomType: RoomType): number {
+  if (roomType === 'battle_Normal') {
+    return Math.max(0, floorNumber - 1);
+  }
+
+  if (roomType === 'battle_Elite') {
+    return floorNumber + 2;
+  }
+
+  return 12;
+}
+
+export function getEnemyLevelForRoom(dungeonExpLevel: number, floorNumber: number, roomType: RoomType): number {
+  return clampEnemyLevel(dungeonExpLevel + getEnemyLevelOffset(floorNumber, roomType));
+}
+
+export function getEnemyMultipliersForLevel(enemyLevel: number): CombatMultipliers {
+  const n = clampEnemyLevel(enemyLevel);
+
+  return {
+    hp: round2(applyEnemyLevelGrowth(n, 1.16, 25, 0.0012, 49, 0.00006)),
+    attack: round2(applyEnemyLevelGrowth(n, 1.09, 25, 0.00055, 49, 0.00003)),
+    attackAmplifier: round2(applyEnemyLevelGrowth(n, 1.04, 25, 0.00022, 49, 0.000024)),
+    noa: round2(applyEnemyLevelGrowth(n, 1.05, 25, 0.00028, 49, 0.00002)),
+    defense: round2(applyEnemyLevelGrowth(n, 1.11, 25, 0.00058, 49, 0.00004)),
+    defenseAmplifier: 1.0,
+  };
+}
+
 function buildFloorRoomMultipliers(maxFloor: number): Record<number, Record<RoomType, CombatMultipliers>> {
   const roomTypeMultipliers: Record<RoomType, CombatMultipliers> = {
     battle_Normal: { hp: 1.0, attack: 1.0, noa: 1.0, attackAmplifier: 1.0, defense: 1.0, defenseAmplifier: 1.0 },
@@ -249,8 +299,14 @@ export function getEffectiveEnemyMultipliers(dungeon: Dungeon, isLunaMode: boole
   };
 }
 
-export function getEffectiveEnemyLevel(dungeonExpLevel: number, floorNumber: number, isLunaMode: boolean): number {
-  return dungeonExpLevel + (floorNumber - 1) + (isLunaMode ? LUNA_MODE_MULTIPLIERS.enemyLevel : 0);
+export function getEffectiveEnemyLevel(
+  dungeonExpLevel: number,
+  floorNumber: number,
+  roomType: RoomType,
+  isLunaMode: boolean,
+): number {
+  const roomEnemyLevel = getEnemyLevelForRoom(dungeonExpLevel, floorNumber, roomType);
+  return clampEnemyLevel(roomEnemyLevel + (isLunaMode ? LUNA_MODE_MULTIPLIERS.enemyLevel : 0));
 }
 
 // Get expedition multiplier for enemy stat scaling
