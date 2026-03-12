@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.5.3 - SPECIFICATION
+# KEMO EXPEDITION v0.6.0 - SPECIFICATION
 
 ## 1. OVERVIEW
 - Text-based, deterministic fantasy RPG
@@ -699,7 +699,8 @@ PT3: 貯金額: 10G
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
-| **0.5.3** | Two tabs mode. Dark mode, Laika mode |
+| **0.6.0** | Big barance update: item, enemy, race, others |
+| 0.5.3 | Two tabs mode. Dark mode, Laika mode |
 | 0.5.2 | Flavor text update. Fixed auto equipment logic, update side quest barance, especially embezzlement part logic. Refine AFK part. |
 | 0.5.1 | Ajusts auto equipment logic |
 | 0.5.0 | unlock for deities, religions . auto equipment update |
