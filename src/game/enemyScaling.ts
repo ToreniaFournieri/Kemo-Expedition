@@ -1,5 +1,5 @@
 import { Dungeon, EnemyDef, RoomType } from '../types';
-import { LUNA_MODE_MULTIPLIERS, getEnemyLevelForRoom, getEnemyMultipliersForLevel } from '../data/dungeons';
+import { LUNA_MODE_ENEMY_LEVEL_BONUS, getEnemyLevelForRoom, getEnemyMultipliersForLevel } from '../data/dungeons';
 import { getDebugSettings } from './debugSettings';
 
 type GodEnemyMultipliers = {
@@ -59,7 +59,7 @@ export function getRoomMultiplier(
   isLunaMode: boolean = false,
 ): number {
   const enemyLevel = getEnemyLevelForRoom(dungeonExpLevel, floorNumber, roomType);
-  const effectiveEnemyLevel = enemyLevel + (isLunaMode ? LUNA_MODE_MULTIPLIERS.enemyLevel : 0);
+  const effectiveEnemyLevel = enemyLevel + (isLunaMode ? LUNA_MODE_ENEMY_LEVEL_BONUS : 0);
   return getEnemyMultipliersForLevel(effectiveEnemyLevel).attack ?? floorMultiplier;
 }
 
@@ -72,7 +72,7 @@ export function applyEnemyEncounterScaling(
   options: EnemyScalingOptions = {}
 ): EnemyDef {
   const roomEnemyLevel = getEnemyLevelForRoom(dungeon.expLevel, floorNumber, roomType);
-  const effectiveEnemyLevel = roomEnemyLevel + (options.isLunaMode ? LUNA_MODE_MULTIPLIERS.enemyLevel : 0);
+  const effectiveEnemyLevel = roomEnemyLevel + (options.isLunaMode ? LUNA_MODE_ENEMY_LEVEL_BONUS : 0);
   const expeditionMult = getEnemyMultipliersForLevel(effectiveEnemyLevel);
   const godMult = options.isGodEnemy ? getGodEnemyMultipliers() : DEFAULT_MULTIPLIERS;
 

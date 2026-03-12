@@ -271,32 +271,14 @@ export function getExpeditionTier(dungeonId: number): number {
   return getDungeonById(dungeonId)?.tier ?? 1;
 }
 
-export const LUNA_MODE_MULTIPLIERS = {
-  hp: 4,
-  attack: 1.6,
-  noa: 1.3,
-  attackAmplifier: 1.6,
-  defense: 1.4,
-  defenseAmplifier: 0.9,
-  enemyLevel: 2,
-} as const;
+export const LUNA_MODE_ENEMY_LEVEL_BONUS = 5;
 
 export function getEffectiveExpeditionTier(dungeonId: number, _isLunaMode: boolean): number {
   return getExpeditionTier(dungeonId);
 }
 
 export function getEffectiveEnemyMultipliers(dungeon: Dungeon, isLunaMode: boolean): ExpeditionEnemyMultipliers {
-  if (!isLunaMode) return dungeon.enemyMultipliers;
-
-  return {
-    ...dungeon.enemyMultipliers,
-    hp: dungeon.enemyMultipliers.hp * LUNA_MODE_MULTIPLIERS.hp,
-    attack: dungeon.enemyMultipliers.attack * LUNA_MODE_MULTIPLIERS.attack,
-    noa: dungeon.enemyMultipliers.noa * LUNA_MODE_MULTIPLIERS.noa,
-    attackAmplifier: dungeon.enemyMultipliers.attackAmplifier * LUNA_MODE_MULTIPLIERS.attackAmplifier,
-    defense: dungeon.enemyMultipliers.defense * LUNA_MODE_MULTIPLIERS.defense,
-    defenseAmplifier: dungeon.enemyMultipliers.defenseAmplifier * LUNA_MODE_MULTIPLIERS.defenseAmplifier,
-  };
+  return isLunaMode ? { ...dungeon.enemyMultipliers } : dungeon.enemyMultipliers;
 }
 
 export function getEffectiveEnemyLevel(
@@ -306,7 +288,7 @@ export function getEffectiveEnemyLevel(
   isLunaMode: boolean,
 ): number {
   const roomEnemyLevel = getEnemyLevelForRoom(dungeonExpLevel, floorNumber, roomType);
-  return clampEnemyLevel(roomEnemyLevel + (isLunaMode ? LUNA_MODE_MULTIPLIERS.enemyLevel : 0));
+  return clampEnemyLevel(roomEnemyLevel + (isLunaMode ? LUNA_MODE_ENEMY_LEVEL_BONUS : 0));
 }
 
 // Get expedition multiplier for enemy stat scaling
