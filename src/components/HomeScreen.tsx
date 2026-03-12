@@ -3186,7 +3186,7 @@ export function HomeScreen({
     const durationScale = getTimeSpeedScale(debugSettings);
     const autoSellCount = Math.max(1, party.lastExpeditionLog?.autoSellCount ?? 1);
     const baseSeconds = cycleState === 'rest'
-      ? 5
+      ? 2
       : cycleState === 'sell'
         ? 5 * autoSellCount
         : cycleState === 'feast'
