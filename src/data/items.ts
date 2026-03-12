@@ -157,23 +157,23 @@ const TYPE_AMPLIFIERS: Record<ItemCategory, number> = {
   armor: 1.0,
   robe: 1.0,
   shield: 1.0,
-  sword: 1.2,
-  katana: 1.8,
+  sword: 1.1,
+  katana: 1.43,
   gauntlet: 1.0,
-  arrow: 0.67,
-  bolt: 1.0,
+  arrow: 0.85,
+  bolt: 1.11,
   archery: 1.0,
-  wand: 0.5,
-  grimoire: 0.75,
+  wand: 0.75,
+  grimoire: 0.98,
   catalyst: 1.0,
 };
 
 const RARITY_AMPLIFIERS: Record<Rarity, number> = {
   common: 1.0,
-  uncommon: 1.2,
-  eliteRare: 1.6,
-  bossRare: 2.4,
-  mythicRare: 3.0,
+  uncommon: 1.4,
+  eliteRare: 1.89,
+  bossRare: 2.46,
+  mythicRare: 3.07,
 };
 
 const SUBTLE_POWER_MULTIPLIERS = [0.2, 0.27, 0.34] as const;
