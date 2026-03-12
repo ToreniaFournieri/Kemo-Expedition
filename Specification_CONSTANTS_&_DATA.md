@@ -789,13 +789,8 @@
 | x0.3 | x0.3 | x0.5 | x0.4 | x0.3 | x1.0 |
 
 
-- `x.luna_mode_mult`
-  - If `m.luna`, apllpy them. IF not, all x1.0.
 
-| `x.luna_HP_mult` | `x.luna_atk_mult` | `x.luna_NoA_mult` | `x.luna_atk_amp_mult` | `x.luna_def_mult` | `x.luna_def_amp_mult` | `x.luna_enemy_level` |
-|-----|-----|-----|----|----|----|----|
-| x4 | x1.6 | x1.3 | x1.6 | x1.4 | x0.9 | +2 |
-
+- If `m.luna`, add +5 `x.enemy_level` for all enemy 
 
 
 | Floor | Room | Type | `x.enemy_level` |
@@ -935,12 +930,12 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 
 **Enemy status mutipliers**
-- `d.HP` : master value x `x.exp_HP_mult` x `x.floor_HP_mult` x `x.god_HP_mult` x `x.luna_HP_mult`
-- `f.attack` :  master value x `x.exp_atk_mult` x `x.floor_atk_mult` x `x.god_atk_mult` x `x.luna_atk_mult`
-- `f.NoA` :  master value x `x.exp_NoA_mult` x `x.floor_NoA_mult` x `x.god_NoA_mult` x `x.luna_NoA_mult` 
-- `f.offense_amplifier` :  master value x `x.exp_atk_amp_mult` x `x.floor_atk_amp_mult` x `x.luna_atk_amp_mult` `x.god_atk_amp_mult`
-- `f.defense` :  master value x `x.exp_def_mult`  x `x.floor_def_mult` x `x.god_def_mult`  x `x.luna_def_mult` 
-- `f.defense_amplifier` : 1.0 x `x.exp_def_amp_mult` x `x.floor_def_amp_mult` x `x.god_def_amp_mult`x `x.luna_def_amp_mult`  //for physical and magical defense
+- `d.HP` : master value x `x.exp_HP_mult` x `x.floor_HP_mult` x `x.god_HP_mult` 
+- `f.attack` :  master value x `x.exp_atk_mult` x `x.floor_atk_mult` x `x.god_atk_mult` 
+- `f.NoA` :  master value x `x.exp_NoA_mult` x `x.floor_NoA_mult` x `x.god_NoA_mult` 
+- `f.offense_amplifier` :  master value x `x.exp_atk_amp_mult` x `x.floor_atk_amp_mult` x `x.god_atk_amp_mult`
+- `f.defense` :  master value x `x.exp_def_mult`  x `x.floor_def_mult` x `x.god_def_mult` 
+- `f.defense_amplifier` : 1.0 x `x.exp_def_amp_mult` x `x.floor_def_amp_mult` x `x.god_def_amp_mult`x `x  //for physical and magical defense
 - `f.elemental_offense_attribute` :  not scale
 - `f.elemental_resistance_attribute` : not scale
 - `f.penet_multiplier`: not scale
