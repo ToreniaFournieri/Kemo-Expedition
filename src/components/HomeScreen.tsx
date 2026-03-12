@@ -2459,7 +2459,7 @@ export function HomeScreen({
       const elapsedMs = Math.max(0, Math.min(Date.now() - checkpointAt, AFK_MAX_ELAPSED_MS));
       lastCheckpointAtRef.current = Date.now() - elapsedMs;
 
-      setAutoRepeatEnabled(true);
+      setAutoRepeatEnabled(parsed.autoRepeatEnabled !== false);
       if (parsed.partyCycles && typeof parsed.partyCycles === 'object') {
         const restoredCycles: Record<number, PartyCycleRuntime> = {};
         Object.entries(parsed.partyCycles).forEach(([key, value]) => {
@@ -2483,23 +2483,6 @@ export function HomeScreen({
       pendingAfkSimulationRef.current = false;
     }
   }, [setAutoRepeatEnabled]);
-
-  useEffect(() => {
-    if (pendingAfkSimulationRef.current) return;
-
-    try {
-      localStorage.setItem(
-        AFK_RUNTIME_STORAGE_KEY,
-        JSON.stringify({
-          checkpointAt: lastCheckpointAtRef.current,
-          autoRepeatEnabled: isAutoRepeatEnabled,
-          partyCycles,
-        })
-      );
-    } catch (error) {
-      console.error('Failed to persist AFK runtime state:', error);
-    }
-  }, [isAutoRepeatEnabled, partyCycles]);
 
   useEffect(() => {
     pendingAfkMsRef.current = pendingAfkMs;
@@ -2609,6 +2592,32 @@ export function HomeScreen({
 
   const pendingGodsBattleByPartyRef = useRef<Record<number, boolean>>({});
   const afkQuestCarryMsRef = useRef<Record<number, number>>({});
+  const partyCyclesRef = useRef<Record<number, PartyCycleRuntime>>({});
+
+  useEffect(() => {
+    partyCyclesRef.current = partyCycles;
+  }, [partyCycles]);
+
+  const persistAfkRuntimeState = useCallback((checkpointAt: number = lastCheckpointAtRef.current) => {
+    if (pendingAfkSimulationRef.current) return;
+
+    try {
+      localStorage.setItem(
+        AFK_RUNTIME_STORAGE_KEY,
+        JSON.stringify({
+          checkpointAt,
+          autoRepeatEnabled: autoRepeatEnabledRef.current,
+          partyCycles: partyCyclesRef.current,
+        })
+      );
+    } catch (error) {
+      console.error('Failed to persist AFK runtime state:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    persistAfkRuntimeState();
+  }, [isAutoRepeatEnabled, partyCycles, persistAfkRuntimeState]);
   const getScaledSideQuestSeconds = useCallback((durationMs: number) => {
     const timeSpeedScale = Math.max(0.001, getTimeSpeedScale(debugSettings));
     return Math.max(1, Math.floor((durationMs / timeSpeedScale) / 1000));
@@ -2659,6 +2668,7 @@ export function HomeScreen({
       });
       shouldRebuildPartyCyclesAfterAfkRef.current = true;
       lastCheckpointAtRef.current = now;
+      persistAfkRuntimeState(now);
       return;
     }
 
@@ -2900,7 +2910,8 @@ export function HomeScreen({
     });
 
     lastCheckpointAtRef.current = now;
-  }, [actions]);
+    persistAfkRuntimeState(now);
+  }, [actions, persistAfkRuntimeState]);
 
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -2908,6 +2919,14 @@ export function HomeScreen({
     }, PARTY_CYCLE_TICK_MS);
     return () => window.clearInterval(id);
   }, [processTimeCheckpoint]);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      persistAfkRuntimeState();
+    }, 5000);
+
+    return () => window.clearInterval(id);
+  }, [persistAfkRuntimeState]);
 
   useEffect(() => {
     const handleFocus = () => {
@@ -2926,6 +2945,30 @@ export function HomeScreen({
       document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, [processTimeCheckpoint]);
+
+  useEffect(() => {
+    const persistLatestCheckpoint = () => {
+      const now = Date.now();
+      lastCheckpointAtRef.current = now;
+      persistAfkRuntimeState(now);
+    };
+
+    const handleVisibilityPersist = () => {
+      if (document.visibilityState === 'hidden') {
+        persistLatestCheckpoint();
+      }
+    };
+
+    window.addEventListener('beforeunload', persistLatestCheckpoint);
+    window.addEventListener('pagehide', persistLatestCheckpoint);
+    document.addEventListener('visibilitychange', handleVisibilityPersist);
+
+    return () => {
+      window.removeEventListener('beforeunload', persistLatestCheckpoint);
+      window.removeEventListener('pagehide', persistLatestCheckpoint);
+      document.removeEventListener('visibilitychange', handleVisibilityPersist);
+    };
+  }, [persistAfkRuntimeState]);
 
   // Item gain notifications after selling phase
   useEffect(() => {
