@@ -5849,6 +5849,12 @@ function ExpeditionTab({
                     {[...displayedEntries].reverse().map((entry, i, arr) => {
                       const originalIndex = arr.length - 1 - i;
                       const latestVisibleRoomIndex = displayedEntries.length - 1;
+                      const latestBattleRoomIndex = displayedEntries.reduce((lastBattleIndex, candidateEntry, candidateIndex) => {
+                        return candidateEntry.details && candidateEntry.details.length > 0
+                          ? candidateIndex
+                          : lastBattleIndex;
+                      }, -1);
+                      const defaultExpandedRoomIndex = latestBattleRoomIndex >= 0 ? latestBattleRoomIndex : latestVisibleRoomIndex;
                       const latestRoomToken = `${currentLog.completedRooms}-${latestVisibleRoomIndex}-${displayedEntries[latestVisibleRoomIndex]?.room ?? -1}`;
                       const roomLabel = entry.floor && entry.roomInFloor
                         ? `${entry.floor}F-${entry.roomInFloor}`
@@ -5865,7 +5871,7 @@ function ExpeditionTab({
                       const enemyRemainingRatio = entry.enemyHP > 0 ? (enemyRemainingAmount / entry.enemyHP) * 100 : 0;
                       const isManualExpandedRoom = expandedRoom?.partyIndex === partyIndex && expandedRoom?.latestRoomToken === latestRoomToken && expandedRoom?.roomIndex === originalIndex;
                       const hasManualSelectionForParty = expandedRoom?.partyIndex === partyIndex && expandedRoom?.latestRoomToken === latestRoomToken;
-                      const isRoomExpanded = isManualExpandedRoom || (!hasManualSelectionForParty && originalIndex === latestVisibleRoomIndex);
+                      const isRoomExpanded = isManualExpandedRoom || (!hasManualSelectionForParty && originalIndex === defaultExpandedRoomIndex);
 
                       return (
                         <div key={`${partyIndex}-${originalIndex}-${entry.room}`} className="bg-white rounded overflow-hidden">
