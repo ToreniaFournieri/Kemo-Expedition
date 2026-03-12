@@ -748,7 +748,7 @@
 #### 2.4.1 Expedition
 - `x.expedition` list
 
-| `x.exp_id` | `x.exp_tier` | `x.exp_level` | `x.expediton` | short word |
+| `x.exp_id` | `x.exp_tier` | `x.enemy_level` | `x.expediton` | short word |
 |---|------|-----|-----|-----|
 | 1 | 1 | 1 | ケイナイアン平原(Caninian Plains) | 原 | 
 | 2 | 2 | 7 | ルピニアンの断崖(Lupinian Crag) | 崖 |
@@ -759,22 +759,18 @@
 | 7 | 7 | 42 | レポリアンの庭園(Leporian Garden) | 園 |
 | 8 | 8 | 49 | セルヴィンの谷(Cervin Vale) | 谷 |
 
-- Strength of enemy by expeditions and floors. 
-  - n = `x.exp_tier`
-
-  - `x.exp_HP_mult`(1)=1, `x.exp_HP_mult`(n)=  `x.exp_HP_mult`(n-1)*(3 - 0.13*(n -2))
-  - `x.exp_atk_mult`(1)=1, `x.exp_atk_mult`(n)= `x.exp_atk_mult`(n-1)*(1.8 - 0.047*(n -2) - max(0, 0.021* (n - 6)) )
-  - `x.exp_atk_amp_mult`(1)=1, `x.exp_atk_amp_mult`(n)= `x.exp_atk_amp_mult`(n-1)*(1.30 - 0.015 *(n -2)  - max(0, 0.008* (n - 6))  )
-  - `x.exp_NoA_mult`(1)=1, `x.exp_NoA_mult`(n)= `x.exp_NoA_mult`(n-1) + max(0.1 ,(1.0 -
-  0.1 * (n - 2)))
-  - `x.exp_def_mult`(1)=1, `x.exp_def_mult`(n)= `x.exp_def_mult`(n-1)*(2 - 0.072 * (n -2) - max(0, 0.007* (n - 6))  )
-  - `x.exp_def_amp_mult`(1)=1, `x.exp_def_amp_mult`(n)= 0.90^(n-1) + 0.01 * max(0, (n-6))
-  - `x.floor_HP_mult`: 1.149^(`x.floor`-1)*(Notmal:1, Elite:1.3, Boss:1.69)
-  - `x.floor_atk_mult`: 1.0845^(`x.floor`-1)*(Normal:1, Elite:1.2, Boss:1.45)
-  - `x.floor_atk_amp_mult`: 1.03^(`x.floor`-1) *(Normal:1, Elite:1.02, Boss:1.05)
-  - `x.floor_NoA_mult`: 1.05^(`x.floor`-1)
-  - `x.floor_def_mult`: 1.0845^(`x.floor`-1)*(Normal:1, Elite:1.2, Boss:1.45)
-  - `x.floor_def_amp_mult`: 0.97^(`x.floor`-1)
+- Strength of enemy by its level 
+  - n = `x.enemy_level` (1~99)
+  - `x.exp_HP_mult`(n) =
+  (1.16 - max(0, 0.0012*(n-25)) - max(0, 0.00006*(n-49)))^n
+  - `x.exp_atk_mult`(n) =
+  (1.09 - max(0, 0.00055*(n-25)) - max(0, 0.00003*(n-49)))^n
+  - `x.exp_atk_amp_mult`(n) =
+  (1.04 - max(0, 0.00022*(n-25)) - max(0, 0.000024*(n-49)))^n
+  - `x.exp_NoA_mult`(n) =
+  (1.05 - max(0, 0.00028*(n-25)) - max(0, 0.00002*(n-49)))^n
+  - `x.exp_def_mult`(n)= (1.11 - max(0, 0.00058*(n-25)) - max(0, 0.00004*(n-49)))^n
+  - `x.exp_def_amp_mult`(n)= 1.0
 
 
 - `x.gods_mult`
@@ -800,41 +796,22 @@
 |-----|-----|-----|----|----|----|----|
 | x4 | x1.6 | x1.3 | x1.6 | x1.4 | x0.9 | +2 |
 
-- Note: Tier 1–15 expedition multiplier table, result of these math calculations
-
-| Tier | exp_HP_mult | exp_atk_mult | exp_atk_amp_mult | exp_NoA_mult | exp_def_mult | exp_def_amp_mult |
-|------|------------|--------------|------------------|-------------|--------------|------------------|
-| 1 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| 2 | 3.00 | 1.80 | 1.30 | 2.00 | 2.00 | 0.90 |
-| 3 | 8.61 | 3.16 | 1.67 | 2.90 | 3.86 | 0.81 |
-| 4 | 23.59 | 5.38 | 2.12 | 3.70 | 7.16 | 0.73 |
-| 5 | 61.57 | 8.93 | 2.66 | 4.40 | 12.77 | 0.66 |
-| 6 | 152.69 | 14.39 | 3.30 | 5.00 | 21.85 | 0.59 |
-| 7 | 358.82 | 22.22 | 4.02 | 5.50 | 35.67 | 0.54 |
-| 8 | 796.58 | 32.79 | 4.80 | 5.90 | 55.43 | 0.50 |
-| 9 | 1664.85 | 46.17 | 5.62 | 6.20 | 81.76 | 0.46 |
-| 10 | 3263.11 | 61.87 | 6.45 | 6.40 | 114.15 | 0.43 |
-| 11 | 5971.50 | 78.70 | 7.25 | 6.50 | 150.33 | 0.40 |
-| 12 | 10151.55 | 94.75 | 7.99 | 6.60 | 186.11 | 0.37 |
-| 13 | 15937.93 | 107.63 | 8.63 | 6.70 | 215.70 | 0.35 |
-| 14 | 22950.62 | 114.95 | 9.11 | 6.80 | 232.96 | 0.33 |
-| 15 | 30065.31 | 114.95 | 9.41 | 6.90 | 233.19 | 0.32 |
 
 
-| Floor | Room | Type | HP_mult | ATK_mult | ATK_AMP_mult | NoA_mult | DEF_mult | DEF_AMP_mult |
-|------|------|------|--------|----------|--------------|----------|----------|--------------|
-| 1 | 1-3 | Normal | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
-| 1 | 4 | Elite | 1.50 | 1.20 | 1.02 | 1.00 | 1.20 | 1.00 |
-| 2 | 1-3 | Normal | 1.15 | 1.08 | 1.03 | 1.05 | 1.08 | 0.97 |
-| 2 | 4 | Elite | 1.72 | 1.30 | 1.05 | 1.05 | 1.30 | 0.97 |
-| 3 | 1-3 | Normal | 1.32 | 1.18 | 1.06 | 1.10 | 1.18 | 0.94 |
-| 3 | 4 | Elite | 1.98 | 1.41 | 1.08 | 1.10 | 1.41 | 0.94 |
-| 4 | 1-3 | Normal | 1.52 | 1.28 | 1.09 | 1.16 | 1.28 | 0.91 |
-| 4 | 4 | Elite | 2.28 | 1.53 | 1.11 | 1.16 | 1.53 | 0.91 |
-| 5 | 1-3 | Normal | 1.74 | 1.38 | 1.13 | 1.22 | 1.38 | 0.89 |
-| 5 | 4 | Elite | 2.61 | 1.66 | 1.15 | 1.22 | 1.66 | 0.89 |
-| 6 | 1-3 | Normal | 2.00 | 1.50 | 1.16 | 1.28 | 1.50 | 0.86 |
-| 6 | 4 | Boss | 4.01 | 2.25 | 1.22 | 1.28 | 2.25 | 0.86 |
+| Floor | Room | Type | `x.enemy_level` |
+|------|------|------|--------|
+| 1 | 1-3 | Normal | +0 | 
+| 1 | 4 | Elite | +3 | 
+| 2 | 1-3 | Normal | +1 | 
+| 2 | 4 | Elite | +4 | 
+| 3 | 1-3 | Normal | +2 | 
+| 3 | 4 | Elite | +5 | 
+| 4 | 1-3 | Normal | +3 | 
+| 4 | 4 | Elite | +6 | 
+| 5 | 1-3 | Normal | +4 |
+| 5 | 4 | Elite | +7 | 
+| 6 | 1-3 | Normal | +5 | 
+| 6 | 4 | Boss | +12 | 
 
 - **Enemy entity distribution** for each `x.expediton`
 
