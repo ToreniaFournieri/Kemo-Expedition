@@ -30,7 +30,7 @@
   1. "ケモ", Caninian, 戦(君), Sturdy, House of the Unmoving
      - equipment: `1101`, `1103`
   2. "ゴン", Vulpinian, 剣(侍), Chivalric, House of War Spirit
-     - equipment: `1104`
+     - equipment: `1104`, `1104`
   3. "イタチ", Murid, 忍(盗), Persistent, House of the Breaking Hand
      - equipment: `1104`
   4. "ロップ", Leporian, 狩(賢), Dexterous, House of Far Sight
