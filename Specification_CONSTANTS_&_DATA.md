@@ -972,16 +972,16 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 | Class | `d.HP` | `a.ability` | `c.accuracy` | `c.evasion` | `d.ranged_attack` | `d.ranged_NoA` | `d.magical_attack` | `d.magical_NoA` | `d.melee_attack` | `d.melee_NoA` | `d.ranged_attack_amplifier` | `d.magical_attack_amplifier` | `d.melee_attack_amplifier` | `d.physical_defense` | `d.magical_defense` | `e.fire` | `e.ice` | `e.thunder` | `r.fire` | `r.ice` |`r.thunder` | `d.experience` |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Fighter | 63 | (none) | 0.00| 0.02 | 0 | 0 | 0 | 0 | 41 | 2 | x1.0 | x1.0 | x1.0 | 23 | 13 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 5 |
-| Duelist | 50 | `a.counter`1 | 0.01 | 0.01 | 0 | 0 | 0 | 0 | 52 | 4 | x1.0 | x1.0 | x1.2 | 13 | 13 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 5 |
-| Ninja | 46 | `a.re-attack`1 | 0.00 | 0.04 | 0 | 0 | 0 | 0 | 59 | 4 | x1.0 | x1.0 | x1.2 | 12 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 7 |
-| Samurai | 40 | `a.iaigiri`1 | -0.05 | -0.01 | 0 | 0 | 0 | 0 | 93 | 1 | x1.0 | x1.0 | x1.3 | 11 | 11 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 4 |
-| Lord | 58 | (none) | 0.00 | 0.00 | 0 | 0 | 0 | 0 | 41 | 4 | x1.0 | x1.0 | x1.1 | 15 | 15 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 8 |
-| Ranger | 44 | (none) | 0.03 | 0.01 | 37 | 4 | 0 | 0 | 0 | 0 | x1.2 | x1.0 | x1.0 | 12 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 6 |
-| Wizard | 27 | `a.resonance`1 | 0.00 | -0.015 |0 | 0 | 52 | 2 | 0 | 0 | x1.0 | x1.2 | x1.0 | 5 | 15 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 4 |
-| Sage | 47 | (none) | 0.00 | 0.00 |0 | 0 | 26 | 4 | 0 | 0 | x1.0 | x1.2 | x1.0 | 12 | 17 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 4 |
-| Rogue | 40 | `a.deflection`1, `a.first-strike`1 | 0.06 | 0.06 | 26 | 4 | 0 | 0 | 26 | 4 | x1.2 | x1.0 | x1.0 | 10 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 4 |
-| Pilgrim | 62 | `a.null-counter`1 | 0.00 | 0.02 | 0 | 0 | 26 | 2 | 41 | 2 | x1.0 | x1.2 | x1.2 | 14 | 14 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 3 |
+| Fighter | 126 | (none) | 0.00| 0.02 | 0 | 0 | 0 | 0 | 41 | 2 | x1.0 | x1.0 | x1.0 | 23 | 13 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 5 |
+| Duelist | 100 | `a.counter`1 | 0.01 | 0.01 | 0 | 0 | 0 | 0 | 52 | 4 | x1.0 | x1.0 | x1.2 | 13 | 13 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 5 |
+| Ninja | 92 | `a.re-attack`1 | 0.00 | 0.04 | 0 | 0 | 0 | 0 | 59 | 4 | x1.0 | x1.0 | x1.2 | 12 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 7 |
+| Samurai | 80 | `a.iaigiri`1 | -0.05 | -0.01 | 0 | 0 | 0 | 0 | 93 | 1 | x1.0 | x1.0 | x1.3 | 11 | 11 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 4 |
+| Lord | 116 | (none) | 0.00 | 0.00 | 0 | 0 | 0 | 0 | 41 | 4 | x1.0 | x1.0 | x1.1 | 15 | 15 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 8 |
+| Ranger | 88 | (none) | 0.03 | 0.01 | 37 | 4 | 0 | 0 | 0 | 0 | x1.2 | x1.0 | x1.0 | 12 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 6 |
+| Wizard | 54 | `a.resonance`1 | 0.00 | -0.015 |0 | 0 | 52 | 2 | 0 | 0 | x1.0 | x1.2 | x1.0 | 5 | 15 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 4 |
+| Sage | 94 | (none) | 0.00 | 0.00 |0 | 0 | 26 | 4 | 0 | 0 | x1.0 | x1.2 | x1.0 | 12 | 17 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 4 |
+| Rogue | 80 | `a.deflection`1, `a.first-strike`1 | 0.06 | 0.06 | 26 | 4 | 0 | 0 | 26 | 4 | x1.2 | x1.0 | x1.0 | 10 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 4 |
+| Pilgrim | 124 | `a.null-counter`1 | 0.00 | 0.02 | 0 | 0 | 26 | 2 | 41 | 2 | x1.0 | x1.2 | x1.2 | 14 | 14 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 3 |
 
 
 ### 2.5 Items
