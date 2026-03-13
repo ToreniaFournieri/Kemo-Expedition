@@ -663,12 +663,12 @@
 
 |lineage | short word | bonus |
 |-----|---|-----------|
-|鋼誓の家（House of Steel Oath）| 鋼 |`c.sword_x1.3` |
+|鋼誓の家（House of Steel Oath）| 鋼 |`c.sword_x1.3`, `c.catalyst_x1.3` |
 |戦魂の家（House of War Spirit）| 魂 |`c.katana_x1.2`, `b.mind+1`|
-|遠眼の家（House of Far Sight）| 眼 |`c.arrow_x1.3`|
+|遠眼の家（House of Far Sight）| 眼 |`c.arrow_x1.3`, `c.gauntlet_x1.2` |
 |不動の家（House of the Unmoving）| 不 |`c.armor_x1.2`, `b.vitality+1` |
 |砕手の家（House of the Breaking Hand）| 砕 |`c.gauntlet_x1.2`, `b.strength+1`|
-|導智の家（House of Guiding Thought）| 導 |`c.wand_x1.3`|
+|導智の家（House of Guiding Thought）| 導 |`c.wand_x1.2`,  `c.bolt_x1.2` |
 |秘理の家（House of Hidden Principles）| 秘 |`c.robe_x1.2`, `b.intelligence+1`|
 |継誓の家（House of Inherited Oaths）| 継 |`c.shield_x1.2`, `b.vitality+1`|
 
