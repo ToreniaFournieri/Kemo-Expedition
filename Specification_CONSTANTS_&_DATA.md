@@ -754,10 +754,10 @@
 | 2 | 2 | 7 | ルピニアンの断崖(Lupinian Crag) | 崖 |
 | 3 | 3 | 13 | ヴァルンの樹林帯(Vulpinian Taiga) | 樹 |
 | 4 | 4 | 19 | ウルサンの霊峰(Ursan Peaks) | 峰 |
-| 5 | 5 | 25 | フェリディの茂み(Felidian Grove) | 茂 |
-| 6 | 6 | 31 | マステリドの巣穴(Mustelid Burrow) | 巣 |
-| 7 | 7 | 37 | レポリアンの庭園(Leporian Garden) | 園 |
-| 8 | 8 | 43 | セルヴィンの谷(Cervin Vale) | 谷 |
+| 5 | 5 | 24 | フェリディの茂み(Felidian Grove) | 茂 |
+| 6 | 6 | 29 | マステリドの巣穴(Mustelid Burrow) | 巣 |
+| 7 | 7 | 35 | レポリアンの庭園(Leporian Garden) | 園 |
+| 8 | 8 | 40 | セルヴィンの谷(Cervin Vale) | 谷 |
 
 - Strength of enemy by its level 
   - n = `x.enemy_level` (1~99)
