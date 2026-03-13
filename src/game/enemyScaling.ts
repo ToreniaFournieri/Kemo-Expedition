@@ -12,12 +12,12 @@ type GodEnemyMultipliers = {
 };
 
 const NORMAL_GOD_ENEMY_MULTIPLIERS: GodEnemyMultipliers = {
-  hp: 2.0,
-  attack: 1.5,
-  noa: 2.0,
-  attackAmplifier: 1.6,
-  defense: 1.5,
-  defenseAmplifier: 0.8,
+  hp: 1.5,
+  attack: 1.1,
+  noa: 1.3,
+  attackAmplifier: 1.2,
+  defense: 1.1,
+  defenseAmplifier: 1.0,
 };
 
 const DEFAULT_MULTIPLIERS: GodEnemyMultipliers = {
