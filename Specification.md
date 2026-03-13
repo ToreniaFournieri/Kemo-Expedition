@@ -549,7 +549,7 @@ Party.`d.HP` =
 
 | State | Duration |
 |-------|-------|
-| rest(休息中)  | heal +1% MaxHP / 2 sec until full |
+| rest(休息中)  | heal max(100, +1% MaxHP) / 2 sec until full |
 | sell(売却中) | 5 seconds per `auto-sell` items |
 | feast(宴会中) | 90 seconds |
 | sound_sleep(熟睡中) | 120 seconds |
