@@ -191,13 +191,11 @@ export function computePartyStats(party: Party): {
 
   // Calculate party HP
   // Party.d.HP =
-  //   100
-  //   + (Total sum of individual (
+  //   Total sum of individual (
   //       Item Bonuses of {((HP x enhancement multiplier x super rare multiplier x its c.multiplier)
   //         x (b.vitality + b.mind) / 20 x c.growth_xV), round off}
   //       + {(b.mind + b.vitality + (L_eff x b.vitality x (b.vitality + b.mind) / 20) x c.growth_xV), round off}
-  //     ))
-  let baseHp = 100;
+  //     )
   let bonusHp = 0;
   const effectiveLevel = getEffectiveLevel(party.level);
 
@@ -291,7 +289,7 @@ export function computePartyStats(party: Party): {
   };
 
   const deityHpMultiplier = getDeityPartyHpMultiplier(party.deity.name, party.deityGold ?? 0);
-  const totalHp = Math.floor((baseHp + bonusHp) * deityHpMultiplier);
+  const totalHp = Math.floor(bonusHp * deityHpMultiplier);
 
   return {
     partyStats: {
