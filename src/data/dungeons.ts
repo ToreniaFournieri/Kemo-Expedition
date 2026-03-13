@@ -205,7 +205,7 @@ export const DUNGEONS: Dungeon[] = [
   {
     id: 5,
     tier: 5,
-    expLevel: 25,
+    expLevel: 24,
     name: 'フェリディの茂み',
     enemyPoolIds: [5],
     bossId: 501,
@@ -217,7 +217,7 @@ export const DUNGEONS: Dungeon[] = [
   {
     id: 6,
     tier: 6,
-    expLevel: 31,
+    expLevel: 29,
     name: 'マステリドの巣穴',
     enemyPoolIds: [6],
     bossId: 601,
@@ -229,7 +229,7 @@ export const DUNGEONS: Dungeon[] = [
   {
     id: 7,
     tier: 7,
-    expLevel: 37,
+    expLevel: 35,
     name: 'レポリアンの庭園',
     enemyPoolIds: [7],
     bossId: 701,
@@ -241,7 +241,7 @@ export const DUNGEONS: Dungeon[] = [
   {
     id: 8,
     tier: 8,
-    expLevel: 43,
+    expLevel: 40,
     name: 'セルヴィンの谷',
     enemyPoolIds: [8],
     bossId: 801,
