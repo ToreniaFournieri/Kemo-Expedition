@@ -5618,6 +5618,9 @@ function ExpeditionTab({
   setExpandedRoom: Dispatch<SetStateAction<{ partyIndex: number; roomIndex: number; latestRoomToken: string } | null>>;
 }) {
   const getEstimatedStartHp = (entry: ExpeditionLogEntry) => {
+    if (typeof entry.startPartyHP === 'number') {
+      return Math.min(entry.maxPartyHP, Math.max(0, entry.startPartyHP));
+    }
     const healAmount = Math.max(0, entry.healAmount ?? 0);
     const attritionAmount = Math.max(0, entry.attritionAmount ?? 0);
     return Math.min(entry.maxPartyHP, Math.max(0, entry.remainingPartyHP + entry.damageTaken + attritionAmount - healAmount));
@@ -5904,8 +5907,13 @@ function ExpeditionTab({
                         : entry.room === currentLog.totalRooms + 1 ? 'BOSS' : entry.room.toString();
                       const healAmount = Math.max(0, entry.healAmount ?? 0);
                       const attritionAmount = Math.max(0, entry.attritionAmount ?? 0);
-                      const postBattleHP = Math.min(entry.maxPartyHP, Math.max(0, entry.remainingPartyHP + attritionAmount - healAmount));
-                      const takenDamageAmount = Math.min(entry.damageTaken, Math.max(0, postBattleHP + entry.damageTaken));
+                      const postBattleHP = typeof entry.postBattlePartyHP === 'number'
+                        ? Math.min(entry.maxPartyHP, Math.max(0, entry.postBattlePartyHP))
+                        : Math.min(entry.maxPartyHP, Math.max(0, entry.remainingPartyHP + attritionAmount - healAmount));
+                      const startPartyHP = typeof entry.startPartyHP === 'number'
+                        ? Math.min(entry.maxPartyHP, Math.max(0, entry.startPartyHP))
+                        : Math.min(entry.maxPartyHP, Math.max(0, postBattleHP + entry.damageTaken));
+                      const takenDamageAmount = Math.max(0, Math.min(entry.damageTaken, startPartyHP));
                       const remainingRatio = entry.maxPartyHP > 0 ? (entry.remainingPartyHP / entry.maxPartyHP) * 100 : 0;
                       const healRatio = entry.maxPartyHP > 0 ? (healAmount / entry.maxPartyHP) * 100 : 0;
                       const takenRatio = entry.maxPartyHP > 0 ? (takenDamageAmount / entry.maxPartyHP) * 100 : 0;
@@ -7125,8 +7133,13 @@ function DiaryTab({
                     }
                     const healAmount = Math.max(0, entry.healAmount ?? 0);
                     const attritionAmount = Math.max(0, entry.attritionAmount ?? 0);
-                    const postBattleHP = Math.min(entry.maxPartyHP, Math.max(0, entry.remainingPartyHP + attritionAmount - healAmount));
-                    const takenDamageAmount = Math.min(entry.damageTaken, Math.max(0, postBattleHP + entry.damageTaken));
+                    const postBattleHP = typeof entry.postBattlePartyHP === 'number'
+                      ? Math.min(entry.maxPartyHP, Math.max(0, entry.postBattlePartyHP))
+                      : Math.min(entry.maxPartyHP, Math.max(0, entry.remainingPartyHP + attritionAmount - healAmount));
+                    const startPartyHP = typeof entry.startPartyHP === 'number'
+                      ? Math.min(entry.maxPartyHP, Math.max(0, entry.startPartyHP))
+                      : Math.min(entry.maxPartyHP, Math.max(0, postBattleHP + entry.damageTaken));
+                    const takenDamageAmount = Math.max(0, Math.min(entry.damageTaken, startPartyHP));
                     const remainingRatio = entry.maxPartyHP > 0 ? (entry.remainingPartyHP / entry.maxPartyHP) * 100 : 0;
                     const healRatio = entry.maxPartyHP > 0 ? (healAmount / entry.maxPartyHP) * 100 : 0;
                     const takenRatio = entry.maxPartyHP > 0 ? (takenDamageAmount / entry.maxPartyHP) * 100 : 0;
