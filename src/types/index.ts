@@ -418,6 +418,8 @@ export interface EnemyDef {
   defenseAmplifier: number;
   experience: number;
   dropItemId: number | null;
+  isGodEnemy?: boolean;
+  godDropItemCategories?: [ItemCategory, ItemCategory];
 }
 
 // Room Types

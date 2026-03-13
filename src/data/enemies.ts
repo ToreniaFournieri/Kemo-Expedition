@@ -801,6 +801,26 @@ export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
     return drops.slice(0, 5);
   }
 
+  if (enemy.isGodEnemy && enemy.dropItemId && enemy.dropItemId % 1000 >= 500) {
+    const mythicItem = getItemById(enemy.dropItemId);
+    if (mythicItem) {
+      const drops: ItemDef[] = [mythicItem];
+      const godCats = enemy.godDropItemCategories ?? bossMythicByTier[tier] ?? ['sword', 'grimoire'];
+      const mythicExtra = pickByCategory(mythicRare, godCats[1], enemy.id + 1, [mythicItem.id])
+        ?? pickByCategory(mythicRare, godCats[0], enemy.id + 2, [mythicItem.id])
+        ?? pickAny(mythicRare, 1, enemy.id + 1, [mythicItem.id])[0];
+      if (mythicExtra) drops.push(mythicExtra);
+
+      const eliteRareFallback = pickByCategory(eliteRare, godCats[0], enemy.id + 3)
+        ?? pickByCategory(eliteRare, godCats[1], enemy.id + 4)
+        ?? pickAny(eliteRare, 1, enemy.id + 3)[0];
+      if (eliteRareFallback) drops.push(eliteRareFallback);
+
+      drops.push(...pickAny(common, Math.max(0, 5 - drops.length), enemy.id + 5));
+      return drops.slice(0, 5);
+    }
+  }
+
   if (enemy.type === 'boss' && enemy.dropItemId && enemy.dropItemId % 1000 >= 500) {
     const mythicItem = getItemById(enemy.dropItemId);
     if (mythicItem) {

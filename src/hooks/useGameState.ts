@@ -1400,6 +1400,8 @@ function createGodEnemy(enemy: EnemyDef, dungeonId: number, dungeonName: string,
       enemyClass: godProfile.enemyClass,
       abilities: godProfile.abilities,
       dropItemId: getGodMythicDropId(godProfile.dropItemTier, godProfile.dropItemCategories, enemy.id),
+      isGodEnemy: true,
+      godDropItemCategories: godProfile.dropItemCategories,
     };
   }
 
@@ -1412,6 +1414,8 @@ function createGodEnemy(enemy: EnemyDef, dungeonId: number, dungeonName: string,
     spawnPool: enemy.spawnPool,
     poolId: enemy.poolId,
     dropItemId: getGodMythicDropId(godProfile.dropItemTier, godProfile.dropItemCategories, enemy.id),
+    isGodEnemy: true,
+    godDropItemCategories: godProfile.dropItemCategories,
   };
 }
 
