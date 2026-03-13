@@ -2710,7 +2710,7 @@ export function HomeScreen({
           const restTickDurationMs = getStateDurationMs(party, 'rest');
           const elapsedRestMs = Math.max(0, simulationNow - updated.stateStartedAt);
           const restTickCount = Math.floor(elapsedRestMs / Math.max(1, restTickDurationMs));
-          const healPerTick = Math.max(1, Math.floor(partyRuntimeStats.hp * 0.01));
+          const healPerTick = Math.max(100, Math.floor(partyRuntimeStats.hp * 0.01));
           const projectedHp = Math.min(
             partyRuntimeStats.hp,
             party.currentHp + (restTickCount > 0 ? healPerTick * restTickCount : 0),
