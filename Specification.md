@@ -249,9 +249,8 @@
 - c.multiplier like `c.amulet_x1.3` applies only for individual character's equipments. 
 
 ```
-Party.`d.HP` =
-  100
-  + (Total sum of individual (Item Bonuses of {((HP x enhancement multiplier x super rare multiplier x its c.multiplier ) x (`b.vitality` + `b.mind`) / 20 x `c.growth_xV`) , round off}
+Party.`d.HP` =  
+  (Total sum of individual (Item Bonuses of {((HP x enhancement multiplier x super rare multiplier x its c.multiplier ) x (`b.vitality` + `b.mind`) / 20 x `c.growth_xV`) , round off}
   + {(`L_eff` x `b.vitality` x (`b.vitality`  + `b.mind`) / 20 x `c.growth_xV`), round off}
 ```
 
@@ -260,7 +259,7 @@ Party.`d.HP` =
 ```
 `L_eff` =
   level * (
-    1
+    10
     + max(0, (level - 10)/33)^1.1
     + max(0, (level - 20)/33)^1.2
     + max(0, (level - 30)/33)^1.3
