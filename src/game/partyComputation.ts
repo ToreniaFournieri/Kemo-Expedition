@@ -195,7 +195,7 @@ export function computePartyStats(party: Party): {
   //   + (Total sum of individual (
   //       Item Bonuses of {((HP x enhancement multiplier x super rare multiplier x its c.multiplier)
   //         x (b.vitality + b.mind) / 20 x c.growth_xV), round off}
-  //       + {(L_eff x b.vitality x (b.vitality + b.mind) / 20 x c.growth_xV), round off}
+  //       + {(b.mind + b.vitality + (L_eff x b.vitality x (b.vitality + b.mind) / 20) x c.growth_xV), round off}
   //     ))
   let baseHp = 100;
   let bonusHp = 0;
@@ -227,8 +227,10 @@ export function computePartyStats(party: Party): {
       }
     }
 
-    // Add rounded L_eff contribution.
-    const levelBonus = Math.round(effectiveLevel * stats.vitality * statMultiplier * growthMultiplier);
+    // Add rounded base stat + L_eff contribution.
+    const levelBonus = Math.round(
+      stats.mind + stats.vitality + (effectiveLevel * stats.vitality * statMultiplier * growthMultiplier),
+    );
 
     // Character's HP contribution
     bonusHp += itemHpBonus + levelBonus;
