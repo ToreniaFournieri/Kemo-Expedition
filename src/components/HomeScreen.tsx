@@ -5904,8 +5904,8 @@ function ExpeditionTab({
                         : entry.room === currentLog.totalRooms + 1 ? 'BOSS' : entry.room.toString();
                       const healAmount = Math.max(0, entry.healAmount ?? 0);
                       const attritionAmount = Math.max(0, entry.attritionAmount ?? 0);
-                      const estimatedStartHP = Math.min(entry.maxPartyHP, Math.max(0, entry.remainingPartyHP + entry.damageTaken + attritionAmount - healAmount));
-                      const takenDamageAmount = Math.max(0, estimatedStartHP - entry.remainingPartyHP);
+                      const postBattleHP = Math.min(entry.maxPartyHP, Math.max(0, entry.remainingPartyHP + attritionAmount - healAmount));
+                      const takenDamageAmount = Math.min(entry.damageTaken, Math.max(0, postBattleHP + entry.damageTaken));
                       const remainingRatio = entry.maxPartyHP > 0 ? (entry.remainingPartyHP / entry.maxPartyHP) * 100 : 0;
                       const healRatio = entry.maxPartyHP > 0 ? (healAmount / entry.maxPartyHP) * 100 : 0;
                       const takenRatio = entry.maxPartyHP > 0 ? (takenDamageAmount / entry.maxPartyHP) * 100 : 0;
@@ -7125,11 +7125,8 @@ function DiaryTab({
                     }
                     const healAmount = Math.max(0, entry.healAmount ?? 0);
                     const attritionAmount = Math.max(0, entry.attritionAmount ?? 0);
-                    const estimatedStartHP = Math.min(
-                      entry.maxPartyHP,
-                      Math.max(0, entry.remainingPartyHP + entry.damageTaken + attritionAmount - healAmount)
-                    );
-                    const takenDamageAmount = Math.max(0, estimatedStartHP - entry.remainingPartyHP);
+                    const postBattleHP = Math.min(entry.maxPartyHP, Math.max(0, entry.remainingPartyHP + attritionAmount - healAmount));
+                    const takenDamageAmount = Math.min(entry.damageTaken, Math.max(0, postBattleHP + entry.damageTaken));
                     const remainingRatio = entry.maxPartyHP > 0 ? (entry.remainingPartyHP / entry.maxPartyHP) * 100 : 0;
                     const healRatio = entry.maxPartyHP > 0 ? (healAmount / entry.maxPartyHP) * 100 : 0;
                     const takenRatio = entry.maxPartyHP > 0 ? (takenDamageAmount / entry.maxPartyHP) * 100 : 0;
