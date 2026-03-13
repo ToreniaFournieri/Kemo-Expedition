@@ -259,7 +259,7 @@ Party.`d.HP` =
 ```
 `L_eff` =
   level * (
-    10
+    20
     + max(0, (level - 10)/33)^1.1
     + max(0, (level - 20)/33)^1.2
     + max(0, (level - 30)/33)^1.3
