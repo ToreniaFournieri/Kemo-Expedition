@@ -806,7 +806,7 @@
 | 5 | 1-3 | Normal | +4 |
 | 5 | 4 | Elite | +7 | 
 | 6 | 1-3 | Normal | +5 | 
-| 6 | 4 | Boss | +12 | 
+| 6 | 4 | Boss | +10 | 
 
 - **Enemy entity distribution** for each `x.expediton`
 
