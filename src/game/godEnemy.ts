@@ -17,20 +17,23 @@ function getBaseGodEnemy(profile: GodEnemyProfile): EnemyDef | null {
 // SpecRef: 6.1 | Encounter Rules | buildGodRuntimeEnemy
 export function buildGodRuntimeEnemy(profile: GodEnemyProfile, isLunaMode: boolean): EnemyDef | null {
   const baseEnemy = getBaseGodEnemy(profile);
-  const dungeon = getDungeonById(profile.expId)
-    ?? DUNGEONS.find((candidate) => candidate.tier === profile.tier)
+  const dungeon = DUNGEONS.find((candidate) => candidate.tier === profile.tier)
+    ?? getDungeonById(profile.expId)
     ?? null;
   if (!baseEnemy || !dungeon) return null;
 
   const effectiveTier = profile.tier;
+  const effectiveExpLevel = Math.max(1, profile.level - 10);
   const tierMultipliers = getExpeditionEnemyMultipliersForTier(profile.tier);
   const effectiveDungeon = {
     ...dungeon,
     tier: effectiveTier,
+    expLevel: effectiveExpLevel,
     enemyMultipliers: getEffectiveEnemyMultipliers(
       {
         ...dungeon,
         tier: effectiveTier,
+        expLevel: effectiveExpLevel,
         enemyMultipliers: tierMultipliers,
       },
       isLunaMode
