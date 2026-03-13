@@ -5914,16 +5914,20 @@ function ExpeditionTab({
                       const enemyRemainingRatio = entry.enemyHP > 0 ? (enemyRemainingAmount / entry.enemyHP) * 100 : 0;
                       const isManualExpandedRoom = expandedRoom?.partyIndex === partyIndex && expandedRoom?.latestRoomToken === latestRoomToken && expandedRoom?.roomIndex === originalIndex;
                       const hasManualSelectionForParty = expandedRoom?.partyIndex === partyIndex && expandedRoom?.latestRoomToken === latestRoomToken;
-                      const isRoomExpanded = isManualExpandedRoom || (!hasManualSelectionForParty && originalIndex === defaultExpandedRoomIndex);
+                      const canExpandRoom = !!entry.details && entry.details.length > 0;
+                      const isRoomExpanded = canExpandRoom && (isManualExpandedRoom || (!hasManualSelectionForParty && originalIndex === defaultExpandedRoomIndex));
 
                       return (
                         <div key={`${partyIndex}-${originalIndex}-${entry.room}`} className="bg-white rounded overflow-hidden">
                         <button
-                          onClick={() => setExpandedRoom(isManualExpandedRoom
-                            ? { partyIndex, roomIndex: -1, latestRoomToken }
-                            : { partyIndex, roomIndex: originalIndex, latestRoomToken }
-                          )}
-                          className="w-full text-left p-2 text-xs"
+                          onClick={() => {
+                            if (!canExpandRoom) return;
+                            setExpandedRoom(isManualExpandedRoom
+                              ? { partyIndex, roomIndex: -1, latestRoomToken }
+                              : { partyIndex, roomIndex: originalIndex, latestRoomToken }
+                            );
+                          }}
+                          className={`w-full text-left p-2 text-xs ${canExpandRoom ? '' : 'cursor-default'}`}
                         >
                             <div className="flex justify-between items-center">
                               <span className="font-medium">{roomLabel}: {renderEnemyNameWithMutedClass(entry.enemyName)}</span>
@@ -5931,7 +5935,7 @@ function ExpeditionTab({
                                 <span className={entry.gateInfo ? 'text-gray-500 font-medium' : entry.outcome === 'victory' ? 'text-sub font-medium' : entry.outcome === 'defeat' ? 'text-accent font-medium' : 'text-accent font-medium'}>
                                   {entry.gateInfo ? '未到達' : entry.outcome === 'victory' ? '勝利' : entry.outcome === 'defeat' ? '敗北' : '引分'}
                                 </span>
-                                <span className={`transform transition-transform ${isRoomExpanded ? 'rotate-180' : ''}`}>▼</span>
+                                {canExpandRoom && <span className={`transform transition-transform ${isRoomExpanded ? 'rotate-180' : ''}`}>▼</span>}
                               </span>
                             </div>
                             {(entry.gateInfo || entry.reward) && (
