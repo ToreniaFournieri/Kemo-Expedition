@@ -34,7 +34,7 @@ function getEnemyLevelOffset(floorNumber: number, roomType: RoomType): number {
     return floorNumber + 2;
   }
 
-  return 12;
+  return 10;
 }
 
 export function getEnemyLevelForRoom(dungeonExpLevel: number, floorNumber: number, roomType: RoomType): number {
