@@ -27,12 +27,12 @@
 - unlocked deity: none (all of other deity is unlocked)
 
 - PT1 Party initial condition.
-  1. "ケモ", Caninian, 戦(君), Sturdy, House of the Unmoving
+  1. "ケモ", Caninian, 戦(盗), Canny, House of the Unmoving
      - equipment: `1101`, `1103`
   2. "ゴン", Vulpinian, 剣(侍), Chivalric, House of War Spirit
      - equipment: `1104`, `1104`
-  3. "イタチ", Murid, 忍(盗), Persistent, House of the Breaking Hand
-     - equipment: `1104`
+  3. "イタチ", Murid, 忍(君), Persistent, House of the Breaking Hand
+     - equipment: `1104`, `1106`
   4. "ロップ", Leporian, 狩(賢), Shikon, House of Far Sight
      - equipment: `1107`, `1108`, `1109`
   5. "ラス", Felidian, 賢(巡), Pursuing, House of Hidden Principles
