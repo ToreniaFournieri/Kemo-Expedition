@@ -6,6 +6,7 @@ export const LINEAGES: Lineage[] = [
     name: '鋼誓の家',
     bonuses: [
       { type: 'sword_multiplier', value: 1.3 },
+      { type: 'catalyst_multiplier', value: 1.3 },
     ],
   },
   {
@@ -21,6 +22,7 @@ export const LINEAGES: Lineage[] = [
     name: '遠眼の家',
     bonuses: [
       { type: 'archery_multiplier', value: 1.3 },
+      { type: 'gauntlet_multiplier', value: 1.2 },
     ],
   },
   {
@@ -43,7 +45,8 @@ export const LINEAGES: Lineage[] = [
     id: 'guiding_thought',
     name: '導智の家',
     bonuses: [
-      { type: 'wand_multiplier', value: 1.3 },
+      { type: 'wand_multiplier', value: 1.2 },
+      { type: 'bolt_multiplier', value: 1.2 },
     ],
   },
   {
