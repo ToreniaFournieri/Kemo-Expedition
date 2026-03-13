@@ -780,7 +780,7 @@
 
 | `x.god_HP_mult` | `x.god_atk_mult` | `x.god_NoA_mult` | `x.god_atk_amp_mult` | `x.god_def_mult` | `x.god_def_amp_mult` |
 |-----|-----|-----|----|----|----|
-| x2.0 | x1.5 | x2.0 | x1.6 | x1.5 | x0.8 |
+| x1.5 | x1.1 | x1.3 | x1.2 | x1.1 | x1.0 |
 
 - `debug mode for god battle`
 
