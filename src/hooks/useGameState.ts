@@ -1991,7 +1991,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             }
 
             // Pass currentHp to maintain HP persistence during expedition
-            const battleResult = executeBattle(currentParty, enemy, bags, currentHp);
+            const roomStartHp = currentHp;
+            const battleResult = executeBattle(currentParty, enemy, bags, roomStartHp);
 
             // Update threat bags from battle result
             bags = {
@@ -2001,7 +2002,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             };
 
             const damageDealt = enemy.hp - Math.max(0, battleResult.enemyHp);
-            const damageTaken = Math.max(0, currentHp - battleResult.partyHp);
+            const damageTaken = Math.max(0, roomStartHp - battleResult.partyHp);
 
             const enemyAttackValues = calculateEnemyAttackValues(enemy, partyStats);
 
@@ -2015,6 +2016,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               floor: floor.floorNumber,
               roomInFloor: roomIndex + 1,
               roomType: roomDef.type,
+              startPartyHP: roomStartHp,
+              postBattlePartyHP: battleResult.partyHp,
               floorMultiplier: roomMultiplier,
               enemyName: formatEnemyNameWithClass(enemy.name, enemy.enemyClass) + roomSuffix,
               enemyHP: enemy.hp,
@@ -2085,6 +2088,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 partyStats.hp
               );
               currentHp = deityHpEffect.hp;
+              entry.postBattlePartyHP = battleResult.partyHp;
               entry.remainingPartyHP = currentHp;
               if (deityHpEffect.healAmount) {
                 entry.healAmount = deityHpEffect.healAmount;

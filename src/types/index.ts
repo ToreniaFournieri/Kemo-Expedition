@@ -554,6 +554,8 @@ export interface ExpeditionLogEntry {
   floor?: number; // Floor number (1-6)
   roomInFloor?: number; // Room within floor (1-4)
   roomType?: RoomType; // Type of room
+  startPartyHP?: number;
+  postBattlePartyHP?: number;
   floorMultiplier?: number; // Floor multiplier applied
   enemyName: string;
   enemyHP: number;
