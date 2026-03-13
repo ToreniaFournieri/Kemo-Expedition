@@ -908,9 +908,9 @@ function drawPartySleepiness(party: Party): { party: Party; sleepiness: Sleepine
 
 function createInitialParty() {
   const defaultSetup = [
-    { race: 'caninian', main: 'fighter', sub: 'lord', pred: 'sturdy', lineage: 'unmoving', name: 'ケモ', equipmentIds: [1101, 1103] },
+    { race: 'caninian', main: 'fighter', sub: 'rogue', pred: 'canny', lineage: 'unmoving', name: 'ケモ', equipmentIds: [1101, 1103] },
     { race: 'vulpinian', main: 'duelist', sub: 'samurai', pred: 'chivalric', lineage: 'war_spirit', name: 'ゴン', equipmentIds: [1104, 1104] },
-    { race: 'murid', main: 'ninja', sub: 'rogue', pred: 'persistent', lineage: 'breaking_hand', name: 'イタチ', equipmentIds: [1104] },
+    { race: 'murid', main: 'ninja', sub: 'lord', pred: 'persistent', lineage: 'breaking_hand', name: 'イタチ', equipmentIds: [1104, 1106] },
     { race: 'leporian', main: 'ranger', sub: 'sage', pred: 'shikon', lineage: 'far_sight', name: 'ロップ', equipmentIds: [1107, 1108, 1109] },
     { race: 'felidian', main: 'sage', sub: 'pilgrim', pred: 'pursuing', lineage: 'hidden_principles', name: 'ラス', equipmentIds: [1110, 1111, 1112] },
     { race: 'cervin', main: 'wizard', sub: 'wizard', pred: 'canny', lineage: 'guiding_thought', name: 'セルヴァ', equipmentIds: [1110] },
