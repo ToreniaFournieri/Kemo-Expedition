@@ -35,7 +35,7 @@
      - equipment: `1104`, `1106`
   4. "ロップ", Leporian, 狩(賢), Shikon, House of Far Sight
      - equipment: `1107`, `1108`, `1109`
-  5. "ラス", Felidian, 賢(巡), Pursuing, House of Hidden Principles
+  5. "ラス", Felidian, 賢(巡), Dexterous, House of Steel Oath
      - equipment: `1110`, `1111`, `1112` 
   6. "セルヴァ", Cervin, 魔(魔), Canny, House of Guiding Thought
      - equipment: `1110`
