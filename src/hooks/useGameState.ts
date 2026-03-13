@@ -1723,12 +1723,16 @@ function buildRewardLogEntries(
 function applyPeriodicDeityHpEffect(
   deityName: string,
   totalDonatedGold: number,
-  roomNumber: number,
-  totalRooms: number,
+  floorNumber: number,
+  roomInFloor: number,
+  roomType: RoomType,
   currentHp: number,
   maxHp: number
 ): { hp: number; healAmount?: number; attritionAmount?: number } {
-  if (roomNumber % 4 !== 0 || roomNumber >= totalRooms) {
+  const isEliteRoom = floorNumber >= 1 && floorNumber <= 5
+    && roomInFloor === 4
+    && roomType === 'battle_Elite';
+  if (!isEliteRoom) {
     return { hp: currentHp };
   }
 
@@ -1881,7 +1885,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       // Use new floor structure if available
       if (dungeon.floors && dungeon.floors.length > 0) {
-        const totalRooms = dungeon.floors.reduce((sum, floor) => sum + floor.rooms.length, 0);
         // New v0.2.0 floor-based expedition
         for (const floor of dungeon.floors) {
           if (expeditionEnded) break;
@@ -2072,7 +2075,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               currentHp = battleResult.partyHp;
               entries.push(entry);
 
-              const deityHpEffect = applyPeriodicDeityHpEffect(currentParty.deity.name, state.global.deityDonations[normalizeDeityName(currentParty.deity.name)] ?? currentParty.deityGold ?? 0, roomCounter, totalRooms, currentHp, partyStats.hp);
+              const deityHpEffect = applyPeriodicDeityHpEffect(
+                currentParty.deity.name,
+                state.global.deityDonations[normalizeDeityName(currentParty.deity.name)] ?? currentParty.deityGold ?? 0,
+                floor.floorNumber,
+                roomIndex + 1,
+                roomDef.type,
+                currentHp,
+                partyStats.hp
+              );
               currentHp = deityHpEffect.hp;
               entry.remainingPartyHP = currentHp;
               if (deityHpEffect.healAmount) {
