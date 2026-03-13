@@ -5913,10 +5913,11 @@ function ExpeditionTab({
                       const startPartyHP = typeof entry.startPartyHP === 'number'
                         ? Math.min(entry.maxPartyHP, Math.max(0, entry.startPartyHP))
                         : Math.min(entry.maxPartyHP, Math.max(0, postBattleHP + entry.damageTaken));
-                      const takenDamageAmount = Math.max(0, Math.min(entry.damageTaken, startPartyHP));
-                      const remainingRatio = entry.maxPartyHP > 0 ? (entry.remainingPartyHP / entry.maxPartyHP) * 100 : 0;
+                      const netLossAmount = Math.max(0, startPartyHP - entry.remainingPartyHP);
+                      const currentHpWithoutHeal = Math.max(0, entry.remainingPartyHP - healAmount);
+                      const remainingRatio = entry.maxPartyHP > 0 ? (currentHpWithoutHeal / entry.maxPartyHP) * 100 : 0;
                       const healRatio = entry.maxPartyHP > 0 ? (healAmount / entry.maxPartyHP) * 100 : 0;
-                      const takenRatio = entry.maxPartyHP > 0 ? (takenDamageAmount / entry.maxPartyHP) * 100 : 0;
+                      const takenRatio = entry.maxPartyHP > 0 ? (netLossAmount / entry.maxPartyHP) * 100 : 0;
                       const enemyTakenAmount = Math.min(entry.enemyHP, Math.max(0, entry.damageDealt));
                       const enemyRemainingAmount = Math.max(0, entry.enemyHP - enemyTakenAmount);
                       const enemyRemainingRatio = entry.enemyHP > 0 ? (enemyRemainingAmount / entry.enemyHP) * 100 : 0;
@@ -7139,10 +7140,11 @@ function DiaryTab({
                     const startPartyHP = typeof entry.startPartyHP === 'number'
                       ? Math.min(entry.maxPartyHP, Math.max(0, entry.startPartyHP))
                       : Math.min(entry.maxPartyHP, Math.max(0, postBattleHP + entry.damageTaken));
-                    const takenDamageAmount = Math.max(0, Math.min(entry.damageTaken, startPartyHP));
-                    const remainingRatio = entry.maxPartyHP > 0 ? (entry.remainingPartyHP / entry.maxPartyHP) * 100 : 0;
+                    const netLossAmount = Math.max(0, startPartyHP - entry.remainingPartyHP);
+                    const currentHpWithoutHeal = Math.max(0, entry.remainingPartyHP - healAmount);
+                    const remainingRatio = entry.maxPartyHP > 0 ? (currentHpWithoutHeal / entry.maxPartyHP) * 100 : 0;
                     const healRatio = entry.maxPartyHP > 0 ? (healAmount / entry.maxPartyHP) * 100 : 0;
-                    const takenRatio = entry.maxPartyHP > 0 ? (takenDamageAmount / entry.maxPartyHP) * 100 : 0;
+                    const takenRatio = entry.maxPartyHP > 0 ? (netLossAmount / entry.maxPartyHP) * 100 : 0;
                     const enemyTakenAmount = Math.min(entry.enemyHP, Math.max(0, entry.damageDealt));
                     const enemyRemainingAmount = Math.max(0, entry.enemyHP - enemyTakenAmount);
                     const enemyRemainingRatio = entry.enemyHP > 0 ? (enemyRemainingAmount / entry.enemyHP) * 100 : 0;
