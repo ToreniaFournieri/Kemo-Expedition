@@ -123,6 +123,40 @@
 | `a.stealth`2 | 隠れ蓑2 | HP29%未満の時、自身へのダメージをすべて回避する|
 | `a.illusion`1 | 幻化1 | 自分が受ける最初の遠距離攻撃を無効化する |
 | `a.illusion`2 | 幻化2 | パーティーが受ける最初の遠距離攻撃を無効化する |
+| `a.howl`1 | 遠吠え1 | 相手の次の攻撃回数4/5 |
+| `a.predator-sense`1 | 捕食1 |相手のHPが50％未満の場合、命中+30 |
+| `a.slow`1 | 鈍足1 | 自身の行動順番に-1して遅くなる |
+| `a.corrode`1 | 腐食1 | 相手の攻撃倍率x2/3 |
+| `a.life-drain`3 | 吸血1 | 与ダメージの7/10を回復 |
+| `a.no-offense`1 | 受身1 | 行動をしなくなる(反撃などは行う) |
+| `a.decompose`1 | 分解1 | 相手の物理防御力を2/3 |
+| `a.swarm`1 | 群れ1 | HPが減ると攻撃倍率・防御倍率減(HP1%につき0.5%減少) |
+| `a.death-touch`1 | 接死1 | 近接攻撃1/6の確率で即死 |
+| `a.flying`1 | 飛行1 | 相手の近接攻撃時、その攻撃回数が1/4 |
+| `a.free`1 | 逃走1 | 近接1タイミングで戦闘から逃げる |
+| `a.frostbite`1 | 凍傷1 | 相手の行動順番に-1を加えて遅らせる |
+| `a.ice-reflect`1 | 氷結反射1 | 氷属性のダメージ反射(3/10) |
+| `a.bind`1 | 拘束1 | 近接行動時、相手の行動を封じる |
+| `a.regeneration`3 | 再生3 | 近接フェーズ開始時、この戦闘で失ったHPの20%を回復する |
+| `a.burn`1 | 火傷1 | 相手の攻撃回数分ダメージ受ける |
+| `a.fire-reflect`1 | 火炎反射1 | 火属性のダメージ反射(3/10)| 
+| `a.soul-reap`1 | 魂奪1 | 魔法フェーズの終わりに、相手のHPが10％未満であった場合、相手は即死する。回避も復活もできない |
+| `a.mutual-magic-amplify`1 | 魔法増幅1 | 双方魔法ダメージ1.3倍 |
+| `a.mutual-physical-amplify`2 | 物理増幅12 | 双方物理ダメージ1.4倍 |
+| `a.mutual-physical-amplify`-1 | 物理抑制1 | 双方物理ダメージ0.8倍 |
+| `a.ranged-confusion`1 | 遠距離混乱1 | 1/6で遠距離2タイミングで遠距離フェーズのみ敵対状態 |
+| `a.self-destruct`1 | 自爆1 | 近接2タイミングで自爆し、相手に残ダメージの3/10を与える |
+| `a.oblivion`1 | 忘却1 | 無作為に選んだ相手のアビリティ1つをこの戦闘中無効にする |
+| `a.reanimate`3 | 即時蘇生3 | 戦闘中1回だけHP30%で復活する |
+| `a.auriferous`1 | 含金1 | 被弾回数が多いほど自信がドロップするアイテム確率が上がる |
+| `a.magic-seal`1 | 魔封1 | 次の魔法無力化する |
+| `a.ambush`1 | 待ち伏せ1 | 相手より早く行動できた場合、与ダメージ1.3倍 |
+| `a.mimic`1 | 模倣1 | 戦闘開始時、相手のアビリティ1つを模倣する |
+| `a.shock`1 | 感電1 | 戦闘中1回だけ、相手の近接攻撃1回目ヒットで強制終了 |
+| `a.unstable-core`1 | 不安定1 | 各フェーズ終了後に残HP30%の自傷ダメージを受ける |
+| `a.magical-reflect`1 | 魔法反射1 | 戦闘中1回だけ、魔法攻撃を反射する(1/10)| |
+| `a.colossal`1 | 巨人1 | 防御力が2倍になるが、物理ダメージ補正x2.0 |
+| `a.upgrade-all-abilities`1 | 他のアビリティ強化+1 | 自身の他のアビリティを１段階強化する(ペナルティ効果のアビリティは軽減される) |
 
 #### 2.1.2 b. bonus
 - "基. 基礎値ボーナス (重複有効)"
@@ -852,23 +886,23 @@
 
 | enemy_type | name | short name | ability1 | ability30 | c. bonuses |
 |-|-|-|-|-|-|
-| Beast | 猛獣 | 猛 | `a.howl`1:遠吠え(相手の次の攻撃回数4/5)| `a.predator-sense`1:捕食(相手のHPが50％未満の場合、命中+30) | `c.growth_x1.1`, `r.fire_x1.3`, `r.thunder_x2/3` |
-| Slime_Colony | 粘体群 | 粘 | `a.move`-1: Slow move, `a.corrode`1:腐食(相手の攻撃倍率x2/3) | `a.life-drain`3:吸血(与ダメージの7/10を回復) | `r.ice_x1.3` |
-| Plant_Fungal | 植菌 | 植 | `a.no-offense`1:受身(行動なし), `a.magical-counter`1, `a.counter`1 | `a.decompose`1:分解:reduce opponent physical defence by 2/3 | `r.fire_x1.3`, `r.thunder_x2/3`, `r.ice_x2/3`, `c.grit+1`, `c.caster+1` |
-| Insect_Swarm | 昆虫 | 虫 | `a.swarm`1:群れ(HPが減ると攻撃倍率・防御倍率減)| `a.death-touch`1:接死(近接攻撃1/6の確率で即死) | `e.thunder+20`, `r.fire_x1.3`, `r.thunder_x2/3` |
-| Aerial | 飛行 | 飛 | `a.flying`1:飛行(相手の近接攻撃時、その攻撃回数が1/4) | `a.free`1:逃走(近接1タイミング) | `c.evasion+0.045`, `c.growth_x0.7`  |
-| Frost | 氷雪 | 雪 | `a.frostbite`1:凍傷(相手の行動順番に-1を加えて遅らせる) | `a.ice-reflect`1:氷属性のダメージ反射(3/10) | `e.ice+20`, `r.fire_x1.3`, `r.ice_x1/5` |
-| Marine | 海棲 | 海 | `a.bind`1:拘束(近接行動時、相手の行動を封じる) | `a.regeneration`1:再生(近接フェーズ開始時、この戦闘で失ったHPの20%を回復する) | `r.thunder_x1.3` |
-| Dragon | 竜 | 竜 | `a.burn`1:火傷(相手の攻撃回数分ダメージ受ける) | `a.fire-reflect`1:火属性のダメージ反射(3/10) | `e.fire+40`, `r.fire_x1/2`, `r.ice_x1.3`|
-| Spirit | 精霊 | 霊 | 	`a.soul-reap`1:魂奪(魔法フェーズの終わりに、相手のHPが10％未満であった場合、相手は即死する。回避も復活もできない) | `a.mutual-magic-amplify`1:魔法増幅(双方魔法ダメージ1.3倍) |  `e.ice+20`, `r.fire_x1.5`, `r.ice_x2/3`,`r.thunder_x4/5`, `c.physical-defense-multiplier_x3/5` |
-| Ghost | 怨霊 | 怨 | `a.ranged-confusion`1:遠距離混乱(1/6で遠距離2タイミングで遠距離フェーズのみ敵対状態) | `a.self-destruct`1:自爆(近接2タイミング) |  `c.evasion+0.020`, `c.physical-defense-multiplier_x3/5`, `r.ice_x1.5` |
-| Undead | 不死 | 屍 | `a.move`-1: Slow move, `a.oblivion`1:忘却(相手のアビリティ1つ無効) | `a.reanimate`1:即時蘇生(1回だけHP30%で復活する) | `c.physical-defense-multiplier_x1/2`, `r.fire_x1.5`, `r.ice_x2/3` |
-| Golem | ゴーレム | 造 | `a.auriferous`1:含金(被弾回数が多いほどアイテムドロップ率アップ) | `a.magic-seal`1:魔封(次の魔法無力化) | `c.growth_x1.3`, `r.thunder_x1.3` |
-| Shadowfang | 影牙 | 影 | `a.ambush`1:待ち伏せ(相手より早く行動できた場合、与ダメージ1.5倍) | `a.mimic`1:模倣(戦闘開始時、相手のアビリティ1つを模倣する) | `e.ice+40`, `r.fire_x1.3`, `r.ice_x2/3` |
-| Mech | 機械 | 機 | `a.shock`1:感電(近接攻撃1回目ヒットで強制終了) | `a.mutual-physical-amplify`2:物理増幅(双方物理ダメージ1.4倍) | `c.physical-defense-multiplier_x3/5`, `r.thunder_x1.5` |
-| Chimera | キメラ | 合 | `a.unstable-core`1:不安定(各フェーズ終了後に残HP30%の自傷ダメージを受ける) | `a.magical-reflect`1:魔法反射 | `e.thunder+30`, `c.grit+1`, `c.pursuit+1`, `c.caster+1`, `c.growth_x1.7`  |
-| Titan | 巨人 | 巨 | `a.colossal`1:巨人(防御力が2倍になるが、物理ダメージ補正x2.0| `a.mutual-physical-amplify`-1:物理抑制(双方物理ダメージ0.8倍) | `c.growth_x1.5` |
-| Jinma | 神魔 | 神 | `a.upgrade-all-abilities`1:他のアビリティ強化+1, race ability1 | race ability2 | `c.growth_x2.0` |
+| Beast | 猛獣 | 猛 | `a.howl`1 | `a.predator-sense`1 | `c.growth_x1.1`, `r.fire_x1.3`, `r.thunder_x2/3` |
+| Slime_Colony | 粘体群 | 粘 | `a.slow`1, `a.corrode`1 | `a.life-drain`3 | `r.ice_x1.3` |
+| Plant_Fungal | 植菌 | 植 | `a.no-offense`1, `a.magical-counter`1, `a.counter`1 | `a.decompose`1 | `r.fire_x1.3`, `r.thunder_x2/3`, `r.ice_x2/3`, `c.grit+1`, `c.caster+1` |
+| Insect_Swarm | 昆虫 | 虫 | `a.swarm`1 | `a.death-touch`1 | `e.thunder+20`, `r.fire_x1.3`, `r.thunder_x2/3` |
+| Aerial | 飛行 | 飛 | `a.flying`1 | `a.free`1 | `c.evasion+0.045`, `c.growth_x0.7`  |
+| Frost | 氷雪 | 雪 | `a.frostbite`1 | `a.ice-reflect`1 | `e.ice+20`, `r.fire_x1.3`, `r.ice_x1/5` |
+| Marine | 海棲 | 海 | `a.bind`1 | `a.regeneration`3 | `r.thunder_x1.3` |
+| Dragon | 竜 | 竜 | `a.burn`1 | `a.fire-reflect`1 | `e.fire+40`, `r.fire_x1/2`, `r.ice_x1.3`|
+| Spirit | 精霊 | 霊 | `a.soul-reap`1 | `a.mutual-magic-amplify`1 |  `e.ice+20`, `r.fire_x1.5`, `r.ice_x2/3`,`r.thunder_x4/5`, `c.physical-defense-multiplier_x3/5` |
+| Ghost | 怨霊 | 怨 | `a.ranged-confusion`1 | `a.self-destruct`1 |  `c.evasion+0.020`, `c.physical-defense-multiplier_x3/5`, `r.ice_x1.5` |
+| Undead | 不死 | 屍 | `a.slow`1, `a.oblivion`1 | `a.reanimate`3 | `c.physical-defense-multiplier_x1/2`, `r.fire_x1.5`, `r.ice_x2/3` |
+| Golem | ゴーレム | 造 | `a.auriferous`1 | `a.magic-seal`1 | `c.growth_x1.3`, `r.thunder_x1.3` |
+| Shadowfang | 影牙 | 影 | `a.ambush`1 | `a.mimic`1 | `e.ice+40`, `r.fire_x1.3`, `r.ice_x2/3` |
+| Mech | 機械 | 機 | `a.shock`1 | `a.mutual-physical-amplify`2 | `c.physical-defense-multiplier_x3/5`, `r.thunder_x1.5` |
+| Chimera | キメラ | 合 | `a.unstable-core`1 | `a.magical-reflect`1 | `e.thunder+30`, `c.grit+1`, `c.pursuit+1`, `c.caster+1`, `c.growth_x1.7`  |
+| Titan | 巨人 | 巨 | `a.colossal`1 | `a.mutual-physical-amplify`-1 | `c.growth_x1.5` |
+| Jinma | 神魔 | 神 | `a.upgrade-all-abilities`1 , race ability1 | race ability2 | `c.growth_x2.0` |
 | Kemono | ケモノ | ケ | race ability1 | race ability2 | |
 
 1. The Core Principle: "Static Master, Dynamic Reality"
