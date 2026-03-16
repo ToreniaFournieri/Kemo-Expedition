@@ -10,6 +10,7 @@
 | 6 | 6 | 35 | マステリドの巣穴(Mustelid Burrow) | 巣 | Cave(洞窟): The ranged NoA is reduced to x0.75 | Leakage(漏電): Take damage equal to 3% of missing HP at the end of every room. |  C:lost tech (fantasy tone) , U:thunder, E:enemy_type B:enemy_type |
 | 7 | 7 | 42 | レポリアンの月宮(Leporian Moon Palace) | 月 | Light Zone(光域):`a.mutual-physical-amplify`-1:物理抑制(双方物理ダメージ0.8倍) | Dark Zone(闇域):`a.mutual-physical-amplify`1:物理増幅(双方物理ダメージ1.2倍) | C:fantasy equipment , U:Light from Titan,Dark from Undead E:enemy_type B:enemy_type |
 | 8 | 8 | 49 | セルヴィンの谷(Cervin Vale) | 谷 | Sanctuary(聖域): `a.mutual-magic-amplify`1:魔法増幅(双方魔法ダメージ1.2倍) | Gehenna(ゲヘナ):No religion bonuses apply | C:more advanced fantasy equipment , U:legendary  E:enemy_type B:enemy_type |
+| 99 | 0 | 0 | 闘技場 (Colosseum) | 闘 | none | none | Debug-only area. Displayed only when Colosseum is enabled. |
 
 # 2 Expedition Floor Concepts
 
