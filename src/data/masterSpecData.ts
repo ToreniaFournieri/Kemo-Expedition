@@ -356,3 +356,14 @@ export const MASTER_ITEM_NAME_INDEX: Record<string, readonly string[]> = {
 export function getMasterItemNames(tier:number, rarity:'common'|'uncommon'|'eliteRare'|'bossRare', category:ItemCategory): readonly string[] {
   return MASTER_ITEM_NAME_INDEX[`${tier}|${rarity}|${category}`] ?? [];
 }
+
+export function getMasterItemCategoriesByRarity(
+  tier: number,
+  rarity: 'common' | 'uncommon' | 'eliteRare' | 'bossRare'
+): ItemCategory[] {
+  const prefix = `${tier}|${rarity}|`;
+  const categories = Object.keys(MASTER_ITEM_NAME_INDEX)
+    .filter((key) => key.startsWith(prefix))
+    .map((key) => key.slice(prefix.length) as ItemCategory);
+  return [...new Set(categories)];
+}
