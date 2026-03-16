@@ -1,4 +1,5 @@
 import { Dungeon, ExpeditionEnemyMultipliers, FloorDef, RoomType } from '../types';
+import { MASTER_EXPEDITION_ENEMIES_PACKED } from './masterSpecData';
 
 type CombatMultipliers = NonNullable<FloorDef['multipliers']>;
 
@@ -126,43 +127,47 @@ export const EXPEDITION_ENEMY_MULTIPLIERS: ExpeditionEnemyMultipliers[] = [
   ...buildExpeditionEnemyMultipliers(8),
 ];
 
+type RoomIdKey = `${number}-${number}`;
 
+function buildMasterRoomEnemyIdLookup(poolId: number): Record<RoomIdKey, number[]> {
+  const lookup: Record<RoomIdKey, number[]> = {};
+  const rows = MASTER_EXPEDITION_ENEMIES_PACKED[poolId] ?? [];
+  let normalCount = 0;
+  let eliteCount = 0;
+
+  const append = (floorNumber: number, roomNumber: number, enemyId: number): void => {
+    const key: RoomIdKey = `${floorNumber}-${roomNumber}`;
+    if (!lookup[key]) {
+      lookup[key] = [];
+    }
+    lookup[key].push(enemyId);
+  };
+
+  rows.forEach((row) => {
+    const [floorNumber, roomCode, , type] = row;
+    const enemyId = type === 'normal'
+      ? poolId * 1000 + (++normalCount)
+      : type === 'elite'
+        ? poolId * 1000 + 50 + (++eliteCount)
+        : poolId * 100 + 1;
+    const roomNumbers = roomCode === '1-2' ? [1, 2] : [Number(roomCode)];
+    roomNumbers.forEach((roomNumber) => append(floorNumber, roomNumber, enemyId));
+  });
+
+  return lookup;
+}
+
+const MASTER_ROOM_ENEMY_ID_LOOKUP: Record<number, Record<RoomIdKey, number[]>> = Object.fromEntries(
+  Array.from({ length: 8 }, (_, index) => {
+    const poolId = index + 1;
+    return [poolId, buildMasterRoomEnemyIdLookup(poolId)];
+  })
+);
 
 function getMasterRoomEnemyIds(poolId: number, floorNumber: number, roomNumber: number): number[] {
-  const tierBase = poolId * 1000;
-
-  if (roomNumber === 1 || roomNumber === 2) {
-    const roomRows = [0, 1, 2];
-    return roomRows.map((index) => tierBase + (floorNumber - 1) * 5 + index + 1);
-  }
-
-  if (roomNumber === 3) {
-    const roomRows = floorNumber <= 4 ? [3, 4] : [3, 4];
-    const normalIds = roomRows
-      .map((index) => tierBase + (floorNumber - 1) * 5 + index + 1)
-      .filter((enemyId) => enemyId <= tierBase + 30);
-
-    const eliteOffsetMap: Record<number, number[]> = {
-      4: [4, 5],
-      5: [7, 8],
-    };
-    const eliteOffsets = eliteOffsetMap[floorNumber] ?? [];
-    const eliteIds = eliteOffsets
-      .map((offset) => tierBase + 50 + offset)
-      .filter((enemyId) => enemyId <= tierBase + 59);
-
-    return [...normalIds, ...eliteIds];
-  }
-
-  if (floorNumber === 6 && roomNumber === 4) {
-    return [poolId * 100 + 1];
-  }
-
-  if (roomNumber === 4) {
-    return [tierBase + 50 + floorNumber];
-  }
-
-  return [];
+  const key: RoomIdKey = `${floorNumber}-${roomNumber}`;
+  const ids = MASTER_ROOM_ENEMY_ID_LOOKUP[poolId]?.[key] ?? [];
+  return ids.slice().sort((a, b) => a - b);
 }
 
 // Create floor structure for a dungeon
