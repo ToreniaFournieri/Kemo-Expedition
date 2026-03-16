@@ -1,726 +1,298 @@
 # 1. Enemy
 
-|Expedition|floor|Type|Class|Japanese name|
-|---------------|-----|------|-------|---------------------------|
-|1|1|Normal|Fighter|原野のイノシシ|
-|1|1|Normal|Ranger|石投げサル|
-|1|1|Normal|Wizard|泥まみれキノコ妖|
-|1|1|Normal|Pilgrim|骨札の獣人|
-|1|1|Normal|Rogue|草影コヨーテ|
-|1|2|Normal|Ninja|木登りヤマネコ|
-|1|2|Normal|Samurai|牙折りオオカミ|
-|1|2|Normal|Sage|苔角シカ|
-|1|2|Normal|Duelist|爪裂きヒョウ|
-|1|2|Normal|Lord|群れのボスオス|
-|1|3|Normal|Fighter|丸太押しバイソン|
-|1|3|Normal|Ranger|棘針ヤマアラシ|
-|1|3|Normal|Wizard|霧呼びホタル妖|
-|1|3|Normal|Lord|縄張りの王サル|
-|1|3|Normal|Samurai|巨牙マンモス|
-|1|4|Normal|Ninja|影跳びキツネ|
-|1|4|Normal|Rogue|盗みカラス|
-|1|4|Normal|Sage|根読みフクロウ|
-|1|4|Normal|Duelist|跳ね牙カンガルー|
-|1|4|Normal|Pilgrim|土鈴の巡り獣|
-|1|5|Normal|Fighter|石甲カメ|
-|1|5|Normal|Ranger|枝矢ウサギ|
-|1|5|Normal|Wizard|黒炭トカゲ妖|
-|1|5|Normal|Lord|群れ統べグマ|
-|1|5|Normal|Samurai|岩砕きサイ|
-|1|6|Normal|Ninja|疾走イタチ|
-|1|6|Normal|Rogue|夜盗ジャッカル|
-|1|6|Normal|Sage|古樹のシカ長|
-|1|6|Normal|Duelist|裂爪ライオン|
-|1|6|Normal|Pilgrim|獣骨の祈り手|
-|1|1|Elite|Rogue|木柵破りの牙鼠|
-|1|2|Elite|Fighter|丸太鎧の大猪|
-|1|3|Elite|Ranger|岩上の狙い鷲|
-|1|4|Elite|Duelist|二枚爪の黒豹|
-|1|5|Elite|Mage|毒霧の沼キノコ王|
-|1|6|BOSS|Fighter|原初の巨獣グラントゥスク|
-|2|1|Normal|Fighter|石槌のクマ戦士|
-|2|1|Normal|Ranger|投石の崖猿|
-|2|1|Normal|Wizard|霧刻みの石霊|
-|2|1|Normal|Pilgrim|石紋の巡礼獣|
-|2|1|Normal|Rogue|崖影の狩猟犬|
-|2|2|Normal|Ninja|岩跳びの山猫|
-|2|2|Normal|Samurai|削岩刃の灰狼|
-|2|2|Normal|Sage|風読の岩角鹿|
-|2|2|Normal|Duelist|断崖の二枚牙グマ|
-|2|2|Normal|Lord|石座の群長グマ|
-|2|3|Normal|Fighter|巨石担ぎの岩グマ|
-|2|3|Normal|Ranger|骨矢の崖射手|
-|2|3|Normal|Wizard|霧岩の刻紋術師|
-|2|3|Normal|Lord|縄張りの石王|
-|2|3|Normal|Samurai|磨刃の断崖剣士|
-|2|4|Normal|Ninja|裂風の岩忍|
-|2|4|Normal|Rogue|石刃の奪掠者|
-|2|4|Normal|Sage|風紋刻む石賢者|
-|2|4|Normal|Duelist|砕牙の岩熊闘士|
-|2|4|Normal|Pilgrim|石祈の巡り獣|
-|2|5|Normal|Fighter|岩鎧の巨熊|
-|2|5|Normal|Ranger|断崖の投石名手|
-|2|5|Normal|Wizard|岩霧の祭司|
-|2|5|Normal|Lord|群れ統べる石王熊|
-|2|5|Normal|Samurai|研ぎ刃の灰狼|
-|2|6|Normal|Ninja|崖駆けの風影|
-|2|6|Normal|Rogue|石牙の夜襲犬|
-|2|6|Normal|Sage|断崖の古岩賢老|
-|2|6|Normal|Duelist|裂岩の双牙熊|
-|2|6|Normal|Pilgrim|風紋の祈り手|
-|2|1|Elite|Rogue|石門破りの山犬|
-|2|2|Elite|Fighter|断崖の岩鎧熊将|
-|2|3|Elite|Ranger|風裂きの崖狙撃手|
-|2|4|Elite|Duelist|双石刃の断崖闘将|
-|2|5|Elite|Mage|霧刻の岩祭司長|
-|2|6|BOSS|Ranger|風哭きの断崖王グリムクラッグ|
-|3|1|Normal|Fighter|青銅槍の狐兵|
-|3|1|Normal|Ranger|霧射ちの狐弓兵|
-|3|1|Normal|Wizard|幻霧の狐術師|
-|3|1|Normal|Pilgrim|樹霧の巡礼狐|
-|3|1|Normal|Rogue|葉影の狐盗賊|
-|3|2|Normal|Ninja|樹間を駆ける狐影|
-|3|2|Normal|Samurai|青銅刃の狐剣士|
-|3|2|Normal|Sage|霧文の狐賢者|
-|3|2|Normal|Duelist|二刃の狐闘士|
-|3|2|Normal|Lord|森境の狐領主|
-|3|3|Normal|Fighter|青銅盾の狐守兵|
-|3|3|Normal|Ranger|迷彩の狐狙撃手|
-|3|3|Normal|Wizard|幻惑の狐呪術師|
-|3|3|Normal|Lord|樹林の狐族長|
-|3|3|Normal|Samurai|霧断ちの狐侍|
-|3|4|Normal|Ninja|霧歩きの狐忍|
-|3|4|Normal|Rogue|樹影の狐奪掠者|
-|3|4|Normal|Sage|樹霊の狐司書|
-|3|4|Normal|Duelist|双青銅刃の狐闘将|
-|3|4|Normal|Pilgrim|霧祈の狐巡礼|
-|3|5|Normal|Fighter|青銅鎧の狐重兵|
-|3|5|Normal|Ranger|連射の狐射手|
-|3|5|Normal|Wizard|森幻の狐大術師|
-|3|5|Normal|Lord|霧林を統べる狐公|
-|3|5|Normal|Samurai|青銅居合の狐剣豪|
-|3|6|Normal|Ninja|幻歩の狐影将|
-|3|6|Normal|Rogue|霧裂きの狐暗殺者|
-|3|6|Normal|Sage|森奥の狐賢老|
-|3|6|Normal|Duelist|連刃の狐剣鬼|
-|3|6|Normal|Pilgrim|樹霧の狐祈り手|
-|3|1|Elite|Rogue|霧門破りの狐盗賊長|
-|3|2|Elite|Fighter|青銅壁の狐守将|
-|3|3|Elite|Ranger|幻林の狐狙撃長|
-|3|4|Elite|Duelist|双刃将の狐剣闘長|
-|3|5|Elite|Mage|幻霧結界の狐大術師|
-|3|6|BOSS|Wizard|幻樹の大賢狐ミストレイル|
-|4|1|Normal|Fighter|鉄鎚の熊戦士|
-|4|1|Normal|Ranger|熔岩射ちの熊射手|
-|4|1|Normal|Wizard|溶岩炉の熊術師|
-|4|1|Normal|Pilgrim|炉祈の熊巡礼|
-|4|1|Normal|Rogue|火影の熊奪掠者|
-|4|2|Normal|Ninja|熔岩跳びの熊影|
-|4|2|Normal|Samurai|鉄刀の熊剣士|
-|4|2|Normal|Sage|鍛炉の熊賢者|
-|4|2|Normal|Duelist|鉄爪の熊闘士|
-|4|2|Normal|Lord|炉座の熊領主|
-|4|3|Normal|Fighter|溶岩盾の熊守兵|
-|4|3|Normal|Ranger|火花散らす熊狙撃手|
-|4|3|Normal|Wizard|熔鉄の熊呪術師|
-|4|3|Normal|Lord|霊峰を統べる熊公|
-|4|3|Normal|Samurai|灼鉄居合の熊侍|
-|4|4|Normal|Ninja|火走りの熊忍|
-|4|4|Normal|Rogue|炉影の熊盗賊|
-|4|4|Normal|Sage|霊峰の熊司書|
-|4|4|Normal|Duelist|双鉄刃の熊闘将|
-|4|4|Normal|Pilgrim|溶岩祈の熊巡礼|
-|4|5|Normal|Fighter|鉄殻の熊重兵|
-|4|5|Normal|Ranger|熔弓の熊射手長|
-|4|5|Normal|Wizard|霊炉の熊大術師|
-|4|5|Normal|Lord|溶岩鍛冶王熊|
-|4|5|Normal|Samurai|霊峰流・鉄刀熊剣豪|
-|4|6|Normal|Ninja|熔走の熊影将|
-|4|6|Normal|Rogue|溶鉄裂きの熊暗殺者|
-|4|6|Normal|Sage|古炉の熊賢老|
-|4|6|Normal|Duelist|連鉄刃の熊剣鬼|
-|4|6|Normal|Pilgrim|炉魂の熊祈り手|
-|4|1|Elite|Rogue|炉門破りの熊奪掠将|
-|4|2|Elite|Fighter|鉄壁の熊守将|
-|4|3|Elite|Ranger|火山の熊狙撃長|
-|4|4|Elite|Duelist|双鉄刃の熊闘将長|
-|4|5|Elite|Mage|霊炉結界の熊大術師長|
-|4|6|BOSS|Samurai|霊峰の鉄王クガネオウ|
-|5|1|Normal|Fighter|月光鎧の猫兵|
-|5|1|Normal|Ranger|光苔射ちの猫射手|
-|5|1|Normal|Wizard|燐光の猫術師|
-|5|1|Normal|Pilgrim|聖茂の猫巡礼|
-|5|1|Normal|Rogue|葉影の猫盗賊|
-|5|2|Normal|Ninja|月影跳びの猫影|
-|5|2|Normal|Samurai|月刃の猫剣士|
-|5|2|Normal|Sage|光苔文の猫賢者|
-|5|2|Normal|Duelist|双月刃の猫闘士|
-|5|2|Normal|Lord|聖域の猫領主|
-|5|3|Normal|Fighter|月光盾の猫守兵|
-|5|3|Normal|Ranger|燐弾連射の猫狙撃手|
-|5|3|Normal|Wizard|月幻の猫呪術師|
-|5|3|Normal|Lord|古遺跡の猫族長|
-|5|3|Normal|Samurai|月断ちの猫侍|
-|5|4|Normal|Ninja|燐歩きの猫忍|
-|5|4|Normal|Rogue|茂影の猫奪掠者|
-|5|4|Normal|Sage|遺跡司書の猫賢者|
-|5|4|Normal|Duelist|連月刃の猫闘将|
-|5|4|Normal|Pilgrim|月祈の猫巡礼|
-|5|5|Normal|Fighter|聖域重装の猫衛士|
-|5|5|Normal|Ranger|閃撃の猫射手長|
-|5|5|Normal|Wizard|月輝の猫大術師|
-|5|5|Normal|Lord|月庭を統べる猫公|
-|5|5|Normal|Samurai|月影居合の猫剣豪|
-|5|6|Normal|Ninja|閃走の猫影将|
-|5|6|Normal|Rogue|燐裂きの猫暗殺者|
-|5|6|Normal|Sage|聖茂の猫賢老|
-|5|6|Normal|Duelist|双月連刃の猫剣鬼|
-|5|6|Normal|Pilgrim|聖域の猫祈り手|
-|5|1|Elite|Rogue|月門破りの猫奪掠将|
-|5|2|Elite|Fighter|聖茂の月光守将|
-|5|3|Elite|Ranger|燐弾嵐の猫狙撃長|
-|5|4|Elite|Duelist|双月刃の猫剣闘長|
-|5|5|Elite|Mage|月輝結界の猫大術師長|
-|5|6|BOSS|Ranger|月影の聖域王ルミナリス|
-|6|1|Normal|Fighter|銅歯車の鼬兵|
-|6|1|Normal|Ranger|蒸気狙いの鼬射手|
-|6|1|Normal|Wizard|毒蒸気の鼬術師|
-|6|1|Normal|Pilgrim|換気祈の鼬巡礼|
-|6|1|Normal|Rogue|歯車影の鼬奪掠者|
-|6|2|Normal|Ninja|配管跳びの鼬影|
-|6|2|Normal|Samurai|銅刃の鼬剣士|
-|6|2|Normal|Sage|配線読の鼬賢者|
-|6|2|Normal|Duelist|双銅刃の鼬闘士|
-|6|2|Normal|Lord|迷宮工匠の鼬領主|
-|6|3|Normal|Fighter|装甲配管の鼬守兵|
-|6|3|Normal|Ranger|歯車連射の鼬狙撃手|
-|6|3|Normal|Wizard|腐食霧の鼬呪術師|
-|6|3|Normal|Lord|銅迷宮の鼬族長|
-|6|3|Normal|Samurai|配管斬りの鼬侍|
-|6|4|Normal|Ninja|蒸気走りの鼬忍|
-|6|4|Normal|Rogue|毒歯の鼬盗賊|
-|6|4|Normal|Sage|炉心配線の鼬司書|
-|6|4|Normal|Duelist|連銅刃の鼬闘将|
-|6|4|Normal|Pilgrim|浄化煙の鼬巡礼|
-|6|5|Normal|Fighter|重装配管の鼬重兵|
-|6|5|Normal|Ranger|精密照準の鼬射手長|
-|6|5|Normal|Wizard|触媒核の鼬大術師|
-|6|5|Normal|Lord|銅迷宮を統べる鼬公|
-|6|5|Normal|Samurai|合金居合の鼬剣豪|
-|6|6|Normal|Ninja|高速配管の鼬影将|
-|6|6|Normal|Rogue|腐蝕刃の鼬暗殺者|
-|6|6|Normal|Sage|深層迷宮の鼬賢老|
-|6|6|Normal|Duelist|双合金刃の鼬剣鬼|
-|6|6|Normal|Pilgrim|毒気浄化の鼬祈り手|
-|6|1|Elite|Rogue|通風路破りの鼬奪掠将|
-|6|2|Elite|Fighter|銅壁の鼬守将|
-|6|3|Elite|Ranger|蒸気狙撃の鼬狙撃長|
-|6|4|Elite|Duelist|双合金刃の鼬闘将長|
-|6|5|Elite|Mage|触媒結界の鼬大術師長|
-|6|6|BOSS|Sage|銅迷宮の主機核アルケミトロン|
-|7|1|Normal|Fighter|風護りの兎兵|
-|7|1|Normal|Ranger|雲狙いの兎射手|
-|7|1|Normal|Wizard|浮雲の兎術師|
-|7|1|Normal|Pilgrim|天空祈の兎巡礼|
-|7|1|Normal|Rogue|風影の兎奪掠者|
-|7|2|Normal|Ninja|気流跳びの兎影|
-|7|2|Normal|Samurai|天刃の兎剣士|
-|7|2|Normal|Sage|風路読みの兎賢者|
-|7|2|Normal|Duelist|双天刃の兎闘士|
-|7|2|Normal|Lord|浮島の兎領主|
-|7|3|Normal|Fighter|雲盾の兎守兵|
-|7|3|Normal|Ranger|旋風連射の兎狙撃手|
-|7|3|Normal|Wizard|高天の兎呪術師|
-|7|3|Normal|Lord|天庭を統べる兎公|
-|7|3|Normal|Samurai|風断ちの兎侍|
-|7|4|Normal|Ninja|空走りの兎忍|
-|7|4|Normal|Rogue|雲影の兎盗賊|
-|7|4|Normal|Sage|天文の兎司書|
-|7|4|Normal|Duelist|連天刃の兎闘将|
-|7|4|Normal|Pilgrim|天空巡礼の兎祈り手|
-|7|5|Normal|Fighter|重雲鎧の兎重兵|
-|7|5|Normal|Ranger|風刃嵐の兎射手長|
-|7|5|Normal|Wizard|天輝の兎大術師|
-|7|5|Normal|Lord|高天を治める兎王侯|
-|7|5|Normal|Samurai|天翔居合の兎剣豪|
-|7|6|Normal|Ninja|風裂走の兎影将|
-|7|6|Normal|Rogue|雲裂きの兎暗殺者|
-|7|6|Normal|Sage|浮島の兎賢老|
-|7|6|Normal|Duelist|双天連刃の兎剣鬼|
-|7|6|Normal|Pilgrim|風祈の兎祈り手|
-|7|1|Elite|Rogue|天門破りの兎奪掠将|
-|7|2|Elite|Fighter|風壁の兎守将|
-|7|3|Elite|Ranger|旋風狙撃の兎狙撃長|
-|7|4|Elite|Duelist|双天刃の兎闘将長|
-|7|5|Elite|Mage|天輝結界の兎大術師長|
-|7|6|BOSS|Lord|高天統治者エアリオン|
-|8|1|Normal|Fighter|結晶装甲の鹿兵|
-|8|1|Normal|Ranger|時層を射抜く鹿射手|
-|8|1|Normal|Wizard|時晶の鹿術師|
-|8|1|Normal|Pilgrim|無音巡礼の鹿祈り手|
-|8|1|Normal|Rogue|鏡影の鹿暗盗|
-|8|2|Normal|Ninja|瞬歩の鹿影|
-|8|2|Normal|Samurai|時断ちの鹿剣士|
-|8|2|Normal|Sage|結界刻む鹿賢者|
-|8|2|Normal|Duelist|双晶刃の鹿闘士|
-|8|2|Normal|Lord|静寂の鹿領主|
-|8|3|Normal|Fighter|時壁の鹿守兵|
-|8|3|Normal|Ranger|層界狙撃の鹿狙撃手|
-|8|3|Normal|Wizard|無音結界の鹿呪術師|
-|8|3|Normal|Lord|玻璃界を統べる鹿公|
-|8|3|Normal|Samurai|結晶居合の鹿侍|
-|8|4|Normal|Ninja|鏡界走りの鹿忍|
-|8|4|Normal|Rogue|時裂きの鹿奪掠者|
-|8|4|Normal|Sage|時層司書の鹿賢者|
-|8|4|Normal|Duelist|連晶刃の鹿闘将|
-|8|4|Normal|Pilgrim|無音祈の鹿巡礼|
-|8|5|Normal|Fighter|結晶重装の鹿衛士|
-|8|5|Normal|Ranger|次元貫きの鹿射手長|
-|8|5|Normal|Wizard|玻璃界の鹿大術師|
-|8|5|Normal|Lord|時界を治める鹿王侯|
-|8|5|Normal|Samurai|時空居合の鹿剣豪|
-|8|6|Normal|Ninja|瞬断の鹿影将|
-|8|6|Normal|Rogue|鏡裂きの鹿暗殺者|
-|8|6|Normal|Sage|無限層の鹿賢老|
-|8|6|Normal|Duelist|双晶連刃の鹿剣鬼|
-|8|6|Normal|Pilgrim|静謐の鹿祈り手|
-|8|1|Elite|Rogue|玻璃門破りの鹿奪掠将|
-|8|2|Elite|Fighter|時壁の鹿守将|
-|8|3|Elite|Ranger|次元狙撃の鹿狙撃長|
-|8|4|Elite|Duelist|双晶刃の鹿闘将長|
-|8|5|Elite|Mage|玻璃結界の鹿大術師長|
-|8|6|BOSS|Samurai|終焉剣聖・時玻璃ノ剣鹿|
+## 1.1 Standard floor and enemy distribution for Expedition
 
+| `x.exp_id` | `x.floor` | `x.room` | `x.level` | `x.type` | `x.enemy_type` | `x.class` | `x.drop` | `x.name` |
+|---|---:|---|---:|---|---|---|---|---|
+| 1 | 1 | 1-2 | 1 | Normal | `Beast` | Rogue | `i.bolt`U, `i.armor`U | |
+| 1 | 1 | 1-2 | 1 | Normal | `Beast` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 1 | 1 | 1-2 | 1 | Normal | `Beast` | Ranger | `i.arrow`U, `i.archery`U | |
+| 1 | 1 | 3 | 2 | Normal | `Beast` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 1 | 1 | 3 | 2 | Normal | `Beast` | Lord | `i.shield`U, `i.robe`U | |
+| 1 | 1 | 4 | 4 | Elite | `Beast` | Duelist | `i.gauntlet`EA, `i.katana`EA | |
+| 1 | 2 | 1-2 | 2 | Normal | `Beast` | Ninja | `i.katana`U, `i.armor`U | |
+| 1 | 2 | 1-2 | 2 | Normal | `Beast` | Samurai | `i.katana`U, `i.catalyst`U | |
+| 1 | 2 | 1-2 | 2 | Normal | `Beast` | Sage | `i.grimoire`U, `i.robe`U | |
+| 1 | 2 | 3 | 3 | Normal | `Aerial` | Duelist | `i.sword`U, `i.arrow`U | |
+| 1 | 2 | 3 | 3 | Normal | `Aerial` | Pilgrim | `i.armor`U, `i.wand`U | |
+| 1 | 2 | 4 | 5 | Elite | `Beast` | Fighter | `i.shield`EA, `i.robe`EA | |
+| 1 | 3 | 1-2 | 3 | Normal | `Insect_Swarm` | Lord | `i.shield`U, `i.robe`U | |
+| 1 | 3 | 1-2 | 3 | Normal | `Insect_Swarm` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 1 | 3 | 1-2 | 3 | Normal | `Insect_Swarm` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 1 | 3 | 3 | 4 | Normal | `Beast` | Samurai | `i.katana`U, `i.bolt`U | |
+| 1 | 3 | 3 | 4 | Normal | `Beast` | Ranger | `i.arrow`U, `i.archery`U | |
+| 1 | 3 | 4 | 6 | Elite | `Insect_Swarm` | Rogue | `i.sword`EC, `i.armor`EC | |
+| 1 | 4 | 1-2 | 4 | Normal | `Aerial` | Rogue | `i.bolt`U, `i.armor`U | |
+| 1 | 4 | 1-2 | 4 | Normal | `Aerial` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 1 | 4 | 1-2 | 4 | Normal | `Aerial` | Ranger | `i.arrow`U, `i.archery`U | |
+| 1 | 4 | 3 | 5 | Normal | `Insect_Swarm` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 1 | 4 | 3 | 5 | Normal | `Insect_Swarm` | Lord | `i.shield`U, `i.robe`U | |
+| 1 | 4 | 4 | 7 | Elite | `Aerial` | Ranger | `i.arrow`EB, `i.bolt`EB, `i.archery`EB | |
+| 1 | 5 | 1-2 | 5 | Normal | `Insect_Swarm` | Ninja | `i.katana`U, `i.armor`U | |
+| 1 | 5 | 1-2 | 5 | Normal | `Insect_Swarm` | Samurai | `i.katana`U, `i.catalyst`U | |
+| 1 | 5 | 1-2 | 5 | Normal | `Insect_Swarm` | Sage | `i.grimoire`U, `i.robe`U | |
+| 1 | 5 | 3 | 6 | Normal | `Aerial` | Duelist | `i.sword`U, `i.arrow`U | |
+| 1 | 5 | 3 | 6 | Normal | `Aerial` | Pilgrim | `i.armor`U, `i.grimoire`U | |
+| 1 | 5 | 4 | 8 | Elite | `Aerial` | Sage | `i.wand`EB, `i.grimoire`EB, `i.catalyst`EB | |
+| 1 | 6 | 1-2 | 6 | Normal | `Beast` | Lord | `i.shield`U, `i.robe`U | |
+| 1 | 6 | 1-2 | 6 | Normal | `Beast` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 1 | 6 | 1-2 | 6 | Normal | `Beast` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 1 | 6 | 3 | 7 | Normal | `Aerial` | Samurai | `i.katana`U, `i.bolt`U | |
+| 1 | 6 | 3 | 7 | Normal | `Aerial` | Ranger | `i.arrow`U, `i.archery`U | |
+| 1 | 6 | 4 | 11 | BOSS | `Caninian` | Fighter | `i.sword`BD, `i.grimoire`BD | |
+| 2 | 1 | 1-2 | 7 | Normal | `Frost` | Rogue | `i.bolt`U, `i.armor`U | |
+| 2 | 1 | 1-2 | 7 | Normal | `Frost` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 2 | 1 | 1-2 | 7 | Normal | `Frost` | Ranger | `i.arrow`U, `i.archery`U | |
+| 2 | 1 | 3 | 8 | Normal | `Frost` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 2 | 1 | 3 | 8 | Normal | `Frost` | Lord | `i.shield`U, `i.robe`U | |
+| 2 | 1 | 4 | 10 | Elite | `Frost` | Rogue | `i.sword`EA, `i.armor`EA | |
+| 2 | 2 | 1-2 | 8 | Normal | `Frost` | Ninja | `i.katana`U, `i.armor`U | |
+| 2 | 2 | 1-2 | 8 | Normal | `Frost` | Samurai | `i.katana`U, `i.catalyst`U | |
+| 2 | 2 | 1-2 | 8 | Normal | `Frost` | Sage | `i.grimoire`U, `i.robe`U | |
+| 2 | 2 | 3 | 9 | Normal | `Golem` | Duelist | `i.sword`U, `i.arrow`U | |
+| 2 | 2 | 3 | 9 | Normal | `Golem` | Pilgrim | `i.armor`U, `i.wand`U | |
+| 2 | 2 | 4 | 11 | Elite | `Frost` | Fighter | `i.shield`EA, `i.robe`EA | |
+| 2 | 3 | 1-2 | 9 | Normal | `Plant_Fungal` | Lord | `i.shield`U, `i.robe`U | |
+| 2 | 3 | 1-2 | 9 | Normal | `Plant_Fungal` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 2 | 3 | 1-2 | 9 | Normal | `Plant_Fungal` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 2 | 3 | 3 | 10 | Normal | `Frost` | Samurai | `i.katana`U, `i.bolt`U | |
+| 2 | 3 | 3 | 10 | Normal | `Frost` | Ranger | `i.arrow`U, `i.archery`U | |
+| 2 | 3 | 4 | 12 | Elite | `Plant_Fungal` | Ranger | `i.arrow`EC, `i.bolt`EC, `i.archery`EC | |
+| 2 | 4 | 1-2 | 10 | Normal | `Golem` | Rogue | `i.bolt`U, `i.armor`U | |
+| 2 | 4 | 1-2 | 10 | Normal | `Golem` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 2 | 4 | 1-2 | 10 | Normal | `Golem` | Ranger | `i.arrow`U, `i.archery`U | |
+| 2 | 4 | 3 | 11 | Normal | `Plant_Fungal` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 2 | 4 | 3 | 11 | Normal | `Plant_Fungal` | Lord | `i.shield`U, `i.robe`U | |
+| 2 | 4 | 4 | 13 | Elite | `Golem` | Duelist | `i.gauntlet`EB, `i.katana`EB | |
+| 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | Ninja | `i.katana`U, `i.armor`U | |
+| 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | Samurai | `i.katana`U, `i.catalyst`U | |
+| 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | Sage | `i.grimoire`U, `i.robe`U | |
+| 2 | 5 | 3 | 12 | Normal | `Golem` | Duelist | `i.sword`U, `i.arrow`U | |
+| 2 | 5 | 3 | 12 | Normal | `Golem` | Pilgrim | `i.armor`U, `i.grimoire`U | |
+| 2 | 5 | 4 | 14 | Elite | `Golem` | Sage | `i.wand`EB, `i.grimoire`EB, `i.catalyst`EB | |
+| 2 | 6 | 1-2 | 12 | Normal | `Frost` | Lord | `i.shield`U, `i.robe`U | |
+| 2 | 6 | 1-2 | 12 | Normal | `Frost` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 2 | 6 | 1-2 | 12 | Normal | `Frost` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 2 | 6 | 3 | 13 | Normal | `Golem` | Samurai | `i.katana`U, `i.bolt`U | |
+| 2 | 6 | 3 | 13 | Normal | `Golem` | Ranger | `i.arrow`U, `i.archery`U | |
+| 2 | 6 | 4 | 17 | BOSS | `Lupinian` | Rogue | `i.armor`BD, `i.arrow`BD | |
+| 3 | 1 | 1-2 | 14 | Normal | `Marine` | Rogue | `i.bolt`U, `i.armor`U | |
+| 3 | 1 | 1-2 | 14 | Normal | `Marine` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 3 | 1 | 1-2 | 14 | Normal | `Marine` | Ranger | `i.arrow`U, `i.archery`U | |
+| 3 | 1 | 3 | 15 | Normal | `Marine` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 3 | 1 | 3 | 15 | Normal | `Marine` | Lord | `i.shield`U, `i.robe`U | |
+| 3 | 1 | 4 | 17 | Elite | `Marine` | Pilgrim | `i.catalyst`EA, `i.robe`EA | |
+| 3 | 2 | 1-2 | 15 | Normal | `Marine` | Ninja | `i.katana`U, `i.armor`U | |
+| 3 | 2 | 1-2 | 15 | Normal | `Marine` | Samurai | `i.katana`U, `i.catalyst`U | |
+| 3 | 2 | 1-2 | 15 | Normal | `Marine` | Sage | `i.grimoire`U, `i.robe`U | |
+| 3 | 2 | 3 | 16 | Normal | `Slime_Colony` | Duelist | `i.sword`U, `i.arrow`U | |
+| 3 | 2 | 3 | 16 | Normal | `Slime_Colony` | Pilgrim | `i.armor`U, `i.wand`U | |
+| 3 | 2 | 4 | 18 | Elite | `Marine` | Lord | `i.shield`EA, `i.sword`EA, `i.armor`EA | |
+| 3 | 3 | 1-2 | 16 | Normal | `Spirit` | Lord | `i.shield`U, `i.robe`U | |
+| 3 | 3 | 1-2 | 16 | Normal | `Spirit` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 3 | 3 | 1-2 | 16 | Normal | `Spirit` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 3 | 3 | 3 | 17 | Normal | `Marine` | Samurai | `i.katana`U, `i.bolt`U | |
+| 3 | 3 | 3 | 17 | Normal | `Marine` | Ranger | `i.arrow`U, `i.archery`U | |
+| 3 | 3 | 4 | 19 | Elite | `Spirit` | Wizard | `i.wand`EC, `i.grimoire`EC | |
+| 3 | 4 | 1-2 | 17 | Normal | `Slime_Colony` | Rogue | `i.bolt`U, `i.armor`U | |
+| 3 | 4 | 1-2 | 17 | Normal | `Slime_Colony` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 3 | 4 | 1-2 | 17 | Normal | `Slime_Colony` | Ranger | `i.arrow`U, `i.archery`U | |
+| 3 | 4 | 3 | 18 | Normal | `Spirit` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 3 | 4 | 3 | 18 | Normal | `Spirit` | Lord | `i.shield`U, `i.robe`U | |
+| 3 | 4 | 4 | 20 | Elite | `Slime_Colony` | Ninja | `i.gauntlet`EB, `i.katana`EB | |
+| 3 | 5 | 1-2 | 18 | Normal | `Spirit` | Ninja | `i.katana`U, `i.armor`U | |
+| 3 | 5 | 1-2 | 18 | Normal | `Spirit` | Samurai | `i.katana`U, `i.catalyst`U | |
+| 3 | 5 | 1-2 | 18 | Normal | `Spirit` | Sage | `i.grimoire`U, `i.robe`U | |
+| 3 | 5 | 3 | 19 | Normal | `Slime_Colony` | Duelist | `i.sword`U, `i.arrow`U | |
+| 3 | 5 | 3 | 19 | Normal | `Slime_Colony` | Pilgrim | `i.armor`U, `i.grimoire`U | |
+| 3 | 5 | 4 | 21 | Elite | `Slime_Colony` | Rogue | `i.arrow`EB, `i.bolt`EB, `i.archery`EB | |
+| 3 | 6 | 1-2 | 19 | Normal | `Marine` | Lord | `i.shield`U, `i.robe`U | |
+| 3 | 6 | 1-2 | 19 | Normal | `Marine` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 3 | 6 | 1-2 | 19 | Normal | `Marine` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 3 | 6 | 3 | 20 | Normal | `Slime_Colony` | Samurai | `i.katana`U, `i.bolt`U | |
+| 3 | 6 | 3 | 20 | Normal | `Slime_Colony` | Ranger | `i.arrow`U, `i.archery`U | |
+| 3 | 6 | 4 | 24 | BOSS | `Vulpinian` | Wizard | `i.wand`BD, `i.robe`BD | |
+| 4 | 1 | 1-2 | 21 | Normal | `Shadowfang` | Rogue | `i.bolt`U, `i.armor`U | |
+| 4 | 1 | 1-2 | 21 | Normal | `Shadowfang` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 4 | 1 | 1-2 | 21 | Normal | `Shadowfang` | Ranger | `i.arrow`U, `i.archery`U | |
+| 4 | 1 | 3 | 22 | Normal | `Shadowfang` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 4 | 1 | 3 | 22 | Normal | `Shadowfang` | Lord | `i.shield`U, `i.robe`U | |
+| 4 | 1 | 4 | 24 | Elite | `Shadowfang` | Rogue | `i.arrow`EA, `i.archery`EA | |
+| 4 | 2 | 1-2 | 22 | Normal | `Shadowfang` | Ninja | `i.katana`U, `i.armor`U | |
+| 4 | 2 | 1-2 | 22 | Normal | `Shadowfang` | Samurai | `i.katana`U, `i.catalyst`U | |
+| 4 | 2 | 1-2 | 22 | Normal | `Shadowfang` | Sage | `i.grimoire`U, `i.robe`U | |
+| 4 | 2 | 3 | 23 | Normal | `Felidian` | Duelist | `i.sword`U, `i.arrow`U | |
+| 4 | 2 | 3 | 23 | Normal | `Felidian` | Pilgrim | `i.armor`U, `i.wand`U | |
+| 4 | 2 | 4 | 25 | Elite | `Shadowfang` | Samurai | `i.katana`EA, `i.shield`EA, `i.gauntlet`EA | |
+| 4 | 3 | 1-2 | 23 | Normal | `Titan` | Lord | `i.shield`U, `i.robe`U | |
+| 4 | 3 | 1-2 | 23 | Normal | `Titan` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 4 | 3 | 1-2 | 23 | Normal | `Titan` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 4 | 3 | 3 | 24 | Normal | `Shadowfang` | Samurai | `i.katana`U, `i.bolt`U | |
+| 4 | 3 | 3 | 24 | Normal | `Shadowfang` | Ranger | `i.arrow`U, `i.archery`U | |
+| 4 | 3 | 4 | 26 | Elite | `Titan` | Fighter | `i.armor`EC, `i.bolt`EC | |
+| 4 | 4 | 1-2 | 24 | Normal | `Felidian` | Rogue | `i.bolt`U, `i.armor`U | |
+| 4 | 4 | 1-2 | 24 | Normal | `Felidian` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 4 | 4 | 1-2 | 24 | Normal | `Felidian` | Ranger | `i.arrow`U, `i.archery`U | |
+| 4 | 4 | 3 | 25 | Normal | `Titan` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 4 | 4 | 3 | 25 | Normal | `Titan` | Lord | `i.shield`U, `i.robe`U | |
+| 4 | 4 | 4 | 27 | Elite | `Felidian` | Duelist | `i.robe`EB, `i.sword`EB | |
+| 4 | 5 | 1-2 | 25 | Normal | `Titan` | Ninja | `i.katana`U, `i.armor`U | |
+| 4 | 5 | 1-2 | 25 | Normal | `Titan` | Samurai | `i.katana`U, `i.catalyst`U | |
+| 4 | 5 | 1-2 | 25 | Normal | `Titan` | Sage | `i.grimoire`U, `i.robe`U | |
+| 4 | 5 | 3 | 26 | Normal | `Felidian` | Duelist | `i.sword`U, `i.arrow`U | |
+| 4 | 5 | 3 | 26 | Normal | `Felidian` | Pilgrim | `i.armor`U, `i.grimoire`U | |
+| 4 | 5 | 4 | 28 | Elite | `Felidian` | Sage | `i.wand`EB, `i.grimoire`EB, `i.catalyst`EB | |
+| 4 | 6 | 1-2 | 26 | Normal | `Shadowfang` | Lord | `i.shield`U, `i.robe`U | |
+| 4 | 6 | 1-2 | 26 | Normal | `Shadowfang` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 4 | 6 | 1-2 | 26 | Normal | `Shadowfang` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 4 | 6 | 3 | 27 | Normal | `Felidian` | Samurai | `i.katana`U, `i.bolt`U | |
+| 4 | 6 | 3 | 27 | Normal | `Felidian` | Ranger | `i.arrow`U, `i.archery`U | |
+| 4 | 6 | 4 | 31 | BOSS | `Felidian` | Ranger | `i.bolt`BD, `i.archery`BD | |
+| 5 | 1 | 1-2 | 28 | Normal | `Beast` | Rogue | `i.bolt`U, `i.armor`U | |
+| 5 | 1 | 1-2 | 28 | Normal | `Beast` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 5 | 1 | 1-2 | 28 | Normal | `Beast` | Ranger | `i.arrow`U, `i.archery`U | |
+| 5 | 1 | 3 | 29 | Normal | `Beast` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 5 | 1 | 3 | 29 | Normal | `Beast` | Lord | `i.shield`U, `i.robe`U | |
+| 5 | 1 | 4 | 31 | Elite | `Beast` | Ranger | `i.arrow`EA, `i.bolt`EA, `i.archery`EA | |
+| 5 | 2 | 1-2 | 29 | Normal | `Beast` | Ninja | `i.katana`U, `i.armor`U | |
+| 5 | 2 | 1-2 | 29 | Normal | `Beast` | Samurai | `i.katana`U, `i.catalyst`U | |
+| 5 | 2 | 1-2 | 29 | Normal | `Beast` | Sage | `i.grimoire`U, `i.robe`U | |
+| 5 | 2 | 3 | 30 | Normal | `Dragon` | Duelist | `i.sword`U, `i.arrow`U | |
+| 5 | 2 | 3 | 30 | Normal | `Dragon` | Pilgrim | `i.armor`U, `i.wand`U | |
+| 5 | 2 | 4 | 32 | Elite | `Beast` | Pilgrim | `i.gauntlet`EA, `i.catalyst`EA | |
+| 5 | 3 | 1-2 | 30 | Normal | `Ursan` | Lord | `i.shield`U, `i.robe`U | |
+| 5 | 3 | 1-2 | 30 | Normal | `Ursan` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 5 | 3 | 1-2 | 30 | Normal | `Ursan` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 5 | 3 | 3 | 31 | Normal | `Beast` | Samurai | `i.katana`U, `i.bolt`U | |
+| 5 | 3 | 3 | 31 | Normal | `Beast` | Ranger | `i.arrow`U, `i.archery`U | |
+| 5 | 3 | 4 | 33 | Elite | `Ursan` | Fighter | `i.sword`EC, `i.armor`EC | |
+| 5 | 4 | 1-2 | 31 | Normal | `Dragon` | Rogue | `i.bolt`U, `i.armor`U | |
+| 5 | 4 | 1-2 | 31 | Normal | `Dragon` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 5 | 4 | 1-2 | 31 | Normal | `Dragon` | Ranger | `i.arrow`U, `i.archery`U | |
+| 5 | 4 | 3 | 32 | Normal | `Ursan` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 5 | 4 | 3 | 32 | Normal | `Ursan` | Lord | `i.shield`U, `i.robe`U | |
+| 5 | 4 | 4 | 34 | Elite | `Dragon` | Lord | `i.shield`EB, `i.katana`EB, `i.robe`EB | |
+| 5 | 5 | 1-2 | 32 | Normal | `Ursan` | Ninja | `i.katana`U, `i.armor`U | |
+| 5 | 5 | 1-2 | 32 | Normal | `Ursan` | Samurai | `i.katana`U, `i.catalyst`U | |
+| 5 | 5 | 1-2 | 32 | Normal | `Ursan` | Sage | `i.grimoire`U, `i.robe`U | |
+| 5 | 5 | 3 | 33 | Normal | `Dragon` | Duelist | `i.sword`U, `i.arrow`U | |
+| 5 | 5 | 3 | 33 | Normal | `Dragon` | Pilgrim | `i.armor`U, `i.grimoire`U | |
+| 5 | 5 | 4 | 35 | Elite | `Dragon` | Wizard | `i.wand`EB, `i.grimoire`EB | |
+| 5 | 6 | 1-2 | 33 | Normal | `Beast` | Lord | `i.shield`U, `i.robe`U | |
+| 5 | 6 | 1-2 | 33 | Normal | `Beast` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 5 | 6 | 1-2 | 33 | Normal | `Beast` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 5 | 6 | 3 | 34 | Normal | `Dragon` | Samurai | `i.katana`U, `i.bolt`U | |
+| 5 | 6 | 3 | 34 | Normal | `Dragon` | Ranger | `i.arrow`U, `i.archery`U | |
+| 5 | 6 | 4 | 38 | BOSS | `Ursan` | Samurai | `i.katana`BD, `i.shield`BD | |
+| 6 | 1 | 1-2 | 35 | Normal | `Mech` | Rogue | `i.bolt`U, `i.armor`U | |
+| 6 | 1 | 1-2 | 35 | Normal | `Mech` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 6 | 1 | 1-2 | 35 | Normal | `Mech` | Ranger | `i.arrow`U, `i.archery`U | |
+| 6 | 1 | 3 | 36 | Normal | `Mech` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 6 | 1 | 3 | 36 | Normal | `Mech` | Lord | `i.shield`U, `i.robe`U | |
+| 6 | 1 | 4 | 38 | Elite | `Mech` | Fighter | `i.shield`EA, `i.robe`EA | |
+| 6 | 2 | 1-2 | 36 | Normal | `Mech` | Ninja | `i.katana`U, `i.armor`U | |
+| 6 | 2 | 1-2 | 36 | Normal | `Mech` | Samurai | `i.katana`U, `i.catalyst`U | |
+| 6 | 2 | 1-2 | 36 | Normal | `Mech` | Sage | `i.grimoire`U, `i.robe`U | |
+| 6 | 2 | 3 | 37 | Normal | `Golem` | Duelist | `i.sword`U, `i.arrow`U | |
+| 6 | 2 | 3 | 37 | Normal | `Golem` | Pilgrim | `i.armor`U, `i.wand`U | |
+| 6 | 2 | 4 | 39 | Elite | `Mech` | Rogue | `i.sword`EA, `i.armor`EA | |
+| 6 | 3 | 1-2 | 37 | Normal | `Chimera` | Lord | `i.shield`U, `i.robe`U | |
+| 6 | 3 | 1-2 | 37 | Normal | `Chimera` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 6 | 3 | 1-2 | 37 | Normal | `Chimera` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 6 | 3 | 3 | 38 | Normal | `Mech` | Samurai | `i.katana`U, `i.bolt`U | |
+| 6 | 3 | 3 | 38 | Normal | `Mech` | Ranger | `i.arrow`U, `i.archery`U | |
+| 6 | 3 | 4 | 40 | Elite | `Chimera` | Sage | `i.wand`EC, `i.grimoire`EC, `i.catalyst`EC | |
+| 6 | 4 | 1-2 | 38 | Normal | `Golem` | Rogue | `i.bolt`U, `i.armor`U | |
+| 6 | 4 | 1-2 | 38 | Normal | `Golem` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 6 | 4 | 1-2 | 38 | Normal | `Golem` | Ranger | `i.arrow`U, `i.archery`U | |
+| 6 | 4 | 3 | 39 | Normal | `Chimera` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 6 | 4 | 3 | 39 | Normal | `Chimera` | Lord | `i.shield`U, `i.robe`U | |
+| 6 | 4 | 4 | 41 | Elite | `Golem` | Samurai | `i.katana`EB, `i.arrow`EB | |
+| 6 | 5 | 1-2 | 39 | Normal | `Chimera` | Ninja | `i.katana`U, `i.armor`U | |
+| 6 | 5 | 1-2 | 39 | Normal | `Chimera` | Samurai | `i.katana`U, `i.catalyst`U | |
+| 6 | 5 | 1-2 | 39 | Normal | `Chimera` | Sage | `i.grimoire`U, `i.robe`U | |
+| 6 | 5 | 3 | 40 | Normal | `Golem` | Duelist | `i.sword`U, `i.arrow`U | |
+| 6 | 5 | 3 | 40 | Normal | `Golem` | Pilgrim | `i.armor`U, `i.grimoire`U | |
+| 6 | 5 | 4 | 42 | Elite | `Golem` | Ninja | `i.gauntlet`EB, `i.bolt`EB, `i.archery`EB | |
+| 6 | 6 | 1-2 | 40 | Normal | `Mech` | Lord | `i.shield`U, `i.robe`U | |
+| 6 | 6 | 1-2 | 40 | Normal | `Mech` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 6 | 6 | 1-2 | 40 | Normal | `Mech` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 6 | 6 | 3 | 41 | Normal | `Golem` | Samurai | `i.katana`U, `i.bolt`U | |
+| 6 | 6 | 3 | 41 | Normal | `Golem` | Ranger | `i.arrow`U, `i.archery`U | |
+| 6 | 6 | 4 | 45 | BOSS | `Mustelid` | Sage | `i.armor`BD, `i.catalyst`BD | |
+| 7 | 1 | 1-2 | 42 | Normal | `Titan` | Rogue | `i.bolt`U, `i.armor`U | |
+| 7 | 1 | 1-2 | 42 | Normal | `Titan` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 7 | 1 | 1-2 | 42 | Normal | `Titan` | Ranger | `i.arrow`U, `i.archery`U | |
+| 7 | 1 | 3 | 43 | Normal | `Titan` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 7 | 1 | 3 | 43 | Normal | `Titan` | Lord | `i.shield`U, `i.robe`U | |
+| 7 | 1 | 4 | 45 | Elite | `Titan` | Lord | `i.sword`EA, `i.shield`EA | |
+| 7 | 2 | 1-2 | 43 | Normal | `Titan` | Ninja | `i.katana`U, `i.armor`U | |
+| 7 | 2 | 1-2 | 43 | Normal | `Titan` | Samurai | `i.katana`U, `i.catalyst`U | |
+| 7 | 2 | 1-2 | 43 | Normal | `Titan` | Sage | `i.grimoire`U, `i.robe`U | |
+| 7 | 2 | 3 | 44 | Normal | `Undead` | Duelist | `i.sword`U, `i.arrow`U | |
+| 7 | 2 | 3 | 44 | Normal | `Undead` | Pilgrim | `i.armor`U, `i.wand`U | |
+| 7 | 2 | 4 | 46 | Elite | `Titan` | Sage | `i.wand`EA, `i.grimoire`EA, `i.robe`EA | |
+| 7 | 3 | 1-2 | 44 | Normal | `Aerial` | Lord | `i.shield`U, `i.robe`U | |
+| 7 | 3 | 1-2 | 44 | Normal | `Aerial` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 7 | 3 | 1-2 | 44 | Normal | `Aerial` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 7 | 3 | 3 | 45 | Normal | `Titan` | Samurai | `i.katana`U, `i.bolt`U | |
+| 7 | 3 | 3 | 45 | Normal | `Titan` | Ranger | `i.arrow`U, `i.archery`U | |
+| 7 | 3 | 4 | 47 | Elite | `Aerial` | Pilgrim | `i.armor`EC, `i.catalyst`EC | |
+| 7 | 4 | 1-2 | 45 | Normal | `Undead` | Rogue | `i.bolt`U, `i.armor`U | |
+| 7 | 4 | 1-2 | 45 | Normal | `Undead` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 7 | 4 | 1-2 | 45 | Normal | `Undead` | Ranger | `i.arrow`U, `i.archery`U | |
+| 7 | 4 | 3 | 46 | Normal | `Aerial` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 7 | 4 | 3 | 46 | Normal | `Aerial` | Lord | `i.shield`U, `i.robe`U | |
+| 7 | 4 | 4 | 48 | Elite | `Undead` | Ranger | `i.arrow`EB, `i.bolt`EB, `i.archery`EB | |
+| 7 | 5 | 1-2 | 46 | Normal | `Aerial` | Ninja | `i.katana`U, `i.armor`U | |
+| 7 | 5 | 1-2 | 46 | Normal | `Aerial` | Samurai | `i.katana`U, `i.catalyst`U | |
+| 7 | 5 | 1-2 | 46 | Normal | `Aerial` | Sage | `i.grimoire`U, `i.robe`U | |
+| 7 | 5 | 3 | 47 | Normal | `Undead` | Duelist | `i.sword`U, `i.arrow`U | |
+| 7 | 5 | 3 | 47 | Normal | `Undead` | Pilgrim | `i.armor`U, `i.grimoire`U | |
+| 7 | 5 | 4 | 49 | Elite | `Undead` | Duelist | `i.gauntlet`EB, `i.katana`EB | |
+| 7 | 6 | 1-2 | 47 | Normal | `Titan` | Lord | `i.shield`U, `i.robe`U | |
+| 7 | 6 | 1-2 | 47 | Normal | `Titan` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 7 | 6 | 1-2 | 47 | Normal | `Titan` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 7 | 6 | 3 | 48 | Normal | `Undead` | Samurai | `i.katana`U, `i.bolt`U | |
+| 7 | 6 | 3 | 48 | Normal | `Undead` | Ranger | `i.arrow`U, `i.archery`U | |
+| 7 | 6 | 4 | 52 | BOSS | `Leporian` | Lord | `i.sword`BD, `i.wand`BD | |
+| 8 | 1 | 1-2 | 49 | Normal | `Dragon` | Rogue | `i.bolt`U, `i.armor`U | |
+| 8 | 1 | 1-2 | 49 | Normal | `Dragon` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 8 | 1 | 1-2 | 49 | Normal | `Dragon` | Ranger | `i.arrow`U, `i.archery`U | |
+| 8 | 1 | 3 | 50 | Normal | `Dragon` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 8 | 1 | 3 | 50 | Normal | `Dragon` | Lord | `i.shield`U, `i.robe`U | |
+| 8 | 1 | 4 | 52 | Elite | `Dragon` | Fighter | `i.sword`EA, `i.armor`EA | |
+| 8 | 2 | 1-2 | 50 | Normal | `Dragon` | Ninja | `i.katana`U, `i.armor`U | |
+| 8 | 2 | 1-2 | 50 | Normal | `Dragon` | Samurai | `i.katana`U, `i.catalyst`U | |
+| 8 | 2 | 1-2 | 50 | Normal | `Dragon` | Sage | `i.grimoire`U, `i.robe`U | |
+| 8 | 2 | 3 | 51 | Normal | `Ghost` | Duelist | `i.sword`U, `i.arrow`U | |
+| 8 | 2 | 3 | 51 | Normal | `Ghost` | Pilgrim | `i.armor`U, `i.wand`U | |
+| 8 | 2 | 4 | 53 | Elite | `Dragon` | Sage | `i.wand`EA, `i.bolt`EA | |
+| 8 | 3 | 1-2 | 51 | Normal | `Jinma` | Lord | `i.shield`U, `i.robe`U | |
+| 8 | 3 | 1-2 | 51 | Normal | `Jinma` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 8 | 3 | 1-2 | 51 | Normal | `Jinma` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 8 | 3 | 3 | 52 | Normal | `Dragon` | Samurai | `i.katana`U, `i.bolt`U | |
+| 8 | 3 | 3 | 52 | Normal | `Dragon` | Ranger | `i.arrow`U, `i.archery`U | |
+| 8 | 3 | 4 | 54 | Elite | `Jinma` | Pilgrim | `i.catalyst`EC, `i.robe`EC, `i.archery`EC | |
+| 8 | 4 | 1-2 | 52 | Normal | `Ghost` | Rogue | `i.bolt`U, `i.armor`U | |
+| 8 | 4 | 1-2 | 52 | Normal | `Ghost` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 8 | 4 | 1-2 | 52 | Normal | `Ghost` | Ranger | `i.arrow`U, `i.archery`U | |
+| 8 | 4 | 3 | 53 | Normal | `Jinma` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 8 | 4 | 3 | 53 | Normal | `Jinma` | Lord | `i.shield`U, `i.robe`U | |
+| 8 | 4 | 4 | 55 | Elite | `Ghost` | Samurai | `i.gauntlet`EB, `i.katana`EB, `i.arrow`EB | |
+| 8 | 5 | 1-2 | 53 | Normal | `Jinma` | Ninja | `i.katana`U, `i.armor`U | |
+| 8 | 5 | 1-2 | 53 | Normal | `Jinma` | Samurai | `i.katana`U, `i.catalyst`U | |
+| 8 | 5 | 1-2 | 53 | Normal | `Jinma` | Sage | `i.grimoire`U, `i.robe`U | |
+| 8 | 5 | 3 | 54 | Normal | `Ghost` | Duelist | `i.sword`U, `i.arrow`U | |
+| 8 | 5 | 3 | 54 | Normal | `Ghost` | Pilgrim | `i.armor`U, `i.grimoire`U | |
+| 8 | 5 | 4 | 56 | Elite | `Ghost` | Wizard | `i.grimoire`EB, `i.shield`EB | |
+| 8 | 6 | 1-2 | 54 | Normal | `Dragon` | Lord | `i.shield`U, `i.robe`U | |
+| 8 | 6 | 1-2 | 54 | Normal | `Dragon` | Wizard | `i.wand`U, `i.catalyst`U | |
+| 8 | 6 | 1-2 | 54 | Normal | `Dragon` | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 8 | 6 | 3 | 55 | Normal | `Ghost` | Samurai | `i.katana`U, `i.bolt`U | |
+| 8 | 6 | 3 | 55 | Normal | `Ghost` | Ranger | `i.arrow`U, `i.archery`U | |
+| 8 | 6 | 4 | 59 | BOSS | `Cervin` | Ninja | `i.katana`BD, `i.bolt`BD, `i.grimoire`BD | |
 
-
-# 2. Item
-
-|Expedition|Rarity|Item type|Japanese name|
-|---------------|-----|-------|---------------------------|
-|1|common|`i.sword`|木の棒|
-|1|common|`i.sword`|尖らせた木杭|
-|1|common|`i.sword`|骨のこん棒|
-|1|common|`i.armor`|木の胸当て|
-|1|common|`i.armor`|獣皮の鎧|
-|1|common|`i.robe`|草編みの法衣|
-|1|common|`i.robe`|獣毛の外套|
-|1|common|`i.shield `|木の盾|
-|1|common|`i.shield `|樹皮の盾|
-|1|common|`i.arrow`|石の矢|
-|1|common|`i.arrow`|骨の矢|
-|1|common|`i.archery`|木の短弓|
-|1|common|`i.wand`|枝の杖|
-|1|common|`i.wand`|焦げ木の杖|
-|1|common|`i.grimoire`|樹皮の符帳|
-|1|common|`i.catalyst`|火打ち石の触媒|
-|1|uncommon|`i.sword`|黒曜石の短剣|
-|1|uncommon|`i.sword`|牙のナイフ|
-|1|uncommon|`i.armor`|硬革の鎧|
-|1|uncommon|`i.robe`|苔縫いの法衣|
-|1|uncommon|`i.shield `|骨枠の盾|
-|1|uncommon|`i.arrow`|黒曜石の矢|
-|1|uncommon|`i.archery`|つる巻き弓|
-|1|uncommon|`i.wand`|精霊樹の杖|
-|1|uncommon|`i.grimoire`|洞窟壁画の呪頁|
-|1|uncommon|`i.catalyst`|琥珀粉の触媒|
-|1|elite rare|`i.sword`|原始の石剣|
-|1|elite rare|`i.armor`|角骨の鎧|
-|1|elite rare|`i.robe`|月苔の法衣|
-|1|elite rare|`i.shield `|巨木の円盾|
-|1|elite rare|`i.arrow`|雷打ち石の矢|
-|1|elite rare|`i.archery`|古代樹の長弓|
-|1|elite rare|`i.wand`|星木の杖|
-|1|elite rare|`i.grimoire`|獣血の呪典|
-|1|elite rare|`i.catalyst`|三色灰の触媒|
-|1|boss rare|`i.sword`|始まりの牙剣|
-|1|boss rare|`i.grimoire`|原初契約の石板|
-|1|boss rare|`i.shield `|大地の心臓殻盾|
-|2|common|`i.sword`|石刃の短剣|
-|2|common|`i.sword`|欠け石の石剣|
-|2|common|`i.sword`|削片の石斧|
-|2|common|`i.armor`|石板縫いの鎧|
-|2|common|`i.armor`|骨留めの革鎧|
-|2|common|`i.robe`|石粉まみれの法衣|
-|2|common|`i.robe`|風紋の獣皮衣|
-|2|common|`i.shield `|石板の盾|
-|2|common|`i.shield `|岩皮の円盾|
-|2|common|`i.arrow`|剥片石の矢|
-|2|common|`i.arrow`|尖頭石の矢|
-|2|common|`i.archery`|角骨の弓|
-|2|common|`i.wand`|刻紋石の杖|
-|2|common|`i.wand`|風穴石の杖|
-|2|common|`i.grimoire`|岩壁刻文の呪頁|
-|2|common|`i.catalyst`|砕石粉の触媒|
-|2|uncommon|`i.sword`|黒曜石の石刃|
-|2|uncommon|`i.sword`|磨石の石剣|
-|2|uncommon|`i.armor`|磨石板の鎧|
-|2|uncommon|`i.robe`|霧染みの法衣|
-|2|uncommon|`i.shield `|黒岩の重盾|
-|2|uncommon|`i.arrow`|黒曜尖石の矢|
-|2|uncommon|`i.archery`|岩角の長弓|
-|2|uncommon|`i.wand`|風刻みの石杖|
-|2|uncommon|`i.grimoire`|断崖壁画の呪典|
-|2|uncommon|`i.catalyst`|磁石砂の触媒|
-|2|elite rare|`i.sword`|裂風の黒曜石剣|
-|2|elite rare|`i.armor`|岩王の石甲|
-|2|elite rare|`i.robe`|断崖司祭の法衣|
-|2|elite rare|`i.shield `|断崖守護の巨盾|
-|2|elite rare|`i.arrow`|風哭きの石矢|
-|2|elite rare|`i.archery`|断崖狩人の戦弓|
-|2|elite rare|`i.wand`|嵐紋の霊石杖|
-|2|elite rare|`i.grimoire`|風刻岩の秘呪書|
-|2|elite rare|`i.catalyst`|嵐灰の触媒|
-|2|boss rare|`i.sword`|断崖王の黒曜大剣|
-|2|boss rare|`i.armor`|風哭きの岩王鎧|
-|2|boss rare|`i.archery`|天裂きの断崖戦弓|
-|3|common|`i.sword`|青銅の短剣|
-|3|common|`i.sword`|青銅の片刃剣|
-|3|common|`i.sword`|青銅の直剣|
-|3|common|`i.armor`|青銅縫いの鎧|
-|3|common|`i.armor`|革下地の青銅鎧|
-|3|common|`i.robe`|霧染みの法衣|
-|3|common|`i.robe`|樹皮織りの法衣|
-|3|common|`i.shield `|青銅縁の木盾|
-|3|common|`i.shield `|青銅円盾|
-|3|common|`i.arrow`|青銅鏃の矢|
-|3|common|`i.arrow`|霧研ぎの青銅矢|
-|3|common|`i.archery`|青銅留めの弓|
-|3|common|`i.wand`|霧晶の青銅杖|
-|3|common|`i.wand`|樹霊刻みの杖|
-|3|common|`i.grimoire`|幻林の呪頁|
-|3|common|`i.catalyst`|霧結晶の触媒|
-|3|uncommon|`i.sword`|狐紋の青銅剣|
-|3|uncommon|`i.sword`|霧鍛えの青銅剣|
-|3|uncommon|`i.armor`|狐族戦士の青銅鎧|
-|3|uncommon|`i.robe`|幻術師の法衣|
-|3|uncommon|`i.shield `|霧払いの青銅盾|
-|3|uncommon|`i.arrow`|幻裂きの青銅矢|
-|3|uncommon|`i.archery`|狐狩人の戦弓|
-|3|uncommon|`i.wand`|幻導の青銅杖|
-|3|uncommon|`i.grimoire`|幻霧の秘呪書|
-|3|uncommon|`i.catalyst`|霧精粉の触媒|
-|3|elite rare|`i.sword`|幻断の青銅剣|
-|3|elite rare|`i.armor`|樹霧守護の青銅鎧|
-|3|elite rare|`i.robe`|霧林司祭の法衣|
-|3|elite rare|`i.shield `|幻樹の青銅大盾|
-|3|elite rare|`i.arrow`|幻貫の青銅矢|
-|3|elite rare|`i.archery`|霧裂きの戦弓|
-|3|elite rare|`i.wand`|幻導の青銅霊杖|
-|3|elite rare|`i.grimoire`|樹霧幻術大全|
-|3|elite rare|`i.catalyst`|幻晶核の触媒|
-|3|boss rare|`i.sword`|幻樹王の青銅剣|
-|3|boss rare|`i.robe`|霧界支配の法衣|
-|3|boss rare|`i.grimoire`|森幻王の禁呪書|
-|4|common|`i.sword`|鉄の短剣|
-|4|common|`i.sword`|鍛鉄の片刃剣|
-|4|common|`i.sword`|粗鍛えの鉄剣|
-|4|common|`i.armor`|鉄縫いの鎧|
-|4|common|`i.armor`|熔岩煤の鉄鎧|
-|4|common|`i.robe`|炉灰染みの法衣|
-|4|common|`i.robe`|耐熱布の法衣|
-|4|common|`i.shield `|鉄縁の盾|
-|4|common|`i.shield `|熔岩煤の鉄盾|
-|4|common|`i.arrow`|鉄鏃の矢|
-|4|common|`i.arrow`|焼入れ鉄矢|
-|4|common|`i.archery`|鉄留めの戦弓|
-|4|common|`i.wand`|炉心鉄の杖|
-|4|common|`i.wand`|熔岩核の鉄杖|
-|4|common|`i.grimoire`|炉壁刻文の呪頁|
-|4|common|`i.catalyst`|炉滓結晶の触媒|
-|4|uncommon|`i.sword`|鍛冶師の鉄剣|
-|4|uncommon|`i.sword`|火入れの鉄刃|
-|4|uncommon|`i.armor`|霊峰鍛冶の鉄鎧|
-|4|uncommon|`i.robe`|炉祈司の法衣|
-|4|uncommon|`i.shield `|熔鉄守護の大盾|
-|4|uncommon|`i.arrow`|火花裂きの鉄矢|
-|4|uncommon|`i.archery`|熊狩人の戦弓|
-|4|uncommon|`i.wand`|霊炉導きの鉄杖|
-|4|uncommon|`i.grimoire`|鍛炉秘伝の呪典|
-|4|uncommon|`i.catalyst`|熔核粉の触媒|
-|4|elite rare|`i.sword`|霊峰鍛えの鉄剣|
-|4|elite rare|`i.armor`|火山守護の鉄甲|
-|4|elite rare|`i.robe`|炉霊司祭の法衣|
-|4|elite rare|`i.shield `|霊峰の溶鉄大盾|
-|4|elite rare|`i.arrow`|溶鉄穿ちの矢|
-|4|elite rare|`i.archery`|火山連射の戦弓|
-|4|elite rare|`i.wand`|霊炉核の鉄霊杖|
-|4|elite rare|`i.grimoire`|霊峰鍛呪大全|
-|4|elite rare|`i.catalyst`|火成核の触媒|
-|4|boss rare|`i.katana`|霊峰秘伝・溶鉄ノ太刀|
-|4|boss rare|`i.armor`|鉄王の霊峰鎧|
-|4|boss rare|`i.shield `|溶岩心臓の王盾|
-|5|common|`i.sword`|月鋼の短剣|
-|5|common|`i.sword`|燐鋼の片刃剣|
-|5|common|`i.sword`|遺跡鋼の直剣|
-|5|common|`i.armor`|月鋼縫いの鎧|
-|5|common|`i.armor`|古遺跡鋼の鎧|
-|5|common|`i.robe`|燐布の法衣|
-|5|common|`i.robe`|月苔織りの法衣|
-|5|common|`i.shield `|月鋼縁の円盾|
-|5|common|`i.shield `|遺跡鋼の盾|
-|5|common|`i.arrow`|月鋼鏃の矢|
-|5|common|`i.arrow`|燐鋼の矢|
-|5|common|`i.archery`|月鋼留めの戦弓|
-|5|common|`i.wand`|燐晶核の杖|
-|5|common|`i.wand`|月輝鋼の魔杖|
-|5|common|`i.grimoire`|聖域遺文の呪頁|
-|5|common|`i.catalyst`|燐核結晶の触媒|
-|5|uncommon|`i.sword`|月鋼細工の剣|
-|5|uncommon|`i.sword`|聖域鍛えの剣|
-|5|uncommon|`i.armor`|聖域守護の月鋼鎧|
-|5|uncommon|`i.robe`|燐光司祭の法衣|
-|5|uncommon|`i.shield `|月輝守護の大盾|
-|5|uncommon|`i.arrow`|閃撃の月鋼矢|
-|5|uncommon|`i.archery`|聖茂狩人の戦弓|
-|5|uncommon|`i.wand`|月導の霊杖|
-|5|uncommon|`i.grimoire`|月影秘儀書|
-|5|uncommon|`i.catalyst`|燐精核の触媒|
-|5|elite rare|`i.sword`|聖月王の光剣|
-|5|elite rare|`i.armor`|月庭守護の霊鎧|
-|5|elite rare|`i.robe`|燐界司祭の聖衣|
-|5|elite rare|`i.shield `|月影の聖域大盾|
-|5|elite rare|`i.arrow`|瞬撃の月鋼矢|
-|5|elite rare|`i.archery`|光苔嵐の戦弓|
-|5|elite rare|`i.wand`|月輝霊核の魔杖|
-|5|elite rare|`i.grimoire`|聖茂幻術大全|
-|5|elite rare|`i.catalyst`|燐界核の触媒|
-|5|boss rare|`i.bolt`|月光閃雷の神速弩矢|
-|5|boss rare|`i.archery`|聖域王の光速弓|
-|5|boss rare|`i.robe`|月界支配の聖衣|
-|6|common|`i.sword`|銅合金の短剣|
-|6|common|`i.sword`|蒸気焼入れの短剣|
-|6|common|`i.sword`|歯車刃の小剣|
-|6|common|`i.armor`|銅板リベット鎧|
-|6|common|`i.armor`|配管補強の軽鎧|
-|6|common|`i.robe`|耐毒繊維の法衣|
-|6|common|`i.robe`|蒸気防護の法衣|
-|6|common|`i.shield `|銅枠の機械盾|
-|6|common|`i.shield `|歯車縁の小盾|
-|6|common|`i.arrow`|鋼芯の銅矢|
-|6|common|`i.arrow`|貫通加工の銅矢|
-|6|common|`i.archery`|滑車式の連射弓|
-|6|common|`i.wand`|触媒導管の魔杖|
-|6|common|`i.wand`|蒸気核の導魔杖|
-|6|common|`i.grimoire`|配線式呪頁|
-|6|common|`i.catalyst`|中和触媒の核|
-|6|uncommon|`i.sword`|合金鍛えの小剣|
-|6|uncommon|`i.sword`|歯車刻みの短剣|
-|6|uncommon|`i.armor`|耐圧配管の機甲|
-|6|uncommon|`i.robe`|毒気遮断の法衣|
-|6|uncommon|`i.shield `|蒸気遮断の機械盾|
-|6|uncommon|`i.arrow`|貫孔加工の精密矢|
-|6|uncommon|`i.archery`|歯車補助の戦弓|
-|6|uncommon|`i.wand`|触媒増幅の魔杖|
-|6|uncommon|`i.grimoire`|迷宮制御の秘呪書|
-|6|uncommon|`i.catalyst`|中和強化触媒|
-|6|elite rare|`i.sword`|銅迷宮王の合金剣|
-|6|elite rare|`i.armor`|耐毒圧の迷宮機甲|
-|6|elite rare|`i.robe`|深層制御の法衣|
-|6|elite rare|`i.shield `|迷宮中枢の機械大盾|
-|6|elite rare|`i.arrow`|貫壁の精密合金矢|
-|6|elite rare|`i.archery`|自動滑車の連射弓|
-|6|elite rare|`i.wand`|主機核導きの霊杖|
-|6|elite rare|`i.grimoire`|迷宮制御中枢書|
-|6|elite rare|`i.catalyst`|完全中和の触媒核|
-|6|boss rare|`i.catalyst`|深層反応炉の原初触媒|
-|6|boss rare|`i.grimoire`|銅迷宮の設計原典|
-|6|boss rare|`i.armor`|主機核装甲・アルケミトロン|
-|7|common|`i.sword`|天鋼の短剣|
-|7|common|`i.sword`|風鍛えの片刃剣|
-|7|common|`i.sword`|雲鋼の直剣|
-|7|common|`i.armor`|雲鋼縫いの鎧|
-|7|common|`i.armor`|風紋刻みの軽鎧|
-|7|common|`i.robe`|天布の法衣|
-|7|common|`i.robe`|雲糸織りの法衣|
-|7|common|`i.shield `|風鋼縁の円盾|
-|7|common|`i.shield `|雲鋼の小盾|
-|7|common|`i.arrow`|風切りの鋼矢|
-|7|common|`i.arrow`|雲鋼鏃の矢|
-|7|common|`i.archery`|風輪式の戦弓|
-|7|common|`i.wand`|天晶核の魔杖|
-|7|common|`i.wand`|風導の霊杖|
-|7|common|`i.grimoire`|天庭律書の呪頁|
-|7|common|`i.catalyst`|風核結晶の触媒|
-|7|uncommon|`i.sword`|天鋼精鍛の剣|
-|7|uncommon|`i.sword`|風紋刻みの剣|
-|7|uncommon|`i.armor`|浮島守護の天鋼鎧|
-|7|uncommon|`i.robe`|天輝司祭の法衣|
-|7|uncommon|`i.shield `|風護りの大盾|
-|7|uncommon|`i.arrow`|旋風穿ちの鋼矢|
-|7|uncommon|`i.archery`|高天狩人の戦弓|
-|7|uncommon|`i.wand`|天導の霊杖|
-|7|uncommon|`i.grimoire`|風律の秘呪書|
-|7|uncommon|`i.catalyst`|高天触媒核|
-|7|elite rare|`i.sword`|高天王の霊剣|
-|7|elite rare|`i.armor`|天空守護の天鋼鎧|
-|7|elite rare|`i.robe`|天庭司祭の聖衣|
-|7|elite rare|`i.shield `|雲界守護の王盾|
-|7|elite rare|`i.arrow`|天裂きの鋼矢|
-|7|elite rare|`i.archery`|風輪嵐の戦弓|
-|7|elite rare|`i.wand`|天輝霊核の魔杖|
-|7|elite rare|`i.grimoire`|高天律法大全|
-|7|elite rare|`i.catalyst`|天空安定の触媒核|
-|7|boss rare|`i.sword`|天界王剣アストレア|
-|7|boss rare|`i.armor`|浮島王の天鋼鎧|
-|7|boss rare|`i.grimoire`|高天統治の禁呪書|
-|8|common|`i.sword`|玻璃鋼の短剣|
-|8|common|`i.sword`|時晶鍛えの片刃剣|
-|8|common|`i.sword`|次元鋼の直剣|
-|8|common|`i.armor`|玻璃鋼縫いの鎧|
-|8|common|`i.armor`|結晶層の軽鎧|
-|8|common|`i.robe`|無音織りの法衣|
-|8|common|`i.robe`|時層布の法衣|
-|8|common|`i.shield `|次元縁の玻璃盾|
-|8|common|`i.shield `|結晶層の小盾|
-|8|common|`i.arrow`|時断の結晶矢|
-|8|common|`i.arrow`|次元鋼鏃の矢|
-|8|common|`i.archery`|層界制御の戦弓|
-|8|common|`i.wand`|時晶核の魔杖|
-|8|common|`i.wand`|無音導きの霊杖|
-|8|common|`i.grimoire`|玻璃律書の呪頁|
-|8|common|`i.catalyst`|時層結晶の触媒|
-|8|uncommon|`i.sword`|時玻璃精鍛の剣|
-|8|uncommon|`i.sword`|次元紋刻みの剣|
-|8|uncommon|`i.armor`|玻璃界守護の結晶鎧|
-|8|uncommon|`i.robe`|無音司祭の法衣|
-|8|uncommon|`i.shield `|時壁守護の大盾|
-|8|uncommon|`i.arrow`|層界穿ちの結晶矢|
-|8|uncommon|`i.archery`|次元狩人の戦弓|
-|8|uncommon|`i.wand`|時導の霊杖|
-|8|uncommon|`i.grimoire`|終焉律法の秘呪書|
-|8|uncommon|`i.catalyst`|次元安定の触媒核|
-|8|elite rare|`i.sword`|時界王の霊剣|
-|8|elite rare|`i.armor`|玻璃守護の王鎧|
-|8|elite rare|`i.robe`|無限層司祭の聖衣|
-|8|elite rare|`i.shield `|次元守護の王盾|
-|8|elite rare|`i.arrow`|終焉穿ちの結晶矢|
-|8|elite rare|`i.archery`|層界嵐の戦弓|
-|8|elite rare|`i.wand`|時晶霊核の魔杖|
-|8|elite rare|`i.grimoire`|時玻璃終章大全|
-|8|elite rare|`i.catalyst`|完全安定の触媒核|
-|8|boss rare|`i.katana`|終焉ノ太刀・時玻璃|
-|8|boss rare|`i.grimoire`|不死超越の最終魔導書|
-|8|boss rare|`i.catalyst`|次元律動の原初触媒|
-|1|common|`i.gauntlet`|骨のガントレット|
-|1|uncommon|`i.gauntlet`|獣皮縫いのガントレット|
-|1|uncommon|`i.gauntlet`|黒曜石縁のガントレット|
-|1|elite rare|`i.gauntlet`|原始骨格の戦闘籠手|
-|1|boss rare|`i.gauntlet`|原初獣王の覇拳|
-|1|common|`i.bolt`|石芯の弩矢|
-|1|uncommon|`i.bolt`|黒曜尖石の弩矢|
-|1|uncommon|`i.bolt`|骨鏃仕込みの弩矢|
-|1|elite rare|`i.bolt`|雷打ち石の弩矢|
-|1|boss rare|`i.bolt`|始まりの雷牙弩矢|
-|2|common|`i.gauntlet`|剥片石のガントレット|
-|2|uncommon|`i.gauntlet`|磨石縁のガントレット|
-|2|uncommon|`i.gauntlet`|黒岩補強のガントレット|
-|2|elite rare|`i.gauntlet`|断崖砕きの戦闘籠手|
-|2|boss rare|`i.gauntlet`|断崖王の巨拳|
-|2|common|`i.bolt`|尖頭石の弩矢|
-|2|uncommon|`i.bolt`|黒曜尖石の重弩矢|
-|2|uncommon|`i.bolt`|磁石砂仕込みの弩矢|
-|2|elite rare|`i.bolt`|風哭きの裂風弩矢|
-|2|boss rare|`i.bolt`|天裂きの断崖神弩矢|
-|3|common|`i.gauntlet`|青銅縁のガントレット|
-|3|uncommon|`i.gauntlet`|狐紋刻みの青銅籠手|
-|3|uncommon|`i.gauntlet`|霧鍛えの青銅籠手|
-|3|elite rare|`i.gauntlet`|幻断の戦闘籠手|
-|3|boss rare|`i.gauntlet`|幻樹王の霊拳|
-|3|common|`i.bolt`|青銅芯の弩矢|
-|3|uncommon|`i.bolt`|幻裂きの青銅弩矢|
-|3|uncommon|`i.bolt`|霧研ぎの精密弩矢|
-|3|elite rare|`i.bolt`|幻貫の重弩矢|
-|3|boss rare|`i.bolt`|霧界穿ちの幻王弩矢|
-|4|common|`i.gauntlet`|鍛鉄のガントレット|
-|4|uncommon|`i.gauntlet`|火入れ鉄の戦闘籠手|
-|4|uncommon|`i.gauntlet`|霊峰鍛冶の籠手|
-|4|elite rare|`i.gauntlet`|溶鉄砕きの重籠手|
-|4|boss rare|`i.gauntlet`|溶岩心臓の王拳|
-|4|common|`i.bolt`|鉄芯の弩矢|
-|4|uncommon|`i.bolt`|火花裂きの鉄弩矢|
-|4|uncommon|`i.bolt`|焼入れ鉄の重弩矢|
-|4|elite rare|`i.bolt`|溶鉄穿ちの重弩矢|
-|4|boss rare|`i.bolt`|火山神鋼の裁断弩矢|
-|5|common|`i.gauntlet`|月鋼縁のガントレット|
-|5|uncommon|`i.gauntlet`|燐鋼鍛えの籠手|
-|5|uncommon|`i.gauntlet`|聖域刻印の月鋼籠手|
-|5|elite rare|`i.gauntlet`|聖月守護の霊拳|
-|5|boss rare|`i.gauntlet`|月界王の神威拳|
-|5|common|`i.bolt`|月鋼芯の弩矢|
-|5|uncommon|`i.bolt`|閃撃の月鋼弩矢|
-|5|uncommon|`i.bolt`|燐鋼精錬の重弩矢|
-|5|elite rare|`i.bolt`|瞬撃の月鋼神速弩矢|
-|5|boss rare|`i.bolt`|月光閃雷の神速弩矢|
-|6|common|`i.gauntlet`|銅合金のガントレット|
-|6|uncommon|`i.gauntlet`|歯車補助の戦闘籠手|
-|6|uncommon|`i.gauntlet`|耐圧配管の機械籠手|
-|6|elite rare|`i.gauntlet`|迷宮粉砕の機装拳|
-|6|boss rare|`i.gauntlet`|主機核装拳・アルケミトロン|
-|6|common|`i.bolt`|鋼芯銅合金の弩矢|
-|6|uncommon|`i.bolt`|貫孔加工の精密弩矢|
-|6|uncommon|`i.bolt`|滑車補助の高速弩矢|
-|6|elite rare|`i.bolt`|貫壁の合金重弩矢|
-|6|boss rare|`i.bolt`|迷宮中枢破壊の原初弩矢|
-|7|common|`i.gauntlet`|天鋼縁のガントレット|
-|7|uncommon|`i.gauntlet`|風紋刻みの戦闘籠手|
-|7|uncommon|`i.gauntlet`|浮島守護の天鋼籠手|
-|7|elite rare|`i.gauntlet`|天空砕きの霊拳|
-|7|boss rare|`i.gauntlet`|天界王の審判拳|
-|7|common|`i.bolt`|風切り鋼芯の弩矢|
-|7|uncommon|`i.bolt`|旋風穿ちの鋼弩矢|
-|7|uncommon|`i.bolt`|高天鍛えの精密弩矢|
-|7|elite rare|`i.bolt`|天裂きの神速弩矢|
-|7|boss rare|`i.bolt`|高天裁断の王雷弩矢|
-|8|common|`i.gauntlet`|玻璃鋼縁のガントレット|
-|8|uncommon|`i.gauntlet`|次元紋刻みの籠手|
-|8|uncommon|`i.gauntlet`|時晶精鍛の戦闘籠手|
-|8|elite rare|`i.gauntlet`|時界粉砕の霊拳|
-|8|boss rare|`i.gauntlet`|次元王の終焉拳|
-|8|common|`i.bolt`|時断結晶芯の弩矢|
-|8|uncommon|`i.bolt`|層界穿ちの結晶弩矢|
-|8|uncommon|`i.bolt`|次元鋼精錬の弩矢|
-|8|elite rare|`i.bolt`|終焉穿ちの王弩矢|
-|8|boss rare|`i.bolt`|次元律動の終極弩矢|
-|1|common|`i.katana`|石刃の太刀|
-|1|uncommon|`i.katana`|黒曜石縁の太刀|
-|1|uncommon|`i.katana`|獣骨柄の太刀|
-|1|elite rare|`i.katana`|原始の戦太刀|
-|1|boss rare|`i.katana`|原初獣王の覇刀|
-|2|common|`i.katana`|剥片石の太刀|
-|2|uncommon|`i.katana`|磨石鍛えの太刀|
-|2|uncommon|`i.katana`|黒岩鍛えの太刀|
-|2|elite rare|`i.katana`|断崖砕きの大太刀|
-|2|boss rare|`i.katana`|断崖王の断風太刀|
-|3|common|`i.katana`|青銅の太刀|
-|3|uncommon|`i.katana`|狐紋刻みの青銅太刀|
-|3|uncommon|`i.katana`|霧鍛えの青銅太刀|
-|3|elite rare|`i.katana`|幻断の青銅大太刀|
-|3|boss rare|`i.katana`|幻樹王の霊太刀|
-|4|common|`i.katana`|鍛鉄の太刀|
-|4|uncommon|`i.katana`|火入れ鍛鉄の太刀|
-|4|uncommon|`i.katana`|霊峰鍛冶の太刀|
-|4|elite rare|`i.katana`|溶鉄砕きの大太刀|
-|4|boss rare|`i.katana`|霊峰秘伝・溶鉄ノ太刀|
-|5|common|`i.katana`|月鋼の太刀|
-|5|uncommon|`i.katana`|燐鋼鍛えの太刀|
-|5|uncommon|`i.katana`|聖域刻印の月鋼太刀|
-|5|elite rare|`i.katana`|聖月王の光太刀|
-|5|boss rare|`i.katana`|月界王の神光太刀|
-|6|common|`i.katana`|銅合金の太刀|
-|6|uncommon|`i.katana`|歯車補助の合金太刀|
-|6|uncommon|`i.katana`|耐圧配管の機装太刀|
-|6|elite rare|`i.katana`|迷宮斬りの機装太刀|
-|6|boss rare|`i.katana`|主機核斬装・アルケミブレード|
-|7|common|`i.katana`|天鋼の太刀|
-|7|uncommon|`i.katana`|風紋刻みの天鋼太刀|
-|7|uncommon|`i.katana`|浮島鍛冶の霊太刀|
-|7|elite rare|`i.katana`|天空断ちの王太刀|
-|7|boss rare|`i.katana`|天界王剣・蒼天ノ太刀|
-|8|common|`i.katana`|玻璃鋼の太刀|
-|8|uncommon|`i.katana`|次元紋刻みの太刀|
-|8|uncommon|`i.katana`|時晶精鍛の霊太刀|
-|8|elite rare|`i.katana`|時界断絶の王太刀|
-|8|boss rare|`i.katana`|終焉ノ太刀・時玻璃|
 
 # 2.2 Mythic rare item from gods
 
