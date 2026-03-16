@@ -766,1363 +766,963 @@
 | move | none | name は荒れた地面を踏みしめて進んでいる |
 | move | none | name は視界の開けた先を目指して歩いている |
 | move | none | name は立ち止まらず一定の速度で進軍している |
-| explore | `x.exp_id`1 and `x.floor`1 | name は風渡る草原で古き道標石を見つけ、旅の祝福を祈りつつ進んでいる |
-| explore | `x.exp_id`1 and `x.floor`1 | name は陽光にきらめく草海のうねりを読み、精霊が囁く方角へ足を向けた |
-| explore | `x.exp_id`1 and `x.floor`1 | name は岩陰に咲く小さな守り花を見つけ、この地の加護が残ると確かめている |
-| explore | `x.exp_id`1 and `x.floor`1 | name は獣道に残るひづめ跡をなぞり、平穏を守る巡礼路を探している |
-| explore | `x.exp_id`1 and `x.floor`1 | name は草の梢に揺れる羽飾りを拾い、先人の旅団の痕跡として記録した |
-| explore | `x.exp_id`1 and `x.floor`1 | name は遠い丘の石碑へ目を凝らし、古詩に詠まれた境界を見定めている |
-| explore | `x.exp_id`1 and `x.floor`1 | name は澄んだ風音に耳を澄ませ、精霊獣の通る静かな回廊を選び取った |
-| explore | `x.exp_id`1 and `x.floor`1 | name は草葉の露を指で払い、夜明けに刻まれた新しい足跡を追っている |
-| explore | `x.exp_id`1 and `x.floor`1 | name は開けた空の下で祈り札を結び、邪気を避ける進路を整えている |
-| explore | `x.exp_id`1 and `x.floor`1 | name は平原の果てに揺らぐ蜃気楼を見据え、幻惑に呑まれぬよう歩を進めた |
-| explore | `x.exp_id`1 and `x.floor`2 | name は赤黒い土に刻まれた爪痕を読み、魔獣の縄張りを慎重に外している |
-| explore | `x.exp_id`1 and `x.floor`2 | name は骨の散る獣道で短く祈詞を唱え、荒ぶる気配を鎮めながら進んだ |
-| explore | `x.exp_id`1 and `x.floor`2 | name は風下へ回り込み、狩りを司る獣王の眷属に見つからぬ道を選んでいる |
-| explore | `x.exp_id`1 and `x.floor`2 | name は倒木に残る牙の痕へ手を当て、この地の掟を仲間へ静かに伝えた |
-| explore | `x.exp_id`1 and `x.floor`2 | name は草陰で気配を殺し、唸り声が遠ざかる刻を待って一気に駆け抜けた |
-| explore | `x.exp_id`1 and `x.floor`2 | name は裂かれた地面の血痕を見つめ、つい先ほどの死闘を読み解いている |
-| explore | `x.exp_id`1 and `x.floor`2 | name は獣臭まじりの風に眉をひそめ、呪除け香を焚いて進路を確保した |
-| explore | `x.exp_id`1 and `x.floor`2 | name は蹄跡と爪跡の交差を地図へ写し、狩る者と狩られる者の流れを掴んだ |
-| explore | `x.exp_id`1 and `x.floor`2 | name は槍先で高草を払い、伏せる影を暴くように一歩ずつ前進している |
-| explore | `x.exp_id`1 and `x.floor`2 | name は月の紋を刻んだ護符を握り、牙の領域を越える覚悟を固めた |
-| explore | `x.exp_id`1 and `x.floor`3 | name は湖のように雨を湛えた巨獣の足跡を見下ろし、太古の回遊路を辿っている |
-| explore | `x.exp_id`1 and `x.floor`3 | name は踏み伏せられた草原の幅を測り、古の巨躯が今も息づくと知った |
-| explore | `x.exp_id`1 and `x.floor`3 | name は地鳴りめく鼓動を聞き分け、巨獣の群れと距離を取る陣形へ組み替えた |
-| explore | `x.exp_id`1 and `x.floor`3 | name は泥に埋もれた角片を拾い、太古の王獣の証として袋へ収めている |
-| explore | `x.exp_id`1 and `x.floor`3 | name は草が倒れた帯を追い、星巡りのように続く獣群の道を横切った |
-| explore | `x.exp_id`1 and `x.floor`3 | name は雷鳴に似た遠吠えへ耳を澄ませ、群れを刺激せぬ静路を選んでいる |
-| explore | `x.exp_id`1 and `x.floor`3 | name は抉れた土手を登り、見晴らしの高みから回遊線の結び目を見定めた |
-| explore | `x.exp_id`1 and `x.floor`3 | name は杖で地を叩いて足場を確かめ、巨体の通り道を慎重に渡っている |
-| explore | `x.exp_id`1 and `x.floor`3 | name は岩肌の擦過痕に触れ、この谷が王獣の古き回廊だと悟った |
-| explore | `x.exp_id`1 and `x.floor`3 | name は風上から静かに迂回し、視界を埋める群れに気取られず進んだ |
-| explore | `x.exp_id`1 and `x.floor`4 | name は疎林の影を渡る気配を追い、狩人たちの見張り座を先に押さえている |
-| explore | `x.exp_id`1 and `x.floor`4 | name は木肌の刻印を読み、森の民が残した合図網の境を見抜こうとしている |
-| explore | `x.exp_id`1 and `x.floor`4 | name は不自然な枝揺れを察し、囮道を外れて側面の獣径へ回り込んだ |
-| explore | `x.exp_id`1 and `x.floor`4 | name は岩陰ごとに息を潜め、弦鳴りに似た軋みへ神経を研ぎ澄ませている |
-| explore | `x.exp_id`1 and `x.floor`4 | name は小石の並びを見て、見張りが入れ替わった直後の足取りを割り出した |
-| explore | `x.exp_id`1 and `x.floor`4 | name は木立の隙間に刺さる視線を感じ、隊の間隔を詰めて奇襲を防いでいる |
-| explore | `x.exp_id`1 and `x.floor`4 | name は高低差ある岩場を使い、包囲されにくい立体の進路を選び取った |
-| explore | `x.exp_id`1 and `x.floor`4 | name は落ち葉に紛れた罠縄の繊維を拾い、罠師の活動域を仲間へ告げた |
-| explore | `x.exp_id`1 and `x.floor`4 | name は尾根筋の狭路を避け、退路を失わぬよう樹間の小道へ降りている |
-| explore | `x.exp_id`1 and `x.floor`4 | name は逆光の稜線を離れ、月影に溶けるように潜行を続けている |
-| explore | `x.exp_id`1 and `x.floor`5 | name は葦の切れ目を流れる浅瀬を見つけ、沈まぬ渡り道として印を結んだ |
-| explore | `x.exp_id`1 and `x.floor`5 | name は泥炭の泡立ちを見極め、踏み抜く沼域を避ける細道を選んでいる |
-| explore | `x.exp_id`1 and `x.floor`5 | name は腐葉の匂いの薄い高まりを探し、休息に足る乾いた島を確保した |
-| explore | `x.exp_id`1 and `x.floor`5 | name は水面を覆う胞子膜を見て口布を固く締め、瘴気への備えを整えた |
-| explore | `x.exp_id`1 and `x.floor`5 | name は朽木に這う菌糸の色を読み、毒茸の群生帯を大きく迂回している |
-| explore | `x.exp_id`1 and `x.floor`5 | name は湧水の温みを辿り、ぬかるみの浅い帯を安全路として仲間に示した |
-| explore | `x.exp_id`1 and `x.floor`5 | name は吸血虫の群れへ燻煙玉を投げ、視界を守りながら短距離で進んだ |
-| explore | `x.exp_id`1 and `x.floor`5 | name は沈んだ杭列を見つけ、失われた堤道の名残を道標として活かしている |
-| explore | `x.exp_id`1 and `x.floor`5 | name は黴の濃い窪地を外し、装備を蝕む湿気から仲間を守って進んだ |
-| explore | `x.exp_id`1 and `x.floor`5 | name は泥はねの高さを見て荷重を配り直し、沼渡りの手順を全員に共有した |
-| explore | `x.exp_id`1 and `x.floor`6 | name は草に埋もれた石畳を払い、滅びた古都の大路をひと筋ずつ辿っている |
-| explore | `x.exp_id`1 and `x.floor`6 | name は崩れ塔の骨格越しに空中回廊の跡を見つけ、上層への道筋を読んだ |
-| explore | `x.exp_id`1 and `x.floor`6 | name は地中から覗く封印板に耳を当て、地下聖域の空洞を見抜いている |
-| explore | `x.exp_id`1 and `x.floor`6 | name は風化した石標の古語を解き、禁域と祈殿の境を丁寧に切り分けた |
-| explore | `x.exp_id`1 and `x.floor`6 | name は苔むす導水溝をたどり、王都中枢へ続く巡礼路の名残を探っている |
-| explore | `x.exp_id`1 and `x.floor`6 | name は半ば埋もれた青銅の取手を掘り出し、閉ざされた祭室への口を開いた |
-| explore | `x.exp_id`1 and `x.floor`6 | name は宮壁の浮彫に触れ、栄華の時代に捧げられた祈りの形を読み取った |
-| explore | `x.exp_id`1 and `x.floor`6 | name は反響する足音を数え、崩れていない螺旋階の位置を慎重に絞っている |
-| explore | `x.exp_id`1 and `x.floor`6 | name は樹根に裂かれた石管の温みを感じ、今なお息づく霊脈の流れを知った |
-| explore | `x.exp_id`1 and `x.floor`6 | name は瓦礫に眠る古い護符片を拾い、失われた王朝の記憶として保管した |
-| explore | `x.exp_id`1 and `x.floor`1 | 風渡る草原で道標石が見つかり、旅人を守る古い加護が息づいている |
-| explore | `x.exp_id`1 and `x.floor`1 | 陽光に揺れる草海のうねりが、精霊の通り道を示すように連なっていた |
-| explore | `x.exp_id`1 and `x.floor`1 | 岩陰に咲く守り花が点在し、この層が穏やかな祝福に包まれていると分かる |
-| explore | `x.exp_id`1 and `x.floor`1 | 獣道の新しいひづめ跡が続き、巡礼路へ重なる安全な進路が特定された |
-| explore | `x.exp_id`1 and `x.floor`1 | 草葉の露に残る微細な乱れから、夜明け直後の通行が推定されている |
-| explore | `x.exp_id`1 and `x.floor`1 | 古詩に記された境界石が確認され、平原の区画認識が更新された |
-| explore | `x.exp_id`1 and `x.floor`1 | 風音に混じる低い唄声が観測され、精霊獣の回廊が共有地図へ追記された |
-| explore | `x.exp_id`1 and `x.floor`1 | 蜃気楼の揺らぎが視線を誘うため、幻惑対策を前提に隊列が組み直された |
-| explore | `x.exp_id`1 and `x.floor`1 | 開けた地形ほど影が薄く、見張り役の配置密度が引き上げられている |
-| explore | `x.exp_id`1 and `x.floor`1 | 小さな羽飾りの遺物が回収され、先人旅団の通過記録として保管された |
-| explore | `x.exp_id`1 and `x.floor`2 | 赤黒い土に深い爪痕が残り、魔獣の縄張り線が明確に引かれている |
-| explore | `x.exp_id`1 and `x.floor`2 | 骨片の散る分岐が続き、狩り場の重なりを避ける迂回路運用に切り替えられた |
-| explore | `x.exp_id`1 and `x.floor`2 | 風下移動を徹底することで、獣王眷属への被発見率が抑えられている |
-| explore | `x.exp_id`1 and `x.floor`2 | 倒木に残る牙痕の新しさから、直近で大型個体が巡回したと判断された |
-| explore | `x.exp_id`1 and `x.floor`2 | 高草の陰は視界を奪うため、槍先で払う前進手順が全体へ共有された |
-| explore | `x.exp_id`1 and `x.floor`2 | 血痕の乾き具合が浅く、つい先ほどの死闘痕が残る危険帯と見なされている |
-| explore | `x.exp_id`1 and `x.floor`2 | 交差する蹄跡と爪跡が記録され、捕食と逃走の流れが図示された |
-| explore | `x.exp_id`1 and `x.floor`2 | 呪除け香の使用で獣臭の濃い区画を突破し、隊の動揺が抑えられた |
-| explore | `x.exp_id`1 and `x.floor`2 | 唸り声の反響方向が分析され、待ち伏せを避ける静路が再設定された |
-| explore | `x.exp_id`1 and `x.floor`2 | 護符消費を前提にした短時間侵入へ改められ、被害拡大が抑制されている |
-| explore | `x.exp_id`1 and `x.floor`3 | 湖のような足跡が連続し、太古の王獣回廊が現役であると裏付けられた |
-| explore | `x.exp_id`1 and `x.floor`3 | 踏み伏せられた草原の幅から、群れ規模が従来想定を上回ると判明した |
-| explore | `x.exp_id`1 and `x.floor`3 | 地鳴りめく振動周期が共有され、接近兆候の早期察知体制が強化された |
-| explore | `x.exp_id`1 and `x.floor`3 | 角片と新しい足跡が同時に見つかり、長期回遊地であることが補強された |
-| explore | `x.exp_id`1 and `x.floor`3 | 倒伏帯の向きが揃い、獣群の主流動線が一本化されていると分かる |
-| explore | `x.exp_id`1 and `x.floor`3 | 雷鳴に似る遠吠えが連鎖し、群れ内連絡の広さに警戒が高まった |
-| explore | `x.exp_id`1 and `x.floor`3 | 高所観測で回遊線の合流点が特定され、安全横断窓が再計算された |
-| explore | `x.exp_id`1 and `x.floor`3 | 地盤を叩く確認手順により、崩れやすい帯の外周が更新されている |
-| explore | `x.exp_id`1 and `x.floor`3 | 岩肌の擦過痕が広範囲に残り、巨躯通行の頻度が高い区画と判定された |
-| explore | `x.exp_id`1 and `x.floor`3 | 風上迂回を徹底した運用で、王獣群との不要接触が回避された |
-| explore | `x.exp_id`1 and `x.floor`4 | 疎林と岩棚の重なりが多く、待ち伏せに適した死角が密集している |
-| explore | `x.exp_id`1 and `x.floor`4 | 木肌の刻印に規則性があり、森の狩人による合図網が機能していると判明した |
-| explore | `x.exp_id`1 and `x.floor`4 | 枝揺れが風向と合致せず、監視者の移動路が逆算されている |
-| explore | `x.exp_id`1 and `x.floor`4 | 小石の配置変化から見張り交代が推測され、警戒線幅が更新された |
-| explore | `x.exp_id`1 and `x.floor`4 | 樹上射線を切る進路へ改めることで、頭上奇襲の危険が軽減された |
-| explore | `x.exp_id`1 and `x.floor`4 | 低位置で折れた枝が多く、伏兵が低姿勢で潜む傾向が共有されている |
-| explore | `x.exp_id`1 and `x.floor`4 | 岩陰ごとの停止観測で、連携包囲に使われる導線が順次潰された |
-| explore | `x.exp_id`1 and `x.floor`4 | 罠縄の繊維片が回収され、罠師活動域の地図精度が引き上げられた |
-| explore | `x.exp_id`1 and `x.floor`4 | 尾根筋の狭路は退路封鎖に使われやすく、先行偵察比率が上げられている |
-| explore | `x.exp_id`1 and `x.floor`4 | 逆光稜線を避ける潜行で輪郭露出が抑えられ、被発見率が低下した |
-| explore | `x.exp_id`1 and `x.floor`5 | 葦原の切れ目に浅瀬が続き、沈みにくい渡り道として活用可能と判断された |
-| explore | `x.exp_id`1 and `x.floor`5 | 泥炭の泡立ちが活発で、踏み抜き危険帯の外周線が更新されている |
-| explore | `x.exp_id`1 and `x.floor`5 | 腐葉臭の薄い高まりが見つかり、休止点候補として登録された |
-| explore | `x.exp_id`1 and `x.floor`5 | 水面の胞子膜が厚く、口布と解毒薬を優先する運用へ切り替えられた |
-| explore | `x.exp_id`1 and `x.floor`5 | 菌糸色の差異から毒茸群の分布線が特定され、迂回路が再設定された |
-| explore | `x.exp_id`1 and `x.floor`5 | 湧水温度の偏りが明瞭で、ぬかるみの浅い帯が安全路として確保された |
-| explore | `x.exp_id`1 and `x.floor`5 | 吸血虫密集域は燻煙で散らし、短距離移動を重ねる方針が採択された |
-| explore | `x.exp_id`1 and `x.floor`5 | 沈下杭列の並びから、失われた堤道の走向が読み取られている |
-| explore | `x.exp_id`1 and `x.floor`5 | 黴の濃い窪地を外す運用で、装備腐食の進行が抑制された |
-| explore | `x.exp_id`1 and `x.floor`5 | 泥はね高さの計測結果を反映し、荷重配分手順が全体に共有された |
-| explore | `x.exp_id`1 and `x.floor`6 | 草に埋もれた石畳が現れ、滅びた古都区画の輪郭が再構築されつつある |
-| explore | `x.exp_id`1 and `x.floor`6 | 崩れ塔越しに空中回廊跡が確認され、上層導線の残存が裏付けられた |
-| explore | `x.exp_id`1 and `x.floor`6 | 地中露出した封印板の反響が空洞を示し、地下聖域の存在が補強された |
-| explore | `x.exp_id`1 and `x.floor`6 | 風化石標の古語が解読され、禁域ごとの進入優先度が整理された |
-| explore | `x.exp_id`1 and `x.floor`6 | 苔むす導水溝が連続し、王都中枢へ向かう巡礼路候補が抽出された |
-| explore | `x.exp_id`1 and `x.floor`6 | 半没した青銅取手が掘り出され、閉鎖祭室へのアクセスが確保された |
-| explore | `x.exp_id`1 and `x.floor`6 | 宮壁の浮彫意匠が残り、往時の祈礼文化がこの層まで広がっていたと分かる |
-| explore | `x.exp_id`1 and `x.floor`6 | 反響差を使った測位で、崩れていない螺旋階候補が絞り込まれた |
-| explore | `x.exp_id`1 and `x.floor`6 | 樹根に裂かれた石管に微かな温みが残り、霊脈の一部生存が示唆されている |
-| explore | `x.exp_id`1 and `x.floor`6 | 瓦礫中の古い護符片が回収され、失われた王朝史の手掛かりとして保管された |
-| explore | `x.exp_id`2 and `x.floor`1 | name は岩だらけの山裾で足場を選び、崩れやすい斜面を慎重に登っている |
-| explore | `x.exp_id`2 and `x.floor`1 | name は砕けた礫の音を殺しながら、風に削られた細道を一歩ずつ進んだ |
-| explore | `x.exp_id`2 and `x.floor`1 | name は山肌に刻まれた古い道標を見つけ、かつての巡礼路を辿っている |
-| explore | `x.exp_id`2 and `x.floor`1 | name は脆い岩棚を杖で叩いて確かめ、落石帯を避ける進路を選んでいる |
-| explore | `x.exp_id`2 and `x.floor`1 | name は谷から吹き上がる乾いた風を読み、安定した稜線側へ回り込んだ |
-| explore | `x.exp_id`2 and `x.floor`1 | name は裂け目に残る獣毛を摘み取り、山獣の通り道を地図へ書き込んでいる |
-| explore | `x.exp_id`2 and `x.floor`1 | name は崩れた石段の痕を見つけ、この山が古道で結ばれていたと悟った |
-| explore | `x.exp_id`2 and `x.floor`1 | name は岩陰に身を寄せて落石の間を見極め、短い合図で仲間を導いた |
-| explore | `x.exp_id`2 and `x.floor`1 | name は高みの白い鷹影を追い、獣の少ない上風側のルートを確保している |
-| explore | `x.exp_id`2 and `x.floor`1 | name は擦り減った登攀杭を見つめ、先人の苦難を胸に歩幅を整えた |
-| explore | `x.exp_id`2 and `x.floor`2 | name は断崖の爪痕をなぞり、山の捕食者が巡る狩場の境を見極めている |
-| explore | `x.exp_id`2 and `x.floor`2 | name は骨片が散る棚道で呼吸を殺し、見張る獣影の死角を渡っている |
-| explore | `x.exp_id`2 and `x.floor`2 | name は風下へ身を伏せ、崖上を巡る狩人獣に匂いを悟られぬよう進んだ |
-| explore | `x.exp_id`2 and `x.floor`2 | name は岩壁に残る牙研ぎ痕を見て、縄張り争いの激しさを仲間へ告げた |
-| explore | `x.exp_id`2 and `x.floor`2 | name は裂けた外套布を拾い、旅人を襲った伏撃地点を推定している |
-| explore | `x.exp_id`2 and `x.floor`2 | name は落差の大きい崖路を避け、追跡されにくい横穴沿いへ迂回した |
-| explore | `x.exp_id`2 and `x.floor`2 | name は獣臭混じりの突風を受け、護符を結び直して警戒線を上げている |
-| explore | `x.exp_id`2 and `x.floor`2 | name は鷲の鳴き交わしを聞き分け、上層からの急襲に備えて陣形を縮めた |
-| explore | `x.exp_id`2 and `x.floor`2 | name は崖下の暗がりで光る目を確認し、松明を覆って気配を断っている |
-| explore | `x.exp_id`2 and `x.floor`2 | name は石灰色の急斜へ爪先を掛け、獣道と交差しない脇道を選び取った |
-| explore | `x.exp_id`2 and `x.floor`3 | name は断崖に隠れた木造家屋を見つけ、荒らされた集落跡へ足を踏み入れた |
-| explore | `x.exp_id`2 and `x.floor`3 | name は切れた縄橋の端を握り、急襲の夜に断たれた逃走路を想像している |
-| explore | `x.exp_id`2 and `x.floor`3 | name は崩れた戸口の刻印を拭い、住民が守った家紋を静かに記録した |
-| explore | `x.exp_id`2 and `x.floor`3 | name は炉に残る灰の冷たさを確かめ、放棄から日が浅いと読み取っている |
-| explore | `x.exp_id`2 and `x.floor`3 | name は山霧に消える足跡を追い、略奪団の撤退路を尾根側へ辿った |
-| explore | `x.exp_id`2 and `x.floor`3 | name は倒れた見張り柱を起こし、村路に潜む死角を仲間へ示している |
-| explore | `x.exp_id`2 and `x.floor`3 | name は戸棚に残る祈り札を見つけ、守護の誓いが破られた痕に目を伏せた |
-| explore | `x.exp_id`2 and `x.floor`3 | name は軋む板廊下を渡り、崖間に張られた廃索道の先を探っている |
-| explore | `x.exp_id`2 and `x.floor`3 | name は石垣裏の隠し貯蔵庫を開け、急場で捨てられた生活具を確認した |
-| explore | `x.exp_id`2 and `x.floor`3 | name は鐘楼跡で風鈴の欠片を拾い、失われた村の静けさに耳を澄ませた |
-| explore | `x.exp_id`2 and `x.floor`4 | name は崩れた監視塔の螺旋階を登り、山路を睨む盗賊の視界を測っている |
-| explore | `x.exp_id`2 and `x.floor`4 | name は矢傷だらけの胸壁に触れ、往来を襲う無法者の戦跡を読み解いた |
-| explore | `x.exp_id`2 and `x.floor`4 | name は見張り鐘の台座を調べ、警報網がまだ一部機能すると突き止めた |
-| explore | `x.exp_id`2 and `x.floor`4 | name は砦門の焼け痕を辿り、強襲で奪われた関所の末路を見つめている |
-| explore | `x.exp_id`2 and `x.floor`4 | name は隠し矢座の裂け目を覗き、峠道を狙う射線を仲間へ共有した |
-| explore | `x.exp_id`2 and `x.floor`4 | name は崩落した兵舎床を跨ぎ、略奪品が運び出された倉路を追っている |
-| explore | `x.exp_id`2 and `x.floor`4 | name は塔上の旗杭を見上げ、幾度も主を変えた血塗られた拠点を悟った |
-| explore | `x.exp_id`2 and `x.floor`4 | name は石畳に残る蹄鉄痕を数え、山賊隊の規模をおおよそ割り出している |
-| explore | `x.exp_id`2 and `x.floor`4 | name は崖縁の抜け道を押さえ、包囲されぬよう退路を先に確保した |
-| explore | `x.exp_id`2 and `x.floor`4 | name は塔影に潜み、巡回の切れ目で関門跡を無音のまま突破した |
-| explore | `x.exp_id`2 and `x.floor`5 | name は風に削られた深い峡谷で、唸る気流を読んで足を進めている |
-| explore | `x.exp_id`2 and `x.floor`5 | name は狭い石回廊の反響を測り、崩落を招かぬ歩調へ整えた |
-| explore | `x.exp_id`2 and `x.floor`5 | name は横殴りの砂塵から目を守り、刻まれた裂谷の底へ降りている |
-| explore | `x.exp_id`2 and `x.floor`5 | name は細い岩橋に身を伏せ、突風の止む瞬間だけを選んで渡った |
-| explore | `x.exp_id`2 and `x.floor`5 | name は風鳴りに混じる笛音を聞き、迷わせる自然の残響を切り分けている |
-| explore | `x.exp_id`2 and `x.floor`5 | name は磨かれた岩肌を手探りし、風蝕洞へ続く避難路を見つけ出した |
-| explore | `x.exp_id`2 and `x.floor`5 | name は谷底の渦風を避けるため、斜めの亀裂帯を鎖で進んでいる |
-| explore | `x.exp_id`2 and `x.floor`5 | name は砂礫に埋もれた石碑を掘り、古い峠道の境界文を読み上げた |
-| explore | `x.exp_id`2 and `x.floor`5 | name は白く乾いた骨片を見つめ、風葬の地であることを慎重に告げた |
-| explore | `x.exp_id`2 and `x.floor`5 | name は裂谷を渡る綱杭を打ち直し、後続隊が安全に越えられるよう整えた |
-| explore | `x.exp_id`2 and `x.floor`6 | name は蒼白の石で築かれた古神殿へ至り、風化した柱列の間を進んでいる |
-| explore | `x.exp_id`2 and `x.floor`6 | name は欠けた神像の面差しを拭い、忘れられた誓約の文字を読み取った |
-| explore | `x.exp_id`2 and `x.floor`6 | name は祭壇に積もる苔を払って、時を越えた祈祷痕を確かめている |
-| explore | `x.exp_id`2 and `x.floor`6 | name は割れた天蓋から差す光を追い、主殿へ続く聖路を見定めた |
-| explore | `x.exp_id`2 and `x.floor`6 | name は風に鳴る石鈴を聞き、神殿守護の機構がまだ眠ると悟っている |
-| explore | `x.exp_id`2 and `x.floor`6 | name は回廊の浮彫に指を這わせ、古き山民の祈りの系譜を辿った |
-| explore | `x.exp_id`2 and `x.floor`6 | name は半壊した香炉を起こし、祭儀再開の道筋を静かに整えている |
-| explore | `x.exp_id`2 and `x.floor`6 | name は聖堂床の亀裂を跨ぎ、崩れぬ石脈を選んで中心壇へ向かった |
-| explore | `x.exp_id`2 and `x.floor`6 | name は色褪せた壁画の狼紋を見つめ、この地の守護伝承を胸に刻んだ |
-| explore | `x.exp_id`2 and `x.floor`6 | name は祈りの間で短く黙礼し、風と時に耐えた神意へ敬意を捧げた |
-| explore | `x.exp_id`2 and `x.floor`1 | 山裾の礫斜面は不安定で、進路は岩質ごとの荷重分散で維持されている |
-| explore | `x.exp_id`2 and `x.floor`1 | 風化した細道の連続により、転落防止の間隔管理が最優先へ引き上げられた |
-| explore | `x.exp_id`2 and `x.floor`1 | 古い道標石が点在し、かつて巡礼路として機能した痕跡が確認された |
-| explore | `x.exp_id`2 and `x.floor`1 | 脆い岩棚は打音検査で判別され、落石帯を外す迂回線が再設定された |
-| explore | `x.exp_id`2 and `x.floor`1 | 谷風の流向差が明瞭で、安定した稜線側ルートの有効性が補強された |
-| explore | `x.exp_id`2 and `x.floor`1 | 裂け目周辺の獣毛採取により、山獣通行帯の地図精度が向上している |
-| explore | `x.exp_id`2 and `x.floor`1 | 崩れ石段の残存幅から、古道網が現在の登攀路に重なると推定された |
-| explore | `x.exp_id`2 and `x.floor`1 | 落石間隔の観測結果が共有され、停止判断の統一手順が整備された |
-| explore | `x.exp_id`2 and `x.floor`1 | 上空の猛禽行動を指標化し、獣接触の少ない上風側誘導が機能している |
-| explore | `x.exp_id`2 and `x.floor`1 | 旧登攀杭の劣化が進み、補助索の常時展張が安全条件として固定された |
-| explore | `x.exp_id`2 and `x.floor`2 | 断崖の爪痕分布から、捕食者の巡回境界が複層化していると判定された |
-| explore | `x.exp_id`2 and `x.floor`2 | 骨片密度の高い棚道は待ち伏せ危険帯とされ、通過時間が短縮運用へ改められた |
-| explore | `x.exp_id`2 and `x.floor`2 | 風下潜行の徹底で、嗅覚追跡による接敵頻度が有意に低下している |
-| explore | `x.exp_id`2 and `x.floor`2 | 岩壁の牙研ぎ痕が新しく、縄張り争いの活発化が確認された |
-| explore | `x.exp_id`2 and `x.floor`2 | 破れた旅装備の散在により、伏撃常習地点の再警戒が指示された |
-| explore | `x.exp_id`2 and `x.floor`2 | 高低差の大きい崖路を外す方針で、追尾戦への移行リスクが抑制された |
-| explore | `x.exp_id`2 and `x.floor`2 | 獣臭を伴う突風発生域が整理され、護符使用の優先区画が更新された |
-| explore | `x.exp_id`2 and `x.floor`2 | 猛禽の鳴き交わし解析により、上層接近の前兆検知精度が強化された |
-| explore | `x.exp_id`2 and `x.floor`2 | 崖下の反射光観測で潜伏個体が確認され、灯火遮蔽手順が標準化された |
-| explore | `x.exp_id`2 and `x.floor`2 | 急斜横断の足場評価を反映し、獣道交差を避ける脇路が常用化された |
-| explore | `x.exp_id`2 and `x.floor`3 | 断崖間の廃村構造が確認され、襲撃後に放棄された生活圏の全体像が判明した |
-| explore | `x.exp_id`2 and `x.floor`3 | 断裂した縄橋位置から、急襲時の退避線が寸断された経緯が裏付けられた |
-| explore | `x.exp_id`2 and `x.floor`3 | 家紋刻印の残存率が高く、住民共同体の結束痕跡が記録された |
-| explore | `x.exp_id`2 and `x.floor`3 | 炉灰温度の調査で放棄時期が比較的新しいと推定されている |
-| explore | `x.exp_id`2 and `x.floor`3 | 霧中の足跡連続から、略奪団が尾根側へ撤退した線が有力となった |
-| explore | `x.exp_id`2 and `x.floor`3 | 倒壊見張り柱の再配置で、集落内死角の把握精度が大幅に向上した |
-| explore | `x.exp_id`2 and `x.floor`3 | 戸棚内の祈り札群が回収され、守護儀礼が日常化していた証拠となった |
-| explore | `x.exp_id`2 and `x.floor`3 | 廃索道の荷重試験結果により、限定的な横断利用が可能と判定された |
-| explore | `x.exp_id`2 and `x.floor`3 | 隠し貯蔵庫の残置物から、避難準備の途中で襲撃を受けた可能性が高まった |
-| explore | `x.exp_id`2 and `x.floor`3 | 鐘楼破片の分布から、警鐘機能が意図的に破壊されたと分析されている |
-| explore | `x.exp_id`2 and `x.floor`4 | 監視塔の残階段が接続し、山路全域を監督した視界網の規模が判明した |
-| explore | `x.exp_id`2 and `x.floor`4 | 胸壁の矢傷密度が高く、長期にわたる往来襲撃拠点であったと裏付けられた |
-| explore | `x.exp_id`2 and `x.floor`4 | 見張り鐘台座の機構痕から、警報連鎖が部分的に稼働可能と判定された |
-| explore | `x.exp_id`2 and `x.floor`4 | 砦門の焼損痕解析により、強襲時の突破方向が特定された |
-| explore | `x.exp_id`2 and `x.floor`4 | 隠し矢座の射線復元で、峠道封鎖運用の詳細が再現されつつある |
-| explore | `x.exp_id`2 and `x.floor`4 | 兵舎床下の搬出痕から、略奪品が系統的に移送された記録が補強された |
-| explore | `x.exp_id`2 and `x.floor`4 | 旗杭交換痕が複数確認され、勢力交代の頻度が高かったと推定された |
-| explore | `x.exp_id`2 and `x.floor`4 | 蹄鉄痕数の統計により、山賊隊の常駐規模が上方修正された |
-| explore | `x.exp_id`2 and `x.floor`4 | 崖縁抜け道の先行確保で、包囲時の退避成功率が改善している |
-| explore | `x.exp_id`2 and `x.floor`4 | 巡回間隔の観測蓄積により、無音突破に適した時間窓が標準化された |
-| explore | `x.exp_id`2 and `x.floor`5 | 風蝕峡谷の気流は周期変動が大きく、移動は風止み窓依存へ再編された |
-| explore | `x.exp_id`2 and `x.floor`5 | 石回廊の反響特性が共有され、崩落誘発を避ける歩調制御が徹底された |
-| explore | `x.exp_id`2 and `x.floor`5 | 砂塵横圧の観測値から、遮眼具と隊列間隔の規定が引き上げられた |
-| explore | `x.exp_id`2 and `x.floor`5 | 細岩橋の通行は突風待機前提となり、単独横断が禁止運用へ変更された |
-| explore | `x.exp_id`2 and `x.floor`5 | 風鳴りに混ざる残響解析で、錯聴誘導域の地図化が進んでいる |
-| explore | `x.exp_id`2 and `x.floor`5 | 風蝕洞の連結が確認され、緊急退避路の候補網が拡張された |
-| explore | `x.exp_id`2 and `x.floor`5 | 谷底渦風を外す斜行ルートが定着し、転倒事故率の低下が報告された |
-| explore | `x.exp_id`2 and `x.floor`5 | 砂礫下の境界碑文が復元され、古峠道の管理範囲が再定義された |
-| explore | `x.exp_id`2 and `x.floor`5 | 乾骨分布と祭祀痕が一致し、風葬文化圏としての性格が補強された |
-| explore | `x.exp_id`2 and `x.floor`5 | 綱杭再整備の効果で、後続隊の裂谷横断時間が短縮されている |
-| explore | `x.exp_id`2 and `x.floor`6 | 蒼白石造の神殿群が残存し、高地祭祀圏の中心遺構と確認された |
-| explore | `x.exp_id`2 and `x.floor`6 | 欠損神像の銘文解読で、古誓約体系の断片が新たに記録された |
-| explore | `x.exp_id`2 and `x.floor`6 | 苔下の祭壇痕から、長期にわたる継続祈祷の存在が裏付けられた |
-| explore | `x.exp_id`2 and `x.floor`6 | 破天蓋からの採光線が主殿導線と一致し、儀礼設計の意図が示された |
-| explore | `x.exp_id`2 and `x.floor`6 | 風鳴石鈴の応答により、守護機構の一部が休眠状態で残ると推定された |
-| explore | `x.exp_id`2 and `x.floor`6 | 回廊浮彫の連続性が確認され、山民信仰の系譜再構築が進展している |
-| explore | `x.exp_id`2 and `x.floor`6 | 半壊香炉群の配置復元で、祭儀動線の再現精度が向上した |
-| explore | `x.exp_id`2 and `x.floor`6 | 床亀裂の石脈評価により、安全に主壇へ至る線が確保された |
-| explore | `x.exp_id`2 and `x.floor`6 | 壁画の狼紋が高頻度で出現し、守護獣信仰の中核性が確認された |
-| explore | `x.exp_id`2 and `x.floor`6 | 祈りの間の遺留痕が整理され、終末期まで礼式が継続した可能性が高まった |
-| explore | `x.exp_id`3 and `x.floor`1 | name は雪を払って針葉の枝を潜り、白銀の獣道を静かにたどっている |
-| explore | `x.exp_id`3 and `x.floor`1 | name は凍った下草を杖先で確かめ、沈み雪を避ける歩幅を刻んだ |
-| explore | `x.exp_id`3 and `x.floor`1 | name は松の幹に残る擦り痕を読み、冬毛の群れが通る方角を示した |
-| explore | `x.exp_id`3 and `x.floor`1 | name は吐息を白く曳きながら、風下へ伸びる細道に耳を澄ませている |
-| explore | `x.exp_id`3 and `x.floor`1 | name は霜に埋もれた境石を掘り起こし、古い狩路の起点を見つけた |
-| explore | `x.exp_id`3 and `x.floor`1 | name は雪明かりで樹間の陰を測り、伏せ身で抜ける安全帯を選んでいる |
-| explore | `x.exp_id`3 and `x.floor`1 | name は凍枝の鳴る高さを見比べ、重雪で折れやすい林冠を避けた |
-| explore | `x.exp_id`3 and `x.floor`1 | name は狐火めいた燐光を遠目に捉え、迷い森へ入らぬよう印を付けた |
-| explore | `x.exp_id`3 and `x.floor`1 | name は獣脂の匂いが残る幹を確かめ、昨夜の巡回圏を地図へ刻んでいる |
-| explore | `x.exp_id`3 and `x.floor`1 | name は白樺の裂け目から樹液氷を採り、凍傷避けの手当てを整えた |
-| explore | `x.exp_id`3 and `x.floor`2 | name は雪面の細い縄跡を見つけ、狩人が張った罠列の端を特定した |
-| explore | `x.exp_id`3 and `x.floor`2 | name は樹上見張り台の影を数え、視線が交わらない進路を選んでいる |
-| explore | `x.exp_id`3 and `x.floor`2 | name は撒かれた灰の筋を読み取り、足音を消す回り道へ仲間を導いた |
-| explore | `x.exp_id`3 and `x.floor`2 | name は枝先の鈴罠を息で揺らし、鳴らさず解ける張力を見極めた |
-| explore | `x.exp_id`3 and `x.floor`2 | name は雪庇の裏に伏せ、巡回する猟手の合図笛を聞き分けている |
-| explore | `x.exp_id`3 and `x.floor`2 | name は皮紐で結ばれた警戒符を外し、気付かれぬ道筋を再構成した |
-| explore | `x.exp_id`3 and `x.floor`2 | name は矢羽の落ちる向きを追って、待ち伏せ角度の死角へ滑り込んだ |
-| explore | `x.exp_id`3 and `x.floor`2 | name は松脂の焦げ跡を拾い、狩場境界を示す夜火の位置を記した |
-| explore | `x.exp_id`3 and `x.floor`2 | name は狐皮で覆われた落とし戸を見破り、踏み抜き地帯を大きく迂回した |
-| explore | `x.exp_id`3 and `x.floor`2 | name は風向きと足跡の乱れから、追跡班が戻る時刻を読み当てた |
-| explore | `x.exp_id`3 and `x.floor`3 | name は煙突から昇る細煙を見つめ、隠れ里がまだ息づく証に目を細めた |
-| explore | `x.exp_id`3 and `x.floor`3 | name は雪冠の丸太家屋を巡り、灯籠道に刻まれた家紋を写し取っている |
-| explore | `x.exp_id`3 and `x.floor`3 | name は凍った井戸枠の祈り札を直し、冬越しの無事をそっと願った |
-| explore | `x.exp_id`3 and `x.floor`3 | name は干し肉棚の残り香から、住民が急ぎ避難した時期を見極めた |
-| explore | `x.exp_id`3 and `x.floor`3 | name は雪に半ば埋もれた神楽面を拾い、祭礼の名残を丁重に包んだ |
-| explore | `x.exp_id`3 and `x.floor`3 | name は戸板の傷筋をなぞり、襲撃時の進入路を静かに復元している |
-| explore | `x.exp_id`3 and `x.floor`3 | name は凍土の倉に残る穀印を調べ、里の備蓄規模を記録へ残した |
-| explore | `x.exp_id`3 and `x.floor`3 | name は雪灯の並びを読み解き、吹雪時に使う避難導線を再確認した |
-| explore | `x.exp_id`3 and `x.floor`3 | name は木橋下の護符結びを解き、よそ者除けの結界を丁寧に迂回した |
-| explore | `x.exp_id`3 and `x.floor`3 | name は炉端石の温もりを測り、先行隊との時差を慎重に見積もっている |
-| explore | `x.exp_id`3 and `x.floor`4 | name は凍湖の白い平面に膝をつき、氷鳴りの間隔から厚みを測っている |
-| explore | `x.exp_id`3 and `x.floor`4 | name は吹雪で隠れた割れ目を杖で探り、安全な渡湖線を引き直した |
-| explore | `x.exp_id`3 and `x.floor`4 | name は風紋の向きを追って、薄氷が広がる危険帯を先に外した |
-| explore | `x.exp_id`3 and `x.floor`4 | name は氷下に揺れる影を見定め、群泳獣の通路を横切らぬ角度を選んだ |
-| explore | `x.exp_id`3 and `x.floor`4 | name は岸辺の石杭を掘り出し、冬だけ現れる渡り道の目印を確認した |
-| explore | `x.exp_id`3 and `x.floor`4 | name は裂氷音が重なる方位を聞き取り、停止すべき区画を即座に告げた |
-| explore | `x.exp_id`3 and `x.floor`4 | name は雪煙に消える対岸灯を見つけ、進路を北尾根へ微修正している |
-| explore | `x.exp_id`3 and `x.floor`4 | name は氷晶に映る月輪を頼りに、帰路標を失わぬよう印を刻んだ |
-| explore | `x.exp_id`3 and `x.floor`4 | name は裂けた漁網の位置を記録し、落氷が頻発する帯を地図へ追記した |
-| explore | `x.exp_id`3 and `x.floor`4 | name は凍結した舟着きを見つけ、かつての湖上交易路に思いを巡らせた |
-| explore | `x.exp_id`3 and `x.floor`5 | name は青白く光る氷晶柱の間を進み、反射迷路の規則を確かめている |
-| explore | `x.exp_id`3 and `x.floor`5 | name は洞壁の霜紋を指でなぞり、魔力が濃い流脈の曲がりを読んだ |
-| explore | `x.exp_id`3 and `x.floor`5 | name は結晶音の反響差を測り、崩れやすい空洞を先に封鎖した |
-| explore | `x.exp_id`3 and `x.floor`5 | name は氷底に眠る古骨を避け、聖域を穢さぬ迂回線を仲間へ示した |
-| explore | `x.exp_id`3 and `x.floor`5 | name は蒼光を返す鉱脈を見つけ、道標として使える稜線を刻んでいる |
-| explore | `x.exp_id`3 and `x.floor`5 | name は結露が凍る速さを確かめ、長居できる区画の限界を算出した |
-| explore | `x.exp_id`3 and `x.floor`5 | name は氷花が咲く裂け目に耳を寄せ、奥層の風道を静かに聞き取った |
-| explore | `x.exp_id`3 and `x.floor`5 | name は晶洞の天井に吊る霜柱を見上げ、接触を避ける低姿勢で進んだ |
-| explore | `x.exp_id`3 and `x.floor`5 | name は青光に紛れる幻影を見破り、本物の通路だけを白墨で示した |
-| explore | `x.exp_id`3 and `x.floor`5 | name は凍土祭壇の欠片を拾い、結晶信仰の古語を記録帳へ写した |
-| explore | `x.exp_id`3 and `x.floor`6 | name は降りしきる雪の静寂で歩を緩め、古き長老庭へ一礼して入った |
-| explore | `x.exp_id`3 and `x.floor`6 | name は石標に刻まれた狐印を拭い、評議の席順を慎ましく読み解いた |
-| explore | `x.exp_id`3 and `x.floor`6 | name は御神木の根元で風の詞を聞き、失われた盟約の断章を拾っている |
-| explore | `x.exp_id`3 and `x.floor`6 | name は雪に埋もれた座石を掘り出し、供物の並べ方を古式どおり整えた |
-| explore | `x.exp_id`3 and `x.floor`6 | name は祈念杭の傾きを正し、結界線がまだ生きていることを確かめた |
-| explore | `x.exp_id`3 and `x.floor`6 | name は聖庭を巡る足跡の疎密から、守り手が交替する時刻を推し量った |
-| explore | `x.exp_id`3 and `x.floor`6 | name は氷結した香炉を温め、淡い煙で方位を読む古儀を再現している |
-| explore | `x.exp_id`3 and `x.floor`6 | name は長老碑の欠けた一文を継ぎ、冬盟の誓いが続いた証を見いだした |
-| explore | `x.exp_id`3 and `x.floor`6 | name は梢を渡る雪片の舞いから、聖域に触れてはならぬ境を見極めた |
-| explore | `x.exp_id`3 and `x.floor`6 | name は白狐像へ小枝を供え、この森を守る誓約に静かに頭を垂れた |
-| explore | `x.exp_id`3 and `x.floor`1 | 深雪の針葉林では獣道が細く続き、白い静けさの中で進路が慎重に定められた |
-| explore | `x.exp_id`3 and `x.floor`1 | 樹冠から落ちる粉雪が視界を曇らせ、足場確認を優先する運用へ切り替えられた |
-| explore | `x.exp_id`3 and `x.floor`1 | 凍てた境石が掘り当てられ、古い森路の輪郭が探索図へ再記録された |
-| explore | `x.exp_id`3 and `x.floor`1 | 松脂の匂いが濃い帯は野獣巡回圏と判断され、風下迂回が徹底されている |
-| explore | `x.exp_id`3 and `x.floor`1 | 雪面反射で遠近感が狂いやすく、隊列間隔の固定規定が強化された |
-| explore | `x.exp_id`3 and `x.floor`1 | 枝鳴りの高さ差から重雪域が推定され、倒木危険帯の外周が更新された |
-| explore | `x.exp_id`3 and `x.floor`1 | 薄い燐光が見える区画は迷い現象の兆候とされ、目印杭の追加が実施された |
-| explore | `x.exp_id`3 and `x.floor`1 | 凍傷予防の小休止間隔が見直され、長時間行軍時の損耗が抑制された |
-| explore | `x.exp_id`3 and `x.floor`1 | 獣毛の付着点分布から、夜間の移動流向が高精度で推定されている |
-| explore | `x.exp_id`3 and `x.floor`1 | 白樺林の風裏を使う進行法が定着し、体温低下率の改善が報告された |
-| explore | `x.exp_id`3 and `x.floor`2 | 狩人道には擬装罠が密集し、踏査は先端検知を伴う低速運用へ移行した |
-| explore | `x.exp_id`3 and `x.floor`2 | 樹上見張り台の視線重複が解析され、無露見で抜ける時間窓が設定された |
-| explore | `x.exp_id`3 and `x.floor`2 | 枝先鈴罠の共鳴範囲が測定され、接近時の無音解除手順が標準化された |
-| explore | `x.exp_id`3 and `x.floor`2 | 足跡に混ざる灰散布は追跡攪乱策と判明し、逆算読図の精度が向上した |
-| explore | `x.exp_id`3 and `x.floor`2 | 落とし戸の偽装材質が共有され、雪下空洞を避ける迂回路網が拡張された |
-| explore | `x.exp_id`3 and `x.floor`2 | 合図笛の節回しが採譜され、巡回班の交代周期が見える化された |
-| explore | `x.exp_id`3 and `x.floor`2 | 矢羽落下の偏りから伏撃角度が再現され、死角進行の成功率が高まった |
-| explore | `x.exp_id`3 and `x.floor`2 | 樹皮刻印の更新時期が比較され、最近稼働した狩場境が限定された |
-| explore | `x.exp_id`3 and `x.floor`2 | 風向固定の匂い対策により、追尾獣への被発見率低下が維持されている |
-| explore | `x.exp_id`3 and `x.floor`2 | 罠列の空白区画が洗い出され、安全通過の基準線として全隊へ共有された |
-| explore | `x.exp_id`3 and `x.floor`3 | 雪屋根の集落遺構が確認され、冬適応型の生活動線が体系的に記録された |
-| explore | `x.exp_id`3 and `x.floor`3 | 灯籠道の配列復元により、吹雪時の避難誘導設計が再現されつつある |
-| explore | `x.exp_id`3 and `x.floor`3 | 井戸縁の祈札群が保全され、共同体の守護儀礼が継続していたと裏付けられた |
-| explore | `x.exp_id`3 and `x.floor`3 | 倉印の残存率から、急退避時の備蓄搬出優先順位が推定された |
-| explore | `x.exp_id`3 and `x.floor`3 | 戸板の斬痕方向が一致し、襲撃主力の進入線が一本化されていると判定された |
-| explore | `x.exp_id`3 and `x.floor`3 | 神楽面の散布範囲が整理され、祭礼場崩壊の時系列が更新された |
-| explore | `x.exp_id`3 and `x.floor`3 | 木橋下の護符結びは外来除け機能を持ち、回避導線の再設定が行われた |
-| explore | `x.exp_id`3 and `x.floor`3 | 炉端石の温度差測定により、先行調査隊との時間差が精密化された |
-| explore | `x.exp_id`3 and `x.floor`3 | 路地の雪踏み密度から、住民集合地点の候補が段階的に絞り込まれた |
-| explore | `x.exp_id`3 and `x.floor`3 | 屋根雪落下帯の監視強化で、市街通過時の負傷率が抑制されている |
-| explore | `x.exp_id`3 and `x.floor`4 | 凍湖横断は氷厚観測を前提とし、停止合図の閾値が再定義された |
-| explore | `x.exp_id`3 and `x.floor`4 | 風紋と亀裂線の相関解析で、薄氷危険帯の地図精度が向上した |
-| explore | `x.exp_id`3 and `x.floor`4 | 裂氷音の周波数分類が進み、崩断前兆の早期検知が可能となった |
-| explore | `x.exp_id`3 and `x.floor`4 | 岸杭の埋没深度比較から、季節ごとの安全渡湖線が再構築された |
-| explore | `x.exp_id`3 and `x.floor`4 | 雪煙で消える対岸灯は方位誤認を誘発し、補助羅針運用が義務化された |
-| explore | `x.exp_id`3 and `x.floor`4 | 氷下影の移動流が記録され、群泳獣との交差回避計画が更新された |
-| explore | `x.exp_id`3 and `x.floor`4 | 漁網残骸の位置一致から、落氷頻発区画の境界が確定した |
-| explore | `x.exp_id`3 and `x.floor`4 | 月光反射で生じる視差対策として、隊列内標識の色規定が改訂された |
-| explore | `x.exp_id`3 and `x.floor`4 | 凍舟着き場の遺構確認により、旧交易路の補給点候補が復元された |
-| explore | `x.exp_id`3 and `x.floor`4 | 横風強度の蓄積値を基に、渡湖可否の判断基準が厳格化された |
-| explore | `x.exp_id`3 and `x.floor`5 | 晶洞内の反射迷路は方位喪失を招きやすく、標識連結法が強化された |
-| explore | `x.exp_id`3 and `x.floor`5 | 霜紋の成長方向が魔力流脈と一致し、進行可能帯の推定精度が上がった |
-| explore | `x.exp_id`3 and `x.floor`5 | 結晶共鳴音の分布図作成で、崩落予兆区画の監視密度が増強された |
-| explore | `x.exp_id`3 and `x.floor`5 | 氷底古骨の周辺は禁足扱いとなり、聖域保全を伴う迂回導線が設定された |
-| explore | `x.exp_id`3 and `x.floor`5 | 蒼光鉱脈の連なりが道標化され、往復経路の再現性が改善している |
-| explore | `x.exp_id`3 and `x.floor`5 | 低温滞在限界の再評価により、探索と退避の切替時刻が前倒しされた |
-| explore | `x.exp_id`3 and `x.floor`5 | 霜柱落下の危険評価が更新され、通過時の姿勢規定が低位化された |
-| explore | `x.exp_id`3 and `x.floor`5 | 幻影発生域の色差検証で、偽通路誤進入の件数が有意に減少した |
-| explore | `x.exp_id`3 and `x.floor`5 | 凍土祭壇片の読解が進み、結晶信仰圏の儀礼語彙が新規登録された |
-| explore | `x.exp_id`3 and `x.floor`5 | 洞気流の脈動観測から、奥層と外縁を結ぶ風道網が推定された |
-| explore | `x.exp_id`3 and `x.floor`6 | 聖庭石標群の配置復元により、長老評議の座次秩序が再確認された |
-| explore | `x.exp_id`3 and `x.floor`6 | 御神木周辺の風音記録が蓄積され、境界結界の活性周期が推定された |
-| explore | `x.exp_id`3 and `x.floor`6 | 供物座石の痕跡比較から、季節儀礼の実施頻度が上方修正された |
-| explore | `x.exp_id`3 and `x.floor`6 | 祈念杭の傾斜補正で、外縁結界線の連続性が部分的に回復した |
-| explore | `x.exp_id`3 and `x.floor`6 | 足跡疎密の解析により、守り手の交替時間帯が統計的に抽出された |
-| explore | `x.exp_id`3 and `x.floor`6 | 香炉煙の流線追跡で、聖域内の安定進行路が高精度で示された |
-| explore | `x.exp_id`3 and `x.floor`6 | 長老碑の欠文接合が進み、冬盟誓約の継承系譜が再構築された |
-| explore | `x.exp_id`3 and `x.floor`6 | 白狐像群の向き一致から、祈祷時の巡礼動線が復元されている |
-| explore | `x.exp_id`3 and `x.floor`6 | 梢雪の落下分布が境界指標と合致し、禁触区画の再設定が完了した |
-| explore | `x.exp_id`3 and `x.floor`6 | 聖庭外周の碑片整理で、評議場末期の防衛改修記録が補強された |
-| explore | `x.exp_id`4 and `x.floor`1 | name は巨岩の門柱に刻まれた熊紋へ手を当て、古き関門の誓いを確かめている |
-| explore | `x.exp_id`4 and `x.floor`1 | name は狭い峠道に残る盾列の跡を追い、守備隊の布陣線を読み解いた |
-| explore | `x.exp_id`4 and `x.floor`1 | name は山風に軋む鉄門の鎖を整え、退路を閉ざさぬよう進路を選んでいる |
-| explore | `x.exp_id`4 and `x.floor`1 | name は岩壁の見張り窓へ視線を巡らせ、伏兵が潜む死角を先に潰した |
-| explore | `x.exp_id`4 and `x.floor`1 | name は崩れた防壁石を乗り越え、熊族が築いた外郭路へ静かに足を踏み入れた |
-| explore | `x.exp_id`4 and `x.floor`1 | name は門前に散る槍片を拾い、最初の防衛戦が激戦だったと仲間へ告げた |
-| explore | `x.exp_id`4 and `x.floor`1 | name は関門脇の狼煙台を確かめ、合図が届く高所線を地図へ刻んでいる |
-| explore | `x.exp_id`4 and `x.floor`1 | name は石畳の摩耗を見て、補給隊が往来した古道の太さを測り取った |
-| explore | `x.exp_id`4 and `x.floor`1 | name は山門を抜ける突風へ身を伏せ、弓射線を避ける低姿勢で進んでいる |
-| explore | `x.exp_id`4 and `x.floor`1 | name は防壁の影に残る祈祷印をなぞり、峠守たちの加護が続くと信じた |
-| explore | `x.exp_id`4 and `x.floor`2 | name は尾根の監視塔を見上げ、谷を渡る視界線の重なりを数えている |
-| explore | `x.exp_id`4 and `x.floor`2 | name は崩れた階段を這い上がり、見張り台から侵入路の全景を掴んだ |
-| explore | `x.exp_id`4 and `x.floor`2 | name は塔壁に刻まれた交代刻印を読み、巡回の間隙へ歩調を合わせた |
-| explore | `x.exp_id`4 and `x.floor`2 | name は稜線を叩く風音を聞き分け、警鐘に紛れる足音を消して進んでいる |
-| explore | `x.exp_id`4 and `x.floor`2 | name は見張り火皿の煤を払い、かつての警戒網が生きた証を確かめた |
-| explore | `x.exp_id`4 and `x.floor`2 | name は塔同士を結ぶ旗索の残骸を辿り、連絡路の順序を復元している |
-| explore | `x.exp_id`4 and `x.floor`2 | name は断崖際の哨戒路を避け、雲影に紛れる内側の石道へ回り込んだ |
-| explore | `x.exp_id`4 and `x.floor`2 | name は矢狭間越しに谷底を覗き、奇襲を受けにくい隊列へ組み替えた |
-| explore | `x.exp_id`4 and `x.floor`2 | name は塔門に刺さる古矢を抜き、厳戒の記憶を胸に進軍速度を抑えている |
-| explore | `x.exp_id`4 and `x.floor`2 | name は稜線の石像へ一礼し、峰を守る監視兵の魂へ無事を祈った |
-| explore | `x.exp_id`4 and `x.floor`3 | name は山腹を裂く壕線へ降り、鉄盾の列が残した防衛帯を踏査している |
-| explore | `x.exp_id`4 and `x.floor`3 | name は泥に沈んだ槍柄を引き上げ、退かぬ誓いがここにあったと悟った |
-| explore | `x.exp_id`4 and `x.floor`3 | name は土塁の切れ目を見つけ、突撃路と退避路の交点を丁寧に記録した |
-| explore | `x.exp_id`4 and `x.floor`3 | name は壕底の足場板を叩いて確かめ、崩落を避ける進路を選び取っている |
-| explore | `x.exp_id`4 and `x.floor`3 | name は錆びた旗杭の向きを読み、当時の主戦軸を仲間へ示している |
-| explore | `x.exp_id`4 and `x.floor`3 | name は防柵に絡む鎖を外し、隊が通れる幅へ通路を広げた |
-| explore | `x.exp_id`4 and `x.floor`3 | name は壕上の岩陰で息を潜め、落石罠の合図線を慎重に切り分けた |
-| explore | `x.exp_id`4 and `x.floor`3 | name は折れた角笛を拾い、反攻の号令が響いた刻を想像している |
-| explore | `x.exp_id`4 and `x.floor`3 | name は土煙に埋もれた胸当てを払い、守備兵の紋章を静かに弔った |
-| explore | `x.exp_id`4 and `x.floor`3 | name は壕路の分岐へ印石を置き、後続が迷わぬ導線を整えている |
-| explore | `x.exp_id`4 and `x.floor`4 | name は赤く脈打つ地割れを跨ぎ、灼熱の炉野に続く細道を探っている |
-| explore | `x.exp_id`4 and `x.floor`4 | name は噴気孔の周期を数え、炎柱が収まる瞬間だけを狙って渡った |
-| explore | `x.exp_id`4 and `x.floor`4 | name は溶岩流の縁で熱歪みを見切り、幻の足場を避けて前進している |
-| explore | `x.exp_id`4 and `x.floor`4 | name は焦げた岩棚へ護符を打ち、熱風で散らぬ目印を残した |
-| explore | `x.exp_id`4 and `x.floor`4 | name は硫の匂いに顔布を締め、息継ぎできる風洞へ隊を導いている |
-| explore | `x.exp_id`4 and `x.floor`4 | name は灼けた鎖橋のたわみを測り、荷重を分散して慎重に越えた |
-| explore | `x.exp_id`4 and `x.floor`4 | name は火口壁に残る鍛冶印を見つけ、炉神へ捧げた古儀式を思い出した |
-| explore | `x.exp_id`4 and `x.floor`4 | name は灰の舞う斜面へ低く構え、視界を奪う熱霞の中を進んでいる |
-| explore | `x.exp_id`4 and `x.floor`4 | name はマグマ脈の明滅を読み、最も揺れの少ない岩路へ回り込んだ |
-| explore | `x.exp_id`4 and `x.floor`4 | name は炎影に揺れる熊像へ祈り、灼熱を越える胆力を奮い立たせた |
-| explore | `x.exp_id`4 and `x.floor`5 | name は山腹深くの大鍛炉跡へ入り、巨槌台に刻まれた工房紋を確かめた |
-| explore | `x.exp_id`4 and `x.floor`5 | name は溶岩導水路の分岐を調べ、炉床へ熱を送る古機構を復元している |
-| explore | `x.exp_id`4 and `x.floor`5 | name は黒鉄の金床に手を置き、英雄武具が鍛たれた残熱を感じ取った |
-| explore | `x.exp_id`4 and `x.floor`5 | name は吊り鎖だらけの作業廊を進み、崩れた炉橋の安全帯を張っている |
-| explore | `x.exp_id`4 and `x.floor`5 | name は煤けた銘板を磨き、名匠たちの連名を仲間へ読み上げた |
-| explore | `x.exp_id`4 and `x.floor`5 | name は鍛造床に残る槌痕の間隔を測り、工房ごとの技法差を見抜いている |
-| explore | `x.exp_id`4 and `x.floor`5 | name は炉室を巡る送風孔を塞ぎ、逆噴気を防いで進路を確保した |
-| explore | `x.exp_id`4 and `x.floor`5 | name は割れた坩堝片を拾い、神鉄精錬が行われた証を袋へ収めた |
-| explore | `x.exp_id`4 and `x.floor`5 | name は工房祭壇の灰を払って、鍛冶神へ無事帰還の願を捧げている |
-| explore | `x.exp_id`4 and `x.floor`5 | name は赤光を反す炉天井を見上げ、次の崩落音が来る前に歩を速めた |
-| explore | `x.exp_id`4 and `x.floor`6 | name は天を仰ぐ聖鍛峰へ辿り着き、巨炉祭壇の前で息を整えている |
-| explore | `x.exp_id`4 and `x.floor`6 | name は風雪に晒された熊神像を拭い、峰を守る古誓へ静かに頭を垂れた |
-| explore | `x.exp_id`4 and `x.floor`6 | name は祭壇柱の鍛造文様を読み、王工たちの系譜を辿っている |
-| explore | `x.exp_id`4 and `x.floor`6 | name は峰上回廊のひび割れを跨ぎ、聖火台へ続く巡礼路を見定めた |
-| explore | `x.exp_id`4 and `x.floor`6 | name は雲海を渡る鐘音に耳を澄まし、儀礼開始の合図を探っている |
-| explore | `x.exp_id`4 and `x.floor`6 | name は風化した供物台へ鍛鉄片を置き、戦匠たちの魂へ敬意を示した |
-| explore | `x.exp_id`4 and `x.floor`6 | name は星光を映す炉皿の縁をなぞり、天火を招く古式の配置を確かめた |
-| explore | `x.exp_id`4 and `x.floor`6 | name は峰壁の旗穴を数え、守護団の布陣規模を推定している |
-| explore | `x.exp_id`4 and `x.floor`6 | name は祭場を巡る石輪に印を結び、禁域へ踏み込まぬ境界を整えた |
-| explore | `x.exp_id`4 and `x.floor`6 | name は暁の風に外套を翻し、聖なる鍛炉の頂で次の一歩を誓った |
-| explore | `x.exp_id`4 and `x.floor`1 | 巨岩門柱の熊紋刻印は風化しつつも判読可能で、外郭防衛線の年代推定が進んだ |
-| explore | `x.exp_id`4 and `x.floor`1 | 石門蝶番の摩耗方向から、関門開閉頻度と補給通行量の相関が確認された |
-| explore | `x.exp_id`4 and `x.floor`1 | 防壁上の矢狭間間隔計測により、対谷射線の重複域が地図化された |
-| explore | `x.exp_id`4 and `x.floor`1 | 門前石畳の沈下分布が重装輸送路を示し、進軍導線の再現性が向上した |
-| explore | `x.exp_id`4 and `x.floor`1 | 狼煙台基壇の煤層分析から、外敵接近時の信号運用周期が抽出された |
-| explore | `x.exp_id`4 and `x.floor`1 | 防壁内側の祈祷印配置は守護儀礼と一致し、精神防衛網の構造が補強された |
-| explore | `x.exp_id`4 and `x.floor`1 | 崩落石材の刻印照合で、門郭補修に複数工房が関与した事実が裏付けられた |
-| explore | `x.exp_id`4 and `x.floor`1 | 風路観測により関門通過時の聴覚死角が判明し、潜行手順が更新された |
-| explore | `x.exp_id`4 and `x.floor`1 | 門塔階段の踏耗差比較で、哨戒班と工兵班の移動経路が分離推定された |
-| explore | `x.exp_id`4 and `x.floor`1 | 峠側石垣の継ぎ目補修痕から、最終防衛期の急造改修記録が復元された |
-| explore | `x.exp_id`4 and `x.floor`2 | 稜線監視塔の視界重畳解析で、谷道監視網の盲点区画が特定された |
-| explore | `x.exp_id`4 and `x.floor`2 | 塔内交代刻印の時系列整理により、哨戒間隔の季節変動が抽出された |
-| explore | `x.exp_id`4 and `x.floor`2 | 旗索固定環の残存位置から、緊急連絡方向の優先順位が再構築された |
-| explore | `x.exp_id`4 and `x.floor`2 | 風鳴りと警鐘共鳴の周波数分離で、偽警報判定精度が改善している |
-| explore | `x.exp_id`4 and `x.floor`2 | 塔門古矢の材質比較により、交戦相手勢力の装備系統が追加同定された |
-| explore | `x.exp_id`4 and `x.floor`2 | 断崖哨戒路の足場幅測定で、重装巡回と軽装伝令の導線差が確認された |
-| explore | `x.exp_id`4 and `x.floor`2 | 火皿煤層の堆積厚から、夜間警戒強化期の持続日数が推定された |
-| explore | `x.exp_id`4 and `x.floor`2 | 見張り窓の開口角補正で、対上昇侵入の監視効率が定量化された |
-| explore | `x.exp_id`4 and `x.floor`2 | 塔外石像の配置は方位儀礼を示し、監視任務の誓約構文が解読された |
-| explore | `x.exp_id`4 and `x.floor`2 | 雲霧流の記録蓄積により、稜線潜行の適正時刻帯が更新された |
-| explore | `x.exp_id`4 and `x.floor`3 | 壕線断面の再測量で、防衛深度と兵站支援路の連動設計が確認された |
-| explore | `x.exp_id`4 and `x.floor`3 | 錆盾列の間隔解析により、近接阻止陣形の標準配置が復元された |
-| explore | `x.exp_id`4 and `x.floor`3 | 壕底足場板の腐朽度比較から、最終使用期の降雨条件が推定された |
-| explore | `x.exp_id`4 and `x.floor`3 | 土塁切れ目の堆積差が反撃路候補を示し、機動迂回計画が再評価された |
-| explore | `x.exp_id`4 and `x.floor`3 | 防柵鎖節の破断面検査で、破壊時の衝撃方向が高精度で特定された |
-| explore | `x.exp_id`4 and `x.floor`3 | 角笛残片の音孔配列比較から、号令系統の階梯構造が補完された |
-| explore | `x.exp_id`4 and `x.floor`3 | 壕上落石罠の索線痕追跡で、起動位置の安全回避帯が確定した |
-| explore | `x.exp_id`4 and `x.floor`3 | 胸甲紋章群の照合が進み、守備連隊の編成規模推定が上方修正された |
-| explore | `x.exp_id`4 and `x.floor`3 | 壕路分岐への標識石再配置で、後続隊の迷走率が有意に低下した |
-| explore | `x.exp_id`4 and `x.floor`3 | 土煙粒度の地層比較から、戦闘期における重踏圧区画が抽出された |
-| explore | `x.exp_id`4 and `x.floor`4 | 地割れ熱流の時系列観測で、炉野横断の安全窓が再定義された |
-| explore | `x.exp_id`4 and `x.floor`4 | 噴気孔周期の同期解析により、炎柱連鎖発生域の予測精度が向上した |
-| explore | `x.exp_id`4 and `x.floor`4 | 溶岩縁の熱歪み補正が進み、視覚誤認による転落件数が抑制された |
-| explore | `x.exp_id`4 and `x.floor`4 | 焦岩面への耐熱標識再設置で、退避導線の視認性が恒常化された |
-| explore | `x.exp_id`4 and `x.floor`4 | 硫気濃度分布図の更新により、呼吸保護具交換時刻が最適化された |
-| explore | `x.exp_id`4 and `x.floor`4 | 鎖橋たわみの荷重試験結果から、隊列通過順序の規定が改訂された |
-| explore | `x.exp_id`4 and `x.floor`4 | 火口壁鍛冶印の位置一致が確認され、炉神儀礼圏の境界が再構築された |
-| explore | `x.exp_id`4 and `x.floor`4 | 灰流風向の記録蓄積で、熱霞下の視程補助手順が標準化された |
-| explore | `x.exp_id`4 and `x.floor`4 | マグマ脈明滅の同期帯抽出により、低揺動岩路の選定精度が上がった |
-| explore | `x.exp_id`4 and `x.floor`4 | 炎影領域の像差検証で、錯視進入リスクの高い区画が明示された |
-| explore | `x.exp_id`4 and `x.floor`5 | 大鍛炉主室の平面復元により、工房区画と祭祀区画の機能分離が判明した |
-| explore | `x.exp_id`4 and `x.floor`5 | 溶岩導水路の勾配再計測で、炉床加熱効率の設計思想が再確認された |
-| explore | `x.exp_id`4 and `x.floor`5 | 金床表面の槌痕密度比較から、用途別鍛造台の役割分担が推定された |
-| explore | `x.exp_id`4 and `x.floor`5 | 作業廊吊り鎖の応力痕解析で、運搬機構の最大荷重が算定された |
-| explore | `x.exp_id`4 and `x.floor`5 | 煤化銘板の接合進展により、名匠連盟の継承系譜が補完された |
-| explore | `x.exp_id`4 and `x.floor`5 | 鍛造床打刻間隔の統計処理で、工房ごとの工程時間差が可視化された |
-| explore | `x.exp_id`4 and `x.floor`5 | 送風孔逆流試験の結果、炉室通過時の停止閾値が厳格化された |
-| explore | `x.exp_id`4 and `x.floor`5 | 坩堝片成分の再分析により、神鉄精錬工程の温度帯が上方補正された |
-| explore | `x.exp_id`4 and `x.floor`5 | 工房祭壇灰層の年代比定が進み、鍛冶儀礼の継続期間が明確化された |
-| explore | `x.exp_id`4 and `x.floor`5 | 炉天井亀裂の伸長監視で、崩落予兆区画の封鎖判断が迅速化された |
-| explore | `x.exp_id`4 and `x.floor`6 | 聖鍛峰祭場の軸線復元により、天体観測と儀礼導線の一致が確認された |
-| explore | `x.exp_id`4 and `x.floor`6 | 熊神像表面の風化差比較で、補修祭の実施周期が統計的に抽出された |
-| explore | `x.exp_id`4 and `x.floor`6 | 祭壇柱鍛造文様の照合から、王工系譜の分岐年代が再整理された |
-| explore | `x.exp_id`4 and `x.floor`6 | 峰上回廊亀裂の変位観測により、巡礼路通行可能帯が更新された |
-| explore | `x.exp_id`4 and `x.floor`6 | 雲海鐘音の到達時間差測定で、儀礼開始合図の伝播範囲が推定された |
-| explore | `x.exp_id`4 and `x.floor`6 | 供物台残渣の材質分析が進み、戦匠奉納品の分類体系が拡張された |
-| explore | `x.exp_id`4 and `x.floor`6 | 炉皿反射角の再計測で、天火招来儀式の配置精度が補強された |
-| explore | `x.exp_id`4 and `x.floor`6 | 峰壁旗穴の間隔規格化により、守護団編成基準の推定誤差が縮小した |
-| explore | `x.exp_id`4 and `x.floor`6 | 外輪石の境界標識再接合で、禁域管理線の連続性が回復している |
-| explore | `x.exp_id`4 and `x.floor`6 | 暁風時の祭場微振動記録が蓄積され、高所滞在上限の判断精度が改善した |
-| explore | `x.exp_id`5 and `x.floor`1 | name は月光に濡れる苔道へ足を乗せ、白花が示す巡礼路を静かに辿っている |
-| explore | `x.exp_id`5 and `x.floor`1 | name は樹冠の隙から落ちる銀の光を頼りに、迷いの小径を見極めた |
-| explore | `x.exp_id`5 and `x.floor`1 | name は梢で揺れる風鈴草の音を聞き、精霊が眠る方角へ歩を進めている |
-| explore | `x.exp_id`5 and `x.floor`1 | name は淡く光る胞子の流れを追い、夜露に沈む森門をくぐった |
-| explore | `x.exp_id`5 and `x.floor`1 | name は白銀の蔓に触れて古い祝詞を口ずさみ、穢れなき道を選んだ |
-| explore | `x.exp_id`5 and `x.floor`1 | name は月兎石の並びを読み取り、巡礼者が残した安全圏を確かめている |
-| explore | `x.exp_id`5 and `x.floor`1 | name は蛍火の輪に合わせて呼吸を整え、森の鼓動と歩調を重ねた |
-| explore | `x.exp_id`5 and `x.floor`1 | name は香る白花を道標にし、薄明の帳を裂くように進んでいる |
-| explore | `x.exp_id`5 and `x.floor`1 | name は月影に浮かぶ石像へ一礼し、静謐なる結界の内へ踏み入れた |
-| explore | `x.exp_id`5 and `x.floor`1 | name は露を含む葉先の揺れを見て、気配なき獣道を先回りしている |
-| explore | `x.exp_id`5 and `x.floor`2 | name は曲水沿いの石畳を撫で、フェリディアン庭師の流儀を読み解いた |
-| explore | `x.exp_id`5 and `x.floor`2 | name は月彩砂の紋様を辿り、庭園迷路の正しい巡路を選び取っている |
-| explore | `x.exp_id`5 and `x.floor`2 | name は苔むす燈籠へ灯芯を戻し、消えかけた祈りの導線を繋いだ |
-| explore | `x.exp_id`5 and `x.floor`2 | name は刈り込まれた灌木の陰を抜け、伏せられた罠杭を避けて進んだ |
-| explore | `x.exp_id`5 and `x.floor`2 | name は花弁に刻まれた紋章を見つけ、旧家の庭域境界を地図へ移した |
-| explore | `x.exp_id`5 and `x.floor`2 | name は小橋の反り具合を確かめ、崩れやすい園路を仲間へ示している |
-| explore | `x.exp_id`5 and `x.floor`2 | name は香木の列植を数え、迎賓路と退避路の分岐点を割り出した |
-| explore | `x.exp_id`5 and `x.floor`2 | name は水面に映る月紋を目安に、幻惑を招く枝道を外している |
-| explore | `x.exp_id`5 and `x.floor`2 | name は石庭に残る爪痕を観察し、夜番の巡回周期を推定した |
-| explore | `x.exp_id`5 and `x.floor`2 | name は銀砂の波紋を崩さぬよう足取りを抑え、庭奥の門へ近づいた |
-| explore | `x.exp_id`5 and `x.floor`3 | name は黒蔓が絡む影径へ身を沈め、息を殺して暗い藪を抜けている |
-| explore | `x.exp_id`5 and `x.floor`3 | name は根上に残る爪研ぎ痕を読み、潜む捕食者の縄張りを避けた |
-| explore | `x.exp_id`5 and `x.floor`3 | name は月光の届かぬ窪地で短剣を逆手に構え、伏撃の気配を待った |
-| explore | `x.exp_id`5 and `x.floor`3 | name は倒木の洞に耳を当て、地鳴りのような唸りを遠くから捉えている |
-| explore | `x.exp_id`5 and `x.floor`3 | name は闇苔の発光周期を測り、安全に渡れる刻だけを選んで進んだ |
-| explore | `x.exp_id`5 and `x.floor`3 | name は棘枝の迷路へ印糸を結び、帰還路を失わぬ工夫を施した |
-| explore | `x.exp_id`5 and `x.floor`3 | name は濡れた腐葉土の沈み方を確かめ、踏み抜き罠の区画を回避している |
-| explore | `x.exp_id`5 and `x.floor`3 | name は枝葉のざわめきを逆算し、待ち伏せる影獣の死角へ回り込んだ |
-| explore | `x.exp_id`5 and `x.floor`3 | name は夜気に混じる鉄錆の匂いを嗅ぎ取り、旧戦場の外縁を見切った |
-| explore | `x.exp_id`5 and `x.floor`3 | name は闇の奥で瞬く双眸を見据え、退路を確保しつつ一歩ずつ前進した |
-| explore | `x.exp_id`5 and `x.floor`4 | name は鏡のごとき湖面へ視線を落とし、偽りの星路を見破っている |
-| explore | `x.exp_id`5 and `x.floor`4 | name は岸辺の石灯籠に残る煤を払い、聖湖巡礼の古い導線を復した |
-| explore | `x.exp_id`5 and `x.floor`4 | name は月映りの揺らぎを測り、幻像が現れる方位を仲間へ伝えた |
-| explore | `x.exp_id`5 and `x.floor`4 | name は苔むした猫像へ香を供え、湖守の怒りを鎮めてから渡渉した |
-| explore | `x.exp_id`5 and `x.floor`4 | name は浅瀬に沈む白石を拾い、儀礼橋の失われた継ぎ目を見つけた |
-| explore | `x.exp_id`5 and `x.floor`4 | name は水鳥の飛び立つ順を追って、沈泥の薄い安全帯を選んでいる |
-| explore | `x.exp_id`5 and `x.floor`4 | name は湖畔碑の欠字をなぞり、月鏡祭の禁則を静かに読み上げた |
-| explore | `x.exp_id`5 and `x.floor`4 | name は波紋ひとつない水面を横目に、音を断つ歩法で聖域へ入った |
-| explore | `x.exp_id`5 and `x.floor`4 | name は薄霧に紛れる桟道を試し、軋みの少ない板だけを選び進んだ |
-| explore | `x.exp_id`5 and `x.floor`4 | name は月輪を映す中央域を避け、幻惑を受けにくい外周路へ迂回した |
-| explore | `x.exp_id`5 and `x.floor`5 | name は古祠の鳥居をくぐり、黄昏の祝詞が残る中庭へ踏み入れた |
-| explore | `x.exp_id`5 and `x.floor`5 | name は祭具庫の封紐を確かめ、未解封の儀礼具を慎重に記録している |
-| explore | `x.exp_id`5 and `x.floor`5 | name は回廊の月紋配置を読み、祈祷者の進退順路を復元した |
-| explore | `x.exp_id`5 and `x.floor`5 | name は石畳に残る香灰を集め、最後の祭が行われた刻を推し量った |
-| explore | `x.exp_id`5 and `x.floor`5 | name は社殿の鈴緒を張り直し、乱れた結界音を静かに整えている |
-| explore | `x.exp_id`5 and `x.floor`5 | name は朱塗りの欄干に爪痕を見つけ、護り手の抵抗線を追跡した |
-| explore | `x.exp_id`5 and `x.floor`5 | name は祈祷庭の砂紋を崩さぬよう、定められた歩幅で進んでいる |
-| explore | `x.exp_id`5 and `x.floor`5 | name は鐘架の影で耳を澄ませ、遠く響く祭囃子の残響を測った |
-| explore | `x.exp_id`5 and `x.floor`5 | name は供物台の欠片を並べ替え、失われた奉納式の順序を導き出した |
-| explore | `x.exp_id`5 and `x.floor`5 | name は黄昏色の幔幕を払い、奥祠へ続く封鎖路を解きほぐした |
-| explore | `x.exp_id`5 and `x.floor`6 | name は月都の石街路へ足を踏み入れ、整然たる区画の気配を測っている |
-| explore | `x.exp_id`5 and `x.floor`6 | name は銀灯の並ぶ広場を巡り、行政区と祭祀区の境を見定めた |
-| explore | `x.exp_id`5 and `x.floor`6 | name は回廊屋根の意匠差を読み、旧王家の紋章圏を地図へ刻んだ |
-| explore | `x.exp_id`5 and `x.floor`6 | name は水路に落ちる月光角を測り、都心へ最短で届く導水線を掴んだ |
-| explore | `x.exp_id`5 and `x.floor`6 | name は市庭の掲示碑を解読し、戒律による夜間通行規則を仲間へ伝えた |
-| explore | `x.exp_id`5 and `x.floor`6 | name は石橋下の反響を確かめ、追手に悟られにくい連絡路を選んでいる |
-| explore | `x.exp_id`5 and `x.floor`6 | name は宮門の鎖鍵へ触れ、封都最後の日に施された封印術を見抜いた |
-| explore | `x.exp_id`5 and `x.floor`6 | name は月庁舎の柱列を数え、議場へ至る儀礼動線を復元している |
-| explore | `x.exp_id`5 and `x.floor`6 | name は白石の街図盤を照合し、失われた居住区画の配置を再構成した |
-| explore | `x.exp_id`5 and `x.floor`6 | name は静まり返る宮前庭で一礼し、月都守護の誓約へ敬意を捧げた |
-| explore | `x.exp_id`5 and `x.floor`1 | 月光苔の発光分布が記録され、森門通過に適した巡礼帯が抽出された |
-| explore | `x.exp_id`5 and `x.floor`1 | 白花群の開閉周期解析により、夜露増加前の移動窓が再定義された |
-| explore | `x.exp_id`5 and `x.floor`1 | 風鈴草音の周波数比較で、精霊活動域の境界線が高精度で推定された |
-| explore | `x.exp_id`5 and `x.floor`1 | 銀蔓表皮の擦過痕照合から、先行隊の安全歩幅が復元された |
-| explore | `x.exp_id`5 and `x.floor`1 | 月兎石列の再測量により、古巡礼路と現地形の偏差が補正された |
-| explore | `x.exp_id`5 and `x.floor`1 | 蛍火群の滞留高度観測で、低視程時の誘導手順が標準化された |
-| explore | `x.exp_id`5 and `x.floor`1 | 石像基壇の欠損配置解析が進み、結界起点の再同定が完了した |
-| explore | `x.exp_id`5 and `x.floor`1 | 葉先露滴の方位偏差測定により、夜風主流路の地図精度が向上した |
-| explore | `x.exp_id`5 and `x.floor`1 | 胞子流線の時系列追跡から、迷路枝道の収束点が可視化された |
-| explore | `x.exp_id`5 and `x.floor`1 | 森門周辺土壌の沈降比較で、重踏圧区画の回避優先度が更新された |
-| explore | `x.exp_id`5 and `x.floor`2 | 園路石畳の摩耗差解析により、主導線と儀礼導線の機能分離が判明した |
-| explore | `x.exp_id`5 and `x.floor`2 | 月彩砂紋の位相比較で、庭園迷路における偽路生成規則が抽出された |
-| explore | `x.exp_id`5 and `x.floor`2 | 石燈籠煤層の年代比定が進み、照明維持周期の推定誤差が縮小した |
-| explore | `x.exp_id`5 and `x.floor`2 | 灌木列の剪定角再計測で、防諜目的の視線誘導設計が確認された |
-| explore | `x.exp_id`5 and `x.floor`2 | 花章刻印の照合結果から、旧家庭域の管理区分が再整理された |
-| explore | `x.exp_id`5 and `x.floor`2 | 小橋反り量の荷重試験により、隊列通過上限が安全側へ改訂された |
-| explore | `x.exp_id`5 and `x.floor`2 | 香木列植の間隔規格化で、迎賓儀礼時の進退基準が補完された |
-| explore | `x.exp_id`5 and `x.floor`2 | 水面月紋の像差補正を実施し、幻惑発生方位の判定精度が上がった |
-| explore | `x.exp_id`5 and `x.floor`2 | 爪痕深度の統計処理で、夜番巡回の更新時刻が定量化された |
-| explore | `x.exp_id`5 and `x.floor`2 | 銀砂波紋の崩壊速度観測から、静歩行に適した移動速度帯が導出された |
-| explore | `x.exp_id`5 and `x.floor`3 | 黒蔓密度の層別測量により、影径の視界遮断区画が明瞭化された |
-| explore | `x.exp_id`5 and `x.floor`3 | 爪研ぎ痕の高さ分布比較で、捕食者種別ごとの行動帯が整理された |
-| explore | `x.exp_id`5 and `x.floor`3 | 窪地音響の残響解析により、唸り声の発生源推定誤差が縮小した |
-| explore | `x.exp_id`5 and `x.floor`3 | 闇苔発光周期の連続記録が進み、安全横断窓の予測精度が改善した |
-| explore | `x.exp_id`5 and `x.floor`3 | 印糸設置点の再配置で、帰還路喪失率の有意な低下が確認された |
-| explore | `x.exp_id`5 and `x.floor`3 | 腐葉土沈降試験の結果、踏み抜き危険帯の境界が再定義された |
-| explore | `x.exp_id`5 and `x.floor`3 | 枝葉騒音の方向推定モデル更新により、伏撃察知の先行時間が延伸した |
-| explore | `x.exp_id`5 and `x.floor`3 | 鉄錆臭濃度勾配の測定で、旧戦場外縁の同定が高精度化された |
-| explore | `x.exp_id`5 and `x.floor`3 | 双眸反射光の波長比較から、夜行獣接近の判定基準が補強された |
-| explore | `x.exp_id`5 and `x.floor`3 | 棘枝迷路の接触痕照合が進み、低損耗進路の再現性が確認された |
-| explore | `x.exp_id`5 and `x.floor`4 | 湖面像の位相揺らぎ観測で、偽星路発生時刻の予測モデルが更新された |
-| explore | `x.exp_id`5 and `x.floor`4 | 石燈籠煤付着の風向補正により、巡礼導線再点火手順が確立した |
-| explore | `x.exp_id`5 and `x.floor`4 | 月映り振幅の連続測定から、幻像出現方位の再現率が向上した |
-| explore | `x.exp_id`5 and `x.floor`4 | 湖守像基壇の供香残渣分析で、鎮護儀礼の実施頻度が推定された |
-| explore | `x.exp_id`5 and `x.floor`4 | 浅瀬白石の配列復元により、儀礼橋基礎線の連続性が回復した |
-| explore | `x.exp_id`5 and `x.floor`4 | 水鳥離水順序の統計比較で、沈泥薄帯の判定時間が短縮された |
-| explore | `x.exp_id`5 and `x.floor`4 | 湖畔碑欠字の接合進展が、月鏡祭禁則の条文解読率を押し上げた |
-| explore | `x.exp_id`5 and `x.floor`4 | 無波面環境下の足音減衰試験により、静歩行導線の妥当性が確認された |
-| explore | `x.exp_id`5 and `x.floor`4 | 桟道軋み周波数の再計測で、板材劣化区画の更新判断が迅速化された |
-| explore | `x.exp_id`5 and `x.floor`4 | 中央映月域の錯視検証が進み、外周迂回路の安全係数が上方修正された |
-| explore | `x.exp_id`5 and `x.floor`5 | 鳥居木材の風化層比較により、祠域改修の年代幅が再整理された |
-| explore | `x.exp_id`5 and `x.floor`5 | 祭具庫封紐の繊維分析で、封印維持手順の変遷が系統化された |
-| explore | `x.exp_id`5 and `x.floor`5 | 回廊月紋配列の照合から、祈祷者進退順路の標準形が復元された |
-| explore | `x.exp_id`5 and `x.floor`5 | 石畳香灰層の年代比定が進み、最終祭儀実施期が限定された |
-| explore | `x.exp_id`5 and `x.floor`5 | 鈴緒張力の再試験結果で、結界音維持に必要な閾値が補強された |
-| explore | `x.exp_id`5 and `x.floor`5 | 欄干爪痕の方向解析により、護り手交戦軸の推定精度が向上した |
-| explore | `x.exp_id`5 and `x.floor`5 | 祈祷庭砂紋の崩壊速度測定で、儀礼歩幅の許容誤差が定義された |
-| explore | `x.exp_id`5 and `x.floor`5 | 鐘架残響の時間差比較が、祭囃子伝播路の再構築を後押しした |
-| explore | `x.exp_id`5 and `x.floor`5 | 供物台片の材質同定により、奉納式工程の分類体系が拡張された |
-| explore | `x.exp_id`5 and `x.floor`5 | 幔幕織目の接合検証で、奥祠封鎖路の開閉条件が明確化された |
-| explore | `x.exp_id`5 and `x.floor`6 | 石街路目地の摩耗差解析により、都内物流動線の主系統が抽出された |
-| explore | `x.exp_id`5 and `x.floor`6 | 銀灯配置の方位検証で、行政区と祭祀区の境界線が再同定された |
-| explore | `x.exp_id`5 and `x.floor`6 | 回廊屋根意匠の層別比較から、旧王家紋章圏の拡張過程が復元された |
-| explore | `x.exp_id`5 and `x.floor`6 | 導水路月光角の連続測定により、都心接続線の最短モデルが更新された |
-| explore | `x.exp_id`5 and `x.floor`6 | 掲示碑文の異本照合で、夜間通行戒律の改訂履歴が明らかになった |
-| explore | `x.exp_id`5 and `x.floor`6 | 石橋下反響特性の測定から、秘匿連絡路の探知回避率が上昇した |
-| explore | `x.exp_id`5 and `x.floor`6 | 宮門鎖鍵の刻印解析が進み、封都時封印術式の継承線が補完された |
-| explore | `x.exp_id`5 and `x.floor`6 | 月庁舎柱列の寸法照合で、議場儀礼動線の再現精度が改善した |
-| explore | `x.exp_id`5 and `x.floor`6 | 白石街図盤の欠損補間により、居住区画復元図の信頼区間が縮小した |
-| explore | `x.exp_id`5 and `x.floor`6 | 宮前庭祭祀面の微振動記録が蓄積され、守護誓約域の境界判定が安定化した |
-| explore | `x.exp_id`6 and `x.floor`1 | name は土壁を支える木枠を叩き、崩落の気配を聞き分けながら先へ進んでいる |
-| explore | `x.exp_id`6 and `x.floor`1 | name は掘削灯の淡い明かりを頼りに、細い坑道へ身を滑り込ませた |
-| explore | `x.exp_id`6 and `x.floor`1 | name は古びた歯車付きの扉を押し開き、地下工房の入口を見つけている |
-| explore | `x.exp_id`6 and `x.floor`1 | name は梁に刻まれた職工印を読み、巣穴網の主導坑を割り出した |
-| explore | `x.exp_id`6 and `x.floor`1 | name は湿った土に残る台車の轍を追い、稼働区画への道を確かめた |
-| explore | `x.exp_id`6 and `x.floor`1 | name は縄巻き昇降機の軋みを確かめ、荷揚げ坑の深さを見積もっている |
-| explore | `x.exp_id`6 and `x.floor`1 | name は壁龕の小さな灯炉へ火を移し、退路の目印を丁寧に残した |
-| explore | `x.exp_id`6 and `x.floor`1 | name は素掘りの横穴に耳を当て、遠くで回る機械音の方角を掴んだ |
-| explore | `x.exp_id`6 and `x.floor`1 | name は木製支柱の継ぎ目を結び直し、隊が安全に通れる幅を整えている |
-| explore | `x.exp_id`6 and `x.floor`1 | name は地の底へ吹く冷気を感じ、より深い工業層の気配へ歩を進めた |
-| explore | `x.exp_id`6 and `x.floor`2 | name は連なる巨歯車の噛み合いを見極め、停止域の隙間を渡っている |
-| explore | `x.exp_id`6 and `x.floor`2 | name は鉄の回廊を走る搬送帯を避け、反対流の保守路へ回り込んだ |
-| explore | `x.exp_id`6 and `x.floor`2 | name は油煙まじりの風に顔布を当て、駆動炉の脈動を数えて進んでいる |
-| explore | `x.exp_id`6 and `x.floor`2 | name は点検盤の刻印を読み、動力弁が開く周期を仲間へ伝えた |
-| explore | `x.exp_id`6 and `x.floor`2 | name は鎖吊り足場の揺れを鎮め、歯車井を跨ぐ安全帯を張っている |
-| explore | `x.exp_id`6 and `x.floor`2 | name は鋼梁に残る火花痕を追い、工兵隊の主動線を割り出した |
-| explore | `x.exp_id`6 and `x.floor`2 | name は摩耗した手摺を握り、機械迷宮の中心軸へ慎重に降りた |
-| explore | `x.exp_id`6 and `x.floor`2 | name は唸る軸受の音階を聞き分け、故障寸前の区画を先に迂回した |
-| explore | `x.exp_id`6 and `x.floor`2 | name は古い搬入口の封蝋を剥がし、未踏の整備通路を開いている |
-| explore | `x.exp_id`6 and `x.floor`2 | name は黄銅の監督鐘に触れ、休むことなき工都の記憶へ短く黙礼した |
-| explore | `x.exp_id`6 and `x.floor`3 | name は蒸気管の継手から漏れる白煙を避け、耐熱路へ体を寄せて進んだ |
-| explore | `x.exp_id`6 and `x.floor`3 | name は圧力計の針を読み、噴出が静まる瞬間に交差路を駆け抜けている |
-| explore | `x.exp_id`6 and `x.floor`3 | name は熱で歪む格子床へ散水し、隊列が崩れぬ足場を確保した |
-| explore | `x.exp_id`6 and `x.floor`3 | name は蒸気弁輪の回転数を数え、安全に降圧できる操作順を整えた |
-| explore | `x.exp_id`6 and `x.floor`3 | name は赤熱する送気管の下を屈み、火傷を避けて配管森を抜けている |
-| explore | `x.exp_id`6 and `x.floor`3 | name は管壁の霜と露を見比べ、冷却路と高圧路の境目を見抜いた |
-| explore | `x.exp_id`6 and `x.floor`3 | name は吐き出し口の轟音に合図を重ね、仲間の移動タイミングを揃えている |
-| explore | `x.exp_id`6 and `x.floor`3 | name は工具祠に残る油布を拾い、熱気から喉を守る覆いに仕立てた |
-| explore | `x.exp_id`6 and `x.floor`3 | name は天井を走る主管の振動を追い、機関核へ続く主幹線を辿っている |
-| explore | `x.exp_id`6 and `x.floor`3 | name は白い蒸気の帳を裂き、灼ける工区の奥へ覚悟を固めて踏み込んだ |
-| explore | `x.exp_id`6 and `x.floor`4 | name は巨時計の振り子が刻む間隙を読み、時罠の回廊を渡っている |
-| explore | `x.exp_id`6 and `x.floor`4 | name は砂時計塔の逆流する砂を見て、歪んだ時相の中心を見定めた |
-| explore | `x.exp_id`6 and `x.floor`4 | name は連接する秒針橋の歩幅を合わせ、ずれる床板を外して進んでいる |
-| explore | `x.exp_id`6 and `x.floor`4 | name は刻印盤に残る実験式を読み、時間偏差の安全域を割り出した |
-| explore | `x.exp_id`6 and `x.floor`4 | name は遅れて響く足音に眉を寄せ、因果がねじれる区画を静かに迂回した |
-| explore | `x.exp_id`6 and `x.floor`4 | name は振り子室の共鳴を止める楔を打ち、崩れる時間鎖を辛うじて繋いだ |
-| explore | `x.exp_id`6 and `x.floor`4 | name は時計職工の肖像へ灯を掲げ、禁じられた研究への敬意を払っている |
-| explore | `x.exp_id`6 and `x.floor`4 | name は時刻符の並びを正し、戻れぬ分岐へ迷い込まぬ導線を整えた |
-| explore | `x.exp_id`6 and `x.floor`4 | name は止まった大鐘の縁をなぞり、一度消えた鐘声の余韻を聞き取った |
-| explore | `x.exp_id`6 and `x.floor`4 | name は瞬きほどの欠落時間を越え、工房最奥の封扉へ手を伸ばしている |
-| explore | `x.exp_id`6 and `x.floor`5 | name は闇に浮かぶ時環機の輪郭を見上げ、脈動する炉心光を測っている |
-| explore | `x.exp_id`6 and `x.floor`5 | name は回転環を繋ぐ導力柱を調べ、暴走を抑える封止順を探り当てた |
-| explore | `x.exp_id`6 and `x.floor`5 | name は古い起動詠式を口ずさみ、眠れる機関に触れぬよう歩を進めた |
-| explore | `x.exp_id`6 and `x.floor`5 | name は床に刻まれた同心円陣を辿り、供給路と排熱路の差を見抜いている |
-| explore | `x.exp_id`6 and `x.floor`5 | name は軋む懸架橋の鎖を締め直し、時環炉を跨ぐ退避線を確保した |
-| explore | `x.exp_id`6 and `x.floor`5 | name は青白い放電を避雷環へ流し、隊の装具を守りながら前進している |
-| explore | `x.exp_id`6 and `x.floor`5 | name は試験台に残る焦げ跡を読み、失敗実験の爆ぜる癖を記録した |
-| explore | `x.exp_id`6 and `x.floor`5 | name は機関祭壇へ小さな歯車を供え、工匠たちの執念へ祈りを捧げた |
-| explore | `x.exp_id`6 and `x.floor`5 | name は鈍く唸る核心部の周期を数え、次の開放窓で深部へ降りる構えを取った |
-| explore | `x.exp_id`6 and `x.floor`5 | name は時を噛む巨環の影を潜り、封じられた最終層への扉を押し開いた |
-| explore | `x.exp_id`6 and `x.floor`6 | name は土中に横たわる星船の外殻へ触れ、冷えた異邦金属の脈を感じている |
-| explore | `x.exp_id`6 and `x.floor`6 | name は砕けた船体通路を照らし、世代船居住区の標識を読み解いた |
-| explore | `x.exp_id`6 and `x.floor`6 | name は無音の炉心室で息を潜め、眠る反応塔の封印鍵を確かめている |
-| explore | `x.exp_id`6 and `x.floor`6 | name は星図投影盤の欠片を集め、失われた航路の終点を辿った |
-| explore | `x.exp_id`6 and `x.floor`6 | name は裂断された艦橋窓から闇を仰ぎ、忘れられた星戦の残光を想った |
-| explore | `x.exp_id`6 and `x.floor`6 | name は休眠端末に残る警告灯を見つめ、K9の最終命令文を静かに記録した |
-| explore | `x.exp_id`6 and `x.floor`6 | name は異形合金の隔壁を叩き、共鳴で生体区画の空洞を割り出している |
-| explore | `x.exp_id`6 and `x.floor`6 | name は船底へ垂れる根の束を払い、地底と宇宙遺産が繋がる継ぎ目を見つけた |
-| explore | `x.exp_id`6 and `x.floor`6 | name は封鎖ハッチの紋章へ灯を掲げ、滅びた乗員たちへ鎮魂の礼を捧げた |
-| explore | `x.exp_id`6 and `x.floor`6 | name は沈黙する巨大艦の心臓部へ踏み入り、星々に遺された誓いを胸に刻んだ |
-| explore | `x.exp_id`6 and `x.floor`1 | 木枠補強された初層坑道の健全区画が特定され、安全進行線が更新された |
-| explore | `x.exp_id`6 and `x.floor`1 | 掘削灯台座の分布解析により、主導坑へ至る導光規則が復元された |
-| explore | `x.exp_id`6 and `x.floor`1 | 歯車扉群の開閉痕比較で、工房入口の稼働優先順位が推定された |
-| explore | `x.exp_id`6 and `x.floor`1 | 職工印の系統照合が進み、巣穴拡張期の施工班編成が補完された |
-| explore | `x.exp_id`6 and `x.floor`1 | 台車轍の深度差から、重量物搬入路と生活導線の分離が確認された |
-| explore | `x.exp_id`6 and `x.floor`1 | 縄巻き昇降機の摩耗角測定で、縦坑利用頻度の時期変動が抽出された |
-| explore | `x.exp_id`6 and `x.floor`1 | 壁龕灯炉の煤層分析により、夜間作業区画の境界が再構築された |
-| explore | `x.exp_id`6 and `x.floor`1 | 横穴音響の反響測定で、稼働機械群の方位推定精度が向上している |
-| explore | `x.exp_id`6 and `x.floor`1 | 木製支柱継手の補修痕比較から、崩落危険帯の再設定が完了した |
-| explore | `x.exp_id`6 and `x.floor`1 | 地底冷気流の追跡により、下層工業区画へ接続する通風軸が特定された |
-| explore | `x.exp_id`6 and `x.floor`2 | 巨歯車列の位相記録が蓄積され、停止窓通過の安全手順が標準化された |
-| explore | `x.exp_id`6 and `x.floor`2 | 搬送帯流向の再測量で、逆流側保守路への侵入効率が改善した |
-| explore | `x.exp_id`6 and `x.floor`2 | 駆動炉脈動の周期同定により、油煙高濃度帯の滞在上限が更新された |
-| explore | `x.exp_id`6 and `x.floor`2 | 点検盤刻印の読解進展で、動力弁開閉の予測誤差が縮小した |
-| explore | `x.exp_id`6 and `x.floor`2 | 鎖吊り足場の荷重試験結果から、歯車井横断時の隊列規定が改訂された |
-| explore | `x.exp_id`6 and `x.floor`2 | 鋼梁火花痕の時系列比較で、工兵主動線の再現精度が向上した |
-| explore | `x.exp_id`6 and `x.floor`2 | 手摺摩耗分布の偏差解析により、中心軸への最短降下路が確立された |
-| explore | `x.exp_id`6 and `x.floor`2 | 軸受異音の音階分類で、故障予兆区画の回避判断が迅速化された |
-| explore | `x.exp_id`6 and `x.floor`2 | 搬入口封蝋の材質照合が進み、未踏整備通路の年代層が明確化された |
-| explore | `x.exp_id`6 and `x.floor`2 | 監督鐘の残響測定により、機械区全域の伝令到達範囲が再推定された |
-| explore | `x.exp_id`6 and `x.floor`3 | 蒸気管漏洩点の地図化により、耐熱進行路の更新精度が向上した |
-| explore | `x.exp_id`6 and `x.floor`3 | 圧力計針動の連続観測で、噴出静穏窓の発生周期が確定した |
-| explore | `x.exp_id`6 and `x.floor`3 | 格子床熱歪みの補正計算が進み、隊列崩壊リスクが低減された |
-| explore | `x.exp_id`6 and `x.floor`3 | 蒸気弁輪回転数の比較解析で、安全降圧手順の標準化が完了した |
-| explore | `x.exp_id`6 and `x.floor`3 | 送気主管下の温度勾配測定により、低被熱帯の選定が最適化された |
-| explore | `x.exp_id`6 and `x.floor`3 | 管壁結露分布の照合から、冷却路と高圧路の境界線が再描画された |
-| explore | `x.exp_id`6 and `x.floor`3 | 吐出口轟音周期の同期化で、交差路通過合図の成功率が上昇した |
-| explore | `x.exp_id`6 and `x.floor`3 | 工具祠遺留物の材質分析により、耐熱装備の供給体系が補完された |
-| explore | `x.exp_id`6 and `x.floor`3 | 天井主管振動の位相追跡で、機関核接続主幹線の推定誤差が縮小した |
-| explore | `x.exp_id`6 and `x.floor`3 | 蒸気幕密度の時系列記録が蓄積され、高危険工区の通過閾値が明確化された |
-| explore | `x.exp_id`6 and `x.floor`4 | 巨時計振り子の偏差観測により、時罠回廊の安全間隙が再定義された |
-| explore | `x.exp_id`6 and `x.floor`4 | 砂時計塔逆流粒度の解析で、時相乱流中心の座標が更新された |
-| explore | `x.exp_id`6 and `x.floor`4 | 秒針橋の位相同期試験が成功し、可動床板区画の突破率が向上した |
-| explore | `x.exp_id`6 and `x.floor`4 | 刻印盤実験式の再読解で、時間偏差安全域の算定精度が補強された |
-| explore | `x.exp_id`6 and `x.floor`4 | 遅延反響足音の記録比較により、因果攪乱帯の輪郭が可視化された |
-| explore | `x.exp_id`6 and `x.floor`4 | 振り子室共鳴抑制楔の再設置で、時間鎖崩壊区画の拡大が抑えられた |
-| explore | `x.exp_id`6 and `x.floor`4 | 時計職工肖像銘の照合が進み、禁制研究班の系譜が整理された |
-| explore | `x.exp_id`6 and `x.floor`4 | 時刻符列の再配列で、不可逆分岐への誤進入率が有意に低下した |
-| explore | `x.exp_id`6 and `x.floor`4 | 停止大鐘の金属疲労検査により、再共鳴実験の許容閾値が確定した |
-| explore | `x.exp_id`6 and `x.floor`4 | 欠落時間帯の観測蓄積で、最奥封扉の開放窓予測が実用段階へ達した |
-| explore | `x.exp_id`6 and `x.floor`5 | 時環機輪郭の再測量により、炉心出力変動の監視精度が向上した |
-| explore | `x.exp_id`6 and `x.floor`5 | 導力柱連結図の復元が進み、暴走抑止封止順が確証された |
-| explore | `x.exp_id`6 and `x.floor`5 | 起動詠式断片の照合で、休眠機関誤起動リスクが低減した |
-| explore | `x.exp_id`6 and `x.floor`5 | 同心円陣の配線再解析により、供給路と排熱路の分離精度が改善した |
-| explore | `x.exp_id`6 and `x.floor`5 | 懸架橋鎖節の応力点検結果から、退避線維持時間が上方修正された |
-| explore | `x.exp_id`6 and `x.floor`5 | 放電路の誘導試験で、装具損耗を抑える避雷運用が定式化された |
-| explore | `x.exp_id`6 and `x.floor`5 | 試験台焦痕の熱履歴比較により、失敗実験の暴発条件が抽出された |
-| explore | `x.exp_id`6 and `x.floor`5 | 機関祭壇供物痕の分析が進み、工匠儀礼と運転手順の連動が裏付けられた |
-| explore | `x.exp_id`6 and `x.floor`5 | 核心部唸動周期の長期記録で、深部開放窓の予測誤差が縮小した |
-| explore | `x.exp_id`6 and `x.floor`5 | 巨環陰影の移動計測により、最終層封扉への安全接近路が確立された |
-| explore | `x.exp_id`6 and `x.floor`6 | 星船外殻合金の組成同定により、地上文明系統外技術の存在が再確認された |
-| explore | `x.exp_id`6 and `x.floor`6 | 破断通路標識の解読進展で、世代船居住区の区画図復元が進んだ |
-| explore | `x.exp_id`6 and `x.floor`6 | 炉心室封印鍵の形状照合から、反応塔起動権限階層が推定された |
-| explore | `x.exp_id`6 and `x.floor`6 | 星図投影片の接合で、失航時に選択された最終航路候補が抽出された |
-| explore | `x.exp_id`6 and `x.floor`6 | 艦橋窓破断面の衝撃解析により、交戦時の主被弾方向が特定された |
-| explore | `x.exp_id`6 and `x.floor`6 | 休眠端末警告灯ログの復旧で、K9最終命令文の断章が保全された |
-| explore | `x.exp_id`6 and `x.floor`6 | 異形合金隔壁の共鳴試験により、生体区画空洞の位置推定が高精度化した |
-| explore | `x.exp_id`6 and `x.floor`6 | 船底根系侵入の層序比較から、地底生態圏との接続年代が再評価された |
-| explore | `x.exp_id`6 and `x.floor`6 | 封鎖ハッチ紋章群の照合が進み、乗員階級と避難優先規則が補完された |
-| explore | `x.exp_id`6 and `x.floor`6 | 巨大艦心臓部の静音振動記録が蓄積され、残留動力の監視体制が強化された |
-| explore | `x.exp_id`7 and `x.floor`1 | name は軌道を漂う残骸の隙間を縫い、古き星庭への進入路を探っている |
-| explore | `x.exp_id`7 and `x.floor`1 | name は砕けた外殻板に刻まれた紋章を読み、失われた守護艦の系譜を辿った |
-| explore | `x.exp_id`7 and `x.floor`1 | name は無音で回転する破片群を見上げ、接触を避ける星屑航路を選んでいる |
-| explore | `x.exp_id`7 and `x.floor`1 | name は凍てた配線束を手繰り、漂流機構の残る安全足場を確保した |
-| explore | `x.exp_id`7 and `x.floor`1 | name は虚空に瞬く警告灯を目印に、崩落帯を外して前進している |
-| explore | `x.exp_id`7 and `x.floor`1 | name は砕片に映る偽りの星明かりを見切り、幻惑の回廊を抜けていく |
-| explore | `x.exp_id`7 and `x.floor`1 | name は古い推進翼の影へ身を寄せ、流星塵の奔流が過ぎるのを待った |
-| explore | `x.exp_id`7 and `x.floor`1 | name は漂う機械骨格に祈り札を結び、静寂の軌道へ敬意を捧げている |
-| explore | `x.exp_id`7 and `x.floor`1 | name は裂けた観測窓の向こうに庭園の光を見つけ、進路の確信を深めた |
-| explore | `x.exp_id`7 and `x.floor`1 | name は金属塵の渦を杖で払い、失われた停泊帯への道筋を描いている |
-| explore | `x.exp_id`7 and `x.floor`2 | name は防衛基台の巡回光を避け、結界縁に沿う死角の通路を進んでいる |
-| explore | `x.exp_id`7 and `x.floor`2 | name は古代の発振塔へ耳を澄ませ、護りの律動が薄れる瞬間を読んだ |
-| explore | `x.exp_id`7 and `x.floor`2 | name は符号化された警戒紋を解き、封鎖線を乱さぬ通行順を整えている |
-| explore | `x.exp_id`7 and `x.floor`2 | name は碧い障壁に手をかざし、魔導電流の揺らぎから安全窓を測定した |
-| explore | `x.exp_id`7 and `x.floor`2 | name は沈黙する砲座の間を潜り、旧守備隊の補給路跡を見つけ出した |
-| explore | `x.exp_id`7 and `x.floor`2 | name は結界杭に絡む蔦を払い、再起動した監視眼の視線をかわしている |
-| explore | `x.exp_id`7 and `x.floor`2 | name は空間に走る薄い雷光を見抜き、感電域を仲間へ短く告げた |
-| explore | `x.exp_id`7 and `x.floor`2 | name は浮遊基盤の継ぎ目を踏み替え、防壁外周を円弧に迂回している |
-| explore | `x.exp_id`7 and `x.floor`2 | name は封印端末へ古語の祈詞を唱え、一時的な通行許可を引き出した |
-| explore | `x.exp_id`7 and `x.floor`2 | name は盾膜の明滅周期を記録し、次隊が通れる安定時間を残している |
-| explore | `x.exp_id`7 and `x.floor`3 | name は制御塔輪の中央で息を潜め、盾陣を統べる脈動音を読み解いている |
-| explore | `x.exp_id`7 and `x.floor`3 | name は空へ伸びる晶柱の位相を合わせ、暴走寸前の結界を鎮めた |
-| explore | `x.exp_id`7 and `x.floor`3 | name は自律機兵の巡回線を外し、塔間連絡橋を無音で渡っている |
-| explore | `x.exp_id`7 and `x.floor`3 | name は端末石板の欠損文字を補い、古代運用式の再現に成功した |
-| explore | `x.exp_id`7 and `x.floor`3 | name は余剰光を吸う導管へ魔力を流し、遮断寸前の回路を延命した |
-| explore | `x.exp_id`7 and `x.floor`3 | name は環状足場の崩れを飛び越え、制御核へ続く短路を切り開いている |
-| explore | `x.exp_id`7 and `x.floor`3 | name は塔頂の風見機に護符を結び、誤作動を呼ぶ逆流波を弱めた |
-| explore | `x.exp_id`7 and `x.floor`3 | name は青白い火花の雨を潜り、同期儀式の起点へ辿り着いた |
-| explore | `x.exp_id`7 and `x.floor`3 | name は守護紋が刻まれた床環を踏み、権限認証の古式を完了している |
-| explore | `x.exp_id`7 and `x.floor`3 | name は塔列の共鳴を聴き分け、崩壊を招く不協和帯を封じ込めた |
-| explore | `x.exp_id`7 and `x.floor`4 | name は半壊した接舷門の影に入り、内部生態区へ続く回廊を確保した |
-| explore | `x.exp_id`7 and `x.floor`4 | name は割れた隔壁に残る導光線を追い、生きた電力網の道を選んでいる |
-| explore | `x.exp_id`7 and `x.floor`4 | name は古扉の封鍵盤へ触れ、眠っていた開門機構を静かに起こした |
-| explore | `x.exp_id`7 and `x.floor`4 | name は損傷した案内像の指先を辿り、正規進入路の方角を定めた |
-| explore | `x.exp_id`7 and `x.floor`4 | name は通路床の重力乱れを測り、落下区画を避ける足順を示している |
-| explore | `x.exp_id`7 and `x.floor`4 | name は錆びた気密輪を押し開け、庭園側の湿った風を初めて受けた |
-| explore | `x.exp_id`7 and `x.floor`4 | name は接続梁に残る焦げ跡を見て、往時の戦闘記録を推定している |
-| explore | `x.exp_id`7 and `x.floor`4 | name は崩れた標識板を組み直し、退路喪失を防ぐ目印を残した |
-| explore | `x.exp_id`7 and `x.floor`4 | name は扉間の真空警報を解除し、隊列が通れる気圧を保っている |
-| explore | `x.exp_id`7 and `x.floor`4 | name は入口聖句を低く唱え、遺構に眠る守り手への礼を尽くした |
-| explore | `x.exp_id`7 and `x.floor`5 | name は浮遊果樹の枝を払って進み、香る花道の架け橋を渡っている |
-| explore | `x.exp_id`7 and `x.floor`5 | name は空庭を巡る水路の音を頼りに、中心島へ続く順路を見出した |
-| explore | `x.exp_id`7 and `x.floor`5 | name は揺れる天空橋の継ぎ目を締め、後続が渡れるよう補強している |
-| explore | `x.exp_id`7 and `x.floor`5 | name は花弁に宿る微光を集め、迷い霧を払う灯珠を作り上げた |
-| explore | `x.exp_id`7 and `x.floor`5 | name は果樹園に残る古い灌漑符を再起動し、枯れかけた区画へ水を通した |
-| explore | `x.exp_id`7 and `x.floor`5 | name は風に運ばれる鈴音を辿り、番人像の見守る静かな園路へ入った |
-| explore | `x.exp_id`7 and `x.floor`5 | name は花蜜に誘われる小精霊へ挨拶し、荒らさぬ通行を約して進んだ |
-| explore | `x.exp_id`7 and `x.floor`5 | name は漂島の縁で膝をつき、空へ張られた根脈網の健在を確かめている |
-| explore | `x.exp_id`7 and `x.floor`5 | name は光樹の梢に結界糸を結び、突風から橋道を守る支えを増やした |
-| explore | `x.exp_id`7 and `x.floor`5 | name は咲き誇る回廊に短い祈りを置き、失われた園丁たちへ黙礼した |
-| explore | `x.exp_id`7 and `x.floor`6 | name は天蓋の人工陽を仰ぎ、星庭核へ注ぐ生命光の流れを観測している |
-| explore | `x.exp_id`7 and `x.floor`6 | name は中央水路の澄流に触れ、循環機関がなお健在だと確信した |
-| explore | `x.exp_id`7 and `x.floor`6 | name は巨大な維生樹の根元で詠唱し、衰えた養分循環を再同期した |
-| explore | `x.exp_id`7 and `x.floor`6 | name は光輪制御盤の欠片を合わせ、失われた日照周期を復元している |
-| explore | `x.exp_id`7 and `x.floor`6 | name は聖池に映る星図を読み、庭園全域の均衡点を割り出した |
-| explore | `x.exp_id`7 and `x.floor`6 | name は天井渠の弁を調整し、乾いた区画へ命の水を行き渡らせた |
-| explore | `x.exp_id`7 and `x.floor`6 | name は眠る管理核へ掌を当て、古代管理者の承認印を呼び覚ました |
-| explore | `x.exp_id`7 and `x.floor`6 | name は光の花が開く周期を記し、崩壊予兆の監視網を整えている |
-| explore | `x.exp_id`7 and `x.floor`6 | name は静謐な祭壇で誓約を更新し、この空庭を守る意思を刻んだ |
-| explore | `x.exp_id`7 and `x.floor`6 | name は生命維持塔の共鳴を整え、庭園核の呼吸を安定域へ戻した |
-| explore | `x.exp_id`7 and `x.floor`1 | 軌道残骸の漂流速度が再計測され、安全通過に必要な待機間隔が更新された |
-| explore | `x.exp_id`7 and `x.floor`1 | 破断外殻の材質照合により、旧防衛艦区画の起源推定が補強された |
-| explore | `x.exp_id`7 and `x.floor`1 | 回転破片群の位相記録が進み、接触回避ルートの再現性が向上している |
-| explore | `x.exp_id`7 and `x.floor`1 | 漂流配線の通電痕から、局所重力制御が断続稼働中と判定された |
-| explore | `x.exp_id`7 and `x.floor`1 | 微細金属塵の濃度分布が整理され、防護布展張の優先帯域が確定した |
-| explore | `x.exp_id`7 and `x.floor`1 | 虚空反射光の解析により、幻視誘発域を避ける視線運用が標準化された |
-| explore | `x.exp_id`7 and `x.floor`1 | 旧停泊梁の残存強度試験が完了し、一時係留点として再利用可能と確認された |
-| explore | `x.exp_id`7 and `x.floor`1 | 警告灯の点滅周期観測で、残骸衝突予兆の検知精度が改善している |
-| explore | `x.exp_id`7 and `x.floor`1 | 断面符号の採取により、星庭外縁での航行禁止区画が再定義された |
-| explore | `x.exp_id`7 and `x.floor`1 | 漂流体同士の干渉音記録が蓄積され、無音接近時の危険判定が強化された |
-| explore | `x.exp_id`7 and `x.floor`2 | 結界外周の明滅周期が再校正され、通過可能窓の算出誤差が縮小した |
-| explore | `x.exp_id`7 and `x.floor`2 | 防衛基台の巡回軌道照合により、死角連結ルートの連続性が確認された |
-| explore | `x.exp_id`7 and `x.floor`2 | 発振塔の周波数偏差が観測され、遮蔽符運用の推奨時刻が更新された |
-| explore | `x.exp_id`7 and `x.floor`2 | 旧砲座区画の電位残留が検出され、接触禁止ラインが追加設定された |
-| explore | `x.exp_id`7 and `x.floor`2 | 封鎖紋章の解読進展により、一時開通手順の必要詠唱数が確定した |
-| explore | `x.exp_id`7 and `x.floor`2 | 監視眼の視野重複が図式化され、低被探知移動の成功率が上昇している |
-| explore | `x.exp_id`7 and `x.floor`2 | 盾膜縁の雷光発生域が再区分され、感電回避導線の運用が安定した |
-| explore | `x.exp_id`7 and `x.floor`2 | 浮遊基盤継ぎ目の疲労測定で、荷重分散歩行の上限値が定義された |
-| explore | `x.exp_id`7 and `x.floor`2 | 古語端末の応答履歴が蓄積され、認証失敗時の復帰手順が短縮された |
-| explore | `x.exp_id`7 and `x.floor`2 | 外周警戒線の再編記録が発見され、侵入検知網の盲点候補が抽出された |
-| explore | `x.exp_id`7 and `x.floor`3 | 制御塔輪の位相差解析が完了し、盾陣同期の不安定要因が特定された |
-| explore | `x.exp_id`7 and `x.floor`3 | 晶柱共鳴の閾値再測定で、暴走抑制に必要な魔力注入量が確定した |
-| explore | `x.exp_id`7 and `x.floor`3 | 自律機兵の巡回間隔記録により、塔間移動の最短安全窓が更新された |
-| explore | `x.exp_id`7 and `x.floor`3 | 欠損石板の文脈復元が進み、運用儀式の工程欠落が補完された |
-| explore | `x.exp_id`7 and `x.floor`3 | 導管温度の時系列監視で、過負荷発生前の予兆検知が可能となった |
-| explore | `x.exp_id`7 and `x.floor`3 | 環状足場の応力試験結果が共有され、崩落帯回避の基準線が統一された |
-| explore | `x.exp_id`7 and `x.floor`3 | 塔頂風見機の逆流観測により、雷火誘導リスクの抑制策が確立された |
-| explore | `x.exp_id`7 and `x.floor`3 | 同期儀式起点の位置誤差が補正され、遠隔再起動成功率が向上している |
-| explore | `x.exp_id`7 and `x.floor`3 | 権限認証環の刻印照合で、正規管理者系統の分岐が整理された |
-| explore | `x.exp_id`7 and `x.floor`3 | 塔列不協和帯の封止記録が再現され、連鎖停止手順の信頼性が高まった |
-| explore | `x.exp_id`7 and `x.floor`4 | 接舷門残骸の歪み計測により、安全開口の維持条件が再定義された |
-| explore | `x.exp_id`7 and `x.floor`4 | 隔壁導光線の追跡結果から、生態区への有効電力経路が可視化された |
-| explore | `x.exp_id`7 and `x.floor`4 | 封鍵盤の反応履歴解析で、開門時の警報連動条件が判明した |
-| explore | `x.exp_id`7 and `x.floor`4 | 損傷案内像の指向角復元により、正規導線の誤差範囲が縮小した |
-| explore | `x.exp_id`7 and `x.floor`4 | 通路重力乱流の観測蓄積で、落下事故回避手順が標準化された |
-| explore | `x.exp_id`7 and `x.floor`4 | 気密輪の腐食試験が進み、再封止可能な区画の優先順位が確定した |
-| explore | `x.exp_id`7 and `x.floor`4 | 接続梁焦げ跡の年代推定から、最終交戦時刻の仮説が更新された |
-| explore | `x.exp_id`7 and `x.floor`4 | 退路標識の再配置効果検証で、迷走率低下が統計的に確認された |
-| explore | `x.exp_id`7 and `x.floor`4 | 真空警報系の冗長化試験が完了し、通行維持時間の延長が達成された |
-| explore | `x.exp_id`7 and `x.floor`4 | 入口聖句の音韻照合により、守護機構の非敵対認証率が上昇している |
-| explore | `x.exp_id`7 and `x.floor`5 | 浮遊果樹帯の枝荷重測定で、橋道上空の通行安全域が再設定された |
-| explore | `x.exp_id`7 and `x.floor`5 | 水路流量の連続観測により、中心島への安定補給線が確立された |
-| explore | `x.exp_id`7 and `x.floor`5 | 天空橋継ぎ目の補修記録が蓄積され、維持管理周期が短縮された |
-| explore | `x.exp_id`7 and `x.floor`5 | 花弁微光の粒度分析で、迷い霧散開に有効な照度条件が判明した |
-| explore | `x.exp_id`7 and `x.floor`5 | 灌漑符の再起動試験結果から、枯損区画の回復速度が改善している |
-| explore | `x.exp_id`7 and `x.floor`5 | 鈴音伝播の遅延測定により、番人像監視域の境界線が明確化された |
-| explore | `x.exp_id`7 and `x.floor`5 | 小精霊出現分布の更新で、非干渉通行に適した時間帯が抽出された |
-| explore | `x.exp_id`7 and `x.floor`5 | 漂島根脈網の張力評価が進み、崩落予兆の早期検知率が向上した |
-| explore | `x.exp_id`7 and `x.floor`5 | 光樹結界糸の耐風試験で、突風時の橋道損傷率が低減された |
-| explore | `x.exp_id`7 and `x.floor`5 | 旧園丁碑文の読解成果により、庭区画ごとの保全規範が復元された |
-| explore | `x.exp_id`7 and `x.floor`6 | 人工陽制御の照度変動監視で、生命光供給の安定条件が定式化された |
-| explore | `x.exp_id`7 and `x.floor`6 | 中央水路の循環効率計測により、維持機関の劣化率推定が更新された |
-| explore | `x.exp_id`7 and `x.floor`6 | 維生樹根系の養分流解析で、再同期儀式の有効区画が拡張された |
-| explore | `x.exp_id`7 and `x.floor`6 | 光輪制御盤の欠片照合が進み、日照周期復元の精度が改善している |
-| explore | `x.exp_id`7 and `x.floor`6 | 聖池星図の座標補正により、庭園均衡点の特定誤差が縮小した |
-| explore | `x.exp_id`7 and `x.floor`6 | 天井渠弁の開閉履歴解析で、水供給偏在の是正手順が確立された |
-| explore | `x.exp_id`7 and `x.floor`6 | 管理核応答波形の記録蓄積により、承認再取得の成功率が上昇した |
-| explore | `x.exp_id`7 and `x.floor`6 | 光花開花周期の長期観測で、崩壊予兆監視モデルの信頼性が高まった |
-| explore | `x.exp_id`7 and `x.floor`6 | 祭壇誓約文の再翻訳結果から、保全命令系統の優先順位が再整理された |
-| explore | `x.exp_id`7 and `x.floor`6 | 生命維持塔共鳴の再調律検証で、庭園核の安定運転時間が延伸した |
-| explore | `x.exp_id`8 and `x.floor`1 | name は峡谷の薄霧に紛れた結界紋を見抜き、谷門の正しい通行路を選び取った |
-| explore | `x.exp_id`8 and `x.floor`1 | name は断崖に走る古い導線をたどり、見えざる障壁の脈動を確かめている |
-| explore | `x.exp_id`8 and `x.floor`1 | name は見張り碑に触れて敬礼し、Cervinの哨戒網へ干渉せぬよう進んでいる |
-| explore | `x.exp_id`8 and `x.floor`1 | name は風に混じる警告鐘の余韻を聞き分け、禁足域の縁を静かに迂回した |
-| explore | `x.exp_id`8 and `x.floor`1 | name は谷壁の水晶片に映る光符を読み、正門を開く位相の刻を待っている |
-| explore | `x.exp_id`8 and `x.floor`1 | name は巡礼路に残る蹄印を追い、番人たちが許した安全帯を踏みしめた |
-| explore | `x.exp_id`8 and `x.floor`1 | name は夜露を帯びた祈祷札を拾い、守護者の誓約が今も生きると知った |
-| explore | `x.exp_id`8 and `x.floor`1 | name は崖間を渡る細道で息を潜め、静かな監視眼の気配を受け流している |
-| explore | `x.exp_id`8 and `x.floor`1 | name は谷門上の星見窓を見上げ、入谷許可を示す光の合図を待ち受けた |
-| explore | `x.exp_id`8 and `x.floor`1 | name は薄青い防壁の揺らぎを観測し、侵入者と巡礼者を分ける境を見定めた |
-| explore | `x.exp_id`8 and `x.floor`2 | name は水晶塔群の共鳴音を記録し、天測信号の流れが乱れていないか確かめた |
-| explore | `x.exp_id`8 and `x.floor`2 | name は結晶柱の影角を測り、時辰ごとに変わる観測窓の開閉を読み解いている |
-| explore | `x.exp_id`8 and `x.floor`2 | name は霧中に浮かぶ微光粒を追跡し、予見機構へ注ぐ星塵導路を特定した |
-| explore | `x.exp_id`8 and `x.floor`2 | name は観測台の祭文を解読し、触れてよい結晶と禁触結晶を判別している |
-| explore | `x.exp_id`8 and `x.floor`2 | name は風鈴めく警報子の震えから、感知網が捉える死角の幅を割り出した |
-| explore | `x.exp_id`8 and `x.floor`2 | name は水晶根元の紋環を照合し、信号増幅塔の巡回順路を仲間へ示した |
-| explore | `x.exp_id`8 and `x.floor`2 | name は星図盤へ方位針を合わせ、予測演算に使われる基準軸を再確認した |
-| explore | `x.exp_id`8 and `x.floor`2 | name は稜線を渡る閃光周期を数え、警戒が緩むわずかな刻限を掴んでいる |
-| explore | `x.exp_id`8 and `x.floor`2 | name は結晶面に映る己の残像を避け、認証を誤作動させぬ歩調で進んだ |
-| explore | `x.exp_id`8 and `x.floor`2 | name は天穹へ伸びる塔列を見渡し、谷の意志そのもののような精密さに息をのんだ |
-| explore | `x.exp_id`8 and `x.floor`3 | name は回転環の軋みを聞き分け、同期ずれを起こした調整台を先に外した |
-| explore | `x.exp_id`8 and `x.floor`3 | name は黄銅の指標輪に刻まれた暦式をなぞり、天球周期との誤差を点検している |
-| explore | `x.exp_id`8 and `x.floor`3 | name は段状テラスの観測鏡を磨き、未来演算へ注ぐ星光束を澄ませた |
-| explore | `x.exp_id`8 and `x.floor`3 | name は校正杖を地に立て、時流の揺らぎが許容域に収まるのを待っている |
-| explore | `x.exp_id`8 and `x.floor`3 | name は環座標に合わせて陣標を動かし、予知儀の焦点をゆっくり結び直した |
-| explore | `x.exp_id`8 and `x.floor`3 | name は高台の風見晶から流速を読み、演算陣へ混入する乱流を遮断した |
-| explore | `x.exp_id`8 and `x.floor`3 | name は補助環へ魔力を分配し、主輪の共振が暴走しないよう制御している |
-| explore | `x.exp_id`8 and `x.floor`3 | name は星読官の古手帳を開き、同位相日に残された警句を照合した |
-| explore | `x.exp_id`8 and `x.floor`3 | name は揺れる計測針を指先で止め、時界の段差が生む誤算を修正している |
-| explore | `x.exp_id`8 and `x.floor`3 | name は光環が重なる瞬間を見届け、予見系が再同期した兆しを記録した |
-| explore | `x.exp_id`8 and `x.floor`4 | name は書架回廊の封蝋紐を解き、百年分の予測録から欠頁を探し出した |
-| explore | `x.exp_id`8 and `x.floor`4 | name は記録水晶に残る囁きを採譜し、分岐年表の改訂痕を突き止めている |
-| explore | `x.exp_id`8 and `x.floor`4 | name は分類印章を照合し、禁書区へ誤って踏み入らぬ導線を組み立てた |
-| explore | `x.exp_id`8 and `x.floor`4 | name は索引卓の浮遊札を追い、失われた未来断章の所在を絞り込んでいる |
-| explore | `x.exp_id`8 and `x.floor`4 | name は保存庫の温湿符を調整し、脆い羊皮予言書の劣化を食い止めた |
-| explore | `x.exp_id`8 and `x.floor`4 | name は学僧の注記余白を読み、封印門異常が初めて記された夜を特定した |
-| explore | `x.exp_id`8 and `x.floor`4 | name は年代棚の配列癖を見抜き、改竄された冊子だけを静かに抜き取った |
-| explore | `x.exp_id`8 and `x.floor`4 | name は知恵灯の明滅規則を解読し、閲覧許可を示す光階梯を昇っている |
-| explore | `x.exp_id`8 and `x.floor`4 | name は書記官像の視線を避け、自動監査術式を起こさぬ歩幅で移動した |
-| explore | `x.exp_id`8 and `x.floor`4 | name は折り畳まれた星図写本を広げ、封域周辺で増える異常波形を確認した |
-| explore | `x.exp_id`8 and `x.floor`5 | name は黒曜の封環へ耳を当て、地の底から滲む異界の脈動を聞き取った |
-| explore | `x.exp_id`8 and `x.floor`5 | name は拘束鎖の符節を点検し、劣化した連結部へ補助刻印を施している |
-| explore | `x.exp_id`8 and `x.floor`5 | name は監視祭壇の燭火色を見て、封印圧が揺らぐ前兆域を割り出した |
-| explore | `x.exp_id`8 and `x.floor`5 | name は奈落縁の観測孔を覗き、理外の囁きが届く周期を記録している |
-| explore | `x.exp_id`8 and `x.floor`5 | name は抑制陣の欠けた節点へ魔粉を撒き、漏出する歪光を一時的に塞いだ |
-| explore | `x.exp_id`8 and `x.floor`5 | name は封門前の誓約碑を再起動し、守護手順の最終条文を唱和している |
-| explore | `x.exp_id`8 and `x.floor`5 | name は結界杭の傾きを直し、次の震動波に備えて支持網を補強した |
-| explore | `x.exp_id`8 and `x.floor`5 | name は暗闇に浮く裂け目光を測距し、門外存在の接近速度を推算している |
-| explore | `x.exp_id`8 and `x.floor`5 | name は退避鐘の試鳴を済ませ、崩壊時の避難導線を仲間へ叩き込んだ |
-| explore | `x.exp_id`8 and `x.floor`5 | name は封鎖輪が重なる静寂の中心で、祈りと計算を同時に積み上げている |
-| explore | `x.exp_id`8 and `x.floor`6 | name は聖域中枢の予見機関へ接続し、無数の未来枝から破滅線を刈り取っている |
-| explore | `x.exp_id`8 and `x.floor`6 | name は水銀めく演算鏡に手をかざし、封印維持に最適な介入時刻を選定した |
-| explore | `x.exp_id`8 and `x.floor`6 | name は浮遊環廊の星紋を踏み、視えすぎる未来から心を守る詠唱を続けた |
-| explore | `x.exp_id`8 and `x.floor`6 | name は高座の光繭へ記録鍵を差し込み、次世代へ継ぐ予兆データを封入した |
-| explore | `x.exp_id`8 and `x.floor`6 | name は天蓋儀の回転位相を微調整し、監視網の盲点が生まれる秒差を潰した |
-| explore | `x.exp_id`8 and `x.floor`6 | name は未来図廊に走る赤線を追い、封門崩壊へ至る連鎖要因を摘み取っている |
-| explore | `x.exp_id`8 and `x.floor`6 | name は静謐なる祭壇で誓句を更新し、Cervinの守望契約を新たな時代へ繋いだ |
-| explore | `x.exp_id`8 and `x.floor`6 | name は予見核の唸りを鎮め、過負荷で裂ける可能性世界を縫い合わせている |
-| explore | `x.exp_id`8 and `x.floor`6 | name は天測窓に群れる流星符を読み、次の百年に訪れる危機群を分類した |
-| explore | `x.exp_id`8 and `x.floor`6 | name は聖堂最奥の光輪陣で膝をつき、世界を守るためのただ一つの選択を刻んだ |
-| explore | `x.exp_id`8 and `x.floor`1 | 峡谷の薄霧に紛れた結界紋を見抜き、谷門の正しい通行路が選定された |
-| explore | `x.exp_id`8 and `x.floor`1 | 断崖に走る古い導線が追跡され、見えざる障壁の脈動周期が確認された |
-| explore | `x.exp_id`8 and `x.floor`1 | 見張り碑への敬礼手順が実施され、哨戒網への干渉回避が維持された |
-| explore | `x.exp_id`8 and `x.floor`1 | 風に混じる警告鐘の余韻解析で、禁足域縁辺の安全迂回路が確保された |
-| explore | `x.exp_id`8 and `x.floor`1 | 谷壁水晶片に映る光符が解読され、正門開放位相の待機刻が確定した |
-| explore | `x.exp_id`8 and `x.floor`1 | 巡礼路の蹄印追跡により、番人承認済みの安全帯が再確認された |
-| explore | `x.exp_id`8 and `x.floor`1 | 夜露を帯びた祈祷札の回収から、守護誓約が現代まで継続していると判明した |
-| explore | `x.exp_id`8 and `x.floor`1 | 崖間細道での監視眼気配観測により、潜行時の呼吸間隔基準が更新された |
-| explore | `x.exp_id`8 and `x.floor`1 | 谷門上の星見窓観察結果から、入谷許可を示す光合図の発火順が記録された |
-| explore | `x.exp_id`8 and `x.floor`1 | 薄青い防壁揺らぎの時系列化で、巡礼者判別境界の判定精度が向上した |
-| explore | `x.exp_id`8 and `x.floor`2 | 水晶塔群の共鳴音記録が進み、天測信号流の乱調検出閾値が再設定された |
-| explore | `x.exp_id`8 and `x.floor`2 | 結晶柱影角の連続測定により、時辰別観測窓の開閉表が更新された |
-| explore | `x.exp_id`8 and `x.floor`2 | 霧中微光粒の追跡で、予見機構へ注ぐ星塵導路の分岐図が完成した |
-| explore | `x.exp_id`8 and `x.floor`2 | 観測台祭文の再解読から、禁触結晶識別規則の誤記が修正された |
-| explore | `x.exp_id`8 and `x.floor`2 | 風鈴型警報子の振幅解析により、感知網死角幅の算定誤差が縮小した |
-| explore | `x.exp_id`8 and `x.floor`2 | 水晶根元紋環の照合結果が反映され、信号増幅塔の巡回順路が最適化された |
-| explore | `x.exp_id`8 and `x.floor`2 | 星図盤への方位針再較正で、予測演算基準軸の偏差が解消された |
-| explore | `x.exp_id`8 and `x.floor`2 | 稜線を渡る閃光周期の統計化により、警戒緩和刻限の抽出精度が改善した |
-| explore | `x.exp_id`8 and `x.floor`2 | 結晶面残像干渉の回避試験で、認証誤作動発生率が有意に低下した |
-| explore | `x.exp_id`8 and `x.floor`2 | 天穹へ伸びる塔列の俯瞰記録から、谷全体制御網の冗長性が確認された |
-| explore | `x.exp_id`8 and `x.floor`3 | 回転環軋みの音響診断で、同期ずれ調整台の優先除外順が確立された |
-| explore | `x.exp_id`8 and `x.floor`3 | 黄銅指標輪の暦式照合により、天球周期との誤差補正式が更新された |
-| explore | `x.exp_id`8 and `x.floor`3 | 段状テラス観測鏡の清浄化後、未来演算へ注ぐ星光束の散乱率が低減した |
-| explore | `x.exp_id`8 and `x.floor`3 | 校正杖基準点の再固定により、時流揺らぎ判定の許容域が再定義された |
-| explore | `x.exp_id`8 and `x.floor`3 | 環座標に連動した陣標移設で、予知儀焦点の収束時間が短縮された |
-| explore | `x.exp_id`8 and `x.floor`3 | 高台風見晶の流速記録蓄積から、演算陣乱流遮断手順が標準化された |
-| explore | `x.exp_id`8 and `x.floor`3 | 補助環への魔力再配分試験で、主輪共振暴走の発生確率が抑制された |
-| explore | `x.exp_id`8 and `x.floor`3 | 星読官古手帳の照合結果により、同位相日における警戒項目が増補された |
-| explore | `x.exp_id`8 and `x.floor`3 | 計測針制動操作の再現実験で、時界段差由来の誤算補正精度が向上した |
-| explore | `x.exp_id`8 and `x.floor`3 | 光環重複瞬間の観測蓄積から、予見系再同期判定の信頼度が上方修正された |
-| explore | `x.exp_id`8 and `x.floor`4 | 書架回廊の封蝋紐再点検により、百年分予測録の欠頁位置が特定された |
-| explore | `x.exp_id`8 and `x.floor`4 | 記録水晶の残響採譜結果から、分岐年表改訂痕の時期が絞り込まれた |
-| explore | `x.exp_id`8 and `x.floor`4 | 分類印章照合の徹底で、禁書区誤進入を防ぐ導線規程が改定された |
-| explore | `x.exp_id`8 and `x.floor`4 | 索引卓浮遊札の追跡統合により、未来断章所在候補が高精度で抽出された |
-| explore | `x.exp_id`8 and `x.floor`4 | 保存庫温湿符の再調整により、羊皮予言書の劣化進行率が抑制された |
-| explore | `x.exp_id`8 and `x.floor`4 | 学僧注記余白の年代比定で、封印門異常初報の夜刻が確定した |
-| explore | `x.exp_id`8 and `x.floor`4 | 年代棚配列癖の解析により、改竄冊子抽出アルゴリズムが補強された |
-| explore | `x.exp_id`8 and `x.floor`4 | 知恵灯明滅規則の解読進展で、閲覧許可光階梯の認証時間が短縮された |
-| explore | `x.exp_id`8 and `x.floor`4 | 書記官像監査術式の回避手順化により、自動警報発生件数が減少した |
-| explore | `x.exp_id`8 and `x.floor`4 | 星図写本の再展開測読で、封域周辺異常波形の増勢傾向が確認された |
-| explore | `x.exp_id`8 and `x.floor`5 | 黒曜封環への音響聴診により、異界脈動の増幅周期が数値化された |
-| explore | `x.exp_id`8 and `x.floor`5 | 拘束鎖符節の点検結果が反映され、劣化連結部への補助刻印が完了した |
-| explore | `x.exp_id`8 and `x.floor`5 | 監視祭壇燭火色の連続監視で、封印圧揺動の前兆域が早期検知された |
-| explore | `x.exp_id`8 and `x.floor`5 | 奈落縁観測孔からの記録蓄積により、理外囁き到達周期が確立された |
-| explore | `x.exp_id`8 and `x.floor`5 | 抑制陣欠損節点への魔粉補填で、歪光漏出量が一時的に低減した |
-| explore | `x.exp_id`8 and `x.floor`5 | 封門前誓約碑の再起動を通じ、守護手順最終条文の伝承が更新された |
-| explore | `x.exp_id`8 and `x.floor`5 | 結界杭傾斜の補正作業により、次期震動波への支持網耐性が向上した |
-| explore | `x.exp_id`8 and `x.floor`5 | 暗闇に浮く裂け目光の測距解析で、門外存在接近速度の推算幅が縮小した |
-| explore | `x.exp_id`8 and `x.floor`5 | 退避鐘試鳴と訓練導線照合により、崩壊時避難の完了時間が短縮された |
-| explore | `x.exp_id`8 and `x.floor`5 | 封鎖輪重複域の静穏観測で、祈祷同期時の安定係数が上方更新された |
-| explore | `x.exp_id`8 and `x.floor`6 | 聖域中枢予見機関の再演算で、破滅線候補群の除外優先度が再編成された |
-| explore | `x.exp_id`8 and `x.floor`6 | 水銀状演算鏡の介入試験により、封印維持最適時刻の推定誤差が低減した |
-| explore | `x.exp_id`8 and `x.floor`6 | 浮遊環廊星紋の踏査記録から、過剰予見時の精神防護詠唱が標準化された |
-| explore | `x.exp_id`8 and `x.floor`6 | 高座光繭への記録鍵封入で、次世代継承用予兆データの完全性が検証された |
-| explore | `x.exp_id`8 and `x.floor`6 | 天蓋儀回転位相の微調整結果が反映され、監視網盲点秒差が解消された |
-| explore | `x.exp_id`8 and `x.floor`6 | 未来図廊赤線群の追跡解析により、封門崩壊連鎖要因の優先遮断順が確立した |
-| explore | `x.exp_id`8 and `x.floor`6 | 静謐祭壇での誓句更新記録が承認され、守望契約の時代継承が完了した |
-| explore | `x.exp_id`8 and `x.floor`6 | 予見核唸動の鎮静処置により、可能性世界裂断リスクが抑制された |
-| explore | `x.exp_id`8 and `x.floor`6 | 天測窓流星符の連続読解で、次百年危機群の分類精度が向上した |
-| explore | `x.exp_id`8 and `x.floor`6 | 聖堂最奥光輪陣の誓約記録により、世界防衛選択の意思決定根拠が保存された |
-| sound_sleep | with mainClass.`Fighter` | name は鎧を外したまま深く眠り、戦場の緊張を静かに解いている |
-| sound_sleep | with mainClass.`Fighter` | name は盾を抱くようにして熟睡し、守る意志を休息に変えている |
-| sound_sleep | with mainClass.`Fighter` | name は規則正しい寝息で体幹の疲労をじっくり回復している |
-| sound_sleep | with mainClass.`Fighter` | name は古傷の痛みも忘れるほど深く眠りに沈んでいる |
-| sound_sleep | with mainClass.`Fighter` | name は焚き火の番を仲間に託し、朝までぐっすり眠っている |
-| sound_sleep | with mainClass.`Fighter` | name は重い装備の負担を手放し、安心した表情で眠っている |
-| sound_sleep | with mainClass.`Fighter` | name は次の防衛戦に備え、芯まで休まる熟睡を取っている |
-| sound_sleep | with mainClass.`Fighter` | name は横たわる姿勢のまま微動だにせず、深い睡眠を続けている |
-| sound_sleep | with mainClass.`Fighter` | name は戦塵の匂いを洗い流すように静かな眠りへ身を預けた |
-| sound_sleep | with mainClass.`Fighter` | name は夜明けまで眠り続け、頼れる体力を満たしている |
-| nap_sleep | with mainClass.`Fighter` | name は盾を枕代わりにして短く仮眠を取り、すぐ立ち上がった |
-| nap_sleep | with mainClass.`Fighter` | name は鎧の留め具を緩めた隙に、数分だけ目を閉じている |
-| nap_sleep | with mainClass.`Fighter` | name は壁際に腰を下ろし、短時間で筋肉の張りを抜いている |
-| nap_sleep | with mainClass.`Fighter` | name は見張り交代までの間に、手早く疲労を和らげている |
-| nap_sleep | with mainClass.`Fighter` | name は荒い呼吸を整えながら、浅い眠りで気力を戻している |
-| nap_sleep | with mainClass.`Fighter` | name は膝に手を置いたままうとうとし、行動準備を崩さない |
-| nap_sleep | with mainClass.`Fighter` | name は短い睡眠で集中を立て直し、守りの感覚を取り戻した |
-| nap_sleep | with mainClass.`Fighter` | name は剣帯を外さず仮眠を取り、即応の姿勢を保っている |
-| nap_sleep | with mainClass.`Fighter` | name は火の温もりを借りて小休止し、足取りを軽くしている |
-| nap_sleep | with mainClass.`Fighter` | name は合図ひとつで動けるよう、浅い眠りで体力を継ぎ足した |
-| sound_sleep | with mainClass.`Duelist` | name は剣を傍らに置き、静謐な呼吸で深く眠っている |
-| sound_sleep | with mainClass.`Duelist` | name は乱れのない寝姿のまま、朝まで熟睡を保っている |
-| sound_sleep | with mainClass.`Duelist` | name は決闘の緊張を忘れ、穏やかな表情で眠り込んでいる |
-| sound_sleep | with mainClass.`Duelist` | name は手首の疲れを癒すように、深い休息へ沈んでいる |
-| sound_sleep | with mainClass.`Duelist` | name は剣筋を思い描く夢の中で、静かに体力を回復している |
-| sound_sleep | with mainClass.`Duelist` | name は物音にも揺らがず、集中を蓄える熟睡を続けている |
-| sound_sleep | with mainClass.`Duelist` | name は静かな寝息とともに、明日の勝負勘を養っている |
-| sound_sleep | with mainClass.`Duelist` | name は一礼するような姿勢で横になり、深く眠っている |
-| sound_sleep | with mainClass.`Duelist` | name は刃の手入れを終えて安心し、重い眠気に身を任せた |
-| sound_sleep | with mainClass.`Duelist` | name は朝の稽古に備え、十分な睡眠で冴えを取り戻している |
-| nap_sleep | with mainClass.`Duelist` | name は愛剣を抱えたまま、短い仮眠で感覚を整えている |
-| nap_sleep | with mainClass.`Duelist` | name は呼吸の間合いを刻みながら、浅い眠りで休んでいる |
-| nap_sleep | with mainClass.`Duelist` | name は椅子にもたれて目を閉じ、疲れた腕を休めている |
-| nap_sleep | with mainClass.`Duelist` | name は数分の仮眠で集中線を結び直し、視線を鋭く戻した |
-| nap_sleep | with mainClass.`Duelist` | name は物音に即応できる姿勢のまま、短い眠りを取っている |
-| nap_sleep | with mainClass.`Duelist` | name は鞘鳴りを確かめた後、手早くひと眠りしている |
-| nap_sleep | with mainClass.`Duelist` | name は瞼を閉じる一瞬で気を養い、再び背筋を伸ばした |
-| nap_sleep | with mainClass.`Duelist` | name は勝負前の静寂のように、短い睡眠で気配を研いでいる |
-| nap_sleep | with mainClass.`Duelist` | name は最小限の休息で体のぶれを整え、立ち姿を戻した |
-| nap_sleep | with mainClass.`Duelist` | name は起床と同時に剣の柄へ手を添え、平常心を取り戻した |
-| sound_sleep | with mainClass.`Ninja` | name は気配を溶かすように熟睡し、闇の中で体力を蓄えている |
-| sound_sleep | with mainClass.`Ninja` | name は浅い物音を聞き流し、揺るがない深い眠りに入っている |
-| sound_sleep | with mainClass.`Ninja` | name は装束を整えたまま横になり、朝まで静かに眠っている |
-| sound_sleep | with mainClass.`Ninja` | name は呼吸を細く保ち、完全な休息で消耗を癒している |
-| sound_sleep | with mainClass.`Ninja` | name は影のように動かぬ姿で、深い睡眠を続けている |
-| sound_sleep | with mainClass.`Ninja` | name は任務の緊迫を手放し、穏やかな寝息で回復している |
-| sound_sleep | with mainClass.`Ninja` | name は忍具を枕元に置き、安心して熟睡している |
-| sound_sleep | with mainClass.`Ninja` | name は夜明け前まで目覚めず、俊敏さを取り戻している |
-| sound_sleep | with mainClass.`Ninja` | name は体温を逃さぬ姿勢で眠り、静かに英気を養っている |
-| sound_sleep | with mainClass.`Ninja` | name は長い潜入の疲労を深い眠りで洗い流している |
-| nap_sleep | with mainClass.`Ninja` | name は物陰で膝を抱え、短い仮眠を素早く済ませている |
-| nap_sleep | with mainClass.`Ninja` | name は見張りの死角を選び、数分だけ目を閉じている |
-| nap_sleep | with mainClass.`Ninja` | name は呼気を整えながら、浅い眠りで集中を回復している |
-| nap_sleep | with mainClass.`Ninja` | name は忍具の点検後に小休止し、気配を整えている |
-| nap_sleep | with mainClass.`Ninja` | name は壁際で一瞬うとうとし、すぐ警戒態勢へ戻った |
-| nap_sleep | with mainClass.`Ninja` | name は短時間で疲労を切り替え、足取りの軽さを取り戻した |
-| nap_sleep | with mainClass.`Ninja` | name は静かな寝息を数回だけ刻み、目を開けて周囲を探った |
-| nap_sleep | with mainClass.`Ninja` | name は最低限の睡眠で脈を整え、任務へ意識を向けた |
-| nap_sleep | with mainClass.`Ninja` | name は影に紛れて仮眠を取り、気づかれずに立ち上がった |
-| nap_sleep | with mainClass.`Ninja` | name は眠気を刃のように研ぎ直し、再び姿勢を低くした |
-| sound_sleep | with mainClass.`Samurai` | name は刀をそばに置き、礼正しい姿勢で深く眠っている |
-| sound_sleep | with mainClass.`Samurai` | name は静かな寝息のまま、心身の乱れを整えている |
-| sound_sleep | with mainClass.`Samurai` | name は一日の戦いを胸中で閉じ、穏やかに熟睡している |
-| sound_sleep | with mainClass.`Samurai` | name は気配を荒らさぬ眠りで、明日の一閃に備えている |
-| sound_sleep | with mainClass.`Samurai` | name は具足の重みを解き、芯まで休まる眠りを取っている |
-| sound_sleep | with mainClass.`Samurai` | name は朝稽古に向け、規律ある休息で体力を満たしている |
-| sound_sleep | with mainClass.`Samurai` | name は焚き火の残り香の中、深い夢へと身を沈めた |
-| sound_sleep | with mainClass.`Samurai` | name は痛みを忘れるほどの熟睡で、精神を澄ませている |
-| sound_sleep | with mainClass.`Samurai` | name は夜明けまで一度も揺らがず、堂々と眠っている |
-| sound_sleep | with mainClass.`Samurai` | name は静寂に溶けるような眠りで英気を養っている |
-| nap_sleep | with mainClass.`Samurai` | name は正座を崩して短く仮眠し、呼吸を整えている |
-| nap_sleep | with mainClass.`Samurai` | name は刀の柄に触れたまま、わずかな眠りで心を鎮めた |
-| nap_sleep | with mainClass.`Samurai` | name は小休止で肩の力を抜き、再び背筋を伸ばした |
-| nap_sleep | with mainClass.`Samurai` | name は無駄のない仮眠で疲れを流し、目を開けた |
-| nap_sleep | with mainClass.`Samurai` | name は湯気の立つ茶を前に、数分だけ目を閉じている |
-| nap_sleep | with mainClass.`Samurai` | name は短い眠りで拍動を整え、落ち着きを取り戻した |
-| nap_sleep | with mainClass.`Samurai` | name は見張り交代の間に仮眠し、礼とともに立ち上がった |
-| nap_sleep | with mainClass.`Samurai` | name は静かな所作で横になり、すぐ起きられる眠りを選んだ |
-| nap_sleep | with mainClass.`Samurai` | name は端正な寝姿で小休止し、気力を補っている |
-| nap_sleep | with mainClass.`Samurai` | name は刹那の睡眠で迷いを払い、視線を前へ戻した |
-| sound_sleep | with mainClass.`Lord` | name は上質な寝具に身を預け、堂々と熟睡している |
-| sound_sleep | with mainClass.`Lord` | name は宴の喧騒を忘れ、余裕ある寝顔で眠っている |
-| sound_sleep | with mainClass.`Lord` | name は護衛を信じて深く眠り、体力を大きく回復している |
-| sound_sleep | with mainClass.`Lord` | name は長旅の疲労を解き、朝まで穏やかに眠り続けた |
-| sound_sleep | with mainClass.`Lord` | name は気品を崩さぬまま、規則正しい寝息で休んでいる |
-| sound_sleep | with mainClass.`Lord` | name は明日の指揮に備え、十分な睡眠を確保している |
-| sound_sleep | with mainClass.`Lord` | name は豪奢な毛布に包まれ、深い夢の中へ沈んでいる |
-| sound_sleep | with mainClass.`Lord` | name は心配事を手放し、安心しきった表情で熟睡している |
-| sound_sleep | with mainClass.`Lord` | name は静かな夜に守られ、堂々たる眠りを貫いている |
-| sound_sleep | with mainClass.`Lord` | name は回復した気配を漂わせながら、夜明けまで眠っている |
-| nap_sleep | with mainClass.`Lord` | name は椅子にもたれて短い仮眠を取り、すぐ指示を再開した |
-| nap_sleep | with mainClass.`Lord` | name は帳簿を閉じて数分だけ目を閉じ、頭を休めている |
-| nap_sleep | with mainClass.`Lord` | name は移動前の隙に仮眠し、余裕の笑みで目覚めた |
-| nap_sleep | with mainClass.`Lord` | name は侍従に時刻を任せ、手早く気力を回復している |
-| nap_sleep | with mainClass.`Lord` | name は短い眠りで判断力を整え、采配の準備を進めた |
-| nap_sleep | with mainClass.`Lord` | name は肩肘張らずに小休止し、落ち着きを取り戻している |
-| nap_sleep | with mainClass.`Lord` | name は浅い仮眠でも充分とばかりに、すぐ立ち上がった |
-| nap_sleep | with mainClass.`Lord` | name は会話の合間に目を閉じ、疲れを最小限で払っている |
-| nap_sleep | with mainClass.`Lord` | name は短時間の睡眠で表情を整え、再び場を仕切った |
-| nap_sleep | with mainClass.`Lord` | name は華やかな外套を畳み、静かにひと眠りしている |
-| sound_sleep | with mainClass.`Ranger` | name は森の匂いを胸いっぱいに吸い、深い眠りに入っている |
-| sound_sleep | with mainClass.`Ranger` | name は野営の物音を気にせず、安定した寝息を刻んでいる |
-| sound_sleep | with mainClass.`Ranger` | name は弓を手元に置き、朝までぐっすり眠っている |
-| sound_sleep | with mainClass.`Ranger` | name は長い追跡の疲れを、静かな熟睡で癒している |
-| sound_sleep | with mainClass.`Ranger` | name は星空の下で心地よく眠り、体力を満たしている |
-| sound_sleep | with mainClass.`Ranger` | name は冷え込みを避ける寝袋で、深い休息を取っている |
-| sound_sleep | with mainClass.`Ranger` | name は夜明けの鳥声まで目覚めず、集中力を回復している |
-| sound_sleep | with mainClass.`Ranger` | name は自然のリズムに合わせ、穏やかに眠り続けている |
-| sound_sleep | with mainClass.`Ranger` | name は足腰の疲労を抜き、軽やかな動きへ備えている |
-| sound_sleep | with mainClass.`Ranger` | name は焚き火のぬくもりのそばで、安心して熟睡している |
-| nap_sleep | with mainClass.`Ranger` | name は見晴らしの良い岩陰で短く仮眠し、すぐ周囲を確認した |
-| nap_sleep | with mainClass.`Ranger` | name は弓弦を緩めた合間に、数分だけ目を閉じている |
-| nap_sleep | with mainClass.`Ranger` | name は追跡の合間に小休止し、呼吸を整えている |
-| nap_sleep | with mainClass.`Ranger` | name は荷を枕にして仮眠を取り、足取りを立て直した |
-| nap_sleep | with mainClass.`Ranger` | name は風向きを確かめた後、浅い眠りで気力を戻している |
-| nap_sleep | with mainClass.`Ranger` | name は短時間の睡眠で目の疲れを抜き、視界を研ぎ澄ました |
-| nap_sleep | with mainClass.`Ranger` | name は野営地の端でうとうとし、すぐ合図に反応した |
-| nap_sleep | with mainClass.`Ranger` | name は休める瞬間を逃さず、機敏な仮眠を済ませている |
-| nap_sleep | with mainClass.`Ranger` | name は朝露の気配に合わせて起き、軽く体を伸ばした |
-| nap_sleep | with mainClass.`Ranger` | name は木陰でひと眠りし、再び追跡の目を取り戻した |
-| sound_sleep | with mainClass.`Wizard` | name は魔導書を閉じ、深い眠りで魔力の巡りを整えている |
-| sound_sleep | with mainClass.`Wizard` | name は星の運行を夢に映しながら、静かに熟睡している |
-| sound_sleep | with mainClass.`Wizard` | name は詠唱疲れを癒すように、規則正しい寝息を立てている |
-| sound_sleep | with mainClass.`Wizard` | name は術式の残響を手放し、穏やかな眠りへ沈んでいる |
-| sound_sleep | with mainClass.`Wizard` | name は杖を枕元に置き、安心して朝まで眠っている |
-| sound_sleep | with mainClass.`Wizard` | name は深い休息で集中力を満たし、魔力回復を進めている |
-| sound_sleep | with mainClass.`Wizard` | name は静かな寝顔のまま、長い研究の疲れを解いている |
-| sound_sleep | with mainClass.`Wizard` | name は外界の雑音を遮り、完全な睡眠へ没入している |
-| sound_sleep | with mainClass.`Wizard` | name は夢の中で符号を結び、明日の呪文準備を整えている |
-| sound_sleep | with mainClass.`Wizard` | name は夜明けまで深く眠り、思考の冴えを取り戻している |
-| nap_sleep | with mainClass.`Wizard` | name は魔導書を胸に、短い仮眠で思考をリセットしている |
-| nap_sleep | with mainClass.`Wizard` | name は詠唱の合間に目を閉じ、わずかな睡眠を取っている |
-| nap_sleep | with mainClass.`Wizard` | name は椅子に座ったままうとうとし、集中を立て直した |
-| nap_sleep | with mainClass.`Wizard` | name はインクの乾きを待つ間に、短時間の休息を挟んでいる |
-| nap_sleep | with mainClass.`Wizard` | name は浅い眠りで頭痛を和らげ、視線の焦点を戻した |
-| nap_sleep | with mainClass.`Wizard` | name は杖に手を添えたまま仮眠し、すぐ詠唱姿勢へ戻った |
-| nap_sleep | with mainClass.`Wizard` | name は数分の眠りで思考を整理し、術式を書き直している |
-| nap_sleep | with mainClass.`Wizard` | name は寝過ごさぬよう短く休み、時間管理を崩さない |
-| nap_sleep | with mainClass.`Wizard` | name は浅い睡眠で魔力酔いを抜き、冷静さを取り戻した |
-| nap_sleep | with mainClass.`Wizard` | name は小休止の後にページを開き、研究を再開している |
-| sound_sleep | with mainClass.`Sage` | name は書板を閉じ、深い眠りで知の疲労を静かに癒している |
-| sound_sleep | with mainClass.`Sage` | name は呼吸を整えたまま、長く安定した熟睡を続けている |
-| sound_sleep | with mainClass.`Sage` | name は祈りに似た寝姿で、穏やかな休息へ沈んでいる |
-| sound_sleep | with mainClass.`Sage` | name は複雑な計算を忘れ、静かな夢の中で体力を回復している |
-| sound_sleep | with mainClass.`Sage` | name は魔障を避ける結界の内で、安心して眠っている |
-| sound_sleep | with mainClass.`Sage` | name は精神の波を鎮め、深層まで届く睡眠を取っている |
-| sound_sleep | with mainClass.`Sage` | name は夜明けまで目覚めず、明晰な思考を取り戻している |
-| sound_sleep | with mainClass.`Sage` | name は学究の疲れを手放し、静謐な寝息で休んでいる |
-| sound_sleep | with mainClass.`Sage` | name は穏やかな表情のまま、十分な回復を重ねている |
-| sound_sleep | with mainClass.`Sage` | name は夢の中で理を巡らせつつ、しっかり熟睡している |
-| nap_sleep | with mainClass.`Sage` | name は注釈を書き終えた直後、短い仮眠で頭を休めている |
-| nap_sleep | with mainClass.`Sage` | name は書物を枕にせず丁寧に閉じ、数分だけ目を閉じた |
-| nap_sleep | with mainClass.`Sage` | name は浅い眠りで思考の熱を冷まし、呼吸を落ち着けている |
-| nap_sleep | with mainClass.`Sage` | name は結界の確認後に小休止し、集中を継ぎ足している |
-| nap_sleep | with mainClass.`Sage` | name は短時間の睡眠で眼精疲労を抜き、文字を追う力を戻した |
-| nap_sleep | with mainClass.`Sage` | name は膝掛けを整えて仮眠し、静かに目を開けた |
-| nap_sleep | with mainClass.`Sage` | name は講義の合間のように、要点だけ休む眠りを選んでいる |
-| nap_sleep | with mainClass.`Sage` | name はわずかな睡眠で精神を整え、再び理路を組み立てた |
-| nap_sleep | with mainClass.`Sage` | name は時計を見て仮眠を切り上げ、淡々と席を立った |
-| nap_sleep | with mainClass.`Sage` | name は短い目覚めの後に微笑み、思索を再開している |
-| sound_sleep | with mainClass.`Rogue` | name は隠し持った短剣をそばに、警戒なく深く眠っている |
-| sound_sleep | with mainClass.`Rogue` | name は夜の喧騒を背に、したたかに熟睡している |
-| sound_sleep | with mainClass.`Rogue` | name は駆け引きの緊張を忘れ、静かな寝息で休んでいる |
-| sound_sleep | with mainClass.`Rogue` | name は鍵束を枕元に置き、安心して朝まで眠っている |
-| sound_sleep | with mainClass.`Rogue` | name は長い潜伏の疲れを、深い睡眠で回復している |
-| sound_sleep | with mainClass.`Rogue` | name はどんな雑音にも動じず、ぐっすり眠り込んでいる |
-| sound_sleep | with mainClass.`Rogue` | name は軽やかな寝返りだけで、熟睡を保っている |
-| sound_sleep | with mainClass.`Rogue` | name は夢の中でも笑みを浮かべ、余裕ある眠りを見せている |
-| sound_sleep | with mainClass.`Rogue` | name は朝の仕事に備え、体力を満たす休息を取っている |
-| sound_sleep | with mainClass.`Rogue` | name は疲労の気配を消すように、静かで深い眠りへ沈んだ |
-| nap_sleep | with mainClass.`Rogue` | name は人目につかぬ席で短く仮眠し、すぐ姿勢を戻した |
-| nap_sleep | with mainClass.`Rogue` | name は取引の合間に目を閉じ、数分で気力を整えている |
-| nap_sleep | with mainClass.`Rogue` | name は荷袋を抱えたままうとうとし、警戒を切らしていない |
-| nap_sleep | with mainClass.`Rogue` | name は浅い眠りで頭を冴えさせ、口上の準備を整えた |
-| nap_sleep | with mainClass.`Rogue` | name は短時間の睡眠で疲労を隠し、いつもの笑顔に戻った |
-| nap_sleep | with mainClass.`Rogue` | name は壁際で小休止し、足音ひとつで目を開けた |
-| nap_sleep | with mainClass.`Rogue` | name は手早い仮眠の後、鍵開けの指先を確かめている |
-| nap_sleep | with mainClass.`Rogue` | name は一瞬の眠りで切り替え、交渉の席へ戻っていった |
-| nap_sleep | with mainClass.`Rogue` | name は短く夢を見て、次の機会を逃さぬ目つきに戻した |
-| nap_sleep | with mainClass.`Rogue` | name は見張りに合図を送り、最小限の休息を済ませている |
-| sound_sleep | with mainClass.`Pilgrim` | name は祈りを終えて深く眠り、静かな安らぎに包まれている |
-| sound_sleep | with mainClass.`Pilgrim` | name は穏やかな寝顔で、旅の疲れを丁寧に癒している |
-| sound_sleep | with mainClass.`Pilgrim` | name は念珠を手にしたまま、朝まで熟睡している |
-| sound_sleep | with mainClass.`Pilgrim` | name は不安を手放し、信仰に寄り添う眠りを取っている |
-| sound_sleep | with mainClass.`Pilgrim` | name は規則正しい寝息で、心身の均衡を回復している |
-| sound_sleep | with mainClass.`Pilgrim` | name は仲間の無事を願う夢の中で、深い休息を得ている |
-| sound_sleep | with mainClass.`Pilgrim` | name は静寂の礼拝堂のような空気に包まれ、眠っている |
-| sound_sleep | with mainClass.`Pilgrim` | name は夜明けの祈鐘まで目覚めず、体力を満たしている |
-| sound_sleep | with mainClass.`Pilgrim` | name は温かな毛布にくるまり、安心して熟睡している |
-| sound_sleep | with mainClass.`Pilgrim` | name は長い道のりの疲労を、深い眠りで静かに流している |
-| nap_sleep | with mainClass.`Pilgrim` | name は祈句をひとつ唱え、短い仮眠で心を整えている |
-| nap_sleep | with mainClass.`Pilgrim` | name は壁際に座って目を閉じ、穏やかな小休止を取った |
-| nap_sleep | with mainClass.`Pilgrim` | name は念珠を握ったままうとうとし、すぐ目を開けた |
-| nap_sleep | with mainClass.`Pilgrim` | name は短時間の睡眠で気持ちを整え、静かに立ち上がった |
-| nap_sleep | with mainClass.`Pilgrim` | name は休める隙に仮眠し、仲間への気配りを再開している |
-| nap_sleep | with mainClass.`Pilgrim` | name は浅い眠りで疲れを和らげ、優しい表情を取り戻した |
-| nap_sleep | with mainClass.`Pilgrim` | name は朝の祈りまでの間だけ、慎ましく眠っている |
-| nap_sleep | with mainClass.`Pilgrim` | name は小さく息を整え、わずかな睡眠で足取りを軽くした |
-| nap_sleep | with mainClass.`Pilgrim` | name は仲間の物音で目覚め、微笑みとともに頷いた |
-| nap_sleep | with mainClass.`Pilgrim` | name は短い休息の後、感謝の言葉を口にしている |
-| return | none | name は戦利品を抱えて拠点へ戻っている |
-| return | none | name は疲れた足取りながらも帰路を急いでいる |
-| return | none | name は今日の成果を確かめつつ歩いている |
-| return | none | name は仲間と合流し安全な道を戻っている |
-| return | none | name は夕暮れの中、拠点の灯りを目指している |
-| return | none | name は傷をかばいながらも着実に帰っている |
-| return | none | name は荷物を落とさぬよう慎重に運んでいる |
-| return | none | name は道中の危険を避けつつ帰還している |
-| return | none | name は無事の報告を思い浮かべながら進んでいる |
-| return | none | name は長い遠征の終わりに安堵している |
-| rest | none | 静かな場所で肩の力を抜いている |
-| rest | none | 深く息を吐いて心身を落ち着けている |
-| rest | none | 体を伸ばしてこわばりをほぐしている |
-| rest | none | しばらく目を閉じて疲労を流している |
-| rest | none | 温もりの中で穏やかな時間を過ごしている |
-| rest | none | 腰を下ろして足の疲れを癒している |
-| rest | none | 周囲の音を聞きながら休息している |
-| rest | none | 乱れた呼吸を整えて体力を戻している |
-| rest | none | 無理をせず静かに回復を待っている |
-| rest | none | 次の行動に備えて英気を養っている |
-| feast | none | 香り豊かな料理をゆっくり味わっている |
-| feast | none | 温かな食事で空腹を満たしている |
-| feast | none | 皿いっぱいの料理を楽しんでいる |
-| feast | none | ごちそうを囲んで和やかに過ごしている |
-| feast | none | 食卓の活気に笑顔がこぼれている |
-| feast | none | 焼きたての一品を嬉しそうに口にしている |
-| feast | none | たっぷりの食事で力を蓄えている |
-| feast | none | 湯気立つ料理で体の芯まで温まっている |
-| feast | none | 満足するまで食事を楽しんでいる |
-| feast | none | 活力を取り戻すように食べ進めている |
-| sell | none | 品物を丁寧に並べて買い手を待っている |
-| sell | none | 価格表を見比べながら売却の準備をしている |
-| sell | none | 相場を確認しつつ取引の機会をうかがっている |
-| sell | none | 品質の良さを説明して交渉している |
-| sell | none | 店先で落ち着いて値段の相談をしている |
-| sell | none | 売れ筋を確かめながら品を選んでいる |
-| sell | none | 取引内容を帳面に記録している |
-| sell | none | 客の反応を見ながら価格を調整している |
-| sell | none | 在庫を整理しながら販売を進めている |
-| sell | none | 取引をまとめて次の商談に向かっている |
-| sound_sleep | none | 夜明けまで深く穏やかに眠っている |
-| sound_sleep | none | 体を休めることに集中して眠っている |
-| sound_sleep | none | 安心した表情で静かに寝入っている |
-| sound_sleep | none | 長い疲れを手放すように眠り込んでいる |
-| sound_sleep | none | 柔らかな寝床で心地よく眠っている |
-| sound_sleep | none | 規則正しい寝息で安定して休んでいる |
-| sound_sleep | none | 朝に備えて十分な睡眠を取っている |
-| sound_sleep | none | 深い休息で体力を大きく回復している |
-| sound_sleep | none | 外の気配を気にせず眠り続けている |
-| sound_sleep | none | 眠りの中で緊張を解きほぐしている |
-| nap_sleep | none | 短時間だけ目を閉じて休んでいる |
-| nap_sleep | none | すき間時間に手早く眠気を取っている |
-| nap_sleep | none | わずかな休息で集中を整えている |
-| nap_sleep | none | 軽い眠りで気分を切り替えている |
-| nap_sleep | none | 小休止で疲れの山をやり過ごしている |
-| nap_sleep | none | 短い仮眠で体の重さを和らげている |
-| nap_sleep | none | 休めるうちに素早く眠っている |
-| nap_sleep | none | ひと眠りして行動の準備をしている |
-| nap_sleep | none | 少しの睡眠で足取りを立て直している |
-| nap_sleep | none | 目覚めに合わせて気力を戻している |
-| pray | none | 静かに目を閉じて祈りに集中している |
-| pray | none | 心を込めて感謝の祈りを捧げている |
-| pray | none | 小さな灯りの前で願いを唱えている |
-| pray | none | 不安を手放すように祈り続けている |
-| pray | none | 深く頭を下げて敬意を示している |
-| pray | none | 明日への希望を胸に祈っている |
-| pray | none | 静寂の中で言葉を紡いでいる |
-| pray | none | 揺るがぬ心を求めて祈っている |
-| pray | none | 祈りの時間で気持ちを整えている |
-| pray | none | 厳かな雰囲気の中で願いを託している |
-| idle | none | 拠点の隅で落ち着いて待機している |
-| idle | none | 手持ちの道具を眺めながら時間を過ごしている |
-| idle | none | 周囲を見回しつつゆったり構えている |
-| idle | none | 次の合図を待ちながら息を整えている |
-| idle | none | 何気ない作業で手を動かしている |
-| idle | none | 物音に注意を払いながら待っている |
-| idle | none | 気を抜きすぎない程度に休んでいる |
-| idle | none | 足元を確かめて立ち位置を整えている |
-| idle | none | ぼんやりと先の流れを考えている |
-| idle | none | 落ち着いた様子で状況を見守っている |
-| move | none | 目的地に向けて歩調を合わせている |
-| move | none | 道の起伏に合わせて着実に進んでいる |
-| move | none | 周囲を警戒しながら前へ進んでいる |
-| move | none | 休まず一定のリズムで移動している |
-| move | none | 視界を確保しながら進路を取っている |
-| move | none | 曲がり角ごとに慎重に足を運んでいる |
-| move | none | 地形を読みながら効率よく移動している |
-| move | none | 足音を抑えて静かに進んでいる |
-| move | none | 遅れないように速度を保っている |
-| move | none | 進行方向を確かめつつ前進している |
-| move | sortie while sleep state with embezzlement > 0 G | nameは神の緊急動員に憤り、d.embezzlementGを持ち逃げして出撃した |
-| move | sortie while sleep state with embezzlement > 0 G | name は寝ぼけ眼のまま命令に毒づき、d.embezzlementGを懐に隠して歩き出した |
-| move | sortie while sleep state with embezzlement > 0 G | name は毛布を引きずりながら、d.embezzlementGの重みだけはしっかり確かめて進軍している |
-| move | sortie while sleep state with embezzlement > 0 G | name は欠伸混じりに神への不満を漏らし、d.embezzlementGを持ったまま隊列に加わった |
-| move | sortie while sleep state with embezzlement > 0 G | name は半分眠った足取りで出撃しつつ、d.embezzlementGの袋だけは離さない |
-| move | sortie while sleep state with embezzlement > 0 G | name は夢の続きに未練を残しながらも、d.embezzlementGを抱えて前線へ向かう |
-| move | sortie while sleep state with embezzlement > 0 G | name はまぶたを擦って神命を恨み、d.embezzlementGを持ち逃げした罪悪感ごと進んでいる |
-| move | sortie while sleep state with embezzlement > 0 G | name は寝台から叩き起こされた怒りを胸に、d.embezzlementGを握って移動している |
-| move | sortie while sleep state with embezzlement > 0 G | name は寝息の名残を引きずったまま、d.embezzlementGを隠して渋々出撃した |
-| move | sortie while sleep state with embezzlement > 0 G | name は眠気と苛立ちを抱え、d.embezzlementGの持ち逃げを正当化しながら進んでいる |
-| move | sortie while feast state with embezzlement > 0 G | name は宴席を中断させた神命に腹を立て、d.embezzlementGを懐へ滑り込ませて出撃した |
-| move | sortie while feast state with embezzlement > 0 G | name は口いっぱいの料理を飲み込み、d.embezzlementGを持ち逃げして怒りの行軍を始めた |
-| move | sortie while feast state with embezzlement > 0 G | name は乾杯の途中で呼び出された恨みを込め、d.embezzlementGを握って歩いている |
-| move | sortie while feast state with embezzlement > 0 G | name は皿を置く音を荒げ、d.embezzlementGをくすねたまま前線へ急いだ |
-| move | sortie while feast state with embezzlement > 0 G | name はまだ肉の香りをまといながら、d.embezzlementGを持って不機嫌に移動している |
-| move | sortie while feast state with embezzlement > 0 G | name は神への文句を噛みしめ、d.embezzlementGの袋を揺らして隊列を進む |
-| move | sortie while feast state with embezzlement > 0 G | name は食後の余韻を奪われた怒りで、d.embezzlementGを隠して出撃を続けている |
-| move | sortie while feast state with embezzlement > 0 G | name はスプーンを投げ置き、d.embezzlementGを持ち逃げして戦地へ向かった |
-| move | sortie while feast state with embezzlement > 0 G | name は満腹のまま不満顔で進み、d.embezzlementGだけはしっかり守っている |
-| move | sortie while feast state with embezzlement > 0 G | name は宴を壊された報復として、d.embezzlementGを抱えて乱暴な足取りで出撃した |
-| move | sortie while rest state with embezzlement > 0 G | name は休息を断ち切る神命に苛立ち、d.embezzlementGを持ち逃げして立ち上がった |
-| move | sortie while rest state with embezzlement > 0 G | name は焚き火から引き剥がされた怒りを隠さず、d.embezzlementGを懐に入れて進んでいる |
-| move | sortie while rest state with embezzlement > 0 G | name はため息交じりに装備を背負い、d.embezzlementGを隠して渋々行軍を始めた |
-| move | sortie while rest state with embezzlement > 0 G | name は癒やしの時間を奪われた腹いせに、d.embezzlementGを確保して出撃した |
-| move | sortie while rest state with embezzlement > 0 G | name は休憩椅子を蹴って立ち上がり、d.embezzlementGを抱えたまま隊列へ戻った |
-| move | sortie while rest state with embezzlement > 0 G | name は静寂を破る出撃命令へ舌打ちし、d.embezzlementGとともに前進している |
-| move | sortie while rest state with embezzlement > 0 G | name は疲れた体に鞭打ちつつ、d.embezzlementGの袋を締めて歩き出した |
-| move | sortie while rest state with embezzlement > 0 G | name は神の気まぐれに抗議しながら、d.embezzlementGを持って移動している |
-| move | sortie while rest state with embezzlement > 0 G | name はひと息つく暇もなく、d.embezzlementGを懐へ隠して戦線へ向かった |
-| move | sortie while rest state with embezzlement > 0 G | name は休息の代償だと言い張り、d.embezzlementGを持ち逃げして不機嫌に進軍する |
-| move | sortie while return state with embezzlement > 0 G | name は帰還直後の再出撃に憤り、d.embezzlementGを握り直して前線へ引き返した |
-| move | sortie while return state with embezzlement > 0 G | name は拠点の門を目前に命令を受け、d.embezzlementGを懐に隠して踵を返した |
-| move | sortie while return state with embezzlement > 0 G | name は安堵が怒りへ変わる中、d.embezzlementGを持ったまま再び行軍している |
-| move | sortie while return state with embezzlement > 0 G | name は報告前に呼び戻された苛立ちで、d.embezzlementGの袋を締めて出撃した |
-| move | sortie while return state with embezzlement > 0 G | name は帰路の疲労を抱えたまま、d.embezzlementGを確かめて無言で進んでいる |
-| move | sortie while return state with embezzlement > 0 G | name は帰還の達成感を奪われ、d.embezzlementGを持ち逃げして不満げに進軍した |
-| move | sortie while return state with embezzlement > 0 G | name は荷を降ろす間もなく、d.embezzlementGを隠して再出撃列へ合流した |
-| move | sortie while return state with embezzlement > 0 G | name は帰ってきた道を逆走しつつ、d.embezzlementGの重みで気を紛らわせている |
-| move | sortie while return state with embezzlement > 0 G | name は「またか」と吐き捨て、d.embezzlementGを抱えたまま前進を始めた |
-| move | sortie while return state with embezzlement > 0 G | name は帰還完了を取り消された怒りをにじませ、d.embezzlementGとともに戦地へ戻った |
-| move | sortie with embezzlement = 0 G | name は神の緊急動員に憤り、露骨に不満顔で出撃した |
-| move | sortie with embezzlement = 0 G | name は理不尽な命令に舌打ちし、荒い足取りで前線へ向かった |
-| move | sortie with embezzlement = 0 G | name は文句を飲み込めず、ぶつぶつと神への抗議を続けている |
-| move | sortie with embezzlement = 0 G | name は納得しないまま装備を担ぎ、不機嫌に隊列へ戻った |
-| move | sortie with embezzlement = 0 G | name は呼び出しの強引さに腹を立て、視線を険しくして進んでいる |
-| move | sortie with embezzlement = 0 G | name は休む間もなく命じられたことに怒り、肩をいからせて移動した |
-| move | sortie with embezzlement = 0 G | name は「また急か」と吐き捨て、反抗的な歩調で進軍している |
-| move | sortie with embezzlement = 0 G | name は神命への不平を隠さず、仲間にも苛立ちをにじませている |
-| move | sortie with embezzlement = 0 G | name は強制出撃への恨みを抱えたまま、黙々と前へ進んでいる |
-| move | sortie with embezzlement = 0 G | name は怒りで頬をこわばらせ、無言の抗議をしながら出撃した |
-| return | none | 帰路の安全を確かめながら進んでいる |
-| return | none | 目的を果たして拠点へ向かっている |
-| return | none | 慎重な足取りで帰還を続けている |
-| return | none | 荷物を守りつつ落ち着いて戻っている |
-| return | none | 見慣れた道をたどって帰っている |
-| return | none | 緊張を緩めずに帰り道を進んでいる |
-| return | none | ほっとした気持ちで拠点を目指している |
-| return | none | 仲間と歩調を合わせて帰還している |
-| return | none | 長い行程を終えるべく歩いている |
-| return | none | 無事に戻ることを第一に進んでいる |
-| return | Clear and `d.HP` > 95% of max HP | name はほとんど無傷のまま、軽い足取りで拠点へ戻っている |
-| return | Clear and `d.HP` > 95% of max HP | name は余裕の笑みを浮かべ、戦果を語りながら帰還している |
-| return | Clear and `d.HP` > 95% of max HP | name は疲れを見せず、先頭に立って帰路を進んでいる |
-| return | Clear and `d.HP` > 95% of max HP | name は装備を整えたまま、警戒を保って拠点へ向かっている |
-| return | Clear and `d.HP` > 95% of max HP | name は次の任務さえ見据え、堂々と帰還している |
-| return | Clear and `d.HP` > 95% of max HP | name は息ひとつ乱さず、安定した歩調で戻っている |
-| return | Clear and `d.HP` > 95% of max HP | name は仲間を励ましつつ、余力十分で道を進んでいる |
-| return | Clear and `d.HP` > 95% of max HP | name は傷の少なさを確かめ、満ちた体力で帰っている |
-| return | Clear and `d.HP` > 95% of max HP | name はまだ戦える気配を残したまま、悠々と帰還している |
-| return | Clear and `d.HP` > 95% of max HP | name は遠征終わりとは思えぬ足取りで拠点へ向かっている |
-| return | Wounded_Retreat | name は痛む体をかばいながら、慎重に帰路をたどっている |
-| return | Wounded_Retreat | name は息を切らしつつも、拠点の灯りを頼りに進んでいる |
-| return | Wounded_Retreat | name はふらつく足を踏みしめ、なんとか帰還を続けている |
-| return | Wounded_Retreat | name は仲間の支えを受けながら、ゆっくり戻っている |
-| return | Wounded_Retreat | name は止血した包帯を押さえ、無言で帰り道を進んでいる |
-| return | Wounded_Retreat | name は一歩ごとに痛みに耐え、拠点を目指している |
-| return | Wounded_Retreat | name は休み休み歩き、帰還だけを考えている |
-| return | Wounded_Retreat | name は視界の揺れをこらえつつ、道を外さず戻っている |
-| return | Wounded_Retreat | name は気力で体を動かし、遅れまいと帰路を急いでいる |
-| return | Wounded_Retreat | name は消えかけた体力を振り絞り、ようやく帰還している |
-| return | Defeat | name は力尽き、仲間に運ばれながら拠点へ収容されている |
-| return | Defeat | name は意識を失ったまま、担架で静かに運ばれている |
-| return | Defeat | name の装備だけが先に回収され、本人は救護班に託された |
-| return | Defeat | name は戦線を離脱し、仲間の腕に支えられて帰還している |
-| return | Defeat | name はその場で倒れ、救助隊によって拠点へ搬送された |
-| return | Defeat | name は反応を失い、静まり返った隊列の中で運ばれている |
-| return | Defeat | name は撤退の混乱の中で救い出され、帰還処置に入った |
-| return | Defeat | name は倒れたまま動かず、仲間が交代で担いで戻っている |
-| return | Defeat | name の呼吸はかすかで、緊急手当てを受けつつ運ばれている |
-| return | Defeat | name は完全に戦闘不能となり、帰還後ただちに治療室へ送られる |
-| return | Turned_Back | name は封印扉の前で足を止め、条件不足を悟って引き返している |
-| return | Turned_Back | name は必要な戦利品が足りないと判断し、未練を残しつつ帰路についた |
-| return | Turned_Back | name は進行条件を満たせず、地図を閉じて拠点への道を選んだ |
-| return | Turned_Back | name は門番の刻印に拒まれ、静かに撤収を指示している |
-| return | Turned_Back | name は先へ進む鍵がないと確認し、隊列を整えて戻っている |
-| return | Turned_Back | name は探索継続を断念し、次回に備えて情報を持ち帰っている |
-| return | Turned_Back | name は条件未達の報せを受け、焦らず帰還して準備を立て直す |
-| return | Turned_Back | name は収集目標の不足を認め、危険を避けて帰還判断を下した |
-| return | Turned_Back | name はこれ以上は無理だと見切り、必要素材を求めて戻っている |
-| return | Turned_Back | name は進路を塞ぐ要件に阻まれ、次の挑戦へ備えて退いた |
-| return | Draw_Retreat | name は決着のつかない戦いを終え、消耗を抑えて帰還している |
-| return | Draw_Retreat | name は互いに譲らぬまま戦線を離れ、静かに拠点へ戻っている |
-| return | Draw_Retreat | name は引き分けの痛み分けを受け入れ、隊列を崩さず帰路を進む |
-| return | Draw_Retreat | name は勝機を得られぬまま時間切れとなり、体勢を保って撤いた |
-| return | Draw_Retreat | name は相手を押し切れず、再戦を誓いながら退いている |
-| return | Draw_Retreat | name は戦況が平行線のまま終わり、損耗管理を優先して戻った |
-| return | Draw_Retreat | name は互角のまま刃を収め、次の機会へ力を温存している |
-| return | Draw_Retreat | name は決め手を欠いた戦闘を切り上げ、慎重に帰還している |
-| return | Draw_Retreat | name は均衡が崩れぬと見て、被害拡大前に撤収した |
-| return | Draw_Retreat | name は勝敗なき離脱を受け止め、拠点での立て直しを急いでいる |
+| explore | `x.exp_id`1 and `x.floor`1 | name は風の草原で朝日を受け、古い道しるべに手を当てて進んでいる |
+| explore | `x.exp_id`1 and `x.floor`1 | name は草の海をかき分け、遠くの石塔を目印に歩いている |
+| explore | `x.exp_id`1 and `x.floor`1 | name は小さな花のそばで足を止め、この地の守りに祈ってから進んだ |
+| explore | `x.exp_id`1 and `x.floor`1 | name はやわらかな風を背に受け、仲間へ合図してゆるい丘を下っている |
+| explore | `x.exp_id`1 and `x.floor`1 | name は草むらの獣道を見つけ、静かな足取りで安全な道を選んだ |
+| explore | `x.exp_id`1 and `x.floor`1 | 空を舞う鳥の流れを見上げながら、name は迷わぬよう進路を決めている |
+| explore | `x.exp_id`1 and `x.floor`1 | ひび割れた石碑の文字をなぞり、name は昔の旅人の祈りを思い出した |
+| explore | `x.exp_id`1 and `x.floor`1 | 露にぬれた草を払いながら、name は朝の光が差す方へ進んでいる |
+| explore | `x.exp_id`1 and `x.floor`1 | 遠くの雲の動きを見上げ、name は雨の前に平原を抜けようとしている |
+| explore | `x.exp_id`1 and `x.floor`1 | 風鳴りに耳をすませる中で、name は精霊が眠る小道へそっと足を踏み入れた |
+| explore | `x.exp_id`1 and `x.floor`1 | 風の草原に古い道しるべが立ち、旅人を導く静かな気配が満ちている |
+| explore | `x.exp_id`1 and `x.floor`1 | 朝日に光る草の海が広がり、遠くの石塔が進む先を示している |
+| explore | `x.exp_id`1 and `x.floor`1 | 小さな守り花が点々と咲き、この地に穏やかな加護が残っている |
+| explore | `x.exp_id`1 and `x.floor`1 | なだらかな丘を渡る風が強く、足音を消してくれる道が続いている |
+| explore | `x.exp_id`1 and `x.floor`1 | 草むらに獣道がいくつも交わり、安全に通れる細道が見つかる |
+| explore | `x.exp_id`1 and `x.floor`1 | 空を回る鳥の列が見え、天気と方角を読む手がかりになっている |
+| explore | `x.exp_id`1 and `x.floor`1 | ひび割れた石碑には古い祈りが残り、旅の無事を願う声が感じられる |
+| explore | `x.exp_id`1 and `x.floor`1 | 朝露をまとった草がきらめき、夜明けの静けさが平原を包んでいる |
+| explore | `x.exp_id`1 and `x.floor`1 | 遠くの雲が速く流れ、雨が来る前の短い好機が生まれている |
+| explore | `x.exp_id`1 and `x.floor`1 | 風鳴りの向こうに精霊の小道がのび、やさしい光が先へと誘っている |
+| explore | `x.exp_id`1 and `x.floor`2 | name は赤い土の道で足跡を見つけ、獣の縄張りを避けて進んでいる |
+| explore | `x.exp_id`1 and `x.floor`2 | name は草むらの揺れを見て手を上げ、仲間に静かに止まるよう伝えた |
+| explore | `x.exp_id`1 and `x.floor`2 | name は獣のうなりを遠くに聞き、風下を選んで低い姿勢で歩いている |
+| explore | `x.exp_id`1 and `x.floor`2 | name は折れた枝を拾って道に印をつけ、戻れるよう備えながら進んだ |
+| explore | `x.exp_id`1 and `x.floor`2 | name は短く祈って護符を結び、危ない谷を横目に細道へ入っていく |
+| explore | `x.exp_id`1 and `x.floor`2 | 深い爪あとを見たあとで、name は盾を前に出して慎重に進んでいる |
+| explore | `x.exp_id`1 and `x.floor`2 | 骨の散る分かれ道に立ち、name は静かな方角を選んで歩き出した |
+| explore | `x.exp_id`1 and `x.floor`2 | 風に獣のにおいが混じる中、name は火種を守って足を速めている |
+| explore | `x.exp_id`1 and `x.floor`2 | 高い草がざわめくたびに、name は足を止めて気配を確かめた |
+| explore | `x.exp_id`1 and `x.floor`2 | 月の光が薄い道を前に、name は仲間の間を詰めて先へ向かった |
+| explore | `x.exp_id`1 and `x.floor`2 | 赤い土には新しい爪あとが残り、獣の縄張りがはっきり分かる |
+| explore | `x.exp_id`1 and `x.floor`2 | 骨の散る分かれ道が続き、静かな迂回路を選ぶ必要がある |
+| explore | `x.exp_id`1 and `x.floor`2 | 風下の細道はにおいを隠しやすく、見つかりにくい進路になっている |
+| explore | `x.exp_id`1 and `x.floor`2 | 折れた枝と荒れた草が多く、足場の悪い区画が広がっている |
+| explore | `x.exp_id`1 and `x.floor`2 | 護符を結ぶ石柱が点在し、旅人に短い祈りの場を与えている |
+| explore | `x.exp_id`1 and `x.floor`2 | 谷側から低いうなりが響き、隊列を小さく保つ方が安全だ |
+| explore | `x.exp_id`1 and `x.floor`2 | 背の高い草は視界を奪うため、一歩ごとの確認が欠かせない |
+| explore | `x.exp_id`1 and `x.floor`2 | 夜になると道の境が消えやすく、月明かりの位置が大事になる |
+| explore | `x.exp_id`1 and `x.floor`2 | 獣道と人の道が交わる場所が多く、進路の見直しが必要になる |
+| explore | `x.exp_id`1 and `x.floor`2 | 荒い風が足音を散らし、静かに進むには都合のよい地形が続く |
+| explore | `x.exp_id`1 and `x.floor`3 | name は虫の羽音を聞き分け、火をかざしてむれの薄い道を選んだ |
+| explore | `x.exp_id`1 and `x.floor`3 | name は湿った谷に入る前に布で口をおおい、ゆっくり足を運んでいる |
+| explore | `x.exp_id`1 and `x.floor`3 | name は倒れた木を渡り、ぬかるみを避けて高い土手へ登った |
+| explore | `x.exp_id`1 and `x.floor`3 | name は小さな巣穴を見つけるたびに印を残し、危ない場所を共有した |
+| explore | `x.exp_id`1 and `x.floor`3 | name は薄暗い谷底を避け、朝の光が届く斜面を選んで進んでいる |
+| explore | `x.exp_id`1 and `x.floor`3 | 羽音が急に強くなったので、name は隊列を縮めて足早に抜けた |
+| explore | `x.exp_id`1 and `x.floor`3 | 泥には細かな足跡が無数にあり、name は踏み込む場所を指で示した |
+| explore | `x.exp_id`1 and `x.floor`3 | 岩陰で休む短い間に、name は火種を整えて煙を立てている |
+| explore | `x.exp_id`1 and `x.floor`3 | 湿気の重い空気の中で、name は呼吸を整えながら前を見すえた |
+| explore | `x.exp_id`1 and `x.floor`3 | 崩れた土手を前にして、name はロープを張って仲間を渡らせた |
+| explore | `x.exp_id`1 and `x.floor`3 | 谷には虫の羽音が満ち、火の明かりが進路を守る手がかりになる |
+| explore | `x.exp_id`1 and `x.floor`3 | ぬかるみが広く続き、乾いた土手を選ぶだけで安全さが変わる |
+| explore | `x.exp_id`1 and `x.floor`3 | 倒木が橋のように並び、慎重に渡れば早く先へ進める |
+| explore | `x.exp_id`1 and `x.floor`3 | 小さな巣穴があちこちにあり、足元への注意が欠かせない |
+| explore | `x.exp_id`1 and `x.floor`3 | 谷底は暗く湿り、朝の光が届く斜面が比較的歩きやすい |
+| explore | `x.exp_id`1 and `x.floor`3 | 泥の足跡は流れやすく、早めの判断が大切になる |
+| explore | `x.exp_id`1 and `x.floor`3 | 岩陰は短い休息に向くが、長居するとむれに囲まれやすい |
+| explore | `x.exp_id`1 and `x.floor`3 | 煙は虫よけに役立ち、隊の視界を守る支えになっている |
+| explore | `x.exp_id`1 and `x.floor`3 | 崩れた土手が多く、ロープの準備が移動を安定させる |
+| explore | `x.exp_id`1 and `x.floor`3 | 湿った風が体力を削るため、歩く速さの調整が求められる |
+| explore | `x.exp_id`1 and `x.floor`4 | name は見張りの影を見つけ、岩かげを使って高台へ近づいている |
+| explore | `x.exp_id`1 and `x.floor`4 | name は細い尾根道を避け、横の斜面から静かに回り込んだ |
+| explore | `x.exp_id`1 and `x.floor`4 | name は木のきしむ音に耳をすませ、待ち伏せの気配を探っている |
+| explore | `x.exp_id`1 and `x.floor`4 | name は落ち葉を払いながら罠の線を見つけ、仲間へ合図した |
+| explore | `x.exp_id`1 and `x.floor`4 | name は月明かりを背にしないよう位置を変え、暗がりを進んでいる |
+| explore | `x.exp_id`1 and `x.floor`4 | 高台の風が強まる中、name はしゃがんで姿を低くして進んだ |
+| explore | `x.exp_id`1 and `x.floor`4 | 崩れた見張り台を見上げて、name は安全な通り道を選び直した |
+| explore | `x.exp_id`1 and `x.floor`4 | 岩場の影が伸びる時間に、name は隊の間隔を詰めている |
+| explore | `x.exp_id`1 and `x.floor`4 | 遠くで金具の音が鳴り、name は足を止めて気配の向きを読んだ |
+| explore | `x.exp_id`1 and `x.floor`4 | 狭い道に入る直前で、name は退路を確かめてから前へ出た |
+| explore | `x.exp_id`1 and `x.floor`4 | 見張りの影が動く高台では、岩かげの利用が生存の鍵になる |
+| explore | `x.exp_id`1 and `x.floor`4 | 細い尾根道は見つかりやすく、斜面側の迂回が安全につながる |
+| explore | `x.exp_id`1 and `x.floor`4 | 木のきしむ音が遠くまで響き、気配を読む手がかりになる |
+| explore | `x.exp_id`1 and `x.floor`4 | 落ち葉の下に罠の線が隠れ、足元確認が強く求められる |
+| explore | `x.exp_id`1 and `x.floor`4 | 月明かりは便利だが、同時に姿をさらす危険も大きい |
+| explore | `x.exp_id`1 and `x.floor`4 | 崩れた見張り台の周辺は視線が通りやすく、短時間で通過したい |
+| explore | `x.exp_id`1 and `x.floor`4 | 岩場の影が長くなる時間は、移動に向いた貴重な機会になる |
+| explore | `x.exp_id`1 and `x.floor`4 | 金具の音が風に乗り、巡回の位置を推測しやすくなる |
+| explore | `x.exp_id`1 and `x.floor`4 | 狭い道ほど退路の確認が重要で、進む前の準備が命を守る |
+| explore | `x.exp_id`1 and `x.floor`4 | 高低差の多い地形が続き、隊列の間隔管理が安全を左右する |
+| explore | `x.exp_id`1 and `x.floor`5 | name は半ば埋もれた石門を見つけ、古い遺跡の筋をたどって進んでいる |
+| explore | `x.exp_id`1 and `x.floor`5 | name は土に沈んだ石畳を払い、崩れにくい道を選んで歩いている |
+| explore | `x.exp_id`1 and `x.floor`5 | name は割れた柱の並びを数え、埋もれた広場の中心へ向かった |
+| explore | `x.exp_id`1 and `x.floor`5 | name は砂にのぞく碑石を確かめ、失われた街道の向きを読んでいる |
+| explore | `x.exp_id`1 and `x.floor`5 | name は崩れた壁の影で短く休み、次の遺構へ静かに移動した |
+| explore | `x.exp_id`1 and `x.floor`5 | 埋もれた段差を前にして、name は足場を確かめながら一歩ずつ進んだ |
+| explore | `x.exp_id`1 and `x.floor`5 | 風で砂が流れる合間に、name は石塔の先端を目印に進路を決めた |
+| explore | `x.exp_id`1 and `x.floor`5 | 倒れた像の欠片を見つけ、name は遺跡地図の印を更新している |
+| explore | `x.exp_id`1 and `x.floor`5 | ひび割れた回廊の入口で、name は仲間を呼んで安全確認を行った |
+| explore | `x.exp_id`1 and `x.floor`5 | 土の下から古い紋章が現れ、name は記録帳に位置を書き留めた |
+| explore | `x.exp_id`1 and `x.floor`5 | 半ば埋もれた石門が並び、遺跡の道筋が野に溶け込んでいる |
+| explore | `x.exp_id`1 and `x.floor`5 | 土に沈んだ石畳が続き、踏み固められた線が安全路になる |
+| explore | `x.exp_id`1 and `x.floor`5 | 割れた柱の並びから、かつての広場の形がうっすら読み取れる |
+| explore | `x.exp_id`1 and `x.floor`5 | 砂にのぞく碑石が街道の向きを示し、進路判断の助けになる |
+| explore | `x.exp_id`1 and `x.floor`5 | 崩れた壁の影は短い休息に向き、視界の確保もしやすい |
+| explore | `x.exp_id`1 and `x.floor`5 | 埋もれた段差が多く、歩幅を小さく保つことが安全につながる |
+| explore | `x.exp_id`1 and `x.floor`5 | 砂が流れる時間帯は石塔の先端が見え、目印を取りやすい |
+| explore | `x.exp_id`1 and `x.floor`5 | 倒れた像の欠片が各地に散り、遺跡区画の境界を示している |
+| explore | `x.exp_id`1 and `x.floor`5 | ひび割れた回廊は崩落の危険があり、入口での確認が欠かせない |
+| explore | `x.exp_id`1 and `x.floor`5 | 土の下から現れる古い紋章が、この野が埋没遺跡群だと物語っている |
+| explore | `x.exp_id`1 and `x.floor`6 | name はカナイニアンの古都跡に入り、獣紋の石壁をたよりに進んでいる |
+| explore | `x.exp_id`1 and `x.floor`6 | name は崩れた城路を見上げ、犬人の王都へ続く主道を探している |
+| explore | `x.exp_id`1 and `x.floor`6 | name は砕けた見張り塔の下で足を止め、巡回路の名残を確かめた |
+| explore | `x.exp_id`1 and `x.floor`6 | name は古い門章に手を当て、カナイニアン衛兵の誓いを静かに読んだ |
+| explore | `x.exp_id`1 and `x.floor`6 | name は石造の街区を横切り、王宮区へ向かう高い道へ上っていく |
+| explore | `x.exp_id`1 and `x.floor`6 | 獣紋が刻まれた壁を見つけ、name は古都地図の区画線を引き直した |
+| explore | `x.exp_id`1 and `x.floor`6 | 崩れた城門の前で、name は仲間と退路を決めてから進み出した |
+| explore | `x.exp_id`1 and `x.floor`6 | 犬人の古い見張り台を見上げ、name は死角になる路地を選んだ |
+| explore | `x.exp_id`1 and `x.floor`6 | 風化した門章の欠片を拾い、name は王宮区の位置を推定している |
+| explore | `x.exp_id`1 and `x.floor`6 | 石造街路の分岐に立ち、name は獣紋の向きで進路を判断した |
+| explore | `x.exp_id`1 and `x.floor`6 | カナイニアンの古都跡には獣紋の石壁が残り、街区の境を示している |
+| explore | `x.exp_id`1 and `x.floor`6 | 崩れた城路が高低差を作り、王都中心へ向かう主道の名残が見える |
+| explore | `x.exp_id`1 and `x.floor`6 | 砕けた見張り塔の土台が点在し、かつての巡回網を想像させる |
+| explore | `x.exp_id`1 and `x.floor`6 | 古い門章には犬人衛兵の誓いが刻まれ、都市の歴史を伝えている |
+| explore | `x.exp_id`1 and `x.floor`6 | 石造の街区が広がり、王宮区へ向かう高い道が今も判別できる |
+| explore | `x.exp_id`1 and `x.floor`6 | 獣紋の向きは進路判断に役立ち、迷路のような路地で力を発揮する |
+| explore | `x.exp_id`1 and `x.floor`6 | 崩れた城門周辺は見通しがよく、通過前の退路確認が重要になる |
+| explore | `x.exp_id`1 and `x.floor`6 | 犬人の見張り台跡は死角も多く、移動は短区間で区切るのが安全だ |
+| explore | `x.exp_id`1 and `x.floor`6 | 風化した門章の欠片が各所に散り、王宮区の位置推定を助けている |
+| explore | `x.exp_id`1 and `x.floor`6 | 石造街路の分岐が多く、合流地点の共有が隊の安定を支えている |
+| explore | `x.exp_id`2 and `x.floor`1 | name は雪の森で白い息をはき、凍った枝を避けて進んでいる |
+| explore | `x.exp_id`2 and `x.floor`1 | name は踏み固められた雪道を見つけ、仲間を先へ導いている |
+| explore | `x.exp_id`2 and `x.floor`1 | name は樹氷の下で足を止め、吹雪の切れ目を待って歩き出した |
+| explore | `x.exp_id`2 and `x.floor`1 | name は冷えた手をこすりながら、静かな林道を選んで進んだ |
+| explore | `x.exp_id`2 and `x.floor`1 | name は雪に埋もれた道しるべを掘り出し、方角を確かめている |
+| explore | `x.exp_id`2 and `x.floor`1 | 白い木々の間を抜けながら、name は足跡の薄い道を選んでいる |
+| explore | `x.exp_id`2 and `x.floor`1 | 凍った小川を前にして、name は石の頭をたどって渡った |
+| explore | `x.exp_id`2 and `x.floor`1 | 風が強まるたびに、name は隊列を寄せて体温を守っている |
+| explore | `x.exp_id`2 and `x.floor`1 | 深い雪の段差を見つけ、name は迂回路を指して進路を変えた |
+| explore | `x.exp_id`2 and `x.floor`1 | 雪煙が視界を消す中で、name は松明の火を小さく守っている |
+| explore | `x.exp_id`2 and `x.floor`1 | 雪の森では枝に積もる霜が光り、道の輪郭がぼんやり浮かぶ |
+| explore | `x.exp_id`2 and `x.floor`1 | 踏み固められた雪道がところどころに残り、移動の助けになる |
+| explore | `x.exp_id`2 and `x.floor`1 | 樹氷の下は風が弱く、短い休息を取りやすい場所になっている |
+| explore | `x.exp_id`2 and `x.floor`1 | 吹雪の切れ目は短く、進む時間を見極める判断が重要になる |
+| explore | `x.exp_id`2 and `x.floor`1 | 雪に埋もれた道しるべが古い行路の向きを伝えている |
+| explore | `x.exp_id`2 and `x.floor`1 | 凍った小川は渡れるが、薄氷の見分けが必要になる |
+| explore | `x.exp_id`2 and `x.floor`1 | 風雪が強い区画では隊列を寄せ、体温維持を優先したい |
+| explore | `x.exp_id`2 and `x.floor`1 | 深雪の段差が多く、歩幅を小さく保つ方が安全につながる |
+| explore | `x.exp_id`2 and `x.floor`1 | 松明の火は視界の支えになり、雪煙の中で道を保ってくれる |
+| explore | `x.exp_id`2 and `x.floor`1 | 白い森の静けさは深く、音で危険を察知しやすい地形だ |
+| explore | `x.exp_id`2 and `x.floor`2 | name は腐木の道で足元を確かめ、崩れやすい板を避けて進んでいる |
+| explore | `x.exp_id`2 and `x.floor`2 | name は湿った樹皮に触れ、古い獣道の境を読み取りながら歩いた |
+| explore | `x.exp_id`2 and `x.floor`2 | name は苔むした倒木をまたぎ、暗い曲がり道へ静かに入っていく |
+| explore | `x.exp_id`2 and `x.floor`2 | name は黒い泥のぬかるみを見て、乾いた根道へ進路を切り替えた |
+| explore | `x.exp_id`2 and `x.floor`2 | name は枯れ枝の裂ける音に耳を澄まし、待ち伏せを警戒している |
+| explore | `x.exp_id`2 and `x.floor`2 | 腐木が連なる細道で、name は杖先で地面を突いて安全を確かめた |
+| explore | `x.exp_id`2 and `x.floor`2 | 濡れた葉が視界をふさぐ中、name は背の低い道を選んで進んだ |
+| explore | `x.exp_id`2 and `x.floor`2 | 倒木の陰で風を避けながら、name は地図の印を更新している |
+| explore | `x.exp_id`2 and `x.floor`2 | 黒泥の水たまりを前に、name は石の並ぶ場所だけを踏んで渡った |
+| explore | `x.exp_id`2 and `x.floor`2 | 湿った空気が重い中で、name は呼吸を整えて歩調を落とした |
+| explore | `x.exp_id`2 and `x.floor`2 | 腐木の道は崩れやすく、足場確認を続ける必要がある |
+| explore | `x.exp_id`2 and `x.floor`2 | 湿った樹皮に残る傷が、古い獣道の境界を示している |
+| explore | `x.exp_id`2 and `x.floor`2 | 苔むした倒木が多く、またぎ方で移動速度が大きく変わる |
+| explore | `x.exp_id`2 and `x.floor`2 | 黒い泥のぬかるみが点在し、根道の選択が安全を左右する |
+| explore | `x.exp_id`2 and `x.floor`2 | 枯れ枝の裂ける音は遠くまで響き、気配読みの手がかりになる |
+| explore | `x.exp_id`2 and `x.floor`2 | 濡れた葉が視界を狭め、低い姿勢での移動が有効になる |
+| explore | `x.exp_id`2 and `x.floor`2 | 倒木の陰は風を避けやすく、短い整理時間に向いている |
+| explore | `x.exp_id`2 and `x.floor`2 | 石の並ぶ場所は泥を渡る橋になり、進路維持に役立つ |
+| explore | `x.exp_id`2 and `x.floor`2 | 湿った空気は体力を削り、歩調管理の重要度が高い |
+| explore | `x.exp_id`2 and `x.floor`2 | 曲がり道が多い森路では、合流地点の共有が不可欠になる |
+| explore | `x.exp_id`2 and `x.floor`3 | name は食虫花の林に入り、つるの動きを見ながら慎重に進んでいる |
+| explore | `x.exp_id`2 and `x.floor`3 | name は開いた花弁を避け、岩沿いの細道を選んで歩いている |
+| explore | `x.exp_id`2 and `x.floor`3 | name は甘い香りに顔をしかめ、口布を締め直して前へ出た |
+| explore | `x.exp_id`2 and `x.floor`3 | name は粘るつるを剣で払い、仲間の通り道を作っている |
+| explore | `x.exp_id`2 and `x.floor`3 | name は花粉の漂う場所を避け、風上の斜面へ回り込んだ |
+| explore | `x.exp_id`2 and `x.floor`3 | 大きな花弁が揺れるたび、name は距離を取って立ち止まっている |
+| explore | `x.exp_id`2 and `x.floor`3 | 岩陰に空いた隙間を見つけ、name は隊列を一列に整えた |
+| explore | `x.exp_id`2 and `x.floor`3 | 甘い匂いが濃くなる前に、name は移動速度を上げて突破した |
+| explore | `x.exp_id`2 and `x.floor`3 | 足首に絡む細いつるを切り、name は後続の進路を確保している |
+| explore | `x.exp_id`2 and `x.floor`3 | 花粉の霞が見える中で、name は風向きを見て歩く線を決めた |
+| explore | `x.exp_id`2 and `x.floor`3 | 食虫花の林では花弁の開閉が速く、間合い管理が求められる |
+| explore | `x.exp_id`2 and `x.floor`3 | 開いた花弁の周辺は危険が高く、岩沿いの通路が比較的安全だ |
+| explore | `x.exp_id`2 and `x.floor`3 | 甘い香りが強い区画は注意が必要で、口元の防護が役に立つ |
+| explore | `x.exp_id`2 and `x.floor`3 | 粘るつるは移動を止めやすく、刃物での処理が有効になる |
+| explore | `x.exp_id`2 and `x.floor`3 | 花粉が漂う場所では風上ルートの確保が安定につながる |
+| explore | `x.exp_id`2 and `x.floor`3 | 大きな花弁の影は広く、接近前の停止判断が生存率を上げる |
+| explore | `x.exp_id`2 and `x.floor`3 | 岩陰の隙間は一列移動に向き、隊列の乱れを抑えられる |
+| explore | `x.exp_id`2 and `x.floor`3 | 匂いが濃くなる前の突破が、接触リスクの低下に直結する |
+| explore | `x.exp_id`2 and `x.floor`3 | 細いつるは足首を取りやすく、後続路の確保が重要になる |
+| explore | `x.exp_id`2 and `x.floor`3 | 風向きの変化が早く、歩く線の調整を続ける必要がある |
+| explore | `x.exp_id`2 and `x.floor`4 | name は氷の壁に印を刻み、迷路の折れ角を一つずつ進んでいる |
+| explore | `x.exp_id`2 and `x.floor`4 | name は足元の霜を確かめ、滑りにくい縁を選んで歩いている |
+| explore | `x.exp_id`2 and `x.floor`4 | name は青く光る氷柱を目印にし、戻り道を失わぬよう進んだ |
+| explore | `x.exp_id`2 and `x.floor`4 | name は冷たい反響に耳を澄まし、広い通路の方向を探っている |
+| explore | `x.exp_id`2 and `x.floor`4 | name は薄氷の橋を前にしゃがみ、荷を分けて慎重に渡った |
+| explore | `x.exp_id`2 and `x.floor`4 | 白い壁が続く角で、name は刻んだ印を見直して進路を決めた |
+| explore | `x.exp_id`2 and `x.floor`4 | 滑る床に足を取られそうになり、name は歩幅を狭めて進んでいる |
+| explore | `x.exp_id`2 and `x.floor`4 | 青い氷柱の列を見上げ、name は安全な回廊を選び直した |
+| explore | `x.exp_id`2 and `x.floor`4 | 反響の長い通路に入り、name は声を抑えて合図だけで動いた |
+| explore | `x.exp_id`2 and `x.floor`4 | 薄氷の橋を渡る直前で、name は先導順を入れ替えている |
+| explore | `x.exp_id`2 and `x.floor`4 | 氷の迷路は形が似ており、壁への印が方向維持を支えている |
+| explore | `x.exp_id`2 and `x.floor`4 | 霜の付き方で滑りやすさが変わり、縁の選択が安全につながる |
+| explore | `x.exp_id`2 and `x.floor`4 | 青く光る氷柱は遠目の目印となり、帰路確認にも役立つ |
+| explore | `x.exp_id`2 and `x.floor`4 | 反響の強い通路では音が広がり、静かな合図運用が有効だ |
+| explore | `x.exp_id`2 and `x.floor`4 | 薄氷の橋は荷重に弱く、荷分けと順番管理が必要になる |
+| explore | `x.exp_id`2 and `x.floor`4 | 白い壁の連続が距離感を奪い、定期的な位置確認が欠かせない |
+| explore | `x.exp_id`2 and `x.floor`4 | 滑る床では歩幅を狭く保つだけで転倒率を下げられる |
+| explore | `x.exp_id`2 and `x.floor`4 | 回廊ごとの温度差があり、霜の密度が危険度を示してくれる |
+| explore | `x.exp_id`2 and `x.floor`4 | 行き止まりが多いため、引き返し時間を見込んだ進行が望ましい |
+| explore | `x.exp_id`2 and `x.floor`4 | 冷気の強い区画では休憩位置の選択が体力維持を左右する |
+| explore | `x.exp_id`2 and `x.floor`5 | name は水晶洞の入口で光を受け、きらめく壁沿いに進んでいる |
+| explore | `x.exp_id`2 and `x.floor`5 | name は透明な柱の間を抜け、足元の割れ目を避けて歩いている |
+| explore | `x.exp_id`2 and `x.floor`5 | name は反射する光に目を細め、暗い脇道を選んで進んだ |
+| explore | `x.exp_id`2 and `x.floor`5 | name は青い結晶片を拾い、地図の目印として袋へ収めた |
+| explore | `x.exp_id`2 and `x.floor`5 | name は響く足音を抑え、静かな回廊へ隊を導いている |
+| explore | `x.exp_id`2 and `x.floor`5 | 結晶の反射が強まる中で、name は灯りの向きを小さく調整した |
+| explore | `x.exp_id`2 and `x.floor`5 | 透明な柱が並ぶ道を前に、name は通れる幅を測って進んでいる |
+| explore | `x.exp_id`2 and `x.floor`5 | 壁のきらめきに紛れて、name は割れ目の影を見つけて回避した |
+| explore | `x.exp_id`2 and `x.floor`5 | 足音が長く響く区画で、name は手信号だけで隊を動かした |
+| explore | `x.exp_id`2 and `x.floor`5 | 青い結晶片を置きながら、name は帰路の線を残している |
+| explore | `x.exp_id`2 and `x.floor`5 | 水晶洞の壁は光を返し、視界の明暗差が大きくなる地形だ |
+| explore | `x.exp_id`2 and `x.floor`5 | 透明な柱が多く、通過幅の確認が移動の安定を支える |
+| explore | `x.exp_id`2 and `x.floor`5 | 反射光が強い区画では、灯りの角度調整が有効になる |
+| explore | `x.exp_id`2 and `x.floor`5 | 足元の割れ目は光に紛れやすく、影の確認が欠かせない |
+| explore | `x.exp_id`2 and `x.floor`5 | 足音の反響が長く、静かな合図運用が探索効率を上げる |
+| explore | `x.exp_id`2 and `x.floor`5 | 青い結晶片は目印として使え、帰路管理に適している |
+| explore | `x.exp_id`2 and `x.floor`5 | きらめきの濃い壁面は方向感覚を乱しやすく注意が必要だ |
+| explore | `x.exp_id`2 and `x.floor`5 | 暗い脇道は安全なこともあり、主通路だけに頼れない |
+| explore | `x.exp_id`2 and `x.floor`5 | 回廊の幅が急に変わるため、隊列調整を繰り返す必要がある |
+| explore | `x.exp_id`2 and `x.floor`5 | 結晶片の散布で後続の迷いを減らし、再合流が容易になる |
+| explore | `x.exp_id`2 and `x.floor`6 | name は砕けた氷宮の門をくぐり、白い広間の先へ進んでいる |
+| explore | `x.exp_id`2 and `x.floor`6 | name は欠けた玉座を見つけ、古い王宮路の向きを読んでいる |
+| explore | `x.exp_id`2 and `x.floor`6 | name は氷の階段を上り、崩れていない回廊を探している |
+| explore | `x.exp_id`2 and `x.floor`6 | name は静かな礼拝間で足を止め、凍った祭壇を確かめた |
+| explore | `x.exp_id`2 and `x.floor`6 | name は割れた宮壁の紋をなぞり、封じられた区画を避けて進んだ |
+| explore | `x.exp_id`2 and `x.floor`6 | 崩れた門柱の前で、name は退路を決めてから広間へ入った |
+| explore | `x.exp_id`2 and `x.floor`6 | 欠けた玉座を見上げながら、name は宮城地図の印を更新した |
+| explore | `x.exp_id`2 and `x.floor`6 | 氷の階段が軋むたびに、name は荷を分けて慎重に上っている |
+| explore | `x.exp_id`2 and `x.floor`6 | 礼拝間の冷気が強い中で、name は休息時間を短く調整した |
+| explore | `x.exp_id`2 and `x.floor`6 | 宮壁の紋章が続く路地で、name は封印区画を避けて進路を選んだ |
+| explore | `x.exp_id`2 and `x.floor`6 | 砕けた氷宮の門が並び、王宮区画の輪郭が今も残っている |
+| explore | `x.exp_id`2 and `x.floor`6 | 欠けた玉座の間は広く、古い統治の中心を感じさせる |
+| explore | `x.exp_id`2 and `x.floor`6 | 氷の階段は脆い箇所があり、荷重管理が安全に直結する |
+| explore | `x.exp_id`2 and `x.floor`6 | 静かな礼拝間では冷気が強く、滞在時間の調整が必要になる |
+| explore | `x.exp_id`2 and `x.floor`6 | 宮壁の紋章は封印区画の境を示し、進路判断の助けになる |
+| explore | `x.exp_id`2 and `x.floor`6 | 崩れた門柱の周辺は見通しがよく、退路共有がしやすい |
+| explore | `x.exp_id`2 and `x.floor`6 | 白い広間は反響が強く、合図方法の統一が重要になる |
+| explore | `x.exp_id`2 and `x.floor`6 | 回廊の崩落箇所が点在し、通行前の確認を欠かせない |
+| explore | `x.exp_id`2 and `x.floor`6 | 凍った祭壇は目印として優秀で、区画把握に役立っている |
+| explore | `x.exp_id`2 and `x.floor`6 | 王宮路の分岐が多く、再合流点の設定が探索を安定させる |
+| explore | `x.exp_id`3 and `x.floor`1 | name は明るい浜辺で波音を聞き、白い砂を踏んで進んでいる |
+| explore | `x.exp_id`3 and `x.floor`1 | name はきらめく潮だまりをのぞき、浅い道を選んで歩いた |
+| explore | `x.exp_id`3 and `x.floor`1 | name は貝殻の散る浜で足を止め、遠い岬を見て進路を決めた |
+| explore | `x.exp_id`3 and `x.floor`1 | name は朝の日差しを背に受け、海風のやさしい道へ入っていく |
+| explore | `x.exp_id`3 and `x.floor`1 | name はぬれた砂の足跡を追い、仲間を安全な浜道へ導いている |
+| explore | `x.exp_id`3 and `x.floor`1 | 青い波が寄せる中で、name は岩の少ない浜筋を選んでいる |
+| explore | `x.exp_id`3 and `x.floor`1 | 潮だまりに空が映るそばで、name は足場を確かめて進んだ |
+| explore | `x.exp_id`3 and `x.floor`1 | 貝殻のきらめきを見ながら、name は岬へ続く線を読んでいる |
+| explore | `x.exp_id`3 and `x.floor`1 | 朝の海風を受けるたびに、name は隊の歩幅を整えている |
+| explore | `x.exp_id`3 and `x.floor`1 | ぬれた砂に残る跡を見つけ、name は先行者の道をたどった |
+| explore | `x.exp_id`3 and `x.floor`1 | 明るい浜辺には白い砂が続き、波音が進路の目安になる |
+| explore | `x.exp_id`3 and `x.floor`1 | 潮だまりが多く、浅い道を選ぶだけで移動が楽になる |
+| explore | `x.exp_id`3 and `x.floor`1 | 貝殻の散る浜筋は歩きやすく、隊列を保ちやすい地形だ |
+| explore | `x.exp_id`3 and `x.floor`1 | 朝の日差しが強く、海風の通る道が体力を守ってくれる |
+| explore | `x.exp_id`3 and `x.floor`1 | ぬれた砂の足跡は残りやすく、通行の流れを読み取りやすい |
+| explore | `x.exp_id`3 and `x.floor`1 | 岬へ向かう浜道は見晴らしがよく、危険を早く見つけられる |
+| explore | `x.exp_id`3 and `x.floor`1 | 波の引き際を見れば、足を置きやすい場所が分かる |
+| explore | `x.exp_id`3 and `x.floor`1 | 岩の少ない区画は進みやすく、荷運びの負担も軽くなる |
+| explore | `x.exp_id`3 and `x.floor`1 | 空の明るさで潮の変化を読み、通過の時間を選びたい |
+| explore | `x.exp_id`3 and `x.floor`1 | 海辺の静けさは深く、音で気配を捉えやすい場になっている |
+| explore | `x.exp_id`3 and `x.floor`2 | name はおだやかな海で小舟を進め、静かな水面を見つめている |
+| explore | `x.exp_id`3 and `x.floor`2 | name はやわらかな波の間を抜け、白い鳥の群れを追って進んだ |
+| explore | `x.exp_id`3 and `x.floor`2 | name は帆を小さく張り、流れのゆるい道を選んで渡っている |
+| explore | `x.exp_id`3 and `x.floor`2 | name は海のきらめきを見て目を細め、遠い島影へ向かった |
+| explore | `x.exp_id`3 and `x.floor`2 | name は舟べりに手を添え、仲間へ静かに進む合図を送った |
+| explore | `x.exp_id`3 and `x.floor`2 | 静かな水面が広がる中で、name はうねりの少ない線を選んでいる |
+| explore | `x.exp_id`3 and `x.floor`2 | 白い鳥が回る空を見上げ、name は風向きに合わせて舵を切った |
+| explore | `x.exp_id`3 and `x.floor`2 | ゆるい流れに舟を乗せながら、name は帆の角度を整えている |
+| explore | `x.exp_id`3 and `x.floor`2 | きらめく海面に目をこらし、name は浅瀬を避けて進んだ |
+| explore | `x.exp_id`3 and `x.floor`2 | 遠い島影が近づくたびに、name は隊の間隔を確かめている |
+| explore | `x.exp_id`3 and `x.floor`2 | 海はおだやかで、うねりの少ない道を取りやすい |
+| explore | `x.exp_id`3 and `x.floor`2 | 白い鳥の動きが風向きの手がかりになり、航路選びを助ける |
+| explore | `x.exp_id`3 and `x.floor`2 | 流れのゆるい帯が続き、小舟でも安定して進める |
+| explore | `x.exp_id`3 and `x.floor`2 | 海面のきらめきは強いが、目印になる島影が見えやすい |
+| explore | `x.exp_id`3 and `x.floor`2 | 舟を寄せる間隔を保てば、隊の形を崩さず渡れる |
+| explore | `x.exp_id`3 and `x.floor`2 | 帆の角度を小まめに変えることで、無理なく進行できる |
+| explore | `x.exp_id`3 and `x.floor`2 | 浅瀬は色で見分けやすく、早めの回避が可能になる |
+| explore | `x.exp_id`3 and `x.floor`2 | 静かな海域ほど音が届き、合図を共有しやすい |
+| explore | `x.exp_id`3 and `x.floor`2 | 空と海の境がはっきりしており、方角を見失いにくい |
+| explore | `x.exp_id`3 and `x.floor`2 | 穏やかな海路は長く続くため、歩調ならぬ舟調の管理が大切だ |
+| explore | `x.exp_id`3 and `x.floor`3 | name は船の墓場に入り、傾いたマストの間を静かに進んでいる |
+| explore | `x.exp_id`3 and `x.floor`3 | name は割れた甲板をまたぎ、残った綱を手がかりに歩いた |
+| explore | `x.exp_id`3 and `x.floor`3 | name は打ち上げられた船腹を見上げ、通れる隙間を探している |
+| explore | `x.exp_id`3 and `x.floor`3 | name はさびた錨のそばで足を止め、安全な渡り板を選んだ |
+| explore | `x.exp_id`3 and `x.floor`3 | name は折れた帆柱の影を使い、潮風を避けながら進んでいる |
+| explore | `x.exp_id`3 and `x.floor`3 | 傾いたマストが並ぶ中で、name は足場の広い道を選んでいる |
+| explore | `x.exp_id`3 and `x.floor`3 | 割れた甲板がきしむたびに、name は荷の重さを分けて進んだ |
+| explore | `x.exp_id`3 and `x.floor`3 | 船腹の隙間を見つけ、name は仲間を一列で通している |
+| explore | `x.exp_id`3 and `x.floor`3 | さびた錨を目印にして、name は戻り道の線を残している |
+| explore | `x.exp_id`3 and `x.floor`3 | 折れた帆柱の陰で、name は風をやり過ごしてから歩き出した |
+| explore | `x.exp_id`3 and `x.floor`3 | 船の墓場には傾いたマストが密に並び、進路が細くなる |
+| explore | `x.exp_id`3 and `x.floor`3 | 割れた甲板が多く、足場の選び直しが頻繁に必要になる |
+| explore | `x.exp_id`3 and `x.floor`3 | 打ち上げられた船腹は壁のようになり、通路を分断している |
+| explore | `x.exp_id`3 and `x.floor`3 | さびた錨や綱は目印になり、帰路の管理に使いやすい |
+| explore | `x.exp_id`3 and `x.floor`3 | 折れた帆柱の陰は風よけとなり、短い待機に向いている |
+| explore | `x.exp_id`3 and `x.floor`3 | きしむ木材の音が危険の前触れになり、判断の助けになる |
+| explore | `x.exp_id`3 and `x.floor`3 | 渡り板は脆いものがあり、荷重の分散が重要になる |
+| explore | `x.exp_id`3 and `x.floor`3 | 隙間通路は一列移動が基本で、隊列管理が欠かせない |
+| explore | `x.exp_id`3 and `x.floor`3 | 潮風で足元が滑りやすく、歩幅を小さく保つ必要がある |
+| explore | `x.exp_id`3 and `x.floor`3 | 残骸地帯は見通しが悪く、合図の統一が探索を安定させる |
+| explore | `x.exp_id`3 and `x.floor`4 | name は海の岩門へ着き、潮の流れを見ながら進んでいる |
+| explore | `x.exp_id`3 and `x.floor`4 | name は高い石のアーチを見上げ、波の弱い時を待って渡った |
+| explore | `x.exp_id`3 and `x.floor`4 | name は潮だまりの縁をたどり、ぬれた岩を避けて歩いている |
+| explore | `x.exp_id`3 and `x.floor`4 | name は岩門の影で息を整え、次の波間へ足を出した |
+| explore | `x.exp_id`3 and `x.floor`4 | name は崩れた岩段を確かめ、仲間を順に先へ通している |
+| explore | `x.exp_id`3 and `x.floor`4 | 石のアーチが海をまたぐ下で、name は足場の硬い道を選んだ |
+| explore | `x.exp_id`3 and `x.floor`4 | 潮の流れが速まる前に、name は短い区間を一気に抜けた |
+| explore | `x.exp_id`3 and `x.floor`4 | ぬれた岩肌を見て、name は滑りにくい縁だけを踏んで進んだ |
+| explore | `x.exp_id`3 and `x.floor`4 | 岩門の影が伸びるころ、name は渡る順番を決めている |
+| explore | `x.exp_id`3 and `x.floor`4 | 崩れた岩段の前で、name はロープを張って移動を助けた |
+| explore | `x.exp_id`3 and `x.floor`4 | 海の岩門は高い石のアーチが続き、潮の読みが重要になる |
+| explore | `x.exp_id`3 and `x.floor`4 | 波の弱い時間は短く、通過の判断が安全を左右する |
+| explore | `x.exp_id`3 and `x.floor`4 | 潮だまりの縁は比較的安定し、移動の軸にしやすい |
+| explore | `x.exp_id`3 and `x.floor`4 | ぬれた岩肌は滑りやすく、縁取りの選択が欠かせない |
+| explore | `x.exp_id`3 and `x.floor`4 | 岩門の影は休む場所にもなり、隊の整理に向いている |
+| explore | `x.exp_id`3 and `x.floor`4 | 崩れた岩段が多く、順番管理で移動の乱れを減らせる |
+| explore | `x.exp_id`3 and `x.floor`4 | 石壁の反響で合図が届きやすく、連携を取りやすい |
+| explore | `x.exp_id`3 and `x.floor`4 | 流れの筋が見える区画では、無理な横断を避けたい |
+| explore | `x.exp_id`3 and `x.floor`4 | 高低差のある岩路は荷の受け渡しが有効になる |
+| explore | `x.exp_id`3 and `x.floor`4 | 海門地形では時間を味方にする進み方が最も安定する |
+| explore | `x.exp_id`3 and `x.floor`5 | name は捨てられた漁村に入り、消えた火の跡を見つめている |
+| explore | `x.exp_id`3 and `x.floor`5 | name は壊れた舟小屋をのぞき、残った道具を確かめて進んだ |
+| explore | `x.exp_id`3 and `x.floor`5 | name は静かな井戸のそばで足を止め、村道の向きを読み直した |
+| explore | `x.exp_id`3 and `x.floor`5 | name は空の網棚を見上げ、風に鳴る縄の音を聞いている |
+| explore | `x.exp_id`3 and `x.floor`5 | name は崩れた板塀を回り、港へ続く細道へ静かに入った |
+| explore | `x.exp_id`3 and `x.floor`5 | 消えた火の跡を見つけて、name は人の流れをたどっている |
+| explore | `x.exp_id`3 and `x.floor`5 | 壊れた舟小屋の影で、name は隊の隊形を整えてから進んだ |
+| explore | `x.exp_id`3 and `x.floor`5 | 静かな井戸の水面を見て、name は短い休息の場所を決めた |
+| explore | `x.exp_id`3 and `x.floor`5 | 空の網棚が揺れる中、name は港側の安全路を選んでいる |
+| explore | `x.exp_id`3 and `x.floor`5 | 崩れた板塀を越える前に、name は退路の確認を仲間へ伝えた |
+| explore | `x.exp_id`3 and `x.floor`5 | 捨てられた漁村には消えた火の跡が残り、往時の暮らしを示す |
+| explore | `x.exp_id`3 and `x.floor`5 | 壊れた舟小屋が並び、港へ向かう道を分かりにくくしている |
+| explore | `x.exp_id`3 and `x.floor`5 | 井戸周りは開けており、短い整理時間を取りやすい |
+| explore | `x.exp_id`3 and `x.floor`5 | 空の網棚と縄の音が風向きの目安になってくれる |
+| explore | `x.exp_id`3 and `x.floor`5 | 崩れた板塀が多く、回り込みで進路を繋ぐ必要がある |
+| explore | `x.exp_id`3 and `x.floor`5 | 村道は細く曲がり、合流地点の共有が探索を安定させる |
+| explore | `x.exp_id`3 and `x.floor`5 | 港側の道は見通しがよく、危険確認を早めに行える |
+| explore | `x.exp_id`3 and `x.floor`5 | 木材のきしみ音は接近の気配を読む助けになる |
+| explore | `x.exp_id`3 and `x.floor`5 | 古い道具が残る小屋は手がかりの宝庫になっている |
+| explore | `x.exp_id`3 and `x.floor`5 | 静まり返った村ほど音が届き、合図管理が有効に働く |
+| explore | `x.exp_id`3 and `x.floor`6 | name は狐長老の聖庭に入り、古い石灯の道をたどっている |
+| explore | `x.exp_id`3 and `x.floor`6 | name は白い庭石の間を進み、静かな祈りの場へ向かった |
+| explore | `x.exp_id`3 and `x.floor`6 | name は朱の門影で一礼し、清らかな回廊へ足を踏み入れた |
+| explore | `x.exp_id`3 and `x.floor`6 | name は古い祭壇の前で灯りを整え、仲間へ合図を送っている |
+| explore | `x.exp_id`3 and `x.floor`6 | name は祈り紋の刻まれた床を見て、禁じられた線を避けて進んだ |
+| explore | `x.exp_id`3 and `x.floor`6 | 石灯が並ぶ参道を見つめながら、name は歩幅を静かに整えている |
+| explore | `x.exp_id`3 and `x.floor`6 | 白い庭石の区画で、name は隊列を一列にして進んでいる |
+| explore | `x.exp_id`3 and `x.floor`6 | 朱の門影が伸びるころ、name は回廊の安全路を選び直した |
+| explore | `x.exp_id`3 and `x.floor`6 | 祭壇の灯りが揺れる中で、name は声を落として合図を交わした |
+| explore | `x.exp_id`3 and `x.floor`6 | 祈り紋の床に目をこらし、name は踏むべき線だけをたどっている |
+| explore | `x.exp_id`3 and `x.floor`6 | 聖庭には古い石灯が並び、祈りの道筋が今も残っている |
+| explore | `x.exp_id`3 and `x.floor`6 | 白い庭石の配置が区画を示し、進路選びの助けになる |
+| explore | `x.exp_id`3 and `x.floor`6 | 朱の門影は時間で伸び縮みし、通過の目安として使える |
+| explore | `x.exp_id`3 and `x.floor`6 | 祭壇の周辺は静けさが深く、小さな合図でも伝わりやすい |
+| explore | `x.exp_id`3 and `x.floor`6 | 祈り紋の床は踏み分けが必要で、慎重な足運びが求められる |
+| explore | `x.exp_id`3 and `x.floor`6 | 回廊は曲がりが多く、一列移動が安定した進み方になる |
+| explore | `x.exp_id`3 and `x.floor`6 | 石灯の明かりは柔らかく、夜でも道を見失いにくい |
+| explore | `x.exp_id`3 and `x.floor`6 | 庭石の隙間は段差があり、歩幅の調整が欠かせない |
+| explore | `x.exp_id`3 and `x.floor`6 | 聖庭の中心へ近づくほど静まり、集中した行動が必要になる |
+| explore | `x.exp_id`3 and `x.floor`6 | 狐長老の庭路は神聖で、礼を重んじる進行が場を守る |
+| explore | `x.exp_id`4 and `x.floor`1 | name は夜の砂漠で星を見上げ、冷えた砂を踏んで進んでいる |
+| explore | `x.exp_id`4 and `x.floor`1 | name は月明かりの薄い道を選び、静かな丘を越えていく |
+| explore | `x.exp_id`4 and `x.floor`1 | name は砂に残る古い跡をたどり、迷わぬよう歩幅を整えた |
+| explore | `x.exp_id`4 and `x.floor`1 | name は夜風を背に受け、光る砂丘の縁をゆっくり進んだ |
+| explore | `x.exp_id`4 and `x.floor`1 | name は黒い岩の影で足を止め、方角を確かめてから歩き出した |
+| explore | `x.exp_id`4 and `x.floor`1 | 星がまたたく空の下で、name は砂丘の低い道を選んでいる |
+| explore | `x.exp_id`4 and `x.floor`1 | 月明かりが揺れるたびに、name は足元の段差を確かめて進んだ |
+| explore | `x.exp_id`4 and `x.floor`1 | 冷たい夜風を受けながら、name は隊の間隔を静かに整えている |
+| explore | `x.exp_id`4 and `x.floor`1 | 砂に残る古い跡を見つけ、name は進路の線を引き直した |
+| explore | `x.exp_id`4 and `x.floor`1 | 黒い岩影が伸びる中で、name は休める場所を見定めている |
+| explore | `x.exp_id`4 and `x.floor`1 | 夜の砂漠は冷え込みが強く、歩く速さの調整が大切になる |
+| explore | `x.exp_id`4 and `x.floor`1 | 星の位置がはっきり見え、方角を見失いにくい地形だ |
+| explore | `x.exp_id`4 and `x.floor`1 | 月明かりの薄い道は静かで、足音を抑えて進みやすい |
+| explore | `x.exp_id`4 and `x.floor`1 | 砂丘の縁には段差があり、低い道を選ぶ方が安全になる |
+| explore | `x.exp_id`4 and `x.floor`1 | 砂に残る古い跡が行路の手がかりとして使える |
+| explore | `x.exp_id`4 and `x.floor`1 | 黒い岩影は短い休息に向き、隊の整理もしやすい |
+| explore | `x.exp_id`4 and `x.floor`1 | 夜風は砂を流し、足場の形が変わりやすい |
+| explore | `x.exp_id`4 and `x.floor`1 | 見晴らしのよい丘では危険を早く見つけられる |
+| explore | `x.exp_id`4 and `x.floor`1 | 灯りを絞ることで夜目を守り、遠くを見通しやすくなる |
+| explore | `x.exp_id`4 and `x.floor`1 | 静かな砂原ほど音が届き、合図の共有がしやすい |
+| explore | `x.exp_id`4 and `x.floor`2 | name は岩の台地で風よけを探し、崖道を確かめながら進んでいる |
+| explore | `x.exp_id`4 and `x.floor`2 | name は赤い岩肌をたどり、平らな足場だけを選んで歩いた |
+| explore | `x.exp_id`4 and `x.floor`2 | name は割れた石の段を越え、見晴らしの高みへ上っていく |
+| explore | `x.exp_id`4 and `x.floor`2 | name は乾いた谷筋を見つけ、隊を横へ広げずに進ませた |
+| explore | `x.exp_id`4 and `x.floor`2 | name は岩陰で短く休み、次の登り道へ静かに向かった |
+| explore | `x.exp_id`4 and `x.floor`2 | 高い岩棚を前にして、name は回り込める道を探している |
+| explore | `x.exp_id`4 and `x.floor`2 | 赤い岩肌が続く中で、name は滑りにくい線を選んで進んだ |
+| explore | `x.exp_id`4 and `x.floor`2 | 割れた石段の手前で、name は荷を分けて上り始めた |
+| explore | `x.exp_id`4 and `x.floor`2 | 乾いた谷筋を見ながら、name は隊列を細く整えている |
+| explore | `x.exp_id`4 and `x.floor`2 | 岩陰に入るたびに、name は風の向きを確かめて歩き出した |
+| explore | `x.exp_id`4 and `x.floor`2 | 岩の台地は高低差が大きく、足場確認が欠かせない |
+| explore | `x.exp_id`4 and `x.floor`2 | 赤い岩肌は乾いていても滑る場所があり注意が必要だ |
+| explore | `x.exp_id`4 and `x.floor`2 | 割れた石段が多く、荷重を分ける工夫が役に立つ |
+| explore | `x.exp_id`4 and `x.floor`2 | 乾いた谷筋は進みやすいが、狭い場所では隊列管理が要る |
+| explore | `x.exp_id`4 and `x.floor`2 | 岩陰は風を避けやすく、短い休息に向いている |
+| explore | `x.exp_id`4 and `x.floor`2 | 高い岩棚は見晴らしがよく、進路の再確認に使える |
+| explore | `x.exp_id`4 and `x.floor`2 | 崖道は曲がりが多く、合流点の共有が安全を支える |
+| explore | `x.exp_id`4 and `x.floor`2 | 石の割れ目は足を取るため、歩幅を小さく保ちたい |
+| explore | `x.exp_id`4 and `x.floor`2 | 風の強い時間帯は砂が舞い、視界が急に落ちることがある |
+| explore | `x.exp_id`4 and `x.floor`2 | 台地の道は遠回りでも平坦な線を選ぶ方が安定する |
+| explore | `x.exp_id`4 and `x.floor`3 | name は石灰の洞に入り、白い壁の反響を聞きながら進んでいる |
+| explore | `x.exp_id`4 and `x.floor`3 | name は鍾乳の影を避け、乾いた通路を選んで歩いている |
+| explore | `x.exp_id`4 and `x.floor`3 | name は壁に手を当て、分かれ道の空気の流れを確かめた |
+| explore | `x.exp_id`4 and `x.floor`3 | name は足元の小石を払い、滑りにくい線で奥へ向かった |
+| explore | `x.exp_id`4 and `x.floor`3 | name は薄い灯りをかざし、白く光る回廊を静かに進んでいる |
+| explore | `x.exp_id`4 and `x.floor`3 | 白い壁が続く道で、name は反響の向きから広間を見つけた |
+| explore | `x.exp_id`4 and `x.floor`3 | 鍾乳の影が揺れる中、name は頭上を確かめて進んでいる |
+| explore | `x.exp_id`4 and `x.floor`3 | 分かれ道に立ったあと、name は風の通る方を選び直した |
+| explore | `x.exp_id`4 and `x.floor`3 | 小石が転がる音を聞いて、name は足場の良い帯へ寄った |
+| explore | `x.exp_id`4 and `x.floor`3 | 白く光る回廊の先で、name は隊を一列に整えている |
+| explore | `x.exp_id`4 and `x.floor`3 | 石灰の洞は白い壁が続き、光が反射して道を見つけやすい |
+| explore | `x.exp_id`4 and `x.floor`3 | 鍾乳の多い区画では頭上確認が安全につながる |
+| explore | `x.exp_id`4 and `x.floor`3 | 分かれ道は風の流れを見ると進路を選びやすい |
+| explore | `x.exp_id`4 and `x.floor`3 | 足元の小石は滑りの原因になり、事前に払うと安定する |
+| explore | `x.exp_id`4 and `x.floor`3 | 薄い灯りでも壁が光り、視界を保ちやすい洞窟だ |
+| explore | `x.exp_id`4 and `x.floor`3 | 反響が強く、合図の音が遠くまで届きやすい |
+| explore | `x.exp_id`4 and `x.floor`3 | 狭い回廊が多いため、一列移動が基本になる |
+| explore | `x.exp_id`4 and `x.floor`3 | 広間の入口は空気が動き、目に見えない目印になる |
+| explore | `x.exp_id`4 and `x.floor`3 | 白い洞床は段差が見えにくく、歩幅調整が必要だ |
+| explore | `x.exp_id`4 and `x.floor`3 | 静かな洞内ほど音の変化で危険を察知しやすい |
+| explore | `x.exp_id`4 and `x.floor`4 | name は夜盗の気配が漂う道で灯りを落とし、静かに進んでいる |
+| explore | `x.exp_id`4 and `x.floor`4 | name は岩陰に身を寄せ、見張りの目を避けて迂回した |
+| explore | `x.exp_id`4 and `x.floor`4 | name は崩れた荷車の跡を見つけ、待ち伏せの道を外している |
+| explore | `x.exp_id`4 and `x.floor`4 | name は短く合図を送り、仲間と足音をそろえて歩いた |
+| explore | `x.exp_id`4 and `x.floor`4 | name は細い谷道を選び、開けた危ない道を避けて進んだ |
+| explore | `x.exp_id`4 and `x.floor`4 | 遠くで金具の音が鳴る中、name は歩みを止めて気配を読んだ |
+| explore | `x.exp_id`4 and `x.floor`4 | 岩陰が続く区画で、name は隊を小さくまとめて進んでいる |
+| explore | `x.exp_id`4 and `x.floor`4 | 崩れた荷車の近くで、name は退路を先に確認している |
+| explore | `x.exp_id`4 and `x.floor`4 | 薄い月明かりの道に入り、name は合図だけで仲間を導いた |
+| explore | `x.exp_id`4 and `x.floor`4 | 細い谷道の分岐で、name は足跡の少ない方を選んだ |
+| explore | `x.exp_id`4 and `x.floor`4 | 夜盗が潜む道は見通しが悪く、灯りを絞る判断が有効だ |
+| explore | `x.exp_id`4 and `x.floor`4 | 岩陰の多い区画は身を隠しやすく、迂回に向いている |
+| explore | `x.exp_id`4 and `x.floor`4 | 崩れた荷車の跡は待ち伏せ地点の目印になりやすい |
+| explore | `x.exp_id`4 and `x.floor`4 | 足音をそろえるだけで気配を抑え、発見率を下げられる |
+| explore | `x.exp_id`4 and `x.floor`4 | 細い谷道は安全だが、分岐管理が重要になる |
+| explore | `x.exp_id`4 and `x.floor`4 | 金具音の反響で巡回位置を推測しやすい |
+| explore | `x.exp_id`4 and `x.floor`4 | 開けた道は速いが見つかりやすく、慎重な選択が要る |
+| explore | `x.exp_id`4 and `x.floor`4 | 月明かりの薄い時間は移動に向く短い機会になる |
+| explore | `x.exp_id`4 and `x.floor`4 | 退路を先に決めることで不意の接触に備えられる |
+| explore | `x.exp_id`4 and `x.floor`4 | 夜道では短い合図の統一が隊の生存を支える |
+| explore | `x.exp_id`4 and `x.floor`5 | name は失われた宝を追う谷で古い印を見つけ、先へ進んでいる |
+| explore | `x.exp_id`4 and `x.floor`5 | name は割れた石碑を読み、宝路の伝承が示す方角を確かめた |
+| explore | `x.exp_id`4 and `x.floor`5 | name は細い谷の底をたどり、きらめく欠片を目印に歩いている |
+| explore | `x.exp_id`4 and `x.floor`5 | name は崩れた橋跡を越え、宝が眠る洞口を探している |
+| explore | `x.exp_id`4 and `x.floor`5 | name は古地図を開き、石柱の並びで位置を合わせて進んだ |
+| explore | `x.exp_id`4 and `x.floor`5 | 谷壁の印を見つけたあと、name は宝路の線を地図へ写した |
+| explore | `x.exp_id`4 and `x.floor`5 | 割れた石碑の前で、name は仲間と進路の候補を絞っている |
+| explore | `x.exp_id`4 and `x.floor`5 | きらめく欠片が散る道で、name は足場の良い線を選んだ |
+| explore | `x.exp_id`4 and `x.floor`5 | 崩れた橋跡の手前で、name はロープを張って渡る準備をした |
+| explore | `x.exp_id`4 and `x.floor`5 | 古地図のしるしを見直し、name は石柱群の中央へ向かった |
+| explore | `x.exp_id`4 and `x.floor`5 | 宝を追う谷には古い印が残り、探索の軸として使える |
+| explore | `x.exp_id`4 and `x.floor`5 | 割れた石碑の文字は欠けていても方角の手がかりになる |
+| explore | `x.exp_id`4 and `x.floor`5 | 谷底の細道には欠片が散り、目印として拾いやすい |
+| explore | `x.exp_id`4 and `x.floor`5 | 崩れた橋跡が多く、渡る前の準備が安全を左右する |
+| explore | `x.exp_id`4 and `x.floor`5 | 石柱の並びは位置合わせに有効で、地図読みに向いている |
+| explore | `x.exp_id`4 and `x.floor`5 | 谷壁の印は風化しており、早めの記録が望ましい |
+| explore | `x.exp_id`4 and `x.floor`5 | 洞口は影に隠れやすく、見落としを防ぐ確認が要る |
+| explore | `x.exp_id`4 and `x.floor`5 | 宝路の候補が複数あるため、進路共有が欠かせない |
+| explore | `x.exp_id`4 and `x.floor`5 | 岩屑の多い区画では歩幅を小さく保つと安定する |
+| explore | `x.exp_id`4 and `x.floor`5 | 伝承に沿った印探しが、無駄な迂回を減らしてくれる |
+| explore | `x.exp_id`4 and `x.floor`6 | name は豊穣の神殿に入り、砂を払った石段を上っている |
+| explore | `x.exp_id`4 and `x.floor`6 | name は古い祭壇の前で灯りを整え、祈りの道へ進んだ |
+| explore | `x.exp_id`4 and `x.floor`6 | name は壁の実り紋をなぞり、神殿の中心へ向かっている |
+| explore | `x.exp_id`4 and `x.floor`6 | name は静かな回廊で一礼し、禁じられた間を避けて歩いた |
+| explore | `x.exp_id`4 and `x.floor`6 | name は金色の柱影をたどり、奥の聖座を目指している |
+| explore | `x.exp_id`4 and `x.floor`6 | 祭壇の灯りが揺れる中で、name は足音を抑えて進んでいる |
+| explore | `x.exp_id`4 and `x.floor`6 | 実り紋の壁を見つめながら、name は進路の線を整えた |
+| explore | `x.exp_id`4 and `x.floor`6 | 静かな回廊の分岐で、name は祈り道の印を選んでいる |
+| explore | `x.exp_id`4 and `x.floor`6 | 金色の柱が並ぶ区画で、name は隊を一列にして進んだ |
+| explore | `x.exp_id`4 and `x.floor`6 | 聖座へ続く段の前で、name は仲間へ礼の合図を送った |
+| explore | `x.exp_id`4 and `x.floor`6 | 豊穣の神殿には実り紋が残り、祈りの道筋を示している |
+| explore | `x.exp_id`4 and `x.floor`6 | 砂を払った石段は歩きやすく、上層へ向かう軸になる |
+| explore | `x.exp_id`4 and `x.floor`6 | 古い祭壇の灯りは目印になり、回廊の位置を把握しやすい |
+| explore | `x.exp_id`4 and `x.floor`6 | 静かな回廊は音が響き、合図の共有がしやすい場だ |
+| explore | `x.exp_id`4 and `x.floor`6 | 金色の柱影は時間で形が変わり、通過判断の助けになる |
+| explore | `x.exp_id`4 and `x.floor`6 | 禁じられた間の印があり、踏み込まない進行が求められる |
+| explore | `x.exp_id`4 and `x.floor`6 | 聖座へ続く段は狭く、一列で進む方が安定する |
+| explore | `x.exp_id`4 and `x.floor`6 | 壁の紋は区画ごとに異なり、現在地確認に役立つ |
+| explore | `x.exp_id`4 and `x.floor`6 | 神殿中心へ近づくほど静まり、礼を重んじる動きが必要だ |
+| explore | `x.exp_id`4 and `x.floor`6 | 祈りの場では急がず整然と進むことが安全につながる |
+| explore | `x.exp_id`5 and `x.floor`1 | name は迷いの森で木に印を刻み、同じ道を避けて進んでいる |
+| explore | `x.exp_id`5 and `x.floor`1 | name は霧の間を抜け、古い根道をたよりに歩いている |
+| explore | `x.exp_id`5 and `x.floor`1 | name は低く枝を払いつつ、仲間を見失わぬよう先導した |
+| explore | `x.exp_id`5 and `x.floor`1 | name は湿った葉の音に耳を澄まし、静かな方角へ進んだ |
+| explore | `x.exp_id`5 and `x.floor`1 | name は苔むした石を見つけ、森の中心への線を確かめている |
+| explore | `x.exp_id`5 and `x.floor`1 | 霧が流れる木立の中で、name は目印の印を増やしている |
+| explore | `x.exp_id`5 and `x.floor`1 | 古い根道を見つけたあと、name は隊列を細く整えて進んだ |
+| explore | `x.exp_id`5 and `x.floor`1 | 枝の影が揺れるたびに、name は立ち止まって気配を見た |
+| explore | `x.exp_id`5 and `x.floor`1 | 湿った葉が足元を隠す中、name は歩幅を小さくしている |
+| explore | `x.exp_id`5 and `x.floor`1 | 苔むした石の並びを見て、name は戻り道の線を引き直した |
+| explore | `x.exp_id`5 and `x.floor`1 | 迷いの森は似た景色が続き、印づけが探索の要になる |
+| explore | `x.exp_id`5 and `x.floor`1 | 霧の濃い区画では遠くが見えず、短い確認を重ねたい |
+| explore | `x.exp_id`5 and `x.floor`1 | 古い根道は歩きやすく、進路の軸として使いやすい |
+| explore | `x.exp_id`5 and `x.floor`1 | 低い枝が多く、前衛の払い動作が移動を助ける |
+| explore | `x.exp_id`5 and `x.floor`1 | 湿った葉は音を隠すが、足場確認はより重要になる |
+| explore | `x.exp_id`5 and `x.floor`1 | 苔むした石の列が方角の目印になり、迷いを減らせる |
+| explore | `x.exp_id`5 and `x.floor`1 | 木立が密な場所は隊列を細く保つ方が安全だ |
+| explore | `x.exp_id`5 and `x.floor`1 | 影の揺れが強い時間は気配を読み違えやすく注意が要る |
+| explore | `x.exp_id`5 and `x.floor`1 | 同じ場所へ戻りやすいため、合流地点の共有が欠かせない |
+| explore | `x.exp_id`5 and `x.floor`1 | 森の中心へ近づくほど静まり、慎重な進行が求められる |
+| explore | `x.exp_id`5 and `x.floor`2 | name は険しい山道で息を整え、崖ぎわを一歩ずつ進んでいる |
+| explore | `x.exp_id`5 and `x.floor`2 | name は岩壁の割れ目を見つけ、登りやすい道へ切り替えた |
+| explore | `x.exp_id`5 and `x.floor`2 | name は細い尾根に入る前に荷を締め、足場を確かめている |
+| explore | `x.exp_id`5 and `x.floor`2 | name は冷たい風を受けながら、谷を避ける高道を選んだ |
+| explore | `x.exp_id`5 and `x.floor`2 | name は崩れた石段を越え、見晴らしの岩棚へ上っていく |
+| explore | `x.exp_id`5 and `x.floor`2 | 切り立つ崖を前にして、name は回り込める道を探している |
+| explore | `x.exp_id`5 and `x.floor`2 | 岩壁の割れ目をたどりながら、name は隊の速度を落とした |
+| explore | `x.exp_id`5 and `x.floor`2 | 尾根道の風が強まる中で、name は間隔を詰めて進んでいる |
+| explore | `x.exp_id`5 and `x.floor`2 | 谷側の砂利が崩れる音を聞き、name は歩く線を変えた |
+| explore | `x.exp_id`5 and `x.floor`2 | 見晴らしの岩棚に着くと、name は次の登路を仲間へ示した |
+| explore | `x.exp_id`5 and `x.floor`2 | 山道は高低差が大きく、足場確認が常に必要になる |
+| explore | `x.exp_id`5 and `x.floor`2 | 岩壁の割れ目は登路の手がかりになり、迂回を減らせる |
+| explore | `x.exp_id`5 and `x.floor`2 | 細い尾根では荷の固定が移動の安定を支える |
+| explore | `x.exp_id`5 and `x.floor`2 | 谷側は崩れやすく、高道を選ぶ方が安全性が高い |
+| explore | `x.exp_id`5 and `x.floor`2 | 崩れた石段が多く、歩幅を小さく保つのが有効だ |
+| explore | `x.exp_id`5 and `x.floor`2 | 風の強い時間は隊列を寄せ、転落の危険を下げたい |
+| explore | `x.exp_id`5 and `x.floor`2 | 岩棚は見晴らしがよく、進路の再確認に向いている |
+| explore | `x.exp_id`5 and `x.floor`2 | 砂利の音は足場の兆しとなり、危険察知に役立つ |
+| explore | `x.exp_id`5 and `x.floor`2 | 登路の分岐が多いため、案内役の合図統一が必要だ |
+| explore | `x.exp_id`5 and `x.floor`2 | 遠回りでも安定した道を取る判断が生存を支える |
+| explore | `x.exp_id`5 and `x.floor`3 | name はウルサンの陣地近くで煙を見つけ、回り道を選んでいる |
+| explore | `x.exp_id`5 and `x.floor`3 | name は粗い柵の影に身を寄せ、見張りの視線を避けて進んだ |
+| explore | `x.exp_id`5 and `x.floor`3 | name は焚き火跡の温みを確かめ、巡回の時間を読んでいる |
+| explore | `x.exp_id`5 and `x.floor`3 | name は獣皮の幕を遠目に見て、静かな谷筋へ移動した |
+| explore | `x.exp_id`5 and `x.floor`3 | name は戦旗の揺れを見上げ、危ない正面道を外している |
+| explore | `x.exp_id`5 and `x.floor`3 | 陣地の煙が上がる方角で、name は足音を抑えて進んでいる |
+| explore | `x.exp_id`5 and `x.floor`3 | 粗い柵が続く区画に入り、name は隊列を細くまとめた |
+| explore | `x.exp_id`5 and `x.floor`3 | 焚き火跡の灰を見て、name は直近の通過を仲間へ伝えた |
+| explore | `x.exp_id`5 and `x.floor`3 | 獣皮の幕が並ぶ先で、name は退路を先に確保している |
+| explore | `x.exp_id`5 and `x.floor`3 | 戦旗の揺れる丘を見ながら、name は側面の道を選び直した |
+| explore | `x.exp_id`5 and `x.floor`3 | ウルサン陣地の周辺は煙が目印になり、位置を読みやすい |
+| explore | `x.exp_id`5 and `x.floor`3 | 粗い柵は通路を狭め、少人数で抜ける判断が有効だ |
+| explore | `x.exp_id`5 and `x.floor`3 | 焚き火跡の温みは巡回時刻を測る手がかりになる |
+| explore | `x.exp_id`5 and `x.floor`3 | 獣皮の幕が並ぶ場所は見張りが多く、正面突破は危険だ |
+| explore | `x.exp_id`5 and `x.floor`3 | 戦旗の立つ丘は見通しがよく、発見されやすい |
+| explore | `x.exp_id`5 and `x.floor`3 | 谷筋の側道は静かで、接触回避に向いている |
+| explore | `x.exp_id`5 and `x.floor`3 | 灰の散り方で移動方向を読み、無駄な接近を防げる |
+| explore | `x.exp_id`5 and `x.floor`3 | 退路を先に決めることで不意の遭遇に備えられる |
+| explore | `x.exp_id`5 and `x.floor`3 | 陣地周辺では短い合図で動く連携が重要になる |
+| explore | `x.exp_id`5 and `x.floor`3 | 迂回の積み重ねが被害を減らし、探索継続を助ける |
+| explore | `x.exp_id`5 and `x.floor`4 | name は竜の尾根で空を見上げ、影が落ちる前に進んでいる |
+| explore | `x.exp_id`5 and `x.floor`4 | name は鋭い岩稜を渡り、風下の道で身を低く保った |
+| explore | `x.exp_id`5 and `x.floor`4 | name は焦げた岩面を見つめ、竜の通り道を外して進んだ |
+| explore | `x.exp_id`5 and `x.floor`4 | name は高い尾根の切れ目で足を止め、次の走路を決めている |
+| explore | `x.exp_id`5 and `x.floor`4 | name はうなる風を聞き、岩影をつないで静かに移動した |
+| explore | `x.exp_id`5 and `x.floor`4 | 空に大きな影がよぎるたび、name は岩陰へ身を寄せている |
+| explore | `x.exp_id`5 and `x.floor`4 | 鋭い岩稜の縁で、name は隊の間隔を狭めて進んだ |
+| explore | `x.exp_id`5 and `x.floor`4 | 焦げた岩面を前にして、name は竜道を避ける線を引いた |
+| explore | `x.exp_id`5 and `x.floor`4 | 尾根の切れ目に立ち、name は短く合図して一気に渡った |
+| explore | `x.exp_id`5 and `x.floor`4 | 風のうなりが強まる中で、name は低い道を選び直した |
+| explore | `x.exp_id`5 and `x.floor`4 | 竜の尾根は見晴らしが広く、空の監視が欠かせない |
+| explore | `x.exp_id`5 and `x.floor`4 | 鋭い岩稜は足場が狭く、間隔管理が安全を支える |
+| explore | `x.exp_id`5 and `x.floor`4 | 焦げた岩面は竜の活動跡となり、回避判断の目安になる |
+| explore | `x.exp_id`5 and `x.floor`4 | 尾根の切れ目は危険だが、短時間通過で被害を抑えられる |
+| explore | `x.exp_id`5 and `x.floor`4 | うなる風は気配を隠す反面、合図も届きにくくなる |
+| explore | `x.exp_id`5 and `x.floor`4 | 岩陰をつなぐ進行が、上空からの視認を下げてくれる |
+| explore | `x.exp_id`5 and `x.floor`4 | 低い道は遠回りでも生存率を上げる選択になる |
+| explore | `x.exp_id`5 and `x.floor`4 | 影の動きを読むことで、走るべきタイミングを選べる |
+| explore | `x.exp_id`5 and `x.floor`4 | 尾根上では荷の揺れが危険となり、固定確認が重要だ |
+| explore | `x.exp_id`5 and `x.floor`4 | 空と地形を同時に見る判断が、この層の鍵になる |
+| explore | `x.exp_id`5 and `x.floor`5 | name は火口のふちで熱気に耐え、ひび割れた岩道を進んでいる |
+| explore | `x.exp_id`5 and `x.floor`5 | name は赤く光る石の間を抜け、噴気の弱い帯を選んだ |
+| explore | `x.exp_id`5 and `x.floor`5 | name は灰の舞う坂を下り、足元を確かめながら歩いた |
+| explore | `x.exp_id`5 and `x.floor`5 | name は煙の柱を遠くに見て、熱だまりを避けて進んでいる |
+| explore | `x.exp_id`5 and `x.floor`5 | name は焼けた岩壁の陰で休み、次の安全路を探している |
+| explore | `x.exp_id`5 and `x.floor`5 | 熱い風が吹き上がる中で、name は顔布を締めて進んでいる |
+| explore | `x.exp_id`5 and `x.floor`5 | 赤く光る石を見つけるたび、name は歩く線を外へ寄せた |
+| explore | `x.exp_id`5 and `x.floor`5 | 灰が舞う坂の手前で、name は隊を一列に整えて下った |
+| explore | `x.exp_id`5 and `x.floor`5 | 噴気の音が強まると、name は立ち止まり向きを確かめた |
+| explore | `x.exp_id`5 and `x.floor`5 | 焼けた岩壁の陰に入り、name は水分の残量を確認している |
+| explore | `x.exp_id`5 and `x.floor`5 | 火口のふちは熱気が強く、短い区間で進むのが有効だ |
+| explore | `x.exp_id`5 and `x.floor`5 | 赤く光る石は高温の印となり、回避の目安になる |
+| explore | `x.exp_id`5 and `x.floor`5 | 灰の舞う坂は滑りやすく、歩幅を小さく保ちたい |
+| explore | `x.exp_id`5 and `x.floor`5 | 煙の柱は位置確認に使えるが、熱だまりの兆しでもある |
+| explore | `x.exp_id`5 and `x.floor`5 | 焼けた岩壁の陰は休息に向き、体勢を整えやすい |
+| explore | `x.exp_id`5 and `x.floor`5 | 噴気の音が変わる時は危険が近く、停止判断が役立つ |
+| explore | `x.exp_id`5 and `x.floor`5 | 一列移動で接触を減らし、転倒時の連鎖を防げる |
+| explore | `x.exp_id`5 and `x.floor`5 | 顔布や水分管理が探索時間を大きく左右する |
+| explore | `x.exp_id`5 and `x.floor`5 | 遠回りでも噴気の弱い帯を選ぶ方が安全に進める |
+| explore | `x.exp_id`5 and `x.floor`5 | 熱波の層では急がず、確実な足運びが最優先になる |
+| explore | `x.exp_id`5 and `x.floor`6 | name は要塞の城門前で盾を握り直し、重い扉へ近づいている |
+| explore | `x.exp_id`5 and `x.floor`6 | name は外壁の影をたどり、矢窓を避ける道を選んで進んだ |
+| explore | `x.exp_id`5 and `x.floor`6 | name は崩れた石段を上り、門前広場の端へ静かに入った |
+| explore | `x.exp_id`5 and `x.floor`6 | name は古い旗台を見つけ、守兵路の向きを読み取っている |
+| explore | `x.exp_id`5 and `x.floor`6 | name は鉄の扉に耳を当て、内側の気配を確かめている |
+| explore | `x.exp_id`5 and `x.floor`6 | 城門の高い影の下で、name は隊の配置を整えている |
+| explore | `x.exp_id`5 and `x.floor`6 | 外壁の矢窓を見上げながら、name は死角の線を選んだ |
+| explore | `x.exp_id`5 and `x.floor`6 | 門前広場へ出る直前に、name は退路と合図を確認した |
+| explore | `x.exp_id`5 and `x.floor`6 | 古い旗台の欠片を見て、name は守兵路の地図を更新した |
+| explore | `x.exp_id`5 and `x.floor`6 | 鉄扉の前で気配を読む間、name は足音を止めて待った |
+| explore | `x.exp_id`5 and `x.floor`6 | 要塞の城門は見通しが広く、接近時の配置が重要になる |
+| explore | `x.exp_id`5 and `x.floor`6 | 外壁の矢窓は危険帯を作るため、死角移動が有効だ |
+| explore | `x.exp_id`5 and `x.floor`6 | 崩れた石段は段差が不揃いで、足場確認が欠かせない |
+| explore | `x.exp_id`5 and `x.floor`6 | 門前広場は広いが目立ちやすく、短時間通過が望ましい |
+| explore | `x.exp_id`5 and `x.floor`6 | 古い旗台は守兵路の手がかりになり、進路整理を助ける |
+| explore | `x.exp_id`5 and `x.floor`6 | 鉄の扉周辺は音が響き、静かな合図が必要になる |
+| explore | `x.exp_id`5 and `x.floor`6 | 退路を決めてから前進すると接触時の混乱を減らせる |
+| explore | `x.exp_id`5 and `x.floor`6 | 高い壁の影は時間で動き、通過の機会を生んでくれる |
+| explore | `x.exp_id`5 and `x.floor`6 | 門前では隊の役割分担が生存率を左右する |
+| explore | `x.exp_id`5 and `x.floor`6 | 焦らず準備を整えることが、要塞突破の第一歩になる |
+| explore | `x.exp_id`6 and `x.floor`1 | name は蒸気のこもる巣穴で歯車の音を聞き、暗い通路を進んでいる |
+| explore | `x.exp_id`6 and `x.floor`1 | name は熱い管の間を抜け、蒸気の薄い道を選んで歩いた |
+| explore | `x.exp_id`6 and `x.floor`1 | name は古い圧力扉を押し開け、白い霧の奥へ入っていく |
+| explore | `x.exp_id`6 and `x.floor`1 | name は天井のしずくを避け、金属床の安全な線をたどった |
+| explore | `x.exp_id`6 and `x.floor`1 | name は低くうなる機械のそばで足を止め、次の道を決めている |
+| explore | `x.exp_id`6 and `x.floor`1 | 蒸気が吹き出す中で、name は顔布を締めて進んでいる |
+| explore | `x.exp_id`6 and `x.floor`1 | 熱い管の影を見つけ、name は隊を一列に整えて通した |
+| explore | `x.exp_id`6 and `x.floor`1 | 圧力扉の前に立ち、name は合図を送ってから押し開けた |
+| explore | `x.exp_id`6 and `x.floor`1 | しずくが落ちる金属床で、name は滑らぬよう歩幅を小さくした |
+| explore | `x.exp_id`6 and `x.floor`1 | うなる機械の音を聞き分けて、name は静かな方角を選んだ |
+| explore | `x.exp_id`6 and `x.floor`1 | 蒸気の巣穴は視界が白くなり、短い確認が欠かせない |
+| explore | `x.exp_id`6 and `x.floor`1 | 熱い管が通路を分け、薄い蒸気の帯が安全路になる |
+| explore | `x.exp_id`6 and `x.floor`1 | 圧力扉は重いが、開ける順を決めると通過しやすい |
+| explore | `x.exp_id`6 and `x.floor`1 | 金属床はしずくで滑りやすく、歩幅調整が有効だ |
+| explore | `x.exp_id`6 and `x.floor`1 | 低いうなり音は機械の位置を示し、進路判断に役立つ |
+| explore | `x.exp_id`6 and `x.floor`1 | 蒸気の濃い区画では顔布と合図の統一が必要になる |
+| explore | `x.exp_id`6 and `x.floor`1 | 管の影は熱を避ける道となり、体力消耗を抑えられる |
+| explore | `x.exp_id`6 and `x.floor`1 | 狭い通路が多く、一列移動が探索を安定させる |
+| explore | `x.exp_id`6 and `x.floor`1 | 音が反響しやすく、短い合図でも届きやすい場だ |
+| explore | `x.exp_id`6 and `x.floor`1 | 霧の切れ目を見つける判断が、この層の鍵になる |
+| explore | `x.exp_id`6 and `x.floor`2 | name はこわれた宇宙船の残骸で光る板を拾い、道を探している |
+| explore | `x.exp_id`6 and `x.floor`2 | name は折れた外殻をまたぎ、青い灯の点る区画へ進んだ |
+| explore | `x.exp_id`6 and `x.floor`2 | name は散らばる椅子を避け、通れる通路を静かに選んでいる |
+| explore | `x.exp_id`6 and `x.floor`2 | name は割れた窓越しに星空を見て、進路の向きを決めた |
+| explore | `x.exp_id`6 and `x.floor`2 | name は船内地図の欠片を見つけ、仲間へ道順を伝えている |
+| explore | `x.exp_id`6 and `x.floor`2 | 傾いた船壁のそばで、name は足場の広い帯を選んでいる |
+| explore | `x.exp_id`6 and `x.floor`2 | 光る板の文字を見て、name は次の区画を推し量った |
+| explore | `x.exp_id`6 and `x.floor`2 | 折れた外殻の切れ目を前に、name は隊を順に通している |
+| explore | `x.exp_id`6 and `x.floor`2 | 割れた窓に映る光を頼りに、name は進路を引き直した |
+| explore | `x.exp_id`6 and `x.floor`2 | 船内地図の欠片を並べ、name は合流点を決めている |
+| explore | `x.exp_id`6 and `x.floor`2 | 宇宙船の残骸は傾きが大きく、足場確認が重要になる |
+| explore | `x.exp_id`6 and `x.floor`2 | 折れた外殻が壁のように並び、通路選びが難しくなる |
+| explore | `x.exp_id`6 and `x.floor`2 | 散らばる座席や部品が多く、移動速度を落とす必要がある |
+| explore | `x.exp_id`6 and `x.floor`2 | 割れた窓から見える星が方角確認の助けになる |
+| explore | `x.exp_id`6 and `x.floor`2 | 光る板は区画情報の手がかりとなり、探索を支える |
+| explore | `x.exp_id`6 and `x.floor`2 | 船内地図の欠片を集めるほど進路精度が上がっていく |
+| explore | `x.exp_id`6 and `x.floor`2 | 狭い穴の通過は順番管理で安全性を高められる |
+| explore | `x.exp_id`6 and `x.floor`2 | 傾斜床では荷の固定が転倒防止に役立つ |
+| explore | `x.exp_id`6 and `x.floor`2 | 残骸区画は見通しが悪く、合図統一が欠かせない |
+| explore | `x.exp_id`6 and `x.floor`2 | 古い船体でも光の導線があり、道筋を読み取れる |
+| explore | `x.exp_id`6 and `x.floor`3 | name は禁じられた研究区で割れたカプセルを横目に進んでいる |
+| explore | `x.exp_id`6 and `x.floor`3 | name は曇った観察窓をぬぐい、奥の通路を確かめた |
+| explore | `x.exp_id`6 and `x.floor`3 | name は白い実験台の間を抜け、静かな扉へ向かっている |
+| explore | `x.exp_id`6 and `x.floor`3 | name は床に散る記録札を拾い、危ない区画を見分けている |
+| explore | `x.exp_id`6 and `x.floor`3 | name は青く揺れる警告灯を見て、遠回りの道を選んだ |
+| explore | `x.exp_id`6 and `x.floor`3 | 割れたカプセルが並ぶ前で、name は隊列を細く整えている |
+| explore | `x.exp_id`6 and `x.floor`3 | 観察窓の曇りを拭いながら、name は進路の先を読んだ |
+| explore | `x.exp_id`6 and `x.floor`3 | 実験台の影が続く中で、name は足音を抑えて進んでいる |
+| explore | `x.exp_id`6 and `x.floor`3 | 散らばる記録札を見つけ、name は封鎖区画を避けている |
+| explore | `x.exp_id`6 and `x.floor`3 | 警告灯が青く揺れるたび、name は立ち止まり方向を修正した |
+| explore | `x.exp_id`6 and `x.floor`3 | 研究区には割れたカプセルが残り、緊張感のある空気が漂う |
+| explore | `x.exp_id`6 and `x.floor`3 | 観察窓の向こうは見えにくく、接近して確認する必要がある |
+| explore | `x.exp_id`6 and `x.floor`3 | 白い実験台が多く、通路が細く分かれている |
+| explore | `x.exp_id`6 and `x.floor`3 | 床の記録札は区画情報の手がかりとして使える |
+| explore | `x.exp_id`6 and `x.floor`3 | 青い警告灯は危険帯の目印になり、回避判断を助ける |
+| explore | `x.exp_id`6 and `x.floor`3 | 静かな扉ほど音が響き、開閉時の合図が重要になる |
+| explore | `x.exp_id`6 and `x.floor`3 | 封鎖区画の境は分かりにくく、地図更新が欠かせない |
+| explore | `x.exp_id`6 and `x.floor`3 | 影の多い室内では短区間で進む方が安全だ |
+| explore | `x.exp_id`6 and `x.floor`3 | 古い設備が残るため、足元と頭上の同時確認が要る |
+| explore | `x.exp_id`6 and `x.floor`3 | 禁域では急がず慎重に進む姿勢が生存を支える |
+| explore | `x.exp_id`6 and `x.floor`4 | name は心なき機械が眠る区画で低い唸りを警戒して進んでいる |
+| explore | `x.exp_id`6 and `x.floor`4 | name は止まった兵機の間を抜け、静かな通路を選んだ |
+| explore | `x.exp_id`6 and `x.floor`4 | name は赤い目の消えた塔機を見上げ、死角の道へ入っていく |
+| explore | `x.exp_id`6 and `x.floor`4 | name は金属腕の影を避け、ひび割れた床を確かめて歩いた |
+| explore | `x.exp_id`6 and `x.floor`4 | name は眠る機械の列で息をひそめ、合図だけで仲間を導いた |
+| explore | `x.exp_id`6 and `x.floor`4 | 止まった兵機のそばで、name は足音を消して進んでいる |
+| explore | `x.exp_id`6 and `x.floor`4 | 赤い目の消えた塔機を見て、name は安全な距離を取った |
+| explore | `x.exp_id`6 and `x.floor`4 | 金属腕が伸びる影の中、name は床の割れ目を避けている |
+| explore | `x.exp_id`6 and `x.floor`4 | 機械列の切れ目を見つけ、name は隊を順に通している |
+| explore | `x.exp_id`6 and `x.floor`4 | 低いうなりが強まると、name は退路を先に確かめた |
+| explore | `x.exp_id`6 and `x.floor`4 | 心なき機械区画は静かだが、急な起動に備える必要がある |
+| explore | `x.exp_id`6 and `x.floor`4 | 止まった兵機の間は狭く、一列移動が基本になる |
+| explore | `x.exp_id`6 and `x.floor`4 | 赤い目の消えた塔機は目印になり、位置確認に使える |
+| explore | `x.exp_id`6 and `x.floor`4 | 金属腕の残骸が多く、頭上確認が欠かせない |
+| explore | `x.exp_id`6 and `x.floor`4 | ひび割れた床は崩れやすく、歩く線の選択が重要だ |
+| explore | `x.exp_id`6 and `x.floor`4 | 機械列の切れ目は通路となり、隊の再整列に向いている |
+| explore | `x.exp_id`6 and `x.floor`4 | 低いうなり音の変化が危険の前触れになることがある |
+| explore | `x.exp_id`6 and `x.floor`4 | 退路共有を先に行うと、不意の接触に備えやすい |
+| explore | `x.exp_id`6 and `x.floor`4 | 光の少ない区画では灯りの向きを絞る方が安全になる |
+| explore | `x.exp_id`6 and `x.floor`4 | 眠る機械地帯では急がない進行が最善の策となる |
+| explore | `x.exp_id`6 and `x.floor`5 | name は主なき橋に立ち、風の中で折れた床を見つめている |
+| explore | `x.exp_id`6 and `x.floor`5 | name は鎖のきしむ音を聞き、渡れる板だけを選んで進んだ |
+| explore | `x.exp_id`6 and `x.floor`5 | name は崩れた欄干を避け、橋の中央線をたどっている |
+| explore | `x.exp_id`6 and `x.floor`5 | name は遠くの灯を目印にし、揺れる橋路を静かに渡った |
+| explore | `x.exp_id`6 and `x.floor`5 | name は落ちた部品をまたぎ、仲間へ歩く順を指示している |
+| explore | `x.exp_id`6 and `x.floor`5 | 橋板が鳴るたびに、name は立ち止まって重みを分けている |
+| explore | `x.exp_id`6 and `x.floor`5 | 鎖の影が揺れる中で、name は風の弱い瞬間を待って進んだ |
+| explore | `x.exp_id`6 and `x.floor`5 | 崩れた欄干の切れ目で、name はロープを張って補助した |
+| explore | `x.exp_id`6 and `x.floor`5 | 遠い灯を見失わぬよう、name は進路の線を仲間へ示した |
+| explore | `x.exp_id`6 and `x.floor`5 | 落ちた部品の密集地で、name は一人ずつ通す判断をした |
+| explore | `x.exp_id`6 and `x.floor`5 | 主なき橋は揺れが大きく、重み配分の管理が重要になる |
+| explore | `x.exp_id`6 and `x.floor`5 | 鎖のきしみは風の強さを知らせ、渡る時機を教えてくれる |
+| explore | `x.exp_id`6 and `x.floor`5 | 崩れた欄干が多く、中央線の維持が安全につながる |
+| explore | `x.exp_id`6 and `x.floor`5 | 折れた床板は見分けが難しく、先導の確認が必要だ |
+| explore | `x.exp_id`6 and `x.floor`5 | 遠くの灯は貴重な目印で、方角維持に役立つ |
+| explore | `x.exp_id`6 and `x.floor`5 | 落ちた部品は足を取るため、短い歩幅で進みたい |
+| explore | `x.exp_id`6 and `x.floor`5 | ロープ補助を使うことで転落の危険を下げられる |
+| explore | `x.exp_id`6 and `x.floor`5 | 一人ずつ通す運用が橋路での混乱を防ぐ |
+| explore | `x.exp_id`6 and `x.floor`5 | 風の切れ目を待つ判断が、橋渡りの成否を左右する |
+| explore | `x.exp_id`6 and `x.floor`5 | 慎重な順番管理こそが主なき橋の攻略法になる |
+| explore | `x.exp_id`6 and `x.floor`6 | name は共鳴の祭壇で青い光を浴び、最後の間へ進んでいる |
+| explore | `x.exp_id`6 and `x.floor`6 | name は石の円壇に手を当て、響きの流れを確かめた |
+| explore | `x.exp_id`6 and `x.floor`6 | name は浮かぶ紋の道をたどり、祭壇の中心へ向かった |
+| explore | `x.exp_id`6 and `x.floor`6 | name は静かな鐘音に耳を澄まし、光る階を上っている |
+| explore | `x.exp_id`6 and `x.floor`6 | name は古い祈り板を見つけ、仲間へ進む順を伝えた |
+| explore | `x.exp_id`6 and `x.floor`6 | 青い光が揺れる中で、name は歩幅をそろえて進んでいる |
+| explore | `x.exp_id`6 and `x.floor`6 | 石の円壇の縁で、name は響きの強い帯を避けている |
+| explore | `x.exp_id`6 and `x.floor`6 | 浮かぶ紋の線を見つめながら、name は進路を整えた |
+| explore | `x.exp_id`6 and `x.floor`6 | 鐘音が重なるたびに、name は立ち止まり合図を送った |
+| explore | `x.exp_id`6 and `x.floor`6 | 祈り板の印を読んで、name は中心への道を選び直した |
+| explore | `x.exp_id`6 and `x.floor`6 | 共鳴の祭壇は青い光が満ち、道筋が紋で示されている |
+| explore | `x.exp_id`6 and `x.floor`6 | 石の円壇は響きが強く、立ち位置の調整が必要になる |
+| explore | `x.exp_id`6 and `x.floor`6 | 浮かぶ紋は進路の目印となり、迷いを減らしてくれる |
+| explore | `x.exp_id`6 and `x.floor`6 | 静かな鐘音は合図の基準になり、隊の動きを合わせやすい |
+| explore | `x.exp_id`6 and `x.floor`6 | 光る階は見やすいが段差があり、歩幅管理が大切だ |
+| explore | `x.exp_id`6 and `x.floor`6 | 古い祈り板には進行順の手がかりが残されている |
+| explore | `x.exp_id`6 and `x.floor`6 | 中心へ近づくほど響きが増し、慎重な進行が求められる |
+| explore | `x.exp_id`6 and `x.floor`6 | 祭壇周囲は開けており、配置調整をしやすい |
+| explore | `x.exp_id`6 and `x.floor`6 | 紋の線を外れない移動が安全な通過を支える |
+| explore | `x.exp_id`6 and `x.floor`6 | 最後の間へ向かう道は静かで、礼を重んじる歩みが合う |
+| explore | `x.exp_id`7 and `x.floor`1 | name は巨大な瓦礫の輪で飛ぶ石を避け、外周道を進んでいる |
+| explore | `x.exp_id`7 and `x.floor`1 | name は砕けた柱をまたぎ、安全な足場を選んで歩いた |
+| explore | `x.exp_id`7 and `x.floor`1 | name は空に浮く破片を見上げ、落下の切れ目で前へ出た |
+| explore | `x.exp_id`7 and `x.floor`1 | name は輪の内側を避け、風の弱い縁道をたどっている |
+| explore | `x.exp_id`7 and `x.floor`1 | name は古い金属片を目印にし、戻り道の線を残して進んだ |
+| explore | `x.exp_id`7 and `x.floor`1 | 飛ぶ石が回る中で、name は隊を小さくまとめて進んでいる |
+| explore | `x.exp_id`7 and `x.floor`1 | 砕けた柱の影を使い、name は落下をやり過ごしている |
+| explore | `x.exp_id`7 and `x.floor`1 | 浮遊破片の動きを見ながら、name は進む間を選んだ |
+| explore | `x.exp_id`7 and `x.floor`1 | 輪の縁へ寄るたびに、name は足場を確かめ直している |
+| explore | `x.exp_id`7 and `x.floor`1 | 金属片の並びを見て、name は合流点の位置を決めた |
+| explore | `x.exp_id`7 and `x.floor`1 | 巨大な瓦礫の輪は落下物が多く、外周移動が安全になる |
+| explore | `x.exp_id`7 and `x.floor`1 | 砕けた柱は障害にも盾にもなり、使い方が鍵になる |
+| explore | `x.exp_id`7 and `x.floor`1 | 浮遊破片の動きには波があり、進む間を選ぶ必要がある |
+| explore | `x.exp_id`7 and `x.floor`1 | 輪の内側は風が強く、縁道の方が安定して進める |
+| explore | `x.exp_id`7 and `x.floor`1 | 古い金属片は目印になり、帰路確認に役立つ |
+| explore | `x.exp_id`7 and `x.floor`1 | 足場が崩れやすく、歩幅を小さく保つのが有効だ |
+| explore | `x.exp_id`7 and `x.floor`1 | 落下音の変化で危険を早めに察知できる |
+| explore | `x.exp_id`7 and `x.floor`1 | 隊を小さく保つことで接触事故を減らせる |
+| explore | `x.exp_id`7 and `x.floor`1 | 遮蔽物をつなぐ進行が被弾率を下げてくれる |
+| explore | `x.exp_id`7 and `x.floor`1 | この層では急がず、落下の間を読む判断が最優先になる |
+| explore | `x.exp_id`7 and `x.floor`2 | name は転送の回廊で揺れる光を見つめ、足元を確かめている |
+| explore | `x.exp_id`7 and `x.floor`2 | name は光門の脈に合わせ、静かな間で一歩ずつ進んだ |
+| explore | `x.exp_id`7 and `x.floor`2 | name は青白い床紋をたどり、ずれない道を選んでいる |
+| explore | `x.exp_id`7 and `x.floor`2 | name は回廊の柱に手を当て、転移風の向きを読んだ |
+| explore | `x.exp_id`7 and `x.floor`2 | name は光の揺らぎを見て、仲間へ渡る順を伝えている |
+| explore | `x.exp_id`7 and `x.floor`2 | 揺れる光の帯の前で、name は歩みを止めて間を待っている |
+| explore | `x.exp_id`7 and `x.floor`2 | 光門の脈が弱まると、name は短い合図で隊を進めた |
+| explore | `x.exp_id`7 and `x.floor`2 | 床紋がずれる区画で、name は中心線へ戻している |
+| explore | `x.exp_id`7 and `x.floor`2 | 回廊柱の影に入り、name は転移風をやり過ごした |
+| explore | `x.exp_id`7 and `x.floor`2 | 光の揺らぎが強まるたび、name は順番を組み直している |
+| explore | `x.exp_id`7 and `x.floor`2 | 転送回廊は光の脈で危険が変わり、待つ判断が重要になる |
+| explore | `x.exp_id`7 and `x.floor`2 | 床紋の中心線をたどることで迷いを減らせる |
+| explore | `x.exp_id`7 and `x.floor`2 | 回廊柱は風よけになり、短い待機に向いている |
+| explore | `x.exp_id`7 and `x.floor`2 | 揺らぎの強い帯は避け、弱い間で渡るのが安全だ |
+| explore | `x.exp_id`7 and `x.floor`2 | 光門の脈は規則があり、観察で通過精度を上げられる |
+| explore | `x.exp_id`7 and `x.floor`2 | 足元確認を続けると転移ずれの危険を下げられる |
+| explore | `x.exp_id`7 and `x.floor`2 | 順番管理を徹底すれば隊の分断を防ぎやすい |
+| explore | `x.exp_id`7 and `x.floor`2 | 短い合図が有効で、回廊内でも連携を保てる |
+| explore | `x.exp_id`7 and `x.floor`2 | 青白い光は目印になるが、見すぎると距離感を失いやすい |
+| explore | `x.exp_id`7 and `x.floor`2 | 落ち着いた歩みが転送路攻略の基本になる |
+| explore | `x.exp_id`7 and `x.floor`3 | name は光の層で目を細め、白く輝く道を進んでいる |
+| explore | `x.exp_id`7 and `x.floor`3 | name はまばゆい壁を避け、影の細道を選んで歩いた |
+| explore | `x.exp_id`7 and `x.floor`3 | name は光の花弁のような紋を見つけ、進路を整えている |
+| explore | `x.exp_id`7 and `x.floor`3 | name は白金の柱影で足を止め、視界が戻るのを待った |
+| explore | `x.exp_id`7 and `x.floor`3 | name は光風に髪を揺らしながら、静かな帯へ入っていく |
+| explore | `x.exp_id`7 and `x.floor`3 | 強い光が差す中で、name は顔を伏せて足場を確かめている |
+| explore | `x.exp_id`7 and `x.floor`3 | 白く輝く壁沿いで、name は影の帯をつないで進んだ |
+| explore | `x.exp_id`7 and `x.floor`3 | 光紋が広がる床を見て、name は中心線を選び直した |
+| explore | `x.exp_id`7 and `x.floor`3 | 白金の柱影に入るたび、name は隊の間隔を整えている |
+| explore | `x.exp_id`7 and `x.floor`3 | 光風が吹き抜ける区画で、name は合図だけで移動した |
+| explore | `x.exp_id`7 and `x.floor`3 | 光の層は明るさが極端で、影道の利用が安全につながる |
+| explore | `x.exp_id`7 and `x.floor`3 | まばゆい壁は視界を奪いやすく、直視を避けるのが有効だ |
+| explore | `x.exp_id`7 and `x.floor`3 | 光紋の広がりが道筋を示し、進路選びの助けになる |
+| explore | `x.exp_id`7 and `x.floor`3 | 白金の柱影は視界回復の休み場として使える |
+| explore | `x.exp_id`7 and `x.floor`3 | 光風が強い場所は合図を短くして連携を保ちたい |
+| explore | `x.exp_id`7 and `x.floor`3 | 足場は見やすいが距離感を誤りやすく注意が必要だ |
+| explore | `x.exp_id`7 and `x.floor`3 | 影の帯をつないだ進行が被害を抑えやすい |
+| explore | `x.exp_id`7 and `x.floor`3 | 明暗差の大きい区画では歩幅を小さく保つと安定する |
+| explore | `x.exp_id`7 and `x.floor`3 | 隊列を密にしすぎない調整が接触を減らしてくれる |
+| explore | `x.exp_id`7 and `x.floor`3 | この層では目と足の休ませ方が探索の鍵になる |
+| explore | `x.exp_id`7 and `x.floor`4 | name は闇の層で仲間の声を頼りに、静かに歩を合わせている |
+| explore | `x.exp_id`7 and `x.floor`4 | name は黒い床紋を指でなぞり、消えた道筋を見つけた |
+| explore | `x.exp_id`7 and `x.floor`4 | name は小さな灯りを手で覆い、影の回廊を進んでいる |
+| explore | `x.exp_id`7 and `x.floor`4 | name は遠くの足音を聞き分け、危ない分岐を避けて進んだ |
+| explore | `x.exp_id`7 and `x.floor`4 | name は暗い柱列をたどり、迷わぬよう印を残している |
+| explore | `x.exp_id`7 and `x.floor`4 | 闇が深まる中で、name は仲間の呼吸に合わせて進んでいる |
+| explore | `x.exp_id`7 and `x.floor`4 | 黒い床紋を見つけるたび、name は進路の線を引き直した |
+| explore | `x.exp_id`7 and `x.floor`4 | 灯りを絞った回廊で、name は足元だけを確かめて歩いた |
+| explore | `x.exp_id`7 and `x.floor`4 | 遠い足音が響く方向を聞き、name は安全な道を選んだ |
+| explore | `x.exp_id`7 and `x.floor`4 | 暗い柱の切れ目で、name は合流点を仲間へ示している |
+| explore | `x.exp_id`7 and `x.floor`4 | 闇の層は視界が乏しく、声と足音が重要な手がかりになる |
+| explore | `x.exp_id`7 and `x.floor`4 | 黒い床紋は薄いが、道筋の確認に役立つ印だ |
+| explore | `x.exp_id`7 and `x.floor`4 | 灯りを絞ることで位置を隠しつつ視界を保てる |
+| explore | `x.exp_id`7 and `x.floor`4 | 分岐が多いため、印づけ運用が探索を安定させる |
+| explore | `x.exp_id`7 and `x.floor`4 | 柱列は方向維持に使え、迷いを減らしてくれる |
+| explore | `x.exp_id`7 and `x.floor`4 | 足音の反響差で広い道と狭い道を見分けやすい |
+| explore | `x.exp_id`7 and `x.floor`4 | 隊の呼吸を合わせると移動音を抑えやすい |
+| explore | `x.exp_id`7 and `x.floor`4 | 合流点を先に決めることで分断を防げる |
+| explore | `x.exp_id`7 and `x.floor`4 | 急がない歩みが闇域での生存率を高める |
+| explore | `x.exp_id`7 and `x.floor`4 | この層では見えない情報を聞いて進む姿勢が大切だ |
+| explore | `x.exp_id`7 and `x.floor`5 | name は深淵のふちで胸をおさえ、落ちる風の音を聞いている |
+| explore | `x.exp_id`7 and `x.floor`5 | name は細い縁道に足を置き、深い闇を避けて進んでいる |
+| explore | `x.exp_id`7 and `x.floor`5 | name は古い杭を確かめ、崩れぬ道だけを選んで歩いた |
+| explore | `x.exp_id`7 and `x.floor`5 | name は裂け目の向こうの灯を見つめ、渡る順を決めている |
+| explore | `x.exp_id`7 and `x.floor`5 | name は揺れる足場で腰を落とし、風の切れ目を待って進んだ |
+| explore | `x.exp_id`7 and `x.floor`5 | 深淵風が吹き上がる中で、name は縁道の中心を保っている |
+| explore | `x.exp_id`7 and `x.floor`5 | 古い杭が並ぶ場所で、name は安全線を仲間へ示した |
+| explore | `x.exp_id`7 and `x.floor`5 | 裂け目の手前に立ち、name はロープを張って準備している |
+| explore | `x.exp_id`7 and `x.floor`5 | 揺れる足場を前にして、name は荷を分けて通過した |
+| explore | `x.exp_id`7 and `x.floor`5 | 闇の底から響く風音を聞き、name は進む間を選んでいる |
+| explore | `x.exp_id`7 and `x.floor`5 | 深淵のふちは転落危険が高く、中心線の維持が不可欠だ |
+| explore | `x.exp_id`7 and `x.floor`5 | 細い縁道は揺れやすく、荷重分散で安定を得られる |
+| explore | `x.exp_id`7 and `x.floor`5 | 古い杭は補助点となり、通過順管理に役立つ |
+| explore | `x.exp_id`7 and `x.floor`5 | 裂け目越えではロープ準備が安全性を大きく上げる |
+| explore | `x.exp_id`7 and `x.floor`5 | 風の切れ目を待つ判断が移動成功を左右する |
+| explore | `x.exp_id`7 and `x.floor`5 | 足場の材が弱く、短区間ごとの確認が必要になる |
+| explore | `x.exp_id`7 and `x.floor`5 | 灯の位置は方角維持に有効で、迷いを減らせる |
+| explore | `x.exp_id`7 and `x.floor`5 | 一人ずつ通す運用が連鎖転倒を防いでくれる |
+| explore | `x.exp_id`7 and `x.floor`5 | 深い闇に目を取られず、足元優先で進みたい |
+| explore | `x.exp_id`7 and `x.floor`5 | この層では慎重な順番管理が命を守る鍵になる |
+| explore | `x.exp_id`7 and `x.floor`6 | name は月の宮で白い床に映る影を追い、玉座の間へ向かっている |
+| explore | `x.exp_id`7 and `x.floor`6 | name は銀の回廊を静かに進み、月光の紋をたどっている |
+| explore | `x.exp_id`7 and `x.floor`6 | name は丸い窓から差す光を見て、正しい扉を選んだ |
+| explore | `x.exp_id`7 and `x.floor`6 | name は青い灯台の前で一礼し、宮の中心へ歩き出した |
+| explore | `x.exp_id`7 and `x.floor`6 | name は薄絹の帳を払って、静かな玉座路へ入っていく |
+| explore | `x.exp_id`7 and `x.floor`6 | 白い床が光る中で、name は影の線を道しるべにしている |
+| explore | `x.exp_id`7 and `x.floor`6 | 銀の回廊の曲がり角で、name は隊の歩幅をそろえた |
+| explore | `x.exp_id`7 and `x.floor`6 | 丸窓の月光が動くたび、name は扉の順を見直している |
+| explore | `x.exp_id`7 and `x.floor`6 | 青い灯台の影に入り、name は短い合図で隊を導いた |
+| explore | `x.exp_id`7 and `x.floor`6 | 薄絹の帳が揺れる先で、name は玉座への線を確かめた |
+| explore | `x.exp_id`7 and `x.floor`6 | 月の宮は白い床が広がり、影の線が進路の目印になる |
+| explore | `x.exp_id`7 and `x.floor`6 | 銀の回廊は静かで、足音管理がしやすい構造だ |
+| explore | `x.exp_id`7 and `x.floor`6 | 丸窓の月光は時間で動き、扉選びの手がかりになる |
+| explore | `x.exp_id`7 and `x.floor`6 | 青い灯台は遠目でも分かり、合流点として使いやすい |
+| explore | `x.exp_id`7 and `x.floor`6 | 薄絹の帳は視界を揺らすため、近接確認が必要になる |
+| explore | `x.exp_id`7 and `x.floor`6 | 玉座路は分岐が多く、順路共有が探索を安定させる |
+| explore | `x.exp_id`7 and `x.floor`6 | 白床は見やすい反面、段差が見えにくい場所もある |
+| explore | `x.exp_id`7 and `x.floor`6 | 静かな宮ほど合図が届き、連携を保ちやすい |
+| explore | `x.exp_id`7 and `x.floor`6 | 礼を重んじるゆるやかな進行が、この場の流れに合う |
+| explore | `x.exp_id`7 and `x.floor`6 | 月光と影を読む判断が宮中探索の鍵となる |
+| explore | `x.exp_id`8 and `x.floor`1 | name は竜の爪あとが残る谷口で砕けた岩を越えて進んでいる |
+| explore | `x.exp_id`8 and `x.floor`1 | name は焼けた地面を確かめ、崩れにくい道を選んで歩いた |
+| explore | `x.exp_id`8 and `x.floor`1 | name は深い爪痕をなぞり、竜道を外す進路へ切り替えた |
+| explore | `x.exp_id`8 and `x.floor`1 | name は風の鳴る谷壁を見上げ、落石の少ない帯をたどっている |
+| explore | `x.exp_id`8 and `x.floor`1 | name は黒い鱗片を拾い、危ない区画を地図に記している |
+| explore | `x.exp_id`8 and `x.floor`1 | 谷口の裂けた岩を前にして、name は隊の間隔を整えている |
+| explore | `x.exp_id`8 and `x.floor`1 | 焼けた地面の熱を見て、name は足場の線を引き直した |
+| explore | `x.exp_id`8 and `x.floor`1 | 深い爪痕が続く中で、name は竜道を避ける側道を選んだ |
+| explore | `x.exp_id`8 and `x.floor`1 | 風の鳴る谷壁の下で、name は落石の間を見て進んだ |
+| explore | `x.exp_id`8 and `x.floor`1 | 黒い鱗片が散る場所で、name は合流点を先に決めている |
+| explore | `x.exp_id`8 and `x.floor`1 | 竜傷の谷口は爪痕が多く、竜道回避が探索の基本になる |
+| explore | `x.exp_id`8 and `x.floor`1 | 焼けた地面は脆く、足場確認を重ねる必要がある |
+| explore | `x.exp_id`8 and `x.floor`1 | 谷壁の風鳴りは落石の前触れとなり、判断に役立つ |
+| explore | `x.exp_id`8 and `x.floor`1 | 黒い鱗片は活動跡の目印となり、危険区画を示す |
+| explore | `x.exp_id`8 and `x.floor`1 | 裂けた岩が多く、歩幅を小さく保つ方が安全だ |
+| explore | `x.exp_id`8 and `x.floor`1 | 側道は遠回りでも接触回避に向いている |
+| explore | `x.exp_id`8 and `x.floor`1 | 熱の残る帯は体力を削り、短区間移動が有効になる |
+| explore | `x.exp_id`8 and `x.floor`1 | 隊の間隔管理で連鎖転倒を防ぎやすくなる |
+| explore | `x.exp_id`8 and `x.floor`1 | 落石の間を読む進行が被害を減らしてくれる |
+| explore | `x.exp_id`8 and `x.floor`1 | この層では急がず、竜の痕を読んで進む姿勢が大切だ |
+| explore | `x.exp_id`8 and `x.floor`2 | name は骨の研究地で古い標本台を見つけ、静かに進んでいる |
+| explore | `x.exp_id`8 and `x.floor`2 | name は白い骨柱の間を抜け、割れ目の少ない道を選んだ |
+| explore | `x.exp_id`8 and `x.floor`2 | name は乾いた骨の山を避け、平らな通路をたどっている |
+| explore | `x.exp_id`8 and `x.floor`2 | name は欠けた記録板を拾い、この地の印を確かめた |
+| explore | `x.exp_id`8 and `x.floor`2 | name は灰色の棚路を歩き、崩れやすい縁を外して進んだ |
+| explore | `x.exp_id`8 and `x.floor`2 | 骨柱が並ぶ区画で、name は隊列を一列に整えている |
+| explore | `x.exp_id`8 and `x.floor`2 | 標本台の影に入り、name は次の分岐を見定めている |
+| explore | `x.exp_id`8 and `x.floor`2 | 乾いた骨片が鳴るたびに、name は歩く線を修正した |
+| explore | `x.exp_id`8 and `x.floor`2 | 欠けた記録板を見て、name は封鎖区画を避けている |
+| explore | `x.exp_id`8 and `x.floor`2 | 灰色の棚路の端で、name は足場の強い帯を選んだ |
+| explore | `x.exp_id`8 and `x.floor`2 | 骨の研究地は骨柱が密で、通路管理が重要になる |
+| explore | `x.exp_id`8 and `x.floor`2 | 標本台は目印として使え、位置確認に役立つ |
+| explore | `x.exp_id`8 and `x.floor`2 | 乾いた骨の山は崩れやすく、接近を避けたい |
+| explore | `x.exp_id`8 and `x.floor`2 | 欠けた記録板には区画情報が残り、進路判断を助ける |
+| explore | `x.exp_id`8 and `x.floor`2 | 灰色の棚路は狭く、一列移動が安定した進み方だ |
+| explore | `x.exp_id`8 and `x.floor`2 | 骨片の音は足場の変化を知らせる手がかりになる |
+| explore | `x.exp_id`8 and `x.floor`2 | 分岐が多く、合流点の共有が欠かせない |
+| explore | `x.exp_id`8 and `x.floor`2 | 崩れやすい縁を外すだけで転落率を下げられる |
+| explore | `x.exp_id`8 and `x.floor`2 | 静かな区画ほど合図が届き、連携を取りやすい |
+| explore | `x.exp_id`8 and `x.floor`2 | この層では記録板の読み取りが探索効率を高める |
+| explore | `x.exp_id`8 and `x.floor`3 | name は小さな神々の祠で供え花を置き、祈りの道へ進んでいる |
+| explore | `x.exp_id`8 and `x.floor`3 | name は石の祠を一つずつ巡り、清い道筋を選んだ |
+| explore | `x.exp_id`8 and `x.floor`3 | name は鈴の音に耳を澄まし、祭路の分岐を確かめた |
+| explore | `x.exp_id`8 and `x.floor`3 | name は苔むした祭壇に一礼し、静かな回廊へ入っていく |
+| explore | `x.exp_id`8 and `x.floor`3 | name は灯明の残る台座を見つけ、中心へ向かう線を引いた |
+| explore | `x.exp_id`8 and `x.floor`3 | 小祠が並ぶ参道で、name は歩幅をそろえて進んでいる |
+| explore | `x.exp_id`8 and `x.floor`3 | 石祠の影が伸びる中、name は休める場を見つけた |
+| explore | `x.exp_id`8 and `x.floor`3 | 鈴音が重なるたびに、name は分岐の向きを見直した |
+| explore | `x.exp_id`8 and `x.floor`3 | 苔むした祭壇の前で、name は合図を静かに交わしている |
+| explore | `x.exp_id`8 and `x.floor`3 | 灯明台座の並びを見て、name は中心路を選び直した |
+| explore | `x.exp_id`8 and `x.floor`3 | 小さな神々の祠は静けさが深く、礼を重んじる進行が合う |
+| explore | `x.exp_id`8 and `x.floor`3 | 石祠の配置が道筋の目印となり、迷いを減らせる |
+| explore | `x.exp_id`8 and `x.floor`3 | 鈴の音は分岐判断の手がかりになりやすい |
+| explore | `x.exp_id`8 and `x.floor`3 | 苔むした祭壇周辺は段差があり、足元確認が必要だ |
+| explore | `x.exp_id`8 and `x.floor`3 | 灯明台座は中心路の線を示し、進路整理を助ける |
+| explore | `x.exp_id`8 and `x.floor`3 | 参道は狭い場所が多く、一列移動が有効になる |
+| explore | `x.exp_id`8 and `x.floor`3 | 合図を短く保つことで場の静けさを守りやすい |
+| explore | `x.exp_id`8 and `x.floor`3 | 祠ごとの紋違いが現在地確認に役立つ |
+| explore | `x.exp_id`8 and `x.floor`3 | 急がない歩みが安全と雰囲気の両方を保ってくれる |
+| explore | `x.exp_id`8 and `x.floor`3 | この層では祈りの作法を守ることが道を開く鍵になる |
+| explore | `x.exp_id`8 and `x.floor`4 | name はゲヘナの荒野で熱い地を踏み、ゆらぐ空気の中を進んでいる |
+| explore | `x.exp_id`8 and `x.floor`4 | name は赤黒い岩原を越え、熱だまりの薄い帯を選んだ |
+| explore | `x.exp_id`8 and `x.floor`4 | name は乾いた裂け目を避け、平らな灰道をたどっている |
+| explore | `x.exp_id`8 and `x.floor`4 | name は遠くの炎柱を見て、危ない風下を外して進んだ |
+| explore | `x.exp_id`8 and `x.floor`4 | name は焦げた地表に印を残し、戻り道を確かめている |
+| explore | `x.exp_id`8 and `x.floor`4 | ゆらぐ空気を前にして、name は顔布を締めて進んでいる |
+| explore | `x.exp_id`8 and `x.floor`4 | 赤黒い岩原の縁で、name は隊を細く整えて移動した |
+| explore | `x.exp_id`8 and `x.floor`4 | 乾いた裂け目が続く中、name は歩く線を高所へ寄せた |
+| explore | `x.exp_id`8 and `x.floor`4 | 炎柱の向きを見ながら、name は風下回避の道を選んだ |
+| explore | `x.exp_id`8 and `x.floor`4 | 焦げた地表の印をたどり、name は合流点へ戻っている |
+| explore | `x.exp_id`8 and `x.floor`4 | ゲヘナの荒野は熱と風が強く、短区間移動が有効になる |
+| explore | `x.exp_id`8 and `x.floor`4 | 赤黒い岩原は見通しがよいが、熱だまりに注意が要る |
+| explore | `x.exp_id`8 and `x.floor`4 | 乾いた裂け目は崩れやすく、接近回避が安全だ |
+| explore | `x.exp_id`8 and `x.floor`4 | 炎柱は位置目印になる反面、危険帯の中心でもある |
+| explore | `x.exp_id`8 and `x.floor`4 | 風下は熱波が集まりやすく、避ける判断が重要になる |
+| explore | `x.exp_id`8 and `x.floor`4 | 顔布と水分管理が探索継続を支える |
+| explore | `x.exp_id`8 and `x.floor`4 | 隊を細く保つと接触事故を減らしやすい |
+| explore | `x.exp_id`8 and `x.floor`4 | 地表印を残す運用で帰路を安定させられる |
+| explore | `x.exp_id`8 and `x.floor`4 | 灰道の高所は比較的歩きやすく、進行軸に向いている |
+| explore | `x.exp_id`8 and `x.floor`4 | この層では熱と風の読みが生存率を決める |
+| explore | `x.exp_id`8 and `x.floor`5 | name は書庫区でほこりを払い、古文書の棚を調べている |
+| explore | `x.exp_id`8 and `x.floor`5 | name は崩れた本架をまたぎ、読める巻物を探して進んだ |
+| explore | `x.exp_id`8 and `x.floor`5 | name は静かな閲覧廊を歩き、地図帖の印を確かめている |
+| explore | `x.exp_id`8 and `x.floor`5 | name は古い書見台に灯りを置き、次の区画を読み解いた |
+| explore | `x.exp_id`8 and `x.floor`5 | name は封じられた書庫扉を避け、開いた回廊へ入っていく |
+| explore | `x.exp_id`8 and `x.floor`5 | ほこり舞う棚列の中で、name は通れる帯を選んでいる |
+| explore | `x.exp_id`8 and `x.floor`5 | 崩れた本架の前で、name は隊の順を決めて通した |
+| explore | `x.exp_id`8 and `x.floor`5 | 閲覧廊の分岐に立ち、name は地図帖の線を引き直した |
+| explore | `x.exp_id`8 and `x.floor`5 | 書見台の灯りを囲み、name は進路候補を仲間へ示した |
+| explore | `x.exp_id`8 and `x.floor`5 | 封書庫の印を見つけ、name は迂回路へ静かに切り替えた |
+| explore | `x.exp_id`8 and `x.floor`5 | 書庫区は棚列が密で、通路管理が探索の要になる |
+| explore | `x.exp_id`8 and `x.floor`5 | 崩れた本架は障害が多く、順番通過が安全だ |
+| explore | `x.exp_id`8 and `x.floor`5 | 閲覧廊は静かで、足音管理をしやすい場になっている |
+| explore | `x.exp_id`8 and `x.floor`5 | 書見台の灯りは目印となり、合流点に使いやすい |
+| explore | `x.exp_id`8 and `x.floor`5 | 封じられた扉は危険帯の印となり、回避判断を助ける |
+| explore | `x.exp_id`8 and `x.floor`5 | 古文書の地図帖は区画把握に役立つ情報源だ |
+| explore | `x.exp_id`8 and `x.floor`5 | ほこりが濃い区画では視界確認を短く重ねたい |
+| explore | `x.exp_id`8 and `x.floor`5 | 棚影をつなぐ進行で発見されにくくなる |
+| explore | `x.exp_id`8 and `x.floor`5 | 分岐の多い書庫では線の共有が欠かせない |
+| explore | `x.exp_id`8 and `x.floor`5 | この層では読む力と慎重な歩みが両輪になる |
+| explore | `x.exp_id`8 and `x.floor`6 | name は予見の聖域で静かな光を受け、未来門の前へ進んでいる |
+| explore | `x.exp_id`8 and `x.floor`6 | name は透き通る壇を歩き、星紋の道をたどっている |
+| explore | `x.exp_id`8 and `x.floor`6 | name は白い祈り輪に手をかざし、門路の順を確かめた |
+| explore | `x.exp_id`8 and `x.floor`6 | name は澄んだ鐘音に耳を澄まし、光の階を上っている |
+| explore | `x.exp_id`8 and `x.floor`6 | name は古い予見札を読み、選ぶべき道を仲間へ伝えた |
+| explore | `x.exp_id`8 and `x.floor`6 | 静かな光が満ちる中で、name は星紋の中心線を進んでいる |
+| explore | `x.exp_id`8 and `x.floor`6 | 透き通る壇の縁で、name は足場の強い帯を選んだ |
+| explore | `x.exp_id`8 and `x.floor`6 | 祈り輪が揺れるたびに、name は門路の順を見直している |
+| explore | `x.exp_id`8 and `x.floor`6 | 澄んだ鐘音が重なる中、name は合図を短く交わした |
+| explore | `x.exp_id`8 and `x.floor`6 | 予見札の印を見つめ、name は未来門への線を整えた |
+| explore | `x.exp_id`8 and `x.floor`6 | 予見の聖域は静かな光が満ち、星紋が道を示している |
+| explore | `x.exp_id`8 and `x.floor`6 | 透き通る壇は見やすいが段差もあり、歩幅調整が要る |
+| explore | `x.exp_id`8 and `x.floor`6 | 祈り輪は門路選びの手がかりとなり、迷いを減らせる |
+| explore | `x.exp_id`8 and `x.floor`6 | 澄んだ鐘音は合図の基準になり、隊の動きを合わせやすい |
+| explore | `x.exp_id`8 and `x.floor`6 | 予見札には進行順の印が残り、判断を支えてくれる |
+| explore | `x.exp_id`8 and `x.floor`6 | 未来門へ近づくほど緊張が高まり、慎重さが求められる |
+| explore | `x.exp_id`8 and `x.floor`6 | 開けた聖域は配置調整をしやすく、再整列に向いている |
+| explore | `x.exp_id`8 and `x.floor`6 | 星紋線を外れない歩みが安全通過を助ける |
+| explore | `x.exp_id`8 and `x.floor`6 | 礼を守る静かな進行が、この場の流れに合っている |
+| explore | `x.exp_id`8 and `x.floor`6 | この層では光と音の読みが最後の鍵となる |
