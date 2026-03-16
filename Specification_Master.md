@@ -25,8 +25,8 @@
 | 1 | 4 | 1-2 | 4 | Normal | `Aerial` | Rogue | `i.bolt`U, `i.armor`U | 風の小翼 |
 | 1 | 4 | 1-2 | 4 | Normal | `Aerial` | Wizard | `i.wand`U, `i.catalyst`U | 曇り空の小翼 |
 | 1 | 4 | 1-2 | 4 | Normal | `Aerial` | Ranger | `i.arrow`U, `i.archery`U | 見張り翼 |
-| 1 | 4 | 3 | 7 | Elite | `Caninian` | Lord | `i.shield`BD, `i.robe`BD | |
-| 1 | 4 | 3 | 7 | Elite | `Caninian` | Fighter | `i.katana`BD, `i.gauntlet`BD | |
+| 1 | 4 | 3 | 7 | Elite | `Caninian` | Lord | `i.shield`BD, `i.robe`BD | 見張り番 |
+| 1 | 4 | 3 | 7 | Elite | `Caninian` | Fighter | `i.katana`BD, `i.gauntlet`BD | 雇われ傭兵 |
 | 1 | 4 | 4 | 7 | Elite | `Aerial` | Ranger | `i.arrow`EB, `i.bolt`EB, `i.archery`EB | 風切り翼 |
 | 1 | 5 | 1-2 | 5 | Normal | `Insect_Swarm` | Ninja | `i.katana`U, `i.armor`U | かくれむれ虫 |
 | 1 | 5 | 1-2 | 5 | Normal | `Insect_Swarm` | Samurai | `i.katana`U, `i.catalyst`U | 刀持ちむれ虫 |
@@ -39,7 +39,7 @@
 | 1 | 6 | 1-2 | 6 | Normal | `Beast` | Fighter | `i.sword`U, `i.gauntlet`U | 遺跡の前衛獣 |
 | 1 | 6 | 3 | 7 | Normal | `Aerial` | Samurai | `i.katana`U, `i.bolt`U | 城上の翼侍 |
 | 1 | 6 | 3 | 7 | Normal | `Aerial` | Ranger | `i.arrow`U, `i.archery`U | 羽弓の小翼 |
-| 1 | 6 | 4 | 11 | BOSS | `Caninian` | Fighter | `i.sword`BD, `i.grimoire`BD | ケイナイアンの若き闘士 |
+| 1 | 6 | 4 | 11 | BOSS | `Caninian` | Fighter | `i.sword`BD, `i.grimoire`BD | アルセウス |
 | 2 | 1 | 1-2 | 7 | Normal | `Frost` | Rogue | `i.bolt`U, `i.armor`U | 霜牙獣 |
 | 2 | 1 | 1-2 | 7 | Normal | `Frost` | Wizard | `i.wand`U, `i.catalyst`U | 凍晶のまじもの |
 | 2 | 1 | 1-2 | 7 | Normal | `Frost` | Ranger | `i.arrow`U, `i.archery`U | 雪原の氷獣 |
@@ -67,15 +67,15 @@
 | 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | Ninja | `i.katana`U, `i.armor`U | 胞子影の這い株 |
 | 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | Samurai | `i.katana`U, `i.catalyst`U | 菌刃のつる株 |
 | 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | Sage | `i.grimoire`U, `i.robe`U | 苔衣の胞子塊 |
-| 2 | 5 | 3 | 14 | Elite | `Lupinian` | Wizard | `i.wand`BD, `i.catalyst`BD | |
-| 2 | 5 | 3 | 14 | Elite | `Lupinian` | Ninja | `i.bolt`BD, `i.archery`BD | |
+| 2 | 5 | 3 | 14 | Elite | `Lupinian` | Wizard | `i.wand`BD, `i.catalyst`BD | 狼の妖術士 |
+| 2 | 5 | 3 | 14 | Elite | `Lupinian` | Ninja | `i.bolt`BD, `i.archery`BD | 忍狼 |
 | 2 | 5 | 4 | 14 | Elite | `Golem` | Sage | `i.wand`EB, `i.grimoire`EB, `i.catalyst`EB | 核晶の導師体 |
 | 2 | 6 | 1-2 | 12 | Normal | `Frost` | Lord | `i.shield`U, `i.robe`U | 氷冠の群核 |
 | 2 | 6 | 1-2 | 12 | Normal | `Frost` | Wizard | `i.wand`U, `i.catalyst`U | 寒天の呪獣 |
 | 2 | 6 | 1-2 | 12 | Normal | `Frost` | Fighter | `i.sword`U, `i.gauntlet`U | 凍原の巨爪獣 |
 | 2 | 6 | 3 | 13 | Normal | `Golem` | Samurai | `i.katana`U, `i.bolt`U | 断崖の岩刃兵 |
 | 2 | 6 | 3 | 13 | Normal | `Golem` | Ranger | `i.arrow`U, `i.archery`U | 石翼の射手 |
-| 2 | 6 | 4 | 17 | BOSS | `Lupinian` | Rogue | `i.armor`BD, `i.arrow`BD | ルピニアンの白狼将 |
+| 2 | 6 | 4 | 17 | BOSS | `Lupinian` | Rogue | `i.armor`BD, `i.arrow`BD | 白狼グリムクラッグ |
 | 3 | 1 | 1-2 | 14 | Normal | `Marine` | Rogue | `i.bolt`U, `i.armor`U | |
 | 3 | 1 | 1-2 | 14 | Normal | `Marine` | Wizard | `i.wand`U, `i.catalyst`U | |
 | 3 | 1 | 1-2 | 14 | Normal | `Marine` | Ranger | `i.arrow`U, `i.archery`U | |
