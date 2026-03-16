@@ -83,41 +83,41 @@
 
 | `x.floor` | `x.room`| `x.+level` | `x.type` | `x.enemy_type` | `x.class` | `x.drop` | `x.name` |
 |-|-|-|-|-|-|-|-|
-| 1 | 1-2 | +0 | Normal | A | Rogue | `i.bolt`UA,`i.armor`UA | |
-| 1 | 1-2 | +0 | Normal | A | Wizard | `i.wand`UA, `i.catalyst`UA | |
-| 1 | 1-2 | +0 | Normal | A | Ranger | `i.arrow`UA, `i.archery`UA |  |
-| 1 | 3 | +1 | Normal | A | Fighter | `i.sword`UA, `i.gauntlet`UA | |
-| 1 | 3 | +1 | Normal | A | Lord | `i.shield`UA, `i.robe`UA | |
+| 1 | 1-2 | +0 | Normal | A | Rogue | `i.bolt`U,`i.armor`U | |
+| 1 | 1-2 | +0 | Normal | A | Wizard | `i.wand`U, `i.catalyst`U | |
+| 1 | 1-2 | +0 | Normal | A | Ranger | `i.arrow`U, `i.archery`U |  |
+| 1 | 3 | +1 | Normal | A | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 1 | 3 | +1 | Normal | A | Lord | `i.shield`U, `i.robe`U | |
 | 1 | 4 | +3 | Elite | A | ELITE1.class | ELITE1.drop | |
-| 2 | 1-2 | +1 | Normal | A | Ninja | `i.katana`UA,`i.armor`UA | |
-| 2 | 1-2 | +1 | Normal | A | Samurai | `i.katana`UA, `i.catalyst`UA | |
-| 2 | 1-2 | +1 | Normal | A | Sage | `i.grimoire`UA, `i.robe`UA | |
-| 2 | 3 | +2 | Normal | B | Duelist | `i.sword`UA, `i.arrow`UA | |
-| 2 | 3 | +2 | Normal | B | Pilgrim | `i.armor`UA, `i.wand`UA | |
+| 2 | 1-2 | +1 | Normal | A | Ninja | `i.katana`U,`i.armor`U | |
+| 2 | 1-2 | +1 | Normal | A | Samurai | `i.katana`U, `i.catalyst`U | |
+| 2 | 1-2 | +1 | Normal | A | Sage | `i.grimoire`U, `i.robe`U | |
+| 2 | 3 | +2 | Normal | B | Duelist | `i.sword`U, `i.arrow`U | |
+| 2 | 3 | +2 | Normal | B | Pilgrim | `i.armor`U, `i.wand`U | |
 | 2 | 4 | +4 | Elite | A | ELITE2.class | ELITE2.drop | |
-| 3 | 1-2 | +2 | Normal | C | Lord | `i.shield`UA,`i.robe`UA | |
-| 3 | 1-2 | +2 | Normal | C | Wizard | `i.wand`UA, `i.catalyst`UA | |
-| 3 | 1-2 | +2 | Normal | C | Fighter | `i.sword`UA, `i.gauntlet`UA | |
-| 3 | 3 | +3 | Normal | A | Samurai | `i.katana`UA, `i.bolt`UA | |
-| 3 | 3 | +3 | Normal | A | Ranger | `i.arrow`UA, `i.archery`UA | |
+| 3 | 1-2 | +2 | Normal | C | Lord | `i.shield`U,`i.robe`U | |
+| 3 | 1-2 | +2 | Normal | C | Wizard | `i.wand`U, `i.catalyst`U | |
+| 3 | 1-2 | +2 | Normal | C | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 3 | 3 | +3 | Normal | A | Samurai | `i.katana`U, `i.bolt`U | |
+| 3 | 3 | +3 | Normal | A | Ranger | `i.arrow`U, `i.archery`U | |
 | 3 | 4 | +5 | Elite | C | ELITE3.class | ELITE3.drop | |
-| 4 | 1-2 | +3 | Normal | B | Rogue | `i.bolt`UA,`i.armor`UA | |
-| 4 | 1-2 | +3 | Normal | B | Wizard | `i.wand`UA, `i.catalyst`UA | |
-| 4 | 1-2 | +3 | Normal | B | Ranger | `i.arrow`UA, `i.archery`UA | |
-| 4 | 3 | +4 | Normal | C | Fighter | `i.sword`UA, `i.gauntlet`UA | |
-| 4 | 3 | +4 | Normal | C | Lord | `i.shield`UA, `i.robe`UA | |
+| 4 | 1-2 | +3 | Normal | B | Rogue | `i.bolt`U,`i.armor`U | |
+| 4 | 1-2 | +3 | Normal | B | Wizard | `i.wand`U, `i.catalyst`U | |
+| 4 | 1-2 | +3 | Normal | B | Ranger | `i.arrow`U, `i.archery`U | |
+| 4 | 3 | +4 | Normal | C | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 4 | 3 | +4 | Normal | C | Lord | `i.shield`U, `i.robe`U | |
 | 4 | 4 | +6 | Elite | B | ELITE4.class | ELITE4.drop | |
-| 5 | 1-2 | +4 | Normal | C | Ninja | `i.katana`UA,`i.armor`UA | |
-| 5 | 1-2 | +4 | Normal | C | Samurai | `i.katana`UA, `i.catalyst`UA | |
-| 5 | 1-2 | +4 | Normal | C | Sage | `i.grimoire`UA, `i.robe`UA | |
-| 5 | 3 | +5 | Normal | B | Duelist | `i.sword`UA, `i.arrow`UA | |
-| 5 | 3 | +5 | Normal | B | Pilgrim | `i.armor`UA, `i.grimoire`UA | |
+| 5 | 1-2 | +4 | Normal | C | Ninja | `i.katana`U,`i.armor`U | |
+| 5 | 1-2 | +4 | Normal | C | Samurai | `i.katana`U, `i.catalyst`U | |
+| 5 | 1-2 | +4 | Normal | C | Sage | `i.grimoire`U, `i.robe`U | |
+| 5 | 3 | +5 | Normal | B | Duelist | `i.sword`U, `i.arrow`U | |
+| 5 | 3 | +5 | Normal | B | Pilgrim | `i.armor`U, `i.grimoire`U | |
 | 5 | 4 | +7 | Elite | B | ELITE5.class | ELITE5.drop | |
-| 6 | 1-2 | +5 | Normal | A | Lord | `i.shield`UA,`i.robe`UA | |
-| 6 | 1-2 | +5 | Normal | A | Wizard | `i.wand`UA, `i.catalyst`UA | |
-| 6 | 1-2 | +5 | Normal | A | Fighter | `i.sword`UA, `i.gauntlet`UA | |
-| 6 | 3 | +6 | Normal | B | Samurai | `i.katana`UA, `i.bolt`UA | |
-| 6 | 3 | +6 | Normal | B | Ranger | `i.arrow`UA, `i.archery`UA | |
+| 6 | 1-2 | +5 | Normal | A | Lord | `i.shield`U,`i.robe`U | |
+| 6 | 1-2 | +5 | Normal | A | Wizard | `i.wand`U, `i.catalyst`U | |
+| 6 | 1-2 | +5 | Normal | A | Fighter | `i.sword`U, `i.gauntlet`U | |
+| 6 | 3 | +6 | Normal | B | Samurai | `i.katana`U, `i.bolt`U | |
+| 6 | 3 | +6 | Normal | B | Ranger | `i.arrow`U, `i.archery`U | |
 | 6 | 4 | +10 | BOSS | D | BOSS.class | BOSS.drop | |
 
 - Expedition unique monster definition
@@ -198,7 +198,7 @@
 - Drop code format: `i.item_type`<Rarity><EnemyTypeSource>
 
 <Rarity>
-- `U`: Uncommon
+- `U`: Uncommon  (No enemy type specific)
 - `E`: Elite Rare
 - `B`: Boss Rare
 
@@ -209,5 +209,5 @@
 - D = symbolic / boss-linked presence
 
 - Within the same `x.item_tier`, Common and Uncommon drop code resolves to a fixed item. (Common can be dropped by all enemy, so it is onmited by the list)
-- Example: if `i.archeryUA` in `x.exp_id = 1` is set to `つる巻き弓`, then every enemy in that expedition that drops `i.archeryUA` drops `つる巻き弓`.
+- Example: if `i.archeryEA` in `x.exp_id = 1` is set to `つる巻き弓`, then every enemy in that expedition that drops `i.archeryEA` drops `つる巻き弓`.
 - Different expeditions may assign different concrete items to the same drop code.
