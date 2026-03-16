@@ -79,9 +79,9 @@
 | 8 | `Dragon` | `Ghost` | `Jinma` | `Cervin` |
 
 # 4 Floor and enemy distribution 
-- Standard templete for each expedition
+- Standard template for each expedition
 
-| `x.floor` | `x.room`| `x.+level` | `x.type` | `x.enemy_type` | `x.class` | `x.drop` | `x.name` |
+| `x.floor` | `x.room`| `x.level_offset` | `x.type` | `x.enemy_type` | `x.class` | `x.drop` | `x.name` |
 |-|-|-|-|-|-|-|-|
 | 1 | 1-2 | +0 | Normal | A | Rogue | `i.bolt`U,`i.armor`U | |
 | 1 | 1-2 | +0 | Normal | A | Wizard | `i.wand`U, `i.catalyst`U | |
@@ -120,7 +120,7 @@
 | 6 | 3 | +6 | Normal | B | Ranger | `i.arrow`U, `i.archery`U | |
 | 6 | 4 | +10 | BOSS | D | BOSS.class | BOSS.drop | |
 
-- Expedition unique monster definition
+- Expedition-specific elite and boss definitions
 
 | `x.exp_id` | expedition unique |  `x.class`  | `x.drop` | name |
 |-|-|-|-|-|
@@ -175,7 +175,7 @@
 
 - Special Elite Enemy allocation 
 
-| `x.exp_id` | Replace floor X, room 3 | `x.+level` |  `x.type` | `x.class` | `x.drop` | `x.name` |
+| `x.exp_id` | Replace floor X, room 3 | `x.level_offset` |  `x.type` | `x.class` | `x.drop` | `x.name` |
 |-|-|-|-|-|-|-|
 | 1 | 4 | +6 | Elite | Lord | `i.shield`BD, `i.robe`BD | |
 | 1 | 4 | +6 | Elite | Fighter | `i.katana`BD, `i.gauntlet`BD | |
@@ -208,6 +208,6 @@
 - C = accent floor enemy 
 - D = symbolic / boss-linked presence
 
-- Within the same `x.item_tier`, Common and Uncommon drop code resolves to a fixed item. (Common can be dropped by all enemy, so it is onmited by the list)
+- Within the same `x.item_tier`, Common and Uncommon drop code resolves to a fixed item. (Common can be dropped by all enemy, so it is omitted by the list)
 - Example: if `i.archeryEA` in `x.exp_id = 1` is set to `つる巻き弓`, then every enemy in that expedition that drops `i.archeryEA` drops `つる巻き弓`.
 - Different expeditions may assign different concrete items to the same drop code.
