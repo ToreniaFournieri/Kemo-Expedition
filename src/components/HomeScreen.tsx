@@ -7842,10 +7842,6 @@ function SettingTab({
       .slice()
       .sort((a, b) => b.floorNumber - a.floorNumber)
       .flatMap(floor => {
-        const tierElites = ENEMIES
-          .filter(enemy => enemy.poolId === selectedBestiaryDungeon.id && enemy.type === 'elite')
-          .sort((a, b) => a.id - b.id);
-
         const normalEnemyIds = floor.rooms
           ?.slice(0, 3)
           .flatMap((room) => room.enemyIds ?? [])
@@ -7859,6 +7855,11 @@ function SettingTab({
         const groups: Array<{ key: string; label: string; enemies: EnemyDef[]; floorNumber: number; groupType: 'boss' | 'elite' | 'normal' }> = [];
         const room3EnemyIds = floor.rooms?.[2]?.enemyIds ?? [];
         const room3SpecialElites = room3EnemyIds
+          .map((enemyId) => ENEMIES.find((enemy) => enemy.id === enemyId))
+          .filter((enemy): enemy is EnemyDef => !!enemy && enemy.type === 'elite')
+          .sort((a, b) => a.id - b.id);
+        const floorEliteEnemyIds = floor.rooms?.[3]?.enemyIds ?? [];
+        const fixedFloorElites = floorEliteEnemyIds
           .map((enemyId) => ENEMIES.find((enemy) => enemy.id === enemyId))
           .filter((enemy): enemy is EnemyDef => !!enemy && enemy.type === 'elite')
           .sort((a, b) => a.id - b.id);
@@ -7884,12 +7885,11 @@ function SettingTab({
           return groups;
         }
 
-        const fixedElite = tierElites[floor.floorNumber - 1];
-        if (fixedElite) {
+        if (fixedFloorElites.length > 0) {
           groups.push({
             key: `floor-${floor.floorNumber}-elite`,
             label: `Floor ${floor.floorNumber} Elite`,
-            enemies: [fixedElite],
+            enemies: fixedFloorElites,
             floorNumber: floor.floorNumber,
             groupType: 'elite',
           });
