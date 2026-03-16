@@ -746,18 +746,7 @@
 - There are 8 `x.expedition` destinations in total. every `x.expedition` has its own tier. (1st `x.expedition` drops tier-1 items. 2nd `x.expedition` drops tier-2 items)
 
 #### 2.4.1 Expedition
-- `x.expedition` list
-
-| `x.exp_id` | `x.exp_tier` | `x.enemy_level` | `x.expediton` | short word |
-|---|------|-----|-----|-----|
-| 1 | 1 | 1 | ケイナイアン平原(Caninian Plains) | 原 | 
-| 2 | 2 | 7 | ルピニアンの断崖(Lupinian Crag) | 崖 |
-| 3 | 3 | 13 | ヴァルンの樹林帯(Vulpinian Taiga) | 樹 |
-| 4 | 4 | 19 | ウルサンの霊峰(Ursan Peaks) | 峰 |
-| 5 | 5 | 24 | フェリディの茂み(Felidian Grove) | 茂 |
-| 6 | 6 | 29 | マステリドの巣穴(Mustelid Burrow) | 巣 |
-| 7 | 7 | 35 | レポリアンの庭園(Leporian Garden) | 園 |
-| 8 | 8 | 40 | セルヴィンの谷(Cervin Vale) | 谷 |
+- @Specification_Master_Data_Definitions.md, 1 Expedition Definitions
 
 - Strength of enemy by its level 
   - n = `x.enemy_level` (1~99)
@@ -788,77 +777,11 @@
 |-----|-----|-----|----|----|----|
 | x0.3 | x0.3 | x0.5 | x0.4 | x0.3 | x1.0 |
 
-
-
 - If `m.luna`, add +5 `x.enemy_level` for all enemy 
 
 
-| Floor | Room | Type | `x.enemy_level` |
-|------|------|------|--------|
-| 1 | 1-3 | Normal | +0 | 
-| 1 | 4 | Elite | +3 | 
-| 2 | 1-3 | Normal | +1 | 
-| 2 | 4 | Elite | +4 | 
-| 3 | 1-3 | Normal | +2 | 
-| 3 | 4 | Elite | +5 | 
-| 4 | 1-3 | Normal | +3 | 
-| 4 | 4 | Elite | +6 | 
-| 5 | 1-3 | Normal | +4 |
-| 5 | 4 | Elite | +7 | 
-| 6 | 1-3 | Normal | +5 | 
-| 6 | 4 | Boss | +10 | 
-
 - **Enemy entity distribution** for each `x.expediton`
-
-| Entity Type | Unique Count | Mapping | Drop Quality | Memo |
-|-----|-----|-----|-----|----|
-| Normal |30 | 5 per Floor Pool (Pools 1–6) | 3 Common, 2 Uncommon |  They provide consistent Uncommon drops and thematic flavor.|
-| Elite | 5 | 1 per Floor ( `x.floor` 1–5, `x.room` 4) | 2 ~ 3 Elite rare, 1 Uncommon, 2 ~ 1 Common | Floor-end guardians serving as "Mechanical Gates." They drop Rare items and test specific build capabilities. |
-| Boss | 1 | `x.floor` 6, `x.room` 4 (Final) | 2 ~ 3 Boss rare , 1 ~ 2 Elite rare, 1 Common (5 in total) | A "Total Power" check and the exclusive source of Boss rewards. |
-| God | - | `x.floor` 6, `x.room` 4 (Final) | 2 Mythic rare , 2 boss rare, 1 Common (5 in total) | Under special condition, replaced by "Boss". |
-
-- `x.expedition` layout overview:
-
-| `x.floor` | `x.room` | `x.room_type` | `x.Spawn_pool`, drops | `x.key_concept` |
-|----|----|----|-----|-----|
-| 1 | 1-3 | `x.battle_Normal` | pool_1 | easy farming |
-| 1 | 4 | `x.battle_Elite` | fixed Elite. elite rare  `i.sword`, `i.armor` | Class:Rogue. Checks if you have equipped items properly. |
-| 2 | 1-3 | `x.battle_Normal` | pool_2 | |
-| 2 | 4 | `x.battle_Elite` | fixed Elite. elite rare  `i.shield`, `i.robe` | Class:Fighter. Checks if you have equipped enough offensive items. |
-| 3 | 1-3 | `x.battle_Normal` | pool_3 |  |
-| 3 | 4 | `x.battle_Elite` | fixed Elite. elite rare  `i.arrow`, `i.bolt`, `i.archery` | Class:Ranger. Check if you have enough physical defensive items. |
-| 4 | 1-3 | `x.battle_Normal` | pool_4 | |
-| 4 | 4 | `x.battle_Elite` | fixed Elite. elite rare  `i.gauntlet`, `i.katana` | Class:Duelist. Checks if you have archery or magic items. (kill it before his melee attacks) |
-| 5 | 1-3 | `x.battle_Normal` | pool_5  | |
-| 5 | 4 | `x.battle_Elite` | fixed Elite. elite rare  `i.wand`, `i.grimoire`, `i.catalyst` | Class:Mage. Checks if you have equipped enough magical defensive items.  |
-| 6 | 1-3 | `x.battle_Normal` | pool_6 | |
-| 6 | 4 | `x.battle_Boss` | fixed Boss. boss rare (see bellows) | Checks if you have enough tital power. |
-
-- each pool has enemies with unique item drops. (*note:* common items are not specifically mentioned but are dropped.)
-  
-| `x.Spawn_pool` | enemy class/drop 1 | enemy class/drop 2 | enemy class/drop 3 | enemy class/drop 4 | enemy class/drop 5 |
-|---|---|---|---|---|---|
-| pool_1 | E01:Fighter/ uncommon `i.sword`1, `i.gauntlet`1 | E02:Ranger/ uncommon `i.arrow1`, `i.archery`1 | E03:Wizard/ uncommon `i.wand`1, `i.catalyst`1 | E04:Pilgrim/ uncommon `i.sword`1, `i.wand`1 | E05:Rogue/ uncommon `i.bolt`1, `i.shield`1 |
-| pool_2 | E06:Ninja/ uncommon `i.katana`1, `i.armor`1 | E07:Samurai/ uncommon `i.katana`1, `i.bolt`1 | E08:Sage/ uncommon `i.grimoire`1, `i.robe`1 | E09:Duelist/ uncommon `i.sword`, `i.arrow` | E10:Lord/ uncommon `i.shield `, `i.robe` |
-| pool_3 | E11:Fighter/ uncommon `i.sword`1, `i.gauntlet`1 | E12:Ranger/ uncommon `i.arrow`1, `i.archery`1 | E13:Wizard/ uncommon `i.wand`1, `i.catalyst`1 | E14:Lord/ uncommon `i.shield`1, `i.robe`1 | E15:Samurai/ uncommon `i.katana`1, `i.bolt`1 |
-| pool_4 | E16:Ninja/ uncommon `i.katana`2, `i.armor`2 | E17:Rogue/ uncommon `i.bolt`2, `i.shield`2 | E18:Sage/ uncommon `i.grimoire`2, `i.robe`2 | E19:Duelist/ uncommon `i.sword`2, `i.arrow`2 | E20:Pilgrim/ uncommon `i.sword`2 , `i.wand`2 |
-| pool_5 | E21:Fighter/ uncommon `i.sword`2, `i.gauntlet`2 | E22:Ranger/ uncommon `i.arrow`2, `i.archery`2 | E23:Wizard/ uncommon `i.wand`2, `i.catalyst`2 | E24:Lord/ uncommon `i.shield`2, `i.robe`2 | E25:Samurai/ uncommon `i.katana`2, `i.bolt`2 |
-| pool_6 | E26:Ninja/ uncommon `i.katana`2, `i.armor`2 | E27:Rogue/ uncommon `i.bolt`2, `i.shield`2 | E28:Sage/ uncommon `i.grimoire`2, `i.robe`2 | E29:Duelist/ uncommon `i.sword`2, `i.arrow`2 | E30:Pilgrim/ uncommon `i.sword`2, `i.wand`2 |
-
- - `i.item_type`variant
-
-- **Boss:**
-
-| `x.expedition` Tier | Boss unique ability | Class | Boss drop Boss rare item types |
-|---|---------|------|---|
-| 1 | `a.seeker`1 | Fighter | `i.sword` , `i.grimoire` |
-| 2 | `a.rage`1 | Ranger  | `i.armor` , `i.arrow` |
-| 3 | `a.momentum`1 | Wizard | `i.wand`,`i.robe` |
-| 4 | `a.cyborgization`1 | Samurai | `i.katana` , `i.shield `| 
-| 5 | `a.first-strike`1 | Ranger | `i.bolt`,  `i.archery` |
-| 6 | `a.resonance`1 | Sage | `i.armor`, `i.catalyst` |
-| 7 | `a.composure`1 | Lord | `i.sword` , `i.wand` |
-| 8 | `a.focus`1 | Ninjya | `i.katana`, `i.bolt`, `i.grimoire`  |
+  - @Specification_Master.md, 1.1 Standard floor and enemy distribution for Expedition
 
 - **Gods (神魔):**
   - Status calculation: master value is `x.exp_tier`. not using `x.exp_id`'s `x.exp_tier`.
