@@ -5751,7 +5751,8 @@ function ExpeditionTab({
           return flavorText ? `${stateLabel}: ${flavorText}` : stateLabel;
         })();
         const hpForSortieCheck = cycle.state === 'explore' ? displayedHp : party.currentHp;
-        const isSortieDisabled = !!selectedDungeonGate?.locked || hpForSortieCheck <= 0 || partyStats.hp <= 0;
+        const isColosseumSelected = selectedDungeon?.id === 99;
+        const isSortieDisabled = (!!selectedDungeonGate?.locked && !isColosseumSelected) || hpForSortieCheck <= 0 || partyStats.hp <= 0;
         const canTriggerGodsBattle = cycle.state === 'explore'
           ? cycle.isCurrentExpeditionGodsBattle === true
           : isGodsBattleAvailable(party, party.selectedDungeonId);
@@ -8720,6 +8721,24 @@ function SettingTab({
         </>}
       </div>
 
+      {debugSettings.colosseumEnabled && <div className="bg-pane rounded-lg p-4 mb-4">
+        <button
+          type="button"
+          onClick={() => setIsEnemyEditExpanded((prev) => !prev)}
+          className="w-full flex items-center justify-between text-left"
+        >
+          <div className="text-sm font-semibold">Enemy Edit</div>
+          <span className="text-gray-500 text-xs" aria-hidden="true">{isEnemyEditExpanded ? '▲' : '▼'}</span>
+        </button>
+        {isEnemyEditExpanded && <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm mt-3">
+          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy name</div><input className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.name} onChange={(e) => updateColosseumEnemySettings({ name: e.target.value })} /></label>
+          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy type</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyType} onChange={(e) => updateColosseumEnemySettings({ enemyType: e.target.value })}>{Object.keys(ENEMY_TYPE_LABELS).map((key) => <option key={key} value={key}>{ENEMY_TYPE_LABELS[key] ?? key}</option>)}</select></label>
+          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy class</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyClass} onChange={(e) => updateColosseumEnemySettings({ enemyClass: e.target.value as ColosseumEnemySettings['enemyClass'] })}>{Object.entries(ENEMY_CLASS_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
+          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy level: {colosseumEnemySettings.level}</div><input type="range" min={1} max={99} value={colosseumEnemySettings.level} onChange={(e) => updateColosseumEnemySettings({ level: Number(e.target.value) })} /></label>
+          {[0,1,2,3,4].map((slot) => <label key={slot} className="space-y-1"><div className="text-xs text-gray-600">Enemy added ability {slot+1}</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.abilities[slot] ?? 'none'} onChange={(e) => { const next=[...colosseumEnemySettings.abilities]; const value=e.target.value as AbilityId | 'none'; if (value === 'none') { next.splice(slot,1); } else { next[slot]=value as AbilityId; } updateColosseumEnemySettings({ abilities: next.filter(Boolean) as AbilityId[] }); }}>{[<option key="none" value="none">none</option>, ...Object.entries(ABILITY_NAMES).map(([key,label]) => <option key={key} value={key}>{label}</option>)]}</select></label>)}
+        </div>}
+      </div>}
+
       <div className="bg-pane rounded-lg p-4 mb-4">
         {renderDivineBureauPanelHeader('superRare', '超レア一覧')}
         {divineBureauPanelExpanded.superRare && <>
@@ -8862,23 +8881,6 @@ function SettingTab({
         </div>}
       </div>
 
-      {debugSettings.colosseumEnabled && <div className="bg-pane rounded-lg p-4 mb-4">
-        <button
-          type="button"
-          onClick={() => setIsEnemyEditExpanded((prev) => !prev)}
-          className="w-full flex items-center justify-between text-left"
-        >
-          <div className="text-sm font-semibold">Enemy Edit</div>
-          <span className="text-gray-500 text-xs" aria-hidden="true">{isEnemyEditExpanded ? '▲' : '▼'}</span>
-        </button>
-        {isEnemyEditExpanded && <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm mt-3">
-          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy name</div><input className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.name} onChange={(e) => updateColosseumEnemySettings({ name: e.target.value })} /></label>
-          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy type</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyType} onChange={(e) => updateColosseumEnemySettings({ enemyType: e.target.value })}>{Object.keys(ENEMY_TYPE_LABELS).map((key) => <option key={key} value={key}>{ENEMY_TYPE_LABELS[key] ?? key}</option>)}</select></label>
-          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy class</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyClass} onChange={(e) => updateColosseumEnemySettings({ enemyClass: e.target.value as ColosseumEnemySettings['enemyClass'] })}>{Object.entries(ENEMY_CLASS_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
-          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy level: {colosseumEnemySettings.level}</div><input type="range" min={1} max={99} value={colosseumEnemySettings.level} onChange={(e) => updateColosseumEnemySettings({ level: Number(e.target.value) })} /></label>
-          {[0,1,2,3,4].map((slot) => <label key={slot} className="space-y-1"><div className="text-xs text-gray-600">Enemy added ability {slot+1}</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.abilities[slot] ?? 'none'} onChange={(e) => { const next=[...colosseumEnemySettings.abilities]; const value=e.target.value as AbilityId | 'none'; if (value === 'none') { next.splice(slot,1); } else { next[slot]=value as AbilityId; } updateColosseumEnemySettings({ abilities: next.filter(Boolean) as AbilityId[] }); }}>{[<option key="none" value="none">none</option>, ...Object.entries(ABILITY_NAMES).map(([key,label]) => <option key={key} value={key}>{label}</option>)]}</select></label>)}
-        </div>}
-      </div>}
 
       <div className="bg-pane rounded-lg p-4 mb-4">
         {renderDivineBureauPanelHeader('debug', 'デバッグ')}
