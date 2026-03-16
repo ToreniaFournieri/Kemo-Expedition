@@ -126,6 +126,45 @@ export const EXPEDITION_ENEMY_MULTIPLIERS: ExpeditionEnemyMultipliers[] = [
   ...buildExpeditionEnemyMultipliers(8),
 ];
 
+
+
+function getMasterRoomEnemyIds(poolId: number, floorNumber: number, roomNumber: number): number[] {
+  const tierBase = poolId * 1000;
+
+  if (roomNumber === 1 || roomNumber === 2) {
+    const roomRows = [0, 1, 2];
+    return roomRows.map((index) => tierBase + (floorNumber - 1) * 5 + index + 1);
+  }
+
+  if (roomNumber === 3) {
+    const roomRows = floorNumber <= 4 ? [3, 4] : [3, 4];
+    const normalIds = roomRows
+      .map((index) => tierBase + (floorNumber - 1) * 5 + index + 1)
+      .filter((enemyId) => enemyId <= tierBase + 30);
+
+    const eliteOffsetMap: Record<number, number[]> = {
+      4: [4, 5],
+      5: [7, 8],
+    };
+    const eliteOffsets = eliteOffsetMap[floorNumber] ?? [];
+    const eliteIds = eliteOffsets
+      .map((offset) => tierBase + 50 + offset)
+      .filter((enemyId) => enemyId <= tierBase + 59);
+
+    return [...normalIds, ...eliteIds];
+  }
+
+  if (floorNumber === 6 && roomNumber === 4) {
+    return [poolId * 100 + 1];
+  }
+
+  if (roomNumber === 4) {
+    return [tierBase + 50 + floorNumber];
+  }
+
+  return [];
+}
+
 // Create floor structure for a dungeon
 // Each floor has 4 rooms: 3 Normal + 1 Elite (or Boss on last floor)
 function createFloors(poolId: number, bossId: number): FloorDef[] {
@@ -139,12 +178,12 @@ function createFloors(poolId: number, bossId: number): FloorDef[] {
       multiplier: normalMultipliers?.attack ?? 1,
       multipliers: normalMultipliers,
       rooms: [
-        { type: 'battle_Normal' as const, poolId },
-        { type: 'battle_Normal' as const, poolId },
-        { type: 'battle_Normal' as const, poolId },
+        { type: 'battle_Normal' as const, poolId, enemyIds: getMasterRoomEnemyIds(poolId, floorNumber, 1) },
+        { type: 'battle_Normal' as const, poolId, enemyIds: getMasterRoomEnemyIds(poolId, floorNumber, 2) },
+        { type: 'battle_Normal' as const, poolId, enemyIds: getMasterRoomEnemyIds(poolId, floorNumber, 3) },
         isLastFloor
-          ? { type: 'battle_Boss' as const, bossId }
-          : { type: 'battle_Elite' as const, poolId },
+          ? { type: 'battle_Boss' as const, bossId, enemyIds: getMasterRoomEnemyIds(poolId, floorNumber, 4) }
+          : { type: 'battle_Elite' as const, poolId, enemyIds: getMasterRoomEnemyIds(poolId, floorNumber, 4) },
       ],
     };
   });

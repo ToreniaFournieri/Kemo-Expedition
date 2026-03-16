@@ -429,6 +429,7 @@ export interface RoomDef {
   type: RoomType;
   poolId?: number; // For Normal/Elite rooms
   bossId?: number; // For Boss rooms
+  enemyIds?: number[]; // Explicit enemy candidates for this room (master spec format)
 }
 
 export interface FloorDef {
