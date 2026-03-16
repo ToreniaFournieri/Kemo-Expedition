@@ -379,6 +379,10 @@
 | 2 | E | `Plant_Fungal` | `i.archery` | |
 | 2 | B | `Lupinian` | `i.armor` | |
 | 2 | B | `Lupinian` | `i.arrow` | |
+| 2 | B | `Lupinian` | `i.wand` | |
+| 2 | B | `Lupinian` | `i.catalyst` | |
+| 2 | B | `Lupinian` | `i.bolt` | |
+| 2 | B | `Lupinian` | `i.archery` | |
 | 3 | C | none | `i.sword` | |
 | 3 | C | none | `i.gauntlet` | |
 | 3 | C | none | `i.shield` | |
@@ -417,6 +421,10 @@
 | 3 | E | `Slime_Colony` | `i.archery` | |
 | 3 | B | `Vulpinian` | `i.wand` | |
 | 3 | B | `Vulpinian` | `i.robe` | |
+| 3 | B | `Vulpinian` | `i.sword` | |
+| 3 | B | `Vulpinian` | `i.shield` | |
+| 3 | B | `Vulpinian` | `i.catalyst` | |
+| 3 | B | `Vulpinian` | `i.gauntlet` | |
 | 4 | C | none | `i.sword` | |
 | 4 | C | none | `i.gauntlet` | |
 | 4 | C | none | `i.shield` | |
@@ -455,6 +463,10 @@
 | 4 | E | `Titan` | `i.gauntlet` | |
 | 4 | B | `Felidian` | `i.bolt` | |
 | 4 | B | `Felidian` | `i.archery` | |
+| 4 | B | `Felidian` | `i.grimoire` | |
+| 4 | B | `Felidian` | `i.arrow` | |
+| 4 | B | `Felidian` | `i.robe` | |
+| 4 | B | `Felidian` | `i.sword` | |
 | 5 | C | none | `i.sword` | |
 | 5 | C | none | `i.gauntlet` | |
 | 5 | C | none | `i.shield` | |
@@ -493,6 +505,10 @@
 | 5 | E | `Dragon` | `i.grimoire` | |
 | 5 | B | `Ursan` | `i.katana` | |
 | 5 | B | `Ursan` | `i.shield` | |
+| 5 | B | `Ursan` | `i.gauntlet` | |
+| 5 | B | `Ursan` | `i.armor` | |
+| 5 | B | `Ursan` | `i.wand` | |
+| 5 | B | `Ursan` | `i.catalyst` | |
 | 6 | C | none | `i.sword` | |
 | 6 | C | none | `i.gauntlet` | |
 | 6 | C | none | `i.shield` | |
@@ -531,6 +547,10 @@
 | 6 | E | `Mustelid` | `i.archery` | |
 | 6 | B | `Mustelid` | `i.armor` | |
 | 6 | B | `Mustelid` | `i.catalyst` | |
+| 6 | B | `Mustelid` | `i.shield` | |
+| 6 | B | `Mustelid` | `i.katana` | |
+| 6 | B | `Mustelid` | `i.arrow` | |
+| 6 | B | `Mustelid` | `i.archery` | |
 | 7 | C | none | `i.sword` | |
 | 7 | C | none | `i.gauntlet` | |
 | 7 | C | none | `i.shield` | |
@@ -569,6 +589,9 @@
 | 7 | E | `Undead` | `i.katana` | |
 | 7 | B | `Leporian` | `i.sword` | |
 | 7 | B | `Leporian` | `i.wand` | |
+| 7 | B | `Leporian` | `i.armor` | |
+| 7 | B | `Leporian` | `i.gauntlet` | |
+| 7 | B | `Leporian` | `i.grimoire` | |
 | 8 | C | none | `i.sword` | |
 | 8 | C | none | `i.gauntlet` | |
 | 8 | C | none | `i.shield` | |
@@ -608,6 +631,10 @@
 | 8 | B | `Cervin` | `i.katana` | |
 | 8 | B | `Cervin` | `i.bolt` | |
 | 8 | B | `Cervin` | `i.grimoire` | |
+| 8 | B | `Cervin` | `i.catalyst` | |
+| 8 | B | `Cervin` | `i.robe` | |
+| 8 | B | `Cervin` | `i.arrow` | |
+| 8 | B | `Cervin` | `i.sword` | |
 
 # 2.2 Mythic rare item from gods
 
