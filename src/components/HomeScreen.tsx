@@ -7818,12 +7818,12 @@ function SettingTab({
   };
   const BESTIARY_TAB_LABELS: Record<number, string> = {
     1: '原',
-    2: '崖',
-    3: '樹',
-    4: '峰',
-    5: '茂',
+    2: '寒',
+    3: '海',
+    4: '砂',
+    5: '炎',
     6: '巣',
-    7: '園',
+    7: '月',
     8: '谷',
     9: '神',
   };

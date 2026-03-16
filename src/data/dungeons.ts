@@ -165,48 +165,48 @@ export const DUNGEONS: Dungeon[] = [
     floors: createFloors(1, 101),
   },
 
-  // Tier 2: ルピニアンの断崖 (Lupinian Crag)
+  // Tier 2: ルピニアンの亜寒帯 (Lupinian Taiga)
   {
     id: 2,
     tier: 2,
     expLevel: 7,
-    name: 'ルピニアンの断崖',
+    name: 'ルピニアンの亜寒帯',
     enemyPoolIds: [2],
     bossId: 201,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[1],
     floors: createFloors(2, 201),
   },
 
-  // Tier 3: ヴァルンの樹林帯 (Vulpinian Taiga)
+  // Tier 3: ヴァルンの海洋 (Vulpinian Ocean)
   {
     id: 3,
     tier: 3,
-    expLevel: 13,
-    name: 'ヴァルンの樹林帯',
+    expLevel: 14,
+    name: 'ヴァルンの海洋',
     enemyPoolIds: [3],
     bossId: 301,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[2],
     floors: createFloors(3, 301),
   },
 
-  // Tier 4: ウルサンの霊峰 (Ursan Peaks)
+  // Tier 4: フェリディ砂漠 (Felidian Desert)
   {
     id: 4,
     tier: 4,
-    expLevel: 19,
-    name: 'ウルサンの霊峰',
+    expLevel: 21,
+    name: 'フェリディ砂漠',
     enemyPoolIds: [4],
     bossId: 401,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[3],
     floors: createFloors(4, 401),
   },
 
-  // Tier 5: フェリディの茂み (Felidian Grove)
+  // Tier 5: ウルサンの炎嶺 (Ursan Pyrepeak)
   {
     id: 5,
     tier: 5,
-    expLevel: 24,
-    name: 'フェリディの茂み',
+    expLevel: 28,
+    name: 'ウルサンの炎嶺',
     enemyPoolIds: [5],
     bossId: 501,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[4],
@@ -217,7 +217,7 @@ export const DUNGEONS: Dungeon[] = [
   {
     id: 6,
     tier: 6,
-    expLevel: 29,
+    expLevel: 35,
     name: 'マステリドの巣穴',
     enemyPoolIds: [6],
     bossId: 601,
@@ -225,12 +225,12 @@ export const DUNGEONS: Dungeon[] = [
     floors: createFloors(6, 601),
   },
 
-  // Tier 7: レポリアンの庭園 (Leporian Garden)
+  // Tier 7: レポリアンの月宮 (Leporian Moon Palace)
   {
     id: 7,
     tier: 7,
-    expLevel: 35,
-    name: 'レポリアンの庭園',
+    expLevel: 42,
+    name: 'レポリアンの月宮',
     enemyPoolIds: [7],
     bossId: 701,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[6],
@@ -241,7 +241,7 @@ export const DUNGEONS: Dungeon[] = [
   {
     id: 8,
     tier: 8,
-    expLevel: 40,
+    expLevel: 49,
     name: 'セルヴィンの谷',
     enemyPoolIds: [8],
     bossId: 801,
