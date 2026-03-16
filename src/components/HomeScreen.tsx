@@ -7842,16 +7842,19 @@ function SettingTab({
       .slice()
       .sort((a, b) => b.floorNumber - a.floorNumber)
       .flatMap(floor => {
-        const tierNormals = ENEMIES
-          .filter(enemy => enemy.poolId === selectedBestiaryDungeon.id && enemy.type === 'normal')
-          .sort((a, b) => a.id - b.id);
         const tierElites = ENEMIES
           .filter(enemy => enemy.poolId === selectedBestiaryDungeon.id && enemy.type === 'elite')
           .sort((a, b) => a.id - b.id);
 
-        // pool_v has 5 enemies: pool_1 => first 5 normals ... pool_6 => last 5 normals
-        const poolIndex = Math.max(1, Math.min(6, floor.floorNumber)) - 1;
-        const normalEnemies = tierNormals.slice(poolIndex * 5, poolIndex * 5 + 5);
+        const normalEnemyIds = floor.rooms
+          ?.slice(0, 3)
+          .flatMap((room) => room.enemyIds ?? [])
+          .filter((enemyId, index, allIds) => allIds.indexOf(enemyId) === index) ?? [];
+
+        const normalEnemies = normalEnemyIds
+          .map((enemyId) => ENEMIES.find((enemy) => enemy.id === enemyId))
+          .filter((enemy): enemy is EnemyDef => !!enemy && enemy.type === 'normal')
+          .sort((a, b) => a.id - b.id);
 
         const groups: Array<{ key: string; label: string; enemies: EnemyDef[]; floorNumber: number; groupType: 'boss' | 'elite' | 'normal' }> = [];
         const room3EnemyIds = floor.rooms?.[2]?.enemyIds ?? [];
