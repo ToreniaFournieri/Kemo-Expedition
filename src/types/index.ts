@@ -393,6 +393,7 @@ export type EnemyClassId =
 export interface EnemyDef {
   id: number;
   type: EnemyType;
+  enemyType: string;
   spawnTier: number;
   spawnPool: number;
   poolId: number;

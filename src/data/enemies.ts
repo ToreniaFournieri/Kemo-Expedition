@@ -77,6 +77,7 @@ function createEnemyFromTemplate(
   type: EnemyType,
   poolId: number,
   enemyClass: EnemyClassId,
+  enemyType: string,
   spawnPool: number,
   extraAbilities: AbilityId[] = [],
 ): EnemyDef {
@@ -119,6 +120,7 @@ function createEnemyFromTemplate(
   return {
     id,
     type,
+    enemyType,
     spawnTier: tier,
     spawnPool,
     poolId,
@@ -205,6 +207,7 @@ function generateEnemies(): EnemyDef[] {
         'normal',
         tier,
         row[5],
+        row[4],
         row[0],
       );
       enemy.dropItemId = getDropItemIdFromMaster(tier, row[6].split(','));
@@ -220,6 +223,7 @@ function generateEnemies(): EnemyDef[] {
         'elite',
         tier,
         row[5],
+        row[4],
         row[0],
       );
       enemy.dropItemId = getDropItemIdFromMaster(tier, row[6].split(','));
@@ -236,6 +240,7 @@ function generateEnemies(): EnemyDef[] {
         'boss',
         0,
         boss[5],
+        boss[4],
         boss[0],
       );
       enemy.dropItemId = getDropItemIdFromMaster(tier, boss[6].split(','));
