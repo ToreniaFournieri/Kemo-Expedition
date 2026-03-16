@@ -779,7 +779,6 @@
 
 - If `m.luna`, add +5 `x.enemy_level` for all enemy 
 
-
 - **Enemy entity distribution** for each `x.expediton`
   - @Specification_Master.md, 1.1 Standard floor and enemy distribution for Expedition
 
@@ -834,6 +833,28 @@
 
 **Enemy Master Specification**
 - This document defines the base data structure and dynamic scaling laws for all entities encountered during an expedition.
+
+
+| enemy_type | name | short name | ability1 | ability30 | c. bonuses |
+|-|-|-|-|-|-|
+| Beast | 猛獣 | 猛 | `a.howl`1:遠吠え(相手の次の攻撃回数4/5)| `a.predator-sense`1:捕食(相手のHPが50％未満の場合、命中+30) | `c.growth_x1.1`, `r.fire_x1.3`, `r.thunder_x2/3` |
+| Slime_Colony | 粘体群 | 粘 | `a.move`-1: Slow move, `a.corrode`1:腐食(相手の攻撃倍率x2/3) | `a.life-drain`3:吸血(与ダメージの7/10を回復) | `r.ice_x1.3` |
+| Plant_Fungal | 植菌 | 植 | `a.no-offense`1:受身(行動なし), `a.magical-counter`1, `a.counter`1 | `a.decompose`1:分解:reduce opponent physical defence by 2/3 | `r.fire_x1.3`, `r.thunder_x2/3`, `r.ice_x2/3`, `c.grit+1`, `c.caster+1` |
+| Insect_Swarm | 昆虫 | 虫 | `a.swarm`1:群れ(HPが減ると攻撃倍率・防御倍率減)| `a.death-touch`1:接死(近接攻撃1/6の確率で即死) | `e.thunder+20`, `r.fire_x1.3`, `r.thunder_x2/3` |
+| Aerial | 飛行 | 飛 | `a.flying`1:飛行(相手の近接攻撃時、その攻撃回数が1/4) | `a.free`1:逃走(近接1タイミング) | `c.evasion+0.045`, `c.growth_x0.7`  |
+| Frost | 氷雪 | 雪 | `a.frostbite`1:凍傷(相手の行動順番に-1を加えて遅らせる) | `a.ice-reflect`1:氷属性のダメージ反射(3/10) | `e.ice+20`, `r.fire_x1.3`, `r.ice_x1/5` |
+| Marine | 海棲 | 海 | `a.bind`1:拘束(近接行動時、相手の行動を封じる) | `a.regeneration`1:再生(近接フェーズ開始時、この戦闘で失ったHPの20%を回復する) | `r.thunder_x1.3` |
+| Dragon | 竜 | 竜 | `a.burn`1:火傷(相手の攻撃回数分ダメージ受ける) | `a.fire-reflect`1:火属性のダメージ反射(3/10) | `e.fire+40`, `r.fire_x1/2`, `r.ice_x1.3`|
+| Spirit | 精霊 | 霊 | 	`a.soul-reap`1:魂奪(魔法フェーズの終わりに、相手のHPが10％未満であった場合、相手は即死する。回避も復活もできない) | `a.mutual-magic-amplify`1:魔法増幅(双方魔法ダメージ1.3倍) |  `e.ice+20`, `r.fire_x1.5`, `r.ice_x2/3`,`r.thunder_x4/5`, `c.physical-defense-multiplier_x3/5` |
+| Ghost | 怨霊 | 怨 | `a.ranged-confusion`1:遠距離混乱(1/6で遠距離2タイミングで遠距離フェーズのみ敵対状態) | `a.self-destruct`1:自爆(近接2タイミング) |  `c.evasion+0.020`, `c.physical-defense-multiplier_x3/5`, `r.ice_x1.5` |
+| Undead | 不死 | 屍 | `a.move`-1: Slow move, `a.oblivion`1:忘却(相手のアビリティ1つ無効) | `a.reanimate`1:即時蘇生(1回だけHP30%で復活する) | `c.physical-defense-multiplier_x1/2`, `r.fire_x1.5`, `r.ice_x2/3` |
+| Golem | ゴーレム | 造 | `a.auriferous`1:含金(被弾回数が多いほどアイテムドロップ率アップ) | `a.magic-seal`1:魔封(次の魔法無力化) | `c.growth_x1.3`, `r.thunder_x1.3` |
+| Shadowfang | 影牙 | 影 | `a.ambush`1:待ち伏せ(相手より早く行動できた場合、与ダメージ1.5倍) | `a.mimic`1:模倣(戦闘開始時、相手のアビリティ1つを模倣する) | `e.ice+40`, `r.fire_x1.3`, `r.ice_x2/3` |
+| Mech | 機械 | 機 | `a.shock`1:感電(近接攻撃1回目ヒットで強制終了) | `a.mutual-physical-amplify`2:物理増幅(双方物理ダメージ1.4倍) | `c.physical-defense-multiplier_x3/5`, `r.thunder_x1.5` |
+| Chimera | キメラ | 合 | `a.unstable-core`1:不安定(各フェーズ終了後に残HP30%の自傷ダメージを受ける) | `a.magical-reflect`1:魔法反射 | `e.thunder+30`, `c.grit+1`, `c.pursuit+1`, `c.caster+1`, `c.growth_x1.7`  |
+| Titan | 巨人 | 巨 | `a.colossal`1:巨人(防御力が2倍になるが、物理ダメージ補正x2.0| `a.mutual-physical-amplify`-1:物理抑制(双方物理ダメージ0.8倍) | `c.growth_x1.5` |
+| Jinma | 神魔 | 神 | `a.upgrade-all-abilities`1:他のアビリティ強化+1, race ability1 | race ability2 | `c.growth_x2.0` |
+| Kemono | ケモノ | ケ | race ability1 | race ability2 | |
 
 1. The Core Principle: "Static Master, Dynamic Reality"
 All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their actual threat level is calculated only upon spawning by applying the environmental pressure of the current Expedition and Floor.
