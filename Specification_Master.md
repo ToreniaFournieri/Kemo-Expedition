@@ -2,7 +2,7 @@
 
 ## 1.1 Standard floor and enemy distribution for Expedition
 
-| `x.exp_id` | `x.floor` | `x.room` | `x.level` | `x.type` | `x.enemy_type` | `x.class` | `x.drop` | `x.name` |
+| `x.exp_id` | `x.floor` | `x.room` | `x.level` | `x.type` | `x.enemy_type` | `x.class` | `x.drop` | `x.name` (Japanese) |
 |---|---:|---|---:|---|---|---|---|---|
 | 1 | 1 | 1-2 | 1 | Normal | `Beast` | Rogue | `i.bolt`U, `i.armor`U | |
 | 1 | 1 | 1-2 | 1 | Normal | `Beast` | Wizard | `i.wand`U, `i.catalyst`U | |
@@ -640,7 +640,7 @@
 
 
 
-# 3. Potential default name 
+# 3. Potential default name for player side characters
 
 | race (English key) | potential name |
 |-------------------|----------------|
