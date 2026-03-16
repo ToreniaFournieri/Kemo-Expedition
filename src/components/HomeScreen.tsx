@@ -1,5 +1,5 @@
 import { Fragment, useState, useEffect, useRef, useCallback, type ChangeEvent, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import {
   DUNGEONS,
@@ -36,6 +36,7 @@ import { resolveMagicProfile } from '../game/magic';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
 import { getRuntimeFlavorText, type FlavorCycleState } from '../game/flavorText';
 import { DebugSettings, getDebugSettings, saveDebugSettings, getTimeSpeedScale } from '../game/debugSettings';
+import { buildColosseumEnemy, ColosseumEnemySettings, getColosseumEnemySettings, normalizeColosseumEnemySettings, saveColosseumEnemySettings } from '../game/colosseum';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -598,7 +599,7 @@ function shouldDelayNextSpecialGoal(party: Party, cycleState?: PartyCycleState):
 
 function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | null {
   const currentDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
-  if (!currentDungeon || !currentDungeon.floors) return null;
+  if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === 99) return null;
 
   const tier = currentDungeon.enemyPoolIds[0];
 
@@ -7421,11 +7422,25 @@ function SettingTab({
   const [divineBureauPanelExpanded, setDivineBureauPanelExpanded] = useState<Record<DivineBureauPanelKey, boolean>>(defaultDivineBureauPanelState);
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const [compendiumCategory, setCompendiumCategory] = useState<string>('armor');
+  const [colosseumEnemySettings, setColosseumEnemySettings] = useState<ColosseumEnemySettings>(() => getColosseumEnemySettings());
   const [compendiumRarityFilter, setCompendiumRarityFilter] = useState<RarityFilter>('all');
   const [glossaryTab, setGlossaryTab] = useState<GlossaryTabKey>('能');
   const [expandedGlossaryEntries, setExpandedGlossaryEntries] = useState<Record<string, boolean>>({});
   const [expandedCompendiumItems, setExpandedCompendiumItems] = useState<Record<number, boolean>>({});
   const bestiaryListRef = useRef<HTMLDivElement | null>(null);
+  const updateColosseumEnemySettings = useCallback((updates: Partial<ColosseumEnemySettings>) => {
+    setColosseumEnemySettings((prev) => normalizeColosseumEnemySettings({ ...prev, ...updates }));
+  }, []);
+
+  useEffect(() => {
+    saveColosseumEnemySettings(colosseumEnemySettings);
+  }, [colosseumEnemySettings]);
+
+  useEffect(() => {
+    if (!debugSettings.colosseumEnabled && selectedBestiaryDungeonId === 99) {
+      onSetSelectedBestiaryDungeonId(1);
+    }
+  }, [debugSettings.colosseumEnabled, selectedBestiaryDungeonId, onSetSelectedBestiaryDungeonId]);
 
   const versionTag = APP_VERSION;
   const currentEnv = getEnvironmentId();
@@ -7834,16 +7849,20 @@ function SettingTab({
     7: '月',
     8: '谷',
     9: '神',
+    99: '特',
   };
 
   const BESTIARY_SPECIAL_DUNGEON_ID_GODS = 9;
+  const BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM = 99;
   const isGodBestiaryTab = selectedBestiaryDungeonId === BESTIARY_SPECIAL_DUNGEON_ID_GODS;
+  const isColosseumBestiaryTab = selectedBestiaryDungeonId === BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM;
   const bestiaryTabOptions = [
-    ...DUNGEONS.map((dungeon) => ({ id: dungeon.id, name: dungeon.name })),
+    ...DUNGEONS.filter((dungeon) => dungeon.id !== 99).map((dungeon) => ({ id: dungeon.id, name: dungeon.name })),
     { id: BESTIARY_SPECIAL_DUNGEON_ID_GODS, name: '神魔' },
+    ...(debugSettings.colosseumEnabled ? [{ id: BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM, name: '特' }] : []),
   ];
 
-  const selectedBestiaryDungeon = DUNGEONS.find(d => d.id === selectedBestiaryDungeonId) ?? DUNGEONS[0];
+  const selectedBestiaryDungeon = DUNGEONS.find(d => d.id === selectedBestiaryDungeonId && d.id !== 99) ?? DUNGEONS[0];
 
   const selectedBestiaryGroups = selectedBestiaryDungeon.floors
     ? selectedBestiaryDungeon.floors
@@ -8576,7 +8595,43 @@ function SettingTab({
               </div>
             );
           })}
-          {!isGodBestiaryTab && selectedBestiaryGroups.map(group => (
+          {isColosseumBestiaryTab && (() => {
+            const colosseumEnemy = buildColosseumEnemy(colosseumEnemySettings, gameMode === 'm.luna');
+            const enemyExpanded = !!expandedBestiaryEnemies[colosseumEnemy.id];
+            const defenseAmplifierPercent = colosseumEnemy.defenseAmplifier * 100;
+            const hasRangedAttack = hasEnemyAttack(colosseumEnemy.rangedAttack, colosseumEnemy.rangedNoA);
+            const hasMeleeAttack = hasEnemyAttack(colosseumEnemy.meleeAttack, colosseumEnemy.meleeNoA);
+            const hasMagicalAttack = hasEnemyAttack(colosseumEnemy.magicalAttack, colosseumEnemy.magicalNoA);
+            const hasPhysicalAttack = hasRangedAttack || hasMeleeAttack;
+            const decay = `${((0.90 + colosseumEnemy.accuracyBonus) * 100).toFixed(1)}%`;
+            return (
+              <div className="bg-white rounded border border-gray-200 p-2">
+                <div className="text-xs text-gray-500 font-medium mb-1">Colosseum Opponent</div>
+                <div className="mt-2 border border-gray-100 rounded">
+                  <button onClick={() => onSetExpandedBestiaryEnemies(prev => ({ ...prev, [colosseumEnemy.id]: !enemyExpanded }))} className="w-full text-left px-2 py-1 text-sm flex justify-between items-center">
+                    <span>{renderEnemyNameWithMutedClass(getEnemyDisplayNameWithClass(colosseumEnemy))}</span><span className="text-xs text-gray-500">{enemyExpanded ? '▲' : '▼'}</span>
+                  </button>
+                  {enemyExpanded && <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                      <div>ID: {colosseumEnemy.id}</div><div>レベル: {formatNumber(colosseumEnemySettings.level)}</div>
+                      <div>HP: {formatNumber(colosseumEnemy.hp)}</div><div>クラス: {ENEMY_CLASS_LABELS[colosseumEnemy.enemyClass] ?? colosseumEnemy.enemyClass}</div>
+                      <div>タイプ: {ENEMY_TYPE_LABELS[colosseumEnemy.enemyType] ?? colosseumEnemy.enemyType}</div><div></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                      <div>{hasRangedAttack ? formatEnemyAttackLine('遠距離攻撃', colosseumEnemy.rangedAttack, colosseumEnemy.rangedNoA, colosseumEnemy.rangedAttackAmplifier) : ''}</div><div>{`属性: ${ENEMY_ELEMENT_LABELS[colosseumEnemy.elementalOffense] ?? '無'} (x1.0)`}</div>
+                      <div>{hasMeleeAttack ? formatEnemyAttackLine('近接攻撃', colosseumEnemy.meleeAttack, colosseumEnemy.meleeNoA, colosseumEnemy.meleeAttackAmplifier) : ''}</div><div>{formatEnemyDefenseLine('物理防御', colosseumEnemy.physicalDefense, defenseAmplifierPercent)}</div>
+                      <div>{hasPhysicalAttack ? `物理命中率: 100% (減衰: ${decay})` : ''}</div><div>{formatEnemyDefenseLine('魔法防御', colosseumEnemy.magicalDefense, defenseAmplifierPercent)}</div>
+                      <div>{hasMagicalAttack ? formatEnemyAttackLine('魔法攻撃', colosseumEnemy.magicalAttack, colosseumEnemy.magicalNoA, colosseumEnemy.magicalAttackAmplifier) : ''}</div><div>回避: {formatNumber(Math.round(colosseumEnemy.evasionBonus * 1000))}</div>
+                      <div>{hasMagicalAttack ? `魔法命中率: 100% (減衰: ${decay})` : ''}</div><div>{renderEnemyElementalResistanceLine(colosseumEnemy)}</div>
+                    </div>
+                    <div>アビリティ: {formatAbilitiesWithLevels(colosseumEnemy.abilities)}</div>
+                    <div>ドロップ候補: なし</div>
+                  </div>}
+                </div>
+              </div>
+            );
+          })()}
+          {!isGodBestiaryTab && !isColosseumBestiaryTab && selectedBestiaryGroups.map(group => (
             <div key={group.key} className="bg-white rounded border border-gray-200 p-2">
               <div className="text-xs text-gray-500 font-medium mb-1">{group.label}</div>
               {group.enemies.map(enemy => {
@@ -8801,6 +8856,17 @@ function SettingTab({
         </div>}
       </div>
 
+      {debugSettings.colosseumEnabled && <div className="bg-pane rounded-lg p-4 mb-4">
+        <div className="text-sm font-semibold mb-3">Enemy Edit</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy name</div><input className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.name} onChange={(e) => updateColosseumEnemySettings({ name: e.target.value })} /></label>
+          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy type</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyType} onChange={(e) => updateColosseumEnemySettings({ enemyType: e.target.value })}>{Object.keys(ENEMY_TYPE_LABELS).map((key) => <option key={key} value={key}>{ENEMY_TYPE_LABELS[key] ?? key}</option>)}</select></label>
+          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy class</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyClass} onChange={(e) => updateColosseumEnemySettings({ enemyClass: e.target.value as ColosseumEnemySettings['enemyClass'] })}>{Object.entries(ENEMY_CLASS_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
+          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy level: {colosseumEnemySettings.level}</div><input type="range" min={1} max={99} value={colosseumEnemySettings.level} onChange={(e) => updateColosseumEnemySettings({ level: Number(e.target.value) })} /></label>
+          {[0,1,2,3,4].map((slot) => <label key={slot} className="space-y-1"><div className="text-xs text-gray-600">Enemy added ability {slot+1}</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.abilities[slot] ?? 'none'} onChange={(e) => { const next=[...colosseumEnemySettings.abilities]; const value=e.target.value as AbilityId | 'none'; if (value === 'none') { next.splice(slot,1); } else { next[slot]=value as AbilityId; } updateColosseumEnemySettings({ abilities: next.filter(Boolean) as AbilityId[] }); }}>{[<option key="none" value="none">none</option>, ...Object.entries(ABILITY_NAMES).map(([key,label]) => <option key={key} value={key}>{label}</option>)]}</select></label>)}
+        </div>
+      </div>}
+
       <div className="bg-pane rounded-lg p-4 mb-4">
         {renderDivineBureauPanelHeader('debug', 'デバッグ')}
         {divineBureauPanelExpanded.debug && <div className="space-y-3 mt-3 text-sm">
@@ -8821,6 +8887,7 @@ function SettingTab({
           <button type="button" onClick={() => onUpdateDebugSettings({ jewelShopOpen: !debugSettings.jewelShopOpen })} className="w-full rounded border bg-white px-3 py-2 text-left">Jewel shop open: {debugSettings.jewelShopOpen ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ displayFlavorCondition: !debugSettings.displayFlavorCondition })} className="w-full rounded border bg-white px-3 py-2 text-left">Display flavor condition: {debugSettings.displayFlavorCondition ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ displayAfkDuration: !debugSettings.displayAfkDuration })} className="w-full rounded border bg-white px-3 py-2 text-left">Display AFK duration: {debugSettings.displayAfkDuration ? 'ON' : 'OFF'}</button>
+          <button type="button" onClick={() => onUpdateDebugSettings({ colosseumEnabled: !debugSettings.colosseumEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">Colosseum mode: {debugSettings.colosseumEnabled ? 'ON' : 'OFF'}</button>
         </div>}
       </div>
 
