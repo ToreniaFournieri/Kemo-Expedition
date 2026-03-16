@@ -7854,6 +7854,11 @@ function SettingTab({
         const normalEnemies = tierNormals.slice(poolIndex * 5, poolIndex * 5 + 5);
 
         const groups: Array<{ key: string; label: string; enemies: EnemyDef[]; floorNumber: number; groupType: 'boss' | 'elite' | 'normal' }> = [];
+        const room3EnemyIds = floor.rooms?.[2]?.enemyIds ?? [];
+        const room3SpecialElites = room3EnemyIds
+          .map((enemyId) => ENEMIES.find((enemy) => enemy.id === enemyId))
+          .filter((enemy): enemy is EnemyDef => !!enemy && enemy.type === 'elite')
+          .sort((a, b) => a.id - b.id);
 
         if (floor.floorNumber === 6) {
           const bossEnemy = ENEMIES.find(enemy => enemy.id === selectedBestiaryDungeon.bossId);
@@ -7882,6 +7887,16 @@ function SettingTab({
             key: `floor-${floor.floorNumber}-elite`,
             label: `Floor ${floor.floorNumber} Elite`,
             enemies: [fixedElite],
+            floorNumber: floor.floorNumber,
+            groupType: 'elite',
+          });
+        }
+
+        if (room3SpecialElites.length > 0) {
+          groups.push({
+            key: `floor-${floor.floorNumber}-room-3-special`,
+            label: `Floor ${floor.floorNumber} Room 3 (Special)`,
+            enemies: room3SpecialElites,
             floorNumber: floor.floorNumber,
             groupType: 'elite',
           });

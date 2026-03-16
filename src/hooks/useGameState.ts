@@ -30,7 +30,7 @@ import { applyEnemyEncounterScaling, getRoomMultiplier } from '../game/enemyScal
 import { replaceCharacterEquipment } from '../game/equipment';
 import { DUNGEONS, getDungeonById, getEffectiveEnemyLevel, getEffectiveEnemyMultipliers, getEffectiveExpeditionTier } from '../data/dungeons';
 import { CLASS_SHORT_NAMES } from '../data/classes';
-import { getEnemiesByPool, getElitesByPool, getBossEnemy, getEnemyDropCandidates } from '../data/enemies';
+import { ENEMIES, getEnemiesByPool, getElitesByPool, getBossEnemy, getEnemyDropCandidates } from '../data/enemies';
 import { getGodProfileForDungeon } from '../data/dropTables';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
 import {
@@ -1315,10 +1315,22 @@ function selectEnemyForRoom(
   poolId?: number,
   bossId?: number,
   floorNumber?: number,
-  roomIndex?: number
+  roomIndex?: number,
+  roomEnemyIds: number[] = []
 ): EnemyDef | null {
   if (roomType === 'battle_Boss' && bossId) {
     return getBossEnemy(bossId) ?? null;
+  }
+
+  if (roomEnemyIds.length > 0) {
+    const explicitEnemies = roomEnemyIds
+      .map((enemyId) => ENEMIES.find((enemy) => enemy.id === enemyId))
+      .filter((enemy): enemy is EnemyDef => enemy !== undefined)
+      .sort((a, b) => a.id - b.id);
+    if (explicitEnemies.length > 0) {
+      const randomIndex = Math.floor(Math.random() * explicitEnemies.length);
+      return explicitEnemies[randomIndex] ?? explicitEnemies[0] ?? null;
+    }
   }
 
   if (!poolId) return null;
@@ -1975,7 +1987,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             }
 
             // Select enemy for this room
-            const baseEnemy = selectEnemyForRoom(roomDef.type, roomDef.poolId, roomDef.bossId, floor.floorNumber, roomIndex);
+            const baseEnemy = selectEnemyForRoom(roomDef.type, roomDef.poolId, roomDef.bossId, floor.floorNumber, roomIndex, roomDef.enemyIds ?? []);
             if (!baseEnemy) continue;
 
             const roomMultiplier = getRoomMultiplier(dungeon.expLevel, floor.floorNumber, roomDef.type, floor.multiplier, gameMode === 'm.luna');
