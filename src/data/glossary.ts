@@ -15,7 +15,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
   {
     "id": "2-1-1",
     "heading": "2.1.1 a. bonus ability",
-    "subtitle": "a. アビリティボーナス (重複なし、強化可能)",
+    "subtitle": "能. アビリティボーナス (重複なし、強化可能)",
     "entries": [
       {
         "key": "a.defender1",
@@ -372,7 +372,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
   {
     "id": "2-1-2",
     "heading": "2.1.2 b. bonus",
-    "subtitle": "b. 基礎値ボーナス (重複有効)",
+    "subtitle": "基. 基礎値ボーナス (重複有効)",
     "entries": [
       {
         "key": "b.vitality+v",
@@ -399,7 +399,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
   {
     "id": "2-1-3",
     "heading": "2.1.3 c. bonus",
-    "subtitle": "c. 固定ボーナス (同一名ボーナスは重複無効)",
+    "subtitle": "固. 固定ボーナス (同一名ボーナスは重複無効)",
     "entries": [
       {
         "key": "c.melee_attack+v",
@@ -691,7 +691,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
   {
     "id": "2-1-4",
     "heading": "2.1.4 d. bonus",
-    "subtitle": "d. 増加ボーナス説明 (重複有効)",
+    "subtitle": "増. 増加ボーナス説明 (重複有効)",
     "entries": [
       {
         "key": "d.ranged_attack",
@@ -803,7 +803,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
   {
     "id": "2-1-6",
     "heading": "2.1.6 f. function",
-    "subtitle": "f. 機能 ゲームの仕組み",
+    "subtitle": "機. 機能 ゲームの仕組み",
     "entries": [
       {
         "key": "f.physical_targeting",
@@ -895,7 +895,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
   {
     "id": "2-1-7",
     "heading": "2.1.7 g. gods, religions",
-    "subtitle": "g. 神、信仰",
+    "subtitle": "信. 神、信仰",
     "entries": [
       {
         "key": "Goddess of Restoration",
@@ -962,7 +962,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
   {
     "id": "2-1-8",
     "heading": "2.1.8 m. magic",
-    "subtitle": "m. 魔法攻撃 (装備によって唱える魔法の種類が変わる)",
+    "subtitle": "魔. 魔法攻撃 (装備によって唱える魔法の種類が変わる)",
     "entries": [
       {
         "key": "arcane_arrows",
@@ -1030,7 +1030,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
   {
     "id": "2-1-9",
     "heading": "2.1.9 q. side quest",
-    "subtitle": "q. サイドクエスト (条件達成すると報酬として結晶が手に入る)",
+    "subtitle": "求. サイドクエスト (条件達成すると報酬として結晶が手に入る)",
     "entries": [
       {
         "key": "q.none",
