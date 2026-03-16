@@ -366,6 +366,176 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "key": "a.illusion2",
         "label": "幻化2",
         "description": "パーティーが受ける最初の遠距離攻撃を無効化する"
+      },
+      {
+        "key": "a.howl1",
+        "label": "遠吠え1",
+        "description": "相手の次の攻撃回数4/5"
+      },
+      {
+        "key": "a.predator-sense1",
+        "label": "捕食1",
+        "description": "相手のHPが50％未満の場合、命中+30"
+      },
+      {
+        "key": "a.slow1",
+        "label": "鈍足1",
+        "description": "自身の行動順番に-1して遅くなる"
+      },
+      {
+        "key": "a.corrode1",
+        "label": "腐食1",
+        "description": "相手の攻撃倍率x2/3"
+      },
+      {
+        "key": "a.life-drain3",
+        "label": "吸血1",
+        "description": "与ダメージの7/10を回復"
+      },
+      {
+        "key": "a.no-offense1",
+        "label": "受身1",
+        "description": "行動をしなくなる(反撃などは行う)"
+      },
+      {
+        "key": "a.decompose1",
+        "label": "分解1",
+        "description": "相手の物理防御力を2/3"
+      },
+      {
+        "key": "a.swarm1",
+        "label": "群れ1",
+        "description": "HPが減ると攻撃倍率・防御倍率減(HP1%につき0.5%減少)"
+      },
+      {
+        "key": "a.death-touch1",
+        "label": "接死1",
+        "description": "近接攻撃1/6の確率で即死"
+      },
+      {
+        "key": "a.flying1",
+        "label": "飛行1",
+        "description": "相手の近接攻撃時、その攻撃回数が1/4"
+      },
+      {
+        "key": "a.free1",
+        "label": "逃走1",
+        "description": "近接1タイミングで戦闘から逃げる"
+      },
+      {
+        "key": "a.frostbite1",
+        "label": "凍傷1",
+        "description": "相手の行動順番に-1を加えて遅らせる"
+      },
+      {
+        "key": "a.ice-reflect1",
+        "label": "氷結反射1",
+        "description": "氷属性のダメージ反射(3/10)"
+      },
+      {
+        "key": "a.bind1",
+        "label": "拘束1",
+        "description": "近接行動時、相手の行動を封じる"
+      },
+      {
+        "key": "a.regeneration3",
+        "label": "再生3",
+        "description": "近接フェーズ開始時、この戦闘で失ったHPの20%を回復する"
+      },
+      {
+        "key": "a.burn1",
+        "label": "火傷1",
+        "description": "相手の攻撃回数分ダメージ受ける"
+      },
+      {
+        "key": "a.fire-reflect1",
+        "label": "火炎反射1",
+        "description": "火属性のダメージ反射(3/10)"
+      },
+      {
+        "key": "a.soul-reap1",
+        "label": "魂奪1",
+        "description": "魔法フェーズの終わりに、相手のHPが10％未満であった場合、相手は即死する。回避も復活もできない"
+      },
+      {
+        "key": "a.mutual-magic-amplify1",
+        "label": "魔法増幅1",
+        "description": "双方魔法ダメージ1.3倍"
+      },
+      {
+        "key": "a.mutual-physical-amplify2",
+        "label": "物理増幅12",
+        "description": "双方物理ダメージ1.4倍"
+      },
+      {
+        "key": "a.mutual-physical-amplify-1",
+        "label": "物理抑制1",
+        "description": "双方物理ダメージ0.8倍"
+      },
+      {
+        "key": "a.ranged-confusion1",
+        "label": "遠距離混乱1",
+        "description": "1/6で遠距離2タイミングで遠距離フェーズのみ敵対状態"
+      },
+      {
+        "key": "a.self-destruct1",
+        "label": "自爆1",
+        "description": "近接2タイミングで自爆し、相手に残ダメージの3/10を与える"
+      },
+      {
+        "key": "a.oblivion1",
+        "label": "忘却1",
+        "description": "無作為に選んだ相手のアビリティ1つをこの戦闘中無効にする"
+      },
+      {
+        "key": "a.reanimate3",
+        "label": "即時蘇生3",
+        "description": "戦闘中1回だけHP30%で復活する"
+      },
+      {
+        "key": "a.auriferous1",
+        "label": "含金1",
+        "description": "被弾回数が多いほど自信がドロップするアイテム確率が上がる"
+      },
+      {
+        "key": "a.magic-seal1",
+        "label": "魔封1",
+        "description": "次の魔法無力化する"
+      },
+      {
+        "key": "a.ambush1",
+        "label": "待ち伏せ1",
+        "description": "相手より早く行動できた場合、与ダメージ1.3倍"
+      },
+      {
+        "key": "a.mimic1",
+        "label": "模倣1",
+        "description": "戦闘開始時、相手のアビリティ1つを模倣する"
+      },
+      {
+        "key": "a.shock1",
+        "label": "感電1",
+        "description": "戦闘中1回だけ、相手の近接攻撃1回目ヒットで強制終了"
+      },
+      {
+        "key": "a.unstable-core1",
+        "label": "不安定1",
+        "description": "各フェーズ終了後に残HP30%の自傷ダメージを受ける"
+      },
+      {
+        "key": "a.magical-reflect1",
+        "label": "魔法反射1",
+        "description": "戦闘中1回だけ、魔法攻撃を反射する(1/10)"
+      },
+      {
+        "key": "a.colossal1",
+        "label": "巨人1",
+        "description": "防御力が2倍になるが、物理ダメージ補正x2.0"
+      },
+      {
+        "key": "a.upgrade-all-abilities1",
+        "label": "他のアビリティ強化+1",
+        "description": "自身の他のアビリティを１段階強化する(ペナルティ効果のアビリティは軽減される)"
       }
     ]
   },
