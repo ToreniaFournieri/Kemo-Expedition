@@ -7869,13 +7869,19 @@ function SettingTab({
         const baseFloorLabel = floorConcept
           ? `Floor ${floor.floorNumber} ${floorConcept}`
           : `Floor ${floor.floorNumber}`;
+        const specialFloorLabel = floorConcept
+          ? `Floor ${floor.floorNumber}-3 ${floorConcept} (Special)`
+          : `Floor ${floor.floorNumber}-3 (Special)`;
+        const eliteFloorLabel = floorConcept
+          ? `Floor ${floor.floorNumber}-4 ${floorConcept} Elite`
+          : `Floor ${floor.floorNumber}-4 Elite`;
 
         if (floor.floorNumber === 6) {
           const bossEnemy = ENEMIES.find(enemy => enemy.id === selectedBestiaryDungeon.bossId);
           if (bossEnemy) {
             groups.push({
               key: 'boss',
-              label: 'BOSS',
+              label: floorConcept ? `BOSS ${floorConcept}` : 'BOSS',
               enemies: [bossEnemy],
               floorNumber: floor.floorNumber,
               groupType: 'boss',
@@ -7885,7 +7891,7 @@ function SettingTab({
           if (room3SpecialElites.length > 0) {
             groups.push({
               key: `floor-${floor.floorNumber}-room-3-special`,
-              label: `Floor ${floor.floorNumber} Room 3 (Special)`,
+              label: specialFloorLabel,
               enemies: room3SpecialElites,
               floorNumber: floor.floorNumber,
               groupType: 'elite',
@@ -7905,7 +7911,7 @@ function SettingTab({
         if (fixedFloorElites.length > 0) {
           groups.push({
             key: `floor-${floor.floorNumber}-elite`,
-            label: `${baseFloorLabel} Elite`,
+            label: eliteFloorLabel,
             enemies: fixedFloorElites,
             floorNumber: floor.floorNumber,
             groupType: 'elite',
@@ -7915,7 +7921,7 @@ function SettingTab({
         if (room3SpecialElites.length > 0) {
           groups.push({
             key: `floor-${floor.floorNumber}-room-3-special`,
-            label: `Floor ${floor.floorNumber} Room 3 (Special)`,
+            label: specialFloorLabel,
             enemies: room3SpecialElites,
             floorNumber: floor.floorNumber,
             groupType: 'elite',
