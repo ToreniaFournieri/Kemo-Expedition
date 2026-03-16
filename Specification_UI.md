@@ -799,11 +799,33 @@ HP: 312                 クラス: 魔法使い
 
 ```
 
+**Enemy Edit Pane**
+- Purpose
+  - The **Enemy Edit** pane is used to manually configure a test enemy for battle simulation.
+  - The configured enemy is used only for Colosseum battles.
+
+- Fields
+
+| Setting | UI | Description | Default |
+|---|---|---|---|
+| Enemy name | Text input | Custom display name of the enemy | `ミーティア` |
+| Enemy type | Pull-down list | Select enemy type category | `Jinma` |
+| Enemy class | Pull-down list | Select enemy class | `Fighter` |
+| Enemy level | Slider bar (`1–99`) | Sets enemy level | `10` |
+| Enemy added ability 1 | Pull-down list | Adds an extra ability | `none` |
+| Enemy added ability 2 | Pull-down list | Adds an extra ability | `none` |
+| Enemy added ability 3 | Pull-down list | Adds an extra ability | `none` |
+| Enemy added ability 4 | Pull-down list | Adds an extra ability | `none` |
+| Enemy added ability 5 | Pull-down list | Adds an extra ability | `none` |
+
+- Behavior
+  - Starting a Colosseum battle immediately loads the current Enemy Edit settings.
+  - Changes made in the Enemy Edit pane are reflected in the next Colosseum battle.
+  - The enemy gives no experience point, item drop or progression.
+
+
 **Super Rare List(超レア一覧)**
 - Display Super Rare list with its unique bonus.
-
-
-
 
 **Mode select (モード切替)**
 
@@ -872,5 +894,6 @@ HP: 312                 クラス: 魔法使い
   - Default: OFF
   - If ON, notification  "(Debug)前回の更新から X秒経過" at the end of AFK calculation 
 
-
+- Colosseum mode : OFF/ON
+  - If ON, Enable Enemy edit pane and Colosseum expedition.  
 
