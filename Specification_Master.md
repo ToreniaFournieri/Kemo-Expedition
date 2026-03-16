@@ -76,78 +76,78 @@
 | 2 | 6 | 3 | 13 | Normal | `Golem` | Samurai | `i.katana`U, `i.bolt`U | 断崖の岩刃兵 |
 | 2 | 6 | 3 | 13 | Normal | `Golem` | Ranger | `i.arrow`U, `i.archery`U | 石翼の射手 |
 | 2 | 6 | 4 | 17 | BOSS | `Lupinian` | Rogue | `i.armor`BD, `i.arrow`BD | 白狼グリムクラッグ |
-| 3 | 1 | 1-2 | 14 | Normal | `Marine` | Rogue | `i.bolt`U, `i.armor`U | |
-| 3 | 1 | 1-2 | 14 | Normal | `Marine` | Wizard | `i.wand`U, `i.catalyst`U | |
-| 3 | 1 | 1-2 | 14 | Normal | `Marine` | Ranger | `i.arrow`U, `i.archery`U | |
-| 3 | 1 | 3 | 15 | Normal | `Marine` | Fighter | `i.sword`U, `i.gauntlet`U | |
-| 3 | 1 | 3 | 15 | Normal | `Marine` | Lord | `i.shield`U, `i.robe`U | |
-| 3 | 1 | 4 | 17 | Elite | `Marine` | Pilgrim | `i.catalyst`EA, `i.robe`EA | |
-| 3 | 2 | 1-2 | 15 | Normal | `Marine` | Ninja | `i.katana`U, `i.armor`U | |
-| 3 | 2 | 1-2 | 15 | Normal | `Marine` | Samurai | `i.katana`U, `i.catalyst`U | |
-| 3 | 2 | 1-2 | 15 | Normal | `Marine` | Sage | `i.grimoire`U, `i.robe`U | |
-| 3 | 2 | 3 | 16 | Normal | `Slime_Colony` | Duelist | `i.sword`U, `i.arrow`U | |
-| 3 | 2 | 3 | 16 | Normal | `Slime_Colony` | Pilgrim | `i.armor`U, `i.wand`U | |
-| 3 | 2 | 4 | 18 | Elite | `Marine` | Lord | `i.shield`EA, `i.sword`EA, `i.armor`EA | |
-| 3 | 3 | 1-2 | 16 | Normal | `Spirit` | Lord | `i.shield`U, `i.robe`U | |
-| 3 | 3 | 1-2 | 16 | Normal | `Spirit` | Wizard | `i.wand`U, `i.catalyst`U | |
-| 3 | 3 | 1-2 | 16 | Normal | `Spirit` | Fighter | `i.sword`U, `i.gauntlet`U | |
-| 3 | 3 | 3 | 17 | Normal | `Marine` | Samurai | `i.katana`U, `i.bolt`U | |
-| 3 | 3 | 3 | 17 | Normal | `Marine` | Ranger | `i.arrow`U, `i.archery`U | |
-| 3 | 3 | 4 | 19 | Elite | `Spirit` | Wizard | `i.wand`EC, `i.grimoire`EC | |
-| 3 | 4 | 1-2 | 17 | Normal | `Slime_Colony` | Rogue | `i.bolt`U, `i.armor`U | |
-| 3 | 4 | 1-2 | 17 | Normal | `Slime_Colony` | Wizard | `i.wand`U, `i.catalyst`U | |
-| 3 | 4 | 1-2 | 17 | Normal | `Slime_Colony` | Ranger | `i.arrow`U, `i.archery`U | |
-| 3 | 4 | 3 | 18 | Normal | `Spirit` | Fighter | `i.sword`U, `i.gauntlet`U | |
-| 3 | 4 | 3 | 18 | Normal | `Spirit` | Lord | `i.shield`U, `i.robe`U | |
-| 3 | 4 | 4 | 20 | Elite | `Slime_Colony` | Ninja | `i.gauntlet`EB, `i.katana`EB | |
-| 3 | 5 | 1-2 | 18 | Normal | `Spirit` | Ninja | `i.katana`U, `i.armor`U | |
-| 3 | 5 | 1-2 | 18 | Normal | `Spirit` | Samurai | `i.katana`U, `i.catalyst`U | |
-| 3 | 5 | 1-2 | 18 | Normal | `Spirit` | Sage | `i.grimoire`U, `i.robe`U | |
-| 3 | 5 | 3 | 21 | Elite | `Vulpinian` | Duelist | `i.sword`BD, `i.shield`BD | |
-| 3 | 5 | 3 | 21 | Elite | `Vulpinian` | Pilgrim | `i.catalyst`BD, `i.gauntlet`BD | |
-| 3 | 5 | 4 | 21 | Elite | `Slime_Colony` | Rogue | `i.arrow`EB, `i.bolt`EB, `i.archery`EB | |
-| 3 | 6 | 1-2 | 19 | Normal | `Marine` | Lord | `i.shield`U, `i.robe`U | |
-| 3 | 6 | 1-2 | 19 | Normal | `Marine` | Wizard | `i.wand`U, `i.catalyst`U | |
-| 3 | 6 | 1-2 | 19 | Normal | `Marine` | Fighter | `i.sword`U, `i.gauntlet`U | |
-| 3 | 6 | 3 | 20 | Normal | `Slime_Colony` | Samurai | `i.katana`U, `i.bolt`U | |
-| 3 | 6 | 3 | 20 | Normal | `Slime_Colony` | Ranger | `i.arrow`U, `i.archery`U | |
-| 3 | 6 | 4 | 24 | BOSS | `Vulpinian` | Wizard | `i.wand`BD, `i.robe`BD | |
-| 4 | 1 | 1-2 | 21 | Normal | `Shadowfang` | Rogue | `i.bolt`U, `i.armor`U | |
-| 4 | 1 | 1-2 | 21 | Normal | `Shadowfang` | Wizard | `i.wand`U, `i.catalyst`U | |
-| 4 | 1 | 1-2 | 21 | Normal | `Shadowfang` | Ranger | `i.arrow`U, `i.archery`U | |
-| 4 | 1 | 3 | 22 | Normal | `Shadowfang` | Fighter | `i.sword`U, `i.gauntlet`U | |
-| 4 | 1 | 3 | 22 | Normal | `Shadowfang` | Lord | `i.shield`U, `i.robe`U | |
-| 4 | 1 | 4 | 24 | Elite | `Shadowfang` | Rogue | `i.arrow`EA, `i.archery`EA | |
-| 4 | 2 | 1-2 | 22 | Normal | `Shadowfang` | Ninja | `i.katana`U, `i.armor`U | |
-| 4 | 2 | 1-2 | 22 | Normal | `Shadowfang` | Samurai | `i.katana`U, `i.catalyst`U | |
-| 4 | 2 | 1-2 | 22 | Normal | `Shadowfang` | Sage | `i.grimoire`U, `i.robe`U | |
-| 4 | 2 | 3 | 23 | Normal | `Felidian` | Duelist | `i.sword`U, `i.arrow`U | |
-| 4 | 2 | 3 | 23 | Normal | `Felidian` | Pilgrim | `i.armor`U, `i.wand`U | |
-| 4 | 2 | 4 | 25 | Elite | `Shadowfang` | Samurai | `i.katana`EA, `i.shield`EA, `i.gauntlet`EA | |
-| 4 | 3 | 1-2 | 23 | Normal | `Titan` | Lord | `i.shield`U, `i.robe`U | |
-| 4 | 3 | 1-2 | 23 | Normal | `Titan` | Wizard | `i.wand`U, `i.catalyst`U | |
-| 4 | 3 | 1-2 | 23 | Normal | `Titan` | Fighter | `i.sword`U, `i.gauntlet`U | |
-| 4 | 3 | 3 | 24 | Normal | `Shadowfang` | Samurai | `i.katana`U, `i.bolt`U | |
-| 4 | 3 | 3 | 24 | Normal | `Shadowfang` | Ranger | `i.arrow`U, `i.archery`U | |
-| 4 | 3 | 4 | 26 | Elite | `Titan` | Fighter | `i.armor`EC, `i.bolt`EC | |
-| 4 | 4 | 1-2 | 24 | Normal | `Felidian` | Rogue | `i.bolt`U, `i.armor`U | |
-| 4 | 4 | 1-2 | 24 | Normal | `Felidian` | Wizard | `i.wand`U, `i.catalyst`U | |
-| 4 | 4 | 1-2 | 24 | Normal | `Felidian` | Ranger | `i.arrow`U, `i.archery`U | |
-| 4 | 4 | 3 | 27 | Elite | `Felidian` | Rogue | `i.grimoire`BD, `i.arrow`BD | |
-| 4 | 4 | 3 | 27 | Elite | `Felidian` | Ninja | `i.robe`BD, `i.sword`BD | |
-| 4 | 4 | 4 | 27 | Elite | `Felidian` | Duelist | `i.robe`EB, `i.sword`EB | |
-| 4 | 5 | 1-2 | 25 | Normal | `Titan` | Ninja | `i.katana`U, `i.armor`U | |
-| 4 | 5 | 1-2 | 25 | Normal | `Titan` | Samurai | `i.katana`U, `i.catalyst`U | |
-| 4 | 5 | 1-2 | 25 | Normal | `Titan` | Sage | `i.grimoire`U, `i.robe`U | |
-| 4 | 5 | 3 | 26 | Normal | `Felidian` | Duelist | `i.sword`U, `i.arrow`U | |
-| 4 | 5 | 3 | 26 | Normal | `Felidian` | Pilgrim | `i.armor`U, `i.grimoire`U | |
-| 4 | 5 | 4 | 28 | Elite | `Felidian` | Sage | `i.wand`EB, `i.grimoire`EB, `i.catalyst`EB | |
-| 4 | 6 | 1-2 | 26 | Normal | `Shadowfang` | Lord | `i.shield`U, `i.robe`U | |
-| 4 | 6 | 1-2 | 26 | Normal | `Shadowfang` | Wizard | `i.wand`U, `i.catalyst`U | |
-| 4 | 6 | 1-2 | 26 | Normal | `Shadowfang` | Fighter | `i.sword`U, `i.gauntlet`U | |
-| 4 | 6 | 3 | 27 | Normal | `Felidian` | Samurai | `i.katana`U, `i.bolt`U | |
-| 4 | 6 | 3 | 27 | Normal | `Felidian` | Ranger | `i.arrow`U, `i.archery`U | |
-| 4 | 6 | 4 | 31 | BOSS | `Felidian` | Ranger | `i.bolt`BD, `i.archery`BD | |
+| 3 | 1 | 1-2 | 14 | Normal | `Marine` | Rogue | `i.bolt`U, `i.armor`U | 浜辺の漂掠魚 |
+| 3 | 1 | 1-2 | 14 | Normal | `Marine` | Wizard | `i.wand`U, `i.catalyst`U | 潮読みの小妖 |
+| 3 | 1 | 1-2 | 14 | Normal | `Marine` | Ranger | `i.arrow`U, `i.archery`U | 波打ちの狩り魚 |
+| 3 | 1 | 3 | 15 | Normal | `Marine` | Fighter | `i.sword`U, `i.gauntlet`U | 潮刃の海獣 |
+| 3 | 1 | 3 | 15 | Normal | `Marine` | Lord | `i.shield`U, `i.robe`U | 浅瀬の群れ長 |
+| 3 | 1 | 4 | 17 | Elite | `Marine` | Pilgrim | `i.catalyst`EA, `i.robe`EA | 潮祈の先導魚 |
+| 3 | 2 | 1-2 | 15 | Normal | `Marine` | Ninja | `i.katana`U, `i.armor`U | 水面潜み |
+| 3 | 2 | 1-2 | 15 | Normal | `Marine` | Samurai | `i.katana`U, `i.catalyst`U | 潮刃兵 |
+| 3 | 2 | 1-2 | 15 | Normal | `Marine` | Sage | `i.grimoire`U, `i.robe`U | 海辺の語り部 |
+| 3 | 2 | 3 | 16 | Normal | `Slime_Colony` | Duelist | `i.sword`U, `i.arrow`U | 粘核の剣闘体 |
+| 3 | 2 | 3 | 16 | Normal | `Slime_Colony` | Pilgrim | `i.armor`U, `i.wand`U | 巡礼ゼリー |
+| 3 | 2 | 4 | 18 | Elite | `Marine` | Lord | `i.shield`EA, `i.sword`EA, `i.armor`EA | 潮騎の重殻 |
+| 3 | 3 | 1-2 | 16 | Normal | `Spirit` | Lord | `i.shield`U, `i.robe`U | 泡霊の群核 |
+| 3 | 3 | 1-2 | 16 | Normal | `Spirit` | Wizard | `i.wand`U, `i.catalyst`U | 潮鳴きの霊術体 |
+| 3 | 3 | 1-2 | 16 | Normal | `Spirit` | Fighter | `i.sword`U, `i.gauntlet`U | 霊波の前衛 |
+| 3 | 3 | 3 | 17 | Normal | `Marine` | Samurai | `i.katana`U, `i.bolt`U | 海路の刃兵 |
+| 3 | 3 | 3 | 17 | Normal | `Marine` | Ranger | `i.arrow`U, `i.archery`U | 白波の射手 |
+| 3 | 3 | 4 | 19 | Elite | `Spirit` | Wizard | `i.wand`EC, `i.grimoire`EC | 潮幻の導師 |
+| 3 | 4 | 1-2 | 17 | Normal | `Slime_Colony` | Rogue | `i.bolt`U, `i.armor`U | 粘波の斥候 |
+| 3 | 4 | 1-2 | 17 | Normal | `Slime_Colony` | Wizard | `i.wand`U, `i.catalyst`U | 粘潮の術核 |
+| 3 | 4 | 1-2 | 17 | Normal | `Slime_Colony` | Ranger | `i.arrow`U, `i.archery`U | 飛沫の射出体 |
+| 3 | 4 | 3 | 18 | Normal | `Spirit` | Fighter | `i.sword`U, `i.gauntlet`U | 霊潮の突撃体 |
+| 3 | 4 | 3 | 18 | Normal | `Spirit` | Lord | `i.shield`U, `i.robe`U | 潮守の灯霊 |
+| 3 | 4 | 4 | 20 | Elite | `Slime_Colony` | Ninja | `i.gauntlet`EB, `i.katana`EB | 粘群の影忍 |
+| 3 | 5 | 1-2 | 18 | Normal | `Spirit` | Ninja | `i.katana`U, `i.armor`U | 月潮の忍霊 |
+| 3 | 5 | 1-2 | 18 | Normal | `Spirit` | Samurai | `i.katana`U, `i.catalyst`U | 波祓いの侍霊 |
+| 3 | 5 | 1-2 | 18 | Normal | `Spirit` | Sage | `i.grimoire`U, `i.robe`U | 潮文の語り霊 |
+| 3 | 5 | 3 | 21 | Elite | `Vulpinian` | Duelist | `i.sword`BD, `i.shield`BD | 蒼牙の剣士 |
+| 3 | 5 | 3 | 21 | Elite | `Vulpinian` | Pilgrim | `i.catalyst`BD, `i.gauntlet`BD | 蒼尾の巡礼士 |
+| 3 | 5 | 4 | 21 | Elite | `Slime_Colony` | Rogue | `i.arrow`EB, `i.bolt`EB, `i.archery`EB | 飛沫群の狙撃核 |
+| 3 | 6 | 1-2 | 19 | Normal | `Marine` | Lord | `i.shield`U, `i.robe`U | 遺浜の群核 |
+| 3 | 6 | 1-2 | 19 | Normal | `Marine` | Wizard | `i.wand`U, `i.catalyst`U | 遺浜の霊術体 |
+| 3 | 6 | 1-2 | 19 | Normal | `Marine` | Fighter | `i.sword`U, `i.gauntlet`U | 遺浜の前衛魚 |
+| 3 | 6 | 3 | 20 | Normal | `Slime_Colony` | Samurai | `i.katana`U, `i.bolt`U | 海蝕の刃兵 |
+| 3 | 6 | 3 | 20 | Normal | `Slime_Colony` | Ranger | `i.arrow`U, `i.archery`U | 泡群の射手 |
+| 3 | 6 | 4 | 24 | BOSS | `Vulpinian` | Wizard | `i.wand`BD, `i.robe`BD | 蒼潮の主祭狐 |
+| 4 | 1 | 1-2 | 21 | Normal | `Shadowfang` | Rogue | `i.bolt`U, `i.armor`U | 砂夜の牙影 |
+| 4 | 1 | 1-2 | 21 | Normal | `Shadowfang` | Wizard | `i.wand`U, `i.catalyst`U | 月砂の呪牙 |
+| 4 | 1 | 1-2 | 21 | Normal | `Shadowfang` | Ranger | `i.arrow`U, `i.archery`U | 砂丘の遠牙 |
+| 4 | 1 | 3 | 22 | Normal | `Shadowfang` | Fighter | `i.sword`U, `i.gauntlet`U | 乾砂の裂爪 |
+| 4 | 1 | 3 | 22 | Normal | `Shadowfang` | Lord | `i.shield`U, `i.robe`U | 影群の頭目 |
+| 4 | 1 | 4 | 24 | Elite | `Shadowfang` | Rogue | `i.arrow`EA, `i.archery`EA | 夜襲の黒牙 |
+| 4 | 2 | 1-2 | 22 | Normal | `Shadowfang` | Ninja | `i.katana`U, `i.armor`U | 砂潜り |
+| 4 | 2 | 1-2 | 22 | Normal | `Shadowfang` | Samurai | `i.katana`U, `i.catalyst`U | 月刃の黒牙 |
+| 4 | 2 | 1-2 | 22 | Normal | `Shadowfang` | Sage | `i.grimoire`U, `i.robe`U | 砂識の導牙 |
+| 4 | 2 | 3 | 23 | Normal | `Felidian` | Duelist | `i.sword`U, `i.arrow`U | 砂猫の剣士 |
+| 4 | 2 | 3 | 23 | Normal | `Felidian` | Pilgrim | `i.armor`U, `i.wand`U | 巡砂の猫民 |
+| 4 | 2 | 4 | 25 | Elite | `Shadowfang` | Samurai | `i.katana`EA, `i.shield`EA, `i.gauntlet`EA | 黒牙の副頭領 |
+| 4 | 3 | 1-2 | 23 | Normal | `Titan` | Lord | `i.shield`U, `i.robe`U | 石骨の守衛 |
+| 4 | 3 | 1-2 | 23 | Normal | `Titan` | Wizard | `i.wand`U, `i.catalyst`U | 砂碑の術巨 |
+| 4 | 3 | 1-2 | 23 | Normal | `Titan` | Fighter | `i.sword`U, `i.gauntlet`U | 乾岩の破砕兵 |
+| 4 | 3 | 3 | 24 | Normal | `Shadowfang` | Samurai | `i.katana`U, `i.bolt`U | 影牙の刃兵 |
+| 4 | 3 | 3 | 24 | Normal | `Shadowfang` | Ranger | `i.arrow`U, `i.archery`U | 砂塵の射牙 |
+| 4 | 3 | 4 | 26 | Elite | `Titan` | Fighter | `i.armor`EC, `i.bolt`EC | 巨躯の破城兵 |
+| 4 | 4 | 1-2 | 24 | Normal | `Felidian` | Rogue | `i.bolt`U, `i.armor`U | 砂猫の斥候 |
+| 4 | 4 | 1-2 | 24 | Normal | `Felidian` | Wizard | `i.wand`U, `i.catalyst`U | 陽炎の猫術士 |
+| 4 | 4 | 1-2 | 24 | Normal | `Felidian` | Ranger | `i.arrow`U, `i.archery`U | 夜砂の弓猫 |
+| 4 | 4 | 3 | 27 | Elite | `Felidian` | Rogue | `i.grimoire`BD, `i.arrow`BD | 黄昏の盗猫 |
+| 4 | 4 | 3 | 27 | Elite | `Felidian` | Ninja | `i.robe`BD, `i.sword`BD | 砂嵐の忍猫 |
+| 4 | 4 | 4 | 27 | Elite | `Felidian` | Duelist | `i.robe`EB, `i.sword`EB | 盗都の決闘猫 |
+| 4 | 5 | 1-2 | 25 | Normal | `Titan` | Ninja | `i.katana`U, `i.armor`U | 砂岩の忍巨 |
+| 4 | 5 | 1-2 | 25 | Normal | `Titan` | Samurai | `i.katana`U, `i.catalyst`U | 断崖の刃巨 |
+| 4 | 5 | 1-2 | 25 | Normal | `Titan` | Sage | `i.grimoire`U, `i.robe`U | 岩窟の古老巨 |
+| 4 | 5 | 3 | 26 | Normal | `Felidian` | Duelist | `i.sword`U, `i.arrow`U | 猫刃の決闘士 |
+| 4 | 5 | 3 | 26 | Normal | `Felidian` | Pilgrim | `i.armor`U, `i.grimoire`U | 流砂の巡礼猫 |
+| 4 | 5 | 4 | 28 | Elite | `Felidian` | Sage | `i.wand`EB, `i.grimoire`EB, `i.catalyst`EB | 秘儀の砂猫 |
+| 4 | 6 | 1-2 | 26 | Normal | `Shadowfang` | Lord | `i.shield`U, `i.robe`U | 遺都の影長 |
+| 4 | 6 | 1-2 | 26 | Normal | `Shadowfang` | Wizard | `i.wand`U, `i.catalyst`U | 遺都の影術士 |
+| 4 | 6 | 1-2 | 26 | Normal | `Shadowfang` | Fighter | `i.sword`U, `i.gauntlet`U | 遺都の影前衛 |
+| 4 | 6 | 3 | 27 | Normal | `Felidian` | Samurai | `i.katana`U, `i.bolt`U | 王都の刃猫 |
+| 4 | 6 | 3 | 27 | Normal | `Felidian` | Ranger | `i.arrow`U, `i.archery`U | 王都の射猫 |
+| 4 | 6 | 4 | 31 | BOSS | `Felidian` | Ranger | `i.bolt`BD, `i.archery`BD | 砂都の狙撃王 |
 | 5 | 1 | 1-2 | 28 | Normal | `Beast` | Rogue | `i.bolt`U, `i.armor`U | |
 | 5 | 1 | 1-2 | 28 | Normal | `Beast` | Wizard | `i.wand`U, `i.catalyst`U | |
 | 5 | 1 | 1-2 | 28 | Normal | `Beast` | Ranger | `i.arrow`U, `i.archery`U | |
@@ -341,132 +341,132 @@
 | 1 | B | `Caninian` | `i.robe` | 若牙の外套 |
 | 1 | B | `Caninian` | `i.katana` | 若牙の刀 |
 | 1 | B | `Caninian` | `i.grimoire` | 若牙の戦書 |
-| 2 | C | none | `i.sword` | |
-| 2 | C | none | `i.gauntlet` | |
-| 2 | C | none | `i.shield` | |
-| 2 | C | none | `i.armor` | |
-| 2 | C | none | `i.robe` | |
-| 2 | C | none | `i.katana` | |
-| 2 | C | none | `i.wand` | |
-| 2 | C | none | `i.grimoire` | |
-| 2 | C | none | `i.catalyst` | |
-| 2 | C | none | `i.arrow` | |
-| 2 | C | none | `i.bolt` | |
-| 2 | C | none | `i.archery` | |
-| 2 | U | none | `i.sword` | |
-| 2 | U | none | `i.gauntlet` | |
-| 2 | U | none | `i.shield` | |
-| 2 | U | none | `i.armor` | |
-| 2 | U | none | `i.robe` | |
-| 2 | U | none | `i.katana` | |
-| 2 | U | none | `i.wand` | |
-| 2 | U | none | `i.grimoire` | |
-| 2 | U | none | `i.catalyst` | |
-| 2 | U | none | `i.arrow` | |
-| 2 | U | none | `i.bolt` | |
-| 2 | U | none | `i.archery` | |
-| 2 | E | `Frost` | `i.sword` | |
-| 2 | E | `Frost` | `i.armor` | |
-| 2 | E | `Frost` | `i.shield` | |
-| 2 | E | `Frost` | `i.robe` | |
-| 2 | E | `Golem` | `i.gauntlet` | |
-| 2 | E | `Golem` | `i.katana` | |
-| 2 | E | `Golem` | `i.wand` | |
-| 2 | E | `Golem` | `i.grimoire` | |
-| 2 | E | `Golem` | `i.catalyst` | |
-| 2 | E | `Plant_Fungal` | `i.arrow` | |
-| 2 | E | `Plant_Fungal` | `i.bolt` | |
-| 2 | E | `Plant_Fungal` | `i.archery` | |
-| 2 | B | `Lupinian` | `i.armor` | |
-| 2 | B | `Lupinian` | `i.arrow` | |
-| 2 | B | `Lupinian` | `i.wand` | |
-| 2 | B | `Lupinian` | `i.catalyst` | |
-| 2 | B | `Lupinian` | `i.bolt` | |
-| 2 | B | `Lupinian` | `i.archery` | |
-| 3 | C | none | `i.sword` | |
-| 3 | C | none | `i.gauntlet` | |
-| 3 | C | none | `i.shield` | |
-| 3 | C | none | `i.armor` | |
-| 3 | C | none | `i.robe` | |
-| 3 | C | none | `i.katana` | |
-| 3 | C | none | `i.wand` | |
-| 3 | C | none | `i.grimoire` | |
-| 3 | C | none | `i.catalyst` | |
-| 3 | C | none | `i.arrow` | |
-| 3 | C | none | `i.bolt` | |
-| 3 | C | none | `i.archery` | |
-| 3 | U | none | `i.sword` | |
-| 3 | U | none | `i.gauntlet` | |
-| 3 | U | none | `i.shield` | |
-| 3 | U | none | `i.armor` | |
-| 3 | U | none | `i.robe` | |
-| 3 | U | none | `i.katana` | |
-| 3 | U | none | `i.wand` | |
-| 3 | U | none | `i.grimoire` | |
-| 3 | U | none | `i.catalyst` | |
-| 3 | U | none | `i.arrow` | |
-| 3 | U | none | `i.bolt` | |
-| 3 | U | none | `i.archery` | |
-| 3 | E | `Marine` | `i.catalyst` | |
-| 3 | E | `Marine` | `i.robe` | |
-| 3 | E | `Marine` | `i.shield` | |
-| 3 | E | `Marine` | `i.sword` | |
-| 3 | E | `Marine` | `i.armor` | |
-| 3 | E | `Spirit` | `i.wand` | |
-| 3 | E | `Spirit` | `i.grimoire` | |
-| 3 | E | `Spirit` | `i.gauntlet` | |
-| 3 | E | `Spirit` | `i.katana` | |
-| 3 | E | `Slime_Colony` | `i.arrow` | |
-| 3 | E | `Slime_Colony` | `i.bolt` | |
-| 3 | E | `Slime_Colony` | `i.archery` | |
-| 3 | B | `Vulpinian` | `i.wand` | |
-| 3 | B | `Vulpinian` | `i.robe` | |
-| 3 | B | `Vulpinian` | `i.sword` | |
-| 3 | B | `Vulpinian` | `i.shield` | |
-| 3 | B | `Vulpinian` | `i.catalyst` | |
-| 3 | B | `Vulpinian` | `i.gauntlet` | |
-| 4 | C | none | `i.sword` | |
-| 4 | C | none | `i.gauntlet` | |
-| 4 | C | none | `i.shield` | |
-| 4 | C | none | `i.armor` | |
-| 4 | C | none | `i.robe` | |
-| 4 | C | none | `i.katana` | |
-| 4 | C | none | `i.wand` | |
-| 4 | C | none | `i.grimoire` | |
-| 4 | C | none | `i.catalyst` | |
-| 4 | C | none | `i.arrow` | |
-| 4 | C | none | `i.bolt` | |
-| 4 | C | none | `i.archery` | |
-| 4 | U | none | `i.sword` | |
-| 4 | U | none | `i.gauntlet` | |
-| 4 | U | none | `i.shield` | |
-| 4 | U | none | `i.armor` | |
-| 4 | U | none | `i.robe` | |
-| 4 | U | none | `i.katana` | |
-| 4 | U | none | `i.wand` | |
-| 4 | U | none | `i.grimoire` | |
-| 4 | U | none | `i.catalyst` | |
-| 4 | U | none | `i.arrow` | |
-| 4 | U | none | `i.bolt` | |
-| 4 | U | none | `i.archery` | |
-| 4 | E | `Felidian` | `i.arrow` | |
-| 4 | E | `Felidian` | `i.archery` | |
-| 4 | E | `Felidian` | `i.robe` | |
-| 4 | E | `Felidian` | `i.sword` | |
-| 4 | E | `Felidian` | `i.wand` | |
-| 4 | E | `Felidian` | `i.grimoire` | |
-| 4 | E | `Felidian` | `i.catalyst` | |
-| 4 | E | `Titan` | `i.armor` | |
-| 4 | E | `Titan` | `i.bolt` | |
-| 4 | E | `Titan` | `i.katana` | |
-| 4 | E | `Titan` | `i.shield` | |
-| 4 | E | `Titan` | `i.gauntlet` | |
-| 4 | B | `Felidian` | `i.bolt` | |
-| 4 | B | `Felidian` | `i.archery` | |
-| 4 | B | `Felidian` | `i.grimoire` | |
-| 4 | B | `Felidian` | `i.arrow` | |
-| 4 | B | `Felidian` | `i.robe` | |
-| 4 | B | `Felidian` | `i.sword` | |
+| 2 | C | none | `i.sword` | 毛巻きの短剣 |
+| 2 | C | none | `i.gauntlet` | 毛革の手甲 |
+| 2 | C | none | `i.shield` | 毛張りの丸盾 |
+| 2 | C | none | `i.armor` | 毛皮あての服 |
+| 2 | C | none | `i.robe` | 防寒の毛ローブ |
+| 2 | C | none | `i.katana` | 毛巻きの打刀 |
+| 2 | C | none | `i.wand` | 毛飾りの枝杖 |
+| 2 | C | none | `i.grimoire` | 毛表紙の術書 |
+| 2 | C | none | `i.catalyst` | 獣毛の核石 |
+| 2 | C | none | `i.arrow` | 毛羽矢 |
+| 2 | C | none | `i.bolt` | 霜毛ボルト |
+| 2 | C | none | `i.archery` | 毛弦の狩弓 |
+| 2 | U | none | `i.sword` | 霜刃の短剣 |
+| 2 | U | none | `i.gauntlet` | 氷革の手甲 |
+| 2 | U | none | `i.shield` | 凍板の盾 |
+| 2 | U | none | `i.armor` | 氷紋の防寒衣 |
+| 2 | U | none | `i.robe` | 氷糸の法衣 |
+| 2 | U | none | `i.katana` | 氷縁の打刀 |
+| 2 | U | none | `i.wand` | 凍晶の杖 |
+| 2 | U | none | `i.grimoire` | 氷紋術式書 |
+| 2 | U | none | `i.catalyst` | 氷核の触媒石 |
+| 2 | U | none | `i.arrow` | 氷羽矢 |
+| 2 | U | none | `i.bolt` | 凍先ボルト |
+| 2 | U | none | `i.archery` | 霜枝の弓 |
+| 2 | E | `Frost` | `i.sword` | 白霜牙の剣 |
+| 2 | E | `Frost` | `i.armor` | 凍狼の毛鎧 |
+| 2 | E | `Frost` | `i.shield` | 氷牙の防盾 |
+| 2 | E | `Frost` | `i.robe` | 吹雪獣の外套 |
+| 2 | E | `Golem` | `i.gauntlet` | 玄晶の手甲 |
+| 2 | E | `Golem` | `i.katana` | 岩晶の刀 |
+| 2 | E | `Golem` | `i.wand` | 結晶脈の杖 |
+| 2 | E | `Golem` | `i.grimoire` | 石核刻印の書 |
+| 2 | E | `Golem` | `i.catalyst` | 岩核触媒 |
+| 2 | E | `Plant_Fungal` | `i.arrow` | 胞子羽の矢 |
+| 2 | E | `Plant_Fungal` | `i.bolt` | 菌殻ボルト |
+| 2 | E | `Plant_Fungal` | `i.archery` | 蔓弓「胞雨」 |
+| 2 | B | `Lupinian` | `i.armor` | 白狼毛の戦衣 |
+| 2 | B | `Lupinian` | `i.arrow` | 狼牙羽の矢 |
+| 2 | B | `Lupinian` | `i.wand` | 狼王の呪杖 |
+| 2 | B | `Lupinian` | `i.catalyst` | 白狼核の触媒 |
+| 2 | B | `Lupinian` | `i.bolt` | 狼爪ボルト |
+| 2 | B | `Lupinian` | `i.archery` | ルピニアン毛弓 |
+| 3 | C | none | `i.sword` | 貝刃の短剣 |
+| 3 | C | none | `i.gauntlet` | 貝殻の手甲 |
+| 3 | C | none | `i.shield` | 二枚貝の盾 |
+| 3 | C | none | `i.armor` | 貝綴じの軽鎧 |
+| 3 | C | none | `i.robe` | 貝砂の法衣 |
+| 3 | C | none | `i.katana` | 貝縁の小刀 |
+| 3 | C | none | `i.wand` | 貝核の杖 |
+| 3 | C | none | `i.grimoire` | 貝紋の術書 |
+| 3 | C | none | `i.catalyst` | 貝珠の触媒石 |
+| 3 | C | none | `i.arrow` | 貝羽矢 |
+| 3 | C | none | `i.bolt` | 貝先ボルト |
+| 3 | C | none | `i.archery` | 貝弦の弓 |
+| 3 | U | none | `i.sword` | 潮刃の短剣 |
+| 3 | U | none | `i.gauntlet` | 潮革の手甲 |
+| 3 | U | none | `i.shield` | 波紋の盾 |
+| 3 | U | none | `i.armor` | 海布の防衣 |
+| 3 | U | none | `i.robe` | 潮香の法衣 |
+| 3 | U | none | `i.katana` | 海燕の打刀 |
+| 3 | U | none | `i.wand` | 潮読の杖 |
+| 3 | U | none | `i.grimoire` | 海流術式書 |
+| 3 | U | none | `i.catalyst` | 潮核の触媒 |
+| 3 | U | none | `i.arrow` | 波羽矢 |
+| 3 | U | none | `i.bolt` | 潮先ボルト |
+| 3 | U | none | `i.archery` | 海曲の弓 |
+| 3 | E | `Marine` | `i.catalyst` | 深潮核の触媒 |
+| 3 | E | `Marine` | `i.robe` | 潮王の外套 |
+| 3 | E | `Marine` | `i.shield` | 海獣骨の盾 |
+| 3 | E | `Marine` | `i.sword` | 潮牙の長剣 |
+| 3 | E | `Marine` | `i.armor` | 深海鱗の鎧 |
+| 3 | E | `Spirit` | `i.wand` | 灯霊の杖 |
+| 3 | E | `Spirit` | `i.grimoire` | 潮幻の秘本 |
+| 3 | E | `Spirit` | `i.gauntlet` | 霊波の手甲 |
+| 3 | E | `Spirit` | `i.katana` | 幽潮の刀 |
+| 3 | E | `Slime_Colony` | `i.arrow` | 粘波の矢 |
+| 3 | E | `Slime_Colony` | `i.bolt` | 凝泡ボルト |
+| 3 | E | `Slime_Colony` | `i.archery` | 群粘の弓 |
+| 3 | B | `Vulpinian` | `i.wand` | 蒼尾王の杖 |
+| 3 | B | `Vulpinian` | `i.robe` | 蒼尾王の法衣 |
+| 3 | B | `Vulpinian` | `i.sword` | 蒼牙王の剣 |
+| 3 | B | `Vulpinian` | `i.shield` | 蒼潮王の盾 |
+| 3 | B | `Vulpinian` | `i.catalyst` | 蒼狐核の触媒 |
+| 3 | B | `Vulpinian` | `i.gauntlet` | 蒼尾王の手甲 |
+| 4 | C | none | `i.sword` | 骨刃の短剣 |
+| 4 | C | none | `i.gauntlet` | 骨環の手甲 |
+| 4 | C | none | `i.shield` | 肋骨の盾 |
+| 4 | C | none | `i.armor` | 骨綴じの鎧 |
+| 4 | C | none | `i.robe` | 骨粉の法衣 |
+| 4 | C | none | `i.katana` | 骨縁の打刀 |
+| 4 | C | none | `i.wand` | 骨杖 |
+| 4 | C | none | `i.grimoire` | 骨刻の術書 |
+| 4 | C | none | `i.catalyst` | 骨核の触媒石 |
+| 4 | C | none | `i.arrow` | 骨羽矢 |
+| 4 | C | none | `i.bolt` | 骨針ボルト |
+| 4 | C | none | `i.archery` | 骨弦の弓 |
+| 4 | U | none | `i.sword` | 砂刃の短剣 |
+| 4 | U | none | `i.gauntlet` | 砂革の手甲 |
+| 4 | U | none | `i.shield` | 砂紋の盾 |
+| 4 | U | none | `i.armor` | 砂旅の外衣 |
+| 4 | U | none | `i.robe` | 乾風の法衣 |
+| 4 | U | none | `i.katana` | 砂走りの打刀 |
+| 4 | U | none | `i.wand` | 陽炎の杖 |
+| 4 | U | none | `i.grimoire` | 砂塵術式書 |
+| 4 | U | none | `i.catalyst` | 砂晶の触媒 |
+| 4 | U | none | `i.arrow` | 砂羽矢 |
+| 4 | U | none | `i.bolt` | 乾砂ボルト |
+| 4 | U | none | `i.archery` | 砂風の弓 |
+| 4 | E | `Felidian` | `i.arrow` | 猫眼の狩矢 |
+| 4 | E | `Felidian` | `i.archery` | 砂猫の長弓 |
+| 4 | E | `Felidian` | `i.robe` | 盗砂の猫衣 |
+| 4 | E | `Felidian` | `i.sword` | 猫爪の曲剣 |
+| 4 | E | `Felidian` | `i.wand` | 猫王の呪杖 |
+| 4 | E | `Felidian` | `i.grimoire` | 砂猫秘儀書 |
+| 4 | E | `Felidian` | `i.catalyst` | 猫眼核の触媒 |
+| 4 | E | `Titan` | `i.armor` | 巨骨の重鎧 |
+| 4 | E | `Titan` | `i.bolt` | 砕岩ボルト |
+| 4 | E | `Titan` | `i.katana` | 巨刃の太刀 |
+| 4 | E | `Titan` | `i.shield` | 岩背の大盾 |
+| 4 | E | `Titan` | `i.gauntlet` | 破砕の巨手甲 |
+| 4 | B | `Felidian` | `i.bolt` | 王都猫の狙撃ボルト |
+| 4 | B | `Felidian` | `i.archery` | 王都猫の弓 |
+| 4 | B | `Felidian` | `i.grimoire` | 王都猫の秘本 |
+| 4 | B | `Felidian` | `i.arrow` | 王都猫の迅矢 |
+| 4 | B | `Felidian` | `i.robe` | 王都猫の王衣 |
+| 4 | B | `Felidian` | `i.sword` | 王都猫の王剣 |
 | 5 | C | none | `i.sword` | |
 | 5 | C | none | `i.gauntlet` | |
 | 5 | C | none | `i.shield` | |
