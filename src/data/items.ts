@@ -1,6 +1,6 @@
 import { ItemDef, EnhancementTitle, SuperRareTitle, ItemCategory, ElementalOffense, Bonus } from '../types';
-import { GOD_MYTHIC_DROPS, MYTHIC_DROP_POOLS } from './dropTables';
-import { getMasterItemNames } from './masterSpecData';
+import { GOD_MYTHIC_DROPS } from './dropTables';
+import { getMasterItemCategoriesByRarity, getMasterItemNames } from './masterSpecData';
 
 // ============================================================
 // Enhancement & Super Rare title tables
@@ -534,10 +534,11 @@ function generateItems(): ItemDef[] {
       if (item) items.push(item);
     }
 
-    // Boss rare items (2~3 per tier based on boss drop tables)
-    const mythicCategories = MYTHIC_DROP_POOLS[tier] ?? [];
-    mythicCategories.forEach((category, index) => {
+    // Boss rare items (master-spec driven categories per tier)
+    const bossRareCategories = getMasterItemCategoriesByRarity(tier, 'bossRare');
+    bossRareCategories.forEach((category, index) => {
       const template = ITEM_TEMPLATE_BY_CATEGORY[category];
+      if (!template) return;
       const id = tier * 1000 + 400 + index + 1; // T4CC format
       const item = createItem(id, tier, 'bossRare', template);
       if (item) items.push(item);
