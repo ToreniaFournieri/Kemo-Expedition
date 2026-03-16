@@ -191,7 +191,7 @@
 | 6 | 6 | +8 | Elite | Mustelid | Samurai | `i.shield`BD, `i.katana`BD |
 | 6 | 6 | +8 | Elite | Mustelid | Ranger | `i.arrow`BD, `i.archery`BD |
 | 7 | 2 | +4 | Elite | Leporian | Pilgrim | `i.armor`BD, `i.gauntlet`BD |
-| 7 | 2 | +4 | Elite | Leporian | Wizard | `i.wand`BD, `i.grimoire`BD |
+| 7 | 2 | +4 | Elite | Leporian | Wizard | `i.archery`BD, `i.grimoire`BD |
 | 8 | 5 | +7 | Elite | Cervin | Sage | `i.catalyst`BD, `i.robe`BD |
 | 8 | 5 | +7 | Elite | Cervin | Rogue | `i.arrow`BD, `i.sword`BD |
 
