@@ -3402,6 +3402,7 @@ export function HomeScreen({
       return (
         <ExpeditionTab
           state={state}
+          debugSettings={debugSettings}
           onSelectDungeon={actions.selectDungeon}
           onSetExpeditionDepthLimit={actions.setExpeditionDepthLimit}
           onResetExpeditionStats={actions.resetExpeditionStats}
@@ -5594,6 +5595,7 @@ function PartyTab({
 
 function ExpeditionTab({
   state,
+  debugSettings,
   onSelectDungeon,
   onSetExpeditionDepthLimit,
   onResetExpeditionStats,
@@ -5607,6 +5609,7 @@ function ExpeditionTab({
   setExpandedRoom,
 }: {
   state: GameState;
+  debugSettings: DebugSettings;
   onSelectDungeon: (partyIndex: number, dungeonId: number) => void;
   onSetExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
   onResetExpeditionStats: (partyIndex: number) => void;
@@ -5828,9 +5831,11 @@ function ExpeditionTab({
                     onChange={(e) => onSelectDungeon(partyIndex, Number(e.target.value))}
                     className="min-w-0 w-full border border-gray-300 rounded px-2 py-1 text-sm"
                   >
-                    {DUNGEONS.map(dungeon => {
+                    {DUNGEONS.filter((dungeon) => debugSettings.colosseumEnabled || dungeon.id !== 99).map(dungeon => {
                       const gateState = getDungeonEntryGateState(party, dungeon);
-                      return <option key={dungeon.id} value={dungeon.id} disabled={gateState.locked}>{dungeon.name} {gateState.locked ? '🔒' : ''}</option>;
+                      const isSelectable = dungeon.id === 99 ? debugSettings.colosseumEnabled : !gateState.locked;
+                      if (!isSelectable) return null;
+                      return <option key={dungeon.id} value={dungeon.id}>{dungeon.name}</option>;
                     })}
                   </select>
                   <select
@@ -7427,6 +7432,7 @@ function SettingTab({
   const [glossaryTab, setGlossaryTab] = useState<GlossaryTabKey>('能');
   const [expandedGlossaryEntries, setExpandedGlossaryEntries] = useState<Record<string, boolean>>({});
   const [expandedCompendiumItems, setExpandedCompendiumItems] = useState<Record<number, boolean>>({});
+  const [isEnemyEditExpanded, setIsEnemyEditExpanded] = useState(true);
   const bestiaryListRef = useRef<HTMLDivElement | null>(null);
   const updateColosseumEnemySettings = useCallback((updates: Partial<ColosseumEnemySettings>) => {
     setColosseumEnemySettings((prev) => normalizeColosseumEnemySettings({ ...prev, ...updates }));
@@ -8857,14 +8863,21 @@ function SettingTab({
       </div>
 
       {debugSettings.colosseumEnabled && <div className="bg-pane rounded-lg p-4 mb-4">
-        <div className="text-sm font-semibold mb-3">Enemy Edit</div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+        <button
+          type="button"
+          onClick={() => setIsEnemyEditExpanded((prev) => !prev)}
+          className="w-full flex items-center justify-between text-left"
+        >
+          <div className="text-sm font-semibold">Enemy Edit</div>
+          <span className="text-gray-500 text-xs" aria-hidden="true">{isEnemyEditExpanded ? '▲' : '▼'}</span>
+        </button>
+        {isEnemyEditExpanded && <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm mt-3">
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy name</div><input className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.name} onChange={(e) => updateColosseumEnemySettings({ name: e.target.value })} /></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy type</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyType} onChange={(e) => updateColosseumEnemySettings({ enemyType: e.target.value })}>{Object.keys(ENEMY_TYPE_LABELS).map((key) => <option key={key} value={key}>{ENEMY_TYPE_LABELS[key] ?? key}</option>)}</select></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy class</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyClass} onChange={(e) => updateColosseumEnemySettings({ enemyClass: e.target.value as ColosseumEnemySettings['enemyClass'] })}>{Object.entries(ENEMY_CLASS_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy level: {colosseumEnemySettings.level}</div><input type="range" min={1} max={99} value={colosseumEnemySettings.level} onChange={(e) => updateColosseumEnemySettings({ level: Number(e.target.value) })} /></label>
           {[0,1,2,3,4].map((slot) => <label key={slot} className="space-y-1"><div className="text-xs text-gray-600">Enemy added ability {slot+1}</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.abilities[slot] ?? 'none'} onChange={(e) => { const next=[...colosseumEnemySettings.abilities]; const value=e.target.value as AbilityId | 'none'; if (value === 'none') { next.splice(slot,1); } else { next[slot]=value as AbilityId; } updateColosseumEnemySettings({ abilities: next.filter(Boolean) as AbilityId[] }); }}>{[<option key="none" value="none">none</option>, ...Object.entries(ABILITY_NAMES).map(([key,label]) => <option key={key} value={key}>{label}</option>)]}</select></label>)}
-        </div>
+        </div>}
       </div>}
 
       <div className="bg-pane rounded-lg p-4 mb-4">
