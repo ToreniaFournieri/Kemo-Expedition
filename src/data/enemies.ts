@@ -365,6 +365,30 @@ export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
   }
 
   if (enemy.type === 'elite') {
+    if (enemy.dropItemId && enemy.dropItemId % 1000 >= 400) {
+      const drops: ItemDef[] = [];
+      const specifiedBossRare = getItemById(enemy.dropItemId);
+      if (specifiedBossRare) {
+        drops.push(specifiedBossRare);
+      }
+
+      const bossRareCats = bossMythicByTier[tier] ?? ['sword', 'grimoire'];
+      const bossRareExtra = pickByCategory(
+        bossRare,
+        bossRareCats[0],
+        enemy.id + 1,
+        specifiedBossRare ? [specifiedBossRare.id] : [],
+      ) ?? pickAny(bossRare, 1, enemy.id + 1, specifiedBossRare ? [specifiedBossRare.id] : [])[0];
+      if (bossRareExtra) drops.push(bossRareExtra);
+
+      const eliteRareFallback = pickByCategory(eliteRare, bossRareCats[0], enemy.id + 2)
+        ?? pickAny(eliteRare, 1, enemy.id + 2)[0];
+      if (eliteRareFallback) drops.push(eliteRareFallback);
+
+      drops.push(...pickAny(common, Math.max(0, 5 - drops.length), enemy.id + 3));
+      return drops.slice(0, 5);
+    }
+
     const drops: ItemDef[] = [];
     const floor = Math.max(1, Math.min(5, (enemy.id % 1000) - 50));
     const eliteRareCats = eliteRareByFloor[floor] ?? ['sword', 'armor'];
