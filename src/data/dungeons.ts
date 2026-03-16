@@ -127,6 +127,26 @@ export const EXPEDITION_ENEMY_MULTIPLIERS: ExpeditionEnemyMultipliers[] = [
   ...buildExpeditionEnemyMultipliers(8),
 ];
 
+const EXPEDITION_FLOOR_CONCEPTS: Record<number, string[]> = {
+  1: ['風渡る草原', '捕食者の縄張り', '群生の巣盆地', '見張り台', '埋没遺跡原野', 'ケイナイアンの廃都'],
+  2: ['雪の森', '腐木の小径', '食肉植物群生地', '氷柱迷宮', '水晶洞窟', '水晶宮殿跡'],
+  3: ['陽だまりの浜辺', '静穏の海', '難破船', '海蝕門', '打ち捨てられた漁村', 'ヴルピニアン長老会の聖廷'],
+  4: ['砂漠の静夜', '岩石台地', '石灰洞窟', '夜盗の待ち伏せ', '失われた宝石の追跡', '豊穣の神殿'],
+  5: ['迷いの森', '険しき山道', 'ウルサンの戦陣', '竜の尾根', '火山火口', '要塞'],
+  6: ['蒸気仕掛けの地下穴', 'K9星間宇宙船の残骸', '禁断の研究施設', '心なき機械', '主なき艦橋', '共鳴の祭壇'],
+  7: ['巨大残骸環', '転送装置区画', '光の領域', '闇の領域', '深淵', '月宮殿'],
+  8: ['竜傷の峡谷門', '納骨研究原野', '小さき神々', 'ゲヘナ', 'セルヴィン文書保管街区', '千里眼の聖域'],
+};
+
+export function getExpeditionFloorConcept(expeditionId: number, floorNumber: number): string | null {
+  const concepts = EXPEDITION_FLOOR_CONCEPTS[expeditionId];
+  if (!concepts || floorNumber < 1 || floorNumber > concepts.length) {
+    return null;
+  }
+
+  return concepts[floorNumber - 1] ?? null;
+}
+
 type RoomIdKey = `${number}-${number}`;
 
 function buildMasterRoomEnemyIdLookup(poolId: number): Record<RoomIdKey, number[]> {

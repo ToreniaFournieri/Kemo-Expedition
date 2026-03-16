@@ -6,6 +6,7 @@ import {
   getEffectiveEnemyLevel,
   getEffectiveEnemyMultipliers,
   getEffectiveExpeditionTier,
+  getExpeditionFloorConcept,
 } from '../data/dungeons';
 import { RACES } from '../data/races';
 import { CLASSES, CLASS_SHORT_NAMES } from '../data/classes';
@@ -7864,6 +7865,11 @@ function SettingTab({
           .filter((enemy): enemy is EnemyDef => !!enemy && enemy.type === 'elite')
           .sort((a, b) => a.id - b.id);
 
+        const floorConcept = getExpeditionFloorConcept(selectedBestiaryDungeon.id, floor.floorNumber);
+        const baseFloorLabel = floorConcept
+          ? `Floor ${floor.floorNumber} ${floorConcept}`
+          : `Floor ${floor.floorNumber}`;
+
         if (floor.floorNumber === 6) {
           const bossEnemy = ENEMIES.find(enemy => enemy.id === selectedBestiaryDungeon.bossId);
           if (bossEnemy) {
@@ -7877,7 +7883,7 @@ function SettingTab({
           }
           groups.push({
             key: 'floor-6',
-            label: 'Floor 6',
+            label: baseFloorLabel,
             enemies: normalEnemies,
             floorNumber: floor.floorNumber,
             groupType: 'normal',
@@ -7888,7 +7894,7 @@ function SettingTab({
         if (fixedFloorElites.length > 0) {
           groups.push({
             key: `floor-${floor.floorNumber}-elite`,
-            label: `Floor ${floor.floorNumber} Elite`,
+            label: `${baseFloorLabel} Elite`,
             enemies: fixedFloorElites,
             floorNumber: floor.floorNumber,
             groupType: 'elite',
@@ -7907,7 +7913,7 @@ function SettingTab({
 
         groups.push({
           key: `floor-${floor.floorNumber}`,
-          label: `Floor ${floor.floorNumber}`,
+          label: baseFloorLabel,
           enemies: normalEnemies,
           floorNumber: floor.floorNumber,
           groupType: 'normal',
