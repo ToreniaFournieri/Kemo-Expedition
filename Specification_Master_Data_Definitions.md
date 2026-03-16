@@ -2,8 +2,8 @@
 
 | `x.exp_id` | `x.item_tier` | `x.enemy_level` | `x.expedition` | short name | terrain effect(f1,2,3,6) | terrain effect(f4,5) | item concept |
 |---|-----|-----|-----|-----|-----|-----|---|
-| 1 | 1 | 1 | ケイナイアン平原(Caninian Plains) | 原 | Rejuvenation(活性化):Heal 2% of missing HP at the end of every room. | Thunderstorm(雷雨): Both sides gain `e.thunder_x3/2` | primitive |
-| 2 | 2 | 7 | ルピニアンの亜寒帯(Lupinian Taiga) | 寒 | Chill(冷気):Room duration is increased by x1.5. Reduce this penalty by 0.1 for each party member with Fire elemental offense | Crystal Zone(水晶域): When a magic attack is used, the attacker takes backfire damage equal to 5% of the damage dealt.  | fur, icy  |
+| 1 | 1 | 1 | ケイナイアン平原(Caninian Plains) | 原 | Rejuvenation(活性化):Heal 2% of missing HP at the end of every room. | Thunderstorm(雷雨): Both sides gain `e.thunder_x3/2` | C:primitive |
+| 2 | 2 | 7 | ルピニアンの亜寒帯(Lupinian Taiga) | 寒 | Chill(冷気):Room duration is increased by x1.5. Reduce this penalty by 0.1 for each party member with Fire elemental offense | Crystal Zone(水晶域): When a magic attack is used, the attacker takes backfire damage equal to 5% of the damage dealt.  | C:fur, U:icy, E:enemy_type B:fur  |
 | 3 | 3 | 14 | ヴァルンの海洋(Vulpinian Ocean) | 海 | Rough waves(荒波):The melee NoA is reduced to x0.75 | Conduction(導電):Thunder attacks cause backfire damage equal to 5% of the damage dealt |  |
 | 4 | 4 | 21 | フェリディ砂漠(Felidian desert) | 砂 | Dry(乾燥):Ice elemental damage is reduced to x0.5 | Heavy wind(強風): Both sides receive `c.accuracy-0.020` |
 | 5 | 5 | 28 | ウルサンの炎嶺(Ursan Pyrepeak) | 炎 | Ashen Haze(灰霞): All `a.first-strike` abilities are disabled | Heat wave(熱波):At the end of every room, take damage equal to 5% of current HP. Reduce this damage by 1% for each party member with Ice elemental offense | 
