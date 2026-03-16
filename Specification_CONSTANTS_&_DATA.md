@@ -331,6 +331,23 @@
 | 12 | `q.losers` | 敗北(X回) | X回敗北する(0%, X回)　(神魔戦で中止) | 3 ~ 6 | |  敗北 | 敗北する(神魔戦で中止)　(3回~ 6回) |
 | 13 | `q.savings` | 貯金(XXXG) | 3,000G貯金する(10%, XXXG)　(神魔戦で中止) | 800 ~ 4,000G | | 貯金 | 貯金する(神魔戦で中止) (800 ~ 4,000G)　|
 
+#### 2.1.10 t. side quest
+- "地. 探索地と地形効果(探索地によって効果が変わる)"
+
+
+| `x.expedition` | short name | terrain effect(f1,2,3,6) | terrain effect(f4,5) |
+|-----|-----|-----|-----|
+| ケイナイアン平原(Caninian Plains) | 原 | Rejuvenation(活性化):Heal 2% of missing HP at the end of every room. | Thunderstorm(雷雨): Both sides gain `e.thunder_x3/2` |
+| ルピニアンの亜寒帯(Lupinian Taiga) | 寒 | Chill(冷気):Room duration is increased by x1.5. Reduce this penalty by 0.1 for each party member with Fire elemental offense | Crystal Zone(水晶域): When a magic attack is used, the attacker takes backfire damage equal to 5% of the damage dealt.  |
+| ヴァルンの海洋(Vulpinian Ocean) | 海 | Rough waves(荒波):The melee NoA is reduced to x0.75 | Conduction(導電):Thunder attacks cause backfire damage equal to 5% of the damage dealt |
+| フェリディ砂漠(Felidian desert) | 砂 | Dry(乾燥):Ice elemental damage is reduced to x0.5 | Heavy wind(強風): Both sides receive `c.accuracy-0.020` |
+| ウルサンの炎嶺(Ursan Pyrepeak) | 炎 | Ashen Haze(灰霞): All `a.first-strike` abilities are disabled | Heat wave(熱波):At the end of every room, take damage equal to 5% of current HP. Reduce this damage by 1% for each party member with Ice elemental offense |
+| マステリドの巣穴(Mustelid Burrow) | 巣 | Cave(洞窟): The ranged NoA is reduced to x0.75 | Leakage(漏電): Take damage equal to 3% of missing HP at the end of every room. |
+| レポリアンの月宮(Leporian Moon Palace) | 月 | Light Zone(光域):`a.mutual-physical-amplify`-1:物理抑制(双方物理ダメージ0.8倍) | Dark Zone(闇域):`a.mutual-physical-amplify`1:物理増幅(双方物理ダメージ1.2倍) |
+| セルヴィンの谷(Cervin Vale) | 谷 | Sanctuary(聖域): `a.mutual-magic-amplify`1:魔法増幅(双方魔法ダメージ1.2倍) | Gehenna(ゲヘナ):No religion bonuses apply |
+
+
+
 ### 2.2 Global constants
 
 **Global structure**
