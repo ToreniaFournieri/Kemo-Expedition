@@ -1891,7 +1891,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
             const tier = dungeon.enemyPoolIds[0]; // dungeon tier
             // Loot-Gate check before entering (floor 1, room 1)
-            if (floor.floorNumber === 1 && roomIndex === 0 && tier > 1) {
+            if (dungeon.id !== 99 && floor.floorNumber === 1 && roomIndex === 0 && tier > 1) {
               const prevTier = tier - 1;
               const prevDungeonName = getDungeonById(prevTier)?.name ?? '前回の探検地';
               const gateRequired = ENTRY_GATE_REQUIRED;
