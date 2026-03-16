@@ -7400,11 +7400,11 @@ function SettingTab({
   onPartyUnlock: () => void;
 }) {
   type DivineBureauPanelKey = 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'bestiary' | 'superRare' | 'gameSetting' | 'debug';
-  type GlossaryTabKey = 'A' | 'B' | 'C' | 'D' | 'F' | 'G' | 'M' | 'Q';
+  type GlossaryTabKey = '能' | '基' | '固' | '増' | '属' | '機' | '信' | '魔' | '求';
   const DIVINE_BUREAU_PANEL_STORAGE_KEY = 'kemo-expedition.divine-bureau.panel-expanded';
   const GLOSSARY_TAB_STORAGE_KEY = 'kemo-expedition.divine-bureau.glossary-tab';
   const GLOSSARY_EXPANDED_STORAGE_KEY = 'kemo-expedition.divine-bureau.glossary-expanded-entries';
-  const GLOSSARY_TABS: readonly GlossaryTabKey[] = ['A', 'B', 'C', 'D', 'F', 'G', 'M', 'Q'];
+  const GLOSSARY_TABS: readonly GlossaryTabKey[] = ['能', '基', '固', '増', '属', '機', '信', '魔', '求'];
   const defaultDivineBureauPanelState: Record<DivineBureauPanelKey, boolean> = {
     modeSelect: false,
     donation: false,
@@ -7422,7 +7422,7 @@ function SettingTab({
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const [compendiumCategory, setCompendiumCategory] = useState<string>('armor');
   const [compendiumRarityFilter, setCompendiumRarityFilter] = useState<RarityFilter>('all');
-  const [glossaryTab, setGlossaryTab] = useState<GlossaryTabKey>('A');
+  const [glossaryTab, setGlossaryTab] = useState<GlossaryTabKey>('能');
   const [expandedGlossaryEntries, setExpandedGlossaryEntries] = useState<Record<string, boolean>>({});
   const [expandedCompendiumItems, setExpandedCompendiumItems] = useState<Record<number, boolean>>({});
   const bestiaryListRef = useRef<HTMLDivElement | null>(null);
@@ -7774,19 +7774,25 @@ function SettingTab({
     .slice()
     .sort((a, b) => b.id - a.id);
 
-  const glossarySectionsByTab: Record<'A' | 'B' | 'C' | 'D' | 'F' | 'G' | 'M' | 'Q', string> = {
-    A: 'a.',
-    B: 'b.',
-    C: 'c.',
-    D: 'd.',
-    F: 'f.',
-    G: 'g.',
-    M: 'm.',
-    Q: 'q.',
-  };
-  const filteredGlossarySections = GLOSSARY_SECTIONS.filter((section) =>
-    section.heading.toLowerCase().includes(glossarySectionsByTab[glossaryTab])
-  );
+  const filteredGlossarySections = GLOSSARY_SECTIONS.filter((section) => {
+    const sectionSubtitle = section.subtitle;
+    if (glossaryTab === '属') {
+      return sectionSubtitle.startsWith('増.');
+    }
+
+    const glossarySectionsByTab: Record<Exclude<GlossaryTabKey, '属'>, string> = {
+      能: '能.',
+      基: '基.',
+      固: '固.',
+      増: '増.',
+      機: '機.',
+      信: '信.',
+      魔: '魔.',
+      求: '求.',
+    };
+
+    return sectionSubtitle.startsWith(glossarySectionsByTab[glossaryTab]);
+  });
 
 
   type GlossaryTable = {
@@ -8244,14 +8250,21 @@ function SettingTab({
                 </div>
                 <div className="space-y-1 max-h-72 overflow-y-auto pr-1">
                   {section.entries.map((entry, index) => {
-                    const isSideQuestGlossarySection = section.heading.toLowerCase().includes('2.1.9 q.');
+                    const isSideQuestGlossarySection = section.subtitle.startsWith('求.');
                     if (isSideQuestGlossarySection && entry.key === 'q.none') {
                       return null;
                     }
                     const entryKey = `${section.id}-${entry.key}-${index}`;
-                    const isGodGlossarySection = section.heading.toLowerCase().includes('2.1.7 g.');
-                    const shouldCollapseEntry = glossaryTab === 'F';
-                    const useDefaultGlossaryTextColor = glossaryTab === 'F';
+                    const isElementalEntry = entry.key.includes('elemental');
+                    if (glossaryTab === '属' && !isElementalEntry) {
+                      return null;
+                    }
+                    if (glossaryTab === '増' && isElementalEntry) {
+                      return null;
+                    }
+                    const isGodGlossarySection = section.subtitle.startsWith('信.');
+                    const shouldCollapseEntry = glossaryTab === '増' || glossaryTab === '属';
+                    const useDefaultGlossaryTextColor = glossaryTab === '増' || glossaryTab === '属';
                     const isEntryExpanded = !shouldCollapseEntry || expandedGlossaryEntries[entryKey] === true;
                     const descriptionLines = entry.description.split('\n');
                     const normalizedDescriptionLines = isSideQuestGlossarySection

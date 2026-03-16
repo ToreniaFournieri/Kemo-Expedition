@@ -747,7 +747,7 @@ note: 0:no sleep 寝ない, 1:nap 仮眠, 2:sound sleep 熟睡
 - list and its descrpition is here:
   - @Specification_CONSTANTS_&_DATA.md
   - 2.1.1 a. bonus ability, 2.1.2 b. bonus, 2.1.3 c. bonus, 2.1.4 d. bonus, 2.1.5, 2.1.6, 2.1.7, 2.1.8, 2.1.9
-- Glossary tabs: A, B, C, D, F, G, M, Q. Default: A
+- Glossary tabs: 能, 基, 固, 増, 属, 機, 信, 魔, 求. Default: 能
 
 
 **Item Compendium (アイテム図鑑)**
