@@ -8603,8 +8603,9 @@ function SettingTab({
             );
           })}
           {isColosseumBestiaryTab && (() => {
-            const colosseumEnemy = buildColosseumEnemy(colosseumEnemySettings, gameMode === 'm.luna');
-            const enemyExpanded = !!expandedBestiaryEnemies[colosseumEnemy.id];
+            const baseColosseumEnemy = buildColosseumEnemy(colosseumEnemySettings, gameMode === 'm.luna');
+            const colosseumEnemy = getDisplayEnemy(baseColosseumEnemy, selectedBestiaryDungeon, 1, 'boss');
+            const enemyExpanded = !!expandedBestiaryEnemies[baseColosseumEnemy.id];
             const defenseAmplifierPercent = colosseumEnemy.defenseAmplifier * 100;
             const hasRangedAttack = hasEnemyAttack(colosseumEnemy.rangedAttack, colosseumEnemy.rangedNoA);
             const hasMeleeAttack = hasEnemyAttack(colosseumEnemy.meleeAttack, colosseumEnemy.meleeNoA);
@@ -8615,7 +8616,7 @@ function SettingTab({
               <div className="bg-white rounded border border-gray-200 p-2">
                 <div className="text-xs text-gray-500 font-medium mb-1">Colosseum Opponent</div>
                 <div className="mt-2 border border-gray-100 rounded">
-                  <button onClick={() => onSetExpandedBestiaryEnemies(prev => ({ ...prev, [colosseumEnemy.id]: !enemyExpanded }))} className="w-full text-left px-2 py-1 text-sm flex justify-between items-center">
+                  <button onClick={() => onSetExpandedBestiaryEnemies(prev => ({ ...prev, [baseColosseumEnemy.id]: !enemyExpanded }))} className="w-full text-left px-2 py-1 text-sm flex justify-between items-center">
                     <span>{renderEnemyNameWithMutedClass(getEnemyDisplayNameWithClass(colosseumEnemy))}</span><span className="text-xs text-gray-500">{enemyExpanded ? '▲' : '▼'}</span>
                   </button>
                   {enemyExpanded && <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
