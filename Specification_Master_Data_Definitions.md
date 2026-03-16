@@ -176,24 +176,24 @@
 | 8 | BOSS | Ninja | `i.katana`BD, `i.bolt`BD, `i.grimoire`BD | |
 
 
-| `x.exp_id` | replace target | `x.level_offset` | `x.type` | `x.class` | `x.drop` | `x.name` |
-|-|-|-|-|-|-|-|
-| 1 | 4 | +6 | Elite | Lord | `i.shield`BD, `i.robe`BD | |
-| 1 | 4 | +6 | Elite | Fighter | `i.katana`BD, `i.gauntlet`BD | |
-| 2 | 5 | +7 | Elite | Wizard | `i.wand`BD, `i.catalyst`BD | |
-| 2 | 5 | +7 | Elite | Ninja | `i.bolt`BD, `i.archery`BD | |
-| 3 | 5 | +7 | Elite | Duelist | `i.sword`BD, `i.shield`BD | |
-| 3 | 5 | +7 | Elite | Pilgrim | `i.catalyst`BD, `i.gauntlet`BD | |
-| 4 | 4 | +6 | Elite | Rogue | `i.grimoire`BD, `i.arrow`BD | |
-| 4 | 4 | +6 | Elite | Ninja | `i.robe`BD, `i.sword`BD | |
-| 5 | 3 | +5 | Elite | Fighter | `i.gauntlet`BD, `i.armor`BD | |
-| 5 | 3 | +5 | Elite | Sage | `i.wand`BD, `i.catalyst`BD | |
-| 6 | 6 | +8 | Elite | Samurai | `i.shield`BD, `i.katana`BD | |
-| 6 | 6 | +8 | Elite | Ranger | `i.arrow`BD, `i.archery`BD | |
-| 7 | 2 | +4 | Elite | Pilgrim | `i.armor`BD, `i.gauntlet`BD | |
-| 7 | 2 | +4 | Elite | Wizard | `i.wand`BD, `i.grimoire`BD | |
-| 8 | 5 | +7 | Elite | Sage | `i.catalyst`BD, `i.robe`BD | |
-| 8 | 5 | +7 | Elite | Rogue | `i.arrow`BD, `i.sword`BD | |
+| `x.exp_id` | replace target | `x.level_offset` | `x.type` | `x_enemy_type` | `x.class` | `x.drop` | `x.name` |
+|-|-|-|-|-|-|-|-|
+| 1 | 4 | +6 | Elite | Caninian | Lord | `i.shield`BD, `i.robe`BD | |
+| 1 | 4 | +6 | Elite | Caninian | Fighter | `i.katana`BD, `i.gauntlet`BD | |
+| 2 | 5 | +7 | Elite | Lupinian |  Wizard | `i.wand`BD, `i.catalyst`BD | |
+| 2 | 5 | +7 | Elite | Lupinian | Ninja | `i.bolt`BD, `i.archery`BD | |
+| 3 | 5 | +7 | Elite | Vulpinian | Duelist | `i.sword`BD, `i.shield`BD | |
+| 3 | 5 | +7 | Elite | Vulpinian | Pilgrim | `i.catalyst`BD, `i.gauntlet`BD | |
+| 4 | 4 | +6 | Elite | Felidian | Rogue | `i.grimoire`BD, `i.arrow`BD | |
+| 4 | 4 | +6 | Elite | Felidian | Ninja | `i.robe`BD, `i.sword`BD | |
+| 5 | 3 | +5 | Elite | Ursan | Fighter | `i.gauntlet`BD, `i.armor`BD | |
+| 5 | 3 | +5 | Elite | Ursan | Sage | `i.wand`BD, `i.catalyst`BD | |
+| 6 | 6 | +8 | Elite | Mustelid | Samurai | `i.shield`BD, `i.katana`BD | |
+| 6 | 6 | +8 | Elite | Mustelid | Ranger | `i.arrow`BD, `i.archery`BD | |
+| 7 | 2 | +4 | Elite | Leporian | Pilgrim | `i.armor`BD, `i.gauntlet`BD | |
+| 7 | 2 | +4 | Elite | Leporian | Wizard | `i.wand`BD, `i.grimoire`BD | |
+| 8 | 5 | +7 | Elite | Cervin | Sage | `i.catalyst`BD, `i.robe`BD | |
+| 8 | 5 | +7 | Elite | Cervin | Rogue | `i.arrow`BD, `i.sword`BD | |
 
 
 - Drop code format: `i.item_type`<Rarity><EnemyTypeSource>
