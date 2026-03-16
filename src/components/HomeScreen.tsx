@@ -7875,6 +7875,17 @@ function SettingTab({
               groupType: 'boss',
             });
           }
+
+          if (room3SpecialElites.length > 0) {
+            groups.push({
+              key: `floor-${floor.floorNumber}-room-3-special`,
+              label: `Floor ${floor.floorNumber} Room 3 (Special)`,
+              enemies: room3SpecialElites,
+              floorNumber: floor.floorNumber,
+              groupType: 'elite',
+            });
+          }
+
           groups.push({
             key: 'floor-6',
             label: 'Floor 6',
