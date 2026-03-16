@@ -334,18 +334,16 @@
 #### 2.1.10 t. side quest
 - "地. 探索地と地形効果(探索地によって効果が変わる)"
 
-
-| `x.expedition` | short name | terrain effect(f1,2,3,6) | terrain effect(f4,5) |
-|-----|-----|-----|-----|
-| ケイナイアン平原(Caninian Plains) | 原 | Rejuvenation(活性化):Heal 2% of missing HP at the end of every room. | Thunderstorm(雷雨): Both sides gain `e.thunder_x3/2` |
-| ルピニアンの亜寒帯(Lupinian Taiga) | 寒 | Chill(冷気):Room duration is increased by x1.5. Reduce this penalty by 0.1 for each party member with Fire elemental offense | Crystal Zone(水晶域): When a magic attack is used, the attacker takes backfire damage equal to 5% of the damage dealt.  |
-| ヴァルンの海洋(Vulpinian Ocean) | 海 | Rough waves(荒波):The melee NoA is reduced to x0.75 | Conduction(導電):Thunder attacks cause backfire damage equal to 5% of the damage dealt |
-| フェリディ砂漠(Felidian desert) | 砂 | Dry(乾燥):Ice elemental damage is reduced to x0.5 | Heavy wind(強風): Both sides receive `c.accuracy-0.020` |
-| ウルサンの炎嶺(Ursan Pyrepeak) | 炎 | Ashen Haze(灰霞): All `a.first-strike` abilities are disabled | Heat wave(熱波):At the end of every room, take damage equal to 5% of current HP. Reduce this damage by 1% for each party member with Ice elemental offense |
-| マステリドの巣穴(Mustelid Burrow) | 巣 | Cave(洞窟): The ranged NoA is reduced to x0.75 | Leakage(漏電): Take damage equal to 3% of missing HP at the end of every room. |
-| レポリアンの月宮(Leporian Moon Palace) | 月 | Light Zone(光域):`a.mutual-physical-amplify`-1:物理抑制(双方物理ダメージ0.8倍) | Dark Zone(闇域):`a.mutual-physical-amplify`1:物理増幅(双方物理ダメージ1.2倍) |
-| セルヴィンの谷(Cervin Vale) | 谷 | Sanctuary(聖域): `a.mutual-magic-amplify`1:魔法増幅(双方魔法ダメージ1.2倍) | Gehenna(ゲヘナ):No religion bonuses apply |
-
+| `x.expedition` | 地形効果(f1,2,3,6) | 地形効果(f4,5) |
+|-----|-----|-----|
+| ケイナイアン平原 | 活性化: 各部屋の終了時、減少HPの2%を回復する。 | 雷雨: 双方に 雷威力x3/2(雷威力が上がる) を付与する。 |
+| ルピニアンの亜寒帯 | 冷気: 部屋の継続時間がx1.5になる。さらに、火属性攻撃を持つパーティメンバー1人につき、このペナルティを0.1軽減する。 | 水晶域: 魔法攻撃を使用したとき、攻撃者は与えたダメージの5%の反動ダメージを受ける。 |
+| ヴァルンの海洋 | 荒波: 近接攻撃回数がNoAがx0.75になる。 | 導電: 雷属性攻撃を行うと、攻撃者は与えたダメージの5%の反動ダメージを受ける。 |
+| フェリディ砂漠 | 乾燥: 氷属性ダメージがx0.5になる。 | 強風: 双方に 命中-20を付与する。 |
+| ウルサンの炎嶺 | 灰霞: すべての先制攻撃を無効化する。 | 熱波: 各部屋の終了時、現在HPの5%に等しいダメージを受ける。さらに、氷属性攻撃を持つパーティメンバー1人につき、このダメージを1%軽減する。 |
+| マステリドの巣穴 | 洞窟: 遠距離攻撃回数がx0.75になる。 | 漏電: 各部屋の終了時、減少HPの3%に等しいダメージを受ける。 |
+| レポリアンの月宮 | 光域: 物理抑制1（双方物理ダメージ0.8倍） | 闇域: 物理増幅1（双方物理ダメージ1.2倍） |
+| セルヴィンの谷 | 聖域: 魔法増幅1（双方魔法ダメージ1.2倍） | ゲヘナ: いかなる宗教ボーナスも適用されない。 |
 
 
 ### 2.2 Global constants
