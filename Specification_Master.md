@@ -25,8 +25,8 @@
 | 1 | 4 | 1-2 | 4 | Normal | `Aerial` | Rogue | `i.bolt`U, `i.armor`U | 風の小翼 |
 | 1 | 4 | 1-2 | 4 | Normal | `Aerial` | Wizard | `i.wand`U, `i.catalyst`U | 曇り空の小翼 |
 | 1 | 4 | 1-2 | 4 | Normal | `Aerial` | Ranger | `i.arrow`U, `i.archery`U | 見張り翼 |
-| 1 | 4 | 3 | 5 | Normal | `Insect_Swarm` | Fighter | `i.sword`U, `i.gauntlet`U | 前線のむれ虫 |
-| 1 | 4 | 3 | 5 | Normal | `Insect_Swarm` | Lord | `i.shield`U, `i.robe`U | 殻もちのむれ虫 |
+| 1 | 4 | 3 | 7 | Elite | `Caninian` | Lord | `i.shield`BD, `i.robe`BD | |
+| 1 | 4 | 3 | 7 | Elite | `Caninian` | Fighter | `i.katana`BD, `i.gauntlet`BD | |
 | 1 | 4 | 4 | 7 | Elite | `Aerial` | Ranger | `i.arrow`EB, `i.bolt`EB, `i.archery`EB | 風切り翼 |
 | 1 | 5 | 1-2 | 5 | Normal | `Insect_Swarm` | Ninja | `i.katana`U, `i.armor`U | かくれむれ虫 |
 | 1 | 5 | 1-2 | 5 | Normal | `Insect_Swarm` | Samurai | `i.katana`U, `i.catalyst`U | 刀持ちむれ虫 |
@@ -67,8 +67,8 @@
 | 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | Ninja | `i.katana`U, `i.armor`U | 胞子影の這い株 |
 | 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | Samurai | `i.katana`U, `i.catalyst`U | 菌刃のつる株 |
 | 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | Sage | `i.grimoire`U, `i.robe`U | 苔衣の胞子塊 |
-| 2 | 5 | 3 | 12 | Normal | `Golem` | Duelist | `i.sword`U, `i.arrow`U | 石脚の剣闘体 |
-| 2 | 5 | 3 | 12 | Normal | `Golem` | Pilgrim | `i.armor`U, `i.grimoire`U | 巡礼の岩体 |
+| 2 | 5 | 3 | 14 | Elite | `Lupinian` | Wizard | `i.wand`BD, `i.catalyst`BD | |
+| 2 | 5 | 3 | 14 | Elite | `Lupinian` | Ninja | `i.bolt`BD, `i.archery`BD | |
 | 2 | 5 | 4 | 14 | Elite | `Golem` | Sage | `i.wand`EB, `i.grimoire`EB, `i.catalyst`EB | 核晶の導師体 |
 | 2 | 6 | 1-2 | 12 | Normal | `Frost` | Lord | `i.shield`U, `i.robe`U | 氷冠の群核 |
 | 2 | 6 | 1-2 | 12 | Normal | `Frost` | Wizard | `i.wand`U, `i.catalyst`U | 寒天の呪獣 |
@@ -103,8 +103,8 @@
 | 3 | 5 | 1-2 | 18 | Normal | `Spirit` | Ninja | `i.katana`U, `i.armor`U | |
 | 3 | 5 | 1-2 | 18 | Normal | `Spirit` | Samurai | `i.katana`U, `i.catalyst`U | |
 | 3 | 5 | 1-2 | 18 | Normal | `Spirit` | Sage | `i.grimoire`U, `i.robe`U | |
-| 3 | 5 | 3 | 19 | Normal | `Slime_Colony` | Duelist | `i.sword`U, `i.arrow`U | |
-| 3 | 5 | 3 | 19 | Normal | `Slime_Colony` | Pilgrim | `i.armor`U, `i.grimoire`U | |
+| 3 | 5 | 3 | 21 | Elite | `Vulpinian` | Duelist | `i.sword`BD, `i.shield`BD | |
+| 3 | 5 | 3 | 21 | Elite | `Vulpinian` | Pilgrim | `i.catalyst`BD, `i.gauntlet`BD | |
 | 3 | 5 | 4 | 21 | Elite | `Slime_Colony` | Rogue | `i.arrow`EB, `i.bolt`EB, `i.archery`EB | |
 | 3 | 6 | 1-2 | 19 | Normal | `Marine` | Lord | `i.shield`U, `i.robe`U | |
 | 3 | 6 | 1-2 | 19 | Normal | `Marine` | Wizard | `i.wand`U, `i.catalyst`U | |
@@ -133,8 +133,8 @@
 | 4 | 4 | 1-2 | 24 | Normal | `Felidian` | Rogue | `i.bolt`U, `i.armor`U | |
 | 4 | 4 | 1-2 | 24 | Normal | `Felidian` | Wizard | `i.wand`U, `i.catalyst`U | |
 | 4 | 4 | 1-2 | 24 | Normal | `Felidian` | Ranger | `i.arrow`U, `i.archery`U | |
-| 4 | 4 | 3 | 25 | Normal | `Titan` | Fighter | `i.sword`U, `i.gauntlet`U | |
-| 4 | 4 | 3 | 25 | Normal | `Titan` | Lord | `i.shield`U, `i.robe`U | |
+| 4 | 4 | 3 | 27 | Elite | `Felidian` | Rogue | `i.grimoire`BD, `i.arrow`BD | |
+| 4 | 4 | 3 | 27 | Elite | `Felidian` | Ninja | `i.robe`BD, `i.sword`BD | |
 | 4 | 4 | 4 | 27 | Elite | `Felidian` | Duelist | `i.robe`EB, `i.sword`EB | |
 | 4 | 5 | 1-2 | 25 | Normal | `Titan` | Ninja | `i.katana`U, `i.armor`U | |
 | 4 | 5 | 1-2 | 25 | Normal | `Titan` | Samurai | `i.katana`U, `i.catalyst`U | |
@@ -163,8 +163,8 @@
 | 5 | 3 | 1-2 | 30 | Normal | `Ursan` | Lord | `i.shield`U, `i.robe`U | |
 | 5 | 3 | 1-2 | 30 | Normal | `Ursan` | Wizard | `i.wand`U, `i.catalyst`U | |
 | 5 | 3 | 1-2 | 30 | Normal | `Ursan` | Fighter | `i.sword`U, `i.gauntlet`U | |
-| 5 | 3 | 3 | 31 | Normal | `Beast` | Samurai | `i.katana`U, `i.bolt`U | |
-| 5 | 3 | 3 | 31 | Normal | `Beast` | Ranger | `i.arrow`U, `i.archery`U | |
+| 5 | 3 | 3 | 33 | Elite | `Ursan` | Fighter | `i.gauntlet`BD, `i.armor`BD | |
+| 5 | 3 | 3 | 33 | Elite | `Ursan` | Sage | `i.wand`BD, `i.catalyst`BD | |
 | 5 | 3 | 4 | 33 | Elite | `Ursan` | Fighter | `i.sword`EC, `i.armor`EC | |
 | 5 | 4 | 1-2 | 31 | Normal | `Dragon` | Rogue | `i.bolt`U, `i.armor`U | |
 | 5 | 4 | 1-2 | 31 | Normal | `Dragon` | Wizard | `i.wand`U, `i.catalyst`U | |
@@ -217,8 +217,8 @@
 | 6 | 6 | 1-2 | 40 | Normal | `Mech` | Lord | `i.shield`U, `i.robe`U | |
 | 6 | 6 | 1-2 | 40 | Normal | `Mech` | Wizard | `i.wand`U, `i.catalyst`U | |
 | 6 | 6 | 1-2 | 40 | Normal | `Mech` | Fighter | `i.sword`U, `i.gauntlet`U | |
-| 6 | 6 | 3 | 41 | Normal | `Golem` | Samurai | `i.katana`U, `i.bolt`U | |
-| 6 | 6 | 3 | 41 | Normal | `Golem` | Ranger | `i.arrow`U, `i.archery`U | |
+| 6 | 6 | 3 | 43 | Elite | `Mustelid` | Samurai | `i.shield`BD, `i.katana`BD | |
+| 6 | 6 | 3 | 43 | Elite | `Mustelid` | Ranger | `i.arrow`BD, `i.archery`BD | |
 | 6 | 6 | 4 | 45 | BOSS | `Mustelid` | Sage | `i.armor`BD, `i.catalyst`BD | |
 | 7 | 1 | 1-2 | 42 | Normal | `Titan` | Rogue | `i.bolt`U, `i.armor`U | |
 | 7 | 1 | 1-2 | 42 | Normal | `Titan` | Wizard | `i.wand`U, `i.catalyst`U | |
@@ -229,8 +229,8 @@
 | 7 | 2 | 1-2 | 43 | Normal | `Titan` | Ninja | `i.katana`U, `i.armor`U | |
 | 7 | 2 | 1-2 | 43 | Normal | `Titan` | Samurai | `i.katana`U, `i.catalyst`U | |
 | 7 | 2 | 1-2 | 43 | Normal | `Titan` | Sage | `i.grimoire`U, `i.robe`U | |
-| 7 | 2 | 3 | 44 | Normal | `Undead` | Duelist | `i.sword`U, `i.arrow`U | |
-| 7 | 2 | 3 | 44 | Normal | `Undead` | Pilgrim | `i.armor`U, `i.wand`U | |
+| 7 | 2 | 3 | 46 | Elite | `Leporian` | Pilgrim | `i.armor`BD, `i.gauntlet`BD | |
+| 7 | 2 | 3 | 46 | Elite | `Leporian` | Wizard | `i.wand`BD, `i.grimoire`BD | |
 | 7 | 2 | 4 | 46 | Elite | `Titan` | Sage | `i.wand`EA, `i.grimoire`EA, `i.robe`EA | |
 | 7 | 3 | 1-2 | 44 | Normal | `Aerial` | Lord | `i.shield`U, `i.robe`U | |
 | 7 | 3 | 1-2 | 44 | Normal | `Aerial` | Wizard | `i.wand`U, `i.catalyst`U | |
@@ -283,8 +283,8 @@
 | 8 | 5 | 1-2 | 53 | Normal | `Jinma` | Ninja | `i.katana`U, `i.armor`U | |
 | 8 | 5 | 1-2 | 53 | Normal | `Jinma` | Samurai | `i.katana`U, `i.catalyst`U | |
 | 8 | 5 | 1-2 | 53 | Normal | `Jinma` | Sage | `i.grimoire`U, `i.robe`U | |
-| 8 | 5 | 3 | 54 | Normal | `Ghost` | Duelist | `i.sword`U, `i.arrow`U | |
-| 8 | 5 | 3 | 54 | Normal | `Ghost` | Pilgrim | `i.armor`U, `i.grimoire`U | |
+| 8 | 5 | 3 | 56 | Elite | `Cervin` | Sage | `i.catalyst`BD, `i.robe`BD | |
+| 8 | 5 | 3 | 56 | Elite | `Cervin` | Rogue | `i.arrow`BD, `i.sword`BD | |
 | 8 | 5 | 4 | 56 | Elite | `Ghost` | Wizard | `i.grimoire`EB, `i.shield`EB | |
 | 8 | 6 | 1-2 | 54 | Normal | `Dragon` | Lord | `i.shield`U, `i.robe`U | |
 | 8 | 6 | 1-2 | 54 | Normal | `Dragon` | Wizard | `i.wand`U, `i.catalyst`U | |
