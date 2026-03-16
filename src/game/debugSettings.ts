@@ -11,6 +11,7 @@ export interface DebugSettings {
   jewelShopOpen: boolean;
   displayFlavorCondition: boolean;
   displayAfkDuration: boolean;
+  colosseumEnabled: boolean;
 }
 
 const DEBUG_SETTINGS_STORAGE_KEY = 'kemo-expedition.debug-settings';
@@ -24,6 +25,7 @@ export const DEFAULT_DEBUG_SETTINGS: DebugSettings = {
   jewelShopOpen: false,
   displayFlavorCondition: false,
   displayAfkDuration: false,
+  colosseumEnabled: false,
 };
 
 function canUseStorage(): boolean {
@@ -41,6 +43,7 @@ export function normalizeDebugSettings(raw: unknown): DebugSettings {
     jewelShopOpen: parsed.jewelShopOpen === true,
     displayFlavorCondition: parsed.displayFlavorCondition === true,
     displayAfkDuration: parsed.displayAfkDuration === true,
+    colosseumEnabled: parsed.colosseumEnabled === true,
   };
 }
 

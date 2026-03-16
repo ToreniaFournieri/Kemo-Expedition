@@ -312,6 +312,24 @@ export const DUNGEONS: Dungeon[] = [
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[7],
     floors: createFloors(8, 801),
   },
+
+  {
+    id: 99,
+    tier: 1,
+    expLevel: 1,
+    name: '闘技場',
+    enemyPoolIds: [99],
+    bossId: 9901,
+    enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[0],
+    floors: [
+      {
+        floorNumber: 1,
+        multiplier: 1,
+        multipliers: FLOOR_ROOM_MULTIPLIERS[1]?.battle_Boss,
+        rooms: [{ type: 'battle_Boss', poolId: 99, bossId: 9901, enemyIds: [9901] }],
+      },
+    ],
+  },
 ];
 
 export const getDungeonById = (id: number): Dungeon | undefined =>

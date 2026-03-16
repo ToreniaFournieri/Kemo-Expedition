@@ -27,6 +27,7 @@ import {
 import { computePartyStats } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
 import { applyEnemyEncounterScaling, getRoomMultiplier } from '../game/enemyScaling';
+import { buildColosseumEnemy, getColosseumEnemySettings } from '../game/colosseum';
 import { replaceCharacterEquipment } from '../game/equipment';
 import { DUNGEONS, getDungeonById, getEffectiveEnemyLevel, getEffectiveEnemyMultipliers, getEffectiveExpeditionTier } from '../data/dungeons';
 import { CLASS_SHORT_NAMES } from '../data/classes';
@@ -1316,8 +1317,13 @@ function selectEnemyForRoom(
   bossId?: number,
   floorNumber?: number,
   roomIndex?: number,
-  roomEnemyIds: number[] = []
+  roomEnemyIds: number[] = [],
+  isLunaMode: boolean = false
 ): EnemyDef | null {
+  if (poolId === 99 || bossId === 9901) {
+    return buildColosseumEnemy(getColosseumEnemySettings(), isLunaMode);
+  }
+
   if (roomType === 'battle_Boss' && bossId) {
     return getBossEnemy(bossId) ?? null;
   }
@@ -1707,30 +1713,6 @@ function getUnlockActorName(party: Party): string | undefined {
   return unlockActorName;
 }
 
-function buildRewardLogEntries(
-  rewards: { itemName: string; autoSellProfit?: number }[],
-  unlockActorName?: string
-): BattleLogEntry[] {
-  const groupedRewards = new Map<string, { itemName: string; autoSellProfit?: number; count: number }>();
-  for (const reward of rewards) {
-    const key = `${reward.itemName}|${reward.autoSellProfit ?? 0}`;
-    const existing = groupedRewards.get(key);
-    if (existing) {
-      existing.count += 1;
-      continue;
-    }
-    groupedRewards.set(key, { ...reward, count: 1 });
-  }
-
-  return Array.from(groupedRewards.values()).map(reward => ({
-    phase: 'long',
-    actor: 'deity',
-    action: unlockActorName
-      ? `${unlockActorName}の解錠 ${reward.itemName}${reward.count > 1 ? ` x${reward.count}` : ''} を獲得した！`
-      : `${reward.itemName}${reward.count > 1 ? ` x${reward.count}` : ''} を獲得した！`,
-    note: reward.autoSellProfit ? `(自動売却対象: ${reward.autoSellProfit * reward.count}G)` : undefined,
-  }));
-}
 
 function applyPeriodicDeityHpEffect(
   deityName: string,
@@ -1943,7 +1925,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             }
 
             // Loot-Gate check before Elite/Boss rooms (room 4 of each floor)
-            if (roomDef.type === 'battle_Elite' || roomDef.type === 'battle_Boss') {
+            if (dungeon.id !== 99 && (roomDef.type === 'battle_Elite' || roomDef.type === 'battle_Boss')) {
               let gateRequired: number;
               let gateRarity: 'uncommon' | 'eliteRare';
               if (roomDef.type === 'battle_Boss') {
@@ -1987,7 +1969,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             }
 
             // Select enemy for this room
-            const baseEnemy = selectEnemyForRoom(roomDef.type, roomDef.poolId, roomDef.bossId, floor.floorNumber, roomIndex, roomDef.enemyIds ?? []);
+            const baseEnemy = selectEnemyForRoom(roomDef.type, roomDef.poolId, roomDef.bossId, floor.floorNumber, roomIndex, roomDef.enemyIds ?? [], gameMode === 'm.luna');
             if (!baseEnemy) continue;
 
             const roomMultiplier = getRoomMultiplier(dungeon.expLevel, floor.floorNumber, roomDef.type, floor.multiplier, gameMode === 'm.luna');
@@ -2043,14 +2025,17 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             };
 
             if (battleResult.outcome === 'victory') {
-              const enemyLevelFinal = getEffectiveEnemyLevel(dungeon.expLevel, floor.floorNumber, roomDef.type, gameMode === 'm.luna');
-              totalExp += calculateExperience(
-                enemy.experience,
-                roomDef.type,
-                effectiveDungeon.tier,
-                currentParty.level,
-                enemyLevelFinal
-              );
+              const isColosseumBattle = dungeon.id === 99;
+              if (!isColosseumBattle) {
+                const enemyLevelFinal = getEffectiveEnemyLevel(dungeon.expLevel, floor.floorNumber, roomDef.type, gameMode === 'm.luna');
+                totalExp += calculateExperience(
+                  enemy.experience,
+                  roomDef.type,
+                  effectiveDungeon.tier,
+                  currentParty.level,
+                  enemyLevelFinal
+                );
+              }
 
               const unlockActorName = getUnlockActorName(currentParty);
               const hasUnlock = !!unlockActorName;
@@ -2062,30 +2047,32 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 ?? 0;
               const hasExtraRewardRollBlessing = deityKey === 'Goddess of Discord'
                 || (deityKey === 'God of Oblivion' && getDeityRank(deityDonation) >= 10);
-              const rewardResult = resolveEnemyRewards(
-                enemy,
-                bags,
-                currentInventory,
-                currentGold,
-                hasUnlock,
-                gameMode,
-                autoSellMultiplier,
-                hasExtraRewardRollBlessing
-              );
-              bags = rewardResult.bags;
-              currentInventory = rewardResult.inventory;
-              currentGold = rewardResult.gold;
-              totalAutoSellProfit += rewardResult.autoSellProfit;
-              totalAutoSellItemCount += rewardResult.autoSellItemCount;
-              totalAutoSellItems.push(...rewardResult.autoSellItems);
-              rewards.push(...rewardResult.rewards);
-              recoveredItems.push(...rewardResult.recoveredItems);
-              if (rewardResult.rewardNames.length > 0) {
-                entry.reward = rewardResult.rewardNames.join(' / ');
-                entry.rewardItems = [...rewardResult.rewards];
-                entry.rewardRarity = rewardResult.highestRewardRarity;
-                entry.rewardIsSuperRare = rewardResult.hasSuperRareReward;
-              }
+              if (!isColosseumBattle) {
+                const rewardResult = resolveEnemyRewards(
+                  enemy,
+                  bags,
+                  currentInventory,
+                  currentGold,
+                  hasUnlock,
+                  gameMode,
+                  autoSellMultiplier,
+                  hasExtraRewardRollBlessing
+                );
+                bags = rewardResult.bags;
+                currentInventory = rewardResult.inventory;
+                currentGold = rewardResult.gold;
+                totalAutoSellProfit += rewardResult.autoSellProfit;
+                totalAutoSellItemCount += rewardResult.autoSellItemCount;
+                totalAutoSellItems.push(...rewardResult.autoSellItems);
+                rewards.push(...rewardResult.rewards);
+                recoveredItems.push(...rewardResult.recoveredItems);
+                if (rewardResult.rewardNames.length > 0) {
+                  entry.reward = rewardResult.rewardNames.join(' / ');
+                  entry.rewardItems = [...rewardResult.rewards];
+                  entry.rewardRarity = rewardResult.highestRewardRarity;
+                  entry.rewardIsSuperRare = rewardResult.hasSuperRareReward;
+                }
+                }
 
               currentHp = battleResult.partyHp;
               entries.push(entry);
@@ -2116,7 +2103,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               if (deityLogEntry) {
                 entry.details.push(deityLogEntry);
               }
-              entry.details.push(...buildRewardLogEntries(rewardResult.rewardLogEntries, unlockActorName));
 
               const isFinalBossRoom =
                 roomDef.type === 'battle_Boss'
