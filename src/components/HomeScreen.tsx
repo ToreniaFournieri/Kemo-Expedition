@@ -7995,6 +7995,37 @@ function SettingTab({
     return shortName ? `${enemy.name}(${shortName})` : enemy.name;
   };
 
+
+  const ENEMY_TYPE_LABELS: Record<string, string> = {
+    Beast: '猛獣',
+    Slime_Colony: '粘体群',
+    Plant_Fungal: '植菌',
+    Insect_Swarm: '昆虫',
+    Aerial: '飛行',
+    Frost: '氷雪',
+    Marine: '海棲',
+    Dragon: '竜',
+    Spirit: '精霊',
+    Ghost: '怨霊',
+    Undead: '不死',
+    Golem: 'ゴーレム',
+    Shadowfang: '影牙',
+    Mech: '機械',
+    Chimera: 'キメラ',
+    Titan: '巨人',
+    Jinma: '神魔',
+    Caninian: 'ケイナイアン',
+    Lupinian: 'ルピニアン',
+    Vulpinian: 'ヴァルピニアン',
+    Ursan: 'ウルサン',
+    Felidian: 'フェリディアン',
+    Mustelid: 'マステリド',
+    Leporian: 'レポリアン',
+    Cervin: 'セルヴィン',
+    Procyonian: 'プロキオニアン',
+    Murid: 'ミュリッド',
+  };
+
   const ENEMY_CLASS_LABELS: Record<string, string> = {
     fighter: '戦士',
     duelist: '剣士',
@@ -8488,11 +8519,11 @@ function SettingTab({
                   <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                       <div>ID: {godRuntimeEnemy ? godRuntimeEnemy.id : god.name}</div>
-                      <div>レベル: {formatNumber(god.level)}</div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                      <div></div>
                       <div>HP: {formatNumber(godRuntimeEnemy?.hp ?? 0)}</div>
+                      <div>レベル: {formatNumber(god.level)}</div>
                       <div>クラス: {ENEMY_CLASS_LABELS[god.enemyClass] ?? god.enemyClass}</div>
+                      <div>タイプ: {ENEMY_TYPE_LABELS[godRuntimeEnemy?.enemyType ?? ''] ?? (godRuntimeEnemy?.enemyType ?? '不明')}</div>
                     </div>
                     {godRuntimeEnemy && (
                       <>
@@ -8572,11 +8603,11 @@ function SettingTab({
                       <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
                         <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                           <div>ID: {displayEnemy.id}</div>
-                          <div>レベル: {formatNumber(enemyLevelFinal)}</div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                          <div></div>
                           <div>HP: {formatNumber(displayEnemy.hp)}</div>
+                          <div>レベル: {formatNumber(enemyLevelFinal)}</div>
                           <div>クラス: {enemyClass}</div>
+                          <div>タイプ: {ENEMY_TYPE_LABELS[displayEnemy.enemyType] ?? displayEnemy.enemyType}</div>
                           {(() => {
                             const hasRangedAttack = hasEnemyAttack(displayEnemy.rangedAttack, displayEnemy.rangedNoA);
                             const hasMeleeAttack = hasEnemyAttack(displayEnemy.meleeAttack, displayEnemy.meleeNoA);
