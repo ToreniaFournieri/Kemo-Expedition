@@ -590,6 +590,7 @@
 | 7 | B | `Leporian` | `i.sword` | |
 | 7 | B | `Leporian` | `i.wand` | |
 | 7 | B | `Leporian` | `i.armor` | |
+| 7 | B | `Leporian` | `i.archery` | |
 | 7 | B | `Leporian` | `i.gauntlet` | |
 | 7 | B | `Leporian` | `i.grimoire` | |
 | 8 | C | none | `i.sword` | |
