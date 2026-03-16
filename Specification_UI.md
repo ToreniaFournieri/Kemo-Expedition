@@ -767,9 +767,10 @@ note: 0:no sleep 寝ない, 1:nap 仮眠, 2:sound sleep 熟睡
 
 **Bestiary (敵キャラクター図鑑)**
 - A comprehensive record of all threats encountered (or to be encountered) during expeditions.
-- Expedition category tabs: 原, 崖, 樹, 峰, 茂, 巣, 園, 谷, 神
+- Expedition category tabs: 原, 崖, 樹, 峰, 茂, 巣, 園, 谷, 神, 特
   - Each letter represents for corresponding expedition. And tap to show the enemy list of it. 
   - Gods are listed in "神" tab.
+  - Colosseum character is listed in 特 tab. (Only visible Colosseum is enabled)
 - Categorize by floor (`x.Spawn_pool`) and is reverse order of rooms (Boss first, then floor6 Normal enemies, floor 5 elite and floor 5 normal enemies…
 
 - Enemy name: List of specific enemies found within that expedition.
