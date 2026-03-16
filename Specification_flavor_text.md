@@ -1726,3 +1726,403 @@
 | explore | `x.exp_id`8 and `x.floor`6 | 星紋線を外れない歩みが安全通過を助ける |
 | explore | `x.exp_id`8 and `x.floor`6 | 礼を守る静かな進行が、この場の流れに合っている |
 | explore | `x.exp_id`8 and `x.floor`6 | この層では光と音の読みが最後の鍵となる |
+| sound_sleep | with mainClass.`Fighter` | name は鎧を外したまま深く眠り、戦場の緊張を静かに解いている |
+| sound_sleep | with mainClass.`Fighter` | name は盾を抱くようにして熟睡し、守る意志を休息に変えている |
+| sound_sleep | with mainClass.`Fighter` | name は規則正しい寝息で体幹の疲労をじっくり回復している |
+| sound_sleep | with mainClass.`Fighter` | name は古傷の痛みも忘れるほど深く眠りに沈んでいる |
+| sound_sleep | with mainClass.`Fighter` | name は焚き火の番を仲間に託し、朝までぐっすり眠っている |
+| sound_sleep | with mainClass.`Fighter` | name は重い装備の負担を手放し、安心した表情で眠っている |
+| sound_sleep | with mainClass.`Fighter` | name は次の防衛戦に備え、芯まで休まる熟睡を取っている |
+| sound_sleep | with mainClass.`Fighter` | name は横たわる姿勢のまま微動だにせず、深い睡眠を続けている |
+| sound_sleep | with mainClass.`Fighter` | name は戦塵の匂いを洗い流すように静かな眠りへ身を預けた |
+| sound_sleep | with mainClass.`Fighter` | name は夜明けまで眠り続け、頼れる体力を満たしている |
+| nap_sleep | with mainClass.`Fighter` | name は盾を枕代わりにして短く仮眠を取り、すぐ立ち上がった |
+| nap_sleep | with mainClass.`Fighter` | name は鎧の留め具を緩めた隙に、数分だけ目を閉じている |
+| nap_sleep | with mainClass.`Fighter` | name は壁際に腰を下ろし、短時間で筋肉の張りを抜いている |
+| nap_sleep | with mainClass.`Fighter` | name は見張り交代までの間に、手早く疲労を和らげている |
+| nap_sleep | with mainClass.`Fighter` | name は荒い呼吸を整えながら、浅い眠りで気力を戻している |
+| nap_sleep | with mainClass.`Fighter` | name は膝に手を置いたままうとうとし、行動準備を崩さない |
+| nap_sleep | with mainClass.`Fighter` | name は短い睡眠で集中を立て直し、守りの感覚を取り戻した |
+| nap_sleep | with mainClass.`Fighter` | name は剣帯を外さず仮眠を取り、即応の姿勢を保っている |
+| nap_sleep | with mainClass.`Fighter` | name は火の温もりを借りて小休止し、足取りを軽くしている |
+| nap_sleep | with mainClass.`Fighter` | name は合図ひとつで動けるよう、浅い眠りで体力を継ぎ足した |
+| sound_sleep | with mainClass.`Duelist` | name は剣を傍らに置き、静謐な呼吸で深く眠っている |
+| sound_sleep | with mainClass.`Duelist` | name は乱れのない寝姿のまま、朝まで熟睡を保っている |
+| sound_sleep | with mainClass.`Duelist` | name は決闘の緊張を忘れ、穏やかな表情で眠り込んでいる |
+| sound_sleep | with mainClass.`Duelist` | name は手首の疲れを癒すように、深い休息へ沈んでいる |
+| sound_sleep | with mainClass.`Duelist` | name は剣筋を思い描く夢の中で、静かに体力を回復している |
+| sound_sleep | with mainClass.`Duelist` | name は物音にも揺らがず、集中を蓄える熟睡を続けている |
+| sound_sleep | with mainClass.`Duelist` | name は静かな寝息とともに、明日の勝負勘を養っている |
+| sound_sleep | with mainClass.`Duelist` | name は一礼するような姿勢で横になり、深く眠っている |
+| sound_sleep | with mainClass.`Duelist` | name は刃の手入れを終えて安心し、重い眠気に身を任せた |
+| sound_sleep | with mainClass.`Duelist` | name は朝の稽古に備え、十分な睡眠で冴えを取り戻している |
+| nap_sleep | with mainClass.`Duelist` | name は愛剣を抱えたまま、短い仮眠で感覚を整えている |
+| nap_sleep | with mainClass.`Duelist` | name は呼吸の間合いを刻みながら、浅い眠りで休んでいる |
+| nap_sleep | with mainClass.`Duelist` | name は椅子にもたれて目を閉じ、疲れた腕を休めている |
+| nap_sleep | with mainClass.`Duelist` | name は数分の仮眠で集中線を結び直し、視線を鋭く戻した |
+| nap_sleep | with mainClass.`Duelist` | name は物音に即応できる姿勢のまま、短い眠りを取っている |
+| nap_sleep | with mainClass.`Duelist` | name は鞘鳴りを確かめた後、手早くひと眠りしている |
+| nap_sleep | with mainClass.`Duelist` | name は瞼を閉じる一瞬で気を養い、再び背筋を伸ばした |
+| nap_sleep | with mainClass.`Duelist` | name は勝負前の静寂のように、短い睡眠で気配を研いでいる |
+| nap_sleep | with mainClass.`Duelist` | name は最小限の休息で体のぶれを整え、立ち姿を戻した |
+| nap_sleep | with mainClass.`Duelist` | name は起床と同時に剣の柄へ手を添え、平常心を取り戻した |
+| sound_sleep | with mainClass.`Ninja` | name は気配を溶かすように熟睡し、闇の中で体力を蓄えている |
+| sound_sleep | with mainClass.`Ninja` | name は浅い物音を聞き流し、揺るがない深い眠りに入っている |
+| sound_sleep | with mainClass.`Ninja` | name は装束を整えたまま横になり、朝まで静かに眠っている |
+| sound_sleep | with mainClass.`Ninja` | name は呼吸を細く保ち、完全な休息で消耗を癒している |
+| sound_sleep | with mainClass.`Ninja` | name は影のように動かぬ姿で、深い睡眠を続けている |
+| sound_sleep | with mainClass.`Ninja` | name は任務の緊迫を手放し、穏やかな寝息で回復している |
+| sound_sleep | with mainClass.`Ninja` | name は忍具を枕元に置き、安心して熟睡している |
+| sound_sleep | with mainClass.`Ninja` | name は夜明け前まで目覚めず、俊敏さを取り戻している |
+| sound_sleep | with mainClass.`Ninja` | name は体温を逃さぬ姿勢で眠り、静かに英気を養っている |
+| sound_sleep | with mainClass.`Ninja` | name は長い潜入の疲労を深い眠りで洗い流している |
+| nap_sleep | with mainClass.`Ninja` | name は物陰で膝を抱え、短い仮眠を素早く済ませている |
+| nap_sleep | with mainClass.`Ninja` | name は見張りの死角を選び、数分だけ目を閉じている |
+| nap_sleep | with mainClass.`Ninja` | name は呼気を整えながら、浅い眠りで集中を回復している |
+| nap_sleep | with mainClass.`Ninja` | name は忍具の点検後に小休止し、気配を整えている |
+| nap_sleep | with mainClass.`Ninja` | name は壁際で一瞬うとうとし、すぐ警戒態勢へ戻った |
+| nap_sleep | with mainClass.`Ninja` | name は短時間で疲労を切り替え、足取りの軽さを取り戻した |
+| nap_sleep | with mainClass.`Ninja` | name は静かな寝息を数回だけ刻み、目を開けて周囲を探った |
+| nap_sleep | with mainClass.`Ninja` | name は最低限の睡眠で脈を整え、任務へ意識を向けた |
+| nap_sleep | with mainClass.`Ninja` | name は影に紛れて仮眠を取り、気づかれずに立ち上がった |
+| nap_sleep | with mainClass.`Ninja` | name は眠気を刃のように研ぎ直し、再び姿勢を低くした |
+| sound_sleep | with mainClass.`Samurai` | name は刀をそばに置き、礼正しい姿勢で深く眠っている |
+| sound_sleep | with mainClass.`Samurai` | name は静かな寝息のまま、心身の乱れを整えている |
+| sound_sleep | with mainClass.`Samurai` | name は一日の戦いを胸中で閉じ、穏やかに熟睡している |
+| sound_sleep | with mainClass.`Samurai` | name は気配を荒らさぬ眠りで、明日の一閃に備えている |
+| sound_sleep | with mainClass.`Samurai` | name は具足の重みを解き、芯まで休まる眠りを取っている |
+| sound_sleep | with mainClass.`Samurai` | name は朝稽古に向け、規律ある休息で体力を満たしている |
+| sound_sleep | with mainClass.`Samurai` | name は焚き火の残り香の中、深い夢へと身を沈めた |
+| sound_sleep | with mainClass.`Samurai` | name は痛みを忘れるほどの熟睡で、精神を澄ませている |
+| sound_sleep | with mainClass.`Samurai` | name は夜明けまで一度も揺らがず、堂々と眠っている |
+| sound_sleep | with mainClass.`Samurai` | name は静寂に溶けるような眠りで英気を養っている |
+| nap_sleep | with mainClass.`Samurai` | name は正座を崩して短く仮眠し、呼吸を整えている |
+| nap_sleep | with mainClass.`Samurai` | name は刀の柄に触れたまま、わずかな眠りで心を鎮めた |
+| nap_sleep | with mainClass.`Samurai` | name は小休止で肩の力を抜き、再び背筋を伸ばした |
+| nap_sleep | with mainClass.`Samurai` | name は無駄のない仮眠で疲れを流し、目を開けた |
+| nap_sleep | with mainClass.`Samurai` | name は湯気の立つ茶を前に、数分だけ目を閉じている |
+| nap_sleep | with mainClass.`Samurai` | name は短い眠りで拍動を整え、落ち着きを取り戻した |
+| nap_sleep | with mainClass.`Samurai` | name は見張り交代の間に仮眠し、礼とともに立ち上がった |
+| nap_sleep | with mainClass.`Samurai` | name は静かな所作で横になり、すぐ起きられる眠りを選んだ |
+| nap_sleep | with mainClass.`Samurai` | name は端正な寝姿で小休止し、気力を補っている |
+| nap_sleep | with mainClass.`Samurai` | name は刹那の睡眠で迷いを払い、視線を前へ戻した |
+| sound_sleep | with mainClass.`Lord` | name は上質な寝具に身を預け、堂々と熟睡している |
+| sound_sleep | with mainClass.`Lord` | name は宴の喧騒を忘れ、余裕ある寝顔で眠っている |
+| sound_sleep | with mainClass.`Lord` | name は護衛を信じて深く眠り、体力を大きく回復している |
+| sound_sleep | with mainClass.`Lord` | name は長旅の疲労を解き、朝まで穏やかに眠り続けた |
+| sound_sleep | with mainClass.`Lord` | name は気品を崩さぬまま、規則正しい寝息で休んでいる |
+| sound_sleep | with mainClass.`Lord` | name は明日の指揮に備え、十分な睡眠を確保している |
+| sound_sleep | with mainClass.`Lord` | name は豪奢な毛布に包まれ、深い夢の中へ沈んでいる |
+| sound_sleep | with mainClass.`Lord` | name は心配事を手放し、安心しきった表情で熟睡している |
+| sound_sleep | with mainClass.`Lord` | name は静かな夜に守られ、堂々たる眠りを貫いている |
+| sound_sleep | with mainClass.`Lord` | name は回復した気配を漂わせながら、夜明けまで眠っている |
+| nap_sleep | with mainClass.`Lord` | name は椅子にもたれて短い仮眠を取り、すぐ指示を再開した |
+| nap_sleep | with mainClass.`Lord` | name は帳簿を閉じて数分だけ目を閉じ、頭を休めている |
+| nap_sleep | with mainClass.`Lord` | name は移動前の隙に仮眠し、余裕の笑みで目覚めた |
+| nap_sleep | with mainClass.`Lord` | name は侍従に時刻を任せ、手早く気力を回復している |
+| nap_sleep | with mainClass.`Lord` | name は短い眠りで判断力を整え、采配の準備を進めた |
+| nap_sleep | with mainClass.`Lord` | name は肩肘張らずに小休止し、落ち着きを取り戻している |
+| nap_sleep | with mainClass.`Lord` | name は浅い仮眠でも充分とばかりに、すぐ立ち上がった |
+| nap_sleep | with mainClass.`Lord` | name は会話の合間に目を閉じ、疲れを最小限で払っている |
+| nap_sleep | with mainClass.`Lord` | name は短時間の睡眠で表情を整え、再び場を仕切った |
+| nap_sleep | with mainClass.`Lord` | name は華やかな外套を畳み、静かにひと眠りしている |
+| sound_sleep | with mainClass.`Ranger` | name は森の匂いを胸いっぱいに吸い、深い眠りに入っている |
+| sound_sleep | with mainClass.`Ranger` | name は野営の物音を気にせず、安定した寝息を刻んでいる |
+| sound_sleep | with mainClass.`Ranger` | name は弓を手元に置き、朝までぐっすり眠っている |
+| sound_sleep | with mainClass.`Ranger` | name は長い追跡の疲れを、静かな熟睡で癒している |
+| sound_sleep | with mainClass.`Ranger` | name は星空の下で心地よく眠り、体力を満たしている |
+| sound_sleep | with mainClass.`Ranger` | name は冷え込みを避ける寝袋で、深い休息を取っている |
+| sound_sleep | with mainClass.`Ranger` | name は夜明けの鳥声まで目覚めず、集中力を回復している |
+| sound_sleep | with mainClass.`Ranger` | name は自然のリズムに合わせ、穏やかに眠り続けている |
+| sound_sleep | with mainClass.`Ranger` | name は足腰の疲労を抜き、軽やかな動きへ備えている |
+| sound_sleep | with mainClass.`Ranger` | name は焚き火のぬくもりのそばで、安心して熟睡している |
+| nap_sleep | with mainClass.`Ranger` | name は見晴らしの良い岩陰で短く仮眠し、すぐ周囲を確認した |
+| nap_sleep | with mainClass.`Ranger` | name は弓弦を緩めた合間に、数分だけ目を閉じている |
+| nap_sleep | with mainClass.`Ranger` | name は追跡の合間に小休止し、呼吸を整えている |
+| nap_sleep | with mainClass.`Ranger` | name は荷を枕にして仮眠を取り、足取りを立て直した |
+| nap_sleep | with mainClass.`Ranger` | name は風向きを確かめた後、浅い眠りで気力を戻している |
+| nap_sleep | with mainClass.`Ranger` | name は短時間の睡眠で目の疲れを抜き、視界を研ぎ澄ました |
+| nap_sleep | with mainClass.`Ranger` | name は野営地の端でうとうとし、すぐ合図に反応した |
+| nap_sleep | with mainClass.`Ranger` | name は休める瞬間を逃さず、機敏な仮眠を済ませている |
+| nap_sleep | with mainClass.`Ranger` | name は朝露の気配に合わせて起き、軽く体を伸ばした |
+| nap_sleep | with mainClass.`Ranger` | name は木陰でひと眠りし、再び追跡の目を取り戻した |
+| sound_sleep | with mainClass.`Wizard` | name は魔導書を閉じ、深い眠りで魔力の巡りを整えている |
+| sound_sleep | with mainClass.`Wizard` | name は星の運行を夢に映しながら、静かに熟睡している |
+| sound_sleep | with mainClass.`Wizard` | name は詠唱疲れを癒すように、規則正しい寝息を立てている |
+| sound_sleep | with mainClass.`Wizard` | name は術式の残響を手放し、穏やかな眠りへ沈んでいる |
+| sound_sleep | with mainClass.`Wizard` | name は杖を枕元に置き、安心して朝まで眠っている |
+| sound_sleep | with mainClass.`Wizard` | name は深い休息で集中力を満たし、魔力回復を進めている |
+| sound_sleep | with mainClass.`Wizard` | name は静かな寝顔のまま、長い研究の疲れを解いている |
+| sound_sleep | with mainClass.`Wizard` | name は外界の雑音を遮り、完全な睡眠へ没入している |
+| sound_sleep | with mainClass.`Wizard` | name は夢の中で符号を結び、明日の呪文準備を整えている |
+| sound_sleep | with mainClass.`Wizard` | name は夜明けまで深く眠り、思考の冴えを取り戻している |
+| nap_sleep | with mainClass.`Wizard` | name は魔導書を胸に、短い仮眠で思考をリセットしている |
+| nap_sleep | with mainClass.`Wizard` | name は詠唱の合間に目を閉じ、わずかな睡眠を取っている |
+| nap_sleep | with mainClass.`Wizard` | name は椅子に座ったままうとうとし、集中を立て直した |
+| nap_sleep | with mainClass.`Wizard` | name はインクの乾きを待つ間に、短時間の休息を挟んでいる |
+| nap_sleep | with mainClass.`Wizard` | name は浅い眠りで頭痛を和らげ、視線の焦点を戻した |
+| nap_sleep | with mainClass.`Wizard` | name は杖に手を添えたまま仮眠し、すぐ詠唱姿勢へ戻った |
+| nap_sleep | with mainClass.`Wizard` | name は数分の眠りで思考を整理し、術式を書き直している |
+| nap_sleep | with mainClass.`Wizard` | name は寝過ごさぬよう短く休み、時間管理を崩さない |
+| nap_sleep | with mainClass.`Wizard` | name は浅い睡眠で魔力酔いを抜き、冷静さを取り戻した |
+| nap_sleep | with mainClass.`Wizard` | name は小休止の後にページを開き、研究を再開している |
+| sound_sleep | with mainClass.`Sage` | name は書板を閉じ、深い眠りで知の疲労を静かに癒している |
+| sound_sleep | with mainClass.`Sage` | name は呼吸を整えたまま、長く安定した熟睡を続けている |
+| sound_sleep | with mainClass.`Sage` | name は祈りに似た寝姿で、穏やかな休息へ沈んでいる |
+| sound_sleep | with mainClass.`Sage` | name は複雑な計算を忘れ、静かな夢の中で体力を回復している |
+| sound_sleep | with mainClass.`Sage` | name は魔障を避ける結界の内で、安心して眠っている |
+| sound_sleep | with mainClass.`Sage` | name は精神の波を鎮め、深層まで届く睡眠を取っている |
+| sound_sleep | with mainClass.`Sage` | name は夜明けまで目覚めず、明晰な思考を取り戻している |
+| sound_sleep | with mainClass.`Sage` | name は学究の疲れを手放し、静謐な寝息で休んでいる |
+| sound_sleep | with mainClass.`Sage` | name は穏やかな表情のまま、十分な回復を重ねている |
+| sound_sleep | with mainClass.`Sage` | name は夢の中で理を巡らせつつ、しっかり熟睡している |
+| nap_sleep | with mainClass.`Sage` | name は注釈を書き終えた直後、短い仮眠で頭を休めている |
+| nap_sleep | with mainClass.`Sage` | name は書物を枕にせず丁寧に閉じ、数分だけ目を閉じた |
+| nap_sleep | with mainClass.`Sage` | name は浅い眠りで思考の熱を冷まし、呼吸を落ち着けている |
+| nap_sleep | with mainClass.`Sage` | name は結界の確認後に小休止し、集中を継ぎ足している |
+| nap_sleep | with mainClass.`Sage` | name は短時間の睡眠で眼精疲労を抜き、文字を追う力を戻した |
+| nap_sleep | with mainClass.`Sage` | name は膝掛けを整えて仮眠し、静かに目を開けた |
+| nap_sleep | with mainClass.`Sage` | name は講義の合間のように、要点だけ休む眠りを選んでいる |
+| nap_sleep | with mainClass.`Sage` | name はわずかな睡眠で精神を整え、再び理路を組み立てた |
+| nap_sleep | with mainClass.`Sage` | name は時計を見て仮眠を切り上げ、淡々と席を立った |
+| nap_sleep | with mainClass.`Sage` | name は短い目覚めの後に微笑み、思索を再開している |
+| sound_sleep | with mainClass.`Rogue` | name は隠し持った短剣をそばに、警戒なく深く眠っている |
+| sound_sleep | with mainClass.`Rogue` | name は夜の喧騒を背に、したたかに熟睡している |
+| sound_sleep | with mainClass.`Rogue` | name は駆け引きの緊張を忘れ、静かな寝息で休んでいる |
+| sound_sleep | with mainClass.`Rogue` | name は鍵束を枕元に置き、安心して朝まで眠っている |
+| sound_sleep | with mainClass.`Rogue` | name は長い潜伏の疲れを、深い睡眠で回復している |
+| sound_sleep | with mainClass.`Rogue` | name はどんな雑音にも動じず、ぐっすり眠り込んでいる |
+| sound_sleep | with mainClass.`Rogue` | name は軽やかな寝返りだけで、熟睡を保っている |
+| sound_sleep | with mainClass.`Rogue` | name は夢の中でも笑みを浮かべ、余裕ある眠りを見せている |
+| sound_sleep | with mainClass.`Rogue` | name は朝の仕事に備え、体力を満たす休息を取っている |
+| sound_sleep | with mainClass.`Rogue` | name は疲労の気配を消すように、静かで深い眠りへ沈んだ |
+| nap_sleep | with mainClass.`Rogue` | name は人目につかぬ席で短く仮眠し、すぐ姿勢を戻した |
+| nap_sleep | with mainClass.`Rogue` | name は取引の合間に目を閉じ、数分で気力を整えている |
+| nap_sleep | with mainClass.`Rogue` | name は荷袋を抱えたままうとうとし、警戒を切らしていない |
+| nap_sleep | with mainClass.`Rogue` | name は浅い眠りで頭を冴えさせ、口上の準備を整えた |
+| nap_sleep | with mainClass.`Rogue` | name は短時間の睡眠で疲労を隠し、いつもの笑顔に戻った |
+| nap_sleep | with mainClass.`Rogue` | name は壁際で小休止し、足音ひとつで目を開けた |
+| nap_sleep | with mainClass.`Rogue` | name は手早い仮眠の後、鍵開けの指先を確かめている |
+| nap_sleep | with mainClass.`Rogue` | name は一瞬の眠りで切り替え、交渉の席へ戻っていった |
+| nap_sleep | with mainClass.`Rogue` | name は短く夢を見て、次の機会を逃さぬ目つきに戻した |
+| nap_sleep | with mainClass.`Rogue` | name は見張りに合図を送り、最小限の休息を済ませている |
+| sound_sleep | with mainClass.`Pilgrim` | name は祈りを終えて深く眠り、静かな安らぎに包まれている |
+| sound_sleep | with mainClass.`Pilgrim` | name は穏やかな寝顔で、旅の疲れを丁寧に癒している |
+| sound_sleep | with mainClass.`Pilgrim` | name は念珠を手にしたまま、朝まで熟睡している |
+| sound_sleep | with mainClass.`Pilgrim` | name は不安を手放し、信仰に寄り添う眠りを取っている |
+| sound_sleep | with mainClass.`Pilgrim` | name は規則正しい寝息で、心身の均衡を回復している |
+| sound_sleep | with mainClass.`Pilgrim` | name は仲間の無事を願う夢の中で、深い休息を得ている |
+| sound_sleep | with mainClass.`Pilgrim` | name は静寂の礼拝堂のような空気に包まれ、眠っている |
+| sound_sleep | with mainClass.`Pilgrim` | name は夜明けの祈鐘まで目覚めず、体力を満たしている |
+| sound_sleep | with mainClass.`Pilgrim` | name は温かな毛布にくるまり、安心して熟睡している |
+| sound_sleep | with mainClass.`Pilgrim` | name は長い道のりの疲労を、深い眠りで静かに流している |
+| nap_sleep | with mainClass.`Pilgrim` | name は祈句をひとつ唱え、短い仮眠で心を整えている |
+| nap_sleep | with mainClass.`Pilgrim` | name は壁際に座って目を閉じ、穏やかな小休止を取った |
+| nap_sleep | with mainClass.`Pilgrim` | name は念珠を握ったままうとうとし、すぐ目を開けた |
+| nap_sleep | with mainClass.`Pilgrim` | name は短時間の睡眠で気持ちを整え、静かに立ち上がった |
+| nap_sleep | with mainClass.`Pilgrim` | name は休める隙に仮眠し、仲間への気配りを再開している |
+| nap_sleep | with mainClass.`Pilgrim` | name は浅い眠りで疲れを和らげ、優しい表情を取り戻した |
+| nap_sleep | with mainClass.`Pilgrim` | name は朝の祈りまでの間だけ、慎ましく眠っている |
+| nap_sleep | with mainClass.`Pilgrim` | name は小さく息を整え、わずかな睡眠で足取りを軽くした |
+| nap_sleep | with mainClass.`Pilgrim` | name は仲間の物音で目覚め、微笑みとともに頷いた |
+| nap_sleep | with mainClass.`Pilgrim` | name は短い休息の後、感謝の言葉を口にしている |
+| return | none | name は戦利品を抱えて拠点へ戻っている |
+| return | none | name は疲れた足取りながらも帰路を急いでいる |
+| return | none | name は今日の成果を確かめつつ歩いている |
+| return | none | name は仲間と合流し安全な道を戻っている |
+| return | none | name は夕暮れの中、拠点の灯りを目指している |
+| return | none | name は傷をかばいながらも着実に帰っている |
+| return | none | name は荷物を落とさぬよう慎重に運んでいる |
+| return | none | name は道中の危険を避けつつ帰還している |
+| return | none | name は無事の報告を思い浮かべながら進んでいる |
+| return | none | name は長い遠征の終わりに安堵している |
+| rest | none | 静かな場所で肩の力を抜いている |
+| rest | none | 深く息を吐いて心身を落ち着けている |
+| rest | none | 体を伸ばしてこわばりをほぐしている |
+| rest | none | しばらく目を閉じて疲労を流している |
+| rest | none | 温もりの中で穏やかな時間を過ごしている |
+| rest | none | 腰を下ろして足の疲れを癒している |
+| rest | none | 周囲の音を聞きながら休息している |
+| rest | none | 乱れた呼吸を整えて体力を戻している |
+| rest | none | 無理をせず静かに回復を待っている |
+| rest | none | 次の行動に備えて英気を養っている |
+| feast | none | 香り豊かな料理をゆっくり味わっている |
+| feast | none | 温かな食事で空腹を満たしている |
+| feast | none | 皿いっぱいの料理を楽しんでいる |
+| feast | none | ごちそうを囲んで和やかに過ごしている |
+| feast | none | 食卓の活気に笑顔がこぼれている |
+| feast | none | 焼きたての一品を嬉しそうに口にしている |
+| feast | none | たっぷりの食事で力を蓄えている |
+| feast | none | 湯気立つ料理で体の芯まで温まっている |
+| feast | none | 満足するまで食事を楽しんでいる |
+| feast | none | 活力を取り戻すように食べ進めている |
+| sell | none | 品物を丁寧に並べて買い手を待っている |
+| sell | none | 価格表を見比べながら売却の準備をしている |
+| sell | none | 相場を確認しつつ取引の機会をうかがっている |
+| sell | none | 品質の良さを説明して交渉している |
+| sell | none | 店先で落ち着いて値段の相談をしている |
+| sell | none | 売れ筋を確かめながら品を選んでいる |
+| sell | none | 取引内容を帳面に記録している |
+| sell | none | 客の反応を見ながら価格を調整している |
+| sell | none | 在庫を整理しながら販売を進めている |
+| sell | none | 取引をまとめて次の商談に向かっている |
+| sound_sleep | none | 夜明けまで深く穏やかに眠っている |
+| sound_sleep | none | 体を休めることに集中して眠っている |
+| sound_sleep | none | 安心した表情で静かに寝入っている |
+| sound_sleep | none | 長い疲れを手放すように眠り込んでいる |
+| sound_sleep | none | 柔らかな寝床で心地よく眠っている |
+| sound_sleep | none | 規則正しい寝息で安定して休んでいる |
+| sound_sleep | none | 朝に備えて十分な睡眠を取っている |
+| sound_sleep | none | 深い休息で体力を大きく回復している |
+| sound_sleep | none | 外の気配を気にせず眠り続けている |
+| sound_sleep | none | 眠りの中で緊張を解きほぐしている |
+| nap_sleep | none | 短時間だけ目を閉じて休んでいる |
+| nap_sleep | none | すき間時間に手早く眠気を取っている |
+| nap_sleep | none | わずかな休息で集中を整えている |
+| nap_sleep | none | 軽い眠りで気分を切り替えている |
+| nap_sleep | none | 小休止で疲れの山をやり過ごしている |
+| nap_sleep | none | 短い仮眠で体の重さを和らげている |
+| nap_sleep | none | 休めるうちに素早く眠っている |
+| nap_sleep | none | ひと眠りして行動の準備をしている |
+| nap_sleep | none | 少しの睡眠で足取りを立て直している |
+| nap_sleep | none | 目覚めに合わせて気力を戻している |
+| pray | none | 静かに目を閉じて祈りに集中している |
+| pray | none | 心を込めて感謝の祈りを捧げている |
+| pray | none | 小さな灯りの前で願いを唱えている |
+| pray | none | 不安を手放すように祈り続けている |
+| pray | none | 深く頭を下げて敬意を示している |
+| pray | none | 明日への希望を胸に祈っている |
+| pray | none | 静寂の中で言葉を紡いでいる |
+| pray | none | 揺るがぬ心を求めて祈っている |
+| pray | none | 祈りの時間で気持ちを整えている |
+| pray | none | 厳かな雰囲気の中で願いを託している |
+| idle | none | 拠点の隅で落ち着いて待機している |
+| idle | none | 手持ちの道具を眺めながら時間を過ごしている |
+| idle | none | 周囲を見回しつつゆったり構えている |
+| idle | none | 次の合図を待ちながら息を整えている |
+| idle | none | 何気ない作業で手を動かしている |
+| idle | none | 物音に注意を払いながら待っている |
+| idle | none | 気を抜きすぎない程度に休んでいる |
+| idle | none | 足元を確かめて立ち位置を整えている |
+| idle | none | ぼんやりと先の流れを考えている |
+| idle | none | 落ち着いた様子で状況を見守っている |
+| move | none | 目的地に向けて歩調を合わせている |
+| move | none | 道の起伏に合わせて着実に進んでいる |
+| move | none | 周囲を警戒しながら前へ進んでいる |
+| move | none | 休まず一定のリズムで移動している |
+| move | none | 視界を確保しながら進路を取っている |
+| move | none | 曲がり角ごとに慎重に足を運んでいる |
+| move | none | 地形を読みながら効率よく移動している |
+| move | none | 足音を抑えて静かに進んでいる |
+| move | none | 遅れないように速度を保っている |
+| move | none | 進行方向を確かめつつ前進している |
+| move | sortie while sleep state with embezzlement > 0 G | nameは神の緊急動員に憤り、d.embezzlementGを持ち逃げして出撃した |
+| move | sortie while sleep state with embezzlement > 0 G | name は寝ぼけ眼のまま命令に毒づき、d.embezzlementGを懐に隠して歩き出した |
+| move | sortie while sleep state with embezzlement > 0 G | name は毛布を引きずりながら、d.embezzlementGの重みだけはしっかり確かめて進軍している |
+| move | sortie while sleep state with embezzlement > 0 G | name は欠伸混じりに神への不満を漏らし、d.embezzlementGを持ったまま隊列に加わった |
+| move | sortie while sleep state with embezzlement > 0 G | name は半分眠った足取りで出撃しつつ、d.embezzlementGの袋だけは離さない |
+| move | sortie while sleep state with embezzlement > 0 G | name は夢の続きに未練を残しながらも、d.embezzlementGを抱えて前線へ向かう |
+| move | sortie while sleep state with embezzlement > 0 G | name はまぶたを擦って神命を恨み、d.embezzlementGを持ち逃げした罪悪感ごと進んでいる |
+| move | sortie while sleep state with embezzlement > 0 G | name は寝台から叩き起こされた怒りを胸に、d.embezzlementGを握って移動している |
+| move | sortie while sleep state with embezzlement > 0 G | name は寝息の名残を引きずったまま、d.embezzlementGを隠して渋々出撃した |
+| move | sortie while sleep state with embezzlement > 0 G | name は眠気と苛立ちを抱え、d.embezzlementGの持ち逃げを正当化しながら進んでいる |
+| move | sortie while feast state with embezzlement > 0 G | name は宴席を中断させた神命に腹を立て、d.embezzlementGを懐へ滑り込ませて出撃した |
+| move | sortie while feast state with embezzlement > 0 G | name は口いっぱいの料理を飲み込み、d.embezzlementGを持ち逃げして怒りの行軍を始めた |
+| move | sortie while feast state with embezzlement > 0 G | name は乾杯の途中で呼び出された恨みを込め、d.embezzlementGを握って歩いている |
+| move | sortie while feast state with embezzlement > 0 G | name は皿を置く音を荒げ、d.embezzlementGをくすねたまま前線へ急いだ |
+| move | sortie while feast state with embezzlement > 0 G | name はまだ肉の香りをまといながら、d.embezzlementGを持って不機嫌に移動している |
+| move | sortie while feast state with embezzlement > 0 G | name は神への文句を噛みしめ、d.embezzlementGの袋を揺らして隊列を進む |
+| move | sortie while feast state with embezzlement > 0 G | name は食後の余韻を奪われた怒りで、d.embezzlementGを隠して出撃を続けている |
+| move | sortie while feast state with embezzlement > 0 G | name はスプーンを投げ置き、d.embezzlementGを持ち逃げして戦地へ向かった |
+| move | sortie while feast state with embezzlement > 0 G | name は満腹のまま不満顔で進み、d.embezzlementGだけはしっかり守っている |
+| move | sortie while feast state with embezzlement > 0 G | name は宴を壊された報復として、d.embezzlementGを抱えて乱暴な足取りで出撃した |
+| move | sortie while rest state with embezzlement > 0 G | name は休息を断ち切る神命に苛立ち、d.embezzlementGを持ち逃げして立ち上がった |
+| move | sortie while rest state with embezzlement > 0 G | name は焚き火から引き剥がされた怒りを隠さず、d.embezzlementGを懐に入れて進んでいる |
+| move | sortie while rest state with embezzlement > 0 G | name はため息交じりに装備を背負い、d.embezzlementGを隠して渋々行軍を始めた |
+| move | sortie while rest state with embezzlement > 0 G | name は癒やしの時間を奪われた腹いせに、d.embezzlementGを確保して出撃した |
+| move | sortie while rest state with embezzlement > 0 G | name は休憩椅子を蹴って立ち上がり、d.embezzlementGを抱えたまま隊列へ戻った |
+| move | sortie while rest state with embezzlement > 0 G | name は静寂を破る出撃命令へ舌打ちし、d.embezzlementGとともに前進している |
+| move | sortie while rest state with embezzlement > 0 G | name は疲れた体に鞭打ちつつ、d.embezzlementGの袋を締めて歩き出した |
+| move | sortie while rest state with embezzlement > 0 G | name は神の気まぐれに抗議しながら、d.embezzlementGを持って移動している |
+| move | sortie while rest state with embezzlement > 0 G | name はひと息つく暇もなく、d.embezzlementGを懐へ隠して戦線へ向かった |
+| move | sortie while rest state with embezzlement > 0 G | name は休息の代償だと言い張り、d.embezzlementGを持ち逃げして不機嫌に進軍する |
+| move | sortie while return state with embezzlement > 0 G | name は帰還直後の再出撃に憤り、d.embezzlementGを握り直して前線へ引き返した |
+| move | sortie while return state with embezzlement > 0 G | name は拠点の門を目前に命令を受け、d.embezzlementGを懐に隠して踵を返した |
+| move | sortie while return state with embezzlement > 0 G | name は安堵が怒りへ変わる中、d.embezzlementGを持ったまま再び行軍している |
+| move | sortie while return state with embezzlement > 0 G | name は報告前に呼び戻された苛立ちで、d.embezzlementGの袋を締めて出撃した |
+| move | sortie while return state with embezzlement > 0 G | name は帰路の疲労を抱えたまま、d.embezzlementGを確かめて無言で進んでいる |
+| move | sortie while return state with embezzlement > 0 G | name は帰還の達成感を奪われ、d.embezzlementGを持ち逃げして不満げに進軍した |
+| move | sortie while return state with embezzlement > 0 G | name は荷を降ろす間もなく、d.embezzlementGを隠して再出撃列へ合流した |
+| move | sortie while return state with embezzlement > 0 G | name は帰ってきた道を逆走しつつ、d.embezzlementGの重みで気を紛らわせている |
+| move | sortie while return state with embezzlement > 0 G | name は「またか」と吐き捨て、d.embezzlementGを抱えたまま前進を始めた |
+| move | sortie while return state with embezzlement > 0 G | name は帰還完了を取り消された怒りをにじませ、d.embezzlementGとともに戦地へ戻った |
+| move | sortie with embezzlement = 0 G | name は神の緊急動員に憤り、露骨に不満顔で出撃した |
+| move | sortie with embezzlement = 0 G | name は理不尽な命令に舌打ちし、荒い足取りで前線へ向かった |
+| move | sortie with embezzlement = 0 G | name は文句を飲み込めず、ぶつぶつと神への抗議を続けている |
+| move | sortie with embezzlement = 0 G | name は納得しないまま装備を担ぎ、不機嫌に隊列へ戻った |
+| move | sortie with embezzlement = 0 G | name は呼び出しの強引さに腹を立て、視線を険しくして進んでいる |
+| move | sortie with embezzlement = 0 G | name は休む間もなく命じられたことに怒り、肩をいからせて移動した |
+| move | sortie with embezzlement = 0 G | name は「また急か」と吐き捨て、反抗的な歩調で進軍している |
+| move | sortie with embezzlement = 0 G | name は神命への不平を隠さず、仲間にも苛立ちをにじませている |
+| move | sortie with embezzlement = 0 G | name は強制出撃への恨みを抱えたまま、黙々と前へ進んでいる |
+| move | sortie with embezzlement = 0 G | name は怒りで頬をこわばらせ、無言の抗議をしながら出撃した |
+| return | none | 帰路の安全を確かめながら進んでいる |
+| return | none | 目的を果たして拠点へ向かっている |
+| return | none | 慎重な足取りで帰還を続けている |
+| return | none | 荷物を守りつつ落ち着いて戻っている |
+| return | none | 見慣れた道をたどって帰っている |
+| return | none | 緊張を緩めずに帰り道を進んでいる |
+| return | none | ほっとした気持ちで拠点を目指している |
+| return | none | 仲間と歩調を合わせて帰還している |
+| return | none | 長い行程を終えるべく歩いている |
+| return | none | 無事に戻ることを第一に進んでいる |
+| return | Clear and `d.HP` > 95% of max HP | name はほとんど無傷のまま、軽い足取りで拠点へ戻っている |
+| return | Clear and `d.HP` > 95% of max HP | name は余裕の笑みを浮かべ、戦果を語りながら帰還している |
+| return | Clear and `d.HP` > 95% of max HP | name は疲れを見せず、先頭に立って帰路を進んでいる |
+| return | Clear and `d.HP` > 95% of max HP | name は装備を整えたまま、警戒を保って拠点へ向かっている |
+| return | Clear and `d.HP` > 95% of max HP | name は次の任務さえ見据え、堂々と帰還している |
+| return | Clear and `d.HP` > 95% of max HP | name は息ひとつ乱さず、安定した歩調で戻っている |
+| return | Clear and `d.HP` > 95% of max HP | name は仲間を励ましつつ、余力十分で道を進んでいる |
+| return | Clear and `d.HP` > 95% of max HP | name は傷の少なさを確かめ、満ちた体力で帰っている |
+| return | Clear and `d.HP` > 95% of max HP | name はまだ戦える気配を残したまま、悠々と帰還している |
+| return | Clear and `d.HP` > 95% of max HP | name は遠征終わりとは思えぬ足取りで拠点へ向かっている |
+| return | Wounded_Retreat | name は痛む体をかばいながら、慎重に帰路をたどっている |
+| return | Wounded_Retreat | name は息を切らしつつも、拠点の灯りを頼りに進んでいる |
+| return | Wounded_Retreat | name はふらつく足を踏みしめ、なんとか帰還を続けている |
+| return | Wounded_Retreat | name は仲間の支えを受けながら、ゆっくり戻っている |
+| return | Wounded_Retreat | name は止血した包帯を押さえ、無言で帰り道を進んでいる |
+| return | Wounded_Retreat | name は一歩ごとに痛みに耐え、拠点を目指している |
+| return | Wounded_Retreat | name は休み休み歩き、帰還だけを考えている |
+| return | Wounded_Retreat | name は視界の揺れをこらえつつ、道を外さず戻っている |
+| return | Wounded_Retreat | name は気力で体を動かし、遅れまいと帰路を急いでいる |
+| return | Wounded_Retreat | name は消えかけた体力を振り絞り、ようやく帰還している |
+| return | Defeat | name は力尽き、仲間に運ばれながら拠点へ収容されている |
+| return | Defeat | name は意識を失ったまま、担架で静かに運ばれている |
+| return | Defeat | name の装備だけが先に回収され、本人は救護班に託された |
+| return | Defeat | name は戦線を離脱し、仲間の腕に支えられて帰還している |
+| return | Defeat | name はその場で倒れ、救助隊によって拠点へ搬送された |
+| return | Defeat | name は反応を失い、静まり返った隊列の中で運ばれている |
+| return | Defeat | name は撤退の混乱の中で救い出され、帰還処置に入った |
+| return | Defeat | name は倒れたまま動かず、仲間が交代で担いで戻っている |
+| return | Defeat | name の呼吸はかすかで、緊急手当てを受けつつ運ばれている |
+| return | Defeat | name は完全に戦闘不能となり、帰還後ただちに治療室へ送られる |
+| return | Turned_Back | name は封印扉の前で足を止め、条件不足を悟って引き返している |
+| return | Turned_Back | name は必要な戦利品が足りないと判断し、未練を残しつつ帰路についた |
+| return | Turned_Back | name は進行条件を満たせず、地図を閉じて拠点への道を選んだ |
+| return | Turned_Back | name は門番の刻印に拒まれ、静かに撤収を指示している |
+| return | Turned_Back | name は先へ進む鍵がないと確認し、隊列を整えて戻っている |
+| return | Turned_Back | name は探索継続を断念し、次回に備えて情報を持ち帰っている |
+| return | Turned_Back | name は条件未達の報せを受け、焦らず帰還して準備を立て直す |
+| return | Turned_Back | name は収集目標の不足を認め、危険を避けて帰還判断を下した |
+| return | Turned_Back | name はこれ以上は無理だと見切り、必要素材を求めて戻っている |
+| return | Turned_Back | name は進路を塞ぐ要件に阻まれ、次の挑戦へ備えて退いた |
+| return | Draw_Retreat | name は決着のつかない戦いを終え、消耗を抑えて帰還している |
+| return | Draw_Retreat | name は互いに譲らぬまま戦線を離れ、静かに拠点へ戻っている |
+| return | Draw_Retreat | name は引き分けの痛み分けを受け入れ、隊列を崩さず帰路を進む |
+| return | Draw_Retreat | name は勝機を得られぬまま時間切れとなり、体勢を保って撤いた |
+| return | Draw_Retreat | name は相手を押し切れず、再戦を誓いながら退いている |
+| return | Draw_Retreat | name は戦況が平行線のまま終わり、損耗管理を優先して戻った |
+| return | Draw_Retreat | name は互角のまま刃を収め、次の機会へ力を温存している |
+| return | Draw_Retreat | name は決め手を欠いた戦闘を切り上げ、慎重に帰還している |
+| return | Draw_Retreat | name は均衡が崩れぬと見て、被害拡大前に撤収した |
+| return | Draw_Retreat | name は勝敗なき離脱を受け止め、拠点での立て直しを急いでいる |
