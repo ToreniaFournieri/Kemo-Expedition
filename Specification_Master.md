@@ -4,78 +4,78 @@
 
 | `x.exp_id` | `x.floor` | `x.room` | `x.level` | `x.type` | `x.enemy_type` | `x.class` | `x.drop` | `x.name` (Japanese) |
 |---|---:|---|---:|---|---|---|---|---|
-| 1 | 1 | 1-2 | 1 | Normal | `Beast` | Rogue | `i.bolt`U, `i.armor`U | |
-| 1 | 1 | 1-2 | 1 | Normal | `Beast` | Wizard | `i.wand`U, `i.catalyst`U | |
-| 1 | 1 | 1-2 | 1 | Normal | `Beast` | Ranger | `i.arrow`U, `i.archery`U | |
-| 1 | 1 | 3 | 2 | Normal | `Beast` | Fighter | `i.sword`U, `i.gauntlet`U | |
-| 1 | 1 | 3 | 2 | Normal | `Beast` | Lord | `i.shield`U, `i.robe`U | |
-| 1 | 1 | 4 | 4 | Elite | `Beast` | Duelist | `i.gauntlet`EA, `i.katana`EA | |
-| 1 | 2 | 1-2 | 2 | Normal | `Beast` | Ninja | `i.katana`U, `i.armor`U | |
-| 1 | 2 | 1-2 | 2 | Normal | `Beast` | Samurai | `i.katana`U, `i.catalyst`U | |
-| 1 | 2 | 1-2 | 2 | Normal | `Beast` | Sage | `i.grimoire`U, `i.robe`U | |
-| 1 | 2 | 3 | 3 | Normal | `Aerial` | Duelist | `i.sword`U, `i.arrow`U | |
-| 1 | 2 | 3 | 3 | Normal | `Aerial` | Pilgrim | `i.armor`U, `i.wand`U | |
-| 1 | 2 | 4 | 5 | Elite | `Beast` | Fighter | `i.shield`EA, `i.robe`EA | |
-| 1 | 3 | 1-2 | 3 | Normal | `Insect_Swarm` | Lord | `i.shield`U, `i.robe`U | |
-| 1 | 3 | 1-2 | 3 | Normal | `Insect_Swarm` | Wizard | `i.wand`U, `i.catalyst`U | |
-| 1 | 3 | 1-2 | 3 | Normal | `Insect_Swarm` | Fighter | `i.sword`U, `i.gauntlet`U | |
-| 1 | 3 | 3 | 4 | Normal | `Beast` | Samurai | `i.katana`U, `i.bolt`U | |
-| 1 | 3 | 3 | 4 | Normal | `Beast` | Ranger | `i.arrow`U, `i.archery`U | |
-| 1 | 3 | 4 | 6 | Elite | `Insect_Swarm` | Rogue | `i.sword`EC, `i.armor`EC | |
-| 1 | 4 | 1-2 | 4 | Normal | `Aerial` | Rogue | `i.bolt`U, `i.armor`U | |
-| 1 | 4 | 1-2 | 4 | Normal | `Aerial` | Wizard | `i.wand`U, `i.catalyst`U | |
-| 1 | 4 | 1-2 | 4 | Normal | `Aerial` | Ranger | `i.arrow`U, `i.archery`U | |
-| 1 | 4 | 3 | 5 | Normal | `Insect_Swarm` | Fighter | `i.sword`U, `i.gauntlet`U | |
-| 1 | 4 | 3 | 5 | Normal | `Insect_Swarm` | Lord | `i.shield`U, `i.robe`U | |
-| 1 | 4 | 4 | 7 | Elite | `Aerial` | Ranger | `i.arrow`EB, `i.bolt`EB, `i.archery`EB | |
-| 1 | 5 | 1-2 | 5 | Normal | `Insect_Swarm` | Ninja | `i.katana`U, `i.armor`U | |
-| 1 | 5 | 1-2 | 5 | Normal | `Insect_Swarm` | Samurai | `i.katana`U, `i.catalyst`U | |
-| 1 | 5 | 1-2 | 5 | Normal | `Insect_Swarm` | Sage | `i.grimoire`U, `i.robe`U | |
-| 1 | 5 | 3 | 6 | Normal | `Aerial` | Duelist | `i.sword`U, `i.arrow`U | |
-| 1 | 5 | 3 | 6 | Normal | `Aerial` | Pilgrim | `i.armor`U, `i.grimoire`U | |
-| 1 | 5 | 4 | 8 | Elite | `Aerial` | Sage | `i.wand`EB, `i.grimoire`EB, `i.catalyst`EB | |
-| 1 | 6 | 1-2 | 6 | Normal | `Beast` | Lord | `i.shield`U, `i.robe`U | |
-| 1 | 6 | 1-2 | 6 | Normal | `Beast` | Wizard | `i.wand`U, `i.catalyst`U | |
-| 1 | 6 | 1-2 | 6 | Normal | `Beast` | Fighter | `i.sword`U, `i.gauntlet`U | |
-| 1 | 6 | 3 | 7 | Normal | `Aerial` | Samurai | `i.katana`U, `i.bolt`U | |
-| 1 | 6 | 3 | 7 | Normal | `Aerial` | Ranger | `i.arrow`U, `i.archery`U | |
-| 1 | 6 | 4 | 11 | BOSS | `Caninian` | Fighter | `i.sword`BD, `i.grimoire`BD | |
-| 2 | 1 | 1-2 | 7 | Normal | `Frost` | Rogue | `i.bolt`U, `i.armor`U | |
-| 2 | 1 | 1-2 | 7 | Normal | `Frost` | Wizard | `i.wand`U, `i.catalyst`U | |
-| 2 | 1 | 1-2 | 7 | Normal | `Frost` | Ranger | `i.arrow`U, `i.archery`U | |
-| 2 | 1 | 3 | 8 | Normal | `Frost` | Fighter | `i.sword`U, `i.gauntlet`U | |
-| 2 | 1 | 3 | 8 | Normal | `Frost` | Lord | `i.shield`U, `i.robe`U | |
-| 2 | 1 | 4 | 10 | Elite | `Frost` | Rogue | `i.sword`EA, `i.armor`EA | |
-| 2 | 2 | 1-2 | 8 | Normal | `Frost` | Ninja | `i.katana`U, `i.armor`U | |
-| 2 | 2 | 1-2 | 8 | Normal | `Frost` | Samurai | `i.katana`U, `i.catalyst`U | |
-| 2 | 2 | 1-2 | 8 | Normal | `Frost` | Sage | `i.grimoire`U, `i.robe`U | |
-| 2 | 2 | 3 | 9 | Normal | `Golem` | Duelist | `i.sword`U, `i.arrow`U | |
-| 2 | 2 | 3 | 9 | Normal | `Golem` | Pilgrim | `i.armor`U, `i.wand`U | |
-| 2 | 2 | 4 | 11 | Elite | `Frost` | Fighter | `i.shield`EA, `i.robe`EA | |
-| 2 | 3 | 1-2 | 9 | Normal | `Plant_Fungal` | Lord | `i.shield`U, `i.robe`U | |
-| 2 | 3 | 1-2 | 9 | Normal | `Plant_Fungal` | Wizard | `i.wand`U, `i.catalyst`U | |
-| 2 | 3 | 1-2 | 9 | Normal | `Plant_Fungal` | Fighter | `i.sword`U, `i.gauntlet`U | |
-| 2 | 3 | 3 | 10 | Normal | `Frost` | Samurai | `i.katana`U, `i.bolt`U | |
-| 2 | 3 | 3 | 10 | Normal | `Frost` | Ranger | `i.arrow`U, `i.archery`U | |
-| 2 | 3 | 4 | 12 | Elite | `Plant_Fungal` | Ranger | `i.arrow`EC, `i.bolt`EC, `i.archery`EC | |
-| 2 | 4 | 1-2 | 10 | Normal | `Golem` | Rogue | `i.bolt`U, `i.armor`U | |
-| 2 | 4 | 1-2 | 10 | Normal | `Golem` | Wizard | `i.wand`U, `i.catalyst`U | |
-| 2 | 4 | 1-2 | 10 | Normal | `Golem` | Ranger | `i.arrow`U, `i.archery`U | |
-| 2 | 4 | 3 | 11 | Normal | `Plant_Fungal` | Fighter | `i.sword`U, `i.gauntlet`U | |
-| 2 | 4 | 3 | 11 | Normal | `Plant_Fungal` | Lord | `i.shield`U, `i.robe`U | |
-| 2 | 4 | 4 | 13 | Elite | `Golem` | Duelist | `i.gauntlet`EB, `i.katana`EB | |
-| 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | Ninja | `i.katana`U, `i.armor`U | |
-| 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | Samurai | `i.katana`U, `i.catalyst`U | |
-| 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | Sage | `i.grimoire`U, `i.robe`U | |
-| 2 | 5 | 3 | 12 | Normal | `Golem` | Duelist | `i.sword`U, `i.arrow`U | |
-| 2 | 5 | 3 | 12 | Normal | `Golem` | Pilgrim | `i.armor`U, `i.grimoire`U | |
-| 2 | 5 | 4 | 14 | Elite | `Golem` | Sage | `i.wand`EB, `i.grimoire`EB, `i.catalyst`EB | |
-| 2 | 6 | 1-2 | 12 | Normal | `Frost` | Lord | `i.shield`U, `i.robe`U | |
-| 2 | 6 | 1-2 | 12 | Normal | `Frost` | Wizard | `i.wand`U, `i.catalyst`U | |
-| 2 | 6 | 1-2 | 12 | Normal | `Frost` | Fighter | `i.sword`U, `i.gauntlet`U | |
-| 2 | 6 | 3 | 13 | Normal | `Golem` | Samurai | `i.katana`U, `i.bolt`U | |
-| 2 | 6 | 3 | 13 | Normal | `Golem` | Ranger | `i.arrow`U, `i.archery`U | |
-| 2 | 6 | 4 | 17 | BOSS | `Lupinian` | Rogue | `i.armor`BD, `i.arrow`BD | |
+| 1 | 1 | 1-2 | 1 | Normal | `Beast` | Rogue | `i.bolt`U, `i.armor`U | 平原のけもの |
+| 1 | 1 | 1-2 | 1 | Normal | `Beast` | Wizard | `i.wand`U, `i.catalyst`U | 平原のちいさな術獣 |
+| 1 | 1 | 1-2 | 1 | Normal | `Beast` | Ranger | `i.arrow`U, `i.archery`U | 草むらの狩り獣 |
+| 1 | 1 | 3 | 2 | Normal | `Beast` | Fighter | `i.sword`U, `i.gauntlet`U | 小爪のけもの |
+| 1 | 1 | 3 | 2 | Normal | `Beast` | Lord | `i.shield`U, `i.robe`U | 群れのけもの |
+| 1 | 1 | 4 | 4 | Elite | `Beast` | Duelist | `i.gauntlet`EA, `i.katana`EA | 群れのリーダー獣 |
+| 1 | 2 | 1-2 | 2 | Normal | `Beast` | Ninja | `i.katana`U, `i.armor`U | 草かげのけもの |
+| 1 | 2 | 1-2 | 2 | Normal | `Beast` | Samurai | `i.katana`U, `i.catalyst`U | 草原の刃獣 |
+| 1 | 2 | 1-2 | 2 | Normal | `Beast` | Sage | `i.grimoire`U, `i.robe`U | ものしり獣 |
+| 1 | 2 | 3 | 3 | Normal | `Aerial` | Duelist | `i.sword`U, `i.arrow`U | 低空の小翼 |
+| 1 | 2 | 3 | 3 | Normal | `Aerial` | Pilgrim | `i.armor`U, `i.wand`U | 旅する小翼 |
+| 1 | 2 | 4 | 5 | Elite | `Beast` | Fighter | `i.shield`EA, `i.robe`EA | 大きめのけもの |
+| 1 | 3 | 1-2 | 3 | Normal | `Insect_Swarm` | Lord | `i.shield`U, `i.robe`U | むれ虫 |
+| 1 | 3 | 1-2 | 3 | Normal | `Insect_Swarm` | Wizard | `i.wand`U, `i.catalyst`U | 羽虫の術使い |
+| 1 | 3 | 1-2 | 3 | Normal | `Insect_Swarm` | Fighter | `i.sword`U, `i.gauntlet`U | 甲虫ファイター |
+| 1 | 3 | 3 | 4 | Normal | `Beast` | Samurai | `i.katana`U, `i.bolt`U | 刃持ちのけもの |
+| 1 | 3 | 3 | 4 | Normal | `Beast` | Ranger | `i.arrow`U, `i.archery`U | すばやいけもの |
+| 1 | 3 | 4 | 6 | Elite | `Insect_Swarm` | Rogue | `i.sword`EC, `i.armor`EC | 硬殻のむれ虫 |
+| 1 | 4 | 1-2 | 4 | Normal | `Aerial` | Rogue | `i.bolt`U, `i.armor`U | 風の小翼 |
+| 1 | 4 | 1-2 | 4 | Normal | `Aerial` | Wizard | `i.wand`U, `i.catalyst`U | 曇り空の小翼 |
+| 1 | 4 | 1-2 | 4 | Normal | `Aerial` | Ranger | `i.arrow`U, `i.archery`U | 見張り翼 |
+| 1 | 4 | 3 | 5 | Normal | `Insect_Swarm` | Fighter | `i.sword`U, `i.gauntlet`U | 前線のむれ虫 |
+| 1 | 4 | 3 | 5 | Normal | `Insect_Swarm` | Lord | `i.shield`U, `i.robe`U | 殻もちのむれ虫 |
+| 1 | 4 | 4 | 7 | Elite | `Aerial` | Ranger | `i.arrow`EB, `i.bolt`EB, `i.archery`EB | 風切り翼 |
+| 1 | 5 | 1-2 | 5 | Normal | `Insect_Swarm` | Ninja | `i.katana`U, `i.armor`U | かくれむれ虫 |
+| 1 | 5 | 1-2 | 5 | Normal | `Insect_Swarm` | Samurai | `i.katana`U, `i.catalyst`U | 刀持ちむれ虫 |
+| 1 | 5 | 1-2 | 5 | Normal | `Insect_Swarm` | Sage | `i.grimoire`U, `i.robe`U | むれ虫の古書持ち |
+| 1 | 5 | 3 | 6 | Normal | `Aerial` | Duelist | `i.sword`U, `i.arrow`U | 細身の翼剣士 |
+| 1 | 5 | 3 | 6 | Normal | `Aerial` | Pilgrim | `i.armor`U, `i.grimoire`U | 巡礼の小翼 |
+| 1 | 5 | 4 | 8 | Elite | `Aerial` | Sage | `i.wand`EB, `i.grimoire`EB, `i.catalyst`EB | 風読みの翼 |
+| 1 | 6 | 1-2 | 6 | Normal | `Beast` | Lord | `i.shield`U, `i.robe`U | 遺跡のけもの |
+| 1 | 6 | 1-2 | 6 | Normal | `Beast` | Wizard | `i.wand`U, `i.catalyst`U | 遺跡の術獣 |
+| 1 | 6 | 1-2 | 6 | Normal | `Beast` | Fighter | `i.sword`U, `i.gauntlet`U | 遺跡の前衛獣 |
+| 1 | 6 | 3 | 7 | Normal | `Aerial` | Samurai | `i.katana`U, `i.bolt`U | 城上の翼侍 |
+| 1 | 6 | 3 | 7 | Normal | `Aerial` | Ranger | `i.arrow`U, `i.archery`U | 羽弓の小翼 |
+| 1 | 6 | 4 | 11 | BOSS | `Caninian` | Fighter | `i.sword`BD, `i.grimoire`BD | ケイナイアンの若き闘士 |
+| 2 | 1 | 1-2 | 7 | Normal | `Frost` | Rogue | `i.bolt`U, `i.armor`U | 霜牙獣 |
+| 2 | 1 | 1-2 | 7 | Normal | `Frost` | Wizard | `i.wand`U, `i.catalyst`U | 凍晶のまじもの |
+| 2 | 1 | 1-2 | 7 | Normal | `Frost` | Ranger | `i.arrow`U, `i.archery`U | 雪原の氷獣 |
+| 2 | 1 | 3 | 8 | Normal | `Frost` | Fighter | `i.sword`U, `i.gauntlet`U | 氷爪獣 |
+| 2 | 1 | 3 | 8 | Normal | `Frost` | Lord | `i.shield`U, `i.robe`U | 白霜の群核 |
+| 2 | 1 | 4 | 10 | Elite | `Frost` | Rogue | `i.sword`EA, `i.armor`EA | 氷影の上位獣 |
+| 2 | 2 | 1-2 | 8 | Normal | `Frost` | Ninja | `i.katana`U, `i.armor`U | 雪潜みの氷獣 |
+| 2 | 2 | 1-2 | 8 | Normal | `Frost` | Samurai | `i.katana`U, `i.catalyst`U | 凍刃獣 |
+| 2 | 2 | 1-2 | 8 | Normal | `Frost` | Sage | `i.grimoire`U, `i.robe`U | 冬森の氷霊 |
+| 2 | 2 | 3 | 9 | Normal | `Golem` | Duelist | `i.sword`U, `i.arrow`U | 石核の剣闘体 |
+| 2 | 2 | 3 | 9 | Normal | `Golem` | Pilgrim | `i.armor`U, `i.wand`U | 祈路の岩体 |
+| 2 | 2 | 4 | 11 | Elite | `Frost` | Fighter | `i.shield`EA, `i.robe`EA | 凍土の重殻獣 |
+| 2 | 3 | 1-2 | 9 | Normal | `Plant_Fungal` | Lord | `i.shield`U, `i.robe`U | 菌林の群生核 |
+| 2 | 3 | 1-2 | 9 | Normal | `Plant_Fungal` | Wizard | `i.wand`U, `i.catalyst`U | 胞子まじない株 |
+| 2 | 3 | 1-2 | 9 | Normal | `Plant_Fungal` | Fighter | `i.sword`U, `i.gauntlet`U | 蔓根の暴れ株 |
+| 2 | 3 | 3 | 10 | Normal | `Frost` | Samurai | `i.katana`U, `i.bolt`U | 霜刃獣 |
+| 2 | 3 | 3 | 10 | Normal | `Frost` | Ranger | `i.arrow`U, `i.archery`U | 吹雪まとい |
+| 2 | 3 | 4 | 12 | Elite | `Plant_Fungal` | Ranger | `i.arrow`EC, `i.bolt`EC, `i.archery`EC | 胞子嵐の飛種 |
+| 2 | 4 | 1-2 | 10 | Normal | `Golem` | Rogue | `i.bolt`U, `i.armor`U | 岩殻の斥候体 |
+| 2 | 4 | 1-2 | 10 | Normal | `Golem` | Wizard | `i.wand`U, `i.catalyst`U | 結晶脈の術体 |
+| 2 | 4 | 1-2 | 10 | Normal | `Golem` | Ranger | `i.arrow`U, `i.archery`U | 谷壁の射撃体 |
+| 2 | 4 | 3 | 11 | Normal | `Plant_Fungal` | Fighter | `i.sword`U, `i.gauntlet`U | 菌殻の突進株 |
+| 2 | 4 | 3 | 11 | Normal | `Plant_Fungal` | Lord | `i.shield`U, `i.robe`U | 菌冠の寄生樹 |
+| 2 | 4 | 4 | 13 | Elite | `Golem` | Duelist | `i.gauntlet`EB, `i.katana`EB | 玄岩の決闘体 |
+| 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | Ninja | `i.katana`U, `i.armor`U | 胞子影の這い株 |
+| 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | Samurai | `i.katana`U, `i.catalyst`U | 菌刃のつる株 |
+| 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | Sage | `i.grimoire`U, `i.robe`U | 苔衣の胞子塊 |
+| 2 | 5 | 3 | 12 | Normal | `Golem` | Duelist | `i.sword`U, `i.arrow`U | 石脚の剣闘体 |
+| 2 | 5 | 3 | 12 | Normal | `Golem` | Pilgrim | `i.armor`U, `i.grimoire`U | 巡礼の岩体 |
+| 2 | 5 | 4 | 14 | Elite | `Golem` | Sage | `i.wand`EB, `i.grimoire`EB, `i.catalyst`EB | 核晶の導師体 |
+| 2 | 6 | 1-2 | 12 | Normal | `Frost` | Lord | `i.shield`U, `i.robe`U | 氷冠の群核 |
+| 2 | 6 | 1-2 | 12 | Normal | `Frost` | Wizard | `i.wand`U, `i.catalyst`U | 寒天の呪獣 |
+| 2 | 6 | 1-2 | 12 | Normal | `Frost` | Fighter | `i.sword`U, `i.gauntlet`U | 凍原の巨爪獣 |
+| 2 | 6 | 3 | 13 | Normal | `Golem` | Samurai | `i.katana`U, `i.bolt`U | 断崖の岩刃兵 |
+| 2 | 6 | 3 | 13 | Normal | `Golem` | Ranger | `i.arrow`U, `i.archery`U | 石翼の射手 |
+| 2 | 6 | 4 | 17 | BOSS | `Lupinian` | Rogue | `i.armor`BD, `i.arrow`BD | ルピニアンの白狼将 |
 | 3 | 1 | 1-2 | 14 | Normal | `Marine` | Rogue | `i.bolt`U, `i.armor`U | |
 | 3 | 1 | 1-2 | 14 | Normal | `Marine` | Wizard | `i.wand`U, `i.catalyst`U | |
 | 3 | 1 | 1-2 | 14 | Normal | `Marine` | Ranger | `i.arrow`U, `i.archery`U | |
@@ -299,48 +299,48 @@
 
 | `x.item_tier` | `x.rarity` | `x.source_enemy_type` | `x.item_type` | `x.name` |
 |---|---|---|---|---|
-| 1 | C | none | `i.sword` | |
-| 1 | C | none | `i.gauntlet` | |
-| 1 | C | none | `i.shield` | |
-| 1 | C | none | `i.armor` | |
-| 1 | C | none | `i.robe` | |
-| 1 | C | none | `i.katana` | |
-| 1 | C | none | `i.wand` | |
-| 1 | C | none | `i.grimoire` | |
-| 1 | C | none | `i.catalyst` | |
-| 1 | C | none | `i.arrow` | |
-| 1 | C | none | `i.bolt` | |
-| 1 | C | none | `i.archery` | |
-| 1 | U | none | `i.sword` | |
-| 1 | U | none | `i.gauntlet` | |
-| 1 | U | none | `i.shield` | |
-| 1 | U | none | `i.armor` | |
-| 1 | U | none | `i.robe` | |
-| 1 | U | none | `i.katana` | |
-| 1 | U | none | `i.wand` | |
-| 1 | U | none | `i.grimoire` | |
-| 1 | U | none | `i.catalyst` | |
-| 1 | U | none | `i.arrow` | |
-| 1 | U | none | `i.bolt` | |
-| 1 | U | none | `i.archery` | |
-| 1 | E | `Aerial` | `i.wand` | |
-| 1 | E | `Aerial` | `i.grimoire` | |
-| 1 | E | `Aerial` | `i.catalyst` | |
-| 1 | E | `Aerial` | `i.arrow` | |
-| 1 | E | `Aerial` | `i.bolt` | |
-| 1 | E | `Aerial` | `i.archery` | |
-| 1 | E | `Beast` | `i.gauntlet` | |
-| 1 | E | `Beast` | `i.shield` | |
-| 1 | E | `Beast` | `i.robe` | |
-| 1 | E | `Beast` | `i.katana` | |
-| 1 | E | `Insect_Swarm` | `i.sword` | |
-| 1 | E | `Insect_Swarm` | `i.armor` | |
-| 1 | B | `Caninian` | `i.sword` | |
-| 1 | B | `Caninian` | `i.gauntlet` | |
-| 1 | B | `Caninian` | `i.shield` | |
-| 1 | B | `Caninian` | `i.robe` | |
-| 1 | B | `Caninian` | `i.katana` | |
-| 1 | B | `Caninian` | `i.grimoire` | |
+| 1 | C | none | `i.sword` | 欠けた短剣 |
+| 1 | C | none | `i.gauntlet` | 布巻きの手甲 |
+| 1 | C | none | `i.shield` | 木の丸盾 |
+| 1 | C | none | `i.armor` | 継ぎ革の服 |
+| 1 | C | none | `i.robe` | 粗布のローブ |
+| 1 | C | none | `i.katana` | 古びた小刀 |
+| 1 | C | none | `i.wand` | ひび杖 |
+| 1 | C | none | `i.grimoire` | 走り書きの本 |
+| 1 | C | none | `i.catalyst` | にごり石 |
+| 1 | C | none | `i.arrow` | 欠け矢 |
+| 1 | C | none | `i.bolt` | 短ボルト |
+| 1 | C | none | `i.archery` | つる弓 |
+| 1 | U | none | `i.sword` | 鉄短剣 |
+| 1 | U | none | `i.gauntlet` | 硬革の手甲 |
+| 1 | U | none | `i.shield` | 補強木盾 |
+| 1 | U | none | `i.armor` | 革当て |
+| 1 | U | none | `i.robe` | 麻布の法衣 |
+| 1 | U | none | `i.katana` | 細身の打刀 |
+| 1 | U | none | `i.wand` | 灰木の杖 |
+| 1 | U | none | `i.grimoire` | 初歩術式書 |
+| 1 | U | none | `i.catalyst` | 磨き石の触媒 |
+| 1 | U | none | `i.arrow` | 羽根矢 |
+| 1 | U | none | `i.bolt` | 石先ボルト |
+| 1 | U | none | `i.archery` | 狩人の弓 |
+| 1 | E | `Aerial` | `i.wand` | 風呼びの小杖 |
+| 1 | E | `Aerial` | `i.grimoire` | 渡り翼の教本 |
+| 1 | E | `Aerial` | `i.catalyst` | 上昇気流の核石 |
+| 1 | E | `Aerial` | `i.arrow` | 風切り矢 |
+| 1 | E | `Aerial` | `i.bolt` | 隼落としボルト |
+| 1 | E | `Aerial` | `i.archery` | 高枝の狩弓 |
+| 1 | E | `Beast` | `i.gauntlet` | 獣革の拳当て |
+| 1 | E | `Beast` | `i.shield` | 獣骨の小盾 |
+| 1 | E | `Beast` | `i.robe` | 毛皮のまとい |
+| 1 | E | `Beast` | `i.katana` | 牙研ぎの曲刀 |
+| 1 | E | `Insect_Swarm` | `i.sword` | 虫刃の直剣 |
+| 1 | E | `Insect_Swarm` | `i.armor` | 甲殻つぎの鎧 |
+| 1 | B | `Caninian` | `i.sword` | 若牙の長剣 |
+| 1 | B | `Caninian` | `i.gauntlet` | 若牙の手甲 |
+| 1 | B | `Caninian` | `i.shield` | 若牙の防盾 |
+| 1 | B | `Caninian` | `i.robe` | 若牙の外套 |
+| 1 | B | `Caninian` | `i.katana` | 若牙の刀 |
+| 1 | B | `Caninian` | `i.grimoire` | 若牙の戦書 |
 | 2 | C | none | `i.sword` | |
 | 2 | C | none | `i.gauntlet` | |
 | 2 | C | none | `i.shield` | |
