@@ -8,7 +8,7 @@ export interface ColosseumEnemySettings {
   enemyType: string;
   enemyClass: EnemyClassId;
   level: number;
-  abilities: AbilityId[];
+  abilities: Array<{ id: AbilityId; level: number }>;
 }
 
 export const DEFAULT_COLOSSEUM_ENEMY_SETTINGS: ColosseumEnemySettings = {
@@ -61,7 +61,22 @@ function canUseStorage(): boolean {
 export function normalizeColosseumEnemySettings(raw: unknown): ColosseumEnemySettings {
   const parsed = (raw && typeof raw === 'object') ? raw as Partial<ColosseumEnemySettings> : {};
   const normalizedAbilities = Array.isArray(parsed.abilities)
-    ? parsed.abilities.filter((id): id is AbilityId => typeof id === 'string').slice(0, 5)
+    ? parsed.abilities
+      .map((entry) => {
+        if (typeof entry === 'string') {
+          return { id: entry as AbilityId, level: 1 };
+        }
+        if (!entry || typeof entry !== 'object') return null;
+        const id = 'id' in entry && typeof entry.id === 'string' ? entry.id as AbilityId : null;
+        if (!id) return null;
+        const rawLevel = 'level' in entry && Number.isFinite(entry.level) ? Number(entry.level) : 1;
+        return {
+          id,
+          level: Math.max(1, Math.min(5, Math.floor(rawLevel))),
+        };
+      })
+      .filter((entry): entry is { id: AbilityId; level: number } => entry !== null)
+      .slice(0, 5)
     : [];
 
   const level = Number.isFinite(parsed.level) ? Math.floor(parsed.level as number) : DEFAULT_COLOSSEUM_ENEMY_SETTINGS.level;
@@ -102,8 +117,8 @@ export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode
   const enemyLevel = normalized.level + (isLunaMode ? LUNA_MODE_ENEMY_LEVEL_BONUS : 0);
   const multipliers = getEnemyMultipliersForLevel(enemyLevel);
   const classAbilities = new Map(classBase.abilities.map((ability) => [ability.id, ability]));
-  normalized.abilities.forEach((abilityId) => {
-    classAbilities.set(abilityId, { id: abilityId, level: 1 });
+  normalized.abilities.forEach((ability) => {
+    classAbilities.set(ability.id, { id: ability.id, level: ability.level });
   });
 
   const elementalResistance: Record<ElementalResistance, number> = {
