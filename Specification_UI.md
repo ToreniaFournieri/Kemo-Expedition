@@ -172,9 +172,10 @@ Left-aligned            Right-aligned
                               回避:+4
 —————
 ボーナス: 護x1.3, 弓x1.1, 鎧x1.8, 装備+1, 根性+1, 体+3
-特殊能力:
-守護者: パーティへの物理ダメージ × 3/5
+アビリティ:
+守護者1, 探究者1
 ```
+Note: Floating bubble for ability explanation.
 
 magic caster
 ```
