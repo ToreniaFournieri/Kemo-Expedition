@@ -377,6 +377,7 @@ interface CharacterAttackResult {
   hits: number;
   wasNegatedByEnemyIllusion?: boolean;
   reflectedDamage?: number;
+  reflectedSourceDamage?: number;
 }
 
 type ReflectDescriptor = {
@@ -1353,6 +1354,7 @@ export function executeBattle(
             let appliedHits = 0;
             let appliedDamage = 0;
             let reflectedDamage = 0;
+            let reflectedSourceDamage = 0;
             let avoidedByStealth = false;
             const avoidedByPartyIllusion = isPartyIllusionActive(phase, characterStats, consumedPartyIllusion);
             const avoidedByIllusion = avoidedByPartyIllusion || isIllusionActive(
@@ -1378,6 +1380,7 @@ export function executeBattle(
 
                 appliedHits += 1;
                 if (reflect) {
+                  reflectedSourceDamage += hitDamage;
                   reflectedDamage += Math.max(1, Math.floor(hitDamage * reflect.amplifier));
                   continue;
                 }
@@ -1441,6 +1444,9 @@ export function executeBattle(
                   ? `${enemy.name} が${attackName}を唱えたが反射された！ (${reflectedAttemptText})`
                   : `${enemy.name} の${reflect.summary}攻撃は反射された！ (${reflectedAttemptText})`,
                 damage: reflectedDamage,
+                reflectedDamage,
+                reflectedSourceDamage,
+                reflectTarget: 'enemy',
                 hits: appliedHits,
                 totalAttempts: attack.totalAttempts,
                 elementalOffense: enemy.elementalOffense,
@@ -1764,7 +1770,9 @@ export function executeBattle(
 
           const reflect = getReflectDescriptor(phase, cs.elementalOffense, enemy.abilities);
           if (result.damage > 0 && reflect) {
+            const reflectedSourceDamage = result.damage;
             result.reflectedDamage = Math.max(1, Math.floor(result.damage * reflect.amplifier));
+            result.reflectedSourceDamage = reflectedSourceDamage;
             partyHp -= result.reflectedDamage;
             result.damage = 0;
           }
@@ -1851,6 +1859,9 @@ export function executeBattle(
                 ? `${char.name} が${attackType}を唱えたが反射された！ (${reflectedAttemptText})`
                 : `${char.name} の${reflect.summary}攻撃は反射された！ (${reflectedAttemptText})`,
               damage: result.reflectedDamage,
+              reflectedDamage: result.reflectedDamage,
+              reflectedSourceDamage: result.reflectedSourceDamage,
+              reflectTarget: 'party',
               hits: result.hits,
               totalAttempts: result.totalAttempts,
               elementalOffense: cs.elementalOffense,

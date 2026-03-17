@@ -497,6 +497,9 @@ export interface BattleLogEntry {
   action: string;
   note?: string;
   damage?: number;
+  reflectedDamage?: number;
+  reflectedSourceDamage?: number;
+  reflectTarget?: 'party' | 'enemy';
   hits?: number; // Number of successful hits
   totalAttempts?: number; // Total number of attack attempts
   rageBonusPercent?: number; // 闘志 bonus shown in battle log
