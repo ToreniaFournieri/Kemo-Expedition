@@ -657,14 +657,36 @@ function getFirstStrikeLevel(charStats: ComputedCharacterStats): number {
   return charStats.abilities.find(a => a.id === 'first_strike')?.level ?? 0;
 }
 
-function rollInitiative(firstStrikeLevel: number, bonus = 0): number {
+function hasAbility(abilities: AbilityLike[], abilityId: AbilityId): boolean {
+  return abilities.some(ability => ability.id === abilityId && ability.level > 0);
+}
+
+function rollInitiative(
+  firstStrikeLevel: number,
+  options?: {
+    fertilityBonus?: number;
+    hasSlow?: boolean;
+    affectedByFrostbite?: boolean;
+  },
+): number {
   const diceCount = firstStrikeLevel >= 3 ? 4 : firstStrikeLevel >= 2 ? 3 : firstStrikeLevel === 1 ? 2 : 1;
   let total = 0;
   for (let i = 0; i < diceCount; i++) {
     total += Math.floor(Math.random() * 3) + 1;
   }
 
-  return Math.min(9, total + bonus);
+  let result = firstStrikeLevel >= 3 ? Math.min(9, total) : total;
+  if ((options?.fertilityBonus ?? 0) > 0) {
+    result = Math.min(9, result + (options?.fertilityBonus ?? 0));
+  }
+  if (options?.hasSlow) {
+    result = Math.max(1, result - 1);
+  }
+  if (options?.affectedByFrostbite) {
+    result = Math.max(1, result - 1);
+  }
+
+  return result;
 }
 
 function getEnemyFirstStrikeLevel(enemy: EnemyDef): number {
@@ -1177,11 +1199,35 @@ export function executeBattle(
   const phases: BattlePhase[] = ['long', 'mid', 'close'];
   const hasFertilityInitiativeBonus = getDeityKey(party.deity.name) === 'Goddess of Fertility';
 
+  const partyHasFrostbite = characterStats.some(cs => hasAbility(cs.abilities, 'frostbite'));
+  const enemyHasFrostbite = hasAbility(enemy.abilities, 'frostbite');
+
+  if (partyHasFrostbite) {
+    const frostbiteOwner = party.characters.find(c => {
+      const stats = characterStats.find(candidate => candidate.characterId === c.id);
+      return stats ? hasAbility(stats.abilities, 'frostbite') : false;
+    });
+
+    log.push({
+      phase: 'long',
+      actor: 'effect',
+      action: `${frostbiteOwner?.name ?? '味方'} の凍傷！`,
+      note: '(相手の行動を少し遅らせる)',
+    });
+  }
+
   for (const phase of phases) {
-    const enemyInitiativeRoll = rollInitiative(getEnemyFirstStrikeLevel(enemy));
+    const enemyInitiativeRoll = rollInitiative(getEnemyFirstStrikeLevel(enemy), {
+      hasSlow: hasAbility(enemy.abilities, 'slow'),
+      affectedByFrostbite: partyHasFrostbite,
+    });
     const characterInitiative = characterStats.map(cs => ({
       stats: cs,
-      roll: rollInitiative(getFirstStrikeLevel(cs), hasFertilityInitiativeBonus ? 1 : 0),
+      roll: rollInitiative(getFirstStrikeLevel(cs), {
+        fertilityBonus: hasFertilityInitiativeBonus ? 1 : 0,
+        hasSlow: hasAbility(cs.abilities, 'slow'),
+        affectedByFrostbite: enemyHasFrostbite,
+      }),
     }));
 
     const initiativeByCharacter = new Map<number, number>(
