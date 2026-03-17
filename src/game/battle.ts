@@ -58,6 +58,30 @@ function toRageBonusPercent(rageAmplifier: number): number {
   return Math.max(0, Math.round((rageAmplifier - 1.0) * 100));
 }
 
+function getMutualAmplifier(
+  phase: BattlePhase,
+  actorAbilities: AbilityLike[],
+  opponentAbilities: AbilityLike[],
+): number {
+  const hasAbilityAtLeast = (abilities: AbilityLike[], abilityId: AbilityId, requiredLevel: number): boolean =>
+    abilities.some((ability) => ability.id === abilityId && ability.level >= requiredLevel);
+  const actorOrOpponentHas = (abilityId: AbilityId, requiredLevel: number): boolean =>
+    hasAbilityAtLeast(actorAbilities, abilityId, requiredLevel) || hasAbilityAtLeast(opponentAbilities, abilityId, requiredLevel);
+
+  if (phase === 'mid') {
+    if (actorOrOpponentHas('mutual_magic_amplify', 1)) return 1.3;
+    if (actorOrOpponentHas('mutual_magic_restraint', 1)) return 0.8;
+    return 1.0;
+  }
+
+  if (phase === 'long' || phase === 'close') {
+    if (actorOrOpponentHas('mutual_physical_amplify', 2)) return 1.4;
+    if (actorOrOpponentHas('mutual_physical_restraint', 1)) return 0.8;
+  }
+
+  return 1.0;
+}
+
 
 
 function hasStealth(charStats: ComputedCharacterStats): boolean {
@@ -221,7 +245,8 @@ function calculateSingleEnemyAttackDamage(
 
   const partyDefenseAbilityAmplifier = getPartyDefenseAbilityAmplifier(phase, characterStats, targetCharStats.row);
   const rageAmplifier = getEnemyRageAmplifier(enemy, enemyHp);
-  const rawDamage = (attack - defense) * amplifier * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier;
+  const mutualAmplifier = getMutualAmplifier(phase, enemy.abilities, targetCharStats.abilities);
+  const rawDamage = (attack - defense) * amplifier * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * mutualAmplifier;
   const totalDamage = Math.max(1, rawDamage);
 
   return Math.floor(totalDamage);
@@ -338,6 +363,7 @@ function calculateCharacterFriendlyFireDamage(
 
   const rageAmplifier = getCharacterRageAmplifier(attacker, partyHp, partyStats.hp);
   const momentumAmplifier = getCharacterMomentumAmplifier(attacker, partyHp, partyStats.hp);
+  const mutualAmplifier = getMutualAmplifier(phase, attacker.abilities, target.abilities);
 
   const partyOffenseAmplifier = getPartyOffenseAbilityAmplifier(phase, characterStats, attacker.row);
   const basePerHitDamage = Math.max(1, Math.floor(
@@ -349,6 +375,7 @@ function calculateCharacterFriendlyFireDamage(
       * partyOffenseAmplifier
       * rageAmplifier
       * momentumAmplifier
+      * mutualAmplifier
   ));
 
   const actorAccuracyPotency = phase === 'mid' ? 1.0 : attacker.accuracyPotency;
@@ -626,11 +653,12 @@ function calculateCharacterDamage(
 
   const rageAmplifier = getCharacterRageAmplifier(charStats, partyHp, partyStats.hp);
   const momentumAmplifier = getCharacterMomentumAmplifier(charStats, partyHp, partyStats.hp);
+  const mutualAmplifier = getMutualAmplifier(phase, charStats.abilities, enemy.abilities);
 
   const partyOffenseAmplifier = getPartyOffenseAbilityAmplifier(phase, characterStats, charStats.row);
   const basePerHitDamage = Math.max(1, Math.floor(
     (attack - effectiveDefense) * offenseAmplifier * charStats.elementalOffenseValue *
-    elementalMultiplier * defenseAmplifier * partyOffenseAmplifier * rageAmplifier * momentumAmplifier
+    elementalMultiplier * defenseAmplifier * partyOffenseAmplifier * rageAmplifier * momentumAmplifier * mutualAmplifier
   ));
 
   // All phases now use hit detection.
@@ -1225,6 +1253,42 @@ export function executeBattle(
   }
 
   for (const phase of phases) {
+    const mutualAbilityLogByPhase: Record<BattlePhase, Array<{ abilityId: AbilityId; actionName: string; note: string; minLevel: number }>> = {
+      long: [
+        { abilityId: 'mutual_physical_amplify', actionName: '物理増幅', note: '(双方物理ダメージ1.4倍)', minLevel: 2 },
+        { abilityId: 'mutual_physical_restraint', actionName: '物理抑制', note: '(双方物理ダメージ0.8倍)', minLevel: 1 },
+      ],
+      mid: [
+        { abilityId: 'mutual_magic_amplify', actionName: '魔法増幅', note: '(双方魔法ダメージ1.3倍)', minLevel: 1 },
+        { abilityId: 'mutual_magic_restraint', actionName: '魔法抑制', note: '(双方魔法ダメージ0.8倍)', minLevel: 1 },
+      ],
+      close: [
+        { abilityId: 'mutual_physical_amplify', actionName: '物理増幅', note: '(双方物理ダメージ1.4倍)', minLevel: 2 },
+        { abilityId: 'mutual_physical_restraint', actionName: '物理抑制', note: '(双方物理ダメージ0.8倍)', minLevel: 1 },
+      ],
+    };
+
+    const mutualOwners: Array<{ name: string; abilities: AbilityLike[] }> = [
+      ...party.characters.map((c) => ({
+        name: c.name,
+        abilities: characterStats.find((cs) => cs.characterId === c.id)?.abilities ?? [],
+      })),
+      { name: enemy.name, abilities: enemy.abilities },
+    ];
+
+    for (const effect of mutualAbilityLogByPhase[phase]) {
+      for (const owner of mutualOwners) {
+        if (owner.abilities.some((ability) => ability.id === effect.abilityId && ability.level >= effect.minLevel)) {
+          log.push({
+            phase,
+            actor: 'effect',
+            action: `[効] ${owner.name} の${effect.actionName}！`,
+            note: effect.note,
+          });
+        }
+      }
+    }
+
     const enemyInitiativeRoll = rollInitiative(getEnemyFirstStrikeLevel(enemy), {
       hasSlow: hasAbility(enemy.abilities, 'slow'),
       affectedByFrostbite: partyHasFrostbite,
