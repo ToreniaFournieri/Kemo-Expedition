@@ -2124,6 +2124,16 @@ export function HomeScreen({
         bonusNames.add(`c.penet+${formatCBonusValue(item.penetBonus)}`);
       }
 
+      if ((item.meleeNoABonus ?? 0) !== 0) {
+        bonusNames.add(`c.melee_NoA+${formatCBonusValue(item.meleeNoABonus ?? 0)}`);
+      }
+      if ((item.rangedNoABonus ?? 0) !== 0) {
+        bonusNames.add(`c.ranged_NoA+${formatCBonusValue(item.rangedNoABonus ?? 0)}`);
+      }
+      if ((item.magicalNoABonus ?? 0) !== 0) {
+        bonusNames.add(`c.magical_NoA+${formatCBonusValue(item.magicalNoABonus ?? 0)}`);
+      }
+
       return bonusNames;
     };
 
