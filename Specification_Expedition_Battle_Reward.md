@@ -129,11 +129,13 @@ left-alinged                                           right-aligned
 
 **Battle Phase**
 
-|Phase |Damage type |number of attacks type |Defense type|
-|-----|-----------|-----------|-----------|
-|LONG |`d.ranged_attack` |`d.ranged_NoA` | `d.physical_defense` |
-|MID |`d.magical_attack` |`d.magical_NoA` | `d.magical_defense` |
-|CLOSE |`d.melee_attack` |`d.melee_NoA` | `d.physical_defense` |
+|Phase | text | Damage type |number of attacks type |Defense type|
+|-----|--------|-------|-----------|-----------|
+| START | [効] | | | |
+| LONG | (遠距離攻撃フェーズ) |`d.ranged_attack` |`d.ranged_NoA` | `d.physical_defense` |
+| MID | (魔法攻撃フェーズ) |`d.magical_attack` |`d.magical_NoA` | `d.magical_defense` |
+| CLOSE | (近接攻撃フェーズ) |`d.melee_attack` |`d.melee_NoA` | `d.physical_defense` |
+| END | [末] | | | |
 
 - After the CLOSE phase, the battle is over. Party needs to beat enemy within these three phases.
  
