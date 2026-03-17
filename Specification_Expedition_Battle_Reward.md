@@ -269,7 +269,9 @@ left-alinged                                           right-aligned
 **Actor action**
 
 - `f.NoA` times, get `f.targeting` -> opponent. 
-  	- If `f.hit_detection`(actor: , opponent: ,Nth_hit: the current hit index), current party.`d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
+  	- If `f.hit_detection`(actor: , opponent: , Nth_hit: the current hit index), current party.
+  	- If (actor.`e.ice` and opponent.`a.ice-reflect`) or (actor.`e.fire` and opponent.`a.fire-reflect`) or (phase is MID and `a.magical-reflect`), actor.`d,HP` -= `f.damage_calculation` x reflect damage amplifier. log "ロップ の氷属性攻撃は反射された！　(2/4回) " or "セルヴァ がフロストニードルを唱えたが反射された！　(3/3回, 共鳴+33%) "
+  	- Else `d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
 - If current opponent .`d.HP` =< 0, if opponent.`a.resurrect`1, set `d.HP` = 1 and disable `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat.
 - If current opponent.`d.HP` =< 0, if character.`a.resurrect`2, set opponent.`d.HP` = 1% of (opponent.max_HP) and disable the `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat. 
 - If (phase is LONG) and (opponent.`a.illusion`1) and (the `a.illusion` is enable), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. log "ポンタへの攻撃はすべて幻だった！".
