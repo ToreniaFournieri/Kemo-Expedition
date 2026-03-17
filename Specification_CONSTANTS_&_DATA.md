@@ -882,7 +882,8 @@
 
 **Enemy Master Specification**
 - This document defines the base data structure and dynamic scaling laws for all entities encountered during an expedition.
-
+- `ability1`: Always active for that enemy type.
+- `ability30`: Becomes active when the enemy's level is **30 or higher**.
 
 | enemy_type | name | short name | ability1 | ability30 | c. bonuses |
 |-|-|-|-|-|-|
