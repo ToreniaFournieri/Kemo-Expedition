@@ -1206,7 +1206,7 @@ export function executeBattle(
     log.push({
       phase: 'long',
       actor: 'effect',
-      action: `[効] ${ownerName} の凍傷！`,
+      action: `${ownerName} の凍傷！`,
       note: '(相手の行動を少し遅らせる)',
     });
   };
