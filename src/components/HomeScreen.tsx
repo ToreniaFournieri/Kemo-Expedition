@@ -5378,11 +5378,11 @@ function PartyTab({
                 <div className="text-gray-500 text-xs">アビリティ:</div>
                 <div className="text-xs text-sub leading-5">
                   {stats.abilities.map((ability, index) => {
-                    const label = `${ability.name}${ability.level}`;
+                    const label = ability.name;
                     const key = `status-ability-${ability.id}-${ability.level}-${index}`;
                     return (
                       <span key={key}>
-                        {index > 0 && <span>, </span>}
+                        {index > 0 && <span className="text-gray-900">, </span>}
                         <button
                           type="button"
                           onPointerDown={(event) => event.stopPropagation()}
