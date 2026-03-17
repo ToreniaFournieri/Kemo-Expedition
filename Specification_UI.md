@@ -175,7 +175,7 @@ Left-aligned            Right-aligned
 アビリティ:
 守護者1, 探究者1
 ```
-Note: Floating bubble for ability explanation.
+Note: Floating bubble of explanation for each individual ability and bonus.
 
 magic caster
 ```
