@@ -114,6 +114,9 @@ left-alinged                                           right-aligned
 [末] 探索深度に到達した為帰還します
 ```
 
+- note: [効] text always at the beginning of battle log (before the "(遠距離攻撃フェーズ)" part)
+- note: [末] text always at the end of battle log (after the "(近接攻撃フェーズ)" part)
+
 ## 6. BATTLE
 
 ### 6.1 Encounter Rules
