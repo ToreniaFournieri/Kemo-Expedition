@@ -942,7 +942,7 @@ export function computeCharacterStats(
   };
 }
 
-function getAbilityName(id: AbilityId, level: number): string {
+export function getAbilityName(id: AbilityId, level: number): string {
   const names: Record<AbilityId, string> = {
     first_strike: '先制攻撃',
     hunter: '狩人',
