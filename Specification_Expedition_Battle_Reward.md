@@ -262,8 +262,11 @@ left-alinged                                           right-aligned
   - `a.first-strike`2, roll **3d3** (3~9)
   - `a.first-strike`1, roll **2d3** (2~6)
   - No `a.first-strike`, roll **1d3** (1~3)
--　If party.`Goddess of Fertility`, add +1 (cap the result at 9)
--  Actions are resolved in descending order of roll result.
+- Modification 
+  - If party.`Goddess of Fertility`, add +1 (cap the result at 9)
+  - If actor.`a.slow`1, subtract 1 (minimum 1)
+  - If opponent.`a.frostbite`1, subtract 1 (minimum 1)
+- Actions are resolved in descending order of roll result.
 - Tie-breaker: Enemy > Front row party members > Last row party member.
 
 **Actor action**
