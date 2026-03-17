@@ -430,7 +430,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.ice-reflect1",
         "label": "氷結反射1",
-        "description": "自身が受ける予定の氷属性ダメージを反射(3/10)して相手に与える(自身はダメージを受けない)"
+        "description": "自身が受ける予定の通常攻撃の氷属性ダメージを反射(3/10)して相手に与える(自身はダメージを受けない)"
       },
       {
         "key": "a.bind1",
@@ -450,7 +450,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.fire-reflect1",
         "label": "火炎反射1",
-        "description": "自身が受ける予定の火属性ダメージを反射(3/10)して相手に与える(自身はダメージを受けない)"
+        "description": "自身が受ける予定の通常攻撃の火属性ダメージを反射(3/10)して相手に与える(自身はダメージを受けない)"
       },
       {
         "key": "a.soul-reap1",
@@ -530,7 +530,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.magical-reflect1",
         "label": "魔法反射1",
-        "description": "自身が受ける予定の魔法ダメージを反射(1/10)して相手に与える(自身はダメージを受けない)"
+        "description": "自身が受ける予定の通常攻撃の魔法ダメージを反射(1/10)して相手に与える(自身はダメージを受けない)"
       },
       {
         "key": "a.colossal1",
