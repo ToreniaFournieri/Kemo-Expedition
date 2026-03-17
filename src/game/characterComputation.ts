@@ -1008,6 +1008,9 @@ function getAbilityName(id: AbilityId, level: number): string {
     colossal: '巨人',
     upgrade_all_abilities: '全能力強化',
   };
+  if (id === 'mutual_physical_amplify' && level <= -1) {
+    return '物理抑制1';
+  }
   if (level >= 1) {
     return `${names[id]}${level}`;
   }

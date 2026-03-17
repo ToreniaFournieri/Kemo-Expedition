@@ -8262,13 +8262,18 @@ function SettingTab({
       return [{ key: 'none', label: 'なし', abilityId: '', level: 0, isMissing: true }];
     }
 
-    return abilities.map((ability, index) => ({
-      key: `${ability.id}-${ability.level}-${index}`,
-      label: `${ABILITY_NAMES[ability.id] ?? ability.id}${ability.level}`,
-      abilityId: ability.id,
-      level: ability.level,
-      isMissing: false,
-    }));
+    return abilities.map((ability, index) => {
+      const label = ability.id === 'mutual_physical_amplify' && ability.level <= -1
+        ? '物理抑制1'
+        : `${ABILITY_NAMES[ability.id] ?? ability.id}${ability.level}`;
+      return {
+        key: `${ability.id}-${ability.level}-${index}`,
+        label,
+        abilityId: ability.id,
+        level: ability.level,
+        isMissing: false,
+      };
+    });
   };
 
   const handleAbilityHelpToggle = (
