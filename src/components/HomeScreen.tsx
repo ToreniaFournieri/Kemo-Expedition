@@ -6216,6 +6216,21 @@ function ExpeditionTab({
                                   ? actionText.replace(/\(共鳴\+\d+%\)$/, '')
                                   : actionText;
                                 const shouldRenderResurrectBeforeHeader = isResurrectLog && shouldShowPhaseHeader;
+                                const isReflectDamageLog = !!log.reflectedDamage && log.reflectedDamage > 0 && !!log.reflectedSourceDamage;
+                                const reflectArrowClass = log.reflectTarget === 'party' ? 'text-accent' : 'text-sub';
+                                const damageDisplay = log.damage !== undefined && log.damage > 0 && (
+                                  isReflectDamageLog
+                                    ? (
+                                      <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
+                                        (<span className="text-gray-500" aria-hidden="true">{emoji}</span>{' '}{formatNumber(log.reflectedSourceDamage ?? log.damage)} <span className={reflectArrowClass}>→反射 {formatNumber(log.reflectedDamage ?? log.damage)}</span>)
+                                      </span>
+                                    )
+                                    : (
+                                      <span className={`ml-auto shrink-0 whitespace-nowrap text-right ${isEnemy ? 'text-accent' : 'text-sub'}`}>
+                                        (<span className={isEnemy ? 'accent-theme-emoji-icon' : 'sub-theme-emoji-icon'} aria-hidden="true">{emoji}</span>{' '}{formatNumber(log.damage)})
+                                      </span>
+                                    )
+                                );
 
                                 return (
                                   <div key={j}>
@@ -6227,11 +6242,7 @@ function ExpeditionTab({
                                           {normalizeBattleLogNote(log.note) && <span className="text-gray-400"> {normalizeBattleLogNote(log.note)}</span>}
                                           {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                         </span>
-                                        {log.damage !== undefined && log.damage > 0 && (
-                                          <span className={`ml-auto shrink-0 whitespace-nowrap text-right ${isEnemy ? 'text-accent' : 'text-sub'}`}>
-                                            (<span className={isEnemy ? 'accent-theme-emoji-icon' : 'sub-theme-emoji-icon'} aria-hidden="true">{emoji}</span>{' '}{formatNumber(log.damage)})
-                                          </span>
-                                        )}
+                                        {damageDisplay}
                                       </div>
                                     )}
                                     {shouldShowPhaseHeader && <div className="text-gray-400">({phaseHeader})</div>}
@@ -6243,11 +6254,7 @@ function ExpeditionTab({
                                         {normalizeBattleLogNote(log.note) && <span className="text-gray-400"> {normalizeBattleLogNote(log.note)}</span>}
                                         {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                       </span>
-                                      {log.damage !== undefined && log.damage > 0 && (
-                                        <span className={`ml-auto shrink-0 whitespace-nowrap text-right ${isEnemy ? 'text-accent' : 'text-sub'}`}>
-                                          (<span className={isEnemy ? 'accent-theme-emoji-icon' : 'sub-theme-emoji-icon'} aria-hidden="true">{emoji}</span>{' '}{formatNumber(log.damage)})
-                                        </span>
-                                      )}
+                                      {damageDisplay}
                                     </div>
                                     )}
                                   </div>
@@ -7460,6 +7467,21 @@ function DiaryTab({
                                 ? actionText.replace(/\(共鳴\+\d+%\)$/, '')
                                 : actionText;
                               const shouldRenderResurrectBeforeHeader = isResurrectLog && shouldShowPhaseHeader;
+                              const isReflectDamageLog = !!battleLog.reflectedDamage && battleLog.reflectedDamage > 0 && !!battleLog.reflectedSourceDamage;
+                              const reflectArrowClass = battleLog.reflectTarget === 'party' ? 'text-accent' : 'text-sub';
+                              const damageDisplay = battleLog.damage !== undefined && battleLog.damage > 0 && (
+                                isReflectDamageLog
+                                  ? (
+                                    <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
+                                      (<span className="text-gray-500" aria-hidden="true">{emoji}</span>{' '}{formatNumber(battleLog.reflectedSourceDamage ?? battleLog.damage)} <span className={reflectArrowClass}>→反射 {formatNumber(battleLog.reflectedDamage ?? battleLog.damage)}</span>)
+                                    </span>
+                                  )
+                                  : (
+                                    <span className={`ml-auto shrink-0 whitespace-nowrap text-right ${isEnemy ? 'text-accent' : 'text-sub'}`}>
+                                      (<span className={isEnemy ? 'accent-theme-emoji-icon' : 'sub-theme-emoji-icon'} aria-hidden="true">{emoji}</span>{' '}{formatNumber(battleLog.damage)})
+                                    </span>
+                                  )
+                              );
 
                               return (
                                 <div key={j}>
@@ -7471,11 +7493,7 @@ function DiaryTab({
                                         {normalizeBattleLogNote(battleLog.note) && <span className="text-gray-400"> {normalizeBattleLogNote(battleLog.note)}</span>}
                                         {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                       </span>
-                                      {battleLog.damage !== undefined && battleLog.damage > 0 && (
-                                        <span className={`ml-auto shrink-0 whitespace-nowrap text-right ${isEnemy ? 'text-accent' : 'text-sub'}`}>
-                                          (<span className={isEnemy ? 'accent-theme-emoji-icon' : 'sub-theme-emoji-icon'} aria-hidden="true">{emoji}</span>{' '}{formatNumber(battleLog.damage)})
-                                        </span>
-                                      )}
+                                      {damageDisplay}
                                     </div>
                                   )}
                                   {shouldShowPhaseHeader && <div className="text-gray-400">({phaseHeader})</div>}
@@ -7487,11 +7505,7 @@ function DiaryTab({
                                       {normalizeBattleLogNote(battleLog.note) && <span className="text-gray-400"> {normalizeBattleLogNote(battleLog.note)}</span>}
                                       {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                     </span>
-                                    {battleLog.damage !== undefined && battleLog.damage > 0 && (
-                                      <span className={`ml-auto shrink-0 whitespace-nowrap text-right ${isEnemy ? 'text-accent' : 'text-sub'}`}>
-                                        (<span className={isEnemy ? 'accent-theme-emoji-icon' : 'sub-theme-emoji-icon'} aria-hidden="true">{emoji}</span>{' '}{formatNumber(battleLog.damage)})
-                                      </span>
-                                    )}
+                                    {damageDisplay}
                                   </div>
                                   )}
                                 </div>
