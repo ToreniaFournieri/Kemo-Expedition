@@ -1202,18 +1202,25 @@ export function executeBattle(
   const partyHasFrostbite = characterStats.some(cs => hasAbility(cs.abilities, 'frostbite'));
   const enemyHasFrostbite = hasAbility(enemy.abilities, 'frostbite');
 
+  const pushFrostbiteLog = (ownerName: string): void => {
+    log.push({
+      phase: 'long',
+      actor: 'effect',
+      action: `[効] ${ownerName} の凍傷！`,
+      note: '(相手の行動を少し遅らせる)',
+    });
+  };
+
   if (partyHasFrostbite) {
     const frostbiteOwner = party.characters.find(c => {
       const stats = characterStats.find(candidate => candidate.characterId === c.id);
       return stats ? hasAbility(stats.abilities, 'frostbite') : false;
     });
+    pushFrostbiteLog(frostbiteOwner?.name ?? '味方');
+  }
 
-    log.push({
-      phase: 'long',
-      actor: 'effect',
-      action: `${frostbiteOwner?.name ?? '味方'} の凍傷！`,
-      note: '(相手の行動を少し遅らせる)',
-    });
+  if (enemyHasFrostbite) {
+    pushFrostbiteLog(enemy.name);
   }
 
   for (const phase of phases) {
