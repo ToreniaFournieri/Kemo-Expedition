@@ -863,10 +863,41 @@ export function executeBattle(
     };
   };
 
+  const createPartyAbilityEffectEntry = (
+    abilityId: AbilityId,
+    label: (level: number) => string,
+    noteText: (level: number) => string,
+  ): BattleLogEntry | null => {
+    let bestLevel = 0;
+    let ownerName: string | null = null;
+
+    for (const char of party.characters) {
+      const stats = characterStats.find((candidate) => candidate.characterId === char.id);
+      const level = stats?.abilities
+        .filter((ability) => ability.id === abilityId)
+        .reduce((maxLevel, ability) => Math.max(maxLevel, ability.level), 0) ?? 0;
+      if (level < bestLevel) continue;
+      if (level > bestLevel || !ownerName) {
+        bestLevel = level;
+        ownerName = char.name;
+      }
+    }
+
+    if (!ownerName || bestLevel === 0) return null;
+
+    return {
+      phase: 'long',
+      actor: 'effect',
+      action: `${ownerName}の ${label(bestLevel)}！`,
+      note: noteText(bestLevel),
+    };
+  };
+
   const partyEffects = [
     createPartyEffectEntry('fighter', 'defender', () => '守護者', level => `(後列の味方への物理ダメージ × ${level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3'})`),
     createPartyEffectEntry('lord', 'command', () => '指揮', level => `(後列の味方が与える物理ダメージ × ${level >= 3 ? '1.43' : level === 2 ? '1.35' : '1.2'})`),
     createPartyEffectEntry('sage', 'm_barrier', () => '魔法障壁', level => `(後列の味方への魔法ダメージ × ${level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3'})`),
+    createPartyAbilityEffectEntry('deflection', () => '矢払い', level => `(敵の遠距離攻撃の命中率を${level >= 2 ? '15' : '10'}%低下)`),
   ];
 
   for (const partyEffect of partyEffects) {
