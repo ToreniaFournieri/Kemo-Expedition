@@ -9053,7 +9053,50 @@ function SettingTab({
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy type</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyType} onChange={(e) => updateColosseumEnemySettings({ enemyType: e.target.value })}>{Object.keys(ENEMY_TYPE_LABELS).map((key) => <option key={key} value={key}>{ENEMY_TYPE_LABELS[key] ?? key}</option>)}</select></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy class</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyClass} onChange={(e) => updateColosseumEnemySettings({ enemyClass: e.target.value as ColosseumEnemySettings['enemyClass'] })}>{Object.entries(ENEMY_CLASS_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy level: {colosseumEnemySettings.level}</div><input type="range" min={1} max={99} value={colosseumEnemySettings.level} onChange={(e) => updateColosseumEnemySettings({ level: Number(e.target.value) })} /></label>
-          {[0,1,2,3,4].map((slot) => <label key={slot} className="space-y-1"><div className="text-xs text-gray-600">Enemy added ability {slot+1}</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.abilities[slot] ?? 'none'} onChange={(e) => { const next=[...colosseumEnemySettings.abilities]; const value=e.target.value as AbilityId | 'none'; if (value === 'none') { next.splice(slot,1); } else { next[slot]=value as AbilityId; } updateColosseumEnemySettings({ abilities: next.filter(Boolean) as AbilityId[] }); }}>{[<option key="none" value="none">none</option>, ...Object.entries(ABILITY_NAMES).map(([key,label]) => <option key={key} value={key}>{label}</option>)]}</select></label>)}
+          {[0, 1, 2, 3, 4].map((slot) => {
+            const slotAbility = colosseumEnemySettings.abilities[slot];
+            return (
+              <Fragment key={slot}>
+                <label className="space-y-1">
+                  <div className="text-xs text-gray-600">Enemy added ability {slot + 1}</div>
+                  <select
+                    className="w-full rounded border px-2 py-1"
+                    value={slotAbility?.id ?? 'none'}
+                    onChange={(e) => {
+                      const next = [...colosseumEnemySettings.abilities];
+                      const value = e.target.value as AbilityId | 'none';
+                      if (value === 'none') {
+                        next.splice(slot, 1);
+                      } else {
+                        next[slot] = { id: value as AbilityId, level: slotAbility?.level ?? 1 };
+                      }
+                      updateColosseumEnemySettings({ abilities: next.filter(Boolean) as ColosseumEnemySettings['abilities'] });
+                    }}
+                  >
+                    {[<option key="none" value="none">none</option>, ...Object.entries(ABILITY_NAMES).map(([key, label]) => <option key={key} value={key}>{label}</option>)]}
+                  </select>
+                </label>
+                <label className="space-y-1">
+                  <div className="text-xs text-gray-600">Enemy added ability {slot + 1} level</div>
+                  <select
+                    className="w-full rounded border px-2 py-1"
+                    value={slotAbility?.level ?? 1}
+                    onChange={(e) => {
+                      const next = [...colosseumEnemySettings.abilities];
+                      const levelValue = Number(e.target.value);
+                      if (slotAbility) {
+                        next[slot] = { ...slotAbility, level: levelValue };
+                      }
+                      updateColosseumEnemySettings({ abilities: next.filter(Boolean) as ColosseumEnemySettings['abilities'] });
+                    }}
+                    disabled={!slotAbility}
+                  >
+                    {[1, 2, 3, 4, 5].map((level) => <option key={level} value={level}>{level}</option>)}
+                  </select>
+                </label>
+              </Fragment>
+            );
+          })}
         </div>}
       </div>}
 
