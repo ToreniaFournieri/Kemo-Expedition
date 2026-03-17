@@ -815,10 +815,15 @@ HP: 312                 クラス: 魔法使い
 | Enemy class | Pull-down list | Select enemy class | `Fighter` |
 | Enemy level | Slider bar (`1–99`) | Sets enemy level | `10` |
 | Enemy added ability 1 | Pull-down list | Adds an extra ability | `none` |
+| Enemy added ability 1 level | Pull-down list | level 1~5 | `1` |
 | Enemy added ability 2 | Pull-down list | Adds an extra ability | `none` |
+| Enemy added ability 2 level | Pull-down list | level 1~5 | `1` |
 | Enemy added ability 3 | Pull-down list | Adds an extra ability | `none` |
+| Enemy added ability 3 level | Pull-down list | level 1~5 | `1` |
 | Enemy added ability 4 | Pull-down list | Adds an extra ability | `none` |
+| Enemy added ability 4 level | Pull-down list | level 1~5 | `1` |
 | Enemy added ability 5 | Pull-down list | Adds an extra ability | `none` |
+| Enemy added ability 5 level 2 | Pull-down list | level 1~5 | `1` |
 
 - Behavior
   - Starting a Colosseum battle immediately loads the current Enemy Edit settings.
