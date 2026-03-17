@@ -368,6 +368,7 @@ function getAbilityName(id: AbilityId, level: number): string {
     mimic: '模倣',
     shock: '感電',
     mutual_physical_amplify: '物理増幅',
+    mutual_physical_restraint: '物理抑制',
     unstable_core: '不安定核',
     magical_reflect: '魔法反射',
     colossal: '巨人',
