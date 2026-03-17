@@ -128,7 +128,7 @@ export type AbilityId =
   | 'decompose' | 'swarm' | 'death_touch' | 'flying' | 'free' | 'frostbite'
   | 'ice_reflect' | 'bind' | 'regeneration' | 'burn' | 'fire_reflect' | 'soul_reap'
   | 'mutual_magic_amplify' | 'ranged_confusion' | 'self_destruct' | 'oblivion' | 'reanimate'
-  | 'auriferous' | 'magic_seal' | 'ambush' | 'mimic' | 'shock' | 'mutual_physical_amplify'
+  | 'auriferous' | 'magic_seal' | 'ambush' | 'mimic' | 'shock' | 'mutual_physical_amplify' | 'mutual_physical_restraint'
   | 'unstable_core' | 'magical_reflect' | 'colossal' | 'upgrade_all_abilities';
 
 export interface Ability {

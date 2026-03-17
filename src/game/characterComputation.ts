@@ -1003,14 +1003,12 @@ function getAbilityName(id: AbilityId, level: number): string {
     mimic: '模倣',
     shock: '感電',
     mutual_physical_amplify: '物理増幅',
+    mutual_physical_restraint: '物理抑制',
     unstable_core: '不安定核',
     magical_reflect: '魔法反射',
     colossal: '巨人',
     upgrade_all_abilities: '全能力強化',
   };
-  if (id === 'mutual_physical_amplify' && level <= -1) {
-    return '物理抑制1';
-  }
   if (level >= 1) {
     return `${names[id]}${level}`;
   }
@@ -1109,7 +1107,8 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     ambush: () => '相手より早く行動できた場合、与ダメージ1.3倍',
     mimic: () => '戦闘開始時、相手のアビリティ1つを模倣する',
     shock: () => '戦闘中1回だけ、相手の近接攻撃1回目ヒットで強制終了',
-    mutual_physical_amplify: (l) => l <= -1 ? '双方物理ダメージ0.8倍' : '双方物理ダメージ1.4倍',
+    mutual_physical_amplify: () => '双方物理ダメージ1.4倍',
+    mutual_physical_restraint: () => '双方物理ダメージ0.8倍',
     unstable_core: () => '各フェーズ終了後に残HP30%の自傷ダメージを受ける',
     magical_reflect: () => '戦闘中1回だけ、魔法攻撃を反射する(1/10)',
     colossal: () => '防御力が2倍になるが、物理ダメージ補正x2.0',
