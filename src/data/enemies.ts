@@ -1,4 +1,4 @@
-import { EnemyDef, EnemyType, EnemyClassId, ElementalOffense, ElementalResistance, ItemDef, AbilityId, ItemCategory, EnemyAbility } from '../types';
+import { EnemyDef, EnemyType, EnemyClassId, ElementalOffense, ElementalResistance, ItemDef, AbilityId, ItemCategory, EnemyAbility, Bonus } from '../types';
 import { MYTHIC_DROP_POOLS } from './dropTables';
 import { getItemById, getItemsByTierAndRarity } from './items';
 import { MASTER_EXPEDITION_ENEMIES_PACKED } from './masterSpecData';
@@ -54,6 +54,162 @@ function levelOneAbilities(abilityIds: AbilityId[]): EnemyAbility[] {
   return abilityIds.map((id) => ({ id, level: 1 }));
 }
 
+
+type EnemyTypeSpec = {
+  ability1: EnemyAbility[];
+  ability30?: EnemyAbility[];
+  bonuses: Bonus[];
+};
+
+const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
+  Beast: {
+    ability1: [{ id: 'howl', level: 1 }],
+    ability30: [{ id: 'predator_sense', level: 1 }],
+    bonuses: [
+      { type: 'growth_xV', value: 1.1 },
+      { type: 'fire_defense_multiplier_xV', value: 1.3 },
+      { type: 'thunder_defense_multiplier_xV', value: 2 / 3 },
+    ],
+  },
+  Slime_Colony: {
+    ability1: [{ id: 'slow', level: 1 }, { id: 'corrode', level: 1 }],
+    ability30: [{ id: 'life_drain', level: 3 }],
+    bonuses: [{ type: 'ice_defense_multiplier_xV', value: 1.3 }],
+  },
+  Plant_Fungal: {
+    ability1: [{ id: 'no_offense', level: 1 }, { id: 'magical_counter', level: 1 }, { id: 'counter', level: 1 }],
+    ability30: [{ id: 'decompose', level: 1 }],
+    bonuses: [
+      { type: 'fire_defense_multiplier_xV', value: 1.3 },
+      { type: 'thunder_defense_multiplier_xV', value: 2 / 3 },
+      { type: 'ice_defense_multiplier_xV', value: 2 / 3 },
+      { type: 'grit', value: 1 },
+      { type: 'caster', value: 1 },
+    ],
+  },
+  Insect_Swarm: {
+    ability1: [{ id: 'swarm', level: 1 }],
+    ability30: [{ id: 'death_touch', level: 1 }],
+    bonuses: [
+      { type: 'thunder_offense', value: 20 },
+      { type: 'fire_defense_multiplier_xV', value: 1.3 },
+      { type: 'thunder_defense_multiplier_xV', value: 2 / 3 },
+    ],
+  },
+  Aerial: {
+    ability1: [{ id: 'flying', level: 1 }],
+    ability30: [{ id: 'free', level: 1 }],
+    bonuses: [{ type: 'evasion', value: 0.045 }, { type: 'growth_xV', value: 0.7 }],
+  },
+  Frost: {
+    ability1: [{ id: 'frostbite', level: 1 }],
+    ability30: [{ id: 'ice_reflect', level: 1 }],
+    bonuses: [
+      { type: 'ice_offense', value: 20 },
+      { type: 'fire_defense_multiplier_xV', value: 1.3 },
+      { type: 'ice_defense_multiplier_xV', value: 1 / 5 },
+    ],
+  },
+  Marine: {
+    ability1: [{ id: 'bind', level: 1 }],
+    ability30: [{ id: 'regeneration', level: 3 }],
+    bonuses: [{ type: 'thunder_defense_multiplier_xV', value: 1.3 }],
+  },
+  Dragon: {
+    ability1: [{ id: 'burn', level: 1 }],
+    ability30: [{ id: 'fire_reflect', level: 1 }],
+    bonuses: [
+      { type: 'fire_offense', value: 40 },
+      { type: 'fire_defense_multiplier_xV', value: 1 / 2 },
+      { type: 'ice_defense_multiplier_xV', value: 1.3 },
+    ],
+  },
+  Spirit: {
+    ability1: [{ id: 'soul_reap', level: 1 }],
+    ability30: [{ id: 'mutual_magic_amplify', level: 1 }],
+    bonuses: [
+      { type: 'ice_offense', value: 20 },
+      { type: 'fire_defense_multiplier_xV', value: 1.5 },
+      { type: 'ice_defense_multiplier_xV', value: 2 / 3 },
+      { type: 'thunder_defense_multiplier_xV', value: 4 / 5 },
+      { type: 'physical_defense_multiplier_xV', value: 3 / 5 },
+    ],
+  },
+  Ghost: {
+    ability1: [{ id: 'ranged_confusion', level: 1 }],
+    ability30: [{ id: 'self_destruct', level: 1 }],
+    bonuses: [
+      { type: 'evasion', value: 0.02 },
+      { type: 'physical_defense_multiplier_xV', value: 3 / 5 },
+      { type: 'ice_defense_multiplier_xV', value: 1.5 },
+    ],
+  },
+  Undead: {
+    ability1: [{ id: 'slow', level: 1 }, { id: 'oblivion', level: 1 }],
+    ability30: [{ id: 'reanimate', level: 3 }],
+    bonuses: [
+      { type: 'physical_defense_multiplier_xV', value: 1 / 2 },
+      { type: 'fire_defense_multiplier_xV', value: 1.5 },
+      { type: 'ice_defense_multiplier_xV', value: 2 / 3 },
+    ],
+  },
+  Golem: {
+    ability1: [{ id: 'auriferous', level: 1 }],
+    ability30: [{ id: 'magic_seal', level: 1 }],
+    bonuses: [{ type: 'growth_xV', value: 1.3 }, { type: 'thunder_defense_multiplier_xV', value: 1.3 }],
+  },
+  Shadowfang: {
+    ability1: [{ id: 'ambush', level: 1 }],
+    ability30: [{ id: 'mimic', level: 1 }],
+    bonuses: [
+      { type: 'ice_offense', value: 40 },
+      { type: 'fire_defense_multiplier_xV', value: 1.3 },
+      { type: 'ice_defense_multiplier_xV', value: 2 / 3 },
+    ],
+  },
+  Mech: {
+    ability1: [{ id: 'shock', level: 1 }],
+    ability30: [{ id: 'mutual_physical_amplify', level: 2 }],
+    bonuses: [
+      { type: 'physical_defense_multiplier_xV', value: 3 / 5 },
+      { type: 'thunder_defense_multiplier_xV', value: 1.5 },
+    ],
+  },
+  Chimera: {
+    ability1: [{ id: 'unstable_core', level: 1 }],
+    ability30: [{ id: 'magical_reflect', level: 1 }],
+    bonuses: [
+      { type: 'thunder_offense', value: 30 },
+      { type: 'grit', value: 1 },
+      { type: 'pursuit', value: 1 },
+      { type: 'caster', value: 1 },
+      { type: 'growth_xV', value: 1.7 },
+    ],
+  },
+  Titan: {
+    ability1: [{ id: 'colossal', level: 1 }],
+    ability30: [{ id: 'mutual_physical_amplify', level: -1 }],
+    bonuses: [{ type: 'growth_xV', value: 1.5 }],
+  },
+  Jinma: {
+    ability1: [{ id: 'upgrade_all_abilities', level: 1 }],
+    bonuses: [{ type: 'growth_xV', value: 2.0 }],
+  },
+};
+
+function mergeEnemyAbilities(...sets: EnemyAbility[][]): EnemyAbility[] {
+  const merged = new Map<AbilityId, EnemyAbility>();
+  for (const abilities of sets) {
+    for (const ability of abilities) {
+      const existing = merged.get(ability.id);
+      if (!existing || existing.level < ability.level) {
+        merged.set(ability.id, { ...ability });
+      }
+    }
+  }
+  return Array.from(merged.values());
+}
+
 const ENEMY_CLASS_BASES: Record<EnemyClassId, EnemyClassBase> = {
   fighter: { hp: 126, abilities: levelOneAbilities([]), accuracyBonus: 0.0, evasionBonus: 0.02, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 41, meleeNoA: 2, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0, physicalDefense: 23, magicalDefense: 10, experience: 5 },
   duelist: { hp: 100, abilities: levelOneAbilities(['counter']), accuracyBonus: 0.01, evasionBonus: 0.01, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 52, meleeNoA: 4, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.2, physicalDefense: 13, magicalDefense: 13, experience: 5 },
@@ -80,20 +236,17 @@ function createEnemyFromTemplate(
   enemyType: string,
   spawnPool: number,
   extraAbilities: AbilityId[] = [],
+  enemyTypeLevel = 1,
 ): EnemyDef {
   const classBase = ENEMY_CLASS_BASES[enemyClass];
   const enemyTypeExpMult = type === 'elite' ? 2.0 : type === 'boss' ? 5.0 : 1.0;
-  const enemyAbilitiesById = new Map<AbilityId, EnemyAbility>();
-  for (const ability of classBase.abilities) {
-    enemyAbilitiesById.set(ability.id, ability);
-  }
-  for (const abilityId of extraAbilities) {
-    const existing = enemyAbilitiesById.get(abilityId);
-    if (!existing || existing.level < 1) {
-      enemyAbilitiesById.set(abilityId, { id: abilityId, level: 1 });
-    }
-  }
-  const enemyAbilities = Array.from(enemyAbilitiesById.values());
+  const enemyTypeSpec = ENEMY_TYPE_SPECS[enemyType];
+  const extraAbilityLevels = extraAbilities.map((id) => ({ id, level: 1 }));
+  const enemyTypeAbilities = [
+    ...(enemyTypeSpec?.ability1 ?? []),
+    ...(enemyTypeLevel >= 30 ? (enemyTypeSpec?.ability30 ?? []) : []),
+  ];
+  const enemyAbilities = mergeEnemyAbilities(classBase.abilities, extraAbilityLevels, enemyTypeAbilities);
   const hasCyborgization = enemyAbilities.some((ability) => ability.id === 'cyborgization');
   const accuracyBonus = classBase.accuracyBonus + (hasCyborgization ? 0.03 : 0);
   const evasionBonus = classBase.evasionBonus + (hasCyborgization ? -0.02 : 0);
@@ -127,6 +280,7 @@ function createEnemyFromTemplate(
     name: template.name,
     enemyClass,
     abilities: enemyAbilities,
+    bonuses: enemyTypeSpec?.bonuses ?? [],
     accuracyBonus,
     evasionBonus,
     hp,
@@ -209,6 +363,8 @@ function generateEnemies(): EnemyDef[] {
         row[5],
         row[4],
         row[0],
+        [],
+        row[2],
       );
       enemy.dropItemId = getDropItemIdFromMaster(tier, row[6].split(','));
       enemies.push(enemy);
@@ -225,6 +381,8 @@ function generateEnemies(): EnemyDef[] {
         row[5],
         row[4],
         row[0],
+        [],
+        row[2],
       );
       enemy.dropItemId = getDropItemIdFromMaster(tier, row[6].split(','));
       enemies.push(enemy);
@@ -242,6 +400,8 @@ function generateEnemies(): EnemyDef[] {
         boss[5],
         boss[4],
         boss[0],
+        [],
+        boss[2],
       );
       enemy.dropItemId = getDropItemIdFromMaster(tier, boss[6].split(','));
       enemies.push(enemy);

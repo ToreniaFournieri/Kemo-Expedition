@@ -122,7 +122,14 @@ export type AbilityId =
   | 'iaigiri' | 'resonance' | 'command' | 'm_barrier' | 'deflection' | 'null_counter' | 'unlock'
   | 'squander' | 'tithe' | 'seeker' | 'resurrect' | 'rage' | 're_counter' | 'momentum' | 'cunning'
   | 'bulwark' | 'cyborgization' | 'covering_fire' | 'peddler' | 'composure' | 'magical_counter'
-  | 'focus' | 'prophecy' | 'stealth' | 'illusion';
+  | 'focus' | 'prophecy' | 'stealth' | 'illusion'
+  // Enemy-only abilities prepared from Enemy Master Specification
+  | 'howl' | 'predator_sense' | 'slow' | 'corrode' | 'life_drain' | 'no_offense'
+  | 'decompose' | 'swarm' | 'death_touch' | 'flying' | 'free' | 'frostbite'
+  | 'ice_reflect' | 'bind' | 'regeneration' | 'burn' | 'fire_reflect' | 'soul_reap'
+  | 'mutual_magic_amplify' | 'ranged_confusion' | 'self_destruct' | 'oblivion' | 'reanimate'
+  | 'auriferous' | 'magic_seal' | 'ambush' | 'mimic' | 'shock' | 'mutual_physical_amplify'
+  | 'unstable_core' | 'magical_reflect' | 'colossal' | 'upgrade_all_abilities';
 
 export interface Ability {
   id: AbilityId;
@@ -400,6 +407,7 @@ export interface EnemyDef {
   name: string;
   enemyClass: EnemyClassId;
   abilities: EnemyAbility[];
+  bonuses?: Bonus[];
   accuracyBonus: number;
   evasionBonus: number;
   hp: number;
