@@ -463,6 +463,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "双方魔法ダメージ1.3倍"
       },
       {
+        "key": "a.mutual-magic-restraint1",
+        "label": "魔法抑制1",
+        "description": "双方魔法ダメージ0.8倍"
+      },
+      {
         "key": "a.mutual-physical-amplify2",
         "label": "物理増幅2",
         "description": "双方物理ダメージ1.4倍"

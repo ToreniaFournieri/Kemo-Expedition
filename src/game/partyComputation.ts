@@ -358,6 +358,7 @@ function getAbilityName(id: AbilityId, level: number): string {
     fire_reflect: '火反射',
     soul_reap: '魂奪',
     mutual_magic_amplify: '魔法増幅',
+    mutual_magic_restraint: '魔法抑制',
     ranged_confusion: '遠距離混乱',
     self_destruct: '自爆',
     oblivion: '忘却',
