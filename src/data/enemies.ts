@@ -187,8 +187,7 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
     ],
   },
   Titan: {
-    ability1: [{ id: 'colossal', level: 1 }],
-    ability30: [{ id: 'mutual_physical_amplify', level: -1 }],
+    ability1: [{ id: 'colossal', level: 1 }, { id: 'mutual_physical_amplify', level: -1 }],
     bonuses: [{ type: 'growth_xV', value: 1.5 }],
   },
   Jinma: {
