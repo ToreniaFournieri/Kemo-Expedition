@@ -1136,6 +1136,81 @@ const ABILITY_NAMES: Record<string, string> = {
   upgrade_all_abilities: '全能力強化',
 };
 
+const ABILITY_HELP_TEXTS: Record<string, string> = {
+  'defender:1': '自身より後列の味方への物理ダメージを 2/3倍。',
+  'defender:2': '自身より後列の味方への物理ダメージを 3/5倍。',
+  'defender:3': '自身より後列の味方への物理ダメージを 1/2倍。',
+  'counter:1': '敵の近距離攻撃を受けたとき反撃する（攻撃回数は半減）。',
+  'counter:2': '敵の近距離攻撃を受けたとき反撃する（攻撃回数は半減しない）。',
+  'counter:3': '敵の近距離攻撃を受けたとき反撃する（攻撃回数は2倍）。',
+  're_attack:1': '攻撃時に追加攻撃を行う（攻撃回数は半減）。',
+  're_attack:2': '攻撃時に追加攻撃を行う（攻撃回数は0.7倍）。',
+  're_attack:3': '攻撃時に追加攻撃を行う（攻撃回数は半減しない）。',
+  'iaigiri:1': '物理ダメージをx1.6倍する（攻撃回数は半減）。',
+  'iaigiri:2': '物理ダメージをx1.8倍する（攻撃回数は半減）。',
+  'iaigiri:3': '物理ダメージをx2.0倍する（攻撃回数は半減）。',
+  'command:1': '自身より後列の味方が与える物理ダメージを 1.2倍。',
+  'command:2': '自身より後列の味方が与える物理ダメージを 1.35倍。',
+  'command:3': '自身より後列の味方が与える物理ダメージを 1.43倍。',
+  'hunter:1': '列による命中率減衰を 1列ごと15%→10% に軽減する。',
+  'hunter:2': '列による命中率減衰を 1列ごと15%→7% に軽減する。',
+  'hunter:3': '列による命中率減衰を 1列ごと15%→5% に軽減する。',
+  'resonance:1': '魔法攻撃1回毎に、全ヒットのダメージが +4% 増加する。',
+  'resonance:2': '魔法攻撃1回毎に、全ヒットのダメージが +7% 増加する。',
+  'resonance:3': '魔法攻撃1回毎に、全ヒットのダメージが +9% 増加する。',
+  'resonance:4': '魔法攻撃1回毎に、全ヒットのダメージが +11% 増加する。',
+  'resonance:5': '魔法攻撃1回毎に、全ヒットのダメージが +12% 増加する。',
+  'm_barrier:1': '自身より後列の味方への魔法ダメージを 2/3倍。',
+  'm_barrier:2': '自身より後列の味方への魔法ダメージを 3/5倍。',
+  'm_barrier:3': '自身より後列の味方への魔法ダメージを 1/2倍。',
+  'deflection:1': '敵の遠距離攻撃の命中率を 10%低下させる。',
+  'deflection:2': '敵の遠距離攻撃の命中率を 15%低下させる。',
+  first_strike: '行動が速くなる。レベルが高いほど先行しやすい。',
+  null_counter: '反撃を無効化する。レベルが高いほど有効回数が増える。',
+  resurrect: '致命ダメージを1回だけ耐える。',
+  rage: '受けたダメージに応じて物理/魔法攻撃倍率が増大する。',
+  re_counter: '敵の反撃に対してさらに反撃する。',
+  momentum: '攻撃倍率が上がる代わりに被ダメージで効果が減少し、収益の一部を着服する。',
+  bulwark: '後列味方への攻撃を肩代わりする。',
+  covering_fire: '味方近接攻撃が単発命中時に遠距離で援護する。',
+  magical_counter: '魔法攻撃に対して魔法で反撃する。',
+  stealth: 'HPが一定未満の時、自身へのダメージをすべて回避する。',
+  illusion: '最初の遠距離攻撃を無効化する。',
+  howl: '相手の次の攻撃回数を低下させる。',
+  predator_sense: '相手HP50%未満で命中+30。',
+  slow: '自身の行動順番に-1して遅くなる。',
+  corrode: '相手の攻撃倍率をx2/3にする。',
+  life_drain: '与ダメージの一部を回復する。',
+  no_offense: '通常行動をしなくなる（反撃などは行う）。',
+  decompose: '相手の物理防御力を低下させる。',
+  swarm: 'HP減少に応じて攻撃倍率・防御倍率が減少する。',
+  death_touch: '近接攻撃時に確率で即死を与える。',
+  flying: '相手の近接攻撃回数を低下させる。',
+  free: '戦闘から逃走する。',
+  frostbite: '相手の行動順を遅らせる。',
+  ice_reflect: '氷属性ダメージを反射する。',
+  bind: '近接行動時に相手の行動を封じる。',
+  regeneration: '近接フェーズ開始時に失ったHPの一部を回復する。',
+  burn: '相手に攻撃回数分の追加ダメージを与える。',
+  fire_reflect: '火属性ダメージを反射する。',
+  soul_reap: '魔法フェーズ終了時、相手HPが一定未満なら即死させる。',
+  mutual_magic_amplify: '双方の魔法ダメージを増幅する。',
+  mutual_physical_amplify: '双方の物理ダメージを増幅（または抑制）する。',
+  ranged_confusion: '確率で遠距離フェーズ中のみ敵対状態になる。',
+  self_destruct: '自爆して相手に残ダメージの一部を与える。',
+  oblivion: '無作為に選んだ相手のアビリティ1つを戦闘中無効にする。',
+  reanimate: '戦闘中1回だけHP割合で復活する。',
+  auriferous: '被弾回数が多いほど自身ドロップアイテム確率が上がる。',
+  magic_seal: '次の魔法を無力化する。',
+  ambush: '相手より早く行動できた場合、与ダメージが増加する。',
+  mimic: '戦闘開始時、相手のアビリティ1つを模倣する。',
+  shock: '戦闘中1回だけ、相手の近接攻撃1回目ヒットで強制終了させる。',
+  unstable_core: '各フェーズ終了後に残HP30%の自傷ダメージを受ける。',
+  magical_reflect: '戦闘中1回だけ魔法攻撃を反射する。',
+  colossal: '防御力が2倍になるが、物理ダメージ補正がx2.0になる。',
+  upgrade_all_abilities: '自身の他のアビリティを1段階強化する（ペナルティ効果は軽減）。',
+};
+
 const C_MULTIPLIER_HELP_DESCRIPTIONS: Record<string, string> = {
   sword: '剣カテゴリ装備の効果が {value} 倍',
   katana: '刀カテゴリ装備の効果が {value} 倍',
@@ -4269,6 +4344,7 @@ function PartyTab({
     setShowBaseStatHelp(false);
     setBaseStatHelpPosition(null);
     setActiveStatusHelpKey(null);
+    setActiveStatusHelpPosition(null);
     setShowBonusHelp(false);
     setShowAutoEquipmentHelp(false);
     setAutoEquipmentHelpPosition(null);
@@ -4327,6 +4403,7 @@ function PartyTab({
       return key;
     });
   };
+
 
 
   return (
@@ -7467,6 +7544,8 @@ function SettingTab({
   const [expandedGlossaryEntries, setExpandedGlossaryEntries] = useState<Record<string, boolean>>({});
   const [expandedCompendiumItems, setExpandedCompendiumItems] = useState<Record<number, boolean>>({});
   const [isEnemyEditExpanded, setIsEnemyEditExpanded] = useState(true);
+  const [activeAbilityHelp, setActiveAbilityHelp] = useState<{ key: string; title: string; description: string } | null>(null);
+  const [abilityHelpPosition, setAbilityHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const bestiaryListRef = useRef<HTMLDivElement | null>(null);
   const updateColosseumEnemySettings = useCallback((updates: Partial<ColosseumEnemySettings>) => {
     setColosseumEnemySettings((prev) => normalizeColosseumEnemySettings({ ...prev, ...updates }));
@@ -8124,18 +8203,84 @@ function SettingTab({
     return drops.length > 0 ? drops.join(' / ') : 'なし';
   };
 
-  const formatAbilitiesWithLevels = (
-    abilities: Array<{ id: string; level: number }>,
-  ): string => {
-    if (abilities.length === 0) return 'なし';
+  const getAbilityHelpDescription = (abilityId: string, level: number): string => {
+    const levelDescription = ABILITY_HELP_TEXTS[`${abilityId}:${level}`];
+    if (levelDescription) return levelDescription;
+    return ABILITY_HELP_TEXTS[abilityId] ?? 'このアビリティの説明は未設定です。';
+  };
 
-    return abilities
-      .map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${ability.level}`)
-      .join(', ');
+  const parseAbilityTokens = (abilities: Array<{ id: string; level: number }>) => {
+    if (abilities.length === 0) {
+      return [{ key: 'none', label: 'なし', abilityId: '', level: 0, isMissing: true }];
+    }
+
+    return abilities.map((ability, index) => ({
+      key: `${ability.id}-${ability.level}-${index}`,
+      label: `${ABILITY_NAMES[ability.id] ?? ability.id}${ability.level}`,
+      abilityId: ability.id,
+      level: ability.level,
+      isMissing: false,
+    }));
+  };
+
+  const handleAbilityHelpToggle = (
+    abilityId: string,
+    level: number,
+    abilityLabel: string,
+    event: MouseEvent<HTMLButtonElement>,
+  ) => {
+    event.stopPropagation();
+    const key = `${abilityId}:${level}`;
+    const triggerRect = event.currentTarget.getBoundingClientRect();
+    const viewportPadding = 12;
+    const tooltipWidth = Math.min(360, window.innerWidth - viewportPadding * 2);
+    const left = Math.min(
+      Math.max(triggerRect.left, viewportPadding),
+      window.innerWidth - viewportPadding - tooltipWidth,
+    );
+
+    setActiveAbilityHelp((current) => {
+      if (current?.key === key) {
+        setAbilityHelpPosition(null);
+        return null;
+      }
+
+      setAbilityHelpPosition({
+        top: triggerRect.bottom + 8,
+        left,
+        width: tooltipWidth,
+      });
+
+      return {
+        key,
+        title: abilityLabel,
+        description: getAbilityHelpDescription(abilityId, level),
+      };
+    });
   };
 
   return (
-    <div>
+    <div
+      onPointerDown={() => {
+        if (activeAbilityHelp) {
+          setActiveAbilityHelp(null);
+          setAbilityHelpPosition(null);
+        }
+      }}
+    >
+      {activeAbilityHelp && abilityHelpPosition && (
+        <div
+          className="fixed z-20 rounded-lg border border-gray-200 bg-white p-3 shadow-lg"
+          style={{
+            top: abilityHelpPosition.top,
+            left: abilityHelpPosition.left,
+            width: abilityHelpPosition.width,
+          }}
+        >
+          <div className="mb-1 text-xs font-semibold text-gray-800">{activeAbilityHelp.title}</div>
+          <div className="text-xs text-gray-700">{activeAbilityHelp.description}</div>
+        </div>
+      )}
       <div className="bg-pane rounded-lg p-4 mb-4">
         {renderDivineBureauPanelHeader('donation', '寄付箱')}
         {divineBureauPanelExpanded.donation && <div className="bg-white rounded p-2 text-sm space-y-1 mt-3">
@@ -8627,7 +8772,28 @@ function SettingTab({
                         <div>{renderEnemyElementalResistanceLine(godRuntimeEnemy)}</div>
                       </>
                     )}
-                    <div>アビリティ: {formatAbilitiesWithLevels(god.abilities)}</div>
+                    <div className="flex items-start gap-1">
+                      <div>アビリティ:</div>
+                      <div className="flex flex-wrap items-center gap-1">
+                        {parseAbilityTokens(god.abilities).map((token, tokenIndex) => (
+                          <Fragment key={token.key}>
+                            {tokenIndex > 0 && <span className="text-gray-400">,</span>}
+                            {token.isMissing ? (
+                              <span>{token.label}</span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={(event) => handleAbilityHelpToggle(token.abilityId, token.level, token.label, event)}
+                                className="rounded px-1 text-left hover:bg-blue-50 focus:outline-none focus:ring-1 focus:ring-sub"
+                                aria-label={`${token.label}の説明を表示`}
+                              >
+                                {token.label}
+                              </button>
+                            )}
+                          </Fragment>
+                        ))}
+                      </div>
+                    </div>
                     <div>待機探検地: {god.expedition}</div>
                     <div className="pt-1">ドロップ候補: {getGodDropCandidates(god.name)}</div>
                   </div>
@@ -8665,7 +8831,28 @@ function SettingTab({
                       <div>{hasMagicalAttack ? formatEnemyAttackLine('魔法攻撃', colosseumEnemy.magicalAttack, colosseumEnemy.magicalNoA, colosseumEnemy.magicalAttackAmplifier) : ''}</div><div>回避: {formatNumber(Math.round(colosseumEnemy.evasionBonus * 1000))}</div>
                       <div>{hasMagicalAttack ? `魔法命中率: 100% (減衰: ${decay})` : ''}</div><div>{renderEnemyElementalResistanceLine(colosseumEnemy)}</div>
                     </div>
-                    <div>アビリティ: {formatAbilitiesWithLevels(colosseumEnemy.abilities)}</div>
+                    <div className="flex items-start gap-1">
+                      <div>アビリティ:</div>
+                      <div className="flex flex-wrap items-center gap-1">
+                        {parseAbilityTokens(colosseumEnemy.abilities).map((token, tokenIndex) => (
+                          <Fragment key={token.key}>
+                            {tokenIndex > 0 && <span className="text-gray-400">,</span>}
+                            {token.isMissing ? (
+                              <span>{token.label}</span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={(event) => handleAbilityHelpToggle(token.abilityId, token.level, token.label, event)}
+                                className="rounded px-1 text-left hover:bg-blue-50 focus:outline-none focus:ring-1 focus:ring-sub"
+                                aria-label={`${token.label}の説明を表示`}
+                              >
+                                {token.label}
+                              </button>
+                            )}
+                          </Fragment>
+                        ))}
+                      </div>
+                    </div>
                     <div>ドロップ候補: なし</div>
                   </div>}
                 </div>
@@ -8742,7 +8929,28 @@ function SettingTab({
                           })()}
                         </div>
                         <div>{renderEnemyElementalResistanceLine(displayEnemy)}</div>
-                        <div>アビリティ: {formatAbilitiesWithLevels(displayEnemy.abilities)}</div>
+                        <div className="flex items-start gap-1">
+                          <div>アビリティ:</div>
+                          <div className="flex flex-wrap items-center gap-1">
+                            {parseAbilityTokens(displayEnemy.abilities).map((token, tokenIndex) => (
+                              <Fragment key={token.key}>
+                                {tokenIndex > 0 && <span className="text-gray-400">,</span>}
+                                {token.isMissing ? (
+                                  <span>{token.label}</span>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={(event) => handleAbilityHelpToggle(token.abilityId, token.level, token.label, event)}
+                                    className="rounded px-1 text-left hover:bg-blue-50 focus:outline-none focus:ring-1 focus:ring-sub"
+                                    aria-label={`${token.label}の説明を表示`}
+                                  >
+                                    {token.label}
+                                  </button>
+                                )}
+                              </Fragment>
+                            ))}
+                          </div>
+                        </div>
                         <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id, item.name)}${item.name}`).join(' / ')}</div>
                       </div>
                     )}
