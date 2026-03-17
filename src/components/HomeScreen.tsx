@@ -3751,7 +3751,8 @@ function PartyTab({
 }) {
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
   const [equipCategory, setEquipCategory] = useState('armor');
-  const [showBonusHelp, setShowBonusHelp] = useState(false);
+  const [activeInlineDetailHelp, setActiveInlineDetailHelp] = useState<{ key: string; title: string; description: string } | null>(null);
+  const [inlineDetailHelpPosition, setInlineDetailHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const [partyRarityFilter, setPartyRarityFilter] = useState<RarityFilter>('all');
   const [partySuperRareOnly, setPartySuperRareOnly] = useState(false);
   const [draggingCharacterIndex, setDraggingCharacterIndex] = useState<number | null>(null);
@@ -4345,9 +4346,10 @@ function PartyTab({
     setBaseStatHelpPosition(null);
     setActiveStatusHelpKey(null);
     setActiveStatusHelpPosition(null);
-    setShowBonusHelp(false);
     setShowAutoEquipmentHelp(false);
     setAutoEquipmentHelpPosition(null);
+    setActiveInlineDetailHelp(null);
+    setInlineDetailHelpPosition(null);
   }, [selectedCharacter, editingCharacter]);
 
   const xpToNextLevel = party.level < MAX_LEVEL ? Math.ceil(getXpToNextLevel(party.level)) : 0;
@@ -4404,14 +4406,44 @@ function PartyTab({
     });
   };
 
+  const handleInlineDetailHelpToggle = (
+    key: string,
+    title: string,
+    description: string,
+    event: MouseEvent<HTMLButtonElement>,
+  ) => {
+    event.stopPropagation();
+    const triggerRect = event.currentTarget.getBoundingClientRect();
+    const viewportPadding = 12;
+    const tooltipWidth = Math.min(360, window.innerWidth - viewportPadding * 2);
+    const left = Math.min(
+      Math.max(triggerRect.left, viewportPadding),
+      window.innerWidth - viewportPadding - tooltipWidth,
+    );
+
+    setActiveInlineDetailHelp((current) => {
+      if (current?.key === key) {
+        setInlineDetailHelpPosition(null);
+        return null;
+      }
+
+      setInlineDetailHelpPosition({
+        top: triggerRect.bottom + 8,
+        left,
+        width: tooltipWidth,
+      });
+      return { key, title, description };
+    });
+  };
+
+
+
+
 
 
   return (
     <div
       onPointerDown={() => {
-        if (showBonusHelp) {
-          setShowBonusHelp(false);
-        }
         if (showBaseStatHelp) {
           setShowBaseStatHelp(false);
           setBaseStatHelpPosition(null);
@@ -4420,8 +4452,26 @@ function PartyTab({
           setActiveStatusHelpKey(null);
           setActiveStatusHelpPosition(null);
         }
+        if (activeInlineDetailHelp) {
+          setActiveInlineDetailHelp(null);
+          setInlineDetailHelpPosition(null);
+        }
       }}
     >
+      {activeInlineDetailHelp && inlineDetailHelpPosition && (
+        <div
+          className="fixed z-20 rounded-lg border border-gray-200 bg-white p-3 shadow-lg"
+          style={{
+            top: inlineDetailHelpPosition.top,
+            left: inlineDetailHelpPosition.left,
+            width: inlineDetailHelpPosition.width,
+          }}
+          onPointerDown={(event) => event.stopPropagation()}
+        >
+          <div className="mb-1 text-xs font-semibold text-gray-800">{activeInlineDetailHelp.title}</div>
+          <div className="text-xs text-gray-700">{activeInlineDetailHelp.description}</div>
+        </div>
+      )}
       {/* Party selector - tab style */}
       <div className="flex mb-4 border-b border-gray-200">
         {[0, 1, 2, 3, 4, 5].map((partyIndex) => {
@@ -5249,14 +5299,15 @@ function PartyTab({
                     parts.push(label);
                     helpRows.push({ label, description: `キャラクター個人のHP基礎値及びアイテムHP増加値が ${formatMultiplierValue(val)} 倍になる` });
                   } else {
-                    const label = `${addNames[key] ?? key}+${val}`;
+                    const normalizedKey = key.replace(/\?+$/g, '');
+                    const label = `${addNames[normalizedKey] ?? normalizedKey}+${val}`;
                     parts.push(label);
-                    if (key === 'equip_slot') helpRows.push({ label, description: `装備スロット数が ${val} 増える` });
-                    if (key === 'grit') helpRows.push({ label, description: `近接攻撃の装備が出来るようになる。近接攻撃回数が ${val} 回増える` });
-                    if (key === 'pursuit') helpRows.push({ label, description: `遠距離攻撃の装備が出来るようになる。遠距離攻撃回数が ${val} 回増える` });
-                    if (key === 'caster') helpRows.push({ label, description: `魔法攻撃の装備が出来るようになる。魔法攻撃回数が ${val} 回増える` });
-                    if (key === 'upgrade_V') helpRows.push({ label, description: `アビリティが ${val} 段階強化する` });
-                    if (key === 'antagonism') helpRows.push({ label: addNames[key], description: '味方を攻撃するようになる' });
+                    if (normalizedKey === 'equip_slot') helpRows.push({ label, description: `装備スロット数が ${val} 増える` });
+                    if (normalizedKey === 'grit') helpRows.push({ label, description: `近接攻撃の装備が出来るようになる。近接攻撃回数が ${val} 回増える` });
+                    if (normalizedKey === 'pursuit') helpRows.push({ label, description: `遠距離攻撃の装備が出来るようになる。遠距離攻撃回数が ${val} 回増える` });
+                    if (normalizedKey === 'caster') helpRows.push({ label, description: `魔法攻撃の装備が出来るようになる。魔法攻撃回数が ${val} 回増える` });
+                    if (normalizedKey === 'upgrade_V') helpRows.push({ label, description: `アビリティが ${val} 段階強化する` });
+                    if (normalizedKey === 'antagonism') helpRows.push({ label: addNames[normalizedKey], description: '味方を攻撃するようになる' });
                   }
                 }
               }
@@ -5293,60 +5344,57 @@ function PartyTab({
                 })
                 .filter((row): row is { label: string; description: string } => row !== null);
 
-              if (parts.length === 0) return null;
+              const bonusHelpMap = new Map<string, string>(
+                [...helpRows, ...bHelpRows].map((row) => [row.label, row.description]),
+              );
+              const bonusEntries = parts.map((label, index) => ({
+                key: `status-bonus-${index}-${label}`,
+                label,
+                description: bonusHelpMap.get(label) ?? 'このボーナスの説明は未設定です。',
+              }));
+
+              if (bonusEntries.length === 0) return null;
               return (
-                <div className="text-xs text-gray-600 mt-1 relative leading-5">
-                  <div className="inline-flex items-start gap-1">
-                    <span className="break-words leading-5">ボーナス: {parts.join(', ')}</span>
-                    <button
-                      type="button"
-                      onPointerDown={(event) => event.stopPropagation()}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        setShowBonusHelp((prev) => !prev);
-                      }}
-                      className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-gray-400 text-[10px] leading-none text-gray-600 hover:bg-gray-100"
-                      aria-label="c.ボーナスの説明を表示"
-                    >
-                      ?
-                    </button>
-                  </div>
-                  {showBonusHelp && (
-                    <div
-                      onPointerDown={(event) => event.stopPropagation()}
-                      className="absolute left-0 top-5 z-20 w-[min(38rem,88vw)] rounded-md border border-gray-200 bg-white p-3 shadow-lg"
-                    >
-                      <div className="mb-2 text-[11px] font-semibold text-gray-700">c. ボーナス説明 (同一名ボーナスは重複無効)</div>
-                      <div className="max-h-56 space-y-1 overflow-y-auto pr-1 text-[11px] leading-4 text-gray-700">
-                        {helpRows.map((row) => (
-                          <div key={row.label}>
-                            <span className="font-bold">{row.label}</span>
-                            <span className="text-gray-500"> - {row.description}</span>
-                          </div>
-                        ))}
-                      </div>
-                      {bHelpRows.length > 0 && (
-                        <div className="mb-2 rounded border border-gray-100 bg-gray-50 px-2 py-1 text-[11px] leading-4 text-gray-700">
-                          <div className="font-semibold text-gray-700">b. ボーナス説明 (重複有効)</div>
-                          {bHelpRows.map((row) => (
-                            <div key={row.label}>
-                              <span className="font-bold">{row.label}</span>
-                              <span className="text-gray-500"> - {row.description}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
+                <div className="text-xs text-gray-600 mt-1 leading-5">
+                  <span className="break-words leading-5">ボーナス: </span>
+                  {bonusEntries.map((entry, index) => (
+                    <span key={entry.key}>
+                      {index > 0 && <span>, </span>}
+                      <button
+                        type="button"
+                        onPointerDown={(event) => event.stopPropagation()}
+                        onClick={(event) => handleInlineDetailHelpToggle(entry.key, entry.label, entry.description, event)}
+                        className="text-left hover:underline"
+                      >
+                        {entry.label}
+                      </button>
+                    </span>
+                  ))}
                 </div>
               );
             })()}
             {stats.abilities.length > 0 && (
               <div className="border-t border-gray-200 mt-2 pt-2">
                 <div className="text-gray-500 text-xs">アビリティ:</div>
-                {stats.abilities.map(a => (
-                  <div key={a.id} className="text-xs text-sub">{a.name}: {a.description}</div>
-                ))}
+                <div className="text-xs text-sub leading-5">
+                  {stats.abilities.map((ability, index) => {
+                    const label = `${ability.name}${ability.level}`;
+                    const key = `status-ability-${ability.id}-${ability.level}-${index}`;
+                    return (
+                      <span key={key}>
+                        {index > 0 && <span>, </span>}
+                        <button
+                          type="button"
+                          onPointerDown={(event) => event.stopPropagation()}
+                          onClick={(event) => handleInlineDetailHelpToggle(key, label, ability.description, event)}
+                          className="text-left hover:underline"
+                        >
+                          {label}
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </div>
