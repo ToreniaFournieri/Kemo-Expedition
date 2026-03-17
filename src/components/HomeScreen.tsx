@@ -297,6 +297,38 @@ function renderEnemyNameWithMutedClass(enemyName: string) {
   );
 }
 
+function renderActionWithMutedTrailingParenthetical(action: string) {
+  if (!action.endsWith(')')) return action;
+
+  let depth = 0;
+  let openingIndex = -1;
+  for (let i = action.length - 1; i >= 0; i -= 1) {
+    const char = action[i];
+    if (char === ')') {
+      depth += 1;
+      continue;
+    }
+    if (char === '(') {
+      depth -= 1;
+      if (depth === 0) {
+        openingIndex = i;
+        break;
+      }
+    }
+  }
+
+  if (openingIndex <= 0 || action[openingIndex - 1] !== ' ') return action;
+
+  const prefix = action.slice(0, openingIndex - 1);
+  const suffix = action.slice(openingIndex);
+  return (
+    <>
+      {prefix}{' '}
+      <span className="text-gray-400">{suffix}</span>
+    </>
+  );
+}
+
 
 
 function RaceIcon({ race, className = "h-8 w-8" }: { race: Race; className?: string }) {
@@ -6215,6 +6247,7 @@ function ExpeditionTab({
                                 const actionDisplay = resonanceMatch && !allMissed
                                   ? actionText.replace(/\(共鳴\+\d+%\)$/, '')
                                   : actionText;
+                                const actionDisplayNode = renderActionWithMutedTrailingParenthetical(actionDisplay);
                                 const shouldRenderResurrectBeforeHeader = isResurrectLog && shouldShowPhaseHeader;
                                 const isReflectDamageLog = !!log.reflectedDamage && log.reflectedDamage > 0 && !!log.reflectedSourceDamage;
                                 const reflectArrowClass = log.reflectTarget === 'party' ? 'text-accent' : 'text-sub';
@@ -6237,8 +6270,8 @@ function ExpeditionTab({
                                     {shouldRenderResurrectBeforeHeader && (
                                       <div className="flex items-start justify-between gap-2 text-gray-600">
                                         <span className="min-w-0">
-                                          <span className="text-gray-400">[{phaseLabel}]</span>{' '}
-                                          {actionDisplay}
+                                        <span className="text-gray-400">[{phaseLabel}]</span>{' '}
+                                          {actionDisplayNode}
                                           {normalizeBattleLogNote(log.note) && <span className="text-gray-400"> {normalizeBattleLogNote(log.note)}</span>}
                                           {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                         </span>
@@ -6250,7 +6283,7 @@ function ExpeditionTab({
                                     <div className={`flex items-start justify-between gap-2 text-gray-600 ${shouldShowEndPhaseSpacer ? 'mt-1' : ''}`}>
                                       <span className="min-w-0">
                                         <span className="text-gray-400">[{phaseLabel}]</span>{' '}
-                                        {actionDisplay}
+                                        {actionDisplayNode}
                                         {normalizeBattleLogNote(log.note) && <span className="text-gray-400"> {normalizeBattleLogNote(log.note)}</span>}
                                         {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                       </span>
@@ -7466,6 +7499,7 @@ function DiaryTab({
                               const actionDisplay = resonanceMatch && !allMissed
                                 ? actionText.replace(/\(共鳴\+\d+%\)$/, '')
                                 : actionText;
+                              const actionDisplayNode = renderActionWithMutedTrailingParenthetical(actionDisplay);
                               const shouldRenderResurrectBeforeHeader = isResurrectLog && shouldShowPhaseHeader;
                               const isReflectDamageLog = !!battleLog.reflectedDamage && battleLog.reflectedDamage > 0 && !!battleLog.reflectedSourceDamage;
                               const reflectArrowClass = battleLog.reflectTarget === 'party' ? 'text-accent' : 'text-sub';
@@ -7489,7 +7523,7 @@ function DiaryTab({
                                     <div className="flex items-start justify-between gap-2 text-gray-600">
                                       <span className="min-w-0">
                                         <span className="text-gray-400">[{phaseLabel}]</span>{' '}
-                                        {actionDisplay}
+                                        {actionDisplayNode}
                                         {normalizeBattleLogNote(battleLog.note) && <span className="text-gray-400"> {normalizeBattleLogNote(battleLog.note)}</span>}
                                         {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                       </span>
@@ -7501,7 +7535,7 @@ function DiaryTab({
                                   <div className={`flex items-start justify-between gap-2 text-gray-600 ${shouldShowEndPhaseSpacer ? 'mt-1' : ''}`}>
                                     <span className="min-w-0">
                                       <span className="text-gray-400">[{phaseLabel}]</span>{' '}
-                                      {actionDisplay}
+                                      {actionDisplayNode}
                                       {normalizeBattleLogNote(battleLog.note) && <span className="text-gray-400"> {normalizeBattleLogNote(battleLog.note)}</span>}
                                       {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                     </span>
