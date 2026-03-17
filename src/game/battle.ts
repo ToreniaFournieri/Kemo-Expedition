@@ -18,6 +18,7 @@ import { getBaseMultiplier } from './baseMultiplier';
 import { drawFromBag, createPhysicalThreatBag, createMagicalThreatBag, getBagTicketTotal } from './bags';
 import { getDeityKey } from './deity';
 import { resolveMagicProfile } from './magic';
+import { getAbilityName } from './characterComputation';
 
 interface BattleContext {
   partyStats: ComputedPartyStats;
@@ -761,8 +762,9 @@ function getEnemyFocusLevel(enemy: EnemyDef): number {
 type AbilityLike = { id: AbilityId; level: number };
 
 function formatAbilityLabel(ability: AbilityLike): string {
-  return `${ability.id}${ability.level}`;
+  return `${getAbilityName(ability.id, ability.level)}アビリティ`;
 }
+
 
 function getAbilityLevelFromList(abilities: AbilityLike[], abilityId: AbilityId): number {
   return abilities.find((ability) => ability.id === abilityId)?.level ?? 0;
