@@ -483,6 +483,9 @@ Party.`d.HP` =
 2. **Search for a candidate item**
    - **`i.gauntlet` `i.archery` `i.catalyst` item category:**
      - From the inventory, search for the **highest (`core concept` + `c.N_NoA+X`) value item** in the target item category.
+       - The highest value item: Exclude any item that satisfies either of the following conditions:
+         - Its **item ID** already exists in **Memory A**.
+         - Its **`c.*` bonus** already exists in **Memory B**.
      - `core concept` is in 2.5.1 Item category @Specification_CONSTANTS_&_DATA.md
      - the value is including enhancement, super rare multiplier calculation.
    - **Other item category:**
