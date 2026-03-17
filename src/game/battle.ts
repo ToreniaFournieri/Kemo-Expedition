@@ -456,6 +456,34 @@ function getReflectActivationMessage(targetName: string, reflect: ReflectDescrip
   return `${targetName} の${reflect.name}！ (${detail})`;
 }
 
+function moveEffectLogsToBattleStart(logs: BattleLogEntry[]): BattleLogEntry[] {
+  const effectLogSet = new Set<string>();
+  const leadingEffectLogs: BattleLogEntry[] = [];
+  const normalLogs: BattleLogEntry[] = [];
+
+  for (const log of logs) {
+    const isEffectLog = log.actor === 'effect' && log.isPersistentEffect === true;
+    if (!isEffectLog) {
+      normalLogs.push(log);
+      continue;
+    }
+
+    const key = `${log.action}|${log.note ?? ''}`;
+    if (effectLogSet.has(key)) {
+      continue;
+    }
+
+    effectLogSet.add(key);
+    leadingEffectLogs.push(log);
+  }
+
+  if (leadingEffectLogs.length === 0) {
+    return logs;
+  }
+
+  return [...leadingEffectLogs, ...normalLogs];
+}
+
 
 function getResonanceAmplifier(resonanceLevel: number | undefined, hitNumber: number): number {
   if (!resonanceLevel || hitNumber <= 1) {
@@ -1282,7 +1310,8 @@ export function executeBattle(
           log.push({
             phase,
             actor: 'effect',
-            action: `[効] ${owner.name} の${effect.actionName}！`,
+            action: `${owner.name} の${effect.actionName}！`,
+            isPersistentEffect: true,
             note: effect.note,
           });
         }
@@ -1500,6 +1529,7 @@ export function executeBattle(
                 phase,
                 actor: 'effect',
                 action: getReflectActivationMessage(targetName, reflect),
+                isPersistentEffect: true,
               });
               log.push({
                 phase,
@@ -1914,6 +1944,7 @@ export function executeBattle(
             phase,
             actor: 'effect',
             action: getReflectActivationMessage(enemy.name, reflect),
+            isPersistentEffect: true,
           });
           log.push({
             phase,
@@ -1973,7 +2004,7 @@ export function executeBattle(
         phase,
         partyHp: 0,
         enemyHp,
-        log,
+        log: moveEffectLogsToBattleStart(log),
         outcome: 'defeat',
         updatedBags: {
           physicalThreatBag: ctx.physicalThreatBag,
@@ -1987,7 +2018,7 @@ export function executeBattle(
         phase,
         partyHp,
         enemyHp: 0,
-        log,
+        log: moveEffectLogsToBattleStart(log),
         outcome: 'victory',
         updatedBags: {
           physicalThreatBag: ctx.physicalThreatBag,
@@ -2012,7 +2043,7 @@ export function executeBattle(
     phase: 'close',
     partyHp: Math.max(0, partyHp),
     enemyHp: Math.max(0, enemyHp),
-    log,
+    log: moveEffectLogsToBattleStart(log),
     outcome,
     updatedBags: {
       physicalThreatBag: ctx.physicalThreatBag,
