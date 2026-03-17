@@ -137,8 +137,12 @@ left-alinged                                           right-aligned
 | CLOSE | (近接攻撃フェーズ) |`d.melee_attack` |`d.melee_NoA` | `d.physical_defense` |
 | END | [末] | | | |
 
-- After the CLOSE phase, the battle is over. Party needs to beat enemy within these three phases.
- 
+**START phase**
+
+- If actor.`a.oblivion`1:
+  - Randomly select 1 opponent.
+  - Randomly select 1 ability from that opponent’s valid abilities.
+  - Disable the selected ability for the rest of the battle.
 
 **functions of attack**
 
