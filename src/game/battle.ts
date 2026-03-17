@@ -376,6 +376,56 @@ interface CharacterAttackResult {
   totalAttempts: number;
   hits: number;
   wasNegatedByEnemyIllusion?: boolean;
+  reflectedDamage?: number;
+}
+
+type ReflectDescriptor = {
+  abilityId: AbilityId;
+  name: '氷結反射' | '火炎反射' | '魔法反射';
+  summary: '氷属性' | '炎属性' | '魔法';
+  amplifier: number;
+};
+
+function getReflectDescriptor(
+  phase: BattlePhase,
+  elementalOffense: ElementalOffense,
+  defenderAbilities: AbilityLike[],
+): ReflectDescriptor | null {
+  if (elementalOffense === 'ice' && getAbilityLevelFromList(defenderAbilities, 'ice_reflect') > 0) {
+    return {
+      abilityId: 'ice_reflect',
+      name: '氷結反射',
+      summary: '氷属性',
+      amplifier: 0.3,
+    };
+  }
+
+  if (elementalOffense === 'fire' && getAbilityLevelFromList(defenderAbilities, 'fire_reflect') > 0) {
+    return {
+      abilityId: 'fire_reflect',
+      name: '火炎反射',
+      summary: '炎属性',
+      amplifier: 0.3,
+    };
+  }
+
+  if (phase === 'mid' && getAbilityLevelFromList(defenderAbilities, 'magical_reflect') > 0) {
+    return {
+      abilityId: 'magical_reflect',
+      name: '魔法反射',
+      summary: '魔法',
+      amplifier: 0.1,
+    };
+  }
+
+  return null;
+}
+
+function getReflectActivationMessage(targetName: string, reflect: ReflectDescriptor): string {
+  const detail = reflect.abilityId === 'magical_reflect'
+    ? '自身が受ける予定の魔法ダメージを反射(1/10)'
+    : `自身が受ける予定の${reflect.summary}ダメージを反射(3/10)`;
+  return `[効] ${targetName} の${reflect.name}！ (${detail})`;
 }
 
 
@@ -1249,6 +1299,7 @@ export function executeBattle(
             const targetName = targetChar?.name ?? '???';
             let appliedHits = 0;
             let appliedDamage = 0;
+            let reflectedDamage = 0;
             let avoidedByStealth = false;
             const avoidedByPartyIllusion = isPartyIllusionActive(phase, characterStats, consumedPartyIllusion);
             const avoidedByIllusion = avoidedByPartyIllusion || isIllusionActive(
@@ -1258,6 +1309,7 @@ export function executeBattle(
               consumedIllusionStateIds,
             );
 
+            const reflect = getReflectDescriptor(phase, enemy.elementalOffense, attack.charStats.abilities);
             if (avoidedByIllusion) {
               if (avoidedByPartyIllusion) {
                 consumedPartyIllusion = true;
@@ -1270,12 +1322,26 @@ export function executeBattle(
                   avoidedByStealth = true;
                   continue;
                 }
+
                 appliedHits += 1;
+                if (reflect) {
+                  reflectedDamage += Math.max(1, Math.floor(hitDamage * reflect.amplifier));
+                  continue;
+                }
+
                 appliedDamage += hitDamage;
                 partyHp -= hitDamage;
               }
             }
 
+            if (reflectedDamage > 0) {
+              enemyHp -= reflectedDamage;
+              triggerEnemyResurrect(phase, turn.roll);
+            }
+
+            const reflectedAttemptText = enemyResonanceLogText
+              ? `${appliedHits}/${attack.totalAttempts}回, ${enemyResonanceLogText.slice(1, -1)}`
+              : `${appliedHits}/${attack.totalAttempts}回`;
 
             const triggeredResurrect = (
               partyHp <= 0
@@ -1308,6 +1374,25 @@ export function executeBattle(
               isEnemyTargetHit: phase === 'mid' ? true : undefined,
               elementalOffense: enemy.elementalOffense,
             });
+
+            if (reflectedDamage > 0 && reflect) {
+              log.push({
+                phase,
+                actor: 'effect',
+                action: getReflectActivationMessage(targetName, reflect),
+              });
+              log.push({
+                phase,
+                actor: 'effect',
+                action: phase === 'mid'
+                  ? `${enemy.name} が${attackName}を唱えたが反射された！ (${reflectedAttemptText})`
+                  : `${enemy.name} の${reflect.summary}攻撃は反射された！ (${reflectedAttemptText})`,
+                damage: reflectedDamage,
+                hits: appliedHits,
+                totalAttempts: attack.totalAttempts,
+                elementalOffense: enemy.elementalOffense,
+              });
+            }
 
             if (avoidedByIllusion) {
               log.push({
@@ -1623,8 +1708,36 @@ export function executeBattle(
             result.hits = 0;
             result.wasNegatedByEnemyIllusion = true;
           }
+
+          const reflect = getReflectDescriptor(phase, cs.elementalOffense, enemy.abilities);
+          if (result.damage > 0 && reflect) {
+            result.reflectedDamage = Math.max(1, Math.floor(result.damage * reflect.amplifier));
+            partyHp -= result.reflectedDamage;
+            result.damage = 0;
+          }
+
           if (result.damage > 0) {
             enemyHp -= result.damage;
+          }
+
+          const selfReflectedResurrect = (
+            (result.reflectedDamage ?? 0) > 0
+            && partyHp <= 0
+            && hasResurrect(cs)
+            && !consumedResurrectCharacterIds.has(cs.characterId)
+          );
+          if (selfReflectedResurrect) {
+            const resurrectLevel = getResurrectLevel(cs);
+            partyHp = resurrectLevel >= 2
+              ? Math.max(1, Math.ceil(partyStats.hp * 0.01))
+              : 1;
+            consumedResurrectCharacterIds.add(cs.characterId);
+            log.push({
+              phase,
+              actor: 'character',
+              characterId: cs.characterId,
+              action: `${char.name} は致命ダメージを食いしばって耐えた！`,
+            });
           }
         }
 
@@ -1666,6 +1779,31 @@ export function executeBattle(
           wasNegated: result.wasNegatedByEnemyIllusion || undefined,
           elementalOffense: cs.elementalOffense,
         });
+
+        if (!isAntagonism && result.reflectedDamage && result.reflectedDamage > 0) {
+          const reflect = getReflectDescriptor(phase, cs.elementalOffense, enemy.abilities);
+          const reflectedAttemptText = resonanceLogText
+            ? `${result.hits}/${result.totalAttempts}回, ${resonanceLogText.slice(1, -1)}`
+            : `${result.hits}/${result.totalAttempts}回`;
+          if (reflect) {
+            log.push({
+              phase,
+              actor: 'effect',
+              action: getReflectActivationMessage(enemy.name, reflect),
+            });
+            log.push({
+              phase,
+              actor: 'effect',
+              action: phase === 'mid'
+                ? `${char.name} が${attackType}を唱えたが反射された！ (${reflectedAttemptText})`
+                : `${char.name} の${reflect.summary}攻撃は反射された！ (${reflectedAttemptText})`,
+              damage: result.reflectedDamage,
+              hits: result.hits,
+              totalAttempts: result.totalAttempts,
+              elementalOffense: cs.elementalOffense,
+            });
+          }
+        }
 
         if (!isAntagonism && result.wasNegatedByEnemyIllusion) {
           log.push({
