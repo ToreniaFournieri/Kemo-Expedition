@@ -760,6 +760,10 @@ function getEnemyFocusLevel(enemy: EnemyDef): number {
 
 type AbilityLike = { id: AbilityId; level: number };
 
+function formatAbilityLabel(ability: AbilityLike): string {
+  return `${ability.id}${ability.level}`;
+}
+
 function getAbilityLevelFromList(abilities: AbilityLike[], abilityId: AbilityId): number {
   return abilities.find((ability) => ability.id === abilityId)?.level ?? 0;
 }
@@ -1032,6 +1036,59 @@ export function executeBattle(
   for (const partyEffect of partyEffects) {
     if (partyEffect) {
       log.push(partyEffect);
+    }
+  }
+
+  const oblivionOwners = characterStats
+    .filter((stats) => getAbilityLevel(stats, 'oblivion') >= 1)
+    .map((stats) => ({
+      name: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+    }));
+  const enemyHasOblivion = getEnemyAbilityLevel(enemy, 'oblivion') >= 1;
+
+  for (const owner of oblivionOwners) {
+    const enemyValidAbilities = enemy.abilities.filter((ability) => ability.level > 0);
+    if (enemyValidAbilities.length === 0) {
+      continue;
+    }
+
+    const selectedEnemyAbility = enemyValidAbilities[Math.floor(Math.random() * enemyValidAbilities.length)];
+    const selectedEnemyAbilityIndex = enemy.abilities.findIndex(
+      (ability) => ability.id === selectedEnemyAbility.id && ability.level === selectedEnemyAbility.level,
+    );
+
+    if (selectedEnemyAbilityIndex >= 0) {
+      enemy.abilities.splice(selectedEnemyAbilityIndex, 1);
+    }
+
+    log.push({
+      phase: 'long',
+      actor: 'effect',
+      action: `${owner.name} が ${enemy.name} の ${formatAbilityLabel(selectedEnemyAbility)} を忘却の彼方に消し去った！`,
+    });
+  }
+
+  if (enemyHasOblivion && characterStats.length > 0) {
+    const targetIndex = Math.floor(Math.random() * characterStats.length);
+    const target = characterStats[targetIndex];
+    const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? '味方';
+    const targetValidAbilities = target.abilities.filter((ability) => ability.level > 0);
+
+    if (targetValidAbilities.length > 0) {
+      const selectedTargetAbility = targetValidAbilities[Math.floor(Math.random() * targetValidAbilities.length)];
+      const selectedTargetAbilityIndex = target.abilities.findIndex(
+        (ability) => ability.id === selectedTargetAbility.id && ability.level === selectedTargetAbility.level,
+      );
+
+      if (selectedTargetAbilityIndex >= 0) {
+        target.abilities.splice(selectedTargetAbilityIndex, 1);
+      }
+
+      log.push({
+        phase: 'long',
+        actor: 'effect',
+        action: `${enemy.name} が ${targetName} の ${formatAbilityLabel(selectedTargetAbility)} を忘却の彼方に消し去った！`,
+      });
     }
   }
 
