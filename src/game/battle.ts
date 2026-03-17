@@ -462,7 +462,7 @@ function moveEffectLogsToBattleStart(logs: BattleLogEntry[]): BattleLogEntry[] {
   const normalLogs: BattleLogEntry[] = [];
 
   for (const log of logs) {
-    const isEffectLog = log.actor === 'effect' && log.action.startsWith('[効]');
+    const isEffectLog = log.actor === 'effect' && log.isPersistentEffect === true;
     if (!isEffectLog) {
       normalLogs.push(log);
       continue;
@@ -1310,7 +1310,8 @@ export function executeBattle(
           log.push({
             phase,
             actor: 'effect',
-            action: `[効] ${owner.name} の${effect.actionName}！`,
+            action: `${owner.name} の${effect.actionName}！`,
+            isPersistentEffect: true,
             note: effect.note,
           });
         }
@@ -1528,6 +1529,7 @@ export function executeBattle(
                 phase,
                 actor: 'effect',
                 action: getReflectActivationMessage(targetName, reflect),
+                isPersistentEffect: true,
               });
               log.push({
                 phase,
@@ -1942,6 +1944,7 @@ export function executeBattle(
             phase,
             actor: 'effect',
             action: getReflectActivationMessage(enemy.name, reflect),
+            isPersistentEffect: true,
           });
           log.push({
             phase,
