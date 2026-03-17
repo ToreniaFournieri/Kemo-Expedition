@@ -93,7 +93,7 @@ left-alinged                                           right-aligned
 [効] name の魔法抑制！ (双方魔法ダメージ0.8倍)
 [効] name の物理増幅！ (双方物理ダメージ1.4倍)
 [効] name の物理抑制！ (双方物理ダメージ0.8倍)
-[効] name が opponent の ability を忘却の彼方に消し去った！
+[効] name が opponent の abilityアビリティを忘却の彼方に消し去った！
 [効] name の魔封！ (この場で最初に唱える魔法は無効化される)
 [効] name が opponent の ability を模倣した！
 
