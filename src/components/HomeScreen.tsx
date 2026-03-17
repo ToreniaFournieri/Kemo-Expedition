@@ -6155,10 +6155,46 @@ function ExpeditionTab({
                           {isRoomExpanded && entry.details && (
                             <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
                               <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
-                              {entry.details.map((log, j) => {
+                              {(() => {
+                                const prioritizedEffectLogIndexes = new Set<number>();
+                                const prioritizedEffectLogKeys = new Set<string>();
+                                const prioritizedEffectLogs: typeof entry.details = [];
+
+                                entry.details.forEach((battleLog, index) => {
+                                  const isStealthEffectLog = battleLog.actor === 'effect' && (battleLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || battleLog.action.includes('への攻撃はすべて幻だった！'));
+                                  const isCounterNegationEffectLog = battleLog.actor === 'effect' && battleLog.action.includes('反撃無効化により');
+                                  const shouldMoveToTop = battleLog.actor === 'effect' && !isStealthEffectLog && !isCounterNegationEffectLog;
+                                  if (!shouldMoveToTop) return;
+
+                                  prioritizedEffectLogIndexes.add(index);
+                                  const effectKey = `${battleLog.action}::${normalizeBattleLogNote(battleLog.note) ?? ''}`;
+                                  if (prioritizedEffectLogKeys.has(effectKey)) return;
+                                  prioritizedEffectLogKeys.add(effectKey);
+                                  prioritizedEffectLogs.push(battleLog);
+                                });
+
+                                return (
+                                  <>
+                                    {prioritizedEffectLogs.map((battleLog, index) => (
+                                      <div key={`effect-${index}`} className="flex items-start justify-between gap-2 text-gray-600">
+                                        <span className="min-w-0">
+                                          <span className="text-gray-400">[効]</span>{' '}
+                                          {battleLog.action}
+                                          {normalizeBattleLogNote(battleLog.note) && <span className="text-gray-400"> {normalizeBattleLogNote(battleLog.note)}</span>}
+                                        </span>
+                                      </div>
+                                    ))}
+                                    {entry.details.map((log, j) => {
+                                      if (prioritizedEffectLogIndexes.has(j)) return null;
+                                      let previousLog: typeof entry.details[number] | undefined;
+                                      for (let prevIndex = j - 1; prevIndex >= 0; prevIndex -= 1) {
+                                        if (!prioritizedEffectLogIndexes.has(prevIndex)) {
+                                          previousLog = entry.details[prevIndex];
+                                          break;
+                                        }
+                                      }
                                 const isResurrectLog = log.action.includes('は致命ダメージを食いしばって耐えた！');
                                 const isPhaseAction = log.actor !== 'deity' && log.actor !== 'effect';
-                                const previousLog = j > 0 ? entry.details[j - 1] : undefined;
                                 const isStealthEffectLog = log.actor === 'effect' && (log.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || log.action.includes('への攻撃はすべて幻だった！'));
                                 const isCounterNegationEffectLog = log.actor === 'effect' && log.action.includes('反撃無効化により');
                                 const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || previousLog.action.includes('への攻撃はすべて幻だった！'));
@@ -6259,7 +6295,10 @@ function ExpeditionTab({
                                     )}
                                   </div>
                                 );
-                              })}
+                                    })}
+                                  </>
+                                );
+                              })()}
                             </div>
                           )}
                         </div>
@@ -7389,10 +7428,46 @@ function DiaryTab({
                         {isRoomExpanded && entry.details && (
                           <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
                             <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
-                            {entry.details.map((battleLog, j) => {
+                            {(() => {
+                              const prioritizedEffectLogIndexes = new Set<number>();
+                              const prioritizedEffectLogKeys = new Set<string>();
+                              const prioritizedEffectLogs: typeof entry.details = [];
+
+                              entry.details.forEach((battleLog, index) => {
+                                const isStealthEffectLog = battleLog.actor === 'effect' && (battleLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || battleLog.action.includes('への攻撃はすべて幻だった！'));
+                                const isCounterNegationEffectLog = battleLog.actor === 'effect' && battleLog.action.includes('反撃無効化により');
+                                const shouldMoveToTop = battleLog.actor === 'effect' && !isStealthEffectLog && !isCounterNegationEffectLog;
+                                if (!shouldMoveToTop) return;
+
+                                prioritizedEffectLogIndexes.add(index);
+                                const effectKey = `${battleLog.action}::${normalizeBattleLogNote(battleLog.note) ?? ''}`;
+                                if (prioritizedEffectLogKeys.has(effectKey)) return;
+                                prioritizedEffectLogKeys.add(effectKey);
+                                prioritizedEffectLogs.push(battleLog);
+                              });
+
+                              return (
+                                <>
+                                  {prioritizedEffectLogs.map((battleLog, index) => (
+                                    <div key={`effect-${index}`} className="flex items-start justify-between gap-2 text-gray-600">
+                                      <span className="min-w-0">
+                                        <span className="text-gray-400">[効]</span>{' '}
+                                        {battleLog.action}
+                                        {normalizeBattleLogNote(battleLog.note) && <span className="text-gray-400"> {normalizeBattleLogNote(battleLog.note)}</span>}
+                                      </span>
+                                    </div>
+                                  ))}
+                                  {entry.details.map((battleLog, j) => {
+                                    if (prioritizedEffectLogIndexes.has(j)) return null;
+                                    let previousLog: typeof entry.details[number] | undefined;
+                                    for (let prevIndex = j - 1; prevIndex >= 0; prevIndex -= 1) {
+                                      if (!prioritizedEffectLogIndexes.has(prevIndex)) {
+                                        previousLog = entry.details[prevIndex];
+                                        break;
+                                      }
+                                    }
                               const isResurrectLog = battleLog.action.includes('は致命ダメージを食いしばって耐えた！');
                               const isPhaseAction = battleLog.actor !== 'deity' && battleLog.actor !== 'effect';
-                              const previousLog = j > 0 ? entry.details[j - 1] : undefined;
                               const isStealthEffectLog = battleLog.actor === 'effect' && (battleLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || battleLog.action.includes('への攻撃はすべて幻だった！'));
                               const isCounterNegationEffectLog = battleLog.actor === 'effect' && battleLog.action.includes('反撃無効化により');
                               const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || previousLog.action.includes('への攻撃はすべて幻だった！'));
@@ -7510,7 +7585,10 @@ function DiaryTab({
                                   )}
                                 </div>
                               );
-                            })}
+                                  })}
+                                </>
+                              );
+                            })()}
                           </div>
                         )}
                       </div>
