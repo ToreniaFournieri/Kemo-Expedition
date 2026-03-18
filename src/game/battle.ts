@@ -557,11 +557,6 @@ function getReflectDescriptor(
   return null;
 }
 
-function getReflectActivationMessage(targetName: string, reflect: ReflectDescriptor): string {
-  const detail = `自身が受ける予定の${reflect.summary}ダメージを反射(${reflect.reflectedPortionText})して相手に与える(自身もダメージ(${reflect.receivedPortionText})を受ける)`;
-  return `${targetName} の${reflect.name}！ (${detail})`;
-}
-
 function moveEffectLogsToBattleStart(logs: BattleLogEntry[]): BattleLogEntry[] {
   const effectLogSet = new Set<string>();
   const leadingEffectLogs: BattleLogEntry[] = [];
@@ -1677,42 +1672,41 @@ export function executeBattle(
             }
 
             const enemyAttackRageBonusPercent = toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp));
-            log.push({
-              phase,
-              initiativeRoll: turn.roll,
-              actor: 'enemy',
-              action: phase === 'mid'
-                ? `${targetName} に命中！`
-                : `${targetName} に${attackName}！${enemyResonanceLogText}`,
-              damage: appliedDamage > 0 ? appliedDamage : undefined,
-              hits: appliedHits,
-              totalAttempts: attack.totalAttempts,
-              wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
-              rageBonusPercent: phase === 'mid' ? undefined : (enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined),
-              isReAttack: isReAttack || undefined,
-              isEnemyTargetHit: phase === 'mid' ? true : undefined,
-              elementalOffense: enemy.elementalOffense,
-            });
-
             if (reflectedDamage > 0 && reflect) {
               log.push({
                 phase,
-                actor: 'effect',
-                action: getReflectActivationMessage(targetName, reflect),
-                isPersistentEffect: true,
-              });
-              log.push({
-                phase,
-                actor: 'effect',
+                initiativeRoll: turn.roll,
+                actor: 'enemy',
                 action: phase === 'mid'
                   ? `${enemy.name} が${attackName}を唱えたが反射された！ (${reflectedAttemptText})`
                   : `${enemy.name} の${reflect.summary}攻撃は反射された！ (${reflectedAttemptText})`,
-                damage: reflectedDamage,
+                damage: appliedDamage,
                 reflectedDamage,
                 reflectedSourceDamage,
                 reflectTarget: 'enemy',
                 hits: appliedHits,
                 totalAttempts: attack.totalAttempts,
+                wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
+                rageBonusPercent: phase === 'mid' ? undefined : (enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined),
+                isReAttack: isReAttack || undefined,
+                isEnemyTargetHit: phase === 'mid' ? true : undefined,
+                elementalOffense: enemy.elementalOffense,
+              });
+            } else {
+              log.push({
+                phase,
+                initiativeRoll: turn.roll,
+                actor: 'enemy',
+                action: phase === 'mid'
+                  ? `${targetName} に命中！`
+                  : `${targetName} に${attackName}！${enemyResonanceLogText}`,
+                damage: appliedDamage > 0 ? appliedDamage : undefined,
+                hits: appliedHits,
+                totalAttempts: attack.totalAttempts,
+                wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
+                rageBonusPercent: phase === 'mid' ? undefined : (enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined),
+                isReAttack: isReAttack || undefined,
+                isEnemyTargetHit: phase === 'mid' ? true : undefined,
                 elementalOffense: enemy.elementalOffense,
               });
             }
@@ -2087,49 +2081,49 @@ export function executeBattle(
           ? getReflectDescriptor(phase, cs.elementalOffense, enemy.abilities)
           : null;
 
-        log.push({
-          phase,
-          initiativeRoll: turn.roll,
-          actor: 'character',
-          characterId: cs.characterId,
-          action: isAntagonism
-            ? `${char.name} は敵対状態！${antagonismTargetName} へ${phase === 'mid' ? `${attackType}を唱えた` : attackType}！${resonanceLogText}`
-            : phase === 'mid'
-              ? `${char.name} が${attackType}を唱えた！${resonanceLogText}`
-              : `${char.name} の${attackType}！${resonanceLogText}`,
-          damage: result.damage,
-          hits: result.hits,
-          totalAttempts: result.totalAttempts,
-          rageBonusPercent: characterAttackRageBonusPercent > 0 ? characterAttackRageBonusPercent : undefined,
-          momentumBonusPercent: cs.abilities.some(a => a.id === 'momentum')
-            ? characterAttackMomentumBonusPercent
-            : undefined,
-          isReAttack: isReAttack || undefined,
-          wasNegated: result.wasNegatedByEnemyIllusion || undefined,
-          elementalOffense: cs.elementalOffense,
-        });
-
         if (reflect) {
-          log.push({
-            phase,
-            actor: 'effect',
-            action: getReflectActivationMessage(enemy.name, reflect),
-            isPersistentEffect: true,
-          });
           log.push({
             phase,
             initiativeRoll: turn.roll,
             actor: 'character',
             characterId: cs.characterId,
             action: phase === 'mid'
-              ? `${char.name} が${attackType}を唱えたが反射された！`
-              : `${char.name} の${reflect.summary}攻撃は反射された！`,
-            damage: result.reflectedDamage,
+              ? `${char.name} が${attackType}を唱えたが反射された！${resonanceLogText}`
+              : `${char.name} の${reflect.summary}攻撃は反射された！${resonanceLogText}`,
+            damage: result.damage,
             reflectedDamage: result.reflectedDamage,
             reflectedSourceDamage: result.reflectedSourceDamage,
             reflectTarget: 'party',
             hits: result.hits,
             totalAttempts: result.totalAttempts,
+            rageBonusPercent: characterAttackRageBonusPercent > 0 ? characterAttackRageBonusPercent : undefined,
+            momentumBonusPercent: cs.abilities.some(a => a.id === 'momentum')
+              ? characterAttackMomentumBonusPercent
+              : undefined,
+            isReAttack: isReAttack || undefined,
+            wasNegated: result.wasNegatedByEnemyIllusion || undefined,
+            elementalOffense: cs.elementalOffense,
+          });
+        } else {
+          log.push({
+            phase,
+            initiativeRoll: turn.roll,
+            actor: 'character',
+            characterId: cs.characterId,
+            action: isAntagonism
+              ? `${char.name} は敵対状態！${antagonismTargetName} へ${phase === 'mid' ? `${attackType}を唱えた` : attackType}！${resonanceLogText}`
+              : phase === 'mid'
+                ? `${char.name} が${attackType}を唱えた！${resonanceLogText}`
+                : `${char.name} の${attackType}！${resonanceLogText}`,
+            damage: result.damage,
+            hits: result.hits,
+            totalAttempts: result.totalAttempts,
+            rageBonusPercent: characterAttackRageBonusPercent > 0 ? characterAttackRageBonusPercent : undefined,
+            momentumBonusPercent: cs.abilities.some(a => a.id === 'momentum')
+              ? characterAttackMomentumBonusPercent
+              : undefined,
+            isReAttack: isReAttack || undefined,
+            wasNegated: result.wasNegatedByEnemyIllusion || undefined,
             elementalOffense: cs.elementalOffense,
           });
         }

@@ -6251,18 +6251,18 @@ function ExpeditionTab({
                                   : actionText;
                                 const actionDisplayNode = renderActionWithMutedTrailingParenthetical(actionDisplay);
                                 const shouldRenderResurrectBeforeHeader = isResurrectLog && shouldShowPhaseHeader;
-                                const isReflectDamageLog = !!log.reflectedDamage && log.reflectedDamage > 0 && !!log.reflectedSourceDamage;
+                                const isReflectDamageLog = !!log.reflectedDamage && log.reflectedDamage > 0;
                                 const reflectArrowClass = log.reflectTarget === 'party' ? 'text-accent' : 'text-sub';
-                                const damageDisplay = log.damage !== undefined && log.damage > 0 && (
+                                const damageDisplay = ((log.damage !== undefined && log.damage > 0) || isReflectDamageLog) && (
                                   isReflectDamageLog
                                     ? (
                                       <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                        (<span className="text-gray-500" aria-hidden="true">{emoji}</span>{' '}{formatNumber(log.reflectedSourceDamage ?? log.damage)} <span className={reflectArrowClass}>→反射 {formatNumber(log.reflectedDamage ?? log.damage)}</span>)
+                                        (<span className="text-gray-500" aria-hidden="true">{emoji}</span>{' '}{formatNumber(log.damage ?? 0)}, <span className={reflectArrowClass}>反射 {formatNumber(log.reflectedDamage || 0)}</span>)
                                       </span>
                                     )
                                     : (
                                       <span className={`ml-auto shrink-0 whitespace-nowrap text-right ${isEnemy ? 'text-accent' : 'text-sub'}`}>
-                                        (<span className={isEnemy ? 'accent-theme-emoji-icon' : 'sub-theme-emoji-icon'} aria-hidden="true">{emoji}</span>{' '}{formatNumber(log.damage)})
+                                        (<span className={isEnemy ? 'accent-theme-emoji-icon' : 'sub-theme-emoji-icon'} aria-hidden="true">{emoji}</span>{' '}{formatNumber(log.damage ?? 0)})
                                       </span>
                                     )
                                 );
@@ -7503,18 +7503,18 @@ function DiaryTab({
                                 : actionText;
                               const actionDisplayNode = renderActionWithMutedTrailingParenthetical(actionDisplay);
                               const shouldRenderResurrectBeforeHeader = isResurrectLog && shouldShowPhaseHeader;
-                              const isReflectDamageLog = !!battleLog.reflectedDamage && battleLog.reflectedDamage > 0 && !!battleLog.reflectedSourceDamage;
+                              const isReflectDamageLog = !!battleLog.reflectedDamage && battleLog.reflectedDamage > 0;
                               const reflectArrowClass = battleLog.reflectTarget === 'party' ? 'text-accent' : 'text-sub';
-                              const damageDisplay = battleLog.damage !== undefined && battleLog.damage > 0 && (
+                              const damageDisplay = ((battleLog.damage !== undefined && battleLog.damage > 0) || isReflectDamageLog) && (
                                 isReflectDamageLog
                                   ? (
                                     <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                      (<span className="text-gray-500" aria-hidden="true">{emoji}</span>{' '}{formatNumber(battleLog.reflectedSourceDamage ?? battleLog.damage)} <span className={reflectArrowClass}>→反射 {formatNumber(battleLog.reflectedDamage ?? battleLog.damage)}</span>)
+                                      (<span className="text-gray-500" aria-hidden="true">{emoji}</span>{' '}{formatNumber(battleLog.damage ?? 0)}, <span className={reflectArrowClass}>反射 {formatNumber(battleLog.reflectedDamage || 0)}</span>)
                                     </span>
                                   )
                                   : (
                                     <span className={`ml-auto shrink-0 whitespace-nowrap text-right ${isEnemy ? 'text-accent' : 'text-sub'}`}>
-                                      (<span className={isEnemy ? 'accent-theme-emoji-icon' : 'sub-theme-emoji-icon'} aria-hidden="true">{emoji}</span>{' '}{formatNumber(battleLog.damage)})
+                                      (<span className={isEnemy ? 'accent-theme-emoji-icon' : 'sub-theme-emoji-icon'} aria-hidden="true">{emoji}</span>{' '}{formatNumber(battleLog.damage ?? 0)})
                                     </span>
                                   )
                               );
