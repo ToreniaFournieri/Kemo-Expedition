@@ -1,5 +1,6 @@
-## 3. MASTER
-### 3.3 Flavor text
+## 5. PROGRESS
+
+### 5.2 PROGRESS_FLAVOR_TEXT
 
 - Priority logic
 
