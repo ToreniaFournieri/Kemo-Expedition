@@ -410,7 +410,7 @@ PT2...
   - Currently selected dungeon with Loot-Gate conditions (ex. 2nd Elite Gate is locked: 2/6 Floor 2 Uncommons collected.)
   - List of available dungeons with Loot-Gate conditions
 	- **Flavor text**
-	  - The system selects flavor text from `@Specification_flavor_text.md`.
+	  - The system selects flavor text from `Specification_3.3_FLAVOR_TEXT.md`.
 	  - The **speaker name** of the flavor text is resolved to the party member who satisfies the triggering condition (race, main class, or ability holder).
       - Conditions may reference:
 	    - any party member’s race
@@ -746,8 +746,7 @@ note: 0:no sleep 寝ない, 1:nap 仮眠, 2:sound sleep 熟睡
 
 **Glossary (用語集)** 
 - list and its descrpition is here:
-  - @Specification_CONSTANTS_&_DATA.md
-  - 2.1.1 a. bonus ability, 2.1.2 b. bonus, 2.1.3 c. bonus, 2.1.4 d. bonus, 2.1.5, 2.1.6, 2.1.7, 2.1.8, 2.1.9
+  - @Specification_2.1_GLOSSARY.md
 - Glossary tabs: 能, 基, 固, 増, 属, 機, 信, 魔, 求. Default: 能
 
 
