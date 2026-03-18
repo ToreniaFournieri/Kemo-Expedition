@@ -444,7 +444,7 @@ PT2...
   - Outcome Handling:
     - **On Victory**
       - The button reverts from 「神魔戦」 → 「出撃」.
-      - The Loot Gate counter resets to 0 Mythic items collected.
+      - The Loot Gate counter resets to 0 Boss items collected.
       - The player can repeat the cycle.
     - **On Defeat**
       - The 「神魔戦」 button remains available.
