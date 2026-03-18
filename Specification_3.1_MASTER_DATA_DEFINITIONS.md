@@ -15,7 +15,7 @@
 | 8 | 8 | 49 | セルヴィンの谷(Cervin Vale) | 谷 | Sanctuary(聖域): `a.mutual-magic-amplify`1:魔法増幅(双方魔法ダメージ1.2倍) | Gehenna(ゲヘナ):No religion bonuses apply | C:more advanced fantasy equipment , U:legendary  E:enemy_type B:enemy_type |
 | 99 | 0 | 0 | 闘技場 (Colosseum) | 闘 | none | none | Debug-only area. Displayed only when Colosseum is enabled. |
 
-### 3.1.2 Expedition Floor Concepts
+**Expedition Floor Concepts**
 
 | `x.exp_id` | `x.floor` | concept | Japanese |
 |---|---:|---|---|
@@ -68,7 +68,16 @@
 | 8 | 5 | Cervin Archive District | セルヴィン文書保管街区 |
 | 8 | 6 | Clairvoyance Sanctuary | 千里眼の聖域 |
 
-### 3.1.3 Expedition Enemy Types
+
+### 3.1.2 Expedition Floor generation
+- This part is discribe process to make @Specification_3.2_MASTER.md 3.2.1 Enemy table.
+
+**Step**  
+  - 1. Define `Expedition Enemy Types`
+    2. Define `Standard template` for the expedition
+    3. Allocate Special elite enemy, replaced by floor X, room 3.
+   
+**Expedition Enemy Types**
 
 | `x.exp_id` | `x.enemy_type`A | `x.enemy_type` B | `x.enemy_type` C | `x.enemy_type` D  |
 |-|-|-|-|-|
@@ -81,12 +90,8 @@
 | 7 | `Titan` | `Undead` | `Aerial` | `Leporian` |
 | 8 | `Dragon` | `Ghost` | `Jinma` | `Cervin` |
 
-### 3.1.4 Floor and enemy distribution 
-- Standard template for each expedition
-- Expedition unique enemy definitions
-- Special elite enemy allocation
-  - replace target: Replace floor X, room 3
-  - 
+**Standard template**
+
 | `x.floor` | `x.room`| `x.level_offset` | `x.type` | `x.enemy_type` | `x.class` | `x.drop` |
 |-|-|-|-|-|-|-|
 | 1 | 1-2 | +0 | Normal | A | Rogue | `i.bolt`U, `i.armor`U |
@@ -126,6 +131,7 @@
 | 6 | 3 | +6 | Normal | B | Ranger | `i.arrow`U, `i.archery`U |
 | 6 | 4 | +10 | BOSS | D | BOSS.class | BOSS.drop |
 
+**Special elite enemy**
 
 | `x.exp_id` | expedition unique | `x.class`  | `x.drop` |
 |-|-|-|-|
