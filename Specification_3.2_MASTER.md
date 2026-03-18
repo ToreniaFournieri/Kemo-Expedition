@@ -1,7 +1,6 @@
-## 2. CONSTANTS & DATA
-### 2.7 Master
+## 3.2 Master
 
-#### 2.7.1 Enemy
+### 3.2.1 Enemy
 - 1.1 Standard floor and enemy distribution for Expedition
 
 | `x.exp_id` | `x.floor` | `x.room` | `x.level` | `x.type` | `x.enemy_type` | `x.class` | `x.drop` | `x.name` (Japanese) |
@@ -295,7 +294,7 @@
 | 8 | 6 | 3 | 55 | Normal | `Ghost` | Ranger | `i.arrow`U, `i.archery`U | 聖域の弓霊 |
 | 8 | 6 | 4 | 59 | BOSS | `Cervin` | Ninja | `i.katana`BD, `i.bolt`BD, `i.grimoire`BD | 千里眼王セルヴァ |
 
-#### 2.7.2 Item drop
+### 3.2.2 Item drop
 - 2.1 Item drop list
 
 | `x.item_tier` | `x.rarity` | `x.source_enemy_type` | `x.item_type` | `x.name` |
@@ -638,7 +637,7 @@
 | 8 | B | `Cervin` | `i.arrow` | 千里眼王の神矢 |
 | 8 | B | `Cervin` | `i.sword` | 千里眼王の王剣 |
 
-#### 2.7.3 Mythic rare item from gods
+### 3.2.3 Mythic rare item from gods
 
 | Drop by | Item type     | name | unique ability |
 |--------|---------------|-------------| ------|
@@ -668,7 +667,7 @@
 | Eris   | `i.wand`        | 乱調の魔杖 | |
 
 
-#### 2.7.4 Potential default name for player side characters
+### 3.2.4 Potential default name for player side characters
 
 | race (English key) | potential name |
 |-------------------|----------------|
