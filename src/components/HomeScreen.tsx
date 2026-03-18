@@ -5464,7 +5464,12 @@ function PartyTab({
                         <button
                           type="button"
                           onPointerDown={(event) => event.stopPropagation()}
-                          onClick={(event) => handleInlineDetailHelpToggle(key, label, ability.description, event)}
+                          onClick={(event) => handleInlineDetailHelpToggle(
+                            key,
+                            label,
+                            BONUS_ABILITY_HELP_BY_LABEL.get(label) ?? ability.description,
+                            event,
+                          )}
                           className="text-left hover:underline"
                         >
                           {label}
