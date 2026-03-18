@@ -477,51 +477,84 @@ interface CharacterAttackResult {
 
 type ReflectDescriptor = {
   abilityId: AbilityId;
-  name: '氷結反射' | '火炎反射' | '魔法反射';
-  summary: '氷属性' | '炎属性' | '魔法';
+  name: '氷結反射' | '火炎反射' | '雷撃反射' | '魔法反射';
+  summary: '氷属性' | '火属性' | '雷属性' | '魔法';
   amplifier: number;
+  reflectedPortionText: string;
+  receivedPortionText: string;
 };
+
+function getReflectAmplifier(level: number): number {
+  if (level >= 5) return 1.0;
+  if (level === 4) return 0.7;
+  if (level === 3) return 0.5;
+  if (level === 2) return 0.3;
+  return 0.1;
+}
+
+function getReflectPortionText(amplifier: number): string {
+  if (amplifier >= 1.0) return '全';
+  return `${Math.round(amplifier * 10)}/10`;
+}
 
 function getReflectDescriptor(
   phase: BattlePhase,
   elementalOffense: ElementalOffense,
   defenderAbilities: AbilityLike[],
 ): ReflectDescriptor | null {
-  if (elementalOffense === 'ice' && getAbilityLevelFromList(defenderAbilities, 'ice_reflect') > 0) {
+  const iceLevel = getAbilityLevelFromList(defenderAbilities, 'ice_reflect');
+  if (elementalOffense === 'ice' && iceLevel > 0) {
+    const amplifier = getReflectAmplifier(iceLevel);
     return {
       abilityId: 'ice_reflect',
       name: '氷結反射',
       summary: '氷属性',
-      amplifier: 0.3,
+      amplifier,
+      reflectedPortionText: getReflectPortionText(amplifier),
+      receivedPortionText: getReflectPortionText(1 - amplifier),
     };
   }
 
-  if (elementalOffense === 'fire' && getAbilityLevelFromList(defenderAbilities, 'fire_reflect') > 0) {
+  const fireLevel = getAbilityLevelFromList(defenderAbilities, 'fire_reflect');
+  if (elementalOffense === 'fire' && fireLevel > 0) {
+    const amplifier = getReflectAmplifier(fireLevel);
     return {
       abilityId: 'fire_reflect',
       name: '火炎反射',
-      summary: '炎属性',
-      amplifier: 0.3,
+      summary: '火属性',
+      amplifier,
+      reflectedPortionText: getReflectPortionText(amplifier),
+      receivedPortionText: getReflectPortionText(1 - amplifier),
     };
   }
 
-  if (phase === 'mid' && getAbilityLevelFromList(defenderAbilities, 'magical_reflect') > 0) {
+  const thunderLevel = getAbilityLevelFromList(defenderAbilities, 'thunder_reflect');
+  if (elementalOffense === 'thunder' && thunderLevel > 0) {
+    const amplifier = getReflectAmplifier(thunderLevel);
+    return {
+      abilityId: 'thunder_reflect',
+      name: '雷撃反射',
+      summary: '雷属性',
+      amplifier,
+      reflectedPortionText: getReflectPortionText(amplifier),
+      receivedPortionText: getReflectPortionText(1 - amplifier),
+    };
+  }
+
+  const magicalLevel = getAbilityLevelFromList(defenderAbilities, 'magical_reflect');
+  if (phase === 'mid' && magicalLevel > 0) {
+    const amplifier = getReflectAmplifier(magicalLevel);
     return {
       abilityId: 'magical_reflect',
       name: '魔法反射',
       summary: '魔法',
-      amplifier: 0.1,
+      amplifier,
+      reflectedPortionText: getReflectPortionText(amplifier),
+      receivedPortionText: getReflectPortionText(1 - amplifier),
     };
   }
 
   return null;
-}
-
-function getReflectActivationMessage(targetName: string, reflect: ReflectDescriptor): string {
-  const detail = reflect.abilityId === 'magical_reflect'
-    ? '自身が受ける予定の魔法ダメージを反射(1/10)'
-    : `自身が受ける予定の${reflect.summary}ダメージを反射(3/10)`;
-  return `${targetName} の${reflect.name}！ (${detail})`;
 }
 
 function moveEffectLogsToBattleStart(logs: BattleLogEntry[]): BattleLogEntry[] {
@@ -1601,8 +1634,12 @@ export function executeBattle(
 
                 appliedHits += 1;
                 if (reflect) {
+                  const reflectedHitDamage = Math.max(1, Math.floor(hitDamage * reflect.amplifier));
+                  const remainingHitDamage = Math.max(0, hitDamage - reflectedHitDamage);
                   reflectedSourceDamage += hitDamage;
-                  reflectedDamage += Math.max(1, Math.floor(hitDamage * reflect.amplifier));
+                  reflectedDamage += reflectedHitDamage;
+                  appliedDamage += remainingHitDamage;
+                  partyHp -= remainingHitDamage;
                   continue;
                 }
 
@@ -1635,42 +1672,41 @@ export function executeBattle(
             }
 
             const enemyAttackRageBonusPercent = toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp));
-            log.push({
-              phase,
-              initiativeRoll: turn.roll,
-              actor: 'enemy',
-              action: phase === 'mid'
-                ? `${targetName} に命中！`
-                : `${targetName} に${attackName}！${enemyResonanceLogText}`,
-              damage: appliedDamage > 0 ? appliedDamage : undefined,
-              hits: appliedHits,
-              totalAttempts: attack.totalAttempts,
-              wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
-              rageBonusPercent: phase === 'mid' ? undefined : (enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined),
-              isReAttack: isReAttack || undefined,
-              isEnemyTargetHit: phase === 'mid' ? true : undefined,
-              elementalOffense: enemy.elementalOffense,
-            });
-
             if (reflectedDamage > 0 && reflect) {
               log.push({
                 phase,
-                actor: 'effect',
-                action: getReflectActivationMessage(targetName, reflect),
-                isPersistentEffect: true,
-              });
-              log.push({
-                phase,
-                actor: 'effect',
+                initiativeRoll: turn.roll,
+                actor: 'enemy',
                 action: phase === 'mid'
                   ? `${enemy.name} が${attackName}を唱えたが反射された！ (${reflectedAttemptText})`
                   : `${enemy.name} の${reflect.summary}攻撃は反射された！ (${reflectedAttemptText})`,
-                damage: reflectedDamage,
+                damage: appliedDamage,
                 reflectedDamage,
                 reflectedSourceDamage,
                 reflectTarget: 'enemy',
                 hits: appliedHits,
                 totalAttempts: attack.totalAttempts,
+                wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
+                rageBonusPercent: phase === 'mid' ? undefined : (enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined),
+                isReAttack: isReAttack || undefined,
+                isEnemyTargetHit: phase === 'mid' ? true : undefined,
+                elementalOffense: enemy.elementalOffense,
+              });
+            } else {
+              log.push({
+                phase,
+                initiativeRoll: turn.roll,
+                actor: 'enemy',
+                action: phase === 'mid'
+                  ? `${targetName} に命中！`
+                  : `${targetName} に${attackName}！${enemyResonanceLogText}`,
+                damage: appliedDamage > 0 ? appliedDamage : undefined,
+                hits: appliedHits,
+                totalAttempts: attack.totalAttempts,
+                wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
+                rageBonusPercent: phase === 'mid' ? undefined : (enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined),
+                isReAttack: isReAttack || undefined,
+                isEnemyTargetHit: phase === 'mid' ? true : undefined,
                 elementalOffense: enemy.elementalOffense,
               });
             }
@@ -1996,7 +2032,7 @@ export function executeBattle(
             result.reflectedDamage = Math.max(1, Math.floor(result.damage * reflect.amplifier));
             result.reflectedSourceDamage = reflectedSourceDamage;
             partyHp -= result.reflectedDamage;
-            result.damage = 0;
+            result.damage = Math.max(0, reflectedSourceDamage - result.reflectedDamage);
           }
 
           if (result.damage > 0) {
@@ -2045,7 +2081,30 @@ export function executeBattle(
           ? getReflectDescriptor(phase, cs.elementalOffense, enemy.abilities)
           : null;
 
-        if (!reflect) {
+        if (reflect) {
+          log.push({
+            phase,
+            initiativeRoll: turn.roll,
+            actor: 'character',
+            characterId: cs.characterId,
+            action: phase === 'mid'
+              ? `${char.name} が${attackType}を唱えたが反射された！${resonanceLogText}`
+              : `${char.name} の${reflect.summary}攻撃は反射された！${resonanceLogText}`,
+            damage: result.damage,
+            reflectedDamage: result.reflectedDamage,
+            reflectedSourceDamage: result.reflectedSourceDamage,
+            reflectTarget: 'party',
+            hits: result.hits,
+            totalAttempts: result.totalAttempts,
+            rageBonusPercent: characterAttackRageBonusPercent > 0 ? characterAttackRageBonusPercent : undefined,
+            momentumBonusPercent: cs.abilities.some(a => a.id === 'momentum')
+              ? characterAttackMomentumBonusPercent
+              : undefined,
+            isReAttack: isReAttack || undefined,
+            wasNegated: result.wasNegatedByEnemyIllusion || undefined,
+            elementalOffense: cs.elementalOffense,
+          });
+        } else {
           log.push({
             phase,
             initiativeRoll: turn.roll,
@@ -2065,29 +2124,6 @@ export function executeBattle(
               : undefined,
             isReAttack: isReAttack || undefined,
             wasNegated: result.wasNegatedByEnemyIllusion || undefined,
-            elementalOffense: cs.elementalOffense,
-          });
-        } else {
-          log.push({
-            phase,
-            actor: 'effect',
-            action: getReflectActivationMessage(enemy.name, reflect),
-            isPersistentEffect: true,
-          });
-          log.push({
-            phase,
-            initiativeRoll: turn.roll,
-            actor: 'character',
-            characterId: cs.characterId,
-            action: phase === 'mid'
-              ? `${char.name} が${attackType}を唱えたが反射された！`
-              : `${char.name} の${reflect.summary}攻撃は反射された！`,
-            damage: result.reflectedDamage,
-            reflectedDamage: result.reflectedDamage,
-            reflectedSourceDamage: result.reflectedSourceDamage,
-            reflectTarget: 'party',
-            hits: result.hits,
-            totalAttempts: result.totalAttempts,
             elementalOffense: cs.elementalOffense,
           });
         }
