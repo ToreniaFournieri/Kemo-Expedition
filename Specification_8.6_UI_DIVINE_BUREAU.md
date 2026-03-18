@@ -1,0 +1,277 @@
+## 8. UI
+
+### 8.6 UI_DIVINE_BUREAU
+- Divine Bureau (神聖局)
+  - All panes are collapsed by default and expandable.
+  - The expanded/collapsed state is persisted and saved.
+
+**Donation box (寄付箱)**
+- Display donated amount of gold of each god.
+
+- Donation Scaling (Divine Bureau)
+  - For each god g:
+  - Let D_g be total donated gold to god g.
+  - Convert donation to tier T_g using thresholds. 
+  - Use effectiveTier = min(T_g, 10).
+  - displayRank = tierIndex + 1
+  - thresholds: [0, 500, 1200, 2200, 3600, 5500, 8000, 11000, 14500, 18500, 23000]
+
+- God scaling:
+  - Restoration:
+    heal_missing_pct = clamp(0.20 + 0.005*effectiveTier, 0.20, 0.30)
+    trigger_every_rooms = 4
+  
+  - Attrition:
+    attack_bonus = 20 + 0.5*effectiveTier
+    hp_loss_pct = max(0.05 - 0.001*effectiveTier, 0.03)
+    trigger_every_rooms = 4
+  
+  - Fortification:
+    physical_def_bonus = clamp(10 + 0.2*effectiveTier, 10, 20)
+    magical_def_bonus  = clamp(10 + 0.2*effectiveTier, 10, 20)
+  
+  - Precision:
+    accuracy_bonus = clamp(0.020 + 0.0005*effectiveTier, 0.020, 0.035)
+    evasion_penalty = clamp(-0.005 - 0.0002*effectiveTier, -0.010, -0.005)
+  
+  - Evasion:
+    evasion_bonus = clamp(0.015 + 0.0006*effectiveTier, 0.015, 0.030)
+  
+  - Resonance:
+    resonance_upgrade_tiers = 1 + floor(effectiveTier/5)
+    magical_def_penalty = clamp(-5 + 1*effectiveTier, -5, 0)
+
+
+```
+(Left-aligned)      (Right-aligned)
+再生の神(ランク3)      1,203G (次 2,200G)
+消耗の神(ランク2)         545G (次 2,200G)
+防備の神(ランク1)         0G (次 500G)
+...
+
+```
+
+
+**Clairvoyance (未来視)**
+- Displays belows 
+
+  **Normal reward (通常報酬)**
+  - common_reward_bag (通常報酬 抽選確率):  
+    - 報酬抽選: remaining / total counts 
+    - 当たり残り counts
+  -	common_enhancement_bag (称号付与 抽選確率): 
+    - 通常称号抽選: remaining / total counts
+    - 名工の残り counts / initial counts
+    - 魔性の残り counts / initial counts
+   	- 宿った残り counts / initial counts
+    - 伝説の残り counts / initial counts
+    - 恐ろしい残り counts / initial counts
+    - 究極の残り counts / initial counts
+  - Button (通常報酬初期化): Initialize `t.common_reward_bag` and `t.common_enhancement_bag` 
+
+  **Unieque reward (固有報酬)**
+  - uncommon reward_bag (アンコモン抽選確率):  
+    - 報酬抽選: remaining / total counts 
+    - 当たり残り remaining
+  - elite rare reward_bag (エリートレア抽選確率):  
+    - 報酬抽選: remaining / total counts 
+    - 当たり残り remaining
+  - boss rare reward_bag (ボスレア抽選確率):  
+    - 報酬抽選: remaining / total counts 
+    - 当たり残り remaining
+  - mythic rare reward_bag (神魔レア抽選抽選確率):  
+    - 報酬抽選: remaining / total counts 
+    - 当たり残り remaining
+  -	enhancement_bag (称号付与 抽選確率): 
+    - 通常称号抽選: remaining / total counts
+    - 名工の残り remaining / initial counts
+    - 魔性の残り remaining / initial counts
+   	- 宿った残り remaining / initial counts
+    - 伝説の残り remaining / initial counts
+    - 恐ろしい残り remaining / initial counts
+    - 究極の残り remaining / initial counts
+  - Button (固有報酬初期化): Initialize `t.common_reward_bag`, `t.uncommon_reward_bag`, `t.elite_rare_reward_bag`, `t.boss_rare_reward_bag`  , `t.mythic_rare_reward_bag`  and `t.enhancement_bag` 
+
+  **Super rare reward (超レア報酬)**
+  - superRare_bag (称号超レア称号付与 抽選確率):
+    - 超レア称号抽選: remaining / total counts
+    - 超レア残り remaining / initial counts
+  - Button (超レア報酬初期化): Initialize `t.superRare_bag`
+
+  **Side quest(サイドクエスト抽選)**
+  - side_quest_bag (サイドクエスト抽選確率)
+    - サイドクエスト抽選 remaining / total counts
+    - 当たり残り remaining / initial counts
+  - Button (サイドクエスト初期化): Initialize `t.side_quest_bag` 
+
+  **sleepiness(眠気抽選)**
+  - sleepiness_of_party_bag (眠気抽選確率)
+
+| パーティ | 眠気度合い | 残り |
+|-|-|-|
+| PT1 | 寝ない | 3 |
+| PT1 | 仮眠 | 2 |
+| PT1 | 熟睡 | 1 |
+| PT2 | 寝ない | 3 |
+...
+
+note: 0:no sleep 寝ない, 1:nap 仮眠, 2:sound sleep 熟睡
+
+**Glossary (用語集)** 
+- list and its descrpition is here:
+  - @Specification_2.1_GLOSSARY.md
+- Glossary tabs: 能, 基, 固, 増, 属, 機, 信, 魔, 求. Default: 能
+
+
+**Item Compendium (アイテム図鑑)**
+- The Item Compendium acts as a global reference for all items within the game. Unlike the Inventory, it displays the base potential of every item, regardless of ownership status.
+- View Settings:
+  - Visibility: Shows all items in the database (including undiscovered items).
+  - Standardized Stats: Displays item data at base level (Enhancement = 0, SuperRare = 0).
+  - Filter button by rarelity (right-aligned): 全て表示, 通常のみ, アンコモンのみ, エリートレアのみ, ボスレアのみ, 神魔レアのみ: [ALL] [C] [U]  [E] [B] [M]
+  	- IF player selects [M],   神魔レアのみ: [ALL] [C] [U] [E] [B] **[M]** 
+- Item category tabs: (same as Inventory tab's item list)
+  - [耐久:鎧,衣,盾],[近距離攻撃:剣,刀,手],[遠距離攻撃:矢,ボ,弓],[魔法攻撃:杖,書,媒].
+  - Default: 鎧 or previously selected category of each character 
+- UI Behavior:
+  - Items are listed in a Collapsed View by default.
+  - Interaction: Tap an item name to expand the detailed status panel.
+
+
+**Bestiary (敵キャラクター図鑑)**
+- A comprehensive record of all threats encountered (or to be encountered) during expeditions.
+- Expedition category tabs: 原, 崖, 樹, 峰, 茂, 巣, 園, 谷, 神, 特
+  - Each letter represents for corresponding expedition. And tap to show the enemy list of it. 
+  - Gods are listed in "神" tab.
+  - Colosseum character is listed in 特 tab. (Only visible Colosseum is enabled)
+- Categorize by floor (`x.Spawn_pool`) and is reverse order of rooms (Boss first, then floor6 Normal enemies, floor 5 elite and floor 5 normal enemies…
+
+- Enemy name: List of specific enemies found within that expedition.
+  - Default: Collapsed.
+- UI Behavior:
+  - Interaction:
+    - Tap Enemy name, Opens detailed enemy status (same logic as battle). Including drop items.
+    - If enemy has no attack values, not show the corresponding values.
+    - Respect `m.luna` mode.
+
+```
+(column 1)              (column 2)
+ID: 5005                レベル: 12
+HP: 312                 クラス: 戦士
+遠距離攻撃: 33 x 2回 (x1.00) 属性: 雷 (x1.2)
+近接攻撃: 35 x 6回 (x1.00)  物理防御: 10 (83%)
+物理命中率: 100% (減衰: 90.0%) 魔法防御: 8 (80%)
+魔法攻撃: 117 x 4回 (x1.00)
+魔法命中率: 100% (減衰: 90.0%)
+
+(column 1)              (column 2)
+ID: 5015                レベル: 12
+HP: 312                 クラス: 魔法使い
+魔法攻撃: 117 x 4回 (x1.00)   属性: 雷 (x1.2)
+魔法命中率: 100% (減衰: 90.0%)  物理防御: 10 (83%)
+                        魔法防御: 8 (80%)
+
+```
+
+**Enemy Edit Pane**
+- Purpose
+  - The **Enemy Edit** pane is used to manually configure a test enemy for battle simulation.
+  - The configured enemy is used only for Colosseum battles.
+
+- Fields
+
+| Setting | UI | Description | Default |
+|---|---|---|---|
+| Enemy name | Text input | Custom display name of the enemy | `ミーティア` |
+| Enemy type | Pull-down list | Select enemy type category | `Jinma` |
+| Enemy class | Pull-down list | Select enemy class | `Fighter` |
+| Enemy level | Slider bar (`1–99`) | Sets enemy level | `10` |
+| Enemy added ability 1 | Pull-down list | Adds an extra ability | `none` |
+| Enemy added ability 1 level | Pull-down list | level 1~5 | `1` |
+| Enemy added ability 2 | Pull-down list | Adds an extra ability | `none` |
+| Enemy added ability 2 level | Pull-down list | level 1~5 | `1` |
+| Enemy added ability 3 | Pull-down list | Adds an extra ability | `none` |
+| Enemy added ability 3 level | Pull-down list | level 1~5 | `1` |
+| Enemy added ability 4 | Pull-down list | Adds an extra ability | `none` |
+| Enemy added ability 4 level | Pull-down list | level 1~5 | `1` |
+| Enemy added ability 5 | Pull-down list | Adds an extra ability | `none` |
+| Enemy added ability 5 level 2 | Pull-down list | level 1~5 | `1` |
+
+- Behavior
+  - Starting a Colosseum battle immediately loads the current Enemy Edit settings.
+  - Changes made in the Enemy Edit pane are reflected in the next Colosseum battle.
+  - The enemy gives no experience point, item drop or progression.
+
+
+**Super Rare List(超レア一覧)**
+- Display Super Rare list with its unique bonus.
+
+**Mode select (モード切替)**
+
+- ダークモード OFF/ON/システム
+  - Dark mode setting
+  - Default: システム
+
+- Switch to 自動周回: ON/OFF (Default:ON )
+
+- Switch to 統計情報表示: ON/OFF (Default:OFF)
+  - If ON, Show statistic line of Party pane in Expedition tab.
+
+- Switch to ケモ、ルナ(高難度)、 ライカ(原点)
+  - ケモ: `m.kemo`, ルナ:`m.luna`, ライカ:`m.laika`
+  - Default: `m.kemo`
+  - Description:
+    - `m.kemo` "通常のモードです"
+    - `m.luna` "敵が大幅に強くなります(報酬がよくなります)"
+    - `m.laika` "超レアが存在しません。通常称号は伝説までしか出ません"
+
+  - If Environment is `/luna/`, Set `m.luna` and other option (`m.kemo`) is disabled.
+
+
+**バックアップ・リセット**
+  - 5.1 Backup (Export)
+    - Allow the player to export the current save data as a file download.
+    - File name format: `Kemo-Expedition_Backup_[version]_[env]_YYYYMMDD`
+    - Example: `Kemo-Expedition_Backup_v0.2.9_qa_20260220`
+
+  - 5.2 Import
+    - Allow the player to import save data via file upload.
+	- Before importing, run validation checks:
+	  - File format compatibility check
+     	- Different version, env is acceptable unless their format is compatible.
+	  - Basic integrity check (missing fields / schema mismatch)
+   - If any issue is detected, show a clear warning and require explicit confirmation before applying import.
+   - On success, replace current save data with the imported data.
+
+  - 5.3 Reset
+    - Provide a Full Reset option that deletes all local save data.
+    - Always show a strong warning and require confirmation before execution.
+
+**Debug pane(デバッグ)**
+ 
+- Clairvoyance: OFF/ON
+  - if OFF, disable `Clairvoyance (未来視)` as default. (it would unlock it by the game progress in the future update)
+- Speed of time: Real time / x5 boost / x20 hyper / x100 Ultra
+  - Default: x5 boost
+  - affects side quest duration. 
+- Gods Battle condition: boss items require Normal / Simple(1)
+  - Default: Normal
+  - Simple: 1 boss rare item instead of actual setting
+- Gods Strength: Normal / Very Weak `debug mode for god battle`
+  - Default: Normal
+- All religions OFF/ON
+  - Default: OFF
+  - if ON, unlock All religions. if back to OFF, only in game unlocked religions available. 
+- Party unlock +1 PT unlock
+  - if press the button, unlock one PT. 
+- Jewel shop open OFF/ON
+  - Default: OFF
+- Display flavor condition OFF/ON
+  - Default: OFF
+  - if ON, it displays condition at the end of flavor text. 
+- Display AFK duration OFF/ON
+  - Default: OFF
+  - If ON, notification  "(Debug)前回の更新から X秒経過" at the end of AFK calculation 
+
+- Colosseum mode : OFF/ON
+  - If ON, Enable Enemy edit pane and Colosseum expedition.  
