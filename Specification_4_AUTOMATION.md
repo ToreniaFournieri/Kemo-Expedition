@@ -6,8 +6,8 @@
 | Mode     | Description                                                                                                                |
 | -------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `OFF`  | No automatic equipment processing is performed. Characters keep their current equipment unless changed manually.           |
-| `SEMI` | Automatically **3.6.2 Fills empty slots** and **3.6.3 Upgrades existing equipment**  , but does **not remove currently equipped items**. |
-| `FULL` | Automatically **3.6.1 Removes all equipment**, **3.6.2 Fills empty slots** and **3.6.3 Upgrades existing equipment**. |                             |
+| `SEMI` | Automatically **Fills empty slots** and **Upgrades existing equipment**  , but does **not remove currently equipped items**. |
+| `FULL` | Automatically **Removes all equipment**, **Fills empty slots** and **Upgrades existing equipment**. |                             |
 
 - Processing priority: Characters are processed sequentially in party order: PT1 Row1 → PT1 Row2 → … → PT1 Row6 → PT2 Row1 → PT2 Row2 → …
 - Item categories of already equipped items are not changed.
@@ -178,12 +178,10 @@
        - The highest value item: Exclude any item that satisfies either of the following conditions:
          - Its **item ID** already exists in **Memory A**.
          - Its **`c.*` bonus** already exists in **Memory B**.
-     - `core concept` is in 2.5.1 Item category @Specification_CONSTANTS_&_DATA.md
      - the value is including enhancement, super rare multiplier calculation.
    - **Other item category:**
      - If the specified category is a group item category, expand it into its constituent item categories. Items from any of the included categories may be selected.
      - From the inventory, search for the **highest `core concept` value item** in the target item category.
-     - `core concept` is in 2.5.1 Item category @Specification_CONSTANTS_&_DATA.md
      - the value is including enhancement, super rare multiplier calculation.
    - Exclude any item that satisfies either of the following conditions:
      - Its **item ID** already exists in **Memory A**.
