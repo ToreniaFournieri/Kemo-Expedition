@@ -11,7 +11,11 @@
 - Each expedition is guided by a single deity, who manifests power through a chosen party to restore balance and reclaim lost knowledge. 
 
 ## 2. CONSTANTS & DATA
-- @Specification_CONSTANTS_&_DATA.md
+- @Specification_GLOSSARY.md
+- @Specification_GLOBAL_CONSTANTS.md
+- @Specification_ENTITY_DATA.md
+- @Specification_ITEM_DATA.md
+- @Specification_Master_Data_Definitions.md
 - @Specification_Master.md
 
 ## 3. INITIALIZATION 
