@@ -1,6 +1,6 @@
-## 2. CONSTANTS & DATA
+## 1. CONSTANTS
 
-### 2.2 Global constants
+### 1.2 CONSTANTS_GLOBAL
 
 **Global structure**
   - gold 
