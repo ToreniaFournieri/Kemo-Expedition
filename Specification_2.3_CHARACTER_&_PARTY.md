@@ -345,3 +345,65 @@ Party.`d.HP` =
 | Goddess of Mirage | 幻影の女神 | Add `c.deity_magical_attack_x1.20` and `c.deity_pysical_defense_x1.10` to each party member | +0.01 to `c.deity_magical_attack_x1.20` per rank |
 | God of Oblivion | 忘却されし神 | (nothing) | at rank 10, one more additional reward chance |
 | Goddess of Discord | 不和の神 |  At the start of each battle,  1 randomly chosen member gets `c.antagonism`, one more additional reward chance | (none)  |
+
+
+#### 2.3.4 INITIALIZATION 
+
+##### 2.3.4.1 Randomness initialization
+-  `f.reset_weighted_bag`(bag_key: t.*)
+  - bags: `t.common_reward_bag`, `t.common_enhancement_bag`, `t.uncommon_reward_bag`, `t.rare_reward_bag`, `t.mythic_reward_bag`, `t.enhancement_bag`, `t.superRare_bag`, `t.physical_threat_weight_bag`, `t.magical_threat_weight_bag`, `t.side_quest_bag`, and `t.sleepiness_of_party_bag` for each party. 
+
+##### 2.3.4.2 Initial setup
+- Initial setup (or reset condition)
+
+- unlocked deity: none (all of other deity is unlocked)
+
+- PT1 Party initial condition.
+  1. "ケモ", Caninian, 戦(盗), Canny, House of the Unmoving
+     - equipment: `1101`, `1103`
+  2. "ゴン", Vulpinian, 剣(侍), Chivalric, House of War Spirit
+     - equipment: `1104`, `1104`
+  3. "イタチ", Murid, 忍(君), Persistent, House of the Breaking Hand
+     - equipment: `1104`, `1106`
+  4. "ロップ", Leporian, 狩(賢), Shikon, House of Far Sight
+     - equipment: `1107`, `1108`, `1109`
+  5. "ラス", Felidian, 賢(巡), Dexterous, House of Steel Oath
+     - equipment: `1110`, `1111`, `1112` 
+  6. "セルヴァ", Cervin, 魔(魔), Canny, House of Guiding Thought
+     - equipment: `1110`
+
+- Party initial inventory.
+  - 1 Tier-1 common items of each item type.
+
+- Party initial state.
+  - `PartyLevel`: 1
+  - `xp_current`: 0
+  - Gold: 200G
+  - Auto-sell: none
+  - state: idle
+  - deity: none
+
+- PT2 initial condition (when unlocked)
+  - deity: `God of Attrition`
+  - party member race: all Lupinian
+  - 3.6 AUTO equipment logic for all party member. 
+ 
+- PT3 initial condition (when unlocked)
+  - deity: `God of Cunning`
+  - party member race: all Vulpinian
+  - 3.6 AUTO equipment logic for all party member.  
+
+- PT4 initial condition (when unlocked)
+  - deity: `God of Fortification`
+  - party member race: all Ursan
+  - 3.6 AUTO equipment logic for all party member.  
+
+- PT5 initial condition (when unlocked)
+  - deity: `Goddess of Fertility`
+  - party member race: all Felidian
+  - 3.6 AUTO equipment logic for all party member. 
+
+- PT6 initial condition (when unlocked)
+  - deity: `God of Resonance`
+  - party member race: all Mustelid
+  - 3.6 AUTO equipment logic for all party member.
