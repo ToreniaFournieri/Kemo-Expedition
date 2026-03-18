@@ -284,7 +284,15 @@ left-alinged                                           right-aligned
   - If actor.`a.slow`1, subtract 1 (minimum 1)
   - If opponent.`a.frostbite`1, subtract 1 (minimum 1)
 - Actions are resolved in descending order of roll result.
-- Tie-breaker: Enemy > Front row party members > Last row party member.
+- **Tie-breaker Action order resolution**
+  - Resolve in the following order:
+    1. Enemy ability
+    2. Front-row party member abilities
+    3. Back-row party member abilities
+    4. Enemy move
+    5. Front-row party member moves
+    6. Back-row party member moves
+
 
 **Actor action**
 
