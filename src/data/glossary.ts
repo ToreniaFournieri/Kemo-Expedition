@@ -453,6 +453,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "自身が受ける予定の通常攻撃の氷属性ダメージを全反射して相手に与える(自身はダメージを受けない)"
       },
       {
+        "key": "a.ice-null1",
+        "label": "氷結無効1",
+        "description": "自身が受ける予定の通常攻撃の氷属性ダメージを無効化する"
+      },
+      {
         "key": "a.bind1",
         "label": "拘束1",
         "description": "近接攻撃の命中回数 x 1/32の確率で相手の行動を封じる"
@@ -493,6 +498,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "自身が受ける予定の通常攻撃の火属性ダメージを全反射して相手に与える(自身はダメージを受けない)"
       },
       {
+        "key": "a.fire-null1",
+        "label": "火炎無効1",
+        "description": "自身が受ける予定の通常攻撃の火属性ダメージを無効化する"
+      },
+      {
         "key": "a.thunder-reflect1",
         "label": "雷撃反射1",
         "description": "自身が受ける予定の通常攻撃の雷属性ダメージを反射(1/10)して相手に与える(自身もダメージ(9/10)を受ける)"
@@ -516,6 +526,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "key": "a.thunder-reflect5",
         "label": "雷撃反射5",
         "description": "自身が受ける予定の通常攻撃の雷属性ダメージを全反射して相手に与える(自身はダメージを受けない)"
+      },
+      {
+        "key": "a.thunder-null1",
+        "label": "雷撃無効1",
+        "description": "自身が受ける予定の通常攻撃の雷属性ダメージを無効化する"
       },
       {
         "key": "a.soul-reap1",
@@ -698,6 +713,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "自身が受ける予定の通常攻撃の魔法ダメージを全反射して相手に与える(自身はダメージを受けない)"
       },
       {
+        "key": "a.magical-null1",
+        "label": "魔法無効1",
+        "description": "自身が受ける予定の通常攻撃の魔法ダメージを無効化する"
+      },
+      {
         "key": "a.ranged-reflect1",
         "label": "矢返し1",
         "description": "自身が受ける予定の遠距離攻撃のダメージを反射(1/10)して相手に与える(自身もダメージ(9/10)を受ける)"
@@ -723,6 +743,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "自身が受ける予定の遠距離攻撃のダメージを全反射して相手に与える(自身はダメージを受けない)"
       },
       {
+        "key": "a.ranged-null1",
+        "label": "遠距離無効1",
+        "description": "自身が受ける予定の遠距離攻撃のダメージを無効化する"
+      },
+      {
         "key": "a.melee-reflect1",
         "label": "打ち返し1",
         "description": "自身が受ける予定の近接攻撃のダメージを反射(1/10)して相手に与える(自身もダメージ(9/10)を受ける)"
@@ -746,6 +771,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "key": "a.melee-reflect5",
         "label": "打ち返し5",
         "description": "自身が受ける予定の近接攻撃のダメージを全反射して相手に与える(自身はダメージを受けない)"
+      },
+      {
+        "key": "a.melee-null1",
+        "label": "近接無効1",
+        "description": "自身が受ける予定の近接攻撃のダメージを無効化する"
       },
       {
         "key": "a.colossal1",
