@@ -463,19 +463,99 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "双方魔法ダメージ1.3倍"
       },
       {
+        "key": "a.mutual-magic-amplify2",
+        "label": "魔法増幅2",
+        "description": "双方魔法ダメージ1.5倍"
+      },
+      {
+        "key": "a.mutual-magic-amplify3",
+        "label": "魔法増幅3",
+        "description": "双方魔法ダメージ1.6倍"
+      },
+      {
+        "key": "a.mutual-magic-amplify4",
+        "label": "魔法増幅4",
+        "description": "双方魔法ダメージ1.65倍"
+      },
+      {
+        "key": "a.mutual-magic-amplify5",
+        "label": "魔法増幅5",
+        "description": "双方魔法ダメージ1.68倍"
+      },
+      {
         "key": "a.mutual-magic-restraint1",
         "label": "魔法抑制1",
-        "description": "双方魔法ダメージ0.8倍"
+        "description": "双方魔法ダメージ0.77倍"
+      },
+      {
+        "key": "a.mutual-magic-restraint2",
+        "label": "魔法抑制2",
+        "description": "双方魔法ダメージ0.67倍"
+      },
+      {
+        "key": "a.mutual-magic-restraint3",
+        "label": "魔法抑制3",
+        "description": "双方魔法ダメージ0.63倍"
+      },
+      {
+        "key": "a.mutual-magic-restraint4",
+        "label": "魔法抑制4",
+        "description": "双方魔法ダメージ0.61倍"
+      },
+      {
+        "key": "a.mutual-magic-restraint5",
+        "label": "魔法抑制5",
+        "description": "双方魔法ダメージ0.59倍"
+      },
+      {
+        "key": "a.mutual-physical-amplify1",
+        "label": "物理増幅1",
+        "description": "双方物理ダメージ1.3倍"
       },
       {
         "key": "a.mutual-physical-amplify2",
         "label": "物理増幅2",
-        "description": "双方物理ダメージ1.4倍"
+        "description": "双方物理ダメージ1.5倍"
+      },
+      {
+        "key": "a.mutual-physical-amplify3",
+        "label": "物理増幅3",
+        "description": "双方物理ダメージ1.6倍"
+      },
+      {
+        "key": "a.mutual-physical-amplify4",
+        "label": "物理増幅4",
+        "description": "双方物理ダメージ1.65倍"
+      },
+      {
+        "key": "a.mutual-physical-amplify5",
+        "label": "物理増幅5",
+        "description": "双方物理ダメージ1.68倍"
       },
       {
         "key": "a.mutual-physical-restraint1",
         "label": "物理抑制1",
-        "description": "双方物理ダメージ0.8倍"
+        "description": "双方物理ダメージ0.77倍"
+      },
+      {
+        "key": "a.mutual-physical-restraint2",
+        "label": "物理抑制2",
+        "description": "双方物理ダメージ0.67倍"
+      },
+      {
+        "key": "a.mutual-physical-restraint3",
+        "label": "物理抑制3",
+        "description": "双方物理ダメージ0.63倍"
+      },
+      {
+        "key": "a.mutual-physical-restraint4",
+        "label": "物理抑制4",
+        "description": "双方物理ダメージ0.61倍"
+      },
+      {
+        "key": "a.mutual-physical-restraint5",
+        "label": "物理抑制5",
+        "description": "双方物理ダメージ0.59倍"
       },
       {
         "key": "a.ranged-confusion1",
