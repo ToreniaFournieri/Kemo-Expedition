@@ -37,7 +37,7 @@
 - @Specification_3.3_FLAVOR_TEXT.md
 
 ## 4. AUTOMATION
-- @Specification_4.AUTOMATION.md
+- @Specification_4_AUTOMATION.md
 
 ## 5. PROGRESS
 - @Specification_5_PROGRESS.md
@@ -46,7 +46,7 @@
 - @Specification_6_BATTLE.md
 
 ## 8. UI
-- @Specification_UI.md
+- @Specification_8_UI.md
 
 ## 9. Environment
 **Branch:** `main` → `/dev/`, `qa` → `/qa/`, `luna` → `/luna`
