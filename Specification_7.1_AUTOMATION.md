@@ -1,6 +1,8 @@
-## 4. AUTOMATION
+## 7. AUTOMATION
 
-### 4.1 AUTO equipment logic
+### 7.1 AUTOMATION
+
+#### 7.1.1 AUTO equipment logic
 - The behavior of automatic equipment is controlled by `m.auto_equipment`,  and upgrades their equipment at the end of **outfit** state.
  
 | Mode     | Description                                                                                                                |
@@ -14,13 +16,13 @@
 - The system only fills empty slots or upgrades existing equipment without replacing it with a different item category.
 - No other policy exist in this version.
 
-#### 4.1.1 Removes all equipment
+##### 7.1.1.1 Removes all equipment
 - Record the **jewel** assignments of each equipped item category as **Memory C**.
 - Record the all of its equipment as **Memory D**.
 - Remove all of its equipment. (this only works when `m.auto_equipment` is FULL)
 - Exception: Super rare item is not removed by this process. 
 
-#### 4.1.2 Equipping into empty slots
+##### 7.1.1.2 Equipping into empty slots
 - When a character has one or more empty equipment slots, auto-equipment selects an item category based on the class’s ideal equipment build order.
 - This order represents the target balance of equipment categories for that class.
 - The system checks the character’s current equipment and selects the earliest category in the order that is still missing.
@@ -198,13 +200,13 @@
   - If **Memory C** contains recorded jewel data, jewels are reassigned by item category.
   - Higher-tier jewels are preferentially assigned to items with higher enhancement values and to super rare items.
 
-#### 4.1.3 Upgrading existing equipment
+##### 7.1.1.3 Upgrading existing equipment
 - If a party member already has an item equipped, and another eligible item (same item ID) exists with a higher enhancement, the equipped item is replaced.
 - Jewels socketed in the currently equipped item remain unchanged.
 - Only the equipment item itself is replaced.
 - Super rare item is not replaced by this process. 
 
-#### 4.1.4 notification 
+##### 7.1.1.4 notification 
 - After the auto-equipment calculation:
   - If `m.auto_equipment` is `FULL`, recall **Memory** D and perform entity comparison with the newly equipped items.
   - Only changed equipment is displayed in the notification.
