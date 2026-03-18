@@ -1,9 +1,11 @@
 ## 6. BATTLE
 
-### 6.1 Encounter Rules
+### 6.1 BATTLE
+
+#### 6.1.1 Encounter Rules
 - Each encounter consists of one battle
 
-### 6.2 Function of battle
+#### 6.1.2 Function of battle
 
 **Battle Phase**
 
@@ -150,7 +152,7 @@
     - Magical counter triggers immediately after damage resolution, regardless of turn order modifiers.
 
 
-### 6.3 Turn resolution 
+#### 6.1.3 Turn resolution 
 **Speed & Turn Order (Rolling Dice Rule)**
 - At the start of each phase (LONG / MID / CLOSE), **each actor** (enemy + each party member) rolls initiative.
   - `a.first-strike`3, roll **4d3** (4~12) cap the result at 9
@@ -225,7 +227,7 @@
 
 - *Note:*  Nth_hit is per action based (not per-target)
 
-### 6.4 Outcome 
+#### 6.1.4 Outcome 
 
 **Resolution**
 - Defeat (Player loses)
@@ -250,7 +252,7 @@
 
 - *Draw*:no penalties (current version). no `d.experience` points nor item reward at this room. Back to home with trophies of previous rooms.
 
-### 6.5. REWARD 
+#### 6.1.5 REWARD 
 - For every item listed in the enemy's potential drop items,
   - If the item is common,
     - Get one ticket from `t.common_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord` or `God of Oblivion`(rank 10 or more).
@@ -282,7 +284,7 @@
 ```
 
 
-### 6.6 Logs
+#### 6.1.6 Logs
 - `f.quick_summary`:
   - `p.outcome_of_expedition`: 
     - 踏破: victory and complete the whole dungeons 
