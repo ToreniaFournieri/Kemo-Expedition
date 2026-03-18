@@ -5,7 +5,7 @@
 - There are 8 `x.expedition` destinations in total. every `x.expedition` has its own tier. (1st `x.expedition` drops tier-1 items. 2nd `x.expedition` drops tier-2 items)
 
 #### 2.4.1 Expedition
-- @Specification_Master_Data_Definitions.md, 1 Expedition Definitions
+- @Specification_3.1_MASTER_DATA_DEFINITIONS.md, 1 Expedition Definitions
 
 - Strength of enemy by its level 
   - n = `x.enemy_level` (1~99)
@@ -39,7 +39,7 @@
 - If `m.luna`, add +5 `x.enemy_level` for all enemy 
 
 - **Enemy entity distribution** for each `x.expediton`
-  - @Specification_Master.md, 1.1 Standard floor and enemy distribution for Expedition
+  - @Specification_3.2_MASTER.md, 1.1 Standard floor and enemy distribution for Expedition
 
 - **Gods (神魔):**
   - Status calculation: master value is `x.exp_tier`. not using `x.exp_id`'s `x.exp_tier`.
