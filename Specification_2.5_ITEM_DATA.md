@@ -154,7 +154,7 @@ Tier 5 common `i.arrow`: `d.ranged_attack` +41, `c.ranged_attack+0.08`
 - **Overflow Handling**
   - If the stack exceeds `max_stack`, the excess items are automatically sold. (treat as auto-sell item)
 
-#### 2.5.4 Item master definitions
+#### 2.5.5 Item master definitions
 - id
 - item_category
 - tier
@@ -198,7 +198,7 @@ inventory = {
 }
 ```
 
-#### 2.5.5 Item selling price
+#### 2.5.6 Item selling price
 
 - Selling price calculation 
   - `item_tier` = 1-8
@@ -212,7 +212,7 @@ inventory = {
   - Selling_price(1)= 200
   - Selling_price(`item_tier`)= Selling_price(`item_tier`-1) * (2.50 - 0.12 *`item_tier` ) (round to the last two digits)
 
-#### 2.5.6 Jewel (結晶) 
+#### 2.5.7 Jewel (結晶) 
 - A tier-scaled enhancement item that grants one c. bonus and fixed d. bonuses based on its rank.
 - category name "晶"
  - `d.` bonuses are added to the item’s base stats before any scaling is applied. Therefore, both the enhancement multiplier and Super Rare multiplier also affect the added `d.` values.
