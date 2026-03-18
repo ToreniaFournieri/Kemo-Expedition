@@ -1179,6 +1179,12 @@ const ABILITY_NAMES: Record<string, string> = {
   upgrade_all_abilities: '全能力強化',
 };
 
+const BONUS_ABILITY_GLOSSARY_SECTION = GLOSSARY_SECTIONS.find((section) => section.heading === '2.1.1 a. bonus ability');
+
+const BONUS_ABILITY_HELP_BY_LABEL = new Map<string, string>(
+  (BONUS_ABILITY_GLOSSARY_SECTION?.entries ?? []).map((entry) => [entry.label, entry.description]),
+);
+
 const ABILITY_HELP_TEXTS: Record<string, string> = {
   'defender:1': '自身より後列の味方への物理ダメージを 2/3倍。',
   'defender:2': '自身より後列の味方への物理ダメージを 3/5倍。',
@@ -8331,7 +8337,10 @@ function SettingTab({
     return drops.length > 0 ? drops.join(' / ') : 'なし';
   };
 
-  const getAbilityHelpDescription = (abilityId: string, level: number): string => {
+  const getAbilityHelpDescription = (abilityId: string, level: number, abilityLabel: string): string => {
+    const glossaryDescription = BONUS_ABILITY_HELP_BY_LABEL.get(abilityLabel);
+    if (glossaryDescription) return glossaryDescription;
+
     const levelDescription = ABILITY_HELP_TEXTS[`${abilityId}:${level}`];
     if (levelDescription) return levelDescription;
     return ABILITY_HELP_TEXTS[abilityId] ?? 'このアビリティの説明は未設定です。';
@@ -8382,7 +8391,7 @@ function SettingTab({
       return {
         key,
         title: abilityLabel,
-        description: getAbilityHelpDescription(abilityId, level),
+        description: getAbilityHelpDescription(abilityId, level, abilityLabel),
       };
     });
   };
