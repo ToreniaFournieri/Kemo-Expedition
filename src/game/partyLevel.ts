@@ -3,7 +3,7 @@ import { RoomType } from '../types';
 const XP_TO_NEXT_BASE = 100;
 const XP_TO_NEXT_GROWTH = 1.259;
 
-// SpecRef: 3.3.1 | Level and slots | getXpToNextLevel
+// SpecRef: 2.3.1.1 | Level and slots | getXpToNextLevel
 export function getXpToNextLevel(level: number): number {
   return XP_TO_NEXT_BASE * (XP_TO_NEXT_GROWTH ** Math.max(0, level - 1));
 }
@@ -14,7 +14,7 @@ function getRankMultiplier(roomType: RoomType): number {
   return 1.0;
 }
 
-// SpecRef: 3.3.1 | Level and slots | calculateExperience
+// SpecRef: 2.3.1.1 | Level and slots | calculateExperience
 export function calculateExperience(
   baseExperience: number,
   roomType: RoomType,
