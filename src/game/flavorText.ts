@@ -228,6 +228,7 @@ function pickMatchingMemberName(condition: FlavorCondition, context: FlavorConte
   return pickSeededMemberName(members, context.seed, context.leaderName);
 }
 
+// SpecRef: 8.4 | Expedition | Flavor text
 function formatConditionDebug(condition: FlavorCondition): string {
   if (condition.k === 'none') return 'no condition';
   if (condition.k === 'raw') return `raw: ${condition.v}`;
@@ -236,6 +237,8 @@ function formatConditionDebug(condition: FlavorCondition): string {
   return `${condition.k}: ${condition.v}`;
 }
 
+// SpecRef: 3.3 | Flavor text | Priority logic
+// SpecRef: 8.4 | Expedition | Flavor text
 export function getRuntimeFlavorText(context: FlavorContext): string | null {
   const stateId = stateIdByName.get(context.state);
   if (stateId === undefined) return null;
