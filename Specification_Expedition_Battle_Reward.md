@@ -298,7 +298,11 @@ left-alinged                                           right-aligned
 
 - `f.NoA` times, get `f.targeting` -> opponent. 
   	- If `f.hit_detection`(actor: , opponent: , Nth_hit: the current hit index), current party.
-  	- If (actor.`e.ice` and opponent.`a.ice-reflect`) or (actor.`e.fire` and opponent.`a.fire-reflect`) or (phase is MID and `a.magical-reflect`), actor.`d,HP` -= `f.damage_calculation` x reflect damage amplifier. log "ロップ の氷属性攻撃は反射された！　(2/4回) " or "セルヴァ がフロストニードルを唱えたが反射された！　(3/3回, 共鳴+33%) "
+  	- If (actor.`e.ice` and opponent.`a.ice-reflect`) or (actor.`e.fire` and opponent.`a.fire-reflect`)　 or (actor.`e.thunder` and opponent.`a.thunder-reflect`) or (phase is MID and `a.magical-reflect`),
+  	  	- Reflect damage: actor.`d.HP` -= `f.damage_calculation` x reflect damage amplifier.
+  	  	- Dealt damage: opponent.`d.HP` -= `f.damage_calculation` x ( 1 - reflect damage amplifier).
+  	  	- log "ロップ の氷属性攻撃は反射された！　(2/4回)  (❄️ {Reflect damage} →反射 {Dealt damage})" or
+  	  	- log "セルヴァ がフロストニードルを唱えたが反射された！　(3/3回, 共鳴+33%)  (❄️ {Reflect damage} →反射 {Dealt damage})"
   	- Else `d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
 - If current opponent .`d.HP` =< 0, if opponent.`a.resurrect`1, set `d.HP` = 1 and disable `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat.
 - If current opponent.`d.HP` =< 0, if character.`a.resurrect`2, set opponent.`d.HP` = 1% of (opponent.max_HP) and disable the `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat. 
