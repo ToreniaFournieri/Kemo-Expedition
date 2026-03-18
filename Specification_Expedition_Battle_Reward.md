@@ -295,7 +295,6 @@ left-alinged                                           right-aligned
 
 
 **Actor action**
-
 - `f.NoA` times, get `f.targeting` -> opponent. 
 	- If `f.hit_detection`(actor: , opponent: , Nth_hit: the current hit index), current party.
 	- Check the following conditions in this order:
@@ -305,22 +304,30 @@ left-alinged                                           right-aligned
 	    04. If phase is `LONG` and opponent.`a.ranged-reflect`
 	    05. If phase is `MID` and opponent.`a.magical-reflect`
         06. If phase is `CLOSE` and opponent.`a.melee-reflect`
-	    07. If actor.`e.ice` and opponent.`a.ice-null`
-	    08. If actor.`e.fire` and opponent.`a.fire-null`
-	    09. If actor.`e.thunder` and opponent.`a.thunder-null`
-	    10. If phase is `LONG` and opponent.`a.ranged-null`
-	    11. If phase is `MID` and opponent.`a.magical-null`
-        12. If phase is `CLOSE` and opponent.`a.melee-null`
-           
+  	    07. If actor.`e.ice` and opponent.`a.ice-absorb`
+	    08. If actor.`e.fire` and opponent.`a.fire-absorb`
+	    09. If actor.`e.thunder` and opponent.`a.thunder-absorb`
+	    10. If phase is `MID` and opponent.`a.magical-absorb`         
+	    11. If actor.`e.ice` and opponent.`a.ice-null`
+	    12. If actor.`e.fire` and opponent.`a.fire-null`
+	    13. If actor.`e.thunder` and opponent.`a.thunder-null`
+	    14. If phase is `LONG` and opponent.`a.ranged-null`
+	    15. If phase is `MID` and opponent.`a.magical-null`
+        16. If phase is `CLOSE` and opponent.`a.melee-null`
 	  - If multiple conditions are true at the same time, resolve only the first matched condition in the order above.
- 
     - Reflect resolve
 	  - Reflect damage: actor.`d.HP` -= `f.damage_calculation` x reflect damage amplifier.
 	  - Dealt damage: opponent.`d.HP` -= `f.damage_calculation` x ( 1 - reflect damage amplifier).
 	  - log "ロップ の氷属性攻撃は反射された！　(2/4回)  (❄️ {Dealt damage}, 反射 {Reflect damage})" or
 	  - log "セルヴァ がフロストニードルを唱えたが反射された！　(3/3回, 共鳴+33%)  (❄️ {Dealt damage}, 反射 {Reflect damage})"
+    - Absorb resolve
+	  - Absorbed damage: opponent.`d.HP` += `f.damage_calculation` x absorb damage amplifier.
+	  - log "ロップ の氷属性攻撃は吸収された！　(2/4回)  (❄️ 吸収 {Absorbed damage})" or
+      - log "ラス がサンダーボルトを唱えたが吸収された！(11/43回) (❄️ 吸収 {Absorbed damage})"
+        - IF opponent is enemy, "(❄️ 吸収 {Absorbed damage})" part is accent color. If opponent is party member, it is sub color.
     - Null resolve
 	  - log "ロップ の氷属性攻撃は無効化された！　(2/4回)  (❄️ 0)" 
+
 
    - Else `d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
 - If current opponent .`d.HP` =< 0, if opponent.`a.resurrect`1, set `d.HP` = 1 and disable `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat.
