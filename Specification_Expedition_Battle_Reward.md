@@ -298,20 +298,31 @@ left-alinged                                           right-aligned
 
 - `f.NoA` times, get `f.targeting` -> opponent. 
 	- If `f.hit_detection`(actor: , opponent: , Nth_hit: the current hit index), current party.
-	- Reflect check
-	  - Check the following conditions in this order:
-	    1. If actor.`e.ice` and opponent.`a.ice-reflect`
-	    2. If actor.`e.fire` and opponent.`a.fire-reflect`
-	    3. If actor.`e.thunder` and opponent.`a.thunder-reflect`
-	    4. If phase is `LONG` and opponent.`a.ranged-reflect`
-	    5. If phase is `MID` and opponent.`a.magical-reflect`
-        6. If phase is `CLOSE` and opponent.`a.melee-reflect`
+	- Check the following conditions in this order:
+	    01. If actor.`e.ice` and opponent.`a.ice-reflect`
+	    02. If actor.`e.fire` and opponent.`a.fire-reflect`
+	    03. If actor.`e.thunder` and opponent.`a.thunder-reflect`
+	    04. If phase is `LONG` and opponent.`a.ranged-reflect`
+	    05. If phase is `MID` and opponent.`a.magical-reflect`
+        06. If phase is `CLOSE` and opponent.`a.melee-reflect`
+	    07. If actor.`e.ice` and opponent.`a.ice-null`
+	    08. If actor.`e.fire` and opponent.`a.fire-null`
+	    09. If actor.`e.thunder` and opponent.`a.thunder-null`
+	    10. If phase is `LONG` and opponent.`a.ranged-null`
+	    11. If phase is `MID` and opponent.`a.magical-null`
+        12. If phase is `CLOSE` and opponent.`a.melee-null`
+           
 	  - If multiple conditions are true at the same time, resolve only the first matched condition in the order above.
-  	  - Reflect damage: actor.`d.HP` -= `f.damage_calculation` x reflect damage amplifier.
-  	  - Dealt damage: opponent.`d.HP` -= `f.damage_calculation` x ( 1 - reflect damage amplifier).
-  	  - log "ロップ の氷属性攻撃は反射された！　(2/4回)  (❄️ {Dealt damage}, 反射 {Reflect damage})" or
-  	  - log "セルヴァ がフロストニードルを唱えたが反射された！　(3/3回, 共鳴+33%)  (❄️ {Dealt damage}, 反射 {Reflect damage})"
-  	  - Else `d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
+ 
+    - Reflect resolve
+	  - Reflect damage: actor.`d.HP` -= `f.damage_calculation` x reflect damage amplifier.
+	  - Dealt damage: opponent.`d.HP` -= `f.damage_calculation` x ( 1 - reflect damage amplifier).
+	  - log "ロップ の氷属性攻撃は反射された！　(2/4回)  (❄️ {Dealt damage}, 反射 {Reflect damage})" or
+	  - log "セルヴァ がフロストニードルを唱えたが反射された！　(3/3回, 共鳴+33%)  (❄️ {Dealt damage}, 反射 {Reflect damage})"
+    - Null resolve
+	  - log "ロップ の氷属性攻撃は無効化された！　(2/4回)  (❄️ 0)" 
+
+   - Else `d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
 - If current opponent .`d.HP` =< 0, if opponent.`a.resurrect`1, set `d.HP` = 1 and disable `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat.
 - If current opponent.`d.HP` =< 0, if character.`a.resurrect`2, set opponent.`d.HP` = 1% of (opponent.max_HP) and disable the `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat. 
 - If (phase is LONG) and (opponent.`a.illusion`1) and (the `a.illusion` is enable), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. log "ポンタへの攻撃はすべて幻だった！".
