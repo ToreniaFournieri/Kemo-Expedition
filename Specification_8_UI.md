@@ -517,7 +517,7 @@ PT4: (未開放:キョウエン 狡猾の神 撃破で開放)
 
 
 **Price (per item, by tier)**
-- see `2.5.5 Item price` @Specification_CONSTANTS_&_DATA.md
+- see `2.5.6 Item selling price` @Specification_2.5_ITEM_DATA.md
 
 - Refresh timing
   - Shop lineup refreshes every 8 hours at **02:00, 10:00, 18:00** (local time).
