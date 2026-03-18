@@ -1,6 +1,8 @@
-## 5. PROGRESS 
+## 5. PROGRESS
 
-### 5.1 Party State Machine
+### 5.1 PROGRESS
+
+#### 5.1.1 Party State Machine
 
 - Use one state per party. Every party ticks independently.
 
@@ -104,7 +106,7 @@ PT2: 踏破1回 寄付金額: 10G, 貯金額:　30G
 PT3: 貯金額: 10G
 ```
 
-### 5.2 Side Quest
+#### 5.1.2 Side Quest
 **Trigger Condition**
 - Checked at the end of the **帰還中 (Returning)** state.
 - If the party:
@@ -129,13 +131,13 @@ PT3: 貯金額: 10G
 - The Jewel’s Rank is randomly selected between 1 and `x.exp_tier`, based on the expedition tier at the time the side quest was generated.
 
 
-### 5.3 Expedition
+#### 5.1.3 Expedition
 - Persistence through an expedition:`d.HP`.
 - auto-sell profit amp:
   - If party.character.`a.cunning`, multiplier x1.2.
   - If party.character.`a.cunning`, multiplier x1.3.
 
-### 5.3.1 "Loot-Gate" progression system
+##### 5.1.3.1 "Loot-Gate" progression system
 - If the party fails to meet the entry requirements, the expedition ends before the Gate Room and they are returned to Home.
 
 | title | Gate `x.floor`,`x.room` | condition |
@@ -150,7 +152,7 @@ PT3: 貯金額: 10G
 | Gods battle gate | - | collect 10 Boss rare items in dungeons to unlock Gods Battle |
 | Side quest gate | - | it depends on side quest `q.` condition |
 
-### 5.3.2 Unlock party & Deity
+##### 5.1.3.2 Unlock party & Deity
 - Party & Deity unlock condition: Defeating corresponding gods.
   - New party with new corresponding deity as default.
   - max 6 parties.
