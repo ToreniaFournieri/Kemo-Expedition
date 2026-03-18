@@ -1,5 +1,4 @@
-## 2. CONSTANTS & DATA
-
+## 1. CONSTANTS 
 
 **Naming Rule**
 
@@ -47,9 +46,9 @@
 | boss rare | ボスレア | [B] |　
 | mythic rare | 神魔レア | [M] |
  
-### 2.1 Glossary 
+### 1.1 CONSTANTS_GLOSSARY
 
-#### 2.1.1 a. bonus ability
+#### 1.1.1 a. bonus ability
 - "能. アビリティボーナス (重複なし、強化可能)"
 
 | `a.` ability | 表示 | 説明 |
@@ -229,7 +228,7 @@
 | `a.colossal`1 | 巨人1 | 自身の防御力が2倍になるが、自身の物理ダメージ補正x2.0 |
 | `a.upgrade-all-abilities`1 | 他のアビリティ強化+1 | 自身の他のアビリティを１段階強化する |
 
-#### 2.1.2 b. bonus
+#### 1.1.2 b. bonus
 - "基. 基礎値ボーナス (重複有効)"
 
 | `b.` Key | 表示 | 説明 |
@@ -239,7 +238,7 @@
 | `b.intelligence+v` | 知+v | 基礎知性に v を加算（魔法火力に影響） |
 | `b.mind+v` | 精+v | 基礎精神に v を加算（HP/魔防に影響） |
 
-#### 2.1.3 c. bonus
+#### 1.1.3 c. bonus
 - "固. 固定ボーナス (同一名ボーナスは重複無効)"
 
 | `c.` Key | 表示 | 説明 |
@@ -294,7 +293,7 @@
 | `c.deity_evasion+v` | [天回避+v] |　値が多いほどより多くの攻撃を回避するようになる　|
 
 
-#### 2.1.4 d. bonus
+#### 1.1.4 d. bonus
 - "増. 増加ボーナス説明 (重複有効)"
 
 | `d.` | Display | 説明 |
@@ -321,7 +320,7 @@
 | `d.elemental_offense_attribute`| 攻撃属性 | 攻撃属性は、炎属性、氷属性、雷属性、無属性から成り立つ。最も属性の倍率が高い属性1つが攻撃属性として採用される。その属性倍率が与えるダメージに掛かる |
 | `d.elemental_defense_attribute`| 属性耐性 | 敵の属性攻撃に対しての耐性。この耐性値が低ければ低いほどその属性攻撃に対して受けるダメージが減る |
 
-#### 2.1.5 e. bonus
+#### 1.1.5 e. bonus
 - "属. 属性攻撃(重複有効)"
 - "攻撃時に属性を持つことがあります。 複数の属性を持つ武器を装備した場合は、その属性の威力増加値が高いものが優先されます。(威力増加値が等しい場合は 雷>氷>炎 の順) "
 
@@ -331,7 +330,7 @@
 | `e.ice+v` | 氷属性+v% | 攻撃が氷属性❄️になり、v%威力が増加する|
 | `e.thunder+v` | 雷属性+v% | 攻撃が雷属性⚡になり、v%威力が増加する|
 
-#### 2.1.6 f. function
+#### 1.1.6 f. function
 - "機. 機能 ゲームの仕組み"
 
 | `f.` Key | 表示 | 説明 |
@@ -374,7 +373,7 @@
 | 90 | 16 |
 | 99 | 17 | |
 
-#### 2.1.7 g. gods, religions
+#### 1.1.7 g. gods, religions
 - "信. 神、信仰"
 
 | `g.` Key | 表示 | 効果説明 | Lore |
@@ -397,7 +396,7 @@
 　- Donation(1) = 1,000 G, Donation(n) = (3.0 - 0.1 * n) * Donation(n-1) (round off)
   - max rank is 10.
 
-#### 2.1.8 m. magic
+#### 1.1.8 m. magic
 - "魔. 魔法攻撃 (装備によって唱える魔法の種類が変わる)"
 
 | Key | style | element | 詠唱魔法 | 効果 |
@@ -416,7 +415,7 @@
 | `tempest_nova` | `area_burst` | `e.thunder` | テンペストノヴァ | 雷属性範囲魔法攻撃(ヒット数は1固定) |
 | `gravity_well` | `percentage_damage` | `e.none` | グラビティウェル | 魔法攻撃回数が20回以上の場合発動。相手の残HPの2/5の固定ダメージ(魔法防御力無視) |
 
-#### 2.1.9 q. side quest
+#### 1.1.9 q. side quest
 - "求. サイドクエスト (条件達成すると報酬として結晶が手に入る)"
 
 | ID | type | Short text | Display text format | value range | logic | for Glossary Title | for Glossary content |
@@ -436,7 +435,7 @@
 | 12 | `q.losers` | 敗北(X回) | X回敗北する(0%, X回)　(神魔戦で中止) | 3 ~ 6 | |  敗北 | 敗北する(神魔戦で中止)　(3回~ 6回) |
 | 13 | `q.savings` | 貯金(XXXG) | 3,000G貯金する(10%, XXXG)　(神魔戦で中止) | 800 ~ 4,000G | | 貯金 | 貯金する(神魔戦で中止) (800 ~ 4,000G)　|
 
-#### 2.1.10 t. side quest
+#### 1.1.10 t. side quest
 - "地. 探索地と地形効果(探索地によって効果が変わる)"
 
 | `x.expedition` | 地形効果(f1,2,3,6) | 地形効果(f4,5) |
