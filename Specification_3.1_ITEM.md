@@ -1,8 +1,8 @@
-## 2. CONSTANTS & DATA
+## 3. ITEM
 
-### 2.5 Items
+### 3.1 ITEM
 
-#### 2.5.1 Item category 
+#### 3.1.1 Item category 
 
 - Item category
 
@@ -31,7 +31,7 @@
 
 - *note:* item might have multiple bonus. sword may have `d.HP` but subtle value.
 
-#### 2.5.2 Item list
+#### 3.1.2 Item list
 
 - base_power(1) = 12, base_power(n) = base_power(n-1) x (1.50 - 0.02 x n) round off
 - base_NoA_power(n) = 0.9 - 0.1 x n
@@ -130,7 +130,7 @@ Tier 4 common `i.katana`: `d.melee_attack` +82, `d.evasion-0.004`, `c_melee_NoA-
 Tier 5 common `i.arrow`: `d.ranged_attack` +41, `c.ranged_attack+0.08`
 
 ```
-#### 2.5.3 Item variation 
+#### 3.1.3 Item variation 
 
 **Item Variation Hierarchy**
 - Common (12 variations per tier): 1 standard version of every item type.
@@ -139,7 +139,7 @@ Tier 5 common `i.arrow`: `d.ranged_attack` +41, `c.ranged_attack+0.08`
 - Boss rare (2~3 variations per tier)
 - Mythic rare (total 12 items)
 
-#### 2.5.4 Item stacking
+#### 3.1.4 Item stacking
 - Items are stacked based on their unique combination of (superRare title, enhancement title, and base item ID). The default `max_stack` is 99.
   - Inventory Tracking: The inventory tracks item variants rather than individual instances.
   - Display: Shows the total stack count per variant.
@@ -154,7 +154,7 @@ Tier 5 common `i.arrow`: `d.ranged_attack` +41, `c.ranged_attack+0.08`
 - **Overflow Handling**
   - If the stack exceeds `max_stack`, the excess items are automatically sold. (treat as auto-sell item)
 
-#### 2.5.5 Item master definitions
+#### 3.1.5 Item master definitions
 - id
 - item_category
 - tier
@@ -198,7 +198,7 @@ inventory = {
 }
 ```
 
-#### 2.5.6 Item selling price
+#### 3.1.6 Item selling price
 
 - Selling price calculation 
   - `item_tier` = 1-8
@@ -212,7 +212,7 @@ inventory = {
   - Selling_price(1)= 200
   - Selling_price(`item_tier`)= Selling_price(`item_tier`-1) * (2.50 - 0.12 *`item_tier` ) (round to the last two digits)
 
-#### 2.5.7 Jewel (結晶) 
+#### 3.1.7 Jewel (結晶) 
 - A tier-scaled enhancement item that grants one c. bonus and fixed d. bonuses based on its rank.
 - category name "晶"
  - `d.` bonuses are added to the item’s base stats before any scaling is applied. Therefore, both the enhancement multiplier and Super Rare multiplier also affect the added `d.` values.
