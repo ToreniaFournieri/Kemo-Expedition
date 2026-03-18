@@ -2,7 +2,6 @@
 ## 3.2 Master
 
 ### 3.2.1 Enemy
-- 1.1 Standard floor and enemy distribution for Expedition
 
 | `x.exp_id` | `x.floor` | `x.room` | `x.level` | `x.type` | `x.enemy_type` | `x.class` | `x.drop` | `x.name` (Japanese) |
 |---|---:|---|---:|---|---|---|---|---|
