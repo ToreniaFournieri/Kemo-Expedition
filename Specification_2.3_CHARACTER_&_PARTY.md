@@ -1,7 +1,9 @@
-## 2. CONSTANTS & DATA
-### 2.3 Character and party
+## 2. CHARACTER_&_PARTY
 
-#### 2.3.1 Character
+### 2.1 CHARACTER_&_PARTY
+
+
+#### 2.1.1 Character
 - The deity creates character and assigns 6 Characters to its party. 
 - Characters can change their race, class, and name at any time while at HOME.
 
@@ -91,7 +93,7 @@
  (`c.armor_x1.4`, `c.armor_x1.3`, `c.armor_x1.3` =>1.4 x 1.3 = x 1.82 -> 1.8 (for display))
 
 
-##### 2.3.1.1 Level and slots
+##### 2.1.1.1 Level and slots
 - Experience and level are party-wide. Characters do not have individual levels; all level-based effects reference Party level.
 - max_level: 49. (current version restriction)
 
@@ -155,7 +157,7 @@
   - The XP is accumulated as float and ceiled once at the end of an `x.expedition` when applied to `xp_current`. 
 
 
-##### 2.3.1.2 Multiplier and Functions
+##### 2.1.1.2 Multiplier and Functions
 
 - c.multiplier like `c.sword_x1.3` applies only for sword item type. other item types like shield may have +10 melee_attack bonus, but shield's melee_attack bonus is not multiplied by `c.sword_x1.3` effect.
   - if character.`a.seeker`, multiplier the calsulated amount to `c. multiplier`. 
@@ -252,12 +254,12 @@
 - character.`f.penet_multiplier`
   -If character.`c.penet`, add them. (ex. `c.penet+0.10` & `c.penet+0.15` -> 0.25)
 
-##### 2.3.1.3 Mathematical Precision & Display Rules
+##### 2.1.1.3 Mathematical Precision & Display Rules
 - Internal Calculation: All multipliers and final status values are calculated using floating-point precision (e.g., 1.4 * 1.3 = 1.82) to ensure accuracy across multiple stacked bonuses.
 - Display Rule (Rounding): For UI and logs, values are rounded to one decimal place (e.g., 1.82 → 1.8).
 - Integer Rule: Final damage values and HP values are always floored to the nearest integer for display, though internal logic may retain decimals until the final step.
  
-#### 2.3.2 Party
+#### 2.1.2 Party
 - c.multiplier like `c.amulet_x1.3` applies only for individual character's equipments. 
 
 ```
@@ -326,7 +328,7 @@ Party.`d.HP` =
 
 - Characters do not have individual HP. Each character contributes total HP. 
 
-#### 2.3.3 Religions lists
+#### 2.1.3 Religions lists
 - 信仰なし (None) may be selected by multiple parties.
 - All other religions are unique and can be assigned to only one party at a time.
 
@@ -347,13 +349,13 @@ Party.`d.HP` =
 | Goddess of Discord | 不和の神 |  At the start of each battle,  1 randomly chosen member gets `c.antagonism`, one more additional reward chance | (none)  |
 
 
-#### 2.3.4 INITIALIZATION 
+#### 2.1.4 INITIALIZATION 
 
-##### 2.3.4.1 Randomness initialization
+##### 2.1.4.1 Randomness initialization
 -  `f.reset_weighted_bag`(bag_key: t.*)
   - bags: `t.common_reward_bag`, `t.common_enhancement_bag`, `t.uncommon_reward_bag`, `t.rare_reward_bag`, `t.mythic_reward_bag`, `t.enhancement_bag`, `t.superRare_bag`, `t.physical_threat_weight_bag`, `t.magical_threat_weight_bag`, `t.side_quest_bag`, and `t.sleepiness_of_party_bag` for each party. 
 
-##### 2.3.4.2 Initial setup
+##### 2.1.4.2 Initial setup
 - Initial setup (or reset condition)
 
 - unlocked deity: none (all of other deity is unlocked)
