@@ -474,6 +474,8 @@ interface CharacterAttackResult {
   reflectedDamage?: number;
   reflectedSourceDamage?: number;
   nullifiedBy?: NullDescriptor;
+  absorbedDamage?: number;
+  absorbedBy?: AbsorbDescriptor;
 }
 
 type ReflectDescriptor = {
@@ -491,6 +493,14 @@ type NullDescriptor = {
   summary: '氷属性' | '火属性' | '雷属性' | '魔法' | '遠距離' | '近接';
 };
 
+type AbsorbDescriptor = {
+  abilityId: AbilityId;
+  name: '氷結吸収' | '火炎吸収' | '雷撃吸収' | '魔法吸収';
+  summary: '氷属性' | '火属性' | '雷属性' | '魔法';
+  amplifier: number;
+  absorbedPortionText: string;
+};
+
 function getReflectAmplifier(level: number): number {
   if (level >= 5) return 1.0;
   if (level === 4) return 0.7;
@@ -502,6 +512,14 @@ function getReflectAmplifier(level: number): number {
 function getReflectPortionText(amplifier: number): string {
   if (amplifier >= 1.0) return '全';
   return `${Math.round(amplifier * 10)}/10`;
+}
+
+function getAbsorbAmplifier(level: number): number {
+  if (level >= 5) return 1.0;
+  if (level === 4) return 0.7;
+  if (level === 3) return 0.5;
+  if (level === 2) return 0.3;
+  return 0.1;
 }
 
 function getReflectDescriptor(
@@ -584,6 +602,62 @@ function getReflectDescriptor(
       amplifier,
       reflectedPortionText: getReflectPortionText(amplifier),
       receivedPortionText: getReflectPortionText(1 - amplifier),
+    };
+  }
+
+  return null;
+}
+
+function getAbsorbDescriptor(
+  phase: BattlePhase,
+  elementalOffense: ElementalOffense,
+  defenderAbilities: AbilityLike[],
+): AbsorbDescriptor | null {
+  const iceLevel = getAbilityLevelFromList(defenderAbilities, 'ice_absorb');
+  if (elementalOffense === 'ice' && iceLevel > 0) {
+    const amplifier = getAbsorbAmplifier(iceLevel);
+    return {
+      abilityId: 'ice_absorb',
+      name: '氷結吸収',
+      summary: '氷属性',
+      amplifier,
+      absorbedPortionText: getReflectPortionText(amplifier),
+    };
+  }
+
+  const fireLevel = getAbilityLevelFromList(defenderAbilities, 'fire_absorb');
+  if (elementalOffense === 'fire' && fireLevel > 0) {
+    const amplifier = getAbsorbAmplifier(fireLevel);
+    return {
+      abilityId: 'fire_absorb',
+      name: '火炎吸収',
+      summary: '火属性',
+      amplifier,
+      absorbedPortionText: getReflectPortionText(amplifier),
+    };
+  }
+
+  const thunderLevel = getAbilityLevelFromList(defenderAbilities, 'thunder_absorb');
+  if (elementalOffense === 'thunder' && thunderLevel > 0) {
+    const amplifier = getAbsorbAmplifier(thunderLevel);
+    return {
+      abilityId: 'thunder_absorb',
+      name: '雷撃吸収',
+      summary: '雷属性',
+      amplifier,
+      absorbedPortionText: getReflectPortionText(amplifier),
+    };
+  }
+
+  const magicalLevel = getAbilityLevelFromList(defenderAbilities, 'magical_absorb');
+  if (phase === 'mid' && magicalLevel > 0) {
+    const amplifier = getAbsorbAmplifier(magicalLevel);
+    return {
+      abilityId: 'magical_absorb',
+      name: '魔法吸収',
+      summary: '魔法',
+      amplifier,
+      absorbedPortionText: getReflectPortionText(amplifier),
     };
   }
 
@@ -1704,6 +1778,7 @@ export function executeBattle(
             let appliedDamage = 0;
             let reflectedDamage = 0;
             let reflectedSourceDamage = 0;
+            let absorbedDamage = 0;
             let avoidedByStealth = false;
             const avoidedByPartyIllusion = isPartyIllusionActive(phase, characterStats, consumedPartyIllusion);
             const avoidedByIllusion = avoidedByPartyIllusion || isIllusionActive(
@@ -1714,7 +1789,8 @@ export function executeBattle(
             );
 
             const reflect = getReflectDescriptor(phase, enemy.elementalOffense, attack.charStats.abilities);
-            const nullify = reflect ? null : getNullDescriptor(phase, enemy.elementalOffense, attack.charStats.abilities);
+            const absorb = reflect ? null : getAbsorbDescriptor(phase, enemy.elementalOffense, attack.charStats.abilities);
+            const nullify = reflect || absorb ? null : getNullDescriptor(phase, enemy.elementalOffense, attack.charStats.abilities);
             if (avoidedByIllusion) {
               if (avoidedByPartyIllusion) {
                 consumedPartyIllusion = true;
@@ -1736,6 +1812,13 @@ export function executeBattle(
                   reflectedDamage += reflectedHitDamage;
                   appliedDamage += remainingHitDamage;
                   partyHp -= remainingHitDamage;
+                  continue;
+                }
+
+                if (absorb) {
+                  const absorbedHitDamage = Math.max(1, Math.floor(hitDamage * absorb.amplifier));
+                  absorbedDamage += absorbedHitDamage;
+                  partyHp = Math.min(partyStats.hp, partyHp + absorbedHitDamage);
                   continue;
                 }
 
@@ -1784,6 +1867,26 @@ export function executeBattle(
                 reflectedDamage,
                 reflectedSourceDamage,
                 reflectTarget: 'enemy',
+                hits: appliedHits,
+                totalAttempts: attack.totalAttempts,
+                wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
+                rageBonusPercent: phase === 'mid' ? undefined : (enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined),
+                isReAttack: isReAttack || undefined,
+                isEnemyTargetHit: phase === 'mid' ? true : undefined,
+                elementalOffense: enemy.elementalOffense,
+              });
+            } else if (absorbedDamage > 0 && absorb) {
+              log.push({
+                phase,
+                initiativeRoll: turn.roll,
+                actor: 'enemy',
+                action: phase === 'mid'
+                  ? `${enemy.name} が${attackName}を唱えたが吸収された！ (${reflectedAttemptText})`
+                  : `${enemy.name} の${absorb.summary}攻撃は吸収された！ (${reflectedAttemptText})`,
+                damage: 0,
+                showZeroDamage: true,
+                absorbedDamage,
+                absorbTarget: 'party',
                 hits: appliedHits,
                 totalAttempts: attack.totalAttempts,
                 wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
@@ -2145,13 +2248,19 @@ export function executeBattle(
           }
 
           const reflect = getReflectDescriptor(phase, cs.elementalOffense, enemy.abilities);
-          const nullify = reflect ? null : getNullDescriptor(phase, cs.elementalOffense, enemy.abilities);
+          const absorb = reflect ? null : getAbsorbDescriptor(phase, cs.elementalOffense, enemy.abilities);
+          const nullify = reflect || absorb ? null : getNullDescriptor(phase, cs.elementalOffense, enemy.abilities);
           if (result.damage > 0 && reflect) {
             const reflectedSourceDamage = result.damage;
             result.reflectedDamage = Math.max(1, Math.floor(result.damage * reflect.amplifier));
             result.reflectedSourceDamage = reflectedSourceDamage;
             partyHp -= result.reflectedDamage;
             result.damage = Math.max(0, reflectedSourceDamage - result.reflectedDamage);
+          } else if (result.damage > 0 && absorb) {
+            result.absorbedDamage = Math.max(1, Math.floor(result.damage * absorb.amplifier));
+            result.absorbedBy = absorb;
+            enemyHp = Math.min(enemy.hp, enemyHp + result.absorbedDamage);
+            result.damage = 0;
           } else if (result.damage > 0 && nullify) {
             result.damage = 0;
             result.nullifiedBy = nullify;
@@ -2202,6 +2311,9 @@ export function executeBattle(
         const reflect = !isAntagonism && result.reflectedDamage && result.reflectedDamage > 0
           ? getReflectDescriptor(phase, cs.elementalOffense, enemy.abilities)
           : null;
+        const absorb = !isAntagonism && result.absorbedDamage && result.absorbedDamage > 0
+          ? result.absorbedBy ?? getAbsorbDescriptor(phase, cs.elementalOffense, enemy.abilities)
+          : null;
         const nullify = !isAntagonism && result.nullifiedBy ? result.nullifiedBy : null;
 
         if (reflect) {
@@ -2217,6 +2329,29 @@ export function executeBattle(
             reflectedDamage: result.reflectedDamage,
             reflectedSourceDamage: result.reflectedSourceDamage,
             reflectTarget: 'party',
+            hits: result.hits,
+            totalAttempts: result.totalAttempts,
+            rageBonusPercent: characterAttackRageBonusPercent > 0 ? characterAttackRageBonusPercent : undefined,
+            momentumBonusPercent: cs.abilities.some(a => a.id === 'momentum')
+              ? characterAttackMomentumBonusPercent
+              : undefined,
+            isReAttack: isReAttack || undefined,
+            wasNegated: result.wasNegatedByEnemyIllusion || undefined,
+            elementalOffense: cs.elementalOffense,
+          });
+        } else if (absorb) {
+          log.push({
+            phase,
+            initiativeRoll: turn.roll,
+            actor: 'character',
+            characterId: cs.characterId,
+            action: phase === 'mid'
+              ? `${char.name} が${attackType}を唱えたが吸収された！${resonanceLogText}`
+              : `${char.name} の${absorb.summary}攻撃は吸収された！${resonanceLogText}`,
+            damage: 0,
+            showZeroDamage: true,
+            absorbedDamage: result.absorbedDamage,
+            absorbTarget: 'enemy',
             hits: result.hits,
             totalAttempts: result.totalAttempts,
             rageBonusPercent: characterAttackRageBonusPercent > 0 ? characterAttackRageBonusPercent : undefined,
