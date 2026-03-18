@@ -165,10 +165,10 @@ left-alinged                                           right-aligned
     - If actor has `a.momentum`2, return 1.25 - (1 - (actor.current_HP / actor.max_HP)) x 0.4
   - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
   - `f.mutual_amplifer`:
-    - If (phase is MID and (actor or opponent) has `a.mutual-magic-amplify`1), return 1.3
-    - If (phase is MID and (actor or opponent) has `a.mutual-magic-restraint`1), return 0.8
-	- If (phase is (LONG or CLOSE) and (actor or opponent) has `a.mutual-physical-amplify`2, return 1.4
-    - If (phase is (LONG or CLOSE) and (actor or opponent) has `a.mutual-physical-restraint`1, return 0.8
+    - If (phase is MID and (actor or opponent) has `a.mutual-magic-amplify`), return n
+    - If (phase is MID and (actor or opponent) has `a.mutual-magic-restraint`), return n
+	- If (phase is (LONG or CLOSE) and (actor or opponent) has `a.mutual-physical-amplify`, return n
+    - If (phase is (LONG or CLOSE) and (actor or opponent) has `a.mutual-physical-restraint`, return n
 
   - If opponent.`a.stealth`1 and (opponent.current_HP / opponent.max_HP) <= 0.24, damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
   - If opponent.`a.stealth`2 and (opponent.current_HP / opponent.max_HP) <= 0.29, damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
