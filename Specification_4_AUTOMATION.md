@@ -114,7 +114,7 @@
 | 9 | `i.melee` |
 | 10 | `i.shield` |
 | 11 | `i.melee` |
-| 11 | `i.gauntlet` |
+| 12 | `i.gauntlet` |
 
 
 - Rogue/ Ranger Class:
