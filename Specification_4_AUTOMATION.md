@@ -14,7 +14,7 @@
 - The system only fills empty slots or upgrades existing equipment without replacing it with a different item category.
 - No other policy exist in this version.
 
-#### 4.1.2 Removes all equipment
+#### 4.1.1 Removes all equipment
 - Record the **jewel** assignments of each equipped item category as **Memory C**.
 - Record the all of its equipment as **Memory D**.
 - Remove all of its equipment. (this only works when `m.auto_equipment` is FULL)
