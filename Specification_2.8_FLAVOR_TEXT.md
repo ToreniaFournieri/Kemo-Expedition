@@ -1,3 +1,5 @@
+## 2. CONSTANTS & DATA
+### 2.8 Flavor text
 
 - Priority logic
 
