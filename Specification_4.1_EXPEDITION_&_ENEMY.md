@@ -1,10 +1,10 @@
-## 2. CONSTANTS & DATA
+## 4. EXPEDITION_&_ENEMY
 
-### 2.4 Expedition & Enemies
+### 4.1 EXPEDITION_&_ENEMY
 - Expedition layout: The 6 `x.floor` spire. Each floor consists of 4 `x.room`s. the last room of the floor is Elite/Boss enemy battle, other rooms are Normal enemy battles.
 - There are 8 `x.expedition` destinations in total. every `x.expedition` has its own tier. (1st `x.expedition` drops tier-1 items. 2nd `x.expedition` drops tier-2 items)
 
-#### 2.4.1 Expedition Definitions
+#### 4.1.1 Expedition Definitions
 
 | `x.exp_id` | `x.item_tier` | `x.enemy_level` | `x.expedition` | short name | terrain effect(f1,2,3,6) | terrain effect(f4,5) | item concept |
 |---|-----|-----|-----|-----|-----|-----|---|
@@ -72,7 +72,7 @@
 | 8 | 6 | Clairvoyance Sanctuary | 千里眼の聖域 |
 
 
-#### 2.4.2 Enemy
+#### 4.1.2 Enemy
 - Strength of enemy by its level 
   - n = `x.enemy_level` (1~99)
   - `x.exp_HP_mult`(n) =
@@ -124,7 +124,7 @@
 | 8 | 68 | Noctyra | God of Oblivion | ノクティラ 忘却されし神 | Samurai | - | `a.rage`2, `a.firststrike`2 | 8 | `i.bolt`, `i.katana` | 11 |
 | 8 | 68 | Eris | Goddess of discord | エリス 不和の神 | Pilgrim | - | `a.momentum`2, `a.resonance`4, `a.stealth`1 | 8 | `i.grimoire`, `i.wand` | 12 |
 
-#### 2.4.3 Enemy structure (in battle)
+#### 4.1.3 Enemy structure (in battle)
 - id: int
 - type: string.  Normal/Elite/Boss
 - x.Spawn_tier
@@ -209,7 +209,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 - `f.elemental_resistance_attribute` : not scale
 - `f.penet_multiplier`: not scale
 
-#### 2.4.4 Base data structure (enemy)
+#### 4.1.4 Base data structure (enemy)
 
 | Class | `d.HP` | `a.ability` | `c.accuracy` | `c.evasion` | `d.ranged_attack` | `d.ranged_NoA` | `d.magical_attack` | `d.magical_NoA` | `d.melee_attack` | `d.melee_NoA` | `d.ranged_attack_amplifier` | `d.magical_attack_amplifier` | `d.melee_attack_amplifier` | `d.physical_defense` | `d.magical_defense` | `e.fire` | `e.ice` | `e.thunder` | `r.fire` | `r.ice` |`r.thunder` | `d.experience` |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
