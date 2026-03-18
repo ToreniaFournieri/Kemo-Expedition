@@ -44,8 +44,6 @@
   - 1 Nap: The party enters a short sleep (light rest). ( x 1/5 sleep duration)
   - 2 Sound sleep: The party enters a full sleep state. ( x1 sleep duration )
 
-
-
 - Profit usuage:
   - At: rest(休息中):
       - `current_profit` = 0
@@ -151,4 +149,25 @@ PT3: 貯金額: 10G
 | Boss gate | 6,4 | correct 3 elite rare items from this `x.expedition` |
 | Gods battle gate | - | collect 10 Boss rare items in dungeons to unlock Gods Battle |
 | Side quest gate | - | it depends on side quest `q.` condition |
+
+### 5.3.2 Unlock party & Deity
+- Party & Deity unlock condition: Defeating corresponding gods.
+  - New party with new corresponding deity as default.
+  - max 6 parties.
+   
+| Condition | Unlock Religions | Unlock party |
+|-----|-----|-----|
+| Defeating: `Seiran` | `Goddess of Restoration` | none |
+| Defeating: `Garv` | `God of Attrition` | 2nd party |
+| Defeating: `Kyōen` | `God of Cunning` | 3rd party |
+| Defeating: `Dolvar` | `God of Fortification` | 4th party |
+| Defeating: `Miora` | `Goddess of Fertility` | 5th party |
+| Defeating: `Rondel` | `God of Resonance` | 6th party |
+| Defeating: `Lira` | `Goddess of Precision` | none |
+| Defeating: `Forne` | `God of Fate` | none |
+| Defeating: `Skuva` | `God of Dusk` | none |
+| Defeating: `Forne` | `God of Fate` | none |
+| Defeating: `Tanue` | `Goddess of Mirage` | none |
+| Defeating: `Noctyra` | `God of Oblivion` | none |
+| Defeating: `Eris` | `Goddess of discord` | none |
 
