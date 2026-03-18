@@ -1,7 +1,7 @@
 ## 3 Master
-### 3.2 Master_Data_Definitions
+### 3.1 Master_Data_Definitions
 
-#### 3.2.1 Expedition Definitions
+#### 3.1.1 Expedition Definitions
 
 | `x.exp_id` | `x.item_tier` | `x.enemy_level` | `x.expedition` | short name | terrain effect(f1,2,3,6) | terrain effect(f4,5) | item concept |
 |---|-----|-----|-----|-----|-----|-----|---|
@@ -15,7 +15,7 @@
 | 8 | 8 | 49 | セルヴィンの谷(Cervin Vale) | 谷 | Sanctuary(聖域): `a.mutual-magic-amplify`1:魔法増幅(双方魔法ダメージ1.2倍) | Gehenna(ゲヘナ):No religion bonuses apply | C:more advanced fantasy equipment , U:legendary  E:enemy_type B:enemy_type |
 | 99 | 0 | 0 | 闘技場 (Colosseum) | 闘 | none | none | Debug-only area. Displayed only when Colosseum is enabled. |
 
-### 3.2.2 Expedition Floor Concepts
+### 3.1.2 Expedition Floor Concepts
 
 | `x.exp_id` | `x.floor` | concept | Japanese |
 |---|---:|---|---|
@@ -68,7 +68,7 @@
 | 8 | 5 | Cervin Archive District | セルヴィン文書保管街区 |
 | 8 | 6 | Clairvoyance Sanctuary | 千里眼の聖域 |
 
-### 3.2.3 Expedition Enemy Types
+### 3.1.3 Expedition Enemy Types
 
 | `x.exp_id` | `x.enemy_type`A | `x.enemy_type` B | `x.enemy_type` C | `x.enemy_type` D  |
 |-|-|-|-|-|
@@ -81,7 +81,7 @@
 | 7 | `Titan` | `Undead` | `Aerial` | `Leporian` |
 | 8 | `Dragon` | `Ghost` | `Jinma` | `Cervin` |
 
-### 3.2.4 Floor and enemy distribution 
+### 3.1.4 Floor and enemy distribution 
 - Standard template for each expedition
 - Expedition unique enemy definitions
 - Special elite enemy allocation
