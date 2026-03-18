@@ -1008,6 +1008,8 @@ export function getAbilityName(id: AbilityId, level: number): string {
     mutual_physical_restraint: '物理抑制',
     unstable_core: '不安定核',
     magical_reflect: '魔法反射',
+    ranged_reflect: '矢返し',
+    melee_reflect: '打ち返し',
     colossal: '巨人',
     upgrade_all_abilities: '全能力強化',
   };
@@ -1115,6 +1117,8 @@ function getAbilityDescription(id: AbilityId, level: number): string {
     mutual_physical_restraint: (l) => `双方物理ダメージ${l >= 5 ? '0.59' : l === 4 ? '0.61' : l === 3 ? '0.63' : l === 2 ? '0.67' : '0.77'}倍`,
     unstable_core: () => '遠距離0(終了)タイミングと魔法0(終了)タイミングにそれぞれ発動。残HP30%の自傷ダメージを受ける',
     magical_reflect: (l) => `自身が受ける予定の通常攻撃の魔法ダメージを反射(${l >= 5 ? '全' : l === 4 ? '7/10' : l === 3 ? '5/10' : l === 2 ? '3/10' : '1/10'})して相手に与える(自身もダメージ(${l >= 5 ? '0/10' : l === 4 ? '3/10' : l === 3 ? '5/10' : l === 2 ? '7/10' : '9/10'})を受ける)`,
+    ranged_reflect: (l) => `自身が受ける予定の遠距離攻撃のダメージを反射(${l >= 5 ? '全' : l === 4 ? '7/10' : l === 3 ? '5/10' : l === 2 ? '3/10' : '1/10'})して相手に与える(自身もダメージ(${l >= 5 ? '0/10' : l === 4 ? '3/10' : l === 3 ? '5/10' : l === 2 ? '7/10' : '9/10'})を受ける)`,
+    melee_reflect: (l) => `自身が受ける予定の近接攻撃のダメージを反射(${l >= 5 ? '全' : l === 4 ? '7/10' : l === 3 ? '5/10' : l === 2 ? '3/10' : '1/10'})して相手に与える(自身もダメージ(${l >= 5 ? '0/10' : l === 4 ? '3/10' : l === 3 ? '5/10' : l === 2 ? '7/10' : '9/10'})を受ける)`,
     colossal: () => '防御力が2倍になるが、物理ダメージ補正x2.0',
     upgrade_all_abilities: () => '自身の他のアビリティを１段階強化する',
   };

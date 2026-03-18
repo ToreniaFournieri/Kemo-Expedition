@@ -1167,6 +1167,8 @@ const ABILITY_NAMES: Record<string, string> = {
   mutual_physical_restraint: '物理抑制',
   unstable_core: '不安定核',
   magical_reflect: '魔法反射',
+  ranged_reflect: '矢返し',
+  melee_reflect: '打ち返し',
   colossal: '巨人',
   upgrade_all_abilities: '全能力強化',
 };
@@ -1245,6 +1247,8 @@ const ABILITY_HELP_TEXTS: Record<string, string> = {
   shock: '相手の最初の近接攻撃に対して発動。相手の近接攻撃が1回目ヒットした段階で攻撃をやめさせる。',
   unstable_core: '遠距離0(終了)タイミングと魔法0(終了)タイミングにそれぞれ発動。残HP30%の自傷ダメージを受ける。',
   magical_reflect: '自身が受ける予定の通常攻撃の魔法ダメージをレベルに応じて反射し、残りは自身が受ける。',
+  ranged_reflect: '自身が受ける予定の遠距離攻撃ダメージをレベルに応じて反射し、残りは自身が受ける。',
+  melee_reflect: '自身が受ける予定の近接攻撃ダメージをレベルに応じて反射し、残りは自身が受ける。',
   colossal: '防御力が2倍になるが、物理ダメージ補正がx2.0になる。',
   upgrade_all_abilities: '自身の他のアビリティを１段階強化する。',
 };

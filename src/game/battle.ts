@@ -477,8 +477,8 @@ interface CharacterAttackResult {
 
 type ReflectDescriptor = {
   abilityId: AbilityId;
-  name: '氷結反射' | '火炎反射' | '雷撃反射' | '魔法反射';
-  summary: '氷属性' | '火属性' | '雷属性' | '魔法';
+  name: '氷結反射' | '火炎反射' | '雷撃反射' | '魔法反射' | '矢返し' | '打ち返し';
+  summary: '氷属性' | '火属性' | '雷属性' | '魔法' | '遠距離' | '近接';
   amplifier: number;
   reflectedPortionText: string;
   receivedPortionText: string;
@@ -541,6 +541,19 @@ function getReflectDescriptor(
     };
   }
 
+  const rangedLevel = getAbilityLevelFromList(defenderAbilities, 'ranged_reflect');
+  if (phase === 'long' && rangedLevel > 0) {
+    const amplifier = getReflectAmplifier(rangedLevel);
+    return {
+      abilityId: 'ranged_reflect',
+      name: '矢返し',
+      summary: '遠距離',
+      amplifier,
+      reflectedPortionText: getReflectPortionText(amplifier),
+      receivedPortionText: getReflectPortionText(1 - amplifier),
+    };
+  }
+
   const magicalLevel = getAbilityLevelFromList(defenderAbilities, 'magical_reflect');
   if (phase === 'mid' && magicalLevel > 0) {
     const amplifier = getReflectAmplifier(magicalLevel);
@@ -548,6 +561,19 @@ function getReflectDescriptor(
       abilityId: 'magical_reflect',
       name: '魔法反射',
       summary: '魔法',
+      amplifier,
+      reflectedPortionText: getReflectPortionText(amplifier),
+      receivedPortionText: getReflectPortionText(1 - amplifier),
+    };
+  }
+
+  const meleeLevel = getAbilityLevelFromList(defenderAbilities, 'melee_reflect');
+  if (phase === 'close' && meleeLevel > 0) {
+    const amplifier = getReflectAmplifier(meleeLevel);
+    return {
+      abilityId: 'melee_reflect',
+      name: '打ち返し',
+      summary: '近接',
       amplifier,
       reflectedPortionText: getReflectPortionText(amplifier),
       receivedPortionText: getReflectPortionText(1 - amplifier),
