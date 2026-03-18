@@ -501,6 +501,11 @@ type AbsorbDescriptor = {
   absorbedPortionText: string;
 };
 
+type DefensiveReaction =
+  | { type: 'reflect'; descriptor: ReflectDescriptor }
+  | { type: 'absorb'; descriptor: AbsorbDescriptor }
+  | { type: 'nullify'; descriptor: NullDescriptor };
+
 function getReflectAmplifier(level: number): number {
   if (level >= 5) return 1.0;
   if (level === 4) return 0.7;
@@ -721,6 +726,29 @@ function getNullDescriptor(
       name: '近接無効',
       summary: '近接',
     };
+  }
+
+  return null;
+}
+
+function getDefensiveReaction(
+  phase: BattlePhase,
+  elementalOffense: ElementalOffense,
+  defenderAbilities: AbilityLike[],
+): DefensiveReaction | null {
+  const absorb = getAbsorbDescriptor(phase, elementalOffense, defenderAbilities);
+  if (absorb) {
+    return { type: 'absorb', descriptor: absorb };
+  }
+
+  const nullify = getNullDescriptor(phase, elementalOffense, defenderAbilities);
+  if (nullify) {
+    return { type: 'nullify', descriptor: nullify };
+  }
+
+  const reflect = getReflectDescriptor(phase, elementalOffense, defenderAbilities);
+  if (reflect) {
+    return { type: 'reflect', descriptor: reflect };
   }
 
   return null;
@@ -1788,9 +1816,10 @@ export function executeBattle(
               consumedIllusionStateIds,
             );
 
-            const reflect = getReflectDescriptor(phase, enemy.elementalOffense, attack.charStats.abilities);
-            const absorb = reflect ? null : getAbsorbDescriptor(phase, enemy.elementalOffense, attack.charStats.abilities);
-            const nullify = reflect || absorb ? null : getNullDescriptor(phase, enemy.elementalOffense, attack.charStats.abilities);
+            const defensiveReaction = getDefensiveReaction(phase, enemy.elementalOffense, attack.charStats.abilities);
+            const reflect = defensiveReaction?.type === 'reflect' ? defensiveReaction.descriptor : null;
+            const absorb = defensiveReaction?.type === 'absorb' ? defensiveReaction.descriptor : null;
+            const nullify = defensiveReaction?.type === 'nullify' ? defensiveReaction.descriptor : null;
             if (avoidedByIllusion) {
               if (avoidedByPartyIllusion) {
                 consumedPartyIllusion = true;
@@ -2247,9 +2276,10 @@ export function executeBattle(
             result.wasNegatedByEnemyIllusion = true;
           }
 
-          const reflect = getReflectDescriptor(phase, cs.elementalOffense, enemy.abilities);
-          const absorb = reflect ? null : getAbsorbDescriptor(phase, cs.elementalOffense, enemy.abilities);
-          const nullify = reflect || absorb ? null : getNullDescriptor(phase, cs.elementalOffense, enemy.abilities);
+          const defensiveReaction = getDefensiveReaction(phase, cs.elementalOffense, enemy.abilities);
+          const reflect = defensiveReaction?.type === 'reflect' ? defensiveReaction.descriptor : null;
+          const absorb = defensiveReaction?.type === 'absorb' ? defensiveReaction.descriptor : null;
+          const nullify = defensiveReaction?.type === 'nullify' ? defensiveReaction.descriptor : null;
           if (result.damage > 0 && reflect) {
             const reflectedSourceDamage = result.damage;
             result.reflectedDamage = Math.max(1, Math.floor(result.damage * reflect.amplifier));
