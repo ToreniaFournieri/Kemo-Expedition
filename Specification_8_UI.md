@@ -499,7 +499,7 @@ PT4: (未開放:キョウエン 狡猾の神 撃破で開放)
 | 40–79 | 1 Elite rare, 2 Uncommon, 2 Common |
 | 80–99 | 1 Boss rare, 2 Elite rare, 2 Uncommon |
 
-### Display (rarity color)
+**Display (rarity color)**
 - Common: non-bold  
 - Uncommon: **bold**  
 - Elite rare: Sub color (blue)  
