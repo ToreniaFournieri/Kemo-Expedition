@@ -298,22 +298,22 @@ left-alinged                                           right-aligned
 - `f.NoA` times, get `f.targeting` -> opponent. 
 	- If `f.hit_detection`(actor: , opponent: , Nth_hit: the current hit index), current party.
 	- Check the following conditions in this order:
-	    01. If actor.`e.ice` and opponent.`a.ice-reflect`
-	    02. If actor.`e.fire` and opponent.`a.fire-reflect`
-	    03. If actor.`e.thunder` and opponent.`a.thunder-reflect`
-	    04. If phase is `LONG` and opponent.`a.ranged-reflect`
-	    05. If phase is `MID` and opponent.`a.magical-reflect`
-        06. If phase is `CLOSE` and opponent.`a.melee-reflect`
-  	    07. If actor.`e.ice` and opponent.`a.ice-absorb`
-	    08. If actor.`e.fire` and opponent.`a.fire-absorb`
-	    09. If actor.`e.thunder` and opponent.`a.thunder-absorb`
-	    10. If phase is `MID` and opponent.`a.magical-absorb`         
-	    11. If actor.`e.ice` and opponent.`a.ice-null`
-	    12. If actor.`e.fire` and opponent.`a.fire-null`
-	    13. If actor.`e.thunder` and opponent.`a.thunder-null`
-	    14. If phase is `LONG` and opponent.`a.ranged-null`
-	    15. If phase is `MID` and opponent.`a.magical-null`
-        16. If phase is `CLOSE` and opponent.`a.melee-null`
+  	    01. If actor.`e.ice` and opponent.`a.ice-absorb`
+	    02. If actor.`e.fire` and opponent.`a.fire-absorb`
+	    03. If actor.`e.thunder` and opponent.`a.thunder-absorb`
+	    04. If phase is `MID` and opponent.`a.magical-absorb`         
+	    05. If actor.`e.ice` and opponent.`a.ice-null`
+	    06. If actor.`e.fire` and opponent.`a.fire-null`
+	    07. If actor.`e.thunder` and opponent.`a.thunder-null`
+	    08. If phase is `LONG` and opponent.`a.ranged-null`
+	    09. If phase is `MID` and opponent.`a.magical-null`
+        10. If phase is `CLOSE` and opponent.`a.melee-null`
+   	    11. If actor.`e.ice` and opponent.`a.ice-reflect`
+	    12. If actor.`e.fire` and opponent.`a.fire-reflect`
+	    13. If actor.`e.thunder` and opponent.`a.thunder-reflect`
+	    14. If phase is `LONG` and opponent.`a.ranged-reflect`
+	    15. If phase is `MID` and opponent.`a.magical-reflect`
+        16. If phase is `CLOSE` and opponent.`a.melee-reflect`
 	  - If multiple conditions are true at the same time, resolve only the first matched condition in the order above.
     - Reflect resolve
 	  - Reflect damage: actor.`d.HP` -= `f.damage_calculation` x reflect damage amplifier.
