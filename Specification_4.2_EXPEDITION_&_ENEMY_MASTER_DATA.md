@@ -1,7 +1,64 @@
-## 3 Master
-## 3.2 Master
+## 4. EXPEDITION_&_ENEMY
 
-### 3.2.1 Enemy
+### 4.2 EXPEDITION_&_ENEMY_MASTER_DATA
+
+### 4.2.1 Expedition
+
+**Expedition Floor Concepts**
+
+| `x.exp_id` | `x.floor` | concept | Japanese |
+|---|---:|---|---|
+| 1 | 1 | Windy Prairie | 風渡る草原 |
+| 1 | 2 | Predator Territory | 捕食者の縄張り |
+| 1 | 3 | Swarm Nest Basin | 群生の巣盆地 |
+| 1 | 4 | Lookout | 見張り台 |
+| 1 | 5 | Buried Ruin Fields | 埋没遺跡原野 |
+| 1 | 6 | Caninian Ruin-City | ケイナイアンの廃都 |
+| 2 | 1 | Snow Forest | 雪の森 |
+| 2 | 2 | Rotwood Trails | 腐木の小径 |
+| 2 | 3 | Carnivorous Plants | 食肉植物群生地 |
+| 2 | 4 | Icicle Labyrinth | 氷柱迷宮 |
+| 2 | 5 | Crystal Cave | 水晶洞窟 |
+| 2 | 6 | Ruin of Crystal Palace | 水晶宮殿跡 |
+| 3 | 1 | Sunny Beach | 陽だまりの浜辺 |
+| 3 | 2 | Sea of Peace | 静穏の海 |
+| 3 | 3 | Shipwreck | 難破船 |
+| 3 | 4 | Sea Arch | 海蝕門 |
+| 3 | 5 | Deserted Fishing Village | 打ち捨てられた漁村 |
+| 3 | 6 | Sacred Court of the Vulpine Elders | ヴルピニアン長老会の聖廷 |
+| 4 | 1 | A Silent Night in the Desert | 砂漠の静夜 |
+| 4 | 2 | Rocky Plateau | 岩石台地 |
+| 4 | 3 | Limestone Cave | 石灰洞窟 |
+| 4 | 4 | Night Bandit Ambush | 夜盗の待ち伏せ |
+| 4 | 5 | Chasing the Lost Gems | 失われた宝石の追跡 |
+| 4 | 6 | Temple of Fertility | 豊穣の神殿 |
+| 5 | 1 | Lost Forest | 迷いの森 |
+| 5 | 2 | Rugged Mountain Trail | 険しき山道 |
+| 5 | 3 | Ursan War Camp | ウルサンの戦陣 |
+| 5 | 4 | Dragon Ridge | 竜の尾根 |
+| 5 | 5 | Volcanic Crater | 火山火口 |
+| 5 | 6 | Fortress | 要塞 |
+| 6 | 1 | Steam-powered Burrow | 蒸気仕掛けの地下穴 |
+| 6 | 2 | Wreckage of K9 Interstellar Spacecraft | K9星間宇宙船の残骸 |
+| 6 | 3 | Forbidden Research Facility | 禁断の研究施設 |
+| 6 | 4 | Machine Without a Heart | 心なき機械 |
+| 6 | 5 | Bridge Without a Master | 主なき艦橋 |
+| 6 | 6 | Altar of Resonance | 共鳴の祭壇 |
+| 7 | 1 | Giant Debris Ring | 巨大残骸環 |
+| 7 | 2 | Transporter | 転送装置区画 |
+| 7 | 3 | Light Zone | 光の領域 |
+| 7 | 4 | Dark Zone | 闇の領域 |
+| 7 | 5 | The Abyss | 深淵 |
+| 7 | 6 | Moon Palace | 月宮殿 |
+| 8 | 1 | Dragon-Scarred Valley Gate | 竜傷の峡谷門 |
+| 8 | 2 | Ossuary Research Fields | 納骨研究原野 |
+| 8 | 3 | Small Gods | 小さき神々 |
+| 8 | 4 | Gehenna | ゲヘナ |
+| 8 | 5 | Cervin Archive District | セルヴィン文書保管街区 |
+| 8 | 6 | Clairvoyance Sanctuary | 千里眼の聖域 |
+
+
+### 4.2.2 Enemy
 
 | `x.exp_id` | `x.floor` | `x.room` | `x.level` | `x.type` | `x.enemy_type` | `x.class` | `x.drop` | `x.name` (Japanese) |
 |---|---:|---|---:|---|---|---|---|---|
