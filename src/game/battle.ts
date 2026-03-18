@@ -59,25 +59,92 @@ function toRageBonusPercent(rageAmplifier: number): number {
   return Math.max(0, Math.round((rageAmplifier - 1.0) * 100));
 }
 
+const MUTUAL_MAGIC_AMPLIFY_MULTIPLIERS: Record<number, number> = {
+  1: 1.3,
+  2: 1.5,
+  3: 1.6,
+  4: 1.65,
+  5: 1.68,
+};
+
+const MUTUAL_MAGIC_RESTRAINT_MULTIPLIERS: Record<number, number> = {
+  1: 0.77,
+  2: 0.67,
+  3: 0.63,
+  4: 0.61,
+  5: 0.59,
+};
+
+const MUTUAL_PHYSICAL_AMPLIFY_MULTIPLIERS: Record<number, number> = {
+  1: 1.3,
+  2: 1.5,
+  3: 1.6,
+  4: 1.65,
+  5: 1.68,
+};
+
+const MUTUAL_PHYSICAL_RESTRAINT_MULTIPLIERS: Record<number, number> = {
+  1: 0.77,
+  2: 0.67,
+  3: 0.63,
+  4: 0.61,
+  5: 0.59,
+};
+
+function getHighestAbilityLevel(
+  abilities: AbilityLike[],
+  abilityId: AbilityId,
+): number {
+  return abilities
+    .filter((ability) => ability.id === abilityId)
+    .reduce((maxLevel, ability) => Math.max(maxLevel, ability.level), 0);
+}
+
+function getMutualAbilityMultiplier(
+  actorAbilities: AbilityLike[],
+  opponentAbilities: AbilityLike[],
+  abilityId: AbilityId,
+  multipliersByLevel: Record<number, number>,
+): number | null {
+  const highestLevel = Math.max(
+    getHighestAbilityLevel(actorAbilities, abilityId),
+    getHighestAbilityLevel(opponentAbilities, abilityId),
+  );
+
+  return highestLevel > 0 ? (multipliersByLevel[highestLevel] ?? null) : null;
+}
+
 function getMutualAmplifier(
   phase: BattlePhase,
   actorAbilities: AbilityLike[],
   opponentAbilities: AbilityLike[],
 ): number {
-  const hasAbilityAtLeast = (abilities: AbilityLike[], abilityId: AbilityId, requiredLevel: number): boolean =>
-    abilities.some((ability) => ability.id === abilityId && ability.level >= requiredLevel);
-  const actorOrOpponentHas = (abilityId: AbilityId, requiredLevel: number): boolean =>
-    hasAbilityAtLeast(actorAbilities, abilityId, requiredLevel) || hasAbilityAtLeast(opponentAbilities, abilityId, requiredLevel);
-
   if (phase === 'mid') {
-    if (actorOrOpponentHas('mutual_magic_amplify', 1)) return 1.3;
-    if (actorOrOpponentHas('mutual_magic_restraint', 1)) return 0.8;
-    return 1.0;
+    return getMutualAbilityMultiplier(
+      actorAbilities,
+      opponentAbilities,
+      'mutual_magic_amplify',
+      MUTUAL_MAGIC_AMPLIFY_MULTIPLIERS,
+    ) ?? getMutualAbilityMultiplier(
+      actorAbilities,
+      opponentAbilities,
+      'mutual_magic_restraint',
+      MUTUAL_MAGIC_RESTRAINT_MULTIPLIERS,
+    ) ?? 1.0;
   }
 
   if (phase === 'long' || phase === 'close') {
-    if (actorOrOpponentHas('mutual_physical_amplify', 2)) return 1.4;
-    if (actorOrOpponentHas('mutual_physical_restraint', 1)) return 0.8;
+    return getMutualAbilityMultiplier(
+      actorAbilities,
+      opponentAbilities,
+      'mutual_physical_amplify',
+      MUTUAL_PHYSICAL_AMPLIFY_MULTIPLIERS,
+    ) ?? getMutualAbilityMultiplier(
+      actorAbilities,
+      opponentAbilities,
+      'mutual_physical_restraint',
+      MUTUAL_PHYSICAL_RESTRAINT_MULTIPLIERS,
+    ) ?? 1.0;
   }
 
   return 1.0;
@@ -1340,18 +1407,18 @@ export function executeBattle(
   }
 
   for (const phase of phases) {
-    const mutualAbilityLogByPhase: Record<BattlePhase, Array<{ abilityId: AbilityId; actionName: string; note: string; minLevel: number }>> = {
+    const mutualAbilityLogByPhase: Record<BattlePhase, Array<{ abilityId: AbilityId; actionName: string; effectLabel: string; multipliersByLevel: Record<number, number> }>> = {
       long: [
-        { abilityId: 'mutual_physical_amplify', actionName: '物理増幅', note: '(双方物理ダメージ1.4倍)', minLevel: 2 },
-        { abilityId: 'mutual_physical_restraint', actionName: '物理抑制', note: '(双方物理ダメージ0.8倍)', minLevel: 1 },
+        { abilityId: 'mutual_physical_amplify', actionName: '物理増幅', effectLabel: '双方物理ダメージ', multipliersByLevel: MUTUAL_PHYSICAL_AMPLIFY_MULTIPLIERS },
+        { abilityId: 'mutual_physical_restraint', actionName: '物理抑制', effectLabel: '双方物理ダメージ', multipliersByLevel: MUTUAL_PHYSICAL_RESTRAINT_MULTIPLIERS },
       ],
       mid: [
-        { abilityId: 'mutual_magic_amplify', actionName: '魔法増幅', note: '(双方魔法ダメージ1.3倍)', minLevel: 1 },
-        { abilityId: 'mutual_magic_restraint', actionName: '魔法抑制', note: '(双方魔法ダメージ0.8倍)', minLevel: 1 },
+        { abilityId: 'mutual_magic_amplify', actionName: '魔法増幅', effectLabel: '双方魔法ダメージ', multipliersByLevel: MUTUAL_MAGIC_AMPLIFY_MULTIPLIERS },
+        { abilityId: 'mutual_magic_restraint', actionName: '魔法抑制', effectLabel: '双方魔法ダメージ', multipliersByLevel: MUTUAL_MAGIC_RESTRAINT_MULTIPLIERS },
       ],
       close: [
-        { abilityId: 'mutual_physical_amplify', actionName: '物理増幅', note: '(双方物理ダメージ1.4倍)', minLevel: 2 },
-        { abilityId: 'mutual_physical_restraint', actionName: '物理抑制', note: '(双方物理ダメージ0.8倍)', minLevel: 1 },
+        { abilityId: 'mutual_physical_amplify', actionName: '物理増幅', effectLabel: '双方物理ダメージ', multipliersByLevel: MUTUAL_PHYSICAL_AMPLIFY_MULTIPLIERS },
+        { abilityId: 'mutual_physical_restraint', actionName: '物理抑制', effectLabel: '双方物理ダメージ', multipliersByLevel: MUTUAL_PHYSICAL_RESTRAINT_MULTIPLIERS },
       ],
     };
 
@@ -1365,13 +1432,15 @@ export function executeBattle(
 
     for (const effect of mutualAbilityLogByPhase[phase]) {
       for (const owner of mutualOwners) {
-        if (owner.abilities.some((ability) => ability.id === effect.abilityId && ability.level >= effect.minLevel)) {
+        const abilityLevel = getHighestAbilityLevel(owner.abilities, effect.abilityId);
+        const multiplier = effect.multipliersByLevel[abilityLevel];
+        if (abilityLevel > 0 && multiplier !== undefined) {
           log.push({
             phase,
             actor: 'effect',
             action: `${owner.name} の${effect.actionName}！`,
             isPersistentEffect: true,
-            note: effect.note,
+            note: `(${effect.effectLabel}${multiplier}倍)`,
           });
         }
       }
