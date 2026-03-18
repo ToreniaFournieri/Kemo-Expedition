@@ -1,5 +1,5 @@
-## 2. CONSTANTS & DATA
-### 2.8 Flavor text
+## 3. MASTER
+### 3.3 Flavor text
 
 - Priority logic
 
