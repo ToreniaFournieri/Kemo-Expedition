@@ -473,6 +473,7 @@ interface CharacterAttackResult {
   wasNegatedByEnemyIllusion?: boolean;
   reflectedDamage?: number;
   reflectedSourceDamage?: number;
+  nullifiedBy?: NullDescriptor;
 }
 
 type ReflectDescriptor = {
@@ -482,6 +483,12 @@ type ReflectDescriptor = {
   amplifier: number;
   reflectedPortionText: string;
   receivedPortionText: string;
+};
+
+type NullDescriptor = {
+  abilityId: AbilityId;
+  name: '氷結無効' | '火炎無効' | '雷撃無効' | '魔法無効' | '遠距離無効' | '近接無効';
+  summary: '氷属性' | '火属性' | '雷属性' | '魔法' | '遠距離' | '近接';
 };
 
 function getReflectAmplifier(level: number): number {
@@ -577,6 +584,68 @@ function getReflectDescriptor(
       amplifier,
       reflectedPortionText: getReflectPortionText(amplifier),
       receivedPortionText: getReflectPortionText(1 - amplifier),
+    };
+  }
+
+  return null;
+}
+
+function getNullDescriptor(
+  phase: BattlePhase,
+  elementalOffense: ElementalOffense,
+  defenderAbilities: AbilityLike[],
+): NullDescriptor | null {
+  const iceLevel = getAbilityLevelFromList(defenderAbilities, 'ice_null');
+  if (elementalOffense === 'ice' && iceLevel > 0) {
+    return {
+      abilityId: 'ice_null',
+      name: '氷結無効',
+      summary: '氷属性',
+    };
+  }
+
+  const fireLevel = getAbilityLevelFromList(defenderAbilities, 'fire_null');
+  if (elementalOffense === 'fire' && fireLevel > 0) {
+    return {
+      abilityId: 'fire_null',
+      name: '火炎無効',
+      summary: '火属性',
+    };
+  }
+
+  const thunderLevel = getAbilityLevelFromList(defenderAbilities, 'thunder_null');
+  if (elementalOffense === 'thunder' && thunderLevel > 0) {
+    return {
+      abilityId: 'thunder_null',
+      name: '雷撃無効',
+      summary: '雷属性',
+    };
+  }
+
+  const rangedLevel = getAbilityLevelFromList(defenderAbilities, 'ranged_null');
+  if (phase === 'long' && rangedLevel > 0) {
+    return {
+      abilityId: 'ranged_null',
+      name: '遠距離無効',
+      summary: '遠距離',
+    };
+  }
+
+  const magicalLevel = getAbilityLevelFromList(defenderAbilities, 'magical_null');
+  if (phase === 'mid' && magicalLevel > 0) {
+    return {
+      abilityId: 'magical_null',
+      name: '魔法無効',
+      summary: '魔法',
+    };
+  }
+
+  const meleeLevel = getAbilityLevelFromList(defenderAbilities, 'melee_null');
+  if (phase === 'close' && meleeLevel > 0) {
+    return {
+      abilityId: 'melee_null',
+      name: '近接無効',
+      summary: '近接',
     };
   }
 
@@ -1645,6 +1714,7 @@ export function executeBattle(
             );
 
             const reflect = getReflectDescriptor(phase, enemy.elementalOffense, attack.charStats.abilities);
+            const nullify = reflect ? null : getNullDescriptor(phase, enemy.elementalOffense, attack.charStats.abilities);
             if (avoidedByIllusion) {
               if (avoidedByPartyIllusion) {
                 consumedPartyIllusion = true;
@@ -1666,6 +1736,10 @@ export function executeBattle(
                   reflectedDamage += reflectedHitDamage;
                   appliedDamage += remainingHitDamage;
                   partyHp -= remainingHitDamage;
+                  continue;
+                }
+
+                if (nullify) {
                   continue;
                 }
 
@@ -1710,6 +1784,24 @@ export function executeBattle(
                 reflectedDamage,
                 reflectedSourceDamage,
                 reflectTarget: 'enemy',
+                hits: appliedHits,
+                totalAttempts: attack.totalAttempts,
+                wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
+                rageBonusPercent: phase === 'mid' ? undefined : (enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined),
+                isReAttack: isReAttack || undefined,
+                isEnemyTargetHit: phase === 'mid' ? true : undefined,
+                elementalOffense: enemy.elementalOffense,
+              });
+            } else if (nullify) {
+              log.push({
+                phase,
+                initiativeRoll: turn.roll,
+                actor: 'enemy',
+                action: phase === 'mid'
+                  ? `${enemy.name} が${attackName}を唱えたが無効化された！ (${reflectedAttemptText})`
+                  : `${enemy.name} の${nullify.summary}攻撃は無効化された！ (${reflectedAttemptText})`,
+                damage: 0,
+                showZeroDamage: true,
                 hits: appliedHits,
                 totalAttempts: attack.totalAttempts,
                 wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
@@ -2053,12 +2145,16 @@ export function executeBattle(
           }
 
           const reflect = getReflectDescriptor(phase, cs.elementalOffense, enemy.abilities);
+          const nullify = reflect ? null : getNullDescriptor(phase, cs.elementalOffense, enemy.abilities);
           if (result.damage > 0 && reflect) {
             const reflectedSourceDamage = result.damage;
             result.reflectedDamage = Math.max(1, Math.floor(result.damage * reflect.amplifier));
             result.reflectedSourceDamage = reflectedSourceDamage;
             partyHp -= result.reflectedDamage;
             result.damage = Math.max(0, reflectedSourceDamage - result.reflectedDamage);
+          } else if (result.damage > 0 && nullify) {
+            result.damage = 0;
+            result.nullifiedBy = nullify;
           }
 
           if (result.damage > 0) {
@@ -2106,6 +2202,7 @@ export function executeBattle(
         const reflect = !isAntagonism && result.reflectedDamage && result.reflectedDamage > 0
           ? getReflectDescriptor(phase, cs.elementalOffense, enemy.abilities)
           : null;
+        const nullify = !isAntagonism && result.nullifiedBy ? result.nullifiedBy : null;
 
         if (reflect) {
           log.push({
@@ -2120,6 +2217,27 @@ export function executeBattle(
             reflectedDamage: result.reflectedDamage,
             reflectedSourceDamage: result.reflectedSourceDamage,
             reflectTarget: 'party',
+            hits: result.hits,
+            totalAttempts: result.totalAttempts,
+            rageBonusPercent: characterAttackRageBonusPercent > 0 ? characterAttackRageBonusPercent : undefined,
+            momentumBonusPercent: cs.abilities.some(a => a.id === 'momentum')
+              ? characterAttackMomentumBonusPercent
+              : undefined,
+            isReAttack: isReAttack || undefined,
+            wasNegated: result.wasNegatedByEnemyIllusion || undefined,
+            elementalOffense: cs.elementalOffense,
+          });
+        } else if (nullify) {
+          log.push({
+            phase,
+            initiativeRoll: turn.roll,
+            actor: 'character',
+            characterId: cs.characterId,
+            action: phase === 'mid'
+              ? `${char.name} が${attackType}を唱えたが無効化された！${resonanceLogText}`
+              : `${char.name} の${nullify.summary}攻撃は無効化された！${resonanceLogText}`,
+            damage: 0,
+            showZeroDamage: true,
             hits: result.hits,
             totalAttempts: result.totalAttempts,
             rageBonusPercent: characterAttackRageBonusPercent > 0 ? characterAttackRageBonusPercent : undefined,

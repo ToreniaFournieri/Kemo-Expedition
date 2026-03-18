@@ -1146,11 +1146,14 @@ const ABILITY_NAMES: Record<string, string> = {
   free: '逃走',
   frostbite: '凍傷',
   ice_reflect: '氷結反射',
+  ice_null: '氷結無効',
   bind: '拘束',
   regeneration: '再生',
   burn: '火傷',
   fire_reflect: '火炎反射',
+  fire_null: '火炎無効',
   thunder_reflect: '雷撃反射',
+  thunder_null: '雷撃無効',
   soul_reap: '魂奪',
   mutual_magic_amplify: '魔法増幅',
   mutual_magic_restraint: '魔法抑制',
@@ -1167,8 +1170,11 @@ const ABILITY_NAMES: Record<string, string> = {
   mutual_physical_restraint: '物理抑制',
   unstable_core: '不安定核',
   magical_reflect: '魔法反射',
+  magical_null: '魔法無効',
   ranged_reflect: '矢返し',
+  ranged_null: '遠距離無効',
   melee_reflect: '打ち返し',
+  melee_null: '近接無効',
   colossal: '巨人',
   upgrade_all_abilities: '全能力強化',
 };
@@ -1226,11 +1232,14 @@ const ABILITY_HELP_TEXTS: Record<string, string> = {
   free: '近接1タイミングで発動。戦闘から逃げる(戦闘は引分になる)。',
   frostbite: '相手の行動順を遅らせる。',
   ice_reflect: '自身が受ける予定の通常攻撃の氷属性ダメージをレベルに応じて反射し、残りは自身が受ける。',
+  ice_null: '自身が受ける予定の通常攻撃の氷属性ダメージを無効化する。',
   bind: '近接攻撃の命中回数 x 1/32の確率で相手の行動を封じる。',
   regeneration: '近接9(開始)タイミングで発動。この戦闘で失ったHPの20%を回復する。近接フェーズ前までにHPが0となった場合には発動しない。',
   burn: '相手の近接攻撃の命中した回数 x 1%のダメージを相手に与える。',
   fire_reflect: '自身が受ける予定の通常攻撃の火属性ダメージをレベルに応じて反射し、残りは自身が受ける。',
+  fire_null: '自身が受ける予定の通常攻撃の火属性ダメージを無効化する。',
   thunder_reflect: '自身が受ける予定の通常攻撃の雷属性ダメージをレベルに応じて反射し、残りは自身が受ける。',
+  thunder_null: '自身が受ける予定の通常攻撃の雷属性ダメージを無効化する。',
   soul_reap: '魔法0(終了)タイミングで発動。相手のHPが10％未満であった場合、相手は即死する。回避も復活もできない。',
   mutual_magic_amplify: '双方の魔法ダメージを増幅する。',
   mutual_magic_restraint: '双方の魔法ダメージを抑制する。',
@@ -1247,8 +1256,11 @@ const ABILITY_HELP_TEXTS: Record<string, string> = {
   shock: '相手の最初の近接攻撃に対して発動。相手の近接攻撃が1回目ヒットした段階で攻撃をやめさせる。',
   unstable_core: '遠距離0(終了)タイミングと魔法0(終了)タイミングにそれぞれ発動。残HP30%の自傷ダメージを受ける。',
   magical_reflect: '自身が受ける予定の通常攻撃の魔法ダメージをレベルに応じて反射し、残りは自身が受ける。',
+  magical_null: '自身が受ける予定の通常攻撃の魔法ダメージを無効化する。',
   ranged_reflect: '自身が受ける予定の遠距離攻撃ダメージをレベルに応じて反射し、残りは自身が受ける。',
+  ranged_null: '自身が受ける予定の遠距離攻撃ダメージを無効化する。',
   melee_reflect: '自身が受ける予定の近接攻撃ダメージをレベルに応じて反射し、残りは自身が受ける。',
+  melee_null: '自身が受ける予定の近接攻撃ダメージを無効化する。',
   colossal: '防御力が2倍になるが、物理ダメージ補正がx2.0になる。',
   upgrade_all_abilities: '自身の他のアビリティを１段階強化する。',
 };
@@ -6257,7 +6269,7 @@ function ExpeditionTab({
                                 const shouldRenderResurrectBeforeHeader = isResurrectLog && shouldShowPhaseHeader;
                                 const isReflectDamageLog = !!log.reflectedDamage && log.reflectedDamage > 0;
                                 const reflectArrowClass = log.reflectTarget === 'party' ? 'text-accent' : 'text-sub';
-                                const damageDisplay = ((log.damage !== undefined && log.damage > 0) || isReflectDamageLog) && (
+                                const damageDisplay = ((log.damage !== undefined && (log.damage > 0 || log.showZeroDamage)) || isReflectDamageLog) && (
                                   isReflectDamageLog
                                     ? (
                                       <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
@@ -7509,7 +7521,7 @@ function DiaryTab({
                               const shouldRenderResurrectBeforeHeader = isResurrectLog && shouldShowPhaseHeader;
                               const isReflectDamageLog = !!battleLog.reflectedDamage && battleLog.reflectedDamage > 0;
                               const reflectArrowClass = battleLog.reflectTarget === 'party' ? 'text-accent' : 'text-sub';
-                              const damageDisplay = ((battleLog.damage !== undefined && battleLog.damage > 0) || isReflectDamageLog) && (
+                              const damageDisplay = ((battleLog.damage !== undefined && (battleLog.damage > 0 || battleLog.showZeroDamage)) || isReflectDamageLog) && (
                                 isReflectDamageLog
                                   ? (
                                     <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
