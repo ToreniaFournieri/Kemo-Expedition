@@ -1,52 +1,85 @@
 # KEMO EXPEDITION v0.6.0 - SPECIFICATION
 
-## 1. OVERVIEW
-- Text-based, deterministic fantasy RPG
-- Support Japanese language. 
-- Tetris like randomness. (Bag Randomization)
-- Data persistence 
+- 1. OVERVIEW
+    - Text-based, deterministic fantasy RPG
+    - Support Japanese language. 
+    - Tetris like randomness. (Bag Randomization)
+    - Data persistence 
 
-### 1.1 World setting
-- The world is fragmented into unexplored regions filled with ancient creatures and forgotten relics.
-- Each expedition is guided by a single deity, who manifests power through a chosen party to restore balance and reclaim lost knowledge. 
+- 2. World setting
+    - The world is fragmented into unexplored regions filled with ancient creatures and forgotten relics.
+    - Each expedition is guided by a single deity, who manifests power through a chosen party to restore balance and reclaim lost knowledge. 
 
-## 2. CONSTANTS & DATA
-### 2.1 Glossary
-- @Specification_2.1_GLOSSARY.md
+## 1. CONSTANTS 
 
-### 2.2 Global constants
-- @Specification_2.2_GLOBAL_CONSTANTS.md
+### 1.1 CONSTANTS_GLOSSARY
+- @Specification_1.1_CONSTANTS_GLOSSARY.md
 
-### 2.3 Play characters
-- @Specification_2.3_CHARACTER_&_PARTY.md
+### 1.2 CONSTANTS_GLOBAL
+- @Specification_1.2_CONSTANTS_GLOBAL.md
 
-### 2.4 Expedition & Enemies
-- @Specification_2.4_EXPEDITION_&_ENEMY.md
+## 2. CHARACTER_&_PARTY
 
-### 2.5 Items
-- @Specification_2.5_ITEM_DATA.md
+### 2.1 CHARACTER_&_PARTY
+- @Specification_2.1_CHARACTER_&_PARTY.md 
 
-## 3. MASTER
-### 3.1 Master_Data_Definitions
-- @Specification_3.1_MASTER_DATA_DEFINITIONS.md
+### 2.2 CHARACTER_&_PARTY_MASTER_DATA
+- @Specification_2.2_CHARACTER_&_PARTY_MASTER_DATA.md
 
-### 3.2 Master
-- @Specification_3.2_MASTER.md
+## 3. ITEM
 
-### 3.3 Flavor text
-- @Specification_3.3_FLAVOR_TEXT.md
+### 3.1 ITEM
+- @Specification_3.1_ITEM.md
 
-## 4. AUTOMATION
-- @Specification_4_AUTOMATION.md
+### 3.2 ITEM_MASTER_DATA
+- @Specification_3.2_ITEM_MASTER_DATA.md
+
+## 4. EXPEDITION_&_ENEMY
+
+### 4.1 EXPEDITION_&_ENEMY
+- @Specification_4.1_EXPEDITION_&_ENEMY.md
+
+### 4.2 EXPEDITION_&_ENEMY_MASTER_DATA
+- @Specification_4.2_EXPEDITION_&_ENEMY_MASTER_DATA.md
 
 ## 5. PROGRESS
-- @Specification_5_PROGRESS.md
+
+### 5.1 PROGRESS
+- @Specification_5.1_PROGRESS.md
+
+### 5.2 PROGRESS_FLAVOR_TEXT
+- @Specification_5.2_PROGRESS_FLAVOR_TEXT.md
 
 ## 6. BATTLE
-- @Specification_6_BATTLE.md
+
+### 6.1 BATTLE
+- @Specification_6.1_BATTLE.md
+
+## 7. AUTOMATION
+
+### 7.1 AUTOMATION
+- @Specification_7.1_AUTOMATION.md
 
 ## 8. UI
-- @Specification_8_UI.md
+
+### 8.1 UI_FOUNDATIONS
+- @Specification_8.1_UI_FOUNDATIONS.md
+
+### 8.2 UI_PARTY
+- @Specification_8.2_UI_PARTY.md
+
+### 8.3 UI_EXPEDITION
+- @Specification_8.3_UI_EXPEDITION.md
+
+### 8.4 UI_BASE
+- @Specification_8.4_UI_BASE.md
+
+### 8.5 UI_DIARY
+- @Specification_8.5_UI_DIARY.md
+
+### 8.6 UI_DIVINE_BUREAU
+- @Specification_8.6_UI_DIVINE_BUREAU.md
+
 
 ## 9. Environment
 **Branch:** `main` → `/dev/`, `qa` → `/qa/`, `luna` → `/luna`
