@@ -26,98 +26,15 @@
 ### 2.5 Items
 - @Specification_2.5_ITEM_DATA.md
 
-### 2.6 Master_Data_Definitions
-- @Specification_2.6_MASTER_DATA_DEFINITIONS.md
+## 3. MASTER
+### 3.1 Master_Data_Definitions
+- @Specification_3.1_MASTER_DATA_DEFINITIONS.md
 
-### 2.7 Master
-- @Specification_2.7_MASTER.md
+### 3.2 Master
+- @Specification_3.2_MASTER.md
 
-### 2.8 Flavor text
-- @Specification_2.8_FLAVOR_TEXT.md
-
-
-## 3. INITIALIZATION 
-
-### 3.1 Randomness initialization
--  `f.reset_weighted_bag`(bag_key: t.*)
-  - bags: `t.common_reward_bag`, `t.common_enhancement_bag`, `t.uncommon_reward_bag`, `t.rare_reward_bag`, `t.mythic_reward_bag`, `t.enhancement_bag`, `t.superRare_bag`, `t.physical_threat_weight_bag`, `t.magical_threat_weight_bag`, `t.side_quest_bag`, and `t.sleepiness_of_party_bag` for each party. 
-
-
-### 3.2 Initial setup
-- Initial setup (or reset condition)
-
-- unlocked deity: none (all of other deity is unlocked)
-
-- PT1 Party initial condition.
-  1. "ケモ", Caninian, 戦(盗), Canny, House of the Unmoving
-     - equipment: `1101`, `1103`
-  2. "ゴン", Vulpinian, 剣(侍), Chivalric, House of War Spirit
-     - equipment: `1104`, `1104`
-  3. "イタチ", Murid, 忍(君), Persistent, House of the Breaking Hand
-     - equipment: `1104`, `1106`
-  4. "ロップ", Leporian, 狩(賢), Shikon, House of Far Sight
-     - equipment: `1107`, `1108`, `1109`
-  5. "ラス", Felidian, 賢(巡), Dexterous, House of Steel Oath
-     - equipment: `1110`, `1111`, `1112` 
-  6. "セルヴァ", Cervin, 魔(魔), Canny, House of Guiding Thought
-     - equipment: `1110`
-
-- Party initial inventory.
-  - 1 Tier-1 common items of each item type.
-
-- Party initial state.
-  - `PartyLevel`: 1
-  - `xp_current`: 0
-  - Gold: 200G
-  - Auto-sell: none
-  - state: idle
-  - deity: none
-
-- PT2 initial condition (when unlocked)
-  - deity: `God of Attrition`
-  - party member race: all Lupinian
-  - 3.6 AUTO equipment logic for all party member. 
- 
-- PT3 initial condition (when unlocked)
-  - deity: `God of Cunning`
-  - party member race: all Vulpinian
-  - 3.6 AUTO equipment logic for all party member.  
-
-- PT4 initial condition (when unlocked)
-  - deity: `God of Fortification`
-  - party member race: all Ursan
-  - 3.6 AUTO equipment logic for all party member.  
-
-- PT5 initial condition (when unlocked)
-  - deity: `Goddess of Fertility`
-  - party member race: all Felidian
-  - 3.6 AUTO equipment logic for all party member. 
-
-- PT6 initial condition (when unlocked)
-  - deity: `God of Resonance`
-  - party member race: all Mustelid
-  - 3.6 AUTO equipment logic for all party member.
-
-### 3.4 Unlock party & Deity
-- Party & Deity unlock condition: Defeating corresponding gods.
-  - New party with new corresponding deity as default.
-  - max 6 parties.
-   
-| Condition | Unlock Religions | Unlock party |
-|-----|-----|-----|
-| Defeating: `Seiran` | `Goddess of Restoration` | none |
-| Defeating: `Garv` | `God of Attrition` | 2nd party |
-| Defeating: `Kyōen` | `God of Cunning` | 3rd party |
-| Defeating: `Dolvar` | `God of Fortification` | 4th party |
-| Defeating: `Miora` | `Goddess of Fertility` | 5th party |
-| Defeating: `Rondel` | `God of Resonance` | 6th party |
-| Defeating: `Lira` | `Goddess of Precision` | none |
-| Defeating: `Forne` | `God of Fate` | none |
-| Defeating: `Skuva` | `God of Dusk` | none |
-| Defeating: `Forne` | `God of Fate` | none |
-| Defeating: `Tanue` | `Goddess of Mirage` | none |
-| Defeating: `Noctyra` | `God of Oblivion` | none |
-| Defeating: `Eris` | `Goddess of discord` | none |
+### 3.3 Flavor text
+- @Specification_3.3_FLAVOR_TEXT.md
 
 ## 4. AUTOMATION
 - @Specification_4.AUTOMATION.md
@@ -127,9 +44,6 @@
 
 ## 6. BATTLE
 - @Specification_6_BATTLE.md
-
-## 7. REWARD 
-- @Specification_Expedition_Battle_Reward.md
 
 ## 8. UI
 - @Specification_UI.md
