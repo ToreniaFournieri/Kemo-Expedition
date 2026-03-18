@@ -129,7 +129,7 @@ export type AbilityId =
   | 'ice_reflect' | 'bind' | 'regeneration' | 'burn' | 'fire_reflect' | 'thunder_reflect' | 'soul_reap'
   | 'mutual_magic_amplify' | 'mutual_magic_restraint' | 'ranged_confusion' | 'self_destruct' | 'oblivion' | 'reanimate'
   | 'auriferous' | 'magic_seal' | 'ambush' | 'mimic' | 'shock' | 'mutual_physical_amplify' | 'mutual_physical_restraint'
-  | 'unstable_core' | 'magical_reflect' | 'colossal' | 'upgrade_all_abilities';
+  | 'unstable_core' | 'magical_reflect' | 'ranged_reflect' | 'melee_reflect' | 'colossal' | 'upgrade_all_abilities';
 
 export interface Ability {
   id: AbilityId;

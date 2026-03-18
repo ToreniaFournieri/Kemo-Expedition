@@ -373,6 +373,8 @@ function getAbilityName(id: AbilityId, level: number): string {
     mutual_physical_restraint: '物理抑制',
     unstable_core: '不安定核',
     magical_reflect: '魔法反射',
+    ranged_reflect: '矢返し',
+    melee_reflect: '打ち返し',
     colossal: '巨人',
     upgrade_all_abilities: '全能力強化',
   };
