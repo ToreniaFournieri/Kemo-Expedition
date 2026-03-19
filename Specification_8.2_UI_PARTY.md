@@ -1,0 +1,278 @@
+## 8. UI
+
+### 8.2 UI_PARTY
+- Party tab
+
+#### 8.2.1 Displays
+
+- List of party
+  - Potentially there are 6 parties.
+```
+  PT1    PT2    PT3    PT4    PT5     PT6
+```
+- Name of deity. Editable, but not duplication. If one deity already assgined to another PT, the deity is not selectable.
+- IF none of religion is unlocked, hide Deity part and 編集 button. 
+
+```
+(Left-Aligned)                         (Right-Aligned)
+PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
+
+再生の神 (Level: 29, Experience 123450/ 123456)    
+```
+ 
+- List of party members
+    	For each character: Icon, main Class (Sub calass).
+```
+🐶
+戦(剣)
+頑/不
+```
+
+- Current status, abilities, bonuses
+
+#### 8.2.2 Party member details
+- Name, race, main class (sub class), predisposition, lineage, status, bonuses (c., aggregated), ability (a. )
+- Status:
+
+- If character has `c.grit+v`, displays 
+近接攻撃:98 x 4回(x1.00)
+- if character has  `c.pursuit+v`, displays 遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(phase: LONG)).
+  - ex. 遠距離攻撃:25 x 6回(x1.13)
+- if character has `c.grit+v` or `c.pursuit+v`, displays 物理命中率: `d.accuracy_potency`　x 100 % (減衰: x (0.90 + `c.accuracy+v`)).  (ex. has `c.accuracy+0.02` and `c.accuracy+0.01`, then 0.90 + 0.02 + 0.01 -> 0.93 )
+  - ex. 物理命中率: 72% (減衰: x0.90)
+- If character has `c.caster+v`, displays 魔法攻撃:`d.magical_attack` x `d.magical_NoA`回(x`f.offense_amplifier`(phase: MID)). and 魔法命中率: 100 % (減衰: x (0.90 + `c.accuracy+v`)).  (ex. has `c.accuracy+0.02` and `c.accuracy+0.01`, then 0.90 + 0.02 + 0.01 -> 0.93 )
+  - ex. 魔法攻撃:36 x 3回(x1.26)
+  - ex. 魔法命中率: 100% (減衰: x0.90)
+
+- Accuracy is internally calculated using the unified stats c.accuracy and c.evasion for all attack types.
+- Physical Accuracy and Magical Accuracy are separated for display purposes only, based on battle phase rules.
+- The MID phase ignores row-based d.accuracy_potency and is treated as fixed potency 1.00.
+
+- *UI Formatting Note:* When displaying aggregated c.multipliers (e.g., 鎧 x1.8), always round the internal product to the first decimal place for a cleaner interface. 
+
+
+```
+レオン                      [編集]
+🐶 ケイナイアン / 戦士(師範) / 頑強 / 不動の家
+[体力:13] [力:10] [知性:10] [精神:10]
+—————
+Left-aligned            Right-aligned
+近接攻撃:98 x 4回(x1.00)     属性:無(x1.0)
+物理命中率: 85% (減衰: 90.1%)     物防:108 (71%)
+                              魔防:56 (83%)
+                              回避:+4
+—————
+ボーナス: 護x1.3, 弓x1.1, 鎧x1.8, 装備+1, 根性+1, 体+3
+アビリティ:
+守護者1, 探究者1
+```
+Note: Floating bubble of explanation for each individual ability and bonus.
+
+magic caster
+```
+Left-aligned            
+魔法攻撃:98 x 4回(x1.00) 
+魔法命中率: 100% (減衰: 90.1%) 
+詠唱魔法: サンダーボルト
+```
+
+#### 8.2.3 Character Edit Mode (selected member):
+**1. Contents**
+- Name [edit]
+- Editable `name` field.
+- Race selection:
+  - Displays a list of available Races.
+  - Each entry shows its name, base status, and unique bonus (ex. 🐶ケイナイアン |体10,力10,知10,精10 | 護符 x1.3, 弓 x1.1)
+- Main Class selection:
+  - Displays a list of available Classes.
+  - Each entry shows its name and unique bonus (main bonus and main/sub bonuses)
+    - If Main Class == Sub Class, then show master bonus instead of main bonus.
+- Sub Class selection:
+  - Displays a list of available Classes.
+  - Each entry shows its name and unique bonus (only main/sub bonuses)
+- Predisposition selection:
+  - Displays a list of available Predispositions.
+  - Each entry shows its name and unique bonus.
+- Lineage selection:
+  - Displays a list of available Lineage.
+  - Each entry shows its name and unique bonus.
+
+**2. Edit Confirmation Rules:**
+- **Done (完了):**
+  - Saves all changes to Race, Class, and Name.
+  - **Automatic Unequip:** All currently equipped items on this character are removed and returned to the inventory.
+  - Character status updates immediately.
+  - *Reason:* To prevent invalid stat states and ensure new class bonuses are calculated correctly from base values.
+- **Cancel (取消):**
+  - Discards all pending changes.
+  -  Character remains exactly as they were (Race, Class, and Equipment are untouched).
+- **UI Requirement:** Display a confirmation warning when pressing "Done": *"Saving changes will unequip all items. Proceed?"*
+
+#### 8.2.4 Equipment management
+**1. Interaction Rules:**
+- **Auto-Equip:** - If there is an empty slot and the player taps an item in the inventory, that item is automatically equipped to the first available slot.
+- **Replace (Single-Tap):** - Tapping an item already in a Character Slot "selects" it. Tapping an item in the inventory while a slot is selected replaces the current item with the new one.
+- **Remove (Double-Tap):** - Double-tapping an item in a Character Slot removes it and returns it to the inventory.
+- **Remove (Single-tap):** - Single-tap an **equipped item in inventory** and returns it to be unequipped item in inventory.
+- Status updates in real time
+- **three-state toggle(手動/補助/一任):** 　`m.auto_equipment` is controlled by a three-state toggle. This setting is configured per party member. Default: `1` SEMI
+
+The toggle cycles through the following modes:
+
+| Value | Mode     | label |
+| ----- | -------- | ----- | 
+| `0`   | `OFF`  | 手動 |
+| `1`   | `SEMI` | 補助 | 
+| `2`   | `FULL` | 一任 |
+
+- **?:** floating bubble for help:
+
+```
+ 手動: 装備の付け替えが自動で変わることはない
+ 補助: 上位の通常称号の同一装備がある場合に置き換える。空きスロットがある際に装備する (熟睡後の身支度が終わった段階で反映)
+ 一任: 装備選定を一任する。自身の判断で現在の装備をすべて見直し、最適な装備構成になるよう自動で再装備する (熟睡後の身支度が終わった段階で反映)
+ ※超レア装備は置き換わる事はない
+```
+
+**2. Equipment Sort logic:**
+- Order: Descending order by Priority.
+- Priority:
+    1. Item category: 鎧>衣>盾>剣>刀>手>矢>ボ>弓>杖>書>媒 
+    2. Base Item ID: Higher-tier base items (e.g., Mythril Sword > Iron Sword) appear first.
+    3. Super Rare Title: Items with Super Rare titles are prioritized within their base item ID.
+    4. Enhancement Tier: Among the same Item ID, higher enhancements (e.g., 究極の > 伝説の) appear higher.
+
+**3. Jewel Enhancement — Equipment Integration**
+- Equipment items can be enhanced by attaching a Jewel (結晶).
+- Each item supports only the Jewel types allowed by its category.
+- Jewel effects apply only while the item is equipped.
+
+- Equipment List (Collapsed State)
+
+```
+装備  4 / 4 スロット 手動?
+白銀英雄の鎧 [2B] 物防+79 魔防+25 HP+32 体力+1 [鎧] [鎧]  ▲
+名工の霧林司祭の法衣 [3E] 魔防+74 [魔防+8%] HP+47 回避+3 [法衣]　▲
+伝説の幻導の青銅杖 [3U] 魔攻+67 [魔攻撃+9%] 魔防+25 [魔防+9%] [ワンド]　▲
+```
+
+- Expanded State (When Selected)
+
+```
+装備  4 / 4 スロット 手動?
+白銀英雄の鎧 [2B] 物防+85 魔防+25 HP+48 体力+1 [物防+8%] [鎧] ▼
+ 堅牢: 1 2 3 4 **5** 6 7 8
+ 障壁: 1 2 3 4 5 6 7 8 
+ 影走: 1 2 3 4 5 6 7 8
+ [物防+8%] 物防+16 HP+16
+名工の霧林司祭の法衣 [3E] 魔防+74 [魔防+8%] HP+47 回避+3 [法衣]　▲
+伝説の幻導の青銅杖 [3U] 魔攻+67 [魔攻撃+9%] 魔防+25 [魔防+9%] [ワンド]　▲
+```
+
+- UI Rules
+  - ▼ = expanded
+  - ▲ = collapsed
+- Rank Display
+  - Black number → Jewel owned
+  - Gray number → Jewel not owned
+  - Sub color bold number → Currently equipped Jewel rank
+
+- Behavior Rules
+  - Attachment
+    - Only one Jewel per equipment item.
+    - Jewel rank must exist in inventory.
+    - Attaching replaces existing Jewel (if any).
+  - Removal
+    - Tap Sub color bold number to remove the jewel.
+    - If the equipment is Unequipped (Moved to inventory)
+    - The attached Jewel automatically returns to inventory.
+  - Jewel effects are active only while the item is equipped.
+  - Combination is not permanent.
+
+
+**4. Inventory Pane:**
+  - Always visible on the same screen at the bottom.
+  - Stacked by item variant
+  - Filter button by rarelity (right-aligned): 全て表示, 通常のみ, アンコモンのみ, レアのみ, 神魔レアのみ : [ALL] [C] [U] [R] [M] |超レア: ON/OFF
+    - IF player selects [M],  　　神魔レアのみ: [ALL] [C] [U] [R] **[M]** 
+    - 超レア[ON/OFF] default: OFF, if ON, filter superRare >= 1.
+  - Inventory includes item category tabs:
+    - Displays [耐久:鎧,衣,盾] for all character
+    - If character has `c.grit+v`, displays [近距離攻撃:剣,刀,手]
+    - If character has `c.pursuit+v`,
+displays [遠距離攻撃:矢,ボ,弓]
+    - If character has `c.caster+v`, displays [魔法攻撃:杖,書,媒]
+
+    - Default: 鎧 or previously selected category of each character 
+    - Each box has two lines:
+      - First line, small and gray letters: 耐久
+      - Second line, current design: 鎧,衣,盾
+    - Items in inventory matching the selected category are shown (filter)
+    - Adds equipped items with icon in the list.
+
+**5. Inventory Sort Logic (within category):**
+- Order: Descending order by Priority.
+- Priority:
+  1. Base Item ID: Higher-tier base items (e.g., Mythril Sword > Iron Sword) appear first.
+  2. Super Rare Title: Items with Super Rare titles are prioritized within their base item ID.
+  3. Enhancement Tier: Among the same Item ID, higher enhancements (e.g., 究極の > 伝説の) appear higher.
+- Item Row: The name, count, and status are left-aligned on **the same line**.
+	- ex. 名工のロングソード x3 | 近攻+19
+- Inventory pane shows at least 10 items
+- Equipped item: The name and status are left-aligned, item type is right-aligned on **the same line**.
+
+**6. Inventory in party tab respects `item_category_x1.x` amplifier**
+- If a character has a category amplifier (e.g., 刀 x2.2 / with `c.katana_x1.4`, `c.katana_x1.3`, `c.katana_x1.2`, internally 2.184), the item’s displayed stats already include this multiplier.
+  - Example: "宿った石刃の太刀 [1C] shows 近攻 +96" in the character equipment pane in Party tab, even though its value is "近攻 +44" in Inventory tab, because the katana category multiplier is applied.
+
+
+**7. Image of inventory pane transaction at equipment management**
+
+```
+宿ったロングソード x2 [C] 近攻+31
+伝説のショートソード　x2 [C] 近攻+22
+名工のショートソード x4 [C] 近攻+10
+```
+
+↓(Taps "名工のショートソード" to equip it)
+
+```
+宿ったロングソード x2 [C] 近攻+31
+伝説のショートソード　x2 [C] 近攻+22
+名工のショートソード x3 [C] 近攻+10
+🐶名工のショートソード x1 [C] 近攻+10
+```
+
+↓(Taps "🐶名工のショートソード" to unequip it)
+
+```
+宿ったロングソード x2 [C] 近攻+31
+伝説のショートソード　x2 [C] 近攻+22
+名工のショートソード x4 [C] 近攻+10
+```
+
+↓(Taps "伝説のショートソード" to equip it)
+
+```
+宿ったロングソード x2 [C] 近攻+31
+伝説のショートソード　x1 [C] 近攻+22
+🐶伝説のショートソード　x1 [C] 近攻+22
+名工のショートソード x4 [C] 近攻+10
+```
+
+↓(Taps "伝説のショートソード" again to equip it)
+
+```
+宿ったロングソード x2 [C] 近攻+31
+🐶伝説のショートソード　x2 [C] 近攻+22
+名工のショートソード x4 [C] 近攻+10
+```
+
+↓(Taps "🐶伝説のショートソード" to unequip it)
+
+```
+宿ったロングソード x2 [C] 近攻+31
+伝説のショートソード　x1 [C] 近攻+22
+🐶伝説のショートソード　x1 [C] 近攻+22
+名工のショートソード x4 [C] 近攻+10
+```   
