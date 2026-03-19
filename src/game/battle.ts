@@ -36,6 +36,47 @@ interface PendingHowlEffect {
   characterId?: number;
 }
 
+const CONFUSION_SUCCESS_LOGS = [
+  'は target に何かを囁き、仲間を疑い始めた！',
+  'の甘い策略に target は引き込まれた！',
+  'の影響で target は錯乱した！',
+  'が睨みつけ、target の精神は錯乱した！',
+  'の精神干渉により target は正常な判断ができなくなった！',
+  'は target に幻術をかけ、仲間を敵と誤認した！',
+  'の幻惑により target の視界は歪んだ！',
+  'の術で target は敵味方の区別を失った！',
+  'が植え付けた疑念によって target は見境なく牙を剥いた！',
+  'が囁いた禁断の言葉により、target は狂気に囚われた！',
+] as const;
+
+const CONFUSION_FAILURE_LOGS = [
+  'の策略を target は打ち破った！',
+  'の効果は target に通じなかった！',
+  'の悪だくみは target によって防がれた！',
+  'の混乱は target に効かなかった！',
+  'の精神干渉を target は振り払った！',
+  'の囁きに対し target は理性を保った！',
+  'の幻術を target は見破った！',
+  'の術は target に打ち消された！',
+  'の見せた幻は target に通用しない！',
+  'が語り掛けた誘惑を target は聞きそびれた！',
+] as const;
+
+const CONFUSION_NO_TARGET_MESSAGES: Record<BattleActionPhase, { action: string; note: string }> = {
+  long: {
+    action: 'は策略を巡らせたが、声は風に流され誰にも届かなかった',
+    note: '(混乱-遠距離対象なし)',
+  },
+  mid: {
+    action: 'は幻惑を仕掛けたが、誰も影響を受けなかった',
+    note: '(混乱-魔法対象なし)',
+  },
+  close: {
+    action: 'は不和をもたらそうとしたが、誰も近くにいなかった',
+    note: '(混乱-近接対象なし)',
+  },
+};
+
 function getElementalMultiplier(
   offense: ElementalOffense,
   resistance: Record<'fire' | 'thunder' | 'ice', number>
@@ -1264,6 +1305,57 @@ function getHowlNote(level: number): string {
   return '(相手の次の攻撃回数5/7)';
 }
 
+function getConfusionChance(level: number): number {
+  if (level >= 5) return 7;
+  if (level === 4) return 5;
+  if (level >= 2) return 3;
+  return level === 1 ? 1 : 0;
+}
+
+function getConfusionTiming(level: number): number | null {
+  if (level <= 0) return null;
+  return level <= 2 ? 1 : 2;
+}
+
+function getConfusionAbilityIdForPhase(phase: BattleActionPhase): AbilityId {
+  switch (phase) {
+    case 'long':
+      return 'ranged_confusion';
+    case 'mid':
+      return 'magic_confusion';
+    case 'close':
+      return 'melee_confusion';
+  }
+}
+
+function getConfusionNote(level: number, success: boolean): string {
+  return `(混乱確率${getConfusionChance(level)}/32: ${success ? '成功' : '失敗'})`;
+}
+
+function pickRandomEntry<T>(entries: readonly T[]): T {
+  return entries[Math.floor(Math.random() * entries.length)];
+}
+
+function buildConfusionAction(
+  actorName: string,
+  targetName: string,
+  success: boolean,
+): string {
+  const template = pickRandomEntry(success ? CONFUSION_SUCCESS_LOGS : CONFUSION_FAILURE_LOGS);
+  return `${actorName}${template.split('target').join(targetName)}`;
+}
+
+function getConfusionNoTargetLog(
+  phase: BattleActionPhase,
+  actorName: string,
+): Pick<BattleLogEntry, 'action' | 'note'> {
+  const message = CONFUSION_NO_TARGET_MESSAGES[phase];
+  return {
+    action: `${actorName}${message.action}`,
+    note: message.note,
+  };
+}
+
 function getCharacterNoAForPhase(phase: BattleActionPhase, charStats: ComputedCharacterStats): number {
   switch (phase) {
     case 'long':
@@ -1351,6 +1443,7 @@ export function executeBattle(
   // Use provided HP if available (for HP persistence), otherwise use max HP
   let partyHp = initialPartyHp !== undefined ? initialPartyHp : partyStats.hp;
   let enemyHp = enemy.hp;
+  let enemyHasAntagonism = false;
   const log: BattleLogEntry[] = [];
 
   const partyDeityKey = getDeityKey(party.deity.name);
@@ -1897,6 +1990,7 @@ export function executeBattle(
     );
 
     let hasTriggeredLongPhaseHowl = false;
+    const triggeredConfusionTimings = new Set<number>();
     const triggerLongPhaseHowl = (): void => {
       if (phase !== 'long' || hasTriggeredLongPhaseHowl) return;
       hasTriggeredLongPhaseHowl = true;
@@ -1947,6 +2041,92 @@ export function executeBattle(
       }
     };
 
+    const triggerConfusionAtTiming = (timing: number): void => {
+      if (triggeredConfusionTimings.has(timing)) return;
+      triggeredConfusionTimings.add(timing);
+
+      const confusionAbilityId = getConfusionAbilityIdForPhase(phase);
+      const eligibleEnemyTarget = isEligibleEnemyForPhase(phase, enemy);
+
+      const enemyConfusionLevel = getEnemyAbilityLevel(enemy, confusionAbilityId);
+      if (getConfusionTiming(enemyConfusionLevel) === timing) {
+        const eligiblePartyTargets = characterStats.filter((stats) => isEligibleCharacterForPhase(phase, stats));
+        const target = eligiblePartyTargets.length > 0
+          ? eligiblePartyTargets[Math.floor(Math.random() * eligiblePartyTargets.length)]
+          : null;
+
+        if (!target) {
+          const noTargetLog = getConfusionNoTargetLog(phase, enemy.name);
+          log.push({
+            phase,
+            initiativeRoll: timing,
+            actor: 'triggered',
+            action: noTargetLog.action,
+            note: noTargetLog.note,
+          });
+        } else {
+          const success = Math.random() < (getConfusionChance(enemyConfusionLevel) / 32);
+          if (success) {
+            characterStats = characterStats.map((stats) => (
+              stats.characterId === target.characterId
+                ? { ...stats, hasAntagonism: true }
+                : stats
+            ));
+            ctx = {
+              ...ctx,
+              characterStats,
+            };
+          }
+
+          const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? '味方';
+          log.push({
+            phase,
+            initiativeRoll: timing,
+            actor: 'triggered',
+            action: buildConfusionAction(enemy.name, targetName, success),
+            note: getConfusionNote(enemyConfusionLevel, success),
+          });
+        }
+      }
+
+      const partyConfusionEntries = characterStats
+        .map((stats) => ({
+          stats,
+          level: getAbilityLevel(stats, confusionAbilityId),
+          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+        }))
+        .filter((entry) => getConfusionTiming(entry.level) === timing)
+        .sort((a, b) => a.stats.row - b.stats.row);
+
+      for (const entry of partyConfusionEntries) {
+        if (!eligibleEnemyTarget) {
+          const noTargetLog = getConfusionNoTargetLog(phase, entry.ownerName);
+          log.push({
+            phase,
+            initiativeRoll: timing,
+            actor: 'triggered',
+            characterId: entry.stats.characterId,
+            action: noTargetLog.action,
+            note: noTargetLog.note,
+          });
+          continue;
+        }
+        const success = Math.random() < (getConfusionChance(entry.level) / 32);
+        if (success) {
+          enemyHasAntagonism = true;
+        }
+
+        log.push({
+          phase,
+          initiativeRoll: timing,
+          actor: 'triggered',
+          characterId: entry.stats.characterId,
+          action: buildConfusionAction(entry.ownerName, enemy.name, success),
+          note: getConfusionNote(entry.level, success),
+        });
+      }
+    };
+
     const turnOrder: Array<{ kind: 'enemy'; roll: number } | { kind: 'character'; roll: number; stats: ComputedCharacterStats }> = [
       ...(enemyInitiativeRoll !== null ? [{ kind: 'enemy' as const, roll: enemyInitiativeRoll }] : []),
       ...characterInitiative.map(ci => ({ kind: 'character' as const, roll: ci.roll, stats: ci.stats })),
@@ -1966,12 +2146,19 @@ export function executeBattle(
       if (phase === 'long' && turn.roll <= 2) {
         triggerLongPhaseHowl();
       }
+      if (turn.roll <= 2) {
+        triggerConfusionAtTiming(2);
+      }
+      if (turn.roll <= 1) {
+        triggerConfusionAtTiming(1);
+      }
 
       if (turn.kind === 'enemy') {
         const baseNoA = getEnemyNoA(phase, enemy);
         const howlEffect = baseNoA > 0 ? consumePendingPartyHowlEffect() : null;
         const noA = Math.ceil(baseNoA * (howlEffect?.multiplier ?? 1.0));
         if (noA <= 0) continue;
+        if (enemyHasAntagonism) continue;
 
         const magicalCounterCandidates = new Map<number, ComputedCharacterStats>();
 
@@ -2498,7 +2685,7 @@ export function executeBattle(
         continue;
       }
 
-      const cs = turn.stats;
+      const cs = characterStats.find((stats) => stats.characterId === turn.stats.characterId) ?? turn.stats;
       const char = party.characters.find(c => c.id === cs.characterId);
       if (!char) continue;
 
