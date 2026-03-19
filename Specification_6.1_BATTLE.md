@@ -6,12 +6,12 @@
 **Battle Phase**
 
 |Phase  | actor | text | Damage type |number of attacks type |Defense type|
-|-----|--------|-------|-----------|-----------|
-| START | effect [効] | | | |
+|-----|--------|-------|-----------|-----------|------|
+| START | effect | [効] | | |
 | LONG | actor | (遠距離攻撃フェーズ) |`d.ranged_attack` |`d.ranged_NoA` | `d.physical_defense` |
 | MID | actor | (魔法攻撃フェーズ) |`d.magical_attack` |`d.magical_NoA` | `d.magical_defense` |
 | CLOSE | actor | (近接攻撃フェーズ) |`d.melee_attack` |`d.melee_NoA` | `d.physical_defense` |
-| END | end [末] | | | |
+| END | end | [末] | | |
 
 #### 6.1.1 Phase resolution
 
