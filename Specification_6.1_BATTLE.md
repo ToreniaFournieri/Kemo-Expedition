@@ -17,15 +17,21 @@
 
 ##### 6.1.1.1 START phase
 **Priority order of ability resolution**
-
-- actor.`a.oblivion`1
+- actor.`a.oblivion`
   - Randomly select 1 opponent.
   - Randomly select 1 valid ability from that opponent.
   - The selected ability is disabled for the rest of the battle.
 
+- actor.`a.mimic`
+  - Randomly select 1 opponent.
+  - Randomly select 1 valid ability from that opponent (excluding `a.mimic` and `a.oblivion`).
+  - Actor gains the selected ability for the rest of the battle.
+
 - Other abilities with `[効]`
 
-  
+- Tie-breaker: Enemy > Front-row party member > Back-row party member
+
+
 ##### 6.1.1.2 LONG, MID, CLOSE phase
 
 **Speed & Turn Order (Rolling Dice Rule)**
