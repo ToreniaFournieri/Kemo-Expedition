@@ -29,6 +29,13 @@ interface BattleContext {
   magicalThreatBag: RandomBag;
 }
 
+interface PendingHowlEffect {
+  multiplier: number;
+  ownerName: string;
+  note: string;
+  initiativeRoll?: number;
+}
+
 function getElementalMultiplier(
   offense: ElementalOffense,
   resistance: Record<'fire' | 'thunder' | 'ice', number>
@@ -1222,6 +1229,23 @@ function getEnemyReCounterNoAMultiplier(enemy: EnemyDef): number {
   return getTierTwoNoAMultiplierForLevel(getEnemyAbilityLevel(enemy, 're_counter'));
 }
 
+function getHowlNoAMultiplier(level: number): number {
+  if (level <= 0) return 1.0;
+  if (level >= 5) return 1 / 7;
+  if (level === 4) return 2 / 7;
+  if (level === 3) return 3 / 7;
+  if (level === 2) return 4 / 7;
+  return 5 / 7;
+}
+
+function getHowlNote(level: number): string {
+  if (level >= 5) return '(相手の次の攻撃回数1/7)';
+  if (level === 4) return '(相手の次の攻撃回数2/7)';
+  if (level === 3) return '(相手の次の攻撃回数3/7)';
+  if (level === 2) return '(相手の次の攻撃回数4/7)';
+  return '(相手の次の攻撃回数5/7)';
+}
+
 // Hit detection functions are available for future use when implementing
 // per-hit accuracy rolls. Currently the game uses deterministic damage calculation.
 
@@ -1401,12 +1425,26 @@ export function executeBattle(
   const consumedIllusionStateIds = new Set<string>();
   let consumedPartyIllusion = false;
   const activeMagicSealQueue = createMagicSealQueue(party, characterStats, enemy);
+  let pendingEnemyHowlEffect: PendingHowlEffect | null = null;
+  let pendingPartyHowlEffect: PendingHowlEffect | null = null;
 
   for (const ownerName of activeMagicSealQueue) {
     log.push(getMagicSealStartLog(ownerName));
   }
 
   const consumeMagicSeal = (): boolean => activeMagicSealQueue.shift() !== undefined;
+
+  const consumePendingEnemyHowlEffect = (): PendingHowlEffect | null => {
+    const effect = pendingEnemyHowlEffect;
+    pendingEnemyHowlEffect = null;
+    return effect;
+  };
+
+  const consumePendingPartyHowlEffect = (): PendingHowlEffect | null => {
+    const effect = pendingPartyHowlEffect;
+    pendingPartyHowlEffect = null;
+    return effect;
+  };
 
   const triggerEnemyResurrect = (phase: BattleActionPhase, initiativeRoll?: number): void => {
     if (enemyHp > 0 || consumedEnemyResurrect) return;
@@ -1795,6 +1833,61 @@ export function executeBattle(
       characterInitiative.map(ci => [ci.stats.characterId, ci.roll])
     );
 
+    if (phase === 'long') {
+      const triggeredHowlEntries: Array<
+        { kind: 'enemy'; roll: number; level: number; ownerName: string }
+        | { kind: 'character'; roll: number; level: number; ownerName: string; stats: ComputedCharacterStats }
+      > = [];
+
+      const enemyHowlLevel = getEnemyAbilityLevel(enemy, 'howl');
+      if (enemyHowlLevel > 0) {
+        triggeredHowlEntries.push({
+          kind: 'enemy',
+          roll: enemyInitiativeRoll,
+          level: enemyHowlLevel,
+          ownerName: enemy.name,
+        });
+      }
+
+      const partyHowlEntries = characterInitiative
+        .map((ci) => ({
+          kind: 'character' as const,
+          roll: ci.roll,
+          level: getAbilityLevel(ci.stats, 'howl'),
+          ownerName: party.characters.find((char) => char.id === ci.stats.characterId)?.name ?? '味方',
+          stats: ci.stats,
+        }))
+        .filter((entry) => entry.level > 0)
+        .sort((a, b) => a.stats.row - b.stats.row);
+
+      triggeredHowlEntries.push(...partyHowlEntries);
+
+      for (const entry of triggeredHowlEntries) {
+        const note = getHowlNote(entry.level);
+        log.push({
+          phase,
+          initiativeRoll: entry.roll,
+          actor: entry.kind === 'enemy' ? 'enemy' : 'character',
+          characterId: entry.kind === 'character' ? entry.stats.characterId : undefined,
+          action: `${entry.ownerName} が遠吠えをした！`,
+          note,
+        });
+
+        const pendingEffect: PendingHowlEffect = {
+          multiplier: getHowlNoAMultiplier(entry.level),
+          ownerName: entry.ownerName,
+          note,
+          initiativeRoll: entry.roll,
+        };
+
+        if (entry.kind === 'enemy') {
+          pendingEnemyHowlEffect = pendingEffect;
+        } else {
+          pendingPartyHowlEffect = pendingEffect;
+        }
+      }
+    }
+
     const turnOrder: Array<{ kind: 'enemy'; roll: number } | { kind: 'character'; roll: number; stats: ComputedCharacterStats }> = [
       { kind: 'enemy' as const, roll: enemyInitiativeRoll },
       ...characterInitiative.map(ci => ({ kind: 'character' as const, roll: ci.roll, stats: ci.stats })),
@@ -1813,7 +1906,19 @@ export function executeBattle(
       if (enemyHp <= 0 || partyHp <= 0) break;
 
       if (turn.kind === 'enemy') {
-        const noA = getEnemyNoA(phase, enemy);
+        const howlEffect = consumePendingPartyHowlEffect();
+        if (howlEffect) {
+          log.push({
+            phase,
+            initiativeRoll: howlEffect.initiativeRoll,
+            actor: 'effect',
+            action: `${howlEffect.ownerName} が遠吠えをした！`,
+            note: howlEffect.note,
+          });
+        }
+
+        const baseNoA = getEnemyNoA(phase, enemy);
+        const noA = Math.ceil(baseNoA * (howlEffect?.multiplier ?? 1.0));
         if (noA <= 0) continue;
 
         const magicalCounterCandidates = new Map<number, ComputedCharacterStats>();
@@ -2291,7 +2396,7 @@ export function executeBattle(
 
         runEnemyAttack(noA, false);
         if (enemyHasReAttack(enemy) && enemyHp > 0 && partyHp > 0) {
-          runEnemyAttack(Math.ceil(noA * getEnemyReAttackNoAMultiplier(enemy)), true);
+          runEnemyAttack(Math.ceil(baseNoA * getEnemyReAttackNoAMultiplier(enemy)), true);
         }
 
         if (phase === 'mid' && enemyHp > 0 && partyHp > 0 && getEnemyAbilityLevel(enemy, 'null_counter') <= 0) {
@@ -2344,6 +2449,17 @@ export function executeBattle(
       const cs = turn.stats;
       const char = party.characters.find(c => c.id === cs.characterId);
       if (!char) continue;
+
+      const howlEffect = consumePendingEnemyHowlEffect();
+      if (howlEffect) {
+        log.push({
+          phase,
+          initiativeRoll: howlEffect.initiativeRoll,
+          actor: 'effect',
+          action: `${howlEffect.ownerName} が遠吠えをした！`,
+          note: howlEffect.note,
+        });
+      }
 
       const runCharacterAttack = (noAMultiplier: number, isReAttack = false): CharacterAttackResult | null => {
         const isAntagonism = cs.hasAntagonism;
@@ -2604,7 +2720,7 @@ export function executeBattle(
         return result;
       };
 
-      const firstAttackResult = runCharacterAttack(1.0, false);
+      const firstAttackResult = runCharacterAttack(howlEffect?.multiplier ?? 1.0, false);
       if (firstAttackResult && enemyHp > 0 && partyHp > 0) {
         triggerCoveringFire(phase, cs, firstAttackResult.hits, turn.roll);
       }
