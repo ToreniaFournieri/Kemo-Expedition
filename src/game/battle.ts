@@ -1266,6 +1266,15 @@ function getDecomposeDefenseMultiplier(level: number): number {
   return level >= 1 ? 6 / 7 : 1.0;
 }
 
+function formatDecomposeDefenseValue(value: number): string {
+  const rounded = Math.round(value * 100) / 100;
+  return rounded.toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
+}
+
+function getDecomposeNote(targetName: string, previousDefense: number, nextDefense: number): string {
+  return `(${targetName} の 防御力 ${formatDecomposeDefenseValue(previousDefense)} → ${formatDecomposeDefenseValue(nextDefense)})`;
+}
+
 type AbilityLike = { id: AbilityId; level: number };
 
 function formatAbilityLabel(ability: AbilityLike): string {
@@ -2525,10 +2534,12 @@ export function executeBattle(
         const target = resolveEnemyTarget(row, characterStats, 'close');
         if (target) {
           const multiplier = getDecomposeDefenseMultiplier(enemyDecomposeLevel);
+          const previousDefense = target.physicalDefense;
+          const nextDefense = previousDefense * multiplier;
           const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? '味方';
           characterStats = characterStats.map((stats) => (
             stats.characterId === target.characterId
-              ? { ...stats, physicalDefense: stats.physicalDefense * multiplier }
+              ? { ...stats, physicalDefense: nextDefense }
               : stats
           ));
           log.push({
@@ -2536,6 +2547,8 @@ export function executeBattle(
             initiativeRoll: timing,
             actor: 'triggered',
             action: buildDecomposeAction(enemy.name, targetName),
+            note: getDecomposeNote(targetName, previousDefense, nextDefense),
+            noteTone: 'muted',
           });
           ctx = {
             ...ctx,
@@ -2556,13 +2569,17 @@ export function executeBattle(
       for (const entry of partyDecomposeEntries) {
         if (enemyHp <= 0 || partyHp <= 0) break;
 
-        enemy.physicalDefense *= getDecomposeDefenseMultiplier(entry.level);
+        const previousDefense = enemy.physicalDefense;
+        const nextDefense = previousDefense * getDecomposeDefenseMultiplier(entry.level);
+        enemy.physicalDefense = nextDefense;
         log.push({
           phase,
           initiativeRoll: timing,
           actor: 'triggered',
           characterId: entry.stats.characterId,
           action: buildDecomposeAction(entry.ownerName, enemy.name),
+          note: getDecomposeNote(enemy.name, previousDefense, nextDefense),
+          noteTone: 'muted',
         });
       }
     };
