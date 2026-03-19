@@ -1844,26 +1844,22 @@ export function executeBattle(
       characterInitiative.map(ci => [ci.stats.characterId, ci.roll])
     );
 
-    if (phase === 'long') {
-      const triggeredHowlEntries: Array<
-        { kind: 'enemy'; roll: number; level: number; ownerName: string }
-        | { kind: 'character'; roll: number; level: number; ownerName: string; stats: ComputedCharacterStats }
-      > = [];
+    let hasTriggeredLongPhaseHowl = false;
+    const triggerLongPhaseHowl = (): void => {
+      if (phase !== 'long' || hasTriggeredLongPhaseHowl) return;
+      hasTriggeredLongPhaseHowl = true;
 
       const enemyHowlLevel = getEnemyAbilityLevel(enemy, 'howl');
       if (enemyHowlLevel > 0) {
-        triggeredHowlEntries.push({
-          kind: 'enemy',
-          roll: enemyInitiativeRoll,
-          level: enemyHowlLevel,
+        pendingEnemyHowlEffect = {
+          multiplier: getHowlNoAMultiplier(enemyHowlLevel),
           ownerName: enemy.name,
-        });
+          note: getHowlNote(enemyHowlLevel),
+        };
       }
 
       const partyHowlEntries = characterInitiative
         .map((ci) => ({
-          kind: 'character' as const,
-          roll: ci.roll,
           level: getAbilityLevel(ci.stats, 'howl'),
           ownerName: party.characters.find((char) => char.id === ci.stats.characterId)?.name ?? '味方',
           stats: ci.stats,
@@ -1871,24 +1867,15 @@ export function executeBattle(
         .filter((entry) => entry.level > 0)
         .sort((a, b) => a.stats.row - b.stats.row);
 
-      triggeredHowlEntries.push(...partyHowlEntries);
-
-      for (const entry of triggeredHowlEntries) {
-        const note = getHowlNote(entry.level);
-        const pendingEffect: PendingHowlEffect = {
+      for (const entry of partyHowlEntries) {
+        pendingPartyHowlEffect = {
           multiplier: getHowlNoAMultiplier(entry.level),
           ownerName: entry.ownerName,
-          note,
-          characterId: entry.kind === 'character' ? entry.stats.characterId : undefined,
+          note: getHowlNote(entry.level),
+          characterId: entry.stats.characterId,
         };
-
-        if (entry.kind === 'enemy') {
-          pendingEnemyHowlEffect = pendingEffect;
-        } else {
-          pendingPartyHowlEffect = pendingEffect;
-        }
       }
-    }
+    };
 
     const turnOrder: Array<{ kind: 'enemy'; roll: number } | { kind: 'character'; roll: number; stats: ComputedCharacterStats }> = [
       { kind: 'enemy' as const, roll: enemyInitiativeRoll },
@@ -1906,6 +1893,9 @@ export function executeBattle(
 
     for (const turn of turnOrder) {
       if (enemyHp <= 0 || partyHp <= 0) break;
+      if (phase === 'long' && turn.roll <= 2) {
+        triggerLongPhaseHowl();
+      }
 
       if (turn.kind === 'enemy') {
         const baseNoA = getEnemyNoA(phase, enemy);
@@ -2739,6 +2729,10 @@ export function executeBattle(
           triggerCoveringFire(phase, cs, reAttackResult.hits, turn.roll);
         }
       }
+    }
+
+    if (phase === 'long') {
+      triggerLongPhaseHowl();
     }
 
     if (partyHp <= 0) {
