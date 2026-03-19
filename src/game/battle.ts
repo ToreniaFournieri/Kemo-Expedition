@@ -2875,6 +2875,9 @@ export function executeBattle(
           return buildBattleResult(forcedOutcomePhase, forcedOutcome);
         }
         triggerSelfDestructAtTiming(2);
+        if (partyHp <= 0 || enemyHp <= 0) {
+          break;
+        }
       }
       if (turn.roll <= 1) {
         if (triggerFreeAtTiming(phase, 1)) {
@@ -3730,6 +3733,10 @@ export function executeBattle(
     triggerConfusionAtTiming(2);
     if (forcedOutcome) {
       return buildBattleResult(forcedOutcomePhase, forcedOutcome);
+    }
+    triggerSelfDestructAtTiming(2);
+    if (partyHp <= 0 || enemyHp <= 0) {
+      return buildBattleResult(phase, partyHp <= 0 ? 'defeat' : 'victory');
     }
     if (triggerFreeAtTiming(phase, 1)) {
       return buildBattleResult(forcedOutcomePhase, forcedOutcome!);
