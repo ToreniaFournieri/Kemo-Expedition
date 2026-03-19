@@ -1785,6 +1785,19 @@ function buildDeityEffectLogEntry(
   return null;
 }
 
+function buildRewardLogEntries(
+  rewardLogEntries: { itemName: string; autoSellProfit?: number }[]
+): BattleLogEntry[] {
+  return rewardLogEntries.map((rewardEntry) => ({
+    phase: 'end',
+    actor: 'effect',
+    action: `${rewardEntry.itemName} を獲得した！`,
+    note: rewardEntry.autoSellProfit && rewardEntry.autoSellProfit > 0
+      ? `(自動売却対象: ${rewardEntry.autoSellProfit}G)`
+      : undefined,
+  }));
+}
+
 function isRetreatHpThresholdReached(currentHp: number, maxHp: number): boolean {
   return currentHp <= maxHp * 0.3;
 }
@@ -2051,6 +2064,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 ?? 0;
               const hasExtraRewardRollBlessing = deityKey === 'Goddess of Discord'
                 || (deityKey === 'God of Oblivion' && getDeityRank(deityDonation) >= 10);
+              let rewardLogEntries: { itemName: string; autoSellProfit?: number }[] = [];
               if (!isColosseumBattle) {
                 const rewardResult = resolveEnemyRewards(
                   enemy,
@@ -2076,7 +2090,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   entry.rewardRarity = rewardResult.highestRewardRarity;
                   entry.rewardIsSuperRare = rewardResult.hasSuperRareReward;
                 }
-                }
+                rewardLogEntries = rewardResult.rewardLogEntries;
+              }
 
               currentHp = battleResult.partyHp;
               entries.push(entry);
@@ -2106,6 +2121,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               );
               if (deityLogEntry) {
                 entry.details.push(deityLogEntry);
+              }
+              if (rewardLogEntries.length > 0) {
+                entry.details.push(...buildRewardLogEntries(rewardLogEntries));
               }
 
               const isFinalBossRoom =
