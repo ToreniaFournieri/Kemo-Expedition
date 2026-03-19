@@ -375,7 +375,7 @@ left-alinged                                           right-aligned
 [効] name の物理抑制！ (双方物理ダメージ0.8倍)
 [効] name が opponent の abilityアビリティを忘却の彼方に消し去った！
 [効] name の魔封！ (この場で最初に唱える魔法は無効化される)
-[効] name が opponent の ability を模倣した！
+[効] name が opponent の abilityアビリティを模倣した！
 
 (遠距離攻撃フェーズ)
 [2] ロップ の攻撃！(1/2回)          (🏹 7)
