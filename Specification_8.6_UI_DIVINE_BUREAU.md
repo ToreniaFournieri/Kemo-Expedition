@@ -119,7 +119,7 @@ note: 0:no sleep 寝ない, 1:nap 仮眠, 2:sound sleep 熟睡
 
 **Glossary (用語集)** 
 - list and its descrpition is here:
-  - @Specification_2.1_GLOSSARY.md
+  - @Specification_1.1_CONSTANTS_GLOSSARY.md
 - Glossary tabs: 能, 基, 固, 増, 属, 機, 信, 魔, 求. Default: 能
 
 

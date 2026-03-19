@@ -25,7 +25,7 @@ PT2...
   - Currently selected dungeon with Loot-Gate conditions (ex. 2nd Elite Gate is locked: 2/6 Floor 2 Uncommons collected.)
   - List of available dungeons with Loot-Gate conditions
 	- **Flavor text**
-	  - The system selects flavor text from `Specification_3.3_FLAVOR_TEXT.md`.
+	  - The system selects flavor text from `Specification_5.2_PROGRESS_FLAVOR_TEXT.md`.
 	  - The **speaker name** of the flavor text is resolved to the party member who satisfies the triggering condition (race, main class, or ability holder).
       - Conditions may reference:
 	    - any party member’s race
