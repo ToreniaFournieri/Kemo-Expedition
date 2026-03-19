@@ -98,7 +98,7 @@ function getDefaultEntriesForBagType(bagType: BagType): WeightedBagEntry[] {
   return BAG_DEFAULT_CREATORS[bagType]().entries;
 }
 
-// SpecRef: 6.5 | REWARD | normalizeBagForType
+// SpecRef: 6.1.5 | REWARD | normalizeBagForType
 export function normalizeBagForType(bag: RandomBag, bagType: BagType): RandomBag {
   const defaultEntries = getDefaultEntriesForBagType(bagType);
   const currentById = new Map<number, number>();
@@ -119,7 +119,7 @@ export function normalizeBagForType(bag: RandomBag, bagType: BagType): RandomBag
 }
 
 
-// SpecRef: 6.5 | REWARD | normalizeGameBags
+// SpecRef: 6.1.5 | REWARD | normalizeGameBags
 export function normalizeGameBags(bags: GameBags): GameBags {
   return {
     commonRewardBag: normalizeBagForType(bags.commonRewardBag, 'commonRewardBag'),
@@ -136,52 +136,52 @@ export function normalizeGameBags(bags: GameBags): GameBags {
   };
 }
 
-// SpecRef: 6.5 | REWARD | createCommonRewardBag
+// SpecRef: 6.1.5 | REWARD | createCommonRewardBag
 export function createCommonRewardBag(): RandomBag {
   return BAG_DEFAULT_CREATORS.commonRewardBag();
 }
 
-// SpecRef: 6.5 | REWARD | createCommonEnhancementBag
+// SpecRef: 6.1.5 | REWARD | createCommonEnhancementBag
 export function createCommonEnhancementBag(): RandomBag {
   return BAG_DEFAULT_CREATORS.commonEnhancementBag();
 }
 
-// SpecRef: 6.5 | REWARD | createUncommonRewardBag
+// SpecRef: 6.1.5 | REWARD | createUncommonRewardBag
 export function createUncommonRewardBag(): RandomBag {
   return BAG_DEFAULT_CREATORS.uncommonRewardBag();
 }
 
-// SpecRef: 6.5 | REWARD | createEliteRareRewardBag
+// SpecRef: 6.1.5 | REWARD | createEliteRareRewardBag
 export function createEliteRareRewardBag(): RandomBag {
   return BAG_DEFAULT_CREATORS.eliteRareRewardBag();
 }
 
-// SpecRef: 6.5 | REWARD | createBossRareRewardBag
+// SpecRef: 6.1.5 | REWARD | createBossRareRewardBag
 export function createBossRareRewardBag(): RandomBag {
   return BAG_DEFAULT_CREATORS.bossRareRewardBag();
 }
 
-// SpecRef: 6.5 | REWARD | createMythicRareRewardBag
+// SpecRef: 6.1.5 | REWARD | createMythicRareRewardBag
 export function createMythicRareRewardBag(): RandomBag {
   return BAG_DEFAULT_CREATORS.mythicRareRewardBag();
 }
 
-// SpecRef: 6.5 | REWARD | createEnhancementBag
+// SpecRef: 6.1.5 | REWARD | createEnhancementBag
 export function createEnhancementBag(): RandomBag {
   return BAG_DEFAULT_CREATORS.enhancementBag();
 }
 
-// SpecRef: 6.5 | REWARD | createSuperRareBag
+// SpecRef: 6.1.5 | REWARD | createSuperRareBag
 export function createSuperRareBag(): RandomBag {
   return BAG_DEFAULT_CREATORS.superRareBag();
 }
 
-// SpecRef: 6.5 | REWARD | createPhysicalThreatBag
+// SpecRef: 6.1.5 | REWARD | createPhysicalThreatBag
 export function createPhysicalThreatBag(): RandomBag {
   return BAG_DEFAULT_CREATORS.physicalThreatBag();
 }
 
-// SpecRef: 6.5 | REWARD | createMagicalThreatBag
+// SpecRef: 6.1.5 | REWARD | createMagicalThreatBag
 export function createMagicalThreatBag(): RandomBag {
   return BAG_DEFAULT_CREATORS.magicalThreatBag();
 }
@@ -212,7 +212,7 @@ export function normalizeSleepinessPartyBag(bag: RandomBag): RandomBag {
   return { entries: normalizedEntries };
 }
 
-// SpecRef: 6.5 | REWARD | initializeBags
+// SpecRef: 6.1.5 | REWARD | initializeBags
 export function initializeBags(): GameBags {
   return {
     commonRewardBag: createCommonRewardBag(),
@@ -237,7 +237,7 @@ function getTotalTickets(bag: RandomBag): number {
   return bag.entries.reduce((sum, entry) => sum + Math.max(0, entry.tickets), 0);
 }
 
-// SpecRef: 6.5 | REWARD | drawFromBag
+// SpecRef: 6.1.5 | REWARD | drawFromBag
 export function drawFromBag(bag: RandomBag): { ticket: number; newBag: RandomBag } {
   const totalTickets = getTotalTickets(bag);
   if (totalTickets <= 0) {
@@ -266,7 +266,7 @@ export function drawFromBag(bag: RandomBag): { ticket: number; newBag: RandomBag
   throw new Error('Failed to draw from weighted bag');
 }
 
-// SpecRef: 6.5 | REWARD | refillBagIfEmpty
+// SpecRef: 6.1.5 | REWARD | refillBagIfEmpty
 export function refillBagIfEmpty(bags: GameBags, bagType: BagType): GameBags {
   const currentBag = bags[bagType];
   if (getTotalTickets(currentBag) > 0) {
@@ -279,12 +279,12 @@ export function refillBagIfEmpty(bags: GameBags, bagType: BagType): GameBags {
   };
 }
 
-// SpecRef: 6.5 | REWARD | getBagTicketTotal
+// SpecRef: 6.1.5 | REWARD | getBagTicketTotal
 export function getBagTicketTotal(bag: RandomBag): number {
   return getTotalTickets(bag);
 }
 
-// SpecRef: 6.5 | REWARD | getBagEntryTickets
+// SpecRef: 6.1.5 | REWARD | getBagEntryTickets
 export function getBagEntryTickets(bag: RandomBag, id: number): number {
   return bag.entries.find((entry) => entry.id === id)?.tickets ?? 0;
 }

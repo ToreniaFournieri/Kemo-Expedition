@@ -14,7 +14,7 @@ function getBaseGodEnemy(profile: GodEnemyProfile): EnemyDef | null {
     .find((candidate) => candidate.enemyClass === profile.enemyClass) ?? null;
 }
 
-// SpecRef: 6.1 | Encounter Rules | buildGodRuntimeEnemy
+// SpecRef: 6.1.1 | Encounter Rules | buildGodRuntimeEnemy
 export function buildGodRuntimeEnemy(profile: GodEnemyProfile, isLunaMode: boolean): EnemyDef | null {
   const baseEnemy = getBaseGodEnemy(profile);
   const dungeon = DUNGEONS.find((candidate) => candidate.tier === profile.tier)

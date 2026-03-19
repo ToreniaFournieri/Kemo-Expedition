@@ -210,7 +210,7 @@ function getUnlockedStateFromEntries(entries: ExpeditionLogEntry[], initialUnloc
   return { unlockedDeities, unlockedPartySlots };
 }
 
-// SpecRef: 8.6 | Diary | It keeps 24 entries
+// SpecRef: 8.5 | UI_DIARY | It keeps 24 entries
 function enforceGlobalDiaryLogRetention(parties: Party[]): Party[] {
   const allDiaryLogRefs = parties.flatMap((party, partyIndex) =>
     (party.diaryLogs ?? []).map((log, logIndex) => ({
@@ -245,7 +245,7 @@ function enforceGlobalDiaryLogRetention(parties: Party[]): Party[] {
 }
 
 
-// SpecRef: 5.3.2 | Unlock party & Deity | Party & Deity unlock condition
+// SpecRef: 5.1.3.2 | Unlock party & Deity | Party & Deity unlock condition
 function getUnlockDiaryLog(
   log: ExpeditionLog | null,
   previousUnlockedDeities: string[],
@@ -387,7 +387,7 @@ function formatEnemyNameWithClass(name: string, classId: keyof typeof CLASS_SHOR
   return shortName ? `${name}(${shortName})` : name;
 }
 
-// SpecRef: 8.6 | Diary | Setting.
+// SpecRef: 8.5 | UI_DIARY | Setting.
 function getDiarySettingsWithDefaults(value: Partial<DiarySettings> | undefined): DiarySettings {
   return {
     ...DEFAULT_DIARY_SETTINGS,
@@ -893,7 +893,7 @@ function normalizeCharacterAutoEquipmentMode(raw: unknown): 0 | 1 | 2 {
   return 1;
 }
 
-// SpecRef: 5.1 | Party State Machine | sleepiness from t.sleepiness_of_party_bag
+// SpecRef: 5.1.1 | Party State Machine | sleepiness from t.sleepiness_of_party_bag
 function drawPartySleepiness(party: Party): { party: Party; sleepiness: SleepinessState } {
   const normalizedBag = normalizeSleepinessPartyBag(party.sleepinessOfPartyBag ?? createSleepinessPartyBag());
   const totalTickets = normalizedBag.entries.reduce((sum, entry) => sum + Math.max(0, entry.tickets), 0);
@@ -3308,7 +3308,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
   }
 }
 
-// SpecRef: 5.1 | Party State Machine | Time-Based Progress Handling (Online + AFK)
+// SpecRef: 5.1.1 | Party State Machine | Time-Based Progress Handling (Online + AFK)
 export function useGameState() {
   const [state, dispatch] = useReducer(gameReducer, null, createInitialState);
   const [notifications, setNotifications] = useState<GameNotification[]>([]);

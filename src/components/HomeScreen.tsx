@@ -3784,10 +3784,11 @@ export function HomeScreen({
   );
 }
 
-// SpecRef: 8.3 | Party tab | Displays
-// SpecRef: 8.3.2 | Party member details | Party member details
-// SpecRef: 8.3.3 | Character Edit Mode (selected member): | Character Edit Mode (selected member):
-// SpecRef: 8.3.4 | Equipment management | Equipment management
+// SpecRef: 8.2 | UI_PARTY | Party tab
+// SpecRef: 8.2.1 | Displays | Displays
+// SpecRef: 8.2.2 | Party member details | Party member details
+// SpecRef: 8.2.3 | Character Edit Mode (selected member): | Character Edit Mode (selected member):
+// SpecRef: 8.2.4 | Equipment management | Equipment management
 function PartyTab({
   parties,
   selectedPartyIndex,
@@ -5838,9 +5839,9 @@ function PartyTab({
   );
 }
 
-// SpecRef: 8.4 | Expedition | Expedition
-// SpecRef: 8.4 | Expedition | Flavor text
-// SpecRef: 8.4 | Expedition | Gods Battle (神魔戦)
+// SpecRef: 8.3 | UI_EXPEDITION | Expedition
+// SpecRef: 8.3 | UI_EXPEDITION | Flavor text
+// SpecRef: 8.3 | UI_EXPEDITION | Gods Battle (神魔戦)
 function ExpeditionTab({
   state,
   debugSettings,
@@ -6364,7 +6365,7 @@ function ExpeditionTab({
   );
 }
 
-// SpecRef: 8.5 | Base(拠点) | Base(拠点)
+// SpecRef: 8.4 | UI_BASE | Base(拠点)
 function BaseTab({
   inventory,
   jewels,
@@ -6644,7 +6645,7 @@ function ShopTab({
   );
 }
 
-// SpecRef: 8.5.3 | Jewel store(結晶店) | Jewel store(結晶店)
+// SpecRef: 8.4.3 | Jewel store(結晶店) | Jewel store(結晶店)
 function JewelStoreTab({
   gold,
   jewelShopPurchases,
@@ -6705,7 +6706,7 @@ function JewelStoreTab({
     </div>
   );
 }
-// SpecRef: 8.5.2 | Inventory(所持品) | Inventory(所持品)
+// SpecRef: 8.4.2 | Inventory(所持品) | Inventory(所持品)
 function InventoryTab({
   inventory,
   jewels,
@@ -7100,8 +7101,8 @@ function InventoryTab({
   );
 }
 
-// SpecRef: 8.6 | Diary | Diary
-// SpecRef: 8.6 | Diary | Setting.
+// SpecRef: 8.5 | UI_DIARY | Diary
+// SpecRef: 8.5 | UI_DIARY | Setting.
 function DiaryTab({
   parties,
   onOpenDiaryLog,
@@ -7806,7 +7807,7 @@ function SettingTab({
     setDivineBureauPanelExpanded((prev) => ({ ...prev, [panelKey]: !prev[panelKey] }));
   };
 
-  // SpecRef: 8.7 | Divine Bureau (神聖局) | Divine Bureau (神聖局)
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Divine Bureau (神聖局)
   const renderDivineBureauPanelHeader = (panelKey: DivineBureauPanelKey, title: string) => {
     const expanded = divineBureauPanelExpanded[panelKey];
     return (
