@@ -1275,6 +1275,36 @@ function getCharacterNoAForPhase(phase: BattleActionPhase, charStats: ComputedCh
   }
 }
 
+function getCharacterAttackForPhase(phase: BattleActionPhase, charStats: ComputedCharacterStats): number {
+  switch (phase) {
+    case 'long':
+      return charStats.rangedAttack;
+    case 'mid':
+      return charStats.magicalAttack;
+    case 'close':
+      return charStats.meleeAttack;
+  }
+}
+
+function getEnemyAttackForPhase(phase: BattleActionPhase, enemy: EnemyDef): number {
+  switch (phase) {
+    case 'long':
+      return enemy.rangedAttack;
+    case 'mid':
+      return enemy.magicalAttack;
+    case 'close':
+      return enemy.meleeAttack;
+  }
+}
+
+function isEligibleCharacterForPhase(phase: BattleActionPhase, charStats: ComputedCharacterStats): boolean {
+  return getCharacterAttackForPhase(phase, charStats) > 0 && getCharacterNoAForPhase(phase, charStats) > 0;
+}
+
+function isEligibleEnemyForPhase(phase: BattleActionPhase, enemy: EnemyDef): boolean {
+  return getEnemyAttackForPhase(phase, enemy) > 0 && getEnemyNoA(phase, enemy) > 0;
+}
+
 // Hit detection functions are available for future use when implementing
 // per-hit accuracy rolls. Currently the game uses deterministic damage calculation.
 
@@ -1569,7 +1599,7 @@ export function executeBattle(
     }
   }
 
-  const triggerEnemyCounter = (targetCharStats: ComputedCharacterStats, dealtDamage: number, initiativeRoll: number): void => {
+  const triggerEnemyCounter = (targetCharStats: ComputedCharacterStats, dealtDamage: number, initiativeRoll?: number): void => {
     const counterNoAMultiplier = getEnemyCounterNoAMultiplier(enemy);
     if (dealtDamage <= 0 || counterNoAMultiplier <= 0) return;
 
@@ -1844,19 +1874,23 @@ export function executeBattle(
   }
 
   for (const phase of phases) {
-
-    const enemyInitiativeRoll = rollInitiative(getEnemyFirstStrikeLevel(enemy), {
-      hasSlow: hasAbility(enemy.abilities, 'slow'),
-      affectedByFrostbite: partyHasFrostbite,
-    });
-    const characterInitiative = characterStats.map(cs => ({
-      stats: cs,
-      roll: rollInitiative(getFirstStrikeLevel(cs), {
-        fertilityBonus: hasFertilityInitiativeBonus ? 1 : 0,
-        hasSlow: hasAbility(cs.abilities, 'slow'),
-        affectedByFrostbite: enemyHasFrostbite,
-      }),
-    }));
+    const enemyIsEligibleActor = isEligibleEnemyForPhase(phase, enemy);
+    const enemyInitiativeRoll = enemyIsEligibleActor
+      ? rollInitiative(getEnemyFirstStrikeLevel(enemy), {
+        hasSlow: hasAbility(enemy.abilities, 'slow'),
+        affectedByFrostbite: partyHasFrostbite,
+      })
+      : null;
+    const characterInitiative = characterStats
+      .filter(cs => isEligibleCharacterForPhase(phase, cs))
+      .map(cs => ({
+        stats: cs,
+        roll: rollInitiative(getFirstStrikeLevel(cs), {
+          fertilityBonus: hasFertilityInitiativeBonus ? 1 : 0,
+          hasSlow: hasAbility(cs.abilities, 'slow'),
+          affectedByFrostbite: enemyHasFrostbite,
+        }),
+      }));
 
     const initiativeByCharacter = new Map<number, number>(
       characterInitiative.map(ci => [ci.stats.characterId, ci.roll])
@@ -1876,14 +1910,24 @@ export function executeBattle(
         };
       }
 
-      const partyHowlEntries = characterInitiative
-        .map((ci) => ({
-          level: getAbilityLevel(ci.stats, 'howl'),
-          ownerName: party.characters.find((char) => char.id === ci.stats.characterId)?.name ?? '味方',
-          stats: ci.stats,
+      const partyHowlEntries = characterStats
+        .map((stats) => ({
+          level: getAbilityLevel(stats, 'howl'),
+          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+          stats,
         }))
         .filter((entry) => entry.level > 0)
         .sort((a, b) => a.stats.row - b.stats.row);
+
+      if (enemyHowlLevel > 0) {
+        log.push({
+          phase,
+          initiativeRoll: 2,
+          actor: 'triggered',
+          action: `${enemy.name} が遠吠えをした！`,
+          note: getHowlNote(enemyHowlLevel),
+        });
+      }
 
       for (const entry of partyHowlEntries) {
         pendingPartyHowlEffect = {
@@ -1892,11 +1936,19 @@ export function executeBattle(
           note: getHowlNote(entry.level),
           characterId: entry.stats.characterId,
         };
+        log.push({
+          phase,
+          initiativeRoll: 2,
+          actor: 'triggered',
+          characterId: entry.stats.characterId,
+          action: `${entry.ownerName} が遠吠えをした！`,
+          note: getHowlNote(entry.level),
+        });
       }
     };
 
     const turnOrder: Array<{ kind: 'enemy'; roll: number } | { kind: 'character'; roll: number; stats: ComputedCharacterStats }> = [
-      { kind: 'enemy' as const, roll: enemyInitiativeRoll },
+      ...(enemyInitiativeRoll !== null ? [{ kind: 'enemy' as const, roll: enemyInitiativeRoll }] : []),
       ...characterInitiative.map(ci => ({ kind: 'character' as const, roll: ci.roll, stats: ci.stats })),
     ].sort((a, b) => {
       if (b.roll !== a.roll) return b.roll - a.roll;
@@ -1918,17 +1970,6 @@ export function executeBattle(
       if (turn.kind === 'enemy') {
         const baseNoA = getEnemyNoA(phase, enemy);
         const howlEffect = baseNoA > 0 ? consumePendingPartyHowlEffect() : null;
-        if (howlEffect) {
-          log.push({
-            phase,
-            initiativeRoll: 2,
-            actor: 'triggered',
-            characterId: howlEffect.characterId,
-            action: `${howlEffect.ownerName} が遠吠えをした！`,
-            note: howlEffect.note,
-          });
-        }
-
         const noA = Math.ceil(baseNoA * (howlEffect?.multiplier ?? 1.0));
         if (noA <= 0) continue;
 
@@ -2463,16 +2504,6 @@ export function executeBattle(
 
       const baseNoA = getCharacterNoAForPhase(phase, cs);
       const howlEffect = baseNoA > 0 ? consumePendingEnemyHowlEffect() : null;
-      if (howlEffect) {
-        log.push({
-          phase,
-          initiativeRoll: 2,
-          actor: 'triggered',
-          characterId: howlEffect.characterId,
-          action: `${howlEffect.ownerName} が遠吠えをした！`,
-          note: howlEffect.note,
-        });
-      }
 
       const runCharacterAttack = (noAMultiplier: number, isReAttack = false): CharacterAttackResult | null => {
         const isAntagonism = cs.hasAntagonism;
@@ -2727,7 +2758,7 @@ export function executeBattle(
         }
 
         if (!isAntagonism && enemyHp > 0 && phase === 'close') {
-          triggerEnemyCounter(cs, result.damage, enemyInitiativeRoll);
+          triggerEnemyCounter(cs, result.damage, enemyInitiativeRoll ?? undefined);
         }
 
         return result;
