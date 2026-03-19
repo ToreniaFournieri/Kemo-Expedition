@@ -232,8 +232,9 @@ function normalizeBattleLogNote(note?: string): string | undefined {
   return note.replace('パーティ攻撃力 ×', 'パーティ物理攻撃力 ×');
 }
 
-function getBattleLogNoteClass(noteTone?: 'default' | 'sub'): string {
-  return noteTone === 'sub' ? 'text-sub' : 'text-gray-400';
+function getBattleLogNoteClass(noteTone?: 'default' | 'sub' | 'muted'): string {
+  if (noteTone === 'sub') return 'text-sub';
+  return 'text-gray-400';
 }
 
 const RACE_ICON_SOURCES = RACES

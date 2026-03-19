@@ -2343,7 +2343,7 @@ export function executeBattle(
           actor: 'triggered',
           action: buildUnstableCoreAction(unstablePhase, enemy.name),
           note: getUnstableCoreNote(enemyUnstableCoreLevel),
-          noteTone: 'sub',
+          noteTone: 'muted',
           damage,
         });
       }
@@ -2372,7 +2372,7 @@ export function executeBattle(
           characterId: entry.stats.characterId,
           action: buildUnstableCoreAction(unstablePhase, entry.ownerName),
           note: getUnstableCoreNote(entry.level),
-          noteTone: 'sub',
+          noteTone: 'muted',
           damage,
         });
       }
