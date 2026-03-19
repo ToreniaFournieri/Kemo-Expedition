@@ -158,22 +158,20 @@
 | {actor} は {target} の防御を溶かした！ |
 | {actor} は {target} の身体を分解した！ |
 
-
 - `log.self-destruct`
 
 | flavor text |
 |---|
-| {actor} は自爆した！ |
-| {actor} は体を爆発させた！ |
-| {actor} は捨て身の爆発を起こした！ |
-| {actor} は己を犠牲に爆ぜた！ |
-| {actor} は最期の力を解き放ち、爆発した！ |
-| {actor} は崩壊し、周囲を巻き込んだ！ |
-| {actor} は全てを投げ打ち、爆発した！ |
-| {actor} は暴発し、辺りを吹き飛ばした！ |
-| {actor} は断末魔と共に爆ぜた！ |
-| {actor} は破裂し、周囲を巻き込んだ！ |
-
+| {actor} は自爆し、{target} を巻き込んだ！ |
+| {actor} は体を爆発させ、{target} にダメージを与えた！ |
+| {actor} は捨て身の爆発を起こし、{target} を吹き飛ばした！ |
+| {actor} は己を犠牲に爆ぜ、{target} を巻き込んだ！ |
+| {actor} は最期の力を解き放ち、{target} を巻き込んで爆発した！ |
+| {actor} は崩壊し、{target} を巻き込んだ！ |
+| {actor} は全てを投げ打ち、{target} を巻き込んで爆発した！ |
+| {actor} は暴発し、{target} を吹き飛ばした！ |
+| {actor} は断末魔と共に爆ぜ、{target} を巻き込んだ！ |
+| {actor} は破裂し、{target} を巻き込んだ！ |
 
 - `log.free`
 
