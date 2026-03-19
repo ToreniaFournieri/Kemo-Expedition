@@ -480,6 +480,7 @@ interface CharacterAttackResult {
   totalAttempts: number;
   hits: number;
   wasNegatedByEnemyIllusion?: boolean;
+  wasNegatedByMagicSeal?: boolean;
   reflectedDamage?: number;
   reflectedSourceDamage?: number;
   nullifiedBy?: NullDescriptor;
@@ -1115,6 +1116,35 @@ function getEnemyAbilityLevel(enemy: EnemyDef, abilityId: AbilityId): number {
   return getAbilityLevelFromList(enemy.abilities, abilityId);
 }
 
+function createMagicSealQueue(
+  party: Party,
+  characterStats: ComputedCharacterStats[],
+  enemy: EnemyDef,
+): string[] {
+  const queue: string[] = [];
+
+  for (const stats of characterStats) {
+    if (getAbilityLevel(stats, 'magic_seal') <= 0) continue;
+    const ownerName = party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方';
+    queue.push(ownerName);
+  }
+
+  if (getEnemyAbilityLevel(enemy, 'magic_seal') > 0) {
+    queue.push(enemy.name);
+  }
+
+  return queue;
+}
+
+function getMagicSealStartLog(ownerName: string): BattleLogEntry {
+  return {
+    phase: 'long',
+    actor: 'effect',
+    action: `[効] ${ownerName} の魔封！`,
+    note: '(この場で最初に唱える魔法は無効化される)',
+  };
+}
+
 function getCounterNoAMultiplierForLevel(level: number): number {
   if (level <= 0) return 0;
   if (level >= 3) return 1.5;
@@ -1399,6 +1429,13 @@ export function executeBattle(
   let consumedEnemyResurrect = false;
   const consumedIllusionStateIds = new Set<string>();
   let consumedPartyIllusion = false;
+  const activeMagicSealQueue = createMagicSealQueue(party, characterStats, enemy);
+
+  for (const ownerName of activeMagicSealQueue) {
+    log.push(getMagicSealStartLog(ownerName));
+  }
+
+  const consumeMagicSeal = (): boolean => activeMagicSealQueue.shift() !== undefined;
 
   const triggerEnemyResurrect = (phase: BattlePhase, initiativeRoll?: number): void => {
     if (enemyHp > 0 || consumedEnemyResurrect) return;
@@ -1882,6 +1919,23 @@ export function executeBattle(
             : { abilities: [] };
           const enemyResonanceLogText = getResonanceLogText(resonanceActor.abilities, enemySuccessfulHits, phase === 'mid');
 
+          if (phase === 'mid' && consumeMagicSeal()) {
+            log.push({
+              phase,
+              initiativeRoll: turn.roll,
+              actor: 'enemy',
+              action: `${enemy.name} が${magicProfile.spellName}${isReAttack ? '連撃' : ''}を唱えたがかき消された！`,
+              damage: 0,
+              showZeroDamage: true,
+              hits: 0,
+              totalAttempts: attempts,
+              wasNegated: true,
+              isReAttack: isReAttack || undefined,
+              elementalOffense: enemy.elementalOffense,
+            });
+            return;
+          }
+
           if (phase === 'mid') {
             log.push({
               phase,
@@ -2331,6 +2385,44 @@ export function executeBattle(
 
       const runCharacterAttack = (noAMultiplier: number, isReAttack = false): CharacterAttackResult | null => {
         const isAntagonism = cs.hasAntagonism;
+        const magicProfile = resolveMagicProfile({
+          style: 'multi-hit',
+          elementalOffense: cs.elementalOffense,
+          elementalOffenseValue: cs.elementalOffenseValue,
+          magicalNoA: Math.max(1, Math.ceil(cs.magicalNoA * noAMultiplier)),
+        });
+        const attackType = isReAttack
+          ? (phase === 'mid' ? `${magicProfile.spellName}連撃` : '連撃')
+          : (phase === 'mid' ? `${magicProfile.spellName}` : '攻撃');
+
+        if (phase === 'mid' && consumeMagicSeal()) {
+          log.push({
+            phase,
+            initiativeRoll: turn.roll,
+            actor: 'character',
+            characterId: cs.characterId,
+            action: `${char.name} が${attackType}を唱えたがかき消された！`,
+            damage: 0,
+            showZeroDamage: true,
+            hits: 0,
+            totalAttempts: Math.max(1, Math.ceil(cs.magicalNoA * noAMultiplier)),
+            rageBonusPercent: toRageBonusPercent(getCharacterRageAmplifier(cs, partyHp, partyStats.hp)) || undefined,
+            momentumBonusPercent: cs.abilities.some(a => a.id === 'momentum')
+              ? toMomentumBonusPercent(getCharacterMomentumAmplifier(cs, partyHp, partyStats.hp))
+              : undefined,
+            isReAttack: isReAttack || undefined,
+            wasNegated: true,
+            elementalOffense: cs.elementalOffense,
+          });
+
+          return {
+            damage: 0,
+            totalAttempts: Math.max(1, Math.ceil(cs.magicalNoA * noAMultiplier)),
+            hits: 0,
+            wasNegatedByMagicSeal: true,
+          };
+        }
+
         let result: CharacterAttackResult;
         let antagonismTarget: ComputedCharacterStats | null = null;
 
@@ -2426,15 +2518,6 @@ export function executeBattle(
 
         if (result.totalAttempts <= 0) return null;
 
-        const magicProfile = resolveMagicProfile({
-          style: 'multi-hit',
-          elementalOffense: cs.elementalOffense,
-          elementalOffenseValue: cs.elementalOffenseValue,
-          magicalNoA: result.totalAttempts,
-        });
-        const attackType = isReAttack
-          ? (phase === 'mid' ? `${magicProfile.spellName}連撃` : '連撃')
-          : (phase === 'mid' ? `${magicProfile.spellName}` : '攻撃');
         const resonanceLogText = getResonanceLogText(cs.abilities, result.hits, phase === 'mid' || (phase === 'long' && partyDeityKey === 'God of Resonance'));
         const characterAttackRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(cs, partyHp, partyStats.hp));
         const characterAttackMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(cs, partyHp, partyStats.hp));
