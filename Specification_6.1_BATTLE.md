@@ -153,7 +153,7 @@
 - **decompose**
   - Triggered by `a.decompose`
   - Use `f.targeting` (phase: CLOSE) for chosing target.
-  - target.`d.defense` = N x target.`d.defense`
+  - target.`d.defense` = N/D x target.`d.defense`
   - Log: `log.decompose`
  
 #### 6.1.3 Actor normal move
