@@ -1123,6 +1123,24 @@ function getMagicSealStartLog(ownerName: string): BattleLogEntry {
   };
 }
 
+function isMagicSealTargetForCharacter(
+  phase: BattleActionPhase,
+  charStats: ComputedCharacterStats,
+  noAMultiplier: number,
+): boolean {
+  if (phase !== 'mid') return false;
+  return charStats.magicalAttack > 0 && Math.ceil(charStats.magicalNoA * noAMultiplier) > 0;
+}
+
+function isMagicSealTargetForEnemy(
+  phase: BattleActionPhase,
+  enemy: EnemyDef,
+  noA: number,
+): boolean {
+  if (phase !== 'mid') return false;
+  return enemy.magicalAttack > 0 && noA > 0;
+}
+
 function getCounterNoAMultiplierForLevel(level: number): number {
   if (level <= 0) return 0;
   if (level >= 3) return 1.5;
@@ -1979,7 +1997,7 @@ export function executeBattle(
             : { abilities: [] };
           const enemyResonanceLogText = getResonanceLogText(resonanceActor.abilities, enemySuccessfulHits, phase === 'mid');
 
-          if (phase === 'mid' && consumeMagicSeal()) {
+          if (isMagicSealTargetForEnemy(phase, enemy, attempts) && consumeMagicSeal()) {
             log.push({
               phase,
               initiativeRoll: turn.roll,
@@ -2468,7 +2486,7 @@ export function executeBattle(
           ? (phase === 'mid' ? `${magicProfile.spellName}連撃` : '連撃')
           : (phase === 'mid' ? `${magicProfile.spellName}` : '攻撃');
 
-        if (phase === 'mid' && consumeMagicSeal()) {
+        if (isMagicSealTargetForCharacter(phase, cs, noAMultiplier) && consumeMagicSeal()) {
           log.push({
             phase,
             initiativeRoll: turn.roll,
