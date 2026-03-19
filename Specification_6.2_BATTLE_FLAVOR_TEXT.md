@@ -141,3 +141,19 @@
 | {actor} の傷跡が消えていく！ |
 | {actor} は再生し、持ち直した！ |
 | {actor} の生命力が傷を癒した！ |
+
+
+- `log.decompose`
+
+| flavor text |
+|---|
+| {actor} は {target} の防御を崩した！ |
+| {actor} は {target} の装甲を劣化させた！ |
+| {actor} は {target} の体を蝕んだ！ |
+| {actor} は {target} の防御を侵食した！ |
+| {actor} は {target} の構造を弱体化させた！ |
+| {actor} は {target} の守りを削り取った！ |
+| {actor} は {target} の外殻を崩壊させた！ |
+| {actor} は {target} の耐久を低下させた！ |
+| {actor} は {target} の防御を溶かした！ |
+| {actor} は {target} の身体を分解した！ |
