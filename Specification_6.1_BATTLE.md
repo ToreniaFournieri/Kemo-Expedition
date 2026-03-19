@@ -162,6 +162,11 @@
   - opponent.`d.HP` -= N/D x ( actor.remaining_HP - opponent.`d.physical_defense` ) x opponent.`f.defense_amplifier`
   - actor.`d.HP` = 0.
   - Log: `log.self-destruct`
+
+- **free**
+  - Triggered by `a.free`
+  - this battle is Draw.
+  - Log: `log.free`
  
 #### 6.1.3 Actor normal move
 
