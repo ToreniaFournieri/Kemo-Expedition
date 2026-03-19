@@ -34,6 +34,8 @@ interface PendingHowlEffect {
   ownerName: string;
   note: string;
   initiativeRoll?: number;
+  actor: 'enemy' | 'character';
+  characterId?: number;
 }
 
 function getElementalMultiplier(
@@ -1864,20 +1866,13 @@ export function executeBattle(
 
       for (const entry of triggeredHowlEntries) {
         const note = getHowlNote(entry.level);
-        log.push({
-          phase,
-          initiativeRoll: entry.roll,
-          actor: entry.kind === 'enemy' ? 'enemy' : 'character',
-          characterId: entry.kind === 'character' ? entry.stats.characterId : undefined,
-          action: `${entry.ownerName} が遠吠えをした！`,
-          note,
-        });
-
         const pendingEffect: PendingHowlEffect = {
           multiplier: getHowlNoAMultiplier(entry.level),
           ownerName: entry.ownerName,
           note,
           initiativeRoll: entry.roll,
+          actor: entry.kind === 'enemy' ? 'enemy' : 'character',
+          characterId: entry.kind === 'character' ? entry.stats.characterId : undefined,
         };
 
         if (entry.kind === 'enemy') {
@@ -1911,7 +1906,8 @@ export function executeBattle(
           log.push({
             phase,
             initiativeRoll: howlEffect.initiativeRoll,
-            actor: 'effect',
+            actor: howlEffect.actor,
+            characterId: howlEffect.characterId,
             action: `${howlEffect.ownerName} が遠吠えをした！`,
             note: howlEffect.note,
           });
@@ -2455,7 +2451,8 @@ export function executeBattle(
         log.push({
           phase,
           initiativeRoll: howlEffect.initiativeRoll,
-          actor: 'effect',
+          actor: howlEffect.actor,
+          characterId: howlEffect.characterId,
           action: `${howlEffect.ownerName} が遠吠えをした！`,
           note: howlEffect.note,
         });
