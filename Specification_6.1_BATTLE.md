@@ -73,10 +73,11 @@
 #### 6.1.2 Triggered ability
 - For each actor:
   - If actor has an ability with matching timing (phase: current phase, timing: current timing):
-    - Tie-breaker action order: Enemy > Front-row party member > Back-row party member
-    - Activate the ability.
+- Resolve activation order using tie-breaker:
+  - Enemy > Front-row party member > Back-row party member
+- Activate abilities in the above order.
 - Log format:
-  - `[2] name が遠吠えをした！ (相手の次の攻撃回数5/7)`
+  - "[2] name が遠吠えをした！ (相手の次の攻撃回数5/7)"
     - Text inside `()` is displayed in gray.
      
 #### 6.1.3 Actor normal move
