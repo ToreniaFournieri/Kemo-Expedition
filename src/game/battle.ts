@@ -78,6 +78,45 @@ const CONFUSION_NO_TARGET_LOGS = [
   'は狂気を広めようとしたが、誰も囚われなかった',
 ] as const;
 
+const ANTAGONISM_LOGS = {
+  long: [
+    '{actor} は {target} を敵と誤認し、遠距離攻撃を放った！',
+    '{actor} は錯乱し、{target} に矢を放ってしまった！',
+    '{actor} は疑念に囚われ、{target} を狙い撃った！',
+    '{actor} は味方を敵と見なし、遠距離攻撃を仕掛けた！',
+    '{actor} の視界は歪み、{target} を撃ち抜いた！',
+    '{actor} は混乱し、{target} に向けて攻撃を放った！',
+    '{actor} は仲間を敵と誤認し、遠距離攻撃を行った！',
+    '{actor} は理性を失い、{target} を射抜いた！',
+    '{actor} は錯乱し、{target} に攻撃を加えた！',
+    '{actor} は敵味方の区別を失い、{target} を狙った！',
+  ],
+  mid: [
+    '{actor} は混乱し、{target} に {spell} を放ってしまった！',
+    '{actor} は {target} を敵と誤認し、{spell}を発動した！',
+    '{actor} の魔力は暴走し、{target} に向けて放たれた！',
+    '{actor} は錯乱し、{target} に{spell}を叩き込んだ！',
+    '{actor} は理性を失い、{target} に{spell}を放った！',
+    '{actor} は仲間を敵と誤認し、魔法攻撃を行った！',
+    '{actor} の幻惑は深まり、{target} に魔法を向けた！',
+    '{actor} は敵味方の区別を失い、{target} に{spell}を放った！',
+    '{actor} は混乱し、{target} に{spell}を発動した！',
+    '{actor} の制御を失った魔力が {target} を襲った！',
+  ],
+  close: [
+    '{actor} は敵対状態！ {target} へ攻撃！',
+    '{actor} は錯乱している！ {target} へ攻撃してしまった！',
+    '{actor} は混乱し、{target} に斬りかかった！',
+    '{actor} は {target} を敵と誤認し、攻撃を仕掛けた！',
+    '{actor} は理性を失い、{target} に襲いかかった！',
+    '{actor} は仲間を敵と見なし、{target} に攻撃した！',
+    '{actor} は見境なく、{target} に牙を剥いた！',
+    '{actor} は敵味方の区別を失い、{target} に攻撃した！',
+    '{actor} は錯乱し、{target} に一撃を加えた！',
+    '{actor} は暴走し、{target} に襲いかかった！',
+  ],
+} as const satisfies Record<BattleActionPhase, readonly string[]>;
+
 function getElementalMultiplier(
   offense: ElementalOffense,
   resistance: Record<'fire' | 'thunder' | 'ice', number>
@@ -1344,6 +1383,19 @@ function buildConfusionAction(
 ): string {
   const template = pickRandomEntry(success ? CONFUSION_SUCCESS_LOGS : CONFUSION_FAILURE_LOGS);
   return `${actorName}${template.split('target').join(targetName)}`;
+}
+
+function buildAntagonismAction(
+  phase: BattleActionPhase,
+  actorName: string,
+  targetName: string,
+  spellName: string | null,
+): string {
+  const template = pickRandomEntry(ANTAGONISM_LOGS[phase]);
+  return template
+    .replace(/\{actor\}/g, actorName)
+    .replace(/\{target\}/g, targetName)
+    .replace(/\{spell\}/g, spellName ?? '魔法');
 }
 
 function getConfusionNoTargetLog(
@@ -2926,13 +2978,16 @@ export function executeBattle(
             elementalOffense: cs.elementalOffense,
           });
         } else {
+          const antagonismAction = isAntagonism && antagonismTargetName
+            ? buildAntagonismAction(phase, char.name, antagonismTargetName, phase === 'mid' ? attackType : null)
+            : null;
           log.push({
             phase,
             initiativeRoll: turn.roll,
             actor: 'character',
             characterId: cs.characterId,
             action: isAntagonism
-              ? `${char.name} は敵対状態！${antagonismTargetName} へ${phase === 'mid' ? `${attackType}を唱えた` : attackType}！${resonanceLogText}`
+              ? `${antagonismAction ?? `${char.name} は敵対状態！${antagonismTargetName} へ${phase === 'mid' ? `${attackType}を唱えた` : attackType}！`}${resonanceLogText}`
               : phase === 'mid'
                 ? `${char.name} が${attackType}を唱えた！${resonanceLogText}`
                 : `${char.name} の${attackType}！${resonanceLogText}`,
