@@ -159,7 +159,7 @@
 - **Self destruct**
   - Triggered by `a.self-destruct`
   - Use `f.targeting` (phase: CLOSE) for choosing target.
-  - opponent.`d.HP` -= N/D x actor.remaining_HP
+  - opponent.`d.HP` -= N/D x ( actor.remaining_HP - opponent.`d.physical_defense` ) x opponent.`f.defense_amplifier`
   - actor.`d.HP` = 0.
   - Log: `log.self-destruct`
  
