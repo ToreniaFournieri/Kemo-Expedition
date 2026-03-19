@@ -53,12 +53,10 @@
 - Actions are resolved in descending order of roll result.
 - **Tie-breaker action order**
   - Resolve in the following order:
-    1. Enemy ability
-    2. Front-row party member abilities
-    3. Back-row party member abilities
-    4. Enemy moves
-    5. Front-row party member moves
-    6. Back-row party member moves
+    1. Triggered abilities
+    2. Enemy moves
+    3. Front-row party member moves
+    4. Back-row party member moves
 
 ##### 6.1.1.3 END phase
 - Note: actor = effect ([末] ), "()" part is gray text.
@@ -72,10 +70,15 @@
 - Item got with `c.unlock`:
   - "イタチの解錠 石板の盾 を獲得した！(自動売却対象: 10G)"
 
-
 #### 6.1.2 Triggered ability
-
-
+- For each actor:
+  - If actor has an ability with matching timing (phase: current phase, timing: current timing):
+    - Tie-breaker action order: Enemy > Front-row party member > Back-row party member
+    - Activate the ability.
+- Log format:
+  - `[2] name が遠吠えをした！ (相手の次の攻撃回数5/7)`
+    - Text inside `()` is displayed in gray.
+     
 #### 6.1.3 Actor normal move
 
 ##### 6.1.3.1 Actor action
