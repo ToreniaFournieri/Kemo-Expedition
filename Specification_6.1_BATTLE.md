@@ -121,7 +121,7 @@
   - Randomly select 1 eligible opponent.
   - Apply `c.antagonism` to the selected target.
   - **Eligible target**
-    - Has both `d.X_attack` and `d.X_NoA`, and **not move in the phase**.
+    - Has both `d.X_attack` and `d.X_NoA`, and **not moved in the phase**.
     - `X = ranged` for `LONG`
     - `X = magical` for `MID`
     - `X = melee` for `CLOSE`
