@@ -160,6 +160,19 @@ const REGENERATION_LOGS = [
   '{actor} の生命力が傷を癒した！',
 ] as const;
 
+const DECOMPOSE_LOGS = [
+  '{actor} は {target} の防御を崩した！',
+  '{actor} は {target} の装備を劣化させた！',
+  '{actor} は {target} の体を蝕んだ！',
+  '{actor} は {target} の防御を侵食した！',
+  '{actor} は {target} の体を弱体化させた！',
+  '{actor} は {target} の守りを削り取った！',
+  '{actor} は {target} の体制を崩した！',
+  '{actor} は {target} の耐久を低下させた！',
+  '{actor} は {target} の防御を溶かした！',
+  '{actor} は {target} の身体を分解した！',
+] as const;
+
 function getElementalMultiplier(
   offense: ElementalOffense,
   resistance: Record<'fire' | 'thunder' | 'ice', number>
@@ -1201,6 +1214,14 @@ function getRegenerationNote(healAmount: number): string {
   return `(✚ ${healAmount})`;
 }
 
+function getDecomposeDefenseMultiplier(level: number): number {
+  if (level >= 5) return 2 / 7;
+  if (level === 4) return 3 / 7;
+  if (level === 3) return 4 / 7;
+  if (level === 2) return 5 / 7;
+  return level >= 1 ? 6 / 7 : 1.0;
+}
+
 type AbilityLike = { id: AbilityId; level: number };
 
 function formatAbilityLabel(ability: AbilityLike): string {
@@ -1505,6 +1526,12 @@ function buildSoulReapAction(actorName: string, targetName: string): string {
 
 function buildRegenerationAction(actorName: string): string {
   return pickRandomEntry(REGENERATION_LOGS).replace(/\{actor\}/g, actorName);
+}
+
+function buildDecomposeAction(actorName: string, targetName: string): string {
+  return pickRandomEntry(DECOMPOSE_LOGS)
+    .replace(/\{actor\}/g, actorName)
+    .replace(/\{target\}/g, targetName);
 }
 
 function getRandomPartyMemberName(party: Party): string {
@@ -2193,6 +2220,7 @@ export function executeBattle(
     let enemyHasMovedInPhase = false;
     const movedCharacterIds = new Set<number>();
     const triggeredConfusionTimings = new Set<number>();
+    let hasTriggeredDecompose = false;
     let hasTriggeredRegeneration = false;
     let hasTriggeredPredatorSense = false;
     const triggerLongPhaseHowl = (): void => {
@@ -2344,6 +2372,60 @@ export function executeBattle(
           characterId: entry.stats.characterId,
           action: buildRegenerationAction(entry.ownerName),
           note: getRegenerationNote(healAmount),
+        });
+      }
+    };
+
+    const triggerDecomposeAtTiming = (timing: number): void => {
+      if (phase !== 'close' || timing !== 2 || hasTriggeredDecompose) return;
+      hasTriggeredDecompose = true;
+      if (enemyHp <= 0 || partyHp <= 0) return;
+
+      const enemyDecomposeLevel = getEnemyAbilityLevel(enemy, 'decompose');
+      if (enemyDecomposeLevel > 0) {
+        const { row, newCtx } = getTargetRow(ctx, 'close');
+        ctx = newCtx;
+        const target = resolveEnemyTarget(row, characterStats, 'close');
+        if (target) {
+          const multiplier = getDecomposeDefenseMultiplier(enemyDecomposeLevel);
+          const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? '味方';
+          characterStats = characterStats.map((stats) => (
+            stats.characterId === target.characterId
+              ? { ...stats, physicalDefense: stats.physicalDefense * multiplier }
+              : stats
+          ));
+          log.push({
+            phase,
+            initiativeRoll: timing,
+            actor: 'triggered',
+            action: buildDecomposeAction(enemy.name, targetName),
+          });
+          ctx = {
+            ...ctx,
+            characterStats,
+          };
+        }
+      }
+
+      const partyDecomposeEntries = characterStats
+        .map((stats) => ({
+          stats,
+          level: getAbilityLevel(stats, 'decompose'),
+          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+        }))
+        .filter((entry) => entry.level > 0)
+        .sort((a, b) => a.stats.row - b.stats.row);
+
+      for (const entry of partyDecomposeEntries) {
+        if (enemyHp <= 0 || partyHp <= 0) break;
+
+        enemy.physicalDefense *= getDecomposeDefenseMultiplier(entry.level);
+        log.push({
+          phase,
+          initiativeRoll: timing,
+          actor: 'triggered',
+          characterId: entry.stats.characterId,
+          action: buildDecomposeAction(entry.ownerName, enemy.name),
         });
       }
     };
@@ -2559,6 +2641,7 @@ export function executeBattle(
         triggerPredatorSenseAtTiming(9);
       }
       if (turn.roll <= 2) {
+        triggerDecomposeAtTiming(2);
         triggerConfusionAtTiming(2);
       }
       if (turn.roll <= 1) {
@@ -3396,6 +3479,7 @@ export function executeBattle(
     }
     triggerRegenerationAtTiming(9);
     triggerPredatorSenseAtTiming(9);
+    triggerDecomposeAtTiming(2);
     triggerConfusionAtTiming(2);
     triggerConfusionAtTiming(1);
     triggerUnstableCoreAtEnd();
