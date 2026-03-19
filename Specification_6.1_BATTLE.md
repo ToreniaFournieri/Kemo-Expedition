@@ -125,7 +125,7 @@
     - `X = ranged` for `LONG`
     - `X = magical` for `MID`
     - `X = melee` for `CLOSE`
-  - **Log** (select one randomly)
+  - **Success log** (select one randomly)
 	- "actor は target に何かを囁き、仲間を疑い始めた！"
 	- "actor の甘い策略に target は引き込まれた！"
 	- "actor の影響で target は錯乱した！"
@@ -136,6 +136,18 @@
 	- "actor の術で target は敵味方の区別を失った！"
 	- "actor が植え付けた疑念によって target は見境なく牙を剥いた！"
 	- "actor が囁いた禁断の言葉により、target は狂気に囚われた！"
+ - **Failure log** (select one randomly)
+    - "actor の策略を target は打ち破った！"
+	- "actor の効果は target に通じなかった！"
+	- "actor の悪だくみは target によって防がれた！"
+	- "actor の混乱は target に効かなかった！"
+	- "actor の精神干渉を target は振り払った！"
+	- "actor の囁きに対し target は理性を保った！"
+	- "actor の幻術を target は見破った！"
+	- "actor の術は target に打ち消された！"
+	- "actor の見せた幻は target に通用しない！"
+	- "actor が語り掛けた誘惑を target は聞きそびれた！"
+
 
 #### 6.1.3 Actor normal move
 
