@@ -16,6 +16,8 @@
 #### 6.1.1 Phase resolution
 
 ##### 6.1.1.1 START phase
+- Note: actor = effect ([効] ), "()" part is gray text.
+- 
 **Priority order of ability resolution**
 - actor.`a.oblivion`
   - Randomly select 1 opponent.
@@ -28,7 +30,7 @@
   - Actor gains the selected ability for the rest of the battle.
 
 - actor.`a.magic-seal`
-  - Log: "[効] name の魔封！ (この場で最初に唱える魔法は無効化される)"
+  - Log: "name の魔封！ (この場で最初に唱える魔法は無効化される)"
   - Sets `a.magic-seal` enable.
 
 - Other abilities with `[効]`
@@ -59,9 +61,17 @@
     6. Back-row party member moves
 
 ##### 6.1.1.3 END phase
+- Note: actor = effect ([末] ), "()" part is gray text.
 - `Goddess of Restoration` effect
+  - "再生の女神の祝福！ (HP回復+585)"
 - `God of Attrition` effect
+  - "消耗の神への代償！ (HP消耗-433585)"
 - `c.unlock`, reward log
+- Item got:
+  - "制御ロッド を獲得した！ (自動売却対象: 9G)"
+- Item got with `c.unlock`:
+  - "イタチの解錠 石板の盾 を獲得した！(自動売却対象: 10G)"
+
 
 #### 6.1.2 Actor normal move
 
