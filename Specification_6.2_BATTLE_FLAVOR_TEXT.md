@@ -78,4 +78,17 @@
 | CLOSE | {actor} は錯乱し、{target} に一撃を加えた！ |
 | CLOSE | {actor} は暴走し、{target} に襲いかかった！ |
 
+`log.unstable-core`
 
+| phase | flavor text |
+|---|---|
+| LONG | {actor} は暴れだし、自らを傷つけた！  |
+| LONG | {actor} は制御を失い、自身を引き裂いた！ |
+| LONG | {actor} は錯乱し、自らに攻撃を加えた！ |
+| LONG | {actor} は苦しみもがき、自傷した！ |
+| LONG | {actor} は狂乱し、己の身を傷つけた！ |
+| MID | {actor} は錯乱し、自らを傷つけた！ |
+| MID | {actor} は暴走し、自身を切り裂いた！ |
+| MID | {actor} は理性を失い、自らに攻撃を加えた！ |
+| MID | {actor} はもがき苦しみ、自傷した！ |
+| MID | {actor} は狂気に呑まれ、自身を傷つけた！ |
