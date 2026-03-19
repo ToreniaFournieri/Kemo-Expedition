@@ -59,7 +59,7 @@
     4. Back-row party member moves
    
 **Order by priority**
-- Each phase is resolved from timing 9 down to timing 1.
+- Each phase is resolved from timing 9 down to timing 0. (0 is only for `Trigger`)
 - At each timing:
   1. Resolve triggered abilities
   2. Resolve enemy actions
