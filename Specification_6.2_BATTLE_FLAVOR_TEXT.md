@@ -92,3 +92,19 @@
 | MID | {actor} は理性を失い、自らに攻撃を加えた！ |
 | MID | {actor} はもがき苦しみ、自傷した！ |
 | MID | {actor} は狂気に呑まれ、自身を傷つけた！ |
+
+
+- `log.soul-reap`
+
+| flavor text |
+|---|
+| {actor} は {target} に終止符を打った！ |
+| {actor} は {target} の魂を刈り取った！ |
+| {actor} は {target} の命を摘み取った！ |
+| {actor} は {target} に死の刻印を刻んだ！ |
+| {actor} は {target} の存在を断ち切った！ |
+| {actor} は {target} を無慈悲に葬り去った！ |
+| {actor} は {target} の魂を引き剥がした！ |
+| {actor} は {target} に逃れられぬ終焉を与えた！ |
+| {actor} は {target} をこの世から消し去った！ |
+| {actor} は {target} の命脈を断ち切った！ |
