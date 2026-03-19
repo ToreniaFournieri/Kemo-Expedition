@@ -95,7 +95,8 @@
 
 
 - `log.soul-reap`
-
+  - note: {target} is randomly selected party member
+ 
 | flavor text |
 |---|
 | {actor} は {target} に終止符を打った！ |
@@ -110,7 +111,7 @@
 | {actor} は {target} の命脈を断ち切った！ |
 
 
-`log.predator-sense`
+- `log.predator-sense`
 
 | flavor text |
 |---|
@@ -124,3 +125,19 @@
 | {actor} は {target} の崩れを察知した！ |
 | {actor} は {target} に食らいつく機を得た！ |
 | {actor} は {target} を獲物として見定めた！ |
+
+
+- `log.regeneration`
+
+| flavor text |
+|---|
+| {actor} の傷がふさがり始めた！ |
+| {actor} の肉体が再生した！ |
+| {actor} の傷がみるみる癒えていく！ |
+| {actor} は失った力を取り戻した！ |
+| {actor} の体が再び動き出した！ |
+| {actor} の損傷が回復した！ |
+| {actor} の肉が再び繋がった！ |
+| {actor} の傷跡が消えていく！ |
+| {actor} は再生し、持ち直した！ |
+| {actor} の生命力が傷を癒した！ |
