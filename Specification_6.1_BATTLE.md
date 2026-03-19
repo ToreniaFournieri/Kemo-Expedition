@@ -152,7 +152,7 @@
 
 - **decompose**
   - Triggered by `a.decompose`
-  - Use `f.targeting` (phase: CLOSE) for chosing target.
+  - Use `f.targeting` (phase: CLOSE) for choosing target.
   - target.`d.defense` = N/D x target.`d.defense`
   - Log: `log.decompose`
  
