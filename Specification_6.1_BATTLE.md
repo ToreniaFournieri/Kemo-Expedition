@@ -131,8 +131,9 @@
 - **Unstable core**
   - Triggered by `a.unstable-core`
   - actor.`d.HP` -= (N x 0.01) x actor.remaining_HP / actor.max_HP
-  - Log: `log.unstable-core` + "(残HP N%の自傷ダメージ: XXX)"
-    - Note: Sub color for "XXX" part
+  - Log: `log.unstable-core` + "(残HP N%の自傷ダメージ)"
+  - Damage: (XXX)
+    - Note: Left-Aligned, Sub color
 
 - **Soul reap**
   - Triggered by `a.soul-reap`

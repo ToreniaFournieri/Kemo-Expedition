@@ -497,6 +497,7 @@ export interface BattleLogEntry {
   characterId?: number;
   action: string;
   note?: string;
+  noteTone?: 'default' | 'sub';
   damage?: number;
   reflectedDamage?: number;
   reflectedSourceDamage?: number;

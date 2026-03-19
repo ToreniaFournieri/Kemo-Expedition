@@ -1430,8 +1430,8 @@ function buildUnstableCoreAction(
   return pickRandomEntry(UNSTABLE_CORE_LOGS[phase]).replace(/\{actor\}/g, actorName);
 }
 
-function getUnstableCoreNote(level: number, damage: number): string {
-  return `(残HP ${getUnstableCoreDamagePercent(level)}%の自傷ダメージ: ${damage})`;
+function getUnstableCoreNote(level: number): string {
+  return `(残HP ${getUnstableCoreDamagePercent(level)}%の自傷ダメージ)`;
 }
 
 function getConfusionNoTargetLog(
@@ -2246,7 +2246,9 @@ export function executeBattle(
           initiativeRoll: 0,
           actor: 'triggered',
           action: buildUnstableCoreAction(unstablePhase, enemy.name),
-          note: getUnstableCoreNote(enemyUnstableCoreLevel, damage),
+          note: getUnstableCoreNote(enemyUnstableCoreLevel),
+          noteTone: 'sub',
+          damage,
         });
       }
 
@@ -2273,7 +2275,9 @@ export function executeBattle(
           actor: 'triggered',
           characterId: entry.stats.characterId,
           action: buildUnstableCoreAction(unstablePhase, entry.ownerName),
-          note: getUnstableCoreNote(entry.level, damage),
+          note: getUnstableCoreNote(entry.level),
+          noteTone: 'sub',
+          damage,
         });
       }
     };

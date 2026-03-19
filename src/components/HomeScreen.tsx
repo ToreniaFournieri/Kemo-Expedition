@@ -232,6 +232,10 @@ function normalizeBattleLogNote(note?: string): string | undefined {
   return note.replace('パーティ攻撃力 ×', 'パーティ物理攻撃力 ×');
 }
 
+function getBattleLogNoteClass(noteTone?: 'default' | 'sub'): string {
+  return noteTone === 'sub' ? 'text-sub' : 'text-gray-400';
+}
+
 const RACE_ICON_SOURCES = RACES
   .map((race) => race.icon)
   .filter((icon): icon is string => Boolean(icon))
@@ -6256,7 +6260,7 @@ function ExpeditionTab({
                                         <span className="min-w-0">
                                         <span className="text-gray-400">[{phaseLabel}]</span>{' '}
                                           {actionDisplayNode}
-                                          {normalizeBattleLogNote(log.note) && <span className="text-gray-400"> {normalizeBattleLogNote(log.note)}</span>}
+                                          {normalizeBattleLogNote(log.note) && <span className={getBattleLogNoteClass(log.noteTone)}> {normalizeBattleLogNote(log.note)}</span>}
                                           {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                         </span>
                                         {damageDisplay}
@@ -6268,7 +6272,7 @@ function ExpeditionTab({
                                       <span className="min-w-0">
                                         <span className="text-gray-400">[{phaseLabel}]</span>{' '}
                                         {actionDisplayNode}
-                                        {normalizeBattleLogNote(log.note) && <span className="text-gray-400"> {normalizeBattleLogNote(log.note)}</span>}
+                                        {normalizeBattleLogNote(log.note) && <span className={getBattleLogNoteClass(log.noteTone)}> {normalizeBattleLogNote(log.note)}</span>}
                                         {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                       </span>
                                       {damageDisplay}
@@ -7528,7 +7532,7 @@ function DiaryTab({
                                       <span className="min-w-0">
                                         <span className="text-gray-400">[{phaseLabel}]</span>{' '}
                                         {actionDisplayNode}
-                                        {normalizeBattleLogNote(battleLog.note) && <span className="text-gray-400"> {normalizeBattleLogNote(battleLog.note)}</span>}
+                                        {normalizeBattleLogNote(battleLog.note) && <span className={getBattleLogNoteClass(battleLog.noteTone)}> {normalizeBattleLogNote(battleLog.note)}</span>}
                                         {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                       </span>
                                       {damageDisplay}
@@ -7540,7 +7544,7 @@ function DiaryTab({
                                     <span className="min-w-0">
                                       <span className="text-gray-400">[{phaseLabel}]</span>{' '}
                                       {actionDisplayNode}
-                                      {normalizeBattleLogNote(battleLog.note) && <span className="text-gray-400"> {normalizeBattleLogNote(battleLog.note)}</span>}
+                                      {normalizeBattleLogNote(battleLog.note) && <span className={getBattleLogNoteClass(battleLog.noteTone)}> {normalizeBattleLogNote(battleLog.note)}</span>}
                                       {compactHitDisplay && <span className="text-gray-400">{compactHitDisplay}</span>}
                                     </span>
                                     {damageDisplay}
