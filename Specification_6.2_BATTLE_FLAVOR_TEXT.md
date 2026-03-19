@@ -92,3 +92,35 @@
 | MID | {actor} は理性を失い、自らに攻撃を加えた！ |
 | MID | {actor} はもがき苦しみ、自傷した！ |
 | MID | {actor} は狂気に呑まれ、自身を傷つけた！ |
+
+
+- `log.soul-reap`
+
+| flavor text |
+|---|
+| {actor} は {target} に終止符を打った！ |
+| {actor} は {target} の魂を刈り取った！ |
+| {actor} は {target} の命を摘み取った！ |
+| {actor} は {target} に死の刻印を刻んだ！ |
+| {actor} は {target} の存在を断ち切った！ |
+| {actor} は {target} を無慈悲に葬り去った！ |
+| {actor} は {target} の魂を引き剥がした！ |
+| {actor} は {target} に逃れられぬ終焉を与えた！ |
+| {actor} は {target} をこの世から消し去った！ |
+| {actor} は {target} の命脈を断ち切った！ |
+
+
+`log.predator-sense`
+
+| flavor text |
+|---|
+| {actor} は {target} の弱りを見逃さなかった！ |
+| {actor} は {target} の隙を見抜いた！ |
+| {actor} は {target} の傷を嗅ぎつけた！ |
+| {actor} は {target} の弱点を捉えた！ |
+| {actor} は {target} を仕留める機を見極めた！ |
+| {actor} は {target} に狙いを定めた！ |
+| {actor} は {target} の動きを読み切った！ |
+| {actor} は {target} の崩れを察知した！ |
+| {actor} は {target} に食らいつく機を得た！ |
+| {actor} は {target} を獲物として見定めた！ |

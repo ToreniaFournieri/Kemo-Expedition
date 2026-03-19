@@ -133,12 +133,17 @@
   - actor.`d.HP` -= (N x 0.01) x actor.remaining_HP / actor.max_HP
   - Log: `log.unstable-core` + "(残HP N%の自傷ダメージ)"
   - Damage: (XXX)
-    - Note: Left-Aligned, Sub color
+	- Note: Left-Aligned, Sub color
 
 - **Soul reap**
   - Triggered by `a.soul-reap`
-  - If opponent.`d.HP` < (N x 0.01) x actor.max_HP, opponent.`d.HP` = 0.
+  - If opponent.`d.HP` < (N x 0.01) x opponent.max_HP, opponent.`d.HP` = 0.
   - Log: `log.soul-reap` + "(HP N％未満で即死)"
+
+- **Predator sense**
+  - Triggered by `a.predator-sense`
+  -  If opponent.`d.HP` < (N x 0.01) x opponent.max_HP, add actor `c.accuracy+0.040`.
+  -  Log: `log.predator-sense` + "(HP N%未満で命中+40)"
  
 #### 6.1.3 Actor normal move
 

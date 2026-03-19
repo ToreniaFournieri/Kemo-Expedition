@@ -499,6 +499,7 @@ export interface BattleLogEntry {
   note?: string;
   noteTone?: 'default' | 'sub';
   damage?: number;
+  damageTarget?: 'party' | 'enemy';
   reflectedDamage?: number;
   reflectedSourceDamage?: number;
   reflectTarget?: 'party' | 'enemy';

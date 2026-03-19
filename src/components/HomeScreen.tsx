@@ -6233,6 +6233,8 @@ function ExpeditionTab({
                                 const isAbsorbDamageLog = !!log.absorbedDamage && log.absorbedDamage > 0;
                                 const reflectArrowClass = log.reflectTarget === 'party' ? 'text-accent' : 'text-sub';
                                 const absorbArrowClass = log.absorbTarget === 'enemy' ? 'text-accent' : 'text-sub';
+                                const damageColorClass = (log.damageTarget ?? (isEnemy ? 'party' : 'enemy')) === 'party' ? 'text-accent' : 'text-sub';
+                                const damageEmojiClass = damageColorClass === 'text-accent' ? 'accent-theme-emoji-icon' : 'sub-theme-emoji-icon';
                                 const damageDisplay = ((log.damage !== undefined && (log.damage > 0 || log.showZeroDamage)) || isReflectDamageLog || isAbsorbDamageLog) && (
                                   isReflectDamageLog
                                     ? (
@@ -6247,8 +6249,8 @@ function ExpeditionTab({
                                         </span>
                                       )
                                       : (
-                                        <span className={`ml-auto shrink-0 whitespace-nowrap text-right ${isEnemy ? 'text-accent' : 'text-sub'}`}>
-                                          (<span className={isEnemy ? 'accent-theme-emoji-icon' : 'sub-theme-emoji-icon'} aria-hidden="true">{emoji}</span>{' '}{formatNumber(log.damage ?? 0)})
+                                        <span className={`ml-auto shrink-0 whitespace-nowrap text-right ${damageColorClass}`}>
+                                          (<span className={damageEmojiClass} aria-hidden="true">{emoji}</span>{' '}{formatNumber(log.damage ?? 0)})
                                         </span>
                                       )
                                 );
@@ -7505,6 +7507,8 @@ function DiaryTab({
                               const isAbsorbDamageLog = !!battleLog.absorbedDamage && battleLog.absorbedDamage > 0;
                               const reflectArrowClass = battleLog.reflectTarget === 'party' ? 'text-accent' : 'text-sub';
                               const absorbArrowClass = battleLog.absorbTarget === 'enemy' ? 'text-accent' : 'text-sub';
+                              const damageColorClass = (battleLog.damageTarget ?? (isEnemy ? 'party' : 'enemy')) === 'party' ? 'text-accent' : 'text-sub';
+                              const damageEmojiClass = damageColorClass === 'text-accent' ? 'accent-theme-emoji-icon' : 'sub-theme-emoji-icon';
                               const damageDisplay = ((battleLog.damage !== undefined && (battleLog.damage > 0 || battleLog.showZeroDamage)) || isReflectDamageLog || isAbsorbDamageLog) && (
                                 isReflectDamageLog
                                   ? (
@@ -7519,8 +7523,8 @@ function DiaryTab({
                                       </span>
                                     )
                                     : (
-                                      <span className={`ml-auto shrink-0 whitespace-nowrap text-right ${isEnemy ? 'text-accent' : 'text-sub'}`}>
-                                        (<span className={isEnemy ? 'accent-theme-emoji-icon' : 'sub-theme-emoji-icon'} aria-hidden="true">{emoji}</span>{' '}{formatNumber(battleLog.damage ?? 0)})
+                                      <span className={`ml-auto shrink-0 whitespace-nowrap text-right ${damageColorClass}`}>
+                                        (<span className={damageEmojiClass} aria-hidden="true">{emoji}</span>{' '}{formatNumber(battleLog.damage ?? 0)})
                                       </span>
                                     )
                               );
