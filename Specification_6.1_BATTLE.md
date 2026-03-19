@@ -125,9 +125,16 @@
     - `X = ranged` for `LONG`
     - `X = magical` for `MID`
     - `X = melee` for `CLOSE`
-  - On activation, roll X/X to apply confusion to a random eligible target.
-  - **Log:**  `log.confusion`
+  - On activation, roll N/D to apply confusion to a random eligible target.
+  - Log:  `log.confusion`
+ 
+- **Unstable core**
+  - Triggered by `a.unstable-core`
+  - actor.`d.HP` -= N x actor.remaining_HP / actor.max_HP
+  - Log: `log.unstable-core` + "(残HP N%の自傷ダメージ: XXX)"
+    - Note: Sub color for "XXX" part
 
+ 
 #### 6.1.3 Actor normal move
 
 ##### 6.1.3.1 Actor action
