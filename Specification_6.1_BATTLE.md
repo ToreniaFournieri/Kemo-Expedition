@@ -116,11 +116,11 @@
     - Text `()` part is displayed in gray.
     - "2" is triggered ability timing.
 
-- `f.confusion`
+- **confusion**
   - Triggered by `a.*-confusion`
   - Randomly select 1 eligible opponent.
   - Apply `c.antagonism` to the selected target.
-  - **Eligible target**
+  - Eligible target
     - Has both `d.X_attack` and `d.X_NoA`, and **not has moved yet in the phase**.
     - `X = ranged` for `LONG`
     - `X = magical` for `MID`
@@ -142,8 +142,13 @@
 
 - **Predator sense**
   - Triggered by `a.predator-sense`
-  -  If opponent.`d.HP` < (N x 0.01) x opponent.max_HP, add actor `c.accuracy+0.040`.
-  -  Log: `log.predator-sense` + "(HP N%未満で命中+40)"
+  - If opponent.`d.HP` < (N x 0.01) x opponent.max_HP, add actor `c.accuracy+0.040`.
+  - Log: `log.predator-sense` + "(HP N%未満で命中+40)"
+ 
+- **regeneration**
+  - Triggered by `a.regeneration`
+  - actor.`d.HP` += min(actor.max_HP, (N x 0.01) x (actor.damage_taken_in_this_battle) / actor.max_HP)
+  - Log: `log.regeneration`
  
 #### 6.1.3 Actor normal move
 
