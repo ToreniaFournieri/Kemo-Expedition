@@ -29,7 +29,7 @@ const DEFAULT_MULTIPLIERS: GodEnemyMultipliers = {
   defenseAmplifier: 1,
 };
 
-// SpecRef: 6.1.1 | Encounter Rules | getGodEnemyMultipliers
+// SpecRef: 4.1.2 | Enemy | x.gods_mult
 const DEBUG_GOD_ENEMY_MULTIPLIERS: GodEnemyMultipliers = {
   hp: 0.3,
   attack: 0.3,
@@ -50,7 +50,7 @@ type EnemyScalingOptions = {
   isLunaMode?: boolean;
 };
 
-// SpecRef: 6.1.1 | Encounter Rules | getRoomMultiplier
+// SpecRef: 4.1.2 | Enemy | Strength of enemy by its level
 export function getRoomMultiplier(
   dungeonExpLevel: number,
   floorNumber: number,
@@ -63,7 +63,7 @@ export function getRoomMultiplier(
   return getEnemyMultipliersForLevel(effectiveEnemyLevel).attack ?? floorMultiplier;
 }
 
-// SpecRef: 6.1.1 | Encounter Rules | applyEnemyEncounterScaling
+// SpecRef: 4.1.2 | Enemy | Enemy status mutipliers
 export function applyEnemyEncounterScaling(
   enemy: EnemyDef,
   dungeon: Dungeon,
