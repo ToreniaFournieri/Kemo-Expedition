@@ -148,6 +148,10 @@
 	- "actor の術は target に打ち消された！ (混乱確率X/X: 失敗)"
 	- "actor の見せた幻は target に通用しない！ (混乱確率X/X: 失敗)"
 	- "actor が語り掛けた誘惑を target は聞きそびれた！ (混乱確率X/X: 失敗)"
+  - **No eligible target**
+    - "actor は策略を巡らせたが、声は風に流され誰にも届かなかった (混乱-遠距離対象なし)"
+    - "actor は幻惑を仕掛けたが、誰も影響を受けなかった (混乱-魔法対象なし)"
+    - "actor は不和をもたらそうとしたが、誰も近くにいなかった (混乱-近接対象なし)"
   - note: Text `()` part is displayed in gray.
 
 #### 6.1.3 Actor normal move
