@@ -48,9 +48,9 @@
 - `God of Attrition` effect
 - `c.unlock`, reward log
 
-#### 6.1.2 Actor move
+#### 6.1.2 Actor normal move
 
-**Actor action**
+##### 6.1.2.1 Actor action
 - `f.NoA` times, get `f.targeting` -> opponent. 
 	- If `f.hit_detection`(actor: , opponent: , Nth_hit: the current hit index), current party.
 	- Check the following conditions in this order:
@@ -89,6 +89,7 @@
 - If (phase is LONG) and (opponent.`a.illusion`1) and (the `a.illusion` is enable), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. log "ポンタへの攻撃はすべて幻だった！".
 - If (phase is LONG) and (opponent.party.character.`a.illusion`2) and (the `a.illusion` is enable), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. log "nameへの攻撃はすべて幻だった！".
 
+##### 6.1.2.2 Chain move trigger
 - **Coutner:** `f.counter`(actor:actor , opponent:opponent ,phase: )
   - **Re-counter** If opponent.`a.re-counter`, `f.re-counter`(actor:opponent , opponent:actor ,phase: )
 - **Re-attack**: IF actor.`a.re-attack`, the actor attacks to opponent. (using f.hit_detection, f.damage_calculation)
@@ -96,14 +97,13 @@
   	- `a.re-attack`2: One attack and actor.`f.NoA` x 0.7, round up
   	- `a.re-attack`3: One attack and actor.`f.NoA` x 1.0
 - **Magical counter:** If opponent.`a.magical-counter` and phase is MID, `f.magical-counter`(actor:opponent, opponent:actor ,phase: )
-
 - **Covering fire:** IF actor.`a.covering-fire` and the actor's successful hit is only one and phase is CLOSE, `f.covering-fire`(actor:covering fire actor.party.character , opponent:opponent)
 
 - *Note:*  Nth_hit is per action based (not per-target)
 
 #### 6.1.3 Function of battle
 
-##### 6.1.3.1 Normal move
+##### 6.1.3.1 Function of attack
 
 **functions of attack**
 - `f.resonance_amplifier`(actor: ,successful hit: n )
@@ -134,7 +134,7 @@
   - If opponent.`a.stealth`2 and (opponent.current_HP / opponent.max_HP) <= 0.29, damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
     - note: This is only for party member ability. enemy have this `a.stealth` ability, then Log:"enemy は神隠れした。もう攻撃はこれ以上あたらない！"
 
-##### 6.1.3.2 Targeting
+##### 6.1.3.2 Function of targeting
 
 **Row-based modifier** 
 - Targeting selects a character only to determine defense, row potency, abilities (counter). All damage resolved against a character is applied to `d.HP`.
@@ -207,7 +207,7 @@
     - Note: Nth_hit counts indevisually and not share with normal attack, re-attack and counter. (Nth_hit is reset per attack sequence)
   - Roll: Return Random(0, 1.0) <= chance
 
-##### 6.1.3.3 Chain move
+##### 6.1.3.3 Function of Chain move
 
 - **`f.counter`(actor: , opponent: ,phase: ) :** IF (opponent or party members have not available `a.null-counter`) and (actor.`a.counter`, phase is CLOSE) , the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
     - `a.counter`1: actor.`f.NoA` x 0.5, round up
@@ -231,7 +231,6 @@
   	- `a.magical-counter`1:   actor.`f.NoA` x 0.5, round up
   	- `a.magical-counter`2:   actor.`f.NoA` x 1.0
     - Magical counter triggers immediately after damage resolution, regardless of turn order modifiers.
-
 
 #### 6.1.4 Outcome 
 
