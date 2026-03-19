@@ -125,7 +125,7 @@ function getElementalMultiplier(
   return resistance[offense] ?? 1.0;
 }
 
-// SpecRef: 6.1.3.1 | Function of attack | f.rage_amplifier
+// SpecRef: 6.1.4.1 | Function of attack | f.rage_amplifier
 function getCharacterRageAmplifier(charStats: ComputedCharacterStats, partyHp: number, maxPartyHp: number): number {
   const rageLevel = charStats.abilities.find(a => a.id === 'rage')?.level ?? 0;
   if (rageLevel <= 0) return 1.0;
@@ -135,7 +135,7 @@ function getCharacterRageAmplifier(charStats: ComputedCharacterStats, partyHp: n
   return Math.min(2.0, 1.0 + (multiplierPerDamageRate * (1.0 - hpRatio)));
 }
 
-// SpecRef: 6.1.3.1 | Function of attack | f.rage_amplifier
+// SpecRef: 6.1.4.1 | Function of attack | f.rage_amplifier
 function getEnemyRageAmplifier(enemy: EnemyDef, enemyHp: number): number {
   const rageLevel = getEnemyAbilityLevel(enemy, 'rage');
   if (rageLevel <= 0) return 1.0;
@@ -204,7 +204,7 @@ function getMutualAbilityMultiplier(
   return highestLevel > 0 ? (multipliersByLevel[highestLevel] ?? null) : null;
 }
 
-// SpecRef: 6.1.3.1 | Function of attack | f.mutual_amplifer
+// SpecRef: 6.1.4.1 | Function of attack | f.mutual_amplifer
 function getMutualAmplifier(
   phase: BattleActionPhase,
   actorAbilities: AbilityLike[],
@@ -295,7 +295,7 @@ function getBulwarkLevel(charStats: ComputedCharacterStats): number {
   return charStats.abilities.find(a => a.id === 'bulwark')?.level ?? 0;
 }
 
-// SpecRef: 6.1.3.2 | Function of targeting | f.targeting
+// SpecRef: 6.1.4.2 | Function of targeting | f.targeting
 function resolveEnemyTarget(
   targetRow: number,
   characterStats: ComputedCharacterStats[],
@@ -325,7 +325,7 @@ function resolveEnemyTarget(
   return selectedTarget;
 }
 
-// SpecRef: 6.1.3.1 | Function of attack | f.momentum_amplifer
+// SpecRef: 6.1.4.1 | Function of attack | f.momentum_amplifer
 function getCharacterMomentumAmplifier(charStats: ComputedCharacterStats, partyHp: number, maxPartyHp: number): number {
   const momentumLevel = charStats.abilities.find(a => a.id === 'momentum')?.level ?? 0;
   if (momentumLevel <= 0) return 1.0;
@@ -341,7 +341,7 @@ function toMomentumBonusPercent(momentumAmplifier: number): number {
   return Math.round((momentumAmplifier - 1.0) * 100);
 }
 
-// SpecRef: 6.1.3.2 | Function of targeting | f.targeting
+// SpecRef: 6.1.4.2 | Function of targeting | f.targeting
 // Get target row index (1-6) using threat bag
 function getTargetRow(ctx: BattleContext, phase: BattleActionPhase): { row: number; newCtx: BattleContext } {
   const isPhysical = phase === 'long' || phase === 'close';
@@ -365,7 +365,7 @@ function getTargetRow(ctx: BattleContext, phase: BattleActionPhase): { row: numb
   return { row: ticket, newCtx };
 }
 
-// SpecRef: 6.1.3.1 | Function of attack | f.damage_calculation
+// SpecRef: 6.1.4.1 | Function of attack | f.damage_calculation
 // Calculate single attack damage (without NoA multiplier)
 function calculateSingleEnemyAttackDamage(
   phase: BattleActionPhase,
@@ -465,8 +465,8 @@ function getPartyDefenseAbilityAmplifier(
   return defenderLevel >= 3 ? 1 / 2 : defenderLevel === 2 ? 3 / 5 : defenderLevel === 1 ? 2 / 3 : 1.0;
 }
 
-// SpecRef: 6.1.3.1 | Function of attack | f.damage_calculation
-// SpecRef: 6.1.3.2 | Function of targeting | f.hit_detection
+// SpecRef: 6.1.4.1 | Function of attack | f.damage_calculation
+// SpecRef: 6.1.4.2 | Function of targeting | f.hit_detection
 function calculateCharacterFriendlyFireDamage(
   phase: BattleActionPhase,
   attacker: ComputedCharacterStats,
@@ -852,7 +852,7 @@ function getDefensiveReaction(
   return null;
 }
 
-// SpecRef: 6.1.3.1 | Function of attack | f.resonance_amplifier
+// SpecRef: 6.1.4.1 | Function of attack | f.resonance_amplifier
 function getResonanceAmplifier(resonanceLevel: number | undefined, hitNumber: number): number {
   if (!resonanceLevel || hitNumber <= 1) {
     return 1.0;
@@ -914,7 +914,7 @@ function roundUpToThirdDecimal(value: number): number {
   return Math.ceil((value + Number.EPSILON) * 1000) / 1000;
 }
 
-// SpecRef: 6.1.3.2 | Function of targeting | f.hit_detection
+// SpecRef: 6.1.4.2 | Function of targeting | f.hit_detection
 function hitDetection(
   actorAccuracyPotency: number,
   actorAccuracyBonus: number,
@@ -941,8 +941,8 @@ function hitDetection(
   return Math.random() <= chance;
 }
 
-// SpecRef: 6.1.3.1 | Function of attack | f.damage_calculation
-// SpecRef: 6.1.3.2 | Function of targeting | f.hit_detection
+// SpecRef: 6.1.4.1 | Function of attack | f.damage_calculation
+// SpecRef: 6.1.4.2 | Function of targeting | f.hit_detection
 function calculateCharacterDamage(
   phase: BattleActionPhase,
   charStats: ComputedCharacterStats,
@@ -1474,15 +1474,15 @@ export interface BattleResult extends BattleState {
 // SpecRef: 6.1.1.3 | END phase | Goddess of Restoration effect
 // SpecRef: 6.1.1.3 | END phase | God of Attrition effect
 // SpecRef: 6.1.1.3 | END phase | c.unlock, reward log
-// SpecRef: 6.1.2.1 | Actor action | f.NoA
-// SpecRef: 6.1.2.1 | Actor action | f.targeting
-// SpecRef: 6.1.2.1 | Actor action | f.hit_detection
-// SpecRef: 6.1.2.1 | Actor action | f.damage_calculation
-// SpecRef: 6.1.2.2 | Chain move trigger | Counter
-// SpecRef: 6.1.2.2 | Chain move trigger | Re-counter
-// SpecRef: 6.1.2.2 | Chain move trigger | Re-attack
-// SpecRef: 6.1.2.2 | Chain move trigger | Magical counter
-// SpecRef: 6.1.2.2 | Chain move trigger | Covering fire
+// SpecRef: 6.1.3.1 | Actor action | f.NoA
+// SpecRef: 6.1.3.1 | Actor action | f.targeting
+// SpecRef: 6.1.3.1 | Actor action | f.hit_detection
+// SpecRef: 6.1.3.1 | Actor action | f.damage_calculation
+// SpecRef: 6.1.3.2 | Chain move trigger | Counter
+// SpecRef: 6.1.3.2 | Chain move trigger | Re-counter
+// SpecRef: 6.1.3.2 | Chain move trigger | Re-attack
+// SpecRef: 6.1.3.2 | Chain move trigger | Magical counter
+// SpecRef: 6.1.3.2 | Chain move trigger | Covering fire
 export function executeBattle(
   party: Party,
   enemy: EnemyDef,
@@ -3100,7 +3100,7 @@ export function executeBattle(
 
 // Calculate enemy attack values for all phases (for display)
 // Shows raw attack values: rangedAttack/magicalAttack/meleeAttack
-// SpecRef: 6.1.3.1 | Function of attack | f.damage_calculation
+// SpecRef: 6.1.4.1 | Function of attack | f.damage_calculation
 export function calculateEnemyAttackValues(
   enemy: EnemyDef,
   _partyStats: ComputedPartyStats
