@@ -33,8 +33,6 @@ interface PendingHowlEffect {
   multiplier: number;
   ownerName: string;
   note: string;
-  initiativeRoll?: number;
-  actor: 'enemy' | 'character';
   characterId?: number;
 }
 
@@ -1248,6 +1246,17 @@ function getHowlNote(level: number): string {
   return '(相手の次の攻撃回数5/7)';
 }
 
+function getCharacterNoAForPhase(phase: BattleActionPhase, charStats: ComputedCharacterStats): number {
+  switch (phase) {
+    case 'long':
+      return charStats.rangedNoA;
+    case 'mid':
+      return charStats.magicalNoA;
+    case 'close':
+      return charStats.meleeNoA;
+  }
+}
+
 // Hit detection functions are available for future use when implementing
 // per-hit accuracy rolls. Currently the game uses deterministic damage calculation.
 
@@ -1870,8 +1879,6 @@ export function executeBattle(
           multiplier: getHowlNoAMultiplier(entry.level),
           ownerName: entry.ownerName,
           note,
-          initiativeRoll: entry.roll,
-          actor: entry.kind === 'enemy' ? 'enemy' : 'character',
           characterId: entry.kind === 'character' ? entry.stats.characterId : undefined,
         };
 
@@ -1901,19 +1908,19 @@ export function executeBattle(
       if (enemyHp <= 0 || partyHp <= 0) break;
 
       if (turn.kind === 'enemy') {
-        const howlEffect = consumePendingPartyHowlEffect();
+        const baseNoA = getEnemyNoA(phase, enemy);
+        const howlEffect = baseNoA > 0 ? consumePendingPartyHowlEffect() : null;
         if (howlEffect) {
           log.push({
             phase,
-            initiativeRoll: howlEffect.initiativeRoll,
-            actor: howlEffect.actor,
+            initiativeRoll: 2,
+            actor: 'triggered',
             characterId: howlEffect.characterId,
             action: `${howlEffect.ownerName} が遠吠えをした！`,
             note: howlEffect.note,
           });
         }
 
-        const baseNoA = getEnemyNoA(phase, enemy);
         const noA = Math.ceil(baseNoA * (howlEffect?.multiplier ?? 1.0));
         if (noA <= 0) continue;
 
@@ -2446,12 +2453,13 @@ export function executeBattle(
       const char = party.characters.find(c => c.id === cs.characterId);
       if (!char) continue;
 
-      const howlEffect = consumePendingEnemyHowlEffect();
+      const baseNoA = getCharacterNoAForPhase(phase, cs);
+      const howlEffect = baseNoA > 0 ? consumePendingEnemyHowlEffect() : null;
       if (howlEffect) {
         log.push({
           phase,
-          initiativeRoll: howlEffect.initiativeRoll,
-          actor: howlEffect.actor,
+          initiativeRoll: 2,
+          actor: 'triggered',
           characterId: howlEffect.characterId,
           action: `${howlEffect.ownerName} が遠吠えをした！`,
           note: howlEffect.note,

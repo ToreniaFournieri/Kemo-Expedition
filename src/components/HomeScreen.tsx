@@ -6158,6 +6158,7 @@ function ExpeditionTab({
                               <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
                               {entry.details.map((log, j) => {
                                 const isResurrectLog = log.action.includes('は致命ダメージを食いしばって耐えた！');
+                                const isTriggeredLog = log.actor === 'triggered';
                                 const isPhaseAction = log.actor !== 'deity' && log.actor !== 'effect';
                                 const previousLog = j > 0 ? entry.details[j - 1] : undefined;
                                 const isStealthEffectLog = log.actor === 'effect' && (log.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || log.action.includes('への攻撃はすべて幻だった！'));
@@ -6173,7 +6174,7 @@ function ExpeditionTab({
                                   : log.phase === 'end'
                                     ? '末'
                                     : isPhaseAction
-                                      ? (log.isCounter || isResurrectLog || log.isEnemyTargetHit ? '-' : `${log.initiativeRoll ?? '?'}`)
+                                      ? (isTriggeredLog ? `${log.initiativeRoll ?? '?'}` : (log.isCounter || isResurrectLog || log.isEnemyTargetHit ? '-' : `${log.initiativeRoll ?? '?'}`))
                                       : (isStealthEffectLog || isCounterNegationEffectLog) ? '-' : (log.actor === 'deity' ? '末' : '効');
                                 const phaseHeader = log.phase === 'long'
                                   ? '遠距離攻撃フェーズ'
@@ -6197,7 +6198,7 @@ function ExpeditionTab({
                                   : '';
 
                                 let actionText: string;
-                                if (log.actor === 'effect') {
+                                if (log.actor === 'effect' || log.actor === 'triggered') {
                                   actionText = log.action;
                                 } else if (isEnemy) {
                                   if (isResurrectLog) {
@@ -7412,6 +7413,7 @@ function DiaryTab({
                             <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
                             {entry.details.map((battleLog, j) => {
                               const isResurrectLog = battleLog.action.includes('は致命ダメージを食いしばって耐えた！');
+                              const isTriggeredLog = battleLog.actor === 'triggered';
                               const isPhaseAction = battleLog.actor !== 'deity' && battleLog.actor !== 'effect';
                               const previousLog = j > 0 ? entry.details[j - 1] : undefined;
                               const isStealthEffectLog = battleLog.actor === 'effect' && (battleLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || battleLog.action.includes('への攻撃はすべて幻だった！'));
@@ -7427,7 +7429,7 @@ function DiaryTab({
                                 : battleLog.phase === 'end'
                                   ? '末'
                                   : isPhaseAction
-                                    ? (battleLog.isCounter || isResurrectLog || battleLog.isEnemyTargetHit ? '-' : `${battleLog.initiativeRoll ?? '?'}`)
+                                    ? (isTriggeredLog ? `${battleLog.initiativeRoll ?? '?'}` : (battleLog.isCounter || isResurrectLog || battleLog.isEnemyTargetHit ? '-' : `${battleLog.initiativeRoll ?? '?'}`))
                                     : (isStealthEffectLog || isCounterNegationEffectLog) ? '-' : (battleLog.actor === 'deity' ? '末' : '効');
                               const phaseHeader = battleLog.phase === 'long'
                                 ? '遠距離攻撃フェーズ'
@@ -7459,7 +7461,7 @@ function DiaryTab({
                                 : '';
 
                               let actionText: string;
-                              if (battleLog.actor === 'effect') {
+                              if (battleLog.actor === 'effect' || battleLog.actor === 'triggered') {
                                 actionText = battleLog.action;
                               } else if (isEnemy) {
                                 if (isResurrectLog) {
