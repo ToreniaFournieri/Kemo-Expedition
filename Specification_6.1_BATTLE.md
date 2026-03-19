@@ -125,29 +125,30 @@
     - `X = ranged` for `LONG`
     - `X = magical` for `MID`
     - `X = melee` for `CLOSE`
+  - On activation, roll X/X to apply confusion to a random eligible target.
   - **Success log** (select one randomly)
-	- "actor は target に何かを囁き、仲間を疑い始めた！"
-	- "actor の甘い策略に target は引き込まれた！"
-	- "actor の影響で target は錯乱した！"
-	- "actor が睨みつけ、target の精神は錯乱した！"
-	- "actor の精神干渉により target は正常な判断ができなくなった！"
-	- "actor は target に幻術をかけ、仲間を敵と誤認した！"
-	- "actor の幻惑により target の視界は歪んだ！"
-	- "actor の術で target は敵味方の区別を失った！"
-	- "actor が植え付けた疑念によって target は見境なく牙を剥いた！"
-	- "actor が囁いた禁断の言葉により、target は狂気に囚われた！"
+	- "actor は target に何かを囁き、仲間を疑い始めた！ (確率X/X: 成功)"
+	- "actor の甘い策略に target は引き込まれた！ (確率X/X: 成功)"
+	- "actor の影響で target は錯乱した！ (確率X/X: 成功)"
+	- "actor が睨みつけ、target の精神は錯乱した！ (確率X/X: 成功)"
+	- "actor の精神干渉により target は正常な判断ができなくなった！ (確率X/X: 成功)"
+	- "actor は target に幻術をかけ、仲間を敵と誤認した！ (確率X/X: 成功)"
+	- "actor の幻惑により target の視界は歪んだ！ (確率X/X: 成功)"
+	- "actor の術で target は敵味方の区別を失った！ (確率X/X: 成功)"
+	- "actor が植え付けた疑念によって target は見境なく牙を剥いた！ (確率X/X: 成功)"
+	- "actor が囁いた禁断の言葉により、target は狂気に囚われた！ (確率X/X: 成功)"
  - **Failure log** (select one randomly)
-    - "actor の策略を target は打ち破った！"
-	- "actor の効果は target に通じなかった！"
-	- "actor の悪だくみは target によって防がれた！"
-	- "actor の混乱は target に効かなかった！"
-	- "actor の精神干渉を target は振り払った！"
-	- "actor の囁きに対し target は理性を保った！"
-	- "actor の幻術を target は見破った！"
-	- "actor の術は target に打ち消された！"
-	- "actor の見せた幻は target に通用しない！"
-	- "actor が語り掛けた誘惑を target は聞きそびれた！"
-
+    - "actor の策略を target は打ち破った！ (確率X/X: 失敗)"
+	- "actor の効果は target に通じなかった！ (確率X/X: 失敗)"
+	- "actor の悪だくみは target によって防がれた！ (確率X/X: 失敗)"
+	- "actor の混乱は target に効かなかった！ (確率X/X: 失敗)"
+	- "actor の精神干渉を target は振り払った！ (確率X/X: 失敗)"
+	- "actor の囁きに対し target は理性を保った！ (確率X/X: 失敗)"
+	- "actor の幻術を target は見破った！ (確率X/X: 失敗)"
+	- "actor の術は target に打ち消された！ (確率X/X: 失敗)"
+	- "actor の見せた幻は target に通用しない！ (確率X/X: 失敗)"
+	- "actor が語り掛けた誘惑を target は聞きそびれた！ (確率X/X: 失敗)"
+  -note: Text `()` part is displayed in gray.
 
 #### 6.1.3 Actor normal move
 
