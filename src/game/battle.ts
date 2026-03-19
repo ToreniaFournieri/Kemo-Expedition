@@ -62,6 +62,21 @@ const CONFUSION_FAILURE_LOGS = [
   'が語り掛けた誘惑を target は聞きそびれた！',
 ] as const;
 
+const CONFUSION_NO_TARGET_MESSAGES: Record<BattleActionPhase, { action: string; note: string }> = {
+  long: {
+    action: 'は策略を巡らせたが、声は風に流され誰にも届かなかった',
+    note: '(混乱-遠距離対象なし)',
+  },
+  mid: {
+    action: 'は幻惑を仕掛けたが、誰も影響を受けなかった',
+    note: '(混乱-魔法対象なし)',
+  },
+  close: {
+    action: 'は不和をもたらそうとしたが、誰も近くにいなかった',
+    note: '(混乱-近接対象なし)',
+  },
+};
+
 function getElementalMultiplier(
   offense: ElementalOffense,
   resistance: Record<'fire' | 'thunder' | 'ice', number>
@@ -1314,7 +1329,7 @@ function getConfusionAbilityIdForPhase(phase: BattleActionPhase): AbilityId {
 }
 
 function getConfusionNote(level: number, success: boolean): string {
-  return `(確率${getConfusionChance(level)}/32: ${success ? '成功' : '失敗'})`;
+  return `(混乱確率${getConfusionChance(level)}/32: ${success ? '成功' : '失敗'})`;
 }
 
 function pickRandomEntry<T>(entries: readonly T[]): T {
@@ -1328,6 +1343,17 @@ function buildConfusionAction(
 ): string {
   const template = pickRandomEntry(success ? CONFUSION_SUCCESS_LOGS : CONFUSION_FAILURE_LOGS);
   return `${actorName}${template.split('target').join(targetName)}`;
+}
+
+function getConfusionNoTargetLog(
+  phase: BattleActionPhase,
+  actorName: string,
+): Pick<BattleLogEntry, 'action' | 'note'> {
+  const message = CONFUSION_NO_TARGET_MESSAGES[phase];
+  return {
+    action: `${actorName}${message.action}`,
+    note: message.note,
+  };
 }
 
 function getCharacterNoAForPhase(phase: BattleActionPhase, charStats: ComputedCharacterStats): number {
@@ -2029,7 +2055,16 @@ export function executeBattle(
           ? eligiblePartyTargets[Math.floor(Math.random() * eligiblePartyTargets.length)]
           : null;
 
-        if (target) {
+        if (!target) {
+          const noTargetLog = getConfusionNoTargetLog(phase, enemy.name);
+          log.push({
+            phase,
+            initiativeRoll: timing,
+            actor: 'triggered',
+            action: noTargetLog.action,
+            note: noTargetLog.note,
+          });
+        } else {
           const success = Math.random() < (getConfusionChance(enemyConfusionLevel) / 32);
           if (success) {
             characterStats = characterStats.map((stats) => (
@@ -2064,7 +2099,18 @@ export function executeBattle(
         .sort((a, b) => a.stats.row - b.stats.row);
 
       for (const entry of partyConfusionEntries) {
-        if (!eligibleEnemyTarget) break;
+        if (!eligibleEnemyTarget) {
+          const noTargetLog = getConfusionNoTargetLog(phase, entry.ownerName);
+          log.push({
+            phase,
+            initiativeRoll: timing,
+            actor: 'triggered',
+            characterId: entry.stats.characterId,
+            action: noTargetLog.action,
+            note: noTargetLog.note,
+          });
+          continue;
+        }
         const success = Math.random() < (getConfusionChance(entry.level) / 32);
         if (success) {
           enemyHasAntagonism = true;
