@@ -150,6 +150,11 @@
   - Log: `log.regeneration`
     - Heal: (✚ XXX)  Left-Aligned, gray text
 
+- **decompose**
+  - Triggered by `a.decompose`
+  - Use `f.targeting` (phase: CLOSE) for chosing target.
+  - target.`d.defense` = N x target.`d.defense`
+  - Log: `log.decompose`
  
 #### 6.1.3 Actor normal move
 
