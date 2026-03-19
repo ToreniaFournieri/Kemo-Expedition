@@ -505,7 +505,8 @@ function calculateCharacterFriendlyFireDamage(
   partyStats: ComputedPartyStats,
   partyHp: number,
   partyDeityKey: string | null,
-  noAMultiplier: number = 1.0
+  noAMultiplier: number = 1.0,
+  temporaryAccuracyBonus: number = 0,
 ): CharacterAttackResult {
   let attack = 0;
   let noA = 0;
@@ -582,7 +583,7 @@ function calculateCharacterFriendlyFireDamage(
   let hits = 0;
   let damage = 0;
   for (let i = 1; i <= noA; i++) {
-    if (hitDetection(actorAccuracyPotency, attacker.accuracyBonus, target.evasionBonus, i, phase, targetDeflectionLevel, actorFocusLevel)) {
+    if (hitDetection(actorAccuracyPotency, attacker.accuracyBonus + temporaryAccuracyBonus, target.evasionBonus, i, phase, targetDeflectionLevel, actorFocusLevel)) {
       hits += 1;
       const resonanceAmplifier = canApplyResonance ? getResonanceAmplifier(resonance?.level, hits) : 1.0;
       damage += Math.max(1, Math.floor(basePerHitDamage * resonanceAmplifier));
@@ -982,7 +983,8 @@ function calculateCharacterDamage(
   partyStats: ComputedPartyStats,
   partyHp: number,
   partyDeityKey: string | null,
-  noAMultiplier: number = 1.0 // For counter/re-attack, use 0.5
+  noAMultiplier: number = 1.0, // For counter/re-attack, use 0.5
+  temporaryAccuracyBonus: number = 0,
 ): CharacterAttackResult {
   let attack = 0;
   let noA = 0;
@@ -1101,7 +1103,7 @@ function calculateCharacterDamage(
   let hits = 0;
   let damage = 0;
   for (let i = 1; i <= noA; i++) {
-    if (hitDetection(actorAccuracyPotency, charStats.accuracyBonus, enemyEvasion, i, phase, enemyDeflectionLevel, actorFocusLevel)) {
+    if (hitDetection(actorAccuracyPotency, charStats.accuracyBonus + temporaryAccuracyBonus, enemyEvasion, i, phase, enemyDeflectionLevel, actorFocusLevel)) {
       hits++;
       const resonanceAmplifier = canApplyResonance ? getResonanceAmplifier(resonance?.level, hits) : 1.0;
       damage += Math.max(1, Math.floor(basePerHitDamage * resonanceAmplifier));
@@ -1157,6 +1159,20 @@ function getDeflectionLevel(charStats: ComputedCharacterStats): number {
 
 function getEnemyFocusLevel(enemy: EnemyDef): number {
   return getEnemyAbilityLevel(enemy, 'focus');
+}
+
+function getPredatorSenseThresholdPercent(level: number): number {
+  if (level >= 5) return 50;
+  if (level === 4) return 48;
+  if (level === 3) return 44;
+  if (level === 2) return 38;
+  if (level === 1) return 30;
+  return 0;
+}
+
+function getPredatorSenseNote(level: number): string {
+  const threshold = getPredatorSenseThresholdPercent(level);
+  return `(HP ${threshold}%未満で命中+40)`;
 }
 
 type AbilityLike = { id: AbilityId; level: number };
@@ -1707,6 +1723,8 @@ export function executeBattle(
   const activeMagicSealQueue = createMagicSealQueue(party, characterStats, enemy);
   let pendingEnemyHowlEffect: PendingHowlEffect | null = null;
   let pendingPartyHowlEffect: PendingHowlEffect | null = null;
+  let enemyTemporaryAccuracyBonus = 0;
+  const temporaryAccuracyBonusByCharacterId = new Map<number, number>();
 
   for (const ownerName of activeMagicSealQueue) {
     log.push(getMagicSealStartLog(ownerName));
@@ -1842,10 +1860,11 @@ export function executeBattle(
     }
 
     const singleDamage = calculateSingleEnemyAttackDamage('close', enemy, characterStats, targetCharStats, enemyHp);
+    const enemyCloseAccuracyBonus = enemyTemporaryAccuracyBonus;
     const attempts = Math.ceil(getEnemyNoA('close', enemy) * counterNoAMultiplier);
     let hits = 0;
     for (let i = 1; i <= attempts; i++) {
-      const didHit = hitDetection(1.0, enemy.accuracyBonus, targetCharStats.evasionBonus, i, 'close', getDeflectionLevel(targetCharStats), getEnemyFocusLevel(enemy));
+      const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyCloseAccuracyBonus, targetCharStats.evasionBonus, i, 'close', getDeflectionLevel(targetCharStats), getEnemyFocusLevel(enemy));
       if (didHit) {
         hits += 1;
       }
@@ -1936,7 +1955,7 @@ export function executeBattle(
       return;
     }
 
-    const reCounterResult = calculateCharacterDamage('close', targetCharStats, targetChar, enemy, characterStats, partyStats, partyHp, partyDeityKey, reCounterNoAMultiplier);
+    const reCounterResult = calculateCharacterDamage('close', targetCharStats, targetChar, enemy, characterStats, partyStats, partyHp, partyDeityKey, reCounterNoAMultiplier, temporaryAccuracyBonusByCharacterId.get(targetCharStats.characterId) ?? 0);
     if (reCounterResult.totalAttempts <= 0) {
       return;
     }
@@ -2121,6 +2140,7 @@ export function executeBattle(
     let enemyHasMovedInPhase = false;
     const movedCharacterIds = new Set<number>();
     const triggeredConfusionTimings = new Set<number>();
+    let hasTriggeredPredatorSense = false;
     const triggerLongPhaseHowl = (): void => {
       if (phase !== 'long' || hasTriggeredLongPhaseHowl) return;
       hasTriggeredLongPhaseHowl = true;
@@ -2167,6 +2187,51 @@ export function executeBattle(
           characterId: entry.stats.characterId,
           action: `${entry.ownerName} が遠吠えをした！`,
           note: getHowlNote(entry.level),
+        });
+      }
+    };
+
+    const triggerPredatorSenseAtTiming = (timing: number): void => {
+      if (phase !== 'close' || timing !== 9 || hasTriggeredPredatorSense) return;
+      hasTriggeredPredatorSense = true;
+
+      const enemyPredatorSenseLevel = getEnemyAbilityLevel(enemy, 'predator_sense');
+      const enemyThreshold = getPredatorSenseThresholdPercent(enemyPredatorSenseLevel);
+      if (enemyThreshold > 0 && partyHp < (partyStats.hp * enemyThreshold) / 100) {
+        enemyTemporaryAccuracyBonus += 0.04;
+        log.push({
+          phase,
+          initiativeRoll: timing,
+          actor: 'triggered',
+          action: `${enemy.name} の捕食！`,
+          note: getPredatorSenseNote(enemyPredatorSenseLevel),
+        });
+      }
+
+      const partyPredatorSenseEntries = characterStats
+        .map((stats) => ({
+          stats,
+          level: getAbilityLevel(stats, 'predator_sense'),
+          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+        }))
+        .filter((entry) => {
+          const threshold = getPredatorSenseThresholdPercent(entry.level);
+          return threshold > 0 && enemyHp < (enemy.hp * threshold) / 100;
+        })
+        .sort((a, b) => a.stats.row - b.stats.row);
+
+      for (const entry of partyPredatorSenseEntries) {
+        temporaryAccuracyBonusByCharacterId.set(
+          entry.stats.characterId,
+          (temporaryAccuracyBonusByCharacterId.get(entry.stats.characterId) ?? 0) + 0.04,
+        );
+        log.push({
+          phase,
+          initiativeRoll: timing,
+          actor: 'triggered',
+          characterId: entry.stats.characterId,
+          action: `${entry.ownerName} の捕食！`,
+          note: getPredatorSenseNote(entry.level),
         });
       }
     };
@@ -2377,6 +2442,9 @@ export function executeBattle(
       if (phase === 'long' && turn.roll <= 2) {
         triggerLongPhaseHowl();
       }
+      if (turn.roll <= 9) {
+        triggerPredatorSenseAtTiming(9);
+      }
       if (turn.roll <= 2) {
         triggerConfusionAtTiming(2);
       }
@@ -2388,6 +2456,7 @@ export function executeBattle(
         enemyHasMovedInPhase = true;
 
         const baseNoA = getEnemyNoA(phase, enemy);
+        const enemyPhaseAccuracyBonus = phase === 'close' ? enemyTemporaryAccuracyBonus : 0;
         const howlEffect = baseNoA > 0 ? consumePendingPartyHowlEffect() : null;
         const noA = Math.ceil(baseNoA * (howlEffect?.multiplier ?? 1.0));
         if (noA <= 0) continue;
@@ -2400,7 +2469,7 @@ export function executeBattle(
 
           const attacksByTarget = new Map<number, { hitDamages: number[]; totalAttempts: number; charStats: ComputedCharacterStats }>();
           const enemyAccuracyPotency = 1.0;
-          const enemyAccuracyBonus = enemy.accuracyBonus;
+          const enemyAccuracyBonus = enemy.accuracyBonus + enemyPhaseAccuracyBonus;
           const enemyResonanceLevel = getEnemyAbilityLevel(enemy, 'resonance');
           let enemyHitIndex = 1;
           let enemySuccessfulHits = 0;
@@ -2718,6 +2787,7 @@ export function executeBattle(
               partyHp,
               partyDeityKey,
               getCounterNoAMultiplier(attack.charStats),
+              phase === 'close' ? (temporaryAccuracyBonusByCharacterId.get(charId) ?? 0) : 0,
             );
             if (counterResult.totalAttempts <= 0) continue;
 
@@ -2776,7 +2846,7 @@ export function executeBattle(
             let reCounterDamage = 0;
             let reCounterHits = 0;
             for (let i = 1; i <= reCounterAttempts; i++) {
-              const didHit = hitDetection(1.0, enemy.accuracyBonus, attack.charStats.evasionBonus, i, phase, getDeflectionLevel(attack.charStats), getEnemyFocusLevel(enemy));
+              const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, attack.charStats.evasionBonus, i, phase, getDeflectionLevel(attack.charStats), getEnemyFocusLevel(enemy));
               if (!didHit) continue;
               reCounterHits += 1;
               reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, characterStats, attack.charStats, enemyHp);
@@ -2927,6 +2997,8 @@ export function executeBattle(
       const baseNoA = getCharacterNoAForPhase(phase, cs);
       const howlEffect = baseNoA > 0 ? consumePendingEnemyHowlEffect() : null;
 
+      const characterPhaseAccuracyBonus = phase === 'close' ? (temporaryAccuracyBonusByCharacterId.get(cs.characterId) ?? 0) : 0;
+
       const runCharacterAttack = (noAMultiplier: number, isReAttack = false): CharacterAttackResult | null => {
         const isAntagonism = cs.hasAntagonism;
         const magicProfile = resolveMagicProfile({
@@ -2977,7 +3049,7 @@ export function executeBattle(
           ctx = newCtx;
           const selected = resolveEnemyTarget(targetRow, candidates, phase) ?? candidates[Math.floor(Math.random() * candidates.length)];
           antagonismTarget = selected;
-          result = calculateCharacterFriendlyFireDamage(phase, cs, selected, characterStats, partyStats, partyHp, partyDeityKey, noAMultiplier);
+          result = calculateCharacterFriendlyFireDamage(phase, cs, selected, characterStats, partyStats, partyHp, partyDeityKey, noAMultiplier, characterPhaseAccuracyBonus);
           if (result.damage > 0) {
             partyHp -= result.damage;
 
@@ -3004,7 +3076,7 @@ export function executeBattle(
             }
           }
         } else {
-          result = calculateCharacterDamage(phase, cs, char, enemy, characterStats, partyStats, partyHp, partyDeityKey, noAMultiplier);
+          result = calculateCharacterDamage(phase, cs, char, enemy, characterStats, partyStats, partyHp, partyDeityKey, noAMultiplier, characterPhaseAccuracyBonus);
           if (
             result.totalAttempts > 0
             && isIllusionActive(phase, getEnemyAbilityLevel(enemy, 'illusion') > 0, 'enemy', consumedIllusionStateIds)
@@ -3209,6 +3281,7 @@ export function executeBattle(
     if (phase === 'long') {
       triggerLongPhaseHowl();
     }
+    triggerPredatorSenseAtTiming(9);
     triggerConfusionAtTiming(2);
     triggerConfusionAtTiming(1);
     triggerUnstableCoreAtEnd();
