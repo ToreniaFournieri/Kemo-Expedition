@@ -117,6 +117,23 @@ const ANTAGONISM_LOGS = {
   ],
 } as const satisfies Record<BattleActionPhase, readonly string[]>;
 
+const UNSTABLE_CORE_LOGS = {
+  long: [
+    '{actor} は暴れだし、自らを傷つけた！',
+    '{actor} は制御を失い、自身を引き裂いた！',
+    '{actor} は錯乱し、自らに攻撃を加えた！',
+    '{actor} は苦しみもがき、自傷した！',
+    '{actor} は狂乱し、己の身を傷つけた！',
+  ],
+  mid: [
+    '{actor} は錯乱し、自らを傷つけた！',
+    '{actor} は暴走し、自身を切り裂いた！',
+    '{actor} は理性を失い、自らに攻撃を加えた！',
+    '{actor} はもがき苦しみ、自傷した！',
+    '{actor} は狂気に呑まれ、自身を傷つけた！',
+  ],
+} as const satisfies Record<Exclude<BattleActionPhase, 'close'>, readonly string[]>;
+
 function getElementalMultiplier(
   offense: ElementalOffense,
   resistance: Record<'fire' | 'thunder' | 'ice', number>
@@ -1372,6 +1389,14 @@ function getConfusionNote(level: number, success: boolean): string {
   return `(混乱確率${getConfusionChance(level)}/32: ${success ? '成功' : '失敗'})`;
 }
 
+function getUnstableCoreDamagePercent(level: number): number {
+  if (level >= 5) return 12;
+  if (level === 4) return 15;
+  if (level === 3) return 19;
+  if (level === 2) return 24;
+  return level >= 1 ? 30 : 0;
+}
+
 function pickRandomEntry<T>(entries: readonly T[]): T {
   return entries[Math.floor(Math.random() * entries.length)];
 }
@@ -1396,6 +1421,17 @@ function buildAntagonismAction(
     .replace(/\{actor\}/g, actorName)
     .replace(/\{target\}/g, targetName)
     .replace(/\{spell\}/g, spellName ?? '魔法');
+}
+
+function buildUnstableCoreAction(
+  phase: Exclude<BattleActionPhase, 'close'>,
+  actorName: string,
+): string {
+  return pickRandomEntry(UNSTABLE_CORE_LOGS[phase]).replace(/\{actor\}/g, actorName);
+}
+
+function getUnstableCoreNote(level: number, damage: number): string {
+  return `(残HP ${getUnstableCoreDamagePercent(level)}%の自傷ダメージ: ${damage})`;
 }
 
 function getConfusionNoTargetLog(
@@ -2188,6 +2224,56 @@ export function executeBattle(
           characterId: entry.stats.characterId,
           action: buildConfusionAction(entry.ownerName, enemy.name, success),
           note: getConfusionNote(entry.level, success),
+        });
+      }
+    };
+
+    // SpecRef: 6.1.2 | Unstable core
+    const triggerUnstableCoreAtEnd = (): void => {
+      if (phase !== 'long' && phase !== 'mid') return;
+      if (enemyHp <= 0 || partyHp <= 0) return;
+
+      const unstablePhase = phase;
+      const enemyUnstableCoreLevel = getEnemyAbilityLevel(enemy, 'unstable_core');
+      if (enemyUnstableCoreLevel > 0) {
+        const damage = Math.min(
+          enemyHp,
+          Math.ceil((enemyHp * getUnstableCoreDamagePercent(enemyUnstableCoreLevel)) / 100),
+        );
+        enemyHp -= damage;
+        log.push({
+          phase,
+          initiativeRoll: 0,
+          actor: 'triggered',
+          action: buildUnstableCoreAction(unstablePhase, enemy.name),
+          note: getUnstableCoreNote(enemyUnstableCoreLevel, damage),
+        });
+      }
+
+      const partyUnstableCoreEntries = characterStats
+        .map((stats) => ({
+          stats,
+          level: getAbilityLevel(stats, 'unstable_core'),
+          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+        }))
+        .filter((entry) => entry.level > 0)
+        .sort((a, b) => a.stats.row - b.stats.row);
+
+      for (const entry of partyUnstableCoreEntries) {
+        if (partyHp <= 0 || enemyHp <= 0) break;
+
+        const damage = Math.min(
+          partyHp,
+          Math.ceil((partyHp * getUnstableCoreDamagePercent(entry.level)) / 100),
+        );
+        partyHp -= damage;
+        log.push({
+          phase,
+          initiativeRoll: 0,
+          actor: 'triggered',
+          characterId: entry.stats.characterId,
+          action: buildUnstableCoreAction(unstablePhase, entry.ownerName),
+          note: getUnstableCoreNote(entry.level, damage),
         });
       }
     };
@@ -3044,6 +3130,7 @@ export function executeBattle(
     }
     triggerConfusionAtTiming(2);
     triggerConfusionAtTiming(1);
+    triggerUnstableCoreAtEnd();
 
     if (partyHp <= 0) {
       return {
