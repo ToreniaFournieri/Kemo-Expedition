@@ -1,11 +1,7 @@
 ## 6. BATTLE
 
 ### 6.1 BATTLE
-
-#### 6.1.1 Encounter Rules
 - Each encounter consists of one battle
-
-#### 6.1.2 Function of battle
 
 **Battle Phase**
 
@@ -17,142 +13,16 @@
 | CLOSE | (近接攻撃フェーズ) |`d.melee_attack` |`d.melee_NoA` | `d.physical_defense` |
 | END | [末] | | | |
 
-**START phase**
+#### 6.1.1 Phase resolution
 
+##### 6.1.1.1 START phase
 - If actor.`a.oblivion`1:
   - Randomly select 1 opponent.
   - Randomly select 1 ability from that opponent’s valid abilities.
   - Disable the selected ability for the rest of the battle.
 
-**functions of attack**
+##### 6.1.1.2 LONG, MID, CLOSE phase
 
-- `f.resonance_amplifier`(actor: ,successful hit: n )
-  - If (phase is MID) or (phase is LONG and party.`God of Resonance`),
-  	- If actor.`a.resonance`1, return 1.0 + (0.05 x (n - 1))   
-  	- If actor.`a.resonance`2, return 1.0 + (0.08 x (n - 1))
-  	- If actor.`a.resonance`3, return 1.0 + (0.11 x (n - 1))
-  	- If actor.`a.resonance`4, return 1.0 + (0.13 x (n - 1))
-  	- If actor.`a.resonance`5, return 1.0 + (0.15 x (n - 1))
-    Else, return 1.0.
-
-- `f.damage_calculation`: (actor: , opponent: , phase: )
-	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) ) x actor.`f.offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x opponent.`f.defense_amplifier` x party.`f.party.offense_amplifier` x `f.resonance_amplifier` x `f.rage_amplifier` x `f.momentum_amplifer` x `f.mutual_amplifer` )
-  - `f.rage_amplifier`:
-    - If actor has `a.rage`1, return min(2.0, 1.0 + 0.5 x (1 - (actor.current_HP / actor.max_HP)))
-    - If actor has `a.rage`2, return min(2.0, 1.0 + 0.6 x (1 - (actor.current_HP / actor.max_HP)))
-  - `f.momentum_amplifer`:
-    - If actor has `a.momentum`1, return 1.25 - (1 - (actor.current_HP / actor.max_HP)) x 0.5
-    - If actor has `a.momentum`2, return 1.25 - (1 - (actor.current_HP / actor.max_HP)) x 0.4
-  - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
-  - `f.mutual_amplifer`:
-    - If (phase is MID and (actor or opponent) has `a.mutual-magic-amplify`), return n
-    - If (phase is MID and (actor or opponent) has `a.mutual-magic-restraint`), return n
-	- If (phase is (LONG or CLOSE) and (actor or opponent) has `a.mutual-physical-amplify`, return n
-    - If (phase is (LONG or CLOSE) and (actor or opponent) has `a.mutual-physical-restraint`, return n
-
-  - If opponent.`a.stealth`1 and (opponent.current_HP / opponent.max_HP) <= 0.24, damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
-  - If opponent.`a.stealth`2 and (opponent.current_HP / opponent.max_HP) <= 0.29, damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
-    - note: This is only for party member ability. enemy have this `a.stealth` ability, then Log:"enemy は神隠れした。もう攻撃はこれ以上あたらない！"
-
-**Row-based modifier** 
-- Targeting selects a character only to determine defense, row potency, abilities (counter). All damage resolved against a character is applied to `d.HP`.
-  - The threat weight table defines how many tickets of each row index are placed into `t.threat_weight_bag`.
-
-|row | Physical Threat weight |
-|---|---|
-|1|16|
-|2|8|
-|3|4|
-|4|2|
-|5|1|
-|6|1|
-
-|row | Magical Threat weight |
-|---|---|
-|1|1|
-|2|1|
-|3|1|
-|4|1|
-|5|1|
-|6|1|
-
-
-- `t.physical_threat_weight_bag` and `t.magical_threat_weight_bag`  Threat Weight (Passive Targeting) 
-  - A numerical value assigned to a unit based on their row position that determines the size of their "slice" in the enemy's targeting pool.
-
-- `f.targeting`:
-  - If actor.`c.antagonism`, target is opposite. (character -> character. enemy -> enemy)
-  - If phase is LONG or CLOSE, Gets one ticket from `t.physical_threat_weight_bag`.
-    - `a.bulwark`1 or `a.bulwark`2 redirect 
-	  if (`a.bulwark`1 and phase is LONG) or (`a.bulwark`2 and phase is (LONG or CLOSE)):
-	      flont_character = party.unit_in_front_of(t)    // the unit directly ahead of selected character (one row closer to enemy)
-	      if flont_character != null and flont_character.has(a.bulwark):
-	          return flont_character
-  - If phase is MID, Gets one ticket from `t.magical_threat_weight_bag`. 
-    - Bag contains numbers [1,2,3,4,5,6]
-    - The drawn number corresponds to row index (1–6).
-    - The character currently occupying that row is selected as the target.
-
-
-- `d.accuracy_potency` 
-  - A global accuracy modifier applied to a unit’s final output based on their current row position.
-  - Row-based modifiers apply only to player characters. Enemies are treated as having fixed potency (1.0).
-  - Row-based `d.accuracy_potency` is applied only during LONG and CLOSE phases.
-  - MID phase ignores row-based accuracy potency, so has fixed potency (1.0).
-
-- **`d.accuracy_potency`**
-  - If character.`a.composure`1, min(1, `d.accuracy_potency` + 0.10)
-  - If character.`a.composure`2, min(1, `d.accuracy_potency` + 0.13)
-
-|row | normal | `a.hunter`1 | `a.hunter`2 | `a.hunter`3 |
-|---|---|---|---|---|
-|1| 1.00 | 1.00 | 1.00 | 1.00 |
-|2| 0.85 | 0.90 | 0.93 | 0.95 |
-|3| 0.72 | 0.81 | 0.86 | 0.90 |
-|4| 0.61 | 0.73 | 0.80 | 0.86 |
-|5| 0.52 | 0.66 | 0.75 | 0.81 |
-|6| 0.44 | 0.59 | 0.70 | 0.77 |
-
-
-- `f.hit_detection`(actor: , opponent: ,Nth_hit: )
-  - For all pahse, LONG, MID, CLOSE.
-  - If actor.`a.focus`1, `f.c_accuracy+v` =  actor.`c.accuracy+v` x 1.2 (rounding up to the 3rd decimal ex. 0.003 * 1.2 = 0.0036 → 0.004)
-  - If actor.`a.focus`2, `f.c_accuracy+v` =  actor.`c.accuracy+v` x 1.3 (rounding up to the 3rd decimal)
-  - decay_of_accuracy: clamp(0.86, 0.90 + actor.`f.c_accuracy+v` - opponent.`c.evasion+v`, 0.98)
-  - baseChance = actor.d.accuracy_potency
-  - If opponent has `a.deflection`2 AND phase == LONG: baseChance -= 0.15. Else if opponent has `a.deflection`1 AND phase == LONG: baseChance -= 0.10
-  - chance = clamp(0.0, baseChance, 1.0) x (decay ^ (Nth_hit - 1))
-    - Note: Nth_hit starts at 1 for the first strike.
-    - Note: Nth_hit counts indevisually and not share with normal attack, re-attack and counter. (Nth_hit is reset per attack sequence)
-  - Roll: Return Random(0, 1.0) <= chance
- 
-
-- **`f.counter`(actor: , opponent: ,phase: ) :** IF (opponent or party members have not available `a.null-counter`) and (actor.`a.counter`, phase is CLOSE) , the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
-    - `a.counter`1: actor.`f.NoA` x 0.5, round up
-    - `a.counter`2: actor.`f.NoA` x 1.0, round up
-    - `a.counter`3: actor.`f.NoA` x 1.5, round up
-    - Counter triggers immediately after damage resolution, regardless of turn order modifiers.
-    - IF actor.`a.counter` and (opponent or opponent.party.character have available `a.null-counter`), displays log like : “巡礼者ブラザの反撃無効化により、二枚爪の黒豹のカウンターは防がれた！”. Reduce null-counter counter. (note: `a.null-counter`1 can disable once in battle,  `a.null-counter`2 can disable twice in battle, `a.null-counter`3 can disable three times in battle. if the null-counter is 0, the `a.null-counter` is disable in this battle. )
-    - *note:* if opponent is character, then check party.`a.null-counter`. if at least one party member has available `a.null-counter`, nagete the counter attack.
-
-- **`f.re-counter`(actor: , opponent: ,phase: ) :** IF actor.`a.re-counter` and (opponent or opponent.party.character have not `a.null-counter`), the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
-  	- `a.re-counter`1:   actor.`f.NoA` x 0.5, round up
-  	- `a.re-counter`2:   actor.`f.NoA` x 1.0
-    - Re Counter triggers immediately after damage resolution, regardless of turn order modifiers.
-
-
-- **`f.covering-fire`(actor: , opponent: ) :** IF actor.`a.covering-fire` and actor can ranged attack, the actor ranged attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
-  	- `a.covering-fire`1:   actor.`f.NoA` x 0.5, round up
-  	- `a.covering-fire`2:   actor.`f.NoA` x 1.0
-    - covering fire triggers immediately after damage resolution, regardless of turn order modifiers.
-
-- **`f.magical-counter`(actor: , opponent: ,phase: ) :** IF actor.`a.magical-counter` and actor can magical attack, the actor magic attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`, and actor.`f.NoA` x 0.5, round up)
-  	- `a.magical-counter`1:   actor.`f.NoA` x 0.5, round up
-  	- `a.magical-counter`2:   actor.`f.NoA` x 1.0
-    - Magical counter triggers immediately after damage resolution, regardless of turn order modifiers.
-
-
-#### 6.1.3 Turn resolution 
 **Speed & Turn Order (Rolling Dice Rule)**
 - At the start of each phase (LONG / MID / CLOSE), **each actor** (enemy + each party member) rolls initiative.
   - `a.first-strike`3, roll **4d3** (4~12) cap the result at 9
@@ -173,6 +43,12 @@
     5. Front-row party member moves
     6. Back-row party member moves
 
+##### 6.1.1.3 END phase
+- `Goddess of Restoration` effect
+- `God of Attrition` effect
+- `c.unlock`, reward log
+
+#### 6.1.2 Actor move
 
 **Actor action**
 - `f.NoA` times, get `f.targeting` -> opponent. 
@@ -207,8 +83,6 @@
         - IF opponent is enemy, "(❄️ 吸収 {Absorbed damage})" part is accent color. If opponent is party member, it is sub color.
     - Null resolve
 	  - log "ロップ の氷属性攻撃は無効化された！　(2/4回)  (❄️ 0)" 
-
-
    - Else `d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
 - If current opponent .`d.HP` =< 0, if opponent.`a.resurrect`1, set `d.HP` = 1 and disable `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat.
 - If current opponent.`d.HP` =< 0, if character.`a.resurrect`2, set opponent.`d.HP` = 1% of (opponent.max_HP) and disable the `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat. 
@@ -226,6 +100,138 @@
 - **Covering fire:** IF actor.`a.covering-fire` and the actor's successful hit is only one and phase is CLOSE, `f.covering-fire`(actor:covering fire actor.party.character , opponent:opponent)
 
 - *Note:*  Nth_hit is per action based (not per-target)
+
+#### 6.1.3 Function of battle
+
+##### 6.1.3.1 Normal move
+
+**functions of attack**
+- `f.resonance_amplifier`(actor: ,successful hit: n )
+  - If (phase is MID) or (phase is LONG and party.`God of Resonance`),
+  	- If actor.`a.resonance`1, return 1.0 + (0.05 x (n - 1))   
+  	- If actor.`a.resonance`2, return 1.0 + (0.08 x (n - 1))
+  	- If actor.`a.resonance`3, return 1.0 + (0.11 x (n - 1))
+  	- If actor.`a.resonance`4, return 1.0 + (0.13 x (n - 1))
+  	- If actor.`a.resonance`5, return 1.0 + (0.15 x (n - 1))
+    Else, return 1.0.
+
+- `f.damage_calculation`: (actor: , opponent: , phase: )
+	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) ) x actor.`f.offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x opponent.`f.defense_amplifier` x party.`f.party.offense_amplifier` x `f.resonance_amplifier` x `f.rage_amplifier` x `f.momentum_amplifer` x `f.mutual_amplifer` )
+  - `f.rage_amplifier`:
+    - If actor has `a.rage`1, return min(2.0, 1.0 + 0.5 x (1 - (actor.current_HP / actor.max_HP)))
+    - If actor has `a.rage`2, return min(2.0, 1.0 + 0.6 x (1 - (actor.current_HP / actor.max_HP)))
+  - `f.momentum_amplifer`:
+    - If actor has `a.momentum`1, return 1.25 - (1 - (actor.current_HP / actor.max_HP)) x 0.5
+    - If actor has `a.momentum`2, return 1.25 - (1 - (actor.current_HP / actor.max_HP)) x 0.4
+  - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
+  - `f.mutual_amplifer`:
+    - If (phase is MID and (actor or opponent) has `a.mutual-magic-amplify`), return n
+    - If (phase is MID and (actor or opponent) has `a.mutual-magic-restraint`), return n
+	- If (phase is (LONG or CLOSE) and (actor or opponent) has `a.mutual-physical-amplify`, return n
+    - If (phase is (LONG or CLOSE) and (actor or opponent) has `a.mutual-physical-restraint`, return n
+
+  - If opponent.`a.stealth`1 and (opponent.current_HP / opponent.max_HP) <= 0.24, damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
+  - If opponent.`a.stealth`2 and (opponent.current_HP / opponent.max_HP) <= 0.29, damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
+    - note: This is only for party member ability. enemy have this `a.stealth` ability, then Log:"enemy は神隠れした。もう攻撃はこれ以上あたらない！"
+
+##### 6.1.3.2 Targeting
+
+**Row-based modifier** 
+- Targeting selects a character only to determine defense, row potency, abilities (counter). All damage resolved against a character is applied to `d.HP`.
+  - The threat weight table defines how many tickets of each row index are placed into `t.threat_weight_bag`.
+
+|row | Physical Threat weight |
+|---|---|
+|1|16|
+|2|8|
+|3|4|
+|4|2|
+|5|1|
+|6|1|
+
+|row | Magical Threat weight |
+|---|---|
+|1|1|
+|2|1|
+|3|1|
+|4|1|
+|5|1|
+|6|1|
+
+- `t.physical_threat_weight_bag` and `t.magical_threat_weight_bag`  Threat Weight (Passive Targeting) 
+  - A numerical value assigned to a unit based on their row position that determines the size of their "slice" in the enemy's targeting pool.
+
+**Targeting**
+- `f.targeting`:
+  - If actor.`c.antagonism`, target is opposite. (character -> character. enemy -> enemy)
+  - If phase is LONG or CLOSE, Gets one ticket from `t.physical_threat_weight_bag`.
+    - `a.bulwark`1 or `a.bulwark`2 redirect 
+	  if (`a.bulwark`1 and phase is LONG) or (`a.bulwark`2 and phase is (LONG or CLOSE)):
+	      flont_character = party.unit_in_front_of(t)    // the unit directly ahead of selected character (one row closer to enemy)
+	      if flont_character != null and flont_character.has(a.bulwark):
+	          return flont_character
+  - If phase is MID, Gets one ticket from `t.magical_threat_weight_bag`. 
+    - Bag contains numbers [1,2,3,4,5,6]
+    - The drawn number corresponds to row index (1–6).
+    - The character currently occupying that row is selected as the target.
+
+- `d.accuracy_potency` 
+  - A global accuracy modifier applied to a unit’s final output based on their current row position.
+  - Row-based modifiers apply only to player characters. Enemies are treated as having fixed potency (1.0).
+  - Row-based `d.accuracy_potency` is applied only during LONG and CLOSE phases.
+  - MID phase ignores row-based accuracy potency, so has fixed potency (1.0).
+
+- **`d.accuracy_potency`**
+  - If character.`a.composure`1, min(1, `d.accuracy_potency` + 0.10)
+  - If character.`a.composure`2, min(1, `d.accuracy_potency` + 0.13)
+
+|row | normal | `a.hunter`1 | `a.hunter`2 | `a.hunter`3 |
+|---|---|---|---|---|
+|1| 1.00 | 1.00 | 1.00 | 1.00 |
+|2| 0.85 | 0.90 | 0.93 | 0.95 |
+|3| 0.72 | 0.81 | 0.86 | 0.90 |
+|4| 0.61 | 0.73 | 0.80 | 0.86 |
+|5| 0.52 | 0.66 | 0.75 | 0.81 |
+|6| 0.44 | 0.59 | 0.70 | 0.77 |
+
+**Hit Detection**
+- `f.hit_detection`(actor: , opponent: ,Nth_hit: )
+  - For all pahse, LONG, MID, CLOSE.
+  - If actor.`a.focus`1, `f.c_accuracy+v` =  actor.`c.accuracy+v` x 1.2 (rounding up to the 3rd decimal ex. 0.003 * 1.2 = 0.0036 → 0.004)
+  - If actor.`a.focus`2, `f.c_accuracy+v` =  actor.`c.accuracy+v` x 1.3 (rounding up to the 3rd decimal)
+  - decay_of_accuracy: clamp(0.86, 0.90 + actor.`f.c_accuracy+v` - opponent.`c.evasion+v`, 0.98)
+  - baseChance = actor.d.accuracy_potency
+  - If opponent has `a.deflection`2 AND phase == LONG: baseChance -= 0.15. Else if opponent has `a.deflection`1 AND phase == LONG: baseChance -= 0.10
+  - chance = clamp(0.0, baseChance, 1.0) x (decay ^ (Nth_hit - 1))
+    - Note: Nth_hit starts at 1 for the first strike.
+    - Note: Nth_hit counts indevisually and not share with normal attack, re-attack and counter. (Nth_hit is reset per attack sequence)
+  - Roll: Return Random(0, 1.0) <= chance
+
+##### 6.1.3.3 Chain move
+
+- **`f.counter`(actor: , opponent: ,phase: ) :** IF (opponent or party members have not available `a.null-counter`) and (actor.`a.counter`, phase is CLOSE) , the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
+    - `a.counter`1: actor.`f.NoA` x 0.5, round up
+    - `a.counter`2: actor.`f.NoA` x 1.0, round up
+    - `a.counter`3: actor.`f.NoA` x 1.5, round up
+    - Counter triggers immediately after damage resolution, regardless of turn order modifiers.
+    - IF actor.`a.counter` and (opponent or opponent.party.character have available `a.null-counter`), displays log like : “巡礼者ブラザの反撃無効化により、二枚爪の黒豹のカウンターは防がれた！”. Reduce null-counter counter. (note: `a.null-counter`1 can disable once in battle,  `a.null-counter`2 can disable twice in battle, `a.null-counter`3 can disable three times in battle. if the null-counter is 0, the `a.null-counter` is disable in this battle. )
+    - *note:* if opponent is character, then check party.`a.null-counter`. if at least one party member has available `a.null-counter`, nagete the counter attack.
+
+- **`f.re-counter`(actor: , opponent: ,phase: ) :** IF actor.`a.re-counter` and (opponent or opponent.party.character have not `a.null-counter`), the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
+  	- `a.re-counter`1:   actor.`f.NoA` x 0.5, round up
+  	- `a.re-counter`2:   actor.`f.NoA` x 1.0
+    - Re Counter triggers immediately after damage resolution, regardless of turn order modifiers.
+
+- **`f.covering-fire`(actor: , opponent: ) :** IF actor.`a.covering-fire` and actor can ranged attack, the actor ranged attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
+  	- `a.covering-fire`1:   actor.`f.NoA` x 0.5, round up
+  	- `a.covering-fire`2:   actor.`f.NoA` x 1.0
+    - covering fire triggers immediately after damage resolution, regardless of turn order modifiers.
+
+- **`f.magical-counter`(actor: , opponent: ,phase: ) :** IF actor.`a.magical-counter` and actor can magical attack, the actor magic attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`, and actor.`f.NoA` x 0.5, round up)
+  	- `a.magical-counter`1:   actor.`f.NoA` x 0.5, round up
+  	- `a.magical-counter`2:   actor.`f.NoA` x 1.0
+    - Magical counter triggers immediately after damage resolution, regardless of turn order modifiers.
+
 
 #### 6.1.4 Outcome 
 
