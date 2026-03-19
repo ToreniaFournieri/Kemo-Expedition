@@ -1,0 +1,73 @@
+## 8. UI
+
+### 8.3 UI_EXPEDITION
+
+- If 自動周回 is ON, it repeats repart to the dungeon.
+
+- **Expedition Depth Limit (探索深度)**
+  - Players can set a depth limit; when the party reaches the selected floor, it stops the expedition and returns home automatically.
+  - Selectable Options : 1F-3まで/2F-3まで/3F-3まで/4F-3まで/5F-3まで/ボス直前まで/全て (default: 全て)
+
+```
+PT1 HP (HP bar, blue) ルピニアンの断崖踏破▼
+移動中: flavor text (background: state progress bar)
+次の目標: ルピニアンの断崖のボスレアアイテム 0/1 でヴァルンの樹林帯 開放
+📜 1,110回アイテム獲得を空振りする(8%, 98回)
+
+ルピニアンの断崖(pull down list)  探索深度 全て 出撃
+(Left-Aligned)                           (Right-Aligned)
+踏破U/帰還V/引分W/撤退X/敗北Y 合計 Z回    リセット
+EXP: L489 | 自動売却額: 134G
+
+PT2...
+```
+- Per party:
+  - Currently selected dungeon with Loot-Gate conditions (ex. 2nd Elite Gate is locked: 2/6 Floor 2 Uncommons collected.)
+  - List of available dungeons with Loot-Gate conditions
+	- **Flavor text**
+	  - The system selects flavor text from `Specification_3.3_FLAVOR_TEXT.md`.
+	  - The **speaker name** of the flavor text is resolved to the party member who satisfies the triggering condition (race, main class, or ability holder).
+      - Conditions may reference:
+	    - any party member’s race
+	    - any party member’s main class
+	    - any party member’s abilities
+	    - the party’s religion
+	    - other defined party-wide attributes
+	  - Therefore, every party member is a potential trigger source for flavor text selection.
+	  - **Flavor text cycle update**
+	    - State types:
+	      - **Step-based states:** Flavor text is updated on each step progression (only `sell` and `explore`).
+	      - **Continuous states:** Flavor text refreshes every **15 seconds** (e.g., `rest`, `sleep`, `feast`, etc.).
+  
+  - Expedition behavior:
+    - Expedition resolves immediately
+    - No loading scenes
+  - Show latest `f.quick_summary`.
+    - Tapping the quick summary shows a `f.list_of_rooms`.
+    - Tapping a room opens the `f.battle_logs`.
+  - 次の目標: show next Loot-Gate condition. 
+
+- **Gods Battle (神魔戦)**
+  - Loot Gate Condition: Collect 10 Boss rare items in dungeons to unlock Gods Battle. (If Gods battle condition is `Simple`, 1 Boss rare items instead)
+    - "特殊目標: `x.expedition`のボスレアアイテム 0/1 で神魔`godname`戦"
+  - UI / Trigger:
+    - When the condition is met, the 「出撃」(Deploy) button changes to 「神魔戦」(Gods Battle).
+    - The player must manually press the 「神魔戦」 button to start the special battle.
+    - Gods Battle cannot be triggered during Auto-Run (自動周回).
+  - Battle Rules:
+    - The normal boss is replaced by a God (a highly formidable enemy)
+  - Outcome Handling:
+    - **On Victory**
+      - The button reverts from 「神魔戦」 → 「出撃」.
+      - The Loot Gate counter resets to 0 Boss items collected.
+      - The player can repeat the cycle.
+    - **On Defeat**
+      - The 「神魔戦」 button remains available.
+      - The player may retry the Gods Battle without re-collecting Boss rare items.
+
+
+- Unlocked party:
+
+```
+PT4: (未開放:キョウエン 狡猾の神 撃破で開放)
+```
