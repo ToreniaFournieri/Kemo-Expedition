@@ -16,11 +16,16 @@
 #### 6.1.1 Phase resolution
 
 ##### 6.1.1.1 START phase
-- If actor.`a.oblivion`1:
-  - Randomly select 1 opponent.
-  - Randomly select 1 ability from that opponent’s valid abilities.
-  - Disable the selected ability for the rest of the battle.
+**Priority order of ability resolution**
 
+- actor.`a.oblivion`1
+  - Randomly select 1 opponent.
+  - Randomly select 1 valid ability from that opponent.
+  - The selected ability is disabled for the rest of the battle.
+
+- Other abilities with `[効]`
+
+  
 ##### 6.1.1.2 LONG, MID, CLOSE phase
 
 **Speed & Turn Order (Rolling Dice Rule)**
