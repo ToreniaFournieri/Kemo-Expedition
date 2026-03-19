@@ -368,64 +368,34 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "パーティーが受ける最初の遠距離攻撃を無効化する"
       },
       {
-        "key": "a.howl1",
-        "label": "遠吠え1",
-        "description": "遠距離2タイミングで発動。相手の次の攻撃回数5/7"
+        "key": "a.ice-null1",
+        "label": "氷結無効1",
+        "description": "自身が受ける予定の通常攻撃の氷属性ダメージを無効化する"
       },
       {
-        "key": "a.predator-sense1",
-        "label": "捕食1",
-        "description": "近接9(開始)タイミングで発動。相手のHPが30％未満の場合、命中+40"
+        "key": "a.fire-null1",
+        "label": "火炎無効1",
+        "description": "自身が受ける予定の通常攻撃の火属性ダメージを無効化する"
       },
       {
-        "key": "a.slow1",
-        "label": "鈍足1",
-        "description": "自身の行動順番に-1して遅くなる"
+        "key": "a.thunder-null1",
+        "label": "雷撃無効1",
+        "description": "自身が受ける予定の通常攻撃の雷属性ダメージを無効化する"
       },
       {
-        "key": "a.corrode1",
-        "label": "腐食1",
-        "description": "通常近接攻撃が3回以上命中した相手に対して、攻撃倍率x6/7"
+        "key": "a.magical-null1",
+        "label": "魔法無効1",
+        "description": "自身が受ける予定の通常攻撃の魔法ダメージを無効化する"
       },
       {
-        "key": "a.life-drain3",
-        "label": "吸血3",
-        "description": "通常近接攻撃で相手に与えたダメージの5/10を回復"
+        "key": "a.ranged-null1",
+        "label": "遠距離無効1",
+        "description": "自身が受ける予定の遠距離攻撃のダメージを無効化する"
       },
       {
-        "key": "a.no-offense1",
-        "label": "受身1",
-        "description": "通常行動をしなくなる(反撃などは行う)"
-      },
-      {
-        "key": "a.decompose1",
-        "label": "分解1",
-        "description": "近接2タイミングで発動。相手の物理防御力を6/7"
-      },
-      {
-        "key": "a.swarm1",
-        "label": "群れ1",
-        "description": "自身のHPが減ると攻撃倍率・防御倍率減(HP1%につき0.5%減少)"
-      },
-      {
-        "key": "a.death-touch1",
-        "label": "接死1",
-        "description": "通常近接攻撃の命中回数 x 2/256の確率で即死"
-      },
-      {
-        "key": "a.flying1",
-        "label": "飛行1",
-        "description": "相手の近接攻撃回数が1/4になる"
-      },
-      {
-        "key": "a.free1",
-        "label": "逃走1",
-        "description": "近接1タイミングで発動。戦闘から逃げる(戦闘は引分になる)"
-      },
-      {
-        "key": "a.frostbite1",
-        "label": "凍傷1",
-        "description": "相手の行動順番に-1を加えて遅らせる"
+        "key": "a.melee-null1",
+        "label": "近接無効1",
+        "description": "自身が受ける予定の近接攻撃のダメージを無効化する"
       },
       {
         "key": "a.ice-reflect1",
@@ -453,26 +423,6 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "自身が受ける予定の通常攻撃の氷属性ダメージを全反射して相手に与える(自身はダメージを受けない)"
       },
       {
-        "key": "a.ice-null1",
-        "label": "氷結無効1",
-        "description": "自身が受ける予定の通常攻撃の氷属性ダメージを無効化する"
-      },
-      {
-        "key": "a.bind1",
-        "label": "拘束1",
-        "description": "近接攻撃の命中回数 x 2/64の確率で相手の行動を封じる"
-      },
-      {
-        "key": "a.regeneration3",
-        "label": "再生3",
-        "description": "近接9(開始)タイミングで発動。この戦闘で失ったHPの19%を回復する。近接フェーズ前までにHPが0となった場合には発動しない"
-      },
-      {
-        "key": "a.burn1",
-        "label": "火傷1",
-        "description": "相手の通常近接攻撃の命中した回数 x 0.5%のダメージを相手に与える"
-      },
-      {
         "key": "a.fire-reflect1",
         "label": "火炎反射1",
         "description": "自身が受ける予定の通常攻撃の火属性ダメージを反射(1/10)して相手に与える(自身もダメージ(9/10)を受ける)"
@@ -496,11 +446,6 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "key": "a.fire-reflect5",
         "label": "火炎反射5",
         "description": "自身が受ける予定の通常攻撃の火属性ダメージを全反射して相手に与える(自身はダメージを受けない)"
-      },
-      {
-        "key": "a.fire-null1",
-        "label": "火炎無効1",
-        "description": "自身が受ける予定の通常攻撃の火属性ダメージを無効化する"
       },
       {
         "key": "a.thunder-reflect1",
@@ -528,14 +473,79 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "自身が受ける予定の通常攻撃の雷属性ダメージを全反射して相手に与える(自身はダメージを受けない)"
       },
       {
-        "key": "a.thunder-null1",
-        "label": "雷撃無効1",
-        "description": "自身が受ける予定の通常攻撃の雷属性ダメージを無効化する"
+        "key": "a.magical-reflect1",
+        "label": "魔法反射1",
+        "description": "自身が受ける予定の通常攻撃の魔法ダメージを反射(1/10)して相手に与える(自身もダメージ(9/10)を受ける)"
       },
       {
-        "key": "a.soul-reap1",
-        "label": "魂奪1",
-        "description": "魔法0(終了)タイミングで発動。相手のHPが10％未満であった場合、相手は即死する。回避も復活もできない"
+        "key": "a.magical-reflect2",
+        "label": "魔法反射2",
+        "description": "自身が受ける予定の通常攻撃の魔法ダメージを反射(3/10)して相手に与える(自身もダメージ(7/10)を受ける)"
+      },
+      {
+        "key": "a.magical-reflect3",
+        "label": "魔法反射3",
+        "description": "自身が受ける予定の通常攻撃の魔法ダメージを反射(5/10)して相手に与える(自身もダメージ(5/10)を受ける)"
+      },
+      {
+        "key": "a.magical-reflect4",
+        "label": "魔法反射4",
+        "description": "自身が受ける予定の通常攻撃の魔法ダメージを反射(7/10)して相手に与える(自身もダメージ(3/10)を受ける)"
+      },
+      {
+        "key": "a.magical-reflect5",
+        "label": "魔法反射5",
+        "description": "自身が受ける予定の通常攻撃の魔法ダメージを全反射して相手に与える(自身はダメージを受けない)"
+      },
+      {
+        "key": "a.ranged-reflect1",
+        "label": "矢返し1",
+        "description": "自身が受ける予定の遠距離攻撃のダメージを反射(1/10)して相手に与える(自身もダメージ(9/10)を受ける)"
+      },
+      {
+        "key": "a.ranged-reflect2",
+        "label": "矢返し2",
+        "description": "自身が受ける予定の遠距離攻撃のダメージを反射(3/10)して相手に与える(自身もダメージ(7/10)を受ける)"
+      },
+      {
+        "key": "a.ranged-reflect3",
+        "label": "矢返し3",
+        "description": "自身が受ける予定の遠距離攻撃のダメージを反射(5/10)して相手に与える(自身もダメージ(5/10)を受ける)"
+      },
+      {
+        "key": "a.ranged-reflect4",
+        "label": "矢返し4",
+        "description": "自身が受ける予定の遠距離攻撃のダメージを反射(7/10)して相手に与える(自身もダメージ(3/10)を受ける)"
+      },
+      {
+        "key": "a.ranged-reflect5",
+        "label": "矢返し5",
+        "description": "自身が受ける予定の遠距離攻撃のダメージを全反射して相手に与える(自身はダメージを受けない)"
+      },
+      {
+        "key": "a.melee-reflect1",
+        "label": "打ち返し1",
+        "description": "自身が受ける予定の近接攻撃のダメージを反射(1/10)して相手に与える(自身もダメージ(9/10)を受ける)"
+      },
+      {
+        "key": "a.melee-reflect2",
+        "label": "打ち返し2",
+        "description": "自身が受ける予定の近接攻撃のダメージを反射(3/10)して相手に与える(自身もダメージ(7/10)を受ける)"
+      },
+      {
+        "key": "a.melee-reflect3",
+        "label": "打ち返し3",
+        "description": "自身が受ける予定の近接攻撃のダメージを反射(5/10)して相手に与える(自身もダメージ(5/10)を受ける)"
+      },
+      {
+        "key": "a.melee-reflect4",
+        "label": "打ち返し4",
+        "description": "自身が受ける予定の近接攻撃のダメージを反射(7/10)して相手に与える(自身もダメージ(3/10)を受ける)"
+      },
+      {
+        "key": "a.melee-reflect5",
+        "label": "打ち返し5",
+        "description": "自身が受ける予定の近接攻撃のダメージを全反射して相手に与える(自身はダメージを受けない)"
       },
       {
         "key": "a.mutual-magic-amplify1",
@@ -638,39 +648,9 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "双方物理ダメージ0.59倍"
       },
       {
-        "key": "a.ranged-confusion1",
-        "label": "遠距離混乱1",
-        "description": "遠距離1タイミングで発動。1/32確率で遠距離攻撃能力を持つ相手一人を敵対状態とする"
-      },
-      {
-        "key": "a.self-destruct1",
-        "label": "自爆1",
-        "description": "近接2タイミングで発動。自爆する。相手に残ダメージの1/10を与える"
-      },
-      {
         "key": "a.oblivion1",
         "label": "忘却1",
         "description": "無作為に選んだ相手のアビリティ1つをこの戦闘中無効にする"
-      },
-      {
-        "key": "a.reanimate3",
-        "label": "即時蘇生3",
-        "description": "自身のHPが0となったタイミングで発動。HP31%で復活する(戦闘中1回のみ有効)"
-      },
-      {
-        "key": "a.auriferous1",
-        "label": "含金1",
-        "description": "自身が受ける総攻撃回数10回毎に、自身がドロップするアイテム抽選確率を+1する"
-      },
-      {
-        "key": "a.magic-seal1",
-        "label": "魔封1",
-        "description": "最初の魔法を無力化する(相手だけでなく自身や味方にもこの制約を受ける)"
-      },
-      {
-        "key": "a.ambush1",
-        "label": "待ち伏せ1",
-        "description": "自身の通常行動時点でいずれの相手もまだこの戦闘中に行動していなかった場合、与ダメージ1.3倍"
       },
       {
         "key": "a.mimic1",
@@ -678,114 +658,24 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "相手のアビリティ1つを無作為に指定する。指定したアビリティの効果を発動する"
       },
       {
-        "key": "a.shock1",
-        "label": "感電1",
-        "description": "相手の最初の通常近接攻撃に対して発動。相手の近接攻撃が1回目ヒットした段階で攻撃をやめさせる"
+        "key": "a.magic-seal1",
+        "label": "魔封1",
+        "description": "最初の魔法を無力化する(相手だけでなく自身や味方にもこの制約を受ける)"
       },
       {
-        "key": "a.unstable-core1",
-        "label": "不安定1",
-        "description": "遠距離0(終了)タイミングと魔法0(終了)タイミングにそれぞれ発動。残HP30%の自傷ダメージを受ける"
+        "key": "a.frostbite1",
+        "label": "凍傷1",
+        "description": "相手の行動順番に-1を加えて遅らせる"
       },
       {
-        "key": "a.magical-reflect1",
-        "label": "魔法反射1",
-        "description": "自身が受ける予定の通常攻撃の魔法ダメージを反射(1/10)して相手に与える(自身もダメージ(9/10)を受ける)"
+        "key": "a.slow1",
+        "label": "鈍足1",
+        "description": "自身の行動順番に-1して遅くなる"
       },
       {
-        "key": "a.magical-reflect2",
-        "label": "魔法反射2",
-        "description": "自身が受ける予定の通常攻撃の魔法ダメージを反射(3/10)して相手に与える(自身もダメージ(7/10)を受ける)"
-      },
-      {
-        "key": "a.magical-reflect3",
-        "label": "魔法反射3",
-        "description": "自身が受ける予定の通常攻撃の魔法ダメージを反射(5/10)して相手に与える(自身もダメージ(5/10)を受ける)"
-      },
-      {
-        "key": "a.magical-reflect4",
-        "label": "魔法反射4",
-        "description": "自身が受ける予定の通常攻撃の魔法ダメージを反射(7/10)して相手に与える(自身もダメージ(3/10)を受ける)"
-      },
-      {
-        "key": "a.magical-reflect5",
-        "label": "魔法反射5",
-        "description": "自身が受ける予定の通常攻撃の魔法ダメージを全反射して相手に与える(自身はダメージを受けない)"
-      },
-      {
-        "key": "a.magical-null1",
-        "label": "魔法無効1",
-        "description": "自身が受ける予定の通常攻撃の魔法ダメージを無効化する"
-      },
-      {
-        "key": "a.ranged-reflect1",
-        "label": "矢返し1",
-        "description": "自身が受ける予定の遠距離攻撃のダメージを反射(1/10)して相手に与える(自身もダメージ(9/10)を受ける)"
-      },
-      {
-        "key": "a.ranged-reflect2",
-        "label": "矢返し2",
-        "description": "自身が受ける予定の遠距離攻撃のダメージを反射(3/10)して相手に与える(自身もダメージ(7/10)を受ける)"
-      },
-      {
-        "key": "a.ranged-reflect3",
-        "label": "矢返し3",
-        "description": "自身が受ける予定の遠距離攻撃のダメージを反射(5/10)して相手に与える(自身もダメージ(5/10)を受ける)"
-      },
-      {
-        "key": "a.ranged-reflect4",
-        "label": "矢返し4",
-        "description": "自身が受ける予定の遠距離攻撃のダメージを反射(7/10)して相手に与える(自身もダメージ(3/10)を受ける)"
-      },
-      {
-        "key": "a.ranged-reflect5",
-        "label": "矢返し5",
-        "description": "自身が受ける予定の遠距離攻撃のダメージを全反射して相手に与える(自身はダメージを受けない)"
-      },
-      {
-        "key": "a.ranged-null1",
-        "label": "遠距離無効1",
-        "description": "自身が受ける予定の遠距離攻撃のダメージを無効化する"
-      },
-      {
-        "key": "a.melee-reflect1",
-        "label": "打ち返し1",
-        "description": "自身が受ける予定の近接攻撃のダメージを反射(1/10)して相手に与える(自身もダメージ(9/10)を受ける)"
-      },
-      {
-        "key": "a.melee-reflect2",
-        "label": "打ち返し2",
-        "description": "自身が受ける予定の近接攻撃のダメージを反射(3/10)して相手に与える(自身もダメージ(7/10)を受ける)"
-      },
-      {
-        "key": "a.melee-reflect3",
-        "label": "打ち返し3",
-        "description": "自身が受ける予定の近接攻撃のダメージを反射(5/10)して相手に与える(自身もダメージ(5/10)を受ける)"
-      },
-      {
-        "key": "a.melee-reflect4",
-        "label": "打ち返し4",
-        "description": "自身が受ける予定の近接攻撃のダメージを反射(7/10)して相手に与える(自身もダメージ(3/10)を受ける)"
-      },
-      {
-        "key": "a.melee-reflect5",
-        "label": "打ち返し5",
-        "description": "自身が受ける予定の近接攻撃のダメージを全反射して相手に与える(自身はダメージを受けない)"
-      },
-      {
-        "key": "a.melee-null1",
-        "label": "近接無効1",
-        "description": "自身が受ける予定の近接攻撃のダメージを無効化する"
-      },
-      {
-        "key": "a.colossal1",
-        "label": "巨人1",
-        "description": "自身の防御力が2倍になるが、自身の物理ダメージ補正x2.0"
-      },
-      {
-        "key": "a.upgrade-all-abilities1",
-        "label": "他のアビリティ強化+1",
-        "description": "自身の他のアビリティを1段階強化する(上限レベル5)"
+        "key": "a.howl1",
+        "label": "遠吠え1",
+        "description": "遠距離2タイミングで発動。相手の次の攻撃回数5/7"
       },
       {
         "key": "a.howl2",
@@ -806,6 +696,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "key": "a.howl5",
         "label": "遠吠え5",
         "description": "遠距離2タイミングで発動。相手の次の攻撃回数1/7"
+      },
+      {
+        "key": "a.ranged-confusion1",
+        "label": "遠距離混乱1",
+        "description": "遠距離1タイミングで発動。1/32確率で遠距離攻撃能力を持つ相手一人を敵対状態とする"
       },
       {
         "key": "a.ranged-confusion2",
@@ -878,6 +773,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "近接2タイミングで発動。7/32の確率で近接攻撃能力を持つ相手一人を敵対状態とする"
       },
       {
+        "key": "a.unstable-core1",
+        "label": "不安定1",
+        "description": "遠距離0(終了)タイミングと魔法0(終了)タイミングにそれぞれ発動。残HP30%の自傷ダメージを受ける"
+      },
+      {
         "key": "a.unstable-core2",
         "label": "不安定2",
         "description": "遠距離0(終了)タイミングと魔法0(終了)タイミングにそれぞれ発動。残HP24%の自傷ダメージを受ける"
@@ -896,6 +796,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "key": "a.unstable-core5",
         "label": "不安定5",
         "description": "遠距離0(終了)タイミングと魔法0(終了)タイミングにそれぞれ発動。残HP12%の自傷ダメージを受ける"
+      },
+      {
+        "key": "a.soul-reap1",
+        "label": "魂奪1",
+        "description": "魔法0(終了)タイミングで発動。相手のHPが10％未満であった場合、相手は即死する。回避も復活もできない"
       },
       {
         "key": "a.soul-reap2",
@@ -928,6 +833,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "近接9(開始)タイミングで発動。この戦闘で失ったHPの15%を回復する。近接フェーズ前までにHPが0となった場合には発動しない"
       },
       {
+        "key": "a.regeneration3",
+        "label": "再生3",
+        "description": "近接9(開始)タイミングで発動。この戦闘で失ったHPの19%を回復する。近接フェーズ前までにHPが0となった場合には発動しない"
+      },
+      {
         "key": "a.regeneration4",
         "label": "再生4",
         "description": "近接9(開始)タイミングで発動。この戦闘で失ったHPの22%を回復する。近接フェーズ前までにHPが0となった場合には発動しない"
@@ -936,6 +846,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "key": "a.regeneration5",
         "label": "再生5",
         "description": "近接9(開始)タイミングで発動。この戦闘で失ったHPの24%を回復する。近接フェーズ前までにHPが0となった場合には発動しない"
+      },
+      {
+        "key": "a.predator-sense1",
+        "label": "捕食1",
+        "description": "近接9(開始)タイミングで発動。相手のHPが30％未満の場合、命中+40"
       },
       {
         "key": "a.predator-sense2",
@@ -958,6 +873,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "近接9(開始)タイミングで発動。相手のHPが50％未満の場合、命中+40"
       },
       {
+        "key": "a.decompose1",
+        "label": "分解1",
+        "description": "近接2タイミングで発動。相手の物理防御力を6/7"
+      },
+      {
         "key": "a.decompose2",
         "label": "分解2",
         "description": "近接2タイミングで発動。相手の物理防御力を5/7"
@@ -976,6 +896,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "key": "a.decompose5",
         "label": "分解5",
         "description": "近接2タイミングで発動。相手の物理防御力を2/7"
+      },
+      {
+        "key": "a.self-destruct1",
+        "label": "自爆1",
+        "description": "近接2タイミングで発動。自爆する。相手に残ダメージの1/10を与える"
       },
       {
         "key": "a.self-destruct2",
@@ -998,6 +923,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "近接2タイミングで発動。自爆する。相手に残ダメージの全てを与える"
       },
       {
+        "key": "a.free1",
+        "label": "逃走1",
+        "description": "近接1タイミングで発動。戦闘から逃げる(戦闘は引分になる)"
+      },
+      {
         "key": "a.free2",
         "label": "逃走2",
         "description": "近接2タイミングで発動。戦闘から逃げる(戦闘は引分になる)"
@@ -1018,6 +948,21 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "魔法2タイミングで発動。戦闘から逃げる(戦闘は引分になる)"
       },
       {
+        "key": "a.auriferous1",
+        "label": "含金1",
+        "description": "自身が受ける総攻撃回数10回毎に、自身がドロップするアイテム抽選確率を+1する"
+      },
+      {
+        "key": "a.no-offense1",
+        "label": "受身1",
+        "description": "通常行動をしなくなる(反撃などは行う)"
+      },
+      {
+        "key": "a.swarm1",
+        "label": "群れ1",
+        "description": "自身のHPが減ると攻撃倍率・防御倍率減(HP1%につき0.5%減少)"
+      },
+      {
         "key": "a.reanimate1",
         "label": "即時蘇生1",
         "description": "自身のHPが0となったタイミングで発動。HP20%で復活する(戦闘中1回のみ有効)"
@@ -1028,6 +973,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "自身のHPが0となったタイミングで発動。HP26%で復活する(戦闘中1回のみ有効)"
       },
       {
+        "key": "a.reanimate3",
+        "label": "即時蘇生3",
+        "description": "自身のHPが0となったタイミングで発動。HP31%で復活する(戦闘中1回のみ有効)"
+      },
+      {
         "key": "a.reanimate4",
         "label": "即時蘇生4",
         "description": "自身のHPが0となったタイミングで発動。HP35%で復活する(戦闘中1回のみ有効)"
@@ -1036,6 +986,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "key": "a.reanimate5",
         "label": "即時蘇生5",
         "description": "自身のHPが0となったタイミングで発動。HP38%で復活する(戦闘中1回のみ有効)"
+      },
+      {
+        "key": "a.ambush1",
+        "label": "待ち伏せ1",
+        "description": "自身の通常行動時点でいずれの相手もまだこの戦闘中に行動していなかった場合、与ダメージ1.3倍"
       },
       {
         "key": "a.ambush2",
@@ -1056,6 +1011,16 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "key": "a.ambush5",
         "label": "待ち伏せ5",
         "description": "自身の通常行動時点でいずれの相手もまだこの戦闘中に行動していなかった場合、与ダメージ1.68倍"
+      },
+      {
+        "key": "a.shock1",
+        "label": "感電1",
+        "description": "相手の最初の通常近接攻撃に対して発動。相手の近接攻撃が1回目ヒットした段階で攻撃をやめさせる"
+      },
+      {
+        "key": "a.corrode1",
+        "label": "腐食1",
+        "description": "通常近接攻撃が3回以上命中した相手に対して、攻撃倍率x6/7"
       },
       {
         "key": "a.corrode2",
@@ -1088,6 +1053,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "通常近接攻撃で相手に与えたダメージの3/10を回復"
       },
       {
+        "key": "a.life-drain3",
+        "label": "吸血3",
+        "description": "通常近接攻撃で相手に与えたダメージの5/10を回復"
+      },
+      {
         "key": "a.life-drain4",
         "label": "吸血4",
         "description": "通常近接攻撃で相手に与えたダメージの7/10を回復"
@@ -1096,6 +1066,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "key": "a.life-drain5",
         "label": "吸血5",
         "description": "通常近接攻撃で相手に与えたダメージを回復"
+      },
+      {
+        "key": "a.death-touch1",
+        "label": "接死1",
+        "description": "通常近接攻撃の命中回数 x 2/256の確率で即死"
       },
       {
         "key": "a.death-touch2",
@@ -1118,6 +1093,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "通常近接攻撃の命中回数 x 6/256の確率で即死"
       },
       {
+        "key": "a.burn1",
+        "label": "火傷1",
+        "description": "相手の通常近接攻撃の命中した回数 x 0.5%のダメージを相手に与える"
+      },
+      {
         "key": "a.burn2",
         "label": "火傷2",
         "description": "相手の通常近接攻撃の命中した回数 x 0.9%のダメージを相手に与える"
@@ -1138,6 +1118,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "相手の通常近接攻撃の命中した回数 x 1.5%のダメージを相手に与える"
       },
       {
+        "key": "a.bind1",
+        "label": "拘束1",
+        "description": "近接攻撃の命中回数 x 2/64の確率で相手の行動を封じる"
+      },
+      {
         "key": "a.bind2",
         "label": "拘束2",
         "description": "近接攻撃の命中回数 x 3/64の確率で相手の行動を封じる"
@@ -1156,6 +1141,21 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "key": "a.bind5",
         "label": "拘束5",
         "description": "近接攻撃の命中回数 x 6/64の確率で相手の行動を封じる"
+      },
+      {
+        "key": "a.flying1",
+        "label": "飛行1",
+        "description": "相手の近接攻撃回数が1/4になる"
+      },
+      {
+        "key": "a.colossal1",
+        "label": "巨人1",
+        "description": "自身の防御力が2倍になるが、自身の物理ダメージ補正x2.0"
+      },
+      {
+        "key": "a.upgrade-all-abilities1",
+        "label": "他のアビリティ強化+1",
+        "description": "自身の他のアビリティを1段階強化する(上限レベル5)"
       },
       {
         "key": "a.upgrade-all-abilities2",
