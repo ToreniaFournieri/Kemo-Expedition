@@ -154,7 +154,7 @@
   - Triggered by `a.decompose`
   - Use `f.targeting` (phase: CLOSE) for choosing target.
   - target.`d.defense` = N/D x target.`d.defense`
-  - Log: `log.decompose`
+  - Log: `log.decompose` + "(target.name の 防御力 XXX → YYY)"   gray text
 
 - **Self destruct**
   - Triggered by `a.self-destruct`
