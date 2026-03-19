@@ -148,7 +148,7 @@
   - Triggered by `a.regeneration`
   - actor.`d.HP` = min(actor.max_HP, actor.HP + (N x 0.01) x actor.damage_taken_in_this_battle)
   - Log: `log.regeneration`
-    - Heal: (✚ XXX)  Left-Aligned, `color-heal-bar` color
+    - Heal: (✚ XXX)  Left-Aligned, gray text
 
  
 #### 6.1.3 Actor normal move
