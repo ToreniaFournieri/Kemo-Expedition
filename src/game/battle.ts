@@ -3078,6 +3078,7 @@ export function executeBattle(
                 ? `${char.name} が${attackType}を唱えた！${resonanceLogText}`
                 : `${char.name} の${attackType}！${resonanceLogText}`,
             damage: result.damage,
+            damageTarget: isAntagonism ? 'party' : 'enemy',
             hits: result.hits,
             totalAttempts: result.totalAttempts,
             rageBonusPercent: characterAttackRageBonusPercent > 0 ? characterAttackRageBonusPercent : undefined,
