@@ -134,6 +134,19 @@ const UNSTABLE_CORE_LOGS = {
   ],
 } as const satisfies Record<Exclude<BattleActionPhase, 'close'>, readonly string[]>;
 
+const SOUL_REAP_LOGS = [
+  '{actor} は {target} に終止符を打った！',
+  '{actor} は {target} の魂を刈り取った！',
+  '{actor} は {target} の命を摘み取った！',
+  '{actor} は {target} に死の刻印を刻んだ！',
+  '{actor} は {target} の存在を断ち切った！',
+  '{actor} は {target} を無慈悲に葬り去った！',
+  '{actor} は {target} の魂を引き剥がした！',
+  '{actor} は {target} に逃れられぬ終焉を与えた！',
+  '{actor} は {target} をこの世から消し去った！',
+  '{actor} は {target} の命脈を断ち切った！',
+] as const;
+
 function getElementalMultiplier(
   offense: ElementalOffense,
   resistance: Record<'fire' | 'thunder' | 'ice', number>
@@ -1397,6 +1410,14 @@ function getUnstableCoreDamagePercent(level: number): number {
   return level >= 1 ? 30 : 0;
 }
 
+function getSoulReapThresholdPercent(level: number): number {
+  if (level >= 5) return 20;
+  if (level === 4) return 19;
+  if (level === 3) return 17;
+  if (level === 2) return 14;
+  return level >= 1 ? 10 : 0;
+}
+
 function pickRandomEntry<T>(entries: readonly T[]): T {
   return entries[Math.floor(Math.random() * entries.length)];
 }
@@ -1432,6 +1453,16 @@ function buildUnstableCoreAction(
 
 function getUnstableCoreNote(level: number): string {
   return `(残HP ${getUnstableCoreDamagePercent(level)}%の自傷ダメージ)`;
+}
+
+function buildSoulReapAction(actorName: string, targetName: string): string {
+  return pickRandomEntry(SOUL_REAP_LOGS)
+    .replace(/\{actor\}/g, actorName)
+    .replace(/\{target\}/g, targetName);
+}
+
+function getSoulReapNote(level: number): string {
+  return `(HP ${getSoulReapThresholdPercent(level)}％未満で即死)`;
 }
 
 function getConfusionNoTargetLog(
@@ -2278,6 +2309,51 @@ export function executeBattle(
           note: getUnstableCoreNote(entry.level),
           noteTone: 'sub',
           damage,
+        });
+      }
+    };
+
+    // SpecRef: 6.1.2 | Soul reap
+    const triggerSoulReapAtEnd = (): void => {
+      if (phase !== 'mid') return;
+      if (enemyHp <= 0 || partyHp <= 0) return;
+
+      const enemySoulReapLevel = getEnemyAbilityLevel(enemy, 'soul_reap');
+      const enemySoulReapThreshold = getSoulReapThresholdPercent(enemySoulReapLevel);
+      if (enemySoulReapThreshold > 0 && partyHp < (partyStats.hp * enemySoulReapThreshold) / 100) {
+        partyHp = 0;
+        log.push({
+          phase,
+          initiativeRoll: 0,
+          actor: 'triggered',
+          action: buildSoulReapAction(enemy.name, party.name),
+          note: getSoulReapNote(enemySoulReapLevel),
+        });
+      }
+
+      const partySoulReapEntries = characterStats
+        .map((stats) => ({
+          stats,
+          level: getAbilityLevel(stats, 'soul_reap'),
+          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+        }))
+        .filter((entry) => entry.level > 0)
+        .sort((a, b) => a.stats.row - b.stats.row);
+
+      for (const entry of partySoulReapEntries) {
+        if (enemyHp <= 0 || partyHp <= 0) break;
+
+        const threshold = getSoulReapThresholdPercent(entry.level);
+        if (enemyHp >= (enemy.hp * threshold) / 100) continue;
+
+        enemyHp = 0;
+        log.push({
+          phase,
+          initiativeRoll: 0,
+          actor: 'triggered',
+          characterId: entry.stats.characterId,
+          action: buildSoulReapAction(entry.ownerName, enemy.name),
+          note: getSoulReapNote(entry.level),
         });
       }
     };
@@ -3136,6 +3212,7 @@ export function executeBattle(
     triggerConfusionAtTiming(2);
     triggerConfusionAtTiming(1);
     triggerUnstableCoreAtEnd();
+    triggerSoulReapAtEnd();
 
     if (partyHp <= 0) {
       return {
