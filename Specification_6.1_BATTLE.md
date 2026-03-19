@@ -131,9 +131,8 @@
 - **Unstable core**
   - Triggered by `a.unstable-core`
   - actor.`d.HP` -= (N x 0.01) x actor.remaining_HP / actor.max_HP
-  - Log: `log.unstable-core` + "(残HP N%の自傷ダメージ)"
-  - Damage: (XXX)
-	- Note: Left-Aligned, Sub color
+  - Log: `log.unstable-core` + "(残HP N%の自傷ダメージ)"  Gray text
+  - Damage: (XXX)  Left-Aligned, Sub color for damage part
 
 - **Soul reap**
   - Triggered by `a.soul-reap`
@@ -149,6 +148,8 @@
   - Triggered by `a.regeneration`
   - actor.`d.HP` += min(actor.max_HP, (N x 0.01) x (actor.damage_taken_in_this_battle) / actor.max_HP)
   - Log: `log.regeneration`
+    - Heal: (XXX)  Left-Aligned, Bold black color
+
  
 #### 6.1.3 Actor normal move
 
