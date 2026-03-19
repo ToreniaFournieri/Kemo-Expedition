@@ -184,6 +184,33 @@ body.app-dark {
   border-color: rgb(75 85 99);
 }
 
+.theme-dark select,
+.theme-dark input,
+.theme-dark textarea {
+  background-color: rgb(15 23 42);
+  color: rgb(229 231 235);
+  border-color: rgb(100 116 139);
+}
+
+.theme-dark select option,
+.theme-dark select optgroup {
+  background-color: rgb(15 23 42);
+  color: rgb(229 231 235);
+}
+
+.theme-dark select:disabled,
+.theme-dark input:disabled,
+.theme-dark textarea:disabled {
+  background-color: rgb(30 41 59);
+  color: rgb(148 163 184);
+}
+
+.theme-dark select:focus,
+.theme-dark input:focus,
+.theme-dark textarea:focus {
+  outline-color: rgb(var(--color-sub));
+}
+
 
 .theme-luna.theme-dark {
   --color-accent: 96 165 250;
