@@ -1187,8 +1187,8 @@ export interface BattleResult extends BattleState {
   };
 }
 
-// SpecRef: 6.2 | Function of battle | f.targeting
-// SpecRef: 6.2 | Function of battle | f.hit_detection
+// SpecRef: 6.1.2 | Function of battle | f.targeting
+// SpecRef: 6.1.2 | Function of battle | f.hit_detection
 export function executeBattle(
   party: Party,
   enemy: EnemyDef,
@@ -2527,7 +2527,7 @@ export function executeBattle(
 
 // Calculate enemy attack values for all phases (for display)
 // Shows raw attack values: rangedAttack/magicalAttack/meleeAttack
-// SpecRef: 6.2 | Function of battle | f.damage_calculation
+// SpecRef: 6.1.2 | Function of battle | f.damage_calculation
 export function calculateEnemyAttackValues(
   enemy: EnemyDef,
   _partyStats: ComputedPartyStats
