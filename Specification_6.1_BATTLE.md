@@ -78,7 +78,7 @@
 - Activate abilities in the above order.
 - Log format:
   - "[2] name が遠吠えをした！ (相手の次の攻撃回数5/7)"
-    - Text inside `()` is displayed in gray.
+    - Text `()` part is displayed in gray.
      
 #### 6.1.3 Actor normal move
 
