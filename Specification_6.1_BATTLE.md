@@ -77,6 +77,7 @@
   - Enemy > Front-row party member > Back-row party member
 - Activate abilities in the above order.
 - Log format:
+  - actor: (ability holder)  note: not `effect`
   - "[2] name が遠吠えをした！ (相手の次の攻撃回数5/7)"
     - Text `()` part is displayed in gray.
      
