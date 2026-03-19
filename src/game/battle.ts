@@ -2987,6 +2987,8 @@ export function executeBattle(
     if (phase === 'long') {
       triggerLongPhaseHowl();
     }
+    triggerConfusionAtTiming(2);
+    triggerConfusionAtTiming(1);
 
     if (partyHp <= 0) {
       return {
