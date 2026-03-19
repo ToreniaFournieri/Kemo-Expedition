@@ -1140,7 +1140,7 @@ function getMagicSealStartLog(ownerName: string): BattleLogEntry {
   return {
     phase: 'long',
     actor: 'effect',
-    action: `[効] ${ownerName} の魔封！`,
+    action: `${ownerName} の魔封！`,
     note: '(この場で最初に唱える魔法は無効化される)',
   };
 }
