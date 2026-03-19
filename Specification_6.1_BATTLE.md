@@ -137,7 +137,7 @@
 	- "actor の術で target は敵味方の区別を失った！ (確率X/X: 成功)"
 	- "actor が植え付けた疑念によって target は見境なく牙を剥いた！ (確率X/X: 成功)"
 	- "actor が囁いた禁断の言葉により、target は狂気に囚われた！ (確率X/X: 成功)"
- - **Failure log** (select one randomly)
+  - **Failure log** (select one randomly)
     - "actor の策略を target は打ち破った！ (確率X/X: 失敗)"
 	- "actor の効果は target に通じなかった！ (確率X/X: 失敗)"
 	- "actor の悪だくみは target によって防がれた！ (確率X/X: 失敗)"
