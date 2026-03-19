@@ -173,6 +173,19 @@ const DECOMPOSE_LOGS = [
   '{actor} は {target} の身体を分解した！',
 ] as const;
 
+const FREE_LOGS = [
+  '{actor} は戦場から離脱した！',
+  '{actor} は素早く逃走した！',
+  '{actor} は隙を突いて逃げ出した！',
+  '{actor} は姿をくらまし、戦闘を離れた！',
+  '{actor} は戦いを放棄し、撤退した！',
+  '{actor} は煙のように消え去った！',
+  '{actor} は機を見て撤退した！',
+  '{actor} は一瞬の隙に逃げ去った！',
+  '{actor} は戦場から姿を消した！',
+  '{actor} は追撃を振り切り、離脱した！',
+] as const;
+
 function getElementalMultiplier(
   offense: ElementalOffense,
   resistance: Record<'fire' | 'thunder' | 'ice', number>
@@ -1214,6 +1227,25 @@ function getRegenerationNote(healAmount: number): string {
   return `(✚ ${healAmount})`;
 }
 
+function getFreeTimingForPhase(
+  phase: BattleActionPhase,
+  level: number,
+): number | null {
+  if (phase === 'close') {
+    if (level >= 3) return 3;
+    if (level === 2) return 2;
+    if (level === 1) return 1;
+    return null;
+  }
+
+  if (phase === 'mid') {
+    if (level >= 5) return 2;
+    if (level === 4) return 1;
+  }
+
+  return null;
+}
+
 function getDecomposeDefenseMultiplier(level: number): number {
   if (level >= 5) return 2 / 7;
   if (level === 4) return 3 / 7;
@@ -1534,6 +1566,10 @@ function buildDecomposeAction(actorName: string, targetName: string): string {
     .replace(/\{target\}/g, targetName);
 }
 
+function buildFreeAction(actorName: string): string {
+  return pickRandomEntry(FREE_LOGS).replace(/\{actor\}/g, actorName);
+}
+
 function getRandomPartyMemberName(party: Party): string {
   if (party.characters.length === 0) return party.name;
   return pickRandomEntry(party.characters).name;
@@ -1789,6 +1825,8 @@ export function executeBattle(
   let pendingPartyHowlEffect: PendingHowlEffect | null = null;
   let enemyTemporaryAccuracyBonus = 0;
   const temporaryAccuracyBonusByCharacterId = new Map<number, number>();
+  let forcedOutcome: BattleOutcome | null = null;
+  let forcedOutcomePhase: BattleActionPhase = 'close';
 
   for (const ownerName of activeMagicSealQueue) {
     log.push(getMagicSealStartLog(ownerName));
@@ -1822,6 +1860,62 @@ export function executeBattle(
     enemyHp -= actualDamage;
     enemyDamageTakenInBattle += actualDamage;
     return actualDamage;
+  };
+
+  const buildBattleResult = (phase: BattleActionPhase, outcome: BattleOutcome): BattleResult => ({
+    phase,
+    partyHp: Math.max(0, partyHp),
+    enemyHp: Math.max(0, enemyHp),
+    log,
+    outcome,
+    updatedBags: {
+      physicalThreatBag: ctx.physicalThreatBag,
+      magicalThreatBag: ctx.magicalThreatBag,
+    },
+  });
+
+  const triggerFreeAtTiming = (phase: BattleActionPhase, timing: number): boolean => {
+    if (forcedOutcome || partyHp <= 0 || enemyHp <= 0) {
+      return false;
+    }
+
+    const enemyFreeLevel = getEnemyAbilityLevel(enemy, 'free');
+    if (getFreeTimingForPhase(phase, enemyFreeLevel) === timing) {
+      forcedOutcome = 'draw';
+      forcedOutcomePhase = phase;
+      log.push({
+        phase,
+        initiativeRoll: timing,
+        actor: 'triggered',
+        action: buildFreeAction(enemy.name),
+      });
+      return true;
+    }
+
+    const partyFreeEntries = characterStats
+      .map((stats) => ({
+        stats,
+        level: getAbilityLevel(stats, 'free'),
+        ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+      }))
+      .filter((entry) => getFreeTimingForPhase(phase, entry.level) === timing)
+      .sort((a, b) => a.stats.row - b.stats.row);
+
+    const freeOwner = partyFreeEntries[0];
+    if (!freeOwner) {
+      return false;
+    }
+
+    forcedOutcome = 'draw';
+    forcedOutcomePhase = phase;
+    log.push({
+      phase,
+      initiativeRoll: timing,
+      actor: 'triggered',
+      characterId: freeOwner.stats.characterId,
+      action: buildFreeAction(freeOwner.ownerName),
+    });
+    return true;
   };
 
   const triggerEnemyResurrect = (phase: BattleActionPhase, initiativeRoll?: number): void => {
@@ -2639,13 +2733,33 @@ export function executeBattle(
       if (turn.roll <= 9) {
         triggerRegenerationAtTiming(9);
         triggerPredatorSenseAtTiming(9);
+        if (forcedOutcome) {
+          return buildBattleResult(forcedOutcomePhase, forcedOutcome);
+        }
+      }
+      if (turn.roll <= 3) {
+        if (triggerFreeAtTiming(phase, 3)) {
+          return buildBattleResult(forcedOutcomePhase, forcedOutcome!);
+        }
       }
       if (turn.roll <= 2) {
+        if (triggerFreeAtTiming(phase, 2)) {
+          return buildBattleResult(forcedOutcomePhase, forcedOutcome!);
+        }
         triggerDecomposeAtTiming(2);
         triggerConfusionAtTiming(2);
+        if (forcedOutcome) {
+          return buildBattleResult(forcedOutcomePhase, forcedOutcome);
+        }
       }
       if (turn.roll <= 1) {
+        if (triggerFreeAtTiming(phase, 1)) {
+          return buildBattleResult(forcedOutcomePhase, forcedOutcome!);
+        }
         triggerConfusionAtTiming(1);
+        if (forcedOutcome) {
+          return buildBattleResult(forcedOutcomePhase, forcedOutcome);
+        }
       }
 
       if (turn.kind === 'enemy') {
@@ -3479,38 +3593,36 @@ export function executeBattle(
     }
     triggerRegenerationAtTiming(9);
     triggerPredatorSenseAtTiming(9);
+    if (forcedOutcome) {
+      return buildBattleResult(forcedOutcomePhase, forcedOutcome);
+    }
+    if (triggerFreeAtTiming(phase, 3)) {
+      return buildBattleResult(forcedOutcomePhase, forcedOutcome!);
+    }
+    if (triggerFreeAtTiming(phase, 2)) {
+      return buildBattleResult(forcedOutcomePhase, forcedOutcome!);
+    }
     triggerDecomposeAtTiming(2);
     triggerConfusionAtTiming(2);
+    if (forcedOutcome) {
+      return buildBattleResult(forcedOutcomePhase, forcedOutcome);
+    }
+    if (triggerFreeAtTiming(phase, 1)) {
+      return buildBattleResult(forcedOutcomePhase, forcedOutcome!);
+    }
     triggerConfusionAtTiming(1);
     triggerUnstableCoreAtEnd();
     triggerSoulReapAtEnd();
+    if (forcedOutcome) {
+      return buildBattleResult(forcedOutcomePhase, forcedOutcome);
+    }
 
     if (partyHp <= 0) {
-      return {
-        phase,
-        partyHp: 0,
-        enemyHp,
-        log,
-        outcome: 'defeat',
-        updatedBags: {
-          physicalThreatBag: ctx.physicalThreatBag,
-          magicalThreatBag: ctx.magicalThreatBag,
-        },
-      };
+      return buildBattleResult(phase, 'defeat');
     }
 
     if (enemyHp <= 0) {
-      return {
-        phase,
-        partyHp,
-        enemyHp: 0,
-        log,
-        outcome: 'victory',
-        updatedBags: {
-          physicalThreatBag: ctx.physicalThreatBag,
-          magicalThreatBag: ctx.magicalThreatBag,
-        },
-      };
+      return buildBattleResult(phase, 'victory');
     }
   }
 
@@ -3525,17 +3637,7 @@ export function executeBattle(
     outcome = 'draw';
   }
 
-  return {
-    phase: 'close',
-    partyHp: Math.max(0, partyHp),
-    enemyHp: Math.max(0, enemyHp),
-    log,
-    outcome,
-    updatedBags: {
-      physicalThreatBag: ctx.physicalThreatBag,
-      magicalThreatBag: ctx.magicalThreatBag,
-    },
-  };
+  return buildBattleResult('close', outcome);
 }
 
 // Calculate enemy attack values for all phases (for display)
