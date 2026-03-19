@@ -46,17 +46,17 @@
   - `a.first-strike`2, roll **3d3** (3~9)
   - `a.first-strike`1, roll **2d3** (2~6)
   - No `a.first-strike`, roll **1d3** (1~3)
-- Modification 
+- Modifications 
   - If party.`Goddess of Fertility`, add +1 (cap the result at 9)
   - If actor.`a.slow`1, subtract 1 (minimum 1)
   - If opponent.`a.frostbite`1, subtract 1 (minimum 1)
 - Actions are resolved in descending order of roll result.
-- **Tie-breaker Action order resolution**
+- **Tie-breaker action order**
   - Resolve in the following order:
     1. Enemy ability
     2. Front-row party member abilities
     3. Back-row party member abilities
-    4. Enemy move
+    4. Enemy moves
     5. Front-row party member moves
     6. Back-row party member moves
 
@@ -73,9 +73,12 @@
   - "イタチの解錠 石板の盾 を獲得した！(自動売却対象: 10G)"
 
 
-#### 6.1.2 Actor normal move
+#### 6.1.2 Triggered ability
 
-##### 6.1.2.1 Actor action
+
+#### 6.1.3 Actor normal move
+
+##### 6.1.3.1 Actor action
 - Check:
   - If (phase = MID and `a.magic-seal` is valid), Disable the actor's move. log "name がフロストニードルを唱えたがかき消された！". Disable the `a.magic-seal`.
 
@@ -118,7 +121,7 @@
 - If (phase is LONG) and (opponent.`a.illusion`1) and (the `a.illusion` is enable), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. log "ポンタへの攻撃はすべて幻だった！".
 - If (phase is LONG) and (opponent.party.character.`a.illusion`2) and (the `a.illusion` is enable), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. log "nameへの攻撃はすべて幻だった！".
 
-##### 6.1.2.2 Chain move trigger
+##### 6.1.3.2 Chain move trigger
 - **Coutner:** `f.counter`(actor:actor , opponent:opponent ,phase: )
   - **Re-counter** If opponent.`a.re-counter`, `f.re-counter`(actor:opponent , opponent:actor ,phase: )
 - **Re-attack**: IF actor.`a.re-attack`, the actor attacks to opponent. (using f.hit_detection, f.damage_calculation)
@@ -130,9 +133,9 @@
 
 - *Note:*  Nth_hit is per action based (not per-target)
 
-#### 6.1.3 Function of battle
+#### 6.1.4 Function of battle
 
-##### 6.1.3.1 Function of attack
+##### 6.1.4.1 Function of attack
 
 **functions of attack**
 - `f.resonance_amplifier`(actor: ,successful hit: n )
@@ -163,7 +166,7 @@
   - If opponent.`a.stealth`2 and (opponent.current_HP / opponent.max_HP) <= 0.29, damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
     - note: This is only for party member ability. enemy have this `a.stealth` ability, then Log:"enemy は神隠れした。もう攻撃はこれ以上あたらない！"
 
-##### 6.1.3.2 Function of targeting
+##### 6.1.4.2 Function of targeting
 
 **Row-based modifier** 
 - Targeting selects a character only to determine defense, row potency, abilities (counter). All damage resolved against a character is applied to `d.HP`.
@@ -236,7 +239,7 @@
     - Note: Nth_hit counts indevisually and not share with normal attack, re-attack and counter. (Nth_hit is reset per attack sequence)
   - Roll: Return Random(0, 1.0) <= chance
 
-##### 6.1.3.3 Function of Chain move
+##### 6.1.4.3 Function of Chain move
 
 - **`f.counter`(actor: , opponent: ,phase: ) :** IF (opponent or party members have not available `a.null-counter`) and (actor.`a.counter`, phase is CLOSE) , the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
     - `a.counter`1: actor.`f.NoA` x 0.5, round up
@@ -261,7 +264,7 @@
   	- `a.magical-counter`2:   actor.`f.NoA` x 1.0
     - Magical counter triggers immediately after damage resolution, regardless of turn order modifiers.
 
-#### 6.1.4 Outcome 
+#### 6.1.5 Outcome 
 
 **Resolution**
 - Defeat (Player loses)
@@ -286,7 +289,7 @@
 
 - *Draw*:no penalties (current version). no `d.experience` points nor item reward at this room. Back to home with trophies of previous rooms.
 
-#### 6.1.5 REWARD 
+#### 6.1.6 REWARD 
 - For every item listed in the enemy's potential drop items,
   - If the item is common,
     - Get one ticket from `t.common_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord` or `God of Oblivion`(rank 10 or more).
@@ -318,7 +321,7 @@
 ```
 
 
-#### 6.1.6 Logs
+#### 6.1.7 Logs
 - `f.quick_summary`:
   - `p.outcome_of_expedition`: 
     - 踏破: victory and complete the whole dungeons 
