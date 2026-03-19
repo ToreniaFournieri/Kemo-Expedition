@@ -1767,8 +1767,8 @@ function buildDeityEffectLogEntry(
   if (deityKey === 'Goddess of Restoration' && healAmount && healAmount > 0) {
     return {
       phase: 'end',
-      actor: 'deity',
-      action: '再生の女神の効果！',
+      actor: 'effect',
+      action: '再生の女神の祝福！',
       note: `(HP回復+${healAmount})`,
     };
   }
@@ -1776,8 +1776,8 @@ function buildDeityEffectLogEntry(
   if (deityKey === 'God of Attrition' && attritionAmount && attritionAmount > 0) {
     return {
       phase: 'end',
-      actor: 'deity',
-      action: '消耗の神の効果！',
+      actor: 'effect',
+      action: '消耗の神への代償！',
       note: `(HP消耗-${attritionAmount})`,
     };
   }
