@@ -1029,7 +1029,7 @@ export function getAbilityName(id: AbilityId, level: number): string {
   return names[id];
 }
 
-function getAbilityDescription(id: AbilityId, level: number): string {
+export function getAbilityDescription(id: AbilityId, level: number): string {
   const descriptions: Record<AbilityId, (level: number) => string> = {
     first_strike: (l) => l >= 3 ? '行動が極めて速くなる' : l === 2 ? '行動がとても速くなる' : '行動が速くなる',
     hunter: (l) => l >= 3
