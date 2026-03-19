@@ -77,9 +77,10 @@
   - Enemy > Front-row party member > Back-row party member
 - Activate abilities in the above order.
 - Log format:
-  - actor: (ability holder)  note: not `effect`
+  - actor: `triggered`  note: not `effect`
   - "[2] name が遠吠えをした！ (相手の次の攻撃回数5/7)"
     - Text `()` part is displayed in gray.
+    - "2" is triggered ability timing.
      
 #### 6.1.3 Actor normal move
 
@@ -87,7 +88,7 @@
 - Check:
   - If (phase = MID and `a.magic-seal` is valid), Disable the actor's move. log "name がフロストニードルを唱えたがかき消された！". Then disable the `a.magic-seal`.
   - If opponent.`a.howl` is active: Apply actor.`f.NoA` × N, Then disable opponent.`a.howl`. log: "[2] name が遠吠えをした！ (相手の次の攻撃回数5/7)"
- 
+
 
 - `f.NoA` times, get `f.targeting` -> opponent. 
 	- If `f.hit_detection`(actor: , opponent: , Nth_hit: the current hit index), current party.
