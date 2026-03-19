@@ -57,6 +57,34 @@
     2. Enemy moves
     3. Front-row party member moves
     4. Back-row party member moves
+   
+**Order by priority**
+- Each phase is resolved from timing 9 down to timing 1.
+- At each timing:
+  1. Resolve triggered abilities
+  2. Resolve enemy actions
+  3. Resolve party member actions from Front-row to Back-row
+
+| phase | timing | action order |
+|--|--:|--|
+| LONG | 9 | Trigger |
+| LONG | 9 | Enemy |
+| LONG | 9 | Party member (Front-row → Back-row) |
+| LONG | 8 | Trigger |
+| LONG | 8 | Enemy |
+| LONG | 8 | Party member (Front-row → Back-row) |
+| ... | ... | ... |
+| LONG | 1 | Trigger |
+| LONG | 1 | Enemy |
+| LONG | 1 | Party member (Front-row → Back-row) |
+| LONG | 0 | Trigger |
+| MID | 9 | Trigger |
+| MID | 9 | Enemy |
+| MID | 9 | Party member (Front-row → Back-row) |
+| ... | ... | ... |
+| CLOSE | 1 | Party member (Front-row → Back-row) |
+| CLOSE | 0 | Trigger |
+
 
 ##### 6.1.1.3 END phase
 - Note: actor = effect ([末] ), "()" part is gray text.
