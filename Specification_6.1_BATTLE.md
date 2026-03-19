@@ -115,7 +115,28 @@
   - "[2] name が遠吠えをした！ (相手の次の攻撃回数5/7)"
     - Text `()` part is displayed in gray.
     - "2" is triggered ability timing.
-     
+
+- `f.confusion`
+  - Triggered by `a.*-confusion`
+  - Randomly select 1 eligible opponent.
+  - Apply `c.antagonism` to the selected target.
+  - **Eligible target**
+    - Has both `d.X_attack` and `d.X_NoA`
+    - `X = ranged` for `LONG`
+    - `X = magical` for `MID`
+    - `X = melee` for `CLOSE`
+  - **Log** (select one randomly)
+	- "actor は target に何かを囁き、仲間を疑い始めた！"
+	- "actor の甘い策略に target は引き込まれた！"
+	- "actor の影響で target は錯乱した！"
+	- "actor が睨みつけ、target の精神は錯乱した！"
+	- "actor の精神干渉により target は正常な判断ができなくなった！"
+	- "actor は target に幻術をかけ、仲間を敵と誤認した！"
+	- "actor の幻惑により target の視界は歪んだ！"
+	- "actor の術で target は敵味方の区別を失った！"
+	- "actor が植え付けた疑念によって target は見境なく牙を剥いた！"
+	- "actor が囁いた禁断の言葉により、target は狂気に囚われた！"
+
 #### 6.1.3 Actor normal move
 
 ##### 6.1.3.1 Actor action
