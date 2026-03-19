@@ -130,10 +130,14 @@
  
 - **Unstable core**
   - Triggered by `a.unstable-core`
-  - actor.`d.HP` -= N x actor.remaining_HP / actor.max_HP
+  - actor.`d.HP` -= (N x 0.01) x actor.remaining_HP / actor.max_HP
   - Log: `log.unstable-core` + "(残HP N%の自傷ダメージ: XXX)"
     - Note: Sub color for "XXX" part
 
+- **Soul reap**
+  - Triggered by `a.soul-reap`
+  - If opponent.`d.HP` < (N x 0.01) x actor.max_HP, opponent.`d.HP` = 0.
+  - Log: `log.soul-reap` + "(HP N％未満で即死)"
  
 #### 6.1.3 Actor normal move
 
