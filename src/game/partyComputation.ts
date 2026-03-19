@@ -17,6 +17,7 @@ import { getLineageById } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, getSuperRareBonuses } from '../data/items';
 import { applyDeityCharacterModifiers, getDeityElementalResistanceModifier, getDeityPartyHpMultiplier } from './deity';
 import { getJewelDRankBonus } from './jewel';
+import { ABILITY_BASE_NAMES } from '../data/abilityNames';
 
 // Get enhancement and super rare multiplier for an item
 function getItemEnhancementMultiplier(item: Item): number {
@@ -308,86 +309,6 @@ export function computePartyStats(party: Party): {
 }
 
 function getAbilityName(id: AbilityId, level: number): string {
-  const names: Record<AbilityId, string> = {
-    first_strike: '先制攻撃',
-    hunter: '狩人',
-    defender: '守護者',
-    counter: '反撃',
-    re_attack: '連撃',
-    iaigiri: '居合斬り',
-    resonance: '共鳴',
-    command: '指揮',
-    m_barrier: '魔法障壁',
-    deflection: '矢払い',
-    null_counter: '反撃無効化',
-    unlock: '解錠',
-    squander: '浪費',
-    tithe: '十分の一税',
-    seeker: '探究者',
-    resurrect: '再起',
-    rage: '闘志',
-    re_counter: '再反撃',
-    momentum: '気勢',
-    cunning: '狡猾',
-    bulwark: '壁',
-    cyborgization: 'サイボーグ化',
-    covering_fire: '援護射撃',
-    peddler: '行商',
-    composure: '平静',
-    magical_counter: '魔法反撃',
-    focus: '集中',
-    prophecy: '予言',
-    stealth: '隠れ蓑',
-    illusion: '幻化',
-    howl: '咆哮',
-    predator_sense: '捕食',
-    slow: '鈍足',
-    corrode: '腐蝕',
-    life_drain: '吸血',
-    no_offense: '受身',
-    decompose: '分解',
-    swarm: '群れ',
-    death_touch: '死触',
-    flying: '飛行',
-    free: '逃走',
-    frostbite: '凍傷',
-    ice_reflect: '氷結反射',
-    ice_absorb: '氷結吸収',
-    ice_null: '氷結無効',
-    bind: '拘束',
-    regeneration: '再生',
-    burn: '火傷',
-    fire_reflect: '火炎反射',
-    fire_absorb: '火炎吸収',
-    fire_null: '火炎無効',
-    thunder_reflect: '雷撃反射',
-    thunder_absorb: '雷撃吸収',
-    thunder_null: '雷撃無効',
-    soul_reap: '魂奪',
-    mutual_magic_amplify: '魔法増幅',
-    mutual_magic_restraint: '魔法抑制',
-    ranged_confusion: '遠距離混乱',
-    self_destruct: '自爆',
-    oblivion: '忘却',
-    reanimate: '即時蘇生',
-    auriferous: '含金',
-    magic_seal: '魔封',
-    ambush: '奇襲',
-    mimic: '模倣',
-    shock: '感電',
-    mutual_physical_amplify: '物理増幅',
-    mutual_physical_restraint: '物理抑制',
-    unstable_core: '不安定核',
-    magical_reflect: '魔法反射',
-    magical_absorb: '魔法吸収',
-    magical_null: '魔法無効',
-    ranged_reflect: '矢返し',
-    ranged_null: '遠距離無効',
-    melee_reflect: '打ち返し',
-    melee_null: '近接無効',
-    colossal: '巨人',
-    upgrade_all_abilities: '全能力強化',
-  };
   if (
     (
       id === 'first_strike'
@@ -406,7 +327,7 @@ function getAbilityName(id: AbilityId, level: number): string {
     )
     && level >= 1
   ) {
-    return `${names[id]}${level}`;
+    return `${ABILITY_BASE_NAMES[id]}${level}`;
   }
-  return names[id];
+  return ABILITY_BASE_NAMES[id];
 }
