@@ -85,7 +85,7 @@
 ##### 6.1.3.1 Actor action
 - Check:
   - If (phase = MID and `a.magic-seal` is valid), Disable the actor's move. log "name がフロストニードルを唱えたがかき消された！". Then disable the `a.magic-seal`.
-  - If opponent.`a.howl` is active: Apply actor.`f.NoA` × N, Then disable opponent.`a.howl`
+  - If opponent.`a.howl` is active: Apply actor.`f.NoA` × N, Then disable opponent.`a.howl`. log: "[2] name が遠吠えをした！ (相手の次の攻撃回数5/7)"
  
 
 - `f.NoA` times, get `f.targeting` -> opponent. 
