@@ -171,6 +171,7 @@ const SELF_DESTRUCT_LOGS = [
   '{actor} は暴発し、辺りを吹き飛ばした！',
   '{actor} は断末魔と共に爆ぜた！',
   '{actor} は破裂し、周囲を巻き込んだ！',
+] as const;
 const DECOMPOSE_LOGS = [
   '{actor} は {target} の防御を崩した！',
   '{actor} は {target} の装備を劣化させた！',
@@ -1541,6 +1542,8 @@ function buildRegenerationAction(actorName: string): string {
 
 function buildSelfDestructAction(actorName: string): string {
   return pickRandomEntry(SELF_DESTRUCT_LOGS).replace(/\{actor\}/g, actorName);
+}
+
 function buildDecomposeAction(actorName: string, targetName: string): string {
   return pickRandomEntry(DECOMPOSE_LOGS)
     .replace(/\{actor\}/g, actorName)
