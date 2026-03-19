@@ -147,6 +147,19 @@ const SOUL_REAP_LOGS = [
   '{actor} は {target} の命脈を断ち切った！',
 ] as const;
 
+const REGENERATION_LOGS = [
+  '{actor} の傷がふさがり始めた！',
+  '{actor} の肉体が再生した！',
+  '{actor} の傷がみるみる癒えていく！',
+  '{actor} は失った力を取り戻した！',
+  '{actor} の体が再び動き出した！',
+  '{actor} の損傷が回復した！',
+  '{actor} の肉が再び繋がった！',
+  '{actor} の傷跡が消えていく！',
+  '{actor} は再生し、持ち直した！',
+  '{actor} の生命力が傷を癒した！',
+] as const;
+
 function getElementalMultiplier(
   offense: ElementalOffense,
   resistance: Record<'fire' | 'thunder' | 'ice', number>
@@ -1175,6 +1188,19 @@ function getPredatorSenseNote(level: number): string {
   return `(HP ${threshold}%未満で命中+40)`;
 }
 
+function getRegenerationPercent(level: number): number {
+  if (level >= 5) return 24;
+  if (level === 4) return 22;
+  if (level === 3) return 19;
+  if (level === 2) return 15;
+  if (level === 1) return 10;
+  return 0;
+}
+
+function getRegenerationNote(healAmount: number): string {
+  return `(✚ ${healAmount})`;
+}
+
 type AbilityLike = { id: AbilityId; level: number };
 
 function formatAbilityLabel(ability: AbilityLike): string {
@@ -1477,6 +1503,10 @@ function buildSoulReapAction(actorName: string, targetName: string): string {
     .replace(/\{target\}/g, targetName);
 }
 
+function buildRegenerationAction(actorName: string): string {
+  return pickRandomEntry(REGENERATION_LOGS).replace(/\{actor\}/g, actorName);
+}
+
 function getRandomPartyMemberName(party: Party): string {
   if (party.characters.length === 0) return party.name;
   return pickRandomEntry(party.characters).name;
@@ -1592,6 +1622,8 @@ export function executeBattle(
   // Use provided HP if available (for HP persistence), otherwise use max HP
   let partyHp = initialPartyHp !== undefined ? initialPartyHp : partyStats.hp;
   let enemyHp = enemy.hp;
+  let partyDamageTakenInBattle = 0;
+  let enemyDamageTakenInBattle = 0;
   let enemyHasAntagonism = false;
   const log: BattleLogEntry[] = [];
 
@@ -1749,6 +1781,22 @@ export function executeBattle(
     return effect;
   };
 
+  const applyPartyDamage = (amount: number): number => {
+    const actualDamage = Math.max(0, Math.min(partyHp, amount));
+    if (actualDamage <= 0) return 0;
+    partyHp -= actualDamage;
+    partyDamageTakenInBattle += actualDamage;
+    return actualDamage;
+  };
+
+  const applyEnemyDamage = (amount: number): number => {
+    const actualDamage = Math.max(0, Math.min(enemyHp, amount));
+    if (actualDamage <= 0) return 0;
+    enemyHp -= actualDamage;
+    enemyDamageTakenInBattle += actualDamage;
+    return actualDamage;
+  };
+
   const triggerEnemyResurrect = (phase: BattleActionPhase, initiativeRoll?: number): void => {
     if (enemyHp > 0 || consumedEnemyResurrect) return;
 
@@ -1896,7 +1944,7 @@ export function executeBattle(
         }
         appliedHits += 1;
         damage += singleDamage;
-        partyHp -= singleDamage;
+        applyPartyDamage(singleDamage);
       }
     }
 
@@ -1967,7 +2015,7 @@ export function executeBattle(
 
     const reCounterDealtDamage = reCounterResult.damage > 0;
     if (reCounterDealtDamage) {
-      enemyHp -= reCounterResult.damage;
+      applyEnemyDamage(reCounterResult.damage);
     }
 
     const characterReCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(targetCharStats, partyHp, partyStats.hp));
@@ -2021,7 +2069,7 @@ export function executeBattle(
 
       const coveringFireDealtDamage = coveringFireResult.damage > 0;
       if (coveringFireDealtDamage) {
-        enemyHp -= coveringFireResult.damage;
+        applyEnemyDamage(coveringFireResult.damage);
       }
 
       const coverFireRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(coverCharStats, partyHp, partyStats.hp));
@@ -2145,6 +2193,7 @@ export function executeBattle(
     let enemyHasMovedInPhase = false;
     const movedCharacterIds = new Set<number>();
     const triggeredConfusionTimings = new Set<number>();
+    let hasTriggeredRegeneration = false;
     let hasTriggeredPredatorSense = false;
     const triggerLongPhaseHowl = (): void => {
       if (phase !== 'long' || hasTriggeredLongPhaseHowl) return;
@@ -2237,6 +2286,64 @@ export function executeBattle(
           characterId: entry.stats.characterId,
           action: `${entry.ownerName} の捕食！`,
           note: getPredatorSenseNote(entry.level),
+        });
+      }
+    };
+
+    const triggerRegenerationAtTiming = (timing: number): void => {
+      if (phase !== 'close' || timing !== 9 || hasTriggeredRegeneration) return;
+      hasTriggeredRegeneration = true;
+
+      const enemyRegenerationLevel = getEnemyAbilityLevel(enemy, 'regeneration');
+      const enemyRegenerationPercent = getRegenerationPercent(enemyRegenerationLevel);
+      if (enemyHp > 0 && enemyRegenerationPercent > 0 && enemyDamageTakenInBattle > 0) {
+        const healAmount = Math.min(
+          enemy.hp - enemyHp,
+          Math.floor((enemyDamageTakenInBattle * enemyRegenerationPercent) / 100),
+        );
+        if (healAmount > 0) {
+          enemyHp = Math.min(enemy.hp, enemyHp + healAmount);
+          log.push({
+            phase,
+            initiativeRoll: timing,
+            actor: 'triggered',
+            action: buildRegenerationAction(enemy.name),
+            note: getRegenerationNote(healAmount),
+          });
+        }
+      }
+
+      const partyRegenerationEntries = characterStats
+        .map((stats) => ({
+          stats,
+          level: getAbilityLevel(stats, 'regeneration'),
+          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+        }))
+        .filter((entry) => getRegenerationPercent(entry.level) > 0)
+        .sort((a, b) => a.stats.row - b.stats.row);
+
+      for (const entry of partyRegenerationEntries) {
+        if (partyHp <= 0 || partyDamageTakenInBattle <= 0) {
+          continue;
+        }
+
+        const healAmount = Math.min(
+          partyStats.hp - partyHp,
+          Math.floor((partyDamageTakenInBattle * getRegenerationPercent(entry.level)) / 100),
+        );
+
+        if (healAmount <= 0) {
+          continue;
+        }
+
+        partyHp = Math.min(partyStats.hp, partyHp + healAmount);
+        log.push({
+          phase,
+          initiativeRoll: timing,
+          actor: 'triggered',
+          characterId: entry.stats.characterId,
+          action: buildRegenerationAction(entry.ownerName),
+          note: getRegenerationNote(healAmount),
         });
       }
     };
@@ -2341,7 +2448,7 @@ export function executeBattle(
           enemyHp,
           Math.ceil((enemyHp * getUnstableCoreDamagePercent(enemyUnstableCoreLevel)) / 100),
         );
-        enemyHp -= damage;
+        applyEnemyDamage(damage);
         log.push({
           phase,
           initiativeRoll: 0,
@@ -2369,7 +2476,7 @@ export function executeBattle(
           partyHp,
           Math.ceil((partyHp * getUnstableCoreDamagePercent(entry.level)) / 100),
         );
-        partyHp -= damage;
+        applyPartyDamage(damage);
         log.push({
           phase,
           initiativeRoll: 0,
@@ -2448,6 +2555,7 @@ export function executeBattle(
         triggerLongPhaseHowl();
       }
       if (turn.roll <= 9) {
+        triggerRegenerationAtTiming(9);
         triggerPredatorSenseAtTiming(9);
       }
       if (turn.roll <= 2) {
@@ -2610,7 +2718,7 @@ export function executeBattle(
                   reflectedSourceDamage += hitDamage;
                   reflectedDamage += reflectedHitDamage;
                   appliedDamage += remainingHitDamage;
-                  partyHp -= remainingHitDamage;
+                  applyPartyDamage(remainingHitDamage);
                   continue;
                 }
 
@@ -2626,12 +2734,12 @@ export function executeBattle(
                 }
 
                 appliedDamage += hitDamage;
-                partyHp -= hitDamage;
+                applyPartyDamage(hitDamage);
               }
             }
 
             if (reflectedDamage > 0) {
-              enemyHp -= reflectedDamage;
+              applyEnemyDamage(reflectedDamage);
               triggerEnemyResurrect(phase, turn.roll);
             }
 
@@ -2798,7 +2906,7 @@ export function executeBattle(
 
             const counterDealtDamage = counterResult.damage > 0;
             if (counterDealtDamage) {
-              enemyHp -= counterResult.damage;
+              applyEnemyDamage(counterResult.damage);
             }
 
             const counterType = phase === 'mid' ? '魔法反撃' : '反撃';
@@ -2879,7 +2987,7 @@ export function executeBattle(
             }
 
             if (reCounterDamage > 0) {
-              partyHp -= reCounterDamage;
+              applyPartyDamage(reCounterDamage);
             }
 
             const reCounterResurrect = (
@@ -2961,7 +3069,7 @@ export function executeBattle(
 
             const magicalCounterDealtDamage = magicalCounterResult.damage > 0;
             if (magicalCounterDealtDamage) {
-              enemyHp -= magicalCounterResult.damage;
+              applyEnemyDamage(magicalCounterResult.damage);
             }
 
             const resonanceLogText = getResonanceLogText(magicalCounterStats.abilities, magicalCounterResult.hits, true);
@@ -3056,7 +3164,7 @@ export function executeBattle(
           antagonismTarget = selected;
           result = calculateCharacterFriendlyFireDamage(phase, cs, selected, characterStats, partyStats, partyHp, partyDeityKey, noAMultiplier, characterPhaseAccuracyBonus);
           if (result.damage > 0) {
-            partyHp -= result.damage;
+            applyPartyDamage(result.damage);
 
             const triggeredResurrect = (
               partyHp <= 0
@@ -3100,7 +3208,7 @@ export function executeBattle(
             const reflectedSourceDamage = result.damage;
             result.reflectedDamage = Math.max(1, Math.floor(result.damage * reflect.amplifier));
             result.reflectedSourceDamage = reflectedSourceDamage;
-            partyHp -= result.reflectedDamage;
+            applyPartyDamage(result.reflectedDamage);
             result.damage = Math.max(0, reflectedSourceDamage - result.reflectedDamage);
           } else if (result.damage > 0 && absorb) {
             result.absorbedDamage = Math.max(1, Math.floor(result.damage * absorb.amplifier));
@@ -3113,7 +3221,7 @@ export function executeBattle(
           }
 
           if (result.damage > 0) {
-            enemyHp -= result.damage;
+            applyEnemyDamage(result.damage);
           }
 
           const selfReflectedResurrect = (
@@ -3286,6 +3394,7 @@ export function executeBattle(
     if (phase === 'long') {
       triggerLongPhaseHowl();
     }
+    triggerRegenerationAtTiming(9);
     triggerPredatorSenseAtTiming(9);
     triggerConfusionAtTiming(2);
     triggerConfusionAtTiming(1);
