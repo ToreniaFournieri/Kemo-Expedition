@@ -370,12 +370,12 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.howl1",
         "label": "遠吠え1",
-        "description": "遠距離2タイミングで発動。相手の次の攻撃回数4/5"
+        "description": "遠距離2タイミングで発動。相手の次の攻撃回数5/7"
       },
       {
         "key": "a.predator-sense1",
         "label": "捕食1",
-        "description": "近接9(開始)タイミングで発動。相手のHPが50％未満の場合、命中+30"
+        "description": "近接9(開始)タイミングで発動。相手のHPが30％未満の場合、命中+40"
       },
       {
         "key": "a.slow1",
@@ -385,12 +385,12 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.corrode1",
         "label": "腐食1",
-        "description": "近接攻撃が1回以上命中した相手に対して、攻撃倍率x2/3"
+        "description": "通常近接攻撃が3回以上命中した相手に対して、攻撃倍率x6/7"
       },
       {
         "key": "a.life-drain3",
-        "label": "吸血1",
-        "description": "近接攻撃で相手に与えたダメージの3/10を回復"
+        "label": "吸血3",
+        "description": "通常近接攻撃で相手に与えたダメージの5/10を回復"
       },
       {
         "key": "a.no-offense1",
@@ -400,7 +400,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.decompose1",
         "label": "分解1",
-        "description": "近接2タイミングで発動。相手の物理防御力を2/3"
+        "description": "近接2タイミングで発動。相手の物理防御力を6/7"
       },
       {
         "key": "a.swarm1",
@@ -410,12 +410,12 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.death-touch1",
         "label": "接死1",
-        "description": "近接攻撃の命中回数 x 1/128の確率で即死"
+        "description": "通常近接攻撃の命中回数 x 2/256の確率で即死"
       },
       {
         "key": "a.flying1",
         "label": "飛行1",
-        "description": "相手の近接攻撃時、その攻撃回数が1/4"
+        "description": "相手の近接攻撃回数が1/4になる"
       },
       {
         "key": "a.free1",
@@ -460,17 +460,17 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.bind1",
         "label": "拘束1",
-        "description": "近接攻撃の命中回数 x 1/32の確率で相手の行動を封じる"
+        "description": "近接攻撃の命中回数 x 2/64の確率で相手の行動を封じる"
       },
       {
         "key": "a.regeneration3",
         "label": "再生3",
-        "description": "近接9(開始)タイミングで発動。この戦闘で失ったHPの20%を回復する。近接フェーズ前までにHPが0となった場合には発動しない"
+        "description": "近接9(開始)タイミングで発動。この戦闘で失ったHPの19%を回復する。近接フェーズ前までにHPが0となった場合には発動しない"
       },
       {
         "key": "a.burn1",
         "label": "火傷1",
-        "description": "相手の近接攻撃の命中した回数 x 1%のダメージを相手に与える"
+        "description": "相手の通常近接攻撃の命中した回数 x 0.5%のダメージを相手に与える"
       },
       {
         "key": "a.fire-reflect1",
@@ -640,12 +640,12 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.ranged-confusion1",
         "label": "遠距離混乱1",
-        "description": "遠距離2タイミングで発動。1/8の確率で無作為に選んだ相手を敵対状態とする。遠距離0(終了)タイミングで敵対状態は解消する"
+        "description": "遠距離1タイミングで発動。1/32確率で遠距離攻撃能力を持つ相手一人を敵対状態とする"
       },
       {
         "key": "a.self-destruct1",
         "label": "自爆1",
-        "description": "近接2タイミングで自爆し、相手に残ダメージの3/10を与える"
+        "description": "近接2タイミングで発動。自爆する。相手に残ダメージの1/10を与える"
       },
       {
         "key": "a.oblivion1",
@@ -655,7 +655,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.reanimate3",
         "label": "即時蘇生3",
-        "description": "自身のHPが0となったタイミングで発動。HP30%で復活する(戦闘中1回のみ有効)"
+        "description": "自身のHPが0となったタイミングで発動。HP31%で復活する(戦闘中1回のみ有効)"
       },
       {
         "key": "a.auriferous1",
@@ -665,7 +665,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.magic-seal1",
         "label": "魔封1",
-        "description": "魔法フェーズの最初の魔法を無力化する(相手だけでなく自身や味方にもこの制約を受ける)"
+        "description": "最初の魔法を無力化する(相手だけでなく自身や味方にもこの制約を受ける)"
       },
       {
         "key": "a.ambush1",
@@ -680,7 +680,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.shock1",
         "label": "感電1",
-        "description": "相手の最初の近接攻撃に対して発動。相手の近接攻撃が1回目ヒットした段階で攻撃をやめさせる"
+        "description": "相手の最初の通常近接攻撃に対して発動。相手の近接攻撃が1回目ヒットした段階で攻撃をやめさせる"
       },
       {
         "key": "a.unstable-core1",
@@ -780,12 +780,397 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "a.colossal1",
         "label": "巨人1",
-        "description": "防御力が2倍になるが、物理ダメージ補正x2.0"
+        "description": "自身の防御力が2倍になるが、自身の物理ダメージ補正x2.0"
       },
       {
         "key": "a.upgrade-all-abilities1",
         "label": "他のアビリティ強化+1",
-        "description": "自身の他のアビリティを１段階強化する"
+        "description": "自身の他のアビリティを1段階強化する(上限レベル5)"
+      },
+      {
+        "key": "a.howl2",
+        "label": "遠吠え2",
+        "description": "遠距離2タイミングで発動。相手の次の攻撃回数4/7"
+      },
+      {
+        "key": "a.howl3",
+        "label": "遠吠え3",
+        "description": "遠距離2タイミングで発動。相手の次の攻撃回数3/7"
+      },
+      {
+        "key": "a.howl4",
+        "label": "遠吠え4",
+        "description": "遠距離2タイミングで発動。相手の次の攻撃回数2/7"
+      },
+      {
+        "key": "a.howl5",
+        "label": "遠吠え5",
+        "description": "遠距離2タイミングで発動。相手の次の攻撃回数1/7"
+      },
+      {
+        "key": "a.ranged-confusion2",
+        "label": "遠距離混乱2",
+        "description": "遠距離1タイミングで発動。3/32の確率で遠距離攻撃能力を持つ相手一人を敵対状態とする"
+      },
+      {
+        "key": "a.ranged-confusion3",
+        "label": "遠距離混乱3",
+        "description": "遠距離2タイミングで発動。3/32の確率で遠距離攻撃能力を持つ相手一人を敵対状態とする"
+      },
+      {
+        "key": "a.ranged-confusion4",
+        "label": "遠距離混乱4",
+        "description": "遠距離2タイミングで発動。5/32の確率で遠距離攻撃能力を持つ相手一人を敵対状態とする"
+      },
+      {
+        "key": "a.ranged-confusion5",
+        "label": "遠距離混乱5",
+        "description": "遠距離2タイミングで発動。7/32の確率で遠距離攻撃能力を持つ相手一人を敵対状態とする"
+      },
+      {
+        "key": "a.magic-confusion1",
+        "label": "魔法混乱1",
+        "description": "魔法1タイミングで発動。1/32確率で魔法攻撃能力を持つ相手一人を敵対状態とする"
+      },
+      {
+        "key": "a.magic-confusion2",
+        "label": "魔法混乱2",
+        "description": "魔法1タイミングで発動。3/32の確率で魔法攻撃能力を持つ相手一人を敵対状態とする"
+      },
+      {
+        "key": "a.magic-confusion3",
+        "label": "魔法混乱3",
+        "description": "魔法2タイミングで発動。3/32の確率で魔法攻撃能力を持つ相手一人を敵対状態とする"
+      },
+      {
+        "key": "a.magic-confusion4",
+        "label": "魔法混乱4",
+        "description": "魔法2タイミングで発動。5/32の確率で魔法攻撃能力を持つ相手一人を敵対状態とする"
+      },
+      {
+        "key": "a.magic-confusion5",
+        "label": "魔法混乱5",
+        "description": "魔法2タイミングで発動。7/32の確率で魔法攻撃能力を持つ相手一人を敵対状態とする"
+      },
+      {
+        "key": "a.melee-confusion1",
+        "label": "近接混乱1",
+        "description": "近接1タイミングで発動。1/32確率で近接攻撃能力を持つ相手一人を敵対状態とする"
+      },
+      {
+        "key": "a.melee-confusion2",
+        "label": "近接混乱2",
+        "description": "近接1タイミングで発動。3/32の確率で近接攻撃能力を持つ相手一人を敵対状態とする"
+      },
+      {
+        "key": "a.melee-confusion3",
+        "label": "近接混乱3",
+        "description": "近接2タイミングで発動。3/32の確率で近接攻撃能力を持つ相手一人を敵対状態とする"
+      },
+      {
+        "key": "a.melee-confusion4",
+        "label": "近接混乱4",
+        "description": "近接2タイミングで発動。5/32の確率で近接攻撃能力を持つ相手一人を敵対状態とする"
+      },
+      {
+        "key": "a.melee-confusion5",
+        "label": "近接混乱5",
+        "description": "近接2タイミングで発動。7/32の確率で近接攻撃能力を持つ相手一人を敵対状態とする"
+      },
+      {
+        "key": "a.unstable-core2",
+        "label": "不安定2",
+        "description": "遠距離0(終了)タイミングと魔法0(終了)タイミングにそれぞれ発動。残HP24%の自傷ダメージを受ける"
+      },
+      {
+        "key": "a.unstable-core3",
+        "label": "不安定3",
+        "description": "遠距離0(終了)タイミングと魔法0(終了)タイミングにそれぞれ発動。残HP19%の自傷ダメージを受ける"
+      },
+      {
+        "key": "a.unstable-core4",
+        "label": "不安定4",
+        "description": "遠距離0(終了)タイミングと魔法0(終了)タイミングにそれぞれ発動。残HP15%の自傷ダメージを受ける"
+      },
+      {
+        "key": "a.unstable-core5",
+        "label": "不安定5",
+        "description": "遠距離0(終了)タイミングと魔法0(終了)タイミングにそれぞれ発動。残HP12%の自傷ダメージを受ける"
+      },
+      {
+        "key": "a.soul-reap2",
+        "label": "魂奪2",
+        "description": "魔法0(終了)タイミングで発動。相手のHPが14％未満であった場合、相手は即死する。回避も復活もできない"
+      },
+      {
+        "key": "a.soul-reap3",
+        "label": "魂奪3",
+        "description": "魔法0(終了)タイミングで発動。相手のHPが17％未満であった場合、相手は即死する。回避も復活もできない"
+      },
+      {
+        "key": "a.soul-reap4",
+        "label": "魂奪4",
+        "description": "魔法0(終了)タイミングで発動。相手のHPが19％未満であった場合、相手は即死する。回避も復活もできない"
+      },
+      {
+        "key": "a.soul-reap5",
+        "label": "魂奪5",
+        "description": "魔法0(終了)タイミングで発動。相手のHPが20％未満であった場合、相手は即死する。回避も復活もできない"
+      },
+      {
+        "key": "a.regeneration1",
+        "label": "再生1",
+        "description": "近接9(開始)タイミングで発動。この戦闘で失ったHPの10%を回復する。近接フェーズ前までにHPが0となった場合には発動しない"
+      },
+      {
+        "key": "a.regeneration2",
+        "label": "再生2",
+        "description": "近接9(開始)タイミングで発動。この戦闘で失ったHPの15%を回復する。近接フェーズ前までにHPが0となった場合には発動しない"
+      },
+      {
+        "key": "a.regeneration4",
+        "label": "再生4",
+        "description": "近接9(開始)タイミングで発動。この戦闘で失ったHPの22%を回復する。近接フェーズ前までにHPが0となった場合には発動しない"
+      },
+      {
+        "key": "a.regeneration5",
+        "label": "再生5",
+        "description": "近接9(開始)タイミングで発動。この戦闘で失ったHPの24%を回復する。近接フェーズ前までにHPが0となった場合には発動しない"
+      },
+      {
+        "key": "a.predator-sense2",
+        "label": "捕食2",
+        "description": "近接9(開始)タイミングで発動。相手のHPが38％未満の場合、命中+40"
+      },
+      {
+        "key": "a.predator-sense3",
+        "label": "捕食3",
+        "description": "近接9(開始)タイミングで発動。相手のHPが44％未満の場合、命中+40"
+      },
+      {
+        "key": "a.predator-sense4",
+        "label": "捕食4",
+        "description": "近接9(開始)タイミングで発動。相手のHPが48％未満の場合、命中+40"
+      },
+      {
+        "key": "a.predator-sense5",
+        "label": "捕食5",
+        "description": "近接9(開始)タイミングで発動。相手のHPが50％未満の場合、命中+40"
+      },
+      {
+        "key": "a.decompose2",
+        "label": "分解2",
+        "description": "近接2タイミングで発動。相手の物理防御力を5/7"
+      },
+      {
+        "key": "a.decompose3",
+        "label": "分解3",
+        "description": "近接2タイミングで発動。相手の物理防御力を4/7"
+      },
+      {
+        "key": "a.decompose4",
+        "label": "分解4",
+        "description": "近接2タイミングで発動。相手の物理防御力を3/7"
+      },
+      {
+        "key": "a.decompose5",
+        "label": "分解5",
+        "description": "近接2タイミングで発動。相手の物理防御力を2/7"
+      },
+      {
+        "key": "a.self-destruct2",
+        "label": "自爆2",
+        "description": "近接2タイミングで発動。自爆する。相手に残ダメージの3/10を与える"
+      },
+      {
+        "key": "a.self-destruct3",
+        "label": "自爆3",
+        "description": "近接2タイミングで発動。自爆する。相手に残ダメージの5/10を与える"
+      },
+      {
+        "key": "a.self-destruct4",
+        "label": "自爆4",
+        "description": "近接2タイミングで発動。自爆する。相手に残ダメージの7/10を与える"
+      },
+      {
+        "key": "a.self-destruct5",
+        "label": "自爆5",
+        "description": "近接2タイミングで発動。自爆する。相手に残ダメージの全てを与える"
+      },
+      {
+        "key": "a.free2",
+        "label": "逃走2",
+        "description": "近接2タイミングで発動。戦闘から逃げる(戦闘は引分になる)"
+      },
+      {
+        "key": "a.free3",
+        "label": "逃走3",
+        "description": "近接3タイミングで発動。戦闘から逃げる(戦闘は引分になる)"
+      },
+      {
+        "key": "a.free4",
+        "label": "逃走4",
+        "description": "魔法1タイミングで発動。戦闘から逃げる(戦闘は引分になる)"
+      },
+      {
+        "key": "a.free5",
+        "label": "逃走5",
+        "description": "魔法2タイミングで発動。戦闘から逃げる(戦闘は引分になる)"
+      },
+      {
+        "key": "a.reanimate1",
+        "label": "即時蘇生1",
+        "description": "自身のHPが0となったタイミングで発動。HP20%で復活する(戦闘中1回のみ有効)"
+      },
+      {
+        "key": "a.reanimate2",
+        "label": "即時蘇生2",
+        "description": "自身のHPが0となったタイミングで発動。HP26%で復活する(戦闘中1回のみ有効)"
+      },
+      {
+        "key": "a.reanimate4",
+        "label": "即時蘇生4",
+        "description": "自身のHPが0となったタイミングで発動。HP35%で復活する(戦闘中1回のみ有効)"
+      },
+      {
+        "key": "a.reanimate5",
+        "label": "即時蘇生5",
+        "description": "自身のHPが0となったタイミングで発動。HP38%で復活する(戦闘中1回のみ有効)"
+      },
+      {
+        "key": "a.ambush2",
+        "label": "待ち伏せ2",
+        "description": "自身の通常行動時点でいずれの相手もまだこの戦闘中に行動していなかった場合、与ダメージ1.5倍"
+      },
+      {
+        "key": "a.ambush3",
+        "label": "待ち伏せ3",
+        "description": "自身の通常行動時点でいずれの相手もまだこの戦闘中に行動していなかった場合、与ダメージ1.6倍"
+      },
+      {
+        "key": "a.ambush4",
+        "label": "待ち伏せ4",
+        "description": "自身の通常行動時点でいずれの相手もまだこの戦闘中に行動していなかった場合、与ダメージ1.65倍"
+      },
+      {
+        "key": "a.ambush5",
+        "label": "待ち伏せ5",
+        "description": "自身の通常行動時点でいずれの相手もまだこの戦闘中に行動していなかった場合、与ダメージ1.68倍"
+      },
+      {
+        "key": "a.corrode2",
+        "label": "腐食2",
+        "description": "通常近接攻撃が3回以上命中した相手に対して、攻撃倍率x5/7"
+      },
+      {
+        "key": "a.corrode3",
+        "label": "腐食3",
+        "description": "通常近接攻撃が3回以上命中した相手に対して、攻撃倍率x4/7"
+      },
+      {
+        "key": "a.corrode4",
+        "label": "腐食4",
+        "description": "通常近接攻撃が3回以上命中した相手に対して、攻撃倍率x3/7"
+      },
+      {
+        "key": "a.corrode5",
+        "label": "腐食5",
+        "description": "通常近接攻撃が3回以上命中した相手に対して、攻撃倍率x2/7"
+      },
+      {
+        "key": "a.life-drain1",
+        "label": "吸血1",
+        "description": "通常近接攻撃で相手に与えたダメージの1/10を回復"
+      },
+      {
+        "key": "a.life-drain2",
+        "label": "吸血2",
+        "description": "通常近接攻撃で相手に与えたダメージの3/10を回復"
+      },
+      {
+        "key": "a.life-drain4",
+        "label": "吸血4",
+        "description": "通常近接攻撃で相手に与えたダメージの7/10を回復"
+      },
+      {
+        "key": "a.life-drain5",
+        "label": "吸血5",
+        "description": "通常近接攻撃で相手に与えたダメージを回復"
+      },
+      {
+        "key": "a.death-touch2",
+        "label": "接死2",
+        "description": "通常近接攻撃の命中回数 x 3/256の確率で即死"
+      },
+      {
+        "key": "a.death-touch3",
+        "label": "接死3",
+        "description": "通常近接攻撃の命中回数 x 4/256の確率で即死"
+      },
+      {
+        "key": "a.death-touch4",
+        "label": "接死4",
+        "description": "通常近接攻撃の命中回数 x 5/256の確率で即死"
+      },
+      {
+        "key": "a.death-touch5",
+        "label": "接死5",
+        "description": "通常近接攻撃の命中回数 x 6/256の確率で即死"
+      },
+      {
+        "key": "a.burn2",
+        "label": "火傷2",
+        "description": "相手の通常近接攻撃の命中した回数 x 0.9%のダメージを相手に与える"
+      },
+      {
+        "key": "a.burn3",
+        "label": "火傷3",
+        "description": "相手の通常近接攻撃の命中した回数 x 1.2%のダメージを相手に与える"
+      },
+      {
+        "key": "a.burn4",
+        "label": "火傷4",
+        "description": "相手の通常近接攻撃の命中した回数 x 1.4%のダメージを相手に与える"
+      },
+      {
+        "key": "a.burn5",
+        "label": "火傷5",
+        "description": "相手の通常近接攻撃の命中した回数 x 1.5%のダメージを相手に与える"
+      },
+      {
+        "key": "a.bind2",
+        "label": "拘束2",
+        "description": "近接攻撃の命中回数 x 3/64の確率で相手の行動を封じる"
+      },
+      {
+        "key": "a.bind3",
+        "label": "拘束3",
+        "description": "近接攻撃の命中回数 x 4/64の確率で相手の行動を封じる"
+      },
+      {
+        "key": "a.bind4",
+        "label": "拘束4",
+        "description": "近接攻撃の命中回数 x 5/64の確率で相手の行動を封じる"
+      },
+      {
+        "key": "a.bind5",
+        "label": "拘束5",
+        "description": "近接攻撃の命中回数 x 6/64の確率で相手の行動を封じる"
+      },
+      {
+        "key": "a.upgrade-all-abilities2",
+        "label": "他のアビリティ強化+2",
+        "description": "自身の他のアビリティを2段階強化する(上限レベル5)"
+      },
+      {
+        "key": "a.upgrade-all-abilities3",
+        "label": "他のアビリティ強化+3",
+        "description": "自身の他のアビリティを3段階強化する(上限レベル5)"
+      },
+      {
+        "key": "a.upgrade-all-abilities4",
+        "label": "他のアビリティ強化+4",
+        "description": "自身の他のアビリティを4段階強化する(上限レベル5)"
       }
     ]
   },

@@ -127,7 +127,7 @@ export type AbilityId =
   | 'howl' | 'predator_sense' | 'slow' | 'corrode' | 'life_drain' | 'no_offense'
   | 'decompose' | 'swarm' | 'death_touch' | 'flying' | 'free' | 'frostbite'
   | 'ice_reflect' | 'ice_absorb' | 'ice_null' | 'bind' | 'regeneration' | 'burn' | 'fire_reflect' | 'fire_absorb' | 'fire_null' | 'thunder_reflect' | 'thunder_absorb' | 'thunder_null' | 'soul_reap'
-  | 'mutual_magic_amplify' | 'mutual_magic_restraint' | 'ranged_confusion' | 'self_destruct' | 'oblivion' | 'reanimate'
+  | 'mutual_magic_amplify' | 'mutual_magic_restraint' | 'ranged_confusion' | 'magic_confusion' | 'melee_confusion' | 'self_destruct' | 'oblivion' | 'reanimate'
   | 'auriferous' | 'magic_seal' | 'ambush' | 'mimic' | 'shock' | 'mutual_physical_amplify' | 'mutual_physical_restraint'
   | 'unstable_core' | 'magical_reflect' | 'magical_absorb' | 'magical_null' | 'ranged_reflect' | 'ranged_null' | 'melee_reflect' | 'melee_null' | 'colossal' | 'upgrade_all_abilities';
 
