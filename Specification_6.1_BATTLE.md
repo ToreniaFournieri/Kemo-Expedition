@@ -41,12 +41,18 @@
 ##### 6.1.1.2 LONG, MID, CLOSE phase
 
 **Speed & Turn Order (Rolling Dice Rule)**
-- At the start of each phase (LONG / MID / CLOSE), **each actor** (enemy + each party member) rolls initiative.
+- At the start of each phase (`LONG` / `MID` / `CLOSE`), every **eligible actor** (enemy + each party member) rolls initiative.
+- **Eligible actor**:
+  - Has both `d.X_attack` and `d.X_NoA`
+  - `X = ranged` for `LONG`
+  - `X = magical` for `MID`
+  - `X = melee` for `CLOSE`
+- **Initiative roll**
   - `a.first-strike`3, roll **4d3** (4~12) cap the result at 9
   - `a.first-strike`2, roll **3d3** (3~9)
   - `a.first-strike`1, roll **2d3** (2~6)
   - No `a.first-strike`, roll **1d3** (1~3)
-- Modifications 
+- **Modifications** 
   - If party.`Goddess of Fertility`, add +1 (cap the result at 9)
   - If actor.`a.slow`1, subtract 1 (minimum 1)
   - If opponent.`a.frostbite`1, subtract 1 (minimum 1)
