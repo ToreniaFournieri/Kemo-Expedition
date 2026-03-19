@@ -121,7 +121,7 @@
   - Randomly select 1 eligible opponent.
   - Apply `c.antagonism` to the selected target.
   - **Eligible target**
-    - Has both `d.X_attack` and `d.X_NoA`
+    - Has both `d.X_attack` and `d.X_NoA`, and **not move in the phase**.
     - `X = ranged` for `LONG`
     - `X = magical` for `MID`
     - `X = melee` for `CLOSE`
@@ -148,10 +148,21 @@
 	- "actor の術は target に打ち消された！ (混乱確率X/X: 失敗)"
 	- "actor の見せた幻は target に通用しない！ (混乱確率X/X: 失敗)"
 	- "actor が語り掛けた誘惑を target は聞きそびれた！ (混乱確率X/X: 失敗)"
-  - **No eligible target**
-    - "actor は策略を巡らせたが、声は風に流され誰にも届かなかった (混乱-遠距離対象なし)"
-    - "actor は幻惑を仕掛けたが、誰も影響を受けなかった (混乱-魔法対象なし)"
-    - "actor は不和をもたらそうとしたが、誰も近くにいなかった (混乱-近接対象なし)"
+  - **No eligible target** 
+    - "actor は策略を巡らせたが、声は風に流され誰にも届かなかった (混乱-対象なし)"
+    - "actor は幻惑を仕掛けたが、誰も影響を受けなかった (混乱-対象なし)"
+    - "actor は不和をもたらそうとしたが、誰も近くにいなかった (混乱-対象なし)"
+	- `actor は策略を巡らせたが、声は誰にも届かなかった (混乱-対象なし)`
+	- `actor は何かを囁いたが、誰の心にも届かなかった (混乱-対象なし)`
+	- `actor は混乱を誘おうとしたが、場は静まり返ったままだった (混乱-対象なし)`
+	- `actor は幻を見せたが、誰もそれを認識しなかった (混乱-対象なし)`
+	- `actor の幻術は空を切り、誰にも届かなかった (混乱-対象なし)`
+	- `actor は視界を歪めようとしたが、影響を受ける者はいなかった (混乱-対象なし)`
+	- `actor の干渉は誰の意識にも届かなかった (混乱-対象なし)`
+	- `actor は心を乱そうとしたが、影響を与える相手がいなかった (混乱-対象なし)`
+	- `actor の試みは空振りに終わった (混乱-対象なし)`
+	- `actor は狂気を広めようとしたが、誰も囚われなかった (混乱-対象なし)`
+
   - note: Text `()` part is displayed in gray.
 
 #### 6.1.3 Actor normal move
