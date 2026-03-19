@@ -1266,9 +1266,12 @@ function getDecomposeDefenseMultiplier(level: number): number {
   return level >= 1 ? 6 / 7 : 1.0;
 }
 
+function roundDecomposeDefenseValue(value: number): number {
+  return Math.round(value);
+}
+
 function formatDecomposeDefenseValue(value: number): string {
-  const rounded = Math.round(value * 100) / 100;
-  return rounded.toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
+  return `${roundDecomposeDefenseValue(value)}`;
 }
 
 function getDecomposeNote(targetName: string, previousDefense: number, nextDefense: number): string {
@@ -2535,7 +2538,7 @@ export function executeBattle(
         if (target) {
           const multiplier = getDecomposeDefenseMultiplier(enemyDecomposeLevel);
           const previousDefense = target.physicalDefense;
-          const nextDefense = previousDefense * multiplier;
+          const nextDefense = roundDecomposeDefenseValue(previousDefense * multiplier);
           const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? '味方';
           characterStats = characterStats.map((stats) => (
             stats.characterId === target.characterId
@@ -2570,7 +2573,7 @@ export function executeBattle(
         if (enemyHp <= 0 || partyHp <= 0) break;
 
         const previousDefense = enemy.physicalDefense;
-        const nextDefense = previousDefense * getDecomposeDefenseMultiplier(entry.level);
+        const nextDefense = roundDecomposeDefenseValue(previousDefense * getDecomposeDefenseMultiplier(entry.level));
         enemy.physicalDefense = nextDefense;
         log.push({
           phase,
