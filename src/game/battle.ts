@@ -62,20 +62,21 @@ const CONFUSION_FAILURE_LOGS = [
   'が語り掛けた誘惑を target は聞きそびれた！',
 ] as const;
 
-const CONFUSION_NO_TARGET_MESSAGES: Record<BattleActionPhase, { action: string; note: string }> = {
-  long: {
-    action: 'は策略を巡らせたが、声は風に流され誰にも届かなかった',
-    note: '(混乱-遠距離対象なし)',
-  },
-  mid: {
-    action: 'は幻惑を仕掛けたが、誰も影響を受けなかった',
-    note: '(混乱-魔法対象なし)',
-  },
-  close: {
-    action: 'は不和をもたらそうとしたが、誰も近くにいなかった',
-    note: '(混乱-近接対象なし)',
-  },
-};
+const CONFUSION_NO_TARGET_LOGS = [
+  'は策略を巡らせたが、声は風に流され誰にも届かなかった',
+  'は幻惑を仕掛けたが、誰も影響を受けなかった',
+  'は不和をもたらそうとしたが、誰も近くにいなかった',
+  'は策略を巡らせたが、声は誰にも届かなかった',
+  'は何かを囁いたが、誰の心にも届かなかった',
+  'は混乱を誘おうとしたが、場は静まり返ったままだった',
+  'は幻を見せたが、誰もそれを認識しなかった',
+  'の幻術は空を切り、誰にも届かなかった',
+  'は視界を歪めようとしたが、影響を受ける者はいなかった',
+  'の干渉は誰の意識にも届かなかった',
+  'は心を乱そうとしたが、影響を与える相手がいなかった',
+  'の試みは空振りに終わった',
+  'は狂気を広めようとしたが、誰も囚われなかった',
+] as const;
 
 function getElementalMultiplier(
   offense: ElementalOffense,
@@ -1346,13 +1347,13 @@ function buildConfusionAction(
 }
 
 function getConfusionNoTargetLog(
-  phase: BattleActionPhase,
+  _phase: BattleActionPhase,
   actorName: string,
 ): Pick<BattleLogEntry, 'action' | 'note'> {
-  const message = CONFUSION_NO_TARGET_MESSAGES[phase];
+  const action = pickRandomEntry(CONFUSION_NO_TARGET_LOGS);
   return {
-    action: `${actorName}${message.action}`,
-    note: message.note,
+    action: `${actorName}${action}`,
+    note: '(混乱-対象なし)',
   };
 }
 
@@ -1389,12 +1390,20 @@ function getEnemyAttackForPhase(phase: BattleActionPhase, enemy: EnemyDef): numb
   }
 }
 
-function isEligibleCharacterForPhase(phase: BattleActionPhase, charStats: ComputedCharacterStats): boolean {
-  return getCharacterAttackForPhase(phase, charStats) > 0 && getCharacterNoAForPhase(phase, charStats) > 0;
+function isEligibleCharacterForPhase(
+  phase: BattleActionPhase,
+  charStats: ComputedCharacterStats,
+  hasMovedInPhase = false,
+): boolean {
+  return !hasMovedInPhase && getCharacterAttackForPhase(phase, charStats) > 0 && getCharacterNoAForPhase(phase, charStats) > 0;
 }
 
-function isEligibleEnemyForPhase(phase: BattleActionPhase, enemy: EnemyDef): boolean {
-  return getEnemyAttackForPhase(phase, enemy) > 0 && getEnemyNoA(phase, enemy) > 0;
+function isEligibleEnemyForPhase(
+  phase: BattleActionPhase,
+  enemy: EnemyDef,
+  hasMovedInPhase = false,
+): boolean {
+  return !hasMovedInPhase && getEnemyAttackForPhase(phase, enemy) > 0 && getEnemyNoA(phase, enemy) > 0;
 }
 
 // Hit detection functions are available for future use when implementing
@@ -1990,6 +1999,8 @@ export function executeBattle(
     );
 
     let hasTriggeredLongPhaseHowl = false;
+    let enemyHasMovedInPhase = false;
+    const movedCharacterIds = new Set<number>();
     const triggeredConfusionTimings = new Set<number>();
     const triggerLongPhaseHowl = (): void => {
       if (phase !== 'long' || hasTriggeredLongPhaseHowl) return;
@@ -2046,11 +2057,13 @@ export function executeBattle(
       triggeredConfusionTimings.add(timing);
 
       const confusionAbilityId = getConfusionAbilityIdForPhase(phase);
-      const eligibleEnemyTarget = isEligibleEnemyForPhase(phase, enemy);
+      const eligibleEnemyTarget = isEligibleEnemyForPhase(phase, enemy, enemyHasMovedInPhase);
 
       const enemyConfusionLevel = getEnemyAbilityLevel(enemy, confusionAbilityId);
       if (getConfusionTiming(enemyConfusionLevel) === timing) {
-        const eligiblePartyTargets = characterStats.filter((stats) => isEligibleCharacterForPhase(phase, stats));
+        const eligiblePartyTargets = characterStats.filter((stats) => (
+          isEligibleCharacterForPhase(phase, stats, movedCharacterIds.has(stats.characterId))
+        ));
         const target = eligiblePartyTargets.length > 0
           ? eligiblePartyTargets[Math.floor(Math.random() * eligiblePartyTargets.length)]
           : null;
@@ -2154,6 +2167,8 @@ export function executeBattle(
       }
 
       if (turn.kind === 'enemy') {
+        enemyHasMovedInPhase = true;
+
         const baseNoA = getEnemyNoA(phase, enemy);
         const howlEffect = baseNoA > 0 ? consumePendingPartyHowlEffect() : null;
         const noA = Math.ceil(baseNoA * (howlEffect?.multiplier ?? 1.0));
@@ -2689,6 +2704,8 @@ export function executeBattle(
       const char = party.characters.find(c => c.id === cs.characterId);
       if (!char) continue;
 
+      movedCharacterIds.add(cs.characterId);
+
       const baseNoA = getCharacterNoAForPhase(phase, cs);
       const howlEffect = baseNoA > 0 ? consumePendingEnemyHowlEffect() : null;
 
@@ -2970,6 +2987,8 @@ export function executeBattle(
     if (phase === 'long') {
       triggerLongPhaseHowl();
     }
+    triggerConfusionAtTiming(2);
+    triggerConfusionAtTiming(1);
 
     if (partyHp <= 0) {
       return {
