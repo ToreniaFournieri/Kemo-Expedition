@@ -160,6 +160,19 @@ const REGENERATION_LOGS = [
   '{actor} の生命力が傷を癒した！',
 ] as const;
 
+const SELF_DESTRUCT_LOGS = [
+  '{actor} は自爆した！',
+  '{actor} は体を爆発させた！',
+  '{actor} は捨て身の爆発を起こした！',
+  '{actor} は己を犠牲に爆ぜた！',
+  '{actor} は最期の力を解き放ち、爆発した！',
+  '{actor} は崩壊し、周囲を巻き込んだ！',
+  '{actor} は全てを投げ打ち、爆発した！',
+  '{actor} は暴発し、辺りを吹き飛ばした！',
+  '{actor} は断末魔と共に爆ぜた！',
+  '{actor} は破裂し、周囲を巻き込んだ！',
+] as const;
+
 function getElementalMultiplier(
   offense: ElementalOffense,
   resistance: Record<'fire' | 'thunder' | 'ice', number>
@@ -1507,6 +1520,10 @@ function buildRegenerationAction(actorName: string): string {
   return pickRandomEntry(REGENERATION_LOGS).replace(/\{actor\}/g, actorName);
 }
 
+function buildSelfDestructAction(actorName: string): string {
+  return pickRandomEntry(SELF_DESTRUCT_LOGS).replace(/\{actor\}/g, actorName);
+}
+
 function getRandomPartyMemberName(party: Party): string {
   if (party.characters.length === 0) return party.name;
   return pickRandomEntry(party.characters).name;
@@ -1514,6 +1531,33 @@ function getRandomPartyMemberName(party: Party): string {
 
 function getSoulReapNote(level: number): string {
   return `(HP ${getSoulReapThresholdPercent(level)}％未満で即死)`;
+}
+
+function getSelfDestructRatio(level: number): { numerator: number; denominator: number } | null {
+  if (level <= 0) return null;
+  if (level >= 5) return { numerator: 1, denominator: 1 };
+  if (level === 4) return { numerator: 7, denominator: 10 };
+  if (level === 3) return { numerator: 5, denominator: 10 };
+  if (level === 2) return { numerator: 3, denominator: 10 };
+  return { numerator: 1, denominator: 10 };
+}
+
+function calculateSelfDestructDamage(
+  level: number,
+  actorRemainingHp: number,
+  targetPhysicalDefense: number,
+  targetDefenseAmplifier: number,
+): number {
+  const ratio = getSelfDestructRatio(level);
+  if (!ratio) return 0;
+
+  const baseDamage = actorRemainingHp - targetPhysicalDefense;
+  if (baseDamage <= 0) return 0;
+
+  return Math.max(
+    0,
+    Math.floor((ratio.numerator / ratio.denominator) * baseDamage * Math.max(0.01, targetDefenseAmplifier)),
+  );
 }
 
 function getConfusionNoTargetLog(
@@ -2436,6 +2480,86 @@ export function executeBattle(
       }
     };
 
+    // SpecRef: 6.1.2 | Self destruct
+    const triggerSelfDestructAtTiming = (timing: number): void => {
+      if (phase !== 'close' || timing !== 2) return;
+      if (enemyHp <= 0 || partyHp <= 0) return;
+
+      const enemySelfDestructLevel = getEnemyAbilityLevel(enemy, 'self_destruct');
+      if (enemySelfDestructLevel > 0) {
+        const { row: targetRow, newCtx } = getTargetRow(ctx, 'close');
+        ctx = newCtx;
+        const target = resolveEnemyTarget(targetRow, characterStats, 'close')
+          ?? characterStats[Math.floor(Math.random() * characterStats.length)]
+          ?? null;
+
+        const targetDefenseAmplifier = target
+          ? Math.max(0.01, target.physicalDefenseAmplifier + target.deityDefenseAmplifierBonus.physical)
+          : 1.0;
+        const damage = target
+          ? calculateSelfDestructDamage(
+            enemySelfDestructLevel,
+            enemyHp,
+            target.physicalDefense,
+            targetDefenseAmplifier,
+          )
+          : 0;
+
+        enemyDamageTakenInBattle += enemyHp;
+        enemyHp = 0;
+
+        if (damage > 0) {
+          applyPartyDamage(damage);
+        }
+
+        log.push({
+          phase,
+          initiativeRoll: timing,
+          actor: 'triggered',
+          action: buildSelfDestructAction(enemy.name),
+          damage: damage > 0 ? damage : undefined,
+          damageTarget: 'party',
+        });
+      }
+
+      const partySelfDestructEntries = characterStats
+        .map((stats) => ({
+          stats,
+          level: getAbilityLevel(stats, 'self_destruct'),
+          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+        }))
+        .filter((entry) => entry.level > 0)
+        .sort((a, b) => a.stats.row - b.stats.row);
+
+      for (const entry of partySelfDestructEntries) {
+        if (enemyHp <= 0 || partyHp <= 0) break;
+
+        const damage = calculateSelfDestructDamage(
+          entry.level,
+          partyHp,
+          enemy.physicalDefense,
+          enemy.defenseAmplifier,
+        );
+
+        partyDamageTakenInBattle += partyHp;
+        partyHp = 0;
+
+        if (damage > 0) {
+          applyEnemyDamage(damage);
+        }
+
+        log.push({
+          phase,
+          initiativeRoll: timing,
+          actor: 'triggered',
+          characterId: entry.stats.characterId,
+          action: buildSelfDestructAction(entry.ownerName),
+          damage: damage > 0 ? damage : undefined,
+          damageTarget: 'enemy',
+        });
+      }
+    };
+
     // SpecRef: 6.1.2 | Unstable core
     const triggerUnstableCoreAtEnd = (): void => {
       if (phase !== 'long' && phase !== 'mid') return;
@@ -2560,6 +2684,7 @@ export function executeBattle(
       }
       if (turn.roll <= 2) {
         triggerConfusionAtTiming(2);
+        triggerSelfDestructAtTiming(2);
       }
       if (turn.roll <= 1) {
         triggerConfusionAtTiming(1);
