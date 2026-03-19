@@ -1766,7 +1766,7 @@ function buildDeityEffectLogEntry(
   const deityKey = getDeityKey(deityName);
   if (deityKey === 'Goddess of Restoration' && healAmount && healAmount > 0) {
     return {
-      phase: 'long',
+      phase: 'end',
       actor: 'deity',
       action: '再生の女神の効果！',
       note: `(HP回復+${healAmount})`,
@@ -1775,7 +1775,7 @@ function buildDeityEffectLogEntry(
 
   if (deityKey === 'God of Attrition' && attritionAmount && attritionAmount > 0) {
     return {
-      phase: 'long',
+      phase: 'end',
       actor: 'deity',
       action: '消耗の神の効果！',
       note: `(HP消耗-${attritionAmount})`,
@@ -2117,7 +2117,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 finalOutcome = 'Retreat';
                 expeditionEnded = true;
                 entry.details.push({
-                  phase: 'close',
+                  phase: 'end',
                   actor: 'deity',
                   action: '撤退',
                   note: 'HPが30%以下のため、戦利品を持ち帰ります。',
@@ -2140,7 +2140,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   finalOutcome = 'Escape';
                   expeditionEnded = true;
                   entry.details.push({
-                    phase: 'close',
+                    phase: 'end',
                     actor: 'deity',
                     action: '探索深度に到達した為帰還します',
                   });

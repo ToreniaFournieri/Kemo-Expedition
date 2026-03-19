@@ -6168,14 +6168,20 @@ function ExpeditionTab({
                                 const previousContinuesCurrentPhase = !!previousLog && (previousWasPhaseAction || previousWasStealthEffectLog || previousWasCounterNegationEffectLog);
                                 const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousContinuesCurrentPhase || previousLog.phase !== log.phase);
                                 const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
-                                const phaseLabel = isPhaseAction
-                                  ? (log.isCounter || isResurrectLog || log.isEnemyTargetHit ? '-' : `${log.initiativeRoll ?? '?'}`)
-                                  : log.actor === 'deity' ? '末' : (isStealthEffectLog || isCounterNegationEffectLog) ? '-' : '効';
+                                const phaseLabel = log.phase === 'start'
+                                  ? '効'
+                                  : log.phase === 'end'
+                                    ? '末'
+                                    : isPhaseAction
+                                      ? (log.isCounter || isResurrectLog || log.isEnemyTargetHit ? '-' : `${log.initiativeRoll ?? '?'}`)
+                                      : (isStealthEffectLog || isCounterNegationEffectLog) ? '-' : (log.actor === 'deity' ? '末' : '効');
                                 const phaseHeader = log.phase === 'long'
                                   ? '遠距離攻撃フェーズ'
                                   : log.phase === 'mid'
                                     ? '魔法攻撃フェーズ'
-                                    : '近接攻撃フェーズ';
+                                    : log.phase === 'close'
+                                      ? '近接攻撃フェーズ'
+                                      : '';
                                 const emoji = log.elementalOffense === 'fire' ? '🔥' : log.elementalOffense === 'thunder' ? '⚡' : log.elementalOffense === 'ice' ? '❄️' : log.phase === 'long' ? '🏹' : log.phase === 'mid' ? '🪄' : '⚔';
                                 const isEnemy = log.actor === 'enemy';
                                 const hits = log.hits ?? 0;
@@ -7416,14 +7422,20 @@ function DiaryTab({
                               const previousContinuesCurrentPhase = !!previousLog && (previousWasPhaseAction || previousWasStealthEffectLog || previousWasCounterNegationEffectLog);
                               const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousContinuesCurrentPhase || previousLog.phase !== battleLog.phase);
                               const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
-                              const phaseLabel = isPhaseAction
-                                ? (battleLog.isCounter || isResurrectLog || battleLog.isEnemyTargetHit ? '-' : `${battleLog.initiativeRoll ?? '?'}`)
-                                : battleLog.actor === 'deity' ? '末' : (isStealthEffectLog || isCounterNegationEffectLog) ? '-' : '効';
+                              const phaseLabel = battleLog.phase === 'start'
+                                ? '効'
+                                : battleLog.phase === 'end'
+                                  ? '末'
+                                  : isPhaseAction
+                                    ? (battleLog.isCounter || isResurrectLog || battleLog.isEnemyTargetHit ? '-' : `${battleLog.initiativeRoll ?? '?'}`)
+                                    : (isStealthEffectLog || isCounterNegationEffectLog) ? '-' : (battleLog.actor === 'deity' ? '末' : '効');
                               const phaseHeader = battleLog.phase === 'long'
                                 ? '遠距離攻撃フェーズ'
                                 : battleLog.phase === 'mid'
                                   ? '魔法攻撃フェーズ'
-                                  : '近接攻撃フェーズ';
+                                  : battleLog.phase === 'close'
+                                    ? '近接攻撃フェーズ'
+                                    : '';
                               const getPhaseEmoji = () => {
                                 if (battleLog.elementalOffense === 'fire') return '🔥';
                                 if (battleLog.elementalOffense === 'thunder') return '⚡';

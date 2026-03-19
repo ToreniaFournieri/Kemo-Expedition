@@ -478,11 +478,12 @@ export interface Dungeon {
 }
 
 // Battle Types
-export type BattlePhase = 'long' | 'mid' | 'close';
+export type BattleActionPhase = 'long' | 'mid' | 'close';
+export type BattlePhase = 'start' | BattleActionPhase | 'end';
 export type BattleOutcome = 'victory' | 'defeat' | 'draw';
 
 export interface BattleState {
-  phase: BattlePhase;
+  phase: BattleActionPhase;
   partyHp: number;
   enemyHp: number;
   log: BattleLogEntry[];
@@ -513,7 +514,6 @@ export interface BattleLogEntry {
   isEnemyTargetHit?: boolean;
   wasNegated?: boolean; // True when an attack dealt 0 hits because an avoidance effect activated
   elementalOffense?: ElementalOffense;
-  isPersistentEffect?: boolean;
 }
 
 // Expedition Types
