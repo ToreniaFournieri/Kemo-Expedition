@@ -27,6 +27,10 @@
   - Randomly select 1 valid ability from that opponent (excluding `a.mimic` and `a.oblivion`).
   - Actor gains the selected ability for the rest of the battle.
 
+- actor.`a.magic-seal`
+  - Log: "[効] name の魔封！ (この場で最初に唱える魔法は無効化される)"
+  - Sets `a.magic-seal` enable.
+
 - Other abilities with `[効]`
 
 - Tie-breaker: Enemy > Front-row party member > Back-row party member
@@ -62,6 +66,10 @@
 #### 6.1.2 Actor normal move
 
 ##### 6.1.2.1 Actor action
+- Check:
+  - If (phase = MID and `a.magic-seal` is valid), Disable the actor's move. log "name がフロストニードルを唱えたがかき消された！". Disable the `a.magic-seal`.
+
+
 - `f.NoA` times, get `f.targeting` -> opponent. 
 	- If `f.hit_detection`(actor: , opponent: , Nth_hit: the current hit index), current party.
 	- Check the following conditions in this order:
