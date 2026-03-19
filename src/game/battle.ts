@@ -1,6 +1,6 @@
 import {
   BattleState,
-  BattlePhase,
+  BattleActionPhase,
   BattleLogEntry,
   BattleOutcome,
   ComputedPartyStats,
@@ -118,7 +118,7 @@ function getMutualAbilityMultiplier(
 
 // SpecRef: 6.1.3.1 | Function of attack | f.mutual_amplifer
 function getMutualAmplifier(
-  phase: BattlePhase,
+  phase: BattleActionPhase,
   actorAbilities: AbilityLike[],
   opponentAbilities: AbilityLike[],
 ): number {
@@ -176,7 +176,7 @@ function partyHasIllusionLevel(characterStats: ComputedCharacterStats[], require
 }
 
 function isIllusionActive(
-  phase: BattlePhase,
+  phase: BattleActionPhase,
   hasIllusionAbility: boolean,
   illusionStateId: string,
   consumedIllusionStateIds: Set<string>,
@@ -185,7 +185,7 @@ function isIllusionActive(
 }
 
 function isPartyIllusionActive(
-  phase: BattlePhase,
+  phase: BattleActionPhase,
   characterStats: ComputedCharacterStats[],
   consumedPartyIllusion: boolean,
 ): boolean {
@@ -211,7 +211,7 @@ function getBulwarkLevel(charStats: ComputedCharacterStats): number {
 function resolveEnemyTarget(
   targetRow: number,
   characterStats: ComputedCharacterStats[],
-  phase: BattlePhase
+  phase: BattleActionPhase
 ): ComputedCharacterStats | null {
   const selectedTarget = characterStats.find(cs => cs.row === targetRow);
   if (!selectedTarget) return null;
@@ -255,7 +255,7 @@ function toMomentumBonusPercent(momentumAmplifier: number): number {
 
 // SpecRef: 6.1.3.2 | Function of targeting | f.targeting
 // Get target row index (1-6) using threat bag
-function getTargetRow(ctx: BattleContext, phase: BattlePhase): { row: number; newCtx: BattleContext } {
+function getTargetRow(ctx: BattleContext, phase: BattleActionPhase): { row: number; newCtx: BattleContext } {
   const isPhysical = phase === 'long' || phase === 'close';
 
   // Refill bag if empty
@@ -280,7 +280,7 @@ function getTargetRow(ctx: BattleContext, phase: BattlePhase): { row: number; ne
 // SpecRef: 6.1.3.1 | Function of attack | f.damage_calculation
 // Calculate single attack damage (without NoA multiplier)
 function calculateSingleEnemyAttackDamage(
-  phase: BattlePhase,
+  phase: BattleActionPhase,
   enemy: EnemyDef,
   characterStats: ComputedCharacterStats[],
   targetCharStats: ComputedCharacterStats,
@@ -328,7 +328,7 @@ function calculateSingleEnemyAttackDamage(
 }
 
 // Get number of attacks for enemy in a phase
-function getEnemyNoA(phase: BattlePhase, enemy: EnemyDef): number {
+function getEnemyNoA(phase: BattleActionPhase, enemy: EnemyDef): number {
   switch (phase) {
     case 'long': return enemy.rangedNoA;
     case 'mid': return enemy.magicalNoA;
@@ -354,7 +354,7 @@ function getFrontRowAbilityLevel(
 }
 
 function getPartyOffenseAbilityAmplifier(
-  phase: BattlePhase,
+  phase: BattleActionPhase,
   characterStats: ComputedCharacterStats[],
   actorRow: number,
 ): number {
@@ -364,7 +364,7 @@ function getPartyOffenseAbilityAmplifier(
 }
 
 function getPartyDefenseAbilityAmplifier(
-  phase: BattlePhase,
+  phase: BattleActionPhase,
   characterStats: ComputedCharacterStats[],
   actorRow: number,
 ): number {
@@ -380,7 +380,7 @@ function getPartyDefenseAbilityAmplifier(
 // SpecRef: 6.1.3.1 | Function of attack | f.damage_calculation
 // SpecRef: 6.1.3.2 | Function of targeting | f.hit_detection
 function calculateCharacterFriendlyFireDamage(
-  phase: BattlePhase,
+  phase: BattleActionPhase,
   attacker: ComputedCharacterStats,
   target: ComputedCharacterStats,
   characterStats: ComputedCharacterStats[],
@@ -538,7 +538,7 @@ function getAbsorbAmplifier(level: number): number {
 }
 
 function getReflectDescriptor(
-  phase: BattlePhase,
+  phase: BattleActionPhase,
   elementalOffense: ElementalOffense,
   defenderAbilities: AbilityLike[],
 ): ReflectDescriptor | null {
@@ -624,7 +624,7 @@ function getReflectDescriptor(
 }
 
 function getAbsorbDescriptor(
-  phase: BattlePhase,
+  phase: BattleActionPhase,
   elementalOffense: ElementalOffense,
   defenderAbilities: AbilityLike[],
 ): AbsorbDescriptor | null {
@@ -680,7 +680,7 @@ function getAbsorbDescriptor(
 }
 
 function getNullDescriptor(
-  phase: BattlePhase,
+  phase: BattleActionPhase,
   elementalOffense: ElementalOffense,
   defenderAbilities: AbilityLike[],
 ): NullDescriptor | null {
@@ -742,7 +742,7 @@ function getNullDescriptor(
 }
 
 function getDefensiveReaction(
-  phase: BattlePhase,
+  phase: BattleActionPhase,
   elementalOffense: ElementalOffense,
   defenderAbilities: AbilityLike[],
 ): DefensiveReaction | null {
@@ -763,35 +763,6 @@ function getDefensiveReaction(
 
   return null;
 }
-
-function moveEffectLogsToBattleStart(logs: BattleLogEntry[]): BattleLogEntry[] {
-  const effectLogSet = new Set<string>();
-  const leadingEffectLogs: BattleLogEntry[] = [];
-  const normalLogs: BattleLogEntry[] = [];
-
-  for (const log of logs) {
-    const isEffectLog = log.actor === 'effect' && log.isPersistentEffect === true;
-    if (!isEffectLog) {
-      normalLogs.push(log);
-      continue;
-    }
-
-    const key = `${log.action}|${log.note ?? ''}`;
-    if (effectLogSet.has(key)) {
-      continue;
-    }
-
-    effectLogSet.add(key);
-    leadingEffectLogs.push(log);
-  }
-
-  if (leadingEffectLogs.length === 0) {
-    return logs;
-  }
-
-  return [...leadingEffectLogs, ...normalLogs];
-}
-
 
 // SpecRef: 6.1.3.1 | Function of attack | f.resonance_amplifier
 function getResonanceAmplifier(resonanceLevel: number | undefined, hitNumber: number): number {
@@ -861,7 +832,7 @@ function hitDetection(
   actorAccuracyBonus: number,
   opponentEvasionBonus: number,
   nthHit: number, // 1-indexed
-  phase: BattlePhase,
+  phase: BattleActionPhase,
   opponentDeflectionLevel: number,
   actorFocusLevel: number
 ): boolean {
@@ -885,7 +856,7 @@ function hitDetection(
 // SpecRef: 6.1.3.1 | Function of attack | f.damage_calculation
 // SpecRef: 6.1.3.2 | Function of targeting | f.hit_detection
 function calculateCharacterDamage(
-  phase: BattlePhase,
+  phase: BattleActionPhase,
   charStats: ComputedCharacterStats,
   character: Character,
   enemy: EnemyDef,
@@ -1138,7 +1109,7 @@ function createMagicSealQueue(
 
 function getMagicSealStartLog(ownerName: string): BattleLogEntry {
   return {
-    phase: 'long',
+    phase: 'start',
     actor: 'effect',
     action: `${ownerName} の魔封！`,
     note: '(この場で最初に唱える魔法は無効化される)',
@@ -1200,7 +1171,7 @@ function getEnemyReAttackNoAMultiplier(enemy: EnemyDef): number {
   return 0.5;
 }
 
-function hasCounter(charStats: ComputedCharacterStats, phase: BattlePhase): boolean {
+function hasCounter(charStats: ComputedCharacterStats, phase: BattleActionPhase): boolean {
   const ability = charStats.abilities.find(a => a.id === 'counter');
   if (!ability) return false;
   return phase === 'close';
@@ -1313,7 +1284,7 @@ export function executeBattle(
     ));
 
     log.push({
-      phase: 'long',
+      phase: 'start',
       actor: 'effect',
       action: '不和の神の効果！',
       note: `([⚠️敵対]${targetName}が仲違いした)`,
@@ -1348,7 +1319,7 @@ export function executeBattle(
     }
 
     log.push({
-      phase: 'long',
+      phase: 'start',
       actor: 'effect',
       action: `${owner.name} が ${enemy.name} の ${formatAbilityLabel(selectedEnemyAbility)} を忘却の彼方に消し去った！`,
     });
@@ -1371,7 +1342,7 @@ export function executeBattle(
       }
 
       log.push({
-        phase: 'long',
+        phase: 'start',
         actor: 'effect',
         action: `${enemy.name} が ${targetName} の ${formatAbilityLabel(selectedTargetAbility)} を忘却の彼方に消し去った！`,
       });
@@ -1398,7 +1369,7 @@ export function executeBattle(
     grantCharacterAbility(owner.stats, selectedEnemyAbility);
 
     log.push({
-      phase: 'long',
+      phase: 'start',
       actor: 'effect',
       action: `${owner.name} が ${enemy.name} の ${formatAbilityLabel(selectedEnemyAbility)} を模倣した！`,
     });
@@ -1417,7 +1388,7 @@ export function executeBattle(
       grantEnemyAbility(enemy, selectedTargetAbility);
 
       log.push({
-        phase: 'long',
+        phase: 'start',
         actor: 'effect',
         action: `${enemy.name} が ${targetName} の ${formatAbilityLabel(selectedTargetAbility)} を模倣した！`,
       });
@@ -1437,7 +1408,7 @@ export function executeBattle(
 
   const consumeMagicSeal = (): boolean => activeMagicSealQueue.shift() !== undefined;
 
-  const triggerEnemyResurrect = (phase: BattlePhase, initiativeRoll?: number): void => {
+  const triggerEnemyResurrect = (phase: BattleActionPhase, initiativeRoll?: number): void => {
     if (enemyHp > 0 || consumedEnemyResurrect) return;
 
     const resurrectLevel = getEnemyAbilityLevel(enemy, 'resurrect');
@@ -1481,7 +1452,7 @@ export function executeBattle(
     if (!ownerName || bestLevel === 0) return null;
 
     return {
-      phase: 'long',
+      phase: 'start',
       actor: 'effect',
       action: `${ownerName}の ${label(bestLevel)}！`,
       note: noteText(bestLevel),
@@ -1511,7 +1482,7 @@ export function executeBattle(
     if (!ownerName || bestLevel === 0) return null;
 
     return {
-      phase: 'long',
+      phase: 'start',
       actor: 'effect',
       action: `${ownerName}の ${label(bestLevel)}！`,
       note: noteText(bestLevel),
@@ -1681,7 +1652,7 @@ export function executeBattle(
   };
 
   const triggerCoveringFire = (
-    phase: BattlePhase,
+    phase: BattleActionPhase,
     sourceCharStats: ComputedCharacterStats,
     sourceHits: number,
     initiativeRoll: number,
@@ -1749,7 +1720,7 @@ export function executeBattle(
     }
   };
 
-  const phases: BattlePhase[] = ['long', 'mid', 'close'];
+  const phases: BattleActionPhase[] = ['long', 'mid', 'close'];
   const hasFertilityInitiativeBonus = getDeityKey(party.deity.name) === 'Goddess of Fertility';
 
   const partyHasFrostbite = characterStats.some(cs => hasAbility(cs.abilities, 'frostbite'));
@@ -1757,7 +1728,7 @@ export function executeBattle(
 
   const pushFrostbiteLog = (ownerName: string): void => {
     log.push({
-      phase: 'long',
+      phase: 'start',
       actor: 'effect',
       action: `${ownerName} の凍傷！`,
       note: '(相手の行動を少し遅らせる)',
@@ -1776,45 +1747,36 @@ export function executeBattle(
     pushFrostbiteLog(enemy.name);
   }
 
-  for (const phase of phases) {
-    const mutualAbilityLogByPhase: Record<BattlePhase, Array<{ abilityId: AbilityId; actionName: string; effectLabel: string; multipliersByLevel: Record<number, number> }>> = {
-      long: [
-        { abilityId: 'mutual_physical_amplify', actionName: '物理増幅', effectLabel: '双方物理ダメージ', multipliersByLevel: MUTUAL_PHYSICAL_AMPLIFY_MULTIPLIERS },
-        { abilityId: 'mutual_physical_restraint', actionName: '物理抑制', effectLabel: '双方物理ダメージ', multipliersByLevel: MUTUAL_PHYSICAL_RESTRAINT_MULTIPLIERS },
-      ],
-      mid: [
-        { abilityId: 'mutual_magic_amplify', actionName: '魔法増幅', effectLabel: '双方魔法ダメージ', multipliersByLevel: MUTUAL_MAGIC_AMPLIFY_MULTIPLIERS },
-        { abilityId: 'mutual_magic_restraint', actionName: '魔法抑制', effectLabel: '双方魔法ダメージ', multipliersByLevel: MUTUAL_MAGIC_RESTRAINT_MULTIPLIERS },
-      ],
-      close: [
-        { abilityId: 'mutual_physical_amplify', actionName: '物理増幅', effectLabel: '双方物理ダメージ', multipliersByLevel: MUTUAL_PHYSICAL_AMPLIFY_MULTIPLIERS },
-        { abilityId: 'mutual_physical_restraint', actionName: '物理抑制', effectLabel: '双方物理ダメージ', multipliersByLevel: MUTUAL_PHYSICAL_RESTRAINT_MULTIPLIERS },
-      ],
-    };
+  const mutualOwners: Array<{ name: string; abilities: AbilityLike[] }> = [
+    ...party.characters.map((c) => ({
+      name: c.name,
+      abilities: characterStats.find((cs) => cs.characterId === c.id)?.abilities ?? [],
+    })),
+    { name: enemy.name, abilities: enemy.abilities },
+  ];
+  const startPhaseEffects: Array<{ abilityId: AbilityId; actionName: string; effectLabel: string; multipliersByLevel: Record<number, number> }> = [
+    { abilityId: 'mutual_physical_amplify', actionName: '物理増幅', effectLabel: '双方物理ダメージ', multipliersByLevel: MUTUAL_PHYSICAL_AMPLIFY_MULTIPLIERS },
+    { abilityId: 'mutual_physical_restraint', actionName: '物理抑制', effectLabel: '双方物理ダメージ', multipliersByLevel: MUTUAL_PHYSICAL_RESTRAINT_MULTIPLIERS },
+    { abilityId: 'mutual_magic_amplify', actionName: '魔法増幅', effectLabel: '双方魔法ダメージ', multipliersByLevel: MUTUAL_MAGIC_AMPLIFY_MULTIPLIERS },
+    { abilityId: 'mutual_magic_restraint', actionName: '魔法抑制', effectLabel: '双方魔法ダメージ', multipliersByLevel: MUTUAL_MAGIC_RESTRAINT_MULTIPLIERS },
+  ];
 
-    const mutualOwners: Array<{ name: string; abilities: AbilityLike[] }> = [
-      ...party.characters.map((c) => ({
-        name: c.name,
-        abilities: characterStats.find((cs) => cs.characterId === c.id)?.abilities ?? [],
-      })),
-      { name: enemy.name, abilities: enemy.abilities },
-    ];
-
-    for (const effect of mutualAbilityLogByPhase[phase]) {
-      for (const owner of mutualOwners) {
-        const abilityLevel = getHighestAbilityLevel(owner.abilities, effect.abilityId);
-        const multiplier = effect.multipliersByLevel[abilityLevel];
-        if (abilityLevel > 0 && multiplier !== undefined) {
-          log.push({
-            phase,
-            actor: 'effect',
-            action: `${owner.name} の${effect.actionName}！`,
-            isPersistentEffect: true,
-            note: `(${effect.effectLabel}${multiplier}倍)`,
-          });
-        }
+  for (const effect of startPhaseEffects) {
+    for (const owner of mutualOwners) {
+      const abilityLevel = getHighestAbilityLevel(owner.abilities, effect.abilityId);
+      const multiplier = effect.multipliersByLevel[abilityLevel];
+      if (abilityLevel > 0 && multiplier !== undefined) {
+        log.push({
+          phase: 'start',
+          actor: 'effect',
+          action: `${owner.name} の${effect.actionName}！`,
+          note: `(${effect.effectLabel}${multiplier}倍)`,
+        });
       }
     }
+  }
+
+  for (const phase of phases) {
 
     const enemyInitiativeRoll = rollInitiative(getEnemyFirstStrikeLevel(enemy), {
       hasSlow: hasAbility(enemy.abilities, 'slow'),
@@ -2663,7 +2625,7 @@ export function executeBattle(
         phase,
         partyHp: 0,
         enemyHp,
-        log: moveEffectLogsToBattleStart(log),
+        log,
         outcome: 'defeat',
         updatedBags: {
           physicalThreatBag: ctx.physicalThreatBag,
@@ -2677,7 +2639,7 @@ export function executeBattle(
         phase,
         partyHp,
         enemyHp: 0,
-        log: moveEffectLogsToBattleStart(log),
+        log,
         outcome: 'victory',
         updatedBags: {
           physicalThreatBag: ctx.physicalThreatBag,
@@ -2702,7 +2664,7 @@ export function executeBattle(
     phase: 'close',
     partyHp: Math.max(0, partyHp),
     enemyHp: Math.max(0, enemyHp),
-    log: moveEffectLogsToBattleStart(log),
+    log,
     outcome,
     updatedBags: {
       physicalThreatBag: ctx.physicalThreatBag,
