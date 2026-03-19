@@ -388,24 +388,24 @@ Party.`d.HP` =
 - PT2 initial condition (when unlocked)
   - deity: `God of Attrition`
   - party member race: all Lupinian
-  - 3.6 AUTO equipment logic for all party member. 
+  - 7.1.1 AUTO equipment logic for all party member. 
  
 - PT3 initial condition (when unlocked)
   - deity: `God of Cunning`
   - party member race: all Vulpinian
-  - 3.6 AUTO equipment logic for all party member.  
+  - 7.1.1 AUTO equipment logic for all party member.  
 
 - PT4 initial condition (when unlocked)
   - deity: `God of Fortification`
   - party member race: all Ursan
-  - 3.6 AUTO equipment logic for all party member.  
+  - 7.1.1 AUTO equipment logic for all party member.  
 
 - PT5 initial condition (when unlocked)
   - deity: `Goddess of Fertility`
   - party member race: all Felidian
-  - 3.6 AUTO equipment logic for all party member. 
+  - 7.1.1 AUTO equipment logic for all party member. 
 
 - PT6 initial condition (when unlocked)
   - deity: `God of Resonance`
   - party member race: all Mustelid
-  - 3.6 AUTO equipment logic for all party member.
+  - 7.1.1 AUTO equipment logic for all party member.

@@ -98,14 +98,14 @@
 
 ### 10.2 Examples
 ```
-// SpecRef: 8.5.1 | Shop (お店) | Paid Refresh (有償洗替)
+// SpecRef: 8.4.1 | Shop (お店) | Paid Refresh (有償洗替)
 
-// SpecRef: 6.2 | Function of battle | f.hit_detection
-// SpecRef: 6.2 | Function of battle | f.targeting
+// SpecRef: 6.1.2 | Function of battle | f.hit_detection
+// SpecRef: 6.1.2 | Function of battle | f.targeting
 ```
 
 ### 10.3 Rules
-- SectionID must exactly match the specification heading number (e.g., `6.2`).
+- SectionID must exactly match the specification heading number (e.g., `6.1.2`).
 - Anchor must exactly match the corresponding identifier/name in the specification (e.g., `f.hit_detection`, `Paid Refresh (有償洗替)`).
 - Place the `SpecRef` comment at the entry point of the implemented logic (function/method or main branch block).
 - If one code block implements multiple spec items, add one `SpecRef` line per item.

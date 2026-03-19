@@ -58,7 +58,7 @@ export const JEWELS_BY_ITEM_CATEGORY: Record<ItemCategory, JewelKey[]> = {
   catalyst: ['fort', 'ward', 'focus'],
 };
 
-// SpecRef: 2.5.7 | Jewel (結晶) | Rule
+// SpecRef: 3.1.7 | Jewel (結晶) | Rule
 export function getJewelDRankValue(base: number, rank: number): number {
   if (rank <= 1) return base;
   let value = base;
@@ -66,7 +66,7 @@ export function getJewelDRankValue(base: number, rank: number): number {
   return value;
 }
 
-// SpecRef: 2.5.7 | Jewel (結晶) | Rank
+// SpecRef: 3.1.7 | Jewel (結晶) | Rank
 export function getJewelCBonusValue(key: JewelKey, rank: number): number {
   const idx = Math.max(0, Math.min(7, rank - 1));
   if (key === 'might' || key === 'arcana') return C_ATTACK_BY_RANK[idx] / 100;
@@ -84,7 +84,7 @@ export function getJewelInventoryKey(key: JewelKey, rank: number): string {
   return `${key}:${rank}`;
 }
 
-// SpecRef: 2.5.7 | Jewel (結晶) | Tier Name
+// SpecRef: 3.1.7 | Jewel (結晶) | Tier Name
 export function getJewelNameByRank(key: JewelKey, rank: number): string {
   const idx = Math.max(0, Math.min(7, rank - 1));
   return `${JEWEL_DEFS[key].displayName}の${JEWEL_TIER_NAME_BY_RANK[idx]}`;
@@ -107,7 +107,7 @@ export function removeJewelFromInventory(inv: JewelInventory, key: JewelKey, ran
   return next;
 }
 
-// SpecRef: 2.5.7 | Jewel (結晶) | Item Type → Available Jewel
+// SpecRef: 3.1.7 | Jewel (結晶) | Item Type → Available Jewel
 export function isJewelAllowedForCategory(category: ItemCategory, key: JewelKey): boolean {
   return JEWELS_BY_ITEM_CATEGORY[category].includes(key);
 }
@@ -116,7 +116,7 @@ export function createStarterJewelInventory(): JewelInventory {
   return {};
 }
 
-// SpecRef: 2.5.7 | Jewel (結晶) | Display
+// SpecRef: 3.1.7 | Jewel (結晶) | Display
 export function jewelLabel(attachment: JewelAttachment | null | undefined): string {
   if (!attachment) return '';
   return `[${JEWEL_DEFS[attachment.key].short}${attachment.rank}]`;

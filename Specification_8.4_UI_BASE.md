@@ -61,7 +61,7 @@
 
 
 **Price (per item, by tier)**
-- see `2.5.6 Item selling price` @Specification_2.5_ITEM_DATA.md
+- see `3.1.6 Item selling price` @Specification_3.1_ITEM.md
 
 - Refresh timing
   - Shop lineup refreshes every 8 hours at **02:00, 10:00, 18:00** (local time).

@@ -3,7 +3,7 @@
 ### 3.2 ITEM_MASTER_DATA
 
 ### 3.2.1 Item drop
-- 2.1 Item drop list
+- 3.2.1 Item drop list
 
 | `x.item_tier` | `x.rarity` | `x.source_enemy_type` | `x.item_type` | `x.name` |
 |---|---|---|---|---|
