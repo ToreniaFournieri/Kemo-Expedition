@@ -18,7 +18,7 @@ import { getBaseMultiplier } from './baseMultiplier';
 import { drawFromBag, createPhysicalThreatBag, createMagicalThreatBag, getBagTicketTotal } from './bags';
 import { getDeityKey } from './deity';
 import { resolveMagicProfile } from './magic';
-import { getAbilityName } from './characterComputation';
+import { getAbilityDescription, getAbilityName } from './characterComputation';
 
 interface BattleContext {
   partyStats: ComputedPartyStats;
@@ -1075,6 +1075,37 @@ function formatAbilityLabel(ability: AbilityLike): string {
   return `${getAbilityName(ability.id, ability.level)}アビリティ`;
 }
 
+function grantCharacterAbility(charStats: ComputedCharacterStats, ability: AbilityLike): void {
+  const existingAbility = charStats.abilities.find((ownedAbility) => ownedAbility.id === ability.id);
+
+  if (existingAbility) {
+    existingAbility.level = Math.max(existingAbility.level, ability.level);
+    existingAbility.name = getAbilityName(existingAbility.id, existingAbility.level);
+    existingAbility.description = getAbilityDescription(existingAbility.id, existingAbility.level);
+    return;
+  }
+
+  charStats.abilities.push({
+    id: ability.id,
+    level: ability.level,
+    name: getAbilityName(ability.id, ability.level),
+    description: getAbilityDescription(ability.id, ability.level),
+  });
+}
+
+function grantEnemyAbility(enemy: EnemyDef, ability: AbilityLike): void {
+  const existingAbility = enemy.abilities.find((ownedAbility) => ownedAbility.id === ability.id);
+
+  if (existingAbility) {
+    existingAbility.level = Math.max(existingAbility.level, ability.level);
+    return;
+  }
+
+  enemy.abilities.push({
+    id: ability.id,
+    level: ability.level,
+  });
+}
 
 function getAbilityLevelFromList(abilities: AbilityLike[], abilityId: AbilityId): number {
   return abilities.find((ability) => ability.id === abilityId)?.level ?? 0;
@@ -1313,6 +1344,52 @@ export function executeBattle(
         phase: 'long',
         actor: 'effect',
         action: `${enemy.name} が ${targetName} の ${formatAbilityLabel(selectedTargetAbility)} を忘却の彼方に消し去った！`,
+      });
+    }
+  }
+
+  const mimicOwners = characterStats
+    .filter((stats) => getAbilityLevel(stats, 'mimic') >= 1)
+    .map((stats) => ({
+      name: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+      stats,
+    }));
+  const enemyHasMimic = getEnemyAbilityLevel(enemy, 'mimic') >= 1;
+
+  for (const owner of mimicOwners) {
+    const enemyValidAbilities = enemy.abilities.filter(
+      (ability) => ability.level > 0 && ability.id !== 'mimic' && ability.id !== 'oblivion',
+    );
+    if (enemyValidAbilities.length === 0) {
+      continue;
+    }
+
+    const selectedEnemyAbility = enemyValidAbilities[Math.floor(Math.random() * enemyValidAbilities.length)];
+    grantCharacterAbility(owner.stats, selectedEnemyAbility);
+
+    log.push({
+      phase: 'long',
+      actor: 'effect',
+      action: `${owner.name} が ${enemy.name} の ${formatAbilityLabel(selectedEnemyAbility)} を模倣した！`,
+    });
+  }
+
+  if (enemyHasMimic && characterStats.length > 0) {
+    const targetIndex = Math.floor(Math.random() * characterStats.length);
+    const target = characterStats[targetIndex];
+    const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? '味方';
+    const targetValidAbilities = target.abilities.filter(
+      (ability) => ability.level > 0 && ability.id !== 'mimic' && ability.id !== 'oblivion',
+    );
+
+    if (targetValidAbilities.length > 0) {
+      const selectedTargetAbility = targetValidAbilities[Math.floor(Math.random() * targetValidAbilities.length)];
+      grantEnemyAbility(enemy, selectedTargetAbility);
+
+      log.push({
+        phase: 'long',
+        actor: 'effect',
+        action: `${enemy.name} が ${targetName} の ${formatAbilityLabel(selectedTargetAbility)} を模倣した！`,
       });
     }
   }
