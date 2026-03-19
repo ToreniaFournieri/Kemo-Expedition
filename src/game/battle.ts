@@ -1477,6 +1477,11 @@ function buildSoulReapAction(actorName: string, targetName: string): string {
     .replace(/\{target\}/g, targetName);
 }
 
+function getRandomPartyMemberName(party: Party): string {
+  if (party.characters.length === 0) return party.name;
+  return pickRandomEntry(party.characters).name;
+}
+
 function getSoulReapNote(level: number): string {
   return `(HP ${getSoulReapThresholdPercent(level)}％未満で即死)`;
 }
@@ -2391,7 +2396,7 @@ export function executeBattle(
           phase,
           initiativeRoll: 0,
           actor: 'triggered',
-          action: buildSoulReapAction(enemy.name, party.name),
+          action: buildSoulReapAction(enemy.name, getRandomPartyMemberName(party)),
           note: getSoulReapNote(enemySoulReapLevel),
         });
       }
