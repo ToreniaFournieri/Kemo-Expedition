@@ -161,16 +161,16 @@ const REGENERATION_LOGS = [
 ] as const;
 
 const SELF_DESTRUCT_LOGS = [
-  '{actor} は自爆した！',
-  '{actor} は体を爆発させた！',
-  '{actor} は捨て身の爆発を起こした！',
-  '{actor} は己を犠牲に爆ぜた！',
-  '{actor} は最期の力を解き放ち、爆発した！',
-  '{actor} は崩壊し、周囲を巻き込んだ！',
-  '{actor} は全てを投げ打ち、爆発した！',
-  '{actor} は暴発し、辺りを吹き飛ばした！',
-  '{actor} は断末魔と共に爆ぜた！',
-  '{actor} は破裂し、周囲を巻き込んだ！',
+  '{actor} は自爆し、{target} を巻き込んだ！',
+  '{actor} は体を爆発させ、{target} にダメージを与えた！',
+  '{actor} は捨て身の爆発を起こし、{target} を吹き飛ばした！',
+  '{actor} は己を犠牲に爆ぜ、{target} を巻き込んだ！',
+  '{actor} は最期の力を解き放ち、{target} を巻き込んで爆発した！',
+  '{actor} は崩壊し、{target} を巻き込んだ！',
+  '{actor} は全てを投げ打ち、{target} を巻き込んで爆発した！',
+  '{actor} は暴発し、{target} を吹き飛ばした！',
+  '{actor} は断末魔と共に爆ぜ、{target} を巻き込んだ！',
+  '{actor} は破裂し、{target} を巻き込んだ！',
 ] as const;
 const DECOMPOSE_LOGS = [
   '{actor} は {target} の防御を崩した！',
@@ -1584,8 +1584,10 @@ function buildRegenerationAction(actorName: string): string {
   return pickRandomEntry(REGENERATION_LOGS).replace(/\{actor\}/g, actorName);
 }
 
-function buildSelfDestructAction(actorName: string): string {
-  return pickRandomEntry(SELF_DESTRUCT_LOGS).replace(/\{actor\}/g, actorName);
+function buildSelfDestructAction(actorName: string, targetName: string): string {
+  return pickRandomEntry(SELF_DESTRUCT_LOGS)
+    .replace(/\{actor\}/g, actorName)
+    .replace(/\{target\}/g, targetName);
 }
 
 function buildDecomposeAction(actorName: string, targetName: string): string {
@@ -2688,6 +2690,9 @@ export function executeBattle(
           ?? characterStats[Math.floor(Math.random() * characterStats.length)]
           ?? null;
 
+        const targetName = target
+          ? party.characters.find((char) => char.id === target.characterId)?.name ?? '味方'
+          : '味方';
         const targetDefenseAmplifier = target
           ? Math.max(0.01, target.physicalDefenseAmplifier + target.deityDefenseAmplifierBonus.physical)
           : 1.0;
@@ -2711,7 +2716,7 @@ export function executeBattle(
           phase,
           initiativeRoll: timing,
           actor: 'triggered',
-          action: buildSelfDestructAction(enemy.name),
+          action: buildSelfDestructAction(enemy.name, targetName),
           damage: damage > 0 ? damage : undefined,
           damageTarget: 'party',
         });
@@ -2748,7 +2753,7 @@ export function executeBattle(
           initiativeRoll: timing,
           actor: 'triggered',
           characterId: entry.stats.characterId,
-          action: buildSelfDestructAction(entry.ownerName),
+          action: buildSelfDestructAction(entry.ownerName, enemy.name),
           damage: damage > 0 ? damage : undefined,
           damageTarget: 'enemy',
         });
