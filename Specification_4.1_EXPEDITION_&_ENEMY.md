@@ -33,21 +33,6 @@
   - `x.exp_def_mult`(n)= (1.11 - max(0, 0.00058*(n-25)) - max(0, 0.00004*(n-49)))^n
   - `x.exp_def_amp_mult`(n)= 1.0
 
-- `x.gods_mult`
-  - If enemy is god, apllpy them. 
-
-- Normal mode
-
-| `x.god_HP_mult` | `x.god_atk_mult` | `x.god_NoA_mult` | `x.god_atk_amp_mult` | `x.god_def_mult` | `x.god_def_amp_mult` |
-|-----|-----|-----|----|----|----|
-| x1.5 | x1.1 | x1.3 | x1.2 | x1.1 | x1.0 |
-
-- `debug mode for god battle`
-
-| `x.god_HP_mult` | `x.god_atk_mult` | `x.god_NoA_mult` | `x.god_atk_amp_mult` | `x.god_def_mult` | `x.god_def_amp_mult` |
-|-----|-----|-----|----|----|----|
-| x0.3 | x0.3 | x0.5 | x0.4 | x0.3 | x1.0 |
-
 - If `m.luna`, add +5 `x.enemy_level` for all enemy 
 
 - **Enemy entity distribution** for each `x.expediton`
@@ -145,12 +130,12 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 
 **Enemy status mutipliers**
-- `d.HP` : master value x `x.exp_HP_mult` x `x.floor_HP_mult` x `x.god_HP_mult` 
-- `f.attack` :  master value x `x.exp_atk_mult` x `x.floor_atk_mult` x `x.god_atk_mult` 
-- `f.NoA` :  master value x `x.exp_NoA_mult` x `x.floor_NoA_mult` x `x.god_NoA_mult` 
-- `f.offense_amplifier` :  master value x `x.exp_atk_amp_mult` x `x.floor_atk_amp_mult` x `x.god_atk_amp_mult`
-- `f.defense` :  master value x `x.exp_def_mult`  x `x.floor_def_mult` x `x.god_def_mult` 
-- `f.defense_amplifier` : 1.0 x `x.exp_def_amp_mult` x `x.floor_def_amp_mult` x `x.god_def_amp_mult`x `x  //for physical and magical defense
+- `d.HP` : master value x `x.exp_HP_mult` x `x.floor_HP_mult` 
+- `f.attack` :  master value x `x.exp_atk_mult` x `x.floor_atk_mult`
+- `f.NoA` :  master value x `x.exp_NoA_mult` x `x.floor_NoA_mult` 
+- `f.offense_amplifier` :  master value x `x.exp_atk_amp_mult` x `x.floor_atk_amp_mult`
+- `f.defense` :  master value x `x.exp_def_mult`  x `x.floor_def_mult`
+- `f.defense_amplifier` : 1.0 x `x.exp_def_amp_mult` x `x.floor_def_amp_mult`  //for physical and magical defense
 - `f.elemental_offense_attribute` :  not scale
 - `f.elemental_resistance_attribute` : not scale
 - `f.penet_multiplier`: not scale
