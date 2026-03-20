@@ -94,8 +94,6 @@
   
 | `a.` ability | 表示 | 説明 | triger |
 |----|----|----|----|
-| `a.bulwark`1 | 壁1 | 真後ろの味方への遠距離攻撃を肩代わりする | preemptive |
-| `a.bulwark`2 | 壁2 | 真後ろの味方への遠距離/近距離攻撃を肩代わりする | preemptive |
 | `a.resonance`1| 共鳴1 | 魔法攻撃 1回毎に、全ヒットのダメージが +4% 増加する | preemptive |
 | `a.resonance`2 | 共鳴2 | 魔法攻撃 1回毎に、全ヒットのダメージが +7% 増加する | preemptive |
 | `a.resonance`3 | 共鳴3 | 魔法攻撃 1回毎に、全ヒットのダメージが +9% 増加する | preemptive |
@@ -117,6 +115,8 @@
 | `a.no-offense`1 | 受身1 | 通常行動をしなくなる(反撃などは行う) | preemptive |
 | `a.swarm`1 | 群れ1 | 自身のHPが減ると攻撃倍率・防御倍率減(HP1%につき0.5%減少) | preemptive |
 | `a.flying`1 | 飛行1 | 相手の近接攻撃回数が1/4になる | preemptive |
+| `a.bulwark`1 | 壁1 | 真後ろの味方への遠距離攻撃を肩代わりする | interrupt |
+| `a.bulwark`2 | 壁2 | 真後ろの味方への遠距離/近距離攻撃を肩代わりする | interrupt |
 | `a.shock`1 | 感電1 | 相手の最初の通常近接攻撃に対して発動。相手の近接攻撃が1回目ヒットした段階で攻撃をやめさせる | interrupt |
 | `a.re-attack`1 | 連撃1 | 攻撃時に 追加攻撃を行う(攻撃回数は半減) | on-strike |
 | `a.re-attack`2 | 連撃2 | 攻撃時に 追加攻撃を行う(攻撃回数は0.7倍) | on-strike |
