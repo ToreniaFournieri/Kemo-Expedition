@@ -53,7 +53,8 @@
 
   - In the Glossary tab, abilities should be displayed in a single line.
     - Example: "居合斬り1 物理ダメージを xN倍する(攻撃回数が半減する) (Lv1: x1.6, Lv2: x1.8, Lv3: x2.0 )"
-      - "居合斬り1" part is bold text.
+      - "居合斬り1" part is bold black text.
+      - "物理ダメージを xN倍する(攻撃回数が半減する)" part is black text
       - "(Lv1: x1.6, Lv2: x1.8, Lv3: x2.0)" part is gray text
   - In Help floating bubble text, it displays like
     - Example: "居合斬り1 物理ダメージをx1.6倍する(攻撃回数が半減する)"
