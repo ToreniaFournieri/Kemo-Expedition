@@ -138,6 +138,16 @@ const PARTY_CYCLE_STATE_LABELS: Record<PartyCycleState, string> = {
   reactivate: '復帰中',
 };
 
+const BONUS_ABILITY_PHASE_DISPLAY_LABELS: Record<'LONG' | 'MID' | 'CLOSE', string> = {
+  LONG: '遠距離',
+  MID: '魔法',
+  CLOSE: '近接',
+};
+
+function formatBonusAbilityPhaseDisplay(value: string): string {
+  return value.replace(/LONG|MID|CLOSE/g, (phase) => BONUS_ABILITY_PHASE_DISPLAY_LABELS[phase as 'LONG' | 'MID' | 'CLOSE']);
+}
+
 const LEGACY_PARTY_CYCLE_STATE_MAP: Record<string, PartyCycleState> = {
   rest: 'rest',
   sell: 'sell',
@@ -8683,7 +8693,7 @@ function SettingTab({
                                     <span className="font-semibold text-gray-900">{displayLabel}</span>
                                     <span className="text-gray-900"> {entry.description}</span>
                                     {entry.levelScale.length > 0 && (
-                                      <span className="text-gray-500"> ({entry.levelScale.join(', ')})</span>
+                                      <span className="text-gray-500"> ({entry.levelScale.map(formatBonusAbilityPhaseDisplay).join(', ')})</span>
                                     )}
                                   </div>
                                 </div>
