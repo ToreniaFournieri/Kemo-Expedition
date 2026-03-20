@@ -120,34 +120,34 @@
 | `a.ambush`4 | 待ち伏せ4 | 自身の通常行動時点でいずれの相手もまだこの戦闘中に行動していなかった場合、与ダメージ1.65倍 | preemptive |
 | `a.ambush`5 | 待ち伏せ5 | 自身の通常行動時点でいずれの相手もまだこの戦闘中に行動していなかった場合、与ダメージ1.68倍 | preemptive |
 | `a.shock`1 | 感電1 | 相手の最初の通常近接攻撃に対して発動。相手の近接攻撃が1回目ヒットした段階で攻撃をやめさせる | interrupt |
-| `a.re-attack`1 | 連撃1 | 攻撃時に 追加攻撃を行う(攻撃回数は半減) | additional-move |
-| `a.re-attack`2 | 連撃2 | 攻撃時に 追加攻撃を行う(攻撃回数は0.7倍) | additional-move |
-| `a.re-attack`3 | 連撃3 | 攻撃時に 追加攻撃を行う(攻撃回数は半減しない) | additional-move |
-| `a.corrode`1 | 腐食1 | 通常近接攻撃が3回以上命中した相手に対して、攻撃倍率x6/7 | additional-move |
-| `a.corrode`2 | 腐食2 | 通常近接攻撃が3回以上命中した相手に対して、攻撃倍率x5/7 | additional-move |
-| `a.corrode`3 | 腐食3 | 通常近接攻撃が3回以上命中した相手に対して、攻撃倍率x4/7 | additional-move |
-| `a.corrode`4 | 腐食4 | 通常近接攻撃が3回以上命中した相手に対して、攻撃倍率x3/7 | additional-move |
-| `a.corrode`5 | 腐食5 | 通常近接攻撃が3回以上命中した相手に対して、攻撃倍率x2/7 | additional-move |
-| `a.life-drain`1 | 吸血1 | 通常近接攻撃で相手に与えたダメージの1/10を回復 | additional-move |
-| `a.life-drain`2 | 吸血2 | 通常近接攻撃で相手に与えたダメージの3/10を回復 | additional-move |
-| `a.life-drain`3 | 吸血3 | 通常近接攻撃で相手に与えたダメージの5/10を回復 | additional-move |
-| `a.life-drain`4 | 吸血4 | 通常近接攻撃で相手に与えたダメージの7/10を回復 | additional-move |
-| `a.life-drain`5 | 吸血5 | 通常近接攻撃で相手に与えたダメージを回復 | additional-move |
-| `a.death-touch`1 | 接死1 | 通常近接攻撃の命中回数 x 2/256の確率で即死 | additional-move |
-| `a.death-touch`2 | 接死2 | 通常近接攻撃の命中回数 x 3/256の確率で即死 | additional-move |
-| `a.death-touch`3 | 接死3 | 通常近接攻撃の命中回数 x 4/256の確率で即死 | additional-move |
-| `a.death-touch`4 | 接死4 | 通常近接攻撃の命中回数 x 5/256の確率で即死 | additional-move |
-| `a.death-touch`5 | 接死5 | 通常近接攻撃の命中回数 x 6/256の確率で即死 | additional-move |
-| `a.burn`1 | 火傷1 | 相手の通常近接攻撃の命中した回数 x 0.5%のダメージを相手に与える | additional-move |
-| `a.burn`2 | 火傷2 | 相手の通常近接攻撃の命中した回数 x 0.9%のダメージを相手に与える | additional-move |
-| `a.burn`3 | 火傷3 | 相手の通常近接攻撃の命中した回数 x 1.2%のダメージを相手に与える | additional-move |
-| `a.burn`4 | 火傷4 | 相手の通常近接攻撃の命中した回数 x 1.4%のダメージを相手に与える | additional-move |
-| `a.burn`5 | 火傷5 | 相手の通常近接攻撃の命中した回数 x 1.5%のダメージを相手に与える | additional-move |
-| `a.bind`1 | 拘束1 | 近接攻撃の命中回数 x 2/64の確率で相手の行動を封じる | additional-move |
-| `a.bind`2 | 拘束2 | 近接攻撃の命中回数 x 3/64の確率で相手の行動を封じる | additional-move |
-| `a.bind`3 | 拘束3 | 近接攻撃の命中回数 x 4/64の確率で相手の行動を封じる | additional-move |
-| `a.bind`4 | 拘束4 | 近接攻撃の命中回数 x 5/64の確率で相手の行動を封じる | additional-move |
-| `a.bind`5 | 拘束5 | 近接攻撃の命中回数 x 6/64の確率で相手の行動を封じる | additional-move |
+| `a.re-attack`1 | 連撃1 | 攻撃時に 追加攻撃を行う(攻撃回数は半減) | on-strike |
+| `a.re-attack`2 | 連撃2 | 攻撃時に 追加攻撃を行う(攻撃回数は0.7倍) | on-strike |
+| `a.re-attack`3 | 連撃3 | 攻撃時に 追加攻撃を行う(攻撃回数は半減しない) | on-strike |
+| `a.corrode`1 | 腐食1 | 通常近接攻撃が3回以上命中した相手に対して、攻撃倍率x6/7 | on-strike |
+| `a.corrode`2 | 腐食2 | 通常近接攻撃が3回以上命中した相手に対して、攻撃倍率x5/7 | on-strike |
+| `a.corrode`3 | 腐食3 | 通常近接攻撃が3回以上命中した相手に対して、攻撃倍率x4/7 | on-strike |
+| `a.corrode`4 | 腐食4 | 通常近接攻撃が3回以上命中した相手に対して、攻撃倍率x3/7 | on-strike |
+| `a.corrode`5 | 腐食5 | 通常近接攻撃が3回以上命中した相手に対して、攻撃倍率x2/7 | on-strike |
+| `a.life-drain`1 | 吸血1 | 通常近接攻撃で相手に与えたダメージの1/10を回復 | on-strike |
+| `a.life-drain`2 | 吸血2 | 通常近接攻撃で相手に与えたダメージの3/10を回復 | on-strike |
+| `a.life-drain`3 | 吸血3 | 通常近接攻撃で相手に与えたダメージの5/10を回復 | on-strike |
+| `a.life-drain`4 | 吸血4 | 通常近接攻撃で相手に与えたダメージの7/10を回復 | on-strike |
+| `a.life-drain`5 | 吸血5 | 通常近接攻撃で相手に与えたダメージを回復 | on-strike |
+| `a.death-touch`1 | 接死1 | 通常近接攻撃の命中回数 x 2/256の確率で即死 | on-strike |
+| `a.death-touch`2 | 接死2 | 通常近接攻撃の命中回数 x 3/256の確率で即死 | on-strike |
+| `a.death-touch`3 | 接死3 | 通常近接攻撃の命中回数 x 4/256の確率で即死 | on-strike |
+| `a.death-touch`4 | 接死4 | 通常近接攻撃の命中回数 x 5/256の確率で即死 | on-strike |
+| `a.death-touch`5 | 接死5 | 通常近接攻撃の命中回数 x 6/256の確率で即死 | on-strike |
+| `a.burn`1 | 火傷1 | 相手の通常近接攻撃の命中した回数 x 0.5%のダメージを相手に与える | on-strike |
+| `a.burn`2 | 火傷2 | 相手の通常近接攻撃の命中した回数 x 0.9%のダメージを相手に与える | on-strike |
+| `a.burn`3 | 火傷3 | 相手の通常近接攻撃の命中した回数 x 1.2%のダメージを相手に与える | on-strike |
+| `a.burn`4 | 火傷4 | 相手の通常近接攻撃の命中した回数 x 1.4%のダメージを相手に与える | on-strike |
+| `a.burn`5 | 火傷5 | 相手の通常近接攻撃の命中した回数 x 1.5%のダメージを相手に与える | on-strike |
+| `a.bind`1 | 拘束1 | 近接攻撃の命中回数 x 2/64の確率で相手の行動を封じる | on-strike |
+| `a.bind`2 | 拘束2 | 近接攻撃の命中回数 x 3/64の確率で相手の行動を封じる | on-strike |
+| `a.bind`3 | 拘束3 | 近接攻撃の命中回数 x 4/64の確率で相手の行動を封じる | on-strike |
+| `a.bind`4 | 拘束4 | 近接攻撃の命中回数 x 5/64の確率で相手の行動を封じる | on-strike |
+| `a.bind`5 | 拘束5 | 近接攻撃の命中回数 x 6/64の確率で相手の行動を封じる | on-strike |
 | `a.counter`1 | 反撃1 | 敵の近距離攻撃を受けたとき反撃する(攻撃回数は半減) | on-receive　|
 | `a.counter`2 | 反撃2 | 敵の近距離攻撃を受けたとき反撃する(攻撃回数は半減しない) | on-receive |
 | `a.counter`3 | 反撃3 | 敵の近距離攻撃を受けたとき反撃する(攻撃回数は2倍) | on-receive |
