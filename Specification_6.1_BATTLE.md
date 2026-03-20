@@ -261,7 +261,8 @@
   - x `f.momentum_amplifier`
   - x `f.mutual_amplifier`
   - x opponent.`f.swarm.amplifier`
-  - x actor.`f.swarm.amplifier` )
+  - x actor.`f.swarm.amplifier`
+  - )
 
 - `f.rage_amplifier`:
   - If actor has `a.rage`1, return min(2.0, 1.0 + 0.5 x (1 - (actor.current_HP / actor.max_HP)))
