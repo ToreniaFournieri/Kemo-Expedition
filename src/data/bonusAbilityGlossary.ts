@@ -31,7 +31,7 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'rage', label: '闘志', description: '受けたダメージ1%につき、物理/魔法攻撃倍率が+N%増加する', levelScale: ['Lv1: +0.5%', 'Lv2: +0.6%'], subcategory: 'reactive' },
   { abilityId: 'momentum', label: '気勢', description: '物理/魔法攻撃倍率がx1.25倍になり、受けたダメージ1%につき-N%減少する。収益の一部を着服する', levelScale: ['Lv1: -0.5%', 'Lv2: -0.4%'], subcategory: 'reactive' },
   { abilityId: 'no_offense', label: '受身', description: '通常行動を行わなくなる(反撃などは行う)', levelScale: [], subcategory: 'reactive' },
-  { abilityId: 'swarm', label: '群れ', description: 'HP減少に応じて攻撃倍率・防御倍率がN%減少する', levelScale: ['Lv1: HP1%につき-0.5%'], subcategory: 'reactive' },
+  { abilityId: 'swarm', label: '群れ', description: '失ったHP割合に応じて、物理与ダメージがN%低下し、物理被ダメージがN%増加する', levelScale: ['Lv1: 失ったHP1%につき0.5%'], subcategory: 'reactive' },
   { abilityId: 'stealth', label: '隠れ蓑', description: 'HPがN%未満のとき、自身へのダメージをすべて回避する', levelScale: ['Lv1: 24%', 'Lv2: 29%'], subcategory: 'reactive' },
   { abilityId: 'illusion', label: '幻化', description: '最初の遠距離攻撃を無効化する(対象範囲:N)', levelScale: ['Lv1: 自身', 'Lv2: パーティー全体'], subcategory: 'reactive' },
   { abilityId: 'flying', label: '飛行', description: '相手の近接攻撃回数がxN倍になる', levelScale: ['Lv1: x1/4'], subcategory: 'reactive' },
