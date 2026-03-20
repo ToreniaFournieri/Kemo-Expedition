@@ -23,7 +23,7 @@ import {
 import { GLOSSARY_SECTIONS } from '../data/glossary';
 import { getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
-import { applyEnemyEncounterScaling } from '../game/enemyScaling';
+import { getEncounterEnemyWithScaling } from '../game/enemyScaling';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
 import { DEITY_OPTIONS, getDeityEffectDescription, getDeityKey, getDeityRank, getNextRankDonationRequirement, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { getXpToNextLevel } from '../game/partyLevel';
@@ -8395,7 +8395,7 @@ function SettingTab({
       tier: effectiveTier,
       enemyMultipliers: getEffectiveEnemyMultipliers(dungeon, gameMode === 'm.luna'),
     };
-    return applyEnemyEncounterScaling(enemy, effectiveDungeon, floorNumber, roomType, { isLunaMode: gameMode === 'm.luna' });
+    return getEncounterEnemyWithScaling(enemy, effectiveDungeon, floorNumber, roomType, { isLunaMode: gameMode === 'm.luna' });
   };
 
   const getGodRuntimeEnemy = (god: (typeof GOD_ENEMY_PROFILES)[number]): EnemyDef | null =>

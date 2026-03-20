@@ -110,3 +110,21 @@ export function applyEnemyEncounterScaling(
     experience: enemy.experience,
   };
 }
+
+function isPreScaledEncounterEnemy(enemy: EnemyDef): boolean {
+  return enemy.poolId === 99 || enemy.id === 9901;
+}
+
+export function getEncounterEnemyWithScaling(
+  enemy: EnemyDef,
+  dungeon: Dungeon,
+  floorNumber: number,
+  roomType: RoomType,
+  options: EnemyScalingOptions = {},
+): EnemyDef {
+  if (isPreScaledEncounterEnemy(enemy)) {
+    return enemy;
+  }
+
+  return applyEnemyEncounterScaling(enemy, dungeon, floorNumber, roomType, options);
+}
