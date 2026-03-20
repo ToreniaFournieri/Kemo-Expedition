@@ -110,7 +110,7 @@
 
 
 - Timed ability(時限アビリティ):
-  - Display transaltion:
+  - Phase display translation:
     - LONG -> 遠距離
     - MID ->魔法
     - CLOSE ->近接
