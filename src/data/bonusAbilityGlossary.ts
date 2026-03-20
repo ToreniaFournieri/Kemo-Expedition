@@ -1,0 +1,100 @@
+import type { AbilityId } from '../types';
+
+export type BonusAbilityGlossarySubcategoryId = 'passive' | 'expedition' | 'reactive' | 'timed';
+
+export type BonusAbilityGlossaryEntry = {
+  abilityId: AbilityId;
+  label: string;
+  description: string;
+  levelScale: string[];
+  subcategory: BonusAbilityGlossarySubcategoryId;
+};
+
+export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
+  { abilityId: 'iaigiri', label: '居合斬り', description: '物理ダメージを xN倍する(攻撃回数が半減する)', levelScale: ['Lv1: x1.6', 'Lv2: x1.8', 'Lv3: x2.0'], subcategory: 'passive' },
+  { abilityId: 'hunter', label: '狩人', description: '列による命中率減衰を軽減する', levelScale: ['Lv1: 15%→10%', 'Lv2: 15%→7%', 'Lv3: 15%→5%'], subcategory: 'passive' },
+  { abilityId: 'seeker', label: '探究者', description: '魔導書の効果を増加する(レベル毎に+N%)', levelScale: ['Lv1: +0.25%', 'Lv2: +0.35%'], subcategory: 'passive' },
+  { abilityId: 'cyborgization', label: 'サイボーグ化', description: '命中が増加し、回避が減少する', levelScale: ['Lv1: 命中+30・回避-20', 'Lv2: 命中+40・回避-15'], subcategory: 'passive' },
+  { abilityId: 'composure', label: '平静', description: '命中率がN%加算される', levelScale: ['Lv1: +10%', 'Lv2: +13%'], subcategory: 'passive' },
+  { abilityId: 'focus', label: '集中', description: '命中ボーナスの効果がxN倍になる', levelScale: ['Lv1: x1.2', 'Lv2: x1.3'], subcategory: 'passive' },
+  { abilityId: 'colossal', label: '巨人', description: '自身の防御力が2倍になり、物理ダメージ補正がx2.0になる', levelScale: [], subcategory: 'passive' },
+  { abilityId: 'upgrade_all_abilities', label: '他のアビリティ強化', description: '自身の他のアビリティをN段階強化する(上限レベル5)', levelScale: ['Lv1: +1', 'Lv2: +2', 'Lv3: +3', 'Lv4: +4'], subcategory: 'passive' },
+
+  { abilityId: 'tithe', label: '十分の一税', description: '遠征利益の+N%を寄付額に上乗せする', levelScale: ['Lv1: +10%', 'Lv2: +15%'], subcategory: 'expedition' },
+  { abilityId: 'squander', label: '浪費', description: '宴会で消費するゴールドがxN倍になる', levelScale: ['Lv1: x1.3', 'Lv2: x1.5'], subcategory: 'expedition' },
+  { abilityId: 'prophecy', label: '予言', description: '報酬抽選内容を可視化し、N段階の操作が可能になる', levelScale: ['Lv1: 可視化', 'Lv2: 可視化＋リセット'], subcategory: 'expedition' },
+  { abilityId: 'cunning', label: '狡猾', description: '自動売却額がxN倍になる', levelScale: ['Lv1: x1.2', 'Lv2: x1.3'], subcategory: 'expedition' },
+  { abilityId: 'peddler', label: '行商', description: '移動時間がxN倍になる', levelScale: ['Lv1: x2/3', 'Lv2: x3/5'], subcategory: 'expedition' },
+
+  { abilityId: 'resonance', label: '共鳴', description: '魔法攻撃を行うたびに、全ヒットのダメージが+N%増加する', levelScale: ['Lv1: +4%', 'Lv2: +7%', 'Lv3: +9%', 'Lv4: +11%', 'Lv5: +12%'], subcategory: 'reactive' },
+  { abilityId: 'ambush', label: '待ち伏せ', description: '自身の通常行動時点で相手が未行動の場合、与ダメージがxN倍になる', levelScale: ['Lv1: x1.3', 'Lv2: x1.5', 'Lv3: x1.6', 'Lv4: x1.65', 'Lv5: x1.68'], subcategory: 'reactive' },
+  { abilityId: 'rage', label: '闘志', description: '受けたダメージ1%につき、物理/魔法攻撃倍率が+N%増加する', levelScale: ['Lv1: +0.5%', 'Lv2: +0.6%'], subcategory: 'reactive' },
+  { abilityId: 'momentum', label: '気勢', description: '物理/魔法攻撃倍率がx1.25倍になり、受けたダメージ1%につき-N%減少する。収益の一部を着服する', levelScale: ['Lv1: -0.5%', 'Lv2: -0.4%'], subcategory: 'reactive' },
+  { abilityId: 'no_offense', label: '受身', description: '通常行動を行わなくなる(反撃などは行う)', levelScale: [], subcategory: 'reactive' },
+  { abilityId: 'swarm', label: '群れ', description: 'HP減少に応じて攻撃倍率・防御倍率がN%減少する', levelScale: ['Lv1: HP1%につき-0.5%'], subcategory: 'reactive' },
+  { abilityId: 'stealth', label: '隠れ蓑', description: 'HPがN%未満のとき、自身へのダメージをすべて回避する', levelScale: ['Lv1: 24%', 'Lv2: 29%'], subcategory: 'reactive' },
+  { abilityId: 'illusion', label: '幻化', description: '最初の遠距離攻撃を無効化する(対象範囲:N)', levelScale: ['Lv1: 自身', 'Lv2: パーティー全体'], subcategory: 'reactive' },
+  { abilityId: 'flying', label: '飛行', description: '相手の近接攻撃回数がxN倍になる', levelScale: ['Lv1: x1/4'], subcategory: 'reactive' },
+  { abilityId: 'bulwark', label: '壁', description: '真後ろの味方への攻撃を肩代わりする(対象:N)', levelScale: ['Lv1: 遠距離', 'Lv2: 遠距離＋近距離'], subcategory: 'reactive' },
+  { abilityId: 'shock', label: '感電', description: '最初の通常近接攻撃に対して発動し、1ヒット後に攻撃を中断させる', levelScale: [], subcategory: 'reactive' },
+  { abilityId: 're_attack', label: '連撃', description: '攻撃時に追加攻撃を行う(攻撃回数がxN倍になる)', levelScale: ['Lv1: x0.5', 'Lv2: x0.7', 'Lv3: x1.0'], subcategory: 'reactive' },
+  { abilityId: 'corrode', label: '腐食', description: '通常近接攻撃が3回以上命中した相手の攻撃倍率をxN倍にする', levelScale: ['Lv1: x6/7', 'Lv2: x5/7', 'Lv3: x4/7', 'Lv4: x3/7', 'Lv5: x2/7'], subcategory: 'reactive' },
+  { abilityId: 'life_drain', label: '吸血', description: '通常近接攻撃で与えたダメージのNを回復する', levelScale: ['Lv1: 1/10', 'Lv2: 3/10', 'Lv3: 5/10', 'Lv4: 7/10', 'Lv5: 100%'], subcategory: 'reactive' },
+  { abilityId: 'death_touch', label: '接死', description: '通常近接攻撃の命中回数×Nの確率で即死させる', levelScale: ['Lv1: 2/256', 'Lv2: 3/256', 'Lv3: 4/256', 'Lv4: 5/256', 'Lv5: 6/256'], subcategory: 'reactive' },
+  { abilityId: 'burn', label: '火傷', description: '相手の近接攻撃命中回数×N%のダメージを与える', levelScale: ['Lv1: 0.5%', 'Lv2: 0.9%', 'Lv3: 1.2%', 'Lv4: 1.4%', 'Lv5: 1.5%'], subcategory: 'reactive' },
+  { abilityId: 'bind', label: '拘束', description: '近接攻撃の命中回数×Nの確率で行動不能にする', levelScale: ['Lv1: 2/64', 'Lv2: 3/64', 'Lv3: 4/64', 'Lv4: 5/64', 'Lv5: 6/64'], subcategory: 'reactive' },
+  { abilityId: 'counter', label: '反撃', description: '近距離攻撃を受けたとき反撃する(攻撃回数がxN倍になる)', levelScale: ['Lv1: x0.5', 'Lv2: x1.0', 'Lv3: x2.0'], subcategory: 'reactive' },
+  { abilityId: 'magical_counter', label: '魔法反撃', description: '魔法攻撃に対して反撃する(攻撃回数がxN倍になる)', levelScale: ['Lv1: x0.5', 'Lv2: x1.0'], subcategory: 'reactive' },
+  { abilityId: 'resurrect', label: '再起', description: '致命ダメージを受けた際、HPをN残して耐える(1回のみ)', levelScale: ['Lv1: 1', 'Lv2: 1%'], subcategory: 'reactive' },
+  { abilityId: 'reanimate', label: '即時蘇生', description: 'HPが0になったとき、HP N%で復活する(戦闘中1回のみ)', levelScale: ['Lv1: 20%', 'Lv2: 26%', 'Lv3: 31%', 'Lv4: 35%', 'Lv5: 38%'], subcategory: 'reactive' },
+  { abilityId: 're_counter', label: '再反撃', description: '反撃に対して反撃する(攻撃回数がxN倍になる)', levelScale: ['Lv1: x0.5', 'Lv2: x1.0'], subcategory: 'reactive' },
+  { abilityId: 'null_counter', label: '反撃無効化', description: '反撃を無効化する(最大N回)', levelScale: ['Lv1: 1回', 'Lv2: 2回', 'Lv3: 3回'], subcategory: 'reactive' },
+  { abilityId: 'covering_fire', label: '援護射撃', description: '味方の近接攻撃が1ヒット時に遠距離攻撃で追撃する(攻撃回数がxN倍になる)', levelScale: ['Lv1: x0.5', 'Lv2: x1.0'], subcategory: 'reactive' },
+
+  { abilityId: 'oblivion', label: '忘却', description: '無作為に選んだ相手のアビリティ1つを、この戦闘中無効化する', levelScale: [], subcategory: 'timed' },
+  { abilityId: 'mimic', label: '模倣', description: '相手のアビリティ1つを無作為に指定し、その効果を発動する', levelScale: [], subcategory: 'timed' },
+  { abilityId: 'defender', label: '守護者', description: '自身より後列の味方への物理ダメージをxN倍にする', levelScale: ['Lv1: x2/3', 'Lv2: x3/5', 'Lv3: x1/2'], subcategory: 'timed' },
+  { abilityId: 'command', label: '指揮', description: '自身より後列の味方が与える物理ダメージをxN倍にする', levelScale: ['Lv1: x1.2', 'Lv2: x1.35', 'Lv3: x1.43'], subcategory: 'timed' },
+  { abilityId: 'm_barrier', label: '魔法障壁', description: '自身より後列の味方への魔法ダメージをxN倍にする', levelScale: ['Lv1: x2/3', 'Lv2: x3/5', 'Lv3: x1/2'], subcategory: 'timed' },
+  { abilityId: 'ice_absorb', label: '氷結吸収', description: '自身が受ける予定の通常攻撃の氷属性ダメージを無効化し、N吸収して回復する', levelScale: ['Lv1: 1/10', 'Lv2: 3/10', 'Lv3: 5/10', 'Lv4: 7/10', 'Lv5: 100%'], subcategory: 'timed' },
+  { abilityId: 'fire_absorb', label: '火炎吸収', description: '自身が受ける予定の通常攻撃の火属性ダメージを無効化し、N吸収して回復する', levelScale: ['Lv1: 1/10', 'Lv2: 3/10', 'Lv3: 5/10', 'Lv4: 7/10', 'Lv5: 100%'], subcategory: 'timed' },
+  { abilityId: 'thunder_absorb', label: '雷撃吸収', description: '自身が受ける予定の通常攻撃の雷属性ダメージを無効化し、N吸収して回復する', levelScale: ['Lv1: 1/10', 'Lv2: 3/10', 'Lv3: 5/10', 'Lv4: 7/10', 'Lv5: 100%'], subcategory: 'timed' },
+  { abilityId: 'magical_absorb', label: '魔法吸収', description: '自身が受ける予定の通常攻撃の魔法ダメージを無効化し、N吸収して回復する', levelScale: ['Lv1: 1/10', 'Lv2: 3/10', 'Lv3: 5/10', 'Lv4: 7/10', 'Lv5: 100%'], subcategory: 'timed' },
+  { abilityId: 'ice_null', label: '氷結無効', description: '自身が受ける予定の通常攻撃の氷属性ダメージを無効化する', levelScale: [], subcategory: 'timed' },
+  { abilityId: 'fire_null', label: '火炎無効', description: '自身が受ける予定の通常攻撃の火属性ダメージを無効化する', levelScale: [], subcategory: 'timed' },
+  { abilityId: 'thunder_null', label: '雷撃無効', description: '自身が受ける予定の通常攻撃の雷属性ダメージを無効化する', levelScale: [], subcategory: 'timed' },
+  { abilityId: 'magical_null', label: '魔法無効', description: '自身が受ける予定の通常攻撃の魔法ダメージを無効化する', levelScale: [], subcategory: 'timed' },
+  { abilityId: 'ranged_null', label: '遠距離無効', description: '自身が受ける予定の遠距離攻撃のダメージを無効化する', levelScale: [], subcategory: 'timed' },
+  { abilityId: 'melee_null', label: '近接無効', description: '自身が受ける予定の近接攻撃のダメージを無効化する', levelScale: [], subcategory: 'timed' },
+  { abilityId: 'ice_reflect', label: '氷結反射', description: '自身が受ける予定の通常攻撃の氷属性ダメージのNを反射して相手に与える(自身は残りを受ける)', levelScale: ['Lv1: 反射1/10・被弾9/10', 'Lv2: 反射3/10・被弾7/10', 'Lv3: 反射5/10・被弾5/10', 'Lv4: 反射7/10・被弾3/10', 'Lv5: 反射100%・被弾0%'], subcategory: 'timed' },
+  { abilityId: 'fire_reflect', label: '火炎反射', description: '自身が受ける予定の通常攻撃の火属性ダメージのNを反射して相手に与える(自身は残りを受ける)', levelScale: ['Lv1: 反射1/10・被弾9/10', 'Lv2: 反射3/10・被弾7/10', 'Lv3: 反射5/10・被弾5/10', 'Lv4: 反射7/10・被弾3/10', 'Lv5: 反射100%・被弾0%'], subcategory: 'timed' },
+  { abilityId: 'thunder_reflect', label: '雷撃反射', description: '自身が受ける予定の通常攻撃の雷属性ダメージのNを反射して相手に与える(自身は残りを受ける)', levelScale: ['Lv1: 反射1/10・被弾9/10', 'Lv2: 反射3/10・被弾7/10', 'Lv3: 反射5/10・被弾5/10', 'Lv4: 反射7/10・被弾3/10', 'Lv5: 反射100%・被弾0%'], subcategory: 'timed' },
+  { abilityId: 'magical_reflect', label: '魔法反射', description: '自身が受ける予定の通常攻撃の魔法ダメージのNを反射して相手に与える(自身は残りを受ける)', levelScale: ['Lv1: 反射1/10・被弾9/10', 'Lv2: 反射3/10・被弾7/10', 'Lv3: 反射5/10・被弾5/10', 'Lv4: 反射7/10・被弾3/10', 'Lv5: 反射100%・被弾0%'], subcategory: 'timed' },
+  { abilityId: 'ranged_reflect', label: '矢返し', description: '自身が受ける予定の遠距離攻撃ダメージのNを反射して相手に与える(自身は残りを受ける)', levelScale: ['Lv1: 反射1/10・被弾9/10', 'Lv2: 反射3/10・被弾7/10', 'Lv3: 反射5/10・被弾5/10', 'Lv4: 反射7/10・被弾3/10', 'Lv5: 反射100%・被弾0%'], subcategory: 'timed' },
+  { abilityId: 'melee_reflect', label: '打ち返し', description: '自身が受ける予定の近接攻撃ダメージのNを反射して相手に与える(自身は残りを受ける)', levelScale: ['Lv1: 反射1/10・被弾9/10', 'Lv2: 反射3/10・被弾7/10', 'Lv3: 反射5/10・被弾5/10', 'Lv4: 反射7/10・被弾3/10', 'Lv5: 反射100%・被弾0%'], subcategory: 'timed' },
+  { abilityId: 'deflection', label: '矢払い', description: '敵の遠距離攻撃の命中率をN%低下させる', levelScale: ['Lv1: -10%', 'Lv2: -15%'], subcategory: 'timed' },
+  { abilityId: 'mutual_magic_amplify', label: '魔法増幅', description: '双方の魔法ダメージをxN倍にする', levelScale: ['Lv1: x1.3', 'Lv2: x1.5', 'Lv3: x1.6', 'Lv4: x1.65', 'Lv5: x1.68'], subcategory: 'timed' },
+  { abilityId: 'mutual_magic_restraint', label: '魔法抑制', description: '双方の魔法ダメージをxN倍にする', levelScale: ['Lv1: x0.77', 'Lv2: x0.67', 'Lv3: x0.63', 'Lv4: x0.61', 'Lv5: x0.59'], subcategory: 'timed' },
+  { abilityId: 'mutual_physical_amplify', label: '物理増幅', description: '双方の物理ダメージをxN倍にする', levelScale: ['Lv1: x1.3', 'Lv2: x1.5', 'Lv3: x1.6', 'Lv4: x1.65', 'Lv5: x1.68'], subcategory: 'timed' },
+  { abilityId: 'mutual_physical_restraint', label: '物理抑制', description: '双方の物理ダメージをxN倍にする', levelScale: ['Lv1: x0.77', 'Lv2: x0.67', 'Lv3: x0.63', 'Lv4: x0.61', 'Lv5: x0.59'], subcategory: 'timed' },
+  { abilityId: 'magic_seal', label: '魔封', description: '最初の魔法を無力化する(相手・自身・味方を含む)', levelScale: [], subcategory: 'timed' },
+  { abilityId: 'first_strike', label: '先制攻撃', description: '行動がN段階速くなる', levelScale: ['Lv1: 速い(2~6)', 'Lv2: とても速い(3~9)', 'Lv3: 極めて速い(4~9)'], subcategory: 'timed' },
+  { abilityId: 'slow', label: '鈍足', description: '自身の行動順をN低下させる', levelScale: ['Lv1: -1'], subcategory: 'timed' },
+  { abilityId: 'frostbite', label: '凍傷', description: '相手の行動順をN低下させる', levelScale: ['Lv1: -1'], subcategory: 'timed' },
+  { abilityId: 'howl', label: '遠吠え', description: '指定タイミングで発動し、相手の次の攻撃回数をxN倍にする', levelScale: ['Lv1: LONG2・x5/7', 'Lv2: LONG2・x4/7', 'Lv3: LONG2・x3/7', 'Lv4: LONG2・x2/7', 'Lv5: LONG2・x1/7'], subcategory: 'timed' },
+  { abilityId: 'ranged_confusion', label: '遠距離混乱', description: '指定タイミングで発動し、遠距離攻撃能力を持つ未行動の相手一人をNの確率で敵対状態にする', levelScale: ['Lv1: LONG1・1/32', 'Lv2: LONG1・3/32', 'Lv3: LONG2・3/32', 'Lv4: LONG2・5/32', 'Lv5: LONG2・7/32'], subcategory: 'timed' },
+  { abilityId: 'magic_confusion', label: '魔法混乱', description: '指定タイミングで発動し、魔法攻撃能力を持つ未行動の相手一人をNの確率で敵対状態にする', levelScale: ['Lv1: MID1・1/32', 'Lv2: MID1・3/32', 'Lv3: MID2・3/32', 'Lv4: MID2・5/32', 'Lv5: MID2・7/32'], subcategory: 'timed' },
+  { abilityId: 'melee_confusion', label: '近接混乱', description: '指定タイミングで発動し、近接攻撃能力を持つ未行動の相手一人をNの確率で敵対状態にする', levelScale: ['Lv1: CLOSE1・1/32', 'Lv2: CLOSE1・3/32', 'Lv3: CLOSE2・3/32', 'Lv4: CLOSE2・5/32', 'Lv5: CLOSE2・7/32'], subcategory: 'timed' },
+  { abilityId: 'unstable_core', label: '不安定', description: '指定終了タイミングで発動し、残HPのN%の自傷ダメージを受ける', levelScale: ['Lv1: LONG0/MID0・30%', 'Lv2: LONG0/MID0・24%', 'Lv3: LONG0/MID0・19%', 'Lv4: LONG0/MID0・15%', 'Lv5: LONG0/MID0・12%'], subcategory: 'timed' },
+  { abilityId: 'soul_reap', label: '魂奪', description: '魔法終了タイミングで発動し、相手のHPがN%未満なら即死させる(回避・復活不可)', levelScale: ['Lv1: 10%', 'Lv2: 14%', 'Lv3: 17%', 'Lv4: 19%', 'Lv5: 20%'], subcategory: 'timed' },
+  { abilityId: 'regeneration', label: '再生', description: '近接開始タイミングで発動し、この戦闘で失ったHPのN%を回復する(近接フェーズ前にHP0なら不発)', levelScale: ['Lv1: 10%', 'Lv2: 15%', 'Lv3: 19%', 'Lv4: 22%', 'Lv5: 24%'], subcategory: 'timed' },
+  { abilityId: 'predator_sense', label: '捕食', description: '近接開始タイミングで発動し、相手のHPがN%未満なら命中+40する', levelScale: ['Lv1: 30%', 'Lv2: 38%', 'Lv3: 44%', 'Lv4: 48%', 'Lv5: 50%'], subcategory: 'timed' },
+  { abilityId: 'decompose', label: '分解', description: '指定タイミングで発動し、相手の物理防御力をxN倍にする', levelScale: ['Lv1: CLOSE2・x6/7', 'Lv2: CLOSE2・x5/7', 'Lv3: CLOSE2・x4/7', 'Lv4: CLOSE2・x3/7', 'Lv5: CLOSE2・x2/7'], subcategory: 'timed' },
+  { abilityId: 'self_destruct', label: '自爆', description: '指定タイミングで発動し、自爆して相手に残ダメージのNを与える', levelScale: ['Lv1: CLOSE2・1/10', 'Lv2: CLOSE2・3/10', 'Lv3: CLOSE2・5/10', 'Lv4: CLOSE2・7/10', 'Lv5: CLOSE2・100%'], subcategory: 'timed' },
+  { abilityId: 'free', label: '逃走', description: '指定タイミングで発動し、戦闘から逃走する(戦闘は引分になる)', levelScale: ['Lv1: CLOSE1', 'Lv2: CLOSE2', 'Lv3: CLOSE3', 'Lv4: MID1', 'Lv5: MID2'], subcategory: 'timed' },
+  { abilityId: 'auriferous', label: '含金', description: '自身が受ける総攻撃回数10回ごとに、自身のドロップ抽選確率を+1する', levelScale: [], subcategory: 'timed' },
+];
+
+export const BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID = new Map(
+  BONUS_ABILITY_GLOSSARY_ENTRIES.map((entry) => [entry.abilityId, entry]),
+);
