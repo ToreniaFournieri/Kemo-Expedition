@@ -90,9 +90,9 @@
 | `a.peddler`1 | 行商1 | 移動時間が2/3になる |
 | `a.peddler`2 | 行商2 | 移動時間が3/5になる |
 
-- Chain ability
+- Reactive ability
   
-| `a.` ability | 表示 | 説明 | chain |
+| `a.` ability | 表示 | 説明 | triger |
 |----|----|----|----|
 | `a.bulwark`1 | 壁1 | 真後ろの味方への遠距離攻撃を肩代わりする | preemptive |
 | `a.bulwark`2 | 壁2 | 真後ろの味方への遠距離/近距離攻撃を肩代わりする | preemptive |
