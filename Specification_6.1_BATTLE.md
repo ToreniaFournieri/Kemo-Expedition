@@ -397,7 +397,7 @@
   - Base: 1
   - +1 if `c.unlock`
   - +1 if `m.luna`
-  - +1 if (`Goddess of Discord` or `God of Oblivion`) rank ≥ 10
+  - +1 if (`Goddess of Discord` or (`God of Oblivion` and its rank ≥ 10)) 
   - +N from `a.auriferous`
  
 	- `a.auriferous`
