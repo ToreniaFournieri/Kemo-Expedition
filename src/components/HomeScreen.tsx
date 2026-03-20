@@ -8427,7 +8427,7 @@ function SettingTab({
   const getBonusAbilityGlossaryDisplayLabel = (abilityId: AbilityId): string => {
     const entry = BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID.get(abilityId);
     if (!entry) return ABILITY_NAMES[abilityId] ?? abilityId;
-    return `${entry.label}1`;
+    return entry.label;
   };
 
   const parseAbilityTokens = (abilities: Array<{ id: string; level: number }>) => {
