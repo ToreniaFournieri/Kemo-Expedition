@@ -51,7 +51,7 @@
 #### 1.1.1 a. bonus ability
 - "能. アビリティボーナス (重複なし、強化可能)"
 
-- Enhance status ability :
+- Passive ability:
 
 | `a.` ability | 表示 | 説明 |
 |----|----|----|
@@ -75,7 +75,7 @@
 | `a.upgrade-all-abilities`3 | 他のアビリティ強化+3 | 自身の他のアビリティを3段階強化する(上限レベル5) |
 | `a.upgrade-all-abilities`4 | 他のアビリティ強化+4 | 自身の他のアビリティを4段階強化する(上限レベル5) |
 
-- utility ability
+- Expedition ability
 
 | `a.` ability | 表示 | 説明 |
 |----|----|----|
@@ -322,8 +322,6 @@
 | `a.free`4 | 逃走4 | 魔法1タイミングで発動。戦闘から逃げる(戦闘は引分になる) | MID | 1 |
 | `a.free`5 | 逃走5 | 魔法2タイミングで発動。戦闘から逃げる(戦闘は引分になる) | MID | 2 |
 | `a.auriferous`1 | 含金1 | 自身が受ける総攻撃回数10回毎に、自身がドロップするアイテム抽選確率を+1する | END | 5 |
-
-
 
 
 #### 1.1.2 b. bonus
