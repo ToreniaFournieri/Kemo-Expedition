@@ -118,6 +118,10 @@
     - LONG -> 遠距離
     - MID ->魔法
     - CLOSE ->近接
+  - Timing display translation for Help floating bubble:
+    - 指定 -> LONG2 -> 遠距離2
+    - Exampple: "指定タイミングで発動し、相手の次の攻撃回数をxN倍にする"  Lv1: LONG2・x5/7 -> "遠距離2タイミングで発動し、相手の次の攻撃回数をx5/7倍にする"
+ 
 
 | ability_id | label | description | level_scale | phase | priority |
 |----|----|----|----|----|----|
