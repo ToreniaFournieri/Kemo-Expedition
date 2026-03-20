@@ -92,7 +92,7 @@
 
 - Reactive ability
   
-| `a.` ability | 表示 | 説明 | triger |
+| `a.` ability | 表示 | 説明 | trigger  |
 |----|----|----|----|
 | `a.resonance`1| 共鳴1 | 魔法攻撃 1回毎に、全ヒットのダメージが +4% 増加する | self-state |
 | `a.resonance`2 | 共鳴2 | 魔法攻撃 1回毎に、全ヒットのダメージが +7% 増加する | self-state |
