@@ -230,6 +230,33 @@ function toRageBonusPercent(rageAmplifier: number): number {
   return Math.max(0, Math.round((rageAmplifier - 1.0) * 100));
 }
 
+function getClampedHpRatio(currentHp: number, maxHp: number): number {
+  if (maxHp <= 0) return 1.0;
+  return Math.max(0, Math.min(1, currentHp / maxHp));
+}
+
+// SpecRef: 6.1.4.1 | Function of attack | f.swarm.amplifier
+function getSwarmAmplifier(
+  actorAbilities: AbilityLike[],
+  actorCurrentHp: number,
+  actorMaxHp: number,
+  opponentAbilities: AbilityLike[],
+  opponentCurrentHp: number,
+  opponentMaxHp: number,
+): number {
+  let amplifier = 1.0;
+
+  if (hasAbility(actorAbilities, 'swarm')) {
+    amplifier *= 1.0 - ((1.0 - getClampedHpRatio(actorCurrentHp, actorMaxHp)) * 0.5);
+  }
+
+  if (hasAbility(opponentAbilities, 'swarm')) {
+    amplifier *= 1.0 + ((1.0 - getClampedHpRatio(opponentCurrentHp, opponentMaxHp)) * 0.5);
+  }
+
+  return amplifier;
+}
+
 const MUTUAL_MAGIC_AMPLIFY_MULTIPLIERS: Record<number, number> = {
   1: 1.3,
   2: 1.5,
@@ -453,7 +480,9 @@ function calculateSingleEnemyAttackDamage(
   enemy: EnemyDef,
   characterStats: ComputedCharacterStats[],
   targetCharStats: ComputedCharacterStats,
-  enemyHp: number
+  enemyHp: number,
+  partyHp: number,
+  maxPartyHp: number,
 ): number {
   let attack = 0;
   let amplifier = 1.0;
@@ -490,7 +519,15 @@ function calculateSingleEnemyAttackDamage(
   const partyDefenseAbilityAmplifier = getPartyDefenseAbilityAmplifier(phase, characterStats, targetCharStats.row);
   const rageAmplifier = getEnemyRageAmplifier(enemy, enemyHp);
   const mutualAmplifier = getMutualAmplifier(phase, enemy.abilities, targetCharStats.abilities);
-  const rawDamage = (attack - defense) * amplifier * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * mutualAmplifier;
+  const swarmAmplifier = getSwarmAmplifier(
+    enemy.abilities,
+    enemyHp,
+    enemy.hp,
+    targetCharStats.abilities,
+    partyHp,
+    maxPartyHp,
+  );
+  const rawDamage = (attack - defense) * amplifier * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * mutualAmplifier * swarmAmplifier;
   const totalDamage = Math.max(1, rawDamage);
 
   return Math.floor(totalDamage);
@@ -611,6 +648,14 @@ function calculateCharacterFriendlyFireDamage(
   const rageAmplifier = getCharacterRageAmplifier(attacker, partyHp, partyStats.hp);
   const momentumAmplifier = getCharacterMomentumAmplifier(attacker, partyHp, partyStats.hp);
   const mutualAmplifier = getMutualAmplifier(phase, attacker.abilities, target.abilities);
+  const swarmAmplifier = getSwarmAmplifier(
+    attacker.abilities,
+    partyHp,
+    partyStats.hp,
+    target.abilities,
+    partyHp,
+    partyStats.hp,
+  );
 
   const partyOffenseAmplifier = getPartyOffenseAbilityAmplifier(phase, characterStats, attacker.row);
   const basePerHitDamage = Math.max(1, Math.floor(
@@ -623,6 +668,7 @@ function calculateCharacterFriendlyFireDamage(
       * rageAmplifier
       * momentumAmplifier
       * mutualAmplifier
+      * swarmAmplifier
   ));
 
   const actorAccuracyPotency = phase === 'mid' ? 1.0 : attacker.accuracyPotency;
@@ -1030,6 +1076,7 @@ function calculateCharacterDamage(
   charStats: ComputedCharacterStats,
   character: Character,
   enemy: EnemyDef,
+  enemyHp: number,
   characterStats: ComputedCharacterStats[],
   partyStats: ComputedPartyStats,
   partyHp: number,
@@ -1137,11 +1184,19 @@ function calculateCharacterDamage(
   const rageAmplifier = getCharacterRageAmplifier(charStats, partyHp, partyStats.hp);
   const momentumAmplifier = getCharacterMomentumAmplifier(charStats, partyHp, partyStats.hp);
   const mutualAmplifier = getMutualAmplifier(phase, charStats.abilities, enemy.abilities);
+  const swarmAmplifier = getSwarmAmplifier(
+    charStats.abilities,
+    partyHp,
+    partyStats.hp,
+    enemy.abilities,
+    enemyHp,
+    enemy.hp,
+  );
 
   const partyOffenseAmplifier = getPartyOffenseAbilityAmplifier(phase, characterStats, charStats.row);
   const basePerHitDamage = Math.max(1, Math.floor(
     (attack - effectiveDefense) * offenseAmplifier * charStats.elementalOffenseValue *
-    elementalMultiplier * defenseAmplifier * partyOffenseAmplifier * rageAmplifier * momentumAmplifier * mutualAmplifier
+    elementalMultiplier * defenseAmplifier * partyOffenseAmplifier * rageAmplifier * momentumAmplifier * mutualAmplifier * swarmAmplifier
   ));
 
   // All phases now use hit detection.
@@ -2010,7 +2065,7 @@ export function executeBattle(
       return;
     }
 
-    const singleDamage = calculateSingleEnemyAttackDamage('close', enemy, characterStats, targetCharStats, enemyHp);
+    const singleDamage = calculateSingleEnemyAttackDamage('close', enemy, characterStats, targetCharStats, enemyHp, partyHp, partyStats.hp);
     const enemyCloseAccuracyBonus = enemyTemporaryAccuracyBonus;
     const attempts = Math.ceil(getEnemyNoA('close', enemy) * counterNoAMultiplier);
     let hits = 0;
@@ -2106,7 +2161,7 @@ export function executeBattle(
       return;
     }
 
-    const reCounterResult = calculateCharacterDamage('close', targetCharStats, targetChar, enemy, characterStats, partyStats, partyHp, partyDeityKey, reCounterNoAMultiplier, temporaryAccuracyBonusByCharacterId.get(targetCharStats.characterId) ?? 0);
+    const reCounterResult = calculateCharacterDamage('close', targetCharStats, targetChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, reCounterNoAMultiplier, temporaryAccuracyBonusByCharacterId.get(targetCharStats.characterId) ?? 0);
     if (reCounterResult.totalAttempts <= 0) {
       return;
     }
@@ -2156,7 +2211,7 @@ export function executeBattle(
       const coverChar = party.characters.find(c => c.id === coverCharStats.characterId);
       if (!coverChar) continue;
 
-      const coveringFireResult = calculateCharacterDamage('long', coverCharStats, coverChar, enemy, characterStats, partyStats, partyHp, partyDeityKey, coveringFireNoAMultiplier);
+      const coveringFireResult = calculateCharacterDamage('long', coverCharStats, coverChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, coveringFireNoAMultiplier);
       if (coveringFireResult.totalAttempts <= 0) continue;
 
       if (isIllusionActive('long', getEnemyAbilityLevel(enemy, 'illusion') > 0, 'enemy', consumedIllusionStateIds)) {
@@ -3002,7 +3057,7 @@ export function executeBattle(
               const resonanceAmplifier = phase === 'mid'
                 ? getResonanceAmplifier(enemyResonanceLevel, enemySuccessfulHits)
                 : 1.0;
-              const singleDamage = calculateSingleEnemyAttackDamage(phase, enemy, characterStats, targetCharStats, enemyHp);
+              const singleDamage = calculateSingleEnemyAttackDamage(phase, enemy, characterStats, targetCharStats, enemyHp, partyHp, partyStats.hp);
               targetAttack.hitDamages.push(Math.max(1, Math.floor(singleDamage * resonanceAmplifier)));
             }
 
@@ -3277,6 +3332,7 @@ export function executeBattle(
               attack.charStats,
               attackChar,
               enemy,
+              enemyHp,
               characterStats,
               partyStats,
               partyHp,
@@ -3345,7 +3401,7 @@ export function executeBattle(
               const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, attack.charStats.evasionBonus, i, phase, getDeflectionLevel(attack.charStats), getEnemyFocusLevel(enemy));
               if (!didHit) continue;
               reCounterHits += 1;
-              reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, characterStats, attack.charStats, enemyHp);
+              reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, characterStats, attack.charStats, enemyHp, partyHp, partyStats.hp);
             }
 
             const avoidedByPartyIllusionOnReCounter = isPartyIllusionActive(phase, characterStats, consumedPartyIllusion);
@@ -3447,7 +3503,7 @@ export function executeBattle(
             const magicalCounterNoAMultiplier = getMagicalCounterNoAMultiplier(magicalCounterStats);
             if (magicalCounterNoAMultiplier <= 0) continue;
 
-            const magicalCounterResult = calculateCharacterDamage('mid', magicalCounterStats, magicalCounterChar, enemy, characterStats, partyStats, partyHp, partyDeityKey, magicalCounterNoAMultiplier);
+            const magicalCounterResult = calculateCharacterDamage('mid', magicalCounterStats, magicalCounterChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, magicalCounterNoAMultiplier);
             if (magicalCounterResult.totalAttempts <= 0) continue;
 
             addEnemyHitsReceived(magicalCounterResult.hits);
@@ -3573,7 +3629,7 @@ export function executeBattle(
             }
           }
         } else {
-          result = calculateCharacterDamage(phase, cs, char, enemy, characterStats, partyStats, partyHp, partyDeityKey, noAMultiplier, characterPhaseAccuracyBonus);
+          result = calculateCharacterDamage(phase, cs, char, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, noAMultiplier, characterPhaseAccuracyBonus);
           if (
             result.totalAttempts > 0
             && isIllusionActive(phase, getEnemyAbilityLevel(enemy, 'illusion') > 0, 'enemy', consumedIllusionStateIds)
