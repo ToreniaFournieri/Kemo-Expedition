@@ -404,6 +404,7 @@
 	  - N = floor(total hits received / 10)
 	  - Multi-hit attacks count as multiple hits
 	  - Evaluated at END phase
+      - Log: `log.auriferous` + (累計X回→ +N回抽選回数増加)
 
 - For every item listed in the enemy's potential drop items,
   - If the item is common,
