@@ -1270,8 +1270,10 @@ function roundDecomposeDefenseValue(value: number): number {
   return Math.round(value);
 }
 
+const decomposeDefenseValueFormatter = new Intl.NumberFormat('ja-JP');
+
 function formatDecomposeDefenseValue(value: number): string {
-  return `${roundDecomposeDefenseValue(value)}`;
+  return decomposeDefenseValueFormatter.format(roundDecomposeDefenseValue(value));
 }
 
 function getDecomposeNote(targetName: string, previousDefense: number, nextDefense: number): string {
