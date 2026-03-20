@@ -1280,7 +1280,7 @@ const ABILITY_HELP_TEXTS: Record<string, string> = {
   ranged_null: '自身が受ける予定の遠距離攻撃ダメージを無効化する。',
   melee_reflect: '自身が受ける予定の近接攻撃ダメージをレベルに応じて反射し、残りは自身が受ける。',
   melee_null: '自身が受ける予定の近接攻撃ダメージを無効化する。',
-  colossal: '自身の防御力が2倍になり、物理被ダメージ補正がx2.0になる。',
+  colossal: '自身の物理防御力が2倍になり、物理被ダメージ補正がx2.0になる。',
   upgrade_all_abilities: '自身の他のアビリティを1〜4段階強化する(上限レベル5)。',
 };
 

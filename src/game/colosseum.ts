@@ -156,7 +156,7 @@ export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode
     magicalAttackAmplifier: classBase.magicalAttackAmplifier * multipliers.attackAmplifier,
     meleeAttackAmplifier: classBase.meleeAttackAmplifier * multipliers.attackAmplifier,
     physicalDefense: Math.max(0, Math.floor(classBase.physicalDefense * multipliers.defense * (hasColossal ? 2 : 1))),
-    magicalDefense: Math.max(0, Math.floor(classBase.magicalDefense * multipliers.defense * (hasColossal ? 2 : 1))),
+    magicalDefense: Math.max(0, Math.floor(classBase.magicalDefense * multipliers.defense)),
     elementalOffense: 'none',
     elementalResistance,
     physicalDefenseAmplifier: multipliers.defenseAmplifier * (hasColossal ? 2 : 1),
