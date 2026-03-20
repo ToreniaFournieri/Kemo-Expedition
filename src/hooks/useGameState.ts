@@ -1540,7 +1540,8 @@ function resolveEnemyRewards(
   hasUnlock: boolean,
   gameMode: GameMode,
   autoSellMultiplier: number,
-  hasExtraRewardRollBlessing: boolean = false
+  hasExtraRewardRollBlessing: boolean = false,
+  auriferousBonusRolls: number = 0,
 ): {
   bags: GameState['bags'];
   inventory: InventoryRecord;
@@ -1588,7 +1589,8 @@ function resolveEnemyRewards(
     const bonusRollCount =
       (hasUnlock ? 1 : 0)
       + (gameMode === 'm.luna' ? 1 : 0)
-      + (hasExtraRewardRollBlessing ? 1 : 0);
+      + (hasExtraRewardRollBlessing ? 1 : 0)
+      + auriferousBonusRolls;
     for (let rollIndex = 0; rollIndex < bonusRollCount; rollIndex++) {
       bags = refillBagIfEmpty(bags, rewardBagType);
       const { ticket: bonusTicket, newBag } = drawFromBag(bags[rewardBagType]);
@@ -1798,6 +1800,33 @@ function buildRewardLogEntries(
       ? `(自動売却対象: ${rewardEntry.autoSellProfit}G)`
       : undefined,
   }));
+}
+
+const AURIFEROUS_LOGS = [
+  '{actor} の体に蓄えられた衝撃からアイテムが零れ落ちた！',
+  '{actor} は受けた攻撃により、装備の一部が露出した！',
+  '{actor} の内側から、価値あるアイテムが静かに形成された…',
+  '{actor} の体内で圧縮された力が、新たなる可能性の輝きとなった！',
+  '{actor} への打撃が重なることで、生成される価値が増している！',
+  '{actor} は打撃を受けるほど、何かを生成している…',
+  '{actor} の損傷が、別の形の“価値”へと転換された！',
+  '{actor} の肉体が圧縮され、素材としての価値を帯び始めた！',
+  '{actor} に刻まれた傷が、アイテムとなる因子へと変わった！',
+  '{actor} は攻撃の蓄積により、価値ある断片を生み出した！',
+] as const;
+
+function buildAuriferousLogEntry(actorName: string, totalHitsReceived: number, bonusRolls: number): BattleLogEntry | null {
+  if (bonusRolls <= 0) return null;
+
+  const flavorText = AURIFEROUS_LOGS[Math.floor(Math.random() * AURIFEROUS_LOGS.length)]
+    ?? '{actor} は攻撃の蓄積により、価値ある断片を生み出した！';
+
+  return {
+    phase: 'end',
+    actor: 'effect',
+    action: flavorText.replace('{actor}', actorName),
+    note: `(累計${totalHitsReceived}回→ +${bonusRolls}回抽選回数増加)`,
+  };
 }
 
 function isRetreatHpThresholdReached(currentHp: number, maxHp: number): boolean {
@@ -2070,6 +2099,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 || (deityKey === 'God of Oblivion' && getDeityRank(deityDonation) >= 10);
               let rewardLogEntries: { itemName: string; autoSellProfit?: number }[] = [];
               if (!isColosseumBattle) {
+                const enemyAuriferousLevel = enemy.abilities
+                  .filter((ability) => ability.id === 'auriferous')
+                  .reduce((maxLevel, ability) => Math.max(maxLevel, ability.level), 0);
+                const auriferousBonusRolls = enemyAuriferousLevel > 0
+                  ? Math.floor(battleResult.enemyHitsReceived / 10)
+                  : 0;
                 const rewardResult = resolveEnemyRewards(
                   enemy,
                   bags,
@@ -2078,7 +2113,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   hasUnlock,
                   gameMode,
                   autoSellMultiplier,
-                  hasExtraRewardRollBlessing
+                  hasExtraRewardRollBlessing,
+                  auriferousBonusRolls,
                 );
                 bags = rewardResult.bags;
                 currentInventory = rewardResult.inventory;
@@ -2095,6 +2131,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   entry.rewardIsSuperRare = rewardResult.hasSuperRareReward;
                 }
                 rewardLogEntries = rewardResult.rewardLogEntries;
+                const auriferousLogEntry = buildAuriferousLogEntry(
+                  enemy.name,
+                  battleResult.enemyHitsReceived,
+                  auriferousBonusRolls,
+                );
+                if (auriferousLogEntry) {
+                  entry.details.push(auriferousLogEntry);
+                }
               }
 
               currentHp = battleResult.partyHp;
