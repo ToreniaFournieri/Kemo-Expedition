@@ -443,15 +443,7 @@ export interface RoomDef {
 
 export interface FloorDef {
   floorNumber: number;
-  multiplier: number; // Floor multiplier (x1.0 to x5.0)
-  multipliers?: {
-    hp: number;
-    attack: number;
-    noa: number;
-    attackAmplifier: number;
-    defense: number;
-    defenseAmplifier: number;
-  };
+  multiplier: number; // Legacy room display multiplier; runtime enemy scaling is level-based.
   rooms: RoomDef[];
 }
 
@@ -575,7 +567,7 @@ export interface ExpeditionLogEntry {
   roomType?: RoomType; // Type of room
   startPartyHP?: number;
   postBattlePartyHP?: number;
-  floorMultiplier?: number; // Floor multiplier applied
+  floorMultiplier?: number; // Displayed room attack multiplier derived from effective enemy level
   enemyName: string;
   enemyHP: number;
   enemyAttackValues: string; // format: "LONG/MID/CLOSE" e.g. "300/0/340"

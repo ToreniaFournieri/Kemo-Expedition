@@ -1925,7 +1925,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   floor: floor.floorNumber,
                   roomInFloor: roomIndex + 1,
                   roomType: roomDef.type,
-                  floorMultiplier: getRoomMultiplier(dungeon.expLevel, floor.floorNumber, roomDef.type, floor.multiplier, gameMode === 'm.luna'),
+                  floorMultiplier: getRoomMultiplier(dungeon.expLevel, floor.floorNumber, roomDef.type, gameMode === 'm.luna'),
                   enemyName: '[扉が封印されている]',
                   enemyHP: 0,
                   enemyAttackValues: '',
@@ -1969,7 +1969,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   floor: floor.floorNumber,
                   roomInFloor: roomIndex + 1,
                   roomType: roomDef.type,
-                  floorMultiplier: getRoomMultiplier(dungeon.expLevel, floor.floorNumber, roomDef.type, floor.multiplier, gameMode === 'm.luna'),
+                  floorMultiplier: getRoomMultiplier(dungeon.expLevel, floor.floorNumber, roomDef.type, gameMode === 'm.luna'),
                   enemyName: '[扉が封印されている]',
                   enemyHP: 0,
                   enemyAttackValues: '',
@@ -1992,7 +1992,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             const baseEnemy = selectEnemyForRoom(roomDef.type, roomDef.poolId, roomDef.bossId, floor.floorNumber, roomIndex, roomDef.enemyIds ?? [], gameMode === 'm.luna');
             if (!baseEnemy) continue;
 
-            const roomMultiplier = getRoomMultiplier(dungeon.expLevel, floor.floorNumber, roomDef.type, floor.multiplier, gameMode === 'm.luna');
+            const roomMultiplier = getRoomMultiplier(dungeon.expLevel, floor.floorNumber, roomDef.type, gameMode === 'm.luna');
             const effectiveTier = getEffectiveExpeditionTier(dungeon.id, gameMode === 'm.luna');
             const effectiveDungeon = {
               ...dungeon,
