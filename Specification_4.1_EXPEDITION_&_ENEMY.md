@@ -26,8 +26,10 @@
 - `f.attack` :  master value x `x.exp_atk_mult`
 - `f.NoA` :  master value x `x.exp_NoA_mult`
 - `f.offense_amplifier` :  master value x `x.exp_atk_amp_mult` 
-- `f.defense` :  master value x `x.exp_def_mult`  
+- `f.defense` :  master value x `x.exp_def_mult`
+  - If `a.colossal`, `f.defense` x= 2.0 
 - `f.physical_defense_amplifier` : 1.0 x `x.exp_def_amp_mult`
+  - If `a.colossal`, `f.physical_defense_amplifier` x= 2.0
 - `f.magical_defense_amplifier` : 1.0 x `x.exp_def_amp_mult`
 - `f.elemental_offense_attribute` :  not scale
 - `f.elemental_resistance_attribute` : not scale
