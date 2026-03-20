@@ -8788,7 +8788,7 @@ function SettingTab({
                         })()}
                       </div>
                       {isBonusAbilityGlossarySection && (
-                        <div className="mb-2 rounded border border-gray-200 bg-gray-50 px-2 py-1.5">
+                        <div className="mb-2 flex flex-wrap items-center gap-2 rounded border border-gray-200 bg-gray-50 px-2 py-1.5">
                           <div className="flex flex-wrap items-center gap-1">
                             {BONUS_ABILITY_GLOSSARY_SUBCATEGORY_META.map((subcategory) => {
                               const isActive = subcategory.id === bonusAbilityGlossarySubcategory;
@@ -8810,9 +8810,7 @@ function SettingTab({
                               );
                             })}
                           </div>
-                          <div className="mt-1 text-[11px] text-gray-500">
-                            {activeBonusAbilitySubcategory?.shortLabel}. {activeBonusAbilitySubcategory?.label}
-                          </div>
+                          <div className="text-[11px] text-gray-500">{activeBonusAbilitySubcategory?.label}</div>
                         </div>
                       )}
                       <div className="space-y-1 max-h-72 overflow-y-auto pr-1">
