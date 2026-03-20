@@ -392,24 +392,37 @@
 - *Draw*:no penalties (current version). no `d.experience` points nor item reward at this room. Back to home with trophies of previous rooms.
 
 #### 6.1.6 REWARD 
+
+- Ticket calculation:
+  - Base: 1
+  - +1 if `c.unlock`
+  - +1 if `m.luna`
+  - +1 if (`Goddess of Discord` or `God of Oblivion`) rank ≥ 10
+  - +N from `a.auriferous`
+ 
+	- `a.auriferous`
+	  - N = floor(total hits received / 10)
+	  - Multi-hit attacks count as multiple hits
+	  - Evaluated at END phase
+
 - For every item listed in the enemy's potential drop items,
   - If the item is common,
-    - Get one ticket from `t.common_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord` or `God of Oblivion`(rank 10 or more).
+    - Draw tickets from `t.common_reward_bag` equal to the total ticket count.
 	- If `t.reward_bag`.value = '1', then get one ticket from `t.common_enhancement_bag`.
       - If (mode is `m.laika`) and `t.enhancement_bag`.value >= 5, then treats `t.enhancement_bag`.value as 4.
     - If `t.enhancement_bag`.value >= 1 and ( mode is not `m.laika`), then get one ticket from `t.superRare_bag`.
   - If the item is uncommon,
-    - Gets one ticket from `t.uncommon_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord` or `God of Oblivion`(rank 10 or more).
+    - Draw tickets from `t.uncommon_reward_bag` equal to the total ticket count.
     - If `t.uncommon_reward_bag`.value = '1', then get one ticket from `t.enhancement_bag`.
       - If (mode is `m.laika`) and `t.enhancement_bag`.value >= 5, then treats `t.enhancement_bag`.value as 4.   
     - If `t.enhancement_bag`.value >= 1 and ( mode is not `m.laika`), then get one ticket from `t.superRare_bag`.
   - If the item is rare,
-    - Gets one ticket from `t.rare_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord` or `God of Oblivion`(rank 10 or more).
+    - Draw tickets from `t.rare_reward_bag`  equal to the total ticket count.
     - If `t.rare_reward_bag`.value = '1', then get one ticket from `t.enhancement_bag`.
       - If (mode is `m.laika`) and `t.enhancement_bag`.value >= 5, then treats `t.enhancement_bag`.value as 4.
     - If `t.enhancement_bag`.value >= 1 and ( mode is not `m.laika`), then get one ticket from `t.superRare_bag`.
   - If the item is mythic,
-    - Gets one ticket from `t.mythic_reward_bag`. One more with `c.unlock`, One more with `m.luna`, One more with `Goddess of Discord` or `God of Oblivion`(rank 10 or more).
+    - Draw tickets from `t.mythic_reward_bag` equal to the total ticket count.
     - If `t.rare_mythic_bag`.value = '1', then get one ticket from `t.enhancement_bag`.
       - If (mode is `m.laika`) and `t.enhancement_bag`.value >= 5, then treats `t.enhancement_bag`.value as 4.
     - If `t.enhancement_bag`.value >= 1 and ( mode is not `m.laika`), then get one ticket from `t.superRare_bag`.
