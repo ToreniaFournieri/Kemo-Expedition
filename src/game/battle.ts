@@ -1707,6 +1707,7 @@ export interface BattleResult extends BattleState {
     physicalThreatBag: RandomBag;
     magicalThreatBag: RandomBag;
   };
+  enemyHitsReceived: number;
 }
 
 const TRIGGER_TIMINGS_DESC = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0] as const;
@@ -1750,6 +1751,7 @@ export function executeBattle(
   let partyDamageTakenInBattle = 0;
   let enemyDamageTakenInBattle = 0;
   let enemyHasAntagonism = false;
+  let enemyHitsReceived = 0;
   const log: BattleLogEntry[] = [];
 
   const partyDeityKey = getDeityKey(party.deity.name);
@@ -1836,6 +1838,12 @@ export function executeBattle(
     return actualDamage;
   };
 
+  const addEnemyHitsReceived = (hits: number): void => {
+    if (hits > 0) {
+      enemyHitsReceived += hits;
+    }
+  };
+
   const buildBattleResult = (phase: BattleActionPhase, outcome: BattleOutcome): BattleResult => ({
     phase,
     partyHp: Math.max(0, partyHp),
@@ -1846,6 +1854,7 @@ export function executeBattle(
       physicalThreatBag: ctx.physicalThreatBag,
       magicalThreatBag: ctx.magicalThreatBag,
     },
+    enemyHitsReceived,
   });
 
   const triggerFreeAtTiming = (phase: BattleActionPhase, timing: number): boolean => {
@@ -2103,6 +2112,7 @@ export function executeBattle(
     }
 
     const reCounterDealtDamage = reCounterResult.damage > 0;
+    addEnemyHitsReceived(reCounterResult.hits);
     if (reCounterDealtDamage) {
       applyEnemyDamage(reCounterResult.damage);
     }
@@ -2156,6 +2166,7 @@ export function executeBattle(
         coveringFireResult.wasNegatedByEnemyIllusion = true;
       }
 
+      addEnemyHitsReceived(coveringFireResult.hits);
       const coveringFireDealtDamage = coveringFireResult.damage > 0;
       if (coveringFireDealtDamage) {
         applyEnemyDamage(coveringFireResult.damage);
@@ -3275,6 +3286,7 @@ export function executeBattle(
             );
             if (counterResult.totalAttempts <= 0) continue;
 
+            addEnemyHitsReceived(counterResult.hits);
             const counterDealtDamage = counterResult.damage > 0;
             if (counterDealtDamage) {
               applyEnemyDamage(counterResult.damage);
@@ -3438,6 +3450,7 @@ export function executeBattle(
             const magicalCounterResult = calculateCharacterDamage('mid', magicalCounterStats, magicalCounterChar, enemy, characterStats, partyStats, partyHp, partyDeityKey, magicalCounterNoAMultiplier);
             if (magicalCounterResult.totalAttempts <= 0) continue;
 
+            addEnemyHitsReceived(magicalCounterResult.hits);
             const magicalCounterDealtDamage = magicalCounterResult.damage > 0;
             if (magicalCounterDealtDamage) {
               applyEnemyDamage(magicalCounterResult.damage);
@@ -3591,6 +3604,7 @@ export function executeBattle(
             result.nullifiedBy = nullify;
           }
 
+          addEnemyHitsReceived(result.hits);
           if (result.damage > 0) {
             applyEnemyDamage(result.damage);
           }
