@@ -20,6 +20,19 @@
 
 
 #### 4.1.2 Enemy
+
+**Enemy status mutipliers**
+- `d.HP` : master value x `x.exp_HP_mult`
+- `f.attack` :  master value x `x.exp_atk_mult`
+- `f.NoA` :  master value x `x.exp_NoA_mult`
+- `f.offense_amplifier` :  master value x `x.exp_atk_amp_mult` 
+- `f.defense` :  master value x `x.exp_def_mult`  
+- `f.physical_defense_amplifier` : 1.0 x `x.exp_def_amp_mult`
+- `f.magical_defense_amplifier` : 1.0 x `x.exp_def_amp_mult`
+- `f.elemental_offense_attribute` :  not scale
+- `f.elemental_resistance_attribute` : not scale
+- `f.penet_multiplier`: not scale
+
 - Strength of enemy by its level 
   - n = `x.enemy_level` (1~99)
   - `x.exp_HP_mult`(n) =
@@ -127,18 +140,6 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 - drop_items
 
 *note:* There are no duel(`d.`, `f.`, `e`, or `r`) related status in the master data. because these data is calculated by the formula.
-
-
-**Enemy status mutipliers**
-- `d.HP` : master value x `x.exp_HP_mult` x `x.floor_HP_mult` 
-- `f.attack` :  master value x `x.exp_atk_mult` x `x.floor_atk_mult`
-- `f.NoA` :  master value x `x.exp_NoA_mult` x `x.floor_NoA_mult` 
-- `f.offense_amplifier` :  master value x `x.exp_atk_amp_mult` x `x.floor_atk_amp_mult`
-- `f.defense` :  master value x `x.exp_def_mult`  x `x.floor_def_mult`
-- `f.defense_amplifier` : 1.0 x `x.exp_def_amp_mult` x `x.floor_def_amp_mult`  //for physical and magical defense
-- `f.elemental_offense_attribute` :  not scale
-- `f.elemental_resistance_attribute` : not scale
-- `f.penet_multiplier`: not scale
 
 #### 4.1.4 Base data structure (enemy)
 
