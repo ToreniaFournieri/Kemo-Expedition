@@ -1409,7 +1409,8 @@ function createGodEnemy(enemy: EnemyDef, dungeonId: number, dungeonName: string,
       meleeAttackAmplifier: enemy.meleeAttackAmplifier * 1.25,
       physicalDefense: Math.max(0, Math.floor(enemy.physicalDefense * 1.6)),
       magicalDefense: Math.max(0, Math.floor(enemy.magicalDefense * 1.6)),
-      defenseAmplifier: enemy.defenseAmplifier * 1.15,
+      physicalDefenseAmplifier: enemy.physicalDefenseAmplifier * 1.15,
+      magicalDefenseAmplifier: enemy.magicalDefenseAmplifier * 1.15,
       experience: Math.floor(enemy.experience * 2.2),
     };
   }

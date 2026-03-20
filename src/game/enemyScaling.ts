@@ -8,7 +8,8 @@ type GodEnemyMultipliers = {
   noa: number;
   attackAmplifier: number;
   defense: number;
-  defenseAmplifier: number;
+  physicalDefenseAmplifier: number;
+  magicalDefenseAmplifier: number;
 };
 
 const NORMAL_GOD_ENEMY_MULTIPLIERS: GodEnemyMultipliers = {
@@ -17,7 +18,8 @@ const NORMAL_GOD_ENEMY_MULTIPLIERS: GodEnemyMultipliers = {
   noa: 1.3,
   attackAmplifier: 1.2,
   defense: 1.1,
-  defenseAmplifier: 1.0,
+  physicalDefenseAmplifier: 1.0,
+  magicalDefenseAmplifier: 1.0,
 };
 
 const DEFAULT_MULTIPLIERS: GodEnemyMultipliers = {
@@ -26,7 +28,8 @@ const DEFAULT_MULTIPLIERS: GodEnemyMultipliers = {
   noa: 1,
   attackAmplifier: 1,
   defense: 1,
-  defenseAmplifier: 1,
+  physicalDefenseAmplifier: 1,
+  magicalDefenseAmplifier: 1,
 };
 
 // SpecRef: 4.1.2 | Enemy | x.god_*_mult
@@ -36,7 +39,8 @@ const DEBUG_GOD_ENEMY_MULTIPLIERS: GodEnemyMultipliers = {
   noa: 0.5,
   attackAmplifier: 0.4,
   defense: 0.3,
-  defenseAmplifier: 1.0,
+  physicalDefenseAmplifier: 1.0,
+  magicalDefenseAmplifier: 1.0,
 };
 
 export function getGodEnemyMultipliers(): GodEnemyMultipliers {
@@ -81,8 +85,11 @@ export function applyEnemyEncounterScaling(
     noa: expeditionMult.noa * godMult.noa,
     attackAmplifier: expeditionMult.attackAmplifier * godMult.attackAmplifier,
     defense: expeditionMult.defense * godMult.defense,
-    defenseAmplifier: expeditionMult.defenseAmplifier * godMult.defenseAmplifier,
+    physicalDefenseAmplifier: expeditionMult.defenseAmplifier * godMult.physicalDefenseAmplifier,
+    magicalDefenseAmplifier: expeditionMult.defenseAmplifier * godMult.magicalDefenseAmplifier,
   };
+
+  const hasColossal = enemy.abilities.some((ability) => ability.id === 'colossal');
 
   return {
     ...enemy,
@@ -96,9 +103,10 @@ export function applyEnemyEncounterScaling(
     rangedAttackAmplifier: enemy.rangedAttackAmplifier * finalMultipliers.attackAmplifier,
     magicalAttackAmplifier: enemy.magicalAttackAmplifier * finalMultipliers.attackAmplifier,
     meleeAttackAmplifier: enemy.meleeAttackAmplifier * finalMultipliers.attackAmplifier,
-    physicalDefense: Math.floor(enemy.physicalDefense * finalMultipliers.defense),
-    magicalDefense: Math.floor(enemy.magicalDefense * finalMultipliers.defense),
-    defenseAmplifier: 1.0 * finalMultipliers.defenseAmplifier,
+    physicalDefense: Math.floor(enemy.physicalDefense * finalMultipliers.defense * (hasColossal ? 2 : 1)),
+    magicalDefense: Math.floor(enemy.magicalDefense * finalMultipliers.defense * (hasColossal ? 2 : 1)),
+    physicalDefenseAmplifier: 1.0 * finalMultipliers.physicalDefenseAmplifier * (hasColossal ? 2 : 1),
+    magicalDefenseAmplifier: 1.0 * finalMultipliers.magicalDefenseAmplifier,
     experience: enemy.experience,
   };
 }

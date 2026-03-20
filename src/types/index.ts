@@ -424,7 +424,8 @@ export interface EnemyDef {
   magicalDefense: number;
   elementalOffense: ElementalOffense;
   elementalResistance: Record<ElementalResistance, number>;
-  defenseAmplifier: number;
+  physicalDefenseAmplifier: number;
+  magicalDefenseAmplifier: number;
   experience: number;
   dropItemId: number | null;
   isGodEnemy?: boolean;
@@ -453,7 +454,8 @@ export interface ExpeditionEnemyMultipliers {
   noa: number;
   attackAmplifier: number;
   defense: number;
-  defenseAmplifier: number;
+  physicalDefenseAmplifier: number;
+  magicalDefenseAmplifier: number;
   experience: number;
 }
 
