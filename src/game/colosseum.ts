@@ -1,4 +1,5 @@
 import { AbilityId, ElementalResistance, EnemyAbility, EnemyClassId, EnemyDef } from '../types';
+import { getEnemyCyborgizationAdjustment, resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
 import { LUNA_MODE_ENEMY_LEVEL_BONUS, getEnemyMultipliersForLevel } from '../data/dungeons';
 
 const COLOSSEUM_STORAGE_KEY = 'kemo-expedition.colosseum-enemy-settings';
@@ -120,8 +121,11 @@ export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode
   normalized.abilities.forEach((ability) => {
     classAbilities.set(ability.id, { id: ability.id, level: ability.level });
   });
-  const abilities = Array.from(classAbilities.values());
+  const abilities = resolveEnemyPassiveAbilities(Array.from(classAbilities.values()));
   const hasColossal = abilities.some((ability) => ability.id === 'colossal');
+  const cyborgizationAdjustment = getEnemyCyborgizationAdjustment(
+    abilities.find((ability) => ability.id === 'cyborgization')?.level ?? 0,
+  );
 
   const elementalResistance: Record<ElementalResistance, number> = {
     fire: 1,
@@ -139,8 +143,8 @@ export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode
     name: normalized.name,
     enemyClass: normalized.enemyClass,
     abilities,
-    accuracyBonus: classBase.accuracyBonus,
-    evasionBonus: classBase.evasionBonus,
+    accuracyBonus: classBase.accuracyBonus + cyborgizationAdjustment.accuracyBonus,
+    evasionBonus: classBase.evasionBonus + cyborgizationAdjustment.evasionBonus,
     hp: Math.max(1, Math.floor(classBase.hp * multipliers.hp)),
     rangedAttack: Math.max(0, Math.floor(classBase.rangedAttack * multipliers.attack)),
     rangedNoA: Math.max(0, Math.floor(classBase.rangedNoA * multipliers.noa)),

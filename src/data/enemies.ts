@@ -2,6 +2,7 @@ import { EnemyDef, EnemyType, EnemyClassId, ElementalOffense, ElementalResistanc
 import { MYTHIC_DROP_POOLS } from './dropTables';
 import { getItemById, getItemsByTierAndRarity } from './items';
 import { MASTER_EXPEDITION_ENEMIES_PACKED } from './masterSpecData';
+import { getEnemyCyborgizationAdjustment, resolveEnemyPassiveAbilities } from '../game/enemyPassiveAbilities';
 
 // ============================================================
 // EnemyTemplate type - compact format for defining enemies
@@ -246,10 +247,12 @@ function createEnemyFromTemplate(
     ...(enemyTypeSpec?.ability1 ?? []),
     ...(enemyTypeLevel >= 30 ? (enemyTypeSpec?.ability30 ?? []) : []),
   ];
-  const enemyAbilities = mergeEnemyAbilities(classBase.abilities, extraAbilityLevels, enemyTypeAbilities);
-  const hasCyborgization = enemyAbilities.some((ability) => ability.id === 'cyborgization');
-  const accuracyBonus = classBase.accuracyBonus + (hasCyborgization ? 0.03 : 0);
-  const evasionBonus = classBase.evasionBonus + (hasCyborgization ? -0.02 : 0);
+  const enemyAbilities = resolveEnemyPassiveAbilities(mergeEnemyAbilities(classBase.abilities, extraAbilityLevels, enemyTypeAbilities));
+  const cyborgizationAdjustment = getEnemyCyborgizationAdjustment(
+    enemyAbilities.find((ability) => ability.id === 'cyborgization')?.level ?? 0,
+  );
+  const accuracyBonus = classBase.accuracyBonus + cyborgizationAdjustment.accuracyBonus;
+  const evasionBonus = classBase.evasionBonus + cyborgizationAdjustment.evasionBonus;
 
   // Master enemy data (before runtime expedition/god scaling)
   const hp = Math.floor(classBase.hp * template.hpMod);
