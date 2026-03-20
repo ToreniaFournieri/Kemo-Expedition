@@ -71,25 +71,34 @@
   2. Resolve enemy actions
   3. Resolve party member actions from Front-row to Back-row
 
-| phase | timing | action order |
-|--|--:|--|
-| LONG | 9 | Trigger |
-| LONG | 9 | Enemy |
-| LONG | 9 | Party member (Front-row → Back-row) |
-| LONG | 8 | Trigger |
-| LONG | 8 | Enemy |
-| LONG | 8 | Party member (Front-row → Back-row) |
-| ... | ... | ... |
-| LONG | 1 | Trigger |
-| LONG | 1 | Enemy |
-| LONG | 1 | Party member (Front-row → Back-row) |
-| LONG | 0 | Trigger |
-| MID | 9 | Trigger |
-| MID | 9 | Enemy |
-| MID | 9 | Party member (Front-row → Back-row) |
-| ... | ... | ... |
-| CLOSE | 1 | Party member (Front-row → Back-row) |
-| CLOSE | 0 | Trigger |
+| phase | timing | action order | Display format |
+|--|--:|--|--|
+| START | 9 | Trigger | [効] |
+| START | 8 | Trigger | [効] |
+| ... | ... | ... | ... |
+| START | 0 | Trigger | [効] |
+| LONG | 9 | Trigger | [9] |
+| LONG | 9 | Enemy | [9] |
+| LONG | 9 | Party member (Front-row → Back-row) | [9] |
+| LONG | 8 | Trigger | [8] |
+| LONG | 8 | Enemy | [8] |
+| LONG | 8 | Party member (Front-row → Back-row) | [8] |
+| ... | ... | ... | ... |
+| LONG | 1 | Trigger | [1] |
+| LONG | 1 | Enemy | [1] |
+| LONG | 1 | Party member (Front-row → Back-row) | [1] |
+| LONG | 0 | Trigger | [0] |
+| MID | 9 | Trigger | [9] |
+| MID | 9 | Enemy | [9] |
+| MID | 9 | Party member (Front-row → Back-row) | [9] |
+| ... | ... | ... | ... |
+| CLOSE | 1 | Party member (Front-row → Back-row) | [1] |
+| CLOSE | 0 | Trigger | [0] |
+| END | 9 | Trigger |  [末] |
+| END | 8 | Trigger | [末] |
+| ... | ... | ... | ... |
+| END | 0 | Trigger |  [末] |
+
 
 
 ##### 6.1.1.3 END phase
