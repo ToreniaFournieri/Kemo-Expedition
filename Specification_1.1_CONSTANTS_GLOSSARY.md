@@ -146,18 +146,18 @@
 | `a.bind`3 | 拘束3 | 近接攻撃の命中回数 x 4/64の確率で相手の行動を封じる | on-strike |
 | `a.bind`4 | 拘束4 | 近接攻撃の命中回数 x 5/64の確率で相手の行動を封じる | on-strike |
 | `a.bind`5 | 拘束5 | 近接攻撃の命中回数 x 6/64の確率で相手の行動を封じる | on-strike |
-| `a.counter`1 | 反撃1 | 敵の近距離攻撃を受けたとき反撃する(攻撃回数は半減) | on-receive　|
-| `a.counter`2 | 反撃2 | 敵の近距離攻撃を受けたとき反撃する(攻撃回数は半減しない) | on-receive |
-| `a.counter`3 | 反撃3 | 敵の近距離攻撃を受けたとき反撃する(攻撃回数は2倍) | on-receive |
-| `a.magical-counter`1 | 魔法反撃1 | 魔法には魔法で反撃する(攻撃回数半減) | on-receive |
-| `a.magical-counter`2 | 魔法反撃2 | 魔法には魔法で反撃する(攻撃回数半減しない) | on-receive |
-| `a.resurrect`1 | 再起1 | 自分が受けた致命ダメージをHP 1残して耐える(1回のみ) | on-receive |
-| `a.resurrect`2 | 再起2 | 自分が受けた致命ダメージをHP 1%残して耐える(1回のみ) | on-receive |
-| `a.reanimate`1 | 即時蘇生1 | 自身のHPが0となったタイミングで発動。HP20%で復活する(戦闘中1回のみ有効) | on-receive |
-| `a.reanimate`2 | 即時蘇生2 | 自身のHPが0となったタイミングで発動。HP26%で復活する(戦闘中1回のみ有効) | on-receive |
-| `a.reanimate`3 | 即時蘇生3 | 自身のHPが0となったタイミングで発動。HP31%で復活する(戦闘中1回のみ有効) | on-receive |
-| `a.reanimate`4 | 即時蘇生4 | 自身のHPが0となったタイミングで発動。HP35%で復活する(戦闘中1回のみ有効) | on-receive |
-| `a.reanimate`5 | 即時蘇生5 | 自身のHPが0となったタイミングで発動。HP38%で復活する(戦闘中1回のみ有効) | on-receive |
+| `a.counter`1 | 反撃1 | 敵の近距離攻撃を受けたとき反撃する(攻撃回数は半減) | counter　|
+| `a.counter`2 | 反撃2 | 敵の近距離攻撃を受けたとき反撃する(攻撃回数は半減しない) | counter |
+| `a.counter`3 | 反撃3 | 敵の近距離攻撃を受けたとき反撃する(攻撃回数は2倍) | counter |
+| `a.magical-counter`1 | 魔法反撃1 | 魔法には魔法で反撃する(攻撃回数半減) | counter |
+| `a.magical-counter`2 | 魔法反撃2 | 魔法には魔法で反撃する(攻撃回数半減しない) | counter |
+| `a.resurrect`1 | 再起1 | 自分が受けた致命ダメージをHP 1残して耐える(1回のみ) | on-defeat |
+| `a.resurrect`2 | 再起2 | 自分が受けた致命ダメージをHP 1%残して耐える(1回のみ) | on-defeat |
+| `a.reanimate`1 | 即時蘇生1 | 自身のHPが0となったタイミングで発動。HP20%で復活する(戦闘中1回のみ有効) | on-defeat |
+| `a.reanimate`2 | 即時蘇生2 | 自身のHPが0となったタイミングで発動。HP26%で復活する(戦闘中1回のみ有効) | on-defeat |
+| `a.reanimate`3 | 即時蘇生3 | 自身のHPが0となったタイミングで発動。HP31%で復活する(戦闘中1回のみ有効) | on-defeat |
+| `a.reanimate`4 | 即時蘇生4 | 自身のHPが0となったタイミングで発動。HP35%で復活する(戦闘中1回のみ有効) | on-defeat |
+| `a.reanimate`5 | 即時蘇生5 | 自身のHPが0となったタイミングで発動。HP38%で復活する(戦闘中1回のみ有効) | on-defeat |
 | `a.re-counter`1 | 再反撃1 | 敵から反撃に対して、反撃する(攻撃回数半減) | counter-chain |
 | `a.re-counter`2 | 再反撃2 | 敵から反撃に対して、反撃する(攻撃回数半減しない) | counter-chain |
 | `a.null-counter`1 | 反撃無効化1 | 反撃を無効化する(1回のみ) | anti-counter |
