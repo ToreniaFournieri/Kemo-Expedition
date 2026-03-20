@@ -166,7 +166,7 @@
 | `a.decompose` | 分解 | 指定タイミングで発動し、相手の物理防御力をxN倍にする | Lv1: CLOSE2・x6/7, Lv2: CLOSE2・x5/7, Lv3: CLOSE2・x4/7, Lv4: CLOSE2・x3/7, Lv5: CLOSE2・x2/7 | CLOSE | 2 |
 | `a.self-destruct` | 自爆 | 指定タイミングで発動し、自爆して相手に残ダメージのNを与える | Lv1: CLOSE2・1/10, Lv2: CLOSE2・3/10, Lv3: CLOSE2・5/10, Lv4: CLOSE2・7/10, Lv5: CLOSE2・100% | CLOSE | 2 |
 | `a.free` | 逃走 | 指定タイミングで発動し、戦闘から逃走する(戦闘は引分になる) | Lv1: CLOSE1, Lv2: CLOSE2, Lv3: CLOSE3, Lv4: MID1, Lv5: MID2 | CLOSE / MID | 1-3 / 1-2 |
-| `a.auriferous` | 含金 | 自身が受ける総攻撃回数10回ごとに、自身のドロップ抽選確率を+1する | - | END | 5 |
+| `a.auriferous` | 含金 | 自身が受けた攻撃回数の累計が10回に達するごとに、ドロップ抽選チケット数を+1する | - | END | 5 |
 
 
 #### 1.1.2 b. bonus
