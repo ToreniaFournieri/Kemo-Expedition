@@ -48,7 +48,7 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'resurrect', label: '再起', description: '致命ダメージを受けた際、HPをN残して耐える(1回のみ)', levelScale: ['Lv1: 1', 'Lv2: 1%'], subcategory: 'reactive' },
   { abilityId: 'reanimate', label: '即時蘇生', description: 'HPが0になったとき、HP N%で復活する(戦闘中1回のみ)', levelScale: ['Lv1: 20%', 'Lv2: 26%', 'Lv3: 31%', 'Lv4: 35%', 'Lv5: 38%'], subcategory: 'reactive' },
   { abilityId: 're_counter', label: '再反撃', description: '反撃に対して反撃する(攻撃回数がxN倍になる)', levelScale: ['Lv1: x0.5', 'Lv2: x1.0'], subcategory: 'reactive' },
-  { abilityId: 'null_counter', label: '反撃無効化', description: '反撃を無効化する(最大N回)', levelScale: ['Lv1: 1回', 'Lv2: 2回', 'Lv3: 3回'], subcategory: 'reactive' },
+  { abilityId: 'null_counter', label: '反撃無効化', description: '反撃を無効化する(最大N回)', levelScale: ['Lv1: 1', 'Lv2: 2', 'Lv3: 3'], subcategory: 'reactive' },
   { abilityId: 'covering_fire', label: '援護射撃', description: '味方の近接攻撃が1ヒット時に遠距離攻撃で追撃する(攻撃回数がxN倍になる)', levelScale: ['Lv1: x0.5', 'Lv2: x1.0'], subcategory: 'reactive' },
 
   { abilityId: 'oblivion', label: '忘却', description: '無作為に選んだ相手のアビリティ1つを、この戦闘中無効化する', levelScale: [], subcategory: 'timed' },
