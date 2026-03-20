@@ -58,7 +58,7 @@
 - Passive ability(常時効果アビリティ):
   - Sub category: 常, 征, 反, 時 (Default: 常)
  
-| `a.` ability | 表示 | 説明 | Level scale |
+| `a.` ability | label | description | Level scale |
 |----|----|----|----|
 | `a.iaigiri` | 居合斬り | 物理ダメージを xN倍する(攻撃回数が半減する) | Lv1: x1.6, Lv2: x1.8, Lv3: x2.0 |
 | `a.hunter` | 狩人 | 列による命中率減衰を軽減する | Lv1: 15%→10%, Lv2: 15%→7%, Lv3: 15%→5% |
@@ -71,7 +71,7 @@
 
 - Expedition ability(遠征アビリティ):
 
-| `a.` ability | 表示 | 説明 | Level scale |
+| `a.` ability | label | description | Level scale |
 |----|----|----|----|
 | `a.tithe` | 十分の一税 | 遠征利益の+N%を寄付額に上乗せする | Lv1: +10%, Lv2: +15% |
 | `a.squander` | 浪費 | 宴会で消費するゴールドがxN倍になる | Lv1: x1.3, Lv2: x1.5 |
@@ -80,85 +80,38 @@
 | `a.peddler` | 行商 | 移動時間がxN倍になる | Lv1: x2/3, Lv2: x3/5 |
 
 - Reactive ability(反応アビリティ):
-  
-| `a.` ability | 表示 | 説明 | trigger  |
-|----|----|----|----|
-| `a.resonance`1| 共鳴1 | 魔法攻撃 1回毎に、全ヒットのダメージが +4% 増加する | self-state |
-| `a.resonance`2 | 共鳴2 | 魔法攻撃 1回毎に、全ヒットのダメージが +7% 増加する | self-state |
-| `a.resonance`3 | 共鳴3 | 魔法攻撃 1回毎に、全ヒットのダメージが +9% 増加する | self-state |
-| `a.resonance`4 | 共鳴4 | 魔法攻撃 1回毎に、全ヒットのダメージが +11% 増加する | self-state |
-| `a.resonance`5 | 共鳴5 | 魔法攻撃 1回毎に、全ヒットのダメージが +12% 増加する | self-state |
-| `a.ambush`1 | 待ち伏せ1 | 自身の通常行動時点でいずれの相手もまだこの戦闘中に行動していなかった場合、与ダメージ1.3倍 | self-state |　
-| `a.ambush`2 | 待ち伏せ2 | 自身の通常行動時点でいずれの相手もまだこの戦闘中に行動していなかった場合、与ダメージ1.5倍 | self-state |
-| `a.ambush`3 | 待ち伏せ3 | 自身の通常行動時点でいずれの相手もまだこの戦闘中に行動していなかった場合、与ダメージ1.6倍 | self-state |
-| `a.ambush`4 | 待ち伏せ4 | 自身の通常行動時点でいずれの相手もまだこの戦闘中に行動していなかった場合、与ダメージ1.65倍 | self-state |
-| `a.ambush`5 | 待ち伏せ5 | 自身の通常行動時点でいずれの相手もまだこの戦闘中に行動していなかった場合、与ダメージ1.68倍 | self-state |
-| `a.rage`1 | 闘志1 | 物理/魔法攻撃倍率増大(受けたダメージ1%につき0.5%増) | self-state |
-| `a.rage`2 | 闘志2 | 物理/魔法攻撃倍率増大(受けたダメージ1%につき0.6%増) | self-state |
-| `a.momentum`1 | 気勢1 | 物理/魔法攻撃倍率1.25倍(受けたダメージ1%につき0.5%減)、収益の一部を着服する | self-state |
-| `a.momentum`2 | 気勢2 | 物理/魔法攻撃倍率1.25倍(受けたダメージ1%につき0.4%減)、収益の一部を着服する | self-state |
-| `a.no-offense`1 | 受身1 | 通常行動をしなくなる(反撃などは行う) | self-state |
-| `a.swarm`1 | 群れ1 | 自身のHPが減ると攻撃倍率・防御倍率減(HP1%につき0.5%減少) | self-state |
-| `a.stealth`1 | 隠れ蓑1 | HP24%未満の時、自身へのダメージをすべて回避する| opponent-reactive |
-| `a.stealth`2 | 隠れ蓑2 | HP29%未満の時、自身へのダメージをすべて回避する| opponent-reactive |
-| `a.illusion`1 | 幻化1 | 自分が受ける最初の遠距離攻撃を無効化する | opponent-reactive |
-| `a.illusion`2 | 幻化2 | パーティーが受ける最初の遠距離攻撃を無効化する | opponent-reactive |
-| `a.flying`1 | 飛行1 | 相手の近接攻撃回数が1/4になる | opponent-reactive |
-| `a.bulwark`1 | 壁1 | 真後ろの味方への遠距離攻撃を肩代わりする | intercept |
-| `a.bulwark`2 | 壁2 | 真後ろの味方への遠距離/近距離攻撃を肩代わりする | intercept |
-| `a.shock`1 | 感電1 | 相手の最初の通常近接攻撃に対して発動。相手の近接攻撃が1回目ヒットした段階で攻撃をやめさせる | interrupt |
-| `a.re-attack`1 | 連撃1 | 攻撃時に 追加攻撃を行う(攻撃回数は半減) | on-strike |
-| `a.re-attack`2 | 連撃2 | 攻撃時に 追加攻撃を行う(攻撃回数は0.7倍) | on-strike |
-| `a.re-attack`3 | 連撃3 | 攻撃時に 追加攻撃を行う(攻撃回数は半減しない) | on-strike |
-| `a.corrode`1 | 腐食1 | 通常近接攻撃が3回以上命中した相手に対して、攻撃倍率x6/7 | on-strike |
-| `a.corrode`2 | 腐食2 | 通常近接攻撃が3回以上命中した相手に対して、攻撃倍率x5/7 | on-strike |
-| `a.corrode`3 | 腐食3 | 通常近接攻撃が3回以上命中した相手に対して、攻撃倍率x4/7 | on-strike |
-| `a.corrode`4 | 腐食4 | 通常近接攻撃が3回以上命中した相手に対して、攻撃倍率x3/7 | on-strike |
-| `a.corrode`5 | 腐食5 | 通常近接攻撃が3回以上命中した相手に対して、攻撃倍率x2/7 | on-strike |
-| `a.life-drain`1 | 吸血1 | 通常近接攻撃で相手に与えたダメージの1/10を回復 | on-strike |
-| `a.life-drain`2 | 吸血2 | 通常近接攻撃で相手に与えたダメージの3/10を回復 | on-strike |
-| `a.life-drain`3 | 吸血3 | 通常近接攻撃で相手に与えたダメージの5/10を回復 | on-strike |
-| `a.life-drain`4 | 吸血4 | 通常近接攻撃で相手に与えたダメージの7/10を回復 | on-strike |
-| `a.life-drain`5 | 吸血5 | 通常近接攻撃で相手に与えたダメージを回復 | on-strike |
-| `a.death-touch`1 | 接死1 | 通常近接攻撃の命中回数 x 2/256の確率で即死 | on-strike |
-| `a.death-touch`2 | 接死2 | 通常近接攻撃の命中回数 x 3/256の確率で即死 | on-strike |
-| `a.death-touch`3 | 接死3 | 通常近接攻撃の命中回数 x 4/256の確率で即死 | on-strike |
-| `a.death-touch`4 | 接死4 | 通常近接攻撃の命中回数 x 5/256の確率で即死 | on-strike |
-| `a.death-touch`5 | 接死5 | 通常近接攻撃の命中回数 x 6/256の確率で即死 | on-strike |
-| `a.burn`1 | 火傷1 | 相手の通常近接攻撃の命中した回数 x 0.5%のダメージを相手に与える | on-strike |
-| `a.burn`2 | 火傷2 | 相手の通常近接攻撃の命中した回数 x 0.9%のダメージを相手に与える | on-strike |
-| `a.burn`3 | 火傷3 | 相手の通常近接攻撃の命中した回数 x 1.2%のダメージを相手に与える | on-strike |
-| `a.burn`4 | 火傷4 | 相手の通常近接攻撃の命中した回数 x 1.4%のダメージを相手に与える | on-strike |
-| `a.burn`5 | 火傷5 | 相手の通常近接攻撃の命中した回数 x 1.5%のダメージを相手に与える | on-strike |
-| `a.bind`1 | 拘束1 | 近接攻撃の命中回数 x 2/64の確率で相手の行動を封じる | on-strike |
-| `a.bind`2 | 拘束2 | 近接攻撃の命中回数 x 3/64の確率で相手の行動を封じる | on-strike |
-| `a.bind`3 | 拘束3 | 近接攻撃の命中回数 x 4/64の確率で相手の行動を封じる | on-strike |
-| `a.bind`4 | 拘束4 | 近接攻撃の命中回数 x 5/64の確率で相手の行動を封じる | on-strike |
-| `a.bind`5 | 拘束5 | 近接攻撃の命中回数 x 6/64の確率で相手の行動を封じる | on-strike |
-| `a.counter`1 | 反撃1 | 敵の近距離攻撃を受けたとき反撃する(攻撃回数は半減) | counter　|
-| `a.counter`2 | 反撃2 | 敵の近距離攻撃を受けたとき反撃する(攻撃回数は半減しない) | counter |
-| `a.counter`3 | 反撃3 | 敵の近距離攻撃を受けたとき反撃する(攻撃回数は2倍) | counter |
-| `a.magical-counter`1 | 魔法反撃1 | 魔法には魔法で反撃する(攻撃回数半減) | counter |
-| `a.magical-counter`2 | 魔法反撃2 | 魔法には魔法で反撃する(攻撃回数半減しない) | counter |
-| `a.resurrect`1 | 再起1 | 自分が受けた致命ダメージをHP 1残して耐える(1回のみ) | on-defeat |
-| `a.resurrect`2 | 再起2 | 自分が受けた致命ダメージをHP 1%残して耐える(1回のみ) | on-defeat |
-| `a.reanimate`1 | 即時蘇生1 | 自身のHPが0となったタイミングで発動。HP20%で復活する(戦闘中1回のみ有効) | on-defeat |
-| `a.reanimate`2 | 即時蘇生2 | 自身のHPが0となったタイミングで発動。HP26%で復活する(戦闘中1回のみ有効) | on-defeat |
-| `a.reanimate`3 | 即時蘇生3 | 自身のHPが0となったタイミングで発動。HP31%で復活する(戦闘中1回のみ有効) | on-defeat |
-| `a.reanimate`4 | 即時蘇生4 | 自身のHPが0となったタイミングで発動。HP35%で復活する(戦闘中1回のみ有効) | on-defeat |
-| `a.reanimate`5 | 即時蘇生5 | 自身のHPが0となったタイミングで発動。HP38%で復活する(戦闘中1回のみ有効) | on-defeat |
-| `a.re-counter`1 | 再反撃1 | 敵から反撃に対して、反撃する(攻撃回数半減) | counter-chain |
-| `a.re-counter`2 | 再反撃2 | 敵から反撃に対して、反撃する(攻撃回数半減しない) | counter-chain |
-| `a.null-counter`1 | 反撃無効化1 | 反撃を無効化する(1回のみ) | anti-counter |
-| `a.null-counter`2 | 反撃無効化2 | 反撃を無効化する(2回まで) | anti-counter |
-| `a.null-counter`3 | 反撃無効化3 | 反撃を無効化する(3回まで) | anti-counter |
-| `a.covering-fire`1 | 援護射撃1 | 味方近接攻撃の命中が1回のみなら遠距離射撃(攻撃回数半減) | ally-follow-up |
-| `a.covering-fire`2 | 援護射撃2 | 味方近接攻撃の命中が1回のみなら遠距離射撃(攻撃回数半減しない) | ally-follow-up |
+
+| `a.` ability | label | description | Level scale | trigger |
+|----|----|----|----|----|
+| `a.resonance` | 共鳴 | 魔法攻撃を行うたびに、全ヒットのダメージが+N%増加する | Lv1: +4%, Lv2: +7%, Lv3: +9%, Lv4: +11%, Lv5: +12% | self-state |
+| `a.ambush` | 待ち伏せ | 自身の通常行動時点で相手が未行動の場合、与ダメージがxN倍になる | Lv1: x1.3, Lv2: x1.5, Lv3: x1.6, Lv4: x1.65, Lv5: x1.68 | self-state |
+| `a.rage` | 闘志 | 受けたダメージ1%につき、物理/魔法攻撃倍率が+N%増加する | Lv1: +0.5%, Lv2: +0.6% | self-state |
+| `a.momentum` | 気勢 | 物理/魔法攻撃倍率がx1.25倍になり、受けたダメージ1%につき-N%減少する。収益の一部を着服する | Lv1: -0.5%, Lv2: -0.4% | self-state |
+| `a.no-offense` | 受身 | 通常行動を行わなくなる(反撃などは行う) | - | self-state |
+| `a.swarm` | 群れ | HP減少に応じて攻撃倍率・防御倍率がN%減少する | Lv1: HP1%につき-0.5% | self-state |
+| `a.stealth` | 隠れ蓑 | HPがN%未満のとき、自身へのダメージをすべて回避する | Lv1: 24%, Lv2: 29% | opponent-reactive |
+| `a.illusion` | 幻化 | 最初の遠距離攻撃を無効化する(対象範囲:N) | Lv1: 自身, Lv2: パーティー全体 | opponent-reactive |
+| `a.flying` | 飛行 | 相手の近接攻撃回数がxN倍になる | Lv1: x1/4 | opponent-reactive |
+| `a.bulwark` | 壁 | 真後ろの味方への攻撃を肩代わりする(対象:N) | Lv1: 遠距離, Lv2: 遠距離＋近距離 | intercept |
+| `a.shock` | 感電 | 最初の通常近接攻撃に対して発動し、1ヒット後に攻撃を中断させる | - | interrupt |
+| `a.re-attack` | 連撃 | 攻撃時に追加攻撃を行う(攻撃回数がxN倍になる) | Lv1: x0.5, Lv2: x0.7, Lv3: x1.0 | on-strike |
+| `a.corrode` | 腐食 | 通常近接攻撃が3回以上命中した相手の攻撃倍率をxN倍にする | Lv1: x6/7, Lv2: x5/7, Lv3: x4/7, Lv4: x3/7, Lv5: x2/7 | on-strike |
+| `a.life-drain` | 吸血 | 通常近接攻撃で与えたダメージのNを回復する | Lv1: 1/10, Lv2: 3/10, Lv3: 5/10, Lv4: 7/10, Lv5: 100% | on-strike |
+| `a.death-touch` | 接死 | 通常近接攻撃の命中回数×Nの確率で即死させる | Lv1: 2/256, Lv2: 3/256, Lv3: 4/256, Lv4: 5/256, Lv5: 6/256 | on-strike |
+| `a.burn` | 火傷 | 相手の近接攻撃命中回数×N%のダメージを与える | Lv1: 0.5%, Lv2: 0.9%, Lv3: 1.2%, Lv4: 1.4%, Lv5: 1.5% | on-strike |
+| `a.bind` | 拘束 | 近接攻撃の命中回数×Nの確率で行動不能にする | Lv1: 2/64, Lv2: 3/64, Lv3: 4/64, Lv4: 5/64, Lv5: 6/64 | on-strike |
+| `a.counter` | 反撃 | 近距離攻撃を受けたとき反撃する(攻撃回数がxN倍になる) | Lv1: x0.5, Lv2: x1.0, Lv3: x2.0 | counter |
+| `a.magical-counter` | 魔法反撃 | 魔法攻撃に対して反撃する(攻撃回数がxN倍になる) | Lv1: x0.5, Lv2: x1.0 | counter |
+| `a.resurrect` | 再起 | 致命ダメージを受けた際、HPをN残して耐える(1回のみ) | Lv1: 1, Lv2: 1% | on-defeat |
+| `a.reanimate` | 即時蘇生 | HPが0になったとき、HP N%で復活する(戦闘中1回のみ) | Lv1: 20%, Lv2: 26%, Lv3: 31%, Lv4: 35%, Lv5: 38% | on-defeat |
+| `a.re-counter` | 再反撃 | 反撃に対して反撃する(攻撃回数がxN倍になる) | Lv1: x0.5, Lv2: x1.0 | counter-chain |
+| `a.null-counter` | 反撃無効化 | 反撃を無効化する(最大N回) | Lv1: 1回, Lv2: 2回, Lv3: 3回 | anti-counter |
+| `a.covering-fire` | 援護射撃 | 味方の近接攻撃が1ヒット時に遠距離攻撃で追撃する(攻撃回数がxN倍になる) | Lv1: x0.5, Lv2: x1.0 | ally-follow-up |
 
 
 - Timed ability(時限アビリティ):
   
-| `a.` ability | 表示 | 説明 | phase | priority |
+| `a.` ability | label | description | phase | priority |
 |----|----|----|----|----|
 | `a.oblivion`1 | 忘却1 | 無作為に選んだ相手のアビリティ1つを、この戦闘中無効化する | START | 9 |
 | `a.mimic`1 | 模倣1 | 相手のアビリティ1つを無作為に指定する。指定したアビリティの効果を発動する | START | 8 |
