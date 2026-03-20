@@ -115,8 +115,8 @@
 | `a.illusion`1 | 幻化1 | 自分が受ける最初の遠距離攻撃を無効化する | opponent-reactive |
 | `a.illusion`2 | 幻化2 | パーティーが受ける最初の遠距離攻撃を無効化する | opponent-reactive |
 | `a.flying`1 | 飛行1 | 相手の近接攻撃回数が1/4になる | opponent-reactive |
-| `a.bulwark`1 | 壁1 | 真後ろの味方への遠距離攻撃を肩代わりする | interrupt |
-| `a.bulwark`2 | 壁2 | 真後ろの味方への遠距離/近距離攻撃を肩代わりする | interrupt |
+| `a.bulwark`1 | 壁1 | 真後ろの味方への遠距離攻撃を肩代わりする | intercept |
+| `a.bulwark`2 | 壁2 | 真後ろの味方への遠距離/近距離攻撃を肩代わりする | intercept |
 | `a.shock`1 | 感電1 | 相手の最初の通常近接攻撃に対して発動。相手の近接攻撃が1回目ヒットした段階で攻撃をやめさせる | interrupt |
 | `a.re-attack`1 | 連撃1 | 攻撃時に 追加攻撃を行う(攻撃回数は半減) | on-strike |
 | `a.re-attack`2 | 連撃2 | 攻撃時に 追加攻撃を行う(攻撃回数は0.7倍) | on-strike |
