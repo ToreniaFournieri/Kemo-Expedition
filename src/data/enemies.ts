@@ -251,7 +251,7 @@ function createEnemyFromTemplate(
   const accuracyBonus = classBase.accuracyBonus + (hasCyborgization ? 0.03 : 0);
   const evasionBonus = classBase.evasionBonus + (hasCyborgization ? -0.02 : 0);
 
-  // Master enemy data (before expedition/floor multipliers)
+  // Master enemy data (before runtime expedition/god scaling)
   const hp = Math.floor(classBase.hp * template.hpMod);
   const attackScale = template.attackMod;
   const defenseScale = template.defenseMod;
@@ -290,7 +290,7 @@ function createEnemyFromTemplate(
     magicalNoA: classBase.magicalNoA,
     meleeAttack: Math.floor(classBase.meleeAttack * attackScale),
     meleeNoA: classBase.meleeNoA,
-    // f.offense_amplifier scales by floor multiplier only (no exp/tier multiplier)
+    // f.offense_amplifier scales only through runtime expedition/god multipliers.
     rangedAttackAmplifier: classBase.rangedAttackAmplifier,
     magicalAttackAmplifier: classBase.magicalAttackAmplifier,
     meleeAttackAmplifier: classBase.meleeAttackAmplifier,

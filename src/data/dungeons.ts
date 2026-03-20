@@ -1,7 +1,14 @@
 import { Dungeon, ExpeditionEnemyMultipliers, FloorDef, RoomType } from '../types';
 import { MASTER_EXPEDITION_ENEMIES_PACKED } from './masterSpecData';
 
-type CombatMultipliers = NonNullable<FloorDef['multipliers']>;
+type CombatMultipliers = {
+  hp: number;
+  attack: number;
+  noa: number;
+  attackAmplifier: number;
+  defense: number;
+  defenseAmplifier: number;
+};
 
 const round2 = (value: number): number => Number(value.toFixed(2));
 
@@ -55,46 +62,6 @@ export function getEnemyMultipliersForLevel(enemyLevel: number): CombatMultiplie
   };
 }
 
-function buildFloorRoomMultipliers(maxFloor: number): Record<number, Record<RoomType, CombatMultipliers>> {
-  const roomTypeMultipliers: Record<RoomType, CombatMultipliers> = {
-    battle_Normal: { hp: 1.0, attack: 1.0, noa: 1.0, attackAmplifier: 1.0, defense: 1.0, defenseAmplifier: 1.0 },
-    battle_Elite: { hp: 1.3, attack: 1.2, noa: 1.0, attackAmplifier: 1.02, defense: 1.2, defenseAmplifier: 1.0 },
-    battle_Boss: { hp: 1.69, attack: 1.45, noa: 1.0, attackAmplifier: 1.05, defense: 1.45, defenseAmplifier: 1.0 },
-  };
-
-  return Array.from({ length: maxFloor }, (_, index) => {
-    const floorNumber = index + 1;
-    const base = {
-      hp: Math.pow(1.149, floorNumber - 1),
-      attack: Math.pow(1.0845, floorNumber - 1),
-      noa: Math.pow(1.05, floorNumber - 1),
-      attackAmplifier: Math.pow(1.03, floorNumber - 1),
-      defense: Math.pow(1.0845, floorNumber - 1),
-      defenseAmplifier: Math.pow(0.97, floorNumber - 1),
-    };
-
-    const roomMultipliers = Object.fromEntries(
-      (Object.entries(roomTypeMultipliers) as [RoomType, CombatMultipliers][]).map(([roomType, roomMult]) => [
-        roomType,
-        {
-          hp: round2(base.hp * roomMult.hp),
-          attack: round2(base.attack * roomMult.attack),
-          noa: round2(base.noa * roomMult.noa),
-          attackAmplifier: round2(base.attackAmplifier * roomMult.attackAmplifier),
-          defense: round2(base.defense * roomMult.defense),
-          defenseAmplifier: round2(base.defenseAmplifier * roomMult.defenseAmplifier),
-        },
-      ])
-    ) as Record<RoomType, CombatMultipliers>;
-
-    return [floorNumber, roomMultipliers] as const;
-  }).reduce<Record<number, Record<RoomType, CombatMultipliers>>>((acc, [floorNumber, multipliers]) => {
-    acc[floorNumber] = multipliers;
-    return acc;
-  }, {});
-}
-
-const FLOOR_ROOM_MULTIPLIERS = buildFloorRoomMultipliers(6);
 
 function buildExpeditionEnemyMultipliers(maxTier: number): ExpeditionEnemyMultipliers[] {
   const multipliers: ExpeditionEnemyMultipliers[] = [
@@ -196,12 +163,9 @@ function createFloors(poolId: number, bossId: number): FloorDef[] {
   return Array.from({ length: 6 }, (_, index) => {
     const floorNumber = index + 1;
     const isLastFloor = floorNumber === 6;
-    const normalMultipliers = FLOOR_ROOM_MULTIPLIERS[floorNumber]?.battle_Normal;
-
     return {
       floorNumber,
-      multiplier: normalMultipliers?.attack ?? 1,
-      multipliers: normalMultipliers,
+      multiplier: 1,
       rooms: [
         { type: 'battle_Normal' as const, poolId, enemyIds: getMasterRoomEnemyIds(poolId, floorNumber, 1) },
         { type: 'battle_Normal' as const, poolId, enemyIds: getMasterRoomEnemyIds(poolId, floorNumber, 2) },
@@ -325,7 +289,6 @@ export const DUNGEONS: Dungeon[] = [
       {
         floorNumber: 1,
         multiplier: 1,
-        multipliers: FLOOR_ROOM_MULTIPLIERS[1]?.battle_Boss,
         rooms: [{ type: 'battle_Boss', poolId: 99, bossId: 9901, enemyIds: [9901] }],
       },
     ],
@@ -335,18 +298,6 @@ export const DUNGEONS: Dungeon[] = [
 export const getDungeonById = (id: number): Dungeon | undefined =>
   DUNGEONS.find(d => d.id === id);
 
-const DEFAULT_MULTIPLIERS: CombatMultipliers = {
-  hp: 1,
-  attack: 1,
-  noa: 1,
-  attackAmplifier: 1,
-  defense: 1,
-  defenseAmplifier: 1,
-};
-
-export function getFloorRoomMultipliers(floorNumber: number, roomType: RoomType): CombatMultipliers {
-  return FLOOR_ROOM_MULTIPLIERS[floorNumber]?.[roomType] ?? DEFAULT_MULTIPLIERS;
-}
 
 // Get expedition tier (1-8) from dungeon id
 export function getExpeditionTier(dungeonId: number): number {
