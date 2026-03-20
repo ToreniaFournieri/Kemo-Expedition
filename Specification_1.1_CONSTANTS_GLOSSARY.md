@@ -50,9 +50,12 @@
 
 #### 1.1.1 a. bonus ability
 - "能. アビリティボーナス (重複なし、強化可能)"
-- Sub category: 常, 征, 反, 時 (Default: 常)
+
+  - in Glossary tab, display abilities in one line, not split per level. 
+  - exapmle: 居合斬り 物理ダメージをx1.6 ~ 2.0倍する(攻撃回数が半減する) (1: x1.6, 2: x1.8, 3: 2.0)
 
 - Passive ability(常時効果アビリティ):
+  - Sub category: 常, 征, 反, 時 (Default: 常)
 
 | `a.` ability | 表示 | 説明 |
 |----|----|----|
