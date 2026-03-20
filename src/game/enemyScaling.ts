@@ -104,7 +104,7 @@ export function applyEnemyEncounterScaling(
     magicalAttackAmplifier: enemy.magicalAttackAmplifier * finalMultipliers.attackAmplifier,
     meleeAttackAmplifier: enemy.meleeAttackAmplifier * finalMultipliers.attackAmplifier,
     physicalDefense: Math.floor(enemy.physicalDefense * finalMultipliers.defense * (hasColossal ? 2 : 1)),
-    magicalDefense: Math.floor(enemy.magicalDefense * finalMultipliers.defense * (hasColossal ? 2 : 1)),
+    magicalDefense: Math.floor(enemy.magicalDefense * finalMultipliers.defense),
     physicalDefenseAmplifier: 1.0 * finalMultipliers.physicalDefenseAmplifier * (hasColossal ? 2 : 1),
     magicalDefenseAmplifier: 1.0 * finalMultipliers.magicalDefenseAmplifier,
     experience: enemy.experience,
