@@ -1,5 +1,6 @@
 import { AbilityId, ElementalResistance, EnemyAbility, EnemyClassId, EnemyDef } from '../types';
 import { getEnemyCyborgizationAdjustment, resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
+import { applyEnemyBonusesToRuntimeEnemy, getEnemyTypeSpec } from './enemyBonuses';
 import { LUNA_MODE_ENEMY_LEVEL_BONUS, getEnemyMultipliersForLevel } from '../data/dungeons';
 
 const COLOSSEUM_STORAGE_KEY = 'kemo-expedition.colosseum-enemy-settings';
@@ -127,13 +128,15 @@ export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode
     abilities.find((ability) => ability.id === 'cyborgization')?.level ?? 0,
   );
 
+  const enemyTypeBonuses = getEnemyTypeSpec(normalized.enemyType)?.bonuses ?? [];
+
   const elementalResistance: Record<ElementalResistance, number> = {
     fire: 1,
     thunder: 1,
     ice: 1,
   };
 
-  return {
+  return applyEnemyBonusesToRuntimeEnemy({
     id: 9901,
     type: 'boss',
     enemyType: normalized.enemyType,
@@ -143,6 +146,7 @@ export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode
     name: normalized.name,
     enemyClass: normalized.enemyClass,
     abilities,
+    bonuses: enemyTypeBonuses,
     accuracyBonus: classBase.accuracyBonus + cyborgizationAdjustment.accuracyBonus,
     evasionBonus: classBase.evasionBonus + cyborgizationAdjustment.evasionBonus,
     hp: Math.max(1, Math.floor(classBase.hp * multipliers.hp)),
@@ -158,10 +162,11 @@ export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode
     physicalDefense: Math.max(0, Math.floor(classBase.physicalDefense * multipliers.defense * (hasColossal ? 2 : 1))),
     magicalDefense: Math.max(0, Math.floor(classBase.magicalDefense * multipliers.defense)),
     elementalOffense: 'none',
+    elementalOffenseValue: 1.0,
     elementalResistance,
     physicalDefenseAmplifier: multipliers.defenseAmplifier * (hasColossal ? 2 : 1),
     magicalDefenseAmplifier: multipliers.defenseAmplifier,
     experience: 0,
     dropItemId: null,
-  };
+  });
 }

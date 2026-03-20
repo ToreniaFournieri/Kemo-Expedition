@@ -1,4 +1,5 @@
 import { Dungeon, EnemyDef, RoomType } from '../types';
+import { applyEnemyBonusesToRuntimeEnemy } from './enemyBonuses';
 import { LUNA_MODE_ENEMY_LEVEL_BONUS, getEnemyLevelForRoom, getEnemyMultipliersForLevel } from '../data/dungeons';
 import { getDebugSettings } from './debugSettings';
 
@@ -91,7 +92,7 @@ export function applyEnemyEncounterScaling(
 
   const hasColossal = enemy.abilities.some((ability) => ability.id === 'colossal');
 
-  return {
+  return applyEnemyBonusesToRuntimeEnemy({
     ...enemy,
     hp: Math.floor(enemy.hp * finalMultipliers.hp),
     rangedAttack: Math.floor(enemy.rangedAttack * finalMultipliers.attack),
@@ -108,7 +109,7 @@ export function applyEnemyEncounterScaling(
     physicalDefenseAmplifier: 1.0 * finalMultipliers.physicalDefenseAmplifier * (hasColossal ? 2 : 1),
     magicalDefenseAmplifier: 1.0 * finalMultipliers.magicalDefenseAmplifier,
     experience: enemy.experience,
-  };
+  });
 }
 
 function isPreScaledEncounterEnemy(enemy: EnemyDef): boolean {

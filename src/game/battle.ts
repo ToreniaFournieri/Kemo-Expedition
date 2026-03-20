@@ -490,7 +490,7 @@ function calculateSingleEnemyAttackDamage(
   const partyDefenseAbilityAmplifier = getPartyDefenseAbilityAmplifier(phase, characterStats, targetCharStats.row);
   const rageAmplifier = getEnemyRageAmplifier(enemy, enemyHp);
   const mutualAmplifier = getMutualAmplifier(phase, enemy.abilities, targetCharStats.abilities);
-  const rawDamage = (attack - defense) * amplifier * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * mutualAmplifier;
+  const rawDamage = (attack - defense) * amplifier * (enemy.elementalOffenseValue ?? 1.0) * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * mutualAmplifier;
   const totalDamage = Math.max(1, rawDamage);
 
   return Math.floor(totalDamage);
@@ -3014,7 +3014,7 @@ export function executeBattle(
           const magicProfile = resolveMagicProfile({
             style: 'multi-hit',
             elementalOffense: enemy.elementalOffense,
-            elementalOffenseValue: 1.0,
+            elementalOffenseValue: enemy.elementalOffenseValue ?? 1.0,
             magicalNoA: attempts,
           });
           const resonanceActor = enemyResonanceLevel > 0

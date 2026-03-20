@@ -1502,11 +1502,11 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
     } else if (b.type === 'magical_defense') {
       parts.push(`魔防+${Math.round(b.value * 100)}%`);
     } else if (b.type === 'fire_offense') {
-      parts.push(`炎攻+${Math.round(b.value * 100)}%`);
+      parts.push(`炎攻+${Math.round((b.value >= 1 ? b.value : b.value * 100))}%`);
     } else if (b.type === 'ice_offense') {
-      parts.push(`氷攻+${Math.round(b.value * 100)}%`);
+      parts.push(`氷攻+${Math.round((b.value >= 1 ? b.value : b.value * 100))}%`);
     } else if (b.type === 'thunder_offense') {
-      parts.push(`雷攻+${Math.round(b.value * 100)}%`);
+      parts.push(`雷攻+${Math.round((b.value >= 1 ? b.value : b.value * 100))}%`);
     } else if (b.type === 'deity_physical_attack_xV') {
       parts.push(`天物攻x${formatMultiplierValue(b.value)}`);
     } else if (b.type === 'deity_magical_attack_xV') {
@@ -8309,6 +8309,11 @@ function SettingTab({
     ice: '氷',
   };
 
+  const formatEnemyElementLine = (enemy: EnemyDef): string =>
+    `属性: ${ENEMY_ELEMENT_LABELS[enemy.elementalOffense] ?? '無'} (x${(enemy.elementalOffenseValue ?? 1).toFixed(1)})`;
+
+  const getEnemyBonusText = (enemy: EnemyDef): string => formatBonuses(enemy.bonuses ?? [], { defenseMultiplierStyle: 'friendly' });
+
   const renderEnemyElementalResistanceLine = (enemy: EnemyDef): JSX.Element => {
     const resistanceOrder: Array<{ key: 'fire' | 'ice' | 'thunder'; emoji: string }> = [
       { key: 'fire', emoji: '🔥' },
@@ -9030,7 +9035,7 @@ function SettingTab({
                             }
 
                             const defenseRows: string[] = [
-                              `属性: ${ENEMY_ELEMENT_LABELS[godRuntimeEnemy.elementalOffense] ?? '無'} (x1.0)`,
+                              formatEnemyElementLine(godRuntimeEnemy),
                               formatEnemyDefenseLine('物理防御', godRuntimeEnemy.physicalDefense, physicalDefenseAmplifierPercent),
                               formatEnemyDefenseLine('魔法防御', godRuntimeEnemy.magicalDefense, magicalDefenseAmplifierPercent),
                               `回避: ${formatNumber(Math.round(godRuntimeEnemy.evasionBonus * 1000))}`,
@@ -9046,6 +9051,7 @@ function SettingTab({
                         <div>{renderEnemyElementalResistanceLine(godRuntimeEnemy)}</div>
                       </>
                     )}
+                    {godRuntimeEnemy && getEnemyBonusText(godRuntimeEnemy).length > 0 && <div>ボーナス: {getEnemyBonusText(godRuntimeEnemy)}</div>}
                     <div className="flex items-start gap-1">
                       <div>アビリティ:</div>
                       <div className="flex flex-wrap items-center gap-1">
@@ -9101,12 +9107,13 @@ function SettingTab({
                       <div>タイプ: {ENEMY_TYPE_LABELS[colosseumEnemy.enemyType] ?? colosseumEnemy.enemyType}</div><div></div>
                     </div>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                      <div>{hasRangedAttack ? formatEnemyAttackLine('遠距離攻撃', colosseumEnemy.rangedAttack, colosseumEnemy.rangedNoA, colosseumEnemy.rangedAttackAmplifier) : ''}</div><div>{`属性: ${ENEMY_ELEMENT_LABELS[colosseumEnemy.elementalOffense] ?? '無'} (x1.0)`}</div>
+                      <div>{hasRangedAttack ? formatEnemyAttackLine('遠距離攻撃', colosseumEnemy.rangedAttack, colosseumEnemy.rangedNoA, colosseumEnemy.rangedAttackAmplifier) : ''}</div><div>{formatEnemyElementLine(colosseumEnemy)}</div>
                       <div>{hasMeleeAttack ? formatEnemyAttackLine('近接攻撃', colosseumEnemy.meleeAttack, colosseumEnemy.meleeNoA, colosseumEnemy.meleeAttackAmplifier) : ''}</div><div>{formatEnemyDefenseLine('物理防御', colosseumEnemy.physicalDefense, physicalDefenseAmplifierPercent)}</div>
                       <div>{hasPhysicalAttack ? `物理命中率: 100% (減衰: ${decay})` : ''}</div><div>{formatEnemyDefenseLine('魔法防御', colosseumEnemy.magicalDefense, magicalDefenseAmplifierPercent)}</div>
                       <div>{hasMagicalAttack ? formatEnemyAttackLine('魔法攻撃', colosseumEnemy.magicalAttack, colosseumEnemy.magicalNoA, colosseumEnemy.magicalAttackAmplifier) : ''}</div><div>回避: {formatNumber(Math.round(colosseumEnemy.evasionBonus * 1000))}</div>
                       <div>{hasMagicalAttack ? `魔法命中率: 100% (減衰: ${decay})` : ''}</div><div>{renderEnemyElementalResistanceLine(colosseumEnemy)}</div>
                     </div>
+                    {getEnemyBonusText(colosseumEnemy).length > 0 && <div>ボーナス: {getEnemyBonusText(colosseumEnemy)}</div>}
                     <div className="flex items-start gap-1">
                       <div>アビリティ:</div>
                       <div className="flex flex-wrap items-center gap-1">
@@ -9192,7 +9199,7 @@ function SettingTab({
 
                             // Bestiary detail keeps the compact 4-line defense block.
                             const defenseRows: string[] = [
-                              `属性: ${ENEMY_ELEMENT_LABELS[displayEnemy.elementalOffense] ?? '無'} (x1.0)`,
+                              formatEnemyElementLine(displayEnemy),
                               formatEnemyDefenseLine('物理防御', displayEnemy.physicalDefense, physicalDefenseAmplifierPercent),
                               formatEnemyDefenseLine('魔法防御', displayEnemy.magicalDefense, magicalDefenseAmplifierPercent),
                               `回避: ${formatNumber(Math.round(displayEnemy.evasionBonus * 1000))}`,
@@ -9206,6 +9213,7 @@ function SettingTab({
                           })()}
                         </div>
                         <div>{renderEnemyElementalResistanceLine(displayEnemy)}</div>
+                        {getEnemyBonusText(displayEnemy).length > 0 && <div>ボーナス: {getEnemyBonusText(displayEnemy)}</div>}
                         <div className="flex items-start gap-1">
                           <div>アビリティ:</div>
                           <div className="flex flex-wrap items-center gap-1">
