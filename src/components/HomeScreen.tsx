@@ -15,7 +15,7 @@ import { LINEAGES } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS, getSuperRareBonuses } from '../data/items';
 import { GOD_ENEMY_PROFILES, GOD_MYTHIC_DROPS, getGodProfileForDungeon } from '../data/dropTables';
 import { ABILITY_BASE_NAMES } from '../data/abilityNames';
-import { GLOSSARY_SECTIONS, type GlossaryEntry } from '../data/glossary';
+import { GLOSSARY_SECTIONS } from '../data/glossary';
 import { getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { applyEnemyEncounterScaling } from '../game/enemyScaling';
@@ -1216,65 +1216,6 @@ function getBonusAbilityGlossarySubcategory(entryKey: string): BonusAbilityGloss
   if (!match) return 'passive';
   const normalizedAbilityId = match[1].replace(/-/g, '_') as AbilityId;
   return BONUS_ABILITY_GLOSSARY_SUBCATEGORY_BY_ABILITY_ID[normalizedAbilityId] ?? 'passive';
-}
-
-function getBonusAbilityGlossaryGroupKey(entryKey: string): string {
-  const match = entryKey.match(/^a\.([a-z-]+?)(\d+)$/);
-  return match ? `a.${match[1]}` : entryKey;
-}
-
-function getBonusAbilityGlossaryLevel(entryKey: string): number | null {
-  const match = entryKey.match(/^a\.[a-z-]+?(\d+)$/);
-  return match ? Number(match[1]) : null;
-}
-
-function getBonusAbilityGlossaryBaseLabel(label: string): string {
-  return label.replace(/\d+$/, '');
-}
-
-function buildAggregatedBonusAbilityGlossaryEntries(entries: GlossaryEntry[]): GlossaryEntry[] {
-  const aggregatedEntries: GlossaryEntry[] = [];
-  const groupedEntries = new Map<string, GlossaryEntry[]>();
-
-  entries.forEach((entry) => {
-    const groupKey = getBonusAbilityGlossaryGroupKey(entry.key);
-    if (!groupedEntries.has(groupKey)) {
-      groupedEntries.set(groupKey, []);
-    }
-    groupedEntries.get(groupKey)?.push(entry);
-  });
-
-  entries.forEach((entry) => {
-    const groupKey = getBonusAbilityGlossaryGroupKey(entry.key);
-    const grouped = groupedEntries.get(groupKey);
-    if (!grouped || grouped.length === 0) return;
-    if (aggregatedEntries.some((aggregatedEntry) => aggregatedEntry.key === groupKey)) return;
-
-    const sortedGroupedEntries = grouped
-      .slice()
-      .sort((a, b) => (getBonusAbilityGlossaryLevel(a.key) ?? 0) - (getBonusAbilityGlossaryLevel(b.key) ?? 0));
-
-    if (sortedGroupedEntries.length === 1) {
-      aggregatedEntries.push(sortedGroupedEntries[0]);
-      return;
-    }
-
-    const baseEntry = sortedGroupedEntries[0];
-    const levelSummary = sortedGroupedEntries
-      .map((groupedEntry) => {
-        const level = getBonusAbilityGlossaryLevel(groupedEntry.key);
-        return level == null ? groupedEntry.description : `Lv${level}: ${groupedEntry.description}`;
-      })
-      .join(', ');
-
-    aggregatedEntries.push({
-      key: groupKey,
-      label: getBonusAbilityGlossaryBaseLabel(baseEntry.label),
-      description: `${baseEntry.description} (${levelSummary})`,
-    });
-  });
-
-  return aggregatedEntries;
 }
 
 const ABILITY_HELP_TEXTS: Record<string, string> = {
@@ -8766,10 +8707,8 @@ function SettingTab({
                     (subcategory) => subcategory.id === bonusAbilityGlossarySubcategory,
                   );
                   const visibleEntries = isBonusAbilityGlossarySection
-                    ? buildAggregatedBonusAbilityGlossaryEntries(
-                        section.entries.filter(
-                          (entry) => getBonusAbilityGlossarySubcategory(entry.key) === bonusAbilityGlossarySubcategory,
-                        ),
+                    ? section.entries.filter(
+                        (entry) => getBonusAbilityGlossarySubcategory(entry.key) === bonusAbilityGlossarySubcategory,
                       )
                     : section.entries;
 
@@ -8866,17 +8805,10 @@ function SettingTab({
                                 </button>
                               ) : (
                                 <div className="flex items-center justify-between gap-2">
-                                  <div className="text-gray-700 font-medium">
-                                    {renderTextWithRaceIcons(entry.label)}
-                                    {isBonusAbilityGlossarySection && (
-                                      <span className="ml-1 font-normal text-gray-500">
-                                        {renderTextWithRaceIcons(mainDescription)}
-                                      </span>
-                                    )}
-                                  </div>
+                                  <div className="text-gray-700 font-medium">{renderTextWithRaceIcons(entry.label)}</div>
                                 </div>
                               )}
-                              {isEntryExpanded && !isBonusAbilityGlossarySection && (
+                              {isEntryExpanded && (
                                 <>
                                   <div className={`${useDefaultGlossaryTextColor ? 'text-gray-700' : 'text-gray-500'} whitespace-pre-line`}>{renderTextWithRaceIcons(mainDescription)}</div>
                                   {isGodGlossarySection && loreLines.map((line, lineIndex) => (
