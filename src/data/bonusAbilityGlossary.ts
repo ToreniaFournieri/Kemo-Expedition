@@ -17,7 +17,7 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'cyborgization', label: 'サイボーグ化', description: '命中が増加し、回避が減少する', levelScale: ['Lv1: 命中+30・回避-20', 'Lv2: 命中+40・回避-15'], subcategory: 'passive' },
   { abilityId: 'composure', label: '平静', description: '命中率がN%加算される', levelScale: ['Lv1: +10%', 'Lv2: +13%'], subcategory: 'passive' },
   { abilityId: 'focus', label: '集中', description: '命中ボーナスの効果がxN倍になる', levelScale: ['Lv1: x1.2', 'Lv2: x1.3'], subcategory: 'passive' },
-  { abilityId: 'colossal', label: '巨人', description: '自身の防御力が2倍になり、物理ダメージ補正がx2.0になる', levelScale: [], subcategory: 'passive' },
+  { abilityId: 'colossal', label: '巨人', description: '自身の防御力が2倍になり、物理被ダメージ補正がx2.0になる', levelScale: [], subcategory: 'passive' },
   { abilityId: 'upgrade_all_abilities', label: '他のアビリティ強化', description: '自身の他のアビリティをN段階強化する(上限レベル5)', levelScale: ['Lv1: +1', 'Lv2: +2', 'Lv3: +3', 'Lv4: +4'], subcategory: 'passive' },
 
   { abilityId: 'tithe', label: '十分の一税', description: '遠征利益の+N%を寄付額に上乗せする', levelScale: ['Lv1: +10%', 'Lv2: +15%'], subcategory: 'expedition' },

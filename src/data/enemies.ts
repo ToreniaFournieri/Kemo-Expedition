@@ -302,7 +302,8 @@ function createEnemyFromTemplate(
       thunder: template.resistances?.thunder ?? 1.0,
       ice: template.resistances?.ice ?? 1.0,
     },
-    defenseAmplifier: 1.0,
+    physicalDefenseAmplifier: 1.0,
+    magicalDefenseAmplifier: 1.0,
     experience: Math.floor(classBase.experience * template.hpMod * enemyTypeExpMult),
     dropItemId,
   };

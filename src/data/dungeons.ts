@@ -65,7 +65,7 @@ export function getEnemyMultipliersForLevel(enemyLevel: number): CombatMultiplie
 
 function buildExpeditionEnemyMultipliers(maxTier: number): ExpeditionEnemyMultipliers[] {
   const multipliers: ExpeditionEnemyMultipliers[] = [
-    { hp: 1, attack: 1, noa: 1, attackAmplifier: 1, defense: 1, defenseAmplifier: 1, experience: 1 },
+    { hp: 1, attack: 1, noa: 1, attackAmplifier: 1, defense: 1, physicalDefenseAmplifier: 1, magicalDefenseAmplifier: 1, experience: 1 },
   ];
 
   for (let tier = 2; tier <= maxTier; tier += 1) {
@@ -81,7 +81,8 @@ function buildExpeditionEnemyMultipliers(maxTier: number): ExpeditionEnemyMultip
       noa: round2(prev.noa + noaIncrease),
       attackAmplifier: round2(prev.attackAmplifier * attackAmplifierMultiplier),
       defense: round2(prev.defense * defenseMultiplier),
-      defenseAmplifier: round2(Math.pow(0.9, tier - 1) + 0.01 * Math.max(0, tier - 6)),
+      physicalDefenseAmplifier: round2(Math.pow(0.9, tier - 1) + 0.01 * Math.max(0, tier - 6)),
+      magicalDefenseAmplifier: round2(Math.pow(0.9, tier - 1) + 0.01 * Math.max(0, tier - 6)),
       experience: round2(prev.experience * hpMultiplier),
     });
   }

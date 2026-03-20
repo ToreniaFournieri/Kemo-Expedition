@@ -120,6 +120,8 @@ export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode
   normalized.abilities.forEach((ability) => {
     classAbilities.set(ability.id, { id: ability.id, level: ability.level });
   });
+  const abilities = Array.from(classAbilities.values());
+  const hasColossal = abilities.some((ability) => ability.id === 'colossal');
 
   const elementalResistance: Record<ElementalResistance, number> = {
     fire: 1,
@@ -136,7 +138,7 @@ export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode
     poolId: 99,
     name: normalized.name,
     enemyClass: normalized.enemyClass,
-    abilities: Array.from(classAbilities.values()),
+    abilities,
     accuracyBonus: classBase.accuracyBonus,
     evasionBonus: classBase.evasionBonus,
     hp: Math.max(1, Math.floor(classBase.hp * multipliers.hp)),
@@ -149,11 +151,12 @@ export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode
     rangedAttackAmplifier: classBase.rangedAttackAmplifier * multipliers.attackAmplifier,
     magicalAttackAmplifier: classBase.magicalAttackAmplifier * multipliers.attackAmplifier,
     meleeAttackAmplifier: classBase.meleeAttackAmplifier * multipliers.attackAmplifier,
-    physicalDefense: Math.max(0, Math.floor(classBase.physicalDefense * multipliers.defense)),
-    magicalDefense: Math.max(0, Math.floor(classBase.magicalDefense * multipliers.defense)),
+    physicalDefense: Math.max(0, Math.floor(classBase.physicalDefense * multipliers.defense * (hasColossal ? 2 : 1))),
+    magicalDefense: Math.max(0, Math.floor(classBase.magicalDefense * multipliers.defense * (hasColossal ? 2 : 1))),
     elementalOffense: 'none',
     elementalResistance,
-    defenseAmplifier: multipliers.defenseAmplifier,
+    physicalDefenseAmplifier: multipliers.defenseAmplifier * (hasColossal ? 2 : 1),
+    magicalDefenseAmplifier: multipliers.defenseAmplifier,
     experience: 0,
     dropItemId: null,
   };

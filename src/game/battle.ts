@@ -1040,7 +1040,7 @@ function calculateCharacterDamage(
   let attack = 0;
   let noA = 0;
   let defense = 0;
-  let defenseAmplifier = enemy.defenseAmplifier;
+  let defenseAmplifier = enemy.physicalDefenseAmplifier;
 
   switch (phase) {
     case 'long':
@@ -1052,6 +1052,7 @@ function calculateCharacterDamage(
       attack = charStats.magicalAttack;
       noA = charStats.magicalNoA;
       defense = enemy.magicalDefense;
+      defenseAmplifier = enemy.magicalDefenseAmplifier;
       break;
     case 'close':
       attack = charStats.meleeAttack;
@@ -2757,7 +2758,7 @@ export function executeBattle(
           entry.level,
           partyHp,
           enemy.physicalDefense,
-          enemy.defenseAmplifier,
+          enemy.physicalDefenseAmplifier,
         );
 
         partyDamageTakenInBattle += partyHp;
