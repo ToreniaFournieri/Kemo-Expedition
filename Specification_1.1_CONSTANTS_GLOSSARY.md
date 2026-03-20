@@ -51,8 +51,8 @@
 #### 1.1.1 a. bonus ability
 - "能. アビリティボーナス (重複なし、強化可能)"
 
-  - in Glossary tab, display abilities in one line, not split per level. 
-  - exapmle: 居合斬り 物理ダメージをx1.6 ~ 2.0倍する(攻撃回数が半減する) (1: x1.6, 2: x1.8, 3: 2.0)
+  - In the Glossary tab, abilities should be displayed in a single line, rather than split by level.
+  - Example: 居合斬り 物理ダメージをx1.6 ~ 2.0倍する(攻撃回数が半減する) (Lv1: x1.6, Lv2: x1.8, Lv3: 2.0)
 
 - Passive ability(常時効果アビリティ):
   - Sub category: 常, 征, 反, 時 (Default: 常)
@@ -60,8 +60,8 @@
 | `a.` ability | 表示 | 説明 |
 |----|----|----|
 | `a.iaigiri`1 | 居合斬り1 | 物理ダメージをx1.6倍する(攻撃回数が半減する) |
-| `a.iaigiri`2 | 居合斬り2 | 物理ダメージをx1.8倍する(攻撃回数を半減する) |
-| `a.iaigiri`3 | 居合斬り3 | 物理ダメージをx2.0倍する(攻撃回数は半減する) |
+| `a.iaigiri`2 | 居合斬り2 | 物理ダメージをx1.8倍する(攻撃回数が半減する) |
+| `a.iaigiri`3 | 居合斬り3 | 物理ダメージをx2.0倍する(攻撃回数が半減する) |
 | `a.hunter`1 | 狩人1 | 列による命中率減衰を 1列ごと15%→10% に軽減する |
 | `a.hunter`2 | 狩人2 | 列による命中率減衰を 1列ごと15%→7% に軽減する |
 | `a.hunter`3 | 狩人3 | 列による命中率減衰を 1列ごと15%→5% に軽減する |
