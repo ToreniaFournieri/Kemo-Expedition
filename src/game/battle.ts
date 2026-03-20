@@ -1708,6 +1708,8 @@ export interface BattleResult extends BattleState {
   };
 }
 
+const TRIGGER_TIMINGS_DESC = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0] as const;
+
 // SpecRef: 6.1.1.1 | START phase | actor.a.oblivion
 // SpecRef: 6.1.1.1 | START phase | actor.a.mimic
 // SpecRef: 6.1.1.2 | LONG, MID, CLOSE phase | Speed & Turn Order (Rolling Dice Rule)
@@ -1782,52 +1784,6 @@ export function executeBattle(
     }));
   const enemyHasOblivion = getEnemyAbilityLevel(enemy, 'oblivion') >= 1;
 
-  for (const owner of oblivionOwners) {
-    const enemyValidAbilities = enemy.abilities.filter((ability) => ability.level > 0);
-    if (enemyValidAbilities.length === 0) {
-      continue;
-    }
-
-    const selectedEnemyAbility = enemyValidAbilities[Math.floor(Math.random() * enemyValidAbilities.length)];
-    const selectedEnemyAbilityIndex = enemy.abilities.findIndex(
-      (ability) => ability.id === selectedEnemyAbility.id && ability.level === selectedEnemyAbility.level,
-    );
-
-    if (selectedEnemyAbilityIndex >= 0) {
-      enemy.abilities.splice(selectedEnemyAbilityIndex, 1);
-    }
-
-    log.push({
-      phase: 'start',
-      actor: 'effect',
-      action: `${owner.name} が ${enemy.name} の ${formatAbilityLabel(selectedEnemyAbility)} を忘却の彼方に消し去った！`,
-    });
-  }
-
-  if (enemyHasOblivion && characterStats.length > 0) {
-    const targetIndex = Math.floor(Math.random() * characterStats.length);
-    const target = characterStats[targetIndex];
-    const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? '味方';
-    const targetValidAbilities = target.abilities.filter((ability) => ability.level > 0);
-
-    if (targetValidAbilities.length > 0) {
-      const selectedTargetAbility = targetValidAbilities[Math.floor(Math.random() * targetValidAbilities.length)];
-      const selectedTargetAbilityIndex = target.abilities.findIndex(
-        (ability) => ability.id === selectedTargetAbility.id && ability.level === selectedTargetAbility.level,
-      );
-
-      if (selectedTargetAbilityIndex >= 0) {
-        target.abilities.splice(selectedTargetAbilityIndex, 1);
-      }
-
-      log.push({
-        phase: 'start',
-        actor: 'effect',
-        action: `${enemy.name} が ${targetName} の ${formatAbilityLabel(selectedTargetAbility)} を忘却の彼方に消し去った！`,
-      });
-    }
-  }
-
   const mimicOwners = characterStats
     .filter((stats) => getAbilityLevel(stats, 'mimic') >= 1)
     .map((stats) => ({
@@ -1835,44 +1791,6 @@ export function executeBattle(
       stats,
     }));
   const enemyHasMimic = getEnemyAbilityLevel(enemy, 'mimic') >= 1;
-
-  for (const owner of mimicOwners) {
-    const enemyValidAbilities = enemy.abilities.filter(
-      (ability) => ability.level > 0 && ability.id !== 'mimic' && ability.id !== 'oblivion',
-    );
-    if (enemyValidAbilities.length === 0) {
-      continue;
-    }
-
-    const selectedEnemyAbility = enemyValidAbilities[Math.floor(Math.random() * enemyValidAbilities.length)];
-    grantCharacterAbility(owner.stats, selectedEnemyAbility);
-
-    log.push({
-      phase: 'start',
-      actor: 'effect',
-      action: `${owner.name} が ${enemy.name} の ${formatAbilityLabel(selectedEnemyAbility)} を模倣した！`,
-    });
-  }
-
-  if (enemyHasMimic && characterStats.length > 0) {
-    const targetIndex = Math.floor(Math.random() * characterStats.length);
-    const target = characterStats[targetIndex];
-    const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? '味方';
-    const targetValidAbilities = target.abilities.filter(
-      (ability) => ability.level > 0 && ability.id !== 'mimic' && ability.id !== 'oblivion',
-    );
-
-    if (targetValidAbilities.length > 0) {
-      const selectedTargetAbility = targetValidAbilities[Math.floor(Math.random() * targetValidAbilities.length)];
-      grantEnemyAbility(enemy, selectedTargetAbility);
-
-      log.push({
-        phase: 'start',
-        actor: 'effect',
-        action: `${enemy.name} が ${targetName} の ${formatAbilityLabel(selectedTargetAbility)} を模倣した！`,
-      });
-    }
-  }
 
   const remainingNullCounterByCharacterId = createNullCounterPool(characterStats);
   const consumedResurrectCharacterIds = new Set<number>();
@@ -1886,10 +1804,6 @@ export function executeBattle(
   const temporaryAccuracyBonusByCharacterId = new Map<number, number>();
   let forcedOutcome: BattleOutcome | null = null;
   let forcedOutcomePhase: BattleActionPhase = 'close';
-
-  for (const ownerName of activeMagicSealQueue) {
-    log.push(getMagicSealStartLog(ownerName));
-  }
 
   const consumeMagicSeal = (): boolean => activeMagicSealQueue.shift() !== undefined;
 
@@ -2064,12 +1978,6 @@ export function executeBattle(
     createPartyEffectEntry('sage', 'm_barrier', () => '魔法障壁', level => `(後列の味方への魔法ダメージ × ${level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3'})`),
     createPartyAbilityEffectEntry('deflection', () => '矢払い', level => `(敵の遠距離攻撃の命中率を${level >= 2 ? '15' : '10'}%低下)`),
   ];
-
-  for (const partyEffect of partyEffects) {
-    if (partyEffect) {
-      log.push(partyEffect);
-    }
-  }
 
   const triggerEnemyCounter = (targetCharStats: ComputedCharacterStats, dealtDamage: number, initiativeRoll?: number): void => {
     const counterNoAMultiplier = getEnemyCounterNoAMultiplier(enemy);
@@ -2305,18 +2213,6 @@ export function executeBattle(
     });
   };
 
-  if (partyHasFrostbite) {
-    const frostbiteOwner = party.characters.find(c => {
-      const stats = characterStats.find(candidate => candidate.characterId === c.id);
-      return stats ? hasAbility(stats.abilities, 'frostbite') : false;
-    });
-    pushFrostbiteLog(frostbiteOwner?.name ?? '味方');
-  }
-
-  if (enemyHasFrostbite) {
-    pushFrostbiteLog(enemy.name);
-  }
-
   const mutualOwners: Array<{ name: string; abilities: AbilityLike[] }> = [
     ...party.characters.map((c) => ({
       name: c.name,
@@ -2331,20 +2227,141 @@ export function executeBattle(
     { abilityId: 'mutual_magic_restraint', actionName: '魔法抑制', effectLabel: '双方魔法ダメージ', multipliersByLevel: MUTUAL_MAGIC_RESTRAINT_MULTIPLIERS },
   ];
 
-  for (const effect of startPhaseEffects) {
-    for (const owner of mutualOwners) {
-      const abilityLevel = getHighestAbilityLevel(owner.abilities, effect.abilityId);
-      const multiplier = effect.multipliersByLevel[abilityLevel];
-      if (abilityLevel > 0 && multiplier !== undefined) {
+  const resolveStartPhaseTriggerTiming = (timing: number): void => {
+    if (timing === 9) {
+      for (const owner of oblivionOwners) {
+        const enemyValidAbilities = enemy.abilities.filter((ability) => ability.level > 0);
+        if (enemyValidAbilities.length === 0) continue;
+
+        const selectedEnemyAbility = enemyValidAbilities[Math.floor(Math.random() * enemyValidAbilities.length)];
+        const selectedEnemyAbilityIndex = enemy.abilities.findIndex(
+          (ability) => ability.id === selectedEnemyAbility.id && ability.level === selectedEnemyAbility.level,
+        );
+
+        if (selectedEnemyAbilityIndex >= 0) {
+          enemy.abilities.splice(selectedEnemyAbilityIndex, 1);
+        }
+
         log.push({
           phase: 'start',
           actor: 'effect',
-          action: `${owner.name} の${effect.actionName}！`,
-          note: `(${effect.effectLabel}${multiplier}倍)`,
+          action: `${owner.name} が ${enemy.name} の ${formatAbilityLabel(selectedEnemyAbility)} を忘却の彼方に消し去った！`,
         });
       }
+
+      if (enemyHasOblivion && characterStats.length > 0) {
+        const targetIndex = Math.floor(Math.random() * characterStats.length);
+        const target = characterStats[targetIndex];
+        const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? '味方';
+        const targetValidAbilities = target.abilities.filter((ability) => ability.level > 0);
+
+        if (targetValidAbilities.length > 0) {
+          const selectedTargetAbility = targetValidAbilities[Math.floor(Math.random() * targetValidAbilities.length)];
+          const selectedTargetAbilityIndex = target.abilities.findIndex(
+            (ability) => ability.id === selectedTargetAbility.id && ability.level === selectedTargetAbility.level,
+          );
+
+          if (selectedTargetAbilityIndex >= 0) {
+            target.abilities.splice(selectedTargetAbilityIndex, 1);
+          }
+
+          log.push({
+            phase: 'start',
+            actor: 'effect',
+            action: `${enemy.name} が ${targetName} の ${formatAbilityLabel(selectedTargetAbility)} を忘却の彼方に消し去った！`,
+          });
+        }
+      }
     }
+
+    if (timing === 8) {
+      for (const owner of mimicOwners) {
+        const enemyValidAbilities = enemy.abilities.filter(
+          (ability) => ability.level > 0 && ability.id !== 'mimic' && ability.id !== 'oblivion',
+        );
+        if (enemyValidAbilities.length === 0) continue;
+
+        const selectedEnemyAbility = enemyValidAbilities[Math.floor(Math.random() * enemyValidAbilities.length)];
+        grantCharacterAbility(owner.stats, selectedEnemyAbility);
+
+        log.push({
+          phase: 'start',
+          actor: 'effect',
+          action: `${owner.name} が ${enemy.name} の ${formatAbilityLabel(selectedEnemyAbility)} を模倣した！`,
+        });
+      }
+
+      if (enemyHasMimic && characterStats.length > 0) {
+        const targetIndex = Math.floor(Math.random() * characterStats.length);
+        const target = characterStats[targetIndex];
+        const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? '味方';
+        const targetValidAbilities = target.abilities.filter(
+          (ability) => ability.level > 0 && ability.id !== 'mimic' && ability.id !== 'oblivion',
+        );
+
+        if (targetValidAbilities.length > 0) {
+          const selectedTargetAbility = targetValidAbilities[Math.floor(Math.random() * targetValidAbilities.length)];
+          grantEnemyAbility(enemy, selectedTargetAbility);
+
+          log.push({
+            phase: 'start',
+            actor: 'effect',
+            action: `${enemy.name} が ${targetName} の ${formatAbilityLabel(selectedTargetAbility)} を模倣した！`,
+          });
+        }
+      }
+    }
+
+    if (timing === 7) {
+      for (const partyEffect of partyEffects) {
+        if (partyEffect) {
+          log.push(partyEffect);
+        }
+      }
+    }
+
+    if (timing === 3) {
+      for (const ownerName of activeMagicSealQueue) {
+        log.push(getMagicSealStartLog(ownerName));
+      }
+
+      if (partyHasFrostbite) {
+        const frostbiteOwner = party.characters.find(c => {
+          const stats = characterStats.find(candidate => candidate.characterId === c.id);
+          return stats ? hasAbility(stats.abilities, 'frostbite') : false;
+        });
+        pushFrostbiteLog(frostbiteOwner?.name ?? '味方');
+      }
+
+      if (enemyHasFrostbite) {
+        pushFrostbiteLog(enemy.name);
+      }
+
+      for (const effect of startPhaseEffects) {
+        for (const owner of mutualOwners) {
+          const abilityLevel = getHighestAbilityLevel(owner.abilities, effect.abilityId);
+          const multiplier = effect.multipliersByLevel[abilityLevel];
+          if (abilityLevel > 0 && multiplier !== undefined) {
+            log.push({
+              phase: 'start',
+              actor: 'effect',
+              action: `${owner.name} の${effect.actionName}！`,
+              note: `(${effect.effectLabel}${multiplier}倍)`,
+            });
+          }
+        }
+      }
+    }
+  };
+
+  for (const timing of TRIGGER_TIMINGS_DESC) {
+    resolveStartPhaseTriggerTiming(timing);
   }
+
+  const resolveEndPhaseTriggerTiming = (_timing: number): void => {
+    // END-phase trigger slots are reserved so new END abilities can be added
+    // without changing the phase-resolution loop structure.
+  };
 
   for (const phase of phases) {
     const enemyIsEligibleActor = isEligibleEnemyForPhase(phase, enemy);
@@ -2875,49 +2892,51 @@ export function executeBattle(
       return a.stats.row - b.stats.row;
     });
 
-    for (const turn of turnOrder) {
+    for (const timing of TRIGGER_TIMINGS_DESC) {
       if (enemyHp <= 0 || partyHp <= 0) break;
-      if (phase === 'long' && turn.roll <= 2) {
+
+      if (phase === 'long' && timing === 2) {
         triggerLongPhaseHowl();
       }
-      if (turn.roll <= 9) {
+      if (timing === 9) {
         triggerRegenerationAtTiming(9);
         triggerPredatorSenseAtTiming(9);
-        if (forcedOutcome) {
-          return buildBattleResult(forcedOutcomePhase, forcedOutcome);
-        }
       }
-      if (turn.roll <= 3) {
+      if (timing === 3) {
         if (triggerFreeAtTiming(phase, 3)) {
           return buildBattleResult(forcedOutcomePhase, forcedOutcome!);
         }
       }
-      if (turn.roll <= 2) {
+      if (timing === 2) {
         if (triggerFreeAtTiming(phase, 2)) {
           return buildBattleResult(forcedOutcomePhase, forcedOutcome!);
         }
         triggerDecomposeAtTiming(2);
         triggerConfusionAtTiming(2);
-        if (forcedOutcome) {
-          return buildBattleResult(forcedOutcomePhase, forcedOutcome);
-        }
         triggerSelfDestructAtTiming(2);
-        if (partyHp <= 0 || enemyHp <= 0) {
-          break;
-        }
       }
-      if (turn.roll <= 1) {
+      if (timing === 1) {
         if (triggerFreeAtTiming(phase, 1)) {
           return buildBattleResult(forcedOutcomePhase, forcedOutcome!);
         }
         triggerConfusionAtTiming(1);
-        if (forcedOutcome) {
-          return buildBattleResult(forcedOutcomePhase, forcedOutcome);
-        }
+      }
+      if (timing === 0) {
+        triggerUnstableCoreAtEnd();
+        triggerSoulReapAtEnd();
       }
 
-      if (turn.kind === 'enemy') {
-        enemyHasMovedInPhase = true;
+      if (forcedOutcome) {
+        return buildBattleResult(forcedOutcomePhase, forcedOutcome);
+      }
+
+      if (enemyHp <= 0 || partyHp <= 0) break;
+
+      for (const turn of turnOrder.filter((candidate) => candidate.roll === timing)) {
+        if (enemyHp <= 0 || partyHp <= 0) break;
+
+        if (turn.kind === 'enemy') {
+          enemyHasMovedInPhase = true;
 
         const baseNoA = getEnemyNoA(phase, enemy);
         const enemyPhaseAccuracyBonus = phase === 'close' ? enemyTemporaryAccuracyBonus : 0;
@@ -3449,12 +3468,12 @@ export function executeBattle(
           }
         }
 
-        continue;
-      }
+          continue;
+        }
 
-      const cs = characterStats.find((stats) => stats.characterId === turn.stats.characterId) ?? turn.stats;
-      const char = party.characters.find(c => c.id === cs.characterId);
-      if (!char) continue;
+        const cs = characterStats.find((stats) => stats.characterId === turn.stats.characterId) ?? turn.stats;
+        const char = party.characters.find(c => c.id === cs.characterId);
+        if (!char) continue;
 
       movedCharacterIds.add(cs.characterId);
 
@@ -3726,53 +3745,21 @@ export function executeBattle(
         return result;
       };
 
-      const firstAttackResult = runCharacterAttack(howlEffect?.multiplier ?? 1.0, false);
-      if (firstAttackResult && enemyHp > 0 && partyHp > 0) {
-        triggerCoveringFire(phase, cs, firstAttackResult.hits, turn.roll);
-      }
+        const firstAttackResult = runCharacterAttack(howlEffect?.multiplier ?? 1.0, false);
+        if (firstAttackResult && enemyHp > 0 && partyHp > 0) {
+          triggerCoveringFire(phase, cs, firstAttackResult.hits, turn.roll);
+        }
 
-      if (enemyHp <= 0 || partyHp <= 0) continue;
+        if (enemyHp <= 0 || partyHp <= 0) continue;
 
-      const reAttackProfile = getReAttackProfile(cs);
-      for (let i = 0; i < reAttackProfile.count && enemyHp > 0 && partyHp > 0; i++) {
-        const reAttackResult = runCharacterAttack(reAttackProfile.noAMultiplier, true);
-        if (reAttackResult && enemyHp > 0 && partyHp > 0) {
-          triggerCoveringFire(phase, cs, reAttackResult.hits, turn.roll);
+        const reAttackProfile = getReAttackProfile(cs);
+        for (let i = 0; i < reAttackProfile.count && enemyHp > 0 && partyHp > 0; i++) {
+          const reAttackResult = runCharacterAttack(reAttackProfile.noAMultiplier, true);
+          if (reAttackResult && enemyHp > 0 && partyHp > 0) {
+            triggerCoveringFire(phase, cs, reAttackResult.hits, turn.roll);
+          }
         }
       }
-    }
-
-    if (phase === 'long') {
-      triggerLongPhaseHowl();
-    }
-    triggerRegenerationAtTiming(9);
-    triggerPredatorSenseAtTiming(9);
-    if (forcedOutcome) {
-      return buildBattleResult(forcedOutcomePhase, forcedOutcome);
-    }
-    if (triggerFreeAtTiming(phase, 3)) {
-      return buildBattleResult(forcedOutcomePhase, forcedOutcome!);
-    }
-    if (triggerFreeAtTiming(phase, 2)) {
-      return buildBattleResult(forcedOutcomePhase, forcedOutcome!);
-    }
-    triggerDecomposeAtTiming(2);
-    triggerConfusionAtTiming(2);
-    if (forcedOutcome) {
-      return buildBattleResult(forcedOutcomePhase, forcedOutcome);
-    }
-    triggerSelfDestructAtTiming(2);
-    if (partyHp <= 0 || enemyHp <= 0) {
-      return buildBattleResult(phase, partyHp <= 0 ? 'defeat' : 'victory');
-    }
-    if (triggerFreeAtTiming(phase, 1)) {
-      return buildBattleResult(forcedOutcomePhase, forcedOutcome!);
-    }
-    triggerConfusionAtTiming(1);
-    triggerUnstableCoreAtEnd();
-    triggerSoulReapAtEnd();
-    if (forcedOutcome) {
-      return buildBattleResult(forcedOutcomePhase, forcedOutcome);
     }
 
     if (partyHp <= 0) {
@@ -3782,6 +3769,10 @@ export function executeBattle(
     if (enemyHp <= 0) {
       return buildBattleResult(phase, 'victory');
     }
+  }
+
+  for (const timing of TRIGGER_TIMINGS_DESC) {
+    resolveEndPhaseTriggerTiming(timing);
   }
 
 
