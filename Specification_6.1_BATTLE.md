@@ -250,15 +250,21 @@
     Else, return 1.0.
 
 - `f.damage_calculation`: (actor: , opponent: , phase: )
-	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) ) x actor.`f.offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x opponent.`f.defense_amplifier` x party.`f.party.offense_amplifier` x `f.resonance_amplifier` x `f.rage_amplifier` x `f.momentum_amplifer` x `f.mutual_amplifer` )
+	max(1, (actor.`f.attack` - opponent.`f.defense` x (1 - actor.`f.penet_multiplier`) ) x actor.`f.offense_amplifier` x actor.`f.elemental_offense_attribute` x opponent.`f.elemental_resistance_attribute` x opponent.`f.defense_amplifier` x party.`f.party.offense_amplifier` x `f.resonance_amplifier` x `f.rage_amplifier` x `f.momentum_amplifier` x `f.mutual_amplifier` x opponent.`f.swarm.amplifier` x actor.`f.swarm.amplifier` )
   - `f.rage_amplifier`:
     - If actor has `a.rage`1, return min(2.0, 1.0 + 0.5 x (1 - (actor.current_HP / actor.max_HP)))
     - If actor has `a.rage`2, return min(2.0, 1.0 + 0.6 x (1 - (actor.current_HP / actor.max_HP)))
-  - `f.momentum_amplifer`:
+  - `f.momentum_amplifier`:
     - If actor has `a.momentum`1, return 1.25 - (1 - (actor.current_HP / actor.max_HP)) x 0.5
     - If actor has `a.momentum`2, return 1.25 - (1 - (actor.current_HP / actor.max_HP)) x 0.4
+  - `f.swarm.amplifier`:
+    - N = 1.0
+    - If actor has `f.swarm`, N *= (1 - (actor.current_HP / actor.max_HP)) x 0.5
+    - If opponent has `f.swarm`, N *= (1 - (opponent.current_HP / opponent.max_HP)) x 0.5
+    - return N
+
   - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
-  - `f.mutual_amplifer`:
+  - `f.mutual_amplifier`:
     - If (phase is MID and (actor or opponent) has `a.mutual-magic-amplify`), return n
     - If (phase is MID and (actor or opponent) has `a.mutual-magic-restraint`), return n
 	- If (phase is (LONG or CLOSE) and (actor or opponent) has `a.mutual-physical-amplify`, return n
