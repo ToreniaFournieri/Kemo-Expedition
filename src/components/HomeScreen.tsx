@@ -8682,7 +8682,6 @@ function SettingTab({
         {divineBureauPanelExpanded.glossary && (
           <>
           <div className="flex justify-end items-center gap-1 mt-3 mb-3">
-            <span className="text-xs text-gray-500">分類</span>
             {GLOSSARY_TABS.map((tab) => (
               <button
                 key={tab}
@@ -8730,7 +8729,6 @@ function SettingTab({
                       {isBonusAbilityGlossarySection && (
                         <div className="mb-2 rounded border border-gray-200 bg-gray-50 px-2 py-1.5">
                           <div className="flex flex-wrap items-center gap-1">
-                            <span className="text-[11px] text-gray-500">分類:</span>
                             {BONUS_ABILITY_GLOSSARY_SUBCATEGORY_META.map((subcategory) => {
                               const isActive = subcategory.id === bonusAbilityGlossarySubcategory;
                               return (
