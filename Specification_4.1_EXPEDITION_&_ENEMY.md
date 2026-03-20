@@ -132,6 +132,19 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 2. Status Scaling FormulasThe final combat value final is derived from the Master Value base using the following multipliers.
 
+**Enemy Passive ability**
+- Resolve in the following priority order:
+  - `a.upgrade-all-abilities`
+    - Increase the level of all other abilities currently possessed by the actor by N, up to Lv5.
+    - Does not affect `a.upgrade-all-abilities` itself.
+  - `a.cyborgization`
+  - `a.composure`
+  - `a.focus`
+  - `a.colossal`
+  - `a.iaigiri`
+  - `a.hunter`
+
+
 **Enemy master data structure**
 - id: int
 - type: string.  Normal/Elite/Boss
