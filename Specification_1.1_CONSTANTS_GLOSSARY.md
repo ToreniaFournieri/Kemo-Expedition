@@ -50,8 +50,9 @@
 
 #### 1.1.1 a. bonus ability
 - "能. アビリティボーナス (重複なし、強化可能)"
+- Sub category: 常, 征, 反, 時 (Default: 常)
 
-- Passive ability:
+- Passive ability(常時効果アビリティ):
 
 | `a.` ability | 表示 | 説明 |
 |----|----|----|
@@ -75,7 +76,7 @@
 | `a.upgrade-all-abilities`3 | 他のアビリティ強化+3 | 自身の他のアビリティを3段階強化する(上限レベル5) |
 | `a.upgrade-all-abilities`4 | 他のアビリティ強化+4 | 自身の他のアビリティを4段階強化する(上限レベル5) |
 
-- Expedition ability
+- Expedition ability(遠征アビリティ):
 
 | `a.` ability | 表示 | 説明 |
 |----|----|----|
@@ -90,7 +91,7 @@
 | `a.peddler`1 | 行商1 | 移動時間が2/3になる |
 | `a.peddler`2 | 行商2 | 移動時間が3/5になる |
 
-- Reactive ability
+- Reactive ability(反応アビリティ):
   
 | `a.` ability | 表示 | 説明 | trigger  |
 |----|----|----|----|
@@ -167,7 +168,7 @@
 | `a.covering-fire`2 | 援護射撃2 | 味方近接攻撃の命中が1回のみなら遠距離射撃(攻撃回数半減しない) | ally-follow-up |
 
 
-- Timed ability
+- Timed ability(時限アビリティ):
   
 | `a.` ability | 表示 | 説明 | phase | priority |
 |----|----|----|----|----|
