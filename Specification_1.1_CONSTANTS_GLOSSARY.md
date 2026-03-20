@@ -52,8 +52,11 @@
 - "能. アビリティボーナス (重複なし、強化可能)"
 
   - In the Glossary tab, abilities should be displayed in a single line.
+    - Example: "居合斬り1 物理ダメージを xN倍する(攻撃回数が半減する) (Lv1: x1.6, Lv2: x1.8, Lv3: x2.0 )"
+      - "居合斬り1" part is bold text.
+      - "(Lv1: x1.6, Lv2: x1.8, Lv3: x2.0)" part is gray text
   - In Help floating bubble text, it displays like
-  - Example: "居合斬り1 物理ダメージをx1.6倍する(攻撃回数が半減する)"
+    - Example: "居合斬り1 物理ダメージをx1.6倍する(攻撃回数が半減する)"
 
 - Passive ability(常時効果アビリティ):
   - Sub category: 常, 征, 反, 時 (Default: 常)
