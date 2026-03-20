@@ -148,6 +148,62 @@ function formatBonusAbilityPhaseDisplay(value: string): string {
   return value.replace(/LONG|MID|CLOSE/g, (phase) => BONUS_ABILITY_PHASE_DISPLAY_LABELS[phase as 'LONG' | 'MID' | 'CLOSE']);
 }
 
+function parseBonusAbilityLevelScale(levelScale: string): { timing: string | null; value: string | null } {
+  const scaleContent = levelScale.replace(/^Lv\d+:\s*/, '').trim();
+  if (scaleContent.length === 0 || scaleContent === '-') {
+    return { timing: null, value: null };
+  }
+
+  const separatorIndex = scaleContent.indexOf('・');
+  if (separatorIndex < 0) {
+    const isTimingOnly = /^(LONG|MID|CLOSE)\d/.test(scaleContent);
+    return {
+      timing: isTimingOnly ? formatBonusAbilityPhaseDisplay(scaleContent) : null,
+      value: isTimingOnly ? null : scaleContent,
+    };
+  }
+
+  const timingToken = scaleContent.slice(0, separatorIndex).trim();
+  const valueToken = scaleContent.slice(separatorIndex + 1).trim();
+  return {
+    timing: timingToken.length > 0 ? formatBonusAbilityPhaseDisplay(timingToken) : null,
+    value: valueToken.length > 0 ? valueToken : null,
+  };
+}
+
+function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: number): string {
+  const entry = BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID.get(abilityId);
+  if (!entry) {
+    return getAbilityDescription(abilityId, level);
+  }
+
+  const levelScale = entry.levelScale[Math.max(level - 1, 0)] ?? entry.levelScale[entry.levelScale.length - 1] ?? '';
+  if (levelScale.length === 0) {
+    return entry.description;
+  }
+
+  const { timing, value } = parseBonusAbilityLevelScale(levelScale);
+  let description = entry.description;
+
+  if (timing) {
+    description = description
+      .replace('指定終了タイミング', `${timing}終了タイミング`)
+      .replace('指定タイミング', `${timing}タイミング`);
+  }
+
+  if (value) {
+    const normalizedValue = value.startsWith('x') ? value.slice(1) : value;
+    description = description
+      .replace(/xN/g, value.startsWith('x') ? value : `x${value}`)
+      .replace(/N/g, normalizedValue);
+  }
+
+  return description
+    .replace(/を\s+x/g, 'をx')
+    .replace(/が\s+x/g, 'がx')
+    .replace(/の\s+x/g, 'のx');
+}
+
 const LEGACY_PARTY_CYCLE_STATE_MAP: Record<string, PartyCycleState> = {
   rest: 'rest',
   sell: 'sell',
@@ -5424,7 +5480,7 @@ function PartyTab({
                             key,
                             label,
                             BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID.has(ability.id as AbilityId)
-                              ? getAbilityDescription(ability.id as AbilityId, ability.level)
+                              ? formatBonusAbilityHelpDescription(ability.id as AbilityId, ability.level)
                               : ability.description,
                             event,
                           )}
@@ -8355,7 +8411,7 @@ function SettingTab({
   const getAbilityHelpDescription = (abilityId: string, level: number): string => {
     const bonusAbilityEntry = BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID.get(abilityId as AbilityId);
     if (bonusAbilityEntry) {
-      return getAbilityDescription(abilityId as AbilityId, level);
+      return formatBonusAbilityHelpDescription(abilityId as AbilityId, level);
     }
 
     const levelDescription = ABILITY_HELP_TEXTS[`${abilityId}:${level}`];
