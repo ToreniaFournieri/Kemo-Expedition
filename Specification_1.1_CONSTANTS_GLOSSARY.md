@@ -51,48 +51,33 @@
 #### 1.1.1 a. bonus ability
 - "能. アビリティボーナス (重複なし、強化可能)"
 
-  - In the Glossary tab, abilities should be displayed in a single line, rather than split by level.
-  - Example: 居合斬り 物理ダメージをx1.6 ~ 2.0倍する(攻撃回数が半減する) (Lv1: x1.6, Lv2: x1.8, Lv3: 2.0)
+  - In the Glossary tab, abilities should be displayed in a single line.
+  - In Help floating bubble text, it displays like
+  - Example: "居合斬り1 物理ダメージをx1.6倍する(攻撃回数が半減する)"
 
 - Passive ability(常時効果アビリティ):
   - Sub category: 常, 征, 反, 時 (Default: 常)
-
-| `a.` ability | 表示 | 説明 |
-|----|----|----|
-| `a.iaigiri`1 | 居合斬り1 | 物理ダメージをx1.6倍する(攻撃回数が半減する) |
-| `a.iaigiri`2 | 居合斬り2 | 物理ダメージをx1.8倍する(攻撃回数が半減する) |
-| `a.iaigiri`3 | 居合斬り3 | 物理ダメージをx2.0倍する(攻撃回数が半減する) |
-| `a.hunter`1 | 狩人1 | 列による命中率減衰を 1列ごと15%→10% に軽減する |
-| `a.hunter`2 | 狩人2 | 列による命中率減衰を 1列ごと15%→7% に軽減する |
-| `a.hunter`3 | 狩人3 | 列による命中率減衰を 1列ごと15%→5% に軽減する |
-| `a.seeker`1 | 探究者1 | 魔導書の効果増加(レベル毎に0.25%) |
-| `a.seeker`2 | 探究者2 | 魔導書の効果増加(レベル毎に0.35%) |
-| `a.cyborgization`1 | サイボーグ化1 | 命中+30、回避-20 |
-| `a.cyborgization`2 | サイボーグ化2 | 命中+40、回避-15 |
-| `a.composure`1 | 平静1 | 命中率+10%加算 |
-| `a.composure`2 | 平静2 | 命中率+13%加算 |
-| `a.focus`1 | 集中1 | 命中ボーナスの効果が1.2倍になる |
-| `a.focus`2 | 集中2 | 命中ボーナスの効果が1.3倍になる |
-| `a.colossal`1 | 巨人1 | 自身の防御力が2倍になるが、自身の物理ダメージ補正x2.0 |
-| `a.upgrade-all-abilities`1 | 他のアビリティ強化+1 | 自身の他のアビリティを1段階強化する(上限レベル5) |
-| `a.upgrade-all-abilities`2 | 他のアビリティ強化+2 | 自身の他のアビリティを2段階強化する(上限レベル5) |
-| `a.upgrade-all-abilities`3 | 他のアビリティ強化+3 | 自身の他のアビリティを3段階強化する(上限レベル5) |
-| `a.upgrade-all-abilities`4 | 他のアビリティ強化+4 | 自身の他のアビリティを4段階強化する(上限レベル5) |
+ 
+| `a.` ability | 表示 | 説明 | Level scale |
+|----|----|----|----|
+| `a.iaigiri` | 居合斬り | 物理ダメージを xN倍する(攻撃回数が半減する) | Lv1: x1.6, Lv2: x1.8, Lv3: x2.0 |
+| `a.hunter` | 狩人 | 列による命中率減衰を軽減する | Lv1: 15%→10%, Lv2: 15%→7%, Lv3: 15%→5% |
+| `a.seeker` | 探究者 | 魔導書の効果を増加する(レベル毎に+N%) | Lv1: +0.25%, Lv2: +0.35% |
+| `a.cyborgization` | サイボーグ化 | 命中が増加し、回避が減少する | Lv1: 命中+30・回避-20, Lv2: 命中+40・回避-15 |
+| `a.composure` | 平静 | 命中率がN%加算される | Lv1: +10%, Lv2: +13% |
+| `a.focus` | 集中 | 命中ボーナスの効果がxN倍になる | Lv1: x1.2, Lv2: x1.3 |
+| `a.colossal` | 巨人 | 自身の防御力が2倍になり、物理ダメージ補正がx2.0になる | - |
+| `a.upgrade-all-abilities` | 他のアビリティ強化 | 自身の他のアビリティをN段階強化する(上限レベル5) | Lv1: +1, Lv2: +2, Lv3: +3, Lv4: +4 |
 
 - Expedition ability(遠征アビリティ):
 
-| `a.` ability | 表示 | 説明 |
-|----|----|----|
-| `a.tithe`1 | 十分の一税1 | 遠征利益の +10% を寄付額に上乗せする |
-| `a.tithe`2 | 十分の一税2 | 遠征利益の +15% を寄付額に上乗せする |
-| `a.squander`1 | 浪費1 | 宴会で消費するゴールドが1.3倍になる |
-| `a.squander`2 | 浪費2 | 宴会で消費するゴールドが1.5倍になる |
-| `a.prophecy`1 | 予言1 | 報酬抽選内容が見えるようになる |
-| `a.prophecy`2 | 予言2 | 報酬抽選内容が見える、リセット出来るようになる |
-| `a.cunning`1 | 狡猾1 | 自動売却額が1.2倍 |
-| `a.cunning`2 | 狡猾2 | 自動売却額が1.3倍 |
-| `a.peddler`1 | 行商1 | 移動時間が2/3になる |
-| `a.peddler`2 | 行商2 | 移動時間が3/5になる |
+| `a.` ability | 表示 | 説明 | Level scale |
+|----|----|----|----|
+| `a.tithe` | 十分の一税 | 遠征利益の+N%を寄付額に上乗せする | Lv1: +10%, Lv2: +15% |
+| `a.squander` | 浪費 | 宴会で消費するゴールドがxN倍になる | Lv1: x1.3, Lv2: x1.5 |
+| `a.prophecy` | 予言 | 報酬抽選内容を可視化し、N段階の操作が可能になる | Lv1: 可視化, Lv2: 可視化＋リセット |
+| `a.cunning` | 狡猾 | 自動売却額がxN倍になる | Lv1: x1.2, Lv2: x1.3 |
+| `a.peddler` | 行商 | 移動時間がxN倍になる | Lv1: x2/3, Lv2: x3/5 |
 
 - Reactive ability(反応アビリティ):
   
