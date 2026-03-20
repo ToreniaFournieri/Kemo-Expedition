@@ -26,7 +26,7 @@ import {
 } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
-import { applyEnemyEncounterScaling, getRoomMultiplier } from '../game/enemyScaling';
+import { getEncounterEnemyWithScaling, getRoomMultiplier } from '../game/enemyScaling';
 import { buildColosseumEnemy, getColosseumEnemySettings } from '../game/colosseum';
 import { replaceCharacterEquipment } from '../game/equipment';
 import { DUNGEONS, getDungeonById, getEffectiveEnemyLevel, getEffectiveEnemyMultipliers, getEffectiveExpeditionTier } from '../data/dungeons';
@@ -2035,7 +2035,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               tier: effectiveTier,
               enemyMultipliers: getEffectiveEnemyMultipliers(dungeon, gameMode === 'm.luna'),
             };
-            let enemy = applyEnemyEncounterScaling(baseEnemy, effectiveDungeon, floor.floorNumber, roomDef.type, { isLunaMode: gameMode === 'm.luna' });
+            let enemy = getEncounterEnemyWithScaling(baseEnemy, effectiveDungeon, floor.floorNumber, roomDef.type, { isLunaMode: gameMode === 'm.luna' });
             if (isGodsBattle && roomDef.type === 'battle_Boss') {
               enemy = createGodEnemy(enemy, dungeon.id, dungeon.name, gameMode === 'm.luna');
             }
