@@ -92,7 +92,7 @@
 | `a.rage` | 闘志 | 受けたダメージ1%につき、物理/魔法攻撃倍率が+N%増加する | Lv1: +0.5%, Lv2: +0.6% | self-state |
 | `a.momentum` | 気勢 | 物理/魔法攻撃倍率がx1.25倍になり、受けたダメージ1%につき-N%減少する。収益の一部を着服する | Lv1: -0.5%, Lv2: -0.4% | self-state |
 | `a.no-offense` | 受身 | 通常行動を行わなくなる(反撃などは行う) | - | self-state |
-| `a.swarm` | 群れ | HP減少に応じて攻撃倍率・防御倍率がN%減少する | Lv1: HP1%につき-0.5% | self-state |
+| `a.swarm` | 群れ | HP減少に応じて物理攻撃倍率・物理被ダメージ倍率がN%弱化する | Lv1: HP1%につき-0.5% | self-state |
 | `a.stealth` | 隠れ蓑 | HPがN%未満のとき、自身へのダメージをすべて回避する | Lv1: 24%, Lv2: 29% | opponent-reactive |
 | `a.illusion` | 幻化 | 最初の遠距離攻撃を無効化する(対象範囲:N) | Lv1: 自身, Lv2: パーティー全体 | opponent-reactive |
 | `a.flying` | 飛行 | 相手の近接攻撃回数がxN倍になる | Lv1: x1/4 | opponent-reactive |
