@@ -1116,6 +1116,108 @@ const BONUS_ABILITY_HELP_BY_LABEL = new Map<string, string>(
   (BONUS_ABILITY_GLOSSARY_SECTION?.entries ?? []).map((entry) => [entry.label, entry.description]),
 );
 
+type BonusAbilityGlossarySubcategoryId = 'passive' | 'expedition' | 'reactive' | 'timed';
+
+const BONUS_ABILITY_GLOSSARY_SUBCATEGORY_META: Array<{
+  id: BonusAbilityGlossarySubcategoryId;
+  shortLabel: '常' | '征' | '反' | '時';
+  label: string;
+}> = [
+  { id: 'passive', shortLabel: '常', label: '常時効果アビリティ' },
+  { id: 'expedition', shortLabel: '征', label: '遠征アビリティ' },
+  { id: 'reactive', shortLabel: '反', label: '反応アビリティ' },
+  { id: 'timed', shortLabel: '時', label: '時限アビリティ' },
+];
+
+const BONUS_ABILITY_GLOSSARY_SUBCATEGORY_BY_ABILITY_ID: Partial<Record<AbilityId, BonusAbilityGlossarySubcategoryId>> = {
+  iaigiri: 'passive',
+  hunter: 'passive',
+  seeker: 'passive',
+  cyborgization: 'passive',
+  composure: 'passive',
+  focus: 'passive',
+  colossal: 'passive',
+  upgrade_all_abilities: 'passive',
+  tithe: 'expedition',
+  squander: 'expedition',
+  prophecy: 'expedition',
+  cunning: 'expedition',
+  peddler: 'expedition',
+  resonance: 'reactive',
+  ambush: 'reactive',
+  rage: 'reactive',
+  momentum: 'reactive',
+  no_offense: 'reactive',
+  swarm: 'reactive',
+  stealth: 'reactive',
+  illusion: 'reactive',
+  flying: 'reactive',
+  bulwark: 'reactive',
+  shock: 'reactive',
+  re_attack: 'reactive',
+  corrode: 'reactive',
+  life_drain: 'reactive',
+  death_touch: 'reactive',
+  burn: 'reactive',
+  bind: 'reactive',
+  counter: 'reactive',
+  magical_counter: 'reactive',
+  resurrect: 'reactive',
+  reanimate: 'reactive',
+  re_counter: 'reactive',
+  null_counter: 'reactive',
+  covering_fire: 'reactive',
+  oblivion: 'timed',
+  mimic: 'timed',
+  defender: 'timed',
+  command: 'timed',
+  m_barrier: 'timed',
+  ice_absorb: 'timed',
+  fire_absorb: 'timed',
+  thunder_absorb: 'timed',
+  magical_absorb: 'timed',
+  ice_null: 'timed',
+  fire_null: 'timed',
+  thunder_null: 'timed',
+  magical_null: 'timed',
+  ranged_null: 'timed',
+  melee_null: 'timed',
+  ice_reflect: 'timed',
+  fire_reflect: 'timed',
+  thunder_reflect: 'timed',
+  magical_reflect: 'timed',
+  ranged_reflect: 'timed',
+  melee_reflect: 'timed',
+  deflection: 'timed',
+  mutual_magic_amplify: 'timed',
+  mutual_magic_restraint: 'timed',
+  mutual_physical_amplify: 'timed',
+  mutual_physical_restraint: 'timed',
+  magic_seal: 'timed',
+  first_strike: 'timed',
+  slow: 'timed',
+  frostbite: 'timed',
+  howl: 'timed',
+  ranged_confusion: 'timed',
+  magic_confusion: 'timed',
+  melee_confusion: 'timed',
+  unstable_core: 'timed',
+  soul_reap: 'timed',
+  regeneration: 'timed',
+  predator_sense: 'timed',
+  decompose: 'timed',
+  self_destruct: 'timed',
+  free: 'timed',
+  auriferous: 'timed',
+};
+
+function getBonusAbilityGlossarySubcategory(entryKey: string): BonusAbilityGlossarySubcategoryId {
+  const match = entryKey.match(/^a\.([a-z-]+?)(\d+)$/);
+  if (!match) return 'passive';
+  const normalizedAbilityId = match[1].replace(/-/g, '_') as AbilityId;
+  return BONUS_ABILITY_GLOSSARY_SUBCATEGORY_BY_ABILITY_ID[normalizedAbilityId] ?? 'passive';
+}
+
 const ABILITY_HELP_TEXTS: Record<string, string> = {
   'defender:1': '自身より後列の味方への物理ダメージを 2/3倍。',
   'defender:2': '自身より後列の味方への物理ダメージを 3/5倍。',
@@ -7664,6 +7766,7 @@ function SettingTab({
   const [colosseumEnemySettings, setColosseumEnemySettings] = useState<ColosseumEnemySettings>(() => getColosseumEnemySettings());
   const [compendiumRarityFilter, setCompendiumRarityFilter] = useState<RarityFilter>('all');
   const [glossaryTab, setGlossaryTab] = useState<GlossaryTabKey>('能');
+  const [bonusAbilityGlossarySubcategory, setBonusAbilityGlossarySubcategory] = useState<BonusAbilityGlossarySubcategoryId>('passive');
   const [expandedGlossaryEntries, setExpandedGlossaryEntries] = useState<Record<string, boolean>>({});
   const [expandedCompendiumItems, setExpandedCompendiumItems] = useState<Record<number, boolean>>({});
   const [isEnemyEditExpanded, setIsEnemyEditExpanded] = useState(true);
@@ -8599,129 +8702,174 @@ function SettingTab({
           <div className="space-y-3 pr-1">
             {filteredGlossarySections.map((section) => (
               <div key={section.id} className="bg-white rounded p-2 border border-gray-200">
-                <div className="text-xs leading-tight mb-2">
-                  {(() => {
-                    const suffixMatch = section.subtitle.match(/\(([^)]*)\)\s*$/);
-                    const titleText = section.subtitle.replace(/\s*\([^)]*\)\s*$/, '');
-                    return (
-                      <>
-                        <span className="font-semibold text-gray-700">{titleText}</span>
-                        {suffixMatch && <span className="text-gray-500"> {suffixMatch[0]}</span>}
-                      </>
-                    );
-                  })()}
-                </div>
-                <div className="space-y-1 max-h-72 overflow-y-auto pr-1">
-                  {section.entries.map((entry, index) => {
-                    const isSideQuestGlossarySection = section.subtitle.startsWith('求.');
-                    if (isSideQuestGlossarySection && entry.key === 'q.none') {
-                      return null;
-                    }
-                    const entryKey = `${section.id}-${entry.key}-${index}`;
-                    const isElementalEntry = entry.key.includes('elemental');
-                    if (glossaryTab === '属' && !isElementalEntry) {
-                      return null;
-                    }
-                    if (glossaryTab === '増' && isElementalEntry) {
-                      return null;
-                    }
-                    const isGodGlossarySection = section.subtitle.startsWith('信.');
-                    const shouldCollapseEntry = glossaryTab === '増' || glossaryTab === '属';
-                    const useDefaultGlossaryTextColor = glossaryTab === '増' || glossaryTab === '属';
-                    const isEntryExpanded = !shouldCollapseEntry || expandedGlossaryEntries[entryKey] === true;
-                    const descriptionLines = entry.description.split('\n');
-                    const normalizedDescriptionLines = isSideQuestGlossarySection
-                      ? descriptionLines
-                        .map((line) => {
-                          const trimmedLine = line.trim();
-                          if (!trimmedLine.startsWith('表示:')) {
-                            return line;
-                          }
-                          return trimmedLine.replace(/^表示:\s*/, '');
-                        })
-                        .filter((line) => line.trim().length > 0)
-                      : descriptionLines;
-                    const hasStyleMetadata = normalizedDescriptionLines[0]?.trim().startsWith('style:') ?? false;
-                    const visibleDescriptionLines = hasStyleMetadata ? normalizedDescriptionLines.slice(1) : normalizedDescriptionLines;
-                    const mainDescription = visibleDescriptionLines[0] ?? '';
-                    const loreLines = visibleDescriptionLines.slice(1);
-                    const firstTableLineIndex = loreLines.findIndex((line) => line.trim().startsWith('|'));
-                    const lorePrefixLines = firstTableLineIndex >= 0 ? loreLines.slice(0, firstTableLineIndex) : loreLines;
-                    const tableCandidateLines = firstTableLineIndex >= 0 ? loreLines.slice(firstTableLineIndex) : [];
-                    const glossaryTable = parseGlossaryTable(tableCandidateLines);
+                {(() => {
+                  const isBonusAbilityGlossarySection = section.heading === '2.1.1 a. bonus ability';
+                  const activeBonusAbilitySubcategory = BONUS_ABILITY_GLOSSARY_SUBCATEGORY_META.find(
+                    (subcategory) => subcategory.id === bonusAbilityGlossarySubcategory,
+                  );
+                  const visibleEntries = isBonusAbilityGlossarySection
+                    ? section.entries.filter(
+                        (entry) => getBonusAbilityGlossarySubcategory(entry.key) === bonusAbilityGlossarySubcategory,
+                      )
+                    : section.entries;
 
-                    return (
-                      <div key={entryKey} className="text-xs border-t border-gray-100 pt-1 first:border-t-0 first:pt-0">
-                        {shouldCollapseEntry ? (
-                          <button
-                            type="button"
-                            onClick={() => setExpandedGlossaryEntries((prev) => ({ ...prev, [entryKey]: !isEntryExpanded }))}
-                            className="w-full flex items-center justify-between gap-2 text-left"
-                            aria-label={isEntryExpanded ? `${entry.label}を折りたたむ` : `${entry.label}を展開する`}
-                          >
-                            <div className="text-gray-700 font-medium">{renderTextWithRaceIcons(entry.label)}</div>
-                            <span className="text-[11px] text-gray-500 hover:text-gray-700">{isEntryExpanded ? '▼' : '▲'}</span>
-                          </button>
-                        ) : (
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="text-gray-700 font-medium">{renderTextWithRaceIcons(entry.label)}</div>
-                          </div>
-                        )}
-                        {isEntryExpanded && (
-                          <>
-                            <div className={`${useDefaultGlossaryTextColor ? 'text-gray-700' : 'text-gray-500'} whitespace-pre-line`}>{renderTextWithRaceIcons(mainDescription)}</div>
-                            {isGodGlossarySection && loreLines.map((line, lineIndex) => (
-                              <div key={`${section.id}-${entry.key}-${index}-lore-${lineIndex}`} className={`${useDefaultGlossaryTextColor ? 'text-gray-700' : 'text-gray-500'} italic whitespace-pre-line`}>
-                                {renderTextWithRaceIcons(line)}
-                              </div>
-                            ))}
-                            {!isGodGlossarySection && lorePrefixLines.length > 0 && (
-                              <div className={`${useDefaultGlossaryTextColor ? 'text-gray-700' : 'text-gray-500'} whitespace-pre-line`}>{renderTextWithRaceIcons(lorePrefixLines.join('\n'))}</div>
-                            )}
-                            {!isGodGlossarySection && glossaryTable && (
-                              <div className="mt-1 rounded border border-gray-200 bg-white px-2 py-1">
-                                <table className="w-full table-fixed text-xs">
-                                  <thead>
-                                      <tr className={`border-b border-gray-100 ${useDefaultGlossaryTextColor ? 'text-gray-700' : 'text-gray-500'}`}>
-                                      {glossaryTable.headers.map((header, headerIndex) => (
-                                        <th
-                                          key={`${section.id}-${entry.key}-table-header-${headerIndex}`}
-                                          className={`py-1 font-medium ${
-                                            headerIndex === glossaryTable.headers.length - 1 ? 'text-right' : 'text-left'
-                                          }`}
-                                        >
-                                          {renderTextWithRaceIcons(header)}
-                                        </th>
-                                      ))}
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {glossaryTable.rows.map((row, rowIndex) => (
-                                      <tr key={`${section.id}-${entry.key}-table-row-${rowIndex}`} className="text-gray-700">
-                                        {row.map((cell, cellIndex) => (
-                                          <td
-                                            key={`${section.id}-${entry.key}-table-row-${rowIndex}-cell-${cellIndex}`}
-                                            className={`py-1 align-top ${
-                                              cellIndex === row.length - 1
-                                                ? `text-right tabular-nums ${useDefaultGlossaryTextColor ? 'text-gray-700' : 'text-sub'}`
-                                                : 'text-left'
-                                            }`}
-                                          >
-                                            {renderTextWithRaceIcons(cell)}
-                                          </td>
-                                        ))}
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            )}
-                          </>
-                        )}
+                  return (
+                    <>
+                      <div className="text-xs leading-tight mb-2">
+                        {(() => {
+                          const suffixMatch = section.subtitle.match(/\(([^)]*)\)\s*$/);
+                          const titleText = section.subtitle.replace(/\s*\([^)]*\)\s*$/, '');
+                          return (
+                            <>
+                              <span className="font-semibold text-gray-700">{titleText}</span>
+                              {suffixMatch && <span className="text-gray-500"> {suffixMatch[0]}</span>}
+                            </>
+                          );
+                        })()}
                       </div>
-                    );
-                  })}
-                </div>
+                      {isBonusAbilityGlossarySection && (
+                        <div className="mb-2 rounded border border-gray-200 bg-gray-50 px-2 py-1.5">
+                          <div className="flex flex-wrap items-center gap-1">
+                            <span className="text-[11px] text-gray-500">分類:</span>
+                            {BONUS_ABILITY_GLOSSARY_SUBCATEGORY_META.map((subcategory) => {
+                              const isActive = subcategory.id === bonusAbilityGlossarySubcategory;
+                              return (
+                                <button
+                                  key={subcategory.id}
+                                  type="button"
+                                  onClick={() => setBonusAbilityGlossarySubcategory(subcategory.id)}
+                                  className={`rounded border px-2 py-0.5 text-[11px] ${
+                                    isActive
+                                      ? 'border-sub bg-sub text-white'
+                                      : 'border-gray-300 bg-white text-gray-600 hover:bg-gray-100'
+                                  }`}
+                                  title={subcategory.label}
+                                  aria-pressed={isActive}
+                                >
+                                  {subcategory.shortLabel}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <div className="mt-1 text-[11px] text-gray-500">
+                            {activeBonusAbilitySubcategory?.shortLabel}. {activeBonusAbilitySubcategory?.label}
+                          </div>
+                        </div>
+                      )}
+                      <div className="space-y-1 max-h-72 overflow-y-auto pr-1">
+                        {visibleEntries.map((entry, index) => {
+                          const isSideQuestGlossarySection = section.subtitle.startsWith('求.');
+                          if (isSideQuestGlossarySection && entry.key === 'q.none') {
+                            return null;
+                          }
+                          const entryKey = `${section.id}-${entry.key}-${index}`;
+                          const isElementalEntry = entry.key.includes('elemental');
+                          if (glossaryTab === '属' && !isElementalEntry) {
+                            return null;
+                          }
+                          if (glossaryTab === '増' && isElementalEntry) {
+                            return null;
+                          }
+                          const isGodGlossarySection = section.subtitle.startsWith('信.');
+                          const shouldCollapseEntry = glossaryTab === '増' || glossaryTab === '属';
+                          const useDefaultGlossaryTextColor = glossaryTab === '増' || glossaryTab === '属';
+                          const isEntryExpanded = !shouldCollapseEntry || expandedGlossaryEntries[entryKey] === true;
+                          const descriptionLines = entry.description.split('\n');
+                          const normalizedDescriptionLines = isSideQuestGlossarySection
+                            ? descriptionLines
+                              .map((line) => {
+                                const trimmedLine = line.trim();
+                                if (!trimmedLine.startsWith('表示:')) {
+                                  return line;
+                                }
+                                return trimmedLine.replace(/^表示:\s*/, '');
+                              })
+                              .filter((line) => line.trim().length > 0)
+                            : descriptionLines;
+                          const hasStyleMetadata = normalizedDescriptionLines[0]?.trim().startsWith('style:') ?? false;
+                          const visibleDescriptionLines = hasStyleMetadata ? normalizedDescriptionLines.slice(1) : normalizedDescriptionLines;
+                          const mainDescription = visibleDescriptionLines[0] ?? '';
+                          const loreLines = visibleDescriptionLines.slice(1);
+                          const firstTableLineIndex = loreLines.findIndex((line) => line.trim().startsWith('|'));
+                          const lorePrefixLines = firstTableLineIndex >= 0 ? loreLines.slice(0, firstTableLineIndex) : loreLines;
+                          const tableCandidateLines = firstTableLineIndex >= 0 ? loreLines.slice(firstTableLineIndex) : [];
+                          const glossaryTable = parseGlossaryTable(tableCandidateLines);
+
+                          return (
+                            <div key={entryKey} className="text-xs border-t border-gray-100 pt-1 first:border-t-0 first:pt-0">
+                              {shouldCollapseEntry ? (
+                                <button
+                                  type="button"
+                                  onClick={() => setExpandedGlossaryEntries((prev) => ({ ...prev, [entryKey]: !isEntryExpanded }))}
+                                  className="w-full flex items-center justify-between gap-2 text-left"
+                                  aria-label={isEntryExpanded ? `${entry.label}を折りたたむ` : `${entry.label}を展開する`}
+                                >
+                                  <div className="text-gray-700 font-medium">{renderTextWithRaceIcons(entry.label)}</div>
+                                  <span className="text-[11px] text-gray-500 hover:text-gray-700">{isEntryExpanded ? '▼' : '▲'}</span>
+                                </button>
+                              ) : (
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="text-gray-700 font-medium">{renderTextWithRaceIcons(entry.label)}</div>
+                                </div>
+                              )}
+                              {isEntryExpanded && (
+                                <>
+                                  <div className={`${useDefaultGlossaryTextColor ? 'text-gray-700' : 'text-gray-500'} whitespace-pre-line`}>{renderTextWithRaceIcons(mainDescription)}</div>
+                                  {isGodGlossarySection && loreLines.map((line, lineIndex) => (
+                                    <div key={`${section.id}-${entry.key}-${index}-lore-${lineIndex}`} className={`${useDefaultGlossaryTextColor ? 'text-gray-700' : 'text-gray-500'} italic whitespace-pre-line`}>
+                                      {renderTextWithRaceIcons(line)}
+                                    </div>
+                                  ))}
+                                  {!isGodGlossarySection && lorePrefixLines.length > 0 && (
+                                    <div className={`${useDefaultGlossaryTextColor ? 'text-gray-700' : 'text-gray-500'} whitespace-pre-line`}>{renderTextWithRaceIcons(lorePrefixLines.join('\n'))}</div>
+                                  )}
+                                  {!isGodGlossarySection && glossaryTable && (
+                                    <div className="mt-1 rounded border border-gray-200 bg-white px-2 py-1">
+                                      <table className="w-full table-fixed text-xs">
+                                        <thead>
+                                          <tr className={`border-b border-gray-100 ${useDefaultGlossaryTextColor ? 'text-gray-700' : 'text-gray-500'}`}>
+                                            {glossaryTable.headers.map((header, headerIndex) => (
+                                              <th
+                                                key={`${section.id}-${entry.key}-table-header-${headerIndex}`}
+                                                className={`py-1 font-medium ${
+                                                  headerIndex === glossaryTable.headers.length - 1 ? 'text-right' : 'text-left'
+                                                }`}
+                                              >
+                                                {renderTextWithRaceIcons(header)}
+                                              </th>
+                                            ))}
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {glossaryTable.rows.map((row, rowIndex) => (
+                                            <tr key={`${section.id}-${entry.key}-table-row-${rowIndex}`} className="text-gray-700">
+                                              {row.map((cell, cellIndex) => (
+                                                <td
+                                                  key={`${section.id}-${entry.key}-table-row-${rowIndex}-cell-${cellIndex}`}
+                                                  className={`py-1 align-top ${
+                                                    cellIndex === row.length - 1
+                                                      ? `text-right tabular-nums ${useDefaultGlossaryTextColor ? 'text-gray-700' : 'text-sub'}`
+                                                      : 'text-left'
+                                                  }`}
+                                                >
+                                                  {renderTextWithRaceIcons(cell)}
+                                                </td>
+                                              ))}
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             ))}
           </div>
