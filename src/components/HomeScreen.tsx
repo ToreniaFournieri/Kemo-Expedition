@@ -1232,87 +1232,6 @@ function getBonusAbilityGlossaryBaseLabel(label: string): string {
   return label.replace(/\d+$/, '');
 }
 
-
-const BONUS_ABILITY_GLOSSARY_VALUE_TOKEN_REGEX = /x?[+-]?\d+\/\d+|x?[+-]?\d+(?:\.\d+)?%?/g;
-
-function trimEdgePunctuation(value: string, edge: 'start' | 'end'): string {
-  return edge === 'start'
-    ? value.replace(/^[\s、。・,:：;；]+/, '')
-    : value.replace(/[\s、。・,:：;；]+$/, '');
-}
-
-function extractBonusAbilityGlossaryValueTokens(description: string): string[] {
-  return description.match(BONUS_ABILITY_GLOSSARY_VALUE_TOKEN_REGEX) ?? [];
-}
-
-function buildAggregatedBonusAbilityDescriptionFromTokens(sortedGroupedEntries: GlossaryEntry[]): string | null {
-  const descriptions = sortedGroupedEntries.map((entry) => entry.description);
-  const tokenLists = descriptions.map(extractBonusAbilityGlossaryValueTokens);
-  const baseTokens = tokenLists[0];
-
-  if (baseTokens.length === 0 || tokenLists.some((tokens) => tokens.length !== baseTokens.length)) {
-    return null;
-  }
-
-  const varyingTokenIndexes = baseTokens
-    .map((_, index) => index)
-    .filter((index) => tokenLists.some((tokens) => tokens[index] !== baseTokens[index]));
-
-  if (varyingTokenIndexes.length === 0) {
-    return null;
-  }
-
-  const baseDescriptionParts = descriptions[0].split(BONUS_ABILITY_GLOSSARY_VALUE_TOKEN_REGEX);
-  if (baseDescriptionParts.length !== baseTokens.length + 1) {
-    return null;
-  }
-
-  const mainDescription = baseDescriptionParts.reduce((assembledDescription, part, index) => {
-    const nextToken = baseTokens[index];
-    if (nextToken === undefined) {
-      return `${assembledDescription}${part}`;
-    }
-
-    if (!varyingTokenIndexes.includes(index)) {
-      return `${assembledDescription}${part}${nextToken}`;
-    }
-
-    const rangeStart = tokenLists[0][index];
-    const rangeEnd = tokenLists[tokenLists.length - 1][index];
-    const combinedToken = rangeStart === rangeEnd ? rangeStart : `${rangeStart} ~ ${rangeEnd}`;
-    return `${assembledDescription}${part}${combinedToken}`;
-  }, '');
-
-  const levelSummary = sortedGroupedEntries
-    .map((groupedEntry, index) => {
-      const level = getBonusAbilityGlossaryLevel(groupedEntry.key);
-      const summaryTokens = varyingTokenIndexes.map((tokenIndex) => tokenLists[index][tokenIndex]);
-      const summaryValue = summaryTokens.join(', ') || groupedEntry.description;
-      return level == null ? summaryValue : `Lv${level}: ${summaryValue}`;
-    })
-    .join(', ');
-
-  return `${trimEdgePunctuation(mainDescription, 'end')} (${levelSummary})`;
-}
-
-// SpecRef: 1.1.1 a. bonus ability | Glossary abilities should be displayed in a single aggregated line.
-function buildAggregatedBonusAbilityDescription(sortedGroupedEntries: GlossaryEntry[]): string {
-  const tokenBasedDescription = buildAggregatedBonusAbilityDescriptionFromTokens(sortedGroupedEntries);
-  if (tokenBasedDescription) {
-    return tokenBasedDescription;
-  }
-
-  const descriptions = sortedGroupedEntries.map((entry) => entry.description);
-  const levelSummary = sortedGroupedEntries
-    .map((groupedEntry) => {
-      const level = getBonusAbilityGlossaryLevel(groupedEntry.key);
-      return level == null ? groupedEntry.description : `Lv${level}: ${groupedEntry.description}`;
-    })
-    .join(', ');
-
-  return `${descriptions[0]} (${levelSummary})`;
-}
-
 function buildAggregatedBonusAbilityGlossaryEntries(entries: GlossaryEntry[]): GlossaryEntry[] {
   const aggregatedEntries: GlossaryEntry[] = [];
   const groupedEntries = new Map<string, GlossaryEntry[]>();
@@ -1341,11 +1260,17 @@ function buildAggregatedBonusAbilityGlossaryEntries(entries: GlossaryEntry[]): G
     }
 
     const baseEntry = sortedGroupedEntries[0];
+    const levelSummary = sortedGroupedEntries
+      .map((groupedEntry) => {
+        const level = getBonusAbilityGlossaryLevel(groupedEntry.key);
+        return level == null ? groupedEntry.description : `Lv${level}: ${groupedEntry.description}`;
+      })
+      .join(', ');
 
     aggregatedEntries.push({
       key: groupKey,
       label: getBonusAbilityGlossaryBaseLabel(baseEntry.label),
-      description: buildAggregatedBonusAbilityDescription(sortedGroupedEntries),
+      description: `${baseEntry.description} (${levelSummary})`,
     });
   });
 
