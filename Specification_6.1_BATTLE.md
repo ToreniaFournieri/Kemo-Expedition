@@ -259,8 +259,8 @@
     - If actor has `a.momentum`2, return 1.25 - (1 - (actor.current_HP / actor.max_HP)) x 0.4
   - `f.swarm.amplifier`:
     - N = 1.0
-    - If actor has `f.swarm`, N *=  1 - (1 - (actor.current_HP / actor.max_HP)) x 0.5
-    - If opponent has `f.swarm`, N *=  1 +  (1 - (opponent.current_HP / opponent.max_HP)) x 0.5
+    - If actor has `a.swarm`, N *=  1 - (1 - (actor.current_HP / actor.max_HP)) x 0.5
+    - If opponent has `a.swarm`, N *=  1 +  (1 - (opponent.current_HP / opponent.max_HP)) x 0.5
     - return N
 
   - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
