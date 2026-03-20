@@ -3,6 +3,7 @@ import { getEnemiesByPool } from '../data/enemies';
 import { GodEnemyProfile } from '../data/dropTables';
 import { EnemyDef } from '../types';
 import { applyEnemyEncounterScaling } from './enemyScaling';
+import { resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
 
 function getGodShortName(displayName: string): string {
   return displayName.split(' ')[0] ?? displayName;
@@ -40,7 +41,11 @@ export function buildGodRuntimeEnemy(profile: GodEnemyProfile, isLunaMode: boole
     ),
   };
 
-  const scaledEnemy = applyEnemyEncounterScaling(baseEnemy, effectiveDungeon, 6, 'battle_Boss', {
+  const resolvedProfileAbilities = resolveEnemyPassiveAbilities(profile.abilities);
+  const scaledEnemy = applyEnemyEncounterScaling({
+    ...baseEnemy,
+    abilities: resolvedProfileAbilities,
+  }, effectiveDungeon, 6, 'battle_Boss', {
     isGodEnemy: true,
     isLunaMode,
   });
@@ -49,6 +54,6 @@ export function buildGodRuntimeEnemy(profile: GodEnemyProfile, isLunaMode: boole
     ...scaledEnemy,
     name: getGodShortName(profile.displayName),
     enemyClass: profile.enemyClass,
-    abilities: profile.abilities,
+    abilities: resolvedProfileAbilities,
   };
 }
