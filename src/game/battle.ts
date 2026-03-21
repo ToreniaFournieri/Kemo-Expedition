@@ -3328,18 +3328,20 @@ export function executeBattle(
               triggerEnemyResurrect(phase, turn.roll);
             }
 
-            if (shouldTriggerShock) {
-              consumeCharacterShock(charId);
-              log.push({
-                phase,
-                initiativeRoll: turn.roll,
-                actor: 'effect',
-                characterId: charId,
-                action: buildShockAction(enemy.name, targetName),
-                note: '(感電:攻撃中断)',
-                noteTone: 'muted',
-              });
-            }
+            const shockEffectLog = shouldTriggerShock
+              ? (() => {
+                  consumeCharacterShock(charId);
+                  return {
+                    phase,
+                    initiativeRoll: turn.roll,
+                    actor: 'effect' as const,
+                    characterId: charId,
+                    action: buildShockAction(enemy.name, targetName),
+                    note: '(感電:攻撃中断)',
+                    noteTone: 'muted' as const,
+                  };
+                })()
+              : null;
 
             const reflectedAttemptText = enemyResonanceLogText
               ? `${appliedHits}/${attack.totalAttempts}回, ${enemyResonanceLogText.slice(1, -1)}`
@@ -3440,6 +3442,10 @@ export function executeBattle(
                 isEnemyTargetHit: phase === 'mid' ? true : undefined,
                 elementalOffense: enemy.elementalOffense,
               });
+            }
+
+            if (shockEffectLog) {
+              log.push(shockEffectLog);
             }
 
             if (avoidedByIllusion) {
@@ -3770,6 +3776,7 @@ export function executeBattle(
         let result: CharacterAttackResult;
         let antagonismTarget: ComputedCharacterStats | null = null;
         let antagonismTargetName: string | null = null;
+        let shockEffectLog: BattleLogEntry | null = null;
 
         if (isAntagonism) {
           const candidates = characterStats.filter(target => target.characterId !== cs.characterId);
@@ -3781,22 +3788,24 @@ export function executeBattle(
           antagonismTargetName = party.characters.find(c => c.id === selected.characterId)?.name ?? '???';
           result = calculateCharacterFriendlyFireDamage(phase, cs, selected, characterStats, partyStats, partyHp, partyDeityKey, noAMultiplier, characterPhaseAccuracyBonus);
 
-          if (phase === 'close' && !isReAttack && isCharacterShockAvailable(selected)) {
-            if (result.hits > 1) {
-              result.damage = getShockAdjustedDamage(result.damage, result.hits);
-              result.hits = 1;
-            }
-            consumeCharacterShock(selected.characterId);
-            log.push({
-              phase,
-              initiativeRoll: turn.roll,
-              actor: 'effect',
-              characterId: selected.characterId,
-              action: buildShockAction(char.name, antagonismTargetName),
-              note: '(感電:攻撃中断)',
-              noteTone: 'muted',
-            });
-          }
+          shockEffectLog = phase === 'close' && !isReAttack && isCharacterShockAvailable(selected)
+            ? (() => {
+                if (result.hits > 1) {
+                  result.damage = getShockAdjustedDamage(result.damage, result.hits);
+                  result.hits = 1;
+                }
+                consumeCharacterShock(selected.characterId);
+                return {
+                  phase,
+                  initiativeRoll: turn.roll,
+                  actor: 'effect' as const,
+                  characterId: selected.characterId,
+                  action: buildShockAction(char.name, antagonismTargetName),
+                  note: '(感電:攻撃中断)',
+                  noteTone: 'muted' as const,
+                };
+              })()
+            : null;
           if (result.damage > 0) {
             applyPartyDamage(result.damage);
 
@@ -3824,21 +3833,23 @@ export function executeBattle(
           }
         } else {
           result = calculateCharacterDamage(phase, cs, char, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, noAMultiplier, characterPhaseAccuracyBonus);
-          if (phase === 'close' && !isReAttack && isEnemyShockAvailable()) {
-            if (result.hits > 1) {
-              result.damage = getShockAdjustedDamage(result.damage, result.hits);
-              result.hits = 1;
-            }
-            consumeEnemyShock();
-            log.push({
-              phase,
-              initiativeRoll: turn.roll,
-              actor: 'effect',
-              action: buildShockAction(char.name, enemy.name),
-              note: '(感電:攻撃中断)',
-              noteTone: 'muted',
-            });
-          }
+          shockEffectLog = phase === 'close' && !isReAttack && isEnemyShockAvailable()
+            ? (() => {
+                if (result.hits > 1) {
+                  result.damage = getShockAdjustedDamage(result.damage, result.hits);
+                  result.hits = 1;
+                }
+                consumeEnemyShock();
+                return {
+                  phase,
+                  initiativeRoll: turn.roll,
+                  actor: 'effect' as const,
+                  action: buildShockAction(char.name, enemy.name),
+                  note: '(感電:攻撃中断)',
+                  noteTone: 'muted' as const,
+                };
+              })()
+            : null;
 
           if (
             result.totalAttempts > 0
@@ -4019,6 +4030,10 @@ export function executeBattle(
             wasNegated: result.wasNegatedByEnemyIllusion || undefined,
             elementalOffense: cs.elementalOffense,
           });
+        }
+
+        if (shockEffectLog) {
+          log.push(shockEffectLog);
         }
 
         if (!isAntagonism && result.wasNegatedByEnemyIllusion) {
