@@ -1279,7 +1279,7 @@ function formatDeathTouchProbabilityNote(level: number, hits: number): string {
   const numerator = DEATH_TOUCH_NUMERATORS[Math.min(5, Math.max(1, level))] ?? 0;
   const successfulHits = Math.max(0, hits);
   const probabilityNumerator = Math.min(256, successfulHits * numerator);
-  return `(接死:有効 ${successfulHits}hit x ${numerator}/256 = ${probabilityNumerator}/256 の確率で即死)`;
+  return `(接死:有効 ${probabilityNumerator}/256 の確率で即死)`;
 }
 
 function getBindChance(level: number, hits: number): number {
