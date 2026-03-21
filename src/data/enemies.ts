@@ -202,6 +202,14 @@ export function getEnemyTypeBonuses(enemyType: string): Bonus[] {
   return ENEMY_TYPE_SPECS[enemyType]?.bonuses ?? [];
 }
 
+export function getEnemyTypeAbilities(enemyType: string, enemyTypeLevel = 1): EnemyAbility[] {
+  const enemyTypeSpec = ENEMY_TYPE_SPECS[enemyType];
+  return [
+    ...(enemyTypeSpec?.ability1 ?? []),
+    ...(enemyTypeLevel >= 30 ? (enemyTypeSpec?.ability30 ?? []) : []),
+  ];
+}
+
 function mergeEnemyAbilities(...sets: EnemyAbility[][]): EnemyAbility[] {
   const merged = new Map<AbilityId, EnemyAbility>();
   for (const abilities of sets) {
@@ -245,12 +253,8 @@ function createEnemyFromTemplate(
 ): EnemyDef {
   const classBase = ENEMY_CLASS_BASES[enemyClass];
   const enemyTypeExpMult = type === 'elite' ? 2.0 : type === 'boss' ? 5.0 : 1.0;
-  const enemyTypeSpec = ENEMY_TYPE_SPECS[enemyType];
   const extraAbilityLevels = extraAbilities.map((id) => ({ id, level: 1 }));
-  const enemyTypeAbilities = [
-    ...(enemyTypeSpec?.ability1 ?? []),
-    ...(enemyTypeLevel >= 30 ? (enemyTypeSpec?.ability30 ?? []) : []),
-  ];
+  const enemyTypeAbilities = getEnemyTypeAbilities(enemyType, enemyTypeLevel);
   const enemyAbilities = resolveEnemyPassiveAbilities(mergeEnemyAbilities(classBase.abilities, extraAbilityLevels, enemyTypeAbilities));
   const cyborgizationAdjustment = getEnemyCyborgizationAdjustment(
     enemyAbilities.find((ability) => ability.id === 'cyborgization')?.level ?? 0,

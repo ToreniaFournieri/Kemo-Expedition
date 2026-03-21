@@ -1,5 +1,5 @@
 import { AbilityId, ElementalResistance, EnemyAbility, EnemyClassId, EnemyDef } from '../types';
-import { getEnemyTypeBonuses } from '../data/enemies';
+import { getEnemyTypeAbilities, getEnemyTypeBonuses } from '../data/enemies';
 import { getEnemyCyborgizationAdjustment, resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
 import { applyEnemyTypeCBonuses } from './enemyScaling';
 import { LUNA_MODE_ENEMY_LEVEL_BONUS, getEnemyMultipliersForLevel } from '../data/dungeons';
@@ -120,6 +120,9 @@ export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode
   const enemyLevel = normalized.level + (isLunaMode ? LUNA_MODE_ENEMY_LEVEL_BONUS : 0);
   const multipliers = getEnemyMultipliersForLevel(enemyLevel);
   const classAbilities = new Map(classBase.abilities.map((ability) => [ability.id, ability]));
+  getEnemyTypeAbilities(normalized.enemyType, enemyLevel).forEach((ability) => {
+    classAbilities.set(ability.id, { ...ability });
+  });
   normalized.abilities.forEach((ability) => {
     classAbilities.set(ability.id, { id: ability.id, level: ability.level });
   });
