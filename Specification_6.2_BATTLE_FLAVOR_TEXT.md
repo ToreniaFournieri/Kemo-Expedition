@@ -233,3 +233,80 @@
 | {actor} は高く跳び上がった！ |
 | {actor} は空中へ退いた！ |
 | {actor} は空へと身を逃がした！ |
+
+- `log.corrode`
+
+| flavor text |
+|---|
+|{actor} の攻撃が {target} を腐食させた！|
+|{actor} は {target} の武器を蝕んだ！|
+|{actor} の腐食が {target} に広がった！|
+|{target} は腐食し、力を削がれた！|
+|{actor} の一撃が {target} を劣化させた！|
+|{target} の攻撃力が腐食により低下した！|
+|{actor} は {target} を腐らせた！|
+|腐食が {target} を侵食した！|
+|{target} は蝕まれ、力を失った！|
+|{actor} の腐食効果が {target} に作用した！|
+
+- `log.life-drain`
+
+| flavor text |
+|---|
+|{actor} は {target} から生命を吸い取った！|
+|{actor} は {target} の力を奪い取った！|
+|{actor} の吸血が {target} を蝕む！|
+|{actor} は {target} の生命を糧とした！|
+|{target} の生命力が吸収された！|
+|{actor} は力を吸収し回復した！|
+|{actor} の吸血が成功した！|
+|{actor} は {target} の生命を奪った！|
+|{actor} は血を啜り、傷を癒した！|
+|{actor} は生命力を取り込み回復した！|
+
+
+- `log.death-touch`
+
+| flavor text |
+|---|
+|{actor} の接死が {target} を捉えた！|
+|{target} は触れられた瞬間、命を絶たれた！|
+|{actor} の一撃が致命に至った！|
+|{target} は即座に倒れた！|
+|死の気配が {target} を包んだ！|
+|{actor} の接死が発動した！|
+|{target} は抗えず倒れた！|
+|{actor} の攻撃が命を断ち切った！|
+|{target} は一瞬で崩れ落ちた！|
+|死が {target} に訪れた！|
+
+- `log.burn`
+
+| flavor text |
+|---|
+|{actor} は炎に焼かれた！|
+|{actor} は火傷の痛みに苦しむ！|
+|火傷が {actor} を蝕む！|
+|{actor} の身体が焼けただれた！|
+|{actor} は炎に包まれた！|
+|絡みつく炎が {actor} を襲う！|
+|{actor} は燃え上がる痛みに悶えた！|
+|火傷がじわじわと {actor} を削る！|
+|{actor} の体が焦げつく！|
+|{actor} は焼けつく痛みに耐える！|
+
+
+- `log.bind`
+
+| flavor text |
+|---|
+|{actor} は {target} を拘束した！|
+|{target} は動きを封じられた！|
+|{actor} の拘束が {target} を縛る！|
+|{target} は身動きが取れない！|
+|{actor} は {target} を絡め取った！|
+|拘束により {target} は行動不能！|
+|{target} は捕らえられた！|
+|{actor} の力で {target} は封じられた！|
+|{target} は逃れられない！|
+|{actor} は {target} の動きを止めた！|
