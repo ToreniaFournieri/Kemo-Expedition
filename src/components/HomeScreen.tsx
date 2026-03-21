@@ -7742,15 +7742,61 @@ function SettingTab({
     debug: true,
   };
 
+  const getStoredDivineBureauPanelState = (): Record<DivineBureauPanelKey, boolean> => {
+    try {
+      const saved = localStorage.getItem(DIVINE_BUREAU_PANEL_STORAGE_KEY);
+      if (!saved) return defaultDivineBureauPanelState;
+      const parsed = JSON.parse(saved) as Partial<Record<DivineBureauPanelKey, boolean>>;
+      return {
+        modeSelect: parsed.modeSelect === true,
+        donation: parsed.donation === true,
+        clairvoyance: parsed.clairvoyance === true,
+        glossary: parsed.glossary === true,
+        itemCompendium: parsed.itemCompendium === true,
+        bestiary: parsed.bestiary === true,
+        superRare: parsed.superRare === true,
+        gameSetting: parsed.gameSetting === true,
+        debug: parsed.debug === true,
+      };
+    } catch (error) {
+      console.error('Failed to load Divine Bureau panel state:', error);
+      return defaultDivineBureauPanelState;
+    }
+  };
+
+  const getStoredGlossaryTab = (): GlossaryTabKey => {
+    try {
+      const savedGlossaryTab = localStorage.getItem(GLOSSARY_TAB_STORAGE_KEY);
+      if (savedGlossaryTab && GLOSSARY_TABS.includes(savedGlossaryTab as GlossaryTabKey)) {
+        return savedGlossaryTab as GlossaryTabKey;
+      }
+    } catch (error) {
+      console.error('Failed to load glossary tab state:', error);
+    }
+    return '能';
+  };
+
+  const getStoredExpandedGlossaryEntries = (): Record<string, boolean> => {
+    try {
+      const savedExpandedEntries = localStorage.getItem(GLOSSARY_EXPANDED_STORAGE_KEY);
+      if (savedExpandedEntries) {
+        return JSON.parse(savedExpandedEntries) as Record<string, boolean>;
+      }
+    } catch (error) {
+      console.error('Failed to load glossary expanded entries:', error);
+    }
+    return {};
+  };
+
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [divineBureauPanelExpanded, setDivineBureauPanelExpanded] = useState<Record<DivineBureauPanelKey, boolean>>(defaultDivineBureauPanelState);
+  const [divineBureauPanelExpanded, setDivineBureauPanelExpanded] = useState<Record<DivineBureauPanelKey, boolean>>(() => getStoredDivineBureauPanelState());
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const [compendiumCategory, setCompendiumCategory] = useState<string>('armor');
   const [colosseumEnemySettings, setColosseumEnemySettings] = useState<ColosseumEnemySettings>(() => getColosseumEnemySettings());
   const [compendiumRarityFilter, setCompendiumRarityFilter] = useState<RarityFilter>('all');
-  const [glossaryTab, setGlossaryTab] = useState<GlossaryTabKey>('能');
+  const [glossaryTab, setGlossaryTab] = useState<GlossaryTabKey>(() => getStoredGlossaryTab());
   const [bonusAbilityGlossarySubcategory, setBonusAbilityGlossarySubcategory] = useState<BonusAbilityGlossarySubcategoryId>('passive');
-  const [expandedGlossaryEntries, setExpandedGlossaryEntries] = useState<Record<string, boolean>>({});
+  const [expandedGlossaryEntries, setExpandedGlossaryEntries] = useState<Record<string, boolean>>(() => getStoredExpandedGlossaryEntries());
   const [expandedCompendiumItems, setExpandedCompendiumItems] = useState<Record<number, boolean>>({});
   const [isEnemyEditExpanded, setIsEnemyEditExpanded] = useState(true);
   const [activeAbilityHelp, setActiveAbilityHelp] = useState<{ key: string; title: string; description: string } | null>(null);
@@ -7773,28 +7819,6 @@ function SettingTab({
   const versionTag = APP_VERSION;
   const currentEnv = getEnvironmentId();
   const modeSelectionLocked = isLunaEnvironment;
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(DIVINE_BUREAU_PANEL_STORAGE_KEY);
-      if (!saved) return;
-      const parsed = JSON.parse(saved) as Partial<Record<DivineBureauPanelKey, boolean>>;
-      setDivineBureauPanelExpanded({
-        modeSelect: parsed.modeSelect === true,
-        donation: parsed.donation === true,
-        clairvoyance: parsed.clairvoyance === true,
-        glossary: parsed.glossary === true,
-        itemCompendium: parsed.itemCompendium === true,
-        bestiary: parsed.bestiary === true,
-        superRare: parsed.superRare === true,
-        gameSetting: parsed.gameSetting === true,
-        debug: parsed.debug === true,
-      });
-    } catch (error) {
-      console.error('Failed to load Divine Bureau panel state:', error);
-    }
-  }, []);
-
   useEffect(() => {
     try {
       localStorage.setItem(DIVINE_BUREAU_PANEL_STORAGE_KEY, JSON.stringify(divineBureauPanelExpanded));
@@ -7802,24 +7826,6 @@ function SettingTab({
       console.error('Failed to persist Divine Bureau panel state:', error);
     }
   }, [divineBureauPanelExpanded]);
-
-  useEffect(() => {
-    try {
-      const savedGlossaryTab = localStorage.getItem(GLOSSARY_TAB_STORAGE_KEY);
-      if (savedGlossaryTab && GLOSSARY_TABS.includes(savedGlossaryTab as GlossaryTabKey)) {
-        setGlossaryTab(savedGlossaryTab as GlossaryTabKey);
-      }
-
-      const savedExpandedEntries = localStorage.getItem(GLOSSARY_EXPANDED_STORAGE_KEY);
-      if (savedExpandedEntries) {
-        const parsedExpandedEntries = JSON.parse(savedExpandedEntries) as Record<string, boolean>;
-        setExpandedGlossaryEntries(parsedExpandedEntries);
-      }
-    } catch (error) {
-      console.error('Failed to load glossary view state:', error);
-    }
-  }, []);
-
   useEffect(() => {
     try {
       localStorage.setItem(GLOSSARY_TAB_STORAGE_KEY, glossaryTab);
