@@ -39,6 +39,7 @@ import {
   buildSoulReapAction,
   buildUnstableCoreAction,
   formatDecomposeNote,
+  formatDefeatRecoveryNote,
   formatRegenerationNote,
   getConfusionNoTargetLog,
 } from './battleNarration';
@@ -1900,7 +1901,7 @@ export function executeBattle(
         characterId: targetStats.characterId,
         isCounter: isCounter || undefined,
         action: buildResurrectAction(targetName),
-        note: `(再起 ✚${healAmount})`,
+        note: formatDefeatRecoveryNote('再起', healAmount),
         noteTone: 'muted',
       });
       return true;
@@ -1918,7 +1919,7 @@ export function executeBattle(
         characterId: targetStats.characterId,
         isCounter: isCounter || undefined,
         action: buildReanimateAction(targetName),
-        note: `(即時蘇生 ✚${healAmount})`,
+        note: formatDefeatRecoveryNote('即時蘇生', healAmount),
         noteTone: 'muted',
       });
       return true;
@@ -1945,7 +1946,7 @@ export function executeBattle(
         initiativeRoll,
         actor: 'enemy',
         action: buildResurrectAction(enemy.name),
-        note: `(再起 ✚${healAmount})`,
+        note: formatDefeatRecoveryNote('再起', healAmount),
         noteTone: 'muted',
       });
       return true;
@@ -1961,7 +1962,7 @@ export function executeBattle(
         initiativeRoll,
         actor: 'enemy',
         action: buildReanimateAction(enemy.name),
-        note: `(即時蘇生 ✚${healAmount})`,
+        note: formatDefeatRecoveryNote('即時蘇生', healAmount),
         noteTone: 'muted',
       });
       return true;
