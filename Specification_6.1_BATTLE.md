@@ -276,6 +276,11 @@
 	- If opponent has `a.swarm`, N *=  1 +  (1 - (opponent.current_HP / opponent.max_HP)) x 0.5
 	- return N
 
+	- logs: add "群れ-N%" to attack log like:
+	  - "[2] 敵の攻撃！(1/2回, 威力-N%)"  (actor.`a.swarm`)
+	  - "[3] カスミ の攻撃！(6/16回, 相手被ダメN%増) "  (opponent.`a.swarm`)
+
+
 - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
 - `f.mutual_amplifier`:
 	- If (phase is MID and (actor or opponent) has `a.mutual-magic-amplify`), return n
