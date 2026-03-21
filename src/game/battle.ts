@@ -198,6 +198,19 @@ const FREE_LOGS = [
   '{actor} は追撃を振り切り、離脱した！',
 ] as const;
 
+const SHOCK_LOGS = [
+  '{target} は感電し、{actor} の攻撃は中断された！',
+  '{target} に電撃が走り、{actor} の攻撃は止められた！',
+  '{target} の感電が発動し、{actor} の攻撃は途中で途切れた！',
+  '{target} は電撃で硬直し、{actor} の連撃は遮られた！',
+  '{target} の放つ電流が {actor} を阻み、攻撃は中断された！',
+  '{target} は帯電し、{actor} の攻撃は強制的に止まった！',
+  '{target} に触れた瞬間、{actor} は感電し攻撃を止めた！',
+  '{target} の電撃反応により、{actor} の攻撃は断ち切られた！',
+  '{target} は電撃を放ち、{actor} の攻撃を遮断した！',
+  '{target} の感電により、{actor} の攻撃はそこで終わった！',
+] as const;
+
 function getElementalMultiplier(
   offense: ElementalOffense,
   resistance: Record<'fire' | 'thunder' | 'ice', number>
@@ -1685,6 +1698,17 @@ function buildFreeAction(actorName: string): string {
   return pickRandomEntry(FREE_LOGS).replace(/\{actor\}/g, actorName);
 }
 
+function buildShockAction(actorName: string, targetName: string): string {
+  return pickRandomEntry(SHOCK_LOGS)
+    .replace(/\{actor\}/g, actorName)
+    .replace(/\{target\}/g, targetName);
+}
+
+function getShockAdjustedDamage(damage: number, hits: number): number {
+  if (hits <= 1 || damage <= 0) return damage;
+  return Math.floor(damage / hits);
+}
+
 function getRandomPartyMemberName(party: Party): string {
   if (party.characters.length === 0) return party.name;
   return pickRandomEntry(party.characters).name;
@@ -1882,6 +1906,8 @@ export function executeBattle(
   let consumedEnemyResurrect = false;
   const consumedIllusionStateIds = new Set<string>();
   let consumedPartyIllusion = false;
+  let consumedEnemyShock = false;
+  const consumedCharacterShockIds = new Set<number>();
   const activeMagicSealQueue = createMagicSealQueue(party, characterStats, enemy);
   let pendingEnemyHowlEffect: PendingHowlEffect | null = null;
   let pendingPartyHowlEffect: PendingHowlEffect | null = null;
@@ -1902,6 +1928,21 @@ export function executeBattle(
     const effect = pendingPartyHowlEffect;
     pendingPartyHowlEffect = null;
     return effect;
+  };
+
+  const isEnemyShockAvailable = (): boolean => !consumedEnemyShock && getEnemyAbilityLevel(enemy, 'shock') > 0;
+
+  const isCharacterShockAvailable = (charStats: ComputedCharacterStats): boolean => (
+    !consumedCharacterShockIds.has(charStats.characterId)
+    && getAbilityLevel(charStats, 'shock') > 0
+  );
+
+  const consumeEnemyShock = (): void => {
+    consumedEnemyShock = true;
+  };
+
+  const consumeCharacterShock = (characterId: number): void => {
+    consumedCharacterShockIds.add(characterId);
   };
 
   const applyPartyDamage = (amount: number): number => {
@@ -3168,6 +3209,10 @@ export function executeBattle(
             const reflect = defensiveReaction?.type === 'reflect' ? defensiveReaction.descriptor : null;
             const absorb = defensiveReaction?.type === 'absorb' ? defensiveReaction.descriptor : null;
             const nullify = defensiveReaction?.type === 'nullify' ? defensiveReaction.descriptor : null;
+            const shouldTriggerShock = !isReAttack && phase === 'close' && isCharacterShockAvailable(attack.charStats);
+            const hitDamagesToApply = shouldTriggerShock && attack.hitDamages.length > 1
+              ? attack.hitDamages.slice(0, 1)
+              : attack.hitDamages;
             if (avoidedByIllusion) {
               if (avoidedByPartyIllusion) {
                 consumedPartyIllusion = true;
@@ -3175,7 +3220,7 @@ export function executeBattle(
                 consumedIllusionStateIds.add(`character:${charId}`);
               }
             } else {
-              for (const hitDamage of attack.hitDamages) {
+              for (const hitDamage of hitDamagesToApply) {
                 if (isStealthActive(attack.charStats, partyHp, partyStats.hp)) {
                   avoidedByStealth = true;
                   continue;
@@ -3211,6 +3256,19 @@ export function executeBattle(
             if (reflectedDamage > 0) {
               applyEnemyDamage(reflectedDamage);
               triggerEnemyResurrect(phase, turn.roll);
+            }
+
+            if (shouldTriggerShock) {
+              consumeCharacterShock(charId);
+              log.push({
+                phase,
+                initiativeRoll: turn.roll,
+                actor: 'effect',
+                characterId: charId,
+                action: buildShockAction(enemy.name, targetName),
+                note: '(感電:攻撃中断)',
+                noteTone: 'muted',
+              });
             }
 
             const reflectedAttemptText = enemyResonanceLogText
@@ -3640,6 +3698,7 @@ export function executeBattle(
 
         let result: CharacterAttackResult;
         let antagonismTarget: ComputedCharacterStats | null = null;
+        let antagonismTargetName: string | null = null;
 
         if (isAntagonism) {
           const candidates = characterStats.filter(target => target.characterId !== cs.characterId);
@@ -3648,7 +3707,25 @@ export function executeBattle(
           ctx = newCtx;
           const selected = resolveEnemyTarget(targetRow, candidates, phase) ?? candidates[Math.floor(Math.random() * candidates.length)];
           antagonismTarget = selected;
+          antagonismTargetName = party.characters.find(c => c.id === selected.characterId)?.name ?? '???';
           result = calculateCharacterFriendlyFireDamage(phase, cs, selected, characterStats, partyStats, partyHp, partyDeityKey, noAMultiplier, characterPhaseAccuracyBonus);
+
+          if (phase === 'close' && !isReAttack && isCharacterShockAvailable(selected)) {
+            if (result.hits > 1) {
+              result.damage = getShockAdjustedDamage(result.damage, result.hits);
+              result.hits = 1;
+            }
+            consumeCharacterShock(selected.characterId);
+            log.push({
+              phase,
+              initiativeRoll: turn.roll,
+              actor: 'effect',
+              characterId: selected.characterId,
+              action: buildShockAction(char.name, antagonismTargetName),
+              note: '(感電:攻撃中断)',
+              noteTone: 'muted',
+            });
+          }
           if (result.damage > 0) {
             applyPartyDamage(result.damage);
 
@@ -3676,6 +3753,22 @@ export function executeBattle(
           }
         } else {
           result = calculateCharacterDamage(phase, cs, char, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, noAMultiplier, characterPhaseAccuracyBonus);
+          if (phase === 'close' && !isReAttack && isEnemyShockAvailable()) {
+            if (result.hits > 1) {
+              result.damage = getShockAdjustedDamage(result.damage, result.hits);
+              result.hits = 1;
+            }
+            consumeEnemyShock();
+            log.push({
+              phase,
+              initiativeRoll: turn.roll,
+              actor: 'effect',
+              action: buildShockAction(char.name, enemy.name),
+              note: '(感電:攻撃中断)',
+              noteTone: 'muted',
+            });
+          }
+
           if (
             result.totalAttempts > 0
             && isIllusionActive(phase, getEnemyAbilityLevel(enemy, 'illusion') > 0, 'enemy', consumedIllusionStateIds)
@@ -3745,9 +3838,11 @@ export function executeBattle(
           antagonismTarget ? partyHp : enemyHp,
           antagonismTarget ? partyStats.hp : enemy.hp,
         );
-        const antagonismTargetName = antagonismTarget
-          ? (party.characters.find(c => c.id === antagonismTarget.characterId)?.name ?? '???')
-          : null;
+        antagonismTargetName = antagonismTargetName ?? (
+          antagonismTarget
+            ? (party.characters.find(c => c.id === antagonismTarget.characterId)?.name ?? '???')
+            : null
+        );
         const reflect = !isAntagonism && result.reflectedDamage && result.reflectedDamage > 0
           ? getReflectDescriptor(phase, cs.elementalOffense, enemy.abilities)
           : null;
