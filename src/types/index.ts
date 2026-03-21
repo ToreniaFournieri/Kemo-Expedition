@@ -489,6 +489,11 @@ export interface BattleLogEntry {
   initiativeRoll?: number;
   actor: 'party' | 'enemy' | 'character' | 'effect' | 'triggered' | 'deity';
   characterId?: number;
+  effectKind?: 'life_drain';
+  effectSourceName?: string;
+  effectTargetName?: string;
+  effectHealAmount?: number;
+  isAggregated?: boolean;
   action: string;
   note?: string;
   noteTone?: 'default' | 'sub' | 'muted';
