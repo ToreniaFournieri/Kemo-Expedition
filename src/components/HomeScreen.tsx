@@ -407,6 +407,93 @@ function renderActionWithMutedTrailingParenthetical(action: string) {
   );
 }
 
+function aggregateBattleLifeDrainLogs(logs: readonly ExpeditionLogEntry['details'][number][]) {
+  type LifeDrainGroup = {
+    lastIndex: number;
+    indexes: number[];
+    targetNames: string[];
+    totalHealAmount: number;
+    templateLog: ExpeditionLogEntry['details'][number];
+    count: number;
+  };
+
+  const groups = new Map<string, LifeDrainGroup>();
+
+  const normalizeLifeDrainNoteForGrouping = (note?: string): string => (
+    (note ?? '').replace(/✚[\d,]+(?=\))/u, '✚#')
+  );
+
+  logs.forEach((log, index) => {
+    if (
+      log.actor !== 'triggered'
+      || log.phase !== 'close'
+      || log.effectKind !== 'life_drain'
+      || !log.effectSourceName
+      || !log.effectTargetName
+    ) {
+      return;
+    }
+
+    const key = [
+      log.phase,
+      log.initiativeRoll ?? '',
+      log.effectKind,
+      log.effectSourceName,
+      normalizeLifeDrainNoteForGrouping(log.note),
+      log.noteTone ?? '',
+    ].join('::');
+    const existingGroup = groups.get(key);
+    if (existingGroup) {
+      existingGroup.lastIndex = index;
+      existingGroup.indexes.push(index);
+      existingGroup.targetNames.push(log.effectTargetName);
+      existingGroup.totalHealAmount += Math.max(0, log.effectHealAmount ?? 0);
+      existingGroup.count += 1;
+      return;
+    }
+
+    groups.set(key, {
+      lastIndex: index,
+      indexes: [index],
+      targetNames: [log.effectTargetName],
+      totalHealAmount: Math.max(0, log.effectHealAmount ?? 0),
+      templateLog: log,
+      count: 1,
+    });
+  });
+
+  if (![...groups.values()].some((group) => group.count > 1)) return [...logs];
+
+  const groupByLastIndex = new Map<number, LifeDrainGroup>();
+  const skippedIndexes = new Set<number>();
+
+  groups.forEach((group) => {
+    if (group.count <= 1) return;
+    for (const index of group.indexes) {
+      skippedIndexes.add(index);
+    }
+    skippedIndexes.delete(group.lastIndex);
+    groupByLastIndex.set(group.lastIndex, group);
+  });
+
+  return logs.flatMap((log, index) => {
+    const group = groupByLastIndex.get(index);
+    if (group) {
+      const summarizedNote = group.templateLog.note?.replace(/✚[\d,]+(?=\))/u, `✚${formatNumber(group.totalHealAmount)}`);
+      const summarizedTargets = [...new Set(group.targetNames)];
+      return [{
+        ...group.templateLog,
+        isAggregated: true,
+        action: `${group.templateLog.effectSourceName} は ${summarizedTargets.join('、')} から生命を吸い取った！`,
+        note: summarizedNote,
+      }];
+    }
+
+    if (skippedIndexes.has(index)) return [];
+    return [log];
+  });
+}
+
 
 
 function RaceIcon({ race, className = "h-8 w-8" }: { race: Race; className?: string }) {
@@ -6231,11 +6318,11 @@ function ExpeditionTab({
                           {isRoomExpanded && entry.details && (
                             <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
                               <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
-                              {entry.details.map((log, j) => {
+                              {aggregateBattleLifeDrainLogs(entry.details).map((log, j, battleLogs) => {
                                 const isResurrectLog = log.action.includes('は致命ダメージを食いしばって耐えた！');
                                 const isTriggeredLog = log.actor === 'triggered';
                                 const isPhaseAction = log.actor !== 'deity' && log.actor !== 'effect';
-                                const previousLog = j > 0 ? entry.details[j - 1] : undefined;
+                                const previousLog = j > 0 ? battleLogs[j - 1] : undefined;
                                 const isStealthEffectLog = log.actor === 'effect' && (log.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || log.action.includes('への攻撃はすべて幻だった！'));
                                 const isCounterNegationEffectLog = log.actor === 'effect' && log.action.includes('反撃無効化により');
                                 const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || previousLog.action.includes('への攻撃はすべて幻だった！'));
@@ -6250,7 +6337,7 @@ function ExpeditionTab({
                                   : log.phase === 'end'
                                     ? '末'
                                     : isPhaseAction
-                                      ? (isTriggeredLog ? `${log.initiativeRoll ?? '?'}` : (log.isCounter || isResurrectLog || log.isEnemyTargetHit ? '-' : `${log.initiativeRoll ?? '?'}`))
+                                      ? (log.isAggregated ? '-' : (isTriggeredLog ? `${log.initiativeRoll ?? '?'}` : (log.isCounter || isResurrectLog || log.isEnemyTargetHit ? '-' : `${log.initiativeRoll ?? '?'}`)))
                                       : (isStealthEffectLog || isCounterNegationEffectLog) ? '-' : (log.actor === 'deity' ? '末' : '効');
                                 const phaseHeader = log.phase === 'long'
                                   ? '遠距離攻撃フェーズ'
@@ -7497,11 +7584,11 @@ function DiaryTab({
                         {isRoomExpanded && entry.details && (
                           <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
                             <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
-                            {entry.details.map((battleLog, j) => {
+                            {aggregateBattleLifeDrainLogs(entry.details).map((battleLog, j, battleLogs) => {
                               const isResurrectLog = battleLog.action.includes('は致命ダメージを食いしばって耐えた！');
                               const isTriggeredLog = battleLog.actor === 'triggered';
                               const isPhaseAction = battleLog.actor !== 'deity' && battleLog.actor !== 'effect';
-                              const previousLog = j > 0 ? entry.details[j - 1] : undefined;
+                              const previousLog = j > 0 ? battleLogs[j - 1] : undefined;
                               const isStealthEffectLog = battleLog.actor === 'effect' && (battleLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || battleLog.action.includes('への攻撃はすべて幻だった！'));
                               const isCounterNegationEffectLog = battleLog.actor === 'effect' && battleLog.action.includes('反撃無効化により');
                               const previousWasStealthEffectLog = !!previousLog && previousLog.actor === 'effect' && (previousLog.action.includes('物陰に隠れて攻撃をやり過ごせたのだ！') || previousLog.action.includes('への攻撃はすべて幻だった！'));
@@ -7516,7 +7603,7 @@ function DiaryTab({
                                 : battleLog.phase === 'end'
                                   ? '末'
                                   : isPhaseAction
-                                    ? (isTriggeredLog ? `${battleLog.initiativeRoll ?? '?'}` : (battleLog.isCounter || isResurrectLog || battleLog.isEnemyTargetHit ? '-' : `${battleLog.initiativeRoll ?? '?'}`))
+                                    ? (battleLog.isAggregated ? '-' : (isTriggeredLog ? `${battleLog.initiativeRoll ?? '?'}` : (battleLog.isCounter || isResurrectLog || battleLog.isEnemyTargetHit ? '-' : `${battleLog.initiativeRoll ?? '?'}`)))
                                     : (isStealthEffectLog || isCounterNegationEffectLog) ? '-' : (battleLog.actor === 'deity' ? '末' : '効');
                               const phaseHeader = battleLog.phase === 'long'
                                 ? '遠距離攻撃フェーズ'
