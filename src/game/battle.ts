@@ -1275,6 +1275,13 @@ function getDeathTouchChance(level: number, hits: number): number {
   return Math.max(0, Math.min(1, (hits * numerator) / 256));
 }
 
+function formatDeathTouchProbabilityNote(level: number, hits: number): string {
+  const numerator = DEATH_TOUCH_NUMERATORS[Math.min(5, Math.max(1, level))] ?? 0;
+  const successfulHits = Math.max(0, hits);
+  const probabilityNumerator = Math.min(256, successfulHits * numerator);
+  return `(接死:有効 ${successfulHits}hit x ${numerator}/256 = ${probabilityNumerator}/256 の確率で即死)`;
+}
+
 function getBindChance(level: number, hits: number): number {
   const numerator = BIND_NUMERATORS[Math.min(5, Math.max(1, level))] ?? 0;
   return Math.max(0, Math.min(1, (hits * numerator) / 64));
@@ -1915,7 +1922,7 @@ export function executeBattle(
         actor: 'triggered',
         characterId: actorStats.characterId,
         action: buildDeathTouchAction(actorName, enemy.name),
-        note: `(接死:有効 ${DEATH_TOUCH_NUMERATORS[Math.min(5, deathTouchLevel)]}/256 の確率で即死)`,
+        note: formatDeathTouchProbabilityNote(deathTouchLevel, result.hits),
         noteTone: 'muted',
       });
     }
@@ -2030,7 +2037,7 @@ export function executeBattle(
         initiativeRoll,
         actor: 'triggered',
         action: buildDeathTouchAction(enemy.name, targetName),
-        note: `(接死:有効 ${DEATH_TOUCH_NUMERATORS[Math.min(5, enemyDeathTouchLevel)]}/256 の確率で即死)`,
+        note: formatDeathTouchProbabilityNote(enemyDeathTouchLevel, appliedHits),
         noteTone: 'muted',
       });
     }
