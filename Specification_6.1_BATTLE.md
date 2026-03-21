@@ -17,8 +17,8 @@
 
 ##### 6.1.1.1 START phase
 - Note: actor = effect ([効] ), "()" part is gray text.
-- 
-**Priority order of ability resolution**
+ 
+**Priority order of Timed ability resolution**
 - actor.`a.oblivion`
   - Randomly select 1 opponent.
   - Randomly select 1 valid ability from that opponent.
@@ -99,8 +99,6 @@
 | ... | ... | ... | ... |
 | END | 0 | Trigger |  [末] |
 
-
-
 ##### 6.1.1.3 END phase
 - Note: actor = effect ([末] ), "()" part is gray text.
 - `Goddess of Restoration` effect
@@ -113,7 +111,7 @@
 - Item got with `c.unlock`:
   - "イタチの解錠 石板の盾 を獲得した！(自動売却対象: 10G)"
 
-#### 6.1.2 Triggered ability
+#### 6.1.2 Timed ability
 - For each actor:
   - If actor has an ability with matching timing (phase: current phase, timing: current timing):
 - Resolve activation order using tie-breaker:
@@ -188,7 +186,7 @@
 - `f.NoA` times, get `f.targeting` -> opponent. 
 	- If `f.hit_detection`(actor: , opponent: , Nth_hit: the current hit index), current party.
 	- Check the following conditions in this order:
-  	    01. If actor.`e.ice` and opponent.`a.ice-absorb`
+  	  01. If actor.`e.ice` and opponent.`a.ice-absorb`
 	    02. If actor.`e.fire` and opponent.`a.fire-absorb`
 	    03. If actor.`e.thunder` and opponent.`a.thunder-absorb`
 	    04. If phase is `MID` and opponent.`a.magical-absorb`         
@@ -197,15 +195,24 @@
 	    07. If actor.`e.thunder` and opponent.`a.thunder-null`
 	    08. If phase is `LONG` and opponent.`a.ranged-null`
 	    09. If phase is `MID` and opponent.`a.magical-null`
-        10. If phase is `CLOSE` and opponent.`a.melee-null`
-   	    11. If actor.`e.ice` and opponent.`a.ice-reflect`
+      10. If phase is `CLOSE` and opponent.`a.melee-null`
+      11. If actor.`e.ice` and opponent.`a.ice-reflect`
 	    12. If actor.`e.fire` and opponent.`a.fire-reflect`
 	    13. If actor.`e.thunder` and opponent.`a.thunder-reflect`
 	    14. If phase is `LONG` and opponent.`a.ranged-reflect`
 	    15. If phase is `MID` and opponent.`a.magical-reflect`
-        16. If phase is `CLOSE` and opponent.`a.melee-reflect`
+      16. If phase is `CLOSE` and opponent.`a.melee-reflect`
 	  - If multiple conditions are true at the same time, resolve only the first matched condition in the order above.
-    - Reflect resolve
+  - **interrupt**
+  - Shock resolve
+    - If opponent.`a.shock` is enable:
+      - After the first hit is applied, the ongoing attack is **interrupted**.
+      - All remaining hits of that attack are canceled.
+      - Disable opponent.`a.shock`.
+      - Log: `log.shock` + (感電:攻撃中断)
+    
+	- **intercept**
+	- Reflect resolve
 	  - Reflect damage: actor.`d.HP` -= `f.damage_calculation` x reflect damage amplifier.
 	  - Dealt damage: opponent.`d.HP` -= `f.damage_calculation` x ( 1 - reflect damage amplifier).
 	  - log "ロップ の氷属性攻撃は反射された！　(2/4回)  (❄️ {Dealt damage}, 反射 {Reflect damage})" or
@@ -218,12 +225,18 @@
     - Null resolve
 	  - log "ロップ の氷属性攻撃は無効化された！　(2/4回)  (❄️ 0)" 
    - Else `d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
+
+
+ 
+**on-defeat**
 - If current opponent .`d.HP` =< 0, if opponent.`a.resurrect`1, set `d.HP` = 1 and disable `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat.
 - If current opponent.`d.HP` =< 0, if character.`a.resurrect`2, set opponent.`d.HP` = 1% of (opponent.max_HP) and disable the `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat. 
+
+**opponent-reactive**
 - If (phase is LONG) and (opponent.`a.illusion`1) and (the `a.illusion` is enable), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. log "ポンタへの攻撃はすべて幻だった！".
 - If (phase is LONG) and (opponent.party.character.`a.illusion`2) and (the `a.illusion` is enable), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. log "nameへの攻撃はすべて幻だった！".
 
-##### 6.1.3.2 Chain move trigger
+##### 6.1.3.2 Reactive ability
 - **Coutner:** `f.counter`(actor:actor , opponent:opponent ,phase: )
   - **Re-counter** If opponent.`a.re-counter`, `f.re-counter`(actor:opponent , opponent:actor ,phase: )
 - **Re-attack**: IF actor.`a.re-attack`, the actor attacks to opponent. (using f.hit_detection, f.damage_calculation)
@@ -365,7 +378,7 @@
     - Note: Nth_hit counts indevisually and not share with normal attack, re-attack and counter. (Nth_hit is reset per attack sequence)
   - Roll: Return Random(0, 1.0) <= chance
 
-##### 6.1.4.3 Function of Chain move
+##### 6.1.4.3 Function of Reactive ability
 
 - **`f.counter`(actor: , opponent: ,phase: ) :** IF (opponent or party members have not available `a.null-counter`) and (actor.`a.counter`, phase is CLOSE) , the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
     - `a.counter`1: actor.`f.NoA` x 0.5, round up
@@ -401,7 +414,6 @@
 	- If enemy.`d.HP` <= 0 and party.`d.HP` > 0
 - Draw
 	- If enemy.`d.HP` > 0 and party.`d.HP` > 0
-
 
 **Consequence**
 - *Defeat*: no penalties (current version). gains `d.experience` points, but no item reward. Back to home without trophies. 
