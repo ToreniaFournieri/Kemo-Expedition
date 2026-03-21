@@ -33,20 +33,19 @@
 
 #### 3.1.2 Item list
 
-- base_power(1) = 12, base_power(n) = base_power(n-1) x (1.50 - 0.02 x n) round off
+- base_power(1) = 12, base_power(n) = base_power(n-1) x (1.45 - 0.02 x n) round off
 - base_NoA_power(n) = 0.9 - 0.1 x n
 
-
 | Tier | base_power | base_NoA_power |
-|------|------------|----|
+|------|------------|----------------|
 | 1 | 12 | 0.8 |
-| 2 | 18 | 0.7 |
-| 3 | 26 | 0.6 |
-| 4 | 37 | 0.5 |
-| 5 | 52 | 0.4 |
-| 6 | 72 | 0.3 |
-| 7 | 98 | 0.2 |
-| 8 | 131 | 0.1 |
+| 2 | 17 | 0.7 |
+| 3 | 24 | 0.6 |
+| 4 | 33 | 0.5 |
+| 5 | 45 | 0.4 |
+| 6 | 60 | 0.3 |
+| 7 | 79 | 0.2 |
+| 8 | 102 | 0.1 |
 
 
 |Tier | multiplier for　鎧, 衣, 剣, 矢, 杖 | plus for 盾 | fixed NoA for 手, 弓, 媒 |penalty for 刀, ボ, 書| elemental v |
@@ -103,10 +102,11 @@
 | Rarelity | `rarelity.amplifier` |
 |------|--------|
 | common | x1.0 |
-| uncommon | x1.40 |
-| elite rare | 1.89 |
-| boss rare | x2.46 |
-| mythic rare | x3.07 |
+| uncommon | x1.35 |
+| elite rare | 1.67 |
+| boss rare | x2.00 |
+| mythic rare | x2.40 |
+|
 
 **Rarelity base**
 
