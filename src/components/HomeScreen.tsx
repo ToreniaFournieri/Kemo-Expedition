@@ -23,7 +23,7 @@ import {
 import { GLOSSARY_SECTIONS } from '../data/glossary';
 import { getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
-import { applyEnemyTypeCBonuses, getEncounterEnemyWithScaling, isEnemyTypeCBonusType } from '../game/enemyScaling';
+import { getEncounterEnemyWithScaling, isEnemyTypeCBonusType } from '../game/enemyScaling';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
 import { DEITY_OPTIONS, getDeityEffectDescription, getDeityKey, getDeityRank, getNextRankDonationRequirement, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { getXpToNextLevel } from '../game/partyLevel';
@@ -1416,19 +1416,6 @@ function formatMultiplierValue(value: number): string {
 
 function formatDefenseMultiplierBonus(label: string, value: number): string {
   const rounded = Math.round(value * 100) / 100;
-
-  const precision = 100;
-  const numerator = Math.round(rounded * precision);
-  const denominator = precision;
-  const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
-  const divisor = gcd(Math.abs(numerator), denominator);
-  const reducedNumerator = numerator / divisor;
-  const reducedDenominator = denominator / divisor;
-
-  if (reducedDenominator <= 12) {
-    return `${label}x${reducedNumerator}/${reducedDenominator}`;
-  }
-
   return `${label}x${rounded.toFixed(2)}`;
 }
 
@@ -8317,13 +8304,12 @@ function SettingTab({
       { key: 'ice', emoji: '❄️' },
       { key: 'thunder', emoji: '⚡' },
     ];
-    const enemyWithTypeBonuses = applyEnemyTypeCBonuses(enemy);
 
     return (
       <>
         属性耐性:{' '}
         {resistanceOrder.map(({ key, emoji }, index) => {
-          const value = enemyWithTypeBonuses.elementalResistance[key] ?? 1;
+          const value = enemy.elementalResistance[key] ?? 1;
           return (
             <Fragment key={key}>
               {index > 0 ? ',' : ''}
