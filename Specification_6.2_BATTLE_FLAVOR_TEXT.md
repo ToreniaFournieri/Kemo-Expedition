@@ -310,3 +310,18 @@
 |{actor} の力で {target} は封じられた！|
 |{target} は逃れられない！|
 |{actor} は {target} の動きを止めた！|
+
+`log.incapacitated`
+
+| flavor text |
+|---|
+|{actor} は行動不能！|
+|{actor} は動けない！|
+|{actor} は身動きが取れない！|
+|{actor} は拘束されている！|
+|{actor} は縛られている！|
+|{actor} は動きを封じられた！|
+|{actor} は足止めされている！|
+|{actor} は自由に動けない！|
+|{actor} は行動を阻まれた！|
+|{actor} は手足もまともに動かせられない！|
