@@ -32,6 +32,8 @@ import {
   buildIncapacitatedAction,
   buildLifeDrainAction,
   buildRegenerationAction,
+  buildReanimateAction,
+  buildResurrectAction,
   buildSelfDestructAction,
   buildShockAction,
   buildSoulReapAction,
@@ -1480,6 +1482,26 @@ function hasResurrect(charStats: ComputedCharacterStats): boolean {
   return getResurrectLevel(charStats) > 0;
 }
 
+const REANIMATE_HP_PERCENTS: Record<number, number> = {
+  1: 20,
+  2: 26,
+  3: 31,
+  4: 35,
+  5: 38,
+};
+
+function getReanimateLevel(charStats: ComputedCharacterStats): number {
+  return charStats.abilities.find(a => a.id === 'reanimate')?.level ?? 0;
+}
+
+function hasReanimate(charStats: ComputedCharacterStats): boolean {
+  return getReanimateLevel(charStats) > 0;
+}
+
+function getReanimateHpPercent(level: number): number {
+  return REANIMATE_HP_PERCENTS[level] ?? REANIMATE_HP_PERCENTS[5];
+}
+
 function getAbilityLevel(charStats: ComputedCharacterStats, abilityId: AbilityId): number {
   return getAbilityLevelFromList(charStats.abilities, abilityId);
 }
@@ -1765,7 +1787,9 @@ export function executeBattle(
 
   const remainingNullCounterByCharacterId = createNullCounterPool(characterStats);
   const consumedResurrectCharacterIds = new Set<number>();
+  const consumedReanimateCharacterIds = new Set<number>();
   let consumedEnemyResurrect = false;
+  let consumedEnemyReanimate = false;
   const consumedIllusionStateIds = new Set<string>();
   let consumedPartyIllusion = false;
   let consumedEnemyShock = false;
@@ -1853,6 +1877,95 @@ export function executeBattle(
     return actualHeal;
   };
 
+  const triggerPartyDefeatRecovery = (
+    targetStats: ComputedCharacterStats,
+    phase: BattleActionPhase,
+    initiativeRoll?: number,
+    isCounter?: boolean,
+  ): boolean => {
+    if (partyHp > 0) return false;
+
+    const targetName = party.characters.find(c => c.id === targetStats.characterId)?.name ?? '???';
+    if (hasResurrect(targetStats) && !consumedResurrectCharacterIds.has(targetStats.characterId)) {
+      const resurrectLevel = getResurrectLevel(targetStats);
+      partyHp = resurrectLevel >= 2
+        ? Math.max(1, Math.ceil(partyStats.hp * 0.01))
+        : 1;
+      consumedResurrectCharacterIds.add(targetStats.characterId);
+      log.push({
+        phase,
+        initiativeRoll,
+        actor: 'character',
+        characterId: targetStats.characterId,
+        isCounter: isCounter || undefined,
+        action: buildResurrectAction(targetName),
+        note: '(再起)',
+        noteTone: 'muted',
+      });
+      return true;
+    }
+
+    if (hasReanimate(targetStats) && !consumedReanimateCharacterIds.has(targetStats.characterId)) {
+      const reanimateLevel = getReanimateLevel(targetStats);
+      partyHp = Math.max(1, Math.ceil((partyStats.hp * getReanimateHpPercent(reanimateLevel)) / 100));
+      consumedReanimateCharacterIds.add(targetStats.characterId);
+      log.push({
+        phase,
+        initiativeRoll,
+        actor: 'character',
+        characterId: targetStats.characterId,
+        isCounter: isCounter || undefined,
+        action: buildReanimateAction(targetName),
+        note: '(即時蘇生)',
+        noteTone: 'muted',
+      });
+      return true;
+    }
+
+    return false;
+  };
+
+  const triggerEnemyDefeatRecovery = (
+    phase: BattleActionPhase,
+    initiativeRoll?: number,
+  ): boolean => {
+    if (enemyHp > 0) return false;
+
+    const resurrectLevel = getEnemyAbilityLevel(enemy, 'resurrect');
+    if (resurrectLevel > 0 && !consumedEnemyResurrect) {
+      enemyHp = resurrectLevel >= 2
+        ? Math.max(1, Math.ceil(enemy.hp * 0.01))
+        : 1;
+      consumedEnemyResurrect = true;
+      log.push({
+        phase,
+        initiativeRoll,
+        actor: 'enemy',
+        action: buildResurrectAction(enemy.name),
+        note: '(再起)',
+        noteTone: 'muted',
+      });
+      return true;
+    }
+
+    const reanimateLevel = getEnemyAbilityLevel(enemy, 'reanimate');
+    if (reanimateLevel > 0 && !consumedEnemyReanimate) {
+      enemyHp = Math.max(1, Math.ceil((enemy.hp * getReanimateHpPercent(reanimateLevel)) / 100));
+      consumedEnemyReanimate = true;
+      log.push({
+        phase,
+        initiativeRoll,
+        actor: 'enemy',
+        action: buildReanimateAction(enemy.name),
+        note: '(即時蘇生)',
+        noteTone: 'muted',
+      });
+      return true;
+    }
+
+    return false;
+  };
+
   const buildBattleResult = (phase: BattleActionPhase, outcome: BattleOutcome): BattleResult => ({
     phase,
     partyHp: Math.max(0, partyHp),
@@ -1926,6 +2039,7 @@ export function executeBattle(
         note: formatDeathTouchProbabilityNote(deathTouchLevel, result.hits),
         noteTone: 'muted',
       });
+      triggerEnemyDefeatRecovery('close', initiativeRoll);
     }
 
     const burnLevel = getEnemyAbilityLevel(enemy, 'burn');
@@ -1952,21 +2066,7 @@ export function executeBattle(
           elementalOffense: 'fire',
         });
 
-        if (
-          partyHp <= 0
-          && hasResurrect(actorStats)
-          && !consumedResurrectCharacterIds.has(actorStats.characterId)
-        ) {
-          const resurrectLevel = getResurrectLevel(actorStats);
-          partyHp = resurrectLevel >= 2 ? Math.max(1, Math.ceil(partyStats.hp * 0.01)) : 1;
-          consumedResurrectCharacterIds.add(actorStats.characterId);
-          log.push({
-            phase: 'close',
-            actor: 'character',
-            characterId: actorStats.characterId,
-            action: `${actorName} は致命ダメージを食いしばって耐えた！`,
-          });
-        }
+        triggerPartyDefeatRecovery(actorStats, 'close');
       }
     }
 
@@ -2043,6 +2143,7 @@ export function executeBattle(
         note: formatDeathTouchProbabilityNote(enemyDeathTouchLevel, appliedHits),
         noteTone: 'muted',
       });
+      triggerPartyDefeatRecovery(targetStats, 'close', initiativeRoll);
     }
 
     const burnLevel = getAbilityLevel(targetStats, 'burn');
@@ -2068,7 +2169,7 @@ export function executeBattle(
           hideInitiativeLabel: true,
           elementalOffense: 'fire',
         });
-        triggerEnemyResurrect('close', initiativeRoll);
+        triggerEnemyDefeatRecovery('close', initiativeRoll);
       }
     }
 
@@ -2130,25 +2231,6 @@ export function executeBattle(
       action: buildFreeAction(freeOwner.ownerName),
     });
     return true;
-  };
-
-  const triggerEnemyResurrect = (phase: BattleActionPhase, initiativeRoll?: number): void => {
-    if (enemyHp > 0 || consumedEnemyResurrect) return;
-
-    const resurrectLevel = getEnemyAbilityLevel(enemy, 'resurrect');
-    if (resurrectLevel <= 0) return;
-
-    enemyHp = resurrectLevel >= 2
-      ? Math.max(1, Math.ceil(enemy.hp * 0.01))
-      : 1;
-    consumedEnemyResurrect = true;
-
-    log.push({
-      phase,
-      initiativeRoll,
-      actor: 'enemy',
-      action: `${enemy.name} は致命ダメージを食いしばって耐えた！`,
-    });
   };
 
   const createPartyEffectEntry = (
@@ -2277,19 +2359,7 @@ export function executeBattle(
       }
     }
 
-    const triggeredResurrect = (
-      partyHp <= 0
-      && hasResurrect(targetCharStats)
-      && !consumedResurrectCharacterIds.has(targetCharStats.characterId)
-    );
-
-    if (triggeredResurrect) {
-      const resurrectLevel = getResurrectLevel(targetCharStats);
-      partyHp = resurrectLevel >= 2
-        ? Math.max(1, Math.ceil(partyStats.hp * 0.01))
-        : 1;
-      consumedResurrectCharacterIds.add(targetCharStats.characterId);
-    }
+    triggerPartyDefeatRecovery(targetCharStats, 'close', initiativeRoll, true);
 
     const enemyCounterRageBonusPercent = toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp));
     const enemyCounterSwarmBonuses = getSwarmLogBonuses(enemy.abilities, enemyHp, enemy.hp, targetCharStats.abilities, partyHp, partyStats.hp);
@@ -2321,16 +2391,6 @@ export function executeBattle(
         phase: 'close',
         actor: 'effect',
         action: `${targetName} は物陰に隠れて攻撃をやり過ごせたのだ！`,
-      });
-    }
-
-    if (triggeredResurrect) {
-      log.push({
-        phase: 'close',
-        actor: 'character',
-        characterId: targetCharStats.characterId,
-        isCounter: true,
-        action: `${targetChar?.name ?? '???'} は致命ダメージを食いしばって耐えた！`,
       });
     }
 
@@ -2371,7 +2431,7 @@ export function executeBattle(
     });
 
     if (reCounterDealtDamage) {
-      triggerEnemyResurrect('close', initiativeRoll);
+      triggerEnemyDefeatRecovery('close', initiativeRoll);
     }
   };
 
@@ -2438,7 +2498,7 @@ export function executeBattle(
       }
 
       if (coveringFireDealtDamage) {
-        triggerEnemyResurrect(phase, initiativeRoll);
+        triggerEnemyDefeatRecovery(phase, initiativeRoll);
       }
 
       if (enemyHp <= 0) {
@@ -3019,7 +3079,6 @@ export function executeBattle(
         if (damage > 0) {
           applyPartyDamage(damage);
         }
-
         log.push({
           phase,
           initiativeRoll: timing,
@@ -3028,6 +3087,10 @@ export function executeBattle(
           damage: damage > 0 ? damage : undefined,
           damageTarget: 'party',
         });
+        triggerEnemyDefeatRecovery(phase, timing);
+        if (target) {
+          triggerPartyDefeatRecovery(target, phase, timing);
+        }
       }
 
       const partySelfDestructEntries = characterStats
@@ -3055,7 +3118,6 @@ export function executeBattle(
         if (damage > 0) {
           applyEnemyDamage(damage);
         }
-
         log.push({
           phase,
           initiativeRoll: timing,
@@ -3065,6 +3127,8 @@ export function executeBattle(
           damage: damage > 0 ? damage : undefined,
           damageTarget: 'enemy',
         });
+        triggerPartyDefeatRecovery(entry.stats, phase, timing);
+        triggerEnemyDefeatRecovery(phase, timing);
       }
     };
 
@@ -3090,6 +3154,7 @@ export function executeBattle(
           noteTone: 'muted',
           damage,
         });
+        triggerEnemyDefeatRecovery(phase, 0);
       }
 
       const partyUnstableCoreEntries = characterStats
@@ -3119,6 +3184,7 @@ export function executeBattle(
           noteTone: 'muted',
           damage,
         });
+        triggerPartyDefeatRecovery(entry.stats, phase, 0);
       }
     };
 
@@ -3415,7 +3481,7 @@ export function executeBattle(
 
             if (reflectedDamage > 0) {
               applyEnemyDamage(reflectedDamage);
-              triggerEnemyResurrect(phase, turn.roll);
+              triggerEnemyDefeatRecovery(phase, turn.roll);
             }
 
             const shockEffectLog = shouldTriggerShock
@@ -3438,19 +3504,7 @@ export function executeBattle(
               ? `${appliedHits}/${attack.totalAttempts}回, ${enemyResonanceLogText.slice(1, -1)}`
               : `${appliedHits}/${attack.totalAttempts}回`;
 
-            const triggeredResurrect = (
-              partyHp <= 0
-              && hasResurrect(attack.charStats)
-              && !consumedResurrectCharacterIds.has(charId)
-            );
-
-            if (triggeredResurrect) {
-              const resurrectLevel = getResurrectLevel(attack.charStats);
-              partyHp = resurrectLevel >= 2
-                ? Math.max(1, Math.ceil(partyStats.hp * 0.01))
-                : 1;
-              consumedResurrectCharacterIds.add(charId);
-            }
+            triggerPartyDefeatRecovery(attack.charStats, phase, turn.roll, true);
 
             const enemyAttackRageBonusPercent = toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp));
             const enemyAttackSwarmBonuses = getSwarmLogBonuses(enemy.abilities, enemyHp, enemy.hp, attack.charStats.abilities, partyHp, partyStats.hp);
@@ -3555,17 +3609,6 @@ export function executeBattle(
               });
             }
 
-            if (triggeredResurrect) {
-              const resurrectedChar = party.characters.find(c => c.id === charId);
-              log.push({
-                phase,
-                actor: 'character',
-                characterId: charId,
-                isCounter: true,
-                action: `${resurrectedChar?.name ?? '???'} は致命ダメージを食いしばって耐えた！`,
-              });
-            }
-
             if (phase === 'close') {
               applyEnemyCloseReactiveAbilities(
                 attack.charStats,
@@ -3646,7 +3689,7 @@ export function executeBattle(
             });
 
             if (counterDealtDamage) {
-              triggerEnemyResurrect(phase, turn.roll);
+              triggerEnemyDefeatRecovery(phase, turn.roll);
             }
 
             if (enemyHp <= 0) break;
@@ -3705,19 +3748,12 @@ export function executeBattle(
               applyPartyDamage(reCounterDamage);
             }
 
-            const reCounterResurrect = (
-              partyHp <= 0
-              && hasResurrect(attack.charStats)
-              && !consumedResurrectCharacterIds.has(charId)
+            triggerPartyDefeatRecovery(
+              attack.charStats,
+              phase,
+              turn.roll,
+              true,
             );
-
-            if (reCounterResurrect) {
-              const resurrectLevel = getResurrectLevel(attack.charStats);
-              partyHp = resurrectLevel >= 2
-                ? Math.max(1, Math.ceil(partyStats.hp * 0.01))
-                : 1;
-              consumedResurrectCharacterIds.add(charId);
-            }
 
             const enemyReCounterRageBonusPercent = toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp));
             const enemyReCounterSwarmBonuses = getSwarmLogBonuses(enemy.abilities, enemyHp, enemy.hp, attack.charStats.abilities, partyHp, partyStats.hp);
@@ -3749,16 +3785,6 @@ export function executeBattle(
                 phase,
                 actor: 'effect',
                 action: `${targetChar?.name ?? '???'} は物陰に隠れて攻撃をやり過ごせたのだ！`,
-              });
-            }
-
-            if (reCounterResurrect) {
-              log.push({
-                phase,
-                actor: 'character',
-                characterId: charId,
-                isCounter: true,
-                action: `${targetChar?.name ?? '???'} は致命ダメージを食いしばって耐えた！`,
               });
             }
 
@@ -3813,7 +3839,7 @@ export function executeBattle(
             });
 
             if (magicalCounterDealtDamage) {
-              triggerEnemyResurrect(phase, turn.roll);
+              triggerEnemyDefeatRecovery(phase, turn.roll);
             }
           }
         }
@@ -3924,27 +3950,7 @@ export function executeBattle(
           if (result.damage > 0) {
             applyPartyDamage(result.damage);
 
-            const triggeredResurrect = (
-              partyHp <= 0
-              && hasResurrect(selected)
-              && !consumedResurrectCharacterIds.has(selected.characterId)
-            );
-
-            if (triggeredResurrect) {
-              const resurrectLevel = getResurrectLevel(selected);
-              partyHp = resurrectLevel >= 2
-                ? Math.max(1, Math.ceil(partyStats.hp * 0.01))
-                : 1;
-              consumedResurrectCharacterIds.add(selected.characterId);
-
-              const resurrectedChar = party.characters.find(c => c.id === selected.characterId);
-              log.push({
-                phase,
-                actor: 'character',
-                characterId: selected.characterId,
-                action: `${resurrectedChar?.name ?? '???'} は致命ダメージを食いしばって耐えた！`,
-              });
-            }
+            triggerPartyDefeatRecovery(selected, phase, turn.roll);
           }
         } else {
           result = calculateCharacterDamage(phase, cs, char, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, noAMultiplier, characterPhaseAccuracyBonus, resolveCharacterOffenseAmplifierMultiplier(cs.characterId));
@@ -4002,24 +4008,8 @@ export function executeBattle(
             applyEnemyDamage(result.damage);
           }
 
-          const selfReflectedResurrect = (
-            (result.reflectedDamage ?? 0) > 0
-            && partyHp <= 0
-            && hasResurrect(cs)
-            && !consumedResurrectCharacterIds.has(cs.characterId)
-          );
-          if (selfReflectedResurrect) {
-            const resurrectLevel = getResurrectLevel(cs);
-            partyHp = resurrectLevel >= 2
-              ? Math.max(1, Math.ceil(partyStats.hp * 0.01))
-              : 1;
-            consumedResurrectCharacterIds.add(cs.characterId);
-            log.push({
-              phase,
-              actor: 'character',
-              characterId: cs.characterId,
-              action: `${char.name} は致命ダメージを食いしばって耐えた！`,
-            });
+          if ((result.reflectedDamage ?? 0) > 0) {
+            triggerPartyDefeatRecovery(cs, phase, turn.roll);
           }
         }
 
@@ -4161,7 +4151,7 @@ export function executeBattle(
         }
 
         if (!isAntagonism && result.damage > 0) {
-          triggerEnemyResurrect(phase, turn.roll);
+          triggerEnemyDefeatRecovery(phase, turn.roll);
         }
 
         if (!isAntagonism && phase === 'close') {
