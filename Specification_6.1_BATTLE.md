@@ -187,7 +187,8 @@
 - Check:
   - If (phase = MID and `a.magic-seal` is valid, and actor.`f.damage_calculation` > 0 ), Disable the actor's move. log "name がフロストニードルを唱えたがかき消された！". Then disable the `a.magic-seal`.
   - If opponent.`a.howl` is active: Apply actor.`f.NoA` × N, Then disable opponent.`a.howl`. log: "[2] name が遠吠えをした！ (相手の次の攻撃回数5/7)"
-
+  - If actor.`incapacitated`:
+    - just display log:`log.incapacitated` instead of normal move.
 
 - `f.NoA` times, get `f.targeting` -> opponent. 
 	- If `f.hit_detection`(actor: , opponent: , Nth_hit: the current hit index), current party.
@@ -251,32 +252,33 @@
   - If opponent.`a.re-counter`, `f.re-counter`(actor:opponent , opponent:actor ,phase: )
 
 **on-strike**
-  - If actor.`a.re-attack`, (using f.hit_detection, f.damage_calculation)
+  - If actor.`a.re-attack`: (using f.hit_detection, f.damage_calculation)
    	- `a.re-attack`: One attack and actor.`f.NoA` x N, round up
 
-  - If actor.`a.corrode`,
-    - If total successful melee hits ≥ 3:
+  - If actor.`a.corrode`:
+    - If total successful melee hits >= 3:
        - Apply: target.`f.offense_amplifier` *= N
-       - Log: `log.corrode` + (腐食:相手の攻撃倍率がN倍)
+       - Log: `log.corrode` + "(腐食:相手の攻撃倍率がN倍)"
 
-  - If actor.`a.life-drain`,
+  - If actor.`a.life-drain`:
        - Heal actor:
        - heal += dealt_damage × N
-       - Log: `log.life-drain` + (吸血: 与ダメージのN倍回復: ✚heal)
+       - Log: `log.life-drain` + "(吸血: 与ダメージのN倍回復: ✚heal)"
 
-  - If actor.`a.death-touch`
+  - If actor.`a.death-touch`:
      - Roll death check:
        - If success → target is instantly defeated.
-       - Log: `log.life-drain` + (接死: Nの確率で即死)
+       - Log: `log.death-touch` + "(接死:有効 Nの確率で即死)"
 
-  - If opponent.`a.burn`,
-    - actor.`d.HP` -= base_damage x actor.(number of successful attacks) × N
-    - Log: `log.burn` + (火傷:)
+  - If opponent.`a.burn`:
+    - actor.`d.HP` -= actor.max_hp x actor.hit_count × (N / 100) x actor.`r.fire`
+    - Log: `log.burn` + "(火傷)"           "(🔥 XXX)" (left-aligned, same as damage log)
     
-  - If actor.`a.bind`,
+  - If actor.`a.bind`:
     - Roll bind check:
-       - If success → apply incapacitated status.
-    - Log: `log.bind` + (拘束: )
+       - If success → apply `incapacitated` status.
+    - Log: `log.bind` + "(拘束:行動不能)"
+
     
 **ally-follow-up**
 - If actor.`a.covering-fire` and the actor's successful hit is only one and phase is CLOSE, `f.covering-fire`(actor:covering fire actor.party.character , opponent:opponent)
