@@ -98,13 +98,13 @@
 | `a.bulwark` | 壁 | 真後ろの味方への攻撃を肩代わりする(対象:N) | Lv1: 遠距離, Lv2: 遠距離＋近距離 | intercept |
 | `a.shock` | 感電 | 最初の通常近接攻撃に対して発動し、1ヒット後に攻撃を中断させる | - | interrupt |
 | `a.re-attack` | 連撃 | 攻撃時に追加攻撃を行う(攻撃回数がxN倍になる) | Lv1: x0.5, Lv2: x0.7, Lv3: x1.0 | on-strike |
-| `a.corrode` | 腐食 | 通常近接攻撃が3回以上命中した相手の攻撃倍率をxN倍にする | Lv1: x6/7, Lv2: x5/7, Lv3: x4/7, Lv4: x3/7, Lv5: x2/7 | on-strike |
+| `a.corrode` | 腐食 | 通常近接攻撃が3回以上命中した相手の攻撃倍率をN倍にする | Lv1: x6/7, Lv2: x5/7, Lv3: x4/7, Lv4: x3/7, Lv5: x2/7 | on-strike |
 | `a.life-drain` | 吸血 | 通常近接攻撃で与えたダメージのNを回復する | Lv1: 1/10, Lv2: 3/10, Lv3: 5/10, Lv4: 7/10, Lv5: 100% | on-strike |
-| `a.death-touch` | 接死 | 通常近接攻撃の命中回数×Nの確率で即死させる | Lv1: 2/256, Lv2: 3/256, Lv3: 4/256, Lv4: 5/256, Lv5: 6/256 | on-strike |
-| `a.burn` | 火傷 | 相手の近接攻撃命中回数×N%のダメージを与える | Lv1: 0.5%, Lv2: 0.9%, Lv3: 1.2%, Lv4: 1.4%, Lv5: 1.5% | on-strike |
-| `a.bind` | 拘束 | 近接攻撃の命中回数×Nの確率で行動不能にする | Lv1: 2/64, Lv2: 3/64, Lv3: 4/64, Lv4: 5/64, Lv5: 6/64 | on-strike |
-| `a.counter` | 反撃 | 近距離攻撃を受けたとき反撃する(攻撃回数がxN倍になる) | Lv1: x0.5, Lv2: x1.0, Lv3: x2.0 | counter |
-| `a.magical-counter` | 魔法反撃 | 魔法攻撃に対して反撃する(攻撃回数がxN倍になる) | Lv1: x0.5, Lv2: x1.0 | counter |
+| `a.death-touch` | 接死 | 通常近接攻撃の命中回数Nの確率で即死させる | Lv1: 2/256, Lv2: 3/256, Lv3: 4/256, Lv4: 5/256, Lv5: 6/256 | on-strike |
+| `a.burn` | 火傷 | 相手の近接攻撃命中回数N%のダメージを与える | Lv1: 0.5%, Lv2: 0.9%, Lv3: 1.2%, Lv4: 1.4%, Lv5: 1.5% | on-strike |
+| `a.bind` | 拘束 | 近接攻撃の命中回数Nの確率で行動不能にする | Lv1: 2/64, Lv2: 3/64, Lv3: 4/64, Lv4: 5/64, Lv5: 6/64 | on-strike |
+| `a.counter` | 反撃 | 近距離攻撃を受けたとき反撃する(攻撃回数がN倍になる) | Lv1: x0.5, Lv2: x1.0, Lv3: x2.0 | counter |
+| `a.magical-counter` | 魔法反撃 | 魔法攻撃に対して反撃する(攻撃回数がN倍になる) | Lv1: x0.5, Lv2: x1.0 | counter |
 | `a.resurrect` | 再起 | 致命ダメージを受けた際、HPをN残して耐える(1回のみ) | Lv1: 1, Lv2: 1% | on-defeat |
 | `a.reanimate` | 即時蘇生 | HPが0になったとき、HP N%で復活する(戦闘中1回のみ) | Lv1: 20%, Lv2: 26%, Lv3: 31%, Lv4: 35%, Lv5: 38% | on-defeat |
 | `a.re-counter` | 再反撃 | 反撃に対して反撃する(攻撃回数がxN倍になる) | Lv1: x0.5, Lv2: x1.0 | counter-chain |
