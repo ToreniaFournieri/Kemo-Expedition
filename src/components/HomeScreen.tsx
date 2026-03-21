@@ -1330,7 +1330,7 @@ const ABILITY_HELP_TEXTS: Record<string, string> = {
   ice_null: '自身が受ける予定の通常攻撃の氷属性ダメージを無効化する。',
   bind: '近接攻撃の命中回数 x 2/64〜6/64 の確率で相手の行動を封じる。',
   regeneration: '近接9(開始)タイミングで発動。この戦闘で失ったHPの10%〜24%を回復する。近接フェーズ前までにHPが0となった場合には発動しない。',
-  burn: '相手の通常近接攻撃の命中回数 x 0.5%〜1.5% のダメージを相手に与える。',
+  burn: '近接攻撃を受けた際に、相手に命中回数×最大HPの0.5%〜1.5%の火属性ダメージを与え返す。',
   fire_reflect: '自身が受ける予定の通常攻撃の火属性ダメージをレベルに応じて反射し、残りは自身が受ける。',
   fire_absorb: '自身が受ける予定の通常攻撃の火属性ダメージを無効化し、レベルに応じて吸収して回復する。',
   fire_null: '自身が受ける予定の通常攻撃の火属性ダメージを無効化する。',
@@ -6333,7 +6333,7 @@ function ExpeditionTab({
                                   : log.phase === 'end'
                                     ? '末'
                                     : isPhaseAction
-                                      ? (log.isAggregated ? '-' : (isTriggeredLog ? `${log.initiativeRoll ?? '?'}` : (log.isCounter || isResurrectLog || log.isEnemyTargetHit ? '-' : `${log.initiativeRoll ?? '?'}`)))
+                                      ? (log.isAggregated ? '-' : ((isTriggeredLog && log.hideInitiativeLabel) ? '-' : (isTriggeredLog ? `${log.initiativeRoll ?? '?'}` : (log.isCounter || isResurrectLog || log.isEnemyTargetHit || log.hideInitiativeLabel ? '-' : `${log.initiativeRoll ?? '?'}`))))
                                       : (isStealthEffectLog || isCounterNegationEffectLog) ? '-' : (log.actor === 'deity' ? '末' : '効');
                                 const phaseHeader = log.phase === 'long'
                                   ? '遠距離攻撃フェーズ'
@@ -7599,7 +7599,7 @@ function DiaryTab({
                                 : battleLog.phase === 'end'
                                   ? '末'
                                   : isPhaseAction
-                                    ? (battleLog.isAggregated ? '-' : (isTriggeredLog ? `${battleLog.initiativeRoll ?? '?'}` : (battleLog.isCounter || isResurrectLog || battleLog.isEnemyTargetHit ? '-' : `${battleLog.initiativeRoll ?? '?'}`)))
+                                    ? (battleLog.isAggregated ? '-' : ((isTriggeredLog && battleLog.hideInitiativeLabel) ? '-' : (isTriggeredLog ? `${battleLog.initiativeRoll ?? '?'}` : (battleLog.isCounter || isResurrectLog || battleLog.isEnemyTargetHit || battleLog.hideInitiativeLabel ? '-' : `${battleLog.initiativeRoll ?? '?'}`))))
                                     : (isStealthEffectLog || isCounterNegationEffectLog) ? '-' : (battleLog.actor === 'deity' ? '末' : '効');
                               const phaseHeader = battleLog.phase === 'long'
                                 ? '遠距離攻撃フェーズ'

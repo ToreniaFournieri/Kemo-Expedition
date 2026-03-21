@@ -515,6 +515,7 @@ export interface BattleLogEntry {
   isCounter?: boolean;
   isReAttack?: boolean;
   isEnemyTargetHit?: boolean;
+  hideInitiativeLabel?: boolean;
   wasNegated?: boolean; // True when an attack dealt 0 hits because an avoidance effect activated
   elementalOffense?: ElementalOffense;
 }
