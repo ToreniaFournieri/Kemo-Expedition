@@ -3424,11 +3424,12 @@ export function executeBattle(
                   return {
                     phase,
                     initiativeRoll: turn.roll,
-                    actor: 'effect' as const,
+                    actor: 'triggered' as const,
                     characterId: charId,
                     action: buildShockAction(enemy.name, targetName),
                     note: '(感電:攻撃中断)',
                     noteTone: 'muted' as const,
+                    hideInitiativeLabel: true,
                   };
                 })()
               : null;
@@ -3911,11 +3912,12 @@ export function executeBattle(
                 return {
                   phase,
                   initiativeRoll: turn.roll,
-                  actor: 'effect' as const,
+                  actor: 'triggered' as const,
                   characterId: selected.characterId,
                   action: buildShockAction(char.name, antagonismTargetName),
                   note: '(感電:攻撃中断)',
                   noteTone: 'muted' as const,
+                  hideInitiativeLabel: true,
                 };
               })()
             : null;
@@ -3956,10 +3958,11 @@ export function executeBattle(
                 return {
                   phase,
                   initiativeRoll: turn.roll,
-                  actor: 'effect' as const,
+                  actor: 'triggered' as const,
                   action: buildShockAction(char.name, enemy.name),
                   note: '(感電:攻撃中断)',
                   noteTone: 'muted' as const,
+                  hideInitiativeLabel: true,
                 };
               })()
             : null;
