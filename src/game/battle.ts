@@ -1940,6 +1940,7 @@ export function executeBattle(
           damageTarget: 'party',
           note: '(火傷)',
           noteTone: 'muted',
+          hideInitiativeLabel: true,
           elementalOffense: 'fire',
         });
 
@@ -2054,6 +2055,7 @@ export function executeBattle(
           damageTarget: 'enemy',
           note: '(火傷)',
           noteTone: 'muted',
+          hideInitiativeLabel: true,
           elementalOffense: 'fire',
         });
         triggerEnemyResurrect('close', initiativeRoll);
