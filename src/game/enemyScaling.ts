@@ -62,6 +62,9 @@ const ENEMY_TYPE_C_BONUS_TYPES = new Set<BonusType>([
   'evasion',
   'physical_defense_multiplier_xV',
   'magical_defense_multiplier_xV',
+  'fire_defense_multiplier_xV',
+  'ice_defense_multiplier_xV',
+  'thunder_defense_multiplier_xV',
 ]);
 
 function formatCBonusValue(value: number): string {
@@ -80,6 +83,7 @@ export function applyEnemyTypeCBonuses(enemy: EnemyDef): EnemyDef {
   let evasionBonus = enemy.evasionBonus;
   let physicalDefenseAmplifier = enemy.physicalDefenseAmplifier;
   let magicalDefenseAmplifier = enemy.magicalDefenseAmplifier;
+  const elementalResistance = { ...enemy.elementalResistance };
   const appliedBonusNames = new Set<string>();
 
   for (const bonus of enemy.bonuses ?? []) {
@@ -111,6 +115,15 @@ export function applyEnemyTypeCBonuses(enemy: EnemyDef): EnemyDef {
       case 'magical_defense_multiplier_xV':
         magicalDefenseAmplifier = Math.max(0.01, magicalDefenseAmplifier * bonus.value);
         break;
+      case 'fire_defense_multiplier_xV':
+        elementalResistance.fire = Math.max(0.01, elementalResistance.fire * bonus.value);
+        break;
+      case 'ice_defense_multiplier_xV':
+        elementalResistance.ice = Math.max(0.01, elementalResistance.ice * bonus.value);
+        break;
+      case 'thunder_defense_multiplier_xV':
+        elementalResistance.thunder = Math.max(0.01, elementalResistance.thunder * bonus.value);
+        break;
     }
   }
 
@@ -123,6 +136,7 @@ export function applyEnemyTypeCBonuses(enemy: EnemyDef): EnemyDef {
     evasionBonus,
     physicalDefenseAmplifier,
     magicalDefenseAmplifier,
+    elementalResistance,
   };
 }
 
