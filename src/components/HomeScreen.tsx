@@ -23,7 +23,7 @@ import {
 import { GLOSSARY_SECTIONS } from '../data/glossary';
 import { getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
-import { getEncounterEnemyWithScaling, isEnemyTypeCBonusType } from '../game/enemyScaling';
+import { applyEnemyTypeCBonuses, getEncounterEnemyWithScaling, isEnemyTypeCBonusType } from '../game/enemyScaling';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
 import { DEITY_OPTIONS, getDeityEffectDescription, getDeityKey, getDeityRank, getNextRankDonationRequirement, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { getXpToNextLevel } from '../game/partyLevel';
@@ -8317,12 +8317,13 @@ function SettingTab({
       { key: 'ice', emoji: '❄️' },
       { key: 'thunder', emoji: '⚡' },
     ];
+    const enemyWithTypeBonuses = applyEnemyTypeCBonuses(enemy);
 
     return (
       <>
         属性耐性:{' '}
         {resistanceOrder.map(({ key, emoji }, index) => {
-          const value = enemy.elementalResistance[key] ?? 1;
+          const value = enemyWithTypeBonuses.elementalResistance[key] ?? 1;
           return (
             <Fragment key={key}>
               {index > 0 ? ',' : ''}
