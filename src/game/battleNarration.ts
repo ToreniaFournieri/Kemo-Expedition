@@ -294,6 +294,7 @@ const REANIMATE_LOGS = [
 ] as const;
 
 const decomposeDefenseValueFormatter = new Intl.NumberFormat('ja-JP');
+const battleNoteValueFormatter = new Intl.NumberFormat('ja-JP');
 
 function pickRandomEntry<T>(entries: readonly T[]): T {
   return entries[Math.floor(Math.random() * entries.length)];
@@ -410,6 +411,10 @@ export function getConfusionNoTargetLog(actorName: string): Pick<BattleLogEntry,
 
 export function formatRegenerationNote(healAmount: number): string {
   return `(✚ ${healAmount})`;
+}
+
+export function formatDefeatRecoveryNote(label: string, healAmount: number): string {
+  return `(${label} ✚${battleNoteValueFormatter.format(healAmount)})`;
 }
 
 export function formatDecomposeNote(targetName: string, previousDefense: number, nextDefense: number): string {
