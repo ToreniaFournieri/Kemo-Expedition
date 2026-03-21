@@ -242,16 +242,23 @@
 - If (phase is LONG) and (opponent.party.character.`a.illusion`2) and (the `a.illusion` is enable), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. log "nameへの攻撃はすべて幻だった！".
 
 ##### 6.1.3.2 Reactive ability
-- **Coutner:** `f.counter`(actor:actor , opponent:opponent ,phase: )
-  - **Re-counter** If opponent.`a.re-counter`, `f.re-counter`(actor:opponent , opponent:actor ,phase: )
-- **Re-attack**: IF actor.`a.re-attack`, the actor attacks to opponent. (using f.hit_detection, f.damage_calculation)
-   	- `a.re-attack`1: One attack and actor.`f.NoA` x 0.5, round up
-  	- `a.re-attack`2: One attack and actor.`f.NoA` x 0.7, round up
-  	- `a.re-attack`3: One attack and actor.`f.NoA` x 1.0
-- **Magical counter:** If opponent.`a.magical-counter` and phase is MID, `f.magical-counter`(actor:opponent, opponent:actor ,phase: )
-- **Covering fire:** IF actor.`a.covering-fire` and the actor's successful hit is only one and phase is CLOSE, `f.covering-fire`(actor:covering fire actor.party.character , opponent:opponent)
 
-- *Note:*  Nth_hit is per action based (not per-target)
+**Counter**
+- If opponent.`a.counter` 
+  - `f.counter`(actor:actor , opponent:opponent ,phase: )
+- If opponent.`a.magical-counter` and phase is MID, `f.magical-counter`(actor:opponent, opponent:actor ,phase: )
+- **counter-chain**
+  - If opponent.`a.re-counter`, `f.re-counter`(actor:opponent , opponent:actor ,phase: )
+
+**on-strike**
+  - If actor.`a.re-attack`, the actor attacks to opponent. (using f.hit_detection, f.damage_calculation)
+   	- `a.re-attack`: One attack and actor.`f.NoA` x N, round up
+
+
+
+**ally-follow-up**
+- If actor.`a.covering-fire` and the actor's successful hit is only one and phase is CLOSE, `f.covering-fire`(actor:covering fire actor.party.character , opponent:opponent)
+  - *Note:*  Nth_hit is per action based (not per-target)
 
 #### 6.1.4 Function of battle
 
