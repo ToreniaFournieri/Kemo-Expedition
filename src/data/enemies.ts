@@ -198,6 +198,10 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
   },
 };
 
+export function getEnemyTypeBonuses(enemyType: string): Bonus[] {
+  return ENEMY_TYPE_SPECS[enemyType]?.bonuses ?? [];
+}
+
 function mergeEnemyAbilities(...sets: EnemyAbility[][]): EnemyAbility[] {
   const merged = new Map<AbilityId, EnemyAbility>();
   for (const abilities of sets) {
@@ -283,7 +287,7 @@ function createEnemyFromTemplate(
     name: template.name,
     enemyClass,
     abilities: enemyAbilities,
-    bonuses: enemyTypeSpec?.bonuses ?? [],
+    bonuses: getEnemyTypeBonuses(enemyType),
     accuracyBonus,
     evasionBonus,
     hp,
