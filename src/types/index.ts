@@ -504,6 +504,8 @@ export interface BattleLogEntry {
   totalAttempts?: number; // Total number of attack attempts
   rageBonusPercent?: number; // 闘志 bonus shown in battle log
   momentumBonusPercent?: number; // 気勢 bonus shown in battle log
+  swarmActorPenaltyPercent?: number; // 群れで自身の威力が低下した割合
+  swarmOpponentBonusPercent?: number; // 群れで相手の被ダメージが増えた割合
   isFirstStrike?: boolean;
   isCounter?: boolean;
   isReAttack?: boolean;
