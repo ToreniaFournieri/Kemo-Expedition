@@ -177,7 +177,7 @@
 
 - **Flying**
   - Triggered by `a.flying`
-  - Reduce opponent melee NoA by N.
+  - opponent.melee.`f.NoA` *= N
   - Log: `log.flying` + (飛行:相手の攻撃回数xN)
 
  
