@@ -257,6 +257,33 @@ function getSwarmAmplifier(
   return amplifier;
 }
 
+function getSwarmLogBonuses(
+  actorAbilities: AbilityLike[],
+  actorCurrentHp: number,
+  actorMaxHp: number,
+  opponentAbilities: AbilityLike[],
+  opponentCurrentHp: number,
+  opponentMaxHp: number,
+): Pick<BattleLogEntry, 'swarmActorPenaltyPercent' | 'swarmOpponentBonusPercent'> {
+  const bonuses: Pick<BattleLogEntry, 'swarmActorPenaltyPercent' | 'swarmOpponentBonusPercent'> = {};
+
+  if (hasAbility(actorAbilities, 'swarm')) {
+    bonuses.swarmActorPenaltyPercent = Math.max(
+      0,
+      Math.round((1.0 - (1.0 - ((1.0 - getClampedHpRatio(actorCurrentHp, actorMaxHp)) * 0.5))) * 100),
+    );
+  }
+
+  if (hasAbility(opponentAbilities, 'swarm')) {
+    bonuses.swarmOpponentBonusPercent = Math.max(
+      0,
+      Math.round(((1.0 + ((1.0 - getClampedHpRatio(opponentCurrentHp, opponentMaxHp)) * 0.5)) - 1.0) * 100),
+    );
+  }
+
+  return bonuses;
+}
+
 const MUTUAL_MAGIC_AMPLIFY_MULTIPLIERS: Record<number, number> = {
   1: 1.3,
   2: 1.5,
@@ -2116,6 +2143,7 @@ export function executeBattle(
     }
 
     const enemyCounterRageBonusPercent = toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp));
+    const enemyCounterSwarmBonuses = getSwarmLogBonuses(enemy.abilities, enemyHp, enemy.hp, targetCharStats.abilities, partyHp, partyStats.hp);
     log.push({
       phase: 'close',
       initiativeRoll,
@@ -2126,6 +2154,7 @@ export function executeBattle(
       totalAttempts: attempts,
       wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
       rageBonusPercent: enemyCounterRageBonusPercent > 0 ? enemyCounterRageBonusPercent : undefined,
+      ...enemyCounterSwarmBonuses,
       isCounter: true,
       elementalOffense: enemy.elementalOffense,
     });
@@ -2174,6 +2203,7 @@ export function executeBattle(
 
     const characterReCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(targetCharStats, partyHp, partyStats.hp));
     const characterReCounterMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(targetCharStats, partyHp, partyStats.hp));
+    const characterReCounterSwarmBonuses = getSwarmLogBonuses(targetCharStats.abilities, partyHp, partyStats.hp, enemy.abilities, enemyHp, enemy.hp);
     log.push({
       phase: 'close',
       actor: 'character',
@@ -2186,6 +2216,7 @@ export function executeBattle(
       momentumBonusPercent: targetCharStats.abilities.some(a => a.id === 'momentum')
         ? characterReCounterMomentumBonusPercent
         : undefined,
+      ...characterReCounterSwarmBonuses,
       isCounter: true,
       elementalOffense: targetCharStats.elementalOffense,
     });
@@ -2229,6 +2260,7 @@ export function executeBattle(
 
       const coverFireRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(coverCharStats, partyHp, partyStats.hp));
       const coverFireMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(coverCharStats, partyHp, partyStats.hp));
+      const coverFireSwarmBonuses = getSwarmLogBonuses(coverCharStats.abilities, partyHp, partyStats.hp, enemy.abilities, enemyHp, enemy.hp);
       log.push({
         phase,
         initiativeRoll,
@@ -2242,6 +2274,7 @@ export function executeBattle(
         momentumBonusPercent: coverCharStats.abilities.some(a => a.id === 'momentum')
           ? coverFireMomentumBonusPercent
           : undefined,
+        ...coverFireSwarmBonuses,
         isCounter: true,
         wasNegated: coveringFireResult.wasNegatedByEnemyIllusion || undefined,
         elementalOffense: coverCharStats.elementalOffense,
@@ -3199,6 +3232,7 @@ export function executeBattle(
             }
 
             const enemyAttackRageBonusPercent = toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp));
+            const enemyAttackSwarmBonuses = getSwarmLogBonuses(enemy.abilities, enemyHp, enemy.hp, attack.charStats.abilities, partyHp, partyStats.hp);
             if (reflectedDamage > 0 && reflect) {
               log.push({
                 phase,
@@ -3215,6 +3249,7 @@ export function executeBattle(
                 totalAttempts: attack.totalAttempts,
                 wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
                 rageBonusPercent: phase === 'mid' ? undefined : (enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined),
+                ...enemyAttackSwarmBonuses,
                 isReAttack: isReAttack || undefined,
                 isEnemyTargetHit: phase === 'mid' ? true : undefined,
                 elementalOffense: enemy.elementalOffense,
@@ -3235,6 +3270,7 @@ export function executeBattle(
                 totalAttempts: attack.totalAttempts,
                 wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
                 rageBonusPercent: phase === 'mid' ? undefined : (enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined),
+                ...enemyAttackSwarmBonuses,
                 isReAttack: isReAttack || undefined,
                 isEnemyTargetHit: phase === 'mid' ? true : undefined,
                 elementalOffense: enemy.elementalOffense,
@@ -3253,6 +3289,7 @@ export function executeBattle(
                 totalAttempts: attack.totalAttempts,
                 wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
                 rageBonusPercent: phase === 'mid' ? undefined : (enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined),
+                ...enemyAttackSwarmBonuses,
                 isReAttack: isReAttack || undefined,
                 isEnemyTargetHit: phase === 'mid' ? true : undefined,
                 elementalOffense: enemy.elementalOffense,
@@ -3270,6 +3307,7 @@ export function executeBattle(
                 totalAttempts: attack.totalAttempts,
                 wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
                 rageBonusPercent: phase === 'mid' ? undefined : (enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined),
+                ...enemyAttackSwarmBonuses,
                 isReAttack: isReAttack || undefined,
                 isEnemyTargetHit: phase === 'mid' ? true : undefined,
                 elementalOffense: enemy.elementalOffense,
@@ -3352,6 +3390,7 @@ export function executeBattle(
             const resonanceLogText = getResonanceLogText(attack.charStats.abilities, counterResult.hits, phase === 'mid' || (phase === 'long' && partyDeityKey === 'God of Resonance'));
             const characterCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(attack.charStats, partyHp, partyStats.hp));
             const characterCounterMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(attack.charStats, partyHp, partyStats.hp));
+            const characterCounterSwarmBonuses = getSwarmLogBonuses(attack.charStats.abilities, partyHp, partyStats.hp, enemy.abilities, enemyHp, enemy.hp);
             log.push({
               phase,
               initiativeRoll: initiativeByCharacter.get(charId),
@@ -3365,6 +3404,7 @@ export function executeBattle(
               momentumBonusPercent: attack.charStats.abilities.some(a => a.id === 'momentum')
                 ? characterCounterMomentumBonusPercent
                 : undefined,
+              ...characterCounterSwarmBonuses,
               isCounter: true,
               elementalOffense: attack.charStats.elementalOffense,
             });
@@ -3444,6 +3484,7 @@ export function executeBattle(
             }
 
             const enemyReCounterRageBonusPercent = toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp));
+            const enemyReCounterSwarmBonuses = getSwarmLogBonuses(enemy.abilities, enemyHp, enemy.hp, attack.charStats.abilities, partyHp, partyStats.hp);
             log.push({
               phase,
               initiativeRoll: turn.roll,
@@ -3454,6 +3495,7 @@ export function executeBattle(
               totalAttempts: reCounterAttempts,
               wasNegated: reCounterHits === 0 && (avoidedReCounterByIllusion || avoidedReCounterByStealth) ? true : undefined,
               rageBonusPercent: enemyReCounterRageBonusPercent > 0 ? enemyReCounterRageBonusPercent : undefined,
+              ...enemyReCounterSwarmBonuses,
               isCounter: true,
               elementalOffense: enemy.elementalOffense,
             });
@@ -3515,6 +3557,7 @@ export function executeBattle(
             const resonanceLogText = getResonanceLogText(magicalCounterStats.abilities, magicalCounterResult.hits, true);
             const magicalCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(magicalCounterStats, partyHp, partyStats.hp));
             const magicalCounterMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(magicalCounterStats, partyHp, partyStats.hp));
+            const magicalCounterSwarmBonuses = getSwarmLogBonuses(magicalCounterStats.abilities, partyHp, partyStats.hp, enemy.abilities, enemyHp, enemy.hp);
             log.push({
               phase,
               initiativeRoll: initiativeByCharacter.get(charId),
@@ -3528,6 +3571,7 @@ export function executeBattle(
               momentumBonusPercent: magicalCounterStats.abilities.some(a => a.id === 'momentum')
                 ? magicalCounterMomentumBonusPercent
                 : undefined,
+              ...magicalCounterSwarmBonuses,
               isCounter: true,
               elementalOffense: magicalCounterStats.elementalOffense,
             });
@@ -3565,6 +3609,7 @@ export function executeBattle(
           : (phase === 'mid' ? `${magicProfile.spellName}` : '攻撃');
 
         if (isMagicSealTargetForCharacter(phase, cs, noAMultiplier) && consumeMagicSeal()) {
+          const characterMagicSealSwarmBonuses = getSwarmLogBonuses(cs.abilities, partyHp, partyStats.hp, enemy.abilities, enemyHp, enemy.hp);
           log.push({
             phase,
             initiativeRoll: turn.roll,
@@ -3579,6 +3624,7 @@ export function executeBattle(
             momentumBonusPercent: cs.abilities.some(a => a.id === 'momentum')
               ? toMomentumBonusPercent(getCharacterMomentumAmplifier(cs, partyHp, partyStats.hp))
               : undefined,
+            ...characterMagicSealSwarmBonuses,
             isReAttack: isReAttack || undefined,
             wasNegated: true,
             elementalOffense: cs.elementalOffense,
@@ -3691,6 +3737,14 @@ export function executeBattle(
         const resonanceLogText = getResonanceLogText(cs.abilities, result.hits, phase === 'mid' || (phase === 'long' && partyDeityKey === 'God of Resonance'));
         const characterAttackRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(cs, partyHp, partyStats.hp));
         const characterAttackMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(cs, partyHp, partyStats.hp));
+        const characterAttackSwarmBonuses = getSwarmLogBonuses(
+          cs.abilities,
+          partyHp,
+          partyStats.hp,
+          antagonismTarget?.abilities ?? enemy.abilities,
+          partyHp,
+          antagonismTarget ? partyStats.hp : enemyHp,
+        );
         const antagonismTargetName = antagonismTarget
           ? (party.characters.find(c => c.id === antagonismTarget.characterId)?.name ?? '???')
           : null;
@@ -3721,6 +3775,7 @@ export function executeBattle(
             momentumBonusPercent: cs.abilities.some(a => a.id === 'momentum')
               ? characterAttackMomentumBonusPercent
               : undefined,
+            ...characterAttackSwarmBonuses,
             isReAttack: isReAttack || undefined,
             wasNegated: result.wasNegatedByEnemyIllusion || undefined,
             elementalOffense: cs.elementalOffense,
@@ -3744,6 +3799,7 @@ export function executeBattle(
             momentumBonusPercent: cs.abilities.some(a => a.id === 'momentum')
               ? characterAttackMomentumBonusPercent
               : undefined,
+            ...characterAttackSwarmBonuses,
             isReAttack: isReAttack || undefined,
             wasNegated: result.wasNegatedByEnemyIllusion || undefined,
             elementalOffense: cs.elementalOffense,
@@ -3765,6 +3821,7 @@ export function executeBattle(
             momentumBonusPercent: cs.abilities.some(a => a.id === 'momentum')
               ? characterAttackMomentumBonusPercent
               : undefined,
+            ...characterAttackSwarmBonuses,
             isReAttack: isReAttack || undefined,
             wasNegated: result.wasNegatedByEnemyIllusion || undefined,
             elementalOffense: cs.elementalOffense,
@@ -3791,6 +3848,7 @@ export function executeBattle(
             momentumBonusPercent: cs.abilities.some(a => a.id === 'momentum')
               ? characterAttackMomentumBonusPercent
               : undefined,
+            ...characterAttackSwarmBonuses,
             isReAttack: isReAttack || undefined,
             wasNegated: result.wasNegatedByEnemyIllusion || undefined,
             elementalOffense: cs.elementalOffense,

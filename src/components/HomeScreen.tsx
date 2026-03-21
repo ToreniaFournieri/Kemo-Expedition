@@ -6270,6 +6270,12 @@ function ExpeditionTab({
                                 const momentumDisplay = typeof log.momentumBonusPercent === 'number'
                                   ? `気勢${log.momentumBonusPercent >= 0 ? '+' : ''}${log.momentumBonusPercent}%`
                                   : '';
+                                const swarmActorDisplay = typeof log.swarmActorPenaltyPercent === 'number' && log.swarmActorPenaltyPercent > 0
+                                  ? `威力-${log.swarmActorPenaltyPercent}%`
+                                  : '';
+                                const swarmOpponentDisplay = typeof log.swarmOpponentBonusPercent === 'number' && log.swarmOpponentBonusPercent > 0
+                                  ? `相手被ダメ${log.swarmOpponentBonusPercent}%増`
+                                  : '';
 
                                 let actionText: string;
                                 if (log.actor === 'effect' || log.actor === 'triggered') {
@@ -6290,6 +6296,8 @@ function ExpeditionTab({
                                   resonanceMatch ? resonanceMatch[1].slice(1, -1) : '',
                                   rageDisplay,
                                   momentumDisplay,
+                                  swarmActorDisplay,
+                                  swarmOpponentDisplay,
                                 ].filter(Boolean);
                                 const compactHitDisplay = hitDisplay && extraSegments.length > 0
                                   ? `(${hits}/${totalAttempts}回, ${extraSegments.join(', ')})`
@@ -7535,6 +7543,12 @@ function DiaryTab({
                               const momentumDisplay = typeof battleLog.momentumBonusPercent === 'number'
                                 ? `気勢${battleLog.momentumBonusPercent >= 0 ? '+' : ''}${battleLog.momentumBonusPercent}%`
                                 : '';
+                              const swarmActorDisplay = typeof battleLog.swarmActorPenaltyPercent === 'number' && battleLog.swarmActorPenaltyPercent > 0
+                                ? `威力-${battleLog.swarmActorPenaltyPercent}%`
+                                : '';
+                              const swarmOpponentDisplay = typeof battleLog.swarmOpponentBonusPercent === 'number' && battleLog.swarmOpponentBonusPercent > 0
+                                ? `相手被ダメ${battleLog.swarmOpponentBonusPercent}%増`
+                                : '';
 
                               let actionText: string;
                               if (battleLog.actor === 'effect' || battleLog.actor === 'triggered') {
@@ -7564,6 +7578,8 @@ function DiaryTab({
                                 resonanceMatch ? resonanceMatch[1].slice(1, -1) : '',
                                 rageDisplay,
                                 momentumDisplay,
+                                swarmActorDisplay,
+                                swarmOpponentDisplay,
                               ].filter(Boolean);
                               const compactHitDisplay = hitDisplay && extraSegments.length > 0
                                 ? `(${hits}/${totalAttempts}回, ${extraSegments.join(', ')})`
