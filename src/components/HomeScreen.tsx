@@ -33,6 +33,7 @@ import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, g
 import { calculateItemSellPrice } from '../game/pricing';
 import { NotificationToast } from './NotificationToast';
 import { getBaseMultiplier } from '../game/baseMultiplier';
+import { formatEnemyDefName } from '../game/enemyDisplay';
 import { computeCharacterStats, getAbilityDescription, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
 import { serializeGameState } from '../game/saveCodec';
 import { createSideQuestBag, createSleepinessPartyBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag } from '../game/bags';
@@ -8344,12 +8345,6 @@ function SettingTab({
     );
   };
 
-  const getEnemyDisplayNameWithClass = (enemy: EnemyDef): string => {
-    const shortName = CLASS_SHORT_NAMES[enemy.enemyClass];
-    return shortName ? `${enemy.name}(${shortName})` : enemy.name;
-  };
-
-
   const ENEMY_TYPE_LABELS: Record<string, string> = {
     Beast: '猛獣',
     Slime_Colony: '粘体群',
@@ -9107,7 +9102,7 @@ function SettingTab({
                 <div className="text-xs text-gray-500 font-medium mb-1">Colosseum Opponent</div>
                 <div className="mt-2 border border-gray-100 rounded">
                   <button onClick={() => onSetExpandedBestiaryEnemies(prev => ({ ...prev, [colosseumEnemy.id]: !enemyExpanded }))} className="w-full text-left px-2 py-1 text-sm flex justify-between items-center">
-                    <span>{renderEnemyNameWithMutedClass(getEnemyDisplayNameWithClass(colosseumEnemy))}</span><span className="text-xs text-gray-500">{enemyExpanded ? '▲' : '▼'}</span>
+                    <span>{renderEnemyNameWithMutedClass(formatEnemyDefName(colosseumEnemy))}</span><span className="text-xs text-gray-500">{enemyExpanded ? '▲' : '▼'}</span>
                   </button>
                   {enemyExpanded && <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
@@ -9175,7 +9170,7 @@ function SettingTab({
                       onClick={() => onSetExpandedBestiaryEnemies(prev => ({ ...prev, [displayEnemy.id]: !enemyExpanded }))}
                       className="w-full text-left px-2 py-1 text-sm flex justify-between items-center"
                     >
-                      <span>{renderEnemyNameWithMutedClass(getEnemyDisplayNameWithClass(displayEnemy))}</span>
+                      <span>{renderEnemyNameWithMutedClass(formatEnemyDefName(displayEnemy))}</span>
                       <span className="text-xs text-gray-500">{enemyExpanded ? '▲' : '▼'}</span>
                     </button>
                     {enemyExpanded && (
