@@ -95,7 +95,6 @@
 | `a.swarm` | 群れ | 失ったHP割合に応じて、物理与ダメージがN%低下し、物理被ダメージがN%増加する | Lv1: 失ったHP1%につき0.5% | self-state |
 | `a.stealth` | 隠れ蓑 | HPがN%未満のとき、自身へのダメージをすべて回避する | Lv1: 24%, Lv2: 29% | opponent-reactive |
 | `a.illusion` | 幻化 | 最初の遠距離攻撃を無効化する(対象範囲:N) | Lv1: 自身, Lv2: パーティー全体 | opponent-reactive |
-| `a.flying` | 飛行 | 相手の近接攻撃回数がxN倍になる | Lv1: x1/4 | opponent-reactive |
 | `a.bulwark` | 壁 | 真後ろの味方への攻撃を肩代わりする(対象:N) | Lv1: 遠距離, Lv2: 遠距離＋近距離 | intercept |
 | `a.shock` | 感電 | 最初の通常近接攻撃に対して発動し、1ヒット後に攻撃を中断させる | - | interrupt |
 | `a.re-attack` | 連撃 | 攻撃時に追加攻撃を行う(攻撃回数がxN倍になる) | Lv1: x0.5, Lv2: x0.7, Lv3: x1.0 | on-strike |
@@ -162,6 +161,7 @@
 | `a.unstable-core` | 不安定 | 指定終了タイミングで発動し、残HPのN%の自傷ダメージを受ける | Lv1: LONG0/MID0・30%, Lv2: LONG0/MID0・24%, Lv3: LONG0/MID0・19%, Lv4: LONG0/MID0・15%, Lv5: LONG0/MID0・12% | LONG and MID | 0 |
 | `a.soul-reap` | 魂奪 | 魔法終了タイミングで発動し、相手のHPがN%未満なら即死させる(回避・復活不可) | Lv1: 10%, Lv2: 14%, Lv3: 17%, Lv4: 19%, Lv5: 20% | MID | 0 |
 | `a.regeneration` | 再生 | 近接開始タイミングで発動し、この戦闘で失ったHPのN%を回復する(近接フェーズ前にHP0なら不発) | Lv1: 10%, Lv2: 15%, Lv3: 19%, Lv4: 22%, Lv5: 24% | CLOSE | 9 |
+| `a.flying` | 飛行 | 相手の近接攻撃回数がxN倍になる | Lv1: x1/4 | CLOSE | 9 |
 | `a.predator-sense` | 捕食 | 近接開始タイミングで発動し、相手のHPがN%未満なら命中+40する | Lv1: 30%, Lv2: 38%, Lv3: 44%, Lv4: 48%, Lv5: 50% | CLOSE | 9 |
 | `a.decompose` | 分解 | 指定タイミングで発動し、相手の物理防御力をxN倍にする | Lv1: CLOSE2・x6/7, Lv2: CLOSE2・x5/7, Lv3: CLOSE2・x4/7, Lv4: CLOSE2・x3/7, Lv5: CLOSE2・x2/7 | CLOSE | 2 |
 | `a.self-destruct` | 自爆 | 指定タイミングで発動し、自爆して相手に残ダメージのNを与える | Lv1: CLOSE2・1/10, Lv2: CLOSE2・3/10, Lv3: CLOSE2・5/10, Lv4: CLOSE2・7/10, Lv5: CLOSE2・100% | CLOSE | 2 |
