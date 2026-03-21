@@ -417,6 +417,7 @@ function aggregateBattleLifeDrainLogs(logs: readonly ExpeditionLogEntry['details
     count: number;
   };
 
+  const normalizeLifeDrainNote = (note: string | undefined) => note?.replace(/✚[\d,]+(?=\))/gu, '✚#TOTAL#') ?? '';
   const groups = new Map<string, LifeDrainGroup>();
 
   logs.forEach((log, index) => {
@@ -435,7 +436,7 @@ function aggregateBattleLifeDrainLogs(logs: readonly ExpeditionLogEntry['details
       log.initiativeRoll ?? '',
       log.effectKind,
       log.effectSourceName,
-      log.note ?? '',
+      normalizeLifeDrainNote(log.note),
       log.noteTone ?? '',
     ].join('::');
     const existingGroup = groups.get(key);
@@ -475,7 +476,7 @@ function aggregateBattleLifeDrainLogs(logs: readonly ExpeditionLogEntry['details
   return logs.flatMap((log, index) => {
     const group = groupByLastIndex.get(index);
     if (group) {
-      const summarizedNote = group.templateLog.note?.replace(/✚[\d,]+(?=\))/u, `✚${formatNumber(group.totalHealAmount)}`);
+      const summarizedNote = group.templateLog.note?.replace(/✚[\d,]+(?=\))/gu, `✚${formatNumber(group.totalHealAmount)}`);
       const summarizedTargets = [...new Set(group.targetNames)];
       return [{
         ...group.templateLog,
