@@ -187,27 +187,26 @@
 	- If `f.hit_detection`(actor: , opponent: , Nth_hit: the current hit index), current party.
 	- Check the following conditions in this order:
   	  01. If actor.`e.ice` and opponent.`a.ice-absorb`
-	    02. If actor.`e.fire` and opponent.`a.fire-absorb`
-	    03. If actor.`e.thunder` and opponent.`a.thunder-absorb`
-	    04. If phase is `MID` and opponent.`a.magical-absorb`         
-	    05. If actor.`e.ice` and opponent.`a.ice-null`
-	    06. If actor.`e.fire` and opponent.`a.fire-null`
-	    07. If actor.`e.thunder` and opponent.`a.thunder-null`
-	    08. If phase is `LONG` and opponent.`a.ranged-null`
-	    09. If phase is `MID` and opponent.`a.magical-null`
+	  02. If actor.`e.fire` and opponent.`a.fire-absorb`
+	  03. If actor.`e.thunder` and opponent.`a.thunder-absorb`
+	  04. If phase is `MID` and opponent.`a.magical-absorb`         
+	  05. If actor.`e.ice` and opponent.`a.ice-null`
+	  06. If actor.`e.fire` and opponent.`a.fire-null`
+	  07. If actor.`e.thunder` and opponent.`a.thunder-null`
+	  08. If phase is `LONG` and opponent.`a.ranged-null`
+	  09. If phase is `MID` and opponent.`a.magical-null`
       10. If phase is `CLOSE` and opponent.`a.melee-null`
       11. If actor.`e.ice` and opponent.`a.ice-reflect`
-	    12. If actor.`e.fire` and opponent.`a.fire-reflect`
-	    13. If actor.`e.thunder` and opponent.`a.thunder-reflect`
-	    14. If phase is `LONG` and opponent.`a.ranged-reflect`
-	    15. If phase is `MID` and opponent.`a.magical-reflect`
+	  12. If actor.`e.fire` and opponent.`a.fire-reflect`
+	  13. If actor.`e.thunder` and opponent.`a.thunder-reflect`
+	  14. If phase is `LONG` and opponent.`a.ranged-reflect`
+	  15. If phase is `MID` and opponent.`a.magical-reflect`
       16. If phase is `CLOSE` and opponent.`a.melee-reflect`
 	  - If multiple conditions are true at the same time, resolve only the first matched condition in the order above.
   - **interrupt**
   - Shock resolve
     - If opponent.`a.shock` is enable:
-      - After the first hit is applied, the ongoing attack is **interrupted**.
-      - All remaining hits of that attack are canceled.
+      - If successful hits > 1, set successful hits = 1.
       - Disable opponent.`a.shock`.
       - Log: `log.shock` + (感電:攻撃中断)
     
