@@ -251,19 +251,33 @@
   - If opponent.`a.re-counter`, `f.re-counter`(actor:opponent , opponent:actor ,phase: )
 
 **on-strike**
-  - If actor.`a.re-attack`, the actor attacks to opponent. (using f.hit_detection, f.damage_calculation)
+  - If actor.`a.re-attack`, (using f.hit_detection, f.damage_calculation)
    	- `a.re-attack`: One attack and actor.`f.NoA` x N, round up
 
   - If actor.`a.corrode`,
+    - If total successful melee hits ≥ 3:
+       - Apply: target.`f.offense_amplifier` *= N
+       - Log: `log.corrode` + (腐食:相手の攻撃倍率がN倍)
 
   - If actor.`a.life-drain`,
+       - Heal actor:
+       - heal += dealt_damage × N
+       - Log: `log.life-drain` + (吸血: 与ダメージのN倍回復: ✚heal)
 
   - If actor.`a.death-touch`
+     - Roll death check:
+       - If success → target is instantly defeated.
+       - Log: `log.life-drain` + (接死: Nの確率で即死)
 
   - If actor.`a.burn`,
-
-  - If actor.`a.burn`,
-
+    - burn_damage += base_damage x (number of successful attacks) × N
+    - Log: `log.burn` + ()
+    
+  - If actor.`a.bind`,
+    - Roll bind check:
+       - If success → apply incapacitated status.
+    - Log: `log.bind` + ()
+    
 **ally-follow-up**
 - If actor.`a.covering-fire` and the actor's successful hit is only one and phase is CLOSE, `f.covering-fire`(actor:covering fire actor.party.character , opponent:opponent)
   - *Note:*  Nth_hit is per action based (not per-target)
