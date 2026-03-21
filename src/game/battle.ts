@@ -21,10 +21,16 @@ import { resolveMagicProfile } from './magic';
 import { getAbilityDescription, getAbilityName } from './characterComputation';
 import {
   buildAntagonismAction,
+  buildBindAction,
+  buildBurnAction,
   buildConfusionAction,
+  buildCorrodeAction,
+  buildDeathTouchAction,
   buildDecomposeAction,
   buildFlyingAction,
   buildFreeAction,
+  buildIncapacitatedAction,
+  buildLifeDrainAction,
   buildRegenerationAction,
   buildSelfDestructAction,
   buildShockAction,
@@ -167,6 +173,46 @@ const MUTUAL_PHYSICAL_RESTRAINT_MULTIPLIERS: Record<number, number> = {
   3: 0.63,
   4: 0.61,
   5: 0.59,
+};
+
+const CORRODE_MULTIPLIERS: Record<number, number> = {
+  1: 6 / 7,
+  2: 5 / 7,
+  3: 4 / 7,
+  4: 3 / 7,
+  5: 2 / 7,
+};
+
+const LIFE_DRAIN_MULTIPLIERS: Record<number, number> = {
+  1: 1 / 10,
+  2: 3 / 10,
+  3: 5 / 10,
+  4: 7 / 10,
+  5: 1.0,
+};
+
+const DEATH_TOUCH_NUMERATORS: Record<number, number> = {
+  1: 2,
+  2: 3,
+  3: 4,
+  4: 5,
+  5: 6,
+};
+
+const BURN_PERCENTS: Record<number, number> = {
+  1: 0.5,
+  2: 0.9,
+  3: 1.2,
+  4: 1.4,
+  5: 1.5,
+};
+
+const BIND_NUMERATORS: Record<number, number> = {
+  1: 2,
+  2: 3,
+  3: 4,
+  4: 5,
+  5: 6,
 };
 
 function getHighestAbilityLevel(
@@ -363,6 +409,7 @@ function calculateSingleEnemyAttackDamage(
   enemyHp: number,
   partyHp: number,
   maxPartyHp: number,
+  runtimeOffenseMultiplier: number = 1.0,
 ): number {
   let attack = 0;
   let amplifier = 1.0;
@@ -407,7 +454,7 @@ function calculateSingleEnemyAttackDamage(
     partyHp,
     maxPartyHp,
   );
-  const rawDamage = (attack - defense) * amplifier * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * mutualAmplifier * swarmAmplifier;
+  const rawDamage = (attack - defense) * amplifier * runtimeOffenseMultiplier * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * mutualAmplifier * swarmAmplifier;
   const totalDamage = Math.max(1, rawDamage);
 
   return Math.floor(totalDamage);
@@ -475,6 +522,7 @@ function calculateCharacterFriendlyFireDamage(
   partyDeityKey: string | null,
   noAMultiplier: number = 1.0,
   temporaryAccuracyBonus: number = 0,
+  runtimeOffenseMultiplier: number = 1.0,
 ): CharacterAttackResult {
   let attack = 0;
   let noA = 0;
@@ -541,6 +589,7 @@ function calculateCharacterFriendlyFireDamage(
   const basePerHitDamage = Math.max(1, Math.floor(
     (attack - effectiveDefense)
       * offenseAmplifier
+      * runtimeOffenseMultiplier
       * attacker.elementalOffenseValue
       * elementalMultiplier
       * defenseAmplifier
@@ -963,6 +1012,7 @@ function calculateCharacterDamage(
   partyDeityKey: string | null,
   noAMultiplier: number = 1.0, // For counter/re-attack, use 0.5
   temporaryAccuracyBonus: number = 0,
+  runtimeOffenseMultiplier: number = 1.0,
 ): CharacterAttackResult {
   let attack = 0;
   let noA = 0;
@@ -1075,7 +1125,7 @@ function calculateCharacterDamage(
 
   const partyOffenseAmplifier = getPartyOffenseAbilityAmplifier(phase, characterStats, charStats.row);
   const basePerHitDamage = Math.max(1, Math.floor(
-    (attack - effectiveDefense) * offenseAmplifier * charStats.elementalOffenseValue *
+    (attack - effectiveDefense) * offenseAmplifier * runtimeOffenseMultiplier * charStats.elementalOffenseValue *
     elementalMultiplier * defenseAmplifier * partyOffenseAmplifier * rageAmplifier * momentumAmplifier * mutualAmplifier * swarmAmplifier
   ));
 
@@ -1210,6 +1260,50 @@ function getDecomposeDefenseMultiplier(level: number): number {
 
 function roundDecomposeDefenseValue(value: number): number {
   return Math.round(value);
+}
+
+function getCorrodeMultiplier(level: number): number {
+  return CORRODE_MULTIPLIERS[Math.min(5, Math.max(1, level))] ?? 1.0;
+}
+
+function getLifeDrainMultiplier(level: number): number {
+  return LIFE_DRAIN_MULTIPLIERS[Math.min(5, Math.max(1, level))] ?? 0;
+}
+
+function getDeathTouchChance(level: number, hits: number): number {
+  const numerator = DEATH_TOUCH_NUMERATORS[Math.min(5, Math.max(1, level))] ?? 0;
+  return Math.max(0, Math.min(1, (hits * numerator) / 256));
+}
+
+function getBindChance(level: number, hits: number): number {
+  const numerator = BIND_NUMERATORS[Math.min(5, Math.max(1, level))] ?? 0;
+  return Math.max(0, Math.min(1, (hits * numerator) / 64));
+}
+
+function getBurnPercent(level: number): number {
+  return BURN_PERCENTS[Math.min(5, Math.max(1, level))] ?? 0;
+}
+
+function formatFractionPercentLabel(value: number): string {
+  const percentage = value * 100;
+  if (Number.isInteger(percentage)) {
+    return `${percentage}%`;
+  }
+  return `${percentage.toFixed(1).replace(/\.0$/, '')}%`;
+}
+
+function formatMultiplierAsFraction(multiplier: number): string {
+  const seventhFractions = [2 / 7, 3 / 7, 4 / 7, 5 / 7, 6 / 7];
+  const matched = seventhFractions.find((candidate) => Math.abs(candidate - multiplier) < 1e-6);
+  if (matched !== undefined) {
+    return `x${Math.round(matched * 7)}/7`;
+  }
+
+  if (Math.abs(multiplier - 1.0) < 1e-6) {
+    return 'x1.0';
+  }
+
+  return `x${multiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')}`;
 }
 
 type AbilityLike = { id: AbilityId; level: number };
@@ -1676,6 +1770,12 @@ export function executeBattle(
   let partyFlyingNoAMultiplier = 1.0;
   let enemyTemporaryAccuracyBonus = 0;
   const temporaryAccuracyBonusByCharacterId = new Map<number, number>();
+  let enemyOffenseAmplifierMultiplier = 1.0;
+  const characterOffenseAmplifierMultiplierById = new Map<number, number>(
+    characterStats.map((stats) => [stats.characterId, 1.0]),
+  );
+  let enemyIncapacitated = false;
+  const incapacitatedCharacterIds = new Set<number>();
   let forcedOutcome: BattleOutcome | null = null;
   let forcedOutcomePhase: BattleActionPhase = 'close';
 
@@ -1730,6 +1830,22 @@ export function executeBattle(
     }
   };
 
+  const healParty = (amount: number): number => {
+    const actualHeal = Math.max(0, Math.min(partyStats.hp - partyHp, amount));
+    if (actualHeal <= 0) return 0;
+    partyHp += actualHeal;
+    partyDamageTakenInBattle = Math.max(0, partyDamageTakenInBattle - actualHeal);
+    return actualHeal;
+  };
+
+  const healEnemy = (amount: number): number => {
+    const actualHeal = Math.max(0, Math.min(enemy.hp - enemyHp, amount));
+    if (actualHeal <= 0) return 0;
+    enemyHp += actualHeal;
+    enemyDamageTakenInBattle = Math.max(0, enemyDamageTakenInBattle - actualHeal);
+    return actualHeal;
+  };
+
   const buildBattleResult = (phase: BattleActionPhase, outcome: BattleOutcome): BattleResult => ({
     phase,
     partyHp: Math.max(0, partyHp),
@@ -1742,6 +1858,214 @@ export function executeBattle(
     },
     enemyHitsReceived,
   });
+
+  const resolveCharacterOffenseAmplifierMultiplier = (characterId: number): number => (
+    characterOffenseAmplifierMultiplierById.get(characterId) ?? 1.0
+  );
+
+  const applyCharacterCloseReactiveAbilities = (
+    actorStats: ComputedCharacterStats,
+    actorName: string,
+    result: CharacterAttackResult,
+    initiativeRoll: number,
+  ): void => {
+    if (result.hits <= 0) return;
+
+    const corrodeLevel = getAbilityLevel(actorStats, 'corrode');
+    if (corrodeLevel > 0 && result.hits >= 3) {
+      const multiplier = getCorrodeMultiplier(corrodeLevel);
+      enemyOffenseAmplifierMultiplier *= multiplier;
+      log.push({
+        phase: 'close',
+        initiativeRoll,
+        actor: 'triggered',
+        characterId: actorStats.characterId,
+        action: buildCorrodeAction(actorName, enemy.name),
+        note: `(腐食:相手の攻撃倍率が${formatMultiplierAsFraction(multiplier)})`,
+        noteTone: 'muted',
+      });
+    }
+
+    const lifeDrainLevel = getAbilityLevel(actorStats, 'life_drain');
+    if (lifeDrainLevel > 0 && result.damage > 0) {
+      const drainMultiplier = getLifeDrainMultiplier(lifeDrainLevel);
+      const healAmount = healParty(Math.floor(result.damage * drainMultiplier));
+      log.push({
+        phase: 'close',
+        initiativeRoll,
+        actor: 'triggered',
+        characterId: actorStats.characterId,
+        action: buildLifeDrainAction(actorName, enemy.name),
+        note: `(吸血: 与ダメージの${formatFractionPercentLabel(drainMultiplier)}回復: ✚${healAmount})`,
+        noteTone: 'muted',
+      });
+    }
+
+    const deathTouchLevel = getAbilityLevel(actorStats, 'death_touch');
+    if (deathTouchLevel > 0 && enemyHp > 0 && Math.random() < getDeathTouchChance(deathTouchLevel, result.hits)) {
+      enemyDamageTakenInBattle += enemyHp;
+      enemyHp = 0;
+      log.push({
+        phase: 'close',
+        initiativeRoll,
+        actor: 'triggered',
+        characterId: actorStats.characterId,
+        action: buildDeathTouchAction(actorName, enemy.name),
+        note: `(接死:有効 ${DEATH_TOUCH_NUMERATORS[Math.min(5, deathTouchLevel)]}/256 の確率で即死)`,
+        noteTone: 'muted',
+      });
+    }
+
+    const burnLevel = getEnemyAbilityLevel(enemy, 'burn');
+    if (burnLevel > 0) {
+      const reflectedDamage = Math.floor(
+        partyStats.hp
+        * result.hits
+        * (getBurnPercent(burnLevel) / 100)
+        * (actorStats.elementalDefenseMultipliers.fire ?? 1.0),
+      );
+      if (reflectedDamage > 0) {
+        applyPartyDamage(reflectedDamage);
+        log.push({
+          phase: 'close',
+          initiativeRoll,
+          actor: 'triggered',
+          characterId: actorStats.characterId,
+          action: buildBurnAction(actorName),
+          damage: reflectedDamage,
+          damageTarget: 'party',
+          note: '(火傷)',
+          noteTone: 'muted',
+          elementalOffense: 'fire',
+        });
+
+        if (
+          partyHp <= 0
+          && hasResurrect(actorStats)
+          && !consumedResurrectCharacterIds.has(actorStats.characterId)
+        ) {
+          const resurrectLevel = getResurrectLevel(actorStats);
+          partyHp = resurrectLevel >= 2 ? Math.max(1, Math.ceil(partyStats.hp * 0.01)) : 1;
+          consumedResurrectCharacterIds.add(actorStats.characterId);
+          log.push({
+            phase: 'close',
+            actor: 'character',
+            characterId: actorStats.characterId,
+            action: `${actorName} は致命ダメージを食いしばって耐えた！`,
+          });
+        }
+      }
+    }
+
+    const bindLevel = getAbilityLevel(actorStats, 'bind');
+    if (bindLevel > 0 && enemyHp > 0 && Math.random() < getBindChance(bindLevel, result.hits)) {
+      enemyIncapacitated = true;
+      log.push({
+        phase: 'close',
+        initiativeRoll,
+        actor: 'triggered',
+        characterId: actorStats.characterId,
+        action: buildBindAction(actorName, enemy.name),
+        note: '(拘束:行動不能)',
+        noteTone: 'muted',
+      });
+    }
+  };
+
+  const applyEnemyCloseReactiveAbilities = (
+    targetStats: ComputedCharacterStats,
+    targetName: string,
+    appliedHits: number,
+    appliedDamage: number,
+    initiativeRoll: number,
+  ): void => {
+    if (appliedHits <= 0) return;
+
+    const enemyCorrodeLevel = getEnemyAbilityLevel(enemy, 'corrode');
+    if (enemyCorrodeLevel > 0 && appliedHits >= 3) {
+      const multiplier = getCorrodeMultiplier(enemyCorrodeLevel);
+      characterOffenseAmplifierMultiplierById.set(
+        targetStats.characterId,
+        resolveCharacterOffenseAmplifierMultiplier(targetStats.characterId) * multiplier,
+      );
+      log.push({
+        phase: 'close',
+        initiativeRoll,
+        actor: 'triggered',
+        action: buildCorrodeAction(enemy.name, targetName),
+        note: `(腐食:相手の攻撃倍率が${formatMultiplierAsFraction(multiplier)})`,
+        noteTone: 'muted',
+      });
+    }
+
+    const enemyLifeDrainLevel = getEnemyAbilityLevel(enemy, 'life_drain');
+    if (enemyLifeDrainLevel > 0 && appliedDamage > 0) {
+      const drainMultiplier = getLifeDrainMultiplier(enemyLifeDrainLevel);
+      const healAmount = healEnemy(Math.floor(appliedDamage * drainMultiplier));
+      log.push({
+        phase: 'close',
+        initiativeRoll,
+        actor: 'triggered',
+        action: buildLifeDrainAction(enemy.name, targetName),
+        note: `(吸血: 与ダメージの${formatFractionPercentLabel(drainMultiplier)}回復: ✚${healAmount})`,
+        noteTone: 'muted',
+      });
+    }
+
+    const enemyDeathTouchLevel = getEnemyAbilityLevel(enemy, 'death_touch');
+    if (enemyDeathTouchLevel > 0 && partyHp > 0 && Math.random() < getDeathTouchChance(enemyDeathTouchLevel, appliedHits)) {
+      partyDamageTakenInBattle += partyHp;
+      partyHp = 0;
+      log.push({
+        phase: 'close',
+        initiativeRoll,
+        actor: 'triggered',
+        action: buildDeathTouchAction(enemy.name, targetName),
+        note: `(接死:有効 ${DEATH_TOUCH_NUMERATORS[Math.min(5, enemyDeathTouchLevel)]}/256 の確率で即死)`,
+        noteTone: 'muted',
+      });
+    }
+
+    const burnLevel = getAbilityLevel(targetStats, 'burn');
+    if (burnLevel > 0 && enemyHp > 0) {
+      const reflectedDamage = Math.floor(
+        enemy.hp
+        * appliedHits
+        * (getBurnPercent(burnLevel) / 100)
+        * (enemy.elementalResistance.fire ?? 1.0),
+      );
+      if (reflectedDamage > 0) {
+        applyEnemyDamage(reflectedDamage);
+        log.push({
+          phase: 'close',
+          initiativeRoll,
+          actor: 'triggered',
+          characterId: targetStats.characterId,
+          action: buildBurnAction(enemy.name),
+          damage: reflectedDamage,
+          damageTarget: 'enemy',
+          note: '(火傷)',
+          noteTone: 'muted',
+          elementalOffense: 'fire',
+        });
+        triggerEnemyResurrect('close', initiativeRoll);
+      }
+    }
+
+    const enemyBindLevel = getEnemyAbilityLevel(enemy, 'bind');
+    if (enemyBindLevel > 0 && partyHp > 0 && Math.random() < getBindChance(enemyBindLevel, appliedHits)) {
+      incapacitatedCharacterIds.add(targetStats.characterId);
+      log.push({
+        phase: 'close',
+        initiativeRoll,
+        actor: 'triggered',
+        characterId: targetStats.characterId,
+        action: buildBindAction(enemy.name, targetName),
+        note: '(拘束:行動不能)',
+        noteTone: 'muted',
+      });
+    }
+  };
 
   const triggerFreeAtTiming = (phase: BattleActionPhase, timing: number): boolean => {
     if (forcedOutcome || partyHp <= 0 || enemyHp <= 0) {
@@ -1896,7 +2220,7 @@ export function executeBattle(
       return;
     }
 
-    const singleDamage = calculateSingleEnemyAttackDamage('close', enemy, characterStats, targetCharStats, enemyHp, partyHp, partyStats.hp);
+    const singleDamage = calculateSingleEnemyAttackDamage('close', enemy, characterStats, targetCharStats, enemyHp, partyHp, partyStats.hp, enemyOffenseAmplifierMultiplier);
     const enemyCloseAccuracyBonus = enemyTemporaryAccuracyBonus;
     const attempts = Math.ceil(getEnemyNoA('close', enemy) * enemyFlyingNoAMultiplier * counterNoAMultiplier);
     let hits = 0;
@@ -1994,7 +2318,7 @@ export function executeBattle(
       return;
     }
 
-    const reCounterResult = calculateCharacterDamage('close', targetCharStats, targetChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, reCounterNoAMultiplier * partyFlyingNoAMultiplier, temporaryAccuracyBonusByCharacterId.get(targetCharStats.characterId) ?? 0);
+    const reCounterResult = calculateCharacterDamage('close', targetCharStats, targetChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, reCounterNoAMultiplier * partyFlyingNoAMultiplier, temporaryAccuracyBonusByCharacterId.get(targetCharStats.characterId) ?? 0, resolveCharacterOffenseAmplifierMultiplier(targetCharStats.characterId));
     if (reCounterResult.totalAttempts <= 0) {
       return;
     }
@@ -2046,7 +2370,7 @@ export function executeBattle(
       const coverChar = party.characters.find(c => c.id === coverCharStats.characterId);
       if (!coverChar) continue;
 
-      const coveringFireResult = calculateCharacterDamage('long', coverCharStats, coverChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, coveringFireNoAMultiplier);
+      const coveringFireResult = calculateCharacterDamage('long', coverCharStats, coverChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, coveringFireNoAMultiplier, 0, resolveCharacterOffenseAmplifierMultiplier(coverCharStats.characterId));
       if (coveringFireResult.totalAttempts <= 0) continue;
 
       if (isIllusionActive('long', getEnemyAbilityLevel(enemy, 'illusion') > 0, 'enemy', consumedIllusionStateIds)) {
@@ -2883,6 +3207,17 @@ export function executeBattle(
         if (turn.kind === 'enemy') {
           enemyHasMovedInPhase = true;
 
+        if (enemyIncapacitated) {
+          enemyIncapacitated = false;
+          log.push({
+            phase,
+            initiativeRoll: turn.roll,
+            actor: 'triggered',
+            action: buildIncapacitatedAction(enemy.name),
+          });
+          continue;
+        }
+
         const baseNoA = getEnemyNoA(phase, enemy);
         const enemyPhaseAccuracyBonus = phase === 'close' ? enemyTemporaryAccuracyBonus : 0;
         const howlEffect = baseNoA > 0 ? consumePendingPartyHowlEffect() : null;
@@ -2935,7 +3270,7 @@ export function executeBattle(
               const resonanceAmplifier = phase === 'mid'
                 ? getResonanceAmplifier(enemyResonanceLevel, enemySuccessfulHits)
                 : 1.0;
-              const singleDamage = calculateSingleEnemyAttackDamage(phase, enemy, characterStats, targetCharStats, enemyHp, partyHp, partyStats.hp);
+              const singleDamage = calculateSingleEnemyAttackDamage(phase, enemy, characterStats, targetCharStats, enemyHp, partyHp, partyStats.hp, enemyOffenseAmplifierMultiplier);
               targetAttack.hitDamages.push(Math.max(1, Math.floor(singleDamage * resonanceAmplifier)));
             }
 
@@ -3209,6 +3544,16 @@ export function executeBattle(
               });
             }
 
+            if (phase === 'close') {
+              applyEnemyCloseReactiveAbilities(
+                attack.charStats,
+                targetName,
+                appliedHits,
+                appliedDamage,
+                turn.roll,
+              );
+            }
+
             if (
               phase === 'mid'
               && appliedDamage > 0
@@ -3245,6 +3590,7 @@ export function executeBattle(
               partyDeityKey,
               getCounterNoAMultiplier(attack.charStats) * (phase === 'close' ? partyFlyingNoAMultiplier : 1.0),
               phase === 'close' ? (temporaryAccuracyBonusByCharacterId.get(charId) ?? 0) : 0,
+              resolveCharacterOffenseAmplifierMultiplier(charId),
             );
             if (counterResult.totalAttempts <= 0) continue;
 
@@ -3309,7 +3655,7 @@ export function executeBattle(
               const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, attack.charStats.evasionBonus, i, phase, getDeflectionLevel(attack.charStats), getEnemyFocusLevel(enemy));
               if (!didHit) continue;
               reCounterHits += 1;
-              reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, characterStats, attack.charStats, enemyHp, partyHp, partyStats.hp);
+              reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, characterStats, attack.charStats, enemyHp, partyHp, partyStats.hp, enemyOffenseAmplifierMultiplier);
             }
 
             const avoidedByPartyIllusionOnReCounter = isPartyIllusionActive(phase, characterStats, consumedPartyIllusion);
@@ -3413,7 +3759,7 @@ export function executeBattle(
             const magicalCounterNoAMultiplier = getMagicalCounterNoAMultiplier(magicalCounterStats);
             if (magicalCounterNoAMultiplier <= 0) continue;
 
-            const magicalCounterResult = calculateCharacterDamage('mid', magicalCounterStats, magicalCounterChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, magicalCounterNoAMultiplier);
+            const magicalCounterResult = calculateCharacterDamage('mid', magicalCounterStats, magicalCounterChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, magicalCounterNoAMultiplier, 0, resolveCharacterOffenseAmplifierMultiplier(charId));
             if (magicalCounterResult.totalAttempts <= 0) continue;
 
             addEnemyHitsReceived(magicalCounterResult.hits);
@@ -3458,6 +3804,18 @@ export function executeBattle(
         if (!char) continue;
 
       movedCharacterIds.add(cs.characterId);
+
+      if (incapacitatedCharacterIds.has(cs.characterId)) {
+        incapacitatedCharacterIds.delete(cs.characterId);
+        log.push({
+          phase,
+          initiativeRoll: turn.roll,
+          actor: 'triggered',
+          characterId: cs.characterId,
+          action: buildIncapacitatedAction(char.name),
+        });
+        continue;
+      }
 
       const baseNoA = getCharacterNoAForPhase(phase, cs);
       const howlEffect = baseNoA > 0 ? consumePendingEnemyHowlEffect() : null;
@@ -3520,7 +3878,7 @@ export function executeBattle(
           const selected = resolveEnemyTarget(targetRow, candidates, phase) ?? candidates[Math.floor(Math.random() * candidates.length)];
           antagonismTarget = selected;
           antagonismTargetName = party.characters.find(c => c.id === selected.characterId)?.name ?? '???';
-          result = calculateCharacterFriendlyFireDamage(phase, cs, selected, characterStats, partyStats, partyHp, partyDeityKey, noAMultiplier, characterPhaseAccuracyBonus);
+          result = calculateCharacterFriendlyFireDamage(phase, cs, selected, characterStats, partyStats, partyHp, partyDeityKey, noAMultiplier, characterPhaseAccuracyBonus, resolveCharacterOffenseAmplifierMultiplier(cs.characterId));
 
           shockEffectLog = phase === 'close' && !isReAttack && isCharacterShockAvailable(selected)
             ? (() => {
@@ -3566,7 +3924,7 @@ export function executeBattle(
             }
           }
         } else {
-          result = calculateCharacterDamage(phase, cs, char, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, noAMultiplier, characterPhaseAccuracyBonus);
+          result = calculateCharacterDamage(phase, cs, char, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, noAMultiplier, characterPhaseAccuracyBonus, resolveCharacterOffenseAmplifierMultiplier(cs.characterId));
           shockEffectLog = phase === 'close' && !isReAttack && isEnemyShockAvailable()
             ? (() => {
                 if (result.hits > 1) {
@@ -3780,6 +4138,10 @@ export function executeBattle(
 
         if (!isAntagonism && result.damage > 0) {
           triggerEnemyResurrect(phase, turn.roll);
+        }
+
+        if (!isAntagonism && phase === 'close') {
+          applyCharacterCloseReactiveAbilities(cs, char.name, result, turn.roll);
         }
 
         if (!isAntagonism && enemyHp > 0 && phase === 'close') {
