@@ -174,6 +174,12 @@
   - Triggered by `a.free`
   - this battle is Draw.
   - Log: `log.free`
+
+- **Flying**
+  - Triggered by `a.flying`
+  - Reduce opponent melee NoA by N.
+  - Log: `log.flying` + (飛行:相手の攻撃回数xN)
+
  
 #### 6.1.3 Actor normal move
 
