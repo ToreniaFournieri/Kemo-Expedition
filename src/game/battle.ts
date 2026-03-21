@@ -1903,6 +1903,7 @@ export function executeBattle(
         action: buildResurrectAction(targetName),
         note: formatDefeatRecoveryNote('再起', healAmount),
         noteTone: 'muted',
+        hideInitiativeLabel: true,
       });
       return true;
     }
@@ -1921,6 +1922,7 @@ export function executeBattle(
         action: buildReanimateAction(targetName),
         note: formatDefeatRecoveryNote('即時蘇生', healAmount),
         noteTone: 'muted',
+        hideInitiativeLabel: true,
       });
       return true;
     }
@@ -1948,6 +1950,7 @@ export function executeBattle(
         action: buildResurrectAction(enemy.name),
         note: formatDefeatRecoveryNote('再起', healAmount),
         noteTone: 'muted',
+        hideInitiativeLabel: true,
       });
       return true;
     }
@@ -1964,6 +1967,7 @@ export function executeBattle(
         action: buildReanimateAction(enemy.name),
         note: formatDefeatRecoveryNote('即時蘇生', healAmount),
         noteTone: 'muted',
+        hideInitiativeLabel: true,
       });
       return true;
     }
