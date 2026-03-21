@@ -30,10 +30,10 @@ import { getEncounterEnemyWithScaling, getRoomMultiplier } from '../game/enemySc
 import { buildColosseumEnemy, getColosseumEnemySettings } from '../game/colosseum';
 import { replaceCharacterEquipment } from '../game/equipment';
 import { DUNGEONS, getDungeonById, getEffectiveEnemyLevel, getEffectiveEnemyMultipliers, getEffectiveExpeditionTier } from '../data/dungeons';
-import { CLASS_SHORT_NAMES } from '../data/classes';
 import { ENEMIES, getEnemiesByPool, getElitesByPool, getBossEnemy, getEnemyDropCandidates } from '../data/enemies';
 import { getGodProfileForDungeon } from '../data/dropTables';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
+import { formatEnemyDefName } from '../game/enemyDisplay';
 import {
   drawFromBag,
   refillBagIfEmpty,
@@ -381,11 +381,6 @@ function getCharacterCombatBonusLevels(character: Character): { grit: number; pu
   }
 
   return { grit, pursuit, caster };
-}
-
-function formatEnemyNameWithClass(name: string, classId: keyof typeof CLASS_SHORT_NAMES): string {
-  const shortName = CLASS_SHORT_NAMES[classId];
-  return shortName ? `${name}(${shortName})` : name;
 }
 
 // SpecRef: 8.5 | UI_DIARY | Setting.
@@ -2063,7 +2058,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               startPartyHP: roomStartHp,
               postBattlePartyHP: battleResult.partyHp,
               floorMultiplier: roomMultiplier,
-              enemyName: formatEnemyNameWithClass(enemy.name, enemy.enemyClass) + roomSuffix,
+              enemyName: formatEnemyDefName(enemy) + roomSuffix,
               enemyHP: enemy.hp,
               enemyAttackValues,
               outcome: battleResult.outcome!,
