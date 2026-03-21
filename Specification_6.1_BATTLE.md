@@ -253,6 +253,7 @@
 - If (phase is LONG) and (opponent.party.character.`a.illusion`2) and (the `a.illusion` is enable), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. log "nameへの攻撃はすべて幻だった！".
 
 ##### 6.1.3.2 Reactive ability
+- Priority: Counter > On-strike > Ally-follow-up
 
 **Counter**
 - If opponent.`a.counter` 
@@ -261,7 +262,7 @@
 - **counter-chain**
   - If opponent.`a.re-counter`, `f.re-counter`(actor:opponent , opponent:actor ,phase: )
 
-**on-strike**
+**On-strike**
   - If actor.`a.re-attack`: (using f.hit_detection, f.damage_calculation)
    	- `a.re-attack`: One attack and actor.`f.NoA` x N, round up
 
@@ -290,8 +291,7 @@
        - If success → apply `incapacitated` status.
     - Log: `log.bind` + "(拘束:行動不能)"
 
-    
-**ally-follow-up**
+**Ally-follow-up**
 - If actor.`a.covering-fire` and the actor's successful hit is only one and phase is CLOSE, `f.covering-fire`(actor:covering fire actor.party.character , opponent:opponent)
   - *Note:*  Nth_hit is per action based (not per-target)
 
