@@ -1883,6 +1883,7 @@ export function executeBattle(
         action: buildCorrodeAction(actorName, enemy.name),
         note: `(腐食:相手の攻撃倍率が${formatMultiplierAsFraction(multiplier)})`,
         noteTone: 'muted',
+        hideInitiativeLabel: true,
       });
     }
 
@@ -1973,6 +1974,7 @@ export function executeBattle(
         action: buildBindAction(actorName, enemy.name),
         note: '(拘束:行動不能)',
         noteTone: 'muted',
+        hideInitiativeLabel: true,
       });
     }
   };
@@ -2000,6 +2002,7 @@ export function executeBattle(
         action: buildCorrodeAction(enemy.name, targetName),
         note: `(腐食:相手の攻撃倍率が${formatMultiplierAsFraction(multiplier)})`,
         noteTone: 'muted',
+        hideInitiativeLabel: true,
       });
     }
 
@@ -2073,6 +2076,7 @@ export function executeBattle(
         action: buildBindAction(enemy.name, targetName),
         note: '(拘束:行動不能)',
         noteTone: 'muted',
+        hideInitiativeLabel: true,
       });
     }
   };
