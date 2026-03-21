@@ -254,7 +254,15 @@
   - If actor.`a.re-attack`, the actor attacks to opponent. (using f.hit_detection, f.damage_calculation)
    	- `a.re-attack`: One attack and actor.`f.NoA` x N, round up
 
+  - If actor.`a.corrode`,
 
+  - If actor.`a.life-drain`,
+
+  - If actor.`a.death-touch`
+
+  - If actor.`a.burn`,
+
+  - If actor.`a.burn`,
 
 **ally-follow-up**
 - If actor.`a.covering-fire` and the actor's successful hit is only one and phase is CLOSE, `f.covering-fire`(actor:covering fire actor.party.character , opponent:opponent)
