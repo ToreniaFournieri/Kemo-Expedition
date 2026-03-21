@@ -267,6 +267,32 @@ const INCAPACITATED_LOGS = [
   '{actor} は手足もまともに動かせられない！',
 ] as const;
 
+const RESURRECT_LOGS = [
+  '{actor} は致命傷を耐えた！',
+  '{actor} は倒れず踏みとどまった！',
+  '{actor} は最後の力で生き残った！',
+  '{actor} は崩れ落ちる寸前で持ちこたえた！',
+  '{actor} は瀕死ながらも立ち続けている！',
+  '{actor} は辛うじて命を繋いだ！',
+  '{actor} は倒れることを拒んだ！',
+  '{actor} は限界を超えて耐えた！',
+  '{actor} はまだ倒れない！',
+  '{actor} は執念で立ち続けた！',
+] as const;
+
+const REANIMATE_LOGS = [
+  '{actor} は蘇った！',
+  '{actor} は再び立ち上がった！',
+  '{actor} は戦線に復帰した！',
+  '{actor} は息を吹き返した！',
+  '{actor} は再生し、立ち上がる！',
+  '{actor} は倒れてなお蘇生した！',
+  '{actor} は再び動き出した！',
+  '{actor} は蘇生して戦いに戻った！',
+  '{actor} は死を乗り越えた！',
+  '{actor} は再び戦う力を得た！',
+] as const;
+
 const decomposeDefenseValueFormatter = new Intl.NumberFormat('ja-JP');
 
 function pickRandomEntry<T>(entries: readonly T[]): T {
@@ -364,6 +390,14 @@ export function buildBindAction(actorName: string, targetName: string): string {
 
 export function buildIncapacitatedAction(actorName: string): string {
   return pickRandomEntry(INCAPACITATED_LOGS).replace(/\{actor\}/g, actorName);
+}
+
+export function buildResurrectAction(actorName: string): string {
+  return pickRandomEntry(RESURRECT_LOGS).replace(/\{actor\}/g, actorName);
+}
+
+export function buildReanimateAction(actorName: string): string {
+  return pickRandomEntry(REANIMATE_LOGS).replace(/\{actor\}/g, actorName);
 }
 
 export function getConfusionNoTargetLog(actorName: string): Pick<BattleLogEntry, 'action' | 'note'> {
