@@ -1888,9 +1888,10 @@ export function executeBattle(
     const targetName = party.characters.find(c => c.id === targetStats.characterId)?.name ?? '???';
     if (hasResurrect(targetStats) && !consumedResurrectCharacterIds.has(targetStats.characterId)) {
       const resurrectLevel = getResurrectLevel(targetStats);
-      partyHp = resurrectLevel >= 2
+      const healAmount = resurrectLevel >= 2
         ? Math.max(1, Math.ceil(partyStats.hp * 0.01))
         : 1;
+      healParty(healAmount);
       consumedResurrectCharacterIds.add(targetStats.characterId);
       log.push({
         phase,
@@ -1899,7 +1900,7 @@ export function executeBattle(
         characterId: targetStats.characterId,
         isCounter: isCounter || undefined,
         action: buildResurrectAction(targetName),
-        note: '(再起)',
+        note: `(再起 ✚${healAmount})`,
         noteTone: 'muted',
       });
       return true;
@@ -1907,7 +1908,8 @@ export function executeBattle(
 
     if (hasReanimate(targetStats) && !consumedReanimateCharacterIds.has(targetStats.characterId)) {
       const reanimateLevel = getReanimateLevel(targetStats);
-      partyHp = Math.max(1, Math.ceil((partyStats.hp * getReanimateHpPercent(reanimateLevel)) / 100));
+      const healAmount = Math.max(1, Math.ceil((partyStats.hp * getReanimateHpPercent(reanimateLevel)) / 100));
+      healParty(healAmount);
       consumedReanimateCharacterIds.add(targetStats.characterId);
       log.push({
         phase,
@@ -1916,7 +1918,7 @@ export function executeBattle(
         characterId: targetStats.characterId,
         isCounter: isCounter || undefined,
         action: buildReanimateAction(targetName),
-        note: '(即時蘇生)',
+        note: `(即時蘇生 ✚${healAmount})`,
         noteTone: 'muted',
       });
       return true;
@@ -1933,16 +1935,17 @@ export function executeBattle(
 
     const resurrectLevel = getEnemyAbilityLevel(enemy, 'resurrect');
     if (resurrectLevel > 0 && !consumedEnemyResurrect) {
-      enemyHp = resurrectLevel >= 2
+      const healAmount = resurrectLevel >= 2
         ? Math.max(1, Math.ceil(enemy.hp * 0.01))
         : 1;
+      healEnemy(healAmount);
       consumedEnemyResurrect = true;
       log.push({
         phase,
         initiativeRoll,
         actor: 'enemy',
         action: buildResurrectAction(enemy.name),
-        note: '(再起)',
+        note: `(再起 ✚${healAmount})`,
         noteTone: 'muted',
       });
       return true;
@@ -1950,14 +1953,15 @@ export function executeBattle(
 
     const reanimateLevel = getEnemyAbilityLevel(enemy, 'reanimate');
     if (reanimateLevel > 0 && !consumedEnemyReanimate) {
-      enemyHp = Math.max(1, Math.ceil((enemy.hp * getReanimateHpPercent(reanimateLevel)) / 100));
+      const healAmount = Math.max(1, Math.ceil((enemy.hp * getReanimateHpPercent(reanimateLevel)) / 100));
+      healEnemy(healAmount);
       consumedEnemyReanimate = true;
       log.push({
         phase,
         initiativeRoll,
         actor: 'enemy',
         action: buildReanimateAction(enemy.name),
-        note: '(即時蘇生)',
+        note: `(即時蘇生 ✚${healAmount})`,
         noteTone: 'muted',
       });
       return true;

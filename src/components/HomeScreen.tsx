@@ -6316,7 +6316,7 @@ function ExpeditionTab({
                             <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
                               <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
                               {aggregateBattleLifeDrainLogs(entry.details).map((log, j, battleLogs) => {
-                                const isResurrectLog = log.note === '(再起)' || log.note === '(即時蘇生)';
+                                const isResurrectLog = log.note?.startsWith('(再起') || log.note?.startsWith('(即時蘇生)');
                                 const isTriggeredLog = log.actor === 'triggered';
                                 const isPhaseAction = log.actor !== 'deity' && log.actor !== 'effect';
                                 const previousLog = j > 0 ? battleLogs[j - 1] : undefined;
@@ -7582,7 +7582,7 @@ function DiaryTab({
                           <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
                             <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
                             {aggregateBattleLifeDrainLogs(entry.details).map((battleLog, j, battleLogs) => {
-                              const isResurrectLog = battleLog.note === '(再起)' || battleLog.note === '(即時蘇生)';
+                              const isResurrectLog = battleLog.note?.startsWith('(再起') || battleLog.note?.startsWith('(即時蘇生)');
                               const isTriggeredLog = battleLog.actor === 'triggered';
                               const isPhaseAction = battleLog.actor !== 'deity' && battleLog.actor !== 'effect';
                               const previousLog = j > 0 ? battleLogs[j - 1] : undefined;
