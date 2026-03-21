@@ -269,14 +269,14 @@
        - If success → target is instantly defeated.
        - Log: `log.life-drain` + (接死: Nの確率で即死)
 
-  - If actor.`a.burn`,
-    - burn_damage += base_damage x (number of successful attacks) × N
-    - Log: `log.burn` + ()
+  - If opponent.`a.burn`,
+    - actor.`d.HP` -= base_damage x actor.(number of successful attacks) × N
+    - Log: `log.burn` + (火傷:)
     
   - If actor.`a.bind`,
     - Roll bind check:
        - If success → apply incapacitated status.
-    - Log: `log.bind` + ()
+    - Log: `log.bind` + (拘束: )
     
 **ally-follow-up**
 - If actor.`a.covering-fire` and the actor's successful hit is only one and phase is CLOSE, `f.covering-fire`(actor:covering fire actor.party.character , opponent:opponent)
