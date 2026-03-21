@@ -235,8 +235,16 @@
 
  
 **on-defeat**
-- If current opponent .`d.HP` =< 0, if opponent.`a.resurrect`1, set `d.HP` = 1 and disable `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat.
-- If current opponent.`d.HP` =< 0, if character.`a.resurrect`2, set opponent.`d.HP` = 1% of (opponent.max_HP) and disable the `a.resurrect` for this battle. log "ケモは致命ダメージを食いしばって耐えた！" . Else,  Defeat. 
+- If current opponent.`d.HP` =< 0, if opponent.`a.resurrect`:
+  - Lv1: Set `d.HP` = 1
+  - Lv2: Set opponent.`d.HP` = 1% of (opponent.max_HP)
+  - Disable `a.resurrect`
+  - log `log.resurrect` + (再起)
+- If current opponent .`d.HP` =< 0 and opponent.`a.reanimate`:
+  - Set opponent.`d.HP` = opponent.max_HP x (N / 100)
+  - Disable `a.reanimate`.
+  - log `log.reanimate` + (即時蘇生)
+- Else: opponent is defeated. 
 
 **opponent-reactive**
 - If (phase is LONG) and (opponent.`a.illusion`1) and (the `a.illusion` is enable), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. log "ポンタへの攻撃はすべて幻だった！".
