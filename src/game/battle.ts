@@ -3742,8 +3742,8 @@ export function executeBattle(
           partyHp,
           partyStats.hp,
           antagonismTarget?.abilities ?? enemy.abilities,
-          partyHp,
-          antagonismTarget ? partyStats.hp : enemyHp,
+          antagonismTarget ? partyHp : enemyHp,
+          antagonismTarget ? partyStats.hp : enemy.hp,
         );
         const antagonismTargetName = antagonismTarget
           ? (party.characters.find(c => c.id === antagonismTarget.characterId)?.name ?? '???')
