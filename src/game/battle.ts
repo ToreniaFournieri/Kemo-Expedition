@@ -211,6 +211,19 @@ const SHOCK_LOGS = [
   '{target} の感電により、{actor} の攻撃はそこで終わった！',
 ] as const;
 
+const FLYING_LOGS = [
+  '{actor} は飛行している！',
+  '{actor} は空へ舞い上がっている！',
+  '{actor} は宙に浮かんでいる！',
+  '{actor} は飛翔した！',
+  '{actor} は上空へ移動した！',
+  '{actor} は空中に身を躍らせた！',
+  '{actor} はふわりと浮かび上がった！',
+  '{actor} は高く跳び上がった！',
+  '{actor} は空中へ退いた！',
+  '{actor} は空へと身を逃がした！',
+] as const;
+
 function getElementalMultiplier(
   offense: ElementalOffense,
   resistance: Record<'fire' | 'thunder' | 'ice', number>
@@ -1335,6 +1348,16 @@ function getRegenerationNote(healAmount: number): string {
   return `(✚ ${healAmount})`;
 }
 
+function getFlyingNoAMultiplier(level: number): number {
+  if (level <= 0) return 1.0;
+  return 1 / 4;
+}
+
+function getFlyingNote(level: number): string {
+  if (level <= 0) return '(飛行:相手の攻撃回数x1)';
+  return '(飛行:相手の攻撃回数x1/4)';
+}
+
 function getFreeTimingForPhase(
   phase: BattleActionPhase,
   level: number,
@@ -1704,6 +1727,10 @@ function buildShockAction(actorName: string, targetName: string): string {
     .replace(/\{target\}/g, targetName);
 }
 
+function buildFlyingAction(actorName: string): string {
+  return pickRandomEntry(FLYING_LOGS).replace(/\{actor\}/g, actorName);
+}
+
 function getShockAdjustedDamage(damage: number, hits: number): number {
   if (hits <= 1 || damage <= 0) return damage;
   return Math.floor(damage / hits);
@@ -1911,6 +1938,8 @@ export function executeBattle(
   const activeMagicSealQueue = createMagicSealQueue(party, characterStats, enemy);
   let pendingEnemyHowlEffect: PendingHowlEffect | null = null;
   let pendingPartyHowlEffect: PendingHowlEffect | null = null;
+  let enemyFlyingNoAMultiplier = 1.0;
+  let partyFlyingNoAMultiplier = 1.0;
   let enemyTemporaryAccuracyBonus = 0;
   const temporaryAccuracyBonusByCharacterId = new Map<number, number>();
   let forcedOutcome: BattleOutcome | null = null;
@@ -2135,7 +2164,7 @@ export function executeBattle(
 
     const singleDamage = calculateSingleEnemyAttackDamage('close', enemy, characterStats, targetCharStats, enemyHp, partyHp, partyStats.hp);
     const enemyCloseAccuracyBonus = enemyTemporaryAccuracyBonus;
-    const attempts = Math.ceil(getEnemyNoA('close', enemy) * counterNoAMultiplier);
+    const attempts = Math.ceil(getEnemyNoA('close', enemy) * enemyFlyingNoAMultiplier * counterNoAMultiplier);
     let hits = 0;
     for (let i = 1; i <= attempts; i++) {
       const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyCloseAccuracyBonus, targetCharStats.evasionBonus, i, 'close', getDeflectionLevel(targetCharStats), getEnemyFocusLevel(enemy));
@@ -2231,7 +2260,7 @@ export function executeBattle(
       return;
     }
 
-    const reCounterResult = calculateCharacterDamage('close', targetCharStats, targetChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, reCounterNoAMultiplier, temporaryAccuracyBonusByCharacterId.get(targetCharStats.characterId) ?? 0);
+    const reCounterResult = calculateCharacterDamage('close', targetCharStats, targetChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, reCounterNoAMultiplier * partyFlyingNoAMultiplier, temporaryAccuracyBonusByCharacterId.get(targetCharStats.characterId) ?? 0);
     if (reCounterResult.totalAttempts <= 0) {
       return;
     }
@@ -2534,6 +2563,7 @@ export function executeBattle(
     let hasTriggeredDecompose = false;
     let hasTriggeredRegeneration = false;
     let hasTriggeredPredatorSense = false;
+    let hasTriggeredFlying = false;
     const triggerLongPhaseHowl = (): void => {
       if (phase !== 'long' || hasTriggeredLongPhaseHowl) return;
       hasTriggeredLongPhaseHowl = true;
@@ -2683,6 +2713,45 @@ export function executeBattle(
           characterId: entry.stats.characterId,
           action: buildRegenerationAction(entry.ownerName),
           note: getRegenerationNote(healAmount),
+        });
+      }
+    };
+
+    const triggerFlyingAtTiming = (timing: number): void => {
+      if (phase !== 'close' || timing !== 9 || hasTriggeredFlying) return;
+      hasTriggeredFlying = true;
+      if (enemyHp <= 0 || partyHp <= 0) return;
+
+      const enemyFlyingLevel = getEnemyAbilityLevel(enemy, 'flying');
+      if (enemyFlyingLevel > 0) {
+        partyFlyingNoAMultiplier *= getFlyingNoAMultiplier(enemyFlyingLevel);
+        log.push({
+          phase,
+          initiativeRoll: timing,
+          actor: 'triggered',
+          action: buildFlyingAction(enemy.name),
+          note: getFlyingNote(enemyFlyingLevel),
+        });
+      }
+
+      const partyFlyingEntries = characterStats
+        .map((stats) => ({
+          stats,
+          level: getAbilityLevel(stats, 'flying'),
+          ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+        }))
+        .filter((entry) => entry.level > 0)
+        .sort((a, b) => a.stats.row - b.stats.row);
+
+      for (const entry of partyFlyingEntries) {
+        enemyFlyingNoAMultiplier *= getFlyingNoAMultiplier(entry.level);
+        log.push({
+          phase,
+          initiativeRoll: timing,
+          actor: 'triggered',
+          characterId: entry.stats.characterId,
+          action: buildFlyingAction(entry.ownerName),
+          note: getFlyingNote(entry.level),
         });
       }
     };
@@ -3042,6 +3111,7 @@ export function executeBattle(
       if (timing === 9) {
         triggerRegenerationAtTiming(9);
         triggerPredatorSenseAtTiming(9);
+        triggerFlyingAtTiming(9);
       }
       if (timing === 3) {
         if (triggerFreeAtTiming(phase, 3)) {
@@ -3082,7 +3152,7 @@ export function executeBattle(
         const baseNoA = getEnemyNoA(phase, enemy);
         const enemyPhaseAccuracyBonus = phase === 'close' ? enemyTemporaryAccuracyBonus : 0;
         const howlEffect = baseNoA > 0 ? consumePendingPartyHowlEffect() : null;
-        const noA = Math.ceil(baseNoA * (howlEffect?.multiplier ?? 1.0));
+        const noA = Math.ceil(baseNoA * (howlEffect?.multiplier ?? 1.0) * (phase === 'close' ? enemyFlyingNoAMultiplier : 1.0));
         if (noA <= 0) continue;
         if (enemyHasAntagonism) continue;
 
@@ -3433,7 +3503,7 @@ export function executeBattle(
               partyStats,
               partyHp,
               partyDeityKey,
-              getCounterNoAMultiplier(attack.charStats),
+              getCounterNoAMultiplier(attack.charStats) * (phase === 'close' ? partyFlyingNoAMultiplier : 1.0),
               phase === 'close' ? (temporaryAccuracyBonusByCharacterId.get(charId) ?? 0) : 0,
             );
             if (counterResult.totalAttempts <= 0) continue;
@@ -3590,7 +3660,7 @@ export function executeBattle(
 
         runEnemyAttack(noA, false);
         if (enemyHasReAttack(enemy) && enemyHp > 0 && partyHp > 0) {
-          runEnemyAttack(Math.ceil(baseNoA * getEnemyReAttackNoAMultiplier(enemy)), true);
+          runEnemyAttack(Math.ceil(baseNoA * getEnemyReAttackNoAMultiplier(enemy) * (phase === 'close' ? enemyFlyingNoAMultiplier : 1.0)), true);
         }
 
         if (phase === 'mid' && enemyHp > 0 && partyHp > 0 && getEnemyAbilityLevel(enemy, 'null_counter') <= 0) {
@@ -3651,6 +3721,7 @@ export function executeBattle(
 
       const baseNoA = getCharacterNoAForPhase(phase, cs);
       const howlEffect = baseNoA > 0 ? consumePendingEnemyHowlEffect() : null;
+      const flyingNoAMultiplier = phase === 'close' ? partyFlyingNoAMultiplier : 1.0;
 
       const characterPhaseAccuracyBonus = phase === 'close' ? (temporaryAccuracyBonusByCharacterId.get(cs.characterId) ?? 0) : 0;
 
@@ -3969,7 +4040,7 @@ export function executeBattle(
         return result;
       };
 
-        const firstAttackResult = runCharacterAttack(howlEffect?.multiplier ?? 1.0, false);
+        const firstAttackResult = runCharacterAttack((howlEffect?.multiplier ?? 1.0) * flyingNoAMultiplier, false);
         if (firstAttackResult && enemyHp > 0 && partyHp > 0) {
           triggerCoveringFire(phase, cs, firstAttackResult.hits, turn.roll);
         }
@@ -3978,7 +4049,7 @@ export function executeBattle(
 
         const reAttackProfile = getReAttackProfile(cs);
         for (let i = 0; i < reAttackProfile.count && enemyHp > 0 && partyHp > 0; i++) {
-          const reAttackResult = runCharacterAttack(reAttackProfile.noAMultiplier, true);
+          const reAttackResult = runCharacterAttack(reAttackProfile.noAMultiplier * flyingNoAMultiplier, true);
           if (reAttackResult && enemyHp > 0 && partyHp > 0) {
             triggerCoveringFire(phase, cs, reAttackResult.hits, turn.roll);
           }
