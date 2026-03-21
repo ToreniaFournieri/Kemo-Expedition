@@ -85,7 +85,7 @@
 - Always fixed at the top.
   - width: ~ 500 width.
 - Displays:
-  - (Game title) + version + (env)
+  - (Game title) + version + (build number) + (env)
     - Game title label: default: ケモの冒険, if `/luna/` environment: "ルナの冒険".
 	- env label by URL subpath const getEnvLabel = () => {
   const p = window.location.pathname; // e.g. "/Kemo-Expedition/dev/..."
@@ -95,7 +95,7 @@
   - Use this specification's version
 ```
 (Left-aligned)             (Right-aligned)
-ケモの冒険　v0.4.0 (αテスト)        200G
+ケモの冒険　v0.6.0(23) (αテスト)        200G
 ```
 - Tab header (primary navigation):
   - Expedition: 探索
