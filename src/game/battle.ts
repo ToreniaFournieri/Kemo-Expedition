@@ -3613,16 +3613,6 @@ export function executeBattle(
               });
             }
 
-            if (phase === 'close') {
-              applyEnemyCloseReactiveAbilities(
-                attack.charStats,
-                targetName,
-                appliedHits,
-                appliedDamage,
-                turn.roll,
-              );
-            }
-
             if (
               phase === 'mid'
               && appliedDamage > 0
@@ -3630,6 +3620,21 @@ export function executeBattle(
               && getEnemyAbilityLevel(enemy, 'null_counter') <= 0
             ) {
               magicalCounterCandidates.set(charId, attack.charStats);
+            }
+
+            const deferEnemyCloseReactiveAbilities = phase === 'close'
+              && partyHp > 0
+              && enemyHp > 0
+              && appliedDamage > 0
+              && hasCounter(attack.charStats, phase);
+            if (phase === 'close' && !deferEnemyCloseReactiveAbilities) {
+              applyEnemyCloseReactiveAbilities(
+                attack.charStats,
+                targetName,
+                appliedHits,
+                appliedDamage,
+                turn.roll,
+              );
             }
 
             if (partyHp <= 0 || enemyHp <= 0) continue;
@@ -3790,6 +3795,16 @@ export function executeBattle(
                 actor: 'effect',
                 action: `${targetChar?.name ?? '???'} は物陰に隠れて攻撃をやり過ごせたのだ！`,
               });
+            }
+
+            if (phase === 'close' && partyHp > 0 && enemyHp > 0) {
+              applyEnemyCloseReactiveAbilities(
+                attack.charStats,
+                targetName,
+                appliedHits,
+                appliedDamage,
+                turn.roll,
+              );
             }
 
             if (partyHp <= 0) break;
@@ -4158,12 +4173,12 @@ export function executeBattle(
           triggerEnemyDefeatRecovery(phase, turn.roll);
         }
 
-        if (!isAntagonism && phase === 'close') {
-          applyCharacterCloseReactiveAbilities(cs, char.name, result, turn.roll);
-        }
-
         if (!isAntagonism && enemyHp > 0 && phase === 'close') {
           triggerEnemyCounter(cs, result.damage, enemyInitiativeRoll ?? undefined);
+        }
+
+        if (!isAntagonism && phase === 'close') {
+          applyCharacterCloseReactiveAbilities(cs, char.name, result, turn.roll);
         }
 
         return result;
