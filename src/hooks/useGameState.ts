@@ -1829,12 +1829,6 @@ function buildAuriferousLogEntry(actorName: string, totalHitsReceived: number, b
   };
 }
 
-function hasEnemyRewardTargets(enemy: EnemyDef): boolean {
-  if (getEnemyDropCandidates(enemy).length > 0) return true;
-
-  return !!(enemy.dropItemId && getItemById(enemy.dropItemId));
-}
-
 function isRetreatHpThresholdReached(currentHp: number, maxHp: number): boolean {
   return currentHp <= maxHp * 0.3;
 }
@@ -2137,13 +2131,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   entry.rewardIsSuperRare = rewardResult.hasSuperRareReward;
                 }
                 rewardLogEntries = rewardResult.rewardLogEntries;
-                const auriferousLogEntry = hasEnemyRewardTargets(enemy)
-                  ? buildAuriferousLogEntry(
-                    enemy.name,
-                    battleResult.enemyHitsReceived,
-                    auriferousBonusRolls,
-                  )
-                  : null;
+                const auriferousLogEntry = buildAuriferousLogEntry(
+                  enemy.name,
+                  battleResult.enemyHitsReceived,
+                  auriferousBonusRolls,
+                );
                 if (auriferousLogEntry) {
                   entry.details.push(auriferousLogEntry);
                 }
