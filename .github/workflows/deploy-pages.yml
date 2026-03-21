@@ -2,6 +2,12 @@ name: Deploy Pages (all environments)
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'Specification*'
+      - '**/Specification*'
 
 permissions:
   contents: read
