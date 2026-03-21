@@ -275,8 +275,9 @@
 
   - If actor.`a.death-touch`:
      - Roll death check:
+       - death_probability = opponent.(total successful hit) x N
        - If success → target is instantly defeated.
-       - Log: `log.death-touch` + "(接死:有効 Nの確率で即死)"
+       - Log: `log.death-touch` + "(接死:有効 death_probabilityの確率で即死)"
 
   - If opponent.`a.burn`:
     - actor.`d.HP` -= actor.max_hp x actor.hit_count × (N / 100) x actor.`r.fire`
