@@ -233,18 +233,20 @@
    - Else `d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
 
 
- 
 **on-defeat**
 - If current opponent.`d.HP` =< 0, if opponent.`a.resurrect`:
-  - Lv1: Set `d.HP` = 1
-  - Lv2: Set opponent.`d.HP` = 1% of (opponent.max_HP)
+  - Lv1: heal = 1
+  - Lv2: heal = 1% of (opponent.max_HP)
+  - opponent.`d.HP` = heal
   - Disable `a.resurrect`
-  - log `log.resurrect` + (再起)
+  - log `log.resurrect` + (再起 ✚ heal)
 - If current opponent .`d.HP` =< 0 and opponent.`a.reanimate`:
-  - Set opponent.`d.HP` = opponent.max_HP x (N / 100)
+  - heal = opponent.max_HP x (N / 100)
+  - opponent.`d.HP` = heal
   - Disable `a.reanimate`.
-  - log `log.reanimate` + (即時蘇生)
+  - log `log.reanimate` + (即時蘇生 ✚ heal)
 - Else: opponent is defeated. 
+
 
 **opponent-reactive**
 - If (phase is LONG) and (opponent.`a.illusion`1) and (the `a.illusion` is enable), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. log "ポンタへの攻撃はすべて幻だった！".
