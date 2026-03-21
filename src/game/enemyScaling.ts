@@ -1,4 +1,4 @@
-import { Dungeon, EnemyDef, RoomType } from '../types';
+import { BonusType, Dungeon, EnemyDef, RoomType } from '../types';
 import { LUNA_MODE_ENEMY_LEVEL_BONUS, getEnemyLevelForRoom, getEnemyMultipliersForLevel } from '../data/dungeons';
 import { getDebugSettings } from './debugSettings';
 
@@ -54,6 +54,78 @@ type EnemyScalingOptions = {
   isLunaMode?: boolean;
 };
 
+const ENEMY_TYPE_C_BONUS_TYPES = new Set<BonusType>([
+  'growth_xV',
+  'grit',
+  'caster',
+  'pursuit',
+  'evasion',
+  'physical_defense_multiplier_xV',
+  'magical_defense_multiplier_xV',
+]);
+
+function formatCBonusValue(value: number): string {
+  return (Math.round(value * 1000000) / 1000000).toString();
+}
+
+export function isEnemyTypeCBonusType(type: BonusType): boolean {
+  return ENEMY_TYPE_C_BONUS_TYPES.has(type);
+}
+
+export function applyEnemyTypeCBonuses(enemy: EnemyDef): EnemyDef {
+  let hp = enemy.hp;
+  let rangedNoA = enemy.rangedNoA;
+  let magicalNoA = enemy.magicalNoA;
+  let meleeNoA = enemy.meleeNoA;
+  let evasionBonus = enemy.evasionBonus;
+  let physicalDefenseAmplifier = enemy.physicalDefenseAmplifier;
+  let magicalDefenseAmplifier = enemy.magicalDefenseAmplifier;
+  const appliedBonusNames = new Set<string>();
+
+  for (const bonus of enemy.bonuses ?? []) {
+    if (!isEnemyTypeCBonusType(bonus.type)) continue;
+
+    const bonusName = `c.${bonus.type}+${formatCBonusValue(bonus.value)}`;
+    if (appliedBonusNames.has(bonusName)) continue;
+    appliedBonusNames.add(bonusName);
+
+    switch (bonus.type) {
+      case 'growth_xV':
+        hp = Math.max(1, Math.floor(hp * bonus.value));
+        break;
+      case 'grit':
+        meleeNoA = Math.max(0, meleeNoA + bonus.value);
+        break;
+      case 'caster':
+        magicalNoA = Math.max(0, magicalNoA + bonus.value);
+        break;
+      case 'pursuit':
+        rangedNoA = Math.max(0, rangedNoA + bonus.value);
+        break;
+      case 'evasion':
+        evasionBonus += bonus.value;
+        break;
+      case 'physical_defense_multiplier_xV':
+        physicalDefenseAmplifier = Math.max(0.01, physicalDefenseAmplifier * bonus.value);
+        break;
+      case 'magical_defense_multiplier_xV':
+        magicalDefenseAmplifier = Math.max(0.01, magicalDefenseAmplifier * bonus.value);
+        break;
+    }
+  }
+
+  return {
+    ...enemy,
+    hp,
+    rangedNoA,
+    magicalNoA,
+    meleeNoA,
+    evasionBonus,
+    physicalDefenseAmplifier,
+    magicalDefenseAmplifier,
+  };
+}
+
 // SpecRef: 4.1.2 | Enemy | Strength of enemy by its level
 export function getRoomMultiplier(
   dungeonExpLevel: number,
@@ -91,7 +163,7 @@ export function applyEnemyEncounterScaling(
 
   const hasColossal = enemy.abilities.some((ability) => ability.id === 'colossal');
 
-  return {
+  return applyEnemyTypeCBonuses({
     ...enemy,
     hp: Math.floor(enemy.hp * finalMultipliers.hp),
     rangedAttack: Math.floor(enemy.rangedAttack * finalMultipliers.attack),
@@ -108,7 +180,7 @@ export function applyEnemyEncounterScaling(
     physicalDefenseAmplifier: 1.0 * finalMultipliers.physicalDefenseAmplifier * (hasColossal ? 2 : 1),
     magicalDefenseAmplifier: 1.0 * finalMultipliers.magicalDefenseAmplifier,
     experience: enemy.experience,
-  };
+  });
 }
 
 function isPreScaledEncounterEnemy(enemy: EnemyDef): boolean {

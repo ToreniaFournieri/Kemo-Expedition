@@ -1,5 +1,7 @@
 import { AbilityId, ElementalResistance, EnemyAbility, EnemyClassId, EnemyDef } from '../types';
+import { getEnemyTypeBonuses } from '../data/enemies';
 import { getEnemyCyborgizationAdjustment, resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
+import { applyEnemyTypeCBonuses } from './enemyScaling';
 import { LUNA_MODE_ENEMY_LEVEL_BONUS, getEnemyMultipliersForLevel } from '../data/dungeons';
 
 const COLOSSEUM_STORAGE_KEY = 'kemo-expedition.colosseum-enemy-settings';
@@ -133,7 +135,7 @@ export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode
     ice: 1,
   };
 
-  return {
+  return applyEnemyTypeCBonuses({
     id: 9901,
     type: 'boss',
     enemyType: normalized.enemyType,
@@ -143,6 +145,7 @@ export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode
     name: normalized.name,
     enemyClass: normalized.enemyClass,
     abilities,
+    bonuses: getEnemyTypeBonuses(normalized.enemyType),
     accuracyBonus: classBase.accuracyBonus + cyborgizationAdjustment.accuracyBonus,
     evasionBonus: classBase.evasionBonus + cyborgizationAdjustment.evasionBonus,
     hp: Math.max(1, Math.floor(classBase.hp * multipliers.hp)),
@@ -163,5 +166,5 @@ export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode
     magicalDefenseAmplifier: multipliers.defenseAmplifier,
     experience: 0,
     dropItemId: null,
-  };
+  });
 }

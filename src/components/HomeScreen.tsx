@@ -1,5 +1,5 @@
 import { Fragment, useState, useEffect, useRef, useCallback, type ChangeEvent, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import {
   DUNGEONS,
@@ -23,7 +23,7 @@ import {
 import { GLOSSARY_SECTIONS } from '../data/glossary';
 import { getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
-import { getEncounterEnemyWithScaling } from '../game/enemyScaling';
+import { getEncounterEnemyWithScaling, isEnemyTypeCBonusType } from '../game/enemyScaling';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
 import { DEITY_OPTIONS, getDeityEffectDescription, getDeityKey, getDeityRank, getNextRankDonationRequirement, getDeityStateDurationMultiplier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { getXpToNextLevel } from '../game/partyLevel';
@@ -1161,9 +1161,6 @@ function getElementalOffenseHelpLines(character: Character, stats: ComputedChara
   return lines;
 }
 
-// Helper to format bonus descriptions
-type Bonus = { type: string; value: number; abilityId?: string; abilityLevel?: number; unimplementedLabel?: string };
-
 const MULTIPLIER_LABELS: Record<string, string> = {
   sword_multiplier: '剣',
   katana_multiplier: '刀',
@@ -1568,6 +1565,11 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
     }
   }
   return parts.join(', ');
+}
+
+function getEnemyTypeCBonusText(enemy: EnemyDef): string {
+  const cBonuses = (enemy.bonuses ?? []).filter((bonus) => isEnemyTypeCBonusType(bonus.type));
+  return formatBonuses(cBonuses, { defenseMultiplierStyle: 'friendly' });
 }
 
 function getRaceBonusesForSelection(race: Race, unlockAbilityActive = false): Bonus[] {
@@ -9044,6 +9046,10 @@ function SettingTab({
                           })()}
                         </div>
                         <div>{renderEnemyElementalResistanceLine(godRuntimeEnemy)}</div>
+                        {(() => {
+                          const bonusText = getEnemyTypeCBonusText(godRuntimeEnemy);
+                          return bonusText ? <div>ボーナス: {bonusText}</div> : null;
+                        })()}
                       </>
                     )}
                     <div className="flex items-start gap-1">
@@ -9107,6 +9113,10 @@ function SettingTab({
                       <div>{hasMagicalAttack ? formatEnemyAttackLine('魔法攻撃', colosseumEnemy.magicalAttack, colosseumEnemy.magicalNoA, colosseumEnemy.magicalAttackAmplifier) : ''}</div><div>回避: {formatNumber(Math.round(colosseumEnemy.evasionBonus * 1000))}</div>
                       <div>{hasMagicalAttack ? `魔法命中率: 100% (減衰: ${decay})` : ''}</div><div>{renderEnemyElementalResistanceLine(colosseumEnemy)}</div>
                     </div>
+                    {(() => {
+                      const bonusText = getEnemyTypeCBonusText(colosseumEnemy);
+                      return bonusText ? <div>ボーナス: {bonusText}</div> : null;
+                    })()}
                     <div className="flex items-start gap-1">
                       <div>アビリティ:</div>
                       <div className="flex flex-wrap items-center gap-1">
@@ -9206,6 +9216,10 @@ function SettingTab({
                           })()}
                         </div>
                         <div>{renderEnemyElementalResistanceLine(displayEnemy)}</div>
+                        {(() => {
+                          const bonusText = getEnemyTypeCBonusText(displayEnemy);
+                          return bonusText ? <div>ボーナス: {bonusText}</div> : null;
+                        })()}
                         <div className="flex items-start gap-1">
                           <div>アビリティ:</div>
                           <div className="flex flex-wrap items-center gap-1">
