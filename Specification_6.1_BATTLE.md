@@ -215,7 +215,7 @@
     - If opponent.`a.shock` is enable:
       - If successful hits > 1, set successful hits = 1.
       - Disable opponent.`a.shock`.
-      - Log: `log.shock` + (感電:攻撃中断)
+      - Log: `[-] log.shock` + (感電:攻撃中断)
     
 	- **intercept**
 	- Reflect resolve
