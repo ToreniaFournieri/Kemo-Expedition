@@ -6358,6 +6358,9 @@ function ExpeditionTab({
                                 const momentumDisplay = typeof log.momentumBonusPercent === 'number'
                                   ? `気勢${log.momentumBonusPercent >= 0 ? '+' : ''}${log.momentumBonusPercent}%`
                                   : '';
+                                const ambushDisplay = typeof log.ambushMultiplier === 'number' && log.ambushMultiplier > 1
+                                  ? `待ち伏せ:x${log.ambushMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')}`
+                                  : '';
                                 const swarmActorDisplay = typeof log.swarmActorPenaltyPercent === 'number' && log.swarmActorPenaltyPercent > 0
                                   ? `威力-${log.swarmActorPenaltyPercent}%`
                                   : '';
@@ -6384,6 +6387,7 @@ function ExpeditionTab({
                                   resonanceMatch ? resonanceMatch[1].slice(1, -1) : '',
                                   rageDisplay,
                                   momentumDisplay,
+                                  ambushDisplay,
                                   swarmActorDisplay,
                                   swarmOpponentDisplay,
                                 ].filter(Boolean);
@@ -7632,6 +7636,9 @@ function DiaryTab({
                               const momentumDisplay = typeof battleLog.momentumBonusPercent === 'number'
                                 ? `気勢${battleLog.momentumBonusPercent >= 0 ? '+' : ''}${battleLog.momentumBonusPercent}%`
                                 : '';
+                              const ambushDisplay = typeof battleLog.ambushMultiplier === 'number' && battleLog.ambushMultiplier > 1
+                                ? `待ち伏せ:x${battleLog.ambushMultiplier.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')}`
+                                : '';
                               const swarmActorDisplay = typeof battleLog.swarmActorPenaltyPercent === 'number' && battleLog.swarmActorPenaltyPercent > 0
                                 ? `威力-${battleLog.swarmActorPenaltyPercent}%`
                                 : '';
@@ -7667,6 +7674,7 @@ function DiaryTab({
                                 resonanceMatch ? resonanceMatch[1].slice(1, -1) : '',
                                 rageDisplay,
                                 momentumDisplay,
+                                ambushDisplay,
                                 swarmActorDisplay,
                                 swarmOpponentDisplay,
                               ].filter(Boolean);
