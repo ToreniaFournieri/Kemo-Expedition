@@ -29,12 +29,12 @@
 |---|---:|---|---|---|
 | 1 | 1 | Windy Prairie | 風渡る草原 | `terrain.rejuvenation` |
 | 1 | 2 | Predator Territory | 捕食者の縄張り | `terrain.predation` |
-| 1 | 3 | Swarm Nest Basin | 群生の巣盆地 | **TBA** |
+| 1 | 3 | Swarm Nest Basin | 群生の巣盆地 | `terrain.fog` |
 | 1 | 4 | Lookout | 見張り台 | `terrain.exposure` |
 | 1 | 5 | Buried Ruin Fields | 埋没遺跡原野 | `terrain.thunderstorm`  |
 | 1 | 6 | Caninian Ruin-City | ケイナイアンの廃都 | `terrain.tailwind` |
 | 2 | 1 | Snow Forest | 雪の森 | `terrain.chill` |
-| 2 | 2 | Rotwood Trails | 腐木の小径 | `terrain.fog` |
+| 2 | 2 | Rotwood Trails | 腐木の小径 | **TBA** |
 | 2 | 3 | Carnivorous Plants | 食肉植物群生地 | `terrain.vine-snare` |
 | 2 | 4 | Icicle Labyrinth | 氷柱迷宮 | `terrain.chill` |
 | 2 | 5 | Crystal Cave | 水晶洞窟 | `terrain.crystal-zone` |
