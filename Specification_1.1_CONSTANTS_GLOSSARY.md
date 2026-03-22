@@ -405,16 +405,15 @@
 | `terrain.headwind` | 向かい風 | 敵の行動速度が少し早まる（行動順判定に+1d3） |
 | `terrain.leakage` | 漏電 | 各部屋の終了時、減少HPの3%に等しいダメージを受ける |
 | `terrain.cap-domain` | 臨界領域 | 命中1発あたりのダメージは対象の最大HPの5%を超えない |
-| `terrain.gravity` | 重力場 | すべての攻撃回数（NoA）が0.7倍になる |
+| `terrain.chain-lightning` | 連鎖雷撃 | 雷属性攻撃が命中した場合、ランダムな別対象に30%威力で追加ヒットする |
 | `terrain.decay` | 崩壊 | 戦闘終了時、最大HPの2%のダメージを受ける |
+| `terrain.gravity` | 重力場 | すべての攻撃回数（NoA）が0.7倍になる |
 | `terrain.light-field` | 光域 | 物理抑制1（双方の物理ダメージが0.8倍になる） |
 | `terrain.dark-field` | 闇域 | 物理増幅1（双方の物理ダメージが1.2倍になる） |
+| `terrain.spell-domain` | 必中魔法領域 | 双方の魔法攻撃はすべて必中する |
+| `terrain.mana-burn` | 魔力侵食 | 魔法攻撃を行うたび、使用者は最大HPの2%のダメージを受ける |
 | `terrain.sanctuary` | 聖域 | 魔法増幅1（双方の魔法ダメージが1.2倍になる） |
 | `terrain.gehenna` | ゲヘナ | いかなる宗教ボーナスも適用されない |
-| `terrain.chain-lightning` | 連鎖雷撃 | 雷属性攻撃が命中した場合、ランダムな別対象に30%威力で追加ヒットする |
-| `terrain.mana-burn` | 魔力侵食 | 魔法攻撃を行うたび、使用者は最大HPの2%のダメージを受ける |
-
-| `terrain.spell-domain` | 必中魔法領域 | 双方の魔法攻撃はすべて必中する |
 
 
 
