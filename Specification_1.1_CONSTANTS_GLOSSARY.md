@@ -376,15 +376,22 @@
 | 12 | `q.losers` | 敗北(X回) | X回敗北する(0%, X回)　(神魔戦で中止) | 3 ~ 6 | |  敗北 | 敗北する(神魔戦で中止)　(3回~ 6回) |
 | 13 | `q.savings` | 貯金(XXXG) | 3,000G貯金する(10%, XXXG)　(神魔戦で中止) | 800 ~ 4,000G | | 貯金 | 貯金する(神魔戦で中止) (800 ~ 4,000G)　|
 
+
 #### 1.1.10 t. terrain effects
 - "地. 地形効果"
 
 | Terrain effect | Japanese | description (Japanese) |
 |---|---|---|
 | `terrain.rejuvenation` | 活性化 | 各部屋の終了時、減少HPの2%を回復する |
+| `terrain.tailwind` | 追い風 | パーティメンバーの行動速度が少し早まる（行動順判定に+1d3） |
+| `terrain.exposure` | 露出 | 双方の物理被ダメージが1.3倍になる |
 | `terrain.thunderstorm` | 雷雨 | 双方に雷威力x3/2(雷威力が上がる)を付与する |
 | `terrain.chill` | 冷気 | 部屋の継続時間がx1.5になる。さらに、火属性攻撃を持つパーティメンバー1人につき、このペナルティを0.1軽減する |
+| `terrain.fog` | 濃霧 | すべての遠距離攻撃の命中が-25される |
 | `terrain.crystal-zone` | 水晶域 | 魔法攻撃を使用したとき、攻撃者は与えたダメージの5%の反動ダメージを受ける |
+| `terrain.sunny-beach` | 陽だまりの浜辺 | 遠距離攻撃の命中+20、ダメージ+15% |
+| `terrain.silence-field` | 静寂領域 | すべての[効]アビリティは発動しない |
+| `terrain.echo-domain` | 残響領域 | 同一戦闘中に使用された属性攻撃1回につき、その属性攻撃の効果が+10%される |
 | `terrain.rough-waves` | 荒波 | 近接攻撃回数(NoA)がx0.75になる |
 | `terrain.conduction` | 導電 | 雷属性攻撃を行うと、攻撃者は与えたダメージの5%の反動ダメージを受ける |
 | `terrain.dry` | 乾燥 | 氷属性ダメージがx0.5になる |
@@ -397,19 +404,13 @@
 | `terrain.dark-field` | 闇域 | 物理増幅1（双方の物理ダメージが1.2倍になる） |
 | `terrain.sanctuary` | 聖域 | 魔法増幅1（双方の魔法ダメージが1.2倍になる） |
 | `terrain.gehenna` | ゲヘナ | いかなる宗教ボーナスも適用されない |
-| `terrain.tailwind` | 追い風 | パーティメンバーの行動速度が少し早まる（行動順判定に+1d3） |
 | `terrain.headwind` | 向かい風 | 敵の行動速度が少し早まる（行動順判定に+1d3） |
-| `terrain.predation` | 捕食本能 | HPが50%未満の対象への与物理ダメージが1.3倍になる |
-| `terrain.echo-domain` | 残響領域 | 同一戦闘中に使用された属性攻撃1回につき、その属性攻撃の効果が+10%される |
-| `terrain.fog` | 濃霧 | すべての遠距離攻撃の命中が-25される |
-| `terrain.exposure` | 露出 | 双方の物理被ダメージが1.3倍になる |
+| `terrain.predation` | 捕食本能 | HPが50%未満の対象への物理与ダメージが1.3倍になる |
 | `terrain.chain-lightning` | 連鎖雷撃 | 雷属性攻撃が命中した場合、ランダムな別対象に30%威力で追加ヒットする |
 | `terrain.mana-burn` | 魔力侵食 | 魔法攻撃を行うたび、使用者は最大HPの2%のダメージを受ける |
 | `terrain.cap-domain` | 臨界領域 | 命中1発あたりのダメージは対象の最大HPの5%を超えない |
 | `terrain.floor-domain` | 必達領域 | 命中1発あたりのダメージは対象の最大HPの1%を下回らない |
-| `terrain.sniper-zone` | 狙撃域 | 遠距離攻撃の命中+20、ダメージ+15% |
 | `terrain.spell-domain` | 必中魔法領域 | 双方の魔法攻撃はすべて必中する |
 | `terrain.gravity` | 重力場 | すべての攻撃回数（NoA）が0.7倍になる |
 | `terrain.decay` | 崩壊 | 戦闘終了時、最大HPの2%のダメージを受ける |
 | `terrain.frenzy` | 狂騒 | 戦闘開始時、双方の物理被ダメージが0.7倍になる |
-| `terrain.silence-field` | 静寂領域 | すべての[効]アビリティは発動しない |
