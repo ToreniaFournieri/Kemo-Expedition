@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - 'build_number'
+      - 'build_number.txt'
 
 permissions:
   contents: read
