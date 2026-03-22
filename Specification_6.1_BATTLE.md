@@ -333,9 +333,11 @@
   - If actor has `a.momentum`1, return 1.25 - (1 - (actor.current_HP / actor.max_HP)) x 0.5
   - If actor has `a.momentum`2, return 1.25 - (1 - (actor.current_HP / actor.max_HP)) x 0.4
     - Log: add "気勢+N%" to attack log
-- `f.ambush_amplifier`:
-  - If actor has a.ambush, and (opponent is not moved in this battle), return N
-    - Log: add "待ち伏せ+N% to attack log.
+- `f.ambush_amplifier`
+  - If actor has `a.ambush`, and opponent has not acted yet in this battle, return N.
+  - Otherwise, return x1.0.
+  - Log: add "待ち伏せ:xN" to the attack log.
+    
 - `f.swarm.amplifier`:
 	- N = 1.0
 	- If actor has `a.swarm`, N *=  1 - (1 - (actor.current_HP / actor.max_HP)) x 0.5
