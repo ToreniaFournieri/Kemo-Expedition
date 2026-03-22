@@ -29,10 +29,10 @@
 |---|---:|---|---|---|
 | 1 | 1 | Windy Prairie | 風渡る草原 | `terrain.rejuvenation` |
 | 1 | 2 | Predator Territory | 捕食者の縄張り | `terrain.predation` |
-| 1 | 3 | Swarm Nest Basin | 群生の巣盆地 | `terrain.tailwind` |
+| 1 | 3 | Swarm Nest Basin | 群生の巣盆地 | **TBA** |
 | 1 | 4 | Lookout | 見張り台 | `terrain.exposure` |
 | 1 | 5 | Buried Ruin Fields | 埋没遺跡原野 | `terrain.thunderstorm`  |
-| 1 | 6 | Caninian Ruin-City | ケイナイアンの廃都 | `terrain.rejuvenation` |
+| 1 | 6 | Caninian Ruin-City | ケイナイアンの廃都 | `terrain.tailwind` |
 | 2 | 1 | Snow Forest | 雪の森 | `terrain.chill` |
 | 2 | 2 | Rotwood Trails | 腐木の小径 | `terrain.fog` |
 | 2 | 3 | Carnivorous Plants | 食肉植物群生地 | `terrain.vine-snare` |
@@ -44,13 +44,13 @@
 | 3 | 3 | Shipwreck | 難破船 | `terrain.rough-waves` |
 | 3 | 4 | Sea Arch | 海蝕門 | `terrain.rough-waves` |
 | 3 | 5 | Deserted Fishing Village | 打ち捨てられた漁村 | `terrain.conduction` |
-| 3 | 6 | Sacred Court of the Vulpine Elders | ヴルピニアン長老会の聖廷 | `sacred-judgement` |
+| 3 | 6 | Sacred Court of the Vulpine Elders | ヴルピニアン長老会の聖廷 | `terrain.sacred-judgement` |
 | 4 | 1 | A Silent Night in the Desert | 砂漠の静夜 | `terrain.dry` |
 | 4 | 2 | Rocky Plateau | 岩石台地 | `terrain.heavy-wind` |
 | 4 | 3 | Limestone Cave | 鍾乳洞 | `terrain.limestone-cave` |
 | 4 | 4 | Night Bandit Ambush | 夜盗の待ち伏せ | `terrain.frenzy` |
 | 4 | 5 | Chasing the Lost Gems | 失われた宝石の追跡 | `terrain.dry` |
-| 4 | 6 | Temple of Fertility | 豊穣の神殿 | `terrian.abundant` |
+| 4 | 6 | Temple of Fertility | 豊穣の神殿 | `terrain.abundant` |
 | 5 | 1 | Lost Forest | 迷いの森 | `terrain.looping-path` |
 | 5 | 2 | Rugged Mountain Trail | 険しき山道 | `terrain.enemy-high-ground` |
 | 5 | 3 | Ursan War Camp | ウルサンの戦陣 | `terrain.ash-haze` |
@@ -60,7 +60,7 @@
 | 6 | 1 | Steam-powered Burrow | 蒸気仕掛けの地下穴 | `terrain.burrow` |
 | 6 | 2 | Wreckage of K9 Interstellar Spacecraft | K9星間宇宙船の残骸 | `terrain.leakage` |
 | 6 | 3 | Forbidden Research Facility | 禁断の研究施設 | `terrain.deletion` |
-| 6 | 4 | Machine Without a Heart | 心なき機械 | `terrain.spell-domain` |
+| 6 | 4 | Machine Without a Heart | 心なき機械 | **TBA** |
 | 6 | 5 | Bridge Without a Master | 主なき艦橋 | `terrain.cap-domain` |
 | 6 | 6 | Altar of Resonance | 共鳴の祭壇 | `terrain.echo-domain`  |
 | 7 | 1 | Giant Debris Ring | 巨大残骸環 | `terrain.decay` |
@@ -73,7 +73,7 @@
 | 8 | 2 | Ossuary Research Fields | 納骨研究原野 | `terrain.gravity` |
 | 8 | 3 | Small Gods | 小さき神々 | `terrain.transcendence` |
 | 8 | 4 | Gehenna | ゲヘナ | `terrain.gehenna` |
-| 8 | 5 | Cervin Archive District | セルヴィン文書保管街区 | `terrain.silence-field` |
+| 8 | 5 | Cervin Archive District | セルヴィン文書保管街区 | `terrain.suppression` |
 | 8 | 6 | Clairvoyance Sanctuary | 千里眼の聖域 | `terrain.sanctuary` |
 
 #### 4.1.2 Enemy
