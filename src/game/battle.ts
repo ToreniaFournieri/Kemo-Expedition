@@ -1490,6 +1490,14 @@ function getEnemyReAttackNoAMultiplier(enemy: EnemyDef): number {
   return 0.5;
 }
 
+function hasNoOffense(charStats: ComputedCharacterStats): boolean {
+  return getAbilityLevel(charStats, 'no_offense') > 0;
+}
+
+function enemyHasNoOffense(enemy: EnemyDef): boolean {
+  return getEnemyAbilityLevel(enemy, 'no_offense') > 0;
+}
+
 function hasCounter(charStats: ComputedCharacterStats, phase: BattleActionPhase): boolean {
   const ability = charStats.abilities.find(a => a.id === 'counter');
   if (!ability) return false;
@@ -1739,6 +1747,7 @@ const TRIGGER_TIMINGS_DESC = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0] as const;
 // SpecRef: 6.1.3.1 | Actor action | f.targeting
 // SpecRef: 6.1.3.1 | Actor action | f.hit_detection
 // SpecRef: 6.1.3.1 | Actor action | f.damage_calculation
+// SpecRef: 6.1.3.1 | Actor action | actor.a.no-offense
 // SpecRef: 6.1.3.2 | Chain move trigger | Counter
 // SpecRef: 6.1.3.2 | Chain move trigger | Re-counter
 // SpecRef: 6.1.3.2 | Chain move trigger | Re-attack
@@ -3348,6 +3357,7 @@ export function executeBattle(
         const howlEffect = baseNoA > 0 ? consumePendingPartyHowlEffect() : null;
         const noA = Math.ceil(baseNoA * (howlEffect?.multiplier ?? 1.0) * (phase === 'close' ? enemyFlyingNoAMultiplier : 1.0));
         if (noA <= 0) continue;
+        if (enemyHasNoOffense(enemy)) continue;
         if (enemyHasAntagonism) continue;
 
         const magicalCounterCandidates = new Map<number, ComputedCharacterStats>();
@@ -3951,6 +3961,7 @@ export function executeBattle(
       const baseNoA = getCharacterNoAForPhase(phase, cs);
       const howlEffect = baseNoA > 0 ? consumePendingEnemyHowlEffect() : null;
       const flyingNoAMultiplier = phase === 'close' ? partyFlyingNoAMultiplier : 1.0;
+      if (hasNoOffense(cs)) continue;
 
       const characterPhaseAccuracyBonus = phase === 'close' ? (temporaryAccuracyBonusByCharacterId.get(cs.characterId) ?? 0) : 0;
 
