@@ -28,14 +28,14 @@
 | `x.exp_id` | `x.floor` | concept | Japanese | terrain effects |
 |---|---:|---|---|---|
 | 1 | 1 | Windy Prairie | 風渡る草原 | `terrain.rejuvenation` |
-| 1 | 2 | Predator Territory | 捕食者の縄張り | `terrain.rejuvenation` |
+| 1 | 2 | Predator Territory | 捕食者の縄張り | `terrain.predation` |
 | 1 | 3 | Swarm Nest Basin | 群生の巣盆地 | `terrain.tailwind` |
 | 1 | 4 | Lookout | 見張り台 | `terrain.exposure` |
 | 1 | 5 | Buried Ruin Fields | 埋没遺跡原野 | `terrain.thunderstorm`  |
 | 1 | 6 | Caninian Ruin-City | ケイナイアンの廃都 | `terrain.rejuvenation` |
 | 2 | 1 | Snow Forest | 雪の森 | `terrain.chill` |
 | 2 | 2 | Rotwood Trails | 腐木の小径 | `terrain.fog` |
-| 2 | 3 | Carnivorous Plants | 食肉植物群生地 | `terrain.fog` |
+| 2 | 3 | Carnivorous Plants | 食肉植物群生地 | `terrain.vine-snare` |
 | 2 | 4 | Icicle Labyrinth | 氷柱迷宮 | `terrain.chill` |
 | 2 | 5 | Crystal Cave | 水晶洞窟 | `terrain.crystal-zone` |
 | 2 | 6 | Ruin of Crystal Palace | 水晶宮殿跡 | `terrain.floor-domain` |
@@ -47,16 +47,16 @@
 | 3 | 6 | Sacred Court of the Vulpine Elders | ヴルピニアン長老会の聖廷 | `terrain.conduction` |
 | 4 | 1 | A Silent Night in the Desert | 砂漠の静夜 | `terrain.dry` |
 | 4 | 2 | Rocky Plateau | 岩石台地 | `terrain.heavy-wind` |
-| 4 | 3 | Limestone Cave | 石灰洞窟 | `terrain.narrow-space` |
+| 4 | 3 | Limestone Cave | 鍾乳洞 | `terrain.limestone-cave` |
 | 4 | 4 | Night Bandit Ambush | 夜盗の待ち伏せ | `terrain.frenzy` |
-| 4 | 5 | Chasing the Lost Gems | 失われた宝石の追跡 | `terrain.heavy-wind` |
+| 4 | 5 | Chasing the Lost Gems | 失われた宝石の追跡 | `terrain.dry` |
 | 4 | 6 | Temple of Fertility | 豊穣の神殿 | `terrian.abundant` |
-| 5 | 1 | Lost Forest | 迷いの森 |
-| 5 | 2 | Rugged Mountain Trail | 険しき山道 |
-| 5 | 3 | Ursan War Camp | ウルサンの戦陣 |
-| 5 | 4 | Dragon Ridge | 竜の尾根 |
-| 5 | 5 | Volcanic Crater | 火山火口 |
-| 5 | 6 | Fortress | 要塞 |
+| 5 | 1 | Lost Forest | 迷いの森 | `terrain.looping-path` |
+| 5 | 2 | Rugged Mountain Trail | 険しき山道 | `terrain.enemy-high-ground` |
+| 5 | 3 | Ursan War Camp | ウルサンの戦陣 | `terrain.ash-haze` |
+| 5 | 4 | Dragon Ridge | 竜の尾根 | `terrain.heatwave` |
+| 5 | 5 | Volcanic Crater | 火山火口 | `terrain.heatwave` |
+| 5 | 6 | Fortress | 要塞 | `terrain.fortified` |
 | 6 | 1 | Steam-powered Burrow | 蒸気仕掛けの地下穴 |
 | 6 | 2 | Wreckage of K9 Interstellar Spacecraft | K9星間宇宙船の残骸 |
 | 6 | 3 | Forbidden Research Facility | 禁断の研究施設 |
