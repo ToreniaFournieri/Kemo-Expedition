@@ -44,7 +44,7 @@
 | 3 | 3 | Shipwreck | 難破船 | `terrain.rough-waves` |
 | 3 | 4 | Sea Arch | 海蝕門 | `terrain.rough-waves` |
 | 3 | 5 | Deserted Fishing Village | 打ち捨てられた漁村 | `terrain.conduction` |
-| 3 | 6 | Sacred Court of the Vulpine Elders | ヴルピニアン長老会の聖廷 | `terrain.conduction` |
+| 3 | 6 | Sacred Court of the Vulpine Elders | ヴルピニアン長老会の聖廷 | `sacred-judgement` |
 | 4 | 1 | A Silent Night in the Desert | 砂漠の静夜 | `terrain.dry` |
 | 4 | 2 | Rocky Plateau | 岩石台地 | `terrain.heavy-wind` |
 | 4 | 3 | Limestone Cave | 鍾乳洞 | `terrain.limestone-cave` |
@@ -57,24 +57,24 @@
 | 5 | 4 | Dragon Ridge | 竜の尾根 | `terrain.heatwave` |
 | 5 | 5 | Volcanic Crater | 火山火口 | `terrain.heatwave` |
 | 5 | 6 | Fortress | 要塞 | `terrain.fortified` |
-| 6 | 1 | Steam-powered Burrow | 蒸気仕掛けの地下穴 |
-| 6 | 2 | Wreckage of K9 Interstellar Spacecraft | K9星間宇宙船の残骸 |
-| 6 | 3 | Forbidden Research Facility | 禁断の研究施設 |
-| 6 | 4 | Machine Without a Heart | 心なき機械 |
-| 6 | 5 | Bridge Without a Master | 主なき艦橋 |
-| 6 | 6 | Altar of Resonance | 共鳴の祭壇 |
-| 7 | 1 | Giant Debris Ring | 巨大残骸環 |
-| 7 | 2 | Transporter | 転送装置区画 |
-| 7 | 3 | Light Zone | 光の領域 |
-| 7 | 4 | Dark Zone | 闇の領域 |
-| 7 | 5 | The Abyss | 深淵 |
-| 7 | 6 | Moon Palace | 月宮殿 |
-| 8 | 1 | Dragon-Scarred Valley Gate | 竜傷の峡谷門 |
-| 8 | 2 | Ossuary Research Fields | 納骨研究原野 |
-| 8 | 3 | Small Gods | 小さき神々 |
-| 8 | 4 | Gehenna | ゲヘナ |
+| 6 | 1 | Steam-powered Burrow | 蒸気仕掛けの地下穴 | `terrain.burrow` |
+| 6 | 2 | Wreckage of K9 Interstellar Spacecraft | K9星間宇宙船の残骸 | `terrain.leakage` |
+| 6 | 3 | Forbidden Research Facility | 禁断の研究施設 | `terrain.deletion` |
+| 6 | 4 | Machine Without a Heart | 心なき機械 | `terrain.spell-domain` |
+| 6 | 5 | Bridge Without a Master | 主なき艦橋 | `terrain.cap-domain` |
+| 6 | 6 | Altar of Resonance | 共鳴の祭壇 | `terrain.echo-domain`  |
+| 7 | 1 | Giant Debris Ring | 巨大残骸環 | `terrain.decay` |
+| 7 | 2 | Transporter | 転送装置区画 | `terrain.chain-lightning` |
+| 7 | 3 | Light Zone | 光の領域 | `terrain.light-field` |
+| 7 | 4 | Dark Zone | 闇の領域 | `terrain.dark-field` |
+| 7 | 5 | The Abyss | 深淵 | `terrain.dark-field` |
+| 7 | 6 | Moon Palace | 月宮殿 | `terrain.low-gravity` |
+| 8 | 1 | Dragon-Scarred Valley Gate | 竜傷の峡谷門 | `terrain.mana-burn` |
+| 8 | 2 | Ossuary Research Fields | 納骨研究原野 | `terrain.gravity` |
+| 8 | 3 | Small Gods | 小さき神々 | `terrain.transcendence` |
+| 8 | 4 | Gehenna | ゲヘナ | `terrain.gehenna` |
 | 8 | 5 | Cervin Archive District | セルヴィン文書保管街区 |
-| 8 | 6 | Clairvoyance Sanctuary | 千里眼の聖域 |
+| 8 | 6 | Clairvoyance Sanctuary | 千里眼の聖域 | `terrain.sanctuary` |
 
 #### 4.1.2 Enemy
 
