@@ -410,6 +410,7 @@
 | `terrain.fortified` | 要塞防備 | 敵が受ける物理・魔法の被ダメージが0.75倍になる |
 | `terrain.burrow` | 地下穴 | 遠距離攻撃回数が3/4になる |
 | `terrain.leakage` | 漏電 | 各部屋の終了時、減少HPの3%に等しいダメージを受ける |
+| `terrain.deletion` | 削除 | 戦闘開始時、双方のいずれかの対象のアビリティ1つを忘却させる |
 | `terrain.spell-domain` | 必中魔法領域 | 双方の魔法攻撃はすべて必中する |
 | `terrain.cap-domain` | 臨界領域 | 命中1発あたりのダメージは対象の最大HPの5%を超えない |
 | `terrain.echo-domain` | 残響領域 | 同一戦闘中に使用された属性攻撃1回につき、その属性攻撃の効果が+10%される |
@@ -417,10 +418,12 @@
 | `terrain.chain-lightning` | 連鎖雷撃 | 雷属性攻撃が命中した場合、ランダムな別対象に30%威力で追加ヒットする |
 | `terrain.light-field` | 光域 | 双方の物理ダメージが0.67倍になる |
 | `terrain.dark-field` | 闇域 | 双方の魔法ダメージが1.45倍になる |
+| `terrain.low-gravity` | 低重力 | すべての攻撃回数（NoA）が1.3倍になる |
 | `terrain.gravity` | 重力場 | すべての攻撃回数（NoA）が0.7倍になる |
 | `terrain.mana-burn` | 魔力侵食 | 魔法攻撃を行うたび、使用者は最大HPの2%のダメージを受ける |
+| `terrain.transcendence` | 超越 | 双方の反応・時限アビリティレベルが+1される(レベル上限5) |
 | `terrain.gehenna` | ゲヘナ | いかなる宗教ボーナスも適用されない |
 | `terrain.sanctuary` | 聖域 | 双方の魔法ダメージが0.67倍になる |
 | `terrain.sniper-domain` | 必中狙撃領域 | 双方の遠距離攻撃はすべて必中する |
-
+| `terrain.suppression` | 抑圧 | 双方の反応・時限アビリティレベルが-1される(レベル下限1) |
 
