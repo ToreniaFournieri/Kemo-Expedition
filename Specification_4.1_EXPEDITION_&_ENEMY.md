@@ -73,7 +73,7 @@
 | 8 | 2 | Ossuary Research Fields | 納骨研究原野 | `terrain.gravity` |
 | 8 | 3 | Small Gods | 小さき神々 | `terrain.transcendence` |
 | 8 | 4 | Gehenna | ゲヘナ | `terrain.gehenna` |
-| 8 | 5 | Cervin Archive District | セルヴィン文書保管街区 |
+| 8 | 5 | Cervin Archive District | セルヴィン文書保管街区 | `terrain.silence-field` |
 | 8 | 6 | Clairvoyance Sanctuary | 千里眼の聖域 | `terrain.sanctuary` |
 
 #### 4.1.2 Enemy
