@@ -189,6 +189,9 @@
   - If opponent.`a.howl` is active: Apply actor.`f.NoA` × N, Then disable opponent.`a.howl`. log: "[2] name が遠吠えをした！ (相手の次の攻撃回数5/7)"
   - If actor.`incapacitated`:
     - just display log:`log.incapacitated` instead of normal move.
+  - If actor.`a.no-offense`:
+    - Skip the actor's normal action.
+    - No action log is displayed.
 
 - `f.NoA` times, get `f.targeting` -> opponent. 
 	- If `f.hit_detection`(actor: , opponent: , Nth_hit: the current hit index), current party.
