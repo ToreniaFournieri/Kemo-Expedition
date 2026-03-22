@@ -377,7 +377,7 @@
 | 13 | `q.savings` | 貯金(XXXG) | 3,000G貯金する(10%, XXXG)　(神魔戦で中止) | 800 ~ 4,000G | | 貯金 | 貯金する(神魔戦で中止) (800 ~ 4,000G)　|
 
 #### 1.1.10 t. terrain effects
-- "地. 探索地と地形効果(探索地によって効果が変わる)"
+- "地. 地形効果"
 
 | Terrain effect | Japanese | description (Japanese) |
 |---|---|---|
