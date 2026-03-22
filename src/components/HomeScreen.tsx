@@ -3626,7 +3626,8 @@ export function HomeScreen({
   const hasUnreadDiary = unreadDiaryCount > 0;
   const unreadDiaryBadgeLabel = unreadDiaryCount >= 11 ? '10+' : `${unreadDiaryCount}`;
   const envLabel = getEnvLabel();
-  const versionLabel = envLabel ? `${APP_VERSION} (${envLabel})` : APP_VERSION;
+  const versionLabel = `${APP_VERSION}(${state.buildNumber})`;
+  const envDisplayLabel = envLabel ? `(${envLabel})` : null;
   const gameTitle = isLunaEnvironment ? 'ルナの冒険' : 'ケモの冒険';
 
   useEffect(() => {
@@ -3772,6 +3773,7 @@ export function HomeScreen({
               </h1>
             </div>
             <div className="flex items-center gap-2 text-right text-sm font-medium leading-none">
+              {envDisplayLabel && <span className="text-xs font-normal text-gray-500">{envDisplayLabel}</span>}
               <span>{formatNumber(state.global.gold)}G</span>
               {!isAutoRepeatEnabled && (
                 <button

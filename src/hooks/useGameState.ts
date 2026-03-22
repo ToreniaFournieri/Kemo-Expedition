@@ -101,7 +101,7 @@ import {
 } from '../game/jewel';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
 
-const BUILD_NUMBER = 1;
+const BUILD_NUMBER = __BUILD_NUMBER__;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
 const AFK_MAX_SIMULATION_MS = 600 * 60 * 1000;
 const STATE_SAVE_THROTTLE_MS = 5000;
