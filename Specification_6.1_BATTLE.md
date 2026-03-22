@@ -319,6 +319,7 @@
   - x `f.resonance_amplifier`
   - x `f.rage_amplifier`
   - x `f.momentum_amplifier`
+  - x `f.ambush_amplifier`
   - x `f.mutual_amplifier`
   - x opponent.`f.swarm.amplifier`
   - x actor.`f.swarm.amplifier`
@@ -327,16 +328,21 @@
 - `f.rage_amplifier`:
   - If actor has `a.rage`1, return min(2.0, 1.0 + 0.5 x (1 - (actor.current_HP / actor.max_HP)))
   - If actor has `a.rage`2, return min(2.0, 1.0 + 0.6 x (1 - (actor.current_HP / actor.max_HP)))
+    - Log: add "闘志+N%" to attack log.
 - `f.momentum_amplifier`:
   - If actor has `a.momentum`1, return 1.25 - (1 - (actor.current_HP / actor.max_HP)) x 0.5
   - If actor has `a.momentum`2, return 1.25 - (1 - (actor.current_HP / actor.max_HP)) x 0.4
+    - Log: add "気勢+N%" to attack log
+- `f.ambush_amplifier`:
+  - If actor has a.ambush, and (opponent is not moved in this battle), return N
+    - Log: add "待ち伏せ+N% to attack log.
 - `f.swarm.amplifier`:
 	- N = 1.0
 	- If actor has `a.swarm`, N *=  1 - (1 - (actor.current_HP / actor.max_HP)) x 0.5
 	- If opponent has `a.swarm`, N *=  1 +  (1 - (opponent.current_HP / opponent.max_HP)) x 0.5
 	- return N
 
-	- logs: add "群れ-N%" to attack log like:
+	- Log: add "群れ-N%" to attack log like:
 	  - "[2] 敵の攻撃！(1/2回, 威力-N%)"  (actor.`a.swarm`)
 	  - "[3] カスミ の攻撃！(6/16回, 相手被ダメN%増) "  (opponent.`a.swarm`)
 
