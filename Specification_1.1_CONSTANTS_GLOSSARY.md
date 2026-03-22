@@ -412,3 +412,4 @@
 | `terrain.gravity` | 重力場 | すべての攻撃回数（NoA）が0.7倍になる |
 | `terrain.decay` | 崩壊 | 戦闘終了時、最大HPの2%のダメージを受ける |
 | `terrain.frenzy` | 狂騒 | 戦闘開始時、双方の物理被ダメージが0.7倍になる |
+| `terrain.silence-field` | 静寂領域 | すべての[効]アビリティは発動しない |
