@@ -402,7 +402,7 @@
 | `terrian.abundant` | 豊富 | 各部屋の終了時、最大HPの2%を回復する |
 | `terrain.looping-path` | 迷いの森 | 部屋の継続時間が2倍になる |
 | `terrain.ash-haze` | 灰霞 | すべての先制攻撃を無効化する |
-| `terrain.headwind` | 向かい風 | 敵の行動速度が少し早まる（行動順判定に+1d3） |
+| `terrain.enemy-high-ground` | 敵高所優位 | 敵の行動速度が少し早まる（行動順判定に+1d3） |
 | `terrain.predation` | 捕食本能 | HPが50%未満の対象への物理与ダメージが1.3倍になる |
 | `terrain.heatwave` | 熱波 | 各部屋の終了時、現在HPの5%に等しいダメージを受ける。さらに、氷属性攻撃を持つパーティメンバー1人につき、このダメージを1%軽減する |
 | `terrain.cave` | 洞窟 | 遠距離攻撃回数が3/4になる |
