@@ -88,7 +88,7 @@
 | `a.` ability | label | description | Level scale | trigger |
 |----|----|----|----|----|
 | `a.resonance` | 共鳴 | 魔法攻撃を行うたびに、全ヒットのダメージが+N%増加する | Lv1: +4%, Lv2: +7%, Lv3: +9%, Lv4: +11%, Lv5: +12% | self-state |
-| `a.ambush` | 待ち伏せ | 自身の通常行動時点で相手が未行動の場合、与ダメージがxN倍になる | Lv1: x1.3, Lv2: x1.5, Lv3: x1.6, Lv4: x1.65, Lv5: x1.68 | self-state |
+| `a.ambush` | 待ち伏せ | 自身の通常行動時、相手がこの戦闘でまだ行動していなければ、与ダメージがxN倍になる | Lv1: x1.3, Lv2: x1.5, Lv3: x1.6, Lv4: x1.65, Lv5: x1.68 | self-state |
 | `a.rage` | 闘志 | 受けたダメージ1%につき、物理/魔法攻撃倍率が+N%増加する | Lv1: +0.5%, Lv2: +0.6% | self-state |
 | `a.momentum` | 気勢 | 物理/魔法攻撃倍率がx1.25倍になり、受けたダメージ1%につき-N%減少する。収益の一部を着服する | Lv1: -0.5%, Lv2: -0.4% | self-state |
 | `a.no-offense` | 受身 | 通常行動を行わなくなる(反撃などは行う) | - | self-state |
