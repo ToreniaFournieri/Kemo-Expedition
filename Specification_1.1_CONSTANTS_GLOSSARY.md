@@ -397,7 +397,8 @@
 | `terrain.conduction` | 導電 | 雷属性攻撃を行うと、攻撃者は与えたダメージの5%の反動ダメージを受ける |
 | `terrain.dry` | 乾燥 | 氷属性ダメージがx0.5になる |
 | `terrain.heavy-wind` | 強風 | 双方に命中-20を付与する |
-| `terrain.frenzy` | 狂騒 | 戦闘開始時、双方の物理被ダメージが0.7倍になる |
+| `terrain.limestone-cave` | 鍾乳洞 | 魔法攻撃回数・近接攻撃回数が1.5倍になる |
+| `terrain.frenzy` | 狂騒 | 戦闘開始時、双方の物理被ダメージが1.4倍になる |
 | `terrian.abundant` | 豊富 | 各部屋の終了時、最大HPの2%を回復する |
 | `terrain.ash-haze` | 灰霞 | すべての先制攻撃を無効化する |
 | `terrain.headwind` | 向かい風 | 敵の行動速度が少し早まる（行動順判定に+1d3） |
