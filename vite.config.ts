@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-const buildNumber = Number.parseInt(readFileSync(resolve(__dirname, 'build_number'), 'utf8').trim(), 10);
+const buildNumber = Number.parseInt(readFileSync(resolve(__dirname, 'build_number.txt'), 'utf8').trim(), 10);
 
 export default defineConfig({
   plugins: [react()],
