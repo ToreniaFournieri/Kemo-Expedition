@@ -385,15 +385,17 @@
 |---|---|---|
 | `terrain.rejuvenation` | 活性化 | 各部屋の終了時、減少HPの2%を回復する |
 | `terrain.exposure` | 露出 | 双方の物理被ダメージが1.3倍になる |
+| `terrain.predation` | 捕食本能 | HPが50%未満の対象への物理与ダメージが1.3倍になる |
 | `terrain.tailwind` | 追い風 | パーティメンバーの行動速度が少し早まる（行動順判定に+1d3） |
 | `terrain.thunderstorm` | 雷雨 | 双方に雷威力x3/2(雷威力が上がる)を付与する |
 | `terrain.chill` | 冷気 | 部屋の継続時間が1.5倍になる。火属性攻撃を持つパーティメンバー1人につき、このペナルティを0.1軽減する |
 | `terrain.fog` | 濃霧 | すべての遠距離攻撃の命中が-25される |
+| `terrain.vine-snare` | 捕食蔓 | 攻撃を行うたび、使用者は現在HPの1%のダメージを受ける |
 | `terrain.crystal-zone` | 水晶域 | 魔法攻撃を使用したとき、攻撃者は与えたダメージの5%の反動ダメージを受ける |
 | `terrain.floor-domain` | 必達領域 | 命中1発あたりのダメージは対象の最大HPの1%を下回らない |
 | `terrain.sunny-beach` | 陽だまりの浜辺 | 遠距離攻撃の命中+20、ダメージ+15% |
 | `terrain.silence-field` | 静寂領域 | すべての[効]アビリティは発動しない |
-| `terrain.rough-waves` | 荒波 | 近接攻撃回数(NoA)がx0.75になる |
+| `terrain.rough-waves` | 荒波 | 近接攻撃回数(NoA)が0.75倍になる |
 | `terrain.conduction` | 導電 | 雷属性攻撃を行うと、攻撃者は与えたダメージの5%の反動ダメージを受ける |
 | `terrain.dry` | 乾燥 | 氷属性ダメージがx0.5になる |
 | `terrain.heavy-wind` | 強風 | 双方に命中-20を付与する |
@@ -403,8 +405,8 @@
 | `terrain.looping-path` | 迷いの森 | 部屋の継続時間が2倍になる |
 | `terrain.ash-haze` | 灰霞 | すべての先制攻撃を無効化する |
 | `terrain.enemy-high-ground` | 敵高所優位 | 敵の行動速度が少し早まる（行動順判定に+1d3） |
-| `terrain.predation` | 捕食本能 | HPが50%未満の対象への物理与ダメージが1.3倍になる |
 | `terrain.heatwave` | 熱波 | 各部屋の終了時、現在HPの5%に等しいダメージを受ける。さらに、氷属性攻撃を持つパーティメンバー1人につき、このダメージを1%軽減する |
+| `terrain.fortified` | 要塞防備 | 敵が受ける物理・魔法の被ダメージが0.75倍になる |
 | `terrain.cave` | 洞窟 | 遠距離攻撃回数が3/4になる |
 | `terrain.leakage` | 漏電 | 各部屋の終了時、減少HPの3%に等しいダメージを受ける |
 | `terrain.cap-domain` | 臨界領域 | 命中1発あたりのダメージは対象の最大HPの5%を超えない |
