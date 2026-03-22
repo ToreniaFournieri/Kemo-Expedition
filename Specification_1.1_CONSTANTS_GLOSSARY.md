@@ -397,6 +397,7 @@
 | `terrain.silence-field` | 静寂領域 | すべての[効]アビリティは発動しない |
 | `terrain.rough-waves` | 荒波 | 近接攻撃回数(NoA)が0.75倍になる |
 | `terrain.conduction` | 導電 | 雷属性攻撃を行うと、攻撃者は与えたダメージの5%の反動ダメージを受ける |
+| `sacred-judgement` | 神罰 | この戦闘で最初に行動した対象に現在HPの5%の雷属性攻撃が下る |
 | `terrain.dry` | 乾燥 | 氷属性ダメージがx0.5になる |
 | `terrain.heavy-wind` | 強風 | 双方に命中-20を付与する |
 | `terrain.limestone-cave` | 鍾乳洞 | 魔法攻撃回数・近接攻撃回数が1.5倍になる |
