@@ -2,6 +2,8 @@
 
 ### 6.2 BATTLE FLAVOR TEXT
 
+#### 6.2.1 Ability flavor text
+
 - `log.confusion`
   - note: Text `()` part is displayed in gray.
 
@@ -355,3 +357,39 @@
 |{actor} は蘇生して戦いに戻った！|
 |{actor} は死を乗り越えた！|
 |{actor} は再び戦う力を得た！|
+
+
+#### 6.2.2 Terrain flavor text
+
+- `log.terrain.rejuvenation`
+  - Note: {actor}: random party member 
+
+| flavor text                 |
+| --------------------------- |
+| {actor} は周囲の活力に満たされ、体力を回復した |
+| {actor} の傷がゆっくりと癒えていく       |
+| {actor} は大地の力を受け、HPを回復した    |
+| {actor} の身体に微かな活力が巡った       |
+| {actor} は自然の息吹に包まれ、回復した     |
+| {actor} の疲労がわずかに和らいだ        |
+| {actor} の傷口が静かにふさがっていく      |
+| {actor} は環境の恩恵を受け、体力を取り戻した  |
+| {actor} に穏やかな再生の力が働いた       |
+| {actor} の身体がじんわりと回復していく     |
+
+
+-
+
+| flavor text |
+|---|
+||
+||
+||
+||
+||
+||
+||
+||
+||
+||
+
