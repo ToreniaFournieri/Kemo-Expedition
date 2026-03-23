@@ -187,6 +187,7 @@ HP: 312                 クラス: 魔法使い
 | Setting | UI | Description | Default |
 |---|---|---|---|
 | Enemy name | Text input | Custom display name of the enemy | `ミーティア` |
+| Terrain effect | Pull-down list | Select terrain effect | `none` |
 | Enemy type | Pull-down list | Select enemy type category | `Jinma` |
 | Enemy class | Pull-down list | Select enemy class | `Fighter` |
 | Enemy level | Slider bar (`1–99`) | Sets enemy level | `10` |
