@@ -2031,7 +2031,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
             // Pass currentHp to maintain HP persistence during expedition
             const roomStartHp = currentHp;
-            const battleResult = executeBattle(currentParty, enemy, bags, roomStartHp);
+            const colosseumTerrainEffect = dungeon.id === 99 ? getColosseumEnemySettings().terrainEffect : 'none';
+            const terrainEffect = colosseumTerrainEffect !== 'none'
+              ? colosseumTerrainEffect
+              : floor.terrainEffect;
+            const battleResult = executeBattle(currentParty, enemy, bags, roomStartHp, { terrainEffect });
 
             // Update threat bags from battle result
             bags = {

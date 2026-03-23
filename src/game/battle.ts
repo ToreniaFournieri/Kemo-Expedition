@@ -12,7 +12,9 @@ import {
   GameBags,
   RandomBag,
   AbilityId,
+  TerrainEffectKey,
 } from '../types';
+import { getTerrainEffectGlossaryEntry } from '../data/glossary';
 import { computePartyStats } from './partyComputation';
 import { getBaseMultiplier } from './baseMultiplier';
 import { drawFromBag, createPhysicalThreatBag, createMagicalThreatBag, getBagTicketTotal } from './bags';
@@ -1735,10 +1737,15 @@ export interface BattleResult extends BattleState {
   enemyHitsReceived: number;
 }
 
+interface BattleEnvironment {
+  terrainEffect?: TerrainEffectKey | null;
+}
+
 const TRIGGER_TIMINGS_DESC = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0] as const;
 
 // SpecRef: 6.1.1.1 | START phase | actor.a.oblivion
 // SpecRef: 6.1.1.1 | START phase | actor.a.mimic
+// SpecRef: 6.1.1.1 | START phase | floor.terrain.*
 // SpecRef: 6.1.1.2 | LONG, MID, CLOSE phase | Speed & Turn Order (Rolling Dice Rule)
 // SpecRef: 6.1.1.3 | END phase | Goddess of Restoration effect
 // SpecRef: 6.1.1.3 | END phase | God of Attrition effect
@@ -1757,7 +1764,8 @@ export function executeBattle(
   party: Party,
   enemy: EnemyDef,
   bags: GameBags,
-  initialPartyHp?: number // Optional: for HP persistence during expedition
+  initialPartyHp?: number, // Optional: for HP persistence during expedition
+  environment: BattleEnvironment = {},
 ): BattleResult {
   const { partyStats, characterStats: computedCharacterStats } = computePartyStats(party);
   let characterStats = computedCharacterStats;
@@ -1783,6 +1791,17 @@ export function executeBattle(
   const log: BattleLogEntry[] = [];
 
   const partyDeityKey = getDeityKey(party.deity.name);
+  const terrainEntry = environment.terrainEffect ? getTerrainEffectGlossaryEntry(environment.terrainEffect) : undefined;
+
+  if (terrainEntry) {
+    log.push({
+      phase: 'start',
+      actor: 'effect',
+      action: `[地形] ${terrainEntry.label}`,
+      note: `(${terrainEntry.description})`,
+      noteTone: 'muted',
+    });
+  }
 
   if (partyDeityKey === 'Goddess of Discord' && characterStats.length > 0) {
     const targetIndex = Math.floor(Math.random() * characterStats.length);

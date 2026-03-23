@@ -982,3 +982,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
     ]
   }
 ];
+
+export const TERRAIN_EFFECT_GLOSSARY_SECTION = GLOSSARY_SECTIONS.find(
+  (section) => section.heading === '1.1.10 t. terrain effects',
+);
+
+export function getTerrainEffectGlossaryEntry(key: string): GlossaryEntry | undefined {
+  return TERRAIN_EFFECT_GLOSSARY_SECTION?.entries.find((entry) => entry.key === key);
+}

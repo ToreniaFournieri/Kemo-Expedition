@@ -1,4 +1,4 @@
-import { Dungeon, ExpeditionEnemyMultipliers, FloorDef, RoomType } from '../types';
+import { Dungeon, ExpeditionEnemyMultipliers, FloorDef, RoomType, TerrainEffectKey } from '../types';
 import { MASTER_EXPEDITION_ENEMIES_PACKED } from './masterSpecData';
 
 type CombatMultipliers = {
@@ -106,6 +106,17 @@ const EXPEDITION_FLOOR_CONCEPTS: Record<number, string[]> = {
   8: ['竜傷の峡谷門', '納骨研究原野', '小さき神々', 'ゲヘナ', 'セルヴィン文書保管街区', '千里眼の聖域'],
 };
 
+const EXPEDITION_FLOOR_TERRAIN_EFFECTS: Record<number, TerrainEffectKey[]> = {
+  1: ['terrain.rejuvenation', 'terrain.predation', 'terrain.fog', 'terrain.exposure', 'terrain.thunderstorm', 'terrain.tailwind'],
+  2: ['terrain.chill', 'terrain.rotwood', 'terrain.vine-snare', 'terrain.chill', 'terrain.crystal-zone', 'terrain.floor-domain'],
+  3: ['terrain.sunny-beach', 'terrain.silence-field', 'terrain.rough-waves', 'terrain.rough-waves', 'terrain.conduction', 'terrain.sacred-judgement'],
+  4: ['terrain.dry', 'terrain.heavy-wind', 'terrain.limestone-cave', 'terrain.frenzy', 'terrain.dry', 'terrain.abundant'],
+  5: ['terrain.looping-path', 'terrain.enemy-high-ground', 'terrain.ash-haze', 'terrain.heatwave', 'terrain.heatwave', 'terrain.fortified'],
+  6: ['terrain.burrow', 'terrain.leakage', 'terrain.deletion', 'terrain.machine-logic', 'terrain.cap-domain', 'terrain.echo-domain'],
+  7: ['terrain.decay', 'terrain.chain-lightning', 'terrain.light-field', 'terrain.dark-field', 'terrain.dark-field', 'terrain.low-gravity'],
+  8: ['terrain.mana-burn', 'terrain.gravity', 'terrain.transcendence', 'terrain.gehenna', 'terrain.suppression', 'terrain.sanctuary'],
+};
+
 export function getExpeditionFloorConcept(expeditionId: number, floorNumber: number): string | null {
   const concepts = EXPEDITION_FLOOR_CONCEPTS[expeditionId];
   if (!concepts || floorNumber < 1 || floorNumber > concepts.length) {
@@ -167,6 +178,7 @@ function createFloors(poolId: number, bossId: number): FloorDef[] {
     return {
       floorNumber,
       multiplier: 1,
+      terrainEffect: EXPEDITION_FLOOR_TERRAIN_EFFECTS[poolId]?.[index],
       rooms: [
         { type: 'battle_Normal' as const, poolId, enemyIds: getMasterRoomEnemyIds(poolId, floorNumber, 1) },
         { type: 'battle_Normal' as const, poolId, enemyIds: getMasterRoomEnemyIds(poolId, floorNumber, 2) },
