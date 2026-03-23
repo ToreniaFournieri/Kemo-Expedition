@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.6.1 - SPECIFICATION
+# KEMO EXPEDITION v0.6.0 - SPECIFICATION
 
 - 1. OVERVIEW
     - Text-based, deterministic fantasy RPG
@@ -111,44 +111,10 @@
 - If one code block implements multiple spec items, add one `SpecRef` line per item.
 - When specification IDs/titles/anchors change, corresponding `SpecRef` comments must be updated in the same change set.
 
-
-## 11. SPECIFICATION EDITING POLICY
-
-### 11.1 Root File Governance
-- `Specification.md` is the table of contents and global policy document for the full specification tree.
-- Feature-specific rules must be defined in the referenced section files, not in `Specification.md`, unless the rule is global in scope.
-- No update `Specification.md` nor `Specification_1.1_CONSTANTS_GLOSSARY.md`
-
-### 11.2 Cross-Reference Update Requirement
-- Every specification change must update all affected cross-references in the same change set.
-- Renames are forbidden unless all inbound references are updated in the same change set.
-
-### 11.3 Required Contents for Behavioral Changes
-- Every behavioral change must include all of the following:
-  - affected section IDs,
-  - a short rationale,
-  - exact anchors or identifiers added or changed,
-  - a changelog entry in `Specification.md`.
-
-### 11.4 Keyword Family Expansion Requirement
-- When adding a new keyword family such as `terrain.*`, the editor must update all applicable locations in the same change set:
-  - glossary or identifier definition,
-  - data source section,
-  - runtime behavior section,
-  - UI or logging section if the behavior is player-visible.
-
-### 11.5 Deterministic Language Requirement
-- Ambiguous language such as “slightly” or “sometimes” must be replaced with deterministic rules.
-
-### 11.6 Clarification Requirement
-- If Codex cannot determine the intended behavior from the existing specification text, it must stop and request clarification instead of inventing game logic.
-
-    
-## 12. CHANGELOG
+## 11. CHANGELOG
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
-| **0.6.1** | Added Section 12 specification editing policy for global spec governance and change traceability |
 | **0.6.0** | Big barance update: item, enemy, race, others |
 | 0.5.3 | Two tabs mode. Dark mode, Laika mode |
 | 0.5.2 | Flavor text update. Fixed auto equipment logic, update side quest barance, especially embezzlement part logic. Refine AFK part. |
