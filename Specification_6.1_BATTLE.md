@@ -16,6 +16,11 @@
 #### 6.1.1 Phase resolution
 
 ##### 6.1.1.1 START phase
+
+If `terrain.*`:
+  - actor = terrain ([地形]), "()" part is gray text.
+
+If `a.*` with phase = START:
 - Note: actor = effect ([効] ), "()" part is gray text.
  
 **Priority order of Timed ability resolution**
