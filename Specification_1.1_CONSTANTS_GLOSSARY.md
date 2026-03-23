@@ -393,13 +393,13 @@
 | `terrain.vine-snare` | 捕食蔓 | 攻撃を行うたび、その攻撃者は現在HPの1%のダメージを受ける |
 | `terrain.crystal-zone` | 水晶域 | 魔法攻撃を使用したとき、攻撃者は与えたダメージの5%の反動ダメージを受ける |
 | `terrain.floor-domain` | 必達領域 | 命中1発あたりの最終ダメージは対象の最大HPの1%を下回らない |
-| `terrain.sunny-beach` | 陽だまりの浜辺 | 遠距離攻撃の命中+20、ダメージ+15% |
+| `terrain.sunny-beach` | 陽だまりの浜辺 | 双方の遠距離攻撃の命中+20 |
 | `terrain.silence-field` | 静寂領域 | すべての[効]アビリティは発動しない |
-| `terrain.rough-waves` | 荒波 | 近接攻撃回数(NoA)が0.75倍になる |
-| `terrain.conduction` | 導電 | 雷属性攻撃を行うと、攻撃者は与えたダメージの5%の反動ダメージを受ける |
+| `terrain.rough-waves` | 荒波 | 近接攻撃回数が0.75倍になる |
+| `terrain.conduction` | 導電 | 雷属性攻撃を行うと、攻撃者は与えたダメージの5%の雷属性ダメージを受ける |
 | `terrain.sacred-judgement` | 神罰 | この戦闘で最初に行動した対象に現在HPの5%の雷属性攻撃が下る |
 | `terrain.dry` | 乾燥 | 氷属性ダメージがx0.5になる |
-| `terrain.heavy-wind` | 強風 | 双方に命中-20を付与する |
+| `terrain.heavy-wind` | 強風 | 遠距離攻撃回数が0.75倍になる |
 | `terrain.limestone-cave` | 鍾乳洞 | 魔法攻撃回数・近接攻撃回数が1.5倍になる |
 | `terrain.frenzy` | 狂騒 | 戦闘開始時、双方の物理被ダメージが1.4倍になる |
 | `terrain.abundant` | 豊富 | 各部屋の終了時、最大HPの2%を回復する |
@@ -408,16 +408,16 @@
 | `terrain.enemy-high-ground` | 敵高所優位 | 敵の行動速度が少し早まる（行動順判定に+1d3） |
 | `terrain.heatwave` | 熱波 | 各部屋の終了時、現在HPの5%に等しいダメージを受ける。さらに、氷属性攻撃を持つパーティメンバー1人につき、このダメージを1%軽減する |
 | `terrain.fortified` | 要塞防備 | 敵が受ける物理・魔法の被ダメージが0.75倍になる |
-| `terrain.burrow` | 地下穴 | 遠距離攻撃回数が3/4になる |
-| `terrain.leakage` | 漏電 | 各部屋の終了時、減少HPの3%に等しいダメージを受ける |
+| `terrain.burrow` | 地下穴 | 遠距離攻撃回数が0.50倍になる |
+| `terrain.leakage` | 漏電 | 各部屋の終了時、減少HPの3%に等しい雷属性ダメージを受ける |
 | `terrain.deletion` | 削除 | 戦闘開始時、双方のいずれかの対象のアビリティ1つを忘却させる |
 | `terrain.spell-domain` | 必中魔法領域 | 双方の魔法攻撃はすべて必中する |
 | `terrain.cap-domain` | 臨界領域 | 命中1発あたりの最終ダメージは対象の最大HPの5%を超えない |
 | `terrain.echo-domain` | 残響領域 | 同一戦闘中に使用された属性攻撃1回につき、その属性攻撃の効果が+10%される |
 | `terrain.decay` | 崩壊 | 戦闘終了時、最大HPの2%のダメージを受ける |
 | `terrain.chain-lightning` | 連鎖雷撃 | 雷属性攻撃が命中した場合、ランダムな別対象に30%威力で追加ヒットする |
-| `terrain.light-field` | 光域 | 双方の物理ダメージが0.67倍になる |
-| `terrain.dark-field` | 闇域 | 双方の魔法ダメージが1.45倍になる |
+| `terrain.light-field` | 光域 | 双方の魔法ダメージが0.67倍になる |
+| `terrain.dark-field` | 闇域 | 双方の物理ダメージが1.45倍になる |
 | `terrain.low-gravity` | 低重力 | すべての攻撃回数（NoA）が1.3倍になる |
 | `terrain.gravity` | 重力場 | すべての攻撃回数（NoA）が0.7倍になる |
 | `terrain.mana-burn` | 魔力侵食 | 魔法攻撃を行うたび、使用者は最大HPの2%のダメージを受ける |
@@ -426,4 +426,5 @@
 | `terrain.sanctuary` | 聖域 | 双方の魔法ダメージが0.67倍になる |
 | `terrain.sniper-domain` | 必中狙撃領域 | 双方の遠距離攻撃はすべて必中する |
 | `terrain.suppression` | 抑圧 | 双方の反応・時限アビリティレベルが-1される(レベル下限1) |
+| `terrain.duelist-domain` | 剣戟領域 | 双方の近接攻撃はすべて必中する |
 
