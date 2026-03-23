@@ -34,7 +34,7 @@
 | 1 | 5 | Buried Ruin Fields | 埋没遺跡原野 | `terrain.thunderstorm`  |
 | 1 | 6 | Caninian Ruin-City | ケイナイアンの廃都 | `terrain.tailwind` |
 | 2 | 1 | Snow Forest | 雪の森 | `terrain.chill` |
-| 2 | 2 | Rotwood Trails | 腐木の小径 | **TBA** |
+| 2 | 2 | Rotwood Trails | 腐木の小径 | `terrain.rotwood` |
 | 2 | 3 | Carnivorous Plants | 食肉植物群生地 | `terrain.vine-snare` |
 | 2 | 4 | Icicle Labyrinth | 氷柱迷宮 | `terrain.chill` |
 | 2 | 5 | Crystal Cave | 水晶洞窟 | `terrain.crystal-zone` |
@@ -60,7 +60,7 @@
 | 6 | 1 | Steam-powered Burrow | 蒸気仕掛けの地下穴 | `terrain.burrow` |
 | 6 | 2 | Wreckage of K9 Interstellar Spacecraft | K9星間宇宙船の残骸 | `terrain.leakage` |
 | 6 | 3 | Forbidden Research Facility | 禁断の研究施設 | `terrain.deletion` |
-| 6 | 4 | Machine Without a Heart | 心なき機械 | **TBA** |
+| 6 | 4 | Machine Without a Heart | 心なき機械 | `terrain.machine-logic` |
 | 6 | 5 | Bridge Without a Master | 主なき艦橋 | `terrain.cap-domain` |
 | 6 | 6 | Altar of Resonance | 共鳴の祭壇 | `terrain.echo-domain`  |
 | 7 | 1 | Giant Debris Ring | 巨大残骸環 | `terrain.decay` |
