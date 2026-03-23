@@ -17,7 +17,7 @@
 
 ##### 6.1.1.1 START phase
 
-If `terrain.*`:
+If floor.`terrain.*`:
   - actor = terrain ([地形]),
   - text = terrain.description (Japanese)
   - Example: "[地形] 活性化 (各部屋の終了時、減少HPの2%を回復する)"
