@@ -124,6 +124,16 @@ const PARTY_EXPEDITION_SPLIT_MIN_WIDTH = 1024;
 const TAB_PANEL_WIDTH_PX = 500;
 const WIDE_MODE_DEFAULT_SECONDARY_TAB: WideModeSecondaryTab = 'party';
 
+const TERRAIN_EFFECT_GLOSSARY_SECTION = GLOSSARY_SECTIONS.find((section) => section.heading === '1.1.10 t. terrain effects');
+const TERRAIN_EFFECT_OPTIONS = [
+  { key: 'none', label: 'none', description: '地形効果なし' },
+  ...(TERRAIN_EFFECT_GLOSSARY_SECTION?.entries ?? []),
+];
+const TERRAIN_EFFECT_LABELS = TERRAIN_EFFECT_OPTIONS.reduce<Record<string, string>>((acc, entry) => {
+  acc[entry.key] = entry.label;
+  return acc;
+}, {});
+
 const PARTY_CYCLE_STATE_LABELS: Record<PartyCycleState, string> = {
   rest: '休息中',
   sell: '売却中',
@@ -9204,7 +9214,7 @@ function SettingTab({
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                       <div>ID: {colosseumEnemy.id}</div><div>レベル: {formatNumber(colosseumEnemySettings.level)}</div>
                       <div>HP: {formatNumber(colosseumEnemy.hp)}</div><div>クラス: {ENEMY_CLASS_LABELS[colosseumEnemy.enemyClass] ?? colosseumEnemy.enemyClass}</div>
-                      <div>タイプ: {ENEMY_TYPE_LABELS[colosseumEnemy.enemyType] ?? colosseumEnemy.enemyType}</div><div></div>
+                      <div>タイプ: {ENEMY_TYPE_LABELS[colosseumEnemy.enemyType] ?? colosseumEnemy.enemyType}</div><div>地形: {TERRAIN_EFFECT_LABELS[colosseumEnemySettings.terrainEffect] ?? colosseumEnemySettings.terrainEffect}</div>
                     </div>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                       <div>{hasRangedAttack ? formatEnemyAttackLine('遠距離攻撃', colosseumEnemy.rangedAttack, colosseumEnemy.rangedNoA, colosseumEnemy.rangedAttackAmplifier) : ''}</div><div>{`属性: ${ENEMY_ELEMENT_LABELS[colosseumEnemy.elementalOffense] ?? '無'} (x1.0)`}</div>
@@ -9364,7 +9374,23 @@ function SettingTab({
           <span className="text-gray-500 text-xs" aria-hidden="true">{isEnemyEditExpanded ? '▲' : '▼'}</span>
         </button>
         {isEnemyEditExpanded && <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm mt-3">
+          {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Enemy Edit Pane */}
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy name</div><input className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.name} onChange={(e) => updateColosseumEnemySettings({ name: e.target.value })} /></label>
+          <label className="space-y-1">
+            <div className="text-xs text-gray-600">Terrain effect</div>
+            <select
+              className="w-full rounded border px-2 py-1"
+              value={colosseumEnemySettings.terrainEffect}
+              onChange={(e) => updateColosseumEnemySettings({ terrainEffect: e.target.value as ColosseumEnemySettings['terrainEffect'] })}
+            >
+              {TERRAIN_EFFECT_OPTIONS.map((entry) => (
+                <option key={entry.key} value={entry.key}>{entry.label}</option>
+              ))}
+            </select>
+            <div className="text-[11px] text-gray-500">
+              {(TERRAIN_EFFECT_OPTIONS.find((entry) => entry.key === colosseumEnemySettings.terrainEffect)?.description) ?? '地形効果なし'}
+            </div>
+          </label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy type</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyType} onChange={(e) => updateColosseumEnemySettings({ enemyType: e.target.value })}>{Object.keys(ENEMY_TYPE_LABELS).map((key) => <option key={key} value={key}>{ENEMY_TYPE_LABELS[key] ?? key}</option>)}</select></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy class</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyClass} onChange={(e) => updateColosseumEnemySettings({ enemyClass: e.target.value as ColosseumEnemySettings['enemyClass'] })}>{Object.entries(ENEMY_CLASS_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy level: {colosseumEnemySettings.level}</div><input type="range" min={1} max={99} value={colosseumEnemySettings.level} onChange={(e) => updateColosseumEnemySettings({ level: Number(e.target.value) })} /></label>
