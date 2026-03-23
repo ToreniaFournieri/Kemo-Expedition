@@ -18,7 +18,10 @@
 ##### 6.1.1.1 START phase
 
 If `terrain.*`:
-  - actor = terrain ([地形]), "()" part is gray text.
+  - actor = terrain ([地形]),
+  - text = terrain.description (Japanese)
+  - Example: "[地形] 活性化 (各部屋の終了時、減少HPの2%を回復する)"
+    - "()" part is gray text.
 
 If `a.*` with phase = START:
 - Note: actor = effect ([効] ), "()" part is gray text.
