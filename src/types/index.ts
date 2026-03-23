@@ -434,6 +434,7 @@ export interface EnemyDef {
 
 // Room Types
 export type RoomType = 'battle_Normal' | 'battle_Elite' | 'battle_Boss';
+export type TerrainEffectKey = `terrain.${string}`;
 
 export interface RoomDef {
   type: RoomType;
@@ -445,6 +446,7 @@ export interface RoomDef {
 export interface FloorDef {
   floorNumber: number;
   multiplier: number; // Legacy room display multiplier; runtime enemy scaling is level-based.
+  terrainEffect?: TerrainEffectKey;
   rooms: RoomDef[];
 }
 
