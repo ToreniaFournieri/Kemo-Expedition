@@ -6,8 +6,11 @@ import { LUNA_MODE_ENEMY_LEVEL_BONUS, getEnemyMultipliersForLevel } from '../dat
 
 const COLOSSEUM_STORAGE_KEY = 'kemo-expedition.colosseum-enemy-settings';
 
+export type ColosseumTerrainEffect = 'none' | `terrain.${string}`;
+
 export interface ColosseumEnemySettings {
   name: string;
+  terrainEffect: ColosseumTerrainEffect;
   enemyType: string;
   enemyClass: EnemyClassId;
   level: number;
@@ -16,6 +19,7 @@ export interface ColosseumEnemySettings {
 
 export const DEFAULT_COLOSSEUM_ENEMY_SETTINGS: ColosseumEnemySettings = {
   name: 'ミーティア',
+  terrainEffect: 'none',
   enemyType: 'Jinma',
   enemyClass: 'fighter',
   level: 10,
@@ -61,6 +65,7 @@ function canUseStorage(): boolean {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
 }
 
+// SpecRef: 8.6 | UI_DIVINE_BUREAU | Enemy Edit Pane
 export function normalizeColosseumEnemySettings(raw: unknown): ColosseumEnemySettings {
   const parsed = (raw && typeof raw === 'object') ? raw as Partial<ColosseumEnemySettings> : {};
   const normalizedAbilities = Array.isArray(parsed.abilities)
@@ -83,8 +88,14 @@ export function normalizeColosseumEnemySettings(raw: unknown): ColosseumEnemySet
     : [];
 
   const level = Number.isFinite(parsed.level) ? Math.floor(parsed.level as number) : DEFAULT_COLOSSEUM_ENEMY_SETTINGS.level;
+  const terrainEffect = typeof parsed.terrainEffect === 'string'
+    && (parsed.terrainEffect === 'none' || parsed.terrainEffect.startsWith('terrain.'))
+      ? parsed.terrainEffect as ColosseumTerrainEffect
+      : DEFAULT_COLOSSEUM_ENEMY_SETTINGS.terrainEffect;
+
   return {
     name: typeof parsed.name === 'string' && parsed.name.trim().length > 0 ? parsed.name.trim() : DEFAULT_COLOSSEUM_ENEMY_SETTINGS.name,
+    terrainEffect,
     enemyType: typeof parsed.enemyType === 'string' && parsed.enemyType.trim().length > 0 ? parsed.enemyType.trim() : DEFAULT_COLOSSEUM_ENEMY_SETTINGS.enemyType,
     enemyClass: (typeof parsed.enemyClass === 'string' && parsed.enemyClass in ENEMY_CLASS_BASES
       ? parsed.enemyClass
