@@ -484,12 +484,20 @@ If `a.*` with phase = START:
 **Consequence**
 - *Defeat*: no penalties (current version). gains `d.experience` points, but no item reward. Back to home without trophies. 
 - *Victory*: gains `d.experience` points to a party. has a chance of gaining reward from enemies drop item. Check the conditions bellow.
-  - Elite Rooms (`x.floor`:1-5, `x.room`:4): If `God of Restoration`, **Heal 20% of missing HP** (show the log). IF `God of Attrition`,  **reduce 5% of remaining HP** (show the log).
-  - If the party.`d.HP` <= 30% of max HP, back to home with trophies. (excpetion: the Final Boss room)  -> `Wonded_Retreat`
+  - Elite Rooms (`x.floor`:1-5, `x.room`:4)
+    - If `God of Restoration`: **Heal 20% of missing HP**
+      - Log: "再生の神の効果！" + "(HP回復+N)"
+    - IF `God of Attrition`: **reduce 5% of remaining HP**
+      - Log: "消耗の神の効果！" + "(HP消耗-N)"
+  - Normal and Elite rooms
+    - If `terrain.rejuvenation`: **Heal 2% of of missing HP**
+	  - Log: `log.terrain.rejuvenation` + "(HP回復+N)"
+    - If the party.`d.HP` <= 30% of max HP, back to home with trophies.   -> `Wonded_Retreat`
   - Normal Rooms (`x.room`:1–2): Proceed to the next `x.room`.
   - Gate Rooms (`x.room`: 3 check): At the end of Room 3, the "Loot-Gate" check occurs. If passed, proceed to `x.room`:4 (Elite/Boss).
   - Elite Rooms (`x.floor`:1-5, `x.room`:4): Proceed to the next floor: `x.floor` +1 , `x.room`:1.
   - Final Boss Room (`x.floor`:6, `x.room`:4): Expedition Clear! Return Home with all trophies.
+
 
 - *Draw*:no penalties (current version). no `d.experience` points nor item reward at this room. Back to home with trophies of previous rooms.
 
