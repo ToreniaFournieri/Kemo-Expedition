@@ -756,48 +756,228 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
   },
   {
     "id": "2-1-10",
-    "heading": "2.1.10 t. side quest",
-    "subtitle": "地. 探索地と地形効果(探索地によって効果が変わる)",
+    "heading": "1.1.10 t. terrain effects",
+    "subtitle": "地. 地形効果",
     "entries": [
       {
-        "key": "x.expedition.0",
-        "label": "ケイナイアン平原",
-        "description": "地形効果(f1,2,3,6): 活性化: 各部屋の終了時、減少HPの2%を回復する。\n地形効果(f4,5): 雷雨: 双方に 雷威力x3/2(雷威力が上がる) を付与する。"
+        "key": "terrain.rejuvenation",
+        "label": "活性化",
+        "description": "各部屋の終了時、減少HPの2%を回復する"
       },
       {
-        "key": "x.expedition.1",
-        "label": "ルピニアンの亜寒帯",
-        "description": "地形効果(f1,2,3,6): 冷気: 部屋の継続時間がx1.5になる。さらに、火属性攻撃を持つパーティメンバー1人につき、このペナルティを0.1軽減する。\n地形効果(f4,5): 水晶域: 魔法攻撃を使用したとき、攻撃者は与えたダメージの5%の反動ダメージを受ける。"
+        "key": "terrain.exposure",
+        "label": "露出",
+        "description": "双方の物理被ダメージが1.3倍になる"
       },
       {
-        "key": "x.expedition.2",
-        "label": "ヴァルンの海洋",
-        "description": "地形効果(f1,2,3,6): 荒波: 近接攻撃回数がNoAがx0.75になる。\n地形効果(f4,5): 導電: 雷属性攻撃を行うと、攻撃者は与えたダメージの5%の反動ダメージを受ける。"
+        "key": "terrain.predation",
+        "label": "捕食本能",
+        "description": "HPが50%未満の対象への物理与ダメージが1.3倍になる"
       },
       {
-        "key": "x.expedition.3",
-        "label": "フェリディ砂漠",
-        "description": "地形効果(f1,2,3,6): 乾燥: 氷属性ダメージがx0.5になる。\n地形効果(f4,5): 強風: 双方に 命中-20を付与する。"
+        "key": "terrain.tailwind",
+        "label": "追い風",
+        "description": "パーティメンバーの行動速度が少し早まる（行動順判定に+1d3）"
       },
       {
-        "key": "x.expedition.4",
-        "label": "ウルサンの炎嶺",
-        "description": "地形効果(f1,2,3,6): 灰霞: すべての先制攻撃を無効化する。\n地形効果(f4,5): 熱波: 各部屋の終了時、現在HPの5%に等しいダメージを受ける。さらに、氷属性攻撃を持つパーティメンバー1人につき、このダメージを1%軽減する。"
+        "key": "terrain.thunderstorm",
+        "label": "雷雨",
+        "description": "双方に雷威力x3/2(雷威力が上がる)を付与する"
       },
       {
-        "key": "x.expedition.5",
-        "label": "マステリドの巣穴",
-        "description": "地形効果(f1,2,3,6): 洞窟: 遠距離攻撃回数がx0.75になる。\n地形効果(f4,5): 漏電: 各部屋の終了時、減少HPの3%に等しいダメージを受ける。"
+        "key": "terrain.chill",
+        "label": "冷気",
+        "description": "部屋の継続時間が1.5倍になる。火属性攻撃を持つパーティメンバー1人につき、このペナルティを0.1軽減する"
       },
       {
-        "key": "x.expedition.6",
-        "label": "レポリアンの月宮",
-        "description": "地形効果(f1,2,3,6): 光域: 物理抑制1（双方物理ダメージ0.8倍）\n地形効果(f4,5): 闇域: 物理増幅1（双方物理ダメージ1.2倍）"
+        "key": "terrain.fog",
+        "label": "濃霧",
+        "description": "すべての遠距離攻撃の命中が-25される"
       },
       {
-        "key": "x.expedition.7",
-        "label": "セルヴィンの谷",
-        "description": "地形効果(f1,2,3,6): 聖域: 魔法増幅1（双方魔法ダメージ1.2倍）\n地形効果(f4,5): ゲヘナ: いかなる宗教ボーナスも適用されない。"
+        "key": "terrain.vine-snare",
+        "label": "捕食蔓",
+        "description": "攻撃を行うたび、その攻撃者は現在HPの1%のダメージを受ける"
+      },
+      {
+        "key": "terrain.crystal-zone",
+        "label": "水晶域",
+        "description": "魔法攻撃を使用したとき、攻撃者は与えたダメージの5%の反動ダメージを受ける"
+      },
+      {
+        "key": "terrain.floor-domain",
+        "label": "必達領域",
+        "description": "命中1発あたりの最終ダメージは対象の最大HPの1%を下回らない"
+      },
+      {
+        "key": "terrain.sunny-beach",
+        "label": "陽だまりの浜辺",
+        "description": "双方の遠距離攻撃の命中+20"
+      },
+      {
+        "key": "terrain.silence-field",
+        "label": "静寂領域",
+        "description": "すべての[効]アビリティは発動しない"
+      },
+      {
+        "key": "terrain.rough-waves",
+        "label": "荒波",
+        "description": "近接攻撃回数が0.75倍になる"
+      },
+      {
+        "key": "terrain.conduction",
+        "label": "導電",
+        "description": "雷属性攻撃を行うと、攻撃者は与えたダメージの5%の雷属性ダメージを受ける"
+      },
+      {
+        "key": "terrain.sacred-judgement",
+        "label": "神罰",
+        "description": "この戦闘で最初に行動した対象に現在HPの5%の雷属性攻撃が下る"
+      },
+      {
+        "key": "terrain.dry",
+        "label": "乾燥",
+        "description": "氷属性ダメージがx0.5になる"
+      },
+      {
+        "key": "terrain.heavy-wind",
+        "label": "強風",
+        "description": "遠距離攻撃回数が0.75倍になる"
+      },
+      {
+        "key": "terrain.limestone-cave",
+        "label": "鍾乳洞",
+        "description": "魔法攻撃回数・近接攻撃回数が1.5倍になる"
+      },
+      {
+        "key": "terrain.frenzy",
+        "label": "狂騒",
+        "description": "戦闘開始時、双方の物理被ダメージが1.4倍になる"
+      },
+      {
+        "key": "terrain.abundant",
+        "label": "豊富",
+        "description": "各部屋の終了時、最大HPの2%を回復する"
+      },
+      {
+        "key": "terrain.looping-path",
+        "label": "迷いの森",
+        "description": "部屋の継続時間が2倍になる"
+      },
+      {
+        "key": "terrain.ash-haze",
+        "label": "灰霞",
+        "description": "すべての先制攻撃を無効化する"
+      },
+      {
+        "key": "terrain.enemy-high-ground",
+        "label": "敵高所優位",
+        "description": "敵の行動速度が少し早まる（行動順判定に+1d3）"
+      },
+      {
+        "key": "terrain.heatwave",
+        "label": "熱波",
+        "description": "各部屋の終了時、現在HPの5%に等しいダメージを受ける。さらに、氷属性攻撃を持つパーティメンバー1人につき、このダメージを1%軽減する"
+      },
+      {
+        "key": "terrain.fortified",
+        "label": "要塞防備",
+        "description": "敵が受ける物理・魔法の被ダメージが0.75倍になる"
+      },
+      {
+        "key": "terrain.burrow",
+        "label": "地下穴",
+        "description": "遠距離攻撃回数が0.50倍になる"
+      },
+      {
+        "key": "terrain.leakage",
+        "label": "漏電",
+        "description": "各部屋の終了時、減少HPの3%に等しい雷属性ダメージを受ける"
+      },
+      {
+        "key": "terrain.deletion",
+        "label": "削除",
+        "description": "戦闘開始時、双方のいずれかの対象のアビリティ1つを忘却させる"
+      },
+      {
+        "key": "terrain.spell-domain",
+        "label": "必中魔法領域",
+        "description": "双方の魔法攻撃はすべて必中する"
+      },
+      {
+        "key": "terrain.cap-domain",
+        "label": "臨界領域",
+        "description": "命中1発あたりの最終ダメージは対象の最大HPの5%を超えない"
+      },
+      {
+        "key": "terrain.echo-domain",
+        "label": "残響領域",
+        "description": "同一戦闘中に使用された属性攻撃1回につき、その属性攻撃の効果が+10%される"
+      },
+      {
+        "key": "terrain.decay",
+        "label": "崩壊",
+        "description": "戦闘終了時、最大HPの2%のダメージを受ける"
+      },
+      {
+        "key": "terrain.chain-lightning",
+        "label": "連鎖雷撃",
+        "description": "雷属性攻撃が命中した場合、ランダムな別対象に30%威力で追加ヒットする"
+      },
+      {
+        "key": "terrain.light-field",
+        "label": "光域",
+        "description": "双方の魔法ダメージが0.67倍になる"
+      },
+      {
+        "key": "terrain.dark-field",
+        "label": "闇域",
+        "description": "双方の物理ダメージが1.45倍になる"
+      },
+      {
+        "key": "terrain.low-gravity",
+        "label": "低重力",
+        "description": "すべての攻撃回数（NoA）が1.3倍になる"
+      },
+      {
+        "key": "terrain.gravity",
+        "label": "重力場",
+        "description": "すべての攻撃回数（NoA）が0.7倍になる"
+      },
+      {
+        "key": "terrain.mana-burn",
+        "label": "魔力侵食",
+        "description": "魔法攻撃を行うたび、使用者は最大HPの2%のダメージを受ける"
+      },
+      {
+        "key": "terrain.transcendence",
+        "label": "超越",
+        "description": "双方の反応・時限アビリティレベルが+1される(レベル上限5)"
+      },
+      {
+        "key": "terrain.gehenna",
+        "label": "ゲヘナ",
+        "description": "いかなる宗教ボーナスも適用されない"
+      },
+      {
+        "key": "terrain.sanctuary",
+        "label": "聖域",
+        "description": "双方の魔法ダメージが0.67倍になる"
+      },
+      {
+        "key": "terrain.sniper-domain",
+        "label": "必中狙撃領域",
+        "description": "双方の遠距離攻撃はすべて必中する"
+      },
+      {
+        "key": "terrain.suppression",
+        "label": "抑圧",
+        "description": "双方の反応・時限アビリティレベルが-1される(レベル下限1)"
+      },
+      {
+        "key": "terrain.duelist-domain",
+        "label": "剣戟領域",
+        "description": "双方の近接攻撃はすべて必中する"
       }
     ]
   }
