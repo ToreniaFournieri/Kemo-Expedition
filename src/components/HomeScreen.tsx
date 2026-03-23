@@ -1,5 +1,5 @@
 import { Fragment, useState, useEffect, useRef, useCallback, type ChangeEvent, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId, type BattleLogEntry } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import {
   DUNGEONS,
@@ -312,6 +312,23 @@ function isIOSMobileSafari(): boolean {
 function normalizeBattleLogNote(note?: string): string | undefined {
   if (!note) return note;
   return note.replace('パーティ攻撃力 ×', 'パーティ物理攻撃力 ×');
+}
+
+// SpecRef: 6.1.1.1 | START phase | floor.terrain.*
+function getBattleLogPhaseLabel(log: BattleLogEntry, isPhaseAction: boolean, isTriggeredLog: boolean, isResurrectLog: boolean, isStealthEffectLog: boolean, isCounterNegationEffectLog: boolean): string {
+  const isTerrainStartLog = log.phase === 'start' && log.actor === 'effect' && log.action.startsWith('[地形]');
+  if (isTerrainStartLog) return '地形';
+  if (log.phase === 'start') return '効';
+  if (log.phase === 'end') return '末';
+  if (isPhaseAction) {
+    if (log.isAggregated) return '-';
+    if (isTriggeredLog && log.hideInitiativeLabel) return '-';
+    if (isTriggeredLog) return `${log.initiativeRoll ?? '?'}`;
+    if (log.isCounter || isResurrectLog || log.isEnemyTargetHit || log.hideInitiativeLabel) return '-';
+    return `${log.initiativeRoll ?? '?'}`;
+  }
+  if (isStealthEffectLog || isCounterNegationEffectLog) return '-';
+  return log.actor === 'deity' ? '末' : '効';
 }
 
 function getBattleLogNoteClass(noteTone?: 'default' | 'sub' | 'muted'): string {
@@ -6341,13 +6358,7 @@ function ExpeditionTab({
                                 const previousContinuesCurrentPhase = !!previousLog && (previousWasPhaseAction || previousWasStealthEffectLog || previousWasCounterNegationEffectLog || previousWasInPhaseEffectLog);
                                 const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousContinuesCurrentPhase || previousLog.phase !== log.phase);
                                 const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
-                                const phaseLabel = log.phase === 'start'
-                                  ? '効'
-                                  : log.phase === 'end'
-                                    ? '末'
-                                    : isPhaseAction
-                                      ? (log.isAggregated ? '-' : ((isTriggeredLog && log.hideInitiativeLabel) ? '-' : (isTriggeredLog ? `${log.initiativeRoll ?? '?'}` : (log.isCounter || isResurrectLog || log.isEnemyTargetHit || log.hideInitiativeLabel ? '-' : `${log.initiativeRoll ?? '?'}`))))
-                                      : (isStealthEffectLog || isCounterNegationEffectLog) ? '-' : (log.actor === 'deity' ? '末' : '効');
+                                const phaseLabel = getBattleLogPhaseLabel(log, isPhaseAction, isTriggeredLog, !!isResurrectLog, !!isStealthEffectLog, !!isCounterNegationEffectLog);
                                 const phaseHeader = log.phase === 'long'
                                   ? '遠距離攻撃フェーズ'
                                   : log.phase === 'mid'
@@ -7611,13 +7622,7 @@ function DiaryTab({
                               const previousContinuesCurrentPhase = !!previousLog && (previousWasPhaseAction || previousWasStealthEffectLog || previousWasCounterNegationEffectLog || previousWasInPhaseEffectLog);
                               const shouldShowPhaseHeader = isPhaseAction && (!previousLog || !previousContinuesCurrentPhase || previousLog.phase !== battleLog.phase);
                               const shouldShowEndPhaseSpacer = !!previousLog && !isPhaseAction && previousWasPhaseAction;
-                              const phaseLabel = battleLog.phase === 'start'
-                                ? '効'
-                                : battleLog.phase === 'end'
-                                  ? '末'
-                                  : isPhaseAction
-                                    ? (battleLog.isAggregated ? '-' : ((isTriggeredLog && battleLog.hideInitiativeLabel) ? '-' : (isTriggeredLog ? `${battleLog.initiativeRoll ?? '?'}` : (battleLog.isCounter || isResurrectLog || battleLog.isEnemyTargetHit || battleLog.hideInitiativeLabel ? '-' : `${battleLog.initiativeRoll ?? '?'}`))))
-                                    : (isStealthEffectLog || isCounterNegationEffectLog) ? '-' : (battleLog.actor === 'deity' ? '末' : '効');
+                              const phaseLabel = getBattleLogPhaseLabel(battleLog, isPhaseAction, isTriggeredLog, !!isResurrectLog, !!isStealthEffectLog, !!isCounterNegationEffectLog);
                               const phaseHeader = battleLog.phase === 'long'
                                 ? '遠距離攻撃フェーズ'
                                 : battleLog.phase === 'mid'
