@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.6.0 - SPECIFICATION
+# KEMO EXPEDITION v0.6.1 - SPECIFICATION
 
 - 1. OVERVIEW
     - Text-based, deterministic fantasy RPG
@@ -116,6 +116,7 @@
 
 |Version  |Changes                                                                               |
 |---------|--------------------------------------------------------------------------------------|
+| **0.6.1** | Added Section 12 specification editing policy for global spec governance and change traceability |
 | **0.6.0** | Big barance update: item, enemy, race, others |
 | 0.5.3 | Two tabs mode. Dark mode, Laika mode |
 | 0.5.2 | Flavor text update. Fixed auto equipment logic, update side quest barance, especially embezzlement part logic. Refine AFK part. |
@@ -137,5 +138,38 @@
 | 0.2.1 | Update:8.7 Divine Bureau, 1. Clairvoyance (add total counts at Normal reward ), Adding 2. Item Comedium and 3. Bestiary |
 | 0.2.0 | Big update: 2.1 Global constants (change randamness upgrade), 2.3 Expedition & Enemies, 2.4 Items, 3. INITIALIZATION, 5.1 "Loot-Gate" progression system, 6.5 Outcome  7. REWARD (change the logic), 8.4 Expedition, 8.7 Divine Bureau (setting)  |
 | 0.1.4 |                                                                |
+
+## 12. SPECIFICATION EDITING POLICY
+
+### 12.1 Root File Governance
+- `Specification.md` is the table of contents and global policy document for the full specification tree.
+- Feature-specific rules must be defined in the referenced section files, not in `Specification.md`, unless the rule is global in scope.
+
+### 12.2 Cross-Reference Update Requirement
+- Every specification change must update all affected cross-references in the same change set.
+- Renames are forbidden unless all inbound references are updated in the same change set.
+
+### 12.3 Required Contents for Behavioral Changes
+- Every behavioral change must include all of the following:
+  - affected section IDs,
+  - a short rationale,
+  - exact anchors or identifiers added or changed,
+  - a changelog entry in `Specification.md`.
+
+### 12.4 Keyword Family Expansion Requirement
+- When adding a new keyword family such as `terrain.*`, the editor must update all applicable locations in the same change set:
+  - glossary or identifier definition,
+  - data source section,
+  - runtime behavior section,
+  - UI or logging section if the behavior is player-visible.
+
+### 12.5 Deterministic Language Requirement
+- Ambiguous language such as “slightly” or “sometimes” must be replaced with deterministic rules.
+
+### 12.6 Clarification Requirement
+- If Codex cannot determine the intended behavior from the existing specification text, it must stop and request clarification instead of inventing game logic.
+
+### 12.7 Repository Workflow Requirement
+- If the repository workflow still requires it, `build_number.txt` must be incremented after approved specification changes.
     
 **END OF SPECIFICATION**
