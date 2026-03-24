@@ -251,13 +251,13 @@ If `a.*` with phase = START:
 
 	- **self-inflicted damage**
       - If `terrain.vine-snare`: actor.`d.HP` -= 0.01 x actor.current_HP
-        - Log: `log.terrain.vine-snare` + (N) :Left-aligned 
+        - Log: `log.terrain.vine-snare` + (N) :left-aligned 
       - If `terrain.crystal-zone` and (phase is MID): actor.`d.HP` -= 0.05 x actor.total_damage
-        - Log: `log.terrain.crystal-zone` + (N) :Left-aligned 
+        - Log: `log.terrain.crystal-zone` + (N) :left-aligned 
       - If `terrain.conduction` and actor.`e.thunder`:  actor.`d.HP` -= 0.05 x (actor.total_damage of `e.thunder`)
-        - Log: `log.terrain.conduction` + (⚡ N) :Left-aligned 
+        - Log: `log.terrain.conduction` + (⚡ N) :left-aligned 
       - If `terrain.mana-burn` and (phase is MID): actor.`d.HP` -= 0.02 x actor.max_HP
-        - Log: `log.terrain.mana-burn` + (N) :Left-aligned 
+        - Log: `log.terrain.mana-burn` + (N) :left-aligned 
 
 **on-defeat**
 - If current opponent.`d.HP` =< 0, if opponent.`a.resurrect`:
