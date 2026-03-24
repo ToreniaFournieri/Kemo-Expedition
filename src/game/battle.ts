@@ -440,6 +440,7 @@ function calculateSingleEnemyAttackDamage(
   enemyHp: number,
   partyHp: number,
   maxPartyHp: number,
+  terrainEffect?: TerrainEffectKey | null,
   runtimeOffenseMultiplier: number = 1.0,
 ): number {
   let attack = 0;
@@ -477,6 +478,7 @@ function calculateSingleEnemyAttackDamage(
   const partyDefenseAbilityAmplifier = getPartyDefenseAbilityAmplifier(phase, characterStats, targetCharStats.row);
   const rageAmplifier = getEnemyRageAmplifier(enemy, enemyHp);
   const mutualAmplifier = getMutualAmplifier(phase, enemy.abilities, targetCharStats.abilities);
+  const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect);
   const swarmAmplifier = getSwarmAmplifier(
     enemy.abilities,
     enemyHp,
@@ -485,7 +487,7 @@ function calculateSingleEnemyAttackDamage(
     partyHp,
     maxPartyHp,
   );
-  const rawDamage = (attack - defense) * amplifier * runtimeOffenseMultiplier * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * mutualAmplifier * swarmAmplifier;
+  const rawDamage = (attack - defense) * amplifier * runtimeOffenseMultiplier * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * mutualAmplifier * terrainAmplifier * swarmAmplifier;
   const totalDamage = Math.max(1, rawDamage);
 
   return Math.floor(totalDamage);
@@ -541,6 +543,19 @@ function getPartyDefenseAbilityAmplifier(
   return defenderLevel >= 3 ? 1 / 2 : defenderLevel === 2 ? 3 / 5 : defenderLevel === 1 ? 2 / 3 : 1.0;
 }
 
+// SpecRef: 6.1.4.1 | Function of attack | f.terrain_amplifier
+function getTerrainAmplifier(
+  phase: BattleActionPhase,
+  terrainEffect?: TerrainEffectKey | null,
+): number {
+  if (!terrainEffect) return 1.0;
+  if ((phase === 'long' || phase === 'close') && terrainEffect === 'terrain.exposure') return 1.3;
+  if ((phase === 'long' || phase === 'close') && terrainEffect === 'terrain.dark-field') return 1.45;
+  if (phase === 'mid' && terrainEffect === 'terrain.light-field') return 1.45;
+  if (phase === 'mid' && terrainEffect === 'terrain.sanctuary') return 0.67;
+  return 1.0;
+}
+
 // SpecRef: 6.1.4.1 | Function of attack | f.damage_calculation
 // SpecRef: 6.1.4.2 | Function of targeting | f.hit_detection
 function calculateCharacterFriendlyFireDamage(
@@ -551,6 +566,7 @@ function calculateCharacterFriendlyFireDamage(
   partyStats: ComputedPartyStats,
   partyHp: number,
   partyDeityKey: string | null,
+  terrainEffect?: TerrainEffectKey | null,
   noAMultiplier: number = 1.0,
   temporaryAccuracyBonus: number = 0,
   runtimeOffenseMultiplier: number = 1.0,
@@ -607,6 +623,7 @@ function calculateCharacterFriendlyFireDamage(
   const rageAmplifier = getCharacterRageAmplifier(attacker, partyHp, partyStats.hp);
   const momentumAmplifier = getCharacterMomentumAmplifier(attacker, partyHp, partyStats.hp);
   const mutualAmplifier = getMutualAmplifier(phase, attacker.abilities, target.abilities);
+  const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect);
   const swarmAmplifier = getSwarmAmplifier(
     attacker.abilities,
     partyHp,
@@ -628,6 +645,7 @@ function calculateCharacterFriendlyFireDamage(
       * rageAmplifier
       * momentumAmplifier
       * mutualAmplifier
+      * terrainAmplifier
       * swarmAmplifier
   ));
 
@@ -1041,6 +1059,7 @@ function calculateCharacterDamage(
   partyStats: ComputedPartyStats,
   partyHp: number,
   partyDeityKey: string | null,
+  terrainEffect?: TerrainEffectKey | null,
   noAMultiplier: number = 1.0, // For counter/re-attack, use 0.5
   temporaryAccuracyBonus: number = 0,
   runtimeOffenseMultiplier: number = 1.0,
@@ -1145,6 +1164,7 @@ function calculateCharacterDamage(
   const rageAmplifier = getCharacterRageAmplifier(charStats, partyHp, partyStats.hp);
   const momentumAmplifier = getCharacterMomentumAmplifier(charStats, partyHp, partyStats.hp);
   const mutualAmplifier = getMutualAmplifier(phase, charStats.abilities, enemy.abilities);
+  const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect);
   const swarmAmplifier = getSwarmAmplifier(
     charStats.abilities,
     partyHp,
@@ -1157,7 +1177,7 @@ function calculateCharacterDamage(
   const partyOffenseAmplifier = getPartyOffenseAbilityAmplifier(phase, characterStats, charStats.row);
   const basePerHitDamage = Math.max(1, Math.floor(
     (attack - effectiveDefense) * offenseAmplifier * runtimeOffenseMultiplier * charStats.elementalOffenseValue *
-    elementalMultiplier * defenseAmplifier * partyOffenseAmplifier * rageAmplifier * momentumAmplifier * mutualAmplifier * swarmAmplifier
+    elementalMultiplier * defenseAmplifier * partyOffenseAmplifier * rageAmplifier * momentumAmplifier * mutualAmplifier * terrainAmplifier * swarmAmplifier
   ));
 
   // All phases now use hit detection.
@@ -2389,7 +2409,7 @@ export function executeBattle(
       return;
     }
 
-    const singleDamage = calculateSingleEnemyAttackDamage('close', enemy, characterStats, targetCharStats, enemyHp, partyHp, partyStats.hp, enemyOffenseAmplifierMultiplier);
+    const singleDamage = calculateSingleEnemyAttackDamage('close', enemy, characterStats, targetCharStats, enemyHp, partyHp, partyStats.hp, environment.terrainEffect, enemyOffenseAmplifierMultiplier);
     const enemyCloseAccuracyBonus = enemyTemporaryAccuracyBonus;
     const attempts = Math.ceil(getEnemyNoA('close', enemy) * enemyFlyingNoAMultiplier * counterNoAMultiplier);
     let hits = 0;
@@ -2465,7 +2485,7 @@ export function executeBattle(
       return;
     }
 
-    const reCounterResult = calculateCharacterDamage('close', targetCharStats, targetChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, reCounterNoAMultiplier * partyFlyingNoAMultiplier, temporaryAccuracyBonusByCharacterId.get(targetCharStats.characterId) ?? 0, resolveCharacterOffenseAmplifierMultiplier(targetCharStats.characterId));
+    const reCounterResult = calculateCharacterDamage('close', targetCharStats, targetChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, reCounterNoAMultiplier * partyFlyingNoAMultiplier, temporaryAccuracyBonusByCharacterId.get(targetCharStats.characterId) ?? 0, resolveCharacterOffenseAmplifierMultiplier(targetCharStats.characterId));
     if (reCounterResult.totalAttempts <= 0) {
       return;
     }
@@ -2517,7 +2537,7 @@ export function executeBattle(
       const coverChar = party.characters.find(c => c.id === coverCharStats.characterId);
       if (!coverChar) continue;
 
-      const coveringFireResult = calculateCharacterDamage('long', coverCharStats, coverChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, coveringFireNoAMultiplier, 0, resolveCharacterOffenseAmplifierMultiplier(coverCharStats.characterId));
+      const coveringFireResult = calculateCharacterDamage('long', coverCharStats, coverChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, coveringFireNoAMultiplier, 0, resolveCharacterOffenseAmplifierMultiplier(coverCharStats.characterId));
       if (coveringFireResult.totalAttempts <= 0) continue;
 
       if (isIllusionActive('long', getEnemyAbilityLevel(enemy, 'illusion') > 0, 'enemy', consumedIllusionStateIds)) {
@@ -3446,6 +3466,7 @@ export function executeBattle(
                 enemyHp,
                 partyHp,
                 partyStats.hp,
+                environment.terrainEffect,
                 enemyOffenseAmplifierMultiplier * ambushAmplifier,
               );
               targetAttack.hitDamages.push(Math.max(1, Math.floor(singleDamage * resonanceAmplifier)));
@@ -3755,6 +3776,7 @@ export function executeBattle(
               partyStats,
               partyHp,
               partyDeityKey,
+              environment.terrainEffect,
               getCounterNoAMultiplier(attack.charStats) * (phase === 'close' ? partyFlyingNoAMultiplier : 1.0),
               phase === 'close' ? (temporaryAccuracyBonusByCharacterId.get(charId) ?? 0) : 0,
               resolveCharacterOffenseAmplifierMultiplier(charId),
@@ -3822,7 +3844,7 @@ export function executeBattle(
               const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, attack.charStats.evasionBonus, i, phase, getDeflectionLevel(attack.charStats), getEnemyFocusLevel(enemy));
               if (!didHit) continue;
               reCounterHits += 1;
-              reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, characterStats, attack.charStats, enemyHp, partyHp, partyStats.hp, enemyOffenseAmplifierMultiplier);
+              reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, characterStats, attack.charStats, enemyHp, partyHp, partyStats.hp, environment.terrainEffect, enemyOffenseAmplifierMultiplier);
             }
 
             const avoidedByPartyIllusionOnReCounter = isPartyIllusionActive(phase, characterStats, consumedPartyIllusion);
@@ -3919,7 +3941,7 @@ export function executeBattle(
             const magicalCounterNoAMultiplier = getMagicalCounterNoAMultiplier(magicalCounterStats);
             if (magicalCounterNoAMultiplier <= 0) continue;
 
-            const magicalCounterResult = calculateCharacterDamage('mid', magicalCounterStats, magicalCounterChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, magicalCounterNoAMultiplier, 0, resolveCharacterOffenseAmplifierMultiplier(charId));
+            const magicalCounterResult = calculateCharacterDamage('mid', magicalCounterStats, magicalCounterChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, magicalCounterNoAMultiplier, 0, resolveCharacterOffenseAmplifierMultiplier(charId));
             if (magicalCounterResult.totalAttempts <= 0) continue;
 
             addEnemyHitsReceived(magicalCounterResult.hits);
@@ -4054,6 +4076,7 @@ export function executeBattle(
             partyStats,
             partyHp,
             partyDeityKey,
+            environment.terrainEffect,
             noAMultiplier,
             characterPhaseAccuracyBonus,
             resolveCharacterOffenseAmplifierMultiplier(cs.characterId) * ambushMultiplier,
@@ -4100,6 +4123,7 @@ export function executeBattle(
             partyStats,
             partyHp,
             partyDeityKey,
+            environment.terrainEffect,
             noAMultiplier,
             characterPhaseAccuracyBonus,
             resolveCharacterOffenseAmplifierMultiplier(cs.characterId) * ambushMultiplier,
