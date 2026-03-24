@@ -5333,6 +5333,21 @@ function PartyTab({
                 );
               })()}
             </div>
+            <div className="text-xs text-gray-500">
+              {/* SpecRef: 8.2.2 | Party member details | Status */}
+              属性耐性:{' '}
+              {([
+                { key: 'fire', emoji: '🔥' },
+                { key: 'ice', emoji: '❄️' },
+                { key: 'thunder', emoji: '⚡' },
+              ] as const).map(({ key, emoji }, index) => (
+                <Fragment key={key}>
+                  {index > 0 ? ',' : ''}
+                  <span className="sub-theme-emoji-icon" aria-hidden="true">{emoji}</span>
+                  {Math.round(Math.max(0.01, stats.elementalDefenseMultipliers[key] ?? 1) * 100)}%
+                </Fragment>
+              ))}
+            </div>
             {/* Bonuses */}
             {(() => {
               const isMasterClass = char.mainClassId === char.subClassId;
