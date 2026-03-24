@@ -1230,26 +1230,39 @@ function hasAbility(abilities: AbilityLike[], abilityId: AbilityId): boolean {
 function rollInitiative(
   firstStrikeLevel: number,
   options?: {
+    terrainEffect?: TerrainEffectKey | null;
+    actorType?: 'enemy' | 'party';
     fertilityBonus?: number;
     hasSlow?: boolean;
     affectedByFrostbite?: boolean;
   },
 ): number {
-  const diceCount = firstStrikeLevel >= 3 ? 4 : firstStrikeLevel >= 2 ? 3 : firstStrikeLevel === 1 ? 2 : 1;
+  // SpecRef: 6.1.1.2 | LONG, MID, CLOSE phase | Speed & Turn Order (Rolling Dice Rule)
+  const isMachineLogic = options?.terrainEffect === 'terrain.machine-logic';
+  const firstStrikeEnabled = !isMachineLogic && options?.terrainEffect !== 'terrain.ash-haze';
+  const effectiveFirstStrikeLevel = firstStrikeEnabled ? firstStrikeLevel : 0;
+  const diceCount = effectiveFirstStrikeLevel >= 3 ? 4 : effectiveFirstStrikeLevel >= 2 ? 3 : effectiveFirstStrikeLevel === 1 ? 2 : 1;
   let total = 0;
   for (let i = 0; i < diceCount; i++) {
     total += Math.floor(Math.random() * 3) + 1;
   }
 
-  let result = firstStrikeLevel >= 3 ? Math.min(9, total) : total;
-  if ((options?.fertilityBonus ?? 0) > 0) {
+  let result = effectiveFirstStrikeLevel >= 3 ? Math.min(9, total) : total;
+
+  if (!isMachineLogic && (options?.fertilityBonus ?? 0) > 0) {
     result = Math.min(9, result + (options?.fertilityBonus ?? 0));
   }
-  if (options?.hasSlow) {
+  if (!isMachineLogic && options?.hasSlow) {
     result = Math.max(1, result - 1);
   }
-  if (options?.affectedByFrostbite) {
+  if (!isMachineLogic && options?.affectedByFrostbite) {
     result = Math.max(1, result - 1);
+  }
+  if (!isMachineLogic && options?.terrainEffect === 'terrain.tailwind' && options?.actorType === 'party') {
+    result = Math.min(9, result + (Math.floor(Math.random() * 3) + 1));
+  }
+  if (!isMachineLogic && options?.terrainEffect === 'terrain.enemy-high-ground' && options?.actorType === 'enemy') {
+    result = Math.min(9, result + (Math.floor(Math.random() * 3) + 1));
   }
 
   return result;
@@ -2785,6 +2798,8 @@ export function executeBattle(
     const enemyIsEligibleActor = isEligibleEnemyForPhase(phase, enemy);
     const enemyInitiativeRoll = enemyIsEligibleActor
       ? rollInitiative(getEnemyFirstStrikeLevel(enemy), {
+        terrainEffect: environment.terrainEffect,
+        actorType: 'enemy',
         hasSlow: hasAbility(enemy.abilities, 'slow'),
         affectedByFrostbite: partyHasFrostbite,
       })
@@ -2794,6 +2809,8 @@ export function executeBattle(
       .map(cs => ({
         stats: cs,
         roll: rollInitiative(getFirstStrikeLevel(cs), {
+          terrainEffect: environment.terrainEffect,
+          actorType: 'party',
           fertilityBonus: hasFertilityInitiativeBonus ? 1 : 0,
           hasSlow: hasAbility(cs.abilities, 'slow'),
           affectedByFrostbite: enemyHasFrostbite,
