@@ -676,7 +676,7 @@ function calculateCharacterFriendlyFireDamage(
   let hits = 0;
   let damage = 0;
   for (let i = 1; i <= noA; i++) {
-    if (hitDetection(actorAccuracyPotency, attacker.accuracyBonus + temporaryAccuracyBonus, target.evasionBonus, i, phase, targetDeflectionLevel, actorFocusLevel)) {
+    if (hitDetection(actorAccuracyPotency, attacker.accuracyBonus + temporaryAccuracyBonus, target.evasionBonus, i, phase, targetDeflectionLevel, actorFocusLevel, terrainEffect)) {
       hits += 1;
       const resonanceAmplifier = canApplyResonance ? getResonanceAmplifier(resonance?.level, hits) : 1.0;
       damage += Math.max(1, Math.floor(basePerHitDamage * resonanceAmplifier));
@@ -1046,12 +1046,26 @@ function hitDetection(
   nthHit: number, // 1-indexed
   phase: BattleActionPhase,
   opponentDeflectionLevel: number,
-  actorFocusLevel: number
+  actorFocusLevel: number,
+  terrainEffect?: TerrainEffectKey | null,
 ): boolean {
+  if (
+    (phase === 'long' && terrainEffect === 'terrain.sniper-domain')
+    || (phase === 'mid' && terrainEffect === 'terrain.spell-domain')
+    || (phase === 'close' && terrainEffect === 'terrain.duelist-domain')
+  ) {
+    return true;
+  }
+
   const focusMultiplier = actorFocusLevel >= 2 ? 1.3 : actorFocusLevel >= 1 ? 1.2 : 1.0;
-  const effectiveAccuracyBonus = actorFocusLevel > 0
+  let effectiveAccuracyBonus = actorFocusLevel > 0
     ? roundUpToThirdDecimal(actorAccuracyBonus * focusMultiplier)
     : actorAccuracyBonus;
+  if (phase === 'long' && terrainEffect === 'terrain.fog') {
+    effectiveAccuracyBonus -= 25;
+  } else if (phase === 'long' && terrainEffect === 'terrain.sunny-beach') {
+    effectiveAccuracyBonus += 20;
+  }
   const decayOfAccuracy = Math.max(0.86, Math.min(0.98, 0.90 + effectiveAccuracyBonus - opponentEvasionBonus));
   let baseChance = actorAccuracyPotency;
   if (phase === 'long') {
@@ -1209,7 +1223,7 @@ function calculateCharacterDamage(
   let hits = 0;
   let damage = 0;
   for (let i = 1; i <= noA; i++) {
-    if (hitDetection(actorAccuracyPotency, charStats.accuracyBonus + temporaryAccuracyBonus, enemyEvasion, i, phase, enemyDeflectionLevel, actorFocusLevel)) {
+    if (hitDetection(actorAccuracyPotency, charStats.accuracyBonus + temporaryAccuracyBonus, enemyEvasion, i, phase, enemyDeflectionLevel, actorFocusLevel, terrainEffect)) {
       hits++;
       const resonanceAmplifier = canApplyResonance ? getResonanceAmplifier(resonance?.level, hits) : 1.0;
       damage += Math.max(1, Math.floor(basePerHitDamage * resonanceAmplifier));
@@ -2450,7 +2464,7 @@ export function executeBattle(
     );
     let hits = 0;
     for (let i = 1; i <= attempts; i++) {
-      const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyCloseAccuracyBonus, targetCharStats.evasionBonus, i, 'close', getDeflectionLevel(targetCharStats), getEnemyFocusLevel(enemy));
+      const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyCloseAccuracyBonus, targetCharStats.evasionBonus, i, 'close', getDeflectionLevel(targetCharStats), getEnemyFocusLevel(enemy), environment.terrainEffect);
       if (didHit) {
         hits += 1;
       }
@@ -3479,7 +3493,8 @@ export function executeBattle(
               enemyHitIndex,
               phase,
               getDeflectionLevel(targetCharStats),
-              getEnemyFocusLevel(enemy)
+              getEnemyFocusLevel(enemy),
+              environment.terrainEffect,
             );
             enemyHitIndex += 1;
 
@@ -3890,7 +3905,7 @@ export function executeBattle(
             let reCounterDamage = 0;
             let reCounterHits = 0;
             for (let i = 1; i <= reCounterAttempts; i++) {
-              const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, attack.charStats.evasionBonus, i, phase, getDeflectionLevel(attack.charStats), getEnemyFocusLevel(enemy));
+              const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, attack.charStats.evasionBonus, i, phase, getDeflectionLevel(attack.charStats), getEnemyFocusLevel(enemy), environment.terrainEffect);
               if (!didHit) continue;
               reCounterHits += 1;
               reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, characterStats, attack.charStats, enemyHp, partyHp, partyStats.hp, environment.terrainEffect, enemyOffenseAmplifierMultiplier);
