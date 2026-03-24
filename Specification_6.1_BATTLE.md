@@ -502,14 +502,16 @@ If `a.*` with phase = START:
 - *Defeat*: no penalties (current version). gains `d.experience` points, but no item reward. Back to home without trophies. 
 - *Victory*: gains `d.experience` points to a party. has a chance of gaining reward from enemies drop item. Check the conditions bellow.
   - Elite Rooms (`x.floor`:1-5, `x.room`:4)
-    - If `God of Restoration`: **Heal 20% of missing HP**
+    - If `God of Restoration` and (Terrain effect is not `terrain.rotwood`): **Heal 20% of missing HP**
       - Log: "再生の神の効果！" + "(HP回復+N)"
     - IF `God of Attrition`: **reduce 5% of remaining HP**
       - Log: "消耗の神の効果！" + "(HP消耗-N)"
   - Normal and Elite rooms
-    - If `terrain.rejuvenation`: **Heal 2% of of missing HP**
+    - If `terrain.rejuvenation`: Heal 2% of of **missing HP**
 	  - Log: `log.terrain.rejuvenation` + "(HP回復+N)"
+    - If `terrain.abundant`:  Heal 2% of of **max_HP**
     - If the party.`d.HP` <= 30% of max HP, back to home with trophies.   -> `Wonded_Retreat`
+    - If `terrain.decay`:  reduce 2% of of **max_HP** 
   - Normal Rooms (`x.room`:1–2): Proceed to the next `x.room`.
   - Gate Rooms (`x.room`: 3 check): At the end of Room 3, the "Loot-Gate" check occurs. If passed, proceed to `x.room`:4 (Elite/Boss).
   - Elite Rooms (`x.floor`:1-5, `x.room`:4): Proceed to the next floor: `x.floor` +1 , `x.room`:1.
