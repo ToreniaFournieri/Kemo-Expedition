@@ -558,6 +558,21 @@ function getTerrainAmplifier(
   return 1.0;
 }
 
+// SpecRef: 6.1.3.1 | Actor action | f.NoA
+function getTerrainNoAAmplifier(
+  phase: BattleActionPhase,
+  terrainEffect?: TerrainEffectKey | null,
+): number {
+  if (!terrainEffect) return 1.0;
+  if (phase === 'close' && terrainEffect === 'terrain.rough-waves') return 0.75;
+  if (phase === 'long' && terrainEffect === 'terrain.heavy-wind') return 0.75;
+  if (phase === 'long' && terrainEffect === 'terrain.burrow') return 0.5;
+  if (terrainEffect === 'terrain.low-gravity') return 1.3;
+  if (terrainEffect === 'terrain.gravity') return 0.7;
+  if ((phase === 'mid' || phase === 'close') && terrainEffect === 'terrain.limestone-cave') return 1.5;
+  return 1.0;
+}
+
 // SpecRef: 6.1.4.1 | Function of attack | f.damage_calculation
 // SpecRef: 6.1.4.2 | Function of targeting | f.hit_detection
 function calculateCharacterFriendlyFireDamage(
@@ -595,7 +610,7 @@ function calculateCharacterFriendlyFireDamage(
     defenseAmplifier = Math.max(0.01, target.physicalDefenseAmplifier + target.deityDefenseAmplifierBonus.physical);
   }
 
-  noA = Math.ceil(noA * noAMultiplier);
+  noA = Math.ceil(noA * noAMultiplier * getTerrainNoAAmplifier(phase, terrainEffect));
   if (noA <= 0 || attack <= 0) return { damage: 0, totalAttempts: 0, hits: 0 };
 
   const effectiveDefense = defense * (1 - attacker.penetMultiplier);
@@ -1091,7 +1106,7 @@ function calculateCharacterDamage(
   }
 
   // Apply NoA multiplier and round up
-  noA = Math.ceil(noA * noAMultiplier);
+  noA = Math.ceil(noA * noAMultiplier * getTerrainNoAAmplifier(phase, terrainEffect));
 
   if (noA === 0 || attack <= 0) return { damage: 0, totalAttempts: 0, hits: 0 };
 
@@ -2413,7 +2428,12 @@ export function executeBattle(
 
     const singleDamage = calculateSingleEnemyAttackDamage('close', enemy, characterStats, targetCharStats, enemyHp, partyHp, partyStats.hp, environment.terrainEffect, enemyOffenseAmplifierMultiplier);
     const enemyCloseAccuracyBonus = enemyTemporaryAccuracyBonus;
-    const attempts = Math.ceil(getEnemyNoA('close', enemy) * enemyFlyingNoAMultiplier * counterNoAMultiplier);
+    const attempts = Math.ceil(
+      getEnemyNoA('close', enemy)
+      * enemyFlyingNoAMultiplier
+      * counterNoAMultiplier
+      * getTerrainNoAAmplifier('close', environment.terrainEffect)
+    );
     let hits = 0;
     for (let i = 1; i <= attempts; i++) {
       const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyCloseAccuracyBonus, targetCharStats.evasionBonus, i, 'close', getDeflectionLevel(targetCharStats), getEnemyFocusLevel(enemy));
@@ -3397,7 +3417,12 @@ export function executeBattle(
         const baseNoA = getEnemyNoA(phase, enemy);
         const enemyPhaseAccuracyBonus = phase === 'close' ? enemyTemporaryAccuracyBonus : 0;
         const howlEffect = baseNoA > 0 ? consumePendingPartyHowlEffect() : null;
-        const noA = Math.ceil(baseNoA * (howlEffect?.multiplier ?? 1.0) * (phase === 'close' ? enemyFlyingNoAMultiplier : 1.0));
+        const noA = Math.ceil(
+          baseNoA
+          * (howlEffect?.multiplier ?? 1.0)
+          * (phase === 'close' ? enemyFlyingNoAMultiplier : 1.0)
+          * getTerrainNoAAmplifier(phase, environment.terrainEffect)
+        );
         if (noA <= 0) continue;
         if (enemyHasNoOffense(enemy)) continue;
         if (enemyHasAntagonism) continue;
@@ -3835,7 +3860,11 @@ export function executeBattle(
               continue;
             }
 
-            const reCounterAttempts = Math.ceil(getEnemyNoA(phase, enemy) * enemyReCounterNoAMultiplier);
+            const reCounterAttempts = Math.ceil(
+              getEnemyNoA(phase, enemy)
+              * enemyReCounterNoAMultiplier
+              * getTerrainNoAAmplifier(phase, environment.terrainEffect)
+            );
             if (reCounterAttempts <= 0) {
               continue;
             }
@@ -3930,7 +3959,12 @@ export function executeBattle(
 
         runEnemyAttack(noA, false);
         if (enemyHasReAttack(enemy) && enemyHp > 0 && partyHp > 0) {
-          runEnemyAttack(Math.ceil(baseNoA * getEnemyReAttackNoAMultiplier(enemy) * (phase === 'close' ? enemyFlyingNoAMultiplier : 1.0)), true);
+          runEnemyAttack(Math.ceil(
+            baseNoA
+            * getEnemyReAttackNoAMultiplier(enemy)
+            * (phase === 'close' ? enemyFlyingNoAMultiplier : 1.0)
+            * getTerrainNoAAmplifier(phase, environment.terrainEffect)
+          ), true);
         }
 
         if (phase === 'mid' && enemyHp > 0 && partyHp > 0 && getEnemyAbilityLevel(enemy, 'null_counter') <= 0) {
