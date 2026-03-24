@@ -772,7 +772,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "terrain.predation",
         "label": "捕食本能",
-        "description": "HPが50%未満の対象への物理与ダメージが1.3倍になる"
+        "description": "HPが50%未満の対象への物理ダメージが1.3倍になる"
       },
       {
         "key": "terrain.tailwind",
@@ -857,7 +857,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "terrain.frenzy",
         "label": "狂騒",
-        "description": "戦闘開始時、双方の物理被ダメージが1.4倍になる"
+        "description": "双方の被ダメージが1.25倍になる"
       },
       {
         "key": "terrain.abundant",
@@ -905,6 +905,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "戦闘開始時、双方のいずれかの対象のアビリティ1つを忘却させる"
       },
       {
+        "key": "terrain.machine-logic",
+        "label": "機械論理",
+        "description": "行動順を変化させるすべての効果は無効化される(先制攻撃・鈍足など)"
+      },
+      {
         "key": "terrain.spell-domain",
         "label": "必中魔法領域",
         "description": "双方の魔法攻撃はすべて必中する"
@@ -932,7 +937,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "terrain.light-field",
         "label": "光域",
-        "description": "双方の魔法ダメージが0.67倍になる"
+        "description": "双方の魔法ダメージが1.45倍になる"
       },
       {
         "key": "terrain.dark-field",
@@ -942,12 +947,12 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "terrain.low-gravity",
         "label": "低重力",
-        "description": "すべての攻撃回数（NoA）が1.3倍になる"
+        "description": "すべての攻撃回数が1.3倍になる"
       },
       {
         "key": "terrain.gravity",
         "label": "重力場",
-        "description": "すべての攻撃回数（NoA）が0.7倍になる"
+        "description": "すべての攻撃回数が0.7倍になる"
       },
       {
         "key": "terrain.mana-burn",
