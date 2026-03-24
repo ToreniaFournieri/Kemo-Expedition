@@ -387,7 +387,7 @@
 | `terrain.abundant` | 豊富 | 各部屋の終了時、最大HPの2%を回復する |
 | `terrain.rotwood` | 腐敗 | すべての回復能力は無効化される |
 | `terrain.decay` | 崩壊 | 戦闘終了時、最大HPの2%のダメージを受ける |
-| `terrain.leakage` | 漏電 | 各部屋の終了時、減少HPの3%に等しい雷属性ダメージを受ける |
+| `terrain.leakage` | 漏電 | 各部屋の終了時、現在HPの3%に等しい雷属性ダメージを受ける |
 | `terrain.exposure` | 露出 | 双方の物理被ダメージが1.3倍になる |
 | `terrain.dark-field` | 闇域 | 双方の物理ダメージが1.45倍になる |
 | `terrain.light-field` | 光域 | 双方の魔法ダメージが1.45倍になる |
