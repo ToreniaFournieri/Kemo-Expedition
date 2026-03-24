@@ -1988,7 +1988,6 @@ function applyTerrainLeakageHpEffect(
   terrainEffect: TerrainEffectKey | undefined,
   roomType: RoomType,
   currentHp: number,
-  maxHp: number,
   thunderResistance: number
 ): { hp: number; damageAmount?: number } {
   if (terrainEffect !== 'terrain.leakage') {
@@ -1997,8 +1996,7 @@ function applyTerrainLeakageHpEffect(
   if (roomType !== 'battle_Normal' && roomType !== 'battle_Elite') {
     return { hp: currentHp };
   }
-  const missingHp = Math.max(0, maxHp - currentHp);
-  const damageAmount = Math.floor(missingHp * 0.03 * thunderResistance);
+  const damageAmount = Math.floor(Math.max(0, currentHp) * 0.03 * thunderResistance);
   if (damageAmount <= 0) {
     return { hp: currentHp };
   }
@@ -2461,7 +2459,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 terrainEffect,
                 roomDef.type,
                 currentHp,
-                partyStats.hp,
                 leakageThunderResistance
               );
               currentHp = leakageHpEffect.hp;
