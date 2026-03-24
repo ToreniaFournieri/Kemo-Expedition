@@ -21,6 +21,7 @@ import {
   NotificationStyle,
   NotificationCategory,
   RoomType,
+  TerrainEffectKey,
   EnemyDef,
   ExpeditionDepthLimit,
 } from '../types';
@@ -1784,6 +1785,58 @@ function buildDeityEffectLogEntry(
   return null;
 }
 
+const TERRAIN_REJUVENATION_LOGS = [
+  '{actor} は周囲の活力に満たされ、体力を回復した',
+  '{actor} の傷がゆっくりと癒えていく',
+  '{actor} は大地の力を受け、HPを回復した',
+  '{actor} の身体に微かな活力が巡った',
+  '{actor} は自然の息吹に包まれ、回復した',
+  '{actor} の疲労がわずかに和らいだ',
+  '{actor} の傷口が静かにふさがっていく',
+  '{actor} は環境の恩恵を受け、体力を取り戻した',
+  '{actor} に穏やかな再生の力が働いた',
+  '{actor} の身体がじんわりと回復していく',
+] as const;
+
+// SpecRef: 6.1.5 | Outcome | terrain.rejuvenation
+function applyTerrainRejuvenationHpEffect(
+  terrainEffect: TerrainEffectKey | undefined,
+  roomType: RoomType,
+  currentHp: number,
+  maxHp: number
+): { hp: number; healAmount?: number } {
+  if (terrainEffect !== 'terrain.rejuvenation') {
+    return { hp: currentHp };
+  }
+  if (roomType !== 'battle_Normal' && roomType !== 'battle_Elite') {
+    return { hp: currentHp };
+  }
+
+  const missingHp = Math.max(0, maxHp - currentHp);
+  const healAmount = Math.floor(missingHp * 0.02);
+  if (healAmount <= 0) {
+    return { hp: currentHp };
+  }
+
+  return {
+    hp: Math.min(maxHp, currentHp + healAmount),
+    healAmount,
+  };
+}
+
+// SpecRef: 6.2.2 | Terrain flavor text | log.terrain.rejuvenation
+function buildTerrainRejuvenationLogEntry(actorName: string, healAmount?: number): BattleLogEntry | null {
+  if (!healAmount || healAmount <= 0) return null;
+  const flavorText = TERRAIN_REJUVENATION_LOGS[Math.floor(Math.random() * TERRAIN_REJUVENATION_LOGS.length)]
+    ?? '{actor} の身体がじんわりと回復していく';
+  return {
+    phase: 'end',
+    actor: 'effect',
+    action: flavorText.replace('{actor}', actorName),
+    note: `(HP回復+${healAmount})`,
+  };
+}
+
 function buildRewardLogEntries(
   rewardLogEntries: { itemName: string; autoSellProfit?: number }[]
 ): BattleLogEntry[] {
@@ -2169,6 +2222,26 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               if (deityLogEntry) {
                 entry.details.push(deityLogEntry);
               }
+
+              const rejuvenationActorName = currentParty.characters[
+                Math.floor(Math.random() * currentParty.characters.length)
+              ]?.name ?? currentParty.name;
+              const terrainHpEffect = applyTerrainRejuvenationHpEffect(
+                terrainEffect,
+                roomDef.type,
+                currentHp,
+                partyStats.hp
+              );
+              currentHp = terrainHpEffect.hp;
+              entry.remainingPartyHP = currentHp;
+              const terrainLogEntry = buildTerrainRejuvenationLogEntry(
+                rejuvenationActorName,
+                terrainHpEffect.healAmount
+              );
+              if (terrainLogEntry) {
+                entry.details.push(terrainLogEntry);
+              }
+
               if (rewardLogEntries.length > 0) {
                 entry.details.push(...buildRewardLogEntries(rewardLogEntries));
               }
