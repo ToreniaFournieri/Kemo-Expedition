@@ -7914,8 +7914,15 @@ function SettingTab({
   const [activeAbilityHelp, setActiveAbilityHelp] = useState<{ key: string; title: string; description: string } | null>(null);
   const [abilityHelpPosition, setAbilityHelpPosition] = useState<{ top: number; left: number; width: number } | null>(null);
   const bestiaryListRef = useRef<HTMLDivElement | null>(null);
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Enemy Edit Pane
   const updateColosseumEnemySettings = useCallback((updates: Partial<ColosseumEnemySettings>) => {
-    setColosseumEnemySettings((prev) => normalizeColosseumEnemySettings({ ...prev, ...updates }));
+    setColosseumEnemySettings((prev) => {
+      const nextSettings = normalizeColosseumEnemySettings({ ...prev, ...updates });
+      // Persist immediately so battle execution (which reads storage) uses the latest setting
+      // even when the player changes Enemy Edit values and starts a battle right away.
+      saveColosseumEnemySettings(nextSettings);
+      return nextSettings;
+    });
   }, []);
 
   useEffect(() => {
