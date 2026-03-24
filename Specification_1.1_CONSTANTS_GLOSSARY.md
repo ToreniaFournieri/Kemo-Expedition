@@ -385,7 +385,7 @@
 |---|---|---|
 | `terrain.rejuvenation` | 活性化 | 各部屋の終了時、減少HPの2%を回復する |
 | `terrain.exposure` | 露出 | 双方の物理被ダメージが1.3倍になる |
-| `terrain.predation` | 捕食本能 | HPが50%未満の対象への物理与ダメージが1.3倍になる |
+| `terrain.predation` | 捕食本能 | HPが50%未満の対象への物理ダメージが1.3倍になる |
 | `terrain.tailwind` | 追い風 | パーティメンバーの行動速度が少し早まる（行動順判定に+1d3） |
 | `terrain.thunderstorm` | 雷雨 | 双方に雷威力x3/2(雷威力が上がる)を付与する |
 | `terrain.chill` | 冷気 | 部屋の継続時間が1.5倍になる。火属性攻撃を持つパーティメンバー1人につき、このペナルティを0.1軽減する |
@@ -418,7 +418,7 @@
 | `terrain.echo-domain` | 残響領域 | 同一戦闘中に使用された属性攻撃1回につき、その属性攻撃の効果が+10%される |
 | `terrain.decay` | 崩壊 | 戦闘終了時、最大HPの2%のダメージを受ける |
 | `terrain.chain-lightning` | 連鎖雷撃 | 雷属性攻撃が命中した場合、ランダムな別対象に30%威力で追加ヒットする |
-| `terrain.light-field` | 光域 | 双方の魔法ダメージが0.67倍になる |
+| `terrain.light-field` | 光域 | 双方の魔法ダメージが1.45倍になる |
 | `terrain.dark-field` | 闇域 | 双方の物理ダメージが1.45倍になる |
 | `terrain.low-gravity` | 低重力 | すべての攻撃回数（NoA）が1.3倍になる |
 | `terrain.gravity` | 重力場 | すべての攻撃回数（NoA）が0.7倍になる |
