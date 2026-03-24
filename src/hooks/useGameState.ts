@@ -1819,7 +1819,7 @@ function applyTerrainRejuvenationHpEffect(
   }
 
   const missingHp = Math.max(0, maxHp - currentHp);
-  const healAmount = Math.floor(missingHp * 0.02);
+  const healAmount = missingHp > 0 ? Math.max(1, Math.floor(missingHp * 0.02)) : 0;
   if (healAmount <= 0) {
     return { hp: currentHp };
   }
