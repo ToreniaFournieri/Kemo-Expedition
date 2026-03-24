@@ -58,7 +58,7 @@ import {
 import { getItemById, getItemsByTierAndRarity } from '../data/items';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { getItemDisplayName } from '../game/gameState';
-import { getDeityKey, getDeityRank, getEffectiveDeityTier, isNoFaithDeity, normalizeDeityName } from '../game/deity';
+import { getDeityKey, getDeityRank, isNoFaithDeity, normalizeDeityName } from '../game/deity';
 import { RACES } from '../data/races';
 import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
@@ -1720,10 +1720,10 @@ function getUnlockActorName(party: Party): string | undefined {
 
 function applyPeriodicDeityHpEffect(
   deityName: string,
-  totalDonatedGold: number,
   floorNumber: number,
   roomInFloor: number,
   roomType: RoomType,
+  terrainEffect: TerrainEffectKey | undefined,
   currentHp: number,
   maxHp: number
 ): { hp: number; healAmount?: number; attritionAmount?: number } {
@@ -1735,10 +1735,13 @@ function applyPeriodicDeityHpEffect(
   }
 
   const deityKey = getDeityKey(deityName);
-  const effectiveTier = getEffectiveDeityTier(totalDonatedGold);
+  const isHealingBlockedByTerrain = terrainEffect === 'terrain.rotwood';
   if (deityKey === 'Goddess of Restoration') {
+    if (isHealingBlockedByTerrain) {
+      return { hp: currentHp };
+    }
     const missingHp = maxHp - currentHp;
-    const healAmount = Math.floor(missingHp * (0.2 + 0.001 * effectiveTier));
+    const healAmount = Math.floor(missingHp * 0.2);
     return {
       hp: Math.min(maxHp, currentHp + healAmount),
       healAmount: healAmount > 0 ? healAmount : undefined,
@@ -1805,6 +1808,9 @@ function applyTerrainRejuvenationHpEffect(
   currentHp: number,
   maxHp: number
 ): { hp: number; healAmount?: number } {
+  if (terrainEffect === 'terrain.rotwood') {
+    return { hp: currentHp };
+  }
   if (terrainEffect !== 'terrain.rejuvenation') {
     return { hp: currentHp };
   }
@@ -1821,6 +1827,79 @@ function applyTerrainRejuvenationHpEffect(
   return {
     hp: Math.min(maxHp, currentHp + healAmount),
     healAmount,
+  };
+}
+
+// SpecRef: 6.1.5 | Outcome | terrain.abundant
+function applyTerrainAbundantHpEffect(
+  terrainEffect: TerrainEffectKey | undefined,
+  roomType: RoomType,
+  currentHp: number,
+  maxHp: number
+): { hp: number; healAmount?: number } {
+  if (terrainEffect === 'terrain.rotwood') {
+    return { hp: currentHp };
+  }
+  if (terrainEffect !== 'terrain.abundant') {
+    return { hp: currentHp };
+  }
+  if (roomType !== 'battle_Normal' && roomType !== 'battle_Elite') {
+    return { hp: currentHp };
+  }
+
+  const healAmount = Math.floor(maxHp * 0.02);
+  if (healAmount <= 0) {
+    return { hp: currentHp };
+  }
+
+  return {
+    hp: Math.min(maxHp, currentHp + healAmount),
+    healAmount,
+  };
+}
+
+// SpecRef: 6.1.5 | Outcome | terrain.decay
+function applyTerrainDecayHpEffect(
+  terrainEffect: TerrainEffectKey | undefined,
+  roomType: RoomType,
+  currentHp: number,
+  maxHp: number
+): { hp: number; damageAmount?: number } {
+  if (terrainEffect !== 'terrain.decay') {
+    return { hp: currentHp };
+  }
+  if (roomType !== 'battle_Normal' && roomType !== 'battle_Elite') {
+    return { hp: currentHp };
+  }
+
+  const damageAmount = Math.floor(maxHp * 0.02);
+  if (damageAmount <= 0) {
+    return { hp: currentHp };
+  }
+
+  return {
+    hp: Math.max(1, currentHp - damageAmount),
+    damageAmount,
+  };
+}
+
+function buildTerrainAbundantLogEntry(healAmount?: number): BattleLogEntry | null {
+  if (!healAmount || healAmount <= 0) return null;
+  return {
+    phase: 'end',
+    actor: 'effect',
+    action: '豊富',
+    note: `(HP回復+${healAmount})`,
+  };
+}
+
+function buildTerrainDecayLogEntry(damageAmount?: number): BattleLogEntry | null {
+  if (!damageAmount || damageAmount <= 0) return null;
+  return {
+    phase: 'end',
+    actor: 'effect',
+    action: '崩壊',
+    note: `(HP消耗-${damageAmount})`,
   };
 }
 
@@ -2198,10 +2277,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
               const deityHpEffect = applyPeriodicDeityHpEffect(
                 currentParty.deity.name,
-                state.global.deityDonations[normalizeDeityName(currentParty.deity.name)] ?? currentParty.deityGold ?? 0,
                 floor.floorNumber,
                 roomIndex + 1,
                 roomDef.type,
+                terrainEffect,
                 currentHp,
                 partyStats.hp
               );
@@ -2242,6 +2321,19 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 entry.details.push(terrainLogEntry);
               }
 
+              const abundantHpEffect = applyTerrainAbundantHpEffect(
+                terrainEffect,
+                roomDef.type,
+                currentHp,
+                partyStats.hp
+              );
+              currentHp = abundantHpEffect.hp;
+              entry.remainingPartyHP = currentHp;
+              const abundantLogEntry = buildTerrainAbundantLogEntry(abundantHpEffect.healAmount);
+              if (abundantLogEntry) {
+                entry.details.push(abundantLogEntry);
+              }
+
               if (rewardLogEntries.length > 0) {
                 entry.details.push(...buildRewardLogEntries(rewardLogEntries));
               }
@@ -2261,6 +2353,19 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   note: 'HPが30%以下のため、戦利品を持ち帰ります。',
                 });
               } else {
+                const decayHpEffect = applyTerrainDecayHpEffect(
+                  terrainEffect,
+                  roomDef.type,
+                  currentHp,
+                  partyStats.hp
+                );
+                currentHp = decayHpEffect.hp;
+                entry.remainingPartyHP = currentHp;
+                const decayLogEntry = buildTerrainDecayLogEntry(decayHpEffect.damageAmount);
+                if (decayLogEntry) {
+                  entry.details.push(decayLogEntry);
+                }
+
                 const reachedDepthLimit =
                   (currentParty.expeditionDepthLimit === '1f-3' && floor.floorNumber === 1 && roomIndex === 2)
                   || (currentParty.expeditionDepthLimit === '1f-4' && floor.floorNumber === 1 && roomIndex === 3)

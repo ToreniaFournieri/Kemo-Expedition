@@ -790,6 +790,11 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "部屋の継続時間が1.5倍になる。火属性攻撃を持つパーティメンバー1人につき、このペナルティを0.1軽減する"
       },
       {
+        "key": "terrain.rotwood",
+        "label": "腐敗",
+        "description": "すべての回復能力は無効化される"
+      },
+      {
         "key": "terrain.fog",
         "label": "濃霧",
         "description": "すべての遠距離攻撃の命中が-25される"
