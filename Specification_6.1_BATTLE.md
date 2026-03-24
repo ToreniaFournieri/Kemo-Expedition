@@ -249,6 +249,15 @@ If `a.*` with phase = START:
 	  - log "ロップ の氷属性攻撃は無効化された！　(2/4回)  (❄️ 0)" 
    - Else `d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
 
+	- **self-inflicted damage**
+      - If `terrain.vine-snare`: actor.`d.HP` -= 0.01 x actor.current_HP
+        - Log: `log.terrain.vine-snare` + (N) :Left-aligned 
+      - If `terrain.crystal-zone` and (phase is MID): actor.`d.HP` -= 0.05 x actor.total_damage
+        - Log: `log.terrain.crystal-zone` + (N) :Left-aligned 
+      - If `terrain.conduction` and actor.`e.thunder`:  actor.`d.HP` -= 0.05 x (actor.total_damage of `e.thunder`)
+        - Log: `log.terrain.conduction` + (⚡ N) :Left-aligned 
+      - If `terrain.mana-burn` and (phase is MID): actor.`d.HP` -= 0.02 x actor.max_HP
+        - Log: `log.terrain.mana-burn` + (N) :Left-aligned 
 
 **on-defeat**
 - If current opponent.`d.HP` =< 0, if opponent.`a.resurrect`:
