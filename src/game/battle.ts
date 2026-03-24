@@ -1808,6 +1808,67 @@ interface BattleEnvironment {
 
 const TRIGGER_TIMINGS_DESC = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0] as const;
 
+// SpecRef: 6.2.2 | Terrain flavor text | log.terrain.vine-snare
+const TERRAIN_VINE_SNARE_LOGS = [
+  '{actor} は蔓に絡め取られた！',
+  '{actor} の動きに反応し、蔓が締め付けた！',
+  '{actor} は足元の蔓に絡みつかれた！',
+  '{actor} が動くたび、蔓が体を締め上げる！',
+  '{actor} の体に蔓が巻き付き、力を奪う！',
+  '{actor} は捕食蔓に絡め取られ、傷ついた！',
+  '{actor} の動きに応じて、蔓が締め付けた！',
+  '{actor} は蔓に拘束され、体力を削られた！',
+  '{actor} の足元から蔓が伸び、絡みついた！',
+  '{actor} は絡みつく蔓により傷を負った！',
+] as const;
+
+// SpecRef: 6.2.2 | Terrain flavor text | log.terrain.crystal-zone
+const TERRAIN_CRYSTAL_ZONE_LOGS = [
+  '{actor} の魔力が反射し、体を傷つけた！',
+  '水晶が魔力を弾き返し、{actor} を傷つけた！',
+  '{actor} の放った魔法が反響し、自身に返ってきた！',
+  '水晶の共鳴が魔力を跳ね返した！',
+  '{actor} の魔力が歪み、反動となって返る！',
+  '水晶の輝きが魔法を屈折させ、{actor} に返した！',
+  '放たれた魔力が水晶に反射し、{actor} を襲う！',
+  '水晶域が魔力を拒み、{actor} に反動を与えた！',
+  '{actor} の魔法は水晶に吸収され、反動となって返る！',
+  '水晶の反響が、{actor} の体を打ち据えた！',
+] as const;
+
+// SpecRef: 6.2.2 | Terrain flavor text | log.terrain.conduction
+const TERRAIN_CONDUCTION_LOGS = [
+  '{actor} の雷撃が伝導し、自身に跳ね返った！',
+  '電流が巡り、{actor} 自身を焼いた！',
+  '雷が導かれ、{actor} に逆流した！',
+  '放たれた電撃が伝わり、{actor} に返った！',
+  '電流が拡散し、{actor} を巻き込んだ！',
+  '雷の力が循環し、{actor} に戻ってきた！',
+  '導電する空間が、電撃を{actor} に返した！',
+  '電撃が伝播し、{actor} 自身を打った！',
+  '雷が巡り巡って、{actor} を貫いた！',
+  '放たれた電流が逆流し、{actor} を襲った！',
+] as const;
+
+// SpecRef: 6.2.2 | Terrain flavor text | log.terrain.mana-burn
+const TERRAIN_MANA_BURN_LOGS = [
+  '{actor} の魔力が暴走し、体を蝕んだ！',
+  '魔力の反動が、{actor} の体を焼いた！',
+  '{actor} の内側で魔力が燃え上がった！',
+  '魔力の消耗が激しく、{actor} は傷ついた！',
+  '{actor} の魔力が乱れ、体に負荷がかかる！',
+  '魔力の奔流が、{actor} の体を侵食した！',
+  '{actor} は魔力の代償として体力を失った！',
+  '制御しきれない魔力が、{actor} を蝕む！',
+  '{actor} の体内で魔力が焼き付き、傷を負った！',
+  '魔力の過負荷が、{actor} にダメージを与えた！',
+] as const;
+
+function pickRandomTerrainFlavorText(logs: readonly string[], fallback: string, actorName: string): string {
+  const selected = logs[Math.floor(Math.random() * logs.length)] ?? fallback;
+  return selected.split('{actor}').join(actorName);
+}
+
 // SpecRef: 6.1.1.1 | START phase | actor.a.oblivion
 // SpecRef: 6.1.1.1 | START phase | actor.a.mimic
 // SpecRef: 6.1.1.1 | START phase | floor.terrain.*
@@ -2095,6 +2156,83 @@ export function executeBattle(
     }
 
     return false;
+  };
+
+  // SpecRef: 6.1.3.1 | Actor action | self-inflicted damage
+  const applyTerrainSelfInflictedDamage = (
+    actor: { kind: 'character'; stats: ComputedCharacterStats; name: string } | { kind: 'enemy'; name: string },
+    phase: BattleActionPhase,
+    totalDamage: number,
+    elementalOffense: ElementalOffense,
+  ): void => {
+    const terrainEffect = environment.terrainEffect;
+    if (!terrainEffect) return;
+
+    const currentHp = actor.kind === 'enemy' ? enemyHp : partyHp;
+    const maxHp = actor.kind === 'enemy' ? enemy.hp : partyStats.hp;
+    const appliedDamage = (amount: number): number => (
+      actor.kind === 'enemy' ? applyEnemyDamage(amount) : applyPartyDamage(amount)
+    );
+
+    let selfDamage = 0;
+    let actionText = '';
+    let noteText = '';
+    let elementalTag: ElementalOffense | undefined;
+
+    if (terrainEffect === 'terrain.vine-snare') {
+      selfDamage = Math.floor(currentHp * 0.01);
+      actionText = pickRandomTerrainFlavorText(
+        TERRAIN_VINE_SNARE_LOGS,
+        '{actor} は蔓に絡め取られた！',
+        actor.name,
+      );
+      noteText = `(HP減少-${selfDamage})`;
+    } else if (terrainEffect === 'terrain.crystal-zone' && phase === 'mid') {
+      selfDamage = Math.floor(totalDamage * 0.05);
+      actionText = pickRandomTerrainFlavorText(
+        TERRAIN_CRYSTAL_ZONE_LOGS,
+        '{actor} の魔力が反射し、体を傷つけた！',
+        actor.name,
+      );
+      noteText = `(HP減少-${selfDamage})`;
+    } else if (terrainEffect === 'terrain.conduction' && elementalOffense === 'thunder') {
+      selfDamage = Math.floor(totalDamage * 0.05);
+      actionText = pickRandomTerrainFlavorText(
+        TERRAIN_CONDUCTION_LOGS,
+        '{actor} の雷撃が伝導し、自身に跳ね返った！',
+        actor.name,
+      );
+      noteText = `(HP減少 ⚡-${selfDamage})`;
+      elementalTag = 'thunder';
+    } else if (terrainEffect === 'terrain.mana-burn' && phase === 'mid') {
+      selfDamage = Math.floor(maxHp * 0.02);
+      actionText = pickRandomTerrainFlavorText(
+        TERRAIN_MANA_BURN_LOGS,
+        '{actor} の魔力が暴走し、体を蝕んだ！',
+        actor.name,
+      );
+      noteText = `(HP減少-${selfDamage})`;
+    }
+
+    if (selfDamage <= 0) return;
+
+    const actualSelfDamage = appliedDamage(selfDamage);
+    if (actualSelfDamage <= 0) return;
+
+    log.push({
+      phase,
+      actor: 'effect',
+      characterId: actor.kind === 'character' ? actor.stats.characterId : undefined,
+      action: actionText,
+      note: noteText.replace(`${selfDamage}`, `${actualSelfDamage}`),
+      elementalOffense: elementalTag,
+    });
+
+    if (actor.kind === 'enemy') {
+      triggerEnemyDefeatRecovery(phase);
+    } else {
+      triggerPartyDefeatRecovery(actor.stats, phase);
+    }
   };
 
   const buildBattleResult = (phase: BattleActionPhase, outcome: BattleOutcome): BattleResult => ({
@@ -3549,6 +3687,7 @@ export function executeBattle(
             ? { abilities: [{ id: 'resonance' as const, level: enemyResonanceLevel }] }
             : { abilities: [] };
           const enemyResonanceLogText = getResonanceLogText(resonanceActor.abilities, enemySuccessfulHits, phase === 'mid');
+          let totalDamageDealt = 0;
 
           if (isMagicSealTargetForEnemy(phase, enemy, attempts) && consumeMagicSeal()) {
             log.push({
@@ -3564,6 +3703,12 @@ export function executeBattle(
               isReAttack: isReAttack || undefined,
               elementalOffense: enemy.elementalOffense,
             });
+            applyTerrainSelfInflictedDamage(
+              { kind: 'enemy', name: enemy.name },
+              phase,
+              0,
+              enemy.elementalOffense,
+            );
             return;
           }
 
@@ -3766,6 +3911,8 @@ export function executeBattle(
                 elementalOffense: enemy.elementalOffense,
               });
             }
+
+            totalDamageDealt += Math.max(0, appliedDamage);
 
             if (shockEffectLog) {
               log.push(shockEffectLog);
@@ -3988,6 +4135,13 @@ export function executeBattle(
 
             if (partyHp <= 0) break;
           }
+
+          applyTerrainSelfInflictedDamage(
+            { kind: 'enemy', name: enemy.name },
+            phase,
+            totalDamageDealt,
+            enemy.elementalOffense,
+          );
         };
 
         runEnemyAttack(noA, false);
@@ -4109,6 +4263,13 @@ export function executeBattle(
             wasNegated: true,
             elementalOffense: cs.elementalOffense,
           });
+
+          applyTerrainSelfInflictedDamage(
+            { kind: 'character', stats: cs, name: char.name },
+            phase,
+            0,
+            cs.elementalOffense,
+          );
 
           return {
             damage: 0,
@@ -4408,6 +4569,13 @@ export function executeBattle(
         if (!isAntagonism && phase === 'close') {
           applyCharacterCloseReactiveAbilities(cs, char.name, result, turn.roll);
         }
+
+        applyTerrainSelfInflictedDamage(
+          { kind: 'character', stats: cs, name: char.name },
+          phase,
+          result.damage,
+          cs.elementalOffense,
+        );
 
         return result;
       };
