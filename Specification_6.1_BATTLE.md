@@ -310,6 +310,16 @@ If `a.*` with phase = START:
 
 ##### 6.1.4.1 Function of attack
 
+**functions of NoA**
+- `f.NoA`
+  - `f.NoA` = `f.NoA` x `f.terrain_NoA_amplifier`
+    - If `terrain.rough-waves` and (phase is CLOSE): 0.75
+    - If `terrain.heavy-wind` and (phase is LONG): 0.75
+    - If `terrain.burrow` and (phase is LONG): 0.50
+    - If `terrain.low-gravity`: 1.3
+    - If `terrain.gravity`: 0.7
+    - If `terrain.limestone-cave` and (phase is MID or CLOSE): 1.5
+
 **functions of attack**
 - `f.resonance_amplifier`(actor: ,successful hit: n )
   - If (phase is MID) or (phase is LONG and party.`God of Resonance`),
@@ -365,6 +375,7 @@ If `a.*` with phase = START:
   - If `terrain.dark-field` and (phase is LONG or CLOSE): 1.45
   - If `terrain.light-field` and (phase is MID): 1.45
   - If `terrain.sanctuary` and (phase is MID): 0.67
+  - If `terrain.fortified`and (opponent is enemy): 0.75 
 
 - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
 - `f.mutual_amplifier`:
