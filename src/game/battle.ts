@@ -478,7 +478,7 @@ function calculateSingleEnemyAttackDamage(
   const partyDefenseAbilityAmplifier = getPartyDefenseAbilityAmplifier(phase, characterStats, targetCharStats.row);
   const rageAmplifier = getEnemyRageAmplifier(enemy, enemyHp);
   const mutualAmplifier = getMutualAmplifier(phase, enemy.abilities, targetCharStats.abilities);
-  const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect);
+  const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect, false);
   const swarmAmplifier = getSwarmAmplifier(
     enemy.abilities,
     enemyHp,
@@ -547,12 +547,14 @@ function getPartyDefenseAbilityAmplifier(
 function getTerrainAmplifier(
   phase: BattleActionPhase,
   terrainEffect?: TerrainEffectKey | null,
+  isOpponentEnemy: boolean = false,
 ): number {
   if (!terrainEffect) return 1.0;
   if ((phase === 'long' || phase === 'close') && terrainEffect === 'terrain.exposure') return 1.3;
   if ((phase === 'long' || phase === 'close') && terrainEffect === 'terrain.dark-field') return 1.45;
   if (phase === 'mid' && terrainEffect === 'terrain.light-field') return 1.45;
   if (phase === 'mid' && terrainEffect === 'terrain.sanctuary') return 0.67;
+  if (isOpponentEnemy && terrainEffect === 'terrain.fortified') return 0.75;
   return 1.0;
 }
 
@@ -623,7 +625,7 @@ function calculateCharacterFriendlyFireDamage(
   const rageAmplifier = getCharacterRageAmplifier(attacker, partyHp, partyStats.hp);
   const momentumAmplifier = getCharacterMomentumAmplifier(attacker, partyHp, partyStats.hp);
   const mutualAmplifier = getMutualAmplifier(phase, attacker.abilities, target.abilities);
-  const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect);
+  const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect, false);
   const swarmAmplifier = getSwarmAmplifier(
     attacker.abilities,
     partyHp,
@@ -1164,7 +1166,7 @@ function calculateCharacterDamage(
   const rageAmplifier = getCharacterRageAmplifier(charStats, partyHp, partyStats.hp);
   const momentumAmplifier = getCharacterMomentumAmplifier(charStats, partyHp, partyStats.hp);
   const mutualAmplifier = getMutualAmplifier(phase, charStats.abilities, enemy.abilities);
-  const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect);
+  const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect, true);
   const swarmAmplifier = getSwarmAmplifier(
     charStats.abilities,
     partyHp,
