@@ -391,7 +391,7 @@
 | `terrain.dark-field` | 闇域 | 双方の物理ダメージが1.45倍になる |
 | `terrain.light-field` | 光域 | 双方の魔法ダメージが1.45倍になる |
 | `terrain.sanctuary` | 聖域 | 双方の魔法ダメージが0.67倍になる |
-| `terrain.frenzy` | 狂騒 | 戦闘開始時、双方の物理被ダメージが1.4倍になる |
+| `terrain.frenzy` | 狂騒 | 双方の被ダメージが1.25倍になる |
 | `terrain.fortified` | 要塞防備 | 敵が受ける物理・魔法の被ダメージが0.75倍になる |
 | `terrain.rough-waves` | 荒波 | 近接攻撃回数が0.75倍になる |
 | `terrain.heavy-wind` | 強風 | 遠距離攻撃回数が0.75倍になる |
