@@ -403,15 +403,18 @@
 | `terrain.enemy-high-ground` | 敵高所優位 | 敵の行動速度が少し早まる（行動順判定に+1d3） |
 | `terrain.ash-haze` | 灰霞 | すべての先制攻撃を無効化する |
 | `terrain.machine-logic` | 機械論理 | 行動順を変化させるすべての効果は無効化される(先制攻撃・鈍足など) |
+| `terrain.fog` | 濃霧 | すべての遠距離攻撃の命中が-25される |
+| `terrain.sunny-beach` | 陽だまりの浜辺 | 双方の遠距離攻撃の命中+20 |
+| `terrain.spell-domain` | 必中魔法領域 | 双方の魔法攻撃はすべて必中する |
+| `terrain.sniper-domain` | 必中狙撃領域 | 双方の遠距離攻撃はすべて必中する |
+| `terrain.duelist-domain` | 剣戟領域 | 双方の近接攻撃はすべて必中する |
 | `terrain.predation` | 捕食本能 | HPが50%未満の対象への物理ダメージが1.3倍になる |
 | `terrain.thunderstorm` | 雷雨 | 双方に雷威力x3/2(雷威力が上がる)を付与する |
 | `terrain.chill` | 冷気 | 部屋の継続時間が1.5倍になる。火属性攻撃を持つパーティメンバー1人につき、このペナルティを0.1軽減する |
 | `terrain.looping-path` | 迷いの森 | 部屋の継続時間が2倍になる |
-| `terrain.fog` | 濃霧 | すべての遠距離攻撃の命中が-25される |
 | `terrain.vine-snare` | 捕食蔓 | 攻撃を行うたび、その攻撃者は現在HPの1%のダメージを受ける |
 | `terrain.crystal-zone` | 水晶域 | 魔法攻撃を使用したとき、攻撃者は与えたダメージの5%の反動ダメージを受ける |
 | `terrain.floor-domain` | 必達領域 | 命中1発あたりの最終ダメージは対象の最大HPの1%を下回らない |
-| `terrain.sunny-beach` | 陽だまりの浜辺 | 双方の遠距離攻撃の命中+20 |
 | `terrain.silence-field` | 静寂領域 | すべての[効]アビリティは発動しない |
 | `terrain.conduction` | 導電 | 雷属性攻撃を行うと、攻撃者は与えたダメージの5%の雷属性ダメージを受ける |
 | `terrain.sacred-judgement` | 神罰 | この戦闘で最初に行動した対象に現在HPの5%の雷属性攻撃が下る |
@@ -419,14 +422,11 @@
 | `terrain.heatwave` | 熱波 | 各部屋の終了時、現在HPの5%に等しいダメージを受ける。さらに、氷属性攻撃を持つパーティメンバー1人につき、このダメージを1%軽減する |
 | `terrain.leakage` | 漏電 | 各部屋の終了時、減少HPの3%に等しい雷属性ダメージを受ける |
 | `terrain.deletion` | 削除 | 戦闘開始時、双方のいずれかの対象のアビリティ1つを忘却させる |
-| `terrain.spell-domain` | 必中魔法領域 | 双方の魔法攻撃はすべて必中する |
 | `terrain.cap-domain` | 臨界領域 | 命中1発あたりの最終ダメージは対象の最大HPの5%を超えない |
 | `terrain.echo-domain` | 残響領域 | 同一戦闘中に使用された属性攻撃1回につき、その属性攻撃の効果が+10%される |
 | `terrain.chain-lightning` | 連鎖雷撃 | 雷属性攻撃が命中した場合、ランダムな別対象に30%威力で追加ヒットする |
 | `terrain.mana-burn` | 魔力侵食 | 魔法攻撃を行うたび、使用者は最大HPの2%のダメージを受ける |
 | `terrain.transcendence` | 超越 | 双方の反応・時限アビリティレベルが+1される(レベル上限5) |
 | `terrain.gehenna` | ゲヘナ | いかなる宗教ボーナスも適用されない |
-| `terrain.sniper-domain` | 必中狙撃領域 | 双方の遠距離攻撃はすべて必中する |
 | `terrain.suppression` | 抑圧 | 双方の反応・時限アビリティレベルが-1される(レベル下限1) |
-| `terrain.duelist-domain` | 剣戟領域 | 双方の近接攻撃はすべて必中する |
 
