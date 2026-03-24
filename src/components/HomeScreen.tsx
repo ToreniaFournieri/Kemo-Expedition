@@ -117,6 +117,27 @@ type Tab = 'party' | 'expedition' | 'base' | 'diary' | 'setting';
 type WideModeSecondaryTab = Exclude<Tab, 'expedition'>;
 type BaseSubTab = 'inventory' | 'shop' | 'jewelStore' | 'workshop' | 'altar';
 
+const ELEMENTAL_RESISTANCE_ORDER: ReadonlyArray<{ key: 'fire' | 'ice' | 'thunder'; emoji: string }> = [
+  { key: 'fire', emoji: '🔥' },
+  { key: 'ice', emoji: '❄️' },
+  { key: 'thunder', emoji: '⚡' },
+];
+
+const renderElementalResistanceInline = (
+  multipliers: Record<'fire' | 'ice' | 'thunder', number>
+): JSX.Element => (
+  <>
+    属性耐性:{' '}
+    {ELEMENTAL_RESISTANCE_ORDER.map(({ key, emoji }, index) => (
+      <Fragment key={key}>
+        {index > 0 ? ',' : ''}
+        <span className="sub-theme-emoji-icon" aria-hidden="true">{emoji}</span>
+        {Math.round(Math.max(0.01, multipliers[key] ?? 1) * 100)}%
+      </Fragment>
+    ))}
+  </>
+);
+
 
 type PartyCycleState = 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray' | 'idle' | 'move' | 'explore' | 'return' | 'reactivate';
 
@@ -5333,6 +5354,10 @@ function PartyTab({
                 );
               })()}
             </div>
+            <div className="text-xs text-gray-500">
+              {/* SpecRef: 8.2.2 | Party member details | Status */}
+              {renderElementalResistanceInline(stats.elementalDefenseMultipliers)}
+            </div>
             {/* Bonuses */}
             {(() => {
               const isMasterClass = char.mainClassId === char.subClassId;
@@ -8440,27 +8465,7 @@ function SettingTab({
   };
 
   const renderEnemyElementalResistanceLine = (enemy: EnemyDef): JSX.Element => {
-    const resistanceOrder: Array<{ key: 'fire' | 'ice' | 'thunder'; emoji: string }> = [
-      { key: 'fire', emoji: '🔥' },
-      { key: 'ice', emoji: '❄️' },
-      { key: 'thunder', emoji: '⚡' },
-    ];
-
-    return (
-      <>
-        属性耐性:{' '}
-        {resistanceOrder.map(({ key, emoji }, index) => {
-          const value = enemy.elementalResistance[key] ?? 1;
-          return (
-            <Fragment key={key}>
-              {index > 0 ? ',' : ''}
-              <span className="sub-theme-emoji-icon" aria-hidden="true">{emoji}</span>
-              {Math.round(value * 100)}%
-            </Fragment>
-          );
-        })}
-      </>
-    );
+    return renderElementalResistanceInline(enemy.elementalResistance);
   };
 
   const ENEMY_TYPE_LABELS: Record<string, string> = {
