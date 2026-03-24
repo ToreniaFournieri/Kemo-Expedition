@@ -552,6 +552,7 @@ function getTerrainAmplifier(
   if (!terrainEffect) return 1.0;
   if ((phase === 'long' || phase === 'close') && terrainEffect === 'terrain.exposure') return 1.3;
   if ((phase === 'long' || phase === 'close') && terrainEffect === 'terrain.dark-field') return 1.45;
+  if (terrainEffect === 'terrain.frenzy') return 1.25;
   if (phase === 'mid' && terrainEffect === 'terrain.light-field') return 1.45;
   if (phase === 'mid' && terrainEffect === 'terrain.sanctuary') return 0.67;
   if (isOpponentEnemy && terrainEffect === 'terrain.fortified') return 0.75;
