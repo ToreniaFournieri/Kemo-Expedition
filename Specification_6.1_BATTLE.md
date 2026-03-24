@@ -373,9 +373,10 @@ If `a.*` with phase = START:
 - `f.terrain_amplifier`
   - If `terrain.exposure` and (phase is LONG or CLOSE): 1.3
   - If `terrain.dark-field` and (phase is LONG or CLOSE): 1.45
+  - If `terrain.frenzy`: 1.25
   - If `terrain.light-field` and (phase is MID): 1.45
   - If `terrain.sanctuary` and (phase is MID): 0.67
-  - If `terrain.fortified`and (opponent is enemy): 0.75 
+  - If `terrain.fortified`and (opponent is enemy): 0.75
 
 - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
 - `f.mutual_amplifier`:
