@@ -334,6 +334,7 @@ If `a.*` with phase = START:
   - x `f.mutual_amplifier`
   - x opponent.`f.swarm.amplifier`
   - x actor.`f.swarm.amplifier`
+  - x `f.terrain_amplifier`
   - )
 
 - `f.rage_amplifier`:
@@ -359,6 +360,11 @@ If `a.*` with phase = START:
 	  - "[2] 敵の攻撃！(1/2回, 威力-N%)"  (actor.`a.swarm`)
 	  - "[3] カスミ の攻撃！(6/16回, 相手被ダメN%増) "  (opponent.`a.swarm`)
 
+- `f.terrain_amplifier`
+  - If `terrain.exposure` and (phase is LONG or CLOSE): 1.3
+  - If `terrain.dark-field` and (phase is LONG or CLOSE): 1.45
+  - If `terrain.light-field` and (phase is MID): 1.45
+  - If `terrain.sanctuary` and (phase is MID): 0.67
 
 - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
 - `f.mutual_amplifier`:
