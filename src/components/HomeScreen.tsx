@@ -337,8 +337,9 @@ function normalizeBattleLogNote(note?: string): string | undefined {
 
 // SpecRef: 6.1.1.1 | START phase | floor.terrain.*
 function getBattleLogPhaseLabel(log: BattleLogEntry, isPhaseAction: boolean, isTriggeredLog: boolean, isResurrectLog: boolean, isStealthEffectLog: boolean, isCounterNegationEffectLog: boolean): string {
-  const isTerrainStartLog = log.phase === 'start' && log.actor === 'effect' && log.effectKind === 'terrain';
+  const isTerrainStartLog = log.phase === 'start' && log.effectKind === 'terrain';
   if (isTerrainStartLog) return '地形';
+  if (log.effectKind === 'terrain') return '効';
   if (log.phase === 'start') return '効';
   if (log.phase === 'end') return '末';
   if (isPhaseAction) {

@@ -2222,6 +2222,7 @@ export function executeBattle(
     log.push({
       phase,
       actor: 'effect',
+      effectKind: 'terrain',
       characterId: actor.kind === 'character' ? actor.stats.characterId : undefined,
       action: actionText,
       note: noteText.replace(`${selfDamage}`, `${actualSelfDamage}`),
