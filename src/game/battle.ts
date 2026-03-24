@@ -1797,7 +1797,8 @@ export function executeBattle(
     log.push({
       phase: 'start',
       actor: 'effect',
-      action: `[地形] ${terrainEntry.label}`,
+      effectKind: 'terrain',
+      action: terrainEntry.label,
       note: `(${terrainEntry.description})`,
       noteTone: 'muted',
     });
