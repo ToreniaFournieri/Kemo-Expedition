@@ -1801,6 +1801,58 @@ const TERRAIN_REJUVENATION_LOGS = [
   '{actor} の身体がじんわりと回復していく',
 ] as const;
 
+const TERRAIN_ROTWOOD_LOGS = [
+  '腐敗の気配が癒しを拒んだ…',
+  '大地は腐り、再生の力は働かない',
+  '生命の流れが淀み、回復は起こらない',
+  '癒しの力は腐敗に呑まれた',
+  '周囲は朽ち、再生の気配はない',
+  '腐敗した空気が、回復を阻んでいる',
+  '大地は死に、癒しは届かない',
+  '再生の力は遮られ、何も起こらない',
+  'すべてが朽ち、回復の兆しは消えた',
+  '腐敗が満ち、癒しの力は失われた',
+] as const;
+
+const TERRAIN_ABUNDANT_LOGS = [
+  '豊かな力が満ち、体力が満たされた',
+  '大地の恵みが溢れ、体力が回復した',
+  '満ち足りた気配が、体を力で満たす',
+  '豊穣の力が流れ込み、体力が回復した',
+  'あふれる生命力が、体を満たしていく',
+  '大地の祝福が降り注ぎ、体力が回復した',
+  '力が満ち、失われた分を超えて満たされる',
+  '周囲に満ちる力が、体力を押し上げる',
+  '濃密な生命の気配が、体を満たす',
+  '豊かな流れが巡り、体力が回復した',
+] as const;
+
+const TERRAIN_DECAY_LOGS = [
+  '見えぬ力が心を蝕んだ…',
+  '正体不明の気配が、じわりと体力を削る',
+  '理解できぬ何かが、内側から力を奪う',
+  '不穏な気配が満ち、心が削られていく',
+  '触れられぬ何かが、確かに力を奪った',
+  '静かな異質さが、体力を侵食する',
+  '名状しがたい力が、じわじわと削っていく',
+  '違和感が広がり、気づかぬうちに力が失われる',
+  '不可視の圧力が、心をすり減らす',
+  '得体の知れぬ力が、体力を奪っていく',
+] as const;
+
+const TERRAIN_LEAKAGE_LOGS = [
+  '{target} に電流が走った！',
+  '{target} は漏電により感電した！',
+  '{target} の体を電撃が駆け抜けた！',
+  '{target} は不意の電流に打たれた！',
+  '{target} に漏れ出した電流が襲いかかった！',
+  '{target} は電撃により体力を失った！',
+  '{target} の周囲で電流が弾け、感電した！',
+  '{target} に稲妻のような電流が走る！',
+  '{target} は漏電の影響を受け、感電した！',
+  '{target} に不規則な電流が流れ込んだ！',
+] as const;
+
 // SpecRef: 6.1.5 | Outcome | terrain.rejuvenation
 function applyTerrainRejuvenationHpEffect(
   terrainEffect: TerrainEffectKey | undefined,
@@ -1885,21 +1937,25 @@ function applyTerrainDecayHpEffect(
 
 function buildTerrainAbundantLogEntry(healAmount?: number): BattleLogEntry | null {
   if (!healAmount || healAmount <= 0) return null;
+  const flavorText = TERRAIN_ABUNDANT_LOGS[Math.floor(Math.random() * TERRAIN_ABUNDANT_LOGS.length)]
+    ?? '豊かな流れが巡り、体力が回復した';
   return {
     phase: 'end',
     actor: 'effect',
-    action: '豊富',
+    action: flavorText,
     note: `(HP回復+${healAmount})`,
   };
 }
 
 function buildTerrainDecayLogEntry(damageAmount?: number): BattleLogEntry | null {
   if (!damageAmount || damageAmount <= 0) return null;
+  const flavorText = TERRAIN_DECAY_LOGS[Math.floor(Math.random() * TERRAIN_DECAY_LOGS.length)]
+    ?? '得体の知れぬ力が、体力を奪っていく';
   return {
     phase: 'end',
     actor: 'effect',
-    action: '崩壊',
-    note: `(HP消耗-${damageAmount})`,
+    action: flavorText,
+    note: `(HP減少-${damageAmount})`,
   };
 }
 
@@ -1913,6 +1969,56 @@ function buildTerrainRejuvenationLogEntry(actorName: string, healAmount?: number
     actor: 'effect',
     action: flavorText.replace('{actor}', actorName),
     note: `(HP回復+${healAmount})`,
+  };
+}
+
+// SpecRef: 6.2.2 | Terrain flavor text | log.terrain.rotwood
+function buildTerrainRotwoodLogEntry(): BattleLogEntry {
+  const flavorText = TERRAIN_ROTWOOD_LOGS[Math.floor(Math.random() * TERRAIN_ROTWOOD_LOGS.length)]
+    ?? '腐敗が満ち、癒しの力は失われた';
+  return {
+    phase: 'end',
+    actor: 'effect',
+    action: flavorText,
+  };
+}
+
+// SpecRef: 6.1.5 | Outcome | terrain.leakage
+function applyTerrainLeakageHpEffect(
+  terrainEffect: TerrainEffectKey | undefined,
+  roomType: RoomType,
+  currentHp: number,
+  maxHp: number,
+  thunderResistance: number
+): { hp: number; damageAmount?: number } {
+  if (terrainEffect !== 'terrain.leakage') {
+    return { hp: currentHp };
+  }
+  if (roomType !== 'battle_Normal' && roomType !== 'battle_Elite') {
+    return { hp: currentHp };
+  }
+  const missingHp = Math.max(0, maxHp - currentHp);
+  const damageAmount = Math.floor(missingHp * 0.03 * thunderResistance);
+  if (damageAmount <= 0) {
+    return { hp: currentHp };
+  }
+
+  return {
+    hp: Math.max(1, currentHp - damageAmount),
+    damageAmount,
+  };
+}
+
+// SpecRef: 6.2.2 | Terrain flavor text | log.terrain.leakage
+function buildTerrainLeakageLogEntry(targetName: string, damageAmount?: number): BattleLogEntry | null {
+  if (!damageAmount || damageAmount <= 0) return null;
+  const flavorText = TERRAIN_LEAKAGE_LOGS[Math.floor(Math.random() * TERRAIN_LEAKAGE_LOGS.length)]
+    ?? '{target} に不規則な電流が流れ込んだ！';
+  return {
+    phase: 'end',
+    actor: 'effect',
+    action: flavorText.replace('{target}', targetName),
+    note: `(HP減少 ⚡-${damageAmount})`,
   };
 }
 
@@ -2033,7 +2139,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const dungeon = getDungeonById(currentParty.selectedDungeonId);
       if (!dungeon) return state;
       const isGodsBattle = action.triggerGodsBattle === true && isGodsBattleAvailable(currentParty, dungeon.id);
-      const { partyStats } = computePartyStats(currentParty);
+      const { partyStats, characterStats } = computePartyStats(currentParty);
       const persistedCurrentHp = currentParty.currentHp ?? partyStats.hp;
       if (persistedCurrentHp <= 0 || partyStats.hp <= 0) {
         return state;
@@ -2332,6 +2438,40 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               const abundantLogEntry = buildTerrainAbundantLogEntry(abundantHpEffect.healAmount);
               if (abundantLogEntry) {
                 entry.details.push(abundantLogEntry);
+              }
+
+              const isNormalOrEliteRoom = roomDef.type === 'battle_Normal' || roomDef.type === 'battle_Elite';
+              const restorationBlockedByRotwood = terrainEffect === 'terrain.rotwood'
+                && isNormalOrEliteRoom
+                && getDeityKey(currentParty.deity.name) === 'Goddess of Restoration'
+                && floor.floorNumber >= 1
+                && floor.floorNumber <= 5
+                && roomIndex + 1 === 4;
+              if (restorationBlockedByRotwood) {
+                entry.details.push(buildTerrainRotwoodLogEntry());
+              }
+
+              const leakageTargetIndex = Math.floor(Math.random() * currentParty.characters.length);
+              const leakageTarget = currentParty.characters[leakageTargetIndex];
+              const leakageTargetStats = characterStats.find(
+                (stats) => stats.characterId === leakageTarget?.id
+              );
+              const leakageThunderResistance = leakageTargetStats?.elementalDefenseMultipliers.thunder ?? 1.0;
+              const leakageHpEffect = applyTerrainLeakageHpEffect(
+                terrainEffect,
+                roomDef.type,
+                currentHp,
+                partyStats.hp,
+                leakageThunderResistance
+              );
+              currentHp = leakageHpEffect.hp;
+              entry.remainingPartyHP = currentHp;
+              const leakageLogEntry = buildTerrainLeakageLogEntry(
+                leakageTarget?.name ?? currentParty.name,
+                leakageHpEffect.damageAmount
+              );
+              if (leakageLogEntry) {
+                entry.details.push(leakageLogEntry);
               }
 
               if (rewardLogEntries.length > 0) {
