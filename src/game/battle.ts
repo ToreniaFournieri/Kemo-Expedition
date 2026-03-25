@@ -15,6 +15,7 @@ import {
   TerrainEffectKey,
 } from '../types';
 import { getTerrainEffectGlossaryEntry } from '../data/glossary';
+import { TERRAIN_REACTIVE_AND_TIMED_ABILITY_IDS } from '../data/abilityNames';
 import { computePartyStats } from './partyComputation';
 import { getBaseMultiplier } from './baseMultiplier';
 import { drawFromBag, createPhysicalThreatBag, createMagicalThreatBag, getBagTicketTotal } from './bags';
@@ -1474,6 +1475,7 @@ function formatMultiplierAsFraction(multiplier: number): string {
 }
 
 type AbilityLike = { id: AbilityId; level: number };
+const TERRAIN_TIMED_OR_REACTIVE_ABILITY_IDS = new Set<AbilityId>(TERRAIN_REACTIVE_AND_TIMED_ABILITY_IDS);
 
 function formatAbilityLabel(ability: AbilityLike): string {
   return `${getAbilityName(ability.id, ability.level)}アビリティ`;
@@ -1509,6 +1511,24 @@ function grantEnemyAbility(enemy: EnemyDef, ability: AbilityLike): void {
     id: ability.id,
     level: ability.level,
   });
+}
+
+function adjustCharacterAbilityLevel(
+  charStats: ComputedCharacterStats,
+  abilityId: AbilityId,
+  delta: number,
+): void {
+  const ability = charStats.abilities.find((ownedAbility) => ownedAbility.id === abilityId);
+  if (!ability || ability.level <= 0) return;
+  ability.level = Math.max(1, Math.min(5, ability.level + delta));
+  ability.name = getAbilityName(ability.id, ability.level);
+  ability.description = getAbilityDescription(ability.id, ability.level);
+}
+
+function adjustEnemyAbilityLevel(enemy: EnemyDef, abilityId: AbilityId, delta: number): void {
+  const ability = enemy.abilities.find((ownedAbility) => ownedAbility.id === abilityId);
+  if (!ability || ability.level <= 0) return;
+  ability.level = Math.max(1, Math.min(5, ability.level + delta));
 }
 
 function getAbilityLevelFromList(abilities: AbilityLike[], abilityId: AbilityId): number {
@@ -1957,6 +1977,20 @@ const TERRAIN_CHAIN_LIGHTNING_LOGS = [
   '弾けた雷が連なり、{target} を襲った！',
 ] as const;
 
+// SpecRef: 6.2.2 | Terrain flavor text | log.terrain.deletion
+const TERRAIN_DELETION_LOGS = [
+  '{target}の {ability} が消去された！',
+  '{target}の {ability} は跡形もなく消えた！',
+  '{target}の {ability} が無に帰した！',
+  '{target}の {ability} が抹消された！',
+  '{target}の {ability} が削り取られた！',
+  '{target}の {ability} が崩壊した！',
+  '{target}の {ability} が消滅した！',
+  '{target}の {ability} は封じられた！',
+  '{target}の {ability} が切り離された！',
+  '{target}の {ability} が存在ごと消えた！',
+] as const;
+
 function pickRandomTerrainFlavorText(
   logs: readonly string[],
   fallback: string,
@@ -2035,6 +2069,81 @@ export function executeBattle(
     });
   }
 
+  let shouldSkipActorStartAbilities = false;
+  if (environment.terrainEffect === 'terrain.deletion') {
+    const terrainDeletionTargets: Array<
+      { kind: 'enemy'; name: string; abilities: AbilityLike[] }
+      | { kind: 'character'; name: string; stats: ComputedCharacterStats; abilities: AbilityLike[] }
+    > = [
+      { kind: 'enemy', name: enemy.name, abilities: enemy.abilities },
+      ...characterStats.map((stats) => ({
+        kind: 'character' as const,
+        name: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+        stats,
+        abilities: stats.abilities,
+      })),
+    ];
+
+    const target = terrainDeletionTargets[Math.floor(Math.random() * terrainDeletionTargets.length)];
+    if (target) {
+      const validAbilities = target.abilities.filter((ability) => ability.level > 0);
+      const selectedAbility = validAbilities[Math.floor(Math.random() * validAbilities.length)];
+      if (selectedAbility) {
+        const selectedIndex = target.abilities.findIndex(
+          (ability) => ability.id === selectedAbility.id && ability.level === selectedAbility.level,
+        );
+        if (selectedIndex >= 0) {
+          target.abilities.splice(selectedIndex, 1);
+        }
+        log.push({
+          phase: 'start',
+          actor: 'effect',
+          effectKind: 'terrain',
+          characterId: target.kind === 'character' ? target.stats.characterId : undefined,
+          action: pickRandomTerrainFlavorText(
+            TERRAIN_DELETION_LOGS,
+            '{target}の {ability} が消去された！',
+            {
+              target: target.name,
+              ability: getAbilityName(selectedAbility.id, selectedAbility.level),
+            },
+          ),
+        });
+      }
+    }
+  } else if (environment.terrainEffect === 'terrain.transcendence' || environment.terrainEffect === 'terrain.suppression') {
+    const delta = environment.terrainEffect === 'terrain.transcendence' ? 1 : -1;
+    const noteText = delta > 0
+      ? '(双方の反応・時限アビリティLv+1)'
+      : '(双方の反応・時限アビリティLv-1)';
+
+    for (const stats of characterStats) {
+      for (const abilityId of TERRAIN_TIMED_OR_REACTIVE_ABILITY_IDS) {
+        adjustCharacterAbilityLevel(stats, abilityId, delta);
+      }
+    }
+    for (const abilityId of TERRAIN_TIMED_OR_REACTIVE_ABILITY_IDS) {
+      adjustEnemyAbilityLevel(enemy, abilityId, delta);
+    }
+
+    log.push({
+      phase: 'start',
+      actor: 'effect',
+      effectKind: 'terrain',
+      action: environment.terrainEffect === 'terrain.transcendence' ? '超越の力が満ちた！' : '抑圧の力が満ちた！',
+      note: noteText,
+      noteTone: 'muted',
+    });
+  } else if (environment.terrainEffect === 'terrain.silence-field') {
+    shouldSkipActorStartAbilities = true;
+    log.push({
+      phase: 'start',
+      actor: 'effect',
+      effectKind: 'terrain',
+      action: '静寂領域により、[効]アビリティが封じられた！',
+    });
+  }
+
   if (partyDeityKey === 'Goddess of Discord' && characterStats.length > 0) {
     const targetIndex = Math.floor(Math.random() * characterStats.length);
     const targetStats = characterStats[targetIndex];
@@ -2063,6 +2172,7 @@ export function executeBattle(
     .filter((stats) => getAbilityLevel(stats, 'oblivion') >= 1)
     .map((stats) => ({
       name: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+      stats,
     }));
   const enemyHasOblivion = getEnemyAbilityLevel(enemy, 'oblivion') >= 1;
 
@@ -3005,27 +3115,11 @@ export function executeBattle(
   ];
 
   const resolveStartPhaseTriggerTiming = (timing: number): void => {
+    if (shouldSkipActorStartAbilities) {
+      return;
+    }
+
     if (timing === 9) {
-      for (const owner of oblivionOwners) {
-        const enemyValidAbilities = enemy.abilities.filter((ability) => ability.level > 0);
-        if (enemyValidAbilities.length === 0) continue;
-
-        const selectedEnemyAbility = enemyValidAbilities[Math.floor(Math.random() * enemyValidAbilities.length)];
-        const selectedEnemyAbilityIndex = enemy.abilities.findIndex(
-          (ability) => ability.id === selectedEnemyAbility.id && ability.level === selectedEnemyAbility.level,
-        );
-
-        if (selectedEnemyAbilityIndex >= 0) {
-          enemy.abilities.splice(selectedEnemyAbilityIndex, 1);
-        }
-
-        log.push({
-          phase: 'start',
-          actor: 'effect',
-          action: `${owner.name} が ${enemy.name} の ${formatAbilityLabel(selectedEnemyAbility)} を忘却の彼方に消し去った！`,
-        });
-      }
-
       if (enemyHasOblivion && characterStats.length > 0) {
         const targetIndex = Math.floor(Math.random() * characterStats.length);
         const target = characterStats[targetIndex];
@@ -3049,25 +3143,29 @@ export function executeBattle(
           });
         }
       }
-    }
 
-    if (timing === 8) {
-      for (const owner of mimicOwners) {
-        const enemyValidAbilities = enemy.abilities.filter(
-          (ability) => ability.level > 0 && ability.id !== 'mimic' && ability.id !== 'oblivion',
-        );
+      for (const owner of oblivionOwners.sort((a, b) => a.stats.row - b.stats.row)) {
+        const enemyValidAbilities = enemy.abilities.filter((ability) => ability.level > 0);
         if (enemyValidAbilities.length === 0) continue;
 
         const selectedEnemyAbility = enemyValidAbilities[Math.floor(Math.random() * enemyValidAbilities.length)];
-        grantCharacterAbility(owner.stats, selectedEnemyAbility);
+        const selectedEnemyAbilityIndex = enemy.abilities.findIndex(
+          (ability) => ability.id === selectedEnemyAbility.id && ability.level === selectedEnemyAbility.level,
+        );
+
+        if (selectedEnemyAbilityIndex >= 0) {
+          enemy.abilities.splice(selectedEnemyAbilityIndex, 1);
+        }
 
         log.push({
           phase: 'start',
           actor: 'effect',
-          action: `${owner.name} が ${enemy.name} の ${formatAbilityLabel(selectedEnemyAbility)} を模倣した！`,
+          action: `${owner.name} が ${enemy.name} の ${formatAbilityLabel(selectedEnemyAbility)} を忘却の彼方に消し去った！`,
         });
       }
+    }
 
+    if (timing === 8) {
       if (enemyHasMimic && characterStats.length > 0) {
         const targetIndex = Math.floor(Math.random() * characterStats.length);
         const target = characterStats[targetIndex];
@@ -3086,6 +3184,22 @@ export function executeBattle(
             action: `${enemy.name} が ${targetName} の ${formatAbilityLabel(selectedTargetAbility)} を模倣した！`,
           });
         }
+      }
+
+      for (const owner of mimicOwners.sort((a, b) => a.stats.row - b.stats.row)) {
+        const enemyValidAbilities = enemy.abilities.filter(
+          (ability) => ability.level > 0 && ability.id !== 'mimic' && ability.id !== 'oblivion',
+        );
+        if (enemyValidAbilities.length === 0) continue;
+
+        const selectedEnemyAbility = enemyValidAbilities[Math.floor(Math.random() * enemyValidAbilities.length)];
+        grantCharacterAbility(owner.stats, selectedEnemyAbility);
+
+        log.push({
+          phase: 'start',
+          actor: 'effect',
+          action: `${owner.name} が ${enemy.name} の ${formatAbilityLabel(selectedEnemyAbility)} を模倣した！`,
+        });
       }
     }
 
