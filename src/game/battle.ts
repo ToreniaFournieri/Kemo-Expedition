@@ -492,7 +492,7 @@ function calculateSingleEnemyAttackDamage(
   const rawDamage = (attack - defense) * amplifier * runtimeOffenseMultiplier * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier;
   const totalDamage = Math.max(1, rawDamage);
 
-  return Math.floor(totalDamage);
+  return applyTerrainDamageOverride(Math.floor(totalDamage), terrainEffect, maxPartyHp);
 }
 
 // Get number of attacks for enemy in a phase
@@ -605,6 +605,23 @@ function getTerrainNoAAmplifier(
 }
 
 // SpecRef: 6.1.4.1 | Function of attack | f.damage_calculation
+function applyTerrainDamageOverride(
+  perHitDamage: number,
+  terrainEffect: TerrainEffectKey | null | undefined,
+  opponentMaxHp: number,
+): number {
+  if (terrainEffect === 'terrain.floor-domain') {
+    return Math.max(Math.floor(opponentMaxHp * 0.01), perHitDamage);
+  }
+
+  if (terrainEffect === 'terrain.cap-domain') {
+    return Math.min(Math.floor(opponentMaxHp * 0.05), perHitDamage);
+  }
+
+  return perHitDamage;
+}
+
+// SpecRef: 6.1.4.1 | Function of attack | f.damage_calculation
 // SpecRef: 6.1.4.2 | Function of targeting | f.hit_detection
 function calculateCharacterFriendlyFireDamage(
   phase: BattleActionPhase,
@@ -699,6 +716,7 @@ function calculateCharacterFriendlyFireDamage(
       * elementalOffenseAttributeAmplifier
       * swarmAmplifier
   ));
+  const terrainAdjustedPerHitDamage = applyTerrainDamageOverride(basePerHitDamage, terrainEffect, partyStats.hp);
 
   const actorAccuracyPotency = phase === 'mid' ? 1.0 : attacker.accuracyPotency;
   const actorFocusLevel = attacker.abilities.find(a => a.id === 'focus')?.level ?? 0;
@@ -712,7 +730,7 @@ function calculateCharacterFriendlyFireDamage(
     if (hitDetection(actorAccuracyPotency, attacker.accuracyBonus + temporaryAccuracyBonus, target.evasionBonus, i, phase, targetDeflectionLevel, actorFocusLevel, terrainEffect)) {
       hits += 1;
       const resonanceAmplifier = canApplyResonance ? getResonanceAmplifier(resonance?.level, hits) : 1.0;
-      damage += Math.max(1, Math.floor(basePerHitDamage * resonanceAmplifier));
+      damage += Math.max(1, Math.floor(terrainAdjustedPerHitDamage * resonanceAmplifier));
     }
   }
 
@@ -1256,6 +1274,7 @@ function calculateCharacterDamage(
     (attack - effectiveDefense) * offenseAmplifier * runtimeOffenseMultiplier * charStats.elementalOffenseValue *
     elementalMultiplier * defenseAmplifier * partyOffenseAmplifier * rageAmplifier * momentumAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier
   ));
+  const terrainAdjustedPerHitDamage = applyTerrainDamageOverride(basePerHitDamage, terrainEffect, enemy.hp);
 
   // All phases now use hit detection.
   // MID phase ignores row-based accuracy potency and uses fixed potency (1.0).
@@ -1271,7 +1290,7 @@ function calculateCharacterDamage(
     if (hitDetection(actorAccuracyPotency, charStats.accuracyBonus + temporaryAccuracyBonus, enemyEvasion, i, phase, enemyDeflectionLevel, actorFocusLevel, terrainEffect)) {
       hits++;
       const resonanceAmplifier = canApplyResonance ? getResonanceAmplifier(resonance?.level, hits) : 1.0;
-      damage += Math.max(1, Math.floor(basePerHitDamage * resonanceAmplifier));
+      damage += Math.max(1, Math.floor(terrainAdjustedPerHitDamage * resonanceAmplifier));
     }
   }
 
