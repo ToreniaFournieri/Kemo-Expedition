@@ -787,7 +787,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "terrain.chill",
         "label": "冷気",
-        "description": "部屋の継続時間が1.5倍になる。火属性攻撃を持つパーティメンバー1人につき、このペナルティを0.1軽減する"
+        "description": "部屋の継続時間が1.5倍になる"
       },
       {
         "key": "terrain.rotwood",
