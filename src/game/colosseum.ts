@@ -3,8 +3,10 @@ import { getEnemyTypeAbilities, getEnemyTypeBonuses } from '../data/enemies';
 import { getEnemyCyborgizationAdjustment, resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
 import { applyEnemyTypeCBonuses } from './enemyScaling';
 import { LUNA_MODE_ENEMY_LEVEL_BONUS, getEnemyMultipliersForLevel } from '../data/dungeons';
+import { createEnvironmentStorageKey } from './environment';
 
-const COLOSSEUM_STORAGE_KEY = 'kemo-expedition.colosseum-enemy-settings';
+// SpecRef: 9 | Environment | Save Data Isolation
+const COLOSSEUM_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.colosseum-enemy-settings');
 
 export type ColosseumTerrainEffect = 'none' | `terrain.${string}`;
 

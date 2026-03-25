@@ -1,3 +1,5 @@
+import { createEnvironmentStorageKey } from './environment';
+
 export type DebugTimeSpeed = 'realtime' | 'x5' | 'x20' | 'x100';
 export type DebugGodsBattleCondition = 'normal' | 'simple1';
 export type DebugGodStrength = 'normal' | 'debug';
@@ -14,7 +16,8 @@ export interface DebugSettings {
   colosseumEnabled: boolean;
 }
 
-const DEBUG_SETTINGS_STORAGE_KEY = 'kemo-expedition.debug-settings';
+// SpecRef: 9 | Environment | Save Data Isolation
+const DEBUG_SETTINGS_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.debug-settings');
 
 export const DEFAULT_DEBUG_SETTINGS: DebugSettings = {
   clairvoyanceEnabled: false,
