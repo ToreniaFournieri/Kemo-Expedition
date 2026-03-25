@@ -1865,6 +1865,20 @@ const TERRAIN_MANA_BURN_LOGS = [
   '魔力の過負荷が、{actor} にダメージを与えた！',
 ] as const;
 
+// SpecRef: 6.2.2 | Terrain flavor text | log.terrain.sacred-judgement
+const TERRAIN_SACRED_JUDGEMENT_LOGS = [
+  '天より雷が落ち、{actor} を打った！',
+  '神罰の雷が {actor} に下った！',
+  '最初に動いた {actor} に、裁きの雷が突き刺さった！',
+  '{actor} の軽挙を咎めるように、雷光が走った！',
+  '神意の雷が {actor} を撃ち抜いた！',
+  '{actor} に天の裁きが下された！',
+  '戦いの先陣を切った {actor} に、雷の報いが落ちた！',
+  '神罰の閃光が {actor} を貫いた！',
+  '{actor} を戒めるように、聖なる雷が落ちた！',
+  '天の怒りが雷となって {actor} に降り注いだ！',
+] as const;
+
 function pickRandomTerrainFlavorText(logs: readonly string[], fallback: string, actorName: string): string {
   const selected = logs[Math.floor(Math.random() * logs.length)] ?? fallback;
   return selected.split('{actor}').join(actorName);
@@ -1915,6 +1929,7 @@ export function executeBattle(
   let enemyHitsReceived = 0;
   let enemyHasActedInBattle = false;
   const characterActedInBattleIds = new Set<number>();
+  let firstActorInBattle: 'enemy' | number | null = null;
   const log: BattleLogEntry[] = [];
 
   const partyDeityKey = getDeityKey(party.deity.name);
@@ -2213,6 +2228,22 @@ export function executeBattle(
         actor.name,
       );
       noteTextTemplate = '(HP減少-{damage})';
+    } else if (
+      terrainEffect === 'terrain.sacred-judgement'
+      && (
+        (actor.kind === 'enemy' && firstActorInBattle === 'enemy')
+        || (actor.kind === 'character' && firstActorInBattle === actor.stats.characterId)
+      )
+    ) {
+      selfDamage = Math.floor(currentHp * 0.05);
+      actionText = pickRandomTerrainFlavorText(
+        TERRAIN_SACRED_JUDGEMENT_LOGS,
+        '天より雷が落ち、{actor} を打った！',
+        actor.name,
+      );
+      noteTextTemplate = '(HP減少 ⚡-{damage})';
+      elementalTag = 'thunder';
+      firstActorInBattle = null;
     }
 
     if (selfDamage <= 0) return;
@@ -4146,6 +4177,9 @@ export function executeBattle(
           );
         };
 
+        if (firstActorInBattle === null) {
+          firstActorInBattle = 'enemy';
+        }
         runEnemyAttack(noA, false);
         if (enemyHasReAttack(enemy) && enemyHp > 0 && partyHp > 0) {
           runEnemyAttack(Math.ceil(
@@ -4582,6 +4616,9 @@ export function executeBattle(
         return result;
       };
 
+        if (firstActorInBattle === null) {
+          firstActorInBattle = cs.characterId;
+        }
         const firstAttackResult = runCharacterAttack((howlEffect?.multiplier ?? 1.0) * flyingNoAMultiplier, false);
         if (firstAttackResult && enemyHp > 0 && partyHp > 0) {
           triggerCoveringFire(phase, cs, firstAttackResult.hits, turn.roll);
