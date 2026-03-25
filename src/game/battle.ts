@@ -2002,12 +2002,16 @@ export function executeBattle(
   const terrainEntry = environment.terrainEffect ? getTerrainEffectGlossaryEntry(environment.terrainEffect) : undefined;
 
   if (terrainEntry) {
+    const terrainDescription = environment.terrainEffect === 'terrain.chill'
+      ? '部屋の継続時間が1.5倍になる'
+      : terrainEntry.description;
+
     log.push({
       phase: 'start',
       actor: 'effect',
       effectKind: 'terrain',
       action: terrainEntry.label,
-      note: `(${terrainEntry.description})`,
+      note: `(${terrainDescription})`,
       noteTone: 'muted',
     });
   }
