@@ -1853,6 +1853,20 @@ const TERRAIN_LEAKAGE_LOGS = [
   '{target} に不規則な電流が流れ込んだ！',
 ] as const;
 
+
+const TERRAIN_HEATWAVE_LOGS = [
+  '灼熱の風が {actor} を焼いた！',
+  '熱波が押し寄せ、{actor} の体力を削った！',
+  'うだるような暑さが {actor} を蝕む！',
+  '焼けつく空気が {actor} を包み込んだ！',
+  '熱気が渦巻き、{actor} の力を奪った！',
+  '容赦ない熱波が {actor} を襲った！',
+  '焦げつくような空気が {actor} を消耗させる！',
+  '灼ける大気が {actor} を締めつけた！',
+  '熱波が吹き荒れ、{actor} のHPを削り取る！',
+  '逃げ場のない暑さが {actor} を苦しめた！',
+] as const;
+
 // SpecRef: 6.1.5 | Outcome | terrain.rejuvenation
 function applyTerrainRejuvenationHpEffect(
   terrainEffect: TerrainEffectKey | undefined,
@@ -1983,6 +1997,31 @@ function buildTerrainRotwoodLogEntry(): BattleLogEntry {
   };
 }
 
+
+// SpecRef: 6.1.5 | Outcome | terrain.heatwave
+function applyTerrainHeatwaveHpEffect(
+  terrainEffect: TerrainEffectKey | undefined,
+  roomType: RoomType,
+  currentHp: number
+): { hp: number; damageAmount?: number } {
+  if (terrainEffect !== 'terrain.heatwave') {
+    return { hp: currentHp };
+  }
+  if (roomType !== 'battle_Normal' && roomType !== 'battle_Elite') {
+    return { hp: currentHp };
+  }
+
+  const damageAmount = Math.floor(Math.max(0, currentHp) * 0.05);
+  if (damageAmount <= 0) {
+    return { hp: currentHp };
+  }
+
+  return {
+    hp: Math.max(1, currentHp - damageAmount),
+    damageAmount,
+  };
+}
+
 // SpecRef: 6.1.5 | Outcome | terrain.leakage
 function applyTerrainLeakageHpEffect(
   terrainEffect: TerrainEffectKey | undefined,
@@ -2004,6 +2043,20 @@ function applyTerrainLeakageHpEffect(
   return {
     hp: Math.max(1, currentHp - damageAmount),
     damageAmount,
+  };
+}
+
+
+// SpecRef: 6.2.2 | Terrain flavor text | log.terrain.heatwave
+function buildTerrainHeatwaveLogEntry(actorName: string, damageAmount?: number): BattleLogEntry | null {
+  if (!damageAmount || damageAmount <= 0) return null;
+  const flavorText = TERRAIN_HEATWAVE_LOGS[Math.floor(Math.random() * TERRAIN_HEATWAVE_LOGS.length)]
+    ?? '逃げ場のない暑さが {actor} を苦しめた！';
+  return {
+    phase: 'end',
+    actor: 'effect',
+    action: flavorText.replace('{actor}', actorName),
+    note: `(HP減少-${damageAmount})`,
   };
 }
 
@@ -2469,6 +2522,24 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               );
               if (leakageLogEntry) {
                 entry.details.push(leakageLogEntry);
+              }
+
+              const heatwaveActorName = currentParty.characters[
+                Math.floor(Math.random() * currentParty.characters.length)
+              ]?.name ?? currentParty.name;
+              const heatwaveHpEffect = applyTerrainHeatwaveHpEffect(
+                terrainEffect,
+                roomDef.type,
+                currentHp
+              );
+              currentHp = heatwaveHpEffect.hp;
+              entry.remainingPartyHP = currentHp;
+              const heatwaveLogEntry = buildTerrainHeatwaveLogEntry(
+                heatwaveActorName,
+                heatwaveHpEffect.damageAmount
+              );
+              if (heatwaveLogEntry) {
+                entry.details.push(heatwaveLogEntry);
               }
 
               if (rewardLogEntries.length > 0) {
