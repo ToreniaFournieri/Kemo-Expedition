@@ -571,7 +571,7 @@ function getElementalOffenseAttributeAmplifier(
   if (terrainEffect === 'terrain.thunderstorm' && elementalOffense === 'thunder') return 1.5;
   if (terrainEffect === 'terrain.dry' && elementalOffense === 'ice') return 0.5;
   if (terrainEffect === 'terrain.echo-domain' && elementalOffense !== 'none') {
-    return 1.0 + (0.1 * echoDomainElementalUsageCount);
+    return 1.0 + (0.1 * Math.max(0, echoDomainElementalUsageCount - 1));
   }
   return 1.0;
 }
@@ -2098,8 +2098,9 @@ export function executeBattle(
   const getEchoDomainLogText = (elementalOffense: ElementalOffense): string => {
     if (environment.terrainEffect !== 'terrain.echo-domain' || elementalOffense === 'none') return '';
     const count = elementalOffenseUsageCounter[elementalOffense] ?? 0;
-    if (count <= 0) return '';
-    return `(残響+${count * 10}%)`;
+    const bonusPercent = Math.max(0, (count - 1) * 10);
+    if (bonusPercent <= 0) return '';
+    return `(残響+${bonusPercent}%)`;
   };
   const characterOffenseAmplifierMultiplierById = new Map<number, number>(
     characterStats.map((stats) => [stats.characterId, 1.0]),
