@@ -194,6 +194,7 @@ export const RACES: Race[] = [
     bonuses: [
       { type: 'penet', value: 0.10 },
       { type: 'bolt_multiplier', value: 1.3 },
+      { type: 'grimoire_multiplier', value: 1.3 },
       { type: 'ability', value: 1, abilityId: 'stealth', abilityLevel: 1 },
     ],
   },
