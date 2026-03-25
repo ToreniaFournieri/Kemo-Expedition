@@ -407,6 +407,7 @@ If `a.*` with phase = START:
 -  `f.elemental_offense_attribute_amplifier`
   - If `terrain.thunderstorm` and actor.`e.thunder`: x 3/2
   - If `terrain.dry` and actor.`e.ice`: x 0.5
+  - If `terrain.echo-domain` and actor.`e.X`: 1.0 + 0.1 x (number of X in this battle from both side)
 
 - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
 - `f.mutual_amplifier`:
