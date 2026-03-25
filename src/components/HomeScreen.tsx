@@ -370,7 +370,13 @@ function renderBattleLogNote(note: string | undefined, noteTone?: 'default' | 's
       {' '}
       {normalizedNote.split(/([⚡🔥❄️])/gu).map((segment, index) => (
         segment === '⚡' || segment === '🔥' || segment === '❄️'
-          ? <span key={`emoji-${index}`} className={emojiClass} aria-hidden="true">{segment}</span>
+          ? <span
+            key={`emoji-${index}`}
+            className={segment === '⚡' ? 'sub-theme-emoji-icon' : emojiClass}
+            aria-hidden="true"
+          >
+            {segment}
+          </span>
           : <Fragment key={`text-${index}`}>{segment}</Fragment>
       ))}
     </span>
