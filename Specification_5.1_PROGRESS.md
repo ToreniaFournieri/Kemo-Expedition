@@ -18,7 +18,7 @@
 | pray(祈り中) | at home. Party members donate money to their deity. | idle or move |
 | idle(待機中) | at home. only when 自動周回 = OFF (idle state) | - |
 | move(移動中) | home → dungeon, If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | explore | `a.peddler` |
-| explore(探索中) | in dungeon. if HP < 30% MaxHP → retreat. At the end of this state, update this {ルピニアンの断崖踏破} part ) | return | `Goddess of Precision` |
+| explore(探索中) | in dungeon. if HP < 30% MaxHP → retreat. At the end of this state, update this {ルピニアンの断崖踏破} part ) | return | `Goddess of Precision`, `terrain.chill`, `terrain.looping-path` |
 | return(帰還中) | dungeon → home,If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | rest | 
 | reactivate(復帰中) | Reactivating from AFK mode | - | - |
 
@@ -40,6 +40,12 @@
 | move(移動中) | 10 seconds * (1.30 - 0.02 * `x.exp_tier` )^(`x.exp_tier`) | 
 | explore(探索中) | 5 seconds per room (24 rooms in total)|
 | return(帰還中) | 30 seconds * (1.30 - 0.02 * `x.exp_tier` )^(`x.exp_tier`)  |
+
+**Durration modifilier**
+- explore state
+  - If `Goddess of Precision`: duration *= 1.5
+  - If `terrain.chill`: duration *= 1.5
+  - If `terrain.looping-path` *= 2.0
 
 - sleepiness from `t.sleepiness_of_party_bag` 
   - 0 No sleep: The party skips the sleep state and continues the normal cycle.
