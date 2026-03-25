@@ -44,8 +44,8 @@
 **Durration modifilier**
 - explore state
   - If `Goddess of Precision`: duration *= 1.5
-  - If `terrain.chill`: duration *= 1.5
-  - If `terrain.looping-path` *= 2.0
+  - If floor is `terrain.chill`: duration *= 1.5
+  - If floor is `terrain.looping-path`' duration *= 2.0
 
 - sleepiness from `t.sleepiness_of_party_bag` 
   - 0 No sleep: The party skips the sleep state and continues the normal cycle.
