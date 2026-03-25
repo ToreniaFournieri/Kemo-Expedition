@@ -543,16 +543,19 @@
 |熱波が吹き荒れ、{actor} のHPを削り取る！|
 |逃げ場のない暑さが {actor} を苦しめた！|
 
+
+- `log.terrain.deletion`
+
 | flavor text |
 |---|
-||
-||
-||
-||
-||
-||
-||
-||
-||
-||
+| {target}の {ability name} が消去された！ |
+| {target}の {ability name} は跡形もなく消えた！ |
+| {target}の {ability name} が無に帰した！ |
+| {target}の {ability name} が抹消された！ |
+| {target}の {ability name} が削り取られた！ |
+| {target}の {ability name} が崩壊した！ |
+| {target}の {ability name} が消滅した！ |
+| {target}の {ability name} は封じられた！ |
+| {target}の {ability name} が切り離された！ |
+| {target}の {ability name} が存在ごと消えた！ |
 
