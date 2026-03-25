@@ -479,6 +479,7 @@ function calculateSingleEnemyAttackDamage(
   const rageAmplifier = getEnemyRageAmplifier(enemy, enemyHp);
   const mutualAmplifier = getMutualAmplifier(phase, enemy.abilities, targetCharStats.abilities);
   const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect, false);
+  const elementalOffenseAttributeAmplifier = getElementalOffenseAttributeAmplifier(terrainEffect, enemy.elementalOffense);
   const swarmAmplifier = getSwarmAmplifier(
     enemy.abilities,
     enemyHp,
@@ -487,7 +488,7 @@ function calculateSingleEnemyAttackDamage(
     partyHp,
     maxPartyHp,
   );
-  const rawDamage = (attack - defense) * amplifier * runtimeOffenseMultiplier * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * mutualAmplifier * terrainAmplifier * swarmAmplifier;
+  const rawDamage = (attack - defense) * amplifier * runtimeOffenseMultiplier * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier;
   const totalDamage = Math.max(1, rawDamage);
 
   return Math.floor(totalDamage);
@@ -556,6 +557,17 @@ function getTerrainAmplifier(
   if (phase === 'mid' && terrainEffect === 'terrain.light-field') return 1.45;
   if (phase === 'mid' && terrainEffect === 'terrain.sanctuary') return 0.67;
   if (isOpponentEnemy && terrainEffect === 'terrain.fortified') return 0.75;
+  return 1.0;
+}
+
+// SpecRef: 6.1.4.1 | Function of attack | f.elemental_offense_attribute_amplifier
+function getElementalOffenseAttributeAmplifier(
+  terrainEffect: TerrainEffectKey | null | undefined,
+  elementalOffense: ElementalOffense,
+): number {
+  if (!terrainEffect) return 1.0;
+  if (terrainEffect === 'terrain.thunderstorm' && elementalOffense === 'thunder') return 1.5;
+  if (terrainEffect === 'terrain.dry' && elementalOffense === 'ice') return 0.5;
   return 1.0;
 }
 
@@ -642,6 +654,7 @@ function calculateCharacterFriendlyFireDamage(
   const momentumAmplifier = getCharacterMomentumAmplifier(attacker, partyHp, partyStats.hp);
   const mutualAmplifier = getMutualAmplifier(phase, attacker.abilities, target.abilities);
   const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect, false);
+  const elementalOffenseAttributeAmplifier = getElementalOffenseAttributeAmplifier(terrainEffect, attacker.elementalOffense);
   const swarmAmplifier = getSwarmAmplifier(
     attacker.abilities,
     partyHp,
@@ -664,6 +677,7 @@ function calculateCharacterFriendlyFireDamage(
       * momentumAmplifier
       * mutualAmplifier
       * terrainAmplifier
+      * elementalOffenseAttributeAmplifier
       * swarmAmplifier
   ));
 
@@ -1197,6 +1211,7 @@ function calculateCharacterDamage(
   const momentumAmplifier = getCharacterMomentumAmplifier(charStats, partyHp, partyStats.hp);
   const mutualAmplifier = getMutualAmplifier(phase, charStats.abilities, enemy.abilities);
   const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect, true);
+  const elementalOffenseAttributeAmplifier = getElementalOffenseAttributeAmplifier(terrainEffect, charStats.elementalOffense);
   const swarmAmplifier = getSwarmAmplifier(
     charStats.abilities,
     partyHp,
@@ -1209,7 +1224,7 @@ function calculateCharacterDamage(
   const partyOffenseAmplifier = getPartyOffenseAbilityAmplifier(phase, characterStats, charStats.row);
   const basePerHitDamage = Math.max(1, Math.floor(
     (attack - effectiveDefense) * offenseAmplifier * runtimeOffenseMultiplier * charStats.elementalOffenseValue *
-    elementalMultiplier * defenseAmplifier * partyOffenseAmplifier * rageAmplifier * momentumAmplifier * mutualAmplifier * terrainAmplifier * swarmAmplifier
+    elementalMultiplier * defenseAmplifier * partyOffenseAmplifier * rageAmplifier * momentumAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier
   ));
 
   // All phases now use hit detection.
