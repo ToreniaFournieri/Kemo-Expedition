@@ -428,5 +428,5 @@
 | `terrain.silence-field` | 静寂領域 | すべての[効]アビリティは発動しない |
 | `terrain.transcendence` | 超越 | 双方の反応・時限アビリティレベルが+1される(レベル上限5) |
 | `terrain.suppression` | 抑圧 | 双方の反応・時限アビリティレベルが-1される(レベル下限1) |
-| `terrain.gehenna` | ゲヘナ | 戦闘中、神々の恩恵を受けることがなくなる |
+| `terrain.gehenna` | ゲヘナ | 神々の恩恵を受けることがなくなる |
 
