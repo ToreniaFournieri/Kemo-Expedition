@@ -331,6 +331,14 @@ If `a.*` with phase = START:
 - If actor.`a.covering-fire` and the actor's successful hit is only one and phase is CLOSE, `f.covering-fire`(actor:covering fire actor.party.character , opponent:opponent)
   - *Note:*  Nth_hit is per action based (not per-target)
 
+- If actor.`e.thunder` and (terrain is `terrain.chain-lightning`):
+  - Target:
+    - Party member → Enemy: Enemy
+    - Enemy → Party member: Onother party member
+  - target.`d.HP` -= 0.30 x actor.total_damage of `e.thunder`
+  - Log: `log.terrain.chain-lightning` + (⚡ N) :right-aligned
+
+
 #### 6.1.4 Function of battle
 
 ##### 6.1.4.1 Function of attack
