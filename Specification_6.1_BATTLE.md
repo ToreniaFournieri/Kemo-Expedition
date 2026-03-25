@@ -380,6 +380,10 @@ If `a.*` with phase = START:
   - x `f.terrain_amplifier`
   - x `f.elemental_offense_attribute_amplifier`
   - )
+ 
+  - **Override**
+  - If `terrain.floor-domain`: final `f.damage_calculation` = max(1% of opponent.max_HP, `f.damage_calculation`)
+  - If `terrain.cap-domain` :final `f.damage_calculation` = min(5% of opponent.max_HP, `f.damage_calculation`)
 
 - `f.rage_amplifier`:
   - If actor has `a.rage`1, return min(2.0, 1.0 + 0.5 x (1 - (actor.current_HP / actor.max_HP)))
