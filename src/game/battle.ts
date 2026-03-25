@@ -1807,6 +1807,7 @@ interface BattleEnvironment {
 }
 
 const TRIGGER_TIMINGS_DESC = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0] as const;
+const battleTerrainNoteValueFormatter = new Intl.NumberFormat('ja-JP');
 
 // SpecRef: 6.2.2 | Terrain flavor text | log.terrain.vine-snare
 const TERRAIN_VINE_SNARE_LOGS = [
@@ -2176,7 +2177,7 @@ export function executeBattle(
 
     let selfDamage = 0;
     let actionText = '';
-    let noteText = '';
+    let noteTextTemplate = '';
     let elementalTag: ElementalOffense | undefined;
 
     if (terrainEffect === 'terrain.vine-snare') {
@@ -2186,7 +2187,7 @@ export function executeBattle(
         '{actor} は蔓に絡め取られた！',
         actor.name,
       );
-      noteText = `(HP減少-${selfDamage})`;
+      noteTextTemplate = '(HP減少-{damage})';
     } else if (terrainEffect === 'terrain.crystal-zone' && phase === 'mid') {
       selfDamage = Math.floor(totalDamage * 0.05);
       actionText = pickRandomTerrainFlavorText(
@@ -2194,7 +2195,7 @@ export function executeBattle(
         '{actor} の魔力が反射し、体を傷つけた！',
         actor.name,
       );
-      noteText = `(HP減少-${selfDamage})`;
+      noteTextTemplate = '(HP減少-{damage})';
     } else if (terrainEffect === 'terrain.conduction' && elementalOffense === 'thunder') {
       selfDamage = Math.floor(totalDamage * 0.05);
       actionText = pickRandomTerrainFlavorText(
@@ -2202,7 +2203,7 @@ export function executeBattle(
         '{actor} の雷撃が伝導し、自身に跳ね返った！',
         actor.name,
       );
-      noteText = `(HP減少 ⚡-${selfDamage})`;
+      noteTextTemplate = '(HP減少 ⚡-{damage})';
       elementalTag = 'thunder';
     } else if (terrainEffect === 'terrain.mana-burn' && phase === 'mid') {
       selfDamage = Math.floor(maxHp * 0.02);
@@ -2211,7 +2212,7 @@ export function executeBattle(
         '{actor} の魔力が暴走し、体を蝕んだ！',
         actor.name,
       );
-      noteText = `(HP減少-${selfDamage})`;
+      noteTextTemplate = '(HP減少-{damage})';
     }
 
     if (selfDamage <= 0) return;
@@ -2225,7 +2226,7 @@ export function executeBattle(
       effectKind: 'terrain',
       characterId: actor.kind === 'character' ? actor.stats.characterId : undefined,
       action: actionText,
-      note: noteText.replace(`${selfDamage}`, `${actualSelfDamage}`),
+      note: noteTextTemplate.replace('{damage}', battleTerrainNoteValueFormatter.format(actualSelfDamage)),
       elementalOffense: elementalTag,
     });
 

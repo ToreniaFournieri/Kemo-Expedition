@@ -339,9 +339,9 @@ function normalizeBattleLogNote(note?: string): string | undefined {
 function getBattleLogPhaseLabel(log: BattleLogEntry, isPhaseAction: boolean, isTriggeredLog: boolean, isResurrectLog: boolean, isStealthEffectLog: boolean, isCounterNegationEffectLog: boolean): string {
   const isTerrainStartLog = log.phase === 'start' && log.effectKind === 'terrain';
   if (isTerrainStartLog) return '地形';
-  if (log.effectKind === 'terrain') return '効';
   if (log.phase === 'start') return '効';
   if (log.phase === 'end') return '末';
+  if (log.effectKind === 'terrain') return '-';
   if (isPhaseAction) {
     if (log.isAggregated) return '-';
     if (isTriggeredLog && log.hideInitiativeLabel) return '-';
@@ -350,7 +350,7 @@ function getBattleLogPhaseLabel(log: BattleLogEntry, isPhaseAction: boolean, isT
     return `${log.initiativeRoll ?? '?'}`;
   }
   if (isStealthEffectLog || isCounterNegationEffectLog) return '-';
-  return log.actor === 'deity' ? '末' : '効';
+  return log.actor === 'deity' ? '末' : '-';
 }
 
 function getBattleLogNoteClass(noteTone?: 'default' | 'sub' | 'muted'): string {
