@@ -370,6 +370,7 @@ If `a.*` with phase = START:
   - x opponent.`f.swarm.amplifier`
   - x actor.`f.swarm.amplifier`
   - x `f.terrain_amplifier`
+  - x `f.elemental_offense_attribute_amplifier`
   - )
 
 - `f.rage_amplifier`:
@@ -402,6 +403,10 @@ If `a.*` with phase = START:
   - If `terrain.light-field` and (phase is MID): 1.45
   - If `terrain.sanctuary` and (phase is MID): 0.67
   - If `terrain.fortified`and (opponent is enemy): 0.75
+
+-  `f.elemental_offense_attribute_amplifier`
+  - If `terrain.thunderstorm` and actor.`e.thunder`: x 3/2
+  - If `terrain.dry` and actor.`e.ice`: x 0.5
 
 - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
 - `f.mutual_amplifier`:
