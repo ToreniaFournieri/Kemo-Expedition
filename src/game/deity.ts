@@ -1,4 +1,4 @@
-import { Ability, ComputedCharacterStats, Party } from '../types';
+import { ComputedCharacterStats, Party } from '../types';
 
 export const DEITY_OPTIONS = [
   { key: 'None', name: '信仰なし' },
@@ -120,23 +120,6 @@ export function getDeityKey(name: string): DeityKey | null {
   return DEITY_KEY_BY_NAME[name] ?? null;
 }
 
-function upgradeResonanceAbility(abilities: Ability[], upgradeTiers: number): Ability[] {
-  return abilities.map((ability) => {
-    if (ability.id !== 'resonance') {
-      return ability;
-    }
-
-    const nextLevel = Math.min(5, ability.level + upgradeTiers);
-    const perNoA = nextLevel === 5 ? '15' : nextLevel === 4 ? '13' : nextLevel === 3 ? '11' : nextLevel === 2 ? '8' : '5';
-    return {
-      ...ability,
-      name: `共鳴${nextLevel}`,
-      level: nextLevel,
-      description: `魔法攻撃1回毎に、全ヒットのダメージが +${perNoA}% 増加する`,
-    };
-  });
-}
-
 // SpecRef: 8.6 | UI_DIVINE_BUREAU | God scaling
 export function getDeityEffectDescription(name: string, totalDonatedGold = 0): string {
   const deityKey = getDeityKey(name);
@@ -253,7 +236,6 @@ export function applyDeityCharacterModifiers(
             physical: stats.deityDefenseAmplifierBonus.physical,
             magical: stats.deityDefenseAmplifierBonus.magical + 0.1,
           },
-          abilities: upgradeResonanceAbility(stats.abilities, 1),
         };
       case 'Goddess of Mirage':
         return {
