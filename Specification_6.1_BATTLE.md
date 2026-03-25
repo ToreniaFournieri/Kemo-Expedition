@@ -682,6 +682,23 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
   - `elemental_offense_attribute` -> `e.fire`:🔥, `e.thunder`:⚡, `e.ice`:❄️
   - If there is no elemental attribute (`e.none`), LONG phase:🏹, MID phase:🪄 ,CLOSE phase:⚔
 
+**Normal Attack Log — Additional Effects**
+- Append effect bonuses inside the parentheses of the action log.
+- Format:
+  - "[{index}] {actor} が {action} を行った！({hit_count}, {effect_list})"
+  - `{effect_list}` is a comma-separated list of active modifiers.
+- Example:
+  - "[3] 敵がアルカナアローを唱えた！(5/6回, 共鳴+12%, 闘志+8%)"
+
+| effect | add format |
+|--|--|
+| `a.resonance` | 共鳴+N% |
+| `a.rage` | 闘志+N% |
+| `a.momentum` | 気勢+N% |
+| `a.ambush` | 待ち伏せ+N% |
+| `a.echo-domain` | 残響+N% |
+
+
 ```
 戦闘ログ:
 left-alinged                                           right-aligned
