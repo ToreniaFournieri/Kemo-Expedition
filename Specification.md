@@ -111,6 +111,12 @@
 - If one code block implements multiple spec items, add one `SpecRef` line per item.
 - When specification IDs/titles/anchors change, corresponding `SpecRef` comments must be updated in the same change set.
 
+
+### 10.4 Formating
+- All numeric values MUST use `Intl.NumberFormat('ja-JP')`
+  - Example: `12,345`
+
+
 ## 11. CHANGELOG
 
 |Version  |Changes                                                                               |
