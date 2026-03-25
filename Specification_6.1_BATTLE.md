@@ -565,6 +565,8 @@ If `a.*` with phase = START:
       - Log: `log.terrain.decay` + "(HP減少-N)"
     - If `terrain.leakage`: `e.thunder` 3% of **current HP** to random party member (his/her `r.thunder` is applied)).
       - Log: `log.terrain.leakage` + "(HP減少 ⚡-N)"
+    - If `terrain.heatwave`: reduce 5% of **current HP**
+      - Log: `log.terrain.heatwave` + "(HP減少-N)"
     - If the party.`d.HP` <= 30% of max HP, back to home with trophies.   -> `Wonded_Retreat`
 
   - Normal Rooms (`x.room`:1–2): Proceed to the next `x.room`.
