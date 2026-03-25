@@ -3562,17 +3562,35 @@ export function HomeScreen({
   };
 
   // SpecRef: 5.1.1 | Party State Machine | Durration modifilier
-  const getExploreTerrainDurationMultiplier = (party: Party): number => {
+  const getExploreTerrainDurationMultiplier = (party: Party, entryCount?: number): number => {
     const dungeon = DUNGEONS.find((entry) => entry.id === party.selectedDungeonId);
     if (!dungeon) return 1;
 
-    const hasChill = dungeon.floors.some((floor) => floor.terrainEffect === 'terrain.chill');
-    const hasLoopingPath = dungeon.floors.some((floor) => floor.terrainEffect === 'terrain.looping-path');
+    const getFloorTerrainRoomMultiplier = (terrainEffect?: string): number => {
+      if (terrainEffect === 'terrain.chill') return 1.5;
+      if (terrainEffect === 'terrain.looping-path') return 2;
+      return 1;
+    };
 
-    let multiplier = 1;
-    if (hasChill) multiplier *= 1.5;
-    if (hasLoopingPath) multiplier *= 2;
-    return multiplier;
+    const floorByNumber = new Map(dungeon.floors.map((floor) => [floor.floorNumber, floor]));
+    const roomsToEvaluate = Math.max(1, entryCount ?? (party.lastExpeditionLog?.entries.length ?? 0));
+    const loggedRooms = party.lastExpeditionLog?.dungeonId === dungeon.id
+      ? party.lastExpeditionLog.entries.slice(0, roomsToEvaluate)
+      : [];
+
+    if (loggedRooms.length > 0) {
+      const weightedRoomMultiplierTotal = loggedRooms.reduce((total, room) => {
+        const floor = typeof room.floor === 'number' ? floorByNumber.get(room.floor) : undefined;
+        return total + getFloorTerrainRoomMultiplier(floor?.terrainEffect);
+      }, 0);
+      return weightedRoomMultiplierTotal / loggedRooms.length;
+    }
+
+    const fullDungeonRoomMultiplierTotal = dungeon.floors.reduce((total, floor) => (
+      total + (4 * getFloorTerrainRoomMultiplier(floor.terrainEffect))
+    ), 0);
+    const fullDungeonRoomCount = dungeon.floors.length * 4;
+    return fullDungeonRoomCount > 0 ? (fullDungeonRoomMultiplierTotal / fullDungeonRoomCount) : 1;
   };
 
   // SpecRef: 5.1.1 | Party State Machine | Durration modifilier
@@ -3580,7 +3598,8 @@ export function HomeScreen({
     const deityGold = state.global.deityDonations[normalizeDeityName(party.deity.name)] ?? party.deityGold ?? 0;
     const deityMultiplier = getDeityStateDurationMultiplier(party.deity.name, deityGold, cycleState);
     if (cycleState !== 'explore') return deityMultiplier;
-    return deityMultiplier * getExploreTerrainDurationMultiplier(party);
+    const exploredRooms = party.lastExpeditionLog?.entries.length;
+    return deityMultiplier * getExploreTerrainDurationMultiplier(party, exploredRooms);
   };
 
   const getStateDurationMs = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray'): number => {
