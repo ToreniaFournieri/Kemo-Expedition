@@ -2007,7 +2007,7 @@ function applyTerrainHeatwaveHpEffect(
   if (terrainEffect !== 'terrain.heatwave') {
     return { hp: currentHp };
   }
-  if (roomType !== 'battle_Normal' && roomType !== 'battle_Elite') {
+  if (roomType !== 'battle_Normal' && roomType !== 'battle_Elite' && roomType !== 'battle_Boss') {
     return { hp: currentHp };
   }
 
@@ -2055,6 +2055,7 @@ function buildTerrainHeatwaveLogEntry(actorName: string, damageAmount?: number):
   return {
     phase: 'end',
     actor: 'effect',
+    effectKind: 'terrain',
     action: flavorText.replace('{actor}', actorName),
     note: `(HP減少-${damageAmount})`,
   };

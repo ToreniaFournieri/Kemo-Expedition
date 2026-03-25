@@ -882,7 +882,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "terrain.heatwave",
         "label": "熱波",
-        "description": "各部屋の終了時、現在HPの5%に等しいダメージを受ける。さらに、氷属性攻撃を持つパーティメンバー1人につき、このダメージを1%軽減する"
+        "description": "各部屋の終了時、現在HPの5%に等しいダメージを受ける"
       },
       {
         "key": "terrain.fortified",
