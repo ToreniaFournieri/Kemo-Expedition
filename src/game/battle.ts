@@ -442,6 +442,7 @@ function calculateSingleEnemyAttackDamage(
   maxPartyHp: number,
   terrainEffect?: TerrainEffectKey | null,
   runtimeOffenseMultiplier: number = 1.0,
+  echoDomainElementalUsageCount: number = 0,
 ): number {
   let attack = 0;
   let amplifier = 1.0;
@@ -479,7 +480,7 @@ function calculateSingleEnemyAttackDamage(
   const rageAmplifier = getEnemyRageAmplifier(enemy, enemyHp);
   const mutualAmplifier = getMutualAmplifier(phase, enemy.abilities, targetCharStats.abilities);
   const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect, false);
-  const elementalOffenseAttributeAmplifier = getElementalOffenseAttributeAmplifier(terrainEffect, enemy.elementalOffense);
+  const elementalOffenseAttributeAmplifier = getElementalOffenseAttributeAmplifier(terrainEffect, enemy.elementalOffense, echoDomainElementalUsageCount);
   const swarmAmplifier = getSwarmAmplifier(
     enemy.abilities,
     enemyHp,
@@ -564,11 +565,28 @@ function getTerrainAmplifier(
 function getElementalOffenseAttributeAmplifier(
   terrainEffect: TerrainEffectKey | null | undefined,
   elementalOffense: ElementalOffense,
+  echoDomainElementalUsageCount: number = 0,
 ): number {
   if (!terrainEffect) return 1.0;
   if (terrainEffect === 'terrain.thunderstorm' && elementalOffense === 'thunder') return 1.5;
   if (terrainEffect === 'terrain.dry' && elementalOffense === 'ice') return 0.5;
+  if (terrainEffect === 'terrain.echo-domain' && elementalOffense !== 'none') {
+    return 1.0 + (0.1 * echoDomainElementalUsageCount);
+  }
   return 1.0;
+}
+
+type ElementalOffenseUsageCounter = Record<'fire' | 'ice' | 'thunder', number>;
+
+function countElementalOffenseUsage(
+  terrainEffect: TerrainEffectKey | null | undefined,
+  elementalOffense: ElementalOffense,
+  usageCounter: ElementalOffenseUsageCounter | undefined,
+): number {
+  if (terrainEffect !== 'terrain.echo-domain' || elementalOffense === 'none' || !usageCounter) return 0;
+  const nextCount = (usageCounter[elementalOffense] ?? 0) + 1;
+  usageCounter[elementalOffense] = nextCount;
+  return nextCount;
 }
 
 // SpecRef: 6.1.3.1 | Actor action | f.NoA
@@ -600,6 +618,7 @@ function calculateCharacterFriendlyFireDamage(
   noAMultiplier: number = 1.0,
   temporaryAccuracyBonus: number = 0,
   runtimeOffenseMultiplier: number = 1.0,
+  echoDomainElementalUsageCount: number = 0,
 ): CharacterAttackResult {
   let attack = 0;
   let noA = 0;
@@ -654,7 +673,7 @@ function calculateCharacterFriendlyFireDamage(
   const momentumAmplifier = getCharacterMomentumAmplifier(attacker, partyHp, partyStats.hp);
   const mutualAmplifier = getMutualAmplifier(phase, attacker.abilities, target.abilities);
   const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect, false);
-  const elementalOffenseAttributeAmplifier = getElementalOffenseAttributeAmplifier(terrainEffect, attacker.elementalOffense);
+  const elementalOffenseAttributeAmplifier = getElementalOffenseAttributeAmplifier(terrainEffect, attacker.elementalOffense, echoDomainElementalUsageCount);
   const swarmAmplifier = getSwarmAmplifier(
     attacker.abilities,
     partyHp,
@@ -1045,6 +1064,16 @@ function getResonanceLogText(
   return `(共鳴+${bonusPercent}%)`;
 }
 
+function mergeAttackBonusLogText(...bonusTexts: string[]): string {
+  const normalized = bonusTexts
+    .map((text) => text.trim())
+    .filter((text) => text.length > 0)
+    .map((text) => (text.startsWith('(') && text.endsWith(')')) ? text.slice(1, -1) : text);
+
+  if (normalized.length === 0) return '';
+  return `(${normalized.join(', ')})`;
+}
+
 // Hit detection for physical attacks (LONG and CLOSE phases)
 // decay_of_accuracy = clamp(0.86, 0.90 + actor.accuracy - opponent.evasion, 0.98)
 // chance = d.accuracy_potency * (decay_of_accuracy)^(Nth_hit - 1)
@@ -1109,6 +1138,7 @@ function calculateCharacterDamage(
   noAMultiplier: number = 1.0, // For counter/re-attack, use 0.5
   temporaryAccuracyBonus: number = 0,
   runtimeOffenseMultiplier: number = 1.0,
+  echoDomainElementalUsageCount: number = 0,
 ): CharacterAttackResult {
   let attack = 0;
   let noA = 0;
@@ -1211,7 +1241,7 @@ function calculateCharacterDamage(
   const momentumAmplifier = getCharacterMomentumAmplifier(charStats, partyHp, partyStats.hp);
   const mutualAmplifier = getMutualAmplifier(phase, charStats.abilities, enemy.abilities);
   const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect, true);
-  const elementalOffenseAttributeAmplifier = getElementalOffenseAttributeAmplifier(terrainEffect, charStats.elementalOffense);
+  const elementalOffenseAttributeAmplifier = getElementalOffenseAttributeAmplifier(terrainEffect, charStats.elementalOffense, echoDomainElementalUsageCount);
   const swarmAmplifier = getSwarmAmplifier(
     charStats.abilities,
     partyHp,
@@ -2017,6 +2047,16 @@ export function executeBattle(
   let enemyTemporaryAccuracyBonus = 0;
   const temporaryAccuracyBonusByCharacterId = new Map<number, number>();
   let enemyOffenseAmplifierMultiplier = 1.0;
+  const elementalOffenseUsageCounter: ElementalOffenseUsageCounter = { fire: 0, ice: 0, thunder: 0 };
+  const registerElementalOffenseUsage = (elementalOffense: ElementalOffense): number => (
+    countElementalOffenseUsage(environment.terrainEffect, elementalOffense, elementalOffenseUsageCounter)
+  );
+  const getEchoDomainLogText = (elementalOffense: ElementalOffense): string => {
+    if (environment.terrainEffect !== 'terrain.echo-domain' || elementalOffense === 'none') return '';
+    const count = elementalOffenseUsageCounter[elementalOffense] ?? 0;
+    if (count <= 0) return '';
+    return `(残響+${count * 10}%)`;
+  };
   const characterOffenseAmplifierMultiplierById = new Map<number, number>(
     characterStats.map((stats) => [stats.characterId, 1.0]),
   );
@@ -2640,7 +2680,8 @@ export function executeBattle(
       return;
     }
 
-    const singleDamage = calculateSingleEnemyAttackDamage('close', enemy, characterStats, targetCharStats, enemyHp, partyHp, partyStats.hp, environment.terrainEffect, enemyOffenseAmplifierMultiplier);
+    const enemyEchoDomainUsageCount = registerElementalOffenseUsage(enemy.elementalOffense);
+    const singleDamage = calculateSingleEnemyAttackDamage('close', enemy, characterStats, targetCharStats, enemyHp, partyHp, partyStats.hp, environment.terrainEffect, enemyOffenseAmplifierMultiplier, enemyEchoDomainUsageCount);
     const enemyCloseAccuracyBonus = enemyTemporaryAccuracyBonus;
     const attempts = Math.ceil(
       getEnemyNoA('close', enemy)
@@ -2721,7 +2762,8 @@ export function executeBattle(
       return;
     }
 
-    const reCounterResult = calculateCharacterDamage('close', targetCharStats, targetChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, reCounterNoAMultiplier * partyFlyingNoAMultiplier, temporaryAccuracyBonusByCharacterId.get(targetCharStats.characterId) ?? 0, resolveCharacterOffenseAmplifierMultiplier(targetCharStats.characterId));
+    const reCounterEchoDomainUsageCount = registerElementalOffenseUsage(targetCharStats.elementalOffense);
+    const reCounterResult = calculateCharacterDamage('close', targetCharStats, targetChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, reCounterNoAMultiplier * partyFlyingNoAMultiplier, temporaryAccuracyBonusByCharacterId.get(targetCharStats.characterId) ?? 0, resolveCharacterOffenseAmplifierMultiplier(targetCharStats.characterId), reCounterEchoDomainUsageCount);
     if (reCounterResult.totalAttempts <= 0) {
       return;
     }
@@ -2773,7 +2815,8 @@ export function executeBattle(
       const coverChar = party.characters.find(c => c.id === coverCharStats.characterId);
       if (!coverChar) continue;
 
-      const coveringFireResult = calculateCharacterDamage('long', coverCharStats, coverChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, coveringFireNoAMultiplier, 0, resolveCharacterOffenseAmplifierMultiplier(coverCharStats.characterId));
+      const coveringFireEchoDomainUsageCount = registerElementalOffenseUsage(coverCharStats.elementalOffense);
+      const coveringFireResult = calculateCharacterDamage('long', coverCharStats, coverChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, coveringFireNoAMultiplier, 0, resolveCharacterOffenseAmplifierMultiplier(coverCharStats.characterId), coveringFireEchoDomainUsageCount);
       if (coveringFireResult.totalAttempts <= 0) continue;
 
       if (isIllusionActive('long', getEnemyAbilityLevel(enemy, 'illusion') > 0, 'enemy', consumedIllusionStateIds)) {
@@ -3649,6 +3692,8 @@ export function executeBattle(
 
         const runEnemyAttack = (attempts: number, isReAttack = false): void => {
           if (attempts <= 0 || partyHp <= 0 || enemyHp <= 0) return;
+          const enemyEchoDomainUsageCount = registerElementalOffenseUsage(enemy.elementalOffense);
+          const enemyEchoDomainLogText = getEchoDomainLogText(enemy.elementalOffense);
 
           const attacksByTarget = new Map<number, {
             hitDamages: number[];
@@ -3714,6 +3759,7 @@ export function executeBattle(
                 partyStats.hp,
                 environment.terrainEffect,
                 enemyOffenseAmplifierMultiplier * ambushAmplifier,
+                enemyEchoDomainUsageCount,
               );
               targetAttack.hitDamages.push(Math.max(1, Math.floor(singleDamage * resonanceAmplifier)));
             }
@@ -3735,6 +3781,7 @@ export function executeBattle(
             ? { abilities: [{ id: 'resonance' as const, level: enemyResonanceLevel }] }
             : { abilities: [] };
           const enemyResonanceLogText = getResonanceLogText(resonanceActor.abilities, enemySuccessfulHits, phase === 'mid');
+          const enemyAttackBonusLogText = mergeAttackBonusLogText(enemyResonanceLogText, enemyEchoDomainLogText);
           let totalDamageDealt = 0;
 
           if (isMagicSealTargetForEnemy(phase, enemy, attempts) && consumeMagicSeal()) {
@@ -3765,7 +3812,7 @@ export function executeBattle(
               phase,
               initiativeRoll: turn.roll,
               actor: 'enemy',
-              action: `${magicProfile.spellName}${isReAttack ? '連撃' : ''}を唱えた！${enemyResonanceLogText}`,
+              action: `${magicProfile.spellName}${isReAttack ? '連撃' : ''}を唱えた！${enemyAttackBonusLogText}`,
               hits: enemySuccessfulHits,
               totalAttempts: attempts,
               rageBonusPercent: toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp)) || undefined,
@@ -3866,8 +3913,8 @@ export function executeBattle(
                 })()
               : null;
 
-            const reflectedAttemptText = enemyResonanceLogText
-              ? `${appliedHits}/${attack.totalAttempts}回, ${enemyResonanceLogText.slice(1, -1)}`
+            const reflectedAttemptText = enemyAttackBonusLogText
+              ? `${appliedHits}/${attack.totalAttempts}回, ${enemyAttackBonusLogText.slice(1, -1)}`
               : `${appliedHits}/${attack.totalAttempts}回`;
 
             triggerPartyDefeatRecovery(attack.charStats, phase, turn.roll, true);
@@ -3946,7 +3993,7 @@ export function executeBattle(
                 actor: 'enemy',
                 action: phase === 'mid'
                   ? `${targetName} に命中！`
-                  : `${targetName} に${attackName}！${enemyResonanceLogText}`,
+                  : `${targetName} に${attackName}！${enemyAttackBonusLogText}`,
                 damage: appliedDamage > 0 ? appliedDamage : undefined,
                 hits: appliedHits,
                 totalAttempts: attack.totalAttempts,
@@ -4035,6 +4082,7 @@ export function executeBattle(
               getCounterNoAMultiplier(attack.charStats) * (phase === 'close' ? partyFlyingNoAMultiplier : 1.0),
               phase === 'close' ? (temporaryAccuracyBonusByCharacterId.get(charId) ?? 0) : 0,
               resolveCharacterOffenseAmplifierMultiplier(charId),
+              registerElementalOffenseUsage(attack.charStats.elementalOffense),
             );
             if (counterResult.totalAttempts <= 0) continue;
 
@@ -4046,6 +4094,8 @@ export function executeBattle(
 
             const counterType = phase === 'mid' ? '魔法反撃' : '反撃';
             const resonanceLogText = getResonanceLogText(attack.charStats.abilities, counterResult.hits, phase === 'mid' || (phase === 'long' && partyDeityKey === 'God of Resonance'));
+            const echoDomainLogText = getEchoDomainLogText(attack.charStats.elementalOffense);
+            const counterBonusLogText = mergeAttackBonusLogText(resonanceLogText, echoDomainLogText);
             const characterCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(attack.charStats, partyHp, partyStats.hp));
             const characterCounterMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(attack.charStats, partyHp, partyStats.hp));
             const characterCounterSwarmBonuses = getSwarmLogBonuses(attack.charStats.abilities, partyHp, partyStats.hp, enemy.abilities, enemyHp, enemy.hp);
@@ -4054,7 +4104,7 @@ export function executeBattle(
               initiativeRoll: initiativeByCharacter.get(charId),
               actor: 'character',
               characterId: charId,
-              action: `${targetChar?.name ?? '???'} の${counterType}！${resonanceLogText}`,
+              action: `${targetChar?.name ?? '???'} の${counterType}！${counterBonusLogText}`,
               damage: counterResult.damage,
               hits: counterResult.hits,
               totalAttempts: counterResult.totalAttempts,
@@ -4099,11 +4149,12 @@ export function executeBattle(
 
             let reCounterDamage = 0;
             let reCounterHits = 0;
+            const enemyReCounterEchoDomainUsageCount = registerElementalOffenseUsage(enemy.elementalOffense);
             for (let i = 1; i <= reCounterAttempts; i++) {
               const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, attack.charStats.evasionBonus, i, phase, getDeflectionLevel(attack.charStats), getEnemyFocusLevel(enemy), environment.terrainEffect);
               if (!didHit) continue;
               reCounterHits += 1;
-              reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, characterStats, attack.charStats, enemyHp, partyHp, partyStats.hp, environment.terrainEffect, enemyOffenseAmplifierMultiplier);
+              reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, characterStats, attack.charStats, enemyHp, partyHp, partyStats.hp, environment.terrainEffect, enemyOffenseAmplifierMultiplier, enemyReCounterEchoDomainUsageCount);
             }
 
             const avoidedByPartyIllusionOnReCounter = isPartyIllusionActive(phase, characterStats, consumedPartyIllusion);
@@ -4215,7 +4266,8 @@ export function executeBattle(
             const magicalCounterNoAMultiplier = getMagicalCounterNoAMultiplier(magicalCounterStats);
             if (magicalCounterNoAMultiplier <= 0) continue;
 
-            const magicalCounterResult = calculateCharacterDamage('mid', magicalCounterStats, magicalCounterChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, magicalCounterNoAMultiplier, 0, resolveCharacterOffenseAmplifierMultiplier(charId));
+            const magicalCounterEchoDomainUsageCount = registerElementalOffenseUsage(magicalCounterStats.elementalOffense);
+            const magicalCounterResult = calculateCharacterDamage('mid', magicalCounterStats, magicalCounterChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, magicalCounterNoAMultiplier, 0, resolveCharacterOffenseAmplifierMultiplier(charId), magicalCounterEchoDomainUsageCount);
             if (magicalCounterResult.totalAttempts <= 0) continue;
 
             addEnemyHitsReceived(magicalCounterResult.hits);
@@ -4225,6 +4277,8 @@ export function executeBattle(
             }
 
             const resonanceLogText = getResonanceLogText(magicalCounterStats.abilities, magicalCounterResult.hits, true);
+            const echoDomainLogText = getEchoDomainLogText(magicalCounterStats.elementalOffense);
+            const magicalCounterBonusLogText = mergeAttackBonusLogText(resonanceLogText, echoDomainLogText);
             const magicalCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(magicalCounterStats, partyHp, partyStats.hp));
             const magicalCounterMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(magicalCounterStats, partyHp, partyStats.hp));
             const magicalCounterSwarmBonuses = getSwarmLogBonuses(magicalCounterStats.abilities, partyHp, partyStats.hp, enemy.abilities, enemyHp, enemy.hp);
@@ -4233,7 +4287,7 @@ export function executeBattle(
               initiativeRoll: initiativeByCharacter.get(charId),
               actor: 'character',
               characterId: charId,
-              action: `${magicalCounterChar.name} の魔法反撃！${resonanceLogText}`,
+              action: `${magicalCounterChar.name} の魔法反撃！${magicalCounterBonusLogText}`,
               damage: magicalCounterResult.damage,
               hits: magicalCounterResult.hits,
               totalAttempts: magicalCounterResult.totalAttempts,
@@ -4361,6 +4415,7 @@ export function executeBattle(
             noAMultiplier,
             characterPhaseAccuracyBonus,
             resolveCharacterOffenseAmplifierMultiplier(cs.characterId) * ambushMultiplier,
+            registerElementalOffenseUsage(cs.elementalOffense),
           );
 
           shockEffectLog = phase === 'close' && !isReAttack && isCharacterShockAvailable(selected)
@@ -4408,6 +4463,7 @@ export function executeBattle(
             noAMultiplier,
             characterPhaseAccuracyBonus,
             resolveCharacterOffenseAmplifierMultiplier(cs.characterId) * ambushMultiplier,
+            registerElementalOffenseUsage(cs.elementalOffense),
           );
           shockEffectLog = phase === 'close' && !isReAttack && isEnemyShockAvailable()
             ? (() => {
@@ -4471,6 +4527,8 @@ export function executeBattle(
         if (result.totalAttempts <= 0) return null;
 
         const resonanceLogText = getResonanceLogText(cs.abilities, result.hits, phase === 'mid' || (phase === 'long' && partyDeityKey === 'God of Resonance'));
+        const echoDomainLogText = getEchoDomainLogText(cs.elementalOffense);
+        const characterAttackBonusLogText = mergeAttackBonusLogText(resonanceLogText, echoDomainLogText);
         const characterAttackRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(cs, partyHp, partyStats.hp));
         const characterAttackMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(cs, partyHp, partyStats.hp));
         const characterAttackSwarmBonuses = getSwarmLogBonuses(
@@ -4501,8 +4559,8 @@ export function executeBattle(
             actor: 'character',
             characterId: cs.characterId,
             action: phase === 'mid'
-              ? `${char.name} が${attackType}を唱えたが反射された！${resonanceLogText}`
-              : `${char.name} の${reflect.summary}攻撃は反射された！${resonanceLogText}`,
+              ? `${char.name} が${attackType}を唱えたが反射された！${characterAttackBonusLogText}`
+              : `${char.name} の${reflect.summary}攻撃は反射された！${characterAttackBonusLogText}`,
             damage: result.damage,
             reflectedDamage: result.reflectedDamage,
             reflectedSourceDamage: result.reflectedSourceDamage,
@@ -4526,8 +4584,8 @@ export function executeBattle(
             actor: 'character',
             characterId: cs.characterId,
             action: phase === 'mid'
-              ? `${char.name} が${attackType}を唱えたが吸収された！${resonanceLogText}`
-              : `${char.name} の${absorb.summary}攻撃は吸収された！${resonanceLogText}`,
+              ? `${char.name} が${attackType}を唱えたが吸収された！${characterAttackBonusLogText}`
+              : `${char.name} の${absorb.summary}攻撃は吸収された！${characterAttackBonusLogText}`,
             damage: 0,
             showZeroDamage: true,
             absorbedDamage: result.absorbedDamage,
@@ -4551,8 +4609,8 @@ export function executeBattle(
             actor: 'character',
             characterId: cs.characterId,
             action: phase === 'mid'
-              ? `${char.name} が${attackType}を唱えたが無効化された！${resonanceLogText}`
-              : `${char.name} の${nullify.summary}攻撃は無効化された！${resonanceLogText}`,
+              ? `${char.name} が${attackType}を唱えたが無効化された！${characterAttackBonusLogText}`
+              : `${char.name} の${nullify.summary}攻撃は無効化された！${characterAttackBonusLogText}`,
             damage: 0,
             showZeroDamage: true,
             hits: result.hits,
@@ -4577,10 +4635,10 @@ export function executeBattle(
             actor: 'character',
             characterId: cs.characterId,
             action: isAntagonism
-              ? `${antagonismAction ?? `${char.name} は敵対状態！${antagonismTargetName} へ${phase === 'mid' ? `${attackType}を唱えた` : attackType}！`}${resonanceLogText}`
+              ? `${antagonismAction ?? `${char.name} は敵対状態！${antagonismTargetName} へ${phase === 'mid' ? `${attackType}を唱えた` : attackType}！`}${characterAttackBonusLogText}`
               : phase === 'mid'
-                ? `${char.name} が${attackType}を唱えた！${resonanceLogText}`
-                : `${char.name} の${attackType}！${resonanceLogText}`,
+                ? `${char.name} が${attackType}を唱えた！${characterAttackBonusLogText}`
+                : `${char.name} の${attackType}！${characterAttackBonusLogText}`,
             damage: result.damage,
             damageTarget: isAntagonism ? 'party' : 'enemy',
             hits: result.hits,
