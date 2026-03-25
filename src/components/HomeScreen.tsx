@@ -225,9 +225,15 @@ function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: number):
 
   if (value) {
     const normalizedValue = value.startsWith('x') ? value.slice(1) : value;
+    const normalizedPercentValue = normalizedValue.endsWith('%') ? normalizedValue.slice(0, -1) : normalizedValue;
+    const signedPercentValue = normalizedValue.startsWith('+') || normalizedValue.startsWith('-') ? normalizedValue : `+${normalizedValue}`;
+    const negativePercentValue = normalizedValue.startsWith('-') ? normalizedValue : `-${normalizedValue.replace(/^\+/, '')}`;
     description = description
+      .replace(/\+N%/g, signedPercentValue)
+      .replace(/-N%/g, negativePercentValue)
+      .replace(/N%/g, normalizedValue)
       .replace(/xN/g, value.startsWith('x') ? value : `x${value}`)
-      .replace(/N/g, normalizedValue);
+      .replace(/N/g, normalizedPercentValue);
   }
 
   return description
