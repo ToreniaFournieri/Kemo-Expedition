@@ -2113,9 +2113,6 @@ export function executeBattle(
     }
   } else if (environment.terrainEffect === 'terrain.transcendence' || environment.terrainEffect === 'terrain.suppression') {
     const delta = environment.terrainEffect === 'terrain.transcendence' ? 1 : -1;
-    const noteText = delta > 0
-      ? '(双方の反応・時限アビリティLv+1)'
-      : '(双方の反応・時限アビリティLv-1)';
 
     for (const stats of characterStats) {
       for (const abilityId of TERRAIN_TIMED_OR_REACTIVE_ABILITY_IDS) {
@@ -2125,15 +2122,6 @@ export function executeBattle(
     for (const abilityId of TERRAIN_TIMED_OR_REACTIVE_ABILITY_IDS) {
       adjustEnemyAbilityLevel(enemy, abilityId, delta);
     }
-
-    log.push({
-      phase: 'start',
-      actor: 'effect',
-      effectKind: 'terrain',
-      action: environment.terrainEffect === 'terrain.transcendence' ? '超越の力が満ちた！' : '抑圧の力が満ちた！',
-      note: noteText,
-      noteTone: 'muted',
-    });
   } else if (environment.terrainEffect === 'terrain.silence-field') {
     shouldSkipActorStartAbilities = true;
   }
