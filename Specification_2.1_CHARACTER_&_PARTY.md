@@ -44,6 +44,21 @@
 |ミュリッド(Murid) | `a.stealth`1 | (none) | `c.unlock_Murid_ability` |`c.penet+0.10`, `c.bolt_x1.3`  |9,8,10,10| 🐭Mouse |
 |プロキオニアン(Procyonian) | `a.illusion`1 | (none) | `c.unlock_Procyonian_ability` |`c.equip_slot+1`, `c.grimoire_x1.3`  |9,8,10,6| 🦝Tanuki |
 
+**classes:**
+
+|class | main/sub bonuses | main bonus | master bonus | 
+|-----|-----------|---------|---------|
+|戦士(戦,Fighter) | `c.grit+1`, `c.equip_slot+2`, `c.armor_x1.4`, `c.gauntlet_x1.3` |`a.defender`1 |`a.defender`2 | 
+|剣士(剣,Duelist) | `c.grit+1`, `c.sword_x1.4` | `a.counter`1 | `a.counter`2 | 
+|侍(侍,Samurai) | `c.grit+1`, `c.katana_x1.4` |`a.iaigiri`1 | `a.iaigiri`2 |
+|狩人(狩,Ranger) | `c.pursuit+3`, `c.arrow_x1.4` | `a.hunter`1: Reduces row-based damage decay from 15% to 10% per step. |`a.hunter`2 | 
+|盗賊(盗,Rogue) | `c.pursuit+2`, `c.archery_x1.4`, `c.equip_slot+1`, `c.unlock` additional reward chance |`a.deflection`, `a.first-strike`1 |`a.deflection`, `a.first-strike`2. | 
+|忍者(忍,Ninja) | `c.pursuit+1`, `c.bolt_x1.4`, `c.penet+0.10` | `a.re-attack`1 | `a.re-attack`2 | 
+|賢者(賢,Sage) | `c.caster+2`, `c.catalyst_x1.4`, `c.grimoire_x1.2`, `c.equip_slot+1` | `a.m-barrier`1 | `a.m-barrier`2 | 
+|魔法使い(魔,Wizard) | `c.caster+1`, `c.wand_x1.4` | `a.resonance`1 | `a.resonance`2 | 
+|巡礼者(巡,Pilgrim) | `c.robe_x1.4`, `c.grimoire_x1.3`, `c.evasion+0.02`, `c.equip_slot+2` |`a.null-counter`1, `a.tithe`1 |`a.null-counter`2, `a.tithe`1 | 
+|君主(君,Lord) | `c.shield_x1.4`, `c.robe_x1.3`, `c.equip_slot+2` |`a.command`1, `a.squander`1 |`a.command`2, `a.squander`1 | 
+
 **predisposition(性格):**
 
 |predisposition | short word | bonus |
@@ -70,21 +85,6 @@
 |導智の家（House of Guiding Thought）| 導 |`c.wand_x1.2`,  `c.bolt_x1.2` |
 |秘理の家（House of Hidden Principles）| 秘 |`c.robe_x1.2`, `b.intelligence+1`|
 |継誓の家（House of Inherited Oaths）| 継 |`c.shield_x1.2`, `b.vitality+1`|
-
-**classes:**
-
-|class | main/sub bonuses | main bonus | master bonus | 
-|-----|-----------|---------|---------|
-|戦士(戦,Fighter) | `c.grit+1`, `c.equip_slot+1`,  `c.armor_x1.4` |`a.defender`1 |`a.defender`2 | 
-|剣士(剣,Duelist) | `c.grit+1`, `c.sword_x1.4` | `a.counter`1 | `a.counter`2 | 
-|忍者(忍,Ninja) | `c.grit+1`, `c.penet+0.15` | `a.re-attack`1 | `a.re-attack`2 | 
-|侍(侍,Samurai) | `c.grit+1`, `c.katana_x1.4` |`a.iaigiri`1 | `a.iaigiri`2 |
-|君主(君,Lord) | `c.grit+1`, `c.gauntlet_x1.4`, `c.equip_slot+1` |`a.command`1, `a.squander`1 |`a.command`2, `a.squander`1 | 
-|狩人(狩,Ranger) | `c.pursuit+2`, `c.arrow_x1.4` | `a.hunter`1: Reduces row-based damage decay from 15% to 10% per step. |`a.hunter`2 | 
-|魔法使い(魔,Wizard) | `c.caster+1`, `c.wand_x1.4` | `a.resonance`1 | `a.resonance`2 | 
-|賢者(賢,Sage) | `c.caster+2`, `c.robe_x1.4`, `c.grimoire_x1.2`, `c.equip_slot+2` | `a.m-barrier`1 | `a.m-barrier`2 | 
-|盗賊(盗,Rogue) | `c.pursuit+1`, `c.unlock` additional reward chance |`a.deflection`, `a.first-strike`1 |`a.deflection`, `a.first-strike`2. | 
-|巡礼者(巡,Pilgrim) | `c.caster+1`, `c.grit+1`, `c.evasion+0.02`, `c.equip_slot+1` |`a.null-counter`1, `a.tithe`1 |`a.null-counter`2, `a.tithe`1 | 
 
 - If `main_class` and  `sub_class` are same class, then it turns into master class, applies master bonus.
 - `main_class` applies main/sub bonuses and main bonus. `sub_class` applies only main/sub bonuses.
