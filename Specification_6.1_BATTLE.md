@@ -696,7 +696,7 @@ X: `p.enemy_name` | `p.outcome_of_room` |  ▼
 | `a.rage` | 闘志+N% |
 | `a.momentum` | 気勢+N% |
 | `a.ambush` | 待ち伏せ+N% |
-| `a.echo-domain` | 残響+N% |
+| `terrain.echo-domain` | 残響+N% |
 
 
 ```
