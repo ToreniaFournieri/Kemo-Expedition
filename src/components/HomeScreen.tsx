@@ -6459,7 +6459,11 @@ function ExpeditionTab({
                                 const totalAttempts = log.totalAttempts ?? 0;
                                 const allMissed = totalAttempts > 0 && hits === 0 && !log.wasNegated;
                                 const hitDisplay = totalAttempts > 0 ? `(${hits}/${totalAttempts}回)` : '';
-                                const resonanceMatch = /(\(共鳴\+\d+%\))$/.exec(log.action);
+                                const trailingEffectMatch = /\(([^()]+)\)$/.exec(log.action);
+                                const trailingEffects = (trailingEffectMatch?.[1] ?? '')
+                                  .split(',')
+                                  .map(effect => effect.trim())
+                                  .filter(effect => /^(共鳴\+\d+%|残響\+\d+%)$/.test(effect));
                                 const rageDisplay = log.rageBonusPercent && log.rageBonusPercent > 0
                                   ? `闘志+${log.rageBonusPercent}%`
                                   : '';
@@ -6492,18 +6496,19 @@ function ExpeditionTab({
                                 }
 
                                 const extraSegments = [
-                                  resonanceMatch ? resonanceMatch[1].slice(1, -1) : '',
+                                  ...trailingEffects,
                                   rageDisplay,
                                   momentumDisplay,
                                   ambushDisplay,
                                   swarmActorDisplay,
                                   swarmOpponentDisplay,
                                 ].filter(Boolean);
-                                const compactHitDisplay = hitDisplay && extraSegments.length > 0
-                                  ? `(${hits}/${totalAttempts}回, ${extraSegments.join(', ')})`
+                                const mergedExtraSegments = Array.from(new Set(extraSegments));
+                                const compactHitDisplay = hitDisplay && mergedExtraSegments.length > 0
+                                  ? `(${hits}/${totalAttempts}回, ${mergedExtraSegments.join(', ')})`
                                   : hitDisplay;
-                                const actionDisplay = resonanceMatch && !allMissed
-                                  ? actionText.replace(/\(共鳴\+\d+%\)$/, '')
+                                const actionDisplay = trailingEffects.length > 0 && !allMissed
+                                  ? actionText.replace(/\([^()]+\)$/, '')
                                   : actionText;
                                 const actionDisplayNode = renderActionWithMutedTrailingParenthetical(actionDisplay);
                                 const shouldRenderResurrectBeforeHeader = isResurrectLog && shouldShowPhaseHeader;
@@ -7731,7 +7736,11 @@ function DiaryTab({
                               const totalAttempts = battleLog.totalAttempts ?? 0;
                               const allMissed = totalAttempts > 0 && hits === 0 && !battleLog.wasNegated;
                               const hitDisplay = totalAttempts > 0 ? `(${hits}/${totalAttempts}回)` : '';
-                              const resonanceMatch = /(\(共鳴\+\d+%\))$/.exec(battleLog.action);
+                              const trailingEffectMatch = /\(([^()]+)\)$/.exec(battleLog.action);
+                              const trailingEffects = (trailingEffectMatch?.[1] ?? '')
+                                .split(',')
+                                .map(effect => effect.trim())
+                                .filter(effect => /^(共鳴\+\d+%|残響\+\d+%)$/.test(effect));
                               const rageDisplay = battleLog.rageBonusPercent && battleLog.rageBonusPercent > 0
                                 ? `闘志+${battleLog.rageBonusPercent}%`
                                 : '';
@@ -7773,18 +7782,19 @@ function DiaryTab({
                               }
 
                               const extraSegments = [
-                                resonanceMatch ? resonanceMatch[1].slice(1, -1) : '',
+                                ...trailingEffects,
                                 rageDisplay,
                                 momentumDisplay,
                                 ambushDisplay,
                                 swarmActorDisplay,
                                 swarmOpponentDisplay,
                               ].filter(Boolean);
-                              const compactHitDisplay = hitDisplay && extraSegments.length > 0
-                                ? `(${hits}/${totalAttempts}回, ${extraSegments.join(', ')})`
+                              const mergedExtraSegments = Array.from(new Set(extraSegments));
+                              const compactHitDisplay = hitDisplay && mergedExtraSegments.length > 0
+                                ? `(${hits}/${totalAttempts}回, ${mergedExtraSegments.join(', ')})`
                                 : hitDisplay;
-                              const actionDisplay = resonanceMatch && !allMissed
-                                ? actionText.replace(/\(共鳴\+\d+%\)$/, '')
+                              const actionDisplay = trailingEffects.length > 0 && !allMissed
+                                ? actionText.replace(/\([^()]+\)$/, '')
                                 : actionText;
                               const actionDisplayNode = renderActionWithMutedTrailingParenthetical(actionDisplay);
                               const shouldRenderResurrectBeforeHeader = isResurrectLog && shouldShowPhaseHeader;
