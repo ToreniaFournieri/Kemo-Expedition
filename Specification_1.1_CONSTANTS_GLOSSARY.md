@@ -152,7 +152,7 @@
 | `a.mutual-physical-amplify` | 物理増幅 | 双方の物理ダメージをxN倍にする | Lv1: x1.3, Lv2: x1.5, Lv3: x1.6, Lv4: x1.65, Lv5: x1.68 | START | 3 |
 | `a.mutual-physical-restraint` | 物理抑制 | 双方の物理ダメージをxN倍にする | Lv1: x0.77, Lv2: x0.67, Lv3: x0.63, Lv4: x0.61, Lv5: x0.59 | START | 3 |
 | `a.magic-seal` | 魔封 | 最初の魔法を無力化する(相手・自身・味方を含む) | - | START | 3 |
-| `a.first-strike` | 先制攻撃 | 行動がN段階速くなる | Lv1: 速い(2~6), Lv2: とても速い(3~9), Lv3: 極めて速い(4~9) | START | 3 |
+| `a.first-strike` | 先制攻撃 | 行動がN速くなる | Lv1: 少し(2~6), Lv2: とても(3~9), Lv3: 極めて(4~9) | START | 3 |
 | `a.slow` | 鈍足 | 自身の行動順をN低下させる | Lv1: -1 | START | 3 |
 | `a.frostbite` | 凍傷 | 相手の行動順をN低下させる | Lv1: -1 | START | 3 |
 | `a.howl` | 遠吠え | 指定タイミングで発動し、相手の次の攻撃回数をxN倍にする | Lv1: LONG2・x5/7, Lv2: LONG2・x4/7, Lv3: LONG2・x3/7, Lv4: LONG2・x2/7, Lv5: LONG2・x1/7 | LONG | 2 |
@@ -428,5 +428,5 @@
 | `terrain.silence-field` | 静寂領域 | すべての[効]アビリティは発動しない |
 | `terrain.transcendence` | 超越 | 双方の反応・時限アビリティレベルが+1される(レベル上限5) |
 | `terrain.suppression` | 抑圧 | 双方の反応・時限アビリティレベルが-1される(レベル下限1) |
-| `terrain.gehenna` | ゲヘナ | いかなる宗教ボーナスも適用されない |
+| `terrain.gehenna` | ゲヘナ | 戦闘中、神々の恩恵を受けることがなくなる |
 
