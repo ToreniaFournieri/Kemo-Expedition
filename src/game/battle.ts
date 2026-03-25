@@ -1924,9 +1924,30 @@ const TERRAIN_SACRED_JUDGEMENT_LOGS = [
   '天の怒りが雷となって {actor} に降り注いだ！',
 ] as const;
 
-function pickRandomTerrainFlavorText(logs: readonly string[], fallback: string, actorName: string): string {
+// SpecRef: 6.2.2 | Terrain flavor text | log.terrain.chain-lightning
+const TERRAIN_CHAIN_LIGHTNING_LOGS = [
+  '雷が跳ね、{target} へと連鎖した！',
+  '稲妻が分岐し、{target} を打った！',
+  '電撃が飛び火し、{target} に広がった！',
+  '雷光が弾け、{target} へ走った！',
+  '閃光が連なり、{target} にもう一撃が放たれた！',
+  '雷が連鎖し、{target} を撃ち抜いた！',
+  '電流が伝播し、{target} へ流れた！',
+  '稲妻が枝分かれし、{target} を貫いた！',
+  '雷撃が跳躍し、{target} に到達した！',
+  '弾けた雷が連なり、{target} を襲った！',
+] as const;
+
+function pickRandomTerrainFlavorText(
+  logs: readonly string[],
+  fallback: string,
+  replacements: Record<string, string>,
+): string {
   const selected = logs[Math.floor(Math.random() * logs.length)] ?? fallback;
-  return selected.split('{actor}').join(actorName);
+  return Object.entries(replacements).reduce(
+    (text, [key, value]) => text.split(`{${key}}`).join(value),
+    selected,
+  );
 }
 
 // SpecRef: 6.1.1.1 | START phase | actor.a.oblivion
@@ -2255,7 +2276,7 @@ export function executeBattle(
       actionText = pickRandomTerrainFlavorText(
         TERRAIN_VINE_SNARE_LOGS,
         '{actor} は蔓に絡め取られた！',
-        actor.name,
+        { actor: actor.name },
       );
       noteTextTemplate = '(HP減少-{damage})';
     } else if (terrainEffect === 'terrain.crystal-zone' && phase === 'mid') {
@@ -2263,7 +2284,7 @@ export function executeBattle(
       actionText = pickRandomTerrainFlavorText(
         TERRAIN_CRYSTAL_ZONE_LOGS,
         '{actor} の魔力が反射し、体を傷つけた！',
-        actor.name,
+        { actor: actor.name },
       );
       noteTextTemplate = '(HP減少-{damage})';
     } else if (terrainEffect === 'terrain.conduction' && elementalOffense === 'thunder') {
@@ -2271,7 +2292,7 @@ export function executeBattle(
       actionText = pickRandomTerrainFlavorText(
         TERRAIN_CONDUCTION_LOGS,
         '{actor} の雷撃が伝導し、自身に跳ね返った！',
-        actor.name,
+        { actor: actor.name },
       );
       noteTextTemplate = '(HP減少 ⚡-{damage})';
       elementalTag = 'thunder';
@@ -2280,7 +2301,7 @@ export function executeBattle(
       actionText = pickRandomTerrainFlavorText(
         TERRAIN_MANA_BURN_LOGS,
         '{actor} の魔力が暴走し、体を蝕んだ！',
-        actor.name,
+        { actor: actor.name },
       );
       noteTextTemplate = '(HP減少-{damage})';
     } else if (
@@ -2294,7 +2315,7 @@ export function executeBattle(
       actionText = pickRandomTerrainFlavorText(
         TERRAIN_SACRED_JUDGEMENT_LOGS,
         '天より雷が落ち、{actor} を打った！',
-        actor.name,
+        { actor: actor.name },
       );
       noteTextTemplate = '(HP減少 ⚡-{damage})';
       elementalTag = 'thunder';
@@ -2321,6 +2342,64 @@ export function executeBattle(
     } else {
       triggerPartyDefeatRecovery(actor.stats, phase);
     }
+  };
+
+  // SpecRef: 6.1.3.1 | Actor action | terrain.chain-lightning
+  const applyTerrainChainLightningDamage = (
+    actor: { kind: 'character'; stats: ComputedCharacterStats; name: string } | { kind: 'enemy'; name: string },
+    phase: BattleActionPhase,
+    thunderDamage: number,
+    excludedPartyMemberId?: number,
+  ): void => {
+    if (environment.terrainEffect !== 'terrain.chain-lightning') return;
+    if (thunderDamage <= 0) return;
+
+    const chainDamage = Math.floor(thunderDamage * 0.30);
+    if (chainDamage <= 0) return;
+
+    if (actor.kind === 'character') {
+      const appliedDamage = applyEnemyDamage(chainDamage);
+      if (appliedDamage <= 0) return;
+
+      log.push({
+        phase,
+        actor: 'effect',
+        effectKind: 'terrain',
+        characterId: actor.stats.characterId,
+        action: pickRandomTerrainFlavorText(
+          TERRAIN_CHAIN_LIGHTNING_LOGS,
+          '雷が跳ね、{target} へと連鎖した！',
+          { target: enemy.name },
+        ),
+        note: `(⚡ ${battleTerrainNoteValueFormatter.format(appliedDamage)})`,
+        elementalOffense: 'thunder',
+      });
+      triggerEnemyDefeatRecovery(phase);
+      return;
+    }
+
+    const chainTargetCandidates = characterStats.filter(stats => stats.characterId !== excludedPartyMemberId);
+    const chainTarget = chainTargetCandidates[Math.floor(Math.random() * chainTargetCandidates.length)] ?? characterStats[0];
+    if (!chainTarget) return;
+    const chainTargetName = party.characters.find((c) => c.id === chainTarget.characterId)?.name ?? '味方';
+
+    const appliedDamage = applyPartyDamage(chainDamage);
+    if (appliedDamage <= 0) return;
+
+    log.push({
+      phase,
+      actor: 'effect',
+      effectKind: 'terrain',
+      characterId: chainTarget.characterId,
+      action: pickRandomTerrainFlavorText(
+        TERRAIN_CHAIN_LIGHTNING_LOGS,
+        '雷が跳ね、{target} へと連鎖した！',
+        { target: chainTargetName },
+      ),
+      note: `(⚡ ${battleTerrainNoteValueFormatter.format(appliedDamage)})`,
+      elementalOffense: 'thunder',
+    });
+    triggerPartyDefeatRecovery(chainTarget, phase);
   };
 
   const buildBattleResult = (phase: BattleActionPhase, outcome: BattleOutcome): BattleResult => ({
@@ -4241,6 +4320,15 @@ export function executeBattle(
             totalDamageDealt,
             enemy.elementalOffense,
           );
+          if (enemy.elementalOffense === 'thunder') {
+            const firstTargetCharacterId = Array.from(attacksByTarget.keys())[0];
+            applyTerrainChainLightningDamage(
+              { kind: 'enemy', name: enemy.name },
+              phase,
+              totalDamageDealt,
+              firstTargetCharacterId,
+            );
+          }
         };
 
         if (firstActorInBattle === null) {
@@ -4685,6 +4773,13 @@ export function executeBattle(
           result.damage,
           cs.elementalOffense,
         );
+        if (cs.elementalOffense === 'thunder') {
+          applyTerrainChainLightningDamage(
+            { kind: 'character', stats: cs, name: char.name },
+            phase,
+            result.damage,
+          );
+        }
 
         return result;
       };
