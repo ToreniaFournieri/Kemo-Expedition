@@ -153,7 +153,7 @@ If `a.*` with phase = START:
 - If `Goddess of Restoration` and (terrain is not `terrain.gehenna`):
   - "再生の女神の祝福！ (HP回復+585)"
 - If `God of Attrition` and (terrain is not `terrain.gehenna`):
-  - "消耗の神への代償！ (HP消耗-433585)"
+  - "消耗の神への代償！ (HP消耗-1,234)"
 - `c.unlock`, reward log
 - Item got:
   - "制御ロッド を獲得した！ (自動売却対象: 9G)"
@@ -616,7 +616,7 @@ If `a.*` with phase = START:
   - Base: 1
   - +1 if `c.unlock`
   - +1 if `m.luna`
-  - +1 if {`Goddess of Discord` or (`God of Oblivion` and its rank ≥ 10) and (terrain is not `terrain.gehenna`)} 
+  - +1 if (terrain is not terrain.gehenna) and {Goddess of Discord or (God of Oblivion and its rank ≥ 10)}
   - +N from `a.auriferous`
  
 	- `a.auriferous`
