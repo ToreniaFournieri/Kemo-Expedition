@@ -416,6 +416,8 @@ If `a.*` with phase = START:
   - If `terrain.thunderstorm` and actor.`e.thunder`: x 3/2
   - If `terrain.dry` and actor.`e.ice`: x 0.5
   - If `terrain.echo-domain` and actor.`e.X`: 1.0 + 0.1 x (number of X in this battle from both side)
+    - log: add "残響+N%" to attack log like:
+      - "[6] ラス がサンダーボルトを唱えた！(8/43回, 共鳴+40%, 残響+20%)"
 
 - note: If actor: enemy, party.`f.party.offense_amplifier` = 1.0
 - `f.mutual_amplifier`:
