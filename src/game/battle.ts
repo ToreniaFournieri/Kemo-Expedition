@@ -2136,12 +2136,6 @@ export function executeBattle(
     });
   } else if (environment.terrainEffect === 'terrain.silence-field') {
     shouldSkipActorStartAbilities = true;
-    log.push({
-      phase: 'start',
-      actor: 'effect',
-      effectKind: 'terrain',
-      action: '静寂領域により、[効]アビリティが封じられた！',
-    });
   }
 
   if (partyDeityKey === 'Goddess of Discord' && characterStats.length > 0) {
