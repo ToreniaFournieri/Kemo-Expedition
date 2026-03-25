@@ -932,7 +932,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "terrain.chain-lightning",
         "label": "連鎖雷撃",
-        "description": "雷属性攻撃が命中した場合、ランダムな別対象に30%威力で追加ヒットする"
+        "description": "雷属性攻撃が命中した場合、別対象に30%威力で追加ヒットする"
       },
       {
         "key": "terrain.light-field",
