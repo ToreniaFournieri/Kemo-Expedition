@@ -34,6 +34,28 @@ If `a.*` with phase = START:
 - Note: actor = effect ([効] ), "()" part is gray text.
  
 **Priority order of Timed ability resolution**
+
+**Terrain Effects**
+- `terrain.deletion`
+  - Randomly select 1 target.
+  - Randomly select 1 valid ability from that target.
+  - The selected ability is disabled for the rest of the battle.
+ 
+- `terrain.transcendence`
+  - Increase the level of all reactive and timed abilities by +1.
+  - Cap at 5.
+  - Refer to: 1.1.1 @Specification_1.1_CONSTANTS_GLOSSARY.md.
+
+- `terrain.suppression`
+  - Decrease the level of all reactive and timed abilities by -1.
+  - Floor at 1.
+  - Refer to: 1.1.1 @Specification_1.1_CONSTANTS_GLOSSARY.md.
+
+- `terrain.silence-field`
+  - Skip all subsequent `actor abilities` part.
+
+**Actor abilities**
+
 - actor.`a.oblivion`
   - Randomly select 1 opponent.
   - Randomly select 1 valid ability from that opponent.
