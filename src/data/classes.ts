@@ -19,8 +19,9 @@ export const CLASSES: ClassDef[] = [
     name: '戦士',
     mainSubBonuses: [
       { type: 'grit', value: 1 },
-      { type: 'equip_slot', value: 1 },
+      { type: 'equip_slot', value: 2 },
       { type: 'armor_multiplier', value: 1.4 },
+      { type: 'gauntlet_multiplier', value: 1.3 },
     ],
     mainBonuses: [
       { type: 'ability', value: 1, abilityId: 'defender', abilityLevel: 1 },
@@ -47,8 +48,9 @@ export const CLASSES: ClassDef[] = [
     id: 'ninja',
     name: '忍者',
     mainSubBonuses: [
-      { type: 'grit', value: 1 },
-      { type: 'penet', value: 0.15 },
+      { type: 'pursuit', value: 1 },
+      { type: 'bolt_multiplier', value: 1.4 },
+      { type: 'penet', value: 0.1 },
     ],
     mainBonuses: [
       { type: 'ability', value: 1, abilityId: 're_attack', abilityLevel: 1 },
@@ -75,9 +77,9 @@ export const CLASSES: ClassDef[] = [
     id: 'lord',
     name: '君主',
     mainSubBonuses: [
-      { type: 'grit', value: 1 },
-      { type: 'gauntlet_multiplier', value: 1.4 },
-      { type: 'equip_slot', value: 1 },
+      { type: 'shield_multiplier', value: 1.4 },
+      { type: 'robe_multiplier', value: 1.3 },
+      { type: 'equip_slot', value: 2 },
     ],
     mainBonuses: [
       { type: 'ability', value: 1, abilityId: 'command', abilityLevel: 1 },
@@ -92,7 +94,7 @@ export const CLASSES: ClassDef[] = [
     id: 'ranger',
     name: '狩人',
     mainSubBonuses: [
-      { type: 'pursuit', value: 2 },
+      { type: 'pursuit', value: 3 },
       { type: 'arrow_multiplier', value: 1.4 },
     ],
     mainBonuses: [
@@ -121,9 +123,9 @@ export const CLASSES: ClassDef[] = [
     name: '賢者',
     mainSubBonuses: [
       { type: 'caster', value: 2 },
-      { type: 'robe_multiplier', value: 1.4 },
+      { type: 'catalyst_multiplier', value: 1.4 },
       { type: 'grimoire_multiplier', value: 1.2 },
-      { type: 'equip_slot', value: 2 },
+      { type: 'equip_slot', value: 1 },
     ],
     mainBonuses: [
       { type: 'ability', value: 1, abilityId: 'm_barrier', abilityLevel: 1 },
@@ -136,7 +138,9 @@ export const CLASSES: ClassDef[] = [
     id: 'rogue',
     name: '盗賊',
     mainSubBonuses: [
-      { type: 'pursuit', value: 1 },
+      { type: 'pursuit', value: 2 },
+      { type: 'archery_multiplier', value: 1.4 },
+      { type: 'equip_slot', value: 1 },
       { type: 'ability', value: 1, abilityId: 'unlock', abilityLevel: 1 },
     ],
     mainBonuses: [
@@ -144,7 +148,7 @@ export const CLASSES: ClassDef[] = [
       { type: 'ability', value: 1, abilityId: 'first_strike', abilityLevel: 1 },
     ],
     masterBonuses: [
-      { type: 'ability', value: 1, abilityId: 'deflection', abilityLevel: 1 },
+      { type: 'ability', value: 1, abilityId: 'deflection', abilityLevel: 2 },
       { type: 'ability', value: 1, abilityId: 'first_strike', abilityLevel: 2 },
     ],
   },
@@ -152,10 +156,10 @@ export const CLASSES: ClassDef[] = [
     id: 'pilgrim',
     name: '巡礼者',
     mainSubBonuses: [
-      { type: 'caster', value: 1 },
-      { type: 'grit', value: 1 },
+      { type: 'robe_multiplier', value: 1.4 },
+      { type: 'grimoire_multiplier', value: 1.3 },
       { type: 'evasion', value: 0.02 },
-      { type: 'equip_slot', value: 1 },
+      { type: 'equip_slot', value: 2 },
     ],
     mainBonuses: [
       { type: 'ability', value: 1, abilityId: 'null_counter', abilityLevel: 1 },
