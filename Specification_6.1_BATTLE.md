@@ -23,7 +23,6 @@
 #### 6.1.1 Phase resolution
 
 ##### 6.1.1.1 START phase
-
 If floor.`terrain.*`:
   - actor = terrain ([地形]),
   - text = terrain.description (Japanese)
@@ -34,6 +33,12 @@ If `a.*` with phase = START:
 - Note: actor = effect ([効] ), "()" part is gray text.
  
 **Priority order of Timed ability resolution**
+**Deity effects**
+- If `Goddess of Discord` and (terrain is not `terrain.gehenna`):
+  - Add `c.antagonism` to random party.
+
+- If `God of Resonance` and (terrain is not `terrain.gehenna`):
+  - Upgrade `a.resonance` ability level by N.
 
 **Terrain Effects**
 - `terrain.deletion`
@@ -92,7 +97,7 @@ If `a.*` with phase = START:
   - Otherwise: roll **1d3** (1–3)
 
 - **Modifications**
-  - If party.`Goddess of Fertility` and terrain != `terrain.machine-logic`: +1 (cap at 9)
+  - If party.`Goddess of Fertility` and terrain not in {`terrain.machine-logic`, `terrain.gehenna` }: +1 (cap at 9)
   - If actor.`a.slow`1 and terrain != `terrain.machine-logic`: −1 (minimum 1)
   - If opponent.`a.frostbite`1 and terrain != `terrain.machine-logic`: −1 (minimum 1)
 
@@ -145,9 +150,9 @@ If `a.*` with phase = START:
 
 ##### 6.1.1.3 END phase
 - Note: actor = effect ([末] ), "()" part is gray text.
-- `Goddess of Restoration` effect
+- If `Goddess of Restoration` and (terrain is not `terrain.gehenna`):
   - "再生の女神の祝福！ (HP回復+585)"
-- `God of Attrition` effect
+- If `God of Attrition` and (terrain is not `terrain.gehenna`):
   - "消耗の神への代償！ (HP消耗-433585)"
 - `c.unlock`, reward log
 - Item got:
@@ -378,7 +383,7 @@ If `a.*` with phase = START:
 
 **functions of attack**
 - `f.resonance_amplifier`(actor: ,successful hit: n )
-  - If (phase is MID) or (phase is LONG and party.`God of Resonance`),
+  - If (phase is MID) or (phase is LONG and party.`God of Resonance` and (terrain is not `terrain.gehenna`)),
   	- If actor.`a.resonance`1, return 1.0 + (0.05 x (n - 1))   
   	- If actor.`a.resonance`2, return 1.0 + (0.08 x (n - 1))
   	- If actor.`a.resonance`3, return 1.0 + (0.11 x (n - 1))
@@ -611,7 +616,7 @@ If `a.*` with phase = START:
   - Base: 1
   - +1 if `c.unlock`
   - +1 if `m.luna`
-  - +1 if (`Goddess of Discord` or (`God of Oblivion` and its rank ≥ 10)) 
+  - +1 if {`Goddess of Discord` or (`God of Oblivion` and its rank ≥ 10) and (terrain is not `terrain.gehenna`)} 
   - +N from `a.auriferous`
  
 	- `a.auriferous`
