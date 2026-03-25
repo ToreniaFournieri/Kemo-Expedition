@@ -1536,6 +1536,7 @@ function resolveEnemyRewards(
   hasUnlock: boolean,
   gameMode: GameMode,
   autoSellMultiplier: number,
+  terrainEffect: TerrainEffectKey | undefined,
   hasExtraRewardRollBlessing: boolean = false,
   auriferousBonusRolls: number = 0,
 ): {
@@ -1585,7 +1586,7 @@ function resolveEnemyRewards(
     const bonusRollCount =
       (hasUnlock ? 1 : 0)
       + (gameMode === 'm.luna' ? 1 : 0)
-      + (hasExtraRewardRollBlessing ? 1 : 0)
+      + (terrainEffect !== 'terrain.gehenna' && hasExtraRewardRollBlessing ? 1 : 0)
       + auriferousBonusRolls;
     for (let rollIndex = 0; rollIndex < bonusRollCount; rollIndex++) {
       bags = refillBagIfEmpty(bags, rewardBagType);
@@ -1735,6 +1736,9 @@ function applyPeriodicDeityHpEffect(
   }
 
   const deityKey = getDeityKey(deityName);
+  if (terrainEffect === 'terrain.gehenna') {
+    return { hp: currentHp };
+  }
   const isHealingBlockedByTerrain = terrainEffect === 'terrain.rotwood';
   if (deityKey === 'Goddess of Restoration') {
     if (isHealingBlockedByTerrain) {
@@ -2402,6 +2406,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   hasUnlock,
                   gameMode,
                   autoSellMultiplier,
+                  terrainEffect,
                   hasExtraRewardRollBlessing,
                   auriferousBonusRolls,
                 );

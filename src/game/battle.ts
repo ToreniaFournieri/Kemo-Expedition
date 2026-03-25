@@ -723,7 +723,8 @@ function calculateCharacterFriendlyFireDamage(
   const actorFocusLevel = attacker.abilities.find(a => a.id === 'focus')?.level ?? 0;
   const targetDeflectionLevel = getDeflectionLevel(target);
   const resonance = attacker.abilities.find(a => a.id === 'resonance');
-  const canApplyResonance = phase === 'mid' || (phase === 'long' && partyDeityKey === 'God of Resonance');
+  const canApplyResonance = phase === 'mid'
+    || (phase === 'long' && partyDeityKey === 'God of Resonance' && terrainEffect !== 'terrain.gehenna');
 
   let hits = 0;
   let damage = 0;
@@ -1249,7 +1250,8 @@ function calculateCharacterDamage(
   }
 
   const resonance = charStats.abilities.find(a => a.id === 'resonance');
-  const canApplyResonance = phase === 'mid' || (phase === 'long' && partyDeityKey === 'God of Resonance');
+  const canApplyResonance = phase === 'mid'
+    || (phase === 'long' && partyDeityKey === 'God of Resonance' && terrainEffect !== 'terrain.gehenna');
 
   const elementalMultiplier = getElementalMultiplier(
     charStats.elementalOffense,
@@ -2126,7 +2128,21 @@ export function executeBattle(
     shouldSkipActorStartAbilities = true;
   }
 
-  if (partyDeityKey === 'Goddess of Discord' && characterStats.length > 0) {
+  // SpecRef: 6.1.1.1 | START phase | Deity effects
+  if (partyDeityKey === 'God of Resonance' && environment.terrainEffect !== 'terrain.gehenna') {
+    characterStats = characterStats.map((stats) => {
+      adjustCharacterAbilityLevel(stats, 'resonance', 1);
+      return stats;
+    });
+
+    ctx = {
+      ...ctx,
+      characterStats,
+    };
+  }
+
+  // SpecRef: 6.1.1.1 | START phase | Deity effects
+  if (partyDeityKey === 'Goddess of Discord' && environment.terrainEffect !== 'terrain.gehenna' && characterStats.length > 0) {
     const targetIndex = Math.floor(Math.random() * characterStats.length);
     const targetStats = characterStats[targetIndex];
     const targetName = party.characters.find(c => c.id === targetStats.characterId)?.name ?? '???';
@@ -3068,7 +3084,8 @@ export function executeBattle(
   };
 
   const phases: BattleActionPhase[] = ['long', 'mid', 'close'];
-  const hasFertilityInitiativeBonus = getDeityKey(party.deity.name) === 'Goddess of Fertility';
+  const hasFertilityInitiativeBonus = getDeityKey(party.deity.name) === 'Goddess of Fertility'
+    && environment.terrainEffect !== 'terrain.gehenna';
 
   const partyHasFrostbite = characterStats.some(cs => hasAbility(cs.abilities, 'frostbite'));
   const enemyHasFrostbite = hasAbility(enemy.abilities, 'frostbite');
@@ -4292,7 +4309,12 @@ export function executeBattle(
             }
 
             const counterType = phase === 'mid' ? '魔法反撃' : '反撃';
-            const resonanceLogText = getResonanceLogText(attack.charStats.abilities, counterResult.hits, phase === 'mid' || (phase === 'long' && partyDeityKey === 'God of Resonance'));
+            const resonanceLogText = getResonanceLogText(
+              attack.charStats.abilities,
+              counterResult.hits,
+              phase === 'mid'
+                || (phase === 'long' && partyDeityKey === 'God of Resonance' && environment.terrainEffect !== 'terrain.gehenna'),
+            );
             const echoDomainLogText = getEchoDomainLogText(attack.charStats.elementalOffense);
             const counterBonusLogText = mergeAttackBonusLogText(resonanceLogText, echoDomainLogText);
             const characterCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(attack.charStats, partyHp, partyStats.hp));
@@ -4734,7 +4756,12 @@ export function executeBattle(
 
         if (result.totalAttempts <= 0) return null;
 
-        const resonanceLogText = getResonanceLogText(cs.abilities, result.hits, phase === 'mid' || (phase === 'long' && partyDeityKey === 'God of Resonance'));
+        const resonanceLogText = getResonanceLogText(
+          cs.abilities,
+          result.hits,
+          phase === 'mid'
+            || (phase === 'long' && partyDeityKey === 'God of Resonance' && environment.terrainEffect !== 'terrain.gehenna'),
+        );
         const echoDomainLogText = getEchoDomainLogText(cs.elementalOffense);
         const characterAttackBonusLogText = mergeAttackBonusLogText(resonanceLogText, echoDomainLogText);
         const characterAttackRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(cs, partyHp, partyStats.hp));

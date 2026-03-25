@@ -967,7 +967,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "terrain.gehenna",
         "label": "ゲヘナ",
-        "description": "いかなる宗教ボーナスも適用されない"
+        "description": "神々の恩恵を受けることがなくなる"
       },
       {
         "key": "terrain.sanctuary",
