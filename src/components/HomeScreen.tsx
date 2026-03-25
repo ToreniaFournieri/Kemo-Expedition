@@ -3561,9 +3561,26 @@ export function HomeScreen({
     return Math.max(0, 1 - embezzlementRate);
   };
 
+  // SpecRef: 5.1.1 | Party State Machine | Durration modifilier
+  const getExploreTerrainDurationMultiplier = (party: Party): number => {
+    const dungeon = DUNGEONS.find((entry) => entry.id === party.selectedDungeonId);
+    if (!dungeon) return 1;
+
+    const hasChill = dungeon.floors.some((floor) => floor.terrainEffect === 'terrain.chill');
+    const hasLoopingPath = dungeon.floors.some((floor) => floor.terrainEffect === 'terrain.looping-path');
+
+    let multiplier = 1;
+    if (hasChill) multiplier *= 1.5;
+    if (hasLoopingPath) multiplier *= 2;
+    return multiplier;
+  };
+
+  // SpecRef: 5.1.1 | Party State Machine | Durration modifilier
   const getPartyStateDurationMultiplier = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray' | 'explore'): number => {
     const deityGold = state.global.deityDonations[normalizeDeityName(party.deity.name)] ?? party.deityGold ?? 0;
-    return getDeityStateDurationMultiplier(party.deity.name, deityGold, cycleState);
+    const deityMultiplier = getDeityStateDurationMultiplier(party.deity.name, deityGold, cycleState);
+    if (cycleState !== 'explore') return deityMultiplier;
+    return deityMultiplier * getExploreTerrainDurationMultiplier(party);
   };
 
   const getStateDurationMs = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray'): number => {
