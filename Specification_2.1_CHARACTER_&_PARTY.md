@@ -212,11 +212,10 @@
 
 - character.`f.NoA`: // NoA 0 = No Action.
   - `d.ranged_NoA` = 0 + Item Bonuses of {(`d.ranged_NoA` x enhancement multiplier x super rare multiplier x its c.multiplier + `c.ranged_NoA+v`), round off} 
-    - IF the character has `a.iaigiri`, halve these number of attacks, round up. 
+    - If character.`a.iaigiri` or `a.heavy-strike`, halve these number of attacks, round up. 
   - `d.magical_NoA`= 0 + Item Bonuses of {(`d.magical_NoA` x enhancement multiplier x super rare multiplier x its c.multiplier + `c.magical_NoA+v`), round off} 
-    - If the charaxter has `a.heavy-strike`, halve these number of attacks, round up. 
   - `d.melee_NoA`= 0 + Item Bonuses of {(`d.melee_NoA` x enhancement multiplier x super rare multiplier x its c.multiplier + `c.melee_NoA+v`), round off} 
-    - IF the character has `a.iaigiri`, halve these number of attacks, round up. 
+    - If character.`a.iaigiri` or `a.heavy-strike`, halve these number of attacks, round up.
   - *note: `c.ranged_NoA+v`, `c.magical_NoA+v`, `c.melee_NoA+v`  Only one single bonuses(c.) of the **exact** same name applies.  
 
 - character.`f.attack`:
