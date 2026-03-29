@@ -273,7 +273,8 @@
   	  - ex. character has `c.fire_defense_multiplier_x3/5`, then 1.0 x 3/5 -> 0.60 for fire.
 
 - character.`f.penet_multiplier`
-  -If character.`c.penet`, add them. (ex. `c.penet+0.10` & `c.penet+0.15` -> 0.25)
+  - If character.`c.penet`, add them. (ex. `c.penet+0.10` & `c.penet+0.15` -> 0.25)
+  - If character has `a.heavy-strike`: Add (original NoA) - (current NoA) them. 
 
 ##### 2.1.1.3 Mathematical Precision & Display Rules
 - Internal Calculation: All multipliers and final status values are calculated using floating-point precision (e.g., 1.4 * 1.3 = 1.82) to ensure accuracy across multiple stacked bonuses.
