@@ -85,12 +85,11 @@ Left-aligned
   - Displays a list of available Races.
   - Each entry shows its name, base status, and unique bonus (ex. 🐶ケイナイアン |体10,力10,知10,精10 | 護符 x1.3, 弓 x1.1)
 - Main Class selection:
-  - category tab:
+  - Category tabs: single-row, no wrap, fit within one viewport width.
 ```
  近接     遠距離     魔法      補助
 剣,侍,聖  狩,弩,忍  魔,賢,錬  防,巡,君
 ```
-
   - Displays selected class name and unique bonus (main bonus and main/sub bonuses)
     - If Main Class == Sub Class, then show master bonus instead of main bonus.
 - Sub Class selection:
