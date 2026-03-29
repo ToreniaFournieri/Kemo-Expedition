@@ -4429,6 +4429,13 @@ function PartyTab({
   const subClass = CLASSES.find(c => c.id === char.subClassId)!;
   const predisposition = PREDISPOSITIONS.find(p => p.id === char.predispositionId)!;
   const lineage = LINEAGES.find(l => l.id === char.lineageId)!;
+  const classCategoryDefinitions: Array<{ label: string; classIds: Character['mainClassId'][] }> = [
+    { label: '近接', classIds: ['duelist', 'ninja', 'sword-saint'] },
+    { label: '遠距離', classIds: ['ranger', 'striker', 'ninja'] },
+    { label: '魔法', classIds: ['wizard', 'sage', 'alchemist'] },
+    { label: '補助', classIds: ['guardian', 'pilgrim', 'lord'] },
+  ];
+  const classById = new Map(CLASSES.map((classDef) => [classDef.id, classDef]));
 
   const getChangedEditKeys = (edits: Partial<Character> | null): (keyof Character)[] => {
     if (!edits) return [];
@@ -5050,41 +5057,112 @@ function PartyTab({
             </div>
             <div>
               <label className="block text-gray-500">メインクラス</label>
-              <select
-                value={pendingEdits?.mainClassId ?? char.mainClassId}
-                onChange={(e) => setPendingEdits({ ...pendingEdits, mainClassId: e.target.value as Character['mainClassId'] })}
-                className="w-full p-1 border rounded text-xs"
-              >
-                {CLASSES.map(c => {
-                  const currentSubId = pendingEdits?.subClassId ?? char.subClassId;
-                  const isMaster = c.id === currentSubId;
-                  const mainBonus = isMaster ? formatBonuses(c.masterBonuses as Bonus[]) : formatBonuses(c.mainBonuses as Bonus[]);
-                  const mainSubBonus = formatBonuses(c.mainSubBonuses as Bonus[]);
-                  const bonusText = [mainSubBonus, mainBonus].filter(Boolean).join(', ');
-                  return (
-                    <option key={c.id} value={c.id}>
-                      {c.name}{isMaster ? '(師範)' : ''} | {bonusText}
-                    </option>
-                  );
-                })}
-              </select>
+              {(() => {
+                const selectedMainClassId = pendingEdits?.mainClassId ?? char.mainClassId;
+                const selectedSubClassId = pendingEdits?.subClassId ?? char.subClassId;
+                const selectedMainClass = classById.get(selectedMainClassId);
+                const selectedMainClassIsMaster = selectedMainClassId === selectedSubClassId;
+                const selectedMainBonus = selectedMainClassIsMaster
+                  ? formatBonuses((selectedMainClass?.masterBonuses ?? []) as Bonus[])
+                  : formatBonuses((selectedMainClass?.mainBonuses ?? []) as Bonus[]);
+                const selectedMainSubBonus = formatBonuses((selectedMainClass?.mainSubBonuses ?? []) as Bonus[]);
+                const selectedMainBonusText = [selectedMainSubBonus, selectedMainBonus].filter(Boolean).join(', ');
+
+                return (
+                  <>
+                    <div className="mb-1 text-xs text-gray-600">
+                      {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? '(師範)' : ''} | {selectedMainBonusText}
+                    </div>
+                    <div className="space-y-1 rounded border border-gray-200 bg-white p-2 text-xs">
+                      {classCategoryDefinitions.map((category) => (
+                        <div key={`main-class-${category.label}`} className="space-y-1">
+                          <div className="text-[11px] text-gray-500">{category.label}: {category.classIds.map((classId) => CLASS_SHORT_NAMES[classId]).join(',')}</div>
+                          <div className="grid grid-cols-3 gap-1">
+                            {category.classIds.map((classId) => {
+                              const classData = classById.get(classId);
+                              if (!classData) return null;
+                              const isMaster = classId === selectedSubClassId;
+                              const classMainBonus = isMaster
+                                ? formatBonuses(classData.masterBonuses as Bonus[])
+                                : formatBonuses(classData.mainBonuses as Bonus[]);
+                              const classMainSubBonus = formatBonuses(classData.mainSubBonuses as Bonus[]);
+                              const classBonusText = [classMainSubBonus, classMainBonus].filter(Boolean).join(', ');
+                              const isSelected = selectedMainClassId === classId;
+
+                              return (
+                                <button
+                                  key={`main-class-${category.label}-${classId}`}
+                                  type="button"
+                                  onClick={() => setPendingEdits({ ...pendingEdits, mainClassId: classId })}
+                                  className={`rounded border px-2 py-1 text-left ${
+                                    isSelected ? 'border-sub bg-blue-50' : 'border-gray-200 hover:bg-gray-50'
+                                  }`}
+                                >
+                                  <div className="text-gray-800">{classData.name}{isMaster ? '(師範)' : ''}</div>
+                                  <div className="text-[10px] text-gray-500 leading-tight">{classBonusText}</div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                );
+              })()}
             </div>
             <div>
               <label className="block text-gray-500">サブクラス</label>
-              <select
-                value={pendingEdits?.subClassId ?? char.subClassId}
-                onChange={(e) => setPendingEdits({ ...pendingEdits, subClassId: e.target.value as Character['subClassId'] })}
-                className="w-full p-1 border rounded text-xs"
-              >
-                {CLASSES.map(c => {
-                  const mainSubBonus = formatBonuses(c.mainSubBonuses as Bonus[]);
-                  return (
-                    <option key={c.id} value={c.id}>
-                      {c.name} | {mainSubBonus}
-                    </option>
-                  );
-                })}
-              </select>
+              {(() => {
+                const selectedMainClassId = pendingEdits?.mainClassId ?? char.mainClassId;
+                const selectedSubClassId = pendingEdits?.subClassId ?? char.subClassId;
+                const selectedSubClass = classById.get(selectedSubClassId);
+                const selectedSubMainBonus = formatBonuses((selectedSubClass?.mainBonuses ?? []) as Bonus[]);
+                const selectedSubMainSubBonus = formatBonuses((selectedSubClass?.mainSubBonuses ?? []) as Bonus[]);
+                const selectedSubBonusText = [selectedSubMainSubBonus, selectedSubMainBonus].filter(Boolean).join(', ');
+
+                return (
+                  <>
+                    <div className="mb-1 text-xs text-gray-600">
+                      {selectedSubClass?.name ?? '-'} | {selectedSubBonusText}
+                    </div>
+                    <div className="space-y-1 rounded border border-gray-200 bg-white p-2 text-xs">
+                      {classCategoryDefinitions.map((category) => (
+                        <div key={`sub-class-${category.label}`} className="space-y-1">
+                          <div className="text-[11px] text-gray-500">{category.label}: {category.classIds.map((classId) => CLASS_SHORT_NAMES[classId]).join(',')}</div>
+                          <div className="grid grid-cols-3 gap-1">
+                            {category.classIds.map((classId) => {
+                              const classData = classById.get(classId);
+                              if (!classData) return null;
+                              const classMainBonus = formatBonuses(classData.mainBonuses as Bonus[]);
+                              const classMainSubBonus = formatBonuses(classData.mainSubBonuses as Bonus[]);
+                              const classBonusText = [classMainSubBonus, classMainBonus].filter(Boolean).join(', ');
+                              const isSelected = selectedSubClassId === classId;
+                              const causesMaster = selectedMainClassId === classId;
+
+                              return (
+                                <button
+                                  key={`sub-class-${category.label}-${classId}`}
+                                  type="button"
+                                  onClick={() => setPendingEdits({ ...pendingEdits, subClassId: classId })}
+                                  className={`rounded border px-2 py-1 text-left ${
+                                    isSelected ? 'border-sub bg-blue-50' : 'border-gray-200 hover:bg-gray-50'
+                                  }`}
+                                >
+                                  <div className="text-gray-800">
+                                    {classData.name}{causesMaster ? '(師範)' : ''}
+                                  </div>
+                                  <div className="text-[10px] text-gray-500 leading-tight">{classBonusText}</div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                );
+              })()}
             </div>
             <div>
               <label className="block text-gray-500">性格</label>
