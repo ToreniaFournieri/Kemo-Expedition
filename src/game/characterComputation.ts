@@ -793,9 +793,14 @@ export function computeCharacterStats(
   const meleeNoAFixedBonus = Array.from(meleeNoAFixedBonuses).reduce((sum, v) => sum + v, 0);
   meleeNoA += meleeNoAFixedBonus;
 
-  // Check for iaigiri ability
+  const originalRangedNoA = Math.ceil(rangedNoA);
+  const originalMeleeNoA = Math.ceil(meleeNoA);
+
+  // SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.NoA
+  // a.iaigiri / a.heavy-strike: halve physical NoA, round up.
   const hasIaigiri = collection.abilities.has('iaigiri');
-  if (hasIaigiri) {
+  const hasHeavyStrike = collection.abilities.has('heavy_strike');
+  if (hasIaigiri || hasHeavyStrike) {
     rangedNoA = rangedNoA / 2;
     meleeNoA = meleeNoA / 2;
     // Physical attack damage amplification is applied during battle
@@ -910,6 +915,8 @@ export function computeCharacterStats(
     maxEquipSlots,
     abilities,
     penetMultiplier: collection.penet,
+    originalRangedNoA,
+    originalMeleeNoA,
     elementalOffense,
     elementalOffenseValue,
     accuracyPotency,
@@ -961,6 +968,7 @@ export function getAbilityDescription(id: AbilityId, level: number): string {
         ? '攻撃時に追加攻撃を1回行う(攻撃回数は0.7倍)'
         : '攻撃時に追加攻撃を1回行う(攻撃回数半減)',
     iaigiri: (l) => `物理ダメージをx${l >= 3 ? '2.0' : l === 2 ? '1.8' : '1.6'}倍する。攻撃回数を半減する`,
+    heavy_strike: (l) => `物理ダメージを1.4倍する。攻撃回数を半減し(切り上げ)、減少分を貫通値に変換する(${l >= 2 ? '+1.5' : '+1.0'}%/回)`,
     resonance: (l) => `魔法攻撃1回毎に、全ヒットのダメージが+${l >= 5 ? 15 : l === 4 ? 13 : l === 3 ? 11 : l === 2 ? 8 : 5}%増加する`,
     command: (l) => `自身より後列の味方が与える物理ダメージを ${l >= 3 ? 1.43 : l === 2 ? 1.35 : 1.2}倍`,
     m_barrier: (l) => `自身より後列の味方への魔法ダメージを ${l >= 3 ? '1/2' : l === 2 ? '3/5' : '2/3'}倍`,
@@ -995,6 +1003,8 @@ export function getAbilityDescription(id: AbilityId, level: number): string {
     magical_counter: (l) => l >= 2
       ? '魔法には魔法で反撃する(攻撃回数半減しない)'
       : '魔法には魔法で反撃する(攻撃回数半減)',
+    arcane_stability: (l) => `魔法攻撃の命中率は${l >= 2 ? '60' : '55'}%を下回らない`,
+    arc_magic: () => '使用する魔法が大魔法になる',
     focus: (l) => `命中ボーナスの効果が${l >= 2 ? '1.3' : '1.2'}倍になる`,
     prophecy: (l) => l >= 2
       ? '報酬抽選内容が見える、リセット出来るようになる'
