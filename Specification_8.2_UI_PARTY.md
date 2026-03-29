@@ -101,12 +101,10 @@ Left-aligned
 **2. Edit Confirmation Rules:**
 - **Done (完了):**
   - Saves all changes to Race, Class, and Name.
-  - **Automatic Unequip:** All currently equipped items on this character are removed and returned to the inventory.
   - Character status updates immediately.
-  - *Reason:* To prevent invalid stat states and ensure new class bonuses are calculated correctly from base values.
 - **Cancel (取消):**
   - Discards all pending changes.
-  -  Character remains exactly as they were (Race, Class, and Equipment are untouched).
+  - Character remains exactly as they were (Race, Class, and Equipment are untouched).
 - **UI Requirement:** Display a confirmation warning when pressing "Done": *"Saving changes will unequip all items. Proceed?"*
 
 #### 8.2.4 Equipment management
