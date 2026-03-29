@@ -485,6 +485,18 @@ function calculateSingleEnemyAttackDamage(
 
   if (attack === 0) return 0;
 
+  const enemyHeavyStrikeLevel = getEnemyAbilityLevel(enemy, 'heavy_strike');
+  const heavyStrikePenetPerNoA = getHeavyStrikePenetPerNoA(enemyHeavyStrikeLevel);
+  const baseNoA = getEnemyBaseNoA(phase, enemy);
+  const adjustedNoA = getEnemyNoA(phase, enemy);
+  const heavyStrikeNoALoss = (phase === 'long' || phase === 'close')
+    ? Math.max(0, baseNoA - adjustedNoA)
+    : 0;
+  const effectiveDefense = defense * (1 - (heavyStrikeNoALoss * heavyStrikePenetPerNoA));
+  if ((phase === 'long' || phase === 'close') && enemyHeavyStrikeLevel > 0) {
+    amplifier *= 1.4;
+  }
+
   const elementalMultiplier = enemy.elementalOffense === 'none'
     ? 1.0
     : targetCharStats.elementalDefenseMultipliers[enemy.elementalOffense] ?? 1.0;
@@ -502,19 +514,28 @@ function calculateSingleEnemyAttackDamage(
     partyHp,
     maxPartyHp,
   );
-  const rawDamage = (attack - defense) * amplifier * runtimeOffenseMultiplier * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier;
+  const rawDamage = (attack - effectiveDefense) * amplifier * runtimeOffenseMultiplier * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier;
   const totalDamage = Math.max(1, rawDamage);
 
   return applyTerrainDamageOverride(Math.floor(totalDamage), terrainEffect, maxPartyHp);
 }
 
-// Get number of attacks for enemy in a phase
-function getEnemyNoA(phase: BattleActionPhase, enemy: EnemyDef): number {
+function getEnemyBaseNoA(phase: BattleActionPhase, enemy: EnemyDef): number {
   switch (phase) {
     case 'long': return enemy.rangedNoA;
     case 'mid': return enemy.magicalNoA;
     case 'close': return enemy.meleeNoA;
   }
+}
+
+// Get number of attacks for enemy in a phase
+function getEnemyNoA(phase: BattleActionPhase, enemy: EnemyDef): number {
+  const baseNoA = getEnemyBaseNoA(phase, enemy);
+  const heavyStrikeLevel = getEnemyAbilityLevel(enemy, 'heavy_strike');
+  if ((phase === 'long' || phase === 'close') && heavyStrikeLevel > 0) {
+    return Math.ceil(baseNoA / 2);
+  }
+  return baseNoA;
 }
 
 
