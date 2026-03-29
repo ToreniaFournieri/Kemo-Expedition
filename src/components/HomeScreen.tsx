@@ -5073,36 +5073,39 @@ function PartyTab({
                     <div className="mb-1 text-xs text-gray-600">
                       {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? '(師範)' : ''} | {selectedMainBonusText}
                     </div>
-                    <div className="space-y-2 rounded border border-gray-200 bg-white p-2 text-xs">
-                      {classCategoryDefinitions.map((category) => (
-                        <div key={`main-class-${category.label}`} className="space-y-1">
-                          <div className="text-[11px] text-gray-500">{category.label}</div>
-                          <div className="flex">
-                            {category.classIds.map((classId) => {
-                              const classData = classById.get(classId);
-                              if (!classData) return null;
-                              const isSelected = selectedMainClassId === classId;
+                    <div className="rounded border border-gray-200 bg-white p-2 text-xs overflow-x-auto">
+                      {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Main Class selection */}
+                      <div className="grid min-w-[480px] grid-cols-4 gap-2">
+                        {classCategoryDefinitions.map((category) => (
+                          <div key={`main-class-${category.label}`} className="space-y-1">
+                            <div className="text-center text-[11px] text-gray-500">{category.label}</div>
+                            <div className="flex justify-center">
+                              {category.classIds.map((classId) => {
+                                const classData = classById.get(classId);
+                                if (!classData) return null;
+                                const isSelected = selectedMainClassId === classId;
 
-                              return (
-                                <button
-                                  key={`main-class-${category.label}-${classId}`}
-                                  type="button"
-                                  onClick={() => setPendingEdits({ ...pendingEdits, mainClassId: classId })}
-                                  className={`px-2 py-1 text-xs border ${
-                                    classId === category.classIds[0] ? 'rounded-l' : classId === category.classIds[category.classIds.length - 1] ? 'rounded-r' : ''
-                                  } ${
-                                    isSelected
-                                      ? 'bg-sub text-white border-sub'
-                                      : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
-                                  }`}
-                                >
-                                  {CLASS_SHORT_NAMES[classData.id] ?? classData.name}
-                                </button>
-                              );
-                            })}
+                                return (
+                                  <button
+                                    key={`main-class-${category.label}-${classId}`}
+                                    type="button"
+                                    onClick={() => setPendingEdits({ ...pendingEdits, mainClassId: classId })}
+                                    className={`px-2 py-1 text-xs border ${
+                                      classId === category.classIds[0] ? 'rounded-l' : classId === category.classIds[category.classIds.length - 1] ? 'rounded-r' : ''
+                                    } ${
+                                      isSelected
+                                        ? 'bg-sub text-white border-sub'
+                                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
+                                    }`}
+                                  >
+                                    {CLASS_SHORT_NAMES[classData.id] ?? classData.name}
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                   </>
                 );
@@ -5122,36 +5125,39 @@ function PartyTab({
                     <div className="mb-1 text-xs text-gray-600">
                       {selectedSubClass?.name ?? '-'} | {selectedSubBonusText}
                     </div>
-                    <div className="space-y-2 rounded border border-gray-200 bg-white p-2 text-xs">
-                      {classCategoryDefinitions.map((category) => (
-                        <div key={`sub-class-${category.label}`} className="space-y-1">
-                          <div className="text-[11px] text-gray-500">{category.label}</div>
-                          <div className="flex">
-                            {category.classIds.map((classId) => {
-                              const classData = classById.get(classId);
-                              if (!classData) return null;
-                              const isSelected = selectedSubClassId === classId;
+                    <div className="rounded border border-gray-200 bg-white p-2 text-xs overflow-x-auto">
+                      {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Sub Class selection */}
+                      <div className="grid min-w-[480px] grid-cols-4 gap-2">
+                        {classCategoryDefinitions.map((category) => (
+                          <div key={`sub-class-${category.label}`} className="space-y-1">
+                            <div className="text-center text-[11px] text-gray-500">{category.label}</div>
+                            <div className="flex justify-center">
+                              {category.classIds.map((classId) => {
+                                const classData = classById.get(classId);
+                                if (!classData) return null;
+                                const isSelected = selectedSubClassId === classId;
 
-                              return (
-                                <button
-                                  key={`sub-class-${category.label}-${classId}`}
-                                  type="button"
-                                  onClick={() => setPendingEdits({ ...pendingEdits, subClassId: classId })}
-                                  className={`px-2 py-1 text-xs border ${
-                                    classId === category.classIds[0] ? 'rounded-l' : classId === category.classIds[category.classIds.length - 1] ? 'rounded-r' : ''
-                                  } ${
-                                    isSelected
-                                      ? 'bg-sub text-white border-sub'
-                                      : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
-                                  }`}
-                                >
-                                  {CLASS_SHORT_NAMES[classData.id] ?? classData.name}
-                                </button>
-                              );
-                            })}
+                                return (
+                                  <button
+                                    key={`sub-class-${category.label}-${classId}`}
+                                    type="button"
+                                    onClick={() => setPendingEdits({ ...pendingEdits, subClassId: classId })}
+                                    className={`px-2 py-1 text-xs border ${
+                                      classId === category.classIds[0] ? 'rounded-l' : classId === category.classIds[category.classIds.length - 1] ? 'rounded-r' : ''
+                                    } ${
+                                      isSelected
+                                        ? 'bg-sub text-white border-sub'
+                                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
+                                    }`}
+                                  >
+                                    {CLASS_SHORT_NAMES[classData.id] ?? classData.name}
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                   </>
                 );
