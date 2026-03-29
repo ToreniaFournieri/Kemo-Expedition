@@ -67,7 +67,7 @@
 | class.samurai | 侍 | 侍 | `c.equip_melee`, `c.katana_x1.4` | `a.iaigiri`1 | `a.iaigiri`2 |
 | class.brawler | 闘士 | 闘 | `c.equip_melee`, `c.gauntlet_x1.4`, `c.equip_slot+1` | `a.re-attack`1 | `a.re-attack`2 |
 | class.ranger | 狩人 | 狩 | `c.equip_ranged`, `c.arrow_x1.4` | `a.hunter`1 | `a.hunter`2 |
-| class.striker | 打撃手 | 打 | `c.equip_ranged`, `c.bolt_x1.4`, `c.penet+0.10` | `a.heavy-strike`1 | `a.heavy-strike`2 |
+| class.striker | 弩手 | 弩 | `c.equip_ranged`, `c.bolt_x1.4`, `c.penet+0.10` | `a.heavy-strike`1 | `a.heavy-strike`2 |
 | class.ninja | 忍者 | 忍 | `c.equip_ranged`, `c.archery_x1.4`, `c.equip_slot+1` | `a.first-strike`1 | `a.first-strike`2 |
 | class.wizard | 魔法使い | 魔 | `c.equip_magic`, `c.wand_x1.4` | `a.resonance`1 | `a.resonance`2 |
 | class.scholar | 学者 | 学 | `c.equip_magic`, `c.grimoire_x1.4` | `a.arc-magic`1 | `a.arc-magic`2 |
