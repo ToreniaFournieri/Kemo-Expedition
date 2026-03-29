@@ -353,11 +353,11 @@
 | `hellfire-volley` | `multi-hit` | `e.fire` >= 1.5 | ヘルファイア | 火属性上位魔法(火属性50%以上) |
 | `blizzard` | `multi-hit` | `e.ice` >= 1.5 | ブリザード | 氷属性上位魔法(氷属性50%以上) |
 | `lightning-barrage` | `multi-hit` | `e.thunder` >= 1.5 | ライトニングバラージ | 雷属性上位魔法(雷属性50%以上) |
-| `astral-flare` | `area-burst` | `e.none` | アストラルフレア | 無属性範囲魔法攻撃(ヒット数は1固定) |
-| `pyroclasm` | `area-burst` | `e.fire`  | パイロクラスム | 火属性範囲魔法攻撃(ヒット数は1固定) |
-| `glacial-burst` | `area-burst` | `e.ice`  | グレイシャルバースト | 氷属性範囲魔法攻撃(ヒット数は1固定) |
-| `tempest-nova` | `area-burst` | `e.thunder` | テンペストノヴァ | 雷属性範囲魔法攻撃(ヒット数は1固定) |
-| `tempest-nova` | `area-burst` | `e.thunder` | テンペストノヴァ | 雷属性範囲魔法攻撃(ヒット数は1固定) |
+| `astral-flare` | `arc-magic` | `e.none` | アストラルフレア | 無属性大魔法 |
+| `pyroclasm` | `arc-magic` | `e.fire`  | パイロクラスム | 火属性大魔法 |
+| `glacial-burst` | `arc-magic` | `e.ice`  | グレイシャルバースト | 氷属性大魔法 |
+| `tempest-nova` | `arc-magic` | `e.thunder` | テンペストノヴァ | 雷属性大魔法 |
+| `tempest-nova` | `arc-magic` | `e.thunder` | テンペストノヴァ | 雷属性大魔法 |
 | `gravity-well` | `percentage-damage` | `e.none` | グラビティウェル | 魔法攻撃回数が20回以上の場合発動。相手の残HPの2/5の固定ダメージ(魔法防御力無視) |
 
 #### 1.1.9 q. side quest
