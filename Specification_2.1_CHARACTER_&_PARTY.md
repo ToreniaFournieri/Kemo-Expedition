@@ -63,14 +63,14 @@
 
 |class | main/sub bonuses | main bonus | master bonus | 
 |-----|-----------|---------|---------|
-|戦士(戦,Fighter) | `c.grit+1`, `c.equip_slot+2`, `c.armor_x1.4`, `c.gauntlet_x1.3` |`a.defender`1 |`a.defender`2 | 
-|剣士(剣,Duelist) | `c.grit+1`, `c.sword_x1.4` | `a.counter`1 | `a.counter`2 | 
-|侍(侍,Samurai) | `c.grit+1`, `c.katana_x1.4` |`a.iaigiri`1 | `a.iaigiri`2 |
-|狩人(狩,Ranger) | `c.pursuit+3`, `c.arrow_x1.4` | `a.hunter`1 |`a.hunter`2 | 
-|盗賊(盗,Rogue) | `c.pursuit+2`, `c.archery_x1.4`, `c.equip_slot+1`, `c.unlock`|`a.deflection`, `a.first-strike`1 |`a.deflection`, `a.first-strike`2. | 
-|忍者(忍,Ninja) | `c.pursuit+1`, `c.bolt_x1.4`, `c.penet+0.10` | `a.re-attack`1 | `a.re-attack`2 | 
-|賢者(賢,Sage) | `c.caster+2`, `c.catalyst_x1.4`, `c.grimoire_x1.2`, `c.equip_slot+1` | `a.m-barrier`1 | `a.m-barrier`2 | 
-|魔法使い(魔,Wizard) | `c.caster+1`, `c.wand_x1.4` | `a.resonance`1 | `a.resonance`2 | 
+|戦士(戦,Fighter) | `c.equip_melee`, `c.equip_slot+2`, `c.armor_x1.4`, `c.gauntlet_x1.3` |`a.defender`1 |`a.defender`2 | 
+|剣士(剣,Duelist) | `c.equip_melee`, `c.sword_x1.4` | `a.counter`1 | `a.counter`2 | 
+|侍(侍,Samurai) | `c.equip_melee`, `c.katana_x1.4` |`a.iaigiri`1 | `a.iaigiri`2 |
+|狩人(狩,Ranger) | `c.equip_ranged`, `c.arrow_x1.4` | `a.hunter`1 |`a.hunter`2 | 
+|盗賊(盗,Rogue) | `c.equip_ranged`, `c.archery_x1.4`, `c.equip_slot+1`, `c.unlock`|`a.deflection`, `a.first-strike`1 |`a.deflection`, `a.first-strike`2. | 
+|忍者(忍,Ninja) | `c.equip_ranged`, `c.bolt_x1.4`, `c.penet+0.10` | `a.re-attack`1 | `a.re-attack`2 | 
+|賢者(賢,Sage) | `c.equip_magic`, `c.catalyst_x1.4`, `c.grimoire_x1.2`, `c.equip_slot+1` | `a.m-barrier`1 | `a.m-barrier`2 | 
+|魔法使い(魔,Wizard) | `c.equip_magic`, `c.wand_x1.4` | `a.resonance`1 | `a.resonance`2 | 
 |巡礼者(巡,Pilgrim) | `c.robe_x1.4`, `c.grimoire_x1.3`, `c.evasion+0.02`, `c.equip_slot+2` |`a.null-counter`1, `a.tithe`1 |`a.null-counter`2, `a.tithe`1 | 
 |君主(君,Lord) | `c.shield_x1.4`, `c.robe_x1.3`, `c.equip_slot+2` |`a.command`1, `a.squander`1 |`a.command`2, `a.squander`1 | 
 
@@ -209,10 +209,10 @@
 
 
 - character.`f.NoA`: // NoA 0 = No Action.
-  - `d.ranged_NoA` = 0 + `c.pursuit+v` bonuses + Item Bonuses of {(`d.ranged_NoA` x enhancement multiplier x super rare multiplier x its c.multiplier + `c.ranged_NoA+v`), round off} 
+  - `d.ranged_NoA` = 0 + Item Bonuses of {(`d.ranged_NoA` x enhancement multiplier x super rare multiplier x its c.multiplier + `c.ranged_NoA+v`), round off} 
     - IF the character has `a.iaigiri`, halve these number of attacks, round up. 
-  - `d.magical_NoA`= 0 + `c.caster+v` bonuses + Item Bonuses of {(`d.magical_NoA` x enhancement multiplier x super rare multiplier x its c.multiplier + `c.magical_NoA+v`), round off} 
-  - `d.melee_NoA`= 0 + `c.grit+v` bonuses + Item Bonuses of {(`d.melee_NoA` x enhancement multiplier x super rare multiplier x its c.multiplier + `c.melee_NoA+v`), round off} 
+  - `d.magical_NoA`= 0 + Item Bonuses of {(`d.magical_NoA` x enhancement multiplier x super rare multiplier x its c.multiplier + `c.magical_NoA+v`), round off} 
+  - `d.melee_NoA`= 0 + Item Bonuses of {(`d.melee_NoA` x enhancement multiplier x super rare multiplier x its c.multiplier + `c.melee_NoA+v`), round off} 
     - IF the character has `a.iaigiri`, halve these number of attacks, round up. 
   - *note: `c.ranged_NoA+v`, `c.magical_NoA+v`, `c.melee_NoA+v`  Only one single bonuses(c.) of the **exact** same name applies.  
 
