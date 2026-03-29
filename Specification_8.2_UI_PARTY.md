@@ -105,7 +105,10 @@ Left-aligned
 - **Cancel (取消):**
   - Discards all pending changes.
   - Character remains exactly as they were (Race, Class, and Equipment are untouched).
-- **UI Requirement:** Display a confirmation warning when pressing "Done": *"Saving changes will unequip all items. Proceed?"*
+- **UI Requirement:** Display a confirmation warning when pressing "Done": 
+  - "⚠️ 変更を保存すると装備枠が2枠減るため、該当分の装備が外れます。?"
+  - "⚠️ 魔法攻撃適正がなくなったため、一部の装備が外れます。"
+
 
 #### 8.2.4 Equipment management
 **1. Interaction Rules:**
