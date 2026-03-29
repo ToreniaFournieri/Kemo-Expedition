@@ -496,9 +496,9 @@ If `a.*` with phase = START:
   - If phase is LONG or CLOSE, Gets one ticket from `t.physical_threat_weight_bag`.
     - `a.bulwark`1 or `a.bulwark`2 redirect 
 	  if (`a.bulwark`1 and phase is LONG) or (`a.bulwark`2 and phase is (LONG or CLOSE)):
-	      flont_character = party.unit_in_front_of(t)    // the unit directly ahead of selected character (one row closer to enemy)
-	      if flont_character != null and flont_character.has(a.bulwark):
-	          return flont_character
+	      front_character = party.unit_in_front_of(t)    // the unit directly ahead of selected character (one row closer to enemy)
+	      if front_character != null and front_character.has(a.bulwark):
+	          return front_character
   - If phase is MID, Gets one ticket from `t.magical_threat_weight_bag`. 
     - Bag contains numbers [1,2,3,4,5,6]
     - The drawn number corresponds to row index (1–6).
@@ -544,7 +544,7 @@ If `a.*` with phase = START:
   - Roll: Return Random(0, 1.0) <= chance
 
   - **Override of ability effect**
-    - If actor.`a.arcane-stability` and (phase is MID): min(N /100 , calculated chance)
+    - If actor.`a.arcane-stability` and (phase is MID): max(N /100 , calculated chance)
 
 ##### 6.1.4.3 Function of Reactive ability
 
