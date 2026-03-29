@@ -29,8 +29,10 @@ export interface RaceAbilityDefinition {
 
 // Class Types
 export type ClassId =
-  | 'fighter' | 'duelist' | 'ninja' | 'samurai' | 'lord'
-  | 'ranger' | 'wizard' | 'sage' | 'rogue' | 'pilgrim';
+  | 'fighter' | 'guardian' | 'duelist' | 'samurai' | 'sword-saint'
+  | 'ranger' | 'striker' | 'ninja'
+  | 'wizard' | 'sage' | 'alchemist'
+  | 'pilgrim' | 'lord' | 'rogue';
 
 export interface ClassDef {
   id: ClassId;
