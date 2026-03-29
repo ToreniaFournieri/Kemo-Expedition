@@ -49,10 +49,10 @@ interface BonusCollection {
   uniqueCAdditiveBonusNames: Set<string>;
   multipliers: Map<BonusType, number[]>;
   statBonuses: BaseStats;
-  grit: number;
-  caster: number;
+  canEquipMelee: boolean;
+  canEquipMagic: boolean;
   penet: number;
-  pursuit: number;
+  canEquipRanged: boolean;
   accuracy: number;
   evasion: number;
   upgradeV: number;
@@ -236,21 +236,17 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
         collection.statBonuses.mind += bonus.value;
         break;
       case 'grit':
-        {
-          const bonusName = `c.grit+${formatCBonusValue(bonus.value)}`;
-          if (!collection.uniqueCAdditiveBonusNames.has(bonusName)) {
-            collection.uniqueCAdditiveBonusNames.add(bonusName);
-            collection.grit += bonus.value;
-          }
+      case 'equip_melee':
+        if (!collection.uniqueCAdditiveBonusNames.has('c.equip_melee')) {
+          collection.uniqueCAdditiveBonusNames.add('c.equip_melee');
+          collection.canEquipMelee = true;
         }
         break;
       case 'caster':
-        {
-          const bonusName = `c.caster+${formatCBonusValue(bonus.value)}`;
-          if (!collection.uniqueCAdditiveBonusNames.has(bonusName)) {
-            collection.uniqueCAdditiveBonusNames.add(bonusName);
-            collection.caster += bonus.value;
-          }
+      case 'equip_magic':
+        if (!collection.uniqueCAdditiveBonusNames.has('c.equip_magic')) {
+          collection.uniqueCAdditiveBonusNames.add('c.equip_magic');
+          collection.canEquipMagic = true;
         }
         break;
       case 'penet':
@@ -263,12 +259,10 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
         }
         break;
       case 'pursuit':
-        {
-          const bonusName = `c.pursuit+${formatCBonusValue(bonus.value)}`;
-          if (!collection.uniqueCAdditiveBonusNames.has(bonusName)) {
-            collection.uniqueCAdditiveBonusNames.add(bonusName);
-            collection.pursuit += bonus.value;
-          }
+      case 'equip_ranged':
+        if (!collection.uniqueCAdditiveBonusNames.has('c.equip_ranged')) {
+          collection.uniqueCAdditiveBonusNames.add('c.equip_ranged');
+          collection.canEquipRanged = true;
         }
         break;
       case 'antagonism':
@@ -494,10 +488,10 @@ export function computeCharacterStats(
     uniqueCAdditiveBonusNames: new Set<string>(),
     multipliers: new Map(),
     statBonuses: { vitality: 0, strength: 0, intelligence: 0, mind: 0 },
-    grit: 0,
-    caster: 0,
+    canEquipMelee: false,
+    canEquipMagic: false,
     penet: 0,
-    pursuit: 0,
+    canEquipRanged: false,
     accuracy: 0,
     evasion: 0,
     upgradeV: 0,
@@ -790,17 +784,14 @@ export function computeCharacterStats(
   elementalOffense = selectedElement;
   elementalOffenseValue = 1 + selectedElementBonus;
 
-  // Add pursuit bonus to ranged NoA
   const rangedNoAFixedBonus = Array.from(rangedNoAFixedBonuses).reduce((sum, v) => sum + v, 0);
-  rangedNoA += collection.pursuit + rangedNoAFixedBonus;
+  rangedNoA += rangedNoAFixedBonus;
 
-  // Add caster bonus to magical NoA
   const magicalNoAFixedBonus = Array.from(magicalNoAFixedBonuses).reduce((sum, v) => sum + v, 0);
-  magicalNoA += collection.caster + magicalNoAFixedBonus;
+  magicalNoA += magicalNoAFixedBonus;
 
-  // Add grit bonus to melee NoA
   const meleeNoAFixedBonus = Array.from(meleeNoAFixedBonuses).reduce((sum, v) => sum + v, 0);
-  meleeNoA += collection.grit + meleeNoAFixedBonus;
+  meleeNoA += meleeNoAFixedBonus;
 
   // Check for iaigiri ability
   const hasIaigiri = collection.abilities.has('iaigiri');

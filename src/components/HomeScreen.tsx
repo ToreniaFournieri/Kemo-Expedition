@@ -1614,14 +1614,14 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
       parts.push(`知+${b.value}`);
     } else if (b.type === 'mind') {
       parts.push(`精+${b.value}`);
-    } else if (b.type === 'grit') {
-      parts.push(`根性+${b.value}`);
-    } else if (b.type === 'caster') {
-      parts.push(`術者+${b.value}`);
+    } else if (b.type === 'grit' || b.type === 'equip_melee') {
+      parts.push('近接装備');
+    } else if (b.type === 'caster' || b.type === 'equip_magic') {
+      parts.push('魔法装備');
     } else if (b.type === 'penet') {
       parts.push(`貫通+${Math.round(b.value * 100)}`);
-    } else if (b.type === 'pursuit') {
-      parts.push(`追撃+${b.value}`);
+    } else if (b.type === 'pursuit' || b.type === 'equip_ranged') {
+      parts.push('遠距離装備');
     } else if (b.type === 'antagonism') {
       parts.push('⚠️敵対');
     } else if (b.type === 'accuracy') {
@@ -1815,7 +1815,7 @@ const ITEM_CATEGORY_ORDER: ItemCategory[] = ['armor', 'robe', 'shield', 'sword',
 
 type CategoryGroup = typeof CATEGORY_GROUPS[number];
 
-function getCharacterCombatBonusLevels(character: Character): { grit: number; pursuit: number; caster: number } {
+function getCharacterCombatBonusLevels(character: Character): { melee: boolean; ranged: boolean; magic: boolean } {
   const race = RACES.find(r => r.id === character.raceId);
   const mainClass = CLASSES.find(c => c.id === character.mainClassId);
   const subClass = CLASSES.find(c => c.id === character.subClassId);
@@ -1823,7 +1823,7 @@ function getCharacterCombatBonusLevels(character: Character): { grit: number; pu
   const lineage = LINEAGES.find(l => l.id === character.lineageId);
 
   if (!race || !mainClass || !subClass || !predisposition || !lineage) {
-    return { grit: 0, pursuit: 0, caster: 0 };
+    return { melee: false, ranged: false, magic: false };
   }
 
   const isMasterClass = character.mainClassId === character.subClassId;
@@ -1836,31 +1836,31 @@ function getCharacterCombatBonusLevels(character: Character): { grit: number; pu
     lineage.bonuses,
   ];
 
-  let grit = 0;
-  let caster = 0;
-  let pursuit = 0;
+  let melee = false;
+  let ranged = false;
+  let magic = false;
   for (const bonuses of bonusSources) {
     for (const bonus of bonuses) {
-      if (bonus.type === 'grit') {
-        grit = Math.max(grit, bonus.value);
-      } else if (bonus.type === 'caster') {
-        caster = Math.max(caster, bonus.value);
-      } else if (bonus.type === 'pursuit') {
-        pursuit += bonus.value;
+      if (bonus.type === 'grit' || bonus.type === 'equip_melee') {
+        melee = true;
+      } else if (bonus.type === 'caster' || bonus.type === 'equip_magic') {
+        magic = true;
+      } else if (bonus.type === 'pursuit' || bonus.type === 'equip_ranged') {
+        ranged = true;
       }
     }
   }
 
-  return { grit, pursuit, caster };
+  return { melee, ranged, magic };
 }
 
 function getAvailableCategoryGroups(character: Character): CategoryGroup[] {
-  const { grit, pursuit, caster } = getCharacterCombatBonusLevels(character);
+  const { melee, ranged, magic } = getCharacterCombatBonusLevels(character);
   return CATEGORY_GROUPS.filter((group) => {
     if (group.id === 'durability') return true;
-    if (group.id === 'melee') return grit > 0;
-    if (group.id === 'ranged') return pursuit > 0;
-    if (group.id === 'magic') return caster > 0;
+    if (group.id === 'melee') return melee;
+    if (group.id === 'ranged') return ranged;
+    if (group.id === 'magic') return magic;
     return false;
   });
 }
@@ -2301,7 +2301,7 @@ export function HomeScreen({
     };
 
     const ITEM_DIRECT_C_BONUS_TYPES = new Set([
-      'equip_slot', 'grit', 'caster', 'pursuit', 'penet', 'accuracy', 'growth_xV', 'upgrade_V',
+      'equip_slot', 'equip_melee', 'equip_ranged', 'equip_magic', 'penet', 'accuracy', 'growth_xV', 'upgrade_V',
       'melee_attack', 'ranged_attack', 'magical_attack', 'physical_attack', 'physical_defense',
       'magical_defense', 'physical_offense_multiplier_xV', 'magical_offense_multiplier_xV',
       'physical_defense_multiplier_xV', 'magical_defense_multiplier_xV', 'fire_defense_multiplier_xV',
@@ -4505,9 +4505,9 @@ function PartyTab({
     const nextCharacter = { ...char, ...edits };
     const oldCombatBonuses = getCharacterCombatBonusLevels(char);
     const nextCombatBonuses = getCharacterCombatBonusLevels(nextCharacter);
-    const lostMeleeAptitude = oldCombatBonuses.grit > 0 && nextCombatBonuses.grit <= 0;
-    const lostRangedAptitude = oldCombatBonuses.pursuit > 0 && nextCombatBonuses.pursuit <= 0;
-    const lostMagicAptitude = oldCombatBonuses.caster > 0 && nextCombatBonuses.caster <= 0;
+    const lostMeleeAptitude = oldCombatBonuses.melee && !nextCombatBonuses.melee;
+    const lostRangedAptitude = oldCombatBonuses.ranged && !nextCombatBonuses.ranged;
+    const lostMagicAptitude = oldCombatBonuses.magic && !nextCombatBonuses.magic;
 
     if (!lostMeleeAptitude && !lostRangedAptitude && !lostMagicAptitude) {
       return { melee: false, ranged: false, magic: false };
@@ -5465,7 +5465,7 @@ function PartyTab({
                   multiplierValues[b.type].add(b.value);
                 } else if (['vitality', 'strength', 'intelligence', 'mind'].includes(b.type)) {
                   additive[b.type] = (additive[b.type] ?? 0) + b.value;
-                } else if (['equip_slot', 'grit', 'caster', 'pursuit', 'penet', 'accuracy', 'growth_xV', 'upgrade_V', 'melee_attack', 'ranged_attack', 'magical_attack', 'physical_attack', 'physical_defense', 'magical_defense', 'antagonism'].includes(b.type)) {
+                } else if (['equip_slot', 'equip_melee', 'equip_ranged', 'equip_magic', 'penet', 'accuracy', 'growth_xV', 'upgrade_V', 'melee_attack', 'ranged_attack', 'magical_attack', 'physical_attack', 'physical_defense', 'magical_defense', 'antagonism'].includes(b.type)) {
                   addUniqueCBonus(b.type, b.value);
                 } else if (b.type === 'evasion') {
                     if (b.value < 0) {
@@ -5517,8 +5517,8 @@ function PartyTab({
               };
               const addNames: Record<string, string> = {
                 vitality: '体', strength: '力', intelligence: '知', mind: '精',
-                equip_slot: '装備', grit: '根性', caster: '術者', penet: '貫通',
-                pursuit: '追撃', accuracy: '命中', evasion: '回避', growth_xV: '成長', upgrade_V: 'V強化', antagonism: '⚠️敵対',
+                equip_slot: '装備', equip_melee: '近接装備', equip_ranged: '遠距離装備', equip_magic: '魔法装備', penet: '貫通',
+                accuracy: '命中', evasion: '回避', growth_xV: '成長', upgrade_V: 'V強化', antagonism: '⚠️敵対',
                 melee_attack: '近攻撃', ranged_attack: '遠攻撃', magical_attack: '魔攻撃', physical_attack: '物攻撃',
                 physical_defense: '物防', magical_defense: '魔防' 
               };
@@ -5586,12 +5586,14 @@ function PartyTab({
                     helpRows.push({ label, description: `キャラクター個人のHP基礎値及びアイテムHP増加値が ${formatMultiplierValue(val)} 倍になる` });
                   } else {
                     const normalizedKey = key.replace(/\?+$/g, '');
-                    const label = `${addNames[normalizedKey] ?? normalizedKey}+${val}`;
+                    const label = ['equip_melee', 'equip_ranged', 'equip_magic'].includes(normalizedKey)
+                      ? `${addNames[normalizedKey] ?? normalizedKey}`
+                      : `${addNames[normalizedKey] ?? normalizedKey}+${val}`;
                     parts.push(label);
                     if (normalizedKey === 'equip_slot') helpRows.push({ label, description: `装備スロット数が ${val} 増える` });
-                    if (normalizedKey === 'grit') helpRows.push({ label, description: `近接攻撃の装備が出来るようになる。近接攻撃回数が ${val} 回増える` });
-                    if (normalizedKey === 'pursuit') helpRows.push({ label, description: `遠距離攻撃の装備が出来るようになる。遠距離攻撃回数が ${val} 回増える` });
-                    if (normalizedKey === 'caster') helpRows.push({ label, description: `魔法攻撃の装備が出来るようになる。魔法攻撃回数が ${val} 回増える` });
+                    if (normalizedKey === 'equip_melee') helpRows.push({ label, description: '近接攻撃の装備が出来るようになる' });
+                    if (normalizedKey === 'equip_ranged') helpRows.push({ label, description: '遠距離攻撃の装備が出来るようになる' });
+                    if (normalizedKey === 'equip_magic') helpRows.push({ label, description: '魔法攻撃の装備が出来るようになる' });
                     if (normalizedKey === 'upgrade_V') helpRows.push({ label, description: `アビリティが ${val} 段階強化する` });
                     if (normalizedKey === 'antagonism') helpRows.push({ label: addNames[normalizedKey], description: '味方を攻撃するようになる' });
                   }

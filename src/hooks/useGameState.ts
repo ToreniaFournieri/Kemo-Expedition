@@ -345,7 +345,7 @@ function applyShopIntimacyDecay(global: GameState['global'], now: Date): GameSta
   };
 }
 
-function getCharacterCombatBonusLevels(character: Character): { grit: number; pursuit: number; caster: number } {
+function getCharacterCombatBonusLevels(character: Character): { melee: boolean; ranged: boolean; magic: boolean } {
   const race = RACES.find(r => r.id === character.raceId);
   const mainClass = CLASSES.find(c => c.id === character.mainClassId);
   const subClass = CLASSES.find(c => c.id === character.subClassId);
@@ -353,7 +353,7 @@ function getCharacterCombatBonusLevels(character: Character): { grit: number; pu
   const lineage = LINEAGES.find(l => l.id === character.lineageId);
 
   if (!race || !mainClass || !subClass || !predisposition || !lineage) {
-    return { grit: 0, pursuit: 0, caster: 0 };
+    return { melee: false, ranged: false, magic: false };
   }
 
   const isMasterClass = character.mainClassId === character.subClassId;
@@ -366,22 +366,22 @@ function getCharacterCombatBonusLevels(character: Character): { grit: number; pu
     lineage.bonuses,
   ];
 
-  let grit = 0;
-  let caster = 0;
-  let pursuit = 0;
+  let melee = false;
+  let ranged = false;
+  let magic = false;
   for (const bonuses of bonusSources) {
     for (const bonus of bonuses) {
-      if (bonus.type === 'grit') {
-        grit = Math.max(grit, bonus.value);
-      } else if (bonus.type === 'caster') {
-        caster = Math.max(caster, bonus.value);
-      } else if (bonus.type === 'pursuit') {
-        pursuit += bonus.value;
+      if (bonus.type === 'grit' || bonus.type === 'equip_melee') {
+        melee = true;
+      } else if (bonus.type === 'caster' || bonus.type === 'equip_magic') {
+        magic = true;
+      } else if (bonus.type === 'pursuit' || bonus.type === 'equip_ranged') {
+        ranged = true;
       }
     }
   }
 
-  return { grit, pursuit, caster };
+  return { melee, ranged, magic };
 }
 
 // SpecRef: 8.5 | UI_DIARY | Setting.
@@ -3210,9 +3210,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const oldCombatBonuses = getCharacterCombatBonusLevels(oldChar);
       const nextCombatBonuses = getCharacterCombatBonusLevels(nextCharacter);
-      const lostMeleeAptitude = oldCombatBonuses.grit > 0 && nextCombatBonuses.grit <= 0;
-      const lostRangedAptitude = oldCombatBonuses.pursuit > 0 && nextCombatBonuses.pursuit <= 0;
-      const lostMagicAptitude = oldCombatBonuses.caster > 0 && nextCombatBonuses.caster <= 0;
+      const lostMeleeAptitude = oldCombatBonuses.melee && !nextCombatBonuses.melee;
+      const lostRangedAptitude = oldCombatBonuses.ranged && !nextCombatBonuses.ranged;
+      const lostMagicAptitude = oldCombatBonuses.magic && !nextCombatBonuses.magic;
 
       if (lostMeleeAptitude || lostRangedAptitude || lostMagicAptitude) {
         newInventory = { ...newInventory };

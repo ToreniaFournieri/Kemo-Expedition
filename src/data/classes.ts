@@ -18,7 +18,7 @@ export const CLASSES: ClassDef[] = [
     id: 'fighter',
     name: '戦士',
     mainSubBonuses: [
-      { type: 'grit', value: 1 },
+      { type: 'equip_melee', value: 1 },
       { type: 'equip_slot', value: 2 },
       { type: 'armor_multiplier', value: 1.4 },
       { type: 'gauntlet_multiplier', value: 1.3 },
@@ -34,7 +34,7 @@ export const CLASSES: ClassDef[] = [
     id: 'duelist',
     name: '剣士',
     mainSubBonuses: [
-      { type: 'grit', value: 1 },
+      { type: 'equip_melee', value: 1 },
       { type: 'sword_multiplier', value: 1.4 },
     ],
     mainBonuses: [
@@ -48,7 +48,7 @@ export const CLASSES: ClassDef[] = [
     id: 'ninja',
     name: '忍者',
     mainSubBonuses: [
-      { type: 'pursuit', value: 1 },
+      { type: 'equip_ranged', value: 1 },
       { type: 'bolt_multiplier', value: 1.4 },
       { type: 'penet', value: 0.1 },
     ],
@@ -63,7 +63,7 @@ export const CLASSES: ClassDef[] = [
     id: 'samurai',
     name: '侍',
     mainSubBonuses: [
-      { type: 'grit', value: 1 },
+      { type: 'equip_melee', value: 1 },
       { type: 'katana_multiplier', value: 1.4 },
     ],
     mainBonuses: [
@@ -94,7 +94,7 @@ export const CLASSES: ClassDef[] = [
     id: 'ranger',
     name: '狩人',
     mainSubBonuses: [
-      { type: 'pursuit', value: 3 },
+      { type: 'equip_ranged', value: 1 },
       { type: 'arrow_multiplier', value: 1.4 },
     ],
     mainBonuses: [
@@ -108,7 +108,7 @@ export const CLASSES: ClassDef[] = [
     id: 'wizard',
     name: '魔法使い',
     mainSubBonuses: [
-      { type: 'caster', value: 1 },
+      { type: 'equip_magic', value: 1 },
       { type: 'wand_multiplier', value: 1.4 },
     ],
     mainBonuses: [
@@ -122,7 +122,7 @@ export const CLASSES: ClassDef[] = [
     id: 'sage',
     name: '賢者',
     mainSubBonuses: [
-      { type: 'caster', value: 2 },
+      { type: 'equip_magic', value: 1 },
       { type: 'catalyst_multiplier', value: 1.4 },
       { type: 'grimoire_multiplier', value: 1.2 },
       { type: 'equip_slot', value: 1 },
@@ -138,7 +138,7 @@ export const CLASSES: ClassDef[] = [
     id: 'rogue',
     name: '盗賊',
     mainSubBonuses: [
-      { type: 'pursuit', value: 2 },
+      { type: 'equip_ranged', value: 1 },
       { type: 'archery_multiplier', value: 1.4 },
       { type: 'equip_slot', value: 1 },
       { type: 'ability', value: 1, abilityId: 'unlock', abilityLevel: 1 },

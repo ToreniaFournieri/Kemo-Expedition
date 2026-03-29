@@ -76,6 +76,7 @@ export type BonusType =
   | 'vitality' | 'strength' | 'intelligence' | 'mind'
   // Combat bonuses
   | 'grit' | 'caster' | 'penet' | 'pursuit'
+  | 'equip_melee' | 'equip_ranged' | 'equip_magic'
   | 'antagonism'
   | 'melee_attack' | 'ranged_attack' | 'magical_attack' | 'physical_attack'
   | 'physical_defense' | 'magical_defense'
