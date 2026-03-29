@@ -1962,15 +1962,19 @@ function normalizeAutoEquipmentMode(mode: Character['autoEquipmentMode']): AutoE
 }
 
 const AUTO_EQUIPMENT_PRIORITY_BY_CLASS: Record<Character['mainClassId'], AutoEquipmentTargetCategory[]> = {
+  guardian: ['armor', 'i.melee', 'robe', 'gauntlet', 'i.melee', 'shield', 'armor', 'robe', 'i.melee', 'shield', 'i.melee'],
   duelist: ['i.melee', 'gauntlet', 'armor', 'robe', 'i.melee', 'armor', 'gauntlet', 'i.melee', 'armor', 'robe', 'i.melee'],
-  ninja: ['i.melee', 'gauntlet', 'armor', 'robe', 'i.melee', 'i.melee', 'gauntlet', 'i.melee', 'armor', 'robe', 'i.melee'],
   samurai: ['i.melee', 'gauntlet', 'armor', 'robe', 'i.melee', 'gauntlet', 'i.melee', 'i.melee', 'armor', 'robe', 'gauntlet'],
+  'sword-saint': ['i.melee', 'gauntlet', 'armor', 'robe', 'i.melee', 'gauntlet', 'i.melee', 'i.melee', 'armor', 'robe', 'gauntlet'],
+  striker: ['i.ranged', 'bolt', 'armor', 'robe', 'i.ranged', 'arrow', 'archery', 'i.ranged', 'armor', 'robe', 'i.ranged'],
+  ninja: ['i.ranged', 'archery', 'armor', 'robe', 'i.ranged', 'arrow', 'archery', 'i.ranged', 'armor', 'robe', 'i.ranged'],
   fighter: ['armor', 'i.melee', 'robe', 'gauntlet', 'i.melee', 'shield', 'armor', 'robe', 'i.melee', 'shield', 'i.melee'],
   lord: ['i.melee', 'armor', 'robe', 'i.melee', 'gauntlet', 'i.melee', 'armor', 'robe', 'i.melee', 'shield', 'i.melee', 'gauntlet'],
   rogue: ['i.ranged', 'archery', 'armor', 'robe', 'i.ranged', 'arrow', 'archery', 'i.ranged', 'armor', 'robe', 'i.ranged'],
   ranger: ['i.ranged', 'archery', 'armor', 'robe', 'i.ranged', 'arrow', 'archery', 'i.ranged', 'armor', 'robe', 'i.ranged'],
   wizard: ['i.magic', 'catalyst', 'armor', 'robe', 'i.magic', 'i.magic', 'catalyst', 'i.magic', 'i.magic', 'robe', 'i.magic'],
   sage: ['i.magic', 'catalyst', 'armor', 'robe', 'i.magic', 'i.magic', 'catalyst', 'i.magic', 'i.magic', 'robe', 'catalyst'],
+  alchemist: ['i.magic', 'catalyst', 'armor', 'robe', 'i.magic', 'i.magic', 'catalyst', 'i.magic', 'i.magic', 'robe', 'catalyst'],
   pilgrim: ['i.magic', 'catalyst', 'armor', 'robe', 'i.magic', 'i.magic', 'catalyst', 'i.magic', 'i.magic', 'robe', 'catalyst'],
 };
 
