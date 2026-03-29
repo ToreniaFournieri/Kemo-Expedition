@@ -5289,15 +5289,18 @@ function PartyTab({
                     ],
                   });
                 }
-                offenseLines.push({
-                  key: 'penetration',
-                  text: `貫通:+${formatNumber(Math.round(stats.penetMultiplier * 100))}%`,
-                  helpTitle: '貫通',
-                  helpLines: [
-                    `貫通: +${formatNumber(Math.round(stats.penetMultiplier * 100))}%`,
-                    `敵の防御力を ${Math.round(stats.penetMultiplier * 100)}% 分無視する`,
-                  ],
-                });
+                const penetrationPercent = Math.round(stats.penetMultiplier * 100);
+                if (penetrationPercent !== 0) {
+                  offenseLines.push({
+                    key: 'penetration',
+                    text: `貫通:+${formatNumber(penetrationPercent)}%`,
+                    helpTitle: '貫通',
+                    helpLines: [
+                      `貫通: +${formatNumber(penetrationPercent)}%`,
+                      `敵の防御力を ${penetrationPercent}% 分無視する`,
+                    ],
+                  });
+                }
 
                 // Defense lines
                 const defenseAmpPhysical = Math.max(0.01, stats.physicalDefenseAmplifier + stats.deityDefenseAmplifierBonus.physical);
