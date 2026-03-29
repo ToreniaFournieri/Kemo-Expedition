@@ -1968,9 +1968,7 @@ const AUTO_EQUIPMENT_PRIORITY_BY_CLASS: Record<Character['mainClassId'], AutoEqu
   'sword-saint': ['i.melee', 'gauntlet', 'armor', 'robe', 'i.melee', 'gauntlet', 'i.melee', 'i.melee', 'armor', 'robe', 'gauntlet'],
   striker: ['i.ranged', 'bolt', 'armor', 'robe', 'i.ranged', 'arrow', 'archery', 'i.ranged', 'armor', 'robe', 'i.ranged'],
   ninja: ['i.ranged', 'archery', 'armor', 'robe', 'i.ranged', 'arrow', 'archery', 'i.ranged', 'armor', 'robe', 'i.ranged'],
-  fighter: ['armor', 'i.melee', 'robe', 'gauntlet', 'i.melee', 'shield', 'armor', 'robe', 'i.melee', 'shield', 'i.melee'],
   lord: ['i.melee', 'armor', 'robe', 'i.melee', 'gauntlet', 'i.melee', 'armor', 'robe', 'i.melee', 'shield', 'i.melee', 'gauntlet'],
-  rogue: ['i.ranged', 'archery', 'armor', 'robe', 'i.ranged', 'arrow', 'archery', 'i.ranged', 'armor', 'robe', 'i.ranged'],
   ranger: ['i.ranged', 'archery', 'armor', 'robe', 'i.ranged', 'arrow', 'archery', 'i.ranged', 'armor', 'robe', 'i.ranged'],
   wizard: ['i.magic', 'catalyst', 'armor', 'robe', 'i.magic', 'i.magic', 'catalyst', 'i.magic', 'i.magic', 'robe', 'i.magic'],
   sage: ['i.magic', 'catalyst', 'armor', 'robe', 'i.magic', 'i.magic', 'catalyst', 'i.magic', 'i.magic', 'robe', 'catalyst'],
@@ -2530,7 +2528,7 @@ export function HomeScreen({
         const autoEquipmentMode = normalizeAutoEquipmentMode(character.autoEquipmentMode);
         if (autoEquipmentMode === 0) return;
 
-        const priorities = AUTO_EQUIPMENT_PRIORITY_BY_CLASS[character.mainClassId] ?? AUTO_EQUIPMENT_PRIORITY_BY_CLASS.fighter;
+        const priorities = AUTO_EQUIPMENT_PRIORITY_BY_CLASS[character.mainClassId] ?? AUTO_EQUIPMENT_PRIORITY_BY_CLASS.guardian;
         const { maxEquipSlots } = computeCharacterStats(character, party.level);
         const simulatedEquipmentSlots = Array.from({ length: maxEquipSlots }, (_, index) => character.equipment[index] ?? null);
         const memoryDEquipmentSlots = autoEquipmentMode === 2

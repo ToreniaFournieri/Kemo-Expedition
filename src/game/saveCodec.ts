@@ -1,5 +1,5 @@
 import { getItemById } from '../data/items';
-import { GameState, InventoryRecord, InventoryVariant, Item, RandomBag, WeightedBagEntry } from '../types';
+import { ClassId, GameState, InventoryRecord, InventoryVariant, Item, RandomBag, WeightedBagEntry } from '../types';
 
 type ItemReference = Pick<Item, 'id' | 'enhancement' | 'superRare' | 'jewel'>;
 type CompactBagEntry = [number, number];
@@ -81,6 +81,12 @@ function hydrateBagEntries(bag: PersistedRandomBag | RandomBag): RandomBag {
   };
 }
 
+function migrateObsoleteClassId(classId: string): ClassId {
+  if (classId === 'fighter') return 'guardian';
+  if (classId === 'rogue') return 'ninja';
+  return classId as ClassId;
+}
+
 // SpecRef: 9 | Environment | serializeGameState
 export function serializeGameState(state: GameState): GameState {
   const compactInventory = Object.entries(state.global.inventory).reduce<InventoryRecord>((acc, [key, variant]) => {
@@ -156,6 +162,8 @@ export function hydrateGameState(state: GameState): GameState {
       sleepinessOfPartyBag: hydrateBagEntries(party.sleepinessOfPartyBag),
       characters: party.characters.map((character) => ({
         ...character,
+        mainClassId: migrateObsoleteClassId(character.mainClassId as string),
+        subClassId: migrateObsoleteClassId(character.subClassId as string),
         equipment: character.equipment.map((item) => (item ? hydrateItem(item) : null)),
       })),
     })),
