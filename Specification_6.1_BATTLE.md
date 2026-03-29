@@ -543,6 +543,9 @@ If `a.*` with phase = START:
     - If override condition is met: return true (skip calculation below)
   - Roll: Return Random(0, 1.0) <= chance
 
+  - **Override of ability effect**
+    - If actor.`a.arcane-stability` and (phase is MID): min(N /100 , calculated chance)
+
 ##### 6.1.4.3 Function of Reactive ability
 
 - **`f.counter`(actor: , opponent: ,phase: ) :** IF (opponent or party members have not available `a.null-counter`) and (actor.`a.counter`, phase is CLOSE) , the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
