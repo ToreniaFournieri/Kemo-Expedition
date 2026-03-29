@@ -5096,7 +5096,7 @@ function PartyTab({
                                       : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
                                   }`}
                                 >
-                                  {classData.name}
+                                  {CLASS_SHORT_NAMES[classData.id] ?? classData.name}
                                 </button>
                               );
                             })}
@@ -5145,7 +5145,7 @@ function PartyTab({
                                       : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
                                   }`}
                                 >
-                                  {classData.name}
+                                  {CLASS_SHORT_NAMES[classData.id] ?? classData.name}
                                 </button>
                               );
                             })}
