@@ -5070,7 +5070,7 @@ function PartyTab({
 
                 return (
                   <>
-                    <div className="mb-1 text-xs text-gray-600">
+                    <div className="mb-1 text-xs text-gray-600 select-none">
                       {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? '(師範)' : ''} | {selectedMainBonusText}
                     </div>
                     <div className="rounded border border-gray-200 bg-white p-2 text-xs">
@@ -5122,7 +5122,7 @@ function PartyTab({
 
                 return (
                   <>
-                    <div className="mb-1 text-xs text-gray-600">
+                    <div className="mb-1 text-xs text-gray-600 select-none">
                       {selectedSubClass?.name ?? '-'} | {selectedSubBonusText}
                     </div>
                     <div className="rounded border border-gray-200 bg-white p-2 text-xs">
