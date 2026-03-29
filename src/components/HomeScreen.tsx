@@ -5073,13 +5073,13 @@ function PartyTab({
                     <div className="mb-1 text-xs text-gray-600">
                       {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? '(師範)' : ''} | {selectedMainBonusText}
                     </div>
-                    <div className="rounded border border-gray-200 bg-white p-2 text-xs overflow-x-auto">
+                    <div className="rounded border border-gray-200 bg-white p-2 text-xs">
                       {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Main Class selection */}
-                      <div className="grid min-w-[480px] grid-cols-4 gap-2">
+                      <div className="grid grid-cols-4 gap-1">
                         {classCategoryDefinitions.map((category) => (
                           <div key={`main-class-${category.label}`} className="space-y-1">
                             <div className="text-center text-[11px] text-gray-500">{category.label}</div>
-                            <div className="flex justify-center">
+                            <div className="flex w-full">
                               {category.classIds.map((classId) => {
                                 const classData = classById.get(classId);
                                 if (!classData) return null;
@@ -5090,7 +5090,7 @@ function PartyTab({
                                     key={`main-class-${category.label}-${classId}`}
                                     type="button"
                                     onClick={() => setPendingEdits({ ...pendingEdits, mainClassId: classId })}
-                                    className={`px-2 py-1 text-xs border ${
+                                    className={`min-w-0 flex-1 px-0 py-1 text-xs border ${
                                       classId === category.classIds[0] ? 'rounded-l' : classId === category.classIds[category.classIds.length - 1] ? 'rounded-r' : ''
                                     } ${
                                       isSelected
@@ -5125,13 +5125,13 @@ function PartyTab({
                     <div className="mb-1 text-xs text-gray-600">
                       {selectedSubClass?.name ?? '-'} | {selectedSubBonusText}
                     </div>
-                    <div className="rounded border border-gray-200 bg-white p-2 text-xs overflow-x-auto">
+                    <div className="rounded border border-gray-200 bg-white p-2 text-xs">
                       {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Sub Class selection */}
-                      <div className="grid min-w-[480px] grid-cols-4 gap-2">
+                      <div className="grid grid-cols-4 gap-1">
                         {classCategoryDefinitions.map((category) => (
                           <div key={`sub-class-${category.label}`} className="space-y-1">
                             <div className="text-center text-[11px] text-gray-500">{category.label}</div>
-                            <div className="flex justify-center">
+                            <div className="flex w-full">
                               {category.classIds.map((classId) => {
                                 const classData = classById.get(classId);
                                 if (!classData) return null;
@@ -5142,7 +5142,7 @@ function PartyTab({
                                     key={`sub-class-${category.label}-${classId}`}
                                     type="button"
                                     onClick={() => setPendingEdits({ ...pendingEdits, subClassId: classId })}
-                                    className={`px-2 py-1 text-xs border ${
+                                    className={`min-w-0 flex-1 px-0 py-1 text-xs border ${
                                       classId === category.classIds[0] ? 'rounded-l' : classId === category.classIds[category.classIds.length - 1] ? 'rounded-r' : ''
                                     } ${
                                       isSelected
