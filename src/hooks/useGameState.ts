@@ -910,7 +910,7 @@ function drawPartySleepiness(party: Party): { party: Party; sleepiness: Sleepine
 
 function createInitialParty() {
   const defaultSetup = [
-    { race: 'caninian', main: 'fighter', sub: 'rogue', pred: 'canny', lineage: 'unmoving', name: 'ケモ', equipmentIds: [1101, 1103] },
+    { race: 'caninian', main: 'guardian', sub: 'ninja', pred: 'canny', lineage: 'unmoving', name: 'ケモ', equipmentIds: [1101, 1103] },
     { race: 'vulpinian', main: 'duelist', sub: 'samurai', pred: 'chivalric', lineage: 'war_spirit', name: 'ゴン', equipmentIds: [1104, 1104] },
     { race: 'murid', main: 'ninja', sub: 'lord', pred: 'persistent', lineage: 'breaking_hand', name: 'イタチ', equipmentIds: [1104, 1106] },
     { race: 'leporian', main: 'ranger', sub: 'sage', pred: 'shikon', lineage: 'far_sight', name: 'ロップ', equipmentIds: [1107, 1108, 1109] },
@@ -967,9 +967,9 @@ function createInitialParty() {
 function createSecondParty() {
   const defaultSetup = [
     { race: 'lupinian', main: 'samurai', sub: 'samurai', pred: 'chivalric', lineage: 'war_spirit', name: 'ルプ' },
-    { race: 'lupinian', main: 'fighter', sub: 'lord', pred: 'sturdy', lineage: 'unmoving', name: 'ガル' },
+    { race: 'lupinian', main: 'guardian', sub: 'lord', pred: 'sturdy', lineage: 'unmoving', name: 'ガル' },
     { race: 'lupinian', main: 'duelist', sub: 'ranger', pred: 'dexterous', lineage: 'far_sight', name: 'ヴォルフ' },
-    { race: 'lupinian', main: 'rogue', sub: 'ninja', pred: 'persistent', lineage: 'breaking_hand', name: 'ライカ' },
+    { race: 'lupinian', main: 'ninja', sub: 'ninja', pred: 'persistent', lineage: 'breaking_hand', name: 'ライカ' },
     { race: 'lupinian', main: 'pilgrim', sub: 'sage', pred: 'pursuing', lineage: 'hidden_principles', name: 'フェン' },
     { race: 'lupinian', main: 'wizard', sub: 'sage', pred: 'canny', lineage: 'guiding_thought', name: 'ノア' },
   ];
@@ -1019,9 +1019,9 @@ function createSecondParty() {
 function createThirdParty() {
   const defaultSetup = [
     { race: 'vulpinian', main: 'duelist', sub: 'samurai', pred: 'chivalric', lineage: 'war_spirit', name: 'キツネ' },
-    { race: 'vulpinian', main: 'rogue', sub: 'ninja', pred: 'persistent', lineage: 'breaking_hand', name: 'ヨウ' },
+    { race: 'vulpinian', main: 'ninja', sub: 'ninja', pred: 'persistent', lineage: 'breaking_hand', name: 'ヨウ' },
     { race: 'vulpinian', main: 'ranger', sub: 'sage', pred: 'dexterous', lineage: 'far_sight', name: 'シュン' },
-    { race: 'vulpinian', main: 'lord', sub: 'fighter', pred: 'sturdy', lineage: 'unmoving', name: 'コン' },
+    { race: 'vulpinian', main: 'lord', sub: 'guardian', pred: 'sturdy', lineage: 'unmoving', name: 'コン' },
     { race: 'vulpinian', main: 'pilgrim', sub: 'sage', pred: 'pursuing', lineage: 'hidden_principles', name: 'ミコ' },
     { race: 'vulpinian', main: 'wizard', sub: 'sage', pred: 'canny', lineage: 'guiding_thought', name: 'イナ' },
   ];
@@ -1070,10 +1070,10 @@ function createThirdParty() {
 
 function createFourthParty() {
   const defaultSetup = [
-    { race: 'ursan', main: 'fighter', sub: 'lord', pred: 'sturdy', lineage: 'unmoving', name: 'グロウ' },
-    { race: 'ursan', main: 'samurai', sub: 'fighter', pred: 'chivalric', lineage: 'war_spirit', name: 'バル' },
+    { race: 'ursan', main: 'guardian', sub: 'lord', pred: 'sturdy', lineage: 'unmoving', name: 'グロウ' },
+    { race: 'ursan', main: 'samurai', sub: 'guardian', pred: 'chivalric', lineage: 'war_spirit', name: 'バル' },
     { race: 'ursan', main: 'duelist', sub: 'ranger', pred: 'dexterous', lineage: 'far_sight', name: 'ロア' },
-    { race: 'ursan', main: 'rogue', sub: 'ninja', pred: 'persistent', lineage: 'breaking_hand', name: 'グリズ' },
+    { race: 'ursan', main: 'ninja', sub: 'ninja', pred: 'persistent', lineage: 'breaking_hand', name: 'グリズ' },
     { race: 'ursan', main: 'sage', sub: 'pilgrim', pred: 'pursuing', lineage: 'hidden_principles', name: 'ウル' },
     { race: 'ursan', main: 'wizard', sub: 'sage', pred: 'canny', lineage: 'guiding_thought', name: 'ドルト' },
   ];
@@ -1125,8 +1125,8 @@ function createFifthParty() {
     { race: 'felidian', main: 'sage', sub: 'pilgrim', pred: 'pursuing', lineage: 'hidden_principles', name: 'ミャオ' },
     { race: 'felidian', main: 'ranger', sub: 'sage', pred: 'dexterous', lineage: 'far_sight', name: 'ニル' },
     { race: 'felidian', main: 'duelist', sub: 'samurai', pred: 'chivalric', lineage: 'war_spirit', name: 'フェル' },
-    { race: 'felidian', main: 'rogue', sub: 'ninja', pred: 'persistent', lineage: 'breaking_hand', name: 'シロ' },
-    { race: 'felidian', main: 'lord', sub: 'fighter', pred: 'sturdy', lineage: 'unmoving', name: 'カリン' },
+    { race: 'felidian', main: 'ninja', sub: 'ninja', pred: 'persistent', lineage: 'breaking_hand', name: 'シロ' },
+    { race: 'felidian', main: 'lord', sub: 'guardian', pred: 'sturdy', lineage: 'unmoving', name: 'カリン' },
     { race: 'felidian', main: 'wizard', sub: 'sage', pred: 'canny', lineage: 'guiding_thought', name: 'ネイ' },
   ];
 
@@ -1175,10 +1175,10 @@ function createFifthParty() {
 function createSixthParty() {
   const defaultSetup = [
     { race: 'mustelid', main: 'wizard', sub: 'sage', pred: 'canny', lineage: 'guiding_thought', name: 'ミン' },
-    { race: 'mustelid', main: 'rogue', sub: 'ninja', pred: 'persistent', lineage: 'breaking_hand', name: 'トロ' },
+    { race: 'mustelid', main: 'ninja', sub: 'ninja', pred: 'persistent', lineage: 'breaking_hand', name: 'トロ' },
     { race: 'mustelid', main: 'duelist', sub: 'samurai', pred: 'chivalric', lineage: 'war_spirit', name: 'ネル' },
     { race: 'mustelid', main: 'ranger', sub: 'sage', pred: 'dexterous', lineage: 'far_sight', name: 'マル' },
-    { race: 'mustelid', main: 'fighter', sub: 'lord', pred: 'sturdy', lineage: 'unmoving', name: 'タル' },
+    { race: 'mustelid', main: 'guardian', sub: 'lord', pred: 'sturdy', lineage: 'unmoving', name: 'タル' },
     { race: 'mustelid', main: 'pilgrim', sub: 'sage', pred: 'pursuing', lineage: 'hidden_principles', name: 'リン' },
   ];
 

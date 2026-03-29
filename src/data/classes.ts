@@ -1,6 +1,6 @@
 import { ClassDef, ClassId } from '../types';
 
-export const CLASS_SHORT_NAMES: Record<ClassId, string> = {
+export const CLASS_SHORT_NAMES: Record<ClassId | 'fighter' | 'rogue', string> = {
   fighter: '戦',
   guardian: '防',
   duelist: '剣',
@@ -19,22 +19,6 @@ export const CLASS_SHORT_NAMES: Record<ClassId, string> = {
 
 // SpecRef: 2.2 | CHARACTER_&_PARTY_MASTER_DATA | class.master_data
 export const CLASSES: ClassDef[] = [
-  {
-    id: 'fighter',
-    name: '戦士',
-    mainSubBonuses: [
-      { type: 'equip_melee', value: 1 },
-      { type: 'equip_slot', value: 2 },
-      { type: 'armor_multiplier', value: 1.4 },
-      { type: 'gauntlet_multiplier', value: 1.3 },
-    ],
-    mainBonuses: [
-      { type: 'ability', value: 1, abilityId: 'defender', abilityLevel: 1 },
-    ],
-    masterBonuses: [
-      { type: 'ability', value: 1, abilityId: 'defender', abilityLevel: 2 },
-    ],
-  },
   {
     id: 'guardian',
     name: '防人',
@@ -176,24 +160,6 @@ export const CLASSES: ClassDef[] = [
     ],
     masterBonuses: [
       { type: 'ability', value: 1, abilityId: 'arcane_stability', abilityLevel: 2 },
-    ],
-  },
-  {
-    id: 'rogue',
-    name: '盗賊',
-    mainSubBonuses: [
-      { type: 'equip_ranged', value: 1 },
-      { type: 'archery_multiplier', value: 1.4 },
-      { type: 'equip_slot', value: 1 },
-      { type: 'ability', value: 1, abilityId: 'unlock', abilityLevel: 1 },
-    ],
-    mainBonuses: [
-      { type: 'ability', value: 1, abilityId: 'deflection', abilityLevel: 1 },
-      { type: 'ability', value: 1, abilityId: 'first_strike', abilityLevel: 1 },
-    ],
-    masterBonuses: [
-      { type: 'ability', value: 1, abilityId: 'deflection', abilityLevel: 2 },
-      { type: 'ability', value: 1, abilityId: 'first_strike', abilityLevel: 2 },
     ],
   },
   {
