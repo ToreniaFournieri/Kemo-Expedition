@@ -505,7 +505,7 @@ If `a.*` with phase = START:
     - The character currently occupying that row is selected as the target.
 
 - `d.accuracy_potency` 
-  - A global accuracy modifier applied to a unit’s final output based on their current row position.
+  - A global accuracy modifier applied to a unit’s hit chance based on their current row position.
   - Row-based modifiers apply only to player characters. Enemies are treated as having fixed potency (1.0).
   - Row-based `d.accuracy_potency` is applied only during LONG and CLOSE phases.
   - MID phase ignores row-based accuracy potency, so has fixed potency (1.0).
