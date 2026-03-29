@@ -107,19 +107,19 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "装備スロット数が v 増える"
       },
       {
-        "key": "c.grit+v",
-        "label": "[根性+v]",
-        "description": "近接攻撃の装備が出来るようになる。近接攻撃回数が　v 回増える"
+        "key": "c.equip_melee",
+        "label": "[近接装備]",
+        "description": "近接攻撃の装備が出来るようになる"
       },
       {
-        "key": "c.pursuit+v",
-        "label": "[追撃+v]",
-        "description": "遠距離攻撃の装備が出来るようになる。遠距離攻撃回数が　v 回増える"
+        "key": "c.equip_ranged",
+        "label": "[遠距離装備]",
+        "description": "遠距離攻撃の装備が出来るようになる"
       },
       {
-        "key": "c.caster+v",
-        "label": "[術者+v]",
-        "description": "魔法攻撃の装備が出来るようになる。魔法攻撃回数が　v 回増える"
+        "key": "c.equip_magic",
+        "label": "[魔法装備]",
+        "description": "魔法攻撃の装備が出来るようになる"
       },
       {
         "key": "c.penet+v",
