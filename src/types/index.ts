@@ -120,9 +120,10 @@ export interface Bonus {
 // Ability Types
 export type AbilityId =
   | 'first_strike' | 'hunter' | 'defender' | 'counter' | 're_attack'
-  | 'iaigiri' | 'resonance' | 'command' | 'm_barrier' | 'deflection' | 'null_counter' | 'unlock'
+  | 'iaigiri' | 'heavy_strike' | 'resonance' | 'command' | 'm_barrier' | 'deflection' | 'null_counter' | 'unlock'
   | 'squander' | 'tithe' | 'seeker' | 'resurrect' | 'rage' | 're_counter' | 'momentum' | 'cunning'
   | 'bulwark' | 'cyborgization' | 'covering_fire' | 'peddler' | 'composure' | 'magical_counter'
+  | 'arcane_stability' | 'arc_magic'
   | 'focus' | 'prophecy' | 'stealth' | 'illusion'
   // Enemy-only abilities prepared from Enemy Master Specification
   | 'howl' | 'predator_sense' | 'slow' | 'corrode' | 'life_drain' | 'no_offense'
@@ -252,6 +253,8 @@ export interface ComputedCharacterStats {
   maxEquipSlots: number;
   abilities: Ability[];
   penetMultiplier: number;
+  originalRangedNoA: number;
+  originalMeleeNoA: number;
   elementalOffense: ElementalOffense;
   elementalOffenseValue: number;
   accuracyPotency: number; // Row-based accuracy potency (d.accuracy_potency)

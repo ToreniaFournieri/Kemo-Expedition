@@ -63,6 +63,18 @@ interface PendingHowlEffect {
   characterId?: number;
 }
 
+function getHeavyStrikePenetPerNoA(level: number): number {
+  if (level >= 2) return 0.015;
+  if (level >= 1) return 0.01;
+  return 0;
+}
+
+function getArcaneStabilityHitFloor(level: number): number {
+  if (level >= 2) return 0.60;
+  if (level >= 1) return 0.55;
+  return 0;
+}
+
 function getElementalMultiplier(
   offense: ElementalOffense,
   resistance: Record<'fire' | 'thunder' | 'ice', number>
@@ -663,12 +675,19 @@ function calculateCharacterFriendlyFireDamage(
   noA = Math.ceil(noA * noAMultiplier * getTerrainNoAAmplifier(phase, terrainEffect));
   if (noA <= 0 || attack <= 0) return { damage: 0, totalAttempts: 0, hits: 0 };
 
-  const effectiveDefense = defense * (1 - attacker.penetMultiplier);
   const phaseAttackScale = phase === 'mid'
     ? getBaseMultiplier(attacker.baseStats.intelligence, 'attack')
     : getBaseMultiplier(attacker.baseStats.strength, 'attack');
 
   const iaigiri = attacker.abilities.find(a => a.id === 'iaigiri');
+  const heavyStrike = attacker.abilities.find(a => a.id === 'heavy_strike');
+  const heavyStrikePenetPerNoA = getHeavyStrikePenetPerNoA(heavyStrike?.level ?? 0);
+  const heavyStrikeNoALoss = phase === 'long'
+    ? Math.max(0, attacker.originalRangedNoA - attacker.rangedNoA)
+    : phase === 'close'
+      ? Math.max(0, attacker.originalMeleeNoA - attacker.meleeNoA)
+      : 0;
+  const effectiveDefenseWithHeavyStrike = defense * (1 - (attacker.penetMultiplier + (heavyStrikeNoALoss * heavyStrikePenetPerNoA)));
   const iaigiriMultiplier = iaigiri ? (iaigiri.level >= 3 ? 2.0 : iaigiri.level >= 2 ? 1.8 : 1.6) : 1.0;
   const phaseBonusSum = phase === 'mid'
     ? attacker.magicalAttackCBonus
@@ -681,6 +700,9 @@ function calculateCharacterFriendlyFireDamage(
     offenseAmplifier = (iaigiriMultiplier * (1.0 + phaseBonusSum) * attacker.physicalOffenseMultiplier + attacker.deityOffenseAmplifierBonus) * phaseAttackScale;
   } else {
     offenseAmplifier = ((1.0 + phaseBonusSum + attacker.physicalAttackCBonus) * attacker.physicalOffenseMultiplier + attacker.deityOffenseAmplifierBonus) * phaseAttackScale;
+  }
+  if (phase !== 'mid' && heavyStrike) {
+    offenseAmplifier *= 1.4;
   }
 
   const elementalMultiplier = attacker.elementalOffense === 'none'
@@ -703,7 +725,7 @@ function calculateCharacterFriendlyFireDamage(
 
   const partyOffenseAmplifier = getPartyOffenseAbilityAmplifier(phase, characterStats, attacker.row);
   const basePerHitDamage = Math.max(1, Math.floor(
-    (attack - effectiveDefense)
+    (attack - effectiveDefenseWithHeavyStrike)
       * offenseAmplifier
       * runtimeOffenseMultiplier
       * attacker.elementalOffenseValue
@@ -729,7 +751,17 @@ function calculateCharacterFriendlyFireDamage(
   let hits = 0;
   let damage = 0;
   for (let i = 1; i <= noA; i++) {
-    if (hitDetection(actorAccuracyPotency, attacker.accuracyBonus + temporaryAccuracyBonus, target.evasionBonus, i, phase, targetDeflectionLevel, actorFocusLevel, terrainEffect)) {
+    if (hitDetection(
+      actorAccuracyPotency,
+      attacker.accuracyBonus + temporaryAccuracyBonus,
+      target.evasionBonus,
+      i,
+      phase,
+      targetDeflectionLevel,
+      actorFocusLevel,
+      terrainEffect,
+      attacker.abilities.find((ability) => ability.id === 'arcane_stability')?.level ?? 0,
+    )) {
       hits += 1;
       const resonanceAmplifier = canApplyResonance ? getResonanceAmplifier(resonance?.level, hits) : 1.0;
       damage += Math.max(1, Math.floor(terrainAdjustedPerHitDamage * resonanceAmplifier));
@@ -1111,6 +1143,7 @@ function hitDetection(
   opponentDeflectionLevel: number,
   actorFocusLevel: number,
   terrainEffect?: TerrainEffectKey | null,
+  actorArcaneStabilityLevel: number = 0,
 ): boolean {
   if (
     (phase === 'long' && terrainEffect === 'terrain.sniper-domain')
@@ -1139,7 +1172,10 @@ function hitDetection(
     }
   }
   const chance = Math.max(0.0, Math.min(1.0, baseChance)) * Math.pow(decayOfAccuracy, nthHit - 1);
-  return Math.random() <= chance;
+  const minChanceByArcaneStability = phase === 'mid'
+    ? getArcaneStabilityHitFloor(actorArcaneStabilityLevel)
+    : 0;
+  return Math.random() <= Math.max(chance, minChanceByArcaneStability);
 }
 
 // SpecRef: 6.1.4.1 | Function of attack | f.damage_calculation
@@ -1190,7 +1226,14 @@ function calculateCharacterDamage(
   if (noA === 0 || attack <= 0) return { damage: 0, totalAttempts: 0, hits: 0 };
 
   // Apply penetration
-  const effectiveDefense = defense * (1 - charStats.penetMultiplier);
+  const heavyStrike = charStats.abilities.find((ability) => ability.id === 'heavy_strike');
+  const heavyStrikePenetPerNoA = getHeavyStrikePenetPerNoA(heavyStrike?.level ?? 0);
+  const heavyStrikeNoALoss = phase === 'long'
+    ? Math.max(0, charStats.originalRangedNoA - charStats.rangedNoA)
+    : phase === 'close'
+      ? Math.max(0, charStats.originalMeleeNoA - charStats.meleeNoA)
+      : 0;
+  const effectiveDefense = defense * (1 - (charStats.penetMultiplier + (heavyStrikeNoALoss * heavyStrikePenetPerNoA)));
 
   const getUniqueOffenseBonusSum = (
     kind: 'melee' | 'ranged' | 'magical',
@@ -1248,6 +1291,9 @@ function calculateCharacterDamage(
     const physicalBonusSum = phaseBonusSum + charStats.physicalAttackCBonus;
     offenseAmplifier = ((1.0 + physicalBonusSum) * charStats.physicalOffenseMultiplier + charStats.deityOffenseAmplifierBonus) * phaseAttackScale;
   }
+  if (phase !== 'mid' && heavyStrike) {
+    offenseAmplifier *= 1.4;
+  }
 
   const resonance = charStats.abilities.find(a => a.id === 'resonance');
   const canApplyResonance = phase === 'mid'
@@ -1290,7 +1336,17 @@ function calculateCharacterDamage(
   let hits = 0;
   let damage = 0;
   for (let i = 1; i <= noA; i++) {
-    if (hitDetection(actorAccuracyPotency, charStats.accuracyBonus + temporaryAccuracyBonus, enemyEvasion, i, phase, enemyDeflectionLevel, actorFocusLevel, terrainEffect)) {
+    if (hitDetection(
+      actorAccuracyPotency,
+      charStats.accuracyBonus + temporaryAccuracyBonus,
+      enemyEvasion,
+      i,
+      phase,
+      enemyDeflectionLevel,
+      actorFocusLevel,
+      terrainEffect,
+      charStats.abilities.find((ability) => ability.id === 'arcane_stability')?.level ?? 0,
+    )) {
       hits++;
       const resonanceAmplifier = canApplyResonance ? getResonanceAmplifier(resonance?.level, hits) : 1.0;
       damage += Math.max(1, Math.floor(terrainAdjustedPerHitDamage * resonanceAmplifier));
@@ -3988,7 +4044,7 @@ export function executeBattle(
           }
 
           const magicProfile = resolveMagicProfile({
-            style: 'multi-hit',
+            style: getEnemyAbilityLevel(enemy, 'arc_magic') > 0 ? 'arc-magic' : 'multi-hit',
             elementalOffense: enemy.elementalOffense,
             elementalOffenseValue: 1.0,
             magicalNoA: attempts,
@@ -4568,7 +4624,7 @@ export function executeBattle(
       const runCharacterAttack = (noAMultiplier: number, isReAttack = false): CharacterAttackResult | null => {
         const isAntagonism = cs.hasAntagonism;
         const magicProfile = resolveMagicProfile({
-          style: 'multi-hit',
+          style: getAbilityLevel(cs, 'arc_magic') > 0 ? 'arc-magic' : 'multi-hit',
           elementalOffense: cs.elementalOffense,
           elementalOffenseValue: cs.elementalOffenseValue,
           magicalNoA: Math.max(1, Math.ceil(cs.magicalNoA * noAMultiplier)),

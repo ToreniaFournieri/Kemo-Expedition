@@ -1,6 +1,6 @@
 import { ElementalOffense } from '../types';
 
-export type MagicStyle = 'multi-hit' | 'area_burst' | 'percentage_damage';
+export type MagicStyle = 'multi-hit' | 'arc-magic' | 'percentage_damage';
 
 export interface MagicProfile {
   key: string;
@@ -34,37 +34,37 @@ export function resolveMagicProfile({
     };
   }
 
-  if (style === 'area_burst') {
+  if (style === 'arc-magic') {
     if (elementalOffense === 'fire') {
-      return { key: 'pyroclasm', style, spellName: 'パイロクラスム', description: '火属性範囲魔法攻撃(ヒット数は1固定)' };
+      return { key: 'pyroclasm', style, spellName: 'パイロクラスム', description: '火属性大魔法' };
     }
     if (elementalOffense === 'ice') {
-      return { key: 'glacial_burst', style, spellName: 'グレイシャルバースト', description: '氷属性範囲魔法攻撃(ヒット数は1固定)' };
+      return { key: 'glacial-burst', style, spellName: 'グレイシャルバースト', description: '氷属性大魔法' };
     }
     if (elementalOffense === 'thunder') {
-      return { key: 'tempest_nova', style, spellName: 'テンペストノヴァ', description: '雷属性範囲魔法攻撃(ヒット数は1固定)' };
+      return { key: 'tempest-nova', style, spellName: 'テンペストノヴァ', description: '雷属性大魔法' };
     }
 
-    return { key: 'astral_flare', style, spellName: 'アストラルフレア', description: '無属性範囲魔法攻撃(ヒット数は1固定)' };
+    return { key: 'astral-flare', style, spellName: 'アストラルフレア', description: '無属性大魔法' };
   }
 
   if (elementalOffense === 'fire') {
     return elementalOffenseValue >= 1.5
-      ? { key: 'hellfire_volley', style, spellName: 'ヘルファイア', description: '火属性上位魔法(火属性50%以上)' }
-      : { key: 'fire_lance', style, spellName: 'ファイアランス', description: '火属性基本魔法(火属性50%未満)' };
+      ? { key: 'hellfire-volley', style, spellName: 'ヘルファイア', description: '火属性上位魔法(火属性50%以上)' }
+      : { key: 'fire-lance', style, spellName: 'ファイアランス', description: '火属性基本魔法(火属性50%未満)' };
   }
 
   if (elementalOffense === 'ice') {
     return elementalOffenseValue >= 1.5
       ? { key: 'blizzard', style, spellName: 'ブリザード', description: '氷属性上位魔法(氷属性50%以上)' }
-      : { key: 'frost_needles', style, spellName: 'フロストニードル', description: '氷属性基本魔法(氷属性50%未満)' };
+      : { key: 'frost-needles', style, spellName: 'フロストニードル', description: '氷属性基本魔法(氷属性50%未満)' };
   }
 
   if (elementalOffense === 'thunder') {
     return elementalOffenseValue >= 1.5
-      ? { key: 'lightning_barrage', style, spellName: 'ライトニングバラージ', description: '雷属性上位魔法(雷属性50%以上)' }
-      : { key: 'thunder_bolts', style, spellName: 'サンダーボルト', description: '雷属性基本魔法(雷属性50%未満)' };
+      ? { key: 'lightning-barrage', style, spellName: 'ライトニングバラージ', description: '雷属性上位魔法(雷属性50%以上)' }
+      : { key: 'thunder-bolts', style, spellName: 'サンダーボルト', description: '雷属性基本魔法(雷属性50%未満)' };
   }
 
-  return { key: 'arcane_arrows', style, spellName: 'アルカナアロー', description: '無属性の基本魔法攻撃' };
+  return { key: 'arcane-arrows', style, spellName: 'アルカナアロー', description: '無属性の基本魔法攻撃' };
 }
