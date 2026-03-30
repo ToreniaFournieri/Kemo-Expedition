@@ -1719,6 +1719,71 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
   return parts.join(', ');
 }
 
+function getBonusHelpDescription(bonus: Bonus): string | null {
+  const multiplierKey = bonus.type.endsWith('_multiplier')
+    ? bonus.type.replace(/_multiplier$/, '')
+    : bonus.type;
+  const multiplierTemplate = C_MULTIPLIER_HELP_DESCRIPTIONS[multiplierKey];
+  if (multiplierTemplate) {
+    return multiplierTemplate.replace('{value}', formatMultiplierValue(bonus.value));
+  }
+
+  if (bonus.type === 'equip_slot') return `装備スロット数が ${bonus.value} 増える`;
+  if (bonus.type === 'vitality') return `基礎体力に ${bonus.value} を加算（HP/物防に影響）`;
+  if (bonus.type === 'strength') return `基礎筋力に ${bonus.value} を加算（近接火力に影響）`;
+  if (bonus.type === 'intelligence') return `基礎知性に ${bonus.value} を加算（魔法火力に影響）`;
+  if (bonus.type === 'mind') return `基礎精神に ${bonus.value} を加算（HP/魔防に影響）`;
+  if (bonus.type === 'grit' || bonus.type === 'equip_melee') return '近接攻撃の装備が出来るようになる';
+  if (bonus.type === 'caster' || bonus.type === 'equip_magic') return '魔法攻撃の装備が出来るようになる';
+  if (bonus.type === 'pursuit' || bonus.type === 'equip_ranged') return '遠距離攻撃の装備が出来るようになる';
+  if (bonus.type === 'penet') return `敵の防御力を ${Math.round(bonus.value * 100)}% 分無視する`;
+  if (bonus.type === 'antagonism') return '味方を攻撃するようになる';
+  if (bonus.type === 'accuracy' || bonus.type === 'deity_accuracy') return '値が多いほどより多くの攻撃が命中するようになる';
+  if (bonus.type === 'evasion' || bonus.type === 'deity_evasion') return '値が多いほどより多くの攻撃を回避するようになる';
+  if (bonus.type === 'deity_move_first') return `先制の発動段階が ${bonus.value} 段階強化する`;
+  if (bonus.type === 'melee_attack') return '近接攻撃の攻撃倍率が上昇する';
+  if (bonus.type === 'ranged_attack') return '遠距離攻撃の攻撃倍率が上昇する';
+  if (bonus.type === 'magical_attack') return '魔法攻撃の攻撃倍率が上昇する';
+  if (bonus.type === 'physical_attack') return '遠距離攻撃・近接攻撃の攻撃倍率が上昇する';
+  if (bonus.type === 'physical_defense') return '物理耐性を強化する';
+  if (bonus.type === 'magical_defense') return '魔法耐性を強化する';
+  if (bonus.type === 'fire_offense') return '炎属性攻撃のダメージ倍率が上昇する';
+  if (bonus.type === 'ice_offense') return '氷属性攻撃のダメージ倍率が上昇する';
+  if (bonus.type === 'thunder_offense') return '雷属性攻撃のダメージ倍率が上昇する';
+  if (bonus.type === 'growth_xV') return `キャラクター個人のHP基礎値及びアイテムHP増加値が ${formatMultiplierValue(bonus.value)} 倍になる`;
+  if (bonus.type === 'ability_upgrade' && bonus.abilityId) return `アビリティ「${ABILITY_NAMES[bonus.abilityId] || bonus.abilityId}」を ${bonus.value} 段階強化する`;
+
+  if (bonus.type in UNLOCK_ABILITY_BONUS_LABELS) {
+    return '対象種族の解放アビリティを使用できるようになる';
+  }
+
+  return null;
+}
+
+function buildInlineBonusEntry(prefix: string, classId: string | undefined, bonus: Bonus, index: number): {
+  key: string;
+  label: string;
+  description: string | null;
+} | null {
+  const label = formatBonuses([bonus]);
+  if (label.length === 0) return null;
+  if (bonus.type === 'ability' && bonus.abilityId) {
+    return {
+      key: `${prefix}-${classId}-${bonus.abilityId}-${bonus.abilityLevel ?? 1}-${index}`,
+      label: `${ABILITY_NAMES[bonus.abilityId] || bonus.abilityId}Lv${bonus.abilityLevel || 1}`,
+      description: BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID.has(bonus.abilityId as AbilityId)
+        ? formatBonusAbilityHelpDescription(bonus.abilityId as AbilityId, bonus.abilityLevel || 1)
+        : getAbilityDescription(bonus.abilityId as AbilityId, bonus.abilityLevel || 1),
+    };
+  }
+
+  return {
+    key: `${prefix}-${classId}-${index}`,
+    label,
+    description: getBonusHelpDescription(bonus),
+  };
+}
+
 function getEnemyTypeCBonusText(enemy: EnemyDef): string {
   const cBonuses = (enemy.bonuses ?? []).filter((bonus) => isEnemyTypeCBonusType(bonus.type));
   return formatBonuses(cBonuses, { defenseMultiplierStyle: 'friendly' });
@@ -5068,45 +5133,34 @@ function PartyTab({
                     ? ((selectedMainClass?.masterBonuses ?? []) as Bonus[])
                     : ((selectedMainClass?.mainBonuses ?? []) as Bonus[])),
                 ];
+                const selectedMainBonusEntries = selectedMainBonusList
+                  .map((bonus, index) => buildInlineBonusEntry('main-class-bonus', selectedMainClassId, bonus, index))
+                  .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null);
 
                 return (
                   <>
                     <div className="mb-1 text-xs text-gray-600 select-none">
                       {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? '(師範)' : ''} |{' '}
-                      {selectedMainBonusList.map((bonus, index) => {
-                        const label = formatBonuses([bonus]);
-                        if (label.length === 0) return null;
-                        if (bonus.type === 'ability' && bonus.abilityId) {
-                          const abilityLabel = `${ABILITY_NAMES[bonus.abilityId] || bonus.abilityId}Lv${bonus.abilityLevel || 1}`;
-                          const key = `main-class-bonus-${selectedMainClassId}-${bonus.abilityId}-${bonus.abilityLevel ?? 1}-${index}`;
-                          return (
-                            <Fragment key={key}>
-                              {index > 0 && ', '}
-                              <button
-                                type="button"
-                                onPointerDown={(event) => event.stopPropagation()}
-                                onClick={(event) => handleInlineDetailHelpToggle(
-                                  key,
-                                  abilityLabel,
-                                  BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID.has(bonus.abilityId as AbilityId)
-                                    ? formatBonusAbilityHelpDescription(bonus.abilityId as AbilityId, bonus.abilityLevel || 1)
-                                    : getAbilityDescription(bonus.abilityId as AbilityId, bonus.abilityLevel || 1),
-                                  event,
-                                )}
-                                className="text-left hover:underline"
-                              >
-                                {abilityLabel}
-                              </button>
-                            </Fragment>
-                          );
-                        }
-                        return (
-                          <Fragment key={`main-class-bonus-${selectedMainClassId}-${index}`}>
-                            {index > 0 && ', '}
-                            {label}
-                          </Fragment>
-                        );
-                      })}
+                      {selectedMainBonusEntries.map((entry, index) => (
+                        <Fragment key={entry.key}>
+                          {index > 0 && ', '}
+                          {entry.description ? (
+                            <button
+                              type="button"
+                              onPointerDown={(event) => event.stopPropagation()}
+                              onClick={(event) => {
+                                if (!entry.description) return;
+                                handleInlineDetailHelpToggle(entry.key, entry.label, entry.description, event);
+                              }}
+                              className="text-left hover:underline"
+                            >
+                              {entry.label}
+                            </button>
+                          ) : (
+                            <span>{entry.label}</span>
+                          )}
+                        </Fragment>
+                      ))}
                     </div>
                     <div className="rounded border border-gray-200 bg-white p-2 text-xs">
                       {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Main Class selection */}
@@ -5155,45 +5209,34 @@ function PartyTab({
                   ...((selectedSubClass?.mainSubBonuses ?? []) as Bonus[]),
                   ...((selectedSubClass?.mainBonuses ?? []) as Bonus[]),
                 ];
+                const selectedSubBonusEntries = selectedSubBonusList
+                  .map((bonus, index) => buildInlineBonusEntry('sub-class-bonus', selectedSubClassId, bonus, index))
+                  .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null);
 
                 return (
                   <>
                     <div className="mb-1 text-xs text-gray-600 select-none">
                       {selectedSubClass?.name ?? '-'} |{' '}
-                      {selectedSubBonusList.map((bonus, index) => {
-                        const label = formatBonuses([bonus]);
-                        if (label.length === 0) return null;
-                        if (bonus.type === 'ability' && bonus.abilityId) {
-                          const abilityLabel = `${ABILITY_NAMES[bonus.abilityId] || bonus.abilityId}Lv${bonus.abilityLevel || 1}`;
-                          const key = `sub-class-bonus-${selectedSubClassId}-${bonus.abilityId}-${bonus.abilityLevel ?? 1}-${index}`;
-                          return (
-                            <Fragment key={key}>
-                              {index > 0 && ', '}
-                              <button
-                                type="button"
-                                onPointerDown={(event) => event.stopPropagation()}
-                                onClick={(event) => handleInlineDetailHelpToggle(
-                                  key,
-                                  abilityLabel,
-                                  BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID.has(bonus.abilityId as AbilityId)
-                                    ? formatBonusAbilityHelpDescription(bonus.abilityId as AbilityId, bonus.abilityLevel || 1)
-                                    : getAbilityDescription(bonus.abilityId as AbilityId, bonus.abilityLevel || 1),
-                                  event,
-                                )}
-                                className="text-left hover:underline"
-                              >
-                                {abilityLabel}
-                              </button>
-                            </Fragment>
-                          );
-                        }
-                        return (
-                          <Fragment key={`sub-class-bonus-${selectedSubClassId}-${index}`}>
-                            {index > 0 && ', '}
-                            {label}
-                          </Fragment>
-                        );
-                      })}
+                      {selectedSubBonusEntries.map((entry, index) => (
+                        <Fragment key={entry.key}>
+                          {index > 0 && ', '}
+                          {entry.description ? (
+                            <button
+                              type="button"
+                              onPointerDown={(event) => event.stopPropagation()}
+                              onClick={(event) => {
+                                if (!entry.description) return;
+                                handleInlineDetailHelpToggle(entry.key, entry.label, entry.description, event);
+                              }}
+                              className="text-left hover:underline"
+                            >
+                              {entry.label}
+                            </button>
+                          ) : (
+                            <span>{entry.label}</span>
+                          )}
+                        </Fragment>
+                      ))}
                     </div>
                     <div className="rounded border border-gray-200 bg-white p-2 text-xs">
                       {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Sub Class selection */}
@@ -5711,76 +5754,62 @@ function PartyTab({
                   if (key === 'melee_attack' || key === 'ranged_attack' || key === 'magical_attack' || key === 'physical_attack') {
                     const label = `${addNames[key]}+${Math.round(val * 100)}%`;
                     parts.push(label);
-                      if (key === 'melee_attack') helpRows.push({ label, description: '近接攻撃の攻撃倍率が上昇する' });
-                    if (key === 'ranged_attack') helpRows.push({ label, description: '遠距離攻撃の攻撃倍率が上昇する' });
-                    if (key === 'magical_attack') helpRows.push({ label, description: '魔法攻撃の攻撃倍率が上昇する' });
-                    if (key === 'physical_attack') helpRows.push({ label, description: '遠距離攻撃・近接攻撃の攻撃倍率が上昇する' });
+                    const description = getBonusHelpDescription({ type: key as BonusType, value: val });
+                    if (description) helpRows.push({ label, description });
                   } else if (key === 'physical_defense' || key === 'magical_defense') {
                     const label = `${addNames[key]}+${Math.round(val * 100)}%`;
                     parts.push(label);
-                    if (key === 'physical_defense') helpRows.push({ label, description: '物理耐性を強化する' });
-                    if (key === 'magical_defense') helpRows.push({ label, description: '魔法耐性を強化する' });
+                    const description = getBonusHelpDescription({ type: key as BonusType, value: val });
+                    if (description) helpRows.push({ label, description });
                   } else if (key === 'penet') {
                     const label = `${addNames[key]}+${Math.round(val * 100)}`;
                     parts.push(label);
-                    helpRows.push({ label, description: `敵の防御力を ${Math.round(val * 100)}% 分無視する` });
+                    const description = getBonusHelpDescription({ type: key as BonusType, value: val });
+                    if (description) helpRows.push({ label, description });
                   } else if (key === 'accuracy') {
                     const label = `${addNames[key]}+${Math.round(val * 1000)}`;
                     parts.push(label);
-                    helpRows.push({ label, description: '値が多いほどより多くの攻撃が命中するようになる' });
+                    const description = getBonusHelpDescription({ type: key as BonusType, value: val });
+                    if (description) helpRows.push({ label, description });
                   } else if (key === 'evasion') {
                     const label = `${addNames[key]}+${Math.round(val * 1000)}`;
                     parts.push(label);
-                    helpRows.push({ label, description: '値が多いほどより多くの攻撃を回避するようになる' });
+                    const description = getBonusHelpDescription({ type: key as BonusType, value: val });
+                    if (description) helpRows.push({ label, description });
                   } else if (key === 'growth_xV') {
                     const label = `${addNames[key] ?? key}${formatMultiplierValue(val)}倍`;
                     parts.push(label);
-                    helpRows.push({ label, description: `キャラクター個人のHP基礎値及びアイテムHP増加値が ${formatMultiplierValue(val)} 倍になる` });
+                    const description = getBonusHelpDescription({ type: key as BonusType, value: val });
+                    if (description) helpRows.push({ label, description });
                   } else {
                     const normalizedKey = key.replace(/\?+$/g, '');
                     const label = ['equip_melee', 'equip_ranged', 'equip_magic'].includes(normalizedKey)
                       ? `${addNames[normalizedKey] ?? normalizedKey}`
                       : `${addNames[normalizedKey] ?? normalizedKey}+${val}`;
                     parts.push(label);
-                    if (normalizedKey === 'equip_slot') helpRows.push({ label, description: `装備スロット数が ${val} 増える` });
-                    if (normalizedKey === 'equip_melee') helpRows.push({ label, description: '近接攻撃の装備が出来るようになる' });
-                    if (normalizedKey === 'equip_ranged') helpRows.push({ label, description: '遠距離攻撃の装備が出来るようになる' });
-                    if (normalizedKey === 'equip_magic') helpRows.push({ label, description: '魔法攻撃の装備が出来るようになる' });
-                    if (normalizedKey === 'upgrade_V') helpRows.push({ label, description: `アビリティが ${val} 段階強化する` });
-                    if (normalizedKey === 'antagonism') helpRows.push({ label: addNames[normalizedKey], description: '味方を攻撃するようになる' });
+                    const description = getBonusHelpDescription({ type: normalizedKey as BonusType, value: val });
+                    if (description) {
+                      helpRows.push({
+                        label: normalizedKey === 'antagonism' ? addNames[normalizedKey] : label,
+                        description,
+                      });
+                    }
                   }
                 }
               }
 
-              const bHelpRows = [
-                {
-                  key: 'vitality',
-                  short: '体',
-                  description: '基礎体力に {value} を加算（HP/物防に影響）',
-                },
-                {
-                  key: 'strength',
-                  short: '力',
-                  description: '基礎筋力に {value} を加算（近接火力に影響）',
-                },
-                {
-                  key: 'intelligence',
-                  short: '知',
-                  description: '基礎知性に {value} を加算（魔法火力に影響）',
-                },
-                {
-                  key: 'mind',
-                  short: '精',
-                  description: '基礎精神に {value} を加算（HP/魔防に影響）',
-                },
-              ]
+              const bHelpRows = ([
+                { key: 'vitality', short: '体' },
+                { key: 'strength', short: '力' },
+                { key: 'intelligence', short: '知' },
+                { key: 'mind', short: '精' },
+              ] as const)
                 .map((row) => {
-                  const value = additive[row.key as keyof typeof additive];
+                  const value = additive[row.key];
                   if (!value) return null;
-                  return {
-                    label: `${row.short}+${value}`,
-                    description: row.description.replace('{value}', `${value}`),
-                  };
+                  const description = getBonusHelpDescription({ type: row.key, value });
+                  if (!description) return null;
+                  return { label: `${row.short}+${value}`, description };
                 })
                 .filter((row): row is { label: string; description: string } => row !== null);
 
