@@ -51,10 +51,12 @@
 | Vulpinian | ヴァルピニアン | 肉食 | 🦊Fox | Y |
 | Felidian | フェリディアン | 肉食 | 😺Cat | Y |
 | Mustelid | マステリド | 肉食 | 🦡Ferret | N |
+|------|----------------|----------|--------|--------------|
 | Caninian | ケイナイアン | 雑食 | 🐶Dog | Y |
 | Ursan | ウルサン | 雑食 | 🐻Bear | Y |
 | Procyonian | プロキオニアン | 雑食 | 🦝Tanuki | Y |
 | Suinian | スイニアン | 雑食 | 🐗Boar | N |
+|------|----------------|----------|--------|--------------|
 | Leporian | レポリアン | 草食 | 🐰Rabbit | Y |
 | Cervin | セルヴィン | 草食 | 🦌Deer | Y |
 | Murid | ミュリッド | 草食 | 🐭Mouse | Y |
