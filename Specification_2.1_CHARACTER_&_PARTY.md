@@ -45,19 +45,20 @@
 | Murid      | 7, 8,11,14| `a.stealth`1      | (none)               | `c.bolt_x1.3`,     `c.grimoire_x1.3`  `c.penet+0.10` |
 | Procyonian |14, 8, 8, 6| `a.illusion`1     | (none)               | `c.grimoire_x1.3`, `c.katana_x1.2`,   `c.robe_x1.2`,  `c.equip_slot+1` |
 
-| races      | Japanese name  | concept   |
-|------------|----------------|-----------|
-| Caninian   | ケイナイアン   | 🐶Dog    |
-| Lupinian   | ルピニアン     | 🐺Wolf   |
-| Vulpinian  | ヴァルピニアン | 🦊Fox    |
-| Ursan      | ウルサン       | 🐻Bear   |
-| Felidian   | フェリディアン | 😺Cat    |
-| Mustelid   | マステリド     | 🦡Ferret |
-| Leporian   | レポリアン     | 🐰Rabbit |
-| Cervin     | セルヴィン     | 🦌Deer   |
-| Murid      | ミュリッド     | 🐭Mouse  |
-| Procyonian | プロキオニアン | 🦝Tanuki |
-
+| races | Japanese name | category | concept |
+|------|------|----------|--------|
+| Lupinian | ルピニアン | 肉食 | 🐺Wolf |
+| Vulpinian | ヴァルピニアン | 肉食 | 🦊Fox |
+| Felidian | フェリディアン | 肉食 | 😺Cat |
+| Mustelid | マステリド | 肉食 | 🦡Ferret |
+| Caninian | ケイナイアン | 雑食 | 🐶Dog |
+| Ursan | ウルサン | 雑食 | 🐻Bear |
+| Procyonian | プロキオニアン | 雑食 | 🦝Tanuki |
+| Suinian | スイニアン | 雑食 | 🐗Boar |
+| Leporian | レポリアン | 草食 | 🐰Rabbit |
+| Cervin | セルヴィン | 草食 | 🦌Deer |
+| Murid | ミュリッド | 草食 | 🐭Mouse |
+| Caprion | カプリオン | 草食 | 🐐Goat |
 
 **classes:**
 
