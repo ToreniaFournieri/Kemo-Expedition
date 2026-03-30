@@ -5062,16 +5062,51 @@ function PartyTab({
                 const selectedSubClassId = pendingEdits?.subClassId ?? char.subClassId;
                 const selectedMainClass = classById.get(selectedMainClassId);
                 const selectedMainClassIsMaster = selectedMainClassId === selectedSubClassId;
-                const selectedMainBonus = selectedMainClassIsMaster
-                  ? formatBonuses((selectedMainClass?.masterBonuses ?? []) as Bonus[])
-                  : formatBonuses((selectedMainClass?.mainBonuses ?? []) as Bonus[]);
-                const selectedMainSubBonus = formatBonuses((selectedMainClass?.mainSubBonuses ?? []) as Bonus[]);
-                const selectedMainBonusText = [selectedMainSubBonus, selectedMainBonus].filter(Boolean).join(', ');
+                const selectedMainBonusList = [
+                  ...((selectedMainClass?.mainSubBonuses ?? []) as Bonus[]),
+                  ...(selectedMainClassIsMaster
+                    ? ((selectedMainClass?.masterBonuses ?? []) as Bonus[])
+                    : ((selectedMainClass?.mainBonuses ?? []) as Bonus[])),
+                ];
 
                 return (
                   <>
                     <div className="mb-1 text-xs text-gray-600 select-none">
-                      {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? '(師範)' : ''} | {selectedMainBonusText}
+                      {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? '(師範)' : ''} |{' '}
+                      {selectedMainBonusList.map((bonus, index) => {
+                        const label = formatBonuses([bonus]);
+                        if (label.length === 0) return null;
+                        if (bonus.type === 'ability' && bonus.abilityId) {
+                          const abilityLabel = `${ABILITY_NAMES[bonus.abilityId] || bonus.abilityId}Lv${bonus.abilityLevel || 1}`;
+                          const key = `main-class-bonus-${selectedMainClassId}-${bonus.abilityId}-${bonus.abilityLevel ?? 1}-${index}`;
+                          return (
+                            <Fragment key={key}>
+                              {index > 0 && ', '}
+                              <button
+                                type="button"
+                                onPointerDown={(event) => event.stopPropagation()}
+                                onClick={(event) => handleInlineDetailHelpToggle(
+                                  key,
+                                  abilityLabel,
+                                  BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID.has(bonus.abilityId as AbilityId)
+                                    ? formatBonusAbilityHelpDescription(bonus.abilityId as AbilityId, bonus.abilityLevel || 1)
+                                    : getAbilityDescription(bonus.abilityId as AbilityId, bonus.abilityLevel || 1),
+                                  event,
+                                )}
+                                className="text-left hover:underline"
+                              >
+                                {abilityLabel}
+                              </button>
+                            </Fragment>
+                          );
+                        }
+                        return (
+                          <Fragment key={`main-class-bonus-${selectedMainClassId}-${index}`}>
+                            {index > 0 && ', '}
+                            {label}
+                          </Fragment>
+                        );
+                      })}
                     </div>
                     <div className="rounded border border-gray-200 bg-white p-2 text-xs">
                       {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Main Class selection */}
@@ -5116,14 +5151,49 @@ function PartyTab({
               {(() => {
                 const selectedSubClassId = pendingEdits?.subClassId ?? char.subClassId;
                 const selectedSubClass = classById.get(selectedSubClassId);
-                const selectedSubMainBonus = formatBonuses((selectedSubClass?.mainBonuses ?? []) as Bonus[]);
-                const selectedSubMainSubBonus = formatBonuses((selectedSubClass?.mainSubBonuses ?? []) as Bonus[]);
-                const selectedSubBonusText = [selectedSubMainSubBonus, selectedSubMainBonus].filter(Boolean).join(', ');
+                const selectedSubBonusList = [
+                  ...((selectedSubClass?.mainSubBonuses ?? []) as Bonus[]),
+                  ...((selectedSubClass?.mainBonuses ?? []) as Bonus[]),
+                ];
 
                 return (
                   <>
                     <div className="mb-1 text-xs text-gray-600 select-none">
-                      {selectedSubClass?.name ?? '-'} | {selectedSubBonusText}
+                      {selectedSubClass?.name ?? '-'} |{' '}
+                      {selectedSubBonusList.map((bonus, index) => {
+                        const label = formatBonuses([bonus]);
+                        if (label.length === 0) return null;
+                        if (bonus.type === 'ability' && bonus.abilityId) {
+                          const abilityLabel = `${ABILITY_NAMES[bonus.abilityId] || bonus.abilityId}Lv${bonus.abilityLevel || 1}`;
+                          const key = `sub-class-bonus-${selectedSubClassId}-${bonus.abilityId}-${bonus.abilityLevel ?? 1}-${index}`;
+                          return (
+                            <Fragment key={key}>
+                              {index > 0 && ', '}
+                              <button
+                                type="button"
+                                onPointerDown={(event) => event.stopPropagation()}
+                                onClick={(event) => handleInlineDetailHelpToggle(
+                                  key,
+                                  abilityLabel,
+                                  BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID.has(bonus.abilityId as AbilityId)
+                                    ? formatBonusAbilityHelpDescription(bonus.abilityId as AbilityId, bonus.abilityLevel || 1)
+                                    : getAbilityDescription(bonus.abilityId as AbilityId, bonus.abilityLevel || 1),
+                                  event,
+                                )}
+                                className="text-left hover:underline"
+                              >
+                                {abilityLabel}
+                              </button>
+                            </Fragment>
+                          );
+                        }
+                        return (
+                          <Fragment key={`sub-class-bonus-${selectedSubClassId}-${index}`}>
+                            {index > 0 && ', '}
+                            {label}
+                          </Fragment>
+                        );
+                      })}
                     </div>
                     <div className="rounded border border-gray-200 bg-white p-2 text-xs">
                       {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Sub Class selection */}
