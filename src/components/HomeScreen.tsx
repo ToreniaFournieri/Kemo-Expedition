@@ -5754,76 +5754,62 @@ function PartyTab({
                   if (key === 'melee_attack' || key === 'ranged_attack' || key === 'magical_attack' || key === 'physical_attack') {
                     const label = `${addNames[key]}+${Math.round(val * 100)}%`;
                     parts.push(label);
-                      if (key === 'melee_attack') helpRows.push({ label, description: '近接攻撃の攻撃倍率が上昇する' });
-                    if (key === 'ranged_attack') helpRows.push({ label, description: '遠距離攻撃の攻撃倍率が上昇する' });
-                    if (key === 'magical_attack') helpRows.push({ label, description: '魔法攻撃の攻撃倍率が上昇する' });
-                    if (key === 'physical_attack') helpRows.push({ label, description: '遠距離攻撃・近接攻撃の攻撃倍率が上昇する' });
+                    const description = getBonusHelpDescription({ type: key as BonusType, value: val });
+                    if (description) helpRows.push({ label, description });
                   } else if (key === 'physical_defense' || key === 'magical_defense') {
                     const label = `${addNames[key]}+${Math.round(val * 100)}%`;
                     parts.push(label);
-                    if (key === 'physical_defense') helpRows.push({ label, description: '物理耐性を強化する' });
-                    if (key === 'magical_defense') helpRows.push({ label, description: '魔法耐性を強化する' });
+                    const description = getBonusHelpDescription({ type: key as BonusType, value: val });
+                    if (description) helpRows.push({ label, description });
                   } else if (key === 'penet') {
                     const label = `${addNames[key]}+${Math.round(val * 100)}`;
                     parts.push(label);
-                    helpRows.push({ label, description: `敵の防御力を ${Math.round(val * 100)}% 分無視する` });
+                    const description = getBonusHelpDescription({ type: key as BonusType, value: val });
+                    if (description) helpRows.push({ label, description });
                   } else if (key === 'accuracy') {
                     const label = `${addNames[key]}+${Math.round(val * 1000)}`;
                     parts.push(label);
-                    helpRows.push({ label, description: '値が多いほどより多くの攻撃が命中するようになる' });
+                    const description = getBonusHelpDescription({ type: key as BonusType, value: val });
+                    if (description) helpRows.push({ label, description });
                   } else if (key === 'evasion') {
                     const label = `${addNames[key]}+${Math.round(val * 1000)}`;
                     parts.push(label);
-                    helpRows.push({ label, description: '値が多いほどより多くの攻撃を回避するようになる' });
+                    const description = getBonusHelpDescription({ type: key as BonusType, value: val });
+                    if (description) helpRows.push({ label, description });
                   } else if (key === 'growth_xV') {
                     const label = `${addNames[key] ?? key}${formatMultiplierValue(val)}倍`;
                     parts.push(label);
-                    helpRows.push({ label, description: `キャラクター個人のHP基礎値及びアイテムHP増加値が ${formatMultiplierValue(val)} 倍になる` });
+                    const description = getBonusHelpDescription({ type: key as BonusType, value: val });
+                    if (description) helpRows.push({ label, description });
                   } else {
                     const normalizedKey = key.replace(/\?+$/g, '');
                     const label = ['equip_melee', 'equip_ranged', 'equip_magic'].includes(normalizedKey)
                       ? `${addNames[normalizedKey] ?? normalizedKey}`
                       : `${addNames[normalizedKey] ?? normalizedKey}+${val}`;
                     parts.push(label);
-                    if (normalizedKey === 'equip_slot') helpRows.push({ label, description: `装備スロット数が ${val} 増える` });
-                    if (normalizedKey === 'equip_melee') helpRows.push({ label, description: '近接攻撃の装備が出来るようになる' });
-                    if (normalizedKey === 'equip_ranged') helpRows.push({ label, description: '遠距離攻撃の装備が出来るようになる' });
-                    if (normalizedKey === 'equip_magic') helpRows.push({ label, description: '魔法攻撃の装備が出来るようになる' });
-                    if (normalizedKey === 'upgrade_V') helpRows.push({ label, description: `アビリティが ${val} 段階強化する` });
-                    if (normalizedKey === 'antagonism') helpRows.push({ label: addNames[normalizedKey], description: '味方を攻撃するようになる' });
+                    const description = getBonusHelpDescription({ type: normalizedKey as BonusType, value: val });
+                    if (description) {
+                      helpRows.push({
+                        label: normalizedKey === 'antagonism' ? addNames[normalizedKey] : label,
+                        description,
+                      });
+                    }
                   }
                 }
               }
 
-              const bHelpRows = [
-                {
-                  key: 'vitality',
-                  short: '体',
-                  description: '基礎体力に {value} を加算（HP/物防に影響）',
-                },
-                {
-                  key: 'strength',
-                  short: '力',
-                  description: '基礎筋力に {value} を加算（近接火力に影響）',
-                },
-                {
-                  key: 'intelligence',
-                  short: '知',
-                  description: '基礎知性に {value} を加算（魔法火力に影響）',
-                },
-                {
-                  key: 'mind',
-                  short: '精',
-                  description: '基礎精神に {value} を加算（HP/魔防に影響）',
-                },
-              ]
+              const bHelpRows = ([
+                { key: 'vitality', short: '体' },
+                { key: 'strength', short: '力' },
+                { key: 'intelligence', short: '知' },
+                { key: 'mind', short: '精' },
+              ] as const)
                 .map((row) => {
-                  const value = additive[row.key as keyof typeof additive];
+                  const value = additive[row.key];
                   if (!value) return null;
-                  return {
-                    label: `${row.short}+${value}`,
-                    description: row.description.replace('{value}', `${value}`),
-                  };
+                  const description = getBonusHelpDescription({ type: row.key, value });
+                  if (!description) return null;
+                  return { label: `${row.short}+${value}`, description };
                 })
                 .filter((row): row is { label: string; description: string } => row !== null);
 
