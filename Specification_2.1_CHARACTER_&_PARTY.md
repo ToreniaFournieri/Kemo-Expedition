@@ -398,7 +398,7 @@ Party.`d.HP` =
      - equipment: `1104`, `1106`,`1104`, `1106`
   4. "ロップ", Leporian, 狩(巡), Nimble, 海
      - equipment: `1107`, `1108`, `1109`
-  5. "ラス", Felidian, 賢(防), Dexterous, 適
+  5. "ラス", Felidian, 賢(防), Nimble, 適
      - equipment: `1110`, `1111`, `1112` 
   6. "セルヴァ", Cervin, 魔(魔), Stubborn, 腕
      - equipment: `1110`, `1112`
