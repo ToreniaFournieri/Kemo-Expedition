@@ -5144,7 +5144,7 @@ function PartyTab({
                   return (
                     <>
                       <div className="mb-1 text-xs text-gray-600 select-none">
-                        種族: <RaceIcon race={selectedRace} className="inline-block h-4 w-4 mx-1 align-text-bottom" />
+                        <span className="font-bold">種族</span>: <RaceIcon race={selectedRace} className="inline-block h-4 w-4 mx-1 align-text-bottom" />
                         {selectedRace.name} | 体{selectedRace.stats.vitality},力{selectedRace.stats.strength},知{selectedRace.stats.intelligence},精{selectedRace.stats.mind} | {selectedRaceBonuses}
                       </div>
                       <div className="grid grid-cols-3 gap-1">
@@ -5186,7 +5186,7 @@ function PartyTab({
                   <>
                     <div className="rounded border border-gray-200 bg-white p-2 text-xs">
                       <div className="mb-1 text-xs text-gray-600 select-none">
-                        メインクラス: {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? '(師範)' : ''} |{' '}
+                        <span className="font-bold">メインクラス</span>: {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? '(師範)' : ''} |{' '}
                         {selectedMainBonusEntries.map((entry, index) => (
                           <Fragment key={entry.key}>
                             {index > 0 && ', '}
@@ -5261,7 +5261,7 @@ function PartyTab({
                   <>
                     <div className="rounded border border-gray-200 bg-white p-2 text-xs">
                       <div className="mb-1 text-xs text-gray-600 select-none">
-                        サブクラス: {selectedSubClass?.name ?? '-'} |{' '}
+                        <span className="font-bold">サブクラス</span>: {selectedSubClass?.name ?? '-'} |{' '}
                         {selectedSubBonusEntries.map((entry, index) => (
                           <Fragment key={entry.key}>
                             {index > 0 && ', '}
@@ -5323,57 +5323,12 @@ function PartyTab({
             <div>
               <div className="rounded border border-gray-200 bg-white p-2 text-xs">
                 {(() => {
-                  const selectedPredispositionId = pendingEdits?.predispositionId ?? char.predispositionId;
-                  const selectedPredisposition = PREDISPOSITIONS.find((p) => p.id === selectedPredispositionId) ?? PREDISPOSITIONS[0];
-                  return (
-                    <>
-                      <div className="mb-1 text-xs text-gray-600 select-none">
-                        性格: {selectedPredisposition.name} | {formatBonuses(selectedPredisposition.bonuses as Bonus[])}
-                      </div>
-                      <div className="grid grid-cols-4 gap-1">
-                        {predispositionCategoryDefinitions.map((category) => (
-                          <div key={`pred-${category.label}`} className="space-y-1">
-                            <div className="text-center text-[11px] text-gray-500 whitespace-nowrap">{category.label}</div>
-                            <div className="flex w-full">
-                              {category.ids.map((predispositionId, index) => {
-                                const predispositionData = PREDISPOSITIONS.find((p) => p.id === predispositionId);
-                                if (!predispositionData) return null;
-                                const isSelected = selectedPredispositionId === predispositionId;
-                                return (
-                                  <button
-                                    key={`pred-${category.label}-${predispositionId}`}
-                                    type="button"
-                                    onClick={() => setPendingEdits({ ...pendingEdits, predispositionId })}
-                                    className={`min-w-0 flex-1 px-0 py-1 text-xs border ${
-                                      index === 0 ? 'rounded-l' : index === category.ids.length - 1 ? 'rounded-r' : ''
-                                    } ${
-                                      isSelected
-                                        ? 'bg-sub text-white border-sub'
-                                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
-                                    }`}
-                                  >
-                                    {predispositionData.shortName ?? PREDISPOSITION_SHORT_NAMES[predispositionId] ?? predispositionData.name}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  );
-                })()}
-              </div>
-            </div>
-            <div>
-              <div className="rounded border border-gray-200 bg-white p-2 text-xs">
-                {(() => {
                   const selectedLineageId = pendingEdits?.lineageId ?? char.lineageId;
                   const selectedLineage = LINEAGES.find((l) => l.id === selectedLineageId) ?? LINEAGES[0];
                   return (
                     <>
                       <div className="mb-1 text-xs text-gray-600 select-none">
-                        系譜: {selectedLineage.name} | {formatBonuses(selectedLineage.bonuses as Bonus[])}
+                        <span className="font-bold">系譜</span>: {selectedLineage.name} | {formatBonuses(selectedLineage.bonuses as Bonus[])}
                       </div>
                       <div className="grid grid-cols-4 gap-1">
                         {lineageCategoryDefinitions.map((category) => (
@@ -5398,6 +5353,51 @@ function PartyTab({
                                     }`}
                                   >
                                     {lineageData.shortName ?? LINEAGE_SHORT_NAMES[lineageId] ?? lineageData.name}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+            <div>
+              <div className="rounded border border-gray-200 bg-white p-2 text-xs">
+                {(() => {
+                  const selectedPredispositionId = pendingEdits?.predispositionId ?? char.predispositionId;
+                  const selectedPredisposition = PREDISPOSITIONS.find((p) => p.id === selectedPredispositionId) ?? PREDISPOSITIONS[0];
+                  return (
+                    <>
+                      <div className="mb-1 text-xs text-gray-600 select-none">
+                        <span className="font-bold">性格</span>: {selectedPredisposition.name} | {formatBonuses(selectedPredisposition.bonuses as Bonus[])}
+                      </div>
+                      <div className="grid grid-cols-4 gap-1">
+                        {predispositionCategoryDefinitions.map((category) => (
+                          <div key={`pred-${category.label}`} className="space-y-1">
+                            <div className="text-center text-[11px] text-gray-500 whitespace-nowrap">{category.label}</div>
+                            <div className="flex w-full">
+                              {category.ids.map((predispositionId, index) => {
+                                const predispositionData = PREDISPOSITIONS.find((p) => p.id === predispositionId);
+                                if (!predispositionData) return null;
+                                const isSelected = selectedPredispositionId === predispositionId;
+                                return (
+                                  <button
+                                    key={`pred-${category.label}-${predispositionId}`}
+                                    type="button"
+                                    onClick={() => setPendingEdits({ ...pendingEdits, predispositionId })}
+                                    className={`min-w-0 flex-1 px-0 py-1 text-xs border ${
+                                      index === 0 ? 'rounded-l' : index === category.ids.length - 1 ? 'rounded-r' : ''
+                                    } ${
+                                      isSelected
+                                        ? 'bg-sub text-white border-sub'
+                                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
+                                    }`}
+                                  >
+                                    {predispositionData.shortName ?? PREDISPOSITION_SHORT_NAMES[predispositionId] ?? predispositionData.name}
                                   </button>
                                 );
                               })}
