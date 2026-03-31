@@ -889,7 +889,7 @@ function normalizeSleepinessState(raw: unknown): SleepinessState {
 
 function normalizeCharacterAutoEquipmentMode(raw: unknown): 0 | 1 | 2 {
   if (raw === 0 || raw === 1 || raw === 2) return raw;
-  return 1;
+  return 2;
 }
 
 // SpecRef: 5.1.1 | Party State Machine | sleepiness from t.sleepiness_of_party_bag
@@ -930,7 +930,7 @@ function createInitialParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
-    autoEquipmentMode: 1,
+    autoEquipmentMode: 2,
     equipment: setup.equipmentIds.map((itemId) => ({
       ...getItemById(itemId)!,
       enhancement: 0,
@@ -986,7 +986,7 @@ function createSecondParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
-    autoEquipmentMode: 1,
+    autoEquipmentMode: 2,
     equipment: [],
   }));
 
@@ -1038,7 +1038,7 @@ function createThirdParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
-    autoEquipmentMode: 1,
+    autoEquipmentMode: 2,
     equipment: [],
   }));
 
@@ -1090,7 +1090,7 @@ function createFourthParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
-    autoEquipmentMode: 1,
+    autoEquipmentMode: 2,
     equipment: [],
   }));
 
@@ -1142,7 +1142,7 @@ function createFifthParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
-    autoEquipmentMode: 1,
+    autoEquipmentMode: 2,
     equipment: [],
   }));
 
@@ -1194,7 +1194,7 @@ function createSixthParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
-    autoEquipmentMode: 1,
+    autoEquipmentMode: 2,
     equipment: [],
   }));
 
@@ -3063,6 +3063,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (charIndex === -1) return state;
 
       const character = currentParty.characters[charIndex];
+      // SpecRef: 8.2.4 | Equipment management | three-state toggle(手動/補助/一任)
+      const isManualEquipmentChange = typeof action.partyIndex === 'undefined';
+      const nextAutoEquipmentMode = isManualEquipmentChange && character.autoEquipmentMode === 2
+        ? 1
+        : character.autoEquipmentMode;
       let newInventory = { ...state.global.inventory };
       let newJewels = { ...state.global.jewels };
       let newGold = state.global.gold;
@@ -3083,7 +3088,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         const variant = newInventory[action.itemKey];
         if (variant && variant.count > 0) {
           newInventory = removeItemFromInventory(newInventory, action.itemKey);
-          const equippedCharacter = replaceCharacterEquipment(character, action.slotIndex, { ...variant.item, jewel: null });
+          const equippedCharacter = {
+            ...replaceCharacterEquipment(character, action.slotIndex, { ...variant.item, jewel: null }),
+            autoEquipmentMode: nextAutoEquipmentMode,
+          };
           const newCharacters = [...currentParty.characters];
           newCharacters[charIndex] = equippedCharacter;
 
@@ -3101,7 +3109,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         }
       }
 
-      const unequippedCharacter = replaceCharacterEquipment(character, action.slotIndex, null);
+      const unequippedCharacter = {
+        ...replaceCharacterEquipment(character, action.slotIndex, null),
+        autoEquipmentMode: nextAutoEquipmentMode,
+      };
       const newCharacters = [...currentParty.characters];
       newCharacters[charIndex] = unequippedCharacter;
 
