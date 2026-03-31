@@ -390,17 +390,17 @@ Party.`d.HP` =
 - unlocked deity: none (all of other deity is unlocked)
 
 - PT1 Party initial condition.
-  1. "ケモ", Caninian, 戦(盗), Canny, House of the Unmoving
+  1. "ケモ", Caninian, 戦(学), Inquisitive, 断
      - equipment: `1101`, `1103`
-  2. "ゴン", Vulpinian, 剣(侍), Chivalric, House of War Spirit
+  2. "ゴン", Vulpinian, 剣(侍), Aggressive, 砂
      - equipment: `1104`, `1104`
-  3. "ソウタ", Procyonian, 忍(君), Persistent, House of the Breaking Hand
+  3. "ソウタ", Procyonian, 忍(君), Evasive, 穹
      - equipment: `1104`, `1106`
-  4. "ロップ", Leporian, 狩(賢), Shikon, House of Far Sight
+  4. "ロップ", Leporian, 狩(賢), Nimble, 海
      - equipment: `1107`, `1108`, `1109`
-  5. "ラス", Felidian, 賢(巡), Dexterous, House of Steel Oath
+  5. "ラス", Felidian, 賢(巡), Dexterous, 適
      - equipment: `1110`, `1111`, `1112` 
-  6. "セルヴァ", Cervin, 魔(魔), Canny, House of Guiding Thought
+  6. "セルヴァ", Cervin, 魔(魔), Stubborn, 桃
      - equipment: `1110`
 
 - Party initial inventory.
