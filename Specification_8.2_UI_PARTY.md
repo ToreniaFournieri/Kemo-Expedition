@@ -51,8 +51,8 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
 - *UI Formatting Note:* When displaying aggregated c.multipliers (e.g., 鎧 x1.8), always round the internal product to the first decimal place for a cleaner interface. 
 
 - Bonus(ボーナス) Display order:
-  - Only display bonuses that are present (i.e., `c.*` exists and value ≠ x1.0).
   - "ボーナス: 装備+N, (Combat style set), (Others), 鎧xN, 衣xN, 盾xN, 成長xN, etc.."
+    - `Combat style` is shared with automation logic part. 
     - Default order: [近接装備, 剣xN, 刀xN, 手xN], [遠距離装備, 矢xN, ボxN, 弓xN], [魔法装備, 杖xN, 書xN, 媒xN]
   - If `Combat style` is Melee: Combat style set is 近接装備, 剣xN, 刀xN, 手xN
   - If `Combat style` is Ranged: Combat style set is 遠距離装備, 矢xN, ボxN, 弓xN
