@@ -216,13 +216,13 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 #### 4.1.4 Base data structure (enemy)
 
 - **Base status**
-| `d.HP` | `a.ability` | `c.accuracy` | `c.evasion` | `d.ranged_attack` | `d.magical_attack` | `d.melee_attack` | `d.ranged_attack_amplifier` | `d.magical_attack_amplifier` | `d.melee_attack_amplifier` | `d.physical_defense` | `d.magical_defense` | `d.experience` |
+| `d.HP` | `a.ability` | `d.accuracy` | `d.evasion` | `d.ranged_attack` | `d.magical_attack` | `d.melee_attack` | `d.ranged_attack_amplifier` | `d.magical_attack_amplifier` | `d.melee_attack_amplifier` | `d.physical_defense` | `d.magical_defense` | `d.experience` |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 100 | (none) | 0.00 | 0.00 | 46 | 41 | 60 | x1.0 | x1.0 | x1.0 | 20 | 20 | 5 |
 
 - **Class modifier**
 
-| Class | `d.HP_modifier` | `a.ability_add` | `c.accuracy_add` | `c.evasion_add` | `d.ranged_attack_modifier` | `d.ranged_NoA` | `d.ranged_attack_amplifier_modifier` | `d.magical_attack_modifier` | `d.magical_NoA` |  `d.magical_attack_amplifier_modifier` | `d.melee_attack_modifier` | `d.melee_NoA` | `d.melee_attack_amplifier_modifier` | `d.physical_defense_modifier` | `d.magical_defense_modifier` | `d.experience` |
+| Class | `d.HP_modifier` | `a.ability_add` | `d.accuracy_add` | `d.evasion_add` | `d.ranged_attack_modifier` | `d.ranged_NoA` | `d.ranged_attack_amplifier_modifier` | `d.magical_attack_modifier` | `d.magical_NoA` |  `d.magical_attack_amplifier_modifier` | `d.melee_attack_modifier` | `d.melee_NoA` | `d.melee_attack_amplifier_modifier` | `d.physical_defense_modifier` | `d.magical_defense_modifier` | `d.experience` |
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
 | class.duelist | x1.00 | `a.counter`1 | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x1.3 | x1.2 | 4 | x0.8 | x0.8 | x1.0 |
 | class.samurai | x0.80 | `a.iaigiri`1 | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x2.0 | x1.0 | 1 | x0.7 | x0.7 | x0.8 |
