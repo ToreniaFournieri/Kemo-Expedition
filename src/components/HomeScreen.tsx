@@ -1,4 +1,4 @@
-import { Fragment, useState, useEffect, useRef, useCallback, type ChangeEvent, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
+import { Fragment, useState, useEffect, useRef, useCallback, useMemo, type ChangeEvent, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
 import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId, type BattleLogEntry } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import {
@@ -2113,7 +2113,11 @@ export function HomeScreen({
   const primarySplitTabContentRef = useRef<HTMLDivElement | null>(null);
   const secondarySplitTabContentRef = useRef<HTMLDivElement | null>(null);
 
-  const currentParty = state.parties[state.selectedPartyIndex];
+  const safeSelectedPartyIndex = useMemo(() => {
+    if (state.parties.length === 0) return 0;
+    return Math.min(Math.max(state.selectedPartyIndex, 0), state.parties.length - 1);
+  }, [state.parties.length, state.selectedPartyIndex]);
+  const currentParty = state.parties[safeSelectedPartyIndex] ?? state.parties[0];
   const prevPartyLogsRef = useRef(state.parties.map((party) => party.lastExpeditionLog));
   const prevPartyLevelsRef = useRef(state.parties.map((party) => party.level));
   const prevPartyCountRef = useRef(state.parties.length);
@@ -2814,6 +2818,13 @@ export function HomeScreen({
   useEffect(() => {
     gameModeRef.current = gameMode;
   }, [gameMode]);
+
+  useEffect(() => {
+    if (state.parties.length === 0) return;
+    if (state.selectedPartyIndex !== safeSelectedPartyIndex) {
+      actions.selectParty(safeSelectedPartyIndex);
+    }
+  }, [actions, safeSelectedPartyIndex, state.parties.length, state.selectedPartyIndex]);
 
   const afkSummaryBaselineRef = useRef<Array<{ Clear: number; Turned_Back: number; Draw_Retreat: number; Wounded_Retreat: number; Defeat: number; donatedGold: number; savedGold: number }> | null>(null);
   const shouldShowAfkSummaryRef = useRef(false);
@@ -3831,7 +3842,7 @@ export function HomeScreen({
       return (
         <PartyTab
           parties={state.parties}
-          selectedPartyIndex={state.selectedPartyIndex}
+          selectedPartyIndex={safeSelectedPartyIndex}
           party={currentParty}
           partyStats={partyStats}
           characterStats={characterStats}
