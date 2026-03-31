@@ -436,5 +436,5 @@ Party.`d.HP` =
 
 - PT6 initial condition (when unlocked)
   - deity: `God of Resonance`
-  - party member race: all Mustelid
+  - party member race: all Procyonian
   - 7.1.1 AUTO equipment logic for all party member.
