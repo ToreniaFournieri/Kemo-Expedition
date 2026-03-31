@@ -101,7 +101,7 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
 - Sub Class selection: "**サブクラス**: 魔法使い | 魔法装備, 杖x1.4, 共鳴Lv1"
   - Display the selected sub class summary as a single-line header above the selector buttons.
   - category tab is same format that of main class
-  - Displays selected class name and unique bonus (main bonus only)
+  - Displays selected class name and unique bonus (main/sub bonuses only)
 - Lineage selection: "**系譜**: 砂塵の系譜 | 剣x1.2"
   - Display the selected lineage summary as a single-line header above the selector buttons.
   - Category tabs: single-row, no wrap, fit within one viewport width.
