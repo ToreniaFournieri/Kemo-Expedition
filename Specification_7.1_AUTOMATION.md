@@ -35,7 +35,7 @@
     - 4th slot → `i.armor`
   - because these are the earliest categories in the order that are not yet satisfied.
 
-- Duelist class:
+- class.duelist:
 
 | order | item category |
 |-|-|
@@ -51,24 +51,8 @@
 | 10 | `i.robe` |
 | 11 | `i.melee` |
 
--  Ninja class:
 
-| order | item category |
-|-|-|
-| 1 | `i.melee` |
-| 2 | `i.gauntlet` |
-| 3 | `i.armor` |
-| 4 | `i.robe` |
-| 5 | `i.melee` |
-| 6 | `i.melee` |
-| 7 | `i.gauntlet` |
-| 8 | `i.melee` |
-| 9 | `i.armor` |
-| 10 | `i.robe` |
-| 11 | `i.melee` |
-
-
-- Samurai class:
+- class.samurai:
 
 | order | item category |
 |-|-|
@@ -84,42 +68,23 @@
 | 10 | `i.robe` |
 | 11 | `i.gauntlet` |
 
-
-- Fighter Class:
-
-| order | item category |
-|-|-|
-| 1 | `i.armor` |
-| 2 | `i.melee` |
-| 3 | `i.robe` |
-| 4 | `i.gauntlet` |
-| 5 | `i.melee` |
-| 6 | `i.shield` |
-| 7 | `i.armor` |
-| 8 | `i.robe` |
-| 9 | `i.melee` |
-| 10 | `i.shield` |
-| 11 | `i.melee` |
-
-- Lord Class:
+- class.sword-saint:
 
 | order | item category |
 |-|-|
 | 1 | `i.melee` |
-| 2 | `i.armor` |
-| 3 | `i.robe` |
-| 4 | `i.melee` |
-| 5 | `i.gauntlet` |
-| 6 | `i.melee` |
-| 7 | `i.armor` |
-| 8 | `i.robe` |
-| 9 | `i.melee` |
-| 10 | `i.shield` |
+| 2 | `i.gauntlet` |
+| 3 | `i.armor` |
+| 4 | `i.robe` |
+| 5 | `i.melee` |
+| 6 | `i.armor` |
+| 7 | `i.gauntlet` |
+| 8 | `i.melee` |
+| 9 | `i.armor` |
+| 10 | `i.robe` |
 | 11 | `i.melee` |
-| 12 | `i.gauntlet` |
 
-
-- Rogue/ Ranger Class:
+- class.ranger:
 
 | order | item category |
 |-|-|
@@ -135,7 +100,39 @@
 | 10 | `i.robe` |
 | 11 | `i.ranged` |
 
-- Wizard Class:
+- class.striker:
+
+| order | item category |
+|-|-|
+| 1 | `i.ranged` |
+| 2 | `i.archery` |
+| 3 | `i.armor` |
+| 4 | `i.robe` |
+| 5 | `i.ranged` |
+| 6 | `i.arrow` |
+| 7 | `i.archery` |
+| 8 | `i.ranged` |
+| 9 | `i.armor` |
+| 10 | `i.robe` |
+| 11 | `i.ranged` |
+
+- class.ninja:
+
+| order | item category |
+|-|-|
+| 1 | `i.ranged` |
+| 2 | `i.archery` |
+| 3 | `i.armor` |
+| 4 | `i.robe` |
+| 5 | `i.ranged` |
+| 6 | `i.arrow` |
+| 7 | `i.archery` |
+| 8 | `i.ranged` |
+| 9 | `i.armor` |
+| 10 | `i.robe` |
+| 11 | `i.ranged` |
+
+- class.wizard:
 
 | order | item category |
 |-|-|
@@ -151,7 +148,7 @@
 | 10 | `i.robe` |
 | 11 | `i.magic`  |
 
-- Sage/ Pilgrim Class:
+- class.sage:
 
 | order | item category |
 |-|-|
@@ -166,6 +163,74 @@
 | 9 | `i.magic`  |
 | 10 | `i.robe` |
 | 11 | `i.catalyst` |
+
+- class.alchemist:
+
+| order | item category |
+|-|-|
+| 1 | `i.magic`  |
+| 2 | `i.catalyst` |
+| 3 | `i.armor` |
+| 4 | `i.robe` |
+| 5 | `i.magic`  |
+| 6 | `i.magic`  |
+| 7 | `i.catalyst` |
+| 8 | `i.magic`  |
+| 9 | `i.magic`  |
+| 10 | `i.robe` |
+| 11 | `i.catalyst` |
+
+
+- class.guardian:
+
+| order | item category |
+|-|-|
+| 1 | `i.armor` |
+| 2 | `i.weapon` |
+| 3 | `i.robe` |
+| 4 | `i.gauntlet` |
+| 5 | `i.weapon` |
+| 6 | `i.shield` |
+| 7 | `i.armor` |
+| 8 | `i.robe` |
+| 9 | `i.weapon` |
+| 10 | `i.shield` |
+| 11 | `i.weapon` |
+
+- class.lord:
+
+| order | item category |
+|-|-|
+| 1 | `i.weapon` |
+| 2 | `i.armor` |
+| 3 | `i.robe` |
+| 4 | `i.weapon` |
+| 5 | `i.gauntlet` |
+| 6 | `i.weapon` |
+| 7 | `i.armor` |
+| 8 | `i.robe` |
+| 9 | `i.weapon` |
+| 10 | `i.shield` |
+| 11 | `i.weapon` |
+| 12 | `i.gauntlet` |
+
+- class.pilgrim:
+
+| order | item category |
+|-|-|
+| 1 | `i.weapon` |
+| 2 | `i.armor` |
+| 3 | `i.robe` |
+| 4 | `i.weapon` |
+| 5 | `i.gauntlet` |
+| 6 | `i.weapon` |
+| 7 | `i.armor` |
+| 8 | `i.robe` |
+| 9 | `i.weapon` |
+| 10 | `i.shield` |
+| 11 | `i.weapon` |
+| 12 | `i.gauntlet` |
+
 
 - **Item selection from a specific item category**
 - When auto-equipment selects items from a specific item category, the following procedure is used:
