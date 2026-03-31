@@ -5115,7 +5115,6 @@ function PartyTab({
         {editingCharacter === selectedCharacter && !showEditConfirm ? (
           <div className="space-y-2 text-sm">
             <div>
-              <label className="block text-gray-500">種族</label>
               <div className="mt-2 rounded border border-gray-200 bg-white p-2 text-xs">
                 {(() => {
                   const selectedRaceId = pendingEdits?.raceId ?? char.raceId;
@@ -5127,6 +5126,7 @@ function PartyTab({
                       <button
                         key={`race-image-${race.id}`}
                         type="button"
+                        aria-label={race.name}
                         onClick={() => handleRaceChange(race.id)}
                         className={`min-w-0 flex-1 px-0 py-1 text-xs border ${
                           isSelectedRace
@@ -5134,9 +5134,8 @@ function PartyTab({
                             : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
                         } ${race.id === 'lupinian' || race.id === 'caninian' || race.id === 'leporian' ? 'rounded-l' : race.id === 'felidian' || race.id === 'procyonian' || race.id === 'murid' ? 'rounded-r' : ''}`}
                       >
-                        <span className="flex items-center justify-center gap-1">
-                          <RaceIcon race={race} className="h-4 w-4 shrink-0" />
-                          <span>{race.name}</span>
+                        <span className="flex items-center justify-center">
+                          <RaceIcon race={race} className="h-5 w-5 shrink-0" />
                         </span>
                       </button>
                     );
@@ -5145,7 +5144,7 @@ function PartyTab({
                   return (
                     <>
                       <div className="mb-1 text-xs text-gray-600 select-none">
-                        <RaceIcon race={selectedRace} className="inline-block h-4 w-4 mr-1 align-text-bottom" />
+                        種族: <RaceIcon race={selectedRace} className="inline-block h-4 w-4 mx-1 align-text-bottom" />
                         {selectedRace.name} | 体{selectedRace.stats.vitality},力{selectedRace.stats.strength},知{selectedRace.stats.intelligence},精{selectedRace.stats.mind} | {selectedRaceBonuses}
                       </div>
                       <div className="grid grid-cols-3 gap-1">
@@ -5168,7 +5167,6 @@ function PartyTab({
               </div>
             </div>
             <div>
-              <label className="block text-gray-500">メインクラス</label>
               {(() => {
                 const selectedMainClassId = pendingEdits?.mainClassId ?? char.mainClassId;
                 const selectedSubClassId = pendingEdits?.subClassId ?? char.subClassId;
@@ -5186,30 +5184,30 @@ function PartyTab({
 
                 return (
                   <>
-                    <div className="mb-1 text-xs text-gray-600 select-none">
-                      {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? '(師範)' : ''} |{' '}
-                      {selectedMainBonusEntries.map((entry, index) => (
-                        <Fragment key={entry.key}>
-                          {index > 0 && ', '}
-                          {entry.description ? (
-                            <button
-                              type="button"
-                              onPointerDown={(event) => event.stopPropagation()}
-                              onClick={(event) => {
-                                if (!entry.description) return;
-                                handleInlineDetailHelpToggle(entry.key, entry.label, entry.description, event);
-                              }}
-                              className="text-left hover:underline"
-                            >
-                              {entry.label}
-                            </button>
-                          ) : (
-                            <span>{entry.label}</span>
-                          )}
-                        </Fragment>
-                      ))}
-                    </div>
                     <div className="rounded border border-gray-200 bg-white p-2 text-xs">
+                      <div className="mb-1 text-xs text-gray-600 select-none">
+                        メインクラス: {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? '(師範)' : ''} |{' '}
+                        {selectedMainBonusEntries.map((entry, index) => (
+                          <Fragment key={entry.key}>
+                            {index > 0 && ', '}
+                            {entry.description ? (
+                              <button
+                                type="button"
+                                onPointerDown={(event) => event.stopPropagation()}
+                                onClick={(event) => {
+                                  if (!entry.description) return;
+                                  handleInlineDetailHelpToggle(entry.key, entry.label, entry.description, event);
+                                }}
+                                className="text-left hover:underline"
+                              >
+                                {entry.label}
+                              </button>
+                            ) : (
+                              <span>{entry.label}</span>
+                            )}
+                          </Fragment>
+                        ))}
+                      </div>
                       {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Main Class selection */}
                       <div className="grid grid-cols-4 gap-1">
                         {classCategoryDefinitions.map((category) => (
@@ -5248,7 +5246,6 @@ function PartyTab({
               })()}
             </div>
             <div>
-              <label className="block text-gray-500">サブクラス</label>
               {(() => {
                 const selectedSubClassId = pendingEdits?.subClassId ?? char.subClassId;
                 const selectedSubClass = classById.get(selectedSubClassId);
@@ -5262,30 +5259,30 @@ function PartyTab({
 
                 return (
                   <>
-                    <div className="mb-1 text-xs text-gray-600 select-none">
-                      {selectedSubClass?.name ?? '-'} |{' '}
-                      {selectedSubBonusEntries.map((entry, index) => (
-                        <Fragment key={entry.key}>
-                          {index > 0 && ', '}
-                          {entry.description ? (
-                            <button
-                              type="button"
-                              onPointerDown={(event) => event.stopPropagation()}
-                              onClick={(event) => {
-                                if (!entry.description) return;
-                                handleInlineDetailHelpToggle(entry.key, entry.label, entry.description, event);
-                              }}
-                              className="text-left hover:underline"
-                            >
-                              {entry.label}
-                            </button>
-                          ) : (
-                            <span>{entry.label}</span>
-                          )}
-                        </Fragment>
-                      ))}
-                    </div>
                     <div className="rounded border border-gray-200 bg-white p-2 text-xs">
+                      <div className="mb-1 text-xs text-gray-600 select-none">
+                        サブクラス: {selectedSubClass?.name ?? '-'} |{' '}
+                        {selectedSubBonusEntries.map((entry, index) => (
+                          <Fragment key={entry.key}>
+                            {index > 0 && ', '}
+                            {entry.description ? (
+                              <button
+                                type="button"
+                                onPointerDown={(event) => event.stopPropagation()}
+                                onClick={(event) => {
+                                  if (!entry.description) return;
+                                  handleInlineDetailHelpToggle(entry.key, entry.label, entry.description, event);
+                                }}
+                                className="text-left hover:underline"
+                              >
+                                {entry.label}
+                              </button>
+                            ) : (
+                              <span>{entry.label}</span>
+                            )}
+                          </Fragment>
+                        ))}
+                      </div>
                       {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Sub Class selection */}
                       <div className="grid grid-cols-4 gap-1">
                         {classCategoryDefinitions.map((category) => (
@@ -5324,7 +5321,6 @@ function PartyTab({
               })()}
             </div>
             <div>
-              <label className="block text-gray-500">性格</label>
               <div className="rounded border border-gray-200 bg-white p-2 text-xs">
                 {(() => {
                   const selectedPredispositionId = pendingEdits?.predispositionId ?? char.predispositionId;
@@ -5332,7 +5328,7 @@ function PartyTab({
                   return (
                     <>
                       <div className="mb-1 text-xs text-gray-600 select-none">
-                        {selectedPredisposition.name} | {formatBonuses(selectedPredisposition.bonuses as Bonus[])}
+                        性格: {selectedPredisposition.name} | {formatBonuses(selectedPredisposition.bonuses as Bonus[])}
                       </div>
                       <div className="grid grid-cols-4 gap-1">
                         {predispositionCategoryDefinitions.map((category) => (
@@ -5370,7 +5366,6 @@ function PartyTab({
               </div>
             </div>
             <div>
-              <label className="block text-gray-500">家系</label>
               <div className="rounded border border-gray-200 bg-white p-2 text-xs">
                 {(() => {
                   const selectedLineageId = pendingEdits?.lineageId ?? char.lineageId;
@@ -5378,7 +5373,7 @@ function PartyTab({
                   return (
                     <>
                       <div className="mb-1 text-xs text-gray-600 select-none">
-                        {selectedLineage.name} | {formatBonuses(selectedLineage.bonuses as Bonus[])}
+                        系譜: {selectedLineage.name} | {formatBonuses(selectedLineage.bonuses as Bonus[])}
                       </div>
                       <div className="grid grid-cols-4 gap-1">
                         {lineageCategoryDefinitions.map((category) => (
