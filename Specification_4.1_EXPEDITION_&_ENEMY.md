@@ -222,7 +222,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 - **Class modifier**
 
-| Class | `d.HP_modifier` | `a.ability_add` | `d.accuracy_add` | `d.evasion_add` | `d.ranged_attack_modifier` | `d.ranged_attack_amplifier_modifier` | `d.ranged_NoA` | `d.magical_attack_modifier` | `d.magical_attack_amplifier_modifier` | `d.magical_NoA` | `d.melee_attack_modifier` | `d.melee_attack_amplifier_modifier` | `d.melee_NoA` | `d.physical_defense_modifier` | `d.magical_defense_modifier` | `d.experience` |
+| Class | `d.HP_modifier` | `a.ability_add` | `d.accuracy_add` | `d.evasion_add` | `d.ranged_attack_modifier` | `d.ranged_attack_amplifier_modifier` | `d.ranged_NoA` | `d.magical_attack_modifier` | `d.magical_attack_amplifier_modifier` | `d.magical_NoA` | `d.melee_attack_modifier` | `d.melee_attack_amplifier_modifier` | `d.melee_NoA` | `d.physical_defense_modifier` | `d.magical_defense_modifier` | `d.experience_modifier` |
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
 | class.duelist | x1.00 | `a.counter`1 | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x1.3 | x1.2 | 4 | x0.8 | x0.8 | x1.0 |
 | class.samurai | x0.80 | `a.iaigiri`1 | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x2.0 | x1.0 | 1 | x0.7 | x0.7 | x0.8 |
@@ -256,7 +256,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 - `f.defense` master value:
   -  `d.physical_defense` x mainClass.`d.physical_defense_modifier` x subClass.`d.physical_defense_modifier`
   -  `d.magical_defense` x mainClass.`d.magical_defense_modifier` x subClass.`d.magical_defense_modifier` 
-- `f.experience` master value: `d.experience` x mainClass.`d.experience` x subClass.`d.experience`
+- `f.experience` master value: `d.experience` x mainClass.`d.experience_modifier` x subClass.`d.experience_modifier`
 
 #### 4.1.5 Master_Data_Definitions
 
