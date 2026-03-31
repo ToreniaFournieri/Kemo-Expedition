@@ -270,14 +270,14 @@
      - From the inventory, search for the **highest `core concept` value item** in the target item category.
      - the value is including enhancement, super rare multiplier calculation.
 
-5. **Register the selected item**
+4. **Register the selected item**
    - Add the selected item's **item ID** to **Memory A**.
    - Add the selected item's **`c.*` bonus** to **Memory B**.
 
-6. **Repeat**
+5. **Repeat**
    - Repeat Step 3 and Step 4 until all potential equipment slots for that item category have been evaluated or no eligible items remain.
 
-7. **Jewel allocation**
+6. **Jewel allocation**
   - If **Memory C** contains recorded jewel data, jewels are reassigned by item category.
   - Higher-tier jewels are preferentially assigned to items with higher enhancement values and to super rare items.
 
