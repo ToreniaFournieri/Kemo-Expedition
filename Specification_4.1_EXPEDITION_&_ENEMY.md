@@ -201,7 +201,6 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
   - `a.iaigiri`
   - `a.hunter`
 
-
 **Enemy master data structure**
 - id: int
 - type: string.  Normal/Elite/Boss
@@ -216,6 +215,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 #### 4.1.4 Base data structure (enemy)
 
 - **Base status**
+
 | `d.HP` | `a.ability` | `d.accuracy` | `d.evasion` | `d.ranged_attack` | `d.magical_attack` | `d.melee_attack` | `d.ranged_attack_amplifier` | `d.magical_attack_amplifier` | `d.melee_attack_amplifier` | `d.physical_defense` | `d.magical_defense` | `d.experience` |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 100 | (none) | 0.00 | 0.00 | 46 | 41 | 60 | x1.0 | x1.0 | x1.0 | 20 | 20 | 5 |
