@@ -34,13 +34,13 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
 - Name, race, main class (sub class), predisposition, lineage, status, bonuses (c., aggregated), ability (a. )
 - Status:
 
-- If character has `c.grit+v`, displays 
+- If character has `c.equip_melee`, displays 
 近接攻撃:98 x 4回(x1.00)
-- if character has  `c.pursuit+v`, displays 遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(phase: LONG)).
+- if character has  `c.equip_ranged`, displays 遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(phase: LONG)).
   - ex. 遠距離攻撃:25 x 6回(x1.13)
-- if character has `c.grit+v` or `c.pursuit+v`, displays 物理命中率: `d.accuracy_potency`　x 100 % (減衰: x (0.90 + `c.accuracy+v`)).  (ex. has `c.accuracy+0.02` and `c.accuracy+0.01`, then 0.90 + 0.02 + 0.01 -> 0.93 )
+- if character has `c.equip_melee` or `c.equip_ranged`, displays 物理命中率: `d.accuracy_potency`　x 100 % (減衰: x (0.90 + `c.accuracy+v`)).  (ex. has `c.accuracy+0.02` and `c.accuracy+0.01`, then 0.90 + 0.02 + 0.01 -> 0.93 )
   - ex. 物理命中率: 72% (減衰: x0.90)
-- If character has `c.caster+v`, displays 魔法攻撃:`d.magical_attack` x `d.magical_NoA`回(x`f.offense_amplifier`(phase: MID)). and 魔法命中率: 100 % (減衰: x (0.90 + `c.accuracy+v`)).  (ex. has `c.accuracy+0.02` and `c.accuracy+0.01`, then 0.90 + 0.02 + 0.01 -> 0.93 )
+- If character has `c.equip_magic`, displays 魔法攻撃:`d.magical_attack` x `d.magical_NoA`回(x`f.offense_amplifier`(phase: MID)). and 魔法命中率: 100 % (減衰: x (0.90 + `c.accuracy+v`)).  (ex. has `c.accuracy+0.02` and `c.accuracy+0.01`, then 0.90 + 0.02 + 0.01 -> 0.93 )
   - ex. 魔法攻撃:36 x 3回(x1.26)
   - ex. 魔法命中率: 100% (減衰: x0.90)
 
@@ -50,6 +50,16 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
 
 - *UI Formatting Note:* When displaying aggregated c.multipliers (e.g., 鎧 x1.8), always round the internal product to the first decimal place for a cleaner interface. 
 
+- Bonus(ボーナス) Display order:
+  - Only display bonuses that are present (i.e., `c.*` exists and value ≠ x1.0).
+  - "ボーナス: 装備+N, (Combat style set), (Others), 鎧xN, 衣xN, 盾xN, 成長xN, etc.."
+    - Default order: [近接装備, 剣xN, 刀xN, 手xN], [遠距離装備, 矢xN, ボxN, 弓xN], [魔法装備, 杖xN, 書xN, 媒xN]
+  - If `Combat style` is Melee: Combat style set is 近接装備, 剣xN, 刀xN, 手xN
+  - If `Combat style` is Ranged: Combat style set is 遠距離装備, 矢xN, ボxN, 弓xN
+  - If `Combat style` is Magic: Combat style set is 魔法装備, 杖xN, 書xN, 媒xN
+
+  - Example: character has `c.equip_ranged`, `c.arrow_x1.4`, `c.archery_x1.1`, `c.armor_x1.8`, `c.sword_x1.2`
+    - "ボーナス: 遠距離装備, 矢x1.4, 弓x1.1, 剣x1.2, 鎧x1.8"
 
 ```
 レオン                      [編集]
@@ -63,7 +73,7 @@ Left-aligned            Right-aligned
                               回避:+4
 —————
 属性耐性: 🔥100%,❄️100%,⚡100%
-ボーナス: 護x1.3, 弓x1.1, 鎧x1.8, 装備+1, 根性+1, 体+3
+ボーナス: 遠距離装備, 矢x1.3, 弓x1.1, 鎧x1.8, 装備+1, 根性+1, 体+3
 アビリティ:
 守護者1, 探究者1
 ```
