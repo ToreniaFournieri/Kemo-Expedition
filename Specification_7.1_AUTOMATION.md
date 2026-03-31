@@ -243,12 +243,13 @@
 - When auto-equipment selects items from a specific item category, the following procedure is used:
 
 1. **Decide the combat style**
+  - The combat style determined is used to resolve all `i.weapon` and `i.NoA` category selections during this process.
   - Compare combat style scores:
     - Ranged: total sum of (1 - `c.arrow_x1.x`), (1 - `c.bolt_x1.x`), and (1 - `c.archery_x1.x`).
     - Magic: total sum of (1 - `c.wand_x1.x`), (1 - `c.grimoire_x1.x`) , and (1 - `c.catalyst_x1.x`).
     - Melee: total sum of (1 - `c.sword_x1.x`), (1 - `c.katana_x1.x`) , and (1 - `c.gauntlet_x1.x`).
     - Note: Only one `c.*` bonus of the exact same name applies.
-    - Example: If character has `c.sword_x1.4`, `c.arrow_x1.2`, `c.bolt_x1.2`, `c.gauntlet_x1.1`, Ranged: 0.4 (arrow 0.2 + bolt0.2) and Melee: 0.5 (sword 0.4 + gauntlet 0.1) so "Melee" is selected.
+    - Example: If character has `c.sword_x1.4`, `c.arrow_x1.2`, `c.bolt_x1.2`, `c.gauntlet_x1.1`, Ranged: 0.4 (arrow 0.2 + bolt 0.2) and Melee: 0.5 (sword 0.4 + gauntlet 0.1) so "Melee" is selected.
     - Tie-breaker: Ranged > Magic > Melee
 
   - If Ranged: target `i.weapon` item categories are `i.arrow` and `i.bolt`, and target `i.NoA` item category is `i.archery`.
@@ -268,7 +269,7 @@
      - the value is including enhancement, super rare multiplier calculation.
    - **Other item categories:**
      - From the inventory, search for the **highest `core concept` value item** in the target item category.
-     - the value is including enhancement, super rare multiplier calculation.
+     - the value includes enhancement, super rare multiplier calculation.
 
 4. **Register the selected item**
    - Add the selected item's **item ID** to **Memory A**.
