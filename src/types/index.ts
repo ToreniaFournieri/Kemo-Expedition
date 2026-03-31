@@ -414,8 +414,12 @@ export interface ComputedPartyStats {
 // Enemy Types
 export type EnemyType = 'normal' | 'elite' | 'boss';
 export type EnemyClassId =
-  | 'fighter' | 'duelist' | 'ninja' | 'samurai' | 'lord'
-  | 'ranger' | 'wizard' | 'sage' | 'rogue' | 'pilgrim';
+  | 'guardian' | 'duelist' | 'samurai' | 'sword-saint'
+  | 'ranger' | 'striker' | 'ninja'
+  | 'wizard' | 'sage' | 'alchemist'
+  | 'pilgrim' | 'lord'
+  // legacy ids for compatibility
+  | 'fighter' | 'rogue';
 
 export interface EnemyDef {
   id: number;
@@ -426,6 +430,7 @@ export interface EnemyDef {
   poolId: number;
   name: string;
   enemyClass: EnemyClassId;
+  enemySubClass?: EnemyClassId | 'none';
   abilities: EnemyAbility[];
   bonuses?: Bonus[];
   accuracyBonus: number;

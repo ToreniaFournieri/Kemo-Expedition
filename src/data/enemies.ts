@@ -3,6 +3,7 @@ import { MYTHIC_DROP_POOLS } from './dropTables';
 import { getItemById, getItemsByTierAndRarity } from './items';
 import { MASTER_EXPEDITION_ENEMIES_PACKED } from './masterSpecData';
 import { getEnemyCyborgizationAdjustment, resolveEnemyPassiveAbilities } from '../game/enemyPassiveAbilities';
+import { buildEnemyClassMasterStats } from './enemyClasses';
 
 // ============================================================
 // EnemyTemplate type - compact format for defining enemies
@@ -27,32 +28,6 @@ function getBossMythicDropId(tier: number, seed: number): number {
   }
 
   return options[seed % options.length].id;
-}
-
-// ============================================================
-// Helper to create stats from class base structure
-// ============================================================
-type EnemyClassBase = {
-  hp: number;
-  abilities: EnemyAbility[];
-  accuracyBonus: number;
-  evasionBonus: number;
-  rangedAttack: number;
-  rangedNoA: number;
-  magicalAttack: number;
-  magicalNoA: number;
-  meleeAttack: number;
-  meleeNoA: number;
-  rangedAttackAmplifier: number;
-  magicalAttackAmplifier: number;
-  meleeAttackAmplifier: number;
-  physicalDefense: number;
-  magicalDefense: number;
-  experience: number;
-};
-
-function levelOneAbilities(abilityIds: AbilityId[]): EnemyAbility[] {
-  return abilityIds.map((id) => ({ id, level: 1 }));
 }
 
 
@@ -223,19 +198,6 @@ function mergeEnemyAbilities(...sets: EnemyAbility[][]): EnemyAbility[] {
   return Array.from(merged.values());
 }
 
-const ENEMY_CLASS_BASES: Record<EnemyClassId, EnemyClassBase> = {
-  fighter: { hp: 126, abilities: levelOneAbilities([]), accuracyBonus: 0.0, evasionBonus: 0.02, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 41, meleeNoA: 2, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0, physicalDefense: 23, magicalDefense: 10, experience: 5 },
-  duelist: { hp: 100, abilities: levelOneAbilities(['counter']), accuracyBonus: 0.01, evasionBonus: 0.01, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 52, meleeNoA: 4, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.2, physicalDefense: 13, magicalDefense: 13, experience: 5 },
-  ninja: { hp: 92, abilities: levelOneAbilities(['re_attack']), accuracyBonus: 0.0, evasionBonus: 0.04, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 59, meleeNoA: 4, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.2, physicalDefense: 12, magicalDefense: 10, experience: 7 },
-  samurai: { hp: 80, abilities: levelOneAbilities(['iaigiri']), accuracyBonus: -0.05, evasionBonus: -0.01, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 93, meleeNoA: 1, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.3, physicalDefense: 11, magicalDefense: 11, experience: 4 },
-  lord: { hp: 116, abilities: levelOneAbilities([]), accuracyBonus: 0.0, evasionBonus: 0.0, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 41, meleeNoA: 4, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.1, physicalDefense: 15, magicalDefense: 15, experience: 8 },
-  ranger: { hp: 88, abilities: levelOneAbilities([]), accuracyBonus: 0.03, evasionBonus: 0.01, rangedAttack: 35, rangedNoA: 4, magicalAttack: 0, magicalNoA: 0, meleeAttack: 0, meleeNoA: 0, rangedAttackAmplifier: 1.2, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0, physicalDefense: 12, magicalDefense: 10, experience: 6 },
-  wizard: { hp: 54, abilities: levelOneAbilities(['resonance']), accuracyBonus: 0.0, evasionBonus: -0.015, rangedAttack: 0, rangedNoA: 0, magicalAttack: 48, magicalNoA: 2, meleeAttack: 0, meleeNoA: 0, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.0, physicalDefense: 5, magicalDefense: 15, experience: 4 },
-  sage: { hp: 94, abilities: levelOneAbilities([]), accuracyBonus: 0.0, evasionBonus: 0.0, rangedAttack: 0, rangedNoA: 0, magicalAttack: 26, magicalNoA: 4, meleeAttack: 0, meleeNoA: 0, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.0, physicalDefense: 12, magicalDefense: 17, experience: 4 },
-  rogue: { hp: 80, abilities: levelOneAbilities(['deflection', 'first_strike']), accuracyBonus: 0.06, evasionBonus: 0.06, rangedAttack: 26, rangedNoA: 4, magicalAttack: 0, magicalNoA: 0, meleeAttack: 26, meleeNoA: 4, rangedAttackAmplifier: 1.2, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0, physicalDefense: 10, magicalDefense: 10, experience: 4 },
-  pilgrim: { hp: 124, abilities: levelOneAbilities(['null_counter']), accuracyBonus: 0.0, evasionBonus: 0.02, rangedAttack: 0, rangedNoA: 0, magicalAttack: 26, magicalNoA: 2, meleeAttack: 41, meleeNoA: 2, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.2, physicalDefense: 14, magicalDefense: 14, experience: 3 },
-};
-
 // ============================================================
 // Generate enemy from template
 // ============================================================
@@ -251,7 +213,7 @@ function createEnemyFromTemplate(
   extraAbilities: AbilityId[] = [],
   enemyTypeLevel = 1,
 ): EnemyDef {
-  const classBase = ENEMY_CLASS_BASES[enemyClass];
+  const classBase = buildEnemyClassMasterStats(enemyClass);
   const enemyTypeExpMult = type === 'elite' ? 2.0 : type === 'boss' ? 5.0 : 1.0;
   const extraAbilityLevels = extraAbilities.map((id) => ({ id, level: 1 }));
   const enemyTypeAbilities = getEnemyTypeAbilities(enemyType, enemyTypeLevel);
@@ -463,9 +425,13 @@ export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
   const mythicRare = getItemsByTierAndRarity(tier, 'mythicRare');
 
   const classUncommonCategories: Record<EnemyClassId, [ItemCategory, ItemCategory]> = {
+    guardian: ['armor', 'shield'],
     fighter: ['sword', 'gauntlet'],
+    'sword-saint': ['sword', 'gauntlet'],
     ranger: ['arrow', 'archery'],
+    striker: ['bolt', 'archery'],
     wizard: ['wand', 'catalyst'],
+    alchemist: ['grimoire', 'catalyst'],
     pilgrim: ['sword', 'wand'],
     rogue: ['bolt', 'shield'],
     ninja: ['katana', 'armor'],
