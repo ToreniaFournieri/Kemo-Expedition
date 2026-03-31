@@ -5252,7 +5252,6 @@ function PartyTab({
                 const selectedSubClass = classById.get(selectedSubClassId);
                 const selectedSubBonusList = [
                   ...((selectedSubClass?.mainSubBonuses ?? []) as Bonus[]),
-                  ...((selectedSubClass?.mainBonuses ?? []) as Bonus[]),
                 ];
                 const selectedSubBonusEntries = selectedSubBonusList
                   .map((bonus, index) => buildInlineBonusEntry('sub-class-bonus', selectedSubClassId, bonus, index))
