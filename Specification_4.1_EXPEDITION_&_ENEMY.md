@@ -243,8 +243,8 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
   - Ranged: `d.ranged_attack` x mainClass.`d.ranged_attack_modifier` x subClass.`d.ranged_attack_modifier`
   - Magical: `d.magical_attack` x mainClass.`d.magical_attack_modifier` x subClass.`d.magical_attack_modifier`
   - Melee: `d.melee_attack` x mainClass.`d.melee_attack_modifier` x subClass.`d.melee_attack_modifier`
-- `f.accuracy` master value:  `c.accuracy` + mainClass.`c.accuracy_add` +  subClass.`c.accuracy_add`
-- `f.evasion` master value:  `c.evasion` + mainClass.`c.evasion_add` +  subClass.`c.evasion_add`
+- `f.accuracy` master value:  `d.accuracy` + mainClass.`d.accuracy_add` +  subClass.`d.accuracy_add`
+- `f.evasion` master value:  `d.evasion` + mainClass.`d.evasion_add` +  subClass.`d.evasion_add`
 - `f.NoA` master value:
   - Ranged: mainClass.`d.ranged_NoA` + subClass.`d.ranged_NoA`
   - Magical: mainClass.`d.magical_NoA` + subClass.`d.magical_NoA`
