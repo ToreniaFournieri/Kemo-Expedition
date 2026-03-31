@@ -32,7 +32,7 @@
 
 **races(種族):**
 
-| races      |体,力,知,精| default ability | unlock ability       | c. bonus      | 
+| races      |体,力,知,精| default ability　 | unlock ability       | c. bonus      | 
 |------------|-----------|-------------------|----------------------|--------------|
 | Lupinian   |10,12, 8, 7| `a.rage`1         | `a.re-counter`1      | `c.katana_x1.3`,   `c.wand_x1.2`,     `c.equip_slot+1`, `c.ice-defense-multiplier_x2/3`|
 | Vulpinian  |11,10,12, 8| `a.momentum`1     | `a.cunning`1         | `c.sword_x1.3`,    `c.grimoire_x1.2`, `c.equip_slot+1`|
@@ -42,7 +42,7 @@
 | Procyonian |14, 8, 8, 6| `a.resonance`1 | `a.illusion`1          | `c.grimoire_x1.3`, `c.katana_x1.2`,   `c.robe_x1.2`,  `c.equip_slot+1`, `c.thunder-defense-multiplier_x2/3` |
 | Leporian   | 9, 8,14,10| `a.composure`1    | `a.magical-counter`1 | `c.arrow_x1.3`,  `c.sword_x1.2`,    `c.armor_x1.3`|
 | Cervin     | 8, 7,13,11| `a.focus`1        | `a.prophecy`1        | `c.wand_x1.3`,     `c.gauntlet_x1.2`, `c.shield_x1.2`|
-| Murid      | 7, 8,11,14| `a.stealth`1      | (none)               | `c.bolt_x1.3`,     `c.grimoire_x1.3`,  `c.penet+0.10` |
+| Murid      | 7, 8,11,14| `a.stealth`1      | (none)               | `c.bolt_x1.3`,     `c.grimoire_x1.3`  `c.penet+0.10` |
 
 | races | Japanese name | category | concept | availability |
 |------|----------------|----------|--------|--------------|
@@ -65,17 +65,16 @@
 |-----|----------|------------|------------------|------------|--------------|
 | class.duelist | 剣士 | 剣 | `c.equip_melee`, `c.sword_x1.4` | `a.counter`1 | `a.counter`2 |
 | class.samurai | 侍 | 侍 | `c.equip_melee`, `c.katana_x1.4` | `a.iaigiri`1 | `a.iaigiri`2 |
-| class.brawler | 闘士 | 闘 | `c.equip_melee`, `c.gauntlet_x1.4`, `c.equip_slot+1` | `a.re-attack`1 | `a.re-attack`2 |
+| class.sword-saint | 剣聖 | 聖 | `c.equip_melee`, `c.gauntlet_x1.4`, `c.equip_slot+1` | `a.re-attack`1 | `a.re-attack`2 |
 | class.ranger | 狩人 | 狩 | `c.equip_ranged`, `c.arrow_x1.4` | `a.hunter`1 | `a.hunter`2 |
-| class.striker | 弩手 | 弩 | `c.equip_ranged`, `c.bolt_x1.4`, `c.penet+0.10` | `a.heavy-strike`1 | `a.heavy-strike`2 |
+| class.striker | 弩手 | 弩 | `c.equip_ranged`, `c.bolt_x1.4` | `a.heavy-strike`1 | `a.heavy-strike`2 |
 | class.ninja | 忍者 | 忍 | `c.equip_ranged`, `c.archery_x1.4`, `c.equip_slot+1` | `a.first-strike`1 | `a.first-strike`2 |
 | class.wizard | 魔法使い | 魔 | `c.equip_magic`, `c.wand_x1.4` | `a.resonance`1 | `a.resonance`2 |
-| class.scholar | 学者 | 学 | `c.equip_magic`, `c.grimoire_x1.4` | `a.arc-magic`1 | `a.arc-magic`2 |
-| class.sage | 賢者 | 賢 | `c.equip_magic`, `c.catalyst_x1.4`, `c.equip_slot+1` | `a.arcane-stability`1 | `a.arcane-stability`2 |
-| class.guardian | 守護者 | 守 | `c.armor_x1.4`, `c.equip_slot+2` | `a.defender`1 | `a.defender`2 |
-| class.pilgrim | 巡礼者 | 巡 | `c.robe_x1.4`, `c.evasion+0.02`, `c.equip_slot+2` | `a.m-barrier`1, `a.tithe`1 | `a.m-barrier`2, `a.tithe`1 |
+| class.sage | 賢者 | 賢 | `c.equip_magic`, `c.grimoire_x1.4` | `a.arc-magic`1 | `a.arc-magic`2 |
+| class.alchemist | 錬金術師 | 錬 | `c.equip_magic`, `c.catalyst_x1.4`, `c.equip_slot+1` | `a.arcane-stability`1 | `a.arcane-stability`2 |
+| class.guardian | 防人 | 防 | `c.armor_x1.4`, `c.equip_slot+2` | `a.defender`1 | `a.defender`2 |
+| class.pilgrim | 巡礼者 | 巡 | `c.robe_x1.4`, `c.equip_slot+2` | `a.m-barrier`1, `a.tithe`1 | `a.m-barrier`2, `a.tithe`1 |
 | class.lord | 君主 | 君 | `c.shield_x1.4`, `c.equip_slot+2` | `a.command`1, `a.squander`1 | `a.command`2, `a.squander`1 |
-
 
 **lineage(家系):**
 
@@ -100,18 +99,18 @@
 
 | predisposition | Japanese | short | category | bonus |
 |-----|-----|---|-----|-----------|
-| Aggressive | 好戦 | 好 | 外向的 | `c.sword_x1.1`, `c.bolt_x1.1`, `c.catalyst_x1.1` |
+| Aggressive | 好戦| 好 | 外向的 | `c.sword_x1.1`, `c.bolt_x1.1`, `c.catalyst_x1.1` |
 | Inquisitive | 探求 | 探 | 外向的 | `c.katana_x1.1`, `c.arrow_x1.1`, `c.grimoire_x1.1` |
-| Amiable | 親和 | 和 | 外向的 | `c.gauntlet_x1.1`, `c.bolt_x1.1`, `c.wand_x1.1` |
+| Amicable | 親和 | 和 | 外向的 | `c.gauntlet_x1.1`, `c.bolt_x1.1`, `c.wand_x1.1` |
 | Stubborn | 頑固 | 頑 | 内向的 | `c.shield_x1.1`, `b.vitality+1` |
-| Evasive | 責任回避 | 避 | 内向的 | `c.evasion+0.020`, `b.mind+1` |
+| Shirk | 責任回避 | 避 | 内向的 | `c.evasion+0.020`, `b.mind+1` |
 | Introspective | 内省 | 内 | 内向的 | `c.armor_x1.1`, `c.robe_x1.1` |
 | Devoted | 献身 | 献 | 適応 | `c.growth_x1.1`, `c.fire-defense-multiplier_x4/5` |
-| Serene | 冷静 | 冷 | 適応 | `c.growth_x1.1`, `c.ice-defense-multiplier_x4/5` |
+| Serenity | 冷静 | 冷 | 適応 | `c.growth_x1.1`, `c.ice-defense-multiplier_x4/5` |
 | Nimble | 軽快 | 軽 | 適応 | `c.evasion+0.010`, `c.thunder-defense-multiplier_x4/5` |
 | Perceptive | 看破 | 看 | 機知 | `c.penet+0.010`, `b.intelligence+1` |
-| Precise | 精確 | 精 | 機知 | `c.accuracy+0.025`, `b.strength+1` |
-| Resourceful | 手腕 | 腕 | 機知 | `c.equip_slot+1` |
+| Exacting | 精確 | 精 | 機知 | `c.accuracy+0.025`, `b.strength+1` |
+| Savvy | 手腕 | 腕 | 機知 | `c.equip-slot+1` |
 
 - If `main_class` and  `sub_class` are same class, then it turns into master class, applies master bonus.
 - `main_class` applies main/sub bonuses and main bonus. `sub_class` applies only main/sub bonuses.
