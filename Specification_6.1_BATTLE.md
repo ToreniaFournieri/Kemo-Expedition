@@ -697,12 +697,12 @@ EXP: `p.gained_experience` | 自動売却額: `p.auto-sell_profit`
 	- `p.reward_from_room`: Shows item.
 
 ```
-X: `p.enemy_name` | `p.outcome_of_room` |  ▼
+X: `p.enemy_name` (race, main class/sub class) | `p.outcome_of_room` |  ▼
 獲得: `p.reward_from_room`.
 ```
 
 ```
-1F-2: キメラ斬撃個体(合,侍) 引分▼
+1F-2: キメラ斬撃個体(合,侍/君) 引分▼
 獲得:伝説の火打ち石の触媒
 (Column 1) 自HP 273 /1,000 [Party HP bar here: Rermaining HP(Blue)/healed HP (Green)  /Taken damage(Dark orange) / max_HP]
 (Column 2) 敵HP 20 /320 [Enemy HP bar here: Rermaining HP(Blue) / max_HP]
