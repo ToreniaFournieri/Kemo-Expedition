@@ -8861,17 +8861,27 @@ function SettingTab({
   };
 
   const ENEMY_CLASS_LABELS: Record<string, string> = {
-    fighter: '戦士',
+    guardian: '防人',
     duelist: '剣士',
-    ninja: '忍者',
     samurai: '侍',
-    lord: '君主',
+    'sword-saint': '剣聖',
     ranger: '狩人',
+    striker: '弩手',
+    ninja: '忍者',
     wizard: '魔法使い',
     sage: '賢者',
-    rogue: '盗賊',
+    alchemist: '錬金術師',
     pilgrim: '巡礼者',
+    lord: '君主',
+    fighter: '戦士',
+    rogue: '盗賊',
   };
+  const ENEMY_EDIT_CLASS_OPTIONS = [
+    'duelist', 'samurai', 'sword-saint',
+    'ranger', 'striker', 'ninja',
+    'wizard', 'sage', 'alchemist',
+    'guardian', 'pilgrim', 'lord',
+  ] as const;
 
   const getDisplayEnemy = (
     enemy: EnemyDef,
@@ -9592,8 +9602,9 @@ function SettingTab({
                   {enemyExpanded && <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                       <div>ID: {colosseumEnemy.id}</div><div>レベル: {formatNumber(colosseumEnemySettings.level)}</div>
-                      <div>HP: {formatNumber(colosseumEnemy.hp)}</div><div>クラス: {ENEMY_CLASS_LABELS[colosseumEnemy.enemyClass] ?? colosseumEnemy.enemyClass}</div>
-                      <div>タイプ: {ENEMY_TYPE_LABELS[colosseumEnemy.enemyType] ?? colosseumEnemy.enemyType}</div><div>地形: {TERRAIN_EFFECT_LABELS[colosseumEnemySettings.terrainEffect] ?? colosseumEnemySettings.terrainEffect}</div>
+                      <div>HP: {formatNumber(colosseumEnemy.hp)}</div><div>タイプ: {ENEMY_TYPE_LABELS[colosseumEnemy.enemyType] ?? colosseumEnemy.enemyType}</div>
+                      <div>メインクラス: {ENEMY_CLASS_LABELS[colosseumEnemy.enemyClass] ?? colosseumEnemy.enemyClass}</div><div>サブクラス: {colosseumEnemy.enemySubClass && colosseumEnemy.enemySubClass !== 'none' ? (ENEMY_CLASS_LABELS[colosseumEnemy.enemySubClass] ?? colosseumEnemy.enemySubClass) : 'なし'}</div>
+                      <div>地形: {TERRAIN_EFFECT_LABELS[colosseumEnemySettings.terrainEffect] ?? colosseumEnemySettings.terrainEffect}</div><div></div>
                     </div>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                       <div>{hasRangedAttack ? formatEnemyAttackLine('遠距離攻撃', colosseumEnemy.rangedAttack, colosseumEnemy.rangedNoA, colosseumEnemy.rangedAttackAmplifier) : ''}</div><div>{`属性: ${ENEMY_ELEMENT_LABELS[colosseumEnemy.elementalOffense] ?? '無'} (x1.0)`}</div>
@@ -9645,7 +9656,10 @@ function SettingTab({
                     ? 'battle_Elite'
                     : 'battle_Normal';
                 const enemyLevelFinal = getEffectiveEnemyLevel(selectedBestiaryDungeon.expLevel, group.floorNumber, roomType, gameMode === 'm.luna');
-                const enemyClass = ENEMY_CLASS_LABELS[displayEnemy.enemyClass] ?? '不明';
+                const enemyMainClass = ENEMY_CLASS_LABELS[displayEnemy.enemyClass] ?? '不明';
+                const enemySubClass = displayEnemy.enemySubClass && displayEnemy.enemySubClass !== 'none'
+                  ? (ENEMY_CLASS_LABELS[displayEnemy.enemySubClass] ?? displayEnemy.enemySubClass)
+                  : 'なし';
                 const enemyExpanded = !!expandedBestiaryEnemies[displayEnemy.id];
                 const physicalDefenseAmplifierPercent = displayEnemy.physicalDefenseAmplifier * 100;
                 const magicalDefenseAmplifierPercent = displayEnemy.magicalDefenseAmplifier * 100;
@@ -9665,8 +9679,10 @@ function SettingTab({
                           <div></div>
                           <div>HP: {formatNumber(displayEnemy.hp)}</div>
                           <div>レベル: {formatNumber(enemyLevelFinal)}</div>
-                          <div>クラス: {enemyClass}</div>
+                          <div>メインクラス: {enemyMainClass}</div>
+                          <div>サブクラス: {enemySubClass}</div>
                           <div>タイプ: {ENEMY_TYPE_LABELS[displayEnemy.enemyType] ?? displayEnemy.enemyType}</div>
+                          <div></div>
                           {(() => {
                             const hasRangedAttack = hasEnemyAttack(displayEnemy.rangedAttack, displayEnemy.rangedNoA);
                             const hasMeleeAttack = hasEnemyAttack(displayEnemy.meleeAttack, displayEnemy.meleeNoA);
@@ -9771,7 +9787,8 @@ function SettingTab({
             </div>
           </label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy type</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyType} onChange={(e) => updateColosseumEnemySettings({ enemyType: e.target.value })}>{Object.keys(ENEMY_TYPE_LABELS).map((key) => <option key={key} value={key}>{ENEMY_TYPE_LABELS[key] ?? key}</option>)}</select></label>
-          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy class</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyClass} onChange={(e) => updateColosseumEnemySettings({ enemyClass: e.target.value as ColosseumEnemySettings['enemyClass'] })}>{Object.entries(ENEMY_CLASS_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
+          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy main class</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyMainClass} onChange={(e) => updateColosseumEnemySettings({ enemyMainClass: e.target.value as ColosseumEnemySettings['enemyMainClass'] })}>{ENEMY_EDIT_CLASS_OPTIONS.map((key) => <option key={key} value={key}>{ENEMY_CLASS_LABELS[key] ?? key}</option>)}</select></label>
+          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy sub class</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemySubClass} onChange={(e) => updateColosseumEnemySettings({ enemySubClass: e.target.value as ColosseumEnemySettings['enemySubClass'] })}><option value="none">none</option>{ENEMY_EDIT_CLASS_OPTIONS.map((key) => <option key={key} value={key}>{ENEMY_CLASS_LABELS[key] ?? key}</option>)}</select></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy level: {colosseumEnemySettings.level}</div><input type="range" min={1} max={99} value={colosseumEnemySettings.level} onChange={(e) => updateColosseumEnemySettings({ level: Number(e.target.value) })} /></label>
           {[0, 1, 2, 3, 4].map((slot) => {
             const slotAbility = colosseumEnemySettings.abilities[slot];

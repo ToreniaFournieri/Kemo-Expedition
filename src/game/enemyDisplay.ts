@@ -22,11 +22,19 @@ export const ENEMY_TYPE_SHORT_NAMES: Record<string, string> = {
   Kemono: 'ケ',
 };
 
-export function formatEnemyName(name: string, enemyType: string, classId: keyof typeof CLASS_SHORT_NAMES): string {
-  const labels = [ENEMY_TYPE_SHORT_NAMES[enemyType], CLASS_SHORT_NAMES[classId]].filter(Boolean);
+export function formatEnemyName(
+  name: string,
+  enemyType: string,
+  classId: keyof typeof CLASS_SHORT_NAMES,
+  subClassId?: keyof typeof CLASS_SHORT_NAMES | 'none',
+): string {
+  const classLabel = CLASS_SHORT_NAMES[classId];
+  const subClassLabel = subClassId && subClassId !== 'none' ? CLASS_SHORT_NAMES[subClassId] : '';
+  const classText = classLabel ? (subClassLabel ? `${classLabel}/${subClassLabel}` : classLabel) : '';
+  const labels = [ENEMY_TYPE_SHORT_NAMES[enemyType], classText].filter(Boolean);
   return labels.length > 0 ? `${name}(${labels.join(',')})` : name;
 }
 
-export function formatEnemyDefName(enemy: Pick<EnemyDef, 'name' | 'enemyType' | 'enemyClass'>): string {
-  return formatEnemyName(enemy.name, enemy.enemyType, enemy.enemyClass);
+export function formatEnemyDefName(enemy: Pick<EnemyDef, 'name' | 'enemyType' | 'enemyClass' | 'enemySubClass'>): string {
+  return formatEnemyName(enemy.name, enemy.enemyType, enemy.enemyClass, enemy.enemySubClass);
 }

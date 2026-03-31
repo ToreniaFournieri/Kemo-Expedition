@@ -1,9 +1,10 @@
-import { AbilityId, ElementalResistance, EnemyAbility, EnemyClassId, EnemyDef } from '../types';
+import { AbilityId, ElementalResistance, EnemyClassId, EnemyDef } from '../types';
 import { getEnemyTypeAbilities, getEnemyTypeBonuses } from '../data/enemies';
 import { getEnemyCyborgizationAdjustment, resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
 import { applyEnemyTypeCBonuses } from './enemyScaling';
 import { LUNA_MODE_ENEMY_LEVEL_BONUS, getEnemyMultipliersForLevel } from '../data/dungeons';
 import { createEnvironmentStorageKey } from './environment';
+import { buildEnemyClassMasterStats } from '../data/enemyClasses';
 
 // SpecRef: 9 | Environment | Save Data Isolation
 const COLOSSEUM_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.colosseum-enemy-settings');
@@ -14,7 +15,8 @@ export interface ColosseumEnemySettings {
   name: string;
   terrainEffect: ColosseumTerrainEffect;
   enemyType: string;
-  enemyClass: EnemyClassId;
+  enemyMainClass: EnemyClassId;
+  enemySubClass: EnemyClassId | 'none';
   level: number;
   abilities: Array<{ id: AbilityId; level: number }>;
 }
@@ -23,45 +25,19 @@ export const DEFAULT_COLOSSEUM_ENEMY_SETTINGS: ColosseumEnemySettings = {
   name: 'ミーティア',
   terrainEffect: 'none',
   enemyType: 'Jinma',
-  enemyClass: 'fighter',
+  enemyMainClass: 'duelist',
+  enemySubClass: 'none',
   level: 10,
   abilities: [],
 };
 
-type EnemyClassBase = {
-  hp: number;
-  abilities: EnemyAbility[];
-  accuracyBonus: number;
-  evasionBonus: number;
-  rangedAttack: number;
-  rangedNoA: number;
-  magicalAttack: number;
-  magicalNoA: number;
-  meleeAttack: number;
-  meleeNoA: number;
-  rangedAttackAmplifier: number;
-  magicalAttackAmplifier: number;
-  meleeAttackAmplifier: number;
-  physicalDefense: number;
-  magicalDefense: number;
-};
-
-function levelOneAbilities(abilityIds: AbilityId[]): EnemyAbility[] {
-  return abilityIds.map((id) => ({ id, level: 1 }));
-}
-
-const ENEMY_CLASS_BASES: Record<EnemyClassId, EnemyClassBase> = {
-  fighter: { hp: 126, abilities: levelOneAbilities([]), accuracyBonus: 0.0, evasionBonus: 0.02, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 41, meleeNoA: 2, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0, physicalDefense: 23, magicalDefense: 10 },
-  duelist: { hp: 100, abilities: levelOneAbilities(['counter']), accuracyBonus: 0.01, evasionBonus: 0.01, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 52, meleeNoA: 4, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.2, physicalDefense: 13, magicalDefense: 13 },
-  ninja: { hp: 92, abilities: levelOneAbilities(['re_attack']), accuracyBonus: 0.0, evasionBonus: 0.04, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 59, meleeNoA: 4, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.2, physicalDefense: 12, magicalDefense: 10 },
-  samurai: { hp: 80, abilities: levelOneAbilities(['iaigiri']), accuracyBonus: -0.05, evasionBonus: -0.01, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 93, meleeNoA: 1, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.3, physicalDefense: 11, magicalDefense: 11 },
-  lord: { hp: 116, abilities: levelOneAbilities([]), accuracyBonus: 0.0, evasionBonus: 0.0, rangedAttack: 0, rangedNoA: 0, magicalAttack: 0, magicalNoA: 0, meleeAttack: 41, meleeNoA: 4, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.1, physicalDefense: 15, magicalDefense: 15 },
-  ranger: { hp: 88, abilities: levelOneAbilities([]), accuracyBonus: 0.03, evasionBonus: 0.01, rangedAttack: 35, rangedNoA: 4, magicalAttack: 0, magicalNoA: 0, meleeAttack: 0, meleeNoA: 0, rangedAttackAmplifier: 1.2, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0, physicalDefense: 12, magicalDefense: 10 },
-  wizard: { hp: 54, abilities: levelOneAbilities(['resonance']), accuracyBonus: 0.0, evasionBonus: -0.015, rangedAttack: 0, rangedNoA: 0, magicalAttack: 48, magicalNoA: 2, meleeAttack: 0, meleeNoA: 0, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.0, physicalDefense: 5, magicalDefense: 15 },
-  sage: { hp: 94, abilities: levelOneAbilities([]), accuracyBonus: 0.0, evasionBonus: 0.0, rangedAttack: 0, rangedNoA: 0, magicalAttack: 26, magicalNoA: 4, meleeAttack: 0, meleeNoA: 0, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.0, physicalDefense: 12, magicalDefense: 17 },
-  rogue: { hp: 80, abilities: levelOneAbilities(['deflection', 'first_strike']), accuracyBonus: 0.06, evasionBonus: 0.06, rangedAttack: 26, rangedNoA: 4, magicalAttack: 0, magicalNoA: 0, meleeAttack: 26, meleeNoA: 4, rangedAttackAmplifier: 1.2, magicalAttackAmplifier: 1.0, meleeAttackAmplifier: 1.0, physicalDefense: 10, magicalDefense: 10 },
-  pilgrim: { hp: 124, abilities: levelOneAbilities(['null_counter']), accuracyBonus: 0.0, evasionBonus: 0.02, rangedAttack: 0, rangedNoA: 0, magicalAttack: 26, magicalNoA: 2, meleeAttack: 41, meleeNoA: 2, rangedAttackAmplifier: 1.0, magicalAttackAmplifier: 1.2, meleeAttackAmplifier: 1.2, physicalDefense: 14, magicalDefense: 14 },
-};
+const isEnemyClassId = (value: unknown): value is EnemyClassId => typeof value === 'string' && [
+  'guardian', 'duelist', 'samurai', 'sword-saint',
+  'ranger', 'striker', 'ninja',
+  'wizard', 'sage', 'alchemist',
+  'pilgrim', 'lord',
+  'fighter', 'rogue',
+].includes(value);
 
 function canUseStorage(): boolean {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
@@ -69,7 +45,7 @@ function canUseStorage(): boolean {
 
 // SpecRef: 8.6 | UI_DIVINE_BUREAU | Enemy Edit Pane
 export function normalizeColosseumEnemySettings(raw: unknown): ColosseumEnemySettings {
-  const parsed = (raw && typeof raw === 'object') ? raw as Partial<ColosseumEnemySettings> : {};
+  const parsed = (raw && typeof raw === 'object') ? raw as Partial<ColosseumEnemySettings> & { enemyClass?: string } : {};
   const normalizedAbilities = Array.isArray(parsed.abilities)
     ? parsed.abilities
       .map((entry) => {
@@ -95,13 +71,19 @@ export function normalizeColosseumEnemySettings(raw: unknown): ColosseumEnemySet
       ? parsed.terrainEffect as ColosseumTerrainEffect
       : DEFAULT_COLOSSEUM_ENEMY_SETTINGS.terrainEffect;
 
+  const legacyEnemyClass = isEnemyClassId(parsed.enemyClass) ? parsed.enemyClass : null;
+  const enemyMainClass = isEnemyClassId(parsed.enemyMainClass)
+    ? parsed.enemyMainClass
+    : (legacyEnemyClass ?? DEFAULT_COLOSSEUM_ENEMY_SETTINGS.enemyMainClass);
+
   return {
     name: typeof parsed.name === 'string' && parsed.name.trim().length > 0 ? parsed.name.trim() : DEFAULT_COLOSSEUM_ENEMY_SETTINGS.name,
     terrainEffect,
     enemyType: typeof parsed.enemyType === 'string' && parsed.enemyType.trim().length > 0 ? parsed.enemyType.trim() : DEFAULT_COLOSSEUM_ENEMY_SETTINGS.enemyType,
-    enemyClass: (typeof parsed.enemyClass === 'string' && parsed.enemyClass in ENEMY_CLASS_BASES
-      ? parsed.enemyClass
-      : DEFAULT_COLOSSEUM_ENEMY_SETTINGS.enemyClass) as EnemyClassId,
+    enemyMainClass,
+    enemySubClass: isEnemyClassId(parsed.enemySubClass)
+      ? parsed.enemySubClass
+      : DEFAULT_COLOSSEUM_ENEMY_SETTINGS.enemySubClass,
     level: Math.max(1, Math.min(99, level)),
     abilities: normalizedAbilities,
   };
@@ -129,7 +111,7 @@ export function saveColosseumEnemySettings(settings: ColosseumEnemySettings): vo
 
 export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode: boolean): EnemyDef {
   const normalized = normalizeColosseumEnemySettings(settings);
-  const classBase = ENEMY_CLASS_BASES[normalized.enemyClass];
+  const classBase = buildEnemyClassMasterStats(normalized.enemyMainClass, normalized.enemySubClass);
   const enemyLevel = normalized.level + (isLunaMode ? LUNA_MODE_ENEMY_LEVEL_BONUS : 0);
   const multipliers = getEnemyMultipliersForLevel(enemyLevel);
   const classAbilities = new Map(classBase.abilities.map((ability) => [ability.id, ability]));
@@ -159,7 +141,8 @@ export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode
     spawnPool: 99,
     poolId: 99,
     name: normalized.name,
-    enemyClass: normalized.enemyClass,
+    enemyClass: normalized.enemyMainClass,
+    enemySubClass: normalized.enemySubClass,
     abilities,
     bonuses: getEnemyTypeBonuses(normalized.enemyType),
     accuracyBonus: classBase.accuracyBonus + cyborgizationAdjustment.accuracyBonus,
