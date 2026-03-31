@@ -239,11 +239,20 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 - **Calculation of master value**
 - `d.HP` master value: `d.HP` x mainClass.`d.HP_modifier`  x subClass.`d.HP_modifier` 
-- `f.attack` master value: `d.HP` x mainClass.`d.HP_modifier`  x subClass.`d.HP_modifier`
+- `f.attack` master value:
+  - Ranged: `d.ranged_attack` x mainClass.`d.ranged_attack_modifier` x subClass.`d.ranged_attack_modifier`
+  - Magical: `d.magical_attack` x mainClass.`d.magical_attack_modifier` x subClass.`d.magical_attack_modifier`
+  - Melee: `d.melee_attack` x mainClass.`d.melee_attack_modifier` x subClass.`d.melee_attack_modifier`
 - `f.accuracy` master value:  `c.accuracy` + mainClass.`c.accuracy_add` +  subClass.`c.accuracy_add`
 - `f.evasion` master value:  `c.evasion` + mainClass.`c.evasion_add` +  subClass.`c.evasion_add`
-- `f.NoA` master value: mainClass.`d.X_NoA` + subClass.`d.X_NoA`
-- `f.offense_amplifier` master value:  `d.X_attack_amplifier` x mainClass.`d.X_attack_amplifier_modifier` x subClass.`d.X_attack_amplifier_modifier`
+- `f.NoA` master value:
+  - Ranged: mainClass.`d.ranged_NoA` + subClass.`d.ranged_NoA`
+  - Magical: mainClass.`d.magical_NoA` + subClass.`d.magical_NoA`
+  - Melee: mainClass.`d.melee_NoA` + subClass.`d.melee_NoA`
+- `f.offense_amplifier` master value:
+  - Ranged: `d.ranged_attack_amplifier` x mainClass.`d.ranged_attack_amplifier_modifier` x subClass.`d.ranged_attack_amplifier_modifier`
+  - Magical: `d.magical_attack_amplifier` x mainClass.`d.magical_attack_amplifier_modifier` x subClass.`d.magical_attack_amplifier_modifier`
+  - Melee: `d.melee_attack_amplifier` x mainClass.`d.melee_attack_amplifier_modifier` x subClass.`d.melee_attack_amplifier_modifier`
 - `f.defense` master value:
   -  `d.physical_defense` x mainClass.`d.physical_defense_modifier` x subClass.`d.physical_defense_modifier`
   -  `d.magical_defense` x mainClass.`d.magical_defense_modifier` x subClass.`d.magical_defense_modifier` 
