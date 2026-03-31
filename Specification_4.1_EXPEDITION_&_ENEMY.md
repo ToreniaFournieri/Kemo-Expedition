@@ -215,8 +215,18 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 #### 4.1.4 Base data structure (enemy)
 
-| Class | `d.HP` | `a.ability` | `c.accuracy` | `c.evasion` | `d.ranged_attack` | `d.ranged_NoA` | `d.magical_attack` | `d.magical_NoA` | `d.melee_attack` | `d.melee_NoA` | `d.ranged_attack_amplifier` | `d.magical_attack_amplifier` | `d.melee_attack_amplifier` | `d.physical_defense` | `d.magical_defense` | `e.fire` | `e.ice` | `e.thunder` | `r.fire` | `r.ice` |`r.thunder` | `d.experience` |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+- **Base status**
+| `d.HP` | `a.ability` | `c.accuracy` | `c.evasion` | `d.ranged_attack` | `d.ranged_NoA` | `d.magical_attack` | `d.magical_NoA` | `d.melee_attack` | `d.melee_NoA` | `d.ranged_attack_amplifier` | `d.magical_attack_amplifier` | `d.melee_attack_amplifier` | `d.physical_defense` | `d.magical_defense` | `d.experience` |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 100 | (none) | 0.00 | 0.00 | 46 | 2 | 41 | 2 | 60 | 2 | x1.0 | x1.0 | x1.0 | 20 | 20 | 5 |
+
+- **Class modifier**
+
+
+
+| Class | `d.HP_modifier` | `a.ability_add` | `c.accuracy_add` | `c.evasion_add` | `d.ranged_attack_modifier` | `d.ranged_NoA_add` | `d.magical_attack_modifier` | `d.magical_NoA_add` | `d.melee_attack_modifier` | `d.melee_NoA_add` | `d.ranged_attack_amplifier_modifier` | `d.magical_attack_amplifier_modifier` | `d.melee_attack_amplifier_modifier` | `d.physical_defense_modifier` | `d.magical_defense_modifier` |
+`d.experience` |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Fighter | 126 | (none) | 0.00| 0.02 | 0 | 0 | 0 | 0 | 41 | 2 | x1.0 | x1.0 | x1.0 | 23 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 5 |
 | Duelist | 100 | `a.counter`1 | 0.01 | 0.01 | 0 | 0 | 0 | 0 | 52 | 4 | x1.0 | x1.0 | x1.2 | 13 | 13 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 5 |
 | Ninja | 92 | `a.re-attack`1 | 0.00 | 0.04 | 0 | 0 | 0 | 0 | 59 | 4 | x1.0 | x1.0 | x1.2 | 12 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 7 |
