@@ -148,6 +148,13 @@ note: 0:no sleep 寝ない, 1:nap 仮眠, 2:sound sleep 熟睡
 
 - Enemy name: List of specific enemies found within that expedition.
   - Default: Collapsed.
+
+- Enemy class:
+  - If enemy has only mainClass: メインクラス: mainClass
+  - If enemy has mainClass and subclass, and mainClass != subClass : メインクラス: mainClass   サブクラス: Subclass
+  - If enemy has mainClass and subclass, and mainClass == subClass : メインクラス: mainClass + (師範)
+
+
 - UI Behavior:
   - Interaction:
     - Tap Enemy name, Opens detailed enemy status (same logic as battle). Including drop items.
