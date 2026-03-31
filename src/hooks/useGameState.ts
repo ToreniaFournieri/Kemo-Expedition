@@ -917,7 +917,7 @@ function createInitialParty() {
     { race: 'vulpinian', main: 'duelist', sub: 'samurai', pred: 'aggressive', lineage: 'sandstorm', name: 'ゴン', equipmentIds: [1104, 1106] },
     { race: 'procyonian', main: 'ninja', sub: 'lord', pred: 'evasive', lineage: 'firmament', name: 'ソウタ', equipmentIds: [1104, 1106, 1104, 1106] },
     { race: 'leporian', main: 'ranger', sub: 'pilgrim', pred: 'nimble', lineage: 'abyssal_sea', name: 'ロップ', equipmentIds: [1107, 1108, 1109] },
-    { race: 'felidian', main: 'sage', sub: 'guardian', pred: 'dexterous', lineage: 'adaptation', name: 'ラス', equipmentIds: [1110, 1111, 1112] },
+    { race: 'felidian', main: 'sage', sub: 'guardian', pred: 'nimble', lineage: 'adaptation', name: 'ラス', equipmentIds: [1110, 1111, 1112] },
     { race: 'cervin', main: 'wizard', sub: 'wizard', pred: 'stubborn', lineage: 'utopia', name: 'セルヴァ', equipmentIds: [1110, 1112] },
   ];
 
