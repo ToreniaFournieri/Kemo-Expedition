@@ -4507,11 +4507,11 @@ function PartyTab({
   const char = selectedChar;
   const stats = characterStats[selectedCharacter];
   const hpDisplayMultiplier = ((stats.baseStats.vitality + stats.baseStats.mind) / 20) * getCharacterGrowthMultiplier(char);
-  const race = RACES.find(r => r.id === char.raceId)!;
-  const mainClass = CLASSES.find(c => c.id === char.mainClassId)!;
-  const subClass = CLASSES.find(c => c.id === char.subClassId)!;
-  const predisposition = PREDISPOSITIONS.find(p => p.id === char.predispositionId)!;
-  const lineage = LINEAGES.find(l => l.id === char.lineageId)!;
+  const race = RACES.find(r => r.id === char.raceId) ?? RACES[0];
+  const mainClass = CLASSES.find(c => c.id === char.mainClassId) ?? CLASSES[0];
+  const subClass = CLASSES.find(c => c.id === char.subClassId) ?? CLASSES[0];
+  const predisposition = PREDISPOSITIONS.find(p => p.id === char.predispositionId) ?? PREDISPOSITIONS[0];
+  const lineage = LINEAGES.find(l => l.id === char.lineageId) ?? LINEAGES[0];
   const raceCategoryDefinitions: Array<{ label: string; raceIds: Character['raceId'][] }> = [
     { label: '肉食', raceIds: ['lupinian', 'vulpinian', 'felidian'] },
     { label: '雑食', raceIds: ['caninian', 'ursan', 'procyonian'] },
