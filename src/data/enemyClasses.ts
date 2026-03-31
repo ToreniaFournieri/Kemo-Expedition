@@ -77,7 +77,6 @@ export function buildEnemyClassMasterStats(mainClass: EnemyClassId, subClass: En
   const sub = subClass === 'none' ? null : ENEMY_CLASS_MODIFIERS[subClass];
   const abilities: EnemyAbility[] = [];
   if (main.abilityAdd) abilities.push({ id: main.abilityAdd, level: 1 });
-  if (sub?.abilityAdd) abilities.push({ id: sub.abilityAdd, level: 1 });
   return {
     hp: ENEMY_BASE_STATUS.hp * main.hpModifier * (sub?.hpModifier ?? 1),
     abilities,
