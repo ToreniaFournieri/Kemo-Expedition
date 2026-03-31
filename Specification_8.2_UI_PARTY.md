@@ -81,13 +81,12 @@ Left-aligned
 **1. Contents**
 - Name [edit]
 - Editable `name` field.
-- Race selection:
+- Race selection: "種族:icon.race ケイナイアン |体10,力10,知10,精10 | 盾x1.3, 手x1.2, 弓x1.1, 成長x1.1""
   - Category tabs: single-row, no wrap, fit within one viewport width.
 ```
 　肉食    雑食    草食
 icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.Procyonian   icon.Leporian, icon.Cervin, icon.Murid
 ``` 
-  - Displays selected race status: "icon.race ケイナイアン |体10,力10,知10,精10 | 盾x1.3, 手x1.2, 弓x1.1, 成長x1.1"
 - Main Class selection: "メインクラス: 魔法使い(師範) | 魔法装備, 杖x1.4, 共鳴Lv2"
   - Category tabs: single-row, no wrap, fit within one viewport width.
 ```
