@@ -5901,7 +5901,8 @@ function PartyTab({
               const seekerMultiplier = seekerAbilityLevel > 0 ? 1 + (party.level * seekerPerLevelBonus) : 1;
 
               // Format display
-              const parts: string[] = [];
+              type BonusDisplayEntry = { key: string; label: string; description?: string };
+              const bonusDisplayEntries: BonusDisplayEntry[] = [];
               const helpRows: Array<{ label: string; description: string }> = [];
               const mulNames: Record<string, string> = {
                 sword: '剣', katana: '刀', archery: '弓', armor: '鎧',
@@ -5931,6 +5932,13 @@ function PartyTab({
                 'magical_defense_multiplier_xV',
               ]);
 
+              const pushBonusDisplayEntry = (entry: BonusDisplayEntry) => {
+                bonusDisplayEntries.push(entry);
+                if (entry.description) {
+                  helpRows.push({ label: entry.label, description: entry.description });
+                }
+              };
+
               for (const [key, val] of Object.entries(multipliers)) {
                 if (hiddenBonusDisplayKeys.has(key)) continue;
                 if (val !== 1) {
@@ -5939,14 +5947,12 @@ function PartyTab({
                     ? effectiveMultiplier.toFixed(2)
                     : effectiveMultiplier.toFixed(1);
                   const label = `${mulNames[key] ?? key}x${formattedMultiplier}`;
-                  parts.push(label);
                   const template = C_MULTIPLIER_HELP_DESCRIPTIONS[key];
-                  if (template) {
-                    helpRows.push({
-                      label,
-                      description: template.replace('{value}', formattedMultiplier),
-                    });
-                  }
+                  pushBonusDisplayEntry({
+                    key,
+                    label,
+                    description: template ? template.replace('{value}', formattedMultiplier) : undefined,
+                  });
                 }
               }
               for (const [key, val] of Object.entries(additive)) {
@@ -5954,47 +5960,39 @@ function PartyTab({
                 if (val !== 0) {
                   if (key === 'melee_attack' || key === 'ranged_attack' || key === 'magical_attack' || key === 'physical_attack') {
                     const label = `${addNames[key]}+${Math.round(val * 100)}%`;
-                    parts.push(label);
                     const description = getBonusHelpDescription({ type: key as BonusType, value: val });
-                    if (description) helpRows.push({ label, description });
+                    pushBonusDisplayEntry({ key, label, description: description ?? undefined });
                   } else if (key === 'physical_defense' || key === 'magical_defense') {
                     const label = `${addNames[key]}+${Math.round(val * 100)}%`;
-                    parts.push(label);
                     const description = getBonusHelpDescription({ type: key as BonusType, value: val });
-                    if (description) helpRows.push({ label, description });
+                    pushBonusDisplayEntry({ key, label, description: description ?? undefined });
                   } else if (key === 'penet') {
                     const label = `${addNames[key]}+${Math.round(val * 100)}`;
-                    parts.push(label);
                     const description = getBonusHelpDescription({ type: key as BonusType, value: val });
-                    if (description) helpRows.push({ label, description });
+                    pushBonusDisplayEntry({ key, label, description: description ?? undefined });
                   } else if (key === 'accuracy') {
                     const label = `${addNames[key]}+${Math.round(val * 1000)}`;
-                    parts.push(label);
                     const description = getBonusHelpDescription({ type: key as BonusType, value: val });
-                    if (description) helpRows.push({ label, description });
+                    pushBonusDisplayEntry({ key, label, description: description ?? undefined });
                   } else if (key === 'evasion') {
                     const label = `${addNames[key]}+${Math.round(val * 1000)}`;
-                    parts.push(label);
                     const description = getBonusHelpDescription({ type: key as BonusType, value: val });
-                    if (description) helpRows.push({ label, description });
+                    pushBonusDisplayEntry({ key, label, description: description ?? undefined });
                   } else if (key === 'growth_xV') {
                     const label = `${addNames[key] ?? key}${formatMultiplierValue(val)}倍`;
-                    parts.push(label);
                     const description = getBonusHelpDescription({ type: key as BonusType, value: val });
-                    if (description) helpRows.push({ label, description });
+                    pushBonusDisplayEntry({ key, label, description: description ?? undefined });
                   } else {
                     const normalizedKey = key.replace(/\?+$/g, '');
                     const label = ['equip_melee', 'equip_ranged', 'equip_magic'].includes(normalizedKey)
                       ? `${addNames[normalizedKey] ?? normalizedKey}`
                       : `${addNames[normalizedKey] ?? normalizedKey}+${val}`;
-                    parts.push(label);
                     const description = getBonusHelpDescription({ type: normalizedKey as BonusType, value: val });
-                    if (description) {
-                      helpRows.push({
-                        label: normalizedKey === 'antagonism' ? addNames[normalizedKey] : label,
-                        description,
-                      });
-                    }
+                    pushBonusDisplayEntry({
+                      key: normalizedKey,
+                      label,
+                      description: description ?? undefined,
+                    });
                   }
                 }
               }
@@ -6014,13 +6012,56 @@ function PartyTab({
                 })
                 .filter((row): row is { label: string; description: string } => row !== null);
 
+              // SpecRef: 8.2.2 | Party member details | Bonus(ボーナス) Display order
+              const combatStyleEnableFlags = {
+                melee: additive.equip_melee != null,
+                ranged: additive.equip_ranged != null,
+                magic: additive.equip_magic != null,
+              };
+              const combatStyleScores: Record<AutoEquipmentCombatStyle, number> = {
+                melee: Math.max(0, (multipliers.sword ?? 1) - 1) + Math.max(0, (multipliers.katana ?? 1) - 1) + Math.max(0, (multipliers.gauntlet ?? 1) - 1),
+                ranged: Math.max(0, (multipliers.arrow ?? 1) - 1) + Math.max(0, (multipliers.bolt ?? 1) - 1) + Math.max(0, (multipliers.archery ?? 1) - 1),
+                magic: Math.max(0, (multipliers.wand ?? 1) - 1) + Math.max(0, (multipliers.grimoire ?? 1) - 1) + Math.max(0, (multipliers.catalyst ?? 1) - 1),
+              };
+              let combatStyle: AutoEquipmentCombatStyle | null = null;
+              let combatStyleScore = Number.NEGATIVE_INFINITY;
+              (['ranged', 'magic', 'melee'] as AutoEquipmentCombatStyle[]).forEach((style) => {
+                if (!combatStyleEnableFlags[style]) return;
+                if (combatStyleScores[style] > combatStyleScore) {
+                  combatStyle = style;
+                  combatStyleScore = combatStyleScores[style];
+                }
+              });
+              const combatStylePriorityKeys: Record<AutoEquipmentCombatStyle, string[]> = {
+                melee: ['equip_melee', 'sword', 'katana', 'gauntlet'],
+                ranged: ['equip_ranged', 'arrow', 'bolt', 'archery'],
+                magic: ['equip_magic', 'wand', 'grimoire', 'catalyst'],
+              };
+              const styleOrder: AutoEquipmentCombatStyle[] = combatStyle
+                ? [combatStyle, ...(['melee', 'ranged', 'magic'] as AutoEquipmentCombatStyle[]).filter((style) => style !== combatStyle)]
+                : ['melee', 'ranged', 'magic'];
+              const orderedCombatKeys = styleOrder.flatMap((style) => combatStylePriorityKeys[style]);
+              const combatPriorityMap = new Map<string, number>(orderedCombatKeys.map((key, index) => [key, index]));
+              const tailPriorityMap = new Map<string, number>([['armor', 0], ['robe', 1], ['shield', 2], ['growth_xV', 3]]);
+              const getBonusDisplayOrder = (key: string): number => {
+                if (key === 'equip_slot') return 0;
+                if (combatPriorityMap.has(key)) return 100 + (combatPriorityMap.get(key) ?? 0);
+                if (tailPriorityMap.has(key)) return 300 + (tailPriorityMap.get(key) ?? 0);
+                return 200;
+              };
+              const sortedBonusDisplayEntries = [...bonusDisplayEntries].sort((a, b) => {
+                const orderDiff = getBonusDisplayOrder(a.key) - getBonusDisplayOrder(b.key);
+                if (orderDiff !== 0) return orderDiff;
+                return a.label.localeCompare(b.label, 'ja-JP');
+              });
+
               const bonusHelpMap = new Map<string, string>(
                 [...helpRows, ...bHelpRows].map((row) => [row.label, row.description]),
               );
-              const bonusEntries = parts.map((label, index) => ({
-                key: `status-bonus-${index}-${label}`,
-                label,
-                description: bonusHelpMap.get(label) ?? 'このボーナスの説明は未設定です。',
+              const bonusEntries = sortedBonusDisplayEntries.map((entry, index) => ({
+                key: `status-bonus-${index}-${entry.key}-${entry.label}`,
+                label: entry.label,
+                description: bonusHelpMap.get(entry.label) ?? 'このボーナスの説明は未設定です。',
               }));
 
               if (bonusEntries.length === 0) return null;
