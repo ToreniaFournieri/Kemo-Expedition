@@ -21,14 +21,6 @@
 |`i.grimoire` | 魔導書 | 書 | + `d.magical_attack`, - `d.magical_NoA`  |
 |`i.catalyst` | 触媒 | 媒 | + `d.magical_NoA`  |
 
-- Group Item category
-
-|category | name | short name | Included Item Categorie |
-|-----|----|----|----|
-|`i.ranged` | 遠距離武器 | 遠 | `i.arrow`, `i.bolt` |
-|`i.magic` | 魔法武器 | 魔 | `i.wand`, `i.grimoire` |
-|`i.melee` | 近接武器 | 近 | `i.sword`, `i.katana` |
-
 - *note:* item might have multiple bonus. sword may have `d.HP` but subtle value.
 
 #### 3.1.2 Item list
