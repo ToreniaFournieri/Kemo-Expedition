@@ -254,12 +254,12 @@ export const DUNGEONS: Dungeon[] = [
     floors: createFloors(5, 501),
   },
 
-  // Tier 6: マステリドの巣穴 (Mustelid Burrow)
+  // Tier 6: プロキオン巣穴 (Procyonian Burrow)
   {
     id: 6,
     tier: 6,
     expLevel: 35,
-    name: 'マステリドの巣穴',
+    name: 'プロキオン巣穴',
     enemyPoolIds: [6],
     bossId: 601,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[5],
