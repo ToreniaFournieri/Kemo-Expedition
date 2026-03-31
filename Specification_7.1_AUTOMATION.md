@@ -235,56 +235,51 @@
 
 | category | name | short name | Included Item Categorie |
 |-----|----|----|----|
-| `i.ranged` | 遠距離武器 | 遠 | `i.arrow`, `i.bolt` |
-| `i.magic` | 魔法武器 | 魔 | `i.wand`, `i.grimoire` |
-| `i.melee` | 近接武器 | 近 | `i.sword`, `i.katana` |
 | `i.weapon` | 武器 | 武 | `i.ranged`, `i.magic`, `i.melee` |
 | `i.NoA` | 回数 | 回 | `i.archery`, `i.catalyst`, `i.gauntlet` |
-
 
 - **Item selection from a specific item category**
 - When auto-equipment selects items from a specific item category, the following procedure is used:
 
-1. **Decide the weapon type**
+1. **Decide the combat style**
   - Compare category of weapon:
     - Ranged: total sum of (1 - `c.arrow_x1.x`), (1 - `c.bolt_x1.x`), and (1 - `c.archery_x1.x`).
     - Magic: total sum of (1 - `c.wand_x1.x`), (1 - `c.grimoire_x1.x`) , and (1 - `c.catalyst_x1.x`).
     - Melee: total sum of (1 - `c.sword_x1.x`), (1 - `c.katana_x1.x`) , and (1 - `c.gauntlet_x1.x`).
-    - Note: `C.*` bonus rule: Only one single bonuses(c.) of the exact same name applies.
-    - Example: If character has `c.wand_x1.4`, `c.arrow_x1.2`, `c.bolt_x1.2`, `c.gauntlet_x1.1`, Ranged: 0.4 (0.2+0.2) and Melee: 0.5 (0.4+0.1) so "Melee" is selected.
+    - Note: Only one `c.*` bonus of the exact same name applies.
+    - Example: If character has `c.sword_x1.4`, `c.arrow_x1.2`, `c.bolt_x1.2`, `c.gauntlet_x1.1`, Ranged: 0.4 (arrow 0.2 + bolt0.2) and Melee: 0.5 (sword 0.4 + gauntlet 0.1) so "Melee" is selected.
     - Tie-breaker: Ranged > Magic > Melee
 
-    - If Ranged: (`i.weapon` is `i.arrow` and `i.bolt`) and (`i.NoA` is `i.archery`).
-    - If Magic: (`i.weapon` is `i.wand` and `i.grimoire`) and (`i.NoA` is `i.catalyst`).
-    - If Melee: (`i.weapon` is `i.sword`, `i.katana`) and (`i.NoA` is `i.gauntlet`).
+    - If Ranged: (`i.weapon` categories are `i.arrow` and `i.bolt`) and (`i.NoA` is `i.archery`).
+    - If Magic: (`i.weapon` categories are `i.wand` and `i.grimoire`) and (`i.NoA` is `i.catalyst`).
+    - If Melee: (`i.weapon` categories are `i.sword`, `i.katana`) and (`i.NoA` is `i.gauntlet`).
    
-3. **Initialize memory**
+2. **Initialize memory**
    - Record the **item IDs** of all currently equipped items as **Memory A**.
    - Record all **`c.*` bonus effects** provided by the currently equipped items as **Memory B**.
 
-4. **Search for a candidate item**
-   - **`i.gauntlet` `i.archery` `i.catalyst` item category:**
+3. **Search for a candidate item**
+   - **For `i.gauntlet`, `i.archery`, and `i.catalyst`:**
      - From the inventory, search for the **highest (`core concept` + `c.N_NoA+X`) value item** in the target item category.
        - The highest value item: Exclude any item that satisfies either of the following conditions:
          - Its **item ID** already exists in **Memory A**.
          - Its **`c.*` bonus** already exists in **Memory B**.
      - the value is including enhancement, super rare multiplier calculation.
-   - **Other item category:**
-     - If the specified category is a group item category, expand it into its constituent item categories. Items from any of the included categories may be selected.
+   - **Other item categories:**
      - From the inventory, search for the **highest `core concept` value item** in the target item category.
      - the value is including enhancement, super rare multiplier calculation.
    - Exclude any item that satisfies either of the following conditions:
      - Its **item ID** already exists in **Memory A**.
      - Its **`c.*` bonus** already exists in **Memory B**.
 
-5. **Register the selected item**
+4. **Register the selected item**
    - Add the selected item's **item ID** to **Memory A**.
    - Add the selected item's **`c.*` bonus** to **Memory B**.
 
-6. **Repeat**
-   - Repeat Step 2 and Step 3 until all potential equipment slots for that item category have been evaluated or no eligible items remain.
+5. **Repeat**
+   - Repeat Step 3 and Step 4 until all potential equipment slots for that item category have been evaluated or no eligible items remain.
 
-7. **Jewel allocation**
+6. **Jewel allocation**
   - If **Memory C** contains recorded jewel data, jewels are reassigned by item category.
   - Higher-tier jewels are preferentially assigned to items with higher enhancement values and to super rare items.
 
