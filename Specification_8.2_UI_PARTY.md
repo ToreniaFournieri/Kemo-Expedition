@@ -82,12 +82,15 @@ Left-aligned
 - Name [edit]
 - Editable `name` field.
 - Race selection: "種族:icon.race ケイナイアン |体10,力10,知10,精10 | 盾x1.3, 手x1.2, 弓x1.1, 成長x1.1""
+  - Display the selected race summary as a single-line header above the selector buttons.
   - Category tabs: single-row, no wrap, fit within one viewport width.
+  - Race selection buttons are icon-only (no race name text on each button).
 ```
 　肉食    雑食    草食
 icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.Procyonian   icon.Leporian, icon.Cervin, icon.Murid
 ``` 
 - Main Class selection: "メインクラス: 魔法使い(師範) | 魔法装備, 杖x1.4, 共鳴Lv2"
+  - Display the selected main class summary as a single-line header above the selector buttons.
   - Category tabs: single-row, no wrap, fit within one viewport width.
 ```
  近接     遠距離     魔法      補助
@@ -96,9 +99,11 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
   - Displays selected class name and unique bonus (main bonus and main/sub bonuses)
     - If Main Class == Sub Class, then show master bonus instead of main bonus.
 - Sub Class selection: "サブクラス: 魔法使い | 魔法装備, 杖x1.4, 共鳴Lv1"
+  - Display the selected sub class summary as a single-line header above the selector buttons.
   - category tab is same format that of main class
   - Displays selected class name and unique bonus (main bonus and main/sub bonuses)
 - Lineage selection: "系譜: 砂塵の系譜 | 剣x1.2"
+  - Display the selected lineage summary as a single-line header above the selector buttons.
   - Category tabs: single-row, no wrap, fit within one viewport width.
 ```
 動乱    狩猟    学識    生存
@@ -106,6 +111,7 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
 ```
   - Displays selected Lineage: 
 - Predisposition selection: "系譜: 好戦 | 剣x1.1, ボx1.1, 媒x1.1"
+  - Display the selected predisposition summary as a single-line header above the selector buttons.
   - Category tabs: single-row, no wrap, fit within one viewport width.
 ```
 外交的    内向的    適応    機知
