@@ -82,8 +82,12 @@ Left-aligned
 - Name [edit]
 - Editable `name` field.
 - Race selection:
-  - Displays a list of available Races.
-  - Each entry shows its name, base status, and unique bonus (ex. 🐶ケイナイアン |体10,力10,知10,精10 | 護符 x1.3, 弓 x1.1)
+  - Category tabs: single-row, no wrap, fit within one viewport width.
+```
+　肉食    雑食    草食
+icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.Procyonian   icon.Leporian, icon.Cervin, icon.Murid
+``` 
+  - Displays selected race status: "icon.race ケイナイアン |体10,力10,知10,精10 | 盾x1.3, 手x1.2, 弓x1.1, 成長x1.1"
 - Main Class selection:
   - Category tabs: single-row, no wrap, fit within one viewport width.
 ```
@@ -96,11 +100,20 @@ Left-aligned
   - category tab is same format that of main class
   - Displays selected class name and unique bonus (main bonus and main/sub bonuses)
 - Predisposition selection:
-  - Displays a list of available Predispositions.
+  - Category tabs: single-row, no wrap, fit within one viewport width.
+```
+動乱    狩猟    学識    生存
+砂,灰,焔  海,穹,凍  桃,機,適  断,風,誓
+```
+  - Displays selected Predisposition: "砂塵の系譜 | 剣x1.2"
   - Each entry shows its name and unique bonus.
 - Lineage selection:
-  - Displays a list of available Lineage.
-  - Each entry shows its name and unique bonus.
+  - Category tabs: single-row, no wrap, fit within one viewport width.
+```
+外交的    内向的    適応    機知
+好,探,和  頑,避,内  献,冷,軽  看,精,腕
+```
+  - Displays selected Lineage: "好戦的 | 剣x1.1, ボx1.1, 媒x1.1"
 
 **2. Edit Confirmation Rules:**
 - **Done (完了):**
