@@ -25,7 +25,7 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
 ```
 🐶
 戦(剣)
-腕/桃
+桃/腕
 ```
 
 - Current status, abilities, bonuses
