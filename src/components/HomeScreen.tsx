@@ -6037,17 +6037,20 @@ function PartyTab({
                 ranged: ['equip_ranged', 'arrow', 'bolt', 'archery'],
                 magic: ['equip_magic', 'wand', 'grimoire', 'catalyst'],
               };
-              const styleOrder: AutoEquipmentCombatStyle[] = combatStyle
-                ? [combatStyle, ...(['melee', 'ranged', 'magic'] as AutoEquipmentCombatStyle[]).filter((style) => style !== combatStyle)]
-                : ['melee', 'ranged', 'magic'];
-              const orderedCombatKeys = styleOrder.flatMap((style) => combatStylePriorityKeys[style]);
-              const combatPriorityMap = new Map<string, number>(orderedCombatKeys.map((key, index) => [key, index]));
-              const tailPriorityMap = new Map<string, number>([['armor', 0], ['robe', 1], ['shield', 2], ['growth_xV', 3]]);
+              const selectedCombatStyleKeys = combatStyle ? combatStylePriorityKeys[combatStyle] : [];
+              const combatPriorityMap = new Map<string, number>(selectedCombatStyleKeys.map((key, index) => [key, index]));
+              const nonSelectedCombatStyleKeys = (['melee', 'ranged', 'magic'] as AutoEquipmentCombatStyle[])
+                .filter((style) => style !== combatStyle)
+                .flatMap((style) => combatStylePriorityKeys[style]);
+              const otherBonusPriorityMap = new Map<string, number>(nonSelectedCombatStyleKeys.map((key, index) => [key, index]));
+              const defensePriorityMap = new Map<string, number>([['armor', 0], ['robe', 1], ['shield', 2]]);
               const getBonusDisplayOrder = (key: string): number => {
                 if (key === 'equip_slot') return 0;
-                if (combatPriorityMap.has(key)) return 100 + (combatPriorityMap.get(key) ?? 0);
-                if (tailPriorityMap.has(key)) return 300 + (tailPriorityMap.get(key) ?? 0);
-                return 200;
+                if (defensePriorityMap.has(key)) return 100 + (defensePriorityMap.get(key) ?? 0);
+                if (combatPriorityMap.has(key)) return 200 + (combatPriorityMap.get(key) ?? 0);
+                if (key === 'growth_xV') return 400;
+                if (otherBonusPriorityMap.has(key)) return 300 + (otherBonusPriorityMap.get(key) ?? 0);
+                return 300 + nonSelectedCombatStyleKeys.length + 1;
               };
               const sortedBonusDisplayEntries = [...bonusDisplayEntries].sort((a, b) => {
                 const orderDiff = getBonusDisplayOrder(a.key) - getBonusDisplayOrder(b.key);
