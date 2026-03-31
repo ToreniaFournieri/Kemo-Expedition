@@ -256,7 +256,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 - `f.defense` master value:
   -  `d.physical_defense` x mainClass.`d.physical_defense_modifier` x subClass.`d.physical_defense_modifier`
   -  `d.magical_defense` x mainClass.`d.magical_defense_modifier` x subClass.`d.magical_defense_modifier` 
-
+- `f.experience` master value: `d.experience` x mainClass.`d.experience` x subClass.`d.experience`
 
 #### 4.1.5 Master_Data_Definitions
 
