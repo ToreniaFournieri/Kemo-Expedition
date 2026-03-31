@@ -79,31 +79,39 @@
 
 **lineage(家系):**
 
-|lineage | short word | bonus |
-|-----|---|-----------|
-|鋼誓の家（House of Steel Oath）| 鋼 |`c.sword_x1.3`, `c.catalyst_x1.3` |
-|戦魂の家（House of War Spirit）| 魂 |`c.katana_x1.2`, `b.mind+1`|
-|遠眼の家（House of Far Sight）| 眼 |`c.arrow_x1.3`, `c.gauntlet_x1.2` |
-|不動の家（House of the Unmoving）| 不 |`c.armor_x1.2`, `b.vitality+1` |
-|砕手の家（House of the Breaking Hand）| 砕 |`c.gauntlet_x1.2`, `b.strength+1`|
-|導智の家（House of Guiding Thought）| 導 |`c.wand_x1.2`,  `c.bolt_x1.2` |
-|秘理の家（House of Hidden Principles）| 秘 |`c.robe_x1.2`, `b.intelligence+1`|
-|継誓の家（House of Inherited Oaths）| 継 |`c.shield_x1.2`, `b.vitality+1`|
+| lineage | short | category | bonus |
+|--------|------|----------|-------|
+| 砂塵の系譜 | 砂 | 動乱 | `c.sword_x1.2` |
+| 灰都の系譜 | 灰 | 動乱 | `c.katana_x1.2` |
+| 焔嶺の系譜 | 焔 | 動乱 | `c.gauntlet_x1.2`, `c.fire-defense-multiplier_x4/5` |
+| 深海の系譜 | 海 | 狩猟 | `c.arrow_x1.2` |
+| 天穹の系譜 | 穹 | 狩猟 | `c.bolt_x1.2` |
+| 凍森の系譜 | 凍 | 狩猟 | `c.archery_x1.2`, `c.ice-defense-multiplier_x4/5` |
+| 桃源の系譜 | 桃 | 学識 | `c.wand_x1.2` |
+| 機骸の系譜 | 機 | 学識 | `c.grimoire_x1.2` |
+| 適応の系譜 | 適 | 学識 | `c.catalyst_x1.2`, `c.thunder-defense-multiplier_x3/4` |
+| 断章の系譜 | 断 | 生存 | `c.armor_x1.2` |
+| 風渡の系譜 | 風 | 生存 | `c.robe_x1.2` |
+| 誓約の系譜 | 誓 | 生存 | `c.shield_x1.2` |
+
 
 **predisposition(性格):**
 
-|predisposition | short word | bonus |
-|-----|---|-----------|
-|頑強 (Sturdy)| 頑 |`b.vitality+2`,  `c.armor_x1.1`|
-|俊敏 (Agile)| 俊 | `c.evasion+0.01` |
-|聡明 (Brilliant)| 聡 |`c.wand_x1.2`|
-|器用 (Dexterous)| 器 |`c.accuracy+0.01`, `c.catalyst_x1.2`|
-|騎士道 (Chivalric)| 騎 |`c.sword_x1.2`, `c.bolt_x1.1`|
-|士魂 (Shikon)| 士 |`b.strength+1`, `c.katana_x1.1`, `c.arrow_x1.2`|
-|追求 (Pursuing)| 追 |`b.intelligence+2`, `c.robe_x1.1`|
-|商才 (Canny)| 商 |`c.equip_slot+1`|
-|忍耐(Persistent)| 耐 |`b.mind+1`, `c.robe_x1.1`|
 
+| predisposition | Japanese | short | category | bonus |
+|-----|-----|---|-----|-----------|
+| Aggressive | 好戦| 好 | 外向的 | `c.sword_x1.1`, `c.bolt_x1.1`, `c.catalyst_x1.1` |
+| Inquisitive | 探求 | 探 | 外向的 | `c.katana_x1.1`, `c.arrow_x1.1`, `c.grimoire_x1.1` |
+| Amicable | 親和 | 和 | 外向的 | `c.gauntlet_x1.1`, `c.bolt_x1.1`, `c.wand_x1.1` |
+| Stubborn | 頑固 | 頑 | 内向的 | `c.shield_x1.1`, `b.vitality+1` |
+| Shirk | 責任回避 | 避 | 内向的 | `c.evasion+0.020`, `b.mind+1` |
+| Introspective | 内省 | 内 | 内向的 | `c.armor_x1.1`, `c.robe_x1.1` |
+| Devoted | 献身 | 献 | 適応 | `c.growth_x1.1`, `c.fire-defense-multiplier_x4/5` |
+| Serenity | 冷静 | 冷 | 適応 | `c.growth_x1.1`, `c.ice-defense-multiplier_x4/5` |
+| Nimble | 軽快 | 軽 | 適応 | `c.evasion+0.010`, `c.thunder-defense-multiplier_x4/5` |
+| Perceptive | 看破 | 看 | 機知 | `c.penet+0.010`, `b.intelligence+1` |
+| Exacting | 精確 | 精 | 機知 | `c.accuracy+0.025`, `b.strength+1` |
+| Savvy | 手腕 | 腕 | 機知 | `c.equip-slot+1` |
 
 - If `main_class` and  `sub_class` are same class, then it turns into master class, applies master bonus.
 - `main_class` applies main/sub bonuses and main bonus. `sub_class` applies only main/sub bonuses.
