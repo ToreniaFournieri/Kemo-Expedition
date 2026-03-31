@@ -222,7 +222,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 - **Class modifier**
 
-| Class | `d.HP_modifier` | `a.ability_add` | `c.accuracy_add` | `c.evasion_add` | `d.ranged_attack_modifier` | `d.ranged_NoA` |`d.ranged_attack_amplifier_modifier` | `d.magical_attack_modifier` | `d.magical_NoA` |  `d.magical_attack_amplifier_modifier` | `d.melee_attack_modifier` | `d.melee_NoA` | `d.melee_attack_amplifier_modifier` | `d.physical_defense_modifier` | `d.magical_defense_modifier` | `d.experience` |
+| Class | `d.HP_modifier` | `a.ability_add` | `c.accuracy_add` | `c.evasion_add` | `d.ranged_attack_modifier` | `d.ranged_NoA` | `d.ranged_attack_amplifier_modifier` | `d.magical_attack_modifier` | `d.magical_NoA` |  `d.magical_attack_amplifier_modifier` | `d.melee_attack_modifier` | `d.melee_NoA` | `d.melee_attack_amplifier_modifier` | `d.physical_defense_modifier` | `d.magical_defense_modifier` | `d.experience` |
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
 | class.duelist | x1.00 | `a.counter`1 | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x1.3 | x1.2 | 4 | x0.8 | x0.8 | x1.0 |
 | class.samurai | x0.80 | `a.iaigiri`1 | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x2.0 | x1.0 | 1 | x0.7 | x0.7 | x0.8 |
@@ -236,6 +236,17 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | class.guardian | x1.50 | (none) | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 2 | x1.3 | x0.6 | x1.0 |
 | class.pilgrim | x1.20 | (none) | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 2 | x1.0 | x1.0 | 0 | x1.1 | x1.1 | x0.4 |
 | class.lord | x1.20 | (none) | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 2 | x1.2 | x1.2 | x1.6 |
+
+- **Calculation of master value**
+- `d.HP` master value: `d.HP` x mainClass.`d.HP_modifier`  x subClass.`d.HP_modifier` 
+- `f.attack` master value: `d.HP` x mainClass.`d.HP_modifier`  x subClass.`d.HP_modifier`
+- `f.accuracy` master value:  `c.accuracy` + mainClass.`c.accuracy_add` +  subClass.`c.accuracy_add`
+- `f.evasion` master value:  `c.evasion` + mainClass.`c.evasion_add` +  subClass.`c.evasion_add`
+- `f.NoA` master value: mainClass.`d.X_NoA` + subClass.`d.X_NoA`
+- `f.offense_amplifier` master value:  `d.X_attack_amplifier` x mainClass.`d.X_attack_amplifier_modifier` x subClass.`d.X_attack_amplifier_modifier`
+- `f.defense` master value:
+  -  `d.physical_defense` x mainClass.`d.physical_defense_modifier` x subClass.`d.physical_defense_modifier`
+  -  `d.magical_defense` x mainClass.`d.magical_defense_modifier` x subClass.`d.magical_defense_modifier` 
 
 
 #### 4.1.5 Master_Data_Definitions
