@@ -76,7 +76,7 @@
 | class.pilgrim | 巡礼者 | 巡 | `c.robe_x1.4`, `c.equip_slot+2` | `a.m-barrier`1, `a.tithe`1 | `a.m-barrier`2, `a.tithe`1 |
 | class.lord | 君主 | 君 | `c.shield_x1.4`, `c.equip_slot+2` | `a.command`1, `a.squander`1 | `a.command`2, `a.squander`1 |
 
-**lineage(家系):**
+**lineage(系譜):**
 
 | lineage | short | category | bonus |
 |--------|------|----------|-------|
