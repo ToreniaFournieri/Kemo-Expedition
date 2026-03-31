@@ -8876,6 +8876,29 @@ function SettingTab({
     fighter: '戦士',
     rogue: '盗賊',
   };
+
+  const getBestiaryClassRows = (
+    mainClassId: string,
+    subClassId?: string | 'none',
+  ): JSX.Element[] => {
+    // SpecRef: 8.6 | UI_DIVINE_BUREAU | Bestiary (敵キャラクター図鑑)
+    const mainClassLabel = ENEMY_CLASS_LABELS[mainClassId] ?? mainClassId;
+    const hasSubClass = !!subClassId && subClassId !== 'none';
+    if (!hasSubClass) {
+      return [<div key="main">メインクラス: {mainClassLabel}</div>];
+    }
+
+    const subClassLabel = ENEMY_CLASS_LABELS[subClassId] ?? subClassId;
+    if (mainClassId === subClassId) {
+      return [<div key="main">メインクラス: {mainClassLabel}(師範)</div>];
+    }
+
+    return [
+      <div key="main">メインクラス: {mainClassLabel}</div>,
+      <div key="sub">サブクラス: {subClassLabel}</div>,
+    ];
+  };
+
   const ENEMY_EDIT_CLASS_OPTIONS = [
     'duelist', 'samurai', 'sword-saint',
     'ranger', 'striker', 'ninja',
@@ -9601,10 +9624,18 @@ function SettingTab({
                   </button>
                   {enemyExpanded && <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                      <div>ID: {colosseumEnemy.id}</div><div>レベル: {formatNumber(colosseumEnemySettings.level)}</div>
-                      <div>HP: {formatNumber(colosseumEnemy.hp)}</div><div>タイプ: {ENEMY_TYPE_LABELS[colosseumEnemy.enemyType] ?? colosseumEnemy.enemyType}</div>
-                      <div>メインクラス: {ENEMY_CLASS_LABELS[colosseumEnemy.enemyClass] ?? colosseumEnemy.enemyClass}</div><div>サブクラス: {colosseumEnemy.enemySubClass && colosseumEnemy.enemySubClass !== 'none' ? (ENEMY_CLASS_LABELS[colosseumEnemy.enemySubClass] ?? colosseumEnemy.enemySubClass) : 'なし'}</div>
-                      <div>地形: {TERRAIN_EFFECT_LABELS[colosseumEnemySettings.terrainEffect] ?? colosseumEnemySettings.terrainEffect}</div><div></div>
+                      {(() => {
+                        const classRows = getBestiaryClassRows(colosseumEnemy.enemyClass, colosseumEnemy.enemySubClass);
+                        return (
+                          <>
+                            <div>ID: {colosseumEnemy.id}</div><div>レベル: {formatNumber(colosseumEnemySettings.level)}</div>
+                            <div>HP: {formatNumber(colosseumEnemy.hp)}</div><div>タイプ: {ENEMY_TYPE_LABELS[colosseumEnemy.enemyType] ?? colosseumEnemy.enemyType}</div>
+                            {classRows.map((row) => row)}
+                            {classRows.length === 1 && <div></div>}
+                            <div>地形: {TERRAIN_EFFECT_LABELS[colosseumEnemySettings.terrainEffect] ?? colosseumEnemySettings.terrainEffect}</div><div></div>
+                          </>
+                        );
+                      })()}
                     </div>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                       <div>{hasRangedAttack ? formatEnemyAttackLine('遠距離攻撃', colosseumEnemy.rangedAttack, colosseumEnemy.rangedNoA, colosseumEnemy.rangedAttackAmplifier) : ''}</div><div>{`属性: ${ENEMY_ELEMENT_LABELS[colosseumEnemy.elementalOffense] ?? '無'} (x1.0)`}</div>
@@ -9656,10 +9687,7 @@ function SettingTab({
                     ? 'battle_Elite'
                     : 'battle_Normal';
                 const enemyLevelFinal = getEffectiveEnemyLevel(selectedBestiaryDungeon.expLevel, group.floorNumber, roomType, gameMode === 'm.luna');
-                const enemyMainClass = ENEMY_CLASS_LABELS[displayEnemy.enemyClass] ?? '不明';
-                const enemySubClass = displayEnemy.enemySubClass && displayEnemy.enemySubClass !== 'none'
-                  ? (ENEMY_CLASS_LABELS[displayEnemy.enemySubClass] ?? displayEnemy.enemySubClass)
-                  : 'なし';
+                const classRows = getBestiaryClassRows(displayEnemy.enemyClass, displayEnemy.enemySubClass);
                 const enemyExpanded = !!expandedBestiaryEnemies[displayEnemy.id];
                 const physicalDefenseAmplifierPercent = displayEnemy.physicalDefenseAmplifier * 100;
                 const magicalDefenseAmplifierPercent = displayEnemy.magicalDefenseAmplifier * 100;
@@ -9679,8 +9707,8 @@ function SettingTab({
                           <div></div>
                           <div>HP: {formatNumber(displayEnemy.hp)}</div>
                           <div>レベル: {formatNumber(enemyLevelFinal)}</div>
-                          <div>メインクラス: {enemyMainClass}</div>
-                          <div>サブクラス: {enemySubClass}</div>
+                          {classRows.map((row) => row)}
+                          {classRows.length === 1 && <div></div>}
                           <div>タイプ: {ENEMY_TYPE_LABELS[displayEnemy.enemyType] ?? displayEnemy.enemyType}</div>
                           <div></div>
                           {(() => {
