@@ -5146,7 +5146,7 @@ function PartyTab({
                 {mcShort}({isMaster ? '師' : scShort})
               </div>
               <div className="text-xs text-gray-400 text-center">
-                {predispositionShort}/{lineageShort}
+                {lineageShort}/{predispositionShort}
               </div>
             </button>
           );
@@ -5523,7 +5523,7 @@ function PartyTab({
                 aria-label="基礎値ヘルプを表示"
               >
                 <RaceIcon race={race} className="h-4 w-4" />
-                <span>{race.name} / {mainClass.name}({char.mainClassId === char.subClassId ? '師範' : subClass.name}) / {predisposition.name} / {lineage.name}</span>
+                <span>{race.name} / {mainClass.name}({char.mainClassId === char.subClassId ? '師範' : subClass.name}) / {lineage.name} / {predisposition.name}</span>
               </button>
               {showBaseStatHelp && (
                 <div
