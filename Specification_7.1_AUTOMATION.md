@@ -39,146 +39,147 @@
 
 | order | item category |
 |-|-|
-| 1 | `i.melee` |
-| 2 | `i.gauntlet` |
+| 1 | `i.weapon` |
+| 2 | `i.NoA` |
 | 3 | `i.armor` |
 | 4 | `i.robe` |
-| 5 | `i.melee` |
+| 5 | `i.weapon` |
 | 6 | `i.armor` |
-| 7 | `i.gauntlet` |
-| 8 | `i.melee` |
+| 7 | `i.NoA` |
+| 8 | `i.weapon` |
 | 9 | `i.armor` |
 | 10 | `i.robe` |
-| 11 | `i.melee` |
+| 11 | `i.weapon` |
 
 
 - class.samurai:
 
 | order | item category |
 |-|-|
-| 1 | `i.melee` |
-| 2 | `i.gauntlet` |
+| 1 | `i.weapon` |
+| 2 | `i.NoA` |
 | 3 | `i.armor` |
 | 4 | `i.robe` |
-| 5 | `i.melee` |
-| 6 | `i.gauntlet` |
-| 7 | `i.melee` |
-| 8 | `i.melee` |
+| 5 | `i.weapon` |
+| 6 | `i.NoA` |
+| 7 | `i.weapon` |
+| 8 | `i.weapon` |
 | 9 | `i.armor` |
 | 10 | `i.robe` |
-| 11 | `i.gauntlet` |
+| 11 | `i.NoA` |
 
 - class.sword-saint:
 
 | order | item category |
 |-|-|
-| 1 | `i.melee` |
-| 2 | `i.gauntlet` |
+| 1 | `i.weapon` |
+| 2 | `i.NoA` |
 | 3 | `i.armor` |
 | 4 | `i.robe` |
-| 5 | `i.melee` |
+| 5 | `i.weapon` |
 | 6 | `i.armor` |
-| 7 | `i.gauntlet` |
-| 8 | `i.melee` |
+| 7 | `i.NoA` |
+| 8 | `i.weapon` |
 | 9 | `i.armor` |
 | 10 | `i.robe` |
-| 11 | `i.melee` |
+| 11 | `i.weapon` |
 
 - class.ranger:
 
 | order | item category |
 |-|-|
-| 1 | `i.ranged` |
-| 2 | `i.archery` |
+| 1 | `i.weapon` |
+| 2 | `i.NoA` |
 | 3 | `i.armor` |
 | 4 | `i.robe` |
-| 5 | `i.ranged` |
+| 5 | `i.weapon` |
 | 6 | `i.arrow` |
-| 7 | `i.archery` |
-| 8 | `i.ranged` |
+| 7 | `i.NoA` |
+| 8 | `i.weapon` |
 | 9 | `i.armor` |
 | 10 | `i.robe` |
-| 11 | `i.ranged` |
+| 11 | `i.weapon` |
 
 - class.striker:
 
 | order | item category |
 |-|-|
-| 1 | `i.ranged` |
-| 2 | `i.archery` |
+| 1 | `i.weapon` |
+| 2 | `i.NoA` |
 | 3 | `i.armor` |
 | 4 | `i.robe` |
-| 5 | `i.ranged` |
+| 5 | `i.weapon` |
 | 6 | `i.arrow` |
-| 7 | `i.archery` |
-| 8 | `i.ranged` |
+| 7 | `i.NoA` |
+| 8 | `i.weapon` |
 | 9 | `i.armor` |
 | 10 | `i.robe` |
-| 11 | `i.ranged` |
+| 11 | `i.weapon` |
+| 12 | `i.NoA` |
 
 - class.ninja:
 
 | order | item category |
 |-|-|
-| 1 | `i.ranged` |
-| 2 | `i.archery` |
+| 1 | `i.weapon` |
+| 2 | `i.NoA` |
 | 3 | `i.armor` |
 | 4 | `i.robe` |
-| 5 | `i.ranged` |
+| 5 | `i.weapon` |
 | 6 | `i.arrow` |
-| 7 | `i.archery` |
-| 8 | `i.ranged` |
+| 7 | `i.NoA` |
+| 8 | `i.weapon` |
 | 9 | `i.armor` |
 | 10 | `i.robe` |
-| 11 | `i.ranged` |
+| 11 | `i.weapon` |
 
 - class.wizard:
 
 | order | item category |
 |-|-|
-| 1 | `i.magic`  |
-| 2 | `i.catalyst` |
+| 1 | `i.weapon`  |
+| 2 | `i.NoA` |
 | 3 | `i.armor` |
 | 4 | `i.robe` |
-| 5 | `i.magic`  |
-| 6 | `i.magic`  |
-| 7 | `i.catalyst` |
-| 8 | `i.magic`  |
-| 9 | `i.magic`  |
+| 5 | `i.weapon`  |
+| 6 | `i.weapon`  |
+| 7 | `i.NoA` |
+| 8 | `i.weapon`  |
+| 9 | `i.weapon`  |
 | 10 | `i.robe` |
-| 11 | `i.magic`  |
+| 11 | `i.weapon`  |
 
 - class.sage:
 
 | order | item category |
 |-|-|
-| 1 | `i.magic`  |
-| 2 | `i.catalyst` |
+| 1 | `i.weapon`  |
+| 2 | `i.NoA` |
 | 3 | `i.armor` |
 | 4 | `i.robe` |
-| 5 | `i.magic`  |
-| 6 | `i.magic`  |
-| 7 | `i.catalyst` |
-| 8 | `i.magic`  |
-| 9 | `i.magic`  |
+| 5 | `i.weapon`  |
+| 6 | `i.weapon`  |
+| 7 | `i.NoA` |
+| 8 | `i.weapon`  |
+| 9 | `i.weapon`  |
 | 10 | `i.robe` |
-| 11 | `i.catalyst` |
+| 11 | `i.NoA` |
 
 - class.alchemist:
 
 | order | item category |
 |-|-|
-| 1 | `i.magic`  |
-| 2 | `i.catalyst` |
+| 1 | `i.weapon`  |
+| 2 | `i.NoA` |
 | 3 | `i.armor` |
 | 4 | `i.robe` |
-| 5 | `i.magic`  |
-| 6 | `i.magic`  |
-| 7 | `i.catalyst` |
-| 8 | `i.magic`  |
-| 9 | `i.magic`  |
+| 5 | `i.weapon`  |
+| 6 | `i.weapon`  |
+| 7 | `i.NoA` |
+| 8 | `i.weapon`  |
+| 9 | `i.weapon`  |
 | 10 | `i.robe` |
-| 11 | `i.catalyst` |
+| 11 | `i.NoA` |
 
 
 - class.guardian:
@@ -188,7 +189,7 @@
 | 1 | `i.armor` |
 | 2 | `i.weapon` |
 | 3 | `i.robe` |
-| 4 | `i.gauntlet` |
+| 4 | `i.NoA` |
 | 5 | `i.weapon` |
 | 6 | `i.shield` |
 | 7 | `i.armor` |
@@ -205,14 +206,14 @@
 | 2 | `i.armor` |
 | 3 | `i.robe` |
 | 4 | `i.weapon` |
-| 5 | `i.gauntlet` |
+| 5 | `i.NoA` |
 | 6 | `i.weapon` |
 | 7 | `i.armor` |
 | 8 | `i.robe` |
 | 9 | `i.weapon` |
 | 10 | `i.shield` |
 | 11 | `i.weapon` |
-| 12 | `i.gauntlet` |
+| 12 | `i.NoA` |
 
 - class.pilgrim:
 
@@ -222,14 +223,14 @@
 | 2 | `i.armor` |
 | 3 | `i.robe` |
 | 4 | `i.weapon` |
-| 5 | `i.gauntlet` |
+| 5 | `i.NoA` |
 | 6 | `i.weapon` |
 | 7 | `i.armor` |
 | 8 | `i.robe` |
 | 9 | `i.weapon` |
 | 10 | `i.shield` |
 | 11 | `i.weapon` |
-| 12 | `i.gauntlet` |
+| 12 | `i.NoA` |
 
 **Group Item category**
 
