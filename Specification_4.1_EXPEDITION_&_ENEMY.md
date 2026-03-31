@@ -226,24 +226,16 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
 | class.duelist | x1.00 | `a.counter`1 | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x1.3 | x1.2 | 4 | x0.8 | x0.8 | x1.0 |
 | class.samurai | x0.80 | `a.iaigiri`1 | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x2.0 | x1.0 | 1 | x0.7 | x0.7 | x0.8 |
-| class.sword-saint | x1.10 | `a.re-attack`1  | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x0.8 | x1.3 | 6 | x0.9 | x0.7 | x1.0 |
+| class.sword-saint | x1.10 | `a.re-attack`1 | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x0.8 | x1.3 | 6 | x0.9 | x0.7 | x1.0 |
 | class.ranger | x0.85 | (none) | 0.03 | 0.01 | x1.3 | x1.2 | 4 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x0.7 | x0.7 | x1.2 |
 | class.striker | x0.95 | `a.heavy-strike`1 | 0.00 | -0.02 | x1.5 | x1.0 | 2 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x0.6 | x0.6 | x0.8 |
-| class.ninja | x0.75 | (none) | 0.05 | 0.03 | x0.8 | x1.3 | 6 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x0.5 | x0.5 | x1.0 |
-| class.wizard | x0.50 | `a.resonance`1  | 0.00 | -0.015 | x1.0 | x1.0 | 0 | x1.2 | x1.0 | 2 | x1.0 | x1.0 | 0 | x0.4 | x1.0 | x1.0 |
-| class.sage | x0.85 | `a.arc-magic`1  | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x0.8 | x1.3 | 4 | x1.0 | x1.0 | 0 | x0.8 | x1.3 | x1.0 |
-
+| class.ninja | x0.75 | `a.first-strike`1 | 0.05 | 0.03 | x0.7 | x1.3 | 5 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x0.5 | x0.5 | x1.0 |
+| class.wizard | x0.50 | `a.resonance`1 | 0.00 | -0.015 | x1.0 | x1.0 | 0 | x1.2 | x1.0 | 2 | x1.0 | x1.0 | 0 | x0.4 | x1.0 | x0.8 |
+| class.sage | x0.85 | `a.arc-magic`1 | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x0.8 | x1.3 | 4 | x1.0 | x1.0 | 0 | x0.8 | x1.3 | x1.0 |
+| class.alchemist | x0.70 | `a.arcane-stability`1 | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.2 | x1.0 | 5 | x1.0 | x1.0 | 0 | x0.7 | x0.7 | x1.2 |
 | class.guardian | x1.50 | (none) | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 2 | x1.3 | x0.6 | x1.0 |
-
-| Duelist | 100 | `a.counter`1 | 0.01 | 0.01 | 0 | 0 | 0 | 0 | 52 | 4 | x1.0 | x1.0 | x1.2 | 13 | 13 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 5 |
-| Ninja | 92 | `a.re-attack`1 | 0.00 | 0.04 | 0 | 0 | 0 | 0 | 59 | 4 | x1.0 | x1.0 | x1.2 | 12 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 7 |
-| Samurai | 80 | `a.iaigiri`1 | -0.05 | -0.01 | 0 | 0 | 0 | 0 | 93 | 1 | x1.0 | x1.0 | x1.3 | 11 | 11 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 4 |
-| Lord | 116 | (none) | 0.00 | 0.00 | 0 | 0 | 0 | 0 | 41 | 4 | x1.0 | x1.0 | x1.1 | 15 | 15 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 8 |
-| Ranger | 88 | (none) | 0.03 | 0.01 | 35 | 4 | 0 | 0 | 0 | 0 | x1.2 | x1.0 | x1.0 | 12 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 6 |
-| Wizard | 54 | `a.resonance`1 | 0.00 | -0.015 | 0 | 0 | 48 | 2 | 0 | 0 | x1.0 | x1.2 | x1.0 | 5 | 15 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 4 |
-| Sage | 94 | (none) | 0.00 | 0.00 |0 | 0 | 26 | 4 | 0 | 0 | x1.0 | x1.2 | x1.0 | 12 | 17 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 4 |
-| Rogue | 80 | `a.deflection`1, `a.first-strike`1 | 0.06 | 0.06 | 26 | 4 | 0 | 0 | 26 | 4 | x1.2 | x1.0 | x1.0 | 10 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 4 |
-| Pilgrim | 124 | `a.null-counter`1 | 0.00 | 0.02 | 0 | 0 | 26 | 2 | 41 | 2 | x1.0 | x1.2 | x1.2 | 14 | 14 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 3 |
+| class.pilgrim | x1.20 | (none) | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 2 | x1.0 | x1.0 | 0 | x1.1 | x1.1 | x0.4 |
+| class.lord | x1.20 | (none) | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 2 | x1.2 | x1.2 | x1.6 |
 
 
 #### 4.1.5 Master_Data_Definitions
