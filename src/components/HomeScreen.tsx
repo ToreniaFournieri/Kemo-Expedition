@@ -4523,6 +4523,7 @@ function PartyTab({
     { label: '魔法', classIds: ['wizard', 'sage', 'alchemist'] },
     { label: '補助', classIds: ['guardian', 'pilgrim', 'lord'] },
   ];
+  const classCategorySelectorGridClass = 'grid grid-cols-4 gap-1';
   const predispositionCategoryDefinitions: Array<{ label: string; ids: Character['predispositionId'][] }> = [
     { label: '外向的', ids: ['aggressive', 'inquisitive', 'amiable'] },
     { label: '内向的', ids: ['stubborn', 'evasive', 'introspective'] },
@@ -5185,7 +5186,7 @@ function PartyTab({
                 return (
                   <>
                     <div className="rounded border border-gray-200 bg-white p-2 text-xs">
-                      <div className="mb-1 text-xs text-gray-600 select-none">
+                      <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
                         <span className="font-bold">メインクラス</span>: {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? '(師範)' : ''} |{' '}
                         {selectedMainBonusEntries.map((entry, index) => (
                           <Fragment key={entry.key}>
@@ -5209,7 +5210,7 @@ function PartyTab({
                         ))}
                       </div>
                       {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Main Class selection */}
-                      <div className="grid grid-cols-4 gap-1">
+                      <div className={classCategorySelectorGridClass}>
                         {classCategoryDefinitions.map((category) => (
                           <div key={`main-class-${category.label}`} className="space-y-1">
                             <div className="text-center text-[11px] text-gray-500">{category.label}</div>
@@ -5255,12 +5256,13 @@ function PartyTab({
                 ];
                 const selectedSubBonusEntries = selectedSubBonusList
                   .map((bonus, index) => buildInlineBonusEntry('sub-class-bonus', selectedSubClassId, bonus, index))
-                  .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null);
+                  .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null)
+                  .filter((entry, index, entries) => entries.findIndex((candidate) => candidate.label === entry.label) === index);
 
                 return (
                   <>
                     <div className="rounded border border-gray-200 bg-white p-2 text-xs">
-                      <div className="mb-1 text-xs text-gray-600 select-none">
+                      <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
                         <span className="font-bold">サブクラス</span>: {selectedSubClass?.name ?? '-'} |{' '}
                         {selectedSubBonusEntries.map((entry, index) => (
                           <Fragment key={entry.key}>
@@ -5284,7 +5286,7 @@ function PartyTab({
                         ))}
                       </div>
                       {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Sub Class selection */}
-                      <div className="grid grid-cols-4 gap-1">
+                      <div className={classCategorySelectorGridClass}>
                         {classCategoryDefinitions.map((category) => (
                           <div key={`sub-class-${category.label}`} className="space-y-1">
                             <div className="text-center text-[11px] text-gray-500">{category.label}</div>
