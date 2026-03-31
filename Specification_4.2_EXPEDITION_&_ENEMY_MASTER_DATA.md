@@ -222,9 +222,9 @@
 | 6 | 6 | 1-2 | 40 | Normal | `Mech` | Lord | `i.shield`U, `i.robe`U | 共鳴祭壇ガード機 |
 | 6 | 6 | 1-2 | 40 | Normal | `Mech` | Wizard | `i.wand`U, `i.catalyst`U | 共鳴術式コア機 |
 | 6 | 6 | 1-2 | 40 | Normal | `Mech` | Fighter | `i.sword`U, `i.gauntlet`U | 共鳴前衛オートマタ |
-| 6 | 6 | 3 | 43 | Elite | `Mustelid` | Samurai | `i.shield`BD, `i.katana`BD | マステリド護刃兵 |
-| 6 | 6 | 3 | 43 | Elite | `Mustelid` | Ranger | `i.arrow`BD, `i.archery`BD | マステリド迅射兵 |
-| 6 | 6 | 4 | 45 | BOSS | `Mustelid` | Sage | `i.armor`BD, `i.catalyst`BD | 遺構主機ヴェルグリム |
+| 6 | 6 | 3 | 43 | Elite | `Procyonian` | Samurai | `i.shield`BD, `i.katana`BD | プロキオニアン護刃兵 |
+| 6 | 6 | 3 | 43 | Elite | `Procyonian` | Ranger | `i.arrow`BD, `i.archery`BD | プロキオニアン迅射兵 |
+| 6 | 6 | 4 | 45 | BOSS | `Procyonian` | Sage | `i.armor`BD, `i.catalyst`BD | 遺構主機ヴェルグリム |
 | 7 | 1 | 1-2 | 42 | Normal | `Titan` | Rogue | `i.bolt`U, `i.armor`U | 月輪の巨斥候 |
 | 7 | 1 | 1-2 | 42 | Normal | `Titan` | Wizard | `i.wand`U, `i.catalyst`U | 光輪の巨導師 |
 | 7 | 1 | 1-2 | 42 | Normal | `Titan` | Ranger | `i.arrow`U, `i.archery`U | 星屑の巨射手 |
