@@ -2020,13 +2020,8 @@ const AUTO_EQUIPMENT_HELP_LINES = [
   '※超レア装備は置き換わる事はない',
 ];
 
-type AutoEquipmentTargetCategory = ItemCategory | 'i.melee' | 'i.ranged' | 'i.magic';
-
-const AUTO_EQUIPMENT_GROUP_CATEGORIES: Record<Exclude<AutoEquipmentTargetCategory, ItemCategory>, ItemCategory[]> = {
-  'i.melee': ['sword', 'katana'],
-  'i.ranged': ['arrow', 'bolt'],
-  'i.magic': ['wand', 'grimoire'],
-};
+type AutoEquipmentCombatStyle = 'ranged' | 'magic' | 'melee';
+type AutoEquipmentTargetCategory = ItemCategory | 'i.weapon' | 'i.NoA';
 
 function normalizeAutoEquipmentMode(mode: Character['autoEquipmentMode']): AutoEquipmentMode {
   if (mode === 0 || mode === 2) return mode;
@@ -2034,43 +2029,40 @@ function normalizeAutoEquipmentMode(mode: Character['autoEquipmentMode']): AutoE
 }
 
 const AUTO_EQUIPMENT_PRIORITY_BY_CLASS: Record<Character['mainClassId'], AutoEquipmentTargetCategory[]> = {
-  guardian: ['armor', 'i.melee', 'robe', 'gauntlet', 'i.melee', 'shield', 'armor', 'robe', 'i.melee', 'shield', 'i.melee'],
-  duelist: ['i.melee', 'gauntlet', 'armor', 'robe', 'i.melee', 'armor', 'gauntlet', 'i.melee', 'armor', 'robe', 'i.melee'],
-  samurai: ['i.melee', 'gauntlet', 'armor', 'robe', 'i.melee', 'gauntlet', 'i.melee', 'i.melee', 'armor', 'robe', 'gauntlet'],
-  'sword-saint': ['i.melee', 'gauntlet', 'armor', 'robe', 'i.melee', 'gauntlet', 'i.melee', 'i.melee', 'armor', 'robe', 'gauntlet'],
-  striker: ['i.ranged', 'bolt', 'armor', 'robe', 'i.ranged', 'arrow', 'archery', 'i.ranged', 'armor', 'robe', 'i.ranged'],
-  ninja: ['i.ranged', 'archery', 'armor', 'robe', 'i.ranged', 'arrow', 'archery', 'i.ranged', 'armor', 'robe', 'i.ranged'],
-  lord: ['i.melee', 'armor', 'robe', 'i.melee', 'gauntlet', 'i.melee', 'armor', 'robe', 'i.melee', 'shield', 'i.melee', 'gauntlet'],
-  ranger: ['i.ranged', 'archery', 'armor', 'robe', 'i.ranged', 'arrow', 'archery', 'i.ranged', 'armor', 'robe', 'i.ranged'],
-  wizard: ['i.magic', 'catalyst', 'armor', 'robe', 'i.magic', 'i.magic', 'catalyst', 'i.magic', 'i.magic', 'robe', 'i.magic'],
-  sage: ['i.magic', 'catalyst', 'armor', 'robe', 'i.magic', 'i.magic', 'catalyst', 'i.magic', 'i.magic', 'robe', 'catalyst'],
-  alchemist: ['i.magic', 'catalyst', 'armor', 'robe', 'i.magic', 'i.magic', 'catalyst', 'i.magic', 'i.magic', 'robe', 'catalyst'],
-  pilgrim: ['i.magic', 'catalyst', 'armor', 'robe', 'i.magic', 'i.magic', 'catalyst', 'i.magic', 'i.magic', 'robe', 'catalyst'],
+  guardian: ['armor', 'i.weapon', 'robe', 'i.NoA', 'i.weapon', 'shield', 'armor', 'robe', 'i.weapon', 'shield', 'i.weapon'],
+  duelist: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'armor', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon'],
+  samurai: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'i.NoA', 'i.weapon', 'i.weapon', 'armor', 'robe', 'i.NoA'],
+  'sword-saint': ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'armor', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon'],
+  striker: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'arrow', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon', 'i.NoA'],
+  ninja: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'arrow', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon'],
+  lord: ['i.weapon', 'armor', 'robe', 'i.weapon', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon', 'shield', 'i.weapon', 'i.NoA'],
+  ranger: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'arrow', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon'],
+  wizard: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'i.weapon', 'i.NoA', 'i.weapon', 'i.weapon', 'robe', 'i.weapon'],
+  sage: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'i.weapon', 'i.NoA', 'i.weapon', 'i.weapon', 'robe', 'i.NoA'],
+  alchemist: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'i.weapon', 'i.NoA', 'i.weapon', 'i.weapon', 'robe', 'i.weapon'],
+  pilgrim: ['i.weapon', 'armor', 'robe', 'i.weapon', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon', 'shield', 'i.weapon', 'i.NoA'],
 };
 
 function getNextMissingAutoEquipmentCategory(
   priorities: AutoEquipmentTargetCategory[],
   equippedCategoryCounts: Partial<Record<ItemCategory, number>>,
+  resolveGroupCount: (targetCategory: AutoEquipmentTargetCategory) => number,
+  skippedCategories: Set<AutoEquipmentTargetCategory>,
 ): AutoEquipmentTargetCategory | null {
   const requiredCounts: Partial<Record<AutoEquipmentTargetCategory, number>> = {};
 
-  const getEquippedCountForTargetCategory = (targetCategory: AutoEquipmentTargetCategory): number => {
-    if (targetCategory in AUTO_EQUIPMENT_GROUP_CATEGORIES) {
-      return AUTO_EQUIPMENT_GROUP_CATEGORIES[targetCategory as keyof typeof AUTO_EQUIPMENT_GROUP_CATEGORIES]
-        .reduce((sum, category) => sum + (equippedCategoryCounts[category] ?? 0), 0);
-    }
-
-    return equippedCategoryCounts[targetCategory as ItemCategory] ?? 0;
-  };
-
   for (const category of priorities) {
+    if (skippedCategories.has(category)) continue;
     requiredCounts[category] = (requiredCounts[category] ?? 0) + 1;
-    if (getEquippedCountForTargetCategory(category) < (requiredCounts[category] ?? 0)) {
+    const equippedCount = category === 'i.weapon' || category === 'i.NoA'
+      ? resolveGroupCount(category)
+      : (equippedCategoryCounts[category as ItemCategory] ?? 0);
+    if (equippedCount < (requiredCounts[category] ?? 0)) {
       return category;
     }
   }
 
-  return priorities[priorities.length - 1] ?? null;
+  return null;
 }
 
 export function HomeScreen({
@@ -2508,15 +2500,93 @@ export function HomeScreen({
       return coreConceptValue;
     };
 
+    const getCharacterAutoEquipBonuses = (character: Character): Bonus[] => {
+      const race = RACES.find((r) => r.id === character.raceId);
+      const mainClass = CLASSES.find((c) => c.id === character.mainClassId);
+      const subClass = CLASSES.find((c) => c.id === character.subClassId);
+      const predisposition = PREDISPOSITIONS.find((p) => p.id === character.predispositionId);
+      const lineage = LINEAGES.find((l) => l.id === character.lineageId);
+      if (!race || !mainClass || !subClass || !predisposition || !lineage) return [];
+
+      const isMasterClass = character.mainClassId === character.subClassId;
+      return [
+        ...race.bonuses,
+        ...mainClass.mainSubBonuses,
+        ...(isMasterClass ? mainClass.masterBonuses : mainClass.mainBonuses),
+        ...(isMasterClass ? [] : subClass.mainSubBonuses),
+        ...predisposition.bonuses,
+        ...lineage.bonuses,
+      ];
+    };
+
+    const decideAutoEquipmentCombatStyle = (character: Character): AutoEquipmentCombatStyle | null => {
+      // SpecRef: 7.1.1.2 | Equipping into empty slots | Decide the combat style
+      const bonuses = getCharacterAutoEquipBonuses(character);
+      const enableFlags = { ranged: false, magic: false, melee: false };
+      const bestMultiplierByType = new Map<string, number>();
+
+      for (const bonus of bonuses) {
+        if (bonus.type === 'pursuit' || bonus.type === 'equip_ranged') enableFlags.ranged = true;
+        if (bonus.type === 'caster' || bonus.type === 'equip_magic') enableFlags.magic = true;
+        if (bonus.type === 'grit' || bonus.type === 'equip_melee') enableFlags.melee = true;
+        if (!bonus.type.endsWith('_multiplier')) continue;
+        const existing = bestMultiplierByType.get(bonus.type);
+        if (existing == null || bonus.value > existing) {
+          bestMultiplierByType.set(bonus.type, bonus.value);
+        }
+      }
+
+      const toScore = (multiplierType: string): number => {
+        const value = bestMultiplierByType.get(multiplierType);
+        if (value == null) return 0;
+        return Math.max(0, value - 1);
+      };
+
+      const scores: Record<AutoEquipmentCombatStyle, number> = {
+        ranged: toScore('arrow_multiplier') + toScore('bolt_multiplier') + toScore('archery_multiplier'),
+        magic: toScore('wand_multiplier') + toScore('grimoire_multiplier') + toScore('catalyst_multiplier'),
+        melee: toScore('sword_multiplier') + toScore('katana_multiplier') + toScore('gauntlet_multiplier'),
+      };
+
+      const ranking: AutoEquipmentCombatStyle[] = ['ranged', 'magic', 'melee'];
+      let bestStyle: AutoEquipmentCombatStyle | null = null;
+      let bestScore = Number.NEGATIVE_INFINITY;
+      ranking.forEach((style) => {
+        if (!enableFlags[style]) return;
+        if (scores[style] > bestScore) {
+          bestStyle = style;
+          bestScore = scores[style];
+        }
+      });
+
+      return bestStyle;
+    };
+
+    const resolveAutoEquipmentTargetCategory = (
+      targetCategory: AutoEquipmentTargetCategory,
+      combatStyle: AutoEquipmentCombatStyle | null,
+    ): ItemCategory[] => {
+      if (targetCategory === 'i.weapon') {
+        if (combatStyle === 'ranged') return ['arrow', 'bolt'];
+        if (combatStyle === 'magic') return ['wand', 'grimoire'];
+        if (combatStyle === 'melee') return ['sword', 'katana'];
+        return [];
+      }
+      if (targetCategory === 'i.NoA') {
+        if (combatStyle === 'ranged') return ['archery'];
+        if (combatStyle === 'magic') return ['catalyst'];
+        if (combatStyle === 'melee') return ['gauntlet'];
+        return [];
+      }
+      return [targetCategory];
+    };
+
     const getBestVariantKeyInCategory = (
       targetCategory: AutoEquipmentTargetCategory,
+      targetCategories: ItemCategory[],
       memoryItemIds: Set<number>,
       memoryCBonusNames: Set<string>,
     ): string | null => {
-      const targetCategories = targetCategory in AUTO_EQUIPMENT_GROUP_CATEGORIES
-        ? AUTO_EQUIPMENT_GROUP_CATEGORIES[targetCategory as keyof typeof AUTO_EQUIPMENT_GROUP_CATEGORIES]
-        : [targetCategory as ItemCategory];
-
       const options = Object.entries(simulatedInventory)
         .filter(([, variant]) => {
           if (
@@ -2604,6 +2674,8 @@ export function HomeScreen({
         const autoEquipmentMode = normalizeAutoEquipmentMode(character.autoEquipmentMode);
         if (autoEquipmentMode === 0) return;
 
+        // SpecRef: 7.1.1.2 | Equipping into empty slots | Item selection from a specific item category
+        const combatStyle = decideAutoEquipmentCombatStyle(character);
         const priorities = AUTO_EQUIPMENT_PRIORITY_BY_CLASS[character.mainClassId] ?? AUTO_EQUIPMENT_PRIORITY_BY_CLASS.guardian;
         const { maxEquipSlots } = computeCharacterStats(character, party.level);
         const simulatedEquipmentSlots = Array.from({ length: maxEquipSlots }, (_, index) => character.equipment[index] ?? null);
@@ -2631,6 +2703,11 @@ export function HomeScreen({
           .map((item, slotIndex) => (item ? -1 : slotIndex))
           .filter((index) => index >= 0);
         const equippedCategoryCounts: Partial<Record<ItemCategory, number>> = {};
+        const getResolvedCategoryCount = (targetCategory: AutoEquipmentTargetCategory): number => {
+          const resolvedCategories = resolveAutoEquipmentTargetCategory(targetCategory, combatStyle);
+          if (resolvedCategories.length === 0) return 0;
+          return resolvedCategories.reduce((sum, category) => sum + (equippedCategoryCounts[category] ?? 0), 0);
+        };
         simulatedEquipmentSlots.forEach((item) => {
           if (!item) return;
           memoryItemIds.add(item.id);
@@ -2639,21 +2716,44 @@ export function HomeScreen({
         });
 
         emptySlotIndexes.forEach((slotIndex) => {
-          const targetCategory = getNextMissingAutoEquipmentCategory(priorities, equippedCategoryCounts);
-          if (!targetCategory) return;
+          const skippedCategories = new Set<AutoEquipmentTargetCategory>();
+          let resolvedSelection: { itemKey: string } | null = null;
 
-          const itemKey = getBestVariantKeyInCategory(targetCategory, memoryItemIds, memoryCBonusNames);
-          if (!itemKey) return;
+          while (!resolvedSelection) {
+            const targetCategory = getNextMissingAutoEquipmentCategory(
+              priorities,
+              equippedCategoryCounts,
+              getResolvedCategoryCount,
+              skippedCategories,
+            );
+            if (!targetCategory) break;
 
-          const variant = simulatedInventory[itemKey];
+            const resolvedCategories = resolveAutoEquipmentTargetCategory(targetCategory, combatStyle);
+            if (resolvedCategories.length === 0) {
+              skippedCategories.add(targetCategory);
+              continue;
+            }
+
+            const itemKey = getBestVariantKeyInCategory(targetCategory, resolvedCategories, memoryItemIds, memoryCBonusNames);
+            if (!itemKey) {
+              skippedCategories.add(targetCategory);
+              continue;
+            }
+
+            resolvedSelection = { itemKey };
+          }
+
+          if (!resolvedSelection) return;
+
+          const variant = simulatedInventory[resolvedSelection.itemKey];
           if (!variant) return;
 
           equippedCategoryCounts[variant.item.category] = (equippedCategoryCounts[variant.item.category] ?? 0) + 1;
-          removeItemFromSimulatedInventory(itemKey);
+          removeItemFromSimulatedInventory(resolvedSelection.itemKey);
           simulatedEquipmentSlots[slotIndex] = variant.item;
           memoryItemIds.add(variant.item.id);
           getItemCBonusSignatures(variant.item).forEach((bonusName) => memoryCBonusNames.add(bonusName));
-          actions.equipItem(character.id, slotIndex, itemKey, partyIndex);
+          actions.equipItem(character.id, slotIndex, resolvedSelection.itemKey, partyIndex);
           if (autoEquipmentMode !== 2) {
             queueAutoEquipmentNotification(party.name, character.name, character.id, slotIndex, variant.item, null, partyIndex);
           }
