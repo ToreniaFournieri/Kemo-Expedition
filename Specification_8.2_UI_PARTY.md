@@ -105,7 +105,7 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
 外交的    内向的    適応    機知
 好,探,和  頑,避,内  献,冷,軽  看,精,腕
 ```
-  - Displays selected Lineage: "好戦的 | 剣x1.1, ボx1.1, 媒x1.1"
+  - Displays selected Predisposition: "好戦 | 剣x1.1, ボx1.1, 媒x1.1"
   - Each entry shows its name and unique bonus.
 - Lineage selection:
   - Category tabs: single-row, no wrap, fit within one viewport width.
@@ -113,7 +113,7 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
 動乱    狩猟    学識    生存
 砂,灰,焔  海,穹,凍  桃,機,適  断,風,誓
 ```
-  - Displays selected Predisposition: "砂塵の系譜 | 剣x1.2"
+  - Displays selected Lineage: "砂塵の系譜 | 剣x1.2"
 
 **2. Edit Confirmation Rules:**
 - **Done (完了):**
