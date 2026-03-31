@@ -35,7 +35,7 @@
     - 4th slot → `i.armor`
   - because these are the earliest categories in the order that are not yet satisfied.
 
-- class.duelist:
+- class.duelist, class.sword-saint:
 
 | order | item category |
 |-|-|
@@ -68,23 +68,8 @@
 | 10 | `i.robe` |
 | 11 | `i.NoA` |
 
-- class.sword-saint:
 
-| order | item category |
-|-|-|
-| 1 | `i.weapon` |
-| 2 | `i.NoA` |
-| 3 | `i.armor` |
-| 4 | `i.robe` |
-| 5 | `i.weapon` |
-| 6 | `i.armor` |
-| 7 | `i.NoA` |
-| 8 | `i.weapon` |
-| 9 | `i.armor` |
-| 10 | `i.robe` |
-| 11 | `i.weapon` |
-
-- class.ranger:
+- class.ranger, class.ninja:
 
 | order | item category |
 |-|-|
@@ -117,23 +102,7 @@
 | 11 | `i.weapon` |
 | 12 | `i.NoA` |
 
-- class.ninja:
-
-| order | item category |
-|-|-|
-| 1 | `i.weapon` |
-| 2 | `i.NoA` |
-| 3 | `i.armor` |
-| 4 | `i.robe` |
-| 5 | `i.weapon` |
-| 6 | `i.arrow` |
-| 7 | `i.NoA` |
-| 8 | `i.weapon` |
-| 9 | `i.armor` |
-| 10 | `i.robe` |
-| 11 | `i.weapon` |
-
-- class.wizard:
+- class.wizard, class.alchemist:
 
 | order | item category |
 |-|-|
@@ -165,23 +134,6 @@
 | 10 | `i.robe` |
 | 11 | `i.NoA` |
 
-- class.alchemist:
-
-| order | item category |
-|-|-|
-| 1 | `i.weapon`  |
-| 2 | `i.NoA` |
-| 3 | `i.armor` |
-| 4 | `i.robe` |
-| 5 | `i.weapon`  |
-| 6 | `i.weapon`  |
-| 7 | `i.NoA` |
-| 8 | `i.weapon`  |
-| 9 | `i.weapon`  |
-| 10 | `i.robe` |
-| 11 | `i.NoA` |
-
-
 - class.guardian:
 
 | order | item category |
@@ -198,24 +150,7 @@
 | 10 | `i.shield` |
 | 11 | `i.weapon` |
 
-- class.lord:
-
-| order | item category |
-|-|-|
-| 1 | `i.weapon` |
-| 2 | `i.armor` |
-| 3 | `i.robe` |
-| 4 | `i.weapon` |
-| 5 | `i.NoA` |
-| 6 | `i.weapon` |
-| 7 | `i.armor` |
-| 8 | `i.robe` |
-| 9 | `i.weapon` |
-| 10 | `i.shield` |
-| 11 | `i.weapon` |
-| 12 | `i.NoA` |
-
-- class.pilgrim:
+- class.lord, class.pilgrim:
 
 | order | item category |
 |-|-|
@@ -244,18 +179,21 @@
 
 1. **Decide the combat style**
   - The combat style determined is used to resolve all `i.weapon` and `i.NoA` category selections during this process.
-  - Compare combat style scores:
-    - Ranged: total sum of (1 - `c.arrow_x1.x`), (1 - `c.bolt_x1.x`), and (1 - `c.archery_x1.x`).
-    - Magic: total sum of (1 - `c.wand_x1.x`), (1 - `c.grimoire_x1.x`) , and (1 - `c.catalyst_x1.x`).
-    - Melee: total sum of (1 - `c.sword_x1.x`), (1 - `c.katana_x1.x`) , and (1 - `c.gauntlet_x1.x`).
-    - Note: Only one `c.*` bonus of the exact same name applies.
-    - Example: If character has `c.sword_x1.4`, `c.arrow_x1.2`, `c.bolt_x1.2`, `c.gauntlet_x1.1`, Ranged: 0.4 (arrow 0.2 + bolt 0.2) and Melee: 0.5 (sword 0.4 + gauntlet 0.1) so "Melee" is selected.
-    - Tie-breaker: Ranged > Magic > Melee
+    - Only combat styles enabled by corresponding `c.equip_*` bonuses are considered.
+    - If multiple `c.equip_*` bonuses are present, compare all enabled combat style scores and select the highest one.
+      - Ranged: total sum of (1 - `c.arrow_x1.x`), (1 - `c.bolt_x1.x`), and (1 - `c.archery_x1.x`).
+      - Magic: total sum of (1 - `c.wand_x1.x`), (1 - `c.grimoire_x1.x`) , and (1 - `c.catalyst_x1.x`).
+      - Melee: total sum of (1 - `c.sword_x1.x`), (1 - `c.katana_x1.x`) , and (1 - `c.gauntlet_x1.x`).
+      - Note: Only one `c.*` bonus of the exact same name applies.
+      - Example: If character has `c.sword_x1.4`, `c.arrow_x1.2`, `c.bolt_x1.2`, `c.gauntlet_x1.1`, Ranged: 0.4 (arrow 0.2 + bolt 0.2) and Melee: 0.5 (sword 0.4 + gauntlet 0.1) so "Melee" is selected.
+      - Tie-breaker: Ranged > Magic > Melee
+      - If no combat style is enabled, the result is None.
 
   - If Ranged: target `i.weapon` item categories are `i.arrow` and `i.bolt`, and target `i.NoA` item category is `i.archery`.
   - If Magic: target `i.weapon` item categories are `i.wand` and `i.grimoire`, and target `i.NoA` item category is `i.catalyst`.
   - If Melee: target `i.weapon` item categories are `i.sword` and `i.katana`, and target `i.NoA` item category is `i.gauntlet`.
-  
+  - If None: `i.weapon` and `i.NoA` cannot be selected. (Skipped)
+   
 2. **Initialize memory**
    - Record the **item IDs** of all currently equipped items as **Memory A**.
    - Record all **`c.*` bonus effects** provided by the currently equipped items as **Memory B**.
