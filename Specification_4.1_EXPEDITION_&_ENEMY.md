@@ -240,6 +240,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 - **Calculation of master value**
 - `d.HP` master value: `d.HP` x mainClass.`d.HP_modifier`  x subClass.`d.HP_modifier`
 - `a.ability` add :`a.ability` + mainClass.`a.ability_add`  // No subClass ability added
+  - If mainclass == subClass, then increment its ability level by 1.
 - `f.attack` master value:
   - Ranged: `d.ranged_attack` x mainClass.`d.ranged_attack_modifier` x subClass.`d.ranged_attack_modifier`
   - Magical: `d.magical_attack` x mainClass.`d.magical_attack_modifier` x subClass.`d.magical_attack_modifier`
