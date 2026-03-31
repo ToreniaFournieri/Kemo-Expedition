@@ -1804,26 +1804,33 @@ function getRaceBonusesForSelection(race: Race, unlockAbilityActive = false): Bo
 }
 
 const PREDISPOSITION_SHORT_NAMES: Record<string, string> = {
-  sturdy: '頑',
-  agile: '俊',
-  brilliant: '聡',
-  dexterous: '器',
-  chivalric: '騎',
-  shikon: '士',
-  pursuing: '追',
-  canny: '商',
-  persistent: '耐',
+  aggressive: '好',
+  inquisitive: '探',
+  amiable: '和',
+  stubborn: '頑',
+  evasive: '避',
+  introspective: '内',
+  devoted: '献',
+  serene: '冷',
+  nimble: '軽',
+  perceptive: '看',
+  precise: '精',
+  resourceful: '腕',
 };
 
 const LINEAGE_SHORT_NAMES: Record<string, string> = {
-  steel_oath: '鋼',
-  war_spirit: '魂',
-  far_sight: '眼',
-  unmoving: '不',
-  breaking_hand: '砕',
-  guiding_thought: '導',
-  hidden_principles: '秘',
-  inherited_oaths: '継',
+  sandstorm: '砂',
+  ashen_capital: '灰',
+  blaze_peak: '焔',
+  abyssal_sea: '海',
+  firmament: '穹',
+  frozen_forest: '凍',
+  utopia: '桃',
+  machina: '機',
+  adaptation: '適',
+  fragment: '断',
+  windcross: '風',
+  oath: '誓',
 };
 
 // Category name mapping
@@ -4494,11 +4501,28 @@ function PartyTab({
   const subClass = CLASSES.find(c => c.id === char.subClassId)!;
   const predisposition = PREDISPOSITIONS.find(p => p.id === char.predispositionId)!;
   const lineage = LINEAGES.find(l => l.id === char.lineageId)!;
+  const raceCategoryDefinitions: Array<{ label: string; raceIds: Character['raceId'][] }> = [
+    { label: '肉食', raceIds: ['lupinian', 'vulpinian', 'felidian'] },
+    { label: '雑食', raceIds: ['caninian', 'ursan', 'procyonian'] },
+    { label: '草食', raceIds: ['leporian', 'cervin', 'murid'] },
+  ];
   const classCategoryDefinitions: Array<{ label: string; classIds: Character['mainClassId'][] }> = [
     { label: '近接', classIds: ['duelist', 'samurai', 'sword-saint'] },
     { label: '遠距離', classIds: ['ranger', 'striker', 'ninja'] },
     { label: '魔法', classIds: ['wizard', 'sage', 'alchemist'] },
     { label: '補助', classIds: ['guardian', 'pilgrim', 'lord'] },
+  ];
+  const predispositionCategoryDefinitions: Array<{ label: string; ids: Character['predispositionId'][] }> = [
+    { label: '外向的', ids: ['aggressive', 'inquisitive', 'amiable'] },
+    { label: '内向的', ids: ['stubborn', 'evasive', 'introspective'] },
+    { label: '適応', ids: ['devoted', 'serene', 'nimble'] },
+    { label: '機知', ids: ['perceptive', 'precise', 'resourceful'] },
+  ];
+  const lineageCategoryDefinitions: Array<{ label: string; ids: Character['lineageId'][] }> = [
+    { label: '動乱', ids: ['sandstorm', 'ashen_capital', 'blaze_peak'] },
+    { label: '狩猟', ids: ['abyssal_sea', 'firmament', 'frozen_forest'] },
+    { label: '学識', ids: ['utopia', 'machina', 'adaptation'] },
+    { label: '生存', ids: ['fragment', 'windcross', 'oath'] },
   ];
   const classById = new Map(CLASSES.map((classDef) => [classDef.id, classDef]));
 
@@ -5081,31 +5105,27 @@ function PartyTab({
           <div className="space-y-2 text-sm">
             <div>
               <label className="block text-gray-500">種族</label>
-              <div className="mt-2 max-h-40 overflow-y-auto rounded border border-gray-200 bg-white">
+              <div className="mt-2 rounded border border-gray-200 bg-white p-2 text-xs">
                 {(() => {
                   const selectedRaceId = pendingEdits?.raceId ?? char.raceId;
                   const selectedRace = RACES.find((race) => race.id === selectedRaceId) ?? RACES[0];
-                  const otherRaces = RACES.filter((race) => race.id !== selectedRace.id);
+                  const selectedRaceBonuses = formatBonuses(getRaceBonusesForSelection(selectedRace));
 
-                  const renderRaceOption = (race: Race, isSelectedRace: boolean, extraClassName = '') => {
-                    const s = race.stats;
-                    const bonusText = formatBonuses(getRaceBonusesForSelection(race));
-
+                  const renderRaceOption = (race: Race, isSelectedRace: boolean) => {
                     return (
                       <button
                         key={`race-image-${race.id}`}
                         type="button"
                         onClick={() => handleRaceChange(race.id)}
-                        className={`w-full px-2 py-1.5 text-left border-b border-gray-100 last:border-b-0 text-xs ${
-                          isSelectedRace ? 'bg-white font-semibold' : 'hover:bg-gray-50'
-                        } ${extraClassName}`}
+                        className={`min-w-0 flex-1 px-0 py-1 text-xs border ${
+                          isSelectedRace
+                            ? 'bg-sub text-white border-sub'
+                            : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
+                        } ${race.id === 'lupinian' || race.id === 'caninian' || race.id === 'leporian' ? 'rounded-l' : race.id === 'felidian' || race.id === 'procyonian' || race.id === 'murid' ? 'rounded-r' : ''}`}
                       >
-                        <span className="flex items-start gap-2">
-                          <RaceIcon race={race} className="h-4 w-4 mt-0.5 shrink-0" />
-                          <span>
-                            <span className="text-gray-800">{race.name}</span>
-                            <span className="text-gray-500"> | 体{s.vitality},力{s.strength},知{s.intelligence},精{s.mind} | {bonusText}</span>
-                          </span>
+                        <span className="flex items-center justify-center gap-1">
+                          <RaceIcon race={race} className="h-4 w-4 shrink-0" />
+                          <span>{race.name}</span>
                         </span>
                       </button>
                     );
@@ -5113,8 +5133,24 @@ function PartyTab({
 
                   return (
                     <>
-                      {renderRaceOption(selectedRace, true, 'sticky top-0 z-10 border-b border-gray-200')}
-                      {otherRaces.map((race) => renderRaceOption(race, false))}
+                      <div className="mb-1 text-xs text-gray-600 select-none">
+                        <RaceIcon race={selectedRace} className="inline-block h-4 w-4 mr-1 align-text-bottom" />
+                        {selectedRace.name} | 体{selectedRace.stats.vitality},力{selectedRace.stats.strength},知{selectedRace.stats.intelligence},精{selectedRace.stats.mind} | {selectedRaceBonuses}
+                      </div>
+                      <div className="grid grid-cols-3 gap-1">
+                        {raceCategoryDefinitions.map((category) => (
+                          <div key={`race-${category.label}`} className="space-y-1">
+                            <div className="text-center text-[11px] text-gray-500 whitespace-nowrap">{category.label}</div>
+                            <div className="flex w-full">
+                              {category.raceIds.map((raceId) => {
+                                const raceData = RACES.find((race) => race.id === raceId);
+                                if (!raceData) return null;
+                                return renderRaceOption(raceData, selectedRaceId === raceId);
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </>
                   );
                 })()}
@@ -5278,37 +5314,95 @@ function PartyTab({
             </div>
             <div>
               <label className="block text-gray-500">性格</label>
-              <select
-                value={pendingEdits?.predispositionId ?? char.predispositionId}
-                onChange={(e) => setPendingEdits({ ...pendingEdits, predispositionId: e.target.value as Character['predispositionId'] })}
-                className="w-full p-1 border rounded text-xs"
-              >
-                {PREDISPOSITIONS.map(p => {
-                  const bonusText = formatBonuses(p.bonuses as Bonus[]);
+              <div className="rounded border border-gray-200 bg-white p-2 text-xs">
+                {(() => {
+                  const selectedPredispositionId = pendingEdits?.predispositionId ?? char.predispositionId;
+                  const selectedPredisposition = PREDISPOSITIONS.find((p) => p.id === selectedPredispositionId) ?? PREDISPOSITIONS[0];
                   return (
-                    <option key={p.id} value={p.id}>
-                      {p.name} | {bonusText}
-                    </option>
+                    <>
+                      <div className="mb-1 text-xs text-gray-600 select-none">
+                        {selectedPredisposition.name} | {formatBonuses(selectedPredisposition.bonuses as Bonus[])}
+                      </div>
+                      <div className="grid grid-cols-4 gap-1">
+                        {predispositionCategoryDefinitions.map((category) => (
+                          <div key={`pred-${category.label}`} className="space-y-1">
+                            <div className="text-center text-[11px] text-gray-500 whitespace-nowrap">{category.label}</div>
+                            <div className="flex w-full">
+                              {category.ids.map((predispositionId, index) => {
+                                const predispositionData = PREDISPOSITIONS.find((p) => p.id === predispositionId);
+                                if (!predispositionData) return null;
+                                const isSelected = selectedPredispositionId === predispositionId;
+                                return (
+                                  <button
+                                    key={`pred-${category.label}-${predispositionId}`}
+                                    type="button"
+                                    onClick={() => setPendingEdits({ ...pendingEdits, predispositionId })}
+                                    className={`min-w-0 flex-1 px-0 py-1 text-xs border ${
+                                      index === 0 ? 'rounded-l' : index === category.ids.length - 1 ? 'rounded-r' : ''
+                                    } ${
+                                      isSelected
+                                        ? 'bg-sub text-white border-sub'
+                                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
+                                    }`}
+                                  >
+                                    {predispositionData.shortName ?? PREDISPOSITION_SHORT_NAMES[predispositionId] ?? predispositionData.name}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
                   );
-                })}
-              </select>
+                })()}
+              </div>
             </div>
             <div>
               <label className="block text-gray-500">家系</label>
-              <select
-                value={pendingEdits?.lineageId ?? char.lineageId}
-                onChange={(e) => setPendingEdits({ ...pendingEdits, lineageId: e.target.value as Character['lineageId'] })}
-                className="w-full p-1 border rounded text-xs"
-              >
-                {LINEAGES.map(l => {
-                  const bonusText = formatBonuses(l.bonuses as Bonus[]);
+              <div className="rounded border border-gray-200 bg-white p-2 text-xs">
+                {(() => {
+                  const selectedLineageId = pendingEdits?.lineageId ?? char.lineageId;
+                  const selectedLineage = LINEAGES.find((l) => l.id === selectedLineageId) ?? LINEAGES[0];
                   return (
-                    <option key={l.id} value={l.id}>
-                      {l.name} | {bonusText}
-                    </option>
+                    <>
+                      <div className="mb-1 text-xs text-gray-600 select-none">
+                        {selectedLineage.name} | {formatBonuses(selectedLineage.bonuses as Bonus[])}
+                      </div>
+                      <div className="grid grid-cols-4 gap-1">
+                        {lineageCategoryDefinitions.map((category) => (
+                          <div key={`lin-${category.label}`} className="space-y-1">
+                            <div className="text-center text-[11px] text-gray-500 whitespace-nowrap">{category.label}</div>
+                            <div className="flex w-full">
+                              {category.ids.map((lineageId, index) => {
+                                const lineageData = LINEAGES.find((l) => l.id === lineageId);
+                                if (!lineageData) return null;
+                                const isSelected = selectedLineageId === lineageId;
+                                return (
+                                  <button
+                                    key={`lineage-${category.label}-${lineageId}`}
+                                    type="button"
+                                    onClick={() => setPendingEdits({ ...pendingEdits, lineageId })}
+                                    className={`min-w-0 flex-1 px-0 py-1 text-xs border ${
+                                      index === 0 ? 'rounded-l' : index === category.ids.length - 1 ? 'rounded-r' : ''
+                                    } ${
+                                      isSelected
+                                        ? 'bg-sub text-white border-sub'
+                                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
+                                    }`}
+                                  >
+                                    {lineageData.shortName ?? LINEAGE_SHORT_NAMES[lineageId] ?? lineageData.name}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
                   );
-                })}
-              </select>
+                })()}
+              </div>
             </div>
           </div>
         ) : (

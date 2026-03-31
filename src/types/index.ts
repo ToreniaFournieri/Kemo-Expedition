@@ -44,23 +44,37 @@ export interface ClassDef {
 
 // Predisposition Types
 export type PredispositionId =
+  | 'aggressive' | 'inquisitive' | 'amiable'
+  | 'stubborn' | 'evasive' | 'introspective'
+  | 'devoted' | 'serene' | 'nimble'
+  | 'perceptive' | 'precise' | 'resourceful'
+  // legacy ids for save compatibility
   | 'sturdy' | 'agile' | 'brilliant' | 'dexterous' | 'chivalric'
   | 'shikon' | 'pursuing' | 'canny' | 'persistent';
 
 export interface Predisposition {
   id: PredispositionId;
   name: string;
+  shortName?: string;
+  category?: string;
   bonuses: Bonus[];
 }
 
 // Lineage Types
 export type LineageId =
+  | 'sandstorm' | 'ashen_capital' | 'blaze_peak'
+  | 'abyssal_sea' | 'firmament' | 'frozen_forest'
+  | 'utopia' | 'machina' | 'adaptation'
+  | 'fragment' | 'windcross' | 'oath'
+  // legacy ids for save compatibility
   | 'steel_oath' | 'war_spirit' | 'far_sight' | 'unmoving'
   | 'breaking_hand' | 'guiding_thought' | 'hidden_principles' | 'inherited_oaths';
 
 export interface Lineage {
   id: LineageId;
   name: string;
+  shortName?: string;
+  category?: string;
   bonuses: Bonus[];
 }
 

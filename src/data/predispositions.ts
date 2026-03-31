@@ -1,77 +1,34 @@
 import { Predisposition } from '../types';
 
+// SpecRef: 8.2.3 | Character Edit Mode (selected member) | Predisposition selection
 export const PREDISPOSITIONS: Predisposition[] = [
-  {
-    id: 'sturdy',
-    name: '頑強',
-    bonuses: [
-      { type: 'vitality', value: 2 },
-      { type: 'armor_multiplier', value: 1.1 },
-    ],
-  },
-  {
-    id: 'agile',
-    name: '俊敏',
-    bonuses: [
-      { type: 'evasion', value: 0.01 },
-    ],
-  },
-  {
-    id: 'brilliant',
-    name: '聡明',
-    bonuses: [
-      { type: 'wand_multiplier', value: 1.2 },
-    ],
-  },
-  {
-    id: 'dexterous',
-    name: '器用',
-    bonuses: [
-      { type: 'accuracy', value: 0.01 },
-      { type: 'catalyst_multiplier', value: 1.2 },
-    ],
-  },
-  {
-    id: 'chivalric',
-    name: '騎士道',
-    bonuses: [
-      { type: 'sword_multiplier', value: 1.2 },
-      { type: 'bolt_multiplier', value: 1.1 },
-    ],
-  },
-  {
-    id: 'shikon',
-    name: '士魂',
-    bonuses: [
-      { type: 'strength', value: 1 },
-      { type: 'katana_multiplier', value: 1.1 },
-      { type: 'arrow_multiplier', value: 1.2 },
-    ],
-  },
-  {
-    id: 'pursuing',
-    name: '追求',
-    bonuses: [
-      { type: 'intelligence', value: 2 },
-      { type: 'robe_multiplier', value: 1.1 },
-    ],
-  },
-  {
-    id: 'canny',
-    name: '商才',
-    bonuses: [
-      { type: 'equip_slot', value: 1 },
-    ],
-  },
-  {
-    id: 'persistent',
-    name: '忍耐',
-    bonuses: [
-      { type: 'mind', value: 1 },
-      { type: 'robe_multiplier', value: 1.1 },
-    ],
-  },
+  { id: 'aggressive', name: '好戦', shortName: '好', category: '外向的', bonuses: [{ type: 'sword_multiplier', value: 1.1 }, { type: 'bolt_multiplier', value: 1.1 }, { type: 'catalyst_multiplier', value: 1.1 }] },
+  { id: 'inquisitive', name: '探求', shortName: '探', category: '外向的', bonuses: [{ type: 'katana_multiplier', value: 1.1 }, { type: 'arrow_multiplier', value: 1.1 }, { type: 'grimoire_multiplier', value: 1.1 }] },
+  { id: 'amiable', name: '親和', shortName: '和', category: '外向的', bonuses: [{ type: 'gauntlet_multiplier', value: 1.1 }, { type: 'bolt_multiplier', value: 1.1 }, { type: 'wand_multiplier', value: 1.1 }] },
+  { id: 'stubborn', name: '頑固', shortName: '頑', category: '内向的', bonuses: [{ type: 'shield_multiplier', value: 1.1 }, { type: 'vitality', value: 1 }] },
+  { id: 'evasive', name: '責任回避', shortName: '避', category: '内向的', bonuses: [{ type: 'evasion', value: 0.02 }, { type: 'mind', value: 1 }] },
+  { id: 'introspective', name: '内省', shortName: '内', category: '内向的', bonuses: [{ type: 'armor_multiplier', value: 1.1 }, { type: 'robe_multiplier', value: 1.1 }] },
+  { id: 'devoted', name: '献身', shortName: '献', category: '適応', bonuses: [{ type: 'growth_xV', value: 1.1 }, { type: 'fire_defense_multiplier_xV', value: 4 / 5 }] },
+  { id: 'serene', name: '冷静', shortName: '冷', category: '適応', bonuses: [{ type: 'growth_xV', value: 1.1 }, { type: 'ice_defense_multiplier_xV', value: 4 / 5 }] },
+  { id: 'nimble', name: '軽快', shortName: '軽', category: '適応', bonuses: [{ type: 'evasion', value: 0.01 }, { type: 'thunder_defense_multiplier_xV', value: 4 / 5 }] },
+  { id: 'perceptive', name: '看破', shortName: '看', category: '機知', bonuses: [{ type: 'penet', value: 0.01 }, { type: 'intelligence', value: 1 }] },
+  { id: 'precise', name: '精確', shortName: '精', category: '機知', bonuses: [{ type: 'accuracy', value: 0.025 }, { type: 'strength', value: 1 }] },
+  { id: 'resourceful', name: '手腕', shortName: '腕', category: '機知', bonuses: [{ type: 'equip_slot', value: 1 }] },
 ];
 
-export const getPredispositionById = (id: string): Predisposition | undefined =>
-  PREDISPOSITIONS.find(p => p.id === id);
+const LEGACY_PREDISPOSITION_ID_ALIASES: Record<string, Predisposition['id']> = {
+  sturdy: 'stubborn',
+  agile: 'evasive',
+  brilliant: 'inquisitive',
+  dexterous: 'precise',
+  chivalric: 'aggressive',
+  shikon: 'amiable',
+  pursuing: 'perceptive',
+  canny: 'resourceful',
+  persistent: 'introspective',
+};
+
+export const getPredispositionById = (id: string): Predisposition | undefined => {
+  const mappedId = LEGACY_PREDISPOSITION_ID_ALIASES[id] ?? id;
+  return PREDISPOSITIONS.find(p => p.id === mappedId);
+};
