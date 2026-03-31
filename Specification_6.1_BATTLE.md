@@ -697,8 +697,11 @@ EXP: `p.gained_experience` | 自動売却額: `p.auto-sell_profit`
 	- `p.reward_from_room`: Shows item.
 
 ```
-X: `p.enemy_name` (race, main class/sub class) | `p.outcome_of_room` |  ▼
+X: `p.enemy_name` (race, mainClass/subClass) | `p.outcome_of_room` |  ▼
 獲得: `p.reward_from_room`.
+
+note: If mainClass == subClass: (race, mainClass+M) : example: (合,侍M)
+
 ```
 
 ```
