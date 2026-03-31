@@ -390,18 +390,18 @@ Party.`d.HP` =
 - unlocked deity: none (all of other deity is unlocked)
 
 - PT1 Party initial condition.
-  1. "ケモ", Caninian, 戦(学), Inquisitive, 断
+  1. "ケモ", Caninian, 防(学), Inquisitive, 断
      - equipment: `1101`, `1103`
   2. "ゴン", Vulpinian, 剣(侍), Aggressive, 砂
-     - equipment: `1104`, `1104`
-  3. "ソウタ", Procyonian, 忍(君), Evasive, 穹
      - equipment: `1104`, `1106`
-  4. "ロップ", Leporian, 狩(賢), Nimble, 海
+  3. "ソウタ", Procyonian, 忍(君), Evasive, 穹
+     - equipment: `1104`, `1106`,`1104`, `1106`
+  4. "ロップ", Leporian, 狩(巡), Nimble, 海
      - equipment: `1107`, `1108`, `1109`
-  5. "ラス", Felidian, 賢(巡), Dexterous, 適
+  5. "ラス", Felidian, 賢(防), Dexterous, 適
      - equipment: `1110`, `1111`, `1112` 
-  6. "セルヴァ", Cervin, 魔(魔), Stubborn, 桃
-     - equipment: `1110`
+  6. "セルヴァ", Cervin, 魔(魔), Stubborn, 腕
+     - equipment: `1110`, `1112`
 
 - Party initial inventory.
   - 1 Tier-1 common items of each item type.
