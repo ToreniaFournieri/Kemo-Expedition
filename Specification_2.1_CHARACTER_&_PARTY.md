@@ -394,7 +394,7 @@ Party.`d.HP` =
      - equipment: `1101`, `1103`
   2. "ゴン", Vulpinian, 剣(侍), Chivalric, House of War Spirit
      - equipment: `1104`, `1104`
-  3. "イタチ", Murid, 忍(君), Persistent, House of the Breaking Hand
+  3. "ソウタ", Procyonian, 忍(君), Persistent, House of the Breaking Hand
      - equipment: `1104`, `1106`
   4. "ロップ", Leporian, 狩(賢), Shikon, House of Far Sight
      - equipment: `1107`, `1108`, `1109`
