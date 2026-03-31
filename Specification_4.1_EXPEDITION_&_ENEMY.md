@@ -222,12 +222,11 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 - **Class modifier**
 
+| Class | `d.HP_modifier` | `a.ability_add` | `c.accuracy_add` | `c.evasion_add` | `d.ranged_attack_modifier` | `d.ranged_NoA_modifier` |`d.ranged_attack_amplifier_modifier` | `d.magical_attack_modifier` | `d.magical_NoA_modifier` |  `d.magical_attack_amplifier_modifier` | `d.melee_attack_modifier` | `d.melee_NoA_modifier` | `d.melee_attack_amplifier_modifier` | `d.physical_defense_modifier` | `d.magical_defense_modifier` | `d.experience` |
+|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
+| Fighter | x1.50 | (none) | 0.00 | 0.00 | 0 | 0 | 0 | 0 | 0 | 0 | x1.0 | x1.0 | x1.0 | x1.3 | x0.6 | x1.0 |
 
 
-| Class | `d.HP_modifier` | `a.ability_add` | `c.accuracy_add` | `c.evasion_add` | `d.ranged_attack_modifier` | `d.ranged_NoA_add` | `d.magical_attack_modifier` | `d.magical_NoA_add` | `d.melee_attack_modifier` | `d.melee_NoA_add` | `d.ranged_attack_amplifier_modifier` | `d.magical_attack_amplifier_modifier` | `d.melee_attack_amplifier_modifier` | `d.physical_defense_modifier` | `d.magical_defense_modifier` |
-`d.experience` |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Fighter | 126 | (none) | 0.00| 0.02 | 0 | 0 | 0 | 0 | 41 | 2 | x1.0 | x1.0 | x1.0 | 23 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 5 |
 | Duelist | 100 | `a.counter`1 | 0.01 | 0.01 | 0 | 0 | 0 | 0 | 52 | 4 | x1.0 | x1.0 | x1.2 | 13 | 13 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 5 |
 | Ninja | 92 | `a.re-attack`1 | 0.00 | 0.04 | 0 | 0 | 0 | 0 | 59 | 4 | x1.0 | x1.0 | x1.2 | 12 | 10 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 7 |
 | Samurai | 80 | `a.iaigiri`1 | -0.05 | -0.01 | 0 | 0 | 0 | 0 | 93 | 1 | x1.0 | x1.0 | x1.3 | 11 | 11 | (none) | (none) | (none) | x1.0 | x1.0 | x1.0 | 4 |
