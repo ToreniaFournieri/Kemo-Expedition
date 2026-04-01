@@ -62,7 +62,7 @@
 |`i.shield ` | `d.HP` | `c.evasion+v` | `d.physical_defense` | `d.melee_attack` | none | none | `b.mind+1` |
 |`i.sword` | `d.melee_attack` | `c.melee_attack+v` | `d.physical_defense` | `d.HP` |  `e.fire` | `c.accuracy+0.01` | `b.strength+1` |
 |`i.katana` | `d.melee_attack` | `c.melee_attack+V`, `d.evasion-v`, `d.melee_NoA-v` | none | none | none | `c.penet+0.0v` | `b.mind+1` |
-|`i.gauntlet` | `d.melee_NoA` | `c.melee_NoA+v` | `d.physical_defense` | none | none | none | b.vitality+1 |
+|`i.gauntlet` | `d.melee_NoA` | `c.melee_NoA+v` | `d.physical_defense` | none | none | none | `b.vitality+1` |
 |`i.arrow` | `d.ranged_attack` | `c.ranged_attack+v` | none | none | `e.fire+v`, `e.ice+v` , `e.thunder+v` | `c.evasion+0.00v` | `b.strength+1` |
 |`i.bolt` | `d.ranged_attack` | `c.ranged_attack+v`, `d.evasion-v`, `d.ranged_NoA-v` | none | `c.penet+0.0v` | `e.fire+v`, `e.ice+v` , `e.thunder+v` | none | `b.vitality+1` |
 |`i.archery` | `d.ranged_NoA` | `c.ranged_NoA+v` | `d.HP` | none | none | `c.accuracy+0.00v` | `b.strength+1` |
