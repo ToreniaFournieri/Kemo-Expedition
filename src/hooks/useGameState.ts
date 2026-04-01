@@ -913,7 +913,7 @@ function drawPartySleepiness(party: Party): { party: Party; sleepiness: Sleepine
 // SpecRef: 2.1.4.2 | Initial setup | PT1 Party initial condition.
 function createInitialParty() {
   const defaultSetup = [
-    { race: 'caninian', main: 'guardian', sub: 'sage', pred: 'inquisitive', lineage: 'fragment', name: 'ケモ', equipmentIds: [1101, 1103] },
+    { race: 'caninian', main: 'guardian', sub: 'sage', pred: 'inquisitive', lineage: 'fragment', name: 'ケモ', equipmentIds: [1101, 1110, 1111, 1112] },
     { race: 'vulpinian', main: 'duelist', sub: 'samurai', pred: 'aggressive', lineage: 'sandstorm', name: 'ゴン', equipmentIds: [1104, 1106] },
     { race: 'procyonian', main: 'ninja', sub: 'lord', pred: 'evasive', lineage: 'firmament', name: 'ソウタ', equipmentIds: [1104, 1106, 1104, 1106] },
     { race: 'leporian', main: 'ranger', sub: 'pilgrim', pred: 'nimble', lineage: 'abyssal_sea', name: 'ロップ', equipmentIds: [1107, 1108, 1109] },
