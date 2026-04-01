@@ -323,8 +323,8 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 
 **Standard template**
-- `x.enemy_type`: class.mainClass.subClass
-- If enemy level is over 30, class.mainClass (without subClass) is tuned to be a master class.
+- `x.class`: class.mainClass.subClass
+- single-class enemies above level 30 are promoted to master-class.
 
 | `x.floor` | `x.room`| `x.level_offset` | `x.type` | `x.enemy_type` | `x.class` |
 |-|-|-|-|-|-|
