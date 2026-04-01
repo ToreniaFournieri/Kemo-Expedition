@@ -443,6 +443,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 - Drop code format: `i.item_type`<Rarity><EnemyTypeSource>
 
 <Rarity>
+- `C`: Common  (No enemy type specific)
 - `U`: Uncommon  (No enemy type specific)
 - `E`: Elite Rare
 - `B`: Boss Rare
