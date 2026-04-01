@@ -496,6 +496,11 @@ function calculateSingleEnemyAttackDamage(
   if ((phase === 'long' || phase === 'close') && enemyHeavyStrikeLevel > 0) {
     amplifier *= 1.4;
   }
+  // SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.offense_amplifier
+  // a.arc-magic: magical offense amplifier x3.0.
+  if (phase === 'mid' && hasEnemyArcMagic(enemy)) {
+    amplifier *= 3.0;
+  }
 
   const elementalMultiplier = enemy.elementalOffense === 'none'
     ? 1.0
@@ -528,9 +533,17 @@ function getEnemyBaseNoA(phase: BattleActionPhase, enemy: EnemyDef): number {
   }
 }
 
+function hasEnemyArcMagic(enemy: EnemyDef): boolean {
+  return getEnemyAbilityLevel(enemy, 'arc_magic') > 0;
+}
+
 // Get number of attacks for enemy in a phase
 function getEnemyNoA(phase: BattleActionPhase, enemy: EnemyDef): number {
+  // SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.NoA
   const baseNoA = getEnemyBaseNoA(phase, enemy);
+  if (phase === 'mid' && hasEnemyArcMagic(enemy)) {
+    return Math.ceil(baseNoA / 3);
+  }
   const heavyStrikeLevel = getEnemyAbilityLevel(enemy, 'heavy_strike');
   if ((phase === 'long' || phase === 'close') && heavyStrikeLevel > 0) {
     return Math.ceil(baseNoA / 2);
@@ -715,8 +728,14 @@ function calculateCharacterFriendlyFireDamage(
     : (phase === 'long' ? attacker.rangedAttackCBonus : attacker.meleeAttackCBonus);
 
   let offenseAmplifier = 1.0;
+  const hasArcMagic = attacker.abilities.some((ability) => ability.id === 'arc_magic');
   if (phase === 'mid') {
     offenseAmplifier = ((1.0 + phaseBonusSum) * attacker.magicalOffenseMultiplier + attacker.deityOffenseAmplifierBonus) * phaseAttackScale;
+    // SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.offense_amplifier
+    // a.arc-magic: magical offense amplifier x3.0.
+    if (hasArcMagic) {
+      offenseAmplifier *= 3.0;
+    }
   } else if (iaigiri) {
     offenseAmplifier = (iaigiriMultiplier * (1.0 + phaseBonusSum) * attacker.physicalOffenseMultiplier + attacker.deityOffenseAmplifierBonus) * phaseAttackScale;
   } else {
@@ -1302,8 +1321,14 @@ function calculateCharacterDamage(
     : getBaseMultiplier(charStats.baseStats.strength, 'attack');
 
   let offenseAmplifier = 1;
+  const hasArcMagic = charStats.abilities.some((ability) => ability.id === 'arc_magic');
   if (phase === 'mid') {
     offenseAmplifier = ((1.0 + magicalBonusSum) * charStats.magicalOffenseMultiplier + charStats.deityOffenseAmplifierBonus) * phaseAttackScale;
+    // SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.offense_amplifier
+    // a.arc-magic: magical offense amplifier x3.0.
+    if (hasArcMagic) {
+      offenseAmplifier *= 3.0;
+    }
   } else if (iaigiri) {
     const phaseBonusSum = phase === 'long' ? rangedBonusSum : meleeBonusSum;
     offenseAmplifier = (iaigiriMultiplier * (1.0 + phaseBonusSum) * charStats.physicalOffenseMultiplier + charStats.deityOffenseAmplifierBonus) * phaseAttackScale;
@@ -4065,7 +4090,7 @@ export function executeBattle(
           }
 
           const magicProfile = resolveMagicProfile({
-            style: getEnemyAbilityLevel(enemy, 'arc_magic') > 0 ? 'arc-magic' : 'multi-hit',
+            style: hasEnemyArcMagic(enemy) ? 'arc-magic' : 'multi-hit',
             elementalOffense: enemy.elementalOffense,
             elementalOffenseValue: 1.0,
             magicalNoA: attempts,
