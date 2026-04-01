@@ -222,7 +222,8 @@
     - If character.`a.iaigiri` or `a.heavy-strike`, halve these number of attacks, round up. 
   - `d.magical_NoA`= 0 + Item Bonuses of {(`d.magical_NoA` x enhancement multiplier x super rare multiplier x its c.multiplier + `c.magical_NoA+v`), round off} 
   - `d.melee_NoA`= 0 + Item Bonuses of {(`d.melee_NoA` x enhancement multiplier x super rare multiplier x its c.multiplier + `c.melee_NoA+v`), round off} 
-    - If character.`a.iaigiri` or `a.heavy-strike`, halve these number of attacks, round up.
+    - If character.`a.iaigiri` or `a.heavy-strike`: halve these number of attacks, round up.
+    - If character.`a.arc-magic`: x1/3 to  these number of attacks, round up.
   - *note: `c.ranged_NoA+v`, `c.magical_NoA+v`, `c.melee_NoA+v`  Only one single bonuses(c.) of the **exact** same name applies.  
 
 - character.`f.attack`:
@@ -233,13 +234,14 @@
 - character.`f.offense_amplifier` (phase: )
   - If phase is LONG or CLOSE,
     - If character.`a.iaigiri`, return v x sum of ( `c.melee_attack+v` or `c.ranged_attack+v`)　x `c.physical_offense_multiplier_xV` x `f.base_multiplier`(base_type: `b.strength`)
-      - `a.iaigiri`1: v = 1.6
-      - `a.iaigiri`2: v = 1.8
-      - `a.iaigiri`3: v = 2.0
+      - `a.iaigiri`1: v *= 1.6
+      - `a.iaigiri`2: v *= 1.8
+      - `a.iaigiri`3: v *= 2.0
     - Else return 1.0 x sum of ( `c.melee_attack+v`, `c.ranged_attack+v` and `c.physical_attack+v` ) x `c.physical_offense_multiplier_xV` x `f.base_multiplier`(base_type: `b.strength`)
     - If character has `a.heavy-strike`: multiply by N. 
   		- ex. If chracter has `c.physical_offense_multiplier_x1.4` and `c.physical_offense_multiplier_x1.2`, 1.4 x 1.2 = 1.68.
   - If phase is MID,  return 1.0 x  sum of (`c.magical_attack+v` and `c.magical_attack+v` ) x `c.magical_offense_multiplier_xV` x `f.base_multiplier`(base_type: `b.intelligence`)
+    - If character.`a.arc-magic`: v *= 3.0
     - ex. If chracter has `c.magical_offense_multiplier_x1.4` and `c.magical_offense_multiplier_x1.2`, 1.4 x 1.2 = 1.68.
   - *note: `c.melee_attack+v`,  `c.ranged_attack+v`, `c.magical_attack+v`, `c.physical_attack+v`, `c.physical_offense_multiplier_xV` or  `c.magical_offense_multiplier_xV`. Only one single bonuses(c.) of the **exact** same name applies.  
 
