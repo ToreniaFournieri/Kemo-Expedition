@@ -208,12 +208,14 @@ function createEnemyFromTemplate(
   type: EnemyType,
   poolId: number,
   enemyClass: EnemyClassId,
+  enemySubClass: EnemyClassId | 'none',
   enemyType: string,
   spawnPool: number,
   extraAbilities: AbilityId[] = [],
   enemyTypeLevel = 1,
 ): EnemyDef {
-  const classBase = buildEnemyClassMasterStats(enemyClass);
+  // SpecRef: 4.1.4 | Base data structure (enemy) | Calculation of master value
+  const classBase = buildEnemyClassMasterStats(enemyClass, enemySubClass);
   const enemyTypeExpMult = type === 'elite' ? 2.0 : type === 'boss' ? 5.0 : 1.0;
   const extraAbilityLevels = extraAbilities.map((id) => ({ id, level: 1 }));
   const enemyTypeAbilities = getEnemyTypeAbilities(enemyType, enemyTypeLevel);
@@ -252,6 +254,7 @@ function createEnemyFromTemplate(
     poolId,
     name: template.name,
     enemyClass,
+    enemySubClass,
     abilities: enemyAbilities,
     bonuses: getEnemyTypeBonuses(enemyType),
     accuracyBonus,
@@ -335,6 +338,7 @@ function generateEnemies(): EnemyDef[] {
         'normal',
         tier,
         row[5],
+        row[8] ?? 'none',
         row[4],
         row[0],
         [],
@@ -353,6 +357,7 @@ function generateEnemies(): EnemyDef[] {
         'elite',
         tier,
         row[5],
+        row[8] ?? 'none',
         row[4],
         row[0],
         [],
@@ -372,6 +377,7 @@ function generateEnemies(): EnemyDef[] {
         'boss',
         0,
         boss[5],
+        boss[8] ?? 'none',
         boss[4],
         boss[0],
         [],
