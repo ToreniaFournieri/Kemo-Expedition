@@ -144,7 +144,7 @@ type ItemTemplate = {
 // ============================================================
 
 // Base power per tier (updated item scale)
-const TIER_BASE_POWER = [12, 17, 24, 33, 45, 60, 79, 102];
+const TIER_BASE_POWER = [12, 18, 26, 35, 45, 60, 80, 100];
 const TIER_NOA_BASE_POWER = [0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1];
 const TIER_TARGET_MULTIPLIERS = [0.13, 0.12, 0.11, 0.09, 0.08, 0.07, 0.06, 0.05, 0.04, 0.03];
 const TIER_SHIELD_EVASION_BONUS = [0.013, 0.012, 0.011, 0.009, 0.008, 0.007, 0.006, 0.005, 0.004, 0.003];
