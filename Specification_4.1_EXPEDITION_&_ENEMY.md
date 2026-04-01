@@ -284,8 +284,10 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | 8 | `Dragon` | `Ghost` | `Jinma` | `Cervin` |
 
 **Drop template**
+- `x.drop` is used for all rarity drops (Uncommon / Elite / Boss).
+- Common drops are selected randomly from the assigned `Drop set`.
 
-| `x.class` | main `x.drop` | Common item drop set |
+| `x.class` | `x.drop` | Common item drop set |
 |-|-|-|
 | class.duelist | `i.sword` | Melee |
 | class.samurai | `i.katana` | Melee |
@@ -301,22 +303,23 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | class.lord | `i.shield` | Defensive |
 
 **Common item table**
-| Drop set | drops |
-|-|-|-|
-| Melee | `i.sword`, `i.katana`,`i.gauntlet`  |
-| Ranged | `i.arrow` | `i.arrow`, `i.bolt`, `i.archery` |
+
+| Drop set | items |
+|----------|-------|
+| Melee | `i.sword`, `i.katana`, `i.gauntlet` |
+| Ranged | `i.arrow`, `i.bolt`, `i.archery` |
 | Magic | `i.wand`, `i.grimoire`, `i.catalyst` |
-| Defensive | `i.armor` | `i.armor`, `i.robe`, `i.shield`  |
+| Defensive | `i.armor`, `i.robe`, `i.shield` |
 
 
 | `x.type` | has subClass | drops  |
 |-|-|-|
-| Normal | No | 1 Uncommon (mainClass), 3 Common |
-| Elite | No | 1 Elite rare (mainClass), 3 Common |
-| Boss | No | 1 Boss rare (mainClass), 3 Common |
-| Normal | Yes | 1 Uncommon (mainClass), 1 Uncommon (subClass), 3 Common |
-| Elite | Yes | 1 Elite rare (mainClass), 1 Elite rare (subClass), 3 Common |
-| Boss | Yes | 1 Boss rare (mainClass), 1 Boss rare (subClass), 3 Common |
+| Normal | No | 1 Uncommon item (mainClass), 3 Common items |
+| Elite | No | 1 Elite rare item (mainClass), 3 Common items |
+| Boss | No | 1 Boss rare item (mainClass), 3 Common items |
+| Normal | Yes | 1 Uncommon item (mainClass), 1 Uncommon (subClass), 3 Common items |
+| Elite | Yes | 1 Elite rare item (mainClass), 1 Elite rare (subClass), 3 Common items |
+| Boss | Yes | 1 Boss rare item (mainClass), 1 Boss rare (subClass), 3 Common items |
 
 
 **Standard template**
