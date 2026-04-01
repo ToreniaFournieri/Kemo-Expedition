@@ -55,20 +55,20 @@
 
 -　Tier 9 and 10 are Multiplier-Only Tiers. (Unccommon/Rare item upgared reference)
 
-| Item type | base_power/Scale for | base c.multiplier for | subtle_power`d.`, `e.`, and `c.` bonus|
-|------|--------|------|------|
-|`i.armor` | `d.physical_defense` | `c.physical_defense+v` | additional `d.physical_defense`, `d.HP`, `d.magical_defense`, `b.vitality+1`  |
-|`i.robe` |  `d.magical_defense`  | `c.magical_defense+v` | `b.mind+1`, `d.HP`, additional `d.magical_defense`, `c.evasion+0.00v` |
-|`i.shield ` | `d.HP` | `c.evasion+v` | `d.physical_defense`, `d.melee_attack`, `b.vitality+1` |
-|`i.sword` | `d.melee_attack` | `c.melee_attack+v` | `c.accuracy+0.01`, `b.strength+1`, `e.fire`, `d.physical_defense` ,`d.HP` |
-|`i.katana` | `d.melee_attack` | `c.melee_attack+V`, `d.evasion-v`, `d.melee_NoA-v` | additional `d.melee_attack`, `c.penet+0.01`, `c.penet+0.02`, `b.mind+1` |
-|`i.gauntlet` | `d.melee_NoA` | `c.melee_NoA+v` | additional `d.melee_NoA`, `d.physical_defense`, `b.strength+1` |
-|`i.arrow` | `d.ranged_attack` | `c.ranged_attack+v` | additional `d.ranged_attack`, `e.fire+v`, `e.ice+v`, `e.thunder+v` |
-|`i.bolt` | `d.ranged_attack` | `c.ranged_attack+v`, `d.evasion-v`, `d.ranged_NoA-v` | additional `d.ranged_attack`, `e.thunder`,`b.strength+1` |
-|`i.archery` | `d.ranged_NoA` | `c.ranged_NoA+v` | `c.accuracy+0.00v`,  `c.evasion+0.00v`, `d.HP`, `b.strength+1`|
-|`i.wand` | `d.magical_attack` | `c.magical_attack+v` | additional `d.magical_attack`, `d.magical_defense`, `b.intelligence+1` |
-|`i.grimoire` | `d.magical_attack` | `c.magical_attack+v`, `d.evasion-v`, `d.magical_NoA-v` | additional `d.magical_attack`, `b.mind+1`, `d.magical_defense` |
-|`i.catalyst` | `d.magical_NoA` | `c.magical_NoA+v` | additional `d.magical_NoA`, `e.fire+v`, `e.ice+v`, `e.thunder+V`, `b.intelligence+1` |
+| Item type | base_power/Scale for | base c.multiplier for | `d.`1 | `d.`2 | `e.` or `r.` |`c.` bonus | `d.` bonus |
+|------|--------|------|------|------|------|------|------|
+|`i.armor` | `d.physical_defense` | `c.physical_defense+v` | `d.HP` | `d.magical_defense` | none | none | `b.vitality+1` |
+|`i.robe` |  `d.magical_defense`  | `c.magical_defense+v` | `d.HP` | `d.physical_defense` | none |`c.evasion+0.00v` | `b.mind+1` |
+|`i.shield ` | `d.HP` | `c.evasion+v` | `d.physical_defense` | `d.melee_attack` | none | none | `b.vitality+1` |
+|`i.sword` | `d.melee_attack` | `c.melee_attack+v` | `d.physical_defense` | `d.HP` |  `e.fire` | `c.accuracy+0.01` | `b.strength+1` |
+|`i.katana` | `d.melee_attack` | `c.melee_attack+V`, `d.evasion-v`, `d.melee_NoA-v` | none | none | none | `c.penet+0.0v` | `b.mind+1` |
+|`i.gauntlet` | `d.melee_NoA` | `c.melee_NoA+v` | `d.physical_defense` | none | none | `b.strength+1` |
+|`i.arrow` | `d.ranged_attack` | `c.ranged_attack+v` | none | none | `e.fire+v`, `e.ice+v` , `e.thunder+v` | `c.evasion+0.00v` | none |
+|`i.bolt` | `d.ranged_attack` | `c.ranged_attack+v`, `d.evasion-v`, `d.ranged_NoA-v` | none | none | `e.fire+v`, `e.ice+v` , `e.thunder+v` | none | `b.strength+1` |
+|`i.archery` | `d.ranged_NoA` | `c.ranged_NoA+v` | `d.HP` | none | none | `c.accuracy+0.00v` | `b.strength+1`|
+|`i.wand` | `d.magical_attack` | `c.magical_attack+v` | `d.magical_defense` | none | none | none | `b.intelligence+1` |
+|`i.grimoire` | `d.magical_attack` | `c.magical_attack+v`, `d.evasion-v`, `d.magical_NoA-v` | `d.HP` | `d.magical_defense` | none | `e.ice+v`, `e.thunder+V` | `b.mind+1`, |
+|`i.catalyst` | `d.magical_NoA` | `c.magical_NoA+v` | none | none | `e.fire+v`, `e.ice+v`, `e.thunder+V` | none | `b.intelligence+1` |
 
 
 **type.amplifier of base_power**
@@ -98,17 +98,18 @@
 | elite rare | 1.67 |
 | boss rare | x2.00 |
 | mythic rare | x2.40 |
-|
 
 **Rarelity base**
 
-| Rarelity | Features |
-|------|--------|
-| common | base_power x `type_amplifier` x rarelity.amplifier, and base c.multiplier |
-| uncommon | base_power x `type_amplifier` x rarelity.amplifier + **one subtle_power`d.` or `c.` bonus**, base c.multiplier +1 tier upgrade(ecept penalty) |
-| elite rare | base_power x `type_amplifier` x rarelity.amplifier + **two** subtle_power`d.`, **`e.`**, or `c.` bonus, base c.multiplier +2 tier upgrade(ecept penalty) |
-| boss rare | base_power x `type_amplifier` x rarelity.amplifier + **three** subtle_power`d.`, `e.`, or `c.` bonus, one **`b.` bonus**, but **no base c.multiplier** |
-| mythic rare | base_power x `type_amplifier` x rarelity.amplifier + **all** subtle_power`d.`, `e.`, or `c.` bonus, one `b.` bonus**, but no base c.multiplier |
+| Rarelity | EnemyTypeSource | Features |
+|------|--------|--------|
+| common | none | base_power x `type_amplifier` x rarelity.amplifier, and base c.multiplier |
+| uncommon | none | base_power x `type_amplifier` x rarelity.amplifier + **one `c.` bonus**, base c.multiplier +1 tier upgrade(ecept penalty) |
+| elite rare | A | base_power x `type_amplifier` x rarelity.amplifier + **two** subtle_power`d.`, **`e.`**, or `c.` bonus, base c.multiplier +2 tier upgrade(ecept penalty) |
+| elite rare | B | base_power x `type_amplifier` x rarelity.amplifier + **`e.`**, and `c.` bonus, base c.multiplier +2 tier upgrade(ecept penalty) |
+| elite rare | C | base_power x `type_amplifier` x rarelity.amplifier + subtle_power`d.` and `c.` bonus, base c.multiplier +2 tier upgrade(ecept penalty) |
+| boss rare | base_power x `type_amplifier` x rarelity.amplifier + `c.` bonus, one **`b.` bonus**, but **no base c.multiplier** |
+| mythic rare | base_power x `type_amplifier` x rarelity.amplifier + subtle_power`d.`, `e.`, or `c.` bonus, one `b.` bonus**, but no base c.multiplier |
 
 *Note:* subtle_power: x0.20 ~ x0.34 of base_power x `type_amplifier` x rarelity.amplifier value.
 
