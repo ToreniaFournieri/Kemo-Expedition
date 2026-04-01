@@ -104,10 +104,10 @@
 | Rarelity | EnemyTypeSource | Features |
 |------|--------|--------|
 | common | none | base_power x `type_amplifier` x rarelity.amplifier, and base c.multiplier |
-| uncommon | none | base_power x `type_amplifier` x rarelity.amplifier + C-bonus + base c.multiplier +1 tier upgrade(ecept penalty) |
+| uncommon | none | base_power x `type_amplifier` x rarelity.amplifier + E-bonus + base c.multiplier +1 tier upgrade(ecept penalty) |
 | elite rare | A | base_power x `type_amplifier` x rarelity.amplifier + X-bonus + E-bonus + base c.multiplier +2 tier upgrade(ecept penalty) |
-| elite rare | B | base_power x `type_amplifier` x rarelity.amplifier + Y-bonus + C-bonus + base c.multiplier +2 tier upgrade(ecept penalty) |
-| elite rare | C | base_power x `type_amplifier` x rarelity.amplifier + X-bonus + Y-bonus + base c.multiplier +2 tier upgrade(ecept penalty) |
+| elite rare | B | base_power x `type_amplifier` x rarelity.amplifier + X-bonus + Y-bonus + base c.multiplier +2 tier upgrade(ecept penalty) |
+| elite rare | C | base_power x `type_amplifier` x rarelity.amplifier + Y-bonus + C-bonus + base c.multiplier +2 tier upgrade(ecept penalty) |
 | boss rare | none | base_power x `type_amplifier` x rarelity.amplifier + X-bonus + C-bonus + B-bonus, but **no base c.multiplier** |
 | mythic rare | none | base_power x `type_amplifier` x rarelity.amplifier + X-bonus + Y-bonus + C-bonus + B-bonus, but no base c.multiplier |
 
