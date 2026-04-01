@@ -399,24 +399,24 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | 5 | ELITE4 | class.lord.duelist |
 | 5 | ELITE5 | class.alchemist.wizard |
 | 5 | BOSS | class.samurai.duelist |
-| 6 | ELITE1 | Fighter |
-| 6 | ELITE2 | Rogue |
-| 6 | ELITE3 | Sage |
-| 6 | ELITE4 | Samurai |
-| 6 | ELITE5 | Ninja |
-| 6 | BOSS | Sage |
-| 7 | ELITE1 | Lord |
-| 7 | ELITE2 | Sage |
-| 7 | ELITE3 | Pilgrim | 
-| 7 | ELITE4 | Ranger |
-| 7 | ELITE5 | Duelist |
-| 7 | BOSS | Lord |
-| 8 | ELITE1 | Fighter |
-| 8 | ELITE2 | Sage |
-| 8 | ELITE3 | Pilgrim |
-| 8 | ELITE4 | Samurai |
-| 8 | ELITE5 | Wizard |
-| 8 | BOSS | Ninja |
+| 6 | ELITE1 | class.guardian.ninja |
+| 6 | ELITE2 | class.ranger.striker |
+| 6 | ELITE3 | class.alchemist.wizard |
+| 6 | ELITE4 | class.samurai.duelist |
+| 6 | ELITE5 | class.ninja.sage |
+| 6 | BOSS | class.sage.lord |
+| 7 | ELITE1 | class.lord.striker |
+| 7 | ELITE2 | class.wizard.sage |
+| 7 | ELITE3 | class.pilgrim.sword-saint | 
+| 7 | ELITE4 | class.ranger.samurai |
+| 7 | ELITE5 | class.duelist.alchemist |
+| 7 | BOSS | class.lord.ninja |
+| 8 | ELITE1 | class.guardian.pilgrim |
+| 8 | ELITE2 | class.sage.alchemist |
+| 8 | ELITE3 | class.pilgrim.sword-saint |
+| 8 | ELITE4 | class.samurai.striker |
+| 8 | ELITE5 | class.wizard.samurai |
+| 8 | BOSS | class.ninja.wizard |
 
 
 | `x.exp_id` | replace target | `x.level_offset` | `x.type` | `x_enemy_type` | `x.class` | `x.drop` |
