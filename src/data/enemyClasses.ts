@@ -39,12 +39,12 @@ export type EnemyClassMasterStats = {
 };
 
 const ENEMY_BASE_STATUS = {
-  hp: 100,
+  hp: 80,
   accuracy: 0,
   evasion: 0,
-  rangedAttack: 46,
-  magicalAttack: 41,
-  meleeAttack: 60,
+  rangedAttack: 42,
+  magicalAttack: 37,
+  meleeAttack: 54,
   rangedAttackAmplifier: 1,
   magicalAttackAmplifier: 1,
   meleeAttackAmplifier: 1,
@@ -64,7 +64,7 @@ const ENEMY_CLASS_MODIFIERS: Record<EnemyClassId, EnemyClassModifier> = {
   wizard: { hpModifier: 0.5, abilityAdd: 'resonance', accuracyAdd: 0.0, evasionAdd: -0.015, rangedAttackModifier: 1.0, rangedAttackAmplifierModifier: 1.0, rangedNoA: 0, magicalAttackModifier: 1.2, magicalAttackAmplifierModifier: 1.0, magicalNoA: 2, meleeAttackModifier: 1.0, meleeAttackAmplifierModifier: 1.0, meleeNoA: 0, physicalDefenseModifier: 0.4, magicalDefenseModifier: 1.0, experienceModifier: 0.8 },
   sage: { hpModifier: 0.85, abilityAdd: 'arc_magic', accuracyAdd: 0.0, evasionAdd: 0.0, rangedAttackModifier: 1.0, rangedAttackAmplifierModifier: 1.0, rangedNoA: 0, magicalAttackModifier: 0.8, magicalAttackAmplifierModifier: 1.3, magicalNoA: 4, meleeAttackModifier: 1.0, meleeAttackAmplifierModifier: 1.0, meleeNoA: 0, physicalDefenseModifier: 0.8, magicalDefenseModifier: 1.3, experienceModifier: 1.0 },
   alchemist: { hpModifier: 0.7, abilityAdd: 'arcane_stability', accuracyAdd: 0.0, evasionAdd: 0.0, rangedAttackModifier: 1.0, rangedAttackAmplifierModifier: 1.0, rangedNoA: 0, magicalAttackModifier: 1.2, magicalAttackAmplifierModifier: 1.0, magicalNoA: 5, meleeAttackModifier: 1.0, meleeAttackAmplifierModifier: 1.0, meleeNoA: 0, physicalDefenseModifier: 0.7, magicalDefenseModifier: 0.7, experienceModifier: 1.2 },
-  guardian: { hpModifier: 1.5, accuracyAdd: 0.0, evasionAdd: 0.0, rangedAttackModifier: 1.0, rangedAttackAmplifierModifier: 1.0, rangedNoA: 0, magicalAttackModifier: 1.0, magicalAttackAmplifierModifier: 1.0, magicalNoA: 0, meleeAttackModifier: 1.0, meleeAttackAmplifierModifier: 1.0, meleeNoA: 2, physicalDefenseModifier: 1.3, magicalDefenseModifier: 0.6, experienceModifier: 1.0 },
+  guardian: { hpModifier: 1.4, accuracyAdd: 0.0, evasionAdd: 0.0, rangedAttackModifier: 1.0, rangedAttackAmplifierModifier: 1.0, rangedNoA: 0, magicalAttackModifier: 1.0, magicalAttackAmplifierModifier: 1.0, magicalNoA: 0, meleeAttackModifier: 1.0, meleeAttackAmplifierModifier: 1.0, meleeNoA: 2, physicalDefenseModifier: 1.3, magicalDefenseModifier: 0.6, experienceModifier: 1.0 },
   pilgrim: { hpModifier: 1.2, accuracyAdd: 0.0, evasionAdd: 0.0, rangedAttackModifier: 1.0, rangedAttackAmplifierModifier: 1.0, rangedNoA: 0, magicalAttackModifier: 1.0, magicalAttackAmplifierModifier: 1.0, magicalNoA: 2, meleeAttackModifier: 1.0, meleeAttackAmplifierModifier: 1.0, meleeNoA: 0, physicalDefenseModifier: 1.1, magicalDefenseModifier: 1.1, experienceModifier: 0.4 },
   lord: { hpModifier: 1.2, accuracyAdd: 0.0, evasionAdd: 0.0, rangedAttackModifier: 1.0, rangedAttackAmplifierModifier: 1.0, rangedNoA: 0, magicalAttackModifier: 1.0, magicalAttackAmplifierModifier: 1.0, magicalNoA: 0, meleeAttackModifier: 1.0, meleeAttackAmplifierModifier: 1.0, meleeNoA: 2, physicalDefenseModifier: 1.2, magicalDefenseModifier: 1.2, experienceModifier: 1.6 },
   fighter: { hpModifier: 1.5, accuracyAdd: 0.0, evasionAdd: 0.0, rangedAttackModifier: 1.0, rangedAttackAmplifierModifier: 1.0, rangedNoA: 0, magicalAttackModifier: 1.0, magicalAttackAmplifierModifier: 1.0, magicalNoA: 0, meleeAttackModifier: 1.0, meleeAttackAmplifierModifier: 1.0, meleeNoA: 2, physicalDefenseModifier: 1.3, magicalDefenseModifier: 0.6, experienceModifier: 1.0 },
