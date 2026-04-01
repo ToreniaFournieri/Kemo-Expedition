@@ -55,19 +55,19 @@
 
 -　Tier 9 and 10 are Multiplier-Only Tiers. (Unccommon/Rare item upgared reference)
 
-| Item type | base_power/Scale for | base c.multiplier for | `d.`1 | `d.`2 | `e.` or `r.` |`c.` bonus | `d.` bonus |
+| Item type | base_power/Scale for | base c.multiplier for | `d.`1 | `d.`2 | `e.` or `r.` |`c.` bonus | `b.` bonus |
 |------|--------|------|------|------|------|------|------|
 |`i.armor` | `d.physical_defense` | `c.physical_defense+v` | `d.HP` | `d.magical_defense` | none | none | `b.vitality+1` |
-|`i.robe` |  `d.magical_defense`  | `c.magical_defense+v` | `d.HP` | `d.physical_defense` | none |`c.evasion+0.00v` | `b.mind+1` |
-|`i.shield ` | `d.HP` | `c.evasion+v` | `d.physical_defense` | `d.melee_attack` | none | none | `b.vitality+1` |
+|`i.robe` |  `d.magical_defense`  | `c.magical_defense+v` | `d.HP` | `d.physical_defense` | none |`c.evasion+0.00v` | `b.intelligence+1` |
+|`i.shield ` | `d.HP` | `c.evasion+v` | `d.physical_defense` | `d.melee_attack` | none | none | `b.mind+1` |
 |`i.sword` | `d.melee_attack` | `c.melee_attack+v` | `d.physical_defense` | `d.HP` |  `e.fire` | `c.accuracy+0.01` | `b.strength+1` |
 |`i.katana` | `d.melee_attack` | `c.melee_attack+V`, `d.evasion-v`, `d.melee_NoA-v` | none | none | none | `c.penet+0.0v` | `b.mind+1` |
 |`i.gauntlet` | `d.melee_NoA` | `c.melee_NoA+v` | `d.physical_defense` | none | none | `b.strength+1` |
-|`i.arrow` | `d.ranged_attack` | `c.ranged_attack+v` | none | none | `e.fire+v`, `e.ice+v` , `e.thunder+v` | `c.evasion+0.00v` | none |
-|`i.bolt` | `d.ranged_attack` | `c.ranged_attack+v`, `d.evasion-v`, `d.ranged_NoA-v` | none | none | `e.fire+v`, `e.ice+v` , `e.thunder+v` | none | `b.strength+1` |
-|`i.archery` | `d.ranged_NoA` | `c.ranged_NoA+v` | `d.HP` | none | none | `c.accuracy+0.00v` | `b.strength+1`|
+|`i.arrow` | `d.ranged_attack` | `c.ranged_attack+v` | none | none | `e.fire+v`, `e.ice+v` , `e.thunder+v` | `c.evasion+0.00v` | `b.strength+1` |
+|`i.bolt` | `d.ranged_attack` | `c.ranged_attack+v`, `d.evasion-v`, `d.ranged_NoA-v` | none | `c.penet+0.0v` | `e.fire+v`, `e.ice+v` , `e.thunder+v` | none | `b.vitality+1` |
+|`i.archery` | `d.ranged_NoA` | `c.ranged_NoA+v` | `d.HP` | none | none | `c.accuracy+0.00v` | `b.strength+1` |
 |`i.wand` | `d.magical_attack` | `c.magical_attack+v` | `d.magical_defense` | none | none | none | `b.intelligence+1` |
-|`i.grimoire` | `d.magical_attack` | `c.magical_attack+v`, `d.evasion-v`, `d.magical_NoA-v` | `d.HP` | `d.magical_defense` | none | `e.ice+v`, `e.thunder+V` | `b.mind+1`, |
+|`i.grimoire` | `d.magical_attack` | `c.magical_attack+v`, `d.evasion-v`, `d.magical_NoA-v` | `d.HP` | `d.magical_defense` | `c.penet+0.0v` | `e.ice+v`, `e.thunder+V` | `b.mind+1` |
 |`i.catalyst` | `d.magical_NoA` | `c.magical_NoA+v` | none | none | `e.fire+v`, `e.ice+v`, `e.thunder+V` | none | `b.intelligence+1` |
 
 
