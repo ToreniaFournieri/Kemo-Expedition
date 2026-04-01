@@ -95,7 +95,7 @@
 | 3 | 3 | 1-2 | 16 | Normal | `Spirit` | class.sword-saint | `i.gauntlet`U, `i.sword`U | 敵3-3-1-2-sword-saint |
 | 3 | 3 | 3 | 17 | Normal | `Marine` | class.samurai.duelist | `i.katana`U, `i.shield`U, `i.sword`U | 敵3-3-3-samurai/duelist |
 | 3 | 3 | 3 | 17 | Normal | `Marine` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U | 敵3-3-3-wizard/alchemist |
-| 3 | 3 | 4 | 19 | Elite | `Spirit` | class.sage.duelist | `i.grimoire`EC, `i.catalyst`EC, `i.sword`EC | 敵3-3-4-sage/duelist |
+| 3 | 3 | 4 | 19 | Elite | `Spirit` | class.wizard.ninja | `i.wand`EC, `i.robe`EC,`i.archery`EC | 敵3-3-4-wizard/ninja |
 | 3 | 4 | 1-2 | 17 | Normal | `Slime_Colony` | class.guardian.wizard | `i.armor`U, `i.gauntlet`U, `i.wand`U | 敵3-4-1-2-guardian/wizard |
 | 3 | 4 | 1-2 | 17 | Normal | `Slime_Colony` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U | 敵3-4-1-2-lord/striker |
 | 3 | 4 | 1-2 | 17 | Normal | `Slime_Colony` | class.sage.samurai | `i.grimoire`U, `i.catalyst`U, `i.katana`U | 敵3-4-1-2-sage/samurai |
