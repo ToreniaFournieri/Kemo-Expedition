@@ -111,6 +111,18 @@
 | boss rare | none | base_power x `type_amplifier` x rarelity.amplifier + X-bonus + C-bonus + B-bonus, but **no base c.multiplier** |
 | mythic rare | none | base_power x `type_amplifier` x rarelity.amplifier + X-bonus + Y-bonus + C-bonus + B-bonus, but no base c.multiplier |
 
+**Elemental by expedition**
+
+| `x.exp_id` | `e.` | `r.` |
+|-|-|-|
+| 1 | none | none |
+| 2 |  |  |
+| 3 |  |  |
+| 4 |  |  |
+| 5 |  |  |
+| 6 |  |  |
+| 7 |  |  |
+| 8 |  |  |
 
 - example of basic item:
 ```
