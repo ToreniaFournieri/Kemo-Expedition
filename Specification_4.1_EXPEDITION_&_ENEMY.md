@@ -323,6 +323,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 
 **Standard template**
+- `x.enemy_type`: class.mainClass.subClass
 
 | `x.floor` | `x.room`| `x.level_offset` | `x.type` | `x.enemy_type` | `x.class` |
 |-|-|-|-|-|-|
@@ -340,27 +341,27 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | 2 | 4 | +4 | Elite | A | ELITE2.class |
 | 3 | 1-2 | +2 | Normal | C | class.sword-saint |
 | 3 | 1-2 | +2 | Normal | C | class.alchemist |
-| 3 | 1-2 | +2 | Normal | C | class.guardian |
-| 3 | 3 | +3 | Normal | A | class.samurai |
-| 3 | 3 | +3 | Normal | A | class.wizard |
+| 3 | 1-2 | +2 | Normal | C | class.guardian.pilgrim |
+| 3 | 3 | +3 | Normal | A | class.samurai.duelist |
+| 3 | 3 | +3 | Normal | A | class.wizard.alchemist |
 | 3 | 4 | +5 | Elite | C | ELITE3.class |
-| 4 | 1-2 | +3 | Normal | B | class.striker |
-| 4 | 1-2 | +3 | Normal | B | class.sage |
-| 4 | 1-2 | +3 | Normal | B | class.guardian |
-| 4 | 3 | +4 | Normal | C | class.duelist |
-| 4 | 3 | +4 | Normal | C | class.lord |
+| 4 | 1-2 | +3 | Normal | B | class.striker.striker |
+| 4 | 1-2 | +3 | Normal | B | class.sage.sage |
+| 4 | 1-2 | +3 | Normal | B | class.guardian.wizard |
+| 4 | 3 | +4 | Normal | C | class.duelist.lord |
+| 4 | 3 | +4 | Normal | C | class.lord.sage |
 | 4 | 4 | +6 | Elite | B | ELITE4.class 
-| 5 | 1-2 | +4 | Normal | C | class.ninja |
-| 5 | 1-2 | +4 | Normal | C | class.samurai |
-| 5 | 1-2 | +4 | Normal | C | class.alchemist |
-| 5 | 3 | +5 | Normal | B | class.sword-saint |
-| 5 | 3 | +5 | Normal | B | class.wizard |
+| 5 | 1-2 | +4 | Normal | C | class.ninja.ranger |
+| 5 | 1-2 | +4 | Normal | C | class.samurai.sword-saint |
+| 5 | 1-2 | +4 | Normal | C | class.alchemist.wizard |
+| 5 | 3 | +5 | Normal | B | class.sword-saint.guardian |
+| 5 | 3 | +5 | Normal | B | class.wizard.ninja |
 | 5 | 4 | +7 | Elite | B | ELITE5.class |
-| 6 | 1-2 | +5 | Normal | A | class.duelist |
-| 6 | 1-2 | +5 | Normal | A | class.pilgrim |
-| 6 | 1-2 | +5 | Normal | A | class.sword-saint |
-| 6 | 3 | +6 | Normal | B | class.samurai |
-| 6 | 3 | +6 | Normal | B | class.ranger |
+| 6 | 1-2 | +5 | Normal | A | class.duelist.striker |
+| 6 | 1-2 | +5 | Normal | A | class.pilgrim.sage |
+| 6 | 1-2 | +5 | Normal | A | class.sword-saint.striker |
+| 6 | 3 | +6 | Normal | B | class.samurai.ranger |
+| 6 | 3 | +6 | Normal | B | class.ranger.duelist |
 | 6 | 4 | +10 | BOSS | D | BOSS.class |
 
 **Special elite enemy**
