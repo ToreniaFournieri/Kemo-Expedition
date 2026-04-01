@@ -192,7 +192,7 @@
   - If Ranged: target `i.weapon` item categories are `i.arrow` and `i.bolt`, and target `i.NoA` item category is `i.archery`.
   - If Magic: target `i.weapon` item categories are `i.wand` and `i.grimoire`, and target `i.NoA` item category is `i.catalyst`.
   - If Melee: target `i.weapon` item categories are `i.sword` and `i.katana`, and target `i.NoA` item category is `i.gauntlet`.
-  - If None: `i.weapon` and `i.NoA` cannot be selected. (Skipped)
+  - If None: `i.shield`.
    
 2. **Initialize memory**
    - Record the **item IDs** of all currently equipped items as **Memory A**.
