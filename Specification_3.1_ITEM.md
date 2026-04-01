@@ -77,7 +77,7 @@
 |------|--------|
 |`i.armor` | x1.0 |
 |`i.robe` | x1.0 |
-|`i.shield` | x1.0 |
+|`i.shield` | x2.0 |
 |`i.sword` | x1.1 |
 |`i.katana` | x1.43 |
 |`i.gauntlet` | x1.0 |
