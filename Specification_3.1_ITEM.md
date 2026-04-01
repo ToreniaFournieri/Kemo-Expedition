@@ -108,8 +108,8 @@
 | elite rare | A | base_power x `type_amplifier` x rarelity.amplifier + **two** subtle_power`d.`, **`e.`**, or `c.` bonus, base c.multiplier +2 tier upgrade(ecept penalty) |
 | elite rare | B | base_power x `type_amplifier` x rarelity.amplifier + **`e.`**, and `c.` bonus, base c.multiplier +2 tier upgrade(ecept penalty) |
 | elite rare | C | base_power x `type_amplifier` x rarelity.amplifier + subtle_power`d.` and `c.` bonus, base c.multiplier +2 tier upgrade(ecept penalty) |
-| boss rare | base_power x `type_amplifier` x rarelity.amplifier + `c.` bonus, one **`b.` bonus**, but **no base c.multiplier** |
-| mythic rare | base_power x `type_amplifier` x rarelity.amplifier + subtle_power`d.`, `e.`, or `c.` bonus, one `b.` bonus**, but no base c.multiplier |
+| boss rare | none | base_power x `type_amplifier` x rarelity.amplifier + `c.` bonus, one **`b.` bonus**, but **no base c.multiplier** |
+| mythic rare | none | base_power x `type_amplifier` x rarelity.amplifier + subtle_power`d.`, `e.`, or `c.` bonus, one `b.` bonus**, but no base c.multiplier |
 
 *Note:* subtle_power: x0.20 ~ x0.34 of base_power x `type_amplifier` x rarelity.amplifier value.
 
