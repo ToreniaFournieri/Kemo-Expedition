@@ -5691,8 +5691,9 @@ function PartyTab({
                   });
                 }
                 if (hasCastableMagic) {
+                  const hasArcMagic = stats.abilities.some((ability) => ability.id === 'arc_magic' && ability.level > 0);
                   const magicProfile = resolveMagicProfile({
-                    style: 'multi-hit',
+                    style: hasArcMagic ? 'arc-magic' : 'multi-hit',
                     elementalOffense: stats.elementalOffense,
                     elementalOffenseValue: stats.elementalOffenseValue,
                     magicalNoA: stats.magicalNoA,
