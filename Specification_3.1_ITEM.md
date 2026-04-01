@@ -75,9 +75,9 @@
 
 | Item type | `type_amplifier` |
 |------|--------|
-|`i.armor` | x1.0 |
-|`i.robe` | x1.0 |
-|`i.shield` | x2.0 |
+|`i.armor` | x1.4 |
+|`i.robe` | x1.15 |
+|`i.shield` | x3.0 |
 |`i.sword` | x1.1 |
 |`i.katana` | x1.43 |
 |`i.gauntlet` | x1.0 |
