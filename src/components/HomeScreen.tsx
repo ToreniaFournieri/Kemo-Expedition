@@ -1,5 +1,5 @@
 import { Fragment, useState, useEffect, useRef, useCallback, useMemo, type ChangeEvent, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId, type BattleLogEntry } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId, type Ability, type BattleLogEntry } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import {
   DUNGEONS,
@@ -1271,6 +1271,26 @@ function getOffenseMultiplierSum(
   }, 0);
 
   return bonusSum;
+}
+
+function hasArcMagicAbility(abilities: Ability[]): boolean {
+  return abilities.some((ability) => ability.id === 'arc_magic');
+}
+
+function hasEnemyArcMagicAbility(enemy: EnemyDef): boolean {
+  return enemy.abilities.some((ability) => ability.id === 'arc_magic' && ability.level > 0);
+}
+
+// SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.offense_amplifier
+// a.arc-magic: magical offense amplifier x3.0.
+function getCharacterDisplayedMagicalAttackAmplifier(baseAmplifier: number, abilities: Ability[]): number {
+  return hasArcMagicAbility(abilities) ? baseAmplifier * 3.0 : baseAmplifier;
+}
+
+// SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.offense_amplifier
+// a.arc-magic: magical offense amplifier x3.0.
+function getEnemyDisplayedMagicalAttackAmplifier(enemy: EnemyDef): number {
+  return hasEnemyArcMagicAbility(enemy) ? enemy.magicalAttackAmplifier * 3.0 : enemy.magicalAttackAmplifier;
 }
 
 function getBaseOffenseScale(value: number): number {
@@ -4250,7 +4270,10 @@ function PartyTab({
     ? selectedIaigiriMultiplier * (1 + selectedStats.rangedAttackCBonus + getOffenseMultiplierSum(equippedItems, 'ranged', selectedStats.offenseCBonusNames)) * selectedStats.physicalOffenseMultiplier
     : (1 + selectedStats.rangedAttackCBonus + getOffenseMultiplierSum(equippedItems, 'ranged', selectedStats.offenseCBonusNames) + selectedStats.physicalAttackCBonus) * selectedStats.physicalOffenseMultiplier
   ) + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.strength);
-  const selectedMagicalAttackAmp = (((1 + selectedStats.magicalAttackCBonus + getOffenseMultiplierSum(equippedItems, 'magical', selectedStats.offenseCBonusNames)) * selectedStats.magicalOffenseMultiplier) + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.intelligence);
+  const selectedMagicalAttackAmp = getCharacterDisplayedMagicalAttackAmplifier(
+    (((1 + selectedStats.magicalAttackCBonus + getOffenseMultiplierSum(equippedItems, 'magical', selectedStats.offenseCBonusNames)) * selectedStats.magicalOffenseMultiplier) + selectedStats.deityOffenseAmplifierBonus) * getBaseOffenseScale(selectedStats.baseStats.intelligence),
+    selectedStats.abilities,
+  );
   const combatTotals = {
     vitality: selectedStats.baseStats.vitality,
     strength: selectedStats.baseStats.strength,
@@ -5607,7 +5630,10 @@ function PartyTab({
                   });
                 }
                 if (hasMagical) {
-                  const amp = ((1.0 + baseMultMagical) * stats.magicalOffenseMultiplier + stats.deityOffenseAmplifierBonus) * intelligenceScale;
+                  const amp = getCharacterDisplayedMagicalAttackAmplifier(
+                    ((1.0 + baseMultMagical) * stats.magicalOffenseMultiplier + stats.deityOffenseAmplifierBonus) * intelligenceScale,
+                    stats.abilities,
+                  );
                   offenseLines.push({
                     key: 'magical-attack',
                     text: `魔法攻撃:${formatNumber(Math.floor(stats.magicalAttack))} x ${formatNumber(stats.magicalNoA)}回(x${amp.toFixed(2)})`,
@@ -9693,7 +9719,7 @@ function SettingTab({
                               offenseRows.push(`物理命中率: 100% (減衰: ${decay})`);
                             }
                             if (hasMagicalAttack) {
-                              offenseRows.push(formatEnemyAttackLine('魔法攻撃', godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA, godRuntimeEnemy.magicalAttackAmplifier));
+                              offenseRows.push(formatEnemyAttackLine('魔法攻撃', godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(godRuntimeEnemy)));
                               offenseRows.push(`魔法命中率: 100% (減衰: ${decay})`);
                             }
 
@@ -9785,7 +9811,7 @@ function SettingTab({
                       <div>{hasRangedAttack ? formatEnemyAttackLine('遠距離攻撃', colosseumEnemy.rangedAttack, colosseumEnemy.rangedNoA, colosseumEnemy.rangedAttackAmplifier) : ''}</div><div>{`属性: ${ENEMY_ELEMENT_LABELS[colosseumEnemy.elementalOffense] ?? '無'} (x1.0)`}</div>
                       <div>{hasMeleeAttack ? formatEnemyAttackLine('近接攻撃', colosseumEnemy.meleeAttack, colosseumEnemy.meleeNoA, colosseumEnemy.meleeAttackAmplifier) : ''}</div><div>{formatEnemyDefenseLine('物理防御', colosseumEnemy.physicalDefense, physicalDefenseAmplifierPercent)}</div>
                       <div>{hasPhysicalAttack ? `物理命中率: 100% (減衰: ${decay})` : ''}</div><div>{formatEnemyDefenseLine('魔法防御', colosseumEnemy.magicalDefense, magicalDefenseAmplifierPercent)}</div>
-                      <div>{hasMagicalAttack ? formatEnemyAttackLine('魔法攻撃', colosseumEnemy.magicalAttack, colosseumEnemy.magicalNoA, colosseumEnemy.magicalAttackAmplifier) : ''}</div><div>回避: {formatNumber(Math.round(colosseumEnemy.evasionBonus * 1000))}</div>
+                      <div>{hasMagicalAttack ? formatEnemyAttackLine('魔法攻撃', colosseumEnemy.magicalAttack, colosseumEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(colosseumEnemy)) : ''}</div><div>回避: {formatNumber(Math.round(colosseumEnemy.evasionBonus * 1000))}</div>
                       <div>{hasMagicalAttack ? `魔法命中率: 100% (減衰: ${decay})` : ''}</div><div>{renderEnemyElementalResistanceLine(colosseumEnemy)}</div>
                     </div>
                     {(() => {
@@ -9873,7 +9899,7 @@ function SettingTab({
                               offenseRows.push(`物理命中率: 100% (減衰: ${decay})`);
                             }
                             if (hasMagicalAttack) {
-                              offenseRows.push(formatEnemyAttackLine('魔法攻撃', displayEnemy.magicalAttack, displayEnemy.magicalNoA, displayEnemy.magicalAttackAmplifier));
+                              offenseRows.push(formatEnemyAttackLine('魔法攻撃', displayEnemy.magicalAttack, displayEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(displayEnemy)));
                               offenseRows.push(`魔法命中率: 100% (減衰: ${decay})`);
                             }
 
