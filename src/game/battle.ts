@@ -498,7 +498,7 @@ function calculateSingleEnemyAttackDamage(
   }
   // SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.offense_amplifier
   // a.arc-magic: magical offense amplifier x3.0.
-  if (phase === 'mid' && getEnemyAbilityLevel(enemy, 'arc_magic') > 0) {
+  if (phase === 'mid' && hasEnemyArcMagic(enemy)) {
     amplifier *= 3.0;
   }
 
@@ -533,11 +533,15 @@ function getEnemyBaseNoA(phase: BattleActionPhase, enemy: EnemyDef): number {
   }
 }
 
+function hasEnemyArcMagic(enemy: EnemyDef): boolean {
+  return getEnemyAbilityLevel(enemy, 'arc_magic') > 0;
+}
+
 // Get number of attacks for enemy in a phase
 function getEnemyNoA(phase: BattleActionPhase, enemy: EnemyDef): number {
   // SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.NoA
   const baseNoA = getEnemyBaseNoA(phase, enemy);
-  if (phase === 'mid' && getEnemyAbilityLevel(enemy, 'arc_magic') > 0) {
+  if (phase === 'mid' && hasEnemyArcMagic(enemy)) {
     return Math.ceil(baseNoA / 3);
   }
   const heavyStrikeLevel = getEnemyAbilityLevel(enemy, 'heavy_strike');
@@ -4086,7 +4090,7 @@ export function executeBattle(
           }
 
           const magicProfile = resolveMagicProfile({
-            style: getEnemyAbilityLevel(enemy, 'arc_magic') > 0 ? 'arc-magic' : 'multi-hit',
+            style: hasEnemyArcMagic(enemy) ? 'arc-magic' : 'multi-hit',
             elementalOffense: enemy.elementalOffense,
             elementalOffenseValue: 1.0,
             magicalNoA: attempts,
