@@ -55,7 +55,7 @@
 
 -　Tier 9 and 10 are Multiplier-Only Tiers. (Unccommon/Rare item upgared reference)
 
-| Item type | base_power/Scale for | base c.multiplier for | `d.`1 | `d.`2 | `e.` or `r.` |`c.` bonus | `b.` bonus |
+| Item type | base_power/Scale for | base c.multiplier for | X-bonus | Y-bonus | R-bonus | C-bonus | B-bonus |
 |------|--------|------|------|------|------|------|------|
 |`i.armor` | `d.physical_defense` | `c.physical_defense+v` | `d.HP` | `d.magical_defense` | `r.fire_xN`,`r.ice_xN`, `r.thunder_xN` | none | `b.vitality+1` |
 |`i.robe` |  `d.magical_defense`  | `c.magical_defense+v` | `d.HP` | `d.physical_defense` | `r.fire_xN`,`r.ice_xN`, `r.thunder_xN` |`c.evasion+0.00v` | `b.intelligence+1` |
@@ -104,12 +104,12 @@
 | Rarelity | EnemyTypeSource | Features |
 |------|--------|--------|
 | common | none | base_power x `type_amplifier` x rarelity.amplifier, and base c.multiplier |
-| uncommon | none | base_power x `type_amplifier` x rarelity.amplifier + **one `c.` bonus**, base c.multiplier +1 tier upgrade(ecept penalty) |
-| elite rare | A | base_power x `type_amplifier` x rarelity.amplifier + **two** subtle_power`d.`, **`e.`**, or `c.` bonus, base c.multiplier +2 tier upgrade(ecept penalty) |
-| elite rare | B | base_power x `type_amplifier` x rarelity.amplifier + **`e.`**, and `c.` bonus, base c.multiplier +2 tier upgrade(ecept penalty) |
-| elite rare | C | base_power x `type_amplifier` x rarelity.amplifier + subtle_power`d.` and `c.` bonus, base c.multiplier +2 tier upgrade(ecept penalty) |
-| boss rare | none | base_power x `type_amplifier` x rarelity.amplifier + `c.` bonus, one **`b.` bonus**, but **no base c.multiplier** |
-| mythic rare | none | base_power x `type_amplifier` x rarelity.amplifier + subtle_power`d.`, `e.`, or `c.` bonus, one `b.` bonus**, but no base c.multiplier |
+| uncommon | none | base_power x `type_amplifier` x rarelity.amplifier + C-bonus + base c.multiplier +1 tier upgrade(ecept penalty) |
+| elite rare | A | base_power x `type_amplifier` x rarelity.amplifier + X-bonus + E-bonus + base c.multiplier +2 tier upgrade(ecept penalty) |
+| elite rare | B | base_power x `type_amplifier` x rarelity.amplifier + Y-bonus + C-bonus + base c.multiplier +2 tier upgrade(ecept penalty) |
+| elite rare | C | base_power x `type_amplifier` x rarelity.amplifier + X-bonus + Y-bonus + base c.multiplier +2 tier upgrade(ecept penalty) |
+| boss rare | none | base_power x `type_amplifier` x rarelity.amplifier + X-bonus + C-bonus + B-bonus, but **no base c.multiplier** |
+| mythic rare | none | base_power x `type_amplifier` x rarelity.amplifier + X-bonus + Y-bonus + C-bonus + B-bonus, but no base c.multiplier |
 
 *Note:* subtle_power: x0.20 ~ x0.34 of base_power x `type_amplifier` x rarelity.amplifier value.
 
