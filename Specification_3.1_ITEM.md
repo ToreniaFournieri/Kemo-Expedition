@@ -62,7 +62,7 @@
 |------|--------|------|------|------|------|------|------|
 |`i.armor` | x1.4 `d.physical_defense` | `c.physical_defense+v` | x1.2 `d.HP` | x0.3 `d.magical_defense` | `r.fire-v`,`r.ice-v`, `r.thunder-v` | none | `b.vitality+1` |
 |`i.robe` | x1.15 `d.magical_defense`  | `c.magical_defense+v` | x1.2 `d.HP` | x0.3 `d.physical_defense` | `r.fire-v`,`r.ice-v`, `r.thunder-v` |`c.evasion+0.00v` | `b.intelligence+1` |
-|`i.shield ` | x3.0 `d.HP` | `c.evasion+v` | x0.20 `d.physical_defense` | x0.20 `d.magical_defense` | `r.fire-v`,`r.ice-v`, `r.thunder-v` | `d.physical_defense` | `b.mind+1` |
+|`i.shield ` | x3.0 `d.HP` | `c.evasion+v` | x0.20 `d.physical_defense` | x0.20 `d.magical_defense` | `r.fire-v`,`r.ice-v`, `r.thunder-v` | none | `b.mind+1` |
 |`i.sword` | x1.1 `d.melee_attack` | `c.melee_attack+v` | x0.25 `d.physical_defense` | x1.1 `d.HP` |  `e.fire+v` | `c.accuracy+0.0v` | `b.strength+1` |
 |`i.katana` | x1.43 `d.melee_attack` | `c.melee_attack+V`, `d.evasion-v`, `d.melee_NoA-v` | x1.0 `d.HP` | x0.3 `d.magical_defense` | none | `c.penet+0.0v` | `b.mind+1` |
 |`i.gauntlet` | x1.0 `d.melee_NoA` | `c.melee_NoA+v` | x0.3 `d.physical_defense` | none | none | `c.physical_defense+v` | `b.vitality+1` |
