@@ -324,44 +324,44 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 **Standard template**
 
-| `x.floor` | `x.room`| `x.level_offset` | `x.type` | `x.enemy_type` | `x.class` | `x.drop` |
-|-|-|-|-|-|-|-|
-| 1 | 1-2 | +0 | Normal | A | Rogue | `i.bolt`U, `i.armor`U |
-| 1 | 1-2 | +0 | Normal | A | Wizard | `i.wand`U, `i.catalyst`U |
-| 1 | 1-2 | +0 | Normal | A | Ranger | `i.arrow`U, `i.archery`U |
-| 1 | 3 | +1 | Normal | A | Fighter | `i.sword`U, `i.gauntlet`U |
-| 1 | 3 | +1 | Normal | A | Lord | `i.shield`U, `i.robe`U |
-| 1 | 4 | +3 | Elite | A | ELITE1.class | ELITE1.drop |
-| 2 | 1-2 | +1 | Normal | A | Ninja | `i.katana`U,`i.armor`U |
-| 2 | 1-2 | +1 | Normal | A | Samurai | `i.katana`U, `i.catalyst`U |
-| 2 | 1-2 | +1 | Normal | A | Sage | `i.grimoire`U, `i.robe`U |
-| 2 | 3 | +2 | Normal | B | Duelist | `i.sword`U, `i.arrow`U |
-| 2 | 3 | +2 | Normal | B | Pilgrim | `i.armor`U, `i.wand`U |
-| 2 | 4 | +4 | Elite | A | ELITE2.class | ELITE2.drop |
-| 3 | 1-2 | +2 | Normal | C | Lord | `i.shield`U,`i.robe`U |
-| 3 | 1-2 | +2 | Normal | C | Wizard | `i.wand`U, `i.catalyst`U |
-| 3 | 1-2 | +2 | Normal | C | Fighter | `i.sword`U, `i.gauntlet`U |
-| 3 | 3 | +3 | Normal | A | Samurai | `i.katana`U, `i.bolt`U |
-| 3 | 3 | +3 | Normal | A | Ranger | `i.arrow`U, `i.archery`U |
-| 3 | 4 | +5 | Elite | C | ELITE3.class | ELITE3.drop |
-| 4 | 1-2 | +3 | Normal | B | Rogue | `i.bolt`U, `i.armor`U |
-| 4 | 1-2 | +3 | Normal | B | Wizard | `i.wand`U, `i.catalyst`U |
-| 4 | 1-2 | +3 | Normal | B | Ranger | `i.arrow`U, `i.archery`U |
-| 4 | 3 | +4 | Normal | C | Fighter | `i.sword`U, `i.gauntlet`U |
-| 4 | 3 | +4 | Normal | C | Lord | `i.shield`U, `i.robe`U |
-| 4 | 4 | +6 | Elite | B | ELITE4.class | ELITE4.drop |
-| 5 | 1-2 | +4 | Normal | C | Ninja | `i.katana`U,`i.armor`U |
-| 5 | 1-2 | +4 | Normal | C | Samurai | `i.katana`U, `i.catalyst`U |
-| 5 | 1-2 | +4 | Normal | C | Sage | `i.grimoire`U, `i.robe`U |
-| 5 | 3 | +5 | Normal | B | Duelist | `i.sword`U, `i.arrow`U |
-| 5 | 3 | +5 | Normal | B | Pilgrim | `i.armor`U, `i.grimoire`U |
-| 5 | 4 | +7 | Elite | B | ELITE5.class | ELITE5.drop |
-| 6 | 1-2 | +5 | Normal | A | Lord | `i.shield`U,`i.robe`U |
-| 6 | 1-2 | +5 | Normal | A | Wizard | `i.wand`U, `i.catalyst`U |
-| 6 | 1-2 | +5 | Normal | A | Fighter | `i.sword`U, `i.gauntlet`U |
-| 6 | 3 | +6 | Normal | B | Samurai | `i.katana`U, `i.bolt`U |
-| 6 | 3 | +6 | Normal | B | Ranger | `i.arrow`U, `i.archery`U |
-| 6 | 4 | +10 | BOSS | D | BOSS.class | BOSS.drop |
+| `x.floor` | `x.room`| `x.level_offset` | `x.type` | `x.enemy_type` | `x.class` |
+|-|-|-|-|-|-|
+| 1 | 1-2 | +0 | Normal | A | class.striker |
+| 1 | 1-2 | +0 | Normal | A | class.wizard | 
+| 1 | 1-2 | +0 | Normal | A | class.ranger | 
+| 1 | 3 | +1 | Normal | A | class.guardian |
+| 1 | 3 | +1 | Normal | A | class.lord |
+| 1 | 4 | +3 | Elite | A | ELITE1.class |
+| 2 | 1-2 | +1 | Normal | A | class.ninja |
+| 2 | 1-2 | +1 | Normal | A | class.samurai |
+| 2 | 1-2 | +1 | Normal | A | class.sage |
+| 2 | 3 | +2 | Normal | B | class.duelist |
+| 2 | 3 | +2 | Normal | B | class.pilgrim |
+| 2 | 4 | +4 | Elite | A | ELITE2.class |
+| 3 | 1-2 | +2 | Normal | C | class.sword-saint |
+| 3 | 1-2 | +2 | Normal | C | class.alchemist |
+| 3 | 1-2 | +2 | Normal | C | class.guardian |
+| 3 | 3 | +3 | Normal | A | class.samurai |
+| 3 | 3 | +3 | Normal | A | class.wizard |
+| 3 | 4 | +5 | Elite | C | ELITE3.class |
+| 4 | 1-2 | +3 | Normal | B | class.striker |
+| 4 | 1-2 | +3 | Normal | B | class.sage |
+| 4 | 1-2 | +3 | Normal | B | class.guardian |
+| 4 | 3 | +4 | Normal | C | class.duelist |
+| 4 | 3 | +4 | Normal | C | class.lord |
+| 4 | 4 | +6 | Elite | B | ELITE4.class 
+| 5 | 1-2 | +4 | Normal | C | class.ninja |
+| 5 | 1-2 | +4 | Normal | C | class.samurai |
+| 5 | 1-2 | +4 | Normal | C | class.alchemist |
+| 5 | 3 | +5 | Normal | B | class.sword-saint |
+| 5 | 3 | +5 | Normal | B | class.wizard |
+| 5 | 4 | +7 | Elite | B | ELITE5.class |
+| 6 | 1-2 | +5 | Normal | A | class.duelist |
+| 6 | 1-2 | +5 | Normal | A | class.pilgrim |
+| 6 | 1-2 | +5 | Normal | A | class.sword-saint |
+| 6 | 3 | +6 | Normal | B | class.samurai |
+| 6 | 3 | +6 | Normal | B | class.ranger |
+| 6 | 4 | +10 | BOSS | D | BOSS.class |
 
 **Special elite enemy**
 
