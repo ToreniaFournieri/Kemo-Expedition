@@ -2556,9 +2556,9 @@ export function HomeScreen({
       const bestMultiplierByType = new Map<string, number>();
 
       for (const bonus of bonuses) {
-        if (bonus.type === 'pursuit' || bonus.type === 'equip_ranged') enableFlags.ranged = true;
-        if (bonus.type === 'caster' || bonus.type === 'equip_magic') enableFlags.magic = true;
-        if (bonus.type === 'grit' || bonus.type === 'equip_melee') enableFlags.melee = true;
+        if (bonus.type === 'equip_ranged') enableFlags.ranged = true;
+        if (bonus.type === 'equip_magic') enableFlags.magic = true;
+        if (bonus.type === 'equip_melee') enableFlags.melee = true;
         if (!bonus.type.endsWith('_multiplier')) continue;
         const existing = bestMultiplierByType.get(bonus.type);
         if (existing == null || bonus.value > existing) {
@@ -2600,13 +2600,13 @@ export function HomeScreen({
         if (combatStyle === 'ranged') return ['arrow', 'bolt'];
         if (combatStyle === 'magic') return ['wand', 'grimoire'];
         if (combatStyle === 'melee') return ['sword', 'katana'];
-        return [];
+        return ['shield'];
       }
       if (targetCategory === 'i.NoA') {
         if (combatStyle === 'ranged') return ['archery'];
         if (combatStyle === 'magic') return ['catalyst'];
         if (combatStyle === 'melee') return ['gauntlet'];
-        return [];
+        return ['shield'];
       }
       return [targetCategory];
     };
