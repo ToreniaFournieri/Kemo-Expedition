@@ -365,7 +365,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | 6 | 3 | +6 | Normal | B | class.ranger.duelist |
 | 6 | 4 | +10 | BOSS | D | BOSS.class |
 
-**Special elite and boss enemy**
+**Elite and boss enemy**
 
 | `x.exp_id` | expedition unique | `x.class`  |
 |-|-|-|
@@ -418,25 +418,26 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | 8 | ELITE5 | class.wizard.samurai |
 | 8 | BOSS | class.ninja.wizard |
 
+**Special enemy of replacement**
 
-| `x.exp_id` | replace target | `x.level_offset` | `x.type` | `x_enemy_type` | `x.class` | `x.drop` |
+| `x.exp_id` | replace target floor | `x.level_offset` | `x.type` | `x_enemy_type` | `x.class` | `x.drop` |
 |-|-|-|-|-|-|-|
-| 1 | 4 | +6 | Elite | Caninian | Lord | `i.shield`BD, `i.robe`BD |
-| 1 | 4 | +6 | Elite | Caninian | Fighter | `i.katana`BD, `i.gauntlet`BD |
-| 2 | 5 | +7 | Elite | Lupinian |  Wizard | `i.wand`BD, `i.catalyst`BD |
-| 2 | 5 | +7 | Elite | Lupinian | Ninja | `i.bolt`BD, `i.archery`BD |
-| 3 | 5 | +7 | Elite | Vulpinian | Duelist | `i.sword`BD, `i.shield`BD |
-| 3 | 5 | +7 | Elite | Vulpinian | Pilgrim | `i.catalyst`BD, `i.gauntlet`BD |
-| 4 | 4 | +6 | Elite | Felidian | Rogue | `i.grimoire`BD, `i.arrow`BD |
-| 4 | 4 | +6 | Elite | Felidian | Ninja | `i.robe`BD, `i.sword`BD |
-| 5 | 3 | +5 | Elite | Ursan | Fighter | `i.gauntlet`BD, `i.armor`BD |
-| 5 | 3 | +5 | Elite | Ursan | Sage | `i.wand`BD, `i.catalyst`BD |
-| 6 | 6 | +8 | Elite | Procyonian | Samurai | `i.shield`BD, `i.katana`BD |
-| 6 | 6 | +8 | Elite | Procyonian | Ranger | `i.arrow`BD, `i.archery`BD |
-| 7 | 2 | +4 | Elite | Leporian | Pilgrim | `i.armor`BD, `i.gauntlet`BD |
-| 7 | 2 | +4 | Elite | Leporian | Wizard | `i.archery`BD, `i.grimoire`BD |
-| 8 | 5 | +7 | Elite | Cervin | Sage | `i.catalyst`BD, `i.robe`BD |
-| 8 | 5 | +7 | Elite | Cervin | Rogue | `i.arrow`BD, `i.sword`BD |
+| 1 | 4 | +6 | Elite | Caninian | class.duelist.lord | `i.shield`BD, `i.robe`BD |
+| 1 | 4 | +6 | Elite | Caninian | class.lord.striker | `i.katana`BD, `i.gauntlet`BD |
+| 2 | 5 | +7 | Elite | Lupinian | class.sword-saint.guardian | `i.wand`BD, `i.catalyst`BD |
+| 2 | 5 | +7 | Elite | Lupinian | class.wizard.ninja | `i.bolt`BD, `i.archery`BD |
+| 3 | 5 | +7 | Elite | Vulpinian | class.sword-saint.guardian | `i.sword`BD, `i.shield`BD |
+| 3 | 5 | +7 | Elite | Vulpinian | class.wizard.ninja | `i.catalyst`BD, `i.gauntlet`BD |
+| 4 | 4 | +6 | Elite | Felidian | class.striker.lord | `i.grimoire`BD, `i.arrow`BD |
+| 4 | 4 | +6 | Elite | Felidian | class.ninja.duelist | `i.robe`BD, `i.sword`BD |
+| 5 | 3 | +5 | Elite | Ursan | class.samurai.duelist | `i.gauntlet`BD, `i.armor`BD |
+| 5 | 3 | +5 | Elite | Ursan | class.wizard.alchemist | `i.wand`BD, `i.catalyst`BD |
+| 6 | 6 | +8 | Elite | Procyonian | class.samurai.ranger  | `i.shield`BD, `i.katana`BD |
+| 6 | 6 | +8 | Elite | Procyonian | class.ranger.duelist | `i.arrow`BD, `i.archery`BD |
+| 7 | 2 | +4 | Elite | Leporian | class.duelist.pilgrim | `i.armor`BD, `i.gauntlet`BD |
+| 7 | 2 | +4 | Elite | Leporian | class.wizard.striker | `i.archery`BD, `i.grimoire`BD |
+| 8 | 5 | +7 | Elite | Cervin | class.sword-saint.ninja | `i.catalyst`BD, `i.robe`BD |
+| 8 | 5 | +7 | Elite | Cervin | class.wizard.guardian | `i.arrow`BD, `i.sword`BD |
 
 
 - Drop code format: `i.item_type`<Rarity><EnemyTypeSource>
