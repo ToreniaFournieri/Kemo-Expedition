@@ -67,7 +67,7 @@
 |`i.bolt` | `d.ranged_attack` | `c.ranged_attack+v`, `d.evasion-v`, `d.ranged_NoA-v` | `d.magical_defense` | `d.HP` | `e.fire+v`, `e.ice+v` , `e.thunder+v` | `c.penet+0.0v`  | `b.vitality+1` |
 |`i.archery` | `d.ranged_NoA` | `c.ranged_NoA+v` | `d.HP` | none | none | `c.accuracy+0.00v` | `b.strength+1` |
 |`i.wand` | `d.magical_attack` | `c.magical_attack+v` | `d.magical_defense` | `d.HP` | none | none | `b.intelligence+1` |
-|`i.grimoire` | `d.magical_attack` | `c.magical_attack+v`, `d.evasion-v`, `d.magical_NoA-v` | `d.physical_defense` | `d.magical_defense` | `c.penet+0.0v` | `e.ice+v`, `e.thunder+V` | `b.mind+1` |
+|`i.grimoire` | `d.magical_attack` | `c.magical_attack+v`, `d.evasion-v`, `d.magical_NoA-v` | `d.physical_defense` | `d.magical_defense` | `e.ice+v`, `e.thunder+V` | `c.penet+0.0v` | `b.mind+1` |
 |`i.catalyst` | `d.magical_NoA` | `c.magical_NoA+v` | `d.HP` | none | `e.fire+v`, `e.ice+v`, `e.thunder+V` | none | `b.intelligence+1` |
 
 
