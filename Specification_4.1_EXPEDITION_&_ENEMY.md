@@ -345,15 +345,15 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | 3 | 3 | +3 | Normal | A | class.samurai.duelist |
 | 3 | 3 | +3 | Normal | A | class.wizard.alchemist |
 | 3 | 4 | +5 | Elite | C | ELITE3.class |
-| 4 | 1-2 | +3 | Normal | B | class.striker.striker |
-| 4 | 1-2 | +3 | Normal | B | class.sage.sage |
+| 4 | 1-2 | +3 | Normal | B | class.lord.striker |
+| 4 | 1-2 | +3 | Normal | B | class.sage.samurai |
 | 4 | 1-2 | +3 | Normal | B | class.guardian.wizard |
 | 4 | 3 | +4 | Normal | C | class.duelist.lord |
-| 4 | 3 | +4 | Normal | C | class.lord.sage |
+| 4 | 3 | +4 | Normal | C | class.lord.striker |
 | 4 | 4 | +6 | Elite | B | ELITE4.class 
 | 5 | 1-2 | +4 | Normal | C | class.ninja.ranger |
 | 5 | 1-2 | +4 | Normal | C | class.samurai.sword-saint |
-| 5 | 1-2 | +4 | Normal | C | class.alchemist.wizard |
+| 5 | 1-2 | +4 | Normal | C | class.wizard.alchemist |
 | 5 | 3 | +5 | Normal | B | class.sword-saint.guardian |
 | 5 | 3 | +5 | Normal | B | class.wizard.ninja |
 | 5 | 4 | +7 | Elite | B | ELITE5.class |
