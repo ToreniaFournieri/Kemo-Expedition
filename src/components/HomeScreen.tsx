@@ -8996,6 +8996,9 @@ function SettingTab({
     `${label}: ${formatNumber(attack)} x ${formatNumber(noA)}回 (x${amplifier.toFixed(2)})`;
 
   const hasEnemyAttack = (attack: number, noA: number) => attack > 0 && noA > 0;
+  const hasEnemyMagicCasting = (enemy: EnemyDef) =>
+    hasEnemyAttack(enemy.magicalAttack, enemy.magicalNoA)
+    || (enemy.bonuses ?? []).some((bonus) => bonus.type === 'caster' || bonus.type === 'equip_magic');
 
   const formatEnemyDefenseLine = (label: string, defense: number, percent: number) =>
     `${label}: ${formatNumber(defense)} (${percent.toFixed(0)}%)`;
@@ -9714,6 +9717,7 @@ function SettingTab({
                             const hasRangedAttack = hasEnemyAttack(godRuntimeEnemy.rangedAttack, godRuntimeEnemy.rangedNoA);
                             const hasMeleeAttack = hasEnemyAttack(godRuntimeEnemy.meleeAttack, godRuntimeEnemy.meleeNoA);
                             const hasMagicalAttack = hasEnemyAttack(godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA);
+                            const hasMagicCasting = hasEnemyMagicCasting(godRuntimeEnemy);
                             const hasPhysicalAttack = hasRangedAttack || hasMeleeAttack;
                             const decay = `${((0.90 + godRuntimeEnemy.accuracyBonus) * 100).toFixed(1)}%`;
                             const physicalDefenseAmplifierPercent = godRuntimeEnemy.physicalDefenseAmplifier * 100;
@@ -9732,6 +9736,8 @@ function SettingTab({
                             if (hasMagicalAttack) {
                               offenseRows.push(formatEnemyAttackLine('魔法攻撃', godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(godRuntimeEnemy)));
                               offenseRows.push(`魔法命中率: 100% (減衰: ${decay})`);
+                            }
+                            if (hasMagicCasting) {
                               offenseRows.push(`詠唱魔法: ${getEnemyBestiarySpellName(godRuntimeEnemy)}`);
                             }
 
@@ -9795,6 +9801,7 @@ function SettingTab({
             const hasRangedAttack = hasEnemyAttack(colosseumEnemy.rangedAttack, colosseumEnemy.rangedNoA);
             const hasMeleeAttack = hasEnemyAttack(colosseumEnemy.meleeAttack, colosseumEnemy.meleeNoA);
             const hasMagicalAttack = hasEnemyAttack(colosseumEnemy.magicalAttack, colosseumEnemy.magicalNoA);
+            const hasMagicCasting = hasEnemyMagicCasting(colosseumEnemy);
             const hasPhysicalAttack = hasRangedAttack || hasMeleeAttack;
             const decay = `${((0.90 + colosseumEnemy.accuracyBonus) * 100).toFixed(1)}%`;
             return (
@@ -9825,7 +9832,7 @@ function SettingTab({
                       <div>{hasPhysicalAttack ? `物理命中率: 100% (減衰: ${decay})` : ''}</div><div>{formatEnemyDefenseLine('魔法防御', colosseumEnemy.magicalDefense, magicalDefenseAmplifierPercent)}</div>
                       <div>{hasMagicalAttack ? formatEnemyAttackLine('魔法攻撃', colosseumEnemy.magicalAttack, colosseumEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(colosseumEnemy)) : ''}</div><div>回避: {formatNumber(Math.round(colosseumEnemy.evasionBonus * 1000))}</div>
                       <div>{hasMagicalAttack ? `魔法命中率: 100% (減衰: ${decay})` : ''}</div><div>{renderEnemyElementalResistanceLine(colosseumEnemy)}</div>
-                      <div>{hasMagicalAttack ? `詠唱魔法: ${getEnemyBestiarySpellName(colosseumEnemy)}` : ''}</div><div></div>
+                      <div>{hasMagicCasting ? `詠唱魔法: ${getEnemyBestiarySpellName(colosseumEnemy)}` : ''}</div><div></div>
                     </div>
                     {(() => {
                       const bonusText = getEnemyTypeCBonusText(colosseumEnemy);
@@ -9898,6 +9905,7 @@ function SettingTab({
                             const hasRangedAttack = hasEnemyAttack(displayEnemy.rangedAttack, displayEnemy.rangedNoA);
                             const hasMeleeAttack = hasEnemyAttack(displayEnemy.meleeAttack, displayEnemy.meleeNoA);
                             const hasMagicalAttack = hasEnemyAttack(displayEnemy.magicalAttack, displayEnemy.magicalNoA);
+                            const hasMagicCasting = hasEnemyMagicCasting(displayEnemy);
                             const hasPhysicalAttack = hasRangedAttack || hasMeleeAttack;
                             const decay = `${((0.90 + displayEnemy.accuracyBonus) * 100).toFixed(1)}%`;
 
@@ -9914,6 +9922,8 @@ function SettingTab({
                             if (hasMagicalAttack) {
                               offenseRows.push(formatEnemyAttackLine('魔法攻撃', displayEnemy.magicalAttack, displayEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(displayEnemy)));
                               offenseRows.push(`魔法命中率: 100% (減衰: ${decay})`);
+                            }
+                            if (hasMagicCasting) {
                               offenseRows.push(`詠唱魔法: ${getEnemyBestiarySpellName(displayEnemy)}`);
                             }
 
