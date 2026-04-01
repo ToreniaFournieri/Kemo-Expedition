@@ -805,6 +805,11 @@ export function computeCharacterStats(
     meleeNoA = meleeNoA / 2;
     // Physical attack damage amplification is applied during battle
   }
+  // SpecRef: 2.1.1.2 | Multiplier and Functions | character.a.arc-magic
+  // a.arc-magic: reduce magical NoA to 1/3, round up.
+  if (collection.abilities.has('arc_magic')) {
+    magicalNoA = magicalNoA / 3;
+  }
 
   // Round NoA values up (ceil per spec)
   rangedNoA = Math.ceil(rangedNoA);
@@ -1004,7 +1009,7 @@ export function getAbilityDescription(id: AbilityId, level: number): string {
       ? '魔法には魔法で反撃する(攻撃回数半減しない)'
       : '魔法には魔法で反撃する(攻撃回数半減)',
     arcane_stability: (l) => `魔法攻撃の命中率は${l >= 2 ? '60' : '55'}%を下回らない`,
-    arc_magic: () => '使用する魔法が大魔法になる',
+    arc_magic: () => '使用する魔法が大魔法になる(魔法攻撃回数1/3・魔法ダメージ3倍)',
     focus: (l) => `命中ボーナスの効果が${l >= 2 ? '1.3' : '1.2'}倍になる`,
     prophecy: (l) => l >= 2
       ? '報酬抽選内容が見える、リセット出来るようになる'
