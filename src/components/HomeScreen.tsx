@@ -1293,6 +1293,16 @@ function getEnemyDisplayedMagicalAttackAmplifier(enemy: EnemyDef): number {
   return hasEnemyArcMagicAbility(enemy) ? enemy.magicalAttackAmplifier * 3.0 : enemy.magicalAttackAmplifier;
 }
 
+function getEnemyBestiarySpellName(enemy: EnemyDef): string {
+  const magicProfile = resolveMagicProfile({
+    style: hasEnemyArcMagicAbility(enemy) ? 'arc-magic' : 'multi-hit',
+    elementalOffense: enemy.elementalOffense,
+    elementalOffenseValue: 1.0,
+    magicalNoA: enemy.magicalNoA,
+  });
+  return magicProfile.spellName;
+}
+
 function getBaseOffenseScale(value: number): number {
   return getBaseMultiplier(value, 'attack');
 }
@@ -9721,6 +9731,7 @@ function SettingTab({
                             if (hasMagicalAttack) {
                               offenseRows.push(formatEnemyAttackLine('魔法攻撃', godRuntimeEnemy.magicalAttack, godRuntimeEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(godRuntimeEnemy)));
                               offenseRows.push(`魔法命中率: 100% (減衰: ${decay})`);
+                              offenseRows.push(`詠唱魔法: ${getEnemyBestiarySpellName(godRuntimeEnemy)}`);
                             }
 
                             const defenseRows: string[] = [
@@ -9813,6 +9824,7 @@ function SettingTab({
                       <div>{hasPhysicalAttack ? `物理命中率: 100% (減衰: ${decay})` : ''}</div><div>{formatEnemyDefenseLine('魔法防御', colosseumEnemy.magicalDefense, magicalDefenseAmplifierPercent)}</div>
                       <div>{hasMagicalAttack ? formatEnemyAttackLine('魔法攻撃', colosseumEnemy.magicalAttack, colosseumEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(colosseumEnemy)) : ''}</div><div>回避: {formatNumber(Math.round(colosseumEnemy.evasionBonus * 1000))}</div>
                       <div>{hasMagicalAttack ? `魔法命中率: 100% (減衰: ${decay})` : ''}</div><div>{renderEnemyElementalResistanceLine(colosseumEnemy)}</div>
+                      <div>{hasMagicalAttack ? `詠唱魔法: ${getEnemyBestiarySpellName(colosseumEnemy)}` : ''}</div><div></div>
                     </div>
                     {(() => {
                       const bonusText = getEnemyTypeCBonusText(colosseumEnemy);
@@ -9901,6 +9913,7 @@ function SettingTab({
                             if (hasMagicalAttack) {
                               offenseRows.push(formatEnemyAttackLine('魔法攻撃', displayEnemy.magicalAttack, displayEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(displayEnemy)));
                               offenseRows.push(`魔法命中率: 100% (減衰: ${decay})`);
+                              offenseRows.push(`詠唱魔法: ${getEnemyBestiarySpellName(displayEnemy)}`);
                             }
 
                             // Bestiary detail keeps the compact 4-line defense block.
