@@ -153,11 +153,11 @@ const TIER_NOA_PENALTIES = [-1.0, -1.2, -1.4, -1.6, -1.8, -2.0, -2.2, -2.4];
 const TIER_EVASION_PENALTIES = [-0.001, -0.002, -0.003, -0.004, -0.005, -0.006, -0.007, -0.008];
 const TIER_ELEMENTAL_BONUS = [0.15, 0.14, 0.13, 0.12, 0.11, 0.09, 0.08, 0.07, 0.06, 0.05];
 
-// Base power scaling (from spec 2.4.2)
+// SpecRef: 3.1.2 | Item list | type.amplifier of base_power
 const TYPE_AMPLIFIERS: Record<ItemCategory, number> = {
-  armor: 1.0,
-  robe: 1.0,
-  shield: 1.0,
+  armor: 1.4,
+  robe: 1.15,
+  shield: 3.0,
   sword: 1.1,
   katana: 1.43,
   gauntlet: 1.0,
