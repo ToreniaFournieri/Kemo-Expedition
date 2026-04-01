@@ -283,6 +283,33 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | 7 | `Titan` | `Undead` | `Aerial` | `Leporian` |
 | 8 | `Dragon` | `Ghost` | `Jinma` | `Cervin` |
 
+**Drop template**
+
+| `x.class` | `x.drop` |
+|-|-|
+| class.duelist | `i.sword` |
+| class.samurai | `i.katana` |
+| class.sword-saint | `i.gauntlet` |
+| class.ranger | `i.arrow` |
+| class.striker | `i.bolt` |
+| class.ninja | `i.archery` |
+| class.wizard | `i.wand` |
+| class.sage | `i.grimoire` |
+| class.alchemist | `i.catalyst` |
+| class.guardian | `i.armor` |
+| class.pilgrim | `i.robe` |
+| class.lord | `i.shield` |
+
+| `x.type` | has subClass | drops  |
+|-|-|-|
+| Normal | No | 1 Uncommon (mainClass), 1 Common (mainClass), 2 Common (other class's) |
+| Elite | No | 1 Elite rare (mainClass), 1 Common (mainClass), 2 Common (other class's)|
+| Boss | No | 1 Boss rare (mainClass), 1 Common (mainClass), 2 Common (other class's) |
+| Normal | Yes | 1 Uncommon (mainClass), 1 Uncommon (subClass), 1 Common (mainClass), 1 Common (subClass) |
+| Elite | Yes | 1 Elite rare (mainClass), 1 Elite rare (subClass), 1 Common (mainClass), 1 Common (subClass) |
+| Boss | Yes | 1 Boss rare (mainClass), 1 Boss rare (subClass), 1 Common (mainClass), 1 Common (subClass) |
+
+
 **Standard template**
 
 | `x.floor` | `x.room`| `x.level_offset` | `x.type` | `x.enemy_type` | `x.class` | `x.drop` |
