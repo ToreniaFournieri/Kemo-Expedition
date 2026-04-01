@@ -38,6 +38,7 @@ export type EnemyClassMasterStats = {
   experience: number;
 };
 
+// SpecRef: 4.1.4 | Base data structure (enemy) | Base status
 const ENEMY_BASE_STATUS = {
   hp: 80,
   accuracy: 0,
@@ -48,8 +49,8 @@ const ENEMY_BASE_STATUS = {
   rangedAttackAmplifier: 1,
   magicalAttackAmplifier: 1,
   meleeAttackAmplifier: 1,
-  physicalDefense: 20,
-  magicalDefense: 20,
+  physicalDefense: 16,
+  magicalDefense: 16,
   experience: 10,
 };
 
