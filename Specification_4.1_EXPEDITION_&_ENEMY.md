@@ -365,22 +365,22 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | 6 | 3 | +6 | Normal | B | class.ranger.duelist |
 | 6 | 4 | +10 | BOSS | D | BOSS.class |
 
-**Special elite enemy**
+**Special elite and boss enemy**
 
 | `x.exp_id` | expedition unique | `x.class`  |
 |-|-|-|
-| 1 | ELITE1 | Duelist |
-| 1 | ELITE2 | Fighter |
-| 1 | ELITE3 | Rogue |
-| 1 | ELITE4 | Ranger |
-| 1 | ELITE5 | Sage |
-| 1 | BOSS | Fighter |
-| 2 | ELITE1 | Rogue |
-| 2 | ELITE2 | Fighter |
-| 2 | ELITE3 | Ranger |
-| 2 | ELITE4 | Duelist |
-| 2 | ELITE5 | Sage |
-| 2 | BOSS | Rogue |
+| 1 | ELITE1 | class.duelist |
+| 1 | ELITE2 | class.guardian |
+| 1 | ELITE3 | class.ranger.striker |
+| 1 | ELITE4 | class.sage.sword-saint  |
+| 1 | ELITE5 | class.alchemist.wizard |
+| 1 | BOSS | class.guardian.lord |
+| 2 | ELITE1 | class.lord.ranger |
+| 2 | ELITE2 | class.samurai.guardian |
+| 2 | ELITE3 | class.striker.pilgrim  |
+| 2 | ELITE4 | class.sword-saint.alchemist |
+| 2 | ELITE5 | class.wizard.sage |
+| 2 | BOSS | class.striker.ninja |
 | 3 | ELITE1 | Pilgrim |
 | 3 | ELITE2 | Lord |
 | 3 | ELITE3 | Wizard |
@@ -431,8 +431,8 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | 4 | 4 | +6 | Elite | Felidian | Ninja | `i.robe`BD, `i.sword`BD |
 | 5 | 3 | +5 | Elite | Ursan | Fighter | `i.gauntlet`BD, `i.armor`BD |
 | 5 | 3 | +5 | Elite | Ursan | Sage | `i.wand`BD, `i.catalyst`BD |
-| 6 | 6 | +8 | Elite | Mustelid | Samurai | `i.shield`BD, `i.katana`BD |
-| 6 | 6 | +8 | Elite | Mustelid | Ranger | `i.arrow`BD, `i.archery`BD |
+| 6 | 6 | +8 | Elite | Procyonian | Samurai | `i.shield`BD, `i.katana`BD |
+| 6 | 6 | +8 | Elite | Procyonian | Ranger | `i.arrow`BD, `i.archery`BD |
 | 7 | 2 | +4 | Elite | Leporian | Pilgrim | `i.armor`BD, `i.gauntlet`BD |
 | 7 | 2 | +4 | Elite | Leporian | Wizard | `i.archery`BD, `i.grimoire`BD |
 | 8 | 5 | +7 | Elite | Cervin | Sage | `i.catalyst`BD, `i.robe`BD |
