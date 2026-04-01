@@ -218,7 +218,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 | `d.HP` | `a.ability` | `d.accuracy` | `d.evasion` | `d.ranged_attack` | `d.magical_attack` | `d.melee_attack` | `d.ranged_attack_amplifier` | `d.magical_attack_amplifier` | `d.melee_attack_amplifier` | `d.physical_defense` | `d.magical_defense` | `d.experience` |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 100 | (none) | 0.00 | 0.00 | 46 | 41 | 60 | x1.0 | x1.0 | x1.0 | 20 | 20 | 10 |
+| 80 | (none) | 0.00 | 0.00 | 42 | 37 | 54 | x1.0 | x1.0 | x1.0 | 20 | 20 | 10 |
 
 - **Class modifier**
 
@@ -233,7 +233,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | class.wizard | x0.50 | `a.resonance`1 | 0.00 | -0.015 | x1.0 | x1.0 | 0 | x1.2 | x1.0 | 2 | x1.0 | x1.0 | 0 | x0.4 | x1.0 | x0.8 |
 | class.sage | x0.85 | `a.arc-magic`1 | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x0.8 | x1.3 | 4 | x1.0 | x1.0 | 0 | x0.8 | x1.3 | x1.0 |
 | class.alchemist | x0.70 | `a.arcane-stability`1 | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.2 | x1.0 | 5 | x1.0 | x1.0 | 0 | x0.7 | x0.7 | x1.2 |
-| class.guardian | x1.50 | (none) | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 2 | x1.3 | x0.6 | x1.0 |
+| class.guardian | x1.40 | (none) | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 2 | x1.3 | x0.6 | x1.0 |
 | class.pilgrim | x1.20 | (none) | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 2 | x1.0 | x1.0 | 0 | x1.1 | x1.1 | x0.4 |
 | class.lord | x1.20 | (none) | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 2 | x1.2 | x1.2 | x1.6 |
 
