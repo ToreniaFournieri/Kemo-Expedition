@@ -285,29 +285,38 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 **Drop template**
 
-| `x.class` | `x.drop` |
-|-|-|
-| class.duelist | `i.sword` |
-| class.samurai | `i.katana` |
-| class.sword-saint | `i.gauntlet` |
-| class.ranger | `i.arrow` |
-| class.striker | `i.bolt` |
-| class.ninja | `i.archery` |
-| class.wizard | `i.wand` |
-| class.sage | `i.grimoire` |
-| class.alchemist | `i.catalyst` |
-| class.guardian | `i.armor` |
-| class.pilgrim | `i.robe` |
-| class.lord | `i.shield` |
+| `x.class` | main `x.drop` | Common item drop set |
+|-|-|-|
+| class.duelist | `i.sword` | Melee |
+| class.samurai | `i.katana` | Melee |
+| class.sword-saint | Melee |
+| class.ranger | `i.arrow` | Ranged |
+| class.striker | `i.bolt` | Ranged |
+| class.ninja | `i.archery` | Ranged |
+| class.wizard | `i.wand` | Magic |
+| class.sage | `i.grimoire` | Magic |
+| class.alchemist | `i.catalyst` | Magic |
+| class.guardian | `i.armor` | Defensive |
+| class.pilgrim | `i.robe` | Defensive |
+| class.lord | `i.shield` | Defensive |
+
+**Common item table**
+| Drop set | drops |
+|-|-|-|
+| Melee | `i.sword`, `i.katana`,`i.gauntlet`  |
+| Ranged | `i.arrow` | `i.arrow`, `i.bolt`, `i.archery` |
+| Magic | `i.wand`, `i.grimoire`, `i.catalyst` |
+| Defensive | `i.armor` | `i.armor`, `i.robe`, `i.shield`  |
+
 
 | `x.type` | has subClass | drops  |
 |-|-|-|
-| Normal | No | 1 Uncommon (mainClass), 1 Common (mainClass), 2 Common (other class's) |
-| Elite | No | 1 Elite rare (mainClass), 1 Common (mainClass), 2 Common (other class's)|
-| Boss | No | 1 Boss rare (mainClass), 1 Common (mainClass), 2 Common (other class's) |
-| Normal | Yes | 1 Uncommon (mainClass), 1 Uncommon (subClass), 1 Common (mainClass), 1 Common (subClass) |
-| Elite | Yes | 1 Elite rare (mainClass), 1 Elite rare (subClass), 1 Common (mainClass), 1 Common (subClass) |
-| Boss | Yes | 1 Boss rare (mainClass), 1 Boss rare (subClass), 1 Common (mainClass), 1 Common (subClass) |
+| Normal | No | 1 Uncommon (mainClass), 3 Common |
+| Elite | No | 1 Elite rare (mainClass), 3 Common |
+| Boss | No | 1 Boss rare (mainClass), 3 Common |
+| Normal | Yes | 1 Uncommon (mainClass), 1 Uncommon (subClass), 3 Common |
+| Elite | Yes | 1 Elite rare (mainClass), 1 Elite rare (subClass), 3 Common |
+| Boss | Yes | 1 Boss rare (mainClass), 1 Boss rare (subClass), 3 Common |
 
 
 **Standard template**
