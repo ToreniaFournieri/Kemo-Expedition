@@ -424,11 +424,11 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 |-|-|-|-|-|-|-|
 | 1 | 4 | +6 | Elite | Caninian | class.duelist.lord | `i.shield`BD, `i.robe`BD |
 | 1 | 4 | +6 | Elite | Caninian | class.lord.striker | `i.katana`BD, `i.gauntlet`BD |
-| 2 | 5 | +7 | Elite | Lupinian | class.sword-saint.guardian | `i.wand`BD, `i.catalyst`BD |
-| 2 | 5 | +7 | Elite | Lupinian | class.wizard.ninja | `i.bolt`BD, `i.archery`BD |
+| 2 | 5 | +7 | Elite | Lupinian | class.wizard.guardian | `i.wand`BD, `i.catalyst`BD |
+| 2 | 5 | +7 | Elite | Lupinian | class.ninja.sword-saint | `i.bolt`BD, `i.archery`BD |
 | 3 | 5 | +7 | Elite | Vulpinian | class.sword-saint.guardian | `i.sword`BD, `i.shield`BD |
 | 3 | 5 | +7 | Elite | Vulpinian | class.wizard.ninja | `i.catalyst`BD, `i.gauntlet`BD |
-| 4 | 4 | +6 | Elite | Felidian | class.striker.lord | `i.grimoire`BD, `i.arrow`BD |
+| 4 | 4 | +6 | Elite | Felidian | class.striker.sage | `i.grimoire`BD, `i.arrow`BD |
 | 4 | 4 | +6 | Elite | Felidian | class.ninja.duelist | `i.robe`BD, `i.sword`BD |
 | 5 | 3 | +5 | Elite | Ursan | class.samurai.duelist | `i.gauntlet`BD, `i.armor`BD |
 | 5 | 3 | +5 | Elite | Ursan | class.wizard.alchemist | `i.wand`BD, `i.catalyst`BD |
@@ -436,8 +436,8 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | 6 | 6 | +8 | Elite | Procyonian | class.ranger.duelist | `i.arrow`BD, `i.archery`BD |
 | 7 | 2 | +4 | Elite | Leporian | class.duelist.pilgrim | `i.armor`BD, `i.gauntlet`BD |
 | 7 | 2 | +4 | Elite | Leporian | class.wizard.striker | `i.archery`BD, `i.grimoire`BD |
-| 8 | 5 | +7 | Elite | Cervin | class.sword-saint.ninja | `i.catalyst`BD, `i.robe`BD |
-| 8 | 5 | +7 | Elite | Cervin | class.wizard.guardian | `i.arrow`BD, `i.sword`BD |
+| 8 | 5 | +7 | Elite | Cervin | class.sword-saint.ninja | `i.catalyst`BD, `i.sword`BD |
+| 8 | 5 | +7 | Elite | Cervin | class.wizard.guardian | `i.arrow`BD, `i.robe`BD |
 
 
 - Drop code format: `i.item_type`<Rarity><EnemyTypeSource>
