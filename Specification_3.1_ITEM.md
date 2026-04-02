@@ -25,20 +25,8 @@
 
 #### 3.1.2 Item list
 
-- base_power(1) = 12, base_power(n) = base_power(n-1) x (1.45 - 0.02 x n) round off
-- base_NoA_power(n) = 0.9 - 0.1 x n
-
-| Tier | base_power | base_NoA_power |
-|------|------------|----------------|
-| 1 | 12 | 0.8 |
-| 2 | 18 | 0.7 |
-| 3 | 26 | 0.6 |
-| 4 | 35 | 0.5 |
-| 5 | 45 | 0.4 |
-| 6 | 60 | 0.3 |
-| 7 | 80 | 0.2 |
-| 8 | 100 | 0.1 |
-
+- D: base_power(1) = 12, base_power(n) = base_power(n-1) x (1.45 - 0.02 x n) round up
+- E: base_NoA_power(n) = 0.9 - 0.1 x n
 
 -　Tier 9 and 10 are Multiplier-Only Tiers. (Uncommon/Rare item upgrade reference)
 
