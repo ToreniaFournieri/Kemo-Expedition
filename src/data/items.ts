@@ -462,12 +462,9 @@ function createItem(
       break;
     case 'gauntlet':
       item.meleeNoA = calculateNoA(noaBasePower, amplifier);
+      item.physicalDefense = calculateStat(basePower, amplifier * 0.3);
       if (rarity !== 'bossRare' && rarity !== 'mythicRare') item.meleeNoABonus = TIER_H_BONUS[getTierIndex(bonusTierH)];
-      if (rarity === 'eliteRare' && eliteSource !== 'A') item.physicalDefense = calculateStat(basePower, amplifier * 0.3);
-      if (rarity === 'bossRare' || rarity === 'mythicRare') {
-        item.partyHP = calculateStat(basePower, amplifier * 1.0);
-        item.physicalDefense = calculateStat(basePower, amplifier * 0.3);
-      }
+      if (rarity === 'bossRare' || rarity === 'mythicRare') item.partyHP = calculateStat(basePower, amplifier * 1.0);
       break;
     case 'arrow':
       item.rangedAttack = calculateStat(basePower, amplifier);
@@ -496,9 +493,8 @@ function createItem(
       break;
     case 'archery':
       item.rangedNoA = calculateNoA(noaBasePower, amplifier);
+      item.partyHP = calculateStat(basePower, amplifier * 1.0);
       if (rarity !== 'bossRare' && rarity !== 'mythicRare') item.rangedNoABonus = TIER_H_BONUS[getTierIndex(bonusTierH)];
-      if (rarity === 'eliteRare' && eliteSource !== 'A') item.partyHP = calculateStat(basePower, amplifier * 1.0);
-      if (rarity === 'bossRare' || rarity === 'mythicRare') item.partyHP = calculateStat(basePower, amplifier * 1.0);
       break;
     case 'wand':
       item.magicalAttack = calculateStat(basePower, amplifier);
@@ -527,13 +523,12 @@ function createItem(
       break;
     case 'catalyst':
       item.magicalNoA = calculateNoA(noaBasePower, amplifier);
+      item.partyHP = calculateStat(basePower, amplifier * 1.0);
       if (rarity !== 'bossRare' && rarity !== 'mythicRare') item.magicalNoABonus = TIER_H_BONUS[getTierIndex(bonusTierH)];
       if (rarity !== 'common') {
         item.elementalOffense = 'fire';
         item.elementalOffenseBonus = TIER_L_BONUS[getTierIndex(bonusTierL)];
       }
-      if (rarity === 'eliteRare' && eliteSource !== 'A') item.partyHP = calculateStat(basePower, amplifier * 1.0);
-      if (rarity === 'bossRare' || rarity === 'mythicRare') item.partyHP = calculateStat(basePower, amplifier * 1.0);
       break;
   }
   if (rarity !== 'bossRare' && rarity !== 'mythicRare') {
