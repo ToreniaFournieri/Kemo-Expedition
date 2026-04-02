@@ -616,7 +616,7 @@ If `a.*` with phase = START:
 #### 6.1.6 REWARD 
 
 - Ticket calculation:
-  - Base: 1
+  - Base: **2**
   - +1 if `c.unlock`
   - +1 if `m.luna`
   - +1 if (terrain is not terrain.gehenna) and {Goddess of Discord or (God of Oblivion and its rank ≥ 10)}
