@@ -1214,13 +1214,11 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
     else if (bucket === 'r') rParts.push(label);
     else otherParts.push(label);
   }
-  if (superRareUniqueBonusText) otherParts.push(`[超:${superRareUniqueBonusText}]`);
+  if (superRareUniqueBonusText) otherParts.push(`超:${superRareUniqueBonusText}`);
 
-  const mergedCombatBonuses = [...cParts, ...eParts];
-  const mergedCBonusesText = mergedCombatBonuses.length > 0 ? `[${mergedCombatBonuses.join(', ')}]` : '';
-  const mergedEBonusesText = '';
-  const mergedRBonusesText = rParts.length > 0 ? `[${rParts.join(', ')}]` : '';
-  return [dParts.join(' '), bParts.join(' '), mergedCBonusesText, mergedEBonusesText, mergedRBonusesText, ...otherParts].filter(Boolean).join(' ');
+  const mergedBracketBonuses = [...cParts, ...eParts, ...rParts, ...otherParts];
+  const mergedBracketBonusesText = mergedBracketBonuses.length > 0 ? `[${mergedBracketBonuses.join(', ')}]` : '';
+  return [dParts.join(' '), bParts.join(' '), mergedBracketBonusesText].filter(Boolean).join(' ');
 }
 
 function getJewelSlotStatusText(item: Item, jewelKey: JewelKey, rank: number, categoryMultiplier: number, hpScaleMultiplier: number): string {
