@@ -46,6 +46,7 @@
 | 1 | B | `Caninian` | `i.sword` | 若牙の長剣 |
 | 1 | B | `Caninian` | `i.gauntlet` | 若牙の手甲 |
 | 1 | B | `Caninian` | `i.shield` | 若牙の防盾 |
+| 1 | B | `Caninian` | `i.armor` | 若牙の戦鎧 |
 | 1 | B | `Caninian` | `i.robe` | 若牙の外套 |
 | 1 | B | `Caninian` | `i.katana` | 若牙の刀 |
 | 1 | B | `Caninian` | `i.grimoire` | 若牙の戦書 |
@@ -129,6 +130,7 @@
 | 3 | E | `Slime_Colony` | `i.archery` | 群粘の弓 |
 | 3 | B | `Vulpinian` | `i.wand` | 蒼尾王の杖 |
 | 3 | B | `Vulpinian` | `i.robe` | 蒼尾王の法衣 |
+| 3 | B | `Vulpinian` | `i.grimoire` | 蒼尾王の秘本 |
 | 3 | B | `Vulpinian` | `i.sword` | 蒼牙王の剣 |
 | 3 | B | `Vulpinian` | `i.shield` | 蒼潮王の盾 |
 | 3 | B | `Vulpinian` | `i.catalyst` | 蒼狐核の触媒 |
@@ -214,6 +216,7 @@
 | 5 | B | `Ursan` | `i.katana` | 熊王の火刀 |
 | 5 | B | `Ursan` | `i.shield` | 熊王の熔盾 |
 | 5 | B | `Ursan` | `i.gauntlet` | 熊王の重手甲 |
+| 5 | B | `Ursan` | `i.sword` | 熊王の剣 |
 | 5 | B | `Ursan` | `i.armor` | 熊王の戦鎧 |
 | 5 | B | `Ursan` | `i.wand` | 熊王の祭杖 |
 | 5 | B | `Ursan` | `i.catalyst` | 熊王核の触媒 |
@@ -255,6 +258,7 @@
 | 6 | E | `Procyonian` | `i.archery` | 葉の狩弓 |
 | 6 | B | `Procyonian` | `i.armor` | 葉王の機導装甲 |
 | 6 | B | `Procyonian` | `i.catalyst` | 葉王核の触媒 |
+| 6 | B | `Procyonian` | `i.grimoire` | 葉王の機導秘本 |
 | 6 | B | `Procyonian` | `i.shield` | 葉王の護盾 |
 | 6 | B | `Procyonian` | `i.katana` | 葉王の迅刀 |
 | 6 | B | `Procyonian` | `i.arrow` | 葉王の狩矢 |
@@ -298,6 +302,8 @@
 | 7 | B | `Leporian` | `i.sword` | 月王兎の聖剣 |
 | 7 | B | `Leporian` | `i.wand` | 月王兎の宝杖 |
 | 7 | B | `Leporian` | `i.armor` | 月王兎の聖鎧 |
+| 7 | B | `Leporian` | `i.katana` | 月王兎の神刀 |
+| 7 | B | `Leporian` | `i.shield` | 月王兎の聖盾 |
 | 7 | B | `Leporian` | `i.archery` | 月王兎の神弓 |
 | 7 | B | `Leporian` | `i.gauntlet` | 月王兎の拳甲 |
 | 7 | B | `Leporian` | `i.grimoire` | 月王兎の秘典 |
@@ -340,9 +346,11 @@
 | 8 | B | `Cervin` | `i.katana` | 千里眼王の神刀 |
 | 8 | B | `Cervin` | `i.bolt` | 千里眼王の雷閃ボルト |
 | 8 | B | `Cervin` | `i.grimoire` | 千里眼王の神典 |
+| 8 | B | `Cervin` | `i.wand` | 千里眼王の神杖 |
 | 8 | B | `Cervin` | `i.catalyst` | 千里眼王核の触媒 |
 | 8 | B | `Cervin` | `i.robe` | 千里眼王の聖衣 |
 | 8 | B | `Cervin` | `i.arrow` | 千里眼王の神矢 |
+| 8 | B | `Cervin` | `i.archery` | 千里眼王の神弓 |
 | 8 | B | `Cervin` | `i.sword` | 千里眼王の王剣 |
 
 ### 3.2.2 Mythic rare item from gods
