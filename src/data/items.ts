@@ -189,11 +189,23 @@ const ITEM_ADDITIONAL_BONUS_BY_NAME: Record<string, Bonus> = {
   '紅の防盾': { type: 'fire_defense_multiplier_xV', value: 2 / 3 },
 };
 
-// SpecRef: 3.2.1 | Item drop | additional bonus
+// SpecRef: 3.2.1 | Item drop | Special Bonus Override
 function applyAdditionalItemBonus(item: ItemDef): void {
   const additionalBonus = ITEM_ADDITIONAL_BONUS_BY_NAME[item.name];
   if (!additionalBonus) return;
-  item.bonuses = [...(item.bonuses ?? []), additionalBonus];
+
+  // Special items only keep their core concept plus the special-bonus.
+  item.bonuses = [additionalBonus];
+  item.accuracyBonus = undefined;
+  item.evasionBonus = undefined;
+  item.penetBonus = undefined;
+  item.vitalityBonus = undefined;
+  item.strengthBonus = undefined;
+  item.intelligenceBonus = undefined;
+  item.mindBonus = undefined;
+  item.meleeNoABonus = undefined;
+  item.rangedNoABonus = undefined;
+  item.magicalNoABonus = undefined;
 }
 
 function getMasterItemName(tier: number, rarity: Rarity, category: ItemCategory, variantIndex?: number): string | undefined {
