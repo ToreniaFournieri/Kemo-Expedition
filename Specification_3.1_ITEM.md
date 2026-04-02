@@ -26,18 +26,18 @@
 #### 3.1.2 Item list
 -　Tier 9 and 10 are Multiplier-Only Tiers. (Uncommon/Rare item upgrade reference)
 
-|Tier| D   | E   | F     | H  | J    | K     | L  | M     | N    | P    |
-|----|-----|-----|-------|----|------|-------|----|-------|------|------|
-| 1  | 12  | 0.8 | 0.13 | 1  | -0.001 | -1.0 | +0.15 | -10| 0.001 | 0.01 |
-| 2  | 18  | 0.7 | 0.12 | 2  | -0.002 | -1.2 | +0.14 | -9 | 0.002 | 0.02 |
-| 3  | 26  | 0.6 | 0.11 | 3  | -0.003 | -1.4 | +0.13 | -8 | 0.003 | 0.03 |
-| 4  | 35  | 0.5 | 0.09 | 4  | -0.004 | -1.6 | +0.12 | -7 | 0.004 | 0.04 |
-| 5  | 45  | 0.4 | 0.08 | 5  | -0.005 | -1.8 | +0.11 | -6 | 0.005 | 0.05 |
-| 6  | 60  | 0.4 | 0.07 | 6  | -0.006 | -2.0 | +0.10 | -5 | 0.006 | 0.06 |
-| 7  | 80  | 0.3 | 0.06 | 7  | -0.007 | -2.2 | +0.09 | -4 | 0.007 | 0.07 |
-| 8  | 100 | 0.3 | 0.05 | 8  | -0.008 | -2.4 | +0.08 | -3 | 0.008 | 0.08 |
-| 9  | 130 | 0.2 | 0.04 | 9  | -0.009 | -2.6 | +0.07 | -2 | 0.009 | 0.09 |
-| 10 | 160 | 0.2 | 0.03 | 10 | -0.010 | -2.8 | +0.06 | -1 | 0.011 | 0.11 |
+|Tier| D   | E   | F     | G     | H  | J    | K     | L  | M     | N    | P    |
+|----|-----|-----|-------|-------|----|------|-------|----|-------|------|------|
+| 1  | 12  | 0.8 | 0.13 | 0.0013 | 1  | -0.001 | -1.0 | +0.15 | -10| 0.001 | 0.01 |
+| 2  | 18  | 0.7 | 0.12 | 0.0012 | 2  | -0.002 | -1.2 | +0.14 | -9 | 0.002 | 0.02 |
+| 3  | 26  | 0.6 | 0.11 | 0.0011 | 3  | -0.003 | -1.4 | +0.13 | -8 | 0.003 | 0.03 |
+| 4  | 35  | 0.5 | 0.09 | 0.0009 | 4  | -0.004 | -1.6 | +0.12 | -7 | 0.004 | 0.04 |
+| 5  | 45  | 0.4 | 0.08 | 0.0008 | 5  | -0.005 | -1.8 | +0.11 | -6 | 0.005 | 0.05 |
+| 6  | 60  | 0.4 | 0.07 | 0.0007 | 6  | -0.006 | -2.0 | +0.10 | -5 | 0.006 | 0.06 |
+| 7  | 80  | 0.3 | 0.06 | 0.0006 | 7  | -0.007 | -2.2 | +0.09 | -4 | 0.007 | 0.07 |
+| 8  | 100 | 0.3 | 0.05 | 0.0005 | 8  | -0.008 | -2.4 | +0.08 | -3 | 0.008 | 0.08 |
+| 9  | 130 | 0.2 | 0.04 | 0.0004 | 9  | -0.009 | -2.6 | +0.07 | -2 | 0.009 | 0.09 |
+| 10 | 160 | 0.2 | 0.03 | 0.0003 | 10 | -0.010 | -2.8 | +0.06 | -1 | 0.011 | 0.11 |
 
 - note: How I made the table.
   - D: base_power(1) = 12, base_power(n) = base_power(n-1) x (1.45 - 0.02 x n) round up
@@ -49,7 +49,7 @@
 |------|--------|------|------|------|------|------|------|
 |`i.armor` | x1.4 `d.physical_defense+D` | `c.physical_defense+F` | x1.2 `d.HP+D` | x0.3 `d.magical_defense+D` | `r.fire-M`,`r.ice-M`, `r.thunder-M` | none | `b.vitality+1` |
 |`i.robe` | x1.15 `d.magical_defense+D`  | `c.magical_defense+F` | x1.2 `d.HP+D` | x0.3 `d.physical_defense+D` | `r.fire-M`,`r.ice-M`, `r.thunder-M` |`c.evasion+N` | `b.intelligence+1` |
-|`i.shield` | x3.0 `d.HP+D` | `c.evasion+F` | x0.20 `d.physical_defense+D` | x0.20 `d.magical_defense+D` | `r.fire-M`,`r.ice-M`, `r.thunder-M` | none | `b.mind+1` |
+|`i.shield` | x3.0 `d.HP+D` | `c.evasion+G` | x0.20 `d.physical_defense+D` | x0.20 `d.magical_defense+D` | `r.fire-M`,`r.ice-M`, `r.thunder-M` | none | `b.mind+1` |
 |`i.sword` | x1.1 `d.melee_attack+D` | `c.melee_attack+F` | x0.25 `d.physical_defense+D` | x1.1 `d.HP+D` |  `e.fire+L` | `c.accuracy+N` | `b.strength+1` |
 |`i.katana` | x1.43 `d.melee_attack+D` | `c.melee_attack+F`, `d.evasion-J`, `d.melee_NoA-K` | x1.0 `d.HP+D` | x0.3 `d.magical_defense+D` | none | `c.penet+P` | `b.mind+1` |
 |`i.gauntlet` | x1.0 `d.melee_NoA+E` | `c.melee_NoA+H` | x0.3 `d.physical_defense+D` | none | none | `c.physical_defense+N` | `b.vitality+1` |
