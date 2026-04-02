@@ -1631,6 +1631,8 @@ const UNLOCK_ABILITY_BONUS_LABELS: Partial<Record<BonusType, string>> = {
 function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'raw' | 'friendly' }): string {
   const defenseMultiplierStyle = options?.defenseMultiplierStyle ?? 'raw';
   const parts: string[] = [];
+  const percentFormatter = new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 1, minimumFractionDigits: 0 });
+  const formatRatePercent = (value: number): string => percentFormatter.format(Math.round(value * 1000) / 10);
   for (const b of bonuses) {
     if (b.type.endsWith('_multiplier') && MULTIPLIER_LABELS[b.type]) {
       parts.push(`${MULTIPLIER_LABELS[b.type]}x${b.value}`);
@@ -1677,9 +1679,9 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
     } else if (b.type === 'physical_attack') {
       parts.push(`物攻撃+${Math.round(b.value * 100)}%`);
     } else if (b.type === 'physical_defense') {
-      parts.push(`物防+${Math.round(b.value * 100)}%`);
+      parts.push(`物防+${formatRatePercent(b.value)}%`);
     } else if (b.type === 'magical_defense') {
-      parts.push(`魔防+${Math.round(b.value * 100)}%`);
+      parts.push(`魔防+${formatRatePercent(b.value)}%`);
     } else if (b.type === 'fire_offense') {
       parts.push(`炎攻+${Math.round(b.value * 100)}%`);
     } else if (b.type === 'ice_offense') {
@@ -5975,6 +5977,7 @@ function PartyTab({
                   helpRows.push({ label: entry.label, description: entry.description });
                 }
               };
+              const defensePercentFormatter = new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 1, minimumFractionDigits: 0 });
 
               for (const [key, val] of Object.entries(multipliers)) {
                 if (hiddenBonusDisplayKeys.has(key)) continue;
@@ -6000,7 +6003,7 @@ function PartyTab({
                     const description = getBonusHelpDescription({ type: key as BonusType, value: val });
                     pushBonusDisplayEntry({ key, label, description: description ?? undefined });
                   } else if (key === 'physical_defense' || key === 'magical_defense') {
-                    const label = `${addNames[key]}+${Math.round(val * 100)}%`;
+                    const label = `${addNames[key]}+${defensePercentFormatter.format(Math.round(val * 1000) / 10)}%`;
                     const description = getBonusHelpDescription({ type: key as BonusType, value: val });
                     pushBonusDisplayEntry({ key, label, description: description ?? undefined });
                   } else if (key === 'penet') {
