@@ -279,7 +279,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | 3 | `Marine` | `Slime_Colony` | `Spirit` | `Vulpinian` |
 | 4 | `Shadowfang` | `Felidian` | `Titan` | `Felidian` |
 | 5 | `Beast` | `Dragon` | `Ursan` | `Ursan` |
-| 6 | `Mech` | `Golem` | `Chimera` | `Mustelid` |
+| 6 | `Mech` | `Golem` | `Chimera` | `Procyonian` |
 | 7 | `Titan` | `Undead` | `Aerial` | `Leporian` |
 | 8 | `Dragon` | `Ghost` | `Jinma` | `Cervin` |
 
