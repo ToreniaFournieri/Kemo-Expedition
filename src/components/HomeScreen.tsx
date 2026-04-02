@@ -1216,8 +1216,9 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
   }
   if (superRareUniqueBonusText) otherParts.push(`[超:${superRareUniqueBonusText}]`);
 
-  const mergedCBonusesText = cParts.length > 0 ? `[${cParts.join(', ')}]` : '';
-  const mergedEBonusesText = eParts.length > 0 ? `[${eParts.join(', ')}]` : '';
+  const mergedCombatBonuses = [...cParts, ...eParts];
+  const mergedCBonusesText = mergedCombatBonuses.length > 0 ? `[${mergedCombatBonuses.join(', ')}]` : '';
+  const mergedEBonusesText = '';
   const mergedRBonusesText = rParts.length > 0 ? `[${rParts.join(', ')}]` : '';
   return [dParts.join(' '), bParts.join(' '), mergedCBonusesText, mergedEBonusesText, mergedRBonusesText, ...otherParts].filter(Boolean).join(' ');
 }
