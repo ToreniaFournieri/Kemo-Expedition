@@ -1096,9 +1096,14 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
   const dParts: string[] = [];
   const bParts: string[] = [];
   const cParts: string[] = [];
+  const eParts: string[] = [];
+  const rParts: string[] = [];
   const otherParts: string[] = [];
-  const classifyDisplayBonusBucket = (bonus: Bonus): 'b' | 'c' | 'other' => {
+  // SpecRef: 3.1.2 | Item Bonuses and rarity power scaling | Display format
+  const classifyDisplayBonusBucket = (bonus: Bonus): 'b' | 'c' | 'e' | 'r' | 'other' => {
     if (['vitality', 'strength', 'intelligence', 'mind'].includes(bonus.type)) return 'b';
+    if (['fire_offense', 'ice_offense', 'thunder_offense'].includes(bonus.type)) return 'e';
+    if (['fire_defense_multiplier_xV', 'ice_defense_multiplier_xV', 'thunder_defense_multiplier_xV'].includes(bonus.type)) return 'r';
     if (
       bonus.type === 'ability'
       || bonus.type === 'ability_upgrade'
@@ -1197,7 +1202,7 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
   if (item.elementalOffense && item.elementalOffense !== 'none') {
     const elem = { fire: '炎', ice: '氷', thunder: '雷' }[item.elementalOffense];
     const elementalPercent = Math.round((item.elementalOffenseBonus ?? 0) * 100);
-    otherParts.push(`${elem}属性+${elementalPercent}%`);
+    eParts.push(`${elem}属性+${elementalPercent}%`);
   }
   for (const bonus of itemUniqueBonuses) {
     const label = formatBonuses([bonus], { defenseMultiplierStyle: 'friendly' }).trim();
@@ -1205,12 +1210,16 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
     const bucket = classifyDisplayBonusBucket(bonus);
     if (bucket === 'b') bParts.push(label);
     else if (bucket === 'c') cParts.push(label);
+    else if (bucket === 'e') eParts.push(label);
+    else if (bucket === 'r') rParts.push(label);
     else otherParts.push(label);
   }
   if (superRareUniqueBonusText) otherParts.push(`[超:${superRareUniqueBonusText}]`);
 
-  const mergedBonusesText = cParts.length > 0 ? `[${cParts.join(', ')}]` : '';
-  return [dParts.join(' '), bParts.join(' '), mergedBonusesText, ...otherParts].filter(Boolean).join(' ');
+  const mergedCBonusesText = cParts.length > 0 ? `[${cParts.join(', ')}]` : '';
+  const mergedEBonusesText = eParts.length > 0 ? `[${eParts.join(', ')}]` : '';
+  const mergedRBonusesText = rParts.length > 0 ? `[${rParts.join(', ')}]` : '';
+  return [dParts.join(' '), bParts.join(' '), mergedCBonusesText, mergedEBonusesText, mergedRBonusesText, ...otherParts].filter(Boolean).join(' ');
 }
 
 function getJewelSlotStatusText(item: Item, jewelKey: JewelKey, rank: number, categoryMultiplier: number, hpScaleMultiplier: number): string {
