@@ -33,17 +33,17 @@
 | 1 | U | none | `i.archery`U | 狩人の弓 |
 | 1 | E | `Beast` | `i.armor`EA | 猛獣の鎧 |
 | 1 | E | `Beast` | `i.sword`EA | 猛獣の剣 |
+| 1 | E | `Beast` | `i.gauntlet`EA | 獣革の拳当て |
+| 1 | E | `Beast` | `i.robe`EA | 毛皮のまとい |
+| 1 | E | `Beast` | `i.katana`EA | 牙研ぎの曲刀 |
+| 1 | E | `Beast` | `i.shield`EA | アイギスの盾 | `c.physical-defense_x2/3` |
+| 1 | E | `Aerial` | `i.shield`EB | 銀鏡の盾 | `c.magical-defense-x2/3` |
 | 1 | E | `Aerial` | `i.wand`EB | 風呼びの小杖 |
-| 1 | E | `Aerial` | `i.gauntlet`EB | 飛翼の手甲 |
 | 1 | E | `Aerial` | `i.grimoire`EB | 渡り翼の教本 |
 | 1 | E | `Aerial` | `i.catalyst`EB | 上昇気流の核石 |
 | 1 | E | `Aerial` | `i.arrow`EB | 風切り矢 |
 | 1 | E | `Aerial` | `i.bolt`EB | 隼落としボルト |
 | 1 | E | `Aerial` | `i.archery`EB | 高枝の狩弓 |
-| 1 | E | `Beast` | `i.gauntlet`EA | 獣革の拳当て |
-| 1 | E | `Beast` | `i.shield`EA | 獣骨の小盾 |
-| 1 | E | `Beast` | `i.robe`EA | 毛皮のまとい |
-| 1 | E | `Beast` | `i.katana`EA | 牙研ぎの曲刀 |
 | 1 | E | `Insect_Swarm` | `i.archery`EC | 群蟲の弓 |
 | 1 | E | `Insect_Swarm` | `i.arrow`EC | 群蟲の矢 |
 | 1 | E | `Insect_Swarm` | `i.bolt`EC | 群蟲のボルト |
