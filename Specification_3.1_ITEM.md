@@ -90,13 +90,13 @@
 | `x.exp_id` | `e.` | `r.` |
 |-|-|-|
 | 1 | none | none |
-| 2 |  |  |
-| 3 |  |  |
-| 4 |  |  |
-| 5 |  |  |
-| 6 |  |  |
-| 7 |  |  |
-| 8 |  |  |
+| 2 | `e.ice+*` | `r.ice-*`  |
+| 3 | `e.thunder+*` | `r.thunder+*` |
+| 4 | `e.fire+*` | `r.fire+*` |
+| 5 | `e.fire+*` | `r.fire+*` |
+| 6 | `e.thunder+*` | `r.thunder+*` |
+| 7 | `e.ice+*` | `r.ice-*` |
+| 8 | none | none |
 
 - example of basic item:
 ```
