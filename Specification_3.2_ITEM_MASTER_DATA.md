@@ -5,8 +5,8 @@
 ### 3.2.1 Item drop
 - 3.2.1 Item drop list
 
-| `x.item_tier` | `x.rarity` | `x.source_enemy_type` | `x.item_type` | `x.name` |
-|---|---|---|---|---|
+| `x.item_tier` | `x.rarity` | `x.source_enemy_type` | `x.item_type` | `x.name` | additional bonus |
+|---|---|---|---|---|---|
 | 1 | C | none | `i.sword`C | 欠けた短剣 |
 | 1 | C | none | `i.gauntlet`C | 布巻きの手甲 |
 | 1 | C | none | `i.shield`C | 木の丸盾 |
