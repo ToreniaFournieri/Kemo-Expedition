@@ -412,6 +412,9 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
       case 'fire_defense_multiplier_xV':
       case 'ice_defense_multiplier_xV':
       case 'thunder_defense_multiplier_xV':
+      case 'fire_defense':
+      case 'ice_defense':
+      case 'thunder_defense':
         {
           const bonusName = `c.${bonus.type}_${formatCBonusValue(bonus.value)}`;
           if (collection.offenseCBonusNames.has(bonusName)) break;
@@ -433,6 +436,12 @@ function collectBonuses(bonuses: Bonus[], collection: BonusCollection): void {
             collection.elementalDefenseMultipliers.fire *= bonus.value;
           } else if (bonus.type === 'ice_defense_multiplier_xV') {
             collection.elementalDefenseMultipliers.ice *= bonus.value;
+          } else if (bonus.type === 'fire_defense') {
+            collection.elementalDefenseMultipliers.fire *= Math.max(0.01, 1 - (bonus.value / 100));
+          } else if (bonus.type === 'ice_defense') {
+            collection.elementalDefenseMultipliers.ice *= Math.max(0.01, 1 - (bonus.value / 100));
+          } else if (bonus.type === 'thunder_defense') {
+            collection.elementalDefenseMultipliers.thunder *= Math.max(0.01, 1 - (bonus.value / 100));
           } else {
             collection.elementalDefenseMultipliers.thunder *= bonus.value;
           }
