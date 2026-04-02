@@ -1639,6 +1639,11 @@ function formatDefenseMultiplierBonus(label: string, value: number): string {
   return `${label}x${rounded.toFixed(2)}`;
 }
 
+function formatElementalResistanceBonus(label: string, value: number): string {
+  const resistPercent = Math.max(0, Math.round((1 - value) * 100));
+  return `${label}${resistPercent}%`;
+}
+
 const UNLOCK_ABILITY_BONUS_LABELS: Partial<Record<BonusType, string>> = {
   unlock_caninian_ability: '🐶解放',
   unlock_lupinian_ability: '🐺解放',
@@ -1744,19 +1749,19 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
     } else if (b.type === 'fire_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
-          ? formatDefenseMultiplierBonus('炎防', b.value)
+          ? formatElementalResistanceBonus('炎防', b.value)
           : `炎防x${b.value.toFixed(2)}`
       );
     } else if (b.type === 'ice_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
-          ? formatDefenseMultiplierBonus('氷防', b.value)
+          ? formatElementalResistanceBonus('氷防', b.value)
           : `氷防x${b.value.toFixed(2)}`
       );
     } else if (b.type === 'thunder_defense_multiplier_xV') {
       parts.push(
         defenseMultiplierStyle === 'friendly'
-          ? formatDefenseMultiplierBonus('雷防', b.value)
+          ? formatElementalResistanceBonus('雷防', b.value)
           : `雷防x${b.value.toFixed(2)}`
       );
     } else if (b.type === 'growth_xV') {
