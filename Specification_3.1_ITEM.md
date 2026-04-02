@@ -24,10 +24,6 @@
 - *note:* item might have multiple bonus. sword may have `d.HP` but subtle value.
 
 #### 3.1.2 Item list
-
-- D: base_power(1) = 12, base_power(n) = base_power(n-1) x (1.45 - 0.02 x n) round up
-- E: base_NoA_power(n) = 0.9 - 0.1 x n
-
 -　Tier 9 and 10 are Multiplier-Only Tiers. (Uncommon/Rare item upgrade reference)
 
 |Tier| D   | E   | F     | H  | J    | K     | L  | M     | N    | P    |
@@ -42,6 +38,12 @@
 | 8  | 100 | 0.3 | 0.005 | 8  | -0.008 | -2.4 | +0.08 | -3 | 0.008 | 0.08 |
 | 9  | 130 | 0.2 | 0.004 | 9  | -0.009 | -2.6 | +0.07 | -2 | 0.009 | 0.09 |
 | 10 | 160 | 0.2 | 0.003 | 10 | -0.010 | -2.8 | +0.06 | -1 | 0.011 | 0.11 |
+
+- note: How I made the table.
+  - D: base_power(1) = 12, base_power(n) = base_power(n-1) x (1.45 - 0.02 x n) round up
+  - E: base_NoA_power(n) = 0.9 - 0.1 x n, but modified a bit for later tier
+  - F: intentionally skip 0.010
+  - N, P: intentionally skip 0.010
 
 | Item type | base_power/Scale for | `c.*+v` (and `d.*-v`) | X-bonus | Y-bonus | R-bonus | C-bonus | B-bonus |
 |------|--------|------|------|------|------|------|------|
