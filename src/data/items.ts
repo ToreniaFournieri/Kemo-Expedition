@@ -525,7 +525,7 @@ function createItem(
     if (template.category === 'sword') item.accuracyBonus = (item.accuracyBonus || 0) + TIER_N_BONUS[getTierIndex(bonusTierN)];
     if (template.category === 'gauntlet') addCBonus('physical_defense', TIER_N_BONUS[getTierIndex(bonusTierN)]);
     if (template.category === 'archery') item.accuracyBonus = (item.accuracyBonus || 0) + TIER_N_BONUS[getTierIndex(bonusTierN)];
-    if (template.category === 'catalyst') addCBonus('magical_defense', TIER_N_BONUS[getTierIndex(bonusTierN)]);
+    if (template.category === 'catalyst') addCBonus('magical_defense', TIER_P_BONUS[getTierIndex(bonusTierP)]);
     if (template.category === 'katana' || template.category === 'bolt' || template.category === 'grimoire') {
       item.penetBonus = (item.penetBonus || 0) + TIER_P_BONUS[getTierIndex(bonusTierP)];
     }
