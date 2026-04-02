@@ -1587,11 +1587,14 @@ function resolveEnemyRewards(
 
     let gotReward = rewardTicket === 1;
 
-    const bonusRollCount =
-      (hasUnlock ? 1 : 0)
+    // SpecRef: 6.1.6 | REWARD | Ticket calculation
+    const totalTicketCount =
+      2
+      + (hasUnlock ? 1 : 0)
       + (gameMode === 'm.luna' ? 1 : 0)
       + (terrainEffect !== 'terrain.gehenna' && hasExtraRewardRollBlessing ? 1 : 0)
       + auriferousBonusRolls;
+    const bonusRollCount = Math.max(0, totalTicketCount - 1);
     for (let rollIndex = 0; rollIndex < bonusRollCount; rollIndex++) {
       bags = refillBagIfEmpty(bags, rewardBagType);
       const { ticket: bonusTicket, newBag } = drawFromBag(bags[rewardBagType]);
