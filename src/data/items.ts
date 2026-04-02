@@ -147,7 +147,7 @@ type ItemTemplate = {
 // Base power per tier (updated item scale)
 const TIER_BASE_POWER = [12, 18, 26, 35, 45, 60, 80, 100, 130, 160];
 const TIER_NOA_BASE_POWER = [0.8, 0.7, 0.6, 0.5, 0.4, 0.4, 0.3, 0.3, 0.2, 0.2];
-const TIER_F_BONUS = [0.013, 0.012, 0.011, 0.009, 0.008, 0.007, 0.006, 0.005, 0.004, 0.003];
+const TIER_F_BONUS = [0.13, 0.12, 0.11, 0.09, 0.08, 0.07, 0.06, 0.05, 0.04, 0.03];
 const TIER_H_BONUS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const TIER_J_PENALTY = [-0.001, -0.002, -0.003, -0.004, -0.005, -0.006, -0.007, -0.008, -0.009, -0.01];
 const TIER_K_PENALTY = [-1.0, -1.2, -1.4, -1.6, -1.8, -2.0, -2.2, -2.4, -2.6, -2.8];
@@ -412,7 +412,6 @@ function createItem(
       break;
     case 'shield':
       item.partyHP = calculateStat(basePower, amplifier * 3.0);
-      if (rarity !== 'common') item.evasionBonus = TIER_F_BONUS[getTierIndex(bonusTierF)];
       if (rarity === 'eliteRare' && eliteSource !== 'A') {
         item.physicalDefense = calculateStat(basePower, amplifier * 0.2);
         item.magicalDefense = calculateStat(basePower, amplifier * 0.2);
@@ -515,13 +514,17 @@ function createItem(
   }
   if (rarity !== 'bossRare' && rarity !== 'mythicRare') {
     const bonusTier = getTierIndex(bonusTierF);
-    if (template.category === 'armor') item.physicalDefense = (item.physicalDefense || 0) + TIER_F_BONUS[bonusTier];
-    if (template.category === 'robe') item.magicalDefense = (item.magicalDefense || 0) + TIER_F_BONUS[bonusTier];
+    const addCBonus = (type: 'physical_defense' | 'magical_defense', value: number): void => {
+      item.bonuses = [...(item.bonuses ?? []), { type, value }];
+    };
+
+    if (template.category === 'armor') addCBonus('physical_defense', TIER_F_BONUS[bonusTier]);
+    if (template.category === 'robe') addCBonus('magical_defense', TIER_F_BONUS[bonusTier]);
     if (template.category === 'shield') item.evasionBonus = (item.evasionBonus || 0) + TIER_F_BONUS[bonusTier];
     if (template.category === 'sword') item.accuracyBonus = (item.accuracyBonus || 0) + TIER_N_BONUS[getTierIndex(bonusTierN)];
-    if (template.category === 'gauntlet') item.physicalDefense = (item.physicalDefense || 0) + TIER_N_BONUS[getTierIndex(bonusTierN)];
+    if (template.category === 'gauntlet') addCBonus('physical_defense', TIER_N_BONUS[getTierIndex(bonusTierN)]);
     if (template.category === 'archery') item.accuracyBonus = (item.accuracyBonus || 0) + TIER_N_BONUS[getTierIndex(bonusTierN)];
-    if (template.category === 'catalyst') item.magicalDefense = (item.magicalDefense || 0) + TIER_N_BONUS[getTierIndex(bonusTierN)];
+    if (template.category === 'catalyst') addCBonus('magical_defense', TIER_N_BONUS[getTierIndex(bonusTierN)]);
     if (template.category === 'katana' || template.category === 'bolt' || template.category === 'grimoire') {
       item.penetBonus = (item.penetBonus || 0) + TIER_P_BONUS[getTierIndex(bonusTierP)];
     }
