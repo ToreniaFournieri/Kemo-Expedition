@@ -1076,7 +1076,7 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
     SUPER_RARE_TITLES.find((title) => title.value === item.superRare)?.bonuses ?? [],
     { defenseMultiplierStyle: 'friendly' }
   );
-  const itemUniqueBonusText = formatBonuses(item.bonuses ?? [], { defenseMultiplierStyle: 'friendly' });
+  const itemUniqueBonuses = item.bonuses ?? [];
   const multiplierPercent = Math.round((baseMultiplier - 1) * 100);
   const formatDecimal = (value: number): string => {
     const rounded = Math.round(value * 100) / 100;
@@ -1094,8 +1094,21 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
     value > 0 ? `${label}${formatSigned(value)}` : `${label}${formatSigned(value)}`;
 
   const dParts: string[] = [];
+  const bParts: string[] = [];
   const cParts: string[] = [];
   const otherParts: string[] = [];
+  const classifyDisplayBonusBucket = (bonus: Bonus): 'b' | 'c' | 'other' => {
+    if (['vitality', 'strength', 'intelligence', 'mind'].includes(bonus.type)) return 'b';
+    if (
+      bonus.type === 'ability'
+      || bonus.type === 'ability_upgrade'
+      || bonus.type === 'unimplemented_bonus'
+      || bonus.type in UNLOCK_ABILITY_BONUS_LABELS
+    ) {
+      return 'other';
+    }
+    return 'c';
+  };
   const jewelDBonus = {
     meleeAttack: 0,
     rangedAttack: 0,
@@ -1176,21 +1189,28 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
   }
   if (item.accuracyBonus) cParts.push(`命中+${Math.round(item.accuracyBonus * 1000)}`);
   if (item.evasionBonus) cParts.push(`回避${formatSigned(Math.round(item.evasionBonus * 1000))}`);
-  if (item.vitalityBonus) cParts.push(`体力+${item.vitalityBonus}`);
-  if (item.strengthBonus) cParts.push(`力+${item.strengthBonus}`);
-  if (item.intelligenceBonus) cParts.push(`知性+${item.intelligenceBonus}`);
-  if (item.mindBonus) cParts.push(`精神+${item.mindBonus}`);
+  if (item.vitalityBonus) bParts.push(`体力+${item.vitalityBonus}`);
+  if (item.strengthBonus) bParts.push(`力+${item.strengthBonus}`);
+  if (item.intelligenceBonus) bParts.push(`知性+${item.intelligenceBonus}`);
+  if (item.mindBonus) bParts.push(`精神+${item.mindBonus}`);
   if (item.penetBonus) cParts.push(`貫通+${Math.round(item.penetBonus * 100)}`);
   if (item.elementalOffense && item.elementalOffense !== 'none') {
     const elem = { fire: '炎', ice: '氷', thunder: '雷' }[item.elementalOffense];
     const elementalPercent = Math.round((item.elementalOffenseBonus ?? 0) * 100);
     otherParts.push(`${elem}属性+${elementalPercent}%`);
   }
-  if (itemUniqueBonusText) cParts.push(...itemUniqueBonusText.split(', ').filter(Boolean));
+  for (const bonus of itemUniqueBonuses) {
+    const label = formatBonuses([bonus], { defenseMultiplierStyle: 'friendly' }).trim();
+    if (!label) continue;
+    const bucket = classifyDisplayBonusBucket(bonus);
+    if (bucket === 'b') bParts.push(label);
+    else if (bucket === 'c') cParts.push(label);
+    else otherParts.push(label);
+  }
   if (superRareUniqueBonusText) otherParts.push(`[超:${superRareUniqueBonusText}]`);
 
   const mergedBonusesText = cParts.length > 0 ? `[${cParts.join(', ')}]` : '';
-  return [dParts.join(' '), mergedBonusesText, ...otherParts].filter(Boolean).join(' ');
+  return [dParts.join(' '), bParts.join(' '), mergedBonusesText, ...otherParts].filter(Boolean).join(' ');
 }
 
 function getJewelSlotStatusText(item: Item, jewelKey: JewelKey, rank: number, categoryMultiplier: number, hpScaleMultiplier: number): string {
