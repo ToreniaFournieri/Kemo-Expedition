@@ -355,6 +355,12 @@ function addElementalResistancePenalty(item: ItemDef, tier: number, element: Ele
   item.bonuses = bonuses;
 }
 
+function addElementalResistancePenalties(item: ItemDef, tier: number, elements: ElementalOffense[]): void {
+  for (const element of elements) {
+    addElementalResistancePenalty(item, tier, element);
+  }
+}
+
 function addRarityCBonus(item: ItemDef, template: ItemTemplate, bonusTierN: number, bonusTierP: number): void {
   const cTierN = getTierIndex(bonusTierN);
   const cTierP = getTierIndex(bonusTierP);
@@ -551,10 +557,18 @@ function createItem(
     if (template.category === 'shield') item.evasionBonus = (item.evasionBonus || 0) + TIER_G_BONUS[getTierIndex(bonusTierG)];
     if (template.category === 'sword') item.accuracyBonus = (item.accuracyBonus || 0) + TIER_N_BONUS[getTierIndex(bonusTierN)];
     if (template.category === 'archery') item.accuracyBonus = (item.accuracyBonus || 0) + TIER_N_BONUS[getTierIndex(bonusTierN)];
-    const canHaveResistancePenalty = template.category === 'armor' || template.category === 'robe' || template.category === 'shield';
-    if (canHaveResistancePenalty) {
-      if (rarity === 'uncommon') addElementalResistancePenalty(item, bonusTierM, expeditionElement);
-      if (rarity === 'eliteRare' && eliteSource === 'A') addElementalResistancePenalty(item, bonusTierM, expeditionElement);
+    const eBonusResistanceElementsByCategory: Partial<Record<ItemCategory, ElementalOffense[]>> = {
+      armor: ['fire', 'ice', 'thunder'],
+      robe: ['fire', 'ice', 'thunder'],
+      shield: ['fire', 'ice', 'thunder'],
+      katana: ['fire', 'ice', 'thunder'],
+      archery: ['fire', 'ice', 'thunder'],
+      wand: ['fire', 'ice', 'thunder'],
+    };
+    const resistanceElements = eBonusResistanceElementsByCategory[template.category];
+    if (resistanceElements) {
+      if (rarity === 'uncommon') addElementalResistancePenalties(item, bonusTierM, resistanceElements);
+      if (rarity === 'eliteRare' && eliteSource === 'A') addElementalResistancePenalties(item, bonusTierM, resistanceElements);
     }
   }
 
