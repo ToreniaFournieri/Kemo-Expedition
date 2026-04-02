@@ -42,36 +42,36 @@
 
 -　Tier 9 and 10 are Multiplier-Only Tiers. (Uncommon/Rare item upgrade reference)
 
-|Tier | `c.*+v` for 鎧, 衣, 剣, 矢, 杖 | `c.*+v` for 盾 | `c.*+v` NoA for 手, 弓, 媒 | penalty `c.*+v` and `d.*-v` for 刀, ボ, 書| C-bonus v | R-bonus `e.*+v` | R-bonus `r.*-v` |
-|------|--------|-----------|--------|--------|------|------|------|
-| 1 | `c.target_status+0.13` | `c.evasion+0.013` | `c.N_NoA+1` | `d.evasion-0.001`, `d.N_NoA-1.0` | 1 | `e.element+0.15` | `r.element-10` |
-| 2 | `c.target_status+0.12` | `c.evasion+0.012` | `c.N_NoA+2` | `d.evasion-0.002`, `d.N_NoA-1.2` | 2 | `e.element+0.14` | `r.element-09` |
-| 3 | `c.target_status+0.11` | `c.evasion+0.011` | `c.N_NoA+3` | `d.evasion-0.003`, `d.N_NoA-1.4` | 3 | `e.element+0.13` | `r.element-08` |
-| 4 | `c.target_status+0.09` | `c.evasion+0.009` | `c.N_NoA+4` | `d.evasion-0.004`, `d.N_NoA-1.6` | 4 | `e.element+0.12` | `r.element-07` |
-| 5 | `c.target_status+0.08` | `c.evasion+0.008` | `c.N_NoA+5` | `d.evasion-0.005`, `d.N_NoA-1.8` | 5 | `e.element+0.11` | `r.element-06` |
-| 6 | `c.target_status+0.07` | `c.evasion+0.007` | `c.N_NoA+6` | `d.evasion-0.006`, `d.N_NoA-2.0` | 6 | `e.element+0.09` | `r.element-05` |
-| 7 | `c.target_status+0.06` | `c.evasion+0.006` | `c.N_NoA+7` | `d.evasion-0.007`, `d.N_NoA-2.2` | 7 | `e.element+0.08` | `r.element-04` |
-| 8 | `c.target_status+0.05` | `c.evasion+0.005` | `c.N_NoA+8` | `d.evasion-0.008`, `d.N_NoA-2.4` | 8 | `e.element+0.07` | `r.element-03` |
-| 9 | `c.target_status+0.04` | `c.evasion+0.004` | `c.N_NoA+9` | - | 9 | `e.element+0.06` | `r.element-02` |
-| 10 | `c.target_status+0.03` | `c.evasion+0.003` | `c.N_NoA+10` | - | 10 | `e.element+0.05` | `r.element-01` |
-
-- for `d.` bonus:  `type.amplifier` + `d.X`
-  - Example: Tier 1 armor's `d.physical_defense` is 12 x 1.4 = 16.8 -> 17. its `d.magical_defense` is 12 x 0.3 = 4.
+|Tier| F  | G     | H  | J      | K    | L     | M   |
+|----|----|-------|----|--------|------|-------|-----|
+| 1  | 13 | 0.013 | 1  | -0.001 | -1.0 | +0.15 | -10 |
+| 2  | 12 | 0.012 | 2  | -0.002 | -1.2 | +0.14 | -9 |
+| 3  | 11 | 0.011 | 3  | -0.003 | -1.4 | +0.13 | -8 |
+| 4  | 10 | 0.009 | 4  | -0.004 | -1.6 | +0.12 | -7 |
+| 5  | 9  | 0.008 | 5  | -0.005 | -1.8 | +0.11 | -6 |
+| 6  | 8  | 0.007 | 6  | -0.006 | -2.0 | +0.10 | -5 |
+| 7  | 7  | 0.006 | 7  | -0.007 | -2.2 | +0.09 | -4 |
+| 8  | 6  | 0.005 | 8  | -0.008 | -2.4 | +0.08 | -3 |
+| 9  | 5  | 0.004 | 9  | -0.009 | -2.6 | +0.07 | -2 |
+| 10 | 4  | 0.003 | 10 | -0.010 | -2.8 | +0.06 | -1 |
 
 | Item type | base_power/Scale for | `c.*+v` (and `d.*-v`) | X-bonus | Y-bonus | R-bonus | C-bonus | B-bonus |
 |------|--------|------|------|------|------|------|------|
-|`i.armor` | x1.4 `d.physical_defense` | `c.physical_defense+v` | x1.2 `d.HP` | x0.3 `d.magical_defense` | `r.fire-v`,`r.ice-v`, `r.thunder-v` | none | `b.vitality+1` |
-|`i.robe` | x1.15 `d.magical_defense`  | `c.magical_defense+v` | x1.2 `d.HP` | x0.3 `d.physical_defense` | `r.fire-v`,`r.ice-v`, `r.thunder-v` |`c.evasion+0.00v` | `b.intelligence+1` |
-|`i.shield ` | x3.0 `d.HP` | `c.evasion+v` | x0.20 `d.physical_defense` | x0.20 `d.magical_defense` | `r.fire-v`,`r.ice-v`, `r.thunder-v` | none | `b.mind+1` |
-|`i.sword` | x1.1 `d.melee_attack` | `c.melee_attack+v` | x0.25 `d.physical_defense` | x1.1 `d.HP` |  `e.fire+v` | `c.accuracy+0.0v` | `b.strength+1` |
-|`i.katana` | x1.43 `d.melee_attack` | `c.melee_attack+v`, `d.evasion-v`, `d.melee_NoA-v` | x1.0 `d.HP` | x0.3 `d.magical_defense` | none | `c.penet+0.0v` | `b.mind+1` |
-|`i.gauntlet` | x1.0 `d.melee_NoA` | `c.melee_NoA+v` | x0.3 `d.physical_defense` | none | none | `c.physical_defense+v` | `b.vitality+1` |
-|`i.arrow` | x0.85 `d.ranged_attack` | `c.ranged_attack+v` | x1.2 `d.HP` | x0.32 `d.physical_defense` | `e.fire+v`, `e.ice+v` , `e.thunder+v` | `c.evasion+0.00v` | `b.strength+1` |
-|`i.bolt` | x1.11 `d.ranged_attack` | `c.ranged_attack+v`, `d.evasion-v`, `d.ranged_NoA-v` | x0.28 `d.magical_defense` | x1.0 `d.HP` | `e.fire+v`, `e.ice+v` , `e.thunder+v` | `c.penet+0.0v`  | `b.vitality+1` |
-|`i.archery` | x1.0 `d.ranged_NoA` | `c.ranged_NoA+v` | x1.0 `d.HP` | none | none | `c.accuracy+0.00v` | `b.strength+1` |
+|`i.armor` | x1.4 `d.physical_defense+F` | `c.physical_defense+v` | x1.2 `d.HP` | x0.3 `d.magical_defense` | `r.fire-v`,`r.ice-v`, `r.thunder-v` | none | `b.vitality+1` |
+|`i.robe` | x1.15 `d.magical_defense+F`  | `c.magical_defense+v` | x1.2 `d.HP` | x0.3 `d.physical_defense` | `r.fire-v`,`r.ice-v`, `r.thunder-v` |`c.evasion+0.00v` | `b.intelligence+1` |
+|`i.shield ` | x3.0 `d.HP+F` | `c.evasion+G` | x0.20 `d.physical_defense` | x0.20 `d.magical_defense` | `r.fire-v`,`r.ice-v`, `r.thunder-v` | none | `b.mind+1` |
+|`i.sword` | x1.1 `d.melee_attack+F` | `c.melee_attack+v` | x0.25 `d.physical_defense` | x1.1 `d.HP` |  `e.fire+v` | `c.accuracy+0.0v` | `b.strength+1` |
+|`i.katana` | x1.43 `d.melee_attack+F` | `c.melee_attack+v`, `d.evasion-0.00v`, `d.melee_NoA-v` | x1.0 `d.HP` | x0.3 `d.magical_defense` | none | `c.penet+0.0v` | `b.mind+1` |
+|`i.gauntlet` | x1.0 `d.melee_NoA+H` | `c.melee_NoA+v` | x0.3 `d.physical_defense` | none | none | `c.physical_defense+v` | `b.vitality+1` |
+|`i.arrow` | x0.85 `d.ranged_attack+F` | `c.ranged_attack+v` | x1.2 `d.HP` | x0.32 `d.physical_defense` | `e.fire+v`, `e.ice+v` , `e.thunder+v` | `c.evasion+0.00v` | `b.strength+1` |
+|`i.bolt` | x1.11 `d.ranged_attack+F` | `c.ranged_attack+v`, `d.evasion-0.00v`, `d.ranged_NoA-v` | x0.28 `d.magical_defense` | x1.0 `d.HP` | `e.fire+v`, `e.ice+v` , `e.thunder+v` | `c.penet+0.0v`  | `b.vitality+1` |
+|`i.archery` | x1.0 `d.ranged_NoA+H` | `c.ranged_NoA+v` | x1.0 `d.HP` | none | none | `c.accuracy+0.00v` | `b.strength+1` |
 |`i.wand` | x0.75 `d.magical_attack` | `c.magical_attack+v` | x0.3 `d.magical_defense` | x1.1 `d.HP` | none | none | `b.intelligence+1` |
-|`i.grimoire` | x0.98 `d.magical_attack` | `c.magical_attack+v`, `d.evasion-v`, `d.magical_NoA-v` | x0.22 `d.physical_defense` | x0.26 `d.magical_defense` | `e.ice+v`, `e.thunder+v` | `c.penet+0.0v` | `b.mind+1` |
-|`i.catalyst` | x1.0 `d.magical_NoA` | `c.magical_NoA+v` | x1.0 `d.HP` | none | `e.fire+v`, `e.ice+v`, `e.thunder+v` | `c.magical_defense+v` | `b.intelligence+1` |
+|`i.grimoire` | x0.98 `d.magical_attack+F` | `c.magical_attack+v`, `d.evasion-0.00v`, `d.magical_NoA-v` | x0.22 `d.physical_defense` | x0.26 `d.magical_defense` | `e.ice+v`, `e.thunder+v` | `c.penet+0.0v` | `b.mind+1` |
+|`i.catalyst` | x1.0 `d.magical_NoA+H` | `c.magical_NoA+v` | x1.0 `d.HP` | none | `e.fire+v`, `e.ice+v`, `e.thunder+v` | `c.magical_defense+v` | `b.intelligence+1` |
+
+- for `d.` bonus:  `type.amplifier` + `d.X`
+  - Example: Tier 2 armor's x1.4 `d.physical_defense` is 12 x (1.45 - 0.04) x 1.4 = 12 x 1.41 = 23.688 → 24. its x0.3 `d.magical_defense` is 12 x (1.45 - 0.04) x 0.3 = 5.076 -> 6.
 
 **rarelity.amplifier of base_power**
 
