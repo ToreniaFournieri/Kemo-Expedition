@@ -45,7 +45,7 @@
   - F: intentionally skip 0.010
   - N, P: intentionally skip 0.010
 
-| Item type | base_power/Scale for | `c.*+v` (and `d.*-v`) | X-bonus | Y-bonus | R-bonus | C-bonus | B-bonus |
+| Item type | xN base_power | base-bonus | X-bonus | Y-bonus | E-bonus | C-bonus | B-bonus |
 |------|--------|------|------|------|------|------|------|
 |`i.armor` | x1.4 `d.physical_defense+D` | `c.physical_defense+F` | x1.2 `d.HP+D` | x0.3 `d.magical_defense+D` | `r.fire-M`,`r.ice-M`, `r.thunder-M` | none | `b.vitality+1` |
 |`i.robe` | x1.15 `d.magical_defense+D`  | `c.magical_defense+F` | x1.2 `d.HP+D` | x0.3 `d.physical_defense+D` | `r.fire-M`,`r.ice-M`, `r.thunder-M` |`c.evasion+N` | `b.intelligence+1` |
@@ -63,27 +63,30 @@
 - for `d.` bonus:  `type.amplifier` + `d.X`
   - Example: Tier 2 armor's x1.4 `d.physical_defense` is 12 x (1.45 - 0.04) x 1.4 = 12 x 1.41 = 23.688 → 24. its x0.3 `d.magical_defense` is 12 x (1.45 - 0.04) x 0.3 = 5.076 -> 6.
 
-**rarelity.amplifier of base_power**
+**rarity.amplifier of base_power**
 
-| Rarelity | `rarelity.amplifier` |
+| Rarity | `rarity.amplifier` |
 |------|--------|
 | common | x1.0 |
 | uncommon | x1.35 |
-| elite rare | 1.67 |
+| elite rare | x1.67 |
 | boss rare | x2.00 |
 | mythic rare | x2.40 |
 
-**Rarelity base**
+**Rarity base**
 
-| Rarelity | EnemyTypeSource | Features |
+| Rarity | EnemyTypeSource | Features |
 |------|--------|--------|
-| common | none | base_power x `type_amplifier` x rarelity.amplifier, and base c.multiplier |
-| uncommon | none | base_power x `type_amplifier` x rarelity.amplifier + E-bonus + base c.multiplier +1 tier upgrade(ecept penalty) |
-| elite rare | A | base_power x `type_amplifier` x rarelity.amplifier + X-bonus + E-bonus + base c.multiplier +2 tier upgrade(ecept penalty) |
-| elite rare | B | base_power x `type_amplifier` x rarelity.amplifier + X-bonus + Y-bonus + base c.multiplier +2 tier upgrade(ecept penalty) |
-| elite rare | C | base_power x `type_amplifier` x rarelity.amplifier + Y-bonus + C-bonus + base c.multiplier +2 tier upgrade(ecept penalty) |
-| boss rare | none | base_power x `type_amplifier` x rarelity.amplifier + X-bonus + C-bonus + B-bonus, but **no base c.multiplier** |
-| mythic rare | none | base_power x `type_amplifier` x rarelity.amplifier + X-bonus + Y-bonus + C-bonus + B-bonus, but no base c.multiplier |
+| common | none | xN base_power x rarity.amplifier, and base-bonus |
+| uncommon | none | xN base_power x rarity.amplifier, E-bonus, base-bonus with +1 tier upgrade(except penalty) |
+| elite rare | A | xN base_power x rarity.amplifier, X-bonus, E-bonus, base-bonus with +2 tier upgrade(except penalty) |
+| elite rare | B | xN base_power x rarity.amplifier, X-bonus, Y-bonus, base-bonus with +2 tier upgrade(except penalty) |
+| elite rare | C | xN base_power x rarity.amplifier, Y-bonus, C-bonus, base-bonus withr +2 tier upgrade(except penalty) |
+| boss rare | none | xN base_power x rarity.amplifier, X-bonus, C-bonus, B-bonus, but **no base-bonus** |
+| mythic rare | none | xN base_power x rarity.amplifier, X-bonus, Y-bonus, C-bonus, B-bonus, but no base-bonus |
+
+- note: `EnemyTypeSource` reference: @Specification_4.1_EXPEDITION_&_ENEMY.md 4.1.5 Master_Data_Definitions Expedition Enemy Types
+- `+1 tier upgrade` means: when reading tier-based bonus columns, use `min(base_tier + 1, 10)` for all bonus references except penalty columns `J` and `K`.
 
 **Elemental by expedition**
 
@@ -136,7 +139,7 @@ Tier 5 common `i.arrow`: `d.ranged_attack` +41, `c.ranged_attack+0.08`
 - id
 - item_category
 - tier
-- rarelity
+- rarity
 - subtle_power (`d.`)
 - bonus (`c.`)
 - elemental offensive bonus (`e.`)
