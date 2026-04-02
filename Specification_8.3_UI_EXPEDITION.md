@@ -45,6 +45,7 @@ PT2...
   - Show latest `f.quick_summary`.
     - Tapping the quick summary shows a `f.list_of_rooms`.
     - Tapping a room opens the `f.battle_logs`.
+    - Tap enemy’s name part to show floating bubble of its bestiary. 
   - 次の目標: show next Loot-Gate condition. 
 
 - **Gods Battle (神魔戦)**
