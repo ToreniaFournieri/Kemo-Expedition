@@ -190,21 +190,6 @@ function getMasterItemName(tier: number, rarity: Rarity, category: ItemCategory,
   }
   return names[0];
 }
-const ITEM_NAME_OVERRIDES: Record<number, string> = {
-  1401: '黎明の聖剣',
-  1402: '秘奥真理の書',
-  2401: '白銀英雄の鎧',
-  3401: '叡智神杖',
-  4401: '月影妖刀',
-  5401: '雷牙神雷ボルト',
-  6401: '暁星英雄の鎧',
-  7401: '天断の聖剣',
-  7402: '星詠神杖',
-  8401: '終焉妖刀',
-  8402: '天罰神雷ボルト',
-  8403: '根源真理の書',
-};
-
 // ============================================================
 // Item templates - 12 categories
 // Order: armor, robe, shield, sword, katana, gauntlet,
@@ -395,7 +380,7 @@ function createItem(
   const expeditionElement = getExpeditionElementByTier(tier);
 
   const masterName = forcedName ?? getMasterItemName(tier, rarity, template.category, variantIndex);
-  const name = ITEM_NAME_OVERRIDES[id] ?? masterName;
+  const name = masterName;
   if (!name) return null;
 
   // Base item
