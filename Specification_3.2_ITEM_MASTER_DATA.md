@@ -243,9 +243,9 @@
 | 5 | E | `Dragon` | `i.wand`EB | 竜脈の杖 |
 | 5 | E | `Dragon` | `i.grimoire`EB | 竜炎秘儀書 |
 | 5 | E | `Dragon` | `i.catalyst`EB | 竜脈の触媒 |
-| 5 | E | `Ursan` | `i.armor`EC | 熊王の鎧 |
-| 5 | E | `Ursan` | `i.gauntlet`EC | 熊王の手甲 |
-| 5 | E | `Ursan` | `i.grimoire`EC | 熊王の秘本 |
+| 5 | E | `Ursan` | `i.armor`EC | 大熊の鎧 |
+| 5 | E | `Ursan` | `i.gauntlet`EC | 大熊の手甲 |
+| 5 | E | `Ursan` | `i.grimoire`EC | 大熊の秘本 |
 | 5 | B | `Ursan` | `i.katana`BD | 熊王の火刀 |
 | 5 | B | `Ursan` | `i.shield`BD | 熊王の熔盾 |
 | 5 | B | `Ursan` | `i.gauntlet`BD | 熊王の重手甲 |
