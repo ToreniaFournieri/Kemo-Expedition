@@ -20,8 +20,9 @@
 | `terrain.` | **T**errain effect |
 | `x.` | E**x**pedition |
 
+- Format:
 
-| `c.` | Display | Example |
+| `x.` | Display | Example |
 |---|----|----|
 | `c.ranged-attack+v` | [遠攻撃+v%] | `c.ranged-attack+13` -> [遠攻撃+13%] |
 | `c.magical-attack+v` | [魔攻撃+v%] | `c.magical-attack-4` -> [魔攻撃-4%] |
@@ -34,8 +35,10 @@
 | `c.accuracy+v` | [命中+(v*1000)] | `c.accuracy+0.001` -> [命中+1] |
 | `c.evasion+v` | [回避+(v*1000)] | `c.evasion-3` [回避-3]  |
 | `c.deity-accuracy+v` | [天命中+(v*1000)] |  `c.deity-accuracy+0.001` -> [命中+1] |
-| `c.deity-evasion+v` | [天回避+(v*1000)] |　`c.deity-evasion-3` [回避-3]　|
-
+| `c.deity-evasion+v` | [天回避+(v*1000)] |　`c.deity-evasion-3`-> [回避-3]　|
+| `r.fire-v` | [炎防v%] | `r.fire-3` -> [炎防3%] |
+| `r.ice-v` | [氷防v%] | `r.ice-3` -> [氷防3%] |
+| `r.thunder-v` | [雷防v%] | `r.thunder-3` -> [雷防3%] |
 
 - Translation
 
