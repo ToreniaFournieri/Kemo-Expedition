@@ -1090,12 +1090,12 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
     // Penalty style values should remain fixed (same as runtime stat computation).
     return value > 0 ? value * multiplier : value;
   };
-  const formatBracket = (label: string, value: number, suffix: string = ''): string =>
-    `[${label}${formatSigned(value, suffix)}]`;
   const formatFixedNoA = (label: string, value: number): string =>
-    value > 0 ? formatBracket(label, value) : `${label}${formatSigned(value)}`;
+    value > 0 ? `${label}${formatSigned(value)}` : `${label}${formatSigned(value)}`;
 
-  const stats: string[] = [];
+  const dParts: string[] = [];
+  const cParts: string[] = [];
+  const otherParts: string[] = [];
   const jewelDBonus = {
     meleeAttack: 0,
     rangedAttack: 0,
@@ -1119,81 +1119,78 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
       })();
       jewelDBonus[d.stat] += rankValue;
     }
-    if (jewel.cBonusType === 'physical_attack') stats.push(`[物攻撃+${cVal}%]`);
-    if (jewel.cBonusType === 'magical_attack') stats.push(`[魔攻撃+${cVal}%]`);
-    if (jewel.cBonusType === 'physical_defense') stats.push(`[物防+${cVal}%]`);
-    if (jewel.cBonusType === 'magical_defense') stats.push(`[魔防+${cVal}%]`);
-    if (jewel.cBonusType === 'accuracy') stats.push(`[命中+${cVal}]`);
-    if (jewel.cBonusType === 'evasion') stats.push(`[回避+${cVal}]`);
+    if (jewel.cBonusType === 'physical_attack') cParts.push(`物攻撃+${cVal}%`);
+    if (jewel.cBonusType === 'magical_attack') cParts.push(`魔攻撃+${cVal}%`);
+    if (jewel.cBonusType === 'physical_defense') cParts.push(`物防+${cVal}%`);
+    if (jewel.cBonusType === 'magical_defense') cParts.push(`魔防+${cVal}%`);
+    if (jewel.cBonusType === 'accuracy') cParts.push(`命中+${cVal}`);
+    if (jewel.cBonusType === 'evasion') cParts.push(`回避+${cVal}`);
   }
   // Match displayed item values with runtime stat computation (rounded, not floored).
   const displayedMeleeAttack = (item.meleeAttack ?? 0) + jewelDBonus.meleeAttack;
   if (displayedMeleeAttack) {
-    stats.push(`近攻+${Math.round(displayedMeleeAttack * multiplier)}`);
-    if (item.category === 'sword' && multiplierPercent) stats.push(formatBracket('近攻撃', multiplierPercent, '%'));
+    dParts.push(`近攻+${Math.round(displayedMeleeAttack * multiplier)}`);
+    if (item.category === 'sword' && multiplierPercent) cParts.push(`近攻撃+${multiplierPercent}%`);
   }
   const displayedRangedAttack = (item.rangedAttack ?? 0) + jewelDBonus.rangedAttack;
   if (displayedRangedAttack) {
-    stats.push(`遠攻+${Math.round(displayedRangedAttack * multiplier)}`);
-    if (item.category === 'arrow' && multiplierPercent) stats.push(formatBracket('遠攻撃', multiplierPercent, '%'));
+    dParts.push(`遠攻+${Math.round(displayedRangedAttack * multiplier)}`);
+    if (item.category === 'arrow' && multiplierPercent) cParts.push(`遠攻撃+${multiplierPercent}%`);
   }
   const displayedMagicalAttack = (item.magicalAttack ?? 0) + jewelDBonus.magicalAttack;
   if (displayedMagicalAttack) {
-    stats.push(`魔攻+${Math.round(displayedMagicalAttack * multiplier)}`);
-    if (item.category === 'wand' && multiplierPercent) stats.push(formatBracket('魔攻撃', multiplierPercent, '%'));
+    dParts.push(`魔攻+${Math.round(displayedMagicalAttack * multiplier)}`);
+    if (item.category === 'wand' && multiplierPercent) cParts.push(`魔攻撃+${multiplierPercent}%`);
   }
   if (item.meleeNoA || item.meleeNoABonus) {
     const baseNoA = item.meleeNoA ?? 0;
-    if (baseNoA !== 0) stats.push(`近回数${formatSigned(getScaledNoA(baseNoA))}`);
-    if (item.meleeNoABonus) stats.push(formatFixedNoA('近回数', item.meleeNoABonus));
+    if (baseNoA !== 0) dParts.push(`近回数${formatSigned(getScaledNoA(baseNoA))}`);
+    if (item.meleeNoABonus) cParts.push(formatFixedNoA('近回数', item.meleeNoABonus));
   }
   if (item.rangedNoA || item.rangedNoABonus) {
     const baseNoA = item.rangedNoA ?? 0;
-    if (baseNoA !== 0) stats.push(`遠回数${formatSigned(getScaledNoA(baseNoA))}`);
-    if (item.rangedNoABonus) stats.push(formatFixedNoA('遠回数', item.rangedNoABonus));
+    if (baseNoA !== 0) dParts.push(`遠回数${formatSigned(getScaledNoA(baseNoA))}`);
+    if (item.rangedNoABonus) cParts.push(formatFixedNoA('遠回数', item.rangedNoABonus));
   }
   if (item.magicalNoA || item.magicalNoABonus) {
     const baseNoA = item.magicalNoA ?? 0;
-    if (baseNoA !== 0) stats.push(`魔回数${formatSigned(getScaledNoA(baseNoA))}`);
-    if (item.magicalNoABonus) stats.push(formatFixedNoA('魔回数', item.magicalNoABonus));
+    if (baseNoA !== 0) dParts.push(`魔回数${formatSigned(getScaledNoA(baseNoA))}`);
+    if (item.magicalNoABonus) cParts.push(formatFixedNoA('魔回数', item.magicalNoABonus));
   }
   const displayedPhysicalDefense = (item.physicalDefense ?? 0) + jewelDBonus.physicalDefense;
   if (displayedPhysicalDefense) {
-    stats.push(`物防+${Math.round(displayedPhysicalDefense * multiplier)}`);
-    if (multiplierPercent) stats.push(formatBracket('物防', multiplierPercent, '%'));
+    dParts.push(`物防+${Math.round(displayedPhysicalDefense * multiplier)}`);
+    if (multiplierPercent) cParts.push(`物防+${multiplierPercent}%`);
   }
   const displayedMagicalDefense = (item.magicalDefense ?? 0) + jewelDBonus.magicalDefense;
   if (displayedMagicalDefense) {
-    stats.push(`魔防+${Math.round(displayedMagicalDefense * multiplier)}`);
-    if (multiplierPercent) stats.push(formatBracket('魔防', multiplierPercent, '%'));
+    dParts.push(`魔防+${Math.round(displayedMagicalDefense * multiplier)}`);
+    if (multiplierPercent) cParts.push(`魔防+${multiplierPercent}%`);
   }
   const displayedPartyHp = (item.partyHP ? Math.round(item.partyHP * multiplier * hpScaleMultiplier) : 0)
     + (jewelDBonus.partyHP ? Math.round(jewelDBonus.partyHP * multiplier * hpScaleMultiplier) : 0);
   if (displayedPartyHp) {
     // Match computePartyStats HP contribution order:
     // Round base and jewel HP contributions separately, then sum.
-    stats.push(`HP+${displayedPartyHp}`);
+    dParts.push(`HP+${displayedPartyHp}`);
   }
-  if (item.accuracyBonus) stats.push(formatBracket('命中', Math.round(item.accuracyBonus * 1000)));
-  if (item.evasionBonus) stats.push(`回避${formatSigned(Math.round(item.evasionBonus * 1000))}`);
-  if (item.vitalityBonus) stats.push(`体力+${item.vitalityBonus}`);
-  if (item.strengthBonus) stats.push(`力+${item.strengthBonus}`);
-  if (item.intelligenceBonus) stats.push(`知性+${item.intelligenceBonus}`);
-  if (item.mindBonus) stats.push(`精神+${item.mindBonus}`);
-  if (item.penetBonus) stats.push(formatBracket('貫通', Math.round(item.penetBonus * 100)));
+  if (item.accuracyBonus) cParts.push(`命中+${Math.round(item.accuracyBonus * 1000)}`);
+  if (item.evasionBonus) cParts.push(`回避${formatSigned(Math.round(item.evasionBonus * 1000))}`);
+  if (item.vitalityBonus) cParts.push(`体力+${item.vitalityBonus}`);
+  if (item.strengthBonus) cParts.push(`力+${item.strengthBonus}`);
+  if (item.intelligenceBonus) cParts.push(`知性+${item.intelligenceBonus}`);
+  if (item.mindBonus) cParts.push(`精神+${item.mindBonus}`);
+  if (item.penetBonus) cParts.push(`貫通+${Math.round(item.penetBonus * 100)}`);
   if (item.elementalOffense && item.elementalOffense !== 'none') {
     const elem = { fire: '炎', ice: '氷', thunder: '雷' }[item.elementalOffense];
     const elementalPercent = Math.round((item.elementalOffenseBonus ?? 0) * 100);
-    stats.push(`${elem}属性+${elementalPercent}%`);
+    otherParts.push(`${elem}属性+${elementalPercent}%`);
   }
-  if (itemUniqueBonusText) stats.push(`[${itemUniqueBonusText}]`);
-  if (superRareUniqueBonusText) stats.push(`[超:${superRareUniqueBonusText}]`);
-  return stats.reduce((result, part, index) => {
-    if (index === 0) return part;
-    const previous = stats[index - 1];
-    if (previous.startsWith('[') && part.startsWith('[')) return `${result}${part}`;
-    return `${result} ${part}`;
-  }, '');
+  if (itemUniqueBonusText) cParts.push(...itemUniqueBonusText.split(', ').filter(Boolean));
+  if (superRareUniqueBonusText) otherParts.push(`[超:${superRareUniqueBonusText}]`);
+
+  const mergedBonusesText = cParts.length > 0 ? `[${cParts.join(', ')}]` : '';
+  return [dParts.join(' '), mergedBonusesText, ...otherParts].filter(Boolean).join(' ');
 }
 
 function getJewelSlotStatusText(item: Item, jewelKey: JewelKey, rank: number, categoryMultiplier: number, hpScaleMultiplier: number): string {
