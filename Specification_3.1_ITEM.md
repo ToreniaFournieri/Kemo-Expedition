@@ -81,12 +81,16 @@
 | uncommon | none | xN base_power x rarity.amplifier, E-bonus, base-bonus with +1 tier upgrade(except penalty) |
 | elite rare | A | xN base_power x rarity.amplifier, X-bonus, E-bonus, base-bonus with +2 tier upgrade(except penalty) |
 | elite rare | B | xN base_power x rarity.amplifier, X-bonus, Y-bonus, base-bonus with +2 tier upgrade(except penalty) |
-| elite rare | C | xN base_power x rarity.amplifier, Y-bonus, C-bonus, base-bonus withr +2 tier upgrade(except penalty) |
+| elite rare | C | xN base_power x rarity.amplifier, Y-bonus, C-bonus, base-bonus with +2 tier upgrade(except penalty) |
 | boss rare | none | xN base_power x rarity.amplifier, X-bonus, C-bonus, B-bonus, but **no base-bonus** |
 | mythic rare | none | xN base_power x rarity.amplifier, X-bonus, Y-bonus, C-bonus, B-bonus, but no base-bonus |
 
-- note: `EnemyTypeSource` reference: @Specification_4.1_EXPEDITION_&_ENEMY.md 4.1.5 Master_Data_Definitions Expedition Enemy Types
-- `+1 tier upgrade` means: when reading tier-based bonus columns, use `min(base_tier + 1, 10)` for all bonus references except penalty columns `J` and `K`.
+- note:
+  - `base-bonus` means the default bonus set granted by the item type at its tier, including its base `c.*` bonus and other default tier-based bonuses defined in the item type table.
+  - `EnemyTypeSource` reference: @Specification_4.1_EXPEDITION_&_ENEMY.md 4.1.5 Master_Data_Definitions Expedition Enemy Types
+  - `+1 tier upgrade` means: when reading tier-based bonus columns, use `min(base_tier + 1, 10)` for all bonus references except penalty columns `J` and `K`.
+  - `+2 tier upgrade` means: when reading tier-based bonus columns, use `min(base_tier + 2, 10)` for all bonus references except penalty columns `J` and `K`.
+  - `xN` means the item-type scale defined in the item type table.
 
 **Elemental by expedition**
 
