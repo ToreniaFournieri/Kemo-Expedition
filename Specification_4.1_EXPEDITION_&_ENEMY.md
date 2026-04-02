@@ -235,7 +235,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | class.alchemist | x0.70 | `a.arcane-stability`1 | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.2 | x1.0 | 5 | x1.0 | x1.0 | 0 | x0.7 | x0.7 | x1.2 |
 | class.guardian | x1.40 | (none) | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 2 | x1.3 | x0.6 | x1.0 |
 | class.pilgrim | x1.20 | (none) | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 2 | x1.0 | x1.0 | 0 | x1.1 | x1.1 | x0.4 |
-| class.lord | x1.20 | (none) | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 2 | x1.2 | x1.2 | x1.6 |
+| class.lord | x1.20 | (none) | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 2 | x1.2 | x1.0 | x1.6 |
 
 - **Calculation of master value**
 - `d.HP` master value: `d.HP` x mainClass.`d.HP_modifier`  x subClass.`d.HP_modifier`
