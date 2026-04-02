@@ -1,6 +1,6 @@
 ## 1. CONSTANTS 
 
-**Naming Rule**
+**1.0.1 Naming Rule**
 
 | Prefix | Description / Definition |
 |-------|-------------------------|
@@ -20,7 +20,7 @@
 | `terrain.` | **T**errain effect |
 | `x.` | E**x**pedition |
 
-- Format:
+- 1.0.2 Display format:
 
 | `x.` | Display | Example |
 |---|----|----|
