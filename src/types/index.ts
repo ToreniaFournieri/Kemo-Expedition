@@ -449,6 +449,7 @@ export interface EnemyDef {
   physicalDefense: number;
   magicalDefense: number;
   elementalOffense: ElementalOffense;
+  elementalOffenseValue: number;
   elementalResistance: Record<ElementalResistance, number>;
   physicalDefenseAmplifier: number;
   magicalDefenseAmplifier: number;

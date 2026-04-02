@@ -519,7 +519,7 @@ function calculateSingleEnemyAttackDamage(
     partyHp,
     maxPartyHp,
   );
-  const rawDamage = (attack - effectiveDefense) * amplifier * runtimeOffenseMultiplier * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier;
+  const rawDamage = (attack - effectiveDefense) * amplifier * runtimeOffenseMultiplier * enemy.elementalOffenseValue * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier;
   const totalDamage = Math.max(1, rawDamage);
 
   return applyTerrainDamageOverride(Math.floor(totalDamage), terrainEffect, maxPartyHp);
@@ -4092,7 +4092,7 @@ export function executeBattle(
           const magicProfile = resolveMagicProfile({
             style: hasEnemyArcMagic(enemy) ? 'arc-magic' : 'multi-hit',
             elementalOffense: enemy.elementalOffense,
-            elementalOffenseValue: 1.0,
+            elementalOffenseValue: enemy.elementalOffenseValue,
             magicalNoA: attempts,
           });
           const resonanceActor = enemyResonanceLevel > 0

@@ -9805,7 +9805,7 @@ function SettingTab({
                             }
 
                             const defenseRows: string[] = [
-                              `属性: ${ENEMY_ELEMENT_LABELS[godRuntimeEnemy.elementalOffense] ?? '無'} (x1.0)`,
+                              `属性: ${ENEMY_ELEMENT_LABELS[godRuntimeEnemy.elementalOffense] ?? '無'} (x${godRuntimeEnemy.elementalOffenseValue.toFixed(2)})`,
                               formatEnemyDefenseLine('物理防御', godRuntimeEnemy.physicalDefense, physicalDefenseAmplifierPercent),
                               formatEnemyDefenseLine('魔法防御', godRuntimeEnemy.magicalDefense, magicalDefenseAmplifierPercent),
                               `回避: ${formatNumber(Math.round(godRuntimeEnemy.evasionBonus * 1000))}`,
@@ -9890,7 +9890,7 @@ function SettingTab({
                       })()}
                     </div>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                      <div>{hasRangedAttack ? formatEnemyAttackLine('遠距離攻撃', colosseumEnemy.rangedAttack, colosseumEnemy.rangedNoA, colosseumEnemy.rangedAttackAmplifier) : ''}</div><div>{`属性: ${ENEMY_ELEMENT_LABELS[colosseumEnemy.elementalOffense] ?? '無'} (x1.0)`}</div>
+                      <div>{hasRangedAttack ? formatEnemyAttackLine('遠距離攻撃', colosseumEnemy.rangedAttack, colosseumEnemy.rangedNoA, colosseumEnemy.rangedAttackAmplifier) : ''}</div><div>{`属性: ${ENEMY_ELEMENT_LABELS[colosseumEnemy.elementalOffense] ?? '無'} (x${colosseumEnemy.elementalOffenseValue.toFixed(2)})`}</div>
                       <div>{hasMeleeAttack ? formatEnemyAttackLine('近接攻撃', colosseumEnemy.meleeAttack, colosseumEnemy.meleeNoA, colosseumEnemy.meleeAttackAmplifier) : ''}</div><div>{formatEnemyDefenseLine('物理防御', colosseumEnemy.physicalDefense, physicalDefenseAmplifierPercent)}</div>
                       <div>{hasPhysicalAttack ? `物理命中率: 100% (減衰: ${decay})` : ''}</div><div>{formatEnemyDefenseLine('魔法防御', colosseumEnemy.magicalDefense, magicalDefenseAmplifierPercent)}</div>
                       <div>{hasMagicalAttack ? formatEnemyAttackLine('魔法攻撃', colosseumEnemy.magicalAttack, colosseumEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(colosseumEnemy)) : ''}</div><div>回避: {formatNumber(Math.round(colosseumEnemy.evasionBonus * 1000))}</div>
@@ -9992,7 +9992,7 @@ function SettingTab({
 
                             // Bestiary detail keeps the compact 4-line defense block.
                             const defenseRows: string[] = [
-                              `属性: ${ENEMY_ELEMENT_LABELS[displayEnemy.elementalOffense] ?? '無'} (x1.0)`,
+                              `属性: ${ENEMY_ELEMENT_LABELS[displayEnemy.elementalOffense] ?? '無'} (x${displayEnemy.elementalOffenseValue.toFixed(2)})`,
                               formatEnemyDefenseLine('物理防御', displayEnemy.physicalDefense, physicalDefenseAmplifierPercent),
                               formatEnemyDefenseLine('魔法防御', displayEnemy.magicalDefense, magicalDefenseAmplifierPercent),
                               `回避: ${formatNumber(Math.round(displayEnemy.evasionBonus * 1000))}`,

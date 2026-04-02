@@ -126,6 +126,25 @@ export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode
   const cyborgizationAdjustment = getEnemyCyborgizationAdjustment(
     abilities.find((ability) => ability.id === 'cyborgization')?.level ?? 0,
   );
+  const enemyTypeBonuses = getEnemyTypeBonuses(normalized.enemyType);
+  const elementalOffenseTotals = enemyTypeBonuses.reduce(
+    (acc, bonus) => {
+      if (bonus.type === 'fire_offense') acc.fire += bonus.value > 1 ? bonus.value / 100 : bonus.value;
+      if (bonus.type === 'ice_offense') acc.ice += bonus.value > 1 ? bonus.value / 100 : bonus.value;
+      if (bonus.type === 'thunder_offense') acc.thunder += bonus.value > 1 ? bonus.value / 100 : bonus.value;
+      return acc;
+    },
+    { fire: 0, ice: 0, thunder: 0 },
+  );
+  const elementalPriority: Array<'thunder' | 'ice' | 'fire'> = ['thunder', 'ice', 'fire'];
+  let elementalOffense: 'none' | 'fire' | 'ice' | 'thunder' = 'none';
+  let elementalOffenseBonus = 0;
+  for (const element of elementalPriority) {
+    if (elementalOffenseTotals[element] > elementalOffenseBonus) {
+      elementalOffense = element;
+      elementalOffenseBonus = elementalOffenseTotals[element];
+    }
+  }
 
   const elementalResistance: Record<ElementalResistance, number> = {
     fire: 1,
@@ -144,7 +163,7 @@ export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode
     enemyClass: normalized.enemyMainClass,
     enemySubClass: normalized.enemySubClass,
     abilities,
-    bonuses: getEnemyTypeBonuses(normalized.enemyType),
+    bonuses: enemyTypeBonuses,
     accuracyBonus: classBase.accuracyBonus + cyborgizationAdjustment.accuracyBonus,
     evasionBonus: classBase.evasionBonus + cyborgizationAdjustment.evasionBonus,
     hp: Math.max(1, Math.floor(classBase.hp * multipliers.hp)),
@@ -159,7 +178,8 @@ export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode
     meleeAttackAmplifier: classBase.meleeAttackAmplifier * multipliers.attackAmplifier,
     physicalDefense: Math.max(0, Math.floor(classBase.physicalDefense * multipliers.defense * (hasColossal ? 2 : 1))),
     magicalDefense: Math.max(0, Math.floor(classBase.magicalDefense * multipliers.defense)),
-    elementalOffense: 'none',
+    elementalOffense,
+    elementalOffenseValue: 1 + elementalOffenseBonus,
     elementalResistance,
     physicalDefenseAmplifier: multipliers.defenseAmplifier * (hasColossal ? 2 : 1),
     magicalDefenseAmplifier: multipliers.defenseAmplifier,

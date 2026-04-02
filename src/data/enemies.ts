@@ -18,6 +18,51 @@ type EnemyTemplate = {
   resistances?: Partial<Record<ElementalResistance, number>>;
 };
 
+function normalizeEnemyElementalBonusValue(value: number): number {
+  return value > 1 ? value / 100 : value;
+}
+
+function getEnemyElementalOffenseProfile(
+  enemyType: string,
+  templateElement?: ElementalOffense,
+): { elementalOffense: ElementalOffense; elementalOffenseValue: number } {
+  const bonuses = getEnemyTypeBonuses(enemyType);
+  const elementalBonusTotals: Record<Exclude<ElementalOffense, 'none'>, number> = {
+    fire: 0,
+    ice: 0,
+    thunder: 0,
+  };
+
+  for (const bonus of bonuses) {
+    if (bonus.type === 'fire_offense') elementalBonusTotals.fire += normalizeEnemyElementalBonusValue(bonus.value);
+    if (bonus.type === 'ice_offense') elementalBonusTotals.ice += normalizeEnemyElementalBonusValue(bonus.value);
+    if (bonus.type === 'thunder_offense') elementalBonusTotals.thunder += normalizeEnemyElementalBonusValue(bonus.value);
+  }
+
+  const elementalPriority: Array<Exclude<ElementalOffense, 'none'>> = ['thunder', 'ice', 'fire'];
+  let selectedElement: ElementalOffense = 'none';
+  let selectedBonus = 0;
+  for (const element of elementalPriority) {
+    const total = elementalBonusTotals[element];
+    if (total > selectedBonus) {
+      selectedBonus = total;
+      selectedElement = element;
+    }
+  }
+
+  if (selectedElement !== 'none') {
+    return {
+      elementalOffense: selectedElement,
+      elementalOffenseValue: 1 + selectedBonus,
+    };
+  }
+
+  return {
+    elementalOffense: templateElement ?? 'none',
+    elementalOffenseValue: 1.0,
+  };
+}
+
 function getBossMythicDropId(tier: number, seed: number): number {
   const categories = MYTHIC_DROP_POOLS[tier] ?? [];
   const bossRareItems = getItemsByTierAndRarity(tier, 'bossRare');
@@ -230,6 +275,7 @@ function createEnemyFromTemplate(
   const hp = Math.floor(classBase.hp * template.hpMod);
   const attackScale = template.attackMod;
   const defenseScale = template.defenseMod;
+  const elementalOffenseProfile = getEnemyElementalOffenseProfile(enemyType, template.element);
 
   // Calculate drop item ID based on enemy type
   // Normal enemies drop uncommon items, elite drop elite eliteRare, boss drop elite eliteRare
@@ -272,7 +318,8 @@ function createEnemyFromTemplate(
     meleeAttackAmplifier: classBase.meleeAttackAmplifier,
     physicalDefense: Math.floor(classBase.physicalDefense * defenseScale),
     magicalDefense: Math.floor(classBase.magicalDefense * defenseScale),
-    elementalOffense: template.element || 'none',
+    elementalOffense: elementalOffenseProfile.elementalOffense,
+    elementalOffenseValue: elementalOffenseProfile.elementalOffenseValue,
     elementalResistance: {
       fire: template.resistances?.fire ?? 1.0,
       thunder: template.resistances?.thunder ?? 1.0,
