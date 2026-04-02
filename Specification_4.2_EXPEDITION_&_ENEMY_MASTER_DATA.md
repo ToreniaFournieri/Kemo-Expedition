@@ -29,7 +29,7 @@
 | 1 | 4 | 1-2 | 4 | Normal | `Aerial` | class.sage.samurai | `i.grimoire`U, `i.catalyst`U, `i.katana`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 見張り翼 |
 | 1 | 4 | 3 | 7 | Elite | `Caninian` | class.duelist.lord | `i.shield`BD, `i.robe`BD, `i.sword`C, `i.katana`C, `i.gauntlet`C | 見張り番 |
 | 1 | 4 | 3 | 7 | Elite | `Caninian` | class.lord.striker | `i.katana`BD, `i.gauntlet`BD, `i.armor`C, `i.robe`C, `i.shield`C | 雇われ傭兵 |
-| 1 | 4 | 4 | 7 | Elite | `Aerial` | class.sage.sword-saint | `i.grimoire`EB, `i.catalyst`EB, `i.gauntlet`EB, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 風切り翼 |
+| 1 | 4 | 4 | 7 | Elite | `Aerial` | class.sage.lord | `i.grimoire`EB, `i.catalyst`EB, `i.i.shield`EB, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 風切り翼 |
 | 1 | 5 | 1-2 | 5 | Normal | `Insect_Swarm` | class.ninja.ranger | `i.archery`U, `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | かくれむれ虫 |
 | 1 | 5 | 1-2 | 5 | Normal | `Insect_Swarm` | class.samurai.sword-saint | `i.katana`U, `i.shield`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 刀持ちむれ虫 |
 | 1 | 5 | 1-2 | 5 | Normal | `Insect_Swarm` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | むれ虫の古書持ち |
