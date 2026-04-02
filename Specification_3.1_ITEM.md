@@ -26,8 +26,8 @@
 #### 3.1.2 Item list
 -　Tier 9 and 10 are Multiplier-Only Tiers. (Uncommon/Rare item upgrade reference)
 
-|Tier| D   | E   | F    | G     | H  | J    | K     | L  | M     | N    | P    |
-|----|-----|-----|------|-------|----|------|-------|----|-------|------|------|
+|Tier| D   | E   | F    | G     | H  | J      | K     | L  | M     | N    | P    |
+|----|-----|-----|------|-------|----|--------|-------|----|-------|------|------|
 | 1  | 12  | 0.8 | 0.13 | 0.013 | 1  | -0.001 | -1.0 | +0.15 | -10| 0.001 | 0.01 |
 | 2  | 18  | 0.7 | 0.12 | 0.012 | 2  | -0.002 | -1.2 | +0.14 | -9 | 0.002 | 0.02 |
 | 3  | 26  | 0.6 | 0.11 | 0.011 | 3  | -0.003 | -1.4 | +0.13 | -8 | 0.003 | 0.03 |
@@ -52,7 +52,7 @@
 |`i.shield` | x3.0 `d.HP+D` | `c.evasion+G` | x0.20 `d.physical_defense+D` | x0.20 `d.magical_defense+D` | `r.fire-M`,`r.ice-M`, `r.thunder-M` | none | `b.mind+1` |
 |`i.sword` | x1.1 `d.melee_attack+D` | `c.melee_attack+F` | x0.25 `d.physical_defense+D` | x1.1 `d.HP+D` |  `e.fire+L` | `c.accuracy+N` | `b.strength+1` |
 |`i.katana` | x1.43 `d.melee_attack+D` | `c.melee_attack+F`, `d.evasion-J`, `d.melee_NoA-K` | x1.0 `d.HP+D` | x0.3 `d.magical_defense+D` | none | `c.penet+P` | `b.mind+1` |
-|`i.gauntlet` | x1.0 `d.melee_NoA+E` | `c.melee_NoA+H` | x0.3 `d.physical_defense+D` | none | none | `c.physical_defense+N` | `b.vitality+1` |
+|`i.gauntlet` | x1.0 `d.melee_NoA+E` | `c.melee_NoA+H` | x0.3 `d.physical_defense+D` | none | none | `c.physical_defense+P` | `b.vitality+1` |
 |`i.arrow` | x0.85 `d.ranged_attack+D` | `c.ranged_attack+F` | x1.2 `d.HP+D` | x0.32 `d.physical_defense+D` | `e.fire+L`, `e.ice+L` , `e.thunder+L` | `c.evasion+N` | `b.strength+1` |
 |`i.bolt` | x1.11 `d.ranged_attack+D` | `c.ranged_attack+F`, `d.evasion-J`, `d.ranged_NoA-K` | x0.28 `d.magical_defense+D` | x1.0 `d.HP+D` | `e.fire+L`, `e.ice+L` , `e.thunder+L` | `c.penet+P`  | `b.vitality+1` |
 |`i.archery` | x1.0 `d.ranged_NoA+E` | `c.ranged_NoA+H` | x1.0 `d.HP+D` | none | none | `c.accuracy+N` | `b.strength+1` |
