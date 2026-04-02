@@ -107,6 +107,7 @@ export function getSuperRareBonuses(value: number): Bonus[] {
 // Item generation types
 // ============================================================
 type Rarity = 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare';
+type EliteSource = 'A' | 'B' | 'C';
 
 type ItemVariantMod = {
   partyHP?: number;
@@ -144,14 +145,16 @@ type ItemTemplate = {
 // ============================================================
 
 // Base power per tier (updated item scale)
-const TIER_BASE_POWER = [12, 18, 26, 35, 45, 60, 80, 100];
-const TIER_NOA_BASE_POWER = [0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1];
-const TIER_TARGET_MULTIPLIERS = [0.13, 0.12, 0.11, 0.09, 0.08, 0.07, 0.06, 0.05, 0.04, 0.03];
-const TIER_SHIELD_EVASION_BONUS = [0.013, 0.012, 0.011, 0.009, 0.008, 0.007, 0.006, 0.005, 0.004, 0.003];
-const TIER_NOA_FIXED_BONUS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-const TIER_NOA_PENALTIES = [-1.0, -1.2, -1.4, -1.6, -1.8, -2.0, -2.2, -2.4];
-const TIER_EVASION_PENALTIES = [-0.001, -0.002, -0.003, -0.004, -0.005, -0.006, -0.007, -0.008];
-const TIER_ELEMENTAL_BONUS = [0.15, 0.14, 0.13, 0.12, 0.11, 0.09, 0.08, 0.07, 0.06, 0.05];
+const TIER_BASE_POWER = [12, 18, 26, 35, 45, 60, 80, 100, 130, 160];
+const TIER_NOA_BASE_POWER = [0.8, 0.7, 0.6, 0.5, 0.4, 0.4, 0.3, 0.3, 0.2, 0.2];
+const TIER_F_BONUS = [0.013, 0.012, 0.011, 0.009, 0.008, 0.007, 0.006, 0.005, 0.004, 0.003];
+const TIER_H_BONUS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const TIER_J_PENALTY = [-0.001, -0.002, -0.003, -0.004, -0.005, -0.006, -0.007, -0.008, -0.009, -0.01];
+const TIER_K_PENALTY = [-1.0, -1.2, -1.4, -1.6, -1.8, -2.0, -2.2, -2.4, -2.6, -2.8];
+const TIER_L_BONUS = [0.15, 0.14, 0.13, 0.12, 0.11, 0.10, 0.09, 0.08, 0.07, 0.06];
+const TIER_M_RESIST_PENALTY = [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1];
+const TIER_N_BONUS = [0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.011];
+const TIER_P_BONUS = [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.11];
 
 // SpecRef: 3.1.2 | Item list | type.amplifier of base_power
 const TYPE_AMPLIFIERS: Record<ItemCategory, number> = {
@@ -177,8 +180,6 @@ const RARITY_AMPLIFIERS: Record<Rarity, number> = {
   mythicRare: 2.4,
 };
 
-const SUBTLE_POWER_MULTIPLIERS = [0.2, 0.27, 0.34] as const;
-
 function getMasterItemName(tier: number, rarity: Rarity, category: ItemCategory, variantIndex?: number): string | undefined {
   if (rarity === 'mythicRare') return undefined;
   const names = getMasterItemNames(tier, rarity, category);
@@ -203,9 +204,6 @@ const ITEM_NAME_OVERRIDES: Record<number, string> = {
   8402: '天罰神雷ボルト',
   8403: '根源真理の書',
 };
-
-// Shield HP values per tier
-const SHIELD_HP_MULTIPLIERS = [12, 18, 27, 41, 61, 91, 137, 205];
 
 // ============================================================
 // Item templates - 12 categories
@@ -327,31 +325,34 @@ const ITEM_TEMPLATE_BY_CATEGORY: Record<ItemCategory, ItemTemplate> = ITEM_TEMPL
 // ============================================================
 
 function calculateStat(basePower: number, amplifier: number): number {
-  return Math.floor(basePower * amplifier);
+  return Math.ceil(basePower * amplifier);
 }
 
 function calculateNoA(basePower: number, amplifier: number): number {
   return Number((basePower * amplifier).toFixed(2));
 }
 
-function getMultiplierTier(tier: number, rarity: Rarity): number | null {
-  if (rarity === 'bossRare' || rarity === 'mythicRare') return null;
-  const bonus = rarity === 'eliteRare' ? 2 : rarity === 'uncommon' ? 1 : 0;
-  return Math.min(tier + bonus, TIER_TARGET_MULTIPLIERS.length);
+function getTierIndex(tier: number): number {
+  return Math.max(0, Math.min(tier - 1, TIER_BASE_POWER.length - 1));
 }
 
-function getRareSubtleMods(template: ItemTemplate, tier: number): ItemVariantMod[] {
-  const subtlePool = [template.variant1Mod, template.variant2Mod, template.variant3Mod].filter(
-    (mod): mod is ItemVariantMod => mod !== undefined
+function getBonusTier(baseTier: number, rarity: Rarity, column: 'F' | 'H' | 'J' | 'K' | 'L' | 'M' | 'N' | 'P'): number {
+  if (column === 'J' || column === 'K') return baseTier;
+  if (rarity === 'uncommon') return Math.min(baseTier + 1, 10);
+  if (rarity === 'eliteRare') return Math.min(baseTier + 2, 10);
+  return baseTier;
+}
+
+function addElementalResistancePenalty(item: ItemDef, tier: number): void {
+  const resistPenalty = TIER_M_RESIST_PENALTY[getTierIndex(tier)];
+  const multiplier = Math.max(0.01, 1 + resistPenalty / 100);
+  const bonuses = item.bonuses ?? [];
+  bonuses.push(
+    { type: 'fire_defense_multiplier_xV', value: multiplier },
+    { type: 'ice_defense_multiplier_xV', value: multiplier },
+    { type: 'thunder_defense_multiplier_xV', value: multiplier },
   );
-
-  if (subtlePool.length <= 2) {
-    return subtlePool;
-  }
-
-  // Rare requires two subtle bonuses; rotate the omitted one by tier for deterministic diversity.
-  const omitIndex = (tier - 1) % subtlePool.length;
-  return subtlePool.filter((_, index) => index !== omitIndex).slice(0, 2);
+  item.bonuses = bonuses;
 }
 
 function createItem(
@@ -360,21 +361,23 @@ function createItem(
   rarity: Rarity,
   template: ItemTemplate,
   variantIndex?: number,
-  forcedName?: string
+  forcedName?: string,
+  eliteSource: EliteSource = 'A'
 ): ItemDef | null {
-  const basePower = TIER_BASE_POWER[tier - 1];
+  // SpecRef: 3.1.2 | Item list | Rarity base
+  const basePower = TIER_BASE_POWER[getTierIndex(tier)];
   const typeAmplifier = TYPE_AMPLIFIERS[template.category];
   const rarityAmplifier = RARITY_AMPLIFIERS[rarity];
   const amplifier = typeAmplifier * rarityAmplifier;
-  const subtlePowerBase = basePower * amplifier;
-  const multiplierTier = getMultiplierTier(tier, rarity);
-  const targetMultiplier = multiplierTier ? 1 + TIER_TARGET_MULTIPLIERS[multiplierTier - 1] : 1;
-  const shieldEvasionBonus = multiplierTier ? TIER_SHIELD_EVASION_BONUS[multiplierTier - 1] : 0;
-  const fixedNoABonus = multiplierTier ? TIER_NOA_FIXED_BONUS[multiplierTier - 1] : 0;
-  const noaPenalty = TIER_NOA_PENALTIES[tier - 1];
-  const evasionPenalty = TIER_EVASION_PENALTIES[tier - 1];
-  const noaBasePower = TIER_NOA_BASE_POWER[tier - 1];
-  const elementalBonus = TIER_ELEMENTAL_BONUS[tier - 1] ?? 0;
+  const noaBasePower = TIER_NOA_BASE_POWER[getTierIndex(tier)];
+  const bonusTierF = getBonusTier(tier, rarity, 'F');
+  const bonusTierH = getBonusTier(tier, rarity, 'H');
+  const bonusTierL = getBonusTier(tier, rarity, 'L');
+  const bonusTierM = getBonusTier(tier, rarity, 'M');
+  const bonusTierN = getBonusTier(tier, rarity, 'N');
+  const bonusTierP = getBonusTier(tier, rarity, 'P');
+  const bonusTierJ = getBonusTier(tier, rarity, 'J');
+  const bonusTierK = getBonusTier(tier, rarity, 'K');
 
   const masterName = forcedName ?? getMasterItemName(tier, rarity, template.category, variantIndex);
   const name = ITEM_NAME_OVERRIDES[id] ?? masterName;
@@ -391,108 +394,170 @@ function createItem(
   switch (template.category) {
     case 'armor':
       item.physicalDefense = calculateStat(basePower, amplifier);
-      if (multiplierTier) item.baseMultiplier = targetMultiplier;
+      if (rarity !== 'common') item.partyHP = calculateStat(basePower, amplifier * 1.2);
+      if (rarity === 'eliteRare' && eliteSource !== 'A') item.magicalDefense = calculateStat(basePower, amplifier * 0.3);
+      if (rarity === 'bossRare' || rarity === 'mythicRare') {
+        item.partyHP = calculateStat(basePower, amplifier * 1.2);
+        item.magicalDefense = calculateStat(basePower, amplifier * 0.3);
+      }
       break;
     case 'robe':
       item.magicalDefense = calculateStat(basePower, amplifier);
-      if (multiplierTier) item.baseMultiplier = targetMultiplier;
+      if (rarity !== 'common') item.partyHP = calculateStat(basePower, amplifier * 1.2);
+      if (rarity === 'eliteRare' && eliteSource !== 'A') item.physicalDefense = calculateStat(basePower, amplifier * 0.3);
+      if (rarity === 'bossRare' || rarity === 'mythicRare') {
+        item.partyHP = calculateStat(basePower, amplifier * 1.2);
+        item.physicalDefense = calculateStat(basePower, amplifier * 0.3);
+      }
       break;
     case 'shield':
-      item.partyHP = SHIELD_HP_MULTIPLIERS[tier - 1];
-      item.physicalDefense = calculateStat(basePower, amplifier);
-      if (shieldEvasionBonus) item.evasionBonus = shieldEvasionBonus;
+      item.partyHP = calculateStat(basePower, amplifier * 3.0);
+      if (rarity !== 'common') item.evasionBonus = TIER_F_BONUS[getTierIndex(bonusTierF)];
+      if (rarity === 'eliteRare' && eliteSource !== 'A') {
+        item.physicalDefense = calculateStat(basePower, amplifier * 0.2);
+        item.magicalDefense = calculateStat(basePower, amplifier * 0.2);
+      }
+      if (rarity === 'bossRare' || rarity === 'mythicRare') {
+        item.physicalDefense = calculateStat(basePower, amplifier * 0.2);
+        item.magicalDefense = calculateStat(basePower, amplifier * 0.2);
+      }
       break;
     case 'sword':
       item.meleeAttack = calculateStat(basePower, amplifier);
-      if (multiplierTier) item.baseMultiplier = targetMultiplier;
+      if (rarity !== 'common') item.elementalOffense = 'fire';
+      if (rarity !== 'common') item.elementalOffenseBonus = TIER_L_BONUS[getTierIndex(bonusTierL)];
+      if (rarity === 'eliteRare' && eliteSource !== 'A') item.partyHP = calculateStat(basePower, amplifier * 1.1);
+      if (rarity === 'bossRare' || rarity === 'mythicRare') {
+        item.physicalDefense = calculateStat(basePower, amplifier * 0.25);
+        item.partyHP = calculateStat(basePower, amplifier * 1.1);
+      }
       break;
     case 'katana':
       item.meleeAttack = calculateStat(basePower, amplifier);
-      item.meleeNoABonus = noaPenalty;
-      item.evasionBonus = evasionPenalty;
+      if (rarity !== 'bossRare' && rarity !== 'mythicRare') {
+        item.meleeNoABonus = TIER_K_PENALTY[getTierIndex(bonusTierK)];
+        item.evasionBonus = TIER_J_PENALTY[getTierIndex(bonusTierJ)];
+        item.penetBonus = TIER_P_BONUS[getTierIndex(bonusTierP)];
+      }
+      if (rarity === 'eliteRare' && eliteSource !== 'A') item.magicalDefense = calculateStat(basePower, amplifier * 0.3);
+      if (rarity === 'bossRare' || rarity === 'mythicRare') {
+        item.partyHP = calculateStat(basePower, amplifier * 1.0);
+        item.magicalDefense = calculateStat(basePower, amplifier * 0.3);
+      }
       break;
     case 'gauntlet':
       item.meleeNoA = calculateNoA(noaBasePower, amplifier);
-      item.meleeNoABonus = fixedNoABonus;
+      if (rarity !== 'bossRare' && rarity !== 'mythicRare') item.meleeNoABonus = TIER_H_BONUS[getTierIndex(bonusTierH)];
+      if (rarity === 'eliteRare' && eliteSource !== 'A') item.physicalDefense = calculateStat(basePower, amplifier * 0.3);
+      if (rarity === 'bossRare' || rarity === 'mythicRare') {
+        item.partyHP = calculateStat(basePower, amplifier * 1.0);
+        item.physicalDefense = calculateStat(basePower, amplifier * 0.3);
+      }
       break;
     case 'arrow':
       item.rangedAttack = calculateStat(basePower, amplifier);
-      if (multiplierTier) item.baseMultiplier = targetMultiplier;
+      if (rarity !== 'common') item.elementalOffenseBonus = TIER_L_BONUS[getTierIndex(bonusTierL)];
+      if (rarity !== 'common') item.elementalOffense = 'fire';
+      if (rarity === 'eliteRare' && eliteSource !== 'A') item.physicalDefense = calculateStat(basePower, amplifier * 0.32);
+      if (rarity === 'bossRare' || rarity === 'mythicRare') {
+        item.partyHP = calculateStat(basePower, amplifier * 1.2);
+        item.physicalDefense = calculateStat(basePower, amplifier * 0.32);
+      }
       break;
     case 'bolt':
       item.rangedAttack = calculateStat(basePower, amplifier);
-      item.rangedNoABonus = noaPenalty;
-      item.evasionBonus = evasionPenalty;
+      if (rarity !== 'bossRare' && rarity !== 'mythicRare') {
+        item.rangedNoABonus = TIER_K_PENALTY[getTierIndex(bonusTierK)];
+        item.evasionBonus = TIER_J_PENALTY[getTierIndex(bonusTierJ)];
+        item.penetBonus = TIER_P_BONUS[getTierIndex(bonusTierP)];
+      }
+      if (rarity !== 'common') item.elementalOffense = 'thunder';
+      if (rarity !== 'common') item.elementalOffenseBonus = TIER_L_BONUS[getTierIndex(bonusTierL)];
+      if (rarity === 'eliteRare' && eliteSource !== 'A') item.partyHP = calculateStat(basePower, amplifier * 1.0);
+      if (rarity === 'bossRare' || rarity === 'mythicRare') {
+        item.magicalDefense = calculateStat(basePower, amplifier * 0.28);
+        item.partyHP = calculateStat(basePower, amplifier * 1.0);
+      }
       break;
     case 'archery':
       item.rangedNoA = calculateNoA(noaBasePower, amplifier);
-      item.rangedNoABonus = fixedNoABonus;
+      if (rarity !== 'bossRare' && rarity !== 'mythicRare') item.rangedNoABonus = TIER_H_BONUS[getTierIndex(bonusTierH)];
+      if (rarity === 'eliteRare' && eliteSource !== 'A') item.partyHP = calculateStat(basePower, amplifier * 1.0);
+      if (rarity === 'bossRare' || rarity === 'mythicRare') item.partyHP = calculateStat(basePower, amplifier * 1.0);
       break;
     case 'wand':
       item.magicalAttack = calculateStat(basePower, amplifier);
-      if (multiplierTier) item.baseMultiplier = targetMultiplier;
+      if (rarity === 'eliteRare' && eliteSource !== 'A') item.partyHP = calculateStat(basePower, amplifier * 1.1);
+      if (rarity === 'bossRare' || rarity === 'mythicRare') {
+        item.magicalDefense = calculateStat(basePower, amplifier * 0.3);
+        item.partyHP = calculateStat(basePower, amplifier * 1.1);
+      }
       break;
     case 'grimoire':
       item.magicalAttack = calculateStat(basePower, amplifier);
-      item.magicalNoABonus = noaPenalty;
-      item.evasionBonus = evasionPenalty;
+      if (rarity !== 'bossRare' && rarity !== 'mythicRare') {
+        item.magicalNoABonus = TIER_K_PENALTY[getTierIndex(bonusTierK)];
+        item.evasionBonus = TIER_J_PENALTY[getTierIndex(bonusTierJ)];
+        item.penetBonus = TIER_P_BONUS[getTierIndex(bonusTierP)];
+      }
+      if (rarity !== 'common') {
+        item.elementalOffense = 'ice';
+        item.elementalOffenseBonus = TIER_L_BONUS[getTierIndex(bonusTierL)];
+      }
+      if (rarity === 'eliteRare' && eliteSource !== 'A') item.magicalDefense = calculateStat(basePower, amplifier * 0.26);
+      if (rarity === 'bossRare' || rarity === 'mythicRare') {
+        item.physicalDefense = calculateStat(basePower, amplifier * 0.22);
+        item.magicalDefense = calculateStat(basePower, amplifier * 0.26);
+      }
       break;
     case 'catalyst':
       item.magicalNoA = calculateNoA(noaBasePower, amplifier);
-      item.magicalNoABonus = fixedNoABonus;
+      if (rarity !== 'bossRare' && rarity !== 'mythicRare') item.magicalNoABonus = TIER_H_BONUS[getTierIndex(bonusTierH)];
+      if (rarity !== 'common') {
+        item.elementalOffense = 'fire';
+        item.elementalOffenseBonus = TIER_L_BONUS[getTierIndex(bonusTierL)];
+      }
+      if (rarity === 'eliteRare' && eliteSource !== 'A') item.partyHP = calculateStat(basePower, amplifier * 1.0);
+      if (rarity === 'bossRare' || rarity === 'mythicRare') item.partyHP = calculateStat(basePower, amplifier * 1.0);
       break;
   }
-
-  const getSubtlePower = (slotIndex = 0): number => {
-    const multiplier = SUBTLE_POWER_MULTIPLIERS[Math.min(slotIndex, SUBTLE_POWER_MULTIPLIERS.length - 1)];
-    return subtlePowerBase * multiplier;
-  };
-
-  const applyVariantMod = (mod?: ItemVariantMod, subtleSlotIndex = 0) => {
-    if (!mod) return;
-    const subtlePower = getSubtlePower(subtleSlotIndex);
-    const archeryCBonusScale = template.category === 'archery' ? tier / 10 : 1;
-    const robeEvasionScale = template.category === 'robe' ? tier / 10 : 1;
-    if (mod.partyHP) item.partyHP = (item.partyHP || 0) + Math.floor(subtlePower * mod.partyHP);
-    if (mod.physicalDefense) item.physicalDefense = (item.physicalDefense || 0) + Math.floor(subtlePower * mod.physicalDefense);
-    if (mod.magicalDefense) item.magicalDefense = (item.magicalDefense || 0) + Math.floor(subtlePower * mod.magicalDefense);
-    if (mod.meleeAttack) item.meleeAttack = (item.meleeAttack || 0) + Math.floor(subtlePower * mod.meleeAttack);
-    if (mod.rangedAttack) item.rangedAttack = (item.rangedAttack || 0) + Math.floor(subtlePower * mod.rangedAttack);
-    if (mod.magicalAttack) item.magicalAttack = (item.magicalAttack || 0) + Math.floor(subtlePower * mod.magicalAttack);
-    if (mod.meleeNoA) item.meleeNoA = (item.meleeNoA || 0) + Number((subtlePower * mod.meleeNoA).toFixed(2));
-    if (mod.rangedNoA) item.rangedNoA = (item.rangedNoA || 0) + Number((subtlePower * mod.rangedNoA).toFixed(2));
-    if (mod.magicalNoA) item.magicalNoA = (item.magicalNoA || 0) + Number((subtlePower * mod.magicalNoA).toFixed(2));
-    if (mod.elementalOffense) {
-      item.elementalOffense = mod.elementalOffense;
-      item.elementalOffenseBonus = elementalBonus;
+  if (rarity !== 'bossRare' && rarity !== 'mythicRare') {
+    const bonusTier = getTierIndex(bonusTierF);
+    if (template.category === 'armor') item.physicalDefense = (item.physicalDefense || 0) + TIER_F_BONUS[bonusTier];
+    if (template.category === 'robe') item.magicalDefense = (item.magicalDefense || 0) + TIER_F_BONUS[bonusTier];
+    if (template.category === 'shield') item.evasionBonus = (item.evasionBonus || 0) + TIER_F_BONUS[bonusTier];
+    if (template.category === 'sword') item.accuracyBonus = (item.accuracyBonus || 0) + TIER_N_BONUS[getTierIndex(bonusTierN)];
+    if (template.category === 'gauntlet') item.physicalDefense = (item.physicalDefense || 0) + TIER_N_BONUS[getTierIndex(bonusTierN)];
+    if (template.category === 'archery') item.accuracyBonus = (item.accuracyBonus || 0) + TIER_N_BONUS[getTierIndex(bonusTierN)];
+    if (template.category === 'catalyst') item.magicalDefense = (item.magicalDefense || 0) + TIER_N_BONUS[getTierIndex(bonusTierN)];
+    if (template.category === 'katana' || template.category === 'bolt' || template.category === 'grimoire') {
+      item.penetBonus = (item.penetBonus || 0) + TIER_P_BONUS[getTierIndex(bonusTierP)];
     }
-    if (mod.meleeNoABonus) item.meleeNoABonus = (item.meleeNoABonus || 0) + mod.meleeNoABonus;
-    if (mod.rangedNoABonus) item.rangedNoABonus = (item.rangedNoABonus || 0) + mod.rangedNoABonus;
-    if (mod.magicalNoABonus) item.magicalNoABonus = (item.magicalNoABonus || 0) + mod.magicalNoABonus;
-    if (mod.accuracyBonus) item.accuracyBonus = (item.accuracyBonus || 0) + mod.accuracyBonus * archeryCBonusScale;
-    if (mod.evasionBonus) item.evasionBonus = (item.evasionBonus || 0) + mod.evasionBonus * archeryCBonusScale * robeEvasionScale;
-    if (mod.vitalityBonus) item.vitalityBonus = (item.vitalityBonus || 0) + mod.vitalityBonus;
-    if (mod.strengthBonus) item.strengthBonus = (item.strengthBonus || 0) + mod.strengthBonus;
-    if (mod.intelligenceBonus) item.intelligenceBonus = (item.intelligenceBonus || 0) + mod.intelligenceBonus;
-    if (mod.mindBonus) item.mindBonus = (item.mindBonus || 0) + mod.mindBonus;
-    if (mod.penetBonus) item.penetBonus = (item.penetBonus || 0) + mod.penetBonus;
-  };
-
-  // Apply rarity subtle modifiers
-  if (rarity === 'uncommon' && variantIndex !== undefined) {
-    applyVariantMod(variantIndex === 0 ? template.variant1Mod : template.variant2Mod, variantIndex);
+    if (rarity === 'uncommon') addElementalResistancePenalty(item, bonusTierM);
+    if (rarity === 'eliteRare' && eliteSource === 'A') addElementalResistancePenalty(item, bonusTierM);
   }
 
   if (rarity === 'eliteRare') {
-    const rareSubtleMods = getRareSubtleMods(template, tier);
-    rareSubtleMods.forEach((mod, index) => applyVariantMod(mod, index));
+    if (eliteSource === 'A') {
+      // X + E
+      if (template.category === 'sword') item.physicalDefense = calculateStat(basePower, amplifier * 0.25);
+      if (template.category === 'wand') item.magicalDefense = calculateStat(basePower, amplifier * 0.3);
+    } else if (eliteSource === 'B') {
+      // X + Y
+      if (template.category === 'armor') item.magicalDefense = calculateStat(basePower, amplifier * 0.3);
+      if (template.category === 'sword') item.partyHP = calculateStat(basePower, amplifier * 1.1);
+    } else {
+      // Y + C
+      if (template.category === 'robe') item.evasionBonus = (item.evasionBonus || 0) + TIER_N_BONUS[getTierIndex(bonusTierN)];
+      if (template.category === 'sword') item.accuracyBonus = (item.accuracyBonus || 0) + TIER_N_BONUS[getTierIndex(bonusTierN)];
+    }
   }
 
   if (rarity === 'bossRare' || rarity === 'mythicRare') {
-    applyVariantMod(template.variant1Mod, 0);
-    applyVariantMod(template.variant2Mod, 1);
-    applyVariantMod(template.variant3Mod || template.variant1Mod, 2);
-    applyVariantMod(template.mythicBonusMod);
+    if (template.category === 'armor' || template.category === 'gauntlet') item.vitalityBonus = 1;
+    if (template.category === 'robe' || template.category === 'wand' || template.category === 'catalyst') item.intelligenceBonus = 1;
+    if (template.category === 'shield' || template.category === 'katana' || template.category === 'grimoire') item.mindBonus = 1;
+    if (template.category === 'sword' || template.category === 'arrow' || template.category === 'archery') item.strengthBonus = 1;
   }
 
   return item;
