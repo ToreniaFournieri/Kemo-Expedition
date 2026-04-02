@@ -396,11 +396,11 @@ function getExpeditionElementByTier(tier: number): ElementalOffense {
 function addElementalResistancePenalty(item: ItemDef, tier: number, element: ElementalOffense): void {
   if (element === 'none') return;
   const resistPenalty = TIER_M_RESIST_PENALTY[getTierIndex(tier)];
-  const multiplier = Math.max(0.01, 1 + resistPenalty / 100);
+  const resistPercent = Math.max(0, Math.abs(resistPenalty));
   const bonuses = item.bonuses ?? [];
-  if (element === 'fire') bonuses.push({ type: 'fire_defense_multiplier_xV', value: multiplier });
-  if (element === 'ice') bonuses.push({ type: 'ice_defense_multiplier_xV', value: multiplier });
-  if (element === 'thunder') bonuses.push({ type: 'thunder_defense_multiplier_xV', value: multiplier });
+  if (element === 'fire') bonuses.push({ type: 'fire_defense', value: resistPercent });
+  if (element === 'ice') bonuses.push({ type: 'ice_defense', value: resistPercent });
+  if (element === 'thunder') bonuses.push({ type: 'thunder_defense', value: resistPercent });
   item.bonuses = bonuses;
 }
 function addRarityCBonus(item: ItemDef, template: ItemTemplate, bonusTierN: number, bonusTierP: number): void {

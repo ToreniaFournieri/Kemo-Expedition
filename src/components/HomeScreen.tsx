@@ -1103,7 +1103,16 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
   const classifyDisplayBonusBucket = (bonus: Bonus): 'b' | 'c' | 'e' | 'r' | 'other' => {
     if (['vitality', 'strength', 'intelligence', 'mind'].includes(bonus.type)) return 'b';
     if (['fire_offense', 'ice_offense', 'thunder_offense'].includes(bonus.type)) return 'e';
-    if (['fire_defense_multiplier_xV', 'ice_defense_multiplier_xV', 'thunder_defense_multiplier_xV'].includes(bonus.type)) return 'r';
+    if (
+      [
+        'fire_defense_multiplier_xV',
+        'ice_defense_multiplier_xV',
+        'thunder_defense_multiplier_xV',
+        'fire_defense',
+        'ice_defense',
+        'thunder_defense',
+      ].includes(bonus.type)
+    ) return 'r';
     if (
       bonus.type === 'ability'
       || bonus.type === 'ability_upgrade'
@@ -1774,6 +1783,12 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
           ? formatElementalResistanceBonus('雷防', b.value)
           : `雷防x${b.value.toFixed(2)}`
       );
+    } else if (b.type === 'fire_defense') {
+      parts.push(`炎防${Math.round(b.value)}%`);
+    } else if (b.type === 'ice_defense') {
+      parts.push(`氷防${Math.round(b.value)}%`);
+    } else if (b.type === 'thunder_defense') {
+      parts.push(`雷防${Math.round(b.value)}%`);
     } else if (b.type === 'growth_xV') {
       parts.push(`成長${formatMultiplierValue(b.value)}倍`);
     } else if (b.type === 'ability' && b.abilityId) {
@@ -5940,7 +5955,7 @@ function PartyTab({
                   multiplierValues[b.type].add(b.value);
                 } else if (['vitality', 'strength', 'intelligence', 'mind'].includes(b.type)) {
                   additive[b.type] = (additive[b.type] ?? 0) + b.value;
-                } else if (['equip_slot', 'equip_melee', 'equip_ranged', 'equip_magic', 'penet', 'accuracy', 'growth_xV', 'upgrade_V', 'melee_attack', 'ranged_attack', 'magical_attack', 'physical_attack', 'physical_defense', 'magical_defense', 'antagonism'].includes(b.type)) {
+                } else if (['equip_slot', 'equip_melee', 'equip_ranged', 'equip_magic', 'penet', 'accuracy', 'growth_xV', 'upgrade_V', 'melee_attack', 'ranged_attack', 'magical_attack', 'physical_attack', 'physical_defense', 'magical_defense', 'antagonism', 'fire_defense', 'ice_defense', 'thunder_defense'].includes(b.type)) {
                   addUniqueCBonus(b.type, b.value);
                 } else if (b.type === 'evasion') {
                     if (b.value < 0) {
@@ -5996,7 +6011,8 @@ function PartyTab({
                 equip_slot: '装備', equip_melee: '近接装備', equip_ranged: '遠距離装備', equip_magic: '魔法装備', penet: '貫通',
                 accuracy: '命中', evasion: '回避', growth_xV: '成長', upgrade_V: 'V強化', antagonism: '⚠️敵対',
                 melee_attack: '近攻撃', ranged_attack: '遠攻撃', magical_attack: '魔攻撃', physical_attack: '物攻撃',
-                physical_defense: '物防', magical_defense: '魔防' 
+                physical_defense: '物防', magical_defense: '魔防',
+                fire_defense: '炎防', ice_defense: '氷防', thunder_defense: '雷防',
               };
               const hiddenBonusDisplayKeys = new Set([
                 'evasion',
@@ -6044,6 +6060,10 @@ function PartyTab({
                     pushBonusDisplayEntry({ key, label, description: description ?? undefined });
                   } else if (key === 'physical_defense' || key === 'magical_defense') {
                     const label = `${addNames[key]}+${defensePercentFormatter.format(Math.round(val * 1000) / 10)}%`;
+                    const description = getBonusHelpDescription({ type: key as BonusType, value: val });
+                    pushBonusDisplayEntry({ key, label, description: description ?? undefined });
+                  } else if (key === 'fire_defense' || key === 'ice_defense' || key === 'thunder_defense') {
+                    const label = `${addNames[key]}${Math.round(val)}%`;
                     const description = getBonusHelpDescription({ type: key as BonusType, value: val });
                     pushBonusDisplayEntry({ key, label, description: description ?? undefined });
                   } else if (key === 'penet') {
