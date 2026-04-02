@@ -355,6 +355,26 @@ function addElementalResistancePenalty(item: ItemDef, tier: number, element: Ele
   item.bonuses = bonuses;
 }
 
+function addRarityCBonus(item: ItemDef, template: ItemTemplate, bonusTierN: number, bonusTierP: number): void {
+  const cTierN = getTierIndex(bonusTierN);
+  const cTierP = getTierIndex(bonusTierP);
+  if (template.category === 'robe' || template.category === 'arrow') {
+    item.evasionBonus = (item.evasionBonus || 0) + TIER_N_BONUS[cTierN];
+  }
+  if (template.category === 'sword' || template.category === 'archery') {
+    item.accuracyBonus = (item.accuracyBonus || 0) + TIER_N_BONUS[cTierN];
+  }
+  if (template.category === 'katana' || template.category === 'bolt' || template.category === 'grimoire') {
+    item.penetBonus = (item.penetBonus || 0) + TIER_P_BONUS[cTierP];
+  }
+  if (template.category === 'gauntlet') {
+    item.bonuses = [...(item.bonuses ?? []), { type: 'physical_defense', value: TIER_P_BONUS[cTierP] }];
+  }
+  if (template.category === 'catalyst') {
+    item.bonuses = [...(item.bonuses ?? []), { type: 'magical_defense', value: TIER_P_BONUS[cTierP] }];
+  }
+}
+
 function createItem(
   id: number,
   tier: number,
@@ -530,12 +550,7 @@ function createItem(
     if (template.category === 'wand') addCBonus('magical_attack', TIER_F_BONUS[bonusTier]);
     if (template.category === 'shield') item.evasionBonus = (item.evasionBonus || 0) + TIER_G_BONUS[getTierIndex(bonusTierG)];
     if (template.category === 'sword') item.accuracyBonus = (item.accuracyBonus || 0) + TIER_N_BONUS[getTierIndex(bonusTierN)];
-    if (template.category === 'gauntlet') addCBonus('physical_defense', TIER_P_BONUS[getTierIndex(bonusTierP)]);
     if (template.category === 'archery') item.accuracyBonus = (item.accuracyBonus || 0) + TIER_N_BONUS[getTierIndex(bonusTierN)];
-    if (template.category === 'catalyst') addCBonus('magical_defense', TIER_P_BONUS[getTierIndex(bonusTierP)]);
-    if (template.category === 'katana' || template.category === 'bolt' || template.category === 'grimoire') {
-      item.penetBonus = (item.penetBonus || 0) + TIER_P_BONUS[getTierIndex(bonusTierP)];
-    }
     const canHaveResistancePenalty = template.category === 'armor' || template.category === 'robe' || template.category === 'shield';
     if (canHaveResistancePenalty) {
       if (rarity === 'uncommon') addElementalResistancePenalty(item, bonusTierM, expeditionElement);
@@ -559,12 +574,12 @@ function createItem(
       if (template.category === 'sword') item.partyHP = calculateStat(basePower, amplifier * 1.1);
     } else {
       // Y + C
-      if (template.category === 'robe') item.evasionBonus = (item.evasionBonus || 0) + TIER_N_BONUS[getTierIndex(bonusTierN)];
-      if (template.category === 'sword') item.accuracyBonus = (item.accuracyBonus || 0) + TIER_N_BONUS[getTierIndex(bonusTierN)];
+      addRarityCBonus(item, template, bonusTierN, bonusTierP);
     }
   }
 
   if (rarity === 'bossRare' || rarity === 'mythicRare') {
+    addRarityCBonus(item, template, bonusTierN, bonusTierP);
     if (template.category === 'armor' || template.category === 'gauntlet') item.vitalityBonus = 1;
     if (template.category === 'robe' || template.category === 'wand' || template.category === 'catalyst') item.intelligenceBonus = 1;
     if (template.category === 'shield' || template.category === 'katana' || template.category === 'grimoire') item.mindBonus = 1;
