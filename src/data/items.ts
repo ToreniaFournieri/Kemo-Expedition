@@ -181,6 +181,21 @@ const RARITY_AMPLIFIERS: Record<Rarity, number> = {
   mythicRare: 2.4,
 };
 
+const ITEM_ADDITIONAL_BONUS_BY_NAME: Record<string, Bonus> = {
+  'アイギスの盾': { type: 'physical_defense_multiplier_xV', value: 2 / 3 },
+  '銀鏡の盾': { type: 'magical_defense_multiplier_xV', value: 2 / 3 },
+  '氷牙の防盾': { type: 'ice_defense_multiplier_xV', value: 2 / 3 },
+  '雷電の防盾': { type: 'thunder_defense_multiplier_xV', value: 2 / 3 },
+  '紅の防盾': { type: 'fire_defense_multiplier_xV', value: 2 / 3 },
+};
+
+// SpecRef: 3.2.1 | Item drop | additional bonus
+function applyAdditionalItemBonus(item: ItemDef): void {
+  const additionalBonus = ITEM_ADDITIONAL_BONUS_BY_NAME[item.name];
+  if (!additionalBonus) return;
+  item.bonuses = [...(item.bonuses ?? []), additionalBonus];
+}
+
 function getMasterItemName(tier: number, rarity: Rarity, category: ItemCategory, variantIndex?: number): string | undefined {
   if (rarity === 'mythicRare') return undefined;
   const names = getMasterItemNames(tier, rarity, category);
@@ -593,6 +608,8 @@ function createItem(
     if (template.category === 'shield' || template.category === 'katana' || template.category === 'grimoire') item.mindBonus = 1;
     if (template.category === 'sword' || template.category === 'arrow' || template.category === 'archery') item.strengthBonus = 1;
   }
+
+  applyAdditionalItemBonus(item);
 
   return item;
 }

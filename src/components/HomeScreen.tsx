@@ -1634,14 +1634,24 @@ function formatMultiplierValue(value: number): string {
   return rounded.toFixed(2).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
 }
 
+function formatMultiplierAsFraction(value: number): string {
+  const fractionCandidates: Array<{ numerator: number; denominator: number }> = [
+    { numerator: 2, denominator: 3 },
+    { numerator: 3, denominator: 5 },
+    { numerator: 4, denominator: 5 },
+    { numerator: 1, denominator: 2 },
+  ];
+  const candidate = fractionCandidates.find(({ numerator, denominator }) => Math.abs(value - (numerator / denominator)) < 0.0001);
+  if (candidate) return `${candidate.numerator}/${candidate.denominator}`;
+  return formatMultiplierValue(value);
+}
+
 function formatDefenseMultiplierBonus(label: string, value: number): string {
-  const rounded = Math.round(value * 100) / 100;
-  return `${label}x${rounded.toFixed(2)}`;
+  return `${label}x${formatMultiplierAsFraction(value)}`;
 }
 
 function formatElementalResistanceBonus(label: string, value: number): string {
-  const resistPercent = Math.max(0, Math.round((1 - value) * 100));
-  return `${label}${resistPercent}%`;
+  return `${label}x${formatMultiplierAsFraction(value)}`;
 }
 
 const UNLOCK_ABILITY_BONUS_LABELS: Partial<Record<BonusType, string>> = {
