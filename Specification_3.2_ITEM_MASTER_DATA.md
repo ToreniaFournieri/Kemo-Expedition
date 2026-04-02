@@ -84,7 +84,7 @@
 | 2 | E | `Frost` | `i.katana`EA | 氷霜の太刀 |
 | 2 | E | `Frost` | `i.sword`EA | 白霜牙の剣 |
 | 2 | E | `Frost` | `i.armor`EA | 凍狼の毛鎧 |
-| 2 | E | `Frost` | `i.shield`EA | 氷牙の防盾 |
+| 2 | E | `Frost` | `i.shield`EA | 氷牙の防盾 | `r.ice_x2/3` |
 | 2 | E | `Frost` | `i.robe`EA | 吹雪獣の外套 |
 | 2 | E | `Golem` | `i.gauntlet`EB | 玄晶の手甲 |
 | 2 | E | `Golem` | `i.katana`EB | 岩晶の刀 |
@@ -132,7 +132,7 @@
 | 3 | E | `Marine` | `i.wand`EA | 潮海の杖 |
 | 3 | E | `Marine` | `i.catalyst`EA | 深潮核の触媒 |
 | 3 | E | `Marine` | `i.robe`EA | 潮王の外套 |
-| 3 | E | `Marine` | `i.shield`EA | 海獣骨の盾 |
+| 3 | E | `Marine` | `i.shield`EA | 雷電の防盾 | `r.thunder_x2/3` |
 | 3 | E | `Marine` | `i.sword`EA | 潮牙の長剣 |
 | 3 | E | `Marine` | `i.armor`EA | 深海鱗の鎧 |
 | 3 | E | `Spirit` | `i.wand`EC | 灯霊の杖 |
@@ -183,7 +183,7 @@
 | 4 | E | `Shadowfang` | `i.grimoire`EA | 影牙の秘本 |
 | 4 | E | `Shadowfang` | `i.katana`EA | 影牙の太刀 |
 | 4 | E | `Shadowfang` | `i.robe`EA | 影牙の法衣 |
-| 4 | E | `Shadowfang` | `i.shield`EA | 影牙の盾 |
+| 4 | E | `Shadowfang` | `i.shield`EA | 紅の防盾 | `r.fire_x2/3` |
 | 4 | E | `Felidian` | `i.bolt`EB | 砂猫のボルト |
 | 4 | E | `Felidian` | `i.arrow`EB | 猫眼の狩矢 |
 | 4 | E | `Felidian` | `i.archery`EB | 砂猫の長弓 |
