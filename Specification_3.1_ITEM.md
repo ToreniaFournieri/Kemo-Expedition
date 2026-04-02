@@ -119,8 +119,8 @@
 
 **Item Variation Hierarchy**
 - Common (12 variations per tier): 1 standard version of every item type.
-- Uncommon (24 variations per tier): 2 specialized versions of every item type.
-- Elite rare ( 12 variations per tier): 1 version of every item type. 
+- Uncommon (12 variations per tier): 1 specialized versions of every item type.
+- Elite rare ( 12 variations per tier): 1+ version of every item type. 
 - Boss rare (2~3 variations per tier)
 - Mythic rare (total 12 items)
 
