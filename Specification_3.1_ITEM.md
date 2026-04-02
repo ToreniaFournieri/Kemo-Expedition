@@ -93,6 +93,9 @@
   - `xN` means the item-type scale defined in the item type table.
 
 **Elemental by expedition**
+- If expedition `e.element` matches item `e.element`, apply `e.*` bonus.
+- If expedition `r.element` matches item `r.element`, apply `r.*` bonus.
+- Otherwise, ignore all elemental bonuses on the item.
 
 | `x.exp_id` | `e.` | `r.` |
 |-|-|-|
