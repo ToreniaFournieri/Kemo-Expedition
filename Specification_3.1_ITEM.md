@@ -58,7 +58,7 @@
 |`i.archery` | x1.0 `d.ranged_NoA+E` | `c.ranged_NoA+H` | x1.0 `d.HP+D` | none | none | `c.accuracy+N` | `b.strength+1` |
 |`i.wand` | x0.75 `d.magical_attack+D` | `c.magical_attack+F` | x0.3 `d.magical_defense+D` | x1.1 `d.HP+D` | none | none | `b.intelligence+1` |
 |`i.grimoire` | x0.98 `d.magical_attack+D` | `c.magical_attack+F`, `d.evasion-J`, `d.magical_NoA-K` | x0.22 `d.physical_defense+D` | x0.26 `d.magical_defense+D` | `e.ice+L`, `e.thunder+L` | `c.penet+P` | `b.mind+1` |
-|`i.catalyst` | x1.0 `d.magical_NoA+E` | `c.magical_NoA+H` | x1.0 `d.HP+D` | none | `e.fire+L`, `e.ice+L`, `e.thunder+L` | `c.magical_defense+N` | `b.intelligence+1` |
+|`i.catalyst` | x1.0 `d.magical_NoA+E` | `c.magical_NoA+H` | x1.0 `d.HP+D` | none | `e.fire+L`, `e.ice+L`, `e.thunder+L` | `c.magical_defense+P` | `b.intelligence+1` |
 
 - for `d.` bonus:  `type.amplifier` + `d.X`
   - Example: Tier 2 armor's x1.4 `d.physical_defense` is 12 x (1.45 - 0.04) x 1.4 = 12 x 1.41 = 23.688 → 24. its x0.3 `d.magical_defense` is 12 x (1.45 - 0.04) x 0.3 = 5.076 -> 6.
