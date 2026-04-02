@@ -2,6 +2,29 @@
 
 ### 4.2 EXPEDITION_&_ENEMY_MASTER_DATA
 
+### 4.1.5 Master_Data_Definitions
+
+**Special enemy of replacement**
+
+| `x.exp_id` | replace target floor | `x.level_offset` | `x.type` | `x_enemy_type` | `x.class` | `x.drop` |
+|-|-|-|-|-|-|-|
+| 1 | 4 | +6 | Elite | Caninian | class.duelist.lord | `i.shield`BD, `i.robe`BD |
+| 1 | 4 | +6 | Elite | Caninian | class.lord.striker | `i.katana`BD, `i.gauntlet`BD |
+| 2 | 5 | +7 | Elite | Lupinian | class.wizard.guardian | `i.wand`BD, `i.catalyst`BD |
+| 2 | 5 | +7 | Elite | Lupinian | class.ninja.sword-saint | `i.bolt`BD, `i.archery`BD |
+| 3 | 5 | +7 | Elite | Vulpinian | class.sword-saint.guardian | `i.sword`BD, `i.shield`BD |
+| 3 | 5 | +7 | Elite | Vulpinian | class.wizard.ninja | `i.catalyst`BD, `i.bolt`BD |
+| 4 | 4 | +6 | Elite | Felidian | class.striker.sage | `i.grimoire`BD, `i.arrow`BD |
+| 4 | 4 | +6 | Elite | Felidian | class.ninja.duelist | `i.robe`BD, `i.sword`BD |
+| 5 | 3 | +5 | Elite | Ursan | class.samurai.duelist | `i.gauntlet`BD, `i.armor`BD |
+| 5 | 3 | +5 | Elite | Ursan | class.wizard.alchemist | `i.wand`BD, `i.catalyst`BD |
+| 6 | 6 | +8 | Elite | Procyonian | class.samurai.ranger | `i.shield`BD, `i.katana`BD |
+| 6 | 6 | +8 | Elite | Procyonian | class.ranger.duelist | `i.arrow`BD, `i.archery`BD |
+| 7 | 2 | +4 | Elite | Leporian | class.duelist.pilgrim | `i.armor`BD, `i.gauntlet`BD |
+| 7 | 2 | +4 | Elite | Leporian | class.wizard.striker | `i.archery`BD, `i.grimoire`BD |
+| 8 | 5 | +7 | Elite | Cervin | class.sword-saint.ninja | `i.catalyst`BD, `i.sword`BD |
+| 8 | 5 | +7 | Elite | Cervin | class.wizard.guardian | `i.arrow`BD, `i.robe`BD |
+
 ### 4.2.2 Enemy
 
 | `x.exp_id` | `x.floor` | `x.room` | `x.level` | `x.type` | `x.enemy_type` | `x.class` | `x.drop` | `x.name` (Japanese) |
@@ -27,8 +50,8 @@
 | 1 | 4 | 1-2 | 4 | Normal | `Aerial` | class.guardian.wizard | `i.armor`U, `i.gauntlet`U, `i.wand`U, `i.armor`C, `i.robe`C, `i.shield`C | 風の小翼 |
 | 1 | 4 | 1-2 | 4 | Normal | `Aerial` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | 曇り空の小翼 |
 | 1 | 4 | 1-2 | 4 | Normal | `Aerial` | class.sage.samurai | `i.grimoire`U, `i.catalyst`U, `i.katana`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 見張り翼 |
-| 1 | 4 | 3 | 7 | Elite | `Caninian` | class.duelist.lord | `i.sword`ED, `i.armor`ED, `i.shield`ED, `i.sword`C, `i.katana`C, `i.gauntlet`C | 見張り番 |
-| 1 | 4 | 3 | 7 | Elite | `Caninian` | class.lord.striker | `i.shield`ED, `i.katana`ED, `i.bolt`ED, `i.armor`C, `i.robe`C, `i.shield`C | 雇われ傭兵 |
+| 1 | 4 | 3 | 7 | Elite | `Caninian` | class.duelist.lord | `i.shield`BD, `i.robe`BD, `i.sword`C, `i.katana`C, `i.gauntlet`C | 見張り番 |
+| 1 | 4 | 3 | 7 | Elite | `Caninian` | class.lord.striker | `i.katana`BD, `i.gauntlet`BD, `i.armor`C, `i.robe`C, `i.shield`C | 雇われ傭兵 |
 | 1 | 4 | 4 | 7 | Elite | `Aerial` | class.sage.sword-saint | `i.grimoire`EB, `i.catalyst`EB, `i.gauntlet`EB, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 風切り翼 |
 | 1 | 5 | 1-2 | 5 | Normal | `Insect_Swarm` | class.ninja.ranger | `i.archery`U, `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | かくれむれ虫 |
 | 1 | 5 | 1-2 | 5 | Normal | `Insect_Swarm` | class.samurai.sword-saint | `i.katana`U, `i.shield`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 刀持ちむれ虫 |
@@ -69,8 +92,8 @@
 | 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | class.ninja.ranger | `i.archery`U, `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 胞子影の這い株 |
 | 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | class.samurai.sword-saint | `i.katana`U, `i.shield`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 菌刃のつる株 |
 | 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 苔衣の胞子塊 |
-| 2 | 5 | 3 | 14 | Elite | `Lupinian` | class.ninja.sword-saint | `i.archery`ED, `i.bolt`ED, `i.gauntlet`ED, `i.arrow`C, `i.bolt`C, `i.archery`C | 忍狼 |
-| 2 | 5 | 3 | 14 | Elite | `Lupinian` | class.wizard.guardian | `i.wand`ED, `i.robe`ED, `i.armor`ED, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 狼の妖術士 |
+| 2 | 5 | 3 | 14 | Elite | `Lupinian` | class.ninja.sword-saint | `i.bolt`BD, `i.archery`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | 忍狼 |
+| 2 | 5 | 3 | 14 | Elite | `Lupinian` | class.wizard.guardian | `i.wand`BD, `i.catalyst`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 狼の妖術士 |
 | 2 | 5 | 4 | 14 | Elite | `Golem` | class.wizard.sage | `i.wand`EB, `i.robe`EB, `i.grimoire`EB, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 核晶の導師体 |
 | 2 | 6 | 1-2 | 12 | Normal | `Frost` | class.duelist.striker | `i.sword`U, `i.armor`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 氷冠の群核 |
 | 2 | 6 | 1-2 | 12 | Normal | `Frost` | class.pilgrim.sage | `i.robe`U, `i.grimoire`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | 寒天の呪獣 |
@@ -105,8 +128,8 @@
 | 3 | 5 | 1-2 | 18 | Normal | `Spirit` | class.ninja.ranger | `i.archery`U, `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 月潮の忍霊 |
 | 3 | 5 | 1-2 | 18 | Normal | `Spirit` | class.samurai.sword-saint | `i.katana`U, `i.shield`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 波祓いの侍霊 |
 | 3 | 5 | 1-2 | 18 | Normal | `Spirit` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 潮文の語り霊 |
-| 3 | 5 | 3 | 21 | Elite | `Vulpinian` | class.sword-saint.guardian | `i.gauntlet`ED, `i.sword`ED, `i.armor`ED, `i.sword`C, `i.katana`C, `i.gauntlet`C | 蒼牙の護剣士 |
-| 3 | 5 | 3 | 21 | Elite | `Vulpinian` | class.wizard.ninja | `i.wand`ED, `i.robe`ED, `i.archery`ED, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 蒼尾の巡礼士 |
+| 3 | 5 | 3 | 21 | Elite | `Vulpinian` | class.sword-saint.guardian | `i.sword`BD, `i.shield`BD, `i.sword`C, `i.katana`C, `i.gauntlet`C | 蒼牙の護剣士 |
+| 3 | 5 | 3 | 21 | Elite | `Vulpinian` | class.wizard.ninja | `i.catalyst`BD, `i.bolt`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 蒼尾の巡礼士 |
 | 3 | 5 | 4 | 21 | Elite | `Slime_Colony` | class.striker.sword-saint | `i.bolt`EB, `i.arrow`EB, `i.gauntlet`EB, `i.arrow`C, `i.bolt`C, `i.archery`C | 飛沫群の狙撃核 |
 | 3 | 6 | 1-2 | 19 | Normal | `Marine` | class.duelist.striker | `i.sword`U, `i.armor`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 遺浜の群核 |
 | 3 | 6 | 1-2 | 19 | Normal | `Marine` | class.pilgrim.sage | `i.robe`U, `i.grimoire`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | 遺浜の霊術体 |
@@ -135,8 +158,8 @@
 | 4 | 4 | 1-2 | 24 | Normal | `Felidian` | class.guardian.wizard | `i.armor`U, `i.gauntlet`U, `i.wand`U, `i.armor`C, `i.robe`C, `i.shield`C | 砂猫の斥候 |
 | 4 | 4 | 1-2 | 24 | Normal | `Felidian` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | 陽炎の猫戦士 |
 | 4 | 4 | 1-2 | 24 | Normal | `Felidian` | class.sage.samurai | `i.grimoire`U, `i.catalyst`U, `i.katana`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 夜砂の賢猫 |
-| 4 | 4 | 3 | 27 | Elite | `Felidian` | class.ninja.duelist | `i.archery`ED, `i.bolt`ED, `i.sword`ED, `i.arrow`C, `i.bolt`C, `i.archery`C | 黄昏の盗猫 |
-| 4 | 4 | 3 | 27 | Elite | `Felidian` | class.striker.sage | `i.bolt`ED, `i.arrow`ED, `i.grimoire`ED, `i.arrow`C, `i.bolt`C, `i.archery`C | 砂嵐の狙撃猫 |
+| 4 | 4 | 3 | 27 | Elite | `Felidian` | class.ninja.duelist | `i.robe`BD, `i.sword`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | 黄昏の盗猫 |
+| 4 | 4 | 3 | 27 | Elite | `Felidian` | class.striker.sage | `i.grimoire`BD, `i.arrow`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | 砂嵐の狙撃猫 |
 | 4 | 4 | 4 | 27 | Elite | `Felidian` | class.ninja.duelist | `i.archery`EB, `i.bolt`EB, `i.sword`EB, `i.arrow`C, `i.bolt`C, `i.archery`C | 盗都の決闘猫 |
 | 4 | 5 | 1-2 | 25 | Normal | `Titan` | class.ninja.ranger | `i.archery`U, `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 砂岩の忍巨 |
 | 4 | 5 | 1-2 | 25 | Normal | `Titan` | class.samurai.sword-saint | `i.katana`U, `i.shield`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 断崖の刃巨 |
@@ -165,8 +188,8 @@
 | 5 | 3 | 1-2 | 30 | Normal | `Ursan` | class.alchemist.alchemist | `i.catalyst`U, `i.wand`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 炎砦の熊錬師 |
 | 5 | 3 | 1-2 | 30 | Normal | `Ursan` | class.guardian.pilgrim | `i.armor`U, `i.gauntlet`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | 火護りの熊呪師 |
 | 5 | 3 | 1-2 | 30 | Normal | `Ursan` | class.sword-saint.sword-saint | `i.gauntlet`U, `i.sword`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 灼鋼の熊戦士 |
-| 5 | 3 | 3 | 33 | Elite | `Ursan` | class.samurai.duelist | `i.katana`ED, `i.shield`ED, `i.sword`ED, `i.sword`C, `i.katana`C, `i.gauntlet`C | 焔営の重拳熊 |
-| 5 | 3 | 3 | 33 | Elite | `Ursan` | class.wizard.alchemist | `i.wand`ED, `i.robe`ED, `i.catalyst`ED, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 焔営の祈祷熊 |
+| 5 | 3 | 3 | 33 | Elite | `Ursan` | class.samurai.duelist | `i.gauntlet`BD, `i.armor`BD, `i.sword`C, `i.katana`C, `i.gauntlet`C | 焔営の重拳熊 |
+| 5 | 3 | 3 | 33 | Elite | `Ursan` | class.wizard.alchemist | `i.wand`BD, `i.catalyst`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 焔営の祈祷熊 |
 | 5 | 3 | 4 | 33 | Elite | `Ursan` | class.guardian.sage | `i.armor`EC, `i.gauntlet`EC, `i.grimoire`EC, `i.armor`C, `i.robe`C, `i.shield`C | 炎陣の熊先兵 |
 | 5 | 4 | 1-2 | 31 | Normal | `Dragon` | class.guardian.wizard | `i.armor`U, `i.gauntlet`U, `i.wand`U, `i.armor`C, `i.robe`C, `i.shield`C | 火嶺の斥候竜 |
 | 5 | 4 | 1-2 | 31 | Normal | `Dragon` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | 焔脈の戦竜 |
@@ -219,8 +242,8 @@
 | 6 | 6 | 1-2 | 40 | Normal | `Mech` | class.duelist.striker | `i.sword`U, `i.armor`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 共鳴祭壇闘撃機 |
 | 6 | 6 | 1-2 | 40 | Normal | `Mech` | class.pilgrim.sage | `i.robe`U, `i.grimoire`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | 共鳴術式コア機 |
 | 6 | 6 | 1-2 | 40 | Normal | `Mech` | class.sword-saint.striker | `i.gauntlet`U, `i.sword`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 共鳴前衛オートマタ |
-| 6 | 6 | 3 | 43 | Elite | `Procyonian` | class.ranger.duelist | `i.arrow`ED, `i.archery`ED, `i.sword`ED, `i.arrow`C, `i.bolt`C, `i.archery`C | プロキオニアン迅射兵 |
-| 6 | 6 | 3 | 43 | Elite | `Procyonian` | class.samurai.ranger | `i.katana`ED, `i.shield`ED, `i.arrow`ED, `i.sword`C, `i.katana`C, `i.gauntlet`C | プロキオニアン護刃兵 |
+| 6 | 6 | 3 | 43 | Elite | `Procyonian` | class.ranger.duelist | `i.arrow`BD, `i.archery`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | プロキオニアン迅射兵 |
+| 6 | 6 | 3 | 43 | Elite | `Procyonian` | class.samurai.ranger | `i.shield`BD, `i.katana`BD, `i.sword`C, `i.katana`C, `i.gauntlet`C | プロキオニアン護刃兵 |
 | 6 | 6 | 4 | 45 | BOSS | `Mustelid` | class.sage.lord | `i.grimoire`BD, `i.catalyst`BD, `i.shield`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 遺構主機ヴェルグリム |
 | 7 | 1 | 1-2 | 42 | Normal | `Titan` | class.ranger.ranger | `i.arrow`U, `i.archery`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 月輪の巨斥候 |
 | 7 | 1 | 1-2 | 42 | Normal | `Titan` | class.striker.striker | `i.bolt`U, `i.arrow`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 光輪の巨斥候 |
@@ -231,8 +254,8 @@
 | 7 | 2 | 1-2 | 43 | Normal | `Titan` | class.ninja.ninja | `i.archery`U, `i.bolt`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 影月の巨忍 |
 | 7 | 2 | 1-2 | 43 | Normal | `Titan` | class.sage.sage | `i.grimoire`U, `i.catalyst`U, `i.grimoire`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 月詠みの巨賢 |
 | 7 | 2 | 1-2 | 43 | Normal | `Titan` | class.samurai.samurai | `i.katana`U, `i.shield`U, `i.katana`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 星詠みの巨侍 |
-| 7 | 2 | 3 | 46 | Elite | `Leporian` | class.duelist.pilgrim | `i.sword`ED, `i.armor`ED, `i.robe`ED, `i.sword`C, `i.katana`C, `i.gauntlet`C | 月宮の白兎巡礼士 |
-| 7 | 2 | 3 | 46 | Elite | `Leporian` | class.wizard.striker | `i.wand`ED, `i.robe`ED, `i.bolt`ED, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 月宮の白兎術師 |
+| 7 | 2 | 3 | 46 | Elite | `Leporian` | class.duelist.pilgrim | `i.armor`BD, `i.gauntlet`BD, `i.sword`C, `i.katana`C, `i.gauntlet`C | 月宮の白兎巡礼士 |
+| 7 | 2 | 3 | 46 | Elite | `Leporian` | class.wizard.striker | `i.archery`BD, `i.grimoire`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 月宮の白兎術師 |
 | 7 | 2 | 4 | 46 | Elite | `Titan` | class.wizard.sage | `i.wand`EA, `i.robe`EA, `i.grimoire`EA, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 天文の巨導賢 |
 | 7 | 3 | 1-2 | 44 | Normal | `Aerial` | class.alchemist.alchemist | `i.catalyst`U, `i.wand`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 光翼の錬空将 |
 | 7 | 3 | 1-2 | 44 | Normal | `Aerial` | class.guardian.pilgrim | `i.armor`U, `i.gauntlet`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | 光翼の術空兵 |
@@ -285,8 +308,8 @@
 | 8 | 5 | 1-2 | 53 | Normal | `Jinma` | class.ninja.ranger | `i.archery`U, `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 書庫影の神魔忍 |
 | 8 | 5 | 1-2 | 53 | Normal | `Jinma` | class.samurai.sword-saint | `i.katana`U, `i.shield`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 書庫護刀の神魔 |
 | 8 | 5 | 1-2 | 53 | Normal | `Jinma` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 書庫識の神魔賢 |
-| 8 | 5 | 3 | 56 | Elite | `Cervin` | class.sword-saint.ninja | `i.gauntlet`ED, `i.sword`ED, `i.archery`ED, `i.sword`C, `i.katana`C, `i.gauntlet`C | 鹿神の秘儀剣忍 |
-| 8 | 5 | 3 | 56 | Elite | `Cervin` | class.wizard.guardian | `i.wand`ED, `i.robe`ED, `i.armor`ED, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 鹿神の影護術士 |
+| 8 | 5 | 3 | 56 | Elite | `Cervin` | class.sword-saint.ninja | `i.catalyst`BD, `i.sword`BD, `i.sword`C, `i.katana`C, `i.gauntlet`C | 鹿神の秘儀剣忍 |
+| 8 | 5 | 3 | 56 | Elite | `Cervin` | class.wizard.guardian | `i.arrow`BD, `i.robe`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 鹿神の影護術士 |
 | 8 | 5 | 4 | 56 | Elite | `Ghost` | class.wizard.samurai | `i.wand`EB, `i.robe`EB, `i.katana`EB, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 亡霊文庫の司書刃霊 |
 | 8 | 6 | 1-2 | 54 | Normal | `Dragon` | class.duelist.striker | `i.sword`U, `i.armor`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 聖域の竜闘長 |
 | 8 | 6 | 1-2 | 54 | Normal | `Dragon` | class.pilgrim.sage | `i.robe`U, `i.grimoire`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | 聖域の竜導師 |
