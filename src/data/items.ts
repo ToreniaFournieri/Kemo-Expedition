@@ -189,23 +189,48 @@ const ITEM_ADDITIONAL_BONUS_BY_NAME: Record<string, Bonus> = {
   '紅の防盾': { type: 'fire_defense_multiplier_xV', value: 2 / 3 },
 };
 
+const ITEM_CORE_CONCEPT_KEYS: Record<ItemCategory, Array<keyof ItemDef>> = {
+  armor: ['physicalDefense'],
+  robe: ['magicalDefense'],
+  shield: ['partyHP'],
+  sword: ['meleeAttack'],
+  katana: ['meleeAttack'],
+  gauntlet: ['meleeNoA', 'physicalDefense'],
+  arrow: ['rangedAttack'],
+  bolt: ['rangedAttack'],
+  archery: ['rangedNoA', 'partyHP'],
+  wand: ['magicalAttack'],
+  grimoire: ['magicalAttack'],
+  catalyst: ['magicalNoA', 'partyHP'],
+};
+
+type ItemStatKey = Exclude<keyof ItemDef, 'id' | 'category' | 'name' | 'bonuses' | 'baseMultiplier'>;
+
+function stripItemToCoreConcept(item: ItemDef): void {
+  const allowedKeys = new Set<ItemStatKey>(ITEM_CORE_CONCEPT_KEYS[item.category] as ItemStatKey[]);
+  const itemStatKeys: ItemStatKey[] = [
+    'meleeAttack', 'meleeNoA', 'meleeNoABonus',
+    'rangedAttack', 'rangedNoA', 'rangedNoABonus',
+    'magicalAttack', 'magicalNoA', 'magicalNoABonus',
+    'partyHP', 'physicalDefense', 'magicalDefense',
+    'elementalOffense', 'elementalOffenseBonus',
+    'accuracyBonus', 'evasionBonus',
+    'vitalityBonus', 'strengthBonus', 'intelligenceBonus', 'mindBonus',
+    'penetBonus',
+  ];
+  for (const key of itemStatKeys) {
+    if (!allowedKeys.has(key)) item[key] = undefined;
+  }
+}
+
 // SpecRef: 3.2.1 | Item drop | Special Bonus Override
 function applyAdditionalItemBonus(item: ItemDef): void {
   const additionalBonus = ITEM_ADDITIONAL_BONUS_BY_NAME[item.name];
   if (!additionalBonus) return;
 
   // Special items only keep their core concept plus the special-bonus.
+  stripItemToCoreConcept(item);
   item.bonuses = [additionalBonus];
-  item.accuracyBonus = undefined;
-  item.evasionBonus = undefined;
-  item.penetBonus = undefined;
-  item.vitalityBonus = undefined;
-  item.strengthBonus = undefined;
-  item.intelligenceBonus = undefined;
-  item.mindBonus = undefined;
-  item.meleeNoABonus = undefined;
-  item.rangedNoABonus = undefined;
-  item.magicalNoABonus = undefined;
 }
 
 function getMasterItemName(tier: number, rarity: Rarity, category: ItemCategory, variantIndex?: number): string | undefined {
