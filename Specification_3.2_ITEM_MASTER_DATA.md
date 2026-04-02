@@ -353,6 +353,71 @@
 | 8 | B | `Cervin` | `i.archery`BD | 千里眼王の神弓 |
 | 8 | B | `Cervin` | `i.sword`BD | 千里眼王の王剣 |
 
+
+<!-- Consistency additions from enemy drop table -->
+| 1 | E | `Aerial` | `i.gauntlet`EB | 飛翼の手甲 |
+| 1 | E | `Beast` | `i.armor`EA | 猛獣の鎧 |
+| 1 | E | `Beast` | `i.sword`EA | 猛獣の剣 |
+| 1 | E | `Insect_Swarm` | `i.archery`EC | 群蟲の弓 |
+| 1 | E | `Insect_Swarm` | `i.arrow`EC | 群蟲の矢 |
+| 1 | E | `Insect_Swarm` | `i.bolt`EC | 群蟲のボルト |
+| 2 | E | `Frost` | `i.arrow`EA | 氷霜の矢 |
+| 2 | E | `Frost` | `i.katana`EA | 氷霜の太刀 |
+| 2 | E | `Golem` | `i.robe`EB | 岩核の法衣 |
+| 2 | E | `Golem` | `i.sword`EB | 岩核の剣 |
+| 2 | E | `Plant_Fungal` | `i.robe`EC | 胞子の法衣 |
+| 3 | E | `Marine` | `i.grimoire`EA | 潮海の秘本 |
+| 3 | E | `Marine` | `i.katana`EA | 潮海の太刀 |
+| 3 | E | `Marine` | `i.wand`EA | 潮海の杖 |
+| 3 | E | `Slime_Colony` | `i.armor`EB | 粘群の鎧 |
+| 3 | E | `Slime_Colony` | `i.gauntlet`EB | 粘群の手甲 |
+| 3 | E | `Spirit` | `i.archery`EC | 潮霊の弓 |
+| 3 | E | `Spirit` | `i.robe`EC | 潮霊の法衣 |
+| 3 | B | `Vulpinian` | `i.bolt`BD | 蒼尾のボルト |
+| 4 | E | `Felidian` | `i.bolt`EB | 砂猫のボルト |
+| 4 | E | `Shadowfang` | `i.armor`EA | 影牙の鎧 |
+| 4 | E | `Shadowfang` | `i.bolt`EA | 影牙のボルト |
+| 4 | E | `Shadowfang` | `i.grimoire`EA | 影牙の秘本 |
+| 4 | E | `Shadowfang` | `i.katana`EA | 影牙の太刀 |
+| 4 | E | `Shadowfang` | `i.robe`EA | 影牙の法衣 |
+| 4 | E | `Shadowfang` | `i.shield`EA | 影牙の盾 |
+| 4 | E | `Titan` | `i.wand`EC | 巨神の杖 |
+| 5 | E | `Beast` | `i.grimoire`EA | 猛獣の秘本 |
+| 5 | E | `Beast` | `i.robe`EA | 猛獣の法衣 |
+| 5 | E | `Dragon` | `i.catalyst`EB | 竜脈の触媒 |
+| 5 | E | `Ursan` | `i.armor`EC | 熊王の鎧 |
+| 5 | E | `Ursan` | `i.gauntlet`EC | 熊王の手甲 |
+| 5 | E | `Ursan` | `i.grimoire`EC | 熊王の秘本 |
+| 6 | E | `Golem` | `i.archery`EB | 岩核の弓 |
+| 6 | E | `Golem` | `i.bolt`EB | 岩核のボルト |
+| 6 | E | `Golem` | `i.grimoire`EB | 岩核の秘本 |
+| 6 | E | `Golem` | `i.shield`EB | 岩核の盾 |
+| 6 | E | `Golem` | `i.sword`EB | 岩核の剣 |
+| 6 | E | `Mech` | `i.archery`EA | 機鋼の弓 |
+| 6 | E | `Mech` | `i.arrow`EA | 機鋼の矢 |
+| 6 | E | `Mech` | `i.bolt`EA | 機鋼のボルト |
+| 6 | B | `Mustelid` | `i.catalyst`BD | 鼬王の触媒 |
+| 6 | B | `Mustelid` | `i.grimoire`BD | 鼬王の秘本 |
+| 6 | B | `Mustelid` | `i.shield`BD | 鼬王の盾 |
+| 7 | E | `Aerial` | `i.gauntlet`EC | 飛翼の手甲 |
+| 7 | E | `Aerial` | `i.grimoire`EC | 飛翼の秘本 |
+| 7 | E | `Aerial` | `i.robe`EC | 飛翼の法衣 |
+| 7 | E | `Titan` | `i.bolt`EA | 巨神のボルト |
+| 7 | E | `Titan` | `i.katana`EA | 巨神の太刀 |
+| 7 | E | `Undead` | `i.archery`EB | 冥骸の弓 |
+| 7 | E | `Undead` | `i.arrow`EB | 冥骸の矢 |
+| 7 | E | `Undead` | `i.sword`EB | 冥骸の剣 |
+| 8 | E | `Dragon` | `i.armor`EA | 竜脈の鎧 |
+| 8 | E | `Dragon` | `i.catalyst`EA | 竜脈の触媒 |
+| 8 | E | `Dragon` | `i.gauntlet`EA | 竜脈の手甲 |
+| 8 | E | `Dragon` | `i.grimoire`EA | 竜脈の秘本 |
+| 8 | E | `Dragon` | `i.robe`EA | 竜脈の法衣 |
+| 8 | E | `Ghost` | `i.bolt`EB | 冥霊のボルト |
+| 8 | E | `Ghost` | `i.katana`EB | 冥霊の太刀 |
+| 8 | E | `Ghost` | `i.shield`EB | 冥霊の盾 |
+| 8 | E | `Ghost` | `i.wand`EB | 冥霊の杖 |
+| 8 | E | `Jinma` | `i.robe`EC | 神魔の法衣 |
+
 ### 3.2.2 Mythic rare item from gods
 
 | Drop by | Item type     | name | unique ability |
