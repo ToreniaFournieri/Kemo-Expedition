@@ -4,8 +4,11 @@
 
 ### 3.2.1 Item drop
 - 3.2.1 Item drop list
+  - **Special Bonus Override:** If an item is generated with a special-bonus, it becomes a special item.
+    - A special item only retains: its core concept, its special-bonus
+    - All other bonus sources are ignored and not applied: base-bonus, X-bonus, Y-bonus, E-bonus, C-bonus, B-bonus
 
-| `x.item_tier` | `x.rarity` | `x.source_enemy_type` | `x.item_type` | `x.name` | additional bonus |
+| `x.item_tier` | `x.rarity` | `x.source_enemy_type` | `x.item_type` | `x.name` | special-bonus |
 |---|---|---|---|---|---|
 | 1 | C | none | `i.sword`C | 欠けた短剣 |
 | 1 | C | none | `i.gauntlet`C | 布巻きの手甲 |
