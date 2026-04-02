@@ -437,7 +437,6 @@ function createItem(
       if (rarity !== 'bossRare' && rarity !== 'mythicRare') {
         item.meleeNoABonus = TIER_K_PENALTY[getTierIndex(bonusTierK)];
         item.evasionBonus = TIER_J_PENALTY[getTierIndex(bonusTierJ)];
-        item.penetBonus = TIER_P_BONUS[getTierIndex(bonusTierP)];
       }
       if (rarity === 'eliteRare' && eliteSource !== 'A') item.magicalDefense = calculateStat(basePower, amplifier * 0.3);
       if (rarity === 'bossRare' || rarity === 'mythicRare') {
@@ -466,7 +465,6 @@ function createItem(
       if (rarity !== 'bossRare' && rarity !== 'mythicRare') {
         item.rangedNoABonus = TIER_K_PENALTY[getTierIndex(bonusTierK)];
         item.evasionBonus = TIER_J_PENALTY[getTierIndex(bonusTierJ)];
-        item.penetBonus = TIER_P_BONUS[getTierIndex(bonusTierP)];
       }
       if (rarity !== 'common') item.elementalOffense = expeditionElement;
       if (rarity !== 'common') item.elementalOffenseBonus = TIER_L_BONUS[getTierIndex(bonusTierL)];
@@ -494,7 +492,6 @@ function createItem(
       if (rarity !== 'bossRare' && rarity !== 'mythicRare') {
         item.magicalNoABonus = TIER_K_PENALTY[getTierIndex(bonusTierK)];
         item.evasionBonus = TIER_J_PENALTY[getTierIndex(bonusTierJ)];
-        item.penetBonus = TIER_P_BONUS[getTierIndex(bonusTierP)];
       }
       if (rarity !== 'common') {
         item.elementalOffense = 'ice';
