@@ -41,6 +41,13 @@
 | `r.fire-v` | [炎防v%] | `r.fire-3` -> [炎防3%] |
 | `r.ice-v` | [氷防v%] | `r.ice-3` -> [氷防3%] |
 | `r.thunder-v` | [雷防v%] | `r.thunder-3` -> [雷防3%] |
+| `r.fire_xN` | [炎防N] | `r.fire_x2/3` -> [炎防x2/3] |
+| `r.ice_xN` | [氷防N] | `r.ice_x2/3` -> [氷防x2/3] |
+| `r.thunder_xN` | [雷防N] | `r.thunder_x2/3` -> [雷防x2/3] |
+| `e.fire_xN` | [炎攻N] | `e.fire_x2/3` -> [炎攻x2/3] |
+| `e.ice_xN` | [氷攻N] | `e.ice_x2/3` -> [氷攻x2/3] |
+| `e.thunder_xN` | [雷攻N] | `e.thunder_x2/3` -> [雷攻x2/3] |
+
 
 - Translation
 
