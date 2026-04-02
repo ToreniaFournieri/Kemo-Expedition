@@ -29,6 +29,8 @@
 | `c.melee-attack+v` | [近攻撃+v%] | `c.melee-attack+3` ->  [近攻撃+3%]  |
 | `c.physical-defense+v` | [物防+v%] | `c.physical-defense+5` ->  [物防+5%] |
 | `c.magical-defense+v` | [魔防+v%] | `c.magical-defense-2` -> [魔防-2%]  |
+| `c.physical-defense_xN` | [物防N] | `c.physical-defense_x2/3` ->  [物防x2/3] |
+| `c.magical-defense_xN` | [魔防N] | `c.magical-defense-x2/3` -> [魔防x2/3]  |
 | `c.ranged-NoA+v` | [遠回数+v] | `c.ranged-NoA+2` -> [遠回数+2] |
 | `c.magical-NoA+v` | [魔回数+v] | `c.magical-NoA+3` -> [魔回数+3] |
 | `c.melee-NoA+v` | [近回数+v] | `c.melee-NoA-1` -> [近回数-1] |
