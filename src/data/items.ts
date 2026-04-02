@@ -343,15 +343,29 @@ function getBonusTier(baseTier: number, rarity: Rarity, column: 'F' | 'H' | 'J' 
   return baseTier;
 }
 
-function addElementalResistancePenalty(item: ItemDef, tier: number): void {
+function getExpeditionElementByTier(tier: number): ElementalOffense {
+  // SpecRef: 3.1.2 | Item list | Elemental by expedition
+  const table: Record<number, ElementalOffense> = {
+    1: 'none',
+    2: 'ice',
+    3: 'thunder',
+    4: 'fire',
+    5: 'fire',
+    6: 'thunder',
+    7: 'ice',
+    8: 'none',
+  };
+  return table[tier] ?? 'none';
+}
+
+function addElementalResistancePenalty(item: ItemDef, tier: number, element: ElementalOffense): void {
+  if (element === 'none') return;
   const resistPenalty = TIER_M_RESIST_PENALTY[getTierIndex(tier)];
   const multiplier = Math.max(0.01, 1 + resistPenalty / 100);
   const bonuses = item.bonuses ?? [];
-  bonuses.push(
-    { type: 'fire_defense_multiplier_xV', value: multiplier },
-    { type: 'ice_defense_multiplier_xV', value: multiplier },
-    { type: 'thunder_defense_multiplier_xV', value: multiplier },
-  );
+  if (element === 'fire') bonuses.push({ type: 'fire_defense_multiplier_xV', value: multiplier });
+  if (element === 'ice') bonuses.push({ type: 'ice_defense_multiplier_xV', value: multiplier });
+  if (element === 'thunder') bonuses.push({ type: 'thunder_defense_multiplier_xV', value: multiplier });
   item.bonuses = bonuses;
 }
 
@@ -378,6 +392,7 @@ function createItem(
   const bonusTierP = getBonusTier(tier, rarity, 'P');
   const bonusTierJ = getBonusTier(tier, rarity, 'J');
   const bonusTierK = getBonusTier(tier, rarity, 'K');
+  const expeditionElement = getExpeditionElementByTier(tier);
 
   const masterName = forcedName ?? getMasterItemName(tier, rarity, template.category, variantIndex);
   const name = ITEM_NAME_OVERRIDES[id] ?? masterName;
@@ -533,8 +548,16 @@ function createItem(
     if (template.category === 'katana' || template.category === 'bolt' || template.category === 'grimoire') {
       item.penetBonus = (item.penetBonus || 0) + TIER_P_BONUS[getTierIndex(bonusTierP)];
     }
-    if (rarity === 'uncommon') addElementalResistancePenalty(item, bonusTierM);
-    if (rarity === 'eliteRare' && eliteSource === 'A') addElementalResistancePenalty(item, bonusTierM);
+    const canHaveResistancePenalty = template.category === 'armor' || template.category === 'robe' || template.category === 'shield';
+    if (canHaveResistancePenalty) {
+      if (rarity === 'uncommon') addElementalResistancePenalty(item, bonusTierM, expeditionElement);
+      if (rarity === 'eliteRare' && eliteSource === 'A') addElementalResistancePenalty(item, bonusTierM, expeditionElement);
+    }
+  }
+
+  if (item.elementalOffense && item.elementalOffense !== expeditionElement) {
+    item.elementalOffense = 'none';
+    item.elementalOffenseBonus = undefined;
   }
 
   if (rarity === 'eliteRare') {
