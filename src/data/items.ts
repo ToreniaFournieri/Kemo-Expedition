@@ -200,11 +200,8 @@ function getMasterItemName(tier: number, rarity: Rarity, category: ItemCategory,
   if (rarity === 'mythicRare') return undefined;
   const names = getMasterItemNames(tier, rarity, category);
   if (!names || names.length === 0) return undefined;
-  if (rarity === 'uncommon') {
-    const index = variantIndex ?? 0;
-    return names[index];
-  }
-  return names[0];
+  const index = Math.max(0, variantIndex ?? 0);
+  return names[index];
 }
 // ============================================================
 // Item templates - 12 categories
@@ -642,12 +639,18 @@ function generateItems(): ItemDef[] {
       if (item2) items.push(item2);
     }
 
-    // Rare items (12 per tier - one of each type)
+    // Elite rare items (master-spec driven variants per category)
+    let eliteRareOffset = 1;
     for (let i = 0; i < ITEM_TEMPLATES.length; i++) {
       const template = ITEM_TEMPLATES[i];
-      const id = tier * 1000 + 300 + i + 1; // T3CC format
-      const item = createItem(id, tier, 'eliteRare', template);
-      if (item) items.push(item);
+      const names = getMasterItemNames(tier, 'eliteRare', template.category);
+      for (let variantIndex = 0; variantIndex < names.length; variantIndex++) {
+        const id = tier * 1000 + 300 + eliteRareOffset; // T3CC format
+        const eliteSource = (['A', 'B', 'C'][variantIndex] ?? 'C') as EliteSource;
+        const item = createItem(id, tier, 'eliteRare', template, variantIndex, undefined, eliteSource);
+        if (item) items.push(item);
+        eliteRareOffset += 1;
+      }
     }
 
     // Boss rare items (master-spec driven categories per tier)
