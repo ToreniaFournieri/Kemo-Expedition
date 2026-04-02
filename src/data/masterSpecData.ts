@@ -28,7 +28,7 @@ export const MASTER_EXPEDITION_ENEMIES_PACKED: Record<number, readonly MasterEne
     [4,'1-2',4,'normal','Aerial','sage','i.grimoireU,i.catalystU,i.katanaU,i.wandC,i.grimoireC,i.catalystC','見張り翼','samurai'],
     [4,'3',7,'elite','Caninian','duelist','i.shieldBD,i.robeBD,i.swordC,i.katanaC,i.gauntletC','見張り番','lord'],
     [4,'3',7,'elite','Caninian','lord','i.katanaBD,i.gauntletBD,i.armorC,i.robeC,i.shieldC','雇われ傭兵','striker'],
-    [4,'4',7,'elite','Aerial','sage','i.grimoireEB,i.catalystEB,i.gauntletEB,i.wandC,i.grimoireC,i.catalystC','風切り翼','sword-saint'],
+    [4,'4',7,'elite','Aerial','sage','i.grimoireEB,i.catalystEB,i.shieldEB,i.wandC,i.grimoireC,i.catalystC','風切り翼','lord'],
     [5,'1-2',5,'normal','Insect_Swarm','ninja','i.archeryU,i.boltU,i.arrowU,i.arrowC,i.boltC,i.archeryC','かくれむれ虫','ranger'],
     [5,'1-2',5,'normal','Insect_Swarm','samurai','i.katanaU,i.shieldU,i.gauntletU,i.swordC,i.katanaC,i.gauntletC','刀持ちむれ虫','sword-saint'],
     [5,'1-2',5,'normal','Insect_Swarm','wizard','i.wandU,i.robeU,i.catalystU,i.wandC,i.grimoireC,i.catalystC','むれ虫の古書持ち','alchemist'],
