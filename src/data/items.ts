@@ -454,7 +454,7 @@ function createItem(
     case 'arrow':
       item.rangedAttack = calculateStat(basePower, amplifier);
       if (rarity !== 'common') item.elementalOffenseBonus = TIER_L_BONUS[getTierIndex(bonusTierL)];
-      if (rarity !== 'common') item.elementalOffense = 'fire';
+      if (rarity !== 'common') item.elementalOffense = expeditionElement;
       if (rarity === 'eliteRare' && eliteSource !== 'A') item.physicalDefense = calculateStat(basePower, amplifier * 0.32);
       if (rarity === 'bossRare' || rarity === 'mythicRare') {
         item.partyHP = calculateStat(basePower, amplifier * 1.2);
@@ -468,7 +468,7 @@ function createItem(
         item.evasionBonus = TIER_J_PENALTY[getTierIndex(bonusTierJ)];
         item.penetBonus = TIER_P_BONUS[getTierIndex(bonusTierP)];
       }
-      if (rarity !== 'common') item.elementalOffense = 'thunder';
+      if (rarity !== 'common') item.elementalOffense = expeditionElement;
       if (rarity !== 'common') item.elementalOffenseBonus = TIER_L_BONUS[getTierIndex(bonusTierL)];
       if (rarity === 'eliteRare' && eliteSource !== 'A') item.partyHP = calculateStat(basePower, amplifier * 1.0);
       if (rarity === 'bossRare' || rarity === 'mythicRare') {
@@ -511,7 +511,7 @@ function createItem(
       item.partyHP = calculateStat(basePower, amplifier * 1.0);
       if (rarity !== 'bossRare' && rarity !== 'mythicRare') item.magicalNoABonus = TIER_H_BONUS[getTierIndex(bonusTierH)];
       if (rarity !== 'common') {
-        item.elementalOffense = 'fire';
+        item.elementalOffense = expeditionElement;
         item.elementalOffenseBonus = TIER_L_BONUS[getTierIndex(bonusTierL)];
       }
       break;
