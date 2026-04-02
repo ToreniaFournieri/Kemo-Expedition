@@ -9066,11 +9066,19 @@ function SettingTab({
   const formatEnemyDefenseLine = (label: string, defense: number, percent: number) =>
     `${label}: ${formatNumber(defense)} (${percent.toFixed(0)}%)`;
 
-  const ENEMY_ELEMENT_LABELS: Record<string, string> = {
-    none: '無',
-    fire: '炎',
-    thunder: '雷',
-    ice: '氷',
+  const ENEMY_ELEMENT_EMOJIS: Record<string, string> = {
+    fire: '🔥',
+    thunder: '⚡',
+    ice: '❄️',
+  };
+
+  const formatEnemyElementOffenseLine = (elementalOffense: string, elementalOffenseValue: number): ReactNode => {
+    const elementEmoji = ENEMY_ELEMENT_EMOJIS[elementalOffense];
+    return (
+      <>
+        属性: {elementEmoji ? <span className="sub-theme-emoji-icon" aria-hidden="true">{elementEmoji}</span> : '無'} (x{elementalOffenseValue.toFixed(2)})
+      </>
+    );
   };
 
   const renderEnemyElementalResistanceLine = (enemy: EnemyDef): JSX.Element => {
@@ -9804,8 +9812,8 @@ function SettingTab({
                               offenseRows.push(`詠唱魔法: ${getEnemyBestiarySpellName(godRuntimeEnemy)}`);
                             }
 
-                            const defenseRows: string[] = [
-                              `属性: ${ENEMY_ELEMENT_LABELS[godRuntimeEnemy.elementalOffense] ?? '無'} (x${godRuntimeEnemy.elementalOffenseValue.toFixed(2)})`,
+                            const defenseRows: ReactNode[] = [
+                              formatEnemyElementOffenseLine(godRuntimeEnemy.elementalOffense, godRuntimeEnemy.elementalOffenseValue),
                               formatEnemyDefenseLine('物理防御', godRuntimeEnemy.physicalDefense, physicalDefenseAmplifierPercent),
                               formatEnemyDefenseLine('魔法防御', godRuntimeEnemy.magicalDefense, magicalDefenseAmplifierPercent),
                               `回避: ${formatNumber(Math.round(godRuntimeEnemy.evasionBonus * 1000))}`,
@@ -9890,7 +9898,7 @@ function SettingTab({
                       })()}
                     </div>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                      <div>{hasRangedAttack ? formatEnemyAttackLine('遠距離攻撃', colosseumEnemy.rangedAttack, colosseumEnemy.rangedNoA, colosseumEnemy.rangedAttackAmplifier) : ''}</div><div>{`属性: ${ENEMY_ELEMENT_LABELS[colosseumEnemy.elementalOffense] ?? '無'} (x${colosseumEnemy.elementalOffenseValue.toFixed(2)})`}</div>
+                      <div>{hasRangedAttack ? formatEnemyAttackLine('遠距離攻撃', colosseumEnemy.rangedAttack, colosseumEnemy.rangedNoA, colosseumEnemy.rangedAttackAmplifier) : ''}</div><div>{formatEnemyElementOffenseLine(colosseumEnemy.elementalOffense, colosseumEnemy.elementalOffenseValue)}</div>
                       <div>{hasMeleeAttack ? formatEnemyAttackLine('近接攻撃', colosseumEnemy.meleeAttack, colosseumEnemy.meleeNoA, colosseumEnemy.meleeAttackAmplifier) : ''}</div><div>{formatEnemyDefenseLine('物理防御', colosseumEnemy.physicalDefense, physicalDefenseAmplifierPercent)}</div>
                       <div>{hasPhysicalAttack ? `物理命中率: 100% (減衰: ${decay})` : ''}</div><div>{formatEnemyDefenseLine('魔法防御', colosseumEnemy.magicalDefense, magicalDefenseAmplifierPercent)}</div>
                       <div>{hasMagicalAttack ? formatEnemyAttackLine('魔法攻撃', colosseumEnemy.magicalAttack, colosseumEnemy.magicalNoA, getEnemyDisplayedMagicalAttackAmplifier(colosseumEnemy)) : ''}</div><div>回避: {formatNumber(Math.round(colosseumEnemy.evasionBonus * 1000))}</div>
@@ -9991,8 +9999,8 @@ function SettingTab({
                             }
 
                             // Bestiary detail keeps the compact 4-line defense block.
-                            const defenseRows: string[] = [
-                              `属性: ${ENEMY_ELEMENT_LABELS[displayEnemy.elementalOffense] ?? '無'} (x${displayEnemy.elementalOffenseValue.toFixed(2)})`,
+                            const defenseRows: ReactNode[] = [
+                              formatEnemyElementOffenseLine(displayEnemy.elementalOffense, displayEnemy.elementalOffenseValue),
                               formatEnemyDefenseLine('物理防御', displayEnemy.physicalDefense, physicalDefenseAmplifierPercent),
                               formatEnemyDefenseLine('魔法防御', displayEnemy.magicalDefense, magicalDefenseAmplifierPercent),
                               `回避: ${formatNumber(Math.round(displayEnemy.evasionBonus * 1000))}`,
