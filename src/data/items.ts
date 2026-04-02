@@ -516,12 +516,18 @@ function createItem(
   }
   if (rarity !== 'bossRare' && rarity !== 'mythicRare') {
     const bonusTier = getTierIndex(bonusTierF);
-    const addCBonus = (type: 'physical_defense' | 'magical_defense', value: number): void => {
+    const addCBonus = (
+      type: 'physical_defense' | 'magical_defense' | 'melee_attack' | 'ranged_attack' | 'magical_attack',
+      value: number
+    ): void => {
       item.bonuses = [...(item.bonuses ?? []), { type, value }];
     };
 
     if (template.category === 'armor') addCBonus('physical_defense', TIER_F_BONUS[bonusTier]);
     if (template.category === 'robe') addCBonus('magical_defense', TIER_F_BONUS[bonusTier]);
+    if (template.category === 'sword') addCBonus('melee_attack', TIER_F_BONUS[bonusTier]);
+    if (template.category === 'arrow') addCBonus('ranged_attack', TIER_F_BONUS[bonusTier]);
+    if (template.category === 'wand') addCBonus('magical_attack', TIER_F_BONUS[bonusTier]);
     if (template.category === 'shield') item.evasionBonus = (item.evasionBonus || 0) + TIER_G_BONUS[getTierIndex(bonusTierG)];
     if (template.category === 'sword') item.accuracyBonus = (item.accuracyBonus || 0) + TIER_N_BONUS[getTierIndex(bonusTierN)];
     if (template.category === 'gauntlet') addCBonus('physical_defense', TIER_N_BONUS[getTierIndex(bonusTierN)]);
