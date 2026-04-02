@@ -108,16 +108,13 @@
 | 7 | `e.ice+*` | `r.ice-*` |
 | 8 | none | none |
 
-- example of basic item:
+- Display format:
+  - `d.*` > [`c.*`] > `b.` > others
 ```
-Tier 1 common `i.sword`: `d.melee_attack` +12, `c.physical_attack+0.13`
-Tier 1 rare `i.sword`: `d.melee_attack` +17, `d.melee_defense` + 5, `d.HP` +4 , `c.physical_attack+0.13`
-Tier 2 common `i.shield`: `d.HP` +18, `c.evasion+0.012`
-Tier 3 common `i.gauntlet`: `d.melee_NoA` +0.6, `c.N_NoA+3`
-Tier 4 common `i.katana`: `d.melee_attack` +82, `d.evasion-0.004`, `c_melee_NoA-1.6`
-Tier 5 common `i.arrow`: `d.ranged_attack` +41, `c.ranged_attack+0.08`
+海曲の弓 [3U] 遠回数+0.81 HP+36 [遠回数+4, 命中+4, 雷防x0.93]
+氷紋の防寒衣 [2U] 物防+35 HP+41 [物防+11%, 氷防x0.92]
+```
 
-```
 #### 3.1.3 Item variation 
 
 **Item Variation Hierarchy**
