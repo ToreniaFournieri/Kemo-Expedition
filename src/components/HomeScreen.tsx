@@ -2896,7 +2896,17 @@ export function HomeScreen({
           .map((item, slotIndex) => (item ? -1 : slotIndex))
           .filter((index) => index >= 0);
         const equippedCategoryCounts: Partial<Record<ItemCategory, number>> = {};
+        const resolvedFallbackTargetCounts: Partial<Record<'i.weapon' | 'i.NoA', number>> = {
+          'i.weapon': 0,
+          'i.NoA': 0,
+        };
         const getResolvedCategoryCount = (targetCategory: AutoEquipmentTargetCategory): number => {
+          if (
+            combatStyle == null
+            && (targetCategory === 'i.weapon' || targetCategory === 'i.NoA')
+          ) {
+            return resolvedFallbackTargetCounts[targetCategory] ?? 0;
+          }
           const resolvedCategories = resolveAutoEquipmentTargetCategory(targetCategory, combatStyle);
           if (resolvedCategories.length === 0) return 0;
           return resolvedCategories.reduce((sum, category) => sum + (equippedCategoryCounts[category] ?? 0), 0);
@@ -2910,7 +2920,7 @@ export function HomeScreen({
 
         emptySlotIndexes.forEach((slotIndex) => {
           const skippedCategories = new Set<AutoEquipmentTargetCategory>();
-          let resolvedSelection: { itemKey: string } | null = null;
+          let resolvedSelection: { itemKey: string; targetCategory: AutoEquipmentTargetCategory } | null = null;
 
           while (!resolvedSelection) {
             const targetCategory = getNextMissingAutoEquipmentCategory(
@@ -2933,7 +2943,7 @@ export function HomeScreen({
               continue;
             }
 
-            resolvedSelection = { itemKey };
+            resolvedSelection = { itemKey, targetCategory };
           }
 
           if (!resolvedSelection) return;
@@ -2942,6 +2952,12 @@ export function HomeScreen({
           if (!variant) return;
 
           equippedCategoryCounts[variant.item.category] = (equippedCategoryCounts[variant.item.category] ?? 0) + 1;
+          if (
+            combatStyle == null
+            && (resolvedSelection.targetCategory === 'i.weapon' || resolvedSelection.targetCategory === 'i.NoA')
+          ) {
+            resolvedFallbackTargetCounts[resolvedSelection.targetCategory] = (resolvedFallbackTargetCounts[resolvedSelection.targetCategory] ?? 0) + 1;
+          }
           removeItemFromSimulatedInventory(resolvedSelection.itemKey);
           simulatedEquipmentSlots[slotIndex] = variant.item;
           memoryItemIds.add(variant.item.id);
