@@ -253,7 +253,6 @@ body {
   display: inline-block;
   -webkit-filter: var(--sub-theme-emoji-filter);
   filter: var(--sub-theme-emoji-filter);
-  transform: translateZ(0);
   opacity: var(--side-quest-icon-opacity);
 }
 
@@ -261,7 +260,6 @@ body {
   display: inline-block;
   -webkit-filter: var(--accent-theme-emoji-filter);
   filter: var(--accent-theme-emoji-filter);
-  transform: translateZ(0);
   opacity: var(--side-quest-icon-opacity);
 }
 
@@ -269,7 +267,6 @@ body {
   display: inline-block;
   -webkit-filter: grayscale(1) saturate(0) brightness(1.0);
   filter: grayscale(1) saturate(0) brightness(1.0);
-  transform: translateZ(0);
   opacity: var(--side-quest-icon-opacity);
 }
 
@@ -278,20 +275,8 @@ body {
   .sub-theme-emoji-icon,
   .accent-theme-emoji-icon,
   .gray-theme-emoji-icon {
-    -webkit-filter: var(--sub-theme-emoji-filter);
-    filter: var(--sub-theme-emoji-filter);
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-  }
-
-  .accent-theme-emoji-icon {
-    -webkit-filter: var(--accent-theme-emoji-filter);
-    filter: var(--accent-theme-emoji-filter);
-  }
-
-  .gray-theme-emoji-icon {
-    -webkit-filter: grayscale(1) saturate(0) brightness(1.0);
-    filter: grayscale(1) saturate(0) brightness(1.0);
   }
 }
 
