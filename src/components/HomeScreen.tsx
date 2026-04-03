@@ -2220,7 +2220,7 @@ const AUTO_EQUIPMENT_PRIORITY_BY_CLASS: Record<Character['mainClassId'], AutoEqu
   lord: ['i.weapon', 'armor', 'robe', 'i.weapon', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon', 'shield', 'i.weapon', 'i.NoA', 'i.weapon', 'armor', 'robe'],
   ranger: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'arrow', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.NoA'],
   wizard: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'i.weapon', 'i.NoA', 'i.weapon', 'i.weapon', 'robe', 'i.weapon', 'i.NoA', 'i.weapon', 'armor', 'robe'],
-  sage: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'i.weapon', 'i.NoA', 'i.weapon', 'i.weapon', 'robe', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.NoA'],
+  sage: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'i.weapon', 'i.NoA', 'i.weapon', 'i.weapon', 'robe', 'i.NoA', 'i.weapon', 'armor', 'i.NoA', 'i.weapon'],
   alchemist: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'i.weapon', 'i.NoA', 'i.weapon', 'i.weapon', 'robe', 'i.weapon', 'i.NoA', 'i.weapon', 'armor', 'robe'],
   pilgrim: ['i.weapon', 'armor', 'robe', 'i.weapon', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon', 'shield', 'i.weapon', 'i.NoA', 'i.weapon', 'armor', 'robe'],
 };
