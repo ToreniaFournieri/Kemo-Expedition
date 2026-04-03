@@ -181,9 +181,9 @@
   - The combat style determined is used to resolve all `i.weapon` and `i.NoA` category selections during this process.
     - Only combat styles enabled by corresponding `c.equip_*` bonuses are considered.
     - If multiple `c.equip_*` bonuses are present, compare all enabled combat style scores and select the highest one.
-      - Ranged: total sum of (1 - `c.arrow_x1.x`), (1 - `c.bolt_x1.x`), and (1 - `c.archery_x1.x`).
-      - Magic: total sum of (1 - `c.wand_x1.x`), (1 - `c.grimoire_x1.x`) , and (1 - `c.catalyst_x1.x`).
-      - Melee: total sum of (1 - `c.sword_x1.x`), (1 - `c.katana_x1.x`) , and (1 - `c.gauntlet_x1.x`).
+      - If `c.equip_ranged`: Ranged: total sum of (1 - `c.arrow_x1.x`), (1 - `c.bolt_x1.x`), and (1 - `c.archery_x1.x`).
+      - If `c.equip_magic` Magic: total sum of (1 - `c.wand_x1.x`), (1 - `c.grimoire_x1.x`) , and (1 - `c.catalyst_x1.x`).
+      - If `c.equip_melee`: Melee: total sum of (1 - `c.sword_x1.x`), (1 - `c.katana_x1.x`) , and (1 - `c.gauntlet_x1.x`).
       - Note: Only one `c.*` bonus of the exact same name applies.
       - Example: If character has `c.sword_x1.4`, `c.arrow_x1.2`, `c.bolt_x1.2`, `c.gauntlet_x1.1`, Ranged: 0.4 (arrow 0.2 + bolt 0.2) and Melee: 0.5 (sword 0.4 + gauntlet 0.1) so "Melee" is selected.
       - Tie-breaker: Ranged > Magic > Melee
