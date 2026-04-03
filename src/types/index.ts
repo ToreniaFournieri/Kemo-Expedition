@@ -608,6 +608,8 @@ export interface ExpeditionLogEntry {
   startPartyHP?: number;
   postBattlePartyHP?: number;
   floorMultiplier?: number; // Displayed room attack multiplier derived from effective enemy level
+  enemyId?: number;
+  enemySnapshot?: EnemyDef;
   enemyName: string;
   enemyHP: number;
   enemyAttackValues: string; // format: "LONG/MID/CLOSE" e.g. "300/0/340"
