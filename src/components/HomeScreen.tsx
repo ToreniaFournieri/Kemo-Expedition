@@ -455,6 +455,59 @@ function renderEnemyNameWithMutedClass(enemyName: string) {
   );
 }
 
+function getBestiaryEnemyFromLogEntry(entry: ExpeditionLogEntry): EnemyDef | null {
+  if (entry.enemySnapshot) return entry.enemySnapshot;
+  if (typeof entry.enemyId === 'number') {
+    return ENEMIES.find((enemy) => enemy.id === entry.enemyId) ?? null;
+  }
+
+  const normalizedEnemyName = entry.enemyName.replace(/\s+\((ELITE|BOSS|神魔戦)\)\s*$/u, '').trim();
+  if (!normalizedEnemyName) return null;
+  return ENEMIES.find((enemy) => formatEnemyDefName(enemy) === normalizedEnemyName) ?? null;
+}
+
+function getEnemyClassSummary(enemy: EnemyDef): string {
+  const mainClass = CLASS_SHORT_NAMES[enemy.enemyClass] ?? enemy.enemyClass;
+  if (!enemy.enemySubClass || enemy.enemySubClass === 'none') return mainClass;
+  if (enemy.enemySubClass === enemy.enemyClass) return `${mainClass}M`;
+  const subClass = CLASS_SHORT_NAMES[enemy.enemySubClass] ?? enemy.enemySubClass;
+  return `${mainClass}/${subClass}`;
+}
+
+function EnemyBestiaryBubble({
+  bubble,
+}: {
+  bubble: {
+    enemy: EnemyDef;
+    top: number;
+    left: number;
+    width: number;
+  };
+}) {
+  return (
+    <div
+      className="fixed z-20 rounded-lg border border-gray-200 bg-white p-3 shadow-lg"
+      style={{
+        top: bubble.top,
+        left: bubble.left,
+        width: bubble.width,
+      }}
+    >
+      <div className="text-xs space-y-1 text-gray-700">
+        <div className="text-sm font-semibold text-gray-800">
+          {renderEnemyNameWithMutedClass(formatEnemyDefName(bubble.enemy))}
+        </div>
+        <div>ID: {bubble.enemy.id}</div>
+        <div>HP: {formatNumber(bubble.enemy.hp)}</div>
+        <div>型: {ENEMY_TYPE_SHORT_NAMES[bubble.enemy.enemyType] ?? bubble.enemy.enemyType} / クラス: {getEnemyClassSummary(bubble.enemy)}</div>
+        <div className="text-gray-600">
+          ドロップ: {getEnemyDropCandidates(bubble.enemy).map((item) => item.name).join(' / ') || 'なし'}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function renderActionWithMutedTrailingParenthetical(action: string) {
   if (!action.endsWith(')')) return action;
 
@@ -6621,25 +6674,6 @@ function ExpeditionTab({
     return Math.min(entry.maxPartyHP, Math.max(0, entry.remainingPartyHP + entry.damageTaken + attritionAmount - healAmount));
   };
 
-  const getBestiaryEnemyFromLogEntry = (entry: ExpeditionLogEntry): EnemyDef | null => {
-    if (entry.enemySnapshot) return entry.enemySnapshot;
-    if (typeof entry.enemyId === 'number') {
-      return ENEMIES.find((enemy) => enemy.id === entry.enemyId) ?? null;
-    }
-
-    const normalizedEnemyName = entry.enemyName.replace(/\s+\((ELITE|BOSS|神魔戦)\)\s*$/u, '').trim();
-    if (!normalizedEnemyName) return null;
-    return ENEMIES.find((enemy) => formatEnemyDefName(enemy) === normalizedEnemyName) ?? null;
-  };
-
-  const getEnemyClassSummary = (enemy: EnemyDef): string => {
-    const mainClass = CLASS_SHORT_NAMES[enemy.enemyClass] ?? enemy.enemyClass;
-    if (!enemy.enemySubClass || enemy.enemySubClass === 'none') return mainClass;
-    if (enemy.enemySubClass === enemy.enemyClass) return `${mainClass}M`;
-    const subClass = CLASS_SHORT_NAMES[enemy.enemySubClass] ?? enemy.enemySubClass;
-    return `${mainClass}/${subClass}`;
-  };
-
   const handleEnemyBestiaryBubbleToggle = (
     bubbleKey: string,
     entry: ExpeditionLogEntry,
@@ -6681,28 +6715,7 @@ function ExpeditionTab({
         }
       }}
     >
-      {activeEnemyBestiaryBubble && (
-        <div
-          className="fixed z-20 rounded-lg border border-gray-200 bg-white p-3 shadow-lg"
-          style={{
-            top: activeEnemyBestiaryBubble.top,
-            left: activeEnemyBestiaryBubble.left,
-            width: activeEnemyBestiaryBubble.width,
-          }}
-        >
-          <div className="text-xs space-y-1 text-gray-700">
-            <div className="text-sm font-semibold text-gray-800">
-              {renderEnemyNameWithMutedClass(formatEnemyDefName(activeEnemyBestiaryBubble.enemy))}
-            </div>
-            <div>ID: {activeEnemyBestiaryBubble.enemy.id}</div>
-            <div>HP: {formatNumber(activeEnemyBestiaryBubble.enemy.hp)}</div>
-            <div>型: {ENEMY_TYPE_SHORT_NAMES[activeEnemyBestiaryBubble.enemy.enemyType] ?? activeEnemyBestiaryBubble.enemy.enemyType} / クラス: {getEnemyClassSummary(activeEnemyBestiaryBubble.enemy)}</div>
-            <div className="text-gray-600">
-              ドロップ: {getEnemyDropCandidates(activeEnemyBestiaryBubble.enemy).map((item) => item.name).join(' / ') || 'なし'}
-            </div>
-          </div>
-        </div>
-      )}
+      {activeEnemyBestiaryBubble && <EnemyBestiaryBubble bubble={activeEnemyBestiaryBubble} />}
       {[0, 1, 2, 3, 4, 5].map((partyIndex) => {
         const party = state.parties[partyIndex];
         if (!party) {
@@ -7989,6 +8002,45 @@ function DiaryTab({
   isSettingsExpanded: boolean;
   onSetIsSettingsExpanded: Dispatch<SetStateAction<boolean>>;
 }) {
+  const [activeEnemyBestiaryBubble, setActiveEnemyBestiaryBubble] = useState<{
+    key: string;
+    enemy: EnemyDef;
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
+
+  const handleEnemyBestiaryBubbleToggle = (
+    bubbleKey: string,
+    entry: ExpeditionLogEntry,
+    targetElement: HTMLElement,
+  ) => {
+    const enemy = getBestiaryEnemyFromLogEntry(entry);
+    if (!enemy) return;
+
+    if (activeEnemyBestiaryBubble?.key === bubbleKey) {
+      setActiveEnemyBestiaryBubble(null);
+      return;
+    }
+
+    const triggerRect = targetElement.getBoundingClientRect();
+    const viewportPadding = 12;
+    const bubbleWidth = Math.min(360, window.innerWidth - viewportPadding * 2);
+    const left = Math.min(
+      Math.max(triggerRect.left, viewportPadding),
+      window.innerWidth - viewportPadding - bubbleWidth,
+    );
+
+    // SpecRef: 8.5 | UI_DIARY | Diary log
+    // Tap enemy’s name part to show floating bubble of its bestiary.
+    setActiveEnemyBestiaryBubble({
+      key: bubbleKey,
+      enemy,
+      top: triggerRect.bottom + 8,
+      left,
+      width: bubbleWidth,
+    });
+  };
 
   const diaryLogs = parties
     .flatMap((party) =>
@@ -8175,7 +8227,15 @@ function DiaryTab({
 
   if (diaryLogs.length === 0) {
     return (
-      <div className="space-y-3">
+      <div
+        className="space-y-3"
+        onPointerDown={() => {
+          if (activeEnemyBestiaryBubble) {
+            setActiveEnemyBestiaryBubble(null);
+          }
+        }}
+      >
+        {activeEnemyBestiaryBubble && <EnemyBestiaryBubble bubble={activeEnemyBestiaryBubble} />}
         {renderDiarySettings()}
         <div className="bg-pane rounded-lg p-4 text-sm text-gray-500 text-center">記録された日誌はありません</div>
       </div>
@@ -8183,7 +8243,15 @@ function DiaryTab({
   }
 
   return (
-    <div className="space-y-3">
+    <div
+      className="space-y-3"
+      onPointerDown={() => {
+        if (activeEnemyBestiaryBubble) {
+          setActiveEnemyBestiaryBubble(null);
+        }
+      }}
+    >
+      {activeEnemyBestiaryBubble && <EnemyBestiaryBubble bubble={activeEnemyBestiaryBubble} />}
       {renderDiarySettings()}
       {diaryLogs.map((diaryLog) => {
         const isSideQuestLog = diaryLog.triggers.includes('sideQuest');
@@ -8302,7 +8370,26 @@ function DiaryTab({
                         >
                           <div className="flex justify-between items-center">
                             <span>
-                              <span className="font-medium">{roomLabel}: {entry.enemyName}</span>
+                              <span className="font-medium">
+                                {roomLabel}:{' '}
+                                <span
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    handleEnemyBestiaryBubbleToggle(roomKey, entry, event.currentTarget);
+                                  }}
+                                  onKeyDown={(event) => {
+                                    if (event.key !== 'Enter' && event.key !== ' ') return;
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    handleEnemyBestiaryBubbleToggle(roomKey, entry, event.currentTarget);
+                                  }}
+                                  className="inline cursor-pointer rounded px-0.5 -mx-0.5 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400"
+                                >
+                                  {renderEnemyNameWithMutedClass(entry.enemyName)}
+                                </span>
+                              </span>
                             </span>
                             <span className="flex items-center gap-2">
                               <span className={
