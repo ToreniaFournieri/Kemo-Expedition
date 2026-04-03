@@ -217,6 +217,7 @@ export type JewelInventory = Record<string, number>;
 export interface Item extends ItemDef {
   enhancement: number; // 0-6
   superRare: number; // 0-80
+  isLocked?: boolean;
   jewel?: JewelAttachment | null;
   isNew?: boolean; // For highlighting newly acquired items
 }

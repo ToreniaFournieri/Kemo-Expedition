@@ -1,7 +1,7 @@
 import { getItemById } from '../data/items';
 import { ClassId, GameState, InventoryRecord, InventoryVariant, Item, RandomBag, WeightedBagEntry } from '../types';
 
-type ItemReference = Pick<Item, 'id' | 'enhancement' | 'superRare' | 'jewel'>;
+type ItemReference = Pick<Item, 'id' | 'enhancement' | 'superRare' | 'jewel' | 'isLocked'>;
 type CompactBagEntry = [number, number];
 
 type PersistedBagEntry = WeightedBagEntry | CompactBagEntry;
@@ -15,6 +15,7 @@ function toItemReference(item: Item): ItemReference {
     id: item.id,
     enhancement: item.enhancement,
     superRare: item.superRare,
+    isLocked: item.isLocked === true,
     jewel: item.jewel ?? null,
   };
 }
@@ -38,6 +39,7 @@ function hydrateItem(item: Partial<Item>, keyHint?: string): Item {
       ...(item as Item),
       enhancement,
       superRare,
+      isLocked: item.isLocked === true,
       jewel: item.jewel ?? null,
     };
   }
@@ -46,6 +48,7 @@ function hydrateItem(item: Partial<Item>, keyHint?: string): Item {
     ...baseItem,
     enhancement,
     superRare,
+    isLocked: item.isLocked === true,
     jewel: item.jewel ?? null,
     isNew: item.isNew,
   };
