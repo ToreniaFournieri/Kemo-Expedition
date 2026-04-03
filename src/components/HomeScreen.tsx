@@ -2704,29 +2704,36 @@ export function HomeScreen({
       // SpecRef: 7.1.1.2 | Equipping into empty slots | Decide the combat style
       const bonuses = getCharacterAutoEquipBonuses(character);
       const enableFlags = { ranged: false, magic: false, melee: false };
-      const bestMultiplierByType = new Map<string, number>();
+      const uniqueMultiplierBonusNames = new Set<string>();
+      const scoreByMultiplierType = new Map<string, number>();
+
+      const addMultiplierScore = (multiplierType: string, value: number): void => {
+        const existing = scoreByMultiplierType.get(multiplierType) ?? 0;
+        scoreByMultiplierType.set(multiplierType, existing + (value - 1));
+      };
 
       for (const bonus of bonuses) {
         if (bonus.type === 'equip_ranged') enableFlags.ranged = true;
         if (bonus.type === 'equip_magic') enableFlags.magic = true;
         if (bonus.type === 'equip_melee') enableFlags.melee = true;
         if (!bonus.type.endsWith('_multiplier')) continue;
-        const existing = bestMultiplierByType.get(bonus.type);
-        if (existing == null || bonus.value > existing) {
-          bestMultiplierByType.set(bonus.type, bonus.value);
-        }
+
+        const bonusName = `${bonus.type}:${bonus.value}`;
+        if (uniqueMultiplierBonusNames.has(bonusName)) continue;
+        uniqueMultiplierBonusNames.add(bonusName);
+        addMultiplierScore(bonus.type, bonus.value);
       }
 
-      const toScore = (multiplierType: string): number => {
-        const value = bestMultiplierByType.get(multiplierType);
-        if (value == null) return 0;
-        return Math.max(0, value - 1);
-      };
-
       const scores: Record<AutoEquipmentCombatStyle, number> = {
-        ranged: toScore('arrow_multiplier') + toScore('bolt_multiplier') + toScore('archery_multiplier'),
-        magic: toScore('wand_multiplier') + toScore('grimoire_multiplier') + toScore('catalyst_multiplier'),
-        melee: toScore('sword_multiplier') + toScore('katana_multiplier') + toScore('gauntlet_multiplier'),
+        ranged: (scoreByMultiplierType.get('arrow_multiplier') ?? 0)
+          + (scoreByMultiplierType.get('bolt_multiplier') ?? 0)
+          + (scoreByMultiplierType.get('archery_multiplier') ?? 0),
+        magic: (scoreByMultiplierType.get('wand_multiplier') ?? 0)
+          + (scoreByMultiplierType.get('grimoire_multiplier') ?? 0)
+          + (scoreByMultiplierType.get('catalyst_multiplier') ?? 0),
+        melee: (scoreByMultiplierType.get('sword_multiplier') ?? 0)
+          + (scoreByMultiplierType.get('katana_multiplier') ?? 0)
+          + (scoreByMultiplierType.get('gauntlet_multiplier') ?? 0),
       };
 
       const ranking: AutoEquipmentCombatStyle[] = ['ranged', 'magic', 'melee'];
