@@ -158,8 +158,8 @@
 | 11 | `i.NoA` |
 | 12 | `i.weapon` |
 | 13 | `i.armor` |
-| 14 | `i.robe` |
-| 15 | `i.NoA` |
+| 14 | `i.NoA` |
+| 15 | `i.weapon` |
 
 - class.guardian:
 
