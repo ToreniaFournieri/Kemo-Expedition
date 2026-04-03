@@ -2690,6 +2690,7 @@ export function HomeScreen({
       if (!race || !mainClass || !subClass || !predisposition || !lineage) return [];
 
       const isMasterClass = character.mainClassId === character.subClassId;
+      const equipmentBonuses = character.equipment.flatMap((item) => item?.bonuses ?? []);
       return [
         ...race.bonuses,
         ...mainClass.mainSubBonuses,
@@ -2697,6 +2698,7 @@ export function HomeScreen({
         ...(isMasterClass ? [] : subClass.mainSubBonuses),
         ...predisposition.bonuses,
         ...lineage.bonuses,
+        ...equipmentBonuses,
       ];
     };
 
