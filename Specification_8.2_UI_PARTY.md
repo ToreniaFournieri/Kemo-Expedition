@@ -182,31 +182,37 @@ The toggle cycles through the following modes:
 - Each item supports only the Jewel types allowed by its category.
 - Jewel effects apply only while the item is equipped.
 
+**4. Lock and unlock item**
+- If item is locked, this item is not changed automatically (when auto equipment is enabled.)
+- Tap 🔒 or 🔓 emoji to switch its state.
+
 - Equipment List (Collapsed State)
 
 ```
 装備  4 / 4 スロット 手動?
-白銀英雄の鎧 [2B] 物防+79 魔防+25 HP+32 体力+1 [鎧] [鎧]  ▲
-名工の霧林司祭の法衣 [3E] 魔防+74 [魔防+8%] HP+47 回避+3 [法衣]　▲
-伝説の幻導の青銅杖 [3U] 魔攻+67 [魔攻撃+9%] 魔防+25 [魔防+9%] [ワンド]　▲
+🔒白銀英雄の鎧 [2B] 物防+79 魔防+25 HP+32 体力+1 [鎧] [鎧]  ▲
+🔓名工の霧林司祭の法衣 [3E] 魔防+74 [魔防+8%] HP+47 回避+3 [法衣]　▲
+🔓伝説の幻導の青銅杖 [3U] 魔攻+67 [魔攻撃+9%] 魔防+25 [魔防+9%] [ワンド]　▲
 ```
 
 - Expanded State (When Selected)
 
 ```
 装備  4 / 4 スロット 手動?
-白銀英雄の鎧 [2B] 物防+85 魔防+25 HP+48 体力+1 [物防+8%] [鎧] ▼
+🔒白銀英雄の鎧 [2B] 物防+85 魔防+25 HP+48 体力+1 [物防+8%] [鎧] ▼
  堅牢: 1 2 3 4 **5** 6 7 8
  障壁: 1 2 3 4 5 6 7 8 
  影走: 1 2 3 4 5 6 7 8
  [物防+8%] 物防+16 HP+16
-名工の霧林司祭の法衣 [3E] 魔防+74 [魔防+8%] HP+47 回避+3 [法衣]　▲
-伝説の幻導の青銅杖 [3U] 魔攻+67 [魔攻撃+9%] 魔防+25 [魔防+9%] [ワンド]　▲
+🔓名工の霧林司祭の法衣 [3E] 魔防+74 [魔防+8%] HP+47 回避+3 [法衣]　▲
+🔓伝説の幻導の青銅杖 [3U] 魔攻+67 [魔攻撃+9%] 魔防+25 [魔防+9%] [ワンド]　▲
 ```
 
 - UI Rules
   - ▼ = expanded
   - ▲ = collapsed
+  - 🔒 = locked　(sub color filtered)
+  - 🔓 = unlocked (gray color filtered)
 - Rank Display
   - Black number → Jewel owned
   - Gray number → Jewel not owned
