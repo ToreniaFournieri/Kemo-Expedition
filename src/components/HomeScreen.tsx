@@ -2673,9 +2673,9 @@ export function HomeScreen({
       }
     };
 
-    const getAutoEquipmentSelectionValue = (item: Item, targetCategory: AutoEquipmentTargetCategory): number => {
+    const getAutoEquipmentSelectionValue = (item: Item, _targetCategory: AutoEquipmentTargetCategory): number => {
       const coreConceptValue = getCoreConceptValue(item);
-      if (targetCategory === 'gauntlet' || targetCategory === 'archery' || targetCategory === 'catalyst') {
+      if (item.category === 'gauntlet' || item.category === 'archery' || item.category === 'catalyst') {
         return coreConceptValue + getNoAFixedBonusValue(item);
       }
       return coreConceptValue;
