@@ -265,6 +265,11 @@ body {
   filter: var(--sub-theme-emoji-filter);
 }
 
+.side-quest-theme-icon {
+  -webkit-filter: var(--sub-theme-emoji-filter);
+  filter: var(--sub-theme-emoji-filter);
+}
+
 .sub-theme-emoji-icon {
   -webkit-filter: var(--sub-theme-emoji-filter);
   filter: var(--sub-theme-emoji-filter);
