@@ -6429,6 +6429,8 @@ function PartyTab({
               const isExpanded = selectingSlot === slotIndex && canExpandJewelPanel;
               const isLockIconVisible = autoEquipmentMode === 2;
               const isLocked = item?.isLocked === true;
+              // SpecRef: 8.2.4 | Equipment management | Lock and Unlock Item
+              const lockEmojiClassName = isLocked ? 'sub-theme-emoji-icon' : 'gray-theme-emoji-icon';
               return (
               <div key={slotIndex} className={`w-full p-2 text-left border rounded text-sm leading-tight bg-white ${isExpanded ? 'border-sub' : 'border-gray-200'}`}>
                 <div className="flex items-center gap-2">
@@ -6440,10 +6442,10 @@ function PartyTab({
                         // SpecRef: 8.2.4 | Equipment management | Lock and Unlock Item
                         onToggleEquipmentLock(char.id, slotIndex);
                       }}
-                      className={`text-base leading-none ${isLocked ? 'text-sub' : 'text-gray-400'}`}
+                      className="text-base leading-none"
                       aria-label={isLocked ? '装備ロック解除' : '装備ロック'}
                     >
-                      {isLocked ? '🔒' : '🔓'}
+                      <span className={lockEmojiClassName} aria-hidden="true">{isLocked ? '🔒' : '🔓'}</span>
                     </button>
                   )}
                   <button

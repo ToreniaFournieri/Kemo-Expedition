@@ -261,6 +261,12 @@ body {
   opacity: var(--side-quest-icon-opacity);
 }
 
+.gray-theme-emoji-icon {
+  display: inline-block;
+  filter: grayscale(1) saturate(0) brightness(0.7);
+  opacity: var(--side-quest-icon-opacity);
+}
+
 
 #root {
   min-height: 100%;
