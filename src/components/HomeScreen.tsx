@@ -2202,6 +2202,7 @@ const AUTO_EQUIPMENT_HELP_LINES = [
 ];
 
 type AutoEquipmentCombatStyle = 'ranged' | 'magic' | 'melee';
+type AutoEquipmentResolvedCombatStyle = AutoEquipmentCombatStyle | 'shield';
 type AutoEquipmentTargetCategory = ItemCategory | 'i.weapon' | 'i.NoA';
 
 function normalizeAutoEquipmentMode(mode: Character['autoEquipmentMode']): AutoEquipmentMode {
@@ -2700,7 +2701,7 @@ export function HomeScreen({
       ];
     };
 
-    const decideAutoEquipmentCombatStyle = (character: Character): AutoEquipmentCombatStyle | null => {
+    const decideAutoEquipmentCombatStyle = (character: Character): AutoEquipmentResolvedCombatStyle => {
       // SpecRef: 7.1.1.2 | Equipping into empty slots | Decide the combat style
       const bonuses = getCharacterAutoEquipBonuses(character);
       const enableFlags = { ranged: false, magic: false, melee: false };
@@ -2709,7 +2710,7 @@ export function HomeScreen({
 
       const addMultiplierScore = (multiplierType: string, value: number): void => {
         const existing = scoreByMultiplierType.get(multiplierType) ?? 0;
-        scoreByMultiplierType.set(multiplierType, existing + (value - 1));
+        scoreByMultiplierType.set(multiplierType, existing + (1 - value));
       };
 
       for (const bonus of bonuses) {
@@ -2747,12 +2748,12 @@ export function HomeScreen({
         }
       });
 
-      return bestStyle;
+      return bestStyle ?? 'shield';
     };
 
     const resolveAutoEquipmentTargetCategory = (
       targetCategory: AutoEquipmentTargetCategory,
-      combatStyle: AutoEquipmentCombatStyle | null,
+      combatStyle: AutoEquipmentResolvedCombatStyle,
     ): ItemCategory[] => {
       if (targetCategory === 'i.weapon') {
         if (combatStyle === 'ranged') return ['arrow', 'bolt'];
