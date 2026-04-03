@@ -182,9 +182,18 @@ The toggle cycles through the following modes:
 - Each item supports only the Jewel types allowed by its category.
 - Jewel effects apply only while the item is equipped.
 
-**4. Lock and unlock item**
-- If item is locked, this item is not changed automatically (when auto equipment is enabled.)
-- Tap 🔒 or 🔓 emoji to switch its state.
+**4. Lock and Unlock Item**
+- Lock behavior
+  - A locked item (🔒) is excluded from all automatic equipment processes.
+  - This includes both `SEMI` and `FULL` modes.
+  - The item will not be removed, replaced, or re-evaluated.
+- Unlock behavior
+  - An unlocked item (🔓) is eligible for automatic equipment processing.
+- Default: Unlock
+- Toggle interaction
+  - Tapping the lock icon toggles the state:
+    - 🔒 Locked → 🔓 Unlocked
+    - 🔓 Unlocked → 🔒 Locked
 
 - Equipment List (Collapsed State)
 
