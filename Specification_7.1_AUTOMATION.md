@@ -19,9 +19,12 @@
 ##### 7.1.1.1 Removes all equipment
 - Record the **jewel** assignments of each equipped item category as **Memory C**.
 - Record the all of its equipment as **Memory D**.
-- Remove all of its equipment. (this only works when `m.auto_equipment` is FULL)
-- Exception: Super rare item is not removed by this process. 
-
+- Remove all of its equipment.
+  - This only works when `m.auto_equipment` is `FULL`
+- **Exception:**
+  - Super rare item is not removed by this process. 
+  - Locked items are not replaced. (but still participate in Memory A/B)
+    
 ##### 7.1.1.2 Equipping into empty slots
 - When a character has one or more empty equipment slots, auto-equipment selects an item category based on the class’s ideal equipment build order.
 - This order represents the target balance of equipment categories for that class.
@@ -216,8 +219,7 @@
     - Only combat styles enabled by corresponding `c.equip_*` bonuses are considered.
     - If multiple `c.equip_*` bonuses are present, compare all enabled combat style scores and select the highest one.
       - If `c.equip_ranged`: Ranged: total sum of (`c.arrow_x1.x` - 1), (`c.bolt_x1.x` - 1), and (`c.archery_x1.x` - 1).
-      - If `c.equip_magic` Magic: total sum of (`c.wand_x1.x` - 1), (`c.grimoire_x1.x` - 1) , and (`c.catalyst_x1.x`
-- 1).
+      - If `c.equip_magic` Magic: total sum of (`c.wand_x1.x` - 1), (`c.grimoire_x1.x` - 1) , and (`c.catalyst_x1.x` - 1).
       - If `c.equip_melee`: Melee: total sum of (`c.sword_x1.x` - 1), (`c.katana_x1.x` - 1) , and (`c.gauntlet_x1.x` - 1).
       - Note: Only one `c.*` bonus of the exact same name applies.
       - Example: If character has `c.equip_ranged`, `c.equip_melee`, `c.sword_x1.4`, `c.arrow_x1.2`, `c.bolt_x1.2`, `c.gauntlet_x1.1`, Ranged: 0.4 (arrow 0.2 + bolt 0.2) and Melee: 0.5 (sword 0.4 + gauntlet 0.1) so "Melee" is selected.
