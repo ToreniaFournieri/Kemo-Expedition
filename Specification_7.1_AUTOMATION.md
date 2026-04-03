@@ -188,7 +188,7 @@
       - Note: Only one `c.*` bonus of the exact same name applies.
       - Example: If character has `c.equip_ranged`, `c.equip_melee`, `c.sword_x1.4`, `c.arrow_x1.2`, `c.bolt_x1.2`, `c.gauntlet_x1.1`, Ranged: 0.4 (arrow 0.2 + bolt 0.2) and Melee: 0.5 (sword 0.4 + gauntlet 0.1) so "Melee" is selected.
       - Tie-breaker: Ranged > Magic > Melee
-      - If no combat style is enabled, resolve i.weapon and i.NoA to shield.
+      - If no `c.equip_ranged`,`c.equip_magic`, `c.equip_melee`: resolve i.weapon and i.NoA to shield.
 
   - If Ranged: target `i.weapon` item categories are `i.arrow` and `i.bolt`, and target `i.NoA` item category is `i.archery`.
   - If Magic: target `i.weapon` item categories are `i.wand` and `i.grimoire`, and target `i.NoA` item category is `i.catalyst`.
