@@ -443,14 +443,14 @@ function getEffectiveAccuracyBonus(accuracyBonus: number, abilities: ComputedCha
 
 function renderEnemyNameWithMutedClass(enemyName: string) {
   const classSuffixMatch = enemyName.match(/^(.*?)(\([^()]+\))(.*)$/);
-  if (!classSuffixMatch) return enemyName;
+  if (!classSuffixMatch) return renderTextWithRaceIcons(enemyName, 'h-4 w-4');
 
   const [, baseName, classSuffix, trailingText] = classSuffixMatch;
   return (
     <>
-      {baseName}
-      <span className="text-gray-500">{classSuffix}</span>
-      {trailingText}
+      {renderTextWithRaceIcons(baseName, 'h-4 w-4')}
+      <span className="text-gray-500">{renderTextWithRaceIcons(classSuffix, 'h-4 w-4')}</span>
+      {renderTextWithRaceIcons(trailingText, 'h-4 w-4')}
     </>
   );
 }
@@ -692,21 +692,24 @@ function RaceIcon({ race, className = "h-8 w-8" }: { race: Race; className?: str
 const RACE_ICON_BY_EMOJI: Record<string, string | undefined> = Object.fromEntries(
   RACES.map((race) => [race.emoji, race.icon])
 );
+const RACE_ICON_BY_TOKEN: Record<string, string | undefined> = Object.fromEntries(
+  RACES.map((race) => [`icon.${race.englishName}`, race.icon])
+);
 
 function renderTextWithRaceIcons(text: string, iconClassName = 'h-3.5 w-3.5'): ReactNode {
   if (!text) return text;
 
-  const emojiPattern = Object.keys(RACE_ICON_BY_EMOJI)
-    .map((emoji) => emoji.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  const iconPattern = [...new Set([...Object.keys(RACE_ICON_BY_EMOJI), ...Object.keys(RACE_ICON_BY_TOKEN)])]
+    .map((token) => token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
     .join('|');
 
-  if (!emojiPattern) return text;
+  if (!iconPattern) return text;
 
-  const regex = new RegExp(`(${emojiPattern})`, 'g');
+  const regex = new RegExp(`(${iconPattern})`, 'g');
   const parts = text.split(regex);
 
   return parts.map((part, index) => {
-    const iconPath = RACE_ICON_BY_EMOJI[part];
+    const iconPath = RACE_ICON_BY_EMOJI[part] ?? RACE_ICON_BY_TOKEN[part];
     if (!iconPath) {
       return part;
     }
