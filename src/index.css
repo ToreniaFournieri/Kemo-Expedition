@@ -278,6 +278,28 @@ body {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
+
+  .side-quest-theme-icon,
+  .sub-theme-emoji-icon {
+    -webkit-filter: none !important;
+    filter: none !important;
+    color: rgb(var(--color-sub));
+    font-variant-emoji: text;
+  }
+
+  .accent-theme-emoji-icon {
+    -webkit-filter: none !important;
+    filter: none !important;
+    color: rgb(var(--color-accent));
+    font-variant-emoji: text;
+  }
+
+  .gray-theme-emoji-icon {
+    -webkit-filter: none !important;
+    filter: none !important;
+    color: rgb(107 114 128);
+    font-variant-emoji: text;
+  }
 }
 
 
