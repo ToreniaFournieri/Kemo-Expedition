@@ -248,21 +248,12 @@ body {
 .accent-theme-emoji-icon,
 .gray-theme-emoji-icon {
   /* SpecRef: 8.2 | UI_PARTY | UI Rules (🔒/🔓 color filtered) */
-  display: inline-flex;
-  align-items: center;
-  -webkit-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  contain: paint;
+  display: inline-block;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
   will-change: filter;
   isolation: isolate;
   opacity: var(--side-quest-icon-opacity);
-}
-
-.side-quest-theme-icon {
-  -webkit-filter: var(--sub-theme-emoji-filter);
-  filter: var(--sub-theme-emoji-filter);
 }
 
 .side-quest-theme-icon {
@@ -286,34 +277,12 @@ body {
 }
 
 @media print {
-  .side-quest-theme-icon {
-    -webkit-filter: var(--sub-theme-emoji-filter) !important;
-    filter: var(--sub-theme-emoji-filter) !important;
-  }
-
-  .sub-theme-emoji-icon {
-    -webkit-filter: var(--sub-theme-emoji-filter) !important;
-    filter: var(--sub-theme-emoji-filter) !important;
-  }
-
-  .accent-theme-emoji-icon {
-    -webkit-filter: var(--accent-theme-emoji-filter) !important;
-    filter: var(--accent-theme-emoji-filter) !important;
-  }
-
-  .gray-theme-emoji-icon {
-    -webkit-filter: grayscale(1) saturate(0) brightness(1.0) !important;
-    filter: grayscale(1) saturate(0) brightness(1.0) !important;
-  }
-
   .side-quest-theme-icon,
   .sub-theme-emoji-icon,
   .accent-theme-emoji-icon,
   .gray-theme-emoji-icon {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
   }
 }
 
