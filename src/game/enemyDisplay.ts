@@ -20,6 +20,16 @@ export const ENEMY_TYPE_SHORT_NAMES: Record<string, string> = {
   Titan: '巨',
   Jinma: '神',
   Kemono: 'ケ',
+  Caninian: 'ケイナイアン',
+  Lupinian: 'ルピニアン',
+  Vulpinian: 'ヴァルピニアン',
+  Ursan: 'ウルサン',
+  Felidian: 'フェリディアン',
+  Mustelid: 'マステリド',
+  Leporian: 'レポリアン',
+  Cervin: 'セルヴィン',
+  Procyonian: 'プロキオニアン',
+  Murid: 'ミュリッド',
 };
 
 export function formatEnemyName(
