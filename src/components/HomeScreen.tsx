@@ -5129,6 +5129,10 @@ function PartyTab({
           setShowBaseStatHelp(false);
           setBaseStatHelpPosition(null);
         }
+        if (showAutoEquipmentHelp) {
+          setShowAutoEquipmentHelp(false);
+          setAutoEquipmentHelpPosition(null);
+        }
         if (activeStatusHelpKey) {
           setActiveStatusHelpKey(null);
           setActiveStatusHelpPosition(null);
@@ -6351,18 +6355,19 @@ function PartyTab({
           </div>
         </div>
         {showAutoEquipmentHelp && autoEquipmentHelpPosition && (
-          <div
-            className="fixed z-20 rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-1"
-            style={{
-              top: autoEquipmentHelpPosition.top,
-              left: autoEquipmentHelpPosition.left,
-              width: autoEquipmentHelpPosition.width,
-            }}
-          >
-            {AUTO_EQUIPMENT_HELP_LINES.map((line) => (
-              <div key={line}>{line}</div>
-            ))}
-          </div>
+        <div
+          className="fixed z-20 rounded-lg border border-gray-200 bg-white p-3 shadow-lg text-xs text-gray-700 space-y-1"
+          style={{
+            top: autoEquipmentHelpPosition.top,
+            left: autoEquipmentHelpPosition.left,
+            width: autoEquipmentHelpPosition.width,
+          }}
+          onPointerDown={(event) => event.stopPropagation()}
+        >
+          {AUTO_EQUIPMENT_HELP_LINES.map((line) => (
+            <div key={line}>{line}</div>
+          ))}
+        </div>
         )}
       <div className="space-y-1">
         {(() => {
