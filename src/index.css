@@ -243,37 +243,31 @@ body {
   color: black;
 }
 
-.side-quest-theme-icon,
-.sub-theme-emoji-icon,
-.accent-theme-emoji-icon,
-.gray-theme-emoji-icon {
-  /* SpecRef: 8.2 | UI_PARTY | UI Rules (🔒/🔓 color filtered) */
+.side-quest-theme-icon {
   display: inline-block;
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  will-change: filter;
-  isolation: isolate;
+  filter: var(--sub-theme-emoji-filter);
   opacity: var(--side-quest-icon-opacity);
 }
 
-.side-quest-theme-icon {
-  -webkit-filter: var(--sub-theme-emoji-filter);
-  filter: var(--sub-theme-emoji-filter);
-}
-
 .sub-theme-emoji-icon {
+  display: inline-block;
   -webkit-filter: var(--sub-theme-emoji-filter);
   filter: var(--sub-theme-emoji-filter);
+  opacity: var(--side-quest-icon-opacity);
 }
 
 .accent-theme-emoji-icon {
+  display: inline-block;
   -webkit-filter: var(--accent-theme-emoji-filter);
   filter: var(--accent-theme-emoji-filter);
+  opacity: var(--side-quest-icon-opacity);
 }
 
 .gray-theme-emoji-icon {
+  display: inline-block;
   -webkit-filter: grayscale(1) saturate(0) brightness(1.0);
   filter: grayscale(1) saturate(0) brightness(1.0);
+  opacity: var(--side-quest-icon-opacity);
 }
 
 @media print {
