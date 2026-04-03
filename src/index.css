@@ -263,7 +263,7 @@ body {
 
 .gray-theme-emoji-icon {
   display: inline-block;
-  filter: grayscale(1) saturate(0) brightness(0.7);
+  filter: grayscale(1) saturate(0) brightness(0.9);
   opacity: var(--side-quest-icon-opacity);
 }
 
