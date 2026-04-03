@@ -81,6 +81,7 @@ interface HomeScreenProps {
     advanceSideQuest: (partyIndex: number, amount: number, simulatedAt?: number) => void;
     setSideQuestProgress: (partyIndex: number, progress: number) => void;
     equipItem: (characterId: number, slotIndex: number, itemKey: string | null, partyIndex?: number) => void;
+    toggleEquipmentLock: (characterId: number, slotIndex: number) => void;
     attachJewel: (characterId: number, slotIndex: number, jewelKey: JewelKey, rank: number, partyIndex?: number) => void;
     updateCharacter: (characterId: number, updates: Partial<Character>) => void;
     reorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
@@ -2457,6 +2458,7 @@ export function HomeScreen({
 
       const isSameVariant = getVariantKey(a) === getVariantKey(b);
       if (!isSameVariant) return false;
+      if ((a.isLocked === true) !== (b.isLocked === true)) return false;
 
       const aJewel = a.jewel;
       const bJewel = b.jewel;
@@ -2468,7 +2470,8 @@ export function HomeScreen({
 
     const getEquipmentEntityKey = (item: Item): string => {
       const jewelSuffix = item.jewel ? `:${item.jewel.key}:${item.jewel.rank}` : '';
-      return `${getVariantKey(item)}${jewelSuffix}`;
+      const lockSuffix = item.isLocked === true ? ':locked' : ':unlocked';
+      return `${getVariantKey(item)}${jewelSuffix}${lockSuffix}`;
     };
 
     const collectEquipmentDiff = (before: Array<Item | null>, after: Array<Item | null>) => {
@@ -2879,8 +2882,11 @@ export function HomeScreen({
         const memoryCJewelsByCategory: Partial<Record<ItemCategory, Array<{ key: JewelKey; rank: number }>>> = {};
 
         if (autoEquipmentMode === 2) {
+          // SpecRef: 8.2.4 | Equipment management | Lock and Unlock Item
+          // SpecRef: 7.1.1.1 | Removes all equipment | Exception
           simulatedEquipmentSlots.forEach((equippedItem, slotIndex) => {
             if (!equippedItem) return;
+            if (equippedItem.isLocked === true) return;
             if (equippedItem.superRare > 0) return;
             if (equippedItem.jewel) {
               const currentCategoryJewels = memoryCJewelsByCategory[equippedItem.category] ?? [];
@@ -2971,6 +2977,7 @@ export function HomeScreen({
 
         simulatedEquipmentSlots.forEach((equippedItem, slotIndex) => {
           if (!equippedItem) return;
+          if (equippedItem.isLocked === true) return;
           const itemKey = getBestUpgradeVariantKeyForItem(equippedItem);
           if (!itemKey) return;
           const variant = simulatedInventory[itemKey];
@@ -4163,6 +4170,7 @@ export function HomeScreen({
           onUpdateCharacter={actions.updateCharacter}
           onReorderPartyCharacter={actions.reorderPartyCharacter}
           onEquipItem={actions.equipItem}
+          onToggleEquipmentLock={actions.toggleEquipmentLock}
           onAttachJewel={actions.attachJewel}
           onAddStatNotifications={actions.addStatNotifications}
           onSelectParty={actions.selectParty}
@@ -4394,6 +4402,7 @@ function PartyTab({
   onUpdateCharacter,
   onReorderPartyCharacter,
   onEquipItem,
+  onToggleEquipmentLock,
   onAttachJewel,
   onAddStatNotifications,
   onSelectParty,
@@ -4415,6 +4424,7 @@ function PartyTab({
   onUpdateCharacter: (id: number, updates: Partial<Character>) => void;
   onReorderPartyCharacter: (fromIndex: number, toIndex: number) => void;
   onEquipItem: (characterId: number, slotIndex: number, itemKey: string | null) => void;
+  onToggleEquipmentLock: (characterId: number, slotIndex: number) => void;
   onAttachJewel: (characterId: number, slotIndex: number, jewelKey: JewelKey, rank: number) => void;
   onAddStatNotifications: (changes: Array<{ message: string; isPositive: boolean }>) => void;
   onSelectParty: (partyIndex: number) => void;
@@ -6417,24 +6427,42 @@ function PartyTab({
               );
               const canExpandJewelPanel = !!item && (hasOwnedAllowedJewel || !!item.jewel);
               const isExpanded = selectingSlot === slotIndex && canExpandJewelPanel;
+              const isLockIconVisible = autoEquipmentMode === 2;
+              const isLocked = item?.isLocked === true;
               return (
               <div key={slotIndex} className={`w-full p-2 text-left border rounded text-sm leading-tight bg-white ${isExpanded ? 'border-sub' : 'border-gray-200'}`}>
-                <button
-                  onClick={() => handleSlotTap(slotIndex)}
-                  className="w-full text-left leading-tight"
-                >
-                  {item ? (
-                    <div className="flex justify-between items-center">
-                      <span>
-                        <span className={getItemNameFontWeightClass(item)}>{getItemDisplayName(item)}</span>
-                        <span className="text-xs leading-tight text-gray-500"> {getRarityShortLabel(item.id, item.name)} {renderTextWithRaceIcons(getItemStats(item, getCharacterCategoryMultiplier(char, item.category), hpDisplayMultiplier))}</span>
-                      </span>
-                      <span className="text-xs text-gray-400">[{CATEGORY_NAMES[item.category]}] {canExpandJewelPanel ? (isExpanded ? '▼' : '▲') : ''}</span>
-                    </div>
-                  ) : (
-                    <span className="text-gray-400">空きスロット</span>
+                <div className="flex items-center gap-2">
+                  {item && isLockIconVisible && (
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        // SpecRef: 8.2.4 | Equipment management | Lock and Unlock Item
+                        onToggleEquipmentLock(char.id, slotIndex);
+                      }}
+                      className={`text-base leading-none ${isLocked ? 'text-sub' : 'text-gray-400'}`}
+                      aria-label={isLocked ? '装備ロック解除' : '装備ロック'}
+                    >
+                      {isLocked ? '🔒' : '🔓'}
+                    </button>
                   )}
-                </button>
+                  <button
+                    onClick={() => handleSlotTap(slotIndex)}
+                    className="w-full text-left leading-tight"
+                  >
+                    {item ? (
+                      <div className="flex justify-between items-center">
+                        <span>
+                          <span className={getItemNameFontWeightClass(item)}>{getItemDisplayName(item)}</span>
+                          <span className="text-xs leading-tight text-gray-500"> {getRarityShortLabel(item.id, item.name)} {renderTextWithRaceIcons(getItemStats(item, getCharacterCategoryMultiplier(char, item.category), hpDisplayMultiplier))}</span>
+                        </span>
+                        <span className="text-xs text-gray-400">[{CATEGORY_NAMES[item.category]}] {canExpandJewelPanel ? (isExpanded ? '▼' : '▲') : ''}</span>
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">空きスロット</span>
+                    )}
+                  </button>
+                </div>
                 {isExpanded && item && (
                   <div className="mt-2 space-y-1 text-xs">
                     {allowedJewels.map((jewelKey) => (

@@ -1293,6 +1293,7 @@ type GameAction =
   | { type: 'ADVANCE_SIDE_QUEST'; partyIndex: number; amount: number; simulatedAt?: number }
   | { type: 'SET_SIDE_QUEST_PROGRESS'; partyIndex: number; progress: number }
   | { type: 'EQUIP_ITEM'; characterId: number; slotIndex: number; itemKey: string | null; partyIndex?: number }
+  | { type: 'TOGGLE_EQUIPMENT_LOCK'; characterId: number; slotIndex: number }
   | { type: 'ATTACH_JEWEL'; characterId: number; slotIndex: number; jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus'; rank: number; partyIndex?: number }
   | { type: 'UPDATE_CHARACTER'; characterId: number; updates: Partial<Character> }
   | { type: 'REORDER_PARTY_CHARACTER'; fromIndex: number; toIndex: number }
@@ -3134,6 +3135,32 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'TOGGLE_EQUIPMENT_LOCK': {
+      const currentParty = state.parties[state.selectedPartyIndex];
+      if (!currentParty) return state;
+      const charIndex = currentParty.characters.findIndex(c => c.id === action.characterId);
+      if (charIndex === -1) return state;
+      const character = currentParty.characters[charIndex];
+      if (character.autoEquipmentMode !== 2) return state;
+      const item = character.equipment[action.slotIndex];
+      if (!item) return state;
+
+      const toggledItem: Item = { ...item, isLocked: item.isLocked !== true };
+      const newCharacters = [...currentParty.characters];
+      newCharacters[charIndex] = replaceCharacterEquipment(character, action.slotIndex, toggledItem);
+
+      const updatedParties = [...state.parties];
+      updatedParties[state.selectedPartyIndex] = {
+        ...currentParty,
+        characters: newCharacters,
+      };
+
+      return {
+        ...state,
+        parties: updatedParties,
+      };
+    }
+
     case 'ATTACH_JEWEL': {
       const targetPartyIndex = action.partyIndex ?? state.selectedPartyIndex;
       const currentParty = state.parties[targetPartyIndex];
@@ -3973,6 +4000,10 @@ export function useGameState() {
 
     equipItem: useCallback((characterId: number, slotIndex: number, itemKey: string | null, partyIndex?: number) => {
       dispatch({ type: 'EQUIP_ITEM', characterId, slotIndex, itemKey, partyIndex });
+    }, []),
+
+    toggleEquipmentLock: useCallback((characterId: number, slotIndex: number) => {
+      dispatch({ type: 'TOGGLE_EQUIPMENT_LOCK', characterId, slotIndex });
     }, []),
 
     attachJewel: useCallback((characterId: number, slotIndex: number, jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus', rank: number, partyIndex?: number) => {
