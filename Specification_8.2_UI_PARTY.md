@@ -183,13 +183,15 @@ The toggle cycles through the following modes:
 - Jewel effects apply only while the item is equipped.
 
 **4. Lock and Unlock Item**
+- Visibility
+  - The lock icon (🔒 / 🔓) is displayed only when `m.auto_equipment` = `FULL`.
+- Default state
+  - All items are Unlocked by default.
 - Lock behavior
   - A locked item (🔒) is excluded from all automatic equipment processes.
-  - This includes both `SEMI` and `FULL` modes.
-  - The item will not be removed, replaced, or re-evaluated.
+  - The item will not be removed, replaced.
 - Unlock behavior
   - An unlocked item (🔓) is eligible for automatic equipment processing.
-- Default: Unlock
 - Toggle interaction
   - Tapping the lock icon toggles the state:
     - 🔒 Locked → 🔓 Unlocked
