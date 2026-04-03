@@ -50,7 +50,10 @@
 | 9 | `i.armor` |
 | 10 | `i.robe` |
 | 11 | `i.weapon` |
-
+| 12 | `i.NoA` |
+| 13 | `i.weapon` |
+| 14 | `i.armor` |
+| 15 | `i.robe` |
 
 - class.samurai:
 
@@ -67,7 +70,13 @@
 | 9 | `i.armor` |
 | 10 | `i.robe` |
 | 11 | `i.NoA` |
-
+| 12 | `i.weapon` |
+| 13 | `i.armor` |
+| 14 | `i.robe` |
+| 12 | `i.NoA` |
+| 13 | `i.weapon` |
+| 14 | `i.armor` |
+| 15 | `i.robe` |
 
 - class.ranger, class.ninja:
 
@@ -84,6 +93,11 @@
 | 9 | `i.armor` |
 | 10 | `i.robe` |
 | 11 | `i.weapon` |
+| 12 | `i.NoA` |
+| 13 | `i.weapon` |
+| 14 | `i.armor` |
+| 15 | `i.robe` |
+| 16 | `i.NoA` |
 
 - class.striker:
 
@@ -101,6 +115,10 @@
 | 10 | `i.robe` |
 | 11 | `i.weapon` |
 | 12 | `i.NoA` |
+| 13 | `i.weapon` |
+| 14 | `i.armor` |
+| 15 | `i.robe` |
+| 16 | `i.NoA` |
 
 - class.wizard, class.alchemist:
 
@@ -117,6 +135,11 @@
 | 9 | `i.weapon`  |
 | 10 | `i.robe` |
 | 11 | `i.weapon`  |
+| 12 | `i.NoA` |
+| 13 | `i.weapon` |
+| 14 | `i.armor` |
+| 15 | `i.robe` |
+
 
 - class.sage:
 
@@ -133,6 +156,10 @@
 | 9 | `i.weapon`  |
 | 10 | `i.robe` |
 | 11 | `i.NoA` |
+| 12 | `i.weapon` |
+| 13 | `i.armor` |
+| 14 | `i.robe` |
+| 15 | `i.NoA` |
 
 - class.guardian:
 
@@ -149,6 +176,10 @@
 | 9 | `i.weapon` |
 | 10 | `i.shield` |
 | 11 | `i.weapon` |
+| 12 | `i.NoA` |
+| 13 | `i.weapon` |
+| 14 | `i.armor` |
+| 15 | `i.robe` |
 
 - class.lord, class.pilgrim:
 
@@ -166,6 +197,9 @@
 | 10 | `i.shield` |
 | 11 | `i.weapon` |
 | 12 | `i.NoA` |
+| 13 | `i.weapon` |
+| 14 | `i.armor` |
+| 15 | `i.robe` |
 
 **Group Item category**
 
@@ -188,11 +222,11 @@
       - Note: Only one `c.*` bonus of the exact same name applies.
       - Example: If character has `c.equip_ranged`, `c.equip_melee`, `c.sword_x1.4`, `c.arrow_x1.2`, `c.bolt_x1.2`, `c.gauntlet_x1.1`, Ranged: 0.4 (arrow 0.2 + bolt 0.2) and Melee: 0.5 (sword 0.4 + gauntlet 0.1) so "Melee" is selected.
       - Tie-breaker: Ranged > Magic > Melee
-      - If no `c.equip_ranged`,`c.equip_magic`, `c.equip_melee`: resolve i.weapon and i.NoA to shield.
 
   - If Ranged: target `i.weapon` item categories are `i.arrow` and `i.bolt`, and target `i.NoA` item category is `i.archery`.
   - If Magic: target `i.weapon` item categories are `i.wand` and `i.grimoire`, and target `i.NoA` item category is `i.catalyst`.
   - If Melee: target `i.weapon` item categories are `i.sword` and `i.katana`, and target `i.NoA` item category is `i.gauntlet`.
+  - If no `c.equip_ranged`,`c.equip_magic`, `c.equip_melee`: resolve i.weapon and i.NoA to shield. 
    
 2. **Initialize memory**
    - Record the **item IDs** of all currently equipped items as **Memory A**.
