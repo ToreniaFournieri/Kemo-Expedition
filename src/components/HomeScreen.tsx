@@ -2209,19 +2209,20 @@ function normalizeAutoEquipmentMode(mode: Character['autoEquipmentMode']): AutoE
   return 1;
 }
 
+// SpecRef: 7.1.1.2 | Equipping into empty slots | class.duelist, class.sword-saint
 const AUTO_EQUIPMENT_PRIORITY_BY_CLASS: Record<Character['mainClassId'], AutoEquipmentTargetCategory[]> = {
-  guardian: ['armor', 'i.weapon', 'robe', 'i.NoA', 'i.weapon', 'shield', 'armor', 'robe', 'i.weapon', 'shield', 'i.weapon'],
-  duelist: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'armor', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon'],
-  samurai: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'i.NoA', 'i.weapon', 'i.weapon', 'armor', 'robe', 'i.NoA'],
-  'sword-saint': ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'armor', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon'],
-  striker: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'arrow', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon', 'i.NoA'],
-  ninja: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'arrow', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon'],
-  lord: ['i.weapon', 'armor', 'robe', 'i.weapon', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon', 'shield', 'i.weapon', 'i.NoA'],
-  ranger: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'arrow', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon'],
-  wizard: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'i.weapon', 'i.NoA', 'i.weapon', 'i.weapon', 'robe', 'i.weapon'],
-  sage: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'i.weapon', 'i.NoA', 'i.weapon', 'i.weapon', 'robe', 'i.NoA'],
-  alchemist: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'i.weapon', 'i.NoA', 'i.weapon', 'i.weapon', 'robe', 'i.weapon'],
-  pilgrim: ['i.weapon', 'armor', 'robe', 'i.weapon', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon', 'shield', 'i.weapon', 'i.NoA'],
+  guardian: ['armor', 'i.weapon', 'robe', 'i.NoA', 'i.weapon', 'shield', 'armor', 'robe', 'i.weapon', 'shield', 'i.weapon', 'i.NoA', 'i.weapon', 'armor', 'robe'],
+  duelist: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'armor', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon', 'i.NoA', 'i.weapon', 'armor', 'robe'],
+  samurai: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'i.NoA', 'i.weapon', 'i.weapon', 'armor', 'robe', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.NoA', 'i.weapon', 'armor', 'robe'],
+  'sword-saint': ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'armor', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon', 'i.NoA', 'i.weapon', 'armor', 'robe'],
+  striker: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'arrow', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.NoA'],
+  ninja: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'arrow', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.NoA'],
+  lord: ['i.weapon', 'armor', 'robe', 'i.weapon', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon', 'shield', 'i.weapon', 'i.NoA', 'i.weapon', 'armor', 'robe'],
+  ranger: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'arrow', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.NoA'],
+  wizard: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'i.weapon', 'i.NoA', 'i.weapon', 'i.weapon', 'robe', 'i.weapon', 'i.NoA', 'i.weapon', 'armor', 'robe'],
+  sage: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'i.weapon', 'i.NoA', 'i.weapon', 'i.weapon', 'robe', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.NoA'],
+  alchemist: ['i.weapon', 'i.NoA', 'armor', 'robe', 'i.weapon', 'i.weapon', 'i.NoA', 'i.weapon', 'i.weapon', 'robe', 'i.weapon', 'i.NoA', 'i.weapon', 'armor', 'robe'],
+  pilgrim: ['i.weapon', 'armor', 'robe', 'i.weapon', 'i.NoA', 'i.weapon', 'armor', 'robe', 'i.weapon', 'shield', 'i.weapon', 'i.NoA', 'i.weapon', 'armor', 'robe'],
 };
 
 function getNextMissingAutoEquipmentCategory(
