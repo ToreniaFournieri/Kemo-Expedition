@@ -484,6 +484,27 @@ function EnemyBestiaryBubble({
     width: number;
   };
 }) {
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Bestiary (敵キャラクター図鑑)
+  const enemy = bubble.enemy;
+  const hasRangedAttack = enemy.rangedAttack > 0 && enemy.rangedNoA > 0;
+  const hasMeleeAttack = enemy.meleeAttack > 0 && enemy.meleeNoA > 0;
+  const hasMagicalAttack = enemy.magicalAttack > 0 && enemy.magicalNoA > 0;
+  const hasPhysicalAttack = hasRangedAttack || hasMeleeAttack;
+  const hasMagicCasting = hasMagicalAttack
+    || (enemy.bonuses ?? []).some((bonus) => bonus.type === 'caster' || bonus.type === 'equip_magic');
+  const decay = `${((0.90 + enemy.accuracyBonus) * 100).toFixed(1)}%`;
+  const classText = getEnemyClassSummary(enemy).replace('/', ' / ');
+  const enemyTypeText = ENEMY_TYPE_SHORT_NAMES[enemy.enemyType] ?? enemy.enemyType;
+  const elementalOffenseEmoji = enemy.elementalOffense === 'fire'
+    ? '🔥'
+    : enemy.elementalOffense === 'ice'
+      ? '❄️'
+      : enemy.elementalOffense === 'thunder'
+        ? '⚡'
+        : null;
+  const dropText = getEnemyDropCandidates(enemy).map((item) => `${getRarityShortLabel(item.id, item.name)}${item.name}`).join(' / ') || 'なし';
+  const abilityText = enemy.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${ability.level}`).join(', ') || 'なし';
+
   return (
     <div
       className="fixed z-20 rounded-lg border border-gray-200 bg-white p-3 shadow-lg"
@@ -495,14 +516,29 @@ function EnemyBestiaryBubble({
     >
       <div className="text-xs space-y-1 text-gray-700">
         <div className="text-sm font-semibold text-gray-800">
-          {renderEnemyNameWithMutedClass(formatEnemyDefName(bubble.enemy))}
+          {renderEnemyNameWithMutedClass(formatEnemyDefName(enemy))}
         </div>
-        <div>ID: {bubble.enemy.id}</div>
-        <div>HP: {formatNumber(bubble.enemy.hp)}</div>
-        <div>型: {ENEMY_TYPE_SHORT_NAMES[bubble.enemy.enemyType] ?? bubble.enemy.enemyType} / クラス: {getEnemyClassSummary(bubble.enemy)}</div>
-        <div className="text-gray-600">
-          ドロップ: {getEnemyDropCandidates(bubble.enemy).map((item) => item.name).join(' / ') || 'なし'}
-        </div>
+        <div>ID: {enemy.id}</div>
+        <div>HP: {formatNumber(enemy.hp)}</div>
+        <div>クラス: {classText}</div>
+        <div>タイプ: {enemyTypeText}</div>
+        {hasRangedAttack && <div>遠距離攻撃: {formatNumber(enemy.rangedAttack)} x {formatNumber(enemy.rangedNoA)}回 (x{enemy.rangedAttackAmplifier.toFixed(2)})</div>}
+        {hasMeleeAttack && <div>近接攻撃: {formatNumber(enemy.meleeAttack)} x {formatNumber(enemy.meleeNoA)}回 (x{enemy.meleeAttackAmplifier.toFixed(2)})</div>}
+        {hasPhysicalAttack && <div>物理命中率: 100% (減衰: {decay})</div>}
+        {hasMagicalAttack && <div>魔法攻撃: {formatNumber(enemy.magicalAttack)} x {formatNumber(enemy.magicalNoA)}回 (x{enemy.magicalAttackAmplifier.toFixed(2)})</div>}
+        {hasMagicCasting && <div>詠唱魔法: {getEnemyBestiarySpellName(enemy)}</div>}
+        <div>属性: {elementalOffenseEmoji ?? '無'} (x{enemy.elementalOffenseValue.toFixed(2)})</div>
+        <div>物理防御: {formatNumber(enemy.physicalDefense)} ({(enemy.physicalDefenseAmplifier * 100).toFixed(0)}%)</div>
+        <div>魔法防御: {formatNumber(enemy.magicalDefense)} ({(enemy.magicalDefenseAmplifier * 100).toFixed(0)}%)</div>
+        {hasMagicalAttack && <div>魔法命中率: 100% (減衰: {decay})</div>}
+        <div>回避: {formatNumber(Math.round(enemy.evasionBonus * 1000))}</div>
+        <div>{renderElementalResistanceInline(enemy.elementalResistance)}</div>
+        {(() => {
+          const bonusText = getEnemyTypeCBonusText(enemy);
+          return bonusText ? <div>ボーナス: {bonusText}</div> : null;
+        })()}
+        <div>アビリティ: {abilityText}</div>
+        <div className="text-gray-600">ドロップ候補: {dropText}</div>
       </div>
     </div>
   );
