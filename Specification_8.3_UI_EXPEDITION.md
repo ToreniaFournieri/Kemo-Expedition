@@ -46,6 +46,26 @@ PT2...
     - Tapping the quick summary shows a `f.list_of_rooms`.
     - Tapping a room opens the `f.battle_logs`.
     - Tap enemy’s name part to show floating bubble of its bestiary. 
+```
+ID: 6055
+レベル: 42
+HP: 16,035 
+クラス: 忍者 /賢者
+タイプ: ゴーレム
+遠距離攻撃: 649 x 32回 (x5.80)
+物理命中率: 100% (減衰: 95.0%)
+魔法攻撃: 701 x 12回 (x5.80)
+詠唱魔法: アルカナアロー
+属性: 無 (x1.00)
+物理防御: 330 (100%)
+魔法防御: 550 (100%)
+魔法命中率: 100% (減衰: 95.0%)
+回避: 30
+属性耐性: 🔥100%,❄️100%,⚡130%
+ボーナス: 成長1.3倍, 雷防x1.3
+アビリティ:先制攻撃1, 含金1, 魔封1
+ドロップ候補: [6E]継ぎ獣導杖 / [6E]合成獣秘録 / [6E]継核触媒 / [6U]落雷の杖 / [6C]駆動コア片
+```
   - 次の目標: show next Loot-Gate condition. 
 
 - **Gods Battle (神魔戦)**
