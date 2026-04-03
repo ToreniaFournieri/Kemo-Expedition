@@ -2715,9 +2715,9 @@ export function HomeScreen({
       };
 
       for (const bonus of bonuses) {
-        if (bonus.type === 'equip_ranged') enableFlags.ranged = true;
-        if (bonus.type === 'equip_magic') enableFlags.magic = true;
-        if (bonus.type === 'equip_melee') enableFlags.melee = true;
+        if (bonus.type === 'equip_ranged' && bonus.value > 0) enableFlags.ranged = true;
+        if (bonus.type === 'equip_magic' && bonus.value > 0) enableFlags.magic = true;
+        if (bonus.type === 'equip_melee' && bonus.value > 0) enableFlags.melee = true;
         if (!bonus.type.endsWith('_multiplier')) continue;
 
         const bonusName = `${bonus.type}:${bonus.value}`;
@@ -2739,6 +2739,9 @@ export function HomeScreen({
       };
 
       const ranking: AutoEquipmentCombatStyle[] = ['ranged', 'magic', 'melee'];
+      if (!enableFlags.ranged && !enableFlags.magic && !enableFlags.melee) {
+        return null;
+      }
       let bestStyle: AutoEquipmentCombatStyle | null = null;
       let bestScore = Number.NEGATIVE_INFINITY;
       ranking.forEach((style) => {
