@@ -251,20 +251,33 @@ body {
 
 .sub-theme-emoji-icon {
   display: inline-block;
+  -webkit-filter: var(--sub-theme-emoji-filter);
   filter: var(--sub-theme-emoji-filter);
   opacity: var(--side-quest-icon-opacity);
 }
 
 .accent-theme-emoji-icon {
   display: inline-block;
+  -webkit-filter: var(--accent-theme-emoji-filter);
   filter: var(--accent-theme-emoji-filter);
   opacity: var(--side-quest-icon-opacity);
 }
 
 .gray-theme-emoji-icon {
   display: inline-block;
+  -webkit-filter: grayscale(1) saturate(0) brightness(1.0);
   filter: grayscale(1) saturate(0) brightness(1.0);
   opacity: var(--side-quest-icon-opacity);
+}
+
+@media print {
+  .side-quest-theme-icon,
+  .sub-theme-emoji-icon,
+  .accent-theme-emoji-icon,
+  .gray-theme-emoji-icon {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 }
 
 
