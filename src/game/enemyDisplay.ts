@@ -39,6 +39,10 @@ export function formatEnemyName(
   subClassId?: keyof typeof CLASS_SHORT_NAMES | 'none',
 ): string {
   // SpecRef: 6.1.7 | Logs | p.enemy_name
+  const enemyTypeLabel = ['Caninian', 'Lupinian', 'Vulpinian', 'Ursan', 'Felidian', 'Mustelid', 'Leporian', 'Cervin', 'Procyonian', 'Murid']
+    .includes(enemyType)
+    ? `icon.${enemyType}`
+    : ENEMY_TYPE_SHORT_NAMES[enemyType];
   const classLabel = CLASS_SHORT_NAMES[classId];
   const hasSubClass = !!subClassId && subClassId !== 'none';
   const subClassLabel = hasSubClass ? CLASS_SHORT_NAMES[subClassId] : '';
@@ -46,7 +50,7 @@ export function formatEnemyName(
   const classText = classLabel
     ? (isMasterClass ? `${classLabel}M` : (subClassLabel ? `${classLabel}/${subClassLabel}` : classLabel))
     : '';
-  const labels = [ENEMY_TYPE_SHORT_NAMES[enemyType], classText].filter(Boolean);
+  const labels = [enemyTypeLabel, classText].filter(Boolean);
   return labels.length > 0 ? `${name}(${labels.join(',')})` : name;
 }
 
