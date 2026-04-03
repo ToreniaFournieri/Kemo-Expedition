@@ -33,7 +33,7 @@ import { getShopItemPrice, getShopHourKey, getShopLineupSeed, getShopStockKey, g
 import { calculateItemSellPrice } from '../game/pricing';
 import { NotificationToast } from './NotificationToast';
 import { getBaseMultiplier } from '../game/baseMultiplier';
-import { formatEnemyDefName } from '../game/enemyDisplay';
+import { ENEMY_TYPE_SHORT_NAMES, formatEnemyDefName } from '../game/enemyDisplay';
 import { computeCharacterStats, getAbilityDescription, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
 import { serializeGameState } from '../game/saveCodec';
 import { createSideQuestBag, createSleepinessPartyBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag } from '../game/bags';
@@ -6604,6 +6604,14 @@ function ExpeditionTab({
   expandedRoom: { partyIndex: number; roomIndex: number; latestRoomToken: string } | null;
   setExpandedRoom: Dispatch<SetStateAction<{ partyIndex: number; roomIndex: number; latestRoomToken: string } | null>>;
 }) {
+  const [activeEnemyBestiaryBubble, setActiveEnemyBestiaryBubble] = useState<{
+    key: string;
+    enemy: EnemyDef;
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
+
   const getEstimatedStartHp = (entry: ExpeditionLogEntry) => {
     if (typeof entry.startPartyHP === 'number') {
       return Math.min(entry.maxPartyHP, Math.max(0, entry.startPartyHP));
@@ -6613,8 +6621,88 @@ function ExpeditionTab({
     return Math.min(entry.maxPartyHP, Math.max(0, entry.remainingPartyHP + entry.damageTaken + attritionAmount - healAmount));
   };
 
+  const getBestiaryEnemyFromLogEntry = (entry: ExpeditionLogEntry): EnemyDef | null => {
+    if (entry.enemySnapshot) return entry.enemySnapshot;
+    if (typeof entry.enemyId === 'number') {
+      return ENEMIES.find((enemy) => enemy.id === entry.enemyId) ?? null;
+    }
+
+    const normalizedEnemyName = entry.enemyName.replace(/\s+\((ELITE|BOSS|神魔戦)\)\s*$/u, '').trim();
+    if (!normalizedEnemyName) return null;
+    return ENEMIES.find((enemy) => formatEnemyDefName(enemy) === normalizedEnemyName) ?? null;
+  };
+
+  const getEnemyClassSummary = (enemy: EnemyDef): string => {
+    const mainClass = CLASS_SHORT_NAMES[enemy.enemyClass] ?? enemy.enemyClass;
+    if (!enemy.enemySubClass || enemy.enemySubClass === 'none') return mainClass;
+    if (enemy.enemySubClass === enemy.enemyClass) return `${mainClass}M`;
+    const subClass = CLASS_SHORT_NAMES[enemy.enemySubClass] ?? enemy.enemySubClass;
+    return `${mainClass}/${subClass}`;
+  };
+
+  const handleEnemyBestiaryBubbleToggle = (
+    bubbleKey: string,
+    entry: ExpeditionLogEntry,
+    targetElement: HTMLElement,
+  ) => {
+    const enemy = getBestiaryEnemyFromLogEntry(entry);
+    if (!enemy) return;
+
+    if (activeEnemyBestiaryBubble?.key === bubbleKey) {
+      setActiveEnemyBestiaryBubble(null);
+      return;
+    }
+
+    const triggerRect = targetElement.getBoundingClientRect();
+    const viewportPadding = 12;
+    const bubbleWidth = Math.min(360, window.innerWidth - viewportPadding * 2);
+    const left = Math.min(
+      Math.max(triggerRect.left, viewportPadding),
+      window.innerWidth - viewportPadding - bubbleWidth,
+    );
+
+    // SpecRef: 8.3 | UI_EXPEDITION | f.battle_logs
+    // Tap enemy’s name part to show floating bubble of its bestiary.
+    setActiveEnemyBestiaryBubble({
+      key: bubbleKey,
+      enemy,
+      top: triggerRect.bottom + 8,
+      left,
+      width: bubbleWidth,
+    });
+  };
+
   return (
-    <div className="space-y-1.5">
+    <div
+      className="space-y-1.5"
+      onPointerDown={() => {
+        if (activeEnemyBestiaryBubble) {
+          setActiveEnemyBestiaryBubble(null);
+        }
+      }}
+    >
+      {activeEnemyBestiaryBubble && (
+        <div
+          className="fixed z-20 rounded-lg border border-gray-200 bg-white p-3 shadow-lg"
+          style={{
+            top: activeEnemyBestiaryBubble.top,
+            left: activeEnemyBestiaryBubble.left,
+            width: activeEnemyBestiaryBubble.width,
+          }}
+        >
+          <div className="text-xs space-y-1 text-gray-700">
+            <div className="text-sm font-semibold text-gray-800">
+              {renderEnemyNameWithMutedClass(formatEnemyDefName(activeEnemyBestiaryBubble.enemy))}
+            </div>
+            <div>ID: {activeEnemyBestiaryBubble.enemy.id}</div>
+            <div>HP: {formatNumber(activeEnemyBestiaryBubble.enemy.hp)}</div>
+            <div>型: {ENEMY_TYPE_SHORT_NAMES[activeEnemyBestiaryBubble.enemy.enemyType] ?? activeEnemyBestiaryBubble.enemy.enemyType} / クラス: {getEnemyClassSummary(activeEnemyBestiaryBubble.enemy)}</div>
+            <div className="text-gray-600">
+              ドロップ: {getEnemyDropCandidates(activeEnemyBestiaryBubble.enemy).map((item) => item.name).join(' / ') || 'なし'}
+            </div>
+          </div>
+        </div>
+      )}
       {[0, 1, 2, 3, 4, 5].map((partyIndex) => {
         const party = state.parties[partyIndex];
         if (!party) {
@@ -6929,7 +7017,30 @@ function ExpeditionTab({
                           className={`w-full text-left p-2 text-xs ${canExpandRoom ? '' : 'cursor-default'}`}
                         >
                             <div className="flex justify-between items-center">
-                              <span className="font-medium">{roomLabel}: {renderEnemyNameWithMutedClass(entry.enemyName)}</span>
+                              <span className="font-medium">
+                                {roomLabel}:{' '}
+                                <span
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    handleEnemyBestiaryBubbleToggle(`${partyIndex}-${originalIndex}-${entry.room}`, entry, event.currentTarget);
+                                  }}
+                                  onKeyDown={(event) => {
+                                    if (event.key !== 'Enter' && event.key !== ' ') return;
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    handleEnemyBestiaryBubbleToggle(
+                                      `${partyIndex}-${originalIndex}-${entry.room}`,
+                                      entry,
+                                      event.currentTarget,
+                                    );
+                                  }}
+                                  className="inline cursor-pointer rounded px-0.5 -mx-0.5 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400"
+                                >
+                                  {renderEnemyNameWithMutedClass(entry.enemyName)}
+                                </span>
+                              </span>
                               <span className="flex items-center gap-2">
                                 <span className={entry.gateInfo ? 'text-gray-500 font-medium' : entry.outcome === 'victory' ? 'text-sub font-medium' : entry.outcome === 'defeat' ? 'text-accent font-medium' : 'text-accent font-medium'}>
                                   {entry.gateInfo ? '未到達' : entry.outcome === 'victory' ? '勝利' : entry.outcome === 'defeat' ? '敗北' : '引分'}

@@ -2363,6 +2363,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               startPartyHP: roomStartHp,
               postBattlePartyHP: battleResult.partyHp,
               floorMultiplier: roomMultiplier,
+              enemyId: enemy.id,
+              enemySnapshot: enemy,
               enemyName: formatEnemyDefName(enemy) + roomSuffix,
               enemyHP: enemy.hp,
               enemyAttackValues,
