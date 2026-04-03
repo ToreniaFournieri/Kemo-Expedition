@@ -479,6 +479,7 @@ function EnemyBestiaryBubble({
 }: {
   bubble: {
     enemy: EnemyDef;
+    enemyLevel: number | null;
     top: number;
     left: number;
     width: number;
@@ -519,6 +520,7 @@ function EnemyBestiaryBubble({
           {renderEnemyNameWithMutedClass(formatEnemyDefName(enemy))}
         </div>
         <div>ID: {enemy.id}</div>
+        {bubble.enemyLevel !== null && <div>レベル: {formatNumber(bubble.enemyLevel)}</div>}
         <div>HP: {formatNumber(enemy.hp)}</div>
         <div>クラス: {classText}</div>
         <div>タイプ: {enemyTypeText}</div>
@@ -6696,6 +6698,7 @@ function ExpeditionTab({
   const [activeEnemyBestiaryBubble, setActiveEnemyBestiaryBubble] = useState<{
     key: string;
     enemy: EnemyDef;
+    enemyLevel: number | null;
     top: number;
     left: number;
     width: number;
@@ -6713,6 +6716,7 @@ function ExpeditionTab({
   const handleEnemyBestiaryBubbleToggle = (
     bubbleKey: string,
     entry: ExpeditionLogEntry,
+    enemyLevel: number | null,
     targetElement: HTMLElement,
   ) => {
     const enemy = getBestiaryEnemyFromLogEntry(entry);
@@ -6736,6 +6740,7 @@ function ExpeditionTab({
     setActiveEnemyBestiaryBubble({
       key: bubbleKey,
       enemy,
+      enemyLevel,
       top: triggerRect.bottom + 8,
       left,
       width: bubbleWidth,
@@ -6773,6 +6778,7 @@ function ExpeditionTab({
         const { partyStats, characterStats } = computePartyStats(party);
         const isLogExpanded = expandedLogParty === partyIndex;
         const currentLog = party.lastExpeditionLog;
+        const currentLogDungeonExpLevel = DUNGEONS.find((dungeon) => dungeon.id === currentLog?.dungeonId)?.expLevel;
         const headlineDungeonName = currentLog?.dungeonName ?? selectedDungeon?.name;
         const headlineState = cycle.state === 'explore'
           ? getPartyCycleStateLabel('explore')
@@ -7073,15 +7079,22 @@ function ExpeditionTab({
                                   tabIndex={0}
                                   onClick={(event) => {
                                     event.stopPropagation();
-                                    handleEnemyBestiaryBubbleToggle(`${partyIndex}-${originalIndex}-${entry.room}`, entry, event.currentTarget);
+                                    const enemyLevel = typeof currentLogDungeonExpLevel === 'number' && entry.floor && entry.roomType
+                                      ? getEffectiveEnemyLevel(currentLogDungeonExpLevel, entry.floor, entry.roomType, getEnvironmentId() === 'luna')
+                                      : null;
+                                    handleEnemyBestiaryBubbleToggle(`${partyIndex}-${originalIndex}-${entry.room}`, entry, enemyLevel, event.currentTarget);
                                   }}
                                   onKeyDown={(event) => {
                                     if (event.key !== 'Enter' && event.key !== ' ') return;
                                     event.preventDefault();
                                     event.stopPropagation();
+                                    const enemyLevel = typeof currentLogDungeonExpLevel === 'number' && entry.floor && entry.roomType
+                                      ? getEffectiveEnemyLevel(currentLogDungeonExpLevel, entry.floor, entry.roomType, getEnvironmentId() === 'luna')
+                                      : null;
                                     handleEnemyBestiaryBubbleToggle(
                                       `${partyIndex}-${originalIndex}-${entry.room}`,
                                       entry,
+                                      enemyLevel,
                                       event.currentTarget,
                                     );
                                   }}
@@ -8041,6 +8054,7 @@ function DiaryTab({
   const [activeEnemyBestiaryBubble, setActiveEnemyBestiaryBubble] = useState<{
     key: string;
     enemy: EnemyDef;
+    enemyLevel: number | null;
     top: number;
     left: number;
     width: number;
@@ -8049,6 +8063,7 @@ function DiaryTab({
   const handleEnemyBestiaryBubbleToggle = (
     bubbleKey: string,
     entry: ExpeditionLogEntry,
+    enemyLevel: number | null,
     targetElement: HTMLElement,
   ) => {
     const enemy = getBestiaryEnemyFromLogEntry(entry);
@@ -8072,6 +8087,7 @@ function DiaryTab({
     setActiveEnemyBestiaryBubble({
       key: bubbleKey,
       enemy,
+      enemyLevel,
       top: triggerRect.bottom + 8,
       left,
       width: bubbleWidth,
@@ -8413,13 +8429,21 @@ function DiaryTab({
                                   tabIndex={0}
                                   onClick={(event) => {
                                     event.stopPropagation();
-                                    handleEnemyBestiaryBubbleToggle(roomKey, entry, event.currentTarget);
+                                    const diaryDungeonExpLevel = DUNGEONS.find((dungeon) => dungeon.id === log.dungeonId)?.expLevel;
+                                    const enemyLevel = typeof diaryDungeonExpLevel === 'number' && entry.floor && entry.roomType
+                                      ? getEffectiveEnemyLevel(diaryDungeonExpLevel, entry.floor, entry.roomType, getEnvironmentId() === 'luna')
+                                      : null;
+                                    handleEnemyBestiaryBubbleToggle(roomKey, entry, enemyLevel, event.currentTarget);
                                   }}
                                   onKeyDown={(event) => {
                                     if (event.key !== 'Enter' && event.key !== ' ') return;
                                     event.preventDefault();
                                     event.stopPropagation();
-                                    handleEnemyBestiaryBubbleToggle(roomKey, entry, event.currentTarget);
+                                    const diaryDungeonExpLevel = DUNGEONS.find((dungeon) => dungeon.id === log.dungeonId)?.expLevel;
+                                    const enemyLevel = typeof diaryDungeonExpLevel === 'number' && entry.floor && entry.roomType
+                                      ? getEffectiveEnemyLevel(diaryDungeonExpLevel, entry.floor, entry.roomType, getEnvironmentId() === 'luna')
+                                      : null;
+                                    handleEnemyBestiaryBubbleToggle(roomKey, entry, enemyLevel, event.currentTarget);
                                   }}
                                   className="inline cursor-pointer rounded px-0.5 -mx-0.5 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400"
                                 >
