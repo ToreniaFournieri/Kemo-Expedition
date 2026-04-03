@@ -4836,7 +4836,7 @@ function PartyTab({
   const normalizedDisplayedDeityName = normalizeDeityName(displayedDeityName);
   const displayedDeityDonation = deityDonations[normalizedDisplayedDeityName] ?? 0;
   const hasUnlockedReligions = unlockedDeities.length > 0;
-  const equippedItemCount = char.equipment.filter((item) => item != null).length;
+  const equippedItemCount = char.equipment.slice(0, stats.maxEquipSlots).filter((item) => item != null).length;
   const autoEquipmentMode = normalizeAutoEquipmentMode(char.autoEquipmentMode);
 
   const handleAutoEquipmentModeCycle = () => {
