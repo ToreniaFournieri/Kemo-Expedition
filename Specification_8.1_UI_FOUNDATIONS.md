@@ -46,6 +46,7 @@
 
 **Emoji Icon Replacement**
 - All emoji used in UI, logs, and text outputs must be replaced with their corresponding icon image assets.
+- Icon images must scale to match the surrounding text size (inline alignment).
 
 - Replacement Mapping
 
