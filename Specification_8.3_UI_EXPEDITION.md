@@ -24,12 +24,12 @@ PT2...
 
 - Per party:
   - Background images for party pane:
-    - The image must scale to fit the full width of the pane.
+    - The image must scale to fit the full width of the pane. (not the screen width)
     - The image fixed so it stays in place when scrolling.
 	  - The expedition PT pane background must be rendered as a viewport-fixed layer.
 	  - It must be independent from all scroll containers.
 	  - Scrolling content must move above the background, while the background remains stationary.
-	  - Do not use `background-attachment`: fixed due to inconsistent Safari support.
+      - The expedition PT pane background must gradually fade out toward the bottom.
     - If `x.exp_id` == 1, use: `background/Caninian-Plains.png`.
     - Else: none.
     
