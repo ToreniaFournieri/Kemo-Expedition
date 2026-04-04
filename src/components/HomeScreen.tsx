@@ -7017,17 +7017,30 @@ function ExpeditionTab({
         const expeditionPaneBackgroundStyle = expeditionPaneBackgroundImage
           ? {
             backgroundImage: isDarkModeEnabled
-              ? `linear-gradient(rgb(15 23 42 / 0.44), rgb(15 23 42 / 0.44)), url("${import.meta.env.BASE_URL}background/${expeditionPaneBackgroundImage}")`
-              : `linear-gradient(rgb(255 255 255 / 0.68), rgb(255 255 255 / 0.68)), url("${import.meta.env.BASE_URL}background/${expeditionPaneBackgroundImage}")`,
-            backgroundSize: '100% 100%, 100% auto',
-            backgroundPosition: 'top left, center top',
-            backgroundRepeat: 'no-repeat, no-repeat',
-            backgroundAttachment: 'scroll, scroll',
+              ? 'linear-gradient(rgb(15 23 42 / 0.44), rgb(15 23 42 / 0.44))'
+              : 'linear-gradient(rgb(255 255 255 / 0.68), rgb(255 255 255 / 0.68))',
+            backgroundSize: '100% 100%',
+            backgroundPosition: 'top left',
+            backgroundRepeat: 'no-repeat',
+            backgroundAttachment: 'scroll',
+          }
+          : undefined;
+        const expeditionPaneImageLayerStyle = expeditionPaneBackgroundImage
+          ? {
+            backgroundImage: `url("${import.meta.env.BASE_URL}background/${expeditionPaneBackgroundImage}")`,
+            backgroundSize: '100% auto',
+            backgroundPosition: 'center top',
+            backgroundRepeat: 'no-repeat',
+            backgroundAttachment: 'scroll',
+            filter: isDarkModeEnabled ? 'invert(1)' : undefined,
           }
           : undefined;
 
         return (
-          <div key={partyIndex} className="bg-pane rounded-lg p-2" style={expeditionPaneBackgroundStyle}>
+          <div key={partyIndex} className="bg-pane relative rounded-lg p-2 overflow-hidden" style={expeditionPaneBackgroundStyle}>
+            {expeditionPaneImageLayerStyle ? (
+              <div aria-hidden className="pointer-events-none absolute inset-0" style={expeditionPaneImageLayerStyle} />
+            ) : null}
             <button
               onClick={() => {
                 const nextExpanded = isLogExpanded ? null : partyIndex;
