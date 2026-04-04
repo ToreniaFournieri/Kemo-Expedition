@@ -21,7 +21,13 @@ EXP: L489 | 自動売却額: 134G
 
 PT2...
 ```
+
 - Per party:
+  - Background images for party pane:
+    - The image must scale to fit the full width of the pane.
+    - If `x.exp_id` == 1, use: `background/Caninian-Plains.png`.
+    - Else: none.
+    
   - Currently selected dungeon with Loot-Gate conditions (ex. 2nd Elite Gate is locked: 2/6 Floor 2 Uncommons collected.)
   - List of available dungeons with Loot-Gate conditions
 	- **Flavor text**
