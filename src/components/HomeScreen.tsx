@@ -7004,12 +7004,12 @@ function ExpeditionTab({
         const partyPaneBackgroundStyle = partyPaneExpeditionId === 1
           ? {
             backgroundImage: isDarkModeEnabled
-              ? `linear-gradient(to bottom, rgb(13 23 44 / 0.64) 0%, rgb(13 23 44 / 0.68) 65%, rgb(13 23 44 / 0.98) 100%), url("${import.meta.env.BASE_URL}background/Caninian-Plains.png")`
-              : `linear-gradient(to bottom, rgb(255 255 255 / 0.52) 0%, rgb(255 255 255 / 0.64) 65%, rgb(255 255 255 / 0.96) 100%), url("${import.meta.env.BASE_URL}background/Caninian-Plains.png")`,
+              ? `linear-gradient(rgb(13 23 44 / 0.72), rgb(13 23 44 / 0.72)), url("${import.meta.env.BASE_URL}background/Caninian-Plains.png")`
+              : `linear-gradient(rgb(255 255 255 / 0.68), rgb(255 255 255 / 0.68)), url("${import.meta.env.BASE_URL}background/Caninian-Plains.png")`,
             backgroundSize: '100% 100%, 100% auto',
             backgroundPosition: 'top left, top center',
             backgroundRepeat: 'no-repeat, no-repeat',
-            backgroundAttachment: 'local, local',
+            backgroundAttachment: 'scroll, fixed',
           }
           : undefined;
 
