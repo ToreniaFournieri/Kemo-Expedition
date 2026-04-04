@@ -7009,6 +7009,7 @@ function ExpeditionTab({
             backgroundSize: '100% 100%, 100% auto',
             backgroundPosition: 'top left, top center',
             backgroundRepeat: 'no-repeat, no-repeat',
+            backgroundAttachment: 'scroll, fixed',
           }
           : undefined;
 
