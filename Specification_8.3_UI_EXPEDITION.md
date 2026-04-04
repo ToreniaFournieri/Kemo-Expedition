@@ -26,6 +26,8 @@ PT2...
   - Background images for party pane:
     - The image must scale to fit the full width of the pane.
     - The image fixed so it stays in place when scrolling.
+      - The background must ignore the PT pane scroll context.
+      - It remains visually stationary even when the upper layout (page-level scroll container) is scrolled.
     - If `x.exp_id` == 1, use: `background/Caninian-Plains.png`.
     - Else: none.
     
