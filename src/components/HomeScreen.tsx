@@ -7000,10 +7000,10 @@ function ExpeditionTab({
         // SpecRef: 8.3 | UI_EXPEDITION | Background images for party pane
         const partyPaneBackgroundStyle = partyPaneExpeditionId === 1
           ? {
-            backgroundImage: `url("${import.meta.env.BASE_URL}background/Caninian-Plains.png")`,
-            backgroundSize: '100% auto',
-            backgroundPosition: 'top center',
-            backgroundRepeat: 'no-repeat',
+            backgroundImage: `linear-gradient(rgb(255 255 255 / 0.68), rgb(255 255 255 / 0.68)), url("${import.meta.env.BASE_URL}background/Caninian-Plains.png")`,
+            backgroundSize: '100% 100%, 100% auto',
+            backgroundPosition: 'top left, top center',
+            backgroundRepeat: 'no-repeat, no-repeat',
           }
           : undefined;
 
