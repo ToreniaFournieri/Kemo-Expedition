@@ -25,7 +25,6 @@ PT2...
 - Per party:
   - Background images for party pane:
     - The image must scale to fit the full width of the pane. (not the screen width)
-    - The image fixed so it stays in place when scrolling.
 - Background images for expedition pane:
   - The image is fixed so it stays in place when scrolling.
   - If `x.exp_id` == 1, use: `public/background/Caninian-Plains.png`.
@@ -38,15 +37,7 @@ PT2...
   - If `x.exp_id` == 8, use: `public/background/Cervin-Vale.png`.
   - Else: none.
 
-    - note: prompt of images
-```
-Style is minimal, atmospheric, and readable:
-- Portrait  
-- no soft shading
-- no fine texture noise
-- only gray tones + halftone dots (30 pxiel)
-- include all of terrain concepts
-```
+    - note: prompt of images ""Style is minimal, atmospheric, and readable: - Portrait,  - no soft shading, - no fine texture noise, - only gray tones + halftone dots (30 pxiel), - include all of terrain concepts"
 
   - Currently selected dungeon with Loot-Gate conditions (ex. 2nd Elite Gate is locked: 2/6 Floor 2 Uncommons collected.)
   - List of available dungeons with Loot-Gate conditions
