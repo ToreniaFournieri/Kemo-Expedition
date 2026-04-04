@@ -1,5 +1,4 @@
 import { Fragment, useState, useEffect, useRef, useCallback, useMemo, type ChangeEvent, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
-import { createPortal } from 'react-dom';
 import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId, type Ability, type BattleLogEntry } from '../types';
 import { computePartyStats } from '../game/partyComputation';
 import {
@@ -113,78 +112,6 @@ interface HomeScreenProps {
     ) => void;
     addStatNotifications: (changes: Array<{ message: string; isPositive: boolean }>) => void;
   };
-}
-
-function ExpeditionPaneFixedBackground({ enabled, isDarkModeEnabled, paneId }: {
-  enabled: boolean;
-  isDarkModeEnabled: boolean;
-  paneId: string;
-}) {
-  const [rect, setRect] = useState<{
-    top: number;
-    left: number;
-    width: number;
-    height: number;
-    borderRadius: string;
-  } | null>(null);
-
-  useEffect(() => {
-    if (!enabled) {
-      setRect(null);
-      return;
-    }
-
-    const paneElement = document.querySelector<HTMLElement>(`[data-expedition-pane-id="${paneId}"]`);
-    if (!paneElement) return;
-
-    const updateRect = () => {
-      const nextRect = paneElement.getBoundingClientRect();
-      const computedStyle = window.getComputedStyle(paneElement);
-      setRect({
-        top: nextRect.top,
-        left: nextRect.left,
-        width: nextRect.width,
-        height: nextRect.height,
-        borderRadius: computedStyle.borderRadius,
-      });
-    };
-
-    updateRect();
-    window.addEventListener('resize', updateRect);
-    document.addEventListener('scroll', updateRect, true);
-    const resizeObserver = new ResizeObserver(updateRect);
-    resizeObserver.observe(paneElement);
-
-    return () => {
-      window.removeEventListener('resize', updateRect);
-      document.removeEventListener('scroll', updateRect, true);
-      resizeObserver.disconnect();
-    };
-  }, [enabled, paneId]);
-
-  if (!enabled || !rect) return null;
-
-  // SpecRef: 8.3 | UI_EXPEDITION | Background images for party pane
-  return createPortal(
-    <div
-      aria-hidden="true"
-      className="pointer-events-none fixed z-0"
-      style={{
-        top: rect.top,
-        left: rect.left,
-        width: rect.width,
-        height: rect.height,
-        borderRadius: rect.borderRadius,
-        backgroundImage: isDarkModeEnabled
-          ? `linear-gradient(rgb(13 23 44 / 0.72), rgb(13 23 44 / 0.72)), url("${import.meta.env.BASE_URL}background/Caninian-Plains.png")`
-          : `linear-gradient(rgb(255 255 255 / 0.68), rgb(255 255 255 / 0.68)), url("${import.meta.env.BASE_URL}background/Caninian-Plains.png")`,
-        backgroundSize: '100% 100%, 100% auto',
-        backgroundPosition: 'top left, top center',
-        backgroundRepeat: 'no-repeat, no-repeat',
-      }}
-    />,
-    document.body,
-  );
 }
 
 type Tab = 'party' | 'expedition' | 'base' | 'diary' | 'setting';
@@ -7073,22 +7000,21 @@ function ExpeditionTab({
         const partyPaneExpeditionId = cycle.state === 'explore'
           ? currentLog?.dungeonId
           : party.selectedDungeonId;
-        const hasFixedPartyPaneBackground = partyPaneExpeditionId === 1;
-        const expeditionPaneId = `expedition-pane-${partyIndex}`;
+        // SpecRef: 8.3 | UI_EXPEDITION | Background images for party pane
+        const partyPaneBackgroundStyle = partyPaneExpeditionId === 1
+          ? {
+            backgroundImage: isDarkModeEnabled
+              ? `linear-gradient(rgb(13 23 44 / 0.72), rgb(13 23 44 / 0.72)), url("${import.meta.env.BASE_URL}background/Caninian-Plains.png")`
+              : `linear-gradient(rgb(255 255 255 / 0.68), rgb(255 255 255 / 0.68)), url("${import.meta.env.BASE_URL}background/Caninian-Plains.png")`,
+            backgroundSize: '100% 100%, 100% auto',
+            backgroundPosition: 'top left, top center',
+            backgroundRepeat: 'no-repeat, no-repeat',
+            backgroundAttachment: 'scroll, fixed',
+          }
+          : undefined;
 
         return (
-          <div
-            key={partyIndex}
-            data-expedition-pane-id={expeditionPaneId}
-            className={`rounded-lg p-2 ${hasFixedPartyPaneBackground ? 'relative overflow-hidden bg-transparent' : 'bg-pane'}`}
-          >
-            <ExpeditionPaneFixedBackground
-              enabled={hasFixedPartyPaneBackground}
-              isDarkModeEnabled={isDarkModeEnabled}
-              paneId={expeditionPaneId}
-            />
-            {hasFixedPartyPaneBackground && <div className="absolute inset-0 bg-pane/35 pointer-events-none" aria-hidden="true" />}
-            <div className="relative z-10">
+          <div key={partyIndex} className="bg-pane rounded-lg p-2" style={partyPaneBackgroundStyle}>
             <button
               onClick={() => {
                 const nextExpanded = isLogExpanded ? null : partyIndex;
@@ -7497,7 +7423,6 @@ function ExpeditionTab({
                 </div>
               </div>
             )}
-          </div>
           </div>
         );
       })}
