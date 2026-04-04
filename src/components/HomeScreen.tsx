@@ -7004,7 +7004,6 @@ function ExpeditionTab({
             backgroundSize: '100% auto',
             backgroundPosition: 'top center',
             backgroundRepeat: 'no-repeat',
-            backgroundColor: 'rgb(255 255 255 / 0.84)',
           }
           : undefined;
 
