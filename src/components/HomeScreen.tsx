@@ -118,10 +118,60 @@ type Tab = 'party' | 'expedition' | 'base' | 'diary' | 'setting';
 type WideModeSecondaryTab = Exclude<Tab, 'expedition'>;
 type BaseSubTab = 'inventory' | 'shop' | 'jewelStore' | 'workshop' | 'altar';
 
-const ELEMENTAL_RESISTANCE_ORDER: ReadonlyArray<{ key: 'fire' | 'ice' | 'thunder'; emoji: string }> = [
-  { key: 'fire', emoji: '🔥' },
-  { key: 'ice', emoji: '❄️' },
-  { key: 'thunder', emoji: '⚡' },
+type UiIconKey = 'fire' | 'ice' | 'thunder' | 'melee' | 'ranged' | 'magic' | 'unlock' | 'lock';
+
+const UI_ICON_PATHS: Record<UiIconKey, string> = {
+  fire: `${import.meta.env.BASE_URL}icons/fire.png`,
+  ice: `${import.meta.env.BASE_URL}icons/ice.png`,
+  thunder: `${import.meta.env.BASE_URL}icons/thunder.png`,
+  melee: `${import.meta.env.BASE_URL}icons/melee.png`,
+  ranged: `${import.meta.env.BASE_URL}icons/ranged.png`,
+  magic: `${import.meta.env.BASE_URL}icons/magic.png`,
+  unlock: `${import.meta.env.BASE_URL}icons/unlock.png`,
+  lock: `${import.meta.env.BASE_URL}icons/lock.png`,
+};
+
+const UI_EMOJI_ICON_MAP: Record<string, UiIconKey> = {
+  '🔥': 'fire',
+  '❄️': 'ice',
+  '⚡': 'thunder',
+  '⚔️': 'melee',
+  '⚔': 'melee',
+  '🏹': 'ranged',
+  '🪄': 'magic',
+  '🔓': 'unlock',
+  '🔒': 'lock',
+};
+
+function renderUiIcon(iconKey: UiIconKey, className: string = 'sub-theme-emoji-icon'): JSX.Element {
+  // SpecRef: 8.1 | UI_FOUNDATIONS | Emoji Icon Replacement
+  return (
+    <img
+      src={UI_ICON_PATHS[iconKey]}
+      alt=""
+      aria-hidden="true"
+      className={className}
+    />
+  );
+}
+
+function renderTextWithUiIcons(text: string, classNameResolver?: (iconKey: UiIconKey) => string): ReactNode {
+  // SpecRef: 8.1 | UI_FOUNDATIONS | Emoji Icon Replacement
+  return text.split(/(🔥|❄️|⚡|⚔️|⚔|🏹|🪄|🔓|🔒)/gu).map((segment, index) => {
+    const mappedIcon = UI_EMOJI_ICON_MAP[segment];
+    if (!mappedIcon) return <Fragment key={`text-${index}`}>{segment}</Fragment>;
+    return (
+      <Fragment key={`icon-${index}`}>
+        {renderUiIcon(mappedIcon, classNameResolver?.(mappedIcon) ?? 'sub-theme-emoji-icon')}
+      </Fragment>
+    );
+  });
+}
+
+const ELEMENTAL_RESISTANCE_ORDER: ReadonlyArray<{ key: 'fire' | 'ice' | 'thunder'; icon: UiIconKey }> = [
+  { key: 'fire', icon: 'fire' },
+  { key: 'ice', icon: 'ice' },
+  { key: 'thunder', icon: 'thunder' },
 ];
 
 const renderElementalResistanceInline = (
@@ -129,10 +179,10 @@ const renderElementalResistanceInline = (
 ): JSX.Element => (
   <>
     属性耐性:{' '}
-    {ELEMENTAL_RESISTANCE_ORDER.map(({ key, emoji }, index) => (
+    {ELEMENTAL_RESISTANCE_ORDER.map(({ key, icon }, index) => (
       <Fragment key={key}>
         {index > 0 ? ',' : ''}
-        <span className="sub-theme-emoji-icon" aria-hidden="true">{emoji}</span>
+        {renderUiIcon(icon)}
         {Math.round(Math.max(0.01, multipliers[key] ?? 1) * 100)}%
       </Fragment>
     ))}
@@ -370,22 +420,15 @@ function renderBattleLogNote(note: string | undefined, noteTone?: 'default' | 's
   if (!normalizedNote) return null;
 
   const noteClass = getBattleLogNoteClass(noteTone);
-  const emojiClass = noteTone === 'sub' ? 'sub-theme-emoji-icon' : 'text-gray-500';
+  const iconClass = noteTone === 'sub' ? 'sub-theme-emoji-icon' : 'text-gray-500';
 
   return (
     <span className={noteClass}>
       {' '}
-      {normalizedNote.split(/([⚡🔥❄️])/gu).map((segment, index) => (
-        segment === '⚡' || segment === '🔥' || segment === '❄️'
-          ? <span
-            key={`emoji-${index}`}
-            className={segment === '⚡' ? 'sub-theme-emoji-icon' : emojiClass}
-            aria-hidden="true"
-          >
-            {segment}
-          </span>
-          : <Fragment key={`text-${index}`}>{segment}</Fragment>
-      ))}
+      {renderTextWithUiIcons(
+        normalizedNote,
+        (icon) => (icon === 'thunder' ? 'sub-theme-emoji-icon' : iconClass),
+      )}
     </span>
   );
 }
@@ -497,12 +540,12 @@ function EnemyBestiaryBubble({
   const decay = `${((0.90 + enemy.accuracyBonus) * 100).toFixed(1)}%`;
   const classText = getEnemyClassSummary(enemy).replace('/', ' / ');
   const enemyTypeText = ENEMY_TYPE_SHORT_NAMES[enemy.enemyType] ?? enemy.enemyType;
-  const elementalOffenseEmoji = enemy.elementalOffense === 'fire'
-    ? '🔥'
+  const elementalOffenseIcon: UiIconKey | null = enemy.elementalOffense === 'fire'
+    ? 'fire'
     : enemy.elementalOffense === 'ice'
-      ? '❄️'
+      ? 'ice'
       : enemy.elementalOffense === 'thunder'
-        ? '⚡'
+        ? 'thunder'
         : null;
   const dropText = getEnemyDropCandidates(enemy).map((item) => `${getRarityShortLabel(item.id, item.name)}${item.name}`).join(' / ') || 'なし';
   const abilityText = enemy.abilities.map((ability) => `${ABILITY_NAMES[ability.id] ?? ability.id}${ability.level}`).join(', ') || 'なし';
@@ -530,7 +573,7 @@ function EnemyBestiaryBubble({
         {hasPhysicalAttack && <div>物理命中率: 100% (減衰: {decay})</div>}
         {hasMagicalAttack && <div>魔法攻撃: {formatNumber(enemy.magicalAttack)} x {formatNumber(enemy.magicalNoA)}回 (x{enemy.magicalAttackAmplifier.toFixed(2)})</div>}
         {hasMagicCasting && <div>詠唱魔法: {getEnemyBestiarySpellName(enemy)}</div>}
-        <div>属性: {elementalOffenseEmoji ?? '無'} (x{enemy.elementalOffenseValue.toFixed(2)})</div>
+        <div>属性: {elementalOffenseIcon ? renderUiIcon(elementalOffenseIcon) : '無'} (x{enemy.elementalOffenseValue.toFixed(2)})</div>
         <div>物理防御: {formatNumber(enemy.physicalDefense)} ({(enemy.physicalDefenseAmplifier * 100).toFixed(0)}%)</div>
         <div>魔法防御: {formatNumber(enemy.magicalDefense)} ({(enemy.magicalDefenseAmplifier * 100).toFixed(0)}%)</div>
         {hasMagicalAttack && <div>魔法命中率: 100% (減衰: {decay})</div>}
@@ -950,7 +993,7 @@ function getDungeonEntryGateState(
 
   return {
     locked: !unlocked,
-    gateText: `🔒 解放条件: ${previousDungeonName}のボスレアアイテム(持ち帰り) ${collected}/${required}`,
+    gateText: `解放条件: ${previousDungeonName}のボスレアアイテム(持ち帰り) ${collected}/${required}`,
   };
 }
 
@@ -1457,10 +1500,10 @@ function getElementalOffenseHelpLines(character: Character, stats: ComputedChara
     }
   }
 
-  const elementMeta: Record<Exclude<ElementalOffense, 'none'>, { label: string; emoji: string }> = {
-    fire: { label: '火', emoji: '🔥' },
-    ice: { label: '氷', emoji: '❄️' },
-    thunder: { label: '雷', emoji: '⚡' },
+  const elementMeta: Record<Exclude<ElementalOffense, 'none'>, { label: string }> = {
+    fire: { label: '火' },
+    ice: { label: '氷' },
+    thunder: { label: '雷' },
   };
 
   const lines: string[] = [];
@@ -1472,14 +1515,14 @@ function getElementalOffenseHelpLines(character: Character, stats: ComputedChara
 
   const selectedMeta = elementMeta[stats.elementalOffense];
   const selectedPercent = Math.round((stats.elementalOffenseValue - 1) * 100);
-  lines.push(`攻撃が${selectedMeta.label}属性${selectedMeta.emoji}になり、${selectedPercent}%威力が増加する`);
+  lines.push(`攻撃が${selectedMeta.label}属性になり、${selectedPercent}%威力が増加する`);
 
   (['fire', 'ice', 'thunder'] as const).forEach((element) => {
     if (element === stats.elementalOffense) return;
     const total = elementalSums[element];
     if (total <= 0) return;
     const meta = elementMeta[element];
-    lines.push(`(非採用)${meta.label}属性${meta.emoji} ${Math.round(total * 100)}%威力増加`);
+    lines.push(`(非採用)${meta.label}属性 ${Math.round(total * 100)}%威力増加`);
   });
 
   return lines;
@@ -5929,18 +5972,18 @@ function PartyTab({
                 // Defense lines
                 const defenseAmpPhysical = Math.max(0.01, stats.physicalDefenseAmplifier + stats.deityDefenseAmplifierBonus.physical);
                 const defenseAmpMagical = Math.max(0.01, stats.magicalDefenseAmplifier + stats.deityDefenseAmplifierBonus.magical);
-                const elementEmoji = stats.elementalOffense === 'fire' ? '🔥' :
-                  stats.elementalOffense === 'thunder' ? '⚡' :
-                  stats.elementalOffense === 'ice' ? '❄️' : null;
+                const elementIcon: UiIconKey | null = stats.elementalOffense === 'fire' ? 'fire' :
+                  stats.elementalOffense === 'thunder' ? 'thunder' :
+                  stats.elementalOffense === 'ice' ? 'ice' : null;
 
                 const defenseLines: StatusLine[] = [
                   {
                     key: 'element',
-                    text: `属性:${elementEmoji ?? '無'}(x${stats.elementalOffenseValue.toFixed(2)})`,
+                    text: `属性:${elementIcon ? '有' : '無'}(x${stats.elementalOffenseValue.toFixed(2)})`,
                     renderedText: (
                       <>
                         属性:
-                        {elementEmoji ? <span className="sub-theme-emoji-icon" aria-hidden="true">{elementEmoji}</span> : '無'}
+                        {elementIcon ? renderUiIcon(elementIcon) : '無'}
                         (x{stats.elementalOffenseValue.toFixed(2)})
                       </>
                     ),
@@ -6445,7 +6488,7 @@ function PartyTab({
                       className="text-base leading-none"
                       aria-label={isLocked ? '装備ロック解除' : '装備ロック'}
                     >
-                      <span className={lockEmojiClassName} aria-hidden="true">{isLocked ? '🔒' : '🔓'}</span>
+                      {renderUiIcon(isLocked ? 'lock' : 'unlock', lockEmojiClassName)}
                     </button>
                   )}
                   <button
@@ -7227,7 +7270,17 @@ function ExpeditionTab({
                                     : log.phase === 'close'
                                       ? '近接攻撃フェーズ'
                                       : '';
-                                const emoji = log.elementalOffense === 'fire' ? '🔥' : log.elementalOffense === 'thunder' ? '⚡' : log.elementalOffense === 'ice' ? '❄️' : log.phase === 'long' ? '🏹' : log.phase === 'mid' ? '🪄' : '⚔';
+                                const iconKey: UiIconKey = log.elementalOffense === 'fire'
+                                  ? 'fire'
+                                  : log.elementalOffense === 'thunder'
+                                    ? 'thunder'
+                                    : log.elementalOffense === 'ice'
+                                      ? 'ice'
+                                      : log.phase === 'long'
+                                        ? 'ranged'
+                                        : log.phase === 'mid'
+                                          ? 'magic'
+                                          : 'melee';
                                 const isEnemy = log.actor === 'enemy';
                                 const hits = log.hits ?? 0;
                                 const totalAttempts = log.totalAttempts ?? 0;
@@ -7296,18 +7349,18 @@ function ExpeditionTab({
                                   isReflectDamageLog
                                     ? (
                                       <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                        (<span className="text-gray-500" aria-hidden="true">{emoji}</span>{' '}{formatNumber(log.damage ?? 0)}, <span className={reflectArrowClass}>反射 {formatNumber(log.reflectedDamage || 0)}</span>)
+                                        ({renderUiIcon(iconKey, 'text-gray-500')}{' '}{formatNumber(log.damage ?? 0)}, <span className={reflectArrowClass}>反射 {formatNumber(log.reflectedDamage || 0)}</span>)
                                       </span>
                                     )
                                     : isAbsorbDamageLog
                                       ? (
                                         <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                          (<span className="text-gray-500" aria-hidden="true">{emoji}</span>{' '}<span className={absorbArrowClass}>吸収 {formatNumber(log.absorbedDamage || 0)}</span>)
+                                          ({renderUiIcon(iconKey, 'text-gray-500')}{' '}<span className={absorbArrowClass}>吸収 {formatNumber(log.absorbedDamage || 0)}</span>)
                                         </span>
                                       )
                                       : (
                                         <span className={`ml-auto shrink-0 whitespace-nowrap text-right ${damageColorClass}`}>
-                                          (<span className={damageEmojiClass} aria-hidden="true">{emoji}</span>{' '}{formatNumber(log.damage ?? 0)})
+                                          ({renderUiIcon(iconKey, damageEmojiClass)}{' '}{formatNumber(log.damage ?? 0)})
                                         </span>
                                       )
                                 );
@@ -8581,15 +8634,15 @@ function DiaryTab({
                                   : battleLog.phase === 'close'
                                     ? '近接攻撃フェーズ'
                                     : '';
-                              const getPhaseEmoji = () => {
-                                if (battleLog.elementalOffense === 'fire') return '🔥';
-                                if (battleLog.elementalOffense === 'thunder') return '⚡';
-                                if (battleLog.elementalOffense === 'ice') return '❄️';
-                                if (battleLog.phase === 'long') return '🏹';
-                                if (battleLog.phase === 'mid') return '🪄';
-                                return '⚔';
+                              const getPhaseIcon = (): UiIconKey => {
+                                if (battleLog.elementalOffense === 'fire') return 'fire';
+                                if (battleLog.elementalOffense === 'thunder') return 'thunder';
+                                if (battleLog.elementalOffense === 'ice') return 'ice';
+                                if (battleLog.phase === 'long') return 'ranged';
+                                if (battleLog.phase === 'mid') return 'magic';
+                                return 'melee';
                               };
-                              const emoji = getPhaseEmoji();
+                              const iconKey = getPhaseIcon();
                               const isEnemy = battleLog.actor === 'enemy';
                               const hits = battleLog.hits ?? 0;
                               const totalAttempts = battleLog.totalAttempts ?? 0;
@@ -8667,18 +8720,18 @@ function DiaryTab({
                                 isReflectDamageLog
                                   ? (
                                     <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                      (<span className="text-gray-500" aria-hidden="true">{emoji}</span>{' '}{formatNumber(battleLog.damage ?? 0)}, <span className={reflectArrowClass}>反射 {formatNumber(battleLog.reflectedDamage || 0)}</span>)
+                                      ({renderUiIcon(iconKey, 'text-gray-500')}{' '}{formatNumber(battleLog.damage ?? 0)}, <span className={reflectArrowClass}>反射 {formatNumber(battleLog.reflectedDamage || 0)}</span>)
                                     </span>
                                   )
                                   : isAbsorbDamageLog
                                     ? (
                                       <span className="ml-auto shrink-0 whitespace-nowrap text-right text-gray-500">
-                                        (<span className="text-gray-500" aria-hidden="true">{emoji}</span>{' '}<span className={absorbArrowClass}>吸収 {formatNumber(battleLog.absorbedDamage || 0)}</span>)
+                                        ({renderUiIcon(iconKey, 'text-gray-500')}{' '}<span className={absorbArrowClass}>吸収 {formatNumber(battleLog.absorbedDamage || 0)}</span>)
                                       </span>
                                     )
                                     : (
                                       <span className={`ml-auto shrink-0 whitespace-nowrap text-right ${damageColorClass}`}>
-                                        (<span className={damageEmojiClass} aria-hidden="true">{emoji}</span>{' '}{formatNumber(battleLog.damage ?? 0)})
+                                        ({renderUiIcon(iconKey, damageEmojiClass)}{' '}{formatNumber(battleLog.damage ?? 0)})
                                       </span>
                                     )
                               );
@@ -9391,17 +9444,17 @@ function SettingTab({
   const formatEnemyDefenseLine = (label: string, defense: number, percent: number) =>
     `${label}: ${formatNumber(defense)} (${percent.toFixed(0)}%)`;
 
-  const ENEMY_ELEMENT_EMOJIS: Record<string, string> = {
-    fire: '🔥',
-    thunder: '⚡',
-    ice: '❄️',
+  const ENEMY_ELEMENT_ICONS: Record<string, UiIconKey> = {
+    fire: 'fire',
+    thunder: 'thunder',
+    ice: 'ice',
   };
 
   const formatEnemyElementOffenseLine = (elementalOffense: string, elementalOffenseValue: number): ReactNode => {
-    const elementEmoji = ENEMY_ELEMENT_EMOJIS[elementalOffense];
+    const elementIcon = ENEMY_ELEMENT_ICONS[elementalOffense];
     return (
       <>
-        属性: {elementEmoji ? <span className="sub-theme-emoji-icon" aria-hidden="true">{elementEmoji}</span> : '無'} (x{elementalOffenseValue.toFixed(2)})
+        属性: {elementIcon ? renderUiIcon(elementIcon) : '無'} (x{elementalOffenseValue.toFixed(2)})
       </>
     );
   };
