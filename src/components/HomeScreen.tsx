@@ -7017,12 +7017,13 @@ function ExpeditionTab({
         const expeditionPaneBackgroundStyle = expeditionPaneBackgroundImage
           ? {
             backgroundImage: isDarkModeEnabled
-              ? `linear-gradient(rgb(15 23 42 / 0.44), rgb(15 23 42 / 0.44)), url("${import.meta.env.BASE_URL}background/${expeditionPaneBackgroundImage}")`
+              ? `linear-gradient(rgb(15 23 42 / 0.5), rgb(15 23 42 / 0.5)), linear-gradient(white, white), url("${import.meta.env.BASE_URL}background/${expeditionPaneBackgroundImage}")`
               : `linear-gradient(rgb(255 255 255 / 0.68), rgb(255 255 255 / 0.68)), url("${import.meta.env.BASE_URL}background/${expeditionPaneBackgroundImage}")`,
-            backgroundSize: '100% 100%, 100% auto',
-            backgroundPosition: 'top left, center top',
-            backgroundRepeat: 'no-repeat, no-repeat',
-            backgroundAttachment: 'scroll, scroll',
+            backgroundBlendMode: isDarkModeEnabled ? 'normal, difference, normal' : 'normal, normal',
+            backgroundSize: isDarkModeEnabled ? '100% 100%, 100% 100%, 100% auto' : '100% 100%, 100% auto',
+            backgroundPosition: isDarkModeEnabled ? 'top left, top left, center top' : 'top left, center top',
+            backgroundRepeat: isDarkModeEnabled ? 'no-repeat, no-repeat, no-repeat' : 'no-repeat, no-repeat',
+            backgroundAttachment: isDarkModeEnabled ? 'scroll, scroll, scroll' : 'scroll, scroll',
           }
           : undefined;
 
