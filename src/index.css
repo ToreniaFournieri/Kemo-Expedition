@@ -283,11 +283,6 @@ body {
   opacity: var(--side-quest-icon-opacity);
 }
 
-.theme-dark .unlock-theme-emoji-icon {
-  -webkit-filter: invert(1);
-  filter: invert(1);
-}
-
 @media print {
   .side-quest-theme-icon,
   .sub-theme-emoji-icon,
