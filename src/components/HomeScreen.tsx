@@ -7043,7 +7043,7 @@ function ExpeditionTab({
             {expeditionPaneImageLayerStyle ? (
               <div aria-hidden className="pointer-events-none absolute inset-0" style={expeditionPaneImageLayerStyle} />
             ) : null}
-            <div className="relative z-10 rounded-md bg-white/88 p-2 text-gray-900">
+            <div className={`relative z-10 rounded-md p-2 text-gray-900 ${isDarkModeEnabled ? 'bg-transparent' : 'bg-white/88'}`}>
             <button
               onClick={() => {
                 const nextExpanded = isLogExpanded ? null : partyIndex;
