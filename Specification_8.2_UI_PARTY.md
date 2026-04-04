@@ -223,7 +223,7 @@ The toggle cycles through the following modes:
   - ▼ = expanded
   - ▲ = collapsed
   - 🔒 = locked　(sub color filtered)
-  - 🔓 = unlocked (gray color filtered)
+  - 🔓 = unlocked (normal, if darkmode, invert its color)
 - Rank Display
   - Black number → Jewel owned
   - Gray number → Jewel not owned
