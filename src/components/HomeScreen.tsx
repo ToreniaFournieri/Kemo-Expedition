@@ -4242,7 +4242,6 @@ export function HomeScreen({
           setExpandedLogParty={setExpeditionExpandedLogParty}
           expandedRoom={expeditionExpandedRoom}
           setExpandedRoom={setExpeditionExpandedRoom}
-          isDarkModeEnabled={isDarkModeEnabled}
         />
       );
     }
@@ -6791,7 +6790,6 @@ function ExpeditionTab({
   setExpandedLogParty,
   expandedRoom,
   setExpandedRoom,
-  isDarkModeEnabled,
 }: {
   state: GameState;
   debugSettings: DebugSettings;
@@ -6806,7 +6804,6 @@ function ExpeditionTab({
   setExpandedLogParty: Dispatch<SetStateAction<number | null>>;
   expandedRoom: { partyIndex: number; roomIndex: number; latestRoomToken: string } | null;
   setExpandedRoom: Dispatch<SetStateAction<{ partyIndex: number; roomIndex: number; latestRoomToken: string } | null>>;
-  isDarkModeEnabled: boolean;
 }) {
   const [activeEnemyBestiaryBubble, setActiveEnemyBestiaryBubble] = useState<{
     key: string;
@@ -7016,9 +7013,7 @@ function ExpeditionTab({
         // SpecRef: 8.3 | UI_EXPEDITION | Background images for expedition pane
         const expeditionPaneBackgroundStyle = expeditionPaneBackgroundImage
           ? {
-            backgroundImage: isDarkModeEnabled
-              ? 'linear-gradient(rgb(15 23 42 / 0.72), rgb(15 23 42 / 0.72))'
-              : 'linear-gradient(rgb(255 255 255 / 0.86), rgb(255 255 255 / 0.86))',
+            backgroundImage: 'linear-gradient(rgb(255 255 255 / 0.86), rgb(255 255 255 / 0.86))',
             backgroundSize: '100% 100%',
             backgroundPosition: 'top left',
             backgroundRepeat: 'no-repeat',
@@ -7032,8 +7027,7 @@ function ExpeditionTab({
             backgroundPosition: 'center top',
             backgroundRepeat: 'no-repeat',
             backgroundAttachment: 'scroll',
-            filter: isDarkModeEnabled ? 'invert(1)' : undefined,
-            opacity: isDarkModeEnabled ? 0.28 : 0.22,
+            opacity: 0.22,
             transform: 'scale(1.01)',
           }
           : undefined;
