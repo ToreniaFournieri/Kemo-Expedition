@@ -4242,6 +4242,7 @@ export function HomeScreen({
           setExpandedLogParty={setExpeditionExpandedLogParty}
           expandedRoom={expeditionExpandedRoom}
           setExpandedRoom={setExpeditionExpandedRoom}
+          isDarkModeEnabled={isDarkModeEnabled}
         />
       );
     }
@@ -6790,6 +6791,7 @@ function ExpeditionTab({
   setExpandedLogParty,
   expandedRoom,
   setExpandedRoom,
+  isDarkModeEnabled,
 }: {
   state: GameState;
   debugSettings: DebugSettings;
@@ -6804,6 +6806,7 @@ function ExpeditionTab({
   setExpandedLogParty: Dispatch<SetStateAction<number | null>>;
   expandedRoom: { partyIndex: number; roomIndex: number; latestRoomToken: string } | null;
   setExpandedRoom: Dispatch<SetStateAction<{ partyIndex: number; roomIndex: number; latestRoomToken: string } | null>>;
+  isDarkModeEnabled: boolean;
 }) {
   const [activeEnemyBestiaryBubble, setActiveEnemyBestiaryBubble] = useState<{
     key: string;
@@ -7000,7 +7003,9 @@ function ExpeditionTab({
         // SpecRef: 8.3 | UI_EXPEDITION | Background images for party pane
         const partyPaneBackgroundStyle = partyPaneExpeditionId === 1
           ? {
-            backgroundImage: `linear-gradient(rgb(255 255 255 / 0.68), rgb(255 255 255 / 0.68)), url("${import.meta.env.BASE_URL}background/Caninian-Plains.png")`,
+            backgroundImage: isDarkModeEnabled
+              ? `linear-gradient(rgb(13 23 44 / 0.72), rgb(13 23 44 / 0.72)), url("${import.meta.env.BASE_URL}background/Caninian-Plains.png")`
+              : `linear-gradient(rgb(255 255 255 / 0.68), rgb(255 255 255 / 0.68)), url("${import.meta.env.BASE_URL}background/Caninian-Plains.png")`,
             backgroundSize: '100% 100%, 100% auto',
             backgroundPosition: 'top left, top center',
             backgroundRepeat: 'no-repeat, no-repeat',
