@@ -5411,7 +5411,7 @@ function PartyTab({
               } ${draggingCharacterIndex === i ? 'opacity-70 border-sub' : ''}`}
               data-party-character-index={i}
             >
-              <div className="flex justify-center pt-0.5"><RaceIcon race={r} className="h-9 w-9 translate-y-0.5" /></div>
+              <div className="flex justify-center"><RaceIcon race={r} className="h-8 w-8" /></div>
               <div className="text-xs text-gray-400 text-center">
                 {mcShort}({isMaster ? '師' : scShort})
               </div>
