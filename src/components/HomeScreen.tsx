@@ -6994,9 +6994,18 @@ function ExpeditionTab({
         const nextGoalText = getNextGoalText(party, cycle.state);
         const sideQuestText = getSideQuestText(party);
         const displayedExpeditionStats = getDisplayedExpeditionStats(party, cycle.state);
+        // SpecRef: 8.3 | UI_EXPEDITION | Background images for party pane
+        const partyPaneBackgroundStyle = selectedDungeon?.id === 1
+          ? {
+            backgroundImage: 'url("/background/Caninian-Plains.png")',
+            backgroundSize: '100% auto',
+            backgroundPosition: 'top center',
+            backgroundRepeat: 'no-repeat',
+          }
+          : undefined;
 
         return (
-          <div key={partyIndex} className="bg-pane rounded-lg p-2">
+          <div key={partyIndex} className="bg-pane rounded-lg p-2" style={partyPaneBackgroundStyle}>
             <button
               onClick={() => {
                 const nextExpanded = isLogExpanded ? null : partyIndex;
