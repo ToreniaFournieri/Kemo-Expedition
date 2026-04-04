@@ -150,7 +150,7 @@ function renderUiIcon(iconKey: UiIconKey, className: string = 'sub-theme-emoji-i
       src={UI_ICON_PATHS[iconKey]}
       alt=""
       aria-hidden="true"
-      className={className}
+      className={`ui-inline-icon ${className}`}
     />
   );
 }
