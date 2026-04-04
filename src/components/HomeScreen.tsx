@@ -6994,8 +6994,11 @@ function ExpeditionTab({
         const nextGoalText = getNextGoalText(party, cycle.state);
         const sideQuestText = getSideQuestText(party);
         const displayedExpeditionStats = getDisplayedExpeditionStats(party, cycle.state);
+        const partyPaneExpeditionId = cycle.state === 'explore'
+          ? currentLog?.dungeonId
+          : party.selectedDungeonId;
         // SpecRef: 8.3 | UI_EXPEDITION | Background images for party pane
-        const partyPaneBackgroundStyle = selectedDungeon?.id === 1
+        const partyPaneBackgroundStyle = partyPaneExpeditionId === 1
           ? {
             backgroundImage: 'url("/background/Caninian-Plains.png")',
             backgroundSize: '100% auto',
