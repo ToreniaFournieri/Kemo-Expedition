@@ -278,11 +278,17 @@ body {
   opacity: var(--side-quest-icon-opacity);
 }
 
+.unlock-theme-emoji-icon {
+  display: inline-block;
+  opacity: var(--side-quest-icon-opacity);
+}
+
 @media print {
   .side-quest-theme-icon,
   .sub-theme-emoji-icon,
   .accent-theme-emoji-icon,
-  .gray-theme-emoji-icon {
+  .gray-theme-emoji-icon,
+  .unlock-theme-emoji-icon {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
