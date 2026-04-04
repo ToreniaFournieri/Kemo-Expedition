@@ -7000,21 +7000,34 @@ function ExpeditionTab({
         const partyPaneExpeditionId = cycle.state === 'explore'
           ? currentLog?.dungeonId
           : party.selectedDungeonId;
-        // SpecRef: 8.3 | UI_EXPEDITION | Background images for party pane
-        const partyPaneBackgroundStyle = partyPaneExpeditionId === 1
+        const expeditionPaneBackgroundImageById: Record<number, string> = {
+          1: 'Caninian-Plains.png',
+          2: 'Lupinian-Taiga.png',
+          3: 'Vulpinian-Ocean.png',
+          4: 'Felidian-Desert.png',
+          5: 'Ursan-Pyrepeak.png',
+          6: 'Procyonian-Burrow.png',
+          7: 'Leporian-Moon-Palace.png',
+          8: 'Cervin-Vale.png',
+        };
+        const expeditionPaneBackgroundImage = partyPaneExpeditionId
+          ? expeditionPaneBackgroundImageById[partyPaneExpeditionId]
+          : undefined;
+        // SpecRef: 8.3 | UI_EXPEDITION | Background images for expedition pane
+        const expeditionPaneBackgroundStyle = expeditionPaneBackgroundImage
           ? {
             backgroundImage: isDarkModeEnabled
-              ? `linear-gradient(rgb(13 23 44 / 0.72), rgb(13 23 44 / 0.72)), url("${import.meta.env.BASE_URL}background/Caninian-Plains.png")`
-              : `linear-gradient(rgb(255 255 255 / 0.68), rgb(255 255 255 / 0.68)), url("${import.meta.env.BASE_URL}background/Caninian-Plains.png")`,
-            backgroundSize: '100% 100%, 100% auto',
+              ? `linear-gradient(rgb(13 23 44 / 0.72), rgb(13 23 44 / 0.72)), url("${import.meta.env.BASE_URL}background/${expeditionPaneBackgroundImage}")`
+              : `linear-gradient(rgb(255 255 255 / 0.68), rgb(255 255 255 / 0.68)), url("${import.meta.env.BASE_URL}background/${expeditionPaneBackgroundImage}")`,
+            backgroundSize: '100% 100%, cover',
             backgroundPosition: 'top left, top center',
             backgroundRepeat: 'no-repeat, no-repeat',
-            backgroundAttachment: 'scroll, scroll',
+            backgroundAttachment: 'scroll, fixed',
           }
           : undefined;
 
         return (
-          <div key={partyIndex} className="bg-pane rounded-lg p-2" style={partyPaneBackgroundStyle}>
+          <div key={partyIndex} className="bg-pane rounded-lg p-2" style={expeditionPaneBackgroundStyle}>
             <button
               onClick={() => {
                 const nextExpanded = isLogExpanded ? null : partyIndex;
