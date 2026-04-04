@@ -7022,7 +7022,7 @@ function ExpeditionTab({
             backgroundSize: '100% 100%, 100% auto',
             backgroundPosition: 'top left, center var(--expedition-background-offset, 0px)',
             backgroundRepeat: 'no-repeat, no-repeat',
-            backgroundAttachment: 'scroll, scroll',
+            backgroundAttachment: 'scroll, fixed',
           }
           : undefined;
 
