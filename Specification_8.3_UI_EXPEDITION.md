@@ -25,6 +25,7 @@ PT2...
 - Per party:
   - Background images for party pane:
     - The image must scale to fit the full width of the pane.
+    - The image fixed so it stays in place when scrolling.
     - If `x.exp_id` == 1, use: `background/Caninian-Plains.png`.
     - Else: none.
     
