@@ -3928,6 +3928,7 @@ export function HomeScreen({
       const expeditionScrollTop = tabScrollPositionsRef.current.expedition ?? 0;
       const secondaryScrollTop = tabScrollPositionsRef.current[activeWideModeSecondaryTab] ?? 0;
       primarySplitTabContentRef.current?.scrollTo({ top: expeditionScrollTop, behavior: 'auto' });
+      syncExpeditionBackgroundOffset(primarySplitTabContentRef.current, expeditionScrollTop);
       secondarySplitTabContentRef.current?.scrollTo({ top: secondaryScrollTop, behavior: 'auto' });
       return;
     }
@@ -3939,6 +3940,9 @@ export function HomeScreen({
     }
 
     tabContentRef.current?.scrollTo({ top: currentScrollTop, behavior: 'auto' });
+    if (activeTab === 'expedition') {
+      syncExpeditionBackgroundOffset(tabContentRef.current, currentScrollTop);
+    }
   }, [activeTab, activeWideModeSecondaryTab, isPartyExpeditionSplitViewEnabled, prefersDocumentScroll]);
 
   const switchTab = (nextTab: Tab) => {
@@ -3961,6 +3965,11 @@ export function HomeScreen({
     tabScrollPositionsRef.current[activeTab] = currentScrollTop;
 
     setActiveTab(nextTab);
+  };
+
+  const syncExpeditionBackgroundOffset = (scrollContainer: HTMLDivElement | null, scrollTop: number) => {
+    if (!scrollContainer) return;
+    scrollContainer.style.setProperty('--expedition-background-offset', `${Math.max(0, scrollTop)}px`);
   };
 
   const transitionTo = (
@@ -4384,6 +4393,9 @@ export function HomeScreen({
           if (prefersDocumentScroll || isPartyExpeditionSplitViewEnabled) return;
           const currentScrollTop = tabContentRef.current?.scrollTop ?? 0;
           tabScrollPositionsRef.current[activeTab] = currentScrollTop;
+          if (activeTab === 'expedition') {
+            syncExpeditionBackgroundOffset(tabContentRef.current, currentScrollTop);
+          }
         }}
       >
         {isPartyExpeditionSplitView ? (
@@ -4397,6 +4409,7 @@ export function HomeScreen({
               onScroll={() => {
                 const currentScrollTop = primarySplitTabContentRef.current?.scrollTop ?? 0;
                 tabScrollPositionsRef.current.expedition = currentScrollTop;
+                syncExpeditionBackgroundOffset(primarySplitTabContentRef.current, currentScrollTop);
               }}
             >
               {renderTabContent('expedition')}
@@ -7007,7 +7020,7 @@ function ExpeditionTab({
               ? `linear-gradient(rgb(13 23 44 / 0.72), rgb(13 23 44 / 0.72)), url("${import.meta.env.BASE_URL}background/Caninian-Plains.png")`
               : `linear-gradient(rgb(255 255 255 / 0.68), rgb(255 255 255 / 0.68)), url("${import.meta.env.BASE_URL}background/Caninian-Plains.png")`,
             backgroundSize: '100% 100%, 100% auto',
-            backgroundPosition: 'top left, top center',
+            backgroundPosition: 'top left, center var(--expedition-background-offset, 0px)',
             backgroundRepeat: 'no-repeat, no-repeat',
             backgroundAttachment: 'scroll, scroll',
           }
