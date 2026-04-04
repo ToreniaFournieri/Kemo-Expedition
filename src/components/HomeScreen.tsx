@@ -7041,6 +7041,7 @@ function ExpeditionTab({
             {expeditionPaneImageLayerStyle ? (
               <div aria-hidden className="pointer-events-none absolute inset-0" style={expeditionPaneImageLayerStyle} />
             ) : null}
+            <div className="relative z-10 rounded-md bg-white/74 p-2 text-gray-900">
             <button
               onClick={() => {
                 const nextExpanded = isLogExpanded ? null : partyIndex;
@@ -7449,6 +7450,7 @@ function ExpeditionTab({
                 </div>
               </div>
             )}
+            </div>
           </div>
         );
       })}
