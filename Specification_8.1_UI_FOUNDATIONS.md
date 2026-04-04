@@ -44,15 +44,26 @@
     - Crimson Red `#DC2626`
       (important actions, warnings, highlights)
 
-- **Emoji icon replacement**
-  - 🔥 -> icons/fire.png
-  - ❄️ -> icons/ice.png
-  - ⚡ -> icons/thunder.png
-  - ⚔️ -> icons/melee.png
-  - 🏹 -> icons/ranged.png
-  - 🪄 -> icons/magic.png
-  - 🔓 -> icons/unlock.png
-  - 🔒 -> icons/lock.png
+**Emoji Icon Replacement**
+- All emoji used in UI, logs, and text outputs must be replaced with their corresponding icon image assets.
+
+- Replacement Mapping
+
+| Emoji | Icon Path |
+|------|-----------|
+| 🔥 | `icons/fire.png` |
+| ❄️ | `icons/ice.png` |
+| ⚡ | `icons/thunder.png` |
+| ⚔️ | `icons/melee.png` |
+| 🏹 | `icons/ranged.png` |
+| 🪄 | `icons/magic.png` |
+| 🔓 | `icons/unlock.png` |
+| 🔒 | `icons/lock.png` |
+
+- Rules
+  - Replacement is applied consistently across all display contexts (UI, logs, tooltips, etc.).
+  - No emoji should remain in the final rendered output once replacement is applied.
+  - Icon assets must visually match the semantic meaning of the original emoji.
 
 
 #### 8.1.1 Notification Logic & Display
