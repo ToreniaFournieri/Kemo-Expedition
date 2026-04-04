@@ -43,7 +43,18 @@
   - Accent color (~5%)
     - Crimson Red `#DC2626`
       (important actions, warnings, highlights)
-        
+
+- **Emoji icon replacement**
+  - 🔥 -> icons/fire.png
+  - ❄️ -> icons/ice.png
+  - ⚡ -> icons/thunder.png
+  - ⚔️ -> icons/melee.png
+  - 🏹 -> icons/ranged.png
+  - 🪄 -> icons/magic.png
+  - 🔓 -> icons/unlock.png
+  - 🔒 -> icons/lock.png
+
+
 #### 8.1.1 Notification Logic & Display
 **Visual & Overlay (Toast)**
 - Position: bottom and left side
