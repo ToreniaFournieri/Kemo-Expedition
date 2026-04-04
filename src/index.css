@@ -273,9 +273,14 @@ body {
 
 .gray-theme-emoji-icon {
   display: inline-block;
-  -webkit-filter: grayscale(1) saturate(0) brightness(1.0);
-  filter: grayscale(1) saturate(0) brightness(1.0);
+  -webkit-filter: grayscale(1) saturate(0) brightness(0.9) contrast(0.9);
+  filter: grayscale(1) saturate(0) brightness(0.9) contrast(0.9);
   opacity: var(--side-quest-icon-opacity);
+}
+
+.unlock-emoji-icon {
+  -webkit-filter: grayscale(1) saturate(0) brightness(0.78) contrast(0.88);
+  filter: grayscale(1) saturate(0) brightness(0.78) contrast(0.88);
 }
 
 @media print {
