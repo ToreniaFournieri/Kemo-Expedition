@@ -7019,8 +7019,8 @@ function ExpeditionTab({
             backgroundImage: isDarkModeEnabled
               ? `linear-gradient(rgb(13 23 44 / 0.72), rgb(13 23 44 / 0.72)), url("${import.meta.env.BASE_URL}background/${expeditionPaneBackgroundImage}")`
               : `linear-gradient(rgb(255 255 255 / 0.68), rgb(255 255 255 / 0.68)), url("${import.meta.env.BASE_URL}background/${expeditionPaneBackgroundImage}")`,
-            backgroundSize: '100% 100%, cover',
-            backgroundPosition: 'top left, top center',
+            backgroundSize: '100% 100%, contain',
+            backgroundPosition: 'top left, center top',
             backgroundRepeat: 'no-repeat, no-repeat',
             backgroundAttachment: 'scroll, scroll',
           }
