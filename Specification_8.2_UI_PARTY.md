@@ -32,13 +32,13 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
 
 #### 8.2.2 Party member details
 - Name, race, main class (sub class), predisposition, lineage, status, bonuses (c., aggregated), ability (a. )
-- Status:
 
 - Display character image
   - Display character image at the top-center of the panel. Maintain original aspect ratio (no stretching). Image size is fixed.
   - If race == Vulpinian, use : /public/character/Vulpinian.png
   - Else: no image
 
+- Status:
 - If character has `c.equip_melee`, displays 
 近接攻撃:98 x 4回(x1.00)
 - if character has  `c.equip_ranged`, displays 遠距離攻撃:`d.ranged_attack` x `d.ranged_NoA`回(x`f.offense_amplifier`(phase: LONG)).
