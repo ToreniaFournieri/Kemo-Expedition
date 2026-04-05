@@ -5431,18 +5431,23 @@ function PartyTab({
       </div>
 
       {/* Character details */}
-      <div
-        className="bg-pane rounded-lg p-4 mb-4"
-        style={partyMemberImageSrc
-          ? {
-              // SpecRef: 8.2.2 | Party member details | Display character image
-              backgroundImage: `url("${partyMemberImageSrc}")`,
-              backgroundPosition: 'top center',
-              backgroundRepeat: 'no-repeat',
-              backgroundSize: '220px auto',
-            }
-          : undefined}
-      >
+      <div className="relative overflow-hidden bg-pane rounded-lg p-4 mb-4">
+        {partyMemberImageSrc && (
+          <>
+            {/* SpecRef: 8.2.2 | Party member details | Display character image */}
+            <img
+              src={partyMemberImageSrc}
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none select-none absolute left-0 top-0 w-full h-auto object-contain object-top opacity-40 blur-[1.5px]"
+            />
+            <div
+              className="pointer-events-none absolute inset-0 bg-white/40 backdrop-blur-[1px]"
+              aria-hidden="true"
+            />
+          </>
+        )}
+        <div className="relative z-10">
         <div className="flex justify-between items-center mb-2 gap-2">
           {editingCharacter === selectedCharacter ? (
             <input
@@ -5835,10 +5840,11 @@ function PartyTab({
               )}
             </div>
             <div className="grid grid-cols-4 gap-1 mt-1 text-xs">
-              <div className="bg-white rounded p-1 text-center">体力:{stats.baseStats.vitality}</div>
-              <div className="bg-white rounded p-1 text-center">力:{stats.baseStats.strength}</div>
-              <div className="bg-white rounded p-1 text-center">知性:{stats.baseStats.intelligence}</div>
-              <div className="bg-white rounded p-1 text-center">精神:{stats.baseStats.mind}</div>
+              {/* SpecRef: 8.2.2 | Party member details | Status */}
+              <div className="bg-white/60 border border-white/80 rounded p-1 text-center backdrop-blur-[1px]">体力:{stats.baseStats.vitality}</div>
+              <div className="bg-white/60 border border-white/80 rounded p-1 text-center backdrop-blur-[1px]">力:{stats.baseStats.strength}</div>
+              <div className="bg-white/60 border border-white/80 rounded p-1 text-center backdrop-blur-[1px]">知性:{stats.baseStats.intelligence}</div>
+              <div className="bg-white/60 border border-white/80 rounded p-1 text-center backdrop-blur-[1px]">精神:{stats.baseStats.mind}</div>
             </div>
             <div className="border-t border-gray-200 mt-2 pt-2 text-sm">
               {(() => {
@@ -6418,6 +6424,7 @@ function PartyTab({
             )}
           </div>
         )}
+        </div>
       </div>
 
       {/* Equipment section */}
