@@ -33,8 +33,13 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
 #### 8.2.2 Party member details
 - Name, race, main class (sub class), predisposition, lineage, status, bonuses (c., aggregated), ability (a. )
 
-- Display character image
-  - Display character image at the top-center of the panel. Maintain original aspect ratio (no stretching). Image size is fixed.
+- **Character image (background)**
+  - Render the character image as a background image of the panel.
+  - Position: top-center.
+  - Do not stretch; preserve original aspect ratio.
+  - Image size is fixed and does not scale with content.
+  - The image remains static relative to the panel (does not move with internal content changes).
+
   - If race == Vulpinian, use : /public/character/Vulpinian.png
   - Else: no image
 
