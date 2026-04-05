@@ -4222,6 +4222,7 @@ export function HomeScreen({
           jewels={state.global.jewels}
           deityDonations={state.global.deityDonations}
           unlockedDeities={debugSettings.allReligionsEnabled ? DEITY_OPTIONS.map((deity) => normalizeDeityName(deity.name)).filter((name) => !isNoFaithDeity(name)) : state.global.unlockedDeities}
+          isDarkModeEnabled={isDarkModeEnabled}
         />
       );
     }
@@ -4455,6 +4456,7 @@ function PartyTab({
   jewels,
   deityDonations,
   unlockedDeities,
+  isDarkModeEnabled,
 }: {
   parties: Party[];
   selectedPartyIndex: number;
@@ -4477,6 +4479,7 @@ function PartyTab({
   jewels: Record<string, number>;
   deityDonations: Record<string, number>;
   unlockedDeities: string[];
+  isDarkModeEnabled: boolean;
 }) {
   const [selectingSlot, setSelectingSlot] = useState<number | null>(null);
   const [equipCategory, setEquipCategory] = useState('armor');
@@ -5439,10 +5442,10 @@ function PartyTab({
               src={partyMemberImageSrc}
               alt=""
               aria-hidden="true"
-              className="pointer-events-none select-none absolute left-0 top-0 w-full h-auto object-contain object-top opacity-40"
+              className={`pointer-events-none select-none absolute left-0 top-0 w-full h-auto object-contain object-top ${isDarkModeEnabled ? 'opacity-50 invert' : 'opacity-40'}`}
             />
             <div
-              className="pointer-events-none absolute inset-0 bg-white/40"
+              className={`pointer-events-none absolute inset-0 ${isDarkModeEnabled ? 'bg-slate-950/20' : 'bg-white/40'}`}
               aria-hidden="true"
             />
           </>
