@@ -6078,7 +6078,7 @@ function PartyTab({
                             </div>
                           )}
                         </div>
-                        <div className="relative text-gray-500">
+                        <div className="relative text-gray-900">
                           {defenseLines[i]?.helpLines?.length ? (
                             <>
                               <button
@@ -6116,7 +6116,7 @@ function PartyTab({
                 );
               })()}
             </div>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-gray-900">
               {/* SpecRef: 8.2.2 | Party member details | Status */}
               {renderElementalResistanceInline(stats.elementalDefenseMultipliers)}
             </div>
@@ -6373,7 +6373,7 @@ function PartyTab({
 
               if (bonusEntries.length === 0) return null;
               return (
-                <div className="text-xs text-gray-600 mt-1 leading-5">
+                <div className="text-xs text-gray-900 mt-1 leading-5">
                   <span className="break-words leading-5">ボーナス: </span>
                   {bonusEntries.map((entry, index) => (
                     <span key={entry.key}>
@@ -6393,7 +6393,7 @@ function PartyTab({
             })()}
             {stats.abilities.length > 0 && (
               <div className="border-t border-gray-200 mt-2 pt-2">
-                <div className="text-gray-500 text-xs">アビリティ:</div>
+                <div className="text-gray-900 text-xs">アビリティ:</div>
                 <div className="text-xs text-sub leading-5">
                   {stats.abilities.map((ability, index) => {
                     const label = ability.name;
