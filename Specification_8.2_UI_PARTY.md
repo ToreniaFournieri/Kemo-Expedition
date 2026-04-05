@@ -38,6 +38,8 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
   - Position: top-center.
   - Do not stretch; preserve original aspect ratio.
   - Image size is fixed and does not scale with content.
+  - The image width matches the panel width.
+  - Apply visual softening so that foreground text remains clearly legible
   - The image remains static relative to the panel (does not move with internal content changes).
 
   - If race == Vulpinian, use : /public/character/Vulpinian.png
