@@ -4879,6 +4879,9 @@ function PartyTab({
   const subClass = CLASSES.find(c => c.id === char.subClassId) ?? CLASSES[0];
   const predisposition = PREDISPOSITIONS.find(p => p.id === char.predispositionId) ?? PREDISPOSITIONS[0];
   const lineage = LINEAGES.find(l => l.id === char.lineageId) ?? LINEAGES[0];
+  const partyMemberImageSrc = race.id === 'vulpinian'
+    ? `${import.meta.env.BASE_URL}public/character/Vulpinian.png`
+    : null;
   const raceCategoryDefinitions: Array<{ label: string; raceIds: Character['raceId'][] }> = [
     { label: '肉食', raceIds: ['lupinian', 'vulpinian', 'felidian'] },
     { label: '雑食', raceIds: ['caninian', 'ursan', 'procyonian'] },
@@ -5426,6 +5429,16 @@ function PartyTab({
 
       {/* Character details */}
       <div className="bg-pane rounded-lg p-4 mb-4">
+        {/* SpecRef: 8.2.2 | Party member details | Display character image */}
+        {partyMemberImageSrc && (
+          <div className="mb-3 flex justify-center">
+            <img
+              src={partyMemberImageSrc}
+              alt={`${race.name} character`}
+              className="h-40 w-40 object-contain"
+            />
+          </div>
+        )}
         <div className="flex justify-between items-center mb-2 gap-2">
           {editingCharacter === selectedCharacter ? (
             <input
