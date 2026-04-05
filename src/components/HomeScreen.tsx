@@ -5442,7 +5442,7 @@ function PartyTab({
               src={partyMemberImageSrc}
               alt=""
               aria-hidden="true"
-              className={`pointer-events-none select-none absolute left-0 top-0 w-full h-auto object-contain object-top ${isDarkModeEnabled ? 'opacity-50' : 'opacity-40'}`}
+              className={`pointer-events-none select-none absolute left-0 top-0 w-full h-auto object-contain object-top ${isDarkModeEnabled ? 'opacity-50 invert' : 'opacity-40'}`}
             />
             <div
               className={`pointer-events-none absolute inset-0 ${isDarkModeEnabled ? 'bg-slate-950/20' : 'bg-white/40'}`}
