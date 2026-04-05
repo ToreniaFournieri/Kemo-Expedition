@@ -7035,6 +7035,7 @@ function ExpeditionTab({
             filter: isDarkModeEnabled ? 'invert(1)' : undefined,
             opacity: isDarkModeEnabled ? 0.28 : 0.22,
             transform: 'scale(1.01)',
+            transformOrigin: 'top center',
           }
           : undefined;
 
