@@ -5439,10 +5439,10 @@ function PartyTab({
               src={partyMemberImageSrc}
               alt=""
               aria-hidden="true"
-              className="pointer-events-none select-none absolute left-0 top-0 w-full h-auto object-contain object-top opacity-55"
+              className="pointer-events-none select-none absolute left-0 top-0 w-full h-auto object-contain object-top opacity-40"
             />
             <div
-              className="pointer-events-none absolute inset-0 bg-gray-500/20"
+              className="pointer-events-none absolute inset-0 bg-white/40"
               aria-hidden="true"
             />
           </>
