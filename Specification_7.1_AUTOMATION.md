@@ -239,12 +239,16 @@
      - Its **item ID** already exists in **Memory A**.
      - Its **`c.*` bonus** already exists in **Memory B**.
    - **For `i.gauntlet`, `i.archery`, and `i.catalyst`:**
-     - From the inventory, search for the **highest ( modfied `target d. bonus` + `c.N_NoA+X`) value item** in the target item category.
+     - From the inventory, search for the **highest ( modfied `target d. bonus` + `c.N_NoA+X`) bonus value item** in the target item category.
      - the value is including enhancement, super rare multiplier calculation.
    - **Other item categories:**
      - From the inventory, search for the **highest modified `target d. bonus` value item** in the target item category.
      - the value includes enhancement, super rare multiplier calculation.
-  - `modified core concept`: the value on the display like "究極の神鋼の短剣 近攻+1111" -> 1111.
+  - `modified core concept`:
+     - Respect corresponding c bonus for item like `c.sword_x1.x`.
+     - the value is exact the same value of displaying item list of character (with `c.sword_x2.0`) "究極の神鋼の短剣 近攻+1111" -> Use: 1111.
+     - "究極の神鋼の短剣" in inventory is "近攻+555", not use this value.
+ 
 
 |category | `target d. bonus` |
 |-----|----------|
