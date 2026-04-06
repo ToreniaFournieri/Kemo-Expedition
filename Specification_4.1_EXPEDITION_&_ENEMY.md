@@ -185,17 +185,17 @@
 | Kemono | ケモノ | ケ | race ability1 | race ability2 | |
 
 
-| Kemono races      | default ability　 | unlock ability       | c. bonus of enemey     | 
-|------------|-----------|-------------------|----------------------|--------------|
-| Lupinian   |10,12, 8, 7| `a.rage`1         | `a.re-counter`1      | `e.ice+25`, `c.ice-defense-multiplier_x2/3`|
-| Vulpinian  |11,10,12, 8| `a.momentum`1     | `a.cunning`1         | `e.thunder+25` |
-| Felidian   | 9, 9,10,13| `a.first-strike`1 | `a.covering-fire`1   | `e.fire+25`, `c.fire-defense-multiplier_x2/3`|
-| Caninian   |10,10,10,10| `a.seeker`1       | `a.resurrect`1       | `c.growth_x1.1`|
-| Ursan      |13,11, 7, 7| `a.bulwark`1      | `a.cyborgization`1   | `e.fire+40` |
-| Procyonian |14, 8, 8, 6| `a.resonance`1 | `a.illusion`1          | `e.thunder+40`, `c.thunder-defense-multiplier_x2/3` |
-| Leporian   | 9, 8,14,10| `a.composure`1    | `a.magical-counter`1 | `e.ice+40` |
-| Cervin     | 8, 7,13,11| `a.focus`1        | `a.prophecy`1        | |
-| Murid      | 7, 8,11,14| `a.stealth`1      | (none)               | `c.penet+0.10` |
+| Kemono races      | ability　 | c. bonus of enemey     | 
+|------------|-----------|-------------------|
+| Lupinian   | `a.rage`1, `a.re-counter`1      | `e.ice+25`, `c.ice-defense-multiplier_x2/3`|
+| Vulpinian  |`a.momentum`1, `a.cunning`1         | `e.thunder+25` |
+| Felidian   |`a.first-strike`1, `a.covering-fire`1   | `e.fire+25`, `c.fire-defense-multiplier_x2/3`|
+| Caninian   |`a.seeker`1, `a.resurrect`1       | `c.growth_x1.1`|
+| Ursan      |`a.bulwark`1, `a.cyborgization`1   | `e.fire+40` |
+| Procyonian |`a.resonance`1, `a.illusion`1          | `e.thunder+40`, `c.thunder-defense-multiplier_x2/3` |
+| Leporian   |`a.composure`1, `a.magical-counter`1 | `e.ice+40` |
+| Cervin     |`a.focus`1, `a.prophecy`1        | |
+| Murid      |`a.stealth`1 | `c.penet+0.10` |
 
 1. The Core Principle: "Static Master, Dynamic Reality"
 All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their actual threat level is calculated only upon spawning by applying the environmental pressure of the current Expedition and Floor.
