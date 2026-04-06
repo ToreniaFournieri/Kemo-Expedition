@@ -21,7 +21,7 @@ import {
   type BonusAbilityGlossarySubcategoryId,
 } from '../data/bonusAbilityGlossary';
 import { GLOSSARY_SECTIONS } from '../data/glossary';
-import { getItemAutoEquipmentSelectionValue, getItemCoreConceptValue, getItemDisplayName } from '../game/gameState';
+import { getItemCoreConceptValue, getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { getEncounterEnemyWithScaling, isEnemyTypeCBonusType } from '../game/enemyScaling';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
@@ -2762,7 +2762,24 @@ export function HomeScreen({
       return [targetCategory];
     };
 
+    const getAutoEquipmentSelectionValueForCharacter = (character: Character, item: Item): number => {
+      // SpecRef: 7.1.1.2 | Equipping into empty slots | modified core concept
+      const categoryMultiplier = getCharacterCategoryMultiplier(character, item.category);
+      const modifiedCoreConceptValue = Math.round(getItemCoreConceptValue(item) * categoryMultiplier);
+      if (item.category === 'gauntlet') {
+        return modifiedCoreConceptValue + (item.meleeNoABonus ?? 0);
+      }
+      if (item.category === 'archery') {
+        return modifiedCoreConceptValue + (item.rangedNoABonus ?? 0);
+      }
+      if (item.category === 'catalyst') {
+        return modifiedCoreConceptValue + (item.magicalNoABonus ?? 0);
+      }
+      return modifiedCoreConceptValue;
+    };
+
     const getBestVariantKeyInCategory = (
+      character: Character,
       targetCategories: ItemCategory[],
       memoryItemIds: Set<number>,
       memoryCBonusNames: Set<string>,
@@ -2787,8 +2804,8 @@ export function HomeScreen({
           return true;
         })
         .sort(([, a], [, b]) => {
-          const selectionValueDiff = getItemAutoEquipmentSelectionValue(b.item)
-            - getItemAutoEquipmentSelectionValue(a.item);
+          const selectionValueDiff = getAutoEquipmentSelectionValueForCharacter(character, b.item)
+            - getAutoEquipmentSelectionValueForCharacter(character, a.item);
           if (selectionValueDiff !== 0) return selectionValueDiff;
 
           return compareItemsByTierAndEnhancement(b.item, a.item);
@@ -2927,7 +2944,7 @@ export function HomeScreen({
               continue;
             }
 
-            const itemKey = getBestVariantKeyInCategory(resolvedCategories, memoryItemIds, memoryCBonusNames);
+            const itemKey = getBestVariantKeyInCategory(character, resolvedCategories, memoryItemIds, memoryCBonusNames);
             if (!itemKey) {
               skippedCategories.add(targetCategory);
               continue;
