@@ -239,26 +239,26 @@
      - Its **item ID** already exists in **Memory A**.
      - Its **`c.*` bonus** already exists in **Memory B**.
    - **For `i.gauntlet`, `i.archery`, and `i.catalyst`:**
-     - From the inventory, search for the **highest ( modfied `core concept` + `c.N_NoA+X`) value item** in the target item category.
+     - From the inventory, search for the **highest ( modfied `target d. bonus` + `c.N_NoA+X`) value item** in the target item category.
      - the value is including enhancement, super rare multiplier calculation.
    - **Other item categories:**
-     - From the inventory, search for the **highest modified `core concept` value item** in the target item category.
+     - From the inventory, search for the **highest modified `target d. bonus` value item** in the target item category.
      - the value includes enhancement, super rare multiplier calculation.
   - `modified core concept`: the value on the display like "究極の神鋼の短剣 近攻+1111" -> 1111.
 
-|category | core concept |
+|category | `target d. bonus` |
 |-----|----------|
 |`i.armor` | + `d.physical_defense` |
 |`i.robe` | + `d.magical_defense` |
 |`i.shield ` | + `d.HP` |
 |`i.sword` | + `d.melee_attack` |
-|`i.katana` | + `d.melee_attack`, - `melee_NoA` |
+|`i.katana` | + `d.melee_attack` |
 |`i.gauntlet` | + `d.melee_NoA` |
 |`i.arrow` | + `d.ranged_attack` |
-|`i.bolt` | + `d.ranged_attack`, - `d.ranged_NoA`  |
+|`i.bolt` | + `d.ranged_attack`  |
 |`i.archery` | + `d.ranged_NoA` |
 |`i.wand` | + `d.magical_attack` |
-|`i.grimoire` | + `d.magical_attack`, - `d.magical_NoA`  |
+|`i.grimoire` | + `d.magical_attack` |
 |`i.catalyst` | + `d.magical_NoA`  |
 
 
