@@ -55,7 +55,7 @@ export function getEnemyMultipliersForLevel(enemyLevel: number): CombatMultiplie
   return {
     hp: round2(applyEnemyLevelGrowth(n, 1.16, 25, 0.0012, 49, 0.00006)),
     attack: round2(applyEnemyLevelGrowth(n, 1.09, 25, 0.00055, 49, 0.00003)),
-    attackAmplifier: round2(applyEnemyLevelGrowth(n, 1.04, 25, 0.00022, 49, 0.000024)),
+    attackAmplifier: round2(applyEnemyLevelGrowth(n, 1.03, 25, 0.000165, 49, 0.000017)),
     noa: round2(applyEnemyLevelGrowth(n, 1.05, 25, 0.00028, 49, 0.00002)),
     defense: round2(applyEnemyLevelGrowth(n, 1.11, 25, 0.00058, 49, 0.00004)),
     defenseAmplifier: 1.0,
