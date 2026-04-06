@@ -137,10 +137,10 @@
 | 8 | `i.weapon`  |
 | 9 | `i.weapon`  |
 | 10 | `i.robe` |
-| 11 | `i.weapon`  |
+| 11 | `i.armor`  |
 | 12 | `i.NoA` |
 | 13 | `i.weapon` |
-| 14 | `i.armor` |
+| 14 | `i.weapon` |
 | 15 | `i.robe` |
 
 
