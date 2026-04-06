@@ -239,11 +239,12 @@
      - Its **item ID** already exists in **Memory A**.
      - Its **`c.*` bonus** already exists in **Memory B**.
    - **For `i.gauntlet`, `i.archery`, and `i.catalyst`:**
-     - From the inventory, search for the **highest (`core concept` + `c.N_NoA+X`) value item** in the target item category.
+     - From the inventory, search for the **highest ( modfied `core concept` + `c.N_NoA+X`) value item** in the target item category.
      - the value is including enhancement, super rare multiplier calculation.
    - **Other item categories:**
-     - From the inventory, search for the **highest `core concept` value item** in the target item category.
+     - From the inventory, search for the **highest modified `core concept` value item** in the target item category.
      - the value includes enhancement, super rare multiplier calculation.
+  - `modified core concept`: the value on the display like "究極の神鋼の短剣 近攻+1111" -> 1111. 
 
 4. **Register the selected item**
    - Add the selected item's **item ID** to **Memory A**.
