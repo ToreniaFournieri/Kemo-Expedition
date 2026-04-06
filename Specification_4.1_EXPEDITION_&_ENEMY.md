@@ -237,18 +237,18 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 | Class | `d.HP_modifier` | `a.ability_add` | `d.accuracy_add` | `d.evasion_add` | `d.ranged_attack_modifier` | `d.ranged_attack_amplifier_modifier` | `d.ranged_NoA` | `d.magical_attack_modifier` | `d.magical_attack_amplifier_modifier` | `d.magical_NoA` | `d.melee_attack_modifier` | `d.melee_attack_amplifier_modifier` | `d.melee_NoA` | `d.physical_defense_modifier` | `d.magical_defense_modifier` | `d.experience_modifier` |
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|
-| class.duelist | x1.00 | `a.counter`1 | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x1.0 | x1.2 | 4 | x0.8 | x0.8 | x1.0 |
-| class.samurai | x0.80 | `a.iaigiri`1 | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x2.0 | x1.0 | 1 | x0.7 | x0.7 | x0.8 |
-| class.sword-saint | x1.10 | `a.re-attack`1 | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x0.8 | x1.3 | 6 | x0.9 | x0.7 | x1.0 |
-| class.ranger | x0.85 | (none) | 0.03 | 0.01 | x1.3 | x1.2 | 4 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x0.7 | x0.7 | x1.2 |
-| class.striker | x0.95 | `a.heavy-strike`1 | 0.00 | -0.02 | x1.5 | x1.0 | 2 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x0.6 | x0.6 | x0.8 |
-| class.ninja | x0.75 | `a.first-strike`1 | 0.05 | 0.03 | x0.7 | x1.3 | 5 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x0.5 | x0.5 | x1.0 |
-| class.wizard | x0.50 | `a.resonance`1 | 0.00 | -0.015 | x1.0 | x1.0 | 0 | x1.2 | x1.0 | 2 | x1.0 | x1.0 | 0 | x0.4 | x1.0 | x0.8 |
-| class.sage | x0.85 | `a.arc-magic`1 | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x0.8 | x1.3 | 4 | x1.0 | x1.0 | 0 | x0.8 | x1.3 | x1.0 |
-| class.alchemist | x0.70 | `a.arcane-stability`1 | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.2 | x1.0 | 5 | x1.0 | x1.0 | 0 | x0.7 | x0.7 | x1.2 |
-| class.guardian | x1.30 | (none) | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 2 | x1.3 | x0.6 | x1.0 |
-| class.pilgrim | x1.15 | (none) | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 2 | x1.0 | x1.0 | 0 | x1.1 | x1.1 | x0.4 |
-| class.lord | x1.10 | (none) | 0.00 | 0.00 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 0 | x1.0 | x1.0 | 2 | x1.2 | x1.0 | x1.6 |
+| class.duelist | x1.00 | `a.counter`1 | 0.00 | 0.00 | x0.9 | x0.8 | 0 | x0.9 | x0.8 | 0 | x1.0 | x1.2 | 4 | x0.8 | x0.8 | x1.0 |
+| class.samurai | x0.80 | `a.iaigiri`1 | 0.00 | -0.02 | x0.9 | x0.8 | 0 | x0.9 | x0.8 | 0 | x2.0 | x1.0 | 1 | x0.7 | x0.7 | x0.8 |
+| class.sword-saint | x1.10 | `a.re-attack`1 | 0.00 | 0.00 | x0.9 | x0.8 | 0 | x0.9 | x0.8 | 0 | x0.8 | x1.3 | 6 | x0.9 | x0.7 | x1.0 |
+| class.ranger | x0.85 | (none) | 0.03 | 0.01 | x1.3 | x1.2 | 4 | x0.9 | x0.8 | 0 | x0.9 | x0.8 | 0 | x0.7 | x0.7 | x1.2 |
+| class.striker | x0.95 | `a.heavy-strike`1 | 0.00 | -0.02 | x1.5 | x1.0 | 2 | x0.9 | x0.8 | 0 | x0.9 | x0.8 | 0 | x0.6 | x0.6 | x0.8 |
+| class.ninja | x0.75 | `a.first-strike`1 | 0.05 | 0.03 | x0.7 | x1.3 | 5 | x0.9 | x0.8 | 0 | x0.9 | x0.8 | 0 | x0.5 | x0.5 | x1.0 |
+| class.wizard | x0.50 | `a.resonance`1 | 0.00 | -0.015 | x0.9 | x0.8 | 0 | x1.2 | x1.0 | 2 | x0.9 | x0.8 | 0 | x0.4 | x1.0 | x0.8 |
+| class.sage | x0.85 | `a.arc-magic`1 | 0.00 | 0.00 | x0.9 | x0.8 | 0 | x0.8 | x1.3 | 4 | x0.9 | x0.8 | 0 | x0.8 | x1.3 | x1.0 |
+| class.alchemist | x0.70 | `a.arcane-stability`1 | 0.00 | 0.00 | x0.9 | x0.8 | 0 | x1.2 | x1.0 | 5 | x0.9 | x0.8 | 0 | x0.7 | x0.7 | x1.2 |
+| class.guardian | x1.30 | (none) | 0.00 | 0.00 | x0.9 | x0.8 | 0 | x0.8 | x0.8 | 0 | x0.9 | x0.8 | 2 | x1.3 | x0.6 | x1.0 |
+| class.pilgrim | x1.15 | (none) | 0.00 | 0.00 | x0.9 | x0.8 | 0 | x0.9 | x0.85 | 2 | x0.9 | x0.9 | 0 | x1.1 | x1.1 | x0.4 |
+| class.lord | x1.10 | (none) | 0.00 | 0.00 | x0.9 | x0.8 | 0 | x0.9 | x0.8 | 0 | x1.0 | x0.9 | 2 | x1.2 | x1.0 | x1.6 |
 
 - **Calculation of master value**
 - `d.HP` master value: `d.HP` x mainClass.`d.HP_modifier`  x subClass.`d.HP_modifier`
