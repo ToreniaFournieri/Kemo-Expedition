@@ -244,7 +244,23 @@
    - **Other item categories:**
      - From the inventory, search for the **highest modified `core concept` value item** in the target item category.
      - the value includes enhancement, super rare multiplier calculation.
-  - `modified core concept`: the value on the display like "究極の神鋼の短剣 近攻+1111" -> 1111. 
+  - `modified core concept`: the value on the display like "究極の神鋼の短剣 近攻+1111" -> 1111.
+
+|category | core concept |
+|-----|----------|
+|`i.armor` | + `d.physical_defense` |
+|`i.robe` | + `d.magical_defense` |
+|`i.shield ` | + `d.HP` |
+|`i.sword` | + `d.melee_attack` |
+|`i.katana` | + `d.melee_attack`, - `melee_NoA` |
+|`i.gauntlet` | + `d.melee_NoA` |
+|`i.arrow` | + `d.ranged_attack` |
+|`i.bolt` | + `d.ranged_attack`, - `d.ranged_NoA`  |
+|`i.archery` | + `d.ranged_NoA` |
+|`i.wand` | + `d.magical_attack` |
+|`i.grimoire` | + `d.magical_attack`, - `d.magical_NoA`  |
+|`i.catalyst` | + `d.magical_NoA`  |
+
 
 4. **Register the selected item**
    - Add the selected item's **item ID** to **Memory A**.
