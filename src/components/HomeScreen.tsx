@@ -21,7 +21,7 @@ import {
   type BonusAbilityGlossarySubcategoryId,
 } from '../data/bonusAbilityGlossary';
 import { GLOSSARY_SECTIONS } from '../data/glossary';
-import { getItemDisplayName } from '../game/gameState';
+import { getItemAutoEquipmentSelectionValue, getItemCoreConceptValue, getItemDisplayName } from '../game/gameState';
 import { ENEMIES, getEnemyDropCandidates } from '../data/enemies';
 import { getEncounterEnemyWithScaling, isEnemyTypeCBonusType } from '../game/enemyScaling';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
@@ -2668,65 +2668,6 @@ export function HomeScreen({
       return a.id - b.id;
     };
 
-    const getEnhancementAndSuperRareMultiplier = (item: Item): number => {
-      const enhancementMultiplier = ENHANCEMENT_TITLES.find((title) => title.value === item.enhancement)?.multiplier ?? 1;
-      const superRareMultiplier = SUPER_RARE_TITLES.find((title) => title.value === item.superRare)?.multiplier ?? 1;
-      return enhancementMultiplier * superRareMultiplier;
-    };
-
-    const getCoreConceptValue = (item: Item): number => {
-      const multiplier = getEnhancementAndSuperRareMultiplier(item) * (item.baseMultiplier ?? 1);
-      switch (item.category) {
-        case 'armor':
-          return (item.physicalDefense ?? 0) * multiplier;
-        case 'robe':
-          return (item.magicalDefense ?? 0) * multiplier;
-        case 'shield':
-          return (item.partyHP ?? 0) * multiplier;
-        case 'sword':
-          return (item.meleeAttack ?? 0) * multiplier;
-        case 'katana':
-          return (item.meleeAttack ?? 0) * multiplier;
-        case 'gauntlet':
-          return (item.meleeNoA ?? 0) * multiplier;
-        case 'arrow':
-          return (item.rangedAttack ?? 0) * multiplier;
-        case 'bolt':
-          return (item.rangedAttack ?? 0) * multiplier;
-        case 'archery':
-          return (item.rangedNoA ?? 0) * multiplier;
-        case 'wand':
-          return (item.magicalAttack ?? 0) * multiplier;
-        case 'grimoire':
-          return (item.magicalAttack ?? 0) * multiplier;
-        case 'catalyst':
-          return (item.magicalNoA ?? 0) * multiplier;
-        default:
-          return 0;
-      }
-    };
-
-    const getNoAFixedBonusValue = (item: Item): number => {
-      const multiplier = getEnhancementAndSuperRareMultiplier(item) * (item.baseMultiplier ?? 1);
-      switch (item.category) {
-        case 'gauntlet':
-          return (item.meleeNoABonus ?? 0) * multiplier;
-        case 'archery':
-          return (item.rangedNoABonus ?? 0) * multiplier;
-        case 'catalyst':
-          return (item.magicalNoABonus ?? 0) * multiplier;
-        default:
-          return 0;
-      }
-    };
-
-    const getAutoEquipmentSelectionValue = (item: Item, _targetCategory: AutoEquipmentTargetCategory): number => {
-      const coreConceptValue = getCoreConceptValue(item);
-      if (item.category === 'gauntlet' || item.category === 'archery' || item.category === 'catalyst') {
-        return coreConceptValue + getNoAFixedBonusValue(item);
-      }
-      return coreConceptValue;
-    };
 
     const getCharacterAutoEquipBonuses = (character: Character): Bonus[] => {
       const race = RACES.find((r) => r.id === character.raceId);
@@ -2822,7 +2763,6 @@ export function HomeScreen({
     };
 
     const getBestVariantKeyInCategory = (
-      targetCategory: AutoEquipmentTargetCategory,
       targetCategories: ItemCategory[],
       memoryItemIds: Set<number>,
       memoryCBonusNames: Set<string>,
@@ -2847,8 +2787,8 @@ export function HomeScreen({
           return true;
         })
         .sort(([, a], [, b]) => {
-          const selectionValueDiff = getAutoEquipmentSelectionValue(b.item, targetCategory)
-            - getAutoEquipmentSelectionValue(a.item, targetCategory);
+          const selectionValueDiff = getItemAutoEquipmentSelectionValue(b.item)
+            - getItemAutoEquipmentSelectionValue(a.item);
           if (selectionValueDiff !== 0) return selectionValueDiff;
 
           return compareItemsByTierAndEnhancement(b.item, a.item);
@@ -2871,7 +2811,7 @@ export function HomeScreen({
           const enhancementDiff = b.item.enhancement - a.item.enhancement;
           if (enhancementDiff !== 0) return enhancementDiff;
 
-          const coreConceptDiff = getCoreConceptValue(b.item) - getCoreConceptValue(a.item);
+          const coreConceptDiff = getItemCoreConceptValue(b.item) - getItemCoreConceptValue(a.item);
           if (coreConceptDiff !== 0) return coreConceptDiff;
 
           const superRareDiff = b.item.superRare - a.item.superRare;
@@ -2899,7 +2839,7 @@ export function HomeScreen({
       const superRareDiff = b.superRare - a.superRare;
       if (superRareDiff !== 0) return superRareDiff;
 
-      const coreConceptDiff = getCoreConceptValue(b) - getCoreConceptValue(a);
+      const coreConceptDiff = getItemCoreConceptValue(b) - getItemCoreConceptValue(a);
       if (coreConceptDiff !== 0) return coreConceptDiff;
 
       return compareItemsByTierAndEnhancement(b, a);
@@ -2987,7 +2927,7 @@ export function HomeScreen({
               continue;
             }
 
-            const itemKey = getBestVariantKeyInCategory(targetCategory, resolvedCategories, memoryItemIds, memoryCBonusNames);
+            const itemKey = getBestVariantKeyInCategory(resolvedCategories, memoryItemIds, memoryCBonusNames);
             if (!itemKey) {
               skippedCategories.add(targetCategory);
               continue;
