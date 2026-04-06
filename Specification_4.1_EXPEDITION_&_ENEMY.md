@@ -241,8 +241,8 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | class.sword-saint | x1.10 | `a.re-attack`1 | 0.00 | 0.00 | x0.9 | x0.8 | 0 | x0.9 | x0.8 | 0 | x0.8 | x1.3 | 6 | x0.9 | x0.7 | x1.0 |
 | class.ranger | x0.85 | (none) | 0.03 | 0.01 | x1.3 | x1.2 | 4 | x0.9 | x0.8 | 0 | x0.9 | x0.8 | 0 | x0.7 | x0.7 | x1.2 |
 | class.striker | x0.95 | `a.heavy-strike`1 | 0.00 | -0.02 | x1.5 | x1.0 | 2 | x0.9 | x0.8 | 0 | x0.9 | x0.8 | 0 | x0.6 | x0.6 | x0.8 |
-| class.ninja | x0.75 | `a.first-strike`1 | 0.05 | 0.03 | x0.7 | x1.3 | 5 | x0.9 | x0.8 | 0 | x0.9 | x0.8 | 0 | x0.5 | x0.5 | x1.0 |
-| class.wizard | x0.50 | `a.resonance`1 | 0.00 | -0.015 | x0.9 | x0.8 | 0 | x1.2 | x1.0 | 2 | x0.9 | x0.8 | 0 | x0.4 | x1.0 | x0.8 |
+| class.ninja | x0.75 | `a.first-strike`1 | 0.05 | 0.03 | x0.8 | x1.3 | 5 | x0.9 | x0.8 | 0 | x0.9 | x0.8 | 0 | x0.75 | x0.75 | x1.0 |
+| class.wizard | x0.50 | `a.resonance`1 | 0.00 | -0.015 | x0.9 | x0.8 | 0 | x1.2 | x1.0 | 2 | x0.9 | x0.8 | 0 | x0.63 | x1.0 | x0.8 |
 | class.sage | x0.85 | `a.arc-magic`1 | 0.00 | 0.00 | x0.9 | x0.8 | 0 | x0.8 | x1.3 | 4 | x0.9 | x0.8 | 0 | x0.8 | x1.3 | x1.0 |
 | class.alchemist | x0.70 | `a.arcane-stability`1 | 0.00 | 0.00 | x0.9 | x0.8 | 0 | x1.2 | x1.0 | 5 | x0.9 | x0.8 | 0 | x0.7 | x0.7 | x1.2 |
 | class.guardian | x1.30 | (none) | 0.00 | 0.00 | x0.9 | x0.8 | 0 | x0.8 | x0.8 | 0 | x0.9 | x0.8 | 2 | x1.3 | x0.6 | x1.0 |
