@@ -2686,19 +2686,19 @@ export function HomeScreen({
         case 'sword':
           return (item.meleeAttack ?? 0) * multiplier;
         case 'katana':
-          return ((item.meleeAttack ?? 0) + (item.meleeNoABonus ?? 0)) * multiplier;
+          return (item.meleeAttack ?? 0) * multiplier;
         case 'gauntlet':
           return (item.meleeNoA ?? 0) * multiplier;
         case 'arrow':
           return (item.rangedAttack ?? 0) * multiplier;
         case 'bolt':
-          return ((item.rangedAttack ?? 0) + (item.rangedNoABonus ?? 0)) * multiplier;
+          return (item.rangedAttack ?? 0) * multiplier;
         case 'archery':
           return (item.rangedNoA ?? 0) * multiplier;
         case 'wand':
           return (item.magicalAttack ?? 0) * multiplier;
         case 'grimoire':
-          return ((item.magicalAttack ?? 0) + (item.magicalNoABonus ?? 0)) * multiplier;
+          return (item.magicalAttack ?? 0) * multiplier;
         case 'catalyst':
           return (item.magicalNoA ?? 0) * multiplier;
         default:
