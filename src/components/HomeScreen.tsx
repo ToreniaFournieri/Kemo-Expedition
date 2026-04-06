@@ -2593,11 +2593,6 @@ export function HomeScreen({
 
     const formatCBonusValue = (value: number): string => (Math.round(value * 1000000) / 1000000).toString();
 
-    const formatDefenseBonusPercent = (value: number): string => {
-      const percent = Math.round(value * 1000) / 10;
-      return Number.isInteger(percent) ? `${percent}` : `${percent.toFixed(1)}`;
-    };
-
     const ITEM_DIRECT_C_BONUS_TYPES = new Set([
       'equip_slot', 'equip_melee', 'equip_ranged', 'equip_magic', 'penet', 'accuracy', 'growth_xV', 'upgrade_V',
       'melee_attack', 'ranged_attack', 'magical_attack', 'physical_attack', 'physical_defense',
@@ -2612,47 +2607,6 @@ export function HomeScreen({
       for (const bonus of item.bonuses ?? []) {
         if (!ITEM_DIRECT_C_BONUS_TYPES.has(bonus.type)) continue;
         bonusNames.add(`c.${bonus.type}+${formatCBonusValue(bonus.value)}`);
-      }
-
-      const baseMultiplier = item.baseMultiplier ?? 1;
-      if (baseMultiplier !== 1) {
-        const offensePercent = Math.round((baseMultiplier - 1) * 1000) / 10;
-        if (item.meleeAttack || item.meleeNoA || item.meleeNoABonus) {
-          bonusNames.add(`c.melee_attack+${offensePercent}`);
-        }
-        if (item.rangedAttack || item.rangedNoA || item.rangedNoABonus) {
-          bonusNames.add(`c.ranged_attack+${offensePercent}`);
-        }
-        if (item.magicalAttack || item.magicalNoA || item.magicalNoABonus) {
-          bonusNames.add(`c.magical_attack+${offensePercent}`);
-        }
-        const defensePercent = formatDefenseBonusPercent(baseMultiplier - 1);
-        if (item.physicalDefense) {
-          bonusNames.add(`c.physical_defense+${defensePercent}`);
-        }
-        if (item.magicalDefense) {
-          bonusNames.add(`c.magical_defense+${defensePercent}`);
-        }
-      }
-
-      if (item.accuracyBonus) {
-        bonusNames.add(`c.accuracy+${formatCBonusValue(item.accuracyBonus)}`);
-      }
-      if ((item.evasionBonus ?? 0) > 0) {
-        bonusNames.add(`c.evasion+${formatCBonusValue(item.evasionBonus ?? 0)}`);
-      }
-      if (item.penetBonus) {
-        bonusNames.add(`c.penet+${formatCBonusValue(item.penetBonus)}`);
-      }
-
-      if ((item.meleeNoABonus ?? 0) !== 0) {
-        bonusNames.add(`c.melee_NoA+${formatCBonusValue(item.meleeNoABonus ?? 0)}`);
-      }
-      if ((item.rangedNoABonus ?? 0) !== 0) {
-        bonusNames.add(`c.ranged_NoA+${formatCBonusValue(item.rangedNoABonus ?? 0)}`);
-      }
-      if ((item.magicalNoABonus ?? 0) !== 0) {
-        bonusNames.add(`c.magical_NoA+${formatCBonusValue(item.magicalNoABonus ?? 0)}`);
       }
 
       return bonusNames;
