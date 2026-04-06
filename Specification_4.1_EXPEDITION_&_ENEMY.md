@@ -181,11 +181,11 @@
 | Mech | 機械 | 機 | `a.shock`1 | `a.mutual-physical-amplify`2 | `c.physical-defense-multiplier_x3/5`, `r.thunder_x1.5` |
 | Chimera | キメラ | 合 | `a.unstable-core`1 | `a.mutual-magic-restraint`1  | `e.thunder+30`, `c.grit+1`, `c.pursuit+1`, `c.caster+1`, `c.growth_x1.7`  |
 | Titan | 巨人 | 巨 | `a.colossal`1 | `a.mutual-physical-restraint`1 | `c.growth_x1.5` |
-| Jinma | 神魔 | 神 | `a.upgrade-all-abilities`1 , race ability1 | race ability2 | `c.growth_x2.0` |
-| Kemono | ケモノ | ケ | race ability1 | race ability2 | |
+| Jinma | 神魔 | 神 | `a.upgrade-all-abilities`1 , race ability1 | none | `c.growth_x1.3` |
+| Kemono | ケモノ | ケ | race ability1 | none | |
 
 
-| Kemono races      | ability　 | c. bonus of enemey     | 
+| Kemono races      | race ability1　 | c. bonus of enemey     | 
 |------------|-----------|-------------------|
 | Lupinian   | `a.rage`1, `a.re-counter`1      | `e.ice+25`, `c.ice-defense-multiplier_x2/3`|
 | Vulpinian  |`a.momentum`1, `a.cunning`1         | `e.thunder+25` |
