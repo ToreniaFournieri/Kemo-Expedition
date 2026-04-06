@@ -198,7 +198,7 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
   },
   Chimera: {
     ability1: [{ id: 'unstable_core', level: 1 }],
-    ability30: [{ id: 'magical_reflect', level: 1 }],
+    ability30: [{ id: 'mutual_magic_restraint', level: 1 }],
     bonuses: [
       { type: 'thunder_offense', value: 30 },
       { type: 'grit', value: 1 },
@@ -209,12 +209,61 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
   },
   Titan: {
     ability1: [{ id: 'colossal', level: 1 }],
-    ability30: [{ id: 'mutual_magic_restraint', level: 1 }],
+    ability30: [{ id: 'mutual_physical_restraint', level: 1 }],
     bonuses: [{ type: 'growth_xV', value: 1.5 }],
   },
   Jinma: {
     ability1: [{ id: 'upgrade_all_abilities', level: 1 }],
-    bonuses: [{ type: 'growth_xV', value: 2.0 }],
+    bonuses: [{ type: 'growth_xV', value: 1.3 }],
+  },
+  Kemono: {
+    ability1: [],
+    bonuses: [],
+  },
+  Caninian: {
+    ability1: [{ id: 'seeker', level: 1 }, { id: 'resurrect', level: 1 }],
+    bonuses: [{ type: 'growth_xV', value: 1.1 }],
+  },
+  Lupinian: {
+    ability1: [{ id: 'rage', level: 1 }, { id: 're_counter', level: 1 }],
+    bonuses: [
+      { type: 'ice_offense', value: 25 },
+      { type: 'ice_defense_multiplier_xV', value: 2 / 3 },
+    ],
+  },
+  Vulpinian: {
+    ability1: [{ id: 'momentum', level: 1 }, { id: 'cunning', level: 1 }],
+    bonuses: [{ type: 'thunder_offense', value: 25 }],
+  },
+  Felidian: {
+    ability1: [{ id: 'first_strike', level: 1 }, { id: 'covering_fire', level: 1 }],
+    bonuses: [
+      { type: 'fire_offense', value: 25 },
+      { type: 'fire_defense_multiplier_xV', value: 2 / 3 },
+    ],
+  },
+  Ursan: {
+    ability1: [{ id: 'bulwark', level: 1 }, { id: 'cyborgization', level: 1 }],
+    bonuses: [{ type: 'fire_offense', value: 40 }],
+  },
+  Procyonian: {
+    ability1: [{ id: 'resonance', level: 1 }, { id: 'illusion', level: 1 }],
+    bonuses: [
+      { type: 'thunder_offense', value: 40 },
+      { type: 'thunder_defense_multiplier_xV', value: 2 / 3 },
+    ],
+  },
+  Leporian: {
+    ability1: [{ id: 'composure', level: 1 }, { id: 'magical_counter', level: 1 }],
+    bonuses: [{ type: 'ice_offense', value: 40 }],
+  },
+  Cervin: {
+    ability1: [{ id: 'focus', level: 1 }, { id: 'prophecy', level: 1 }],
+    bonuses: [],
+  },
+  Murid: {
+    ability1: [{ id: 'stealth', level: 1 }],
+    bonuses: [{ type: 'penet', value: 0.1 }],
   },
 };
 
