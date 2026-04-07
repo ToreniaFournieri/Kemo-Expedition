@@ -273,9 +273,6 @@ HP: 312                 タイプ: 神魔
   - Simple: 1 boss rare item instead of actual setting
 - Gods Strength: Normal / Very Weak `debug mode for god battle`
   - Default: Normal
-- All religions OFF/ON
-  - Default: OFF
-  - if ON, unlock All religions. if back to OFF, only in game unlocked religions available. 
 - Party unlock +1 PT unlock
   - if press the button, unlock one PT. 
 - Jewel shop open OFF/ON
