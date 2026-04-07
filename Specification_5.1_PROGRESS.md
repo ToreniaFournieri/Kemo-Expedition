@@ -10,17 +10,17 @@
 
 | State | Logic | Move to | Durration modifilier |
 |-------|-------|----------|---------|
-| rest(休息中)  | at home | sell or feast | `God of Fortification` |
-| sell(売却中) | at home, Sell auto-sell items to shop owners. and officially gain items (notification of item gains at the end of sell state.). If they have no trophy nor auto-sell item, skip this state. | feast | `God of Dusk` |
-| feast(宴会中) | at home, skip if current_profit = 0). Skipped if the party’s total HP was below 30% of Max HP at the beginning of rest state. | sound_sleep or nap_sleep or pray | `Goddess of Fertility` |
-| sleep/ sound_sleep(熟睡中), nap_sleep(仮眠中) | at home. skip if the party’s total HP was below 10% of Max HP at the beginning of rest state. (no draw a ticket from `t.sleepiness_of_party_bag`) | sound sleep:outfit, nap_sleep:pray |
-| outfit(身支度中) | equipping items. skip if no sound_sleep | pray |
-| pray(祈り中) | at home. Party members donate money to their deity. | idle or move |
-| idle(待機中) | at home. only when 自動周回 = OFF (idle state) | - |
-| move(移動中) | home → dungeon, If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | explore | `a.peddler` |
-| explore(探索中) | in dungeon. if HP < 30% MaxHP → retreat. At the end of this state, update this {ルピニアンの断崖踏破} part ) | return | `Goddess of Precision`, `terrain.chill`, `terrain.looping-path` |
-| return(帰還中) | dungeon → home,If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | rest | 
-| reactivate(復帰中) | Reactivating from AFK mode | - | - |
+| `state.rest`  | at home | sell or feast | `God of Fortification` |
+| `state.sell` | at home, Sell auto-sell items to shop owners. and officially gain items (notification of item gains at the end of sell state.). If they have no trophy nor auto-sell item, skip this state. | feast | `God of Dusk` |
+| `state.feast` | at home, skip if current_profit = 0). Skipped if the party’s total HP was below 30% of Max HP at the beginning of rest state. | sound_sleep or nap_sleep or pray | `Goddess of Fertility` |
+| sleep/ `state.sound_sleep`, `state.nap_sleep` | at home. skip if the party’s total HP was below 10% of Max HP at the beginning of rest state. (no draw a ticket from `t.sleepiness_of_party_bag`) | sound sleep:outfit, nap_sleep:pray |
+| `state.outfit` | equipping items. skip if no sound_sleep | pray |
+| `state.pray` | at home. Party members donate money to their deity. | idle or move |
+| `state.idle` | at home. only when 自動周回 = OFF (idle state) | - |
+| `state.move` | home → dungeon, If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | explore | `a.peddler` |
+| `state.explore` | in dungeon. if HP < 30% MaxHP → retreat. At the end of this state, update this {ルピニアンの断崖踏破} part ) | return | `Goddess of Precision`, `terrain.chill`, `terrain.looping-path` |
+| `state.return` | dungeon → home,If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | rest | 
+| `state.reactivate` | Reactivating from AFK mode | - | - |
 
 - **Realtime Progress**
 - Debug Scaling:
@@ -28,41 +28,43 @@
   - If `x20 boost` , all durations are multiplied by **0.05**.
 
 
-| State | Duration |
-|-------|-------|
-| rest(休息中)  | heal max(100, +1% MaxHP) / 2 sec until full |
-| sell(売却中) | 5 seconds per `auto-sell` items |
-| feast(宴会中) | 90 seconds |
-| sound_sleep(熟睡中) | 120 seconds |
-| nap_sleep(仮眠中) | x 1/5 of sound sleep |
-| outfit(身支度中) | 60 seconds |
-| pray(祈り中) | 30 seconds |
-| move(移動中) | 10 seconds * (1.30 - 0.02 * `x.exp_tier` )^(`x.exp_tier`) | 
-| explore(探索中) | 5 seconds per room (24 rooms in total)|
-| return(帰還中) | 30 seconds * (1.30 - 0.02 * `x.exp_tier` )^(`x.exp_tier`)  |
+| State | Japanese label | Duration |
+|-------|-------|-------|
+| `state.rest` | 休息中 | heal max(100, +1% MaxHP) / 2 sec until full |
+| `state.sell` | 売却中 | 5 seconds per `auto-sell` items |
+| `state.feast` | 宴会中 | 90 seconds |
+| `state.sound_sleep` | 熟睡中 | 120 seconds |
+| `state.nap_sleep` | 仮眠中 | | x 1/5 of sound sleep |
+| `state.outfit` | 身支度中 | 60 seconds |
+| `state.pray` | 祈り中 | 30 seconds |
+| `state.idle` | 待機中 | - |
+| `state.move` | 移動中 | 10 seconds * (1.30 - 0.02 * `x.exp_tier` )^(`x.exp_tier`) | 
+| `state.explore` | 探索中 | 5 seconds per room (24 rooms in total)|
+| `state.return` | 帰還中 | 30 seconds * (1.30 - 0.02 * `x.exp_tier` )^(`x.exp_tier`)  |
+| `state.reactivate` | 復帰中 | - |
 
 **Durration modifilier**
-- explore state
+- `state.explore` state
   - If `Goddess of Precision`: duration *= 1.5
   - If floor is `terrain.chill`: duration *= 1.5
   - If floor is `terrain.looping-path`' duration *= 2.0
 
 - sleepiness from `t.sleepiness_of_party_bag` 
   - 0 No sleep: The party skips the sleep state and continues the normal cycle.
-  - 1 Nap: The party enters a short sleep (light rest). ( x 1/5 sleep duration)
-  - 2 Sound sleep: The party enters a full sleep state. ( x1 sleep duration )
+  - 1 Nap: `state.nap_sleep` The party enters a short sleep (light rest). ( x 1/5 sleep duration)
+  - 2 Sound sleep: `state.sound_sleep` The party enters a full sleep state. ( x1 sleep duration )
 
 - Profit usuage:
-  - At: rest(休息中):
+  - At: `state.rest`:
       - `current_profit` = 0
-  - At the end of sell(売却中):
+  - At the end of `state.sell`:
       - `current_profit` = Sum of (Auto-sell items)
-  - At the end of feast(宴会中):
+  - At the end of `state.feast`:
       - `current_profit` -= spending feast ( spend 33–67% of `current_profit` without `a.squander`, x1.3 spending with `a.squander`1, x1.5 spending with `a.squander`2. Not exceed current_profit )
         - Notification :
           - Without Squander: PT1は25Gお金を使った
           - With Squander: PT1 君主トムは贅沢に50G使った
-  - At the end of pray(祈り中):
+  - At the end of `state.pray`:
       - `current_profit` -= donattion ( 10–33% of `current_profit` without `a.tithe`, if party has `a.tithe`2, Adds +15% , else if party has `a.tithe`1, Adds +10, if deity = none, donation is 0. )
       - `current_profit` -= embezzlement (if `God of Cunning`, +50% of `current_profit`. if partymember.`a.momentum`, +10% of `current_profit`. Else if, 0%)
         -  Notification:
@@ -80,12 +82,11 @@
 
 - Player taps 出撃
   - If party is in return / idle / rest / sell / feast / sound_sleep / nap_sleep / pray state:
-  - Immediately set state to move state
-  - If they not gain items (not finished 売却中 state), immediately gain items and show notifications.
+  - Immediately set state to `state.move`
+  - If they not gain items (not finished `state.sell`), immediately gain items and show notifications.
   - Do not refill HP; dungeon starts with current HP. No squander, donation, nor remaining profits to the global wallet. The profit vanishes (The party menders would definitely not be happy with this players emergency sortie.)
-  - If party is already in explore state: ignore tap
+  - If party is already in `state.explore`: ignore tap
   - If party Hp is 0 (just after defeated): ignore tap and show notification log:"random party.character は疲弊しており出撃を拒否した"
-
 
 - **Transition rules**
   - 自動周回ON: 休息中→宴会中(if possible)→睡眠中→祈り中→待機中→移動中→探索中→帰還中→休息中
