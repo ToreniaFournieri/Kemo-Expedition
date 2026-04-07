@@ -127,7 +127,9 @@ PT3: 貯金額: 10G
   - "PT1はサイドクエスト 治療 (2時間) を受けた"
 
 **AFK handling**
-- Respect this side quest progress while AFK mode.
+- Side quest progress continues during AFK (`state.reactivate`).
+- Deadline timing respects speed modifiers (e.g., Debug mode).
+- Deadline checks are performed once at the end of each chunk.
 
 **Cancellation**
 - If a **神魔戦 (God Battle)** begins, the current side quest is **cancelled**.
