@@ -156,6 +156,7 @@ const TIER_L_BONUS = [0.15, 0.14, 0.13, 0.12, 0.11, 0.10, 0.09, 0.08, 0.07, 0.06
 const TIER_M_RESIST_PENALTY = [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1];
 const TIER_N_BONUS = [0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.011];
 const TIER_P_BONUS = [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.11];
+const TIER_Q_BONUS = [0.023, 0.022, 0.021, 0.02, 0.019, 0.018, 0.017, 0.016, 0.015, 0.014];
 
 // SpecRef: 3.1.2 | Item list | type.amplifier of base_power
 const TYPE_AMPLIFIERS: Record<ItemCategory, number> = {
@@ -372,7 +373,7 @@ function getTierIndex(tier: number): number {
   return Math.max(0, Math.min(tier - 1, TIER_BASE_POWER.length - 1));
 }
 
-function getBonusTier(baseTier: number, rarity: Rarity, column: 'F' | 'G' | 'H' | 'J' | 'K' | 'L' | 'M' | 'N' | 'P'): number {
+function getBonusTier(baseTier: number, rarity: Rarity, column: 'F' | 'G' | 'H' | 'J' | 'K' | 'L' | 'M' | 'N' | 'P' | 'Q'): number {
   if (column === 'J' || column === 'K') return baseTier;
   if (rarity === 'uncommon') return Math.min(baseTier + 1, 10);
   if (rarity === 'eliteRare') return Math.min(baseTier + 2, 10);
@@ -446,6 +447,7 @@ function createItem(
   const bonusTierM = getBonusTier(tier, rarity, 'M');
   const bonusTierN = getBonusTier(tier, rarity, 'N');
   const bonusTierP = getBonusTier(tier, rarity, 'P');
+  const bonusTierQ = getBonusTier(tier, rarity, 'Q');
   const bonusTierJ = getBonusTier(tier, rarity, 'J');
   const bonusTierK = getBonusTier(tier, rarity, 'K');
   const expeditionElement = getExpeditionElementByTier(tier);
@@ -480,20 +482,18 @@ function createItem(
   switch (template.category) {
     case 'armor':
       item.physicalDefense = calculateStat(basePower, amplifier);
-      if (hasX) item.partyHP = calculateStat(basePower, amplifier * 0.8);
+      if (hasX) item.partyHP = calculateStat(basePower, amplifier * 0.6);
       if (hasY) item.magicalDefense = calculateStat(basePower, amplifier * 0.3);
       break;
     case 'robe':
       item.magicalDefense = calculateStat(basePower, amplifier);
-      if (hasX) item.partyHP = calculateStat(basePower, amplifier * 0.8);
+      if (hasX) item.partyHP = calculateStat(basePower, amplifier * 0.6);
       if (hasY) item.physicalDefense = calculateStat(basePower, amplifier * 0.3);
       break;
     case 'shield':
-      item.partyHP = calculateStat(basePower, amplifier * 2.0);
-      if (hasX || hasY) {
-        item.physicalDefense = calculateStat(basePower, amplifier * 0.2);
-        item.magicalDefense = calculateStat(basePower, amplifier * 0.2);
-      }
+      item.partyHP = calculateStat(basePower, amplifier);
+      if (hasX) item.physicalDefense = calculateStat(basePower, amplifier * 0.2);
+      if (hasY) item.magicalDefense = calculateStat(basePower, amplifier * 0.2);
       break;
     case 'sword':
       item.meleeAttack = calculateStat(basePower, amplifier);
@@ -513,12 +513,12 @@ function createItem(
       break;
     case 'gauntlet':
       item.meleeNoA = calculateNoA(noaBasePower, amplifier);
-      item.physicalDefense = calculateStat(basePower, amplifier * 0.3);
+      if (hasX) item.physicalDefense = calculateStat(basePower, amplifier * 0.3);
       if (hasBaseBonus) item.meleeNoABonus = TIER_H_BONUS[getTierIndex(bonusTierH)];
       break;
     case 'arrow':
       item.rangedAttack = calculateStat(basePower, amplifier);
-      if (hasX) item.partyHP = calculateStat(basePower, amplifier * 0.8);
+      if (hasX) item.partyHP = calculateStat(basePower, amplifier * 0.55);
       if (hasY) {
         item.physicalDefense = calculateStat(basePower, amplifier * 0.32);
       }
@@ -583,7 +583,6 @@ function createItem(
       'robe',
       'shield',
       'katana',
-      'archery',
       'wand',
     ]);
     if (expeditionElementResistanceCategories.has(template.category) && expeditionElement !== 'none') {
@@ -591,8 +590,14 @@ function createItem(
     }
   }
 
+  // SpecRef: 3.1.2 | Item list | Y-bonus
+  if (hasY && template.category === 'archery' && expeditionElement !== 'none') {
+    addElementalResistancePenalty(item, bonusTierM, expeditionElement);
+  }
+
   if (hasBaseBonus) {
-    const bonusTier = getTierIndex(bonusTierF);
+    const bonusTierFIndex = getTierIndex(bonusTierF);
+    const bonusTierQIndex = getTierIndex(bonusTierQ);
     const addCBonus = (
       type: 'physical_defense' | 'magical_defense' | 'melee_attack' | 'ranged_attack' | 'magical_attack',
       value: number
@@ -600,11 +605,14 @@ function createItem(
       item.bonuses = [...(item.bonuses ?? []), { type, value }];
     };
 
-    if (template.category === 'armor') addCBonus('physical_defense', TIER_F_BONUS[bonusTier]);
-    if (template.category === 'robe') addCBonus('magical_defense', TIER_F_BONUS[bonusTier]);
-    if (template.category === 'sword') addCBonus('melee_attack', TIER_F_BONUS[bonusTier]);
-    if (template.category === 'arrow') addCBonus('ranged_attack', TIER_F_BONUS[bonusTier]);
-    if (template.category === 'wand') addCBonus('magical_attack', TIER_F_BONUS[bonusTier]);
+    if (template.category === 'armor') addCBonus('physical_defense', TIER_F_BONUS[bonusTierFIndex]);
+    if (template.category === 'robe') addCBonus('magical_defense', TIER_F_BONUS[bonusTierFIndex]);
+    if (template.category === 'sword') addCBonus('melee_attack', TIER_Q_BONUS[bonusTierQIndex]);
+    if (template.category === 'katana') addCBonus('melee_attack', TIER_F_BONUS[bonusTierFIndex]);
+    if (template.category === 'arrow') addCBonus('ranged_attack', TIER_Q_BONUS[bonusTierQIndex]);
+    if (template.category === 'bolt') addCBonus('ranged_attack', TIER_F_BONUS[bonusTierFIndex]);
+    if (template.category === 'wand') addCBonus('magical_attack', TIER_Q_BONUS[bonusTierQIndex]);
+    if (template.category === 'grimoire') addCBonus('magical_attack', TIER_F_BONUS[bonusTierFIndex]);
     if (template.category === 'shield') item.evasionBonus = (item.evasionBonus || 0) + TIER_G_BONUS[getTierIndex(bonusTierG)];
     if (template.category === 'sword') item.accuracyBonus = (item.accuracyBonus || 0) + TIER_N_BONUS[getTierIndex(bonusTierN)];
     if (template.category === 'archery') item.accuracyBonus = (item.accuracyBonus || 0) + TIER_N_BONUS[getTierIndex(bonusTierN)];
