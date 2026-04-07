@@ -294,7 +294,7 @@
 ```
 Party.`d.HP` =  
   (Total sum of individual (Item Bonuses of {((HP x enhancement multiplier x super rare multiplier x its c.multiplier ) x (`b.vitality` + `b.mind`) / 20 x `c.growth_xV`) , round off}
-  + {(  2.0 x `b.mind` + 2.0 x `b.vitality` + (`L_eff` x `b.vitality` x (`b.vitality`  + `b.mind`) / 20 ) x `c.growth_xV`), round off}
+  + {(  3.0 x `b.mind` + 3.0 x `b.vitality` + (`L_eff` x `b.vitality` x (`b.vitality`  + `b.mind`) / 20 ) x `c.growth_xV`), round off}
 ```
 
 - If character has c.growth_x1.6 and c.growth_x1.3, then 1.6 x 1.3 -> 2.08
