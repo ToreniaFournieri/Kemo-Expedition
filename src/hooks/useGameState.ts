@@ -64,9 +64,16 @@ import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
 import { LINEAGES } from '../data/lineages';
 import {
+  ELITE_GATE_REQUIREMENTS,
+  ENTRY_GATE_REQUIRED,
+  BOSS_GATE_REQUIRED,
   getGodsBattleRequired,
   getLootCollectionCount,
   getLootCollectionKey,
+  getEntryGateKey,
+  getEliteGateKey,
+  getBossGateKey,
+  isLootGateUnlocked,
   checkLootGateRequirement,
   addRecoveredItemsToLootProgress,
   unlockAvailableLootGates,
@@ -1483,6 +1490,33 @@ function getApproxAfkTimeQuestProgressPerCycle(party: Party, approxCycleDuration
     default:
       return 0;
   }
+}
+
+function hasActiveNonGodBattleLootGateCondition(party: Party): boolean {
+  // SpecRef: 5.1.2 | Side Quest | Trigger Condition
+  const currentDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId);
+  if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === 99) return false;
+
+  const tier = currentDungeon.enemyPoolIds[0];
+  for (const floor of currentDungeon.floors) {
+    if (floor.floorNumber >= 6) continue;
+    const required = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 3;
+    const collected = getLootCollectionCount(party, tier, 'uncommon');
+    const unlocked = isLootGateUnlocked(party, getEliteGateKey(currentDungeon.id, floor.floorNumber)) || collected >= required;
+    if (!unlocked) return true;
+  }
+
+  const eliteRareCollected = getLootCollectionCount(party, tier, 'eliteRare');
+  const bossUnlocked = isLootGateUnlocked(party, getBossGateKey(currentDungeon.id)) || eliteRareCollected >= BOSS_GATE_REQUIRED;
+  if (!bossUnlocked) return true;
+
+  const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === currentDungeon.id + 1);
+  if (!nextDungeon) return false;
+
+  const previousBossDefeated = party.defeatedBossExpeditions?.[currentDungeon.id] ? 1 : 0;
+  const entryUnlocked = isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id))
+    || previousBossDefeated >= ENTRY_GATE_REQUIRED;
+  return !entryUnlocked;
 }
 
 
@@ -3565,7 +3599,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             }
           }
 
-          if (postCycleParty && !postCycleParty.sideQuest) {
+          if (postCycleParty && !postCycleParty.sideQuest && !hasActiveNonGodBattleLootGateCondition(postCycleParty)) {
             workingState = gameReducer(workingState, {
               type: 'ROLL_SIDE_QUEST',
               partyIndex,

@@ -1172,8 +1172,30 @@ function getDisplayedExpeditionStats(party: Party, cycleState?: PartyCycleState)
 }
 
 
-function hasActiveLootGateCondition(party: Party, cycleState?: PartyCycleState): boolean {
-  return getNextGoalText(party, cycleState) !== null;
+function hasActiveNonGodBattleLootGateCondition(party: Party): boolean {
+  // SpecRef: 5.1.2 | Side Quest | Trigger Condition
+  const currentDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId);
+  if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === 99) return false;
+
+  const tier = currentDungeon.enemyPoolIds[0];
+  for (const floor of currentDungeon.floors) {
+    if (floor.floorNumber >= 6) continue;
+    const required = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 3;
+    const collected = getLootCollectionCount(party, tier, 'uncommon');
+    const unlocked = isLootGateUnlocked(party, getEliteGateKey(currentDungeon.id, floor.floorNumber)) || collected >= required;
+    if (!unlocked) return true;
+  }
+
+  const eliteRareCollected = getLootCollectionCount(party, tier, 'eliteRare');
+  const bossUnlocked = isLootGateUnlocked(party, getBossGateKey(currentDungeon.id)) || eliteRareCollected >= BOSS_GATE_REQUIRED;
+  if (!bossUnlocked) return true;
+
+  const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === currentDungeon.id + 1);
+  if (!nextDungeon) return false;
+
+  const entryUnlocked = isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id))
+    || Boolean(party.defeatedBossExpeditions?.[currentDungeon.id]);
+  return !entryUnlocked;
 }
 
 function getSideQuestAssignMessage(partyName: string, shortText: string): string {
@@ -3637,7 +3659,7 @@ export function HomeScreen({
               updated.isCurrentExpeditionGodsBattle = false;
             } else if (updated.state === 'return') {
               if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, getScaledSideQuestSeconds(updated.durationMs), simulationNow);
-              if (!party.sideQuest && !hasActiveLootGateCondition(party, updated.state)) {
+              if (!party.sideQuest && !hasActiveNonGodBattleLootGateCondition(party)) {
                 actions.rollSideQuest(partyIndex, party.selectedDungeonId, simulationNow);
               }
               const shouldSkipSleepForLowHp = hpRatioAtRestStart < 0.1;
