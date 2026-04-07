@@ -64,16 +64,10 @@ import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
 import { LINEAGES } from '../data/lineages';
 import {
-  ELITE_GATE_REQUIREMENTS,
-  ENTRY_GATE_REQUIRED,
-  BOSS_GATE_REQUIRED,
   getGodsBattleRequired,
-  getEntryGateKey,
-  getEliteGateKey,
-  getBossGateKey,
   getLootCollectionCount,
   getLootCollectionKey,
-  isLootGateUnlocked,
+  checkLootGateRequirement,
   addRecoveredItemsToLootProgress,
   unlockAvailableLootGates,
 } from '../game/lootGate';
@@ -2237,82 +2231,37 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             roomCounter++;
 
             const tier = dungeon.enemyPoolIds[0]; // dungeon tier
-            // Loot-Gate check before entering (floor 1, room 1)
-            if (dungeon.id !== 99 && floor.floorNumber === 1 && roomIndex === 0 && tier > 1) {
-              const prevTier = tier - 1;
-              const prevDungeonName = getDungeonById(prevTier)?.name ?? '前回の探検地';
-              const gateRequired = ENTRY_GATE_REQUIRED;
-              const entryGateKey = getEntryGateKey(dungeon.id);
-              const collected = getLootCollectionCount(currentParty, prevTier, 'bossRare');
-              const currentCollected = collected;
-              const gateUnlocked = isLootGateUnlocked(currentParty, entryGateKey) || currentCollected >= gateRequired;
-              if (!gateUnlocked) {
-                const gateEntry: ExpeditionLogEntry = {
-                  room: roomCounter,
-                  floor: floor.floorNumber,
-                  roomInFloor: roomIndex + 1,
-                  roomType: roomDef.type,
-                  floorMultiplier: getRoomMultiplier(dungeon.expLevel, floor.floorNumber, roomDef.type, gameMode === 'm.luna'),
-                  enemyName: '[扉が封印されている]',
-                  enemyHP: 0,
-                  enemyAttackValues: '',
-                  outcome: 'draw', // Not a battle - displayed as 未到達
-                  damageDealt: 0,
-                  damageTaken: 0,
-                  remainingPartyHP: currentHp,
-                  maxPartyHP: partyStats.hp,
-                  details: [],
-                  gateInfo: `${prevDungeonName}のボスレアアイテム(持ち帰り) ${currentCollected}/${gateRequired}（判定時）`,
-                };
-                entries.push(gateEntry);
-                finalOutcome = 'Escape';
-                expeditionEnded = true;
-                break;
-              }
-            }
-
-            // Loot-Gate check before Elite/Boss rooms (room 4 of each floor)
-            if (dungeon.id !== 99 && (roomDef.type === 'battle_Elite' || roomDef.type === 'battle_Boss')) {
-              let gateRequired: number;
-              let gateRarity: 'uncommon' | 'eliteRare';
-              if (roomDef.type === 'battle_Boss') {
-                gateRequired = BOSS_GATE_REQUIRED;
-                gateRarity = 'eliteRare';
-              } else {
-                gateRequired = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 3;
-                gateRarity = 'uncommon';
-              }
-              const gateKey = roomDef.type === 'battle_Boss'
-                ? getBossGateKey(dungeon.id)
-                : getEliteGateKey(dungeon.id, floor.floorNumber);
-              const collected = getLootCollectionCount(currentParty, tier, gateRarity);
-              const currentCollected = collected;
-              const gateUnlocked = isLootGateUnlocked(currentParty, gateKey) || currentCollected >= gateRequired;
-              if (!gateUnlocked) {
-                // Gate locked - expedition ends
-                const rarityLabel = gateRarity === 'eliteRare' ? 'エリートレアアイテム' : 'アンコモンアイテム';
-                const gateEntry: ExpeditionLogEntry = {
-                  room: roomCounter,
-                  floor: floor.floorNumber,
-                  roomInFloor: roomIndex + 1,
-                  roomType: roomDef.type,
-                  floorMultiplier: getRoomMultiplier(dungeon.expLevel, floor.floorNumber, roomDef.type, gameMode === 'm.luna'),
-                  enemyName: '[扉が封印されている]',
-                  enemyHP: 0,
-                  enemyAttackValues: '',
-                  outcome: 'draw', // Not a battle - displayed as 未到達
-                  damageDealt: 0,
-                  damageTaken: 0,
-                  remainingPartyHP: currentHp,
-                  maxPartyHP: partyStats.hp,
-                  details: [],
-                  gateInfo: `${rarityLabel}(持ち帰り) ${currentCollected}/${gateRequired}（判定時）`,
-                };
-                entries.push(gateEntry);
-                finalOutcome = 'Escape';
-                expeditionEnded = true;
-                break;
-              }
+            // SpecRef: 5.1.3.1 | "Loot-Gate" progression system | Gate `x.floor`,`x.room`
+            const gateCheck = checkLootGateRequirement({
+              dungeonId: dungeon.id,
+              floorNumber: floor.floorNumber,
+              roomInFloor: roomIndex + 1,
+              roomType: roomDef.type,
+              tier,
+              party: currentParty,
+            });
+            if (gateCheck.blocked) {
+              const gateEntry: ExpeditionLogEntry = {
+                room: roomCounter,
+                floor: floor.floorNumber,
+                roomInFloor: roomIndex + 1,
+                roomType: roomDef.type,
+                floorMultiplier: getRoomMultiplier(dungeon.expLevel, floor.floorNumber, roomDef.type, gameMode === 'm.luna'),
+                enemyName: '[扉が封印されている]',
+                enemyHP: 0,
+                enemyAttackValues: '',
+                outcome: 'draw', // Not a battle - displayed as 未到達
+                damageDealt: 0,
+                damageTaken: 0,
+                remainingPartyHP: currentHp,
+                maxPartyHP: partyStats.hp,
+                details: [],
+                gateInfo: `${gateCheck.label} ${gateCheck.collected}/${gateCheck.required}（判定時）`,
+              };
+              entries.push(gateEntry);
+              finalOutcome = 'Escape';
+              expeditionEnded = true;
+              break;
             }
 
             // Select enemy for this room
