@@ -304,6 +304,20 @@ function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
   return getLootCollectionCount(party, dungeonId, 'bossRare') >= getGodsBattleRequired();
 }
 
+function normalizePartyMotivation(raw: unknown): number {
+  if (typeof raw !== 'number' || !Number.isFinite(raw)) return 0;
+  return Math.floor(raw);
+}
+
+// SpecRef: 7.1.2 | AUTO progress logic | motivation state classification
+function getOutcomeMotivationAdjustment(finalOutcome: ExpeditionLog['finalOutcome'], endedWithDrawRetreat: boolean): number {
+  if (finalOutcome === 'Clear') return 2;
+  if (finalOutcome === 'Escape') return 1;
+  if (finalOutcome === 'Retreat') return endedWithDrawRetreat ? -2 : -10;
+  if (finalOutcome === 'Defeat') return -200;
+  return 0;
+}
+
 
 function applyShopIntimacyDecay(global: GameState['global'], now: Date): GameState['global'] {
   const elapsedRefreshes = countElapsedShopRefreshes(global.shopIntimacyLastDecayAt, now);
@@ -725,6 +739,7 @@ function loadSavedState(): GameState | null {
           }
           if (typeof party.deityGold !== 'number') party.deityGold = 0;
           party.expeditionStats = getExpeditionStatsWithDefaults(party.expeditionStats);
+          party.motivation = normalizePartyMotivation(party.motivation);
           party.lastExpeditionLog = normalizeExpeditionLog(party.lastExpeditionLog);
           if (party.pendingDiaryLog?.expeditionLog) {
             party.pendingDiaryLog = {
@@ -854,6 +869,7 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
     expeditionStats: getExpeditionStatsWithDefaults(party.expeditionStats),
     sleepinessOfPartyBag: normalizeSleepinessPartyBag(party.sleepinessOfPartyBag ?? createSleepinessPartyBag()),
     currentSleepiness: normalizeSleepinessState(party.currentSleepiness),
+    motivation: normalizePartyMotivation(party.motivation),
     sideQuest: normalizedSideQuest,
   };
 }
@@ -939,6 +955,7 @@ function createInitialParty() {
     expeditionStats: getExpeditionStatsWithDefaults(null),
     sleepinessOfPartyBag: createSleepinessPartyBag(),
     currentSleepiness: 0,
+    motivation: 0,
     sideQuest: null,
   };
 
@@ -992,6 +1009,7 @@ function createSecondParty() {
     expeditionStats: getExpeditionStatsWithDefaults(null),
     sleepinessOfPartyBag: createSleepinessPartyBag(),
     currentSleepiness: 0,
+    motivation: 0,
     sideQuest: null,
   };
 
@@ -1045,6 +1063,7 @@ function createThirdParty() {
     expeditionStats: getExpeditionStatsWithDefaults(null),
     sleepinessOfPartyBag: createSleepinessPartyBag(),
     currentSleepiness: 0,
+    motivation: 0,
     sideQuest: null,
   };
 
@@ -1098,6 +1117,7 @@ function createFourthParty() {
     expeditionStats: getExpeditionStatsWithDefaults(null),
     sleepinessOfPartyBag: createSleepinessPartyBag(),
     currentSleepiness: 0,
+    motivation: 0,
     sideQuest: null,
   };
 
@@ -1151,6 +1171,7 @@ function createFifthParty() {
     expeditionStats: getExpeditionStatsWithDefaults(null),
     sleepinessOfPartyBag: createSleepinessPartyBag(),
     currentSleepiness: 0,
+    motivation: 0,
     sideQuest: null,
   };
 
@@ -1204,6 +1225,7 @@ function createSixthParty() {
     expeditionStats: getExpeditionStatsWithDefaults(null),
     sleepinessOfPartyBag: createSleepinessPartyBag(),
     currentSleepiness: 0,
+    motivation: 0,
     sideQuest: null,
   };
 
@@ -2674,6 +2696,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         : null;
 
       const updatedParties = [...state.parties];
+      const endedWithDrawRetreat = entries.length > 0 && entries[entries.length - 1].outcome === 'draw';
+      const motivationDelta = getOutcomeMotivationAdjustment(finalOutcome, endedWithDrawRetreat);
+      const shouldConsumeMotivationForAutoGodsBattle = action.triggerGodsBattle === true
+        && normalizePartyMotivation(currentParty.motivation) >= 400
+        && !currentParty.sideQuest;
       updatedParties[action.partyIndex] = {
         ...currentParty,
         expeditionRewardsPending: true,
@@ -2686,12 +2713,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         // Party-cycle spending/donation is defined from the *latest* expedition's
         // auto-sell profit, so this should not accumulate across expeditions.
         pendingProfit: finalAutoSellProfit,
+        // SpecRef: 7.1.2 | AUTO progress logic | motivation
+        motivation: normalizePartyMotivation(currentParty.motivation)
+          + motivationDelta
+          - (shouldConsumeMotivationForAutoGodsBattle ? 400 : 0),
         expeditionStats: {
           ...currentParty.expeditionStats,
           Clear: currentParty.expeditionStats.Clear + (finalOutcome === 'Clear' ? 1 : 0),
           Turned_Back: currentParty.expeditionStats.Turned_Back + (finalOutcome === 'Escape' ? 1 : 0),
-          Draw_Retreat: currentParty.expeditionStats.Draw_Retreat + (finalOutcome === 'Retreat' && entries.length > 0 && entries[entries.length - 1].outcome === 'draw' ? 1 : 0),
-          Wounded_Retreat: currentParty.expeditionStats.Wounded_Retreat + (finalOutcome === 'Retreat' && !(entries.length > 0 && entries[entries.length - 1].outcome === 'draw') ? 1 : 0),
+          Draw_Retreat: currentParty.expeditionStats.Draw_Retreat + (finalOutcome === 'Retreat' && endedWithDrawRetreat ? 1 : 0),
+          Wounded_Retreat: currentParty.expeditionStats.Wounded_Retreat + (finalOutcome === 'Retreat' && !endedWithDrawRetreat ? 1 : 0),
           Defeat: currentParty.expeditionStats.Defeat + (finalOutcome === 'Defeat' ? 1 : 0),
         },
       };

@@ -1137,6 +1137,21 @@ function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
   return getLootCollectionCount(party, dungeonId, 'bossRare') >= getGodsBattleRequired();
 }
 
+function getMotivationLabel(motivation: number): string {
+  if (motivation <= -200) return '不調';
+  if (motivation <= -1) return '低調';
+  if (motivation <= 199) return '平常';
+  if (motivation <= 399) return '順調';
+  return '好調';
+}
+
+// SpecRef: 7.1.2 | AUTO progress logic | God Battle engagement condition
+function shouldAutoTriggerGodsBattle(party: Party): boolean {
+  return party.motivation >= 400
+    && isGodsBattleAvailable(party, party.selectedDungeonId)
+    && !party.sideQuest;
+}
+
 function getDisplayedBossRareCount(party: Party, dungeonId: number, cycleState?: PartyCycleState): number {
   const latestCount = getLootCollectionCount(party, dungeonId, 'bossRare');
   if (cycleState !== 'explore') return latestCount;
@@ -3635,7 +3650,8 @@ export function HomeScreen({
             } else if (updated.state === 'idle') {
               updated.durationMs = 1000;
             } else if (updated.state === 'move') {
-              const triggerGodsBattle = pendingGodsBattleByPartyRef.current[partyIndex] === true;
+              const triggerGodsBattle = pendingGodsBattleByPartyRef.current[partyIndex] === true
+                || shouldAutoTriggerGodsBattle(party);
               pendingGodsBattleByPartyRef.current[partyIndex] = false;
               if (triggerGodsBattle && party.sideQuest) {
                 actions.cancelSideQuest(partyIndex);
@@ -6917,6 +6933,7 @@ function ExpeditionTab({
           : currentLog
             ? getExpeditionOutcomeLabel(currentLog.finalOutcome)
             : getPartyCycleStateLabel(cycle.state);
+        const motivationLabel = getMotivationLabel(party.motivation);
 
         const displayedEntries = (() => {
           if (!currentLog) return [];
@@ -7079,6 +7096,7 @@ function ExpeditionTab({
                 </span>
                 <span className="truncate">{headlineDungeonName}</span>
                 <span className="font-medium text-sub shrink-0">{headlineState}</span>
+                <span className="font-medium text-sub shrink-0">{motivationLabel}</span>
               </span>
               <span className={`shrink-0 ${isLogExpanded ? 'transform transition-transform rotate-180' : ''}`}>▼</span>
             </button>
