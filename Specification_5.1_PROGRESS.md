@@ -162,20 +162,32 @@ PT3: 貯金額: 10G
 - Party & Deity unlock condition: Defeating corresponding gods.
   - New party with new corresponding deity as default.
   - max 6 parties.
+
+**Unlock Party**
+
+| Condition | Unlock party |
+|-----|-----|
+| Defeating: `Seiran` | 2nd party |
+| Defeating: `Garv` | 3rd party |
+| Defeating: `Kyōen` | 4th party |
+| Defeating: `Miora` | 5th party |
+| Defeating: `Dolvar` | 6th party |
+
+**Unlock Religions**
    
-| Condition | Unlock Religions | Unlock party |
-|-----|-----|-----|
-| Defeating: `Seiran` | `Goddess of Restoration` | none |
-| Defeating: `Garv` | `God of Attrition` | 2nd party |
-| Defeating: `Kyōen` | `God of Cunning` | 3rd party |
-| Defeating: `Dolvar` | `God of Fortification` | 4th party |
-| Defeating: `Miora` | `Goddess of Fertility` | 5th party |
-| Defeating: `Rondel` | `God of Resonance` | 6th party |
-| Defeating: `Lira` | `Goddess of Precision` | none |
-| Defeating: `Forne` | `God of Fate` | none |
-| Defeating: `Skuva` | `God of Dusk` | none |
-| Defeating: `Forne` | `God of Fate` | none |
-| Defeating: `Tanue` | `Goddess of Mirage` | none |
-| Defeating: `Noctyra` | `God of Oblivion` | none |
-| Defeating: `Eris` | `Goddess of discord` | none |
+| Condition | Unlock Religions |
+|-----|-----|
+| Defeating: BOSS of `x.exp_id` = 1 | `Goddess of Restoration` |
+| Defeating: BOSS of `x.exp_id` = 2 | `God of Attrition` |
+| Defeating: BOSS of `x.exp_id` = 3 | `God of Cunning` |
+| Defeating: BOSS of `x.exp_id` = 4 | `Goddess of Fertility` |
+| Defeating: BOSS of `x.exp_id` = 5 | `God of Fortification` |
+| Defeating: BOSS of `x.exp_id` = 6 | `Goddess of Mirage` |
+| Defeating: BOSS of `x.exp_id` = 7 | `Goddess of Precision` |
+| Defeating: BOSS of `x.exp_id` = 8 | `God of Fate` |
+| Defeating: `Skuva` | `God of Dusk` |
+| Defeating: `Forne` | `God of Fate` |
+| Defeating: `Rondel` | `God of Resonance` |
+| Defeating: `Noctyra` | `God of Oblivion` |
+| Defeating: `Eris` | `Goddess of discord` |
 
