@@ -49,8 +49,8 @@ const ENEMY_BASE_STATUS = {
   rangedAttackAmplifier: 1,
   magicalAttackAmplifier: 1,
   meleeAttackAmplifier: 1,
-  physicalDefense: 16,
-  magicalDefense: 16,
+  physicalDefense: 12,
+  magicalDefense: 12,
   experience: 5,
 };
 
