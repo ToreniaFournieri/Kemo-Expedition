@@ -163,7 +163,7 @@
   - max(0, 0.00042 × (n - 24))
   - max(0, 0.00018 × (n - 36))
   - max(0, 0.00006 × (n - 48))
-)^(level - 1)
+)^(level - 1) round up
 ```
 - When the party levels up:
   - `PartyLevel` += 1
