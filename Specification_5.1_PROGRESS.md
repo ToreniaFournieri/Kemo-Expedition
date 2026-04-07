@@ -115,14 +115,14 @@ PT3: 貯金額: 10G
 
 #### 5.1.2 Side Quest
 **Trigger Condition**
-- Checked at the end of the **帰還中 (Returning)** state.
+- Checked at the end of the `state.return`.
 - If the party:
-  - has **no active loot gate condition** (including God battle loot gates), and
-  - has **no active side quest**
+  - has no active loot gate condition (**excluding** God battle loot gates), and
+  - has no active side quest
 - then roll one ticket from `t.side_quest_bag`.
 
 **Assignment**
-- The selected side quest is assigned immediately after the **Returning** state ends.
+- The selected side quest is assigned immediately after the `state.return` ends.
 - Notification example:
   - "PT1はサイドクエスト 治療 (2時間) を受けた"
 
@@ -132,6 +132,11 @@ PT3: 貯金額: 10G
 **Cancellation**
 - If a **神魔戦 (God Battle)** begins, the current side quest is **cancelled**.
 - State whether cancellation applies to all quest types equally and no side quest for the party.
+
+**Expiration**
+- A side quest expires if its deadline passes before its completion conditions are met.
+- Notification example:
+  - "PT1はサイドクエスト 横領 を達成できなかった"
 
 **Reward**
 - On completion, the party receives **1 Jewel**.
