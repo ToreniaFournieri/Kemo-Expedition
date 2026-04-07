@@ -161,22 +161,10 @@
   - `xp_current` = 0
   - Any overflow XP is discarded.
 
-- Experience calculation:
-  - Each expedition has a  `x.exp_level`.
-  - Each expedition has 6 `xfloor`s, and each `x.floor`.
-  - Enemy level `x.enemy_level_final` = `x.exp_level` + (`x.floor` - 1 )
-  - Enemy level is used only for experience calculation. 
-  - Example:
-    - Tier 2 expedition (base enemy level = 7), floor 3 (add +2): `x.enemy_level_final` = 7 + 2 = 9
-
 - Multipliers
-  - Tier multiplier: `x.exp_experience_mult` = 3 ^(`x.tier` - 1)
-  - Rank multiplier:
-    - `x.mult_rank` = 1.0 (Normal)
-    - `x.mult_rank` = 1.5 (Elite)
-    - `x.mult_rank` = 3.0 (Boss)
-  - Over-level penalty:
-    - `x.experience_penalty` = (1/2) ^ max(0, `PartyLevel` - `x.enemy_level_final`)
+  - `f.experience`: master value x `x.enemy_level` x `x.enemyTypeExpMult` x  `x.experience_penalty`
+    - `x.enemyTypeExpMult`: Normal = 1.0, Elite = 3.0, Boss = 5.0, Gods =10.0
+    - Over-level penalty: `x.experience_penalty` = (1/2) ^ max(0, `PartyLevel` - `x.enemy_level`)
 
 - Total gained XP:
   - `f.calculate_experience` = `d.experience` x `x.mult_rank` x `x.exp_experience_mult` x `x.experience_penalty`
