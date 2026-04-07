@@ -1,11 +1,22 @@
 import { RoomType } from '../types';
 
 const XP_TO_NEXT_BASE = 100;
-const XP_TO_NEXT_GROWTH = 1.259;
+const XP_TO_NEXT_GROWTH_BASE = 1.259;
+
+function getXpGrowthRate(level: number): number {
+  const normalizedLevel = Math.max(1, Math.min(99, level));
+  return XP_TO_NEXT_GROWTH_BASE
+    - Math.max(0, 0.00085 * (normalizedLevel - 12))
+    - Math.max(0, 0.00042 * (normalizedLevel - 24))
+    - Math.max(0, 0.00018 * (normalizedLevel - 36))
+    - Math.max(0, 0.00006 * (normalizedLevel - 48));
+}
 
 // SpecRef: 2.1.1.1 | Level and slots | getXpToNextLevel
 export function getXpToNextLevel(level: number): number {
-  return XP_TO_NEXT_BASE * (XP_TO_NEXT_GROWTH ** Math.max(0, level - 1));
+  const normalizedLevel = Math.max(1, Math.min(99, level));
+  const growthRate = getXpGrowthRate(normalizedLevel);
+  return Math.ceil(XP_TO_NEXT_BASE * (growthRate ** Math.max(0, normalizedLevel - 1)));
 }
 
 function getRankMultiplier(roomType: RoomType): number {
