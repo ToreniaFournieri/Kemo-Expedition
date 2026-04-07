@@ -72,7 +72,6 @@ import {
   unlockAvailableLootGates,
 } from '../game/lootGate';
 import { calculateExperience, getXpToNextLevel } from '../game/partyLevel';
-import { getDebugSettings } from '../game/debugSettings';
 import { MAX_LEVEL } from '../types';
 import { createEnvironmentStorageKey, getEnvironmentId } from '../game/environment';
 import { DIARY_LOG_RETENTION_LIMIT } from '../game/diary';
@@ -2132,11 +2131,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'UPDATE_PARTY_DEITY': {
       const normalizedDeityName = normalizeDeityName(action.deityName);
-      const debugSettings = getDebugSettings();
       const isKnownDeity = DEITY_OPTIONS.some((deity) => normalizeDeityName(deity.name) === normalizedDeityName);
       const isUnlockedDeity = isNoFaithDeity(normalizedDeityName)
         || isKnownDeity
-        || debugSettings.allReligionsEnabled
         || normalizeUnlockedDeities(state.global.unlockedDeities).includes(normalizedDeityName);
       if (!isUnlockedDeity) {
         return state;

@@ -40,7 +40,6 @@ interface FlavorContext {
   autoSellPrice?: number;
   debug?: {
     displayCondition?: boolean;
-    allReligionsEnabled?: boolean;
   };
 }
 
@@ -113,7 +112,7 @@ function isRawConditionMatch(
     sortieSourceState?: 'rest' | 'feast' | 'sleep' | 'return';
     embezzlementGold?: number;
     debug?: {
-      allReligionsEnabled?: boolean;
+      displayCondition?: boolean;
     };
   }
 ): boolean {
@@ -127,7 +126,6 @@ function isRawConditionMatch(
 
   const religionMatch = raw.match(/with\s+religion\.\s*`([^`]+)`/i);
   if (religionMatch) {
-    if (context.debug?.allReligionsEnabled) return true;
     return context.partyReligionName === religionMatch[1].trim();
   }
 

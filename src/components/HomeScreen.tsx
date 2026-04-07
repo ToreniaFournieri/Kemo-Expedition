@@ -4179,7 +4179,7 @@ export function HomeScreen({
           inventory={state.global.inventory}
           jewels={state.global.jewels}
           deityDonations={state.global.deityDonations}
-          unlockedDeities={debugSettings.allReligionsEnabled ? DEITY_OPTIONS.map((deity) => normalizeDeityName(deity.name)).filter((name) => !isNoFaithDeity(name)) : state.global.unlockedDeities}
+          unlockedDeities={state.global.unlockedDeities}
           isDarkModeEnabled={isDarkModeEnabled}
         />
       );
@@ -6968,7 +6968,6 @@ function ExpeditionTab({
             embezzlementGold: cycle.sortieEmbezzlementGold,
             debug: {
               displayCondition: getDebugSettings().displayFlavorCondition,
-              allReligionsEnabled: getDebugSettings().allReligionsEnabled,
             },
           });
           return flavorText ? `${stateLabel}: ${flavorText}` : stateLabel;
@@ -10700,7 +10699,6 @@ function SettingTab({
           </div>
           <button type="button" onClick={() => onUpdateDebugSettings({ godsBattleCondition: debugSettings.godsBattleCondition === 'normal' ? 'simple1' : 'normal' })} className="w-full rounded border bg-white px-3 py-2 text-left">Gods Battle condition: {debugSettings.godsBattleCondition === 'simple1' ? 'Simple(1)' : 'Normal'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ godStrength: debugSettings.godStrength === 'normal' ? 'debug' : 'normal' })} className="w-full rounded border bg-white px-3 py-2 text-left">Gods Strength: {debugSettings.godStrength === 'debug' ? 'Very Weak' : 'Normal'}</button>
-          <button type="button" onClick={() => onUpdateDebugSettings({ allReligionsEnabled: !debugSettings.allReligionsEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">All religions: {debugSettings.allReligionsEnabled ? 'ON' : 'OFF'}</button>
           <button type="button" disabled={partyCount >= 6} onClick={onPartyUnlock} className="w-full rounded border bg-white px-3 py-2 text-left disabled:opacity-50">Party unlock +1 PT unlock ({partyCount}/6)</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ jewelShopOpen: !debugSettings.jewelShopOpen })} className="w-full rounded border bg-white px-3 py-2 text-left">Jewel shop open: {debugSettings.jewelShopOpen ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ displayFlavorCondition: !debugSettings.displayFlavorCondition })} className="w-full rounded border bg-white px-3 py-2 text-left">Display flavor condition: {debugSettings.displayFlavorCondition ? 'ON' : 'OFF'}</button>
