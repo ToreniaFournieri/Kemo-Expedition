@@ -9,7 +9,7 @@
   - Selectable Options : 1F-3まで/2F-3まで/3F-3まで/4F-3まで/5F-3まで/ボス直前まで/全て (default: 全て)
 
 ```
-PT1 HP (HP bar, blue) ルピニアンの断崖踏破▼
+PT1 HP (HP bar, blue) ルピニアンの断崖踏破  好調▼
 移動中: flavor text (background: state progress bar)
 次の目標: ルピニアンの断崖のボス撃破 でヴァルンの樹林帯 開放
 📜 1,110回アイテム獲得を空振りする(8%, 98回, 残り4時間)
