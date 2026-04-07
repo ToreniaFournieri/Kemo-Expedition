@@ -161,7 +161,7 @@ const TIER_P_BONUS = [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.11
 const TYPE_AMPLIFIERS: Record<ItemCategory, number> = {
   armor: 1.4,
   robe: 1.15,
-  shield: 2.0,
+  shield: 1.6,
   sword: 1.1,
   katana: 1.43,
   gauntlet: 1.0,
@@ -264,7 +264,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
     variant1Mod: { partyHP: 3 },
     variant2Mod: { evasionBonus: 0.01 },
     variant3Mod: { magicalDefense: 2 },
-    mythicBonusMod: { mindBonus: 1 },
+    mythicBonusMod: { intelligenceBonus: 1 },
   },
   // Index 2: shield (盾) - +HP, +physicalDefense
   {
@@ -272,7 +272,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
     variant1Mod: { physicalDefense: 1 },
     variant2Mod: { meleeAttack: 1 },
     variant3Mod: { partyHP: 2 },
-    mythicBonusMod: { vitalityBonus: 1 },
+    mythicBonusMod: { mindBonus: 1 },
   },
   // Index 3: sword (剣) - +meleeAttack
   {
@@ -296,7 +296,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
     variant1Mod: { partyHP: 2 },
     variant2Mod: { physicalDefense: 1 },
     variant3Mod: { meleeAttack: 1 },
-    mythicBonusMod: { strengthBonus: 1 },
+    mythicBonusMod: { vitalityBonus: 1 },
   },
   // Index 6: arrow (矢) - +rangedAttack
   {
@@ -304,6 +304,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
     variant1Mod: { elementalOffense: 'fire' },
     variant2Mod: { elementalOffense: 'ice' },
     variant3Mod: { rangedAttack: 1 },
+    mythicBonusMod: { strengthBonus: 1 },
   },
   // Index 7: bolt (ボルト) - +rangedAttack, -rangedNoA
   {
@@ -311,7 +312,7 @@ const ITEM_TEMPLATES: ItemTemplate[] = [
     variant1Mod: { rangedAttack: 1 },
     variant2Mod: { elementalOffense: 'thunder' },
     variant3Mod: { rangedAttack: 1 },
-    mythicBonusMod: { strengthBonus: 1 },
+    mythicBonusMod: { vitalityBonus: 1 },
   },
   // Index 8: archery (弓) - +rangedNoA
   {
@@ -497,7 +498,7 @@ function createItem(
     case 'sword':
       item.meleeAttack = calculateStat(basePower, amplifier);
       if (hasX) item.physicalDefense = calculateStat(basePower, amplifier * 0.25);
-      if (hasY) item.partyHP = calculateStat(basePower, amplifier * 1.1);
+      if (hasY) item.partyHP = calculateStat(basePower, amplifier * 0.85);
       break;
     case 'katana':
       item.meleeAttack = calculateStat(basePower, amplifier);
@@ -505,7 +506,7 @@ function createItem(
         item.meleeNoABonus = TIER_K_PENALTY[getTierIndex(bonusTierK)];
         item.evasionBonus = TIER_J_PENALTY[getTierIndex(bonusTierJ)];
       }
-      if (hasX) item.partyHP = calculateStat(basePower, amplifier * 0.7);
+      if (hasX) item.partyHP = calculateStat(basePower, amplifier * 0.55);
       if (hasY) {
         item.magicalDefense = calculateStat(basePower, amplifier * 0.3);
       }
@@ -536,13 +537,13 @@ function createItem(
     case 'archery':
       item.rangedNoA = calculateNoA(noaBasePower, amplifier);
       if (hasBaseBonus) item.rangedNoABonus = TIER_H_BONUS[getTierIndex(bonusTierH)];
-      if (hasX) item.partyHP = calculateStat(basePower, amplifier * 0.7);
+      if (hasX) item.partyHP = calculateStat(basePower, amplifier * 0.52);
       break;
     case 'wand':
       item.magicalAttack = calculateStat(basePower, amplifier);
       if (hasX) item.magicalDefense = calculateStat(basePower, amplifier * 0.3);
       if (hasY) {
-        item.partyHP = calculateStat(basePower, amplifier * 0.8);
+        item.partyHP = calculateStat(basePower, amplifier * 0.55);
       }
       break;
     case 'grimoire':
@@ -553,13 +554,13 @@ function createItem(
       }
       if (hasX) item.physicalDefense = calculateStat(basePower, amplifier * 0.22);
       if (hasY) {
-        item.magicalDefense = calculateStat(basePower, amplifier * 0.28);
+        item.magicalDefense = calculateStat(basePower, amplifier * 0.26);
       }
       break;
     case 'catalyst':
       item.magicalNoA = calculateNoA(noaBasePower, amplifier);
       if (hasBaseBonus) item.magicalNoABonus = TIER_H_BONUS[getTierIndex(bonusTierH)];
-      if (hasX) item.partyHP = calculateStat(basePower, amplifier * 0.7);
+      if (hasX) item.partyHP = calculateStat(basePower, amplifier * 0.52);
       break;
   }
   if (hasE) {
@@ -588,10 +589,6 @@ function createItem(
     if (expeditionElementResistanceCategories.has(template.category) && expeditionElement !== 'none') {
       addElementalResistancePenalty(item, bonusTierM, expeditionElement);
     }
-  }
-
-  if (hasY && template.category === 'archery' && expeditionElement !== 'none') {
-    addElementalResistancePenalty(item, bonusTierM, expeditionElement);
   }
 
   if (hasBaseBonus) {
