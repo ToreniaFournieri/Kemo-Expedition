@@ -1520,6 +1520,13 @@ function getApproxAfkTimeQuestProgressPerCycle(party: Party, approxCycleDuration
   }
 }
 
+function getScaledSideQuestExpiresAt(sideQuest: Party['sideQuest'], cycleDurationScale: number): number {
+  if (!sideQuest) return 0;
+  const safeScale = Math.max(0.001, cycleDurationScale);
+  const deadlineWindowMs = Math.max(0, sideQuest.expiresAt - sideQuest.assignedAt);
+  return sideQuest.assignedAt + Math.floor(deadlineWindowMs * safeScale);
+}
+
 function hasActiveNonGodBattleLootGateCondition(party: Party): boolean {
   // SpecRef: 5.1.2 | Side Quest | Trigger Condition
   const currentDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId);
@@ -3615,9 +3622,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
           const currentParty = workingState.parties[partyIndex];
           if (!currentParty) continue;
-          if (currentParty.sideQuest && simulatedAt >= currentParty.sideQuest.expiresAt) {
-            workingState = gameReducer(workingState, { type: 'CANCEL_SIDE_QUEST', partyIndex });
-          }
           const activeParty = workingState.parties[partyIndex];
           if (!activeParty) continue;
 
@@ -3655,6 +3659,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               rolledTier: postCycleParty.selectedDungeonId,
               simulatedAt,
             });
+          }
+
+          const latestParty = workingState.parties[partyIndex];
+          // SpecRef: 5.1.2 | Side Quest | AFK handling
+          if (
+            latestParty?.sideQuest
+            && simulatedAt >= getScaledSideQuestExpiresAt(latestParty.sideQuest, resolvedCycleDurationScale)
+          ) {
+            workingState = gameReducer(workingState, { type: 'CANCEL_SIDE_QUEST', partyIndex });
           }
         }
       }
