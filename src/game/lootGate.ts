@@ -78,7 +78,7 @@ export function checkLootGateRequirement(params: {
   roomInFloor: number;
   roomType: GateRoomType;
   tier: number;
-  party: Pick<Party, 'lootGateProgress' | 'lootGateStatus'>;
+  party: Pick<Party, 'lootGateProgress' | 'lootGateStatus' | 'defeatedBossExpeditions'>;
 }): LootGateCheckResult {
   const { dungeonId, floorNumber, roomInFloor, roomType, tier, party } = params;
   if (dungeonId === 99) return { blocked: false };
@@ -87,14 +87,14 @@ export function checkLootGateRequirement(params: {
   if (floorNumber === 1 && roomInFloor === 1 && tier > 1) {
     const prevTier = tier - 1;
     const required = ENTRY_GATE_REQUIRED;
-    const collected = getLootCollectionCount(party, prevTier, 'bossRare');
+    const collected = party.defeatedBossExpeditions?.[prevTier] ? 1 : 0;
     const gateUnlocked = isLootGateUnlocked(party, getEntryGateKey(dungeonId)) || collected >= required;
     if (!gateUnlocked) {
       return {
         blocked: true,
         required,
         collected,
-        label: '前回ダンジョンのボスレアアイテム(持ち帰り)',
+        label: '前回ダンジョンのボス撃破',
       };
     }
     return { blocked: false };
@@ -151,6 +151,7 @@ export function addRecoveredItemsToLootProgress(currentProgress: Record<string, 
 export function unlockAvailableLootGates(
   currentStatus: Record<number, boolean>,
   progress: Record<string, number>,
+  defeatedBossExpeditions: Record<number, boolean>,
   maxDungeonId: number
 ): Record<number, boolean> {
   const nextStatus = { ...currentStatus };
@@ -170,8 +171,8 @@ export function unlockAvailableLootGates(
     }
 
     if (dungeonId > 1) {
-      const previousBossRare = progress[getLootCollectionKey(dungeonId - 1, 'bossRare')] ?? 0;
-      if (previousBossRare >= ENTRY_GATE_REQUIRED) {
+      const defeatedPreviousBoss = Boolean(defeatedBossExpeditions[dungeonId - 1]);
+      if (defeatedPreviousBoss) {
         nextStatus[getEntryGateKey(dungeonId)] = true;
       }
     }
