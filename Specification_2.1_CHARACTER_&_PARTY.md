@@ -157,7 +157,7 @@
 - Experience point to next is calculated:
 ```
   - N=1 to 99
-`f.XP_to_next`(level: ) = 100 x (
+`f.XP_to_next`(level: ) = 400 x (
   1.259
   - max(0, 0.00085 × (n - 12))
   - max(0, 0.00042 × (n - 24))
