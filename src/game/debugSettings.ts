@@ -9,7 +9,6 @@ export interface DebugSettings {
   timeSpeed: DebugTimeSpeed;
   godsBattleCondition: DebugGodsBattleCondition;
   godStrength: DebugGodStrength;
-  allReligionsEnabled: boolean;
   jewelShopOpen: boolean;
   displayFlavorCondition: boolean;
   displayAfkDuration: boolean;
@@ -24,7 +23,6 @@ export const DEFAULT_DEBUG_SETTINGS: DebugSettings = {
   timeSpeed: 'x5',
   godsBattleCondition: 'normal',
   godStrength: 'normal',
-  allReligionsEnabled: false,
   jewelShopOpen: false,
   displayFlavorCondition: false,
   displayAfkDuration: false,
@@ -42,7 +40,6 @@ export function normalizeDebugSettings(raw: unknown): DebugSettings {
     timeSpeed: parsed.timeSpeed === 'realtime' || parsed.timeSpeed === 'x20' || parsed.timeSpeed === 'x100' || parsed.timeSpeed === 'x5' ? parsed.timeSpeed : 'x5',
     godsBattleCondition: parsed.godsBattleCondition === 'simple1' ? 'simple1' : 'normal',
     godStrength: parsed.godStrength === 'debug' ? 'debug' : 'normal',
-    allReligionsEnabled: parsed.allReligionsEnabled === true,
     jewelShopOpen: parsed.jewelShopOpen === true,
     displayFlavorCondition: parsed.displayFlavorCondition === true,
     displayAfkDuration: parsed.displayAfkDuration === true,
