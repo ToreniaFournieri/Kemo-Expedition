@@ -91,6 +91,8 @@
 - `f.elemental_offense_attribute` :  not scale
 - `f.elemental_resistance_attribute` : not scale
 - `f.penet_multiplier`: not scale
+- `f.experience`: master value x `x.enemy_level` x `x.enemyTypeExpMult`
+  - `x.enemyTypeExpMult`: Normal = 1.0, Elite = 3.0, Boss = 5.0, Gods =10.0 
 
 - Strength of enemy by its level 
   - n = `x.enemy_level` (1~99)
@@ -155,6 +157,7 @@
 - f.penet_multiplier
   	- always 0 // (in this version)
 - `d.experience` // Enemy experience is added directly to party experience.
+  
 - drop_item
 
 **Enemy Master Specification**
