@@ -19,7 +19,7 @@ function getBaseGodEnemy(profile: GodEnemyProfile): EnemyDef | null {
 export function buildGodRuntimeEnemy(profile: GodEnemyProfile, isLunaMode: boolean): EnemyDef | null {
   const baseEnemy = getBaseGodEnemy(profile);
   const dungeon = DUNGEONS.find((candidate) => candidate.tier === profile.tier)
-    ?? getDungeonById(profile.expId)
+    ?? getDungeonById(profile.tier)
     ?? null;
   if (!baseEnemy || !dungeon) return null;
 
