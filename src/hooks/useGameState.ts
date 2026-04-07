@@ -105,39 +105,36 @@ const ITEM_MAX_STACK = 99;
 const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.sleeping', 'q.exercise', 'q.healing', 'q.AFK']);
 
 const PARTY_UNLOCK_BY_GOD_NAME: Record<string, number> = {
-  Garv: 2,
-  'ガーヴ': 2,
-  'Kyōen': 3,
-  'キョウエン': 3,
-  Dolvar: 4,
-  'ドルヴァ': 4,
+  Seiran: 2,
+  'セイラン': 2,
+  Garv: 3,
+  'ガーヴ': 3,
+  'Kyōen': 4,
+  'キョウエン': 4,
   Miora: 5,
   'ミオラ': 5,
-  Rondel: 6,
-  'ロンデル': 6,
+  Dolvar: 6,
+  'ドルヴァ': 6,
+};
+
+const DEITY_UNLOCK_BY_BOSS_DUNGEON_ID: Record<number, string> = {
+  1: 'Goddess of Restoration',
+  2: 'God of Attrition',
+  3: 'God of Cunning',
+  4: 'Goddess of Fertility',
+  5: 'God of Fortification',
+  6: 'Goddess of Mirage',
+  7: 'Goddess of Precision',
+  8: 'God of Fate',
 };
 
 const UNLOCKABLE_DEITY_BY_GOD_NAME: Record<string, string> = {
-  Seiran: 'Goddess of Restoration',
-  'セイラン': 'Goddess of Restoration',
-  Garv: 'God of Attrition',
-  'ガーヴ': 'God of Attrition',
-  'Kyōen': 'God of Cunning',
-  'キョウエン': 'God of Cunning',
-  Dolvar: 'God of Fortification',
-  'ドルヴァ': 'God of Fortification',
-  Miora: 'Goddess of Fertility',
-  'ミオラ': 'Goddess of Fertility',
-  Rondel: 'God of Resonance',
-  'ロンデル': 'God of Resonance',
-  Lira: 'Goddess of Precision',
-  'リラ': 'Goddess of Precision',
-  Forne: 'God of Fate',
-  'フォルネ': 'God of Fate',
   Skuva: 'God of Dusk',
   'スクヴァ': 'God of Dusk',
-  Tanue: 'Goddess of Mirage',
-  'タヌエ': 'Goddess of Mirage',
+  Forne: 'God of Fate',
+  'フォルネ': 'God of Fate',
+  Rondel: 'God of Resonance',
+  'ロンデル': 'God of Resonance',
   Noctyra: 'God of Oblivion',
   'ノクティラ': 'God of Oblivion',
   Eris: 'Goddess of Discord',
@@ -147,6 +144,27 @@ const UNLOCKABLE_DEITY_BY_GOD_NAME: Record<string, string> = {
 function getGodNameFromLogEnemyName(enemyName: string): string {
   const token = enemyName.split(' ')[0] ?? enemyName;
   return token.replace(/\(.*?\)/g, '');
+}
+
+function getUnlockedDeityNameFromEntry(entry: ExpeditionLogEntry, dungeonId: number): string | null {
+  if (entry.outcome !== 'victory' || entry.roomType !== 'battle_Boss') return null;
+
+  if (entry.enemyName.includes('(BOSS)')) {
+    return DEITY_UNLOCK_BY_BOSS_DUNGEON_ID[dungeonId] ?? null;
+  }
+
+  if (entry.enemyName.includes('(神魔戦)')) {
+    const enemyName = getGodNameFromLogEnemyName(entry.enemyName);
+    return UNLOCKABLE_DEITY_BY_GOD_NAME[enemyName] ?? null;
+  }
+
+  return null;
+}
+
+function getUnlockedPartySlotFromEntry(entry: ExpeditionLogEntry): number | null {
+  if (entry.outcome !== 'victory' || entry.roomType !== 'battle_Boss' || !entry.enemyName.includes('(神魔戦)')) return null;
+  const enemyName = getGodNameFromLogEnemyName(entry.enemyName);
+  return PARTY_UNLOCK_BY_GOD_NAME[enemyName] ?? null;
 }
 
 const DEFAULT_UNLOCKED_DEITIES: string[] = DEITY_OPTIONS
@@ -187,21 +205,20 @@ function createUnlockedPartyWithAvailableDeity(defaultParty: Party, existingPart
   };
 }
 
-function getUnlockedStateFromEntries(entries: ExpeditionLogEntry[], initialUnlockedDeities: string[], initialPartySlots: number): { unlockedDeities: string[]; unlockedPartySlots: number } {
+function getUnlockedStateFromEntries(logs: ExpeditionLog[], initialUnlockedDeities: string[], initialPartySlots: number): { unlockedDeities: string[]; unlockedPartySlots: number } {
   let unlockedDeities = [...initialUnlockedDeities];
   let unlockedPartySlots = initialPartySlots;
 
-  for (const entry of entries) {
-    if (entry.outcome !== 'victory') continue;
-    if (!entry.enemyName.includes('(神魔戦)')) continue;
-    const enemyName = getGodNameFromLogEnemyName(entry.enemyName);
-    const unlockDeityName = UNLOCKABLE_DEITY_BY_GOD_NAME[enemyName];
-    if (unlockDeityName) {
-      unlockedDeities = ensureUnlockedDeity(unlockedDeities, unlockDeityName);
-    }
-    const unlockPartySlot = PARTY_UNLOCK_BY_GOD_NAME[enemyName];
-    if (unlockPartySlot) {
-      unlockedPartySlots = Math.max(unlockedPartySlots, unlockPartySlot);
+  for (const log of logs) {
+    for (const entry of log.entries) {
+      const unlockDeityName = getUnlockedDeityNameFromEntry(entry, log.dungeonId);
+      if (unlockDeityName) {
+        unlockedDeities = ensureUnlockedDeity(unlockedDeities, unlockDeityName);
+      }
+      const unlockPartySlot = getUnlockedPartySlotFromEntry(entry);
+      if (unlockPartySlot) {
+        unlockedPartySlots = Math.max(unlockedPartySlots, unlockPartySlot);
+      }
     }
   }
 
@@ -260,12 +277,23 @@ function getUnlockDiaryLog(
     : null;
   if (newDeityNames.length === 0 && !unlockedPartySlot) return null;
 
-  const godVictoryEntry = [...log.entries]
+  const unlockSourceEntry = [...log.entries]
     .reverse()
-    .find((entry) => entry.outcome === 'victory' && entry.enemyName.includes('(神魔戦)'));
+    .find((entry) => {
+      const deityUnlock = getUnlockedDeityNameFromEntry(entry, log.dungeonId);
+      const partyUnlock = getUnlockedPartySlotFromEntry(entry);
+      return !!deityUnlock || !!partyUnlock;
+    });
 
-  const godName = godVictoryEntry ? getGodNameFromLogEnemyName(godVictoryEntry.enemyName) : null;
+  const godName = unlockSourceEntry && unlockSourceEntry.enemyName.includes('(神魔戦)')
+    ? getGodNameFromLogEnemyName(unlockSourceEntry.enemyName)
+    : null;
   const godProfile = godName ? getGodProfileForDungeon(log.dungeonId, log.dungeonName) : null;
+  const unlockHeadline = godProfile
+    ? `${godProfile.displayName}撃破`
+    : unlockSourceEntry?.enemyName.includes('(BOSS)')
+      ? `${log.dungeonName}のBOSS撃破`
+      : '解禁条件達成';
 
   const unlockDeityLabel = newDeityNames[0] ? `信仰:${normalizeDeityName(newDeityNames[0])} 解禁` : '';
   const unlockPartyLabel = unlockedPartySlot ? `PT${unlockedPartySlot}解放` : '';
@@ -275,7 +303,7 @@ function getUnlockDiaryLog(
     id: `${createdAt}-${Math.random().toString(36).slice(2, 8)}`,
     expeditionLog: log,
     triggers: ['unlock'],
-    unlockHeadline: godProfile ? `${godProfile.displayName}撃破` : '神魔撃破',
+    unlockHeadline,
     unlockDetail,
     createdAt,
     isRead: false,
@@ -780,12 +808,12 @@ function loadSavedState(): GameState | null {
 
           unlockedDeities = ensureUnlockedDeity(unlockedDeities, party.deity.name);
 
-          const allLogEntries: ExpeditionLogEntry[] = [
-            ...(party.lastExpeditionLog?.entries ?? []),
-            ...party.diaryLogs.flatMap((log: DiaryLog) => log.expeditionLog?.entries ?? []),
-            ...(party.pendingDiaryLog?.expeditionLog?.entries ?? []),
+          const allExpeditionLogs: ExpeditionLog[] = [
+            ...(party.lastExpeditionLog ? [party.lastExpeditionLog] : []),
+            ...party.diaryLogs.flatMap((log: DiaryLog) => (log.expeditionLog ? [log.expeditionLog] : [])),
+            ...(party.pendingDiaryLog?.expeditionLog ? [party.pendingDiaryLog.expeditionLog] : []),
           ];
-          const unlockedState = getUnlockedStateFromEntries(allLogEntries, unlockedDeities, unlockedPartySlots);
+          const unlockedState = getUnlockedStateFromEntries(allExpeditionLogs, unlockedDeities, unlockedPartySlots);
           unlockedDeities = unlockedState.unlockedDeities;
           unlockedPartySlots = Math.max(unlockedPartySlots, unlockedState.unlockedPartySlots);
 
@@ -994,7 +1022,7 @@ function createSecondParty() {
     defeatedBossExpeditions: {},
     lootGateProgress: {},
     lootGateStatus: {},
-    deity: createInitialDeity('God of Attrition'),
+    deity: createInitialDeity('Goddess of Restoration'),
     characters,
     selectedDungeonId: 1,
     expeditionDepthLimit: 'all',
@@ -1047,7 +1075,7 @@ function createThirdParty() {
     defeatedBossExpeditions: {},
     lootGateProgress: {},
     lootGateStatus: {},
-    deity: createInitialDeity('God of Cunning'),
+    deity: createInitialDeity('God of Attrition'),
     characters,
     selectedDungeonId: 1,
     expeditionDepthLimit: 'all',
@@ -1100,7 +1128,7 @@ function createFourthParty() {
     defeatedBossExpeditions: {},
     lootGateProgress: {},
     lootGateStatus: {},
-    deity: createInitialDeity('God of Fortification'),
+    deity: createInitialDeity('God of Cunning'),
     characters,
     selectedDungeonId: 1,
     expeditionDepthLimit: 'all',
@@ -1206,7 +1234,7 @@ function createSixthParty() {
     defeatedBossExpeditions: {},
     lootGateProgress: {},
     lootGateStatus: {},
-    deity: createInitialDeity('God of Resonance'),
+    deity: createInitialDeity('God of Fortification'),
     characters,
     selectedDungeonId: 1,
     expeditionDepthLimit: 'all',
@@ -2690,7 +2718,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const currentUnlockedDeities = normalizeUnlockedDeities(state.global.unlockedDeities);
       const currentUnlockedPartySlots = state.parties.length;
-      const unlockedState = getUnlockedStateFromEntries(entries, currentUnlockedDeities, currentUnlockedPartySlots);
+      const unlockedState = getUnlockedStateFromEntries([log], currentUnlockedDeities, currentUnlockedPartySlots);
       const pendingUnlockState = (
         unlockedState.unlockedDeities.length > currentUnlockedDeities.length
         || unlockedState.unlockedPartySlots > currentUnlockedPartySlots
@@ -3675,12 +3703,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let unlockedPartySlots = Math.max(1, Math.min(6, normalizedParties.length || 1));
       for (const party of normalizedParties) {
         unlockedDeities = ensureUnlockedDeity(unlockedDeities, party.deity.name);
-        const allEntries = [
-          ...(party.lastExpeditionLog?.entries ?? []),
-          ...party.diaryLogs.flatMap((log) => log.expeditionLog?.entries ?? []),
-          ...(party.pendingDiaryLog?.expeditionLog?.entries ?? []),
+        const allExpeditionLogs = [
+          ...(party.lastExpeditionLog ? [party.lastExpeditionLog] : []),
+          ...party.diaryLogs.flatMap((log) => (log.expeditionLog ? [log.expeditionLog] : [])),
+          ...(party.pendingDiaryLog?.expeditionLog ? [party.pendingDiaryLog.expeditionLog] : []),
         ];
-        const unlockedState = getUnlockedStateFromEntries(allEntries, unlockedDeities, unlockedPartySlots);
+        const unlockedState = getUnlockedStateFromEntries(allExpeditionLogs, unlockedDeities, unlockedPartySlots);
         unlockedDeities = unlockedState.unlockedDeities;
         unlockedPartySlots = Math.max(unlockedPartySlots, unlockedState.unlockedPartySlots);
       }
