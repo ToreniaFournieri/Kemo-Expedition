@@ -322,5 +322,6 @@
 
 - AFK (during `state.reactivate`)
   - `motivation` is calculated once at the end of each chunk, then clamped to its minimum and maximum values.
+  - During AFK, only the `God Battle` engagement applies a reduction to motivation.
 
 
