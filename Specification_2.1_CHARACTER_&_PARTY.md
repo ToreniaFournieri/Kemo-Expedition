@@ -412,7 +412,7 @@ Party.`d.HP` =
   - Gold: 200G
   - Auto-sell: none
   - state: idle
-  - deity: none
+  - deity: `Goddess of Restoration`
 
 - PT2 initial condition (when unlocked)
   - deity: `God of Attrition`
