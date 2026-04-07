@@ -158,9 +158,8 @@ PT3: 貯金額: 10G
 | Gods battle gate | - | collect 10 Boss rare items in dungeons to unlock Gods Battle |
 | Side quest gate | - | it depends on side quest `q.` condition |
 
-##### 5.1.3.2 Unlock party & Deity
-- Party & Deity unlock condition: Defeating corresponding gods.
-  - New party with new corresponding deity as default.
+##### 5.1.3.2 Unlock party
+- Party unlock condition: Defeating corresponding gods.
   - max 6 parties.
 
 **Unlock Party**
@@ -172,22 +171,3 @@ PT3: 貯金額: 10G
 | Defeating: `Kyōen` | 4th party |
 | Defeating: `Miora` | 5th party |
 | Defeating: `Dolvar` | 6th party |
-
-**Unlock Religions**
-   
-| Condition | Unlock Religions |
-|-----|-----|
-| Defeating: BOSS of `x.exp_id` = 1 | `Goddess of Restoration` |
-| Defeating: BOSS of `x.exp_id` = 2 | `God of Attrition` |
-| Defeating: BOSS of `x.exp_id` = 3 | `God of Cunning` |
-| Defeating: BOSS of `x.exp_id` = 4 | `Goddess of Fertility` |
-| Defeating: BOSS of `x.exp_id` = 5 | `God of Fortification` |
-| Defeating: BOSS of `x.exp_id` = 6 | `Goddess of Mirage` |
-| Defeating: BOSS of `x.exp_id` = 7 | `Goddess of Precision` |
-| Defeating: BOSS of `x.exp_id` = 8 | `God of Fate` |
-| Defeating: `Skuva` | `God of Dusk` |
-| Defeating: `Forne` | `God of Fate` |
-| Defeating: `Rondel` | `God of Resonance` |
-| Defeating: `Noctyra` | `God of Oblivion` |
-| Defeating: `Eris` | `Goddess of discord` |
-
