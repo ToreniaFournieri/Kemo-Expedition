@@ -172,7 +172,7 @@
 
 - Multipliers
   - `f.experience`: master value x `x.enemy_level` x `x.enemyTypeExpMult` x  `x.experience_penalty`
-    - `x.enemyTypeExpMult`: Normal = 1.0, Elite = 3.0, Boss = 5.0, Gods =10.0
+    - `x.enemyTypeExpMult`: Normal = 1.0, Elite = 1.25, Boss = 1.5, Gods =3.0
     - Over-level penalty: `x.experience_penalty` = (1/2) ^ max(0, `PartyLevel` - `x.enemy_level`)
 
 - Total gained XP:
