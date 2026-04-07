@@ -1,6 +1,6 @@
 import { RoomType } from '../types';
 
-const XP_TO_NEXT_BASE = 600;
+const XP_TO_NEXT_BASE = 1000;
 const XP_TO_NEXT_GROWTH_BASE = 1.259;
 
 function getXpGrowthRate(level: number): number {
@@ -19,9 +19,10 @@ export function getXpToNextLevel(level: number): number {
   return Math.ceil(XP_TO_NEXT_BASE * (growthRate ** Math.max(0, normalizedLevel - 1)));
 }
 
-function getRankMultiplier(roomType: RoomType): number {
-  if (roomType === 'battle_Boss') return 5.0;
-  if (roomType === 'battle_Elite') return 3.0;
+function getEnemyTypeExperienceMultiplier(roomType: RoomType, isGodsBattle: boolean): number {
+  if (isGodsBattle) return 3.0;
+  if (roomType === 'battle_Boss') return 1.5;
+  if (roomType === 'battle_Elite') return 1.25;
   return 1.0;
 }
 
@@ -34,7 +35,7 @@ export function calculateExperience(
   isGodsBattle = false,
 ): number {
   // SpecRef: 2.1.1.1 | Level and slots | f.experience
-  const rankMultiplier = isGodsBattle ? 10.0 : getRankMultiplier(roomType);
-  const overLevelPenalty = 0.5 ** Math.max(0, partyLevel - enemyLevelFinal);
-  return baseExperience * enemyLevelFinal * rankMultiplier * overLevelPenalty;
+  const enemyTypeExpMultiplier = getEnemyTypeExperienceMultiplier(roomType, isGodsBattle);
+  const experiencePenalty = 0.5 ** Math.max(0, partyLevel - enemyLevelFinal);
+  return baseExperience * enemyLevelFinal * enemyTypeExpMultiplier * experiencePenalty;
 }
