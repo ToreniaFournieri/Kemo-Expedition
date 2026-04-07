@@ -293,5 +293,30 @@
 
 
 #### 7.1.2 AUTO progress logic
-- TBA
+- Each party has a parameter motivation.
+  - Initial value: 0
+
+- `motivation` is adjusted based on expedition outcomes:
+
+| Outcome | Adjustment |
+|-|-|
+| `Clear` | +1 |
+| `Turned_Back` | 0 |
+| `Draw_Retreat` | -1 |
+| `Wounded_Retreat` | -5 |
+| `Defeat` | -100 |
+
+- `motivation` state classification:
+
+| `motivation`| label |
+|--|--|
+| -100 =< | 不調 |
+| -99 ~ 0 | 低調 |
+| 0 ~ 99 | 平常 |
+| 100 ~ 199 | 順調 |
+|  =< 200  | 好調 |
+
+- If party `motivation` >= 200 and (`God Battle` is ready) and (has no active sub quest),
+- Engage `God Battle` and `motivation` -= 200.
+
 
