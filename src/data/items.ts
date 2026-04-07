@@ -156,7 +156,7 @@ const TIER_L_BONUS = [0.15, 0.14, 0.13, 0.12, 0.11, 0.10, 0.09, 0.08, 0.07, 0.06
 const TIER_M_RESIST_PENALTY = [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1];
 const TIER_N_BONUS = [0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.011];
 const TIER_P_BONUS = [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.11];
-const TIER_Q_BONUS = [0.023, 0.022, 0.021, 0.02, 0.019, 0.018, 0.017, 0.016, 0.015, 0.014];
+const TIER_Q_BONUS = [0.23, 0.22, 0.21, 0.20, 0.19, 0.18, 0.17, 0.16, 0.15, 0.14];
 
 // SpecRef: 3.1.2 | Item list | type.amplifier of base_power
 const TYPE_AMPLIFIERS: Record<ItemCategory, number> = {
