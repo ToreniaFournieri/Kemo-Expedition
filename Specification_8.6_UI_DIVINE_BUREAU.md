@@ -274,9 +274,13 @@ HP: 312                 タイプ: 神魔
 - Gods Strength: Normal / Very Weak `debug mode for god battle`
   - Default: Normal
 - Party unlock +1 PT unlock
-  - if press the button, unlock one PT. 
+  - if press the button, unlock one PT.
 - Jewel shop open OFF/ON
   - Default: OFF
+- Display `motivation` OFF/ON
+  - Default: OFF
+  - If ON, `motivation`.label shows "好調(+203)" instead of "好調"
+
 - Display flavor condition OFF/ON
   - Default: OFF
   - if ON, it displays condition at the end of flavor text. 
