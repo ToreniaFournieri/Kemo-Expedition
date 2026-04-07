@@ -310,6 +310,11 @@ function normalizePartyMotivation(raw: unknown): number {
   return Math.max(-400, Math.min(800, Math.floor(raw)));
 }
 
+function getRawPartyMotivation(raw: unknown): number {
+  if (typeof raw !== 'number' || !Number.isFinite(raw)) return 0;
+  return Math.floor(raw);
+}
+
 // SpecRef: 7.1.2 | AUTO progress logic | motivation state classification
 function getOutcomeMotivationAdjustment(finalOutcome: ExpeditionLog['finalOutcome'], endedWithDrawRetreat: boolean): number {
   if (finalOutcome === 'Clear') return 2;
@@ -1286,7 +1291,7 @@ type GameAction =
   | { type: 'SET_EXPEDITION_DEPTH_LIMIT'; partyIndex: number; depthLimit: ExpeditionDepthLimit }
   | { type: 'RESET_EXPEDITION_STATS'; partyIndex: number }
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
-  | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; gameMode?: GameMode; triggerGodsBattle?: boolean }
+  | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; gameMode?: GameMode; triggerGodsBattle?: boolean; isAfkSimulation?: boolean }
   | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number }
   | { type: 'HEAL_PARTY_HP'; partyIndex: number; amount: number }
   | { type: 'CLEAR_PENDING_PROFIT'; partyIndex: number }
@@ -2698,7 +2703,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const updatedParties = [...state.parties];
       const endedWithDrawRetreat = entries.length > 0 && entries[entries.length - 1].outcome === 'draw';
-      const motivationDelta = getOutcomeMotivationAdjustment(finalOutcome, endedWithDrawRetreat);
+      const rawMotivationDelta = getOutcomeMotivationAdjustment(finalOutcome, endedWithDrawRetreat);
+      const motivationDelta = action.isAfkSimulation === true
+        ? Math.max(0, rawMotivationDelta)
+        : rawMotivationDelta;
+      const motivationBase = action.isAfkSimulation === true
+        ? getRawPartyMotivation(currentParty.motivation)
+        : normalizePartyMotivation(currentParty.motivation);
       const shouldConsumeMotivationForAutoGodsBattle = action.triggerGodsBattle === true
         && normalizePartyMotivation(currentParty.motivation) >= 400
         && !currentParty.sideQuest;
@@ -2715,7 +2726,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         // auto-sell profit, so this should not accumulate across expeditions.
         pendingProfit: finalAutoSellProfit,
         // SpecRef: 7.1.2 | AUTO progress logic | motivation
-        motivation: normalizePartyMotivation(currentParty.motivation)
+        motivation: motivationBase
           + motivationDelta
           - (shouldConsumeMotivationForAutoGodsBattle ? 400 : 0),
         expeditionStats: {
@@ -3593,7 +3604,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             cycleCompletedAt + (partyIndex * partyTimestampStepMs)
           );
 
-          workingState = gameReducer(workingState, { type: 'RUN_EXPEDITION', partyIndex, simulatedAt, gameMode });
+          workingState = gameReducer(workingState, {
+            type: 'RUN_EXPEDITION',
+            partyIndex,
+            simulatedAt,
+            gameMode,
+            isAfkSimulation: true,
+          });
           workingState = gameReducer(workingState, { type: 'FINALIZE_DIARY_LOG', partyIndex });
 
           const currentParty = workingState.parties[partyIndex];
@@ -3641,6 +3658,17 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           }
         }
       }
+
+      const clampedParties = workingState.parties.map((party) => ({
+        ...party,
+        // SpecRef: 7.1.2 | AUTO progress logic | AFK (during state.reactivate)
+        motivation: normalizePartyMotivation(party.motivation),
+      }));
+
+      workingState = {
+        ...workingState,
+        parties: clampedParties,
+      };
 
       return workingState;
     }
