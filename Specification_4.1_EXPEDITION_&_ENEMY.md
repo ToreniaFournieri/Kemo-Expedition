@@ -96,7 +96,7 @@
 - Strength of enemy by its level 
   - n = `x.enemy_level` (1~99)
   - `x.exp_HP_mult`(n) =
-  (1.16 - max(0, 0.0012*(n-25)) - max(0, 0.00006*(n-49)))^n
+  (1.20 - max(0, 0.0012*(n-25)) - max(0, 0.00006*(n-49)))^n
   - `x.exp_atk_mult`(n) =
   (1.09 - max(0, 0.00055*(n-25)) - max(0, 0.00003*(n-49)))^n
   - `x.exp_atk_amp_mult`(n) = (1.03 - max(0, 0.000165*(n-25)) - max(0, 0.000017*(n-49)))^n
