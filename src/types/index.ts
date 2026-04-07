@@ -345,6 +345,8 @@ export interface SideQuestState {
   target: number;
   progress: number;
   rolledTier: number;
+  assignedAt: number;
+  expiresAt: number;
 }
 
 export type ExpeditionDepthLimit =

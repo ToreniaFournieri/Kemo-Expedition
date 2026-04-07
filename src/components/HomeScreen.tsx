@@ -76,7 +76,7 @@ interface HomeScreenProps {
     processPendingProfit: (partyIndex: number, donation: number, deposit: number) => void;
     spendPendingProfit: (partyIndex: number, amount: number) => void;
     rollPartySleepiness: (partyIndex: number) => void;
-    rollSideQuest: (partyIndex: number, rolledTier: number) => void;
+    rollSideQuest: (partyIndex: number, rolledTier: number, simulatedAt?: number) => void;
     cancelSideQuest: (partyIndex: number) => void;
     advanceSideQuest: (partyIndex: number, amount: number, simulatedAt?: number) => void;
     setSideQuestProgress: (partyIndex: number, progress: number) => void;
@@ -1061,7 +1061,7 @@ function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | n
 
 function getSideQuestText(party: Party): string | null {
   if (!party.sideQuest) return null;
-  const { type, shortText, progress, target } = party.sideQuest;
+  const { type, shortText, progress, target, expiresAt } = party.sideQuest;
   const isTimeQuest = TIME_BASED_SIDE_QUEST_TYPES.has(type);
   const safeTarget = Math.max(1, target);
   const clampedProgress = Math.max(0, Math.min(progress, safeTarget));
@@ -1129,7 +1129,8 @@ function getSideQuestText(party: Party): string | null {
     current: `${formatNumber(displayProgress)}/${formatNumber(displayTarget)}`,
   };
 
-  return `${display.text} (${percent}%, ${display.current})`;
+  const remainingHours = Math.max(0, Math.ceil((expiresAt - Date.now()) / (60 * 60 * 1000)));
+  return `${display.text} (${percent}%, ${display.current}, 残り${formatNumber(remainingHours)}時間)`;
 }
 
 function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
@@ -3439,6 +3440,17 @@ export function HomeScreen({
         const { partyStats: partyRuntimeStats } = computePartyStats(party);
         const hpRatioAtRestStart = partyRuntimeStats.hp > 0 ? party.currentHp / partyRuntimeStats.hp : 1;
 
+        // SpecRef: 5.1.2 | Side Quest | Expiration
+        if (party.sideQuest && simulationNow >= party.sideQuest.expiresAt) {
+          const failedQuestName = party.sideQuest.shortText.replace(/\(.*\)/, '').trim();
+          actions.cancelSideQuest(partyIndex);
+          if (!suppressCycleNotificationsForAfk) {
+            actions.addNotification(`${party.name}はサイドクエスト ${failedQuestName} を達成できなかった`);
+          }
+          next[partyIndex] = updated;
+          return;
+        }
+
         if (updated.state === 'idle' && autoRepeatEnabled) {
           updated.state = 'move';
           updated.durationMs = getPartyTravelDurationMs(party, 'move');
@@ -3626,7 +3638,7 @@ export function HomeScreen({
             } else if (updated.state === 'return') {
               if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, getScaledSideQuestSeconds(updated.durationMs), simulationNow);
               if (!party.sideQuest && !hasActiveLootGateCondition(party, updated.state)) {
-                actions.rollSideQuest(partyIndex, party.selectedDungeonId);
+                actions.rollSideQuest(partyIndex, party.selectedDungeonId, simulationNow);
               }
               const shouldSkipSleepForLowHp = hpRatioAtRestStart < 0.1;
               if (!shouldSkipSleepForLowHp) {
