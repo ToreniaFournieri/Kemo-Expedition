@@ -10,6 +10,7 @@ export interface DebugSettings {
   godsBattleCondition: DebugGodsBattleCondition;
   godStrength: DebugGodStrength;
   jewelShopOpen: boolean;
+  displayMotivation: boolean;
   displayFlavorCondition: boolean;
   displayAfkDuration: boolean;
   colosseumEnabled: boolean;
@@ -24,6 +25,7 @@ export const DEFAULT_DEBUG_SETTINGS: DebugSettings = {
   godsBattleCondition: 'normal',
   godStrength: 'normal',
   jewelShopOpen: false,
+  displayMotivation: false,
   displayFlavorCondition: false,
   displayAfkDuration: false,
   colosseumEnabled: false,
@@ -41,6 +43,8 @@ export function normalizeDebugSettings(raw: unknown): DebugSettings {
     godsBattleCondition: parsed.godsBattleCondition === 'simple1' ? 'simple1' : 'normal',
     godStrength: parsed.godStrength === 'debug' ? 'debug' : 'normal',
     jewelShopOpen: parsed.jewelShopOpen === true,
+    // SpecRef: 8.6 | UI_DIVINE_BUREAU | Display `motivation` OFF/ON
+    displayMotivation: parsed.displayMotivation === true,
     displayFlavorCondition: parsed.displayFlavorCondition === true,
     displayAfkDuration: parsed.displayAfkDuration === true,
     colosseumEnabled: parsed.colosseumEnabled === true,

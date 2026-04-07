@@ -1137,12 +1137,15 @@ function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
   return getLootCollectionCount(party, dungeonId, 'bossRare') >= getGodsBattleRequired();
 }
 
-function getMotivationLabel(motivation: number): string {
-  if (motivation <= -200) return '不調';
-  if (motivation <= -1) return '低調';
-  if (motivation <= 199) return '平常';
-  if (motivation <= 399) return '順調';
-  return '好調';
+function getMotivationLabel(motivation: number, showValue: boolean): string {
+  let label = '好調';
+  if (motivation <= -200) label = '不調';
+  else if (motivation <= -1) label = '低調';
+  else if (motivation <= 199) label = '平常';
+  else if (motivation <= 399) label = '順調';
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Display `motivation` OFF/ON
+  if (!showValue) return label;
+  return `${label}(${motivation >= 0 ? '+' : ''}${formatNumber(motivation)})`;
 }
 
 // SpecRef: 7.1.2 | AUTO progress logic | God Battle engagement condition
@@ -6933,7 +6936,7 @@ function ExpeditionTab({
           : currentLog
             ? getExpeditionOutcomeLabel(currentLog.finalOutcome)
             : getPartyCycleStateLabel(cycle.state);
-        const motivationLabel = getMotivationLabel(party.motivation);
+        const motivationLabel = getMotivationLabel(party.motivation, debugSettings.displayMotivation);
 
         const displayedEntries = (() => {
           if (!currentLog) return [];
@@ -10756,6 +10759,7 @@ function SettingTab({
           <button type="button" onClick={() => onUpdateDebugSettings({ godStrength: debugSettings.godStrength === 'normal' ? 'debug' : 'normal' })} className="w-full rounded border bg-white px-3 py-2 text-left">Gods Strength: {debugSettings.godStrength === 'debug' ? 'Very Weak' : 'Normal'}</button>
           <button type="button" disabled={partyCount >= 6} onClick={onPartyUnlock} className="w-full rounded border bg-white px-3 py-2 text-left disabled:opacity-50">Party unlock +1 PT unlock ({partyCount}/6)</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ jewelShopOpen: !debugSettings.jewelShopOpen })} className="w-full rounded border bg-white px-3 py-2 text-left">Jewel shop open: {debugSettings.jewelShopOpen ? 'ON' : 'OFF'}</button>
+          <button type="button" onClick={() => onUpdateDebugSettings({ displayMotivation: !debugSettings.displayMotivation })} className="w-full rounded border bg-white px-3 py-2 text-left">Display motivation: {debugSettings.displayMotivation ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ displayFlavorCondition: !debugSettings.displayFlavorCondition })} className="w-full rounded border bg-white px-3 py-2 text-left">Display flavor condition: {debugSettings.displayFlavorCondition ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ displayAfkDuration: !debugSettings.displayAfkDuration })} className="w-full rounded border bg-white px-3 py-2 text-left">Display AFK duration: {debugSettings.displayAfkDuration ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ colosseumEnabled: !debugSettings.colosseumEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">Colosseum mode: {debugSettings.colosseumEnabled ? 'ON' : 'OFF'}</button>
