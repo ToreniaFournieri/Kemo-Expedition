@@ -306,7 +306,8 @@ function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
 
 function normalizePartyMotivation(raw: unknown): number {
   if (typeof raw !== 'number' || !Number.isFinite(raw)) return 0;
-  return Math.floor(raw);
+  // SpecRef: 7.1.2 | AUTO progress logic | motivation
+  return Math.max(-400, Math.min(800, Math.floor(raw)));
 }
 
 // SpecRef: 7.1.2 | AUTO progress logic | motivation state classification
