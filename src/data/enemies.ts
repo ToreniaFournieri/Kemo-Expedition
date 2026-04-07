@@ -183,7 +183,7 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
     ability1: [{ id: 'ambush', level: 1 }],
     ability30: [{ id: 'mimic', level: 1 }],
     bonuses: [
-      { type: 'ice_offense', value: 40 },
+      { type: 'fire_offense', value: 20 },
       { type: 'fire_defense_multiplier_xV', value: 1.3 },
       { type: 'ice_defense_multiplier_xV', value: 2 / 3 },
     ],
