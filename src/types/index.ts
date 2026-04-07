@@ -333,6 +333,7 @@ export interface Party {
   };
   sleepinessOfPartyBag: RandomBag;
   currentSleepiness: SleepinessState;
+  motivation: number;
   sideQuest: SideQuestState | null;
 }
 
