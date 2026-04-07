@@ -298,14 +298,15 @@
   - Minimum value (floor): -400
   - Maximum value (cell): +800
 - `motivation` is adjusted based on expedition outcomes:
+  - Update timing: applied at the end of `state.explore` to prevent spoilers.
 
 | Outcome | Adjustment |
 |-|-|
 | `Clear` | +2 |
 | `Turned_Back` | +1 |
 | `Draw_Retreat` | -2 |
-| `Wounded_Retreat` | -10 |
-| `Defeat` | -200 |
+| `Wounded_Retreat` | -5 |
+| `Defeat` | -40 |
 
 - `motivation` state classification:
 
