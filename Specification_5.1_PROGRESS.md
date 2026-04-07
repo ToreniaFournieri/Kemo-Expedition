@@ -148,7 +148,7 @@ PT3: 貯金額: 10G
 
 | title | Gate `x.floor`,`x.room` | condition |
 |----|----|----|
-| Entering | 1,1 | correct 1 boss rare item from previous expedition ( `x.expedition` -1 ), expect for the first expedition. |
+| Entering | 1,1 | defeat the boss from previous expedition ( `x.expedition` -1 ), except for the first expedition. |
 | 1st Elite gate | 1,4 | correct 3 uncommon items from this `x.expedition` |
 | 2nd Elite gate | 2,4 | correct 9 uncommon items from this `x.expedition`  |
 | 3rd Elite gate | 3,4 | correct 18 uncommon items from this x.expedition` |
