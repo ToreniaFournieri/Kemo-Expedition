@@ -117,48 +117,9 @@ const PARTY_UNLOCK_BY_GOD_NAME: Record<string, number> = {
   'ドルヴァ': 6,
 };
 
-const DEITY_UNLOCK_BY_BOSS_DUNGEON_ID: Record<number, string> = {
-  1: 'Goddess of Restoration',
-  2: 'God of Attrition',
-  3: 'God of Cunning',
-  4: 'Goddess of Fertility',
-  5: 'God of Fortification',
-  6: 'Goddess of Mirage',
-  7: 'Goddess of Precision',
-  8: 'God of Fate',
-};
-
-const UNLOCKABLE_DEITY_BY_GOD_NAME: Record<string, string> = {
-  Skuva: 'God of Dusk',
-  'スクヴァ': 'God of Dusk',
-  Forne: 'God of Fate',
-  'フォルネ': 'God of Fate',
-  Rondel: 'God of Resonance',
-  'ロンデル': 'God of Resonance',
-  Noctyra: 'God of Oblivion',
-  'ノクティラ': 'God of Oblivion',
-  Eris: 'Goddess of Discord',
-  'エリス': 'Goddess of Discord',
-};
-
 function getGodNameFromLogEnemyName(enemyName: string): string {
   const token = enemyName.split(' ')[0] ?? enemyName;
   return token.replace(/\(.*?\)/g, '');
-}
-
-function getUnlockedDeityNameFromEntry(entry: ExpeditionLogEntry, dungeonId: number): string | null {
-  if (entry.outcome !== 'victory' || entry.roomType !== 'battle_Boss') return null;
-
-  if (entry.enemyName.includes('(BOSS)')) {
-    return DEITY_UNLOCK_BY_BOSS_DUNGEON_ID[dungeonId] ?? null;
-  }
-
-  if (entry.enemyName.includes('(神魔戦)')) {
-    const enemyName = getGodNameFromLogEnemyName(entry.enemyName);
-    return UNLOCKABLE_DEITY_BY_GOD_NAME[enemyName] ?? null;
-  }
-
-  return null;
 }
 
 function getUnlockedPartySlotFromEntry(entry: ExpeditionLogEntry): number | null {
@@ -185,12 +146,6 @@ function normalizeUnlockedDeities(unlockedDeities: unknown): string[] {
   return normalized;
 }
 
-function ensureUnlockedDeity(unlockedDeities: string[], deityName: string): string[] {
-  const normalized = normalizeDeityName(deityName);
-  if (isNoFaithDeity(normalized) || unlockedDeities.includes(normalized)) return unlockedDeities;
-  return [...unlockedDeities, normalized];
-}
-
 function createUnlockedPartyWithAvailableDeity(defaultParty: Party, existingParties: Party[]): Party {
   const normalizedDeityName = normalizeDeityName(defaultParty.deity.name);
   if (isNoFaithDeity(normalizedDeityName)) return defaultParty;
@@ -205,16 +160,11 @@ function createUnlockedPartyWithAvailableDeity(defaultParty: Party, existingPart
   };
 }
 
-function getUnlockedStateFromEntries(logs: ExpeditionLog[], initialUnlockedDeities: string[], initialPartySlots: number): { unlockedDeities: string[]; unlockedPartySlots: number } {
-  let unlockedDeities = [...initialUnlockedDeities];
+function getUnlockedStateFromEntries(logs: ExpeditionLog[], initialPartySlots: number): { unlockedPartySlots: number } {
   let unlockedPartySlots = initialPartySlots;
 
   for (const log of logs) {
     for (const entry of log.entries) {
-      const unlockDeityName = getUnlockedDeityNameFromEntry(entry, log.dungeonId);
-      if (unlockDeityName) {
-        unlockedDeities = ensureUnlockedDeity(unlockedDeities, unlockDeityName);
-      }
       const unlockPartySlot = getUnlockedPartySlotFromEntry(entry);
       if (unlockPartySlot) {
         unlockedPartySlots = Math.max(unlockedPartySlots, unlockPartySlot);
@@ -222,7 +172,7 @@ function getUnlockedStateFromEntries(logs: ExpeditionLog[], initialUnlockedDeiti
     }
   }
 
-  return { unlockedDeities, unlockedPartySlots };
+  return { unlockedPartySlots };
 }
 
 // SpecRef: 8.5 | UI_DIARY | It keeps 24 entries
@@ -260,29 +210,25 @@ function enforceGlobalDiaryLogRetention(parties: Party[]): Party[] {
 }
 
 
-// SpecRef: 5.1.3.2 | Unlock party & Deity | Party & Deity unlock condition
+// SpecRef: 5.1.3.2 | Unlock party | Party unlock condition
 function getUnlockDiaryLog(
   log: ExpeditionLog | null,
-  previousUnlockedDeities: string[],
   previousPartySlots: number,
   pendingUnlockState: NonNullable<Party['pendingUnlockState']>,
   createdAt: number,
 ): DiaryLog | null {
   if (!log) return null;
 
-  const newDeityNames = normalizeUnlockedDeities(pendingUnlockState.deityNames)
-    .filter((deityName) => !previousUnlockedDeities.includes(deityName));
   const unlockedPartySlot = pendingUnlockState.partySlotCount > previousPartySlots
     ? pendingUnlockState.partySlotCount
     : null;
-  if (newDeityNames.length === 0 && !unlockedPartySlot) return null;
+  if (!unlockedPartySlot) return null;
 
   const unlockSourceEntry = [...log.entries]
     .reverse()
     .find((entry) => {
-      const deityUnlock = getUnlockedDeityNameFromEntry(entry, log.dungeonId);
       const partyUnlock = getUnlockedPartySlotFromEntry(entry);
-      return !!deityUnlock || !!partyUnlock;
+      return !!partyUnlock;
     });
 
   const godName = unlockSourceEntry && unlockSourceEntry.enemyName.includes('(神魔戦)')
@@ -295,9 +241,8 @@ function getUnlockDiaryLog(
       ? `${log.dungeonName}のBOSS撃破`
       : '解禁条件達成';
 
-  const unlockDeityLabel = newDeityNames[0] ? `信仰:${normalizeDeityName(newDeityNames[0])} 解禁` : '';
   const unlockPartyLabel = unlockedPartySlot ? `PT${unlockedPartySlot}解放` : '';
-  const unlockDetail = [unlockDeityLabel, unlockPartyLabel].filter(Boolean).join('、');
+  const unlockDetail = [unlockPartyLabel].filter(Boolean).join('、');
 
   return {
     id: `${createdAt}-${Math.random().toString(36).slice(2, 8)}`,
@@ -725,10 +670,7 @@ function loadSavedState(): GameState | null {
           ? Math.max(0, Math.min(Math.floor(parsed.selectedPartyIndex), Math.max(0, parsed.parties.length - 1)))
           : 0;
 
-        const initialUnlockedDeities = parsed.global.unlockedDeities.length > 0
-          ? parsed.global.unlockedDeities
-          : [...DEFAULT_UNLOCKED_DEITIES];
-        let unlockedDeities = [...initialUnlockedDeities];
+        const unlockedDeities = [...DEFAULT_UNLOCKED_DEITIES];
         let unlockedPartySlots = Math.max(1, Math.min(defaultParties.length, parsed.parties.length || 1));
 
         // Process all parties (whether single or array)
@@ -806,15 +748,12 @@ function loadSavedState(): GameState | null {
             }));
           }
 
-          unlockedDeities = ensureUnlockedDeity(unlockedDeities, party.deity.name);
-
           const allExpeditionLogs: ExpeditionLog[] = [
             ...(party.lastExpeditionLog ? [party.lastExpeditionLog] : []),
             ...party.diaryLogs.flatMap((log: DiaryLog) => (log.expeditionLog ? [log.expeditionLog] : [])),
             ...(party.pendingDiaryLog?.expeditionLog ? [party.pendingDiaryLog.expeditionLog] : []),
           ];
-          const unlockedState = getUnlockedStateFromEntries(allExpeditionLogs, unlockedDeities, unlockedPartySlots);
-          unlockedDeities = unlockedState.unlockedDeities;
+          const unlockedState = getUnlockedStateFromEntries(allExpeditionLogs, unlockedPartySlots);
           unlockedPartySlots = Math.max(unlockedPartySlots, unlockedState.unlockedPartySlots);
 
           const normalizedDeityName = normalizeDeityName(party.deity.name);
@@ -2194,7 +2133,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'UPDATE_PARTY_DEITY': {
       const normalizedDeityName = normalizeDeityName(action.deityName);
       const debugSettings = getDebugSettings();
+      const isKnownDeity = DEITY_OPTIONS.some((deity) => normalizeDeityName(deity.name) === normalizedDeityName);
       const isUnlockedDeity = isNoFaithDeity(normalizedDeityName)
+        || isKnownDeity
         || debugSettings.allReligionsEnabled
         || normalizeUnlockedDeities(state.global.unlockedDeities).includes(normalizedDeityName);
       if (!isUnlockedDeity) {
@@ -2716,15 +2657,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         },
       };
 
-      const currentUnlockedDeities = normalizeUnlockedDeities(state.global.unlockedDeities);
       const currentUnlockedPartySlots = state.parties.length;
-      const unlockedState = getUnlockedStateFromEntries([log], currentUnlockedDeities, currentUnlockedPartySlots);
+      const unlockedState = getUnlockedStateFromEntries([log], currentUnlockedPartySlots);
       const pendingUnlockState = (
-        unlockedState.unlockedDeities.length > currentUnlockedDeities.length
-        || unlockedState.unlockedPartySlots > currentUnlockedPartySlots
+        unlockedState.unlockedPartySlots > currentUnlockedPartySlots
       )
         ? {
-            deityNames: unlockedState.unlockedDeities,
+            deityNames: [...DEFAULT_UNLOCKED_DEITIES],
             partySlotCount: Math.max(1, Math.min(6, unlockedState.unlockedPartySlots)),
           }
         : null;
@@ -2757,7 +2696,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const unlockDiaryLog = pendingUnlockState
         ? getUnlockDiaryLog(
             party.lastExpeditionLog,
-            normalizeUnlockedDeities(state.global.unlockedDeities),
             state.parties.length,
             pendingUnlockState,
             createdAtBase + 1,
@@ -2792,7 +2730,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       let nextGlobal = state.global;
       if (pendingUnlockState) {
-        const nextUnlockedDeities = normalizeUnlockedDeities(pendingUnlockState.deityNames);
         const nextUnlockedPartySlots = Math.max(1, Math.min(6, pendingUnlockState.partySlotCount));
         const defaultParties = createDefaultParties();
 
@@ -2808,7 +2745,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
         nextGlobal = {
           ...state.global,
-          unlockedDeities: nextUnlockedDeities,
+          unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
         };
       }
 
@@ -3697,19 +3634,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         currentSleepiness: normalizeSleepinessState(party.currentSleepiness),
       }));
       const defaultParties = createDefaultParties();
-      const normalizedUnlockedDeities = normalizeUnlockedDeities(hydrated.global.unlockedDeities);
-      const unlockedBase = normalizedUnlockedDeities.length > 0 ? normalizedUnlockedDeities : [...DEFAULT_UNLOCKED_DEITIES];
-      let unlockedDeities = [...unlockedBase];
+      const unlockedDeities = [...DEFAULT_UNLOCKED_DEITIES];
       let unlockedPartySlots = Math.max(1, Math.min(6, normalizedParties.length || 1));
       for (const party of normalizedParties) {
-        unlockedDeities = ensureUnlockedDeity(unlockedDeities, party.deity.name);
         const allExpeditionLogs = [
           ...(party.lastExpeditionLog ? [party.lastExpeditionLog] : []),
           ...party.diaryLogs.flatMap((log) => (log.expeditionLog ? [log.expeditionLog] : [])),
           ...(party.pendingDiaryLog?.expeditionLog ? [party.pendingDiaryLog.expeditionLog] : []),
         ];
-        const unlockedState = getUnlockedStateFromEntries(allExpeditionLogs, unlockedDeities, unlockedPartySlots);
-        unlockedDeities = unlockedState.unlockedDeities;
+        const unlockedState = getUnlockedStateFromEntries(allExpeditionLogs, unlockedPartySlots);
         unlockedPartySlots = Math.max(unlockedPartySlots, unlockedState.unlockedPartySlots);
       }
       while (normalizedParties.length < unlockedPartySlots) {
