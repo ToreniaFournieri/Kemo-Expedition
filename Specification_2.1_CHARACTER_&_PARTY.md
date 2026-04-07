@@ -154,8 +154,17 @@
 
 **Experience and level and experience point**
 - Each party has its own `PartyLevel` and `xp_current`.
-- Experience point to next is calculated like this:
-  - `f.XP_to_next`(level: ) = 100 x (1.259)^(level -1)
+- Experience point to next is calculated:
+```
+  - N=1 to 99
+`f.XP_to_next`(level: ) = 100 x (
+  1.259
+  - max(0, 0.00085 × (n - 12))
+  - max(0, 0.00042 × (n - 24))
+  - max(0, 0.00018 × (n - 36))
+  - max(0, 0.00006 × (n - 48))
+)^(level - 1)
+```
 - When the party levels up:
   - `PartyLevel` += 1
   - `xp_current` = 0
