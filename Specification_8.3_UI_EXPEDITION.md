@@ -8,6 +8,13 @@
   - Players can set a depth limit; when the party reaches the selected floor, it stops the expedition and returns home automatically.
   - Selectable Options : 1F-3まで/2F-3まで/3F-3まで/4F-3まで/5F-3まで/ボス直前まで/全て (default: 全て)
 
+
+```
+left-aligned                                    right-aligned
+PT1 HP (HP bar, blue) `x.expedition`.name       outcome `motivation`.label ▼
+```
+
+
 ```
 PT1 HP (HP bar, blue) ルピニアンの断崖踏破  好調▼
 移動中: flavor text (background: state progress bar)
