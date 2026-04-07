@@ -146,9 +146,9 @@ PT3: 貯金額: 10G
 ##### 5.1.3.1 "Loot-Gate" progression system
 - If the party fails to meet the entry requirements, the expedition ends before the Gate Room and they are returned to Home.
 
-| title | Gate `x.floor`,`x.room` | condition |
-|----|----|----|
-| Entering | 1,1 | defeat the boss from previous expedition ( `x.expedition` -1 ), except for the first expedition. |
+| title | Gate `x.floor`,`x.room` | condition | text example |
+|----|----|----|----|
+| Entering | 1,1 | defeat the boss from previous expedition ( `x.expedition` -1 ), except for the first expedition. | ルピニアンの断崖のボス撃破 でヴァルンの樹林帯 開放 |
 | 1st Elite gate | 1,4 | correct 3 uncommon items from this `x.expedition` |
 | 2nd Elite gate | 2,4 | correct 9 uncommon items from this `x.expedition`  |
 | 3rd Elite gate | 3,4 | correct 18 uncommon items from this x.expedition` |
