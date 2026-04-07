@@ -2333,9 +2333,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 totalExp += calculateExperience(
                   enemy.experience,
                   roomDef.type,
-                  effectiveDungeon.tier,
                   currentParty.level,
-                  enemyLevelFinal
+                  enemyLevelFinal,
+                  isGodsBattle,
                 );
               }
 

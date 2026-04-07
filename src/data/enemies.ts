@@ -310,7 +310,6 @@ function createEnemyFromTemplate(
 ): EnemyDef {
   // SpecRef: 4.1.4 | Base data structure (enemy) | Calculation of master value
   const classBase = buildEnemyClassMasterStats(enemyClass, enemySubClass);
-  const enemyTypeExpMult = type === 'elite' ? 2.0 : type === 'boss' ? 5.0 : 1.0;
   const extraAbilityLevels = extraAbilities.map((id) => ({ id, level: 1 }));
   const enemyTypeAbilities = getEnemyTypeAbilities(enemyType, enemyTypeLevel);
   const enemyAbilities = resolveEnemyPassiveAbilities(mergeEnemyAbilities(classBase.abilities, extraAbilityLevels, enemyTypeAbilities));
@@ -376,7 +375,7 @@ function createEnemyFromTemplate(
     },
     physicalDefenseAmplifier: 1.0,
     magicalDefenseAmplifier: 1.0,
-    experience: Math.floor(classBase.experience * template.hpMod * enemyTypeExpMult),
+    experience: Math.floor(classBase.experience * template.hpMod),
     dropItemId,
   };
 }
