@@ -715,6 +715,7 @@ function loadSavedState(): GameState | null {
           party.deity.name = normalizeDeityName(party.deity.name);
           if (typeof party.level !== 'number') party.level = 1;
           if (typeof party.experience !== 'number') party.experience = 0;
+          if (!party.defeatedBossExpeditions) party.defeatedBossExpeditions = {};
           if (!party.lootGateStatus) party.lootGateStatus = {};
           if (!party.lootGateProgress) party.lootGateProgress = {};
           if (!Array.isArray(party.diaryLogs)) party.diaryLogs = [];
@@ -937,6 +938,7 @@ function createInitialParty() {
     name: 'PT1',
     level: 1,
     experience: 0,
+    defeatedBossExpeditions: {},
     lootGateProgress: {},
     lootGateStatus: {},
     deity: createInitialDeity('None'),
@@ -989,6 +991,7 @@ function createSecondParty() {
     name: 'PT2',
     level: 1,
     experience: 0,
+    defeatedBossExpeditions: {},
     lootGateProgress: {},
     lootGateStatus: {},
     deity: createInitialDeity('God of Attrition'),
@@ -1041,6 +1044,7 @@ function createThirdParty() {
     name: 'PT3',
     level: 1,
     experience: 0,
+    defeatedBossExpeditions: {},
     lootGateProgress: {},
     lootGateStatus: {},
     deity: createInitialDeity('God of Cunning'),
@@ -1093,6 +1097,7 @@ function createFourthParty() {
     name: 'PT4',
     level: 1,
     experience: 0,
+    defeatedBossExpeditions: {},
     lootGateProgress: {},
     lootGateStatus: {},
     deity: createInitialDeity('God of Fortification'),
@@ -1145,6 +1150,7 @@ function createFifthParty() {
     name: 'PT5',
     level: 1,
     experience: 0,
+    defeatedBossExpeditions: {},
     lootGateProgress: {},
     lootGateStatus: {},
     deity: createInitialDeity('Goddess of Fertility'),
@@ -1197,6 +1203,7 @@ function createSixthParty() {
     name: 'PT6',
     level: 1,
     experience: 0,
+    defeatedBossExpeditions: {},
     lootGateProgress: {},
     lootGateStatus: {},
     deity: createInitialDeity('God of Resonance'),
@@ -2592,9 +2599,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (isGodsBattle && finalOutcome === 'Clear') {
         nextLootGateProgress[getLootCollectionKey(dungeon.id, 'bossRare')] = 0;
       }
+      const nextDefeatedBossExpeditions = {
+        ...(currentParty.defeatedBossExpeditions ?? {}),
+      };
+      if (!isGodsBattle && finalOutcome === 'Clear') {
+        nextDefeatedBossExpeditions[dungeon.id] = true;
+      }
       const nextLootGateStatus = unlockAvailableLootGates(
         currentParty.lootGateStatus ?? {},
         nextLootGateProgress,
+        nextDefeatedBossExpeditions,
         DUNGEONS.length
       );
 
@@ -2655,6 +2669,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       updatedParties[action.partyIndex] = {
         ...currentParty,
         expeditionRewardsPending: true,
+        defeatedBossExpeditions: nextDefeatedBossExpeditions,
         lootGateProgress: nextLootGateProgress,
         lootGateStatus: nextLootGateStatus,
         lastExpeditionLog: log,

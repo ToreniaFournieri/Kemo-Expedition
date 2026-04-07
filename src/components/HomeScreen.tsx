@@ -988,12 +988,12 @@ function getDungeonEntryGateState(
   const previousDungeon = DUNGEONS.find(d => d.id === dungeon.id - 1);
   const previousDungeonName = previousDungeon?.name ?? '前回の探検地';
   const required = ENTRY_GATE_REQUIRED;
-  const collected = getLootCollectionCount(party, dungeon.id - 1, 'bossRare');
+  const collected = party.defeatedBossExpeditions?.[dungeon.id - 1] ? 1 : 0;
   const unlocked = isLootGateUnlocked(party, getEntryGateKey(dungeon.id)) || collected >= required;
 
   return {
     locked: !unlocked,
-    gateText: `解放条件: ${previousDungeonName}のボスレアアイテム(持ち帰り) ${collected}/${required}`,
+    gateText: `解放条件: ${previousDungeonName}のボス撃破 ${collected}/${required}`,
   };
 }
 
@@ -1037,10 +1037,11 @@ function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | n
   const nextDungeon = DUNGEONS.find(d => d.id === currentDungeon.id + 1);
   const entryRequired = ENTRY_GATE_REQUIRED;
   const bossRareCollected = getDisplayedBossRareCount(party, currentDungeon.id, cycleState);
+  const previousBossDefeated = party.defeatedBossExpeditions?.[currentDungeon.id] ? 1 : 0;
   if (nextDungeon) {
-    const entryUnlocked = isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id)) || bossRareCollected >= entryRequired;
+    const entryUnlocked = isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id)) || previousBossDefeated >= entryRequired;
     if (!entryUnlocked) {
-      return `次の目標: ${nextDungeon.name}の解放: ${currentDungeon.name}のボスレアアイテム(持ち帰り) ${bossRareCollected}/${entryRequired}（現在）`;
+      return `次の目標: ${nextDungeon.name}の解放: ${currentDungeon.name}のボス撃破 ${previousBossDefeated}/${entryRequired}（現在）`;
     }
   }
 

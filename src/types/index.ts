@@ -302,6 +302,7 @@ export interface Party {
   name: string;
   level: number;
   experience: number;
+  defeatedBossExpeditions: Record<number, boolean>;
   lootGateProgress: Record<string, number>;
   lootGateStatus: Record<number, boolean>;
   deity: Deity;
