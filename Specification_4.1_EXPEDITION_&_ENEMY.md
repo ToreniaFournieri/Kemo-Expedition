@@ -230,7 +230,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 
 | `d.HP` | `a.ability` | `d.accuracy` | `d.evasion` | `d.ranged_attack` | `d.magical_attack` | `d.melee_attack` | `d.ranged_attack_amplifier` | `d.magical_attack_amplifier` | `d.melee_attack_amplifier` | `d.physical_defense` | `d.magical_defense` | `d.experience` |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 80 | (none) | 0.00 | 0.00 | 31 | 29 | 40 | x1.0 | x1.0 | x1.0 | 16 | 16 | 5 |
+| 80 | (none) | 0.00 | 0.00 | 31 | 29 | 40 | x1.0 | x1.0 | x1.0 | 12 | 12 | 5 |
 
 - **Class modifier**
 
