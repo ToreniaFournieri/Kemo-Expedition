@@ -316,7 +316,7 @@
 | 200 ~ 399 | 順調 |
 |  =< 400  | 好調 |
 
-- If party `motivation` >= 200 and (`God Battle` is ready) and (has no active sub quest),
+- If party `motivation` >= 400 and (`God Battle` is ready) and (has no active sub quest),
 - Engage `God Battle` and `motivation` -= 400.
 
 
