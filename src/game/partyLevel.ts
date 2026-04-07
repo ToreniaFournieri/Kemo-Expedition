@@ -1,6 +1,6 @@
 import { RoomType } from '../types';
 
-const XP_TO_NEXT_BASE = 100;
+const XP_TO_NEXT_BASE = 400;
 const XP_TO_NEXT_GROWTH_BASE = 1.259;
 
 function getXpGrowthRate(level: number): number {
