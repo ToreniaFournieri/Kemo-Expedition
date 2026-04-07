@@ -300,23 +300,23 @@
 
 | Outcome | Adjustment |
 |-|-|
-| `Clear` | +1 |
-| `Turned_Back` | 0 |
-| `Draw_Retreat` | -1 |
-| `Wounded_Retreat` | -5 |
-| `Defeat` | -100 |
+| `Clear` | +2 |
+| `Turned_Back` | +1 |
+| `Draw_Retreat` | -2 |
+| `Wounded_Retreat` | -10 |
+| `Defeat` | -200 |
 
 - `motivation` state classification:
 
 | `motivation`| label |
 |--|--|
-| -100 =< | 不調 |
-| -99 ~ 0 | 低調 |
-| 0 ~ 99 | 平常 |
-| 100 ~ 199 | 順調 |
-|  =< 200  | 好調 |
+| -200 =< | 不調 |
+| -199 ~ -1 | 低調 |
+| 0 ~ 199 | 平常 |
+| 200 ~ 399 | 順調 |
+|  =< 400  | 好調 |
 
 - If party `motivation` >= 200 and (`God Battle` is ready) and (has no active sub quest),
-- Engage `God Battle` and `motivation` -= 200.
+- Engage `God Battle` and `motivation` -= 400.
 
 
