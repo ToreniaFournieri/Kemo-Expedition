@@ -295,7 +295,7 @@
 #### 7.1.2 AUTO progress logic
 - Each party has a parameter motivation.
   - Initial value: 0
-  - Minimum value (floor): -800
+  - Minimum value (floor): -400
   - Maximum value (cell): +800
 - `motivation` is adjusted based on expedition outcomes:
 
