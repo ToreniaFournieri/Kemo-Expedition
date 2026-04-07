@@ -290,3 +290,8 @@
 - notification logic. 
   - empty slot to equip item: PT2ニャンは 恐ろしい月鋼鏃の矢を装備した
   - exist item to equip another item: PT2ニャンは 恐ろしい月鋼鏃の矢 を 魔性の瞬撃の月鋼矢に装備しなおした 
+
+
+#### 7.1.2 AUTO progress logic
+- TBA
+
