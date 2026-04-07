@@ -190,6 +190,14 @@ export function applyDeityCharacterModifiers(
 
   return characterStats.map((stats) => {
     switch (deityKey) {
+      case 'Goddess of Restoration':
+        return {
+          ...stats,
+          elementalDefenseMultipliers: {
+            ...stats.elementalDefenseMultipliers,
+            ice: stats.elementalDefenseMultipliers.ice * 1.5,
+          },
+        };
       case 'God of Attrition':
         return {
           ...stats,
@@ -210,9 +218,19 @@ export function applyDeityCharacterModifiers(
             physical: stats.deityDefenseAmplifierBonus.physical - (1 - 2 / 3),
             magical: stats.deityDefenseAmplifierBonus.magical,
           },
+          elementalDefenseMultipliers: {
+            ...stats.elementalDefenseMultipliers,
+            thunder: stats.elementalDefenseMultipliers.thunder * 1.5,
+          },
         };
       case 'Goddess of Fertility': {
-        return stats;
+        return {
+          ...stats,
+          elementalDefenseMultipliers: {
+            ...stats.elementalDefenseMultipliers,
+            fire: stats.elementalDefenseMultipliers.fire * 1.5,
+          },
+        };
       }
       case 'Goddess of Precision':
         return {
