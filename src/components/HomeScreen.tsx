@@ -7080,6 +7080,7 @@ function ExpeditionTab({
               <div aria-hidden className="pointer-events-none absolute inset-0" style={expeditionPaneImageLayerStyle} />
             ) : null}
             <div className={`relative z-10 rounded-md p-2 text-gray-900 ${isDarkModeEnabled ? 'bg-slate-900/18' : 'bg-white/74'}`}>
+            {/* SpecRef: 8.3 | UI_EXPEDITION | PT1 HP (HP bar, blue) `x.expedition`.name / outcome `motivation`.label ▼ */}
             <button
               onClick={() => {
                 const nextExpanded = isLogExpanded ? null : partyIndex;
@@ -7095,10 +7096,12 @@ function ExpeditionTab({
                   <span className="block h-full bg-blue-500 transition-[width] duration-200" style={{ width: `${hpPercent}%` }} />
                 </span>
                 <span className="truncate">{headlineDungeonName}</span>
+              </span>
+              <span className="shrink-0 flex items-center gap-1">
                 <span className="font-medium text-sub shrink-0">{headlineState}</span>
                 <span className="font-medium text-sub shrink-0">{motivationLabel}</span>
+                <span className={`${isLogExpanded ? 'transform transition-transform rotate-180' : ''}`}>▼</span>
               </span>
-              <span className={`shrink-0 ${isLogExpanded ? 'transform transition-transform rotate-180' : ''}`}>▼</span>
             </button>
 
             <div className={`mb-1 relative h-9 min-w-0 rounded-md overflow-hidden text-[11px] ${isDarkModeEnabled ? 'bg-slate-900/28' : 'bg-white/45'}`}>
