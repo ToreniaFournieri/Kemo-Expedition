@@ -64,9 +64,16 @@ import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
 import { LINEAGES } from '../data/lineages';
 import {
+  ELITE_GATE_REQUIREMENTS,
+  ENTRY_GATE_REQUIRED,
+  BOSS_GATE_REQUIRED,
   getGodsBattleRequired,
   getLootCollectionCount,
   getLootCollectionKey,
+  getEntryGateKey,
+  getEliteGateKey,
+  getBossGateKey,
+  isLootGateUnlocked,
   checkLootGateRequirement,
   addRecoveredItemsToLootProgress,
   unlockAvailableLootGates,
@@ -260,7 +267,7 @@ function getCycleDurationScale(): number {
 }
 
 function formatSideQuestShortText(type: string, shortText: string, target: number): string {
-  const formatNumber = (value: number) => Math.floor(value).toLocaleString('en-US');
+  const formatNumber = (value: number) => Math.floor(value).toLocaleString('ja-JP');
   const valueByType: Partial<Record<string, string>> = {
     'q.squander': `${formatNumber(target)}G`,
     'q.sleeping': `${formatNumber(target)}分`,
@@ -825,6 +832,14 @@ function createStarterInventory(): InventoryRecord {
 
 function initializePartyRuntimeState<T extends Party>(party: T): T {
   const { partyStats } = computePartyStats(party);
+  const now = Date.now();
+  const normalizedSideQuest = party.sideQuest
+    ? {
+        ...party.sideQuest,
+        assignedAt: Number.isFinite(party.sideQuest.assignedAt) ? party.sideQuest.assignedAt : now,
+        expiresAt: Number.isFinite(party.sideQuest.expiresAt) ? party.sideQuest.expiresAt : now + (16 * 60 * 60 * 1000),
+      }
+    : null;
   return {
     ...party,
     characters: party.characters.map((character) => ({
@@ -839,7 +854,7 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
     expeditionStats: getExpeditionStatsWithDefaults(party.expeditionStats),
     sleepinessOfPartyBag: normalizeSleepinessPartyBag(party.sleepinessOfPartyBag ?? createSleepinessPartyBag()),
     currentSleepiness: normalizeSleepinessState(party.currentSleepiness),
-    sideQuest: party.sideQuest ?? null,
+    sideQuest: normalizedSideQuest,
   };
 }
 
@@ -1255,7 +1270,7 @@ type GameAction =
   | { type: 'PROCESS_PENDING_PROFIT'; partyIndex: number; donation: number; deposit: number }
   | { type: 'SPEND_PENDING_PROFIT'; partyIndex: number; amount: number }
   | { type: 'ROLL_PARTY_SLEEPINESS'; partyIndex: number }
-  | { type: 'ROLL_SIDE_QUEST'; partyIndex: number; rolledTier: number }
+  | { type: 'ROLL_SIDE_QUEST'; partyIndex: number; rolledTier: number; simulatedAt?: number }
   | { type: 'CANCEL_SIDE_QUEST'; partyIndex: number }
   | { type: 'ADVANCE_SIDE_QUEST'; partyIndex: number; amount: number; simulatedAt?: number }
   | { type: 'SET_SIDE_QUEST_PROGRESS'; partyIndex: number; progress: number }
@@ -1475,6 +1490,33 @@ function getApproxAfkTimeQuestProgressPerCycle(party: Party, approxCycleDuration
     default:
       return 0;
   }
+}
+
+function hasActiveNonGodBattleLootGateCondition(party: Party): boolean {
+  // SpecRef: 5.1.2 | Side Quest | Trigger Condition
+  const currentDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId);
+  if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === 99) return false;
+
+  const tier = currentDungeon.enemyPoolIds[0];
+  for (const floor of currentDungeon.floors) {
+    if (floor.floorNumber >= 6) continue;
+    const required = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 3;
+    const collected = getLootCollectionCount(party, tier, 'uncommon');
+    const unlocked = isLootGateUnlocked(party, getEliteGateKey(currentDungeon.id, floor.floorNumber)) || collected >= required;
+    if (!unlocked) return true;
+  }
+
+  const eliteRareCollected = getLootCollectionCount(party, tier, 'eliteRare');
+  const bossUnlocked = isLootGateUnlocked(party, getBossGateKey(currentDungeon.id)) || eliteRareCollected >= BOSS_GATE_REQUIRED;
+  if (!bossUnlocked) return true;
+
+  const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === currentDungeon.id + 1);
+  if (!nextDungeon) return false;
+
+  const previousBossDefeated = party.defeatedBossExpeditions?.[currentDungeon.id] ? 1 : 0;
+  const entryUnlocked = isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id))
+    || previousBossDefeated >= ENTRY_GATE_REQUIRED;
+  return !entryUnlocked;
 }
 
 
@@ -2824,25 +2866,27 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       bags = { ...bags, sideQuestBag: newBag };
       if (ticket === 0) return { ...state, bags };
 
-      const questById: Record<number, { type: string; shortText: string; min: number; max: number }> = {
-        1: { type: 'q.squander', shortText: '散財', min: 500, max: 2000 },
-        2: { type: 'q.sleeping', shortText: '安眠', min: 20, max: 60 },
-        3: { type: 'q.exercise', shortText: '運動', min: 45, max: 150 },
-        4: { type: 'q.embezzlement', shortText: '横領', min: 100, max: 400 },
-        5: { type: 'q.donation', shortText: '寄付', min: 400, max: 2000 },
-        6: { type: 'q.healing', shortText: '治療', min: 60, max: 120 },
-        7: { type: 'q.AFK', shortText: '放置', min: 180, max: 360 },
-        8: { type: 'q.treasure_super_rare', shortText: '超レア獲得', min: 1, max: 2 },
-        9: { type: 'q.treasure_boss_rare', shortText: 'ボスレア獲得', min: 5, max: 15 },
-        10: { type: 'q.poor_kid', shortText: 'アイテム獲得空振り', min: 500, max: 1500 },
-        11: { type: 'q.consecutive_wins', shortText: '連続踏破', min: 15, max: 60 },
-        12: { type: 'q.losers', shortText: '敗北', min: 3, max: 6 },
-        13: { type: 'q.savings', shortText: '貯金', min: 800, max: 4000 },
+      const questById: Record<number, { type: string; shortText: string; min: number; max: number; deadlineHours: number }> = {
+        1: { type: 'q.squander', shortText: '散財', min: 500, max: 2000, deadlineHours: 16 },
+        2: { type: 'q.sleeping', shortText: '安眠', min: 20, max: 60, deadlineHours: 16 },
+        3: { type: 'q.exercise', shortText: '運動', min: 45, max: 150, deadlineHours: 16 },
+        4: { type: 'q.embezzlement', shortText: '横領', min: 100, max: 400, deadlineHours: 16 },
+        5: { type: 'q.donation', shortText: '寄付', min: 400, max: 2000, deadlineHours: 12 },
+        6: { type: 'q.healing', shortText: '治療', min: 60, max: 120, deadlineHours: 16 },
+        7: { type: 'q.AFK', shortText: '放置', min: 180, max: 360, deadlineHours: 16 },
+        8: { type: 'q.treasure_super_rare', shortText: '超レア獲得', min: 1, max: 2, deadlineHours: 24 },
+        9: { type: 'q.treasure_boss_rare', shortText: 'ボスレア獲得', min: 5, max: 15, deadlineHours: 16 },
+        10: { type: 'q.poor_kid', shortText: 'アイテム獲得空振り', min: 500, max: 1500, deadlineHours: 9 },
+        11: { type: 'q.consecutive_wins', shortText: '連続踏破', min: 15, max: 60, deadlineHours: 16 },
+        12: { type: 'q.losers', shortText: '敗北', min: 3, max: 6, deadlineHours: 16 },
+        13: { type: 'q.savings', shortText: '貯金', min: 800, max: 4000, deadlineHours: 16 },
       };
       const def = questById[ticket];
       if (!def) return { ...state, bags };
       const target = Math.floor(Math.random() * (def.max - def.min + 1)) + def.min;
       const internalTarget = TIME_BASED_SIDE_QUEST_TYPES.has(def.type) ? target * 60 : target;
+      const assignedAt = action.simulatedAt ?? Date.now();
+      const expiresAt = assignedAt + (def.deadlineHours * 60 * 60 * 1000);
       const updatedParties = [...state.parties];
       updatedParties[action.partyIndex] = {
         ...currentParty,
@@ -2853,6 +2897,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           target: internalTarget,
           progress: 0,
           rolledTier: Math.max(1, Math.min(8, Math.floor(action.rolledTier))),
+          assignedAt,
+          expiresAt,
         },
       };
       return { ...state, bags, parties: updatedParties };
@@ -3520,9 +3566,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
           const currentParty = workingState.parties[partyIndex];
           if (!currentParty) continue;
+          if (currentParty.sideQuest && simulatedAt >= currentParty.sideQuest.expiresAt) {
+            workingState = gameReducer(workingState, { type: 'CANCEL_SIDE_QUEST', partyIndex });
+          }
+          const activeParty = workingState.parties[partyIndex];
+          if (!activeParty) continue;
 
-          if (currentParty.sideQuest && TIME_BASED_SIDE_QUEST_TYPES.has(currentParty.sideQuest.type)) {
-            const approximateProgress = getApproxAfkTimeQuestProgressPerCycle(currentParty, approxCycleDurationMs);
+          if (activeParty.sideQuest && TIME_BASED_SIDE_QUEST_TYPES.has(activeParty.sideQuest.type)) {
+            const approximateProgress = getApproxAfkTimeQuestProgressPerCycle(activeParty, approxCycleDurationMs);
             if (approximateProgress > 0) {
               workingState = gameReducer(workingState, {
                 type: 'ADVANCE_SIDE_QUEST',
@@ -3548,11 +3599,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             }
           }
 
-          if (postCycleParty && !postCycleParty.sideQuest) {
+          if (postCycleParty && !postCycleParty.sideQuest && !hasActiveNonGodBattleLootGateCondition(postCycleParty)) {
             workingState = gameReducer(workingState, {
               type: 'ROLL_SIDE_QUEST',
               partyIndex,
               rolledTier: postCycleParty.selectedDungeonId,
+              simulatedAt,
             });
           }
         }
@@ -3900,8 +3952,8 @@ export function useGameState() {
       dispatch({ type: 'SPEND_PENDING_PROFIT', partyIndex, amount });
     }, []),
 
-    rollSideQuest: useCallback((partyIndex: number, rolledTier: number) => {
-      dispatch({ type: 'ROLL_SIDE_QUEST', partyIndex, rolledTier });
+    rollSideQuest: useCallback((partyIndex: number, rolledTier: number, simulatedAt?: number) => {
+      dispatch({ type: 'ROLL_SIDE_QUEST', partyIndex, rolledTier, simulatedAt });
     }, []),
 
     rollPartySleepiness: useCallback((partyIndex: number) => {
