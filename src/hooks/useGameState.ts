@@ -319,9 +319,14 @@ function getRawPartyMotivation(raw: unknown): number {
 function getOutcomeMotivationAdjustment(finalOutcome: ExpeditionLog['finalOutcome'], endedWithDrawRetreat: boolean): number {
   if (finalOutcome === 'Clear') return 2;
   if (finalOutcome === 'Escape') return 1;
-  if (finalOutcome === 'Retreat') return endedWithDrawRetreat ? -2 : -10;
-  if (finalOutcome === 'Defeat') return -200;
+  if (finalOutcome === 'Retreat') return endedWithDrawRetreat ? -2 : -5;
+  if (finalOutcome === 'Defeat') return -40;
   return 0;
+}
+
+function isGodsBattleExpedition(log: ExpeditionLog | null): boolean {
+  if (!log) return false;
+  return log.entries.some((entry) => entry.enemyName.includes('(神魔戦)'));
 }
 
 
@@ -1292,7 +1297,7 @@ type GameAction =
   | { type: 'RESET_EXPEDITION_STATS'; partyIndex: number }
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
   | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; gameMode?: GameMode; triggerGodsBattle?: boolean; isAfkSimulation?: boolean }
-  | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number }
+  | { type: 'FINALIZE_DIARY_LOG'; partyIndex: number; isAfkSimulation?: boolean }
   | { type: 'HEAL_PARTY_HP'; partyIndex: number; amount: number }
   | { type: 'CLEAR_PENDING_PROFIT'; partyIndex: number }
   | { type: 'PROCESS_PENDING_PROFIT'; partyIndex: number; donation: number; deposit: number }
@@ -2710,16 +2715,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const updatedParties = [...state.parties];
       const endedWithDrawRetreat = entries.length > 0 && entries[entries.length - 1].outcome === 'draw';
-      const rawMotivationDelta = getOutcomeMotivationAdjustment(finalOutcome, endedWithDrawRetreat);
-      const motivationDelta = action.isAfkSimulation === true
-        ? Math.max(0, rawMotivationDelta)
-        : rawMotivationDelta;
-      const motivationBase = action.isAfkSimulation === true
-        ? getRawPartyMotivation(currentParty.motivation)
-        : normalizePartyMotivation(currentParty.motivation);
-      const shouldConsumeMotivationForAutoGodsBattle = action.triggerGodsBattle === true
-        && normalizePartyMotivation(currentParty.motivation) >= 400
-        && !currentParty.sideQuest;
       updatedParties[action.partyIndex] = {
         ...currentParty,
         expeditionRewardsPending: true,
@@ -2732,10 +2727,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         // Party-cycle spending/donation is defined from the *latest* expedition's
         // auto-sell profit, so this should not accumulate across expeditions.
         pendingProfit: finalAutoSellProfit,
-        // SpecRef: 7.1.2 | AUTO progress logic | motivation
-        motivation: motivationBase
-          + motivationDelta
-          - (shouldConsumeMotivationForAutoGodsBattle ? 400 : 0),
         expeditionStats: {
           ...currentParty.expeditionStats,
           Clear: currentParty.expeditionStats.Clear + (finalOutcome === 'Clear' ? 1 : 0),
@@ -2798,12 +2789,32 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       let nextLevel = party.level;
       let nextExperience = party.experience;
+      let nextMotivation = party.motivation;
       if (party.expeditionRewardsPending && party.lastExpeditionLog) {
         nextExperience += party.lastExpeditionLog.totalExperience;
         if (nextLevel < MAX_LEVEL && nextExperience >= getXpToNextLevel(nextLevel)) {
           nextLevel += 1;
           nextExperience = 0;
         }
+        const endedWithDrawRetreat = party.lastExpeditionLog.entries.length > 0
+          && party.lastExpeditionLog.entries[party.lastExpeditionLog.entries.length - 1].outcome === 'draw';
+        const rawMotivationDelta = getOutcomeMotivationAdjustment(
+          party.lastExpeditionLog.finalOutcome,
+          endedWithDrawRetreat,
+        );
+        const motivationDelta = action.isAfkSimulation === true
+          ? Math.max(0, rawMotivationDelta)
+          : rawMotivationDelta;
+        const motivationBase = action.isAfkSimulation === true
+          ? getRawPartyMotivation(party.motivation)
+          : normalizePartyMotivation(party.motivation);
+        const shouldConsumeMotivationForAutoGodsBattle = isGodsBattleExpedition(party.lastExpeditionLog)
+          && normalizePartyMotivation(party.motivation) >= 400
+          && !party.sideQuest;
+        // SpecRef: 7.1.2 | AUTO progress logic | motivation
+        nextMotivation = motivationBase
+          + motivationDelta
+          - (shouldConsumeMotivationForAutoGodsBattle ? 400 : 0);
       }
 
       const updatedParties = [...state.parties];
@@ -2811,6 +2822,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...party,
         level: nextLevel,
         experience: nextExperience,
+        motivation: nextMotivation,
         expeditionRewardsPending: false,
         pendingDiaryLog: null,
         diaryLogs: nextDiaryLogs,
@@ -3618,7 +3630,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             gameMode,
             isAfkSimulation: true,
           });
-          workingState = gameReducer(workingState, { type: 'FINALIZE_DIARY_LOG', partyIndex });
+          workingState = gameReducer(workingState, { type: 'FINALIZE_DIARY_LOG', partyIndex, isAfkSimulation: true });
 
           const currentParty = workingState.parties[partyIndex];
           if (!currentParty) continue;
