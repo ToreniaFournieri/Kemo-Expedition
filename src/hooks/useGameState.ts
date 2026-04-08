@@ -2802,13 +2802,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           : rawMotivationDelta;
         const motivationBase = normalizePartyMotivation(party.motivation);
         const shouldConsumeMotivationForAutoGodsBattle = isGodsBattleExpedition(party.lastExpeditionLog)
-          && normalizePartyMotivation(party.motivation) >= 400
+          && normalizePartyMotivation(party.motivation) >= 100
           && !party.sideQuest;
         // SpecRef: 7.1.2 | AUTO progress logic | motivation
         nextMotivation = normalizePartyMotivation(
           motivationBase
           + motivationDelta
-          - (shouldConsumeMotivationForAutoGodsBattle ? 400 : 0),
+          - (shouldConsumeMotivationForAutoGodsBattle ? 200 : 0),
         );
       }
 
