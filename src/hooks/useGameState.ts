@@ -1676,18 +1676,16 @@ function resolveEnemyRewards(
       autoSellProfit: result.wasAutoSold ? result.autoSellProfit : undefined,
     });
 
+    rewards.push(newItem);
+    rewardNames.push(itemName);
+    if (!highestRewardRarity || getRarityRank(baseRarity) > getRarityRank(highestRewardRarity)) {
+      highestRewardRarity = baseRarity;
+    }
+    if (newItem.superRare > 0) hasSuperRareReward = true;
+
     if (result.wasAutoSold) {
       autoSellItemCount += 1;
       autoSellItems.push({ itemName, autoSellProfit: result.autoSellProfit });
-    }
-
-    if (!result.wasAutoSold) {
-      rewards.push(newItem);
-      rewardNames.push(itemName);
-      if (!highestRewardRarity || getRarityRank(baseRarity) > getRarityRank(highestRewardRarity)) {
-        highestRewardRarity = baseRarity;
-      }
-      if (newItem.superRare > 0) hasSuperRareReward = true;
     }
   }
 
