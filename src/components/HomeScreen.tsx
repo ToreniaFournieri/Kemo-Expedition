@@ -3427,9 +3427,10 @@ export function HomeScreen({
     persistAfkRuntimeState();
   }, [isAutoRepeatEnabled, partyCycles, persistAfkRuntimeState]);
   const getScaledSideQuestSeconds = useCallback((durationMs: number) => {
-    const timeSpeedScale = Math.max(0.001, getTimeSpeedScale(debugSettings));
-    return Math.max(1, Math.floor((durationMs / timeSpeedScale) / 1000));
-  }, [debugSettings]);
+    // SpecRef: 5.1.2 | Side Quest | Realtime Progress
+    // Side-quest time progress follows debug-scaled runtime duration.
+    return Math.max(1, Math.floor(durationMs / 1000));
+  }, []);
 
   const processTimeCheckpoint = useCallback((now: number = Date.now()) => {
     const parties = latestPartiesRef.current;
