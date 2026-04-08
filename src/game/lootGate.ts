@@ -23,12 +23,17 @@ export const ELITE_GATE_REQUIREMENTS: Record<number, number> = {
 
 export const ENTRY_GATE_REQUIRED = 1;
 export const BOSS_GATE_REQUIRED = 3;
-export const GODS_BATTLE_REQUIRED = 10;
+export const GODS_BATTLE_REQUIRED = 3;
 
 // SpecRef: 5.1.3.1 | "Loot-Gate" progression system | getGodsBattleRequired
 export function getGodsBattleRequired(): number {
   const settings = getDebugSettings();
   return settings.godsBattleCondition === 'simple1' ? 1 : GODS_BATTLE_REQUIRED;
+}
+
+// SpecRef: 5.1.3.1 | "Loot-Gate" progression system | Gods battle gate
+export function hasDefeatedAnyDungeonBoss(party: Pick<Party, 'defeatedBossExpeditions'>): boolean {
+  return Object.values(party.defeatedBossExpeditions ?? {}).some(Boolean);
 }
 
 // SpecRef: 5.1.3.1 | "Loot-Gate" progression system | getLootCollectionKey

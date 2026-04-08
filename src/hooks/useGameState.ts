@@ -76,6 +76,7 @@ import {
   isLootGateUnlocked,
   checkLootGateRequirement,
   addRecoveredItemsToLootProgress,
+  hasDefeatedAnyDungeonBoss,
   unlockAvailableLootGates,
 } from '../game/lootGate';
 import { calculateExperience, getXpToNextLevel } from '../game/partyLevel';
@@ -301,7 +302,9 @@ const MAGIC_CATEGORIES = new Set<Item['category']>(['wand', 'grimoire', 'catalys
 
 
 function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
-  return getLootCollectionCount(party, dungeonId, 'bossRare') >= getGodsBattleRequired();
+  // SpecRef: 5.1.3.1 | "Loot-Gate" progression system | Gods battle gate
+  return getLootCollectionCount(party, dungeonId, 'bossRare') >= getGodsBattleRequired()
+    && hasDefeatedAnyDungeonBoss(party);
 }
 
 function normalizePartyMotivation(raw: unknown): number {

@@ -54,6 +54,7 @@ import {
   getBossGateKey,
   getLootCollectionCount,
   getItemRarityForLootGate,
+  hasDefeatedAnyDungeonBoss,
   isLootGateUnlocked,
 } from '../game/lootGate';
 
@@ -1046,14 +1047,15 @@ function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | n
   }
 
   const godsRequired = getGodsBattleRequired();
-  const godsUnlocked = bossRareCollected >= godsRequired;
+  const hasBossDefeat = hasDefeatedAnyDungeonBoss(party);
+  const godsUnlocked = bossRareCollected >= godsRequired && hasBossDefeat;
   if (!godsUnlocked) {
     if (shouldDelayNextSpecialGoal(party, cycleState)) {
       return null;
     }
     const waitingGod = getGodProfileForDungeon(currentDungeon.id, currentDungeon.name);
     const waitingGodName = waitingGod ? getGodShortName(waitingGod.displayName) : '神魔';
-    return `特殊目標: ${currentDungeon.name}のボスレアアイテム ${bossRareCollected}/${godsRequired} で神魔${waitingGodName}戦`;
+    return `特殊目標: ${currentDungeon.name}のボスレアアイテム ${bossRareCollected}/${godsRequired}・ダンジョンボス撃破 ${hasBossDefeat ? 1 : 0}/1 で神魔${waitingGodName}戦`;
   }
 
   return null;
@@ -1142,7 +1144,9 @@ function getSideQuestText(party: Party, cycleDurationScale: number): string | nu
 }
 
 function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
-  return getLootCollectionCount(party, dungeonId, 'bossRare') >= getGodsBattleRequired();
+  // SpecRef: 5.1.3.1 | "Loot-Gate" progression system | Gods battle gate
+  return getLootCollectionCount(party, dungeonId, 'bossRare') >= getGodsBattleRequired()
+    && hasDefeatedAnyDungeonBoss(party);
 }
 
 function getMotivationLabel(motivation: number, showValue: boolean): string {
