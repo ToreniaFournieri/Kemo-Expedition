@@ -1055,7 +1055,7 @@ function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | n
     }
     const waitingGod = getGodProfileForDungeon(currentDungeon.id, currentDungeon.name);
     const waitingGodName = waitingGod ? getGodShortName(waitingGod.displayName) : '神魔';
-    return `特殊目標: ${currentDungeon.name}のボスレアアイテム ${bossRareCollected}/${godsRequired}・ダンジョンボス撃破 ${hasBossDefeat ? 1 : 0}/1 で神魔${waitingGodName}戦`;
+    return `特殊目標: ${currentDungeon.name}のボスレアアイテム ${bossRareCollected}/${godsRequired} で神魔${waitingGodName}戦`;
   }
 
   return null;
