@@ -2,6 +2,8 @@ import { ItemDef, EnhancementTitle, SuperRareTitle, ItemCategory, ElementalOffen
 import { GOD_MYTHIC_DROPS } from './dropTables';
 import { getMasterItemCategoriesByRarity, getMasterItemNames } from './masterSpecData';
 
+const GOD_MYTHIC_DROP_TIER_BY_ID = new Map<number, number>();
+
 // ============================================================
 // Enhancement & Super Rare title tables
 // ============================================================
@@ -702,6 +704,7 @@ function generateItems(): ItemDef[] {
         item.bonuses = drop.bonuses;
       }
       items.push(item);
+      GOD_MYTHIC_DROP_TIER_BY_ID.set(item.id, drop.tier);
     }
   });
 
@@ -722,6 +725,10 @@ export function getItemsByTier(tier: number): ItemDef[] {
 
 // Item lookup by tier and rarity
 export function getItemsByTierAndRarity(tier: number, rarity: Rarity): ItemDef[] {
+  if (rarity === 'mythicRare') {
+    return ITEMS.filter((item) => GOD_MYTHIC_DROP_TIER_BY_ID.get(item.id) === tier);
+  }
+
   const tierBase = tier * 1000;
   const rarityBase = { common: 100, uncommon: 200, eliteRare: 300, bossRare: 400, mythicRare: 500 }[rarity];
   return ITEMS.filter(i => i.id >= tierBase + rarityBase && i.id < tierBase + rarityBase + 100);
