@@ -26,6 +26,7 @@
 - Debug Scaling:
   - If `x5 boost` , all durations are multiplied by **0.2**.
   - If `x20 boost` , all durations are multiplied by **0.05**.
+  - This debug scaling affects to side quest time count. 
 
 
 | State | Japanese label | Duration |
