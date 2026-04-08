@@ -1059,9 +1059,16 @@ function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | n
   return null;
 }
 
-function getSideQuestText(party: Party): string | null {
+function getScaledSideQuestExpiresAt(sideQuest: Party['sideQuest'], cycleDurationScale: number): number {
+  if (!sideQuest) return 0;
+  const safeScale = Math.max(0.001, cycleDurationScale);
+  const deadlineWindowMs = Math.max(0, sideQuest.expiresAt - sideQuest.assignedAt);
+  return sideQuest.assignedAt + Math.floor(deadlineWindowMs * safeScale);
+}
+
+function getSideQuestText(party: Party, cycleDurationScale: number): string | null {
   if (!party.sideQuest) return null;
-  const { type, shortText, progress, target, expiresAt } = party.sideQuest;
+  const { type, shortText, progress, target } = party.sideQuest;
   const isTimeQuest = TIME_BASED_SIDE_QUEST_TYPES.has(type);
   const safeTarget = Math.max(1, target);
   const clampedProgress = Math.max(0, Math.min(progress, safeTarget));
@@ -1129,7 +1136,8 @@ function getSideQuestText(party: Party): string | null {
     current: `${formatNumber(displayProgress)}/${formatNumber(displayTarget)}`,
   };
 
-  const remainingHours = Math.max(0, Math.ceil((expiresAt - Date.now()) / (60 * 60 * 1000)));
+  const scaledExpiresAt = getScaledSideQuestExpiresAt(party.sideQuest, cycleDurationScale);
+  const remainingHours = Math.max(0, Math.ceil((scaledExpiresAt - Date.now()) / (60 * 60 * 1000)));
   return `${display.text} (${percent}%, ${display.current}, 残り${formatNumber(remainingHours)}時間)`;
 }
 
@@ -3481,7 +3489,7 @@ export function HomeScreen({
         const hpRatioAtRestStart = partyRuntimeStats.hp > 0 ? party.currentHp / partyRuntimeStats.hp : 1;
 
         // SpecRef: 5.1.2 | Side Quest | Expiration
-        if (party.sideQuest && simulationNow >= party.sideQuest.expiresAt) {
+        if (party.sideQuest && simulationNow >= getScaledSideQuestExpiresAt(party.sideQuest, timeSpeedScale)) {
           const failedQuestName = party.sideQuest.shortText.replace(/\(.*\)/, '').trim();
           actions.cancelSideQuest(partyIndex);
           if (!suppressCycleNotificationsForAfk) {
@@ -7033,7 +7041,7 @@ function ExpeditionTab({
           ? cycle.isCurrentExpeditionGodsBattle === true
           : isGodsBattleAvailable(party, party.selectedDungeonId);
         const nextGoalText = getNextGoalText(party, cycle.state);
-        const sideQuestText = getSideQuestText(party);
+        const sideQuestText = getSideQuestText(party, getTimeSpeedScale(debugSettings));
         const displayedExpeditionStats = getDisplayedExpeditionStats(party, cycle.state);
         const partyPaneExpeditionId = cycle.state === 'explore'
           ? currentLog?.dungeonId
