@@ -1139,8 +1139,11 @@ function getSideQuestText(party: Party, cycleDurationScale: number): string | nu
   };
 
   const scaledExpiresAt = getScaledSideQuestExpiresAt(party.sideQuest, cycleDurationScale);
-  const remainingHours = Math.max(0, Math.ceil((scaledExpiresAt - Date.now()) / (60 * 60 * 1000)));
-  return `${display.text} (${percent}%, ${display.current}, 残り${formatNumber(remainingHours)}時間)`;
+  const remainingMs = Math.max(0, scaledExpiresAt - Date.now());
+  const remainingLabel = remainingMs >= (60 * 60 * 1000)
+    ? `残り${formatNumber(Math.ceil(remainingMs / (60 * 60 * 1000)))}時間`
+    : `残り${formatNumber(Math.ceil(remainingMs / (60 * 1000)))}分`;
+  return `${display.text} (${percent}%, ${display.current}, ${remainingLabel})`;
 }
 
 function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
