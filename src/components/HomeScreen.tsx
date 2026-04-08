@@ -3314,7 +3314,9 @@ export function HomeScreen({
 
     const timerId = window.setTimeout(() => {
       const autoRepeatEnabled = autoRepeatEnabledRef.current;
-      const chunkElapsedMs = Math.min(pendingAfkMs, AFK_BACKGROUND_CHUNK_MS);
+      const approxCycleDurationMs = Math.max(1, Math.floor(460_000 * getTimeSpeedScale(debugSettings)));
+      const minimumSimulationChunkMs = Math.max(AFK_BACKGROUND_CHUNK_MS, approxCycleDurationMs);
+      const chunkElapsedMs = Math.min(pendingAfkMs, minimumSimulationChunkMs);
       const anchor = afkSimulationAnchorRef.current ?? Date.now();
       const simulatedEndAt = anchor - pendingAfkMs + chunkElapsedMs;
       actions.simulateAfk(
