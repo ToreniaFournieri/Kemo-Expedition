@@ -296,7 +296,7 @@
 - Each party has a parameter motivation.
   - Initial value: 0
   - Minimum value (floor): -400
-  - Maximum value (cell): +800
+  - Maximum value (cell): +400
 - `motivation` is adjusted based on expedition outcomes:
   - Update timing: applied at the end of `state.explore` to prevent spoilers.
 
