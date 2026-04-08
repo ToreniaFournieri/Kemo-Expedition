@@ -310,11 +310,6 @@ function normalizePartyMotivation(raw: unknown): number {
   return Math.max(-400, Math.min(400, Math.floor(raw)));
 }
 
-function getRawPartyMotivation(raw: unknown): number {
-  if (typeof raw !== 'number' || !Number.isFinite(raw)) return 0;
-  return Math.floor(raw);
-}
-
 // SpecRef: 7.1.2 | AUTO progress logic | motivation state classification
 function getOutcomeMotivationAdjustment(finalOutcome: ExpeditionLog['finalOutcome'], endedWithDrawRetreat: boolean): number {
   if (finalOutcome === 'Clear') return 2;
@@ -2805,16 +2800,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         const motivationDelta = action.isAfkSimulation === true
           ? Math.max(0, rawMotivationDelta)
           : rawMotivationDelta;
-        const motivationBase = action.isAfkSimulation === true
-          ? getRawPartyMotivation(party.motivation)
-          : normalizePartyMotivation(party.motivation);
+        const motivationBase = normalizePartyMotivation(party.motivation);
         const shouldConsumeMotivationForAutoGodsBattle = isGodsBattleExpedition(party.lastExpeditionLog)
           && normalizePartyMotivation(party.motivation) >= 400
           && !party.sideQuest;
         // SpecRef: 7.1.2 | AUTO progress logic | motivation
-        nextMotivation = motivationBase
+        nextMotivation = normalizePartyMotivation(
+          motivationBase
           + motivationDelta
-          - (shouldConsumeMotivationForAutoGodsBattle ? 400 : 0);
+          - (shouldConsumeMotivationForAutoGodsBattle ? 400 : 0),
+        );
       }
 
       const updatedParties = [...state.parties];
