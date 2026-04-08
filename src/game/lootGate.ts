@@ -36,6 +36,14 @@ export function hasDefeatedAnyDungeonBoss(party: Pick<Party, 'defeatedBossExpedi
   return Object.values(party.defeatedBossExpeditions ?? {}).some(Boolean);
 }
 
+// SpecRef: 5.1.3.1 | "Loot-Gate" progression system | Gods battle gate
+export function hasDefeatedDungeonBoss(
+  party: Pick<Party, 'defeatedBossExpeditions'>,
+  dungeonId: number,
+): boolean {
+  return Boolean(party.defeatedBossExpeditions?.[dungeonId]);
+}
+
 // SpecRef: 5.1.3.1 | "Loot-Gate" progression system | getLootCollectionKey
 export function getLootCollectionKey(tier: number, rarity: GateRarity): string {
   return `${tier}:${rarity}`;
