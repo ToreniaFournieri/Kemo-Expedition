@@ -353,7 +353,7 @@ const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
 const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.sleeping', 'q.exercise', 'q.healing', 'q.AFK']);
 const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
 const AFK_MAX_ELAPSED_MS = 1800 * 60 * 1000;
-const AFK_BACKGROUND_CHUNK_MS = 120 * 1000;
+const CATCHUP_CHUNK_MINUTES = 60;
 
 function getElapsedWholeSeconds(carriedMs: number, elapsedMs: number): { gainedSeconds: number; remainderMs: number } {
   const totalMs = Math.max(0, carriedMs + elapsedMs);
@@ -3331,7 +3331,13 @@ export function HomeScreen({
 
     const timerId = window.setTimeout(() => {
       const autoRepeatEnabled = autoRepeatEnabledRef.current;
-      const chunkElapsedMs = Math.min(pendingAfkMs, AFK_BACKGROUND_CHUNK_MS);
+      // SpecRef: 5.1.1 | Party State Machine | Time-Based Progress Handling (Online + AFK)
+      // Catch-up is processed in fixed-size chunks (60 minutes), scaled by debug speed.
+      const catchupChunkMs = Math.max(
+        PARTY_CYCLE_TICK_MS,
+        Math.floor(CATCHUP_CHUNK_MINUTES * 60 * 1000 * Math.max(0.001, getTimeSpeedScale(debugSettings))),
+      );
+      const chunkElapsedMs = Math.min(pendingAfkMs, catchupChunkMs);
       const anchor = afkSimulationAnchorRef.current ?? Date.now();
       const simulatedEndAt = anchor - pendingAfkMs + chunkElapsedMs;
       actions.simulateAfk(
