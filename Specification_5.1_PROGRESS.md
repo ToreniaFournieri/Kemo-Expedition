@@ -157,14 +157,14 @@ PT3: 貯金額: 10G
 | title | Gate `x.floor`,`x.room` | condition | text example |
 |----|----|----|----|
 | Entering | 1,1 | defeat the boss from previous expedition ( `x.expedition` -1 ), except for the first expedition. | ルピニアンの断崖のボス撃破 でヴァルンの樹林帯 開放 |
-| 1st Elite gate | 1,4 | correct 3 uncommon items from this `x.expedition` |
-| 2nd Elite gate | 2,4 | correct 9 uncommon items from this `x.expedition`  |
-| 3rd Elite gate | 3,4 | correct 18 uncommon items from this x.expedition` |
-| 4th Elite gate | 4,4 | correct 30 uncommon items from this `x.expedition`  |
-| 5th Elite gate | 5,4 | correct 45 uncommon items from this `x.expedition`  |
-| Boss gate | 6,4 | correct 3 elite rare items from this `x.expedition` |
-| Gods battle gate | - | collect 10 Boss rare items in dungeons to unlock Gods Battle |
-| Side quest gate | - | it depends on side quest `q.` condition |
+| 1st Elite gate | 1,4 | correct 3 uncommon items from this `x.expedition` | |
+| 2nd Elite gate | 2,4 | correct 9 uncommon items from this `x.expedition`  | |
+| 3rd Elite gate | 3,4 | correct 18 uncommon items from this x.expedition` | |
+| 4th Elite gate | 4,4 | correct 30 uncommon items from this `x.expedition`  | |
+| 5th Elite gate | 5,4 | correct 45 uncommon items from this `x.expedition`  | |
+| Boss gate | 6,4 | correct 3 elite rare items from this `x.expedition` | |
+| Gods battle gate | - | Collect at least 3 Boss Rare items from dungeons, and defeat the dungeon boss at least once (lifetime, party-wide)) | |
+| Side quest gate | - | it depends on side quest `q.` condition | |
 
 ##### 5.1.3.2 Unlock party
 - Party unlock condition: Defeating corresponding gods.
