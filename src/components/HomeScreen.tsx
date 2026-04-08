@@ -1138,8 +1138,10 @@ function getSideQuestText(party: Party, cycleDurationScale: number): string | nu
     current: `${formatNumber(displayProgress)}/${formatNumber(displayTarget)}`,
   };
 
-  const scaledExpiresAt = getScaledSideQuestExpiresAt(party.sideQuest, cycleDurationScale);
-  const remainingMs = Math.max(0, scaledExpiresAt - Date.now());
+  const safeScale = Math.max(0.001, cycleDurationScale);
+  const simulatedElapsedMs = Math.max(0, Date.now() - party.sideQuest.assignedAt) / safeScale;
+  const simulatedNow = party.sideQuest.assignedAt + simulatedElapsedMs;
+  const remainingMs = Math.max(0, party.sideQuest.expiresAt - simulatedNow);
   const remainingLabel = remainingMs >= (60 * 60 * 1000)
     ? `残り${formatNumber(Math.ceil(remainingMs / (60 * 60 * 1000)))}時間`
     : `残り${formatNumber(Math.ceil(remainingMs / (60 * 1000)))}分`;
