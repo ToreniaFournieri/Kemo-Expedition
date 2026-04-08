@@ -54,7 +54,7 @@ import {
   getBossGateKey,
   getLootCollectionCount,
   getItemRarityForLootGate,
-  hasDefeatedAnyDungeonBoss,
+  hasDefeatedDungeonBoss,
   isLootGateUnlocked,
 } from '../game/lootGate';
 
@@ -1047,7 +1047,7 @@ function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | n
   }
 
   const godsRequired = getGodsBattleRequired();
-  const hasBossDefeat = hasDefeatedAnyDungeonBoss(party);
+  const hasBossDefeat = hasDefeatedDungeonBoss(party, currentDungeon.id);
   const godsUnlocked = bossRareCollected >= godsRequired && hasBossDefeat;
   if (!godsUnlocked) {
     if (shouldDelayNextSpecialGoal(party, cycleState)) {
@@ -1146,7 +1146,7 @@ function getSideQuestText(party: Party, cycleDurationScale: number): string | nu
 function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
   // SpecRef: 5.1.3.1 | "Loot-Gate" progression system | Gods battle gate
   return getLootCollectionCount(party, dungeonId, 'bossRare') >= getGodsBattleRequired()
-    && hasDefeatedAnyDungeonBoss(party);
+    && hasDefeatedDungeonBoss(party, dungeonId);
 }
 
 function getMotivationLabel(motivation: number, showValue: boolean): string {
