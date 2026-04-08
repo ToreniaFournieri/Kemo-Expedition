@@ -3442,25 +3442,6 @@ export function HomeScreen({
       actions.addNotification(`(Debug)前回の更新から ${formatNumber(elapsedSeconds)}秒経過`);
     }
 
-    const timeSpeedScale = Math.max(0.001, getTimeSpeedScale(debugSettings));
-
-    parties.forEach((party, partyIndex) => {
-      if (party.sideQuest?.type !== 'q.AFK') {
-        afkQuestCarryMsRef.current[partyIndex] = 0;
-        return;
-      }
-
-      const carriedMs = afkQuestCarryMsRef.current[partyIndex] ?? 0;
-      const simulatedElapsedMs = elapsedMs / timeSpeedScale;
-      const { gainedSeconds, remainderMs } = getElapsedWholeSeconds(carriedMs, simulatedElapsedMs);
-      afkQuestCarryMsRef.current[partyIndex] = remainderMs;
-
-      if (gainedSeconds > 0) {
-        const simulatedAt = lastCheckpointAtRef.current + elapsedMs;
-        actions.advanceSideQuest(partyIndex, gainedSeconds, simulatedAt);
-      }
-    });
-
     // Long background spans should be simulated inside the reducer so each expedition
     // phase reads the latest pending profit / HP values instead of stale render snapshots.
     if (elapsedMs >= 60_000) {
@@ -3479,6 +3460,25 @@ export function HomeScreen({
       persistAfkRuntimeState(now);
       return;
     }
+
+    const timeSpeedScale = Math.max(0.001, getTimeSpeedScale(debugSettings));
+
+    parties.forEach((party, partyIndex) => {
+      if (party.sideQuest?.type !== 'q.AFK') {
+        afkQuestCarryMsRef.current[partyIndex] = 0;
+        return;
+      }
+
+      const carriedMs = afkQuestCarryMsRef.current[partyIndex] ?? 0;
+      const simulatedElapsedMs = elapsedMs / timeSpeedScale;
+      const { gainedSeconds, remainderMs } = getElapsedWholeSeconds(carriedMs, simulatedElapsedMs);
+      afkQuestCarryMsRef.current[partyIndex] = remainderMs;
+
+      if (gainedSeconds > 0) {
+        const simulatedAt = lastCheckpointAtRef.current + elapsedMs;
+        actions.advanceSideQuest(partyIndex, gainedSeconds, simulatedAt);
+      }
+    });
 
     const simulationNow = lastCheckpointAtRef.current + elapsedMs;
     const suppressCycleNotificationsForAfk = pendingAfkMsRef.current > 0 || shouldShowAfkSummaryRef.current;
