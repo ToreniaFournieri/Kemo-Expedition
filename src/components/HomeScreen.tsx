@@ -3574,8 +3574,17 @@ export function HomeScreen({
             if (updated.state === 'sell') {
               const shouldSkipFeast = cyclePendingProfit <= 0 || updated.skipFeastThisCycle === true;
               const sleepState = party.currentSleepiness === 1 ? 'nap_sleep' : 'sound_sleep';
-              updated.state = shouldSkipFeast ? sleepState : 'feast';
-              updated.durationMs = getStateDurationMs(party, shouldSkipFeast ? sleepState : 'feast');
+              const sleepDurationMs = getStateDurationMs(party, sleepState);
+              if (!shouldSkipFeast) {
+                updated.state = 'feast';
+                updated.durationMs = getStateDurationMs(party, 'feast');
+              } else if (party.currentSleepiness === 0 || sleepDurationMs <= 100) {
+                updated.state = 'pray';
+                updated.durationMs = getStateDurationMs(party, 'pray');
+              } else {
+                updated.state = sleepState;
+                updated.durationMs = sleepDurationMs;
+              }
               if (shouldSkipFeast) {
                 updated.skipFeastThisCycle = false;
               }
