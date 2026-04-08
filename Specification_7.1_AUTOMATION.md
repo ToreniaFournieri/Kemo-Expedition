@@ -314,11 +314,11 @@
 |--|--|
 | -200 =< | 不調 |
 | -199 ~ -1 | 低調 |
-| 0 ~ 199 | 平常 |
-| 200 ~ 399 | 順調 |
-|  =< 400  | 好調 |
+| 0 ~ 99 | 平常 |
+| 100 ~ 149 | 順調 |
+| =< 150 | 好調 |
 
-- If party `motivation` >= 200 and (`God Battle` is ready) and (has no active sub quest),
+- If party `motivation` >= 100 and (`God Battle` is ready) and (has no active sub quest),
 - Engage `God Battle` and `motivation` -= 200.
 
 - AFK (during `state.reactivate`)
