@@ -95,9 +95,16 @@
 
 
 **Time-Based Progress Handling (Online + AFK)**
-- The state machine is purely time-based: persist `state` and `state_started_at`, and on each update tick compute progress from `now - state_started_at`, applying any completed transitions to reach the latest state.
-- Update `state_started_at` **only when the party state changes** (on every state transition).
-- Limit: maximum 1,800 minutes (30 hours) per catch-up simulation (current version).
+- The party state machine is purely time-based: persist state and `state_started_at`, then on each update tick calculate elapsed = now - `state_started_at`.
+- Catch-up simulation must be processed in chunks (chunk update).
+- `simulated_elapsed` = min(elapsed, 1,800 minutes)
+- Process `simulated_elapsed` sequentially in `fixed-size` chunks (CATCHUP_CHUNK_MINUTES, current default: 60 minute). Chunk duration must respect debug speed scaling. Example: in x100 debug mode, each chunk is processed as 60 / 100 = 0.6 simulated minutes.
+- For each chunk, resolve all completed state transitions in chronological order until no further transition is completed within that chunk.
+- 'state_started_at' must be updated only when the party state changes (at each transition boundary), never on a plain tick without transition.
+- If a transition completes exactly at a chunk boundary, treat it as completed in that chunk and carry remaining time (if any) into the next state/chunk.
+- Multiple state transitions within a single update tick are valid and must be applied deterministically in order.
+- Limit: maximum 1,800 minutes (30 hours) per catch-up simulation in the current version; elapsed time beyond this cap is ignored for that tick.
+
 
 **Notification**
 - Format: 踏破N回/帰還Y回/引分Z回/撤退M回/敗北X回 寄付金額: vG, 貯金額:　vG
