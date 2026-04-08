@@ -318,8 +318,8 @@
 | 200 ~ 399 | 順調 |
 |  =< 400  | 好調 |
 
-- If party `motivation` >= 400 and (`God Battle` is ready) and (has no active sub quest),
-- Engage `God Battle` and `motivation` -= 400.
+- If party `motivation` >= 200 and (`God Battle` is ready) and (has no active sub quest),
+- Engage `God Battle` and `motivation` -= 200.
 
 - AFK (during `state.reactivate`)
   - `motivation` is calculated once at the end of each chunk, then clamped to its minimum and maximum values.
