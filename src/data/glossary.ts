@@ -690,52 +690,52 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "q.squander",
         "label": "散財",
-        "description": "宴会で浪費する(神魔戦で中止) (500 ~ 2,000G)"
+        "description": "宴会で浪費する(神魔戦で中止) (250 ~ 1,000G)"
       },
       {
         "key": "q.sleeping",
         "label": "安眠",
-        "description": "寝る(神魔戦で中止) (20分 ~ 60分)"
+        "description": "寝る(神魔戦で中止) (10分 ~ 30分)"
       },
       {
         "key": "q.exercise",
         "label": "運動",
-        "description": "歩く(神魔戦で中止) (45分 ~ 150分)"
+        "description": "歩く(神魔戦で中止) (20分 ~ 60分)"
       },
       {
         "key": "q.embezzlement",
         "label": "横領",
-        "description": "着服する(神魔戦で中止) (100 ~ 400G)"
+        "description": "着服する(神魔戦で中止) (50 ~ 200G)"
       },
       {
         "key": "q.donation",
         "label": "寄付",
-        "description": "寄付する(神魔戦で中止) (400 ~ 2,000G)"
+        "description": "寄付する(神魔戦で中止) (200 ~ 1,000G)"
       },
       {
         "key": "q.healing",
         "label": "治療",
-        "description": "治療を受ける(神魔戦で中止) (60分 ~ 120分)"
+        "description": "治療を受ける(神魔戦で中止) (30分 ~ 60分)"
       },
       {
         "key": "q.AFK",
         "label": "放置",
-        "description": "神から見放されている(神魔戦で中止) (180分 ~ 360分)"
+        "description": "神から見放されている(神魔戦で中止) (90分 ~ 180分)"
       },
       {
         "key": "q.treasure_super_rare",
         "label": "超レア獲得",
-        "description": "超レアを獲得する(神魔戦で中止) (1個 ~ 2個)"
+        "description": "超レアを獲得する(神魔戦で中止) (1個)"
       },
       {
         "key": "q.treasure_boss_rare",
         "label": "ボスレア獲得",
-        "description": "ボスレアを獲得する(神魔戦で中止) (5個 ~ 15個)"
+        "description": "ボスレアを獲得する(神魔戦で中止) (2個 ~ 7個)"
       },
       {
         "key": "q.poor_kid",
         "label": "アイテム獲得空振り",
-        "description": "アイテム獲得空振り(神魔戦で中止) (500回 ~ 1,500回)"
+        "description": "アイテム獲得空振り(神魔戦で中止) (250回 ~ 700回)"
       },
       {
         "key": "q.consecutive_wins",
@@ -750,7 +750,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "q.savings",
         "label": "貯金",
-        "description": "貯金する(神魔戦で中止) (800 ~ 4,000G)"
+        "description": "貯金する(神魔戦で中止) (400 ~ 2,000G)"
       }
     ]
   },

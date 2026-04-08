@@ -2927,19 +2927,19 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (ticket === 0) return { ...state, bags };
 
       const questById: Record<number, { type: string; shortText: string; min: number; max: number; deadlineHours: number }> = {
-        1: { type: 'q.squander', shortText: '散財', min: 500, max: 2000, deadlineHours: 16 },
-        2: { type: 'q.sleeping', shortText: '安眠', min: 20, max: 60, deadlineHours: 16 },
-        3: { type: 'q.exercise', shortText: '運動', min: 45, max: 150, deadlineHours: 16 },
-        4: { type: 'q.embezzlement', shortText: '横領', min: 100, max: 400, deadlineHours: 16 },
-        5: { type: 'q.donation', shortText: '寄付', min: 400, max: 2000, deadlineHours: 12 },
-        6: { type: 'q.healing', shortText: '治療', min: 60, max: 120, deadlineHours: 16 },
-        7: { type: 'q.AFK', shortText: '放置', min: 180, max: 360, deadlineHours: 16 },
-        8: { type: 'q.treasure_super_rare', shortText: '超レア獲得', min: 1, max: 2, deadlineHours: 24 },
-        9: { type: 'q.treasure_boss_rare', shortText: 'ボスレア獲得', min: 5, max: 15, deadlineHours: 16 },
-        10: { type: 'q.poor_kid', shortText: 'アイテム獲得空振り', min: 500, max: 1500, deadlineHours: 9 },
+        1: { type: 'q.squander', shortText: '散財', min: 250, max: 1000, deadlineHours: 16 },
+        2: { type: 'q.sleeping', shortText: '安眠', min: 10, max: 30, deadlineHours: 16 },
+        3: { type: 'q.exercise', shortText: '運動', min: 20, max: 60, deadlineHours: 16 },
+        4: { type: 'q.embezzlement', shortText: '横領', min: 50, max: 200, deadlineHours: 16 },
+        5: { type: 'q.donation', shortText: '寄付', min: 200, max: 1000, deadlineHours: 12 },
+        6: { type: 'q.healing', shortText: '治療', min: 30, max: 60, deadlineHours: 16 },
+        7: { type: 'q.AFK', shortText: '放置', min: 90, max: 180, deadlineHours: 16 },
+        8: { type: 'q.treasure_super_rare', shortText: '超レア獲得', min: 1, max: 1, deadlineHours: 24 },
+        9: { type: 'q.treasure_boss_rare', shortText: 'ボスレア獲得', min: 2, max: 7, deadlineHours: 16 },
+        10: { type: 'q.poor_kid', shortText: 'アイテム獲得空振り', min: 250, max: 700, deadlineHours: 9 },
         11: { type: 'q.consecutive_wins', shortText: '連続踏破', min: 15, max: 60, deadlineHours: 16 },
         12: { type: 'q.losers', shortText: '敗北', min: 3, max: 6, deadlineHours: 16 },
-        13: { type: 'q.savings', shortText: '貯金', min: 800, max: 4000, deadlineHours: 16 },
+        13: { type: 'q.savings', shortText: '貯金', min: 400, max: 2000, deadlineHours: 16 },
       };
       const def = questById[ticket];
       if (!def) return { ...state, bags };
