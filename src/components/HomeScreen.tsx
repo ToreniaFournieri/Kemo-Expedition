@@ -1141,8 +1141,8 @@ function getMotivationLabel(motivation: number, showValue: boolean): string {
   let label = '好調';
   if (motivation <= -200) label = '不調';
   else if (motivation <= -1) label = '低調';
-  else if (motivation <= 199) label = '平常';
-  else if (motivation <= 399) label = '順調';
+  else if (motivation <= 99) label = '平常';
+  else if (motivation <= 149) label = '順調';
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | Display `motivation` OFF/ON
   if (!showValue) return label;
   return `${label}(${motivation >= 0 ? '+' : ''}${formatNumber(motivation)})`;
@@ -1150,7 +1150,7 @@ function getMotivationLabel(motivation: number, showValue: boolean): string {
 
 // SpecRef: 7.1.2 | AUTO progress logic | God Battle engagement condition
 function shouldAutoTriggerGodsBattle(party: Party): boolean {
-  return party.motivation >= 400
+  return party.motivation >= 100
     && isGodsBattleAvailable(party, party.selectedDungeonId)
     && !party.sideQuest;
 }
