@@ -1068,7 +1068,7 @@ function getScaledSideQuestExpiresAt(sideQuest: Party['sideQuest'], cycleDuratio
   return sideQuest.assignedAt + Math.floor(deadlineWindowMs * safeScale);
 }
 
-function getSideQuestText(party: Party, cycleDurationScale: number): string | null {
+function getSideQuestText(party: Party, cycleDurationScale: number, emulatedNowMs: number): string | null {
   if (!party.sideQuest) return null;
   const { type, shortText, progress, target } = party.sideQuest;
   const isTimeQuest = TIME_BASED_SIDE_QUEST_TYPES.has(type);
@@ -1139,7 +1139,7 @@ function getSideQuestText(party: Party, cycleDurationScale: number): string | nu
   };
 
   const safeScale = Math.max(0.001, cycleDurationScale);
-  const simulatedElapsedMs = Math.max(0, Date.now() - party.sideQuest.assignedAt) / safeScale;
+  const simulatedElapsedMs = Math.max(0, emulatedNowMs - party.sideQuest.assignedAt) / safeScale;
   const simulatedNow = party.sideQuest.assignedAt + simulatedElapsedMs;
   const remainingMs = Math.max(0, party.sideQuest.expiresAt - simulatedNow);
   const remainingLabel = remainingMs >= (60 * 60 * 1000)
@@ -4272,10 +4272,14 @@ export function HomeScreen({
     }
 
     if (tab === 'expedition') {
+      const emulatedNowMs = afkSimulationAnchorRef.current !== null && pendingAfkMs > 0
+        ? Math.max(0, afkSimulationAnchorRef.current - pendingAfkMs)
+        : Date.now();
       return (
         <ExpeditionTab
           state={state}
           debugSettings={debugSettings}
+          emulatedNowMs={emulatedNowMs}
           onSelectDungeon={actions.selectDungeon}
           onSetExpeditionDepthLimit={actions.setExpeditionDepthLimit}
           onResetExpeditionStats={actions.resetExpeditionStats}
@@ -6851,6 +6855,7 @@ function PartyTab({
 function ExpeditionTab({
   state,
   debugSettings,
+  emulatedNowMs,
   onSelectDungeon,
   onSetExpeditionDepthLimit,
   onResetExpeditionStats,
@@ -6866,6 +6871,7 @@ function ExpeditionTab({
 }: {
   state: GameState;
   debugSettings: DebugSettings;
+  emulatedNowMs: number;
   onSelectDungeon: (partyIndex: number, dungeonId: number) => void;
   onSetExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
   onResetExpeditionStats: (partyIndex: number) => void;
@@ -7066,7 +7072,7 @@ function ExpeditionTab({
           ? cycle.isCurrentExpeditionGodsBattle === true
           : isGodsBattleAvailable(party, party.selectedDungeonId);
         const nextGoalText = getNextGoalText(party, cycle.state);
-        const sideQuestText = getSideQuestText(party, getTimeSpeedScale(debugSettings));
+        const sideQuestText = getSideQuestText(party, getTimeSpeedScale(debugSettings), emulatedNowMs);
         const displayedExpeditionStats = getDisplayedExpeditionStats(party, cycle.state);
         const partyPaneExpeditionId = cycle.state === 'explore'
           ? currentLog?.dungeonId
