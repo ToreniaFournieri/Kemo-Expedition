@@ -10,7 +10,7 @@ export interface DebugSettings {
   godsBattleCondition: DebugGodsBattleCondition;
   godStrength: DebugGodStrength;
   jewelShopOpen: boolean;
-  displayMotivation: boolean;
+  displayCondition: boolean;
   displayFlavorCondition: boolean;
   displayAfkDuration: boolean;
   colosseumEnabled: boolean;
@@ -25,7 +25,7 @@ export const DEFAULT_DEBUG_SETTINGS: DebugSettings = {
   godsBattleCondition: 'normal',
   godStrength: 'normal',
   jewelShopOpen: false,
-  displayMotivation: false,
+  displayCondition: false,
   displayFlavorCondition: false,
   displayAfkDuration: false,
   colosseumEnabled: false,
@@ -36,15 +36,15 @@ function canUseStorage(): boolean {
 }
 
 export function normalizeDebugSettings(raw: unknown): DebugSettings {
-  const parsed = (raw && typeof raw === 'object') ? raw as Partial<DebugSettings> : {};
+  const parsed = (raw && typeof raw === 'object') ? raw as Partial<DebugSettings> & { displayMotivation?: boolean } : {};
   return {
     clairvoyanceEnabled: parsed.clairvoyanceEnabled === true,
     timeSpeed: parsed.timeSpeed === 'realtime' || parsed.timeSpeed === 'x20' || parsed.timeSpeed === 'x100' || parsed.timeSpeed === 'x5' ? parsed.timeSpeed : 'x5',
     godsBattleCondition: parsed.godsBattleCondition === 'simple1' ? 'simple1' : 'normal',
     godStrength: parsed.godStrength === 'debug' ? 'debug' : 'normal',
     jewelShopOpen: parsed.jewelShopOpen === true,
-    // SpecRef: 8.6 | UI_DIVINE_BUREAU | Display `motivation` OFF/ON
-    displayMotivation: parsed.displayMotivation === true,
+    // SpecRef: 8.6 | UI_DIVINE_BUREAU | Display `condition` OFF/ON
+    displayCondition: parsed.displayCondition === true || parsed.displayMotivation === true,
     displayFlavorCondition: parsed.displayFlavorCondition === true,
     displayAfkDuration: parsed.displayAfkDuration === true,
     colosseumEnabled: parsed.colosseumEnabled === true,
