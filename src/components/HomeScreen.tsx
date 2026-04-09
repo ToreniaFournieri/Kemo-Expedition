@@ -1238,7 +1238,16 @@ function hasActiveNonGodBattleLootGateCondition(party: Party): boolean {
 }
 
 function getSideQuestAssignMessage(partyName: string, shortText: string): string {
+  // SpecRef: 8.1 | UI_FOUNDATIONS | Side quest notifications
   return `${partyName}はサイドクエスト ${shortText} を受けた`;
+}
+
+function getSideQuestSuccessMessage(partyName: string, sideQuestDetail?: string): string | null {
+  // SpecRef: 8.1 | UI_FOUNDATIONS | Side quest notifications
+  if (!sideQuestDetail) return null;
+  const jewelMatch = sideQuestDetail.match(/:\s*(.+)\s*を手に入れた$/);
+  if (!jewelMatch?.[1]) return null;
+  return `${partyName}はサイドクエストを達成し、${jewelMatch[1]}を手に入れた`;
 }
 
 // Helper to format item stats
@@ -3510,10 +3519,9 @@ export function HomeScreen({
 
         // SpecRef: 5.1.2 | Side Quest | Expiration
         if (party.sideQuest && simulationNow >= getScaledSideQuestExpiresAt(party.sideQuest, timeSpeedScale)) {
-          const failedQuestName = party.sideQuest.shortText.replace(/\(.*\)/, '').trim();
           actions.cancelSideQuest(partyIndex);
           if (!suppressCycleNotificationsForAfk) {
-            actions.addNotification(`${party.name}はサイドクエスト ${failedQuestName} を達成できなかった`);
+            actions.addNotification(`${party.name}はサイドクエスト ${party.sideQuest.shortText} を達成できなかった`);
           }
           next[partyIndex] = updated;
           return;
@@ -3907,7 +3915,13 @@ export function HomeScreen({
         actions.addNotification(getSideQuestAssignMessage(party.name, nextQuest.shortText));
       }
       if (prevQuest && !nextQuest) {
-        actions.addNotification(`${party.name}のサイドクエストが終了した`);
+        const latestDiary = party.diaryLogs?.[0];
+        if (latestDiary?.triggers?.includes('sideQuest')) {
+          const successMessage = getSideQuestSuccessMessage(party.name, latestDiary.sideQuestDetail);
+          if (successMessage) {
+            actions.addNotification(successMessage);
+          }
+        }
       }
     });
     prevSideQuestRef.current = state.parties.map((party) => party.sideQuest);
