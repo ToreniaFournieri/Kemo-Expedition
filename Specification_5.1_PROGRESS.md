@@ -136,6 +136,7 @@ PT3: 貯金額: 10G
 
 **AFK handling**
 - Side quest progress continues during AFK (`state.reactivate`).
+- Side quest respects speed modifiers (sleep 40 minutes -> use emulated time speed)
 - Deadline timing respects speed modifiers (e.g., Debug mode).
 - Deadline checks are performed once at the end of each chunk.
 
