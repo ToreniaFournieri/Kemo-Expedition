@@ -277,9 +277,9 @@ HP: 312                 タイプ: 神魔
   - if press the button, unlock one PT.
 - Jewel shop open OFF/ON
   - Default: OFF
-- Display `motivation` OFF/ON
+- Display `condition` OFF/ON
   - Default: OFF
-  - If ON, `motivation`.label shows "好調(+203)" instead of "好調"
+  - If ON, `condition`.label shows "好調(+203)" instead of "好調"
 
 - Display flavor condition OFF/ON
   - Default: OFF
