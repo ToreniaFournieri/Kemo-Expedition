@@ -325,7 +325,12 @@
 - Engage `God Battle` and `condition` -= 200.
 
 - AFK (during `state.reactivate`)
-  - `condition` is calculated once at the end of each chunk, then clamped to its minimum and maximum values.
-  - During AFK, only the `God Battle` engagement applies a reduction to condition.
-
+  - Process AFK progression at the end of each chunk:
+  - 1. Update `condition`:
+    - Recalculate `condition` once at the end of the chunk.
+    - Clamp the result within its minimum and maximum limits.
+  - 2. Check God Battle trigger:
+    - Resolve the `God Battle` engagement check after the condition update.
+    - If triggered, engage `God Battle` and apply the corresponding `condition` reduction.
+    - This simplified handling applies only during AFK chunk processing.
 
