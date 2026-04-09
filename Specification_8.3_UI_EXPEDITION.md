@@ -11,7 +11,7 @@
 
 ```
 left-aligned                                    right-aligned
-PT1 HP (HP bar, blue) `x.expedition`.name       outcome `motivation`.label ▼
+PT1 HP (HP bar, blue) `x.expedition`.name       outcome `condition`.label ▼
 ```
 
 
