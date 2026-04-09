@@ -2858,9 +2858,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           party.lastExpeditionLog.finalOutcome,
           endedWithDrawRetreat,
         );
-        const conditionDelta = action.isAfkSimulation === true
-          ? Math.max(0, rawConditionDelta)
-          : rawConditionDelta;
+        const conditionDelta = rawConditionDelta;
         const shouldConsumeConditionForAutoGodsBattle = isGodsBattleExpedition(party.lastExpeditionLog)
           && conditionBase >= 100
           && !party.sideQuest;
@@ -3678,12 +3676,23 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             cycleCompletedAt + (partyIndex * partyTimestampStepMs)
           );
 
+          const partyForAfkChunk = workingState.parties[partyIndex];
+          const shouldTriggerAfkGodsBattle = partyForAfkChunk
+            ? (
+              // SpecRef: 7.1.2 | AUTO progress logic | AFK (during state.reactivate)
+              normalizePartyCondition(partyForAfkChunk.condition) >= 100
+              && !partyForAfkChunk.sideQuest
+              && isGodsBattleAvailable(partyForAfkChunk, partyForAfkChunk.selectedDungeonId)
+            )
+            : false;
+
           workingState = gameReducer(workingState, {
             type: 'RUN_EXPEDITION',
             partyIndex,
             simulatedAt,
             gameMode,
             isAfkSimulation: true,
+            triggerGodsBattle: shouldTriggerAfkGodsBattle,
           });
           workingState = gameReducer(workingState, { type: 'FINALIZE_DIARY_LOG', partyIndex, isAfkSimulation: true });
 
