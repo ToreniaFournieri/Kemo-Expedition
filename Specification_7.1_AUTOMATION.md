@@ -300,27 +300,25 @@
 - `condition` is adjusted based on expedition outcomes:
   - Update timing: applied at the end of `state.explore` to prevent spoilers.
 
-| Outcome | Adjustment |
-|-|-|
-| `Clear` | +2 |
-| `Turned_Back` | +1 |
-| `Draw_Retreat` | -2 |
-| `Wounded_Retreat` | -5 |
-| `Defeat` | -40 |
+| Outcome | `condition.terrible` | `condition.poor` | `condition.low` | `condition.cautious` | `condition.normal` | `condition.steady` | `condition.good` | `condition.great` | `condition.excellent` |
+|--|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| `Clear` | +8 | +7 | +6 | +5  | +4 | +3 | +2  |  +1  |  +1 |
+| `Turned_Back` | +4 | +4 | +3 | +3 | +2 | +1  | +1 | 0 | 0 |
+| `Draw_Retreat` | 0 | -1 | -2 | -3 | -4 | -5 | -6 | -7 | -8 |
+| `Wounded_Retreat` | -2  | -4 | -6 | -8 | -10 | -12 | -14 | -16 | -18 |
+| `Defeat` | -6 | -17 | -28 | -39 | -50 | -58 | -64 | -68 | -70 |
 
-- `condition` state classification:
-
-| `condition`| label |
-|--|--|
-| -400 ~ -350 | 絶不調 |
-| -349 ~ -250 | 不調 |
-| -249 ~ -150 | 低調 |
-| -149 ~ -50 | 慎重 |
-| -50 ~ 50 | 平常 |
-| 51 ~ 150 | 順調 |
-| 151 ~ 250 | 快調 |
-| 251 ~ 350 | 好調 |
-| 351 ~ 400 | 絶好調 |
+| `condition` | key | label |
+|--:|--|--|
+| -400 ~ -350 | `condition.terrible` | 絶不調 |
+| -349 ~ -250 | `condition.poor` | 不調 |
+| -249 ~ -150 | `condition.low` | 低調 |
+| -149 ~ -50 | `condition.cautious` | 慎重 |
+| -50 ~ 50 | `condition.normal` | 平常 |
+| 51 ~ 150 | `condition.steady` | 順調 |
+| 151 ~ 250 | `condition.good` | 快調 |
+| 251 ~ 350 | `condition.great` | 好調 |
+| 351 ~ 400 | `condition.excellent` | 絶好調 |
 
 
 - If party `condition` >= 100 and (`God Battle` is ready) and (has no active sub quest),
