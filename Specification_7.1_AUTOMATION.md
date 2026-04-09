@@ -293,11 +293,11 @@
 
 
 #### 7.1.2 AUTO progress logic
-- Each party has a parameter motivation.
+- Each party has a parameter condition.
   - Initial value: 0
   - Minimum value (floor): -400
   - Maximum value (cell): +400
-- `motivation` is adjusted based on expedition outcomes:
+- `condition` is adjusted based on expedition outcomes:
   - Update timing: applied at the end of `state.explore` to prevent spoilers.
 
 | Outcome | Adjustment |
@@ -308,21 +308,26 @@
 | `Wounded_Retreat` | -5 |
 | `Defeat` | -40 |
 
-- `motivation` state classification:
+- `condition` state classification:
 
-| `motivation`| label |
+| `condition`| label |
 |--|--|
-| -200 =< | 不調 |
-| -199 ~ -1 | 低調 |
-| 0 ~ 99 | 平常 |
-| 100 ~ 149 | 順調 |
-| =< 150 | 好調 |
+| -400 ~ -350 | 絶不調 |
+| -349 ~ -250 | 不調 |
+| -249 ~ -150 | 低調 |
+| -149 ~ -50 | 慎重 |
+| -50 ~ 50 | 平常 |
+| 51 ~ 150 | 順調 |
+| 151 ~ 250 | 快調 |
+| 251 ~ 350 | 好調 |
+| 351 ~ 400 | 絶好調 |
 
-- If party `motivation` >= 100 and (`God Battle` is ready) and (has no active sub quest),
-- Engage `God Battle` and `motivation` -= 200.
+
+- If party `condition` >= 100 and (`God Battle` is ready) and (has no active sub quest),
+- Engage `God Battle` and `condition` -= 200.
 
 - AFK (during `state.reactivate`)
-  - `motivation` is calculated once at the end of each chunk, then clamped to its minimum and maximum values.
-  - During AFK, only the `God Battle` engagement applies a reduction to motivation.
+  - `condition` is calculated once at the end of each chunk, then clamped to its minimum and maximum values.
+  - During AFK, only the `God Battle` engagement applies a reduction to condition.
 
 
