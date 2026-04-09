@@ -183,19 +183,17 @@ inventory = {
 }
 ```
 
+
 #### 3.1.6 Item selling price
 
-- Selling price calculation 
+- Selling price and Purchesing price in Felis's Junk shop calculation 
   - `item_tier` = 1-8
   - `enhancement`: 0-6
-  - `super_rare`:0 or 1
-  - Selling_price(1)= 5 * 1.25^(`enhancement` -1) * 1,000 ^ (`super_rare`)
-  - Selling_price(`item_tier`)= Selling_price(`item_tier`-1) * (1.30 - 0.02 *`item_tier` )
+  - `rarity`: common = 1, uncommon = 3, elite rare = 10, boss rare = 30, mythic rare = 300. 
+  - `super_rare`: If yes, 200, if no, 1.
+  - Selling_price = (10 + 2 x `item_tier` ) x `rarity` x `super_rare`
+  - Purchesing_price = (10 + 2 x `item_tier` ) x 100
 
-- Purchesing price in Felis's Junk shop. 
-  - `item_tier` = 1-8
-  - Selling_price(1)= 200
-  - Selling_price(`item_tier`)= Selling_price(`item_tier`-1) * (2.50 - 0.12 *`item_tier` ) (round to the last two digits)
 
 #### 3.1.7 Jewel (結晶) 
 - A tier-scaled enhancement item that grants one c. bonus and fixed d. bonuses based on its rank.
