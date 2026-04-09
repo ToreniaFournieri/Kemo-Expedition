@@ -313,13 +313,60 @@ function normalizePartyCondition(raw: unknown): number {
   return Math.max(-400, Math.min(400, Math.floor(raw)));
 }
 
+type PartyConditionState =
+  | 'condition.terrible'
+  | 'condition.poor'
+  | 'condition.low'
+  | 'condition.cautious'
+  | 'condition.normal'
+  | 'condition.steady'
+  | 'condition.good'
+  | 'condition.great'
+  | 'condition.excellent';
+
+type ConditionOutcomeKey = 'Clear' | 'Turned_Back' | 'Draw_Retreat' | 'Wounded_Retreat' | 'Defeat';
+
+const CONDITION_ADJUSTMENTS: Record<PartyConditionState, Record<ConditionOutcomeKey, number>> = {
+  'condition.terrible': { Clear: 8, Turned_Back: 4, Draw_Retreat: 0, Wounded_Retreat: -2, Defeat: -6 },
+  'condition.poor': { Clear: 7, Turned_Back: 4, Draw_Retreat: -1, Wounded_Retreat: -4, Defeat: -17 },
+  'condition.low': { Clear: 6, Turned_Back: 3, Draw_Retreat: -2, Wounded_Retreat: -6, Defeat: -28 },
+  'condition.cautious': { Clear: 5, Turned_Back: 3, Draw_Retreat: -3, Wounded_Retreat: -8, Defeat: -39 },
+  'condition.normal': { Clear: 4, Turned_Back: 2, Draw_Retreat: -4, Wounded_Retreat: -10, Defeat: -50 },
+  'condition.steady': { Clear: 3, Turned_Back: 1, Draw_Retreat: -5, Wounded_Retreat: -12, Defeat: -58 },
+  'condition.good': { Clear: 2, Turned_Back: 1, Draw_Retreat: -6, Wounded_Retreat: -14, Defeat: -64 },
+  'condition.great': { Clear: 1, Turned_Back: 0, Draw_Retreat: -7, Wounded_Retreat: -16, Defeat: -68 },
+  'condition.excellent': { Clear: 1, Turned_Back: 0, Draw_Retreat: -8, Wounded_Retreat: -18, Defeat: -70 },
+};
+
 // SpecRef: 7.1.2 | AUTO progress logic | condition state classification
-function getOutcomeConditionAdjustment(finalOutcome: ExpeditionLog['finalOutcome'], endedWithDrawRetreat: boolean): number {
-  if (finalOutcome === 'Clear') return 2;
-  if (finalOutcome === 'Escape') return 1;
-  if (finalOutcome === 'Retreat') return endedWithDrawRetreat ? -2 : -5;
-  if (finalOutcome === 'Defeat') return -40;
-  return 0;
+function getConditionState(condition: number): PartyConditionState {
+  if (condition <= -350) return 'condition.terrible';
+  if (condition <= -250) return 'condition.poor';
+  if (condition <= -150) return 'condition.low';
+  if (condition <= -50) return 'condition.cautious';
+  if (condition <= 50) return 'condition.normal';
+  if (condition <= 150) return 'condition.steady';
+  if (condition <= 250) return 'condition.good';
+  if (condition <= 350) return 'condition.great';
+  return 'condition.excellent';
+}
+
+function getConditionOutcomeKey(finalOutcome: ExpeditionLog['finalOutcome'], endedWithDrawRetreat: boolean): ConditionOutcomeKey {
+  if (finalOutcome === 'Clear') return 'Clear';
+  if (finalOutcome === 'Escape') return 'Turned_Back';
+  if (finalOutcome === 'Retreat') return endedWithDrawRetreat ? 'Draw_Retreat' : 'Wounded_Retreat';
+  return 'Defeat';
+}
+
+// SpecRef: 7.1.2 | AUTO progress logic | condition
+function getOutcomeConditionAdjustment(
+  conditionBeforeOutcome: number,
+  finalOutcome: ExpeditionLog['finalOutcome'],
+  endedWithDrawRetreat: boolean,
+): number {
+  const conditionState = getConditionState(conditionBeforeOutcome);
+  const outcomeKey = getConditionOutcomeKey(finalOutcome, endedWithDrawRetreat);
+  return CONDITION_ADJUSTMENTS[conditionState][outcomeKey];
 }
 
 function isGodsBattleExpedition(log: ExpeditionLog | null): boolean {
@@ -2805,16 +2852,17 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         }
         const endedWithDrawRetreat = party.lastExpeditionLog.entries.length > 0
           && party.lastExpeditionLog.entries[party.lastExpeditionLog.entries.length - 1].outcome === 'draw';
+        const conditionBase = normalizePartyCondition(party.condition);
         const rawConditionDelta = getOutcomeConditionAdjustment(
+          conditionBase,
           party.lastExpeditionLog.finalOutcome,
           endedWithDrawRetreat,
         );
         const conditionDelta = action.isAfkSimulation === true
           ? Math.max(0, rawConditionDelta)
           : rawConditionDelta;
-        const conditionBase = normalizePartyCondition(party.condition);
         const shouldConsumeConditionForAutoGodsBattle = isGodsBattleExpedition(party.lastExpeditionLog)
-          && normalizePartyCondition(party.condition) >= 100
+          && conditionBase >= 100
           && !party.sideQuest;
         // SpecRef: 7.1.2 | AUTO progress logic | condition
         nextCondition = normalizePartyCondition(
