@@ -1499,10 +1499,16 @@ function advanceAfkLogSideQuestProgress(state: GameState, partyIndex: number, si
   }
 }
 
-function getApproxAfkTimeQuestProgressPerCycle(party: Party, approxCycleDurationMs: number): number {
+function getApproxAfkTimeQuestProgressPerCycle(
+  party: Party,
+  approxCycleDurationMs: number,
+  cycleDurationScale: number,
+): number {
+  // SpecRef: 5.1.2 | Side Quest | AFK handling
   if (!party.sideQuest || !TIME_BASED_SIDE_QUEST_TYPES.has(party.sideQuest.type)) return 0;
 
-  const cycleSeconds = Math.max(1, Math.floor(approxCycleDurationMs / 1000));
+  const safeScale = Math.max(0.001, cycleDurationScale);
+  const emulatedCycleSeconds = Math.max(1, Math.floor((approxCycleDurationMs / safeScale) / 1000));
   const baseRestSeconds = 5;
   const baseMoveSeconds = 10;
   const baseReturnSeconds = 30;
@@ -1517,7 +1523,7 @@ function getApproxAfkTimeQuestProgressPerCycle(party: Party, approxCycleDuration
     case 'q.sleeping':
       return baseSleepSeconds;
     case 'q.AFK':
-      return cycleSeconds;
+      return emulatedCycleSeconds;
     default:
       return 0;
   }
@@ -3636,7 +3642,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           if (!activeParty) continue;
 
           if (activeParty.sideQuest && TIME_BASED_SIDE_QUEST_TYPES.has(activeParty.sideQuest.type)) {
-            const approximateProgress = getApproxAfkTimeQuestProgressPerCycle(activeParty, approxCycleDurationMs);
+            const approximateProgress = getApproxAfkTimeQuestProgressPerCycle(
+              activeParty,
+              approxCycleDurationMs,
+              resolvedCycleDurationScale,
+            );
             if (approximateProgress > 0) {
               workingState = gameReducer(workingState, {
                 type: 'ADVANCE_SIDE_QUEST',
