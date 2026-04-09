@@ -99,6 +99,7 @@
 
 - Side quest
   - Example: "PT1はサイドクエスト 治療 (2時間) を受けた"
+  - "PT1はサイドクエスト 治療 (2時間) を達成できなかった"
 
 - Auto equipment:
   - Example: "PT1ケモは 名工の木の胸当て を装備した"
