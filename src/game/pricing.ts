@@ -8,38 +8,40 @@ function getItemTier(itemId: number): number {
   return clampTier(itemId / 1000);
 }
 
-function getTierSellMultiplier(tier: number): number {
-  let multiplier = 1;
+type ItemPriceRarity = 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare';
 
-  for (let currentTier = 2; currentTier <= tier; currentTier += 1) {
-    multiplier *= (1.30 - 0.02 * currentTier);
-  }
+const SELLING_RARITY_MULTIPLIER: Record<ItemPriceRarity, number> = {
+  common: 1,
+  uncommon: 3,
+  eliteRare: 10,
+  bossRare: 30,
+  mythicRare: 300,
+};
 
-  return multiplier;
+function getItemPriceRarity(itemId: number): ItemPriceRarity {
+  const rarityCode = itemId % 1000;
+  if (rarityCode >= 500) return 'mythicRare';
+  if (rarityCode >= 400) return 'bossRare';
+  if (rarityCode >= 300) return 'eliteRare';
+  if (rarityCode >= 200) return 'uncommon';
+  return 'common';
 }
 
-function getTierShopMultiplier(tier: number): number {
-  let multiplier = 1;
-
-  for (let currentTier = 2; currentTier <= tier; currentTier += 1) {
-    multiplier *= (2.50 - 0.12 * currentTier);
-  }
-
-  return multiplier;
+function getTierBasePrice(tier: number): number {
+  return 10 + (2 * tier);
 }
 
-// SpecRef: 3.1.6 | Item selling price | calculateItemSellPrice
+// SpecRef: 3.1.6 | Item selling price | Selling_price
 export function calculateItemSellPrice(item: Item, autoSellMultiplier = 1): number {
   const tier = getItemTier(item.id);
-  const superRareFlag = item.superRare > 0 ? 1 : 0;
-  const tier1SellPrice = 5 * (1.25 ** (item.enhancement - 1)) * (1000 ** superRareFlag);
-  const rawPrice = tier1SellPrice * getTierSellMultiplier(tier) * autoSellMultiplier;
+  const rarityMultiplier = SELLING_RARITY_MULTIPLIER[getItemPriceRarity(item.id)];
+  const superRareMultiplier = item.superRare > 0 ? 200 : 1;
+  const rawPrice = getTierBasePrice(tier) * rarityMultiplier * superRareMultiplier * autoSellMultiplier;
   return Math.floor(rawPrice);
 }
 
-// SpecRef: 3.1.6 | Item selling price | getShopItemPrice
+// SpecRef: 3.1.6 | Item selling price | Purchesing_price
 export function getShopItemPrice(itemId: number): number {
   const tier = getItemTier(itemId);
-  const rawPrice = 200 * getTierShopMultiplier(tier);
-  return Math.round(rawPrice / 100) * 100;
+  return getTierBasePrice(tier) * 100;
 }
