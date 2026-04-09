@@ -307,14 +307,14 @@ function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
     && hasDefeatedDungeonBoss(party, dungeonId);
 }
 
-function normalizePartyMotivation(raw: unknown): number {
+function normalizePartyCondition(raw: unknown): number {
   if (typeof raw !== 'number' || !Number.isFinite(raw)) return 0;
-  // SpecRef: 7.1.2 | AUTO progress logic | motivation
+  // SpecRef: 7.1.2 | AUTO progress logic | condition
   return Math.max(-400, Math.min(400, Math.floor(raw)));
 }
 
-// SpecRef: 7.1.2 | AUTO progress logic | motivation state classification
-function getOutcomeMotivationAdjustment(finalOutcome: ExpeditionLog['finalOutcome'], endedWithDrawRetreat: boolean): number {
+// SpecRef: 7.1.2 | AUTO progress logic | condition state classification
+function getOutcomeConditionAdjustment(finalOutcome: ExpeditionLog['finalOutcome'], endedWithDrawRetreat: boolean): number {
   if (finalOutcome === 'Clear') return 2;
   if (finalOutcome === 'Escape') return 1;
   if (finalOutcome === 'Retreat') return endedWithDrawRetreat ? -2 : -5;
@@ -748,7 +748,10 @@ function loadSavedState(): GameState | null {
           }
           if (typeof party.deityGold !== 'number') party.deityGold = 0;
           party.expeditionStats = getExpeditionStatsWithDefaults(party.expeditionStats);
-          party.motivation = normalizePartyMotivation(party.motivation);
+          const legacyCondition = typeof party.condition === 'number'
+            ? party.condition
+            : (party as Party & { motivation?: unknown }).motivation;
+          party.condition = normalizePartyCondition(legacyCondition);
           party.lastExpeditionLog = normalizeExpeditionLog(party.lastExpeditionLog);
           if (party.pendingDiaryLog?.expeditionLog) {
             party.pendingDiaryLog = {
@@ -878,7 +881,7 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
     expeditionStats: getExpeditionStatsWithDefaults(party.expeditionStats),
     sleepinessOfPartyBag: normalizeSleepinessPartyBag(party.sleepinessOfPartyBag ?? createSleepinessPartyBag()),
     currentSleepiness: normalizeSleepinessState(party.currentSleepiness),
-    motivation: normalizePartyMotivation(party.motivation),
+    condition: normalizePartyCondition(party.condition),
     sideQuest: normalizedSideQuest,
   };
 }
@@ -964,7 +967,7 @@ function createInitialParty() {
     expeditionStats: getExpeditionStatsWithDefaults(null),
     sleepinessOfPartyBag: createSleepinessPartyBag(),
     currentSleepiness: 0,
-    motivation: 0,
+    condition: 0,
     sideQuest: null,
   };
 
@@ -1018,7 +1021,7 @@ function createSecondParty() {
     expeditionStats: getExpeditionStatsWithDefaults(null),
     sleepinessOfPartyBag: createSleepinessPartyBag(),
     currentSleepiness: 0,
-    motivation: 0,
+    condition: 0,
     sideQuest: null,
   };
 
@@ -1072,7 +1075,7 @@ function createThirdParty() {
     expeditionStats: getExpeditionStatsWithDefaults(null),
     sleepinessOfPartyBag: createSleepinessPartyBag(),
     currentSleepiness: 0,
-    motivation: 0,
+    condition: 0,
     sideQuest: null,
   };
 
@@ -1126,7 +1129,7 @@ function createFourthParty() {
     expeditionStats: getExpeditionStatsWithDefaults(null),
     sleepinessOfPartyBag: createSleepinessPartyBag(),
     currentSleepiness: 0,
-    motivation: 0,
+    condition: 0,
     sideQuest: null,
   };
 
@@ -1180,7 +1183,7 @@ function createFifthParty() {
     expeditionStats: getExpeditionStatsWithDefaults(null),
     sleepinessOfPartyBag: createSleepinessPartyBag(),
     currentSleepiness: 0,
-    motivation: 0,
+    condition: 0,
     sideQuest: null,
   };
 
@@ -1234,7 +1237,7 @@ function createSixthParty() {
     expeditionStats: getExpeditionStatsWithDefaults(null),
     sleepinessOfPartyBag: createSleepinessPartyBag(),
     currentSleepiness: 0,
-    motivation: 0,
+    condition: 0,
     sideQuest: null,
   };
 
@@ -2793,7 +2796,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       let nextLevel = party.level;
       let nextExperience = party.experience;
-      let nextMotivation = party.motivation;
+      let nextCondition = party.condition;
       if (party.expeditionRewardsPending && party.lastExpeditionLog) {
         nextExperience += party.lastExpeditionLog.totalExperience;
         if (nextLevel < MAX_LEVEL && nextExperience >= getXpToNextLevel(nextLevel)) {
@@ -2802,22 +2805,22 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         }
         const endedWithDrawRetreat = party.lastExpeditionLog.entries.length > 0
           && party.lastExpeditionLog.entries[party.lastExpeditionLog.entries.length - 1].outcome === 'draw';
-        const rawMotivationDelta = getOutcomeMotivationAdjustment(
+        const rawConditionDelta = getOutcomeConditionAdjustment(
           party.lastExpeditionLog.finalOutcome,
           endedWithDrawRetreat,
         );
-        const motivationDelta = action.isAfkSimulation === true
-          ? Math.max(0, rawMotivationDelta)
-          : rawMotivationDelta;
-        const motivationBase = normalizePartyMotivation(party.motivation);
-        const shouldConsumeMotivationForAutoGodsBattle = isGodsBattleExpedition(party.lastExpeditionLog)
-          && normalizePartyMotivation(party.motivation) >= 100
+        const conditionDelta = action.isAfkSimulation === true
+          ? Math.max(0, rawConditionDelta)
+          : rawConditionDelta;
+        const conditionBase = normalizePartyCondition(party.condition);
+        const shouldConsumeConditionForAutoGodsBattle = isGodsBattleExpedition(party.lastExpeditionLog)
+          && normalizePartyCondition(party.condition) >= 100
           && !party.sideQuest;
-        // SpecRef: 7.1.2 | AUTO progress logic | motivation
-        nextMotivation = normalizePartyMotivation(
-          motivationBase
-          + motivationDelta
-          - (shouldConsumeMotivationForAutoGodsBattle ? 200 : 0),
+        // SpecRef: 7.1.2 | AUTO progress logic | condition
+        nextCondition = normalizePartyCondition(
+          conditionBase
+          + conditionDelta
+          - (shouldConsumeConditionForAutoGodsBattle ? 200 : 0),
         );
       }
 
@@ -2826,7 +2829,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...party,
         level: nextLevel,
         experience: nextExperience,
-        motivation: nextMotivation,
+        condition: nextCondition,
         expeditionRewardsPending: false,
         pendingDiaryLog: null,
         diaryLogs: nextDiaryLogs,
@@ -3695,7 +3698,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const clampedParties = workingState.parties.map((party) => ({
         ...party,
         // SpecRef: 7.1.2 | AUTO progress logic | AFK (during state.reactivate)
-        motivation: normalizePartyMotivation(party.motivation),
+        condition: normalizePartyCondition(party.condition),
       }));
 
       workingState = {
