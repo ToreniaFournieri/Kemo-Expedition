@@ -700,17 +700,17 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "q.exercise",
         "label": "運動",
-        "description": "歩く(神魔戦で中止) (20分 ~ 60分)"
+        "description": "歩く(神魔戦で中止) (5分 ~ 15分)"
       },
       {
         "key": "q.embezzlement",
         "label": "横領",
-        "description": "着服する(神魔戦で中止) (50 ~ 200G)"
+        "description": "着服する(神魔戦で中止) (25 ~ 100G)"
       },
       {
         "key": "q.donation",
         "label": "寄付",
-        "description": "寄付する(神魔戦で中止) (200 ~ 1,000G)"
+        "description": "寄付する(神魔戦で中止) (100 ~ 500G)"
       },
       {
         "key": "q.healing",
@@ -720,7 +720,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "q.AFK",
         "label": "放置",
-        "description": "神から見放されている(神魔戦で中止) (90分 ~ 360分)"
+        "description": "神から見放されている(神魔戦で中止) (30分 ~ 120分)"
       },
       {
         "key": "q.treasure-super-rare",
@@ -735,12 +735,12 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "q.poor-kid",
         "label": "アイテム獲得空振り",
-        "description": "アイテム獲得空振り(神魔戦で中止) (25回 ~ 70回)"
+        "description": "アイテム獲得空振り(神魔戦で中止) (10回 ~ 30回)"
       },
       {
         "key": "q.consecutive-wins",
         "label": "連続踏破",
-        "description": "連続して踏破する(神魔戦で中止) (15回 ~ 60回)"
+        "description": "連続して踏破する(神魔戦で中止)"
       },
       {
         "key": "q.losers",
@@ -750,7 +750,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "q.savings",
         "label": "貯金",
-        "description": "貯金する(神魔戦で中止) (400 ~ 2,000G)"
+        "description": "貯金する(神魔戦で中止) (200 ~ 1,000G)"
       }
     ]
   },
