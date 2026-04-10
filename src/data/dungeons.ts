@@ -332,9 +332,10 @@ export function getEffectiveEnemyLevel(
   floorNumber: number,
   roomType: RoomType,
   isLunaMode: boolean,
+  difficultyOffset: number = 0,
 ): number {
   const roomEnemyLevel = getEnemyLevelForRoom(dungeonExpLevel, floorNumber, roomType);
-  return clampEnemyLevel(roomEnemyLevel + (isLunaMode ? LUNA_MODE_ENEMY_LEVEL_BONUS : 0));
+  return clampEnemyLevel(roomEnemyLevel + (isLunaMode ? LUNA_MODE_ENEMY_LEVEL_BONUS : 0) + difficultyOffset);
 }
 
 // Get expedition multiplier for enemy stat scaling

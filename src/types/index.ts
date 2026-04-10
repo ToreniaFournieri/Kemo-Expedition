@@ -309,6 +309,7 @@ export interface Party {
   characters: Character[];
   selectedDungeonId: number;
   expeditionDepthLimit: ExpeditionDepthLimit;
+  expeditionDifficultyOffset: number;
   currentHp: number;
   pendingProfit: number;
   expeditionRewardsPending: boolean;
@@ -636,6 +637,7 @@ export interface ExpeditionLogEntry {
 export interface ExpeditionLog {
   dungeonId: number;
   dungeonName: string;
+  difficultyOffset: number;
   totalExperience: number;
   totalRooms: number;
   completedRooms: number;

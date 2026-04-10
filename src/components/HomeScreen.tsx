@@ -68,6 +68,7 @@ interface HomeScreenProps {
     selectParty: (partyIndex: number) => void;
     selectDungeon: (partyIndex: number, dungeonId: number) => void;
     setExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
+    setExpeditionDifficultyOffset: (partyIndex: number, difficultyOffset: number) => void;
     resetExpeditionStats: (partyIndex: number) => void;
     runExpedition: (partyIndex: number, gameMode?: GameMode, triggerGodsBattle?: boolean) => void;
     finalizeDiaryLog: (partyIndex: number) => void;
@@ -4297,6 +4298,7 @@ export function HomeScreen({
           emulatedNowMs={emulatedNowMs}
           onSelectDungeon={actions.selectDungeon}
           onSetExpeditionDepthLimit={actions.setExpeditionDepthLimit}
+          onSetExpeditionDifficultyOffset={actions.setExpeditionDifficultyOffset}
           onResetExpeditionStats={actions.resetExpeditionStats}
           isExpeditionStatsDisplayEnabled={isExpeditionStatsDisplayEnabled}
           partyCycles={partyCycles}
@@ -6866,6 +6868,7 @@ function ExpeditionTab({
   emulatedNowMs,
   onSelectDungeon,
   onSetExpeditionDepthLimit,
+  onSetExpeditionDifficultyOffset,
   onResetExpeditionStats,
   isExpeditionStatsDisplayEnabled,
   partyCycles,
@@ -6882,6 +6885,7 @@ function ExpeditionTab({
   emulatedNowMs: number;
   onSelectDungeon: (partyIndex: number, dungeonId: number) => void;
   onSetExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
+  onSetExpeditionDifficultyOffset: (partyIndex: number, difficultyOffset: number) => void;
   onResetExpeditionStats: (partyIndex: number) => void;
   isExpeditionStatsDisplayEnabled: boolean;
   partyCycles: Record<number, PartyCycleRuntime>;
@@ -6970,6 +6974,9 @@ function ExpeditionTab({
         }
 
         const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
+        // SpecRef: 8.3 | UI_EXPEDITION | Difficulty Offset (難易度)
+        const isDifficultyOffsetUnlocked = hasDefeatedDungeonBoss(party, party.selectedDungeonId);
+        const selectedDifficultyOffset = isDifficultyOffsetUnlocked ? party.expeditionDifficultyOffset : 0;
         const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
         const cycle = partyCycles[partyIndex] ?? { state: 'idle', stateStartedAt: Date.now(), durationMs: 1000 };
         const cycleElapsedMs = Math.max(0, Date.now() - cycle.stateStartedAt);
@@ -7228,6 +7235,22 @@ function ExpeditionTab({
                     {canTriggerGodsBattle ? '神魔戦' : '出撃'}
                   </button>
                 </div>
+                <div className="text-xs text-gray-600 space-y-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <span>難易度: +{formatNumber(selectedDifficultyOffset)}</span>
+                    {!isDifficultyOffsetUnlocked && <span className="text-[10px] text-gray-500">ボス初回撃破後に解放</span>}
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={30}
+                    step={1}
+                    value={selectedDifficultyOffset}
+                    disabled={!isDifficultyOffsetUnlocked}
+                    onChange={(e) => onSetExpeditionDifficultyOffset(partyIndex, Number(e.target.value))}
+                    className="w-full accent-sub disabled:opacity-50"
+                  />
+                </div>
                 {['return', 'idle'].includes(cycle.state) && party.currentHp <= 0 && (
                   <div className="text-xs text-accent">HPが0のため出撃できません。休息で回復してください。</div>
                 )}
@@ -7327,7 +7350,13 @@ function ExpeditionTab({
                                   onClick={(event) => {
                                     event.stopPropagation();
                                     const enemyLevel = typeof currentLogDungeonExpLevel === 'number' && entry.floor && entry.roomType
-                                      ? getEffectiveEnemyLevel(currentLogDungeonExpLevel, entry.floor, entry.roomType, getEnvironmentId() === 'luna')
+                                      ? getEffectiveEnemyLevel(
+                                          currentLogDungeonExpLevel,
+                                          entry.floor,
+                                          entry.roomType,
+                                          getEnvironmentId() === 'luna',
+                                          currentLog.difficultyOffset ?? 0,
+                                        )
                                       : null;
                                     handleEnemyBestiaryBubbleToggle(`${partyIndex}-${originalIndex}-${entry.room}`, entry, enemyLevel, event.currentTarget);
                                   }}
@@ -7336,7 +7365,13 @@ function ExpeditionTab({
                                     event.preventDefault();
                                     event.stopPropagation();
                                     const enemyLevel = typeof currentLogDungeonExpLevel === 'number' && entry.floor && entry.roomType
-                                      ? getEffectiveEnemyLevel(currentLogDungeonExpLevel, entry.floor, entry.roomType, getEnvironmentId() === 'luna')
+                                      ? getEffectiveEnemyLevel(
+                                          currentLogDungeonExpLevel,
+                                          entry.floor,
+                                          entry.roomType,
+                                          getEnvironmentId() === 'luna',
+                                          currentLog.difficultyOffset ?? 0,
+                                        )
                                       : null;
                                     handleEnemyBestiaryBubbleToggle(
                                       `${partyIndex}-${originalIndex}-${entry.room}`,
@@ -8689,7 +8724,13 @@ function DiaryTab({
                                     event.stopPropagation();
                                     const diaryDungeonExpLevel = DUNGEONS.find((dungeon) => dungeon.id === log.dungeonId)?.expLevel;
                                     const enemyLevel = typeof diaryDungeonExpLevel === 'number' && entry.floor && entry.roomType
-                                      ? getEffectiveEnemyLevel(diaryDungeonExpLevel, entry.floor, entry.roomType, getEnvironmentId() === 'luna')
+                                      ? getEffectiveEnemyLevel(
+                                          diaryDungeonExpLevel,
+                                          entry.floor,
+                                          entry.roomType,
+                                          getEnvironmentId() === 'luna',
+                                          log.difficultyOffset ?? 0,
+                                        )
                                       : null;
                                     handleEnemyBestiaryBubbleToggle(roomKey, entry, enemyLevel, event.currentTarget);
                                   }}
@@ -8699,7 +8740,13 @@ function DiaryTab({
                                     event.stopPropagation();
                                     const diaryDungeonExpLevel = DUNGEONS.find((dungeon) => dungeon.id === log.dungeonId)?.expLevel;
                                     const enemyLevel = typeof diaryDungeonExpLevel === 'number' && entry.floor && entry.roomType
-                                      ? getEffectiveEnemyLevel(diaryDungeonExpLevel, entry.floor, entry.roomType, getEnvironmentId() === 'luna')
+                                      ? getEffectiveEnemyLevel(
+                                          diaryDungeonExpLevel,
+                                          entry.floor,
+                                          entry.roomType,
+                                          getEnvironmentId() === 'luna',
+                                          log.difficultyOffset ?? 0,
+                                        )
                                       : null;
                                     handleEnemyBestiaryBubbleToggle(roomKey, entry, enemyLevel, event.currentTarget);
                                   }}
