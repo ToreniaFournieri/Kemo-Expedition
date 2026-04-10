@@ -4119,15 +4119,15 @@ export function HomeScreen({
     const durationScale = getTimeSpeedScale(debugSettings);
     const autoSellCount = Math.max(1, party.lastExpeditionLog?.autoSellCount ?? 1);
     const baseSeconds = cycleState === 'rest'
-      ? 2
+      ? 1
       : cycleState === 'sell'
-        ? 5 * autoSellCount
+        ? 15 * autoSellCount
         : cycleState === 'feast'
           ? 90
           : cycleState === 'sound_sleep'
             ? 120
             : cycleState === 'nap_sleep'
-              ? 24
+              ? 30
               : cycleState === 'outfit'
                 ? 60
               : 30;
@@ -4135,7 +4135,7 @@ export function HomeScreen({
   };
 
   const getPartyTravelDurationMs = (party: Party, travelState: 'move' | 'return'): number => {
-    const baseSeconds = travelState === 'move' ? 30 : 60;
+    const baseSeconds = travelState === 'move' ? 30 : 90;
     const tierFactor = getExpeditionTierDurationFactor(party.selectedDungeonId);
     const durationScale = getTimeSpeedScale(debugSettings);
     const baseDurationMs = baseSeconds * 1000 * tierFactor * durationScale;
