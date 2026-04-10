@@ -7236,20 +7236,21 @@ function ExpeditionTab({
                   </button>
                 </div>
                 <div className="text-xs text-gray-600 space-y-1">
-                  <div className="flex items-center justify-between gap-3">
-                    <span>難易度: +{formatNumber(selectedDifficultyOffset)}</span>
-                    {!isDifficultyOffsetUnlocked && <span className="text-[10px] text-gray-500">ボス初回撃破後に解放</span>}
+                  <div className="flex items-center gap-2">
+                    <span className="shrink-0">難易度:</span>
+                    <input
+                      type="range"
+                      min={0}
+                      max={30}
+                      step={1}
+                      value={selectedDifficultyOffset}
+                      disabled={!isDifficultyOffsetUnlocked}
+                      onChange={(e) => onSetExpeditionDifficultyOffset(partyIndex, Number(e.target.value))}
+                      className="min-w-0 flex-1 accent-sub disabled:opacity-50"
+                    />
+                    <span className="shrink-0">+{formatNumber(selectedDifficultyOffset)}</span>
                   </div>
-                  <input
-                    type="range"
-                    min={0}
-                    max={30}
-                    step={1}
-                    value={selectedDifficultyOffset}
-                    disabled={!isDifficultyOffsetUnlocked}
-                    onChange={(e) => onSetExpeditionDifficultyOffset(partyIndex, Number(e.target.value))}
-                    className="w-full accent-sub disabled:opacity-50"
-                  />
+                  {!isDifficultyOffsetUnlocked && <div className="text-[10px] text-gray-500">ボス初回撃破後に解放</div>}
                 </div>
                 {['return', 'idle'].includes(cycle.state) && party.currentHp <= 0 && (
                   <div className="text-xs text-accent">HPが0のため出撃できません。休息で回復してください。</div>
