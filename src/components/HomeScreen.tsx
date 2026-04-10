@@ -1,6 +1,6 @@
 import { Fragment, useState, useEffect, useRef, useCallback, useMemo, type ChangeEvent, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
 import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId, type Ability, type BattleLogEntry } from '../types';
-import { computePartyStats } from '../game/partyComputation';
+import { computeCharacterHpContribution, computePartyStats } from '../game/partyComputation';
 import {
   DUNGEONS,
   getEffectiveEnemyLevel,
@@ -1766,12 +1766,6 @@ const CATEGORY_TO_MULTIPLIER_BONUS: Record<ItemCategory, BonusType | null> = {
   catalyst: 'catalyst_multiplier',
   arrow: 'arrow_multiplier',
 };
-
-function getEnhancementAndSuperRareMultiplier(item: Item): number {
-  const enhancementMultiplier = ENHANCEMENT_TITLES.find((t) => t.value === item.enhancement)?.multiplier ?? 1;
-  const superRareMultiplier = SUPER_RARE_TITLES.find((t) => t.value === item.superRare)?.multiplier ?? 1;
-  return enhancementMultiplier * superRareMultiplier;
-}
 
 function formatCBonusValue(value: number): string {
   return (Math.round(value * 1000000) / 1000000).toString();
@@ -5156,16 +5150,9 @@ function PartyTab({
     { label: '精神', value: stats.baseStats.mind, note: '魔法耐性', ratio: getBaseDefenseScale(stats.baseStats.mind) },
   ];
 
-  const hpStatMultiplier = (stats.baseStats.vitality + stats.baseStats.mind) / 20;
-  const hpGrowthMultiplier = getCharacterGrowthMultiplier(char);
-  const hpBaseIncrease = Math.round(party.level * stats.baseStats.vitality * hpStatMultiplier * hpGrowthMultiplier);
-  const hpItemIncrease = char.equipment.reduce((total, item) => {
-    if (!item?.partyHP) return total;
-    const categoryMultiplier = getCharacterCategoryMultiplier(char, item.category);
-    const itemMultiplier = getEnhancementAndSuperRareMultiplier(item);
-    const baseMultiplier = item.baseMultiplier ?? 1;
-    return total + Math.round(item.partyHP * categoryMultiplier * itemMultiplier * baseMultiplier * hpStatMultiplier * hpGrowthMultiplier);
-  }, 0);
+  const hpContribution = computeCharacterHpContribution(char, party.level);
+  const hpBaseIncrease = hpContribution.baseHpBonus;
+  const hpItemIncrease = hpContribution.itemHpBonus;
 
   const availableCategoryGroups = getAvailableCategoryGroups(char);
   const availableCategories = availableCategoryGroups.flatMap(group => group.categories);
