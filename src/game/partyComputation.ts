@@ -163,14 +163,14 @@ function getCharacterGrowthMultiplier(
 function getEffectiveLevel(level: number): number {
   // SpecRef: 2.1.2 | Party | L_eff
   const growthTerms = [
-    { threshold: 10, multiplier: 1.0 },
-    { threshold: 20, multiplier: 2.0 },
-    { threshold: 30, multiplier: 3.8 },
-    { threshold: 40, multiplier: 4.4 },
-    { threshold: 50, multiplier: 6.0 },
-    { threshold: 60, multiplier: 7.4 },
-    { threshold: 70, multiplier: 7.6 },
-    { threshold: 80, multiplier: 7.6 },
+    { threshold: 7, multiplier: 1.0 },
+    { threshold: 14, multiplier: 1.9 },
+    { threshold: 21, multiplier: 1.8 },
+    { threshold: 28, multiplier: 1.7 },
+    { threshold: 35, multiplier: 1.6 },
+    { threshold: 42, multiplier: 1.5 },
+    { threshold: 49, multiplier: 1.4 },
+    { threshold: 56, multiplier: 1.3 },
   ];
 
   const scale = 1 + growthTerms.reduce(
