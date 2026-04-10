@@ -181,6 +181,49 @@ function getEffectiveLevel(level: number): number {
   return level * scale;
 }
 
+export function computeCharacterHpContribution(
+  character: Party['characters'][number],
+  partyLevel: number,
+): {
+  itemHpBonus: number;
+  baseHpBonus: number;
+  totalHpBonus: number;
+} {
+  const stats = getCharacterBaseStats(character);
+  const statMultiplier = (stats.vitality + stats.mind) / 20;
+  const growthMultiplier = getCharacterGrowthMultiplier(character);
+  const effectiveLevel = getEffectiveLevel(partyLevel);
+
+  let itemHpBonus = 0;
+  for (const item of character.equipment) {
+    if (item && item.partyHP) {
+      const categoryMult = getCharacterMultiplier(character, item.category);
+      const enhanceMult = getItemEnhancementMultiplier(item);
+      const baseMult = item.baseMultiplier ?? 1;
+      itemHpBonus += Math.round(item.partyHP * categoryMult * enhanceMult * baseMult * statMultiplier * growthMultiplier);
+    }
+    if (item) {
+      const jewelPartyHP = getJewelDRankBonus(item.jewel, 'partyHP');
+      if (jewelPartyHP) {
+        const categoryMult = getCharacterMultiplier(character, item.category);
+        const enhanceMult = getItemEnhancementMultiplier(item);
+        const baseMult = item.baseMultiplier ?? 1;
+        itemHpBonus += Math.round(jewelPartyHP * categoryMult * enhanceMult * baseMult * statMultiplier * growthMultiplier);
+      }
+    }
+  }
+
+  const baseHpBonus = Math.round(
+    (3.0 * stats.mind) + (3.0 * stats.vitality) + (effectiveLevel * stats.vitality * statMultiplier * growthMultiplier),
+  );
+
+  return {
+    itemHpBonus,
+    baseHpBonus,
+    totalHpBonus: itemHpBonus + baseHpBonus,
+  };
+}
+
 // SpecRef: 2.1.2 | Party | computePartyStats
 export function computePartyStats(party: Party): {
   partyStats: ComputedPartyStats;
@@ -199,41 +242,10 @@ export function computePartyStats(party: Party): {
   //       + {(3.0 x b.mind + 3.0 x b.vitality + (L_eff x b.vitality x (b.vitality + b.mind) / 20) x c.growth_xV), round off}
   //     )
   let bonusHp = 0;
-  const effectiveLevel = getEffectiveLevel(party.level);
 
   for (const character of party.characters) {
-    const stats = getCharacterBaseStats(character);
-    const statMultiplier = (stats.vitality + stats.mind) / 20;
-    const growthMultiplier = getCharacterGrowthMultiplier(character);
-
-    // Sum item HP bonuses with full per-character HP scaling,
-    // rounding each item contribution individually.
-    let itemHpBonus = 0;
-    for (const item of character.equipment) {
-      if (item && item.partyHP) {
-        const categoryMult = getCharacterMultiplier(character, item.category);
-        const enhanceMult = getItemEnhancementMultiplier(item);
-        const baseMult = item.baseMultiplier ?? 1;
-        itemHpBonus += Math.round(item.partyHP * categoryMult * enhanceMult * baseMult * statMultiplier * growthMultiplier);
-      }
-      if (item) {
-        const jewelPartyHP = getJewelDRankBonus(item.jewel, 'partyHP');
-        if (jewelPartyHP) {
-          const categoryMult = getCharacterMultiplier(character, item.category);
-          const enhanceMult = getItemEnhancementMultiplier(item);
-          const baseMult = item.baseMultiplier ?? 1;
-          itemHpBonus += Math.round(jewelPartyHP * categoryMult * enhanceMult * baseMult * statMultiplier * growthMultiplier);
-        }
-      }
-    }
-
-    // Add rounded base stat + L_eff contribution.
-    const levelBonus = Math.round(
-      (3.0 * stats.mind) + (3.0 * stats.vitality) + (effectiveLevel * stats.vitality * statMultiplier * growthMultiplier),
-    );
-
-    // Character's HP contribution
-    bonusHp += itemHpBonus + levelBonus;
+    const characterHpContribution = computeCharacterHpContribution(character, party.level);
+    bonusHp += characterHpContribution.totalHpBonus;
   }
 
   // Collect all party abilities
