@@ -350,7 +350,7 @@ function rollPercentInclusive(min: number, max: number): number {
 const PARTY_CYCLE_TICK_MS = 100;
 const EXPLORING_PROGRESS_STEP_MS = 15000;
 const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
-const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.sleeping', 'q.exercise', 'q.healing', 'q.AFK']);
+const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.exercise', 'q.healing', 'q.AFK']);
 const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
 const AFK_MAX_ELAPSED_MS = 1800 * 60 * 1000;
 const CATCHUP_CHUNK_MINUTES = 60;
@@ -1084,8 +1084,8 @@ function getSideQuestText(party: Party, cycleDurationScale: number, emulatedNowM
       current: `${formatNumber(displayProgress)}G`,
     },
     'q.sleeping': {
-      text: `${formatNumber(displayTarget)}分寝る`,
-      current: `${formatNumber(displayProgress)}分`,
+      text: `${formatNumber(displayTarget)}回寝る`,
+      current: `${formatNumber(displayProgress)}回`,
     },
     'q.exercise': {
       text: `${formatNumber(displayTarget)}分歩く`,
@@ -1107,19 +1107,19 @@ function getSideQuestText(party: Party, cycleDurationScale: number, emulatedNowM
       text: `${formatNumber(displayTarget)}分神から見放されている`,
       current: `${formatNumber(displayProgress)}分`,
     },
-    'q.treasure_super_rare': {
+    'q.treasure-super-rare': {
       text: `超レアを${formatNumber(displayTarget)}個獲得する`,
       current: `${formatNumber(displayProgress)}個`,
     },
-    'q.treasure_boss_rare': {
+    'q.treasure-boss-rare': {
       text: `ボスレアを${formatNumber(displayTarget)}個獲得する`,
       current: `${formatNumber(displayProgress)}個`,
     },
-    'q.poor_kid': {
+    'q.poor-kid': {
       text: `${formatNumber(displayTarget)}回アイテム獲得空振りする`,
       current: `${formatNumber(displayProgress)}回`,
     },
-    'q.consecutive_wins': {
+    'q.consecutive-wins': {
       text: `${formatNumber(displayTarget)}連続して踏破する`,
       current: `${formatNumber(displayProgress)}連`,
     },
@@ -1142,9 +1142,11 @@ function getSideQuestText(party: Party, cycleDurationScale: number, emulatedNowM
   const simulatedElapsedMs = Math.max(0, emulatedNowMs - party.sideQuest.assignedAt) / safeScale;
   const simulatedNow = party.sideQuest.assignedAt + simulatedElapsedMs;
   const remainingMs = Math.max(0, party.sideQuest.expiresAt - simulatedNow);
-  const remainingLabel = remainingMs >= (60 * 60 * 1000)
-    ? `残り${formatNumber(Math.ceil(remainingMs / (60 * 60 * 1000)))}時間`
-    : `残り${formatNumber(Math.ceil(remainingMs / (60 * 1000)))}分`;
+  const remainingLabel = party.sideQuest.expiresAt >= Number.MAX_SAFE_INTEGER
+    ? '期限なし'
+    : remainingMs >= (60 * 60 * 1000)
+      ? `残り${formatNumber(Math.ceil(remainingMs / (60 * 60 * 1000)))}時間`
+      : `残り${formatNumber(Math.ceil(remainingMs / (60 * 1000)))}分`;
   return `${display.text} (${percent}%, ${display.current}, ${remainingLabel})`;
 }
 
@@ -3648,7 +3650,7 @@ export function HomeScreen({
                 updated.skipSleepThisCycle = false;
               }
             } else if (updated.state === 'sound_sleep' || updated.state === 'nap_sleep') {
-              if (party.sideQuest?.type === 'q.sleeping' && updated.durationMs > 100) actions.advanceSideQuest(partyIndex, getScaledSideQuestSeconds(updated.durationMs), simulationNow);
+              if (party.sideQuest?.type === 'q.sleeping' && updated.durationMs > 100) actions.advanceSideQuest(partyIndex, 1, simulationNow);
               if (updated.state === 'sound_sleep') {
                 updated.state = 'outfit';
                 updated.durationMs = getStateDurationMs(party, 'outfit');
@@ -3828,18 +3830,18 @@ export function HomeScreen({
       const currentLog = party.lastExpeditionLog;
       const hasNewLog = !!currentLog && currentLog !== previousLog;
       if (hasNewLog && currentLog && party.sideQuest) {
-        if (party.sideQuest.type === 'q.treasure_super_rare') {
+        if (party.sideQuest.type === 'q.treasure-super-rare') {
           const gained = currentLog.rewards.filter((item) => item.superRare > 0).length;
           if (gained > 0) actions.advanceSideQuest(index, gained);
         }
-        if (party.sideQuest.type === 'q.treasure_boss_rare') {
+        if (party.sideQuest.type === 'q.treasure-boss-rare') {
           const gained = currentLog.rewards.filter((item) => getItemRarityById(item.id) === 'bossRare').length;
           if (gained > 0) actions.advanceSideQuest(index, gained);
         }
-        if (party.sideQuest.type === 'q.poor_kid' && (currentLog.rewards.length ?? 0) === 0) {
+        if (party.sideQuest.type === 'q.poor-kid' && (currentLog.rewards.length ?? 0) === 0) {
           actions.advanceSideQuest(index, 1);
         }
-        if (party.sideQuest.type === 'q.consecutive_wins') {
+        if (party.sideQuest.type === 'q.consecutive-wins') {
           if (currentLog.finalOutcome === 'Clear') {
             actions.advanceSideQuest(index, 1);
           } else {

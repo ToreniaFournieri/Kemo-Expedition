@@ -695,7 +695,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "q.sleeping",
         "label": "安眠",
-        "description": "寝る(神魔戦で中止) (10分 ~ 30分)"
+        "description": "寝る(神魔戦で中止) (1回 ~ 4回)"
       },
       {
         "key": "q.exercise",
@@ -715,37 +715,37 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "q.healing",
         "label": "治療",
-        "description": "治療を受ける(神魔戦で中止) (30分 ~ 60分)"
+        "description": "治療を受ける(神魔戦で中止) (5分 ~ 20分)"
       },
       {
         "key": "q.AFK",
         "label": "放置",
-        "description": "神から見放されている(神魔戦で中止) (90分 ~ 180分)"
+        "description": "神から見放されている(神魔戦で中止) (90分 ~ 360分)"
       },
       {
-        "key": "q.treasure_super_rare",
+        "key": "q.treasure-super-rare",
         "label": "超レア獲得",
         "description": "超レアを獲得する(神魔戦で中止) (1個)"
       },
       {
-        "key": "q.treasure_boss_rare",
+        "key": "q.treasure-boss-rare",
         "label": "ボスレア獲得",
-        "description": "ボスレアを獲得する(神魔戦で中止) (2個 ~ 7個)"
+        "description": "ボスレアを獲得する(神魔戦で中止) (1個 ~ 4個)"
       },
       {
-        "key": "q.poor_kid",
+        "key": "q.poor-kid",
         "label": "アイテム獲得空振り",
-        "description": "アイテム獲得空振り(神魔戦で中止) (250回 ~ 700回)"
+        "description": "アイテム獲得空振り(神魔戦で中止) (25回 ~ 70回)"
       },
       {
-        "key": "q.consecutive_wins",
+        "key": "q.consecutive-wins",
         "label": "連続踏破",
         "description": "連続して踏破する(神魔戦で中止) (15回 ~ 60回)"
       },
       {
         "key": "q.losers",
         "label": "敗北",
-        "description": "敗北する(神魔戦で中止) (3回 ~ 6回)"
+        "description": "敗北する(神魔戦で中止)"
       },
       {
         "key": "q.savings",
