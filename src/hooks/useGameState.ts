@@ -288,15 +288,16 @@ function formatSideQuestShortText(type: string, shortText: string, target: numbe
     'q.donation': `${formatNumber(target)}G`,
     'q.healing': `${formatNumber(target)}分`,
     'q.AFK': `${formatNumber(target)}分`,
-    'q.treasure-super-rare': `${formatNumber(target)}個`,
+    'q.treasure-super-rare': '',
     'q.treasure-boss-rare': `${formatNumber(target)}個`,
-    'q.poor-kid': `${formatNumber(target)}回アイテム獲得空振り`,
+    'q.poor-kid': `${formatNumber(target)}回`,
     'q.consecutive-wins': `${formatNumber(target)}連`,
-    'q.losers': `${formatNumber(target)}回`,
+    'q.losers': '',
     'q.savings': `${formatNumber(target)}G`,
   };
-
-  return `${shortText}(${valueByType[type] ?? formatNumber(target)})`;
+  const suffix = valueByType[type];
+  if (suffix === '') return shortText;
+  return `${shortText}(${suffix ?? formatNumber(target)})`;
 }
 
 const DEFAULT_DIARY_SETTINGS: DiarySettings = {
