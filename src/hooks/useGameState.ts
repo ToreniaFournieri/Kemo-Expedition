@@ -109,7 +109,18 @@ const AFK_MAX_SIMULATION_MS = 600 * 60 * 1000;
 const STATE_SAVE_THROTTLE_MS = 5000;
 const DEBUG_CYCLE_DURATION_SCALE = 0.2;
 const ITEM_MAX_STACK = 99;
-const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.sleeping', 'q.exercise', 'q.healing', 'q.AFK']);
+const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.exercise', 'q.healing', 'q.AFK']);
+
+function normalizeSideQuestType(type: string): string {
+  // SpecRef: 5.1.2 | Side Quest | Runtime quest id normalization
+  const legacyToCurrentTypeMap: Record<string, string> = {
+    'q.treasure_super_rare': 'q.treasure-super-rare',
+    'q.treasure_boss_rare': 'q.treasure-boss-rare',
+    'q.poor_kid': 'q.poor-kid',
+    'q.consecutive_wins': 'q.consecutive-wins',
+  };
+  return legacyToCurrentTypeMap[type] ?? type;
+}
 
 const PARTY_UNLOCK_BY_GOD_NAME: Record<string, number> = {
   Seiran: 2,
@@ -271,16 +282,16 @@ function formatSideQuestShortText(type: string, shortText: string, target: numbe
   const formatNumber = (value: number) => Math.floor(value).toLocaleString('ja-JP');
   const valueByType: Partial<Record<string, string>> = {
     'q.squander': `${formatNumber(target)}G`,
-    'q.sleeping': `${formatNumber(target)}分`,
+    'q.sleeping': `${formatNumber(target)}回`,
     'q.exercise': `${formatNumber(target)}分`,
     'q.embezzlement': `${formatNumber(target)}G`,
     'q.donation': `${formatNumber(target)}G`,
     'q.healing': `${formatNumber(target)}分`,
     'q.AFK': `${formatNumber(target)}分`,
-    'q.treasure_super_rare': `${formatNumber(target)}個`,
-    'q.treasure_boss_rare': `${formatNumber(target)}個`,
-    'q.poor_kid': `${formatNumber(target)}回アイテム獲得空振り`,
-    'q.consecutive_wins': `${formatNumber(target)}連`,
+    'q.treasure-super-rare': `${formatNumber(target)}個`,
+    'q.treasure-boss-rare': `${formatNumber(target)}個`,
+    'q.poor-kid': `${formatNumber(target)}回アイテム獲得空振り`,
+    'q.consecutive-wins': `${formatNumber(target)}連`,
     'q.losers': `${formatNumber(target)}回`,
     'q.savings': `${formatNumber(target)}G`,
   };
@@ -814,6 +825,16 @@ function loadSavedState(): GameState | null {
           party.sleepinessOfPartyBag = normalizeSleepinessPartyBag(party.sleepinessOfPartyBag ?? createSleepinessPartyBag());
           party.currentSleepiness = normalizeSleepinessState(party.currentSleepiness);
           if (typeof party.sideQuest === 'undefined') party.sideQuest = null;
+          if (party.sideQuest) {
+            party.sideQuest.type = normalizeSideQuestType(party.sideQuest.type);
+          }
+          if (party.sideQuest?.type === 'q.sleeping' && party.sideQuest.target > 4) {
+            party.sideQuest = {
+              ...party.sideQuest,
+              target: Math.max(1, Math.min(4, Math.floor(party.sideQuest.target / 10))),
+              progress: Math.max(0, Math.min(4, Math.floor(party.sideQuest.progress / 10))),
+            };
+          }
           if (party.sideQuest && TIME_BASED_SIDE_QUEST_TYPES.has(party.sideQuest.type) && party.sideQuest.target < 1000) {
             party.sideQuest = {
               ...party.sideQuest,
@@ -1524,19 +1545,23 @@ function advanceAfkLogSideQuestProgress(state: GameState, partyIndex: number, si
   if (!sideQuestType || !afkLog) return state;
 
   switch (sideQuestType) {
-    case 'q.treasure_super_rare': {
+    case 'q.treasure_super_rare':
+    case 'q.treasure-super-rare': {
       const gained = afkLog.rewards.filter((item) => item.superRare > 0).length;
       return gained > 0 ? gameReducer(state, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: gained, simulatedAt }) : state;
     }
-    case 'q.treasure_boss_rare': {
+    case 'q.treasure_boss_rare':
+    case 'q.treasure-boss-rare': {
       const gained = afkLog.rewards.filter((item) => getItemRarityById(item.id) === 'bossRare').length;
       return gained > 0 ? gameReducer(state, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: gained, simulatedAt }) : state;
     }
     case 'q.poor_kid':
+    case 'q.poor-kid':
       return (afkLog.rewards.length ?? 0) === 0
         ? gameReducer(state, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1, simulatedAt })
         : state;
     case 'q.consecutive_wins':
+    case 'q.consecutive-wins':
       return afkLog.finalOutcome === 'Clear'
         ? gameReducer(state, { type: 'ADVANCE_SIDE_QUEST', partyIndex, amount: 1, simulatedAt })
         : gameReducer(state, { type: 'SET_SIDE_QUEST_PROGRESS', partyIndex, progress: 0 });
@@ -1555,23 +1580,23 @@ function getApproxAfkTimeQuestProgressPerCycle(
   cycleDurationScale: number,
 ): number {
   // SpecRef: 5.1.2 | Side Quest | AFK handling
-  if (!party.sideQuest || !TIME_BASED_SIDE_QUEST_TYPES.has(party.sideQuest.type)) return 0;
+  if (!party.sideQuest) return 0;
+  if (party.sideQuest.type === 'q.sleeping') {
+    return normalizeSleepinessState(party.currentSleepiness ?? 2) > 0 ? 1 : 0;
+  }
+  if (!TIME_BASED_SIDE_QUEST_TYPES.has(party.sideQuest.type)) return 0;
 
   const safeScale = Math.max(0.001, cycleDurationScale);
   const emulatedCycleSeconds = Math.max(1, Math.floor((approxCycleDurationMs / safeScale) / 1000));
   const baseRestSeconds = 5;
   const baseMoveSeconds = 10;
   const baseReturnSeconds = 30;
-  const sleepiness = normalizeSleepinessState(party.currentSleepiness ?? 2);
-  const baseSleepSeconds = sleepiness === 2 ? 120 : sleepiness === 1 ? 24 : 0;
 
   switch (party.sideQuest.type) {
     case 'q.healing':
       return baseRestSeconds;
     case 'q.exercise':
       return baseMoveSeconds + baseReturnSeconds;
-    case 'q.sleeping':
-      return baseSleepSeconds;
     case 'q.AFK':
       return emulatedCycleSeconds;
     default:
@@ -2983,17 +3008,17 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const questById: Record<number, { type: string; shortText: string; min: number; max: number; deadlineHours: number }> = {
         1: { type: 'q.squander', shortText: '散財', min: 250, max: 1000, deadlineHours: 16 },
-        2: { type: 'q.sleeping', shortText: '安眠', min: 10, max: 30, deadlineHours: 16 },
+        2: { type: 'q.sleeping', shortText: '安眠', min: 1, max: 4, deadlineHours: 12 },
         3: { type: 'q.exercise', shortText: '運動', min: 20, max: 60, deadlineHours: 16 },
         4: { type: 'q.embezzlement', shortText: '横領', min: 50, max: 200, deadlineHours: 16 },
         5: { type: 'q.donation', shortText: '寄付', min: 200, max: 1000, deadlineHours: 12 },
-        6: { type: 'q.healing', shortText: '治療', min: 30, max: 60, deadlineHours: 16 },
-        7: { type: 'q.AFK', shortText: '放置', min: 90, max: 180, deadlineHours: 16 },
-        8: { type: 'q.treasure_super_rare', shortText: '超レア獲得', min: 1, max: 1, deadlineHours: 24 },
-        9: { type: 'q.treasure_boss_rare', shortText: 'ボスレア獲得', min: 2, max: 7, deadlineHours: 16 },
-        10: { type: 'q.poor_kid', shortText: 'アイテム獲得空振り', min: 250, max: 700, deadlineHours: 9 },
-        11: { type: 'q.consecutive_wins', shortText: '連続踏破', min: 15, max: 60, deadlineHours: 16 },
-        12: { type: 'q.losers', shortText: '敗北', min: 3, max: 6, deadlineHours: 16 },
+        6: { type: 'q.healing', shortText: '治療', min: 5, max: 20, deadlineHours: 16 },
+        7: { type: 'q.AFK', shortText: '放置', min: 90, max: 360, deadlineHours: 0 },
+        8: { type: 'q.treasure-super-rare', shortText: '超レア獲得', min: 1, max: 1, deadlineHours: 24 },
+        9: { type: 'q.treasure-boss-rare', shortText: 'ボスレア獲得', min: 1, max: 4, deadlineHours: 16 },
+        10: { type: 'q.poor-kid', shortText: 'アイテム獲得空振り', min: 25, max: 70, deadlineHours: 9 },
+        11: { type: 'q.consecutive-wins', shortText: '連続踏破', min: 15, max: 60, deadlineHours: 16 },
+        12: { type: 'q.losers', shortText: '敗北', min: 1, max: 1, deadlineHours: 9 },
         13: { type: 'q.savings', shortText: '貯金', min: 400, max: 2000, deadlineHours: 16 },
       };
       const def = questById[ticket];
@@ -3001,7 +3026,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const target = Math.floor(Math.random() * (def.max - def.min + 1)) + def.min;
       const internalTarget = TIME_BASED_SIDE_QUEST_TYPES.has(def.type) ? target * 60 : target;
       const assignedAt = action.simulatedAt ?? Date.now();
-      const expiresAt = assignedAt + (def.deadlineHours * 60 * 60 * 1000);
+      const expiresAt = def.deadlineHours > 0
+        ? assignedAt + (def.deadlineHours * 60 * 60 * 1000)
+        : Number.MAX_SAFE_INTEGER;
       const updatedParties = [...state.parties];
       updatedParties[action.partyIndex] = {
         ...currentParty,
