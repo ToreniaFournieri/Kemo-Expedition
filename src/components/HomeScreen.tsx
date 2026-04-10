@@ -1078,7 +1078,7 @@ function getSideQuestText(party: Party, cycleDurationScale: number, emulatedNowM
   const displayProgress = isTimeQuest ? Math.floor(clampedProgress / 60) : clampedProgress;
   const percent = Math.floor((clampedProgress / safeTarget) * 100);
 
-  const progressByType: Record<string, { text: string; current: string }> = {
+  const progressByType: Record<string, { text: string; current?: string }> = {
     'q.squander': {
       text: `宴会で${formatNumber(displayTarget)}G浪費する`,
       current: `${formatNumber(displayProgress)}G`,
@@ -1108,15 +1108,14 @@ function getSideQuestText(party: Party, cycleDurationScale: number, emulatedNowM
       current: `${formatNumber(displayProgress)}分`,
     },
     'q.treasure-super-rare': {
-      text: `超レアを${formatNumber(displayTarget)}個獲得する`,
-      current: `${formatNumber(displayProgress)}個`,
+      text: '超レアを獲得する',
     },
     'q.treasure-boss-rare': {
       text: `ボスレアを${formatNumber(displayTarget)}個獲得する`,
       current: `${formatNumber(displayProgress)}個`,
     },
     'q.poor-kid': {
-      text: `${formatNumber(displayTarget)}回アイテム獲得空振りする`,
+      text: `${formatNumber(displayTarget)}回アイテム獲得空振り`,
       current: `${formatNumber(displayProgress)}回`,
     },
     'q.consecutive-wins': {
@@ -1124,8 +1123,7 @@ function getSideQuestText(party: Party, cycleDurationScale: number, emulatedNowM
       current: `${formatNumber(displayProgress)}連`,
     },
     'q.losers': {
-      text: `${formatNumber(displayTarget)}回敗北する`,
-      current: `${formatNumber(displayProgress)}回`,
+      text: '敗北する',
     },
     'q.savings': {
       text: `${formatNumber(displayTarget)}G貯金する`,
@@ -1147,7 +1145,10 @@ function getSideQuestText(party: Party, cycleDurationScale: number, emulatedNowM
     : remainingMs >= (60 * 60 * 1000)
       ? `残り${formatNumber(Math.ceil(remainingMs / (60 * 60 * 1000)))}時間`
       : `残り${formatNumber(Math.ceil(remainingMs / (60 * 1000)))}分`;
-  return `${display.text} (${percent}%, ${display.current}, ${remainingLabel})`;
+  const progressParts = [`${percent}%`];
+  if (display.current) progressParts.push(display.current);
+  progressParts.push(remainingLabel);
+  return `${display.text} (${progressParts.join(', ')})`;
 }
 
 function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
