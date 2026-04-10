@@ -375,23 +375,22 @@
 #### 1.1.9 q. side quest
 - "求. サイドクエスト (条件達成すると報酬として結晶が手に入る)"
 
-| ID | type | Short text | Display text format | value range | deadline | logic | for Glossary Title | for Glossary content |
-|--|--|---|---|---|---|---|---|---|
-| 0 | (none) | |  | | | | | |
-| 1 | `q.squander` | 散財(XXXG) | 宴会で XXXG 浪費する(0%, XXXG)　(神魔戦で中止) | 250 ~ 1,000 G | 16 hours | | 散財 | 宴会で浪費する(神魔戦で中止) (250 ~ 1,000G) |
-| 2 | `q.sleeping` | 安眠(X回) | X回寝る(0%, X回)　(神魔戦で中止) | 1 - 4 | 12 hours | | 安眠 | 寝る(神魔戦で中止) (1回 ~ 4回) |
-| 3 | `q.exercise` | 運動(XX分) | X分歩く(0%, XX分)　(神魔戦で中止) | 20分 ~ 60分 | 16 hours | count the time of 移動中 and 帰還中 state | 運動 | 歩く(神魔戦で中止) (20分 ~ 60分) |
-| 4 | `q.embezzlement` | 横領(XXXG) | XXXG着服する(60%, XXXG)　(神魔戦で中止) | 50 ~ 200G | 16 hours | | 横領 | 着服する(神魔戦で中止) (50 ~ 200G) | 
-| 5 | `q.donation` | 寄付(XXXG) | 200G寄付する(10%, XXXG)　(神魔戦で中止) | 200 ~ 1,000G | 12 hours | | 寄付 | 寄付する(神魔戦で中止) (200 ~ 1,000G)| 
-| 6 | `q.healing` | 治療(X分) | X分治療を受ける (10%, XX分)　(神魔戦で中止) | 5分 ~ 20分 | 16 hours | count the time of rest state | 治療 | 治療を受ける(神魔戦で中止) (5分 ~ 20分) |
-| 7 | `q.AFK` | 放置(X分) | X分神から見放されている (10%, XX分)　(神魔戦で中止) | 90分 ~ 360分 | - | | 放置 | 神から見放されている(神魔戦で中止) (90分 ~ 360分) |
-| 8 | `q.treasure-super-rare` | 超レア獲得 | 超レアを獲得する(0%)　(神魔戦で中止) | 1 | 24 hours | | 超レア獲得 | 超レアを獲得する(神魔戦で中止) |
-| 9 | `q.treasure-boss-rare` | ボスレアXX個獲得 | ボスレアを XX個獲得する(0%, X個)　(神魔戦で中止) | 1 ~ 4 | 16 hours | | ボスレア獲得 | ボスレアを獲得する(神魔戦で中止) (1個 ~ 4個) | 
-| 10 | `q.poor-kid` | アイテム獲得空振り(XX回) | XX回アイテム獲得空振り(0%, X個)　(神魔戦で中止) | 25 ~ 70 | 9 hours | | アイテム獲得空振り | アイテム獲得空振り(神魔戦で中止) (25回 ~ 70回) |
-| 11 | `q.consecutive-wins` | 連続踏破(XX連続) | XX連続して踏破する(30%, XX連)　(神魔戦で中止) | 15 ~ 60 | 16 hours | reset to 0 if defeat/retreat/non-victory condition | 連続踏破 | 連続して踏破する(神魔戦で中止) (15回 ~ 60回) |
-| 12 | `q.losers` | 敗北 | 敗北する(0%)　(神魔戦で中止) | 1 ~ 1 | 9 hours | |  敗北 | 敗北する(神魔戦で中止) |
-| 13 | `q.savings` | 貯金(XXXG) | 1,000G貯金する(10%, XXXG)　(神魔戦で中止) | 400 ~ 2,000G | 16 hours | | 貯金 | 貯金する(神魔戦で中止) (400 ~ 2,000G)　|
-
+| ID | type | Short text | Display text format | deadline | logic | for Glossary Title | for Glossary content |
+|--|--|---|---|---|---|---|---|
+| 0 | (none) | |  | | | | |
+| 1 | `q.squander` | 散財(XXXG) | 宴会で XXXG 浪費する(0%, XXXG)　(神魔戦で中止) | 250 ~ 1,000 G | 16 hours | | 散財 | 宴会で浪費する(神魔戦で中止) |
+| 2 | `q.sleeping` | 安眠(X回) | X回寝る(0%, X回)　(神魔戦で中止) | 12 hours | | 安眠 | 寝る(神魔戦で中止) |
+| 3 | `q.exercise` | 運動(XX分) | X分歩く(0%, XX分)　(神魔戦で中止) | 16 hours | count the time of 移動中 and 帰還中 state | 運動 | 歩く(神魔戦で中止) |
+| 4 | `q.embezzlement` | 横領(XXXG) | XXXG着服する(60%, XXXG)　(神魔戦で中止) | 16 hours | | 横領 | 着服する(神魔戦で中止) | 
+| 5 | `q.donation` | 寄付(XXXG) | 200G寄付する(10%, XXXG)　(神魔戦で中止) | 12 hours | | 寄付 | 寄付する(神魔戦で中止) | 
+| 6 | `q.healing` | 治療(X分) | X分治療を受ける (10%, XX分)　(神魔戦で中止) | 16 hours | count the time of rest state | 治療 | 治療を受ける(神魔戦で中止) |
+| 7 | `q.AFK` | 放置(X分) | X分神から見放されている (10%, XX分)　(神魔戦で中止) | - | | 放置 | 神から見放されている(神魔戦で中止) |
+| 8 | `q.treasure-super-rare` | 超レア獲得 | 超レアを獲得する(0%)　(神魔戦で中止) | 24 hours | | 超レア獲得 | 超レアを獲得する(神魔戦で中止) |
+| 9 | `q.treasure-boss-rare` | ボスレアXX個獲得 | ボスレアを XX個獲得する(0%, X個)　(神魔戦で中止) | 16 hours | | ボスレア獲得 | ボスレアを獲得する(神魔戦で中止)  | 
+| 10 | `q.poor-kid` | アイテム獲得空振り(XX回) | XX回アイテム獲得空振り(0%, X個)　(神魔戦で中止) | 9 hours | | アイテム獲得空振り | アイテム獲得空振り(神魔戦で中止) |
+| 11 | `q.consecutive-wins` | 連続踏破(XX連続) | XX連続して踏破する(30%, XX連)　(神魔戦で中止) | 16 hours | reset to 0 if defeat/retreat/non-victory condition | 連続踏破 | 連続して踏破する(神魔戦で中止) |
+| 12 | `q.losers` | 敗北 | 敗北する(0%)　(神魔戦で中止) | 9 hours | |  敗北 | 敗北する(神魔戦で中止) |
+| 13 | `q.savings` | 貯金(XXXG) | 1,000G貯金する(10%, XXXG)　(神魔戦で中止) | 16 hours | | 貯金 | 貯金する(神魔戦で中止)　|
 
 #### 1.1.10 t. terrain effects
 - "地. 地形効果"
