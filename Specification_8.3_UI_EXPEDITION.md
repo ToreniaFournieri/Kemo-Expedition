@@ -17,6 +17,7 @@ PT1 HP (HP bar, blue) `x.expedition`.name       outcome `condition`.label ▼
 - Difficulty Offset (難易度):
   - Adjustable with a slider from +0 to +30.
   - The selected value is added to the level of all enemies in the selected expedition.
+  - This option becomes available only after the party has defeated that expedition’s Boss at least once (lifetime, party-wide).
 
 ```
 PT1 HP (HP bar, blue) ルピニアンの断崖踏破  好調▼
