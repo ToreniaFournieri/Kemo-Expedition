@@ -348,7 +348,7 @@ function rollPercentInclusive(min: number, max: number): number {
 }
 
 const PARTY_CYCLE_TICK_MS = 100;
-const EXPLORING_PROGRESS_STEP_MS = 5000;
+const EXPLORING_PROGRESS_STEP_MS = 15000;
 const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
 const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.sleeping', 'q.exercise', 'q.healing', 'q.AFK']);
 const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
@@ -4135,7 +4135,7 @@ export function HomeScreen({
   };
 
   const getPartyTravelDurationMs = (party: Party, travelState: 'move' | 'return'): number => {
-    const baseSeconds = travelState === 'move' ? 10 : 30;
+    const baseSeconds = travelState === 'move' ? 30 : 60;
     const tierFactor = getExpeditionTierDurationFactor(party.selectedDungeonId);
     const durationScale = getTimeSpeedScale(debugSettings);
     const baseDurationMs = baseSeconds * 1000 * tierFactor * durationScale;
