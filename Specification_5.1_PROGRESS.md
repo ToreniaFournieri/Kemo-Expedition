@@ -134,6 +134,44 @@ PT3: 貯金額: 10G
 - Notification example:
   - "PT1はサイドクエスト 治療 (2時間) を受けた"
 
+- Side quest difficulty
+  - If `x.exp_id` = 4, side quest level = 2.
+  - For `q.exercise`:
+  - Base range: 5 ~ 15
+  - Lv2 multiplier: x1.3
+  - Result: 5 × 1.3 = 6.5, 15 × 1.3 = 19.5
+  - Rounded range: 7 ~ 20
+  - Final target: randomly select one integer from 7 to 20 (inclusive).
+
+| ID | type | base value range(lv1) | lv2 | 1v3 | lv4 |
+|--|--|---|---|---|---|
+| 1 | `q.squander` | 100 ~ 400 | x1.4 | x1.8 | x2.2 |  
+| 2 | `q.sleeping` | 1 ~ 4 | - | - | - |
+| 3 | `q.exercise` | 5 ~ 15 | x1.3 | x1.5 | x2.0 |
+| 4 | `q.embezzlement` | 25 ~ 100 | x1.4 | x1.8 | x2.2 | 
+| 5 | `q.donation` | 100 ~ 500 | x1.4 | x1.8 | x2.2 | 
+| 6 | `q.healing` | 5 ~ 20 | x1.3 | x1.5 | x2.0 |
+| 7 | `q.AFK` | 30 ~ 120 | x1.3 | x1.5 | x2.0 |
+| 8 | `q.treasure-super-rare` | 1 | - | - | - |
+| 9 | `q.treasure-boss-rare` | 1 - 4 | - | - | - |
+| 10 | `q.poor-kid` | 10 ~ 30 | x1.3 | x1.5 | x2.0 |
+| 11 | `q.consecutive-wins` | 5 ~ 20 | x1.3 | x1.5 | x2.0 |
+| 12 | `q.losers` | 1 | - | - | - |
+| 13 | `q.savings` | 200 - 1,000 | x1.4 | x1.8 | x2.2 | 
+
+| `x.exp_id` | lv |
+|---|----|
+| 1 | 1 |
+| 2 | 1 |
+| 3 | 2 |
+| 4 | 2 |
+| 5 | 3 |
+| 6 | 3 |
+| 7 | 4 |
+| 8 | 4 |
+
+
+
 **AFK handling**
 - Side quest progress continues during AFK (`state.reactivate`).
 - Side quest respects speed modifiers (sleep 40 minutes -> use emulated time speed)
