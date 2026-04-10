@@ -303,14 +303,14 @@ Party.`d.HP` =
 `L_eff` =
   (level) * (
     1
-    + max(0, (level - 10)/33)^1.1
-    + max(0, (level - 20)/33)^1.2
-    + max(0, (level - 30)/33)^1.3
-    + max(0, (level - 40)/33)^1.4
-    + max(0, (level - 50)/33)^1.5
-    + max(0, (level - 60)/33)^1.6
-    + max(0, (level - 70)/33)^1.7
-    + max(0, (level - 80)/33)^1.8
+    + max(0, (level - 10)/33)^1.2
+    + max(0, (level - 20)/33)^1.3
+    + max(0, (level - 30)/33)^1.4
+    + max(0, (level - 40)/33)^1.5
+    + max(0, (level - 50)/33)^1.6
+    + max(0, (level - 60)/33)^1.7
+    + max(0, (level - 70)/33)^1.8
+    + max(0, (level - 80)/33)^1.9
   )
 ```
 
