@@ -174,7 +174,7 @@ function getEffectiveLevel(level: number): number {
   ];
 
   const scale = 1 + growthTerms.reduce(
-    (sum, { threshold, multiplier }) => sum + (Math.max(0, (level - threshold) / 30) * multiplier),
+    (sum, { threshold, multiplier }) => sum + (Math.max(0, (level - threshold) / 28) * multiplier),
     0,
   );
 
