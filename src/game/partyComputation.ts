@@ -162,14 +162,14 @@ function getCharacterGrowthMultiplier(
 
 function getEffectiveLevel(level: number): number {
   const growthTerms = [
-    { threshold: 10, exponent: 1.1 },
-    { threshold: 20, exponent: 1.2 },
-    { threshold: 30, exponent: 1.3 },
-    { threshold: 40, exponent: 1.4 },
-    { threshold: 50, exponent: 1.5 },
-    { threshold: 60, exponent: 1.6 },
-    { threshold: 70, exponent: 1.7 },
-    { threshold: 80, exponent: 1.8 },
+    { threshold: 10, exponent: 1.2 },
+    { threshold: 20, exponent: 1.3 },
+    { threshold: 30, exponent: 1.4 },
+    { threshold: 40, exponent: 1.5 },
+    { threshold: 50, exponent: 1.6 },
+    { threshold: 60, exponent: 1.7 },
+    { threshold: 70, exponent: 1.8 },
+    { threshold: 80, exponent: 1.9 },
   ];
 
   const scale = 1 + growthTerms.reduce(
