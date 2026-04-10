@@ -161,19 +161,20 @@ function getCharacterGrowthMultiplier(
 }
 
 function getEffectiveLevel(level: number): number {
+  // SpecRef: 2.1.2 | Party | L_eff
   const growthTerms = [
-    { threshold: 10, exponent: 1.2 },
-    { threshold: 20, exponent: 1.3 },
-    { threshold: 30, exponent: 1.4 },
-    { threshold: 40, exponent: 1.5 },
-    { threshold: 50, exponent: 1.6 },
-    { threshold: 60, exponent: 1.7 },
-    { threshold: 70, exponent: 1.8 },
-    { threshold: 80, exponent: 1.9 },
+    { threshold: 10, multiplier: 1.2 },
+    { threshold: 20, multiplier: 1.3 },
+    { threshold: 30, multiplier: 1.4 },
+    { threshold: 40, multiplier: 1.5 },
+    { threshold: 50, multiplier: 1.6 },
+    { threshold: 60, multiplier: 1.7 },
+    { threshold: 70, multiplier: 1.8 },
+    { threshold: 80, multiplier: 1.9 },
   ];
 
   const scale = 1 + growthTerms.reduce(
-    (sum, { threshold, exponent }) => sum + Math.pow(Math.max(0, (level - threshold) / 33), exponent),
+    (sum, { threshold, multiplier }) => sum + (Math.max(0, (level - threshold) / 30) * multiplier),
     0,
   );
 
