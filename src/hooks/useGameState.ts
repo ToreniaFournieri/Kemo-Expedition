@@ -111,6 +111,46 @@ const DEBUG_CYCLE_DURATION_SCALE = 0.2;
 const ITEM_MAX_STACK = 99;
 const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.exercise', 'q.healing', 'q.AFK']);
 
+type SideQuestScaleByLevel = {
+  1: number;
+  2: number;
+  3: number;
+  4: number;
+};
+
+type SideQuestRuntimeDef = {
+  type: string;
+  shortText: string;
+  baseMin: number;
+  baseMax: number;
+  deadlineHours: number;
+  scaleByLevel: SideQuestScaleByLevel;
+};
+
+const SIDE_QUEST_RUNTIME_DEFS: Record<number, SideQuestRuntimeDef> = {
+  1: { type: 'q.squander', shortText: '散財', baseMin: 100, baseMax: 400, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
+  2: { type: 'q.sleeping', shortText: '安眠', baseMin: 1, baseMax: 4, deadlineHours: 12, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
+  3: { type: 'q.exercise', shortText: '運動', baseMin: 5, baseMax: 15, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
+  4: { type: 'q.embezzlement', shortText: '横領', baseMin: 25, baseMax: 100, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
+  5: { type: 'q.donation', shortText: '寄付', baseMin: 100, baseMax: 500, deadlineHours: 12, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
+  6: { type: 'q.healing', shortText: '治療', baseMin: 5, baseMax: 20, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
+  7: { type: 'q.AFK', shortText: '放置', baseMin: 30, baseMax: 120, deadlineHours: 0, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
+  8: { type: 'q.treasure-super-rare', shortText: '超レア獲得', baseMin: 1, baseMax: 1, deadlineHours: 24, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
+  9: { type: 'q.treasure-boss-rare', shortText: 'ボスレア獲得', baseMin: 1, baseMax: 4, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
+  10: { type: 'q.poor-kid', shortText: 'アイテム獲得空振り', baseMin: 10, baseMax: 30, deadlineHours: 9, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
+  11: { type: 'q.consecutive-wins', shortText: '連続踏破', baseMin: 5, baseMax: 20, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.3, 3: 1.5, 4: 2.0 } },
+  12: { type: 'q.losers', shortText: '敗北', baseMin: 1, baseMax: 1, deadlineHours: 9, scaleByLevel: { 1: 1, 2: 1, 3: 1, 4: 1 } },
+  13: { type: 'q.savings', shortText: '貯金', baseMin: 200, baseMax: 1000, deadlineHours: 16, scaleByLevel: { 1: 1, 2: 1.4, 3: 1.8, 4: 2.2 } },
+};
+
+function getSideQuestLevelFromExpId(expId: number): 1 | 2 | 3 | 4 {
+  // SpecRef: 5.1.2 | Side Quest | Side quest difficulty
+  if (expId <= 2) return 1;
+  if (expId <= 4) return 2;
+  if (expId <= 6) return 3;
+  return 4;
+}
+
 function normalizeSideQuestType(type: string): string {
   // SpecRef: 5.1.2 | Side Quest | Runtime quest id normalization
   const legacyToCurrentTypeMap: Record<string, string> = {
@@ -3007,24 +3047,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       bags = { ...bags, sideQuestBag: newBag };
       if (ticket === 0) return { ...state, bags };
 
-      const questById: Record<number, { type: string; shortText: string; min: number; max: number; deadlineHours: number }> = {
-        1: { type: 'q.squander', shortText: '散財', min: 250, max: 1000, deadlineHours: 16 },
-        2: { type: 'q.sleeping', shortText: '安眠', min: 1, max: 4, deadlineHours: 12 },
-        3: { type: 'q.exercise', shortText: '運動', min: 20, max: 60, deadlineHours: 16 },
-        4: { type: 'q.embezzlement', shortText: '横領', min: 50, max: 200, deadlineHours: 16 },
-        5: { type: 'q.donation', shortText: '寄付', min: 200, max: 1000, deadlineHours: 12 },
-        6: { type: 'q.healing', shortText: '治療', min: 5, max: 20, deadlineHours: 16 },
-        7: { type: 'q.AFK', shortText: '放置', min: 90, max: 360, deadlineHours: 0 },
-        8: { type: 'q.treasure-super-rare', shortText: '超レア獲得', min: 1, max: 1, deadlineHours: 24 },
-        9: { type: 'q.treasure-boss-rare', shortText: 'ボスレア獲得', min: 1, max: 4, deadlineHours: 16 },
-        10: { type: 'q.poor-kid', shortText: 'アイテム獲得空振り', min: 25, max: 70, deadlineHours: 9 },
-        11: { type: 'q.consecutive-wins', shortText: '連続踏破', min: 15, max: 60, deadlineHours: 16 },
-        12: { type: 'q.losers', shortText: '敗北', min: 1, max: 1, deadlineHours: 9 },
-        13: { type: 'q.savings', shortText: '貯金', min: 400, max: 2000, deadlineHours: 16 },
-      };
-      const def = questById[ticket];
+      // SpecRef: 5.1.2 | Side Quest | Side quest difficulty
+      const def = SIDE_QUEST_RUNTIME_DEFS[ticket];
       if (!def) return { ...state, bags };
-      const target = Math.floor(Math.random() * (def.max - def.min + 1)) + def.min;
+      const sideQuestLevel = getSideQuestLevelFromExpId(Math.floor(action.rolledTier));
+      const multiplier = def.scaleByLevel[sideQuestLevel] ?? 1;
+      const scaledMin = Math.round(def.baseMin * multiplier);
+      const scaledMax = Math.round(def.baseMax * multiplier);
+      const min = Math.min(scaledMin, scaledMax);
+      const max = Math.max(scaledMin, scaledMax);
+      const target = Math.floor(Math.random() * (max - min + 1)) + min;
       const internalTarget = TIME_BASED_SIDE_QUEST_TYPES.has(def.type) ? target * 60 : target;
       const assignedAt = action.simulatedAt ?? Date.now();
       const expiresAt = def.deadlineHours > 0
