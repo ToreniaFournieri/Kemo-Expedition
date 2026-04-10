@@ -518,6 +518,11 @@ function getExpeditionDepthLimitWithDefault(value: unknown): ExpeditionDepthLimi
   return validDepthLimits.includes(value as ExpeditionDepthLimit) ? (value as ExpeditionDepthLimit) : 'all';
 }
 
+function normalizeExpeditionDifficultyOffset(value: unknown): number {
+  if (typeof value !== 'number' || Number.isNaN(value)) return 0;
+  return Math.max(0, Math.min(30, Math.floor(value)));
+}
+
 function matchesDiaryThreshold(item: Item, threshold: DiarySettings['superRareThreshold']): boolean {
   if (threshold === 'none') return false;
   if (threshold === 'all') return true;
@@ -701,6 +706,7 @@ function normalizeExpeditionLog(log: ExpeditionLog | null | undefined): Expediti
   if (!log) return null;
   return {
     ...log,
+    difficultyOffset: normalizeExpeditionDifficultyOffset(log.difficultyOffset),
     finalOutcome: normalizeExpeditionFinalOutcome(log.finalOutcome),
   };
 }
@@ -832,6 +838,7 @@ function loadSavedState(): GameState | null {
             party.currentHp = computed.hp;
           }
           party.expeditionDepthLimit = getExpeditionDepthLimitWithDefault(party.expeditionDepthLimit);
+          party.expeditionDifficultyOffset = normalizeExpeditionDifficultyOffset(party.expeditionDifficultyOffset);
           if (typeof party.pendingProfit !== 'number') party.pendingProfit = 0;
           if (typeof party.expeditionRewardsPending !== 'boolean') party.expeditionRewardsPending = false;
           if (!party.pendingUnlockState || typeof party.pendingUnlockState !== 'object') {
@@ -987,6 +994,7 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
     expeditionRewardsPending: false,
     pendingUnlockState: null,
     deityGold: 0,
+    expeditionDifficultyOffset: normalizeExpeditionDifficultyOffset(party.expeditionDifficultyOffset),
     expeditionStats: getExpeditionStatsWithDefaults(party.expeditionStats),
     sleepinessOfPartyBag: normalizeSleepinessPartyBag(party.sleepinessOfPartyBag ?? createSleepinessPartyBag()),
     currentSleepiness: normalizeSleepinessState(party.currentSleepiness),
@@ -1063,6 +1071,7 @@ function createInitialParty() {
     characters,
     selectedDungeonId: 1,
     expeditionDepthLimit: 'all',
+    expeditionDifficultyOffset: 0,
     currentHp: 0,
     pendingProfit: 0,
     expeditionRewardsPending: false,
@@ -1117,6 +1126,7 @@ function createSecondParty() {
     characters,
     selectedDungeonId: 1,
     expeditionDepthLimit: 'all',
+    expeditionDifficultyOffset: 0,
     currentHp: 0,
     pendingProfit: 0,
     expeditionRewardsPending: false,
@@ -1171,6 +1181,7 @@ function createThirdParty() {
     characters,
     selectedDungeonId: 1,
     expeditionDepthLimit: 'all',
+    expeditionDifficultyOffset: 0,
     currentHp: 0,
     pendingProfit: 0,
     expeditionRewardsPending: false,
@@ -1225,6 +1236,7 @@ function createFourthParty() {
     characters,
     selectedDungeonId: 1,
     expeditionDepthLimit: 'all',
+    expeditionDifficultyOffset: 0,
     currentHp: 0,
     pendingProfit: 0,
     expeditionRewardsPending: false,
@@ -1279,6 +1291,7 @@ function createFifthParty() {
     characters,
     selectedDungeonId: 1,
     expeditionDepthLimit: 'all',
+    expeditionDifficultyOffset: 0,
     currentHp: 0,
     pendingProfit: 0,
     expeditionRewardsPending: false,
@@ -1333,6 +1346,7 @@ function createSixthParty() {
     characters,
     selectedDungeonId: 1,
     expeditionDepthLimit: 'all',
+    expeditionDifficultyOffset: 0,
     currentHp: 0,
     pendingProfit: 0,
     expeditionRewardsPending: false,
@@ -1404,6 +1418,7 @@ type GameAction =
   | { type: 'SELECT_PARTY'; partyIndex: number }
   | { type: 'SELECT_DUNGEON'; partyIndex: number; dungeonId: number }
   | { type: 'SET_EXPEDITION_DEPTH_LIMIT'; partyIndex: number; depthLimit: ExpeditionDepthLimit }
+  | { type: 'SET_EXPEDITION_DIFFICULTY_OFFSET'; partyIndex: number; difficultyOffset: number }
   | { type: 'RESET_EXPEDITION_STATS'; partyIndex: number }
   | { type: 'UPDATE_PARTY_DEITY'; partyIndex: number; deityName: string }
   | { type: 'RUN_EXPEDITION'; partyIndex: number; simulatedAt?: number; gameMode?: GameMode; triggerGodsBattle?: boolean; isAfkSimulation?: boolean }
@@ -2322,6 +2337,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, parties: updatedParties };
     }
 
+    case 'SET_EXPEDITION_DIFFICULTY_OFFSET': {
+      const updatedParties = [...state.parties];
+      updatedParties[action.partyIndex] = {
+        ...updatedParties[action.partyIndex],
+        expeditionDifficultyOffset: normalizeExpeditionDifficultyOffset(action.difficultyOffset),
+      };
+      return { ...state, parties: updatedParties };
+    }
+
     case 'RESET_EXPEDITION_STATS': {
       const updatedParties = [...state.parties];
       updatedParties[action.partyIndex] = {
@@ -2378,6 +2402,10 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         return state;
       }
       let currentHp = Math.max(0, Math.min(persistedCurrentHp, partyStats.hp));
+      // SpecRef: 8.3 | UI_EXPEDITION | Difficulty Offset (難易度)
+      const effectiveDifficultyOffset = hasDefeatedDungeonBoss(currentParty, dungeon.id)
+        ? normalizeExpeditionDifficultyOffset(currentParty.expeditionDifficultyOffset)
+        : 0;
 
       const entries: ExpeditionLogEntry[] = [];
       const rewards: Item[] = [];
@@ -2421,7 +2449,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 floor: floor.floorNumber,
                 roomInFloor: roomIndex + 1,
                 roomType: roomDef.type,
-                floorMultiplier: getRoomMultiplier(dungeon.expLevel, floor.floorNumber, roomDef.type, gameMode === 'm.luna'),
+                floorMultiplier: getRoomMultiplier(
+                  dungeon.expLevel,
+                  floor.floorNumber,
+                  roomDef.type,
+                  gameMode === 'm.luna',
+                  effectiveDifficultyOffset,
+                ),
                 enemyName: '[扉が封印されている]',
                 enemyHP: 0,
                 enemyAttackValues: '',
@@ -2443,14 +2477,23 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             const baseEnemy = selectEnemyForRoom(roomDef.type, roomDef.poolId, roomDef.bossId, floor.floorNumber, roomIndex, roomDef.enemyIds ?? [], gameMode === 'm.luna');
             if (!baseEnemy) continue;
 
-            const roomMultiplier = getRoomMultiplier(dungeon.expLevel, floor.floorNumber, roomDef.type, gameMode === 'm.luna');
+            const roomMultiplier = getRoomMultiplier(
+              dungeon.expLevel,
+              floor.floorNumber,
+              roomDef.type,
+              gameMode === 'm.luna',
+              effectiveDifficultyOffset,
+            );
             const effectiveTier = getEffectiveExpeditionTier(dungeon.id, gameMode === 'm.luna');
             const effectiveDungeon = {
               ...dungeon,
               tier: effectiveTier,
               enemyMultipliers: getEffectiveEnemyMultipliers(dungeon, gameMode === 'm.luna'),
             };
-            let enemy = getEncounterEnemyWithScaling(baseEnemy, effectiveDungeon, floor.floorNumber, roomDef.type, { isLunaMode: gameMode === 'm.luna' });
+            let enemy = getEncounterEnemyWithScaling(baseEnemy, effectiveDungeon, floor.floorNumber, roomDef.type, {
+              isLunaMode: gameMode === 'm.luna',
+              difficultyOffset: effectiveDifficultyOffset,
+            });
             if (isGodsBattle && roomDef.type === 'battle_Boss') {
               enemy = createGodEnemy(enemy, dungeon.id, dungeon.name, gameMode === 'm.luna');
             }
@@ -2504,7 +2547,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             if (battleResult.outcome === 'victory') {
               const isColosseumBattle = dungeon.id === 99;
               if (!isColosseumBattle) {
-                const enemyLevelFinal = getEffectiveEnemyLevel(dungeon.expLevel, floor.floorNumber, roomDef.type, gameMode === 'm.luna');
+                const enemyLevelFinal = getEffectiveEnemyLevel(
+                  dungeon.expLevel,
+                  floor.floorNumber,
+                  roomDef.type,
+                  gameMode === 'm.luna',
+                  effectiveDifficultyOffset,
+                );
                 totalExp += calculateExperience(
                   enemy.experience,
                   roomDef.type,
@@ -2790,6 +2839,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const log: ExpeditionLog = {
         dungeonId: dungeon.id,
         dungeonName: dungeon.name,
+        difficultyOffset: effectiveDifficultyOffset,
         totalExperience: totalExpGain,
         totalRooms: dungeon.floors.reduce((sum, f) => sum + f.rooms.length, 0),
         completedRooms: entries.length,
@@ -3115,6 +3165,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         expeditionLog: {
           dungeonId: currentParty.selectedDungeonId,
           dungeonName,
+          difficultyOffset: 0,
           totalExperience: 0,
           totalRooms: 0,
           completedRooms: 0,
@@ -4131,6 +4182,10 @@ export function useGameState() {
 
     setExpeditionDepthLimit: useCallback((partyIndex: number, depthLimit: ExpeditionDepthLimit) => {
       dispatch({ type: 'SET_EXPEDITION_DEPTH_LIMIT', partyIndex, depthLimit });
+    }, []),
+
+    setExpeditionDifficultyOffset: useCallback((partyIndex: number, difficultyOffset: number) => {
+      dispatch({ type: 'SET_EXPEDITION_DIFFICULTY_OFFSET', partyIndex, difficultyOffset });
     }, []),
 
     resetExpeditionStats: useCallback((partyIndex: number) => {
