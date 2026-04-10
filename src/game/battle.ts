@@ -2153,6 +2153,7 @@ export function executeBattle(
   let enemyHasActedInBattle = false;
   const characterActedInBattleIds = new Set<number>();
   let firstActorInBattle: 'enemy' | number | null = null;
+  let sacredJudgementTriggered = false;
   const log: BattleLogEntry[] = [];
 
   const partyDeityKey = getDeityKey(party.deity.name);
@@ -2540,6 +2541,7 @@ export function executeBattle(
       noteTextTemplate = '(HP減少-{damage})';
     } else if (
       terrainEffect === 'terrain.sacred-judgement'
+      && !sacredJudgementTriggered
       && (
         (actor.kind === 'enemy' && firstActorInBattle === 'enemy')
         || (actor.kind === 'character' && firstActorInBattle === actor.stats.characterId)
@@ -2553,7 +2555,7 @@ export function executeBattle(
       );
       noteTextTemplate = '(HP減少 ⚡-{damage})';
       elementalTag = 'thunder';
-      firstActorInBattle = null;
+      sacredJudgementTriggered = true;
     }
 
     if (selfDamage <= 0) return;
