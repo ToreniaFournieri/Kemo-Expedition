@@ -32,7 +32,7 @@
 | State | Japanese label | Duration |
 |-------|-------|-------|
 | `state.rest` | 休息中 | heal max(100, +1% MaxHP) / 2 sec until full |
-| `state.sell` | 売却中 | 5 seconds per `auto-sell` items |
+| `state.sell` | 売却中 | 15 seconds per `auto-sell` items |
 | `state.feast` | 宴会中 | 90 seconds |
 | `state.sound_sleep` | 熟睡中 | 120 seconds |
 | `state.nap_sleep` | 仮眠中 | | x 1/5 of sound sleep |
