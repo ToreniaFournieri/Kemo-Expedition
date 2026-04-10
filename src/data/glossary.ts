@@ -690,52 +690,52 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "q.squander",
         "label": "散財",
-        "description": "宴会で浪費する(神魔戦で中止) (250 ~ 1,000G)"
+        "description": "宴会で浪費する(神魔戦で中止) "
       },
       {
         "key": "q.sleeping",
         "label": "安眠",
-        "description": "寝る(神魔戦で中止) (1回 ~ 4回)"
+        "description": "寝る(神魔戦で中止) "
       },
       {
         "key": "q.exercise",
         "label": "運動",
-        "description": "歩く(神魔戦で中止) (5分 ~ 15分)"
+        "description": "歩く(神魔戦で中止)"
       },
       {
         "key": "q.embezzlement",
         "label": "横領",
-        "description": "着服する(神魔戦で中止) (25 ~ 100G)"
+        "description": "着服する(神魔戦で中止)"
       },
       {
         "key": "q.donation",
         "label": "寄付",
-        "description": "寄付する(神魔戦で中止) (100 ~ 500G)"
+        "description": "寄付する(神魔戦で中止)"
       },
       {
         "key": "q.healing",
         "label": "治療",
-        "description": "治療を受ける(神魔戦で中止) (5分 ~ 20分)"
+        "description": "治療を受ける(神魔戦で中止)"
       },
       {
         "key": "q.AFK",
         "label": "放置",
-        "description": "神から見放されている(神魔戦で中止) (30分 ~ 120分)"
+        "description": "神から見放されている(神魔戦で中止)"
       },
       {
         "key": "q.treasure-super-rare",
         "label": "超レア獲得",
-        "description": "超レアを獲得する(神魔戦で中止) (1個)"
+        "description": "超レアを獲得する(神魔戦で中止)"
       },
       {
         "key": "q.treasure-boss-rare",
         "label": "ボスレア獲得",
-        "description": "ボスレアを獲得する(神魔戦で中止) (1個 ~ 4個)"
+        "description": "ボスレアを獲得する(神魔戦で中止)"
       },
       {
         "key": "q.poor-kid",
         "label": "アイテム獲得空振り",
-        "description": "アイテム獲得空振り(神魔戦で中止) (10回 ~ 30回)"
+        "description": "アイテム獲得空振り(神魔戦で中止)"
       },
       {
         "key": "q.consecutive-wins",
@@ -750,7 +750,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "q.savings",
         "label": "貯金",
-        "description": "貯金する(神魔戦で中止) (200 ~ 1,000G)"
+        "description": "貯金する(神魔戦で中止)"
       }
     ]
   },
