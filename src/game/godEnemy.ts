@@ -16,7 +16,12 @@ function getBaseGodEnemy(profile: GodEnemyProfile): EnemyDef | null {
 }
 
 // SpecRef: 4.1.2 | Enemy | Gods (神魔)
-export function buildGodRuntimeEnemy(profile: GodEnemyProfile, isLunaMode: boolean): EnemyDef | null {
+// SpecRef: 8.3 | UI_EXPEDITION | Difficulty Offset (難易度)
+export function buildGodRuntimeEnemy(
+  profile: GodEnemyProfile,
+  isLunaMode: boolean,
+  difficultyOffset: number = 0,
+): EnemyDef | null {
   const baseEnemy = getBaseGodEnemy(profile);
   const dungeon = DUNGEONS.find((candidate) => candidate.tier === profile.tier)
     ?? getDungeonById(profile.tier)
@@ -48,6 +53,7 @@ export function buildGodRuntimeEnemy(profile: GodEnemyProfile, isLunaMode: boole
   }, effectiveDungeon, 6, 'battle_Boss', {
     isGodEnemy: true,
     isLunaMode,
+    difficultyOffset,
   });
 
   return {

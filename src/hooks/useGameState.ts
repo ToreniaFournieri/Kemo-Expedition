@@ -1530,7 +1530,13 @@ function getGodMythicDropId(dropItemTier: number, categories: [ItemCategory, Ite
   return options[seed % options.length].id;
 }
 
-function createGodEnemy(enemy: EnemyDef, dungeonId: number, dungeonName: string, isLunaMode: boolean): EnemyDef {
+function createGodEnemy(
+  enemy: EnemyDef,
+  dungeonId: number,
+  dungeonName: string,
+  isLunaMode: boolean,
+  difficultyOffset: number,
+): EnemyDef {
   const godProfile = getGodProfileForDungeon(dungeonId, dungeonName);
   const godName = godProfile ? getGodShortName(godProfile.displayName) : enemy.name;
 
@@ -1556,7 +1562,7 @@ function createGodEnemy(enemy: EnemyDef, dungeonId: number, dungeonName: string,
     };
   }
 
-  const runtimeGodEnemy = buildGodRuntimeEnemy(godProfile, isLunaMode);
+  const runtimeGodEnemy = buildGodRuntimeEnemy(godProfile, isLunaMode, difficultyOffset);
 
   if (!runtimeGodEnemy) {
     return {
@@ -2495,7 +2501,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               difficultyOffset: effectiveDifficultyOffset,
             });
             if (isGodsBattle && roomDef.type === 'battle_Boss') {
-              enemy = createGodEnemy(enemy, dungeon.id, dungeon.name, gameMode === 'm.luna');
+              enemy = createGodEnemy(
+                enemy,
+                dungeon.id,
+                dungeon.name,
+                gameMode === 'm.luna',
+                effectiveDifficultyOffset,
+              );
             }
 
             // Pass currentHp to maintain HP persistence during expedition
