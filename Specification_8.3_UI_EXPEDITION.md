@@ -14,6 +14,9 @@ left-aligned                                    right-aligned
 PT1 HP (HP bar, blue) `x.expedition`.name       outcome `condition`.label ▼
 ```
 
+- Difficulty Offset (難易度):
+  - Adjustable with a slider from +0 to +30.
+  - The selected value is added to the level of all enemies in the selected expedition.
 
 ```
 PT1 HP (HP bar, blue) ルピニアンの断崖踏破  好調▼
@@ -22,6 +25,7 @@ PT1 HP (HP bar, blue) ルピニアンの断崖踏破  好調▼
 📜 1,110回アイテム獲得を空振りする(8%, 98回, 残り4時間)
 
 ルピニアンの断崖(pull down list)  探索深度 全て 出撃
+難易度: (Slider) +10
 (Left-Aligned)                           (Right-Aligned)
 踏破U/帰還V/引分W/撤退X/敗北Y 合計 Z回    リセット
 EXP: L489 | 自動売却額: 134G
