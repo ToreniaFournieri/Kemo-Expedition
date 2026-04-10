@@ -39,9 +39,9 @@
 | `state.outfit` | 身支度中 | 60 seconds |
 | `state.pray` | 祈り中 | 30 seconds |
 | `state.idle` | 待機中 | - |
-| `state.move` | 移動中 | 10 seconds * (1.30 - 0.02 * `x.exp_tier` )^(`x.exp_tier`) | 
-| `state.explore` | 探索中 | 5 seconds per room (24 rooms in total)|
-| `state.return` | 帰還中 | 30 seconds * (1.30 - 0.02 * `x.exp_tier` )^(`x.exp_tier`)  |
+| `state.move` | 移動中 | 30 seconds * (1.30 - 0.02 * `x.exp_tier` )^(`x.exp_tier`) | 
+| `state.explore` | 探索中 | 15 seconds per room (24 rooms in total)|
+| `state.return` | 帰還中 | 60 seconds * (1.30 - 0.02 * `x.exp_tier` )^(`x.exp_tier`)  |
 | `state.reactivate` | 復帰中 | - |
 
 **Durration modifilier**
