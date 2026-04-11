@@ -7144,7 +7144,7 @@ function ExpeditionTab({
           : undefined;
 
         return (
-          <div key={partyIndex} className="bg-pane relative rounded-lg p-2 overflow-hidden" style={expeditionPaneBackgroundStyle}>
+          <div key={partyIndex} className="bg-pane relative rounded-lg p-2 overflow-hidden shadow-md shadow-slate-900/15" style={expeditionPaneBackgroundStyle}>
             {expeditionPaneImageLayerStyle ? (
               <div aria-hidden className="pointer-events-none absolute inset-0" style={expeditionPaneImageLayerStyle} />
             ) : null}
