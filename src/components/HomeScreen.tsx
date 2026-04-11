@@ -10039,7 +10039,7 @@ function SettingTab({
                 key={tab}
                 type="button"
                 onClick={() => setGlossaryTab(tab)}
-                className={`text-xs px-2 py-0.5 border rounded ${
+                className={`text-xs px-2 py-0.5 border rounded shadow-sm shadow-slate-900/10 ${
                   glossaryTab === tab
                     ? 'bg-sub text-white border-sub'
                     : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
@@ -10052,7 +10052,7 @@ function SettingTab({
 
           <div className="space-y-3 pr-1">
             {filteredGlossarySections.map((section) => (
-              <div key={section.id} className="bg-white rounded p-2 border border-gray-200">
+              <div key={section.id} className="bg-white rounded p-2 border border-gray-200 shadow-sm shadow-slate-900/10">
                 {(() => {
                   const isBonusAbilityGlossarySection = section.heading === '2.1.1 a. bonus ability';
                   const activeBonusAbilitySubcategory = BONUS_ABILITY_GLOSSARY_SUBCATEGORY_META.find(
@@ -10249,7 +10249,7 @@ function SettingTab({
             <button
               key={filter}
               onClick={() => setCompendiumRarityFilter(filter)}
-              className={`text-xs px-1.5 py-0.5 border rounded ${
+              className={`text-xs px-1.5 py-0.5 border rounded shadow-sm shadow-slate-900/10 ${
                 compendiumRarityFilter === filter
                   ? 'bg-sub text-white border-sub'
                   : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
@@ -10269,7 +10269,7 @@ function SettingTab({
                   <button
                     key={cat}
                     onClick={() => setCompendiumCategory(cat)}
-                    className={`px-2 py-1 text-sm ${
+                    className={`px-2 py-1 text-sm shadow-sm shadow-slate-900/10 ${
                       i === 0 ? 'rounded-l' : i === group.categories.length - 1 ? 'rounded-r' : ''
                     } ${
                       compendiumCategory === cat
@@ -10290,7 +10290,7 @@ function SettingTab({
             const baseItem: Item = { ...item, enhancement: 0, superRare: 0 };
             const expanded = !!expandedCompendiumItems[item.id];
             return (
-              <div key={item.id} className="bg-white rounded border border-gray-200">
+              <div key={item.id} className="bg-white rounded border border-gray-200 shadow-sm shadow-slate-900/10">
                 <button
                   onClick={() => setExpandedCompendiumItems(prev => ({ ...prev, [item.id]: !expanded }))}
                   className="w-full text-left px-3 py-2 text-sm flex justify-between items-center"
@@ -10321,7 +10321,7 @@ function SettingTab({
             <button
               key={dungeon.id}
               onClick={() => onSetSelectedBestiaryDungeonId(dungeon.id)}
-              className={`px-2 py-1 text-sm rounded ${
+              className={`px-2 py-1 text-sm rounded shadow-sm shadow-slate-900/10 ${
                 selectedBestiaryDungeonId === dungeon.id
                   ? 'bg-sub text-white'
                   : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
@@ -10347,7 +10347,7 @@ function SettingTab({
             const godRuntimeEnemy = getGodRuntimeEnemy(god);
             const godClassShortName = CLASS_SHORT_NAMES[god.enemyClass];
             return (
-              <div key={god.name} className="mt-2 border border-gray-100 rounded bg-white">
+              <div key={god.name} className="mt-2 border border-gray-100 rounded bg-white shadow-sm shadow-slate-900/10">
                 <button
                   onClick={() => onSetExpandedBestiaryEnemies(prev => ({ ...prev, [godBestiaryId]: !godExpanded }))}
                   className="w-full text-left px-2 py-1 text-sm flex justify-between items-center"
@@ -10460,7 +10460,7 @@ function SettingTab({
             const hasPhysicalAttack = hasRangedAttack || hasMeleeAttack;
             const decay = `${((0.90 + colosseumEnemy.accuracyBonus) * 100).toFixed(1)}%`;
             return (
-              <div className="bg-white rounded border border-gray-200 p-2">
+              <div className="bg-white rounded border border-gray-200 p-2 shadow-sm shadow-slate-900/10">
                 <div className="text-xs text-gray-500 font-medium mb-1">Colosseum Opponent</div>
                 <div className="mt-2 border border-gray-100 rounded">
                   <button onClick={() => onSetExpandedBestiaryEnemies(prev => ({ ...prev, [colosseumEnemy.id]: !enemyExpanded }))} className="w-full text-left px-2 py-1 text-sm flex justify-between items-center">
@@ -10522,7 +10522,7 @@ function SettingTab({
             );
           })()}
           {!isGodBestiaryTab && !isColosseumBestiaryTab && selectedBestiaryGroups.map(group => (
-            <div key={group.key} className="bg-white rounded border border-gray-200 p-2">
+            <div key={group.key} className="bg-white rounded border border-gray-200 p-2 shadow-sm shadow-slate-900/10">
               <div className="text-xs text-gray-500 font-medium mb-1">{group.label}</div>
               {group.enemies.map(enemy => {
                 const displayEnemy = getDisplayEnemy(enemy, selectedBestiaryDungeon, group.floorNumber, group.groupType);
