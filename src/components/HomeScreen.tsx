@@ -202,7 +202,7 @@ const IOS_GLASS_BUTTON_CLASS =
   'ios-glass-button rounded-xl';
 // SpecRef: 8.1 | UI_FOUNDATIONS | Style: Compact, simple, iOS-like
 const IOS_GLASS_TAB_CLASS =
-  'ios-glass-button rounded-t-xl';
+  'ios-glass-button rounded-xl';
 // SpecRef: 8.1 | UI_FOUNDATIONS | Style: Compact, simple, iOS-like
 const IOS_GLASS_SLIDER_CLASS =
   'ios-glass-slider';
