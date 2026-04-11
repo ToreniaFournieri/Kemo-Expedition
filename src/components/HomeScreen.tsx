@@ -7162,18 +7162,17 @@ function ExpeditionTab({
               <div aria-hidden className="pointer-events-none absolute inset-0" style={expeditionPaneImageLayerStyle} />
             ) : null}
             <div className={`relative z-10 rounded-md p-2 text-gray-900 ${isDarkModeEnabled ? 'bg-slate-900/18' : 'bg-white/74'}`}>
-            {/* SpecRef: 8.3 | UI_EXPEDITION | PT1 (HP bar, blue) `x.expedition`.name / outcome `condition`.label ▼ */}
+            {/* SpecRef: 8.3 | UI_EXPEDITION | ### part: HP donuts bar, sub-color */}
             <button
               onClick={() => {
                 const nextExpanded = isLogExpanded ? null : partyIndex;
                 setExpandedLogParty(nextExpanded);
                 setExpandedRoom(null);
               }}
-              className="w-full flex justify-between items-center text-xs mb-1 gap-1.5"
+              className="w-full text-xs mb-1.5"
             >
-              <span className="min-w-0 flex items-center gap-1.5">
-                <span className="font-bold text-black shrink-0">{party.name}</span>
-                <span className="relative h-7 w-7 shrink-0">
+              <span className="min-w-0 flex items-start gap-2">
+                <span className="relative h-11 w-11 shrink-0 mt-0.5">
                   <svg
                     viewBox="0 0 36 36"
                     className="h-full w-full -rotate-90 drop-shadow-[0_1px_1px_rgb(15_23_42/0.2)]"
@@ -7185,72 +7184,72 @@ function ExpeditionTab({
                       cy="18"
                       r="14"
                       fill="none"
-                      stroke={isDarkModeEnabled ? 'rgb(148 163 184 / 0.36)' : 'rgb(147 197 253 / 0.55)'}
-                      strokeWidth="6"
+                      stroke={isDarkModeEnabled ? 'rgb(148 163 184 / 0.36)' : 'rgb(186 230 253 / 0.7)'}
+                      strokeWidth="5"
                     />
                     <circle
                       cx="18"
                       cy="18"
                       r="14"
                       fill="none"
-                      stroke="rgb(59 130 246)"
-                      strokeWidth="6"
+                      stroke="rgb(14 165 233)"
+                      strokeWidth="5"
                       strokeLinecap="round"
                       strokeDasharray={`${Math.max(0, Math.min(100, hpPercent)) * 0.88} 100`}
                       className="transition-[stroke-dasharray] duration-200"
                     />
                   </svg>
                 </span>
-                <span className="truncate">{headlineDungeonName}</span>
-              </span>
-              <span className="shrink-0 flex items-center gap-1">
-                <span className="font-medium text-sub shrink-0">{headlineState}</span>
-                <span className="font-medium text-sub shrink-0">{conditionLabel}</span>
-                <span className={`${isLogExpanded ? 'transform transition-transform rotate-180' : ''}`}>▼</span>
+                <span className="min-w-0 flex-1 space-y-0.5 text-left">
+                  <span className="flex items-start justify-between gap-1.5">
+                    <span className="min-w-0 truncate text-black">
+                      <span className="font-bold shrink-0 mr-1">{party.name}</span>
+                      {headlineDungeonName}
+                    </span>
+                    <span className="shrink-0 flex items-center gap-1">
+                      <span className="font-medium text-sub shrink-0">{conditionLabel}</span>
+                      <span className={`${isLogExpanded ? 'transform transition-transform rotate-180' : ''}`}>▼</span>
+                    </span>
+                  </span>
+                  {nextGoalText && (
+                    <span
+                      className="block text-[11px] text-gray-700 overflow-hidden break-words"
+                      style={{
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                      }}
+                    >
+                      {nextGoalText}
+                    </span>
+                  )}
+                  {sideQuestText && (
+                    <span className="block text-[11px] text-gray-700 truncate">
+                      <span className="side-quest-theme-icon" aria-hidden="true">📜</span>{' '}
+                      {sideQuestText}
+                    </span>
+                  )}
+                  <span className={`block relative h-8 min-w-0 rounded-md overflow-hidden text-[11px] shadow-[0_2px_6px_rgb(15_23_42/0.18),inset_0_1px_0_rgb(255_255_255/0.42)] ${isDarkModeEnabled ? 'bg-slate-900/28' : 'bg-white/45'}`}>
+                    <span
+                      className={`absolute inset-y-0 left-0 bg-sub/20 ${cycle.state === 'explore' ? '' : 'transition-[width] duration-200'}`}
+                      style={{ width: `${progressPercent}%` }}
+                    />
+                    <span className="relative z-10 flex h-full items-center px-1.5 text-black leading-tight">
+                      <span
+                        className="overflow-hidden text-pretty"
+                        style={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                        }}
+                      >
+                        {headlineState}: {progressLabel}
+                      </span>
+                    </span>
+                  </span>
+                </span>
               </span>
             </button>
-
-            <div className={`mb-1 relative h-9 min-w-0 rounded-md overflow-hidden text-[11px] shadow-[0_2px_6px_rgb(15_23_42/0.18),inset_0_1px_0_rgb(255_255_255/0.42)] ${isDarkModeEnabled ? 'bg-slate-900/28' : 'bg-white/45'}`}>
-              <div
-                className={`absolute inset-y-0 left-0 bg-sub/20 ${cycle.state === 'explore' ? '' : 'transition-[width] duration-200'}`}
-                style={{ width: `${progressPercent}%` }}
-              />
-              <div className="relative z-10 h-full px-1.5 py-1 text-black text-center leading-tight grid place-items-center">
-                <span
-                  className="overflow-hidden text-pretty"
-                  style={{
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                  }}
-                >
-                  {progressLabel}
-                </span>
-              </div>
-            </div>
-
-            {(nextGoalText || sideQuestText) && (
-              <div className="mb-1 space-y-0.5">
-                {nextGoalText && (
-                  <div
-                    className="text-[11px] text-gray-700 overflow-hidden break-words"
-                    style={{
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                    }}
-                  >
-                    {nextGoalText}
-                  </div>
-                )}
-                {sideQuestText && (
-                  <div className="text-[11px] text-gray-700 truncate">
-                    <span className="side-quest-theme-icon" aria-hidden="true">📜</span>{' '}
-                    {sideQuestText}
-                  </div>
-                )}
-              </div>
-            )}
 
             {isLogExpanded && (
               <div className="space-y-2 mb-2">
