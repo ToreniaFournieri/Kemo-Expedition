@@ -233,12 +233,12 @@
 2. **Initialize memory**
   - Record the **item IDs** of all currently equipped items as **Memory A**.
   - Record all **`c.*` bonus effects** provided by the currently equipped items as **Memory B**.
-    - Include `c.antagonism` in Memory B to prevent the selection of items that introduce harmful effects.
 
 3. **Search for a candidate item**
    - Exclude any item that satisfies either of the following conditions:
      - Its **item ID** already exists in **Memory A**.
      - Its **`c.*` bonus** already exists in **Memory B**.
+     - It has `c.antagonism`. (to prevent the selection of items that introduce harmful effects.)
    - **For `i.gauntlet`, `i.archery`, and `i.catalyst`:**
      - From the inventory, search for the **highest ( modfied `target d. bonus` + `c.N_NoA+X`) bonus value item** in the target item category.
      - the value is including enhancement, super rare multiplier calculation.
