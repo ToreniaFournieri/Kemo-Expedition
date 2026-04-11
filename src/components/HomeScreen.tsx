@@ -7157,7 +7157,7 @@ function ExpeditionTab({
               <div aria-hidden className="pointer-events-none absolute inset-0" style={expeditionPaneImageLayerStyle} />
             ) : null}
             <div className={`relative z-10 rounded-md p-2 text-gray-900 ${isDarkModeEnabled ? 'bg-slate-900/18' : 'bg-white/74'}`}>
-            {/* SpecRef: 8.3 | UI_EXPEDITION | PT1 HP (HP bar, blue) `x.expedition`.name / outcome `condition`.label ▼ */}
+            {/* SpecRef: 8.3 | UI_EXPEDITION | PT1 (HP bar, blue) `x.expedition`.name / outcome `condition`.label ▼ */}
             <button
               onClick={() => {
                 const nextExpanded = isLogExpanded ? null : partyIndex;
@@ -7168,7 +7168,6 @@ function ExpeditionTab({
             >
               <span className="min-w-0 flex items-center gap-1.5">
                 <span className="font-bold text-black shrink-0">{party.name}</span>
-                <span className="shrink-0 text-xs text-gray-600">HP</span>
                 <span className={`h-2 w-14 rounded-full overflow-hidden shrink-0 shadow-[inset_0_1px_2px_rgb(15_23_42/0.24),0_1px_2px_rgb(15_23_42/0.16)] ${isDarkModeEnabled ? 'bg-slate-100/30' : 'bg-blue-100/55'}`}>
                   <span className="block h-full bg-blue-500 transition-[width] duration-200" style={{ width: `${hpPercent}%` }} />
                 </span>
