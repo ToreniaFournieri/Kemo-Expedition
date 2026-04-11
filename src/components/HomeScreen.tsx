@@ -374,6 +374,7 @@ const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.exercise', 'q.healing', 'q.AFK']
 const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
 const AFK_MAX_ELAPSED_MS = 1800 * 60 * 1000;
 const CATCHUP_CHUNK_MINUTES = 60;
+const REDUCER_CATCHUP_THRESHOLD_MS = 1000;
 
 function getElapsedWholeSeconds(carriedMs: number, elapsedMs: number): { gainedSeconds: number; remainderMs: number } {
   const totalMs = Math.max(0, carriedMs + elapsedMs);
@@ -3481,7 +3482,7 @@ export function HomeScreen({
 
     // Long background spans should be simulated inside the reducer so each expedition
     // phase reads the latest pending profit / HP values instead of stale render snapshots.
-    if (elapsedMs >= 60_000) {
+    if (elapsedMs >= REDUCER_CATCHUP_THRESHOLD_MS) {
       if (pendingAfkMsRef.current <= 0) {
         afkSummaryBaselineRef.current = parties.map((party) => ({ ...party.expeditionStats }));
         shouldShowAfkSummaryRef.current = true;
