@@ -6580,7 +6580,7 @@ function PartyTab({
               // SpecRef: 8.2.4 | Equipment management | Lock and Unlock Item
               const lockEmojiClassName = isLocked ? 'sub-theme-emoji-icon' : 'unlock-theme-emoji-icon race-icon';
               return (
-              <div key={slotIndex} className={`w-full p-2 text-left border rounded text-sm leading-tight bg-white ${isExpanded ? 'border-sub' : 'border-gray-200'}`}>
+              <div key={slotIndex} className={`w-full p-2 text-left border rounded text-sm leading-tight bg-white shadow-sm shadow-slate-900/10 ${isExpanded ? 'border-sub' : 'border-gray-200'}`}>
                 <div className="flex items-center gap-2">
                   {item && isLockIconVisible && (
                     <button
@@ -6795,7 +6795,7 @@ function PartyTab({
                   <button
                     key={filter}
                     onClick={() => setPartyRarityFilter(filter)}
-                    className={`text-xs px-1.5 py-0.5 border rounded ${
+                    className={`text-xs px-1.5 py-0.5 border rounded shadow-sm shadow-slate-900/10 ${
                       partyRarityFilter === filter
                         ? 'bg-sub text-white border-sub'
                         : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
@@ -6808,7 +6808,7 @@ function PartyTab({
                 <span className="text-xs text-gray-500"> 超レア</span>
                 <button
                   onClick={() => setPartySuperRareOnly(prev => !prev)}
-                  className={`text-xs px-1.5 py-0.5 border rounded ${
+                  className={`text-xs px-1.5 py-0.5 border rounded shadow-sm shadow-slate-900/10 ${
                     partySuperRareOnly
                       ? 'bg-accent text-white border-accent'
                       : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
@@ -6828,7 +6828,7 @@ function PartyTab({
                       <button
                         key={cat}
                         onClick={() => setEquipCategory(cat)}
-                        className={`px-2 py-1 text-xs ${
+                        className={`px-2 py-1 text-xs shadow-sm shadow-slate-900/10 ${
                           i === 0 ? 'rounded-l' : i === group.categories.length - 1 ? 'rounded-r' : ''
                         } ${
                           equipCategory === cat
@@ -6849,7 +6849,7 @@ function PartyTab({
                   key={displayItem.key}
                   onClick={() => handleItemTap(displayItem)}
                   disabled={!displayItem.isEquipped && selectingSlot === null && !hasEmptySlot}
-                  className={`w-full p-2 text-left text-sm border rounded bg-white ${
+                  className={`w-full p-2 text-left text-sm border rounded bg-white shadow-sm shadow-slate-900/10 ${
                     displayItem.isEquipped
                       ? 'border-sub bg-blue-50'
                       : selectingSlot !== null || hasEmptySlot
@@ -8139,7 +8139,7 @@ function InventoryTab({
             <button
               key={filter}
               onClick={() => setInventoryRarityFilter(filter)}
-              className={`text-xs px-1.5 py-0.5 border rounded ${
+              className={`text-xs px-1.5 py-0.5 border rounded shadow-sm shadow-slate-900/10 ${
                 inventoryRarityFilter === filter
                   ? 'bg-sub text-white border-sub'
                   : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
@@ -8152,7 +8152,7 @@ function InventoryTab({
           <span className="text-xs text-gray-500"> 超レア</span>
           <button
             onClick={() => setInventorySuperRareOnly(prev => !prev)}
-            className={`text-xs px-1.5 py-0.5 border rounded ${
+            className={`text-xs px-1.5 py-0.5 border rounded shadow-sm shadow-slate-900/10 ${
               inventorySuperRareOnly
                 ? 'bg-accent text-white border-accent'
                 : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100'
@@ -8175,7 +8175,7 @@ function InventoryTab({
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat as InventoryCategory)}
-                  className={`px-2 py-1 text-sm ${
+                  className={`px-2 py-1 text-sm shadow-sm shadow-slate-900/10 ${
                     i === 0 ? 'rounded-l' : i === group.categories.length - 1 ? 'rounded-r' : ''
                   } ${
                     selectedCategory === cat
@@ -8201,7 +8201,7 @@ function InventoryTab({
           {isJewelCategory && combinedJewelEntries.map((entry) => {
             if (entry.type === 'owned') {
               return (
-                <div key={entry.key} className="px-2 py-1.5 rounded bg-pane">
+                <div key={entry.key} className="px-2 py-1.5 rounded bg-pane shadow-sm shadow-slate-900/10">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="text-sm truncate">{getJewelNameByRank(entry.jewelKey, entry.rank)}</span>
@@ -8217,7 +8217,7 @@ function InventoryTab({
 
             const race = RACES.find((raceEntry) => raceEntry.id === entry.raceId);
             return (
-              <div key={entry.key} className="px-2 py-1.5 rounded bg-pane">
+              <div key={entry.key} className="px-2 py-1.5 rounded bg-pane shadow-sm shadow-slate-900/10">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
                     {race && <RaceIcon race={race} className="h-4 w-4 shrink-0" />}
@@ -8240,7 +8240,7 @@ function InventoryTab({
               return (
                 <div
                   key={entry.key}
-                  className="px-2 py-1.5 rounded bg-pane"
+                  className="px-2 py-1.5 rounded bg-pane shadow-sm shadow-slate-900/10"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
@@ -8277,7 +8277,7 @@ function InventoryTab({
             return (
               <div
                 key={entry.key}
-                className="px-2 py-1.5 rounded bg-pane"
+                className="px-2 py-1.5 rounded bg-pane shadow-sm shadow-slate-900/10"
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
