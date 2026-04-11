@@ -2688,12 +2688,13 @@ export function HomeScreen({
       return Number.isInteger(percent) ? `${percent}` : `${percent.toFixed(1)}`;
     };
 
+    // SpecRef: 7.1.1.2 | Equipping into empty slots | Initialize memory
     const ITEM_DIRECT_C_BONUS_TYPES = new Set([
       'equip_slot', 'equip_melee', 'equip_ranged', 'equip_magic', 'penet', 'accuracy', 'growth_xV', 'upgrade_V',
       'melee_attack', 'ranged_attack', 'magical_attack', 'physical_attack', 'physical_defense',
       'magical_defense', 'physical_offense_multiplier_xV', 'magical_offense_multiplier_xV',
       'physical_defense_multiplier_xV', 'magical_defense_multiplier_xV', 'fire_defense_multiplier_xV',
-      'ice_defense_multiplier_xV', 'thunder_defense_multiplier_xV',
+      'ice_defense_multiplier_xV', 'thunder_defense_multiplier_xV', 'antagonism',
     ]);
 
     const getItemCBonusSignatures = (item: Item): Set<string> => {
