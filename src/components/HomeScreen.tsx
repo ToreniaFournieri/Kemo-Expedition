@@ -1069,9 +1069,9 @@ function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | n
       return null;
     }
     if (hasBossDefeat) {
-      return `特殊目標: ボスレアアイテム ${bossRareCollected}/${godsRequired} で神魔キョウエン戦`;
+      return `ボスレアアイテム ${bossRareCollected}/${godsRequired} で神魔キョウエン戦`;
     }
-    return '特殊目標: ボスを撃破せよ';
+    return 'ボスを撃破せよ';
   }
 
   return null;
