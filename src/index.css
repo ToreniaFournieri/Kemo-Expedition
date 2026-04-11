@@ -385,3 +385,26 @@ body {
     inset 0 1px 0 rgb(255 255 255 / 0.45),
     0 5px 12px var(--glass-shadow);
 }
+
+.liquid-glass-segmented {
+  border: 1px solid var(--glass-border);
+  background-color: rgb(255 255 255 / 0.35);
+  background-image: linear-gradient(to bottom, var(--glass-highlight), rgb(255 255 255 / 0));
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.42), 0 8px 18px var(--glass-shadow);
+}
+
+.liquid-glass-tab-active {
+  border-color: rgb(var(--color-sub) / 0.45) !important;
+  background-color: rgb(var(--color-sub) / 0.14) !important;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.56), 0 6px 12px var(--glass-shadow);
+}
+
+.theme-dark .liquid-glass-segmented {
+  background-color: rgb(30 41 59 / 0.45);
+}
+
+.theme-dark .liquid-glass-tab-active {
+  background-color: rgb(var(--color-sub) / 0.2) !important;
+}

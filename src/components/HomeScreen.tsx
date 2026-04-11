@@ -5312,7 +5312,7 @@ function PartyTab({
         </div>
       )}
       {/* Party selector - tab style */}
-      <div className="flex mb-4 border-b border-gray-200">
+      <div className="liquid-glass-segmented mb-4 flex gap-1 rounded-2xl p-1">
         {[0, 1, 2, 3, 4, 5].map((partyIndex) => {
           const isAvailable = partyIndex < parties.length;
           const isSelected = partyIndex === selectedPartyIndex;
@@ -5326,12 +5326,12 @@ function PartyTab({
                 setPendingDeityName(parties[partyIndex].deity.name);
               }}
               disabled={!isAvailable}
-              className={`flex-1 py-2 text-sm font-medium transition-colors ${
+              className={`${IOS_GLASS_TAB_CLASS} flex-1 px-1 py-2 text-sm font-medium transition-colors ${
                 isSelected
-                  ? 'text-sub border-b-2 border-sub bg-blue-50/70'
+                  ? 'liquid-glass-tab-active text-sub'
                   : isAvailable
-                  ? 'text-gray-700 hover:text-gray-900 hover:bg-gray-100/70'
-                  : 'text-gray-300 cursor-not-allowed'
+                  ? 'text-gray-700 hover:text-gray-900'
+                  : 'text-gray-300 cursor-not-allowed opacity-60'
               }`}
             >
               PT{partyIndex + 1}
@@ -5427,7 +5427,7 @@ function PartyTab({
       )}
 
       {/* Character selector */}
-      <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+      <div className="liquid-glass-segmented mb-4 flex gap-2 overflow-x-auto rounded-2xl p-2 pb-2">
         {party.characters.map((c, i) => {
           const r = RACES.find(r => r.id === c.raceId)!;
           const mc = CLASSES.find(cl => cl.id === c.mainClassId)!;
@@ -5483,8 +5483,8 @@ function PartyTab({
                 setDraggingCharacterIndex(null);
               }}
               onClick={() => { setSelectedCharacter(i); setSelectingSlot(null); }}
-              className={`flex-shrink-0 p-2 rounded-lg border transition-colors ${
-                i === selectedCharacter ? 'border-sub bg-blue-50' : 'border-gray-200 hover:bg-gray-50/70'
+              className={`${IOS_GLASS_BUTTON_CLASS} flex-shrink-0 p-2 transition-colors ${
+                i === selectedCharacter ? 'liquid-glass-tab-active border-sub' : 'border-white/55 hover:bg-white/65'
               } ${draggingCharacterIndex === i ? 'opacity-70 border-sub' : ''}`}
               data-party-character-index={i}
             >
@@ -7643,7 +7643,7 @@ function BaseTab({
 
   return (
     <div>
-      <div className="flex mb-4 border-b border-gray-200">
+      <div className="liquid-glass-segmented mb-4 flex gap-1 rounded-2xl p-1">
         {baseSubTabs.map((tab) => (
           <button
             key={tab.id}
@@ -7652,12 +7652,12 @@ function BaseTab({
               onSetActiveSubTab(tab.id);
             }}
             disabled={!tab.isAvailable}
-            className={`flex-1 py-2 text-sm font-medium ${
+            className={`${IOS_GLASS_TAB_CLASS} flex-1 px-1 py-2 text-sm font-medium transition-colors ${
               activeSubTab === tab.id
-                ? 'text-sub border-b-2 border-sub'
+                ? 'liquid-glass-tab-active text-sub'
                 : tab.isAvailable
                 ? 'text-gray-700 hover:text-gray-900'
-                : 'text-gray-300 cursor-not-allowed'
+                : 'text-gray-300 cursor-not-allowed opacity-60'
             }`}
           >
             {tab.label}
