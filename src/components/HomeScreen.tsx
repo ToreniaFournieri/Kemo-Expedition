@@ -2874,6 +2874,7 @@ export function HomeScreen({
       memoryItemIds: Set<number>,
       memoryCBonusNames: Set<string>,
     ): string | null => {
+      // SpecRef: 7.1.1.2 | Equipping into empty slots | Search for a candidate item
       const options = Object.entries(simulatedInventory)
         .filter(([, variant]) => {
           if (
@@ -2885,6 +2886,7 @@ export function HomeScreen({
           }
 
           if (memoryItemIds.has(variant.item.id)) return false;
+          if ((variant.item.bonuses ?? []).some((bonus) => bonus.type === 'antagonism')) return false;
 
           const cBonusNames = getItemCBonusSignatures(variant.item);
           for (const bonusName of cBonusNames) {
