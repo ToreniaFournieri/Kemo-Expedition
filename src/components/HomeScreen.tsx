@@ -13,7 +13,7 @@ import { CLASSES, CLASS_SHORT_NAMES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
 import { LINEAGES } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS, getSuperRareBonuses } from '../data/items';
-import { GOD_ENEMY_PROFILES, GOD_MYTHIC_DROPS, getGodProfileForDungeon } from '../data/dropTables';
+import { GOD_ENEMY_PROFILES, GOD_MYTHIC_DROPS } from '../data/dropTables';
 import { ABILITY_BASE_NAMES } from '../data/abilityNames';
 import {
   BONUS_ABILITY_GLOSSARY_ENTRIES,
@@ -1019,10 +1019,6 @@ function getDungeonEntryGateState(
   };
 }
 
-function getGodShortName(displayName: string): string {
-  return displayName.split(' ')[0] ?? displayName;
-}
-
 function shouldDelayNextSpecialGoal(party: Party, cycleState?: PartyCycleState): boolean {
   if (cycleState !== 'explore') return false;
   const log = party.lastExpeditionLog;
@@ -1074,9 +1070,10 @@ function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | n
     if (shouldDelayNextSpecialGoal(party, cycleState)) {
       return null;
     }
-    const waitingGod = getGodProfileForDungeon(currentDungeon.id, currentDungeon.name);
-    const waitingGodName = waitingGod ? getGodShortName(waitingGod.displayName) : '神魔';
-    return `特殊目標: ${currentDungeon.name}のボスレアアイテム ${bossRareCollected}/${godsRequired} で神魔${waitingGodName}戦`;
+    if (hasBossDefeat) {
+      return `特殊目標: ボスレアアイテム ${bossRareCollected}/${godsRequired} で神魔キョウエン戦`;
+    }
+    return '特殊目標: ボスを撃破せよ';
   }
 
   return null;
