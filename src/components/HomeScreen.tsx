@@ -1,4 +1,4 @@
-import { Fragment, useState, useEffect, useRef, useCallback, useMemo, type ChangeEvent, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
+import { Fragment, useState, useEffect, useRef, useCallback, useMemo, type ChangeEvent, type CSSProperties, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
 import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId, type Ability, type BattleLogEntry } from '../types';
 import { computeCharacterHpContribution, computePartyStats } from '../game/partyComputation';
 import {
@@ -209,6 +209,13 @@ const IOS_GLASS_TOP_TAB_CLASS =
 // SpecRef: 8.1 | UI_FOUNDATIONS | Style: Compact, simple, iOS-like
 const IOS_GLASS_SLIDER_CLASS =
   'ios-glass-slider';
+
+function getSliderProgressStyle(value: number, min: number, max: number): CSSProperties {
+  const clampedMax = Math.max(min, max);
+  const clampedValue = Math.min(clampedMax, Math.max(min, value));
+  const progress = clampedMax === min ? 0 : ((clampedValue - min) / (clampedMax - min)) * 100;
+  return { '--slider-progress': `${progress}%` } as CSSProperties;
+}
 
 const TERRAIN_EFFECT_GLOSSARY_SECTION = GLOSSARY_SECTIONS.find((section) => section.heading === '1.1.10 t. terrain effects');
 const TERRAIN_EFFECT_OPTIONS = [
@@ -7259,6 +7266,7 @@ function ExpeditionTab({
                         value={selectedDifficultyOffset}
                         onChange={(e) => onSetExpeditionDifficultyOffset(partyIndex, Number(e.target.value))}
                         className={`min-w-0 flex-1 ${IOS_GLASS_SLIDER_CLASS}`}
+                        style={getSliderProgressStyle(selectedDifficultyOffset, 0, 30)}
                       />
                       <span className="shrink-0">+{formatNumber(selectedDifficultyOffset)}</span>
                     </div>
@@ -7431,7 +7439,7 @@ function ExpeditionTab({
                             )}
                           </button>
                           {isRoomExpanded && entry.details && (
-                            <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
+                            <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)]">
                               <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
                               {aggregateBattleLifeDrainLogs(entry.details).map((log, j, battleLogs) => {
                                 const isResurrectLog = log.note?.startsWith('(再起') || log.note?.startsWith('(即時蘇生)');
@@ -8808,7 +8816,7 @@ function DiaryTab({
                           )}
                         </button>
                         {isRoomExpanded && entry.details && (
-                          <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1">
+                          <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)]">
                             <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
                             {aggregateBattleLifeDrainLogs(entry.details).map((battleLog, j, battleLogs) => {
                               const isResurrectLog = battleLog.note?.startsWith('(再起') || battleLog.note?.startsWith('(即時蘇生)');
@@ -10658,7 +10666,7 @@ function SettingTab({
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy type</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyType} onChange={(e) => updateColosseumEnemySettings({ enemyType: e.target.value })}>{Object.keys(ENEMY_TYPE_LABELS).map((key) => <option key={key} value={key}>{ENEMY_TYPE_LABELS[key] ?? key}</option>)}</select></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy main class</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyMainClass} onChange={(e) => updateColosseumEnemySettings({ enemyMainClass: e.target.value as ColosseumEnemySettings['enemyMainClass'] })}>{ENEMY_EDIT_CLASS_OPTIONS.map((key) => <option key={key} value={key}>{ENEMY_CLASS_LABELS[key] ?? key}</option>)}</select></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy sub class</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemySubClass} onChange={(e) => updateColosseumEnemySettings({ enemySubClass: e.target.value as ColosseumEnemySettings['enemySubClass'] })}><option value="none">none</option>{ENEMY_EDIT_CLASS_OPTIONS.map((key) => <option key={key} value={key}>{ENEMY_CLASS_LABELS[key] ?? key}</option>)}</select></label>
-          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy level: {colosseumEnemySettings.level}</div><input className={IOS_GLASS_SLIDER_CLASS} type="range" min={1} max={99} value={colosseumEnemySettings.level} onChange={(e) => updateColosseumEnemySettings({ level: Number(e.target.value) })} /></label>
+          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy level: {colosseumEnemySettings.level}</div><input className={IOS_GLASS_SLIDER_CLASS} type="range" min={1} max={99} value={colosseumEnemySettings.level} onChange={(e) => updateColosseumEnemySettings({ level: Number(e.target.value) })} style={getSliderProgressStyle(colosseumEnemySettings.level, 1, 99)} /></label>
           {[0, 1, 2, 3, 4].map((slot) => {
             const slotAbility = colosseumEnemySettings.abilities[slot];
             return (
