@@ -8175,7 +8175,7 @@ function InventoryTab({
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat as InventoryCategory)}
-                  className={`px-2 py-1 text-sm shadow-sm shadow-slate-900/10 ${
+                  className={`px-2 py-1 text-sm pane-button-shadow ${
                     i === 0 ? 'rounded-l' : i === group.categories.length - 1 ? 'rounded-r' : ''
                   } ${
                     selectedCategory === cat
@@ -10269,7 +10269,7 @@ function SettingTab({
                   <button
                     key={cat}
                     onClick={() => setCompendiumCategory(cat)}
-                    className={`px-2 py-1 text-sm shadow-sm shadow-slate-900/10 ${
+                    className={`px-2 py-1 text-sm pane-button-shadow ${
                       i === 0 ? 'rounded-l' : i === group.categories.length - 1 ? 'rounded-r' : ''
                     } ${
                       compendiumCategory === cat
@@ -10321,7 +10321,7 @@ function SettingTab({
             <button
               key={dungeon.id}
               onClick={() => onSetSelectedBestiaryDungeonId(dungeon.id)}
-              className={`px-2 py-1 text-sm rounded shadow-sm shadow-slate-900/10 ${
+              className={`px-2 py-1 text-sm rounded pane-button-shadow ${
                 selectedBestiaryDungeonId === dungeon.id
                   ? 'bg-sub text-white'
                   : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
@@ -10718,7 +10718,7 @@ function SettingTab({
         {renderDivineBureauPanelHeader('superRare', '超レア一覧')}
         {divineBureauPanelExpanded.superRare && <>
         <div className="text-xs text-gray-500 mt-3 mb-2">Super Rare List (超レア一覧)</div>
-        <div className="bg-white rounded p-2 text-sm space-y-1 max-h-72 overflow-y-auto">
+        <div className="bg-white rounded p-2 text-sm space-y-1 max-h-72 overflow-y-auto pane-button-shadow">
           {SUPER_RARE_TITLES.filter(title => title.value > 0).map(title => {
             const uniqueBonus = formatBonuses(title.bonuses ?? [], { defenseMultiplierStyle: 'friendly' });
             return (
@@ -10743,7 +10743,7 @@ function SettingTab({
               role="switch"
               aria-checked={isAutoRepeatEnabled}
               onClick={() => onSetAutoRepeatEnabled(!isAutoRepeatEnabled)}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 pane-button-shadow"
             >
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-gray-700">自動周回</span>
@@ -10765,7 +10765,7 @@ function SettingTab({
               role="switch"
               aria-checked={isExpeditionStatsDisplayEnabled}
               onClick={() => onSetExpeditionStatsDisplayEnabled(!isExpeditionStatsDisplayEnabled)}
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 pane-button-shadow"
             >
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-gray-700">統計情報表示</span>
@@ -10788,7 +10788,7 @@ function SettingTab({
                 <button
                   key={mode}
                   onClick={() => onSetDarkModeSetting(mode)}
-                  className={`py-2 rounded border text-sm font-medium ${
+                  className={`py-2 rounded border text-sm font-medium pane-button-shadow ${
                     darkModeSetting === mode
                       ? 'bg-sub text-white border-sub'
                       : 'bg-white text-gray-700 border-gray-300'
@@ -10798,7 +10798,7 @@ function SettingTab({
                 </button>
               ))}
             </div>
-            <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600">
+            <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600 pane-button-shadow">
               {darkModeSetting === 'system'
                 ? '端末の表示設定に追従します'
                 : darkModeSetting === 'on'
@@ -10813,7 +10813,7 @@ function SettingTab({
               <button
                 onClick={() => !modeSelectionLocked && onSetGameMode('m.kemo')}
                 disabled={modeSelectionLocked}
-                className={`py-2 rounded border text-sm font-medium ${
+                  className={`py-2 rounded border text-sm font-medium pane-button-shadow ${
                   gameMode === 'm.kemo'
                     ? 'bg-sub text-white border-sub'
                     : 'bg-white text-gray-700 border-gray-300'
@@ -10823,7 +10823,7 @@ function SettingTab({
               </button>
               <button
                 onClick={() => onSetGameMode('m.luna')}
-                className={`py-2 rounded border text-sm font-medium ${
+                  className={`py-2 rounded border text-sm font-medium pane-button-shadow ${
                   gameMode === 'm.luna'
                     ? 'bg-sub text-white border-sub'
                     : 'bg-white text-gray-700 border-gray-300'
@@ -10834,7 +10834,7 @@ function SettingTab({
               <button
                 onClick={() => !modeSelectionLocked && onSetGameMode('m.laika')}
                 disabled={modeSelectionLocked}
-                className={`py-2 rounded border text-sm font-medium ${
+                  className={`py-2 rounded border text-sm font-medium pane-button-shadow ${
                   gameMode === 'm.laika'
                     ? 'bg-sub text-white border-sub'
                     : 'bg-white text-gray-700 border-gray-300'
@@ -10843,7 +10843,7 @@ function SettingTab({
                 ライカ(原点)
               </button>
             </div>
-            <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600">
+            <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600 pane-button-shadow">
               {modeSelectionLocked
                 ? 'ゲームモードは/luna/環境のためm.luna固定です（m.kemoは選択できません）'
                 : gameMode === 'm.kemo'
