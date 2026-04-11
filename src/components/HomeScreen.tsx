@@ -205,7 +205,7 @@ const IOS_GLASS_TAB_CLASS =
   'ios-glass-button rounded-xl';
 // SpecRef: 8.1 | UI_FOUNDATIONS | Navigation tabs
 const IOS_GLASS_TOP_TAB_CLASS =
-  'ios-glass-button rounded-md';
+  'ios-glass-button rounded-none';
 // SpecRef: 8.1 | UI_FOUNDATIONS | Style: Compact, simple, iOS-like
 const IOS_GLASS_SLIDER_CLASS =
   'ios-glass-slider';
@@ -4403,7 +4403,7 @@ export function HomeScreen({
   return (
     <div className={`flex flex-col ${prefersDocumentScroll ? 'min-h-screen' : 'h-screen'} ${HEADER_HEIGHT_CLASS} ${gameMode === 'm.luna' ? 'theme-luna' : gameMode === 'm.laika' ? 'theme-laika' : ''} ${isDarkModeEnabled ? 'theme-dark' : ''}`}>
       {/* Fixed Header */}
-      <div className="fixed top-0 left-0 right-0 z-30 border-b border-gray-300">
+      <div className="fixed top-0 left-0 right-0 z-30">
         <div className="absolute inset-0 bg-white" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[500px] px-3 py-2.5 bg-white">
           <div className="flex justify-between items-center gap-3 min-h-[44px]">
@@ -4429,7 +4429,7 @@ export function HomeScreen({
           </div>
 
           {/* Tabs */}
-          <div className="flex mt-1.5 -mb-3 border-b border-gray-200">
+          <div className="flex mt-1.5 -mb-3">
             {tabs.map(tab => (
               <button
                 key={tab.id}
