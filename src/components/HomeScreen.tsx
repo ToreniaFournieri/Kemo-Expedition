@@ -9873,7 +9873,7 @@ function SettingTab({
       )}
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('donation', '寄付箱')}
-        {divineBureauPanelExpanded.donation && <div className="bg-white rounded p-2 text-sm space-y-1 mt-3">
+        {divineBureauPanelExpanded.donation && <div className="bg-white rounded p-2 text-sm space-y-1 mt-3 pane-button-shadow">
           <div className="flex items-center justify-between gap-3 text-xs text-gray-500 border-b border-gray-100 pb-1 mb-1">
             <span>神格</span>
             <span>寄付額</span>
@@ -10796,10 +10796,10 @@ function SettingTab({
                 <button
                   key={mode}
                   onClick={() => onSetDarkModeSetting(mode)}
-                  className={`py-2 rounded border text-sm font-medium pane-button-shadow ${
+                  className={`py-2 rounded border text-sm font-medium ${
                     darkModeSetting === mode
-                      ? 'bg-sub text-white border-sub'
-                      : 'bg-white text-gray-700 border-gray-300'
+                      ? 'bg-sub text-white border-sub pane-button-shadow-soft'
+                      : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
                   }`}
                 >
                   {mode === 'off' ? 'OFF' : mode === 'on' ? 'ON' : 'システム'}
@@ -10821,20 +10821,20 @@ function SettingTab({
               <button
                 onClick={() => !modeSelectionLocked && onSetGameMode('m.kemo')}
                 disabled={modeSelectionLocked}
-                  className={`py-2 rounded border text-sm font-medium pane-button-shadow ${
+                  className={`py-2 rounded border text-sm font-medium ${
                   gameMode === 'm.kemo'
-                    ? 'bg-sub text-white border-sub'
-                    : 'bg-white text-gray-700 border-gray-300'
+                    ? 'bg-sub text-white border-sub pane-button-shadow-soft'
+                    : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
                 } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
                 ケモ
               </button>
               <button
                 onClick={() => onSetGameMode('m.luna')}
-                  className={`py-2 rounded border text-sm font-medium pane-button-shadow ${
+                  className={`py-2 rounded border text-sm font-medium ${
                   gameMode === 'm.luna'
-                    ? 'bg-sub text-white border-sub'
-                    : 'bg-white text-gray-700 border-gray-300'
+                    ? 'bg-sub text-white border-sub pane-button-shadow-soft'
+                    : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
                 }`}
               >
                 ルナ(高難度)
@@ -10842,10 +10842,10 @@ function SettingTab({
               <button
                 onClick={() => !modeSelectionLocked && onSetGameMode('m.laika')}
                 disabled={modeSelectionLocked}
-                  className={`py-2 rounded border text-sm font-medium pane-button-shadow ${
+                  className={`py-2 rounded border text-sm font-medium ${
                   gameMode === 'm.laika'
-                    ? 'bg-sub text-white border-sub'
-                    : 'bg-white text-gray-700 border-gray-300'
+                    ? 'bg-sub text-white border-sub pane-button-shadow-soft'
+                    : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
                 } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
                 ライカ(原点)
