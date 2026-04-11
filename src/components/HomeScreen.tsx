@@ -5511,7 +5511,7 @@ function PartyTab({
       </div>
 
       {/* Character details */}
-      <div className="relative overflow-hidden bg-pane rounded-lg p-4 mb-4">
+      <div className="relative overflow-hidden bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/15">
         {partyMemberImageSrc && (
           <>
             {/* SpecRef: 8.2.2 | Party member details | Display character image */}
@@ -6508,7 +6508,7 @@ function PartyTab({
       </div>
 
       {/* Equipment section */}
-      <div className="bg-pane rounded-lg p-4">
+      <div className="bg-pane rounded-lg p-4 shadow-md shadow-slate-900/15">
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm font-medium">装備</span>
           <div className="flex items-center gap-3">
@@ -6760,7 +6760,7 @@ function PartyTab({
         );
 
         return (
-          <div className={`mt-4 border rounded-lg p-4 ${selectingSlot !== null ? 'border-sub bg-blue-50' : 'border-gray-200 bg-gray-50'}`}>
+          <div className={`mt-4 border rounded-lg p-4 shadow-md shadow-slate-900/15 ${selectingSlot !== null ? 'border-sub bg-blue-50' : 'border-gray-200 bg-gray-50'}`}>
             <div className="mb-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">
