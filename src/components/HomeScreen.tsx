@@ -7167,10 +7167,10 @@ function ExpeditionTab({
               className="w-full text-xs mb-0.5"
             >
               <span className="min-w-0 flex items-start gap-2">
-                <span className="relative h-10 w-10 shrink-0 mt-0.5">
+                <span className="relative h-10 w-10 shrink-0 mt-0.5 rounded-full shadow-[0_4px_12px_rgb(15_23_42/0.24)]">
                   <svg
                     viewBox="0 0 36 36"
-                    className="h-full w-full -rotate-90 drop-shadow-[0_1px_1px_rgb(15_23_42/0.2)]"
+                    className="h-full w-full -rotate-90 drop-shadow-[0_2px_2px_rgb(15_23_42/0.32)]"
                     role="img"
                     aria-label={`HP ${hpPercent}%`}
                   >
