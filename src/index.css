@@ -335,11 +335,17 @@ body {
 }
 
 .pane-button-shadow {
-  box-shadow: 0 3px 10px rgb(15 23 42 / 0.12);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.72) inset,
+    0 1px 3px rgb(15 23 42 / 0.22),
+    0 0 0 1px rgb(15 23 42 / 0.08);
 }
 
 .theme-dark .pane-button-shadow {
-  box-shadow: 0 4px 12px rgb(2 6 23 / 0.4);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.12) inset,
+    0 1px 3px rgb(2 6 23 / 0.55),
+    0 0 0 1px rgb(148 163 184 / 0.22);
 }
 
 .ios-glass-top-tab {
@@ -490,7 +496,10 @@ body {
 .liquid-glass-tab-active {
   border-color: rgb(var(--color-sub) / 0.45) !important;
   background-color: rgb(var(--color-sub) / 0.14) !important;
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.56), 0 6px 12px var(--glass-shadow);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.56),
+    0 1px 3px rgb(15 23 42 / 0.2),
+    0 0 0 1px rgb(var(--color-sub) / 0.2);
 }
 
 .theme-dark .liquid-glass-tab-active {
