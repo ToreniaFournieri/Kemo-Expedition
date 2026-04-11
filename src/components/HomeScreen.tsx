@@ -205,7 +205,7 @@ const IOS_GLASS_TAB_CLASS =
   'ios-glass-button rounded-xl';
 // SpecRef: 8.1 | UI_FOUNDATIONS | Navigation tabs
 const IOS_GLASS_TOP_TAB_CLASS =
-  'ios-glass-button rounded-none';
+  'ios-glass-button ios-glass-top-tab rounded-none';
 // SpecRef: 8.1 | UI_FOUNDATIONS | Style: Compact, simple, iOS-like
 const IOS_GLASS_SLIDER_CLASS =
   'ios-glass-slider';
@@ -7242,7 +7242,7 @@ function ExpeditionTab({
                   <button
                     onClick={() => onTriggerSortie(partyIndex, canTriggerGodsBattle)}
                     disabled={isSortieDisabled}
-                    className={`px-3 py-2 text-white rounded font-medium text-sm leading-none whitespace-nowrap ${isSortieDisabled ? 'bg-gray-400 cursor-not-allowed' : canTriggerGodsBattle ? 'bg-accent hover:bg-accent/90' : 'bg-sub hover:bg-sub/90'}`}
+                    className={`px-3 py-2 font-medium text-sm leading-none whitespace-nowrap liquid-glass-sortie-button ${isSortieDisabled ? '' : canTriggerGodsBattle ? 'liquid-glass-sortie-button--accent' : 'liquid-glass-sortie-button--sub'}`}
                   >
                     {canTriggerGodsBattle ? '神魔戦' : '出撃'}
                   </button>
