@@ -210,7 +210,7 @@ PT3: 貯金額: 10G
 | 4th Elite gate | 4,4 | correct 30 uncommon items from this `x.expedition`  | アンコモンアイテム 0/30で 4F-4解放 | |
 | 5th Elite gate | 5,4 | correct 45 uncommon items from this `x.expedition`  | アンコモンアイテム 0/45で 5F-4解放 | |
 | Boss gate | 6,4 | correct 3 elite rare items from this `x.expedition` | エリートレアアイテム 0/3で ボス戦解放 | |
-| Gods battle gate | - | Collect at least 3 Boss Rare items from dungeons, and defeat the dungeon boss at least once (lifetime, party-wide)) | ボスレアアイテム 1/3 で神魔キョウエン戦 |
+| Gods battle gate | - | Collect at least 3 Boss Rare items from dungeons, and defeat the dungeon boss at least once (lifetime, party-wide)) | If party has defeated the dungeon boss:"ボスレアアイテム 1/3 で神魔キョウエン戦", Else: "ボスを撃破せよ"|
 | Side quest gate | - | it depends on side quest `q.` condition | |
 
 ##### 5.1.3.2 Unlock party
