@@ -11,6 +11,7 @@
   --color-hp-taken: 252 183 134;
   --color-heal-bar: 184 237 178;
   --color-hp-bar-empty: 226 232 240;
+  --color-hp-bar-empty-alpha: 1;
   --sub-theme-emoji-filter: brightness(0) saturate(100%) invert(69%) sepia(94%) saturate(1800%) hue-rotate(194deg) brightness(75%) contrast(95%);
   --accent-theme-emoji-filter: brightness(0) saturate(100%) invert(43%) sepia(90%) saturate(2064%) hue-rotate(8deg) brightness(98%) contrast(92%);
   --side-quest-icon-opacity: 0.9;
@@ -29,6 +30,7 @@
   --color-hp-taken: 255 237 145;
   --color-heal-bar: 184 237 178;
   --color-hp-bar-empty: 217 204 175;
+  --color-hp-bar-empty-alpha: 0.45;
   --sub-theme-emoji-filter: brightness(0) saturate(100%) invert(58%) sepia(48%) saturate(716%) hue-rotate(356deg) brightness(92%) contrast(90%);
   --accent-theme-emoji-filter: brightness(0) saturate(100%) invert(32%) sepia(87%) saturate(2961%) hue-rotate(223deg) brightness(95%) contrast(91%);
   --side-quest-icon-opacity: 0.9;
@@ -228,6 +230,7 @@ body.app-dark {
   --color-hp-taken: 133 114 85;
   --color-heal-bar: 112 138 88;
   --color-hp-bar-empty: 43 52 68;
+  --color-hp-bar-empty-alpha: 0.45;
 }
 
 .theme-laika.theme-dark {
