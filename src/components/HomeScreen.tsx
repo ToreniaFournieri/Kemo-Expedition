@@ -2330,7 +2330,7 @@ const AUTO_EQUIPMENT_MODE_LABEL: Record<AutoEquipmentMode, string> = {
 
 const AUTO_EQUIPMENT_HELP_LINES = [
   '手動: 装備の付け替えが自動で変わることはない',
-  '補助: 上位の通常称号の同一装備がある場合に置き換える。空きスロットがある際に装備する (熟睡後の身支度が終わった段階で反映)',
+  '補助: 上位の通常称号の同一装備がある場合に置き換える。 (熟睡後の身支度が終わった段階で反映)',
   '一任: 装備選定を一任する。自身の判断で現在の装備をすべて見直し、最適な装備構成になるよう自動で再装備する (熟睡後の身支度が終わった段階で反映)',
   '※超レア装備は置き換わる事はない',
 ];
@@ -3017,55 +3017,54 @@ export function HomeScreen({
           equippedCategoryCounts[item.category] = (equippedCategoryCounts[item.category] ?? 0) + 1;
         });
 
-        emptySlotIndexes.forEach((slotIndex) => {
-          const skippedCategories = new Set<AutoEquipmentTargetCategory>();
-          let resolvedSelection: { itemKey: string; targetCategory: AutoEquipmentTargetCategory } | null = null;
+        if (autoEquipmentMode === 2) {
+          emptySlotIndexes.forEach((slotIndex) => {
+            const skippedCategories = new Set<AutoEquipmentTargetCategory>();
+            let resolvedSelection: { itemKey: string; targetCategory: AutoEquipmentTargetCategory } | null = null;
 
-          while (!resolvedSelection) {
-            const targetCategory = getNextMissingAutoEquipmentCategory(
-              priorities,
-              equippedCategoryCounts,
-              getResolvedCategoryCount,
-              skippedCategories,
-            );
-            if (!targetCategory) break;
+            while (!resolvedSelection) {
+              const targetCategory = getNextMissingAutoEquipmentCategory(
+                priorities,
+                equippedCategoryCounts,
+                getResolvedCategoryCount,
+                skippedCategories,
+              );
+              if (!targetCategory) break;
 
-            const resolvedCategories = resolveAutoEquipmentTargetCategory(targetCategory, combatStyle);
-            if (resolvedCategories.length === 0) {
-              skippedCategories.add(targetCategory);
-              continue;
+              const resolvedCategories = resolveAutoEquipmentTargetCategory(targetCategory, combatStyle);
+              if (resolvedCategories.length === 0) {
+                skippedCategories.add(targetCategory);
+                continue;
+              }
+
+              const itemKey = getBestVariantKeyInCategory(character, resolvedCategories, memoryItemIds, memoryCBonusNames);
+              if (!itemKey) {
+                skippedCategories.add(targetCategory);
+                continue;
+              }
+
+              resolvedSelection = { itemKey, targetCategory };
             }
 
-            const itemKey = getBestVariantKeyInCategory(character, resolvedCategories, memoryItemIds, memoryCBonusNames);
-            if (!itemKey) {
-              skippedCategories.add(targetCategory);
-              continue;
+            if (!resolvedSelection) return;
+
+            const variant = simulatedInventory[resolvedSelection.itemKey];
+            if (!variant) return;
+
+            equippedCategoryCounts[variant.item.category] = (equippedCategoryCounts[variant.item.category] ?? 0) + 1;
+            if (
+              combatStyle == null
+              && (resolvedSelection.targetCategory === 'i.weapon' || resolvedSelection.targetCategory === 'i.NoA')
+            ) {
+              resolvedFallbackTargetCounts[resolvedSelection.targetCategory] = (resolvedFallbackTargetCounts[resolvedSelection.targetCategory] ?? 0) + 1;
             }
-
-            resolvedSelection = { itemKey, targetCategory };
-          }
-
-          if (!resolvedSelection) return;
-
-          const variant = simulatedInventory[resolvedSelection.itemKey];
-          if (!variant) return;
-
-          equippedCategoryCounts[variant.item.category] = (equippedCategoryCounts[variant.item.category] ?? 0) + 1;
-          if (
-            combatStyle == null
-            && (resolvedSelection.targetCategory === 'i.weapon' || resolvedSelection.targetCategory === 'i.NoA')
-          ) {
-            resolvedFallbackTargetCounts[resolvedSelection.targetCategory] = (resolvedFallbackTargetCounts[resolvedSelection.targetCategory] ?? 0) + 1;
-          }
-          removeItemFromSimulatedInventory(resolvedSelection.itemKey);
-          simulatedEquipmentSlots[slotIndex] = variant.item;
-          memoryItemIds.add(variant.item.id);
-          getItemCBonusSignatures(variant.item).forEach((bonusName) => memoryCBonusNames.add(bonusName));
-          actions.equipItem(character.id, slotIndex, resolvedSelection.itemKey, partyIndex);
-          if (autoEquipmentMode !== 2) {
-            queueAutoEquipmentNotification(party.name, character.name, character.id, slotIndex, variant.item, null, partyIndex);
-          }
-        });
+            removeItemFromSimulatedInventory(resolvedSelection.itemKey);
+            simulatedEquipmentSlots[slotIndex] = variant.item;
+            memoryItemIds.add(variant.item.id);
+            getItemCBonusSignatures(variant.item).forEach((bonusName) => memoryCBonusNames.add(bonusName));
+            actions.equipItem(character.id, slotIndex, resolvedSelection.itemKey, partyIndex);
+          });
+        }
 
         simulatedEquipmentSlots.forEach((equippedItem, slotIndex) => {
           if (!equippedItem) return;
