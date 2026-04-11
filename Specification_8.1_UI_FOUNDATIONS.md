@@ -3,7 +3,7 @@
 ### 8.1 UI_FOUNDATIONS
 
 - Platform: Web-based (React + TypeScript + Tailwind)
-  - Style: Compact, simple, iOS-like
+  - Style: Compact, simple, iOS-like, Liquid Glass style.
   - Navigation: Minimal scene transitions, tab-centered
 - Interaction philosophy:
   - Fast feedback
