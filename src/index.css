@@ -337,6 +337,10 @@ body {
     6px 8px 16px -8px var(--glass-shadow);
 }
 
+.theme-dark .ios-glass-top-tab {
+  border-color: transparent;
+}
+
 .liquid-glass-sortie-button {
   color: white;
   border-radius: 0.75rem;
