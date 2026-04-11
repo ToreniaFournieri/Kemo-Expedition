@@ -197,6 +197,15 @@ type PartyCycleState = 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' |
 const PARTY_EXPEDITION_SPLIT_MIN_WIDTH = 1024;
 const TAB_PANEL_WIDTH_PX = 500;
 const WIDE_MODE_DEFAULT_SECONDARY_TAB: WideModeSecondaryTab = 'party';
+// SpecRef: 8.1 | UI_FOUNDATIONS | Style: Compact, simple, iOS-like
+const IOS_GLASS_BUTTON_CLASS =
+  'ios-glass-button rounded-xl';
+// SpecRef: 8.1 | UI_FOUNDATIONS | Style: Compact, simple, iOS-like
+const IOS_GLASS_TAB_CLASS =
+  'ios-glass-button rounded-t-xl';
+// SpecRef: 8.1 | UI_FOUNDATIONS | Style: Compact, simple, iOS-like
+const IOS_GLASS_SLIDER_CLASS =
+  'ios-glass-slider';
 
 const TERRAIN_EFFECT_GLOSSARY_SECTION = GLOSSARY_SECTIONS.find((section) => section.heading === '1.1.10 t. terrain effects');
 const TERRAIN_EFFECT_OPTIONS = [
@@ -4408,7 +4417,7 @@ export function HomeScreen({
                 <button
                   type="button"
                   onClick={() => setAutoRepeatEnabled(true)}
-                  className="text-sub hover:opacity-80"
+                  className={`${IOS_GLASS_BUTTON_CLASS} px-2 py-1 text-sub hover:opacity-90`}
                 >
                   静止中
                 </button>
@@ -4424,10 +4433,10 @@ export function HomeScreen({
                 onClick={() => {
                   switchTab(tab.id);
                 }}
-                className={`flex-1 py-2 text-sm font-medium relative transition-colors ${
+                className={`${IOS_GLASS_TAB_CLASS} flex-1 py-2 text-sm font-medium relative transition-colors ${
                   ((isPartyExpeditionSplitView && (tab.id === 'expedition' || tab.id === activeWideModeSecondaryTab)) || (!isPartyExpeditionSplitView && activeTab === tab.id))
                     ? 'text-sub border-b-2 border-sub bg-blue-50/70'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100/70'
+                    : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
                 {tab.label}
@@ -7246,7 +7255,7 @@ function ExpeditionTab({
                         step={1}
                         value={selectedDifficultyOffset}
                         onChange={(e) => onSetExpeditionDifficultyOffset(partyIndex, Number(e.target.value))}
-                        className="min-w-0 flex-1 accent-sub"
+                        className={`min-w-0 flex-1 ${IOS_GLASS_SLIDER_CLASS}`}
                       />
                       <span className="shrink-0">+{formatNumber(selectedDifficultyOffset)}</span>
                     </div>
@@ -10646,7 +10655,7 @@ function SettingTab({
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy type</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyType} onChange={(e) => updateColosseumEnemySettings({ enemyType: e.target.value })}>{Object.keys(ENEMY_TYPE_LABELS).map((key) => <option key={key} value={key}>{ENEMY_TYPE_LABELS[key] ?? key}</option>)}</select></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy main class</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyMainClass} onChange={(e) => updateColosseumEnemySettings({ enemyMainClass: e.target.value as ColosseumEnemySettings['enemyMainClass'] })}>{ENEMY_EDIT_CLASS_OPTIONS.map((key) => <option key={key} value={key}>{ENEMY_CLASS_LABELS[key] ?? key}</option>)}</select></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy sub class</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemySubClass} onChange={(e) => updateColosseumEnemySettings({ enemySubClass: e.target.value as ColosseumEnemySettings['enemySubClass'] })}><option value="none">none</option>{ENEMY_EDIT_CLASS_OPTIONS.map((key) => <option key={key} value={key}>{ENEMY_CLASS_LABELS[key] ?? key}</option>)}</select></label>
-          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy level: {colosseumEnemySettings.level}</div><input type="range" min={1} max={99} value={colosseumEnemySettings.level} onChange={(e) => updateColosseumEnemySettings({ level: Number(e.target.value) })} /></label>
+          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy level: {colosseumEnemySettings.level}</div><input className={IOS_GLASS_SLIDER_CLASS} type="range" min={1} max={99} value={colosseumEnemySettings.level} onChange={(e) => updateColosseumEnemySettings({ level: Number(e.target.value) })} /></label>
           {[0, 1, 2, 3, 4].map((slot) => {
             const slotAbility = colosseumEnemySettings.abilities[slot];
             return (

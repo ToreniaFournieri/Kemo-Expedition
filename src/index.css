@@ -14,6 +14,10 @@
   --sub-theme-emoji-filter: brightness(0) saturate(100%) invert(69%) sepia(94%) saturate(1800%) hue-rotate(194deg) brightness(75%) contrast(95%);
   --accent-theme-emoji-filter: brightness(0) saturate(100%) invert(43%) sepia(90%) saturate(2064%) hue-rotate(8deg) brightness(98%) contrast(92%);
   --side-quest-icon-opacity: 0.9;
+  --glass-highlight: rgb(255 255 255 / 0.78);
+  --glass-tint: rgb(255 255 255 / 0.50);
+  --glass-border: rgb(255 255 255 / 0.72);
+  --glass-shadow: rgb(15 23 42 / 0.14);
 }
 
 .theme-luna {
@@ -93,6 +97,10 @@
   --color-hp-taken: 165 136 109;
   --color-heal-bar: 94 140 91;
   --color-hp-bar-empty: 55 65 81;
+  --glass-highlight: rgb(255 255 255 / 0.18);
+  --glass-tint: rgb(51 65 85 / 0.42);
+  --glass-border: rgb(148 163 184 / 0.55);
+  --glass-shadow: rgb(2 6 23 / 0.5);
 }
 
 html.app-dark,
@@ -298,4 +306,82 @@ body {
 #root {
   min-height: 100%;
   background-color: inherit;
+}
+
+.ios-glass-button {
+  border: 1px solid var(--glass-border);
+  background-color: var(--glass-tint);
+  background-image: linear-gradient(to bottom, var(--glass-highlight), rgb(255 255 255 / 0));
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.48),
+    0 8px 16px var(--glass-shadow);
+  transition: transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease, color 140ms ease;
+}
+
+.ios-glass-button:hover {
+  background-color: rgb(255 255 255 / 0.62);
+}
+
+.ios-glass-button:active {
+  transform: translateY(1px) scale(0.99);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.35),
+    0 5px 12px var(--glass-shadow);
+}
+
+.ios-glass-slider {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 1.35rem;
+  background: transparent;
+}
+
+.ios-glass-slider::-webkit-slider-runnable-track {
+  height: 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid var(--glass-border);
+  background-color: var(--glass-tint);
+  background-image: linear-gradient(to bottom, var(--glass-highlight), rgb(255 255 255 / 0));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.42),
+    0 5px 12px var(--glass-shadow);
+}
+
+.ios-glass-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: -0.36rem;
+  border-radius: 9999px;
+  border: 1px solid rgb(255 255 255 / 0.78);
+  background-color: rgb(var(--color-sub) / 0.92);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.45),
+    0 5px 12px var(--glass-shadow);
+}
+
+.ios-glass-slider::-moz-range-track {
+  height: 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid var(--glass-border);
+  background-color: var(--glass-tint);
+  background-image: linear-gradient(to bottom, var(--glass-highlight), rgb(255 255 255 / 0));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.42),
+    0 5px 12px var(--glass-shadow);
+}
+
+.ios-glass-slider::-moz-range-thumb {
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 9999px;
+  border: 1px solid rgb(255 255 255 / 0.78);
+  background-color: rgb(var(--color-sub) / 0.92);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.45),
+    0 5px 12px var(--glass-shadow);
 }
