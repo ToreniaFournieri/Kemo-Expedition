@@ -231,8 +231,9 @@
   - If no `c.equip_ranged`,`c.equip_magic`, `c.equip_melee`: resolve i.weapon and i.NoA to shield. 
    
 2. **Initialize memory**
-   - Record the **item IDs** of all currently equipped items as **Memory A**.
-   - Record all **`c.*` bonus effects** provided by the currently equipped items as **Memory B**.
+  - Record the **item IDs** of all currently equipped items as **Memory A**.
+  - Record all **`c.*` bonus effects** provided by the currently equipped items as **Memory B**.
+    - Include `c.antagonism` in Memory B to prevent the selection of items that introduce harmful effects.
 
 3. **Search for a candidate item**
    - Exclude any item that satisfies either of the following conditions:
