@@ -68,7 +68,7 @@ function NotificationItem({ notification, onDismiss, onDismissAll }: Notificatio
       className={`
         notification-toast-item
         px-3 py-1.5 rounded-lg shadow-md cursor-pointer
-        text-xs ${fontWeight} w-fit
+        text-xs ${fontWeight} w-fit text-left
         transition-opacity duration-300
         bg-white/80 ${isItem ? itemTextColor : nonItemColor}
       `}
