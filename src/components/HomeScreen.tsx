@@ -7168,7 +7168,7 @@ function ExpeditionTab({
               <span className="min-w-0 flex items-center gap-1.5">
                 <span className="font-bold text-black shrink-0">{party.name}</span>
                 <span className="shrink-0 text-xs text-gray-600">HP</span>
-                <span className={`h-2 w-14 rounded-full overflow-hidden shrink-0 ${isDarkModeEnabled ? 'bg-slate-100/30' : 'bg-blue-100/55'}`}>
+                <span className={`h-2 w-14 rounded-full overflow-hidden shrink-0 shadow-sm shadow-slate-900/20 ${isDarkModeEnabled ? 'bg-slate-100/30' : 'bg-blue-100/55'}`}>
                   <span className="block h-full bg-blue-500 transition-[width] duration-200" style={{ width: `${hpPercent}%` }} />
                 </span>
                 <span className="truncate">{headlineDungeonName}</span>
@@ -7180,7 +7180,7 @@ function ExpeditionTab({
               </span>
             </button>
 
-            <div className={`mb-1 relative h-9 min-w-0 rounded-md overflow-hidden text-[11px] ${isDarkModeEnabled ? 'bg-slate-900/28' : 'bg-white/45'}`}>
+            <div className={`mb-1 relative h-9 min-w-0 rounded-md overflow-hidden text-[11px] shadow-sm shadow-slate-900/15 ${isDarkModeEnabled ? 'bg-slate-900/28' : 'bg-white/45'}`}>
               <div
                 className={`absolute inset-y-0 left-0 bg-sub/20 ${cycle.state === 'explore' ? '' : 'transition-[width] duration-200'}`}
                 style={{ width: `${progressPercent}%` }}
