@@ -19,11 +19,13 @@ PT1 HP (HP bar, blue) `x.expedition`.name       outcome `condition`.label ▼
   - The selected value is added to the level of all enemies in the selected expedition.
   - This option becomes available only after the party has defeated that expedition’s Boss at least once (lifetime, party-wide).
 
+- "###" part: HP donuts bar, sub-color
+
 ```
-PT1 (HP bar, blue) ルピニアンの断崖踏破  好調▼
+( ####### ) PT1 ルピニアンの断崖踏破  好調▼
+( ##   ## ) 次の目標: ルピニアンの断崖のボス撃破 でヴァルンの樹林帯 開放
+( ####### )📜 1,110回アイテム獲得を空振りする(8%, 98回, 残り4時間)
 移動中: flavor text (background: state progress bar)
-次の目標: ルピニアンの断崖のボス撃破 でヴァルンの樹林帯 開放
-📜 1,110回アイテム獲得を空振りする(8%, 98回, 残り4時間)
 
 ルピニアンの断崖(pull down list)  探索深度 全て 出撃
 難易度: (Slider) +10
