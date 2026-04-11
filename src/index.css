@@ -337,15 +337,13 @@ body {
 .pane-button-shadow {
   box-shadow:
     0 1px 0 rgb(255 255 255 / 0.72) inset,
-    0 1px 3px rgb(15 23 42 / 0.22),
-    0 0 0 1px rgb(15 23 42 / 0.08);
+    0 1px 3px rgb(15 23 42 / 0.18);
 }
 
 .theme-dark .pane-button-shadow {
   box-shadow:
     0 1px 0 rgb(255 255 255 / 0.12) inset,
-    0 1px 3px rgb(2 6 23 / 0.55),
-    0 0 0 1px rgb(148 163 184 / 0.22);
+    0 1px 3px rgb(2 6 23 / 0.45);
 }
 
 .ios-glass-top-tab {
