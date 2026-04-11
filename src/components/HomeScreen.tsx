@@ -7184,7 +7184,7 @@ function ExpeditionTab({
                       cy="18"
                       r="14"
                       fill="none"
-                      stroke={isDarkModeEnabled ? 'rgb(148 163 184 / 0.36)' : 'rgb(186 230 253 / 0.7)'}
+                      stroke="rgb(var(--color-sub) / 0.24)"
                       strokeWidth="5"
                     />
                     <circle
@@ -7192,7 +7192,7 @@ function ExpeditionTab({
                       cy="18"
                       r="14"
                       fill="none"
-                      stroke="rgb(14 165 233)"
+                      stroke="rgb(var(--color-sub))"
                       strokeWidth="5"
                       strokeLinecap="round"
                       strokeDasharray={`${Math.max(0, Math.min(100, hpPercent)) * 0.88} 100`}
@@ -7206,7 +7206,8 @@ function ExpeditionTab({
                       <span className="font-bold shrink-0 mr-1">{party.name}</span>
                       {headlineDungeonName}
                     </span>
-                    <span className="shrink-0 flex items-center gap-1">
+                    <span className="shrink-0 flex items-center gap-1.5">
+                      <span className="font-medium text-gray-700 shrink-0">{headlineState}</span>
                       <span className="font-medium text-sub shrink-0">{conditionLabel}</span>
                       <span className={`${isLogExpanded ? 'transform transition-transform rotate-180' : ''}`}>▼</span>
                     </span>
@@ -7229,23 +7230,23 @@ function ExpeditionTab({
                       {sideQuestText}
                     </span>
                   )}
-                  <span className={`block relative h-8 min-w-0 rounded-md overflow-hidden text-[11px] shadow-[0_2px_6px_rgb(15_23_42/0.18),inset_0_1px_0_rgb(255_255_255/0.42)] ${isDarkModeEnabled ? 'bg-slate-900/28' : 'bg-white/45'}`}>
-                    <span
-                      className={`absolute inset-y-0 left-0 bg-sub/20 ${cycle.state === 'explore' ? '' : 'transition-[width] duration-200'}`}
-                      style={{ width: `${progressPercent}%` }}
-                    />
-                    <span className="relative z-10 flex h-full items-center px-1.5 text-black leading-tight">
-                      <span
-                        className="overflow-hidden text-pretty"
-                        style={{
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                        }}
-                      >
-                        {headlineState}: {progressLabel}
-                      </span>
-                    </span>
+                </span>
+              </span>
+              <span className={`mt-1.5 block relative h-8 min-w-0 rounded-md overflow-hidden text-[11px] shadow-[0_2px_6px_rgb(15_23_42/0.18),inset_0_1px_0_rgb(255_255_255/0.42)] ${isDarkModeEnabled ? 'bg-slate-900/28' : 'bg-white/45'}`}>
+                <span
+                  className={`absolute inset-y-0 left-0 bg-sub/20 ${cycle.state === 'explore' ? '' : 'transition-[width] duration-200'}`}
+                  style={{ width: `${progressPercent}%` }}
+                />
+                <span className="relative z-10 flex h-full items-center px-1.5 text-black leading-tight">
+                  <span
+                    className="overflow-hidden text-pretty"
+                    style={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                    }}
+                  >
+                    {progressLabel}
                   </span>
                 </span>
               </span>
