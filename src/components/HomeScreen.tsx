@@ -8504,7 +8504,7 @@ function DiaryTab({
   };
 
   const renderDiarySettings = () => (
-    <div className="bg-pane rounded-lg p-3">
+    <div className="bg-pane rounded-lg p-3 shadow-md shadow-slate-900/10">
       <button
         onClick={() => onSetIsSettingsExpanded((prev) => !prev)}
         className="w-full text-left"
@@ -8603,7 +8603,7 @@ function DiaryTab({
       >
         {activeEnemyBestiaryBubble && <EnemyBestiaryBubble bubble={activeEnemyBestiaryBubble} />}
         {renderDiarySettings()}
-        <div className="bg-pane rounded-lg p-4 text-sm text-gray-500 text-center">記録された日誌はありません</div>
+        <div className="bg-pane rounded-lg p-4 text-sm text-gray-500 text-center shadow-md shadow-slate-900/10">記録された日誌はありません</div>
       </div>
     );
   }
@@ -8628,7 +8628,7 @@ function DiaryTab({
           return rarity === 'bossRare' || rarity === 'mythicRare' || item.superRare > 0;
         });
         return (
-          <div key={diaryLog.id} className="bg-pane rounded-lg p-3">
+          <div key={diaryLog.id} className="bg-pane rounded-lg p-3 shadow-md shadow-slate-900/10">
             <button
               onClick={() => {
                 if (isSideQuestLog) {
@@ -9863,7 +9863,7 @@ function SettingTab({
           </div>
         </div>
       )}
-      <div className="bg-pane rounded-lg p-4 mb-4">
+      <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('donation', '寄付箱')}
         {divineBureauPanelExpanded.donation && <div className="bg-white rounded p-2 text-sm space-y-1 mt-3">
           <div className="flex items-center justify-between gap-3 text-xs text-gray-500 border-b border-gray-100 pb-1 mb-1">
@@ -9883,7 +9883,7 @@ function SettingTab({
         </div>}
       </div>
 
-      {debugSettings.clairvoyanceEnabled && <div className="bg-pane rounded-lg p-4 mb-4">
+      {debugSettings.clairvoyanceEnabled && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('clairvoyance', '未来視')}
         {divineBureauPanelExpanded.clairvoyance && <>
 
@@ -10029,7 +10029,7 @@ function SettingTab({
         </>}
       </div>}
 
-      <div className="bg-pane rounded-lg p-4 mb-4">
+      <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('glossary', '用語集')}
         {divineBureauPanelExpanded.glossary && (
           <>
@@ -10238,7 +10238,7 @@ function SettingTab({
         )}
       </div>
 
-      <div className="bg-pane rounded-lg p-4 mb-4">
+      <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('itemCompendium', 'アイテム図鑑')}
         {divineBureauPanelExpanded.itemCompendium && <>
         <div className="flex justify-end items-center gap-1 mt-3 mb-3">
@@ -10313,7 +10313,7 @@ function SettingTab({
         </>}
       </div>
 
-      <div className="bg-pane rounded-lg p-4 mb-4">
+      <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('bestiary', '敵キャラクター図鑑')}
         {divineBureauPanelExpanded.bestiary && <>
         <div className="flex gap-1 mt-3 mb-3 overflow-x-auto pb-1">
@@ -10636,7 +10636,7 @@ function SettingTab({
         </>}
       </div>
 
-      {debugSettings.colosseumEnabled && <div className="bg-pane rounded-lg p-4 mb-4">
+      {debugSettings.colosseumEnabled && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         <button
           type="button"
           onClick={() => setIsEnemyEditExpanded((prev) => !prev)}
@@ -10714,7 +10714,7 @@ function SettingTab({
         </div>}
       </div>}
 
-      <div className="bg-pane rounded-lg p-4 mb-4">
+      <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('superRare', '超レア一覧')}
         {divineBureauPanelExpanded.superRare && <>
         <div className="text-xs text-gray-500 mt-3 mb-2">Super Rare List (超レア一覧)</div>
@@ -10734,7 +10734,7 @@ function SettingTab({
         </div>
         </>}
       </div>
-      <div className="bg-pane rounded-lg p-4 mb-4">
+      <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('modeSelect', 'モード切替')}
         {divineBureauPanelExpanded.modeSelect && <div className="mt-3 space-y-4">
           <div className="space-y-2">
@@ -10857,7 +10857,7 @@ function SettingTab({
       </div>
 
 
-      <div className="bg-pane rounded-lg p-4 mb-4">
+      <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('debug', 'デバッグ')}
         {divineBureauPanelExpanded.debug && <div className="space-y-3 mt-3 text-sm">
           <button type="button" onClick={() => onUpdateDebugSettings({ clairvoyanceEnabled: !debugSettings.clairvoyanceEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">Clairvoyance: {debugSettings.clairvoyanceEnabled ? 'ON' : 'OFF'}</button>
@@ -10881,7 +10881,7 @@ function SettingTab({
         </div>}
       </div>
 
-      <div className="bg-pane rounded-lg p-4 mb-4">
+      <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('gameSetting', 'バックアップ・リセット')}
         {divineBureauPanelExpanded.gameSetting && <div className="space-y-4 mt-3">
           <div>
