@@ -4457,7 +4457,7 @@ export function HomeScreen({
       {/* Tab Content */}
       <div
         ref={tabContentRef}
-        className={prefersDocumentScroll ? 'p-4' : `flex-1 p-4 ${isPartyExpeditionSplitViewEnabled ? 'overflow-hidden' : 'overflow-y-auto'}`}
+        className={prefersDocumentScroll ? 'px-4 pb-4' : `flex-1 px-4 pb-4 ${isPartyExpeditionSplitViewEnabled ? 'overflow-hidden' : 'overflow-y-auto'}`}
         onScroll={() => {
           if (prefersDocumentScroll || isPartyExpeditionSplitViewEnabled) return;
           const currentScrollTop = tabContentRef.current?.scrollTop ?? 0;
