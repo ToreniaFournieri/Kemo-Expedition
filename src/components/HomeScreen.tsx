@@ -7232,9 +7232,9 @@ function ExpeditionTab({
                   className={`absolute inset-y-0 left-0 bg-sub/20 ${cycle.state === 'explore' ? '' : 'transition-[width] duration-200'}`}
                   style={{ width: `${progressPercent}%` }}
                 />
-                <span className="relative z-10 flex h-full items-center px-1.5 text-black leading-tight">
+                <span className="relative z-10 flex h-full items-center justify-center px-1.5 text-center text-black leading-tight">
                   <span
-                    className="overflow-hidden text-pretty"
+                    className="w-full overflow-hidden text-pretty"
                     style={{
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
