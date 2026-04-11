@@ -203,6 +203,9 @@ const IOS_GLASS_BUTTON_CLASS =
 // SpecRef: 8.1 | UI_FOUNDATIONS | Style: Compact, simple, iOS-like
 const IOS_GLASS_TAB_CLASS =
   'ios-glass-button rounded-xl';
+// SpecRef: 8.1 | UI_FOUNDATIONS | Navigation tabs
+const IOS_GLASS_TOP_TAB_CLASS =
+  'ios-glass-button rounded-md';
 // SpecRef: 8.1 | UI_FOUNDATIONS | Style: Compact, simple, iOS-like
 const IOS_GLASS_SLIDER_CLASS =
   'ios-glass-slider';
@@ -4433,7 +4436,7 @@ export function HomeScreen({
                 onClick={() => {
                   switchTab(tab.id);
                 }}
-                className={`${IOS_GLASS_TAB_CLASS} flex-1 py-2 text-sm font-medium relative transition-colors ${
+                className={`${IOS_GLASS_TOP_TAB_CLASS} flex-1 py-2 text-sm font-medium relative transition-colors ${
                   ((isPartyExpeditionSplitView && (tab.id === 'expedition' || tab.id === activeWideModeSecondaryTab)) || (!isPartyExpeditionSplitView && activeTab === tab.id))
                     ? 'text-sub border-b-2 border-sub bg-blue-50/70'
                     : 'text-gray-500 hover:text-gray-700'
