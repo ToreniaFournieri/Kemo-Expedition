@@ -2886,7 +2886,11 @@ export function HomeScreen({
           }
 
           if (memoryItemIds.has(variant.item.id)) return false;
-          if ((variant.item.bonuses ?? []).some((bonus) => bonus.type === 'antagonism')) return false;
+          const hasAntagonismBonus = [
+            ...(variant.item.bonuses ?? []),
+            ...getSuperRareBonuses(variant.item.superRare),
+          ].some((bonus) => bonus.type === 'antagonism');
+          if (hasAntagonismBonus) return false;
 
           const cBonusNames = getItemCBonusSignatures(variant.item);
           for (const bonusName of cBonusNames) {
