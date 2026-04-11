@@ -2471,7 +2471,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 remainingPartyHP: currentHp,
                 maxPartyHP: partyStats.hp,
                 details: [],
-                gateInfo: `${gateCheck.label} ${gateCheck.collected}/${gateCheck.required}（判定時）`,
+                gateInfo: roomDef.type === 'battle_Boss'
+                  ? `${gateCheck.label} ${gateCheck.collected}/${gateCheck.required}で ボス戦解放`
+                  : roomIndex === 0
+                    ? `${gateCheck.label} ${gateCheck.collected}/${gateCheck.required}で${dungeon.name}開放`
+                    : `${gateCheck.label} ${gateCheck.collected}/${gateCheck.required}で ${floor.floorNumber}F-4解放`,
               };
               entries.push(gateEntry);
               finalOutcome = 'Escape';

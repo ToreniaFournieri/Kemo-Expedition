@@ -1004,18 +1004,16 @@ function getDungeonEntryGateState(
   gateText: string;
 } {
   if (dungeon.id === 1) {
-    return { locked: false, gateText: '解放条件: なし（最初の探検地）' };
+    return { locked: false, gateText: 'なし（最初の探検地）' };
   }
 
-  const previousDungeon = DUNGEONS.find(d => d.id === dungeon.id - 1);
-  const previousDungeonName = previousDungeon?.name ?? '前回の探検地';
   const required = ENTRY_GATE_REQUIRED;
   const collected = party.defeatedBossExpeditions?.[dungeon.id - 1] ? 1 : 0;
   const unlocked = isLootGateUnlocked(party, getEntryGateKey(dungeon.id)) || collected >= required;
 
   return {
     locked: !unlocked,
-    gateText: `解放条件: ${previousDungeonName}のボス撃破 ${collected}/${required}`,
+    gateText: `ボス撃破 ${collected}/${required}で${dungeon.name}開放`,
   };
 }
 
@@ -1044,7 +1042,7 @@ function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | n
       const collected = getLootCollectionCount(party, tier, 'uncommon');
       const unlocked = isLootGateUnlocked(party, getEliteGateKey(currentDungeon.id, floor.floorNumber)) || collected >= required;
       if (!unlocked) {
-        return `次の目標: ${currentDungeon.name} ${floor.floorNumber}F-4の解放: アンコモンアイテム(持ち帰り) ${collected}/${required}（現在）`;
+        return `アンコモンアイテム ${collected}/${required}で ${floor.floorNumber}F-4解放`;
       }
     }
   }
@@ -1053,7 +1051,7 @@ function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | n
   const rareCollected = getLootCollectionCount(party, tier, 'eliteRare');
   const bossUnlocked = isLootGateUnlocked(party, getBossGateKey(currentDungeon.id)) || rareCollected >= bossRequired;
   if (!bossUnlocked) {
-    return `次の目標: ${currentDungeon.name} 6F-4の解放: エリートレアアイテム(持ち帰り) ${rareCollected}/${bossRequired}（現在）`;
+    return `エリートレアアイテム ${rareCollected}/${bossRequired}で ボス戦解放`;
   }
 
   const nextDungeon = DUNGEONS.find(d => d.id === currentDungeon.id + 1);
@@ -1063,7 +1061,7 @@ function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | n
   if (nextDungeon) {
     const entryUnlocked = isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id)) || previousBossDefeated >= entryRequired;
     if (!entryUnlocked) {
-      return `次の目標: ${nextDungeon.name}の解放: ${currentDungeon.name}のボス撃破 ${previousBossDefeated}/${entryRequired}（現在）`;
+      return `ボス撃破 ${previousBossDefeated}/${entryRequired}で${nextDungeon.name}開放`;
     }
   }
 
@@ -1076,7 +1074,7 @@ function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | n
     }
     const waitingGod = getGodProfileForDungeon(currentDungeon.id, currentDungeon.name);
     const waitingGodName = waitingGod ? getGodShortName(waitingGod.displayName) : '神魔';
-    return `特殊目標: ${currentDungeon.name}のボスレアアイテム ${bossRareCollected}/${godsRequired} で神魔${waitingGodName}戦`;
+    return `ボスレアアイテム ${bossRareCollected}/${godsRequired}で神魔${waitingGodName}戦`;
   }
 
   return null;
@@ -7445,7 +7443,7 @@ function ExpeditionTab({
                             </div>
                             {(entry.gateInfo || entry.reward) && (
                               <div className="text-gray-500 mt-1 flex flex-wrap items-center gap-1">
-                                {entry.gateInfo && <span className="text-accent">解放条件: {entry.gateInfo}</span>}
+                                {entry.gateInfo && <span className="text-accent">{entry.gateInfo}</span>}
                                 {renderEntryReward(entry)}
                               </div>
                             )}
@@ -8822,7 +8820,7 @@ function DiaryTab({
                           </div>
                           {(entry.gateInfo || entry.reward) && (
                             <div className="text-gray-500 mt-1 flex flex-wrap items-center gap-1">
-                              {entry.gateInfo && <span className="text-accent">解放条件: {entry.gateInfo}</span>}
+                              {entry.gateInfo && <span className="text-accent">{entry.gateInfo}</span>}
                               {renderEntryReward(entry)}
                             </div>
                           )}
