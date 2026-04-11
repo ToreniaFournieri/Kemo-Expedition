@@ -3475,15 +3475,6 @@ export function HomeScreen({
     const elapsedMs = Math.max(0, Math.min(now - lastCheckpointAtRef.current, AFK_MAX_ELAPSED_MS));
     if (elapsedMs < PARTY_CYCLE_TICK_MS) return;
 
-    // SpecRef: 5.1.1 | Party State Machine | Time-Based Progress Handling (Online + AFK)
-    // While AFK catch-up simulation is running, don't enqueue additional catch-up windows
-    // from wall-clock checkpoints; otherwise state labels can flap between move/reactivate.
-    if (pendingAfkMsRef.current > 0) {
-      lastCheckpointAtRef.current = now;
-      persistAfkRuntimeState(now);
-      return;
-    }
-
     if (debugSettings.displayAfkDuration && elapsedMs > 60_000) {
       const elapsedSeconds = Math.floor(elapsedMs / 1000);
       actions.addNotification(`(Debug)前回の更新から ${formatNumber(elapsedSeconds)}秒経過`);
