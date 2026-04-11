@@ -22,9 +22,9 @@ PT1 HP (HP bar, blue) `x.expedition`.name       outcome `condition`.label ▼
 - "###" part: HP donuts bar, sub-color
 
 ```
-( ####### ) PT1 ルピニアンの断崖踏破  好調▼
+( ####### ) PT1 ルピニアンの断崖   踏破  好調▼
 ( ##   ## ) 次の目標: ルピニアンの断崖のボス撃破 でヴァルンの樹林帯 開放
-( ####### )📜 1,110回アイテム獲得を空振りする(8%, 98回, 残り4時間)
+( ####### ) 📜 1,110回アイテム獲得を空振りする(8%, 98回, 残り4時間)
 移動中: flavor text (background: state progress bar)
 
 ルピニアンの断崖(pull down list)  探索深度 全て 出撃
