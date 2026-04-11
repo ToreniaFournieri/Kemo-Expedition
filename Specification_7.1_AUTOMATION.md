@@ -8,7 +8,7 @@
 | Mode     | Description                                                                                                                |
 | -------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `OFF`  | No automatic equipment processing is performed. Characters keep their current equipment unless changed manually.           |
-| `SEMI` | Automatically **Fills empty slots** and **Upgrades existing equipment**  , but does **not remove currently equipped items**. |
+| `SEMI` | Automatically **Upgrades existing equipment**  , but does **not remove currently equipped items**. |
 | `FULL` | Automatically **Removes all equipment**, **Fills empty slots** and **Upgrades existing equipment**. |                             |
 
 - Processing priority: Characters are processed sequentially in party order: PT1 Row1 → PT1 Row2 → … → PT1 Row6 → PT2 Row1 → PT2 Row2 → …
