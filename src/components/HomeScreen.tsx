@@ -7351,7 +7351,7 @@ function ExpeditionTab({
                       const isRoomExpanded = canExpandRoom && (isManualExpandedRoom || (!hasManualSelectionForParty && originalIndex === defaultExpandedRoomIndex));
 
                       return (
-                        <div key={`${partyIndex}-${originalIndex}-${entry.room}`} className="bg-white rounded overflow-hidden">
+                        <div key={`${partyIndex}-${originalIndex}-${entry.room}`} className="bg-white rounded overflow-hidden shadow-[0_6px_16px_rgba(15,23,42,0.14)]">
                         <button
                           onClick={() => {
                             if (!canExpandRoom) return;
@@ -8729,7 +8729,7 @@ function DiaryTab({
                     const isRoomExpanded = !!expandedRooms[roomKey];
 
                     return (
-                      <div key={roomKey} className="bg-white rounded overflow-hidden">
+                      <div key={roomKey} className="bg-white rounded overflow-hidden shadow-[0_6px_16px_rgba(15,23,42,0.14)]">
                         <button
                           onClick={() => onSetExpandedRooms((prev) => ({ ...prev, [roomKey]: !isRoomExpanded }))}
                           className="w-full text-left p-2 text-xs"
