@@ -2698,14 +2698,10 @@ export function HomeScreen({
     ]);
 
     const getItemCBonusSignatures = (item: Item): Set<string> => {
-      // SpecRef: 7.1.1.2 | Equipping into empty slots | Initialize memory
       const bonusNames = new Set<string>();
 
       for (const bonus of item.bonuses ?? []) {
         if (!ITEM_DIRECT_C_BONUS_TYPES.has(bonus.type)) continue;
-        if (bonus.type === 'antagonism') {
-          bonusNames.add('c.antagonism');
-        }
         bonusNames.add(`c.${bonus.type}+${formatCBonusValue(bonus.value)}`);
       }
 
@@ -2994,7 +2990,6 @@ export function HomeScreen({
         }
         const memoryItemIds = new Set<number>();
         const memoryCBonusNames = new Set<string>();
-        memoryCBonusNames.add('c.antagonism');
         const emptySlotIndexes = simulatedEquipmentSlots
           .map((item, slotIndex) => (item ? -1 : slotIndex))
           .filter((index) => index >= 0);
