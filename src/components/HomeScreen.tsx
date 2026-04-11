@@ -7152,11 +7152,11 @@ function ExpeditionTab({
           : undefined;
 
         return (
-          <div key={partyIndex} className="bg-pane relative rounded-lg p-2 overflow-hidden shadow-md shadow-slate-900/15" style={expeditionPaneBackgroundStyle}>
+          <div key={partyIndex} className="bg-pane relative rounded-lg p-1.5 overflow-hidden shadow-md shadow-slate-900/15" style={expeditionPaneBackgroundStyle}>
             {expeditionPaneImageLayerStyle ? (
               <div aria-hidden className="pointer-events-none absolute inset-0" style={expeditionPaneImageLayerStyle} />
             ) : null}
-            <div className={`relative z-10 rounded-md p-2 text-gray-900 ${isDarkModeEnabled ? 'bg-slate-900/18' : 'bg-white/74'}`}>
+            <div className={`relative z-10 rounded-md p-1.5 text-gray-900 ${isDarkModeEnabled ? 'bg-slate-900/18' : 'bg-white/74'}`}>
             {/* SpecRef: 8.3 | UI_EXPEDITION | ### part: HP donuts bar, sub-color */}
             <button
               onClick={() => {
@@ -7164,10 +7164,10 @@ function ExpeditionTab({
                 setExpandedLogParty(nextExpanded);
                 setExpandedRoom(null);
               }}
-              className="w-full text-xs mb-1.5"
+              className="w-full text-xs mb-1"
             >
               <span className="min-w-0 flex items-start gap-2">
-                <span className="relative h-11 w-11 shrink-0 mt-0.5">
+                <span className="relative h-10 w-10 shrink-0 mt-0.5">
                   <svg
                     viewBox="0 0 36 36"
                     className="h-full w-full -rotate-90 drop-shadow-[0_1px_1px_rgb(15_23_42/0.2)]"
@@ -7195,7 +7195,7 @@ function ExpeditionTab({
                     />
                   </svg>
                 </span>
-                <span className="min-w-0 flex-1 space-y-0.5 text-left">
+                <span className="min-w-0 flex-1 space-y-0 text-left">
                   <span className="flex items-start justify-between gap-1.5">
                     <span className="min-w-0 truncate text-black">
                       <span className="font-bold shrink-0 mr-1">{party.name}</span>
@@ -7212,7 +7212,7 @@ function ExpeditionTab({
                       className="block text-[11px] text-gray-700 overflow-hidden break-words"
                       style={{
                         display: '-webkit-box',
-                        WebkitLineClamp: 2,
+                        WebkitLineClamp: 1,
                         WebkitBoxOrient: 'vertical',
                       }}
                     >
@@ -7227,7 +7227,7 @@ function ExpeditionTab({
                   )}
                 </span>
               </span>
-              <span className={`mt-1.5 block relative h-8 min-w-0 rounded-md overflow-hidden text-[11px] shadow-[0_2px_6px_rgb(15_23_42/0.18),inset_0_1px_0_rgb(255_255_255/0.42)] ${isDarkModeEnabled ? 'bg-slate-900/28' : 'bg-white/45'}`}>
+              <span className={`mt-1 block relative h-7 min-w-0 rounded-md overflow-hidden text-[11px] shadow-[0_2px_6px_rgb(15_23_42/0.18),inset_0_1px_0_rgb(255_255_255/0.42)] ${isDarkModeEnabled ? 'bg-slate-900/28' : 'bg-white/45'}`}>
                 <span
                   className={`absolute inset-y-0 left-0 bg-sub/20 ${cycle.state === 'explore' ? '' : 'transition-[width] duration-200'}`}
                   style={{ width: `${progressPercent}%` }}
@@ -7237,7 +7237,7 @@ function ExpeditionTab({
                     className="w-full overflow-hidden text-pretty"
                     style={{
                       display: '-webkit-box',
-                      WebkitLineClamp: 2,
+                      WebkitLineClamp: 1,
                       WebkitBoxOrient: 'vertical',
                     }}
                   >
