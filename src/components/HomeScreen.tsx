@@ -7164,7 +7164,7 @@ function ExpeditionTab({
                 setExpandedLogParty(nextExpanded);
                 setExpandedRoom(null);
               }}
-              className="w-full text-xs mb-1"
+              className="w-full text-xs mb-0.5"
             >
               <span className="min-w-0 flex items-start gap-2">
                 <span className="relative h-10 w-10 shrink-0 mt-0.5">
@@ -7227,7 +7227,7 @@ function ExpeditionTab({
                   )}
                 </span>
               </span>
-              <span className={`mt-1 block relative h-10 min-w-0 rounded-md overflow-hidden text-[11px] shadow-[0_2px_6px_rgb(15_23_42/0.18),inset_0_1px_0_rgb(255_255_255/0.42)] ${isDarkModeEnabled ? 'bg-slate-900/28' : 'bg-white/45'}`}>
+              <span className={`mt-0.5 block relative h-10 min-w-0 rounded-md overflow-hidden text-[11px] shadow-[0_2px_6px_rgb(15_23_42/0.18),inset_0_1px_0_rgb(255_255_255/0.42)] ${isDarkModeEnabled ? 'bg-slate-900/28' : 'bg-white/45'}`}>
                 <span
                   className={`absolute inset-y-0 left-0 bg-sub/20 ${cycle.state === 'explore' ? '' : 'transition-[width] duration-200'}`}
                   style={{ width: `${progressPercent}%` }}
