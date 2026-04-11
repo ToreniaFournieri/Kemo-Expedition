@@ -107,7 +107,7 @@ export function checkLootGateRequirement(params: {
         blocked: true,
         required,
         collected,
-        label: '前回ダンジョンのボス撃破',
+        label: 'ボス撃破',
       };
     }
     return { blocked: false };
@@ -125,7 +125,7 @@ export function checkLootGateRequirement(params: {
         blocked: true,
         required,
         collected,
-        label: 'アンコモンアイテム(持ち帰り)',
+        label: 'アンコモンアイテム',
       };
     }
   }
@@ -139,7 +139,7 @@ export function checkLootGateRequirement(params: {
         blocked: true,
         required,
         collected,
-        label: 'エリートレアアイテム(持ち帰り)',
+        label: 'エリートレアアイテム',
       };
     }
   }
