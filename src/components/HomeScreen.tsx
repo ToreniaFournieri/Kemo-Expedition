@@ -35,7 +35,7 @@ import { NotificationToast } from './NotificationToast';
 import { getBaseMultiplier } from '../game/baseMultiplier';
 import { ENEMY_TYPE_SHORT_NAMES, formatEnemyDefName } from '../game/enemyDisplay';
 import { computeCharacterStats, getAbilityDescription, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
-import { serializeGameState } from '../game/saveCodec';
+import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { createSideQuestBag, createSleepinessPartyBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag } from '../game/bags';
 import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRankValue, getJewelNameByRank, getJewelOwnedCount } from '../game/jewel';
 import { replaceCharacterEquipment } from '../game/equipment';
@@ -9257,12 +9257,18 @@ function SettingTab({
       const issues = validateImportedSaveData(saveData);
 
       if (parsed && typeof parsed === 'object' && 'meta' in parsed) {
-        const meta = (parsed as { meta?: { version?: string; env?: string } }).meta;
+        const meta = (parsed as { meta?: { version?: string; env?: string; format?: string } }).meta;
         if (meta?.version && meta.version !== versionTag) {
           issues.push(`バージョン差異: 現在 ${versionTag} / ファイル ${meta.version}`);
         }
         if (meta?.env && meta.env !== currentEnv) {
           issues.push(`環境差異: 現在 ${currentEnv} / ファイル ${meta.env}`);
+        }
+        if (meta?.format === 'compressed-v1') {
+          const canonicalImported = serializeGameState(hydrateGameState(saveData as GameState));
+          if (JSON.stringify(canonicalImported) !== JSON.stringify(saveData)) {
+            issues.push('形式差異: インポートデータが現在の保存/復元フォーマットに一致しません。');
+          }
         }
       }
 
@@ -9287,6 +9293,7 @@ function SettingTab({
   };
 
   const validateImportedSaveData = (saveData: Partial<GameState>): string[] => {
+    // SpecRef: 9 | Environment | Import/Export format consistency check
     const issues: string[] = [];
 
     if (!Array.isArray(saveData.parties)) issues.push('parties が存在しない、または配列ではありません。');
