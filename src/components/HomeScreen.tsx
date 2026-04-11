@@ -9865,7 +9865,7 @@ function SettingTab({
       )}
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('donation', '寄付箱')}
-        {divineBureauPanelExpanded.donation && <div className="bg-white rounded p-2 text-sm space-y-1 mt-3">
+        {divineBureauPanelExpanded.donation && <div className="bg-white rounded p-2 text-sm space-y-1 mt-3 pane-button-shadow">
           <div className="flex items-center justify-between gap-3 text-xs text-gray-500 border-b border-gray-100 pb-1 mb-1">
             <span>神格</span>
             <span>寄付額</span>
@@ -10647,11 +10647,11 @@ function SettingTab({
         </button>
         {isEnemyEditExpanded && <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm mt-3">
           {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Enemy Edit Pane */}
-          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy name</div><input className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.name} onChange={(e) => updateColosseumEnemySettings({ name: e.target.value })} /></label>
+          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy name</div><input className="w-full rounded border border-gray-300 bg-white px-2 py-1 pane-button-shadow" value={colosseumEnemySettings.name} onChange={(e) => updateColosseumEnemySettings({ name: e.target.value })} /></label>
           <label className="space-y-1">
             <div className="text-xs text-gray-600">Terrain effect</div>
             <select
-              className="w-full rounded border px-2 py-1"
+              className="w-full rounded border border-gray-300 bg-white px-2 py-1 pane-button-shadow"
               value={colosseumEnemySettings.terrainEffect}
               onChange={(e) => updateColosseumEnemySettings({ terrainEffect: e.target.value as ColosseumEnemySettings['terrainEffect'] })}
             >
@@ -10663,9 +10663,9 @@ function SettingTab({
               {(TERRAIN_EFFECT_OPTIONS.find((entry) => entry.key === colosseumEnemySettings.terrainEffect)?.description) ?? '地形効果なし'}
             </div>
           </label>
-          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy type</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyType} onChange={(e) => updateColosseumEnemySettings({ enemyType: e.target.value })}>{Object.keys(ENEMY_TYPE_LABELS).map((key) => <option key={key} value={key}>{ENEMY_TYPE_LABELS[key] ?? key}</option>)}</select></label>
-          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy main class</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemyMainClass} onChange={(e) => updateColosseumEnemySettings({ enemyMainClass: e.target.value as ColosseumEnemySettings['enemyMainClass'] })}>{ENEMY_EDIT_CLASS_OPTIONS.map((key) => <option key={key} value={key}>{ENEMY_CLASS_LABELS[key] ?? key}</option>)}</select></label>
-          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy sub class</div><select className="w-full rounded border px-2 py-1" value={colosseumEnemySettings.enemySubClass} onChange={(e) => updateColosseumEnemySettings({ enemySubClass: e.target.value as ColosseumEnemySettings['enemySubClass'] })}><option value="none">none</option>{ENEMY_EDIT_CLASS_OPTIONS.map((key) => <option key={key} value={key}>{ENEMY_CLASS_LABELS[key] ?? key}</option>)}</select></label>
+          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy type</div><select className="w-full rounded border border-gray-300 bg-white px-2 py-1 pane-button-shadow" value={colosseumEnemySettings.enemyType} onChange={(e) => updateColosseumEnemySettings({ enemyType: e.target.value })}>{Object.keys(ENEMY_TYPE_LABELS).map((key) => <option key={key} value={key}>{ENEMY_TYPE_LABELS[key] ?? key}</option>)}</select></label>
+          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy main class</div><select className="w-full rounded border border-gray-300 bg-white px-2 py-1 pane-button-shadow" value={colosseumEnemySettings.enemyMainClass} onChange={(e) => updateColosseumEnemySettings({ enemyMainClass: e.target.value as ColosseumEnemySettings['enemyMainClass'] })}>{ENEMY_EDIT_CLASS_OPTIONS.map((key) => <option key={key} value={key}>{ENEMY_CLASS_LABELS[key] ?? key}</option>)}</select></label>
+          <label className="space-y-1"><div className="text-xs text-gray-600">Enemy sub class</div><select className="w-full rounded border border-gray-300 bg-white px-2 py-1 pane-button-shadow" value={colosseumEnemySettings.enemySubClass} onChange={(e) => updateColosseumEnemySettings({ enemySubClass: e.target.value as ColosseumEnemySettings['enemySubClass'] })}><option value="none">none</option>{ENEMY_EDIT_CLASS_OPTIONS.map((key) => <option key={key} value={key}>{ENEMY_CLASS_LABELS[key] ?? key}</option>)}</select></label>
           <label className="space-y-1"><div className="text-xs text-gray-600">Enemy level: {colosseumEnemySettings.level}</div><input className={IOS_GLASS_SLIDER_CLASS} type="range" min={1} max={99} value={colosseumEnemySettings.level} onChange={(e) => updateColosseumEnemySettings({ level: Number(e.target.value) })} style={getSliderProgressStyle(colosseumEnemySettings.level, 1, 99)} /></label>
           {[0, 1, 2, 3, 4].map((slot) => {
             const slotAbility = colosseumEnemySettings.abilities[slot];
@@ -10674,7 +10674,7 @@ function SettingTab({
                 <label className="space-y-1">
                   <div className="text-xs text-gray-600">Enemy added ability {slot + 1}</div>
                   <select
-                    className="w-full rounded border px-2 py-1"
+                    className="w-full rounded border border-gray-300 bg-white px-2 py-1 pane-button-shadow"
                     value={slotAbility?.id ?? 'none'}
                     onChange={(e) => {
                       const next = [...colosseumEnemySettings.abilities];
@@ -10693,7 +10693,7 @@ function SettingTab({
                 <label className="space-y-1">
                   <div className="text-xs text-gray-600">Enemy added ability {slot + 1} level</div>
                   <select
-                    className="w-full rounded border px-2 py-1"
+                    className="w-full rounded border border-gray-300 bg-white px-2 py-1 pane-button-shadow"
                     value={slotAbility?.level ?? 1}
                     onChange={(e) => {
                       const next = [...colosseumEnemySettings.abilities];
@@ -10860,24 +10860,24 @@ function SettingTab({
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('debug', 'デバッグ')}
         {divineBureauPanelExpanded.debug && <div className="space-y-3 mt-3 text-sm">
-          <button type="button" onClick={() => onUpdateDebugSettings({ clairvoyanceEnabled: !debugSettings.clairvoyanceEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">Clairvoyance: {debugSettings.clairvoyanceEnabled ? 'ON' : 'OFF'}</button>
-          <div className="bg-white rounded border p-2">
+          <button type="button" onClick={() => onUpdateDebugSettings({ clairvoyanceEnabled: !debugSettings.clairvoyanceEnabled })} className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-left pane-button-shadow">Clairvoyance: {debugSettings.clairvoyanceEnabled ? 'ON' : 'OFF'}</button>
+          <div className="bg-white rounded border border-gray-300 p-2 pane-button-shadow">
             <div className="text-xs text-gray-500 mb-1">Speed of time</div>
             <div className="flex gap-2">
-              <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'realtime' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'realtime' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>Real time</button>
-              <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'x5' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'x5' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x5 boost</button>
-              <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'x20' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'x20' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x20 hyper</button>
-              <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'x100' })} className={`px-2 py-1 rounded border ${debugSettings.timeSpeed === 'x100' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x100 Ultra</button>
+              <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'realtime' })} className={`px-2 py-1 rounded border pane-button-shadow ${debugSettings.timeSpeed === 'realtime' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>Real time</button>
+              <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'x5' })} className={`px-2 py-1 rounded border pane-button-shadow ${debugSettings.timeSpeed === 'x5' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x5 boost</button>
+              <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'x20' })} className={`px-2 py-1 rounded border pane-button-shadow ${debugSettings.timeSpeed === 'x20' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x20 hyper</button>
+              <button onClick={() => onUpdateDebugSettings({ timeSpeed: 'x100' })} className={`px-2 py-1 rounded border pane-button-shadow ${debugSettings.timeSpeed === 'x100' ? 'bg-sub text-white border-sub' : 'border-gray-300'}`}>x100 Ultra</button>
             </div>
           </div>
-          <button type="button" onClick={() => onUpdateDebugSettings({ godsBattleCondition: debugSettings.godsBattleCondition === 'normal' ? 'simple1' : 'normal' })} className="w-full rounded border bg-white px-3 py-2 text-left">Gods Battle condition: {debugSettings.godsBattleCondition === 'simple1' ? 'Simple(1)' : 'Normal'}</button>
-          <button type="button" onClick={() => onUpdateDebugSettings({ godStrength: debugSettings.godStrength === 'normal' ? 'debug' : 'normal' })} className="w-full rounded border bg-white px-3 py-2 text-left">Gods Strength: {debugSettings.godStrength === 'debug' ? 'Very Weak' : 'Normal'}</button>
-          <button type="button" disabled={partyCount >= 6} onClick={onPartyUnlock} className="w-full rounded border bg-white px-3 py-2 text-left disabled:opacity-50">Party unlock +1 PT unlock ({partyCount}/6)</button>
-          <button type="button" onClick={() => onUpdateDebugSettings({ jewelShopOpen: !debugSettings.jewelShopOpen })} className="w-full rounded border bg-white px-3 py-2 text-left">Jewel shop open: {debugSettings.jewelShopOpen ? 'ON' : 'OFF'}</button>
-          <button type="button" onClick={() => onUpdateDebugSettings({ displayCondition: !debugSettings.displayCondition })} className="w-full rounded border bg-white px-3 py-2 text-left">Display condition: {debugSettings.displayCondition ? 'ON' : 'OFF'}</button>
-          <button type="button" onClick={() => onUpdateDebugSettings({ displayFlavorCondition: !debugSettings.displayFlavorCondition })} className="w-full rounded border bg-white px-3 py-2 text-left">Display flavor condition: {debugSettings.displayFlavorCondition ? 'ON' : 'OFF'}</button>
-          <button type="button" onClick={() => onUpdateDebugSettings({ displayAfkDuration: !debugSettings.displayAfkDuration })} className="w-full rounded border bg-white px-3 py-2 text-left">Display AFK duration: {debugSettings.displayAfkDuration ? 'ON' : 'OFF'}</button>
-          <button type="button" onClick={() => onUpdateDebugSettings({ colosseumEnabled: !debugSettings.colosseumEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">Colosseum mode: {debugSettings.colosseumEnabled ? 'ON' : 'OFF'}</button>
+          <button type="button" onClick={() => onUpdateDebugSettings({ godsBattleCondition: debugSettings.godsBattleCondition === 'normal' ? 'simple1' : 'normal' })} className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-left pane-button-shadow">Gods Battle condition: {debugSettings.godsBattleCondition === 'simple1' ? 'Simple(1)' : 'Normal'}</button>
+          <button type="button" onClick={() => onUpdateDebugSettings({ godStrength: debugSettings.godStrength === 'normal' ? 'debug' : 'normal' })} className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-left pane-button-shadow">Gods Strength: {debugSettings.godStrength === 'debug' ? 'Very Weak' : 'Normal'}</button>
+          <button type="button" disabled={partyCount >= 6} onClick={onPartyUnlock} className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-left pane-button-shadow disabled:opacity-50">Party unlock +1 PT unlock ({partyCount}/6)</button>
+          <button type="button" onClick={() => onUpdateDebugSettings({ jewelShopOpen: !debugSettings.jewelShopOpen })} className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-left pane-button-shadow">Jewel shop open: {debugSettings.jewelShopOpen ? 'ON' : 'OFF'}</button>
+          <button type="button" onClick={() => onUpdateDebugSettings({ displayCondition: !debugSettings.displayCondition })} className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-left pane-button-shadow">Display condition: {debugSettings.displayCondition ? 'ON' : 'OFF'}</button>
+          <button type="button" onClick={() => onUpdateDebugSettings({ displayFlavorCondition: !debugSettings.displayFlavorCondition })} className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-left pane-button-shadow">Display flavor condition: {debugSettings.displayFlavorCondition ? 'ON' : 'OFF'}</button>
+          <button type="button" onClick={() => onUpdateDebugSettings({ displayAfkDuration: !debugSettings.displayAfkDuration })} className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-left pane-button-shadow">Display AFK duration: {debugSettings.displayAfkDuration ? 'ON' : 'OFF'}</button>
+          <button type="button" onClick={() => onUpdateDebugSettings({ colosseumEnabled: !debugSettings.colosseumEnabled })} className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-left pane-button-shadow">Colosseum mode: {debugSettings.colosseumEnabled ? 'ON' : 'OFF'}</button>
         </div>}
       </div>
 
