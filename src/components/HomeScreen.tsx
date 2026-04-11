@@ -7173,8 +7173,33 @@ function ExpeditionTab({
             >
               <span className="min-w-0 flex items-center gap-1.5">
                 <span className="font-bold text-black shrink-0">{party.name}</span>
-                <span className={`h-2 w-14 rounded-full overflow-hidden shrink-0 shadow-[inset_0_1px_2px_rgb(15_23_42/0.24),0_1px_2px_rgb(15_23_42/0.16)] ${isDarkModeEnabled ? 'bg-slate-100/30' : 'bg-blue-100/55'}`}>
-                  <span className="block h-full bg-blue-500 transition-[width] duration-200" style={{ width: `${hpPercent}%` }} />
+                <span className="relative h-7 w-7 shrink-0">
+                  <svg
+                    viewBox="0 0 36 36"
+                    className="h-full w-full -rotate-90 drop-shadow-[0_1px_1px_rgb(15_23_42/0.2)]"
+                    role="img"
+                    aria-label={`HP ${hpPercent}%`}
+                  >
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="14"
+                      fill="none"
+                      stroke={isDarkModeEnabled ? 'rgb(148 163 184 / 0.36)' : 'rgb(147 197 253 / 0.55)'}
+                      strokeWidth="6"
+                    />
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="14"
+                      fill="none"
+                      stroke="rgb(59 130 246)"
+                      strokeWidth="6"
+                      strokeLinecap="round"
+                      strokeDasharray={`${Math.max(0, Math.min(100, hpPercent)) * 0.88} 100`}
+                      className="transition-[stroke-dasharray] duration-200"
+                    />
+                  </svg>
                 </span>
                 <span className="truncate">{headlineDungeonName}</span>
               </span>
