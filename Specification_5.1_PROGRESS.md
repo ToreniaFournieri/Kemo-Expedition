@@ -2,17 +2,17 @@
 
 ### 5.1 PROGRESS
 **Definition of time scale.**
-  - `Step`: The basic unit of progress. 15 second per step.
-    - Debug Scaling:
-      - If `x5 boost` , Step is multiplied by **0.2**.
-      - If `x20 boost` , Step is multiplied by **0.05**.
-      - If `x100 boost` , Step is multiplied by **0.01**.
-      - This debug scaling affects to side quest time count. 
-  - `Cycle`: One total state movement.
-      - `Cycle` start from `state.rest`.
-    
-  - `Chunk`: The bulk unit of progress.
-    - One Chunk consist of 12 Cycle.
+- **`Step`**: The smallest unit of progression.  
+  - Base duration: **15 seconds per Step**.  
+  - **Debug Scaling** (applies multiplicatively to Step duration):  
+    - `x5 boost` → Step × **0.2** (3 seconds)  
+    - `x20 boost` → Step × **0.05** (0.75 seconds)  
+    - `x100 boost` → Step × **0.01** (0.15 seconds)  
+  - This scaling also applies to side quest time progression.
+- **`Cycle`**: One complete sequence of state transitions.  
+  - A Cycle always **begins at `state.rest`**.
+- **`Chunk`**: A higher-level processing unit used for bulk progression.  
+  - **1 Chunk = 12 Cycles**.
 
 - **Realtime Progress**
 
