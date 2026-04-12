@@ -123,7 +123,7 @@
   - Represent the progress of a single `Step` using "🐾🐾" emojis.  
   - Each "🐾" is rotated **clockwise by 90°**.  
     - The display simulates a **walking motion from left side to right side of screen**.
-    - It takes 1 `Step` time (If normal, 15 seconds) from left side to right side. 
+    - It takes 1 `Step` time (If normal, 1 `Step` is 15 seconds) from left side to right side. Every one paw represent 2/30 `Step` progress.
     - At each update tick:
       - The leftmost paw disappears.
       - A new paw appears on the right, maintaining two visible paws at all times.
@@ -133,11 +133,11 @@
 ```
 ↓
 ```
-  🐾 (shift right; left paw disappears) 
+  🐾 (shift right; left paw disappears)  (1/30 `Step`)
 ```
 ↓
 ```
-  🐾🐾 (new paw appears on the right)
+  🐾🐾 (new paw appears on the right) (2/30 `Step`)
 ```
 
 
