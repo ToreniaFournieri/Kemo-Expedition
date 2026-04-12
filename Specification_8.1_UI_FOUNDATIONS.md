@@ -129,15 +129,19 @@
       - A new paw appears on the right, maintaining two visible paws at all times.
 
 ```
-🐾🐾 (Initial: both paws at the left)
+🐾 (Initial: a paw at the left)
 ```
 ↓
 ```
-  🐾 (shift right; left paw disappears)  (1/30 `Step`)
+🐾🐾 (new paw appears on the right) (1/30 `Step`)
 ```
 ↓
 ```
-  🐾🐾 (new paw appears on the right) (2/30 `Step`)
+  🐾 (left paw disappears)  (2/30 `Step`)
+```
+↓
+```
+  🐾🐾 (new paw appears on the right) (3/30 `Step`)
 ```
 
 
