@@ -4133,7 +4133,7 @@ export function HomeScreen({
     if (!dungeon) return 1;
 
     const getFloorTerrainRoomMultiplier = (terrainEffect?: string): number => {
-      if (terrainEffect === 'terrain.chill') return 1.5;
+      if (terrainEffect === 'terrain.chill') return 2;
       if (terrainEffect === 'terrain.looping-path') return 2;
       return 1;
     };
