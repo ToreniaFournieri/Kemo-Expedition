@@ -735,7 +735,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "q.poor-kid",
         "label": "アイテム獲得空振り",
-        "description": "アイテム獲得空振り(神魔戦で中止)"
+        "description": "アイテム獲得空振り(自動売却を除いたアイテムの有無で判定)(神魔戦で中止)"
       },
       {
         "key": "q.consecutive-wins",
