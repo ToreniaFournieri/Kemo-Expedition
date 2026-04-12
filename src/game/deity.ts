@@ -127,7 +127,7 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
   switch (deityKey) {
     case 'Goddess of Restoration': {
       const healMissingPct = 0.2 + 0.001 * effectiveTier;
-      return `4部屋毎に減少HPの${Math.round(healMissingPct * 100)}%を回復する。睡眠時間1.50倍。氷属性に弱い(1.5倍ダメージ増)`;
+      return `4部屋毎に減少HPの${Math.round(healMissingPct * 100)}%を回復する。睡眠時間2倍。氷属性に弱い(1.5倍ダメージ増)`;
     }
     case 'God of Attrition': {
       const attackMult = 1.2 + 0.01 * effectiveTier;
@@ -138,20 +138,17 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
       return `全員に魔法防御倍率2/3倍。貯金額${autoSellMultiplier.toFixed(2)}倍(着服する)。`;
     }
     case 'God of Fortification': {
-      const restDuration = Math.max(1, 1.5 - 0.01 * effectiveTier);
-      return `全員に物理防御倍率2/3倍。休息時間${restDuration.toFixed(2)}倍。雷属性に弱い(1.5倍ダメージ増)`;
+      return '全員に物理防御倍率2/3倍。休息時間2倍。雷属性に弱い(1.5倍ダメージ増)';
     }
     case 'Goddess of Fertility': {
-      const feastDuration = Math.max(1, 1.5 - 0.01 * effectiveTier);
-      return `全員に先制+1。宴会時間${feastDuration.toFixed(2)}倍。火属性に弱い(1.5倍ダメージ増)`;
+      return '全員に先制+1。宴会時間2倍。火属性に弱い(1.5倍ダメージ増)';
     }
     case 'Goddess of Precision': {
       const accuracyBonus = 0.015 + 0.001 * effectiveTier;
-      return `全員の命中+${(accuracyBonus * 1000).toFixed(0)}、回避-5。探索時間1.50倍`;
+      return `全員の命中+${(accuracyBonus * 1000).toFixed(0)}、回避-5。探索時間2倍`;
     }
     case 'God of Fate': {
-      const prayDuration = Math.max(1, 1.5 - 0.01 * effectiveTier);
-      return `未来改変。祈り時間${prayDuration.toFixed(2)}倍。`;
+      return '未来改変。祈り時間2倍。';
     }
     case 'God of Dusk': {
       const evasionBonus = 0.015 + 0.001 * effectiveTier;
@@ -274,15 +271,15 @@ export function applyDeityCharacterModifiers(
 // SpecRef: 5.1.1 | Party State Machine | Durration modifilier
 export function getDeityStateDurationMultiplier(name: string, totalDonatedGold = 0, state: 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray' | 'explore'): number {
   const deityKey = getDeityKey(name);
-  const effectiveTier = getEffectiveDeityTier(totalDonatedGold);
+  void totalDonatedGold;
   if (!deityKey) return 1;
 
-  if ((state === 'sound_sleep' || state === 'nap_sleep') && deityKey === 'Goddess of Restoration') return 1.5;
-  if (state === 'rest' && deityKey === 'God of Fortification') return Math.max(1, 1.5 - 0.01 * effectiveTier);
-  if (state === 'sell' && deityKey === 'God of Dusk') return 1.5;
-  if (state === 'feast' && deityKey === 'Goddess of Fertility') return Math.max(1, 1.5 - 0.01 * effectiveTier);
-  if (state === 'pray' && deityKey === 'God of Fate') return Math.max(1, 1.5 - 0.01 * effectiveTier);
-  if (state === 'explore' && deityKey === 'Goddess of Precision') return 1.5;
+  if ((state === 'sound_sleep' || state === 'nap_sleep') && deityKey === 'Goddess of Restoration') return 2;
+  if (state === 'rest' && deityKey === 'God of Fortification') return 2;
+  if (state === 'sell' && deityKey === 'God of Dusk') return 2;
+  if (state === 'feast' && deityKey === 'Goddess of Fertility') return 2;
+  if (state === 'pray' && deityKey === 'God of Fate') return 2;
+  if (state === 'explore' && deityKey === 'Goddess of Precision') return 2;
   return 1;
 }
 
