@@ -146,9 +146,9 @@
 
 
 ```
+`Step Progress`
 (Left-aligned)             (Right-aligned)
 ケモの冒険　v0.6.0(23) (αテスト)        200G
-`Step Progress`
 ```
 - Tab header (primary navigation):
   - Expedition: 探索
