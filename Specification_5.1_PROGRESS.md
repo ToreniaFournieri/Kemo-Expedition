@@ -1,6 +1,21 @@
 ## 5. PROGRESS
 
 ### 5.1 PROGRESS
+**Definition of time scale.**
+  - `Step`: The basic unit of progress. 15 second per step.
+    - Debug Scaling:
+      - If `x5 boost` , Step is multiplied by **0.2**.
+      - If `x20 boost` , Step is multiplied by **0.05**.
+      - If `x100 boost` , Step is multiplied by **0.01**.
+      - This debug scaling affects to side quest time count. 
+  - `Cycle`: One total state movement.
+      - `Cycle` start from `state.rest`.
+    
+  - `Chunk`: The bulk unit of progress.
+    - One Chunk consist of 12 Cycle.
+
+- **Realtime Progress**
+
 
 #### 5.1.1 Party State Machine
 
@@ -22,11 +37,6 @@
 | `state.return` | dungeon → home,If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | rest | 
 | `state.reactivate` | Reactivating from AFK mode | - | - |
 
-- **Realtime Progress**
-- Debug Scaling:
-  - If `x5 boost` , all durations are multiplied by **0.2**.
-  - If `x20 boost` , all durations are multiplied by **0.05**.
-  - This debug scaling affects to side quest time count. 
 
 
 | State | Japanese label | Duration |
