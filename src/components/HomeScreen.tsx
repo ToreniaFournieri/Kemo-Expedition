@@ -4441,6 +4441,11 @@ export function HomeScreen({
               )}
             </div>
           </div>
+          {/* SpecRef: 8.1.2 | Header | Step Progress Display */}
+          <div className="mt-1 flex justify-end" aria-label="Step Progress">
+            <span className="step-progress-paw" aria-hidden="true">🐾</span>
+            <span className="step-progress-paw step-progress-paw-delay" aria-hidden="true">🐾</span>
+          </div>
 
           {/* Tabs */}
           <div className="flex mt-1.5 -mb-3">
