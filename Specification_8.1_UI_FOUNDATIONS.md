@@ -118,9 +118,15 @@
   if (p.includes("/qa/")) return "αテスト";
   return "";  };
   - Use this specification's version
+
+- **`Step Progress` Display**:  
+  - Represent the progress of a single `Step` using "🐾🐾" emojis.  
+  - Each "🐾" rotates **clockwise by 45°**. Like walking from left side to right side.- 
+
 ```
 (Left-aligned)             (Right-aligned)
 ケモの冒険　v0.6.0(23) (αテスト)        200G
+`Step Progress`
 ```
 - Tab header (primary navigation):
   - Expedition: 探索
