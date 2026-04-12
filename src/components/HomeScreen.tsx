@@ -1160,14 +1160,15 @@ function getSideQuestText(party: Party, cycleDurationScale: number, emulatedNowM
   const simulatedElapsedMs = Math.max(0, emulatedNowMs - party.sideQuest.assignedAt) / safeScale;
   const simulatedNow = party.sideQuest.assignedAt + simulatedElapsedMs;
   const remainingMs = Math.max(0, party.sideQuest.expiresAt - simulatedNow);
-  const remainingLabel = party.sideQuest.expiresAt >= Number.MAX_SAFE_INTEGER
-    ? '期限なし'
+  const hasDeadline = party.sideQuest.expiresAt < Number.MAX_SAFE_INTEGER;
+  const remainingLabel = !hasDeadline
+    ? null
     : remainingMs >= (60 * 60 * 1000)
       ? `残り${formatNumber(Math.ceil(remainingMs / (60 * 60 * 1000)))}時間`
       : `残り${formatNumber(Math.ceil(remainingMs / (60 * 1000)))}分`;
   const progressParts = [`${percent}%`];
   if (display.current) progressParts.push(display.current);
-  progressParts.push(remainingLabel);
+  if (remainingLabel) progressParts.push(remainingLabel);
   return `${display.text} (${progressParts.join(', ')})`;
 }
 
