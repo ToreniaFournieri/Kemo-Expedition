@@ -70,7 +70,7 @@ interface HomeScreenProps {
     setExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
     setExpeditionDifficultyOffset: (partyIndex: number, difficultyOffset: number) => void;
     resetExpeditionStats: (partyIndex: number) => void;
-    runExpedition: (partyIndex: number, gameMode?: GameMode, triggerGodsBattle?: boolean) => void;
+    runExpedition: (partyIndex: number, gameMode?: GameMode, triggerGodsBattle?: boolean, simulatedAt?: number) => void;
     finalizeDiaryLog: (partyIndex: number) => void;
     updatePartyDeity: (partyIndex: number, deityName: string) => void;
     healPartyHp: (partyIndex: number, amount: number) => void;
@@ -3769,7 +3769,7 @@ export function HomeScreen({
                 }
               }
               if (party.sideQuest?.type === 'q.exercise') actions.advanceSideQuest(partyIndex, getScaledSideQuestSeconds(updated.durationMs), simulationNow);
-              actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle);
+              actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, simulationNow);
               updated.state = 'explore';
               updated.durationMs = getExplorationDurationMs(
                 undefined,
@@ -3889,26 +3889,27 @@ export function HomeScreen({
       const currentLog = party.lastExpeditionLog;
       const hasNewLog = !!currentLog && currentLog !== previousLog;
       if (hasNewLog && currentLog && party.sideQuest) {
+        const simulatedAt = lastCheckpointAtRef.current;
         if (party.sideQuest.type === 'q.treasure-super-rare') {
           const gained = currentLog.rewards.filter((item) => item.superRare > 0).length;
-          if (gained > 0) actions.advanceSideQuest(index, gained);
+          if (gained > 0) actions.advanceSideQuest(index, gained, simulatedAt);
         }
         if (party.sideQuest.type === 'q.treasure-boss-rare') {
           const gained = currentLog.rewards.filter((item) => getItemRarityById(item.id) === 'bossRare').length;
-          if (gained > 0) actions.advanceSideQuest(index, gained);
+          if (gained > 0) actions.advanceSideQuest(index, gained, simulatedAt);
         }
         if (party.sideQuest.type === 'q.poor-kid' && (currentLog.rewards.length ?? 0) === 0) {
-          actions.advanceSideQuest(index, 1);
+          actions.advanceSideQuest(index, 1, simulatedAt);
         }
         if (party.sideQuest.type === 'q.consecutive-wins') {
           if (currentLog.finalOutcome === 'Clear') {
-            actions.advanceSideQuest(index, 1);
+            actions.advanceSideQuest(index, 1, simulatedAt);
           } else {
             actions.setSideQuestProgress(index, 0);
           }
         }
         if (party.sideQuest.type === 'q.losers' && currentLog.finalOutcome === 'Defeat') {
-          actions.advanceSideQuest(index, 1);
+          actions.advanceSideQuest(index, 1, simulatedAt);
         }
       }
       const hasLevelUp = party.level > previousLevel;
