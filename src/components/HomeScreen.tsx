@@ -200,7 +200,6 @@ const WIDE_MODE_DEFAULT_SECONDARY_TAB: WideModeSecondaryTab = 'party';
 const STEP_PROGRESS_TOTAL_TICKS_PER_STEP = 30;
 const STEP_PROGRESS_PAW_UNITS_PER_STEP = 15;
 const STEP_PROGRESS_TRACK_COLUMNS = STEP_PROGRESS_PAW_UNITS_PER_STEP + 1;
-const STEP_PROGRESS_TICK_MS = 15_000 / STEP_PROGRESS_TOTAL_TICKS_PER_STEP;
 // SpecRef: 8.1 | UI_FOUNDATIONS | Style: Compact, simple, iOS-like
 const IOS_GLASS_BUTTON_CLASS =
   'ios-glass-button rounded-xl';
@@ -2414,7 +2413,7 @@ export function HomeScreen({
   const [gameMode, setGameMode] = useState<GameMode>(() => getInitialGameMode(isLunaEnvironment));
   const [darkModeSetting, setDarkModeSetting] = useState<DarkModeSetting>(() => getInitialDarkModeSetting());
   const [isSystemDarkMode, setIsSystemDarkMode] = useState(false);
-  const [stepProgressTick, setStepProgressTick] = useState(0);
+  const [stepProgressNowMs, setStepProgressNowMs] = useState(() => Date.now());
   const [debugSettings, setDebugSettings] = useState<DebugSettings>(() => getDebugSettings());
   const [isAutoEquipmentEnabled] = useState<boolean>(() => getInitialAutoEquipmentEnabled());
   const tabScrollPositionsRef = useRef<Partial<Record<Tab, number>>>({});
@@ -2422,13 +2421,26 @@ export function HomeScreen({
   const primarySplitTabContentRef = useRef<HTMLDivElement | null>(null);
   const secondarySplitTabContentRef = useRef<HTMLDivElement | null>(null);
 
+  const stepProgressTick = useMemo(() => {
+    // SpecRef: 8.1.2 | Header | Step Progress Display
+    // Synchronize paw animation with real Step duration including debug time-scale effects.
+    const scaledStepDurationMs = Math.max(1, BASE_STEP_DURATION_MS * Math.max(0.001, getTimeSpeedScale(debugSettings)));
+    const normalizedStepProgress = (stepProgressNowMs % scaledStepDurationMs) / scaledStepDurationMs;
+    return Math.min(
+      STEP_PROGRESS_TOTAL_TICKS_PER_STEP - 1,
+      Math.floor(normalizedStepProgress * STEP_PROGRESS_TOTAL_TICKS_PER_STEP),
+    );
+  }, [debugSettings, stepProgressNowMs]);
+
   useEffect(() => {
     // SpecRef: 8.1.2 | Header | Step Progress Display
+    const scaledStepDurationMs = Math.max(1, BASE_STEP_DURATION_MS * Math.max(0.001, getTimeSpeedScale(debugSettings)));
+    const tickIntervalMs = Math.max(33, Math.floor(scaledStepDurationMs / STEP_PROGRESS_TOTAL_TICKS_PER_STEP));
     const stepProgressTimer = window.setInterval(() => {
-      setStepProgressTick((prev) => (prev + 1) % STEP_PROGRESS_TOTAL_TICKS_PER_STEP);
-    }, STEP_PROGRESS_TICK_MS);
+      setStepProgressNowMs(Date.now());
+    }, tickIntervalMs);
     return () => window.clearInterval(stepProgressTimer);
-  }, []);
+  }, [debugSettings]);
 
   const stepProgressPawSlots = useMemo(() => {
     // SpecRef: 8.1.2 | Header | Step Progress Display
