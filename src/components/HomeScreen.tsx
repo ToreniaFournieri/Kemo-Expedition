@@ -368,12 +368,14 @@ function rollPercentInclusive(min: number, max: number): number {
 }
 
 const PARTY_CYCLE_TICK_MS = 100;
-const EXPLORING_PROGRESS_STEP_MS = 15000;
+const BASE_STEP_DURATION_MS = 15000;
+const EXPLORING_PROGRESS_STEP_MS = BASE_STEP_DURATION_MS;
 const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
+const APPROX_CYCLE_STEP_COUNT = 30;
+const CHUNK_CYCLE_COUNT = 12;
 const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.exercise', 'q.healing', 'q.AFK']);
 const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
 const AFK_MAX_ELAPSED_MS = 1800 * 60 * 1000;
-const CATCHUP_CHUNK_MINUTES = 60;
 const REDUCER_CATCHUP_THRESHOLD_MS = 15000;
 
 function getElapsedWholeSeconds(carriedMs: number, elapsedMs: number): { gainedSeconds: number; remainderMs: number } {
@@ -396,8 +398,7 @@ const APP_VERSION = `v${__APP_VERSION__}`;
 
 
 function getExpeditionTierDurationFactor(expTier: number): number {
-  const normalizedTier = Math.max(0, expTier);
-  return Math.pow(1.3 - (0.02 * normalizedTier), normalizedTier);
+  return Math.max(0, expTier);
 }
 
 function isIOSMobileSafari(): boolean {
@@ -473,7 +474,7 @@ function preloadRaceIcons(): void {
 
 function getExplorationDurationMs(entryCount?: number, durationMultiplier: number = 1, durationScale: number = 1): number {
   const exploredSteps = Math.max(1, Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, entryCount ?? EXPLORING_PROGRESS_TOTAL_STEPS));
-  return Math.floor(exploredSteps * EXPLORING_PROGRESS_STEP_MS * durationMultiplier * durationScale);
+  return Math.max(100, Math.ceil(exploredSteps * EXPLORING_PROGRESS_STEP_MS * durationMultiplier * durationScale));
 }
 
 function getExplorationVisibleRoomCount(elapsedMs: number, durationMs: number, totalEntries: number): number {
@@ -3363,10 +3364,10 @@ export function HomeScreen({
     const timerId = window.setTimeout(() => {
       const autoRepeatEnabled = autoRepeatEnabledRef.current;
       // SpecRef: 5.1.1 | Party State Machine | Time-Based Progress Handling (Online + AFK)
-      // Catch-up is processed in fixed-size chunks (60 minutes), scaled by debug speed.
+      // Catch-up is processed in fixed-size chunks (12 cycles), scaled by debug speed.
       const catchupChunkMs = Math.max(
         PARTY_CYCLE_TICK_MS,
-        Math.floor(CATCHUP_CHUNK_MINUTES * 60 * 1000 * Math.max(0.001, getTimeSpeedScale(debugSettings))),
+        Math.ceil(BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * CHUNK_CYCLE_COUNT * Math.max(0.001, getTimeSpeedScale(debugSettings))),
       );
       const chunkElapsedMs = Math.min(pendingAfkMs, catchupChunkMs);
       const anchor = afkSimulationAnchorRef.current ?? Date.now();
@@ -3392,7 +3393,7 @@ export function HomeScreen({
     if (shouldRebuildPartyCyclesAfterAfkRef.current) {
       const now = Date.now();
       const autoRepeatEnabled = autoRepeatEnabledRef.current;
-      const approxCycleDurationMs = Math.max(1, Math.floor(460_000 * getTimeSpeedScale(debugSettings)));
+      const approxCycleDurationMs = Math.max(1, Math.ceil(BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * getTimeSpeedScale(debugSettings)));
       const remainderMs = afkRecoveryTotalMsRef.current % approxCycleDurationMs;
       setPartyCycles(() => {
         const next: Record<number, PartyCycleRuntime> = {};
@@ -3566,7 +3567,8 @@ export function HomeScreen({
           const restTickDurationMs = getStateDurationMs(party, 'rest');
           const elapsedRestMs = Math.max(0, simulationNow - updated.stateStartedAt);
           const restTickCount = Math.floor(elapsedRestMs / Math.max(1, restTickDurationMs));
-          const healPerTick = Math.max(100, Math.floor(partyRuntimeStats.hp * 0.01));
+          // SpecRef: 5.1.1 | Party State Machine | state.rest
+          const healPerTick = Math.max(1500, Math.ceil(partyRuntimeStats.hp * 0.15));
           const projectedHp = Math.min(
             partyRuntimeStats.hp,
             party.currentHp + (restTickCount > 0 ? healPerTick * restTickCount : 0),
@@ -4133,34 +4135,38 @@ export function HomeScreen({
     return deityMultiplier * getExploreTerrainDurationMultiplier(party, exploredRooms);
   };
 
+  // SpecRef: 5.1 | PROGRESS | Step
   const getStateDurationMs = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray'): number => {
     const durationScale = getTimeSpeedScale(debugSettings);
     const autoSellCount = Math.max(1, party.lastExpeditionLog?.autoSellCount ?? 1);
-    const baseSeconds = cycleState === 'rest'
+    const baseStepCount = cycleState === 'rest'
       ? 1
       : cycleState === 'sell'
-        ? 15 * autoSellCount
+        ? autoSellCount
         : cycleState === 'feast'
-          ? 90
+          ? 6
           : cycleState === 'sound_sleep'
-            ? 120
+            ? 8
             : cycleState === 'nap_sleep'
-              ? 30
+              ? 2
               : cycleState === 'outfit'
-                ? 60
-              : 30;
-    return Math.max(100, Math.floor(baseSeconds * 1000 * durationScale * getPartyStateDurationMultiplier(party, cycleState)));
+                ? 4
+              : 2;
+    return Math.max(100, Math.ceil(baseStepCount * BASE_STEP_DURATION_MS * durationScale * getPartyStateDurationMultiplier(party, cycleState)));
   };
 
+  // SpecRef: 5.1.1 | Party State Machine | state.move
+  // SpecRef: 5.1.1 | Party State Machine | state.return
   const getPartyTravelDurationMs = (party: Party, travelState: 'move' | 'return'): number => {
-    const baseSeconds = travelState === 'move' ? 30 : 90;
-    const tierFactor = getExpeditionTierDurationFactor(party.selectedDungeonId);
+    const baseStepCount = travelState === 'move'
+      ? 1 + getExpeditionTierDurationFactor(party.selectedDungeonId)
+      : 5 + getExpeditionTierDurationFactor(party.selectedDungeonId);
     const durationScale = getTimeSpeedScale(debugSettings);
-    const baseDurationMs = baseSeconds * 1000 * tierFactor * durationScale;
+    const baseDurationMs = baseStepCount * BASE_STEP_DURATION_MS * durationScale;
     const peddlerLevel = getPartyAbilityLevel(party, 'peddler');
-    if (peddlerLevel >= 2) return Math.max(100, Math.floor((baseDurationMs * 3) / 5));
-    if (peddlerLevel >= 1) return Math.max(100, Math.floor((baseDurationMs * 2) / 3));
-    return Math.max(100, Math.floor(baseDurationMs));
+    if (peddlerLevel >= 2) return Math.max(100, Math.ceil((baseDurationMs * 3) / 5));
+    if (peddlerLevel >= 1) return Math.max(100, Math.ceil((baseDurationMs * 2) / 3));
+    return Math.max(100, Math.ceil(baseDurationMs));
   };
 
   const notifyExpeditionRewardsIfNeeded = (party: Party, partyIndex: number) => {
