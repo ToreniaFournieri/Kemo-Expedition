@@ -28,7 +28,7 @@
 
 .step-progress-track {
   width: 100%;
-  max-width: 22rem;
+  max-width: 9.5rem;
   overflow: visible;
 }
 
@@ -52,7 +52,7 @@
   transform-origin: center;
   font-size: 0.66rem;
   position: relative;
-  top: -0.28rem;
+  top: 0.18rem;
   z-index: 30;
 }
 
