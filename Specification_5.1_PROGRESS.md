@@ -13,7 +13,7 @@
   - This scaling also applies to side quest time progression.
 - **`Cycle`**: One complete sequence of state transitions.  
   - A Cycle always **begins at `state.rest`**.
-- **`Chunk`**: A higher-level processing unit used for bulk progression.  
+- **`Chunk`**: A higher-level processing unit used for bulk progression. 
   - **1 Chunk = 12 Cycles**.
 
 #### 5.1.1 Party State Machine
