@@ -121,7 +121,24 @@
 
 - **`Step Progress` Display**:  
   - Represent the progress of a single `Step` using "🐾🐾" emojis.  
-  - Each "🐾" rotates **clockwise by 45°**. Like walking from left side to right side.- 
+  - Each "🐾" is rotated **clockwise by 45°**.  
+    - The display simulates a **walking motion from left to right** by shifting the paw positions horizontally.  
+    - At each update tick:
+      - The leftmost paw disappears.
+      - A new paw appears on the right, maintaining two visible paws at all times.
+
+```
+🐾🐾   (Initial: both paws at the left)
+```
+↓
+```
+  🐾🐾 (shift right; left paw disappears, new paw appears on the right)
+```
+↓
+```
+    🐾🐾 (continues shifting right until reaching the end)
+```
+
 
 ```
 (Left-aligned)             (Right-aligned)
