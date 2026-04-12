@@ -3970,13 +3970,15 @@ export function HomeScreen({
   }, [state.parties, partyCycles, actions, pendingAfkMs]);
 
   useEffect(() => {
+    const suppressSideQuestNotificationsForAfk = pendingAfkMs > 0 || shouldShowAfkSummaryRef.current;
+
     state.parties.forEach((party, index) => {
       const prevQuest = prevSideQuestRef.current[index] ?? null;
       const nextQuest = party.sideQuest ?? null;
-      if (!prevQuest && nextQuest) {
+      if (!prevQuest && nextQuest && !suppressSideQuestNotificationsForAfk) {
         actions.addNotification(getSideQuestAssignMessage(party.name, nextQuest.shortText));
       }
-      if (prevQuest && !nextQuest) {
+      if (prevQuest && !nextQuest && !suppressSideQuestNotificationsForAfk) {
         const latestDiary = party.diaryLogs?.[0];
         if (latestDiary?.triggers?.includes('sideQuest')) {
           const successMessage = getSideQuestSuccessMessage(party.name, latestDiary.sideQuestDetail);
@@ -3987,7 +3989,7 @@ export function HomeScreen({
       }
     });
     prevSideQuestRef.current = state.parties.map((party) => party.sideQuest);
-  }, [actions, state.parties]);
+  }, [actions, state.parties, pendingAfkMs]);
 
   useEffect(() => {
     notifiedRewardLogRef.current = notifiedRewardLogRef.current.slice(0, state.parties.length);
