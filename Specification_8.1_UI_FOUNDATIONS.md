@@ -120,13 +120,14 @@
   - Use this specification's version
 
 - **`Step Progress` Display**:  
-  - Represent the progress of a single `Step` using "🐾🐾" emojis.  
+  - Represent the progress of a single `Step` using "🐾🐾" emojis.
   - Each "🐾" is rotated **clockwise by 90°**.  
     - The display simulates a **walking motion from left side to right side of screen**.
     - It takes 1 `Step` time (If normal, 1 `Step` is 15 seconds) from left side to right side. Every one paw represent 2/30 `Step` progress.
     - At each update tick:
       - The leftmost paw disappears.
       - A new paw appears on the right, maintaining two visible paws at all times.
+  - The animation is **synchronized with actual `Step` progression**, including all **debug scaling effects**.
 
 ```
 🐾 (Initial: a paw at the left)
