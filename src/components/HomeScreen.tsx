@@ -4441,6 +4441,21 @@ export function HomeScreen({
       <div className="fixed top-0 left-0 right-0 z-30">
         <div className="absolute inset-0 bg-white" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[500px] px-3 py-2.5 bg-white">
+          {/* SpecRef: 8.1.2 | Header | Step Progress Display */}
+          <div className="step-progress-shell mt-0 mb-0.5 flex w-full leading-none" aria-label="Step Progress">
+            <div className="step-progress-track" aria-hidden="true">
+              <span className="step-progress-lane" style={{ gridTemplateColumns: `repeat(${STEP_PROGRESS_TRACK_COLUMNS}, minmax(0, 1fr))` }}>
+                {Array.from({ length: STEP_PROGRESS_TRACK_COLUMNS }).map((_, slotIndex) => (
+                  <span key={slotIndex} className="step-progress-slot">
+                    {stepProgressPawSlots.includes(slotIndex) ? (
+                      <span className="step-progress-paw">🐾</span>
+                    ) : null}
+                  </span>
+                ))}
+              </span>
+            </div>
+          </div>
+
           <div className="flex justify-between items-center gap-3 min-h-[44px]">
             <div>
               <h1 className="flex items-center gap-1 text-lg font-bold">
@@ -4460,20 +4475,6 @@ export function HomeScreen({
                   静止中
                 </button>
               )}
-            </div>
-          </div>
-          {/* SpecRef: 8.1.2 | Header | Step Progress Display */}
-          <div className="step-progress-shell mt-0 -mb-2.5 flex w-full leading-none" aria-label="Step Progress">
-            <div className="step-progress-track" aria-hidden="true">
-              <span className="step-progress-lane" style={{ gridTemplateColumns: `repeat(${STEP_PROGRESS_TRACK_COLUMNS}, minmax(0, 1fr))` }}>
-                {Array.from({ length: STEP_PROGRESS_TRACK_COLUMNS }).map((_, slotIndex) => (
-                  <span key={slotIndex} className="step-progress-slot">
-                    {stepProgressPawSlots.includes(slotIndex) ? (
-                      <span className="step-progress-paw">🐾</span>
-                    ) : null}
-                  </span>
-                ))}
-              </span>
             </div>
           </div>
 
