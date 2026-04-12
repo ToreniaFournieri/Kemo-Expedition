@@ -4217,8 +4217,8 @@ export function useGameState() {
       dispatch({ type: 'UPDATE_PARTY_DEITY', partyIndex, deityName });
     }, []),
 
-    runExpedition: useCallback((partyIndex: number, gameMode: GameMode = 'm.kemo', triggerGodsBattle: boolean = false) => {
-      dispatch({ type: 'RUN_EXPEDITION', partyIndex, gameMode, triggerGodsBattle });
+    runExpedition: useCallback((partyIndex: number, gameMode: GameMode = 'm.kemo', triggerGodsBattle: boolean = false, simulatedAt?: number) => {
+      dispatch({ type: 'RUN_EXPEDITION', partyIndex, gameMode, triggerGodsBattle, simulatedAt });
     }, []),
 
     finalizeDiaryLog: useCallback((partyIndex: number) => {
