@@ -104,10 +104,10 @@
 
 
 **Time-Based Progress Handling (Online + AFK)**
-- The party state machine is purely time-based: persist state and `state_started_at`, then on each update tick calculate elapsed = now - `state_started_at`.
+- The party state machine is purely `Step`-based: persist state and `state_started_at`, then on each update tick calculate elapsed = `current_step` - `state_started_at`.
 - Catch-up simulation must be processed in chunks (chunk update).
 - `simulated_elapsed` = min(elapsed, 1,800 minutes)
-- Process `simulated_elapsed` sequentially in `fixed-size` chunks (CATCHUP_CHUNK_MINUTES, current default: 60 minute). Chunk duration must respect debug speed scaling. Example: in x100 debug mode, each chunk is processed as 60 / 100 = 0.6 simulated minutes.
+- Process `simulated_elapsed` sequentially in chunks.
 - For each chunk, resolve all completed state transitions in chronological order until no further transition is completed within that chunk.
 - 'state_started_at' must be updated only when the party state changes (at each transition boundary), never on a plain tick without transition.
 - If a transition completes exactly at a chunk boundary, treat it as completed in that chunk and carry remaining time (if any) into the next state/chunk.
