@@ -34,6 +34,7 @@ import {
   buildFreeAction,
   buildIncapacitatedAction,
   buildLifeDrainAction,
+  buildRequiemAction,
   buildRegenerationAction,
   buildReanimateAction,
   buildResurrectAction,
@@ -1786,6 +1787,14 @@ function getReanimateLevel(charStats: ComputedCharacterStats): number {
 
 function hasReanimate(charStats: ComputedCharacterStats): boolean {
   return getReanimateLevel(charStats) > 0;
+}
+
+function hasRequiem(charStats: ComputedCharacterStats): boolean {
+  return getAbilityLevel(charStats, 'requiem') > 0;
+}
+
+function enemyHasRequiem(enemy: EnemyDef): boolean {
+  return getEnemyAbilityLevel(enemy, 'requiem') > 0;
 }
 
 function getReanimateHpPercent(level: number): number {
@@ -4238,6 +4247,21 @@ export function executeBattle(
               : `${appliedHits}/${attack.totalAttempts}回`;
 
             triggerPartyDefeatRecovery(attack.charStats, phase, turn.roll, true);
+            // SpecRef: 6.1.3.1 | Actor action | actor.a.requiem
+            if (
+              appliedHits > 0
+              && enemyHasRequiem(enemy)
+              && consumedReanimateCharacterIds.has(charId)
+              && partyHp > 0
+            ) {
+              partyHp = 0;
+              log.push({
+                phase,
+                initiativeRoll: turn.roll,
+                actor: 'enemy',
+                action: `${buildRequiemAction(enemy.name, targetName)} (鎮魂歌)`,
+              });
+            }
 
             const enemyAttackRageBonusPercent = toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp));
             const enemyAttackSwarmBonuses = getSwarmLogBonuses(enemy.abilities, enemyHp, enemy.hp, attack.charStats.abilities, partyHp, partyStats.hp);
@@ -5008,6 +5032,23 @@ export function executeBattle(
 
         if (!isAntagonism && result.damage > 0) {
           triggerEnemyDefeatRecovery(phase, turn.roll);
+        }
+        // SpecRef: 6.1.3.1 | Actor action | actor.a.requiem
+        if (
+          !isAntagonism
+          && result.hits > 0
+          && hasRequiem(cs)
+          && consumedEnemyReanimate
+          && enemyHp > 0
+        ) {
+          enemyHp = 0;
+          log.push({
+            phase,
+            initiativeRoll: turn.roll,
+            actor: 'character',
+            characterId: cs.characterId,
+            action: `${buildRequiemAction(char.name, enemy.name)} (鎮魂歌)`,
+          });
         }
 
         if (!isAntagonism && enemyHp > 0 && phase === 'close') {

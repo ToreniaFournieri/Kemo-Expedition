@@ -611,7 +611,7 @@ export const MASTER_ITEM_NAME_INDEX: Record<string, readonly string[]> = {
   '7|bossRare|grimoire': ['月王兎の秘典'],
   '7|bossRare|katana': ['月王兎の神刀'],
   '7|bossRare|shield': ['月王兎の聖盾'],
-  '7|bossRare|sword': ['月王兎の聖剣'],
+  '7|bossRare|sword': ['ホーリーソード'],
   '7|bossRare|wand': ['月王兎の宝杖'],
   '8|common|archery': ['聖奏の弓'],
   '8|common|armor': ['古聖域の鎧'],
