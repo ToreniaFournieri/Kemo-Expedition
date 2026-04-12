@@ -67,8 +67,8 @@ PT2...
 	  - Therefore, every party member is a potential trigger source for flavor text selection.
 	  - **Flavor text cycle update**
 	    - State types:
-	      - **Step-based states:** Flavor text is updated on each step progression (only `sell` and `explore`).
-	      - **Continuous states:** Flavor text refreshes every **15 seconds** (e.g., `rest`, `sleep`, `feast`, etc.).
+	      - **Step-based states:** Flavor text is updated on each `Step` progression (only `state.sell` and `state.explore`).
+	      - **Continuous states:** Flavor text refreshes every 1 `Step` (e.g., `state.rest`, `state.sleep`, `state.feast`, `state.idle` etc.).
   
   - Expedition behavior:
     - Expedition resolves immediately
