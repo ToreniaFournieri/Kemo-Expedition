@@ -106,6 +106,9 @@
   - Example: "PT1ケモは 名工の木の胸当て を装備した"
   - Example:　"PT3ガルドは 宿った鉄の短剣 を 伝説の鉄の短剣に装備しなおした"
 
+- notification while AFK mode:
+  - no notifications shows while AFK mode until at the end of AFK mode. 
+
 #### 8.1.2 Header
 - Always fixed at the top.
   - width: ~ 500 width.
