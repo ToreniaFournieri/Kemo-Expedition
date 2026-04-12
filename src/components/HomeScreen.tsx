@@ -7110,14 +7110,15 @@ function ExpeditionTab({
           if (cycle.state === 'reactivate') return stateLabel;
           const leader = party.characters[0];
           if (!leader) return stateLabel;
+          // SpecRef: 5.2 | PROGRESS_FLAVOR_TEXT | Flavor text cycle update
+          const scaledStepDurationMs = Math.max(1, BASE_STEP_DURATION_MS * Math.max(0.001, getTimeSpeedScale(debugSettings)));
+          const continuousFlavorStep = Math.floor(cycleElapsedMs / scaledStepDurationMs);
           const flavorStepOffset = cycle.state === 'explore'
             ? displayedEntries.length
             : cycle.state === 'sell'
             ? sellProgressState?.completedSteps ?? 0
-            : 0;
-          const flavorSeed = cycle.state === 'rest'
-            ? Math.floor(Date.now() / 15_000) + partyIndex * 131
-            : cycle.stateStartedAt + partyIndex * 131 + flavorStepOffset;
+            : continuousFlavorStep;
+          const flavorSeed = cycle.stateStartedAt + partyIndex * 131 + flavorStepOffset;
           const currentDisplayedEntry = displayedEntries.length > 0
             ? displayedEntries[displayedEntries.length - 1]
             : null;
