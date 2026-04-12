@@ -36,13 +36,15 @@
   display: inline-flex;
   justify-content: flex-start;
   align-items: center;
-  min-height: 1rem;
+  min-height: 0.6rem;
+  line-height: 0.6rem;
 }
 
 .step-progress-paw {
   display: inline-flex;
   transform: rotate(90deg);
   transform-origin: center;
+  font-size: 0.72rem;
 }
 
 .theme-luna {

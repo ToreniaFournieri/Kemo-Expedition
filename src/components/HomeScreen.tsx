@@ -2432,10 +2432,10 @@ export function HomeScreen({
 
   const stepProgressPawSlots = useMemo(() => {
     // SpecRef: 8.1.2 | Header | Step Progress Display
-    const pairIndex = Math.floor(stepProgressTick / 2);
-    const rightPawSlot = Math.min(pairIndex + 1, STEP_PROGRESS_PAW_UNITS_PER_STEP);
-    if (stepProgressTick % 2 === 1) return [rightPawSlot];
-    return [pairIndex, rightPawSlot];
+    const leadPawSlot = Math.floor(stepProgressTick / 2);
+    const trailingPawSlot = Math.min(leadPawSlot + 1, STEP_PROGRESS_PAW_UNITS_PER_STEP);
+    if (stepProgressTick % 2 === 0) return [leadPawSlot];
+    return [leadPawSlot, trailingPawSlot];
   }, [stepProgressTick]);
 
   const safeSelectedPartyIndex = useMemo(() => {
@@ -4463,7 +4463,7 @@ export function HomeScreen({
             </div>
           </div>
           {/* SpecRef: 8.1.2 | Header | Step Progress Display */}
-          <div className="mt-1 flex w-full" aria-label="Step Progress">
+          <div className="mt-0.5 -mb-1 flex w-full leading-none" aria-label="Step Progress">
             <div className="step-progress-track" aria-hidden="true">
               <span className="step-progress-lane" style={{ gridTemplateColumns: `repeat(${STEP_PROGRESS_TRACK_COLUMNS}, minmax(0, 1fr))` }}>
                 {Array.from({ length: STEP_PROGRESS_TRACK_COLUMNS }).map((_, slotIndex) => (
