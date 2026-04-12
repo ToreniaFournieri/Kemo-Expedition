@@ -364,15 +364,15 @@ Party.`d.HP` =
 | God | Name | Effect | ability | Scaling of rank up |
 |-|-|-|-|-|
 | none | 信仰なし | なし | (none) | (none) |
-| Goddess of Restoration | 再生の女神 | At the end of every 4th room,  Heal 20% of missing HP, longer sleep 睡眠中 by x1.5, weak against ice (x1.5) | `r.ice_x1.5` | +0.1% Heal per rank |
+| Goddess of Restoration | 再生の女神 | At the end of every 4th room,  Heal 20% of missing HP, longer sleep 睡眠中 by x2.0, weak against ice (x1.5) | `r.ice_x1.5` | +0.1% Heal per rank |
 | God of Attrition | 消耗の神 |  Add `c.deity_physical_attack_x1.20` to each party member. At the end of every 4th room, reduce 5% of remaining HP.| | +0.01 to `c.diety+attack_x1.20` per rank |
 | God of Cunning | 狡猾の神 | Add `c.deity_magical_defense_x2/3` to each party member, abscond (lower saving money by x0.50) | (none) | saving money +0.01 to x0.50 per rank |
-| God of Fortification | 防備の神 |  Add `c.deity_physical_defense_x2/3` to each party member, longer healing 休息中 by x1.5, weak against thunder (x1.5) | `r.thunder_x1.5` | healing time -0.01 to x1.5 per rank |
-| Goddess of Fertility | 豊穣の女神 |  Add `c.deity_move_first+1` to each party member, longer fest 宴会中 by 1.5, weak against fire (x1.5) | `r.fire_x1.5` | fest time -0.01 to x1.5 per rank  |
+| God of Fortification | 防備の神 |  Add `c.deity_physical_defense_x2/3` to each party member, longer healing 休息中 by x2.0, weak against thunder (x1.5) | `r.thunder_x1.5` | - |
+| Goddess of Fertility | 豊穣の女神 |  Add `c.deity_move_first+1` to each party member, longer fest 宴会中 by 2.0, weak against fire (x1.5) | `r.fire_x1.5` | -  |
 | God of Resonance | 共鳴の神 | Upgrade all `a.resonance` values by +1 tier to each party member, resonance works in MID phase and also in LONG phase with God of Resonance. Add `c.deity_magical_defense_x1.10` to each party member, Add `c.deity_HP_x0.900` to party | (none) | +0.2 to `a.resonance` bonus (round down), +0.002 to `c.deity_HP_x0.900` per rank |
-| Goddess of Precision | 精密の女神 | Add `c.deity_accuracy+0.015`, `c.deity_evasion-0.005` to each party member, longer 探索中 by 1.5 | (none) | +0.001 to `c.deity_accuracy+0.020` per rank |
-| God of Fate | 運命の神 | alter future, longer praying 祈り中 by 1.5 | (none) | praying time -0.01 to x1.5 per rank |
-| God of Dusk | 黄昏の神 | Add `c.deity_evasion+0.015`,  `c.deity_magical_defense_x1.10` to each party member, longer trading 売却中 by 1.5 | (none) | +0.001 to `c.deity_accuracy+0.020` per rank |
+| Goddess of Precision | 精密の女神 | Add `c.deity_accuracy+0.015`, `c.deity_evasion-0.005` to each party member, longer 探索中 by 2.0 | (none) | +0.001 to `c.deity_accuracy+0.020` per rank |
+| God of Fate | 運命の神 | alter future, longer praying 祈り中 by 2.0 | (none) | praying time -0.01 to x1.5 per rank |
+| God of Dusk | 黄昏の神 | Add `c.deity_evasion+0.015`,  `c.deity_magical_defense_x1.10` to each party member, longer trading 売却中 by 2.0 | (none) | +0.001 to `c.deity_accuracy+0.020` per rank |
 | Goddess of Mirage | 幻影の女神 | Add `c.deity_magical_attack_x1.20` and `c.deity_pysical_defense_x1.10` to each party member | (none) | +0.01 to `c.deity_magical_attack_x1.20` per rank |
 | God of Oblivion | 忘却されし神 | (nothing) | (none) | at rank 10, one more additional reward chance |
 | Goddess of Discord | 不和の神 |  At the start of each battle,  1 randomly chosen member gets `c.antagonism`, one more additional reward chance | (none) | (none)  |
