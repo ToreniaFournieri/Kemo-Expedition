@@ -2476,6 +2476,7 @@ export function HomeScreen({
   const afkRecoveryTotalMsRef = useRef(0);
   const previousPendingAfkMsRef = useRef(0);
   const shouldRebuildPartyCyclesAfterAfkRef = useRef(false);
+  const stepSyncCarryMsRef = useRef(0);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -3534,6 +3535,12 @@ export function HomeScreen({
     }
 
     const timeSpeedScale = Math.max(0.001, getTimeSpeedScale(debugSettings));
+    const scaledStepDurationMs = Math.max(1, BASE_STEP_DURATION_MS * timeSpeedScale);
+    const accumulatedStepMs = stepSyncCarryMsRef.current + elapsedMs;
+    const advancedStepCount = Math.floor(accumulatedStepMs / scaledStepDurationMs);
+    if (advancedStepCount <= 0) return;
+    const simulatedElapsedMs = advancedStepCount * scaledStepDurationMs;
+    stepSyncCarryMsRef.current = accumulatedStepMs - simulatedElapsedMs;
 
     parties.forEach((party, partyIndex) => {
       if (party.sideQuest?.type !== 'q.AFK') {
@@ -3542,17 +3549,17 @@ export function HomeScreen({
       }
 
       const carriedMs = afkQuestCarryMsRef.current[partyIndex] ?? 0;
-      const simulatedElapsedMs = elapsedMs / timeSpeedScale;
-      const { gainedSeconds, remainderMs } = getElapsedWholeSeconds(carriedMs, simulatedElapsedMs);
+      const steppedElapsedMs = simulatedElapsedMs / timeSpeedScale;
+      const { gainedSeconds, remainderMs } = getElapsedWholeSeconds(carriedMs, steppedElapsedMs);
       afkQuestCarryMsRef.current[partyIndex] = remainderMs;
 
       if (gainedSeconds > 0) {
-        const simulatedAt = lastCheckpointAtRef.current + elapsedMs;
+        const simulatedAt = lastCheckpointAtRef.current + simulatedElapsedMs;
         actions.advanceSideQuest(partyIndex, gainedSeconds, simulatedAt);
       }
     });
 
-    const simulationNow = lastCheckpointAtRef.current + elapsedMs;
+    const simulationNow = lastCheckpointAtRef.current + simulatedElapsedMs;
     const suppressCycleNotificationsForAfk = pendingAfkMsRef.current > 0 || shouldShowAfkSummaryRef.current;
 
     setPartyCycles((prev) => {
@@ -3810,8 +3817,8 @@ export function HomeScreen({
       return next;
     });
 
-    lastCheckpointAtRef.current = now;
-    persistAfkRuntimeState(now);
+    lastCheckpointAtRef.current = simulationNow;
+    persistAfkRuntimeState(simulationNow);
   }, [actions, persistAfkRuntimeState]);
 
   useEffect(() => {
