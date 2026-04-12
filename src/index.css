@@ -23,7 +23,7 @@
 
 .step-progress-shell {
   position: relative;
-  z-index: 25;
+  z-index: 20;
 }
 
 .step-progress-track {
@@ -41,8 +41,8 @@
   display: inline-flex;
   justify-content: flex-start;
   align-items: center;
-  min-height: 0.72rem;
-  line-height: 0.72rem;
+  min-height: 0.62rem;
+  line-height: 0.62rem;
   overflow: visible;
 }
 
@@ -50,7 +50,7 @@
   display: inline-flex;
   transform: rotate(90deg);
   transform-origin: center;
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   position: relative;
   z-index: 30;
 }
