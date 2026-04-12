@@ -351,7 +351,7 @@
 | 7 | E | `Undead` | `i.archery`EB | 冥府の弓 |
 | 7 | E | `Undead` | `i.arrow`EB | 冥府の矢 |
 | 7 | E | `Undead` | `i.sword`EB | 冥府の剣 |
-| 7 | B | `Leporian` | `i.sword`BD | 月王兎の聖剣 |
+| 7 | B | `Leporian` | `i.sword`BD | ホーリーソード |
 | 7 | B | `Leporian` | `i.wand`BD | 月王兎の宝杖 |
 | 7 | B | `Leporian` | `i.armor`BD | 月王兎の聖鎧 |
 | 7 | B | `Leporian` | `i.katana`BD | 月王兎の神刀 |
