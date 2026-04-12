@@ -3580,7 +3580,7 @@ export function HomeScreen({
         // SpecRef: 5.1.2 | Side Quest | Expiration
         if (party.sideQuest && simulationNow >= getScaledSideQuestExpiresAt(party.sideQuest, timeSpeedScale)) {
           actions.cancelSideQuest(partyIndex);
-          if (!suppressCycleNotificationsForAfk) {
+          if (!suppressCycleNotificationsForAfk && party.sideQuest.type !== 'q.AFK') {
             actions.addNotification(`${party.name}はサイドクエスト ${party.sideQuest.shortText} を達成できなかった`);
           }
           next[partyIndex] = updated;
@@ -3764,7 +3764,7 @@ export function HomeScreen({
               pendingGodsBattleByPartyRef.current[partyIndex] = false;
               if (triggerGodsBattle && party.sideQuest) {
                 actions.cancelSideQuest(partyIndex);
-                if (!suppressCycleNotificationsForAfk) {
+                if (!suppressCycleNotificationsForAfk && party.sideQuest.type !== 'q.AFK') {
                   actions.addNotification(`${party.name}のサイドクエストは神魔戦の開始で中止された`);
                 }
               }
@@ -3970,13 +3970,16 @@ export function HomeScreen({
   }, [state.parties, partyCycles, actions, pendingAfkMs]);
 
   useEffect(() => {
+    const suppressSideQuestNotificationsForAfk = pendingAfkMs > 0 || shouldShowAfkSummaryRef.current;
     state.parties.forEach((party, index) => {
       const prevQuest = prevSideQuestRef.current[index] ?? null;
       const nextQuest = party.sideQuest ?? null;
-      if (!prevQuest && nextQuest) {
+      const isAfkQuestTransition = prevQuest?.type === 'q.AFK' || nextQuest?.type === 'q.AFK';
+
+      if (!prevQuest && nextQuest && !suppressSideQuestNotificationsForAfk && !isAfkQuestTransition) {
         actions.addNotification(getSideQuestAssignMessage(party.name, nextQuest.shortText));
       }
-      if (prevQuest && !nextQuest) {
+      if (prevQuest && !nextQuest && !suppressSideQuestNotificationsForAfk && !isAfkQuestTransition) {
         const latestDiary = party.diaryLogs?.[0];
         if (latestDiary?.triggers?.includes('sideQuest')) {
           const successMessage = getSideQuestSuccessMessage(party.name, latestDiary.sideQuestDetail);
@@ -3987,7 +3990,7 @@ export function HomeScreen({
       }
     });
     prevSideQuestRef.current = state.parties.map((party) => party.sideQuest);
-  }, [actions, state.parties]);
+  }, [actions, pendingAfkMs, state.parties]);
 
   useEffect(() => {
     notifiedRewardLogRef.current = notifiedRewardLogRef.current.slice(0, state.parties.length);
