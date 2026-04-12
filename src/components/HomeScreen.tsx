@@ -197,6 +197,10 @@ type PartyCycleState = 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' |
 const PARTY_EXPEDITION_SPLIT_MIN_WIDTH = 1024;
 const TAB_PANEL_WIDTH_PX = 500;
 const WIDE_MODE_DEFAULT_SECONDARY_TAB: WideModeSecondaryTab = 'party';
+const STEP_PROGRESS_VISIBLE_PAW_COUNT = 2;
+const STEP_PROGRESS_MAX_SHIFT = 6;
+const STEP_PROGRESS_TICK_MS = 600;
+const STEP_PROGRESS_SHIFT_PX = 12;
 // SpecRef: 8.1 | UI_FOUNDATIONS | Style: Compact, simple, iOS-like
 const IOS_GLASS_BUTTON_CLASS =
   'ios-glass-button rounded-xl';
@@ -2410,12 +2414,21 @@ export function HomeScreen({
   const [gameMode, setGameMode] = useState<GameMode>(() => getInitialGameMode(isLunaEnvironment));
   const [darkModeSetting, setDarkModeSetting] = useState<DarkModeSetting>(() => getInitialDarkModeSetting());
   const [isSystemDarkMode, setIsSystemDarkMode] = useState(false);
+  const [stepProgressShift, setStepProgressShift] = useState(0);
   const [debugSettings, setDebugSettings] = useState<DebugSettings>(() => getDebugSettings());
   const [isAutoEquipmentEnabled] = useState<boolean>(() => getInitialAutoEquipmentEnabled());
   const tabScrollPositionsRef = useRef<Partial<Record<Tab, number>>>({});
   const tabContentRef = useRef<HTMLDivElement | null>(null);
   const primarySplitTabContentRef = useRef<HTMLDivElement | null>(null);
   const secondarySplitTabContentRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    // SpecRef: 8.1.2 | Header | Step Progress Display
+    const stepProgressTimer = window.setInterval(() => {
+      setStepProgressShift((prev) => (prev >= STEP_PROGRESS_MAX_SHIFT ? 0 : prev + 1));
+    }, STEP_PROGRESS_TICK_MS);
+    return () => window.clearInterval(stepProgressTimer);
+  }, []);
 
   const safeSelectedPartyIndex = useMemo(() => {
     if (state.parties.length === 0) return 0;
@@ -4443,8 +4456,16 @@ export function HomeScreen({
           </div>
           {/* SpecRef: 8.1.2 | Header | Step Progress Display */}
           <div className="mt-1 flex justify-end" aria-label="Step Progress">
-            <span className="step-progress-paw" aria-hidden="true">🐾</span>
-            <span className="step-progress-paw step-progress-paw-delay" aria-hidden="true">🐾</span>
+            <div className="step-progress-track" aria-hidden="true">
+              <span
+                className="step-progress-lane"
+                style={{ transform: `translateX(${stepProgressShift * STEP_PROGRESS_SHIFT_PX}px)` }}
+              >
+                {Array.from({ length: STEP_PROGRESS_VISIBLE_PAW_COUNT }).map((_, pawIndex) => (
+                  <span key={pawIndex} className="step-progress-paw">🐾</span>
+                ))}
+              </span>
+            </div>
           </div>
 
           {/* Tabs */}

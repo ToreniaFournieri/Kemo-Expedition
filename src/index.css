@@ -21,26 +21,23 @@
   --glass-shadow: rgb(15 23 42 / 0.14);
 }
 
-@keyframes step-progress-paw-walk {
-  from {
-    transform: rotate(0deg);
-  }
+.step-progress-track {
+  width: 8rem;
+  overflow: hidden;
+}
 
-  to {
-    transform: rotate(45deg);
-  }
+.step-progress-lane {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: transform 180ms linear;
+  will-change: transform;
 }
 
 .step-progress-paw {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  transform: rotate(45deg);
   transform-origin: center;
-  animation: step-progress-paw-walk 600ms linear infinite;
-}
-
-.step-progress-paw-delay {
-  animation-delay: 300ms;
 }
 
 .theme-luna {
