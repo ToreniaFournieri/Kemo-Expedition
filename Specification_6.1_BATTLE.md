@@ -355,6 +355,10 @@ If `a.*` with phase = START:
        - If success → apply `incapacitated` status.
     - Log: `log.bind` + "(拘束:行動不能)"
 
+  - If actor.`a.requiem` and (opponent.`a.reanimate` has used):
+    - Set opponent HP to 0. 
+    - Log: `log.requiem` + "(鎮魂歌)"
+
 **Ally-follow-up**
 - If actor.`a.covering-fire` and the actor's successful hit is only one and phase is CLOSE, `f.covering-fire`(actor:covering fire actor.party.character , opponent:opponent)
   - *Note:*  Nth_hit is per action based (not per-target)
