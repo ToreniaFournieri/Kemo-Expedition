@@ -41,15 +41,15 @@
 
 | State | Japanese label | Duration |
 |-------|-------|-------|
-| `state.rest` | 休息中 | heal max(100, +1% MaxHP) / 1 sec until full |
-| `state.sell` | 売却中 | 15 seconds per `auto-sell` items |
-| `state.feast` | 宴会中 | 90 seconds |
-| `state.sound_sleep` | 熟睡中 | 120 seconds |
-| `state.nap_sleep` | 仮眠中 | 30 seconds |
-| `state.outfit` | 身支度中 | 60 seconds |
-| `state.pray` | 祈り中 | 30 seconds |
+| `state.rest` | 休息中 | heal max(1500, +15% MaxHP) / 1 `Step` until full |
+| `state.sell` | 売却中 | 1 `Step` per `auto-sell` items |
+| `state.feast` | 宴会中 | 6 `Step` |
+| `state.sound_sleep` | 熟睡中 | 8 `Step` |
+| `state.nap_sleep` | 仮眠中 | 2 `Step` |
+| `state.outfit` | 身支度中 | 4 `Step` |
+| `state.pray` | 祈り中 | 2 `Step` |
 | `state.idle` | 待機中 | - |
-| `state.move` | 移動中 | 30 seconds * (1.30 - 0.02 * `x.exp_tier` )^(`x.exp_tier`) | 
+| `state.move` | 移動中 | (1 + `x.exp_tier` ) `Step` | 
 | `state.explore` | 探索中 | 15 seconds per room (24 rooms in total)|
 | `state.return` | 帰還中 | 90 seconds * (1.30 - 0.02 * `x.exp_tier` )^(`x.exp_tier`)  |
 | `state.reactivate` | 復帰中 | - |
