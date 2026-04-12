@@ -4463,7 +4463,7 @@ export function HomeScreen({
             </div>
           </div>
           {/* SpecRef: 8.1.2 | Header | Step Progress Display */}
-          <div className="mt-0.5 -mb-1 flex w-full leading-none" aria-label="Step Progress">
+          <div className="step-progress-shell mt-0.5 -mb-2 flex w-full leading-none" aria-label="Step Progress">
             <div className="step-progress-track" aria-hidden="true">
               <span className="step-progress-lane" style={{ gridTemplateColumns: `repeat(${STEP_PROGRESS_TRACK_COLUMNS}, minmax(0, 1fr))` }}>
                 {Array.from({ length: STEP_PROGRESS_TRACK_COLUMNS }).map((_, slotIndex) => (
@@ -4478,7 +4478,7 @@ export function HomeScreen({
           </div>
 
           {/* Tabs */}
-          <div className="flex mt-1.5 -mb-3">
+          <div className="flex mt-1 -mb-3">
             {tabs.map(tab => (
               <button
                 key={tab.id}

@@ -21,10 +21,15 @@
   --glass-shadow: rgb(15 23 42 / 0.14);
 }
 
+.step-progress-shell {
+  position: relative;
+  z-index: 25;
+}
+
 .step-progress-track {
   width: 100%;
   max-width: 22rem;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .step-progress-lane {
@@ -36,8 +41,9 @@
   display: inline-flex;
   justify-content: flex-start;
   align-items: center;
-  min-height: 0.6rem;
-  line-height: 0.6rem;
+  min-height: 0.72rem;
+  line-height: 0.72rem;
+  overflow: visible;
 }
 
 .step-progress-paw {
@@ -45,6 +51,8 @@
   transform: rotate(90deg);
   transform-origin: center;
   font-size: 0.72rem;
+  position: relative;
+  z-index: 30;
 }
 
 .theme-luna {
