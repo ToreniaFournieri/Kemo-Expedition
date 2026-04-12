@@ -5988,9 +5988,10 @@ function PartyTab({
                 const iaigiriMultiplier = iaigiri ? (iaigiri.level >= 3 ? 3.0 : iaigiri.level >= 2 ? 2.5 : 2.0) : 1.0;
                 const strengthScale = getBaseOffenseScale(stats.baseStats.strength);
                 const intelligenceScale = getBaseOffenseScale(stats.baseStats.intelligence);
-                const hasRanged = stats.rangedAttack > 0 || stats.rangedNoA > 0;
-                const hasMagical = stats.magicalAttack > 0 || stats.magicalNoA > 0;
-                const hasMelee = stats.meleeAttack > 0 || stats.meleeNoA > 0;
+                const combatBonusLevels = getCharacterCombatBonusLevels(char);
+                const hasRanged = combatBonusLevels.ranged;
+                const hasMagical = combatBonusLevels.magic;
+                const hasMelee = combatBonusLevels.melee;
                 const equippedItems = char.equipment.filter((item): item is Item => item != null);
                 const baseAppliedOffenseBonusNames = stats.offenseCBonusNames;
                 const baseMultMelee = stats.meleeAttackCBonus + getOffenseMultiplierSum(
@@ -6070,9 +6071,7 @@ function PartyTab({
 
                 const baseDecay = 0.90 + getEffectiveAccuracyBonus(stats.accuracyBonus, stats.abilities);
                 const decayText = `${(baseDecay * 100).toFixed(1)}%`;
-                const hasPhysicalAttacks =
-                  (stats.rangedAttack > 0 && stats.rangedNoA > 0) ||
-                  (stats.meleeAttack > 0 && stats.meleeNoA > 0);
+                const hasPhysicalAttacks = hasRanged || hasMelee;
                 if (hasPhysicalAttacks) {
                   offenseLines.push({
                     key: 'physical-accuracy',
@@ -6084,7 +6083,7 @@ function PartyTab({
                     ],
                   });
                 }
-                const hasCastableMagic = stats.magicalAttack > 0 && stats.magicalNoA > 0;
+                const hasCastableMagic = hasMagical;
                 if (hasCastableMagic) {
                   offenseLines.push({
                     key: 'magical-accuracy',
