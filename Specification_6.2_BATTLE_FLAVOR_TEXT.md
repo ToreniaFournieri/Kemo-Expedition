@@ -559,3 +559,17 @@
 | {target}の {ability name} が切り離された！ |
 | {target}の {ability name} が存在ごと消えた！ |
 
+- `log.requiem`
+
+| flavor text |
+|-|
+| {actor}は刃に鎮魂歌を乗せ、{target}を安らかな眠りへと導いた |
+| {actor}の斬撃とともに鎮魂歌が響き、{target}の魂は解き放たれた |
+| {actor}は静かな一太刀で{target}を終焉へと送り出した |
+| {actor}の近接の一撃に鎮魂が宿り、{target}は天へと還った |
+| {actor}の刃が触れた瞬間、{target}の再生は断ち切られた |
+| {actor}は迷いなき一撃で{target}の輪廻を断ち切った |
+| {actor}の鋭い一閃が鎮魂歌となり、{target}を永遠の眠りへ沈めた |
+| {actor}の刃は慈悲深く、しかし確実に{target}の終わりを刻んだ |
+| {actor}の一太刀が鎮魂歌となり、{target}を静寂へと還した |
+| {actor}の一薙ぎにより {target}は跡形もなく消滅した |
