@@ -2,8 +2,10 @@
 
 ### 5.1 PROGRESS
 **Definition of time scale.**
-- **`Step`**: The smallest unit of progression.  
-  - Base duration: **15 seconds per Step**.  
+- **`Step`**: The smallest unit of progression. 
+  - Steps are processed **globally**, meaning all parties update their progress simultaneously at each Step. 
+  - Base duration: **15 seconds per Step**.
+  - Duration modifier: **round up** after all multipliers are applied.
   - **Debug Scaling** (applies multiplicatively to Step duration):  
     - `x5 boost` → Step × **0.2** (3 seconds)  
     - `x20 boost` → Step × **0.05** (0.75 seconds)  
@@ -13,9 +15,6 @@
   - A Cycle always **begins at `state.rest`**.
 - **`Chunk`**: A higher-level processing unit used for bulk progression.  
   - **1 Chunk = 12 Cycles**.
-
-- **Realtime Progress**
-
 
 #### 5.1.1 Party State Machine
 
@@ -32,9 +31,9 @@
 | `state.outfit` | equipping items. skip if no sound_sleep | pray |
 | `state.pray` | at home. Party members donate money to their deity. | idle or move |
 | `state.idle` | at home. only when 自動周回 = OFF (idle state) | - |
-| `state.move` | home → dungeon, If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | explore | `a.peddler` |
+| `state.move` | home → dungeon, If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3 round up, `a.peddler`2: 3/5)  round up| explore | `a.peddler` |
 | `state.explore` | in dungeon. if HP < 30% MaxHP → retreat. At the end of this state, update this {ルピニアンの断崖踏破} part ) | return | `Goddess of Precision`, `terrain.chill`, `terrain.looping-path` |
-| `state.return` | dungeon → home,If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3, `a.peddler`2: 3/5) | rest | 
+| `state.return` | dungeon → home,If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3  round up, `a.peddler`2: 3/5 round up) | rest | 
 | `state.reactivate` | Reactivating from AFK mode | - | - |
 
 
@@ -50,20 +49,20 @@
 | `state.pray` | 祈り中 | 2 `Step` |
 | `state.idle` | 待機中 | - |
 | `state.move` | 移動中 | (1 + `x.exp_tier` ) `Step` | 
-| `state.explore` | 探索中 | 15 seconds per room (24 rooms in total)|
-| `state.return` | 帰還中 | 90 seconds * (1.30 - 0.02 * `x.exp_tier` )^(`x.exp_tier`)  |
+| `state.explore` | 探索中 | 1 `Step` per room (24 rooms in total)|
+| `state.return` | 帰還中 | (5 + `x.exp_tier`) `Step` |
 | `state.reactivate` | 復帰中 | - |
 
 **Durration modifilier**
 - `state.explore` state
-  - If `Goddess of Precision`: duration *= 1.5
-  - If floor is `terrain.chill`: duration *= 1.5
-  - If floor is `terrain.looping-path`' duration *= 2.0
+  - If `Goddess of Precision`: `Step` *= 1.5 round up
+  - If floor is `terrain.chill`: `Step` *= 1.5 round up
+  - If floor is `terrain.looping-path`' `Step` *= 2.0 round up
 
 - sleepiness from `t.sleepiness_of_party_bag` 
   - 0 No sleep: The party skips the sleep state and continues the normal cycle.
-  - 1 Nap: `state.nap_sleep` The party enters a short sleep (light rest). ( x 1/5 sleep duration)
-  - 2 Sound sleep: `state.sound_sleep` The party enters a full sleep state. ( x1 sleep duration )
+  - 1 Nap: `state.nap_sleep` The party enters a short sleep (light rest).
+  - 2 Sound sleep: `state.sound_sleep` The party enters a full sleep state.
 
 - Profit usuage:
   - At: `state.rest`:
