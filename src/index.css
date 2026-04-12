@@ -27,16 +27,20 @@
 }
 
 .step-progress-lane {
-  display: inline-flex;
+  display: grid;
   align-items: center;
-  gap: 0.25rem;
-  transition: transform 180ms linear;
-  will-change: transform;
+}
+
+.step-progress-slot {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 1rem;
 }
 
 .step-progress-paw {
   display: inline-flex;
-  transform: rotate(45deg);
+  transform: rotate(90deg);
   transform-origin: center;
 }
 
