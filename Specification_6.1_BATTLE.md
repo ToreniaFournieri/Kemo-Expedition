@@ -355,7 +355,7 @@ If `a.*` with phase = START:
        - If success → apply `incapacitated` status.
     - Log: `log.bind` + "(拘束:行動不能)"
 
-  - If actor.`a.requiem` and (opponent.`a.reanimate` has used):
+  - If actor.`a.requiem` and (opponent.`a.reanimate` has used) and actor hit at least once to the opponent:
     - Set opponent HP to 0. 
     - Log: `log.requiem` + "(鎮魂歌)"
 
