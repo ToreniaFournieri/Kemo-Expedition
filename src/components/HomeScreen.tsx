@@ -13,7 +13,7 @@ import { CLASSES, CLASS_SHORT_NAMES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
 import { LINEAGES } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS, getSuperRareBonuses } from '../data/items';
-import { GOD_ENEMY_PROFILES, GOD_MYTHIC_DROPS } from '../data/dropTables';
+import { GOD_ENEMY_PROFILES, GOD_MYTHIC_DROPS, getGodProfileForDungeon } from '../data/dropTables';
 import { ABILITY_BASE_NAMES } from '../data/abilityNames';
 import {
   BONUS_ABILITY_GLOSSARY_ENTRIES,
@@ -1029,6 +1029,13 @@ function shouldDelayNextSpecialGoal(party: Party, cycleState?: PartyCycleState):
   return lastEntry?.roomType === 'battle_Boss' && lastEntry.enemyName.includes('(神魔戦)');
 }
 
+function getGodBattleLabel(dungeon: Dungeon): string {
+  // SpecRef: 8.3 | UI_EXPEDITION | Gods Battle (神魔戦)
+  const godProfile = getGodProfileForDungeon(dungeon.id, dungeon.name);
+  const godShortName = godProfile?.displayName.split(' ')[0]?.trim();
+  return godShortName ? `神魔${godShortName}戦` : '神魔戦';
+}
+
 function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | null {
   const currentDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
   if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === 99) return null;
@@ -1073,7 +1080,7 @@ function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | n
       return null;
     }
     if (hasBossDefeat) {
-      return `ボスレアアイテム ${bossRareCollected}/${godsRequired} で神魔キョウエン戦`;
+      return `ボスレアアイテム ${bossRareCollected}/${godsRequired} で${getGodBattleLabel(currentDungeon)}`;
     }
     return 'ボスを撃破せよ';
   }
