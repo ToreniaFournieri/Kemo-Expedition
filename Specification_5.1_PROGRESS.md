@@ -55,8 +55,8 @@
 
 **Durration modifilier**
 - `state.explore` state
-  - If `Goddess of Precision`: `Step` *= 1.5 round up
-  - If floor is `terrain.chill`: `Step` *= 1.5 round up
+  - If `Goddess of Precision`: `Step` *= 2.0 round up
+  - If floor is `terrain.chill`: `Step` *= 2.0 round up
   - If floor is `terrain.looping-path`' `Step` *= 2.0 round up
 
 - sleepiness from `t.sleepiness_of_party_bag` 
