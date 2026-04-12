@@ -4463,7 +4463,7 @@ export function HomeScreen({
             </div>
           </div>
           {/* SpecRef: 8.1.2 | Header | Step Progress Display */}
-          <div className="mt-1 flex justify-end" aria-label="Step Progress">
+          <div className="mt-1 flex w-full" aria-label="Step Progress">
             <div className="step-progress-track" aria-hidden="true">
               <span className="step-progress-lane" style={{ gridTemplateColumns: `repeat(${STEP_PROGRESS_TRACK_COLUMNS}, minmax(0, 1fr))` }}>
                 {Array.from({ length: STEP_PROGRESS_TRACK_COLUMNS }).map((_, slotIndex) => (

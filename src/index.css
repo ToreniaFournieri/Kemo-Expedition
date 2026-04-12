@@ -22,7 +22,8 @@
 }
 
 .step-progress-track {
-  width: 8rem;
+  width: 100%;
+  max-width: 22rem;
   overflow: hidden;
 }
 
@@ -33,7 +34,7 @@
 
 .step-progress-slot {
   display: inline-flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   min-height: 1rem;
 }
