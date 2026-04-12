@@ -27,9 +27,9 @@
 }
 
 .step-progress-track {
-  width: min(100%, 8.8rem);
+  width: 100%;
+  max-width: 22rem;
   overflow: visible;
-  margin-left: auto;
 }
 
 .step-progress-lane {
@@ -41,8 +41,8 @@
   display: inline-flex;
   justify-content: flex-start;
   align-items: center;
-  min-height: 0.5rem;
-  line-height: 0.5rem;
+  min-height: 0.62rem;
+  line-height: 0.62rem;
   overflow: visible;
 }
 
@@ -52,7 +52,7 @@
   transform-origin: center;
   font-size: 0.66rem;
   position: relative;
-  top: -0.2rem;
+  top: -0.42rem;
   z-index: 30;
 }
 
