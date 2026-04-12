@@ -110,6 +110,8 @@ const STATE_SAVE_THROTTLE_MS = 5000;
 const DEBUG_CYCLE_DURATION_SCALE = 0.2;
 const ITEM_MAX_STACK = 99;
 const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.exercise', 'q.healing', 'q.AFK']);
+const BASE_STEP_DURATION_MS = 15_000;
+const APPROX_CYCLE_STEP_COUNT = 30;
 
 type SideQuestScaleByLevel = {
   1: number;
@@ -1649,16 +1651,18 @@ function getApproxAfkTimeQuestProgressPerCycle(
   if (!TIME_BASED_SIDE_QUEST_TYPES.has(party.sideQuest.type)) return 0;
 
   const safeScale = Math.max(0.001, cycleDurationScale);
-  const emulatedCycleSeconds = Math.max(1, Math.floor((approxCycleDurationMs / safeScale) / 1000));
-  const baseRestSeconds = 5;
-  const baseMoveSeconds = 10;
-  const baseReturnSeconds = 30;
+  const emulatedCycleSeconds = Math.max(1, Math.ceil((approxCycleDurationMs / safeScale) / 1000));
+  const stepSeconds = BASE_STEP_DURATION_MS / 1000;
+  const baseRestSeconds = Math.ceil(stepSeconds);
+  const expeditionTier = Math.max(0, party.selectedDungeonId);
+  const moveSeconds = Math.ceil((1 + expeditionTier) * stepSeconds);
+  const returnSeconds = Math.ceil((5 + expeditionTier) * stepSeconds);
 
   switch (party.sideQuest.type) {
     case 'q.healing':
       return baseRestSeconds;
     case 'q.exercise':
-      return baseMoveSeconds + baseReturnSeconds;
+      return moveSeconds + returnSeconds;
     case 'q.AFK':
       return emulatedCycleSeconds;
     default:
@@ -3786,7 +3790,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (cappedElapsedMs < 1000) return state;
 
       const resolvedCycleDurationScale = Math.max(0.001, action.cycleDurationScale ?? getCycleDurationScale());
-      const approxCycleDurationMs = Math.max(1, Math.floor(460_000 * resolvedCycleDurationScale));
+      // SpecRef: 5.1 | PROGRESS | Cycle
+      const approxCycleDurationMs = Math.max(1, Math.ceil(BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * resolvedCycleDurationScale));
       const runCount = Math.max(0, Math.floor(cappedElapsedMs / approxCycleDurationMs));
       if (runCount <= 0) return state;
 
