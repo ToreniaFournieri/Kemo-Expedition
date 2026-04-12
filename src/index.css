@@ -21,6 +21,28 @@
   --glass-shadow: rgb(15 23 42 / 0.14);
 }
 
+@keyframes step-progress-paw-walk {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(45deg);
+  }
+}
+
+.step-progress-paw {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center;
+  animation: step-progress-paw-walk 600ms linear infinite;
+}
+
+.step-progress-paw-delay {
+  animation-delay: 300ms;
+}
+
 .theme-luna {
   --color-sub: 194 136 50;
   --color-accent: 12 60 234;
