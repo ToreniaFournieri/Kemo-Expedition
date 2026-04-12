@@ -126,6 +126,7 @@
 | `a.re-counter` | 再反撃 | 反撃に対して反撃する(攻撃回数がxN倍になる) | Lv1: x0.5, Lv2: x1.0 | counter-chain |
 | `a.null-counter` | 反撃無効化 | 反撃を無効化する(最大N回) | Lv1: 1回, Lv2: 2回, Lv3: 3回 | anti-counter |
 | `a.covering-fire` | 援護射撃 | 味方の近接攻撃が1ヒット時に遠距離攻撃で追撃する(攻撃回数がxN倍になる) | Lv1: x0.5, Lv2: x1.0 | ally-follow-up |
+| `a.requiem` | 鎮魂歌 | 即時蘇生が一度発動した相手にこの攻撃が当たった時に発動する。相手を即死させる | on-strike  |
 
 
 - Timed ability(時限アビリティ):
