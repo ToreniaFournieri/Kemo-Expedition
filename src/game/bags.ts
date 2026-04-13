@@ -10,8 +10,8 @@ function createBagFromEntries(entries: WeightedBagEntry[]): RandomBag {
 }
 
 const COMMON_REWARD_BAG_DEFAULT: WeightedBagEntry[] = [
-  { id: 0, tickets: 90 },
-  { id: 1, tickets: 10 },
+  { id: 0, tickets: 97 },
+  { id: 1, tickets: 3 },
 ];
 
 const COMMON_ENHANCEMENT_BAG_DEFAULT: WeightedBagEntry[] = ENHANCEMENT_TITLES.map((title) => ({
