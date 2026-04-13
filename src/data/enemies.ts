@@ -452,6 +452,7 @@ function generateEnemies(): EnemyDef[] {
         [],
         row[2],
       );
+      enemy.masterDropTokens = row[6].split(',').map((token) => token.trim()).filter((token) => token.length > 0);
       enemy.dropItemId = getDropItemIdFromMaster(tier, row[6].split(','));
       enemies.push(enemy);
     });
@@ -471,6 +472,7 @@ function generateEnemies(): EnemyDef[] {
         [],
         row[2],
       );
+      enemy.masterDropTokens = row[6].split(',').map((token) => token.trim()).filter((token) => token.length > 0);
       enemy.dropItemId = getDropItemIdFromMaster(tier, row[6].split(','));
       enemies.push(enemy);
     });
@@ -491,6 +493,7 @@ function generateEnemies(): EnemyDef[] {
         [],
         boss[2],
       );
+      enemy.masterDropTokens = boss[6].split(',').map((token) => token.trim()).filter((token) => token.length > 0);
       enemy.dropItemId = getDropItemIdFromMaster(tier, boss[6].split(','));
       enemies.push(enemy);
     }
@@ -531,6 +534,25 @@ function pickItems(pool: ItemDef[], count: number, seed: number): ItemDef[] {
 }
 
 export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
+  // SpecRef: 4.2 | EXPEDITION_&_ENEMY_MASTER_DATA | x.drop
+  if (enemy.masterDropTokens && enemy.masterDropTokens.length > 0) {
+    const exactDrops = enemy.masterDropTokens
+      .map((token) => parseMasterDropToken(token))
+      .filter((parsed): parsed is { category: ItemCategory; rarity: 'uncommon' | 'eliteRare' | 'bossRare'; variantIndex?: number } => parsed !== null)
+      .map((parsed) => {
+        const pool = getItemsByTierAndRarity(enemy.spawnTier || getTierFromEnemy(enemy.id), parsed.rarity)
+          .filter((item) => item.category === parsed.category);
+        if (pool.length === 0) return undefined;
+        const variantIndex = Math.max(0, parsed.variantIndex ?? 0);
+        return pool[variantIndex] ?? pool[0];
+      })
+      .filter((item): item is ItemDef => item !== undefined);
+
+    if (exactDrops.length > 0) {
+      return exactDrops;
+    }
+  }
+
   const tier = enemy.spawnTier || getTierFromEnemy(enemy.id);
   const common = getItemsByTierAndRarity(tier, 'common');
   const uncommon = getItemsByTierAndRarity(tier, 'uncommon');
