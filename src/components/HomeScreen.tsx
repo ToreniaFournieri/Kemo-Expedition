@@ -36,7 +36,7 @@ import { getBaseMultiplier } from '../game/baseMultiplier';
 import { ENEMY_TYPE_SHORT_NAMES, formatEnemyDefName } from '../game/enemyDisplay';
 import { computeCharacterStats, getAbilityDescription, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
-import { createSideQuestBag, createSleepinessPartyBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag } from '../game/bags';
+import { createMythicRareRewardBag, createSideQuestBag, createSleepinessPartyBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag } from '../game/bags';
 import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRankValue, getJewelNameByRank, getJewelOwnedCount } from '../game/jewel';
 import { replaceCharacterEquipment } from '../game/equipment';
 import { resolveMagicProfile } from '../game/magic';
@@ -9519,6 +9519,7 @@ function SettingTab({
   const commonEnhancementTotal = ENHANCEMENT_TITLES.reduce((sum, t) => sum + t.tickets, 0);
   const uniqueRewardTotal = 100;
   const enhancementTotal = 5490 + (ENHANCEMENT_TITLES.reduce((sum, t) => sum + (t.value === 0 ? 0 : t.tickets), 0));
+  const mythicRewardTotal = getBagTicketTotal(createMythicRareRewardBag());
 
   const confirmReset = (label: string, onConfirm: () => void) => {
     if (!window.confirm(`${label}を実行します。\n現在の抽選状況が初期化されます。\nよろしいですか？`)) {
@@ -9529,6 +9530,15 @@ function SettingTab({
   };
 
   const superRareTotal = SUPER_RARE_TITLES.reduce((sum, t) => sum + t.tickets, 0);
+  const superRareHitTotal = SUPER_RARE_TITLES.reduce((sum, t) => sum + (t.value > 0 ? t.tickets : 0), 0);
+  const enhancementCountTargets = [
+    { value: 1, label: '名工の残り' },
+    { value: 2, label: '魔性の残り' },
+    { value: 3, label: '宿った残り' },
+    { value: 4, label: '伝説の残り' },
+    { value: 5, label: '恐ろしい残り' },
+    { value: 6, label: '究極の残り' },
+  ] as const;
   const sideQuestDefaultBag = createSideQuestBag();
   const sideQuestTotal = getBagTicketTotal(sideQuestDefaultBag);
   const sleepinessDefaultBag = createSleepinessPartyBag();
@@ -10006,16 +10016,27 @@ function SettingTab({
                 PT{partyIndex + 1} {isExpanded ? '▲' : '▼'}
               </button>
               {isExpanded && <div className="mt-2 space-y-1 text-sm">
+                {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Clairvoyance (未来視) */}
                 <div>コモン報酬: {formatNumber(getBagTicketTotal(partyBags.commonRewardBag))} / {formatNumber(commonRewardTotal)} (通常当たり残り {formatNumber(getBagEntryTickets(partyBags.commonRewardBag, 1))})</div>
                 <div>コモン称号付与: {formatNumber(getBagTicketTotal(partyBags.commonEnhancementBag))} / {formatNumber(commonEnhancementTotal)}</div>
+                <div className="pl-3 text-xs text-gray-700">{enhancementCountTargets.map(({ value, label }) => {
+                  const initialCount = ENHANCEMENT_TITLES.find((title) => title.value === value)?.tickets ?? 0;
+                  return `${label} ${formatNumber(getBagEntryTickets(partyBags.commonEnhancementBag, value))} / ${formatNumber(initialCount)}`;
+                }).join(' / ')}</div>
                 <div>コモン超レア称号付与: {formatNumber(getBagTicketTotal(partyBags.commonSuperRareBag))} / {formatNumber(superRareTotal)}</div>
+                <div className="pl-3 text-xs text-gray-700">超レア残り {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.commonSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
                 <button onClick={() => confirmReset('コモン報酬初期化', () => onResetCommonBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">コモン報酬初期化</button>
                 <div>アンコモン報酬: {formatNumber(getBagTicketTotal(partyBags.uncommonRewardBag))} / {formatNumber(uniqueRewardTotal)}</div>
                 <div>エリートレア報酬: {formatNumber(getBagTicketTotal(partyBags.eliteRareRewardBag))} / {formatNumber(uniqueRewardTotal)}</div>
                 <div>ボスレア報酬: {formatNumber(getBagTicketTotal(partyBags.bossRareRewardBag))} / {formatNumber(uniqueRewardTotal)}</div>
-                <div>神魔レア報酬: {formatNumber(getBagTicketTotal(partyBags.mythicRareRewardBag))} / 50</div>
+                <div>神魔レア報酬: {formatNumber(getBagTicketTotal(partyBags.mythicRareRewardBag))} / {formatNumber(mythicRewardTotal)}</div>
                 <div>称号付与: {formatNumber(getBagTicketTotal(partyBags.enhancementBag))} / {formatNumber(enhancementTotal)}</div>
+                <div className="pl-3 text-xs text-gray-700">{enhancementCountTargets.map(({ value, label }) => {
+                  const initialCount = ENHANCEMENT_TITLES.find((title) => title.value === value)?.tickets ?? 0;
+                  return `${label} ${formatNumber(getBagEntryTickets(partyBags.enhancementBag, value))} / ${formatNumber(initialCount)}`;
+                }).join(' / ')}</div>
                 <div>超レア称号付与: {formatNumber(getBagTicketTotal(partyBags.rareSuperRareBag))} / {formatNumber(superRareTotal)}</div>
+                <div className="pl-3 text-xs text-gray-700">超レア残り {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.rareSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
                 <button onClick={() => confirmReset('報酬初期化', () => onResetUniqueBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">報酬初期化</button>
                 <div>サイドクエスト抽選: {formatNumber(getBagTicketTotal(partyBags.sideQuestBag))} / {formatNumber(sideQuestTotal)}</div>
                 <button onClick={() => confirmReset('サイドクエスト初期化', () => onResetSideQuestBag(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">サイドクエスト初期化</button>
