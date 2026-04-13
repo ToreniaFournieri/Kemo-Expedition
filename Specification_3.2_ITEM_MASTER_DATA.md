@@ -250,7 +250,7 @@
 | 5 | E | `Ursan` | `i.gauntlet`EC | 大熊の手甲 |
 | 5 | E | `Ursan` | `i.grimoire`EC | 大熊の秘本 |
 | 5 | B | `Ursan` | `i.katana`BD | 熊王の火刀 |
-| 5 | B | `Ursan` | `i.shield`BD | 熊王の熔盾 |
+| 5 | B | `Ursan` | `i.shield`BD | 灰色の石 | `a.slow` |
 | 5 | B | `Ursan` | `i.gauntlet`BD | 熊王の重手甲 |
 | 5 | B | `Ursan` | `i.sword`BD | 熊王の剣 |
 | 5 | B | `Ursan` | `i.armor`BD | 熊王の戦鎧 |
