@@ -356,7 +356,8 @@
 | 7 | B | `Leporian` | `i.armor`BD | 月王兎の聖鎧 |
 | 7 | B | `Leporian` | `i.katana`BD | 月王兎の神刀 |
 | 7 | B | `Leporian` | `i.shield`BD | 月王兎の聖盾 |
-| 7 | B | `Leporian` | `i.archery`BD | 月王兎の神弓 |
+| 7 | B | `Leporian` | `i.archery`BD | 月王兎の神弓 | 
+| 7 | E | `Leporian` | `i.arrow`EB | ホーリーアロー | `a.requiem` |
 | 7 | B | `Leporian` | `i.gauntlet`BD | 月王兎の拳甲 |
 | 7 | B | `Leporian` | `i.grimoire`BD | 月王兎の秘典 |
 | 8 | C | none | `i.sword`C | 神鋼の短剣 |
