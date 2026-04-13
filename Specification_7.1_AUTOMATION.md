@@ -322,7 +322,7 @@
 | 351 ~ 400 | `condition.excellent` | 絶好調 |
 
 
-- If party `condition` >= 100 and (`God Battle` is ready) and (has no active sub quest),
+- If party `condition` >= 251 and (`God Battle` is ready) and (has no active sub quest),
 - Engage `God Battle` and `condition` -= 200.
 
 - AFK (during `state.reactivate`)
