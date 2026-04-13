@@ -55,52 +55,41 @@
 **Clairvoyance (未来視)**
 - Displays belows 
 
-  **Normal reward (通常報酬)**
-  - common_reward_bag (通常報酬 抽選確率):  
-    - 報酬抽選: remaining / total counts 
-    - 当たり残り counts
-  -	common_enhancement_bag (称号付与 抽選確率): 
-    - 通常称号抽選: remaining / total counts
+- Party pane (PT1, PT2...): "PT1     ▼"
+  - Each party pane has:
+
+- 報酬
+  - コモン報酬: common reward_bag remaining / total counts 
+    - 通常当たり残り counts
+  -	コモン称号付与: common_enhancement_bag remaining / total counts
     - 名工の残り counts / initial counts
     - 魔性の残り counts / initial counts
    	- 宿った残り counts / initial counts
     - 伝説の残り counts / initial counts
     - 恐ろしい残り counts / initial counts
     - 究極の残り counts / initial counts
-  - Button (通常報酬初期化): Initialize `t.common_reward_bag` and `t.common_enhancement_bag` 
+  - コモン超レア称号付与: common superRare_bag remaining / total counts
+    - 超レア残り remaining / initial counts
+  - Button (コモン報酬初期化): Initialize `t.common_reward_bag` and `t.common_enhancement_bag`, `t.common_superRare_bag`
 
-  **Unieque reward (固有報酬)**
-  - uncommon reward_bag (アンコモン抽選確率):  
-    - 報酬抽選: remaining / total counts 
+  - アンコモン報酬: uncommon reward_bag remaining / total counts 
     - 当たり残り remaining
-  - elite rare reward_bag (エリートレア抽選確率):  
-    - 報酬抽選: remaining / total counts 
+  - エリートレア報酬: elite rare reward_bag remaining / total counts 
     - 当たり残り remaining
-  - boss rare reward_bag (ボスレア抽選確率):  
-    - 報酬抽選: remaining / total counts 
+  - ボスレア報酬: boss rare reward_bag remaining / total counts 
     - 当たり残り remaining
-  - mythic rare reward_bag (神魔レア抽選抽選確率):  
-    - 報酬抽選: remaining / total counts 
+  - 神魔レア報酬: mythic rare reward_bag remaining / total counts 
     - 当たり残り remaining
-  -	enhancement_bag (称号付与 抽選確率): 
-    - 通常称号抽選: remaining / total counts
+  -	称号付与: enhancement_bag remaining / total counts
     - 名工の残り remaining / initial counts
     - 魔性の残り remaining / initial counts
    	- 宿った残り remaining / initial counts
     - 伝説の残り remaining / initial counts
     - 恐ろしい残り remaining / initial counts
     - 究極の残り remaining / initial counts
-  - Button (固有報酬初期化): Initialize `t.common_reward_bag`, `t.uncommon_reward_bag`, `t.elite_rare_reward_bag`, `t.boss_rare_reward_bag`  , `t.mythic_rare_reward_bag`  and `t.enhancement_bag` 
-
-  **Super rare reward (超レア報酬)**
-  - Conmon_superRare_bag (コモン-称号超レア称号付与 抽選確率):
-    - 超レア称号抽選: remaining / total counts
+  - 超レア称号付与: Rare_superRare_bag remaining / total counts
     - 超レア残り remaining / initial counts
-  - Button (超レア報酬初期化): Initialize `t.common_superRare_bag`
-  - Rare_superRare_bag (レア-称号超レア称号付与 抽選確率):
-    - 超レア称号抽選: remaining / total counts
-    - 超レア残り remaining / initial counts
-  - Button (超レア報酬初期化): Initialize `t.rare_superRare_bag`
+  - Button (報酬初期化): Initialize `t.common_reward_bag`, `t.uncommon_reward_bag`, `t.elite_rare_reward_bag`, `t.boss_rare_reward_bag`  , `t.mythic_rare_reward_bag`  and `t.enhancement_bag`, `t.rare_superRare_bag`
 
   **Side quest(サイドクエスト抽選)**
   - side_quest_bag (サイドクエスト抽選確率)
