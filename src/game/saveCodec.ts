@@ -68,7 +68,10 @@ function isCompactBagEntry(entry: PersistedBagEntry): entry is CompactBagEntry {
     && typeof entry[1] === 'number';
 }
 
-function hydrateBagEntries(bag: PersistedRandomBag | RandomBag): RandomBag {
+function hydrateBagEntries(bag: PersistedRandomBag | RandomBag | undefined): RandomBag {
+  if (!bag || !Array.isArray(bag.entries)) {
+    return { entries: [] };
+  }
   return {
     ...bag,
     entries: bag.entries.reduce<WeightedBagEntry[]>((acc, entry) => {
@@ -111,6 +114,8 @@ export function serializeGameState(state: GameState): GameState {
       mythicRareRewardBag: compactBagEntries(state.bags.mythicRareRewardBag) as RandomBag,
       enhancementBag: compactBagEntries(state.bags.enhancementBag) as RandomBag,
       superRareBag: compactBagEntries(state.bags.superRareBag) as RandomBag,
+      commonSuperRareBag: compactBagEntries(state.bags.commonSuperRareBag) as RandomBag,
+      rareSuperRareBag: compactBagEntries(state.bags.rareSuperRareBag) as RandomBag,
       physicalThreatBag: compactBagEntries(state.bags.physicalThreatBag) as RandomBag,
       magicalThreatBag: compactBagEntries(state.bags.magicalThreatBag) as RandomBag,
       sideQuestBag: compactBagEntries(state.bags.sideQuestBag) as RandomBag,
@@ -152,6 +157,8 @@ export function hydrateGameState(state: GameState): GameState {
       mythicRareRewardBag: hydrateBagEntries(state.bags.mythicRareRewardBag),
       enhancementBag: hydrateBagEntries(state.bags.enhancementBag),
       superRareBag: hydrateBagEntries(state.bags.superRareBag),
+      commonSuperRareBag: hydrateBagEntries(state.bags.commonSuperRareBag),
+      rareSuperRareBag: hydrateBagEntries(state.bags.rareSuperRareBag),
       physicalThreatBag: hydrateBagEntries(state.bags.physicalThreatBag),
       magicalThreatBag: hydrateBagEntries(state.bags.magicalThreatBag),
       sideQuestBag: hydrateBagEntries(state.bags.sideQuestBag),

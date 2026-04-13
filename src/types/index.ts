@@ -586,7 +586,9 @@ export interface GameBags {
   bossRareRewardBag: RandomBag;      // For boss rare rewards (99 no item, 1 win)
   mythicRareRewardBag: RandomBag;    // For mythic rare rewards (49 no item, 1 win)
   enhancementBag: RandomBag;       // For unique rewards enhancement
-  superRareBag: RandomBag;
+  superRareBag: RandomBag; // For non-reward systems that still consume shared super rare titles (e.g., shop)
+  commonSuperRareBag: RandomBag; // For common reward super rare rolls
+  rareSuperRareBag: RandomBag; // For uncommon or higher reward super rare rolls
   physicalThreatBag: RandomBag;
   magicalThreatBag: RandomBag;
   sideQuestBag: RandomBag;

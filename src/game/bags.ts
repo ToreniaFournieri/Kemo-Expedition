@@ -10,8 +10,8 @@ function createBagFromEntries(entries: WeightedBagEntry[]): RandomBag {
 }
 
 const COMMON_REWARD_BAG_DEFAULT: WeightedBagEntry[] = [
-  { id: 0, tickets: 97 },
-  { id: 1, tickets: 3 },
+  { id: 0, tickets: 90 },
+  { id: 1, tickets: 10 },
 ];
 
 const COMMON_ENHANCEMENT_BAG_DEFAULT: WeightedBagEntry[] = ENHANCEMENT_TITLES.map((title) => ({
@@ -47,6 +47,16 @@ const ENHANCEMENT_BAG_DEFAULT: WeightedBagEntry[] = ENHANCEMENT_TITLES.map((titl
 const SUPER_RARE_BAG_DEFAULT: WeightedBagEntry[] = SUPER_RARE_TITLES.map((title) => ({
   id: title.value,
   tickets: title.tickets,
+}));
+
+const COMMON_SUPER_RARE_BAG_DEFAULT: WeightedBagEntry[] = SUPER_RARE_TITLES.map((title) => ({
+  id: title.value,
+  tickets: title.value === 0 ? 409_918 : 1,
+}));
+
+const RARE_SUPER_RARE_BAG_DEFAULT: WeightedBagEntry[] = SUPER_RARE_TITLES.map((title) => ({
+  id: title.value,
+  tickets: title.value === 0 ? 40_918 : 1,
 }));
 
 const PHYSICAL_THREAT_WEIGHT_BAG_DEFAULT: WeightedBagEntry[] = [
@@ -87,6 +97,8 @@ const BAG_DEFAULT_CREATORS = {
   mythicRareRewardBag: () => createBagFromEntries(MYTHIC_RARE_REWARD_BAG_DEFAULT),
   enhancementBag: () => createBagFromEntries(ENHANCEMENT_BAG_DEFAULT),
   superRareBag: () => createBagFromEntries(SUPER_RARE_BAG_DEFAULT),
+  commonSuperRareBag: () => createBagFromEntries(COMMON_SUPER_RARE_BAG_DEFAULT),
+  rareSuperRareBag: () => createBagFromEntries(RARE_SUPER_RARE_BAG_DEFAULT),
   physicalThreatBag: () => createBagFromEntries(PHYSICAL_THREAT_WEIGHT_BAG_DEFAULT),
   magicalThreatBag: () => createBagFromEntries(MAGICAL_THREAT_WEIGHT_BAG_DEFAULT),
   sideQuestBag: () => createBagFromEntries(SIDE_QUEST_BAG_DEFAULT),
@@ -130,6 +142,8 @@ export function normalizeGameBags(bags: GameBags): GameBags {
     mythicRareRewardBag: normalizeBagForType(bags.mythicRareRewardBag, 'mythicRareRewardBag'),
     enhancementBag: normalizeBagForType(bags.enhancementBag, 'enhancementBag'),
     superRareBag: normalizeBagForType(bags.superRareBag, 'superRareBag'),
+    commonSuperRareBag: normalizeBagForType(bags.commonSuperRareBag, 'commonSuperRareBag'),
+    rareSuperRareBag: normalizeBagForType(bags.rareSuperRareBag, 'rareSuperRareBag'),
     physicalThreatBag: normalizeBagForType(bags.physicalThreatBag, 'physicalThreatBag'),
     magicalThreatBag: normalizeBagForType(bags.magicalThreatBag, 'magicalThreatBag'),
     sideQuestBag: normalizeBagForType(bags.sideQuestBag, 'sideQuestBag'),
@@ -174,6 +188,16 @@ export function createEnhancementBag(): RandomBag {
 // SpecRef: 6.1.6 | REWARD | createSuperRareBag
 export function createSuperRareBag(): RandomBag {
   return BAG_DEFAULT_CREATORS.superRareBag();
+}
+
+// SpecRef: 6.1.6 | REWARD | createCommonSuperRareBag
+export function createCommonSuperRareBag(): RandomBag {
+  return BAG_DEFAULT_CREATORS.commonSuperRareBag();
+}
+
+// SpecRef: 6.1.6 | REWARD | createRareSuperRareBag
+export function createRareSuperRareBag(): RandomBag {
+  return BAG_DEFAULT_CREATORS.rareSuperRareBag();
 }
 
 // SpecRef: 6.1.6 | REWARD | createPhysicalThreatBag
@@ -223,6 +247,8 @@ export function initializeBags(): GameBags {
     mythicRareRewardBag: createMythicRareRewardBag(),
     enhancementBag: createEnhancementBag(),
     superRareBag: createSuperRareBag(),
+    commonSuperRareBag: createCommonSuperRareBag(),
+    rareSuperRareBag: createRareSuperRareBag(),
     physicalThreatBag: createPhysicalThreatBag(),
     magicalThreatBag: createMagicalThreatBag(),
     sideQuestBag: createSideQuestBag(),
