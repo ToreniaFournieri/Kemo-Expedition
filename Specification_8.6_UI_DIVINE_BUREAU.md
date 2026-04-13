@@ -93,10 +93,14 @@
   - Button (固有報酬初期化): Initialize `t.common_reward_bag`, `t.uncommon_reward_bag`, `t.elite_rare_reward_bag`, `t.boss_rare_reward_bag`  , `t.mythic_rare_reward_bag`  and `t.enhancement_bag` 
 
   **Super rare reward (超レア報酬)**
-  - superRare_bag (称号超レア称号付与 抽選確率):
+  - Conmon_superRare_bag (コモン-称号超レア称号付与 抽選確率):
     - 超レア称号抽選: remaining / total counts
     - 超レア残り remaining / initial counts
-  - Button (超レア報酬初期化): Initialize `t.superRare_bag`
+  - Button (超レア報酬初期化): Initialize `t.common_superRare_bag`
+  - Rare_superRare_bag (レア-称号超レア称号付与 抽選確率):
+    - 超レア称号抽選: remaining / total counts
+    - 超レア残り remaining / initial counts
+  - Button (超レア報酬初期化): Initialize `t.rare_superRare_bag`
 
   **Side quest(サイドクエスト抽選)**
   - side_quest_bag (サイドクエスト抽選確率)
