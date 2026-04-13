@@ -629,17 +629,33 @@ export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
         drops.push(specifiedBossRare);
       }
 
-      const bossRareCats = bossMythicByTier[tier] ?? ['sword', 'grimoire'];
-      const bossRareExtra = pickByCategory(
-        bossRare,
-        bossRareCats[0],
-        enemy.id + 1,
-        specifiedBossRare ? [specifiedBossRare.id] : [],
-      ) ?? pickAny(bossRare, 1, enemy.id + 1, specifiedBossRare ? [specifiedBossRare.id] : [])[0];
+      const relatedCategoryMap: Partial<Record<ItemCategory, ItemCategory[]>> = {
+        arrow: ['archery'],
+        archery: ['arrow'],
+        bolt: ['archery', 'arrow'],
+        wand: ['grimoire', 'catalyst'],
+        grimoire: ['wand', 'catalyst'],
+        catalyst: ['grimoire', 'wand'],
+        sword: ['katana', 'gauntlet'],
+        katana: ['sword', 'shield'],
+        shield: ['armor', 'katana'],
+        armor: ['shield', 'gauntlet'],
+        gauntlet: ['sword', 'armor'],
+        robe: ['grimoire', 'wand'],
+      };
+      const tierFallbackCats = bossMythicByTier[tier] ?? ['sword', 'grimoire'];
+      const preferredCats = specifiedBossRare
+        ? [specifiedBossRare.category, ...(relatedCategoryMap[specifiedBossRare.category] ?? [])]
+        : tierFallbackCats;
+      const excludedIds = specifiedBossRare ? [specifiedBossRare.id] : [];
+      const bossRareExtra = preferredCats
+        .map((category, index) => pickByCategory(bossRare, category, enemy.id + 1 + index, excludedIds))
+        .find((item): item is ItemDef => item !== undefined);
       if (bossRareExtra) drops.push(bossRareExtra);
 
-      const eliteRareFallback = pickByCategory(eliteRare, bossRareCats[0], enemy.id + 2)
-        ?? pickAny(eliteRare, 1, enemy.id + 2)[0];
+      const eliteRareFallback = preferredCats
+        .map((category, index) => pickByCategory(eliteRare, category, enemy.id + 2 + index))
+        .find((item): item is ItemDef => item !== undefined);
       if (eliteRareFallback) drops.push(eliteRareFallback);
 
       drops.push(...pickAny(common, Math.max(0, 5 - drops.length), enemy.id + 3));
