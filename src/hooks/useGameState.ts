@@ -56,6 +56,7 @@ import {
   normalizeBagForType,
   BagType,
   normalizeGameBags,
+  initializeBags,
 } from '../game/bags';
 import { getItemById, getItemsByTierAndRarity } from '../data/items';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
@@ -873,6 +874,7 @@ function loadSavedState(): GameState | null {
           }
           if (typeof party.deityGold !== 'number') party.deityGold = 0;
           party.expeditionStats = getExpeditionStatsWithDefaults(party.expeditionStats);
+          party.bags = normalizeImportedBags((party as Party & { bags?: unknown }).bags ?? parsed.bags);
           const legacyCondition = typeof party.condition === 'number'
             ? party.condition
             : (party as Party & { motivation?: unknown }).motivation;
@@ -1004,6 +1006,7 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
     : null;
   return {
     ...party,
+    bags: normalizeImportedBags(party.bags),
     characters: party.characters.map((character) => ({
       ...character,
       autoEquipmentMode: normalizeCharacterAutoEquipmentMode(character.autoEquipmentMode),
@@ -1104,6 +1107,7 @@ function createInitialParty() {
     hasUnreadDiary: false,
     diarySettings: getDiarySettingsWithDefaults(undefined),
     expeditionStats: getExpeditionStatsWithDefaults(null),
+    bags: initializeBags(),
     sleepinessOfPartyBag: createSleepinessPartyBag(),
     currentSleepiness: 0,
     condition: 0,
@@ -1160,6 +1164,7 @@ function createSecondParty() {
     hasUnreadDiary: false,
     diarySettings: getDiarySettingsWithDefaults(undefined),
     expeditionStats: getExpeditionStatsWithDefaults(null),
+    bags: initializeBags(),
     sleepinessOfPartyBag: createSleepinessPartyBag(),
     currentSleepiness: 0,
     condition: 0,
@@ -1216,6 +1221,7 @@ function createThirdParty() {
     hasUnreadDiary: false,
     diarySettings: getDiarySettingsWithDefaults(undefined),
     expeditionStats: getExpeditionStatsWithDefaults(null),
+    bags: initializeBags(),
     sleepinessOfPartyBag: createSleepinessPartyBag(),
     currentSleepiness: 0,
     condition: 0,
@@ -1272,6 +1278,7 @@ function createFourthParty() {
     hasUnreadDiary: false,
     diarySettings: getDiarySettingsWithDefaults(undefined),
     expeditionStats: getExpeditionStatsWithDefaults(null),
+    bags: initializeBags(),
     sleepinessOfPartyBag: createSleepinessPartyBag(),
     currentSleepiness: 0,
     condition: 0,
@@ -1328,6 +1335,7 @@ function createFifthParty() {
     hasUnreadDiary: false,
     diarySettings: getDiarySettingsWithDefaults(undefined),
     expeditionStats: getExpeditionStatsWithDefaults(null),
+    bags: initializeBags(),
     sleepinessOfPartyBag: createSleepinessPartyBag(),
     currentSleepiness: 0,
     condition: 0,
@@ -1384,6 +1392,7 @@ function createSixthParty() {
     hasUnreadDiary: false,
     diarySettings: getDiarySettingsWithDefaults(undefined),
     expeditionStats: getExpeditionStatsWithDefaults(null),
+    bags: initializeBags(),
     sleepinessOfPartyBag: createSleepinessPartyBag(),
     currentSleepiness: 0,
     condition: 0,
@@ -1478,11 +1487,11 @@ type GameAction =
   | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: GameMode; simulatedEndAt?: number; cycleDurationScale?: number }
   | { type: 'RESET_GAME' }
   | { type: 'IMPORT_GAME_STATE'; state: GameState }
-  | { type: 'RESET_COMMON_BAGS' }
-  | { type: 'RESET_UNIQUE_BAGS' }
-  | { type: 'RESET_COMMON_SUPER_RARE_BAG' }
-  | { type: 'RESET_RARE_SUPER_RARE_BAG' }
-  | { type: 'RESET_SIDE_QUEST_BAG' }
+  | { type: 'RESET_COMMON_BAGS'; partyIndex?: number }
+  | { type: 'RESET_UNIQUE_BAGS'; partyIndex?: number }
+  | { type: 'RESET_COMMON_SUPER_RARE_BAG'; partyIndex?: number }
+  | { type: 'RESET_RARE_SUPER_RARE_BAG'; partyIndex?: number }
+  | { type: 'RESET_SIDE_QUEST_BAG'; partyIndex?: number }
   | { type: 'UNLOCK_PARTY_SLOT' };
 
 // Select enemy based on room type and pool
@@ -2463,7 +2472,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const rewards: Item[] = [];
       const recoveredItems: Item[] = [];
       let totalExp = 0;
-      let bags = state.bags;
+      let bags = normalizeImportedBags(currentParty.bags);
       let finalOutcome: 'Clear' | 'Escape' | 'Defeat' | 'Retreat' = 'Clear';
       let currentInventory = state.global.inventory;
       let currentGold = state.global.gold;
@@ -2949,6 +2958,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const endedWithDrawRetreat = entries.length > 0 && entries[entries.length - 1].outcome === 'draw';
       updatedParties[action.partyIndex] = {
         ...currentParty,
+        bags,
         expeditionRewardsPending: true,
         defeatedBossExpeditions: nextDefeatedBossExpeditions,
         lootGateProgress: nextLootGateProgress,
@@ -2988,7 +2998,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       return {
         ...state,
-        bags,
         parties: nextParties,
         global: {
           ...state.global,
@@ -3154,14 +3163,22 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'ROLL_SIDE_QUEST': {
       const currentParty = state.parties[action.partyIndex];
       if (!currentParty || currentParty.sideQuest) return state;
-      let bags = refillBagIfEmpty(state.bags, 'sideQuestBag');
+      let bags = refillBagIfEmpty(normalizeImportedBags(currentParty.bags), 'sideQuestBag');
       const { ticket, newBag } = drawFromBag(bags.sideQuestBag);
       bags = { ...bags, sideQuestBag: newBag };
-      if (ticket === 0) return { ...state, bags };
+      if (ticket === 0) {
+        const updatedParties = [...state.parties];
+        updatedParties[action.partyIndex] = { ...currentParty, bags };
+        return { ...state, parties: updatedParties };
+      }
 
       // SpecRef: 5.1.2 | Side Quest | Side quest difficulty
       const def = SIDE_QUEST_RUNTIME_DEFS[ticket];
-      if (!def) return { ...state, bags };
+      if (!def) {
+        const updatedParties = [...state.parties];
+        updatedParties[action.partyIndex] = { ...currentParty, bags };
+        return { ...state, parties: updatedParties };
+      }
       const sideQuestLevel = getSideQuestLevelFromExpId(Math.floor(action.rolledTier));
       const multiplier = def.scaleByLevel[sideQuestLevel] ?? 1;
       const scaledMin = Math.round(def.baseMin * multiplier);
@@ -3177,6 +3194,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const updatedParties = [...state.parties];
       updatedParties[action.partyIndex] = {
         ...currentParty,
+        bags,
         sideQuest: {
           id: ticket,
           type: def.type,
@@ -3188,7 +3206,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           expiresAt,
         },
       };
-      return { ...state, bags, parties: updatedParties };
+      return { ...state, parties: updatedParties };
     }
 
     case 'CANCEL_SIDE_QUEST': {
@@ -4008,6 +4026,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...party,
         level: typeof party.level === 'number' ? party.level : 1,
         experience: typeof party.experience === 'number' ? party.experience : 0,
+        bags: normalizeImportedBags((party as Party & { bags?: unknown }).bags ?? hydrated.bags),
         sleepinessOfPartyBag: normalizeSleepinessPartyBag(party.sleepinessOfPartyBag ?? createSleepinessPartyBag()),
         currentSleepiness: normalizeSleepinessState(party.currentSleepiness),
       }));
@@ -4064,59 +4083,94 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'RESET_COMMON_BAGS': {
-      return {
-        ...state,
+      const partyIndex = action.partyIndex ?? state.selectedPartyIndex;
+      const currentParty = state.parties[partyIndex];
+      if (!currentParty) return state;
+      const updatedParties = [...state.parties];
+      updatedParties[partyIndex] = {
+        ...currentParty,
         bags: {
-          ...state.bags,
+          ...normalizeImportedBags(currentParty.bags),
           commonRewardBag: createCommonRewardBag(),
           commonEnhancementBag: createCommonEnhancementBag(),
+          commonSuperRareBag: createCommonSuperRareBag(),
         },
+      };
+      return {
+        ...state,
+        parties: updatedParties,
       };
     }
 
     case 'RESET_UNIQUE_BAGS': {
-      return {
-        ...state,
+      const partyIndex = action.partyIndex ?? state.selectedPartyIndex;
+      const currentParty = state.parties[partyIndex];
+      if (!currentParty) return state;
+      const updatedParties = [...state.parties];
+      updatedParties[partyIndex] = {
+        ...currentParty,
         bags: {
-          ...state.bags,
+          ...normalizeImportedBags(currentParty.bags),
           commonRewardBag: createCommonRewardBag(),
           uncommonRewardBag: createUncommonRewardBag(),
           eliteRareRewardBag: createEliteRareRewardBag(),
           bossRareRewardBag: createBossRareRewardBag(),
           mythicRareRewardBag: createMythicRareRewardBag(),
           enhancementBag: createEnhancementBag(),
-          sideQuestBag: createSideQuestBag(),
+          rareSuperRareBag: createRareSuperRareBag(),
         },
+      };
+      return {
+        ...state,
+        parties: updatedParties,
       };
     }
 
     case 'RESET_COMMON_SUPER_RARE_BAG': {
-      return {
-        ...state,
+      const partyIndex = action.partyIndex ?? state.selectedPartyIndex;
+      const currentParty = state.parties[partyIndex];
+      if (!currentParty) return state;
+      const updatedParties = [...state.parties];
+      updatedParties[partyIndex] = {
+        ...currentParty,
         bags: {
-          ...state.bags,
+          ...normalizeImportedBags(currentParty.bags),
           commonSuperRareBag: createCommonSuperRareBag(),
         },
       };
+      return { ...state, parties: updatedParties };
     }
 
     case 'RESET_RARE_SUPER_RARE_BAG': {
-      return {
-        ...state,
+      const partyIndex = action.partyIndex ?? state.selectedPartyIndex;
+      const currentParty = state.parties[partyIndex];
+      if (!currentParty) return state;
+      const updatedParties = [...state.parties];
+      updatedParties[partyIndex] = {
+        ...currentParty,
         bags: {
-          ...state.bags,
+          ...normalizeImportedBags(currentParty.bags),
           rareSuperRareBag: createRareSuperRareBag(),
         },
       };
+      return { ...state, parties: updatedParties };
     }
 
     case 'RESET_SIDE_QUEST_BAG': {
-      return {
-        ...state,
+      const partyIndex = action.partyIndex ?? state.selectedPartyIndex;
+      const currentParty = state.parties[partyIndex];
+      if (!currentParty) return state;
+      const updatedParties = [...state.parties];
+      updatedParties[partyIndex] = {
+        ...currentParty,
         bags: {
-          ...state.bags,
+          ...normalizeImportedBags(currentParty.bags),
           sideQuestBag: createSideQuestBag(),
         },
+      };
+      return {
+        ...state,
+        parties: updatedParties,
       };
     }
 
@@ -4387,24 +4441,24 @@ export function useGameState() {
       dispatch({ type: 'IMPORT_GAME_STATE', state: nextState });
     }, []),
 
-    resetCommonBags: useCallback(() => {
-      dispatch({ type: 'RESET_COMMON_BAGS' });
+    resetCommonBags: useCallback((partyIndex?: number) => {
+      dispatch({ type: 'RESET_COMMON_BAGS', partyIndex });
     }, []),
 
-    resetUniqueBags: useCallback(() => {
-      dispatch({ type: 'RESET_UNIQUE_BAGS' });
+    resetUniqueBags: useCallback((partyIndex?: number) => {
+      dispatch({ type: 'RESET_UNIQUE_BAGS', partyIndex });
     }, []),
 
-    resetCommonSuperRareBag: useCallback(() => {
-      dispatch({ type: 'RESET_COMMON_SUPER_RARE_BAG' });
+    resetCommonSuperRareBag: useCallback((partyIndex?: number) => {
+      dispatch({ type: 'RESET_COMMON_SUPER_RARE_BAG', partyIndex });
     }, []),
 
-    resetRareSuperRareBag: useCallback(() => {
-      dispatch({ type: 'RESET_RARE_SUPER_RARE_BAG' });
+    resetRareSuperRareBag: useCallback((partyIndex?: number) => {
+      dispatch({ type: 'RESET_RARE_SUPER_RARE_BAG', partyIndex });
     }, []),
 
-    resetSideQuestBag: useCallback(() => {
-      dispatch({ type: 'RESET_SIDE_QUEST_BAG' });
+    resetSideQuestBag: useCallback((partyIndex?: number) => {
+      dispatch({ type: 'RESET_SIDE_QUEST_BAG', partyIndex });
     }, []),
 
     unlockPartySlot: useCallback(() => {
@@ -4417,5 +4471,6 @@ export function useGameState() {
     dismissAllNotifications,
   };
 
-  return { state, actions, bags: state.bags, notifications };
+  const selectedParty = state.parties[state.selectedPartyIndex];
+  return { state, actions, bags: selectedParty?.bags ?? state.bags, notifications };
 }

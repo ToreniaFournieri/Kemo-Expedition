@@ -2392,7 +2392,6 @@ function getNextMissingAutoEquipmentCategory(
 export function HomeScreen({
   state,
   actions,
-  bags,
   notifications,
   onDismissNotification,
   onDismissAllNotifications,
@@ -4429,14 +4428,11 @@ export function HomeScreen({
       <SettingTab
         gameState={state}
         deityDonations={state.global.deityDonations}
-        bags={bags}
         onResetGame={handleResetGame}
         onImportGameState={actions.importGameState}
         onAddNotification={actions.addNotification}
         onResetCommonBags={actions.resetCommonBags}
         onResetUniqueBags={actions.resetUniqueBags}
-        onResetCommonSuperRareBag={actions.resetCommonSuperRareBag}
-        onResetRareSuperRareBag={actions.resetRareSuperRareBag}
         onResetSideQuestBag={actions.resetSideQuestBag}
         selectedBestiaryDungeonId={selectedBestiaryDungeonId}
         onSetSelectedBestiaryDungeonId={setSelectedBestiaryDungeonId}
@@ -9101,14 +9097,11 @@ function DiaryTab({
 function SettingTab({
   gameState,
   deityDonations,
-  bags,
   onResetGame,
   onImportGameState,
   onAddNotification,
   onResetCommonBags,
   onResetUniqueBags,
-  onResetCommonSuperRareBag,
-  onResetRareSuperRareBag,
   onResetSideQuestBag,
   selectedBestiaryDungeonId,
   onSetSelectedBestiaryDungeonId,
@@ -9132,7 +9125,6 @@ function SettingTab({
 }: {
   gameState: GameState;
   deityDonations: Record<string, number>;
-  bags: GameBags;
   onResetGame: () => void;
   onImportGameState: (state: GameState) => void;
   onAddNotification: (
@@ -9141,11 +9133,9 @@ function SettingTab({
     category?: NotificationCategory,
     isPositive?: boolean
   ) => void;
-  onResetCommonBags: () => void;
-  onResetUniqueBags: () => void;
-  onResetCommonSuperRareBag: () => void;
-  onResetRareSuperRareBag: () => void;
-  onResetSideQuestBag: () => void;
+  onResetCommonBags: (partyIndex?: number) => void;
+  onResetUniqueBags: (partyIndex?: number) => void;
+  onResetSideQuestBag: (partyIndex?: number) => void;
   selectedBestiaryDungeonId: number;
   onSetSelectedBestiaryDungeonId: Dispatch<SetStateAction<number>>;
   expandedBestiaryEnemies: Record<number, boolean>;
@@ -9169,6 +9159,7 @@ function SettingTab({
   type DivineBureauPanelKey = 'modeSelect' | 'donation' | 'clairvoyance' | 'glossary' | 'itemCompendium' | 'bestiary' | 'superRare' | 'gameSetting' | 'debug';
   type GlossaryTabKey = '能' | '基' | '固' | '増' | '属' | '機' | '信' | '魔' | '地' | '求';
   const DIVINE_BUREAU_PANEL_STORAGE_KEY = 'kemo-expedition.divine-bureau.panel-expanded';
+  const CLAIRVOYANCE_PARTY_STORAGE_KEY = 'kemo-expedition.divine-bureau.clairvoyance-party-expanded';
   const GLOSSARY_TAB_STORAGE_KEY = 'kemo-expedition.divine-bureau.glossary-tab';
   const GLOSSARY_EXPANDED_STORAGE_KEY = 'kemo-expedition.divine-bureau.glossary-expanded-entries';
   const GLOSSARY_TABS: readonly GlossaryTabKey[] = ['能', '基', '固', '増', '属', '機', '信', '魔', '地', '求'];
@@ -9232,6 +9223,20 @@ function SettingTab({
 
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [divineBureauPanelExpanded, setDivineBureauPanelExpanded] = useState<Record<DivineBureauPanelKey, boolean>>(() => getStoredDivineBureauPanelState());
+  const [clairvoyancePartyExpanded, setClairvoyancePartyExpanded] = useState<Record<number, boolean>>(() => {
+    try {
+      const saved = localStorage.getItem(CLAIRVOYANCE_PARTY_STORAGE_KEY);
+      if (!saved) return {};
+      const parsed = JSON.parse(saved) as Record<string, boolean>;
+      return Object.entries(parsed).reduce<Record<number, boolean>>((acc, [key, value]) => {
+        const index = Number(key);
+        if (Number.isFinite(index)) acc[index] = value === true;
+        return acc;
+      }, {});
+    } catch {
+      return {};
+    }
+  });
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const [compendiumCategory, setCompendiumCategory] = useState<string>('armor');
   const [colosseumEnemySettings, setColosseumEnemySettings] = useState<ColosseumEnemySettings>(() => getColosseumEnemySettings());
@@ -9275,6 +9280,9 @@ function SettingTab({
       console.error('Failed to persist Divine Bureau panel state:', error);
     }
   }, [divineBureauPanelExpanded]);
+  useEffect(() => {
+    localStorage.setItem(CLAIRVOYANCE_PARTY_STORAGE_KEY, JSON.stringify(clairvoyancePartyExpanded));
+  }, [clairvoyancePartyExpanded]);
   useEffect(() => {
     try {
       localStorage.setItem(GLOSSARY_TAB_STORAGE_KEY, glossaryTab);
@@ -9475,45 +9483,10 @@ function SettingTab({
     bestiaryListRef.current?.scrollTo({ top: bestiaryScrollTop, behavior: 'auto' });
   }, [bestiaryScrollTop]);
 
-  const getInitialCount = (value: number) => ENHANCEMENT_TITLES.find(t => t.value === value)?.tickets ?? 0;
-  const craftsmanInitial = getInitialCount(1);
-  const demonicInitial = getInitialCount(2);
-  const dwellingInitial = getInitialCount(3);
-  const legendaryInitial = getInitialCount(4);
-  const terribleInitial = getInitialCount(5);
-  const ultimateInitial = getInitialCount(6);
-
   const commonRewardTotal = 100;
-  const commonRewardRemaining = getBagTicketTotal(bags.commonRewardBag);
-  const commonRewardWins = getBagEntryTickets(bags.commonRewardBag, 1);
-
   const commonEnhancementTotal = ENHANCEMENT_TITLES.reduce((sum, t) => sum + t.tickets, 0);
-  const commonEnhancementRemaining = getBagTicketTotal(bags.commonEnhancementBag);
-  const commonCraftsmanRemaining = getBagEntryTickets(bags.commonEnhancementBag, 1);
-  const commonDemonicRemaining = getBagEntryTickets(bags.commonEnhancementBag, 2);
-  const commonDwellingRemaining = getBagEntryTickets(bags.commonEnhancementBag, 3);
-  const commonLegendaryRemaining = getBagEntryTickets(bags.commonEnhancementBag, 4);
-  const commonTerribleRemaining = getBagEntryTickets(bags.commonEnhancementBag, 5);
-  const commonUltimateRemaining = getBagEntryTickets(bags.commonEnhancementBag, 6);
-
   const uniqueRewardTotal = 100;
-  const uncommonRewardRemaining = getBagTicketTotal(bags.uncommonRewardBag);
-  const uncommonRewardWins = getBagEntryTickets(bags.uncommonRewardBag, 1);
-  const eliteRareRewardRemaining = getBagTicketTotal(bags.eliteRareRewardBag);
-  const eliteRareRewardWins = getBagEntryTickets(bags.eliteRareRewardBag, 1);
-  const bossRareRewardRemaining = getBagTicketTotal(bags.bossRareRewardBag);
-  const bossRareRewardWins = getBagEntryTickets(bags.bossRareRewardBag, 1);
-  const mythicRareRewardRemaining = getBagTicketTotal(bags.mythicRareRewardBag);
-  const mythicRareRewardWins = getBagEntryTickets(bags.mythicRareRewardBag, 1);
-
   const enhancementTotal = 5490 + (ENHANCEMENT_TITLES.reduce((sum, t) => sum + (t.value === 0 ? 0 : t.tickets), 0));
-  const enhancementRemaining = getBagTicketTotal(bags.enhancementBag);
-  const craftsmanRemaining = getBagEntryTickets(bags.enhancementBag, 1);
-  const demonicRemaining = getBagEntryTickets(bags.enhancementBag, 2);
-  const dwellingRemaining = getBagEntryTickets(bags.enhancementBag, 3);
-  const legendaryRemaining = getBagEntryTickets(bags.enhancementBag, 4);
-  const terribleRemaining = getBagEntryTickets(bags.enhancementBag, 5);
-  const ultimateRemaining = getBagEntryTickets(bags.enhancementBag, 6);
 
   const confirmReset = (label: string, onConfirm: () => void) => {
     if (!window.confirm(`${label}を実行します。\n現在の抽選状況が初期化されます。\nよろしいですか？`)) {
@@ -9524,26 +9497,9 @@ function SettingTab({
   };
 
   const superRareTotal = SUPER_RARE_TITLES.reduce((sum, t) => sum + t.tickets, 0);
-  const superRareInitial = SUPER_RARE_TITLES.filter(t => t.value > 0).reduce((sum, t) => sum + t.tickets, 0);
-  const commonSuperRareRemaining = getBagTicketTotal(bags.commonSuperRareBag);
-  const commonSuperRareHits = SUPER_RARE_TITLES.filter(t => t.value > 0).reduce((sum, t) => sum + getBagEntryTickets(bags.commonSuperRareBag, t.value), 0);
-  const rareSuperRareRemaining = getBagTicketTotal(bags.rareSuperRareBag);
-  const rareSuperRareHits = SUPER_RARE_TITLES.filter(t => t.value > 0).reduce((sum, t) => sum + getBagEntryTickets(bags.rareSuperRareBag, t.value), 0);
   const sideQuestDefaultBag = createSideQuestBag();
   const sideQuestTotal = getBagTicketTotal(sideQuestDefaultBag);
-  const sideQuestRemaining = getBagTicketTotal(bags.sideQuestBag);
-  const sideQuestInitial = sideQuestDefaultBag.entries.filter((entry) => entry.id > 0).reduce((sum, entry) => sum + entry.tickets, 0);
-  const sideQuestHits = bags.sideQuestBag.entries.filter((entry) => entry.id > 0).reduce((sum, entry) => sum + entry.tickets, 0);
   const sleepinessDefaultBag = createSleepinessPartyBag();
-  const sleepinessInitialById = new Map(sleepinessDefaultBag.entries.map((entry) => [entry.id, entry.tickets]));
-  const sleepinessRows = gameState.parties.flatMap((party, partyIndex) => {
-    const bag = normalizeSleepinessPartyBag(party.sleepinessOfPartyBag);
-    return [
-      { partyLabel: party.name || `PT${partyIndex + 1}`, sleepinessLabel: '寝ない', remaining: getBagEntryTickets(bag, 0), initial: sleepinessInitialById.get(0) ?? 0 },
-      { partyLabel: party.name || `PT${partyIndex + 1}`, sleepinessLabel: '仮眠', remaining: getBagEntryTickets(bag, 1), initial: sleepinessInitialById.get(1) ?? 0 },
-      { partyLabel: party.name || `PT${partyIndex + 1}`, sleepinessLabel: '熟睡', remaining: getBagEntryTickets(bag, 2), initial: sleepinessInitialById.get(2) ?? 0 },
-    ];
-  });
 
   const visibleDeityNames = new Set(
     gameState.global.unlockedDeities
@@ -10009,162 +9965,34 @@ function SettingTab({
 
       {debugSettings.clairvoyanceEnabled && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('clairvoyance', '未来視')}
-        {divineBureauPanelExpanded.clairvoyance && <>
-
-        <div className="mb-4 border-b border-gray-200 pb-4">
-          <div className="text-xs text-gray-600 font-medium mb-2">通常報酬 (Normal reward)</div>
-
-          <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">common_reward_bag (通常報酬 抽選確率)</div>
-            <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>報酬抽選</span><span>{formatNumber(commonRewardRemaining)} / {formatNumber(commonRewardTotal)}</span></div>
-              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{formatNumber(commonRewardWins)}</span></div>
-            </div>
-          </div>
-
-          <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">common_enhancement_bag (称号付与 抽選確率)</div>
-            <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>通常称号抽選</span><span>{formatNumber(commonEnhancementRemaining)} / {formatNumber(commonEnhancementTotal)}</span></div>
-              <div className="flex justify-between text-sub"><span>名工の残り</span><span>{formatNumber(commonCraftsmanRemaining)} / {formatNumber(craftsmanInitial)}</span></div>
-              <div className="flex justify-between text-sub"><span>魔性の残り</span><span>{formatNumber(commonDemonicRemaining)} / {formatNumber(demonicInitial)}</span></div>
-              <div className="flex justify-between text-sub"><span>宿った残り</span><span>{formatNumber(commonDwellingRemaining)} / {formatNumber(dwellingInitial)}</span></div>
-              <div className="flex justify-between text-sub"><span>伝説の残り</span><span>{formatNumber(commonLegendaryRemaining)} / {formatNumber(legendaryInitial)}</span></div>
-              <div className="flex justify-between text-sub"><span>恐ろしい残り</span><span>{formatNumber(commonTerribleRemaining)} / {formatNumber(terribleInitial)}</span></div>
-              <div className="flex justify-between text-sub"><span>究極の残り</span><span>{formatNumber(commonUltimateRemaining)} / {formatNumber(ultimateInitial)}</span></div>
-            </div>
-          </div>
-
-          <button
-            onClick={() => confirmReset('通常報酬初期化', onResetCommonBags)}
-            className="w-full py-2 bg-sub text-white rounded text-sm font-medium"
-          >
-            通常報酬初期化
-          </button>
-        </div>
-
-        <div className="mb-4 border-b border-gray-200 pb-4">
-          <div className="text-xs text-gray-600 font-medium mb-2">固有報酬 (Unique reward)</div>
-
-          <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">uncommon_reward_bag (アンコモン抽選確率)</div>
-            <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>報酬抽選</span><span>{formatNumber(uncommonRewardRemaining)} / {formatNumber(uniqueRewardTotal)}</span></div>
-              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{formatNumber(uncommonRewardWins)}</span></div>
-            </div>
-          </div>
-
-          <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">elite_rare_reward_bag (エリートレア抽選確率)</div>
-            <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>報酬抽選</span><span>{formatNumber(eliteRareRewardRemaining)} / {formatNumber(uniqueRewardTotal)}</span></div>
-              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{formatNumber(eliteRareRewardWins)}</span></div>
-            </div>
-          </div>
-
-          <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">boss_rare_reward_bag (ボスレア抽選確率)</div>
-            <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>報酬抽選</span><span>{formatNumber(bossRareRewardRemaining)} / {formatNumber(uniqueRewardTotal)}</span></div>
-              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{formatNumber(bossRareRewardWins)}</span></div>
-            </div>
-          </div>
-
-          <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">mythic_rare_reward_bag (神魔レア抽選確率)</div>
-            <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>報酬抽選</span><span>{formatNumber(mythicRareRewardRemaining)} / 50</span></div>
-              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{formatNumber(mythicRareRewardWins)}</span></div>
-            </div>
-          </div>
-
-          <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">enhancement_bag (称号付与 抽選確率)</div>
-            <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>通常称号抽選</span><span>{formatNumber(enhancementRemaining)} / {formatNumber(enhancementTotal)}</span></div>
-              <div className="flex justify-between text-sub"><span>名工の残り</span><span>{formatNumber(craftsmanRemaining)} / {formatNumber(craftsmanInitial)}</span></div>
-              <div className="flex justify-between text-sub"><span>魔性の残り</span><span>{formatNumber(demonicRemaining)} / {formatNumber(demonicInitial)}</span></div>
-              <div className="flex justify-between text-sub"><span>宿った残り</span><span>{formatNumber(dwellingRemaining)} / {formatNumber(dwellingInitial)}</span></div>
-              <div className="flex justify-between text-sub"><span>伝説の残り</span><span>{formatNumber(legendaryRemaining)} / {formatNumber(legendaryInitial)}</span></div>
-              <div className="flex justify-between text-sub"><span>恐ろしい残り</span><span>{formatNumber(terribleRemaining)} / {formatNumber(terribleInitial)}</span></div>
-              <div className="flex justify-between text-sub"><span>究極の残り</span><span>{formatNumber(ultimateRemaining)} / {formatNumber(ultimateInitial)}</span></div>
-            </div>
-          </div>
-
-          <button
-            onClick={() => confirmReset('固有報酬初期化', onResetUniqueBags)}
-            className="w-full py-2 bg-sub text-white rounded text-sm font-medium"
-          >
-            固有報酬初期化
-          </button>
-        </div>
-
-        <div className="mb-2">
-          <div className="text-xs text-gray-600 font-medium mb-2">超レア報酬 (Super rare reward)</div>
-          <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">Conmon_superRare_bag (コモン-称号超レア称号付与 抽選確率)</div>
-            <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>超レア称号抽選</span><span>{formatNumber(commonSuperRareRemaining)} / {formatNumber(superRareTotal)}</span></div>
-              <div className="flex justify-between text-accent"><span>超レア残り</span><span>{formatNumber(commonSuperRareHits)} / {formatNumber(superRareInitial)}</span></div>
-            </div>
-          </div>
-          <button
-            onClick={() => confirmReset('超レア報酬初期化', onResetCommonSuperRareBag)}
-            className="w-full py-2 bg-accent text-white rounded text-sm font-medium"
-          >
-            超レア報酬初期化
-          </button>
-
-          <div className="mb-2 mt-2">
-            <div className="text-xs text-gray-500 mb-1">Rare_superRare_bag (レア-称号超レア称号付与 抽選確率)</div>
-            <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>超レア称号抽選</span><span>{formatNumber(rareSuperRareRemaining)} / {formatNumber(superRareTotal)}</span></div>
-              <div className="flex justify-between text-accent"><span>超レア残り</span><span>{formatNumber(rareSuperRareHits)} / {formatNumber(superRareInitial)}</span></div>
-            </div>
-          </div>
-          <button
-            onClick={() => confirmReset('超レア報酬初期化', onResetRareSuperRareBag)}
-            className="w-full py-2 bg-accent text-white rounded text-sm font-medium"
-          >
-            超レア報酬初期化
-          </button>
-
-          <div className="mt-2 mb-2">
-            <div className="text-xs text-gray-500 mb-1">side_quest_bag (サイドクエスト抽選確率)</div>
-            <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>サイドクエスト抽選</span><span>{formatNumber(sideQuestRemaining)} / {formatNumber(sideQuestTotal)}</span></div>
-              <div className="flex justify-between text-sub"><span>当たり残り</span><span>{formatNumber(sideQuestHits)} / {formatNumber(sideQuestInitial)}</span></div>
-            </div>
-          </div>
-          <button
-            onClick={() => confirmReset('サイドクエスト初期化', onResetSideQuestBag)}
-            className="w-full py-2 bg-sub text-white rounded text-sm font-medium"
-          >
-            サイドクエスト初期化
-          </button>
-
-          <div className="mt-4">
-            <div className="text-xs text-gray-600 font-medium mb-2">sleepiness(眠気抽選)</div>
-            <div className="text-xs text-gray-500 mb-1">sleepiness_of_party_bag (眠気抽選確率)</div>
-            <div className="bg-white rounded p-2 text-sm">
-              <div className="grid grid-cols-[1fr_1fr_auto] gap-x-2 gap-y-1 text-xs text-gray-500 border-b border-gray-100 pb-1 mb-1">
-                <span>パーティ</span>
-                <span>眠気度合い</span>
-                <span className="text-right">残り</span>
-              </div>
-              <div className="space-y-1">
-                {sleepinessRows.map((row, index) => (
-                  <div key={`${row.partyLabel}-${row.sleepinessLabel}-${index}`} className="grid grid-cols-[1fr_1fr_auto] gap-x-2">
-                    <span className="text-gray-700">{row.partyLabel}</span>
-                    <span className="text-gray-700">{row.sleepinessLabel}</span>
-                    <span className="text-right text-sub tabular-nums">{formatNumber(row.remaining)} / {formatNumber(row.initial)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-        </>}
+        {divineBureauPanelExpanded.clairvoyance && <div className="mt-3 space-y-3">
+          {gameState.parties.map((party, partyIndex) => {
+            const partyBags = party.bags;
+            const isExpanded = clairvoyancePartyExpanded[partyIndex] === true;
+            return <div key={`clairvoyance-${party.id}`} className="rounded border border-gray-200 bg-white p-2">
+              <button type="button" className="w-full text-left font-semibold" onClick={() => setClairvoyancePartyExpanded((prev) => ({ ...prev, [partyIndex]: !isExpanded }))}>
+                PT{partyIndex + 1} {isExpanded ? '▲' : '▼'}
+              </button>
+              {isExpanded && <div className="mt-2 space-y-1 text-sm">
+                <div>コモン報酬: {formatNumber(getBagTicketTotal(partyBags.commonRewardBag))} / {formatNumber(commonRewardTotal)} (通常当たり残り {formatNumber(getBagEntryTickets(partyBags.commonRewardBag, 1))})</div>
+                <div>コモン称号付与: {formatNumber(getBagTicketTotal(partyBags.commonEnhancementBag))} / {formatNumber(commonEnhancementTotal)}</div>
+                <div>コモン超レア称号付与: {formatNumber(getBagTicketTotal(partyBags.commonSuperRareBag))} / {formatNumber(superRareTotal)}</div>
+                <button onClick={() => confirmReset('コモン報酬初期化', () => onResetCommonBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">コモン報酬初期化</button>
+                <div>アンコモン報酬: {formatNumber(getBagTicketTotal(partyBags.uncommonRewardBag))} / {formatNumber(uniqueRewardTotal)}</div>
+                <div>エリートレア報酬: {formatNumber(getBagTicketTotal(partyBags.eliteRareRewardBag))} / {formatNumber(uniqueRewardTotal)}</div>
+                <div>ボスレア報酬: {formatNumber(getBagTicketTotal(partyBags.bossRareRewardBag))} / {formatNumber(uniqueRewardTotal)}</div>
+                <div>神魔レア報酬: {formatNumber(getBagTicketTotal(partyBags.mythicRareRewardBag))} / 50</div>
+                <div>称号付与: {formatNumber(getBagTicketTotal(partyBags.enhancementBag))} / {formatNumber(enhancementTotal)}</div>
+                <div>超レア称号付与: {formatNumber(getBagTicketTotal(partyBags.rareSuperRareBag))} / {formatNumber(superRareTotal)}</div>
+                <button onClick={() => confirmReset('報酬初期化', () => onResetUniqueBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">報酬初期化</button>
+                <div>サイドクエスト抽選: {formatNumber(getBagTicketTotal(partyBags.sideQuestBag))} / {formatNumber(sideQuestTotal)}</div>
+                <button onClick={() => confirmReset('サイドクエスト初期化', () => onResetSideQuestBag(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">サイドクエスト初期化</button>
+                <div>眠気抽選: {formatNumber(getBagTicketTotal(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag)))} / {formatNumber(getBagTicketTotal(sleepinessDefaultBag))}</div>
+                <div>寝ない: {formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 0))} / 仮眠: {formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 1))} / 熟睡: {formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 2))}</div>
+              </div>}
+            </div>;
+          })}
+        </div>}
       </div>}
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
