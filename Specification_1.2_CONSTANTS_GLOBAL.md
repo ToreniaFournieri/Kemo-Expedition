@@ -58,8 +58,8 @@
 
 | ID | title | tickets |
 |-----|---------|------|
-| 0 | no item | 90 |
-| 1 | win | 10 |  
+| 0 | no item | 97 |
+| 1 | win | 3 |  
 
 - `t.uncommon_reward_bag_default` table
  
