@@ -5,32 +5,34 @@
 ### 4.2.2 Enemy
 
 - Common item drop
+  - All enemies drop common items, determined by their `x.class`.
 
+**Class → Drop Set Mapping**
 
-**Common item table**
+| `x.class` | Common item drop set |
+|-|-|
+| class.duelist | Melee |
+| class.samurai | Melee |
+| class.sword-saint | Melee |
+| class.ranger | Ranged |
+| class.striker | Ranged |
+| class.ninja | Ranged |
+| class.wizard | Magic |
+| class.sage | Magic |
+| class.alchemist | Magic |
+| class.guardian | Defensive |
+| class.pilgrim | Defensive |
+| class.lord | Defensive |
 
+**Common Item Pool**
+- Once the Drop Set is determined, assign them to enemy's `x.drop` list.
+  
 | Drop set | items |
 |----------|-------|
 | Melee | `i.sword`, `i.katana`, `i.gauntlet` |
 | Ranged | `i.arrow`, `i.bolt`, `i.archery` |
 | Magic | `i.wand`, `i.grimoire`, `i.catalyst` |
 | Defensive | `i.armor`, `i.robe`, `i.shield` |
-
-
-| `x.class` | `x.drop` | Common item drop set |
-|-|-|-|
-| class.duelist | `i.sword`, `i.armor` | Melee |
-| class.samurai | `i.katana`, `i.shield` | Melee |
-| class.sword-saint | `i.gauntlet`, `i.sword` | Melee |
-| class.ranger | `i.arrow`,`i.archery` | Ranged |
-| class.striker | `i.bolt`, `i.arrow` | Ranged |
-| class.ninja | `i.archery`, `i.bolt` | Ranged |
-| class.wizard | `i.wand`, `i.robe` | Magic |
-| class.sage | `i.grimoire`, `i.catalyst` | Magic |
-| class.alchemist | `i.catalyst`, `i.wand` | Magic |
-| class.guardian | `i.armor`, `i.gauntlet` | Defensive |
-| class.pilgrim | `i.robe`, `i.grimoire` | Defensive |
-| class.lord | `i.shield`, `i.katana` | Defensive |
 
 
 - Rare items drop
