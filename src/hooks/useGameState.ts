@@ -1480,7 +1480,8 @@ type GameAction =
   | { type: 'IMPORT_GAME_STATE'; state: GameState }
   | { type: 'RESET_COMMON_BAGS' }
   | { type: 'RESET_UNIQUE_BAGS' }
-  | { type: 'RESET_SUPER_RARE_BAG' }
+  | { type: 'RESET_COMMON_SUPER_RARE_BAG' }
+  | { type: 'RESET_RARE_SUPER_RARE_BAG' }
   | { type: 'RESET_SIDE_QUEST_BAG' }
   | { type: 'UNLOCK_PARTY_SLOT' };
 
@@ -4089,13 +4090,21 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
-    case 'RESET_SUPER_RARE_BAG': {
+    case 'RESET_COMMON_SUPER_RARE_BAG': {
       return {
         ...state,
         bags: {
           ...state.bags,
-          superRareBag: createSuperRareBag(),
           commonSuperRareBag: createCommonSuperRareBag(),
+        },
+      };
+    }
+
+    case 'RESET_RARE_SUPER_RARE_BAG': {
+      return {
+        ...state,
+        bags: {
+          ...state.bags,
           rareSuperRareBag: createRareSuperRareBag(),
         },
       };
@@ -4386,8 +4395,12 @@ export function useGameState() {
       dispatch({ type: 'RESET_UNIQUE_BAGS' });
     }, []),
 
-    resetSuperRareBag: useCallback(() => {
-      dispatch({ type: 'RESET_SUPER_RARE_BAG' });
+    resetCommonSuperRareBag: useCallback(() => {
+      dispatch({ type: 'RESET_COMMON_SUPER_RARE_BAG' });
+    }, []),
+
+    resetRareSuperRareBag: useCallback(() => {
+      dispatch({ type: 'RESET_RARE_SUPER_RARE_BAG' });
     }, []),
 
     resetSideQuestBag: useCallback(() => {
