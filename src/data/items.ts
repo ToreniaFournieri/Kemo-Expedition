@@ -192,6 +192,7 @@ const ITEM_ADDITIONAL_BONUS_BY_NAME: Record<string, Bonus> = {
   '紅の防盾': { type: 'fire_defense_multiplier_xV', value: 2 / 3 },
   'ホーリーソード': { type: 'ability', value: 1, abilityId: 'requiem', abilityLevel: 1 },
   'ホーリーアロー': { type: 'ability', value: 1, abilityId: 'requiem', abilityLevel: 1 },
+  '灰色の石': { type: 'ability', value: 1, abilityId: 'slow', abilityLevel: 1 },
 };
 
 const ITEM_CORE_CONCEPT_KEYS: Record<ItemCategory, Array<keyof ItemDef>> = {

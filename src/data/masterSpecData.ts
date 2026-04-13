@@ -522,7 +522,7 @@ export const MASTER_ITEM_NAME_INDEX: Record<string, readonly string[]> = {
   '5|bossRare|catalyst': ['熊王核の触媒'],
   '5|bossRare|gauntlet': ['熊王の重手甲'],
   '5|bossRare|katana': ['熊王の火刀'],
-  '5|bossRare|shield': ['熊王の熔盾'],
+  '5|bossRare|shield': ['灰色の石'],
   '5|bossRare|sword': ['熊王の剣'],
   '5|bossRare|wand': ['熊王の祭杖'],
   '6|common|archery': ['機弦弓'],
