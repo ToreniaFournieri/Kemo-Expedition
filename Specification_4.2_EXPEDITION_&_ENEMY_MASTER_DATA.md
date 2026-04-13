@@ -7,15 +7,30 @@
 - Common item drop
 
 
-| `x.type` | has subClass | drops  |
-|-|-|-|
-| Normal | No | 2 Uncommon items (mainClass), 3 Common items |
-| Elite | No | 2 Elite rare items (mainClass), 3 Common items |
-| Boss | No | 2 Boss rare items (mainClass), 3 Common items |
-| Normal | Yes | 2 Uncommon items (mainClass), 1 Uncommon item (subClass: first `x.drop`), 3 Common items |
-| Elite | Yes | 2 Elite rare items (mainClass), 1 Elite rare item (subClass: first `x.drop`), 3 Common items |
-| Boss | Yes | 2 Boss rare items (mainClass), 1 Boss rare item (subClass: first `x.drop`), 3 Common items |
+**Common item table**
 
+| Drop set | items |
+|----------|-------|
+| Melee | `i.sword`, `i.katana`, `i.gauntlet` |
+| Ranged | `i.arrow`, `i.bolt`, `i.archery` |
+| Magic | `i.wand`, `i.grimoire`, `i.catalyst` |
+| Defensive | `i.armor`, `i.robe`, `i.shield` |
+
+
+| `x.class` | `x.drop` | Common item drop set |
+|-|-|-|
+| class.duelist | `i.sword`, `i.armor` | Melee |
+| class.samurai | `i.katana`, `i.shield` | Melee |
+| class.sword-saint | `i.gauntlet`, `i.sword` | Melee |
+| class.ranger | `i.arrow`,`i.archery` | Ranged |
+| class.striker | `i.bolt`, `i.arrow` | Ranged |
+| class.ninja | `i.archery`, `i.bolt` | Ranged |
+| class.wizard | `i.wand`, `i.robe` | Magic |
+| class.sage | `i.grimoire`, `i.catalyst` | Magic |
+| class.alchemist | `i.catalyst`, `i.wand` | Magic |
+| class.guardian | `i.armor`, `i.gauntlet` | Defensive |
+| class.pilgrim | `i.robe`, `i.grimoire` | Defensive |
+| class.lord | `i.shield`, `i.katana` | Defensive |
 
 
 - Rare items drop
