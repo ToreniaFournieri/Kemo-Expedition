@@ -102,7 +102,8 @@ interface HomeScreenProps {
     importGameState: (state: GameState) => void;
     resetCommonBags: () => void;
     resetUniqueBags: () => void;
-    resetSuperRareBag: () => void;
+    resetCommonSuperRareBag: () => void;
+    resetRareSuperRareBag: () => void;
     resetSideQuestBag: () => void;
     unlockPartySlot: () => void;
     addNotification: (
@@ -4434,7 +4435,8 @@ export function HomeScreen({
         onAddNotification={actions.addNotification}
         onResetCommonBags={actions.resetCommonBags}
         onResetUniqueBags={actions.resetUniqueBags}
-        onResetSuperRareBag={actions.resetSuperRareBag}
+        onResetCommonSuperRareBag={actions.resetCommonSuperRareBag}
+        onResetRareSuperRareBag={actions.resetRareSuperRareBag}
         onResetSideQuestBag={actions.resetSideQuestBag}
         selectedBestiaryDungeonId={selectedBestiaryDungeonId}
         onSetSelectedBestiaryDungeonId={setSelectedBestiaryDungeonId}
@@ -9105,7 +9107,8 @@ function SettingTab({
   onAddNotification,
   onResetCommonBags,
   onResetUniqueBags,
-  onResetSuperRareBag,
+  onResetCommonSuperRareBag,
+  onResetRareSuperRareBag,
   onResetSideQuestBag,
   selectedBestiaryDungeonId,
   onSetSelectedBestiaryDungeonId,
@@ -9140,7 +9143,8 @@ function SettingTab({
   ) => void;
   onResetCommonBags: () => void;
   onResetUniqueBags: () => void;
-  onResetSuperRareBag: () => void;
+  onResetCommonSuperRareBag: () => void;
+  onResetRareSuperRareBag: () => void;
   onResetSideQuestBag: () => void;
   selectedBestiaryDungeonId: number;
   onSetSelectedBestiaryDungeonId: Dispatch<SetStateAction<number>>;
@@ -9520,9 +9524,11 @@ function SettingTab({
   };
 
   const superRareTotal = SUPER_RARE_TITLES.reduce((sum, t) => sum + t.tickets, 0);
-  const superRareRemaining = getBagTicketTotal(bags.superRareBag);
   const superRareInitial = SUPER_RARE_TITLES.filter(t => t.value > 0).reduce((sum, t) => sum + t.tickets, 0);
-  const superRareHits = SUPER_RARE_TITLES.filter(t => t.value > 0).reduce((sum, t) => sum + getBagEntryTickets(bags.superRareBag, t.value), 0);
+  const commonSuperRareRemaining = getBagTicketTotal(bags.commonSuperRareBag);
+  const commonSuperRareHits = SUPER_RARE_TITLES.filter(t => t.value > 0).reduce((sum, t) => sum + getBagEntryTickets(bags.commonSuperRareBag, t.value), 0);
+  const rareSuperRareRemaining = getBagTicketTotal(bags.rareSuperRareBag);
+  const rareSuperRareHits = SUPER_RARE_TITLES.filter(t => t.value > 0).reduce((sum, t) => sum + getBagEntryTickets(bags.rareSuperRareBag, t.value), 0);
   const sideQuestDefaultBag = createSideQuestBag();
   const sideQuestTotal = getBagTicketTotal(sideQuestDefaultBag);
   const sideQuestRemaining = getBagTicketTotal(bags.sideQuestBag);
@@ -10096,14 +10102,28 @@ function SettingTab({
         <div className="mb-2">
           <div className="text-xs text-gray-600 font-medium mb-2">超レア報酬 (Super rare reward)</div>
           <div className="mb-2">
-            <div className="text-xs text-gray-500 mb-1">superRare_bag (称号超レア称号付与 抽選確率)</div>
+            <div className="text-xs text-gray-500 mb-1">Conmon_superRare_bag (コモン-称号超レア称号付与 抽選確率)</div>
             <div className="bg-white rounded p-2 text-sm space-y-1">
-              <div className="flex justify-between"><span>超レア称号抽選</span><span>{formatNumber(superRareRemaining)} / {formatNumber(superRareTotal)}</span></div>
-              <div className="flex justify-between text-accent"><span>超レア残り</span><span>{formatNumber(superRareHits)} / {formatNumber(superRareInitial)}</span></div>
+              <div className="flex justify-between"><span>超レア称号抽選</span><span>{formatNumber(commonSuperRareRemaining)} / {formatNumber(superRareTotal)}</span></div>
+              <div className="flex justify-between text-accent"><span>超レア残り</span><span>{formatNumber(commonSuperRareHits)} / {formatNumber(superRareInitial)}</span></div>
             </div>
           </div>
           <button
-            onClick={() => confirmReset('超レア報酬初期化', onResetSuperRareBag)}
+            onClick={() => confirmReset('超レア報酬初期化', onResetCommonSuperRareBag)}
+            className="w-full py-2 bg-accent text-white rounded text-sm font-medium"
+          >
+            超レア報酬初期化
+          </button>
+
+          <div className="mb-2 mt-2">
+            <div className="text-xs text-gray-500 mb-1">Rare_superRare_bag (レア-称号超レア称号付与 抽選確率)</div>
+            <div className="bg-white rounded p-2 text-sm space-y-1">
+              <div className="flex justify-between"><span>超レア称号抽選</span><span>{formatNumber(rareSuperRareRemaining)} / {formatNumber(superRareTotal)}</span></div>
+              <div className="flex justify-between text-accent"><span>超レア残り</span><span>{formatNumber(rareSuperRareHits)} / {formatNumber(superRareInitial)}</span></div>
+            </div>
+          </div>
+          <button
+            onClick={() => confirmReset('超レア報酬初期化', onResetRareSuperRareBag)}
             className="w-full py-2 bg-accent text-white rounded text-sm font-medium"
           >
             超レア報酬初期化
