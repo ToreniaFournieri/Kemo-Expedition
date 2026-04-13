@@ -1202,7 +1202,7 @@ function getConditionLabel(condition: number, showValue: boolean): string {
 
 // SpecRef: 7.1.2 | AUTO progress logic | God Battle engagement condition
 function shouldAutoTriggerGodsBattle(party: Party): boolean {
-  return party.condition >= 100
+  return party.condition >= 251
     && isGodsBattleAvailable(party, party.selectedDungeonId)
     && !party.sideQuest;
 }
