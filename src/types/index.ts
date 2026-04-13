@@ -463,6 +463,7 @@ export interface EnemyDef {
   magicalDefenseAmplifier: number;
   experience: number;
   dropItemId: number | null;
+  masterDropTokens?: string[];
   isGodEnemy?: boolean;
   godDropItemCategories?: [ItemCategory, ItemCategory];
 }
