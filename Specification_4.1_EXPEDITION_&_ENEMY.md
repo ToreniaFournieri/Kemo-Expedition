@@ -305,39 +305,29 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 - `x.drop` is used for all rarity drops (Uncommon / Elite / Boss).
 - Common drops are selected randomly from the assigned `Drop set`.
 
-| `x.class` | `x.drop` | Common item drop set |
-|-|-|-|
-| class.duelist | `i.sword`, `i.armor` | Melee |
-| class.samurai | `i.katana`, `i.shield` | Melee |
-| class.sword-saint | `i.gauntlet`, `i.sword` | Melee |
-| class.ranger | `i.arrow`,`i.archery` | Ranged |
-| class.striker | `i.bolt`, `i.arrow` | Ranged |
-| class.ninja | `i.archery`, `i.bolt` | Ranged |
-| class.wizard | `i.wand`, `i.robe` | Magic |
-| class.sage | `i.grimoire`, `i.catalyst` | Magic |
-| class.alchemist | `i.catalyst`, `i.wand` | Magic |
-| class.guardian | `i.armor`, `i.gauntlet` | Defensive |
-| class.pilgrim | `i.robe`, `i.grimoire` | Defensive |
-| class.lord | `i.shield`, `i.katana` | Defensive |
-
-**Common item table**
-
-| Drop set | items |
-|----------|-------|
-| Melee | `i.sword`, `i.katana`, `i.gauntlet` |
-| Ranged | `i.arrow`, `i.bolt`, `i.archery` |
-| Magic | `i.wand`, `i.grimoire`, `i.catalyst` |
-| Defensive | `i.armor`, `i.robe`, `i.shield` |
-
+| `x.class` | `x.drop` |
+|-|-|
+| class.duelist | `i.sword`, `i.armor` |
+| class.samurai | `i.katana`, `i.shield` |
+| class.sword-saint | `i.gauntlet`, `i.sword` |
+| class.ranger | `i.arrow`,`i.archery` |
+| class.striker | `i.bolt`, `i.arrow` |
+| class.ninja | `i.archery`, `i.bolt` |
+| class.wizard | `i.wand`, `i.robe` |
+| class.sage | `i.grimoire`, `i.catalyst` |
+| class.alchemist | `i.catalyst`, `i.wand` |
+| class.guardian | `i.armor`, `i.gauntlet` |
+| class.pilgrim | `i.robe`, `i.grimoire` |
+| class.lord | `i.shield`, `i.katana` |
 
 | `x.type` | has subClass | drops  |
 |-|-|-|
-| Normal | No | 2 Uncommon items (mainClass), 3 Common items |
-| Elite | No | 2 Elite rare items (mainClass), 3 Common items |
-| Boss | No | 2 Boss rare items (mainClass), 3 Common items |
-| Normal | Yes | 2 Uncommon items (mainClass), 1 Uncommon item (subClass: first `x.drop`), 3 Common items |
-| Elite | Yes | 2 Elite rare items (mainClass), 1 Elite rare item (subClass: first `x.drop`), 3 Common items |
-| Boss | Yes | 2 Boss rare items (mainClass), 1 Boss rare item (subClass: first `x.drop`), 3 Common items |
+| Normal | No | 2 Uncommon items (mainClass) |
+| Elite | No | 2 Elite rare items (mainClass) |
+| Boss | No | 2 Boss rare items (mainClass) |
+| Normal | Yes | 2 Uncommon items (mainClass), 1 Uncommon item (subClass: first `x.drop`) |
+| Elite | Yes | 2 Elite rare items (mainClass), 1 Elite rare item (subClass: first `x.drop`) |
+| Boss | Yes | 2 Boss rare items (mainClass), 1 Boss rare item (subClass: first `x.drop`) |
 
 
 **Standard template**
@@ -445,7 +435,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | 2 | 5 | +7 | Elite | Lupinian | class.wizard.guardian | `i.wand`BD, `i.catalyst`BD |
 | 2 | 5 | +7 | Elite | Lupinian | class.ninja.sword-saint | `i.bolt`BD, `i.archery`BD |
 | 3 | 5 | +7 | Elite | Vulpinian | class.sword-saint.guardian | `i.sword`BD, `i.shield`BD |
-| 3 | 5 | +7 | Elite | Vulpinian | class.wizard.ninja | `i.catalyst`BD, `i.bolt`BDBD |
+| 3 | 5 | +7 | Elite | Vulpinian | class.wizard.ninja | `i.catalyst`BD, `i.bolt`BD |
 | 4 | 4 | +6 | Elite | Felidian | class.striker.sage | `i.grimoire`BD, `i.arrow`BD |
 | 4 | 4 | +6 | Elite | Felidian | class.ninja.duelist | `i.robe`BD, `i.sword`BD |
 | 5 | 3 | +5 | Elite | Ursan | class.samurai.duelist | `i.gauntlet`BD, `i.armor`BD |
