@@ -53,12 +53,12 @@
 
 
 **Clairvoyance (未来視)**
-- Displays belows 
 
 - Party pane (PT1, PT2...): "PT1     ▼"
+  - Default: collapsed. persist its state. 
   - Each party pane has:
 
-- 報酬
+- **報酬**
   - コモン報酬: common reward_bag remaining / total counts 
     - 通常当たり残り counts
   -	コモン称号付与: common_enhancement_bag remaining / total counts
@@ -91,22 +91,16 @@
     - 超レア残り remaining / initial counts
   - Button (報酬初期化): Initialize `t.common_reward_bag`, `t.uncommon_reward_bag`, `t.elite_rare_reward_bag`, `t.boss_rare_reward_bag`  , `t.mythic_rare_reward_bag`  and `t.enhancement_bag`, `t.rare_superRare_bag`
 
-  **Side quest(サイドクエスト抽選)**
-  - side_quest_bag (サイドクエスト抽選確率)
-    - サイドクエスト抽選 remaining / total counts
-    - 当たり残り remaining / initial counts
+- **サイドクエスト**
+  - サイドクエスト抽選: side_quest_bag total
+    - 当たり残り remaining
   - Button (サイドクエスト初期化): Initialize `t.side_quest_bag` 
 
-  **sleepiness(眠気抽選)**
-  - sleepiness_of_party_bag (眠気抽選確率)
-
-| パーティ | 眠気度合い | 残り |
-|-|-|-|
-| PT1 | 寝ない | 3 |
-| PT1 | 仮眠 | 2 |
-| PT1 | 熟睡 | 1 |
-| PT2 | 寝ない | 3 |
-...
+- **眠気**
+  - 眠気抽選: sleepiness_of_party_bag total
+    - 寝ない: remaining
+    - 仮眠: remaining
+    - 熟睡: remaining
 
 note: 0:no sleep 寝ない, 1:nap 仮眠, 2:sound sleep 熟睡
 
