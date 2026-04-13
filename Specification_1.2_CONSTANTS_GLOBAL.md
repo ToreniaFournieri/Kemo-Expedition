@@ -58,8 +58,8 @@
 
 | ID | title | tickets |
 |-----|---------|------|
-| 0 | no item | 97 |
-| 1 | win | 3 |  
+| 0 | no item | 90 |
+| 1 | win | 10 |  
 
 - `t.uncommon_reward_bag_default` table
  
@@ -231,11 +231,21 @@
 | 81 | 災いもたらす | `c.growth_x0.9`成長0.9倍, `c.magical_offense_multiplier_x1.5`魔攻撃1.5倍 |
 | 82 | 呪われし | `c.antagonism`⚠️敵対, `c.growth_x1.8`成長1.8倍 |
 
-- `t.superRare_bag_default` table
+- `t.common_superRare_bag_default` table
 
 | ID | tickets |
 |-----|------|
 | 0  | 409918 |
+| 1 | 1 |
+| 2 | 1 |
+| ... | 1 |
+| 82 | 1 |
+
+- `t.rare_superRare_bag_default` table
+
+| ID | tickets |
+|-----|------|
+| 0  | 40918 |
 | 1 | 1 |
 | 2 | 1 |
 | ... | 1 |
