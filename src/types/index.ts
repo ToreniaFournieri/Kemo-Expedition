@@ -334,6 +334,7 @@ export interface Party {
     donatedGold: number;
     savedGold: number;
   };
+  bags: GameBags;
   sleepinessOfPartyBag: RandomBag;
   currentSleepiness: SleepinessState;
   condition: number;

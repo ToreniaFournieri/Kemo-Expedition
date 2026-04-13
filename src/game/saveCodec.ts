@@ -124,14 +124,31 @@ export function serializeGameState(state: GameState): GameState {
       ...state.global,
       inventory: compactInventory,
     },
-    parties: state.parties.map((party) => ({
+    parties: state.parties.map((party) => {
+      const partyBags = party.bags ?? state.bags;
+      return ({
       ...party,
+      bags: {
+        commonRewardBag: compactBagEntries(partyBags.commonRewardBag) as RandomBag,
+        commonEnhancementBag: compactBagEntries(partyBags.commonEnhancementBag) as RandomBag,
+        uncommonRewardBag: compactBagEntries(partyBags.uncommonRewardBag) as RandomBag,
+        eliteRareRewardBag: compactBagEntries(partyBags.eliteRareRewardBag) as RandomBag,
+        bossRareRewardBag: compactBagEntries(partyBags.bossRareRewardBag) as RandomBag,
+        mythicRareRewardBag: compactBagEntries(partyBags.mythicRareRewardBag) as RandomBag,
+        enhancementBag: compactBagEntries(partyBags.enhancementBag) as RandomBag,
+        superRareBag: compactBagEntries(partyBags.superRareBag) as RandomBag,
+        commonSuperRareBag: compactBagEntries(partyBags.commonSuperRareBag) as RandomBag,
+        rareSuperRareBag: compactBagEntries(partyBags.rareSuperRareBag) as RandomBag,
+        physicalThreatBag: compactBagEntries(partyBags.physicalThreatBag) as RandomBag,
+        magicalThreatBag: compactBagEntries(partyBags.magicalThreatBag) as RandomBag,
+        sideQuestBag: compactBagEntries(partyBags.sideQuestBag) as RandomBag,
+      },
       sleepinessOfPartyBag: compactBagEntries(party.sleepinessOfPartyBag) as RandomBag,
       characters: party.characters.map((character) => ({
         ...character,
         equipment: character.equipment.map((item) => (item ? (toItemReference(item) as Item) : null)),
       })),
-    })),
+    })}),
   };
 }
 
@@ -167,8 +184,25 @@ export function hydrateGameState(state: GameState): GameState {
       ...state.global,
       inventory: hydratedInventory,
     },
-    parties: state.parties.map((party) => ({
+    parties: state.parties.map((party) => {
+      const partyBags = party.bags ?? state.bags;
+      return ({
       ...party,
+      bags: {
+        commonRewardBag: hydrateBagEntries(partyBags.commonRewardBag),
+        commonEnhancementBag: hydrateBagEntries(partyBags.commonEnhancementBag),
+        uncommonRewardBag: hydrateBagEntries(partyBags.uncommonRewardBag),
+        eliteRareRewardBag: hydrateBagEntries(partyBags.eliteRareRewardBag),
+        bossRareRewardBag: hydrateBagEntries(partyBags.bossRareRewardBag),
+        mythicRareRewardBag: hydrateBagEntries(partyBags.mythicRareRewardBag),
+        enhancementBag: hydrateBagEntries(partyBags.enhancementBag),
+        superRareBag: hydrateBagEntries(partyBags.superRareBag),
+        commonSuperRareBag: hydrateBagEntries(partyBags.commonSuperRareBag),
+        rareSuperRareBag: hydrateBagEntries(partyBags.rareSuperRareBag),
+        physicalThreatBag: hydrateBagEntries(partyBags.physicalThreatBag),
+        magicalThreatBag: hydrateBagEntries(partyBags.magicalThreatBag),
+        sideQuestBag: hydrateBagEntries(partyBags.sideQuestBag),
+      },
       sleepinessOfPartyBag: hydrateBagEntries(party.sleepinessOfPartyBag),
       characters: party.characters.map((character) => ({
         ...character,
@@ -176,6 +210,6 @@ export function hydrateGameState(state: GameState): GameState {
         subClassId: migrateObsoleteClassId(character.subClassId as string),
         equipment: character.equipment.map((item) => (item ? hydrateItem(item) : null)),
       })),
-    })),
+    })}),
   };
 }
