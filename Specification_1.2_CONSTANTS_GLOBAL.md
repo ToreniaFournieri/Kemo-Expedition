@@ -182,64 +182,64 @@
 | 32 | 祈りし | (巡礼者2アビリティ強化-未実装), `c.physical_attack+30`物攻撃+30% |
 | 33 | 鼓舞し | `c.upgrade_command`指揮強化+1, `c.magical_attack+10`魔攻撃+10% |
 | 34 | 王道なる | (君主2アビリティ強化-未実装), `c.penet+0.08`貫通+8 |
-| 37 | 一気呵成 | `c.upgrade_rage`闘志強化+1,　`e.fire+0.10`炎攻撃+10% |
-| 38 | 起き上がる | `c.upgrade_re-counter`再反撃強化+1, `c.magical_defense+10`魔防+10% | 
-| 39 | 始まりの | `c.upgrade_momentum`気勢強化+1, `c.accuracy+0.015`命中+15 |
-| 40 | 狡知を巡らす | `c.upgrade_cunning`狡猾強化+1, `c.penet+0.04`貫通+4 |
-| 43 | 先を行く | `c.upgrade_first-strike`先制攻撃強化+1, `e.thunder+0.10`雷攻撃+10% |
-| 44 | 連携し | `c.upgrade_covering-fire`援護射撃強化+1, `c.magical_attack+20`魔攻撃+20% |
-| 45 | 探し求めた | `c.upgrade_seeker`探究者強化+1, `c.penet+0.04`貫通+4 |
-| 46 | 修復されし | `c.upgrade_resurrect`再起強化+1, `c.physical_attack+20`物攻撃+20% |
-| 47 | 背を預ける | `c.upgrade_bulwark`壁強化+1, `c.penet+0.08`貫通+8 |
-| 48 | 機械化し | `c.upgrade_cyborgization`サイボーグ化強化+1, `c.physical_defense+10`物防+10% |
-| 49 | 共感し | `c.upgrade_resonance`共鳴強化+1, `c.physical_attack+10`物攻撃+10% |
-| 50 | 化けた | `c.upgrade_illusion`幻化強化+1, `c.evasion+0.010`回避+10 |
-| 51 | 冷酷なる | `c.upgrade_composure`平静強化+1, `e.ice+0.10`氷攻撃+10%|
-| 52 | 反射する | `c.upgrade_magical-counter`魔法反撃強化+1, `c.physical_attack+20`物攻撃+20% |
-| 53 | 研ぎ澄ます | `c.upgrade_focus`集中強化+1, `c.magical_attack+20`魔攻撃+20% |
-| 54 | 未来を変える | `c.upgrade_prophecy`予言強化+1, `c.physical_attack+10`物攻撃+10% |
-| 55 | 影に消える | `c.upgrade_stealth`隠れ蓑強化+1, `c.evasion+0.015`回避+15 |
-| 56 | 駆け巡る | (ミュリッド2アビリティ強化-未実装), `c.accuracy+0.015`命中+15 |
-| 57 | 火焔の | `e.fire+0.30`炎攻撃+30%, `c.accuracy+0.010`命中+10 |
-| 58 | 氷晶纏いし | `e.ice+0.30`氷攻撃+30%, `c.physical_defense+10`物防+10% |
-| 59 | 電光帯びし | `e.thunder+0.30`雷攻撃+30%, `c.magical_defense+10`魔防+10% |
-| 60 | 炎を躱す | `c.fire_defense_multiplier_x3/5`炎防x3/5, `c.evasion+0.010`回避+10 |
-| 61 | 氷結砕きし | `c.ice_defense_multiplier_x3/5`氷防x3/5, `c.magical_attack+10`魔攻撃+10% |
-| 62 | 電光いなす | `c.thunder_defense_multiplier_x3/5`雷防x3/5, `c.physical_attack+10`物攻撃+10% |
-| 63 | 灼熱なる | `e.fire+0.20`炎攻撃+20%, `c.ice_defense_multiplier_x3/5`氷防x3/5 |
-| 64 | 冷徹なる | `e.ice+0.20`氷攻撃+20%, `c.thunder_defense_multiplier_x3/5`雷防x3/5 |
-| 65 | 天衝く | `e.thunder+0.20`雷攻撃+20%, `c.fire_defense_multiplier_x3/5`炎防x3/5 |
-| 66 | 氷炎踊る | `c.ice_defense_multiplier_x3/5`氷防x3/5, `c.fire_defense_multiplier_x3/5`炎防x3/5 |
-| 67 | 護られし | `c.armor_x1.1`鎧x1.1, `c.accuracy+0.010`命中+10 |
-| 68 | 舞い踊る | `c.robe_x1.1`衣x1.1, `c.magical_defense+10`魔防+10% |
-| 69 | 盾影に射る | `c.shield_x1.1`盾x1.1, `c.physical_attack+20`物攻撃+20% |
-| 70 | 剣影に舞う | `c.sword_x1.1`剣x1.1, `c.evasion+0.010`回避+10 |
-| 71 | 一閃に至る | `c.katana_x1.1`刀x1.1, `c.physical_defense+10`物防+10% |
-| 72 | 慟哭し | `c.gauntlet_x1.1`手x1.1, `c.magical_attack+20`魔攻撃+20% |
-| 73 | 矢で導く | `c.arrow_x1.1`矢x1.1, `c.magical_attack+20`魔攻撃+20% |
-| 74 | 弩級の | `c.bolt_x1.1`ボx1.1, `c.physical_defense+10`物防+10% |
-| 75 | 仇なす | `c.archery_x1.1`弓x1.1, `c.accuracy+0.010`命中+10 |
-| 76 | 妖護りし | `c.wand_x1.1`杖x1.1, `c.magical_defense+10`魔防+10% |
-| 77 | 秘められし | `c.grimoire_x1.1`書x1.1, `c.physical_defense+10`物防+10% |
-| 78 | 許されぬ | `c.catalyst_x1.1`媒x1.1, `c.physical_attack+20`物攻撃+20% |
-| 79 | 討ち抜く | `c.physical_offense_multiplier_x1.4`物攻撃1.4倍, `c.evasion-0.005`回避-5 | 
-| 80 | 魔極めし | `c.magical_offense_multiplier_x1.4`魔攻撃1.4倍, `c.accuracy-0.005`命中-5  |
-| 81 | 牙剝く | `c.physical_offense_multiplier_x1.2`物攻撃1.2倍, `c.magical_offense_multiplier_x1.2`魔攻撃1.2倍 |
-| 82 | 深淵を覗く | `c.magical_attack+40`魔攻撃+40%, `c.physical_attack+10`物攻撃+10% |
-| 83 | 疾風の如く | `c.physical_attack+40`物攻撃+40%, `c.evasion+0.010`回避+10 |
-| 84 | 祝福されし | `c.physical_defense_multiplier_x3/5`物防x3/5, `c.magical_defense_multiplier_x3/5`魔防x3/5 |
-| 85 | 災いもたらす | `c.growth_x0.9`成長0.9倍, `c.magical_offense_multiplier_x1.5`魔攻撃1.5倍 |
-| 86 | 呪われし | `c.antagonism`⚠️敵対, `c.growth_x1.8`成長1.8倍 |
+| 35 | 一気呵成 | `c.upgrade_rage`闘志強化+1,　`e.fire+0.10`炎攻撃+10% |
+| 36 | 起き上がる | `c.upgrade_re-counter`再反撃強化+1, `c.magical_defense+10`魔防+10% | 
+| 37 | 始まりの | `c.upgrade_momentum`気勢強化+1, `c.accuracy+0.015`命中+15 |
+| 38 | 狡知を巡らす | `c.upgrade_cunning`狡猾強化+1, `c.penet+0.04`貫通+4 |
+| 39 | 先を行く | `c.upgrade_first-strike`先制攻撃強化+1, `e.thunder+0.10`雷攻撃+10% |
+| 40 | 連携し | `c.upgrade_covering-fire`援護射撃強化+1, `c.magical_attack+20`魔攻撃+20% |
+| 41 | 探し求めた | `c.upgrade_seeker`探究者強化+1, `c.penet+0.04`貫通+4 |
+| 42 | 修復されし | `c.upgrade_resurrect`再起強化+1, `c.physical_attack+20`物攻撃+20% |
+| 43 | 背を預ける | `c.upgrade_bulwark`壁強化+1, `c.penet+0.08`貫通+8 |
+| 44 | 機械化し | `c.upgrade_cyborgization`サイボーグ化強化+1, `c.physical_defense+10`物防+10% |
+| 45 | 共感し | `c.upgrade_resonance`共鳴強化+1, `c.physical_attack+10`物攻撃+10% |
+| 46 | 化けた | `c.upgrade_illusion`幻化強化+1, `c.evasion+0.010`回避+10 |
+| 47 | 冷酷なる | `c.upgrade_composure`平静強化+1, `e.ice+0.10`氷攻撃+10%|
+| 48 | 反射する | `c.upgrade_magical-counter`魔法反撃強化+1, `c.physical_attack+20`物攻撃+20% |
+| 49 | 研ぎ澄ます | `c.upgrade_focus`集中強化+1, `c.magical_attack+20`魔攻撃+20% |
+| 50 | 未来を変える | `c.upgrade_prophecy`予言強化+1, `c.physical_attack+10`物攻撃+10% |
+| 51 | 影に消える | `c.upgrade_stealth`隠れ蓑強化+1, `c.evasion+0.015`回避+15 |
+| 52 | 駆け巡る | (ミュリッド2アビリティ強化-未実装), `c.accuracy+0.015`命中+15 |
+| 53 | 火焔の | `e.fire+0.30`炎攻撃+30%, `c.accuracy+0.010`命中+10 |
+| 54 | 氷晶纏いし | `e.ice+0.30`氷攻撃+30%, `c.physical_defense+10`物防+10% |
+| 55 | 電光帯びし | `e.thunder+0.30`雷攻撃+30%, `c.magical_defense+10`魔防+10% |
+| 56 | 炎を躱す | `c.fire_defense_multiplier_x3/5`炎防x3/5, `c.evasion+0.010`回避+10 |
+| 57 | 氷結砕きし | `c.ice_defense_multiplier_x3/5`氷防x3/5, `c.magical_attack+10`魔攻撃+10% |
+| 58 | 電光いなす | `c.thunder_defense_multiplier_x3/5`雷防x3/5, `c.physical_attack+10`物攻撃+10% |
+| 59 | 灼熱なる | `e.fire+0.20`炎攻撃+20%, `c.ice_defense_multiplier_x3/5`氷防x3/5 |
+| 60 | 冷徹なる | `e.ice+0.20`氷攻撃+20%, `c.thunder_defense_multiplier_x3/5`雷防x3/5 |
+| 61 | 天衝く | `e.thunder+0.20`雷攻撃+20%, `c.fire_defense_multiplier_x3/5`炎防x3/5 |
+| 62 | 氷炎踊る | `c.ice_defense_multiplier_x3/5`氷防x3/5, `c.fire_defense_multiplier_x3/5`炎防x3/5 |
+| 63 | 護られし | `c.armor_x1.1`鎧x1.1, `c.accuracy+0.010`命中+10 |
+| 64 | 舞い踊る | `c.robe_x1.1`衣x1.1, `c.magical_defense+10`魔防+10% |
+| 65 | 盾影に射る | `c.shield_x1.1`盾x1.1, `c.physical_attack+20`物攻撃+20% |
+| 66 | 剣影に舞う | `c.sword_x1.1`剣x1.1, `c.evasion+0.010`回避+10 |
+| 67 | 一閃に至る | `c.katana_x1.1`刀x1.1, `c.physical_defense+10`物防+10% |
+| 68 | 慟哭し | `c.gauntlet_x1.1`手x1.1, `c.magical_attack+20`魔攻撃+20% |
+| 69 | 矢で導く | `c.arrow_x1.1`矢x1.1, `c.magical_attack+20`魔攻撃+20% |
+| 70 | 弩級の | `c.bolt_x1.1`ボx1.1, `c.physical_defense+10`物防+10% |
+| 71 | 仇なす | `c.archery_x1.1`弓x1.1, `c.accuracy+0.010`命中+10 |
+| 72 | 妖護りし | `c.wand_x1.1`杖x1.1, `c.magical_defense+10`魔防+10% |
+| 73 | 秘められし | `c.grimoire_x1.1`書x1.1, `c.physical_defense+10`物防+10% |
+| 74 | 許されぬ | `c.catalyst_x1.1`媒x1.1, `c.physical_attack+20`物攻撃+20% |
+| 75 | 討ち抜く | `c.physical_offense_multiplier_x1.4`物攻撃1.4倍, `c.evasion-0.005`回避-5 | 
+| 76 | 魔極めし | `c.magical_offense_multiplier_x1.4`魔攻撃1.4倍, `c.accuracy-0.005`命中-5  |
+| 77 | 牙剝く | `c.physical_offense_multiplier_x1.2`物攻撃1.2倍, `c.magical_offense_multiplier_x1.2`魔攻撃1.2倍 |
+| 78 | 深淵を覗く | `c.magical_attack+40`魔攻撃+40%, `c.physical_attack+10`物攻撃+10% |
+| 79 | 疾風の如く | `c.physical_attack+40`物攻撃+40%, `c.evasion+0.010`回避+10 |
+| 80 | 祝福されし | `c.physical_defense_multiplier_x3/5`物防x3/5, `c.magical_defense_multiplier_x3/5`魔防x3/5 |
+| 81 | 災いもたらす | `c.growth_x0.9`成長0.9倍, `c.magical_offense_multiplier_x1.5`魔攻撃1.5倍 |
+| 82 | 呪われし | `c.antagonism`⚠️敵対, `c.growth_x1.8`成長1.8倍 |
 
 - `t.superRare_bag_default` table
 
 | ID | tickets |
 |-----|------|
-| 0  | 429914 |
+| 0  | 409918 |
 | 1 | 1 |
 | 2 | 1 |
 | ... | 1 |
-| 86 | 1 |
+| 82 | 1 |
 
 **Threat weight**
 - `t.physical_threat_weight_bag_default`
