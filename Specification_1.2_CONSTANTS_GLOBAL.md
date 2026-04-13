@@ -233,13 +233,13 @@
 
 - `t.superRare_bag_default` table
 
-| ID | tickets | multiplier |
-|-----|------|-----|
-| 0  | 399920 | x1.0 |
-| 1 | 1 | x2.0 |
-| 2 | 1 | x2.0 |
-| ... | 1 | x2.0 |
-| 80 | 1 | x2.0 |
+| ID | tickets |
+|-----|------|
+| 0  | 429914 |
+| 1 | 1 |
+| 2 | 1 |
+| ... | 1 |
+| 86 | 1 |
 
 **Threat weight**
 - `t.physical_threat_weight_bag_default`
