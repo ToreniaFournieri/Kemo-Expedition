@@ -139,7 +139,7 @@
   - At the start of a rest cycle, draw 1 ticket from the bag to determine the party’s sleep state.
 
 | sleepiness | ticket |
-|-|-|-|
+|-|-|
 | 0 | 9 |
 | 1 | 2 |
 | 2 | 1 |
