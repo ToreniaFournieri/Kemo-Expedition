@@ -525,6 +525,16 @@ function normalizeExpeditionDifficultyOffset(value: unknown): number {
   return Math.max(0, Math.min(30, Math.floor(value)));
 }
 
+function normalizeExpeditionDifficultyOffsetByDungeon(value: unknown): Record<number, number> {
+  if (!value || typeof value !== 'object') return {};
+  return Object.entries(value as Record<string, unknown>).reduce<Record<number, number>>((acc, [rawDungeonId, rawOffset]) => {
+    const dungeonId = Number(rawDungeonId);
+    if (!Number.isFinite(dungeonId)) return acc;
+    acc[Math.floor(dungeonId)] = normalizeExpeditionDifficultyOffset(rawOffset);
+    return acc;
+  }, {});
+}
+
 function matchesDiaryThreshold(item: Item, threshold: DiarySettings['superRareThreshold']): boolean {
   if (threshold === 'none') return false;
   if (threshold === 'all') return true;
@@ -841,6 +851,7 @@ function loadSavedState(): GameState | null {
           }
           party.expeditionDepthLimit = getExpeditionDepthLimitWithDefault(party.expeditionDepthLimit);
           party.expeditionDifficultyOffset = normalizeExpeditionDifficultyOffset(party.expeditionDifficultyOffset);
+          party.expeditionDifficultyOffsetByDungeon = normalizeExpeditionDifficultyOffsetByDungeon(party.expeditionDifficultyOffsetByDungeon);
           if (typeof party.pendingProfit !== 'number') party.pendingProfit = 0;
           if (typeof party.expeditionRewardsPending !== 'boolean') party.expeditionRewardsPending = false;
           if (!party.pendingUnlockState || typeof party.pendingUnlockState !== 'object') {
@@ -997,6 +1008,7 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
     pendingUnlockState: null,
     deityGold: 0,
     expeditionDifficultyOffset: normalizeExpeditionDifficultyOffset(party.expeditionDifficultyOffset),
+    expeditionDifficultyOffsetByDungeon: normalizeExpeditionDifficultyOffsetByDungeon(party.expeditionDifficultyOffsetByDungeon),
     expeditionStats: getExpeditionStatsWithDefaults(party.expeditionStats),
     sleepinessOfPartyBag: normalizeSleepinessPartyBag(party.sleepinessOfPartyBag ?? createSleepinessPartyBag()),
     currentSleepiness: normalizeSleepinessState(party.currentSleepiness),
@@ -1074,6 +1086,7 @@ function createInitialParty() {
     selectedDungeonId: 1,
     expeditionDepthLimit: 'all',
     expeditionDifficultyOffset: 0,
+    expeditionDifficultyOffsetByDungeon: {},
     currentHp: 0,
     pendingProfit: 0,
     expeditionRewardsPending: false,
@@ -1129,6 +1142,7 @@ function createSecondParty() {
     selectedDungeonId: 1,
     expeditionDepthLimit: 'all',
     expeditionDifficultyOffset: 0,
+    expeditionDifficultyOffsetByDungeon: {},
     currentHp: 0,
     pendingProfit: 0,
     expeditionRewardsPending: false,
@@ -1184,6 +1198,7 @@ function createThirdParty() {
     selectedDungeonId: 1,
     expeditionDepthLimit: 'all',
     expeditionDifficultyOffset: 0,
+    expeditionDifficultyOffsetByDungeon: {},
     currentHp: 0,
     pendingProfit: 0,
     expeditionRewardsPending: false,
@@ -1239,6 +1254,7 @@ function createFourthParty() {
     selectedDungeonId: 1,
     expeditionDepthLimit: 'all',
     expeditionDifficultyOffset: 0,
+    expeditionDifficultyOffsetByDungeon: {},
     currentHp: 0,
     pendingProfit: 0,
     expeditionRewardsPending: false,
@@ -1294,6 +1310,7 @@ function createFifthParty() {
     selectedDungeonId: 1,
     expeditionDepthLimit: 'all',
     expeditionDifficultyOffset: 0,
+    expeditionDifficultyOffsetByDungeon: {},
     currentHp: 0,
     pendingProfit: 0,
     expeditionRewardsPending: false,
@@ -1349,6 +1366,7 @@ function createSixthParty() {
     selectedDungeonId: 1,
     expeditionDepthLimit: 'all',
     expeditionDifficultyOffset: 0,
+    expeditionDifficultyOffsetByDungeon: {},
     currentHp: 0,
     pendingProfit: 0,
     expeditionRewardsPending: false,
@@ -2331,9 +2349,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'SELECT_DUNGEON': {
       const updatedParties = [...state.parties];
+      const targetParty = updatedParties[action.partyIndex];
       updatedParties[action.partyIndex] = {
-        ...updatedParties[action.partyIndex],
-        selectedDungeonId: action.dungeonId
+        ...targetParty,
+        selectedDungeonId: action.dungeonId,
+        expeditionDifficultyOffset: normalizeExpeditionDifficultyOffset(
+          targetParty.expeditionDifficultyOffsetByDungeon?.[action.dungeonId] ?? 0,
+        ),
       };
       return { ...state, parties: updatedParties };
     }
@@ -2349,9 +2371,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'SET_EXPEDITION_DIFFICULTY_OFFSET': {
       const updatedParties = [...state.parties];
+      const targetParty = updatedParties[action.partyIndex];
+      const normalizedOffset = normalizeExpeditionDifficultyOffset(action.difficultyOffset);
       updatedParties[action.partyIndex] = {
-        ...updatedParties[action.partyIndex],
-        expeditionDifficultyOffset: normalizeExpeditionDifficultyOffset(action.difficultyOffset),
+        ...targetParty,
+        expeditionDifficultyOffset: normalizedOffset,
+        expeditionDifficultyOffsetByDungeon: {
+          ...(targetParty.expeditionDifficultyOffsetByDungeon ?? {}),
+          [targetParty.selectedDungeonId]: normalizedOffset,
+        },
       };
       return { ...state, parties: updatedParties };
     }
@@ -2414,7 +2442,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let currentHp = Math.max(0, Math.min(persistedCurrentHp, partyStats.hp));
       // SpecRef: 8.3 | UI_EXPEDITION | Difficulty Offset (難易度)
       const effectiveDifficultyOffset = hasDefeatedDungeonBoss(currentParty, dungeon.id)
-        ? normalizeExpeditionDifficultyOffset(currentParty.expeditionDifficultyOffset)
+        ? normalizeExpeditionDifficultyOffset(currentParty.expeditionDifficultyOffsetByDungeon?.[dungeon.id] ?? currentParty.expeditionDifficultyOffset)
         : 0;
 
       const entries: ExpeditionLogEntry[] = [];
