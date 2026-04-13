@@ -22,7 +22,7 @@
   - characters slots
 
 **Bag Randomization:** 
-- There are weighted bags (g.*_bag) that control probabilistic randomness: `t.common_reward_bag`, `t.common_enhancement_bag`, `t.uncommon_reward_bag`, `t.elite_rare_reward_bag`, `t.boss_rare_reward_bag`, `t.mythic_rare_reward_bag`, `t.enhancement_bag`, `t.superRare_bag`, `t.physical_threat_weight_bag`, `t.magical_threat_weight_bag`, `t.side_quest_bag`, and
+- There are weighted bags (g.*_bag) that control probabilistic randomness: `t.common_reward_bag`, `t.common_enhancement_bag`, `t.uncommon_reward_bag`, `t.elite_rare_reward_bag`, `t.boss_rare_reward_bag`, `t.mythic_rare_reward_bag`, `t.enhancement_bag`, `t.common_superRare_bag`,`t.rare_superRare_bag`, `t.physical_threat_weight_bag`, `t.magical_threat_weight_bag`, `t.side_quest_bag`, and
 `t.sleepiness_of_party_bag` for each party. 
   - All bags persist in save data and are not reset per battle or per expedition.
   - Bags are reset only when: explicitly reset, or automatically reset when the bag becomes empty (total_tickets == 0).
@@ -33,7 +33,7 @@
   - Bag iteration order is stable (e.g., ascending ID).
     - Examples:
       - `t.common_reward_bag` = { { ID: 0, tickets: 90 }, { ID: 1, tickets: 10 },  }
-      - `t.superRare_bag` = { { ID: 0, tickets: 399920 }, { ID: 1, tickets: 1 }, { ID: 2, tickets: 1 }, ... , { ID: 80, tickets: 1 } }
+      - `t.superRare_bag` = { { ID: 0, tickets: 409918 }, { ID: 1, tickets: 1 }, { ID: 2, tickets: 1 }, ... , { ID: 82, tickets: 1 } }
 
 - `f.pop_from_weighted_bag`(bag_key: g.*)
   - Get bag by bag_key.
