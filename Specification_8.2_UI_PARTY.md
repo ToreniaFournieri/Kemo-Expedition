@@ -160,7 +160,7 @@ icon.Lupinian, icon.Vulpinian, icon.Felidian   icon.Caninian, icon.Ursan, icon.P
 - **Remove (Double-Tap):** - Double-tapping an item in a Character Slot removes it and returns it to the inventory.
 - **Remove (Single-tap):** - Single-tap an **equipped item in inventory** and returns it to be unequipped item in inventory.
 - Status updates in real time
-- **Auto equipment button(自動装備):** When the player presses the “自動装備” button, the auto-equipment logic is triggered immediately.
+- **Auto equipment button(自動装備):** When the player presses the “自動装備” button, the auto-equipment logic is triggered immediately. This button is visible only when `m.auto_equipment` = 2 (FULL mode).
 - **three-state toggle(手動/補助/一任):** 　`m.auto_equipment` is controlled by a three-state toggle. This setting is configured per party member. Default: `2` FULL
   - If the player performs any manual equipment change while `m.auto_equipment = 2` (FULL), then automatically set `m.auto_equipment = 1` (SEMI).
   - The toggle cycles in the following order: `OFF (0)` → `SEMI (1)` → `FULL (2)` → `OFF (0)` ...
