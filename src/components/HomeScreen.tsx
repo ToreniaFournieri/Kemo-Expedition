@@ -4348,6 +4348,7 @@ export function HomeScreen({
           onAddStatNotifications={actions.addStatNotifications}
           onSelectParty={actions.selectParty}
           onUpdatePartyDeity={actions.updatePartyDeity}
+          onRunAutoEquipmentForCharacter={(characterId) => runAutoEquipment([safeSelectedPartyIndex], [characterId])}
           inventory={state.global.inventory}
           jewels={state.global.jewels}
           deityDonations={state.global.deityDonations}
@@ -4602,6 +4603,7 @@ function PartyTab({
   onAddStatNotifications,
   onSelectParty,
   onUpdatePartyDeity,
+  onRunAutoEquipmentForCharacter,
   inventory,
   jewels,
   deityDonations,
@@ -4625,6 +4627,7 @@ function PartyTab({
   onAddStatNotifications: (changes: Array<{ message: string; isPositive: boolean }>) => void;
   onSelectParty: (partyIndex: number) => void;
   onUpdatePartyDeity: (partyIndex: number, deityName: string) => void;
+  onRunAutoEquipmentForCharacter: (characterId: number) => void;
   inventory: InventoryRecord;
   jewels: Record<string, number>;
   deityDonations: Record<string, number>;
@@ -5084,6 +5087,12 @@ function PartyTab({
   const handleAutoEquipmentModeCycle = () => {
     const nextMode = ((autoEquipmentMode + 1) % 3) as AutoEquipmentMode;
     onUpdateCharacter(char.id, { autoEquipmentMode: nextMode });
+  };
+
+  const handleAutoEquipmentButtonClick = () => {
+    // SpecRef: 8.2.4 | Equipment management | Auto equipment button(自動装備)
+    if (autoEquipmentMode !== 2) return;
+    onRunAutoEquipmentForCharacter(char.id);
   };
 
   const handleAutoEquipmentHelpToggle = (event: MouseEvent<HTMLButtonElement>) => {
@@ -6583,6 +6592,15 @@ function PartyTab({
             <span className="text-xs text-gray-500">
               {formatNumber(equippedItemCount)} / {formatNumber(stats.maxEquipSlots)} スロット
             </span>
+            {autoEquipmentMode === 2 && (
+              <button
+                type="button"
+                onClick={handleAutoEquipmentButtonClick}
+                className="text-xs font-semibold text-sub hover:opacity-80"
+              >
+                自動装備
+              </button>
+            )}
             <div className="flex items-center gap-1">
               <button
                 type="button"
