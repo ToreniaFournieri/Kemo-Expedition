@@ -46,6 +46,8 @@ import {
   createMythicRareRewardBag,
   createEnhancementBag,
   createSuperRareBag,
+  createCommonSuperRareBag,
+  createRareSuperRareBag,
   createPhysicalThreatBag,
   createMagicalThreatBag,
   createSideQuestBag,
@@ -697,6 +699,8 @@ function normalizeImportedBags(rawBags: unknown): GameState['bags'] {
     mythicRareRewardBag: migrateLegacyBag(bags.mythicRareRewardBag, createMythicRareRewardBag, 'mythicRareRewardBag'),
     enhancementBag: migrateLegacyBag(bags.enhancementBag, createEnhancementBag, 'enhancementBag'),
     superRareBag: migrateLegacyBag(bags.superRareBag, createSuperRareBag, 'superRareBag'),
+    commonSuperRareBag: migrateLegacyBag(bags.commonSuperRareBag ?? bags.superRareBag, createCommonSuperRareBag, 'commonSuperRareBag'),
+    rareSuperRareBag: migrateLegacyBag(bags.rareSuperRareBag ?? bags.superRareBag, createRareSuperRareBag, 'rareSuperRareBag'),
     physicalThreatBag: migrateLegacyBag(bags.physicalThreatBag, createPhysicalThreatBag, 'physicalThreatBag'),
     magicalThreatBag: migrateLegacyBag(bags.magicalThreatBag, createMagicalThreatBag, 'magicalThreatBag'),
     sideQuestBag: migrateLegacyBag(bags.sideQuestBag, createSideQuestBag, 'sideQuestBag'),
@@ -742,6 +746,8 @@ function loadSavedState(): GameState | null {
           mythicRareRewardBag: migrateLegacyBag(parsed.bags.mythicRareRewardBag, createMythicRareRewardBag, 'mythicRareRewardBag'),
           enhancementBag: migrateLegacyBag(parsed.bags.enhancementBag, createEnhancementBag, 'enhancementBag'),
           superRareBag: migrateLegacyBag(parsed.bags.superRareBag, createSuperRareBag, 'superRareBag'),
+          commonSuperRareBag: migrateLegacyBag(parsed.bags.commonSuperRareBag ?? parsed.bags.superRareBag, createCommonSuperRareBag, 'commonSuperRareBag'),
+          rareSuperRareBag: migrateLegacyBag(parsed.bags.rareSuperRareBag ?? parsed.bags.superRareBag, createRareSuperRareBag, 'rareSuperRareBag'),
           physicalThreatBag: migrateLegacyBag(parsed.bags.physicalThreatBag, createPhysicalThreatBag, 'physicalThreatBag'),
           magicalThreatBag: migrateLegacyBag(parsed.bags.magicalThreatBag, createMagicalThreatBag, 'magicalThreatBag'),
           sideQuestBag: migrateLegacyBag(parsed.bags.sideQuestBag, createSideQuestBag, 'sideQuestBag'),
@@ -1421,9 +1427,11 @@ function createInitialState(): GameState {
       uncommonRewardBag: createUncommonRewardBag(),
       eliteRareRewardBag: createEliteRareRewardBag(),
       bossRareRewardBag: createBossRareRewardBag(),
-          mythicRareRewardBag: createMythicRareRewardBag(),
+      mythicRareRewardBag: createMythicRareRewardBag(),
       enhancementBag: createEnhancementBag(),
       superRareBag: createSuperRareBag(),
+      commonSuperRareBag: createCommonSuperRareBag(),
+      rareSuperRareBag: createRareSuperRareBag(),
       physicalThreatBag: createPhysicalThreatBag(),
       magicalThreatBag: createMagicalThreatBag(),
       sideQuestBag: createSideQuestBag(),
@@ -1745,6 +1753,10 @@ function getRarityRank(rarity: 'common' | 'uncommon' | 'eliteRare' | 'bossRare' 
   return 1;
 }
 
+function getSuperRareBagTypeForRarity(rarity: 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare'): 'commonSuperRareBag' | 'rareSuperRareBag' {
+  return rarity === 'common' ? 'commonSuperRareBag' : 'rareSuperRareBag';
+}
+
 function resolveEnemyRewards(
   enemy: EnemyDef,
   currentBags: GameState['bags'],
@@ -1792,6 +1804,7 @@ function resolveEnemyRewards(
   for (const baseItem of baseDropItems) {
     const baseRarity = getItemRarityById(baseItem.id);
     const rewardBagType = getRewardBagTypeForRarity(baseRarity);
+    const superRareBagType = getSuperRareBagTypeForRarity(baseRarity);
     const enhancementBagType = rewardBagType === 'commonRewardBag' ? 'commonEnhancementBag' : 'enhancementBag';
 
     bags = refillBagIfEmpty(bags, rewardBagType);
@@ -1825,9 +1838,9 @@ function resolveEnemyRewards(
 
     let srVal = 0;
     if (normalizedEnhancement >= 1 && gameMode !== 'm.laika') {
-      bags = refillBagIfEmpty(bags, 'superRareBag');
-      const { ticket: drawnSrVal, newBag: newSRBag } = drawFromBag(bags.superRareBag);
-      bags = { ...bags, superRareBag: newSRBag };
+      bags = refillBagIfEmpty(bags, superRareBagType);
+      const { ticket: drawnSrVal, newBag: newSRBag } = drawFromBag(bags[superRareBagType]);
+      bags = { ...bags, [superRareBagType]: newSRBag };
       srVal = drawnSrVal;
     }
 
@@ -3978,6 +3991,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           mythicRareRewardBag: createMythicRareRewardBag(),
           enhancementBag: createEnhancementBag(),
           superRareBag: createSuperRareBag(),
+          commonSuperRareBag: createCommonSuperRareBag(),
+          rareSuperRareBag: createRareSuperRareBag(),
           physicalThreatBag: createPhysicalThreatBag(),
           magicalThreatBag: createMagicalThreatBag(),
           sideQuestBag: createSideQuestBag(),
@@ -4080,6 +4095,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         bags: {
           ...state.bags,
           superRareBag: createSuperRareBag(),
+          commonSuperRareBag: createCommonSuperRareBag(),
+          rareSuperRareBag: createRareSuperRareBag(),
         },
       };
     }
