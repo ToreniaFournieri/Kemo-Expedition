@@ -232,7 +232,7 @@
 | 7 | 2 | 1-2 | 43 | Normal | `Titan` | class.sage.sage | `i.grimoire`U, `i.catalyst`U, `i.grimoire`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 月詠みの巨賢 |
 | 7 | 2 | 1-2 | 43 | Normal | `Titan` | class.samurai.samurai | `i.katana`U, `i.shield`U, `i.katana`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 星詠みの巨侍 |
 | 7 | 2 | 3 | 46 | Elite | `Leporian` | class.duelist.pilgrim | `i.armor`BD, `i.gauntlet`BD, `i.sword`C, `i.katana`C, `i.gauntlet`C | 月宮の白兎巡礼士 |
-| 7 | 2 | 3 | 46 | Elite | `Leporian` | class.wizard.striker | `i.archery`BD, `i.grimoire`BD, `i.arrow`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 月宮の白兎術師 |
+| 7 | 2 | 3 | 46 | Elite | `Leporian` | class.wizard.striker | `i.archery`BD, `i.grimoire`BD, `i.arrow`BD, `i.wand`C, `i.grimoire`C | 月宮の白兎術師 |
 | 7 | 2 | 4 | 46 | Elite | `Titan` | class.wizard.sage | `i.wand`EA, `i.robe`EA, `i.grimoire`EA, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 天文の巨導賢 |
 | 7 | 3 | 1-2 | 44 | Normal | `Aerial` | class.alchemist.alchemist | `i.catalyst`U, `i.wand`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 光翼の錬空将 |
 | 7 | 3 | 1-2 | 44 | Normal | `Aerial` | class.guardian.pilgrim | `i.armor`U, `i.gauntlet`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | 光翼の術空兵 |
