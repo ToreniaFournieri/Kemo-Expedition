@@ -54,9 +54,10 @@
 
 **Clairvoyance (未来視)**
 
-- Party pane (PT1, PT2...): "PT1     ▼"
-  - Default: collapsed. persist its state. 
-  - Each party pane has:
+- Display format: "PT1 ▼", "PT2 ▼", etc.
+  - Default state: Collapsed
+  - State persistence: The expand/collapse state is preserved per party
+  - Each party pane contains the following sections:
 
 - **報酬**
   - コモン報酬: common reward_bag remaining / total counts 
