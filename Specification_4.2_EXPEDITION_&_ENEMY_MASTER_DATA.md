@@ -4,6 +4,22 @@
 
 ### 4.2.2 Enemy
 
+- Common item drop
+
+
+| `x.type` | has subClass | drops  |
+|-|-|-|
+| Normal | No | 2 Uncommon items (mainClass), 3 Common items |
+| Elite | No | 2 Elite rare items (mainClass), 3 Common items |
+| Boss | No | 2 Boss rare items (mainClass), 3 Common items |
+| Normal | Yes | 2 Uncommon items (mainClass), 1 Uncommon item (subClass: first `x.drop`), 3 Common items |
+| Elite | Yes | 2 Elite rare items (mainClass), 1 Elite rare item (subClass: first `x.drop`), 3 Common items |
+| Boss | Yes | 2 Boss rare items (mainClass), 1 Boss rare item (subClass: first `x.drop`), 3 Common items |
+
+
+
+- Rare items drop
+
 | `x.exp_id` | `x.floor` | `x.room` | `x.level` | `x.type` | `x.enemy_type` | `x.class` | `x.drop` | `x.name` (Japanese) |
 |---|---:|---|---:|---|---|---|---|---|
 | 1 | 1 | 1-2 | 1 | Normal | `Beast` | class.ranger | `i.arrow`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 平原のけもの |
