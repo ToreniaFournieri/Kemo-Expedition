@@ -3024,7 +3024,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         );
         const conditionDelta = rawConditionDelta;
         const shouldConsumeConditionForAutoGodsBattle = isGodsBattleExpedition(party.lastExpeditionLog)
-          && conditionBase >= 100
+          && conditionBase >= 251
           && !party.sideQuest;
         // SpecRef: 7.1.2 | AUTO progress logic | condition
         nextCondition = normalizePartyCondition(
@@ -3840,7 +3840,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           const shouldTriggerAfkGodsBattle = partyForAfkChunk
             ? (
               // SpecRef: 7.1.2 | AUTO progress logic | AFK (during state.reactivate)
-              normalizePartyCondition(partyForAfkChunk.condition) >= 100
+              normalizePartyCondition(partyForAfkChunk.condition) >= 251
               && !partyForAfkChunk.sideQuest
               && isGodsBattleAvailable(partyForAfkChunk, partyForAfkChunk.selectedDungeonId)
             )
