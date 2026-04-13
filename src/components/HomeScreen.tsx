@@ -7063,7 +7063,9 @@ function ExpeditionTab({
         const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
         // SpecRef: 8.3 | UI_EXPEDITION | Difficulty Offset (難易度)
         const isDifficultyOffsetUnlocked = hasDefeatedDungeonBoss(party, party.selectedDungeonId);
-        const selectedDifficultyOffset = isDifficultyOffsetUnlocked ? party.expeditionDifficultyOffset : 0;
+        const selectedDifficultyOffset = isDifficultyOffsetUnlocked
+          ? (party.expeditionDifficultyOffsetByDungeon?.[party.selectedDungeonId] ?? party.expeditionDifficultyOffset)
+          : 0;
         const selectedDungeonGate = selectedDungeon ? getDungeonEntryGateState(party, selectedDungeon) : null;
         const cycle = partyCycles[partyIndex] ?? { state: 'idle', stateStartedAt: Date.now(), durationMs: 1000 };
         const cycleElapsedMs = Math.max(0, Date.now() - cycle.stateStartedAt);

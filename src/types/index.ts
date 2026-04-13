@@ -311,6 +311,7 @@ export interface Party {
   selectedDungeonId: number;
   expeditionDepthLimit: ExpeditionDepthLimit;
   expeditionDifficultyOffset: number;
+  expeditionDifficultyOffsetByDungeon: Record<number, number>;
   currentHp: number;
   pendingProfit: number;
   expeditionRewardsPending: boolean;
