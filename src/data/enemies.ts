@@ -383,21 +383,33 @@ function createEnemyFromTemplate(
 // ============================================================
 // Generate all enemies
 // ============================================================
-function parseMasterDropToken(token: string): { category: ItemCategory; rarity: 'uncommon' | 'eliteRare' | 'bossRare' } | null {
+function parseMasterDropToken(token: string): { category: ItemCategory; rarity: 'uncommon' | 'eliteRare' | 'bossRare'; variantIndex?: number } | null {
   const match = token.match(/i\.([a-z_]+)`?([A-Z]+)$/);
   if (!match) return null;
 
   const category = match[1] as ItemCategory;
   const rarityCode = match[2];
-  const rarity = rarityCode === 'U'
-    ? 'uncommon'
-    : rarityCode === 'BD'
-      ? 'bossRare'
-      : rarityCode.startsWith('E')
-        ? 'eliteRare'
-        : null;
-  if (!rarity) return null;
-  return { category, rarity };
+  if (rarityCode === 'U') {
+    return { category, rarity: 'uncommon', variantIndex: 0 };
+  }
+
+  if (rarityCode.startsWith('E')) {
+    const sourceCode = rarityCode.slice(1);
+    const variantIndex = sourceCode.length > 0
+      ? Math.max(0, sourceCode.charCodeAt(0) - 'A'.charCodeAt(0))
+      : 0;
+    return { category, rarity: 'eliteRare', variantIndex };
+  }
+
+  if (rarityCode.startsWith('B')) {
+    const sourceCode = rarityCode.slice(1);
+    const variantIndex = sourceCode.length > 0
+      ? Math.max(0, sourceCode.charCodeAt(0) - 'A'.charCodeAt(0))
+      : 0;
+    return { category, rarity: 'bossRare', variantIndex };
+  }
+
+  return null;
 }
 
 function getDropItemIdFromMaster(tier: number, drops: string[]): number {
@@ -406,7 +418,8 @@ function getDropItemIdFromMaster(tier: number, drops: string[]): number {
     if (!parsed) continue;
     const pool = getItemsByTierAndRarity(tier, parsed.rarity).filter((item) => item.category === parsed.category);
     if (pool.length > 0) {
-      return pool[0].id;
+      const variantIndex = Math.max(0, parsed.variantIndex ?? 0);
+      return (pool[variantIndex] ?? pool[0]).id;
     }
   }
 
