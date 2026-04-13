@@ -5795,6 +5795,7 @@ function PartyTab({
                 const selectedSubBonusEntries = selectedSubBonusList
                   .map((bonus, index) => buildInlineBonusEntry('sub-class-bonus', selectedSubClassId, bonus, index))
                   .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null)
+                  .filter((entry) => entry.label.trim().length > 0)
                   .filter((entry, index, entries) => entries.findIndex((candidate) => candidate.label === entry.label) === index);
 
                 return (
@@ -5802,26 +5803,28 @@ function PartyTab({
                     <div className="rounded border border-gray-200 bg-white p-2 text-xs">
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
                         <span className="font-bold">サブクラス</span>: {selectedSubClass?.name ?? '-'} |{' '}
-                        {selectedSubBonusEntries.map((entry, index) => (
-                          <Fragment key={entry.key}>
-                            {index > 0 && ', '}
-                            {entry.description ? (
-                              <button
-                                type="button"
-                                onPointerDown={(event) => event.stopPropagation()}
-                                onClick={(event) => {
-                                  if (!entry.description) return;
-                                  handleInlineDetailHelpToggle(entry.key, entry.label, entry.description, event);
-                                }}
-                                className="text-left hover:underline"
-                              >
-                                {entry.label}
-                              </button>
-                            ) : (
-                              <span>{entry.label}</span>
-                            )}
-                          </Fragment>
-                        ))}
+                        {selectedSubBonusEntries.length === 0
+                          ? '-'
+                          : selectedSubBonusEntries.map((entry, index) => (
+                            <Fragment key={entry.key}>
+                              {index > 0 && ', '}
+                              {entry.description ? (
+                                <button
+                                  type="button"
+                                  onPointerDown={(event) => event.stopPropagation()}
+                                  onClick={(event) => {
+                                    if (!entry.description) return;
+                                    handleInlineDetailHelpToggle(entry.key, entry.label, entry.description, event);
+                                  }}
+                                  className="text-left hover:underline"
+                                >
+                                  {entry.label}
+                                </button>
+                              ) : (
+                                <span>{entry.label}</span>
+                              )}
+                            </Fragment>
+                          ))}
                       </div>
                       {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Sub Class selection */}
                       <div className={classCategorySelectorGridClass}>
