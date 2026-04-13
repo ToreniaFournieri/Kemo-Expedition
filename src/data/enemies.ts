@@ -383,12 +383,18 @@ function createEnemyFromTemplate(
 // ============================================================
 // Generate all enemies
 // ============================================================
-function parseMasterDropToken(token: string): { category: ItemCategory; rarity: 'uncommon' | 'eliteRare' | 'bossRare'; variantIndex?: number } | null {
+type MasterDropRarity = 'common' | 'uncommon' | 'eliteRare' | 'bossRare';
+
+function parseMasterDropToken(token: string): { category: ItemCategory; rarity: MasterDropRarity; variantIndex?: number } | null {
   const match = token.match(/i\.([a-z_]+)`?([A-Z]+)$/);
   if (!match) return null;
 
   const category = match[1] as ItemCategory;
   const rarityCode = match[2];
+  if (rarityCode === 'C') {
+    return { category, rarity: 'common', variantIndex: 0 };
+  }
+
   if (rarityCode === 'U') {
     return { category, rarity: 'uncommon', variantIndex: 0 };
   }
@@ -567,7 +573,7 @@ export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
   if (enemy.masterDropTokens && enemy.masterDropTokens.length > 0) {
     const exactDrops = enemy.masterDropTokens
       .map((token) => parseMasterDropToken(token))
-      .filter((parsed): parsed is { category: ItemCategory; rarity: 'uncommon' | 'eliteRare' | 'bossRare'; variantIndex?: number } => parsed !== null)
+      .filter((parsed): parsed is { category: ItemCategory; rarity: MasterDropRarity; variantIndex?: number } => parsed !== null)
       .map((parsed) => {
         const pool = getItemsByTierAndRarity(enemy.spawnTier || getTierFromEnemy(enemy.id), parsed.rarity)
           .filter((item) => item.category === parsed.category);
