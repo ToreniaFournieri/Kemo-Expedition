@@ -427,6 +427,32 @@ function getDropItemIdFromMaster(tier: number, drops: string[]): number {
   return fallback?.id ?? tier * 1000 + 201;
 }
 
+const COMMON_DROP_SET_BY_CLASS: Record<EnemyClassId, [ItemCategory, ItemCategory, ItemCategory]> = {
+  duelist: ['sword', 'katana', 'gauntlet'],
+  samurai: ['sword', 'katana', 'gauntlet'],
+  'sword-saint': ['sword', 'katana', 'gauntlet'],
+  ranger: ['arrow', 'bolt', 'archery'],
+  striker: ['arrow', 'bolt', 'archery'],
+  ninja: ['arrow', 'bolt', 'archery'],
+  wizard: ['wand', 'grimoire', 'catalyst'],
+  sage: ['wand', 'grimoire', 'catalyst'],
+  alchemist: ['wand', 'grimoire', 'catalyst'],
+  guardian: ['armor', 'robe', 'shield'],
+  pilgrim: ['armor', 'robe', 'shield'],
+  lord: ['armor', 'robe', 'shield'],
+  // legacy ids for compatibility
+  fighter: ['sword', 'katana', 'gauntlet'],
+  rogue: ['arrow', 'bolt', 'archery'],
+};
+
+function assignCommonDropTokensByClass(dropTokens: string[], enemyClass: EnemyClassId): string[] {
+  // SpecRef: 4.2.2 | Enemy | Common item drop
+  const commonDropSet = COMMON_DROP_SET_BY_CLASS[enemyClass] ?? COMMON_DROP_SET_BY_CLASS.duelist;
+  const nonCommonDrops = dropTokens.filter((token) => !/C$/.test(token.trim()));
+  const commonDrops = commonDropSet.map((category) => `i.${category}C`);
+  return [...nonCommonDrops, ...commonDrops];
+}
+
 function generateEnemies(): EnemyDef[] {
   const enemies: EnemyDef[] = [];
 
@@ -452,7 +478,8 @@ function generateEnemies(): EnemyDef[] {
         [],
         row[2],
       );
-      enemy.masterDropTokens = row[6].split(',').map((token) => token.trim()).filter((token) => token.length > 0);
+      const masterDropTokens = row[6].split(',').map((token) => token.trim()).filter((token) => token.length > 0);
+      enemy.masterDropTokens = assignCommonDropTokensByClass(masterDropTokens, row[5]);
       enemy.dropItemId = getDropItemIdFromMaster(tier, row[6].split(','));
       enemies.push(enemy);
     });
@@ -472,7 +499,8 @@ function generateEnemies(): EnemyDef[] {
         [],
         row[2],
       );
-      enemy.masterDropTokens = row[6].split(',').map((token) => token.trim()).filter((token) => token.length > 0);
+      const masterDropTokens = row[6].split(',').map((token) => token.trim()).filter((token) => token.length > 0);
+      enemy.masterDropTokens = assignCommonDropTokensByClass(masterDropTokens, row[5]);
       enemy.dropItemId = getDropItemIdFromMaster(tier, row[6].split(','));
       enemies.push(enemy);
     });
@@ -493,7 +521,8 @@ function generateEnemies(): EnemyDef[] {
         [],
         boss[2],
       );
-      enemy.masterDropTokens = boss[6].split(',').map((token) => token.trim()).filter((token) => token.length > 0);
+      const bossDropTokens = boss[6].split(',').map((token) => token.trim()).filter((token) => token.length > 0);
+      enemy.masterDropTokens = assignCommonDropTokensByClass(bossDropTokens, boss[5]);
       enemy.dropItemId = getDropItemIdFromMaster(tier, boss[6].split(','));
       enemies.push(enemy);
     }
