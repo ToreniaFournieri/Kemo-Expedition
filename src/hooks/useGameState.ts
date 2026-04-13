@@ -350,6 +350,7 @@ const DEFAULT_DIARY_SETTINGS: DiarySettings = {
   bossThreshold: 'all',
   mythicThreshold: 'all',
   rareThreshold: 5,
+  sideQuestThreshold: 'all',
   notifyDefeat: true,
 };
 
@@ -542,6 +543,14 @@ function matchesDiaryThreshold(item: Item, threshold: DiarySettings['superRareTh
   if (threshold === 'none') return false;
   if (threshold === 'all') return true;
   return item.enhancement >= threshold;
+}
+
+// SpecRef: 8.5 | UI_DIARY | Setting.
+function matchesSideQuestDiaryThreshold(rewardRank: number, threshold: DiarySettings['sideQuestThreshold']): boolean {
+  if (threshold === 'none') return false;
+  if (threshold === 'all') return true;
+  if (threshold === 8) return rewardRank === 8;
+  return rewardRank >= threshold;
 }
 
 function getItemRarityCode(item: Item): 'common' | 'uncommon' | 'eliteRare' | 'bossRare' | 'mythicRare' {
@@ -3240,39 +3249,45 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const dungeonName = DUNGEONS.find((dungeon) => dungeon.id === currentParty.selectedDungeonId)?.name ?? '';
       const sideQuestLabel = currentParty.sideQuest.shortText.replace(/\(([^)]*)\)/, '$1');
       const sideQuestDetail = `${dungeonName}: ${getJewelNameByRank(key, rewardRank)} を手に入れた`;
-      const sideQuestDiaryLog: DiaryLog = {
-        id: `${diaryCreatedAt}-${Math.random().toString(36).slice(2, 8)}`,
-        expeditionLog: {
-          dungeonId: currentParty.selectedDungeonId,
-          dungeonName,
-          difficultyOffset: 0,
-          totalExperience: 0,
-          totalRooms: 0,
-          completedRooms: 0,
-          finalOutcome: 'Escape',
-          entries: [],
-          rewards: [],
-          autoSellProfit: 0,
-          autoSellCount: 0,
-          autoSellItems: [],
-          remainingPartyHP: currentParty.currentHp,
-          maxPartyHP: currentParty.currentHp,
-        },
-        triggers: ['sideQuest'],
-        sideQuestLabel,
-        sideQuestDetail,
-        createdAt: diaryCreatedAt,
-        isRead: false,
-      };
+      const shouldAddSideQuestDiary = matchesSideQuestDiaryThreshold(
+        rewardRank,
+        getDiarySettingsWithDefaults(currentParty.diarySettings).sideQuestThreshold,
+      );
+      const sideQuestDiaryLog: DiaryLog | null = shouldAddSideQuestDiary
+        ? {
+            id: `${diaryCreatedAt}-${Math.random().toString(36).slice(2, 8)}`,
+            expeditionLog: {
+              dungeonId: currentParty.selectedDungeonId,
+              dungeonName,
+              difficultyOffset: 0,
+              totalExperience: 0,
+              totalRooms: 0,
+              completedRooms: 0,
+              finalOutcome: 'Escape',
+              entries: [],
+              rewards: [],
+              autoSellProfit: 0,
+              autoSellCount: 0,
+              autoSellItems: [],
+              remainingPartyHP: currentParty.currentHp,
+              maxPartyHP: currentParty.currentHp,
+            },
+            triggers: ['sideQuest'],
+            sideQuestLabel,
+            sideQuestDetail,
+            createdAt: diaryCreatedAt,
+            isRead: false,
+          }
+        : null;
       const nextDiaryLogs: DiaryLog[] = [
-        sideQuestDiaryLog,
+        ...(sideQuestDiaryLog ? [sideQuestDiaryLog] : []),
         ...(currentParty.diaryLogs ?? []),
       ].slice(0, DIARY_LOG_RETENTION_LIMIT);
       updatedParties[action.partyIndex] = {
         ...currentParty,
         sideQuest: null,
         diaryLogs: nextDiaryLogs,
-        hasUnreadDiary: true,
+        hasUnreadDiary: sideQuestDiaryLog ? true : currentParty.hasUnreadDiary,
       };
       const trimmedParties = enforceGlobalDiaryLogRetention(updatedParties);
       return {

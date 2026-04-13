@@ -1,5 +1,5 @@
 import { Fragment, useState, useEffect, useRef, useCallback, useMemo, type ChangeEvent, type CSSProperties, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySettings, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId, type Ability, type BattleLogEntry } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySideQuestThreshold, DiarySettings, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId, type Ability, type BattleLogEntry } from '../types';
 import { computeCharacterHpContribution, computePartyStats } from '../game/partyComputation';
 import {
   DUNGEONS,
@@ -866,6 +866,18 @@ const DIARY_THRESHOLD_OPTIONS: Array<{ value: DiaryRarityThreshold; label: strin
   { value: 'none', label: 'なし' },
 ];
 
+const DIARY_SIDE_QUEST_THRESHOLD_OPTIONS: Array<{ value: DiarySideQuestThreshold; label: string }> = [
+  { value: 'all', label: '全て' },
+  { value: 2, label: '2良晶以上' },
+  { value: 3, label: '3雅晶以上' },
+  { value: 4, label: '4煌晶以上' },
+  { value: 5, label: '5碧晶以上' },
+  { value: 6, label: '6紫晶以上' },
+  { value: 7, label: '7金晶以上' },
+  { value: 8, label: '8王晶のみ' },
+  { value: 'none', label: 'なし' },
+];
+
 const EXPEDITION_DEPTH_OPTIONS: Array<{ value: ExpeditionDepthLimit; label: string }> = [
   { value: 'all', label: '全て' },
   { value: 'beforeBoss', label: 'ボス前' },
@@ -899,6 +911,13 @@ function parseDiaryThreshold(value: string): DiaryRarityThreshold {
   if (value === 'all' || value === 'none') return value;
   const numericValue = Number(value);
   if (numericValue >= 1 && numericValue <= 6) return numericValue as 1 | 2 | 3 | 4 | 5 | 6;
+  return 'all';
+}
+
+function parseDiarySideQuestThreshold(value: string): DiarySideQuestThreshold {
+  if (value === 'all' || value === 'none') return value;
+  const numericValue = Number(value);
+  if (numericValue >= 2 && numericValue <= 8) return numericValue as 2 | 3 | 4 | 5 | 6 | 7 | 8;
   return 'all';
 }
 
@@ -8689,6 +8708,19 @@ function DiaryTab({
                     >
                       <option value="あり">あり</option>
                       <option value="なし">なし</option>
+                    </select>
+                  </label>
+                  {/* SpecRef: 8.5 | UI_DIARY | Setting. */}
+                  <label className="flex items-center justify-between gap-2">
+                    <span>サイドクエスト獲得通知</span>
+                    <select
+                      value={settings.sideQuestThreshold}
+                      onChange={(event) => onUpdateDiarySettings(partyIndex, { sideQuestThreshold: parseDiarySideQuestThreshold(event.target.value) })}
+                      className="rounded border border-gray-300 bg-white px-2 py-1"
+                    >
+                      {DIARY_SIDE_QUEST_THRESHOLD_OPTIONS.map((option) => (
+                        <option key={`sq-${option.value}`} value={option.value}>{option.label}</option>
+                      ))}
                     </select>
                   </label>
                 </div>

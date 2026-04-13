@@ -381,12 +381,14 @@ export interface DiaryLog {
 }
 
 export type DiaryRarityThreshold = 'all' | 1 | 2 | 3 | 4 | 5 | 6 | 'none';
+export type DiarySideQuestThreshold = 'all' | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 'none';
 
 export interface DiarySettings {
   superRareThreshold: DiaryRarityThreshold;
   bossThreshold: DiaryRarityThreshold;
   mythicThreshold: DiaryRarityThreshold;
   rareThreshold: DiaryRarityThreshold;
+  sideQuestThreshold: DiarySideQuestThreshold;
   notifyDefeat: boolean;
 }
 
