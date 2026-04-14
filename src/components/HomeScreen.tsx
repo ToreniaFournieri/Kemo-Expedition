@@ -476,9 +476,9 @@ function preloadRaceIcons(): void {
   });
 }
 
-function getExplorationDurationMs(entryCount?: number, durationMultiplier: number = 1, durationScale: number = 1): number {
-  const exploredSteps = Math.max(1, Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, entryCount ?? EXPLORING_PROGRESS_TOTAL_STEPS));
-  return Math.max(100, Math.ceil(exploredSteps * EXPLORING_PROGRESS_STEP_MS * durationMultiplier * durationScale));
+function getExplorationDurationMs(exploreStepCount: number = EXPLORING_PROGRESS_TOTAL_STEPS, durationScale: number = 1): number {
+  const exploredSteps = Math.max(1, Math.ceil(exploreStepCount));
+  return Math.max(100, Math.ceil(exploredSteps * EXPLORING_PROGRESS_STEP_MS * durationScale));
 }
 
 function getExplorationVisibleRoomCount(elapsedMs: number, durationMs: number, totalEntries: number): number {
@@ -3615,10 +3615,8 @@ export function HomeScreen({
         }
 
         if (updated.state === 'explore') {
-          const exploredRooms = party.lastExpeditionLog?.entries.length;
           updated.durationMs = getExplorationDurationMs(
-            exploredRooms,
-            getPartyStateDurationMultiplier(party, 'explore'),
+            getExploreStepCount(party),
             getTimeSpeedScale(debugSettings),
           );
         }
@@ -3791,8 +3789,7 @@ export function HomeScreen({
               actions.runExpedition(partyIndex, gameModeRef.current, triggerGodsBattle, simulationNow);
               updated.state = 'explore';
               updated.durationMs = getExplorationDurationMs(
-                undefined,
-                getPartyStateDurationMultiplier(party, 'explore'),
+                getExploreStepCount(party),
                 getTimeSpeedScale(debugSettings),
               );
               updated.isCurrentExpeditionGodsBattle = triggerGodsBattle;
@@ -4158,45 +4155,43 @@ export function HomeScreen({
   };
 
   // SpecRef: 5.1.1 | Party State Machine | Durration modifilier
-  const getExploreTerrainDurationMultiplier = (party: Party, entryCount?: number): number => {
-    const dungeon = DUNGEONS.find((entry) => entry.id === party.selectedDungeonId);
-    if (!dungeon) return 1;
+  const getExploreStepCount = (party: Party): number => {
+    if (party.selectedDungeonId === 99) return 1;
 
-    const getFloorTerrainRoomMultiplier = (terrainEffect?: string): number => {
-      if (terrainEffect === 'terrain.chill') return 2;
-      if (terrainEffect === 'terrain.looping-path') return 2;
-      return 1;
+    const dungeon = DUNGEONS.find((entry) => entry.id === party.selectedDungeonId);
+    if (!dungeon) return EXPLORING_PROGRESS_TOTAL_STEPS;
+
+    const getRoomStepCount = (terrainEffect?: string): number => {
+      let roomSteps = 1;
+      const deityKey = getDeityKey(party.deity.name);
+      if (deityKey === 'Goddess of Precision') roomSteps *= 2;
+      if (terrainEffect === 'terrain.chill') roomSteps *= 2;
+      if (terrainEffect === 'terrain.looping-path') roomSteps *= 2;
+      return roomSteps;
     };
 
     const floorByNumber = new Map(dungeon.floors.map((floor) => [floor.floorNumber, floor]));
-    const roomsToEvaluate = Math.max(1, entryCount ?? (party.lastExpeditionLog?.entries.length ?? 0));
     const loggedRooms = party.lastExpeditionLog?.dungeonId === dungeon.id
-      ? party.lastExpeditionLog.entries.slice(0, roomsToEvaluate)
+      ? party.lastExpeditionLog.entries
       : [];
 
     if (loggedRooms.length > 0) {
-      const weightedRoomMultiplierTotal = loggedRooms.reduce((total, room) => {
+      return loggedRooms.reduce((total, room) => {
         const floor = typeof room.floor === 'number' ? floorByNumber.get(room.floor) : undefined;
-        return total + getFloorTerrainRoomMultiplier(floor?.terrainEffect);
+        return total + getRoomStepCount(floor?.terrainEffect);
       }, 0);
-      return weightedRoomMultiplierTotal / loggedRooms.length;
     }
 
-    const fullDungeonRoomMultiplierTotal = dungeon.floors.reduce((total, floor) => (
-      total + (4 * getFloorTerrainRoomMultiplier(floor.terrainEffect))
+    const fullDungeonStepCount = dungeon.floors.reduce((total, floor) => (
+      total + (4 * getRoomStepCount(floor.terrainEffect))
     ), 0);
-    const fullDungeonRoomCount = dungeon.floors.length * 4;
-    return fullDungeonRoomCount > 0 ? (fullDungeonRoomMultiplierTotal / fullDungeonRoomCount) : 1;
+    return Math.max(1, fullDungeonStepCount);
   };
 
   // SpecRef: 5.1.1 | Party State Machine | Durration modifilier
-  const getPartyStateDurationMultiplier = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray' | 'explore'): number => {
+  const getPartyStateDurationMultiplier = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray'): number => {
     const deityGold = state.global.deityDonations[normalizeDeityName(party.deity.name)] ?? party.deityGold ?? 0;
-    const deityMultiplier = getDeityStateDurationMultiplier(party.deity.name, deityGold, cycleState);
-    if (cycleState !== 'explore') return deityMultiplier;
-    if (party.selectedDungeonId === 99) return 1;
-    const exploredRooms = party.lastExpeditionLog?.entries.length;
-    return deityMultiplier * getExploreTerrainDurationMultiplier(party, exploredRooms);
+    return getDeityStateDurationMultiplier(party.deity.name, deityGold, cycleState);
   };
 
   // SpecRef: 5.1 | PROGRESS | Step
