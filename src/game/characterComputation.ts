@@ -803,16 +803,23 @@ export function computeCharacterStats(
   meleeNoA += meleeNoAFixedBonus;
 
   const originalRangedNoA = Math.ceil(rangedNoA);
+  const originalMagicalNoA = Math.ceil(magicalNoA);
   const originalMeleeNoA = Math.ceil(meleeNoA);
 
   // SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.NoA
-  // a.iaigiri / a.heavy-strike: halve physical NoA, round up.
+  // a.iaigiri: halve physical NoA, round up.
+  // a.heavy-strike: halve physical/magical NoA, round up.
   const hasIaigiri = collection.abilities.has('iaigiri');
   const hasHeavyStrike = collection.abilities.has('heavy_strike');
-  if (hasIaigiri || hasHeavyStrike) {
+  if (hasIaigiri) {
     rangedNoA = rangedNoA / 2;
     meleeNoA = meleeNoA / 2;
-    // Physical attack damage amplification is applied during battle
+  }
+  if (hasHeavyStrike) {
+    rangedNoA = rangedNoA / 2;
+    magicalNoA = magicalNoA / 2;
+    meleeNoA = meleeNoA / 2;
+    // Damage amplification and penetration conversion are applied during battle.
   }
   // SpecRef: 2.1.1.2 | Multiplier and Functions | character.a.arc-magic
   // a.arc-magic: reduce magical NoA to 1/3, round up.
@@ -930,6 +937,7 @@ export function computeCharacterStats(
     abilities,
     penetMultiplier: collection.penet,
     originalRangedNoA,
+    originalMagicalNoA,
     originalMeleeNoA,
     elementalOffense,
     elementalOffenseValue,
