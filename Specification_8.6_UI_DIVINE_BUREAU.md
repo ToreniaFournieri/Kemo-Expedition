@@ -55,6 +55,8 @@
 **Clairvoyance (未来視)**
 
 - Display format: "PT1 ▼", "PT2 ▼", etc.
+  - Visibility condition: The pane is displayed only if at least one member in the corresponding party has `a.prophecy`.
+  - Reset functionality: The reset button is available only if at least one member in the party has `a.prophecy`2.
   - Default state: Collapsed
   - State persistence: The expand/collapse state is preserved per party
   - Each party pane contains the following sections:
