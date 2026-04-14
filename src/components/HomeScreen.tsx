@@ -1594,13 +1594,15 @@ function getArcMagicOffenseAmplifier(level: number): number {
 // SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.offense_amplifier
 // a.arc-magic: magical offense amplifier xN (Lv1:3.0, Lv2:3.6, Lv3:4.2).
 function getCharacterDisplayedMagicalAttackAmplifier(baseAmplifier: number, abilities: Ability[]): number {
-  return baseAmplifier * getArcMagicOffenseAmplifier(getArcMagicAbilityLevel(abilities));
+  const heavyStrikeAmplifier = abilities.some((ability) => ability.id === 'heavy_strike' && ability.level > 0) ? 1.4 : 1.0;
+  return baseAmplifier * heavyStrikeAmplifier * getArcMagicOffenseAmplifier(getArcMagicAbilityLevel(abilities));
 }
 
 // SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.offense_amplifier
 // a.arc-magic: magical offense amplifier xN (Lv1:3.0, Lv2:3.6, Lv3:4.2).
 function getEnemyDisplayedMagicalAttackAmplifier(enemy: EnemyDef): number {
-  return enemy.magicalAttackAmplifier * getArcMagicOffenseAmplifier(getEnemyArcMagicAbilityLevel(enemy));
+  const heavyStrikeAmplifier = enemy.abilities.some((ability) => ability.id === 'heavy_strike' && ability.level > 0) ? 1.4 : 1.0;
+  return enemy.magicalAttackAmplifier * heavyStrikeAmplifier * getArcMagicOffenseAmplifier(getEnemyArcMagicAbilityLevel(enemy));
 }
 
 function getEnemyBestiarySpellName(enemy: EnemyDef): string {
@@ -6061,7 +6063,9 @@ function PartyTab({
               {(() => {
                 // Calculate offense amplifiers per phase
                 const iaigiri = stats.abilities.find(a => a.id === 'iaigiri');
+                const heavyStrike = stats.abilities.find(a => a.id === 'heavy_strike');
                 const iaigiriMultiplier = iaigiri ? (iaigiri.level >= 3 ? 3.0 : iaigiri.level >= 2 ? 2.5 : 2.0) : 1.0;
+                const heavyStrikeMultiplier = heavyStrike ? 1.4 : 1.0;
                 const strengthScale = getBaseOffenseScale(stats.baseStats.strength);
                 const intelligenceScale = getBaseOffenseScale(stats.baseStats.intelligence);
                 const combatBonusLevels = getCharacterCombatBonusLevels(char);
@@ -6100,7 +6104,7 @@ function PartyTab({
                   const amp = ((iaigiri
                     ? iaigiriMultiplier * (1.0 + baseMultRanged) * stats.physicalOffenseMultiplier
                     : (1.0 + baseMultRanged + stats.physicalAttackCBonus) * stats.physicalOffenseMultiplier
-                  ) + stats.deityOffenseAmplifierBonus) * strengthScale;
+                  ) + stats.deityOffenseAmplifierBonus) * strengthScale * heavyStrikeMultiplier;
                   offenseLines.push({
                     key: 'ranged-attack',
                     text: `遠距離攻撃:${formatNumber(Math.floor(stats.rangedAttack))} x ${formatNumber(stats.rangedNoA)}回(x${amp.toFixed(2)})`,
@@ -6132,7 +6136,7 @@ function PartyTab({
                   const amp = ((iaigiri
                     ? iaigiriMultiplier * (1.0 + baseMultMelee) * stats.physicalOffenseMultiplier
                     : (1.0 + baseMultMelee + stats.physicalAttackCBonus) * stats.physicalOffenseMultiplier
-                  ) + stats.deityOffenseAmplifierBonus) * strengthScale;
+                  ) + stats.deityOffenseAmplifierBonus) * strengthScale * heavyStrikeMultiplier;
                   offenseLines.push({
                     key: 'melee-attack',
                     text: `近接攻撃:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}回(x${amp.toFixed(2)})`,
