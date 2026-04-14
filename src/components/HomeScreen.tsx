@@ -36,7 +36,7 @@ import { getBaseMultiplier } from '../game/baseMultiplier';
 import { ENEMY_TYPE_SHORT_NAMES, formatEnemyDefName } from '../game/enemyDisplay';
 import { computeCharacterStats, getAbilityDescription, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
-import { createMythicRareRewardBag, createSideQuestBag, createSleepinessPartyBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag } from '../game/bags';
+import { createCommonSuperRareBag, createMythicRareRewardBag, createRareSuperRareBag, createSideQuestBag, createSleepinessPartyBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag } from '../game/bags';
 import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRankValue, getJewelNameByRank, getJewelOwnedCount } from '../game/jewel';
 import { replaceCharacterEquipment } from '../game/equipment';
 import { resolveMagicProfile } from '../game/magic';
@@ -9529,7 +9529,8 @@ function SettingTab({
     onConfirm();
   };
 
-  const superRareTotal = SUPER_RARE_TITLES.reduce((sum, t) => sum + t.tickets, 0);
+  const commonSuperRareTotal = getBagTicketTotal(createCommonSuperRareBag());
+  const rareSuperRareTotal = getBagTicketTotal(createRareSuperRareBag());
   const superRareHitTotal = SUPER_RARE_TITLES.reduce((sum, t) => sum + (t.value > 0 ? t.tickets : 0), 0);
   const enhancementCountTargets = [
     { value: 1, label: '名工の残り' },
@@ -10025,7 +10026,7 @@ function SettingTab({
                     return <div key={`common-enhancement-${party.id}-${value}`}>{label} {formatNumber(getBagEntryTickets(partyBags.commonEnhancementBag, value))} / {formatNumber(initialCount)}</div>;
                   })}
                 </div>
-                <div>コモン超レア称号付与: {formatNumber(getBagTicketTotal(partyBags.commonSuperRareBag))} / {formatNumber(superRareTotal)}</div>
+                <div>コモン超レア称号付与: {formatNumber(getBagTicketTotal(partyBags.commonSuperRareBag))} / {formatNumber(commonSuperRareTotal)}</div>
                 <div className="pl-3 text-xs text-gray-700">超レア残り {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.commonSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
                 <button onClick={() => confirmReset('コモン報酬初期化', () => onResetCommonBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">コモン報酬初期化</button>
                 <div>アンコモン報酬: {formatNumber(getBagTicketTotal(partyBags.uncommonRewardBag))} / {formatNumber(uniqueRewardTotal)}</div>
@@ -10039,7 +10040,7 @@ function SettingTab({
                     return <div key={`enhancement-${party.id}-${value}`}>{label} {formatNumber(getBagEntryTickets(partyBags.enhancementBag, value))} / {formatNumber(initialCount)}</div>;
                   })}
                 </div>
-                <div>超レア称号付与: {formatNumber(getBagTicketTotal(partyBags.rareSuperRareBag))} / {formatNumber(superRareTotal)}</div>
+                <div>超レア称号付与: {formatNumber(getBagTicketTotal(partyBags.rareSuperRareBag))} / {formatNumber(rareSuperRareTotal)}</div>
                 <div className="pl-3 text-xs text-gray-700">超レア残り {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.rareSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
                 <button onClick={() => confirmReset('報酬初期化', () => onResetUniqueBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">報酬初期化</button>
                 <div>サイドクエスト抽選: {formatNumber(getBagTicketTotal(partyBags.sideQuestBag))} / {formatNumber(sideQuestTotal)}</div>

@@ -18,7 +18,7 @@ export const ENHANCEMENT_TITLES: EnhancementTitle[] = [
 ];
 
 export const SUPER_RARE_TITLES: SuperRareTitle[] = [
-  { value: 0, title: '', tickets: 40918, multiplier: 1.0, bonuses: [] },
+  { value: 0, title: '', tickets: 409918, multiplier: 1.0, bonuses: [] },
   { value: 1, title: '世界を征する', tickets: 1, multiplier: 2.0, bonuses: [{ type: 'growth_xV', value: 1.6 }, { type: 'evasion', value: -0.005 }] },
   { value: 2, title: '天に選ばれし', tickets: 1, multiplier: 2.0, bonuses: [{ type: 'growth_xV', value: 1.3 }, { type: 'evasion', value: 0.01 }] },
   { value: 3, title: '千里を見通す', tickets: 1, multiplier: 2.0, bonuses: [{ type: 'growth_xV', value: 1.3 }, { type: 'accuracy', value: 0.01 }] },
