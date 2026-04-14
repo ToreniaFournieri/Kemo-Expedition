@@ -2,7 +2,6 @@ import { Fragment, useState, useEffect, useRef, useCallback, useMemo, type Chang
 import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySideQuestThreshold, DiarySettings, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId, type Ability, type BattleLogEntry } from '../types';
 import { computeCharacterHpContribution, computePartyStats } from '../game/partyComputation';
 import {
-  COLOSSEUM_EXPEDITION_ID,
   DUNGEONS,
   getEffectiveEnemyLevel,
   getEffectiveEnemyMultipliers,
@@ -1059,7 +1058,7 @@ function getGodBattleLabel(dungeon: Dungeon): string {
 
 function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | null {
   const currentDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
-  if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === COLOSSEUM_EXPEDITION_ID) return null;
+  if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === 99) return null;
 
   const tier = currentDungeon.enemyPoolIds[0];
 
@@ -1266,7 +1265,7 @@ function getDisplayedExpeditionStats(party: Party, cycleState?: PartyCycleState)
 function hasActiveNonGodBattleLootGateCondition(party: Party): boolean {
   // SpecRef: 5.1.2 | Side Quest | Trigger Condition
   const currentDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId);
-  if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === COLOSSEUM_EXPEDITION_ID) return false;
+  if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === 99) return false;
 
   const tier = currentDungeon.enemyPoolIds[0];
   for (const floor of currentDungeon.floors) {
@@ -7207,7 +7206,7 @@ function ExpeditionTab({
           return flavorText ? `${stateLabel}: ${flavorText}` : stateLabel;
         })();
         const hpForSortieCheck = cycle.state === 'explore' ? displayedHp : party.currentHp;
-        const isColosseumSelected = selectedDungeon?.id === COLOSSEUM_EXPEDITION_ID;
+        const isColosseumSelected = selectedDungeon?.id === 99;
         const isSortieDisabled = (!!selectedDungeonGate?.locked && !isColosseumSelected) || hpForSortieCheck <= 0 || partyStats.hp <= 0;
         const canTriggerGodsBattle = cycle.state === 'explore'
           ? cycle.isCurrentExpeditionGodsBattle === true
@@ -7359,9 +7358,9 @@ function ExpeditionTab({
                     onChange={(e) => onSelectDungeon(partyIndex, Number(e.target.value))}
                     className="min-w-0 w-full border border-gray-300 rounded px-2 py-1 text-sm"
                   >
-                    {DUNGEONS.filter((dungeon) => debugSettings.colosseumEnabled || dungeon.id !== COLOSSEUM_EXPEDITION_ID).map(dungeon => {
+                    {DUNGEONS.filter((dungeon) => debugSettings.colosseumEnabled || dungeon.id !== 99).map(dungeon => {
                       const gateState = getDungeonEntryGateState(party, dungeon);
-                      const isSelectable = dungeon.id === COLOSSEUM_EXPEDITION_ID ? debugSettings.colosseumEnabled : !gateState.locked;
+                      const isSelectable = dungeon.id === 99 ? debugSettings.colosseumEnabled : !gateState.locked;
                       if (!isSelectable) return null;
                       return <option key={dungeon.id} value={dungeon.id}>{dungeon.name}</option>;
                     })}
@@ -9298,7 +9297,7 @@ function SettingTab({
   }, [colosseumEnemySettings]);
 
   useEffect(() => {
-    if (!debugSettings.colosseumEnabled && selectedBestiaryDungeonId === COLOSSEUM_EXPEDITION_ID) {
+    if (!debugSettings.colosseumEnabled && selectedBestiaryDungeonId === 99) {
       onSetSelectedBestiaryDungeonId(1);
     }
   }, [debugSettings.colosseumEnabled, selectedBestiaryDungeonId, onSetSelectedBestiaryDungeonId]);
@@ -9642,20 +9641,20 @@ function SettingTab({
     7: '月',
     8: '谷',
     9: '神',
-    [COLOSSEUM_EXPEDITION_ID]: '特',
+    99: '特',
   };
 
   const BESTIARY_SPECIAL_DUNGEON_ID_GODS = 9;
-  const BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM = COLOSSEUM_EXPEDITION_ID;
+  const BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM = 99;
   const isGodBestiaryTab = selectedBestiaryDungeonId === BESTIARY_SPECIAL_DUNGEON_ID_GODS;
   const isColosseumBestiaryTab = selectedBestiaryDungeonId === BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM;
   const bestiaryTabOptions = [
-    ...DUNGEONS.filter((dungeon) => dungeon.id !== COLOSSEUM_EXPEDITION_ID).map((dungeon) => ({ id: dungeon.id, name: dungeon.name })),
+    ...DUNGEONS.filter((dungeon) => dungeon.id !== 99).map((dungeon) => ({ id: dungeon.id, name: dungeon.name })),
     { id: BESTIARY_SPECIAL_DUNGEON_ID_GODS, name: '神魔' },
     ...(debugSettings.colosseumEnabled ? [{ id: BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM, name: '特' }] : []),
   ];
 
-  const selectedBestiaryDungeon = DUNGEONS.find(d => d.id === selectedBestiaryDungeonId && d.id !== COLOSSEUM_EXPEDITION_ID) ?? DUNGEONS[0];
+  const selectedBestiaryDungeon = DUNGEONS.find(d => d.id === selectedBestiaryDungeonId && d.id !== 99) ?? DUNGEONS[0];
 
   const selectedBestiaryGroups = selectedBestiaryDungeon.floors
     ? selectedBestiaryDungeon.floors

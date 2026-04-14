@@ -30,16 +30,7 @@ import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
 import { getEncounterEnemyWithScaling, getRoomMultiplier } from '../game/enemyScaling';
 import { buildColosseumEnemy, getColosseumEnemySettings } from '../game/colosseum';
 import { replaceCharacterEquipment } from '../game/equipment';
-import {
-  COLOSSEUM_BOSS_ID,
-  COLOSSEUM_ENEMY_POOL_ID,
-  COLOSSEUM_EXPEDITION_ID,
-  DUNGEONS,
-  getDungeonById,
-  getEffectiveEnemyLevel,
-  getEffectiveEnemyMultipliers,
-  getEffectiveExpeditionTier,
-} from '../data/dungeons';
+import { DUNGEONS, getDungeonById, getEffectiveEnemyLevel, getEffectiveEnemyMultipliers, getEffectiveExpeditionTier } from '../data/dungeons';
 import { ENEMIES, getEnemiesByPool, getElitesByPool, getBossEnemy, getEnemyDropCandidates } from '../data/enemies';
 import { getGodProfileForDungeon } from '../data/dropTables';
 import { buildGodRuntimeEnemy } from '../game/godEnemy';
@@ -1538,7 +1529,7 @@ function selectEnemyForRoom(
   roomEnemyIds: number[] = [],
   isLunaMode: boolean = false
 ): EnemyDef | null {
-  if (poolId === COLOSSEUM_ENEMY_POOL_ID || bossId === COLOSSEUM_BOSS_ID) {
+  if (poolId === 99 || bossId === 9901) {
     return buildColosseumEnemy(getColosseumEnemySettings(), isLunaMode);
   }
 
@@ -1750,7 +1741,7 @@ function getScaledSideQuestExpiresAt(sideQuest: Party['sideQuest'], cycleDuratio
 function hasActiveNonGodBattleLootGateCondition(party: Party): boolean {
   // SpecRef: 5.1.2 | Side Quest | Trigger Condition
   const currentDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId);
-  if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === COLOSSEUM_EXPEDITION_ID) return false;
+  if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === 99) return false;
 
   const tier = currentDungeon.enemyPoolIds[0];
   for (const floor of currentDungeon.floors) {
@@ -2607,7 +2598,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
             // Pass currentHp to maintain HP persistence during expedition
             const roomStartHp = currentHp;
-            const colosseumTerrainEffect = dungeon.id === COLOSSEUM_EXPEDITION_ID ? getColosseumEnemySettings().terrainEffect : 'none';
+            const colosseumTerrainEffect = dungeon.id === 99 ? getColosseumEnemySettings().terrainEffect : 'none';
             const terrainEffect = colosseumTerrainEffect !== 'none'
               ? colosseumTerrainEffect
               : floor.terrainEffect;
@@ -2652,7 +2643,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             };
 
             if (battleResult.outcome === 'victory') {
-              const isColosseumBattle = dungeon.id === COLOSSEUM_EXPEDITION_ID;
+              const isColosseumBattle = dungeon.id === 99;
               if (!isColosseumBattle) {
                 const enemyLevelFinal = getEffectiveEnemyLevel(
                   dungeon.expLevel,

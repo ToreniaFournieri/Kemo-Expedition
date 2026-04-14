@@ -1,11 +1,5 @@
 import { BonusType, Dungeon, EnemyDef, RoomType } from '../types';
-import {
-  COLOSSEUM_BOSS_ID,
-  COLOSSEUM_ENEMY_POOL_ID,
-  LUNA_MODE_ENEMY_LEVEL_BONUS,
-  getEnemyLevelForRoom,
-  getEnemyMultipliersForLevel,
-} from '../data/dungeons';
+import { LUNA_MODE_ENEMY_LEVEL_BONUS, getEnemyLevelForRoom, getEnemyMultipliersForLevel } from '../data/dungeons';
 import { getDebugSettings } from './debugSettings';
 
 type GodEnemyMultipliers = {
@@ -208,7 +202,7 @@ export function applyEnemyEncounterScaling(
 }
 
 function isPreScaledEncounterEnemy(enemy: EnemyDef): boolean {
-  return enemy.poolId === COLOSSEUM_ENEMY_POOL_ID || enemy.id === COLOSSEUM_BOSS_ID;
+  return enemy.poolId === 99 || enemy.id === 9901;
 }
 
 export function getEncounterEnemyWithScaling(
