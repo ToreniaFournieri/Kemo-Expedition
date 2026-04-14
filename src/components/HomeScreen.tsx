@@ -1594,13 +1594,15 @@ function getArcMagicOffenseAmplifier(level: number): number {
 // SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.offense_amplifier
 // a.arc-magic: magical offense amplifier xN (Lv1:3.0, Lv2:3.6, Lv3:4.2).
 function getCharacterDisplayedMagicalAttackAmplifier(baseAmplifier: number, abilities: Ability[]): number {
-  return baseAmplifier * getArcMagicOffenseAmplifier(getArcMagicAbilityLevel(abilities));
+  const heavyStrikeAmplifier = abilities.some((ability) => ability.id === 'heavy_strike' && ability.level > 0) ? 1.4 : 1.0;
+  return baseAmplifier * heavyStrikeAmplifier * getArcMagicOffenseAmplifier(getArcMagicAbilityLevel(abilities));
 }
 
 // SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.offense_amplifier
 // a.arc-magic: magical offense amplifier xN (Lv1:3.0, Lv2:3.6, Lv3:4.2).
 function getEnemyDisplayedMagicalAttackAmplifier(enemy: EnemyDef): number {
-  return enemy.magicalAttackAmplifier * getArcMagicOffenseAmplifier(getEnemyArcMagicAbilityLevel(enemy));
+  const heavyStrikeAmplifier = enemy.abilities.some((ability) => ability.id === 'heavy_strike' && ability.level > 0) ? 1.4 : 1.0;
+  return enemy.magicalAttackAmplifier * heavyStrikeAmplifier * getArcMagicOffenseAmplifier(getEnemyArcMagicAbilityLevel(enemy));
 }
 
 function getEnemyBestiarySpellName(enemy: EnemyDef): string {
@@ -6061,7 +6063,9 @@ function PartyTab({
               {(() => {
                 // Calculate offense amplifiers per phase
                 const iaigiri = stats.abilities.find(a => a.id === 'iaigiri');
+                const heavyStrike = stats.abilities.find(a => a.id === 'heavy_strike');
                 const iaigiriMultiplier = iaigiri ? (iaigiri.level >= 3 ? 3.0 : iaigiri.level >= 2 ? 2.5 : 2.0) : 1.0;
+                const heavyStrikeMultiplier = heavyStrike ? 1.4 : 1.0;
                 const strengthScale = getBaseOffenseScale(stats.baseStats.strength);
                 const intelligenceScale = getBaseOffenseScale(stats.baseStats.intelligence);
                 const combatBonusLevels = getCharacterCombatBonusLevels(char);
@@ -6100,7 +6104,7 @@ function PartyTab({
                   const amp = ((iaigiri
                     ? iaigiriMultiplier * (1.0 + baseMultRanged) * stats.physicalOffenseMultiplier
                     : (1.0 + baseMultRanged + stats.physicalAttackCBonus) * stats.physicalOffenseMultiplier
-                  ) + stats.deityOffenseAmplifierBonus) * strengthScale;
+                  ) + stats.deityOffenseAmplifierBonus) * strengthScale * heavyStrikeMultiplier;
                   offenseLines.push({
                     key: 'ranged-attack',
                     text: `遠距離攻撃:${formatNumber(Math.floor(stats.rangedAttack))} x ${formatNumber(stats.rangedNoA)}回(x${amp.toFixed(2)})`,
@@ -6132,7 +6136,7 @@ function PartyTab({
                   const amp = ((iaigiri
                     ? iaigiriMultiplier * (1.0 + baseMultMelee) * stats.physicalOffenseMultiplier
                     : (1.0 + baseMultMelee + stats.physicalAttackCBonus) * stats.physicalOffenseMultiplier
-                  ) + stats.deityOffenseAmplifierBonus) * strengthScale;
+                  ) + stats.deityOffenseAmplifierBonus) * strengthScale * heavyStrikeMultiplier;
                   offenseLines.push({
                     key: 'melee-attack',
                     text: `近接攻撃:${formatNumber(Math.floor(stats.meleeAttack))} x ${formatNumber(stats.meleeNoA)}回(x${amp.toFixed(2)})`,
@@ -9339,6 +9343,16 @@ function SettingTab({
   }, [debugSettings.colosseumEnabled, selectedBestiaryDungeonId, onSetSelectedBestiaryDungeonId]);
 
   const versionTag = APP_VERSION;
+
+  const getDivineBureauPartyAbilityLevel = (party: Party, abilityId: string): number => {
+    const { characterStats } = computePartyStats(party);
+    return characterStats.reduce((maxLevel, stats) => {
+      const level = stats.abilities
+        .filter((ability) => ability.id === abilityId)
+        .reduce((abilityMax, ability) => Math.max(abilityMax, ability.level), 0);
+      return Math.max(maxLevel, level);
+    }, 0);
+  };
   const currentEnv = getEnvironmentId();
   const modeSelectionLocked = isLunaEnvironment;
   useEffect(() => {
@@ -10042,19 +10056,25 @@ function SettingTab({
         </div>}
       </div>
 
-      {debugSettings.clairvoyanceEnabled && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
+      {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Clairvoyance (未来視) */}
+      {(debugSettings.clairvoyanceEnabled || gameState.parties.some((party) => getDivineBureauPartyAbilityLevel(party, 'prophecy') >= 1)) && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('clairvoyance', '未来視')}
         {divineBureauPanelExpanded.clairvoyance && <div className="mt-3 space-y-3">
           {gameState.parties.map((party, partyIndex) => {
+            const prophecyLevel = getDivineBureauPartyAbilityLevel(party, 'prophecy');
+            const isPaneVisible = debugSettings.clairvoyanceEnabled || prophecyLevel >= 1;
+            if (!isPaneVisible) {
+              return null;
+            }
+
+            const canResetBags = debugSettings.clairvoyanceEnabled || prophecyLevel >= 2;
             const partyBags = party.bags;
             const isExpanded = clairvoyancePartyExpanded[partyIndex] === true;
             return <div key={`clairvoyance-${party.id}`} className="rounded border border-gray-200 bg-white p-2">
               <button type="button" className="flex w-full items-center justify-between text-left font-semibold" onClick={() => setClairvoyancePartyExpanded((prev) => ({ ...prev, [partyIndex]: !isExpanded }))}>
-                <span>PT{partyIndex + 1}</span>
-                <span className="text-xs text-gray-500">{isExpanded ? '▲' : '▼'}</span>
+                <span>PT{partyIndex + 1} {isExpanded ? '▲' : '▼'}</span>
               </button>
               {isExpanded && <div className="mt-2 space-y-3 text-sm">
-                {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Clairvoyance (未来視) */}
                 <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1">
                   <div className="text-xs font-semibold text-gray-700 tracking-wide">コモン</div>
                   <div className="flex items-start justify-between gap-3">
@@ -10076,7 +10096,7 @@ function SettingTab({
                   </div>
                   <div>コモン超レア称号付与: {formatNumber(getBagTicketTotal(partyBags.commonSuperRareBag))} / {formatNumber(commonSuperRareTotal)}</div>
                   <div className="text-xs text-gray-500 text-right">超レア残り {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.commonSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
-                  <button onClick={() => confirmReset('コモン報酬初期化', () => onResetCommonBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">コモン報酬初期化</button>
+                  {canResetBags && <button onClick={() => confirmReset('コモン報酬初期化', () => onResetCommonBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">コモン報酬初期化</button>}
                 </div>
                 <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1">
                   <div className="text-xs font-semibold text-gray-700 tracking-wide">その他レアリティ</div>
@@ -10111,12 +10131,12 @@ function SettingTab({
                   </div>
                   <div>超レア称号付与: {formatNumber(getBagTicketTotal(partyBags.rareSuperRareBag))} / {formatNumber(rareSuperRareTotal)}</div>
                   <div className="text-xs text-gray-500 text-right">超レア残り {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.rareSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
-                  <button onClick={() => confirmReset('報酬初期化', () => onResetUniqueBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">報酬初期化</button>
+                  {canResetBags && <button onClick={() => confirmReset('報酬初期化', () => onResetUniqueBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">報酬初期化</button>}
                 </div>
                 <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1">
                   <div className="text-xs font-semibold text-gray-700 tracking-wide">サイドクエスト</div>
                   <div>サイドクエスト抽選: {formatNumber(getBagTicketTotal(partyBags.sideQuestBag))} / {formatNumber(sideQuestTotal)}</div>
-                  <button onClick={() => confirmReset('サイドクエスト初期化', () => onResetSideQuestBag(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">サイドクエスト初期化</button>
+                  {canResetBags && <button onClick={() => confirmReset('サイドクエスト初期化', () => onResetSideQuestBag(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">サイドクエスト初期化</button>}
                 </div>
                 <div className="flex items-start justify-between gap-3">
                   <div>眠気抽選: {formatNumber(getBagTicketTotal(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag)))} / {formatNumber(getBagTicketTotal(sleepinessDefaultBag))}</div>

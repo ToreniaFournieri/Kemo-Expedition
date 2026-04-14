@@ -55,6 +55,9 @@
 **Clairvoyance (未来視)**
 
 - Display format: "PT1 ▼", "PT2 ▼", etc.
+  - Visibility condition: The pane is displayed only if at least one member in the corresponding party has `a.prophecy`. 
+  - Reset functionality: The reset button is available only if at least one member in the party has `a.prophecy`2.
+  - Debug override: If debug.Clairvoyance == ON: All Clairvoyance panes are always visible. Reset functionality is always enabled, regardless of `a.prophecy` level.
   - Default state: Collapsed
   - State persistence: The expand/collapse state is preserved per party
   - Each party pane contains the following sections:
@@ -252,7 +255,7 @@ HP: 312                 タイプ: 神魔
 **Debug pane(デバッグ)**
  
 - Clairvoyance: OFF/ON
-  - if OFF, disable `Clairvoyance (未来視)` as default. (it would unlock it by the game progress in the future update)
+  - if OFF, disable `Clairvoyance (未来視)` as default.
 - Speed of time: Real time / x5 boost / x20 hyper / x100 Ultra
   - Default: x5 boost
   - affects side quest duration. 
