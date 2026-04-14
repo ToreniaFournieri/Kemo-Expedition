@@ -10023,11 +10023,12 @@ function SettingTab({
                   <div className="text-xs text-gray-500 text-right">当たり残り <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.commonRewardBag, 1))}</span></div>
                 </div>
                 <div>コモン称号付与: {formatNumber(getBagTicketTotal(partyBags.commonEnhancementBag))} / {formatNumber(commonEnhancementTotal)}</div>
-                <div className="pl-3 text-xs text-gray-500">
+                <div className="pl-1 text-xs text-gray-500">
                   {enhancementCountTargets.map(({ value, label }) => {
                     const initialCount = ENHANCEMENT_TITLES.find((title) => title.value === value)?.tickets ?? 0;
                     return (
-                      <div key={`common-enhancement-${party.id}-${value}`} className="flex items-center justify-between gap-3">
+                      <div key={`common-enhancement-${party.id}-${value}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-2 leading-5">
+                        <span className="tabular-nums text-right text-gray-400">{value}</span>
                         <span>{label}</span>
                         <span className="tabular-nums text-right">{formatNumber(getBagEntryTickets(partyBags.commonEnhancementBag, value))} / {formatNumber(initialCount)}</span>
                       </div>
@@ -10054,11 +10055,12 @@ function SettingTab({
                   <div className="text-xs text-gray-500 text-right">当たり残り <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.mythicRareRewardBag, 1))}</span></div>
                 </div>
                 <div>称号付与: {formatNumber(getBagTicketTotal(partyBags.enhancementBag))} / {formatNumber(enhancementTotal)}</div>
-                <div className="pl-3 text-xs text-gray-500">
+                <div className="pl-1 text-xs text-gray-500">
                   {enhancementCountTargets.map(({ value, label }) => {
                     const initialCount = ENHANCEMENT_TITLES.find((title) => title.value === value)?.tickets ?? 0;
                     return (
-                      <div key={`enhancement-${party.id}-${value}`} className="flex items-center justify-between gap-3">
+                      <div key={`enhancement-${party.id}-${value}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-2 leading-5">
+                        <span className="tabular-nums text-right text-gray-400">{value}</span>
                         <span>{label}</span>
                         <span className="tabular-nums text-right">{formatNumber(getBagEntryTickets(partyBags.enhancementBag, value))} / {formatNumber(initialCount)}</span>
                       </div>
