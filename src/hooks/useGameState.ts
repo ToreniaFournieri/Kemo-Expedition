@@ -1855,8 +1855,10 @@ function resolveEnemyRewards(
 
     const normalizedEnhancement = gameMode === 'm.laika' && enhVal >= 5 ? 4 : enhVal;
 
+    const minEnhancementForSuperRare = baseRarity === 'common' ? 2 : 1;
+
     let srVal = 0;
-    if (normalizedEnhancement >= 1 && gameMode !== 'm.laika') {
+    if (normalizedEnhancement >= minEnhancementForSuperRare && gameMode !== 'm.laika') {
       bags = refillBagIfEmpty(bags, superRareBagType);
       const { ticket: drawnSrVal, newBag: newSRBag } = drawFromBag(bags[superRareBagType]);
       bags = { ...bags, [superRareBagType]: newSRBag };
