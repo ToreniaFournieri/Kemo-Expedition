@@ -221,6 +221,7 @@
   - `d.ranged_NoA` = 0 + Item Bonuses of {(`d.ranged_NoA` x enhancement multiplier x super rare multiplier x its c.multiplier + `c.ranged_NoA+v`), round up} 
     - If character.`a.iaigiri` or `a.heavy-strike`, halve these number of attacks, round up. 
   - `d.magical_NoA`= 0 + Item Bonuses of {(`d.magical_NoA` x enhancement multiplier x super rare multiplier x its c.multiplier + `c.magical_NoA+v`), round up}
+    - If character.`a.heavy-strike`, halve these number of attacks, round up. 
     - If character.`a.arc-magic`: reduce this number of attacks to 1/3, round up.
 
   - `d.melee_NoA`= 0 + Item Bonuses of {(`d.melee_NoA` x enhancement multiplier x super rare multiplier x its c.multiplier + `c.melee_NoA+v`), round off} 
@@ -243,6 +244,7 @@
   		- ex. If chracter has `c.physical_offense_multiplier_x1.4` and `c.physical_offense_multiplier_x1.2`, 1.4 x 1.2 = 1.68.
   - If phase is MID,  return 1.0 x  sum of (`c.magical_attack+v` and `c.magical_attack+v` ) x `c.magical_offense_multiplier_xV` x `f.base_multiplier`(base_type: `b.intelligence`)
     - If character.`a.arc-magic`: v *= 3.0
+    - If character has `a.heavy-strike`: multiply by N. 
     - ex. If chracter has `c.magical_offense_multiplier_x1.4` and `c.magical_offense_multiplier_x1.2`, 1.4 x 1.2 = 1.68.
   - *note: `c.melee_attack+v`,  `c.ranged_attack+v`, `c.magical_attack+v`, `c.physical_attack+v`, `c.physical_offense_multiplier_xV` or  `c.magical_offense_multiplier_xV`. Only one single bonuses(c.) of the **exact** same name applies.  
 
