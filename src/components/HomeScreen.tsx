@@ -4194,6 +4194,7 @@ export function HomeScreen({
     const deityGold = state.global.deityDonations[normalizeDeityName(party.deity.name)] ?? party.deityGold ?? 0;
     const deityMultiplier = getDeityStateDurationMultiplier(party.deity.name, deityGold, cycleState);
     if (cycleState !== 'explore') return deityMultiplier;
+    if (party.selectedDungeonId === 99) return 1;
     const exploredRooms = party.lastExpeditionLog?.entries.length;
     return deityMultiplier * getExploreTerrainDurationMultiplier(party, exploredRooms);
   };
