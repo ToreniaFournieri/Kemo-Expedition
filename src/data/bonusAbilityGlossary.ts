@@ -12,7 +12,7 @@ export type BonusAbilityGlossaryEntry = {
 
 export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'iaigiri', label: '居合斬り', description: '物理ダメージを xN倍する(攻撃回数が半減する)', levelScale: ['Lv1: x1.6', 'Lv2: x1.8', 'Lv3: x2.0'], subcategory: 'passive' },
-  { abilityId: 'heavy_strike', label: '重撃', description: '物理ダメージを1.4倍する。攻撃回数を半減し(切り上げ)、減少分を貫通値に変換する(N)', levelScale: ['Lv1: +1%/回', 'Lv2: +1.5%/回'], subcategory: 'passive' },
+  { abilityId: 'heavy_strike', label: '重撃', description: '物理/魔法ダメージを1.4倍する。攻撃回数を半減し(切り上げ)、減少分を貫通値に変換する(N)', levelScale: ['Lv1: +1%/回', 'Lv2: +1.5%/回'], subcategory: 'passive' },
   { abilityId: 'arcane_stability', label: '術式安定', description: '魔法攻撃の命中率はNを下回らない', levelScale: ['Lv1: 55%', 'Lv2: 60%'], subcategory: 'passive' },
   { abilityId: 'arc_magic', label: '大魔法', description: '使用する魔法が大魔法になる(魔法攻撃回数が1/3倍になり、魔法ダメージがN倍になる)', levelScale: ['Lv1: 3', 'Lv2: 3.6', 'Lv3: 4.2'], subcategory: 'passive' },
   { abilityId: 'hunter', label: '狩人', description: '列による命中率減衰を軽減する', levelScale: ['Lv1: 15%→10%', 'Lv2: 15%→7%', 'Lv3: 15%→5%'], subcategory: 'passive' },
