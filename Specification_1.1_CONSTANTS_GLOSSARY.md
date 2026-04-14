@@ -119,7 +119,7 @@
 | `a.death-touch` | 接死 | 通常近接攻撃の命中回数Nの確率で即死させる | Lv1: 2/256, Lv2: 3/256, Lv3: 4/256, Lv4: 5/256, Lv5: 6/256 | on-strike |
 | `a.burn` | 火傷 | 近接攻撃を受けた際に、相手に命中回数x 最大HPのN%の火属性ダメージを与え返す | Lv1: 0.5%, Lv2: 0.9%, Lv3: 1.2%, Lv4: 1.4%, Lv5: 1.5% | on-strike |
 | `a.bind` | 拘束 | 近接攻撃の命中回数Nの確率で行動不能にする | Lv1: 2/64, Lv2: 3/64, Lv3: 4/64, Lv4: 5/64, Lv5: 6/64 | on-strike |
-| `a.counter` | 反撃 | 近距離攻撃を受けたとき反撃する(攻撃回数がN倍になる) | Lv1: x0.5, Lv2: x1.0, Lv3: x2.0 | counter |
+| `a.counter` | 反撃 | 物理攻撃を受けたとき反撃する(攻撃回数がN倍になる) | Lv1: x0.5, Lv2: x1.0, Lv3: x2.0 | counter |
 | `a.magical-counter` | 魔法反撃 | 魔法攻撃に対して反撃する(攻撃回数がN倍になる) | Lv1: x0.5, Lv2: x1.0 | counter |
 | `a.resurrect` | 再起 | 致命ダメージを受けた際、HPをN残して耐える(1回のみ) | Lv1: 1, Lv2: 1% | on-defeat |
 | `a.reanimate` | 即時蘇生 | HPが0になったとき、HP N%で復活する(戦闘中1回のみ) | Lv1: 20%, Lv2: 26%, Lv3: 31%, Lv4: 35%, Lv5: 38% | on-defeat |
