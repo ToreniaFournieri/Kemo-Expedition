@@ -1715,9 +1715,12 @@ function getApproxAfkTimeQuestProgressPerCycle(
   const emulatedCycleSeconds = Math.max(1, Math.ceil((approxCycleDurationMs / safeScale) / 1000));
   const stepSeconds = BASE_STEP_DURATION_MS / 1000;
   const baseRestSeconds = Math.ceil(stepSeconds);
+  // SpecRef: 5.1.1 | Party State Machine | state.move
+  // SpecRef: 5.1.1 | Party State Machine | state.return
+  const isColosseum = party.selectedDungeonId === 99;
   const expeditionTier = Math.max(0, party.selectedDungeonId);
-  const moveSeconds = Math.ceil((1 + expeditionTier) * stepSeconds);
-  const returnSeconds = Math.ceil((5 + expeditionTier) * stepSeconds);
+  const moveSeconds = Math.ceil((isColosseum ? 1 : (1 + expeditionTier)) * stepSeconds);
+  const returnSeconds = Math.ceil((isColosseum ? 1 : (5 + expeditionTier)) * stepSeconds);
 
   switch (party.sideQuest.type) {
     case 'q.healing':
