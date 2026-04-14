@@ -497,11 +497,9 @@ function calculateSingleEnemyAttackDamage(
   const heavyStrikePenetPerNoA = getHeavyStrikePenetPerNoA(enemyHeavyStrikeLevel);
   const baseNoA = getEnemyBaseNoA(phase, enemy);
   const adjustedNoA = getEnemyNoA(phase, enemy);
-  const heavyStrikeNoALoss = (phase === 'long' || phase === 'close')
-    ? Math.max(0, baseNoA - adjustedNoA)
-    : 0;
+  const heavyStrikeNoALoss = Math.max(0, baseNoA - adjustedNoA);
   const effectiveDefense = defense * (1 - (heavyStrikeNoALoss * heavyStrikePenetPerNoA));
-  if ((phase === 'long' || phase === 'close') && enemyHeavyStrikeLevel > 0) {
+  if (enemyHeavyStrikeLevel > 0) {
     amplifier *= 1.4;
   }
   // SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.offense_amplifier
@@ -548,15 +546,15 @@ function hasEnemyArcMagic(enemy: EnemyDef): boolean {
 // Get number of attacks for enemy in a phase
 function getEnemyNoA(phase: BattleActionPhase, enemy: EnemyDef): number {
   // SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.NoA
-  const baseNoA = getEnemyBaseNoA(phase, enemy);
-  if (phase === 'mid' && hasEnemyArcMagic(enemy)) {
-    return Math.ceil(baseNoA / 3);
-  }
+  let adjustedNoA = getEnemyBaseNoA(phase, enemy);
   const heavyStrikeLevel = getEnemyAbilityLevel(enemy, 'heavy_strike');
-  if ((phase === 'long' || phase === 'close') && heavyStrikeLevel > 0) {
-    return Math.ceil(baseNoA / 2);
+  if (heavyStrikeLevel > 0) {
+    adjustedNoA = Math.ceil(adjustedNoA / 2);
   }
-  return baseNoA;
+  if (phase === 'mid' && hasEnemyArcMagic(enemy)) {
+    adjustedNoA = Math.ceil(adjustedNoA / 3);
+  }
+  return adjustedNoA;
 }
 
 
@@ -726,6 +724,8 @@ function calculateCharacterFriendlyFireDamage(
   const heavyStrikePenetPerNoA = getHeavyStrikePenetPerNoA(heavyStrike?.level ?? 0);
   const heavyStrikeNoALoss = phase === 'long'
     ? Math.max(0, attacker.originalRangedNoA - attacker.rangedNoA)
+    : phase === 'mid'
+      ? Math.max(0, attacker.originalMagicalNoA - attacker.magicalNoA)
     : phase === 'close'
       ? Math.max(0, attacker.originalMeleeNoA - attacker.meleeNoA)
       : 0;
@@ -747,7 +747,7 @@ function calculateCharacterFriendlyFireDamage(
   } else {
     offenseAmplifier = ((1.0 + phaseBonusSum + attacker.physicalAttackCBonus) * attacker.physicalOffenseMultiplier + attacker.deityOffenseAmplifierBonus) * phaseAttackScale;
   }
-  if (phase !== 'mid' && heavyStrike) {
+  if (heavyStrike) {
     offenseAmplifier *= 1.4;
   }
 
@@ -1218,9 +1218,7 @@ function hitDetection(
     }
   }
   const chance = Math.max(0.0, Math.min(1.0, baseChance)) * Math.pow(decayOfAccuracy, nthHit - 1);
-  const minChanceByArcaneStability = phase === 'mid'
-    ? getArcaneStabilityHitFloor(actorArcaneStabilityLevel)
-    : 0;
+  const minChanceByArcaneStability = getArcaneStabilityHitFloor(actorArcaneStabilityLevel);
   return Math.random() <= Math.max(chance, minChanceByArcaneStability);
 }
 
@@ -1276,6 +1274,8 @@ function calculateCharacterDamage(
   const heavyStrikePenetPerNoA = getHeavyStrikePenetPerNoA(heavyStrike?.level ?? 0);
   const heavyStrikeNoALoss = phase === 'long'
     ? Math.max(0, charStats.originalRangedNoA - charStats.rangedNoA)
+    : phase === 'mid'
+      ? Math.max(0, charStats.originalMagicalNoA - charStats.magicalNoA)
     : phase === 'close'
       ? Math.max(0, charStats.originalMeleeNoA - charStats.meleeNoA)
       : 0;
@@ -1341,7 +1341,7 @@ function calculateCharacterDamage(
     const physicalBonusSum = phaseBonusSum + charStats.physicalAttackCBonus;
     offenseAmplifier = ((1.0 + physicalBonusSum) * charStats.physicalOffenseMultiplier + charStats.deityOffenseAmplifierBonus) * phaseAttackScale;
   }
-  if (phase !== 'mid' && heavyStrike) {
+  if (heavyStrike) {
     offenseAmplifier *= 1.4;
   }
 

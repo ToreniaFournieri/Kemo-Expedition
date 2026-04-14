@@ -273,6 +273,7 @@ export interface ComputedCharacterStats {
   abilities: Ability[];
   penetMultiplier: number;
   originalRangedNoA: number;
+  originalMagicalNoA: number;
   originalMeleeNoA: number;
   elementalOffense: ElementalOffense;
   elementalOffenseValue: number;
