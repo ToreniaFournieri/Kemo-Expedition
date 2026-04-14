@@ -46,7 +46,7 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'death_touch', label: '接死', description: '通常近接攻撃の命中回数×Nの確率で即死させる', levelScale: ['Lv1: 2/256', 'Lv2: 3/256', 'Lv3: 4/256', 'Lv4: 5/256', 'Lv5: 6/256'], subcategory: 'reactive' },
   { abilityId: 'burn', label: '火傷', description: '近接攻撃を受けた際に、相手に命中回数x 最大HPのN%の火属性ダメージを与え返す', levelScale: ['Lv1: 0.5%', 'Lv2: 0.9%', 'Lv3: 1.2%', 'Lv4: 1.4%', 'Lv5: 1.5%'], subcategory: 'reactive' },
   { abilityId: 'bind', label: '拘束', description: '近接攻撃の命中回数×Nの確率で行動不能にする', levelScale: ['Lv1: 2/64', 'Lv2: 3/64', 'Lv3: 4/64', 'Lv4: 5/64', 'Lv5: 6/64'], subcategory: 'reactive' },
-  { abilityId: 'counter', label: '反撃', description: '近距離攻撃を受けたとき反撃する(攻撃回数がxN倍になる)', levelScale: ['Lv1: x0.5', 'Lv2: x1.0', 'Lv3: x2.0'], subcategory: 'reactive' },
+  { abilityId: 'counter', label: '反撃', description: '物理攻撃を受けたとき反撃する(攻撃回数がxN倍になる)', levelScale: ['Lv1: x0.5', 'Lv2: x1.0', 'Lv3: x2.0'], subcategory: 'reactive' },
   { abilityId: 'magical_counter', label: '魔法反撃', description: '魔法攻撃に対して反撃する(攻撃回数がxN倍になる)', levelScale: ['Lv1: x0.5', 'Lv2: x1.0'], subcategory: 'reactive' },
   { abilityId: 'resurrect', label: '再起', description: '致命ダメージを受けた際、HPをN残して耐える(1回のみ)', levelScale: ['Lv1: 1', 'Lv2: 1%'], subcategory: 'reactive' },
   { abilityId: 'reanimate', label: '即時蘇生', description: 'HPが0になったとき、HP N%で復活する(戦闘中1回のみ)', levelScale: ['Lv1: 20%', 'Lv2: 26%', 'Lv3: 31%', 'Lv4: 35%', 'Lv5: 38%'], subcategory: 'reactive' },
