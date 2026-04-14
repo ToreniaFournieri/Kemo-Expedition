@@ -1568,24 +1568,39 @@ function getOffenseMultiplierSum(
   return bonusSum;
 }
 
-function hasArcMagicAbility(abilities: Ability[]): boolean {
-  return abilities.some((ability) => ability.id === 'arc_magic');
-}
-
 function hasEnemyArcMagicAbility(enemy: EnemyDef): boolean {
   return enemy.abilities.some((ability) => ability.id === 'arc_magic' && ability.level > 0);
 }
 
-// SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.offense_amplifier
-// a.arc-magic: magical offense amplifier x3.0.
-function getCharacterDisplayedMagicalAttackAmplifier(baseAmplifier: number, abilities: Ability[]): number {
-  return hasArcMagicAbility(abilities) ? baseAmplifier * 3.0 : baseAmplifier;
+function getArcMagicAbilityLevel(abilities: Ability[]): number {
+  return abilities
+    .filter((ability) => ability.id === 'arc_magic')
+    .reduce((maxLevel, ability) => Math.max(maxLevel, ability.level), 0);
+}
+
+function getEnemyArcMagicAbilityLevel(enemy: EnemyDef): number {
+  return enemy.abilities
+    .filter((ability) => ability.id === 'arc_magic')
+    .reduce((maxLevel, ability) => Math.max(maxLevel, ability.level), 0);
+}
+
+function getArcMagicOffenseAmplifier(level: number): number {
+  if (level >= 3) return 4.2;
+  if (level >= 2) return 3.6;
+  if (level >= 1) return 3.0;
+  return 1.0;
 }
 
 // SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.offense_amplifier
-// a.arc-magic: magical offense amplifier x3.0.
+// a.arc-magic: magical offense amplifier xN (Lv1:3.0, Lv2:3.6, Lv3:4.2).
+function getCharacterDisplayedMagicalAttackAmplifier(baseAmplifier: number, abilities: Ability[]): number {
+  return baseAmplifier * getArcMagicOffenseAmplifier(getArcMagicAbilityLevel(abilities));
+}
+
+// SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.offense_amplifier
+// a.arc-magic: magical offense amplifier xN (Lv1:3.0, Lv2:3.6, Lv3:4.2).
 function getEnemyDisplayedMagicalAttackAmplifier(enemy: EnemyDef): number {
-  return hasEnemyArcMagicAbility(enemy) ? enemy.magicalAttackAmplifier * 3.0 : enemy.magicalAttackAmplifier;
+  return enemy.magicalAttackAmplifier * getArcMagicOffenseAmplifier(getEnemyArcMagicAbilityLevel(enemy));
 }
 
 function getEnemyBestiarySpellName(enemy: EnemyDef): string {
