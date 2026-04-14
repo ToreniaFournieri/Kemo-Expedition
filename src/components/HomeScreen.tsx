@@ -4161,6 +4161,7 @@ export function HomeScreen({
   const getExploreTerrainDurationMultiplier = (party: Party, entryCount?: number): number => {
     const dungeon = DUNGEONS.find((entry) => entry.id === party.selectedDungeonId);
     if (!dungeon) return 1;
+    if (dungeon.id === 99) return 0.01;
 
     const getFloorTerrainRoomMultiplier = (terrainEffect?: string): number => {
       if (terrainEffect === 'terrain.chill') return 2;
