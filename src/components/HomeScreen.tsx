@@ -10023,7 +10023,7 @@ function SettingTab({
                   <div className="text-xs text-gray-500 text-right">当たり残り <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.commonRewardBag, 1))}</span></div>
                 </div>
                 <div>コモン称号付与: {formatNumber(getBagTicketTotal(partyBags.commonEnhancementBag))} / {formatNumber(commonEnhancementTotal)}</div>
-                <div className="pl-3 text-xs text-gray-700">
+                <div className="pl-3 text-xs text-gray-500">
                   {enhancementCountTargets.map(({ value, label }) => {
                     const initialCount = ENHANCEMENT_TITLES.find((title) => title.value === value)?.tickets ?? 0;
                     return (
@@ -10054,7 +10054,7 @@ function SettingTab({
                   <div className="text-xs text-gray-500 text-right">当たり残り <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.mythicRareRewardBag, 1))}</span></div>
                 </div>
                 <div>称号付与: {formatNumber(getBagTicketTotal(partyBags.enhancementBag))} / {formatNumber(enhancementTotal)}</div>
-                <div className="pl-3 text-xs text-gray-700">
+                <div className="pl-3 text-xs text-gray-500">
                   {enhancementCountTargets.map(({ value, label }) => {
                     const initialCount = ENHANCEMENT_TITLES.find((title) => title.value === value)?.tickets ?? 0;
                     return (
@@ -10070,8 +10070,12 @@ function SettingTab({
                 <button onClick={() => confirmReset('報酬初期化', () => onResetUniqueBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">報酬初期化</button>
                 <div>サイドクエスト抽選: {formatNumber(getBagTicketTotal(partyBags.sideQuestBag))} / {formatNumber(sideQuestTotal)}</div>
                 <button onClick={() => confirmReset('サイドクエスト初期化', () => onResetSideQuestBag(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">サイドクエスト初期化</button>
-                <div>眠気抽選: {formatNumber(getBagTicketTotal(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag)))} / {formatNumber(getBagTicketTotal(sleepinessDefaultBag))}</div>
-                <div>寝ない: {formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 0))} / 仮眠: {formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 1))} / 熟睡: {formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 2))}</div>
+                <div className="flex items-start justify-between gap-3">
+                  <div>眠気抽選: {formatNumber(getBagTicketTotal(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag)))} / {formatNumber(getBagTicketTotal(sleepinessDefaultBag))}</div>
+                  <div className="text-xs text-gray-500 text-right">
+                    寝ない: {formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 0))} / 仮眠: {formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 1))} / 熟睡: {formatNumber(getBagEntryTickets(normalizeSleepinessPartyBag(party.sleepinessOfPartyBag), 2))}
+                  </div>
+                </div>
               </div>}
             </div>;
           })}
