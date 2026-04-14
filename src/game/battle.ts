@@ -1417,8 +1417,9 @@ function rollInitiative(
     terrainEffect?: TerrainEffectKey | null;
     actorType?: 'enemy' | 'party';
     fertilityBonus?: number;
-    hasSlow?: boolean;
-    affectedByFrostbite?: boolean;
+    slowPenalty?: number;
+    boostBonus?: number;
+    frostbitePenalty?: number;
   },
 ): number {
   // SpecRef: 6.1.1.2 | LONG, MID, CLOSE phase | Speed & Turn Order (Rolling Dice Rule)
@@ -1436,11 +1437,14 @@ function rollInitiative(
   if (!isMachineLogic && (options?.fertilityBonus ?? 0) > 0) {
     result = Math.min(9, result + (options?.fertilityBonus ?? 0));
   }
-  if (!isMachineLogic && options?.hasSlow) {
-    result = Math.max(1, result - 1);
+  if (!isMachineLogic && (options?.slowPenalty ?? 0) > 0) {
+    result = Math.max(1, result - (options?.slowPenalty ?? 0));
   }
-  if (!isMachineLogic && options?.affectedByFrostbite) {
-    result = Math.max(1, result - 1);
+  if (!isMachineLogic && (options?.boostBonus ?? 0) > 0) {
+    result = Math.min(9, result + (options?.boostBonus ?? 0));
+  }
+  if (!isMachineLogic && (options?.frostbitePenalty ?? 0) > 0) {
+    result = Math.max(1, result - (options?.frostbitePenalty ?? 0));
   }
   if (!isMachineLogic && options?.terrainEffect === 'terrain.tailwind' && options?.actorType === 'party') {
     result = Math.min(9, result + (Math.floor(Math.random() * 3) + 1));
@@ -3372,8 +3376,9 @@ export function executeBattle(
       ? rollInitiative(getEnemyFirstStrikeLevel(enemy), {
         terrainEffect: environment.terrainEffect,
         actorType: 'enemy',
-        hasSlow: hasAbility(enemy.abilities, 'slow'),
-        affectedByFrostbite: partyHasFrostbite,
+        slowPenalty: getHighestAbilityLevel(enemy.abilities, 'slow'),
+        boostBonus: getHighestAbilityLevel(enemy.abilities, 'boost'),
+        frostbitePenalty: partyHasFrostbite ? 1 : 0,
       })
       : null;
     const characterInitiative = characterStats
@@ -3384,8 +3389,9 @@ export function executeBattle(
           terrainEffect: environment.terrainEffect,
           actorType: 'party',
           fertilityBonus: hasFertilityInitiativeBonus ? 1 : 0,
-          hasSlow: hasAbility(cs.abilities, 'slow'),
-          affectedByFrostbite: enemyHasFrostbite,
+          slowPenalty: getHighestAbilityLevel(cs.abilities, 'slow'),
+          boostBonus: getHighestAbilityLevel(cs.abilities, 'boost'),
+          frostbitePenalty: enemyHasFrostbite ? 1 : 0,
         }),
       }));
 
