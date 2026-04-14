@@ -110,7 +110,7 @@
 - **Enemy entity distribution** for each `x.expediton`
 
 - **Gods (神魔):**
-  - Status calculation: master value is `x.exp_tier`. not using `x.exp_id`'s `x.exp_tier`.
+  - Status calculation: master value is `x.exp_tier`.
 
 | `x.exp_id` | `x.enemy_level` | Name | Title | Display name | Class | Represent for | + ability | Drop item tier | Drop item category |
 |-|-|-|-|-|-|-|-|-|-|
