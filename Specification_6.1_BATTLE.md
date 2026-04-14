@@ -553,8 +553,14 @@ If `a.*` with phase = START:
 
 ##### 6.1.4.3 Function of Reactive ability
 
-- **`f.counter`(actor: , opponent: ,phase: ) :** IF (opponent or party members have not available `a.null-counter`) and (actor.`a.counter`, phase is CLOSE) , the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
-    - `a.counter`1: actor.`f.NoA` x 0.5, round up
+- **`f.counter`(actor: , opponent: ,phase: ) :** IF (opponent or party members have not available `a.null-counter`) and (actor.`a.counter`, phase is LONG or CLOSE) , the actor attacks to opponent. (using `f.hit_detection` and `f.damage_calculation`)
+  - Attack resolution:
+    - If phase == LONG: Execute a ranged attack.
+    - If phase == CLOSE: Execute a melee attack.
+  - Failure condition:
+    - If actor does not have a valid attack capability for the current phase, the counteraction is skipped.
+  - Calculation:
+	- `a.counter`1: actor.`f.NoA` x 0.5, round up
     - `a.counter`2: actor.`f.NoA` x 1.0, round up
     - `a.counter`3: actor.`f.NoA` x 1.5, round up
     - Counter triggers immediately after damage resolution, regardless of turn order modifiers.
