@@ -14,6 +14,9 @@ const round2 = (value: number): number => Number(value.toFixed(2));
 
 const MIN_ENEMY_LEVEL = 1;
 const MAX_ENEMY_LEVEL = 99;
+export const COLOSSEUM_EXPEDITION_ID = 0;
+export const COLOSSEUM_ENEMY_POOL_ID = 0;
+export const COLOSSEUM_BOSS_ID = 9901;
 
 const clampEnemyLevel = (enemyLevel: number): number =>
   Math.max(MIN_ENEMY_LEVEL, Math.min(MAX_ENEMY_LEVEL, enemyLevel));
@@ -291,18 +294,18 @@ export const DUNGEONS: Dungeon[] = [
   },
 
   {
-    id: 99,
+    id: COLOSSEUM_EXPEDITION_ID,
     tier: 1,
     expLevel: 1,
     name: '闘技場',
-    enemyPoolIds: [99],
-    bossId: 9901,
+    enemyPoolIds: [COLOSSEUM_ENEMY_POOL_ID],
+    bossId: COLOSSEUM_BOSS_ID,
     enemyMultipliers: EXPEDITION_ENEMY_MULTIPLIERS[0],
     floors: [
       {
         floorNumber: 1,
         multiplier: 1,
-        rooms: [{ type: 'battle_Boss', poolId: 99, bossId: 9901, enemyIds: [9901] }],
+        rooms: [{ type: 'battle_Boss', poolId: COLOSSEUM_ENEMY_POOL_ID, bossId: COLOSSEUM_BOSS_ID, enemyIds: [COLOSSEUM_BOSS_ID] }],
       },
     ],
   },

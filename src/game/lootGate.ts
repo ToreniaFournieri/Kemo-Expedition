@@ -1,4 +1,5 @@
 import { Item, Party } from '../types';
+import { COLOSSEUM_EXPEDITION_ID } from '../data/dungeons';
 import { getDebugSettings } from './debugSettings';
 
 export type GateRarity = 'uncommon' | 'eliteRare' | 'bossRare';
@@ -94,7 +95,7 @@ export function checkLootGateRequirement(params: {
   party: Pick<Party, 'lootGateProgress' | 'lootGateStatus' | 'defeatedBossExpeditions'>;
 }): LootGateCheckResult {
   const { dungeonId, floorNumber, roomInFloor, roomType, tier, party } = params;
-  if (dungeonId === 99) return { blocked: false };
+  if (dungeonId === COLOSSEUM_EXPEDITION_ID) return { blocked: false };
 
   // Entering gate (1,1): previous expedition boss clear requirement. First expedition is exempt.
   if (floorNumber === 1 && roomInFloor === 1 && tier > 1) {
