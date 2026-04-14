@@ -4221,8 +4221,9 @@ export function HomeScreen({
   // SpecRef: 5.1.1 | Party State Machine | state.move
   // SpecRef: 5.1.1 | Party State Machine | state.return
   const getPartyTravelDurationMs = (party: Party, travelState: 'move' | 'return'): number => {
+    // SpecRef: 5.1.1 | Party State Machine | Durration modifilier
     const baseStepCount = travelState === 'move'
-      ? 1 + getExpeditionTierDurationFactor(party.selectedDungeonId)
+      ? (party.selectedDungeonId === 99 ? 1 : 1 + getExpeditionTierDurationFactor(party.selectedDungeonId))
       : 5 + getExpeditionTierDurationFactor(party.selectedDungeonId);
     const durationScale = getTimeSpeedScale(debugSettings);
     const baseDurationMs = baseStepCount * BASE_STEP_DURATION_MS * durationScale;
