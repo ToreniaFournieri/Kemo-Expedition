@@ -54,10 +54,12 @@
 | `state.reactivate` | 復帰中 | - |
 
 **Durration modifilier**
-- `state.explore` state
+- `state.explore`:
   - If `Goddess of Precision`: `Step` *= 2.0 round up
   - If floor is `terrain.chill`: `Step` *= 2.0 round up
   - If floor is `terrain.looping-path`' `Step` *= 2.0 round up
+- `state.move`:
+  - If colosseum, total duration is 1 `Step`.  
 
 - sleepiness from `t.sleepiness_of_party_bag` 
   - 0 No sleep: The party skips the sleep state and continues the normal cycle.
