@@ -58,7 +58,6 @@
   - If `Goddess of Precision`: `Step` *= 2.0 round up
   - If floor is `terrain.chill`: `Step` *= 2.0 round up
   - If floor is `terrain.looping-path`' `Step` *= 2.0 round up
-  - If colosseum, `Step` *= 0.01 round up
 
 - sleepiness from `t.sleepiness_of_party_bag` 
   - 0 No sleep: The party skips the sleep state and continues the normal cycle.
