@@ -10013,8 +10013,9 @@ function SettingTab({
             const partyBags = party.bags;
             const isExpanded = clairvoyancePartyExpanded[partyIndex] === true;
             return <div key={`clairvoyance-${party.id}`} className="rounded border border-gray-200 bg-white p-2">
-              <button type="button" className="w-full text-left font-semibold" onClick={() => setClairvoyancePartyExpanded((prev) => ({ ...prev, [partyIndex]: !isExpanded }))}>
-                PT{partyIndex + 1} {isExpanded ? '▲' : '▼'}
+              <button type="button" className="flex w-full items-center justify-between text-left font-semibold" onClick={() => setClairvoyancePartyExpanded((prev) => ({ ...prev, [partyIndex]: !isExpanded }))}>
+                <span>PT{partyIndex + 1}</span>
+                <span className="text-xs text-gray-500">{isExpanded ? '▲' : '▼'}</span>
               </button>
               {isExpanded && <div className="mt-2 space-y-1 text-sm">
                 {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Clairvoyance (未来視) */}
@@ -10027,7 +10028,7 @@ function SettingTab({
                   {enhancementCountTargets.map(({ value, label }) => {
                     const initialCount = ENHANCEMENT_TITLES.find((title) => title.value === value)?.tickets ?? 0;
                     return (
-                      <div key={`common-enhancement-${party.id}-${value}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-2 leading-5">
+                      <div key={`common-enhancement-${party.id}-${value}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_6.5rem] items-center gap-x-4 leading-5">
                         <span className="tabular-nums text-right text-gray-400">{value}</span>
                         <span>{label}</span>
                         <span className="tabular-nums text-right">{formatNumber(getBagEntryTickets(partyBags.commonEnhancementBag, value))} / {formatNumber(initialCount)}</span>
@@ -10059,7 +10060,7 @@ function SettingTab({
                   {enhancementCountTargets.map(({ value, label }) => {
                     const initialCount = ENHANCEMENT_TITLES.find((title) => title.value === value)?.tickets ?? 0;
                     return (
-                      <div key={`enhancement-${party.id}-${value}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-2 leading-5">
+                      <div key={`enhancement-${party.id}-${value}`} className="grid grid-cols-[2.25rem_minmax(0,1fr)_6.5rem] items-center gap-x-4 leading-5">
                         <span className="tabular-nums text-right text-gray-400">{value}</span>
                         <span>{label}</span>
                         <span className="tabular-nums text-right">{formatNumber(getBagEntryTickets(partyBags.enhancementBag, value))} / {formatNumber(initialCount)}</span>
