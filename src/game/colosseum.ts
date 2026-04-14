@@ -2,7 +2,12 @@ import { AbilityId, ElementalResistance, EnemyClassId, EnemyDef } from '../types
 import { getEnemyTypeAbilities, getEnemyTypeBonuses } from '../data/enemies';
 import { getEnemyCyborgizationAdjustment, resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
 import { applyEnemyTypeCBonuses } from './enemyScaling';
-import { LUNA_MODE_ENEMY_LEVEL_BONUS, getEnemyMultipliersForLevel } from '../data/dungeons';
+import {
+  COLOSSEUM_BOSS_ID,
+  COLOSSEUM_ENEMY_POOL_ID,
+  LUNA_MODE_ENEMY_LEVEL_BONUS,
+  getEnemyMultipliersForLevel,
+} from '../data/dungeons';
 import { createEnvironmentStorageKey } from './environment';
 import { buildEnemyClassMasterStats } from '../data/enemyClasses';
 
@@ -153,12 +158,12 @@ export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode
   };
 
   return applyEnemyTypeCBonuses({
-    id: 9901,
+    id: COLOSSEUM_BOSS_ID,
     type: 'boss',
     enemyType: normalized.enemyType,
     spawnTier: 0,
-    spawnPool: 99,
-    poolId: 99,
+    spawnPool: COLOSSEUM_ENEMY_POOL_ID,
+    poolId: COLOSSEUM_ENEMY_POOL_ID,
     name: normalized.name,
     enemyClass: normalized.enemyMainClass,
     enemySubClass: normalized.enemySubClass,
