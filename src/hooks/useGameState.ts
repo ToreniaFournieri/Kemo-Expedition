@@ -674,11 +674,27 @@ function migrateLegacyBag(
   if (Array.isArray(bag.entries)) {
     return normalizeBagForType({
       entries: bag.entries
-        .filter((entry): entry is { id: unknown; tickets: unknown } => Boolean(entry) && typeof entry === 'object' && 'id' in entry && 'tickets' in entry)
-        .map((entry) => ({
-          id: typeof entry.id === 'number' ? entry.id : 0,
-          tickets: Math.max(0, Math.floor(typeof entry.tickets === 'number' ? entry.tickets : 0)),
-        })),
+        .map((entry) => {
+          if (Array.isArray(entry) && entry.length >= 2) {
+            const [id, tickets] = entry;
+            if (typeof id === 'number' && typeof tickets === 'number') {
+              return {
+                id,
+                tickets: Math.max(0, Math.floor(tickets)),
+              };
+            }
+            return null;
+          }
+          if (entry && typeof entry === 'object' && 'id' in entry && 'tickets' in entry) {
+            const typedEntry = entry as { id: unknown; tickets: unknown };
+            return {
+              id: typeof typedEntry.id === 'number' ? typedEntry.id : 0,
+              tickets: Math.max(0, Math.floor(typeof typedEntry.tickets === 'number' ? typedEntry.tickets : 0)),
+            };
+          }
+          return null;
+        })
+        .filter((entry): entry is { id: number; tickets: number } => entry !== null),
     }, bagType);
   }
 
