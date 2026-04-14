@@ -10019,8 +10019,8 @@ function SettingTab({
               </button>
               {isExpanded && <div className="mt-2 space-y-3 text-sm">
                 {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | Clairvoyance (未来視) */}
-                <div className="rounded border border-blue-200 bg-blue-50/50 p-2 space-y-1">
-                  <div className="text-xs font-semibold text-blue-700 tracking-wide">コモン</div>
+                <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1">
+                  <div className="text-xs font-semibold text-gray-700 tracking-wide">コモン</div>
                   <div className="flex items-start justify-between gap-3">
                     <div>コモン報酬: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.commonRewardBag))} / {formatNumber(commonRewardTotal)}</span></div>
                     <div className="text-xs text-gray-500 text-right">当たり残り <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.commonRewardBag, 1))}</span></div>
@@ -10042,8 +10042,8 @@ function SettingTab({
                   <div className="text-xs text-gray-500 text-right">超レア残り {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.commonSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
                   <button onClick={() => confirmReset('コモン報酬初期化', () => onResetCommonBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">コモン報酬初期化</button>
                 </div>
-                <div className="rounded border border-indigo-200 bg-indigo-50/40 p-2 space-y-1">
-                  <div className="text-xs font-semibold text-indigo-700 tracking-wide">その他レアリティ</div>
+                <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1">
+                  <div className="text-xs font-semibold text-gray-700 tracking-wide">その他レアリティ</div>
                   <div className="flex items-start justify-between gap-3">
                     <div>アンコモン報酬: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.uncommonRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
                     <div className="text-xs text-gray-500 text-right">当たり残り <span className="tabular-nums">{formatNumber(getBagEntryTickets(partyBags.uncommonRewardBag, 1))}</span></div>
@@ -10077,8 +10077,8 @@ function SettingTab({
                   <div className="text-xs text-gray-500 text-right">超レア残り {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.rareSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
                   <button onClick={() => confirmReset('報酬初期化', () => onResetUniqueBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">報酬初期化</button>
                 </div>
-                <div className="rounded border border-emerald-200 bg-emerald-50/40 p-2 space-y-1">
-                  <div className="text-xs font-semibold text-emerald-700 tracking-wide">サイドクエスト</div>
+                <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1">
+                  <div className="text-xs font-semibold text-gray-700 tracking-wide">サイドクエスト</div>
                   <div>サイドクエスト抽選: {formatNumber(getBagTicketTotal(partyBags.sideQuestBag))} / {formatNumber(sideQuestTotal)}</div>
                   <button onClick={() => confirmReset('サイドクエスト初期化', () => onResetSideQuestBag(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">サイドクエスト初期化</button>
                 </div>
