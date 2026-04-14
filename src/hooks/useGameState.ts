@@ -3686,6 +3686,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const baseItem = getItemById(action.itemId);
       const shopPrice = getShopItemPrice(action.itemId);
       if (!baseItem || globalState.gold < shopPrice) return state;
+      const selectedPartyIndex = state.selectedPartyIndex;
+      const currentParty = state.parties[selectedPartyIndex];
+      let partyBags = normalizeImportedBags(currentParty.bags);
 
       const hourKey = getShopHourKey(now);
       const refreshCount = globalState.shopRefreshCounts[hourKey] ?? 0;
@@ -3693,20 +3696,19 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const soldOutItemIds = globalState.shopPurchases[stockKey] ?? [];
       if (soldOutItemIds.includes(action.itemId)) return state;
 
-      const guaranteedEnhancementResult = drawGuaranteedEnhancement(state.bags);
+      const guaranteedEnhancementResult = drawGuaranteedEnhancement(partyBags);
       const enhancement = guaranteedEnhancementResult.enhancement;
-      let bags = guaranteedEnhancementResult.bags;
+      partyBags = guaranteedEnhancementResult.bags;
 
-      bags = refillBagIfEmpty(bags, 'superRareBag');
-      const { ticket: superRare, newBag: newSuperRareBag } = drawFromBag(bags.superRareBag);
-      bags = { ...bags, superRareBag: newSuperRareBag };
+      partyBags = refillBagIfEmpty(partyBags, 'superRareBag');
+      const { ticket: superRare, newBag: newSuperRareBag } = drawFromBag(partyBags.superRareBag);
+      partyBags = { ...partyBags, superRareBag: newSuperRareBag };
 
       const purchasedItem: Item = {
         ...baseItem,
         enhancement,
         superRare,
       };
-      const currentParty = state.parties[state.selectedPartyIndex];
       const autoSellMultiplier = getPartyCunningMultiplier(currentParty);
       const inventoryResult = addItemToInventory(
         globalState.inventory,
@@ -3714,10 +3716,15 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         globalState.gold,
         autoSellMultiplier,
       );
+      const updatedParties = [...state.parties];
+      updatedParties[selectedPartyIndex] = {
+        ...currentParty,
+        bags: partyBags,
+      };
 
       return {
         ...state,
-        bags,
+        parties: updatedParties,
         global: {
           ...globalState,
           inventory: inventoryResult.inventory,
