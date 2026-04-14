@@ -1700,7 +1700,7 @@ function isMagicSealTargetForEnemy(
 
 function getCounterNoAMultiplierForLevel(level: number): number {
   if (level <= 0) return 0;
-  if (level >= 3) return 1.5;
+  if (level >= 3) return 2.0;
   if (level === 2) return 1.0;
   return 0.5;
 }
@@ -1762,9 +1762,10 @@ function enemyHasNoOffense(enemy: EnemyDef): boolean {
 }
 
 function hasCounter(charStats: ComputedCharacterStats, phase: BattleActionPhase): boolean {
+  // SpecRef: 6.1.4.3 | Function of Reactive ability | f.counter
   const ability = charStats.abilities.find(a => a.id === 'counter');
   if (!ability) return false;
-  return phase === 'close';
+  return phase === 'long' || phase === 'close';
 }
 
 function getCounterNoAMultiplier(charStats: ComputedCharacterStats): number {
@@ -2990,9 +2991,15 @@ export function executeBattle(
     createPartyAbilityEffectEntry('deflection', () => '矢払い', level => `(敵の遠距離攻撃の命中率を${level >= 2 ? '15' : '10'}%低下)`),
   ];
 
-  const triggerEnemyCounter = (targetCharStats: ComputedCharacterStats, dealtDamage: number, initiativeRoll?: number): void => {
+  const triggerEnemyCounter = (
+    phase: BattleActionPhase,
+    targetCharStats: ComputedCharacterStats,
+    dealtDamage: number,
+    initiativeRoll?: number,
+  ): void => {
+    // SpecRef: 6.1.4.3 | Function of Reactive ability | f.counter
     const counterNoAMultiplier = getEnemyCounterNoAMultiplier(enemy);
-    if (dealtDamage <= 0 || counterNoAMultiplier <= 0) return;
+    if (dealtDamage <= 0 || counterNoAMultiplier <= 0 || (phase !== 'long' && phase !== 'close')) return;
 
     const nullifierStats = getAvailableNullCounterOwner(characterStats, remainingNullCounterByCharacterId);
     const nullifiedByParty = !!nullifierStats;
@@ -3004,7 +3011,7 @@ export function executeBattle(
         consumeNullCounter(nullifierStats.characterId, remainingNullCounterByCharacterId);
       }
       log.push({
-        phase: 'close',
+        phase,
         actor: 'effect',
         action: `${nullifier?.name ?? '味方'}の反撃無効化により、${enemy.name}の反撃は防がれた！`,
       });
@@ -3012,17 +3019,17 @@ export function executeBattle(
     }
 
     const enemyEchoDomainUsageCount = registerElementalOffenseUsage(enemy.elementalOffense);
-    const singleDamage = calculateSingleEnemyAttackDamage('close', enemy, characterStats, targetCharStats, enemyHp, partyHp, partyStats.hp, environment.terrainEffect, enemyOffenseAmplifierMultiplier, enemyEchoDomainUsageCount);
-    const enemyCloseAccuracyBonus = enemyTemporaryAccuracyBonus;
+    const singleDamage = calculateSingleEnemyAttackDamage(phase, enemy, characterStats, targetCharStats, enemyHp, partyHp, partyStats.hp, environment.terrainEffect, enemyOffenseAmplifierMultiplier, enemyEchoDomainUsageCount);
+    const enemyPhaseAccuracyBonus = phase === 'close' ? enemyTemporaryAccuracyBonus : 0;
     const attempts = Math.ceil(
-      getEnemyNoA('close', enemy)
-      * enemyFlyingNoAMultiplier
+      getEnemyNoA(phase, enemy)
+      * (phase === 'close' ? enemyFlyingNoAMultiplier : 1.0)
       * counterNoAMultiplier
-      * getTerrainNoAAmplifier('close', environment.terrainEffect)
+      * getTerrainNoAAmplifier(phase, environment.terrainEffect)
     );
     let hits = 0;
     for (let i = 1; i <= attempts; i++) {
-      const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyCloseAccuracyBonus, targetCharStats.evasionBonus, i, 'close', getDeflectionLevel(targetCharStats), getEnemyFocusLevel(enemy), environment.terrainEffect);
+      const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, targetCharStats.evasionBonus, i, phase, getDeflectionLevel(targetCharStats), getEnemyFocusLevel(enemy), environment.terrainEffect);
       if (didHit) {
         hits += 1;
       }
@@ -3033,7 +3040,7 @@ export function executeBattle(
     let appliedHits = 0;
     let avoidedByStealth = false;
     const avoidedByIllusion = isIllusionActive(
-      'close',
+      phase,
       hasIllusion(targetCharStats),
       `character:${targetCharStats.characterId}`,
       consumedIllusionStateIds,
@@ -3053,12 +3060,12 @@ export function executeBattle(
       }
     }
 
-    triggerPartyDefeatRecovery(targetCharStats, 'close', initiativeRoll, true);
+    triggerPartyDefeatRecovery(targetCharStats, phase, initiativeRoll, true);
 
     const enemyCounterRageBonusPercent = toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp));
     const enemyCounterSwarmBonuses = getSwarmLogBonuses(enemy.abilities, enemyHp, enemy.hp, targetCharStats.abilities, partyHp, partyStats.hp);
     log.push({
-      phase: 'close',
+      phase,
       initiativeRoll,
       actor: 'enemy',
       action: `${targetName} に反撃！`,
@@ -3074,7 +3081,7 @@ export function executeBattle(
 
     if (avoidedByIllusion) {
       log.push({
-        phase: 'close',
+        phase,
         actor: 'effect',
         action: `${targetName} への攻撃はすべて幻だった！`,
       });
@@ -3082,7 +3089,7 @@ export function executeBattle(
 
     if (avoidedByStealth) {
       log.push({
-        phase: 'close',
+        phase,
         actor: 'effect',
         action: `${targetName} は物陰に隠れて攻撃をやり過ごせたのだ！`,
       });
@@ -3094,7 +3101,7 @@ export function executeBattle(
     }
 
     const reCounterEchoDomainUsageCount = registerElementalOffenseUsage(targetCharStats.elementalOffense);
-    const reCounterResult = calculateCharacterDamage('close', targetCharStats, targetChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, reCounterNoAMultiplier * partyFlyingNoAMultiplier, temporaryAccuracyBonusByCharacterId.get(targetCharStats.characterId) ?? 0, resolveCharacterOffenseAmplifierMultiplier(targetCharStats.characterId), reCounterEchoDomainUsageCount);
+    const reCounterResult = calculateCharacterDamage(phase, targetCharStats, targetChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, reCounterNoAMultiplier * (phase === 'close' ? partyFlyingNoAMultiplier : 1.0), phase === 'close' ? (temporaryAccuracyBonusByCharacterId.get(targetCharStats.characterId) ?? 0) : 0, resolveCharacterOffenseAmplifierMultiplier(targetCharStats.characterId), reCounterEchoDomainUsageCount);
     if (reCounterResult.totalAttempts <= 0) {
       return;
     }
@@ -3109,7 +3116,7 @@ export function executeBattle(
     const characterReCounterMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(targetCharStats, partyHp, partyStats.hp));
     const characterReCounterSwarmBonuses = getSwarmLogBonuses(targetCharStats.abilities, partyHp, partyStats.hp, enemy.abilities, enemyHp, enemy.hp);
     log.push({
-      phase: 'close',
+      phase,
       actor: 'character',
       characterId: targetCharStats.characterId,
       action: `${targetChar.name} の再反撃！`,
@@ -3126,7 +3133,7 @@ export function executeBattle(
     });
 
     if (reCounterDealtDamage) {
-      triggerEnemyDefeatRecovery('close', initiativeRoll);
+      triggerEnemyDefeatRecovery(phase, initiativeRoll);
     }
   };
 
@@ -5060,8 +5067,8 @@ export function executeBattle(
           });
         }
 
-        if (!isAntagonism && enemyHp > 0 && phase === 'close') {
-          triggerEnemyCounter(cs, result.damage, enemyInitiativeRoll ?? undefined);
+        if (!isAntagonism && enemyHp > 0 && (phase === 'long' || phase === 'close')) {
+          triggerEnemyCounter(phase, cs, result.damage, enemyInitiativeRoll ?? undefined);
         }
 
         if (!isAntagonism && phase === 'close') {
