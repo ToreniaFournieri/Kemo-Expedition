@@ -58,7 +58,7 @@
   - If `Goddess of Precision`: `Step` *= 2.0 round up
   - If floor is `terrain.chill`: `Step` *= 2.0 round up
   - If floor is `terrain.looping-path`' `Step` *= 2.0 round up
-- `state.move`:
+- `state.move` and `state.return`
   - If colosseum, total duration is 1 `Step`.  
 
 - sleepiness from `t.sleepiness_of_party_bag` 
