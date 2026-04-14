@@ -3458,11 +3458,18 @@ export function HomeScreen({
       setPartyCycles(() => {
         const next: Record<number, PartyCycleRuntime> = {};
         latestPartiesRef.current.forEach((party, partyIndex) => {
-          const nextState: PartyCycleState = autoRepeatEnabled ? 'move' : 'idle';
+          const { partyStats } = computePartyStats(party);
+          const needsRest = party.currentHp < partyStats.hp;
+          const nextState: PartyCycleState = autoRepeatEnabled ? 'move' : (needsRest ? 'rest' : 'idle');
           next[partyIndex] = {
             state: nextState,
             stateStartedAt: now - remainderMs,
-            durationMs: nextState === 'move' ? getPartyTravelDurationMs(party, 'move') : 1000,
+            durationMs:
+              nextState === 'move'
+                ? getPartyTravelDurationMs(party, 'move')
+                : nextState === 'rest'
+                  ? getStateDurationMs(party, 'rest')
+                  : 1000,
             isCurrentExpeditionGodsBattle: false,
             skipFeastThisCycle: false,
             skipSleepThisCycle: false,
@@ -3587,13 +3594,23 @@ export function HomeScreen({
       const autoEquipmentPartyIndexes = new Set<number>();
 
       parties.forEach((party, partyIndex) => {
+        const { partyStats: partyRuntimeStats } = computePartyStats(party);
         const runtime = next[partyIndex] ?? {
-          state: (autoRepeatEnabled ? 'move' : 'idle') as PartyCycleState,
+          state: (
+            autoRepeatEnabled
+              ? 'move'
+              : party.currentHp < partyRuntimeStats.hp
+                ? 'rest'
+                : 'idle'
+          ) as PartyCycleState,
           stateStartedAt: simulationNow,
-          durationMs: autoRepeatEnabled ? getPartyTravelDurationMs(party, 'move') : 1000,
+          durationMs: autoRepeatEnabled
+            ? getPartyTravelDurationMs(party, 'move')
+            : party.currentHp < partyRuntimeStats.hp
+              ? getStateDurationMs(party, 'rest')
+              : 1000,
         };
         const updated = { ...runtime };
-        const { partyStats: partyRuntimeStats } = computePartyStats(party);
         const hpRatioAtRestStart = partyRuntimeStats.hp > 0 ? party.currentHp / partyRuntimeStats.hp : 1;
 
         // SpecRef: 5.1.2 | Side Quest | Expiration
