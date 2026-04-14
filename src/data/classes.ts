@@ -39,6 +39,7 @@ export const CLASSES: ClassDef[] = [
     mainSubBonuses: [
       { type: 'equip_melee', value: 1 },
       { type: 'sword_multiplier', value: 1.4 },
+      { type: 'bolt_multiplier', value: 1.1 },
     ],
     mainBonuses: [
       { type: 'ability', value: 1, abilityId: 'counter', abilityLevel: 1 },
@@ -53,6 +54,7 @@ export const CLASSES: ClassDef[] = [
     mainSubBonuses: [
       { type: 'equip_melee', value: 1 },
       { type: 'katana_multiplier', value: 1.4 },
+      { type: 'archery_multiplier', value: 1.2 },
     ],
     mainBonuses: [
       { type: 'ability', value: 1, abilityId: 'iaigiri', abilityLevel: 1 },
@@ -67,6 +69,7 @@ export const CLASSES: ClassDef[] = [
     mainSubBonuses: [
       { type: 'equip_melee', value: 1 },
       { type: 'gauntlet_multiplier', value: 1.4 },
+      { type: 'grimoire_multiplier', value: 1.1 },
       { type: 'equip_slot', value: 1 },
     ],
     mainBonuses: [
@@ -82,6 +85,7 @@ export const CLASSES: ClassDef[] = [
     mainSubBonuses: [
       { type: 'equip_ranged', value: 1 },
       { type: 'arrow_multiplier', value: 1.4 },
+      { type: 'sword_multiplier', value: 1.1 },
     ],
     mainBonuses: [
       { type: 'ability', value: 1, abilityId: 'hunter', abilityLevel: 1 },
@@ -96,6 +100,7 @@ export const CLASSES: ClassDef[] = [
     mainSubBonuses: [
       { type: 'equip_ranged', value: 1 },
       { type: 'bolt_multiplier', value: 1.4 },
+      { type: 'katana_multiplier', value: 1.1 },
     ],
     mainBonuses: [
       { type: 'ability', value: 1, abilityId: 'heavy_strike', abilityLevel: 1 },
@@ -110,6 +115,7 @@ export const CLASSES: ClassDef[] = [
     mainSubBonuses: [
       { type: 'equip_ranged', value: 1 },
       { type: 'archery_multiplier', value: 1.4 },
+      { type: 'wand_multiplier', value: 1.1 },
       { type: 'equip_slot', value: 1 },
     ],
     mainBonuses: [
@@ -125,6 +131,7 @@ export const CLASSES: ClassDef[] = [
     mainSubBonuses: [
       { type: 'equip_magic', value: 1 },
       { type: 'wand_multiplier', value: 1.4 },
+      { type: 'bolt_multiplier', value: 1.1 },
     ],
     mainBonuses: [
       { type: 'ability', value: 1, abilityId: 'resonance', abilityLevel: 1 },
@@ -139,6 +146,7 @@ export const CLASSES: ClassDef[] = [
     mainSubBonuses: [
       { type: 'equip_magic', value: 1 },
       { type: 'grimoire_multiplier', value: 1.4 },
+      { type: 'sword_multiplier', value: 1.2 },
     ],
     mainBonuses: [
       { type: 'ability', value: 1, abilityId: 'arc_magic', abilityLevel: 1 },
@@ -153,6 +161,7 @@ export const CLASSES: ClassDef[] = [
     mainSubBonuses: [
       { type: 'equip_magic', value: 1 },
       { type: 'catalyst_multiplier', value: 1.4 },
+      { type: 'robe_multiplier', value: 1.1 },
       { type: 'equip_slot', value: 1 },
     ],
     mainBonuses: [
