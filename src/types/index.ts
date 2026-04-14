@@ -143,7 +143,7 @@ export type AbilityId =
   | 'arcane_stability' | 'arc_magic'
   | 'focus' | 'prophecy' | 'stealth' | 'illusion'
   // Enemy-only abilities prepared from Enemy Master Specification
-  | 'howl' | 'predator_sense' | 'slow' | 'corrode' | 'life_drain' | 'no_offense'
+  | 'howl' | 'predator_sense' | 'slow' | 'boost' | 'corrode' | 'life_drain' | 'no_offense'
   | 'decompose' | 'swarm' | 'death_touch' | 'flying' | 'free' | 'frostbite'
   | 'ice_reflect' | 'ice_absorb' | 'ice_null' | 'bind' | 'regeneration' | 'burn' | 'fire_reflect' | 'fire_absorb' | 'fire_null' | 'thunder_reflect' | 'thunder_absorb' | 'thunder_null' | 'soul_reap'
   | 'mutual_magic_amplify' | 'mutual_magic_restraint' | 'ranged_confusion' | 'magic_confusion' | 'melee_confusion' | 'self_destruct' | 'oblivion' | 'reanimate'
