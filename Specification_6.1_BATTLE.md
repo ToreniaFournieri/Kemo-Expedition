@@ -549,7 +549,7 @@ If `a.*` with phase = START:
   - Roll: Return Random(0, 1.0) <= chance
 
   - **Override of ability effect**
-    - If actor.`a.arcane-stability` and (phase is MID): max(N /100 , calculated chance)
+    - If actor.`a.arcane-stability`: max(N /100 , calculated chance)
 
 ##### 6.1.4.3 Function of Reactive ability
 
