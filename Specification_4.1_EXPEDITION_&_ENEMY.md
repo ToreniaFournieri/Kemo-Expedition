@@ -382,7 +382,7 @@ All enemies are stored with Master Values (Tier 1, Room 1 equivalent). Their act
 | 1 | ELITE3 | class.ranger.striker |
 | 1 | ELITE4 | class.sage.lord  |
 | 1 | ELITE5 | class.alchemist.wizard |
-| 1 | BOSS | class.guardian.lord |
+| 1 | BOSS | class.guardian |
 | 2 | ELITE1 | class.lord.ranger |
 | 2 | ELITE2 | class.samurai.guardian |
 | 2 | ELITE3 | class.striker.pilgrim  |
