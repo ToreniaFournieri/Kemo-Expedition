@@ -1082,13 +1082,12 @@ function drawPartySleepiness(party: Party): { party: Party; sleepiness: Sleepine
 // SpecRef: 2.1.4.2 | Initial setup | PT1 Party initial condition.
 function createInitialParty() {
   const defaultSetup = [
-    { race: 'caninian', main: 'guardian', sub: 'alchemist', pred: 'inquisitive', lineage: 'fragment', name: 'ケモ', equipmentIds: [1101, 1110, 1111, 1112] },
-    { race: 'vulpinian', main: 'duelist', sub: 'samurai', pred: 'aggressive', lineage: 'sandstorm', name: 'ゴン', equipmentIds: [1104, 1106] },
-    { race: 'procyonian', main: 'ninja', sub: 'lord', pred: 'evasive', lineage: 'firmament', name: 'ソウタ', equipmentIds: [1104, 1106, 1104, 1106] },
-    { race: 'leporian', main: 'ranger', sub: 'pilgrim', pred: 'nimble', lineage: 'abyssal_sea', name: 'ロップ', equipmentIds: [1107, 1108, 1109] },
-    { race: 'felidian', main: 'sage', sub: 'guardian', pred: 'nimble', lineage: 'adaptation', name: 'ラス', equipmentIds: [1110, 1111, 1112] },
-    // SpecRef: 2.1.4.2 | Initial setup | PT1 #6 "セルヴァ" starts with 1110 and 1112 only.
-    { race: 'cervin', main: 'wizard', sub: 'wizard', pred: 'resourceful', lineage: 'utopia', name: 'セルヴァ', equipmentIds: [1110, 1112] },
+    { race: 'caninian', main: 'guardian', sub: 'pilgrim', pred: 'devoted', lineage: 'fragment', name: 'ケモ', equipmentIds: [1101, 1110, 1111, 1112] },
+    { race: 'vulpinian', main: 'duelist', sub: 'pilgrim', pred: 'aggressive', lineage: 'sandstorm', name: 'ゴン', equipmentIds: [1104, 1106] },
+    { race: 'leporian', main: 'ranger', sub: 'ninja', pred: 'inquisitive', lineage: 'abyssal_sea', name: 'ロップ', equipmentIds: [1107, 1108, 1109] },
+    { race: 'procyonian', main: 'ninja', sub: 'striker', pred: 'evasive', lineage: 'firmament', name: 'ソウタ', equipmentIds: [1104, 1106, 1104, 1106] },
+    { race: 'cervin', main: 'wizard', sub: 'alchemist', pred: 'amiable', lineage: 'utopia', name: 'セルフィン', equipmentIds: [1110, 1112] },
+    { race: 'felidian', main: 'sage', sub: 'wizard', pred: 'resourceful', lineage: 'machina', name: 'ラス', equipmentIds: [1110, 1112] },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
@@ -1144,12 +1143,12 @@ function createInitialParty() {
 
 function createSecondParty() {
   const defaultSetup = [
-    { race: 'lupinian', main: 'samurai', sub: 'samurai', pred: 'aggressive', lineage: 'ashen_capital', name: 'ルプ' },
-    { race: 'lupinian', main: 'guardian', sub: 'lord', pred: 'stubborn', lineage: 'fragment', name: 'ガル' },
-    { race: 'lupinian', main: 'duelist', sub: 'ranger', pred: 'precise', lineage: 'abyssal_sea', name: 'ヴォルフ' },
-    { race: 'lupinian', main: 'ninja', sub: 'ninja', pred: 'introspective', lineage: 'blaze_peak', name: 'ライカ' },
-    { race: 'lupinian', main: 'pilgrim', sub: 'sage', pred: 'perceptive', lineage: 'utopia', name: 'フェン' },
-    { race: 'lupinian', main: 'wizard', sub: 'sage', pred: 'resourceful', lineage: 'firmament', name: 'ノア' },
+    { race: 'procyonian', main: 'samurai', sub: 'guardian', pred: 'inquisitive', lineage: 'ashen_capital', name: 'コロ' },
+    { race: 'lupinian', main: 'sword-saint', sub: 'samurai', pred: 'perceptive', lineage: 'windcross', name: 'マーレ' },
+    { race: 'felidian', main: 'ranger', sub: 'striker', pred: 'amiable', lineage: 'abyssal_sea', name: 'ルドルフ' },
+    { race: 'murid', main: 'striker', sub: 'striker', pred: 'aggressive', lineage: 'firmament', name: 'コソネ' },
+    { race: 'caninian', main: 'ninja', sub: 'striker', pred: 'aggressive', lineage: 'frozen_forest', name: 'ルーファス' },
+    { race: 'vulpinian', main: 'wizard', sub: 'sage', pred: 'serene', lineage: 'utopia', name: 'アヤ' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
@@ -1201,12 +1200,12 @@ function createSecondParty() {
 
 function createThirdParty() {
   const defaultSetup = [
-    { race: 'vulpinian', main: 'duelist', sub: 'samurai', pred: 'aggressive', lineage: 'ashen_capital', name: 'キツネ' },
-    { race: 'vulpinian', main: 'ninja', sub: 'ninja', pred: 'introspective', lineage: 'blaze_peak', name: 'ヨウ' },
-    { race: 'vulpinian', main: 'ranger', sub: 'sage', pred: 'precise', lineage: 'abyssal_sea', name: 'シュン' },
-    { race: 'vulpinian', main: 'lord', sub: 'guardian', pred: 'stubborn', lineage: 'fragment', name: 'コン' },
-    { race: 'vulpinian', main: 'pilgrim', sub: 'sage', pred: 'perceptive', lineage: 'utopia', name: 'ミコ' },
-    { race: 'vulpinian', main: 'wizard', sub: 'sage', pred: 'resourceful', lineage: 'firmament', name: 'イナ' },
+    { race: 'procyonian', main: 'pilgrim', sub: 'guardian', pred: 'nimble', lineage: 'oath', name: 'シマ' },
+    { race: 'ursan', main: 'samurai', sub: 'ranger', pred: 'inquisitive', lineage: 'abyssal_sea', name: 'クレセント' },
+    { race: 'cervin', main: 'wizard', sub: 'alchemist', pred: 'introspective', lineage: 'utopia', name: 'シーケルン' },
+    { race: 'vulpinian', main: 'sage', sub: 'sage', pred: 'precise', lineage: 'adaptation', name: 'ドッシュ' },
+    { race: 'felidian', main: 'alchemist', sub: 'wizard', pred: 'serene', lineage: 'machina', name: 'アルテミス' },
+    { race: 'lupinian', main: 'ninja', sub: 'wizard', pred: 'perceptive', lineage: 'windcross', name: 'ウォッシ' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
@@ -1258,12 +1257,12 @@ function createThirdParty() {
 
 function createFourthParty() {
   const defaultSetup = [
-    { race: 'ursan', main: 'guardian', sub: 'lord', pred: 'stubborn', lineage: 'fragment', name: 'グロウ' },
-    { race: 'ursan', main: 'samurai', sub: 'guardian', pred: 'aggressive', lineage: 'ashen_capital', name: 'バル' },
-    { race: 'ursan', main: 'duelist', sub: 'ranger', pred: 'precise', lineage: 'abyssal_sea', name: 'ロア' },
-    { race: 'ursan', main: 'ninja', sub: 'ninja', pred: 'introspective', lineage: 'blaze_peak', name: 'グリズ' },
-    { race: 'ursan', main: 'sage', sub: 'pilgrim', pred: 'perceptive', lineage: 'utopia', name: 'ウル' },
-    { race: 'ursan', main: 'wizard', sub: 'sage', pred: 'resourceful', lineage: 'firmament', name: 'ドルト' },
+    { race: 'ursan', main: 'guardian', sub: 'guardian', pred: 'stubborn', lineage: 'fragment', name: 'グレン' },
+    { race: 'caninian', main: 'lord', sub: 'wizard', pred: 'resourceful', lineage: 'machina', name: 'ライカ' },
+    { race: 'felidian', main: 'sword-saint', sub: 'duelist', pred: 'perceptive', lineage: 'ashen_capital', name: 'ヴェリタス' },
+    { race: 'lupinian', main: 'duelist', sub: 'samurai', pred: 'inquisitive', lineage: 'blaze_peak', name: 'ラビ' },
+    { race: 'murid', main: 'striker', sub: 'ninja', pred: 'aggressive', lineage: 'firmament', name: 'ネロ' },
+    { race: 'lupinian', main: 'sage', sub: 'wizard', pred: 'amiable', lineage: 'adaptation', name: 'フェン' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
@@ -1315,12 +1314,12 @@ function createFourthParty() {
 
 function createFifthParty() {
   const defaultSetup = [
-    { race: 'felidian', main: 'sage', sub: 'pilgrim', pred: 'perceptive', lineage: 'utopia', name: 'ミャオ' },
-    { race: 'felidian', main: 'ranger', sub: 'sage', pred: 'precise', lineage: 'abyssal_sea', name: 'ニル' },
-    { race: 'felidian', main: 'duelist', sub: 'samurai', pred: 'aggressive', lineage: 'ashen_capital', name: 'フェル' },
-    { race: 'felidian', main: 'ninja', sub: 'ninja', pred: 'introspective', lineage: 'blaze_peak', name: 'シロ' },
-    { race: 'felidian', main: 'lord', sub: 'guardian', pred: 'stubborn', lineage: 'fragment', name: 'カリン' },
-    { race: 'felidian', main: 'wizard', sub: 'sage', pred: 'resourceful', lineage: 'firmament', name: 'ネイ' },
+    { race: 'caninian', main: 'lord', sub: 'ninja', pred: 'stubborn', lineage: 'machina', name: 'アーサー' },
+    { race: 'vulpinian', main: 'ninja', sub: 'ranger', pred: 'evasive', lineage: 'abyssal_sea', name: 'ダミアン' },
+    { race: 'leporian', main: 'ranger', sub: 'guardian', pred: 'precise', lineage: 'abyssal_sea', name: 'ファー' },
+    { race: 'felidian', main: 'striker', sub: 'pilgrim', pred: 'devoted', lineage: 'firmament', name: 'ミケ' },
+    { race: 'lupinian', main: 'striker', sub: 'ranger', pred: 'aggressive', lineage: 'firmament', name: 'グレイ' },
+    { race: 'cervin', main: 'wizard', sub: 'wizard', pred: 'resourceful', lineage: 'utopia', name: 'セトラ' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
@@ -1372,12 +1371,12 @@ function createFifthParty() {
 
 function createSixthParty() {
   const defaultSetup = [
-    { race: 'mustelid', main: 'wizard', sub: 'sage', pred: 'resourceful', lineage: 'firmament', name: 'ミン' },
-    { race: 'mustelid', main: 'ninja', sub: 'ninja', pred: 'introspective', lineage: 'blaze_peak', name: 'トロ' },
-    { race: 'mustelid', main: 'duelist', sub: 'samurai', pred: 'aggressive', lineage: 'ashen_capital', name: 'ネル' },
-    { race: 'mustelid', main: 'ranger', sub: 'sage', pred: 'precise', lineage: 'abyssal_sea', name: 'マル' },
-    { race: 'mustelid', main: 'guardian', sub: 'lord', pred: 'stubborn', lineage: 'fragment', name: 'タル' },
-    { race: 'mustelid', main: 'pilgrim', sub: 'sage', pred: 'perceptive', lineage: 'utopia', name: 'リン' },
+    { race: 'ursan', main: 'guardian', sub: 'wizard', pred: 'resourceful', lineage: 'adaptation', name: 'ドンガ' },
+    { race: 'procyonian', main: 'sword-saint', sub: 'ranger', pred: 'evasive', lineage: 'utopia', name: 'ピナ' },
+    { race: 'caninian', main: 'wizard', sub: 'ranger', pred: 'inquisitive', lineage: 'abyssal_sea', name: 'ミィス' },
+    { race: 'procyonian', main: 'alchemist', sub: 'alchemist', pred: 'amiable', lineage: 'adaptation', name: 'ケラ' },
+    { race: 'cervin', main: 'wizard', sub: 'sage', pred: 'amiable', lineage: 'machina', name: 'コシ' },
+    { race: 'lupinian', main: 'wizard', sub: 'alchemist', pred: 'nimble', lineage: 'utopia', name: 'ディル' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({

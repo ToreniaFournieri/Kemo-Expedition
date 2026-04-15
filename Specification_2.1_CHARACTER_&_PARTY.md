@@ -78,20 +78,20 @@
 
 **lineage(系譜):**
 
-| lineage | short | category | bonus |
-|--------|------|----------|-------|
-| 砂塵の系譜 | 砂 | 動乱 | `c.sword_x1.2` |
-| 灰都の系譜 | 灰 | 動乱 | `c.katana_x1.2` |
-| 焔嶺の系譜 | 焔 | 動乱 | `c.gauntlet_x1.2`, `c.fire-defense-multiplier_x4/5` |
-| 深海の系譜 | 海 | 狩猟 | `c.arrow_x1.2` |
-| 天穹の系譜 | 穹 | 狩猟 | `c.bolt_x1.2` |
-| 凍森の系譜 | 凍 | 狩猟 | `c.archery_x1.2`, `c.ice-defense-multiplier_x4/5` |
-| 桃源の系譜 | 桃 | 学識 | `c.wand_x1.2` |
-| 機骸の系譜 | 機 | 学識 | `c.grimoire_x1.2` |
-| 適応の系譜 | 適 | 学識 | `c.catalyst_x1.2`, `c.thunder-defense-multiplier_x3/4` |
-| 断章の系譜 | 断 | 生存 | `c.armor_x1.2` |
-| 風渡の系譜 | 風 | 生存 | `c.robe_x1.2` |
-| 誓約の系譜 | 誓 | 生存 | `c.shield_x1.2` |
+| lineage |　Text | short | category | bonus |
+|--------|-----|------|----------|-------|
+| `sandstorm` | 砂塵の系譜 | 砂 | 動乱 | `c.sword_x1.2` |
+| `ashen_capital` | 灰都の系譜 | 灰 | 動乱 | `c.katana_x1.2` |
+| `blaze_peak` | 焔嶺の系譜 | 焔 | 動乱 | `c.gauntlet_x1.2`, `c.fire-defense-multiplier_x4/5` |
+| `abyssal_sea` | 深海の系譜 | 海 | 狩猟 | `c.arrow_x1.2` |
+| `firmament` | 天穹の系譜 | 穹 | 狩猟 | `c.bolt_x1.2` |
+| `frozen_forest` | 凍森の系譜 | 凍 | 狩猟 | `c.archery_x1.2`, `c.ice-defense-multiplier_x4/5` |
+| `utopia` | 桃源の系譜 | 桃 | 学識 | `c.wand_x1.2` |
+| `machina` | 機骸の系譜 | 機 | 学識 | `c.grimoire_x1.2` |
+| `adaptation` | 適応の系譜 | 適 | 学識 | `c.catalyst_x1.2`, `c.thunder-defense-multiplier_x3/4` |
+| `fragment` | 断章の系譜 | 断 | 生存 | `c.armor_x1.2` |
+| `windcross` | 風渡の系譜 | 風 | 生存 | `c.robe_x1.2` |
+| `oath` | 誓約の系譜 | 誓 | 生存 | `c.shield_x1.2` |
 
 
 **predisposition(性格):**
@@ -108,7 +108,7 @@
 | Devoted | 献身 | 献 | 適応 | `c.growth_x1.1`, `c.fire-defense-multiplier_x4/5` |
 | Serenity | 冷静 | 冷 | 適応 | `c.growth_x1.1`, `c.ice-defense-multiplier_x4/5` |
 | Nimble | 軽快 | 軽 | 適応 | `c.evasion+0.010`, `c.thunder-defense-multiplier_x4/5` |
-| Perceptive | 看破 | 看 | 機知 | `c.penet+0.010`, `b.intelligence+1` |
+| Perceptive | 看破 | 看 | 機知 | `c.penet+0.100`, `b.intelligence+1` |
 | Exacting | 精確 | 精 | 機知 | `c.accuracy+0.025`, `b.strength+1` |
 | Savvy | 手腕 | 腕 | 機知 | `c.equip-slot+1` |
 
@@ -395,18 +395,15 @@ Party.`d.HP` =
 - unlocked deity: none (all of other deity is unlocked)
 
 - PT1 Party initial condition.
-  1. "ケモ", Caninian, 防(錬), Inquisitive, 断
-     - equipment: `1101`, `1110`, `1111`, `1112` 
-  2. "ゴン", Vulpinian, 剣(侍), Aggressive, 砂
-     - equipment: `1104`, `1106`
-  3. "ソウタ", Procyonian, 忍(君), Evasive, 穹
-     - equipment: `1104`, `1106`,`1104`, `1106`
-  4. "ロップ", Leporian, 狩(巡), Nimble, 海
-     - equipment: `1107`, `1108`, `1109`
-  5. "ラス", Felidian, 賢(防), Nimble, 適
-     - equipment: `1110`, `1111`, `1112` 
-  6. "セルヴァ", Cervin, 魔(魔), Stubborn, 腕
-     - equipment: `1110`, `1112`
+
+| order | Name | Race | main class | sub class | lineage | predisposition | Initial equipment |
+|------|------|------|------|------|------|------|------|
+| 1 | ケモ | Caninian | `class.guardian` | `class.pilgrim` | `fragment` | `Devoted` | `1101`, `1110`, `1111`, `1112` |
+| 2 | ゴン | Vulpinian | `class.duelist` | `class.pilgrim` | `sandstorm` | `Aggressive` | `1104`, `1106` |
+| 3 | ロップ | Leporian | `class.ranger` | `class.ninja` | `abyssal_sea` | `Inquisitive` | `1107`, `1108`, `1109` |
+| 4 | ソウタ | Procyonian | `class.ninja`| `class.striker` | `firmament` | `Shirk` |`1104`, `1106`,`1104`, `1106` |
+| 5 | セルフィン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Amicable` | `1110`, `1112` |
+| 6 | ラス | Felidian | `class.sage` | `class.wizard`| `machina` | `Savvy` | `1110`, `1112`  |
 
 - Party initial inventory.
   - 1 Tier-1 common items of each item type.
@@ -421,25 +418,75 @@ Party.`d.HP` =
 
 - PT2 initial condition (when unlocked)
   - deity: `God of Attrition`
-  - party member race: all Lupinian
-  - 7.1.1 AUTO equipment logic for all party member. 
+
+
+| order | Name | Race | main class | sub class | lineage | predisposition |
+|------|------|------|------|------|------|------|
+| 1 | コロ | Procyonian | `class.samurai` | `class.guardian` | `ashen_capital` | `Inquisitive` |
+| 2 | マーレ | Lupinian | `class.sword-saint` | `class.samurai` | `windcross` | `Perceptive` |
+| 3 | ルドルフ | Felidian | `class.ranger` | `class.striker` | `abyssal_sea` | `Amicable` |
+| 4 | コソネ | Murid | `class.striker`| `class.striker` | `firmament` | `Aggressive ` |
+| 5 | ルーファス | Caninian | `class.ninja` | `class.striker` | `frozen_forest` | `Aggressive` |
+| 6 | アヤ | Vulpinian | `class.wizard` | `class.sage`| `utopia` | `Serenity` |
+
+  
+- 7.1.1 AUTO equipment logic for all party member. 
  
 - PT3 initial condition (when unlocked)
   - deity: `God of Cunning`
-  - party member race: all Vulpinian
+
+| order | Name | Race | main class | sub class | lineage | predisposition |
+|------|------|------|------|------|------|------|
+| 1 | シマ | Procyonian | `class.pilgrim` | `class.guardian` | `oath` | `Nimble` |
+| 2 | クレセント | Ursan | `class.samurai` | `class.ranger` | `abyssal_sea` | `Inquisitive` |
+| 3 | シーケルン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Introspective` |
+| 4 | ドッシュ | Vulpinian | `class.sage`| `class.sage` | `adaptation` | `Exacting` |
+| 5 | アルテミス | Felidian | `class.alchemist` | `class.wizard` | `machina` | `Serenity` |
+| 6 | ウォッシ | Lupinian | `class.ninja` | `class.wizard`| `windcross` | `Perceptive` |
+
+
   - 7.1.1 AUTO equipment logic for all party member.  
 
 - PT4 initial condition (when unlocked)
   - deity: `God of Fortification`
   - party member race: all Ursan
+
+| order | Name | Race | main class | sub class | lineage | predisposition |
+|------|------|------|------|------|------|------|
+| 1 | グレン | Ursan | `class.guardian` | `class.guardian` | `fragment` | `Stubborn` |
+| 2 | ライカ | Caninian | `class.lord` | `class.wizard` | `machina` | `Savvy` |
+| 3 | ヴェリタス | Felidian | `class.sword-saint` | `class.duelist` | `ashen_capital` | `Perceptive` |
+| 4 | ラビ | Lupinian | `class.duelist` | `class.samurai` | `blaze_peak` | `Inquisitive` |
+| 5 | ネロ | Murid | `class.striker`| `class.ninja` | `firmament` | `Aggressive` |
+| 6 | フェン | Lupinian | `class.sage` | `class.wizard`| `adaptation` | `Amicable` |
+
+
   - 7.1.1 AUTO equipment logic for all party member.  
 
 - PT5 initial condition (when unlocked)
   - deity: `Goddess of Fertility`
-  - party member race: all Felidian
+
+| order | Name | Race | main class | sub class | lineage | predisposition |
+|------|------|------|------|------|------|------|
+| 1 | アーサー | Caninian | `class.lord` | `class.ninja` | `machina` | `Stubborn` |
+| 2 | ダミアン | Vulpinian | `class.ninja` | `class.ranger` | `abyssal_sea` | `Shirk` |
+| 3 | ファー | Leporian | `class.ranger` | `class.guardian` | `abyssal_sea` | `Exacting` |
+| 4 | ミケ | Felidian | `class.striker`| `class.pilgrim` | `firmament` | `Devoted` |
+| 5 | グレイ | Lupinian | `class.striker` | `class.ranger` | `firmament` | `Aggressive` |
+| 6 | セトラ | Cervin | `class.wizard` | `class.wizard` | `utopia` | `Savvy` |
+
   - 7.1.1 AUTO equipment logic for all party member. 
 
 - PT6 initial condition (when unlocked)
   - deity: `God of Resonance`
-  - party member race: all Procyonian
+
+| order | Name | Race | main class | sub class | lineage | predisposition |
+|------|------|------|------|------|------|------|
+| 1 | ドンガ | Ursan | `class.guardian` | `class.wizard` | `adaptation` | `Savvy` |
+| 2 | ピナ | Procyonian | `class.sword-saint` | `class.ranger` | `utopia` | `Shirk` |
+| 3 | ミィス | Caninian | `class.wizard` | `class.ranger` | `abyssal_sea` | `Inquisitive` |
+| 4 | ケラ| Procyonian | `class.alchemist`| `class.alchemist` | `adaptation` | `Amicable` |
+| 5 | コシ | Cervin | `class.wizard` | `class.sage` | `machina` | `Amicable` |
+| 6 | ディル | Lupinian | `class.wizard` | `class.alchemist` | `utopia` | `Nimble` |
+  
   - 7.1.1 AUTO equipment logic for all party member.
