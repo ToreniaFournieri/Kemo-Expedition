@@ -230,7 +230,7 @@ export const MASTER_EXPEDITION_ENEMIES_PACKED: Record<number, readonly MasterEne
     [6,'1-2',40,'normal','Mech','sword-saint','i.gauntletU,i.swordU,i.boltU,i.swordC,i.katanaC,i.gauntletC','共鳴前衛オートマタ','striker'],
     [6,'3',43,'elite','Procyonian','ranger','i.arrowBD,i.archeryBD,i.arrowC,i.boltC,i.archeryC','プロキオニアン迅射兵','duelist'],
     [6,'3',43,'elite','Procyonian','samurai','i.shieldBD,i.katanaBD,i.swordC,i.katanaC,i.gauntletC','プロキオニアン護刃兵','ranger'],
-    [6,'4',45,'boss','Procyonian','sage','i.grimoireBD,i.catalystBD,i.shieldBD,i.wandC,i.grimoireC,i.catalystC','遺構主機ヴェルグリム','lord'],
+    [6,'4',45,'boss','Procyonian','sage','i.grimoireBD,i.catalystBD,i.shieldBD,i.wandC,i.grimoireC,i.catalystC','セレスティアルリーパー','lord'],
   ],
   7: [
     [1,'1-2',42,'normal','Titan','ranger','i.arrowU,i.archeryU,i.arrowU,i.arrowC,i.boltC,i.archeryC','月輪の巨斥候','ranger'],
