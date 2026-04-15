@@ -186,15 +186,23 @@ const RARITY_AMPLIFIERS: Record<Rarity, number> = {
   mythicRare: 2.4,
 };
 
-const ITEM_ADDITIONAL_BONUS_BY_NAME: Record<string, Bonus> = {
-  'アイギスの盾': { type: 'physical_defense_multiplier_xV', value: 2 / 3 },
-  '銀鏡の盾': { type: 'magical_defense_multiplier_xV', value: 2 / 3 },
-  '氷牙の防盾': { type: 'ice_defense_multiplier_xV', value: 2 / 3 },
-  '雷電の防盾': { type: 'thunder_defense_multiplier_xV', value: 2 / 3 },
-  '紅の防盾': { type: 'fire_defense_multiplier_xV', value: 2 / 3 },
-  'ホーリーソード': { type: 'ability', value: 1, abilityId: 'requiem', abilityLevel: 1 },
-  'ホーリーアロー': { type: 'ability', value: 1, abilityId: 'requiem', abilityLevel: 1 },
-  '灰色の石': { type: 'ability', value: 1, abilityId: 'slow', abilityLevel: 1 },
+const ITEM_ADDITIONAL_BONUS_BY_NAME: Record<string, Bonus[]> = {
+  'アイギスの盾': [{ type: 'physical_defense_multiplier_xV', value: 2 / 3 }],
+  '銀鏡の盾': [{ type: 'magical_defense_multiplier_xV', value: 2 / 3 }],
+  '氷牙の防盾': [{ type: 'ice_defense_multiplier_xV', value: 2 / 3 }],
+  '雷電の防盾': [{ type: 'thunder_defense_multiplier_xV', value: 2 / 3 }],
+  '紅の防盾': [{ type: 'fire_defense_multiplier_xV', value: 2 / 3 }],
+  '俊敏の弓': [
+    { type: 'ability', value: 1, abilityId: 'boost', abilityLevel: 1 },
+    { type: 'physical_defense_multiplier_xV', value: 1.1 },
+  ],
+  'はやぶさの剣': [
+    { type: 'ability', value: 1, abilityId: 'boost', abilityLevel: 1 },
+    { type: 'physical_defense_multiplier_xV', value: 1.1 },
+  ],
+  'ホーリーソード': [{ type: 'ability', value: 1, abilityId: 'requiem', abilityLevel: 1 }],
+  'ホーリーアロー': [{ type: 'ability', value: 1, abilityId: 'requiem', abilityLevel: 1 }],
+  '灰色の石': [{ type: 'ability', value: 1, abilityId: 'slow', abilityLevel: 1 }],
 };
 
 const ITEM_CORE_CONCEPT_KEYS: Record<ItemCategory, Array<keyof ItemDef>> = {
@@ -233,12 +241,12 @@ function stripItemToCoreConcept(item: ItemDef): void {
 
 // SpecRef: 3.2.1 | Item drop | Special Bonus Override
 function applyAdditionalItemBonus(item: ItemDef): void {
-  const additionalBonus = ITEM_ADDITIONAL_BONUS_BY_NAME[item.name];
-  if (!additionalBonus) return;
+  const additionalBonuses = ITEM_ADDITIONAL_BONUS_BY_NAME[item.name];
+  if (!additionalBonuses || additionalBonuses.length === 0) return;
 
   // Special items only keep their core concept plus the special-bonus.
   stripItemToCoreConcept(item);
-  item.bonuses = [additionalBonus];
+  item.bonuses = [...additionalBonuses];
 }
 
 function getMasterItemName(tier: number, rarity: Rarity, category: ItemCategory, variantIndex?: number): string | undefined {
