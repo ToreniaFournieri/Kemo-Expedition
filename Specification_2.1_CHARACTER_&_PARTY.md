@@ -434,14 +434,30 @@ Party.`d.HP` =
  
 - PT3 initial condition (when unlocked)
   - deity: `God of Cunning`
-  - party member race: all Vulpinian
+
+
+| order | Name | Race | main class | sub class | lineage | predisposition |
+|------|------|------|------|------|------|------|
+| 1 | シマ | Procyonian | `class.pilgrim` | `class.guardian` | `ashen_capital` | `Inquisitive` |
+| 2 | クレセント | Ursan | `class.samurai` | `class.sword-saint` | `windcross` | `Perceptive` |
+| 3 | シーケルン | Cervin | `class.ranger` | `class.striker` | `abyssal_sea` | `Amicable` |
+| 4 | ドッシュ | Vulpinian | `class.striker`| `class.striker` | `firmament` | `Aggressive ` |
+| 5 | アルテミス | Felidian | `class.ninja` | `class.striker` | `frozen_forest` | `Aggressive` |
+| 6 | ウォッシ | Lupinian | `class.wizard` | `class.sage`| `utopia` | `Serenity` |
+
+
   - 7.1.1 AUTO equipment logic for all party member.  
 
 - PT4 initial condition (when unlocked)
   - deity: `God of Fortification`
   - party member race: all Ursan
 
- 
+
+  - 7.1.1 AUTO equipment logic for all party member.  
+
+- PT5 initial condition (when unlocked)
+  - deity: `Goddess of Fertility`
+
 | order | Name | Race | main class | sub class | lineage | predisposition |
 |------|------|------|------|------|------|------|
 | 1 | アーサー | Caninian | `class.lord` | `class.ninja` | `machina` | `Stubborn` |
@@ -451,12 +467,6 @@ Party.`d.HP` =
 | 5 | グレイ | Lupinian | `class.striker` | `class.ranger` | `firmament` | `Aggressive` |
 | 6 | セトラ | Cervin | `class.wizard` | `class.wizard` | `utopia` | `Savvy` |
 
-
-  - 7.1.1 AUTO equipment logic for all party member.  
-
-- PT5 initial condition (when unlocked)
-  - deity: `Goddess of Fertility`
-  - party member race: all Felidian
   - 7.1.1 AUTO equipment logic for all party member. 
 
 - PT6 initial condition (when unlocked)
