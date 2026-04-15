@@ -482,12 +482,12 @@ Party.`d.HP` =
 
 | order | Name | Race | main class | sub class | lineage | predisposition |
 |------|------|------|------|------|------|------|
-| 1 | ドンガ | Ursan | `class.lord` | `class.ninja` | `machina` | `Stubborn` |
-| 2 | ピナ | Leporian | `class.ninja` | `class.ranger` | `abyssal_sea` | `Shirk` |
-| 3 | ミィス | Murid | `class.ranger` | `class.guardian` | `abyssal_sea` | `Exacting` |
-| 4 | バウ | Caninian | `class.striker`| `class.pilgrim` | `firmament` | `Devoted` |
-| 5 | コシ | Cervin | `class.striker` | `class.ranger` | `firmament` | `Aggressive` |
-| 6 | ディル | Lupinian | `class.wizard` | `class.wizard` | `utopia` | `Savvy` |
+| 1 | ドンガ | Ursan | `class.guardian` | `class.wizard` | `adaptation` | `Savvy` |
+| 2 | ピナ | Procyonian | `class.sword-saint` | `class.ranger` | `utopia` | `Shirk` |
+| 3 | ミィス | Caninian | `class.wizard` | `class.ranger` | `abyssal_sea` | `Inquisitive` |
+| 4 | ケラ| Procyonian | `class.alchemist`| `class.alchemist` | `adaptation` | `Amicable` |
+| 5 | コシ | Cervin | `class.wizard` | `class.sage` | `machina` | `Amicable` |
+| 6 | ディル | Lupinian | `class.wizard` | `class.alchemist` | `utopia` | `Nimble` |
   
 
   - 7.1.1 AUTO equipment logic for all party member.
