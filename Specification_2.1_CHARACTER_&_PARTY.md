@@ -395,20 +395,15 @@ Party.`d.HP` =
 - unlocked deity: none (all of other deity is unlocked)
 
 - PT1 Party initial condition.
-| order | Name | Race | main class | sub class | lineage | predisposition |
 
-  1. "ケモ", Caninian, `class.guardian`, `class.pilgrim`,`Devoted`
-     - equipment: `1101`, `1110`, `1111`, `1112` 
-  2. "ゴン", Vulpinian, 剣(侍), Aggressive, 砂
-     - equipment: `1104`, `1106`
-  3. "ソウタ", Procyonian, 忍(君), Evasive, 穹
-     - equipment: `1104`, `1106`,`1104`, `1106`
-  4. "ロップ", Leporian, 狩(巡), Nimble, 海
-     - equipment: `1107`, `1108`, `1109`
-  5. "ラス", Felidian, 賢(防), Nimble, 適
-     - equipment: `1110`, `1111`, `1112` 
-  6. "セルヴァ", Cervin, 魔(魔), Stubborn, 腕
-     - equipment: `1110`, `1112`
+| order | Name | Race | main class | sub class | lineage | predisposition | Initial equipment |
+|------|------|------|------|------|------|------|------|
+| 1 | ケモ | Caninian | `class.guardian` | `class.pilgrim` | `fragment` | `Devoted` | `1101`, `1110`, `1111`, `1112` |
+| 2 | ゴン | Vulpinian | `class.duelist` | `class.pilgrim` | `sandstorm` | `Aggressive` | `1104`, `1106` |
+| 3 | ロップ | Leporian | `class.ranger` | `class.ninja` | `abyssal_sea` | `Inquisitive` | `1107`, `1108`, `1109` |
+| 4 | ソウタ | Procyonian | `class.ninja`| `class.striker` | `firmament` | `Shirk` |`1104`, `1106`,`1104`, `1106` |
+| 5 | セルフィン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Amicable` | `1110`, `1112` |
+| 6 | ラス | Felidian | `class.sage` | `class.wizard`| `machina` | `Savvy` | `1110`, `1112`  |
 
 - Party initial inventory.
   - 1 Tier-1 common items of each item type.
