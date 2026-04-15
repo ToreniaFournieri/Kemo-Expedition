@@ -108,7 +108,7 @@
 | Devoted | 献身 | 献 | 適応 | `c.growth_x1.1`, `c.fire-defense-multiplier_x4/5` |
 | Serenity | 冷静 | 冷 | 適応 | `c.growth_x1.1`, `c.ice-defense-multiplier_x4/5` |
 | Nimble | 軽快 | 軽 | 適応 | `c.evasion+0.010`, `c.thunder-defense-multiplier_x4/5` |
-| Perceptive | 看破 | 看 | 機知 | `c.penet+0.010`, `b.intelligence+1` |
+| Perceptive | 看破 | 看 | 機知 | `c.penet+0.100`, `b.intelligence+1` |
 | Exacting | 精確 | 精 | 機知 | `c.accuracy+0.025`, `b.strength+1` |
 | Savvy | 手腕 | 腕 | 機知 | `c.equip-slot+1` |
 
@@ -418,8 +418,19 @@ Party.`d.HP` =
 
 - PT2 initial condition (when unlocked)
   - deity: `God of Attrition`
-  - party member race: all Lupinian
-  - 7.1.1 AUTO equipment logic for all party member. 
+
+
+| order | Name | Race | main class | sub class | lineage | predisposition |
+|------|------|------|------|------|------|------|
+| 1 | コロ | Procyonian | `class.samurai` | `class.guardian` | `ashen_capital` | `Inquisitive` |
+| 2 | マーレ | Lupinian | `class.sword-saint` | `class.samurai` | `windcross` | `Perceptive` |
+| 3 | ロップ | Felidian | `class.ranger` | `class.ninja` | `abyssal_sea` | `Inquisitive` |
+| 4 | ソウタ | Procyonian | `class.ninja`| `class.striker` | `firmament` | `Shirk` |
+| 5 | セルフィン | Caninian | `class.wizard` | `class.alchemist` | `utopia` | `Amicable` |
+| 6 | ラス | Vulpinian | `class.sage` | `class.wizard`| `machina` | `Savvy` |
+
+  
+- 7.1.1 AUTO equipment logic for all party member. 
  
 - PT3 initial condition (when unlocked)
   - deity: `God of Cunning`
