@@ -489,5 +489,4 @@ Party.`d.HP` =
 | 5 | コシ | Cervin | `class.wizard` | `class.sage` | `machina` | `Amicable` |
 | 6 | ディル | Lupinian | `class.wizard` | `class.alchemist` | `utopia` | `Nimble` |
   
-
   - 7.1.1 AUTO equipment logic for all party member.
