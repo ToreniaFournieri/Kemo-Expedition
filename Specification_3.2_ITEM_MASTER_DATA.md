@@ -202,11 +202,11 @@
 | 4 | E | `Titan` | `i.gauntlet`EC | 破砕の巨手甲 |
 | 4 | E | `Titan` | `i.wand`EC | 巨神の杖 |
 | 4 | B | `Felidian` | `i.bolt`BD | 王都猫の狙撃ボルト |
-| 4 | B | `Felidian` | `i.archery`BD | 王都猫の弓 |
+| 4 | B | `Felidian` | `i.archery`BD | 俊敏の弓 | `a.boost`1, `c.physical-defense-multiplier_x1.1` |
 | 4 | B | `Felidian` | `i.grimoire`BD | 王都猫の秘本 |
 | 4 | B | `Felidian` | `i.arrow`BD | 王都猫の迅矢 |
 | 4 | B | `Felidian` | `i.robe`BD | 王都猫の王衣 |
-| 4 | B | `Felidian` | `i.sword`BD | 王都猫の王剣 |
+| 4 | B | `Felidian` | `i.sword`BD | はやぶさの剣 | `a.boost`1, `c.physical-defense-multiplier_x1.1`  |
 | 5 | C | none | `i.sword`C | 錆鉄の短剣 |
 | 5 | C | none | `i.gauntlet`C | 鉄環の手甲 |
 | 5 | C | none | `i.shield`C | 鉄板の盾 |
