@@ -169,7 +169,8 @@
 | `a.mutual-physical-restraint` | 物理抑制 | 双方の物理ダメージをxN倍にする | Lv1: x0.77, Lv2: x0.67, Lv3: x0.63, Lv4: x0.61, Lv5: x0.59 | START | 3 |
 | `a.magic-seal` | 魔封 | 最初の魔法を無力化する(相手・自身・味方を含む) | - | START | 3 |
 | `a.first-strike` | 先制攻撃 | 行動がN速くなる | Lv1: 少し(2~6), Lv2: とても(3~9), Lv3: 極めて(4~9) | START | 3 |
-| `a.slow` | 鈍足 | 自身の行動順をN低下させる | Lv1: -1 | START | 3 |
+| `a.boost` | 加速 | 自身の行動順をN増加させる | Lv1: 1, Lv2: 2, Lv3: 3 | START | 3 |
+| `a.slow` | 鈍足 | 自身の行動順をN低下させる | Lv1: -1, Lv2: -2, Lv3: -3 | START | 3 |
 | `a.frostbite` | 凍傷 | 相手の行動順をN低下させる | Lv1: -1 | START | 3 |
 | `a.howl` | 遠吠え | 指定タイミングで発動し、相手の次の攻撃回数をxN倍にする | Lv1: LONG2・x5/7, Lv2: LONG2・x4/7, Lv3: LONG2・x3/7, Lv4: LONG2・x2/7, Lv5: LONG2・x1/7 | LONG | 2 |
 | `a.ranged-confusion` | 遠距離混乱 | 指定タイミングで発動し、遠距離攻撃能力を持つ未行動の相手一人をNの確率で敵対状態にする | Lv1: LONG1・1/32, Lv2: LONG1・3/32, Lv3: LONG2・3/32, Lv4: LONG2・5/32, Lv5: LONG2・7/32 | LONG | 1 |
