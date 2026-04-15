@@ -438,12 +438,12 @@ Party.`d.HP` =
 
 | order | Name | Race | main class | sub class | lineage | predisposition |
 |------|------|------|------|------|------|------|
-| 1 | シマ | Procyonian | `class.pilgrim` | `class.guardian` | `ashen_capital` | `Inquisitive` |
-| 2 | クレセント | Ursan | `class.samurai` | `class.sword-saint` | `windcross` | `Perceptive` |
-| 3 | シーケルン | Cervin | `class.ranger` | `class.striker` | `abyssal_sea` | `Amicable` |
-| 4 | ドッシュ | Vulpinian | `class.striker`| `class.striker` | `firmament` | `Aggressive ` |
-| 5 | アルテミス | Felidian | `class.ninja` | `class.striker` | `frozen_forest` | `Aggressive` |
-| 6 | ウォッシ | Lupinian | `class.wizard` | `class.sage`| `utopia` | `Serenity` |
+| 1 | シマ | Procyonian | `class.pilgrim` | `class.guardian` | `oath` | `Nimble` |
+| 2 | クレセント | Ursan | `class.samurai` | `class.sword-saint` | `ashen_capital` | `Inquisitive` |
+| 3 | シーケルン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Introspective` |
+| 4 | ドッシュ | Vulpinian | `class.sage`| `class.sage` | `adaptation` | `Exacting` |
+| 5 | アルテミス | Felidian | `class.alchemist` | `class.wizard` | `machina` | `Serenity` |
+| 6 | ウォッシ | Lupinian | `class.ninja` | `class.wizard`| `windcross` | `Perceptive` |
 
 
   - 7.1.1 AUTO equipment logic for all party member.  
