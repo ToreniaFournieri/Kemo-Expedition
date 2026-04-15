@@ -78,20 +78,20 @@
 
 **lineage(系譜):**
 
-| lineage | short | category | bonus |
-|--------|------|----------|-------|
-| 砂塵の系譜 | 砂 | 動乱 | `c.sword_x1.2` |
-| 灰都の系譜 | 灰 | 動乱 | `c.katana_x1.2` |
-| 焔嶺の系譜 | 焔 | 動乱 | `c.gauntlet_x1.2`, `c.fire-defense-multiplier_x4/5` |
-| 深海の系譜 | 海 | 狩猟 | `c.arrow_x1.2` |
-| 天穹の系譜 | 穹 | 狩猟 | `c.bolt_x1.2` |
-| 凍森の系譜 | 凍 | 狩猟 | `c.archery_x1.2`, `c.ice-defense-multiplier_x4/5` |
-| 桃源の系譜 | 桃 | 学識 | `c.wand_x1.2` |
-| 機骸の系譜 | 機 | 学識 | `c.grimoire_x1.2` |
-| 適応の系譜 | 適 | 学識 | `c.catalyst_x1.2`, `c.thunder-defense-multiplier_x3/4` |
-| 断章の系譜 | 断 | 生存 | `c.armor_x1.2` |
-| 風渡の系譜 | 風 | 生存 | `c.robe_x1.2` |
-| 誓約の系譜 | 誓 | 生存 | `c.shield_x1.2` |
+| lineage |　Text | short | category | bonus |
+|--------|-----|------|----------|-------|
+| `sandstorm` | 砂塵の系譜 | 砂 | 動乱 | `c.sword_x1.2` |
+| `ashen_capital` | 灰都の系譜 | 灰 | 動乱 | `c.katana_x1.2` |
+| `blaze_peak` | 焔嶺の系譜 | 焔 | 動乱 | `c.gauntlet_x1.2`, `c.fire-defense-multiplier_x4/5` |
+| `abyssal_sea` | 深海の系譜 | 海 | 狩猟 | `c.arrow_x1.2` |
+| `firmament` | 天穹の系譜 | 穹 | 狩猟 | `c.bolt_x1.2` |
+| `frozen_forest` | 凍森の系譜 | 凍 | 狩猟 | `c.archery_x1.2`, `c.ice-defense-multiplier_x4/5` |
+| `utopia` | 桃源の系譜 | 桃 | 学識 | `c.wand_x1.2` |
+| `machina` | 機骸の系譜 | 機 | 学識 | `c.grimoire_x1.2` |
+| `adaptation` | 適応の系譜 | 適 | 学識 | `c.catalyst_x1.2`, `c.thunder-defense-multiplier_x3/4` |
+| `fragment` | 断章の系譜 | 断 | 生存 | `c.armor_x1.2` |
+| `windcross` | 風渡の系譜 | 風 | 生存 | `c.robe_x1.2` |
+| `oath` | 誓約の系譜 | 誓 | 生存 | `c.shield_x1.2` |
 
 
 **predisposition(性格):**
@@ -395,7 +395,9 @@ Party.`d.HP` =
 - unlocked deity: none (all of other deity is unlocked)
 
 - PT1 Party initial condition.
-  1. "ケモ", Caninian, 防(錬), Inquisitive, 断
+| order | Name | Race | main class | sub class | lineage | predisposition |
+
+  1. "ケモ", Caninian, `class.guardian`, `class.pilgrim`,`Devoted`
      - equipment: `1101`, `1110`, `1111`, `1112` 
   2. "ゴン", Vulpinian, 剣(侍), Aggressive, 砂
      - equipment: `1104`, `1106`
