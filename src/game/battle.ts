@@ -2923,7 +2923,7 @@ export function executeBattle(
   };
 
   const createPartyEffectEntry = (
-    classId: 'guardian' | 'lord' | 'sage',
+    classId: 'guardian' | 'lord' | 'pilgrim',
     abilityId: 'defender' | 'command' | 'm_barrier',
     label: (level: number) => string,
     noteText: (level: number) => string,
@@ -2987,7 +2987,7 @@ export function executeBattle(
   const partyEffects = [
     createPartyEffectEntry('guardian', 'defender', () => '守護者', level => `(後列の味方への物理ダメージ × ${level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3'})`),
     createPartyEffectEntry('lord', 'command', () => '指揮', level => `(後列の味方が与える物理ダメージ × ${level >= 3 ? '1.43' : level === 2 ? '1.35' : '1.2'})`),
-    createPartyEffectEntry('sage', 'm_barrier', () => '魔法障壁', level => `(後列の味方への魔法ダメージ × ${level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3'})`),
+    createPartyEffectEntry('pilgrim', 'm_barrier', () => '魔法障壁', level => `(後列の味方への魔法ダメージ × ${level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3'})`),
     createPartyAbilityEffectEntry('deflection', () => '矢払い', level => `(敵の遠距離攻撃の命中率を${level >= 2 ? '15' : '10'}%低下)`),
   ];
 

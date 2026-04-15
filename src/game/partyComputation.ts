@@ -268,7 +268,7 @@ export function computePartyStats(party: Party): {
   }
 
   const getBestMainClassAbilityLevel = (
-    classId: 'guardian' | 'lord' | 'sage',
+    classId: 'guardian' | 'lord' | 'pilgrim',
     abilityId: 'defender' | 'command' | 'm_barrier',
   ): number => {
     let bestLevel = 0;
@@ -287,11 +287,11 @@ export function computePartyStats(party: Party): {
   const commandLevel = getBestMainClassAbilityLevel('lord', 'command');
   const offenseAmplifier = commandLevel >= 3 ? 2.43 : commandLevel === 2 ? 1.35 : commandLevel === 1 ? 1.2 : 1.0;
 
-  // Party-wide damage reduction abilities (main class: guardian/sage)
+  // Party-wide damage reduction abilities (main class: guardian/pilgrim)
   const defenderLevel = getBestMainClassAbilityLevel('guardian', 'defender');
   const physicalDefenseAmplifier = defenderLevel >= 3 ? 1 / 2 : defenderLevel === 2 ? 3 / 5 : defenderLevel === 1 ? 2 / 3 : 1.0;
 
-  const mBarrierLevel = getBestMainClassAbilityLevel('sage', 'm_barrier');
+  const mBarrierLevel = getBestMainClassAbilityLevel('pilgrim', 'm_barrier');
   const magicalDefenseAmplifier = mBarrierLevel >= 3 ? 1 / 2 : mBarrierLevel === 2 ? 3 / 5 : mBarrierLevel === 1 ? 2 / 3 : 1.0;
 
   // Elemental resistance (always 1.0 in current version)
