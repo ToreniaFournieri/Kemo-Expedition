@@ -438,7 +438,7 @@ Party.`d.HP` =
 | order | Name | Race | main class | sub class | lineage | predisposition |
 |------|------|------|------|------|------|------|
 | 1 | シマ | Procyonian | `class.pilgrim` | `class.guardian` | `oath` | `Nimble` |
-| 2 | クレセント | Ursan | `class.samurai` | `class.sword-saint` | `ashen_capital` | `Inquisitive` |
+| 2 | クレセント | Ursan | `class.samurai` | `class.ranger` | `abyssal_sea` | `Inquisitive` |
 | 3 | シーケルン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Introspective` |
 | 4 | ドッシュ | Vulpinian | `class.sage`| `class.sage` | `adaptation` | `Exacting` |
 | 5 | アルテミス | Felidian | `class.alchemist` | `class.wizard` | `machina` | `Serenity` |
