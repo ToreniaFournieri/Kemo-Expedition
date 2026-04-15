@@ -40,7 +40,7 @@ export const MASTER_EXPEDITION_ENEMIES_PACKED: Record<number, readonly MasterEne
     [6,'1-2',6,'normal','Beast','sword-saint','i.gauntletU,i.swordU,i.boltU,i.swordC,i.katanaC,i.gauntletC','遺跡の前衛獣','striker'],
     [6,'3',7,'normal','Aerial','ranger','i.arrowU,i.archeryU,i.swordU,i.arrowC,i.boltC,i.archeryC','羽弓の小翼','duelist'],
     [6,'3',7,'normal','Aerial','samurai','i.katanaU,i.shieldU,i.arrowU,i.swordC,i.katanaC,i.gauntletC','城上の翼侍','ranger'],
-    [6,'4',11,'boss','Caninian','guardian','i.armorBD,i.gauntletBD,i.shieldBD,i.armorC,i.robeC,i.shieldC','アルセウス','lord'],
+    [6,'4',11,'boss','Caninian','guardian','i.armorBD,i.gauntletBD,i.shieldBD,i.armorC,i.robeC,i.shieldC','アルセウス'],
   ],
   2: [
     [1,'1-2',7,'normal','Frost','ranger','i.arrowU,i.archeryU,i.arrowC,i.boltC,i.archeryC','霜牙獣'],
