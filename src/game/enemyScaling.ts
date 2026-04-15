@@ -1,6 +1,8 @@
-import { BonusType, Dungeon, EnemyDef, RoomType } from '../types';
+import { BonusType, Dungeon, EnemyAbility, EnemyDef, RoomType } from '../types';
+import { getEnemyTypeAbilities } from '../data/enemies';
 import { LUNA_MODE_ENEMY_LEVEL_BONUS, getEnemyLevelForRoom, getEnemyMultipliersForLevel } from '../data/dungeons';
 import { getDebugSettings } from './debugSettings';
+import { resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
 
 type GodEnemyMultipliers = {
   hp: number;
@@ -141,6 +143,18 @@ export function applyEnemyTypeCBonuses(enemy: EnemyDef): EnemyDef {
   };
 }
 
+function mergeEnemyAbilities(existingAbilities: EnemyAbility[], levelBasedAbilities: EnemyAbility[]): EnemyAbility[] {
+  const merged = new Map(existingAbilities.map((ability) => [ability.id, { ...ability }]));
+  for (const ability of levelBasedAbilities) {
+    const current = merged.get(ability.id);
+    if (!current || current.level < ability.level) {
+      merged.set(ability.id, { ...ability });
+    }
+  }
+
+  return Array.from(merged.values());
+}
+
 // SpecRef: 4.1.2 | Enemy | Strength of enemy by its level
 export function getRoomMultiplier(
   dungeonExpLevel: number,
@@ -168,6 +182,9 @@ export function applyEnemyEncounterScaling(
     + (options.difficultyOffset ?? 0);
   const expeditionMult = getEnemyMultipliersForLevel(effectiveEnemyLevel);
   const godMult = options.isGodEnemy ? getGodEnemyMultipliers() : DEFAULT_MULTIPLIERS;
+  const enemyTypeAbilitiesForLevel = getEnemyTypeAbilities(enemy.enemyType, effectiveEnemyLevel);
+  // SpecRef: 4.1.2 | Enemy | x.level and x.ability
+  const scaledAbilities = resolveEnemyPassiveAbilities(mergeEnemyAbilities(enemy.abilities, enemyTypeAbilitiesForLevel));
 
   const finalMultipliers = {
     hp: expeditionMult.hp * godMult.hp,
@@ -179,10 +196,11 @@ export function applyEnemyEncounterScaling(
     magicalDefenseAmplifier: expeditionMult.defenseAmplifier * godMult.magicalDefenseAmplifier,
   };
 
-  const hasColossal = enemy.abilities.some((ability) => ability.id === 'colossal');
+  const hasColossal = scaledAbilities.some((ability) => ability.id === 'colossal');
 
   return applyEnemyTypeCBonuses({
     ...enemy,
+    abilities: scaledAbilities,
     hp: Math.floor(enemy.hp * finalMultipliers.hp),
     rangedAttack: Math.floor(enemy.rangedAttack * finalMultipliers.attack),
     magicalAttack: Math.floor(enemy.magicalAttack * finalMultipliers.attack),
