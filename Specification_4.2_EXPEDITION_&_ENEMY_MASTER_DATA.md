@@ -254,7 +254,7 @@
 | 6 | 6 | 1-2 | 40 | Normal | `Mech` | class.sword-saint.striker | `i.gauntlet`U, `i.sword`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 共鳴前衛オートマタ |
 | 6 | 6 | 3 | 43 | Elite | `Procyonian` | class.ranger.duelist | `i.arrow`BD, `i.archery`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | プロキオニアン迅射兵 |
 | 6 | 6 | 3 | 43 | Elite | `Procyonian` | class.samurai.ranger | `i.shield`BD, `i.katana`BD, `i.sword`C, `i.katana`C, `i.gauntlet`C | プロキオニアン護刃兵 |
-| 6 | 6 | 4 | 45 | BOSS | `Procyonian` | class.sage.lord | `i.grimoire`BD, `i.catalyst`BD, `i.shield`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 遺構主機ヴェルグリム |
+| 6 | 6 | 4 | 45 | BOSS | `Procyonian` | class.sage.lord | `i.grimoire`BD, `i.catalyst`BD, `i.shield`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | セレスティアルリーパー |
 | 7 | 1 | 1-2 | 42 | Normal | `Titan` | class.ranger.ranger | `i.arrow`U, `i.archery`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 月輪の巨斥候 |
 | 7 | 1 | 1-2 | 42 | Normal | `Titan` | class.striker.striker | `i.bolt`U, `i.arrow`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 光輪の巨斥候 |
 | 7 | 1 | 1-2 | 42 | Normal | `Titan` | class.wizard.wizard | `i.wand`U, `i.robe`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 星屑の巨導師 |
