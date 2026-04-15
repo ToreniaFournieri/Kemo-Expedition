@@ -487,6 +487,28 @@ function getCharacterCombatBonusLevels(character: Character): { melee: boolean; 
   return { melee, ranged, magic };
 }
 
+// SpecRef: 9 | Environment | Save Data Isolation
+function normalizeImportedCharacter(character: Character, fallbackCharacter: Character): Character {
+  const normalizedMainClassId = CLASSES.some((c) => c.id === character.mainClassId)
+    ? character.mainClassId
+    : fallbackCharacter.mainClassId;
+  const normalizedSubClassId = CLASSES.some((c) => c.id === character.subClassId)
+    ? character.subClassId
+    : normalizedMainClassId;
+
+  return {
+    ...character,
+    raceId: RACES.some((r) => r.id === character.raceId) ? character.raceId : fallbackCharacter.raceId,
+    mainClassId: normalizedMainClassId,
+    subClassId: normalizedSubClassId,
+    predispositionId: PREDISPOSITIONS.some((p) => p.id === character.predispositionId)
+      ? character.predispositionId
+      : fallbackCharacter.predispositionId,
+    lineageId: LINEAGES.some((l) => l.id === character.lineageId) ? character.lineageId : fallbackCharacter.lineageId,
+    autoEquipmentMode: normalizeCharacterAutoEquipmentMode(character.autoEquipmentMode),
+  };
+}
+
 // SpecRef: 8.5 | UI_DIARY | Setting.
 function getDiarySettingsWithDefaults(value: Partial<DiarySettings> | undefined): DiarySettings {
   return {
@@ -854,6 +876,7 @@ function loadSavedState(): GameState | null {
         // Process all parties (whether single or array)
         const partiesToProcess = parsed.parties ?? [];
         for (const [index, party] of partiesToProcess.entries()) {
+          const defaultParty = defaultParties[Math.min(index, defaultParties.length - 1)];
           if (!party.id) {
             party.id = index + 1;
           }
@@ -869,6 +892,13 @@ function loadSavedState(): GameState | null {
           if (!Array.isArray(party.diaryLogs)) party.diaryLogs = [];
           if (typeof party.pendingDiaryLog === 'undefined') party.pendingDiaryLog = null;
           if (typeof party.hasUnreadDiary !== 'boolean') party.hasUnreadDiary = false;
+          if (!Array.isArray(party.characters) || party.characters.length === 0) {
+            party.characters = defaultParty.characters.map((character) => ({ ...character }));
+          }
+          party.characters = party.characters.map((character: Character, charIndex: number) => {
+            const fallbackCharacter = defaultParty.characters[Math.min(charIndex, defaultParty.characters.length - 1)];
+            return normalizeImportedCharacter(character, fallbackCharacter);
+          });
           party.diaryLogs = party.diaryLogs
             .map((log: DiaryLog) => ({
               ...log,
@@ -936,13 +966,6 @@ function loadSavedState(): GameState | null {
               progress: Math.max(0, Math.floor(party.sideQuest.progress * 60)),
             };
           }
-          if (Array.isArray(party.characters)) {
-            party.characters = party.characters.map((character: Character) => ({
-              ...character,
-              autoEquipmentMode: normalizeCharacterAutoEquipmentMode(character.autoEquipmentMode),
-            }));
-          }
-
           const allExpeditionLogs: ExpeditionLog[] = [
             ...(party.lastExpeditionLog ? [party.lastExpeditionLog] : []),
             ...party.diaryLogs.flatMap((log: DiaryLog) => (log.expeditionLog ? [log.expeditionLog] : [])),
