@@ -267,14 +267,11 @@ export function computePartyStats(party: Party): {
     });
   }
 
-  const getBestMainClassAbilityLevel = (
-    classId: 'guardian' | 'lord' | 'pilgrim',
+  const getBestAbilityLevel = (
     abilityId: 'defender' | 'command' | 'm_barrier',
   ): number => {
     let bestLevel = 0;
     for (const stats of characterStats) {
-      const character = party.characters.find((c) => c.id === stats.characterId);
-      if (!character || character.mainClassId !== classId) continue;
       const level = stats.abilities
         .filter((ability) => ability.id === abilityId)
         .reduce((maxLevel, ability) => Math.max(maxLevel, ability.level), 0);
@@ -283,15 +280,15 @@ export function computePartyStats(party: Party): {
     return bestLevel;
   };
 
-  // Calculate offense amplifier from command ability (main class: lord)
-  const commandLevel = getBestMainClassAbilityLevel('lord', 'command');
+  // Calculate offense amplifier from the highest command ability holder in party.
+  const commandLevel = getBestAbilityLevel('command');
   const offenseAmplifier = commandLevel >= 3 ? 2.43 : commandLevel === 2 ? 1.35 : commandLevel === 1 ? 1.2 : 1.0;
 
-  // Party-wide damage reduction abilities (main class: guardian/pilgrim)
-  const defenderLevel = getBestMainClassAbilityLevel('guardian', 'defender');
+  // Party-wide damage reduction abilities are determined by highest ability level in party.
+  const defenderLevel = getBestAbilityLevel('defender');
   const physicalDefenseAmplifier = defenderLevel >= 3 ? 1 / 2 : defenderLevel === 2 ? 3 / 5 : defenderLevel === 1 ? 2 / 3 : 1.0;
 
-  const mBarrierLevel = getBestMainClassAbilityLevel('pilgrim', 'm_barrier');
+  const mBarrierLevel = getBestAbilityLevel('m_barrier');
   const magicalDefenseAmplifier = mBarrierLevel >= 3 ? 1 / 2 : mBarrierLevel === 2 ? 3 / 5 : mBarrierLevel === 1 ? 2 / 3 : 1.0;
 
   // Elemental resistance (always 1.0 in current version)
