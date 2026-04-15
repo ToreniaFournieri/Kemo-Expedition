@@ -482,9 +482,9 @@ Party.`d.HP` =
 
 | order | Name | Race | main class | sub class | lineage | predisposition |
 |------|------|------|------|------|------|------|
-| 1 | ドンガ | Ursan | `class.guardian` | `class.wizard` | `adaptation` | `Savvy` |
-| 2 | ピナ | Procyonian | `class.sword-saint` | `class.ranger` | `utopia` | `Shirk` |
-| 3 | ミィス | Caninian | `class.wizard` | `class.ranger` | `abyssal_sea` | `Inquisitive` |
+| 1 | ドンガ | Ursan | `class.pilgrim` | `class.wizard` | `fragment` | `Introspective` |
+| 2 | ミィス | Caninian | `class.wizard` | `class.ranger` | `abyssal_sea` | `Inquisitive` |
+| 3 | ピナ | Procyonian | `class.sword-saint` | `class.ranger` | `utopia` | `Shirk` |
 | 4 | ケラ| Procyonian | `class.alchemist`| `class.alchemist` | `adaptation` | `Amicable` |
 | 5 | コシ | Cervin | `class.wizard` | `class.sage` | `machina` | `Amicable` |
 | 6 | ディル | Lupinian | `class.wizard` | `class.alchemist` | `utopia` | `Nimble` |
