@@ -425,7 +425,7 @@ Party.`d.HP` =
 | 1 | コロ | Procyonian | `class.samurai` | `class.guardian` | `ashen_capital` | `Inquisitive` |
 | 2 | マーレ | Lupinian | `class.sword-saint` | `class.samurai` | `windcross` | `Perceptive` |
 | 3 | ルドルフ | Felidian | `class.ranger` | `class.striker` | `abyssal_sea` | `Amicable` |
-| 4 | コソネ | Procyonian | `class.striker`| `class.striker` | `firmament` | `Aggressive ` |
+| 4 | コソネ | Murid | `class.striker`| `class.striker` | `firmament` | `Aggressive ` |
 | 5 | ルーファス | Caninian | `class.ninja` | `class.striker` | `frozen_forest` | `Aggressive` |
 | 6 | アヤ | Vulpinian | `class.wizard` | `class.sage`| `utopia` | `Serenity` |
 
@@ -434,7 +434,6 @@ Party.`d.HP` =
  
 - PT3 initial condition (when unlocked)
   - deity: `God of Cunning`
-
 
 | order | Name | Race | main class | sub class | lineage | predisposition |
 |------|------|------|------|------|------|------|
@@ -451,6 +450,15 @@ Party.`d.HP` =
 - PT4 initial condition (when unlocked)
   - deity: `God of Fortification`
   - party member race: all Ursan
+
+| order | Name | Race | main class | sub class | lineage | predisposition |
+|------|------|------|------|------|------|------|
+| 1 | グレン | Ursan | `class.guardian` | `class.guardian` | `fragment` | `Stubborn` |
+| 2 | ライカ | Caninian | `class.lord` | `class.wizard` | `machina` | `Savvy` |
+| 3 | ヴェリタス | Felidian | `class.sword-saint` | `class.duelist` | `ashen_capital` | `Perceptive` |
+| 4 | ラビ | Lupinian | `class.duelist` | `class.samurai` | `blaze_peak` | `Inquisitive` |
+| 5 | ネロ | Murid | `class.striker`| `class.ninja` | `firmament` | `Aggressive` |
+| 6 | フェン | Lupinian | `class.sage` | `class.wizard`| `adaptation` | `Amicable` |
 
 
   - 7.1.1 AUTO equipment logic for all party member.  
