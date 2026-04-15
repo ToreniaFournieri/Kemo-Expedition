@@ -221,44 +221,52 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
     bonuses: [],
   },
   Caninian: {
-    ability1: [{ id: 'seeker', level: 1 }, { id: 'resurrect', level: 1 }],
+    ability1: [{ id: 'seeker', level: 1 }],
+    ability30: [{ id: 'resurrect', level: 1 }],
     bonuses: [{ type: 'growth_xV', value: 1.1 }],
   },
   Lupinian: {
-    ability1: [{ id: 'rage', level: 1 }, { id: 're_counter', level: 1 }],
+    ability1: [{ id: 'rage', level: 1 }],
+    ability30: [{ id: 're_counter', level: 1 }],
     bonuses: [
       { type: 'ice_offense', value: 25 },
       { type: 'ice_defense_multiplier_xV', value: 2 / 3 },
     ],
   },
   Vulpinian: {
-    ability1: [{ id: 'momentum', level: 1 }, { id: 'cunning', level: 1 }],
+    ability1: [{ id: 'momentum', level: 1 }],
+    ability30: [{ id: 'cunning', level: 1 }],
     bonuses: [{ type: 'thunder_offense', value: 25 }],
   },
   Felidian: {
-    ability1: [{ id: 'first_strike', level: 1 }, { id: 'covering_fire', level: 1 }],
+    ability1: [{ id: 'first_strike', level: 1 }],
+    ability30: [{ id: 'covering_fire', level: 1 }],
     bonuses: [
       { type: 'fire_offense', value: 25 },
       { type: 'fire_defense_multiplier_xV', value: 2 / 3 },
     ],
   },
   Ursan: {
-    ability1: [{ id: 'bulwark', level: 1 }, { id: 'cyborgization', level: 1 }],
+    ability1: [{ id: 'bulwark', level: 1 }],
+    ability30: [{ id: 'cyborgization', level: 1 }],
     bonuses: [{ type: 'fire_offense', value: 40 }],
   },
   Procyonian: {
-    ability1: [{ id: 'resonance', level: 1 }, { id: 'illusion', level: 1 }],
+    ability1: [{ id: 'resonance', level: 1 }],
+    ability30: [{ id: 'illusion', level: 1 }],
     bonuses: [
       { type: 'thunder_offense', value: 40 },
       { type: 'thunder_defense_multiplier_xV', value: 2 / 3 },
     ],
   },
   Leporian: {
-    ability1: [{ id: 'composure', level: 1 }, { id: 'magical_counter', level: 1 }],
+    ability1: [{ id: 'composure', level: 1 }],
+    ability30: [{ id: 'magical_counter', level: 1 }],
     bonuses: [{ type: 'ice_offense', value: 40 }],
   },
   Cervin: {
-    ability1: [{ id: 'focus', level: 1 }, { id: 'prophecy', level: 1 }],
+    ability1: [{ id: 'focus', level: 1 }],
+    ability30: [{ id: 'prophecy', level: 1 }],
     bonuses: [],
   },
   Murid: {
@@ -272,6 +280,7 @@ export function getEnemyTypeBonuses(enemyType: string): Bonus[] {
 }
 
 export function getEnemyTypeAbilities(enemyType: string, enemyTypeLevel = 1): EnemyAbility[] {
+  // SpecRef: 4.2.2 | Enemy | ability1 / ability30
   const enemyTypeSpec = ENEMY_TYPE_SPECS[enemyType];
   return [
     ...(enemyTypeSpec?.ability1 ?? []),
