@@ -103,7 +103,7 @@
 | Inquisitive | 探求 | 探 | 外向的 | `c.katana_x1.1`, `c.arrow_x1.1`, `c.grimoire_x1.1` |
 | Amicable | 親和 | 和 | 外向的 | `c.gauntlet_x1.1`, `c.bolt_x1.1`, `c.wand_x1.1` |
 | Stubborn | 頑固 | 頑 | 内向的 | `c.shield_x1.1`, `b.vitality+1` |
-| Shirk | 責任回避 | 避 | 内向的 | `c.evasion+0.020`, `b.mind+1` |
+| Evasive | 責任回避 | 避 | 内向的 | `c.evasion+0.020`, `b.mind+1` |
 | Introspective | 内省 | 内 | 内向的 | `c.armor_x1.1`, `c.robe_x1.1` |
 | Devoted | 献身 | 献 | 適応 | `c.growth_x1.1`, `c.fire-defense-multiplier_x4/5` |
 | Serenity | 冷静 | 冷 | 適応 | `c.growth_x1.1`, `c.ice-defense-multiplier_x4/5` |
@@ -401,7 +401,7 @@ Party.`d.HP` =
 | 1 | ケモ | Caninian | `class.guardian` | `class.pilgrim` | `fragment` | `Devoted` | `1101`, `1110`, `1111`, `1112` |
 | 2 | ゴン | Vulpinian | `class.duelist` | `class.pilgrim` | `sandstorm` | `Aggressive` | `1104`, `1106` |
 | 3 | ロップ | Leporian | `class.ranger` | `class.ninja` | `abyssal_sea` | `Inquisitive` | `1107`, `1108`, `1109` |
-| 4 | ソウタ | Procyonian | `class.ninja`| `class.striker` | `firmament` | `Shirk` |`1104`, `1106`,`1104`, `1106` |
+| 4 | ソウタ | Procyonian | `class.ninja`| `class.striker` | `firmament` | `Evasive` |`1104`, `1106`,`1104`, `1106` |
 | 5 | セルフィン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Amicable` | `1110`, `1112` |
 | 6 | ラス | Felidian | `class.sage` | `class.wizard`| `machina` | `Savvy` | `1110`, `1112`  |
 
@@ -469,7 +469,7 @@ Party.`d.HP` =
 | order | Name | Race | main class | sub class | lineage | predisposition |
 |------|------|------|------|------|------|------|
 | 1 | アーサー | Caninian | `class.lord` | `class.ninja` | `machina` | `Stubborn` |
-| 2 | ダミアン | Vulpinian | `class.ninja` | `class.ranger` | `abyssal_sea` | `Shirk` |
+| 2 | ダミアン | Vulpinian | `class.ninja` | `class.ranger` | `abyssal_sea` | `Evasive` |
 | 3 | ファー | Leporian | `class.ranger` | `class.guardian` | `abyssal_sea` | `Exacting` |
 | 4 | ミケ | Felidian | `class.striker`| `class.pilgrim` | `firmament` | `Devoted` |
 | 5 | グレイ | Lupinian | `class.striker` | `class.ranger` | `firmament` | `Aggressive` |
@@ -484,7 +484,7 @@ Party.`d.HP` =
 |------|------|------|------|------|------|------|
 | 1 | ドンガ | Ursan | `class.pilgrim` | `class.wizard` | `fragment` | `Introspective` |
 | 2 | ミィス | Caninian | `class.wizard` | `class.ranger` | `abyssal_sea` | `Inquisitive` |
-| 3 | ピナ | Procyonian | `class.sword-saint` | `class.ranger` | `utopia` | `Shirk` |
+| 3 | ピナ | Procyonian | `class.sword-saint` | `class.ranger` | `utopia` | `Evasive` |
 | 4 | ケラ| Procyonian | `class.alchemist`| `class.alchemist` | `adaptation` | `Amicable` |
 | 5 | コシ | Cervin | `class.wizard` | `class.sage` | `machina` | `Amicable` |
 | 6 | ディル | Lupinian | `class.wizard` | `class.alchemist` | `utopia` | `Nimble` |
