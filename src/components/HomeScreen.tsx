@@ -10070,12 +10070,12 @@ function SettingTab({
             const canResetBags = debugSettings.clairvoyanceEnabled || prophecyLevel >= 2;
             const partyBags = party.bags;
             const isExpanded = clairvoyancePartyExpanded[partyIndex] === true;
-            return <div key={`clairvoyance-${party.id}`} className="rounded border border-gray-200 bg-white p-2">
+            return <div key={`clairvoyance-${party.id}`} className="rounded border border-gray-200 bg-white p-2 pane-button-shadow">
               <button type="button" className="flex w-full items-center justify-between text-left font-semibold" onClick={() => setClairvoyancePartyExpanded((prev) => ({ ...prev, [partyIndex]: !isExpanded }))}>
                 <span>PT{partyIndex + 1} {isExpanded ? '▲' : '▼'}</span>
               </button>
               {isExpanded && <div className="mt-2 space-y-3 text-sm">
-                <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1">
+                <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1 pane-button-shadow-soft">
                   <div className="text-xs font-semibold text-gray-700 tracking-wide">コモン</div>
                   <div className="flex items-start justify-between gap-3">
                     <div>コモン報酬: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.commonRewardBag))} / {formatNumber(commonRewardTotal)}</span></div>
@@ -10098,7 +10098,7 @@ function SettingTab({
                   <div className="text-xs text-gray-500 text-right">超レア残り {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.commonSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
                   {canResetBags && <button onClick={() => confirmReset('コモン報酬初期化', () => onResetCommonBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">コモン報酬初期化</button>}
                 </div>
-                <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1">
+                <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1 pane-button-shadow-soft">
                   <div className="text-xs font-semibold text-gray-700 tracking-wide">その他レアリティ</div>
                   <div className="flex items-start justify-between gap-3">
                     <div>アンコモン報酬: <span className="tabular-nums">{formatNumber(getBagTicketTotal(partyBags.uncommonRewardBag))} / {formatNumber(uniqueRewardTotal)}</span></div>
@@ -10133,7 +10133,7 @@ function SettingTab({
                   <div className="text-xs text-gray-500 text-right">超レア残り {formatNumber(superRareHitTotal === 0 ? 0 : SUPER_RARE_TITLES.reduce((sum, title) => sum + (title.value > 0 ? getBagEntryTickets(partyBags.rareSuperRareBag, title.value) : 0), 0))} / {formatNumber(superRareHitTotal)}</div>
                   {canResetBags && <button onClick={() => confirmReset('報酬初期化', () => onResetUniqueBags(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">報酬初期化</button>}
                 </div>
-                <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1">
+                <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1 pane-button-shadow-soft">
                   <div className="text-xs font-semibold text-gray-700 tracking-wide">サイドクエスト</div>
                   <div>サイドクエスト抽選: {formatNumber(getBagTicketTotal(partyBags.sideQuestBag))} / {formatNumber(sideQuestTotal)}</div>
                   {canResetBags && <button onClick={() => confirmReset('サイドクエスト初期化', () => onResetSideQuestBag(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">サイドクエスト初期化</button>}
