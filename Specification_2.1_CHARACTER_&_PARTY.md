@@ -424,10 +424,10 @@ Party.`d.HP` =
 |------|------|------|------|------|------|------|
 | 1 | コロ | Procyonian | `class.samurai` | `class.guardian` | `ashen_capital` | `Inquisitive` |
 | 2 | マーレ | Lupinian | `class.sword-saint` | `class.samurai` | `windcross` | `Perceptive` |
-| 3 | ロップ | Felidian | `class.ranger` | `class.ninja` | `abyssal_sea` | `Inquisitive` |
-| 4 | ソウタ | Procyonian | `class.ninja`| `class.striker` | `firmament` | `Shirk` |
-| 5 | セルフィン | Caninian | `class.wizard` | `class.alchemist` | `utopia` | `Amicable` |
-| 6 | ラス | Vulpinian | `class.sage` | `class.wizard`| `machina` | `Savvy` |
+| 3 | ルドルフ | Felidian | `class.ranger` | `class.striker` | `abyssal_sea` | `Amicable` |
+| 4 | コソネ | Procyonian | `class.striker`| `class.striker` | `firmament` | `Aggressive ` |
+| 5 | ルーファス | Caninian | `class.ninja` | `class.striker` | `frozen_forest` | `Aggressive` |
+| 6 | アヤ | Vulpinian | `class.wizard` | `class.sage`| `utopia` | `Serenity` |
 
   
 - 7.1.1 AUTO equipment logic for all party member. 
@@ -440,6 +440,18 @@ Party.`d.HP` =
 - PT4 initial condition (when unlocked)
   - deity: `God of Fortification`
   - party member race: all Ursan
+
+ 
+| order | Name | Race | main class | sub class | lineage | predisposition |
+|------|------|------|------|------|------|------|
+| 1 | アーサー | Caninian | `class.lord` | `class.ninja` | `machina` | `Stubborn` |
+| 2 | ダミアン | Vulpinian | `class.ninja` | `class.ranger` | `abyssal_sea` | `Shirk` |
+| 3 | ファー | Leporian | `class.ranger` | `class.guardian` | `abyssal_sea` | `Exacting` |
+| 4 | ミケ | Felidian | `class.striker`| `class.pilgrim` | `firmament` | `Devoted` |
+| 5 | グレイ | Lupinian | `class.striker` | `class.ranger` | `firmament` | `Aggressive` |
+| 6 | セトラ | Cervin | `class.wizard` | `class.wizard` | `utopia` | `Savvy` |
+
+
   - 7.1.1 AUTO equipment logic for all party member.  
 
 - PT5 initial condition (when unlocked)
