@@ -479,5 +479,15 @@ Party.`d.HP` =
 
 - PT6 initial condition (when unlocked)
   - deity: `God of Resonance`
-  - party member race: all Procyonian
+
+| order | Name | Race | main class | sub class | lineage | predisposition |
+|------|------|------|------|------|------|------|
+| 1 | ドンガ | Ursan | `class.lord` | `class.ninja` | `machina` | `Stubborn` |
+| 2 | ピナ | Leporian | `class.ninja` | `class.ranger` | `abyssal_sea` | `Shirk` |
+| 3 | ミィス | Murid | `class.ranger` | `class.guardian` | `abyssal_sea` | `Exacting` |
+| 4 | バウ | Caninian | `class.striker`| `class.pilgrim` | `firmament` | `Devoted` |
+| 5 | コシ | Cervin | `class.striker` | `class.ranger` | `firmament` | `Aggressive` |
+| 6 | ディル | Lupinian | `class.wizard` | `class.wizard` | `utopia` | `Savvy` |
+  
+
   - 7.1.1 AUTO equipment logic for all party member.
