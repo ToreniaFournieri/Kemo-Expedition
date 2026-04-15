@@ -1394,9 +1394,9 @@ function createFifthParty() {
 
 function createSixthParty() {
   const defaultSetup = [
-    { race: 'ursan', main: 'guardian', sub: 'wizard', pred: 'resourceful', lineage: 'adaptation', name: 'ドンガ' },
-    { race: 'procyonian', main: 'sword-saint', sub: 'ranger', pred: 'evasive', lineage: 'utopia', name: 'ピナ' },
+    { race: 'ursan', main: 'pilgrim', sub: 'wizard', pred: 'introspective', lineage: 'fragment', name: 'ドンガ' },
     { race: 'caninian', main: 'wizard', sub: 'ranger', pred: 'inquisitive', lineage: 'abyssal_sea', name: 'ミィス' },
+    { race: 'procyonian', main: 'sword-saint', sub: 'ranger', pred: 'shirk', lineage: 'utopia', name: 'ピナ' },
     { race: 'procyonian', main: 'alchemist', sub: 'alchemist', pred: 'amiable', lineage: 'adaptation', name: 'ケラ' },
     { race: 'cervin', main: 'wizard', sub: 'sage', pred: 'amiable', lineage: 'machina', name: 'コシ' },
     { race: 'lupinian', main: 'wizard', sub: 'alchemist', pred: 'nimble', lineage: 'utopia', name: 'ディル' },
