@@ -19,6 +19,7 @@ export const PREDISPOSITIONS: Predisposition[] = [
 const LEGACY_PREDISPOSITION_ID_ALIASES: Record<string, Predisposition['id']> = {
   sturdy: 'stubborn',
   agile: 'evasive',
+  shirk: 'evasive',
   brilliant: 'inquisitive',
   dexterous: 'precise',
   chivalric: 'aggressive',
