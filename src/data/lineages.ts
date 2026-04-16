@@ -14,7 +14,7 @@ export const LINEAGES: Lineage[] = [
   { id: 'fragment', name: '断章の系譜', shortName: '断', category: '生存', selectable: true, bonuses: [{ type: 'armor_multiplier', value: 1.2 }] },
   { id: 'windcross', name: '風渡の系譜', shortName: '風', category: '生存', selectable: true, bonuses: [{ type: 'robe_multiplier', value: 1.2 }] },
   { id: 'oath', name: '誓約の系譜', shortName: '誓', category: '生存', selectable: true, bonuses: [{ type: 'shield_multiplier', value: 1.2 }] },
-  { id: 'unascertained', name: '不詳', shortName: '不', category: '-', selectable: false, bonuses: [{ type: 'armor_multiplier', value: 1.3 }, { type: 'armor_multiplier', value: 1.3 }] },
+  { id: 'unascertained', name: '不詳', shortName: '不', category: '-', selectable: false, bonuses: [{ type: 'armor_multiplier', value: 1.3 }, { type: 'robe_multiplier', value: 1.3 }] },
   { id: 'incarnation', name: '化身', shortName: '化', category: '-', selectable: false, bonuses: [{ type: 'ability', value: 1, abilityId: 'boost', abilityLevel: 1 }, { type: 'ability', value: 1, abilityId: 'prophecy', abilityLevel: 1 }] },
   { id: 'usurper', name: '簒奪者', shortName: '簒', category: '-', selectable: false, bonuses: [{ type: 'ability', value: 1, abilityId: 'predator_sense', abilityLevel: 1 }, { type: 'catalyst_multiplier', value: 1.3 }] },
   { id: 'pioneer', name: '先駆者', shortName: '先', category: '-', selectable: false, bonuses: [{ type: 'wand_multiplier', value: 1.3 }, { type: 'ability', value: 1, abilityId: 'howl', abilityLevel: 1 }] },
