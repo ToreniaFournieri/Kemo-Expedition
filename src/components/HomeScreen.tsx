@@ -2190,6 +2190,12 @@ const LINEAGE_SHORT_NAMES: Record<string, string> = {
   fragment: '断',
   windcross: '風',
   oath: '誓',
+  unascertained: '不',
+  incarnation: '化',
+  usurper: '簒',
+  pioneer: '先',
+  apex_predator: '捕',
+  true_heir: '真',
 };
 
 // Category name mapping
