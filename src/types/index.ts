@@ -66,6 +66,8 @@ export type LineageId =
   | 'abyssal_sea' | 'firmament' | 'frozen_forest'
   | 'utopia' | 'machina' | 'adaptation'
   | 'fragment' | 'windcross' | 'oath'
+  | 'unascertained' | 'incarnation' | 'usurper'
+  | 'pioneer' | 'apex_predator' | 'true_heir'
   // legacy ids for save compatibility
   | 'steel_oath' | 'war_spirit' | 'far_sight' | 'unmoving'
   | 'breaking_hand' | 'guiding_thought' | 'hidden_principles' | 'inherited_oaths';
@@ -75,6 +77,7 @@ export interface Lineage {
   name: string;
   shortName?: string;
   category?: string;
+  selectable?: boolean;
   bonuses: Bonus[];
 }
 
