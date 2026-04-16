@@ -5663,9 +5663,11 @@ function PartyTab({
           {editingCharacter === selectedCharacter ? (
             <div className="flex-1 min-w-0 space-y-1">
               {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Unique Character Flag. */}
-              <div className="text-[11px] text-gray-500">
-                <span className="font-semibold">Unique</span>: {char.isUnique ? 'true' : 'false'}
-              </div>
+              {char.isUnique && (
+                <div className="text-[11px] text-gray-500">
+                  固有キャラクター(クラスのみ編集可能)
+                </div>
+              )}
               <input
                 type="text"
                 value={pendingEdits?.name ?? char.name}

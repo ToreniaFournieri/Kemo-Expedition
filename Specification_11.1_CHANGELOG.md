@@ -3,6 +3,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.0 | 429 | 2026/4/16 | Update Character Edit Mode unique flag display: remove `Unique: true/false`; show `固有キャラクター(クラスのみ編集可能)` only for unique members. |
 | 0.6.0 | 428 | 2026/4/16 | Enforce Unique character edit-mode immutability UI (disable/grey Name, Race, Lineage, Predisposition; keep Main/Sub Class editable). |
 | 0.6.0 | 427 | 2026/4/16 | Align runtime initial setup to Spec 2.1.4.2 (PT data corrections and Unique character immutability rules). |
 | 0.6.0 | 426 | 2026/4/16 | Update runtime condition outcome adjustments. |
