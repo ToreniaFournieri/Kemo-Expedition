@@ -3,6 +3,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.0 | 433 | 2026/4/16 | Align runtime PT6 initial member races to Spec 2.1.4.2 (バーシヴァル: Lupinian, ディル: Murid). |
 | 0.6.0 | 432 | 2026/4/16 | Update runtime boss generation to apply the Spec 4.2.2 additional ability for セレスティアルリーパー (`a.soul-reap`3). |
 | 0.6.0 | 431 | 2026/4/16 | Update runtime `unascertained` lineage bonuses to match Spec 2.1 (`c.armor_x1.3`, `c.robe_x1.3`). |
 | 0.6.0 | 430 | 2026/4/16 | Update runtime lineage master data and default party setup to Spec 2.1.4.2 (add non-selectable lineages and align PT1-PT6 members/lineages/unique flags). |
