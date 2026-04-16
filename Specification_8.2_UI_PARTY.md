@@ -103,8 +103,8 @@ Left-aligned
 **1. Contents**
 
 - `Unique`: Unique Character Flag. 
-  - If `true`: The following attributes are immutable: Name, Race, Lineag, Predisposition
-  - The following attributes remain modifiable: Main Class, Sub Class
+  - If `true`: The following attributes are immutable (input fields are disabled / greyed out): Name, Race, Lineag, Predisposition
+  - The following attributes remain modifiable (normal input fields): Main Class, Sub Class
 
 - Name [edit]
 - Editable `name` field.
