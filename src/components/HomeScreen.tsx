@@ -5661,16 +5661,26 @@ function PartyTab({
         <div className="relative z-10">
         <div className="flex justify-between items-center mb-2 gap-2">
           {editingCharacter === selectedCharacter ? (
-            <input
-              type="text"
-              value={pendingEdits?.name ?? char.name}
-              onChange={(e) => {
-                if (char.isUnique) return;
-                setPendingEdits({ ...pendingEdits, name: e.target.value });
-              }}
-              readOnly={char.isUnique}
-              className="text-lg font-bold bg-transparent border-b border-sub focus:outline-none flex-1 min-w-0"
-            />
+            <div className="flex-1 min-w-0 space-y-1">
+              {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Unique Character Flag. */}
+              <div className="text-[11px] text-gray-500">
+                <span className="font-semibold">Unique</span>: {char.isUnique ? 'true' : 'false'}
+              </div>
+              <input
+                type="text"
+                value={pendingEdits?.name ?? char.name}
+                onChange={(e) => {
+                  if (char.isUnique) return;
+                  setPendingEdits({ ...pendingEdits, name: e.target.value });
+                }}
+                disabled={char.isUnique}
+                className={`text-lg font-bold border-b focus:outline-none w-full ${
+                  char.isUnique
+                    ? 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed'
+                    : 'bg-transparent border-sub'
+                }`}
+              />
+            </div>
           ) : (
             <span className="text-lg font-bold">{char.name}</span>
           )}
@@ -5741,7 +5751,7 @@ function PartyTab({
                         className={`min-w-0 flex-1 px-0 py-1 text-xs border ${
                           isSelectedRace
                             ? 'bg-sub text-white border-sub'
-                            : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
+                            : `border-gray-200 ${char.isUnique ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-600 hover:bg-gray-100'}`
                         } ${race.id === 'lupinian' || race.id === 'caninian' || race.id === 'leporian' ? 'rounded-l' : race.id === 'felidian' || race.id === 'procyonian' || race.id === 'murid' ? 'rounded-r' : ''}`}
                       >
                         <span className="flex items-center justify-center">
@@ -5963,7 +5973,7 @@ function PartyTab({
                                     } ${
                                       isSelected
                                         ? 'bg-sub text-white border-sub'
-                                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
+                                        : `border-gray-200 ${char.isUnique ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-600 hover:bg-gray-100'}`
                                     }`}
                                   >
                                     {lineageData.shortName ?? LINEAGE_SHORT_NAMES[lineageId] ?? lineageData.name}
@@ -6009,7 +6019,7 @@ function PartyTab({
                                     } ${
                                       isSelected
                                         ? 'bg-sub text-white border-sub'
-                                        : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100'
+                                        : `border-gray-200 ${char.isUnique ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-600 hover:bg-gray-100'}`
                                     }`}
                                   >
                                     {predispositionData.shortName ?? PREDISPOSITION_SHORT_NAMES[predispositionId] ?? predispositionData.name}
