@@ -393,21 +393,21 @@ Party.`d.HP` =
 - Initial setup (or reset condition)
 
 - unlocked deity: none (all of other deity is unlocked)
-- Unique Character Flag;
-  - If true: The following attributes are immutable: Name, Race, Lineag, Predisposition
+- `Unique`: Unique Character Flag. 
+  - If `true`: The following attributes are immutable: Name, Race, Lineag, Predisposition
   - The following attributes remain modifiable: Main Class, Sub Class
 
 
 - **PT1** Party initial condition.
 
-| order | Name | Race | main class | sub class | lineage | predisposition | Initial equipment |
-|------|------|------|------|------|------|------|------|
-| 1 | ケモ | Caninian | `class.guardian` | `class.pilgrim` | `fragment` | `Devoted` | `1101`, `1110`, `1111`, `1112` |
-| 2 | ゴン | Vulpinian | `class.duelist` | `class.pilgrim` | `sandstorm` | `Aggressive` | `1104`, `1106` |
-| 3 | ロップ | Leporian | `class.ranger` | `class.ninja` | `abyssal_sea` | `Inquisitive` | `1107`, `1108`, `1109` |
-| 4 | ソウタ | Procyonian | `class.ninja`| `class.striker` | `firmament` | `Evasive` |`1104`, `1106`,`1104`, `1106` |
-| 5 | セルフィン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Amicable` | `1110`, `1112` |
-| 6 | ラス | Felidian | `class.sage` | `class.wizard`| `machina` | `Savvy` | `1110`, `1112`  |
+| order | Name | Race | main class | sub class | lineage | predisposition | Initial equipment | Unique |
+|------|------|------|------|------|------|------|------|------|
+| 1 | ケモ | Caninian | `class.guardian` | `class.pilgrim` | `fragment` | `Devoted` | `1101`, `1110`, `1111`, `1112` | `true` |
+| 2 | ゴン | Vulpinian | `class.duelist` | `class.pilgrim` | `sandstorm` | `Aggressive` | `1104`, `1106` | `false` |
+| 3 | ロップ | Leporian | `class.ranger` | `class.ninja` | `abyssal_sea` | `Inquisitive` | `1107`, `1108`, `1109` |  `false` |
+| 4 | ソウタ | Procyonian | `class.ninja`| `class.striker` | `firmament` | `Evasive` |`1104`, `1106`,`1104`, `1106` | `false` |
+| 5 | セルフィン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Amicable` | `1110`, `1112` | `false` |
+| 6 | ラス | Felidian | `class.sage` | `class.wizard`| `machina` | `Savvy` | `1110`, `1112`  | `false` |
 
 - Party initial inventory.
   - 1 Tier-1 common items of each item type.
@@ -423,62 +423,62 @@ Party.`d.HP` =
 - **PT2** initial condition (when unlocked)
   - deity: `God of Attrition`
 
-| order | Name | Race | main class | sub class | lineage | predisposition |
-|------|------|------|------|------|------|------|
-| 1 | コロ | Procyonian | `class.samurai` | `class.guardian` | `ashen_capital` | `Inquisitive` |
-| 2 | マーレ | Lupinian | `class.sword-saint` | `class.samurai` | `windcross` | `Perceptive` |
-| 3 | ルドルフ | Felidian | `class.ranger` | `class.striker` | `abyssal_sea` | `Amicable` |
-| 4 | コソネ | Murid | `class.striker`| `class.striker` | `firmament` | `Aggressive ` |
-| 5 | ルーファス | Caninian | `class.ninja` | `class.striker` | `frozen_forest` | `Aggressive` |
-| 6 | アヤ | Vulpinian | `class.wizard` | `class.sage`| `utopia` | `Serenity` |
+| order | Name | Race | main class | sub class | lineage | predisposition | Unique |
+|------|------|------|------|------|------|------|------|
+| 1 | コロ | Procyonian | `class.samurai` | `class.guardian` | `ashen_capital` | `Inquisitive` | `false` |
+| 2 | マーレ | Lupinian | `class.sword-saint` | `class.samurai` | `windcross` | `Perceptive` | `true` |
+| 3 | ルドルフ | Felidian | `class.ranger` | `class.striker` | `abyssal_sea` | `Amicable` | `false` |
+| 4 | コソネ | Murid | `class.striker`| `class.striker` | `firmament` | `Aggressive ` | `false` |
+| 5 | ルーファス | Caninian | `class.ninja` | `class.striker` | `frozen_forest` | `Aggressive` | `false` |
+| 6 | アヤ | Vulpinian | `class.wizard` | `class.sage`| `utopia` | `Serenity` | `false` |
 
 - **PT3** initial condition (when unlocked)
   - deity: `God of Cunning`
 
-| order | Name | Race | main class | sub class | lineage | predisposition |
-|------|------|------|------|------|------|------|
-| 1 | シマ | Procyonian | `class.pilgrim` | `class.sage` | `machina` | `Nimble` |
-| 2 | クレセント | Ursan | `class.samurai` | `class.ninja` | `fragment` | `Introspective` |
-| 3 | シーケルン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Amicable` |
-| 4 | ドッシュ | Vulpinian | `class.sage`| `class.sage` | `adaptation` | `Exacting` |
-| 5 | アルテミス | Felidian | `class.alchemist` | `class.wizard` | `machina` | `Serenity` |
-| 6 | ウォッシ | Lupinian | `class.ninja` | `class.wizard`| `windcross` | `Perceptive` |
+| order | Name | Race | main class | sub class | lineage | predisposition | Unique |
+|------|------|------|------|------|------|------|------|
+| 1 | シマ | Procyonian | `class.pilgrim` | `class.sage` | `machina` | `Nimble` | `false` |
+| 2 | クレセント | Ursan | `class.samurai` | `class.ninja` | `fragment` | `Introspective` | `false` |
+| 3 | シーケルン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Amicable` | `false` |
+| 4 | ドッシュ | Vulpinian | `class.sage`| `class.sage` | `adaptation` | `Exacting` | `false` |
+| 5 | アルテミス | Felidian | `class.alchemist` | `class.wizard` | `machina` | `Serenity` | `false` |
+| 6 | ウォッシ | Lupinian | `class.ninja` | `class.wizard`| `windcross` | `Perceptive` | `false` |
 
 - **PT4** initial condition (when unlocked)
   - deity: `God of Fortification`
 
-| order | Name | Race | main class | sub class | lineage | predisposition |
-|------|------|------|------|------|------|------|
-| 1 | グレン | Ursan | `class.guardian` | `class.guardian` | `fragment` | `Stubborn` |
-| 2 | ライカ | Caninian | `class.lord` | `class.wizard` | `machina` | `Savvy` |
-| 3 | ヴェリタス | Felidian | `class.sword-saint` | `class.duelist` | `ashen_capital` | `Perceptive` |
-| 4 | ラビ | Lupinian | `class.duelist` | `class.samurai` | `blaze_peak` | `Inquisitive` |
-| 5 | ネロ | Murid | `class.striker`| `class.ninja` | `firmament` | `Aggressive` |
-| 6 | フェン | Vulpinian | `class.sage` | `class.wizard`| `adaptation` | `Amicable` |
+| order | Name | Race | main class | sub class | lineage | predisposition | Unique |
+|------|------|------|------|------|------|------|------|
+| 1 | グレン | Ursan | `class.guardian` | `class.guardian` | `fragment` | `Stubborn` | `false` |
+| 2 | ライカ | Caninian | `class.lord` | `class.wizard` | `machina` | `Savvy` | `true` |
+| 3 | ヴェリタス | Felidian | `class.sword-saint` | `class.duelist` | `ashen_capital` | `Perceptive` | `false` |
+| 4 | ラビ | Lupinian | `class.duelist` | `class.samurai` | `blaze_peak` | `Inquisitive` | `false` |
+| 5 | ネロ | Murid | `class.striker`| `class.ninja` | `firmament` | `Aggressive` | `false` |
+| 6 | フェン | Vulpinian | `class.sage` | `class.wizard`| `adaptation` | `Amicable` | `false` |
 
 - **PT5** initial condition (when unlocked)
   - deity: `Goddess of Fertility`
 
-| order | Name | Race | main class | sub class | lineage | predisposition |
-|------|------|------|------|------|------|------|
-| 1 | アーサー | Caninian | `class.lord` | `class.ninja` | `machina` | `Stubborn` |
-| 2 | ダミアン | Vulpinian | `class.ninja` | `class.ranger` | `abyssal_sea` | `Evasive` |
-| 3 | ファー | Leporian | `class.ranger` | `class.guardian` | `abyssal_sea` | `Exacting` |
-| 4 | ミケ | Felidian | `class.striker`| `class.pilgrim` | `firmament` | `Devoted` |
-| 5 | グレイ | Lupinian | `class.striker` | `class.ranger` | `firmament` | `Aggressive` |
-| 6 | セトラ | Cervin | `class.wizard` | `class.wizard` | `utopia` | `Savvy` |
+| order | Name | Race | main class | sub class | lineage | predisposition | Unique |
+|------|------|------|------|------|------|------|------|
+| 1 | アーサー | Caninian | `class.lord` | `class.ninja` | `machina` | `Stubborn` | `false` |
+| 2 | ダミアン | Vulpinian | `class.ninja` | `class.ranger` | `abyssal_sea` | `Evasive` | `false` |
+| 3 | ファー | Leporian | `class.ranger` | `class.guardian` | `abyssal_sea` | `Exacting` | `false` |
+| 4 | ルナ | Felidian | `class.striker`| `class.pilgrim` | `firmament` | `Devoted` | `false` |
+| 5 | グレイ | Lupinian | `class.striker` | `class.ranger` | `firmament` | `Aggressive` | `false` |
+| 6 | セトラ | Cervin | `class.wizard` | `class.wizard` | `utopia` | `Savvy` | `false` |
 
 - **PT6** initial condition (when unlocked)
   - deity: `God of Resonance`
 
-| order | Name | Race | main class | sub class | lineage | predisposition |
-|------|------|------|------|------|------|------|
-| 1 | ドンガ | Ursan | `class.pilgrim` | `class.wizard` | `fragment` | `Introspective` |
-| 2 | ミィス | Caninian | `class.wizard` | `class.ranger` | `abyssal_sea` | `Inquisitive` |
-| 3 | ピナ | Procyonian | `class.sword-saint` | `class.ranger` | `utopia` | `Evasive` |
-| 4 | ケラ| Procyonian | `class.alchemist`| `class.alchemist` | `adaptation` | `Amicable` |
-| 5 | コシ | Cervin | `class.wizard` | `class.sage` | `machina` | `Amicable` |
-| 6 | ディル | Lupinian | `class.wizard` | `class.alchemist` | `utopia` | `Nimble` |
+| order | Name | Race | main class | sub class | lineage | predisposition | Unique |
+|------|------|------|------|------|------|------|------|
+| 1 | ドンガ | Ursan | `class.pilgrim` | `class.wizard` | `fragment` | `Introspective` | `false` |
+| 2 | ミィス | Caninian | `class.wizard` | `class.ranger` | `abyssal_sea` | `Inquisitive` | `false` |
+| 3 | ピナ | Procyonian | `class.sword-saint` | `class.ranger` | `utopia` | `Evasive` | `false` |
+| 4 | ケラ | Procyonian | `class.alchemist`| `class.alchemist` | `adaptation` | `Amicable` | `false` |
+| 5 | コシ | Cervin | `class.wizard` | `class.sage` | `machina` | `Amicable` | `false` |
+| 6 | ディル | Lupinian | `class.wizard` | `class.alchemist` | `utopia` | `Nimble` | `false` |
   
 
 
