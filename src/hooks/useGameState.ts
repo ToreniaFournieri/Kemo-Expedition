@@ -3565,7 +3565,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       const oldChar = currentParty.characters[charIndex];
       // SpecRef: 2.1.4.2 | Initial setup | Unique Character Flag.
-      // SpecRef: 8.2.3 | Character Edit Mode (selected member) | Unique
       const immutableForUnique: ReadonlySet<keyof Character> = new Set(['name', 'raceId', 'lineageId', 'predispositionId']);
       const sanitizedUpdates = oldChar.isUnique
         ? Object.fromEntries(
