@@ -101,6 +101,11 @@ Left-aligned
 
 #### 8.2.3 Character Edit Mode (selected member):
 **1. Contents**
+
+- `Unique`: Unique Character Flag. 
+  - If `true`: The following attributes are immutable: Name, Race, Lineag, Predisposition
+  - The following attributes remain modifiable: Main Class, Sub Class
+
 - Name [edit]
 - Editable `name` field.
 - Race selection: "**種族**:icon.race ケイナイアン |体10,力10,知10,精10 | 盾x1.3, 手x1.2, 弓x1.1, 成長x1.1""
