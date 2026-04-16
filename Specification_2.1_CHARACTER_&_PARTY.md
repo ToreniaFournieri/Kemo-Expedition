@@ -78,39 +78,46 @@
 
 **lineage(系譜):**
 
-| lineage |　Text | short | category | bonus |
-|--------|-----|------|----------|-------|
-| `sandstorm` | 砂塵の系譜 | 砂 | 動乱 | `c.sword_x1.2` |
-| `ashen_capital` | 灰都の系譜 | 灰 | 動乱 | `c.katana_x1.2` |
-| `blaze_peak` | 焔嶺の系譜 | 焔 | 動乱 | `c.gauntlet_x1.2`, `c.fire-defense-multiplier_x4/5` |
-| `abyssal_sea` | 深海の系譜 | 海 | 狩猟 | `c.arrow_x1.2` |
-| `firmament` | 天穹の系譜 | 穹 | 狩猟 | `c.bolt_x1.2` |
-| `frozen_forest` | 凍森の系譜 | 凍 | 狩猟 | `c.archery_x1.2`, `c.ice-defense-multiplier_x4/5` |
-| `utopia` | 桃源の系譜 | 桃 | 学識 | `c.wand_x1.2` |
-| `machina` | 機骸の系譜 | 機 | 学識 | `c.grimoire_x1.2` |
-| `adaptation` | 適応の系譜 | 適 | 学識 | `c.catalyst_x1.2`, `c.thunder-defense-multiplier_x3/4` |
-| `fragment` | 断章の系譜 | 断 | 生存 | `c.armor_x1.2` |
-| `windcross` | 風渡の系譜 | 風 | 生存 | `c.robe_x1.2` |
-| `oath` | 誓約の系譜 | 誓 | 生存 | `c.shield_x1.2` |
+-Selectable:
+  - `true`: Available for player selection during character creation or edit.
+  - `false`: Not available for manual selection (e.g., reserved for unique characters, events, or system assignment).
+
+| lineage |　Text | short | category | bonus | selectable |
+|--------|-----|------|----------|-------|------|
+| `sandstorm` | 砂塵の系譜 | 砂 | 動乱 | `c.sword_x1.2` | `true` |
+| `ashen_capital` | 灰都の系譜 | 灰 | 動乱 | `c.katana_x1.2` | `true` |
+| `blaze_peak` | 焔嶺の系譜 | 焔 | 動乱 | `c.gauntlet_x1.2`, `c.fire-defense-multiplier_x4/5` | `true` |
+| `abyssal_sea` | 深海の系譜 | 海 | 狩猟 | `c.arrow_x1.2` | `true` |
+| `firmament` | 天穹の系譜 | 穹 | 狩猟 | `c.bolt_x1.2` | `true` |
+| `frozen_forest` | 凍森の系譜 | 凍 | 狩猟 | `c.archery_x1.2`, `c.ice-defense-multiplier_x4/5` | `true` |
+| `utopia` | 桃源の系譜 | 桃 | 学識 | `c.wand_x1.2` | `true` |
+| `machina` | 機骸の系譜 | 機 | 学識 | `c.grimoire_x1.2` | `true` |
+| `adaptation` | 適応の系譜 | 適 | 学識 | `c.catalyst_x1.2`, `c.thunder-defense-multiplier_x3/4` | `true` |
+| `fragment` | 断章の系譜 | 断 | 生存 | `c.armor_x1.2` | `true` |
+| `windcross` | 風渡の系譜 | 風 | 生存 | `c.robe_x1.2` | `true` |
+| `oath` | 誓約の系譜 | 誓 | 生存 | `c.shield_x1.2` | `true` |
 
 
 **predisposition(性格):**
+-Selectable:
+  - `true`: Available for player selection during character creation or edit.
+  - `false`: Not available for manual selection (e.g., reserved for unique characters, events, or system assignment).
 
 
-| predisposition | Japanese | short | category | bonus |
-|-----|-----|---|-----|-----------|
-| Aggressive | 好戦| 好 | 外向的 | `c.sword_x1.1`, `c.bolt_x1.1`, `c.catalyst_x1.1` |
-| Inquisitive | 探求 | 探 | 外向的 | `c.katana_x1.1`, `c.arrow_x1.1`, `c.grimoire_x1.1` |
-| Amicable | 親和 | 和 | 外向的 | `c.gauntlet_x1.1`, `c.bolt_x1.1`, `c.wand_x1.1` |
-| Stubborn | 頑固 | 頑 | 内向的 | `c.shield_x1.1`, `b.vitality+1` |
-| Evasive | 責任回避 | 避 | 内向的 | `c.evasion+0.020`, `b.mind+1` |
-| Introspective | 内省 | 内 | 内向的 | `c.armor_x1.1`, `c.robe_x1.1` |
-| Devoted | 献身 | 献 | 適応 | `c.growth_x1.1`, `c.fire-defense-multiplier_x4/5` |
-| Serenity | 冷静 | 冷 | 適応 | `c.growth_x1.1`, `c.ice-defense-multiplier_x4/5` |
-| Nimble | 軽快 | 軽 | 適応 | `c.evasion+0.010`, `c.thunder-defense-multiplier_x4/5` |
-| Perceptive | 看破 | 看 | 機知 | `c.penet+0.100`, `b.intelligence+1` |
-| Exacting | 精確 | 精 | 機知 | `c.accuracy+0.025`, `b.strength+1` |
-| Savvy | 手腕 | 腕 | 機知 | `c.equip-slot+1` |
+| predisposition | Japanese | short | category | bonus | selectable |
+|-----|-----|---|-----|-----------|--------|
+| Aggressive | 好戦| 好 | 外向的 | `c.sword_x1.1`, `c.bolt_x1.1`, `c.catalyst_x1.1` | `true` |
+| Inquisitive | 探求 | 探 | 外向的 | `c.katana_x1.1`, `c.arrow_x1.1`, `c.grimoire_x1.1` | `true` |
+| Amicable | 親和 | 和 | 外向的 | `c.gauntlet_x1.1`, `c.bolt_x1.1`, `c.wand_x1.1` | `true` |
+| Stubborn | 頑固 | 頑 | 内向的 | `c.shield_x1.1`, `b.vitality+1` | `true` |
+| Evasive | 責任回避 | 避 | 内向的 | `c.evasion+0.020`, `b.mind+1` | `true` |
+| Introspective | 内省 | 内 | 内向的 | `c.armor_x1.1`, `c.robe_x1.1` | `true` |
+| Devoted | 献身 | 献 | 適応 | `c.growth_x1.1`, `c.fire-defense-multiplier_x4/5` | `true` |
+| Serenity | 冷静 | 冷 | 適応 | `c.growth_x1.1`, `c.ice-defense-multiplier_x4/5` | `true` |
+| Nimble | 軽快 | 軽 | 適応 | `c.evasion+0.010`, `c.thunder-defense-multiplier_x4/5` | `true` |
+| Perceptive | 看破 | 看 | 機知 | `c.penet+0.100`, `b.intelligence+1` | `true` |
+| Exacting | 精確 | 精 | 機知 | `c.accuracy+0.025`, `b.strength+1` | `true` |
+| Savvy | 手腕 | 腕 | 機知 | `c.equip-slot+1` | `true` |
 
 - If `main_class` and  `sub_class` are same class, then it turns into master class, applies master bonus.
 - `main_class` applies main/sub bonuses and main bonus. `sub_class` applies only main/sub bonuses.
