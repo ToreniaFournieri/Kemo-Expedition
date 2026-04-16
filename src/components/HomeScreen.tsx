@@ -256,6 +256,10 @@ function formatBonusAbilityPhaseDisplay(value: string): string {
   return value.replace(/LONG|MID|CLOSE/g, (phase) => BONUS_ABILITY_PHASE_DISPLAY_LABELS[phase as 'LONG' | 'MID' | 'CLOSE']);
 }
 
+function isBonusAbilityTimingToken(token: string): boolean {
+  return /^(?:LONG|MID|CLOSE)\d(?:\/(?:LONG|MID|CLOSE)\d)*$/.test(token);
+}
+
 function parseBonusAbilityLevelScale(levelScale: string): { timing: string | null; value: string | null } {
   const scaleContent = levelScale.replace(/^Lv\d+:\s*/, '').trim();
   if (scaleContent.length === 0 || scaleContent === '-') {
@@ -273,6 +277,14 @@ function parseBonusAbilityLevelScale(levelScale: string): { timing: string | nul
 
   const timingToken = scaleContent.slice(0, separatorIndex).trim();
   const valueToken = scaleContent.slice(separatorIndex + 1).trim();
+
+  if (!isBonusAbilityTimingToken(timingToken)) {
+    return {
+      timing: null,
+      value: scaleContent,
+    };
+  }
+
   return {
     timing: timingToken.length > 0 ? formatBonusAbilityPhaseDisplay(timingToken) : null,
     value: valueToken.length > 0 ? valueToken : null,
