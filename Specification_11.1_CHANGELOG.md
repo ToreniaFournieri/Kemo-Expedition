@@ -3,7 +3,6 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
-| 0.6.0 | 428 | 2026/4/16 | Implement Character Edit Mode `Unique` behavior in runtime: immutable fields ignored for unique members and edit UI now shows Unique flag with immutable/modifiable guidance. |
 | 0.6.0 | 427 | 2026/4/16 | Align runtime initial setup to Spec 2.1.4.2 (PT data corrections and Unique character immutability rules). |
 | 0.6.0 | 426 | 2026/4/16 | Update runtime condition outcome adjustments. |
 

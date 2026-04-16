@@ -5122,16 +5122,11 @@ function PartyTab({
     { label: '生存', ids: ['fragment', 'windcross', 'oath'] },
   ];
   const classById = new Map(CLASSES.map((classDef) => [classDef.id, classDef]));
-  // SpecRef: 8.2.3 | Character Edit Mode (selected member) | Unique
-  const immutableEditKeysForUnique: ReadonlySet<keyof Character> = new Set(['name', 'raceId', 'lineageId', 'predispositionId']);
 
   const getChangedEditKeys = (edits: Partial<Character> | null): (keyof Character)[] => {
     if (!edits) return [];
 
     return (Object.keys(edits) as (keyof Character)[]).filter((key) => {
-      if (char.isUnique && immutableEditKeysForUnique.has(key)) {
-        return false;
-      }
       const nextValue = edits[key];
       if (nextValue === undefined) return false;
       return nextValue !== char[key];
@@ -5728,10 +5723,6 @@ function PartyTab({
 
         {editingCharacter === selectedCharacter && !showEditConfirm ? (
           <div className="space-y-2 text-sm">
-            <div className="rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600">
-              <span className="font-bold">Unique</span>: {char.isUnique ? 'true' : 'false'}
-              {char.isUnique && <span className="ml-2 text-[11px]">Name / Race / 系譜 / 性格は固定、メイン/サブクラスのみ変更可</span>}
-            </div>
             <div>
               <div className="mt-2 rounded border border-gray-200 bg-white p-2 text-xs">
                 {(() => {
