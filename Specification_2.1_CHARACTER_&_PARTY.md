@@ -96,7 +96,12 @@
 | `fragment` | 断章の系譜 | 断 | 生存 | `c.armor_x1.2` | `true` |
 | `windcross` | 風渡の系譜 | 風 | 生存 | `c.robe_x1.2` | `true` |
 | `oath` | 誓約の系譜 | 誓 | 生存 | `c.shield_x1.2` | `true` |
-
+| `unascertained` | 不詳 | 不 | - | `c.armor_x1.3`, `c.armor_x1.3` | `false` |
+| `incarnation ` | 化身 | 化 | - | `a.boost`1, `a.prophecy`1 | `false` |
+| `usurper` | 簒奪者 | 簒 | - | `a.predator-sense`1, `c.catalyst_x1.3` | `false` |
+| `pioneer` | 先駆者 | 先 | - | `c.wand_x1.3`, `a.howl`1 | `false` |
+| `apex_predator` | エーペックスプレデター | 捕 | - | `c.katana_x1.2`, `c.grimoire_x1.2`, `c.upgrade_first-strike` | `false` |
+| `true_heir` | 真の継承者 | 真 | - |  `c.arrow_x1.3`, `c.armor_x1.2`, `a.re-counter`1 | `false` |
 
 **predisposition(性格):**
 -Selectable:
