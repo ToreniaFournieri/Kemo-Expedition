@@ -485,10 +485,10 @@ Party.`d.HP` =
 |------|------|------|------|------|------|------|------|
 | 1 | ドンガ | Ursan | `class.pilgrim` | `class.wizard` | `fragment` | `Introspective` | `false` |
 | 2 | ミィス | Caninian | `class.wizard` | `class.ranger` | `abyssal_sea` | `Inquisitive` | `false` |
-| 3 | バーシヴァル | Procyonian | `class.sword-saint` | `class.ranger` | `true_heir` | `Evasive` | `true` |
+| 3 | バーシヴァル | Lupinian | `class.sword-saint` | `class.ranger` | `true_heir` | `Evasive` | `true` |
 | 4 | ケラ | Procyonian | `class.alchemist`| `class.alchemist` | `adaptation` | `Amicable` | `false` |
 | 5 | コシ | Cervin | `class.wizard` | `class.sage` | `machina` | `Amicable` | `false` |
-| 6 | ディル | Lupinian | `class.wizard` | `class.alchemist` | `utopia` | `Nimble` | `false` |
+| 6 | ディル | Murid | `class.wizard` | `class.alchemist` | `utopia` | `Nimble` | `false` |
   
 
 
