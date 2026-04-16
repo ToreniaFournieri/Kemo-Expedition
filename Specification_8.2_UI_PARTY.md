@@ -104,6 +104,7 @@ Left-aligned
 
 - `Unique`: Unique Character Flag. 
   - If `true`: The following attributes are immutable (input fields are disabled / greyed out): Name, Race, Lineag, Predisposition
+  - Text: "固有キャラクター(クラスのみ編集可能)"
   - The following attributes remain modifiable (normal input fields): Main Class, Sub Class
 
 - Name [edit]
