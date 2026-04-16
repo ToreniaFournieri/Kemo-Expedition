@@ -498,6 +498,7 @@ function normalizeImportedCharacter(character: Character, fallbackCharacter: Cha
 
   return {
     ...character,
+    isUnique: typeof character.isUnique === 'boolean' ? character.isUnique : (fallbackCharacter.isUnique ?? false),
     raceId: RACES.some((r) => r.id === character.raceId) ? character.raceId : fallbackCharacter.raceId,
     mainClassId: normalizedMainClassId,
     subClassId: normalizedSubClassId,
@@ -1105,7 +1106,7 @@ function drawPartySleepiness(party: Party): { party: Party; sleepiness: Sleepine
 // SpecRef: 2.1.4.2 | Initial setup | PT1 Party initial condition.
 function createInitialParty() {
   const defaultSetup = [
-    { race: 'caninian', main: 'guardian', sub: 'pilgrim', pred: 'devoted', lineage: 'fragment', name: 'ケモ', equipmentIds: [1101, 1110, 1111, 1112] },
+    { race: 'caninian', main: 'guardian', sub: 'pilgrim', pred: 'devoted', lineage: 'fragment', name: 'ケモ', isUnique: true, equipmentIds: [1101, 1110, 1111, 1112] },
     { race: 'vulpinian', main: 'duelist', sub: 'pilgrim', pred: 'aggressive', lineage: 'sandstorm', name: 'ゴン', equipmentIds: [1104, 1106] },
     { race: 'leporian', main: 'ranger', sub: 'ninja', pred: 'inquisitive', lineage: 'abyssal_sea', name: 'ロップ', equipmentIds: [1107, 1108, 1109] },
     { race: 'procyonian', main: 'ninja', sub: 'striker', pred: 'evasive', lineage: 'firmament', name: 'ソウタ', equipmentIds: [1104, 1106, 1104, 1106] },
@@ -1121,6 +1122,7 @@ function createInitialParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
+    isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
     autoEquipmentMode: 2,
     equipment: setup.equipmentIds.map((itemId) => ({
       ...getItemById(itemId)!,
@@ -1167,7 +1169,7 @@ function createInitialParty() {
 function createSecondParty() {
   const defaultSetup = [
     { race: 'procyonian', main: 'samurai', sub: 'guardian', pred: 'inquisitive', lineage: 'ashen_capital', name: 'コロ' },
-    { race: 'lupinian', main: 'sword-saint', sub: 'samurai', pred: 'perceptive', lineage: 'windcross', name: 'マーレ' },
+    { race: 'lupinian', main: 'sword-saint', sub: 'samurai', pred: 'perceptive', lineage: 'windcross', name: 'マーレ', isUnique: true },
     { race: 'felidian', main: 'ranger', sub: 'striker', pred: 'amiable', lineage: 'abyssal_sea', name: 'ルドルフ' },
     { race: 'murid', main: 'striker', sub: 'striker', pred: 'aggressive', lineage: 'firmament', name: 'コソネ' },
     { race: 'caninian', main: 'ninja', sub: 'striker', pred: 'aggressive', lineage: 'frozen_forest', name: 'ルーファス' },
@@ -1182,6 +1184,7 @@ function createSecondParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
+    isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
     autoEquipmentMode: 2,
     equipment: [],
   }));
@@ -1223,9 +1226,9 @@ function createSecondParty() {
 
 function createThirdParty() {
   const defaultSetup = [
-    { race: 'procyonian', main: 'pilgrim', sub: 'guardian', pred: 'nimble', lineage: 'oath', name: 'シマ' },
-    { race: 'ursan', main: 'samurai', sub: 'ranger', pred: 'inquisitive', lineage: 'abyssal_sea', name: 'クレセント' },
-    { race: 'cervin', main: 'wizard', sub: 'alchemist', pred: 'introspective', lineage: 'utopia', name: 'シーケルン' },
+    { race: 'procyonian', main: 'pilgrim', sub: 'sage', pred: 'nimble', lineage: 'machina', name: 'シマ' },
+    { race: 'ursan', main: 'samurai', sub: 'ninja', pred: 'introspective', lineage: 'fragment', name: 'クレセント' },
+    { race: 'cervin', main: 'wizard', sub: 'alchemist', pred: 'amiable', lineage: 'utopia', name: 'シーケルン' },
     { race: 'vulpinian', main: 'sage', sub: 'sage', pred: 'precise', lineage: 'adaptation', name: 'ドッシュ' },
     { race: 'felidian', main: 'alchemist', sub: 'wizard', pred: 'serene', lineage: 'machina', name: 'アルテミス' },
     { race: 'lupinian', main: 'ninja', sub: 'wizard', pred: 'perceptive', lineage: 'windcross', name: 'ウォッシ' },
@@ -1239,6 +1242,7 @@ function createThirdParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
+    isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
     autoEquipmentMode: 2,
     equipment: [],
   }));
@@ -1285,7 +1289,7 @@ function createFourthParty() {
     { race: 'felidian', main: 'sword-saint', sub: 'duelist', pred: 'perceptive', lineage: 'ashen_capital', name: 'ヴェリタス' },
     { race: 'lupinian', main: 'duelist', sub: 'samurai', pred: 'inquisitive', lineage: 'blaze_peak', name: 'ラビ' },
     { race: 'murid', main: 'striker', sub: 'ninja', pred: 'aggressive', lineage: 'firmament', name: 'ネロ' },
-    { race: 'lupinian', main: 'sage', sub: 'wizard', pred: 'amiable', lineage: 'adaptation', name: 'フェン' },
+    { race: 'vulpinian', main: 'sage', sub: 'wizard', pred: 'amiable', lineage: 'adaptation', name: 'フェン' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
@@ -1296,6 +1300,7 @@ function createFourthParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
+    isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
     autoEquipmentMode: 2,
     equipment: [],
   }));
@@ -1340,7 +1345,7 @@ function createFifthParty() {
     { race: 'caninian', main: 'lord', sub: 'ninja', pred: 'stubborn', lineage: 'machina', name: 'アーサー' },
     { race: 'vulpinian', main: 'ninja', sub: 'ranger', pred: 'evasive', lineage: 'abyssal_sea', name: 'ダミアン' },
     { race: 'leporian', main: 'ranger', sub: 'guardian', pred: 'precise', lineage: 'abyssal_sea', name: 'ファー' },
-    { race: 'felidian', main: 'striker', sub: 'pilgrim', pred: 'devoted', lineage: 'firmament', name: 'ミケ' },
+    { race: 'felidian', main: 'striker', sub: 'pilgrim', pred: 'devoted', lineage: 'firmament', name: 'ルナ', isUnique: true },
     { race: 'lupinian', main: 'striker', sub: 'ranger', pred: 'aggressive', lineage: 'firmament', name: 'グレイ' },
     { race: 'cervin', main: 'wizard', sub: 'wizard', pred: 'resourceful', lineage: 'utopia', name: 'セトラ' },
   ];
@@ -1353,6 +1358,7 @@ function createFifthParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
+    isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
     autoEquipmentMode: 2,
     equipment: [],
   }));
@@ -1410,6 +1416,7 @@ function createSixthParty() {
     subClassId: setup.sub as ClassId,
     predispositionId: setup.pred as PredispositionId,
     lineageId: setup.lineage as LineageId,
+    isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
     autoEquipmentMode: 2,
     equipment: [],
   }));
@@ -3557,12 +3564,19 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (charIndex === -1) return state;
 
       const oldChar = currentParty.characters[charIndex];
+      // SpecRef: 2.1.4.2 | Initial setup | Unique Character Flag.
+      const immutableForUnique: ReadonlySet<keyof Character> = new Set(['name', 'raceId', 'lineageId', 'predispositionId']);
+      const sanitizedUpdates = oldChar.isUnique
+        ? Object.fromEntries(
+          Object.entries(action.updates).filter(([key]) => !immutableForUnique.has(key as keyof Character))
+        ) as Partial<Character>
+        : action.updates;
       const newCharacters = [...currentParty.characters];
 
       let newInventory = state.global.inventory;
       let newJewels = state.global.jewels;
       let newGold = state.global.gold;
-      const nextCharacter = { ...oldChar, ...action.updates };
+      const nextCharacter = { ...oldChar, ...sanitizedUpdates };
       const oldMaxEquipSlots = computeCharacterStats(oldChar, currentParty.level).maxEquipSlots;
       const nextMaxEquipSlots = computeCharacterStats(nextCharacter, currentParty.level).maxEquipSlots;
       let newEquipment = [...oldChar.equipment];
@@ -3618,7 +3632,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         }
       }
 
-      newCharacters[charIndex] = { ...oldChar, ...action.updates, equipment: newEquipment };
+      newCharacters[charIndex] = { ...oldChar, ...sanitizedUpdates, equipment: newEquipment };
 
       const updatedParties = [...state.parties];
       updatedParties[state.selectedPartyIndex] = {

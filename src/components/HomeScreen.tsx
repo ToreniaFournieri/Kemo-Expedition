@@ -5068,6 +5068,7 @@ function PartyTab({
   };
 
   const handleRaceChange = (raceId: Character['raceId']) => {
+    if (char.isUnique) return;
     setPendingEdits((prev) => ({
       ...prev,
       raceId,
@@ -5663,7 +5664,11 @@ function PartyTab({
             <input
               type="text"
               value={pendingEdits?.name ?? char.name}
-              onChange={(e) => setPendingEdits({ ...pendingEdits, name: e.target.value })}
+              onChange={(e) => {
+                if (char.isUnique) return;
+                setPendingEdits({ ...pendingEdits, name: e.target.value });
+              }}
+              readOnly={char.isUnique}
               className="text-lg font-bold bg-transparent border-b border-sub focus:outline-none flex-1 min-w-0"
             />
           ) : (
@@ -5731,6 +5736,7 @@ function PartyTab({
                         key={`race-image-${race.id}`}
                         type="button"
                         aria-label={race.name}
+                        disabled={char.isUnique}
                         onClick={() => handleRaceChange(race.id)}
                         className={`min-w-0 flex-1 px-0 py-1 text-xs border ${
                           isSelectedRace
@@ -5950,6 +5956,7 @@ function PartyTab({
                                   <button
                                     key={`lineage-${category.label}-${lineageId}`}
                                     type="button"
+                                    disabled={char.isUnique}
                                     onClick={() => setPendingEdits({ ...pendingEdits, lineageId })}
                                     className={`min-w-0 flex-1 px-0 py-1 text-xs border ${
                                       index === 0 ? 'rounded-l' : index === category.ids.length - 1 ? 'rounded-r' : ''
@@ -5995,6 +6002,7 @@ function PartyTab({
                                   <button
                                     key={`pred-${category.label}-${predispositionId}`}
                                     type="button"
+                                    disabled={char.isUnique}
                                     onClick={() => setPendingEdits({ ...pendingEdits, predispositionId })}
                                     className={`min-w-0 flex-1 px-0 py-1 text-xs border ${
                                       index === 0 ? 'rounded-l' : index === category.ids.length - 1 ? 'rounded-r' : ''
