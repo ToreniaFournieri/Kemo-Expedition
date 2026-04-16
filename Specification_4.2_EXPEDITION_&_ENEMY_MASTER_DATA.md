@@ -290,7 +290,7 @@
 | 7 | 6 | 1-2 | 47 | Normal | `Titan` | class.sword-saint.striker | `i.gauntlet`U, `i.sword`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 月宮の巨前衛 |
 | 7 | 6 | 3 | 48 | Normal | `Undead` | class.ranger.duelist | `i.arrow`U, `i.archery`U, `i.sword`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 王墓の亡射手 |
 | 7 | 6 | 3 | 48 | Normal | `Undead` | class.samurai.ranger | `i.katana`U, `i.shield`U, `i.arrow`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 王墓の亡侍 |
-| 7 | 6 | 4 | 52 | BOSS | `Leporian` | class.lord.ninja | `i.shield`BD, `i.katana`BD, `i.archery`BD, `i.armor`C, `i.robe`C, `i.shield`C | 月王ラピエル |
+| 7 | 6 | 4 | 52 | BOSS | `Leporian` | class.lord.ninja | `i.shield`BD, `i.katana`BD, `i.archery`BD, `i.armor`C, `i.robe`C, `i.shield`C | 月王ラピエル | `a.melee-reflect`2 |
 | 8 | 1 | 1-2 | 49 | Normal | `Dragon` | class.ranger.ranger | `i.arrow`U, `i.archery`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 谷門の竜斥候 |
 | 8 | 1 | 1-2 | 49 | Normal | `Dragon` | class.striker.striker | `i.bolt`U, `i.arrow`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 谷門の竜斥候 |
 | 8 | 1 | 1-2 | 49 | Normal | `Dragon` | class.wizard.wizard | `i.wand`U, `i.robe`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 谷門の竜術師 |
@@ -326,4 +326,4 @@
 | 8 | 6 | 1-2 | 54 | Normal | `Dragon` | class.sword-saint.striker | `i.gauntlet`U, `i.sword`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 聖域の竜戦兵 |
 | 8 | 6 | 3 | 55 | Normal | `Ghost` | class.ranger.duelist | `i.arrow`U, `i.archery`U, `i.sword`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 聖域の弓霊 |
 | 8 | 6 | 3 | 55 | Normal | `Ghost` | class.samurai.ranger | `i.katana`U, `i.shield`U, `i.arrow`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 聖域の太刀霊 |
-| 8 | 6 | 4 | 59 | BOSS | `Cervin` | class.ninja.wizard | `i.archery`BD, `i.bolt`BD, `i.wand`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | 千里眼王セルヴァ |
+| 8 | 6 | 4 | 59 | BOSS | `Cervin` | class.ninja.wizard | `i.archery`BD, `i.bolt`BD, `i.wand`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | セルヴァ・レム | `a.shock`1, `a.magic-seal`1 |
