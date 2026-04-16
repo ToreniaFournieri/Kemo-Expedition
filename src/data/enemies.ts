@@ -314,14 +314,13 @@ function createEnemyFromTemplate(
   enemySubClass: EnemyClassId | 'none',
   enemyType: string,
   spawnPool: number,
-  extraAbilities: AbilityId[] = [],
+  extraAbilities: EnemyAbility[] = [],
   enemyTypeLevel = 1,
 ): EnemyDef {
   // SpecRef: 4.1.4 | Base data structure (enemy) | Calculation of master value
   const classBase = buildEnemyClassMasterStats(enemyClass, enemySubClass);
-  const extraAbilityLevels = extraAbilities.map((id) => ({ id, level: 1 }));
   const enemyTypeAbilities = getEnemyTypeAbilities(enemyType, enemyTypeLevel);
-  const enemyAbilities = resolveEnemyPassiveAbilities(mergeEnemyAbilities(classBase.abilities, extraAbilityLevels, enemyTypeAbilities));
+  const enemyAbilities = resolveEnemyPassiveAbilities(mergeEnemyAbilities(classBase.abilities, extraAbilities, enemyTypeAbilities));
   const cyborgizationAdjustment = getEnemyCyborgizationAdjustment(
     enemyAbilities.find((ability) => ability.id === 'cyborgization')?.level ?? 0,
   );
@@ -468,6 +467,12 @@ function assignCommonDropTokensByClass(dropTokens: string[], enemyClass: EnemyCl
   return [...nonCommonDrops, ...commonDrops];
 }
 
+const MASTER_BOSS_BONUS_ABILITIES: Partial<Record<number, EnemyAbility[]>> = {
+  // SpecRef: 4.2.2 | Enemy | Rare items drop
+  // x.exp_id=6 floor=6 room=4 boss セレスティアルリーパー additional ability
+  6: [{ id: 'soul_reap', level: 3 }],
+};
+
 function generateEnemies(): EnemyDef[] {
   const enemies: EnemyDef[] = [];
 
@@ -533,7 +538,7 @@ function generateEnemies(): EnemyDef[] {
         boss[8] ?? 'none',
         boss[4],
         boss[0],
-        [],
+        MASTER_BOSS_BONUS_ABILITIES[tier] ?? [],
         boss[2],
       );
       const bossDropTokens = boss[6].split(',').map((token) => token.trim()).filter((token) => token.length > 0);
