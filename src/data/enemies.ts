@@ -469,8 +469,18 @@ function assignCommonDropTokensByClass(dropTokens: string[], enemyClass: EnemyCl
 
 const MASTER_BOSS_BONUS_ABILITIES: Partial<Record<number, EnemyAbility[]>> = {
   // SpecRef: 4.2.2 | Enemy | Rare items drop
-  // x.exp_id=6 floor=6 room=4 boss セレスティアルリーパー additional ability
+  1: [{ id: 'ice_absorb', level: 1 }],
+  2: [{ id: 'deflection', level: 2 }],
+  3: [{ id: 'melee_confusion', level: 1 }],
+  5: [{ id: 'fire_reflect', level: 1 }],
   6: [{ id: 'soul_reap', level: 3 }],
+  7: [{ id: 'melee_reflect', level: 2 }],
+  8: [{ id: 'shock', level: 1 }, { id: 'magic_seal', level: 1 }],
+};
+
+const MASTER_BOSS_BONUS_MODIFIERS: Partial<Record<number, Bonus[]>> = {
+  // SpecRef: 4.2.2 | Enemy | Rare items drop
+  4: [{ type: 'fire_defense_multiplier_xV', value: 4 / 5 }],
 };
 
 function generateEnemies(): EnemyDef[] {
@@ -544,6 +554,10 @@ function generateEnemies(): EnemyDef[] {
       const bossDropTokens = boss[6].split(',').map((token) => token.trim()).filter((token) => token.length > 0);
       enemy.masterDropTokens = assignCommonDropTokensByClass(bossDropTokens, boss[5]);
       enemy.dropItemId = getDropItemIdFromMaster(tier, boss[6].split(','));
+      const bossBonusModifiers = MASTER_BOSS_BONUS_MODIFIERS[tier] ?? [];
+      if (bossBonusModifiers.length > 0) {
+        enemy.bonuses = [...(enemy.bonuses ?? []), ...bossBonusModifiers];
+      }
       enemies.push(enemy);
     }
   }

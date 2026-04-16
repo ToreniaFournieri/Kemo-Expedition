@@ -40,7 +40,7 @@ export const MASTER_EXPEDITION_ENEMIES_PACKED: Record<number, readonly MasterEne
     [6,'1-2',6,'normal','Beast','sword-saint','i.gauntletU,i.swordU,i.boltU,i.swordC,i.katanaC,i.gauntletC','遺跡の前衛獣','striker'],
     [6,'3',7,'normal','Aerial','ranger','i.arrowU,i.archeryU,i.swordU,i.arrowC,i.boltC,i.archeryC','羽弓の小翼','duelist'],
     [6,'3',7,'normal','Aerial','samurai','i.katanaU,i.shieldU,i.arrowU,i.swordC,i.katanaC,i.gauntletC','城上の翼侍','ranger'],
-    [6,'4',11,'boss','Caninian','guardian','i.armorBD,i.gauntletBD,i.shieldBD,i.armorC,i.robeC,i.shieldC','アルセウス'],
+    [6,'4',11,'boss','Caninian','guardian','i.armorBD,i.gauntletBD,i.shieldBD,i.armorC,i.robeC,i.shieldC','アレウス'],
   ],
   2: [
     [1,'1-2',7,'normal','Frost','ranger','i.arrowU,i.archeryU,i.arrowC,i.boltC,i.archeryC','霜牙獣'],
@@ -78,7 +78,7 @@ export const MASTER_EXPEDITION_ENEMIES_PACKED: Record<number, readonly MasterEne
     [6,'1-2',12,'normal','Frost','sword-saint','i.gauntletU,i.swordU,i.boltU,i.swordC,i.katanaC,i.gauntletC','凍原の巨爪獣','striker'],
     [6,'3',13,'normal','Golem','ranger','i.arrowU,i.archeryU,i.swordU,i.arrowC,i.boltC,i.archeryC','石翼の射手','duelist'],
     [6,'3',13,'normal','Golem','samurai','i.katanaU,i.shieldU,i.arrowU,i.swordC,i.katanaC,i.gauntletC','断崖の岩刃兵','ranger'],
-    [6,'4',17,'boss','Lupinian','striker','i.boltBD,i.arrowBD,i.archeryBD,i.arrowC,i.boltC,i.archeryC','白狼グリムクラッグ','ninja'],
+    [6,'4',17,'boss','Lupinian','striker','i.boltBD,i.arrowBD,i.archeryBD,i.arrowC,i.boltC,i.archeryC','蒼狼ボルテフ','ninja'],
   ],
   3: [
     [1,'1-2',14,'normal','Marine','ranger','i.arrowU,i.archeryU,i.arrowU,i.arrowC,i.boltC,i.archeryC','浜辺の漂掠魚','ranger'],
@@ -116,7 +116,7 @@ export const MASTER_EXPEDITION_ENEMIES_PACKED: Record<number, readonly MasterEne
     [6,'1-2',19,'normal','Marine','sword-saint','i.gauntletU,i.swordU,i.boltU,i.swordC,i.katanaC,i.gauntletC','遺浜の前衛魚','striker'],
     [6,'3',20,'normal','Slime_Colony','ranger','i.arrowU,i.archeryU,i.swordU,i.arrowC,i.boltC,i.archeryC','泡群の射手','duelist'],
     [6,'3',20,'normal','Slime_Colony','samurai','i.katanaU,i.shieldU,i.arrowU,i.swordC,i.katanaC,i.gauntletC','海蝕の刃兵','ranger'],
-    [6,'4',24,'boss','Vulpinian','wizard','i.wandBD,i.robeBD,i.grimoireBD,i.wandC,i.grimoireC,i.catalystC','蒼潮の主祭狐','sage'],
+    [6,'4',24,'boss','Vulpinian','wizard','i.wandBD,i.robeBD,i.grimoireBD,i.wandC,i.grimoireC,i.catalystC','アズラーイール','sage'],
   ],
   4: [
     [1,'1-2',21,'normal','Shadowfang','ranger','i.arrowU,i.archeryU,i.arrowU,i.arrowC,i.boltC,i.archeryC','砂夜の牙影','ranger'],
@@ -154,7 +154,7 @@ export const MASTER_EXPEDITION_ENEMIES_PACKED: Record<number, readonly MasterEne
     [6,'1-2',26,'normal','Shadowfang','sword-saint','i.gauntletU,i.swordU,i.boltU,i.swordC,i.katanaC,i.gauntletC','遺都の影前衛','striker'],
     [6,'3',27,'normal','Felidian','ranger','i.arrowU,i.archeryU,i.swordU,i.arrowC,i.boltC,i.archeryC','王都の射猫','duelist'],
     [6,'3',27,'normal','Felidian','samurai','i.katanaU,i.shieldU,i.arrowU,i.swordC,i.katanaC,i.gauntletC','王都の刃猫','ranger'],
-    [6,'4',31,'boss','Felidian','striker','i.boltBD,i.arrowBD,i.arrowBD,i.arrowC,i.boltC,i.archeryC','砂都の狙撃王','ranger'],
+    [6,'4',31,'boss','Felidian','striker','i.boltBD,i.arrowBD,i.arrowBD,i.arrowC,i.boltC,i.archeryC','シルウェストリス','ranger'],
   ],
   5: [
     [1,'1-2',28,'normal','Beast','ranger','i.arrowU,i.archeryU,i.arrowU,i.arrowC,i.boltC,i.archeryC','火灰の狩獣','ranger'],
@@ -306,7 +306,7 @@ export const MASTER_EXPEDITION_ENEMIES_PACKED: Record<number, readonly MasterEne
     [6,'1-2',54,'normal','Dragon','sword-saint','i.gauntletU,i.swordU,i.boltU,i.swordC,i.katanaC,i.gauntletC','聖域の竜戦兵','striker'],
     [6,'3',55,'normal','Ghost','ranger','i.arrowU,i.archeryU,i.swordU,i.arrowC,i.boltC,i.archeryC','聖域の弓霊','duelist'],
     [6,'3',55,'normal','Ghost','samurai','i.katanaU,i.shieldU,i.arrowU,i.swordC,i.katanaC,i.gauntletC','聖域の太刀霊','ranger'],
-    [6,'4',59,'boss','Cervin','ninja','i.archeryBD,i.boltBD,i.wandBD,i.arrowC,i.boltC,i.archeryC','千里眼王セルヴァ','wizard'],
+    [6,'4',59,'boss','Cervin','ninja','i.archeryBD,i.boltBD,i.wandBD,i.arrowC,i.boltC,i.archeryC','セルヴァ・レム','wizard'],
   ],
 } as const;
 
