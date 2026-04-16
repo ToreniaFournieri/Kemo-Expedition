@@ -245,6 +245,7 @@ export type InventoryRecord = Record<string, InventoryVariant>;
 export interface Character {
   id: number;
   name: string;
+  isUnique?: boolean;
   autoEquipmentMode?: 0 | 1 | 2;
   raceId: RaceId;
   mainClassId: ClassId;
