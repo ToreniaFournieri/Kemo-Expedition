@@ -464,7 +464,7 @@ Party.`d.HP` =
 | 1 | アーサー | Caninian | `class.lord` | `class.ninja` | `machina` | `Stubborn` | `false` |
 | 2 | ダミアン | Vulpinian | `class.ninja` | `class.ranger` | `abyssal_sea` | `Evasive` | `false` |
 | 3 | ファー | Leporian | `class.ranger` | `class.guardian` | `abyssal_sea` | `Exacting` | `false` |
-| 4 | ルナ | Felidian | `class.striker`| `class.pilgrim` | `firmament` | `Devoted` | `false` |
+| 4 | ルナ | Felidian | `class.striker`| `class.pilgrim` | `firmament` | `Devoted` | `true` |
 | 5 | グレイ | Lupinian | `class.striker` | `class.ranger` | `firmament` | `Aggressive` | `false` |
 | 6 | セトラ | Cervin | `class.wizard` | `class.wizard` | `utopia` | `Savvy` | `false` |
 
