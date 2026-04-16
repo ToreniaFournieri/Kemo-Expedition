@@ -393,6 +393,10 @@ Party.`d.HP` =
 - Initial setup (or reset condition)
 
 - unlocked deity: none (all of other deity is unlocked)
+- Unique Character Flag;
+  - If true: The following attributes are immutable: Name, Race, Lineag, Predisposition
+  - The following attributes remain modifiable: Main Class, Sub Class
+
 
 - **PT1** Party initial condition.
 
