@@ -458,7 +458,7 @@ Party.`d.HP` =
 | 3 | ヴェリタス | Felidian | `class.sword-saint` | `class.duelist` | `ashen_capital` | `Perceptive` |
 | 4 | ラビ | Lupinian | `class.duelist` | `class.samurai` | `blaze_peak` | `Inquisitive` |
 | 5 | ネロ | Murid | `class.striker`| `class.ninja` | `firmament` | `Aggressive` |
-| 6 | フェン | Lupinian | `class.sage` | `class.wizard`| `adaptation` | `Amicable` |
+| 6 | フェン | Vulpinian | `class.sage` | `class.wizard`| `adaptation` | `Amicable` |
 
 
   - 7.1.1 AUTO equipment logic for all party member.  
