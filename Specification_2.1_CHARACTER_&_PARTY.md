@@ -394,7 +394,7 @@ Party.`d.HP` =
 
 - unlocked deity: none (all of other deity is unlocked)
 
-- PT1 Party initial condition.
+- **PT1** Party initial condition.
 
 | order | Name | Race | main class | sub class | lineage | predisposition | Initial equipment |
 |------|------|------|------|------|------|------|------|
@@ -416,9 +416,8 @@ Party.`d.HP` =
   - state: idle
   - deity: `Goddess of Restoration`
 
-- PT2 initial condition (when unlocked)
+- **PT2** initial condition (when unlocked)
   - deity: `God of Attrition`
-
 
 | order | Name | Race | main class | sub class | lineage | predisposition |
 |------|------|------|------|------|------|------|
@@ -429,10 +428,7 @@ Party.`d.HP` =
 | 5 | ルーファス | Caninian | `class.ninja` | `class.striker` | `frozen_forest` | `Aggressive` |
 | 6 | アヤ | Vulpinian | `class.wizard` | `class.sage`| `utopia` | `Serenity` |
 
-  
-- 7.1.1 AUTO equipment logic for all party member. 
- 
-- PT3 initial condition (when unlocked)
+- **PT3** initial condition (when unlocked)
   - deity: `God of Cunning`
 
 | order | Name | Race | main class | sub class | lineage | predisposition |
@@ -444,12 +440,8 @@ Party.`d.HP` =
 | 5 | アルテミス | Felidian | `class.alchemist` | `class.wizard` | `machina` | `Serenity` |
 | 6 | ウォッシ | Lupinian | `class.ninja` | `class.wizard`| `windcross` | `Perceptive` |
 
-
-  - 7.1.1 AUTO equipment logic for all party member.  
-
-- PT4 initial condition (when unlocked)
+- **PT4** initial condition (when unlocked)
   - deity: `God of Fortification`
-  - party member race: all Ursan
 
 | order | Name | Race | main class | sub class | lineage | predisposition |
 |------|------|------|------|------|------|------|
@@ -460,10 +452,7 @@ Party.`d.HP` =
 | 5 | ネロ | Murid | `class.striker`| `class.ninja` | `firmament` | `Aggressive` |
 | 6 | フェン | Vulpinian | `class.sage` | `class.wizard`| `adaptation` | `Amicable` |
 
-
-  - 7.1.1 AUTO equipment logic for all party member.  
-
-- PT5 initial condition (when unlocked)
+- **PT5** initial condition (when unlocked)
   - deity: `Goddess of Fertility`
 
 | order | Name | Race | main class | sub class | lineage | predisposition |
@@ -475,9 +464,7 @@ Party.`d.HP` =
 | 5 | グレイ | Lupinian | `class.striker` | `class.ranger` | `firmament` | `Aggressive` |
 | 6 | セトラ | Cervin | `class.wizard` | `class.wizard` | `utopia` | `Savvy` |
 
-  - 7.1.1 AUTO equipment logic for all party member. 
-
-- PT6 initial condition (when unlocked)
+- **PT6** initial condition (when unlocked)
   - deity: `God of Resonance`
 
 | order | Name | Race | main class | sub class | lineage | predisposition |
@@ -489,4 +476,6 @@ Party.`d.HP` =
 | 5 | コシ | Cervin | `class.wizard` | `class.sage` | `machina` | `Amicable` |
 | 6 | ディル | Lupinian | `class.wizard` | `class.alchemist` | `utopia` | `Nimble` |
   
-  - 7.1.1 AUTO equipment logic for all party member.
+
+
+- 7.1.1 AUTO equipment logic for all party member.
