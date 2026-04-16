@@ -35,10 +35,10 @@
 | Defensive | `i.armor`, `i.robe`, `i.shield` |
 
 
-- Rare items drop
+- Rare items drop, Enemy
 
-| `x.exp_id` | `x.floor` | `x.room` | `x.level` | `x.type` | `x.enemy_type` | `x.class` | `x.drop` | `x.name` (Japanese) |
-|---|---:|---|---:|---|---|---|---|---|
+| `x.exp_id` | `x.floor` | `x.room` | `x.level` | `x.type` | `x.enemy_type` | `x.class` | `x.drop` | `x.name` (Japanese) | additional abilities or bonus |
+|---|---:|---|---:|---|---|---|---|---|---|
 | 1 | 1 | 1-2 | 1 | Normal | `Beast` | class.ranger | `i.arrow`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 平原のけもの |
 | 1 | 1 | 1-2 | 1 | Normal | `Beast` | class.striker | `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 平原のちいさな斥候獣 |
 | 1 | 1 | 1-2 | 1 | Normal | `Beast` | class.wizard | `i.wand`U, `i.robe`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 草むらの狩り獣 |
@@ -254,7 +254,7 @@
 | 6 | 6 | 1-2 | 40 | Normal | `Mech` | class.sword-saint.striker | `i.gauntlet`U, `i.sword`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 共鳴前衛オートマタ |
 | 6 | 6 | 3 | 43 | Elite | `Procyonian` | class.ranger.duelist | `i.arrow`BD, `i.archery`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | プロキオニアン迅射兵 |
 | 6 | 6 | 3 | 43 | Elite | `Procyonian` | class.samurai.ranger | `i.shield`BD, `i.katana`BD, `i.sword`C, `i.katana`C, `i.gauntlet`C | プロキオニアン護刃兵 |
-| 6 | 6 | 4 | 45 | BOSS | `Procyonian` | class.sage.lord | `i.grimoire`BD, `i.catalyst`BD, `i.shield`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | セレスティアルリーパー |
+| 6 | 6 | 4 | 45 | BOSS | `Procyonian` | class.sage.lord | `i.grimoire`BD, `i.catalyst`BD, `i.shield`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | セレスティアルリーパー | `a.soul-reap`3 |
 | 7 | 1 | 1-2 | 42 | Normal | `Titan` | class.ranger.ranger | `i.arrow`U, `i.archery`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 月輪の巨斥候 |
 | 7 | 1 | 1-2 | 42 | Normal | `Titan` | class.striker.striker | `i.bolt`U, `i.arrow`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 光輪の巨斥候 |
 | 7 | 1 | 1-2 | 42 | Normal | `Titan` | class.wizard.wizard | `i.wand`U, `i.robe`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 星屑の巨導師 |
