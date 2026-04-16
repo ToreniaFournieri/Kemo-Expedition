@@ -445,7 +445,7 @@ Party.`d.HP` =
 | 1 | シマ | Procyonian | `class.pilgrim` | `class.sage` | `machina` | `Nimble` | `false` |
 | 2 | クレセント | Ursan | `class.samurai` | `class.ninja` | `fragment` | `Introspective` | `false` |
 | 3 | シーケルン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Amicable` | `false` |
-| 4 | ドッシュ | Vulpinian | `class.sage`| `class.sage` | `adaptation` | `Exacting` | `false` |
+| 4 | ヴァルター | Vulpinian | `class.sage`| `class.lord` | `adaptation` | `Exacting` | `true` |
 | 5 | アルテミス | Felidian | `class.alchemist` | `class.wizard` | `machina` | `Serenity` | `false` |
 | 6 | ウォッシ | Lupinian | `class.ninja` | `class.wizard`| `windcross` | `Perceptive` | `false` |
 
@@ -480,7 +480,7 @@ Party.`d.HP` =
 |------|------|------|------|------|------|------|------|
 | 1 | ドンガ | Ursan | `class.pilgrim` | `class.wizard` | `fragment` | `Introspective` | `false` |
 | 2 | ミィス | Caninian | `class.wizard` | `class.ranger` | `abyssal_sea` | `Inquisitive` | `false` |
-| 3 | ピナ | Procyonian | `class.sword-saint` | `class.ranger` | `utopia` | `Evasive` | `false` |
+| 3 | バーシヴァル | Procyonian | `class.sword-saint` | `class.ranger` | `utopia` | `Evasive` | `true` |
 | 4 | ケラ | Procyonian | `class.alchemist`| `class.alchemist` | `adaptation` | `Amicable` | `false` |
 | 5 | コシ | Cervin | `class.wizard` | `class.sage` | `machina` | `Amicable` | `false` |
 | 6 | ディル | Lupinian | `class.wizard` | `class.alchemist` | `utopia` | `Nimble` | `false` |
