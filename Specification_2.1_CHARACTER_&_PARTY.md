@@ -104,7 +104,7 @@
 | `oath` | 誓約の系譜 | 誓 | 生存 | `c.shield_x1.2` | `true` |
 | `unascertained` | 不詳 | 不 | - | `c.armor_x1.3`, `c.robe_x1.3` | `false` |
 | `pioneer` | 先駆者 | 先 | - | `c.wand_x1.3`, `a.howl`1 | `false` |
-| `almighty` | 全能 | 全 | - | `c.growth_x1.3`, `c.sword_x1.3`, `c.arrow_x1.3`, `c.wand_x1.3`, `b.vitality+1`, `b.mind+1`, `b.intelligence+1`, `b.mind+1` | `false` |
+| `almighty` | 全能 | 全 | - | `c.growth_x1.3`, `c.sword_x1.3`, `c.arrow_x1.3`, `c.wand_x1.3`, `b.vitality+1`, `b.strength+1`, `b.intelligence+1`, `b.mind+1` | `false` |
 | `hidden_grail` | 隠された杯 | 杯 | - | `c.evasion+0.010`, `c.robe_x1.3`, `b.vitality+1`  | `false` |
 | `rowdy_orca_girl` | わんぱくシャチ娘 | わ | - | `a.bind`1, `c.sword_x1.2`, `c.arrow_x1.2`, `b.intelligence-1` | `false` |
 | `meddlesome_fox` | 世話焼き狐 | 世 | - | `a.defender`1, `c.shield_x1.3`  | `false` |
@@ -112,7 +112,7 @@
 | `phantom_thief` | 怪盗 | 怪 | - | `a.ranged-reflect`1, `c.gauntlet_x1.2`, `b.mind+1` | `false` |
 | `flamebound_grove` | 炎の杜 | 炎 | - | `a.fire-absorb`1, `c.sword_x1.1` | `false` |
 | `apostate` | 背教者 | 背 | - | `c.grimoire_x1.3`, `c.bolt_x1.2`, `b.mind+3`  | `false` |
-| `incarnation ` | 化身 | 化 | - | `a.boost`1, `a.prophecy`1, `b.intelligence+1` | `false` |
+| `incarnation` | 化身 | 化 | - | `a.boost`1, `a.prophecy`1, `b.intelligence+1` | `false` |
 | `the_moon_is_a_harsh_master` | 月は無慈悲な夜の主 | 夜 | - |  `a.soul-reap`1, `a.decompose`1, `b.strength+1` | `false` |
 
 
@@ -446,7 +446,7 @@ Party.`d.HP` =
 | 1 | パーシヴァル | Procyonian | `class.samurai` | `class.guardian` | **`hidden_grail`** | `Inquisitive` | **`true`** |
 | 2 | ランスロット | Lupinian | `class.sword-saint` | `class.samurai` | **`almighty`** | `Perceptive` | **`true`** |
 | 3 | ルドルフ | Felidian | `class.ranger` | `class.striker` | `abyssal_sea` | `Amicable` | `false` |
-| 4 | コソネ | Murid | `class.striker`| `class.striker` | `firmament` | `Aggressive ` | `false` |
+| 4 | コソネ | Murid | `class.striker`| `class.striker` | `firmament` | `Aggressive` | `false` |
 | 5 | ルーファス | Caninian | `class.ninja` | `class.striker` | `frozen_forest` | `Aggressive` | `false` |
 | 6 | アヤ | Vulpinian | `class.wizard` | `class.sage`| `utopia` | `Serenity` | `false` |
 
