@@ -105,13 +105,13 @@
 | `unascertained` | 不詳 | 不 | - | `c.armor_x1.3`, `c.robe_x1.3` | `false` |
 | `pioneer` | 先駆者 | 先 | - | `c.wand_x1.3`, `a.howl`1 | `false` |
 | `almighty` | 全能 | 全 | - | `c.growth_x1.3`, `c.sword_x1.3`, `c.arrow_x1.3`, `c.wand_x1.3` | `false` |
-| `hidden_grail` | 隠された杯  | - | `c.evasion+0.010`, `c.robe_x1.3`  | `false` |
-| `rowdy_orca_girl` | わんぱくシャチ娘 | - | `a.bind`1, `c.sword_x1.2`, `c.arrow_x1.2` | `false` |
-| `meddlesome_fox` | 世話焼き狐 | - | `a.defender`1, `c.shield_x1.3`  | `false` |
-| `crescent_jade` | 三日月瑶 | - | `a.death-touch`1, `c.wand_x1.1`, `c.robe_x1.1` | `false` |
-| `phantom_thief` | 怪盗 | - | | `false` |
-| `flamebound_grove` | 炎の杜 | - | | `false` |
-| `apostate` | 背教者 | - | | `false` |
+| `hidden_grail` | 隠された杯 | 杯 | - | `c.evasion+0.010`, `c.robe_x1.3`  | `false` |
+| `rowdy_orca_girl` | わんぱくシャチ娘 | わ | - | `a.bind`1, `c.sword_x1.2`, `c.arrow_x1.2` | `false` |
+| `meddlesome_fox` | 世話焼き狐 | 世 | - | `a.defender`1, `c.shield_x1.3`  | `false` |
+| `crescent_jade` | 三日月瑶 | 月 | - | `a.death-touch`1, `c.wand_x1.1`, `c.robe_x1.1` | `false` |
+| `phantom_thief` | 怪盗 | 怪 | - | `a.ranged-reflect`1, `c.gauntlet_x1.2` | `false` |
+| `flamebound_grove` | 炎の杜 | 炎 | - | `a.fire-absorb`1, `c.sword_x1.1` | `false` |
+| `apostate` | 背教者 | 背 | - | `c.grimoire_x1.3`, `c.bolt_x1.2`  | `false` |
 | `incarnation ` | 化身 | 化 | - | `a.boost`1, `a.prophecy`1 | `false` |
 | `true_heir` | 真の継承者 | 真 | - |  `c.arrow_x1.3`, `c.armor_x1.2`, `a.re-counter`1 | `false` |
 | `apex_predator` | エーペックスプレデター | 捕 | - | `c.katana_x1.2`, `c.grimoire_x1.2`, `c.upgrade_first-strike` | `false` |
@@ -483,7 +483,7 @@ Party.`d.HP` =
 | order | Name | Race | main class | sub class | lineage | predisposition | Unique |
 |------|------|------|------|------|------|------|------|
 | 1 | ミシュカ | Ursan | `class.lord` | `class.ninja` | **`apostate`** | `Stubborn` | **`true`** |
-| 2 | プチーツァ | **Avian** | `class.ninja` | `class.ranger` | **`abyssal_sea`** | `Evasive` | **`true`** |
+| 2 | プチーツァ | **Avian** | `class.ninja` | `class.ranger` | **`flamebound_grove`** | `Evasive` | **`true`** |
 | 3 | ファー | Leporian | `class.ranger` | `class.guardian` | `abyssal_sea` | `Exacting` | `false` |
 | 4 | ヴェリタス | Felidian | `class.striker`| `class.pilgrim` | `firmament` | `Devoted` | `false` |
 | 5 | グレイ | Lupinian | `class.striker` | `class.ranger` | `firmament` | `Aggressive` | `false` |
