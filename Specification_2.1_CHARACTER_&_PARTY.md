@@ -104,14 +104,14 @@
 | `oath` | 誓約の系譜 | 誓 | 生存 | `c.shield_x1.2` | `true` |
 | `unascertained` | 不詳 | 不 | - | `c.armor_x1.3`, `c.robe_x1.3` | `false` |
 | `pioneer` | 先駆者 | 先 | - | `c.wand_x1.3`, `a.howl`1 | `false` |
-| `almighty` | 全能 | 全 | - |
-| `hidden_grail` | 隠された杯  | - |
-| `rowdy_orca_girl` | わんぱくシャチ娘 | - |
-| `meddlesome_fox` | 世話焼き狐 | - |
-| `crescent_jade` | 三日月瑶 | - |
-| `phantom_thief` | 怪盗 | - |
-| `flamebound_grove` | 炎の杜 | - |
-| `apostate` | 背教者 | - |
+| `almighty` | 全能 | 全 | - | `c.growth_x1.3`, `c.sword_x1.3`, `c.arrow_x1.3`, `c.wand_x1.3` | `false` |
+| `hidden_grail` | 隠された杯  | - | `c.evasion+0.010`, `c.robe_x1.3`  | `false` |
+| `rowdy_orca_girl` | わんぱくシャチ娘 | - | `a.bind`1, `c.sword_x1.2`, `c.arrow_x1.2` | `false` |
+| `meddlesome_fox` | 世話焼き狐 | - | `a.defender`1, `c.shield_x1.3`  | `false` |
+| `crescent_jade` | 三日月瑶 | - | | `false` |
+| `phantom_thief` | 怪盗 | - | | `false` |
+| `flamebound_grove` | 炎の杜 | - | | `false` |
+| `apostate` | 背教者 | - | | `false` |
 | `incarnation ` | 化身 | 化 | - | `a.boost`1, `a.prophecy`1 | `false` |
 | `true_heir` | 真の継承者 | 真 | - |  `c.arrow_x1.3`, `c.armor_x1.2`, `a.re-counter`1 | `false` |
 | `apex_predator` | エーペックスプレデター | 捕 | - | `c.katana_x1.2`, `c.grimoire_x1.2`, `c.upgrade_first-strike` | `false` |
