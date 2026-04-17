@@ -316,6 +316,15 @@ function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: number):
         .replace(/の\s+x/g, 'のx');
     }
   }
+  if (abilityId === 'melee_conversion') {
+    const meleeConversionScaleMatch = levelScale.match(/Lv\d+:\s*(\d+)%・(\d+)%/);
+    if (meleeConversionScaleMatch) {
+      const [, rangedRate, magicalRate] = meleeConversionScaleMatch;
+      return entry.description
+        .replace(/N%/g, `${rangedRate}%`)
+        .replace(/M%/g, `${magicalRate}%`);
+    }
+  }
 
   const { timing, value } = parseBonusAbilityLevelScale(levelScale);
   let description = entry.description;

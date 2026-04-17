@@ -3,6 +3,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.0 | 440 | 2026/4/17 | Fix `a.melee-conversion` tooltip text interpolation (`N%` / `M%`) and apply melee conversion attack gain to enemy runtime scaling (including Colosseum editor opponent status). |
 | 0.6.0 | 439 | 2026/4/17 | Implement passive ability `a.melee-conversion` in runtime: add new ability id/name/glossary entry and apply `d.melee_attack += round(d.ranged_attack×N%) + round(d.magical_attack×M%)` (Lv1: 30%/30%, Lv2: 40%/40%). |
 | 0.6.0 | 438 | 2026/4/17 | Add non-selectable runtime races `Kemoria` / `Orcinian` / `Avian` (with specified base stats and c-bonuses), and update `a.flying` glossary scale to `Lv1: x1/3, Lv2: x1/4, Lv3: x1/5` with `CLOSE` phase priority `9`. |
 | 0.6.0 | 437 | 2026/4/17 | Fix bonus ability tooltip wording format for `a.execution`: correctly interpolate `N` and `xM` from level scale (`50%・x1.8`) and display tooltip as `タイトル：説明`. |
