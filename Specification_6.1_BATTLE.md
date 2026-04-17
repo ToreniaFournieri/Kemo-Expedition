@@ -407,6 +407,8 @@ If `a.*` with phase = START:
   - x `f.rage_amplifier`
   - x `f.momentum_amplifier`
   - x `f.ambush_amplifier`
+  - x `f.overwatch_amplifier`
+  - x `f.execution_amplifier`
   - x `f.mutual_amplifier`
   - x opponent.`f.swarm.amplifier`
   - x actor.`f.swarm.amplifier`
@@ -430,6 +432,14 @@ If `a.*` with phase = START:
   - If actor has `a.ambush`, and opponent has not acted yet in this battle, return N.
   - Otherwise, return x1.0.
   - Log: add "待ち伏せ:xN" to the attack log.
+- `f.overwatch_amplifier`
+  - If actor has `a.overwatch`, and opponent and other party members have not acted yet in this battle, return N.
+  - Otherwise, return x1.0.
+  - Log: add "監視:xN" to the attack log.
+- `f.execution_amplifier`
+  - If actor has `a.execution`, and opponent.`d.HP` <= N, return M.
+  - Otherwise, return x1.0.
+  - Log: add "エクセキューション:xM" to the attack log.
     
 - `f.swarm.amplifier`:
 	- N = 1.0
