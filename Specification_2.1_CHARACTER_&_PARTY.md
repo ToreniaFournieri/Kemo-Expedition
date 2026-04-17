@@ -412,9 +412,15 @@ Party.`d.HP` =
 
 - unlocked deity: none (all of other deity is unlocked)
 - `Unique`: Unique Character Flag. 
+- For PT2 to PT6: `7.1.1 AUTO equipment logic` for all party member.
 
+- Initial state:
+  - Gold: 200G
+  - `PartyLevel`: 1
+  - `xp_current`: 0
 
 - **PT1** Party initial condition.
+  - deity: `Goddess of Restoration`
 
 | order | Name | Race | main class | sub class | lineage | predisposition | Initial equipment | Unique |
 |------|------|------|------|------|------|------|------|------|
@@ -424,17 +430,6 @@ Party.`d.HP` =
 | 4 | ソウタ | Procyonian | `class.ninja`| `class.striker` | `firmament` | `Evasive` |`1104`, `1106`,`1104`, `1106` | `false` |
 | 5 | セルフィン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Amicable` | `1110`, `1112` | `false` |
 | 6 | ライカ | Caninian | `class.sage` | `class.wizard`| **`pioneer`** | `Savvy` | `1110`, `1112`  | **`true`** |
-
-- Party initial inventory.
-  - 1 Tier-1 common items of each item type.
-
-- Party initial state.
-  - `PartyLevel`: 1
-  - `xp_current`: 0
-  - Gold: 200G
-  - Auto-sell: none
-  - state: idle
-  - deity: `Goddess of Restoration`
 
 - **PT2** initial condition (when unlocked)
   - deity: `God of Attrition`
@@ -497,4 +492,3 @@ Party.`d.HP` =
 | 6 | ディル | Murid | `class.wizard` | `class.alchemist` | `utopia` | `Nimble` | `false` |
   
 
-- 7.1.1 AUTO equipment logic for all party member.
