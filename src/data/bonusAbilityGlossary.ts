@@ -8,6 +8,8 @@ export type BonusAbilityGlossaryEntry = {
   description: string;
   levelScale: string[];
   subcategory: BonusAbilityGlossarySubcategoryId;
+  phase?: 'LONG' | 'MID' | 'CLOSE';
+  priority?: number;
 };
 
 export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
@@ -39,7 +41,8 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'swarm', label: '群れ', description: '失ったHP割合に応じて、物理与ダメージがN%低下し、物理被ダメージがN%増加する', levelScale: ['Lv1: 失ったHP1%につき0.5%'], subcategory: 'reactive' },
   { abilityId: 'stealth', label: '隠れ蓑', description: 'HPがN%未満のとき、自身へのダメージをすべて回避する', levelScale: ['Lv1: 24%', 'Lv2: 29%'], subcategory: 'reactive' },
   { abilityId: 'illusion', label: '幻化', description: '最初の遠距離攻撃を無効化する(対象範囲:N)', levelScale: ['Lv1: 自身', 'Lv2: パーティー全体'], subcategory: 'reactive' },
-  { abilityId: 'flying', label: '飛行', description: '相手の近接攻撃回数がxN倍になる', levelScale: ['Lv1: x1/4'], subcategory: 'reactive' },
+  // SpecRef: 1.1 | CONSTANTS_GLOSSARY | a.flying
+  { abilityId: 'flying', label: '飛行', description: '相手の近接攻撃回数がxN倍になる', levelScale: ['Lv1: x1/3', 'Lv2: x1/4', 'Lv3: x1/5'], subcategory: 'reactive', phase: 'CLOSE', priority: 9 },
   { abilityId: 'bulwark', label: '壁', description: '真後ろの味方への攻撃を肩代わりする(対象:N)', levelScale: ['Lv1: 遠距離', 'Lv2: 遠距離＋近距離'], subcategory: 'reactive' },
   { abilityId: 'shock', label: '感電', description: '最初の通常近接攻撃に対して発動し、1ヒット後に攻撃を中断させる', levelScale: [], subcategory: 'reactive' },
   { abilityId: 're_attack', label: '連撃', description: '攻撃時に追加攻撃を行う(攻撃回数がxN倍になる)', levelScale: ['Lv1: x0.5', 'Lv2: x0.7', 'Lv3: x1.0'], subcategory: 'reactive' },
