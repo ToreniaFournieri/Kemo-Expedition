@@ -113,7 +113,7 @@
 | `flamebound_grove` | 炎の杜 | 炎 | - | `a.fire-absorb`1, `c.sword_x1.1` | `false` |
 | `apostate` | 背教者 | 背 | - | `c.grimoire_x1.3`, `c.bolt_x1.2`, `b.mind+3`  | `false` |
 | `incarnation` | 化身 | 化 | - | `a.boost`1, `a.prophecy`1, `b.intelligence+1` | `false` |
-| `unexpected_prince(ss)` | UNEXPECTED PRINCE(SS) | U | - |  `a.soul-reap`1, `a.decompose`1, `b.strength+1` | `false` |
+| `unexpected_prince(ss)` | UNEXPECTED PRINCE(SS) | U | - |  `a.melee-conversion`, `c.equip_melee`, `b.strength+1` | `false` |
 
 
 
@@ -497,7 +497,7 @@ Party.`d.HP` =
 |------|------|------|------|------|------|------|------|
 | 1 | ドンガ | Ursan | `class.pilgrim` | `class.wizard` | `fragment` | `Introspective` | `false` |
 | 2 | ミィス | Caninian | `class.wizard` | `class.ranger` | `abyssal_sea` | `Inquisitive` | `false` |
-| 3 | フィン | Leporian | `class.sword-saint` | `class.ranger` | **`the_moon_is_a_harsh_master`** | `Evasive` | **`true`** |
+| 3 | フィン | Leporian | `class.sword-saint` | `class.ranger` | **``unexpected_prince(ss)``** | `Evasive` | **`true`** |
 | 4 | ケラ | Procyonian | `class.alchemist`| `class.alchemist` | `adaptation` | `Amicable` | `false` |
 | 5 | マーレ | Cervin | `class.wizard` | `class.sage` | **`incarnation`** | `Amicable` | **`true`** |
 | 6 | ディル | Murid | `class.wizard` | `class.alchemist` | `utopia` | `Nimble` | `false` |
