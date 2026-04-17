@@ -1,6 +1,7 @@
 import { Race } from '../types';
 
 export const RACES: Race[] = [
+  // SpecRef: 2.1 | CHARACTER_&_PARTY | races(種族)
   {
     id: 'caninian',
     name: 'ケイナイアン',
@@ -199,6 +200,53 @@ export const RACES: Race[] = [
       { type: 'bolt_multiplier', value: 1.3 },
       { type: 'grimoire_multiplier', value: 1.3 },
       { type: 'ability', value: 1, abilityId: 'stealth', abilityLevel: 1 },
+    ],
+  },
+  {
+    id: 'kemoria',
+    name: 'ケモリア',
+    englishName: 'Kemoria',
+    emoji: '🐾',
+    stats: { vitality: 10, strength: 10, intelligence: 10, mind: 10 },
+    defaultAbility: { id: 'none', name: '(none)', description: '(none)' },
+    memo: 'origin',
+    selectable: false,
+    bonuses: [
+      { type: 'growth_xV', value: 1.2 },
+      { type: 'equip_ranged', value: 1 },
+      { type: 'equip_melee', value: 1 },
+    ],
+  },
+  {
+    id: 'orcinian',
+    name: 'オルシニアン',
+    englishName: 'Orcinian',
+    emoji: '🐋',
+    stats: { vitality: 11, strength: 13, intelligence: 10, mind: 8 },
+    defaultAbility: { id: 'a.execution', name: 'エクセキューション', description: '相手の残HPがN以下の場合、与ダメージがxM倍になる' },
+    unlockAbility: { id: 'a.overwatch', name: '監視', description: '自身の通常行動時点で味方・相手ともに未行動の場合、与ダメージがxN倍になる' },
+    memo: 'orca',
+    selectable: false,
+    bonuses: [
+      { type: 'archery_multiplier', value: 1.2 },
+      { type: 'catalyst_multiplier', value: 1.2 },
+      { type: 'equip_slot', value: 2 },
+      { type: 'ability', value: 1, abilityId: 'execution', abilityLevel: 1 },
+    ],
+  },
+  {
+    id: 'avian',
+    name: 'アヴィアン',
+    englishName: 'Avian',
+    emoji: '🐓',
+    stats: { vitality: 8, strength: 11, intelligence: 11, mind: 9 },
+    defaultAbility: { id: 'a.flying', name: '飛行', description: '相手の近接攻撃回数がxN倍になる' },
+    memo: 'bird',
+    selectable: false,
+    bonuses: [
+      { type: 'gauntlet_multiplier', value: 1.3 },
+      { type: 'penet', value: 0.15 },
+      { type: 'ability', value: 1, abilityId: 'flying', abilityLevel: 1 },
     ],
   },
 ];

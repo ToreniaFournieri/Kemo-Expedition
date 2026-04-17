@@ -5,7 +5,8 @@ export type ElementalResistance = 'fire' | 'thunder' | 'ice';
 // Race Types
 export type RaceId =
   | 'caninian' | 'lupinian' | 'vulpinian' | 'ursan'
-  | 'felidian' | 'mustelid' | 'leporian' | 'cervin' | 'murid' | 'procyonian';
+  | 'felidian' | 'mustelid' | 'leporian' | 'cervin' | 'murid' | 'procyonian'
+  | 'kemoria' | 'orcinian' | 'avian';
 
 export interface Race {
   id: RaceId;
@@ -19,6 +20,7 @@ export interface Race {
   unlockAbility?: RaceAbilityDefinition;
   unlockCondition?: string;
   memo?: string;
+  selectable?: boolean;
 }
 
 export interface RaceAbilityDefinition {
