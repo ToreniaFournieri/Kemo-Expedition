@@ -302,6 +302,21 @@ function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: number):
     return entry.description;
   }
 
+  if (abilityId === 'execution') {
+    const executionScaleMatch = levelScale.match(/Lv\d+:\s*(\d+%)・x?([\d.]+)/);
+    if (executionScaleMatch) {
+      const [, threshold, multiplier] = executionScaleMatch;
+      return entry.description
+        .replace(/xN/g, `x${multiplier}`)
+        .replace(/xM/g, `x${multiplier}`)
+        .replace(/N/g, threshold)
+        .replace(/M/g, multiplier)
+        .replace(/を\s+x/g, 'をx')
+        .replace(/が\s+x/g, 'がx')
+        .replace(/の\s+x/g, 'のx');
+    }
+  }
+
   const { timing, value } = parseBonusAbilityLevelScale(levelScale);
   let description = entry.description;
 
@@ -10086,7 +10101,7 @@ function SettingTab({
         >
           <div className="text-xs text-gray-700">
             <span className="font-semibold text-gray-800">{activeAbilityHelp.title}</span>
-            <span> {activeAbilityHelp.description}</span>
+            <span>：{activeAbilityHelp.description}</span>
           </div>
         </div>
       )}
