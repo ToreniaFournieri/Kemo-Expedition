@@ -255,8 +255,11 @@
 
 - character.`f.attack`:
   - `d.ranged_attack`= Item Bonuses of {(`d.ranged_attack` x enhancement multiplier x super rare multiplier x its c.multiplier), round off}
-  - `d.melee_attack`= Item Bonuses of {(`d.melee_attack` x enhancement multiplier x super rare multiplier x its c.multiplier), round off}
   - `d.magical_attack`= Item Bonuses of of {(`d.magical_attack`  x enhancement multiplier x super rare multiplier x its c.multiplier), round off}
+  - `d.melee_attack`= Item Bonuses of {(`d.melee_attack` x enhancement multiplier x super rare multiplier x its c.multiplier), round off}
+    - If character has `a.melee-conversion`, modify `d.melee_attack` as follows:
+      - `d.melee_attack` += round(`d.ranged_attack` × N%)
+      - `d.melee_attack` += round(`d.magical_attack` × M%)   
 
 - character.`f.offense_amplifier` (phase: )
   - If phase is LONG or CLOSE,
