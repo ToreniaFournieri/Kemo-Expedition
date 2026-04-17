@@ -103,11 +103,21 @@
 | `windcross` | 風渡の系譜 | 風 | 生存 | `c.robe_x1.2` | `true` |
 | `oath` | 誓約の系譜 | 誓 | 生存 | `c.shield_x1.2` | `true` |
 | `unascertained` | 不詳 | 不 | - | `c.armor_x1.3`, `c.robe_x1.3` | `false` |
-| `incarnation ` | 化身 | 化 | - | `a.boost`1, `a.prophecy`1 | `false` |
-| `usurper` | 簒奪者 | 簒 | - | `a.predator-sense`1, `c.catalyst_x1.3` | `false` |
 | `pioneer` | 先駆者 | 先 | - | `c.wand_x1.3`, `a.howl`1 | `false` |
-| `apex_predator` | エーペックスプレデター | 捕 | - | `c.katana_x1.2`, `c.grimoire_x1.2`, `c.upgrade_first-strike` | `false` |
+| `almighty` | 全能 | 全 | - |
+| `hidden_grail` | 隠された杯  | - |
+| `rowdy_orca_girl` | わんぱくシャチ娘 | - |
+| `meddlesome_fox` | 世話焼き狐 | - |
+| `crescent_jade` | 三日月瑶 | - |
+| `phantom_thief` | 怪盗 | - |
+| `flamebound_grove` | 炎の杜 | - |
+| `apostate` | 背教者 | - |
+| `incarnation ` | 化身 | 化 | - | `a.boost`1, `a.prophecy`1 | `false` |
 | `true_heir` | 真の継承者 | 真 | - |  `c.arrow_x1.3`, `c.armor_x1.2`, `a.re-counter`1 | `false` |
+| `apex_predator` | エーペックスプレデター | 捕 | - | `c.katana_x1.2`, `c.grimoire_x1.2`, `c.upgrade_first-strike` | `false` |
+| `usurper` | 簒奪者 | 簒 | - | `a.predator-sense`1, `c.catalyst_x1.3` | `false` |
+
+
 
 **predisposition(性格):**
 -Selectable:
@@ -449,7 +459,7 @@ Party.`d.HP` =
 | order | Name | Race | main class | sub class | lineage | predisposition | Unique |
 |------|------|------|------|------|------|------|------|
 | 1 | シマ | Procyonian | `class.pilgrim` | `class.sage` | `machina` | `Nimble` | `false` |
-| 2 | オルカ | **Orcinian** | `class.samurai` | `class.ninja` | `fragment` | **`Introspective`** | **`true`** |
+| 2 | オルカ | **Orcinian** | `class.samurai` | `class.ninja` | **`rowdy_orca_girl`** | `Introspective` | **`true`** |
 | 3 | シーケルン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Amicable` | `false` |
 | 4 | レナード | Vulpinian | `class.sage`| `class.lord` | **`meddlesome_fox`** | `Exacting` | **`true`** |
 | 5 | アルテミス | Felidian | `class.alchemist` | `class.wizard` | `machina` | `Serenity` | `false` |
@@ -462,7 +472,7 @@ Party.`d.HP` =
 |------|------|------|------|------|------|------|------|
 | 1 | グレン | Ursan | `class.guardian` | `class.guardian` | `fragment` | `Stubborn` | `false` |
 | 2 | ロス | Caninian | `class.lord` | `class.wizard` | `machina` | `Savvy` | `false` |
-| 3 | ルナ | Felidian | `class.sword-saint` | `class.duelist` | **`crescent_gem`** | `Perceptive` | **`true`** |
+| 3 | ルナ | Felidian | `class.sword-saint` | `class.duelist` | **`crescent_jade`** | `Perceptive` | **`true`** |
 | 4 | ラビ | Lupinian | `class.duelist` | `class.samurai` | `blaze_peak` | `Inquisitive` | `false` |
 | 5 | ノクス | Murid | `class.striker`| `class.ninja` | **`phantom_thief`** | `Aggressive` | **`true`** |
 | 6 | フェン | Vulpinian | `class.sage` | `class.wizard`| `adaptation` | `Amicable` | `false` |
