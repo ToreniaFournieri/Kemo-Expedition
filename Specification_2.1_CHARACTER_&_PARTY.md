@@ -108,7 +108,7 @@
 | `hidden_grail` | 隠された杯  | - | `c.evasion+0.010`, `c.robe_x1.3`  | `false` |
 | `rowdy_orca_girl` | わんぱくシャチ娘 | - | `a.bind`1, `c.sword_x1.2`, `c.arrow_x1.2` | `false` |
 | `meddlesome_fox` | 世話焼き狐 | - | `a.defender`1, `c.shield_x1.3`  | `false` |
-| `crescent_jade` | 三日月瑶 | - | | `false` |
+| `crescent_jade` | 三日月瑶 | - | `a.death-touch`1, `c.wand_x1.1`, `c.robe_x1.1` | `false` |
 | `phantom_thief` | 怪盗 | - | | `false` |
 | `flamebound_grove` | 炎の杜 | - | | `false` |
 | `apostate` | 背教者 | - | | `false` |
