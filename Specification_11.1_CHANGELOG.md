@@ -3,6 +3,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.0 | 436 | 2026/4/17 | Implement reactive abilities `a.overwatch` / `a.execution` in runtime battle damage formula (`f.overwatch_amplifier`, `f.execution_amplifier`) and add corresponding battle log displays (`監視:xN`, `エクセキューション:xM`). |
 | 0.6.0 | 435 | 2026/4/16 | Fix bonus ability tooltip interpolation for reflect abilities so scales like `反射3/10・被弾7/10` are treated as values (not timing), correcting descriptions such as 打ち返し2. |
 | 0.6.0 | 434 | 2026/4/16 | Update runtime Expedition 6F boss data to Spec 4.2.2 (boss names and additional abilities/bonus for exp_id 1,2,3,4,5,7,8 and Cervin boss naming). |
 | 0.6.0 | 433 | 2026/4/16 | Align runtime PT6 initial member races to Spec 2.1.4.2 (バーシヴァル: Lupinian, ディル: Murid). |

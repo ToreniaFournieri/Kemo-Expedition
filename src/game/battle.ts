@@ -225,6 +225,14 @@ const AMBUSH_MULTIPLIERS: Record<number, number> = {
   5: 1.68,
 };
 
+const OVERWATCH_MULTIPLIERS: Record<number, number> = {
+  1: 1.3,
+  2: 1.5,
+  3: 1.6,
+  4: 1.65,
+  5: 1.68,
+};
+
 const DEATH_TOUCH_NUMERATORS: Record<number, number> = {
   1: 2,
   2: 3,
@@ -288,6 +296,41 @@ function getAmbushAmplifier(
   }
 
   return AMBUSH_MULTIPLIERS[Math.min(5, ambushLevel)] ?? 1.0;
+}
+
+// SpecRef: 6.1.4.1 | Function of attack | f.overwatch_amplifier
+function getOverwatchAmplifier(
+  actorAbilities: AbilityLike[],
+  opponentHasActedInBattle: boolean,
+  alliedOthersHaveActedInBattle: boolean,
+  isNormalAction: boolean,
+): number {
+  if (!isNormalAction || opponentHasActedInBattle || alliedOthersHaveActedInBattle) {
+    return 1.0;
+  }
+
+  const overwatchLevel = getHighestAbilityLevel(actorAbilities, 'overwatch');
+  if (overwatchLevel <= 0) {
+    return 1.0;
+  }
+
+  return OVERWATCH_MULTIPLIERS[Math.min(5, overwatchLevel)] ?? 1.0;
+}
+
+// SpecRef: 6.1.4.1 | Function of attack | f.execution_amplifier
+function getExecutionAmplifier(
+  actorAbilities: AbilityLike[],
+  opponentCurrentHp: number,
+  opponentMaxHp: number,
+): number {
+  const executionLevel = getHighestAbilityLevel(actorAbilities, 'execution');
+  if (executionLevel <= 0 || opponentMaxHp <= 0) {
+    return 1.0;
+  }
+
+  const thresholdRate = executionLevel >= 2 ? 0.5 : 0.4;
+  const executionMultiplier = executionLevel >= 2 ? 1.8 : 1.5;
+  return opponentCurrentHp <= (opponentMaxHp * thresholdRate) ? executionMultiplier : 1.0;
 }
 
 // SpecRef: 6.1.4.1 | Function of attack | f.mutual_amplifer
@@ -4043,6 +4086,8 @@ export function executeBattle(
             totalAttempts: number;
             charStats: ComputedCharacterStats;
             ambushMultiplier: number;
+            overwatchMultiplier: number;
+            executionMultiplier: number;
           }>();
           const enemyAccuracyPotency = 1.0;
           const enemyAccuracyBonus = enemy.accuracyBonus + enemyPhaseAccuracyBonus;
@@ -4077,6 +4122,8 @@ export function executeBattle(
               totalAttempts: 0,
               charStats: targetCharStats,
               ambushMultiplier: 1.0,
+              overwatchMultiplier: 1.0,
+              executionMultiplier: 1.0,
             };
             targetAttack.totalAttempts += 1;
 
@@ -4085,6 +4132,17 @@ export function executeBattle(
               // When the enemy attacks, the "opponent" for a.ambush is the targeted party member.
               characterActedInBattleIds.has(targetCharStats.characterId),
               !isReAttack,
+            );
+            const overwatchAmplifier = getOverwatchAmplifier(
+              enemy.abilities,
+              characterActedInBattleIds.size > 0,
+              false,
+              !isReAttack,
+            );
+            const executionAmplifier = getExecutionAmplifier(
+              enemy.abilities,
+              partyHp,
+              partyStats.hp,
             );
 
             if (didHit) {
@@ -4101,13 +4159,15 @@ export function executeBattle(
                 partyHp,
                 partyStats.hp,
                 environment.terrainEffect,
-                enemyOffenseAmplifierMultiplier * ambushAmplifier,
+                enemyOffenseAmplifierMultiplier * ambushAmplifier * overwatchAmplifier * executionAmplifier,
                 enemyEchoDomainUsageCount,
               );
               targetAttack.hitDamages.push(Math.max(1, Math.floor(singleDamage * resonanceAmplifier)));
             }
 
             targetAttack.ambushMultiplier = Math.max(targetAttack.ambushMultiplier, ambushAmplifier);
+            targetAttack.overwatchMultiplier = Math.max(targetAttack.overwatchMultiplier, overwatchAmplifier);
+            targetAttack.executionMultiplier = Math.max(targetAttack.executionMultiplier, executionAmplifier);
 
             if (!existing) {
               attacksByTarget.set(targetCharStats.characterId, targetAttack);
@@ -4280,6 +4340,8 @@ export function executeBattle(
             const enemyAttackRageBonusPercent = toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp));
             const enemyAttackSwarmBonuses = getSwarmLogBonuses(enemy.abilities, enemyHp, enemy.hp, attack.charStats.abilities, partyHp, partyStats.hp);
             const enemyAttackAmbushMultiplier = attack.ambushMultiplier;
+            const enemyAttackOverwatchMultiplier = attack.overwatchMultiplier;
+            const enemyAttackExecutionMultiplier = attack.executionMultiplier;
             if (reflectedDamage > 0 && reflect) {
               log.push({
                 phase,
@@ -4297,6 +4359,8 @@ export function executeBattle(
                 wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
                 rageBonusPercent: phase === 'mid' ? undefined : (enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined),
                 ambushMultiplier: enemyAttackAmbushMultiplier > 1.0 ? enemyAttackAmbushMultiplier : undefined,
+                overwatchMultiplier: enemyAttackOverwatchMultiplier > 1.0 ? enemyAttackOverwatchMultiplier : undefined,
+                executionMultiplier: enemyAttackExecutionMultiplier > 1.0 ? enemyAttackExecutionMultiplier : undefined,
                 ...enemyAttackSwarmBonuses,
                 isReAttack: isReAttack || undefined,
                 isEnemyTargetHit: phase === 'mid' ? true : undefined,
@@ -4319,6 +4383,8 @@ export function executeBattle(
                 wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
                 rageBonusPercent: phase === 'mid' ? undefined : (enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined),
                 ambushMultiplier: enemyAttackAmbushMultiplier > 1.0 ? enemyAttackAmbushMultiplier : undefined,
+                overwatchMultiplier: enemyAttackOverwatchMultiplier > 1.0 ? enemyAttackOverwatchMultiplier : undefined,
+                executionMultiplier: enemyAttackExecutionMultiplier > 1.0 ? enemyAttackExecutionMultiplier : undefined,
                 ...enemyAttackSwarmBonuses,
                 isReAttack: isReAttack || undefined,
                 isEnemyTargetHit: phase === 'mid' ? true : undefined,
@@ -4339,6 +4405,8 @@ export function executeBattle(
                 wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
                 rageBonusPercent: phase === 'mid' ? undefined : (enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined),
                 ambushMultiplier: enemyAttackAmbushMultiplier > 1.0 ? enemyAttackAmbushMultiplier : undefined,
+                overwatchMultiplier: enemyAttackOverwatchMultiplier > 1.0 ? enemyAttackOverwatchMultiplier : undefined,
+                executionMultiplier: enemyAttackExecutionMultiplier > 1.0 ? enemyAttackExecutionMultiplier : undefined,
                 ...enemyAttackSwarmBonuses,
                 isReAttack: isReAttack || undefined,
                 isEnemyTargetHit: phase === 'mid' ? true : undefined,
@@ -4358,6 +4426,8 @@ export function executeBattle(
                 wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
                 rageBonusPercent: phase === 'mid' ? undefined : (enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined),
                 ambushMultiplier: enemyAttackAmbushMultiplier > 1.0 ? enemyAttackAmbushMultiplier : undefined,
+                overwatchMultiplier: enemyAttackOverwatchMultiplier > 1.0 ? enemyAttackOverwatchMultiplier : undefined,
+                executionMultiplier: enemyAttackExecutionMultiplier > 1.0 ? enemyAttackExecutionMultiplier : undefined,
                 ...enemyAttackSwarmBonuses,
                 isReAttack: isReAttack || undefined,
                 isEnemyTargetHit: phase === 'mid' ? true : undefined,
@@ -4706,6 +4776,7 @@ export function executeBattle(
       if (hasNoOffense(cs)) continue;
 
       const characterPhaseAccuracyBonus = phase === 'close' ? (temporaryAccuracyBonusByCharacterId.get(cs.characterId) ?? 0) : 0;
+      const alliedPartyMembersActedInBattle = Array.from(characterActedInBattleIds).some((actedId) => actedId !== cs.characterId);
 
       const runCharacterAttack = (noAMultiplier: number, isReAttack = false): CharacterAttackResult | null => {
         const isAntagonism = cs.hasAntagonism;
@@ -4761,6 +4832,8 @@ export function executeBattle(
         let antagonismTargetName: string | null = null;
         let shockEffectLog: BattleLogEntry | null = null;
         let ambushMultiplier = 1.0;
+        let overwatchMultiplier = 1.0;
+        let executionMultiplier = 1.0;
 
         if (isAntagonism) {
           const candidates = characterStats.filter(target => target.characterId !== cs.characterId);
@@ -4775,6 +4848,17 @@ export function executeBattle(
             characterActedInBattleIds.has(selected.characterId),
             !isReAttack,
           );
+          overwatchMultiplier = getOverwatchAmplifier(
+            cs.abilities,
+            characterActedInBattleIds.size > 0 || enemyHasActedInBattle,
+            alliedPartyMembersActedInBattle,
+            !isReAttack,
+          );
+          executionMultiplier = getExecutionAmplifier(
+            cs.abilities,
+            partyHp,
+            partyStats.hp,
+          );
           result = calculateCharacterFriendlyFireDamage(
             phase,
             cs,
@@ -4786,7 +4870,7 @@ export function executeBattle(
             environment.terrainEffect,
             noAMultiplier,
             characterPhaseAccuracyBonus,
-            resolveCharacterOffenseAmplifierMultiplier(cs.characterId) * ambushMultiplier,
+            resolveCharacterOffenseAmplifierMultiplier(cs.characterId) * ambushMultiplier * overwatchMultiplier * executionMultiplier,
             registerElementalOffenseUsage(cs.elementalOffense),
           );
 
@@ -4821,6 +4905,17 @@ export function executeBattle(
             enemyHasActedInBattle,
             !isReAttack,
           );
+          overwatchMultiplier = getOverwatchAmplifier(
+            cs.abilities,
+            enemyHasActedInBattle,
+            alliedPartyMembersActedInBattle,
+            !isReAttack,
+          );
+          executionMultiplier = getExecutionAmplifier(
+            cs.abilities,
+            enemyHp,
+            enemy.hp,
+          );
           result = calculateCharacterDamage(
             phase,
             cs,
@@ -4834,7 +4929,7 @@ export function executeBattle(
             environment.terrainEffect,
             noAMultiplier,
             characterPhaseAccuracyBonus,
-            resolveCharacterOffenseAmplifierMultiplier(cs.characterId) * ambushMultiplier,
+            resolveCharacterOffenseAmplifierMultiplier(cs.characterId) * ambushMultiplier * overwatchMultiplier * executionMultiplier,
             registerElementalOffenseUsage(cs.elementalOffense),
           );
           shockEffectLog = phase === 'close' && !isReAttack && isEnemyShockAvailable()
@@ -4949,6 +5044,8 @@ export function executeBattle(
               ? characterAttackMomentumBonusPercent
               : undefined,
             ambushMultiplier: ambushMultiplier > 1.0 ? ambushMultiplier : undefined,
+            overwatchMultiplier: overwatchMultiplier > 1.0 ? overwatchMultiplier : undefined,
+            executionMultiplier: executionMultiplier > 1.0 ? executionMultiplier : undefined,
             ...characterAttackSwarmBonuses,
             isReAttack: isReAttack || undefined,
             wasNegated: result.wasNegatedByEnemyIllusion || undefined,
@@ -4974,6 +5071,8 @@ export function executeBattle(
               ? characterAttackMomentumBonusPercent
               : undefined,
             ambushMultiplier: ambushMultiplier > 1.0 ? ambushMultiplier : undefined,
+            overwatchMultiplier: overwatchMultiplier > 1.0 ? overwatchMultiplier : undefined,
+            executionMultiplier: executionMultiplier > 1.0 ? executionMultiplier : undefined,
             ...characterAttackSwarmBonuses,
             isReAttack: isReAttack || undefined,
             wasNegated: result.wasNegatedByEnemyIllusion || undefined,
@@ -4997,6 +5096,8 @@ export function executeBattle(
               ? characterAttackMomentumBonusPercent
               : undefined,
             ambushMultiplier: ambushMultiplier > 1.0 ? ambushMultiplier : undefined,
+            overwatchMultiplier: overwatchMultiplier > 1.0 ? overwatchMultiplier : undefined,
+            executionMultiplier: executionMultiplier > 1.0 ? executionMultiplier : undefined,
             ...characterAttackSwarmBonuses,
             isReAttack: isReAttack || undefined,
             wasNegated: result.wasNegatedByEnemyIllusion || undefined,
@@ -5025,6 +5126,8 @@ export function executeBattle(
               ? characterAttackMomentumBonusPercent
               : undefined,
             ambushMultiplier: ambushMultiplier > 1.0 ? ambushMultiplier : undefined,
+            overwatchMultiplier: overwatchMultiplier > 1.0 ? overwatchMultiplier : undefined,
+            executionMultiplier: executionMultiplier > 1.0 ? executionMultiplier : undefined,
             ...characterAttackSwarmBonuses,
             isReAttack: isReAttack || undefined,
             wasNegated: result.wasNegatedByEnemyIllusion || undefined,
