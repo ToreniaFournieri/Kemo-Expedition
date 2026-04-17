@@ -26,7 +26,7 @@ export const LINEAGES: Lineage[] = [
   { id: 'flamebound_grove', name: '炎の杜', shortName: '炎', category: '-', selectable: false, bonuses: [{ type: 'ability', value: 1, abilityId: 'fire_absorb', abilityLevel: 1 }, { type: 'sword_multiplier', value: 1.1 }] },
   { id: 'apostate', name: '背教者', shortName: '背', category: '-', selectable: false, bonuses: [{ type: 'grimoire_multiplier', value: 1.3 }, { type: 'bolt_multiplier', value: 1.2 }, { type: 'mind', value: 3 }] },
   { id: 'incarnation', name: '化身', shortName: '化', category: '-', selectable: false, bonuses: [{ type: 'ability', value: 1, abilityId: 'boost', abilityLevel: 1 }, { type: 'ability', value: 1, abilityId: 'prophecy', abilityLevel: 1 }, { type: 'intelligence', value: 1 }] },
-  { id: 'unexpected_prince(ss)', name: 'UNEXPECTED PRINCE(SS)', shortName: 'U', category: '-', selectable: false, bonuses: [{ type: 'ability', value: 1, abilityId: 'soul_reap', abilityLevel: 1 }, { type: 'ability', value: 1, abilityId: 'decompose', abilityLevel: 1 }, { type: 'strength', value: 1 }] },
+  { id: 'unexpected_prince(ss)', name: 'UNEXPECTED PRINCE(SS)', shortName: 'U', category: '-', selectable: false, bonuses: [{ type: 'ability', value: 1, abilityId: 'melee_conversion', abilityLevel: 1 }, { type: 'equip_melee', value: 1 }, { type: 'strength', value: 1 }] },
 ];
 
 const LEGACY_LINEAGE_ID_ALIASES: Record<string, Lineage['id']> = {
