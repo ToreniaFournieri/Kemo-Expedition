@@ -412,12 +412,12 @@ Party.`d.HP` =
 
 | order | Name | Race | main class | sub class | lineage | predisposition | Initial equipment | Unique |
 |------|------|------|------|------|------|------|------|------|
-| 1 | ケモ | Caninian | `class.guardian` | `class.pilgrim` | `unascertained` | `Devoted` | `1101`, `1110`, `1111`, `1112` | `true` |
+| 1 | ケモ | Kemoria | `class.guardian` | `class.pilgrim` | `unascertained` | `Devoted` | `1101`, `1110`, `1111`, `1112` | `true` |
 | 2 | ゴン | Vulpinian | `class.duelist` | `class.pilgrim` | `sandstorm` | `Aggressive` | `1104`, `1106` | `false` |
 | 3 | ロップ | Leporian | `class.ranger` | `class.ninja` | `abyssal_sea` | `Inquisitive` | `1107`, `1108`, `1109` |  `false` |
 | 4 | ソウタ | Procyonian | `class.ninja`| `class.striker` | `firmament` | `Evasive` |`1104`, `1106`,`1104`, `1106` | `false` |
 | 5 | セルフィン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Amicable` | `1110`, `1112` | `false` |
-| 6 | ラス | Felidian | `class.sage` | `class.wizard`| `machina` | `Savvy` | `1110`, `1112`  | `false` |
+| 6 | ライカ | Caninian | `class.sage` | `class.wizard`| `machina` | `Savvy` | `1110`, `1112`  | `false` |
 
 - Party initial inventory.
   - 1 Tier-1 common items of each item type.
