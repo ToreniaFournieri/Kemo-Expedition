@@ -152,7 +152,7 @@ export type AbilityId =
   | 'mutual_magic_amplify' | 'mutual_magic_restraint' | 'ranged_confusion' | 'magic_confusion' | 'melee_confusion' | 'self_destruct' | 'oblivion' | 'reanimate'
   | 'auriferous' | 'magic_seal' | 'ambush' | 'mimic' | 'shock' | 'mutual_physical_amplify' | 'mutual_physical_restraint'
   | 'unstable_core' | 'magical_reflect' | 'magical_absorb' | 'magical_null' | 'ranged_reflect' | 'ranged_null' | 'melee_reflect' | 'melee_null' | 'colossal' | 'upgrade_all_abilities'
-  | 'requiem';
+  | 'requiem' | 'overwatch' | 'execution';
 
 export interface Ability {
   id: AbilityId;
@@ -556,6 +556,8 @@ export interface BattleLogEntry {
   rageBonusPercent?: number; // 闘志 bonus shown in battle log
   momentumBonusPercent?: number; // 気勢 bonus shown in battle log
   ambushMultiplier?: number; // 待ち伏せ bonus shown in battle log
+  overwatchMultiplier?: number; // 監視 bonus shown in battle log
+  executionMultiplier?: number; // エクセキューション bonus shown in battle log
   swarmActorPenaltyPercent?: number; // 群れで自身の威力が低下した割合
   swarmOpponentBonusPercent?: number; // 群れで相手の被ダメージが増えた割合
   isFirstStrike?: boolean;

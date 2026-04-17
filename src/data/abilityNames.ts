@@ -76,6 +76,8 @@ export const ABILITY_BASE_NAMES: Record<AbilityId, string> = {
   reanimate: '即時蘇生',
   requiem: '鎮魂歌',
   ambush: '待ち伏せ',
+  overwatch: '監視',
+  execution: 'エクセキューション',
   shock: '感電',
   corrode: '腐食',
   life_drain: '吸血',
@@ -93,6 +95,8 @@ export const ABILITY_BASE_NAMES: Record<AbilityId, string> = {
 export const TERRAIN_REACTIVE_AND_TIMED_ABILITY_IDS: readonly AbilityId[] = [
   'resonance',
   'ambush',
+  'overwatch',
+  'execution',
   'rage',
   'momentum',
   'no_offense',

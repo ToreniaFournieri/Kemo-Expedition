@@ -31,6 +31,8 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
 
   { abilityId: 'resonance', label: '共鳴', description: '魔法攻撃を行うたびに、全ヒットのダメージが+N%増加する', levelScale: ['Lv1: +4%', 'Lv2: +7%', 'Lv3: +9%', 'Lv4: +11%', 'Lv5: +12%'], subcategory: 'reactive' },
   { abilityId: 'ambush', label: '待ち伏せ', description: '自身の通常行動時点で相手が未行動の場合、与ダメージがxN倍になる', levelScale: ['Lv1: x1.3', 'Lv2: x1.5', 'Lv3: x1.6', 'Lv4: x1.65', 'Lv5: x1.68'], subcategory: 'reactive' },
+  { abilityId: 'overwatch', label: '監視', description: '自身の通常行動時点で味方・相手ともに未行動の場合、与ダメージがxN倍になる', levelScale: ['Lv1: x1.3', 'Lv2: x1.5', 'Lv3: x1.6', 'Lv4: x1.65', 'Lv5: x1.68'], subcategory: 'reactive' },
+  { abilityId: 'execution', label: 'エクセキューション', description: '相手の残HPがN以下の場合、与ダメージがxM倍になる', levelScale: ['Lv1: 40%・x1.5', 'Lv2: 50%・x1.8'], subcategory: 'reactive' },
   { abilityId: 'rage', label: '闘志', description: '受けたダメージ1%につき、物理/魔法攻撃倍率が+N%増加する', levelScale: ['Lv1: +0.5%', 'Lv2: +0.6%'], subcategory: 'reactive' },
   { abilityId: 'momentum', label: '気勢', description: '物理/魔法攻撃倍率がx1.25倍になり、受けたダメージ1%につき-N%減少する。収益の一部を着服する', levelScale: ['Lv1: -0.5%', 'Lv2: -0.4%'], subcategory: 'reactive' },
   { abilityId: 'no_offense', label: '受身', description: '通常行動を行わなくなる(反撃などは行う)', levelScale: [], subcategory: 'reactive' },
