@@ -436,8 +436,8 @@ Party.`d.HP` =
 
 | order | Name | Race | main class | sub class | lineage | predisposition | Unique |
 |------|------|------|------|------|------|------|------|
-| 1 | パーシヴァル | Procyonian | `class.samurai` | `class.guardian` | **`ashen_capital`** | `Inquisitive` | **`true`** |
-| 2 | ランスロット | Lupinian | `class.sword-saint` | `class.samurai` | **``** | `Perceptive` | **`true`** |
+| 1 | パーシヴァル | Procyonian | `class.samurai` | `class.guardian` | **`hidden_grail`** | `Inquisitive` | **`true`** |
+| 2 | ランスロット | Lupinian | `class.sword-saint` | `class.samurai` | **`almighty`** | `Perceptive` | **`true`** |
 | 3 | ルドルフ | Felidian | `class.ranger` | `class.striker` | `abyssal_sea` | `Amicable` | `false` |
 | 4 | コソネ | Murid | `class.striker`| `class.striker` | `firmament` | `Aggressive ` | `false` |
 | 5 | ルーファス | Caninian | `class.ninja` | `class.striker` | `frozen_forest` | `Aggressive` | `false` |
@@ -451,7 +451,7 @@ Party.`d.HP` =
 | 1 | シマ | Procyonian | `class.pilgrim` | `class.sage` | `machina` | `Nimble` | `false` |
 | 2 | オルカ | **Orcinian** | `class.samurai` | `class.ninja` | `fragment` | **`Introspective`** | **`true`** |
 | 3 | シーケルン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Amicable` | `false` |
-| 4 | レナード | Vulpinian | `class.sage`| `class.lord` | **`usurper`** | `Exacting` | **`true`** |
+| 4 | レナード | Vulpinian | `class.sage`| `class.lord` | **`meddlesome_fox`** | `Exacting` | **`true`** |
 | 5 | アルテミス | Felidian | `class.alchemist` | `class.wizard` | `machina` | `Serenity` | `false` |
 | 6 | ウォッシ | Lupinian | `class.ninja` | `class.wizard`| `windcross` | `Perceptive` | `false` |
 
@@ -462,9 +462,9 @@ Party.`d.HP` =
 |------|------|------|------|------|------|------|------|
 | 1 | グレン | Ursan | `class.guardian` | `class.guardian` | `fragment` | `Stubborn` | `false` |
 | 2 | ロス | Caninian | `class.lord` | `class.wizard` | `machina` | `Savvy` | `false` |
-| 3 | ルナ | Felidian | `class.sword-saint` | `class.duelist` | **`apex_predator`** | `Perceptive` | **`true`** |
+| 3 | ルナ | Felidian | `class.sword-saint` | `class.duelist` | **`crescent_gem`** | `Perceptive` | **`true`** |
 | 4 | ラビ | Lupinian | `class.duelist` | `class.samurai` | `blaze_peak` | `Inquisitive` | `false` |
-| 5 | ノクス | Murid | `class.striker`| `class.ninja` | **`firmament`** | `Aggressive` | **`true`** |
+| 5 | ノクス | Murid | `class.striker`| `class.ninja` | **`phantom_thief`** | `Aggressive` | **`true`** |
 | 6 | フェン | Vulpinian | `class.sage` | `class.wizard`| `adaptation` | `Amicable` | `false` |
 
 - **PT5** initial condition (when unlocked)
@@ -472,7 +472,7 @@ Party.`d.HP` =
 
 | order | Name | Race | main class | sub class | lineage | predisposition | Unique |
 |------|------|------|------|------|------|------|------|
-| 1 | ミシュカ | Ursan | `class.lord` | `class.ninja` | **`machina`** | `Stubborn` | **`true`** |
+| 1 | ミシュカ | Ursan | `class.lord` | `class.ninja` | **`apostate`** | `Stubborn` | **`true`** |
 | 2 | プチーツァ | **Avian** | `class.ninja` | `class.ranger` | **`abyssal_sea`** | `Evasive` | **`true`** |
 | 3 | ファー | Leporian | `class.ranger` | `class.guardian` | `abyssal_sea` | `Exacting` | `false` |
 | 4 | ヴェリタス | Felidian | `class.striker`| `class.pilgrim` | `firmament` | `Devoted` | `false` |
