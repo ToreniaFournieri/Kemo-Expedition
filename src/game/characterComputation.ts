@@ -802,6 +802,15 @@ export function computeCharacterStats(
   const meleeNoAFixedBonus = Array.from(meleeNoAFixedBonuses).reduce((sum, v) => sum + v, 0);
   meleeNoA += meleeNoAFixedBonus;
 
+  // SpecRef: 2.1.1.2 | Multiplier and Functions | character.f.attack
+  // SpecRef: 2.1.1.2 | Multiplier and Functions | character.a.melee-conversion
+  const meleeConversionLevel = collection.abilities.get('melee_conversion') ?? 0;
+  if (meleeConversionLevel > 0) {
+    const conversionRate = meleeConversionLevel >= 2 ? 0.4 : 0.3;
+    meleeAttack += Math.round(rangedAttack * conversionRate);
+    meleeAttack += Math.round(magicalAttack * conversionRate);
+  }
+
   const originalRangedNoA = Math.ceil(rangedNoA);
   const originalMagicalNoA = Math.ceil(magicalNoA);
   const originalMeleeNoA = Math.ceil(meleeNoA);
@@ -1027,6 +1036,7 @@ export function getAbilityDescription(id: AbilityId, level: number): string {
       : '魔法には魔法で反撃する(攻撃回数半減)',
     arcane_stability: (l) => `魔法/物理攻撃の命中率は${l >= 2 ? '60' : '55'}%を下回らない`,
     arc_magic: (l) => `使用する魔法が大魔法になる(魔法攻撃回数1/3・魔法ダメージ${l >= 3 ? '4.2' : l === 2 ? '3.6' : '3'}倍)`,
+    melee_conversion: (l) => `遠距離攻撃力の${l >= 2 ? '40' : '30'}%と魔法攻撃力の${l >= 2 ? '40' : '30'}%を近距離攻撃力に加算する`,
     focus: (l) => `命中ボーナスの効果が${l >= 2 ? '1.3' : '1.2'}倍になる`,
     prophecy: (l) => l >= 2
       ? '報酬抽選内容が見える、リセット出来るようになる'

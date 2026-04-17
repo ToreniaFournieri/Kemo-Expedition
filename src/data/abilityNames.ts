@@ -29,6 +29,7 @@ export const ABILITY_BASE_NAMES: Record<AbilityId, string> = {
   magical_counter: '魔法反撃',
   arcane_stability: '術式安定',
   arc_magic: '大魔法',
+  melee_conversion: '近接攻撃への変換',
   focus: '集中',
   prophecy: '予言',
   stealth: '隠れ蓑',

@@ -146,6 +146,7 @@ export type AbilityId =
   | 'squander' | 'tithe' | 'seeker' | 'resurrect' | 'rage' | 're_counter' | 'momentum' | 'cunning'
   | 'bulwark' | 'cyborgization' | 'covering_fire' | 'peddler' | 'composure' | 'magical_counter'
   | 'arcane_stability' | 'arc_magic'
+  | 'melee_conversion'
   | 'focus' | 'prophecy' | 'stealth' | 'illusion'
   // Enemy-only abilities prepared from Enemy Master Specification
   | 'howl' | 'predator_sense' | 'slow' | 'boost' | 'corrode' | 'life_drain' | 'no_offense'
