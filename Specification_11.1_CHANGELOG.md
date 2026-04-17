@@ -3,6 +3,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.0 | 443 | 2026/4/17 | Fix runtime lineage `unexpected_prince(ss)` bonuses to match spec row (`a.melee-conversion`, `c.equip_melee`, `b.strength+1`) instead of enemy-only timed abilities. |
 | 0.6.0 | 442 | 2026/4/17 | Update runtime PT1–PT6 default party setups to requested initial conditions (deities, races, names, classes, lineages, predispositions, unique flags, and PT1 initial equipment), and wire race icon paths for Kemoria/Orcinian/Avian. |
 | 0.6.0 | 441 | 2026/4/17 | Update runtime lineage master data to match Spec 2.1 lineup/bonuses/selectable flags; add new non-selectable lineages and remove obsolete runtime usage of `apex_predator` / `usurper` (legacy save IDs now alias to current lineages). |
 | 0.6.0 | 440 | 2026/4/17 | Fix `a.melee-conversion` tooltip text interpolation (`N%` / `M%`) and apply melee conversion attack gain to enemy runtime scaling (including Colosseum editor opponent status). |
