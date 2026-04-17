@@ -32,17 +32,21 @@
 
 **races(種族):**
 
-| races      |体,力,知,精| default ability　 | unlock ability       | c. bonus      | 
-|------------|-----------|-------------------|----------------------|--------------|
-| Lupinian   |10,12, 8, 7| `a.rage`1         | `a.re-counter`1      | `c.katana_x1.3`,   `c.wand_x1.2`,     `c.equip_slot+1`, `c.ice-defense-multiplier_x2/3`|
-| Vulpinian  |11,10,12, 8| `a.momentum`1     | `a.cunning`1         | `c.sword_x1.3`,    `c.grimoire_x1.2`, `c.equip_slot+1`|
-| Felidian   | 9, 9,10,13| `a.first-strike`1 | `a.covering-fire`1   | `c.robe_x1.3`,     `c.sword_x1.1`,    `c.arrow_x1.1`, `c.fire-defense-multiplier_x2/3`|
-| Caninian   |10,10,10,10| `a.seeker`1       | `a.resurrect`1       | `c.shield_x1.3`,   `c.gauntlet_x1.2`, `c.archery_x1.1`, `c.growth_x1.1`|
-| Ursan      |13,11, 7, 7| `a.bulwark`1      | `a.cyborgization`1   | `c.catalyst_x1.3`, `c.katana_x1.1`,   `c.equip_slot+2`|
-| Procyonian |14, 8, 8, 6| `a.resonance`1 | `a.illusion`1          | `c.grimoire_x1.3`, `c.katana_x1.2`,   `c.robe_x1.2`,  `c.equip_slot+1`, `c.thunder-defense-multiplier_x2/3` |
-| Leporian   | 9, 8,14,10| `a.composure`1    | `a.magical-counter`1 | `c.arrow_x1.3`,  `c.sword_x1.2`,    `c.armor_x1.3`|
-| Cervin     | 8, 7,13,11| `a.focus`1        | `a.prophecy`1        | `c.wand_x1.3`,     `c.gauntlet_x1.2`, `c.shield_x1.2`|
-| Murid      | 7, 8,11,14| `a.stealth`1      | (none)               | `c.bolt_x1.3`,     `c.grimoire_x1.3`  `c.penet+0.10` |
+| races      |体,力,知,精| default ability　 | unlock ability       | c. bonus      | selectable |
+|------------|-----------|-------------------|----------------------|--------------|------------|
+| Lupinian   |10,12, 8, 7| `a.rage`1         | `a.re-counter`1      | `c.katana_x1.3`,   `c.wand_x1.2`,     `c.equip_slot+1`, `c.ice-defense-multiplier_x2/3`| `true` |
+| Vulpinian  |11,10,12, 8| `a.momentum`1     | `a.cunning`1         | `c.sword_x1.3`,    `c.grimoire_x1.2`, `c.equip_slot+1`| `true` |
+| Felidian   | 9, 9,10,13| `a.first-strike`1 | `a.covering-fire`1   | `c.robe_x1.3`,     `c.sword_x1.1`,    `c.arrow_x1.1`, `c.fire-defense-multiplier_x2/3`| `true` |
+| Caninian   |10,10,10,10| `a.seeker`1       | `a.resurrect`1       | `c.shield_x1.3`,   `c.gauntlet_x1.2`, `c.archery_x1.1`, `c.growth_x1.1`| `true` |
+| Ursan      |13,11, 7, 7| `a.bulwark`1      | `a.cyborgization`1   | `c.catalyst_x1.3`, `c.katana_x1.1`,   `c.equip_slot+2`| `true` |
+| Procyonian |14, 8, 8, 6| `a.resonance`1 | `a.illusion`1          | `c.grimoire_x1.3`, `c.katana_x1.2`,   `c.robe_x1.2`,  `c.equip_slot+1`, `c.thunder-defense-multiplier_x2/3` | `true` |
+| Leporian   | 9, 8,14,10| `a.composure`1    | `a.magical-counter`1 | `c.arrow_x1.3`,  `c.sword_x1.2`,    `c.armor_x1.3`| `true` |
+| Cervin     | 8, 7,13,11| `a.focus`1        | `a.prophecy`1        | `c.wand_x1.3`,     `c.gauntlet_x1.2`, `c.shield_x1.2`| `true` |
+| Murid      | 7, 8,11,14| `a.stealth`1      | (none)               | `c.bolt_x1.3`,     `c.grimoire_x1.3`  `c.penet+0.10` | `true` |
+| Murid      | 7, 8,11,14| `a.stealth`1      | (none)               | `c.bolt_x1.3`,     `c.grimoire_x1.3`  `c.penet+0.10` | `true` |
+| Kemoria    |10,10,10,10|                   |                      |               | `false` |
+| Orcinian   |10,10,10,10|                   |                      |               | `false` |
+| Avianv     |10,10,10,10|                   |                      |               | `false` |
 
 | races | Japanese name | category | concept | availability |
 |------|----------------|----------|--------|--------------|
@@ -58,6 +62,9 @@
 | Cervin | セルヴィン | 草食 | 🦌Deer | Y |
 | Murid | ミュリッド | 草食 | 🐭Mouse | Y |
 | Caprion | カプリオン | 草食 | 🐐Goat | N |
+| Kemoria | ケモリア | 雑食 | origin | N |
+| Orcinian | オルシニアン | 肉食 | orca | N |
+| Avian | アヴィアン | 雑食 | 🐓bird | N |
 
 **classes:**
 
