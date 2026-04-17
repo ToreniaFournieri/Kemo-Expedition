@@ -423,7 +423,7 @@ Party.`d.HP` =
 | 3 | ロップ | Leporian | `class.ranger` | `class.ninja` | `abyssal_sea` | `Inquisitive` | `1107`, `1108`, `1109` |  `false` |
 | 4 | ソウタ | Procyonian | `class.ninja`| `class.striker` | `firmament` | `Evasive` |`1104`, `1106`,`1104`, `1106` | `false` |
 | 5 | セルフィン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Amicable` | `1110`, `1112` | `false` |
-| 6 | ライカ | Caninian | `class.sage` | `class.wizard`| `machina` | `Savvy` | `1110`, `1112`  | `false` |
+| 6 | ライカ | Caninian | `class.sage` | `class.wizard`| `machina` | `Savvy` | `1110`, `1112`  | `true` |
 
 - Party initial inventory.
   - 1 Tier-1 common items of each item type.
@@ -454,9 +454,9 @@ Party.`d.HP` =
 | order | Name | Race | main class | sub class | lineage | predisposition | Unique |
 |------|------|------|------|------|------|------|------|
 | 1 | シマ | Procyonian | `class.pilgrim` | `class.sage` | `machina` | `Nimble` | `false` |
-| 2 | クレセント | Ursan | `class.samurai` | `class.ninja` | `fragment` | `Introspective` | `false` |
+| 2 | オルカ | Orcinian | `class.samurai` | `class.ninja` | `fragment` | `Introspective` | `true` |
 | 3 | シーケルン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Amicable` | `false` |
-| 4 | ヴァルター | Vulpinian | `class.sage`| `class.lord` | `usurper` | `Exacting` | `true` |
+| 4 | レナード | Vulpinian | `class.sage`| `class.lord` | `usurper` | `Exacting` | `true` |
 | 5 | アルテミス | Felidian | `class.alchemist` | `class.wizard` | `machina` | `Serenity` | `false` |
 | 6 | ウォッシ | Lupinian | `class.ninja` | `class.wizard`| `windcross` | `Perceptive` | `false` |
 
