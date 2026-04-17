@@ -1,5 +1,6 @@
 import { Lineage } from '../types';
 
+// SpecRef: 2.1 | CHARACTER_&_PARTY | lineage(系譜)
 // SpecRef: 8.2.3 | Character Edit Mode (selected member) | Lineage selection
 export const LINEAGES: Lineage[] = [
   { id: 'sandstorm', name: '砂塵の系譜', shortName: '砂', category: '動乱', selectable: true, bonuses: [{ type: 'sword_multiplier', value: 1.2 }] },
@@ -15,11 +16,17 @@ export const LINEAGES: Lineage[] = [
   { id: 'windcross', name: '風渡の系譜', shortName: '風', category: '生存', selectable: true, bonuses: [{ type: 'robe_multiplier', value: 1.2 }] },
   { id: 'oath', name: '誓約の系譜', shortName: '誓', category: '生存', selectable: true, bonuses: [{ type: 'shield_multiplier', value: 1.2 }] },
   { id: 'unascertained', name: '不詳', shortName: '不', category: '-', selectable: false, bonuses: [{ type: 'armor_multiplier', value: 1.3 }, { type: 'robe_multiplier', value: 1.3 }] },
-  { id: 'incarnation', name: '化身', shortName: '化', category: '-', selectable: false, bonuses: [{ type: 'ability', value: 1, abilityId: 'boost', abilityLevel: 1 }, { type: 'ability', value: 1, abilityId: 'prophecy', abilityLevel: 1 }] },
-  { id: 'usurper', name: '簒奪者', shortName: '簒', category: '-', selectable: false, bonuses: [{ type: 'ability', value: 1, abilityId: 'predator_sense', abilityLevel: 1 }, { type: 'catalyst_multiplier', value: 1.3 }] },
   { id: 'pioneer', name: '先駆者', shortName: '先', category: '-', selectable: false, bonuses: [{ type: 'wand_multiplier', value: 1.3 }, { type: 'ability', value: 1, abilityId: 'howl', abilityLevel: 1 }] },
-  { id: 'apex_predator', name: 'エーペックスプレデター', shortName: '捕', category: '-', selectable: false, bonuses: [{ type: 'katana_multiplier', value: 1.2 }, { type: 'grimoire_multiplier', value: 1.2 }, { type: 'ability_upgrade', value: 1, abilityId: 'first_strike' }] },
-  { id: 'true_heir', name: '真の継承者', shortName: '真', category: '-', selectable: false, bonuses: [{ type: 'arrow_multiplier', value: 1.3 }, { type: 'armor_multiplier', value: 1.2 }, { type: 'ability', value: 1, abilityId: 're_counter', abilityLevel: 1 }] },
+  { id: 'almighty', name: '全能', shortName: '全', category: '-', selectable: false, bonuses: [{ type: 'growth_xV', value: 1.3 }, { type: 'sword_multiplier', value: 1.3 }, { type: 'arrow_multiplier', value: 1.3 }, { type: 'wand_multiplier', value: 1.3 }, { type: 'vitality', value: 1 }, { type: 'strength', value: 1 }, { type: 'intelligence', value: 1 }, { type: 'mind', value: 1 }] },
+  { id: 'hidden_grail', name: '隠された杯', shortName: '杯', category: '-', selectable: false, bonuses: [{ type: 'evasion', value: 0.01 }, { type: 'robe_multiplier', value: 1.3 }, { type: 'vitality', value: 1 }] },
+  { id: 'rowdy_orca_girl', name: 'わんぱくシャチ娘', shortName: 'わ', category: '-', selectable: false, bonuses: [{ type: 'ability', value: 1, abilityId: 'bind', abilityLevel: 1 }, { type: 'sword_multiplier', value: 1.2 }, { type: 'arrow_multiplier', value: 1.2 }, { type: 'intelligence', value: -1 }] },
+  { id: 'meddlesome_fox', name: '世話焼き狐', shortName: '世', category: '-', selectable: false, bonuses: [{ type: 'ability', value: 1, abilityId: 'defender', abilityLevel: 1 }, { type: 'shield_multiplier', value: 1.3 }] },
+  { id: 'crescent_jade', name: '三日月瑶', shortName: '月', category: '-', selectable: false, bonuses: [{ type: 'ability', value: 1, abilityId: 'death_touch', abilityLevel: 1 }, { type: 'wand_multiplier', value: 1.1 }, { type: 'robe_multiplier', value: 1.1 }] },
+  { id: 'phantom_thief', name: '怪盗', shortName: '怪', category: '-', selectable: false, bonuses: [{ type: 'ability', value: 1, abilityId: 'ranged_reflect', abilityLevel: 1 }, { type: 'gauntlet_multiplier', value: 1.2 }, { type: 'mind', value: 1 }] },
+  { id: 'flamebound_grove', name: '炎の杜', shortName: '炎', category: '-', selectable: false, bonuses: [{ type: 'ability', value: 1, abilityId: 'fire_absorb', abilityLevel: 1 }, { type: 'sword_multiplier', value: 1.1 }] },
+  { id: 'apostate', name: '背教者', shortName: '背', category: '-', selectable: false, bonuses: [{ type: 'grimoire_multiplier', value: 1.3 }, { type: 'bolt_multiplier', value: 1.2 }, { type: 'mind', value: 3 }] },
+  { id: 'incarnation', name: '化身', shortName: '化', category: '-', selectable: false, bonuses: [{ type: 'ability', value: 1, abilityId: 'boost', abilityLevel: 1 }, { type: 'ability', value: 1, abilityId: 'prophecy', abilityLevel: 1 }, { type: 'intelligence', value: 1 }] },
+  { id: 'unexpected_prince(ss)', name: 'UNEXPECTED PRINCE(SS)', shortName: 'U', category: '-', selectable: false, bonuses: [{ type: 'ability', value: 1, abilityId: 'soul_reap', abilityLevel: 1 }, { type: 'ability', value: 1, abilityId: 'decompose', abilityLevel: 1 }, { type: 'strength', value: 1 }] },
 ];
 
 const LEGACY_LINEAGE_ID_ALIASES: Record<string, Lineage['id']> = {
@@ -31,6 +38,9 @@ const LEGACY_LINEAGE_ID_ALIASES: Record<string, Lineage['id']> = {
   hidden_principles: 'utopia',
   unmoving: 'fragment',
   inherited_oaths: 'oath',
+  usurper: 'meddlesome_fox',
+  apex_predator: 'crescent_jade',
+  true_heir: 'unexpected_prince(ss)',
 };
 
 export const getLineageById = (id: string): Lineage | undefined => {
