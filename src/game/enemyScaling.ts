@@ -2,7 +2,7 @@ import { BonusType, Dungeon, EnemyAbility, EnemyDef, RoomType } from '../types';
 import { getEnemyTypeAbilities } from '../data/enemies';
 import { LUNA_MODE_ENEMY_LEVEL_BONUS, getEnemyLevelForRoom, getEnemyMultipliersForLevel } from '../data/dungeons';
 import { getDebugSettings } from './debugSettings';
-import { resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
+import { applyEnemyMeleeConversionAttack, resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
 
 type GodEnemyMultipliers = {
   hp: number;
@@ -197,14 +197,23 @@ export function applyEnemyEncounterScaling(
   };
 
   const hasColossal = scaledAbilities.some((ability) => ability.id === 'colossal');
+  const meleeConversionLevel = scaledAbilities.find((ability) => ability.id === 'melee_conversion')?.level ?? 0;
+  const scaledRangedAttack = Math.floor(enemy.rangedAttack * finalMultipliers.attack);
+  const scaledMagicalAttack = Math.floor(enemy.magicalAttack * finalMultipliers.attack);
+  const scaledMeleeAttack = Math.floor(enemy.meleeAttack * finalMultipliers.attack);
 
   return applyEnemyTypeCBonuses({
     ...enemy,
     abilities: scaledAbilities,
     hp: Math.floor(enemy.hp * finalMultipliers.hp),
-    rangedAttack: Math.floor(enemy.rangedAttack * finalMultipliers.attack),
-    magicalAttack: Math.floor(enemy.magicalAttack * finalMultipliers.attack),
-    meleeAttack: Math.floor(enemy.meleeAttack * finalMultipliers.attack),
+    rangedAttack: scaledRangedAttack,
+    magicalAttack: scaledMagicalAttack,
+    meleeAttack: applyEnemyMeleeConversionAttack(
+      scaledMeleeAttack,
+      scaledRangedAttack,
+      scaledMagicalAttack,
+      meleeConversionLevel,
+    ),
     rangedNoA: Math.floor(enemy.rangedNoA * finalMultipliers.noa),
     magicalNoA: Math.floor(enemy.magicalNoA * finalMultipliers.noa),
     meleeNoA: Math.floor(enemy.meleeNoA * finalMultipliers.noa),

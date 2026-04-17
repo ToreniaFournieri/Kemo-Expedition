@@ -1,6 +1,6 @@
 import { AbilityId, ElementalResistance, EnemyClassId, EnemyDef } from '../types';
 import { getEnemyTypeAbilities, getEnemyTypeBonuses } from '../data/enemies';
-import { getEnemyCyborgizationAdjustment, resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
+import { applyEnemyMeleeConversionAttack, getEnemyCyborgizationAdjustment, resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
 import { applyEnemyTypeCBonuses } from './enemyScaling';
 import { LUNA_MODE_ENEMY_LEVEL_BONUS, getEnemyMultipliersForLevel } from '../data/dungeons';
 import { createEnvironmentStorageKey } from './environment';
@@ -123,6 +123,7 @@ export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode
   });
   const abilities = resolveEnemyPassiveAbilities(Array.from(classAbilities.values()));
   const hasColossal = abilities.some((ability) => ability.id === 'colossal');
+  const meleeConversionLevel = abilities.find((ability) => ability.id === 'melee_conversion')?.level ?? 0;
   const cyborgizationAdjustment = getEnemyCyborgizationAdjustment(
     abilities.find((ability) => ability.id === 'cyborgization')?.level ?? 0,
   );
@@ -151,6 +152,9 @@ export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode
     thunder: 1,
     ice: 1,
   };
+  const rangedAttack = Math.max(0, Math.floor(classBase.rangedAttack * multipliers.attack));
+  const magicalAttack = Math.max(0, Math.floor(classBase.magicalAttack * multipliers.attack));
+  const meleeAttack = Math.max(0, Math.floor(classBase.meleeAttack * multipliers.attack));
 
   return applyEnemyTypeCBonuses({
     id: 9901,
@@ -167,11 +171,11 @@ export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode
     accuracyBonus: classBase.accuracyBonus + cyborgizationAdjustment.accuracyBonus,
     evasionBonus: classBase.evasionBonus + cyborgizationAdjustment.evasionBonus,
     hp: Math.max(1, Math.floor(classBase.hp * multipliers.hp)),
-    rangedAttack: Math.max(0, Math.floor(classBase.rangedAttack * multipliers.attack)),
+    rangedAttack,
     rangedNoA: Math.max(0, Math.floor(classBase.rangedNoA * multipliers.noa)),
-    magicalAttack: Math.max(0, Math.floor(classBase.magicalAttack * multipliers.attack)),
+    magicalAttack,
     magicalNoA: Math.max(0, Math.floor(classBase.magicalNoA * multipliers.noa)),
-    meleeAttack: Math.max(0, Math.floor(classBase.meleeAttack * multipliers.attack)),
+    meleeAttack: applyEnemyMeleeConversionAttack(meleeAttack, rangedAttack, magicalAttack, meleeConversionLevel),
     meleeNoA: Math.max(0, Math.floor(classBase.meleeNoA * multipliers.noa)),
     rangedAttackAmplifier: classBase.rangedAttackAmplifier * multipliers.attackAmplifier,
     magicalAttackAmplifier: classBase.magicalAttackAmplifier * multipliers.attackAmplifier,

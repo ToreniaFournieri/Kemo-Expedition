@@ -33,3 +33,24 @@ export function getEnemyCyborgizationAdjustment(level: number): { accuracyBonus:
   }
   return { accuracyBonus: 0, evasionBonus: 0 };
 }
+
+export function getEnemyMeleeConversionRate(level: number): number {
+  if (level >= 2) {
+    return 0.4;
+  }
+  if (level >= 1) {
+    return 0.3;
+  }
+  return 0;
+}
+
+export function applyEnemyMeleeConversionAttack(
+  meleeAttack: number,
+  rangedAttack: number,
+  magicalAttack: number,
+  abilityLevel: number,
+): number {
+  const conversionRate = getEnemyMeleeConversionRate(abilityLevel);
+  if (conversionRate <= 0) return meleeAttack;
+  return meleeAttack + Math.round(rangedAttack * conversionRate) + Math.round(magicalAttack * conversionRate);
+}
