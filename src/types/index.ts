@@ -68,11 +68,14 @@ export type LineageId =
   | 'abyssal_sea' | 'firmament' | 'frozen_forest'
   | 'utopia' | 'machina' | 'adaptation'
   | 'fragment' | 'windcross' | 'oath'
-  | 'unascertained' | 'incarnation' | 'usurper'
-  | 'pioneer' | 'apex_predator' | 'true_heir'
+  | 'unascertained' | 'pioneer' | 'almighty' | 'hidden_grail'
+  | 'rowdy_orca_girl' | 'meddlesome_fox' | 'crescent_jade'
+  | 'phantom_thief' | 'flamebound_grove' | 'apostate' | 'incarnation'
+  | 'unexpected_prince(ss)'
   // legacy ids for save compatibility
   | 'steel_oath' | 'war_spirit' | 'far_sight' | 'unmoving'
-  | 'breaking_hand' | 'guiding_thought' | 'hidden_principles' | 'inherited_oaths';
+  | 'breaking_hand' | 'guiding_thought' | 'hidden_principles' | 'inherited_oaths'
+  | 'usurper' | 'apex_predator' | 'true_heir';
 
 export interface Lineage {
   id: LineageId;

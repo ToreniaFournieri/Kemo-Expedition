@@ -1229,7 +1229,7 @@ function createThirdParty() {
     { race: 'procyonian', main: 'pilgrim', sub: 'sage', pred: 'nimble', lineage: 'machina', name: 'シマ' },
     { race: 'ursan', main: 'samurai', sub: 'ninja', pred: 'introspective', lineage: 'fragment', name: 'クレセント' },
     { race: 'cervin', main: 'wizard', sub: 'alchemist', pred: 'amiable', lineage: 'utopia', name: 'シーケルン' },
-    { race: 'vulpinian', main: 'sage', sub: 'lord', pred: 'precise', lineage: 'usurper', name: 'ヴァルター', isUnique: true },
+    { race: 'vulpinian', main: 'sage', sub: 'lord', pred: 'precise', lineage: 'meddlesome_fox', name: 'ヴァルター', isUnique: true },
     { race: 'felidian', main: 'alchemist', sub: 'wizard', pred: 'serene', lineage: 'machina', name: 'アルテミス' },
     { race: 'lupinian', main: 'ninja', sub: 'wizard', pred: 'perceptive', lineage: 'windcross', name: 'ウォッシ' },
   ];
@@ -1345,7 +1345,7 @@ function createFifthParty() {
     { race: 'caninian', main: 'lord', sub: 'ninja', pred: 'stubborn', lineage: 'machina', name: 'アーサー' },
     { race: 'vulpinian', main: 'ninja', sub: 'ranger', pred: 'evasive', lineage: 'abyssal_sea', name: 'ダミアン' },
     { race: 'leporian', main: 'ranger', sub: 'guardian', pred: 'precise', lineage: 'abyssal_sea', name: 'ファー' },
-    { race: 'felidian', main: 'striker', sub: 'pilgrim', pred: 'devoted', lineage: 'apex_predator', name: 'ルナ', isUnique: true },
+    { race: 'felidian', main: 'striker', sub: 'pilgrim', pred: 'devoted', lineage: 'crescent_jade', name: 'ルナ', isUnique: true },
     { race: 'lupinian', main: 'striker', sub: 'ranger', pred: 'aggressive', lineage: 'firmament', name: 'グレイ' },
     { race: 'cervin', main: 'wizard', sub: 'wizard', pred: 'resourceful', lineage: 'utopia', name: 'セトラ' },
   ];
@@ -1402,7 +1402,7 @@ function createSixthParty() {
   const defaultSetup = [
     { race: 'ursan', main: 'pilgrim', sub: 'wizard', pred: 'introspective', lineage: 'fragment', name: 'ドンガ' },
     { race: 'caninian', main: 'wizard', sub: 'ranger', pred: 'inquisitive', lineage: 'abyssal_sea', name: 'ミィス' },
-    { race: 'lupinian', main: 'sword-saint', sub: 'ranger', pred: 'evasive', lineage: 'true_heir', name: 'バーシヴァル', isUnique: true },
+    { race: 'lupinian', main: 'sword-saint', sub: 'ranger', pred: 'evasive', lineage: 'unexpected_prince(ss)', name: 'バーシヴァル', isUnique: true },
     { race: 'procyonian', main: 'alchemist', sub: 'alchemist', pred: 'amiable', lineage: 'adaptation', name: 'ケラ' },
     { race: 'cervin', main: 'wizard', sub: 'sage', pred: 'amiable', lineage: 'machina', name: 'コシ' },
     { race: 'murid', main: 'wizard', sub: 'alchemist', pred: 'nimble', lineage: 'utopia', name: 'ディル' },

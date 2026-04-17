@@ -2230,11 +2230,17 @@ const LINEAGE_SHORT_NAMES: Record<string, string> = {
   windcross: '風',
   oath: '誓',
   unascertained: '不',
-  incarnation: '化',
-  usurper: '簒',
   pioneer: '先',
-  apex_predator: '捕',
-  true_heir: '真',
+  almighty: '全',
+  hidden_grail: '杯',
+  rowdy_orca_girl: 'わ',
+  meddlesome_fox: '世',
+  crescent_jade: '月',
+  phantom_thief: '怪',
+  flamebound_grove: '炎',
+  apostate: '背',
+  incarnation: '化',
+  'unexpected_prince(ss)': 'U',
 };
 
 // Category name mapping
