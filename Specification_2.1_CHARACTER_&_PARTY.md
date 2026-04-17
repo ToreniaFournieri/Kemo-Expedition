@@ -113,7 +113,8 @@
 | `flamebound_grove` | 炎の杜 | 炎 | - | `a.fire-absorb`1, `c.sword_x1.1` | `false` |
 | `apostate` | 背教者 | 背 | - | `c.grimoire_x1.3`, `c.bolt_x1.2`, `b.mind+3`  | `false` |
 | `incarnation` | 化身 | 化 | - | `a.boost`1, `a.prophecy`1, `b.intelligence+1` | `false` |
-| `the_moon_is_a_harsh_master` | 月は無慈悲な夜の主 | 夜 | - |  `a.soul-reap`1, `a.decompose`1, `b.strength+1` | `false` |
+| `unexpected_prince(ss)` | UNEXPECTED PRINCE(SS) | U | - |  `a.soul-reap`1, `a.decompose`1, `b.strength+1` | `false` |
+
 
 
 **predisposition(性格):**
