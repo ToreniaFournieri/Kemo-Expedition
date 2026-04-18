@@ -471,12 +471,12 @@ Party.`d.HP` =
 
 | order | Name | Race | main class | sub class | lineage | predisposition | Unique |
 |------|------|------|------|------|------|------|------|
-| 1 | グレン | Ursan | `class.guardian` | `class.guardian` | `fragment` | `Stubborn` | `false` |
-| 2 | ロス | Caninian | `class.lord` | `class.wizard` | `machina` | `Savvy` | `false` |
-| 3 | ルナ | Felidian | `class.sword-saint` | `class.duelist` | **`crescent_jade`** | `Perceptive` | **`true`** |
-| 4 | ラビ | Lupinian | `class.duelist` | `class.samurai` | `blaze_peak` | `Inquisitive` | `false` |
-| 5 | ノクス | Murid | `class.striker`| `class.ninja` | **`phantom_thief`** | `Aggressive` | **`true`** |
-| 6 | フェン | Vulpinian | `class.sage` | `class.wizard`| `adaptation` | `Amicable` | `false` |
+| 1 | グレン | Ursan | `class.guardian` | `class.ranger` | `firmament` | `Evasive` | `false` |
+| 2 | ロス | Caninian | `class.lord` | `class.ninja` | `firmament` | `Exacting` | `false` |
+| 3 | ノクス | Murid | `class.ninja`| `class.ranger` | **`phantom_thief`** | `Aggressive` | **`true`** |
+| 4 | ルナ | Felidian | `class.sword-saint` | `class.ranger` | **`crescent_jade`** | `Perceptive` | **`true`** |
+| 5 | ラビ | Lupinian | `class.duelist` | `class.striker` | `frozen_forest` | `Amicable` | `false` |
+| 6 | フェン | Vulpinian | `class.sage` | `class.wizard`| `adaptation` | `Inquisitive` | `false` |
 
 - **PT5** initial condition (when unlocked)
   - deity:  `God of Fortification`
