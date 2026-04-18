@@ -1074,9 +1074,11 @@ function getDungeonEntryGateState(
   const collected = party.defeatedBossExpeditions?.[dungeon.id - 1] ? 1 : 0;
   const unlocked = isLootGateUnlocked(party, getEntryGateKey(dungeon.id)) || collected >= required;
 
+  const gateProgressText = required === 1 ? 'ボス撃破' : `ボス撃破 ${collected}/${required}`;
+
   return {
     locked: !unlocked,
-    gateText: `ボス撃破 ${collected}/${required}で${dungeon.name}開放`,
+    gateText: `${gateProgressText}で${dungeon.name}開放`,
   };
 }
 
@@ -1127,7 +1129,8 @@ function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | n
   if (nextDungeon) {
     const entryUnlocked = isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id)) || previousBossDefeated >= entryRequired;
     if (!entryUnlocked) {
-      return `ボス撃破 ${previousBossDefeated}/${entryRequired}で${nextDungeon.name}開放`;
+      const entryProgressText = entryRequired === 1 ? 'ボス撃破' : `ボス撃破 ${previousBossDefeated}/${entryRequired}`;
+      return `${entryProgressText}で${nextDungeon.name}開放`;
     }
   }
 
