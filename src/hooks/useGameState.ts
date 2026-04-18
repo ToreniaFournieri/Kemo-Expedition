@@ -167,28 +167,19 @@ function normalizeSideQuestType(type: string): string {
   return legacyToCurrentTypeMap[type] ?? type;
 }
 
-const PARTY_UNLOCK_BY_GOD_NAME: Record<string, number> = {
-  Seiran: 2,
-  'セイラン': 2,
-  Garv: 3,
-  'ガーヴ': 3,
-  'Kyōen': 4,
-  'キョウエン': 4,
-  Miora: 5,
-  'ミオラ': 5,
-  Dolvar: 6,
-  'ドルヴァ': 6,
+const PARTY_UNLOCK_BY_DUNGEON_ID: Record<number, number> = {
+  2: 2,
+  3: 3,
+  4: 4,
+  5: 5,
+  6: 6,
 };
 
-function getGodNameFromLogEnemyName(enemyName: string): string {
-  const token = enemyName.split(' ')[0] ?? enemyName;
-  return token.replace(/\(.*?\)/g, '');
-}
-
-function getUnlockedPartySlotFromEntry(entry: ExpeditionLogEntry): number | null {
-  if (entry.outcome !== 'victory' || entry.roomType !== 'battle_Boss' || !entry.enemyName.includes('(神魔戦)')) return null;
-  const enemyName = getGodNameFromLogEnemyName(entry.enemyName);
-  return PARTY_UNLOCK_BY_GOD_NAME[enemyName] ?? null;
+function getUnlockedPartySlotFromEntry(entry: ExpeditionLogEntry, dungeonId?: number): number | null {
+  // SpecRef: 5.1.3.2 | Unlock party | Party unlock condition
+  if (entry.outcome !== 'victory' || entry.roomType !== 'battle_Boss') return null;
+  if (typeof dungeonId !== 'number') return null;
+  return PARTY_UNLOCK_BY_DUNGEON_ID[dungeonId] ?? null;
 }
 
 const DEFAULT_UNLOCKED_DEITIES: string[] = DEITY_OPTIONS
@@ -228,7 +219,7 @@ function getUnlockedStateFromEntries(logs: ExpeditionLog[], initialPartySlots: n
 
   for (const log of logs) {
     for (const entry of log.entries) {
-      const unlockPartySlot = getUnlockedPartySlotFromEntry(entry);
+      const unlockPartySlot = getUnlockedPartySlotFromEntry(entry, log.dungeonId);
       if (unlockPartySlot) {
         unlockedPartySlots = Math.max(unlockedPartySlots, unlockPartySlot);
       }
@@ -290,19 +281,13 @@ function getUnlockDiaryLog(
   const unlockSourceEntry = [...log.entries]
     .reverse()
     .find((entry) => {
-      const partyUnlock = getUnlockedPartySlotFromEntry(entry);
+      const partyUnlock = getUnlockedPartySlotFromEntry(entry, log.dungeonId);
       return !!partyUnlock;
     });
 
-  const godName = unlockSourceEntry && unlockSourceEntry.enemyName.includes('(神魔戦)')
-    ? getGodNameFromLogEnemyName(unlockSourceEntry.enemyName)
-    : null;
-  const godProfile = godName ? getGodProfileForDungeon(log.dungeonId, log.dungeonName) : null;
-  const unlockHeadline = godProfile
-    ? `${godProfile.displayName}撃破`
-    : unlockSourceEntry?.enemyName.includes('(BOSS)')
-      ? `${log.dungeonName}のBOSS撃破`
-      : '解禁条件達成';
+  const unlockHeadline = unlockSourceEntry?.enemyName.includes('(BOSS)')
+    ? `${log.dungeonName}踏破`
+    : '解禁条件達成';
 
   const unlockPartyLabel = unlockedPartySlot ? `PT${unlockedPartySlot}解放` : '';
   const unlockDetail = [unlockPartyLabel].filter(Boolean).join('、');
