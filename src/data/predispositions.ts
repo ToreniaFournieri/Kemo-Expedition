@@ -2,6 +2,7 @@ import { Predisposition } from '../types';
 
 // SpecRef: 8.2.3 | Character Edit Mode (selected member) | Predisposition selection
 export const PREDISPOSITIONS: Predisposition[] = [
+  { id: 'none', name: '', shortName: '', category: '-', selectable: false, bonuses: [] },
   { id: 'aggressive', name: '好戦', shortName: '好', category: '外向的', selectable: true, bonuses: [{ type: 'sword_multiplier', value: 1.1 }, { type: 'bolt_multiplier', value: 1.1 }, { type: 'catalyst_multiplier', value: 1.1 }] },
   { id: 'inquisitive', name: '探求', shortName: '探', category: '外向的', selectable: true, bonuses: [{ type: 'katana_multiplier', value: 1.1 }, { type: 'arrow_multiplier', value: 1.1 }, { type: 'grimoire_multiplier', value: 1.1 }] },
   { id: 'amiable', name: '親和', shortName: '和', category: '外向的', selectable: true, bonuses: [{ type: 'ability', value: 1, abilityId: 'null_antagonism', abilityLevel: 1 }, { type: 'gauntlet_multiplier', value: 1.1 }, { type: 'bolt_multiplier', value: 1.1 }] },
@@ -17,6 +18,7 @@ export const PREDISPOSITIONS: Predisposition[] = [
 ];
 
 const LEGACY_PREDISPOSITION_ID_ALIASES: Record<string, Predisposition['id']> = {
+  None: 'none',
   sturdy: 'stubborn',
   agile: 'evasive',
   shirk: 'evasive',

@@ -3,6 +3,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.0 | 464 | 2026/4/18 | Implement runtime `None` predisposition (`selectable:false`, no bonuses) and update PT1–PT6 unique-character initial predispositions to `None` per Spec 2.1.4.2 initial conditions. |
 | 0.6.0 | 463 | 2026/4/18 | Align runtime `Devoted` predisposition bonuses to Spec 2.1: replace `c.growth_x1.1` with `a.first-aid`1 while keeping `c.shield_x1.1` and `c.fire-defense-multiplier_x4/5`. |
 | 0.6.0 | 462 | 2026/4/18 | Implement passive ability `a.equation-breaker` in runtime/master data: add ability name/description/glossary + `log.equation-breaker`, grant it to `Serenity` predisposition, allow `a.first-strike` to ignore `terrain.machine-logic` initiative penalty when owned, and make `terrain.silence-field` skip START actor abilities except owners with `a.equation-breaker`. |
 | 0.6.0 | 461 | 2026/4/18 | Implement timed ability `a.first-aid` (応急措置) in runtime: add master ability id/name/tooltip entries and apply post-elite-battle END healing per member (`d.HP` basis, Lv1–Lv5 = 2%–6%) with new `log.first-aid` flavor text + `(HP回復+N)` notes. |
