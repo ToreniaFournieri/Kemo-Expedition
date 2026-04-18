@@ -3,6 +3,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.0 | 451 | 2026/4/18 | Update runtime `state.explore` flavor text set for `x.exp_id`8 / `x.floor`1 to the latest `虚痕` narrative lines (including route/terrain cautions and contextual lore line). |
 | 0.6.0 | 450 | 2026/4/18 | Update runtime Expedition 8 Dragon→Voidspawn conversion: floor 1 concept renamed to `虚痕の峡谷門`, enemy type master/bonuses switched to `Voidspawn` (`a.null_counter`1, `a.oblivion`1, elemental defenses), Expedition 8 enemy table entries updated (types/Japanese names), and tier-8 elite item names updated to `虚痕` variants. |
 | 0.6.0 | 449 | 2026/4/18 | Fix Party bonus summary growth aggregation: `c.growth_xV` now deduplicates and multiplies unique multipliers (e.g. 1.2×1.1=1.32) instead of additive stacking in display. |
 | 0.6.0 | 448 | 2026/4/18 | Update runtime assignments/abilities: Caninian default ability to `a.howl`1 (unlock `a.resurrect`1), Pioneer lineage bonus ability to `a.seeker`1, and Seeker scaling to Lv1 `+0.50%` / Lv2 `+0.75%` for grimoire effects. |

@@ -8695,7 +8695,7 @@ export const FLAVOR_ENTRIES: ReadonlyArray<readonly [number, number, string]> = 
   [
     9,
     80,
-    "name は竜の爪あとが残る谷口で砕けた岩を越えて進んでいる"
+    "name は虚構へと向かう谷口で砕けた岩を越えて進んでいる"
   ],
   [
     9,
@@ -8705,7 +8705,7 @@ export const FLAVOR_ENTRIES: ReadonlyArray<readonly [number, number, string]> = 
   [
     9,
     80,
-    "name は深い爪痕をなぞり、竜道を外す進路へ切り替えた"
+    "name は深い爪痕をなぞり、深淵に入り込まない進路へ切り替えた"
   ],
   [
     9,
@@ -8725,12 +8725,12 @@ export const FLAVOR_ENTRIES: ReadonlyArray<readonly [number, number, string]> = 
   [
     9,
     80,
-    "焼けた地面の熱を見て、name は足場の線を引き直した"
+    "瘴気で焼けた地面を見て、name は足場の線を引き直した"
   ],
   [
     9,
     80,
-    "深い爪痕が続く中で、name は竜道を避ける側道を選んだ"
+    "深い爪痕が続く中で、name は虚痕を避ける側道を選んだ"
   ],
   [
     9,
@@ -8745,12 +8745,12 @@ export const FLAVOR_ENTRIES: ReadonlyArray<readonly [number, number, string]> = 
   [
     9,
     80,
-    "竜傷の谷口は爪痕が多く、竜道回避が探索の基本になる"
+    "虚痕の谷口は陥没痕が多く、足元がおぼつかない"
   ],
   [
     9,
     80,
-    "焼けた地面は脆く、足場確認を重ねる必要がある"
+    "溶けた地面は脆く、足場確認を重ねる必要がある"
   ],
   [
     9,
@@ -8760,7 +8760,7 @@ export const FLAVOR_ENTRIES: ReadonlyArray<readonly [number, number, string]> = 
   [
     9,
     80,
-    "黒い鱗片は活動跡の目印となり、危険区画を示す"
+    "いつからかなのだろう、その古びた石造りの小屋がそこにあったのは"
   ],
   [
     9,
@@ -8775,7 +8775,7 @@ export const FLAVOR_ENTRIES: ReadonlyArray<readonly [number, number, string]> = 
   [
     9,
     80,
-    "熱の残る帯は体力を削り、短区間移動が有効になる"
+    "瘴気の残る帯は体力を削り、なるべく短い時間で通り過ぎたいものだ"
   ],
   [
     9,
@@ -8790,7 +8790,7 @@ export const FLAVOR_ENTRIES: ReadonlyArray<readonly [number, number, string]> = 
   [
     9,
     80,
-    "この層では急がず、竜の痕を読んで進む姿勢が大切だ"
+    "この層では急がず、虚痕を読んで進む姿勢が大切だ"
   ],
   [
     9,
