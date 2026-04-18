@@ -151,6 +151,7 @@ export type AbilityId =
   | 'bulwark' | 'cyborgization' | 'covering_fire' | 'peddler' | 'composure' | 'magical_counter'
   | 'arcane_stability' | 'arc_magic'
   | 'melee_conversion'
+  | 'true_sight' | 'output_stabilizer'
   | 'focus' | 'prophecy' | 'stealth' | 'illusion'
   // Enemy-only abilities prepared from Enemy Master Specification
   | 'howl' | 'predator_sense' | 'slow' | 'boost' | 'corrode' | 'life_drain' | 'no_offense'

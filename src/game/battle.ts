@@ -690,7 +690,11 @@ function countElementalOffenseUsage(
 function getTerrainNoAAmplifier(
   phase: BattleActionPhase,
   terrainEffect?: TerrainEffectKey | null,
+  actorAbilities: AbilityLike[] = [],
 ): number {
+  // SpecRef: 6.1.3.1 | Actor action | f.NoA
+  // a.output-stabilizer: Ignore terrain-based NoA amplification/reduction.
+  if (hasAbility(actorAbilities, 'output_stabilizer')) return 1.0;
   if (!terrainEffect) return 1.0;
   if (phase === 'close' && terrainEffect === 'terrain.rough-waves') return 0.75;
   if (phase === 'long' && terrainEffect === 'terrain.heavy-wind') return 0.75;
@@ -756,7 +760,7 @@ function calculateCharacterFriendlyFireDamage(
     defenseAmplifier = Math.max(0.01, target.physicalDefenseAmplifier + target.deityDefenseAmplifierBonus.physical);
   }
 
-  noA = Math.ceil(noA * noAMultiplier * getTerrainNoAAmplifier(phase, terrainEffect));
+  noA = Math.ceil(noA * noAMultiplier * getTerrainNoAAmplifier(phase, terrainEffect, attacker.abilities));
   if (noA <= 0 || attack <= 0) return { damage: 0, totalAttempts: 0, hits: 0 };
 
   const phaseAttackScale = phase === 'mid'
@@ -851,6 +855,7 @@ function calculateCharacterFriendlyFireDamage(
       actorFocusLevel,
       terrainEffect,
       attacker.abilities.find((ability) => ability.id === 'arcane_stability')?.level ?? 0,
+      hasAbility(attacker.abilities, 'true_sight'),
     )) {
       hits += 1;
       const resonanceAmplifier = canApplyResonance ? getResonanceAmplifier(resonance?.level, hits) : 1.0;
@@ -1234,6 +1239,7 @@ function hitDetection(
   actorFocusLevel: number,
   terrainEffect?: TerrainEffectKey | null,
   actorArcaneStabilityLevel: number = 0,
+  actorHasTrueSight: boolean = false,
 ): boolean {
   if (
     (phase === 'long' && terrainEffect === 'terrain.sniper-domain')
@@ -1247,7 +1253,7 @@ function hitDetection(
   let effectiveAccuracyBonus = actorFocusLevel > 0
     ? roundUpToThirdDecimal(actorAccuracyBonus * focusMultiplier)
     : actorAccuracyBonus;
-  if (phase === 'long' && terrainEffect === 'terrain.fog') {
+  if (phase === 'long' && terrainEffect === 'terrain.fog' && !actorHasTrueSight) {
     effectiveAccuracyBonus -= 25;
   } else if (phase === 'long' && terrainEffect === 'terrain.sunny-beach') {
     effectiveAccuracyBonus += 20;
@@ -1309,7 +1315,7 @@ function calculateCharacterDamage(
   }
 
   // Apply NoA multiplier and round up
-  noA = Math.ceil(noA * noAMultiplier * getTerrainNoAAmplifier(phase, terrainEffect));
+  noA = Math.ceil(noA * noAMultiplier * getTerrainNoAAmplifier(phase, terrainEffect, charStats.abilities));
 
   if (noA === 0 || attack <= 0) return { damage: 0, totalAttempts: 0, hits: 0 };
 
@@ -1440,6 +1446,7 @@ function calculateCharacterDamage(
       actorFocusLevel,
       terrainEffect,
       charStats.abilities.find((ability) => ability.id === 'arcane_stability')?.level ?? 0,
+      hasAbility(charStats.abilities, 'true_sight'),
     )) {
       hits++;
       const resonanceAmplifier = canApplyResonance ? getResonanceAmplifier(resonance?.level, hits) : 1.0;
@@ -1467,11 +1474,13 @@ function rollInitiative(
     slowPenalty?: number;
     boostBonus?: number;
     frostbitePenalty?: number;
+    actorHasTrueSight?: boolean;
   },
 ): number {
   // SpecRef: 6.1.1.2 | LONG, MID, CLOSE phase | Speed & Turn Order (Rolling Dice Rule)
   const isMachineLogic = options?.terrainEffect === 'terrain.machine-logic';
-  const firstStrikeEnabled = !isMachineLogic && options?.terrainEffect !== 'terrain.ash-haze';
+  const firstStrikeEnabled = !isMachineLogic
+    && (options?.terrainEffect !== 'terrain.ash-haze' || (options?.actorHasTrueSight ?? false));
   const effectiveFirstStrikeLevel = firstStrikeEnabled ? firstStrikeLevel : 0;
   const diceCount = effectiveFirstStrikeLevel >= 3 ? 4 : effectiveFirstStrikeLevel >= 2 ? 3 : effectiveFirstStrikeLevel === 1 ? 2 : 1;
   let total = 0;
@@ -3082,11 +3091,11 @@ export function executeBattle(
       getEnemyNoA(phase, enemy)
       * (phase === 'close' ? enemyFlyingNoAMultiplier : 1.0)
       * counterNoAMultiplier
-      * getTerrainNoAAmplifier(phase, environment.terrainEffect)
+      * getTerrainNoAAmplifier(phase, environment.terrainEffect, enemy.abilities)
     );
     let hits = 0;
     for (let i = 1; i <= attempts; i++) {
-      const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, targetCharStats.evasionBonus, i, phase, getDeflectionLevel(targetCharStats), getEnemyFocusLevel(enemy), environment.terrainEffect);
+      const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, targetCharStats.evasionBonus, i, phase, getDeflectionLevel(targetCharStats), getEnemyFocusLevel(enemy), environment.terrainEffect, 0, hasAbility(enemy.abilities, 'true_sight'));
       if (didHit) {
         hits += 1;
       }
@@ -3446,6 +3455,7 @@ export function executeBattle(
         slowPenalty: getHighestAbilityLevel(enemy.abilities, 'slow'),
         boostBonus: getHighestAbilityLevel(enemy.abilities, 'boost'),
         frostbitePenalty: partyHasFrostbite ? 1 : 0,
+        actorHasTrueSight: hasAbility(enemy.abilities, 'true_sight'),
       })
       : null;
     const characterInitiative = characterStats
@@ -3459,6 +3469,7 @@ export function executeBattle(
           slowPenalty: getHighestAbilityLevel(cs.abilities, 'slow'),
           boostBonus: getHighestAbilityLevel(cs.abilities, 'boost'),
           frostbitePenalty: enemyHasFrostbite ? 1 : 0,
+          actorHasTrueSight: hasAbility(cs.abilities, 'true_sight'),
         }),
       }));
 
@@ -4104,7 +4115,7 @@ export function executeBattle(
           baseNoA
           * (howlEffect?.multiplier ?? 1.0)
           * (phase === 'close' ? enemyFlyingNoAMultiplier : 1.0)
-          * getTerrainNoAAmplifier(phase, environment.terrainEffect)
+          * getTerrainNoAAmplifier(phase, environment.terrainEffect, enemy.abilities)
         );
         if (noA <= 0) continue;
         if (enemyHasNoOffense(enemy)) continue;
@@ -4150,6 +4161,8 @@ export function executeBattle(
               getDeflectionLevel(targetCharStats),
               getEnemyFocusLevel(enemy),
               environment.terrainEffect,
+              0,
+              hasAbility(enemy.abilities, 'true_sight'),
             );
             enemyHitIndex += 1;
 
@@ -4610,7 +4623,7 @@ export function executeBattle(
             const reCounterAttempts = Math.ceil(
               getEnemyNoA(phase, enemy)
               * enemyReCounterNoAMultiplier
-              * getTerrainNoAAmplifier(phase, environment.terrainEffect)
+              * getTerrainNoAAmplifier(phase, environment.terrainEffect, enemy.abilities)
             );
             if (reCounterAttempts <= 0) {
               continue;
@@ -4620,7 +4633,7 @@ export function executeBattle(
             let reCounterHits = 0;
             const enemyReCounterEchoDomainUsageCount = registerElementalOffenseUsage(enemy.elementalOffense);
             for (let i = 1; i <= reCounterAttempts; i++) {
-              const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, attack.charStats.evasionBonus, i, phase, getDeflectionLevel(attack.charStats), getEnemyFocusLevel(enemy), environment.terrainEffect);
+              const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, attack.charStats.evasionBonus, i, phase, getDeflectionLevel(attack.charStats), getEnemyFocusLevel(enemy), environment.terrainEffect, 0, hasAbility(enemy.abilities, 'true_sight'));
               if (!didHit) continue;
               reCounterHits += 1;
               reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, characterStats, attack.charStats, enemyHp, partyHp, partyStats.hp, environment.terrainEffect, enemyOffenseAmplifierMultiplier, enemyReCounterEchoDomainUsageCount);
@@ -4730,7 +4743,7 @@ export function executeBattle(
             baseNoA
             * getEnemyReAttackNoAMultiplier(enemy)
             * (phase === 'close' ? enemyFlyingNoAMultiplier : 1.0)
-            * getTerrainNoAAmplifier(phase, environment.terrainEffect)
+            * getTerrainNoAAmplifier(phase, environment.terrainEffect, enemy.abilities)
           ), true);
         }
 

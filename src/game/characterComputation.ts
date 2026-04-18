@@ -1038,6 +1038,8 @@ export function getAbilityDescription(id: AbilityId, level: number): string {
     arcane_stability: (l) => `魔法/物理攻撃の命中率は${l >= 2 ? '60' : '55'}%を下回らない`,
     arc_magic: (l) => `使用する魔法が大魔法になる(魔法攻撃回数1/3・魔法ダメージ${l >= 3 ? '4.2' : l === 2 ? '3.6' : '3'}倍)`,
     melee_conversion: (l) => `遠距離攻撃力の${l >= 2 ? '40' : '30'}%と魔法攻撃力の${l >= 2 ? '40' : '30'}%を近距離攻撃力に加算する`,
+    true_sight: () => '灰霞や霧の中でも視認できる(悪影響を受けなくなる)',
+    output_stabilizer: () => '地形効果による攻撃回数の変動を受けなくなる',
     focus: (l) => `命中ボーナスの効果が${l >= 2 ? '1.3' : '1.2'}倍になる`,
     prophecy: (l) => l >= 2
       ? '報酬抽選内容が見える、リセット出来るようになる'
