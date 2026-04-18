@@ -79,6 +79,7 @@ export const ABILITY_BASE_NAMES: Record<AbilityId, string> = {
   ambush: '待ち伏せ',
   overwatch: '監視',
   execution: 'エクセキューション',
+  null_antagonism: '敵対無効化',
   shock: '感電',
   corrode: '腐食',
   life_drain: '吸血',

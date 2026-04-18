@@ -34,6 +34,7 @@ import {
   buildFreeAction,
   buildIncapacitatedAction,
   buildLifeDrainAction,
+  buildNullAntagonismAction,
   buildRequiemAction,
   buildRegenerationAction,
   buildReanimateAction,
@@ -1928,6 +1929,10 @@ function getConfusionNote(level: number, success: boolean): string {
   return `(混乱確率${getConfusionChance(level)}/32: ${success ? '成功' : '失敗'})`;
 }
 
+function getNullAntagonismNote(): string {
+  return '(敵対無効化)';
+}
+
 function getUnstableCoreDamagePercent(level: number): number {
   if (level >= 5) return 12;
   if (level === 4) return 15;
@@ -2309,19 +2314,30 @@ export function executeBattle(
     const targetIndex = Math.floor(Math.random() * characterStats.length);
     const targetStats = characterStats[targetIndex];
     const targetName = party.characters.find(c => c.id === targetStats.characterId)?.name ?? '???';
+    const hasNullAntagonism = getAbilityLevel(targetStats, 'null_antagonism') >= 1;
 
-    characterStats = characterStats.map((stats, index) => (
-      index === targetIndex
-        ? { ...stats, hasAntagonism: true }
-        : stats
-    ));
-
-    log.push({
-      phase: 'start',
-      actor: 'effect',
-      action: '不和の神の効果！',
-      note: `([⚠️敵対]${targetName}が仲違いした)`,
-    });
+    // SpecRef: 6.1.1.1 | START phase | Deity effects
+    if (!hasNullAntagonism) {
+      characterStats = characterStats.map((stats, index) => (
+        index === targetIndex
+          ? { ...stats, hasAntagonism: true }
+          : stats
+      ));
+      log.push({
+        phase: 'start',
+        actor: 'effect',
+        action: '不和の神の効果！',
+        note: `([⚠️敵対]${targetName}が仲違いした)`,
+      });
+    } else {
+      log.push({
+        phase: 'start',
+        actor: 'effect',
+        characterId: targetStats.characterId,
+        action: buildNullAntagonismAction(targetName),
+        note: getNullAntagonismNote(),
+      });
+    }
 
     ctx = {
       ...ctx,
@@ -3739,16 +3755,22 @@ export function executeBattle(
           });
         } else {
           const success = Math.random() < (getConfusionChance(enemyConfusionLevel) / 32);
+          let nullAntagonismBlocked = false;
           if (success) {
-            characterStats = characterStats.map((stats) => (
-              stats.characterId === target.characterId
-                ? { ...stats, hasAntagonism: true }
-                : stats
-            ));
-            ctx = {
-              ...ctx,
-              characterStats,
-            };
+            const hasNullAntagonism = getAbilityLevel(target, 'null_antagonism') >= 1;
+            if (!hasNullAntagonism) {
+              characterStats = characterStats.map((stats) => (
+                stats.characterId === target.characterId
+                  ? { ...stats, hasAntagonism: true }
+                  : stats
+              ));
+              ctx = {
+                ...ctx,
+                characterStats,
+              };
+            } else {
+              nullAntagonismBlocked = true;
+            }
           }
 
           const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? '味方';
@@ -3756,8 +3778,12 @@ export function executeBattle(
             phase,
             initiativeRoll: timing,
             actor: 'triggered',
-            action: buildConfusionAction(enemy.name, targetName, success),
-            note: getConfusionNote(enemyConfusionLevel, success),
+            action: nullAntagonismBlocked
+              ? buildNullAntagonismAction(targetName)
+              : buildConfusionAction(enemy.name, targetName, success),
+            note: nullAntagonismBlocked
+              ? getNullAntagonismNote()
+              : getConfusionNote(enemyConfusionLevel, success),
           });
         }
       }
@@ -3785,8 +3811,14 @@ export function executeBattle(
           continue;
         }
         const success = Math.random() < (getConfusionChance(entry.level) / 32);
+        let nullAntagonismBlocked = false;
         if (success) {
-          enemyHasAntagonism = true;
+          const hasNullAntagonism = getEnemyAbilityLevel(enemy, 'null_antagonism') >= 1;
+          if (!hasNullAntagonism) {
+            enemyHasAntagonism = true;
+          } else {
+            nullAntagonismBlocked = true;
+          }
         }
 
         log.push({
@@ -3794,8 +3826,12 @@ export function executeBattle(
           initiativeRoll: timing,
           actor: 'triggered',
           characterId: entry.stats.characterId,
-          action: buildConfusionAction(entry.ownerName, enemy.name, success),
-          note: getConfusionNote(entry.level, success),
+          action: nullAntagonismBlocked
+            ? buildNullAntagonismAction(enemy.name)
+            : buildConfusionAction(entry.ownerName, enemy.name, success),
+          note: nullAntagonismBlocked
+            ? getNullAntagonismNote()
+            : getConfusionNote(entry.level, success),
         });
       }
     };
