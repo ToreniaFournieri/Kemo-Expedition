@@ -82,6 +82,7 @@ export const ABILITY_BASE_NAMES: Record<AbilityId, string> = {
   overwatch: '監視',
   execution: 'エクセキューション',
   null_antagonism: '敵対無効化',
+  first_aid: '応急措置',
   shock: '感電',
   corrode: '腐食',
   life_drain: '吸血',
@@ -163,4 +164,5 @@ export const TERRAIN_REACTIVE_AND_TIMED_ABILITY_IDS: readonly AbilityId[] = [
   'self_destruct',
   'free',
   'auriferous',
+  'first_aid',
 ] as const;

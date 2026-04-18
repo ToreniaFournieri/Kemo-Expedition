@@ -25,7 +25,7 @@ import {
   EnemyDef,
   ExpeditionDepthLimit,
 } from '../types';
-import { computePartyStats } from '../game/partyComputation';
+import { computeCharacterHpContribution, computePartyStats } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
 import { getEncounterEnemyWithScaling, getRoomMultiplier } from '../game/enemyScaling';
 import { buildColosseumEnemy, getColosseumEnemySettings } from '../game/colosseum';
@@ -2158,6 +2158,78 @@ const TERRAIN_HEATWAVE_LOGS = [
   '逃げ場のない暑さが {actor} を苦しめた！',
 ] as const;
 
+const FIRST_AID_LOGS = [
+  '{actor}は応急処置を行った',
+  '{actor}は手早く傷を手当てした',
+  '{actor}は戦いの傷をその場で塞いだ',
+  '{actor}は乱れた呼吸を整えた',
+  '{actor}は自らに簡易手当てを施した',
+  '{actor}は傷口を押さえて持ち直した',
+  '{actor}は素早く体勢を立て直した',
+  '{actor}は慣れた手つきで止血した',
+  '{actor}は戦場の合間に傷を癒やした',
+  '{actor}は最小限の処置で回復した',
+] as const;
+
+function getFirstAidHealRate(level: number): number {
+  if (level >= 5) return 0.06;
+  if (level === 4) return 0.05;
+  if (level === 3) return 0.04;
+  if (level === 2) return 0.03;
+  if (level === 1) return 0.02;
+  return 0;
+}
+
+// SpecRef: 6.1.5 | Outcome | a.first-aid
+function applyFirstAidHpEffect(
+  party: Party,
+  characterStats: ReturnType<typeof computePartyStats>['characterStats'],
+  floorNumber: number,
+  roomInFloor: number,
+  roomType: RoomType,
+  currentHp: number,
+  maxHp: number,
+): { hp: number; logs: BattleLogEntry[] } {
+  const isEliteRoom = floorNumber >= 1 && floorNumber <= 5
+    && roomInFloor === 4
+    && roomType === 'battle_Elite';
+  if (!isEliteRoom) {
+    return { hp: currentHp, logs: [] };
+  }
+
+  let nextHp = currentHp;
+  const logs: BattleLogEntry[] = [];
+
+  for (const character of party.characters) {
+    const stats = characterStats.find((entry) => entry.characterId === character.id);
+    const firstAidLevel = stats?.abilities
+      .filter((ability) => ability.id === 'first_aid')
+      .reduce((maxLevel, ability) => Math.max(maxLevel, ability.level), 0)
+      ?? 0;
+    if (firstAidLevel <= 0) continue;
+
+    const healRate = getFirstAidHealRate(firstAidLevel);
+    if (healRate <= 0) continue;
+
+    const hpContribution = computeCharacterHpContribution(character, party.level);
+    const healAmount = Math.floor(hpContribution.totalHpBonus * healRate);
+    if (healAmount <= 0) continue;
+
+    const flavorText = FIRST_AID_LOGS[Math.floor(Math.random() * FIRST_AID_LOGS.length)]
+      ?? '{actor}は応急処置を行った';
+    logs.push({
+      phase: 'end',
+      actor: 'effect',
+      action: flavorText.replace('{actor}', character.name),
+      note: `(HP回復+${healAmount})`,
+    });
+
+    nextHp = Math.min(maxHp, nextHp + healAmount);
+  }
+
+  return { hp: nextHp, logs };
+}
+
 // SpecRef: 6.1.5 | Outcome | terrain.rejuvenation
 function applyTerrainRejuvenationHpEffect(
   terrainEffect: TerrainEffectKey | undefined,
@@ -2761,6 +2833,21 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               );
               if (deityLogEntry) {
                 entry.details.push(deityLogEntry);
+              }
+
+              const firstAidHpEffect = applyFirstAidHpEffect(
+                currentParty,
+                characterStats,
+                floor.floorNumber,
+                roomIndex + 1,
+                roomDef.type,
+                currentHp,
+                partyStats.hp
+              );
+              currentHp = firstAidHpEffect.hp;
+              entry.remainingPartyHP = currentHp;
+              if (firstAidHpEffect.logs.length > 0) {
+                entry.details.push(...firstAidHpEffect.logs);
               }
 
               const rejuvenationActorName = currentParty.characters[

@@ -105,6 +105,7 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'self_destruct', label: '自爆', description: '指定タイミングで発動し、自爆して相手に残ダメージのNを与える', levelScale: ['Lv1: CLOSE2・1/10', 'Lv2: CLOSE2・3/10', 'Lv3: CLOSE2・5/10', 'Lv4: CLOSE2・7/10', 'Lv5: CLOSE2・100%'], subcategory: 'timed' },
   { abilityId: 'free', label: '逃走', description: '指定タイミングで発動し、戦闘から逃走する(戦闘は引分になる)', levelScale: ['Lv1: CLOSE1', 'Lv2: CLOSE2', 'Lv3: CLOSE3', 'Lv4: MID1', 'Lv5: MID2'], subcategory: 'timed' },
   { abilityId: 'auriferous', label: '含金', description: '自身が受ける総攻撃回数10回ごとに、自身のドロップ抽選確率を+1する', levelScale: [], subcategory: 'timed' },
+  { abilityId: 'first_aid', label: '応急措置', description: '戦闘終了後に、自身のHP増加基礎値とアイテムHP増加値のN%を回復する', levelScale: ['Lv1: 2%', 'Lv2: 3%', 'Lv3: 4%', 'Lv4: 5%', 'Lv5: 6%'], subcategory: 'timed', phase: 'CLOSE', priority: 4 },
 ];
 
 export const BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID = new Map(
