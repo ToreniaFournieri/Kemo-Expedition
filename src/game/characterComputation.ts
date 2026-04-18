@@ -596,7 +596,7 @@ export function computeCharacterStats(
   };
 
   const seekerLevel = collection.abilities.get('seeker') ?? 0;
-  const seekerPerLevelBonus = seekerLevel >= 2 ? 0.0035 : seekerLevel >= 1 ? 0.0025 : 0;
+  const seekerPerLevelBonus = seekerLevel >= 2 ? 0.0075 : seekerLevel >= 1 ? 0.005 : 0;
   const seekerMultiplier = seekerLevel > 0 ? 1 + (partyLevel * seekerPerLevelBonus) : 1;
 
   // Calculate stats from equipment
@@ -1013,7 +1013,7 @@ export function getAbilityDescription(id: AbilityId, level: number): string {
     unlock: () => '追加報酬チャンス',
     squander: (l) => `宴会で消費するゴールドが${l >= 2 ? '1.5' : '1.3'}倍になる`,
     tithe: (l) => `祈り時に寄付額へ探検利益の+${l >= 2 ? '15' : '10'}%を加算`,
-    seeker: (l) => `魔導書の効果増加(レベル毎に${l >= 2 ? '0.35' : '0.25'}%)`,
+    seeker: (l) => `魔導書の効果増加(レベル毎に${l >= 2 ? '0.75' : '0.50'}%)`,
     resurrect: (l) => l >= 2
       ? '自分が受けた致命ダメージをHP1%残して耐える(1回のみ)'
       : '自分が受けた致命ダメージをHP1残して耐える',

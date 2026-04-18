@@ -19,7 +19,7 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'arc_magic', label: '大魔法', description: '使用する魔法が大魔法になる(魔法攻撃回数が1/3倍になり、魔法ダメージがN倍になる)', levelScale: ['Lv1: 3', 'Lv2: 3.6', 'Lv3: 4.2'], subcategory: 'passive' },
   { abilityId: 'melee_conversion', label: '近接攻撃への変換', description: '遠距離攻撃力のN%と魔法攻撃力のM%を近距離攻撃に加算する', levelScale: ['Lv1: 30%・30%', 'Lv2: 40%・40%'], subcategory: 'passive' },
   { abilityId: 'hunter', label: '狩人', description: '列による命中率減衰を軽減する', levelScale: ['Lv1: 15%→10%', 'Lv2: 15%→7%', 'Lv3: 15%→5%'], subcategory: 'passive' },
-  { abilityId: 'seeker', label: '探究者', description: '魔導書の効果を増加する(レベル毎に+N%)', levelScale: ['Lv1: +0.25%', 'Lv2: +0.35%'], subcategory: 'passive' },
+  { abilityId: 'seeker', label: '探究者', description: '魔導書の効果を増加する(レベル毎に+N%)', levelScale: ['Lv1: +0.50%', 'Lv2: +0.75%'], subcategory: 'passive' },
   { abilityId: 'cyborgization', label: 'サイボーグ化', description: '命中が増加し、回避が減少する', levelScale: ['Lv1: 命中+30・回避-20', 'Lv2: 命中+40・回避-15'], subcategory: 'passive' },
   { abilityId: 'composure', label: '平静', description: '命中率がN%加算される', levelScale: ['Lv1: +10%', 'Lv2: +13%'], subcategory: 'passive' },
   { abilityId: 'focus', label: '集中', description: '命中ボーナスの効果がxN倍になる', levelScale: ['Lv1: x1.2', 'Lv2: x1.3'], subcategory: 'passive' },

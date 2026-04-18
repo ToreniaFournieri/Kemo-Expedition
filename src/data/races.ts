@@ -10,9 +10,9 @@ export const RACES: Race[] = [
     icon: '/race-icons/Caninian.png',
     stats: { vitality: 10, strength: 10, intelligence: 10, mind: 10 },
     defaultAbility: {
-      id: 'a.seeker',
-      name: '探究者',
-      description: '魔導書の効果増加(レベル毎に0.25%)',
+      id: 'a.howl',
+      name: '遠吠え',
+      description: '指定タイミングで発動し、相手の次の攻撃回数をxN倍にする',
     },
     unlockAbility: {
       id: 'a.resurrect',
@@ -26,7 +26,7 @@ export const RACES: Race[] = [
       { type: 'gauntlet_multiplier', value: 1.2 },
       { type: 'archery_multiplier', value: 1.1 },
       { type: 'growth_xV', value: 1.1 },
-      { type: 'ability', value: 1, abilityId: 'seeker', abilityLevel: 1 },
+      { type: 'ability', value: 1, abilityId: 'howl', abilityLevel: 1 },
       { type: 'ability', value: 1, abilityId: 'resurrect', abilityLevel: 1 },
     ],
   },
