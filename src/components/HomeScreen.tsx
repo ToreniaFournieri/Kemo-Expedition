@@ -5142,12 +5142,9 @@ function PartyTab({
   const subClass = CLASSES.find(c => c.id === char.subClassId) ?? CLASSES[0];
   const predisposition = PREDISPOSITIONS.find(p => p.id === char.predispositionId) ?? PREDISPOSITIONS[0];
   const lineage = LINEAGES.find(l => l.id === char.lineageId) ?? LINEAGES[0];
-  const isVulpinianRace = race.id === 'vulpinian'
-    || race.englishName === 'Vulpinian'
-    || race.name === 'ヴァルピニアン';
-  const partyMemberImageSrc = isVulpinianRace
-    ? `${import.meta.env.BASE_URL}character/Vulpinian.png`
-    : null;
+  // SpecRef: 8.2.2 | Party member details | Character image (background)
+  // No image (in this version)
+  const partyMemberImageSrc = null;
   const raceCategoryDefinitions: Array<{ label: string; raceIds: Character['raceId'][] }> = [
     { label: '肉食', raceIds: ['lupinian', 'vulpinian', 'felidian'] },
     { label: '雑食', raceIds: ['caninian', 'ursan', 'procyonian'] },
