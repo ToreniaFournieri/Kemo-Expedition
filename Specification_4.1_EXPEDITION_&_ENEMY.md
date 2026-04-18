@@ -69,7 +69,7 @@
 | 7 | 4 | Dark Zone | 闇の領域 | `terrain.dark-field` |
 | 7 | 5 | The Abyss | 深淵 | `terrain.dark-field` |
 | 7 | 6 | Moon Palace | 月宮殿 | `terrain.low-gravity` |
-| 8 | 1 | Dragon-Scarred Valley Gate | 竜傷の峡谷門 | `terrain.mana-burn` |
+| 8 | 1 | Void-Scarred Valley Gate | 虚痕の峡谷門 | `terrain.mana-burn` |
 | 8 | 2 | Ossuary Research Fields | 納骨研究原野 | `terrain.gravity` |
 | 8 | 3 | Small Gods | 小さき神々 | `terrain.transcendence` |
 | 8 | 4 | Gehenna | ゲヘナ | `terrain.gehenna` |
