@@ -6062,18 +6062,19 @@ function PartyTab({
                                 const predispositionData = PREDISPOSITIONS.find((p) => p.id === predispositionId);
                                 if (!predispositionData) return null;
                                 const isSelected = selectedPredispositionId === predispositionId;
+                                const isSelectable = predispositionData.selectable ?? true;
                                 return (
                                   <button
                                     key={`pred-${category.label}-${predispositionId}`}
                                     type="button"
-                                    disabled={char.isUnique}
+                                    disabled={char.isUnique || !isSelectable}
                                     onClick={() => setPendingEdits({ ...pendingEdits, predispositionId })}
                                     className={`min-w-0 flex-1 px-0 py-1 text-xs border ${
                                       index === 0 ? 'rounded-l' : index === category.ids.length - 1 ? 'rounded-r' : ''
                                     } ${
                                       isSelected
                                         ? 'bg-sub text-white border-sub'
-                                        : `border-gray-200 ${char.isUnique ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-600 hover:bg-gray-100'}`
+                                        : `border-gray-200 ${char.isUnique || !isSelectable ? 'bg-gray-100 text-gray-400' : 'bg-white text-gray-600 hover:bg-gray-100'}`
                                     }`}
                                   >
                                     {predispositionData.shortName ?? PREDISPOSITION_SHORT_NAMES[predispositionId] ?? predispositionData.name}
