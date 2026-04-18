@@ -216,6 +216,19 @@ const CORRODE_LOGS = [
   '{actor} の腐食効果が {target} に作用した！',
 ] as const;
 
+const NULL_CORRODE_LOGS = [
+  '{actor}の腐食は{target}に効かなかった',
+  '{actor}は{target}を腐食させようとしたが無効化された',
+  '{target}は{actor}の腐食を退けた',
+  '{actor}の腐食効果は{target}に届かない',
+  '{target}は{actor}の腐食を受け付けない',
+  '{actor}の腐食は{target}に阻まれた',
+  '{target}は{actor}の腐食から身を守った',
+  '{actor}の腐食は{target}に通用しない',
+  '{target}は{actor}の腐食を無効化した',
+  '{actor}の腐食は{target}には影響しない',
+] as const;
+
 const LIFE_DRAIN_LOGS = [
   '{actor} は {target} から生命を吸い取った！',
   '{actor} は {target} の力を奪い取った！',
@@ -227,6 +240,19 @@ const LIFE_DRAIN_LOGS = [
   '{actor} は {target} の生命を奪った！',
   '{actor} は血を啜り、傷を癒した！',
   '{actor} は生命力を取り込み回復した！',
+] as const;
+
+const NULL_LIFE_DRAIN_LOGS = [
+  '{actor}は{target}から生命を奪えなかった',
+  '{target}は{actor}の吸血を拒んだ',
+  '{actor}の吸血は{target}に通じない',
+  '{target}は{actor}に生命力を与えなかった',
+  '{actor}の吸血は{target}に遮られた',
+  '{target}は{actor}の吸血を無効化した',
+  '{actor}は{target}から回復できなかった',
+  '{target}は{actor}の吸血を受け付けない',
+  '{actor}の吸血は{target}に届かなかった',
+  '{target}は{actor}の吸血を防いだ',
 ] as const;
 
 const DEATH_TOUCH_LOGS = [
@@ -242,6 +268,19 @@ const DEATH_TOUCH_LOGS = [
   '死が {target} に訪れた！',
 ] as const;
 
+const NULL_DEATH_TOUCH_LOGS = [
+  '{actor}の接死は{target}に効かなかった',
+  '{target}は{actor}の即死効果を退けた',
+  '{actor}の一撃は{target}を倒せない',
+  '{target}は{actor}の死の力に耐えた',
+  '{actor}の接死は{target}に無効化された',
+  '{target}は{actor}の致命の力を拒んだ',
+  '{actor}の死の宣告は{target}に届かない',
+  '{target}は{actor}の即死効果を無視した',
+  '{actor}の接死は{target}を捉えられない',
+  '{target}は{actor}の死の一撃を免れた',
+] as const;
+
 const BURN_LOGS = [
   '{actor} は炎に焼かれた！',
   '{actor} は火傷の痛みに苦しむ！',
@@ -255,6 +294,19 @@ const BURN_LOGS = [
   '{actor} は焼けつく痛みに耐える！',
 ] as const;
 
+const NULL_BURN_LOGS = [
+  '{actor}の炎は{target}を焼けなかった',
+  '{target}は{actor}の火傷を防いだ',
+  '{actor}の熱は{target}に通じない',
+  '{target}は{actor}の炎を受け流した',
+  '{actor}の火傷は{target}に効かない',
+  '{target}は{actor}の炎に耐えた',
+  '{actor}の炎は{target}に阻まれた',
+  '{target}は{actor}の火傷を無効化した',
+  '{actor}の熱は{target}に影響しない',
+  '{target}は{actor}の炎から身を守った',
+] as const;
+
 const BIND_LOGS = [
   '{actor} は {target} を拘束した！',
   '{target} は動きを封じられた！',
@@ -266,6 +318,19 @@ const BIND_LOGS = [
   '{actor} の力で {target} は封じられた！',
   '{target} は逃れられない！',
   '{actor} は {target} の動きを止めた！',
+] as const;
+
+const NULL_BIND_LOGS = [
+  '{actor}は{target}を拘束できなかった',
+  '{target}は{actor}の拘束を振り払った',
+  '{actor}の拘束は{target}に通じない',
+  '{target}は{actor}の束縛から逃れた',
+  '{actor}の拘束は{target}に無効化された',
+  '{target}は{actor}の束縛を拒んだ',
+  '{actor}は{target}の動きを止められない',
+  '{target}は{actor}の拘束を打ち破った',
+  '{actor}の拘束は{target}に効かなかった',
+  '{target}は{actor}の束縛を受け付けない',
 ] as const;
 
 const INCAPACITATED_LOGS = [
@@ -318,6 +383,19 @@ const REQUIEM_LOGS = [
   '{actor}の刃は慈悲深く、しかし確実に{target}の終わりを刻んだ',
   '{actor}の一太刀が鎮魂歌となり、{target}を静寂へと還した',
   '{actor}の一薙ぎにより {target}は跡形もなく消滅した',
+] as const;
+
+const NULL_REQUIEM_LOGS = [
+  '{actor}の鎮魂歌は{target}に届かなかった',
+  '{target}は{actor}の鎮魂を拒んだ',
+  '{actor}の歌は{target}を導けない',
+  '{target}は{actor}の鎮魂歌に抗った',
+  '{actor}の鎮魂は{target}に無効化された',
+  '{target}は{actor}の導きを受け入れない',
+  '{actor}の鎮魂歌は{target}に響かない',
+  '{target}は{actor}の鎮魂を退けた',
+  '{actor}の歌は{target}を成仏させられない',
+  '{target}は{actor}の鎮魂から逃れた',
 ] as const;
 
 const NULL_ANTAGONISM_LOGS = [
@@ -441,8 +519,20 @@ export function buildCorrodeAction(actorName: string, targetName: string): strin
     .replace(/\{target\}/g, targetName);
 }
 
+export function buildNullCorrodeAction(actorName: string, targetName: string): string {
+  return pickRandomEntry(NULL_CORRODE_LOGS)
+    .replace(/\{actor\}/g, actorName)
+    .replace(/\{target\}/g, targetName);
+}
+
 export function buildLifeDrainAction(actorName: string, targetName: string): string {
   return pickRandomEntry(LIFE_DRAIN_LOGS)
+    .replace(/\{actor\}/g, actorName)
+    .replace(/\{target\}/g, targetName);
+}
+
+export function buildNullLifeDrainAction(actorName: string, targetName: string): string {
+  return pickRandomEntry(NULL_LIFE_DRAIN_LOGS)
     .replace(/\{actor\}/g, actorName)
     .replace(/\{target\}/g, targetName);
 }
@@ -453,12 +543,30 @@ export function buildDeathTouchAction(actorName: string, targetName: string): st
     .replace(/\{target\}/g, targetName);
 }
 
+export function buildNullDeathTouchAction(actorName: string, targetName: string): string {
+  return pickRandomEntry(NULL_DEATH_TOUCH_LOGS)
+    .replace(/\{actor\}/g, actorName)
+    .replace(/\{target\}/g, targetName);
+}
+
 export function buildBurnAction(actorName: string): string {
   return pickRandomEntry(BURN_LOGS).replace(/\{actor\}/g, actorName);
 }
 
+export function buildNullBurnAction(actorName: string, targetName: string): string {
+  return pickRandomEntry(NULL_BURN_LOGS)
+    .replace(/\{actor\}/g, actorName)
+    .replace(/\{target\}/g, targetName);
+}
+
 export function buildBindAction(actorName: string, targetName: string): string {
   return pickRandomEntry(BIND_LOGS)
+    .replace(/\{actor\}/g, actorName)
+    .replace(/\{target\}/g, targetName);
+}
+
+export function buildNullBindAction(actorName: string, targetName: string): string {
+  return pickRandomEntry(NULL_BIND_LOGS)
     .replace(/\{actor\}/g, actorName)
     .replace(/\{target\}/g, targetName);
 }
@@ -478,6 +586,12 @@ export function buildReanimateAction(actorName: string): string {
 // SpecRef: 6.2.2 | Terrain flavor text | log.requiem
 export function buildRequiemAction(actorName: string, targetName: string): string {
   return pickRandomEntry(REQUIEM_LOGS)
+    .replace(/\{actor\}/g, actorName)
+    .replace(/\{target\}/g, targetName);
+}
+
+export function buildNullRequiemAction(actorName: string, targetName: string): string {
+  return pickRandomEntry(NULL_REQUIEM_LOGS)
     .replace(/\{actor\}/g, actorName)
     .replace(/\{target\}/g, targetName);
 }
