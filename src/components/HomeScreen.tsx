@@ -2207,6 +2207,7 @@ function getRaceBonusesForSelection(race: Race, unlockAbilityActive = false): Bo
 }
 
 const PREDISPOSITION_SHORT_NAMES: Record<string, string> = {
+  none: '-',
   aggressive: '好',
   inquisitive: '探',
   amiable: '和',
