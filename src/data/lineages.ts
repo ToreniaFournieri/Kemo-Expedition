@@ -10,7 +10,7 @@ export const LINEAGES: Lineage[] = [
   { id: 'firmament', name: '天穹の系譜', shortName: '穹', category: '狩猟', selectable: true, bonuses: [{ type: 'bolt_multiplier', value: 1.2 }, { type: 'shield_multiplier', value: 1.2 }] },
   { id: 'frozen_forest', name: '凍森の系譜', shortName: '凍', category: '狩猟', selectable: true, bonuses: [{ type: 'archery_multiplier', value: 1.2 }, { type: 'robe_multiplier', value: 1.2 }, { type: 'ice_defense_multiplier_xV', value: 4 / 5 }] },
   { id: 'utopia', name: '桃源の系譜', shortName: '桃', category: '学識', selectable: true, bonuses: [{ type: 'wand_multiplier', value: 1.2 }, { type: 'bolt_multiplier', value: 1.2 }] },
-  { id: 'machina', name: '機骸の系譜', shortName: '機', category: '学識', selectable: true, bonuses: [{ type: 'grimoire_multiplier', value: 1.2 }, { type: 'gauntlet_multiplier', value: 1.2 }] },
+  { id: 'machina', name: '機骸の系譜', shortName: '機', category: '学識', selectable: true, bonuses: [{ type: 'ability', value: 1, abilityId: 'null_shock', abilityLevel: 1 }, { type: 'grimoire_multiplier', value: 1.2 }, { type: 'gauntlet_multiplier', value: 1.2 }] },
   { id: 'adaptation', name: '適応の系譜', shortName: '適', category: '学識', selectable: true, bonuses: [{ type: 'catalyst_multiplier', value: 1.2 }, { type: 'archery_multiplier', value: 1.2 }, { type: 'thunder_defense_multiplier_xV', value: 3 / 4 }] },
   { id: 'fragment', name: '断章の系譜', shortName: '断', category: '生存', selectable: true, bonuses: [{ type: 'armor_multiplier', value: 1.2 }, { type: 'wand_multiplier', value: 1.2 }] },
   { id: 'windcross', name: '風渡の系譜', shortName: '風', category: '生存', selectable: true, bonuses: [{ type: 'robe_multiplier', value: 1.2 }, { type: 'katana_multiplier', value: 1.2 }] },

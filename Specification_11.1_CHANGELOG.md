@@ -3,6 +3,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.0 | 468 | 2026/4/18 | Implement passive ability `a.null-shock` in runtime/master data: add ability id/name/glossary/tooltip, grant it to `machina` lineage, and update CLOSE shock resolution to consume `a.shock` but keep attacks uninterrupted for `a.null-shock` actors with `log.null-shock` + `(感電予防:攻撃継続)`. |
 | 0.6.0 | 467 | 2026/4/18 | Update runtime predisposition bonuses for `Amicable`/`Stubborn` to requested table values; remove extra `a.slow` from `Stubborn` while keeping `c.shield_x1.1`, `c.physical_defense+0.10`, and `b.vitality+1`. |
 | 0.6.0 | 466 | 2026/4/18 | Implement passive ability `a.unforgettable` in runtime/master data and apply `a.oblivion` immunity handling with `log.unforgettable` + `(忘却無効)`; align `incarnation` and all requested predisposition bonuses (including `Introspective`/`a.unforgettable`) to Spec 2.1 tables. |
 | 0.6.0 | 465 | 2026/4/18 | Update runtime predisposition `None` display values to Japanese `(なし)` and short `-` while keeping non-selectable/no-bonus behavior. |

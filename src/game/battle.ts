@@ -35,6 +35,7 @@ import {
   buildFreeAction,
   buildIncapacitatedAction,
   buildLifeDrainAction,
+  buildNullShockAction,
   buildNullAntagonismAction,
   buildRequiemAction,
   buildRegenerationAction,
@@ -1830,6 +1831,14 @@ function hasNoOffense(charStats: ComputedCharacterStats): boolean {
 
 function enemyHasNoOffense(enemy: EnemyDef): boolean {
   return getEnemyAbilityLevel(enemy, 'no_offense') > 0;
+}
+
+function hasNullShock(charStats: ComputedCharacterStats): boolean {
+  return getAbilityLevel(charStats, 'null_shock') > 0;
+}
+
+function enemyHasNullShock(enemy: EnemyDef): boolean {
+  return getEnemyAbilityLevel(enemy, 'null_shock') > 0;
 }
 
 function hasCounter(charStats: ComputedCharacterStats, phase: BattleActionPhase): boolean {
@@ -4368,8 +4377,10 @@ export function executeBattle(
             const reflect = defensiveReaction?.type === 'reflect' ? defensiveReaction.descriptor : null;
             const absorb = defensiveReaction?.type === 'absorb' ? defensiveReaction.descriptor : null;
             const nullify = defensiveReaction?.type === 'nullify' ? defensiveReaction.descriptor : null;
+            // SpecRef: 6.1.2 | Function of battle | Shock resolve
             const shouldTriggerShock = !isReAttack && phase === 'close' && isCharacterShockAvailable(attack.charStats);
-            const hitDamagesToApply = shouldTriggerShock && attack.hitDamages.length > 1
+            const actorIsNullShock = enemyHasNullShock(enemy);
+            const hitDamagesToApply = shouldTriggerShock && !actorIsNullShock && attack.hitDamages.length > 1
               ? attack.hitDamages.slice(0, 1)
               : attack.hitDamages;
             if (avoidedByIllusion) {
@@ -4425,8 +4436,10 @@ export function executeBattle(
                     initiativeRoll: turn.roll,
                     actor: 'triggered' as const,
                     characterId: charId,
-                    action: buildShockAction(enemy.name, targetName),
-                    note: '(感電:攻撃中断)',
+                    action: actorIsNullShock
+                      ? buildNullShockAction(enemy.name, targetName)
+                      : buildShockAction(enemy.name, targetName),
+                    note: actorIsNullShock ? '(感電予防:攻撃継続)' : '(感電:攻撃中断)',
                     noteTone: 'muted' as const,
                     hideInitiativeLabel: true,
                   };
@@ -4991,9 +5004,11 @@ export function executeBattle(
             registerElementalOffenseUsage(cs.elementalOffense),
           );
 
+          // SpecRef: 6.1.2 | Function of battle | Shock resolve
           shockEffectLog = phase === 'close' && !isReAttack && isCharacterShockAvailable(selected)
             ? (() => {
-                if (result.hits > 1) {
+                const actorIsNullShock = hasNullShock(cs);
+                if (!actorIsNullShock && result.hits > 1) {
                   result.damage = getShockAdjustedDamage(result.damage, result.hits);
                   result.hits = 1;
                 }
@@ -5003,8 +5018,10 @@ export function executeBattle(
                   initiativeRoll: turn.roll,
                   actor: 'triggered' as const,
                   characterId: selected.characterId,
-                  action: buildShockAction(char.name, antagonismTargetName),
-                  note: '(感電:攻撃中断)',
+                  action: actorIsNullShock
+                    ? buildNullShockAction(char.name, antagonismTargetName)
+                    : buildShockAction(char.name, antagonismTargetName),
+                  note: actorIsNullShock ? '(感電予防:攻撃継続)' : '(感電:攻撃中断)',
                   noteTone: 'muted' as const,
                   hideInitiativeLabel: true,
                 };
@@ -5049,9 +5066,11 @@ export function executeBattle(
             resolveCharacterOffenseAmplifierMultiplier(cs.characterId) * ambushMultiplier * overwatchMultiplier * executionMultiplier,
             registerElementalOffenseUsage(cs.elementalOffense),
           );
+          // SpecRef: 6.1.2 | Function of battle | Shock resolve
           shockEffectLog = phase === 'close' && !isReAttack && isEnemyShockAvailable()
             ? (() => {
-                if (result.hits > 1) {
+                const actorIsNullShock = hasNullShock(cs);
+                if (!actorIsNullShock && result.hits > 1) {
                   result.damage = getShockAdjustedDamage(result.damage, result.hits);
                   result.hits = 1;
                 }
@@ -5060,8 +5079,10 @@ export function executeBattle(
                   phase,
                   initiativeRoll: turn.roll,
                   actor: 'triggered' as const,
-                  action: buildShockAction(char.name, enemy.name),
-                  note: '(感電:攻撃中断)',
+                  action: actorIsNullShock
+                    ? buildNullShockAction(char.name, enemy.name)
+                    : buildShockAction(char.name, enemy.name),
+                  note: actorIsNullShock ? '(感電予防:攻撃継続)' : '(感電:攻撃中断)',
                   noteTone: 'muted' as const,
                   hideInitiativeLabel: true,
                 };
