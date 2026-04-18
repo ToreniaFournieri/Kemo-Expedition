@@ -348,32 +348,45 @@ If `a.*` with phase = START:
 
   - If actor.`a.corrode`:
     - If total successful melee hits >= 3:
-       - Apply: target.`f.offense_amplifier` *= N
-       - Log: `log.corrode` + "(腐食:相手の攻撃倍率がN倍)"
+      - Apply: target.`f.offense_amplifier` *= N
+      - Log: `log.corrode` + "(腐食:相手の攻撃倍率がN倍)"
+      - Exception: If actor has `a.null-corrode`, do not apply corrode.
+        - Log: `log.null-corrode` + (防腐)
 
   - If actor.`a.life-drain`:
        - Heal actor:
        - heal += dealt_damage × N
        - Log: `log.life-drain` + "(吸血: 与ダメージのN倍回復: ✚heal)"
+      - Exception: If actor has `a.null-life-drain`, do not apply life-drain.
+        - Log: `log.null-life-drain` + (吸血無効)
 
   - If actor.`a.death-touch`:
-     - Roll death check:
-       - death_probability = opponent.(total successful hit) x N
-       - If success → target is instantly defeated.
-       - Log: `log.death-touch` + "(接死:有効 death_probabilityの確率で即死)"
+    - Roll death check:
+      - death_probability = opponent.(total successful hit) x N
+      - If success → target is instantly defeated.
+      - Log: `log.death-touch` + "(接死:有効 death_probabilityの確率で即死)"
+      - Exception: If actor has `a.null-death-touch`, do not apply death-touch.
+        - Log: `log.null-death-touch` + (即死無効)
 
   - If opponent.`a.burn`:
     - actor.`d.HP` -= actor.max_hp x actor.hit_count × (N / 100) x actor.`r.fire`
     - Log: `log.burn` + "(火傷)"           "(🔥 XXX)" (left-aligned, same as damage log)
+    - Exception: If actor has `a.null-burn`, do not apply burn.
+    　　- Log: `log.null-burn` + (火傷無効)
     
   - If actor.`a.bind`:
     - Roll bind check:
        - If success → apply `incapacitated` status.
     - Log: `log.bind` + "(拘束:行動不能)"
-
+    - Exception: If actor has `a.bind`, do not apply `incapacitated` status.
+    　　- Log: `log.null-bind` + (拘束無効)
+      
   - If actor.`a.requiem` and (opponent.`a.reanimate` has used) and actor hit at least once to the opponent:
     - Set opponent HP to 0. 
     - Log: `log.requiem` + "(鎮魂歌)"
+    - Exception: If actor has `a.requiem`, do not apply requiem.
+    　　- Log: `log.null-requiem` + (鎮魂無効)
+
 
 **Ally-follow-up**
 - If actor.`a.covering-fire` and the actor's successful hit is only one and phase is CLOSE, `f.covering-fire`(actor:covering fire actor.party.character , opponent:opponent)
