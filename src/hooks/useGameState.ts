@@ -1211,10 +1211,10 @@ function createSecondParty() {
 
 function createThirdParty() {
   const defaultSetup = [
-    { race: 'procyonian', main: 'pilgrim', sub: 'sage', pred: 'nimble', lineage: 'machina', name: 'シマ' },
-    { race: 'orcinian', main: 'samurai', sub: 'ninja', pred: 'introspective', lineage: 'rowdy_orca_girl', name: 'オルカ', isUnique: true },
+    { race: 'vulpinian', main: 'duelist', sub: 'lord', pred: 'devoted', lineage: 'meddlesome_fox', name: 'レナード', isUnique: true },
+    { race: 'orcinian', main: 'samurai', sub: 'sword-saint', pred: 'aggressive', lineage: 'rowdy_orca_girl', name: 'オルカ', isUnique: true },
+    { race: 'procyonian', main: 'ranger', sub: 'ranger', pred: 'nimble', lineage: 'frozen_forest', name: 'シマ' },
     { race: 'cervin', main: 'wizard', sub: 'alchemist', pred: 'amiable', lineage: 'utopia', name: 'シーケルン' },
-    { race: 'vulpinian', main: 'sage', sub: 'lord', pred: 'precise', lineage: 'meddlesome_fox', name: 'レナード', isUnique: true },
     { race: 'felidian', main: 'alchemist', sub: 'wizard', pred: 'serene', lineage: 'machina', name: 'アルテミス' },
     { race: 'lupinian', main: 'ninja', sub: 'wizard', pred: 'perceptive', lineage: 'windcross', name: 'ウォッシ' },
   ];
@@ -1328,11 +1328,11 @@ function createFourthParty() {
 function createFifthParty() {
   const defaultSetup = [
     { race: 'ursan', main: 'lord', sub: 'ninja', pred: 'stubborn', lineage: 'apostate', name: 'ミシュカ', isUnique: true },
-    { race: 'avian', main: 'ninja', sub: 'ranger', pred: 'evasive', lineage: 'flamebound_grove', name: 'プチーツァ', isUnique: true },
+    { race: 'avian', main: 'ninja', sub: 'ranger', pred: 'introspective', lineage: 'flamebound_grove', name: 'プチーツァ', isUnique: true },
     { race: 'leporian', main: 'ranger', sub: 'guardian', pred: 'precise', lineage: 'abyssal_sea', name: 'ファー' },
     { race: 'felidian', main: 'striker', sub: 'pilgrim', pred: 'devoted', lineage: 'firmament', name: 'ヴェリタス' },
-    { race: 'lupinian', main: 'striker', sub: 'ranger', pred: 'aggressive', lineage: 'firmament', name: 'グレイ' },
-    { race: 'cervin', main: 'wizard', sub: 'wizard', pred: 'resourceful', lineage: 'utopia', name: 'セトラ' },
+    { race: 'lupinian', main: 'wizard', sub: 'sage', pred: 'amiable', lineage: 'machina', name: 'グレイ' },
+    { race: 'cervin', main: 'sage', sub: 'wizard', pred: 'resourceful', lineage: 'utopia', name: 'セトラ' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
@@ -1387,9 +1387,9 @@ function createSixthParty() {
   const defaultSetup = [
     { race: 'ursan', main: 'pilgrim', sub: 'wizard', pred: 'introspective', lineage: 'fragment', name: 'ドンガ' },
     { race: 'caninian', main: 'wizard', sub: 'ranger', pred: 'inquisitive', lineage: 'abyssal_sea', name: 'ミィス' },
-    { race: 'leporian', main: 'sword-saint', sub: 'ranger', pred: 'evasive', lineage: 'unexpected_prince(ss)', name: 'フィン', isUnique: true },
-    { race: 'procyonian', main: 'alchemist', sub: 'alchemist', pred: 'amiable', lineage: 'adaptation', name: 'ケラ' },
-    { race: 'cervin', main: 'wizard', sub: 'sage', pred: 'amiable', lineage: 'incarnation', name: 'マーレ', isUnique: true },
+    { race: 'leporian', main: 'sword-saint', sub: 'ranger', pred: 'perceptive', lineage: 'unexpected_prince(ss)', name: 'フィン', isUnique: true },
+    { race: 'procyonian', main: 'alchemist', sub: 'alchemist', pred: 'inquisitive', lineage: 'adaptation', name: 'ケラ' },
+    { race: 'cervin', main: 'sage', sub: 'wizard', pred: 'amiable', lineage: 'incarnation', name: 'マーレ', isUnique: true },
     { race: 'murid', main: 'wizard', sub: 'alchemist', pred: 'nimble', lineage: 'utopia', name: 'ディル' },
   ];
 
