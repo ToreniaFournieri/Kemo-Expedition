@@ -90,18 +90,18 @@
 
 | lineage |　Text | short | category | bonus | selectable |
 |--------|-----|------|----------|-------|------|
-| `sandstorm` | 砂塵の系譜 | 砂 | 動乱 | `c.sword_x1.2`, `c.grimoire_x1.2` | `true` |
-| `ashen_capital` | 灰都の系譜 | 灰 | 動乱 | `c.katana_x1.2`, `c.arrow_x1.2` | `true` |
-| `blaze_peak` | 焔嶺の系譜 | 焔 | 動乱 | `c.gauntlet_x1.2`, `c.armor_x1.2`, `c.fire-defense-multiplier_x4/5` | `true` |
-| `abyssal_sea` | 深海の系譜 | 海 | 狩猟 | `c.arrow_x1.2`, `c.catalyst_x1.2` | `true` |
+| `sandstorm` | 砂塵の系譜 | 砂 | 動乱 | `a.null-corrode`, `c.sword_x1.2`, `c.grimoire_x1.2` | `true` |
+| `ashen_capital` | 灰都の系譜 | 灰 | 動乱 | `a.null-life-drain`, `c.katana_x1.2`, `c.arrow_x1.2` | `true` |
+| `blaze_peak` | 焔嶺の系譜 | 焔 | 動乱 | `a.null-burn`, `c.gauntlet_x1.2`, `c.armor_x1.2`, `c.fire-defense-multiplier_x4/5` | `true` |
+| `abyssal_sea` | 深海の系譜 | 海 | 狩猟 | `a.null-bind`, `c.arrow_x1.2`, `c.catalyst_x1.2` | `true` |
 | `firmament` | 天穹の系譜 | 穹 | 狩猟 | `c.bolt_x1.2`, `c.shield_x1.2` | `true` |
 | `frozen_forest` | 凍森の系譜 | 凍 | 狩猟 | `c.archery_x1.2`, `c.robe_x1.2`, `c.ice-defense-multiplier_x4/5` | `true` |
-| `utopia` | 桃源の系譜 | 桃 | 学識 | `c.wand_x1.2`, `c.bolt_x1.2` | `true` |
+| `utopia` | 桃源の系譜 | 桃 | 学識 | `a.null-death-touch`, `c.wand_x1.2`, `c.bolt_x1.2` | `true` |
 | `machina` | 機骸の系譜 | 機 | 学識 | `a.null-shock`, `c.grimoire_x1.2`, `c.gauntlet_x1.2` | `true` |
 | `adaptation` | 適応の系譜 | 適 | 学識 | `c.catalyst_x1.2`, `c.archery_x1.2`, `c.thunder-defense-multiplier_x3/4` | `true` |
 | `fragment` | 断章の系譜 | 断 | 生存 | `c.armor_x1.2`, `c.wand_x1.2` | `true` |
 | `windcross` | 風渡の系譜 | 風 | 生存 | `c.robe_x1.2`, `c.katana_x1.2` | `true` |
-| `oath` | 誓約の系譜 | 誓 | 生存 | `c.shield_x1.2`, `c.sword_x1.2` | `true` |
+| `oath` | 誓約の系譜 | 誓 | 生存 | `a.requiem`, `c.shield_x1.2`, `c.sword_x1.2` | `true` |
 | `unascertained` | 不詳 | 不 | - | `c.armor_x1.3`, `c.robe_x1.3` | `false` |
 | `pioneer` | 先駆者 | 先 | - | `c.wand_x1.3`, `a.seeker`1 | `false` |
 | `almighty` | 全能 | 全 | - | `c.growth_x1.3`, `c.sword_x1.3`, `c.arrow_x1.3`, `c.wand_x1.3`, `b.vitality+1`, `b.strength+1`, `b.intelligence+1`, `b.mind+1` | `false` |
