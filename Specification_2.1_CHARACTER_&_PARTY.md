@@ -137,7 +137,7 @@
 | Perceptive | 看破 | 看 | 機知 | `a.true-sight`, `c.penet+0.100`, `c.bolt_x1.1`, `b.intelligence+1` | `true` |
 | Exacting | 精確 | 精 | 機知 | `a.output-stabilizer`, `c.accuracy+0.020`, `c.archery_x1.1`, `b.strength+1` | `true` |
 | Savvy | 手腕 | 腕 | 機知 | `c.equip-slot+1`, `c.gauntlet_x1.1` | `true` |
-| None | | | - | none | `false` |
+| None | - | - | - | none | `false` |
 
 - If `main_class` and  `sub_class` are same class, then it turns into master class, applies master bonus.
 - `main_class` applies main/sub bonuses and main bonus. `sub_class` applies only main/sub bonuses.
