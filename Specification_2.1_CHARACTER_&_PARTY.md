@@ -127,10 +127,10 @@
 |-----|-----|---|-----|-----------|--------|
 | Aggressive | 好戦| 好 | 外向的 | `c.sword_x1.1`, `c.bolt_x1.1`, `c.catalyst_x1.1` | `true` |
 | Inquisitive | 探求 | 探 | 外向的 | `c.katana_x1.1`, `c.arrow_x1.1`, `c.grimoire_x1.1` | `true` |
-| Amicable | 親和 | 和 | 外向的 | `c.gauntlet_x1.1`, `c.bolt_x1.1`, `c.wand_x1.1` | `true` |
+| Amicable | 親和 | 和 | 外向的 | `a.null-antagonism`, `c.gauntlet_x1.1`, `c.bolt_x1.1`,  | `true` |
 | Stubborn | 頑固 | 頑 | 内向的 | `c.shield_x1.1`, `b.vitality+1` | `true` |
-| Evasive | 責任回避 | 避 | 内向的 | `c.evasion+0.020`, `b.mind+1` | `true` |
-| Introspective | 内省 | 内 | 内向的 | `c.armor_x1.1`, `c.robe_x1.1` | `true` |
+| Evasive | 責任回避 | 避 | 内向的 | `c.evasion+0.020`, `c.robe_x1.1`, `b.mind+1` | `true` |
+| Introspective | 内省 | 内 | 内向的 | `c.wand_x1.1`, `c.armor_x1.1`  | `true` |
 | Devoted | 献身 | 献 | 適応 | `c.growth_x1.1`, `c.shield_x1.1`, `c.fire-defense-multiplier_x4/5` | `true` |
 | Serenity | 冷静 | 冷 | 適応 | `c.growth_x1.1`, `c.ice-defense-multiplier_x4/5` | `true` |
 | Nimble | 軽快 | 軽 | 適応 | `c.evasion+0.010`, `c.thunder-defense-multiplier_x4/5` | `true` |
