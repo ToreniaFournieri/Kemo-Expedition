@@ -62,6 +62,7 @@ If `a.*` with phase = START:
 
 - `terrain.silence-field`
   - Skip all subsequent `actor abilities` part.
+  - Exception: actor who has `a.equation-breaker`.
 
 **Actor abilities**
 
@@ -95,7 +96,7 @@ If `a.*` with phase = START:
   - `X = melee` for `CLOSE`
 - **Initiative roll**
   - If actor has `a.first-strike`:
-      - If terrain = `terrain.machine-logic` : roll **1d3** (1–3)
+      - If terrain = `terrain.machine-logic` and actor does not have `a.equation-breaker` : roll **1d3** (1–3)
       - Else if terrain = `terrain.ash-haze` and actor does not have `a.true-sight`: roll **1d3** (1–3)
       - Else if `a.first-strike`3: Roll **4d3**(4–12), cap at 9
       - Else if `a.first-strike`2: Roll **3d3**(3–9)
