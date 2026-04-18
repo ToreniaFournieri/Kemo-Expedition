@@ -9,7 +9,8 @@
   - **Debug Scaling** (applies multiplicatively to Step duration):  
     - `x5 boost` → Step × **0.2** (3 seconds)  
     - `x20 boost` → Step × **0.05** (0.75 seconds)  
-    - `x100 boost` → Step × **0.01** (0.15 seconds)  
+    - `x100 boost` → Step × **0.01** (0.15 seconds)
+    - `x10000 boost`  → Step × **0.0001** (0.0015 seconds)
   - This scaling also applies to side quest time progression.
 - **`Cycle`**: One complete sequence of state transitions.  
   - A Cycle always **begins at `state.rest`**.
