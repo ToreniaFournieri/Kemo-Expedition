@@ -1269,12 +1269,12 @@ function createThirdParty() {
 
 function createFourthParty() {
   const defaultSetup = [
-    { race: 'ursan', main: 'guardian', sub: 'guardian', pred: 'stubborn', lineage: 'fragment', name: 'グレン' },
-    { race: 'caninian', main: 'lord', sub: 'wizard', pred: 'resourceful', lineage: 'machina', name: 'ロス' },
-    { race: 'felidian', main: 'sword-saint', sub: 'duelist', pred: 'perceptive', lineage: 'crescent_jade', name: 'ルナ', isUnique: true },
-    { race: 'lupinian', main: 'duelist', sub: 'samurai', pred: 'inquisitive', lineage: 'blaze_peak', name: 'ラビ' },
-    { race: 'murid', main: 'striker', sub: 'ninja', pred: 'aggressive', lineage: 'phantom_thief', name: 'ノクス', isUnique: true },
-    { race: 'vulpinian', main: 'sage', sub: 'wizard', pred: 'amiable', lineage: 'adaptation', name: 'フェン' },
+    { race: 'ursan', main: 'guardian', sub: 'ranger', pred: 'evasive', lineage: 'firmament', name: 'グレン' },
+    { race: 'caninian', main: 'lord', sub: 'ninja', pred: 'precise', lineage: 'firmament', name: 'ロス' },
+    { race: 'murid', main: 'ninja', sub: 'ranger', pred: 'aggressive', lineage: 'phantom_thief', name: 'ノクス', isUnique: true },
+    { race: 'felidian', main: 'sword-saint', sub: 'ranger', pred: 'perceptive', lineage: 'crescent_jade', name: 'ルナ', isUnique: true },
+    { race: 'lupinian', main: 'duelist', sub: 'striker', pred: 'amiable', lineage: 'frozen_forest', name: 'ラビ' },
+    { race: 'vulpinian', main: 'sage', sub: 'wizard', pred: 'inquisitive', lineage: 'adaptation', name: 'フェン' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({

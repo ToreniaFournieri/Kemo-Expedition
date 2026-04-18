@@ -3,6 +3,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.0 | 454 | 2026/4/18 | Align runtime PT4 initial member setup to Spec 2.1.4.2: update classes, lineages, predispositions, order, and unique flags under Goddess of Fertility. |
 | 0.6.0 | 453 | 2026/4/18 | Update runtime PT1 initial member setup to match requested condition: ケモ sub class `class.samurai` with initial equipment `1101`, `1105`, `1106` under Goddess of Restoration. |
 | 0.6.0 | 452 | 2026/4/18 | Implement runtime Debug time speed `x10000 MAX` option in the Divine Bureau debug pane and wire `Debug Scaling` Step multiplier `×0.0001` (0.0015 seconds). |
 | 0.6.0 | 451 | 2026/4/18 | Update runtime `state.explore` flavor text set for `x.exp_id`8 / `x.floor`1 to the latest `虚痕` narrative lines (including route/terrain cautions and contextual lore line). |
