@@ -281,7 +281,9 @@ If `a.*` with phase = START:
     - If opponent.`a.shock` is enable:
       - If successful hits > 1, set successful hits = 1.
       - Disable opponent.`a.shock`.
-      - Log: `[-] log.shock` + (感電:攻撃中断)
+      - Log: `log.shock` + (感電:攻撃中断)
+      - Exception: If actor has `a.null-shock`, Do not apply shock effect, but diable opponent.`a.shock`.
+        Log: `log.null-shock` + (感電予防:攻撃継続)
     
 	- **intercept**
 	- Reflect resolve
