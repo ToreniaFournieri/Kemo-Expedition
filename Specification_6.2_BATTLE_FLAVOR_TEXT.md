@@ -635,3 +635,20 @@
 | {target}の記憶は消えない。{actor}は息を切らした |
 | {target}は忘却に屈しなかった。{actor}は記憶の操作を諦めた |
 | {actor}の囁きにも{target}は屈することなく自分を保ち続けた |
+
+- `log.null-shock`
+
+| flavor text |
+|-|
+| {target}は帯電していたが、{actor}は意に介さず攻撃を続けた |
+| {actor}は{target}の電撃を受け流し、動きを止めない |
+| {actor}は痺れを無視して{target}に踏み込んだ |
+| {actor}は{target}の感電をものともせず攻撃を継続した |
+| {actor}の動きは{target}の電撃でも鈍らない |
+| {actor}は{target}の衝撃を受けてもなお攻め続けた |
+| {actor}は{target}の電流を耐え抜いた |
+| {target}の雷撃に{actor}は一瞬の硬直すら見せない |
+| {actor}は{target}の帯電状態を無効化した |
+| {target}は電気を放ったが{actor}は動きを止められなかった |
+
+
