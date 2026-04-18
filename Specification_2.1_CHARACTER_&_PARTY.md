@@ -131,8 +131,8 @@
 | Stubborn | 頑固 | 頑 | 内向的 | `c.shield_x1.1`, `b.vitality+1` | `true` |
 | Evasive | 責任回避 | 避 | 内向的 | `c.evasion+0.020`, `c.robe_x1.1`, `b.mind+1` | `true` |
 | Introspective | 内省 | 内 | 内向的 | `c.wand_x1.1`, `c.armor_x1.1`  | `true` |
-| Devoted | 献身 | 献 | 適応 | `c.growth_x1.1`, `c.shield_x1.1`, `c.fire-defense-multiplier_x4/5` | `true` |
-| Serenity | 冷静 | 冷 | 適応 | `c.growth_x1.1`, `c.ice-defense-multiplier_x4/5` | `true` |
+| Devoted | 献身 | 献 | 適応 | `a.first-aid`1, `c.shield_x1.1`, `c.fire-defense-multiplier_x4/5` | `true` |
+| Serenity | 冷静 | 冷 | 適応 | `a.equation-breaker`, `c.growth_x1.1`, `c.ice-defense-multiplier_x4/5` | `true` |
 | Nimble | 軽快 | 軽 | 適応 | `c.evasion+0.010`, `c.thunder-defense-multiplier_x4/5` | `true` |
 | Perceptive | 看破 | 看 | 機知 | `a.true-sight`, `c.penet+0.100`, `c.bolt_x1.1`, `b.intelligence+1` | `true` |
 | Exacting | 精確 | 精 | 機知 | `a.output-stabilizer`, `c.accuracy+0.020`, `c.archery_x1.1`, `b.strength+1` | `true` |
