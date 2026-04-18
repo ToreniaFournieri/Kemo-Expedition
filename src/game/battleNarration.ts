@@ -306,6 +306,19 @@ const REQUIEM_LOGS = [
   '{actor}の一薙ぎにより {target}は跡形もなく消滅した',
 ] as const;
 
+const NULL_ANTAGONISM_LOGS = [
+  '{actor}は不穏な気配を払いのけた',
+  '{actor}は敵意の誘いに応じなかった',
+  '{actor}は心を乱されなかった',
+  '{actor}は敵対の呪いを退けた',
+  '{actor}は冷静さを保った',
+  '{actor}は争いの流れから外れている',
+  '{actor}には敵意が届かなかった',
+  '{actor}は不和の囁きを拒んだ',
+  '{actor}は理性を失わなかった',
+  '{actor}は敵対の影響を受けない',
+] as const;
+
 const decomposeDefenseValueFormatter = new Intl.NumberFormat('ja-JP');
 const battleNoteValueFormatter = new Intl.NumberFormat('ja-JP');
 
@@ -419,6 +432,11 @@ export function buildRequiemAction(actorName: string, targetName: string): strin
   return pickRandomEntry(REQUIEM_LOGS)
     .replace(/\{actor\}/g, actorName)
     .replace(/\{target\}/g, targetName);
+}
+
+// SpecRef: 6.2.2 | Terrain flavor text | log.null-antagonism
+export function buildNullAntagonismAction(actorName: string): string {
+  return pickRandomEntry(NULL_ANTAGONISM_LOGS).replace(/\{actor\}/g, actorName);
 }
 
 export function getConfusionNoTargetLog(actorName: string): Pick<BattleLogEntry, 'action' | 'note'> {
