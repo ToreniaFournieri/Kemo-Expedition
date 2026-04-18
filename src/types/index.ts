@@ -59,6 +59,7 @@ export interface Predisposition {
   name: string;
   shortName?: string;
   category?: string;
+  selectable?: boolean;
   bonuses: Bonus[];
 }
 
