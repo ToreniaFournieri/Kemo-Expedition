@@ -619,3 +619,19 @@
 | {actor}は戦場の定義を書き換えた |
 | {actor}は沈黙の制約を突破した |
 | {actor}は理を越えて行動した |
+
+
+- `log.unforgettable`
+
+| flavor text |
+|-|
+| {actor}が記憶を消し去ろうとしたが{target}は抗った |
+| {actor}の忘却は{target}に届かなかった |
+| {actor}が呪詛を唱えた。{target}は記憶を手放さなかった |
+| {target}は忘却の力を拒んだ。{actor}の顔はゆがんだ |
+| {target}の意識は揺らがない。{actor}は困惑した |
+| {actor}の干渉は{target}に阻まれた |
+| {actor}の呪縛に対して{target}は自我を保っている |
+| {target}の記憶は消えない。{actor}は息を切らした |
+| {target}は忘却に屈しなかった。{actor}は記憶の操作を諦めた |
+| {actor}の囁きにも{target}は屈することなく自分を保ち続けた |
