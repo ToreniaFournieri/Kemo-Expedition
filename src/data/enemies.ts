@@ -145,6 +145,15 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
       { type: 'ice_defense_multiplier_xV', value: 1.3 },
     ],
   },
+  Voidspawn: {
+    ability1: [{ id: 'null_counter', level: 1 }],
+    ability30: [{ id: 'oblivion', level: 1 }],
+    bonuses: [
+      { type: 'fire_defense_multiplier_xV', value: 2 / 3 },
+      { type: 'ice_defense_multiplier_xV', value: 2 / 3 },
+      { type: 'thunder_defense_multiplier_xV', value: 1.3 },
+    ],
+  },
   Spirit: {
     ability1: [{ id: 'soul_reap', level: 1 }],
     ability30: [{ id: 'mutual_magic_amplify', level: 1 }],

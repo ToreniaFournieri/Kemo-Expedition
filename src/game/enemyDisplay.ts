@@ -10,6 +10,7 @@ export const ENEMY_TYPE_SHORT_NAMES: Record<string, string> = {
   Frost: '雪',
   Marine: '海',
   Dragon: '竜',
+  Voidspawn: '虚',
   Spirit: '霊',
   Ghost: '怨',
   Undead: '屍',
