@@ -459,9 +459,9 @@ Party.`d.HP` =
 
 | order | Name | Race | main class | sub class | lineage | predisposition | Unique |
 |------|------|------|------|------|------|------|------|
-| 1 | **レナード** | Vulpinian | `class.sage`| `class.lord` | **`meddlesome_fox`** | `Exacting` | **`true`** |
+| 1 | **レナード** | Vulpinian | `class.duelist`| `class.lord` | **`meddlesome_fox`** | `Devoted` | **`true`** |
 | 2 | **オルカ** | **Orcinian** | `class.samurai` | `class.sword-saint` | **`rowdy_orca_girl`** | `Aggressive` | **`true`** |
-| 1 | シマ | Procyonian | `class.pilgrim` | `class.sage` | `machina` | `Nimble` | `false` |
+| 1 | シマ | Procyonian | `class.ranger` | `class.ranger` | `frozen_forest` | `Nimble` | `false` |
 | 3 | シーケルン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Amicable` | `false` |
 | 5 | アルテミス | Felidian | `class.alchemist` | `class.wizard` | `machina` | `Serenity` | `false` |
 | 6 | ウォッシ | Lupinian | `class.ninja` | `class.wizard`| `windcross` | `Perceptive` | `false` |
@@ -484,11 +484,11 @@ Party.`d.HP` =
 | order | Name | Race | main class | sub class | lineage | predisposition | Unique |
 |------|------|------|------|------|------|------|------|
 | 1 | **ミシュカ** | Ursan | `class.lord` | `class.ninja` | **`apostate`** | `Stubborn` | **`true`** |
-| 2 | **プチーツァ** | **Avian** | `class.ninja` | `class.ranger` | **`flamebound_grove`** | `Evasive` | **`true`** |
+| 2 | **プチーツァ** | **Avian** | `class.ninja` | `class.ranger` | **`flamebound_grove`** | `Introspective` | **`true`** |
 | 3 | ファー | Leporian | `class.ranger` | `class.guardian` | `abyssal_sea` | `Exacting` | `false` |
 | 4 | ヴェリタス | Felidian | `class.striker`| `class.pilgrim` | `firmament` | `Devoted` | `false` |
-| 5 | グレイ | Lupinian | `class.striker` | `class.ranger` | `firmament` | `Aggressive` | `false` |
-| 6 | セトラ | Cervin | `class.wizard` | `class.wizard` | `utopia` | `Savvy` | `false` |
+| 5 | グレイ | Lupinian | `class.wizard` | `class.sage` | `machina` | `Amicable` | `false` |
+| 6 | セトラ | Cervin | `class.sage` | `class.wizard` | `utopia` | `Savvy` | `false` |
 
 - **PT6** initial condition (when unlocked)
   - deity: `God of Resonance`
