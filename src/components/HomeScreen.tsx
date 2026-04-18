@@ -7193,11 +7193,11 @@ function ExpeditionTab({
         const party = state.parties[partyIndex];
         if (!party) {
           const lockedPartyUnlockTextByIndex: Partial<Record<number, string>> = {
-            1: '未開放:セイラン 再生の女神 撃破で開放',
-            2: '未開放:ガーヴ 消耗の神 撃破で開放',
-            3: '未開放:キョウエン 狡猾の神 撃破で開放',
-            4: '未開放:ミオラ 豊穣の女神 撃破で開放',
-            5: '未開放:ドルヴァ 防備の神 撃破で開放',
+            1: '(未開放)ルピニアンの亜寒帯踏破で開放',
+            2: '(未開放)ヴァルンの海洋踏破で開放',
+            3: '(未開放)フェリディ砂漠踏破で開放',
+            4: '(未開放)ウルサンの炎嶺踏破で開放',
+            5: '(未開放)プロキオン巣穴踏破で開放',
           };
           const lockedPartyText = lockedPartyUnlockTextByIndex[partyIndex] ?? '未開放';
           return <div key={partyIndex} className="bg-pane rounded-lg p-2"><div className="text-xs text-gray-400">PT{partyIndex + 1}: ({lockedPartyText})</div></div>;
