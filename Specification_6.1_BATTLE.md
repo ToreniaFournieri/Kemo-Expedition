@@ -36,6 +36,9 @@ If `a.*` with phase = START:
 **Deity effects**
 - If `Goddess of Discord` and (terrain is not `terrain.gehenna`):
   - Add `c.antagonism` to random party.
+  - Exception: If candidate has `a.null-antagonism`:
+    - Do not apply `c.antagonism`.
+    - Log: `log.null-antagonism` + "(敵対無効化)"
 
 - If `God of Resonance` and (terrain is not `terrain.gehenna`):
   - Upgrade `a.resonance` ability level by N.
@@ -177,6 +180,10 @@ If `a.*` with phase = START:
   - Triggered by `a.*-confusion`
   - Randomly select 1 eligible opponent.
   - Apply `c.antagonism` to the selected target.
+    - Exception: If candidate has `a.null-antagonism`:
+      - Do not apply `c.antagonism`.
+      - Log: `log.null-antagonism` + "(敵対無効化)"
+
   - Eligible target
     - Has both `d.X_attack` and `d.X_NoA`, and **not has moved yet in the phase**.
     - `X = ranged` for `LONG`
