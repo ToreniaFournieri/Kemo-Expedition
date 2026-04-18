@@ -624,6 +624,8 @@ If `a.*` with phase = START:
       - If `God of Restoration` and `log.terrain.rotwood`: Log: `log.terrain.rotwood` 
     - IF `God of Attrition`: **reduce 5% of remaining HP**
       - Log: "消耗の神への代償！" + "(HP消耗-N)"
+  　- If party member has `a.first-aid`:　**Heal N% of the party member's `d.HP`** (not party.`d.HP`)
+      - Log: `log.first-aid` + "(HP回復+N)"
   - Normal and Elite rooms
     - If `terrain.rejuvenation`: Heal 2% of **missing HP**
 	  - Log: `log.terrain.rejuvenation` + "(HP回復+N)"
