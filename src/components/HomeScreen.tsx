@@ -6442,7 +6442,10 @@ function PartyTab({
                   multiplierValues[b.type].add(b.value);
                 } else if (['vitality', 'strength', 'intelligence', 'mind'].includes(b.type)) {
                   additive[b.type] = (additive[b.type] ?? 0) + b.value;
-                } else if (['equip_slot', 'equip_melee', 'equip_ranged', 'equip_magic', 'penet', 'accuracy', 'growth_xV', 'upgrade_V', 'melee_attack', 'ranged_attack', 'magical_attack', 'physical_attack', 'physical_defense', 'magical_defense', 'antagonism', 'fire_defense', 'ice_defense', 'thunder_defense'].includes(b.type)) {
+                } else if (b.type === 'growth_xV') {
+                  if (!multiplierValues[b.type]) multiplierValues[b.type] = new Set();
+                  multiplierValues[b.type].add(b.value);
+                } else if (['equip_slot', 'equip_melee', 'equip_ranged', 'equip_magic', 'penet', 'accuracy', 'upgrade_V', 'melee_attack', 'ranged_attack', 'magical_attack', 'physical_attack', 'physical_defense', 'magical_defense', 'antagonism', 'fire_defense', 'ice_defense', 'thunder_defense'].includes(b.type)) {
                   addUniqueCBonus(b.type, b.value);
                 } else if (b.type === 'evasion') {
                     if (b.value < 0) {
@@ -6523,7 +6526,7 @@ function PartyTab({
               const defensePercentFormatter = new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 1, minimumFractionDigits: 0 });
 
               for (const [key, val] of Object.entries(multipliers)) {
-                if (hiddenBonusDisplayKeys.has(key)) continue;
+                if (hiddenBonusDisplayKeys.has(key) || key === 'growth_xV') continue;
                 if (val !== 1) {
                   const effectiveMultiplier = key === 'grimoire' ? val * seekerMultiplier : val;
                   const formattedMultiplier = key === 'grimoire'
@@ -6565,10 +6568,6 @@ function PartyTab({
                     const label = `${addNames[key]}+${Math.round(val * 1000)}`;
                     const description = getBonusHelpDescription({ type: key as BonusType, value: val });
                     pushBonusDisplayEntry({ key, label, description: description ?? undefined });
-                  } else if (key === 'growth_xV') {
-                    const label = `${addNames[key] ?? key}${formatMultiplierValue(val)}倍`;
-                    const description = getBonusHelpDescription({ type: key as BonusType, value: val });
-                    pushBonusDisplayEntry({ key, label, description: description ?? undefined });
                   } else {
                     const normalizedKey = key.replace(/\?+$/g, '');
                     const label = ['equip_melee', 'equip_ranged', 'equip_magic'].includes(normalizedKey)
@@ -6582,6 +6581,12 @@ function PartyTab({
                     });
                   }
                 }
+              }
+              const growthMultiplier = multipliers.growth_xV ?? 1;
+              if (growthMultiplier !== 1) {
+                const label = `${addNames.growth_xV}${formatMultiplierValue(growthMultiplier)}倍`;
+                const description = getBonusHelpDescription({ type: 'growth_xV', value: growthMultiplier });
+                pushBonusDisplayEntry({ key: 'growth_xV', label, description: description ?? undefined });
               }
 
               const bHelpRows = ([

@@ -3,6 +3,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.0 | 449 | 2026/4/18 | Fix Party bonus summary growth aggregation: `c.growth_xV` now deduplicates and multiplies unique multipliers (e.g. 1.2×1.1=1.32) instead of additive stacking in display. |
 | 0.6.0 | 448 | 2026/4/18 | Update runtime assignments/abilities: Caninian default ability to `a.howl`1 (unlock `a.resurrect`1), Pioneer lineage bonus ability to `a.seeker`1, and Seeker scaling to Lv1 `+0.50%` / Lv2 `+0.75%` for grimoire effects. |
 | 0.6.0 | 447 | 2026/4/18 | Fix Party UI/runtime race-unlock behavior for Procyonian: gate `a.resonance` behind unlock condition by registering the race unlock ability id; and normalize signed base-stat bonus text rendering to avoid awkward `知+-1` style display (`知-1`, etc.). |
 | 0.6.0 | 446 | 2026/4/18 | Align runtime Procyonian race master data to Spec 2.1 races table: set default ability to `a.illusion`1 and unlock ability to `a.resonance`1 (including race ability bonus ordering). |
