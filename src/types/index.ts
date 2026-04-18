@@ -161,7 +161,8 @@ export type AbilityId =
   | 'mutual_magic_amplify' | 'mutual_magic_restraint' | 'ranged_confusion' | 'magic_confusion' | 'melee_confusion' | 'self_destruct' | 'oblivion' | 'reanimate'
   | 'auriferous' | 'magic_seal' | 'ambush' | 'mimic' | 'shock' | 'null_shock' | 'mutual_physical_amplify' | 'mutual_physical_restraint'
   | 'unstable_core' | 'magical_reflect' | 'magical_absorb' | 'magical_null' | 'ranged_reflect' | 'ranged_null' | 'melee_reflect' | 'melee_null' | 'colossal' | 'upgrade_all_abilities'
-  | 'requiem' | 'overwatch' | 'execution' | 'null_antagonism' | 'first_aid' | 'equation_breaker' | 'unforgettable';
+  | 'requiem' | 'overwatch' | 'execution' | 'null_antagonism' | 'first_aid' | 'equation_breaker' | 'unforgettable'
+  | 'null_corrode' | 'null_life_drain' | 'null_death_touch' | 'null_burn' | 'null_bind' | 'null_requiem';
 
 export interface Ability {
   id: AbilityId;

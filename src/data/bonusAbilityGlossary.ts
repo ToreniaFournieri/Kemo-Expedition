@@ -28,6 +28,12 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'equation_breaker', label: '式破り', description: '理論武装する(機械理論、静寂領域の地形効果が無効になる)', levelScale: [], subcategory: 'passive' },
   { abilityId: 'unforgettable', label: '不忘', description: 'アビリティは消して忘れることがなくなる(忘却無効)', levelScale: [], subcategory: 'passive' },
   { abilityId: 'null_shock', label: '感電予防', description: '感電しなくなる', levelScale: [], subcategory: 'passive' },
+  { abilityId: 'null_corrode', label: '防腐', description: '腐食しなくなる', levelScale: [], subcategory: 'passive' },
+  { abilityId: 'null_life_drain', label: '吸血無効', description: '吸血されることがなくなる', levelScale: [], subcategory: 'passive' },
+  { abilityId: 'null_death_touch', label: '即死無効', description: '接死が無効化する', levelScale: [], subcategory: 'passive' },
+  { abilityId: 'null_burn', label: '火傷無効', description: '火傷を負わなくなる', levelScale: [], subcategory: 'passive' },
+  { abilityId: 'null_bind', label: '拘束無効', description: '拘束を速やかに解くことができる', levelScale: [], subcategory: 'passive' },
+  { abilityId: 'null_requiem', label: '鎮魂無効', description: '鎮魂歌では成仏はしない', levelScale: [], subcategory: 'passive' },
   { abilityId: 'upgrade_all_abilities', label: '他のアビリティ強化', description: '自身の他のアビリティをN段階強化する(上限レベル5)', levelScale: ['Lv1: +1', 'Lv2: +2', 'Lv3: +3', 'Lv4: +4'], subcategory: 'passive' },
 
   { abilityId: 'tithe', label: '十分の一税', description: '遠征利益の+N%を寄付額に上乗せする', levelScale: ['Lv1: +10%', 'Lv2: +15%'], subcategory: 'expedition' },

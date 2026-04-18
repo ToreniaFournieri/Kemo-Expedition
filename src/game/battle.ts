@@ -35,6 +35,12 @@ import {
   buildFreeAction,
   buildIncapacitatedAction,
   buildLifeDrainAction,
+  buildNullBindAction,
+  buildNullBurnAction,
+  buildNullCorrodeAction,
+  buildNullDeathTouchAction,
+  buildNullLifeDrainAction,
+  buildNullRequiemAction,
   buildNullShockAction,
   buildNullAntagonismAction,
   buildRequiemAction,
@@ -1841,6 +1847,46 @@ function enemyHasNullShock(enemy: EnemyDef): boolean {
   return getEnemyAbilityLevel(enemy, 'null_shock') > 0;
 }
 
+function hasNullCorrode(charStats: ComputedCharacterStats): boolean {
+  return getAbilityLevel(charStats, 'null_corrode') > 0;
+}
+
+function enemyHasNullCorrode(enemy: EnemyDef): boolean {
+  return getEnemyAbilityLevel(enemy, 'null_corrode') > 0;
+}
+
+function hasNullLifeDrain(charStats: ComputedCharacterStats): boolean {
+  return getAbilityLevel(charStats, 'null_life_drain') > 0;
+}
+
+function enemyHasNullLifeDrain(enemy: EnemyDef): boolean {
+  return getEnemyAbilityLevel(enemy, 'null_life_drain') > 0;
+}
+
+function hasNullDeathTouch(charStats: ComputedCharacterStats): boolean {
+  return getAbilityLevel(charStats, 'null_death_touch') > 0;
+}
+
+function enemyHasNullDeathTouch(enemy: EnemyDef): boolean {
+  return getEnemyAbilityLevel(enemy, 'null_death_touch') > 0;
+}
+
+function hasNullBurn(charStats: ComputedCharacterStats): boolean {
+  return getAbilityLevel(charStats, 'null_burn') > 0;
+}
+
+function enemyHasNullBurn(enemy: EnemyDef): boolean {
+  return getEnemyAbilityLevel(enemy, 'null_burn') > 0;
+}
+
+function hasNullBind(charStats: ComputedCharacterStats): boolean {
+  return getAbilityLevel(charStats, 'null_bind') > 0;
+}
+
+function enemyHasNullBind(enemy: EnemyDef): boolean {
+  return getEnemyAbilityLevel(enemy, 'null_bind') > 0;
+}
+
 function hasCounter(charStats: ComputedCharacterStats, phase: BattleActionPhase): boolean {
   // SpecRef: 6.1.4.3 | Function of Reactive ability | f.counter
   const ability = charStats.abilities.find(a => a.id === 'counter');
@@ -1883,6 +1929,14 @@ function hasRequiem(charStats: ComputedCharacterStats): boolean {
 
 function enemyHasRequiem(enemy: EnemyDef): boolean {
   return getEnemyAbilityLevel(enemy, 'requiem') > 0;
+}
+
+function hasNullRequiem(charStats: ComputedCharacterStats): boolean {
+  return getAbilityLevel(charStats, 'null_requiem') > 0;
+}
+
+function enemyHasNullRequiem(enemy: EnemyDef): boolean {
+  return getEnemyAbilityLevel(enemy, 'null_requiem') > 0;
 }
 
 function getReanimateHpPercent(level: number): number {
@@ -2799,24 +2853,32 @@ export function executeBattle(
 
     const corrodeLevel = getAbilityLevel(actorStats, 'corrode');
     if (corrodeLevel > 0 && result.hits >= 3) {
+      const targetNullCorrode = enemyHasNullCorrode(enemy);
       const multiplier = getCorrodeMultiplier(corrodeLevel);
-      enemyOffenseAmplifierMultiplier *= multiplier;
       log.push({
         phase: 'close',
         initiativeRoll,
         actor: 'triggered',
         characterId: actorStats.characterId,
-        action: buildCorrodeAction(actorName, enemy.name),
-        note: `(腐食:相手の攻撃倍率が${formatMultiplierAsFraction(multiplier)})`,
+        action: targetNullCorrode
+          ? buildNullCorrodeAction(actorName, enemy.name)
+          : buildCorrodeAction(actorName, enemy.name),
+        note: targetNullCorrode
+          ? '(防腐)'
+          : `(腐食:相手の攻撃倍率が${formatMultiplierAsFraction(multiplier)})`,
         noteTone: 'muted',
         hideInitiativeLabel: true,
       });
+      if (!targetNullCorrode) {
+        enemyOffenseAmplifierMultiplier *= multiplier;
+      }
     }
 
     const lifeDrainLevel = getAbilityLevel(actorStats, 'life_drain');
     if (lifeDrainLevel > 0 && result.damage > 0) {
       const drainMultiplier = getLifeDrainMultiplier(lifeDrainLevel);
-      const healAmount = healParty(Math.floor(result.damage * drainMultiplier));
+      const targetNullLifeDrain = enemyHasNullLifeDrain(enemy);
+      const healAmount = targetNullLifeDrain ? 0 : healParty(Math.floor(result.damage * drainMultiplier));
       log.push({
         phase: 'close',
         initiativeRoll,
@@ -2826,69 +2888,105 @@ export function executeBattle(
         effectSourceName: actorName,
         effectTargetName: enemy.name,
         effectHealAmount: healAmount,
-        action: buildLifeDrainAction(actorName, enemy.name),
-        note: `(吸血: 与ダメージの${formatFractionPercentLabel(drainMultiplier)}回復: ✚${healAmount})`,
+        action: targetNullLifeDrain
+          ? buildNullLifeDrainAction(actorName, enemy.name)
+          : buildLifeDrainAction(actorName, enemy.name),
+        note: targetNullLifeDrain
+          ? '(吸血無効)'
+          : `(吸血: 与ダメージの${formatFractionPercentLabel(drainMultiplier)}回復: ✚${healAmount})`,
         noteTone: 'muted',
       });
     }
 
     const deathTouchLevel = getAbilityLevel(actorStats, 'death_touch');
-    if (deathTouchLevel > 0 && enemyHp > 0 && Math.random() < getDeathTouchChance(deathTouchLevel, result.hits)) {
-      enemyDamageTakenInBattle += enemyHp;
-      enemyHp = 0;
-      log.push({
-        phase: 'close',
-        initiativeRoll,
-        actor: 'triggered',
-        characterId: actorStats.characterId,
-        action: buildDeathTouchAction(actorName, enemy.name),
-        note: formatDeathTouchProbabilityNote(deathTouchLevel, result.hits),
-        noteTone: 'muted',
-      });
-      triggerEnemyDefeatRecovery('close', initiativeRoll);
-    }
-
-    const burnLevel = getEnemyAbilityLevel(enemy, 'burn');
-    if (burnLevel > 0) {
-      const reflectedDamage = Math.floor(
-        partyStats.hp
-        * result.hits
-        * (getBurnPercent(burnLevel) / 100)
-        * (actorStats.elementalDefenseMultipliers.fire ?? 1.0),
-      );
-      if (reflectedDamage > 0) {
-        applyPartyDamage(reflectedDamage);
+    if (deathTouchLevel > 0 && enemyHp > 0) {
+      const targetNullDeathTouch = enemyHasNullDeathTouch(enemy);
+      if (targetNullDeathTouch) {
         log.push({
           phase: 'close',
           initiativeRoll,
           actor: 'triggered',
           characterId: actorStats.characterId,
-          action: buildBurnAction(actorName),
-          damage: reflectedDamage,
-          damageTarget: 'party',
-          note: '(火傷)',
+          action: buildNullDeathTouchAction(actorName, enemy.name),
+          note: '(即死無効)',
+          noteTone: 'muted',
+        });
+      } else if (Math.random() < getDeathTouchChance(deathTouchLevel, result.hits)) {
+        enemyDamageTakenInBattle += enemyHp;
+        enemyHp = 0;
+        log.push({
+          phase: 'close',
+          initiativeRoll,
+          actor: 'triggered',
+          characterId: actorStats.characterId,
+          action: buildDeathTouchAction(actorName, enemy.name),
+          note: formatDeathTouchProbabilityNote(deathTouchLevel, result.hits),
+          noteTone: 'muted',
+        });
+        triggerEnemyDefeatRecovery('close', initiativeRoll);
+      }
+    }
+
+    const burnLevel = getEnemyAbilityLevel(enemy, 'burn');
+    if (burnLevel > 0) {
+      const actorNullBurn = hasNullBurn(actorStats);
+      const reflectedDamage = actorNullBurn ? 0 : Math.floor(
+        partyStats.hp
+        * result.hits
+        * (getBurnPercent(burnLevel) / 100)
+        * (actorStats.elementalDefenseMultipliers.fire ?? 1.0),
+      );
+      if (reflectedDamage > 0 || actorNullBurn) {
+        if (reflectedDamage > 0) {
+          applyPartyDamage(reflectedDamage);
+        }
+        log.push({
+          phase: 'close',
+          initiativeRoll,
+          actor: 'triggered',
+          characterId: actorStats.characterId,
+          action: actorNullBurn ? buildNullBurnAction(enemy.name, actorName) : buildBurnAction(actorName),
+          damage: reflectedDamage > 0 ? reflectedDamage : undefined,
+          damageTarget: reflectedDamage > 0 ? 'party' : undefined,
+          note: actorNullBurn ? '(火傷無効)' : '(火傷)',
           noteTone: 'muted',
           hideInitiativeLabel: true,
-          elementalOffense: 'fire',
+          elementalOffense: reflectedDamage > 0 ? 'fire' : undefined,
         });
 
-        triggerPartyDefeatRecovery(actorStats, 'close');
+        if (reflectedDamage > 0) {
+          triggerPartyDefeatRecovery(actorStats, 'close');
+        }
       }
     }
 
     const bindLevel = getAbilityLevel(actorStats, 'bind');
-    if (bindLevel > 0 && enemyHp > 0 && Math.random() < getBindChance(bindLevel, result.hits)) {
-      enemyIncapacitated = true;
-      log.push({
-        phase: 'close',
-        initiativeRoll,
-        actor: 'triggered',
-        characterId: actorStats.characterId,
-        action: buildBindAction(actorName, enemy.name),
-        note: '(拘束:行動不能)',
-        noteTone: 'muted',
-        hideInitiativeLabel: true,
-      });
+    if (bindLevel > 0 && enemyHp > 0) {
+      const targetNullBind = enemyHasNullBind(enemy);
+      if (targetNullBind) {
+        log.push({
+          phase: 'close',
+          initiativeRoll,
+          actor: 'triggered',
+          characterId: actorStats.characterId,
+          action: buildNullBindAction(actorName, enemy.name),
+          note: '(拘束無効)',
+          noteTone: 'muted',
+          hideInitiativeLabel: true,
+        });
+      } else if (Math.random() < getBindChance(bindLevel, result.hits)) {
+        enemyIncapacitated = true;
+        log.push({
+          phase: 'close',
+          initiativeRoll,
+          actor: 'triggered',
+          characterId: actorStats.characterId,
+          action: buildBindAction(actorName, enemy.name),
+          note: '(拘束:行動不能)',
+          noteTone: 'muted',
+          hideInitiativeLabel: true,
+        });
+      }
     }
   };
 
@@ -2903,26 +3001,34 @@ export function executeBattle(
 
     const enemyCorrodeLevel = getEnemyAbilityLevel(enemy, 'corrode');
     if (enemyCorrodeLevel > 0 && appliedHits >= 3) {
+      const targetNullCorrode = hasNullCorrode(targetStats);
       const multiplier = getCorrodeMultiplier(enemyCorrodeLevel);
-      characterOffenseAmplifierMultiplierById.set(
-        targetStats.characterId,
-        resolveCharacterOffenseAmplifierMultiplier(targetStats.characterId) * multiplier,
-      );
       log.push({
         phase: 'close',
         initiativeRoll,
         actor: 'triggered',
-        action: buildCorrodeAction(enemy.name, targetName),
-        note: `(腐食:相手の攻撃倍率が${formatMultiplierAsFraction(multiplier)})`,
+        action: targetNullCorrode
+          ? buildNullCorrodeAction(enemy.name, targetName)
+          : buildCorrodeAction(enemy.name, targetName),
+        note: targetNullCorrode
+          ? '(防腐)'
+          : `(腐食:相手の攻撃倍率が${formatMultiplierAsFraction(multiplier)})`,
         noteTone: 'muted',
         hideInitiativeLabel: true,
       });
+      if (!targetNullCorrode) {
+        characterOffenseAmplifierMultiplierById.set(
+          targetStats.characterId,
+          resolveCharacterOffenseAmplifierMultiplier(targetStats.characterId) * multiplier,
+        );
+      }
     }
 
     const enemyLifeDrainLevel = getEnemyAbilityLevel(enemy, 'life_drain');
     if (enemyLifeDrainLevel > 0 && appliedDamage > 0) {
       const drainMultiplier = getLifeDrainMultiplier(enemyLifeDrainLevel);
-      const healAmount = healEnemy(Math.floor(appliedDamage * drainMultiplier));
+      const targetNullLifeDrain = hasNullLifeDrain(targetStats);
+      const healAmount = targetNullLifeDrain ? 0 : healEnemy(Math.floor(appliedDamage * drainMultiplier));
       log.push({
         phase: 'close',
         initiativeRoll,
@@ -2931,67 +3037,102 @@ export function executeBattle(
         effectSourceName: enemy.name,
         effectTargetName: targetName,
         effectHealAmount: healAmount,
-        action: buildLifeDrainAction(enemy.name, targetName),
-        note: `(吸血: 与ダメージの${formatFractionPercentLabel(drainMultiplier)}回復: ✚${healAmount})`,
+        action: targetNullLifeDrain
+          ? buildNullLifeDrainAction(enemy.name, targetName)
+          : buildLifeDrainAction(enemy.name, targetName),
+        note: targetNullLifeDrain
+          ? '(吸血無効)'
+          : `(吸血: 与ダメージの${formatFractionPercentLabel(drainMultiplier)}回復: ✚${healAmount})`,
         noteTone: 'muted',
       });
     }
 
     const enemyDeathTouchLevel = getEnemyAbilityLevel(enemy, 'death_touch');
-    if (enemyDeathTouchLevel > 0 && partyHp > 0 && Math.random() < getDeathTouchChance(enemyDeathTouchLevel, appliedHits)) {
-      partyDamageTakenInBattle += partyHp;
-      partyHp = 0;
-      log.push({
-        phase: 'close',
-        initiativeRoll,
-        actor: 'triggered',
-        action: buildDeathTouchAction(enemy.name, targetName),
-        note: formatDeathTouchProbabilityNote(enemyDeathTouchLevel, appliedHits),
-        noteTone: 'muted',
-      });
-      triggerPartyDefeatRecovery(targetStats, 'close', initiativeRoll);
+    if (enemyDeathTouchLevel > 0 && partyHp > 0) {
+      const targetNullDeathTouch = hasNullDeathTouch(targetStats);
+      if (targetNullDeathTouch) {
+        log.push({
+          phase: 'close',
+          initiativeRoll,
+          actor: 'triggered',
+          action: buildNullDeathTouchAction(enemy.name, targetName),
+          note: '(即死無効)',
+          noteTone: 'muted',
+        });
+      } else if (Math.random() < getDeathTouchChance(enemyDeathTouchLevel, appliedHits)) {
+        partyDamageTakenInBattle += partyHp;
+        partyHp = 0;
+        log.push({
+          phase: 'close',
+          initiativeRoll,
+          actor: 'triggered',
+          action: buildDeathTouchAction(enemy.name, targetName),
+          note: formatDeathTouchProbabilityNote(enemyDeathTouchLevel, appliedHits),
+          noteTone: 'muted',
+        });
+        triggerPartyDefeatRecovery(targetStats, 'close', initiativeRoll);
+      }
     }
 
     const burnLevel = getAbilityLevel(targetStats, 'burn');
     if (burnLevel > 0 && enemyHp > 0) {
-      const reflectedDamage = Math.floor(
+      const actorNullBurn = enemyHasNullBurn(enemy);
+      const reflectedDamage = actorNullBurn ? 0 : Math.floor(
         enemy.hp
         * appliedHits
         * (getBurnPercent(burnLevel) / 100)
         * (enemy.elementalResistance.fire ?? 1.0),
       );
-      if (reflectedDamage > 0) {
-        applyEnemyDamage(reflectedDamage);
+      if (reflectedDamage > 0 || actorNullBurn) {
+        if (reflectedDamage > 0) {
+          applyEnemyDamage(reflectedDamage);
+        }
         log.push({
           phase: 'close',
           initiativeRoll,
           actor: 'triggered',
           characterId: targetStats.characterId,
-          action: buildBurnAction(enemy.name),
-          damage: reflectedDamage,
-          damageTarget: 'enemy',
-          note: '(火傷)',
+          action: actorNullBurn ? buildNullBurnAction(targetName, enemy.name) : buildBurnAction(enemy.name),
+          damage: reflectedDamage > 0 ? reflectedDamage : undefined,
+          damageTarget: reflectedDamage > 0 ? 'enemy' : undefined,
+          note: actorNullBurn ? '(火傷無効)' : '(火傷)',
           noteTone: 'muted',
           hideInitiativeLabel: true,
-          elementalOffense: 'fire',
+          elementalOffense: reflectedDamage > 0 ? 'fire' : undefined,
         });
-        triggerEnemyDefeatRecovery('close', initiativeRoll);
+        if (reflectedDamage > 0) {
+          triggerEnemyDefeatRecovery('close', initiativeRoll);
+        }
       }
     }
 
     const enemyBindLevel = getEnemyAbilityLevel(enemy, 'bind');
-    if (enemyBindLevel > 0 && partyHp > 0 && Math.random() < getBindChance(enemyBindLevel, appliedHits)) {
-      incapacitatedCharacterIds.add(targetStats.characterId);
-      log.push({
-        phase: 'close',
-        initiativeRoll,
-        actor: 'triggered',
-        characterId: targetStats.characterId,
-        action: buildBindAction(enemy.name, targetName),
-        note: '(拘束:行動不能)',
-        noteTone: 'muted',
-        hideInitiativeLabel: true,
-      });
+    if (enemyBindLevel > 0 && partyHp > 0) {
+      const targetNullBind = hasNullBind(targetStats);
+      if (targetNullBind) {
+        log.push({
+          phase: 'close',
+          initiativeRoll,
+          actor: 'triggered',
+          characterId: targetStats.characterId,
+          action: buildNullBindAction(enemy.name, targetName),
+          note: '(拘束無効)',
+          noteTone: 'muted',
+          hideInitiativeLabel: true,
+        });
+      } else if (Math.random() < getBindChance(enemyBindLevel, appliedHits)) {
+        incapacitatedCharacterIds.add(targetStats.characterId);
+        log.push({
+          phase: 'close',
+          initiativeRoll,
+          actor: 'triggered',
+          characterId: targetStats.characterId,
+          action: buildBindAction(enemy.name, targetName),
+          note: '(拘束:行動不能)',
+          noteTone: 'muted',
+          hideInitiativeLabel: true,
+        });
+      }
     }
   };
 
@@ -4458,13 +4599,17 @@ export function executeBattle(
               && consumedReanimateCharacterIds.has(charId)
               && partyHp > 0
             ) {
-              partyHp = 0;
               log.push({
                 phase,
                 initiativeRoll: turn.roll,
                 actor: 'enemy',
-                action: `${buildRequiemAction(enemy.name, targetName)} (鎮魂歌)`,
+                action: hasNullRequiem(attack.charStats)
+                  ? `${buildNullRequiemAction(enemy.name, targetName)} (鎮魂無効)`
+                  : `${buildRequiemAction(enemy.name, targetName)} (鎮魂歌)`,
               });
+              if (!hasNullRequiem(attack.charStats)) {
+                partyHp = 0;
+              }
             }
 
             const enemyAttackRageBonusPercent = toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp));
@@ -5296,14 +5441,18 @@ export function executeBattle(
           && consumedEnemyReanimate
           && enemyHp > 0
         ) {
-          enemyHp = 0;
           log.push({
             phase,
             initiativeRoll: turn.roll,
             actor: 'character',
             characterId: cs.characterId,
-            action: `${buildRequiemAction(char.name, enemy.name)} (鎮魂歌)`,
+            action: enemyHasNullRequiem(enemy)
+              ? `${buildNullRequiemAction(char.name, enemy.name)} (鎮魂無効)`
+              : `${buildRequiemAction(char.name, enemy.name)} (鎮魂歌)`,
           });
+          if (!enemyHasNullRequiem(enemy)) {
+            enemyHp = 0;
+          }
         }
 
         if (!isAntagonism && enemyHp > 0 && (phase === 'long' || phase === 'close')) {
