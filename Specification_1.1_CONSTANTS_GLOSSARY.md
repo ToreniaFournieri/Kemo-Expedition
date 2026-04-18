@@ -96,6 +96,7 @@
 | `a.unforgettable` | 不忘 | アビリティは消して忘れることがなくなる(忘却無効) | - |
 | `a.null-shock` | 感電予防 | 感電しなくなる | - |
 | `a.null-corrode` | 防腐 | 腐食しなくなる | - |
+| `a.null-life-drain` | 吸血無効 | 吸血されることがなくなる |
 | `a.null-death-touch` | 即死無効 | 接死が無効化する | - |
 | `a.null-burn` | 火傷無効 | 火傷を負わなくなる | - |
 | `a.null-bind` | 拘束無効 | 拘束を速やかに解くことができる | - |
