@@ -97,7 +97,7 @@
 | `firmament` | 天穹の系譜 | 穹 | 狩猟 | `c.bolt_x1.2`, `c.shield_x1.2` | `true` |
 | `frozen_forest` | 凍森の系譜 | 凍 | 狩猟 | `c.archery_x1.2`, `c.robe_x1.2`, `c.ice-defense-multiplier_x4/5` | `true` |
 | `utopia` | 桃源の系譜 | 桃 | 学識 | `c.wand_x1.2`, `c.bolt_x1.2` | `true` |
-| `machina` | 機骸の系譜 | 機 | 学識 | `c.grimoire_x1.2`, `c.gauntlet_x1.2` | `true` |
+| `machina` | 機骸の系譜 | 機 | 学識 | `a.null-shock`, `c.grimoire_x1.2`, `c.gauntlet_x1.2` | `true` |
 | `adaptation` | 適応の系譜 | 適 | 学識 | `c.catalyst_x1.2`, `c.archery_x1.2`, `c.thunder-defense-multiplier_x3/4` | `true` |
 | `fragment` | 断章の系譜 | 断 | 生存 | `c.armor_x1.2`, `c.wand_x1.2` | `true` |
 | `windcross` | 風渡の系譜 | 風 | 生存 | `c.robe_x1.2`, `c.katana_x1.2` | `true` |
