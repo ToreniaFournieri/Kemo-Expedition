@@ -1993,19 +1993,20 @@ function formatBonuses(bonuses: Bonus[], options?: { defenseMultiplierStyle?: 'r
   const parts: string[] = [];
   const percentFormatter = new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 1, minimumFractionDigits: 0 });
   const formatRatePercent = (value: number): string => percentFormatter.format(Math.round(value * 1000) / 10);
+  const formatSigned = (value: number): string => `${value >= 0 ? '+' : ''}${value}`;
   for (const b of bonuses) {
     if (b.type.endsWith('_multiplier') && MULTIPLIER_LABELS[b.type]) {
       parts.push(`${MULTIPLIER_LABELS[b.type]}x${b.value}`);
     } else if (b.type === 'equip_slot') {
       parts.push(`装備+${b.value}`);
     } else if (b.type === 'vitality') {
-      parts.push(`体+${b.value}`);
+      parts.push(`体${formatSigned(b.value)}`);
     } else if (b.type === 'strength') {
-      parts.push(`力+${b.value}`);
+      parts.push(`力${formatSigned(b.value)}`);
     } else if (b.type === 'intelligence') {
-      parts.push(`知+${b.value}`);
+      parts.push(`知${formatSigned(b.value)}`);
     } else if (b.type === 'mind') {
-      parts.push(`精+${b.value}`);
+      parts.push(`精${formatSigned(b.value)}`);
     } else if (b.type === 'grit' || b.type === 'equip_melee') {
       parts.push('近接装備');
     } else if (b.type === 'caster' || b.type === 'equip_magic') {

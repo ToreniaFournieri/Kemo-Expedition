@@ -135,6 +135,7 @@ export const RACE_UNLOCK_ABILITY_IDS: Partial<Record<RaceId, AbilityId>> = {
   mustelid: 'peddler',
   leporian: 'magical_counter',
   cervin: 'prophecy',
+  procyonian: 'resonance',
 };
 
 export const RACE_UNLOCK_BONUS_BY_RACE: Partial<Record<RaceId, BonusType>> = {
