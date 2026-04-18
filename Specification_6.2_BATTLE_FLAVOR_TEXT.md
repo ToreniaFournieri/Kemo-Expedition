@@ -652,3 +652,96 @@
 | {target}は電気を放ったが{actor}は動きを止められなかった |
 
 
+- `log.null-corrode`
+
+| flavor text |
+|-|
+| {actor}の腐食は{target}に効かなかった |
+| {actor}は{target}を腐食させようとしたが無効化された |
+| {target}は{actor}の腐食を退けた |
+| {actor}の腐食効果は{target}に届かない |
+| {target}は{actor}の腐食を受け付けない |
+| {actor}の腐食は{target}に阻まれた |
+| {target}は{actor}の腐食から身を守った |
+| {actor}の腐食は{target}に通用しない |
+| {target}は{actor}の腐食を無効化した |
+| {actor}の腐食は{target}には影響しない |
+
+- `log.null-life-drain`
+
+| flavor text |
+|-|
+| {actor}は{target}から生命を奪えなかった |
+| {target}は{actor}の吸血を拒んだ |
+| {actor}の吸血は{target}に通じない |
+| {target}は{actor}に生命力を与えなかった |
+| {actor}の吸血は{target}に遮られた |
+| {target}は{actor}の吸血を無効化した |
+| {actor}は{target}から回復できなかった |
+| {target}は{actor}の吸血を受け付けない |
+| {actor}の吸血は{target}に届かなかった |
+| {target}は{actor}の吸血を防いだ |
+
+- `log.null-death-touch`
+
+| flavor text |
+|-|
+| {actor}の接死は{target}に効かなかった |
+| {target}は{actor}の即死効果を退けた |
+| {actor}の一撃は{target}を倒せない |
+| {target}は{actor}の死の力に耐えた |
+| {actor}の接死は{target}に無効化された |
+| {target}は{actor}の致命の力を拒んだ |
+| {actor}の死の宣告は{target}に届かない |
+| {target}は{actor}の即死効果を無視した |
+| {actor}の接死は{target}を捉えられない |
+| {target}は{actor}の死の一撃を免れた |
+
+- `log.null-burn`
+
+| flavor text |
+|-|
+| {actor}の炎は{target}を焼けなかった |
+| {target}は{actor}の火傷を防いだ |
+| {actor}の熱は{target}に通じない |
+| {target}は{actor}の炎を受け流した |
+| {actor}の火傷は{target}に効かない |
+| {target}は{actor}の炎に耐えた |
+| {actor}の炎は{target}に阻まれた |
+| {target}は{actor}の火傷を無効化した |
+| {actor}の熱は{target}に影響しない |
+| {target}は{actor}の炎から身を守った |
+
+- `log.null-bind`
+
+| flavor text |
+|-|
+| {actor}は{target}を拘束できなかった |
+| {target}は{actor}の拘束を振り払った |
+| {actor}の拘束は{target}に通じない |
+| {target}は{actor}の束縛から逃れた |
+| {actor}の拘束は{target}に無効化された |
+| {target}は{actor}の束縛を拒んだ |
+| {actor}は{target}の動きを止められない |
+| {target}は{actor}の拘束を打ち破った |
+| {actor}の拘束は{target}に効かなかった |
+| {target}は{actor}の束縛を受け付けない |
+
+
+- `log.null-requiem`
+
+| flavor text |
+|-|
+| {actor}の鎮魂歌は{target}に届かなかった |
+| {target}は{actor}の鎮魂を拒んだ |
+| {actor}の歌は{target}を導けない |
+| {target}は{actor}の鎮魂歌に抗った |
+| {actor}の鎮魂は{target}に無効化された |
+| {target}は{actor}の導きを受け入れない |
+| {actor}の鎮魂歌は{target}に響かない |
+| {target}は{actor}の鎮魂を退けた |
+| {actor}の歌は{target}を成仏させられない |
+| {target}は{actor}の鎮魂から逃れた |
+
+
+
