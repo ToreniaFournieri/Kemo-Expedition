@@ -3,6 +3,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.0 | 455 | 2026/4/18 | Align runtime lineage/party initial setup to Spec 2.1.4.2: add `a.resonance` to `incarnation`, and update PT3/PT5/PT6 members (order, classes, lineages, predispositions, unique placements) to the requested initial conditions. |
 | 0.6.0 | 454 | 2026/4/18 | Align runtime PT4 initial member setup to Spec 2.1.4.2: update classes, lineages, predispositions, order, and unique flags under Goddess of Fertility. |
 | 0.6.0 | 453 | 2026/4/18 | Update runtime PT1 initial member setup to match requested condition: ケモ sub class `class.samurai` with initial equipment `1101`, `1105`, `1106` under Goddess of Restoration. |
 | 0.6.0 | 452 | 2026/4/18 | Implement runtime Debug time speed `x10000 MAX` option in the Divine Bureau debug pane and wire `Debug Scaling` Step multiplier `×0.0001` (0.0015 seconds). |
