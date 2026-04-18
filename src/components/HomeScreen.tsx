@@ -1768,6 +1768,7 @@ const ABILITY_HELP_TEXTS: Record<string, string> = {
   'deflection:1': '敵の遠距離攻撃の命中率を 10%低下させる。',
   'deflection:2': '敵の遠距離攻撃の命中率を 15%低下させる。',
   first_strike: '行動が速くなる。レベルが高いほど先行しやすい。',
+  equation_breaker: '機械理論・静寂領域の地形干渉を無効化する。',
   null_counter: '反撃を無効化する。レベルが高いほど有効回数が増える。',
   resurrect: '致命ダメージを1回だけ耐える。',
   rage: '受けたダメージに応じて物理/魔法攻撃倍率が増大する。',
