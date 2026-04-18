@@ -42,6 +42,7 @@ import {
   buildResurrectAction,
   buildSelfDestructAction,
   buildShockAction,
+  buildUnforgettableAction,
   buildSoulReapAction,
   buildUnstableCoreAction,
   formatDecomposeNote,
@@ -3358,9 +3359,20 @@ export function executeBattle(
         const targetIndex = Math.floor(Math.random() * characterStats.length);
         const target = characterStats[targetIndex];
         const targetName = party.characters.find((char) => char.id === target.characterId)?.name ?? '味方';
+        const targetHasUnforgettable = getAbilityLevel(target, 'unforgettable') >= 1;
+        if (targetHasUnforgettable) {
+          log.push({
+            phase: 'start',
+            actor: 'effect',
+            characterId: target.characterId,
+            action: buildUnforgettableAction(enemy.name, targetName),
+            note: '(忘却無効)',
+            noteTone: 'muted',
+          });
+        }
         const targetValidAbilities = target.abilities.filter((ability) => ability.level > 0);
 
-        if (targetValidAbilities.length > 0) {
+        if (!targetHasUnforgettable && targetValidAbilities.length > 0) {
           const selectedTargetAbility = targetValidAbilities[Math.floor(Math.random() * targetValidAbilities.length)];
           const selectedTargetAbilityIndex = target.abilities.findIndex(
             (ability) => ability.id === selectedTargetAbility.id && ability.level === selectedTargetAbility.level,
@@ -3379,6 +3391,18 @@ export function executeBattle(
       }
 
       for (const owner of oblivionOwners.sort((a, b) => a.stats.row - b.stats.row)) {
+        const enemyHasUnforgettable = getEnemyAbilityLevel(enemy, 'unforgettable') >= 1;
+        if (enemyHasUnforgettable) {
+          log.push({
+            phase: 'start',
+            actor: 'effect',
+            action: buildUnforgettableAction(owner.name, enemy.name),
+            note: '(忘却無効)',
+            noteTone: 'muted',
+          });
+          continue;
+        }
+
         const enemyValidAbilities = enemy.abilities.filter((ability) => ability.level > 0);
         if (enemyValidAbilities.length === 0) continue;
 
