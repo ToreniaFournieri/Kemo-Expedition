@@ -319,6 +319,19 @@ const NULL_ANTAGONISM_LOGS = [
   '{actor}は敵対の影響を受けない',
 ] as const;
 
+const EQUATION_BREAKER_LOGS = [
+  '{actor}は戦場の法則を読み解いた',
+  '{actor}は既存の理論を否定した',
+  '{actor}は演算を上書きした',
+  '{actor}は式の前提を崩した',
+  '{actor}は論理の外側に立っている',
+  '{actor}は干渉を無効化した',
+  '{actor}は計算結果を覆した',
+  '{actor}は戦場の定義を書き換えた',
+  '{actor}は沈黙の制約を突破した',
+  '{actor}は理を越えて行動した',
+] as const;
+
 const decomposeDefenseValueFormatter = new Intl.NumberFormat('ja-JP');
 const battleNoteValueFormatter = new Intl.NumberFormat('ja-JP');
 
@@ -437,6 +450,11 @@ export function buildRequiemAction(actorName: string, targetName: string): strin
 // SpecRef: 6.2.2 | Terrain flavor text | log.null-antagonism
 export function buildNullAntagonismAction(actorName: string): string {
   return pickRandomEntry(NULL_ANTAGONISM_LOGS).replace(/\{actor\}/g, actorName);
+}
+
+// SpecRef: 6.2.2 | Terrain flavor text | log.equation-breaker
+export function buildEquationBreakerAction(actorName: string): string {
+  return pickRandomEntry(EQUATION_BREAKER_LOGS).replace(/\{actor\}/g, actorName);
 }
 
 export function getConfusionNoTargetLog(actorName: string): Pick<BattleLogEntry, 'action' | 'note'> {

@@ -30,6 +30,7 @@ import {
   buildCorrodeAction,
   buildDeathTouchAction,
   buildDecomposeAction,
+  buildEquationBreakerAction,
   buildFlyingAction,
   buildFreeAction,
   buildIncapacitatedAction,
@@ -1465,6 +1466,15 @@ function hasAbility(abilities: AbilityLike[], abilityId: AbilityId): boolean {
   return abilities.some(ability => ability.id === abilityId && ability.level > 0);
 }
 
+// SpecRef: 6.1.1.1 | START phase | terrain.silence-field
+function isActorAbilitySuppressedBySilenceField(
+  terrainEffect: TerrainEffectKey | null | undefined,
+  abilities: AbilityLike[],
+): boolean {
+  if (terrainEffect !== 'terrain.silence-field') return false;
+  return !hasAbility(abilities, 'equation_breaker');
+}
+
 function rollInitiative(
   firstStrikeLevel: number,
   options?: {
@@ -1475,11 +1485,12 @@ function rollInitiative(
     boostBonus?: number;
     frostbitePenalty?: number;
     actorHasTrueSight?: boolean;
+    actorHasEquationBreaker?: boolean;
   },
 ): number {
   // SpecRef: 6.1.1.2 | LONG, MID, CLOSE phase | Speed & Turn Order (Rolling Dice Rule)
   const isMachineLogic = options?.terrainEffect === 'terrain.machine-logic';
-  const firstStrikeEnabled = !isMachineLogic
+  const firstStrikeEnabled = (!isMachineLogic || (options?.actorHasEquationBreaker ?? false))
     && (options?.terrainEffect !== 'terrain.ash-haze' || (options?.actorHasTrueSight ?? false));
   const effectiveFirstStrikeLevel = firstStrikeEnabled ? firstStrikeLevel : 0;
   const diceCount = effectiveFirstStrikeLevel >= 3 ? 4 : effectiveFirstStrikeLevel >= 2 ? 3 : effectiveFirstStrikeLevel === 1 ? 2 : 1;
@@ -1708,13 +1719,19 @@ function createMagicSealQueue(
   party: Party,
   characterStats: ComputedCharacterStats[],
   enemy: EnemyDef,
+  terrainEffect?: TerrainEffectKey | null,
 ): string[] {
   const queue: string[] = [];
 
   for (const stats of characterStats) {
+    if (isActorAbilitySuppressedBySilenceField(terrainEffect, stats.abilities)) continue;
     if (getAbilityLevel(stats, 'magic_seal') <= 0) continue;
     const ownerName = party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方';
     queue.push(ownerName);
+  }
+
+  if (isActorAbilitySuppressedBySilenceField(terrainEffect, enemy.abilities)) {
+    return queue;
   }
 
   if (getEnemyAbilityLevel(enemy, 'magic_seal') > 0) {
@@ -2248,7 +2265,6 @@ export function executeBattle(
     });
   }
 
-  let shouldSkipActorStartAbilities = false;
   if (environment.terrainEffect === 'terrain.deletion') {
     const terrainDeletionTargets: Array<
       { kind: 'enemy'; name: string; abilities: AbilityLike[] }
@@ -2302,7 +2318,27 @@ export function executeBattle(
       adjustEnemyAbilityLevel(enemy, abilityId, delta);
     }
   } else if (environment.terrainEffect === 'terrain.silence-field') {
-    shouldSkipActorStartAbilities = true;
+    const equationBreakerOwners = [
+      ...characterStats
+        .filter((stats) => hasAbility(stats.abilities, 'equation_breaker'))
+        .map((stats) => ({
+          name: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+          characterId: stats.characterId,
+        })),
+      ...(hasAbility(enemy.abilities, 'equation_breaker')
+        ? [{ name: enemy.name, characterId: undefined as number | undefined }]
+        : []),
+    ];
+
+    for (const owner of equationBreakerOwners) {
+      log.push({
+        phase: 'start',
+        actor: 'effect',
+        characterId: owner.characterId,
+        action: buildEquationBreakerAction(owner.name),
+        note: '(式破り:静寂領域無効化)',
+      });
+    }
   }
 
   // SpecRef: 6.1.1.1 | START phase | Deity effects
@@ -2354,21 +2390,24 @@ export function executeBattle(
     };
   }
 
+  const enemyActorAbilitiesSuppressed = isActorAbilitySuppressedBySilenceField(environment.terrainEffect, enemy.abilities);
   const oblivionOwners = characterStats
+    .filter((stats) => !isActorAbilitySuppressedBySilenceField(environment.terrainEffect, stats.abilities))
     .filter((stats) => getAbilityLevel(stats, 'oblivion') >= 1)
     .map((stats) => ({
       name: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
       stats,
     }));
-  const enemyHasOblivion = getEnemyAbilityLevel(enemy, 'oblivion') >= 1;
+  const enemyHasOblivion = !enemyActorAbilitiesSuppressed && getEnemyAbilityLevel(enemy, 'oblivion') >= 1;
 
   const mimicOwners = characterStats
+    .filter((stats) => !isActorAbilitySuppressedBySilenceField(environment.terrainEffect, stats.abilities))
     .filter((stats) => getAbilityLevel(stats, 'mimic') >= 1)
     .map((stats) => ({
       name: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
       stats,
     }));
-  const enemyHasMimic = getEnemyAbilityLevel(enemy, 'mimic') >= 1;
+  const enemyHasMimic = !enemyActorAbilitiesSuppressed && getEnemyAbilityLevel(enemy, 'mimic') >= 1;
 
   const remainingNullCounterByCharacterId = createNullCounterPool(characterStats);
   const consumedResurrectCharacterIds = new Set<number>();
@@ -2379,7 +2418,7 @@ export function executeBattle(
   let consumedPartyIllusion = false;
   let consumedEnemyShock = false;
   const consumedCharacterShockIds = new Set<number>();
-  const activeMagicSealQueue = createMagicSealQueue(party, characterStats, enemy);
+  const activeMagicSealQueue = createMagicSealQueue(party, characterStats, enemy, environment.terrainEffect);
   let pendingEnemyHowlEffect: PendingHowlEffect | null = null;
   let pendingPartyHowlEffect: PendingHowlEffect | null = null;
   let enemyFlyingNoAMultiplier = 1.0;
@@ -3000,6 +3039,7 @@ export function executeBattle(
 
     for (const char of party.characters) {
       const stats = characterStats.find((candidate) => candidate.characterId === char.id);
+      if (!stats || isActorAbilitySuppressedBySilenceField(environment.terrainEffect, stats.abilities)) continue;
       const level = stats?.abilities
         .filter((ability) => ability.id === abilityId)
         .reduce((maxLevel, ability) => Math.max(maxLevel, ability.level), 0) ?? 0;
@@ -3030,6 +3070,7 @@ export function executeBattle(
 
     for (const char of party.characters) {
       const stats = characterStats.find((candidate) => candidate.characterId === char.id);
+      if (!stats || isActorAbilitySuppressedBySilenceField(environment.terrainEffect, stats.abilities)) continue;
       const level = stats?.abilities
         .filter((ability) => ability.id === abilityId)
         .reduce((maxLevel, ability) => Math.max(maxLevel, ability.level), 0) ?? 0;
@@ -3280,8 +3321,11 @@ export function executeBattle(
   const hasFertilityInitiativeBonus = getDeityKey(party.deity.name) === 'Goddess of Fertility'
     && environment.terrainEffect !== 'terrain.gehenna';
 
-  const partyHasFrostbite = characterStats.some(cs => hasAbility(cs.abilities, 'frostbite'));
-  const enemyHasFrostbite = hasAbility(enemy.abilities, 'frostbite');
+  const partyHasFrostbite = characterStats.some((cs) => (
+    !isActorAbilitySuppressedBySilenceField(environment.terrainEffect, cs.abilities)
+    && hasAbility(cs.abilities, 'frostbite')
+  ));
+  const enemyHasFrostbite = !enemyActorAbilitiesSuppressed && hasAbility(enemy.abilities, 'frostbite');
 
   const pushFrostbiteLog = (ownerName: string): void => {
     log.push({
@@ -3293,11 +3337,13 @@ export function executeBattle(
   };
 
   const mutualOwners: Array<{ name: string; abilities: AbilityLike[] }> = [
-    ...party.characters.map((c) => ({
-      name: c.name,
-      abilities: characterStats.find((cs) => cs.characterId === c.id)?.abilities ?? [],
-    })),
-    { name: enemy.name, abilities: enemy.abilities },
+    ...party.characters
+      .map((c) => ({
+        name: c.name,
+        abilities: characterStats.find((cs) => cs.characterId === c.id)?.abilities ?? [],
+      }))
+      .filter((owner) => !isActorAbilitySuppressedBySilenceField(environment.terrainEffect, owner.abilities)),
+    ...(!enemyActorAbilitiesSuppressed ? [{ name: enemy.name, abilities: enemy.abilities }] : []),
   ];
   const startPhaseEffects: Array<{ abilityId: AbilityId; actionName: string; effectLabel: string; multipliersByLevel: Record<number, number> }> = [
     { abilityId: 'mutual_physical_amplify', actionName: '物理増幅', effectLabel: '双方物理ダメージ', multipliersByLevel: MUTUAL_PHYSICAL_AMPLIFY_MULTIPLIERS },
@@ -3307,10 +3353,6 @@ export function executeBattle(
   ];
 
   const resolveStartPhaseTriggerTiming = (timing: number): void => {
-    if (shouldSkipActorStartAbilities) {
-      return;
-    }
-
     if (timing === 9) {
       if (enemyHasOblivion && characterStats.length > 0) {
         const targetIndex = Math.floor(Math.random() * characterStats.length);
@@ -3456,6 +3498,7 @@ export function executeBattle(
         boostBonus: getHighestAbilityLevel(enemy.abilities, 'boost'),
         frostbitePenalty: partyHasFrostbite ? 1 : 0,
         actorHasTrueSight: hasAbility(enemy.abilities, 'true_sight'),
+        actorHasEquationBreaker: hasAbility(enemy.abilities, 'equation_breaker'),
       })
       : null;
     const characterInitiative = characterStats
@@ -3470,6 +3513,7 @@ export function executeBattle(
           boostBonus: getHighestAbilityLevel(cs.abilities, 'boost'),
           frostbitePenalty: enemyHasFrostbite ? 1 : 0,
           actorHasTrueSight: hasAbility(cs.abilities, 'true_sight'),
+          actorHasEquationBreaker: hasAbility(cs.abilities, 'equation_breaker'),
         }),
       }));
 

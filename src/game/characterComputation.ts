@@ -1040,6 +1040,7 @@ export function getAbilityDescription(id: AbilityId, level: number): string {
     melee_conversion: (l) => `遠距離攻撃力の${l >= 2 ? '40' : '30'}%と魔法攻撃力の${l >= 2 ? '40' : '30'}%を近距離攻撃力に加算する`,
     true_sight: () => '灰霞や霧の中でも視認できる(悪影響を受けなくなる)',
     output_stabilizer: () => '地形効果による攻撃回数の変動を受けなくなる',
+    equation_breaker: () => '理論武装する(機械理論、静寂領域の地形効果が無効になる)',
     focus: (l) => `命中ボーナスの効果が${l >= 2 ? '1.3' : '1.2'}倍になる`,
     prophecy: (l) => l >= 2
       ? '報酬抽選内容が見える、リセット出来るようになる'
