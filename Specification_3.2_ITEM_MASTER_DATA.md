@@ -384,11 +384,11 @@
 | 8 | U | none | `i.arrow`U | 伝承羽矢 |
 | 8 | U | none | `i.bolt`U | 神話閃ボルト |
 | 8 | U | none | `i.archery`U | 英雄王の弓 |
-| 8 | E | `Dragon` | `i.armor`EA | 竜脈の鎧 |
-| 8 | E | `Dragon` | `i.catalyst`EA | 竜脈の触媒 |
-| 8 | E | `Dragon` | `i.gauntlet`EA | 竜脈の手甲 |
-| 8 | E | `Dragon` | `i.grimoire`EA | 竜脈の秘本 |
-| 8 | E | `Dragon` | `i.robe`EA | 竜脈の法衣 |
+| 8 | E | `Voidspawn` | `i.armor`EA | 虚痕の鎧 |
+| 8 | E | `Voidspawn` | `i.catalyst`EA | 虚痕の触媒 |
+| 8 | E | `Voidspawn` | `i.gauntlet`EA | 虚痕の手甲 |
+| 8 | E | `Voidspawn` | `i.grimoire`EA | 虚痕の秘本 |
+| 8 | E | `Voidspawn` | `i.robe`EA | 虚痕の法衣 |
 | 8 | E | `Ghost` | `i.bolt`EB | 冥霊のボルト |
 | 8 | E | `Ghost` | `i.katana`EB | 冥霊の太刀 |
 | 8 | E | `Ghost` | `i.shield`EB | 冥霊の盾 |
