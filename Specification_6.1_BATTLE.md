@@ -389,12 +389,13 @@ If `a.*` with phase = START:
 **functions of NoA**
 - `f.NoA`
   - `f.NoA` = `f.NoA` x `f.terrain_NoA_amplifier`
-    - If `terrain.rough-waves` and (phase is CLOSE): 0.75
-    - If `terrain.heavy-wind` and (phase is LONG): 0.75
-    - If `terrain.burrow` and (phase is LONG): 0.50
-    - If `terrain.low-gravity`: 1.3
-    - If `terrain.gravity`: 0.7
-    - If `terrain.limestone-cave` and (phase is MID or CLOSE): 1.5
+    - If actor has `a.output-stabilizer`: 1.0
+    - Else if `terrain.rough-waves` and (phase is CLOSE): 0.75
+    - Else if `terrain.heavy-wind` and (phase is LONG): 0.75
+    - Else if `terrain.burrow` and (phase is LONG): 0.50
+    - Else if `terrain.low-gravity`: 1.3
+    - Else if `terrain.gravity`: 0.7
+    - Else if `terrain.limestone-cave` and (phase is MID or CLOSE): 1.5
 
 **functions of attack**
 - `f.resonance_amplifier`(actor: ,successful hit: n )
