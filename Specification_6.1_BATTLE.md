@@ -94,10 +94,13 @@ If `a.*` with phase = START:
   - `X = magical` for `MID`
   - `X = melee` for `CLOSE`
 - **Initiative roll**
-  - If `a.first-strike`3 and terrain not in {`terrain.ash-haze`, `terrain.machine-logic`}: roll **4d3** (4–12), cap at 9
-  - If `a.first-strike`2 and terrain not in {`terrain.ash-haze`, `terrain.machine-logic`}: roll **3d3** (3–9)
-  - If `a.first-strike`1 and terrain not in {`terrain.ash-haze`, `terrain.machine-logic`}: roll **2d3** (2–6)
-  - Otherwise: roll **1d3** (1–3)
+  - If actor has `a.first-strike`:
+      - If terrain = `terrain.machine-logic` : roll **1d3** (1–3)
+      - Else if terrain = `terrain.ash-haze` and actor does not have `a.true-sight`: roll **1d3** (1–3)
+      - Else if `a.first-strike`3: Roll **4d3**(4–12), cap at 9
+      - Else if `a.first-strike`2: Roll **3d3**(3–9)
+      - Else if `a.first-strike`1: Roll **2d3**(2–6)
+      - Otherwise: roll **1d3** (1–3)
 
 - **Modifications**
   - If party.`Goddess of Fertility` and terrain not in {`terrain.machine-logic`, `terrain.gehenna` }: +1 (cap at 9)
@@ -552,7 +555,7 @@ If `a.*` with phase = START:
     - If actor.`a.focus`1, actor.`f.c_accuracy+v` =  actor.`c.accuracy+v` x 1.2 (rounding up to the 3rd decimal ex. 0.003 x 1.2 = 0.0036 → 0.004)
     - If actor.`a.focus`2, actor.`f.c_accuracy+v` =  actor.`c.accuracy+v` x 1.3 (rounding up to the 3rd decimal)
   - **Terrain effect**
-    - If `terrain.fog` and (phase is LONG): actor.`f.c_accuracy+v` -= 25
+    - If `terrain.fog` and (actor does not have `a.true-sight`) and (phase is LONG): actor.`f.c_accuracy+v` -= 25
     - If `terrain.sunny-beach` and (phase is LONG): actor.`f.c_accuracy+v` += 20
   - decay_of_accuracy: clamp(0.86, 0.90 + actor.`f.c_accuracy+v` - opponent.`c.evasion+v`, 0.98)
   - baseChance = actor.d.accuracy_potency
