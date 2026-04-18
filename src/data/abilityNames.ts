@@ -86,6 +86,7 @@ export const ABILITY_BASE_NAMES: Record<AbilityId, string> = {
   equation_breaker: '式破り',
   unforgettable: '不忘',
   shock: '感電',
+  null_shock: '感電予防',
   corrode: '腐食',
   life_drain: '吸血',
   death_touch: '接死',

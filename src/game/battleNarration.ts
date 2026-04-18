@@ -176,6 +176,20 @@ const SHOCK_LOGS = [
   '{target} の感電により、{actor} の攻撃はそこで終わった！',
 ] as const;
 
+// SpecRef: 6.2.2 | Terrain flavor text | log.null-shock
+const NULL_SHOCK_LOGS = [
+  '{target}は帯電していたが、{actor}は意に介さず攻撃を続けた',
+  '{actor}は{target}の電撃を受け流し、動きを止めない',
+  '{actor}は痺れを無視して{target}に踏み込んだ',
+  '{actor}は{target}の感電をものともせず攻撃を継続した',
+  '{actor}の動きは{target}の電撃でも鈍らない',
+  '{actor}は{target}の衝撃を受けてもなお攻め続けた',
+  '{actor}は{target}の電流を耐え抜いた',
+  '{target}の雷撃に{actor}は一瞬の硬直すら見せない',
+  '{actor}は{target}の帯電状態を無効化した',
+  '{target}は電気を放ったが{actor}は動きを止められなかった',
+] as const;
+
 const FLYING_LOGS = [
   '{actor} は飛行している！',
   '{actor} は空へ舞い上がっている！',
@@ -406,6 +420,13 @@ export function buildFreeAction(actorName: string): string {
 
 export function buildShockAction(actorName: string, targetName: string): string {
   return pickRandomEntry(SHOCK_LOGS)
+    .replace(/\{actor\}/g, actorName)
+    .replace(/\{target\}/g, targetName);
+}
+
+// SpecRef: 6.2.2 | Terrain flavor text | log.null-shock
+export function buildNullShockAction(actorName: string, targetName: string): string {
+  return pickRandomEntry(NULL_SHOCK_LOGS)
     .replace(/\{actor\}/g, actorName)
     .replace(/\{target\}/g, targetName);
 }
