@@ -332,6 +332,20 @@ const EQUATION_BREAKER_LOGS = [
   '{actor}は理を越えて行動した',
 ] as const;
 
+// SpecRef: 6.2.2 | Terrain flavor text | log.unforgettable
+const UNFORGETTABLE_LOGS = [
+  '{actor}が記憶を消し去ろうとしたが{target}は抗った',
+  '{actor}の忘却は{target}に届かなかった',
+  '{actor}が呪詛を唱えた。{target}は記憶を手放さなかった',
+  '{target}は忘却の力を拒んだ。{actor}の顔はゆがんだ',
+  '{target}の意識は揺らがない。{actor}は困惑した',
+  '{actor}の干渉は{target}に阻まれた',
+  '{actor}の呪縛に対して{target}は自我を保っている',
+  '{target}の記憶は消えない。{actor}は息を切らした',
+  '{target}は忘却に屈しなかった。{actor}は記憶の操作を諦めた',
+  '{actor}の囁きにも{target}は屈することなく自分を保ち続けた',
+] as const;
+
 const decomposeDefenseValueFormatter = new Intl.NumberFormat('ja-JP');
 const battleNoteValueFormatter = new Intl.NumberFormat('ja-JP');
 
@@ -455,6 +469,13 @@ export function buildNullAntagonismAction(actorName: string): string {
 // SpecRef: 6.2.2 | Terrain flavor text | log.equation-breaker
 export function buildEquationBreakerAction(actorName: string): string {
   return pickRandomEntry(EQUATION_BREAKER_LOGS).replace(/\{actor\}/g, actorName);
+}
+
+// SpecRef: 6.2.2 | Terrain flavor text | log.unforgettable
+export function buildUnforgettableAction(actorName: string, targetName: string): string {
+  return pickRandomEntry(UNFORGETTABLE_LOGS)
+    .replace(/\{actor\}/g, actorName)
+    .replace(/\{target\}/g, targetName);
 }
 
 export function getConfusionNoTargetLog(actorName: string): Pick<BattleLogEntry, 'action' | 'note'> {

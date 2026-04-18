@@ -3,6 +3,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.0 | 466 | 2026/4/18 | Implement passive ability `a.unforgettable` in runtime/master data and apply `a.oblivion` immunity handling with `log.unforgettable` + `(忘却無効)`; align `incarnation` and all requested predisposition bonuses (including `Introspective`/`a.unforgettable`) to Spec 2.1 tables. |
 | 0.6.0 | 465 | 2026/4/18 | Update runtime predisposition `None` display values to Japanese `(なし)` and short `-` while keeping non-selectable/no-bonus behavior. |
 | 0.6.0 | 464 | 2026/4/18 | Implement runtime `None` predisposition (`selectable:false`, no bonuses) and update PT1–PT6 unique-character initial predispositions to `None` per Spec 2.1.4.2 initial conditions. |
 | 0.6.0 | 463 | 2026/4/18 | Align runtime `Devoted` predisposition bonuses to Spec 2.1: replace `c.growth_x1.1` with `a.first-aid`1 while keeping `c.shield_x1.1` and `c.fire-defense-multiplier_x4/5`. |
