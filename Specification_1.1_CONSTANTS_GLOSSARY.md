@@ -94,6 +94,12 @@
 | `a.output-stabilizer` | 攻撃安定化 | いつでも安定して攻撃を行う(地形効果による攻撃回数の変動を受けなくなる) | - |
 | `a.equation-breaker` | 式破り | 理論武装する(機械理論、静寂領域の地形効果が無効になる) | - |
 | `a.unforgettable` | 不忘 | アビリティは消して忘れることがなくなる(忘却無効) | - |
+| `a.null-shock` | 感電予防 | 感電しなくなる | - |
+| `a.null-corrode` | 防腐 | 腐食しなくなる | - |
+| `a.null-death-touch` | 即死無効 | 接死が無効化する | - |
+| `a.null-burn` | 火傷無効 | 火傷を負わなくなる | - |
+| `a.null-bind` | 拘束無効 | 拘束を速やかに解くことができる | - |
+
 
 - Expedition ability(遠征アビリティ):
 
