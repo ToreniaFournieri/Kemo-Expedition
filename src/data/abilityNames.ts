@@ -13,6 +13,8 @@ export const ABILITY_BASE_NAMES: Record<AbilityId, string> = {
   m_barrier: '魔法障壁',
   deflection: '矢払い',
   first_strike: '先制攻撃',
+  true_sight: '真の視界',
+  output_stabilizer: '攻撃安定化',
   tithe: '十分の一税',
   null_counter: '反撃無効化',
   seeker: '探究者',

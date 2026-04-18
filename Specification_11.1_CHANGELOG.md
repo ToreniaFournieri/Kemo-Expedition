@@ -3,6 +3,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.0 | 460 | 2026/4/18 | Implement passive abilities `a.true-sight` / `a.output-stabilizer`: add ability master labels/descriptions, wire predisposition bonuses (`Perceptive`/`Exacting`) to grant them per Spec 2.1, and apply battle runtime effects for initiative, fog LONG-phase accuracy penalty immunity, and terrain NoA-amplifier immunity. |
 | 0.6.0 | 459 | 2026/4/18 | Align runtime predisposition master data to Spec 2.1 table: update bonus mappings (including `a.null-antagonism` for `Amicable`) and add explicit `selectable` flags with edit-mode enforcement for non-selectable predispositions. |
 | 0.6.0 | 458 | 2026/4/18 | Implement runtime passive ability `a.null-antagonism` (敵対無効化): add ability master labels/descriptions, block `c.antagonism` from `Goddess of Discord` and `a.*-confusion` when target has immunity, and emit `log.null-antagonism` with note `(敵対無効化)`. |
 | 0.6.0 | 457 | 2026/4/18 | Update runtime selectable lineage master data bonuses to match Spec 2.1 table (add missing secondary `c.*_x1.2` bonuses and defensive multipliers across `sandstorm` to `oath`). |
