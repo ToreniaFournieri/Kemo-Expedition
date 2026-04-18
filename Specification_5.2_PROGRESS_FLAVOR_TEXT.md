@@ -1639,26 +1639,26 @@
 | explore | `x.exp_id`7 and `x.floor`6 | 静かな宮ほど合図が届き、連携を保ちやすい |
 | explore | `x.exp_id`7 and `x.floor`6 | 礼を重んじるゆるやかな進行が、この場の流れに合う |
 | explore | `x.exp_id`7 and `x.floor`6 | 月光と影を読む判断が宮中探索の鍵となる |
-| explore | `x.exp_id`8 and `x.floor`1 | name は竜の爪あとが残る谷口で砕けた岩を越えて進んでいる |
+| explore | `x.exp_id`8 and `x.floor`1 | name は虚構へと向かう谷口で砕けた岩を越えて進んでいる |
 | explore | `x.exp_id`8 and `x.floor`1 | name は焼けた地面を確かめ、崩れにくい道を選んで歩いた |
-| explore | `x.exp_id`8 and `x.floor`1 | name は深い爪痕をなぞり、竜道を外す進路へ切り替えた |
+| explore | `x.exp_id`8 and `x.floor`1 | name は深い爪痕をなぞり、深淵に入り込まない進路へ切り替えた |
 | explore | `x.exp_id`8 and `x.floor`1 | name は風の鳴る谷壁を見上げ、落石の少ない帯をたどっている |
 | explore | `x.exp_id`8 and `x.floor`1 | name は黒い鱗片を拾い、危ない区画を地図に記している |
 | explore | `x.exp_id`8 and `x.floor`1 | 谷口の裂けた岩を前にして、name は隊の間隔を整えている |
-| explore | `x.exp_id`8 and `x.floor`1 | 焼けた地面の熱を見て、name は足場の線を引き直した |
-| explore | `x.exp_id`8 and `x.floor`1 | 深い爪痕が続く中で、name は竜道を避ける側道を選んだ |
+| explore | `x.exp_id`8 and `x.floor`1 | 瘴気で焼けた地面を見て、name は足場の線を引き直した |
+| explore | `x.exp_id`8 and `x.floor`1 | 深い爪痕が続く中で、name は虚痕を避ける側道を選んだ |
 | explore | `x.exp_id`8 and `x.floor`1 | 風の鳴る谷壁の下で、name は落石の間を見て進んだ |
 | explore | `x.exp_id`8 and `x.floor`1 | 黒い鱗片が散る場所で、name は合流点を先に決めている |
-| explore | `x.exp_id`8 and `x.floor`1 | 竜傷の谷口は爪痕が多く、竜道回避が探索の基本になる |
-| explore | `x.exp_id`8 and `x.floor`1 | 焼けた地面は脆く、足場確認を重ねる必要がある |
+| explore | `x.exp_id`8 and `x.floor`1 | 虚痕の谷口は陥没痕が多く、足元がおぼつかない |
+| explore | `x.exp_id`8 and `x.floor`1 | 溶けた地面は脆く、足場確認を重ねる必要がある |
 | explore | `x.exp_id`8 and `x.floor`1 | 谷壁の風鳴りは落石の前触れとなり、判断に役立つ |
-| explore | `x.exp_id`8 and `x.floor`1 | 黒い鱗片は活動跡の目印となり、危険区画を示す |
+| explore | `x.exp_id`8 and `x.floor`1 | いつからかなのだろう、その古びた石造りの小屋がそこにあったのは |
 | explore | `x.exp_id`8 and `x.floor`1 | 裂けた岩が多く、歩幅を小さく保つ方が安全だ |
 | explore | `x.exp_id`8 and `x.floor`1 | 側道は遠回りでも接触回避に向いている |
-| explore | `x.exp_id`8 and `x.floor`1 | 熱の残る帯は体力を削り、短区間移動が有効になる |
+| explore | `x.exp_id`8 and `x.floor`1 | 瘴気の残る帯は体力を削り、なるべく短い時間で通り過ぎたいものだ |
 | explore | `x.exp_id`8 and `x.floor`1 | 隊の間隔管理で連鎖転倒を防ぎやすくなる |
 | explore | `x.exp_id`8 and `x.floor`1 | 落石の間を読む進行が被害を減らしてくれる |
-| explore | `x.exp_id`8 and `x.floor`1 | この層では急がず、竜の痕を読んで進む姿勢が大切だ |
+| explore | `x.exp_id`8 and `x.floor`1 | この層では急がず、虚痕を読んで進む姿勢が大切だ |
 | explore | `x.exp_id`8 and `x.floor`2 | name は骨の研究地で古い標本台を見つけ、静かに進んでいる |
 | explore | `x.exp_id`8 and `x.floor`2 | name は白い骨柱の間を抜け、割れ目の少ない道を選んだ |
 | explore | `x.exp_id`8 and `x.floor`2 | name は乾いた骨の山を避け、平らな通路をたどっている |
