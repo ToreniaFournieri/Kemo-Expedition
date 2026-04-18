@@ -3,6 +3,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.0 | 446 | 2026/4/18 | Align runtime Procyonian race master data to Spec 2.1 races table: set default ability to `a.illusion`1 and unlock ability to `a.resonance`1 (including race ability bonus ordering). |
 | 0.6.0 | 445 | 2026/4/18 | Implement runtime party unlock progression per Spec 5.1.3.2: unlock PT2–PT6 by defeating expedition bosses for `x.expedition` 2–6, and update locked party UI text to the specified expedition-clear messages. |
 | 0.6.0 | 444 | 2026/4/18 | Update runtime Party member details (8.2.2) to disable character background image rendering for this version (`No image`). |
 | 0.6.0 | 443 | 2026/4/17 | Fix runtime lineage `unexpected_prince(ss)` bonuses to match spec row (`a.melee-conversion`, `c.equip_melee`, `b.strength+1`) instead of enemy-only timed abilities. |

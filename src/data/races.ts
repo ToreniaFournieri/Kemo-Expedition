@@ -173,8 +173,8 @@ export const RACES: Race[] = [
     emoji: '🦝',
     icon: '/race-icons/Procyonian.png',
     stats: { vitality: 14, strength: 8, intelligence: 8, mind: 6 },
-    defaultAbility: { id: 'a.resonance', name: '共鳴1', description: '魔法攻撃1回毎に、全ヒットのダメージが +5% 増加する' },
-    unlockAbility: { id: 'a.illusion', name: '幻化1', description: '自分が受ける最初の遠距離攻撃を無効化する' },
+    defaultAbility: { id: 'a.illusion', name: '幻化1', description: '自分が受ける最初の遠距離攻撃を無効化する' },
+    unlockAbility: { id: 'a.resonance', name: '共鳴1', description: '魔法攻撃1回毎に、全ヒットのダメージが +5% 増加する' },
     memo: 'Tanuki',
     bonuses: [
       { type: 'equip_slot', value: 1 },
@@ -182,8 +182,8 @@ export const RACES: Race[] = [
       { type: 'katana_multiplier', value: 1.2 },
       { type: 'robe_multiplier', value: 1.2 },
       { type: 'thunder_defense_multiplier_xV', value: 2 / 3 },
-      { type: 'ability', value: 1, abilityId: 'resonance', abilityLevel: 1 },
       { type: 'ability', value: 1, abilityId: 'illusion', abilityLevel: 1 },
+      { type: 'ability', value: 1, abilityId: 'resonance', abilityLevel: 1 },
     ],
   },
   {
