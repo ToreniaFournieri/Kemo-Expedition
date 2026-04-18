@@ -46,6 +46,7 @@ export interface ClassDef {
 
 // Predisposition Types
 export type PredispositionId =
+  | 'none'
   | 'aggressive' | 'inquisitive' | 'amiable'
   | 'stubborn' | 'evasive' | 'introspective'
   | 'devoted' | 'serene' | 'nimble'
