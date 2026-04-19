@@ -91,7 +91,7 @@ interface HomeScreenProps {
     sellStack: (variantKey: string) => void;
     sellAllOwned: () => void;
     buyShopItem: (itemId: number) => void;
-    buyJewelShopItem: (jewelKey: JewelKey, rank: number) => void;
+    buyDebugStoreItem: (itemId: number) => void;
     refreshShopLineup: () => void;
     setVariantStatus: (variantKey: string, status: 'notown') => void;
     markItemsSeen: () => void;
@@ -120,7 +120,7 @@ interface HomeScreenProps {
 
 type Tab = 'party' | 'expedition' | 'base' | 'diary' | 'setting';
 type WideModeSecondaryTab = Exclude<Tab, 'expedition'>;
-type BaseSubTab = 'inventory' | 'shop' | 'jewelStore' | 'workshop' | 'altar';
+type BaseSubTab = 'inventory' | 'shop' | 'debugStore' | 'workshop' | 'altar';
 
 type UiIconKey = 'fire' | 'ice' | 'thunder' | 'melee' | 'ranged' | 'magic' | 'unlock' | 'lock';
 
@@ -4526,14 +4526,14 @@ export function HomeScreen({
           parties={state.parties}
           gold={state.global.gold}
           shopPurchases={state.global.shopPurchases}
-          jewelShopPurchases={state.global.jewelShopPurchases}
+          debugStorePurchases={state.global.jewelShopPurchases}
           shopRefreshCounts={state.global.shopRefreshCounts}
           shopIntimacy={state.global.shopIntimacy}
           shopIntimacyLastDecayAt={state.global.shopIntimacyLastDecayAt}
           onSellStack={actions.sellStack}
           onSetVariantStatus={actions.setVariantStatus}
           onBuyShopItem={actions.buyShopItem}
-          onBuyJewelShopItem={actions.buyJewelShopItem}
+          onBuyDebugStoreItem={actions.buyDebugStoreItem}
           onRefreshShopLineup={actions.refreshShopLineup}
           activeSubTab={activeBaseSubTab}
           onSetActiveSubTab={setActiveBaseSubTab}
@@ -7889,14 +7889,14 @@ function BaseTab({
   parties,
   gold,
   shopPurchases,
-  jewelShopPurchases,
+  debugStorePurchases,
   shopRefreshCounts,
   shopIntimacy,
   shopIntimacyLastDecayAt,
   onSellStack,
   onSetVariantStatus,
   onBuyShopItem,
-  onBuyJewelShopItem,
+  onBuyDebugStoreItem,
   onRefreshShopLineup,
   activeSubTab,
   onSetActiveSubTab,
@@ -7907,14 +7907,14 @@ function BaseTab({
   parties: Party[];
   gold: number;
   shopPurchases: Record<string, number[]>;
-  jewelShopPurchases: Record<string, number>;
+  debugStorePurchases: Record<string, number>;
   shopRefreshCounts: Record<string, number>;
   shopIntimacy: number;
   shopIntimacyLastDecayAt: number;
   onSellStack: (variantKey: string) => void;
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
   onBuyShopItem: (itemId: number) => void;
-  onBuyJewelShopItem: (jewelKey: JewelKey, rank: number) => void;
+  onBuyDebugStoreItem: (itemId: number) => void;
   onRefreshShopLineup: () => void;
   activeSubTab: BaseSubTab;
   onSetActiveSubTab: (tab: BaseSubTab) => void;
@@ -7923,7 +7923,7 @@ function BaseTab({
   const baseSubTabs = [
     { id: 'shop' as const, label: 'お店', isAvailable: true },
     { id: 'inventory' as const, label: '所持品', isAvailable: true },
-    { id: 'jewelStore' as const, label: '結晶店', isAvailable: debugSettings.jewelShopOpen },
+    { id: 'debugStore' as const, label: 'デバッグ店', isAvailable: debugSettings.jewelShopOpen },
     { id: 'workshop' as const, label: '工房', isAvailable: false },
     { id: 'altar' as const, label: '祭壇', isAvailable: false },
   ];
@@ -7971,11 +7971,11 @@ function BaseTab({
           onBuyShopItem={onBuyShopItem}
           onRefreshShopLineup={onRefreshShopLineup}
         />
-      ) : activeSubTab === 'jewelStore' ? (
-        <JewelStoreTab
+      ) : activeSubTab === 'debugStore' && debugSettings.jewelShopOpen ? (
+        <DebugStoreTab
           gold={gold}
-          jewelShopPurchases={jewelShopPurchases}
-          onBuyJewelShopItem={onBuyJewelShopItem}
+          debugStorePurchases={debugStorePurchases}
+          onBuyDebugStoreItem={onBuyDebugStoreItem}
         />
       ) : (
         <div className="text-sm text-gray-600">この機能は次のバージョンで利用可能になります。</div>
@@ -8162,60 +8162,80 @@ function ShopTab({
   );
 }
 
-// SpecRef: 8.4.3 | Jewel store(結晶店) | Jewel store(結晶店)
-function JewelStoreTab({
+// SpecRef: 8.4.3 | Debug store(デバッグ店) | Debug store(デバッグ店)
+function DebugStoreTab({
   gold,
-  jewelShopPurchases,
-  onBuyJewelShopItem,
+  debugStorePurchases,
+  onBuyDebugStoreItem,
 }: {
   gold: number;
-  jewelShopPurchases: Record<string, number>;
-  onBuyJewelShopItem: (jewelKey: JewelKey, rank: number) => void;
+  debugStorePurchases: Record<string, number>;
+  onBuyDebugStoreItem: (itemId: number) => void;
 }) {
   const shopkeeperRace = RACES.find((race) => race.id === 'vulpinian') ?? RACES.find((race) => race.id === 'mustelid');
   if (!shopkeeperRace) {
-    return <div className="text-sm text-gray-600">結晶店の準備中です。</div>;
+    return <div className="text-sm text-gray-600">デバッグ店の準備中です。</div>;
   }
 
-  const jewelEntries = (Object.keys(JEWEL_DEFS) as JewelKey[]).flatMap((jewelKey) => (
-    Array.from({ length: 8 }, (_, index) => {
-      const rank = index + 1;
-      const stockKey = `${jewelKey}:${rank}`;
-      const purchasedCount = jewelShopPurchases[stockKey] ?? 0;
-      const remainingStock = Math.max(0, 5 - purchasedCount);
-      return { jewelKey, rank, remainingStock, canBuy: remainingStock > 0 && gold >= 100 };
-    })
-  ));
+  const DEBUG_STORE_PRICE = 1;
+  const DEBUG_STORE_STOCK = 99;
+  const debugStoreItems = ITEMS
+    .slice()
+    .sort((a, b) => b.id - a.id)
+    .map((item) => {
+      const purchaseKey = `item:${item.id}`;
+      const purchasedCount = debugStorePurchases[purchaseKey] ?? 0;
+      const remainingStock = Math.max(0, DEBUG_STORE_STOCK - purchasedCount);
+      const canBuy = remainingStock > 0 && gold >= DEBUG_STORE_PRICE;
+      const displayItem: Item = { ...item, enhancement: 0, superRare: 0 };
+      return {
+        item,
+        displayItem,
+        purchaseKey,
+        remainingStock,
+        canBuy,
+      };
+    });
 
   return (
-    <div className="rounded border border-gray-200 bg-white p-3">
-      <div className="text-sm font-semibold text-sub">カリエスの狐彩堂</div>
-      <div className="mt-2 grid grid-cols-[auto,1fr] items-start gap-3">
-        <RaceIcon race={shopkeeperRace} className="h-10 w-10 self-center" />
-        <p className="text-sm text-gray-700">
-          お越し頂きありがとうございます。デバッグ用に宝石を用意しております。こちら、本番では自力でご用意いただく必要がございますことご理解ください。
-        </p>
+    <div className="space-y-3">
+      <div className="rounded border border-gray-200 bg-white p-3">
+        <div className="text-sm font-semibold text-sub">カリエスの狐彩堂</div>
+        <div className="mt-2 grid grid-cols-[auto,1fr] items-start gap-3">
+          <RaceIcon race={shopkeeperRace} className="h-10 w-10 self-center" />
+          <p className="text-sm text-gray-700">
+            お越し頂きありがとうございます。デバッグ用に全種類の商品を用意しております。こちら、本番では自力でご用意いただく必要がございますことご理解ください。
+          </p>
+        </div>
       </div>
-      <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-3">
-        {jewelEntries.map((entry) => (
-          <div key={`${entry.jewelKey}:${entry.rank}`} className="rounded border border-gray-200 px-2 py-1.5">
-            <div className="flex items-center justify-between gap-2 text-xs">
-              <span className="font-semibold text-gray-700">[{JEWEL_DEFS[entry.jewelKey].short}{entry.rank}] {JEWEL_DEFS[entry.jewelKey].displayName}</span>
-              <span className="text-gray-500">100G</span>
-            </div>
-            <div className="mt-1 flex items-center justify-between">
-              <span className="text-[11px] text-gray-500">在庫 {entry.remainingStock}/5</span>
-              <button
-                onClick={() => onBuyJewelShopItem(entry.jewelKey, entry.rank)}
-                disabled={!entry.canBuy}
-                className={`rounded px-2 py-0.5 text-xs font-medium ${
-                  entry.canBuy
-                    ? 'bg-sub text-white hover:bg-sub/90'
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                }`}
-              >
-                購入
-              </button>
+
+      <div className="space-y-2">
+        {debugStoreItems.map(({ item, displayItem, purchaseKey, remainingStock, canBuy }) => (
+          <div key={purchaseKey} className="rounded border border-gray-200 bg-white px-3 py-2">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 text-sm text-gray-900">
+                  <span className="truncate">{item.name}</span>
+                  <span className="shrink-0 text-xs text-gray-500">{formatNumber(DEBUG_STORE_PRICE)}G</span>
+                </div>
+                <div className="mt-0.5 text-xs leading-tight text-gray-400">
+                  {getRarityShortLabel(item.id, item.name)} {renderTextWithRaceIcons(getItemStats(displayItem))}
+                </div>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <span className="text-[11px] text-gray-500">在庫 {formatNumber(remainingStock)}/{formatNumber(DEBUG_STORE_STOCK)}</span>
+                <button
+                  onClick={() => onBuyDebugStoreItem(item.id)}
+                  disabled={!canBuy}
+                  className={`rounded px-2 py-0.5 text-xs font-medium ${
+                    canBuy
+                      ? 'bg-sub text-white hover:bg-sub/90'
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  買う
+                </button>
+              </div>
             </div>
           </div>
         ))}
@@ -11111,7 +11131,7 @@ function SettingTab({
           <button type="button" onClick={() => onUpdateDebugSettings({ godsBattleCondition: debugSettings.godsBattleCondition === 'normal' ? 'simple1' : 'normal' })} className="w-full rounded border bg-white px-3 py-2 text-left">Gods Battle condition: {debugSettings.godsBattleCondition === 'simple1' ? 'Simple(1)' : 'Normal'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ godStrength: debugSettings.godStrength === 'normal' ? 'debug' : 'normal' })} className="w-full rounded border bg-white px-3 py-2 text-left">Gods Strength: {debugSettings.godStrength === 'debug' ? 'Very Weak' : 'Normal'}</button>
           <button type="button" disabled={partyCount >= 6} onClick={onPartyUnlock} className="w-full rounded border bg-white px-3 py-2 text-left disabled:opacity-50">Party unlock +1 PT unlock ({partyCount}/6)</button>
-          <button type="button" onClick={() => onUpdateDebugSettings({ jewelShopOpen: !debugSettings.jewelShopOpen })} className="w-full rounded border bg-white px-3 py-2 text-left">Jewel shop open: {debugSettings.jewelShopOpen ? 'ON' : 'OFF'}</button>
+          <button type="button" onClick={() => onUpdateDebugSettings({ jewelShopOpen: !debugSettings.jewelShopOpen })} className="w-full rounded border bg-white px-3 py-2 text-left">Debug store open: {debugSettings.jewelShopOpen ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ displayCondition: !debugSettings.displayCondition })} className="w-full rounded border bg-white px-3 py-2 text-left">Display condition: {debugSettings.displayCondition ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ displayFlavorCondition: !debugSettings.displayFlavorCondition })} className="w-full rounded border bg-white px-3 py-2 text-left">Display flavor condition: {debugSettings.displayFlavorCondition ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ displayAfkDuration: !debugSettings.displayAfkDuration })} className="w-full rounded border bg-white px-3 py-2 text-left">Display AFK duration: {debugSettings.displayAfkDuration ? 'ON' : 'OFF'}</button>
