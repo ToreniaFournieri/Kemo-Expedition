@@ -537,6 +537,17 @@ export function buildNullLifeDrainAction(actorName: string, targetName: string):
     .replace(/\{target\}/g, targetName);
 }
 
+export function buildAggregatedLifeDrainAction(
+  actorName: string,
+  aggregatedTargetName: string,
+  isNullified: boolean,
+): string {
+  const template = isNullified ? NULL_LIFE_DRAIN_LOGS[0] : LIFE_DRAIN_LOGS[0];
+  return template
+    .replace(/\{actor\}/g, actorName)
+    .replace(/\{target\}/g, aggregatedTargetName);
+}
+
 export function buildDeathTouchAction(actorName: string, targetName: string): string {
   return pickRandomEntry(DEATH_TOUCH_LOGS)
     .replace(/\{actor\}/g, actorName)
