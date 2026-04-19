@@ -8,7 +8,7 @@ export type BonusAbilityGlossaryEntry = {
   description: string;
   levelScale: string[];
   subcategory: BonusAbilityGlossarySubcategoryId;
-  phase?: 'LONG' | 'MID' | 'CLOSE';
+  phase?: 'START' | 'LONG' | 'MID' | 'CLOSE';
   priority?: number;
 };
 
@@ -73,6 +73,7 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
 
   { abilityId: 'oblivion', label: '忘却', description: '無作為に選んだ相手のアビリティ1つを、この戦闘中無効化する', levelScale: [], subcategory: 'timed' },
   { abilityId: 'mimic', label: '模倣', description: '相手のアビリティ1つを無作為に指定し、その効果を発動する', levelScale: [], subcategory: 'timed' },
+  { abilityId: 'domain_breaker', label: '領域破り', description: '領域展開を無視する(必達領域、臨界領域、残響領域、静寂領域、剣戟領域、必中狙撃領域、必中魔法領域)', levelScale: [], subcategory: 'timed', phase: 'START', priority: 7 },
   { abilityId: 'defender', label: '守護者', description: '自身より後列の味方への物理ダメージをxN倍にする', levelScale: ['Lv1: x2/3', 'Lv2: x3/5', 'Lv3: x1/2'], subcategory: 'timed' },
   { abilityId: 'command', label: '指揮', description: '自身より後列の味方が与える物理ダメージをxN倍にする', levelScale: ['Lv1: x1.2', 'Lv2: x1.35', 'Lv3: x1.43'], subcategory: 'timed' },
   { abilityId: 'm_barrier', label: '魔法障壁', description: '自身より後列の味方への魔法ダメージをxN倍にする', levelScale: ['Lv1: x2/3', 'Lv2: x3/5', 'Lv3: x1/2'], subcategory: 'timed' },

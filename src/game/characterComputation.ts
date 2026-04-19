@@ -1041,6 +1041,7 @@ export function getAbilityDescription(id: AbilityId, level: number): string {
     true_sight: () => '灰霞や霧の中でも視認できる(悪影響を受けなくなる)',
     output_stabilizer: () => '地形効果による攻撃回数の変動を受けなくなる',
     equation_breaker: () => '理論武装する(機械理論、静寂領域の地形効果が無効になる)',
+    domain_breaker: () => '領域展開を無視する(必達領域、臨界領域、残響領域、静寂領域、剣戟領域、必中狙撃領域、必中魔法領域)',
     unforgettable: () => 'アビリティは消して忘れることがなくなる(忘却無効)',
     focus: (l) => `命中ボーナスの効果が${l >= 2 ? '1.3' : '1.2'}倍になる`,
     prophecy: (l) => l >= 2
