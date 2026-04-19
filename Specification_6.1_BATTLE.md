@@ -86,6 +86,33 @@ If `a.*` with phase = START:
   - If actor.`a.domain-breaker`,
     - Log: "name はNの影響を受けない"  N: name of domain (ex. "静寂領域" )
 
+
+- actor.`a.command`
+	- party.`f.party.offense_amplifier`(phase: phase):
+	  - If phase is LONG or CLOSE:
+	    - If front_row_from_actor_member_has.`a.command`3: multiply x2.43
+		- If front_row_from_actor_member_has.`a.command`2: multiply x1.35
+	    - If front_row_from_actor_member_has.`a.command`1: multiply x1.2
+
+- actor.`a.defender` or `a.m-barrier`
+	- party.`f.abilities_defense_amplifier`(phase: phase):
+	  - If phase is LONG or CLOSE:
+	  	- If front_row_from_actor_member_has.`a.defender`3: multiply x1/2
+	  	- If front_row_from_actor_member_has.`a.defender`2: multiply x3/5
+		- If front_row_from_actor_member_has.`a.defender`1: multiply x2/3
+
+- actor.`a.m-barrier`
+	- party.`f.abilities_defense_amplifier`(phase: phase):
+    - If phase is MID:
+	    - If front_row_from_actor_member_has.`a.m-barrier`3: multiply x1/2
+	    - If front_row_from_actor_member_has.`a.m-barrier`2: multiply x3/5
+	    - If front_row_from_actor_member_has.`a.m-barrier`1: multiply x2/3
+     - Exception: If opponent has `a.m-barrier-breaker`, skip this.
+       Log: `log.m-barrier-breaker` + (魔法障壁破り)
+   
+
+
+
 - Tie-breaker: Enemy > Front-row party member > Back-row party member
 
 
