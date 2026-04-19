@@ -95,7 +95,7 @@
 | `blaze_peak` | 焔嶺の系譜 | 焔 | 動乱 | `a.null-burn`, `c.gauntlet_x1.2`, `c.armor_x1.2`, `c.fire-defense-multiplier_x4/5` | `true` |
 | `abyssal_sea` | 深海の系譜 | 海 | 狩猟 | `a.null-bind`, `c.arrow_x1.2`, `c.catalyst_x1.2` | `true` |
 | `firmament` | 天穹の系譜 | 穹 | 狩猟 | `a.siege`, `c.bolt_x1.2`, `c.shield_x1.2` | `true` |
-| `frozen_forest` | 凍森の系譜 | 凍 | 狩猟 | `a.frostbite`1, `c.archery_x1.2`, `c.robe_x1.2`, `c.ice-defense-multiplier_x4/5` | `true` |
+| `frozen_forest` | 凍森の系譜 | 凍 | 狩猟 | a.coldproof`1, `c.archery_x1.2`, `c.robe_x1.2`, `c.ice-defense-multiplier_x4/5` | `true` |
 | `utopia` | 桃源の系譜 | 桃 | 学識 | `a.null-death-touch`, `c.wand_x1.2`, `c.bolt_x1.2` | `true` |
 | `machina` | 機骸の系譜 | 機 | 学識 | `a.null-shock`, `c.grimoire_x1.2`, `c.gauntlet_x1.2` | `true` |
 | `adaptation` | 適応の系譜 | 適 | 学識 | `c.catalyst_x1.2`, `c.archery_x1.2`, `c.thunder-defense-multiplier_x3/4` | `true` |
