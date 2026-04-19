@@ -447,7 +447,9 @@ If `a.*` with phase = START:
  
   - **Override**
   - If `terrain.floor-domain`: final `f.damage_calculation` = max(1% of opponent.max_HP, `f.damage_calculation`)
+    - Exception: If actor has `a.domain-breaker`, not apply floor-domain.
   - If `terrain.cap-domain` :final `f.damage_calculation` = min(5% of opponent.max_HP, `f.damage_calculation`)
+    - Exception: If actor has `a.domain-breaker`, not apply cap-domain.
 
 - `f.rage_amplifier`:
   - If actor has `a.rage`1, return min(2.0, 1.0 + 0.5 x (1 - (actor.current_HP / actor.max_HP)))
@@ -492,6 +494,7 @@ If `a.*` with phase = START:
   - If `terrain.thunderstorm` and actor.`e.thunder`: x 3/2
   - If `terrain.dry` and actor.`e.ice`: x 0.5
   - If `terrain.echo-domain` and actor.`e.X`: 1.0 + 0.1 x (1 - (number of X in this battle from both side))
+    - Exception: If actor has `a.domain-breaker`, skip echo-domain. 
     - If result is > 1.0, 
 	  - log: add "残響+N%" to attack log like:
       - "[6] ラス がサンダーボルトを唱えた！(8/43回, 共鳴+40%, 残響+20%)"
@@ -584,6 +587,7 @@ If `a.*` with phase = START:
     - Note: Nth_hit counts individually and not share with normal attack, re-attack and counter. (Nth_hit is reset per attack sequence)
   - **Override of terrain effect**
     - If {`terrain.sniper-domain` and (phase is LONG)} or {`terrain.spell-domain` and (phase is MID)} or {`terrain.duelist-domain` and (phase is CLOSE)}: All hits are treated as successful.
+      - Exception: If actor has `a.domain-breaker`, skip these terrain effect. 
     - If override condition is met: return true (skip calculation below)
   - Roll: Return Random(0, 1.0) <= chance
 
