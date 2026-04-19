@@ -293,12 +293,27 @@ If `a.*` with phase = START:
 	  - Dealt damage: opponent.`d.HP` -= `f.damage_calculation` x ( 1 - reflect damage amplifier).
 	  - log "ロップ の氷属性攻撃は反射された！　(2/4回)  (❄️ {Dealt damage}, 反射 {Reflect damage})" or
 	  - log "セルヴァ がフロストニードルを唱えたが反射された！　(3/3回, 共鳴+33%)  (❄️ {Dealt damage}, 反射 {Reflect damage})"
-    - Absorb resolve
+      - **Exception**
+        - Skip Reflect resolution if any of the following is true:
+	      - actor has `a.fire-protect-breaker` and opponent has `a.fire-reflect`
+	      - actor has `a.ice-protect-breaker` and opponent has `a.ice-reflect`
+	      - actor has `a.thunder-protect-breaker` and opponent has `a.thunder-reflect`
+
+	- Absorb resolve
 	  - Absorbed damage: opponent.`d.HP` += `f.damage_calculation` x absorb damage amplifier.
 	  - log "ロップ の氷属性攻撃は吸収された！　(2/4回)  (❄️ 吸収 {Absorbed damage})" or
       - log "ラス がサンダーボルトを唱えたが吸収された！(11/43回) (❄️ 吸収 {Absorbed damage})"
         - IF opponent is enemy, "(❄️ 吸収 {Absorbed damage})" part is accent color. If opponent is party member, it is sub color.
-    - Null resolve
+      - Exception: If actor has `a.X-protect-breaker` and (opponent has `a.X-absorb`), absorb resolve is skipped.
+        - X is `fire`, `ice`, `thunder`, or `magical`.
+      - **Exception**
+        - Skip Absorb resolution if any of the following is true:
+	      - actor has `a.fire-protect-breaker` and opponent has `a.fire-absorb`
+	      - actor has `a.ice-protect-breaker` and opponent has `a.ice-absorb`
+	      - actor has `a.thunder-protect-breaker` and opponent has `a.thunder-absorb`
+	      - actor has `a.m-barrier-breaker` and opponent has `a.magical-absorb`
+
+	- Null resolve
 	  - log "ロップ の氷属性攻撃は無効化された！　(2/4回)  (❄️ 0)" 
    - Else `d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
 
