@@ -1045,6 +1045,10 @@ export function getAbilityDescription(id: AbilityId, level: number): string {
     wind_rider: () => '風の影響を強く受ける(強風下では遠距離攻撃回数が0.50倍、追い風では行動順判定に+2d3)',
     siege: () => '要塞防備による敵の有利な効果を無視できる',
     coldproof: () => '寒さにとても強い(凍傷を無効化する)',
+    fire_protect_breaker: () => '火属性攻撃時に相手の火炎反射・火炎吸収効果を無視する',
+    ice_protect_breaker: () => '氷属性攻撃時に相手の氷結反射・氷結吸収効果を無視する',
+    thunder_protect_breaker: () => '雷属性攻撃時に相手の雷撃反射・雷撃吸収効果を無視する',
+    m_barrier_breaker: () => '相手の魔法障壁・魔法吸収効果を無視する',
     unforgettable: () => 'アビリティは消して忘れることがなくなる(忘却無効)',
     focus: (l) => `命中ボーナスの効果が${l >= 2 ? '1.3' : '1.2'}倍になる`,
     prophecy: (l) => l >= 2

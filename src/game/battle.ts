@@ -565,7 +565,7 @@ function calculateSingleEnemyAttackDamage(
     ? 1.0
     : targetCharStats.elementalDefenseMultipliers[enemy.elementalOffense] ?? 1.0;
 
-  const partyDefenseAbilityAmplifier = getPartyDefenseAbilityAmplifier(phase, characterStats, targetCharStats.row);
+  const partyDefenseAbilityAmplifier = getPartyDefenseAbilityAmplifier(phase, characterStats, targetCharStats.row, enemy.abilities);
   const rageAmplifier = getEnemyRageAmplifier(enemy, enemyHp);
   const mutualAmplifier = getMutualAmplifier(phase, enemy.abilities, targetCharStats.abilities);
   const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect, false, enemy.abilities);
@@ -641,8 +641,14 @@ function getPartyDefenseAbilityAmplifier(
   phase: BattleActionPhase,
   characterStats: ComputedCharacterStats[],
   actorRow: number,
+  opponentAbilities: AbilityLike[] = [],
 ): number {
+  // SpecRef: 6.1.2 | Function of battle | party.f.abilities_defense_amplifier
+  // SpecRef: 6.1.2 | Function of battle | a.m-barrier-breaker
   if (phase === 'mid') {
+    if (hasAbility(opponentAbilities, 'm_barrier_breaker')) {
+      return 1.0;
+    }
     const mBarrierLevel = getFrontRowAbilityLevel(characterStats, actorRow, 'm_barrier');
     return mBarrierLevel >= 3 ? 1 / 2 : mBarrierLevel === 2 ? 3 / 5 : mBarrierLevel === 1 ? 2 / 3 : 1.0;
   }
@@ -957,9 +963,10 @@ function getReflectDescriptor(
   phase: BattleActionPhase,
   elementalOffense: ElementalOffense,
   defenderAbilities: AbilityLike[],
+  attackerAbilities: AbilityLike[],
 ): ReflectDescriptor | null {
   const iceLevel = getAbilityLevelFromList(defenderAbilities, 'ice_reflect');
-  if (elementalOffense === 'ice' && iceLevel > 0) {
+  if (elementalOffense === 'ice' && iceLevel > 0 && !hasAbility(attackerAbilities, 'ice_protect_breaker')) {
     const amplifier = getReflectAmplifier(iceLevel);
     return {
       abilityId: 'ice_reflect',
@@ -972,7 +979,7 @@ function getReflectDescriptor(
   }
 
   const fireLevel = getAbilityLevelFromList(defenderAbilities, 'fire_reflect');
-  if (elementalOffense === 'fire' && fireLevel > 0) {
+  if (elementalOffense === 'fire' && fireLevel > 0 && !hasAbility(attackerAbilities, 'fire_protect_breaker')) {
     const amplifier = getReflectAmplifier(fireLevel);
     return {
       abilityId: 'fire_reflect',
@@ -985,7 +992,7 @@ function getReflectDescriptor(
   }
 
   const thunderLevel = getAbilityLevelFromList(defenderAbilities, 'thunder_reflect');
-  if (elementalOffense === 'thunder' && thunderLevel > 0) {
+  if (elementalOffense === 'thunder' && thunderLevel > 0 && !hasAbility(attackerAbilities, 'thunder_protect_breaker')) {
     const amplifier = getReflectAmplifier(thunderLevel);
     return {
       abilityId: 'thunder_reflect',
@@ -1043,9 +1050,10 @@ function getAbsorbDescriptor(
   phase: BattleActionPhase,
   elementalOffense: ElementalOffense,
   defenderAbilities: AbilityLike[],
+  attackerAbilities: AbilityLike[],
 ): AbsorbDescriptor | null {
   const iceLevel = getAbilityLevelFromList(defenderAbilities, 'ice_absorb');
-  if (elementalOffense === 'ice' && iceLevel > 0) {
+  if (elementalOffense === 'ice' && iceLevel > 0 && !hasAbility(attackerAbilities, 'ice_protect_breaker')) {
     const amplifier = getAbsorbAmplifier(iceLevel);
     return {
       abilityId: 'ice_absorb',
@@ -1057,7 +1065,7 @@ function getAbsorbDescriptor(
   }
 
   const fireLevel = getAbilityLevelFromList(defenderAbilities, 'fire_absorb');
-  if (elementalOffense === 'fire' && fireLevel > 0) {
+  if (elementalOffense === 'fire' && fireLevel > 0 && !hasAbility(attackerAbilities, 'fire_protect_breaker')) {
     const amplifier = getAbsorbAmplifier(fireLevel);
     return {
       abilityId: 'fire_absorb',
@@ -1069,7 +1077,7 @@ function getAbsorbDescriptor(
   }
 
   const thunderLevel = getAbilityLevelFromList(defenderAbilities, 'thunder_absorb');
-  if (elementalOffense === 'thunder' && thunderLevel > 0) {
+  if (elementalOffense === 'thunder' && thunderLevel > 0 && !hasAbility(attackerAbilities, 'thunder_protect_breaker')) {
     const amplifier = getAbsorbAmplifier(thunderLevel);
     return {
       abilityId: 'thunder_absorb',
@@ -1081,7 +1089,7 @@ function getAbsorbDescriptor(
   }
 
   const magicalLevel = getAbilityLevelFromList(defenderAbilities, 'magical_absorb');
-  if (phase === 'mid' && magicalLevel > 0) {
+  if (phase === 'mid' && magicalLevel > 0 && !hasAbility(attackerAbilities, 'm_barrier_breaker')) {
     const amplifier = getAbsorbAmplifier(magicalLevel);
     return {
       abilityId: 'magical_absorb',
@@ -1161,8 +1169,14 @@ function getDefensiveReaction(
   phase: BattleActionPhase,
   elementalOffense: ElementalOffense,
   defenderAbilities: AbilityLike[],
+  attackerAbilities: AbilityLike[],
 ): DefensiveReaction | null {
-  const absorb = getAbsorbDescriptor(phase, elementalOffense, defenderAbilities);
+  // SpecRef: 6.1.2 | Function of battle | intercept
+  // SpecRef: 6.1.2 | Function of battle | a.fire-protect-breaker
+  // SpecRef: 6.1.2 | Function of battle | a.ice-protect-breaker
+  // SpecRef: 6.1.2 | Function of battle | a.thunder-protect-breaker
+  // SpecRef: 6.1.2 | Function of battle | a.m-barrier-breaker
+  const absorb = getAbsorbDescriptor(phase, elementalOffense, defenderAbilities, attackerAbilities);
   if (absorb) {
     return { type: 'absorb', descriptor: absorb };
   }
@@ -1172,7 +1186,7 @@ function getDefensiveReaction(
     return { type: 'nullify', descriptor: nullify };
   }
 
-  const reflect = getReflectDescriptor(phase, elementalOffense, defenderAbilities);
+  const reflect = getReflectDescriptor(phase, elementalOffense, defenderAbilities, attackerAbilities);
   if (reflect) {
     return { type: 'reflect', descriptor: reflect };
   }
@@ -3304,10 +3318,17 @@ export function executeBattle(
     };
   };
 
+  const mBarrierEffectEntry = createPartyEffectEntry('m_barrier', () => '魔法障壁', level => `(後列の味方への魔法ダメージ × ${level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3'})`);
   const partyEffects = [
     createPartyEffectEntry('defender', () => '守護者', level => `(後列の味方への物理ダメージ × ${level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3'})`),
     createPartyEffectEntry('command', () => '指揮', level => `(後列の味方が与える物理ダメージ × ${level >= 3 ? '1.43' : level === 2 ? '1.35' : '1.2'})`),
-    createPartyEffectEntry('m_barrier', () => '魔法障壁', level => `(後列の味方への魔法ダメージ × ${level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3'})`),
+    mBarrierEffectEntry && hasAbility(enemy.abilities, 'm_barrier_breaker')
+      ? {
+        phase: 'start',
+        actor: 'effect',
+        action: `${enemy.name}は魔法障壁を打ち破り無効化した(魔法障壁破り)`,
+      } as BattleLogEntry
+      : mBarrierEffectEntry,
     createPartyAbilityEffectEntry('deflection', () => '矢払い', level => `(敵の遠距離攻撃の命中率を${level >= 2 ? '15' : '10'}%低下)`),
   ];
 
@@ -4581,7 +4602,7 @@ export function executeBattle(
               consumedIllusionStateIds,
             );
 
-            const defensiveReaction = getDefensiveReaction(phase, enemy.elementalOffense, attack.charStats.abilities);
+            const defensiveReaction = getDefensiveReaction(phase, enemy.elementalOffense, attack.charStats.abilities, enemy.abilities);
             const reflect = defensiveReaction?.type === 'reflect' ? defensiveReaction.descriptor : null;
             const absorb = defensiveReaction?.type === 'absorb' ? defensiveReaction.descriptor : null;
             const nullify = defensiveReaction?.type === 'nullify' ? defensiveReaction.descriptor : null;
@@ -5295,7 +5316,7 @@ export function executeBattle(
             result.wasNegatedByEnemyIllusion = true;
           }
 
-          const defensiveReaction = getDefensiveReaction(phase, cs.elementalOffense, enemy.abilities);
+          const defensiveReaction = getDefensiveReaction(phase, cs.elementalOffense, enemy.abilities, cs.abilities);
           const reflect = defensiveReaction?.type === 'reflect' ? defensiveReaction.descriptor : null;
           const absorb = defensiveReaction?.type === 'absorb' ? defensiveReaction.descriptor : null;
           const nullify = defensiveReaction?.type === 'nullify' ? defensiveReaction.descriptor : null;
@@ -5351,10 +5372,10 @@ export function executeBattle(
             : null
         );
         const reflect = !isAntagonism && result.reflectedDamage && result.reflectedDamage > 0
-          ? getReflectDescriptor(phase, cs.elementalOffense, enemy.abilities)
+          ? getReflectDescriptor(phase, cs.elementalOffense, enemy.abilities, cs.abilities)
           : null;
         const absorb = !isAntagonism && result.absorbedDamage && result.absorbedDamage > 0
-          ? result.absorbedBy ?? getAbsorbDescriptor(phase, cs.elementalOffense, enemy.abilities)
+          ? result.absorbedBy ?? getAbsorbDescriptor(phase, cs.elementalOffense, enemy.abilities, cs.abilities)
           : null;
         const nullify = !isAntagonism && result.nullifiedBy ? result.nullifiedBy : null;
 
