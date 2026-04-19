@@ -44,6 +44,7 @@ import { decodePersistedState, encodePersistedState } from '../game/storageCompr
 import { getRuntimeFlavorText, type FlavorCycleState } from '../game/flavorText';
 import { DebugSettings, getDebugSettings, saveDebugSettings, getTimeSpeedScale } from '../game/debugSettings';
 import { buildColosseumEnemy, ColosseumEnemySettings, getColosseumEnemySettings, normalizeColosseumEnemySettings, saveColosseumEnemySettings } from '../game/colosseum';
+import { buildAggregatedLifeDrainAction } from '../game/battleNarration';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -756,10 +757,16 @@ function aggregateBattleLifeDrainLogs(logs: readonly ExpeditionLogEntry['details
     if (group) {
       const summarizedNote = group.templateLog.note?.replace(/✚[\d,]+(?=\))/gu, `✚${formatNumber(group.totalHealAmount)}`);
       const summarizedTargets = [...new Set(group.targetNames)];
+      const isNullifiedLifeDrain = group.templateLog.note?.includes('吸血無効') ?? false;
+      const effectSourceName = group.templateLog.effectSourceName ?? '';
       return [{
         ...group.templateLog,
         isAggregated: true,
-        action: `${group.templateLog.effectSourceName} は ${summarizedTargets.join('、')} から生命を吸い取った！`,
+        action: buildAggregatedLifeDrainAction(
+          effectSourceName,
+          summarizedTargets.join('、'),
+          isNullifiedLifeDrain,
+        ),
         note: summarizedNote,
       }];
     }
