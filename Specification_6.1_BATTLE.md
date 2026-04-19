@@ -114,7 +114,7 @@ If `a.*` with phase = START:
   - If opponent.`a.frostbite`1 and terrain != `terrain.machine-logic`: −1 (minimum 1)
 
   - **Terrain effects**
-    - If `terrain.tailwind` and actor is a party member: +**1d3**, cap at 9
+    - If `terrain.tailwind` and (actor doesn't has `a.wind-rider`) and (actor is a party member): +**1d3**, cap at 9
     - If `terrain.enemy-high-ground` and actor is an enemy: +**1d3**, cap at 9
 
 - Actions are resolved in descending order of roll result.
@@ -411,7 +411,8 @@ If `a.*` with phase = START:
   - `f.NoA` = `f.NoA` x `f.terrain_NoA_amplifier`
     - If actor has `a.output-stabilizer`: 1.0
     - Else if `terrain.rough-waves` and (phase is CLOSE): 0.75
-    - Else if `terrain.heavy-wind` and (phase is LONG): 0.75
+    - Else if `terrain.heavy-wind` and (actor doesn't has `a.wind-rider`) and (phase is LONG): 0.75
+    - Else if `terrain.heavy-wind` and (actor **has** `a.wind-rider`) and (phase is LONG): 0.50
     - Else if `terrain.burrow` and (phase is LONG): 0.50
     - Else if `terrain.low-gravity`: 1.3
     - Else if `terrain.gravity`: 0.7
