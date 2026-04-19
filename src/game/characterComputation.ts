@@ -1042,6 +1042,9 @@ export function getAbilityDescription(id: AbilityId, level: number): string {
     output_stabilizer: () => '地形効果による攻撃回数の変動を受けなくなる',
     equation_breaker: () => '理論武装する(機械理論、静寂領域の地形効果が無効になる)',
     domain_breaker: () => '領域展開を無視する(必達領域、臨界領域、残響領域、静寂領域、剣戟領域、必中狙撃領域、必中魔法領域)',
+    wind_rider: () => '風の影響を強く受ける(強風下では遠距離攻撃回数が0.50倍、追い風では行動順判定に+2d3)',
+    siege: () => '要塞防備による敵の有利な効果を無視できる',
+    coldproof: () => '寒さにとても強い(凍傷を無効化する)',
     unforgettable: () => 'アビリティは消して忘れることがなくなる(忘却無効)',
     focus: (l) => `命中ボーナスの効果が${l >= 2 ? '1.3' : '1.2'}倍になる`,
     prophecy: (l) => l >= 2
