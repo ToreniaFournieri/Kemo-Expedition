@@ -349,22 +349,6 @@ Party.`d.HP` =
   )
 ```
 
-- party.`f.party.offense_amplifier`(phase: phase):
-  - If phase is LONG or CLOSE:
-    - If flont_row_from_actor_member_has.`a.command`3: multiply x2.43
-	- If flont_row_from_actor_member_has.`a.command`2: multiply x1.35
-    - If flont_row_from_actor_member_has.`a.command`1: multiply x1.2
-- party.`f.abilities_defense_amplifier`(phase: phase):
-  - If phase is LONG or CLOSE:
-  	- If flont_row_from_actor_member_has.`a.defender`3: multiply x1/2
-  	- If flont_row_from_actor_member_has.`a.defender`2: multiply x3/5
-	- If flont_row_from_actor_member_has.`a.defender`1: multiply x2/3
-  - If phase is MID:
-    - If flont_row_from_actor_member_has.`a.m-barrier`3: multiply x1/2
-    - If flont_row_from_actor_member_has.`a.m-barrier`2: multiply x3/5
-    - If flont_row_from_actor_member_has.`a.m-barrier`1: multiply x2/3
-   
-
 **Party structure**
 1. Party Properties
 - Player party consists of 6 characters. 
