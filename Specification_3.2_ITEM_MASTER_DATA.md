@@ -40,6 +40,7 @@
 | 1 | E | `Beast` | `i.robe`EA | 毛皮のまとい |
 | 1 | E | `Beast` | `i.katana`EA | 牙研ぎの曲刀 |
 | 1 | E | `Beast` | `i.shield`EA | アイギスの盾 | `c.physical-defense_x2/3` |
+| 1 | E | `Aerial` | `i.robe`EB | 風羽衣 | `a.wind-rider` |
 | 1 | E | `Aerial` | `i.shield`EB | 銀鏡の盾 | `c.magical-defense-x2/3` |
 | 1 | E | `Aerial` | `i.wand`EB | 風呼びの小杖 |
 | 1 | E | `Aerial` | `i.grimoire`EB | 渡り翼の教本 |
@@ -242,7 +243,7 @@
 | 5 | E | `Dragon` | `i.sword`EB | 竜炉の剣 |
 | 5 | E | `Dragon` | `i.armor`EB | 竜鱗の重鎧 |
 | 5 | E | `Dragon` | `i.shield`EB | 竜稜の盾 |
-| 5 | E | `Dragon` | `i.katana`EB | 焔竜の太刀 |
+| 5 | E | `Dragon` | `i.katana`EB | 破城槌 | `a.siege` |
 | 5 | E | `Dragon` | `i.robe`EB | 竜火の法衣 |
 | 5 | E | `Dragon` | `i.wand`EB | 竜脈の杖 |
 | 5 | E | `Dragon` | `i.grimoire`EB | 竜炎秘儀書 |
