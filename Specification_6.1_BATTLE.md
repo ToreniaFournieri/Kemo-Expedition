@@ -325,6 +325,7 @@ If `a.*` with phase = START:
 	      - actor has `a.fire-protect-breaker` and opponent has `a.fire-reflect`
 	      - actor has `a.ice-protect-breaker` and opponent has `a.ice-reflect`
 	      - actor has `a.thunder-protect-breaker` and opponent has `a.thunder-reflect`
+	      - actor has `a.m-barrier-breaker` and opponent has `a.magical-reflect`
 
 	- Absorb resolve
 	  - Absorbed damage: opponent.`d.HP` += `f.damage_calculation` x absorb damage amplifier.
