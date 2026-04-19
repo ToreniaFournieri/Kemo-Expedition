@@ -100,6 +100,7 @@
 | 2 | E | `Plant_Fungal` | `i.bolt`EC | 菌殻ボルト |
 | 2 | E | `Plant_Fungal` | `i.archery`EC | 蔓弓「胞雨」 |
 | 2 | E | `Plant_Fungal` | `i.robe`EC | 胞子の法衣 |
+| 2 | B | `Lupinian` | `i.robe`BD | 毛皮衣 | `a.coldproof` |
 | 2 | B | `Lupinian` | `i.armor`BD | 白狼毛の戦衣 |
 | 2 | B | `Lupinian` | `i.arrow`BD | 狼牙羽の矢 |
 | 2 | B | `Lupinian` | `i.wand`BD | 狼王の呪杖 |
