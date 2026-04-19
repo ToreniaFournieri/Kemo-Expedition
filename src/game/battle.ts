@@ -74,16 +74,6 @@ interface PendingHowlEffect {
   characterId?: number;
 }
 
-const DOMAIN_BREAKER_TERRAIN_EFFECTS = new Set<TerrainEffectKey>([
-  'terrain.floor-domain',
-  'terrain.cap-domain',
-  'terrain.echo-domain',
-  'terrain.silence-field',
-  'terrain.duelist-domain',
-  'terrain.sniper-domain',
-  'terrain.spell-domain',
-]);
-
 function getHeavyStrikePenetPerNoA(level: number): number {
   if (level >= 2) return 0.015;
   if (level >= 1) return 0.01;
@@ -579,12 +569,7 @@ function calculateSingleEnemyAttackDamage(
   const rageAmplifier = getEnemyRageAmplifier(enemy, enemyHp);
   const mutualAmplifier = getMutualAmplifier(phase, enemy.abilities, targetCharStats.abilities);
   const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect, false);
-  const elementalOffenseAttributeAmplifier = getElementalOffenseAttributeAmplifier(
-    terrainEffect,
-    enemy.elementalOffense,
-    echoDomainElementalUsageCount,
-    enemy.abilities,
-  );
+  const elementalOffenseAttributeAmplifier = getElementalOffenseAttributeAmplifier(terrainEffect, enemy.elementalOffense, echoDomainElementalUsageCount);
   const swarmAmplifier = getSwarmAmplifier(
     enemy.abilities,
     enemyHp,
@@ -596,7 +581,7 @@ function calculateSingleEnemyAttackDamage(
   const rawDamage = (attack - effectiveDefense) * amplifier * runtimeOffenseMultiplier * enemy.elementalOffenseValue * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier;
   const totalDamage = Math.max(1, rawDamage);
 
-  return applyTerrainDamageOverride(Math.floor(totalDamage), terrainEffect, maxPartyHp, enemy.abilities);
+  return applyTerrainDamageOverride(Math.floor(totalDamage), terrainEffect, maxPartyHp);
 }
 
 function getEnemyBaseNoA(phase: BattleActionPhase, enemy: EnemyDef): number {
@@ -687,13 +672,11 @@ function getElementalOffenseAttributeAmplifier(
   terrainEffect: TerrainEffectKey | null | undefined,
   elementalOffense: ElementalOffense,
   echoDomainElementalUsageCount: number = 0,
-  actorAbilities: AbilityLike[] = [],
 ): number {
   if (!terrainEffect) return 1.0;
   if (terrainEffect === 'terrain.thunderstorm' && elementalOffense === 'thunder') return 1.5;
   if (terrainEffect === 'terrain.dry' && elementalOffense === 'ice') return 0.5;
   if (terrainEffect === 'terrain.echo-domain' && elementalOffense !== 'none') {
-    if (hasDomainBreaker(actorAbilities)) return 1.0;
     return 1.0 + (0.1 * Math.max(0, echoDomainElementalUsageCount - 1));
   }
   return 1.0;
@@ -736,9 +719,7 @@ function applyTerrainDamageOverride(
   perHitDamage: number,
   terrainEffect: TerrainEffectKey | null | undefined,
   opponentMaxHp: number,
-  actorAbilities: AbilityLike[] = [],
 ): number {
-  if (hasDomainBreaker(actorAbilities)) return perHitDamage;
   if (terrainEffect === 'terrain.floor-domain') {
     return Math.max(Math.floor(opponentMaxHp * 0.01), perHitDamage);
   }
@@ -835,12 +816,7 @@ function calculateCharacterFriendlyFireDamage(
   const momentumAmplifier = getCharacterMomentumAmplifier(attacker, partyHp, partyStats.hp);
   const mutualAmplifier = getMutualAmplifier(phase, attacker.abilities, target.abilities);
   const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect, false);
-  const elementalOffenseAttributeAmplifier = getElementalOffenseAttributeAmplifier(
-    terrainEffect,
-    attacker.elementalOffense,
-    echoDomainElementalUsageCount,
-    attacker.abilities,
-  );
+  const elementalOffenseAttributeAmplifier = getElementalOffenseAttributeAmplifier(terrainEffect, attacker.elementalOffense, echoDomainElementalUsageCount);
   const swarmAmplifier = getSwarmAmplifier(
     attacker.abilities,
     partyHp,
@@ -866,7 +842,7 @@ function calculateCharacterFriendlyFireDamage(
       * elementalOffenseAttributeAmplifier
       * swarmAmplifier
   ));
-  const terrainAdjustedPerHitDamage = applyTerrainDamageOverride(basePerHitDamage, terrainEffect, partyStats.hp, attacker.abilities);
+  const terrainAdjustedPerHitDamage = applyTerrainDamageOverride(basePerHitDamage, terrainEffect, partyStats.hp);
 
   const actorAccuracyPotency = phase === 'mid' ? 1.0 : attacker.accuracyPotency;
   const actorFocusLevel = attacker.abilities.find(a => a.id === 'focus')?.level ?? 0;
@@ -889,7 +865,6 @@ function calculateCharacterFriendlyFireDamage(
       terrainEffect,
       attacker.abilities.find((ability) => ability.id === 'arcane_stability')?.level ?? 0,
       hasAbility(attacker.abilities, 'true_sight'),
-      hasDomainBreaker(attacker.abilities),
     )) {
       hits += 1;
       const resonanceAmplifier = canApplyResonance ? getResonanceAmplifier(resonance?.level, hits) : 1.0;
@@ -1274,15 +1249,11 @@ function hitDetection(
   terrainEffect?: TerrainEffectKey | null,
   actorArcaneStabilityLevel: number = 0,
   actorHasTrueSight: boolean = false,
-  actorHasDomainBreaker: boolean = false,
 ): boolean {
   if (
-    !actorHasDomainBreaker
-    && (
-      (phase === 'long' && terrainEffect === 'terrain.sniper-domain')
-      || (phase === 'mid' && terrainEffect === 'terrain.spell-domain')
-      || (phase === 'close' && terrainEffect === 'terrain.duelist-domain')
-    )
+    (phase === 'long' && terrainEffect === 'terrain.sniper-domain')
+    || (phase === 'mid' && terrainEffect === 'terrain.spell-domain')
+    || (phase === 'close' && terrainEffect === 'terrain.duelist-domain')
   ) {
     return true;
   }
@@ -1446,12 +1417,7 @@ function calculateCharacterDamage(
   const momentumAmplifier = getCharacterMomentumAmplifier(charStats, partyHp, partyStats.hp);
   const mutualAmplifier = getMutualAmplifier(phase, charStats.abilities, enemy.abilities);
   const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect, true);
-  const elementalOffenseAttributeAmplifier = getElementalOffenseAttributeAmplifier(
-    terrainEffect,
-    charStats.elementalOffense,
-    echoDomainElementalUsageCount,
-    charStats.abilities,
-  );
+  const elementalOffenseAttributeAmplifier = getElementalOffenseAttributeAmplifier(terrainEffect, charStats.elementalOffense, echoDomainElementalUsageCount);
   const swarmAmplifier = getSwarmAmplifier(
     charStats.abilities,
     partyHp,
@@ -1466,7 +1432,7 @@ function calculateCharacterDamage(
     (attack - effectiveDefense) * offenseAmplifier * runtimeOffenseMultiplier * charStats.elementalOffenseValue *
     elementalMultiplier * defenseAmplifier * partyOffenseAmplifier * rageAmplifier * momentumAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier
   ));
-  const terrainAdjustedPerHitDamage = applyTerrainDamageOverride(basePerHitDamage, terrainEffect, enemy.hp, charStats.abilities);
+  const terrainAdjustedPerHitDamage = applyTerrainDamageOverride(basePerHitDamage, terrainEffect, enemy.hp);
 
   // All phases now use hit detection.
   // MID phase ignores row-based accuracy potency and uses fixed potency (1.0).
@@ -1490,7 +1456,6 @@ function calculateCharacterDamage(
       terrainEffect,
       charStats.abilities.find((ability) => ability.id === 'arcane_stability')?.level ?? 0,
       hasAbility(charStats.abilities, 'true_sight'),
-      hasDomainBreaker(charStats.abilities),
     )) {
       hits++;
       const resonanceAmplifier = canApplyResonance ? getResonanceAmplifier(resonance?.level, hits) : 1.0;
@@ -1509,17 +1474,13 @@ function hasAbility(abilities: AbilityLike[], abilityId: AbilityId): boolean {
   return abilities.some(ability => ability.id === abilityId && ability.level > 0);
 }
 
-function hasDomainBreaker(actorAbilities: AbilityLike[]): boolean {
-  return hasAbility(actorAbilities, 'domain_breaker');
-}
-
 // SpecRef: 6.1.1.1 | START phase | terrain.silence-field
 function isActorAbilitySuppressedBySilenceField(
   terrainEffect: TerrainEffectKey | null | undefined,
   abilities: AbilityLike[],
 ): boolean {
   if (terrainEffect !== 'terrain.silence-field') return false;
-  return !hasAbility(abilities, 'equation_breaker') && !hasDomainBreaker(abilities);
+  return !hasAbility(abilities, 'equation_breaker');
 }
 
 function rollInitiative(
@@ -2368,28 +2329,6 @@ export function executeBattle(
     });
   }
 
-  if (environment.terrainEffect && DOMAIN_BREAKER_TERRAIN_EFFECTS.has(environment.terrainEffect)) {
-    const domainLabel = terrainEntry?.label ?? environment.terrainEffect;
-    for (const stats of characterStats.filter((candidate) => hasDomainBreaker(candidate.abilities))) {
-      const ownerName = party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方';
-      log.push({
-        phase: 'start',
-        actor: 'effect',
-        characterId: stats.characterId,
-        action: `${ownerName} は${domainLabel}の影響を受けない`,
-        noteTone: 'muted',
-      });
-    }
-    if (hasDomainBreaker(enemy.abilities)) {
-      log.push({
-        phase: 'start',
-        actor: 'effect',
-        action: `${enemy.name} は${domainLabel}の影響を受けない`,
-        noteTone: 'muted',
-      });
-    }
-  }
-
   if (environment.terrainEffect === 'terrain.deletion') {
     const terrainDeletionTargets: Array<
       { kind: 'enemy'; name: string; abilities: AbilityLike[] }
@@ -2555,8 +2494,7 @@ export function executeBattle(
   const registerElementalOffenseUsage = (elementalOffense: ElementalOffense): number => (
     countElementalOffenseUsage(environment.terrainEffect, elementalOffense, elementalOffenseUsageCounter)
   );
-  const getEchoDomainLogText = (elementalOffense: ElementalOffense, actorAbilities: AbilityLike[]): string => {
-    if (hasDomainBreaker(actorAbilities)) return '';
+  const getEchoDomainLogText = (elementalOffense: ElementalOffense): string => {
     if (environment.terrainEffect !== 'terrain.echo-domain' || elementalOffense === 'none') return '';
     const count = elementalOffenseUsageCounter[elementalOffense] ?? 0;
     const bonusPercent = Math.max(0, (count - 1) * 10);
@@ -3349,19 +3287,7 @@ export function executeBattle(
     );
     let hits = 0;
     for (let i = 1; i <= attempts; i++) {
-      const didHit = hitDetection(
-        1.0,
-        enemy.accuracyBonus + enemyPhaseAccuracyBonus,
-        targetCharStats.evasionBonus,
-        i,
-        phase,
-        getDeflectionLevel(targetCharStats),
-        getEnemyFocusLevel(enemy),
-        environment.terrainEffect,
-        0,
-        hasAbility(enemy.abilities, 'true_sight'),
-        hasDomainBreaker(enemy.abilities),
-      );
+      const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, targetCharStats.evasionBonus, i, phase, getDeflectionLevel(targetCharStats), getEnemyFocusLevel(enemy), environment.terrainEffect, 0, hasAbility(enemy.abilities, 'true_sight'));
       if (didHit) {
         hits += 1;
       }
@@ -4418,7 +4344,7 @@ export function executeBattle(
         const runEnemyAttack = (attempts: number, isReAttack = false): void => {
           if (attempts <= 0 || partyHp <= 0 || enemyHp <= 0) return;
           const enemyEchoDomainUsageCount = registerElementalOffenseUsage(enemy.elementalOffense);
-          const enemyEchoDomainLogText = getEchoDomainLogText(enemy.elementalOffense, enemy.abilities);
+          const enemyEchoDomainLogText = getEchoDomainLogText(enemy.elementalOffense);
 
           const attacksByTarget = new Map<number, {
             hitDamages: number[];
@@ -4455,7 +4381,6 @@ export function executeBattle(
               environment.terrainEffect,
               0,
               hasAbility(enemy.abilities, 'true_sight'),
-              hasDomainBreaker(enemy.abilities),
             );
             enemyHitIndex += 1;
 
@@ -4872,7 +4797,7 @@ export function executeBattle(
               phase === 'mid'
                 || (phase === 'long' && partyDeityKey === 'God of Resonance' && environment.terrainEffect !== 'terrain.gehenna'),
             );
-            const echoDomainLogText = getEchoDomainLogText(attack.charStats.elementalOffense, attack.charStats.abilities);
+            const echoDomainLogText = getEchoDomainLogText(attack.charStats.elementalOffense);
             const counterBonusLogText = mergeAttackBonusLogText(resonanceLogText, echoDomainLogText);
             const characterCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(attack.charStats, partyHp, partyStats.hp));
             const characterCounterMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(attack.charStats, partyHp, partyStats.hp));
@@ -4929,19 +4854,7 @@ export function executeBattle(
             let reCounterHits = 0;
             const enemyReCounterEchoDomainUsageCount = registerElementalOffenseUsage(enemy.elementalOffense);
             for (let i = 1; i <= reCounterAttempts; i++) {
-              const didHit = hitDetection(
-                1.0,
-                enemy.accuracyBonus + enemyPhaseAccuracyBonus,
-                attack.charStats.evasionBonus,
-                i,
-                phase,
-                getDeflectionLevel(attack.charStats),
-                getEnemyFocusLevel(enemy),
-                environment.terrainEffect,
-                0,
-                hasAbility(enemy.abilities, 'true_sight'),
-                hasDomainBreaker(enemy.abilities),
-              );
+              const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, attack.charStats.evasionBonus, i, phase, getDeflectionLevel(attack.charStats), getEnemyFocusLevel(enemy), environment.terrainEffect, 0, hasAbility(enemy.abilities, 'true_sight'));
               if (!didHit) continue;
               reCounterHits += 1;
               reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, characterStats, attack.charStats, enemyHp, partyHp, partyStats.hp, environment.terrainEffect, enemyOffenseAmplifierMultiplier, enemyReCounterEchoDomainUsageCount);
@@ -5066,7 +4979,7 @@ export function executeBattle(
             }
 
             const resonanceLogText = getResonanceLogText(magicalCounterStats.abilities, magicalCounterResult.hits, true);
-            const echoDomainLogText = getEchoDomainLogText(magicalCounterStats.elementalOffense, magicalCounterStats.abilities);
+            const echoDomainLogText = getEchoDomainLogText(magicalCounterStats.elementalOffense);
             const magicalCounterBonusLogText = mergeAttackBonusLogText(resonanceLogText, echoDomainLogText);
             const magicalCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(magicalCounterStats, partyHp, partyStats.hp));
             const magicalCounterMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(magicalCounterStats, partyHp, partyStats.hp));
@@ -5354,7 +5267,7 @@ export function executeBattle(
           phase === 'mid'
             || (phase === 'long' && partyDeityKey === 'God of Resonance' && environment.terrainEffect !== 'terrain.gehenna'),
         );
-        const echoDomainLogText = getEchoDomainLogText(cs.elementalOffense, cs.abilities);
+        const echoDomainLogText = getEchoDomainLogText(cs.elementalOffense);
         const characterAttackBonusLogText = mergeAttackBonusLogText(resonanceLogText, echoDomainLogText);
         const characterAttackRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(cs, partyHp, partyStats.hp));
         const characterAttackMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(cs, partyHp, partyStats.hp));
