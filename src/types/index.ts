@@ -163,7 +163,8 @@ export type AbilityId =
   | 'unstable_core' | 'magical_reflect' | 'magical_absorb' | 'magical_null' | 'ranged_reflect' | 'ranged_null' | 'melee_reflect' | 'melee_null' | 'colossal' | 'upgrade_all_abilities'
   | 'requiem' | 'overwatch' | 'execution' | 'null_antagonism' | 'first_aid' | 'equation_breaker' | 'unforgettable'
   | 'null_corrode' | 'null_life_drain' | 'null_death_touch' | 'null_burn' | 'null_bind' | 'null_requiem'
-  | 'domain_breaker' | 'wind_rider' | 'siege' | 'coldproof';
+  | 'domain_breaker' | 'wind_rider' | 'siege' | 'coldproof'
+  | 'fire_protect_breaker' | 'ice_protect_breaker' | 'thunder_protect_breaker' | 'm_barrier_breaker';
 
 export interface Ability {
   id: AbilityId;
