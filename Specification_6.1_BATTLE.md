@@ -242,8 +242,8 @@ If `a.*` with phase = START:
 
 - **Flying**
   - Triggered by `a.flying`
-  - opponent.melee.`f.NoA` *= N
-  - Log: `log.flying` + (飛行:相手の攻撃回数xN)
+  - actor.evasion += N 
+  - Log: `log.flying` + (飛行:回避+N)
 
  
 #### 6.1.3 Actor normal move
