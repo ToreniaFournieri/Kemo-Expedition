@@ -3,6 +3,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.0 | 482 | 2026/4/19 | Fix `Stubborn` (頑固) predisposition physical defense bonus value to spec-compliant `c.physical_defense+0.10` so UI/runtime applies `物防+10%` instead of `物防+1,000%`. |
 | 0.6.0 | 481 | 2026/4/19 | Fix `Amicable` (親和) predisposition magical defense bonus value to spec-compliant `c.magical_defense+0.10` so UI/runtime shows `魔防+10%` instead of `魔防+1,000%`. |
 | 0.6.0 | 480 | 2026/4/19 | Implement passive abilities `a.fire-protect-breaker`, `a.ice-protect-breaker`, `a.thunder-protect-breaker`, and `a.m-barrier-breaker` in runtime/master text: add ability ids/names/glossary/help descriptions, make intercept resolution skip matching elemental reflect/absorb and magical absorb when breaker is owned by attacker, and make MID `a.m-barrier` defense amplification ignored when opponent has `a.m-barrier-breaker` with start log `敵名は魔法障壁を打ち破り無効化した(魔法障壁破り)`. |
 | 0.6.0 | 479 | 2026/4/19 | Update timed ability `a.flying` in runtime to Spec 6.1 behavior: trigger at CLOSE timing 9 to grant self evasion (`Lv1:+40`, `Lv2:+45`, `Lv3:+50`), emit `log.flying` note `(飛行:回避+N)`, and align related ability/race tooltip glossary text from old close NoA reduction to evasion bonus. |
