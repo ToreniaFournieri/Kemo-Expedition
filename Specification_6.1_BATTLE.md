@@ -331,8 +331,6 @@ If `a.*` with phase = START:
 	  - log "ロップ の氷属性攻撃は吸収された！　(2/4回)  (❄️ 吸収 {Absorbed damage})" or
       - log "ラス がサンダーボルトを唱えたが吸収された！(11/43回) (❄️ 吸収 {Absorbed damage})"
         - IF opponent is enemy, "(❄️ 吸収 {Absorbed damage})" part is accent color. If opponent is party member, it is sub color.
-      - Exception: If actor has `a.X-protect-breaker` and (opponent has `a.X-absorb`), absorb resolve is skipped.
-        - X is `fire`, `ice`, `thunder`, or `magical`.
       - **Exception**
         - Skip Absorb resolution if any of the following is true:
 	      - actor has `a.fire-protect-breaker` and opponent has `a.fire-absorb`
