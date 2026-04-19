@@ -491,7 +491,7 @@ If `a.*` with phase = START:
   - If `terrain.frenzy`: 1.25
   - If `terrain.light-field` and (phase is MID): 1.45
   - If `terrain.sanctuary` and (phase is MID): 0.67
-  - If `terrain.fortified`and (opponent is enemy): 0.75
+  - If `terrain.fortified` and (actor does't have `a.siege`) and (opponent is enemy): 0.75
 
 -  `f.elemental_offense_attribute_amplifier`
   - If `terrain.thunderstorm` and actor.`e.thunder`: x 3/2
