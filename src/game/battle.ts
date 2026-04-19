@@ -568,7 +568,7 @@ function calculateSingleEnemyAttackDamage(
   const partyDefenseAbilityAmplifier = getPartyDefenseAbilityAmplifier(phase, characterStats, targetCharStats.row);
   const rageAmplifier = getEnemyRageAmplifier(enemy, enemyHp);
   const mutualAmplifier = getMutualAmplifier(phase, enemy.abilities, targetCharStats.abilities);
-  const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect, false);
+  const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect, false, enemy.abilities);
   const elementalOffenseAttributeAmplifier = getElementalOffenseAttributeAmplifier(terrainEffect, enemy.elementalOffense, echoDomainElementalUsageCount, enemy.abilities);
   const swarmAmplifier = getSwarmAmplifier(
     enemy.abilities,
@@ -656,6 +656,7 @@ function getTerrainAmplifier(
   phase: BattleActionPhase,
   terrainEffect?: TerrainEffectKey | null,
   isOpponentEnemy: boolean = false,
+  actorAbilities: AbilityLike[] = [],
 ): number {
   if (!terrainEffect) return 1.0;
   if ((phase === 'long' || phase === 'close') && terrainEffect === 'terrain.exposure') return 1.3;
@@ -663,7 +664,7 @@ function getTerrainAmplifier(
   if (terrainEffect === 'terrain.frenzy') return 1.25;
   if (phase === 'mid' && terrainEffect === 'terrain.light-field') return 1.45;
   if (phase === 'mid' && terrainEffect === 'terrain.sanctuary') return 0.67;
-  if (isOpponentEnemy && terrainEffect === 'terrain.fortified') return 0.75;
+  if (isOpponentEnemy && terrainEffect === 'terrain.fortified' && !hasAbility(actorAbilities, 'siege')) return 0.75;
   return 1.0;
 }
 
@@ -714,7 +715,9 @@ function getTerrainNoAAmplifier(
   if (hasAbility(actorAbilities, 'output_stabilizer')) return 1.0;
   if (!terrainEffect) return 1.0;
   if (phase === 'close' && terrainEffect === 'terrain.rough-waves') return 0.75;
-  if (phase === 'long' && terrainEffect === 'terrain.heavy-wind') return 0.75;
+  if (phase === 'long' && terrainEffect === 'terrain.heavy-wind') {
+    return hasAbility(actorAbilities, 'wind_rider') ? 0.5 : 0.75;
+  }
   if (phase === 'long' && terrainEffect === 'terrain.burrow') return 0.5;
   if (terrainEffect === 'terrain.low-gravity') return 1.3;
   if (terrainEffect === 'terrain.gravity') return 0.7;
@@ -826,7 +829,7 @@ function calculateCharacterFriendlyFireDamage(
   const rageAmplifier = getCharacterRageAmplifier(attacker, partyHp, partyStats.hp);
   const momentumAmplifier = getCharacterMomentumAmplifier(attacker, partyHp, partyStats.hp);
   const mutualAmplifier = getMutualAmplifier(phase, attacker.abilities, target.abilities);
-  const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect, false);
+  const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect, false, attacker.abilities);
   const elementalOffenseAttributeAmplifier = getElementalOffenseAttributeAmplifier(terrainEffect, attacker.elementalOffense, echoDomainElementalUsageCount, attacker.abilities);
   const swarmAmplifier = getSwarmAmplifier(
     attacker.abilities,
@@ -1429,7 +1432,7 @@ function calculateCharacterDamage(
   const rageAmplifier = getCharacterRageAmplifier(charStats, partyHp, partyStats.hp);
   const momentumAmplifier = getCharacterMomentumAmplifier(charStats, partyHp, partyStats.hp);
   const mutualAmplifier = getMutualAmplifier(phase, charStats.abilities, enemy.abilities);
-  const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect, true);
+  const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect, true, charStats.abilities);
   const elementalOffenseAttributeAmplifier = getElementalOffenseAttributeAmplifier(terrainEffect, charStats.elementalOffense, echoDomainElementalUsageCount, charStats.abilities);
   const swarmAmplifier = getSwarmAmplifier(
     charStats.abilities,
@@ -1518,6 +1521,7 @@ function rollInitiative(
     frostbitePenalty?: number;
     actorHasTrueSight?: boolean;
     actorHasEquationBreaker?: boolean;
+    actorHasWindRider?: boolean;
   },
 ): number {
   // SpecRef: 6.1.1.2 | LONG, MID, CLOSE phase | Speed & Turn Order (Rolling Dice Rule)
@@ -1546,7 +1550,10 @@ function rollInitiative(
     result = Math.max(1, result - (options?.frostbitePenalty ?? 0));
   }
   if (!isMachineLogic && options?.terrainEffect === 'terrain.tailwind' && options?.actorType === 'party') {
-    result = Math.min(9, result + (Math.floor(Math.random() * 3) + 1));
+    const tailwindDiceCount = options?.actorHasWindRider ? 2 : 1;
+    for (let i = 0; i < tailwindDiceCount; i++) {
+      result = Math.min(9, result + (Math.floor(Math.random() * 3) + 1));
+    }
   }
   if (!isMachineLogic && options?.terrainEffect === 'terrain.enemy-high-ground' && options?.actorType === 'enemy') {
     result = Math.min(9, result + (Math.floor(Math.random() * 3) + 1));
@@ -3720,9 +3727,10 @@ export function executeBattle(
         actorType: 'enemy',
         slowPenalty: getHighestAbilityLevel(enemy.abilities, 'slow'),
         boostBonus: getHighestAbilityLevel(enemy.abilities, 'boost'),
-        frostbitePenalty: partyHasFrostbite ? 1 : 0,
+        frostbitePenalty: partyHasFrostbite && !hasAbility(enemy.abilities, 'coldproof') ? 1 : 0,
         actorHasTrueSight: hasAbility(enemy.abilities, 'true_sight'),
         actorHasEquationBreaker: hasAbility(enemy.abilities, 'equation_breaker'),
+        actorHasWindRider: hasAbility(enemy.abilities, 'wind_rider'),
       })
       : null;
     const characterInitiative = characterStats
@@ -3735,9 +3743,10 @@ export function executeBattle(
           fertilityBonus: hasFertilityInitiativeBonus ? 1 : 0,
           slowPenalty: getHighestAbilityLevel(cs.abilities, 'slow'),
           boostBonus: getHighestAbilityLevel(cs.abilities, 'boost'),
-          frostbitePenalty: enemyHasFrostbite ? 1 : 0,
+          frostbitePenalty: enemyHasFrostbite && !hasAbility(cs.abilities, 'coldproof') ? 1 : 0,
           actorHasTrueSight: hasAbility(cs.abilities, 'true_sight'),
           actorHasEquationBreaker: hasAbility(cs.abilities, 'equation_breaker'),
+          actorHasWindRider: hasAbility(cs.abilities, 'wind_rider'),
         }),
       }));
 
