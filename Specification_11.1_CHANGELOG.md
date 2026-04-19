@@ -3,6 +3,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.0 | 475 | 2026/4/19 | Implement timed ability `a.domain-breaker` (領域破り) in runtime/master data: add ability id/name/tooltip entries, ignore affected domain terrain effects (必達/臨界/残響/静寂/剣戟/必中狙撃/必中魔法) for holders, bypass domain damage/hit overrides and echo bonus logs for holders, and emit START log `name はNの影響を受けない`. |
 | 0.6.0 | 474 | 2026/4/19 | Update battle runtime reactive resolution order for Spec 6.1.3.2 priority: resolve On-strike effects before Counter, and keep Ally-follow-up (`a.covering-fire`) after counter chains (`On-strike > Counter > Ally-follow-up`) for both character and enemy CLOSE actions. |
 | 0.6.0 | 473 | 2026/4/19 | Refine Diary aggregated life-drain text generation to reuse canonical flavor text templates (`LIFE_DRAIN_LOGS` / `NULL_LIFE_DRAIN_LOGS`) via shared narration helper, ensuring nullified aggregations render spec-aligned `log.null-life-drain` wording. |
 | 0.6.0 | 472 | 2026/4/19 | Fix aggregated CLOSE-phase life-drain log text in Diary: when nullified (`(吸血無効)`), keep `log.null-life-drain` flavor wording (`…生命を奪えなかった`) instead of incorrectly using `log.life-drain` phrasing. |
