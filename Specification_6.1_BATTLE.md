@@ -333,14 +333,7 @@ If `a.*` with phase = START:
 - If (phase is LONG) and (opponent.party.character.`a.illusion`2) and (the `a.illusion` is enable), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. log "nameへの攻撃はすべて幻だった！".
 
 ##### 6.1.3.2 Reactive ability
-- Priority: Counter > On-strike > Ally-follow-up
-
-**Counter**
-- If opponent.`a.counter` 
-  - `f.counter`(actor:actor , opponent:opponent ,phase: )
-- If opponent.`a.magical-counter` and phase is MID, `f.magical-counter`(actor:opponent, opponent:actor ,phase: )
-- **counter-chain**
-  - If opponent.`a.re-counter`, `f.re-counter`(actor:opponent , opponent:actor ,phase: )
+- Priority: On-strike > Counter > Ally-follow-up
 
 **On-strike**
   - If actor.`a.re-attack`: (using f.hit_detection, f.damage_calculation)
@@ -386,6 +379,13 @@ If `a.*` with phase = START:
     - Log: `log.requiem` + "(鎮魂歌)"
     - Exception: If actor has `a.requiem`, do not apply requiem.
     　　- Log: `log.null-requiem` + (鎮魂無効)
+
+**Counter**
+- If opponent.`a.counter` 
+  - `f.counter`(actor:actor , opponent:opponent ,phase: )
+- If opponent.`a.magical-counter` and phase is MID, `f.magical-counter`(actor:opponent, opponent:actor ,phase: )
+- **counter-chain**
+  - If opponent.`a.re-counter`, `f.re-counter`(actor:opponent , opponent:actor ,phase: )
 
 
 **Ally-follow-up**
