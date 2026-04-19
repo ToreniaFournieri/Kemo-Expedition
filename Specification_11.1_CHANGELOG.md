@@ -3,6 +3,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.0 | 485 | 2026/4/19 | Update Base `デバッグ店` item category tabs to match Inventory UI grouping: add `[機能:晶]` + durability/melee/ranged/magic category tab rows, default selected category `晶`, preserve per-tab item filtering, and keep purchase action label as `買う` for 1-item purchases. |
 | 0.6.0 | 484 | 2026/4/19 | Update Base runtime UI/logic from Jewel store to Debug store: rename Base sub-tab to `デバッグ店`, add Debug pane toggle label `Debug store open OFF/ON` (default OFF), and implement 8.4.3 debug shop behavior (`カリエスの狐彩堂`) to sell all item types without enhancement at `1G`, stock `99`, with inventory-like row layout and `買う` action for 1-item purchases. |
 | 0.6.0 | 483 | 2026/4/19 | Update runtime item/enemy drop assignments to Spec 3.2.1/4.2.2: fix elite enemy drop tables for `風読みの翼`/`狼の妖術士`, rename rare drop item names to `破城槌`/`焔断`/`雷切`/`白妙`/`祓詞`/`境断`, and wire special-bonus abilities (`a.wind-rider`, `a.coldproof`, `a.siege`, protect-breakers, `a.domain-breaker`). |
 | 0.6.0 | 482 | 2026/4/19 | Fix `Stubborn` (頑固) predisposition physical defense bonus value to spec-compliant `c.physical_defense+0.10` so UI/runtime applies `物防+10%` instead of `物防+1,000%`. |

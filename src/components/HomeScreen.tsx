@@ -8179,6 +8179,8 @@ function DebugStoreTab({
 
   const DEBUG_STORE_PRICE = 1;
   const DEBUG_STORE_STOCK = 99;
+  const [selectedCategory, setSelectedCategory] = useState<InventoryCategory>('jewel');
+  const isJewelCategory = selectedCategory === 'jewel';
   const debugStoreItems = ITEMS
     .slice()
     .sort((a, b) => b.id - a.id)
@@ -8196,6 +8198,10 @@ function DebugStoreTab({
         canBuy,
       };
     });
+  const filteredDebugStoreItems = isJewelCategory
+    ? []
+    : debugStoreItems.filter(({ item }) => item.category === selectedCategory);
+  const totalAvailableCount = filteredDebugStoreItems.reduce((sum, { remainingStock }) => sum + remainingStock, 0);
 
   return (
     <div className="space-y-3">
@@ -8209,8 +8215,43 @@ function DebugStoreTab({
         </div>
       </div>
 
-      <div className="space-y-2">
-        {debugStoreItems.map(({ item, displayItem, purchaseKey, remainingStock, canBuy }) => (
+      <div className="text-sm text-gray-500">
+        {isJewelCategory ? '0個' : `${formatNumber(totalAvailableCount)}個`}
+      </div>
+
+      <div className="flex gap-1 overflow-x-auto pb-1">
+        {INVENTORY_CATEGORY_GROUPS.map((group) => (
+          <div key={group.id} className="flex flex-col">
+            <div className="mb-0.5 text-center text-xs text-gray-400">{group.label}</div>
+            <div className="flex">
+              {group.categories.map((cat, i) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat as InventoryCategory)}
+                  className={`px-2 py-1 text-sm pane-button-shadow ${
+                    i === 0 ? 'rounded-l' : i === group.categories.length - 1 ? 'rounded-r' : ''
+                  } ${
+                    selectedCategory === cat
+                      ? 'bg-sub text-white'
+                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  }`}
+                >
+                  {cat === 'jewel' ? '晶' : CATEGORY_SHORT_NAMES[cat]}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {isJewelCategory && (
+        <div className="rounded border border-gray-200 bg-white px-3 py-2 text-xs text-gray-500">
+          晶カテゴリは準備中です。耐久・攻撃カテゴリからアイテムをご購入ください。
+        </div>
+      )}
+
+      <div className="space-y-2 min-h-[364px] max-h-[26rem] overflow-y-auto">
+        {!isJewelCategory && filteredDebugStoreItems.map(({ item, displayItem, purchaseKey, remainingStock, canBuy }) => (
           <div key={purchaseKey} className="rounded border border-gray-200 bg-white px-3 py-2">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
@@ -8239,6 +8280,11 @@ function DebugStoreTab({
             </div>
           </div>
         ))}
+        {!isJewelCategory && filteredDebugStoreItems.length === 0 && (
+          <div className="rounded border border-gray-200 bg-white px-3 py-4 text-center text-sm text-gray-400">
+            このカテゴリの商品はありません
+          </div>
+        )}
       </div>
     </div>
   );
