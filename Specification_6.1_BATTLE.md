@@ -111,7 +111,7 @@ If `a.*` with phase = START:
   - If party.`Goddess of Fertility` and terrain not in {`terrain.machine-logic`, `terrain.gehenna` }: +1 (cap at 9)
   - If actor.`a.slow`N and terrain != `terrain.machine-logic`: −N (minimum 1)
   - If actor.`a.boost`N and terrain != `terrain.machine-logic`: +N (cap at 9)
-  - If opponent.`a.frostbite`1 and (opponent doesn't have `a.coldproof`) and terrain != `terrain.machine-logic`: −1 (minimum 1)
+  - If opponent.`a.frostbite`1 and (actor doesn't have `a.coldproof`) and terrain != `terrain.machine-logic`: -1 (minimum 1)
 
   - **Terrain effects**
     - If `terrain.tailwind` and (actor doesn't has `a.wind-rider`) and (actor is a party member): +**1d3**, cap at 9
