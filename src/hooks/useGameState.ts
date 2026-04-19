@@ -1516,7 +1516,7 @@ type GameAction =
   | { type: 'SELL_STACK'; variantKey: string }
   | { type: 'SELL_ALL_OWNED' }
   | { type: 'BUY_SHOP_ITEM'; itemId: number }
-  | { type: 'BUY_JEWEL_SHOP_ITEM'; jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus'; rank: number }
+  | { type: 'BUY_DEBUG_STORE_ITEM'; itemId: number }
   | { type: 'REFRESH_SHOP_LINEUP' }
   | { type: 'SET_VARIANT_STATUS'; variantKey: string; status: 'notown' }
   | { type: 'MARK_ITEMS_SEEN' }
@@ -3866,20 +3866,41 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
 
-    case 'BUY_JEWEL_SHOP_ITEM': {
-      const JEWEL_PRICE = 100;
-      const JEWEL_STOCK_LIMIT = 5;
-      const purchaseKey = `${action.jewelKey}:${Math.max(1, Math.min(8, Math.floor(action.rank)))}`;
-      const purchasedCount = state.global.jewelShopPurchases[purchaseKey] ?? 0;
-      if (state.global.gold < JEWEL_PRICE || purchasedCount >= JEWEL_STOCK_LIMIT) return state;
+    case 'BUY_DEBUG_STORE_ITEM': {
+      // SpecRef: 8.4.3 | Debug store(デバッグ店) | Item purchase (debug purpose only)
+      const DEBUG_STORE_PRICE = 1;
+      const DEBUG_STORE_STOCK_LIMIT = 99;
+      const baseItem = getItemById(action.itemId);
+      if (!baseItem) return state;
 
-      const rank = Math.max(1, Math.min(8, Math.floor(action.rank)));
+      const purchaseKey = `item:${baseItem.id}`;
+      const purchasedCount = state.global.jewelShopPurchases[purchaseKey] ?? 0;
+      if (state.global.gold < DEBUG_STORE_PRICE || purchasedCount >= DEBUG_STORE_STOCK_LIMIT) return state;
+
+      const debugStoreItem: Item = {
+        ...baseItem,
+        enhancement: 0,
+        superRare: 0,
+      };
+      const variantKey = getVariantKey(debugStoreItem);
+      const previousVariant = state.global.inventory[variantKey];
+      const nextCount = Math.min(ITEM_MAX_STACK, (previousVariant?.count ?? 0) + 1);
+      if ((previousVariant?.count ?? 0) >= ITEM_MAX_STACK) return state;
+
       return {
         ...state,
         global: {
           ...state.global,
-          gold: state.global.gold - JEWEL_PRICE,
-          jewels: addJewelToInventory(state.global.jewels, action.jewelKey, rank),
+          gold: state.global.gold - DEBUG_STORE_PRICE,
+          inventory: {
+            ...state.global.inventory,
+            [variantKey]: {
+              item: debugStoreItem,
+              count: nextCount,
+              status: 'owned',
+              isNew: previousVariant?.isNew ?? true,
+            },
+          },
           jewelShopPurchases: {
             ...state.global.jewelShopPurchases,
             [purchaseKey]: purchasedCount + 1,
@@ -4552,8 +4573,8 @@ export function useGameState() {
       dispatch({ type: 'BUY_SHOP_ITEM', itemId });
     }, []),
 
-    buyJewelShopItem: useCallback((jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus', rank: number) => {
-      dispatch({ type: 'BUY_JEWEL_SHOP_ITEM', jewelKey, rank });
+    buyDebugStoreItem: useCallback((itemId: number) => {
+      dispatch({ type: 'BUY_DEBUG_STORE_ITEM', itemId });
     }, []),
 
     refreshShopLineup: useCallback(() => {
