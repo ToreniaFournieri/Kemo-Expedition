@@ -243,7 +243,7 @@ export const RACES: Race[] = [
     emoji: '🐓',
     icon: '/race-icons/Avian.png',
     stats: { vitality: 8, strength: 11, intelligence: 11, mind: 9 },
-    defaultAbility: { id: 'a.flying', name: '飛行', description: '相手の近接攻撃回数がxN倍になる' },
+    defaultAbility: { id: 'a.flying', name: '飛行', description: '近接開始タイミングで発動し、自身の回避を+Nする' },
     unlockAbility: { id: 'a.wind-rider', name: '風渡り', description: '強風時に有利な補正を得る' },
     memo: 'bird',
     selectable: false,

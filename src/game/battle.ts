@@ -1312,6 +1312,7 @@ function calculateCharacterDamage(
   terrainEffect?: TerrainEffectKey | null,
   noAMultiplier: number = 1.0, // For counter/re-attack, use 0.5
   temporaryAccuracyBonus: number = 0,
+  temporaryTargetEvasionBonus: number = 0,
   runtimeOffenseMultiplier: number = 1.0,
   echoDomainElementalUsageCount: number = 0,
 ): CharacterAttackResult {
@@ -1453,7 +1454,7 @@ function calculateCharacterDamage(
   // All phases now use hit detection.
   // MID phase ignores row-based accuracy potency and uses fixed potency (1.0).
   const actorAccuracyPotency = phase === 'mid' ? 1.0 : charStats.accuracyPotency;
-  const enemyEvasion = enemy.evasionBonus;
+  const enemyEvasion = enemy.evasionBonus + temporaryTargetEvasionBonus;
 
   const actorFocusLevel = charStats.abilities.find(a => a.id === 'focus')?.level ?? 0;
   const enemyDeflectionLevel = getEnemyAbilityLevel(enemy, 'deflection');
@@ -1597,14 +1598,18 @@ function getRegenerationPercent(level: number): number {
   return 0;
 }
 
-function getFlyingNoAMultiplier(level: number): number {
-  if (level <= 0) return 1.0;
-  return 1 / 4;
+function getFlyingEvasionBonus(level: number): number {
+  if (level >= 3) return 0.50;
+  if (level === 2) return 0.45;
+  if (level === 1) return 0.40;
+  return 0;
 }
 
 function getFlyingNote(level: number): string {
-  if (level <= 0) return '(飛行:相手の攻撃回数x1)';
-  return '(飛行:相手の攻撃回数x1/4)';
+  if (level >= 3) return '(飛行:回避+50)';
+  if (level === 2) return '(飛行:回避+45)';
+  if (level === 1) return '(飛行:回避+40)';
+  return '(飛行:回避+0)';
 }
 
 function getFreeTimingForPhase(
@@ -2541,10 +2546,10 @@ export function executeBattle(
   const activeMagicSealQueue = createMagicSealQueue(party, characterStats, enemy, environment.terrainEffect);
   let pendingEnemyHowlEffect: PendingHowlEffect | null = null;
   let pendingPartyHowlEffect: PendingHowlEffect | null = null;
-  let enemyFlyingNoAMultiplier = 1.0;
-  let partyFlyingNoAMultiplier = 1.0;
+  let enemyTemporaryEvasionBonus = 0;
   let enemyTemporaryAccuracyBonus = 0;
   const temporaryAccuracyBonusByCharacterId = new Map<number, number>();
+  const temporaryEvasionBonusByCharacterId = new Map<number, number>();
   let enemyOffenseAmplifierMultiplier = 1.0;
   const elementalOffenseUsageCounter: ElementalOffenseUsageCounter = { fire: 0, ice: 0, thunder: 0 };
   const registerElementalOffenseUsage = (elementalOffense: ElementalOffense, actorAbilities: AbilityLike[]): number => (
@@ -3338,13 +3343,12 @@ export function executeBattle(
     const enemyPhaseAccuracyBonus = phase === 'close' ? enemyTemporaryAccuracyBonus : 0;
     const attempts = Math.ceil(
       getEnemyNoA(phase, enemy)
-      * (phase === 'close' ? enemyFlyingNoAMultiplier : 1.0)
       * counterNoAMultiplier
       * getTerrainNoAAmplifier(phase, environment.terrainEffect, enemy.abilities)
     );
     let hits = 0;
     for (let i = 1; i <= attempts; i++) {
-      const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, targetCharStats.evasionBonus, i, phase, getDeflectionLevel(targetCharStats), getEnemyFocusLevel(enemy), environment.terrainEffect, 0, hasAbility(enemy.abilities, 'true_sight'), hasAbility(enemy.abilities, 'domain_breaker'));
+      const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, targetCharStats.evasionBonus + (phase === 'close' ? (temporaryEvasionBonusByCharacterId.get(targetCharStats.characterId) ?? 0) : 0), i, phase, getDeflectionLevel(targetCharStats), getEnemyFocusLevel(enemy), environment.terrainEffect, 0, hasAbility(enemy.abilities, 'true_sight'), hasAbility(enemy.abilities, 'domain_breaker'));
       if (didHit) {
         hits += 1;
       }
@@ -3416,7 +3420,7 @@ export function executeBattle(
     }
 
     const reCounterEchoDomainUsageCount = registerElementalOffenseUsage(targetCharStats.elementalOffense, targetCharStats.abilities);
-    const reCounterResult = calculateCharacterDamage(phase, targetCharStats, targetChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, reCounterNoAMultiplier * (phase === 'close' ? partyFlyingNoAMultiplier : 1.0), phase === 'close' ? (temporaryAccuracyBonusByCharacterId.get(targetCharStats.characterId) ?? 0) : 0, resolveCharacterOffenseAmplifierMultiplier(targetCharStats.characterId), reCounterEchoDomainUsageCount);
+    const reCounterResult = calculateCharacterDamage(phase, targetCharStats, targetChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, reCounterNoAMultiplier, phase === 'close' ? (temporaryAccuracyBonusByCharacterId.get(targetCharStats.characterId) ?? 0) : 0, phase === 'close' ? enemyTemporaryEvasionBonus : 0, resolveCharacterOffenseAmplifierMultiplier(targetCharStats.characterId), reCounterEchoDomainUsageCount);
     if (reCounterResult.totalAttempts <= 0) {
       return;
     }
@@ -3469,7 +3473,7 @@ export function executeBattle(
       if (!coverChar) continue;
 
       const coveringFireEchoDomainUsageCount = registerElementalOffenseUsage(coverCharStats.elementalOffense, coverCharStats.abilities);
-      const coveringFireResult = calculateCharacterDamage('long', coverCharStats, coverChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, coveringFireNoAMultiplier, 0, resolveCharacterOffenseAmplifierMultiplier(coverCharStats.characterId), coveringFireEchoDomainUsageCount);
+      const coveringFireResult = calculateCharacterDamage('long', coverCharStats, coverChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, coveringFireNoAMultiplier, 0, 0, resolveCharacterOffenseAmplifierMultiplier(coverCharStats.characterId), coveringFireEchoDomainUsageCount);
       if (coveringFireResult.totalAttempts <= 0) continue;
 
       if (isIllusionActive('long', getEnemyAbilityLevel(enemy, 'illusion') > 0, 'enemy', consumedIllusionStateIds)) {
@@ -3915,6 +3919,7 @@ export function executeBattle(
       }
     };
 
+    // SpecRef: 6.1.3.1 | Actor action | actor.a.flying
     const triggerFlyingAtTiming = (timing: number): void => {
       if (phase !== 'close' || timing !== 9 || hasTriggeredFlying) return;
       hasTriggeredFlying = true;
@@ -3922,7 +3927,7 @@ export function executeBattle(
 
       const enemyFlyingLevel = getEnemyAbilityLevel(enemy, 'flying');
       if (enemyFlyingLevel > 0) {
-        partyFlyingNoAMultiplier *= getFlyingNoAMultiplier(enemyFlyingLevel);
+        enemyTemporaryEvasionBonus += getFlyingEvasionBonus(enemyFlyingLevel);
         log.push({
           phase,
           initiativeRoll: timing,
@@ -3942,7 +3947,10 @@ export function executeBattle(
         .sort((a, b) => a.stats.row - b.stats.row);
 
       for (const entry of partyFlyingEntries) {
-        enemyFlyingNoAMultiplier *= getFlyingNoAMultiplier(entry.level);
+        temporaryEvasionBonusByCharacterId.set(
+          entry.stats.characterId,
+          (temporaryEvasionBonusByCharacterId.get(entry.stats.characterId) ?? 0) + getFlyingEvasionBonus(entry.level),
+        );
         log.push({
           phase,
           initiativeRoll: timing,
@@ -4391,7 +4399,6 @@ export function executeBattle(
         const noA = Math.ceil(
           baseNoA
           * (howlEffect?.multiplier ?? 1.0)
-          * (phase === 'close' ? enemyFlyingNoAMultiplier : 1.0)
           * getTerrainNoAAmplifier(phase, environment.terrainEffect, enemy.abilities)
         );
         if (noA <= 0) continue;
@@ -4432,7 +4439,7 @@ export function executeBattle(
             const didHit = hitDetection(
               enemyAccuracyPotency,
               enemyAccuracyBonus,
-              targetCharStats.evasionBonus,
+              targetCharStats.evasionBonus + (phase === 'close' ? (temporaryEvasionBonusByCharacterId.get(targetCharStats.characterId) ?? 0) : 0),
               enemyHitIndex,
               phase,
               getDeflectionLevel(targetCharStats),
@@ -4837,8 +4844,9 @@ export function executeBattle(
               partyHp,
               partyDeityKey,
               environment.terrainEffect,
-              getCounterNoAMultiplier(attack.charStats) * (phase === 'close' ? partyFlyingNoAMultiplier : 1.0),
+              getCounterNoAMultiplier(attack.charStats),
               phase === 'close' ? (temporaryAccuracyBonusByCharacterId.get(charId) ?? 0) : 0,
+              phase === 'close' ? enemyTemporaryEvasionBonus : 0,
               resolveCharacterOffenseAmplifierMultiplier(charId),
               registerElementalOffenseUsage(attack.charStats.elementalOffense, attack.charStats.abilities),
             );
@@ -4914,7 +4922,7 @@ export function executeBattle(
             let reCounterHits = 0;
             const enemyReCounterEchoDomainUsageCount = registerElementalOffenseUsage(enemy.elementalOffense, enemy.abilities);
             for (let i = 1; i <= reCounterAttempts; i++) {
-              const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, attack.charStats.evasionBonus, i, phase, getDeflectionLevel(attack.charStats), getEnemyFocusLevel(enemy), environment.terrainEffect, 0, hasAbility(enemy.abilities, 'true_sight'), hasAbility(enemy.abilities, 'domain_breaker'));
+              const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, attack.charStats.evasionBonus + (phase === 'close' ? (temporaryEvasionBonusByCharacterId.get(charId) ?? 0) : 0), i, phase, getDeflectionLevel(attack.charStats), getEnemyFocusLevel(enemy), environment.terrainEffect, 0, hasAbility(enemy.abilities, 'true_sight'), hasAbility(enemy.abilities, 'domain_breaker'));
               if (!didHit) continue;
               reCounterHits += 1;
               reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, characterStats, attack.charStats, enemyHp, partyHp, partyStats.hp, environment.terrainEffect, enemyOffenseAmplifierMultiplier, enemyReCounterEchoDomainUsageCount);
@@ -5013,7 +5021,6 @@ export function executeBattle(
           runEnemyAttack(Math.ceil(
             baseNoA
             * getEnemyReAttackNoAMultiplier(enemy)
-            * (phase === 'close' ? enemyFlyingNoAMultiplier : 1.0)
             * getTerrainNoAAmplifier(phase, environment.terrainEffect, enemy.abilities)
           ), true);
         }
@@ -5029,7 +5036,7 @@ export function executeBattle(
             if (magicalCounterNoAMultiplier <= 0) continue;
 
             const magicalCounterEchoDomainUsageCount = registerElementalOffenseUsage(magicalCounterStats.elementalOffense, magicalCounterStats.abilities);
-            const magicalCounterResult = calculateCharacterDamage('mid', magicalCounterStats, magicalCounterChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, magicalCounterNoAMultiplier, 0, resolveCharacterOffenseAmplifierMultiplier(charId), magicalCounterEchoDomainUsageCount);
+            const magicalCounterResult = calculateCharacterDamage('mid', magicalCounterStats, magicalCounterChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, magicalCounterNoAMultiplier, 0, 0, resolveCharacterOffenseAmplifierMultiplier(charId), magicalCounterEchoDomainUsageCount);
             if (magicalCounterResult.totalAttempts <= 0) continue;
 
             addEnemyHitsReceived(magicalCounterResult.hits);
@@ -5092,7 +5099,6 @@ export function executeBattle(
 
       const baseNoA = getCharacterNoAForPhase(phase, cs);
       const howlEffect = baseNoA > 0 ? consumePendingEnemyHowlEffect() : null;
-      const flyingNoAMultiplier = phase === 'close' ? partyFlyingNoAMultiplier : 1.0;
       if (hasNoOffense(cs)) continue;
 
       const characterPhaseAccuracyBonus = phase === 'close' ? (temporaryAccuracyBonusByCharacterId.get(cs.characterId) ?? 0) : 0;
@@ -5528,7 +5534,7 @@ export function executeBattle(
         if (firstActorInBattle === null) {
           firstActorInBattle = cs.characterId;
         }
-        const firstAttackResult = runCharacterAttack((howlEffect?.multiplier ?? 1.0) * flyingNoAMultiplier, false);
+        const firstAttackResult = runCharacterAttack(howlEffect?.multiplier ?? 1.0, false);
         if (firstAttackResult && enemyHp > 0 && partyHp > 0) {
           triggerCoveringFire(phase, cs, firstAttackResult.hits, turn.roll);
         }
@@ -5537,7 +5543,7 @@ export function executeBattle(
 
         const reAttackProfile = getReAttackProfile(cs);
         for (let i = 0; i < reAttackProfile.count && enemyHp > 0 && partyHp > 0; i++) {
-          const reAttackResult = runCharacterAttack(reAttackProfile.noAMultiplier * flyingNoAMultiplier, true);
+          const reAttackResult = runCharacterAttack(reAttackProfile.noAMultiplier, true);
           if (reAttackResult && enemyHp > 0 && partyHp > 0) {
             triggerCoveringFire(phase, cs, reAttackResult.hits, turn.roll);
           }
