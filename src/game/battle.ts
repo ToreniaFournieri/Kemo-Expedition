@@ -2996,6 +2996,9 @@ export function executeBattle(
     appliedHits: number,
     appliedDamage: number,
     initiativeRoll: number,
+    options?: {
+      skipNullCorrodeLog?: boolean;
+    },
   ): void => {
     if (appliedHits <= 0) return;
 
@@ -3003,19 +3006,21 @@ export function executeBattle(
     if (enemyCorrodeLevel > 0 && appliedHits >= 3) {
       const targetNullCorrode = hasNullCorrode(targetStats);
       const multiplier = getCorrodeMultiplier(enemyCorrodeLevel);
-      log.push({
-        phase: 'close',
-        initiativeRoll,
-        actor: 'triggered',
-        action: targetNullCorrode
-          ? buildNullCorrodeAction(enemy.name, targetName)
-          : buildCorrodeAction(enemy.name, targetName),
-        note: targetNullCorrode
-          ? '(防腐)'
-          : `(腐食:相手の攻撃倍率が${formatMultiplierAsFraction(multiplier)})`,
-        noteTone: 'muted',
-        hideInitiativeLabel: true,
-      });
+      if (!(targetNullCorrode && options?.skipNullCorrodeLog)) {
+        log.push({
+          phase: 'close',
+          initiativeRoll,
+          actor: 'triggered',
+          action: targetNullCorrode
+            ? buildNullCorrodeAction(enemy.name, targetName)
+            : buildCorrodeAction(enemy.name, targetName),
+          note: targetNullCorrode
+            ? '(防腐)'
+            : `(腐食:相手の攻撃倍率が${formatMultiplierAsFraction(multiplier)})`,
+          noteTone: 'muted',
+          hideInitiativeLabel: true,
+        });
+      }
       if (!targetNullCorrode) {
         characterOffenseAmplifierMultiplierById.set(
           targetStats.characterId,
@@ -4741,6 +4746,22 @@ export function executeBattle(
               magicalCounterCandidates.set(charId, attack.charStats);
             }
 
+            const hasImmediateNullCorrodeLog = phase === 'close'
+              && appliedHits >= 3
+              && getEnemyAbilityLevel(enemy, 'corrode') > 0
+              && hasNullCorrode(attack.charStats);
+            if (hasImmediateNullCorrodeLog) {
+              log.push({
+                phase,
+                initiativeRoll: turn.roll,
+                actor: 'triggered',
+                action: buildNullCorrodeAction(enemy.name, targetName),
+                note: '(防腐)',
+                noteTone: 'muted',
+                hideInitiativeLabel: true,
+              });
+            }
+
             const deferEnemyCloseReactiveAbilities = phase === 'close'
               && partyHp > 0
               && enemyHp > 0
@@ -4753,6 +4774,7 @@ export function executeBattle(
                 appliedHits,
                 appliedDamage,
                 turn.roll,
+                { skipNullCorrodeLog: hasImmediateNullCorrodeLog },
               );
             }
 
@@ -4937,6 +4959,7 @@ export function executeBattle(
                 appliedHits,
                 appliedDamage,
                 turn.roll,
+                { skipNullCorrodeLog: hasImmediateNullCorrodeLog },
               );
             }
 

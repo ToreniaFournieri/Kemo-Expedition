@@ -3,6 +3,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.0 | 470 | 2026/4/19 | Fix CLOSE-phase `a.null-corrode` battle log ordering for enemy corrosion attempts so `(防腐)` is emitted immediately after the triggering enemy action (before deferred counter/re-counter sequences), while keeping existing deferred reactive resolution flow intact. |
 | 0.6.0 | 469 | 2026/4/18 | Implement passive nullification abilities `a.null-corrode`, `a.null-life-drain`, `a.null-death-touch`, `a.null-burn`, `a.null-bind`, and `a.null-requiem` in runtime/master data: add ability ids/names/glossary/help text, add `log.null-*` flavor text builders, apply immunity handling to CLOSE on-strike/reactive effects and requiem resolution, and grant lineage bonuses per table (`sandstorm`, `ashen_capital`, `blaze_peak`, `abyssal_sea`, `utopia`, plus `oath` requiem). |
 | 0.6.0 | 468 | 2026/4/18 | Implement passive ability `a.null-shock` in runtime/master data: add ability id/name/glossary/tooltip, grant it to `machina` lineage, and update CLOSE shock resolution to consume `a.shock` but keep attacks uninterrupted for `a.null-shock` actors with `log.null-shock` + `(感電予防:攻撃継続)`. |
 | 0.6.0 | 467 | 2026/4/18 | Update runtime predisposition bonuses for `Amicable`/`Stubborn` to requested table values; remove extra `a.slow` from `Stubborn` while keeping `c.shield_x1.1`, `c.physical_defense+0.10`, and `b.vitality+1`. |
