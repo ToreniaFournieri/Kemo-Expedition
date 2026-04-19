@@ -408,7 +408,7 @@
 | 8 | E | `Cervin` | `i.armor`ED | 鹿神の鎧 |
 | 8 | E | `Cervin` | `i.wand`ED | 鹿神の杖 |
 | 8 | E | `Cervin` | `i.bolt`ED | 鹿神の閃ボルト |
-| 8 | B | `Cervin` | `i.katana`BD | 千里眼王の神刀 |
+| 8 | B | `Cervin` | `i.katana`BD | 境断 | `a.domain-breaker` |
 | 8 | B | `Cervin` | `i.bolt`BD | 千里眼王の雷閃ボルト |
 | 8 | B | `Cervin` | `i.grimoire`BD | 千里眼王の神典 |
 | 8 | B | `Cervin` | `i.wand`BD | 祓詞 | `a.m-barrier-breaker` |
