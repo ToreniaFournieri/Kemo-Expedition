@@ -244,12 +244,14 @@ export const RACES: Race[] = [
     icon: '/race-icons/Avian.png',
     stats: { vitality: 8, strength: 11, intelligence: 11, mind: 9 },
     defaultAbility: { id: 'a.flying', name: '飛行', description: '相手の近接攻撃回数がxN倍になる' },
+    unlockAbility: { id: 'a.wind-rider', name: '風渡り', description: '強風時に有利な補正を得る' },
     memo: 'bird',
     selectable: false,
     bonuses: [
       { type: 'gauntlet_multiplier', value: 1.3 },
       { type: 'penet', value: 0.15 },
       { type: 'ability', value: 1, abilityId: 'flying', abilityLevel: 1 },
+      { type: 'ability', value: 1, abilityId: 'wind_rider', abilityLevel: 1 },
     ],
   },
 ];
