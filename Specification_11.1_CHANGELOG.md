@@ -3,6 +3,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.0 | 474 | 2026/4/19 | Update battle runtime reactive resolution order for Spec 6.1.3.2 priority: resolve On-strike effects before Counter, and keep Ally-follow-up (`a.covering-fire`) after counter chains (`On-strike > Counter > Ally-follow-up`) for both character and enemy CLOSE actions. |
 | 0.6.0 | 473 | 2026/4/19 | Refine Diary aggregated life-drain text generation to reuse canonical flavor text templates (`LIFE_DRAIN_LOGS` / `NULL_LIFE_DRAIN_LOGS`) via shared narration helper, ensuring nullified aggregations render spec-aligned `log.null-life-drain` wording. |
 | 0.6.0 | 472 | 2026/4/19 | Fix aggregated CLOSE-phase life-drain log text in Diary: when nullified (`(吸血無効)`), keep `log.null-life-drain` flavor wording (`…生命を奪えなかった`) instead of incorrectly using `log.life-drain` phrasing. |
 | 0.6.0 | 471 | 2026/4/19 | Extend CLOSE-phase immediate nullification log ordering in deferred enemy-reactive flows: emit `a.null-corrode`, `a.null-life-drain`, `a.null-death-touch`, `a.null-burn`, and `a.null-bind` logs right after the triggering enemy action (before counter/re-counter logs), with duplicate suppression in deferred resolution. |
