@@ -1517,6 +1517,7 @@ type GameAction =
   | { type: 'SELL_ALL_OWNED' }
   | { type: 'BUY_SHOP_ITEM'; itemId: number }
   | { type: 'BUY_DEBUG_STORE_ITEM'; itemId: number }
+  | { type: 'BUY_DEBUG_STORE_JEWEL'; jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus'; rank: number }
   | { type: 'REFRESH_SHOP_LINEUP' }
   | { type: 'SET_VARIANT_STATUS'; variantKey: string; status: 'notown' }
   | { type: 'MARK_ITEMS_SEEN' }
@@ -3909,6 +3910,29 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
 
+    case 'BUY_DEBUG_STORE_JEWEL': {
+      // SpecRef: 8.4.3 | Debug store(デバッグ店) | Item purchase (debug purpose only)
+      const DEBUG_STORE_PRICE = 1;
+      const DEBUG_STORE_STOCK_LIMIT = 99;
+      const purchaseKey = `jewel:${action.jewelKey}:${action.rank}`;
+      const purchasedCount = state.global.jewelShopPurchases[purchaseKey] ?? 0;
+      const ownedCount = getJewelOwnedCount(state.global.jewels, action.jewelKey, action.rank);
+      if (state.global.gold < DEBUG_STORE_PRICE || purchasedCount >= DEBUG_STORE_STOCK_LIMIT || ownedCount >= ITEM_MAX_STACK) return state;
+
+      return {
+        ...state,
+        global: {
+          ...state.global,
+          gold: state.global.gold - DEBUG_STORE_PRICE,
+          jewels: addJewelToInventory(state.global.jewels, action.jewelKey, action.rank),
+          jewelShopPurchases: {
+            ...state.global.jewelShopPurchases,
+            [purchaseKey]: purchasedCount + 1,
+          },
+        },
+      };
+    }
+
     case 'REFRESH_SHOP_LINEUP': {
       const now = new Date();
       const globalState = applyShopIntimacyDecay(state.global, now);
@@ -4575,6 +4599,10 @@ export function useGameState() {
 
     buyDebugStoreItem: useCallback((itemId: number) => {
       dispatch({ type: 'BUY_DEBUG_STORE_ITEM', itemId });
+    }, []),
+
+    buyDebugStoreJewel: useCallback((jewelKey: 'might' | 'arcana' | 'fort' | 'ward' | 'shade' | 'focus', rank: number) => {
+      dispatch({ type: 'BUY_DEBUG_STORE_JEWEL', jewelKey, rank });
     }, []),
 
     refreshShopLineup: useCallback(() => {

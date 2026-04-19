@@ -92,6 +92,7 @@ interface HomeScreenProps {
     sellAllOwned: () => void;
     buyShopItem: (itemId: number) => void;
     buyDebugStoreItem: (itemId: number) => void;
+    buyDebugStoreJewel: (jewelKey: JewelKey, rank: number) => void;
     refreshShopLineup: () => void;
     setVariantStatus: (variantKey: string, status: 'notown') => void;
     markItemsSeen: () => void;
@@ -4534,6 +4535,7 @@ export function HomeScreen({
           onSetVariantStatus={actions.setVariantStatus}
           onBuyShopItem={actions.buyShopItem}
           onBuyDebugStoreItem={actions.buyDebugStoreItem}
+          onBuyDebugStoreJewel={actions.buyDebugStoreJewel}
           onRefreshShopLineup={actions.refreshShopLineup}
           activeSubTab={activeBaseSubTab}
           onSetActiveSubTab={setActiveBaseSubTab}
@@ -7897,6 +7899,7 @@ function BaseTab({
   onSetVariantStatus,
   onBuyShopItem,
   onBuyDebugStoreItem,
+  onBuyDebugStoreJewel,
   onRefreshShopLineup,
   activeSubTab,
   onSetActiveSubTab,
@@ -7915,6 +7918,7 @@ function BaseTab({
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
   onBuyShopItem: (itemId: number) => void;
   onBuyDebugStoreItem: (itemId: number) => void;
+  onBuyDebugStoreJewel: (jewelKey: JewelKey, rank: number) => void;
   onRefreshShopLineup: () => void;
   activeSubTab: BaseSubTab;
   onSetActiveSubTab: (tab: BaseSubTab) => void;
@@ -7976,6 +7980,7 @@ function BaseTab({
           gold={gold}
           debugStorePurchases={debugStorePurchases}
           onBuyDebugStoreItem={onBuyDebugStoreItem}
+          onBuyDebugStoreJewel={onBuyDebugStoreJewel}
         />
       ) : (
         <div className="text-sm text-gray-600">この機能は次のバージョンで利用可能になります。</div>
@@ -8167,11 +8172,15 @@ function DebugStoreTab({
   gold,
   debugStorePurchases,
   onBuyDebugStoreItem,
+  onBuyDebugStoreJewel,
 }: {
   gold: number;
   debugStorePurchases: Record<string, number>;
   onBuyDebugStoreItem: (itemId: number) => void;
+  onBuyDebugStoreJewel: (jewelKey: JewelKey, rank: number) => void;
 }) {
+  // SpecRef: 8.4.3 | Debug store(デバッグ店) | Inventory includes item category tabs
+  const [selectedCategory, setSelectedCategory] = useState<InventoryCategory>('jewel');
   const shopkeeperRace = RACES.find((race) => race.id === 'vulpinian') ?? RACES.find((race) => race.id === 'mustelid');
   if (!shopkeeperRace) {
     return <div className="text-sm text-gray-600">デバッグ店の準備中です。</div>;
@@ -8196,6 +8205,25 @@ function DebugStoreTab({
         canBuy,
       };
     });
+  const debugJewelItems = (Object.keys(JEWEL_DEFS) as JewelKey[]).map((jewelKey) => {
+    const rank = 1;
+    const purchaseKey = `jewel:${jewelKey}:${rank}`;
+    const purchasedCount = debugStorePurchases[purchaseKey] ?? 0;
+    const remainingStock = Math.max(0, DEBUG_STORE_STOCK - purchasedCount);
+    const canBuy = remainingStock > 0 && gold >= DEBUG_STORE_PRICE;
+    return {
+      jewelKey,
+      rank,
+      purchaseKey,
+      remainingStock,
+      canBuy,
+    };
+  });
+  const selectedGroup = INVENTORY_CATEGORY_GROUPS.find((group) => group.categories.includes(selectedCategory)) ?? INVENTORY_CATEGORY_GROUPS[0];
+  const displayShortName = (category: string) => category === 'jewel' ? '晶' : (CATEGORY_SHORT_NAMES[category] ?? category);
+  const visibleDebugItems = selectedCategory === 'jewel'
+    ? []
+    : debugStoreItems.filter(({ item }) => item.category === selectedCategory);
 
   return (
     <div className="space-y-3">
@@ -8209,8 +8237,52 @@ function DebugStoreTab({
         </div>
       </div>
 
+      <div className="liquid-glass-segmented flex flex-wrap gap-1 rounded-2xl p-1">
+        {INVENTORY_CATEGORY_GROUPS.map((group) => (
+          <button
+            key={group.id}
+            type="button"
+            onClick={() => setSelectedCategory(group.categories[0] as InventoryCategory)}
+            className={`${IOS_GLASS_TAB_CLASS} rounded-lg px-2 py-1 text-xs font-medium transition-colors ${
+              selectedGroup.id === group.id ? 'liquid-glass-tab-active text-sub' : 'text-gray-700 hover:text-gray-900'
+            }`}
+            title={`${group.label}:${group.categories.map((category) => displayShortName(category)).join(',')}`}
+          >
+            {group.label}:{group.categories.map((category) => displayShortName(category)).join(',')}
+          </button>
+        ))}
+      </div>
+
       <div className="space-y-2">
-        {debugStoreItems.map(({ item, displayItem, purchaseKey, remainingStock, canBuy }) => (
+        {selectedCategory === 'jewel' ? debugJewelItems.map(({ jewelKey, rank, purchaseKey, remainingStock, canBuy }) => (
+          <div key={purchaseKey} className="rounded border border-gray-200 bg-white px-3 py-2">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 text-sm text-gray-900">
+                  <span className="truncate">{getJewelNameByRank(jewelKey, rank)}</span>
+                  <span className="shrink-0 text-xs text-gray-500">{formatNumber(DEBUG_STORE_PRICE)}G</span>
+                </div>
+                <div className="mt-0.5 text-xs leading-tight text-gray-400">
+                  {getJewelInventoryStatusText(jewelKey, rank)}
+                </div>
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                <span className="text-[11px] text-gray-500">在庫 {formatNumber(remainingStock)}/{formatNumber(DEBUG_STORE_STOCK)}</span>
+                <button
+                  onClick={() => onBuyDebugStoreJewel(jewelKey, rank)}
+                  disabled={!canBuy}
+                  className={`rounded px-2 py-0.5 text-xs font-medium ${
+                    canBuy
+                      ? 'bg-sub text-white hover:bg-sub/90'
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  買う
+                </button>
+              </div>
+            </div>
+          </div>
+        )) : visibleDebugItems.map(({ item, displayItem, purchaseKey, remainingStock, canBuy }) => (
           <div key={purchaseKey} className="rounded border border-gray-200 bg-white px-3 py-2">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
