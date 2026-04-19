@@ -204,7 +204,7 @@
 | `a.unstable-core` | 不安定 | 指定終了タイミングで発動し、残HPのN%の自傷ダメージを受ける | Lv1: LONG0/MID0・30%, Lv2: LONG0/MID0・24%, Lv3: LONG0/MID0・19%, Lv4: LONG0/MID0・15%, Lv5: LONG0/MID0・12% | LONG and MID | 0 |
 | `a.soul-reap` | 魂奪 | 魔法終了タイミングで発動し、相手のHPがN%未満なら即死させる(回避・復活不可) | Lv1: 10%, Lv2: 14%, Lv3: 17%, Lv4: 19%, Lv5: 20% | MID | 0 |
 | `a.regeneration` | 再生 | 近接開始タイミングで発動し、この戦闘で失ったHPのN%を回復する(近接フェーズ前にHP0なら不発) | Lv1: 10%, Lv2: 15%, Lv3: 19%, Lv4: 22%, Lv5: 24% | CLOSE | 9 |
-| `a.flying` | 飛行 | 相手の近接攻撃回数がxN倍になる | Lv1: x1/3, Lv2:1/4, Lv3:1/5 | CLOSE | 9 |
+| `a.flying` | 飛行 | 近接開始タイミングで発動し、自身の回避を+Nする | Lv1: 40, Lv2: 45, Lv3: 50 | CLOSE | 9 |
 | `a.predator-sense` | 捕食 | 近接開始タイミングで発動し、相手のHPがN%未満なら命中+40する | Lv1: 30%, Lv2: 38%, Lv3: 44%, Lv4: 48%, Lv5: 50% | CLOSE | 9 |
 | `a.decompose` | 分解 | 指定タイミングで発動し、相手の物理防御力をxN倍にする | Lv1: CLOSE2・x6/7, Lv2: CLOSE2・x5/7, Lv3: CLOSE2・x4/7, Lv4: CLOSE2・x3/7, Lv5: CLOSE2・x2/7 | CLOSE | 2 |
 | `a.self-destruct` | 自爆 | 指定タイミングで発動し、自爆して相手に残ダメージのNを与える | Lv1: CLOSE2・1/10, Lv2: CLOSE2・3/10, Lv3: CLOSE2・5/10, Lv4: CLOSE2・7/10, Lv5: CLOSE2・100% | CLOSE | 2 |
