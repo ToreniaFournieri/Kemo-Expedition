@@ -68,7 +68,7 @@
 | 1 | 5 | 1-2 | 5 | Normal | `Insect_Swarm` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | むれ虫の古書持ち |
 | 1 | 5 | 3 | 6 | Normal | `Aerial` | class.sword-saint.guardian | `i.gauntlet`U, `i.sword`U, `i.armor`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 細身の翼剣士 |
 | 1 | 5 | 3 | 6 | Normal | `Aerial` | class.wizard.ninja | `i.wand`U, `i.robe`U, `i.archery`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 巡礼の小翼 |
-| 1 | 5 | 4 | 8 | Elite | `Aerial` | class.alchemist.wizard | `i.catalyst`EB, `i.wand`EB, `i.wand`EB, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 風読みの翼 |
+| 1 | 5 | 4 | 8 | Elite | `Aerial` | class.alchemist.wizard | `i.catalyst`EB, `i.wand`EB, `i.robe`EB, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 風読みの翼 |
 | 1 | 6 | 1-2 | 6 | Normal | `Beast` | class.duelist.striker | `i.sword`U, `i.armor`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 遺跡のけもの |
 | 1 | 6 | 1-2 | 6 | Normal | `Beast` | class.pilgrim.sage | `i.robe`U, `i.grimoire`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | 遺跡の術獣 |
 | 1 | 6 | 1-2 | 6 | Normal | `Beast` | class.sword-saint.striker | `i.gauntlet`U, `i.sword`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 遺跡の前衛獣 |
