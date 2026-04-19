@@ -107,8 +107,8 @@ If `a.*` with phase = START:
 	    - If front_row_from_actor_member_has.`a.m-barrier`3: multiply x1/2
 	    - If front_row_from_actor_member_has.`a.m-barrier`2: multiply x3/5
 	    - If front_row_from_actor_member_has.`a.m-barrier`1: multiply x2/3
-     - Exception: If opponent has `a.m-barrier-breaker`, skip this.
-       Log: `log.m-barrier-breaker` + (魔法障壁破り)
+     - Exception: If opponent has `a.m-barrier-breaker`, ignore this effect
+       Log: "opponentは魔法障壁を打ち破り無効化した(魔法障壁破り)" instead of m-barrier log.
    
 
 
