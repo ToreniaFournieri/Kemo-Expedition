@@ -83,6 +83,8 @@ If `a.*` with phase = START:
   - Sets `a.magic-seal` enable.
 
 - Other abilities with `[効]`
+  - If actor.`a.domain-breaker`,
+    - Log: "name はNの影響を受けない"  N: name of domain (ex. "静寂領域" )
 
 - Tie-breaker: Enemy > Front-row party member > Back-row party member
 
