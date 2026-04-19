@@ -84,6 +84,7 @@ export const ABILITY_BASE_NAMES: Record<AbilityId, string> = {
   null_antagonism: '敵対無効化',
   first_aid: '応急措置',
   equation_breaker: '式破り',
+  domain_breaker: '領域破り',
   unforgettable: '不忘',
   null_corrode: '防腐',
   null_life_drain: '吸血無効',

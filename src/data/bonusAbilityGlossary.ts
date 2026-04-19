@@ -26,6 +26,7 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'colossal', label: '巨人', description: '自身の物理防御力が2倍になり、物理被ダメージ補正がx2.0になる', levelScale: [], subcategory: 'passive' },
   { abilityId: 'null_antagonism', label: '敵対無効化', description: '敵対の効果が自身に効かなくなる', levelScale: [], subcategory: 'passive' },
   { abilityId: 'equation_breaker', label: '式破り', description: '理論武装する(機械理論、静寂領域の地形効果が無効になる)', levelScale: [], subcategory: 'passive' },
+  { abilityId: 'domain_breaker', label: '領域破り', description: '領域展開を無視する(これらの領域の効果の影響を受けない:必達領域、臨界領域、残響領域、静寂領域、剣戟領域、必中狙撃領域、必中魔法領域)', levelScale: [], subcategory: 'passive' },
   { abilityId: 'unforgettable', label: '不忘', description: 'アビリティは消して忘れることがなくなる(忘却無効)', levelScale: [], subcategory: 'passive' },
   { abilityId: 'null_shock', label: '感電予防', description: '感電しなくなる', levelScale: [], subcategory: 'passive' },
   { abilityId: 'null_corrode', label: '防腐', description: '腐食しなくなる', levelScale: [], subcategory: 'passive' },
