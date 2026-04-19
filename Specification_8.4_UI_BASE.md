@@ -135,6 +135,8 @@
 		- Stock: 99 per item.
       - UI Behavior
         - Follows the same layout and interaction model as Inventory UI
+        - Inventory includes item category tabs: [機能:晶] [耐久:鎧,衣,盾],[近距離攻撃:剣,刀,手],[遠距離攻撃:矢,ボ,弓],[魔法攻撃:杖,書,媒].
+          - Default: 晶 or previously selected category.
         - Replace:
           - "全売却" → "買う"
           - "買う": Purchases 1 unit of the selected item.
