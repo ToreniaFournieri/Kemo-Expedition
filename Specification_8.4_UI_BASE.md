@@ -118,9 +118,9 @@
     - ex. 名工のロングソード x3 | 近攻+19     [解除]
   - Unlock button(解除): Changes item state from `s.sold` to `s.notown`
 
-#### 8.4.3 Debug store(デバッグ)
+#### 8.4.3 Debug store(デバッグ店)
 
-- **Function:** Sells items.
+- **Function:** Item purchase (debug purpose only)
 - **Shop name:** カリエスの狐彩堂 (Caelis' Kosaidō)
 
 **Dialogue pane (UI)**
@@ -128,8 +128,14 @@
 - **Column 2:** Dialogue
 
 	- Dialogue: "お越し頂きありがとうございます。デバッグ用に全種類の商品を用意しております。こちら、本番では自力でご用意いただく必要がございますことご理解ください。"
-	  - The shop sells all kind of items (no enhancement).
+	  - The shop sells:
+		- All item types are available
+        - All items are provided without enhancement
 		- Price: 1G each
 		- Stock: 99 per item.
-      - UI same as Inventory, "買う" button (for one item) instead of "全売却" button.
+      - UI Behavior
+        - Follows the same layout and interaction model as Inventory UI
+        - Replace:
+          - "全売却" → "買う"
+          - "買う": Purchases 1 unit of the selected item.
   
