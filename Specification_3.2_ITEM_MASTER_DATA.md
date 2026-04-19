@@ -249,7 +249,7 @@
 | 5 | E | `Ursan` | `i.armor`EC | 大熊の鎧 |
 | 5 | E | `Ursan` | `i.gauntlet`EC | 大熊の手甲 |
 | 5 | E | `Ursan` | `i.grimoire`EC | 大熊の秘本 |
-| 5 | B | `Ursan` | `i.katana`BD | 熊王の火刀 |
+| 5 | B | `Ursan` | `i.katana`BD | 焔断 | `a.fire-protect-breaker` |
 | 5 | B | `Ursan` | `i.shield`BD | 灰色の石 | `a.slow` |
 | 5 | B | `Ursan` | `i.gauntlet`BD | 熊王の重手甲 |
 | 5 | B | `Ursan` | `i.sword`BD | 熊王の剣 |
@@ -304,7 +304,7 @@
 | 6 | B | `Procyonian` | `i.catalyst`BD | 葉王核の触媒 |
 | 6 | B | `Procyonian` | `i.grimoire`BD | 葉王の機導秘本 |
 | 6 | B | `Procyonian` | `i.shield`BD | 葉王の護盾 |
-| 6 | B | `Procyonian` | `i.katana`BD | 葉王の迅刀 |
+| 6 | B | `Procyonian` | `i.katana`BD | 雷切 | `a.thunder-protect-breaker` |
 | 6 | B | `Procyonian` | `i.arrow`BD | 葉王の狩矢 |
 | 6 | B | `Procyonian` | `i.archery`BD | 葉王の弩弓 |
 | 7 | C | none | `i.sword`C | 星銀の短剣 |
@@ -354,7 +354,7 @@
 | 7 | B | `Leporian` | `i.sword`BD | ホーリーソード | `a.requiem` |
 | 7 | B | `Leporian` | `i.wand`BD | 月王兎の宝杖 |
 | 7 | B | `Leporian` | `i.armor`BD | 月王兎の聖鎧 |
-| 7 | B | `Leporian` | `i.katana`BD | 月王兎の神刀 |
+| 7 | B | `Leporian` | `i.katana`BD | 白妙 | `a.ice-protect-breaker` |
 | 7 | B | `Leporian` | `i.shield`BD | 月王兎の聖盾 |
 | 7 | B | `Leporian` | `i.archery`BD | 月王兎の神弓 | 
 | 7 | B | `Leporian` | `i.arrow`BD | ホーリーアロー | `a.requiem` |
@@ -409,8 +409,8 @@
 | 8 | B | `Cervin` | `i.katana`BD | 千里眼王の神刀 |
 | 8 | B | `Cervin` | `i.bolt`BD | 千里眼王の雷閃ボルト |
 | 8 | B | `Cervin` | `i.grimoire`BD | 千里眼王の神典 |
-| 8 | B | `Cervin` | `i.wand`BD | 千里眼王の神杖 |
-| 8 | B | `Cervin` | `i.catalyst`BD | 千里眼王核の触媒 |
+| 8 | B | `Cervin` | `i.wand`BD | 祓詞 | `a.m-barrier-breaker` |
+| 8 | B | `Cervin` | `i.catalyst`BD | 千里眼王核の触媒 | 
 | 8 | B | `Cervin` | `i.robe`BD | 千里眼王の聖衣 |
 | 8 | B | `Cervin` | `i.arrow`BD | 千里眼王の神矢 |
 | 8 | B | `Cervin` | `i.archery`BD | 千里眼王の神弓 |
