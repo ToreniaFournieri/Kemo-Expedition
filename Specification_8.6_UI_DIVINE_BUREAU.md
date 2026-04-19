@@ -266,7 +266,7 @@ HP: 312                 タイプ: 神魔
   - Default: Normal
 - Party unlock +1 PT unlock
   - if press the button, unlock one PT.
-- Debug shop open OFF/ON
+- Debug store open OFF/ON
   - Default: OFF
 - Display `condition` OFF/ON
   - Default: OFF
