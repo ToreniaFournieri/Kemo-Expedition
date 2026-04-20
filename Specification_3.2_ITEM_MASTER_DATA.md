@@ -355,7 +355,7 @@
 | 7 | E | `Undead` | `i.sword`EB | 冥府の剣 | `a.life-drain`1, `r.fire_x1.3` |
 | 7 | B | `Leporian` | `i.sword`BD | ホーリーソード | `a.requiem` |
 | 7 | B | `Leporian` | `i.wand`BD | 月兎の宝杖 |
-| 7 | B | `Leporian` | `i.armor`BD | 月兎の聖鎧 |
+| 7 | B | `Leporian` | `i.armor`BD | アミラの鎧 |
 | 7 | B | `Leporian` | `i.katana`BD | 白妙 | `a.ice-protect-breaker` |
 | 7 | B | `Leporian` | `i.shield`BD | 月兎の聖盾 |
 | 7 | B | `Leporian` | `i.archery`BD | 月兎の銀弓 | 
@@ -402,21 +402,21 @@
 | 8 | E | `Jinma` | `i.katana`EC | 神魔の太刀 |
 | 8 | E | `Jinma` | `i.arrow`EC | 神魔の祀矢 |
 | 8 | E | `Jinma` | `i.grimoire`EC | 神魔祭文書 |
-| 8 | E | `Jinma` | `i.shield`EC | 神魔護法盾 |
-| 8 | E | `Jinma` | `i.robe`EC | 神魔の法衣 |
+| 8 | E | `Jinma` | `i.shield`EC | 神魔の盾 |
+| 8 | E | `Jinma` | `i.robe`EC | 神魔の衣 |
 | 8 | E | `Cervin` | `i.sword`ED | 勇鹿の剣 |
-| 8 | E | `Cervin` | `i.armor`ED | 鹿神の鎧 |
-| 8 | E | `Cervin` | `i.wand`ED | 鹿神の杖 |
-| 8 | E | `Cervin` | `i.bolt`ED | 鹿神の閃ボルト |
+| 8 | E | `Cervin` | `i.armor`ED | セルヴィンの鎧 |
+| 8 | E | `Cervin` | `i.wand`ED | 勇鹿の杖 |
+| 8 | E | `Cervin` | `i.bolt`ED | 勇鹿の閃ボルト |
 | 8 | B | `Cervin` | `i.katana`BD | 境断 | `a.domain-breaker` |
-| 8 | B | `Cervin` | `i.bolt`BD | 千里眼王の雷閃ボルト |
+| 8 | B | `Cervin` | `i.bolt`BD | 千里眼の雷閃ボルト |
 | 8 | B | `Cervin` | `i.grimoire`BD | 刻憶の書 | `a.unforgettable` |
 | 8 | B | `Cervin` | `i.wand`BD | 祓詞 | `a.m-barrier-breaker` |
 | 8 | B | `Cervin` | `i.catalyst`BD | 魔封晶 | `a.magic-seal` |
-| 8 | B | `Cervin` | `i.robe`BD | 千里眼王の聖衣 |
-| 8 | B | `Cervin` | `i.arrow`BD | 千里眼王の神矢 |
-| 8 | B | `Cervin` | `i.archery`BD | 千里眼王の神弓 |
-| 8 | B | `Cervin` | `i.sword`BD | 千里眼王の王剣 |
+| 8 | B | `Cervin` | `i.robe`BD | 定めの聖衣 |
+| 8 | B | `Cervin` | `i.arrow`BD | 神矢 |
+| 8 | B | `Cervin` | `i.archery`BD | 鹿眼の弓 |
+| 8 | B | `Cervin` | `i.sword`BD | アストラルブレイカー |
 
 
 
