@@ -1,4 +1,4 @@
-# KEMO EXPEDITION v0.6.0 - SPECIFICATION
+# KEMO EXPEDITION v0.6.1 - SPECIFICATION
 
 - 1. OVERVIEW
     - Text-based, deterministic fantasy RPG
@@ -97,7 +97,8 @@
     - Debug mode: ON
     - Speed of time: x20 hyper 
   - `/beta/`:
-    - Debug mode: OFF 
+    - Debug mode: OFF
+    - Theme: `m.laika` and fixed (not to be changed)
 **Save Data Isolation:** Save data must be namespaced per environment (example: `/dev/` and `/qa/`) and never shared between them.
 
 ## 10. Coding Rule: SpecRef Traceability
