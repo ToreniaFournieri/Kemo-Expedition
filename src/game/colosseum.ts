@@ -2,7 +2,7 @@ import { AbilityId, ElementalResistance, EnemyClassId, EnemyDef } from '../types
 import { getEnemyTypeAbilities, getEnemyTypeBonuses } from '../data/enemies';
 import { applyEnemyMeleeConversionAttack, getEnemyCyborgizationAdjustment, resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
 import { applyEnemyTypeCBonuses } from './enemyScaling';
-import { LUNA_MODE_ENEMY_LEVEL_BONUS, getEnemyMultipliersForLevel } from '../data/dungeons';
+import { getEnemyMultipliersForLevel } from '../data/dungeons';
 import { createEnvironmentStorageKey } from './environment';
 import { buildEnemyClassMasterStats } from '../data/enemyClasses';
 
@@ -109,10 +109,10 @@ export function saveColosseumEnemySettings(settings: ColosseumEnemySettings): vo
   }
 }
 
-export function buildColosseumEnemy(settings: ColosseumEnemySettings, isLunaMode: boolean): EnemyDef {
+export function buildColosseumEnemy(settings: ColosseumEnemySettings): EnemyDef {
   const normalized = normalizeColosseumEnemySettings(settings);
   const classBase = buildEnemyClassMasterStats(normalized.enemyMainClass, normalized.enemySubClass);
-  const enemyLevel = normalized.level + (isLunaMode ? LUNA_MODE_ENEMY_LEVEL_BONUS : 0);
+  const enemyLevel = normalized.level;
   const multipliers = getEnemyMultipliersForLevel(enemyLevel);
   const classAbilities = new Map(classBase.abilities.map((ability) => [ability.id, ability]));
   getEnemyTypeAbilities(normalized.enemyType, enemyLevel).forEach((ability) => {

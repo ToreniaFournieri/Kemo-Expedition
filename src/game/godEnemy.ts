@@ -19,7 +19,6 @@ function getBaseGodEnemy(profile: GodEnemyProfile): EnemyDef | null {
 // SpecRef: 8.3 | UI_EXPEDITION | Difficulty Offset (難易度)
 export function buildGodRuntimeEnemy(
   profile: GodEnemyProfile,
-  isLunaMode: boolean,
   difficultyOffset: number = 0,
 ): EnemyDef | null {
   const baseEnemy = getBaseGodEnemy(profile);
@@ -42,7 +41,7 @@ export function buildGodRuntimeEnemy(
         expLevel: effectiveExpLevel,
         enemyMultipliers: tierMultipliers,
       },
-      isLunaMode
+      false
     ),
   };
 
@@ -52,7 +51,7 @@ export function buildGodRuntimeEnemy(
     abilities: resolvedProfileAbilities,
   }, effectiveDungeon, 6, 'battle_Boss', {
     isGodEnemy: true,
-    isLunaMode,
+    isLunaMode: false,
     difficultyOffset,
   });
 
