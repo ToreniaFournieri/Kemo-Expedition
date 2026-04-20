@@ -33,7 +33,7 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'fire_protect_breaker', label: '火炎守破り', description: '相手の火属性反射・吸収効果を無視する(反射/吸収は発生しない)', levelScale: [], subcategory: 'passive' },
   { abilityId: 'ice_protect_breaker', label: '氷守破り', description: '相手の氷属性反射・吸収効果を無視する(反射/吸収は発生しない)', levelScale: [], subcategory: 'passive' },
   { abilityId: 'thunder_protect_breaker', label: '雷守破り', description: '相手の雷属性反射・吸収効果を無視する(反射/吸収は発生しない)', levelScale: [], subcategory: 'passive' },
-  { abilityId: 'm_barrier_breaker', label: '魔法障壁破り', description: '相手の魔法障壁・魔法吸収効果を無視する(吸収は発生しない)', levelScale: [], subcategory: 'passive' },
+  { abilityId: 'm_barrier_breaker', label: '魔法障壁破り', description: '相手の魔法障壁・魔法反射・魔法吸収効果を無視する(反射/吸収は発生しない)', levelScale: [], subcategory: 'passive' },
   { abilityId: 'unforgettable', label: '不忘', description: 'アビリティは消して忘れることがなくなる(忘却無効)', levelScale: [], subcategory: 'passive' },
   { abilityId: 'null_shock', label: '感電予防', description: '感電しなくなる', levelScale: [], subcategory: 'passive' },
   { abilityId: 'null_corrode', label: '防腐', description: '腐食しなくなる', levelScale: [], subcategory: 'passive' },
