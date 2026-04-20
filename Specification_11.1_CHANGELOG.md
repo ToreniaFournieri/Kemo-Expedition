@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.0 | 487 | 2026/4/20 | Update runtime item drop master/special bonus mapping for Spec 3.2.1 entries: align elite/boss rare item names (`霧払`, `甲鎧`, `シトロネラの衣`, `ファーストエイド`, `粘膜覆`, `硫酸刺`, `小刀`, `雷式`, `矢払盾`, `崩壊核`, `スケールメイル`, `演式核`, `絶縁体`, `大鎌`, `刻憶の書`, `魔封晶`) and apply the corresponding special-bonus effects in runtime generation. |
 | 0.6.0 | 486 | 2026/4/20 | Update runtime `a.m-barrier-breaker` behavior/text to match Spec 6.1 intercept exception: include magical reflect bypass in glossary/tooltip descriptions and skip `a.magical-reflect` resolution when attacker has `a.m-barrier-breaker`. |
 | 0.6.0 | 485 | 2026/4/19 | Update Base `デバッグ店` item category tabs to match Inventory UI grouping: add `[機能:晶]` + durability/melee/ranged/magic category tab rows, default selected category `晶`, preserve per-tab item filtering, and keep purchase action label as `買う` for 1-item purchases. |
 | 0.6.0 | 484 | 2026/4/19 | Update Base runtime UI/logic from Jewel store to Debug store: rename Base sub-tab to `デバッグ店`, add Debug pane toggle label `Debug store open OFF/ON` (default OFF), and implement 8.4.3 debug shop behavior (`カリエスの狐彩堂`) to sell all item types without enhancement at `1G`, stock `99`, with inventory-like row layout and `買う` action for 1-item purchases. |
