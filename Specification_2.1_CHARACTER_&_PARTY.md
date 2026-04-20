@@ -422,10 +422,10 @@ Party.`d.HP` =
 |------|------|------|------|------|------|------|------|------|
 | 1 | **ケモ** | **Kemoria** | `class.guardian` | `class.samurai` | **`unascertained`** | `None` | `1101`, `1105`, `1106` | **`true`** |
 | 2 | ゴン | Vulpinian | `class.duelist` | `class.pilgrim` | `sandstorm` | `Aggressive` | `1104`, `1106` | `false` |
-| 3 | ロップ | Leporian | `class.ranger` | `class.ninja` | `abyssal_sea` | `Inquisitive` | `1107`, `1108`, `1109` |  `false` |
-| 4 | ソウタ | Procyonian | `class.ninja`| `class.striker` | `firmament` | `Evasive` |`1104`, `1106`,`1104`, `1106` | `false` |
+| 3 | ロップ | Leporian | `class.ranger` | `class.ninja` | `abyssal_sea` | `Inquisitive` | `1107`, `1109` |  `false` |
+| 4 | ソウタ | Procyonian | `class.ninja`| `class.striker` | `firmament` | `Evasive` | `1107`, `1109` | `false` |
 | 5 | セルフィン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Amicable` | `1110`, `1112` | `false` |
-| 6 | **ライカ** | Caninian | `class.sage` | `class.wizard`| **`pioneer`** | `None` | `1110`, `1112`  | **`true`** |
+| 6 | **ライカ** | Caninian | `class.sage` | `class.alchemist`| **`pioneer`** | `None` | `1110`, `1112`  | **`true`** |
 
 - **PT2** initial condition (when unlocked)
   - deity: `God of Attrition`
