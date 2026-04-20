@@ -64,7 +64,7 @@
 | 2 | C | none | `i.gauntlet`C | 毛革の手甲 |
 | 2 | C | none | `i.shield`C | 毛張りの丸盾 |
 | 2 | C | none | `i.armor`C | 毛皮あての服 |
-| 2 | C | none | `i.robe`C | 防寒の毛ローブ |
+| 2 | C | none | `i.robe`C | 毛ローブ |
 | 2 | C | none | `i.katana`C | 毛巻きの打刀 |
 | 2 | C | none | `i.wand`C | 毛飾りの枝杖 |
 | 2 | C | none | `i.grimoire`C | 毛表紙の術書 |
@@ -74,15 +74,15 @@
 | 2 | C | none | `i.archery`C | 毛弦の狩弓 |
 | 2 | U | none | `i.sword`U | 霜刃の短剣 |
 | 2 | U | none | `i.gauntlet`U | 氷革の手甲 |
-| 2 | U | none | `i.shield`U | 凍板の盾 |
+| 2 | U | none | `i.shield`U | 板の盾 |
 | 2 | U | none | `i.armor`U | 氷紋の防寒衣 |
 | 2 | U | none | `i.robe`U | 氷糸の法衣 |
-| 2 | U | none | `i.katana`U | 氷縁の打刀 |
-| 2 | U | none | `i.wand`U | 凍晶の杖 |
+| 2 | U | none | `i.katana`U | 晶の打刀 |
+| 2 | U | none | `i.wand`U | 晶の杖 |
 | 2 | U | none | `i.grimoire`U | 氷紋術式書 |
 | 2 | U | none | `i.catalyst`U | 氷核の触媒石 |
-| 2 | U | none | `i.arrow`U | 氷羽矢 |
-| 2 | U | none | `i.bolt`U | 凍先ボルト |
+| 2 | U | none | `i.arrow`U | 羽矢 |
+| 2 | U | none | `i.bolt`U | 石ボルト |
 | 2 | U | none | `i.archery`U | 霜枝の弓 |
 | 2 | E | `Frost` | `i.arrow`EA | 氷霜の矢 |
 | 2 | E | `Frost` | `i.katana`EA | 氷霜の太刀 |
@@ -95,17 +95,17 @@
 | 2 | E | `Golem` | `i.wand`EB | 結晶脈の杖 |
 | 2 | E | `Golem` | `i.grimoire`EB | 石核刻印の書 |
 | 2 | E | `Golem` | `i.catalyst`EB | 岩核触媒 |
-| 2 | E | `Golem` | `i.robe`EB | 岩核の法衣 |
-| 2 | E | `Golem` | `i.sword`EB | 岩晶の剣 |
+| 2 | E | `Golem` | `i.robe`EB | アスベストの衣 |
+| 2 | E | `Golem` | `i.sword`EB | 岩斬剣 |
 | 2 | E | `Plant_Fungal` | `i.arrow`EC | 胞子羽の矢 |
 | 2 | E | `Plant_Fungal` | `i.bolt`EC | 菌殻ボルト |
 | 2 | E | `Plant_Fungal` | `i.archery`EC | 蔓弓「胞雨」 |
 | 2 | E | `Plant_Fungal` | `i.robe`EC | シトロネラの衣 | `a.null-life-drain` |
 | 2 | B | `Lupinian` | `i.robe`BD | 毛皮衣 | `a.coldproof` |
 | 2 | B | `Lupinian` | `i.armor`BD | ファーストエイド | `a.first-aid`1  |
-| 2 | B | `Lupinian` | `i.arrow`BD | 狼牙羽の矢 |
-| 2 | B | `Lupinian` | `i.wand`BD | 狼王の呪杖 |
-| 2 | B | `Lupinian` | `i.catalyst`BD | 白狼核の触媒 |
+| 2 | B | `Lupinian` | `i.arrow`BD | 狼毛の矢 |
+| 2 | B | `Lupinian` | `i.wand`BD | 蒼狼の杖 |
+| 2 | B | `Lupinian` | `i.catalyst`BD | 蒼狼核の触媒 |
 | 2 | B | `Lupinian` | `i.bolt`BD | 狼爪ボルト |
 | 2 | B | `Lupinian` | `i.archery`BD | ルピニアン毛弓 |
 | 3 | C | none | `i.sword`C | 貝刃の短剣 |
