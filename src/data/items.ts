@@ -232,6 +232,12 @@ const ITEM_ADDITIONAL_BONUS_BY_NAME: Record<string, Bonus[]> = {
   'ホーリーソード': [{ type: 'ability', value: 1, abilityId: 'requiem', abilityLevel: 1 }],
   'ホーリーアロー': [{ type: 'ability', value: 1, abilityId: 'requiem', abilityLevel: 1 }],
   '灰色の石': [{ type: 'ability', value: 1, abilityId: 'slow', abilityLevel: 1 }],
+  '忘却の書': [
+    { type: 'ability', value: 1, abilityId: 'oblivion', abilityLevel: 1 },
+    { type: 'ice_defense_multiplier_xV', value: 3.0 },
+    { type: 'ice_defense_multiplier_xV', value: 2.0 },
+    { type: 'thunder_defense_multiplier_xV', value: 2.0 },
+  ],
 };
 
 const ITEM_CORE_CONCEPT_KEYS: Record<ItemCategory, Array<keyof ItemDef>> = {
