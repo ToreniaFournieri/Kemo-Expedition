@@ -1018,7 +1018,7 @@ function getReflectDescriptor(
   }
 
   const magicalLevel = getAbilityLevelFromList(defenderAbilities, 'magical_reflect');
-  if (phase === 'mid' && magicalLevel > 0) {
+  if (phase === 'mid' && magicalLevel > 0 && !hasAbility(attackerAbilities, 'm_barrier_breaker')) {
     const amplifier = getReflectAmplifier(magicalLevel);
     return {
       abilityId: 'magical_reflect',

@@ -1780,7 +1780,7 @@ const ABILITY_HELP_TEXTS: Record<string, string> = {
   fire_protect_breaker: '火属性攻撃時、相手の火炎反射・火炎吸収を無視する。',
   ice_protect_breaker: '氷属性攻撃時、相手の氷結反射・氷結吸収を無視する。',
   thunder_protect_breaker: '雷属性攻撃時、相手の雷撃反射・雷撃吸収を無視する。',
-  m_barrier_breaker: '相手の魔法障壁・魔法吸収を無視する。',
+  m_barrier_breaker: '相手の魔法障壁・魔法反射・魔法吸収を無視する。',
   null_counter: '反撃を無効化する。レベルが高いほど有効回数が増える。',
   resurrect: '致命ダメージを1回だけ耐える。',
   rage: '受けたダメージに応じて物理/魔法攻撃倍率が増大する。',
