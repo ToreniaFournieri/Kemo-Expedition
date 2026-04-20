@@ -362,21 +362,21 @@
 | 7 | B | `Leporian` | `i.arrow`BD | ホーリーアロー | `a.requiem` |
 | 7 | B | `Leporian` | `i.gauntlet`BD | 月兎のガントレット |
 | 7 | B | `Leporian` | `i.grimoire`BD | 月兎の歴史書 |
-| 8 | C | none | `i.sword`C | 神鋼の短剣 |
+| 8 | C | none | `i.sword`C | ミスリルの短剣 |
 | 8 | C | none | `i.gauntlet`C | 聖鍛の手甲 |
 | 8 | C | none | `i.shield`C | 竜印の盾 |
 | 8 | C | none | `i.armor`C | 古聖域の鎧 |
 | 8 | C | none | `i.robe`C | 神託の法衣 |
-| 8 | C | none | `i.katana`C | 聖鋼の打刀 |
+| 8 | C | none | `i.katana`C | ミスリルの打刀 |
 | 8 | C | none | `i.wand`C | 聖樹の杖 |
 | 8 | C | none | `i.grimoire`C | 古王の術典 |
 | 8 | C | none | `i.catalyst`C | 神眼の触媒 |
 | 8 | C | none | `i.arrow`C | 霊銀矢 |
 | 8 | C | none | `i.bolt`C | 神紋ボルト |
 | 8 | C | none | `i.archery`C | 聖奏の弓 |
-| 8 | U | none | `i.sword`U | 伝承王の短剣 |
+| 8 | U | none | `i.sword`U | アリヴァの短剣 |
 | 8 | U | none | `i.gauntlet`U | 英雄譚の手甲 |
-| 8 | U | none | `i.shield`U | 神話守の盾 |
+| 8 | U | none | `i.shield`U | 守の盾 |
 | 8 | U | none | `i.armor`U | 星史の鎧 |
 | 8 | U | none | `i.robe`U | 聖譚の法衣 |
 | 8 | U | none | `i.katana`U | 伝承刃の打刀 |
@@ -385,11 +385,11 @@
 | 8 | U | none | `i.catalyst`U | 聖遺物の触媒 |
 | 8 | U | none | `i.arrow`U | 伝承羽矢 |
 | 8 | U | none | `i.bolt`U | 神話閃ボルト |
-| 8 | U | none | `i.archery`U | 英雄王の弓 |
+| 8 | U | none | `i.archery`U | 英雄の弓 |
 | 8 | E | `Voidspawn` | `i.armor`EA | 虚痕の鎧 |
 | 8 | E | `Voidspawn` | `i.catalyst`EA | 虚痕の触媒 |
 | 8 | E | `Voidspawn` | `i.gauntlet`EA | 虚痕の手甲 |
-| 8 | E | `Voidspawn` | `i.grimoire`EA | 虚痕の秘本 |
+| 8 | E | `Voidspawn` | `i.grimoire`EA | 忘却の書 | `a.oblivion`, `r.ice_x3.0, `r.ice_x2.0`, `r.thunder_x2.0` |
 | 8 | E | `Voidspawn` | `i.robe`EA | 虚痕の法衣 |
 | 8 | E | `Ghost` | `i.bolt`EB | 冥霊のボルト |
 | 8 | E | `Ghost` | `i.katana`EB | 冥霊の太刀 |
