@@ -102,7 +102,7 @@
 | 2 | E | `Plant_Fungal` | `i.archery`EC | 蔓弓「胞雨」 |
 | 2 | E | `Plant_Fungal` | `i.robe`EC | シトロネラの衣 | `a.null-life-drain` |
 | 2 | B | `Lupinian` | `i.robe`BD | 毛皮衣 | `a.coldproof` |
-| 2 | B | `Lupinian` | `i.armor`BD | 白狼毛の戦衣 |
+| 2 | B | `Lupinian` | `i.armor`BD | ファーストエイド | `a.first-aid`1  |
 | 2 | B | `Lupinian` | `i.arrow`BD | 狼牙羽の矢 |
 | 2 | B | `Lupinian` | `i.wand`BD | 狼王の呪杖 |
 | 2 | B | `Lupinian` | `i.catalyst`BD | 白狼核の触媒 |
@@ -156,7 +156,7 @@
 | 3 | B | `Vulpinian` | `i.robe`BD | 蒼尾王の法衣 |
 | 3 | B | `Vulpinian` | `i.grimoire`BD | 蒼尾王の秘本 |
 | 3 | B | `Vulpinian` | `i.sword`BD | 雷式 | `e.thunder+30`, `b.strength+1` |
-| 3 | B | `Vulpinian` | `i.shield`BD | 蒼潮王の盾 |
+| 3 | B | `Vulpinian` | `i.shield`BD | 矢払盾 | `a.deflection`1 |
 | 3 | B | `Vulpinian` | `i.catalyst`BD | 蒼狐核の触媒 |
 | 3 | B | `Vulpinian` | `i.gauntlet`BD | 蒼尾王の手甲 |
 | 4 | C | none | `i.sword`C | 骨刃の短剣 |
@@ -196,7 +196,7 @@
 | 4 | E | `Felidian` | `i.sword`EB | 猫爪の曲剣 |
 | 4 | E | `Felidian` | `i.wand`EB | 猫王の呪杖 |
 | 4 | E | `Felidian` | `i.grimoire`EB | 砂猫秘儀書 |
-| 4 | E | `Felidian` | `i.catalyst`EB | 猫眼核の触媒 |
+| 4 | E | `Felidian` | `i.catalyst`EB | 崩壊核 | `a.decompose`1 |
 | 4 | E | `Titan` | `i.armor`EC | 巨骨の重鎧 |
 | 4 | E | `Titan` | `i.bolt`EC | 砕岩ボルト |
 | 4 | E | `Titan` | `i.katana`EC | 巨刃の太刀 |
@@ -351,8 +351,8 @@
 | 7 | E | `Undead` | `i.gauntlet`EB | 冥爪の手甲 |
 | 7 | E | `Undead` | `i.katana`EB | 亡刃の太刀 |
 | 7 | E | `Undead` | `i.archery`EB | 冥府の弓 |
-| 7 | E | `Undead` | `i.arrow`EB | 冥府の矢 |
-| 7 | E | `Undead` | `i.sword`EB | 冥府の剣 |
+| 7 | E | `Undead` | `i.arrow`EB | 冥府の矢 | `a.life-drain`1, `r.fire_x1.3` |
+| 7 | E | `Undead` | `i.sword`EB | 冥府の剣 | `a.life-drain`1, `r.fire_x1.3` |
 | 7 | B | `Leporian` | `i.sword`BD | ホーリーソード | `a.requiem` |
 | 7 | B | `Leporian` | `i.wand`BD | 月王兎の宝杖 |
 | 7 | B | `Leporian` | `i.armor`BD | 月王兎の聖鎧 |
