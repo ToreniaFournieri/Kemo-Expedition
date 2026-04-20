@@ -3367,6 +3367,9 @@ export function executeBattle(
       * counterNoAMultiplier
       * getTerrainNoAAmplifier(phase, environment.terrainEffect, enemy.abilities)
     );
+    if (attempts <= 0) {
+      return;
+    }
     let hits = 0;
     for (let i = 1; i <= attempts; i++) {
       const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, targetCharStats.evasionBonus + (phase === 'close' ? (temporaryEvasionBonusByCharacterId.get(targetCharStats.characterId) ?? 0) : 0), i, phase, getDeflectionLevel(targetCharStats), getEnemyFocusLevel(enemy), environment.terrainEffect, 0, hasAbility(enemy.abilities, 'true_sight'), hasAbility(enemy.abilities, 'domain_breaker'));
