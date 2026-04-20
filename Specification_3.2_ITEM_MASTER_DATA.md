@@ -349,7 +349,7 @@
 | 7 | E | `Undead` | `i.armor`EB | 亡王の鎧 |
 | 7 | E | `Undead` | `i.catalyst`EB | 冥府核の触媒 |
 | 7 | E | `Undead` | `i.gauntlet`EB | 冥爪の手甲 |
-| 7 | E | `Undead` | `i.katana`EB | 亡刃の太刀 |
+| 7 | E | `Undead` | `i.katana`EB | 大鎌 | `a.soul-reap`1, `r.fire_x1.3` |
 | 7 | E | `Undead` | `i.archery`EB | 冥府の弓 |
 | 7 | E | `Undead` | `i.arrow`EB | 冥府の矢 | `a.life-drain`1, `r.fire_x1.3` |
 | 7 | E | `Undead` | `i.sword`EB | 冥府の剣 | `a.life-drain`1, `r.fire_x1.3` |
@@ -412,7 +412,7 @@
 | 8 | B | `Cervin` | `i.bolt`BD | 千里眼王の雷閃ボルト |
 | 8 | B | `Cervin` | `i.grimoire`BD | 刻憶の書 | `a.unforgettable` |
 | 8 | B | `Cervin` | `i.wand`BD | 祓詞 | `a.m-barrier-breaker` |
-| 8 | B | `Cervin` | `i.catalyst`BD | 千里眼王核の触媒 | 
+| 8 | B | `Cervin` | `i.catalyst`BD | 魔封晶 | `a.magic-seal` |
 | 8 | B | `Cervin` | `i.robe`BD | 千里眼王の聖衣 |
 | 8 | B | `Cervin` | `i.arrow`BD | 千里眼王の神矢 |
 | 8 | B | `Cervin` | `i.archery`BD | 千里眼王の神弓 |
