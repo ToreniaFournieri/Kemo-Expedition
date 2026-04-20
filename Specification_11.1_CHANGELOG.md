@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.0 | 489 | 2026/4/20 | Update runtime item-drop master name pools for Spec 3.2.1 entries provided in this task: align Tier 1 elite/boss and Tier 2 uncommon/elite/boss item names to the requested Beast/Aerial/Insect_Swarm/Caninian/Golem/Lupinian tables. |
 | 0.6.0 | 488 | 2026/4/20 | Align runtime spec data for requested entries: set special-bonus values for `白霜牙の剣` to `e.ice+0.020` and `雷式` to `e.thunder+0.030` + `b.strength+1`, and update lineages so `adaptation` adds `c.evasion+20` and `fragment` grants `a.unforgettable` with existing multipliers. |
 | 0.6.0 | 487 | 2026/4/20 | Update runtime item drop master/special bonus mapping for Spec 3.2.1 entries: align elite/boss rare item names (`霧払`, `甲鎧`, `シトロネラの衣`, `ファーストエイド`, `粘膜覆`, `硫酸刺`, `小刀`, `雷式`, `矢払盾`, `崩壊核`, `スケールメイル`, `演式核`, `絶縁体`, `大鎌`, `刻憶の書`, `魔封晶`) and apply the corresponding special-bonus effects in runtime generation. |
 | 0.6.0 | 486 | 2026/4/20 | Update runtime `a.m-barrier-breaker` behavior/text to match Spec 6.1 intercept exception: include magical reflect bypass in glossary/tooltip descriptions and skip `a.magical-reflect` resolution when attacker has `a.m-barrier-breaker`. |
