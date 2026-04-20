@@ -52,10 +52,10 @@
 | 1 | E | `Insect_Swarm` | `i.arrow`EC | 群蟲の矢 |
 | 1 | E | `Insect_Swarm` | `i.bolt`EC | 群蟲のボルト |
 | 1 | E | `Insect_Swarm` | `i.sword`EC | 虫刃の直剣 |
-| 1 | E | `Insect_Swarm` | `i.armor`EC | 甲殻つぎの鎧 |
+| 1 | E | `Insect_Swarm` | `i.armor`EC | 甲鎧 | `a.null-death-touch` |
 | 1 | B | `Caninian` | `i.sword`BD | 若牙の長剣 |
 | 1 | B | `Caninian` | `i.gauntlet`BD | 若牙の手甲 |
-| 1 | B | `Caninian` | `i.shield`BD | 若牙の防盾 |
+| 1 | B | `Caninian` | `i.shield`BD | 霧払 | `a.true-sight` |
 | 1 | B | `Caninian` | `i.armor`BD | 若牙の戦鎧 |
 | 1 | B | `Caninian` | `i.robe`BD | 若牙の外套 |
 | 1 | B | `Caninian` | `i.katana`BD | 若牙の刀 |
@@ -100,7 +100,7 @@
 | 2 | E | `Plant_Fungal` | `i.arrow`EC | 胞子羽の矢 |
 | 2 | E | `Plant_Fungal` | `i.bolt`EC | 菌殻ボルト |
 | 2 | E | `Plant_Fungal` | `i.archery`EC | 蔓弓「胞雨」 |
-| 2 | E | `Plant_Fungal` | `i.robe`EC | 胞子の法衣 |
+| 2 | E | `Plant_Fungal` | `i.robe`EC | シトロネラの衣 | `a.null-life-drain` |
 | 2 | B | `Lupinian` | `i.robe`BD | 毛皮衣 | `a.coldproof` |
 | 2 | B | `Lupinian` | `i.armor`BD | 白狼毛の戦衣 |
 | 2 | B | `Lupinian` | `i.arrow`BD | 狼牙羽の矢 |
@@ -138,7 +138,7 @@
 | 3 | E | `Marine` | `i.catalyst`EA | 深潮核の触媒 |
 | 3 | E | `Marine` | `i.robe`EA | 潮王の外套 |
 | 3 | E | `Marine` | `i.shield`EA | 雷電の防盾 | `r.thunder_x2/3` |
-| 3 | E | `Marine` | `i.sword`EA | 潮牙の長剣 |
+| 3 | E | `Marine` | `i.sword`EA | 小刀 | `a.null-bind` |
 | 3 | E | `Marine` | `i.armor`EA | 深海鱗の鎧 |
 | 3 | E | `Spirit` | `i.wand`EC | 灯霊の杖 |
 | 3 | E | `Spirit` | `i.grimoire`EC | 潮幻の秘本 |
@@ -147,9 +147,9 @@
 | 3 | E | `Spirit` | `i.archery`EC | 潮霊の弓 |
 | 3 | E | `Spirit` | `i.robe`EC | 潮霊の法衣 |
 | 3 | E | `Slime_Colony` | `i.arrow`EB | 粘波の矢 |
-| 3 | E | `Slime_Colony` | `i.bolt`EB | 凝泡ボルト |
+| 3 | E | `Slime_Colony` | `i.bolt`EB | 硫酸刺 | `a.corrode` |
 | 3 | E | `Slime_Colony` | `i.archery`EB | 群粘の弓 |
-| 3 | E | `Slime_Colony` | `i.armor`EB | 粘群の鎧 |
+| 3 | E | `Slime_Colony` | `i.armor`EB | 粘膜覆 | `a.null-corrode` |
 | 3 | E | `Slime_Colony` | `i.gauntlet`EB | 粘群の手甲 |
 | 3 | B | `Vulpinian` | `i.bolt`BD | 蒼尾のボルト |
 | 3 | B | `Vulpinian` | `i.wand`BD | 蒼尾王の杖 |
@@ -241,7 +241,7 @@
 | 5 | E | `Beast` | `i.gauntlet`EA | 焔爪の手甲 |
 | 5 | E | `Beast` | `i.catalyst`EA | 獣核の焔触媒 |
 | 5 | E | `Dragon` | `i.sword`EB | 竜炉の剣 |
-| 5 | E | `Dragon` | `i.armor`EB | 竜鱗の重鎧 |
+| 5 | E | `Dragon` | `i.armor`EB | スケールメイル | `a.null-burn` |
 | 5 | E | `Dragon` | `i.shield`EB | 竜稜の盾 |
 | 5 | E | `Dragon` | `i.katana`EB | 破城槌 | `a.siege` |
 | 5 | E | `Dragon` | `i.robe`EB | 竜火の法衣 |
@@ -302,8 +302,8 @@
 | 6 | E | `Mech` | `i.gauntlet`EA | グローブ |
 | 6 | B | `Procyonian` | `i.bolt`BD | 葉の迅撃ボルト |
 | 6 | B | `Procyonian` | `i.archery`BD | 葉の狩弓 |
-| 6 | B | `Procyonian` | `i.armor`BD | 葉王の機導装甲 |
-| 6 | B | `Procyonian` | `i.catalyst`BD | 葉王核の触媒 |
+| 6 | B | `Procyonian` | `i.armor`BD | 絶縁体 | `a.null-shock` |
+| 6 | B | `Procyonian` | `i.catalyst`BD | 演式核 | `a.equation-breaker` |
 | 6 | B | `Procyonian` | `i.grimoire`BD | 葉王の機導秘本 |
 | 6 | B | `Procyonian` | `i.shield`BD | 葉王の護盾 |
 | 6 | B | `Procyonian` | `i.katana`BD | 雷切 | `a.thunder-protect-breaker` |
@@ -410,7 +410,7 @@
 | 8 | E | `Cervin` | `i.bolt`ED | 鹿神の閃ボルト |
 | 8 | B | `Cervin` | `i.katana`BD | 境断 | `a.domain-breaker` |
 | 8 | B | `Cervin` | `i.bolt`BD | 千里眼王の雷閃ボルト |
-| 8 | B | `Cervin` | `i.grimoire`BD | 千里眼王の神典 |
+| 8 | B | `Cervin` | `i.grimoire`BD | 刻憶の書 | `a.unforgettable` |
 | 8 | B | `Cervin` | `i.wand`BD | 祓詞 | `a.m-barrier-breaker` |
 | 8 | B | `Cervin` | `i.catalyst`BD | 千里眼王核の触媒 | 
 | 8 | B | `Cervin` | `i.robe`BD | 千里眼王の聖衣 |
