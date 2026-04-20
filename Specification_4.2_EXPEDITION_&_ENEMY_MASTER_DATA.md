@@ -119,7 +119,7 @@
 | 3 | 1 | 4 | 17 | Elite | `Marine` | class.pilgrim.wizard | `i.robe`EA, `i.grimoire`EA, `i.wand`EA, `i.armor`C, `i.robe`C, `i.shield`C | 潮祈の先導魚 |
 | 3 | 2 | 1-2 | 15 | Normal | `Marine` | class.ninja.ninja | `i.archery`U, `i.bolt`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 水面潜み |
 | 3 | 2 | 1-2 | 15 | Normal | `Marine` | class.sage.sage | `i.grimoire`U, `i.catalyst`U, `i.grimoire`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 潮賢兵 |
-| 3 | 2 | 1-2 | 15 | Normal | `Marine` | class.samurai.samurai | `i.katana`U, `i.shield`U, `i.katana`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 海辺の語り部 |
+| 3 | 2 | 1-2 | 15 | Normal | `Marine` | class.samurai.samurai | `i.katana`U, `i.shield`U, `i.katana`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 海辺の魚侍 |
 | 3 | 2 | 3 | 16 | Normal | `Slime_Colony` | class.duelist.duelist | `i.sword`U, `i.armor`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 粘核の剣闘体 |
 | 3 | 2 | 3 | 16 | Normal | `Slime_Colony` | class.pilgrim.pilgrim | `i.robe`U, `i.grimoire`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | 巡礼ゼリー |
 | 3 | 2 | 4 | 18 | Elite | `Marine` | class.lord.samurai | `i.shield`EA, `i.katana`EA, `i.katana`EA, `i.armor`C, `i.robe`C, `i.shield`C | 潮騎の重殻 |
@@ -138,10 +138,10 @@
 | 3 | 5 | 1-2 | 18 | Normal | `Spirit` | class.ninja.ranger | `i.archery`U, `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 月潮の忍霊 |
 | 3 | 5 | 1-2 | 18 | Normal | `Spirit` | class.samurai.sword-saint | `i.katana`U, `i.shield`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 波祓いの侍霊 |
 | 3 | 5 | 1-2 | 18 | Normal | `Spirit` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 潮文の語り霊 |
-| 3 | 5 | 3 | 21 | Elite | `Vulpinian` | class.sword-saint.guardian | `i.sword`BD, `i.shield`BD, `i.sword`C, `i.katana`C, `i.gauntlet`C | 蒼牙の護剣士 |
-| 3 | 5 | 3 | 21 | Elite | `Vulpinian` | class.wizard.ninja | `i.catalyst`BD, `i.bolt`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 蒼尾の巡礼士 |
+| 3 | 5 | 3 | 21 | Elite | `Vulpinian` | class.sword-saint.guardian | `i.sword`BD, `i.shield`BD, `i.sword`C, `i.katana`C, `i.gauntlet`C | 狐牙の護剣士 |
+| 3 | 5 | 3 | 21 | Elite | `Vulpinian` | class.wizard.ninja | `i.catalyst`BD, `i.bolt`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 狐尾の魔術師 |
 | 3 | 5 | 4 | 21 | Elite | `Slime_Colony` | class.striker.sword-saint | `i.bolt`EB, `i.arrow`EB, `i.gauntlet`EB, `i.arrow`C, `i.bolt`C, `i.archery`C | 飛沫群の狙撃核 |
-| 3 | 6 | 1-2 | 19 | Normal | `Marine` | class.duelist.striker | `i.sword`U, `i.armor`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 遺浜の群核 |
+| 3 | 6 | 1-2 | 19 | Normal | `Marine` | class.duelist.striker | `i.sword`U, `i.armor`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 遺浜の貫魚 |
 | 3 | 6 | 1-2 | 19 | Normal | `Marine` | class.pilgrim.sage | `i.robe`U, `i.grimoire`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | 遺浜の霊術体 |
 | 3 | 6 | 1-2 | 19 | Normal | `Marine` | class.sword-saint.striker | `i.gauntlet`U, `i.sword`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 遺浜の前衛魚 |
 | 3 | 6 | 3 | 20 | Normal | `Slime_Colony` | class.ranger.duelist | `i.arrow`U, `i.archery`U, `i.sword`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 泡群の射手 |
