@@ -335,33 +335,33 @@
 | 7 | U | none | `i.archery`U | 光闇の弓 |
 | 7 | E | `Aerial` | `i.gauntlet`EC | 飛翼の手甲 |
 | 7 | E | `Aerial` | `i.grimoire`EC | 飛翼の秘本 |
-| 7 | E | `Aerial` | `i.robe`EC | 飛翼の法衣 |
+| 7 | E | `Aerial` | `i.robe`EC | 飛翼の羽衣 |
 | 7 | E | `Aerial` | `i.arrow`EC | 天翔の翼矢 |
 | 7 | E | `Aerial` | `i.bolt`EC | 風裂ボルト |
 | 7 | E | `Aerial` | `i.archery`EC | 翼騎の長弓 |
-| 7 | E | `Titan` | `i.sword`EA | 巨神の剣 |
-| 7 | E | `Titan` | `i.shield`EA | 巨神の大盾 |
+| 7 | E | `Titan` | `i.sword`EA | 巨人剣 |
+| 7 | E | `Titan` | `i.shield`EA | 巨大盾 |
 | 7 | E | `Titan` | `i.wand`EA | 巨神の導杖 |
-| 7 | E | `Titan` | `i.grimoire`EA | 巨神刻文書 |
+| 7 | E | `Titan` | `i.grimoire`EA | ロゼッタストーン |
 | 7 | E | `Titan` | `i.robe`EA | 巨神の法衣 |
 | 7 | E | `Titan` | `i.bolt`EA | 巨神のボルト |
-| 7 | E | `Titan` | `i.katana`EA | 巨神の太刀 |
-| 7 | E | `Undead` | `i.armor`EB | 亡王の鎧 |
-| 7 | E | `Undead` | `i.catalyst`EB | 冥府核の触媒 |
+| 7 | E | `Titan` | `i.katana`EA | 巨太刀 |
+| 7 | E | `Undead` | `i.armor`EB | 冥府の鎧 |
+| 7 | E | `Undead` | `i.catalyst`EB | 冥核 |
 | 7 | E | `Undead` | `i.gauntlet`EB | 冥爪の手甲 |
 | 7 | E | `Undead` | `i.katana`EB | 大鎌 | `a.soul-reap`1, `r.fire_x1.3` |
 | 7 | E | `Undead` | `i.archery`EB | 冥府の弓 |
 | 7 | E | `Undead` | `i.arrow`EB | 冥府の矢 | `a.life-drain`1, `r.fire_x1.3` |
 | 7 | E | `Undead` | `i.sword`EB | 冥府の剣 | `a.life-drain`1, `r.fire_x1.3` |
 | 7 | B | `Leporian` | `i.sword`BD | ホーリーソード | `a.requiem` |
-| 7 | B | `Leporian` | `i.wand`BD | 月王兎の宝杖 |
-| 7 | B | `Leporian` | `i.armor`BD | 月王兎の聖鎧 |
+| 7 | B | `Leporian` | `i.wand`BD | 月兎の宝杖 |
+| 7 | B | `Leporian` | `i.armor`BD | 月兎の聖鎧 |
 | 7 | B | `Leporian` | `i.katana`BD | 白妙 | `a.ice-protect-breaker` |
-| 7 | B | `Leporian` | `i.shield`BD | 月王兎の聖盾 |
-| 7 | B | `Leporian` | `i.archery`BD | 月王兎の神弓 | 
+| 7 | B | `Leporian` | `i.shield`BD | 月兎の聖盾 |
+| 7 | B | `Leporian` | `i.archery`BD | 月兎の銀弓 | 
 | 7 | B | `Leporian` | `i.arrow`BD | ホーリーアロー | `a.requiem` |
-| 7 | B | `Leporian` | `i.gauntlet`BD | 月王兎の拳甲 |
-| 7 | B | `Leporian` | `i.grimoire`BD | 月王兎の秘典 |
+| 7 | B | `Leporian` | `i.gauntlet`BD | 月兎のガントレット |
+| 7 | B | `Leporian` | `i.grimoire`BD | 月兎の歴史書 |
 | 8 | C | none | `i.sword`C | 神鋼の短剣 |
 | 8 | C | none | `i.gauntlet`C | 聖鍛の手甲 |
 | 8 | C | none | `i.shield`C | 竜印の盾 |
