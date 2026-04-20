@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 12 | 2026/4/20 | Preserve ongoing AFK `state.reactivate` catch-up across page refresh by persisting/restoring pending AFK runtime (`pendingAfkMs`, recovery total, and simulation anchor), so resumed emulation continues instead of dropping back to normal state mid-recovery. |
 | 0.6.1 | 11 | 2026/4/20 | Fix battle log reactive output for enemy counters: skip emitting `…に反撃！` entries when enemy has no usable attack attempts in that phase (e.g., no ranged attack/NoA during LONG), preventing empty counter-only lines with no damage text. |
 | 0.6.1 | 10 | 2026/4/20 | Update runtime header game title styling: set the emphasized 「🐾」 character rotation to `0°` (no rotation), while keeping enlarged scale. |
 | 0.6.1 | 9 | 2026/4/20 | Adjust runtime header game title emphasis scaling for `冒ケモ🐾`: keep existing rotations (`-22.5°` / `22.5°`) but reset emphasized `冒` and `🐾` scale to `1.0` per request. |
