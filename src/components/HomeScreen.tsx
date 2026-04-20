@@ -4611,7 +4611,8 @@ export function HomeScreen({
               <h1 className="flex items-center gap-1 text-lg font-bold">
                 <span aria-label={gameTitle}>
                   <span className="inline-block text-[1.35em] leading-none" style={{ transform: 'rotate(-22.5deg)' }}>冒</span>
-                  <span>ケモ🐾</span>
+                  <span>ケモ</span>
+                  <span className="inline-block leading-none" style={{ transform: 'rotate(22.5deg)' }}>🐾</span>
                 </span>
                 <span className="text-xs font-normal text-gray-500">{versionLabel}</span>
               </h1>

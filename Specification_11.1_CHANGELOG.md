@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 7 | 2026/4/20 | Update runtime header game title per Spec 8.1.2: keep `冒ケモ🐾` and apply clockwise `22.5°` rotation to the `🐾` character while preserving emphasized `冒` styling. |
 | 0.6.1 | 6 | 2026/4/20 | Update runtime header title per Spec 8.1.2: change game title label to `冒ケモ🐾` and emphasize the `冒` character with larger scale and `-22.5°` counterclockwise rotation. |
 | 0.6.1 | 5 | 2026/4/20 | Implement runtime loading-message randomization per Spec 1.2.2: replace fixed loading text with `LOADING_MESSAGE` pool and randomly select one entry each time the loading screen is displayed. |
 | 0.6.1 | 4 | 2026/4/20 | Update runtime PT1/unascertained setup to requested Spec 2.1 values: change `unascertained` lineage bonus to `c.equip-slot+3` and set ケモ initial equipment to `1101, 1102, 1104, 1105, 1106, 1211` under `Goddess of Restoration`. |
