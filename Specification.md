@@ -82,10 +82,23 @@
 
 
 ## 9. Environment
-**Branch:** `main` → `/dev/`, `qa` → `/qa/`, `luna` → `/luna`
-**Environment:** `/dev/` = 開発環境, `/qa/` = αテスト, `/luna/` = αテスト; display the environment label in the version line.
-**Special mod:** If `/luna/`, game mode is `m.luna` and cannot be changed. 
-**Save Data Isolation:** Save data must be namespaced per environment (`/dev/` and `/qa/`) and never shared between them.
+**Branch:**
+  - `main` → `/dev/`
+  - `qa` → `/qa/`
+  - `beta` → `/beta/`
+  - *obsolated*: `luna` → `/luna`
+**Environment:**
+  - `/dev/` = 開発環境,
+  - `/qa/` = αテスト,
+  - `/beta/` = βテスト.
+  - display the environment label in the version line.
+    onfiguration:**
+  - `/dev/` and `/qa/`:
+    - Debug mode: ON
+    - Speed of time: x20 hyper 
+  - `/beta/`:
+    - Debug mode: OFF 
+**Save Data Isolation:** Save data must be namespaced per environment (example: `/dev/` and `/qa/`) and never shared between them.
 
 ## 10. Coding Rule: SpecRef Traceability
 - To ensure traceability between specification and implementation, developers must annotate relevant code blocks with SpecRef comments.
