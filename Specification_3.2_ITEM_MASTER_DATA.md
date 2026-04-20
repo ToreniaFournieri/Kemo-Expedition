@@ -34,8 +34,8 @@
 | 1 | U | none | `i.arrow`U | 羽根矢 |
 | 1 | U | none | `i.bolt`U | 石先ボルト |
 | 1 | U | none | `i.archery`U | 狩人の弓 |
-| 1 | E | `Beast` | `i.armor`EA | 猛獣の鎧 |
-| 1 | E | `Beast` | `i.sword`EA | 猛獣の剣 |
+| 1 | E | `Beast` | `i.armor`EA | 獣革の鎧 |
+| 1 | E | `Beast` | `i.sword`EA | 牙の剣 |
 | 1 | E | `Beast` | `i.gauntlet`EA | 獣革の拳当て |
 | 1 | E | `Beast` | `i.robe`EA | 毛皮のまとい |
 | 1 | E | `Beast` | `i.katana`EA | 牙研ぎの曲刀 |
