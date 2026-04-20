@@ -505,6 +505,14 @@ function getTargetRow(ctx: BattleContext, phase: BattleActionPhase): { row: numb
 }
 
 // SpecRef: 6.1.4.1 | Function of attack | f.damage_calculation
+function getPostDefenseBaseDamage(
+  attack: number,
+  effectiveDefense: number,
+): number {
+  return Math.max(1, attack - effectiveDefense);
+}
+
+// SpecRef: 6.1.4.1 | Function of attack | f.damage_calculation
 // Calculate single attack damage (without NoA multiplier)
 function calculateSingleEnemyAttackDamage(
   phase: BattleActionPhase,
@@ -578,7 +586,7 @@ function calculateSingleEnemyAttackDamage(
     partyHp,
     maxPartyHp,
   );
-  const rawDamage = (attack - effectiveDefense) * amplifier * runtimeOffenseMultiplier * enemy.elementalOffenseValue * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier;
+  const rawDamage = getPostDefenseBaseDamage(attack, effectiveDefense) * amplifier * runtimeOffenseMultiplier * enemy.elementalOffenseValue * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier;
   const totalDamage = Math.max(1, rawDamage);
 
   return applyTerrainDamageOverride(Math.floor(totalDamage), terrainEffect, maxPartyHp, enemy.abilities);
@@ -848,7 +856,7 @@ function calculateCharacterFriendlyFireDamage(
 
   const partyOffenseAmplifier = getPartyOffenseAbilityAmplifier(phase, characterStats, attacker.row);
   const basePerHitDamage = Math.max(1, Math.floor(
-    (attack - effectiveDefenseWithHeavyStrike)
+    getPostDefenseBaseDamage(attack, effectiveDefenseWithHeavyStrike)
       * offenseAmplifier
       * runtimeOffenseMultiplier
       * attacker.elementalOffenseValue
@@ -1460,7 +1468,7 @@ function calculateCharacterDamage(
 
   const partyOffenseAmplifier = getPartyOffenseAbilityAmplifier(phase, characterStats, charStats.row);
   const basePerHitDamage = Math.max(1, Math.floor(
-    (attack - effectiveDefense) * offenseAmplifier * runtimeOffenseMultiplier * charStats.elementalOffenseValue *
+    getPostDefenseBaseDamage(attack, effectiveDefense) * offenseAmplifier * runtimeOffenseMultiplier * charStats.elementalOffenseValue *
     elementalMultiplier * defenseAmplifier * partyOffenseAmplifier * rageAmplifier * momentumAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier
   ));
   const terrainAdjustedPerHitDamage = applyTerrainDamageOverride(basePerHitDamage, terrainEffect, enemy.hp, charStats.abilities);
