@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.0 | 490 | 2026/4/20 | Update runtime item drop name pools to requested Spec 3.2.1 entries for tier 3–4: Spirit elite (`誘いの書`/`幽刀`/`潮霊の羽衣`), Vulpinian boss (`狐尾のボルト`/`狐尾の杖`/`茶褐色の法衣`/`狡猾の書`), tier-4 uncommon (`乾風衣`/`砂走刀`), and Felidian elite/boss (`猫牙矢`/`短弓`/`曲剣`/`猫呪杖`/`狙撃ボルト`/`バステトの書`/`迅矢`/`カフタン`). |
 | 0.6.0 | 489 | 2026/4/20 | Update runtime item-drop master name pools for Spec 3.2.1 entries provided in this task: align Tier 1 elite/boss and Tier 2 uncommon/elite/boss item names to the requested Beast/Aerial/Insect_Swarm/Caninian/Golem/Lupinian tables. |
 | 0.6.0 | 488 | 2026/4/20 | Align runtime spec data for requested entries: set special-bonus values for `白霜牙の剣` to `e.ice+0.020` and `雷式` to `e.thunder+0.030` + `b.strength+1`, and update lineages so `adaptation` adds `c.evasion+20` and `fragment` grants `a.unforgettable` with existing multipliers. |
 | 0.6.0 | 487 | 2026/4/20 | Update runtime item drop master/special bonus mapping for Spec 3.2.1 entries: align elite/boss rare item names (`霧払`, `甲鎧`, `シトロネラの衣`, `ファーストエイド`, `粘膜覆`, `硫酸刺`, `小刀`, `雷式`, `矢払盾`, `崩壊核`, `スケールメイル`, `演式核`, `絶縁体`, `大鎌`, `刻憶の書`, `魔封晶`) and apply the corresponding special-bonus effects in runtime generation. |
