@@ -131,11 +131,11 @@
 
 - **`Step Progress` Display**:  
   - Represent the progress of a single `Step` using progress bar.
-    - Visualization:
-      - Represent the progression of a single Step using a horizontal progress bar.
+    - Visualization: Represent the progression of a single Step using a horizontal progress bar.
     - Style:
-      - Progress fill: Sub color with 40% opacity (α = 0.4)
+			   - Progress fill: Sub color with 40% opacity (α = 0.4)
       - Background: Transparent
+    - Width: Spans the full horizontal width of the container (left edge to right edge)
 
 ```
 `Step Progress`
