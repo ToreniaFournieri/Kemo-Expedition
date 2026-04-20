@@ -120,7 +120,7 @@
       - Rotation: −22.5° (counterclockwise)
     - The character 「🐾」is emphasized:   
       - Scale: Larger than surrounding text
-						- Rotation: 22.5° (clockwise)
+						- Rotation: 0° 
 
 	- env label by URL subpath const getEnvLabel = () => {
   const p = window.location.pathname; // e.g. "/Kemo-Expedition/dev/..."
