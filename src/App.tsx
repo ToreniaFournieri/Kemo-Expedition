@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useGameState } from './hooks/useGameState';
 import { HomeScreen } from './components/HomeScreen';
-import { createEnvironmentStorageKey } from './game/environment';
+import { createEnvironmentStorageKey, getEnvironmentId } from './game/environment';
 
 const LOADING_MESSAGE = '下界にいる勇敢な冒険者達を捜索中…';
 const DARK_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-dark-mode');
@@ -10,6 +10,7 @@ const THEME_SYNC_EVENT = 'kemo-expedition-theme-sync';
 
 function getInitialGameModeClass() {
   if (typeof window === 'undefined') return '';
+  if (getEnvironmentId() === 'beta') return 'theme-laika';
   const saved = localStorage.getItem(GAME_MODE_STORAGE_KEY);
   return saved === 'm.luna' ? 'theme-luna' : saved === 'm.laika' ? 'theme-laika' : '';
 }
@@ -43,7 +44,11 @@ export default function App() {
       }
 
       const savedMode = localStorage.getItem(GAME_MODE_STORAGE_KEY);
-      setGameModeClass(savedMode === 'm.luna' ? 'theme-luna' : savedMode === 'm.laika' ? 'theme-laika' : '');
+      if (getEnvironmentId() === 'beta') {
+        setGameModeClass('theme-laika');
+      } else {
+        setGameModeClass(savedMode === 'm.luna' ? 'theme-luna' : savedMode === 'm.laika' ? 'theme-laika' : '');
+      }
     };
 
     syncThemeState();

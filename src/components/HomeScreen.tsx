@@ -2397,6 +2397,7 @@ function sortInventoryItems(items: [string, InventoryVariant][]): [string, Inven
 
 function getInitialGameMode(): GameMode {
   if (typeof window === 'undefined') return 'm.kemo';
+  if (getEnvironmentId() === 'beta') return 'm.laika';
 
   try {
     const savedMode = localStorage.getItem(GAME_MODE_STORAGE_KEY);
@@ -3394,6 +3395,10 @@ export function HomeScreen({
 
   useEffect(() => {
     try {
+      if (getEnvironmentId() === 'beta') {
+        setGameMode('m.laika');
+        return;
+      }
       const savedMode = localStorage.getItem(GAME_MODE_STORAGE_KEY);
       if (savedMode === 'm.kemo' || savedMode === 'm.luna' || savedMode === 'm.laika') {
         setGameMode(savedMode);
@@ -3405,7 +3410,11 @@ export function HomeScreen({
 
   useEffect(() => {
     try {
-      localStorage.setItem(GAME_MODE_STORAGE_KEY, gameMode);
+      const storedMode = getEnvironmentId() === 'beta' ? 'm.laika' : gameMode;
+      if (getEnvironmentId() === 'beta' && gameMode !== 'm.laika') {
+        setGameMode('m.laika');
+      }
+      localStorage.setItem(GAME_MODE_STORAGE_KEY, storedMode);
       window.dispatchEvent(new Event(THEME_SYNC_EVENT));
     } catch (error) {
       console.error('Failed to persist game mode:', error);
@@ -9518,7 +9527,8 @@ function SettingTab({
     }, 0);
   };
   const currentEnv = getEnvironmentId();
-  const modeSelectionLocked = false;
+  const isBetaEnvironment = currentEnv === 'beta';
+  const modeSelectionLocked = isBetaEnvironment;
   useEffect(() => {
     try {
       localStorage.setItem(DIVINE_BUREAU_PANEL_STORAGE_KEY, JSON.stringify(divineBureauPanelExpanded));
@@ -11108,11 +11118,12 @@ function SettingTab({
               </button>
               <button
                 onClick={() => onSetGameMode('m.luna')}
+                disabled={modeSelectionLocked}
                   className={`py-2 rounded border text-sm font-medium ${
                   gameMode === 'm.luna'
                     ? 'bg-sub text-white border-sub pane-button-shadow-soft'
                     : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
-                }`}
+                } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
                 ルナ
               </button>
@@ -11140,7 +11151,7 @@ function SettingTab({
       </div>
 
 
-      <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
+      {!isBetaEnvironment && <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('debug', 'デバッグ')}
         {divineBureauPanelExpanded.debug && <div className="space-y-3 mt-3 text-sm">
           <button type="button" onClick={() => onUpdateDebugSettings({ clairvoyanceEnabled: !debugSettings.clairvoyanceEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">Clairvoyance: {debugSettings.clairvoyanceEnabled ? 'ON' : 'OFF'}</button>
@@ -11163,7 +11174,7 @@ function SettingTab({
           <button type="button" onClick={() => onUpdateDebugSettings({ displayAfkDuration: !debugSettings.displayAfkDuration })} className="w-full rounded border bg-white px-3 py-2 text-left">Display AFK duration: {debugSettings.displayAfkDuration ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ colosseumEnabled: !debugSettings.colosseumEnabled })} className="w-full rounded border bg-white px-3 py-2 text-left">Colosseum mode: {debugSettings.colosseumEnabled ? 'ON' : 'OFF'}</button>
         </div>}
-      </div>
+      </div>}
 
       <div className="bg-pane rounded-lg p-4 mb-4 shadow-md shadow-slate-900/10">
         {renderDivineBureauPanelHeader('gameSetting', 'バックアップ・リセット')}
