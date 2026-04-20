@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 9 | 2026/4/20 | Adjust runtime header game title emphasis scaling for `冒ケモ🐾`: keep existing rotations (`-22.5°` / `22.5°`) but reset emphasized `冒` and `🐾` scale to `1.0` per request. |
 | 0.6.1 | 8 | 2026/4/20 | Update runtime header game title rendering (`冒ケモ🐾`) to emphasize both `冒` and `🐾` with larger scale and specified rotations (`-22.5°` / `22.5°`) per Spec 8.1.2. |
 | 0.6.1 | 7 | 2026/4/20 | Update runtime header game title per Spec 8.1.2: keep `冒ケモ🐾` and apply clockwise `22.5°` rotation to the `🐾` character while preserving emphasized `冒` styling. |
 | 0.6.1 | 6 | 2026/4/20 | Update runtime header title per Spec 8.1.2: change game title label to `冒ケモ🐾` and emphasize the `冒` character with larger scale and `-22.5°` counterclockwise rotation. |
