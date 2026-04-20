@@ -1,4 +1,4 @@
-import { createEnvironmentStorageKey } from './environment';
+import { createEnvironmentStorageKey, getEnvironmentId } from './environment';
 
 export type DebugTimeSpeed = 'realtime' | 'x5' | 'x20' | 'x100' | 'x10000';
 export type DebugGodsBattleCondition = 'normal' | 'simple1';
@@ -31,13 +31,28 @@ export const DEFAULT_DEBUG_SETTINGS: DebugSettings = {
   colosseumEnabled: false,
 };
 
+const BETA_LOCKED_DEBUG_SETTINGS: DebugSettings = {
+  ...DEFAULT_DEBUG_SETTINGS,
+  timeSpeed: 'realtime',
+  godsBattleCondition: 'normal',
+  godStrength: 'normal',
+};
+
+function enforceEnvironmentDebugPolicy(settings: DebugSettings): DebugSettings {
+  // SpecRef: 9 | Environment | /beta/ Debug mode OFF
+  if (getEnvironmentId() === 'beta') {
+    return BETA_LOCKED_DEBUG_SETTINGS;
+  }
+  return settings;
+}
+
 function canUseStorage(): boolean {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
 }
 
 export function normalizeDebugSettings(raw: unknown): DebugSettings {
   const parsed = (raw && typeof raw === 'object') ? raw as Partial<DebugSettings> & { displayMotivation?: boolean } : {};
-  return {
+  return enforceEnvironmentDebugPolicy({
     clairvoyanceEnabled: parsed.clairvoyanceEnabled === true,
     timeSpeed: parsed.timeSpeed === 'realtime' || parsed.timeSpeed === 'x20' || parsed.timeSpeed === 'x100' || parsed.timeSpeed === 'x10000' || parsed.timeSpeed === 'x5' ? parsed.timeSpeed : 'realtime',
     godsBattleCondition: parsed.godsBattleCondition === 'simple1' ? 'simple1' : 'normal',
@@ -48,24 +63,24 @@ export function normalizeDebugSettings(raw: unknown): DebugSettings {
     displayFlavorCondition: parsed.displayFlavorCondition === true,
     displayAfkDuration: parsed.displayAfkDuration === true,
     colosseumEnabled: parsed.colosseumEnabled === true,
-  };
+  });
 }
 
 export function getDebugSettings(): DebugSettings {
-  if (!canUseStorage()) return DEFAULT_DEBUG_SETTINGS;
+  if (!canUseStorage()) return enforceEnvironmentDebugPolicy(DEFAULT_DEBUG_SETTINGS);
   try {
     const saved = window.localStorage.getItem(DEBUG_SETTINGS_STORAGE_KEY);
-    if (!saved) return DEFAULT_DEBUG_SETTINGS;
+    if (!saved) return enforceEnvironmentDebugPolicy(DEFAULT_DEBUG_SETTINGS);
     return normalizeDebugSettings(JSON.parse(saved));
   } catch {
-    return DEFAULT_DEBUG_SETTINGS;
+    return enforceEnvironmentDebugPolicy(DEFAULT_DEBUG_SETTINGS);
   }
 }
 
 export function saveDebugSettings(settings: DebugSettings): void {
   if (!canUseStorage()) return;
   try {
-    window.localStorage.setItem(DEBUG_SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+    window.localStorage.setItem(DEBUG_SETTINGS_STORAGE_KEY, JSON.stringify(enforceEnvironmentDebugPolicy(settings)));
   } catch {
     // noop
   }
