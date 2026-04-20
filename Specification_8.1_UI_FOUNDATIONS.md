@@ -118,7 +118,8 @@
 		  - The character 「冒」 is emphasized:   
       - Scale: Larger than surrounding text
       - Rotation: −22.5° (counterclockwise)
-    - The character 「🐾」:
+    - The character 「🐾」is emphasized:   
+      - Scale: Larger than surrounding text
 						- Rotation: 22.5° (clockwise)
 
 	- env label by URL subpath const getEnvLabel = () => {
