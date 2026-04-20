@@ -44,22 +44,22 @@
 | 1 | E | `Aerial` | `i.shield`EB | 銀鏡の盾 | `c.magical-defense-x2/3` |
 | 1 | E | `Aerial` | `i.wand`EB | 風呼びの小杖 |
 | 1 | E | `Aerial` | `i.grimoire`EB | 渡り翼の教本 |
-| 1 | E | `Aerial` | `i.catalyst`EB | 上昇気流の核石 |
+| 1 | E | `Aerial` | `i.catalyst`EB | 軽羽石 |
 | 1 | E | `Aerial` | `i.arrow`EB | 風切り矢 |
 | 1 | E | `Aerial` | `i.bolt`EB | 隼落としボルト |
-| 1 | E | `Aerial` | `i.archery`EB | 高枝の狩弓 |
-| 1 | E | `Insect_Swarm` | `i.archery`EC | 群蟲の弓 |
-| 1 | E | `Insect_Swarm` | `i.arrow`EC | 群蟲の矢 |
-| 1 | E | `Insect_Swarm` | `i.bolt`EC | 群蟲のボルト |
-| 1 | E | `Insect_Swarm` | `i.sword`EC | 虫刃の直剣 |
+| 1 | E | `Aerial` | `i.archery`EB | 軽骨弓 |
+| 1 | E | `Insect_Swarm` | `i.archery`EC | 甲殻弓 |
+| 1 | E | `Insect_Swarm` | `i.arrow`EC | 角針 |
+| 1 | E | `Insect_Swarm` | `i.bolt`EC | 甲殻片 |
+| 1 | E | `Insect_Swarm` | `i.sword`EC | 虫牙 |
 | 1 | E | `Insect_Swarm` | `i.armor`EC | 甲鎧 | `a.null-death-touch` |
-| 1 | B | `Caninian` | `i.sword`BD | 若牙の長剣 |
-| 1 | B | `Caninian` | `i.gauntlet`BD | 若牙の手甲 |
+| 1 | B | `Caninian` | `i.sword`BD | 長剣 |
+| 1 | B | `Caninian` | `i.gauntlet`BD | 手甲 |
 | 1 | B | `Caninian` | `i.shield`BD | 霧払 | `a.true-sight` |
-| 1 | B | `Caninian` | `i.armor`BD | 若牙の戦鎧 |
-| 1 | B | `Caninian` | `i.robe`BD | 若牙の外套 |
+| 1 | B | `Caninian` | `i.armor`BD | ライトアーマー |
+| 1 | B | `Caninian` | `i.robe`BD | 外套 |
 | 1 | B | `Caninian` | `i.katana`BD | 若牙の刀 |
-| 1 | B | `Caninian` | `i.grimoire`BD | 若牙の戦書 |
+| 1 | B | `Caninian` | `i.grimoire`BD | 戦術書 |
 | 2 | C | none | `i.sword`C | 毛巻きの短剣 |
 | 2 | C | none | `i.gauntlet`C | 毛革の手甲 |
 | 2 | C | none | `i.shield`C | 毛張りの丸盾 |
