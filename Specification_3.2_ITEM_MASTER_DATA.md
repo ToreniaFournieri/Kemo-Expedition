@@ -271,16 +271,16 @@
 | 6 | C | none | `i.bolt`C | 機鋼ボルト |
 | 6 | C | none | `i.archery`C | 機弦弓 |
 | 6 | U | none | `i.sword`U | 高周波刃 |
-| 6 | U | none | `i.gauntlet`U | 帯電手甲 |
+| 6 | U | none | `i.gauntlet`U | 銅甲 |
 | 6 | U | none | `i.shield`U | 磁気盾 |
 | 6 | U | none | `i.armor`U | 電導の鎧 |
-| 6 | U | none | `i.robe`U | 雷紋ローブ | 
-| 6 | U | none | `i.katana`U | 迅電の打刀 |
-| 6 | U | none | `i.wand`U | 落雷の杖 |
+| 6 | U | none | `i.robe`U | 波紋ローブ | 
+| 6 | U | none | `i.katana`U | 迅打刀 |
+| 6 | U | none | `i.wand`U | 銅杖 |
 | 6 | U | none | `i.grimoire`U | 雷導術式書 |
 | 6 | U | none | `i.catalyst`U | 電晶触媒 |
-| 6 | U | none | `i.arrow`U | 雷尾矢 |
-| 6 | U | none | `i.bolt`U | 放電ボルト |
+| 6 | U | none | `i.arrow`U | 銅礫 |
+| 6 | U | none | `i.bolt`U | 銅片 |
 | 6 | U | none | `i.archery`U | 轟雷の弓 |
 | 6 | E | `Chimera` | `i.wand`EC | 継ぎ獣導杖 |
 | 6 | E | `Chimera` | `i.grimoire`EC | 合成獣秘録 |
@@ -293,7 +293,7 @@
 | 6 | E | `Golem` | `i.shield`EB | 岩核の盾 |
 | 6 | E | `Golem` | `i.sword`EB | 岩核の剣 |
 | 6 | E | `Mech` | `i.archery`EA | 鉄筒 |
-| 6 | E | `Mech` | `i.arrow`EA | 鉄片 |
+| 6 | E | `Mech` | `i.arrow`EA | 鉄礫 |
 | 6 | E | `Mech` | `i.bolt`EA | 鉄塊 |
 | 6 | E | `Mech` | `i.shield`EA | シールド |
 | 6 | E | `Mech` | `i.robe`EA | ケージ |
@@ -304,11 +304,11 @@
 | 6 | B | `Procyonian` | `i.archery`BD | 葉の狩弓 |
 | 6 | B | `Procyonian` | `i.armor`BD | 絶縁体 | `a.null-shock` |
 | 6 | B | `Procyonian` | `i.catalyst`BD | 演式核 | `a.equation-breaker` |
-| 6 | B | `Procyonian` | `i.grimoire`BD | 葉王の機導秘本 |
-| 6 | B | `Procyonian` | `i.shield`BD | 葉王の護盾 |
+| 6 | B | `Procyonian` | `i.grimoire`BD | 葉術本 |
+| 6 | B | `Procyonian` | `i.shield`BD | 葉盾 |
 | 6 | B | `Procyonian` | `i.katana`BD | 雷切 | `a.thunder-protect-breaker` |
-| 6 | B | `Procyonian` | `i.arrow`BD | 葉王の狩矢 |
-| 6 | B | `Procyonian` | `i.archery`BD | 葉王の弩弓 |
+| 6 | B | `Procyonian` | `i.arrow`BD | 葉剛矢 |
+| 6 | B | `Procyonian` | `i.archery`BD | 葉曲弓 |
 | 7 | C | none | `i.sword`C | 星銀の短剣 |
 | 7 | C | none | `i.gauntlet`C | 月環の手甲 |
 | 7 | C | none | `i.shield`C | 蒼月の盾 |
