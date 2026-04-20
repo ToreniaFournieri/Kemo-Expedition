@@ -141,24 +141,24 @@
 | 3 | E | `Marine` | `i.sword`EA | 小刀 | `a.null-bind` |
 | 3 | E | `Marine` | `i.armor`EA | 深海鱗の鎧 |
 | 3 | E | `Spirit` | `i.wand`EC | 灯霊の杖 |
-| 3 | E | `Spirit` | `i.grimoire`EC | 潮幻の秘本 |
+| 3 | E | `Spirit` | `i.grimoire`EC | 誘いの書 |
 | 3 | E | `Spirit` | `i.gauntlet`EC | 霊波の手甲 |
-| 3 | E | `Spirit` | `i.katana`EC | 幽潮の刀 |
+| 3 | E | `Spirit` | `i.katana`EC | 幽刀 |
 | 3 | E | `Spirit` | `i.archery`EC | 潮霊の弓 |
-| 3 | E | `Spirit` | `i.robe`EC | 潮霊の法衣 |
+| 3 | E | `Spirit` | `i.robe`EC | 潮霊の羽衣 |
 | 3 | E | `Slime_Colony` | `i.arrow`EB | 粘波の矢 |
 | 3 | E | `Slime_Colony` | `i.bolt`EB | 硫酸刺 | `a.corrode` |
 | 3 | E | `Slime_Colony` | `i.archery`EB | 群粘の弓 |
 | 3 | E | `Slime_Colony` | `i.armor`EB | 粘膜覆 | `a.null-corrode` |
 | 3 | E | `Slime_Colony` | `i.gauntlet`EB | 粘群の手甲 |
-| 3 | B | `Vulpinian` | `i.bolt`BD | 蒼尾のボルト |
-| 3 | B | `Vulpinian` | `i.wand`BD | 蒼尾王の杖 |
-| 3 | B | `Vulpinian` | `i.robe`BD | 蒼尾王の法衣 |
-| 3 | B | `Vulpinian` | `i.grimoire`BD | 蒼尾王の秘本 |
+| 3 | B | `Vulpinian` | `i.bolt`BD | 狐尾のボルト |
+| 3 | B | `Vulpinian` | `i.wand`BD | 狐尾の杖 |
+| 3 | B | `Vulpinian` | `i.robe`BD | 茶褐色の法衣 |
+| 3 | B | `Vulpinian` | `i.grimoire`BD | 狡猾の書 |
 | 3 | B | `Vulpinian` | `i.sword`BD | 雷式 | `e.thunder+0.030`, `b.strength+1` |
 | 3 | B | `Vulpinian` | `i.shield`BD | 矢払盾 | `a.deflection`1 |
-| 3 | B | `Vulpinian` | `i.catalyst`BD | 蒼狐核の触媒 |
-| 3 | B | `Vulpinian` | `i.gauntlet`BD | 蒼尾王の手甲 |
+| 3 | B | `Vulpinian` | `i.catalyst`BD | 狐核の触媒 |
+| 3 | B | `Vulpinian` | `i.gauntlet`BD | 肉球 |
 | 4 | C | none | `i.sword`C | 骨刃の短剣 |
 | 4 | C | none | `i.gauntlet`C | 骨環の手甲 |
 | 4 | C | none | `i.shield`C | 肋骨の盾 |
@@ -175,8 +175,8 @@
 | 4 | U | none | `i.gauntlet`U | 砂革の手甲 |
 | 4 | U | none | `i.shield`U | 砂紋の盾 |
 | 4 | U | none | `i.armor`U | 砂旅の外衣 |
-| 4 | U | none | `i.robe`U | 乾風の法衣 |
-| 4 | U | none | `i.katana`U | 砂走りの打刀 |
+| 4 | U | none | `i.robe`U | 乾風衣 |
+| 4 | U | none | `i.katana`U | 砂走刀 |
 | 4 | U | none | `i.wand`U | 陽炎の杖 |
 | 4 | U | none | `i.grimoire`U | 砂塵術式書 |
 | 4 | U | none | `i.catalyst`U | 砂晶の触媒 |
@@ -190,11 +190,11 @@
 | 4 | E | `Shadowfang` | `i.robe`EA | 影牙の法衣 |
 | 4 | E | `Shadowfang` | `i.shield`EA | 紅の防盾 | `r.fire_x2/3` |
 | 4 | E | `Felidian` | `i.bolt`EB | 砂猫のボルト |
-| 4 | E | `Felidian` | `i.arrow`EB | 猫眼の狩矢 |
-| 4 | E | `Felidian` | `i.archery`EB | 砂猫の長弓 |
+| 4 | E | `Felidian` | `i.arrow`EB | 猫牙矢 |
+| 4 | E | `Felidian` | `i.archery`EB | 短弓 |
 | 4 | E | `Felidian` | `i.robe`EB | 盗砂の猫衣 |
-| 4 | E | `Felidian` | `i.sword`EB | 猫爪の曲剣 |
-| 4 | E | `Felidian` | `i.wand`EB | 猫王の呪杖 |
+| 4 | E | `Felidian` | `i.sword`EB | 曲剣 |
+| 4 | E | `Felidian` | `i.wand`EB | 猫呪杖 |
 | 4 | E | `Felidian` | `i.grimoire`EB | 砂猫秘儀書 |
 | 4 | E | `Felidian` | `i.catalyst`EB | 崩壊核 | `a.decompose`1 |
 | 4 | E | `Titan` | `i.armor`EC | 巨骨の重鎧 |
@@ -203,11 +203,11 @@
 | 4 | E | `Titan` | `i.shield`EC | 岩背の大盾 |
 | 4 | E | `Titan` | `i.gauntlet`EC | 破砕の巨手甲 |
 | 4 | E | `Titan` | `i.wand`EC | 巨神の杖 |
-| 4 | B | `Felidian` | `i.bolt`BD | 王都猫の狙撃ボルト |
+| 4 | B | `Felidian` | `i.bolt`BD | 狙撃ボルト |
 | 4 | B | `Felidian` | `i.archery`BD | 俊敏の弓 | `a.boost`1, `c.physical-defense-multiplier_x1.1` |
-| 4 | B | `Felidian` | `i.grimoire`BD | 王都猫の秘本 |
-| 4 | B | `Felidian` | `i.arrow`BD | 王都猫の迅矢 |
-| 4 | B | `Felidian` | `i.robe`BD | 王都猫の王衣 |
+| 4 | B | `Felidian` | `i.grimoire`BD | バステトの書 |
+| 4 | B | `Felidian` | `i.arrow`BD | 迅矢 |
+| 4 | B | `Felidian` | `i.robe`BD | カフタン |
 | 4 | B | `Felidian` | `i.sword`BD | はやぶさの剣 | `a.boost`1, `c.physical-defense-multiplier_x1.1`  |
 | 5 | C | none | `i.sword`C | 錆鉄の短剣 |
 | 5 | C | none | `i.gauntlet`C | 鉄環の手甲 |
