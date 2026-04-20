@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.0 | 496 | 2026/4/20 | Update runtime Expedition 7 rare enemy master entries (floors 2-6) to the requested Spec 4.2.2 values by aligning listed Japanese names and Leporian wizard drops for these rows: `白兎巡礼士`, `白兎術師`, `光翼の戦空兵`, `影墓の亡者`, `闇刃の亡者`, `宵闇の亡者`, `冥月の亡者アドリアン`, `冥府の剣士ヴァレン`, `月宮の戦士長`, `月宮の導師`, `月宮の親衛隊`, `月王の寵臣ナヴィル`, `月王の寵臣カリス`. |
 | 0.6.0 | 495 | 2026/4/20 | Update runtime Expedition 5–6 rare-drop enemy master rows to requested Spec 4.2.2 Japanese names for listed Dragon/Ursan/Mech/Golem/Chimera entries (including 溶鱗の竜, 火道の竜, 監視熊ボルク, オートマタVer2.1, ナイトメア, 断刃決闘像, 鉱刃デュエラ像, 鉱核祭像). |
 | 0.6.0 | 494 | 2026/4/20 | Update runtime Expedition 2–4 enemy master rows to requested Spec 4.2.2 rare-drop entries (Japanese names/class pairings) across listed floors/rooms, including Frost/Plant_Fungal/Golem/Lupinian, Marine/Vulpinian, and Shadowfang/Titan/Felidian records such as `凍晶の霊`, `冬森の刃霊`, `玄岩の連撃体`, `妖狼`, `狐牙の護剣士`, `狐尾の魔術師`, `忍猫ネロ`, and `豊穣の親衛隊`. |
 | 0.6.0 | 493 | 2026/4/20 | Update runtime Expedition 1 enemy master rows to requested Spec 4.2.2 rare-drop enemy entries (Japanese names/class pairings) for floors 1–6: 平原のちいさな獣, ものしり獣, 仁けもの, かぎ爪の小翼, 羽虫, 唱えるけもの, 賢い翼, 雇われ傭兵, 見張り番, 風切りの鳥ケモ, 細身の鳥ケモ, 魔道の鳥ケモ, 学びし鳥ケモ, 遺跡を守りしもの, 遺跡の傭兵. |
