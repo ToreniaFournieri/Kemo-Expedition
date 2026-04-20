@@ -102,7 +102,7 @@
 | `fragment` | 断章の系譜 | 断 | 生存 | `a.unforgettable`, `c.armor_x1.2`, `c.wand_x1.2` | `true` |
 | `windcross` | 風渡の系譜 | 風 | 生存 | `a.wind-rider`, `c.robe_x1.2`, `c.katana_x1.2` | `true` |
 | `oath` | 誓約の系譜 | 誓 | 生存 | `a.requiem`, `c.shield_x1.2`, `c.sword_x1.2` | `true` |
-| `unascertained` | 不詳 | 不 | - | `c.armor_x1.3`, `c.robe_x1.3` | `false` |
+| `unascertained` | 不詳 | 不 | - | `c.equip-slot+3` | `false` |
 | `pioneer` | 先駆者 | 先 | - | `c.wand_x1.3`, `a.seeker`1 | `false` |
 | `almighty` | 全能 | 全 | - | `c.growth_x1.3`, `c.sword_x1.3`, `c.arrow_x1.3`, `c.wand_x1.3`, `b.vitality+1`, `b.strength+1`, `b.intelligence+1`, `b.mind+1` | `false` |
 | `hidden_grail` | 隠された杯 | 杯 | - | `c.evasion+0.010`, `c.robe_x1.3`, `b.vitality+1`  | `false` |
