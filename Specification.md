@@ -98,7 +98,7 @@
     - Speed of time: x20 hyper 
   - `/beta/`:
     - Debug mode: OFF
-    - Theme: `m.laika` and fixed (not to be changed)
+    - Theme: `m.laika` (fixed; not user-configurable)
 **Save Data Isolation:** Save data must be namespaced per environment (example: `/dev/` and `/qa/`) and never shared between them.
 
 ## 10. Coding Rule: SpecRef Traceability
