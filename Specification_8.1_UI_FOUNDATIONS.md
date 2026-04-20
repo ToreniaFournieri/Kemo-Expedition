@@ -131,11 +131,11 @@
 
 - **`Step Progress` Display**:  
   - Represent the progress of a single `Step` using progress bar.
-  - Color: 
-    - Progress bar: Sub color 
-    - Background: transparent 
-  - The animation is **synchronized with actual `Step` progression**, including all **debug scaling effects**.
-
+    - Visualization:
+      - Represent the progression of a single Step using a horizontal progress bar.
+    - Style:
+      - Progress fill: Sub color with 40% opacity (α = 0.4)
+      - Background: Transparent
 
 ```
 `Step Progress`
