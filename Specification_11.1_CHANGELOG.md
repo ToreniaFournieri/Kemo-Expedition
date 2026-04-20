@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 2 | 2026/4/20 | Fix normal character attack damage argument ordering in battle runtime: pass enemy temporary evasion to `calculateCharacterDamage` before runtime offense multiplier, restoring expected melee/ranged/magic normal attack damage instead of unintended near-minimum values. |
 | 0.6.1 | 1 | 2026/4/20 | Update runtime environment policy for `/beta/`: force fixed theme `m.laika` (non-configurable in UI), lock game-mode selection accordingly, and enforce Debug mode OFF in persisted/runtime debug settings. Also bump app version to `v0.6.1` and reset build number to `1`. |
 | 0.6.0 | 499 | 2026/4/20 | Update GitHub Pages deployment workflow/environment index to replace obsolete `luna` target with `beta` branch and `/beta/` (`βテスト`) route. |
 | 0.6.0 | 498 | 2026/4/20 | Update runtime mode/environment behavior per latest spec: treat `m.kemo`/`m.luna`/`m.laika` as theme-color-only selection (remove Luna/Laika gameplay reward and difficulty effects), update Divine Bureau mode descriptions to theme text, switch environment routing from obsolete `/luna/` to `/beta/` (`βテスト` label), set debug-pane default speed to `Real time`, and set `/dev/`/`/qa/` simulation speed baseline to x20 hyper. |

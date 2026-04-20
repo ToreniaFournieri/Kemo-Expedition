@@ -5280,6 +5280,7 @@ export function executeBattle(
             environment.terrainEffect,
             noAMultiplier,
             characterPhaseAccuracyBonus,
+            phase === 'close' ? enemyTemporaryEvasionBonus : 0,
             resolveCharacterOffenseAmplifierMultiplier(cs.characterId) * ambushMultiplier * overwatchMultiplier * executionMultiplier,
             registerElementalOffenseUsage(cs.elementalOffense, cs.abilities),
           );
