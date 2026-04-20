@@ -3441,6 +3441,9 @@ export function HomeScreen({
         checkpointAt?: number;
         autoRepeatEnabled?: boolean;
         partyCycles?: Record<number, PartyCycleRuntime>;
+        pendingAfkMs?: number;
+        afkRecoveryTotalMs?: number;
+        afkSimulationAnchor?: number | null;
       };
 
       const checkpointAt = typeof parsed.checkpointAt === 'number' ? parsed.checkpointAt : Date.now();
@@ -3448,6 +3451,19 @@ export function HomeScreen({
       lastCheckpointAtRef.current = Date.now() - elapsedMs;
 
       setAutoRepeatEnabled(parsed.autoRepeatEnabled !== false);
+      const restoredPendingAfkMs = typeof parsed.pendingAfkMs === 'number'
+        ? Math.max(0, Math.min(parsed.pendingAfkMs, AFK_MAX_ELAPSED_MS))
+        : 0;
+      if (restoredPendingAfkMs > 0) {
+        setPendingAfkMs(restoredPendingAfkMs);
+        afkRecoveryTotalMsRef.current = typeof parsed.afkRecoveryTotalMs === 'number'
+          ? Math.max(restoredPendingAfkMs, parsed.afkRecoveryTotalMs)
+          : restoredPendingAfkMs;
+        afkSimulationAnchorRef.current = typeof parsed.afkSimulationAnchor === 'number'
+          ? parsed.afkSimulationAnchor
+          : Date.now();
+        shouldRebuildPartyCyclesAfterAfkRef.current = true;
+      }
       if (parsed.partyCycles && typeof parsed.partyCycles === 'object') {
         const restoredCycles: Record<number, PartyCycleRuntime> = {};
         Object.entries(parsed.partyCycles).forEach(([key, value]) => {
@@ -3609,6 +3625,9 @@ export function HomeScreen({
           checkpointAt,
           autoRepeatEnabled: autoRepeatEnabledRef.current,
           partyCycles: partyCyclesRef.current,
+          pendingAfkMs: pendingAfkMsRef.current,
+          afkRecoveryTotalMs: afkRecoveryTotalMsRef.current,
+          afkSimulationAnchor: afkSimulationAnchorRef.current,
         })
       );
     } catch (error) {
@@ -3618,7 +3637,7 @@ export function HomeScreen({
 
   useEffect(() => {
     persistAfkRuntimeState();
-  }, [isAutoRepeatEnabled, partyCycles, persistAfkRuntimeState]);
+  }, [isAutoRepeatEnabled, partyCycles, pendingAfkMs, persistAfkRuntimeState]);
   const getScaledSideQuestSeconds = useCallback((durationMs: number) => {
     // SpecRef: 5.1.2 | Side Quest | Realtime Progress
     // Side-quest time progress follows debug-scaled runtime duration.
