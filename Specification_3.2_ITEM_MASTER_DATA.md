@@ -86,7 +86,7 @@
 | 2 | U | none | `i.archery`U | 霜枝の弓 |
 | 2 | E | `Frost` | `i.arrow`EA | 氷霜の矢 |
 | 2 | E | `Frost` | `i.katana`EA | 氷霜の太刀 |
-| 2 | E | `Frost` | `i.sword`EA | 白霜牙の剣 | `e.ice+20` |
+| 2 | E | `Frost` | `i.sword`EA | 白霜牙の剣 | `e.ice+0.020` |
 | 2 | E | `Frost` | `i.armor`EA | 凍狼の毛鎧 |
 | 2 | E | `Frost` | `i.shield`EA | 氷牙の防盾 | `r.ice_x2/3` |
 | 2 | E | `Frost` | `i.robe`EA | 吹雪獣の外套 |
@@ -155,7 +155,7 @@
 | 3 | B | `Vulpinian` | `i.wand`BD | 蒼尾王の杖 |
 | 3 | B | `Vulpinian` | `i.robe`BD | 蒼尾王の法衣 |
 | 3 | B | `Vulpinian` | `i.grimoire`BD | 蒼尾王の秘本 |
-| 3 | B | `Vulpinian` | `i.sword`BD | 雷式 | `e.thunder+30`, `b.strength+1` |
+| 3 | B | `Vulpinian` | `i.sword`BD | 雷式 | `e.thunder+0.030`, `b.strength+1` |
 | 3 | B | `Vulpinian` | `i.shield`BD | 矢払盾 | `a.deflection`1 |
 | 3 | B | `Vulpinian` | `i.catalyst`BD | 蒼狐核の触媒 |
 | 3 | B | `Vulpinian` | `i.gauntlet`BD | 蒼尾王の手甲 |
