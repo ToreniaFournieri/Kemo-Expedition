@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 8 | 2026/4/20 | Update runtime header game title rendering (`冒ケモ🐾`) to emphasize both `冒` and `🐾` with larger scale and specified rotations (`-22.5°` / `22.5°`) per Spec 8.1.2. |
 | 0.6.1 | 7 | 2026/4/20 | Update runtime header game title per Spec 8.1.2: keep `冒ケモ🐾` and apply clockwise `22.5°` rotation to the `🐾` character while preserving emphasized `冒` styling. |
 | 0.6.1 | 6 | 2026/4/20 | Update runtime header title per Spec 8.1.2: change game title label to `冒ケモ🐾` and emphasize the `冒` character with larger scale and `-22.5°` counterclockwise rotation. |
 | 0.6.1 | 5 | 2026/4/20 | Implement runtime loading-message randomization per Spec 1.2.2: replace fixed loading text with `LOADING_MESSAGE` pool and randomly select one entry each time the loading screen is displayed. |
