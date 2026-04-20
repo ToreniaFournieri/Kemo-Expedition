@@ -217,9 +217,9 @@
 | 5 | C | none | `i.katana`C | 赤熱の打刀 |
 | 5 | C | none | `i.wand`C | 鉄芯の杖 |
 | 5 | C | none | `i.grimoire`C | 鍛炉の術書 |
-| 5 | C | none | `i.catalyst`C | 鉄滓の触媒石 |
+| 5 | C | none | `i.catalyst`C | 鉄滓石 |
 | 5 | C | none | `i.arrow`C | 鋼羽矢 |
-| 5 | C | none | `i.bolt`C | 鉄針ボルト |
+| 5 | C | none | `i.bolt`C | 鉄針 |
 | 5 | C | none | `i.archery`C | 鉄弦の弓 |
 | 5 | U | none | `i.sword`U | 焔鋼の短剣 |
 | 5 | U | none | `i.gauntlet`U | 火鱗の手甲 |
@@ -233,14 +233,14 @@
 | 5 | U | none | `i.arrow`U | 炎尾矢 |
 | 5 | U | none | `i.bolt`U | 火花ボルト |
 | 5 | U | none | `i.archery`U | 灼熱の弓 |
-| 5 | E | `Beast` | `i.grimoire`EA | 猛獣の秘本 |
-| 5 | E | `Beast` | `i.robe`EA | 猛獣の法衣 |
+| 5 | E | `Beast` | `i.grimoire`EA | 獣の秘本 |
+| 5 | E | `Beast` | `i.robe`EA | 火鼠の皮衣 | `r.fire_x3/5` |
 | 5 | E | `Beast` | `i.arrow`EA | 炎獣の狩矢 |
 | 5 | E | `Beast` | `i.bolt`EA | 灰牙ボルト |
 | 5 | E | `Beast` | `i.archery`EA | 炎獣の長弓 |
 | 5 | E | `Beast` | `i.gauntlet`EA | 焔爪の手甲 |
 | 5 | E | `Beast` | `i.catalyst`EA | 獣核の焔触媒 |
-| 5 | E | `Dragon` | `i.sword`EB | 竜炉の剣 |
+| 5 | E | `Dragon` | `i.sword`EB | ドラグスレイブ | `e.fire+30` |
 | 5 | E | `Dragon` | `i.armor`EB | スケールメイル | `a.null-burn` |
 | 5 | E | `Dragon` | `i.shield`EB | 竜稜の盾 |
 | 5 | E | `Dragon` | `i.katana`EB | 破城槌 | `a.siege` |
@@ -253,11 +253,11 @@
 | 5 | E | `Ursan` | `i.grimoire`EC | 大熊の秘本 |
 | 5 | B | `Ursan` | `i.katana`BD | 焔断 | `a.fire-protect-breaker` |
 | 5 | B | `Ursan` | `i.shield`BD | 灰色の石 | `a.slow` |
-| 5 | B | `Ursan` | `i.gauntlet`BD | 熊王の重手甲 |
-| 5 | B | `Ursan` | `i.sword`BD | 熊王の剣 |
-| 5 | B | `Ursan` | `i.armor`BD | 熊王の戦鎧 |
-| 5 | B | `Ursan` | `i.wand`BD | 熊王の祭杖 |
-| 5 | B | `Ursan` | `i.catalyst`BD | 熊王核の触媒 |
+| 5 | B | `Ursan` | `i.gauntlet`BD | 重手甲 |
+| 5 | B | `Ursan` | `i.sword`BD | 三連爪 |
+| 5 | B | `Ursan` | `i.armor`BD | 熊厚鎧 |
+| 5 | B | `Ursan` | `i.wand`BD | 軍配 |
+| 5 | B | `Ursan` | `i.catalyst`BD | 溶触媒 |
 | 6 | C | none | `i.sword`C | 機工の短剣 |
 | 6 | C | none | `i.gauntlet`C | 歯車の手甲 |
 | 6 | C | none | `i.shield`C | 鋼板シールド |
