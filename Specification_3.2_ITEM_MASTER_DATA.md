@@ -258,9 +258,9 @@
 | 5 | B | `Ursan` | `i.armor`BD | 熊厚鎧 |
 | 5 | B | `Ursan` | `i.wand`BD | 軍配 |
 | 5 | B | `Ursan` | `i.catalyst`BD | 溶触媒 |
-| 6 | C | none | `i.sword`C | 機工の短剣 |
-| 6 | C | none | `i.gauntlet`C | 歯車の手甲 |
-| 6 | C | none | `i.shield`C | 鋼板シールド |
+| 6 | C | none | `i.sword`C | 合金短剣 |
+| 6 | C | none | `i.gauntlet`C | 銅の手甲 |
+| 6 | C | none | `i.shield`C | シールド |
 | 6 | C | none | `i.armor`C | 機鋼外装 |
 | 6 | C | none | `i.robe`C | 導線ローブ |
 | 6 | C | none | `i.katana`C | 歯刃の打刀 |
@@ -270,11 +270,11 @@
 | 6 | C | none | `i.arrow`C | 鋼芯矢 |
 | 6 | C | none | `i.bolt`C | 機鋼ボルト |
 | 6 | C | none | `i.archery`C | 機弦弓 |
-| 6 | U | none | `i.sword`U | 雷刃の短剣 |
+| 6 | U | none | `i.sword`U | 高周波刃 |
 | 6 | U | none | `i.gauntlet`U | 帯電手甲 |
-| 6 | U | none | `i.shield`U | 避雷の盾 |
+| 6 | U | none | `i.shield`U | 磁気盾 |
 | 6 | U | none | `i.armor`U | 電導の鎧 |
-| 6 | U | none | `i.robe`U | 雷紋ローブ |
+| 6 | U | none | `i.robe`U | 雷紋ローブ | 
 | 6 | U | none | `i.katana`U | 迅電の打刀 |
 | 6 | U | none | `i.wand`U | 落雷の杖 |
 | 6 | U | none | `i.grimoire`U | 雷導術式書 |
