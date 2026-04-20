@@ -317,7 +317,7 @@ export function getExpeditionTier(dungeonId: number): number {
   return getDungeonById(dungeonId)?.tier ?? 1;
 }
 
-export const LUNA_MODE_ENEMY_LEVEL_BONUS = 5;
+export const LUNA_MODE_ENEMY_LEVEL_BONUS = 0;
 
 export function getEffectiveExpeditionTier(dungeonId: number, _isLunaMode: boolean): number {
   return getExpeditionTier(dungeonId);

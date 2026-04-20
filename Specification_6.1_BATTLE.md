@@ -718,7 +718,6 @@ If `a.*` with phase = START:
 - Ticket calculation:
   - Base: **2**
   - +1 if `c.unlock`
-  - +1 if `m.luna`
   - +1 if (terrain is not terrain.gehenna) and {Goddess of Discord or (God of Oblivion and its rank ≥ 10)}
   - +N from `a.auriferous`
  
@@ -732,23 +731,19 @@ If `a.*` with phase = START:
   - If the item is common,
     - Draw tickets from `t.common_reward_bag` equal to the total ticket count.
 	- If `t.reward_bag`.value = '1', then get one ticket from `t.common_enhancement_bag`.
-      - If (mode is `m.laika`) and `t.enhancement_bag`.value >= 5, then treats `t.enhancement_bag`.value as 4.
-    - If `t.enhancement_bag`.value >= 2 and ( mode is not `m.laika`), then get one ticket from `t.common_superRare_bag`.
+    - If `t.enhancement_bag`.value >= 2, then get one ticket from `t.common_superRare_bag`.
   - If the item is uncommon,
     - Draw tickets from `t.uncommon_reward_bag` equal to the total ticket count.
     - If `t.uncommon_reward_bag`.value = '1', then get one ticket from `t.enhancement_bag`.
-      - If (mode is `m.laika`) and `t.enhancement_bag`.value >= 5, then treats `t.enhancement_bag`.value as 4.   
-    - If `t.enhancement_bag`.value >= 1 and ( mode is not `m.laika`), then get one ticket from `t.rare_superRare_bag`.
+    - If `t.enhancement_bag`.value >= 1, then get one ticket from `t.rare_superRare_bag`.
   - If the item is elite rare or boss rare,
     - Draw tickets from `t.rare_reward_bag`  equal to the total ticket count.
     - If `t.rare_reward_bag`.value = '1', then get one ticket from `t.enhancement_bag`.
-      - If (mode is `m.laika`) and `t.enhancement_bag`.value >= 5, then treats `t.enhancement_bag`.value as 4.
-    - If `t.enhancement_bag`.value >= 1 and ( mode is not `m.laika`), then get one ticket from `t.rare_superRare_bag`.
+    - If `t.enhancement_bag`.value >= 1, then get one ticket from `t.rare_superRare_bag`.
   - If the item is mythic,
     - Draw tickets from `t.mythic_reward_bag` equal to the total ticket count.
     - If `t.rare_mythic_bag`.value = '1', then get one ticket from `t.enhancement_bag`.
-      - If (mode is `m.laika`) and `t.enhancement_bag`.value >= 5, then treats `t.enhancement_bag`.value as 4.
-    - If `t.enhancement_bag`.value >= 1 and ( mode is not `m.laika`), then get one ticket from `t.rare_superRare_bag`.
+    - If `t.enhancement_bag`.value >= 1, then get one ticket from `t.rare_superRare_bag`.
 
   - Combines them into one item.
 

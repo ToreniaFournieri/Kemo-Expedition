@@ -222,15 +222,14 @@ HP: 312                 タイプ: 神魔
 - Switch to 統計情報表示: ON/OFF (Default:OFF)
   - If ON, Show statistic line of Party pane in Expedition tab.
 
-- Switch to ケモ、ルナ(高難度)、 ライカ(原点)
+- "テーマカラー"
+  - Switch to "ケモ", "ルナ", "ライカ"
   - ケモ: `m.kemo`, ルナ:`m.luna`, ライカ:`m.laika`
   - Default: `m.kemo`
   - Description:
-    - `m.kemo` "通常のモードです"
-    - `m.luna` "敵が大幅に強くなります(報酬がよくなります)"
-    - `m.laika` "超レアが存在しません。通常称号は伝説までしか出ません"
-
-  - If Environment is `/luna/`, Set `m.luna` and other option (`m.kemo`) is disabled.
+    - `m.kemo` "青を基調としたテーマです"
+    - `m.luna` "黄色を基調としたテーマです"
+    - `m.laika` "緑を基調としたテーマです"
 
 
 **バックアップ・リセット**
@@ -257,7 +256,7 @@ HP: 312                 タイプ: 神魔
 - Clairvoyance: OFF/ON
   - if OFF, disable `Clairvoyance (未来視)` as default.
 - Speed of time: Real time / x5 boost / x20 hyper / x100 Ultra / x10000 MAX
-  - Default: x5 boost
+  - Default: Real time
   - affects side quest duration. 
 - Gods Battle condition: boss items require Normal / Simple(1)
   - Default: Normal
