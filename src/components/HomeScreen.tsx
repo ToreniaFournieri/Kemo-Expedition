@@ -200,8 +200,6 @@ const PARTY_EXPEDITION_SPLIT_MIN_WIDTH = 1024;
 const TAB_PANEL_WIDTH_PX = 500;
 const WIDE_MODE_DEFAULT_SECONDARY_TAB: WideModeSecondaryTab = 'party';
 const STEP_PROGRESS_TOTAL_TICKS_PER_STEP = 30;
-const STEP_PROGRESS_PAW_UNITS_PER_STEP = 15;
-const STEP_PROGRESS_TRACK_COLUMNS = STEP_PROGRESS_PAW_UNITS_PER_STEP + 1;
 // SpecRef: 8.1 | UI_FOUNDATIONS | Style: Compact, simple, iOS-like
 const IOS_GLASS_BUTTON_CLASS =
   'ios-glass-button rounded-xl';
@@ -2541,7 +2539,7 @@ export function HomeScreen({
 
   const stepProgressTick = useMemo(() => {
     // SpecRef: 8.1.2 | Header | Step Progress Display
-    // Synchronize paw animation with real Step duration including debug time-scale effects.
+    // Synchronize Step progress bar fill with real Step duration including debug time-scale effects.
     const scaledStepDurationMs = Math.max(1, BASE_STEP_DURATION_MS * Math.max(0.001, getTimeSpeedScale(debugSettings)));
     const normalizedStepProgress = (stepProgressNowMs % scaledStepDurationMs) / scaledStepDurationMs;
     return Math.min(
@@ -2560,12 +2558,12 @@ export function HomeScreen({
     return () => window.clearInterval(stepProgressTimer);
   }, [debugSettings]);
 
-  const stepProgressPawSlots = useMemo(() => {
+  const stepProgressPercent = useMemo(() => {
     // SpecRef: 8.1.2 | Header | Step Progress Display
-    const leadPawSlot = Math.floor(stepProgressTick / 2);
-    const trailingPawSlot = Math.min(leadPawSlot + 1, STEP_PROGRESS_PAW_UNITS_PER_STEP);
-    if (stepProgressTick % 2 === 0) return [leadPawSlot];
-    return [leadPawSlot, trailingPawSlot];
+    return Math.max(
+      0,
+      Math.min(100, ((stepProgressTick + 1) / STEP_PROGRESS_TOTAL_TICKS_PER_STEP) * 100),
+    );
   }, [stepProgressTick]);
 
   const safeSelectedPartyIndex = useMemo(() => {
@@ -4625,15 +4623,7 @@ export function HomeScreen({
           {/* SpecRef: 8.1.2 | Header | Step Progress Display */}
           <div className="step-progress-shell mt-0 -mb-1 flex w-full leading-none" aria-label="Step Progress">
             <div className="step-progress-track" aria-hidden="true">
-              <span className="step-progress-lane" style={{ gridTemplateColumns: `repeat(${STEP_PROGRESS_TRACK_COLUMNS}, minmax(0, 1fr))` }}>
-                {Array.from({ length: STEP_PROGRESS_TRACK_COLUMNS }).map((_, slotIndex) => (
-                  <span key={slotIndex} className="step-progress-slot">
-                    {stepProgressPawSlots.includes(slotIndex) ? (
-                      <span className="step-progress-paw">🐾</span>
-                    ) : null}
-                  </span>
-                ))}
-              </span>
+              <span className="step-progress-fill" style={{ width: `${stepProgressPercent}%` }} />
             </div>
           </div>
 

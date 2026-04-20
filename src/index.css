@@ -28,32 +28,16 @@
 
 .step-progress-track {
   width: 100%;
-  max-width: 22rem;
-  overflow: visible;
+  background: transparent;
+  min-height: 0.38rem;
 }
 
-.step-progress-lane {
-  display: grid;
-  align-items: center;
-}
-
-.step-progress-slot {
-  display: inline-flex;
-  justify-content: flex-start;
-  align-items: center;
-  min-height: 0.62rem;
-  line-height: 0.62rem;
-  overflow: visible;
-}
-
-.step-progress-paw {
-  display: inline-flex;
-  transform: rotate(90deg);
-  transform-origin: center;
-  font-size: 0.66rem;
-  position: relative;
-  top: 0.18rem;
-  z-index: 30;
+.step-progress-fill {
+  display: block;
+  height: 0.38rem;
+  border-radius: 9999px;
+  background: rgb(var(--color-sub) / 0.4);
+  transition: width 80ms linear;
 }
 
 .theme-luna {
