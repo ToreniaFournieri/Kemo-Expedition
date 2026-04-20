@@ -1093,10 +1093,10 @@ function createInitialParty() {
   const defaultSetup = [
     { race: 'kemoria', main: 'guardian', sub: 'samurai', pred: 'none', lineage: 'unascertained', name: 'ケモ', isUnique: true, equipmentIds: [1101, 1105, 1106] },
     { race: 'vulpinian', main: 'duelist', sub: 'pilgrim', pred: 'aggressive', lineage: 'sandstorm', name: 'ゴン', equipmentIds: [1104, 1106] },
-    { race: 'leporian', main: 'ranger', sub: 'ninja', pred: 'inquisitive', lineage: 'abyssal_sea', name: 'ロップ', equipmentIds: [1107, 1108, 1109] },
-    { race: 'procyonian', main: 'ninja', sub: 'striker', pred: 'evasive', lineage: 'firmament', name: 'ソウタ', equipmentIds: [1104, 1106, 1104, 1106] },
+    { race: 'leporian', main: 'ranger', sub: 'ninja', pred: 'inquisitive', lineage: 'abyssal_sea', name: 'ロップ', equipmentIds: [1107, 1109] },
+    { race: 'procyonian', main: 'ninja', sub: 'striker', pred: 'evasive', lineage: 'firmament', name: 'ソウタ', equipmentIds: [1107, 1109] },
     { race: 'cervin', main: 'wizard', sub: 'alchemist', pred: 'amiable', lineage: 'utopia', name: 'セルフィン', equipmentIds: [1110, 1112] },
-    { race: 'caninian', main: 'sage', sub: 'wizard', pred: 'none', lineage: 'pioneer', name: 'ライカ', isUnique: true, equipmentIds: [1110, 1112] },
+    { race: 'caninian', main: 'sage', sub: 'alchemist', pred: 'none', lineage: 'pioneer', name: 'ライカ', isUnique: true, equipmentIds: [1110, 1112] },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
