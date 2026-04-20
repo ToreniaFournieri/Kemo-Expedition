@@ -76,34 +76,34 @@
 | 1 | 6 | 3 | 7 | Normal | `Aerial` | class.samurai.ranger | `i.katana`U, `i.shield`U, `i.arrow`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 城上の翼侍 |
 | 1 | 6 | 4 | 11 | BOSS | `Caninian` | class.guardian | `i.armor`BD, `i.gauntlet`BD, `i.shield`BD, `i.armor`C, `i.robe`C, `i.shield`C | アレウス  | `a.ice-absorb`1 |
 | 2 | 1 | 1-2 | 7 | Normal | `Frost` | class.ranger | `i.arrow`U, `i.archery`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 霜牙獣 |
-| 2 | 1 | 1-2 | 7 | Normal | `Frost` | class.striker | `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 凍晶のまじもの |
+| 2 | 1 | 1-2 | 7 | Normal | `Frost` | class.striker | `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 凍晶の霊 |
 | 2 | 1 | 1-2 | 7 | Normal | `Frost` | class.wizard | `i.wand`U, `i.robe`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 雪原の氷獣 |
 | 2 | 1 | 3 | 8 | Normal | `Frost` | class.guardian | `i.armor`U, `i.gauntlet`U, `i.armor`C, `i.robe`C, `i.shield`C | 氷爪獣 |
 | 2 | 1 | 3 | 8 | Normal | `Frost` | class.lord | `i.shield`U, `i.katana`U, `i.armor`C, `i.robe`C, `i.shield`C | 白霜の群核 |
 | 2 | 1 | 4 | 10 | Elite | `Frost` | class.lord.ranger | `i.shield`EA, `i.katana`EA, `i.arrow`EA, `i.armor`C, `i.robe`C, `i.shield`C | 氷影の上位獣 |
 | 2 | 2 | 1-2 | 8 | Normal | `Frost` | class.ninja | `i.archery`U, `i.bolt`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 雪潜みの氷獣 |
 | 2 | 2 | 1-2 | 8 | Normal | `Frost` | class.sage | `i.grimoire`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 凍智獣 |
-| 2 | 2 | 1-2 | 8 | Normal | `Frost` | class.samurai | `i.katana`U, `i.shield`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 冬森の氷霊 |
+| 2 | 2 | 1-2 | 8 | Normal | `Frost` | class.samurai | `i.katana`U, `i.shield`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 冬森の刃霊 |
 | 2 | 2 | 3 | 9 | Normal | `Golem` | class.duelist | `i.sword`U, `i.armor`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 石核の剣闘体 |
 | 2 | 2 | 3 | 9 | Normal | `Golem` | class.pilgrim | `i.robe`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | 祈路の岩体 |
 | 2 | 2 | 4 | 11 | Elite | `Frost` | class.samurai.guardian | `i.katana`EA, `i.shield`EA, `i.armor`EA, `i.sword`C, `i.katana`C, `i.gauntlet`C | 凍土の重殻獣 |
 | 2 | 3 | 1-2 | 9 | Normal | `Plant_Fungal` | class.alchemist | `i.catalyst`U, `i.wand`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 菌林の群生核 |
-| 2 | 3 | 1-2 | 9 | Normal | `Plant_Fungal` | class.guardian.pilgrim | `i.armor`U, `i.gauntlet`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | 胞子まじない株 |
+| 2 | 3 | 1-2 | 9 | Normal | `Plant_Fungal` | class.guardian.pilgrim | `i.armor`U, `i.gauntlet`U, `i.robe`U, `i.armor`C, `i.robe`C, `i.shield`C | 胞子守護株 |
 | 2 | 3 | 1-2 | 9 | Normal | `Plant_Fungal` | class.sword-saint | `i.gauntlet`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 蔓根の暴れ株 |
 | 2 | 3 | 3 | 10 | Normal | `Frost` | class.samurai.duelist | `i.katana`U, `i.shield`U, `i.sword`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 霜刃獣 |
 | 2 | 3 | 3 | 10 | Normal | `Frost` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 吹雪まとい |
 | 2 | 3 | 4 | 12 | Elite | `Plant_Fungal` | class.striker.pilgrim | `i.bolt`EC, `i.arrow`EC, `i.robe`EC, `i.arrow`C, `i.bolt`C, `i.archery`C | 胞子嵐の飛種 |
-| 2 | 4 | 1-2 | 10 | Normal | `Golem` | class.guardian.wizard | `i.armor`U, `i.gauntlet`U, `i.wand`U, `i.armor`C, `i.robe`C, `i.shield`C | 岩殻の斥候体 |
+| 2 | 4 | 1-2 | 10 | Normal | `Golem` | class.guardian.wizard | `i.armor`U, `i.gauntlet`U, `i.wand`U, `i.armor`C, `i.robe`C, `i.shield`C | 岩殻の守体 |
 | 2 | 4 | 1-2 | 10 | Normal | `Golem` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | 結晶脈の突撃体 |
 | 2 | 4 | 1-2 | 10 | Normal | `Golem` | class.sage.samurai | `i.grimoire`U, `i.catalyst`U, `i.katana`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 谷壁の賢刀体 |
 | 2 | 4 | 3 | 11 | Normal | `Plant_Fungal` | class.duelist.lord | `i.sword`U, `i.armor`U, `i.shield`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 菌殻の突進株 |
 | 2 | 4 | 3 | 11 | Normal | `Plant_Fungal` | class.lord.striker | `i.shield`U, `i.katana`U, `i.bolt`U, `i.armor`C, `i.robe`C, `i.shield`C | 菌冠の寄生樹 |
-| 2 | 4 | 4 | 13 | Elite | `Golem` | class.sword-saint.alchemist | `i.gauntlet`EB, `i.sword`EB, `i.catalyst`EB, `i.sword`C, `i.katana`C, `i.gauntlet`C | 玄岩の決闘体 |
+| 2 | 4 | 4 | 13 | Elite | `Golem` | class.sword-saint.alchemist | `i.gauntlet`EB, `i.sword`EB, `i.catalyst`EB, `i.sword`C, `i.katana`C, `i.gauntlet`C | 玄岩の連撃体 |
 | 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | class.ninja.ranger | `i.archery`U, `i.bolt`U, `i.arrow`U, `i.arrow`C, `i.bolt`C, `i.archery`C | 胞子影の這い株 |
 | 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | class.samurai.sword-saint | `i.katana`U, `i.shield`U, `i.gauntlet`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 菌刃のつる株 |
 | 2 | 5 | 1-2 | 11 | Normal | `Plant_Fungal` | class.wizard.alchemist | `i.wand`U, `i.robe`U, `i.catalyst`U, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 苔衣の胞子塊 |
 | 2 | 5 | 3 | 14 | Elite | `Lupinian` | class.ninja.sword-saint | `i.bolt`BD, `i.archery`BD, `i.arrow`C, `i.bolt`C, `i.archery`C | 忍狼 |
-| 2 | 5 | 3 | 14 | Elite | `Lupinian` | class.wizard.guardian | `i.wand`BD, `i.catalyst`BD, `i.robe`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 狼の妖術士 |
+| 2 | 5 | 3 | 14 | Elite | `Lupinian` | class.wizard.guardian | `i.wand`BD, `i.catalyst`BD, `i.robe`BD, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 妖狼 |
 | 2 | 5 | 4 | 14 | Elite | `Golem` | class.wizard.sage | `i.wand`EB, `i.robe`EB, `i.grimoire`EB, `i.wand`C, `i.grimoire`C, `i.catalyst`C | 核晶の導師体 |
 | 2 | 6 | 1-2 | 12 | Normal | `Frost` | class.duelist.striker | `i.sword`U, `i.armor`U, `i.bolt`U, `i.sword`C, `i.katana`C, `i.gauntlet`C | 氷冠の群核 |
 | 2 | 6 | 1-2 | 12 | Normal | `Frost` | class.pilgrim.sage | `i.robe`U, `i.grimoire`U, `i.grimoire`U, `i.armor`C, `i.robe`C, `i.shield`C | 寒天の呪獣 |
