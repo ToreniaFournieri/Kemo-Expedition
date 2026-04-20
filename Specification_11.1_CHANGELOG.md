@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 4 | 2026/4/20 | Update runtime PT1/unascertained setup to requested Spec 2.1 values: change `unascertained` lineage bonus to `c.equip-slot+3` and set ケモ initial equipment to `1101, 1102, 1104, 1105, 1106, 1211` under `Goddess of Restoration`. |
 | 0.6.1 | 3 | 2026/4/20 | Align runtime PT1 initial setup to requested party condition: update ロップ/ソウタ initial equipment to `1107`,`1109` and set ライカ sub class to `class.alchemist` while keeping deity `Goddess of Restoration` and unique flags for ケモ/ライカ. |
 | 0.6.1 | 2 | 2026/4/20 | Fix normal character attack damage argument ordering in battle runtime: pass enemy temporary evasion to `calculateCharacterDamage` before runtime offense multiplier, restoring expected melee/ranged/magic normal attack damage instead of unintended near-minimum values. |
 | 0.6.1 | 1 | 2026/4/20 | Update runtime environment policy for `/beta/`: force fixed theme `m.laika` (non-configurable in UI), lock game-mode selection accordingly, and enforce Debug mode OFF in persisted/runtime debug settings. Also bump app version to `v0.6.1` and reset build number to `1`. |
