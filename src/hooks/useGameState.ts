@@ -110,7 +110,7 @@ const BUILD_NUMBER = __BUILD_NUMBER__;
 const STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-save');
 const AFK_MAX_SIMULATION_MS = 600 * 60 * 1000;
 const STATE_SAVE_THROTTLE_MS = 5000;
-const DEBUG_CYCLE_DURATION_SCALE = 0.2;
+const DEBUG_CYCLE_DURATION_SCALE = 0.05;
 const ITEM_MAX_STACK = 99;
 const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.exercise', 'q.healing', 'q.AFK']);
 const BASE_STEP_DURATION_MS = 15_000;
@@ -305,7 +305,7 @@ function getUnlockDiaryLog(
 
 function getCycleDurationScale(): number {
   const env = getEnvironmentId();
-  return env === 'dev' || env === 'qa' || env === 'luna' ? DEBUG_CYCLE_DURATION_SCALE : 1;
+  return env === 'dev' || env === 'qa' ? DEBUG_CYCLE_DURATION_SCALE : 1;
 }
 
 function formatSideQuestShortText(type: string, shortText: string, target: number): string {
@@ -1541,10 +1541,9 @@ function selectEnemyForRoom(
   floorNumber?: number,
   roomIndex?: number,
   roomEnemyIds: number[] = [],
-  isLunaMode: boolean = false
 ): EnemyDef | null {
   if (poolId === 99 || bossId === 9901) {
-    return buildColosseumEnemy(getColosseumEnemySettings(), isLunaMode);
+    return buildColosseumEnemy(getColosseumEnemySettings());
   }
 
   if (roomType === 'battle_Boss' && bossId) {
@@ -1611,7 +1610,6 @@ function createGodEnemy(
   enemy: EnemyDef,
   dungeonId: number,
   dungeonName: string,
-  isLunaMode: boolean,
   difficultyOffset: number,
 ): EnemyDef {
   const godProfile = getGodProfileForDungeon(dungeonId, dungeonName);
@@ -1639,7 +1637,7 @@ function createGodEnemy(
     };
   }
 
-  const runtimeGodEnemy = buildGodRuntimeEnemy(godProfile, isLunaMode, difficultyOffset);
+  const runtimeGodEnemy = buildGodRuntimeEnemy(godProfile, difficultyOffset);
 
   if (!runtimeGodEnemy) {
     return {
@@ -1815,7 +1813,6 @@ function resolveEnemyRewards(
   currentInventory: InventoryRecord,
   currentGold: number,
   hasUnlock: boolean,
-  gameMode: GameMode,
   autoSellMultiplier: number,
   terrainEffect: TerrainEffectKey | undefined,
   hasExtraRewardRollBlessing: boolean = false,
@@ -1869,7 +1866,6 @@ function resolveEnemyRewards(
     const totalTicketCount =
       2
       + (hasUnlock ? 1 : 0)
-      + (gameMode === 'm.luna' ? 1 : 0)
       + (terrainEffect !== 'terrain.gehenna' && hasExtraRewardRollBlessing ? 1 : 0)
       + auriferousBonusRolls;
     const bonusRollCount = Math.max(0, totalTicketCount - 1);
@@ -1886,12 +1882,12 @@ function resolveEnemyRewards(
     const { ticket: enhVal, newBag: newEnhBag } = drawFromBag(bags[enhancementBagType]);
     bags = { ...bags, [enhancementBagType]: newEnhBag };
 
-    const normalizedEnhancement = gameMode === 'm.laika' && enhVal >= 5 ? 4 : enhVal;
+    const normalizedEnhancement = enhVal;
 
     const minEnhancementForSuperRare = baseRarity === 'common' ? 2 : 1;
 
     let srVal = 0;
-    if (normalizedEnhancement >= minEnhancementForSuperRare && gameMode !== 'm.laika') {
+    if (normalizedEnhancement >= minEnhancementForSuperRare) {
       bags = refillBagIfEmpty(bags, superRareBagType);
       const { ticket: drawnSrVal, newBag: newSRBag } = drawFromBag(bags[superRareBagType]);
       bags = { ...bags, [superRareBagType]: newSRBag };
@@ -2568,7 +2564,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'RUN_EXPEDITION': {
-      const gameMode = action.gameMode ?? 'm.kemo';
       const currentParty = state.parties[action.partyIndex];
       const dungeon = getDungeonById(currentParty.selectedDungeonId);
       if (!dungeon) return state;
@@ -2630,7 +2625,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   dungeon.expLevel,
                   floor.floorNumber,
                   roomDef.type,
-                  gameMode === 'm.luna',
+                  false,
                   effectiveDifficultyOffset,
                 ),
                 enemyName: '[扉が封印されている]',
@@ -2655,24 +2650,24 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             }
 
             // Select enemy for this room
-            const baseEnemy = selectEnemyForRoom(roomDef.type, roomDef.poolId, roomDef.bossId, floor.floorNumber, roomIndex, roomDef.enemyIds ?? [], gameMode === 'm.luna');
+            const baseEnemy = selectEnemyForRoom(roomDef.type, roomDef.poolId, roomDef.bossId, floor.floorNumber, roomIndex, roomDef.enemyIds ?? []);
             if (!baseEnemy) continue;
 
             const roomMultiplier = getRoomMultiplier(
               dungeon.expLevel,
               floor.floorNumber,
               roomDef.type,
-              gameMode === 'm.luna',
+              false,
               effectiveDifficultyOffset,
             );
-            const effectiveTier = getEffectiveExpeditionTier(dungeon.id, gameMode === 'm.luna');
+            const effectiveTier = getEffectiveExpeditionTier(dungeon.id, false);
             const effectiveDungeon = {
               ...dungeon,
               tier: effectiveTier,
-              enemyMultipliers: getEffectiveEnemyMultipliers(dungeon, gameMode === 'm.luna'),
+              enemyMultipliers: getEffectiveEnemyMultipliers(dungeon, false),
             };
             let enemy = getEncounterEnemyWithScaling(baseEnemy, effectiveDungeon, floor.floorNumber, roomDef.type, {
-              isLunaMode: gameMode === 'm.luna',
+              isLunaMode: false,
               difficultyOffset: effectiveDifficultyOffset,
             });
             if (isGodsBattle && roomDef.type === 'battle_Boss') {
@@ -2680,7 +2675,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 enemy,
                 dungeon.id,
                 dungeon.name,
-                gameMode === 'm.luna',
                 effectiveDifficultyOffset,
               );
             }
@@ -2738,7 +2732,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   dungeon.expLevel,
                   floor.floorNumber,
                   roomDef.type,
-                  gameMode === 'm.luna',
+                  false,
                   effectiveDifficultyOffset,
                 );
                 totalExp += calculateExperience(
@@ -2774,7 +2768,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                   currentInventory,
                   currentGold,
                   hasUnlock,
-                  gameMode,
                   autoSellMultiplier,
                   terrainEffect,
                   hasExtraRewardRollBlessing,

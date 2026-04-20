@@ -1,20 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useGameState } from './hooks/useGameState';
 import { HomeScreen } from './components/HomeScreen';
-import { createEnvironmentStorageKey, getEnvironmentId } from './game/environment';
+import { createEnvironmentStorageKey } from './game/environment';
 
 const LOADING_MESSAGE = '下界にいる勇敢な冒険者達を捜索中…';
 const DARK_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-dark-mode');
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
 const THEME_SYNC_EVENT = 'kemo-expedition-theme-sync';
 
-function getInitialIsLunaMode() {
-  if (typeof window === 'undefined') return false;
-
-  if (getEnvironmentId() === 'luna') return true;
-
+function getInitialGameModeClass() {
+  if (typeof window === 'undefined') return '';
   const saved = localStorage.getItem(GAME_MODE_STORAGE_KEY);
-  return saved === 'm.luna';
+  return saved === 'm.luna' ? 'theme-luna' : saved === 'm.laika' ? 'theme-laika' : '';
 }
 function getInitialDarkModeEnabled() {
   if (typeof window === 'undefined') return false;
@@ -29,7 +26,7 @@ export default function App() {
   const { state, actions, bags, notifications } = useGameState();
   const [isLoading, setIsLoading] = useState(true);
   const [isDarkModeEnabled, setIsDarkModeEnabled] = useState(() => getInitialDarkModeEnabled());
-  const [isLunaMode, setIsLunaMode] = useState(() => getInitialIsLunaMode());
+  const [gameModeClass, setGameModeClass] = useState(() => getInitialGameModeClass());
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -45,11 +42,8 @@ export default function App() {
         setIsDarkModeEnabled(mediaQuery.matches);
       }
 
-      if (getEnvironmentId() === 'luna') {
-        setIsLunaMode(true);
-      } else {
-        setIsLunaMode(localStorage.getItem(GAME_MODE_STORAGE_KEY) === 'm.luna');
-      }
+      const savedMode = localStorage.getItem(GAME_MODE_STORAGE_KEY);
+      setGameModeClass(savedMode === 'm.luna' ? 'theme-luna' : savedMode === 'm.laika' ? 'theme-laika' : '');
     };
 
     syncThemeState();
@@ -75,7 +69,7 @@ export default function App() {
     };
   }, [isDarkModeEnabled]);
 
-  const appThemeClasses = `${isLunaMode ? 'theme-luna' : ''} ${isDarkModeEnabled ? 'theme-dark' : ''}`;
+  const appThemeClasses = `${gameModeClass} ${isDarkModeEnabled ? 'theme-dark' : ''}`;
 
   useEffect(() => {
     const timer = window.setTimeout(() => {

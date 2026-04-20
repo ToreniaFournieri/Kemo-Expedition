@@ -21,7 +21,7 @@ const DEBUG_SETTINGS_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.
 
 export const DEFAULT_DEBUG_SETTINGS: DebugSettings = {
   clairvoyanceEnabled: false,
-  timeSpeed: 'x5',
+  timeSpeed: 'realtime',
   godsBattleCondition: 'normal',
   godStrength: 'normal',
   jewelShopOpen: false,
@@ -39,7 +39,7 @@ export function normalizeDebugSettings(raw: unknown): DebugSettings {
   const parsed = (raw && typeof raw === 'object') ? raw as Partial<DebugSettings> & { displayMotivation?: boolean } : {};
   return {
     clairvoyanceEnabled: parsed.clairvoyanceEnabled === true,
-    timeSpeed: parsed.timeSpeed === 'realtime' || parsed.timeSpeed === 'x20' || parsed.timeSpeed === 'x100' || parsed.timeSpeed === 'x10000' || parsed.timeSpeed === 'x5' ? parsed.timeSpeed : 'x5',
+    timeSpeed: parsed.timeSpeed === 'realtime' || parsed.timeSpeed === 'x20' || parsed.timeSpeed === 'x100' || parsed.timeSpeed === 'x10000' || parsed.timeSpeed === 'x5' ? parsed.timeSpeed : 'realtime',
     godsBattleCondition: parsed.godsBattleCondition === 'simple1' ? 'simple1' : 'normal',
     godStrength: parsed.godStrength === 'debug' ? 'debug' : 'normal',
     jewelShopOpen: parsed.jewelShopOpen === true,

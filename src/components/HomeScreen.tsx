@@ -2395,9 +2395,7 @@ function sortInventoryItems(items: [string, InventoryVariant][]): [string, Inven
 }
 
 
-function getInitialGameMode(isLunaEnvironment: boolean): GameMode {
-  if (isLunaEnvironment) return 'm.luna';
-
+function getInitialGameMode(): GameMode {
   if (typeof window === 'undefined') return 'm.kemo';
 
   try {
@@ -2510,8 +2508,6 @@ export function HomeScreen({
   onDismissAllNotifications,
 }: HomeScreenProps) {
   const prefersDocumentScroll = isIOSMobileSafari();
-  const currentEnv = getEnvironmentId();
-  const isLunaEnvironment = currentEnv === 'luna';
   const [activeTab, setActiveTab] = useState<Tab>('expedition');
   const [activeWideModeSecondaryTab, setActiveWideModeSecondaryTab] = useState<WideModeSecondaryTab>(WIDE_MODE_DEFAULT_SECONDARY_TAB);
   const [activeBaseSubTab, setActiveBaseSubTab] = useState<BaseSubTab>('shop');
@@ -2531,7 +2527,7 @@ export function HomeScreen({
   const [selectedBestiaryDungeonId, setSelectedBestiaryDungeonId] = useState<number>(1);
   const [expandedBestiaryEnemies, setExpandedBestiaryEnemies] = useState<Record<number, boolean>>({});
   const [bestiaryScrollTop, setBestiaryScrollTop] = useState(0);
-  const [gameMode, setGameMode] = useState<GameMode>(() => getInitialGameMode(isLunaEnvironment));
+  const [gameMode, setGameMode] = useState<GameMode>(() => getInitialGameMode());
   const [darkModeSetting, setDarkModeSetting] = useState<DarkModeSetting>(() => getInitialDarkModeSetting());
   const [isSystemDarkMode, setIsSystemDarkMode] = useState(false);
   const [stepProgressNowMs, setStepProgressNowMs] = useState(() => Date.now());
@@ -3397,11 +3393,6 @@ export function HomeScreen({
   }, []);
 
   useEffect(() => {
-    if (isLunaEnvironment) {
-      setGameMode('m.luna');
-      return;
-    }
-
     try {
       const savedMode = localStorage.getItem(GAME_MODE_STORAGE_KEY);
       if (savedMode === 'm.kemo' || savedMode === 'm.luna' || savedMode === 'm.laika') {
@@ -3410,22 +3401,16 @@ export function HomeScreen({
     } catch (error) {
       console.error('Failed to load game mode:', error);
     }
-  }, [isLunaEnvironment]);
+  }, []);
 
   useEffect(() => {
-    const modeToPersist: GameMode = isLunaEnvironment ? 'm.luna' : gameMode;
-    if (isLunaEnvironment && gameMode !== 'm.luna') {
-      setGameMode('m.luna');
-      return;
-    }
-
     try {
-      localStorage.setItem(GAME_MODE_STORAGE_KEY, modeToPersist);
+      localStorage.setItem(GAME_MODE_STORAGE_KEY, gameMode);
       window.dispatchEvent(new Event(THEME_SYNC_EVENT));
     } catch (error) {
       console.error('Failed to persist game mode:', error);
     }
-  }, [gameMode, isLunaEnvironment]);
+  }, [gameMode]);
 
   useEffect(() => {
     try {
@@ -4453,7 +4438,7 @@ export function HomeScreen({
   const envLabel = getEnvLabel();
   const versionLabel = `${APP_VERSION}(${state.buildNumber})`;
   const envDisplayLabel = envLabel ? `(${envLabel})` : null;
-  const gameTitle = isLunaEnvironment ? 'ルナの冒険' : 'ケモの冒険';
+  const gameTitle = 'ケモの冒険';
 
   useEffect(() => {
     document.title = gameTitle;
@@ -4578,7 +4563,6 @@ export function HomeScreen({
         onSetGameMode={setGameMode}
         darkModeSetting={darkModeSetting}
         onSetDarkModeSetting={setDarkModeSetting}
-        isLunaEnvironment={isLunaEnvironment}
         isAutoRepeatEnabled={isAutoRepeatEnabled}
         onSetAutoRepeatEnabled={setAutoRepeatEnabled}
         isExpeditionStatsDisplayEnabled={isExpeditionStatsDisplayEnabled}
@@ -7643,7 +7627,7 @@ function ExpeditionTab({
                                           currentLogDungeonExpLevel,
                                           entry.floor,
                                           entry.roomType,
-                                          getEnvironmentId() === 'luna',
+                                          false,
                                           currentLog.difficultyOffset ?? 0,
                                         )
                                       : null;
@@ -7658,7 +7642,7 @@ function ExpeditionTab({
                                           currentLogDungeonExpLevel,
                                           entry.floor,
                                           entry.roomType,
-                                          getEnvironmentId() === 'luna',
+                                          false,
                                           currentLog.difficultyOffset ?? 0,
                                         )
                                       : null;
@@ -9104,7 +9088,7 @@ function DiaryTab({
                                           diaryDungeonExpLevel,
                                           entry.floor,
                                           entry.roomType,
-                                          getEnvironmentId() === 'luna',
+                                          false,
                                           log.difficultyOffset ?? 0,
                                         )
                                       : null;
@@ -9120,7 +9104,7 @@ function DiaryTab({
                                           diaryDungeonExpLevel,
                                           entry.floor,
                                           entry.roomType,
-                                          getEnvironmentId() === 'luna',
+                                          false,
                                           log.difficultyOffset ?? 0,
                                         )
                                       : null;
@@ -9367,7 +9351,6 @@ function SettingTab({
   onSetGameMode,
   darkModeSetting,
   onSetDarkModeSetting,
-  isLunaEnvironment,
   isAutoRepeatEnabled,
   onSetAutoRepeatEnabled,
   isExpeditionStatsDisplayEnabled,
@@ -9400,7 +9383,6 @@ function SettingTab({
   onSetGameMode: Dispatch<SetStateAction<GameMode>>;
   darkModeSetting: DarkModeSetting;
   onSetDarkModeSetting: Dispatch<SetStateAction<DarkModeSetting>>;
-  isLunaEnvironment: boolean;
   isAutoRepeatEnabled: boolean;
   onSetAutoRepeatEnabled: (enabled: boolean) => void;
   isExpeditionStatsDisplayEnabled: boolean;
@@ -9536,7 +9518,7 @@ function SettingTab({
     }, 0);
   };
   const currentEnv = getEnvironmentId();
-  const modeSelectionLocked = isLunaEnvironment;
+  const modeSelectionLocked = false;
   useEffect(() => {
     try {
       localStorage.setItem(DIVINE_BUREAU_PANEL_STORAGE_KEY, JSON.stringify(divineBureauPanelExpanded));
@@ -10107,17 +10089,17 @@ function SettingTab({
     groupType: 'boss' | 'elite' | 'normal'
   ): EnemyDef => {
     const roomType = groupType === 'boss' ? 'battle_Boss' : groupType === 'elite' ? 'battle_Elite' : 'battle_Normal';
-    const effectiveTier = getEffectiveExpeditionTier(dungeon.id, gameMode === 'm.luna');
+    const effectiveTier = getEffectiveExpeditionTier(dungeon.id, false);
     const effectiveDungeon = {
       ...dungeon,
       tier: effectiveTier,
-      enemyMultipliers: getEffectiveEnemyMultipliers(dungeon, gameMode === 'm.luna'),
+      enemyMultipliers: getEffectiveEnemyMultipliers(dungeon, false),
     };
-    return getEncounterEnemyWithScaling(enemy, effectiveDungeon, floorNumber, roomType, { isLunaMode: gameMode === 'm.luna' });
+    return getEncounterEnemyWithScaling(enemy, effectiveDungeon, floorNumber, roomType, { isLunaMode: false });
   };
 
   const getGodRuntimeEnemy = (god: (typeof GOD_ENEMY_PROFILES)[number]): EnemyDef | null =>
-    buildGodRuntimeEnemy(god, gameMode === 'm.luna');
+    buildGodRuntimeEnemy(god);
 
   const getGodDropCandidates = (godName: string): string => {
     const drops = GOD_MYTHIC_DROPS
@@ -10752,7 +10734,7 @@ function SettingTab({
           {isColosseumBestiaryTab && (() => {
             // Colosseum enemies are already fully computed from the editor settings.
             // Reapplying expedition encounter scaling here would double-count ability effects like colossal.
-            const colosseumEnemy = buildColosseumEnemy(colosseumEnemySettings, gameMode === 'm.luna');
+            const colosseumEnemy = buildColosseumEnemy(colosseumEnemySettings);
             const enemyExpanded = !!expandedBestiaryEnemies[colosseumEnemy.id];
             const physicalDefenseAmplifierPercent = colosseumEnemy.physicalDefenseAmplifier * 100;
             const magicalDefenseAmplifierPercent = colosseumEnemy.magicalDefenseAmplifier * 100;
@@ -10834,7 +10816,7 @@ function SettingTab({
                   : group.groupType === 'elite'
                     ? 'battle_Elite'
                     : 'battle_Normal';
-                const enemyLevelFinal = getEffectiveEnemyLevel(selectedBestiaryDungeon.expLevel, group.floorNumber, roomType, gameMode === 'm.luna');
+                const enemyLevelFinal = getEffectiveEnemyLevel(selectedBestiaryDungeon.expLevel, group.floorNumber, roomType, false);
                 const classRows = getBestiaryClassRows(displayEnemy.enemyClass, displayEnemy.enemySubClass);
                 const enemyExpanded = !!expandedBestiaryEnemies[displayEnemy.id];
                 const physicalDefenseAmplifierPercent = displayEnemy.physicalDefenseAmplifier * 100;
@@ -11132,7 +11114,7 @@ function SettingTab({
                     : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
                 }`}
               >
-                ルナ(高難度)
+                ルナ
               </button>
               <button
                 onClick={() => !modeSelectionLocked && onSetGameMode('m.laika')}
@@ -11143,17 +11125,15 @@ function SettingTab({
                     : 'bg-white text-gray-700 border-gray-300 pane-button-shadow'
                 } ${modeSelectionLocked ? 'opacity-60 cursor-not-allowed' : ''}`}
               >
-                ライカ(原点)
+                ライカ
               </button>
             </div>
             <div className="mt-2 rounded bg-white p-2 text-xs text-gray-600 pane-button-shadow">
-              {modeSelectionLocked
-                ? 'ゲームモードは/luna/環境のためm.luna固定です（m.kemoは選択できません）'
-                : gameMode === 'm.kemo'
-                  ? '通常のモードです'
-                  : gameMode === 'm.luna'
-                    ? '敵が大幅に強くなります(報酬がよくなります)'
-                    : '超レアが存在しません。通常称号は伝説までしか出ません'}
+              {gameMode === 'm.kemo'
+                ? '青を基調としたテーマです'
+                : gameMode === 'm.luna'
+                  ? '黄色を基調としたテーマです'
+                  : '緑を基調としたテーマです'}
             </div>
           </div>
         </div>}
