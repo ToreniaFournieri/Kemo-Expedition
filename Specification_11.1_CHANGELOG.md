@@ -5,6 +5,15 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 10 | 2026/4/20 | Update runtime header game title styling: set the emphasized 「🐾」 character rotation to `0°` (no rotation), while keeping enlarged scale. |
+| 0.6.1 | 9 | 2026/4/20 | Adjust runtime header game title emphasis scaling for `冒ケモ🐾`: keep existing rotations (`-22.5°` / `22.5°`) but reset emphasized `冒` and `🐾` scale to `1.0` per request. |
+| 0.6.1 | 8 | 2026/4/20 | Update runtime header game title rendering (`冒ケモ🐾`) to emphasize both `冒` and `🐾` with larger scale and specified rotations (`-22.5°` / `22.5°`) per Spec 8.1.2. |
+| 0.6.1 | 7 | 2026/4/20 | Update runtime header game title per Spec 8.1.2: keep `冒ケモ🐾` and apply clockwise `22.5°` rotation to the `🐾` character while preserving emphasized `冒` styling. |
+| 0.6.1 | 6 | 2026/4/20 | Update runtime header title per Spec 8.1.2: change game title label to `冒ケモ🐾` and emphasize the `冒` character with larger scale and `-22.5°` counterclockwise rotation. |
+| 0.6.1 | 5 | 2026/4/20 | Implement runtime loading-message randomization per Spec 1.2.2: replace fixed loading text with `LOADING_MESSAGE` pool and randomly select one entry each time the loading screen is displayed. |
+| 0.6.1 | 4 | 2026/4/20 | Update runtime PT1/unascertained setup to requested Spec 2.1 values: change `unascertained` lineage bonus to `c.equip-slot+3` and set ケモ initial equipment to `1101, 1102, 1104, 1105, 1106, 1211` under `Goddess of Restoration`. |
+| 0.6.1 | 3 | 2026/4/20 | Align runtime PT1 initial setup to requested party condition: update ロップ/ソウタ initial equipment to `1107`,`1109` and set ライカ sub class to `class.alchemist` while keeping deity `Goddess of Restoration` and unique flags for ケモ/ライカ. |
+| 0.6.1 | 2 | 2026/4/20 | Fix normal character attack damage argument ordering in battle runtime: pass enemy temporary evasion to `calculateCharacterDamage` before runtime offense multiplier, restoring expected melee/ranged/magic normal attack damage instead of unintended near-minimum values. |
 | 0.6.1 | 1 | 2026/4/20 | Update runtime environment policy for `/beta/`: force fixed theme `m.laika` (non-configurable in UI), lock game-mode selection accordingly, and enforce Debug mode OFF in persisted/runtime debug settings. Also bump app version to `v0.6.1` and reset build number to `1`. |
 | 0.6.0 | 499 | 2026/4/20 | Update GitHub Pages deployment workflow/environment index to replace obsolete `luna` target with `beta` branch and `/beta/` (`βテスト`) route. |
 | 0.6.0 | 498 | 2026/4/20 | Update runtime mode/environment behavior per latest spec: treat `m.kemo`/`m.luna`/`m.laika` as theme-color-only selection (remove Luna/Laika gameplay reward and difficulty effects), update Divine Bureau mode descriptions to theme text, switch environment routing from obsolete `/luna/` to `/beta/` (`βテスト` label), set debug-pane default speed to `Real time`, and set `/dev/`/`/qa/` simulation speed baseline to x20 hyper. |

@@ -3,10 +3,29 @@ import { useGameState } from './hooks/useGameState';
 import { HomeScreen } from './components/HomeScreen';
 import { createEnvironmentStorageKey, getEnvironmentId } from './game/environment';
 
-const LOADING_MESSAGE = '下界にいる勇敢な冒険者達を捜索中…';
+const LOADING_MESSAGES = [
+  'ケモは長い夢を見る',
+  'ライカは復興の為ならいかなる手段も俎上にあげる',
+  'ランスロットは立場よりも信念を貫く',
+  'パーシヴァルは真実よりも果実を好む',
+  'レナードは人を信じない。でもシャチだけは信じてる',
+  'オルカは地上を歩きたい',
+  'ルナは奇跡を信じない',
+  'ノクスは宝石の心が盗めない',
+  'ミシュカは祖国に帰りたい',
+  'プチーツァは平穏に暮らしたい',
+  'フィンは王女としては暮らせてない',
+  'マーレは普通のふりをする',
+] as const;
 const DARK_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-dark-mode');
 const GAME_MODE_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-game-mode');
 const THEME_SYNC_EVENT = 'kemo-expedition-theme-sync';
+
+// SpecRef: 1.2.2 | Loading message | LOADING_MESSAGE
+function getRandomLoadingMessage() {
+  const randomIndex = Math.floor(Math.random() * LOADING_MESSAGES.length);
+  return LOADING_MESSAGES[randomIndex];
+}
 
 function getInitialGameModeClass() {
   if (typeof window === 'undefined') return '';
@@ -26,6 +45,7 @@ function getInitialDarkModeEnabled() {
 export default function App() {
   const { state, actions, bags, notifications } = useGameState();
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingMessage, setLoadingMessage] = useState(() => getRandomLoadingMessage());
   const [isDarkModeEnabled, setIsDarkModeEnabled] = useState(() => getInitialDarkModeEnabled());
   const [gameModeClass, setGameModeClass] = useState(() => getInitialGameModeClass());
 
@@ -77,6 +97,11 @@ export default function App() {
   const appThemeClasses = `${gameModeClass} ${isDarkModeEnabled ? 'theme-dark' : ''}`;
 
   useEffect(() => {
+    if (!isLoading) return;
+    setLoadingMessage(getRandomLoadingMessage());
+  }, [isLoading]);
+
+  useEffect(() => {
     const timer = window.setTimeout(() => {
       setIsLoading(false);
     }, 1200);
@@ -89,7 +114,7 @@ export default function App() {
   if (isLoading) {
     return (
       <div className={`min-h-screen bg-white text-black flex items-center justify-center px-6 text-center ${appThemeClasses}`}>
-        <p className="text-lg font-medium">{LOADING_MESSAGE}</p>
+        <p className="text-lg font-medium">{loadingMessage}</p>
       </div>
     );
   }

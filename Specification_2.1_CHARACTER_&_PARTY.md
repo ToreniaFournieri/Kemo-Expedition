@@ -102,7 +102,7 @@
 | `fragment` | 断章の系譜 | 断 | 生存 | `a.unforgettable`, `c.armor_x1.2`, `c.wand_x1.2` | `true` |
 | `windcross` | 風渡の系譜 | 風 | 生存 | `a.wind-rider`, `c.robe_x1.2`, `c.katana_x1.2` | `true` |
 | `oath` | 誓約の系譜 | 誓 | 生存 | `a.requiem`, `c.shield_x1.2`, `c.sword_x1.2` | `true` |
-| `unascertained` | 不詳 | 不 | - | `c.armor_x1.3`, `c.robe_x1.3` | `false` |
+| `unascertained` | 不詳 | 不 | - | `c.equip-slot+3` | `false` |
 | `pioneer` | 先駆者 | 先 | - | `c.wand_x1.3`, `a.seeker`1 | `false` |
 | `almighty` | 全能 | 全 | - | `c.growth_x1.3`, `c.sword_x1.3`, `c.arrow_x1.3`, `c.wand_x1.3`, `b.vitality+1`, `b.strength+1`, `b.intelligence+1`, `b.mind+1` | `false` |
 | `hidden_grail` | 隠された杯 | 杯 | - | `c.evasion+0.010`, `c.robe_x1.3`, `b.vitality+1`  | `false` |
@@ -420,12 +420,12 @@ Party.`d.HP` =
 
 | order | Name | Race | main class | sub class | lineage | predisposition | Initial equipment | Unique |
 |------|------|------|------|------|------|------|------|------|
-| 1 | **ケモ** | **Kemoria** | `class.guardian` | `class.samurai` | **`unascertained`** | `None` | `1101`, `1105`, `1106` | **`true`** |
+| 1 | **ケモ** | **Kemoria** | `class.guardian` | `class.samurai` | **`unascertained`** | `None` | 1101, 1102, 1104, 1105, 1106, 1211 | **`true`** |
 | 2 | ゴン | Vulpinian | `class.duelist` | `class.pilgrim` | `sandstorm` | `Aggressive` | `1104`, `1106` | `false` |
-| 3 | ロップ | Leporian | `class.ranger` | `class.ninja` | `abyssal_sea` | `Inquisitive` | `1107`, `1108`, `1109` |  `false` |
-| 4 | ソウタ | Procyonian | `class.ninja`| `class.striker` | `firmament` | `Evasive` |`1104`, `1106`,`1104`, `1106` | `false` |
+| 3 | ロップ | Leporian | `class.ranger` | `class.ninja` | `abyssal_sea` | `Inquisitive` | `1107`, `1109` |  `false` |
+| 4 | ソウタ | Procyonian | `class.ninja`| `class.striker` | `firmament` | `Evasive` | `1107`, `1109` | `false` |
 | 5 | セルフィン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Amicable` | `1110`, `1112` | `false` |
-| 6 | **ライカ** | Caninian | `class.sage` | `class.wizard`| **`pioneer`** | `None` | `1110`, `1112`  | **`true`** |
+| 6 | **ライカ** | Caninian | `class.sage` | `class.alchemist`| **`pioneer`** | `None` | `1110`, `1112`  | **`true`** |
 
 - **PT2** initial condition (when unlocked)
   - deity: `God of Attrition`

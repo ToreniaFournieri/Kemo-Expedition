@@ -284,4 +284,21 @@
   - `elemental_offense_attribute` : `e.none`, `e.fire`, `e.thunder`, `e.ice` // Offensive
   - `elemental_resistance_attribute` : `r.none`, `r.fire`, `r.thunder`, `r.ice` // Defensive
 
+#### 1.2.2 Loading message
+-Randomly select one entry from LOADING_MESSAGE each time the loading screen is displayed.
+
+| LOADING_MESSAGE |
+|-|
+| ケモは長い夢を見る |
+| ライカは復興の為ならいかなる手段も俎上にあげる |
+| ランスロットは立場よりも信念を貫く |
+| パーシヴァルは真実よりも果実を好む |
+| レナードは人を信じない。でもシャチだけは信じてる |
+| オルカは地上を歩きたい |
+| ルナは奇跡を信じない |
+| ノクスは宝石の心が盗めない |
+| ミシュカは祖国に帰りたい |
+| プチーツァは平穏に暮らしたい |
+| フィンは王女としては暮らせてない |
+| マーレは普通のふりをする |
 

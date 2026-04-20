@@ -4447,7 +4447,7 @@ export function HomeScreen({
   const envLabel = getEnvLabel();
   const versionLabel = `${APP_VERSION}(${state.buildNumber})`;
   const envDisplayLabel = envLabel ? `(${envLabel})` : null;
-  const gameTitle = 'ケモの冒険';
+  const gameTitle = '冒ケモ🐾';
 
   useEffect(() => {
     document.title = gameTitle;
@@ -4607,8 +4607,13 @@ export function HomeScreen({
 
           <div className="flex justify-between items-center gap-3 min-h-[44px]">
             <div>
+              {/* SpecRef: 8.1.2 | Header | Game title label */}
               <h1 className="flex items-center gap-1 text-lg font-bold">
-                <span>{gameTitle}</span>
+                <span aria-label={gameTitle}>
+                  <span className="inline-block text-[1.35em] leading-none" style={{ transform: 'rotate(-22.5deg) scale(1.0)' }}>冒</span>
+                  <span>ケモ</span>
+                  <span className="inline-block text-[1.35em] leading-none" style={{ transform: 'rotate(0deg) scale(1.0)' }}>🐾</span>
+                </span>
                 <span className="text-xs font-normal text-gray-500">{versionLabel}</span>
               </h1>
             </div>
