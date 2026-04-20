@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 13 | 2026/4/20 | Fix AFK runtime persistence restore for party-cycle transient flags by rehydrating `sortieSourceState`, `sortieEmbezzlementGold`, `skipFeastThisCycle`, and `skipSleepThisCycle` from local storage, preventing cycle behavior drift after refresh during auto progression. |
 | 0.6.1 | 12 | 2026/4/20 | Preserve ongoing AFK `state.reactivate` catch-up across page refresh by persisting/restoring pending AFK runtime (`pendingAfkMs`, recovery total, and simulation anchor), so resumed emulation continues instead of dropping back to normal state mid-recovery. |
 | 0.6.1 | 11 | 2026/4/20 | Fix battle log reactive output for enemy counters: skip emitting `…に反撃！` entries when enemy has no usable attack attempts in that phase (e.g., no ranged attack/NoA during LONG), preventing empty counter-only lines with no damage text. |
 | 0.6.1 | 10 | 2026/4/20 | Update runtime header game title styling: set the emphasized 「🐾」 character rotation to `0°` (no rotation), while keeping enlarged scale. |
