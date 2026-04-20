@@ -4612,7 +4612,7 @@ export function HomeScreen({
                 <span aria-label={gameTitle}>
                   <span className="inline-block text-[1.35em] leading-none" style={{ transform: 'rotate(-22.5deg) scale(1.0)' }}>冒</span>
                   <span>ケモ</span>
-                  <span className="inline-block text-[1.35em] leading-none" style={{ transform: 'rotate(22.5deg) scale(1.0)' }}>🐾</span>
+                  <span className="inline-block text-[1.35em] leading-none" style={{ transform: 'rotate(0deg) scale(1.0)' }}>🐾</span>
                 </span>
                 <span className="text-xs font-normal text-gray-500">{versionLabel}</span>
               </h1>
