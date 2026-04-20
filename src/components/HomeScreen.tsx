@@ -3476,7 +3476,20 @@ export function HomeScreen({
             state: toPartyCycleState(runtime.state),
             stateStartedAt,
             durationMs: typeof runtime.durationMs === 'number' ? runtime.durationMs : 1000,
+            sortieSourceState:
+              runtime.sortieSourceState === 'rest'
+              || runtime.sortieSourceState === 'feast'
+              || runtime.sortieSourceState === 'sleep'
+              || runtime.sortieSourceState === 'return'
+                ? runtime.sortieSourceState
+                : undefined,
+            sortieEmbezzlementGold:
+              typeof runtime.sortieEmbezzlementGold === 'number'
+              ? Math.max(0, Math.floor(runtime.sortieEmbezzlementGold))
+              : undefined,
             isCurrentExpeditionGodsBattle: runtime.isCurrentExpeditionGodsBattle === true,
+            skipFeastThisCycle: runtime.skipFeastThisCycle === true,
+            skipSleepThisCycle: runtime.skipSleepThisCycle === true,
           };
         });
         setPartyCycles(restoredCycles);
