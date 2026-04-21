@@ -4404,7 +4404,6 @@ export function executeBattle(
 
         if (turn.kind === 'enemy') {
           enemyHasMovedInPhase = true;
-          enemyHasActedInBattle = true;
 
         if (enemyIncapacitated) {
           enemyIncapacitated = false;
@@ -4417,9 +4416,10 @@ export function executeBattle(
           continue;
         }
 
+        const isEnemyFirstActionInBattle = !enemyHasActedInBattle;
         const baseNoA = getEnemyNoA(phase, enemy);
         const enemyPhaseAccuracyBonus = phase === 'close' ? enemyTemporaryAccuracyBonus : 0;
-        const howlEffect = baseNoA > 0 ? consumePendingPartyHowlEffect() : null;
+        const howlEffect = isEnemyFirstActionInBattle && baseNoA > 0 ? consumePendingPartyHowlEffect() : null;
         const noA = Math.ceil(
           baseNoA
           * (howlEffect?.multiplier ?? 1.0)
@@ -5037,6 +5037,7 @@ export function executeBattle(
           }
         };
 
+        enemyHasActedInBattle = true;
         if (firstActorInBattle === null) {
           firstActorInBattle = 'enemy';
         }
@@ -5106,9 +5107,6 @@ export function executeBattle(
         const char = party.characters.find(c => c.id === cs.characterId);
         if (!char) continue;
 
-      movedCharacterIds.add(cs.characterId);
-      characterActedInBattleIds.add(cs.characterId);
-
       if (incapacitatedCharacterIds.has(cs.characterId)) {
         incapacitatedCharacterIds.delete(cs.characterId);
         log.push({
@@ -5122,7 +5120,8 @@ export function executeBattle(
       }
 
       const baseNoA = getCharacterNoAForPhase(phase, cs);
-      const howlEffect = baseNoA > 0 ? consumePendingEnemyHowlEffect() : null;
+      const isPartyFirstActionInBattle = characterActedInBattleIds.size === 0;
+      const howlEffect = isPartyFirstActionInBattle && baseNoA > 0 ? consumePendingEnemyHowlEffect() : null;
       if (hasNoOffense(cs)) continue;
 
       const characterPhaseAccuracyBonus = phase === 'close' ? (temporaryAccuracyBonusByCharacterId.get(cs.characterId) ?? 0) : 0;
@@ -5556,6 +5555,8 @@ export function executeBattle(
         return result;
       };
 
+        movedCharacterIds.add(cs.characterId);
+        characterActedInBattleIds.add(cs.characterId);
         if (firstActorInBattle === null) {
           firstActorInBattle = cs.characterId;
         }
