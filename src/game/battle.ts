@@ -2558,8 +2558,8 @@ export function executeBattle(
   let consumedEnemyShock = false;
   const consumedCharacterShockIds = new Set<number>();
   const activeMagicSealQueue = createMagicSealQueue(party, characterStats, enemy, environment.terrainEffect);
-  let pendingEnemyHowlEffect: PendingHowlEffect | null = null;
-  let pendingPartyHowlEffect: PendingHowlEffect | null = null;
+  let pendingEnemyHowlEffects: PendingHowlEffect[] = [];
+  let pendingPartyHowlEffects: PendingHowlEffect[] = [];
   let enemyTemporaryEvasionBonus = 0;
   let enemyTemporaryAccuracyBonus = 0;
   const temporaryAccuracyBonusByCharacterId = new Map<number, number>();
@@ -2588,14 +2588,18 @@ export function executeBattle(
   const consumeMagicSeal = (): boolean => activeMagicSealQueue.shift() !== undefined;
 
   const consumePendingEnemyHowlEffect = (): PendingHowlEffect | null => {
-    const effect = pendingEnemyHowlEffect;
-    pendingEnemyHowlEffect = null;
+    const effect = pendingEnemyHowlEffects.length > 0
+      ? pendingEnemyHowlEffects[pendingEnemyHowlEffects.length - 1]
+      : null;
+    pendingEnemyHowlEffects = [];
     return effect;
   };
 
   const consumePendingPartyHowlEffect = (): PendingHowlEffect | null => {
-    const effect = pendingPartyHowlEffect;
-    pendingPartyHowlEffect = null;
+    const effect = pendingPartyHowlEffects.length > 0
+      ? pendingPartyHowlEffects[pendingPartyHowlEffects.length - 1]
+      : null;
+    pendingPartyHowlEffects = [];
     return effect;
   };
 
@@ -3796,11 +3800,11 @@ export function executeBattle(
 
       const enemyHowlLevel = getEnemyAbilityLevel(enemy, 'howl');
       if (enemyHowlLevel > 0) {
-        pendingEnemyHowlEffect = {
+        pendingEnemyHowlEffects = [{
           multiplier: getHowlNoAMultiplier(enemyHowlLevel),
           ownerName: enemy.name,
           note: getHowlNote(enemyHowlLevel),
-        };
+        }];
       }
 
       const partyHowlEntries = characterStats
@@ -3823,12 +3827,12 @@ export function executeBattle(
       }
 
       for (const entry of partyHowlEntries) {
-        pendingPartyHowlEffect = {
+        pendingPartyHowlEffects.push({
           multiplier: getHowlNoAMultiplier(entry.level),
           ownerName: entry.ownerName,
           note: getHowlNote(entry.level),
           characterId: entry.stats.characterId,
-        };
+        });
         log.push({
           phase,
           initiativeRoll: 2,
