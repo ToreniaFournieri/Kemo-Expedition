@@ -278,7 +278,7 @@ If `a.*` with phase = START:
 ##### 6.1.3.1 Actor action
 - Check:
   - If (phase = MID and `a.magic-seal` is valid, and actor.`f.damage_calculation` > 0 ), Disable the actor's move. log "name がフロストニードルを唱えたがかき消された！". Then disable the `a.magic-seal`.
-  - If opponent.`a.howl` is active: Apply actor.`f.NoA` × N, Then disable opponent.`a.howl`. log: "[2] name が遠吠えをした！ (相手の次の攻撃回数5/7)"
+  - If opponent.`a.howl` is active and (actor side has not performed any action in this battle yet): Apply actor.`f.NoA` × N, Then disable opponent.`a.howl`. log: "[2] name が遠吠えをした！ (相手の次の攻撃回数5/7)"
   - If actor.`incapacitated`:
     - just display log:`log.incapacitated` instead of normal move.
   - If actor.`a.no-offense`:
