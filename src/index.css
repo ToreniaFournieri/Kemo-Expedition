@@ -411,6 +411,16 @@ body {
   background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.4), rgb(255 255 255 / 0));
 }
 
+.theme-dark .liquid-glass-sortie-button--sub {
+  background-color: rgb(var(--color-sub) / 0.68);
+  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.24), rgb(255 255 255 / 0));
+}
+
+.theme-dark .liquid-glass-sortie-button--accent {
+  background-color: rgb(var(--color-accent) / 0.62);
+  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.2), rgb(255 255 255 / 0));
+}
+
 .liquid-glass-sortie-button:hover {
   filter: brightness(1.03);
 }

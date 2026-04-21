@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 27 | 2026/4/21 | Adjust Expedition sortie button color intensity in dark mode (Spec 8.3): reduce brightness of both 「出撃」 and 「神魔戦」 states by lowering base opacity and highlight gradient strength for a more modest appearance while preserving contrast/readability. |
 | 0.6.1 | 26 | 2026/4/21 | Adjust Party tab/card glass styling in dark mode (Spec 8.1/8.2): darken segmented button surfaces and soften active-sub highlight intensity for PT tabs and character chips to reduce brightness while keeping selected-state visibility. |
 | 0.6.1 | 25 | 2026/4/21 | Adjust Expedition pane dark-mode background layering (Spec 8.3): reduce gray overlay darkness and increase dungeon image layer opacity so background art is more visible while keeping text readability. |
 | 0.6.1 | 24 | 2026/4/21 | Update battle runtime `a.howl` actor-action handling (Spec 6.1.3.1): when an actor takes a turn, consume and clear all active opponent howl effects (not just one), while applying the current action `f.NoA` multiplier from the selected pending howl effect. |
