@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 29 | 2026/4/21 | Improve Party tab dark-mode section separation: add visible panel borders to the character status pane and equipment pane so each block boundary is easier to recognize. |
 | 0.6.1 | 28 | 2026/4/21 | Improve dark-mode UI contrast/readability: tone down 「出撃/神魔戦」 button text glare, soften bright base-stat chip borders (体力/力/知性/精神), and strengthen pane border visibility in 日誌 and 神聖局 sections so card boundaries are easier to distinguish. |
 | 0.6.1 | 27 | 2026/4/21 | Adjust Expedition sortie button color intensity in dark mode (Spec 8.3): reduce brightness of both 「出撃」 and 「神魔戦」 states by lowering base opacity and highlight gradient strength for a more modest appearance while preserving contrast/readability. |
 | 0.6.1 | 26 | 2026/4/21 | Adjust Party tab/card glass styling in dark mode (Spec 8.1/8.2): darken segmented button surfaces and soften active-sub highlight intensity for PT tabs and character chips to reduce brightness while keeping selected-state visibility. |
