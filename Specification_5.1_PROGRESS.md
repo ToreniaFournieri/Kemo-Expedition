@@ -120,6 +120,18 @@
 - Multiple state transitions within a single update tick are valid and must be applied deterministically in order.
 - Limit: maximum 1,800 minutes (30 hours) per catch-up simulation in the current version; elapsed time beyond this cap is ignored for that tick.
 
+**AFK → Online Transition Handling**
+- **State Transfer:**
+  - Upon completion of AFK emulation, transfer the **latest runtime state** to Online mode without loss or recalculation.
+  - The transition must be **deterministic and precise**.
+- **Step Continuity Rule:**
+  - If AFK emulation ends mid-`Step`, resume from the exact same `Step` progress in Online mode.
+  - Example:
+    - AFK ends at `state.return`, `Step` progress = **3/7**  
+      → Resume at `state.return`, **3/7 `Step`**.
+- **Sub-step Progress Handling:**
+  - Ignore intra-`Step` (sub-progress) timing.
+  - Preserve only the discrete `Step` progress ratio.
 
 **Notification**
 - Format: 踏破N回/帰還Y回/引分Z回/撤退M回/敗北X回 寄付金額: vG, 貯金額:　vG
