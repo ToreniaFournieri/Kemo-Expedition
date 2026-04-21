@@ -8549,7 +8549,7 @@ function InventoryTab({
           {isJewelCategory && combinedJewelEntries.map((entry) => {
             if (entry.type === 'owned') {
               return (
-                <div key={entry.key} className="px-2 py-1.5 rounded bg-pane shadow-sm shadow-slate-900/10">
+                <div key={entry.key} className="px-2 py-1.5 rounded bg-pane border border-gray-200 shadow-sm shadow-slate-900/10">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="text-sm truncate">{getJewelNameByRank(entry.jewelKey, entry.rank)}</span>
@@ -8565,7 +8565,7 @@ function InventoryTab({
 
             const race = RACES.find((raceEntry) => raceEntry.id === entry.raceId);
             return (
-              <div key={entry.key} className="px-2 py-1.5 rounded bg-pane shadow-sm shadow-slate-900/10">
+              <div key={entry.key} className="px-2 py-1.5 rounded bg-pane border border-gray-200 shadow-sm shadow-slate-900/10">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
                     {race && <RaceIcon race={race} className="h-4 w-4 shrink-0" />}
@@ -8588,7 +8588,7 @@ function InventoryTab({
               return (
                 <div
                   key={entry.key}
-                  className="px-2 py-1.5 rounded bg-pane shadow-sm shadow-slate-900/10"
+                  className="px-2 py-1.5 rounded bg-pane border border-gray-200 shadow-sm shadow-slate-900/10"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
@@ -8625,7 +8625,7 @@ function InventoryTab({
             return (
               <div
                 key={entry.key}
-                className="px-2 py-1.5 rounded bg-pane shadow-sm shadow-slate-900/10"
+                className="px-2 py-1.5 rounded bg-pane border border-gray-200 shadow-sm shadow-slate-900/10"
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
