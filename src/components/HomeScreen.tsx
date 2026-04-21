@@ -4227,7 +4227,7 @@ export function HomeScreen({
     partyIndex: number,
     nextState: PartyCycleState,
     durationMs: number,
-    sortieContext?: { sourceState?: 'rest' | 'feast' | 'sleep' | 'return'; embezzlementGold?: number },
+    sortieContext?: { sourceState?: 'rest' | 'feast' | 'sleep' | 'return'; embezzlementGold?: number; isCurrentExpeditionGodsBattle?: boolean },
   ) => {
     setPartyCycles((prev) => ({
       ...prev,
@@ -4239,6 +4239,7 @@ export function HomeScreen({
         sortieEmbezzlementGold: sortieContext
           ? Math.max(0, Math.floor(sortieContext.embezzlementGold ?? 0))
           : undefined,
+        isCurrentExpeditionGodsBattle: sortieContext?.isCurrentExpeditionGodsBattle === true,
       },
     }));
   };
@@ -4393,6 +4394,11 @@ export function HomeScreen({
       actions.addNotification(`${party.name} は探索中であり、その要請には従えない`);
       return;
     }
+    // SpecRef: 8.3 | UI_EXPEDITION | "出撃" / "神魔戦" Buttons
+    if (triggerGodsBattle && cycle?.state === 'move' && cycle.isCurrentExpeditionGodsBattle === true) {
+      actions.addNotification(`${party.name} は既に神魔戦へ向けて移動中だ`);
+      return;
+    }
 
     const stolenProfit = Math.max(0, party.pendingProfit);
 
@@ -4419,6 +4425,7 @@ export function HomeScreen({
             ? 'sleep'
             : undefined,
         embezzlementGold: stolenProfit,
+        isCurrentExpeditionGodsBattle: triggerGodsBattle,
       },
     );
   };
@@ -7360,7 +7367,9 @@ function ExpeditionTab({
         const hpForSortieCheck = cycle.state === 'explore' ? displayedHp : party.currentHp;
         const isColosseumSelected = selectedDungeon?.id === 99;
         // SpecRef: 8.3 | UI_EXPEDITION | "出撃" / "神魔戦" Buttons
+        const isPendingGodsBattleMove = cycle.state === 'move' && cycle.isCurrentExpeditionGodsBattle === true;
         const isSortieDisabled = cycle.state === 'explore'
+          || isPendingGodsBattleMove
           || ((!!selectedDungeonGate?.locked && !isColosseumSelected) || hpForSortieCheck <= 0 || partyStats.hp <= 0);
         const canTriggerGodsBattle = cycle.state === 'explore'
           ? cycle.isCurrentExpeditionGodsBattle === true
