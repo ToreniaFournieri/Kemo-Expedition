@@ -21,31 +21,6 @@
   --glass-shadow: rgb(15 23 42 / 0.14);
 }
 
-.step-progress-shell {
-  position: relative;
-  z-index: 20;
-}
-
-.step-progress-track {
-  --step-progress-pill-width: 1.1rem;
-  width: 100%;
-  position: relative;
-  background: transparent;
-  min-height: 0.38rem;
-}
-
-.step-progress-indicator {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: var(--step-progress-pill-width);
-  height: 0.38rem;
-  border-radius: 9999px;
-  background: rgb(var(--color-sub) / 0.4);
-  transition: transform 80ms linear;
-  will-change: transform;
-}
-
 .theme-luna {
   --color-sub: 194 136 50;
   --color-accent: 12 60 234;

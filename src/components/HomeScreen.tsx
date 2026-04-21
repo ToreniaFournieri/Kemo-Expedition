@@ -199,7 +199,6 @@ type PartyCycleState = 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' |
 const PARTY_EXPEDITION_SPLIT_MIN_WIDTH = 1024;
 const TAB_PANEL_WIDTH_PX = 500;
 const WIDE_MODE_DEFAULT_SECONDARY_TAB: WideModeSecondaryTab = 'party';
-const STEP_PROGRESS_TOTAL_TICKS_PER_STEP = 30;
 // SpecRef: 8.1 | UI_FOUNDATIONS | Style: Compact, simple, iOS-like
 const IOS_GLASS_BUTTON_CLASS =
   'ios-glass-button rounded-xl';
@@ -2529,30 +2528,12 @@ export function HomeScreen({
   const [gameMode, setGameMode] = useState<GameMode>(() => getInitialGameMode());
   const [darkModeSetting, setDarkModeSetting] = useState<DarkModeSetting>(() => getInitialDarkModeSetting());
   const [isSystemDarkMode, setIsSystemDarkMode] = useState(false);
-  const [stepProgressNowMs, setStepProgressNowMs] = useState(() => Date.now());
   const [debugSettings, setDebugSettings] = useState<DebugSettings>(() => getDebugSettings());
   const [isAutoEquipmentEnabled] = useState<boolean>(() => getInitialAutoEquipmentEnabled());
   const tabScrollPositionsRef = useRef<Partial<Record<Tab, number>>>({});
   const tabContentRef = useRef<HTMLDivElement | null>(null);
   const primarySplitTabContentRef = useRef<HTMLDivElement | null>(null);
   const secondarySplitTabContentRef = useRef<HTMLDivElement | null>(null);
-
-  const stepProgressRatio = useMemo(() => {
-    // SpecRef: 8.1.2 | Header | Step Progress Display
-    // Synchronize Step progress indicator movement with real Step duration including debug time-scale effects.
-    const scaledStepDurationMs = Math.max(1, BASE_STEP_DURATION_MS * Math.max(0.001, getTimeSpeedScale(debugSettings)));
-    return Math.max(0, Math.min(1, (stepProgressNowMs % scaledStepDurationMs) / scaledStepDurationMs));
-  }, [debugSettings, stepProgressNowMs]);
-
-  useEffect(() => {
-    // SpecRef: 8.1.2 | Header | Step Progress Display
-    const scaledStepDurationMs = Math.max(1, BASE_STEP_DURATION_MS * Math.max(0.001, getTimeSpeedScale(debugSettings)));
-    const tickIntervalMs = Math.max(33, Math.floor(scaledStepDurationMs / STEP_PROGRESS_TOTAL_TICKS_PER_STEP));
-    const stepProgressTimer = window.setInterval(() => {
-      setStepProgressNowMs(Date.now());
-    }, tickIntervalMs);
-    return () => window.clearInterval(stepProgressTimer);
-  }, [debugSettings]);
 
   const safeSelectedPartyIndex = useMemo(() => {
     if (state.parties.length === 0) return 0;
@@ -4608,16 +4589,6 @@ export function HomeScreen({
       <div className="fixed top-0 left-0 right-0 z-30">
         <div className="absolute inset-0 bg-white" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[500px] px-3 py-2.5 bg-white">
-          {/* SpecRef: 8.1.2 | Header | Step Progress Display */}
-          <div className="step-progress-shell mt-0 -mb-1 flex w-full leading-none" aria-label="Step Progress">
-            <div className="step-progress-track" aria-hidden="true">
-              <span
-                className="step-progress-indicator"
-                style={{ transform: `translateX(calc((100% - var(--step-progress-pill-width)) * ${stepProgressRatio}))` }}
-              />
-            </div>
-          </div>
-
           <div className="flex justify-between items-center gap-3 min-h-[44px]">
             <div>
               {/* SpecRef: 8.1.2 | Header | Game title label */}
