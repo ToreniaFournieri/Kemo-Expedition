@@ -7279,6 +7279,16 @@ function ExpeditionTab({
           }
           return Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100);
         })();
+        // SpecRef: 8.3 | UI_EXPEDITION | Sub progress bar
+        const subProgressPercent = (() => {
+          if (cycle.state !== 'sell' && cycle.state !== 'explore') return null;
+          const totalStepCount = cycle.state === 'sell'
+            ? Math.max(1, party.lastExpeditionLog?.autoSellItems?.length || party.lastExpeditionLog?.autoSellCount || 1)
+            : Math.max(1, currentLog?.entries.length ?? 1);
+          const stepDurationMs = Math.max(1, cycle.durationMs / totalStepCount);
+          const elapsedWithinStepMs = cycleElapsedMs % stepDurationMs;
+          return Math.min(100, (elapsedWithinStepMs / stepDurationMs) * 100);
+        })();
         const progressLabel = (() => {
           if (afkRecoveryProgressPercent !== null) return getPartyCycleStateLabel('reactivate');
           const stateLabel = getPartyCycleStateLabel(cycle.state);
@@ -7474,6 +7484,15 @@ function ExpeditionTab({
                 </span>
               </span>
             </button>
+
+            {subProgressPercent !== null ? (
+              <div className="mb-1 h-1 w-full overflow-hidden rounded-full bg-transparent" aria-label="Sub progress bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(subProgressPercent)}>
+                <div
+                  className="h-full bg-sub/40"
+                  style={{ width: `${subProgressPercent}%` }}
+                />
+              </div>
+            ) : null}
 
             {isLogExpanded && (
               <div className="space-y-2 mb-2">
