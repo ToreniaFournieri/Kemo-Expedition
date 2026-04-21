@@ -3798,8 +3798,11 @@ export function executeBattle(
       if (phase !== 'long' || hasTriggeredLongPhaseHowl) return;
       hasTriggeredLongPhaseHowl = true;
 
+      // SpecRef: 1.1 | CONSTANTS_GLOSSARY | a.howl
+      // `a.howl` triggers only while the opponent side has not acted yet in this battle.
       const enemyHowlLevel = getEnemyAbilityLevel(enemy, 'howl');
-      if (enemyHowlLevel > 0) {
+      const canEnemyTriggerHowl = characterActedInBattleIds.size === 0;
+      if (enemyHowlLevel > 0 && canEnemyTriggerHowl) {
         pendingEnemyHowlEffects = [{
           multiplier: getHowlNoAMultiplier(enemyHowlLevel),
           ownerName: enemy.name,
@@ -3807,16 +3810,17 @@ export function executeBattle(
         }];
       }
 
+      const canPartyTriggerHowl = !enemyHasActedInBattle;
       const partyHowlEntries = characterStats
         .map((stats) => ({
           level: getAbilityLevel(stats, 'howl'),
           ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
           stats,
         }))
-        .filter((entry) => entry.level > 0)
+        .filter((entry) => entry.level > 0 && canPartyTriggerHowl)
         .sort((a, b) => a.stats.row - b.stats.row);
 
-      if (enemyHowlLevel > 0) {
+      if (enemyHowlLevel > 0 && canEnemyTriggerHowl) {
         log.push({
           phase,
           initiativeRoll: 2,

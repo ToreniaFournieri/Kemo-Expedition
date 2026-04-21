@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 34 | 2026/4/21 | Fix runtime `a.howl` trigger eligibility per glossary rule: only trigger LONG2 howl when the opponent side has not acted yet in the battle, preventing late howl activation after opponents already moved. |
 | 0.6.1 | 33 | 2026/4/21 | Tone down `m.laika` sub-theme emoji icon rendering (Spec 8.1): reduce green icon filter saturation/brightness so battle/log emoji-icons align better with other sub-color UI elements. |
 | 0.6.1 | 32 | 2026/4/21 | Fix AFK recovery (復帰中) main progress bar rendering after page refresh by normalizing invalid percentages and enforcing a minimal visible fill during resumed AFK catch-up. |
 | 0.6.1 | 31 | 2026/4/21 | Prevent AFK catch-up reward toast flood (Spec 8.1.1): suppress item-drop notifications during AFK and for the immediate post-AFK settle pass, while keeping AFK-end summary notification behavior. |
