@@ -40,6 +40,7 @@ PT1 HP (HP bar, blue) `x.expedition`.name       outcome `condition`.label ▼
   - Disable conditions:
     - Party HP = 0
     - Party is in `state.explore`
+    - "神魔戦" button is pressed and party is going to engage gods battle. 
 
 ```
 ( ####### ) PT1 ルピニアンの断崖   踏破  好調▼
@@ -139,7 +140,7 @@ HP: 16,035
       - The 「神魔戦」 button remains available.
       - The player may retry the Gods Battle without re-collecting Boss rare items.
   - **Party Pane Visual State:**
-    - During `state.move` and `state.explore` of Gods battle, the Party pane border uses the Sub color theme (emphasis state).
+    - After pressed "神魔戦" button, during `state.move` and `state.explore` of Gods battle, the Party pane border uses the Sub color theme (emphasis state).
     - On battle end, the border style reverts to the default (normal) style. 
 
 - Unlocked party:
