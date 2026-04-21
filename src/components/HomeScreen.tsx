@@ -2560,6 +2560,7 @@ export function HomeScreen({
   const afkSimulationAnchorRef = useRef<number | null>(null);
   const afkRecoveryTotalMsRef = useRef(0);
   const previousPendingAfkMsRef = useRef(0);
+  const justCompletedAfkRecoveryRef = useRef(false);
   const shouldRebuildPartyCyclesAfterAfkRef = useRef(false);
 
   useEffect(() => {
@@ -3572,6 +3573,12 @@ export function HomeScreen({
     const previousPendingAfkMs = previousPendingAfkMsRef.current;
     previousPendingAfkMsRef.current = pendingAfkMs;
 
+    if (previousPendingAfkMs > 0 && pendingAfkMs === 0) {
+      justCompletedAfkRecoveryRef.current = true;
+    } else if (pendingAfkMs > 0) {
+      justCompletedAfkRecoveryRef.current = false;
+    }
+
     if (previousPendingAfkMs <= pendingAfkMs) return;
 
     runAutoEquipment(undefined, undefined, { suppressNotifications: true });
@@ -4004,7 +4011,10 @@ export function HomeScreen({
 
   // Item gain notifications after selling phase
   useEffect(() => {
-    const suppressRewardNotificationsForAfk = pendingAfkMs > 0 || shouldShowAfkSummaryRef.current;
+    // SpecRef: 8.1.1 | Notification Logic & Display | notification while AFK mode
+    const suppressRewardNotificationsForAfk = pendingAfkMs > 0
+      || shouldShowAfkSummaryRef.current
+      || justCompletedAfkRecoveryRef.current;
 
     state.parties.forEach((party, index) => {
       const previousLog = prevPartyLogsRef.current[index] ?? null;
@@ -4090,6 +4100,7 @@ export function HomeScreen({
     prevPartyLogsRef.current = state.parties.map((party) => party.lastExpeditionLog);
     prevPartyLevelsRef.current = state.parties.map((party) => party.level);
     prevPartyCycleStateRef.current = state.parties.map((_, index) => partyCycles[index]?.state ?? null);
+    justCompletedAfkRecoveryRef.current = false;
   }, [state.parties, partyCycles, actions, pendingAfkMs]);
 
   useEffect(() => {
