@@ -139,7 +139,7 @@ HP: 16,035
       - The 「神魔戦」 button remains available.
       - The player may retry the Gods Battle without re-collecting Boss rare items.
   - **Party Pane Visual State:**
-    - During Gods battle, the Party pane border uses the Sub color theme (emphasis state).
+    - During `state.move` and `state.explore` of Gods battle, the Party pane border uses the Sub color theme (emphasis state).
     - On battle end, the border style reverts to the default (normal) style. 
 
 - Unlocked party:
