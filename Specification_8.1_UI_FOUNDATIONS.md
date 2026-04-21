@@ -44,6 +44,8 @@
     - Crimson Red `#DC2626`
       (important actions, warnings, highlights)
 
+  - Damage color: `#ffebcd`
+
 **Emoji Icon Replacement**
 - All emoji used in UI, logs, and text outputs must be replaced with their corresponding icon image assets.
 - Icon images must scale to match the surrounding text size (inline alignment).
