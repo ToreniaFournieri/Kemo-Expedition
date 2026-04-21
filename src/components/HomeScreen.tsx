@@ -2537,15 +2537,11 @@ export function HomeScreen({
   const primarySplitTabContentRef = useRef<HTMLDivElement | null>(null);
   const secondarySplitTabContentRef = useRef<HTMLDivElement | null>(null);
 
-  const stepProgressTick = useMemo(() => {
+  const stepProgressRatio = useMemo(() => {
     // SpecRef: 8.1.2 | Header | Step Progress Display
-    // Synchronize Step progress bar fill with real Step duration including debug time-scale effects.
+    // Synchronize Step progress indicator movement with real Step duration including debug time-scale effects.
     const scaledStepDurationMs = Math.max(1, BASE_STEP_DURATION_MS * Math.max(0.001, getTimeSpeedScale(debugSettings)));
-    const normalizedStepProgress = (stepProgressNowMs % scaledStepDurationMs) / scaledStepDurationMs;
-    return Math.min(
-      STEP_PROGRESS_TOTAL_TICKS_PER_STEP - 1,
-      Math.floor(normalizedStepProgress * STEP_PROGRESS_TOTAL_TICKS_PER_STEP),
-    );
+    return Math.max(0, Math.min(1, (stepProgressNowMs % scaledStepDurationMs) / scaledStepDurationMs));
   }, [debugSettings, stepProgressNowMs]);
 
   useEffect(() => {
@@ -2557,14 +2553,6 @@ export function HomeScreen({
     }, tickIntervalMs);
     return () => window.clearInterval(stepProgressTimer);
   }, [debugSettings]);
-
-  const stepProgressPercent = useMemo(() => {
-    // SpecRef: 8.1.2 | Header | Step Progress Display
-    return Math.max(
-      0,
-      Math.min(100, ((stepProgressTick + 1) / STEP_PROGRESS_TOTAL_TICKS_PER_STEP) * 100),
-    );
-  }, [stepProgressTick]);
 
   const safeSelectedPartyIndex = useMemo(() => {
     if (state.parties.length === 0) return 0;
@@ -4623,7 +4611,10 @@ export function HomeScreen({
           {/* SpecRef: 8.1.2 | Header | Step Progress Display */}
           <div className="step-progress-shell mt-0 -mb-1 flex w-full leading-none" aria-label="Step Progress">
             <div className="step-progress-track" aria-hidden="true">
-              <span className="step-progress-fill" style={{ width: `${stepProgressPercent}%` }} />
+              <span
+                className="step-progress-indicator"
+                style={{ transform: `translateX(calc((100% - var(--step-progress-pill-width)) * ${stepProgressRatio}))` }}
+              />
             </div>
           </div>
 

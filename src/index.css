@@ -27,17 +27,23 @@
 }
 
 .step-progress-track {
+  --step-progress-pill-width: 1.1rem;
   width: 100%;
+  position: relative;
   background: transparent;
   min-height: 0.38rem;
 }
 
-.step-progress-fill {
-  display: block;
+.step-progress-indicator {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--step-progress-pill-width);
   height: 0.38rem;
   border-radius: 9999px;
   background: rgb(var(--color-sub) / 0.4);
-  transition: width 80ms linear;
+  transition: transform 80ms linear;
+  will-change: transform;
 }
 
 .theme-luna {

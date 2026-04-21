@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 15 | 2026/4/20 | Update runtime header Step Progress display (Spec 8.1.2) to a moving pill-shaped indicator over a transparent full-width track; indicator uses sub color at 40% opacity and continuously travels left-to-right in sync with debug-scaled Step progression timing. |
 | 0.6.1 | 14 | 2026/4/20 | Update runtime header Step Progress display (Spec 8.1.2) from paw-slot indicator to a full-width horizontal progress bar with transparent track and sub-color fill at 40% opacity, synchronized to Step duration with existing debug time-scale behavior. |
 | 0.6.1 | 13 | 2026/4/20 | Fix AFK runtime persistence restore for party-cycle transient flags by rehydrating `sortieSourceState`, `sortieEmbezzlementGold`, `skipFeastThisCycle`, and `skipSleepThisCycle` from local storage, preventing cycle behavior drift after refresh during auto progression. |
 | 0.6.1 | 12 | 2026/4/20 | Preserve ongoing AFK `state.reactivate` catch-up across page refresh by persisting/restoring pending AFK runtime (`pendingAfkMs`, recovery total, and simulation anchor), so resumed emulation continues instead of dropping back to normal state mid-recovery. |
