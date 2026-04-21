@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 40 | 2026/4/21 | Update runtime loading-message pool text to exactly match Spec 1.2.2 `LOADING_MESSAGE` entries while preserving random selection each time the loading screen is displayed. |
 | 0.6.1 | 39 | 2026/4/21 | Expedition UI: remove the HP=0 sortie warning text beneath the dungeon/depth selectors because the sortie button is already disabled in that state. |
 | 0.6.1 | 38 | 2026/4/21 | Update runtime `m.laika` color scheme per Spec 8.1 by changing the damage-taken color to `#ffebcd` (HP taken bar now uses RGB `255 235 205`). |
 | 0.6.1 | 37 | 2026/4/21 | Refine runtime Gods Battle sortie flow (Spec 8.3): treat pressed 「神魔戦」 as active during `state.move` by persisting `isCurrentExpeditionGodsBattle`, disable 「出撃/神魔戦」 while that gods-battle move is in progress, and block duplicate gods-battle sortie requests until battle flow advances. |
