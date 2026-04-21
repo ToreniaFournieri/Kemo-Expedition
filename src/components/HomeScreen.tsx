@@ -7368,8 +7368,9 @@ function ExpeditionTab({
         // SpecRef: 8.3 | UI_EXPEDITION | Background images for expedition pane
         const expeditionPaneBackgroundStyle = expeditionPaneBackgroundImage
           ? {
+            backgroundColor: isDarkModeEnabled ? 'rgb(71 85 105 / 0.56)' : undefined,
             backgroundImage: isDarkModeEnabled
-              ? 'linear-gradient(rgb(15 23 42 / 0.72), rgb(15 23 42 / 0.72))'
+              ? 'linear-gradient(rgb(15 23 42 / 0.58), rgb(15 23 42 / 0.58))'
               : 'linear-gradient(rgb(255 255 255 / 0.86), rgb(255 255 255 / 0.86))',
             backgroundSize: '100% 100%',
             backgroundPosition: 'top left',
@@ -7384,8 +7385,7 @@ function ExpeditionTab({
             backgroundPosition: 'center top',
             backgroundRepeat: 'no-repeat',
             backgroundAttachment: 'scroll',
-            filter: isDarkModeEnabled ? 'invert(1)' : undefined,
-            opacity: isDarkModeEnabled ? 0.28 : 0.22,
+            opacity: isDarkModeEnabled ? 0.24 : 0.22,
             transform: 'scale(1.01)',
             transformOrigin: 'top center',
           }
