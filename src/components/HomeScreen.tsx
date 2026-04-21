@@ -7372,9 +7372,9 @@ function ExpeditionTab({
               ? 'linear-gradient(rgb(15 23 42 / 0.72), rgb(15 23 42 / 0.72))'
               : 'linear-gradient(rgb(255 255 255 / 0.86), rgb(255 255 255 / 0.86))',
             backgroundSize: '100% 100%',
-            backgroundPosition: 'top left',
+            backgroundPosition: 'center top',
             backgroundRepeat: 'no-repeat',
-            backgroundAttachment: 'scroll',
+            backgroundAttachment: 'fixed',
           }
           : undefined;
         const expeditionPaneImageLayerStyle = expeditionPaneBackgroundImage
@@ -7383,7 +7383,7 @@ function ExpeditionTab({
             backgroundSize: '100% auto',
             backgroundPosition: 'center top',
             backgroundRepeat: 'no-repeat',
-            backgroundAttachment: 'scroll',
+            backgroundAttachment: 'fixed',
             filter: isDarkModeEnabled ? 'invert(1)' : undefined,
             opacity: isDarkModeEnabled ? 0.28 : 0.22,
             transform: 'scale(1.01)',

@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 23 | 2026/4/21 | Update runtime Expedition pane background behavior per Spec 8.3: keep per-party pane image width fit (`100%` of pane), fix the background layer in place during scrolling (`background-attachment: fixed`), and retain automatic dark-mode image inversion. |
 | 0.6.1 | 22 | 2026/4/21 | Simplify runtime `a.howl` actor-action handling per Spec 6.1.3.1: when an actor takes a turn, consume the opponent's pending howl immediately; if present, apply the howl NoA multiplier to that actor's current action `f.NoA` and then clear it. |
 | 0.6.1 | 21 | 2026/4/21 | Implement runtime `a.howl` actor-action condition from Spec 6.1.3.1: apply pending howl NoA multiplier only when the acting side has not performed any battle action yet, and consume the pending effect on that first action only. |
 | 0.6.1 | 20 | 2026/4/21 | Tone down `m.laika` accent emoji rendering by reducing saturation/brightness of the theme accent emoji filter, making battle/log accent icons less visually harsh. |
