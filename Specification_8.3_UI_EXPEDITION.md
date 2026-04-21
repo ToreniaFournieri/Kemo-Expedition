@@ -122,7 +122,7 @@ HP: 16,035
   - 次の目標: show next Loot-Gate condition. 
 
 - **Gods Battle (神魔戦)**
-  - Loot Gate Condition: Collect 10 Boss rare items in dungeons to unlock Gods Battle. (If Gods battle condition is `Simple`, 1 Boss rare items instead)
+  - Loot Gate Condition: Collect X Boss rare items in dungeons to unlock Gods Battle. (If Gods battle condition is `Simple`, 1 Boss rare items instead)
     - "特殊目標: `x.expedition`のボスレアアイテム 0/1 で神魔`godname`戦"
   - UI / Trigger:
     - When the condition is met, the 「出撃」(Deploy) button changes to 「神魔戦」(Gods Battle).
@@ -138,7 +138,9 @@ HP: 16,035
     - **On Defeat**
       - The 「神魔戦」 button remains available.
       - The player may retry the Gods Battle without re-collecting Boss rare items.
-
+  - **Party Pane Visual State:**
+    - During Gods battle, the Party pane border uses the Sub color theme (emphasis state).
+    - On battle end, the border style reverts to the default (normal) style. 
 
 - Unlocked party:
 
