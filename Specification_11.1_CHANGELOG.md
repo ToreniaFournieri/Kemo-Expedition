@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 25 | 2026/4/21 | Adjust Expedition pane dark-mode background layering (Spec 8.3): reduce gray overlay darkness and increase dungeon image layer opacity so background art is more visible while keeping text readability. |
 | 0.6.1 | 24 | 2026/4/21 | Update battle runtime `a.howl` actor-action handling (Spec 6.1.3.1): when an actor takes a turn, consume and clear all active opponent howl effects (not just one), while applying the current action `f.NoA` multiplier from the selected pending howl effect. |
 | 0.6.1 | 23 | 2026/4/21 | Update runtime Expedition pane dark-mode background rendering (Spec 8.3): remove image color inversion and add a gray backdrop layer behind dungeon art for improved readability while preserving original image colors. |
 | 0.6.1 | 22 | 2026/4/21 | Simplify runtime `a.howl` actor-action handling per Spec 6.1.3.1: when an actor takes a turn, consume the opponent's pending howl immediately; if present, apply the howl NoA multiplier to that actor's current action `f.NoA` and then clear it. |
