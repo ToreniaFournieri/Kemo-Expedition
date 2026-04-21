@@ -4416,10 +4416,11 @@ export function executeBattle(
           continue;
         }
 
-        const isEnemyFirstActionInBattle = !enemyHasActedInBattle;
         const baseNoA = getEnemyNoA(phase, enemy);
         const enemyPhaseAccuracyBonus = phase === 'close' ? enemyTemporaryAccuracyBonus : 0;
-        const howlEffect = isEnemyFirstActionInBattle && baseNoA > 0 ? consumePendingPartyHowlEffect() : null;
+        // SpecRef: 6.1.3.1 | Actor action | a.howl
+        // Acting always consumes opponent active howl; if present, apply to this action's f.NoA.
+        const howlEffect = consumePendingPartyHowlEffect();
         const noA = Math.ceil(
           baseNoA
           * (howlEffect?.multiplier ?? 1.0)
@@ -5119,9 +5120,9 @@ export function executeBattle(
         continue;
       }
 
-      const baseNoA = getCharacterNoAForPhase(phase, cs);
-      const isPartyFirstActionInBattle = characterActedInBattleIds.size === 0;
-      const howlEffect = isPartyFirstActionInBattle && baseNoA > 0 ? consumePendingEnemyHowlEffect() : null;
+      // SpecRef: 6.1.3.1 | Actor action | a.howl
+      // Acting always consumes opponent active howl; if present, apply to this action's f.NoA.
+      const howlEffect = consumePendingEnemyHowlEffect();
       if (hasNoOffense(cs)) continue;
 
       const characterPhaseAccuracyBonus = phase === 'close' ? (temporaryAccuracyBonusByCharacterId.get(cs.characterId) ?? 0) : 0;
