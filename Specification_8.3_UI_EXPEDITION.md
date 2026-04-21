@@ -56,7 +56,7 @@ PT2...
     - The image must scale to fit the full width of the pane. (not the screen width)
 - Background images for expedition pane:
   - The image is fixed so it stays in place when scrolling.
-  - Automatically inverts colors in Dark Mode. 
+  - Adding gray background color behind the image in dark mode. (No need to invert the image color)
   - If `x.exp_id` == 1, use: `public/background/Caninian-Plains.png`.
   - If `x.exp_id` == 2, use: `public/background/Lupinian-Taiga.png`.
   - If `x.exp_id` == 3, use: `public/background/Vulpinian-Ocean.png`.
