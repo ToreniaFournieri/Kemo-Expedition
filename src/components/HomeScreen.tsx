@@ -7586,9 +7586,6 @@ function ExpeditionTab({
                     </div>
                   </div>
                 )}
-                {['return', 'idle'].includes(cycle.state) && party.currentHp <= 0 && (
-                  <div className="text-xs text-accent">HPが0のため出撃できません。休息で回復してください。</div>
-                )}
                 {isExpeditionStatsDisplayEnabled && (
                   <div className="flex items-center justify-between gap-2 text-xs text-gray-600">
                     <span>
