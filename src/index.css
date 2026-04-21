@@ -63,7 +63,8 @@
   --color-pane: 229 231 235;
   --color-hp-bar: 8 166 69;
   --color-hp-bar-mild: 8 166 69;
-  --color-hp-taken: 252 165 165;
+  /* SpecRef: 8.1 | UI_FOUNDATIONS | Damage taken color */
+  --color-hp-taken: 255 235 205;
   --color-heal-bar: 184 237 178;
   --color-hp-bar-empty: 209 213 219;
   /* SpecRef: 8.1 | UI_FOUNDATIONS | Emoji Display Rule */

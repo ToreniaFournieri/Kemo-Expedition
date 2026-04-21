@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 38 | 2026/4/21 | Update runtime `m.laika` color scheme per Spec 8.1 by changing the damage-taken color to `#ffebcd` (HP taken bar now uses RGB `255 235 205`). |
 | 0.6.1 | 37 | 2026/4/21 | Refine runtime Gods Battle sortie flow (Spec 8.3): treat pressed 「神魔戦」 as active during `state.move` by persisting `isCurrentExpeditionGodsBattle`, disable 「出撃/神魔戦」 while that gods-battle move is in progress, and block duplicate gods-battle sortie requests until battle flow advances. |
 | 0.6.1 | 36 | 2026/4/21 | Update runtime Gods Battle party-pane visual emphasis (Spec 8.3): apply Sub-color border during `state.move` and `state.explore` while gods battle is active, and keep default border outside those states/end of battle. |
 | 0.6.1 | 35 | 2026/4/21 | Implement UI_EXPEDITION runtime updates (Spec 8.3): disable 「出撃/神魔戦」 while `state.explore` (in addition to HP=0), and emphasize active gods battle panes with Sub-color border styling that automatically reverts to normal after battle ends. |
