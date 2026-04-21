@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 21 | 2026/4/21 | Implement runtime `a.howl` actor-action condition from Spec 6.1.3.1: apply pending howl NoA multiplier only when the acting side has not performed any battle action yet, and consume the pending effect on that first action only. |
 | 0.6.1 | 20 | 2026/4/21 | Tone down `m.laika` accent emoji rendering by reducing saturation/brightness of the theme accent emoji filter, making battle/log accent icons less visually harsh. |
 | 0.6.1 | 19 | 2026/4/21 | Update runtime Expedition sub progress bar rendering to keep layout height stable: show active bar only in `state.sell`/`state.explore`, and render an empty placeholder row in all other states. |
 | 0.6.1 | 18 | 2026/4/21 | Implement runtime Expedition pane sub progress bar per Spec 8.3: display only during `state.sell`/`state.explore`, animate continuously from 0–100% within each Step using debug-scaled real-time duration, and render with transparent background + sub-color fill at 40% opacity. |
