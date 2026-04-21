@@ -377,6 +377,19 @@ body {
   transform: none;
 }
 
+.theme-dark .liquid-glass-segmented .ios-glass-button {
+  border-color: rgb(148 163 184 / 0.38);
+  background-color: rgb(30 41 59 / 0.44);
+  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.16),
+    0 6px 14px rgb(2 6 23 / 0.5);
+}
+
+.theme-dark .liquid-glass-segmented .ios-glass-button:hover {
+  background-color: rgb(30 41 59 / 0.58);
+}
+
 .liquid-glass-sortie-button {
   color: white;
   border-radius: 0.75rem;
@@ -509,5 +522,10 @@ body {
 }
 
 .theme-dark .liquid-glass-tab-active {
-  background-color: rgb(var(--color-sub) / 0.2) !important;
+  border-color: rgb(var(--color-sub) / 0.42) !important;
+  background-color: rgb(var(--color-sub) / 0.12) !important;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.2),
+    0 1px 3px rgb(2 6 23 / 0.55),
+    0 0 0 1px rgb(var(--color-sub) / 0.16);
 }
