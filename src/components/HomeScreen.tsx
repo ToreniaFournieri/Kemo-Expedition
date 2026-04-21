@@ -7290,6 +7290,12 @@ function ExpeditionTab({
           }
           return Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100);
         })();
+        const normalizedProgressPercent = Number.isFinite(progressPercent)
+          ? Math.max(0, Math.min(100, progressPercent))
+          : 0;
+        const visualProgressPercent = afkRecoveryProgressPercent !== null && normalizedProgressPercent <= 0
+          ? 1
+          : normalizedProgressPercent;
         // SpecRef: 8.3 | UI_EXPEDITION | Sub progress bar
         const subProgressPercent = (() => {
           if (cycle.state !== 'sell' && cycle.state !== 'explore') return null;
@@ -7481,7 +7487,7 @@ function ExpeditionTab({
               <span className={`mt-0.5 block relative h-9 min-w-0 rounded-md overflow-hidden text-[11px] shadow-[0_2px_6px_rgb(15_23_42/0.18),inset_0_1px_0_rgb(255_255_255/0.42)] ${isDarkModeEnabled ? 'bg-slate-900/28' : 'bg-white/45'}`}>
                 <span
                   className={`absolute inset-y-0 left-0 bg-sub/20 ${cycle.state === 'explore' ? '' : 'transition-[width] duration-200'}`}
-                  style={{ width: `${progressPercent}%` }}
+                  style={{ width: `${visualProgressPercent}%` }}
                 />
                 <span className="relative z-10 flex h-full items-center justify-center px-1.5 text-center text-black leading-tight">
                   <span className="w-full overflow-hidden break-words text-pretty leading-tight"

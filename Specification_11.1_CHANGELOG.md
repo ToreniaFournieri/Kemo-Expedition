@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 32 | 2026/4/21 | Fix AFK recovery (復帰中) main progress bar rendering after page refresh by normalizing invalid percentages and enforcing a minimal visible fill during resumed AFK catch-up. |
 | 0.6.1 | 31 | 2026/4/21 | Prevent AFK catch-up reward toast flood (Spec 8.1.1): suppress item-drop notifications during AFK and for the immediate post-AFK settle pass, while keeping AFK-end summary notification behavior. |
 | 0.6.1 | 30 | 2026/4/21 | Improve Base > Inventory item-card readability in dark mode by adding visible card borders (`border border-gray-200`) to owned/equipped/jewel list entries so each row is clearly distinguishable. |
 | 0.6.1 | 29 | 2026/4/21 | Improve Party tab dark-mode section separation: add visible panel borders to the character status pane and equipment pane so each block boundary is easier to recognize. |
