@@ -7267,15 +7267,18 @@ function ExpeditionTab({
           };
         })();
 
-        const progressPercent = afkRecoveryProgressPercent ?? (cycle.state === 'idle'
-          ? 100
-          : cycle.state === 'rest'
-          ? hpPercent
-          : cycle.state === 'explore'
-          ? (Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, displayedEntries.length) / EXPLORING_PROGRESS_TOTAL_STEPS) * 100
-          : sellProgressState !== null
-          ? sellProgressState.percent
-          : Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100));
+        const progressPercent = afkRecoveryProgressPercent ?? (() => {
+          // SpecRef: 5.1 | PROGRESS | Step Progress behavior by state
+          if (cycle.state === 'idle') return 100;
+          if (cycle.state === 'reactivate') return 100;
+          if (cycle.state === 'explore') {
+            return (Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, displayedEntries.length) / EXPLORING_PROGRESS_TOTAL_STEPS) * 100;
+          }
+          if (sellProgressState !== null) {
+            return sellProgressState.percent;
+          }
+          return Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100);
+        })();
         const progressLabel = (() => {
           if (afkRecoveryProgressPercent !== null) return getPartyCycleStateLabel('reactivate');
           const stateLabel = getPartyCycleStateLabel(cycle.state);
