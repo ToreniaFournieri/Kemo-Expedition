@@ -35,6 +35,12 @@ PT1 HP (HP bar, blue) `x.expedition`.name       outcome `condition`.label ▼
     - Progress fill: Sub color with 40% opacity (α = 0.4)
     - Background: Transparent
 
+- **"出撃" / "神魔戦" Buttons:**
+  - State: Disabled (grayed out) when the action is not available.
+  - Disable conditions:
+    - Party HP = 0
+    - Party is in `state.explore`
+
 ```
 ( ####### ) PT1 ルピニアンの断崖   踏破  好調▼
 ( ##   ## ) ボス撃破 でヴァルンの樹林帯 開放
