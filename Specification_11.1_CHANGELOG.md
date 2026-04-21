@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 17 | 2026/4/21 | Update runtime party state progress bar behavior by state: keep continuous filling for `rest/feast/sound_sleep/nap_sleep/outfit/pray/move/return`, keep step-based jumps for `sell` (auto-sell item step) and `explore` (room step), and stop using HP-ratio-based fill during `state.rest` so the bar represents the active Step duration. |
 | 0.6.1 | 16 | 2026/4/21 | Remove runtime header `Step Progress` display from the fixed header UI, including the moving pill/track rendering and related progress-timer logic, per updated UI foundations requirement. |
 | 0.6.1 | 15 | 2026/4/20 | Update runtime header Step Progress display (Spec 8.1.2) to a moving pill-shaped indicator over a transparent full-width track; indicator uses sub color at 40% opacity and continuously travels left-to-right in sync with debug-scaled Step progression timing. |
 | 0.6.1 | 14 | 2026/4/20 | Update runtime header Step Progress display (Spec 8.1.2) from paw-slot indicator to a full-width horizontal progress bar with transparent track and sub-color fill at 40% opacity, synchronized to Step duration with existing debug time-scale behavior. |
