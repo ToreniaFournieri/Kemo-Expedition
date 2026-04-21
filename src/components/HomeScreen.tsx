@@ -7492,7 +7492,9 @@ function ExpeditionTab({
                   style={{ width: `${subProgressPercent}%` }}
                 />
               </div>
-            ) : null}
+            ) : (
+              <div className="mb-1 h-1 w-full" aria-hidden="true" />
+            )}
 
             {isLogExpanded && (
               <div className="space-y-2 mb-2">
