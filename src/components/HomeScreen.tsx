@@ -401,6 +401,12 @@ interface PartyCycleRuntime {
   skipSleepThisCycle?: boolean;
 }
 
+interface AfkRuntimeSnapshot {
+  state: PartyCycleState;
+  completedSteps: number;
+  totalSteps: number;
+}
+
 function rollPercentInclusive(min: number, max: number): number {
   return min + Math.random() * (max - min + Number.EPSILON);
 }
@@ -415,6 +421,14 @@ const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.exercise', 'q.healing', 'q.AFK']
 const AFK_RUNTIME_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition-afk-runtime');
 const AFK_MAX_ELAPSED_MS = 1800 * 60 * 1000;
 const REDUCER_CATCHUP_THRESHOLD_MS = 15000;
+
+// SpecRef: 5.1.1 | Party State Machine | AFK → Online Transition Handling
+function getStateStepCountFromRuntime(state: PartyCycleState, runtime: PartyCycleRuntime, party: Party): number {
+  if (state === 'sell') return Math.max(1, party.lastExpeditionLog?.autoSellCount ?? 1);
+  if (state === 'explore') return Math.max(1, party.lastExpeditionLog?.entries.length ?? EXPLORING_PROGRESS_TOTAL_STEPS);
+  const nominalStepDurationMs = Math.max(1, BASE_STEP_DURATION_MS);
+  return Math.max(1, Math.round(runtime.durationMs / nominalStepDurationMs));
+}
 
 function getElapsedWholeSeconds(carriedMs: number, elapsedMs: number): { gainedSeconds: number; remainderMs: number } {
   const totalMs = Math.max(0, carriedMs + elapsedMs);
@@ -2562,6 +2576,7 @@ export function HomeScreen({
   const previousPendingAfkMsRef = useRef(0);
   const justCompletedAfkRecoveryRef = useRef(false);
   const shouldRebuildPartyCyclesAfterAfkRef = useRef(false);
+  const afkRuntimeSnapshotRef = useRef<Record<number, AfkRuntimeSnapshot>>({});
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -3540,21 +3555,46 @@ export function HomeScreen({
       const autoRepeatEnabled = autoRepeatEnabledRef.current;
       const approxCycleDurationMs = Math.max(1, Math.ceil(BASE_STEP_DURATION_MS * APPROX_CYCLE_STEP_COUNT * getTimeSpeedScale(debugSettings)));
       const remainderMs = afkRecoveryTotalMsRef.current % approxCycleDurationMs;
+      const runtimeSnapshots = afkRuntimeSnapshotRef.current;
       setPartyCycles(() => {
         const next: Record<number, PartyCycleRuntime> = {};
         latestPartiesRef.current.forEach((party, partyIndex) => {
           const { partyStats } = computePartyStats(party);
           const needsRest = party.currentHp < partyStats.hp;
-          const nextState: PartyCycleState = autoRepeatEnabled ? 'move' : (needsRest ? 'rest' : 'idle');
+          const fallbackState: PartyCycleState = autoRepeatEnabled ? 'move' : (needsRest ? 'rest' : 'idle');
+          const snapshot = runtimeSnapshots[partyIndex];
+          const nextState: PartyCycleState = snapshot?.state ?? fallbackState;
+          const fallbackDurationMs =
+            nextState === 'move'
+              ? getPartyTravelDurationMs(party, 'move')
+              : nextState === 'return'
+                ? getPartyTravelDurationMs(party, 'return')
+                : nextState === 'explore'
+                  ? getExplorationDurationMs(
+                    party.lastExpeditionLog?.entries.length,
+                    getPartyStateDurationMultiplier(party, 'explore'),
+                    getTimeSpeedScale(debugSettings),
+                  )
+                  : nextState === 'idle' || nextState === 'reactivate'
+                    ? 1000
+                    : getStateDurationMs(party, nextState as 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray');
+          const totalSteps = Math.max(1, snapshot?.totalSteps ?? getStateStepCountFromRuntime(nextState, {
+            state: nextState,
+            stateStartedAt: now,
+            durationMs: fallbackDurationMs,
+          }, party));
+          const completedSteps = Math.min(totalSteps, Math.max(0, snapshot?.completedSteps ?? 0));
+          const continuedCompletedSteps = Math.min(
+            totalSteps,
+            completedSteps + Math.floor((remainderMs / Math.max(1, approxCycleDurationMs)) * totalSteps),
+          );
+          const stateStepDurationMs = Math.max(1, Math.floor(fallbackDurationMs / totalSteps));
           next[partyIndex] = {
             state: nextState,
-            stateStartedAt: now - remainderMs,
-            durationMs:
-              nextState === 'move'
-                ? getPartyTravelDurationMs(party, 'move')
-                : nextState === 'rest'
-                  ? getStateDurationMs(party, 'rest')
-                  : 1000,
+            // SpecRef: 5.1.1 | Party State Machine | Step Continuity Rule
+            // Keep AFK-completed discrete Step count and resume online from the same Step progress ratio.
+            stateStartedAt: now - (continuedCompletedSteps * stateStepDurationMs),
+            durationMs: fallbackDurationMs,
             isCurrentExpeditionGodsBattle: false,
             skipFeastThisCycle: false,
             skipSleepThisCycle: false,
@@ -3563,6 +3603,7 @@ export function HomeScreen({
         return next;
       });
       shouldRebuildPartyCyclesAfterAfkRef.current = false;
+      afkRuntimeSnapshotRef.current = {};
     }
 
     afkSimulationAnchorRef.current = null;
@@ -3648,6 +3689,22 @@ export function HomeScreen({
       if (pendingAfkMsRef.current <= 0) {
         afkSummaryBaselineRef.current = parties.map((party) => ({ ...party.expeditionStats }));
         shouldShowAfkSummaryRef.current = true;
+        const runtimeSnapshots: Record<number, AfkRuntimeSnapshot> = {};
+        const snapshotNow = now;
+        parties.forEach((party, partyIndex) => {
+          const runtime = partyCyclesRef.current[partyIndex];
+          if (!runtime) return;
+          const elapsedRuntimeMs = Math.max(0, snapshotNow - runtime.stateStartedAt);
+          const totalSteps = getStateStepCountFromRuntime(runtime.state, runtime, party);
+          const stepDurationMs = Math.max(1, runtime.durationMs / totalSteps);
+          const completedSteps = Math.min(totalSteps, Math.floor(elapsedRuntimeMs / stepDurationMs));
+          runtimeSnapshots[partyIndex] = {
+            state: runtime.state,
+            completedSteps,
+            totalSteps,
+          };
+        });
+        afkRuntimeSnapshotRef.current = runtimeSnapshots;
       }
       afkSimulationAnchorRef.current = now;
       setPendingAfkMs((prev) => {
