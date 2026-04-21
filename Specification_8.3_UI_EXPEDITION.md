@@ -24,7 +24,9 @@ PT1 HP (HP bar, blue) `x.expedition`.name       outcome `condition`.label ▼
 
 
 - **Sub progress bar:**
-  - If state is `state.sell` or `state.explore`, shows Sub progress bar. 
+  - Visibility:
+    - Displayed only when `state` is `state.sell` or `state.explore`.
+    - For all other states, render an empty placeholder to preserve layout height.
   - Represents elapsed time within the current `Step`.
   - Fills **continuously** from 0% → 100% during a single `Step` (e.g., 15 seconds).
   - **Synchronization:**
