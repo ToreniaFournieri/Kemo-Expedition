@@ -2558,8 +2558,8 @@ export function executeBattle(
   let consumedEnemyShock = false;
   const consumedCharacterShockIds = new Set<number>();
   const activeMagicSealQueue = createMagicSealQueue(party, characterStats, enemy, environment.terrainEffect);
-  let pendingEnemyHowlEffect: PendingHowlEffect | null = null;
-  let pendingPartyHowlEffect: PendingHowlEffect | null = null;
+  let pendingEnemyHowlEffects: PendingHowlEffect[] = [];
+  let pendingPartyHowlEffects: PendingHowlEffect[] = [];
   let enemyTemporaryEvasionBonus = 0;
   let enemyTemporaryAccuracyBonus = 0;
   const temporaryAccuracyBonusByCharacterId = new Map<number, number>();
@@ -2588,14 +2588,18 @@ export function executeBattle(
   const consumeMagicSeal = (): boolean => activeMagicSealQueue.shift() !== undefined;
 
   const consumePendingEnemyHowlEffect = (): PendingHowlEffect | null => {
-    const effect = pendingEnemyHowlEffect;
-    pendingEnemyHowlEffect = null;
+    const effect = pendingEnemyHowlEffects.length > 0
+      ? pendingEnemyHowlEffects[pendingEnemyHowlEffects.length - 1]
+      : null;
+    pendingEnemyHowlEffects = [];
     return effect;
   };
 
   const consumePendingPartyHowlEffect = (): PendingHowlEffect | null => {
-    const effect = pendingPartyHowlEffect;
-    pendingPartyHowlEffect = null;
+    const effect = pendingPartyHowlEffects.length > 0
+      ? pendingPartyHowlEffects[pendingPartyHowlEffects.length - 1]
+      : null;
+    pendingPartyHowlEffects = [];
     return effect;
   };
 
@@ -3367,6 +3371,9 @@ export function executeBattle(
       * counterNoAMultiplier
       * getTerrainNoAAmplifier(phase, environment.terrainEffect, enemy.abilities)
     );
+    if (attempts <= 0) {
+      return;
+    }
     let hits = 0;
     for (let i = 1; i <= attempts; i++) {
       const didHit = hitDetection(1.0, enemy.accuracyBonus + enemyPhaseAccuracyBonus, targetCharStats.evasionBonus + (phase === 'close' ? (temporaryEvasionBonusByCharacterId.get(targetCharStats.characterId) ?? 0) : 0), i, phase, getDeflectionLevel(targetCharStats), getEnemyFocusLevel(enemy), environment.terrainEffect, 0, hasAbility(enemy.abilities, 'true_sight'), hasAbility(enemy.abilities, 'domain_breaker'));
@@ -3793,11 +3800,11 @@ export function executeBattle(
 
       const enemyHowlLevel = getEnemyAbilityLevel(enemy, 'howl');
       if (enemyHowlLevel > 0) {
-        pendingEnemyHowlEffect = {
+        pendingEnemyHowlEffects = [{
           multiplier: getHowlNoAMultiplier(enemyHowlLevel),
           ownerName: enemy.name,
           note: getHowlNote(enemyHowlLevel),
-        };
+        }];
       }
 
       const partyHowlEntries = characterStats
@@ -3820,12 +3827,12 @@ export function executeBattle(
       }
 
       for (const entry of partyHowlEntries) {
-        pendingPartyHowlEffect = {
+        pendingPartyHowlEffects.push({
           multiplier: getHowlNoAMultiplier(entry.level),
           ownerName: entry.ownerName,
           note: getHowlNote(entry.level),
           characterId: entry.stats.characterId,
-        };
+        });
         log.push({
           phase,
           initiativeRoll: 2,
@@ -4401,7 +4408,6 @@ export function executeBattle(
 
         if (turn.kind === 'enemy') {
           enemyHasMovedInPhase = true;
-          enemyHasActedInBattle = true;
 
         if (enemyIncapacitated) {
           enemyIncapacitated = false;
@@ -4416,7 +4422,9 @@ export function executeBattle(
 
         const baseNoA = getEnemyNoA(phase, enemy);
         const enemyPhaseAccuracyBonus = phase === 'close' ? enemyTemporaryAccuracyBonus : 0;
-        const howlEffect = baseNoA > 0 ? consumePendingPartyHowlEffect() : null;
+        // SpecRef: 6.1.3.1 | Actor action | a.howl
+        // Acting always consumes opponent active howl; if present, apply to this action's f.NoA.
+        const howlEffect = consumePendingPartyHowlEffect();
         const noA = Math.ceil(
           baseNoA
           * (howlEffect?.multiplier ?? 1.0)
@@ -5034,6 +5042,7 @@ export function executeBattle(
           }
         };
 
+        enemyHasActedInBattle = true;
         if (firstActorInBattle === null) {
           firstActorInBattle = 'enemy';
         }
@@ -5103,9 +5112,6 @@ export function executeBattle(
         const char = party.characters.find(c => c.id === cs.characterId);
         if (!char) continue;
 
-      movedCharacterIds.add(cs.characterId);
-      characterActedInBattleIds.add(cs.characterId);
-
       if (incapacitatedCharacterIds.has(cs.characterId)) {
         incapacitatedCharacterIds.delete(cs.characterId);
         log.push({
@@ -5118,8 +5124,9 @@ export function executeBattle(
         continue;
       }
 
-      const baseNoA = getCharacterNoAForPhase(phase, cs);
-      const howlEffect = baseNoA > 0 ? consumePendingEnemyHowlEffect() : null;
+      // SpecRef: 6.1.3.1 | Actor action | a.howl
+      // Acting always consumes opponent active howl; if present, apply to this action's f.NoA.
+      const howlEffect = consumePendingEnemyHowlEffect();
       if (hasNoOffense(cs)) continue;
 
       const characterPhaseAccuracyBonus = phase === 'close' ? (temporaryAccuracyBonusByCharacterId.get(cs.characterId) ?? 0) : 0;
@@ -5553,6 +5560,8 @@ export function executeBattle(
         return result;
       };
 
+        movedCharacterIds.add(cs.characterId);
+        characterActedInBattleIds.add(cs.characterId);
         if (firstActorInBattle === null) {
           firstActorInBattle = cs.characterId;
         }

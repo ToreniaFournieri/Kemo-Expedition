@@ -22,11 +22,25 @@ PT1 HP (HP bar, blue) `x.expedition`.name       outcome `condition`.label ▼
 
 - "###" part: HP donuts bar, sub-color
 
+
+- **Sub progress bar:**
+  - Visibility:
+    - Displayed only when `state` is `state.sell` or `state.explore`.
+    - For all other states, render an empty placeholder to preserve layout height.
+  - Represents elapsed time within the current `Step`.
+  - Fills **continuously** from 0% → 100% during a single `Step` (e.g., 15 seconds).
+  - **Synchronization:**
+    - The mini progress bar is strictly synchronized with real-time `Step` duration (including debug time scaling).
+  - Style:
+    - Progress fill: Sub color with 40% opacity (α = 0.4)
+    - Background: Transparent
+
 ```
 ( ####### ) PT1 ルピニアンの断崖   踏破  好調▼
 ( ##   ## ) ボス撃破 でヴァルンの樹林帯 開放
 ( ####### ) 📜 10回アイテム獲得を空振りする(10%, 1回, 残り4時間)
 移動中: flavor text (background: state progress bar)
+(Sub progress bar)
 
 ルピニアンの断崖(pull down list)  探索深度 全て 出撃
 難易度: (Slider) +10
@@ -42,6 +56,7 @@ PT2...
     - The image must scale to fit the full width of the pane. (not the screen width)
 - Background images for expedition pane:
   - The image is fixed so it stays in place when scrolling.
+  - Adding gray background color behind the image in dark mode. (No need to invert the image color)
   - If `x.exp_id` == 1, use: `public/background/Caninian-Plains.png`.
   - If `x.exp_id` == 2, use: `public/background/Lupinian-Taiga.png`.
   - If `x.exp_id` == 3, use: `public/background/Vulpinian-Ocean.png`.

@@ -21,41 +21,6 @@
   --glass-shadow: rgb(15 23 42 / 0.14);
 }
 
-.step-progress-shell {
-  position: relative;
-  z-index: 20;
-}
-
-.step-progress-track {
-  width: 100%;
-  max-width: 22rem;
-  overflow: visible;
-}
-
-.step-progress-lane {
-  display: grid;
-  align-items: center;
-}
-
-.step-progress-slot {
-  display: inline-flex;
-  justify-content: flex-start;
-  align-items: center;
-  min-height: 0.62rem;
-  line-height: 0.62rem;
-  overflow: visible;
-}
-
-.step-progress-paw {
-  display: inline-flex;
-  transform: rotate(90deg);
-  transform-origin: center;
-  font-size: 0.66rem;
-  position: relative;
-  top: 0.18rem;
-  z-index: 30;
-}
-
 .theme-luna {
   --color-sub: 194 136 50;
   --color-accent: 12 60 234;
@@ -102,7 +67,7 @@
   --color-heal-bar: 184 237 178;
   --color-hp-bar-empty: 209 213 219;
   --sub-theme-emoji-filter: brightness(0) saturate(100%) invert(56%) sepia(71%) saturate(445%) hue-rotate(108deg) brightness(95%) contrast(89%);
-  --accent-theme-emoji-filter: brightness(0) saturate(100%) invert(19%) sepia(87%) saturate(5198%) hue-rotate(354deg) brightness(98%) contrast(88%);
+  --accent-theme-emoji-filter: brightness(0) saturate(100%) invert(28%) sepia(74%) saturate(2140%) hue-rotate(356deg) brightness(90%) contrast(86%);
   --side-quest-icon-opacity: 0.9;
 }
 
@@ -412,6 +377,19 @@ body {
   transform: none;
 }
 
+.theme-dark .liquid-glass-segmented .ios-glass-button {
+  border-color: rgb(148 163 184 / 0.38);
+  background-color: rgb(30 41 59 / 0.44);
+  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.1), rgb(255 255 255 / 0));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.16),
+    0 6px 14px rgb(2 6 23 / 0.5);
+}
+
+.theme-dark .liquid-glass-segmented .ios-glass-button:hover {
+  background-color: rgb(30 41 59 / 0.58);
+}
+
 .liquid-glass-sortie-button {
   color: white;
   border-radius: 0.75rem;
@@ -431,6 +409,16 @@ body {
 .liquid-glass-sortie-button--accent {
   background-color: rgb(var(--color-accent) / 0.86);
   background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.4), rgb(255 255 255 / 0));
+}
+
+.theme-dark .liquid-glass-sortie-button--sub {
+  background-color: rgb(var(--color-sub) / 0.68);
+  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.24), rgb(255 255 255 / 0));
+}
+
+.theme-dark .liquid-glass-sortie-button--accent {
+  background-color: rgb(var(--color-accent) / 0.62);
+  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.2), rgb(255 255 255 / 0));
 }
 
 .liquid-glass-sortie-button:hover {
@@ -544,5 +532,10 @@ body {
 }
 
 .theme-dark .liquid-glass-tab-active {
-  background-color: rgb(var(--color-sub) / 0.2) !important;
+  border-color: rgb(var(--color-sub) / 0.42) !important;
+  background-color: rgb(var(--color-sub) / 0.12) !important;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.2),
+    0 1px 3px rgb(2 6 23 / 0.55),
+    0 0 0 1px rgb(var(--color-sub) / 0.16);
 }

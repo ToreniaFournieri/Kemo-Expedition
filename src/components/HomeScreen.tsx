@@ -199,9 +199,6 @@ type PartyCycleState = 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' |
 const PARTY_EXPEDITION_SPLIT_MIN_WIDTH = 1024;
 const TAB_PANEL_WIDTH_PX = 500;
 const WIDE_MODE_DEFAULT_SECONDARY_TAB: WideModeSecondaryTab = 'party';
-const STEP_PROGRESS_TOTAL_TICKS_PER_STEP = 30;
-const STEP_PROGRESS_PAW_UNITS_PER_STEP = 15;
-const STEP_PROGRESS_TRACK_COLUMNS = STEP_PROGRESS_PAW_UNITS_PER_STEP + 1;
 // SpecRef: 8.1 | UI_FOUNDATIONS | Style: Compact, simple, iOS-like
 const IOS_GLASS_BUTTON_CLASS =
   'ios-glass-button rounded-xl';
@@ -2531,42 +2528,12 @@ export function HomeScreen({
   const [gameMode, setGameMode] = useState<GameMode>(() => getInitialGameMode());
   const [darkModeSetting, setDarkModeSetting] = useState<DarkModeSetting>(() => getInitialDarkModeSetting());
   const [isSystemDarkMode, setIsSystemDarkMode] = useState(false);
-  const [stepProgressNowMs, setStepProgressNowMs] = useState(() => Date.now());
   const [debugSettings, setDebugSettings] = useState<DebugSettings>(() => getDebugSettings());
   const [isAutoEquipmentEnabled] = useState<boolean>(() => getInitialAutoEquipmentEnabled());
   const tabScrollPositionsRef = useRef<Partial<Record<Tab, number>>>({});
   const tabContentRef = useRef<HTMLDivElement | null>(null);
   const primarySplitTabContentRef = useRef<HTMLDivElement | null>(null);
   const secondarySplitTabContentRef = useRef<HTMLDivElement | null>(null);
-
-  const stepProgressTick = useMemo(() => {
-    // SpecRef: 8.1.2 | Header | Step Progress Display
-    // Synchronize paw animation with real Step duration including debug time-scale effects.
-    const scaledStepDurationMs = Math.max(1, BASE_STEP_DURATION_MS * Math.max(0.001, getTimeSpeedScale(debugSettings)));
-    const normalizedStepProgress = (stepProgressNowMs % scaledStepDurationMs) / scaledStepDurationMs;
-    return Math.min(
-      STEP_PROGRESS_TOTAL_TICKS_PER_STEP - 1,
-      Math.floor(normalizedStepProgress * STEP_PROGRESS_TOTAL_TICKS_PER_STEP),
-    );
-  }, [debugSettings, stepProgressNowMs]);
-
-  useEffect(() => {
-    // SpecRef: 8.1.2 | Header | Step Progress Display
-    const scaledStepDurationMs = Math.max(1, BASE_STEP_DURATION_MS * Math.max(0.001, getTimeSpeedScale(debugSettings)));
-    const tickIntervalMs = Math.max(33, Math.floor(scaledStepDurationMs / STEP_PROGRESS_TOTAL_TICKS_PER_STEP));
-    const stepProgressTimer = window.setInterval(() => {
-      setStepProgressNowMs(Date.now());
-    }, tickIntervalMs);
-    return () => window.clearInterval(stepProgressTimer);
-  }, [debugSettings]);
-
-  const stepProgressPawSlots = useMemo(() => {
-    // SpecRef: 8.1.2 | Header | Step Progress Display
-    const leadPawSlot = Math.floor(stepProgressTick / 2);
-    const trailingPawSlot = Math.min(leadPawSlot + 1, STEP_PROGRESS_PAW_UNITS_PER_STEP);
-    if (stepProgressTick % 2 === 0) return [leadPawSlot];
-    return [leadPawSlot, trailingPawSlot];
-  }, [stepProgressTick]);
 
   const safeSelectedPartyIndex = useMemo(() => {
     if (state.parties.length === 0) return 0;
@@ -3441,6 +3408,9 @@ export function HomeScreen({
         checkpointAt?: number;
         autoRepeatEnabled?: boolean;
         partyCycles?: Record<number, PartyCycleRuntime>;
+        pendingAfkMs?: number;
+        afkRecoveryTotalMs?: number;
+        afkSimulationAnchor?: number | null;
       };
 
       const checkpointAt = typeof parsed.checkpointAt === 'number' ? parsed.checkpointAt : Date.now();
@@ -3448,6 +3418,19 @@ export function HomeScreen({
       lastCheckpointAtRef.current = Date.now() - elapsedMs;
 
       setAutoRepeatEnabled(parsed.autoRepeatEnabled !== false);
+      const restoredPendingAfkMs = typeof parsed.pendingAfkMs === 'number'
+        ? Math.max(0, Math.min(parsed.pendingAfkMs, AFK_MAX_ELAPSED_MS))
+        : 0;
+      if (restoredPendingAfkMs > 0) {
+        setPendingAfkMs(restoredPendingAfkMs);
+        afkRecoveryTotalMsRef.current = typeof parsed.afkRecoveryTotalMs === 'number'
+          ? Math.max(restoredPendingAfkMs, parsed.afkRecoveryTotalMs)
+          : restoredPendingAfkMs;
+        afkSimulationAnchorRef.current = typeof parsed.afkSimulationAnchor === 'number'
+          ? parsed.afkSimulationAnchor
+          : Date.now();
+        shouldRebuildPartyCyclesAfterAfkRef.current = true;
+      }
       if (parsed.partyCycles && typeof parsed.partyCycles === 'object') {
         const restoredCycles: Record<number, PartyCycleRuntime> = {};
         Object.entries(parsed.partyCycles).forEach(([key, value]) => {
@@ -3460,7 +3443,20 @@ export function HomeScreen({
             state: toPartyCycleState(runtime.state),
             stateStartedAt,
             durationMs: typeof runtime.durationMs === 'number' ? runtime.durationMs : 1000,
+            sortieSourceState:
+              runtime.sortieSourceState === 'rest'
+              || runtime.sortieSourceState === 'feast'
+              || runtime.sortieSourceState === 'sleep'
+              || runtime.sortieSourceState === 'return'
+                ? runtime.sortieSourceState
+                : undefined,
+            sortieEmbezzlementGold:
+              typeof runtime.sortieEmbezzlementGold === 'number'
+              ? Math.max(0, Math.floor(runtime.sortieEmbezzlementGold))
+              : undefined,
             isCurrentExpeditionGodsBattle: runtime.isCurrentExpeditionGodsBattle === true,
+            skipFeastThisCycle: runtime.skipFeastThisCycle === true,
+            skipSleepThisCycle: runtime.skipSleepThisCycle === true,
           };
         });
         setPartyCycles(restoredCycles);
@@ -3609,6 +3605,9 @@ export function HomeScreen({
           checkpointAt,
           autoRepeatEnabled: autoRepeatEnabledRef.current,
           partyCycles: partyCyclesRef.current,
+          pendingAfkMs: pendingAfkMsRef.current,
+          afkRecoveryTotalMs: afkRecoveryTotalMsRef.current,
+          afkSimulationAnchor: afkSimulationAnchorRef.current,
         })
       );
     } catch (error) {
@@ -3618,7 +3617,7 @@ export function HomeScreen({
 
   useEffect(() => {
     persistAfkRuntimeState();
-  }, [isAutoRepeatEnabled, partyCycles, persistAfkRuntimeState]);
+  }, [isAutoRepeatEnabled, partyCycles, pendingAfkMs, persistAfkRuntimeState]);
   const getScaledSideQuestSeconds = useCallback((durationMs: number) => {
     // SpecRef: 5.1.2 | Side Quest | Realtime Progress
     // Side-quest time progress follows debug-scaled runtime duration.
@@ -4590,21 +4589,6 @@ export function HomeScreen({
       <div className="fixed top-0 left-0 right-0 z-30">
         <div className="absolute inset-0 bg-white" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[500px] px-3 py-2.5 bg-white">
-          {/* SpecRef: 8.1.2 | Header | Step Progress Display */}
-          <div className="step-progress-shell mt-0 -mb-1 flex w-full leading-none" aria-label="Step Progress">
-            <div className="step-progress-track" aria-hidden="true">
-              <span className="step-progress-lane" style={{ gridTemplateColumns: `repeat(${STEP_PROGRESS_TRACK_COLUMNS}, minmax(0, 1fr))` }}>
-                {Array.from({ length: STEP_PROGRESS_TRACK_COLUMNS }).map((_, slotIndex) => (
-                  <span key={slotIndex} className="step-progress-slot">
-                    {stepProgressPawSlots.includes(slotIndex) ? (
-                      <span className="step-progress-paw">🐾</span>
-                    ) : null}
-                  </span>
-                ))}
-              </span>
-            </div>
-          </div>
-
           <div className="flex justify-between items-center gap-3 min-h-[44px]">
             <div>
               {/* SpecRef: 8.1.2 | Header | Game title label */}
@@ -7283,15 +7267,28 @@ function ExpeditionTab({
           };
         })();
 
-        const progressPercent = afkRecoveryProgressPercent ?? (cycle.state === 'idle'
-          ? 100
-          : cycle.state === 'rest'
-          ? hpPercent
-          : cycle.state === 'explore'
-          ? (Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, displayedEntries.length) / EXPLORING_PROGRESS_TOTAL_STEPS) * 100
-          : sellProgressState !== null
-          ? sellProgressState.percent
-          : Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100));
+        const progressPercent = afkRecoveryProgressPercent ?? (() => {
+          // SpecRef: 5.1 | PROGRESS | Step Progress behavior by state
+          if (cycle.state === 'idle') return 100;
+          if (cycle.state === 'reactivate') return 100;
+          if (cycle.state === 'explore') {
+            return (Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, displayedEntries.length) / EXPLORING_PROGRESS_TOTAL_STEPS) * 100;
+          }
+          if (sellProgressState !== null) {
+            return sellProgressState.percent;
+          }
+          return Math.min(100, (cycleElapsedMs / Math.max(1, cycle.durationMs)) * 100);
+        })();
+        // SpecRef: 8.3 | UI_EXPEDITION | Sub progress bar
+        const subProgressPercent = (() => {
+          if (cycle.state !== 'sell' && cycle.state !== 'explore') return null;
+          const totalStepCount = cycle.state === 'sell'
+            ? Math.max(1, party.lastExpeditionLog?.autoSellItems?.length || party.lastExpeditionLog?.autoSellCount || 1)
+            : Math.max(1, currentLog?.entries.length ?? 1);
+          const stepDurationMs = Math.max(1, cycle.durationMs / totalStepCount);
+          const elapsedWithinStepMs = cycleElapsedMs % stepDurationMs;
+          return Math.min(100, (elapsedWithinStepMs / stepDurationMs) * 100);
+        })();
         const progressLabel = (() => {
           if (afkRecoveryProgressPercent !== null) return getPartyCycleStateLabel('reactivate');
           const stateLabel = getPartyCycleStateLabel(cycle.state);
@@ -7371,8 +7368,9 @@ function ExpeditionTab({
         // SpecRef: 8.3 | UI_EXPEDITION | Background images for expedition pane
         const expeditionPaneBackgroundStyle = expeditionPaneBackgroundImage
           ? {
+            backgroundColor: isDarkModeEnabled ? 'rgb(15 23 42 / 0.40)' : undefined,
             backgroundImage: isDarkModeEnabled
-              ? 'linear-gradient(rgb(15 23 42 / 0.72), rgb(15 23 42 / 0.72))'
+              ? 'linear-gradient(rgb(2 6 23 / 0.36), rgb(2 6 23 / 0.36))'
               : 'linear-gradient(rgb(255 255 255 / 0.86), rgb(255 255 255 / 0.86))',
             backgroundSize: '100% 100%',
             backgroundPosition: 'top left',
@@ -7387,8 +7385,7 @@ function ExpeditionTab({
             backgroundPosition: 'center top',
             backgroundRepeat: 'no-repeat',
             backgroundAttachment: 'scroll',
-            filter: isDarkModeEnabled ? 'invert(1)' : undefined,
-            opacity: isDarkModeEnabled ? 0.28 : 0.22,
+            opacity: isDarkModeEnabled ? 0.34 : 0.22,
             transform: 'scale(1.01)',
             transformOrigin: 'top center',
           }
@@ -7487,6 +7484,17 @@ function ExpeditionTab({
                 </span>
               </span>
             </button>
+
+            {subProgressPercent !== null ? (
+              <div className="mb-1 h-1 w-full overflow-hidden rounded-full bg-transparent" aria-label="Sub progress bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(subProgressPercent)}>
+                <div
+                  className="h-full bg-sub/40"
+                  style={{ width: `${subProgressPercent}%` }}
+                />
+              </div>
+            ) : (
+              <div className="mb-1 h-1 w-full" aria-hidden="true" />
+            )}
 
             {isLogExpanded && (
               <div className="space-y-2 mb-2">

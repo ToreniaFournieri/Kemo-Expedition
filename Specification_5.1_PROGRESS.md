@@ -37,22 +37,25 @@
 | `state.return` | dungeon → home,If party.character.`a.peddler`, reduce its duration. (`a.peddler`1: 2/3  round up, `a.peddler`2: 3/5 round up) | rest | 
 | `state.reactivate` | Reactivating from AFK mode | - | - |
 
+- **`Step Progress` behavior by state:**
+  - The progress bar behavior depends on the active `state`.
+  - **Continuous:** The bar fills smoothly over the duration of the current `Step`.
+  - **Step-based:** The bar updates only when one `Step` is completed, without smooth in-between animation.
 
-
-| State | Japanese label | Duration |
-|-------|-------|-------|
-| `state.rest` | 休息中 | heal max(1500, +15% MaxHP) / 1 `Step` until full |
-| `state.sell` | 売却中 | 1 `Step` per `auto-sell` items |
-| `state.feast` | 宴会中 | 6 `Step` |
-| `state.sound_sleep` | 熟睡中 | 8 `Step` |
-| `state.nap_sleep` | 仮眠中 | 2 `Step` |
-| `state.outfit` | 身支度中 | 4 `Step` |
-| `state.pray` | 祈り中 | 2 `Step` |
-| `state.idle` | 待機中 | - |
-| `state.move` | 移動中 | (1 + `x.exp_tier` ) `Step` | 
-| `state.explore` | 探索中 | 1 `Step` per room (24 rooms in total)|
-| `state.return` | 帰還中 | (5 + `x.exp_tier`) `Step` |
-| `state.reactivate` | 復帰中 | - |
+| State | Japanese label | Duration | Progress bar behavior |
+|-------|-------|-------|-------|
+| `state.rest` | 休息中 | heal max(1500, +15% MaxHP) / 1 `Step` until full | Continuous |
+| `state.sell` | 売却中 | 1 `Step` per `auto-sell` items | Step-based |
+| `state.feast` | 宴会中 | 6 `Step` | Continuous |
+| `state.sound_sleep` | 熟睡中 | 8 `Step` | Continuous |
+| `state.nap_sleep` | 仮眠中 | 2 `Step` | Continuous |
+| `state.outfit` | 身支度中 | 4 `Step` | Continuous |
+| `state.pray` | 祈り中 | 2 `Step` | Continuous |
+| `state.idle` | 待機中 | - | - |
+| `state.move` | 移動中 | (1 + `x.exp_tier` ) `Step` | Continuous |
+| `state.explore` | 探索中 | 1 `Step` per room (24 rooms in total)| Step-based |
+| `state.return` | 帰還中 | (5 + `x.exp_tier`) `Step` | Continuous |
+| `state.reactivate` | 復帰中 | - | - |
 
 **Durration modifilier**
 - `state.explore`:
