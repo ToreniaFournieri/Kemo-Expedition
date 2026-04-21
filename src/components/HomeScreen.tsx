@@ -6131,10 +6131,10 @@ function PartyTab({
             </div>
             <div className="grid grid-cols-4 gap-1 mt-1 text-xs">
               {/* SpecRef: 8.2.2 | Party member details | Status */}
-              <div className="bg-white/60 border border-white/80 rounded p-1 text-center backdrop-blur-[1px]">体力:{stats.baseStats.vitality}</div>
-              <div className="bg-white/60 border border-white/80 rounded p-1 text-center backdrop-blur-[1px]">力:{stats.baseStats.strength}</div>
-              <div className="bg-white/60 border border-white/80 rounded p-1 text-center backdrop-blur-[1px]">知性:{stats.baseStats.intelligence}</div>
-              <div className="bg-white/60 border border-white/80 rounded p-1 text-center backdrop-blur-[1px]">精神:{stats.baseStats.mind}</div>
+              <div className="base-stat-chip">体力:{stats.baseStats.vitality}</div>
+              <div className="base-stat-chip">力:{stats.baseStats.strength}</div>
+              <div className="base-stat-chip">知性:{stats.baseStats.intelligence}</div>
+              <div className="base-stat-chip">精神:{stats.baseStats.mind}</div>
             </div>
             <div className="border-t border-gray-200 mt-2 pt-2 text-sm">
               {(() => {
@@ -8955,7 +8955,7 @@ function DiaryTab({
   if (diaryLogs.length === 0) {
     return (
       <div
-        className="space-y-3"
+        className="space-y-3 diary-tab-surface"
         onPointerDown={() => {
           if (activeEnemyBestiaryBubble) {
             setActiveEnemyBestiaryBubble(null);
@@ -8971,7 +8971,7 @@ function DiaryTab({
 
   return (
     <div
-      className="space-y-3"
+      className="space-y-3 diary-tab-surface"
       onPointerDown={() => {
         if (activeEnemyBestiaryBubble) {
           setActiveEnemyBestiaryBubble(null);
@@ -10201,6 +10201,7 @@ function SettingTab({
 
   return (
     <div
+      className="divine-bureau-tab"
       onPointerDown={() => {
         if (activeAbilityHelp) {
           setActiveAbilityHelp(null);

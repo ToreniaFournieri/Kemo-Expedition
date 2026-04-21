@@ -411,6 +411,11 @@ body {
   background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.4), rgb(255 255 255 / 0));
 }
 
+.theme-dark .liquid-glass-sortie-button {
+  color: rgb(226 232 240 / 0.92);
+  border-color: rgb(148 163 184 / 0.58);
+}
+
 .theme-dark .liquid-glass-sortie-button--sub {
   background-color: rgb(var(--color-sub) / 0.68);
   background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.24), rgb(255 255 255 / 0));
@@ -438,6 +443,37 @@ body {
   background-image: none;
   box-shadow: none;
   cursor: not-allowed;
+}
+
+.base-stat-chip {
+  background-color: rgb(255 255 255 / 0.6);
+  border: 1px solid rgb(255 255 255 / 0.8);
+  border-radius: 0.25rem;
+  padding: 0.25rem;
+  text-align: center;
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+}
+
+.theme-dark .base-stat-chip {
+  color: rgb(226 232 240 / 0.92);
+  background-color: rgb(15 23 42 / 0.48);
+  border-color: rgb(148 163 184 / 0.8);
+}
+
+.theme-dark .diary-tab-surface .bg-pane,
+.theme-dark .divine-bureau-tab .bg-pane {
+  border: 1px solid rgb(100 116 139 / 0.72);
+}
+
+.theme-dark .diary-tab-surface .border-gray-200,
+.theme-dark .divine-bureau-tab .border-gray-200 {
+  border-color: rgb(100 116 139 / 0.9);
+}
+
+.theme-dark .diary-tab-surface .border-gray-100,
+.theme-dark .divine-bureau-tab .border-gray-100 {
+  border-color: rgb(71 85 105 / 0.9);
 }
 
 .ios-glass-slider {
