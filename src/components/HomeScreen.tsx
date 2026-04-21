@@ -7366,7 +7366,11 @@ function ExpeditionTab({
           ? cycle.isCurrentExpeditionGodsBattle === true
           : isGodsBattleAvailable(party, party.selectedDungeonId);
         // SpecRef: 8.3 | UI_EXPEDITION | Gods Battle (神魔戦)
-        const isGodsBattleInProgress = cycle.state === 'explore' && cycle.isCurrentExpeditionGodsBattle === true;
+        // SpecRef: 8.3 | UI_EXPEDITION | Party Pane Visual State
+        const isGodsBattleInProgress = (
+          cycle.state === 'move'
+          || cycle.state === 'explore'
+        ) && cycle.isCurrentExpeditionGodsBattle === true;
         const nextGoalText = getNextGoalText(party, cycle.state);
         const sideQuestText = getSideQuestText(party, getTimeSpeedScale(debugSettings), emulatedNowMs);
         const displayedExpeditionStats = getDisplayedExpeditionStats(party, cycle.state);
