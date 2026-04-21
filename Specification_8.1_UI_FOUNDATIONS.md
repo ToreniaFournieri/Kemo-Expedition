@@ -129,26 +129,8 @@
   return "";  };
   - Use this specification's version
 
-**`Step Progress` Display**
-
-- **Visualization**  
-  - Represent the progression of a single `Step` using a **horizontal track with a moving indicator**.  
-  - A **small pill-shaped object** travels from the left edge to the right edge to indicate progress.
-
-- **Style**  
-  - **Indicator (pill):** Sub color (40% opacity, α = 0.4)  
-  - **Track (background):** Transparent  
-
-- **Behavior**  
-  - The indicator’s position reflects the current progress ratio (0% → left edge, 100% → right edge).  
-  - Movement is **continuous and synchronized with actual `Step` progression**, including all debug scaling effects.
-
-- **Width**  
-  - Track spans the full horizontal width of the container (left edge to right edge)
-
 
 ```
-`Step Progress`
 (Left-aligned)             (Right-aligned)
 冒ケモ🐾　v0.6.0(23) (αテスト)        200G
 ```
