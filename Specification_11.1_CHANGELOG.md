@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 41 | 2026/4/21 | Refine Party State Machine AFK→Online runtime handoff (Spec 5.1.1): snapshot discrete per-party Step progress at AFK start and resume with the same state + Step ratio after AFK catch-up, preserving deterministic mid-Step continuity without sub-step timing carryover. |
 | 0.6.1 | 40 | 2026/4/21 | Update runtime loading-message pool text to exactly match Spec 1.2.2 `LOADING_MESSAGE` entries while preserving random selection each time the loading screen is displayed. |
 | 0.6.1 | 39 | 2026/4/21 | Expedition UI: remove the HP=0 sortie warning text beneath the dungeon/depth selectors because the sortie button is already disabled in that state. |
 | 0.6.1 | 38 | 2026/4/21 | Update runtime `m.laika` color scheme per Spec 8.1 by changing the damage-taken color to `#ffebcd` (HP taken bar now uses RGB `255 235 205`). |
