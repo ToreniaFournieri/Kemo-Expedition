@@ -7359,10 +7359,14 @@ function ExpeditionTab({
         })();
         const hpForSortieCheck = cycle.state === 'explore' ? displayedHp : party.currentHp;
         const isColosseumSelected = selectedDungeon?.id === 99;
-        const isSortieDisabled = (!!selectedDungeonGate?.locked && !isColosseumSelected) || hpForSortieCheck <= 0 || partyStats.hp <= 0;
+        // SpecRef: 8.3 | UI_EXPEDITION | "出撃" / "神魔戦" Buttons
+        const isSortieDisabled = cycle.state === 'explore'
+          || ((!!selectedDungeonGate?.locked && !isColosseumSelected) || hpForSortieCheck <= 0 || partyStats.hp <= 0);
         const canTriggerGodsBattle = cycle.state === 'explore'
           ? cycle.isCurrentExpeditionGodsBattle === true
           : isGodsBattleAvailable(party, party.selectedDungeonId);
+        // SpecRef: 8.3 | UI_EXPEDITION | Gods Battle (神魔戦)
+        const isGodsBattleInProgress = cycle.state === 'explore' && cycle.isCurrentExpeditionGodsBattle === true;
         const nextGoalText = getNextGoalText(party, cycle.state);
         const sideQuestText = getSideQuestText(party, getTimeSpeedScale(debugSettings), emulatedNowMs);
         const displayedExpeditionStats = getDisplayedExpeditionStats(party, cycle.state);
@@ -7409,7 +7413,13 @@ function ExpeditionTab({
           : undefined;
 
         return (
-          <div key={partyIndex} className="bg-pane relative rounded-lg p-1.5 overflow-hidden shadow-md shadow-slate-900/15" style={expeditionPaneBackgroundStyle}>
+          <div
+            key={partyIndex}
+            className={`bg-pane relative rounded-lg p-1.5 overflow-hidden shadow-md shadow-slate-900/15 border ${
+              isGodsBattleInProgress ? 'border-sub/80 shadow-[0_0_0_1px_rgb(var(--color-sub)/0.65)]' : 'border-gray-200/80'
+            }`}
+            style={expeditionPaneBackgroundStyle}
+          >
             {expeditionPaneImageLayerStyle ? (
               <div aria-hidden className="pointer-events-none absolute inset-0" style={expeditionPaneImageLayerStyle} />
             ) : null}
