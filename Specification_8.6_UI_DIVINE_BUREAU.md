@@ -266,6 +266,7 @@ HP: 312                 タイプ: 神魔
 - Party unlock +1 PT unlock
   - if press the button, unlock one PT.
 - Debug store open OFF/ON
+  - If on, Ashen Route Vault work as debug store.
   - Default: OFF
 - Display `condition` OFF/ON
   - Default: OFF
