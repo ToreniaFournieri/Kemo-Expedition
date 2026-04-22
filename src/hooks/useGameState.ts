@@ -1153,12 +1153,12 @@ function createInitialParty() {
 
 function createSecondParty() {
   const defaultSetup = [
-    { race: 'procyonian', main: 'samurai', sub: 'guardian', pred: 'none', lineage: 'hidden_grail', name: 'パーシヴァル', isUnique: true },
-    { race: 'lupinian', main: 'sword-saint', sub: 'samurai', pred: 'none', lineage: 'almighty', name: 'ランスロット', isUnique: true },
-    { race: 'felidian', main: 'ranger', sub: 'striker', pred: 'amiable', lineage: 'abyssal_sea', name: 'ルドルフ' },
-    { race: 'murid', main: 'striker', sub: 'striker', pred: 'aggressive', lineage: 'firmament', name: 'コソネ' },
-    { race: 'caninian', main: 'ninja', sub: 'striker', pred: 'aggressive', lineage: 'frozen_forest', name: 'ルーファス' },
-    { race: 'vulpinian', main: 'wizard', sub: 'sage', pred: 'serene', lineage: 'utopia', name: 'アヤ' },
+    { race: 'vulpinian', main: 'duelist', sub: 'lord', pred: 'none', lineage: 'meddlesome_fox', name: 'レナード', isUnique: true },
+    { race: 'orcinian', main: 'samurai', sub: 'sword-saint', pred: 'none', lineage: 'rowdy_orca_girl', name: 'オルカ', isUnique: true },
+    { race: 'procyonian', main: 'ranger', sub: 'ranger', pred: 'nimble', lineage: 'frozen_forest', name: 'シマ' },
+    { race: 'cervin', main: 'wizard', sub: 'alchemist', pred: 'amiable', lineage: 'utopia', name: 'シーケルン' },
+    { race: 'felidian', main: 'alchemist', sub: 'wizard', pred: 'serene', lineage: 'machina', name: 'アルテミス' },
+    { race: 'lupinian', main: 'ninja', sub: 'wizard', pred: 'perceptive', lineage: 'windcross', name: 'ウォッシ' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
@@ -1177,64 +1177,6 @@ function createSecondParty() {
   const party: Party = {
     id: 2,
     name: 'PT2',
-    level: 1,
-    experience: 0,
-    defeatedBossExpeditions: {},
-    lootGateProgress: {},
-    lootGateStatus: {},
-    deity: createInitialDeity('God of Attrition'),
-    characters,
-    selectedDungeonId: 1,
-    expeditionDepthLimit: 'all',
-    expeditionDifficultyOffset: 0,
-    expeditionDifficultyOffsetByDungeon: {},
-    currentHp: 0,
-    pendingProfit: 0,
-    expeditionRewardsPending: false,
-    pendingUnlockState: null,
-    deityGold: 0,
-    lastExpeditionLog: null,
-    pendingDiaryLog: null,
-    diaryLogs: [],
-    hasUnreadDiary: false,
-    diarySettings: getDiarySettingsWithDefaults(undefined),
-    expeditionStats: getExpeditionStatsWithDefaults(null),
-    bags: initializeBags(),
-    sleepinessOfPartyBag: createSleepinessPartyBag(),
-    currentSleepiness: 0,
-    condition: 0,
-    sideQuest: null,
-  };
-
-  return initializePartyRuntimeState(party);
-}
-
-function createThirdParty() {
-  const defaultSetup = [
-    { race: 'vulpinian', main: 'duelist', sub: 'lord', pred: 'none', lineage: 'meddlesome_fox', name: 'レナード', isUnique: true },
-    { race: 'orcinian', main: 'samurai', sub: 'sword-saint', pred: 'none', lineage: 'rowdy_orca_girl', name: 'オルカ', isUnique: true },
-    { race: 'procyonian', main: 'ranger', sub: 'ranger', pred: 'nimble', lineage: 'frozen_forest', name: 'シマ' },
-    { race: 'cervin', main: 'wizard', sub: 'alchemist', pred: 'amiable', lineage: 'utopia', name: 'シーケルン' },
-    { race: 'felidian', main: 'alchemist', sub: 'wizard', pred: 'serene', lineage: 'machina', name: 'アルテミス' },
-    { race: 'lupinian', main: 'ninja', sub: 'wizard', pred: 'perceptive', lineage: 'windcross', name: 'ウォッシ' },
-  ];
-
-  const characters: Character[] = defaultSetup.map((setup, i) => ({
-    id: i + 201,
-    name: setup.name,
-    raceId: setup.race as RaceId,
-    mainClassId: setup.main as ClassId,
-    subClassId: setup.sub as ClassId,
-    predispositionId: setup.pred as PredispositionId,
-    lineageId: setup.lineage as LineageId,
-    isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
-    autoEquipmentMode: 2,
-    equipment: [],
-  }));
-
-  const party: Party = {
-    id: 3,
-    name: 'PT3',
     level: 1,
     experience: 0,
     defeatedBossExpeditions: {},
@@ -1267,7 +1209,7 @@ function createThirdParty() {
   return initializePartyRuntimeState(party);
 }
 
-function createFourthParty() {
+function createThirdParty() {
   const defaultSetup = [
     { race: 'ursan', main: 'guardian', sub: 'ranger', pred: 'evasive', lineage: 'firmament', name: 'グレン' },
     { race: 'caninian', main: 'lord', sub: 'ninja', pred: 'precise', lineage: 'firmament', name: 'ロス' },
@@ -1278,7 +1220,7 @@ function createFourthParty() {
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
-    id: i + 301,
+    id: i + 201,
     name: setup.name,
     raceId: setup.race as RaceId,
     mainClassId: setup.main as ClassId,
@@ -1291,8 +1233,8 @@ function createFourthParty() {
   }));
 
   const party: Party = {
-    id: 4,
-    name: 'PT4',
+    id: 3,
+    name: 'PT3',
     level: 1,
     experience: 0,
     defeatedBossExpeditions: {},
@@ -1325,7 +1267,7 @@ function createFourthParty() {
   return initializePartyRuntimeState(party);
 }
 
-function createFifthParty() {
+function createFourthParty() {
   const defaultSetup = [
     { race: 'ursan', main: 'lord', sub: 'ninja', pred: 'none', lineage: 'apostate', name: 'ミシュカ', isUnique: true },
     { race: 'avian', main: 'ninja', sub: 'ranger', pred: 'none', lineage: 'flamebound_grove', name: 'プチーツァ', isUnique: true },
@@ -1336,7 +1278,7 @@ function createFifthParty() {
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
-    id: i + 401,
+    id: i + 301,
     name: setup.name,
     raceId: setup.race as RaceId,
     mainClassId: setup.main as ClassId,
@@ -1349,8 +1291,8 @@ function createFifthParty() {
   }));
 
   const party: Party = {
-    id: 5,
-    name: 'PT5',
+    id: 4,
+    name: 'PT4',
     level: 1,
     experience: 0,
     defeatedBossExpeditions: {},
@@ -1383,10 +1325,68 @@ function createFifthParty() {
   return initializePartyRuntimeState(party);
 }
 
+function createFifthParty() {
+  const defaultSetup = [
+    { race: 'procyonian', main: 'samurai', sub: 'guardian', pred: 'none', lineage: 'hidden_grail', name: 'パーシヴァル', isUnique: true },
+    { race: 'lupinian', main: 'sword-saint', sub: 'samurai', pred: 'none', lineage: 'almighty', name: 'ランスロット', isUnique: true },
+    { race: 'felidian', main: 'wizard', sub: 'ranger', pred: 'amiable', lineage: 'abyssal_sea', name: 'ルドルフ' },
+    { race: 'murid', main: 'striker', sub: 'striker', pred: 'aggressive', lineage: 'firmament', name: 'コソネ' },
+    { race: 'caninian', main: 'ninja', sub: 'striker', pred: 'aggressive', lineage: 'frozen_forest', name: 'ルーファス' },
+    { race: 'vulpinian', main: 'wizard', sub: 'sage', pred: 'serene', lineage: 'utopia', name: 'アヤ' },
+  ];
+
+  const characters: Character[] = defaultSetup.map((setup, i) => ({
+    id: i + 401,
+    name: setup.name,
+    raceId: setup.race as RaceId,
+    mainClassId: setup.main as ClassId,
+    subClassId: setup.sub as ClassId,
+    predispositionId: setup.pred as PredispositionId,
+    lineageId: setup.lineage as LineageId,
+    isUnique: Boolean((setup as { isUnique?: boolean }).isUnique),
+    autoEquipmentMode: 2,
+    equipment: [],
+  }));
+
+  const party: Party = {
+    id: 5,
+    name: 'PT5',
+    level: 1,
+    experience: 0,
+    defeatedBossExpeditions: {},
+    lootGateProgress: {},
+    lootGateStatus: {},
+    deity: createInitialDeity('God of Resonance'),
+    characters,
+    selectedDungeonId: 1,
+    expeditionDepthLimit: 'all',
+    expeditionDifficultyOffset: 0,
+    expeditionDifficultyOffsetByDungeon: {},
+    currentHp: 0,
+    pendingProfit: 0,
+    expeditionRewardsPending: false,
+    pendingUnlockState: null,
+    deityGold: 0,
+    lastExpeditionLog: null,
+    pendingDiaryLog: null,
+    diaryLogs: [],
+    hasUnreadDiary: false,
+    diarySettings: getDiarySettingsWithDefaults(undefined),
+    expeditionStats: getExpeditionStatsWithDefaults(null),
+    bags: initializeBags(),
+    sleepinessOfPartyBag: createSleepinessPartyBag(),
+    currentSleepiness: 0,
+    condition: 0,
+    sideQuest: null,
+  };
+
+  return initializePartyRuntimeState(party);
+}
+
 function createSixthParty() {
   const defaultSetup = [
     { race: 'ursan', main: 'pilgrim', sub: 'wizard', pred: 'introspective', lineage: 'fragment', name: 'ドンガ' },
-    { race: 'caninian', main: 'wizard', sub: 'ranger', pred: 'inquisitive', lineage: 'abyssal_sea', name: 'ミィス' },
+    { race: 'caninian', main: 'samurai', sub: 'ranger', pred: 'inquisitive', lineage: 'abyssal_sea', name: 'ミィス' },
     { race: 'leporian', main: 'sword-saint', sub: 'ranger', pred: 'none', lineage: 'unexpected_prince(ss)', name: 'フィン', isUnique: true },
     { race: 'procyonian', main: 'alchemist', sub: 'alchemist', pred: 'inquisitive', lineage: 'adaptation', name: 'ケラ' },
     { race: 'cervin', main: 'sage', sub: 'wizard', pred: 'none', lineage: 'incarnation', name: 'マーレ', isUnique: true },
@@ -1414,7 +1414,7 @@ function createSixthParty() {
     defeatedBossExpeditions: {},
     lootGateProgress: {},
     lootGateStatus: {},
-    deity: createInitialDeity('God of Resonance'),
+    deity: createInitialDeity('Goddess of Precision'),
     characters,
     selectedDungeonId: 1,
     expeditionDepthLimit: 'all',
