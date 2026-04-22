@@ -480,8 +480,8 @@ Party.`d.HP` =
 
 | order | Name | Race | main class | sub class | lineage | predisposition | Unique |
 |------|------|------|------|------|------|------|------|
-| 1 | ドンガ | Ursan | `class.pilgrim` | `class.wizard` | `fragment` | `Introspective` | `false` |
-| 2 | ミィス | Caninian | `class.samurai` | `class.ranger` | `abyssal_sea` | `Inquisitive` | `false` |
+| 1 | ドンガ | Ursan | `class.pilgrim` | `class.samurai` | `fragment` | `Introspective` | `false` |
+| 2 | ミィス | Caninian | `class.samurai` | `class.sword-saint` | `abyssal_sea` | `Inquisitive` | `false` |
 | 3 | **フィン** | Leporian | `class.sword-saint` | `class.ranger` | **``unexpected_prince(ss)``** | `None` | **`true`** |
 | 4 | ケラ | Procyonian | `class.alchemist`| `class.alchemist` | `adaptation` | `Inquisitive` | `false` |
 | 5 | **マーレ** | Cervin | `class.sage` | `class.wizard` | **`incarnation`** | `None` | **`true`** |
