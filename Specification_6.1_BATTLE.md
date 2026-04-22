@@ -506,15 +506,15 @@ If `a.*` with phase = START:
   - If actor has `a.momentum`2, return 1.25 - (1 - (actor.current_HP / actor.max_HP)) x 0.4
     - Log: add "気勢+N%" to attack log
 - `f.ambush_amplifier`
-  - If actor has `a.ambush`, and opponent has not acted yet in this battle, return N.
+  - If actor has `a.ambush`, and (opponent has not acted yet in this battle) and (opponent doesn't have `a.anti-ambush`), return N.
   - Otherwise, return x1.0.
   - Log: add "待ち伏せ:xN" to the attack log.
 - `f.overwatch_amplifier`
-  - If actor has `a.overwatch`, and opponent and other party members have not acted yet in this battle, return N.
+  - If actor has `a.overwatch`, and (opponent and other party members have not acted yet in this battle) and (opponent doesn't have `a.anti-overwatch`), return N.
   - Otherwise, return x1.0.
   - Log: add "監視:xN" to the attack log.
 - `f.execution_amplifier`
-  - If actor has `a.execution`, and opponent.`d.HP` <= N, return M.
+  - If actor has `a.execution`, and (opponent.`d.HP` <= N) and (opponent doesn't have `a.execution-null`), return M.
   - Otherwise, return x1.0.
   - Log: add "エクセキューション:xM" to the attack log.
     
