@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 54 | 2026/4/22 | Align runtime PT1–PT6 initial predispositions to the requested tables in party initial conditions: セルフィン→`Introspective`, シーケルン→`Inquisitive`, ラビ→`Perceptive`, グレイ→`Introspective`, ルドルフ→`Exacting`, ルーファス→`Amicable`, ドンガ→`Stubborn`, ミィス→`Savvy`; deities/classes/lineages/unique flags unchanged. |
 | 0.6.1 | 53 | 2026/4/22 | Align runtime PT6 initial setup to requested condition under Goddess of Precision: ドンガ sub class updated to `class.samurai` and ミィス sub class updated to `class.sword-saint`; other PT6 members unchanged. |
 | 0.6.1 | 52 | 2026/4/22 | Align runtime PT4 initial setup to Spec 2.1.4.2: update ミシュカ sub class to `class.duelist` and プチーツァ sub class to `class.sword-saint` in unlocked PT4 default party data. |
 | 0.6.1 | 51 | 2026/4/22 | Expedition tab: reduce top/bottom padding in party panes by switching pane and inner container spacing from `p-1.5` to `px-1.5 py-1`, tightening vertical margins while preserving horizontal spacing. |
