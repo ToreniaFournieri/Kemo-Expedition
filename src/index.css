@@ -468,6 +468,11 @@ body {
   border: 1px solid rgb(100 116 139 / 0.72);
 }
 
+
+.theme-dark .expedition-party-pane.border-gray-200\/80 {
+  border-color: rgb(100 116 139 / 0.72);
+}
+
 .theme-dark .diary-tab-surface .border-gray-200,
 .theme-dark .divine-bureau-tab .border-gray-200 {
   border-color: rgb(100 116 139 / 0.9);
