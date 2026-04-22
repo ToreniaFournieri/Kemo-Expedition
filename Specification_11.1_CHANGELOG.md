@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 46 | 2026/4/22 | Tighten AFK emulation notification suppression in Expedition UI: clear active toast queue while AFK catch-up is running/settling, suppress reward + side-quest + shop purchase toasts during AFK emulation windows, and keep reward logs marked as notified to prevent post-AFK burst overlays on app reopen. |
 | 0.6.1 | 45 | 2026/4/22 | Implement runtime passive abilities `a.dryproof`, `a.vine-cutter`, `a.mana-ward`, and `a.defiance`: dry terrain now skips ice offense penalty for `a.dryproof`; vine-snare/crystal-zone/mana-burn self-damage now ignores actors with corresponding immunity (`a.vine-cutter`/`a.mana-ward`); suppression terrain now excludes targets that have `a.defiance`; and add ability ids/names/descriptions/glossary entries for UI/runtime integration. |
 | 0.6.1 | 44 | 2026/4/22 | Tone down the Diary HP damage-taken bar color in `theme-laika.theme-dark` to a more modest muted hue for improved visual balance. |
 | 0.6.1 | 43 | 2026/4/22 | Rename Base 8.4.3 debug shop presentation to Ashen Route Vault: update sub-tab label to `灰路の蔵`, change shop header to `カリエスの灰路の蔵`, and align related SpecRef titles to `Ashen Route Vault(灰路の蔵)` while keeping debug-purpose purchase behavior unchanged. |

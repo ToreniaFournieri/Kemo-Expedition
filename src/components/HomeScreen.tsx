@@ -3625,6 +3625,16 @@ export function HomeScreen({
     runAutoEquipment(undefined, undefined, { suppressNotifications: true });
   }, [pendingAfkMs, runAutoEquipment]);
 
+  const suppressNotificationsForAfkEmulation = pendingAfkMs > 0
+    || shouldShowAfkSummaryRef.current
+    || justCompletedAfkRecoveryRef.current;
+
+  useEffect(() => {
+    // SpecRef: 8.1.1 | Notification Logic & Display | notification while AFK mode
+    if (!suppressNotificationsForAfkEmulation) return;
+    onDismissAllNotifications();
+  }, [onDismissAllNotifications, suppressNotificationsForAfkEmulation]);
+
   const afkRecoveryProgressPercent = pendingAfkMs > 0
     ? Math.max(
         0,
@@ -4069,10 +4079,6 @@ export function HomeScreen({
   // Item gain notifications after selling phase
   useEffect(() => {
     // SpecRef: 8.1.1 | Notification Logic & Display | notification while AFK mode
-    const suppressRewardNotificationsForAfk = pendingAfkMs > 0
-      || shouldShowAfkSummaryRef.current
-      || justCompletedAfkRecoveryRef.current;
-
     state.parties.forEach((party, index) => {
       const previousLog = prevPartyLogsRef.current[index] ?? null;
       const previousLevel = prevPartyLevelsRef.current[index] ?? party.level;
@@ -4129,7 +4135,7 @@ export function HomeScreen({
       const justFinishedSelling = prevPartyCycleStateRef.current[index] === 'sell' && cycleState !== 'sell';
 
       if (hasRewardsToNotify && sellingFinished && canAnnounceGains && (hasNewLog || justFinishedSelling) && !isAlreadyNotified && currentLog) {
-        if (suppressRewardNotificationsForAfk) {
+        if (suppressNotificationsForAfkEmulation) {
           notifiedRewardLogRef.current[index] = currentLog;
           return;
         }
@@ -4158,18 +4164,16 @@ export function HomeScreen({
     prevPartyLevelsRef.current = state.parties.map((party) => party.level);
     prevPartyCycleStateRef.current = state.parties.map((_, index) => partyCycles[index]?.state ?? null);
     justCompletedAfkRecoveryRef.current = false;
-  }, [state.parties, partyCycles, actions, pendingAfkMs]);
+  }, [state.parties, partyCycles, actions, suppressNotificationsForAfkEmulation]);
 
   useEffect(() => {
-    const suppressSideQuestNotificationsForAfk = pendingAfkMs > 0 || shouldShowAfkSummaryRef.current;
-
     state.parties.forEach((party, index) => {
       const prevQuest = prevSideQuestRef.current[index] ?? null;
       const nextQuest = party.sideQuest ?? null;
-      if (!prevQuest && nextQuest && !suppressSideQuestNotificationsForAfk) {
+      if (!prevQuest && nextQuest && !suppressNotificationsForAfkEmulation) {
         actions.addNotification(getSideQuestAssignMessage(party.name, nextQuest.shortText));
       }
-      if (prevQuest && !nextQuest && !suppressSideQuestNotificationsForAfk) {
+      if (prevQuest && !nextQuest && !suppressNotificationsForAfkEmulation) {
         const latestDiary = party.diaryLogs?.[0];
         if (latestDiary?.triggers?.includes('sideQuest')) {
           const successMessage = getSideQuestSuccessMessage(party.name, latestDiary.sideQuestDetail);
@@ -4180,7 +4184,7 @@ export function HomeScreen({
       }
     });
     prevSideQuestRef.current = state.parties.map((party) => party.sideQuest);
-  }, [actions, state.parties, pendingAfkMs]);
+  }, [actions, state.parties, suppressNotificationsForAfkEmulation]);
 
   useEffect(() => {
     notifiedRewardLogRef.current = notifiedRewardLogRef.current.slice(0, state.parties.length);
@@ -4194,6 +4198,12 @@ export function HomeScreen({
   }, [state.parties.length]);
 
   useEffect(() => {
+    if (suppressNotificationsForAfkEmulation) {
+      prevShopPurchasesRef.current = state.global.shopPurchases;
+      prevInventoryRef.current = state.global.inventory;
+      return;
+    }
+
     const newlyPurchasedItemIds: number[] = [];
 
     for (const [stockKey, currentPurchases] of Object.entries(state.global.shopPurchases)) {
@@ -4238,7 +4248,7 @@ export function HomeScreen({
 
     prevShopPurchasesRef.current = state.global.shopPurchases;
     prevInventoryRef.current = state.global.inventory;
-  }, [state.global.shopPurchases, state.global.inventory, actions]);
+  }, [state.global.shopPurchases, state.global.inventory, actions, suppressNotificationsForAfkEmulation]);
 
   useEffect(() => {
     if (isPartyExpeditionSplitViewEnabled) {
