@@ -514,7 +514,7 @@ If `a.*` with phase = START:
   - Otherwise, return x1.0.
   - Log: add "監視:xN" to the attack log.
 - `f.execution_amplifier`
-  - If actor has `a.execution`, and (opponent.`d.HP` <= N) and (opponent doesn't have `a.execution-null`), return M.
+  - If actor has `a.execution`, and (opponent.current_HP / opponent.max_HP x 100 <= N) and (opponent doesn't have `a.execution-null`), return M.
   - Otherwise, return x1.0.
   - Log: add "エクセキューション:xM" to the attack log.
     
