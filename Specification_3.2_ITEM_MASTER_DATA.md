@@ -401,7 +401,7 @@
 | 8 | E | `Jinma` | `i.gauntlet`EC | 神魔の拳甲 |
 | 8 | E | `Jinma` | `i.katana`EC | 神魔の太刀 |
 | 8 | E | `Jinma` | `i.arrow`EC | 神魔の祀矢 |
-| 8 | E | `Jinma` | `i.grimoire`EC | 神魔祭文書 |
+| 8 | E | `Jinma` | `i.grimoire`EC | 反乱の手引 | `a.defiance` | 
 | 8 | E | `Jinma` | `i.shield`EC | 神魔の盾 |
 | 8 | E | `Jinma` | `i.robe`EC | 神魔の衣 |
 | 8 | E | `Cervin` | `i.sword`ED | 勇鹿の剣 |
