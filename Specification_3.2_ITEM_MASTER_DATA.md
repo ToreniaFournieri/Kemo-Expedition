@@ -84,8 +84,8 @@
 | 2 | U | none | `i.arrow`U | 羽矢 |
 | 2 | U | none | `i.bolt`U | 石ボルト |
 | 2 | U | none | `i.archery`U | 霜枝の弓 |
-| 2 | E | `Frost` | `i.arrow`EA | 氷霜の矢 |
-| 2 | E | `Frost` | `i.katana`EA | 氷霜の太刀 |
+| 2 | E | `Frost` | `i.arrow`EA | 氷霜の矢 | `e.ice+0.020`
+| 2 | E | `Frost` | `i.katana`EA | 氷霜の太刀 | `e.ice+0.020` |
 | 2 | E | `Frost` | `i.sword`EA | 白霜牙の剣 | `e.ice+0.020` |
 | 2 | E | `Frost` | `i.armor`EA | 凍狼の毛鎧 |
 | 2 | E | `Frost` | `i.shield`EA | 氷牙の防盾 | `r.ice_x2/3` |
