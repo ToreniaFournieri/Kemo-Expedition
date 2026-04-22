@@ -3860,7 +3860,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
 
     case 'BUY_DEBUG_STORE_ITEM': {
-      // SpecRef: 8.4.3 | Debug store(デバッグ店) | Item purchase (debug purpose only)
+      // SpecRef: 8.4.3 | Ashen Route Vault(灰路の蔵) | Item purchase (debug purpose only)
       const DEBUG_STORE_PRICE = 1;
       const DEBUG_STORE_STOCK_LIMIT = 99;
       const baseItem = getItemById(action.itemId);

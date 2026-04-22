@@ -8023,7 +8023,7 @@ function BaseTab({
   const baseSubTabs = [
     { id: 'shop' as const, label: 'お店', isAvailable: true },
     { id: 'inventory' as const, label: '所持品', isAvailable: true },
-    { id: 'debugStore' as const, label: 'デバッグ店', isAvailable: debugSettings.jewelShopOpen },
+    { id: 'debugStore' as const, label: '灰路の蔵', isAvailable: debugSettings.jewelShopOpen },
     { id: 'workshop' as const, label: '工房', isAvailable: false },
     { id: 'altar' as const, label: '祭壇', isAvailable: false },
   ];
@@ -8262,7 +8262,7 @@ function ShopTab({
   );
 }
 
-// SpecRef: 8.4.3 | Debug store(デバッグ店) | Debug store(デバッグ店)
+// SpecRef: 8.4.3 | Ashen Route Vault(灰路の蔵) | Item purchase (debug purpose only)
 function DebugStoreTab({
   gold,
   debugStorePurchases,
@@ -8274,7 +8274,7 @@ function DebugStoreTab({
 }) {
   const shopkeeperRace = RACES.find((race) => race.id === 'vulpinian') ?? RACES.find((race) => race.id === 'mustelid');
   if (!shopkeeperRace) {
-    return <div className="text-sm text-gray-600">デバッグ店の準備中です。</div>;
+    return <div className="text-sm text-gray-600">灰路の蔵の準備中です。</div>;
   }
 
   const DEBUG_STORE_PRICE = 1;
@@ -8306,7 +8306,7 @@ function DebugStoreTab({
   return (
     <div className="space-y-3">
       <div className="rounded border border-gray-200 bg-white p-3">
-        <div className="text-sm font-semibold text-sub">カリエスの狐彩堂</div>
+        <div className="text-sm font-semibold text-sub">カリエスの灰路の蔵</div>
         <div className="mt-2 grid grid-cols-[auto,1fr] items-start gap-3">
           <RaceIcon race={shopkeeperRace} className="h-10 w-10 self-center" />
           <p className="text-sm text-gray-700">
@@ -11276,7 +11276,7 @@ function SettingTab({
           <button type="button" onClick={() => onUpdateDebugSettings({ godsBattleCondition: debugSettings.godsBattleCondition === 'normal' ? 'simple1' : 'normal' })} className="w-full rounded border bg-white px-3 py-2 text-left">Gods Battle condition: {debugSettings.godsBattleCondition === 'simple1' ? 'Simple(1)' : 'Normal'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ godStrength: debugSettings.godStrength === 'normal' ? 'debug' : 'normal' })} className="w-full rounded border bg-white px-3 py-2 text-left">Gods Strength: {debugSettings.godStrength === 'debug' ? 'Very Weak' : 'Normal'}</button>
           <button type="button" disabled={partyCount >= 6} onClick={onPartyUnlock} className="w-full rounded border bg-white px-3 py-2 text-left disabled:opacity-50">Party unlock +1 PT unlock ({partyCount}/6)</button>
-          <button type="button" onClick={() => onUpdateDebugSettings({ jewelShopOpen: !debugSettings.jewelShopOpen })} className="w-full rounded border bg-white px-3 py-2 text-left">Debug store open: {debugSettings.jewelShopOpen ? 'ON' : 'OFF'}</button>
+          <button type="button" onClick={() => onUpdateDebugSettings({ jewelShopOpen: !debugSettings.jewelShopOpen })} className="w-full rounded border bg-white px-3 py-2 text-left">Ashen Route Vault open: {debugSettings.jewelShopOpen ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ displayCondition: !debugSettings.displayCondition })} className="w-full rounded border bg-white px-3 py-2 text-left">Display condition: {debugSettings.displayCondition ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ displayFlavorCondition: !debugSettings.displayFlavorCondition })} className="w-full rounded border bg-white px-3 py-2 text-left">Display flavor condition: {debugSettings.displayFlavorCondition ? 'ON' : 'OFF'}</button>
           <button type="button" onClick={() => onUpdateDebugSettings({ displayAfkDuration: !debugSettings.displayAfkDuration })} className="w-full rounded border bg-white px-3 py-2 text-left">Display AFK duration: {debugSettings.displayAfkDuration ? 'ON' : 'OFF'}</button>
