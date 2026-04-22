@@ -537,7 +537,7 @@ If `a.*` with phase = START:
 
 -  `f.elemental_offense_attribute_amplifier`
   - If `terrain.thunderstorm` and actor.`e.thunder`: x 3/2
-  - If `terrain.dry` and actor.`e.ice`: x 0.5
+  - If `terrain.dry` and actor.`e.ice` and (actor doesn't have `a.dryproof`): x 0.5
   - If `terrain.echo-domain` and actor.`e.X`: 1.0 + 0.1 x (1 - (number of X in this battle from both side))
     - Exception: If actor has `a.domain-breaker`, this effect is not applied. 
     - If result is > 1.0, 
