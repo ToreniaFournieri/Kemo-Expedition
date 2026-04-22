@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 47 | 2026/4/22 | Update runtime item-drop master/special-bonus mappings for requested entries: set `1|B|Caninian|i.swordBD` to `小刀` with `a.vine-cutter`, set `2|B|Lupinian|i.catalystBD` to `蒼き護符` with `a.mana-ward`, rename `4|E|Shadowfang|i.robeEA` to `影衣` with `a.dryproof`, and rename `8|E|Jinma|i.grimoireEC` to `反乱の手引` with `a.defiance`. |
 | 0.6.1 | 46 | 2026/4/22 | Tighten AFK emulation notification suppression in Expedition UI: clear active toast queue while AFK catch-up is running/settling, suppress reward + side-quest + shop purchase toasts during AFK emulation windows, and keep reward logs marked as notified to prevent post-AFK burst overlays on app reopen. |
 | 0.6.1 | 45 | 2026/4/22 | Implement runtime passive abilities `a.dryproof`, `a.vine-cutter`, `a.mana-ward`, and `a.defiance`: dry terrain now skips ice offense penalty for `a.dryproof`; vine-snare/crystal-zone/mana-burn self-damage now ignores actors with corresponding immunity (`a.vine-cutter`/`a.mana-ward`); suppression terrain now excludes targets that have `a.defiance`; and add ability ids/names/descriptions/glossary entries for UI/runtime integration. |
 | 0.6.1 | 44 | 2026/4/22 | Tone down the Diary HP damage-taken bar color in `theme-laika.theme-dark` to a more modest muted hue for improved visual balance. |
