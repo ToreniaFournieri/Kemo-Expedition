@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 51 | 2026/4/22 | Expedition tab: reduce top/bottom padding in party panes by switching pane and inner container spacing from `p-1.5` to `px-1.5 py-1`, tightening vertical margins while preserving horizontal spacing. |
 | 0.6.1 | 50 | 2026/4/22 | Update runtime party unlock progression (Spec 5.1.3.2) to the requested conditions: unlock PT2–PT6 on boss victories for `x.expedition` 3–7, and align locked-party unlock text to `ヴァルンの海洋` / `フェリディ砂漠` / `ウルサンの炎嶺` / `プロキオン巣穴` / `レポリアンの月宮`. |
 | 0.6.1 | 49 | 2026/4/22 | Align runtime PT2–PT6 initial setup in `createDefaultParties` to Spec 2.1.4.2: fix unlocked-party deity assignments (`PT2: God of Cunning`, `PT3: Goddess of Fertility`, `PT4: God of Fortification`, `PT5: God of Resonance`, `PT6: Goddess of Precision`), replace each unlocked party member lineup/order/unique flags/classes/lineages/predispositions to the requested tables, and correct PT6 ミィス main class to `class.samurai`. |
 | 0.6.1 | 48 | 2026/4/22 | Update runtime item master data for requested Spec 3.2 Frost elite rows: add `氷霜の矢` (`2|E|Frost|i.arrowEA`) and `氷霜の太刀` (`2|E|Frost|i.katanaEA`) to tier-2 elite item name pools and apply `e.ice+0.020` special-bonus mappings for both item names. |

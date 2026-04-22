@@ -7495,7 +7495,7 @@ function ExpeditionTab({
         return (
           <div
             key={partyIndex}
-            className={`bg-pane expedition-party-pane relative rounded-lg p-1.5 overflow-hidden shadow-md shadow-slate-900/15 border ${
+            className={`bg-pane expedition-party-pane relative rounded-lg px-1.5 py-1 overflow-hidden shadow-md shadow-slate-900/15 border ${
               isGodsBattleInProgress ? 'border-sub/80 shadow-[0_0_0_1px_rgb(var(--color-sub)/0.65)]' : 'border-gray-200/80'
             }`}
             style={expeditionPaneBackgroundStyle}
@@ -7503,7 +7503,7 @@ function ExpeditionTab({
             {expeditionPaneImageLayerStyle ? (
               <div aria-hidden className="pointer-events-none absolute inset-0" style={expeditionPaneImageLayerStyle} />
             ) : null}
-            <div className={`relative z-10 rounded-md p-1.5 text-gray-900 ${isDarkModeEnabled ? 'bg-slate-900/18' : 'bg-white/74'}`}>
+            <div className={`relative z-10 rounded-md px-1.5 py-1 text-gray-900 ${isDarkModeEnabled ? 'bg-slate-900/18' : 'bg-white/74'}`}>
             {/* SpecRef: 8.3 | UI_EXPEDITION | ### part: HP donuts bar, sub-color */}
             <button
               onClick={() => {
