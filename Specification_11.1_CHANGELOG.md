@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 53 | 2026/4/22 | Align runtime PT6 initial setup to requested condition under Goddess of Precision: ドンガ sub class updated to `class.samurai` and ミィス sub class updated to `class.sword-saint`; other PT6 members unchanged. |
 | 0.6.1 | 52 | 2026/4/22 | Align runtime PT4 initial setup to Spec 2.1.4.2: update ミシュカ sub class to `class.duelist` and プチーツァ sub class to `class.sword-saint` in unlocked PT4 default party data. |
 | 0.6.1 | 51 | 2026/4/22 | Expedition tab: reduce top/bottom padding in party panes by switching pane and inner container spacing from `p-1.5` to `px-1.5 py-1`, tightening vertical margins while preserving horizontal spacing. |
 | 0.6.1 | 50 | 2026/4/22 | Update runtime party unlock progression (Spec 5.1.3.2) to the requested conditions: unlock PT2–PT6 on boss victories for `x.expedition` 3–7, and align locked-party unlock text to `ヴァルンの海洋` / `フェリディ砂漠` / `ウルサンの炎嶺` / `プロキオン巣穴` / `レポリアンの月宮`. |
