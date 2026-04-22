@@ -168,11 +168,11 @@ function normalizeSideQuestType(type: string): string {
 }
 
 const PARTY_UNLOCK_BY_DUNGEON_ID: Record<number, number> = {
-  2: 2,
-  3: 3,
-  4: 4,
-  5: 5,
-  6: 6,
+  3: 2,
+  4: 3,
+  5: 4,
+  6: 5,
+  7: 6,
 };
 
 function getUnlockedPartySlotFromEntry(entry: ExpeditionLogEntry, dungeonId?: number): number | null {
