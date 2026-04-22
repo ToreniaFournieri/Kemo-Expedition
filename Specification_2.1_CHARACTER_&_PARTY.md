@@ -424,7 +424,7 @@ Party.`d.HP` =
 | 2 | ゴン | Vulpinian | `class.duelist` | `class.pilgrim` | `sandstorm` | `Aggressive` | `1104`, `1106` | `false` |
 | 3 | ロップ | Leporian | `class.ranger` | `class.ninja` | `abyssal_sea` | `Inquisitive` | `1107`, `1109` |  `false` |
 | 4 | ソウタ | Procyonian | `class.ninja`| `class.striker` | `firmament` | `Evasive` | `1107`, `1109` | `false` |
-| 5 | セルフィン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Amicable` | `1110`, `1112` | `false` |
+| 5 | セルフィン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Introspective` | `1110`, `1112` | `false` |
 | 6 | **ライカ** | Caninian | `class.sage` | `class.alchemist`| **`pioneer`** | `None` | `1110`, `1112`  | **`true`** |
 
 - **PT2** initial condition (when unlocked)
@@ -435,7 +435,7 @@ Party.`d.HP` =
 | 1 | **レナード** | Vulpinian | `class.duelist`| `class.lord` | **`meddlesome_fox`** | `None` | **`true`** |
 | 2 | **オルカ** | **Orcinian** | `class.samurai` | `class.sword-saint` | **`rowdy_orca_girl`** | `None` | **`true`** |
 | 1 | シマ | Procyonian | `class.ranger` | `class.ranger` | `frozen_forest` | `Nimble` | `false` |
-| 3 | シーケルン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Amicable` | `false` |
+| 3 | シーケルン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Inquisitive` | `false` |
 | 5 | アルテミス | Felidian | `class.alchemist` | `class.wizard` | `machina` | `Serenity` | `false` |
 | 6 | ウォッシ | Lupinian | `class.ninja` | `class.wizard`| `windcross` | `Perceptive` | `false` |
 
@@ -448,7 +448,7 @@ Party.`d.HP` =
 | 2 | ロス | Caninian | `class.lord` | `class.ninja` | `firmament` | `Exacting` | `false` |
 | 3 | **ノクス** | Murid | `class.ninja`| `class.ranger` | **`phantom_thief`** | `None` | **`true`** |
 | 4 | **ルナ** | Felidian | `class.sword-saint` | `class.ranger` | **`crescent_jade`** | `None` | **`true`** |
-| 5 | ラビ | Lupinian | `class.duelist` | `class.striker` | `frozen_forest` | `Amicable` | `false` |
+| 5 | ラビ | Lupinian | `class.duelist` | `class.striker` | `frozen_forest` | `Perceptive` | `false` |
 | 6 | フェン | Vulpinian | `class.sage` | `class.wizard`| `adaptation` | `Inquisitive` | `false` |
 
 - **PT4** initial condition (when unlocked)
@@ -460,7 +460,7 @@ Party.`d.HP` =
 | 2 | **プチーツァ** | **Avian** | `class.ninja` | `class.sword-saint` | **`flamebound_grove`** | `None` | **`true`** |
 | 3 | ファー | Leporian | `class.ranger` | `class.guardian` | `abyssal_sea` | `Exacting` | `false` |
 | 4 | ヴェリタス | Felidian | `class.striker`| `class.pilgrim` | `firmament` | `Devoted` | `false` |
-| 5 | グレイ | Lupinian | `class.wizard` | `class.sage` | `machina` | `Amicable` | `false` |
+| 5 | グレイ | Lupinian | `class.wizard` | `class.sage` | `machina` | `Introspective` | `false` |
 | 6 | セトラ | Cervin | `class.sage` | `class.wizard` | `utopia` | `Savvy` | `false` |
 
 - **PT5** initial condition (when unlocked)
@@ -470,9 +470,9 @@ Party.`d.HP` =
 |------|------|------|------|------|------|------|------|
 | 1 | **パーシヴァル** | Procyonian | `class.samurai` | `class.guardian` | **`hidden_grail`** | `None` | **`true`** |
 | 2 | **ランスロット** | Lupinian | `class.sword-saint` | `class.samurai` | **`almighty`** | `None` | **`true`** |
-| 3 | ルドルフ | Felidian | `class.wizard` | `class.ranger` | `abyssal_sea` | `Amicable` | `false` |
+| 3 | ルドルフ | Felidian | `class.wizard` | `class.ranger` | `abyssal_sea` | `Exacting` | `false` |
 | 4 | コソネ | Murid | `class.striker`| `class.striker` | `firmament` | `Aggressive` | `false` |
-| 5 | ルーファス | Caninian | `class.ninja` | `class.striker` | `frozen_forest` | `Aggressive` | `false` |
+| 5 | ルーファス | Caninian | `class.ninja` | `class.striker` | `frozen_forest` | `Amicable` | `false` |
 | 6 | アヤ | Vulpinian | `class.wizard` | `class.sage`| `utopia` | `Serenity` | `false` |
 
 - **PT6** initial condition (when unlocked)
@@ -480,8 +480,8 @@ Party.`d.HP` =
 
 | order | Name | Race | main class | sub class | lineage | predisposition | Unique |
 |------|------|------|------|------|------|------|------|
-| 1 | ドンガ | Ursan | `class.pilgrim` | `class.samurai` | `fragment` | `Introspective` | `false` |
-| 2 | ミィス | Caninian | `class.samurai` | `class.sword-saint` | `abyssal_sea` | `Inquisitive` | `false` |
+| 1 | ドンガ | Ursan | `class.pilgrim` | `class.samurai` | `fragment` | `Stubborn` | `false` |
+| 2 | ミィス | Caninian | `class.samurai` | `class.sword-saint` | `abyssal_sea` | `Savvy` | `false` |
 | 3 | **フィン** | Leporian | `class.sword-saint` | `class.ranger` | **``unexpected_prince(ss)``** | `None` | **`true`** |
 | 4 | ケラ | Procyonian | `class.alchemist`| `class.alchemist` | `adaptation` | `Inquisitive` | `false` |
 | 5 | **マーレ** | Cervin | `class.sage` | `class.wizard` | **`incarnation`** | `None` | **`true`** |
