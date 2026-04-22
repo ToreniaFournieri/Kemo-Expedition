@@ -53,7 +53,7 @@
 | 1 | E | `Insect_Swarm` | `i.bolt`EC | 甲殻片 |
 | 1 | E | `Insect_Swarm` | `i.sword`EC | 虫牙 |
 | 1 | E | `Insect_Swarm` | `i.armor`EC | 甲鎧 | `a.null-death-touch` |
-| 1 | B | `Caninian` | `i.sword`BD | 長剣 |
+| 1 | B | `Caninian` | `i.sword`BD | 小刀 | `a.vine-cutter` |
 | 1 | B | `Caninian` | `i.gauntlet`BD | 手甲 |
 | 1 | B | `Caninian` | `i.shield`BD | 霧払 | `a.true-sight` |
 | 1 | B | `Caninian` | `i.armor`BD | ライトアーマー |
@@ -105,7 +105,7 @@
 | 2 | B | `Lupinian` | `i.armor`BD | ファーストエイド | `a.first-aid`1  |
 | 2 | B | `Lupinian` | `i.arrow`BD | 狼毛の矢 |
 | 2 | B | `Lupinian` | `i.wand`BD | 蒼狼の杖 |
-| 2 | B | `Lupinian` | `i.catalyst`BD | 蒼狼核の触媒 |
+| 2 | B | `Lupinian` | `i.catalyst`BD | 蒼き護符 | `a.mana-ward` |
 | 2 | B | `Lupinian` | `i.bolt`BD | 狼爪ボルト |
 | 2 | B | `Lupinian` | `i.archery`BD | ルピニアン毛弓 |
 | 3 | C | none | `i.sword`C | 貝刃の短剣 |
@@ -187,7 +187,7 @@
 | 4 | E | `Shadowfang` | `i.bolt`EA | 影牙のボルト |
 | 4 | E | `Shadowfang` | `i.grimoire`EA | 影牙の秘本 |
 | 4 | E | `Shadowfang` | `i.katana`EA | 影牙の太刀 |
-| 4 | E | `Shadowfang` | `i.robe`EA | 影牙の法衣 |
+| 4 | E | `Shadowfang` | `i.robe`EA | 影衣 | `a.dryproof` |
 | 4 | E | `Shadowfang` | `i.shield`EA | 紅の防盾 | `r.fire_x2/3` |
 | 4 | E | `Felidian` | `i.bolt`EB | 砂猫のボルト |
 | 4 | E | `Felidian` | `i.arrow`EB | 猫牙矢 |
