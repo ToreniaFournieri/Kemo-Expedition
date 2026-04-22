@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 44 | 2026/4/22 | Tone down the Diary HP damage-taken bar color in `theme-laika.theme-dark` to a more modest muted hue for improved visual balance. |
 | 0.6.1 | 43 | 2026/4/22 | Rename Base 8.4.3 debug shop presentation to Ashen Route Vault: update sub-tab label to `灰路の蔵`, change shop header to `カリエスの灰路の蔵`, and align related SpecRef titles to `Ashen Route Vault(灰路の蔵)` while keeping debug-purpose purchase behavior unchanged. |
 | 0.6.1 | 42 | 2026/4/22 | Toned down dark-mode expedition party pane border color to a muted slate value aligned with other dark pane borders (matching status-pane style). |
 | 0.6.1 | 41 | 2026/4/21 | Refine Party State Machine AFK→Online runtime handoff (Spec 5.1.1): snapshot discrete per-party Step progress at AFK start and resume with the same state + Step ratio after AFK catch-up, preserving deterministic mid-Step continuity without sub-step timing carryover. |
