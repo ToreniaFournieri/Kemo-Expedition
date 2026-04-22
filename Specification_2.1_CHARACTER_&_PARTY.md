@@ -456,8 +456,8 @@ Party.`d.HP` =
 
 | order | Name | Race | main class | sub class | lineage | predisposition | Unique |
 |------|------|------|------|------|------|------|------|
-| 1 | **ミシュカ** | Ursan | `class.lord` | `class.ninja` | **`apostate`** | `None` | **`true`** |
-| 2 | **プチーツァ** | **Avian** | `class.ninja` | `class.ranger` | **`flamebound_grove`** | `None` | **`true`** |
+| 1 | **ミシュカ** | Ursan | `class.lord` | `class.duelist` | **`apostate`** | `None` | **`true`** |
+| 2 | **プチーツァ** | **Avian** | `class.ninja` | `class.sword-saint` | **`flamebound_grove`** | `None` | **`true`** |
 | 3 | ファー | Leporian | `class.ranger` | `class.guardian` | `abyssal_sea` | `Exacting` | `false` |
 | 4 | ヴェリタス | Felidian | `class.striker`| `class.pilgrim` | `firmament` | `Devoted` | `false` |
 | 5 | グレイ | Lupinian | `class.wizard` | `class.sage` | `machina` | `Amicable` | `false` |
