@@ -683,7 +683,8 @@ function getElementalOffenseAttributeAmplifier(
 ): number {
   if (!terrainEffect) return 1.0;
   if (terrainEffect === 'terrain.thunderstorm' && elementalOffense === 'thunder') return 1.5;
-  if (terrainEffect === 'terrain.dry' && elementalOffense === 'ice') return 0.5;
+  // SpecRef: 6.1.4.1 | Function of attack | a.dryproof
+  if (terrainEffect === 'terrain.dry' && elementalOffense === 'ice' && !hasAbility(actorAbilities, 'dryproof')) return 0.5;
   // SpecRef: 6.1.4.1 | Function of attack | a.domain-breaker
   if (terrainEffect === 'terrain.echo-domain' && elementalOffense !== 'none' && !hasAbility(actorAbilities, 'domain_breaker')) {
     return 1.0 + (0.1 * Math.max(0, echoDomainElementalUsageCount - 1));
@@ -2446,15 +2447,23 @@ export function executeBattle(
       }
     }
   } else if (environment.terrainEffect === 'terrain.transcendence' || environment.terrainEffect === 'terrain.suppression') {
-    const delta = environment.terrainEffect === 'terrain.transcendence' ? 1 : -1;
+    const isSuppression = environment.terrainEffect === 'terrain.suppression';
+    const delta = isSuppression ? -1 : 1;
 
     for (const stats of characterStats) {
+      // SpecRef: 6.1.1.1 | START phase | terrain.suppression
+      if (isSuppression && hasAbility(stats.abilities, 'defiance')) continue;
       for (const abilityId of TERRAIN_TIMED_OR_REACTIVE_ABILITY_IDS) {
         adjustCharacterAbilityLevel(stats, abilityId, delta);
       }
     }
-    for (const abilityId of TERRAIN_TIMED_OR_REACTIVE_ABILITY_IDS) {
-      adjustEnemyAbilityLevel(enemy, abilityId, delta);
+    // SpecRef: 6.1.1.1 | START phase | terrain.suppression
+    if (isSuppression && hasAbility(enemy.abilities, 'defiance')) {
+      // a.defiance ignores suppression effect.
+    } else {
+      for (const abilityId of TERRAIN_TIMED_OR_REACTIVE_ABILITY_IDS) {
+        adjustEnemyAbilityLevel(enemy, abilityId, delta);
+      }
     }
   } else if (environment.terrainEffect === 'terrain.silence-field') {
     const equationBreakerOwners = [
@@ -2773,8 +2782,10 @@ export function executeBattle(
     let actionText = '';
     let noteTextTemplate = '';
     let elementalTag: ElementalOffense | undefined;
+    const actorAbilities = actor.kind === 'enemy' ? enemy.abilities : actor.stats.abilities;
 
-    if (terrainEffect === 'terrain.vine-snare') {
+    // SpecRef: 6.1.3.1 | Actor action | a.vine-cutter
+    if (terrainEffect === 'terrain.vine-snare' && !hasAbility(actorAbilities, 'vine_cutter')) {
       selfDamage = Math.floor(currentHp * 0.01);
       actionText = pickRandomTerrainFlavorText(
         TERRAIN_VINE_SNARE_LOGS,
@@ -2782,7 +2793,8 @@ export function executeBattle(
         { actor: actor.name },
       );
       noteTextTemplate = '(HP減少-{damage})';
-    } else if (terrainEffect === 'terrain.crystal-zone' && phase === 'mid') {
+    // SpecRef: 6.1.3.1 | Actor action | a.mana-ward
+    } else if (terrainEffect === 'terrain.crystal-zone' && phase === 'mid' && !hasAbility(actorAbilities, 'mana_ward')) {
       selfDamage = Math.floor(totalDamage * 0.05);
       actionText = pickRandomTerrainFlavorText(
         TERRAIN_CRYSTAL_ZONE_LOGS,
@@ -2799,7 +2811,7 @@ export function executeBattle(
       );
       noteTextTemplate = '(HP減少 ⚡-{damage})';
       elementalTag = 'thunder';
-    } else if (terrainEffect === 'terrain.mana-burn' && phase === 'mid') {
+    } else if (terrainEffect === 'terrain.mana-burn' && phase === 'mid' && !hasAbility(actorAbilities, 'mana_ward')) {
       selfDamage = Math.floor(maxHp * 0.02);
       actionText = pickRandomTerrainFlavorText(
         TERRAIN_MANA_BURN_LOGS,
