@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 55 | 2026/4/22 | Implement runtime counter-abilities for reactive amplifiers: add `a.anti-ambush`, `a.anti-overwatch`, `a.rage-breaker`, `a.momentum-breaker`, and `a.execution-null` to ability ids/UI glossary, and enforce them in battle calculations so `f.ambush_amplifier`/`f.overwatch_amplifier`/`f.execution_amplifier`/`f.rage_amplifier`/`f.momentum_amplifier` are nullified when defender-side blockers are present. |
 | 0.6.1 | 54 | 2026/4/22 | Align runtime PT1–PT6 initial predispositions to the requested tables in party initial conditions: セルフィン→`Introspective`, シーケルン→`Inquisitive`, ラビ→`Perceptive`, グレイ→`Introspective`, ルドルフ→`Exacting`, ルーファス→`Amicable`, ドンガ→`Stubborn`, ミィス→`Savvy`; deities/classes/lineages/unique flags unchanged. |
 | 0.6.1 | 53 | 2026/4/22 | Align runtime PT6 initial setup to requested condition under Goddess of Precision: ドンガ sub class updated to `class.samurai` and ミィス sub class updated to `class.sword-saint`; other PT6 members unchanged. |
 | 0.6.1 | 52 | 2026/4/22 | Align runtime PT4 initial setup to Spec 2.1.4.2: update ミシュカ sub class to `class.duelist` and プチーツァ sub class to `class.sword-saint` in unlocked PT4 default party data. |
