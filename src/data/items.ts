@@ -199,7 +199,8 @@ const ITEM_ADDITIONAL_BONUS_BY_NAME: Record<string, Bonus[]> = {
   'ファーストエイド': [{ type: 'ability', value: 1, abilityId: 'first_aid', abilityLevel: 1 }],
   '粘膜覆': [{ type: 'ability', value: 1, abilityId: 'null_corrode', abilityLevel: 1 }],
   '硫酸刺': [{ type: 'ability', value: 1, abilityId: 'corrode', abilityLevel: 1 }],
-  '小刀': [{ type: 'ability', value: 1, abilityId: 'null_bind', abilityLevel: 1 }],
+  '小刀': [{ type: 'ability', value: 1, abilityId: 'vine_cutter', abilityLevel: 1 }],
+  '蒼き護符': [{ type: 'ability', value: 1, abilityId: 'mana_ward', abilityLevel: 1 }],
   '雷式': [{ type: 'thunder_offense', value: 0.03 }, { type: 'strength', value: 1 }],
   '矢払盾': [{ type: 'ability', value: 1, abilityId: 'deflection', abilityLevel: 1 }],
   '崩壊核': [{ type: 'ability', value: 1, abilityId: 'decompose', abilityLevel: 1 }],
@@ -221,6 +222,7 @@ const ITEM_ADDITIONAL_BONUS_BY_NAME: Record<string, Bonus[]> = {
   '白妙': [{ type: 'ability', value: 1, abilityId: 'ice_protect_breaker', abilityLevel: 1 }],
   '祓詞': [{ type: 'ability', value: 1, abilityId: 'm_barrier_breaker', abilityLevel: 1 }],
   '境断': [{ type: 'ability', value: 1, abilityId: 'domain_breaker', abilityLevel: 1 }],
+  '影衣': [{ type: 'ability', value: 1, abilityId: 'dryproof', abilityLevel: 1 }],
   '俊敏の弓': [
     { type: 'ability', value: 1, abilityId: 'boost', abilityLevel: 1 },
     { type: 'physical_defense_multiplier_xV', value: 1.1 },
@@ -238,6 +240,7 @@ const ITEM_ADDITIONAL_BONUS_BY_NAME: Record<string, Bonus[]> = {
     { type: 'ice_defense_multiplier_xV', value: 2.0 },
     { type: 'thunder_defense_multiplier_xV', value: 2.0 },
   ],
+  '反乱の手引': [{ type: 'ability', value: 1, abilityId: 'defiance', abilityLevel: 1 }],
 };
 
 const ITEM_CORE_CONCEPT_KEYS: Record<ItemCategory, Array<keyof ItemDef>> = {
