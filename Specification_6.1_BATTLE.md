@@ -498,12 +498,12 @@ If `a.*` with phase = START:
     - Exception: If actor has `a.domain-breaker`, this effect is ignored.
 
 - `f.rage_amplifier`:
-  - If actor has `a.rage`1, return min(2.0, 1.0 + 0.5 x (1 - (actor.current_HP / actor.max_HP)))
-  - If actor has `a.rage`2, return min(2.0, 1.0 + 0.6 x (1 - (actor.current_HP / actor.max_HP)))
+  - If actor has `a.rage`1 and (opponent doesn't have `a.rage-breaker`), return min(2.0, 1.0 + 0.5 x (1 - (actor.current_HP / actor.max_HP)))
+  - If actor has `a.rage`2 and (opponent doesn't have `a.rage-breaker`), return min(2.0, 1.0 + 0.6 x (1 - (actor.current_HP / actor.max_HP)))
     - Log: add "闘志+N%" to attack log.
 - `f.momentum_amplifier`:
-  - If actor has `a.momentum`1, return 1.25 - (1 - (actor.current_HP / actor.max_HP)) x 0.5
-  - If actor has `a.momentum`2, return 1.25 - (1 - (actor.current_HP / actor.max_HP)) x 0.4
+  - If actor has `a.momentum`1 and (opponent doesn't have `a.momentum-breaker`), return 1.25 - (1 - (actor.current_HP / actor.max_HP)) x 0.5
+  - If actor has `a.momentum`2 and (opponent doesn't have `a.momentum-breaker`), return 1.25 - (1 - (actor.current_HP / actor.max_HP)) x 0.4
     - Log: add "気勢+N%" to attack log
 - `f.ambush_amplifier`
   - If actor has `a.ambush`, and (opponent has not acted yet in this battle) and (opponent doesn't have `a.anti-ambush`), return N.
