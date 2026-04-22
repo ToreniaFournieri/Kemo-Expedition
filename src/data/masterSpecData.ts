@@ -363,6 +363,8 @@ export const MASTER_ITEM_NAME_INDEX: Record<string, readonly string[]> = {
   '2|uncommon|katana': ['晶の打刀'],
   '2|uncommon|shield': ['板の盾'],
   '2|uncommon|wand': ['晶の杖'],
+  '2|eliteRare|arrow': ['氷霜の矢'],
+  '2|eliteRare|katana': ['氷霜の太刀'],
   '2|eliteRare|robe': ['アスベストの衣'],
   '2|eliteRare|sword': ['岩斬剣'],
   '2|bossRare|arrow': ['狼毛の矢'],

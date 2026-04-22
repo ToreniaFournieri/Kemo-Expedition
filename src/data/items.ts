@@ -195,6 +195,8 @@ const ITEM_ADDITIONAL_BONUS_BY_NAME: Record<string, Bonus[]> = {
   '霧払': [{ type: 'ability', value: 1, abilityId: 'true_sight', abilityLevel: 1 }],
   '甲鎧': [{ type: 'ability', value: 1, abilityId: 'null_death_touch', abilityLevel: 1 }],
   '白霜牙の剣': [{ type: 'ice_offense', value: 0.02 }],
+  '氷霜の矢': [{ type: 'ice_offense', value: 0.02 }],
+  '氷霜の太刀': [{ type: 'ice_offense', value: 0.02 }],
   'シトロネラの衣': [{ type: 'ability', value: 1, abilityId: 'null_life_drain', abilityLevel: 1 }],
   'ファーストエイド': [{ type: 'ability', value: 1, abilityId: 'first_aid', abilityLevel: 1 }],
   '粘膜覆': [{ type: 'ability', value: 1, abilityId: 'null_corrode', abilityLevel: 1 }],
