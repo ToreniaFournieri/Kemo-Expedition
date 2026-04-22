@@ -428,18 +428,6 @@ Party.`d.HP` =
 | 6 | **ライカ** | Caninian | `class.sage` | `class.alchemist`| **`pioneer`** | `None` | `1110`, `1112`  | **`true`** |
 
 - **PT2** initial condition (when unlocked)
-  - deity: `God of Attrition`
-
-| order | Name | Race | main class | sub class | lineage | predisposition | Unique |
-|------|------|------|------|------|------|------|------|
-| 1 | **パーシヴァル** | Procyonian | `class.samurai` | `class.guardian` | **`hidden_grail`** | `None` | **`true`** |
-| 2 | **ランスロット** | Lupinian | `class.sword-saint` | `class.samurai` | **`almighty`** | `None` | **`true`** |
-| 3 | ルドルフ | Felidian | `class.ranger` | `class.striker` | `abyssal_sea` | `Amicable` | `false` |
-| 4 | コソネ | Murid | `class.striker`| `class.striker` | `firmament` | `Aggressive` | `false` |
-| 5 | ルーファス | Caninian | `class.ninja` | `class.striker` | `frozen_forest` | `Aggressive` | `false` |
-| 6 | アヤ | Vulpinian | `class.wizard` | `class.sage`| `utopia` | `Serenity` | `false` |
-
-- **PT3** initial condition (when unlocked)
   - deity: `God of Cunning`
 
 | order | Name | Race | main class | sub class | lineage | predisposition | Unique |
@@ -451,7 +439,7 @@ Party.`d.HP` =
 | 5 | アルテミス | Felidian | `class.alchemist` | `class.wizard` | `machina` | `Serenity` | `false` |
 | 6 | ウォッシ | Lupinian | `class.ninja` | `class.wizard`| `windcross` | `Perceptive` | `false` |
 
-- **PT4** initial condition (when unlocked)
+- **PT3** initial condition (when unlocked)
   - deity: `Goddess of Fertility`
 
 | order | Name | Race | main class | sub class | lineage | predisposition | Unique |
@@ -463,7 +451,7 @@ Party.`d.HP` =
 | 5 | ラビ | Lupinian | `class.duelist` | `class.striker` | `frozen_forest` | `Amicable` | `false` |
 | 6 | フェン | Vulpinian | `class.sage` | `class.wizard`| `adaptation` | `Inquisitive` | `false` |
 
-- **PT5** initial condition (when unlocked)
+- **PT4** initial condition (when unlocked)
   - deity:  `God of Fortification`
 
 | order | Name | Race | main class | sub class | lineage | predisposition | Unique |
@@ -475,8 +463,20 @@ Party.`d.HP` =
 | 5 | グレイ | Lupinian | `class.wizard` | `class.sage` | `machina` | `Amicable` | `false` |
 | 6 | セトラ | Cervin | `class.sage` | `class.wizard` | `utopia` | `Savvy` | `false` |
 
-- **PT6** initial condition (when unlocked)
+- **PT5** initial condition (when unlocked)
   - deity: `God of Resonance`
+
+| order | Name | Race | main class | sub class | lineage | predisposition | Unique |
+|------|------|------|------|------|------|------|------|
+| 1 | **パーシヴァル** | Procyonian | `class.samurai` | `class.guardian` | **`hidden_grail`** | `None` | **`true`** |
+| 2 | **ランスロット** | Lupinian | `class.sword-saint` | `class.samurai` | **`almighty`** | `None` | **`true`** |
+| 3 | ルドルフ | Felidian | `class.ranger` | `class.striker` | `abyssal_sea` | `Amicable` | `false` |
+| 4 | コソネ | Murid | `class.striker`| `class.striker` | `firmament` | `Aggressive` | `false` |
+| 5 | ルーファス | Caninian | `class.ninja` | `class.striker` | `frozen_forest` | `Aggressive` | `false` |
+| 6 | アヤ | Vulpinian | `class.wizard` | `class.sage`| `utopia` | `Serenity` | `false` |
+
+- **PT6** initial condition (when unlocked)
+
 
 | order | Name | Race | main class | sub class | lineage | predisposition | Unique |
 |------|------|------|------|------|------|------|------|
