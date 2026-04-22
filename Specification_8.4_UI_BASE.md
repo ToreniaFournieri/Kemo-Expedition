@@ -2,7 +2,7 @@
 
 ### 8.4 UI_BASE
 - Base(拠点)
-- It has tabs inside Base tab. Shop(お店), Inventory(所持品), Debug store(デバッグ店) , Workshop(工房), Altar(祭壇). (same visual UI as List of party (PT1, PT2...) tab in Party tab)
+- It has tabs inside Base tab. Shop(お店), Inventory(所持品),Ashen Route Vault(灰路の蔵) , Workshop(工房), Altar(祭壇). (same visual UI as List of party (PT1, PT2...) tab in Party tab)
   - Default: Shop
   - not available for Workshop(工房), Altar(祭壇) in this version. (Gray out)
 	
@@ -118,10 +118,10 @@
     - ex. 名工のロングソード x3 | 近攻+19     [解除]
   - Unlock button(解除): Changes item state from `s.sold` to `s.notown`
 
-#### 8.4.3 Debug store(デバッグ店)
+#### 8.4.3 Ashen Route Vault(灰路の蔵)
 
 - **Function:** Item purchase (debug purpose only)
-- **Shop name:** カリエスの狐彩堂 (Caelis' Kosaidō)
+- **Shop name:** カリエスの灰路の蔵 (Caelis' Ashen Route Vault)
 
 **Dialogue pane (UI)**
 - **Column 1:** Shop owner icon (Vulpinian icon)  
