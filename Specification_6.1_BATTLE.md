@@ -588,7 +588,7 @@ If `a.*` with phase = START:
   - If actor.`c.antagonism`, target is opposite. (character -> character. enemy -> enemy)
   - If phase is LONG or CLOSE, Gets one ticket from `t.physical_threat_weight_bag`.
     - `a.bulwark`1 or `a.bulwark`2 redirect 
-	  if (`a.bulwark`1 and phase is LONG) or (`a.bulwark`2 and phase is (LONG or CLOSE)):
+	  if {(`a.bulwark`1 and phase is LONG) or (`a.bulwark`2 and phase is (LONG or CLOSE))} and (enemy doesn't have `a.bulwark-breaker`):
 	      front_character = party.unit_in_front_of(t)    // the unit directly ahead of selected character (one row closer to enemy)
 	      if front_character != null and front_character.has(a.bulwark):
 	          return front_character
