@@ -102,9 +102,15 @@ function getElementalMultiplier(
 }
 
 // SpecRef: 6.1.4.1 | Function of attack | f.rage_amplifier
-function getCharacterRageAmplifier(charStats: ComputedCharacterStats, partyHp: number, maxPartyHp: number): number {
+function getCharacterRageAmplifier(
+  charStats: ComputedCharacterStats,
+  partyHp: number,
+  maxPartyHp: number,
+  opponentAbilities: AbilityLike[] = [],
+): number {
   const rageLevel = charStats.abilities.find(a => a.id === 'rage')?.level ?? 0;
   if (rageLevel <= 0) return 1.0;
+  if (hasAbility(opponentAbilities, 'rage_breaker')) return 1.0;
   if (maxPartyHp <= 0) return 1.0;
   const hpRatio = Math.max(0, Math.min(1, partyHp / maxPartyHp));
   const multiplierPerDamageRate = rageLevel >= 2 ? 0.6 : 0.5;
@@ -112,9 +118,10 @@ function getCharacterRageAmplifier(charStats: ComputedCharacterStats, partyHp: n
 }
 
 // SpecRef: 6.1.4.1 | Function of attack | f.rage_amplifier
-function getEnemyRageAmplifier(enemy: EnemyDef, enemyHp: number): number {
+function getEnemyRageAmplifier(enemy: EnemyDef, enemyHp: number, opponentAbilities: AbilityLike[] = []): number {
   const rageLevel = getEnemyAbilityLevel(enemy, 'rage');
   if (rageLevel <= 0) return 1.0;
+  if (hasAbility(opponentAbilities, 'rage_breaker')) return 1.0;
   if (enemy.hp <= 0) return 1.0;
   const hpRatio = Math.max(0, Math.min(1, enemyHp / enemy.hp));
   const multiplierPerDamageRate = rageLevel >= 2 ? 0.6 : 0.5;
@@ -293,10 +300,14 @@ function getMutualAbilityMultiplier(
 // SpecRef: 6.1.4.1 | Function of attack | f.ambush_amplifier
 function getAmbushAmplifier(
   actorAbilities: AbilityLike[],
+  opponentAbilities: AbilityLike[],
   opponentHasActedInBattle: boolean,
   isNormalAction: boolean,
 ): number {
   if (!isNormalAction || opponentHasActedInBattle) {
+    return 1.0;
+  }
+  if (hasAbility(opponentAbilities, 'anti_ambush')) {
     return 1.0;
   }
 
@@ -311,11 +322,15 @@ function getAmbushAmplifier(
 // SpecRef: 6.1.4.1 | Function of attack | f.overwatch_amplifier
 function getOverwatchAmplifier(
   actorAbilities: AbilityLike[],
+  opponentAbilities: AbilityLike[],
   opponentHasActedInBattle: boolean,
   alliedOthersHaveActedInBattle: boolean,
   isNormalAction: boolean,
 ): number {
   if (!isNormalAction || opponentHasActedInBattle || alliedOthersHaveActedInBattle) {
+    return 1.0;
+  }
+  if (hasAbility(opponentAbilities, 'anti_overwatch')) {
     return 1.0;
   }
 
@@ -330,11 +345,15 @@ function getOverwatchAmplifier(
 // SpecRef: 6.1.4.1 | Function of attack | f.execution_amplifier
 function getExecutionAmplifier(
   actorAbilities: AbilityLike[],
+  opponentAbilities: AbilityLike[],
   opponentCurrentHp: number,
   opponentMaxHp: number,
 ): number {
   const executionLevel = getHighestAbilityLevel(actorAbilities, 'execution');
   if (executionLevel <= 0 || opponentMaxHp <= 0) {
+    return 1.0;
+  }
+  if (hasAbility(opponentAbilities, 'execution_null')) {
     return 1.0;
   }
 
@@ -465,9 +484,15 @@ function resolveEnemyTarget(
 }
 
 // SpecRef: 6.1.4.1 | Function of attack | f.momentum_amplifer
-function getCharacterMomentumAmplifier(charStats: ComputedCharacterStats, partyHp: number, maxPartyHp: number): number {
+function getCharacterMomentumAmplifier(
+  charStats: ComputedCharacterStats,
+  partyHp: number,
+  maxPartyHp: number,
+  opponentAbilities: AbilityLike[] = [],
+): number {
   const momentumLevel = charStats.abilities.find(a => a.id === 'momentum')?.level ?? 0;
   if (momentumLevel <= 0) return 1.0;
+  if (hasAbility(opponentAbilities, 'momentum_breaker')) return 1.0;
   if (maxPartyHp <= 0) return 1.0;
   const hpRatio = Math.max(0, Math.min(1, partyHp / maxPartyHp));
   if (momentumLevel >= 2) {
@@ -566,7 +591,7 @@ function calculateSingleEnemyAttackDamage(
     : targetCharStats.elementalDefenseMultipliers[enemy.elementalOffense] ?? 1.0;
 
   const partyDefenseAbilityAmplifier = getPartyDefenseAbilityAmplifier(phase, characterStats, targetCharStats.row, enemy.abilities);
-  const rageAmplifier = getEnemyRageAmplifier(enemy, enemyHp);
+  const rageAmplifier = getEnemyRageAmplifier(enemy, enemyHp, targetCharStats.abilities);
   const mutualAmplifier = getMutualAmplifier(phase, enemy.abilities, targetCharStats.abilities);
   const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect, false, enemy.abilities);
   const elementalOffenseAttributeAmplifier = getElementalOffenseAttributeAmplifier(terrainEffect, enemy.elementalOffense, echoDomainElementalUsageCount, enemy.abilities);
@@ -833,8 +858,8 @@ function calculateCharacterFriendlyFireDamage(
     ? 1.0
     : target.elementalDefenseMultipliers[attacker.elementalOffense] ?? 1.0;
 
-  const rageAmplifier = getCharacterRageAmplifier(attacker, partyHp, partyStats.hp);
-  const momentumAmplifier = getCharacterMomentumAmplifier(attacker, partyHp, partyStats.hp);
+  const rageAmplifier = getCharacterRageAmplifier(attacker, partyHp, partyStats.hp, target.abilities);
+  const momentumAmplifier = getCharacterMomentumAmplifier(attacker, partyHp, partyStats.hp, target.abilities);
   const mutualAmplifier = getMutualAmplifier(phase, attacker.abilities, target.abilities);
   const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect, false, attacker.abilities);
   const elementalOffenseAttributeAmplifier = getElementalOffenseAttributeAmplifier(terrainEffect, attacker.elementalOffense, echoDomainElementalUsageCount, attacker.abilities);
@@ -1445,8 +1470,8 @@ function calculateCharacterDamage(
     enemy.elementalResistance
   );
 
-  const rageAmplifier = getCharacterRageAmplifier(charStats, partyHp, partyStats.hp);
-  const momentumAmplifier = getCharacterMomentumAmplifier(charStats, partyHp, partyStats.hp);
+  const rageAmplifier = getCharacterRageAmplifier(charStats, partyHp, partyStats.hp, enemy.abilities);
+  const momentumAmplifier = getCharacterMomentumAmplifier(charStats, partyHp, partyStats.hp, enemy.abilities);
   const mutualAmplifier = getMutualAmplifier(phase, charStats.abilities, enemy.abilities);
   const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect, true, charStats.abilities);
   const elementalOffenseAttributeAmplifier = getElementalOffenseAttributeAmplifier(terrainEffect, charStats.elementalOffense, echoDomainElementalUsageCount, charStats.abilities);
@@ -3421,7 +3446,7 @@ export function executeBattle(
 
     triggerPartyDefeatRecovery(targetCharStats, phase, initiativeRoll, true);
 
-    const enemyCounterRageBonusPercent = toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp));
+    const enemyCounterRageBonusPercent = toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp, targetCharStats.abilities));
     const enemyCounterSwarmBonuses = getSwarmLogBonuses(enemy.abilities, enemyHp, enemy.hp, targetCharStats.abilities, partyHp, partyStats.hp);
     log.push({
       phase,
@@ -3471,8 +3496,8 @@ export function executeBattle(
       applyEnemyDamage(reCounterResult.damage);
     }
 
-    const characterReCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(targetCharStats, partyHp, partyStats.hp));
-    const characterReCounterMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(targetCharStats, partyHp, partyStats.hp));
+    const characterReCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(targetCharStats, partyHp, partyStats.hp, enemy.abilities));
+    const characterReCounterMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(targetCharStats, partyHp, partyStats.hp, enemy.abilities));
     const characterReCounterSwarmBonuses = getSwarmLogBonuses(targetCharStats.abilities, partyHp, partyStats.hp, enemy.abilities, enemyHp, enemy.hp);
     log.push({
       phase,
@@ -3529,8 +3554,8 @@ export function executeBattle(
         applyEnemyDamage(coveringFireResult.damage);
       }
 
-      const coverFireRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(coverCharStats, partyHp, partyStats.hp));
-      const coverFireMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(coverCharStats, partyHp, partyStats.hp));
+      const coverFireRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(coverCharStats, partyHp, partyStats.hp, enemy.abilities));
+      const coverFireMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(coverCharStats, partyHp, partyStats.hp, enemy.abilities));
       const coverFireSwarmBonuses = getSwarmLogBonuses(coverCharStats.abilities, partyHp, partyStats.hp, enemy.abilities, enemyHp, enemy.hp);
       log.push({
         phase,
@@ -4508,18 +4533,21 @@ export function executeBattle(
 
             const ambushAmplifier = getAmbushAmplifier(
               enemy.abilities,
+              targetCharStats.abilities,
               // When the enemy attacks, the "opponent" for a.ambush is the targeted party member.
               characterActedInBattleIds.has(targetCharStats.characterId),
               !isReAttack,
             );
             const overwatchAmplifier = getOverwatchAmplifier(
               enemy.abilities,
+              targetCharStats.abilities,
               characterActedInBattleIds.size > 0,
               false,
               !isReAttack,
             );
             const executionAmplifier = getExecutionAmplifier(
               enemy.abilities,
+              targetCharStats.abilities,
               partyHp,
               partyStats.hp,
             );
@@ -4912,8 +4940,8 @@ export function executeBattle(
             );
             const echoDomainLogText = getEchoDomainLogText(attack.charStats.elementalOffense, attack.charStats.abilities);
             const counterBonusLogText = mergeAttackBonusLogText(resonanceLogText, echoDomainLogText);
-            const characterCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(attack.charStats, partyHp, partyStats.hp));
-            const characterCounterMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(attack.charStats, partyHp, partyStats.hp));
+            const characterCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(attack.charStats, partyHp, partyStats.hp, enemy.abilities));
+            const characterCounterMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(attack.charStats, partyHp, partyStats.hp, enemy.abilities));
             const characterCounterSwarmBonuses = getSwarmLogBonuses(attack.charStats.abilities, partyHp, partyStats.hp, enemy.abilities, enemyHp, enemy.hp);
             log.push({
               phase,
@@ -5005,7 +5033,7 @@ export function executeBattle(
               true,
             );
 
-            const enemyReCounterRageBonusPercent = toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp));
+            const enemyReCounterRageBonusPercent = toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp, attack.charStats.abilities));
             const enemyReCounterSwarmBonuses = getSwarmLogBonuses(enemy.abilities, enemyHp, enemy.hp, attack.charStats.abilities, partyHp, partyStats.hp);
             log.push({
               phase,
@@ -5094,8 +5122,8 @@ export function executeBattle(
             const resonanceLogText = getResonanceLogText(magicalCounterStats.abilities, magicalCounterResult.hits, true);
             const echoDomainLogText = getEchoDomainLogText(magicalCounterStats.elementalOffense, magicalCounterStats.abilities);
             const magicalCounterBonusLogText = mergeAttackBonusLogText(resonanceLogText, echoDomainLogText);
-            const magicalCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(magicalCounterStats, partyHp, partyStats.hp));
-            const magicalCounterMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(magicalCounterStats, partyHp, partyStats.hp));
+            const magicalCounterRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(magicalCounterStats, partyHp, partyStats.hp, enemy.abilities));
+            const magicalCounterMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(magicalCounterStats, partyHp, partyStats.hp, enemy.abilities));
             const magicalCounterSwarmBonuses = getSwarmLogBonuses(magicalCounterStats.abilities, partyHp, partyStats.hp, enemy.abilities, enemyHp, enemy.hp);
             log.push({
               phase,
@@ -5172,9 +5200,9 @@ export function executeBattle(
             showZeroDamage: true,
             hits: 0,
             totalAttempts: Math.max(1, Math.ceil(cs.magicalNoA * noAMultiplier)),
-            rageBonusPercent: toRageBonusPercent(getCharacterRageAmplifier(cs, partyHp, partyStats.hp)) || undefined,
+            rageBonusPercent: toRageBonusPercent(getCharacterRageAmplifier(cs, partyHp, partyStats.hp, enemy.abilities)) || undefined,
             momentumBonusPercent: cs.abilities.some(a => a.id === 'momentum')
-              ? toMomentumBonusPercent(getCharacterMomentumAmplifier(cs, partyHp, partyStats.hp))
+              ? toMomentumBonusPercent(getCharacterMomentumAmplifier(cs, partyHp, partyStats.hp, enemy.abilities))
               : undefined,
             ...characterMagicSealSwarmBonuses,
             isReAttack: isReAttack || undefined,
@@ -5215,17 +5243,20 @@ export function executeBattle(
           antagonismTargetName = party.characters.find(c => c.id === selected.characterId)?.name ?? '???';
           ambushMultiplier = getAmbushAmplifier(
             cs.abilities,
+            selected.abilities,
             characterActedInBattleIds.has(selected.characterId),
             !isReAttack,
           );
           overwatchMultiplier = getOverwatchAmplifier(
             cs.abilities,
+            selected.abilities,
             characterActedInBattleIds.size > 0 || enemyHasActedInBattle,
             alliedPartyMembersActedInBattle,
             !isReAttack,
           );
           executionMultiplier = getExecutionAmplifier(
             cs.abilities,
+            selected.abilities,
             partyHp,
             partyStats.hp,
           );
@@ -5275,18 +5306,21 @@ export function executeBattle(
         } else {
           ambushMultiplier = getAmbushAmplifier(
             cs.abilities,
+            enemy.abilities,
             // When a character attacks, the "opponent" for a.ambush is the enemy actor.
             enemyHasActedInBattle,
             !isReAttack,
           );
           overwatchMultiplier = getOverwatchAmplifier(
             cs.abilities,
+            enemy.abilities,
             enemyHasActedInBattle,
             alliedPartyMembersActedInBattle,
             !isReAttack,
           );
           executionMultiplier = getExecutionAmplifier(
             cs.abilities,
+            enemy.abilities,
             enemyHp,
             enemy.hp,
           );
@@ -5380,8 +5414,8 @@ export function executeBattle(
         );
         const echoDomainLogText = getEchoDomainLogText(cs.elementalOffense, cs.abilities);
         const characterAttackBonusLogText = mergeAttackBonusLogText(resonanceLogText, echoDomainLogText);
-        const characterAttackRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(cs, partyHp, partyStats.hp));
-        const characterAttackMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(cs, partyHp, partyStats.hp));
+        const characterAttackRageBonusPercent = toRageBonusPercent(getCharacterRageAmplifier(cs, partyHp, partyStats.hp, enemy.abilities));
+        const characterAttackMomentumBonusPercent = toMomentumBonusPercent(getCharacterMomentumAmplifier(cs, partyHp, partyStats.hp, enemy.abilities));
         const characterAttackSwarmBonuses = getSwarmLogBonuses(
           cs.abilities,
           partyHp,
