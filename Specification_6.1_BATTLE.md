@@ -345,13 +345,13 @@ If `a.*` with phase = START:
    - Else `d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
 
 	- **self-inflicted damage**
-      - If `terrain.vine-snare`: actor.`d.HP` -= 0.01 x actor.current_HP
+      - If `terrain.vine-snare` and (actor doesn't have `a.vine-cutter`): actor.`d.HP` -= 0.01 x actor.current_HP
         - Log: `log.terrain.vine-snare` + (N) :right-aligned 
-      - If `terrain.crystal-zone` and (phase is MID): actor.`d.HP` -= 0.05 x actor.total_damage
+      - If `terrain.crystal-zone` and (phase is MID) and (actor doesn't have `a.mana-ward`): actor.`d.HP` -= 0.05 x actor.total_damage
         - Log: `log.terrain.crystal-zone` + (N) :right-aligned 
       - If `terrain.conduction` and actor.`e.thunder`:  actor.`d.HP` -= (0.05 x actor.total_damage ) of `e.thunder`
         - Log: `log.terrain.conduction` + (⚡ N)  :right-aligned 
-      - If `terrain.mana-burn` and (phase is MID): actor.`d.HP` -= 0.02 x actor.max_HP
+      - If `terrain.mana-burn` and (phase is MID) and (actor doesn't have `a.mana-ward`): actor.`d.HP` -= 0.02 x actor.max_HP
         - Log: `log.terrain.mana-burn` + (N) :right-aligned 
       - If `terrain.sacred-judgement` and is first actor of the battle:  actor.`d.HP` -= (0.05 x (ctor.current_HP) of `e.thunder`
         - Log: `log.terrain.sacred-judgement` + (N) :right-aligned
