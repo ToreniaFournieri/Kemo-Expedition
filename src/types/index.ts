@@ -164,6 +164,7 @@ export type AbilityId =
   | 'requiem' | 'overwatch' | 'execution' | 'null_antagonism' | 'first_aid' | 'equation_breaker' | 'unforgettable'
   | 'null_corrode' | 'null_life_drain' | 'null_death_touch' | 'null_burn' | 'null_bind' | 'null_requiem'
   | 'domain_breaker' | 'wind_rider' | 'siege' | 'coldproof'
+  | 'dryproof' | 'vine_cutter' | 'mana_ward' | 'defiance'
   | 'fire_protect_breaker' | 'ice_protect_breaker' | 'thunder_protect_breaker' | 'm_barrier_breaker';
 
 export interface Ability {
