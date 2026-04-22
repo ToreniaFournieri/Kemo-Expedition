@@ -56,6 +56,7 @@ If `a.*` with phase = START:
   - Refer to: 1.1.1 @Specification_1.1_CONSTANTS_GLOSSARY.md.
 
 - `terrain.suppression`
+  - Applies only to targets that do not have `a.defiance`.
   - Decrease the level of all reactive and timed abilities by -1.
   - Floor at 1.
   - Refer to: 1.1.1 @Specification_1.1_CONSTANTS_GLOSSARY.md.
