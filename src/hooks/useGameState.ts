@@ -1383,10 +1383,11 @@ function createFifthParty() {
   return initializePartyRuntimeState(party);
 }
 
+// SpecRef: 2.1.4.2 | Initial setup | PT6 Party initial condition.
 function createSixthParty() {
   const defaultSetup = [
-    { race: 'ursan', main: 'pilgrim', sub: 'wizard', pred: 'introspective', lineage: 'fragment', name: 'ドンガ' },
-    { race: 'caninian', main: 'samurai', sub: 'ranger', pred: 'inquisitive', lineage: 'abyssal_sea', name: 'ミィス' },
+    { race: 'ursan', main: 'pilgrim', sub: 'samurai', pred: 'introspective', lineage: 'fragment', name: 'ドンガ' },
+    { race: 'caninian', main: 'samurai', sub: 'sword-saint', pred: 'inquisitive', lineage: 'abyssal_sea', name: 'ミィス' },
     { race: 'leporian', main: 'sword-saint', sub: 'ranger', pred: 'none', lineage: 'unexpected_prince(ss)', name: 'フィン', isUnique: true },
     { race: 'procyonian', main: 'alchemist', sub: 'alchemist', pred: 'inquisitive', lineage: 'adaptation', name: 'ケラ' },
     { race: 'cervin', main: 'sage', sub: 'wizard', pred: 'none', lineage: 'incarnation', name: 'マーレ', isUnique: true },
