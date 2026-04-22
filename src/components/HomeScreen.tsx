@@ -7485,7 +7485,7 @@ function ExpeditionTab({
         return (
           <div
             key={partyIndex}
-            className={`bg-pane relative rounded-lg p-1.5 overflow-hidden shadow-md shadow-slate-900/15 border ${
+            className={`bg-pane expedition-party-pane relative rounded-lg p-1.5 overflow-hidden shadow-md shadow-slate-900/15 border ${
               isGodsBattleInProgress ? 'border-sub/80 shadow-[0_0_0_1px_rgb(var(--color-sub)/0.65)]' : 'border-gray-200/80'
             }`}
             style={expeditionPaneBackgroundStyle}
