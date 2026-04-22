@@ -248,8 +248,8 @@ PT3: 貯金額: 10G
 
 | Condition | Unlock party | text for unlock PT |
 |-----|-----|-----|
-| Defeating: `x.expedition`= 2 Boss | 2nd party | (未開放)ルピニアンの亜寒帯踏破で開放 |
-| Defeating: `x.expedition`= 3 Boss | 3rd party | (未開放)ヴァルンの海洋踏破で開放 |
-| Defeating: `x.expedition`= 4 Boss | 4th party | (未開放)フェリディ砂漠踏破で開放 |
-| Defeating: `x.expedition`= 5 Boss | 5th party | (未開放)ウルサンの炎嶺踏破で開放 |
-| Defeating: `x.expedition`= 6 Boss | 6th party | (未開放)プロキオン巣穴踏破で開放 |
+| Defeating: `x.expedition`= 3 Boss | 2rd party | (未開放)ヴァルンの海洋踏破で開放 |
+| Defeating: `x.expedition`= 4 Boss | 3th party | (未開放)フェリディ砂漠踏破で開放 |
+| Defeating: `x.expedition`= 5 Boss | 4th party | (未開放)ウルサンの炎嶺踏破で開放 |
+| Defeating: `x.expedition`= 6 Boss | 5th party | (未開放)プロキオン巣穴踏破で開放 |
+| Defeating: `x.expedition`= 7 Boss | 6nd party | (未開放)レポリアンの月宮踏破で開放 |
