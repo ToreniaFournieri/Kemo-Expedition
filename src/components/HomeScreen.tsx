@@ -397,6 +397,7 @@ interface PartyCycleRuntime {
   state: PartyCycleState;
   stateStartedAt: number;
   durationMs: number;
+  restInitialTotalSteps?: number;
   sortieSourceState?: 'rest' | 'feast' | 'sleep' | 'return';
   sortieEmbezzlementGold?: number;
   isCurrentExpeditionGodsBattle?: boolean;
@@ -429,6 +430,7 @@ const PARTY_CYCLE_TICK_MS = 100;
 const BASE_STEP_DURATION_MS = 15000;
 const EXPLORING_PROGRESS_STEP_MS = BASE_STEP_DURATION_MS;
 const EXPLORING_PROGRESS_TOTAL_STEPS = 24;
+const STEP_BASED_STATES: ReadonlySet<PartyCycleState> = new Set(['rest', 'sell', 'explore']);
 const APPROX_CYCLE_STEP_COUNT = 30;
 const CHUNK_CYCLE_COUNT = 12;
 const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.exercise', 'q.healing', 'q.AFK']);
@@ -438,6 +440,7 @@ const REDUCER_CATCHUP_THRESHOLD_MS = 15000;
 
 // SpecRef: 5.1.1 | Party State Machine | AFK → Online Transition Handling
 function getStateStepCountFromRuntime(state: PartyCycleState, runtime: PartyCycleRuntime, party: Party): number {
+  if (state === 'rest') return Math.max(1, runtime.restInitialTotalSteps ?? 1);
   if (state === 'sell') return Math.max(1, party.lastExpeditionLog?.autoSellCount ?? 1);
   if (state === 'explore') return Math.max(1, party.lastExpeditionLog?.entries.length ?? EXPLORING_PROGRESS_TOTAL_STEPS);
   const nominalStepDurationMs = Math.max(1, BASE_STEP_DURATION_MS);
@@ -450,6 +453,16 @@ function getElapsedWholeSeconds(carriedMs: number, elapsedMs: number): { gainedS
     gainedSeconds: Math.floor(totalMs / 1000),
     remainderMs: totalMs % 1000,
   };
+}
+
+// SpecRef: 5.1 | PROGRESS | state.rest
+function getRestInitialTotalSteps(currentHp: number, maxHp: number): number {
+  const normalizedMaxHp = Math.max(1, Math.floor(maxHp));
+  const normalizedCurrentHp = Math.max(0, Math.floor(currentHp));
+  const missingHp = Math.max(0, normalizedMaxHp - normalizedCurrentHp);
+  if (missingHp <= 0) return 1;
+  const healPerStep = Math.max(1500, Math.ceil(normalizedMaxHp * 0.15));
+  return Math.max(1, Math.ceil(missingHp / healPerStep));
 }
 
 const HEADER_HEIGHT_CLASS = 'pt-[118px]';
@@ -3473,6 +3486,10 @@ export function HomeScreen({
             state: toPartyCycleState(runtime.state),
             stateStartedAt,
             durationMs: typeof runtime.durationMs === 'number' ? runtime.durationMs : 1000,
+            restInitialTotalSteps:
+              typeof runtime.restInitialTotalSteps === 'number'
+              ? Math.max(1, Math.floor(runtime.restInitialTotalSteps))
+              : undefined,
             sortieSourceState:
               runtime.sortieSourceState === 'rest'
               || runtime.sortieSourceState === 'feast'
@@ -3787,11 +3804,15 @@ export function HomeScreen({
             : party.currentHp < partyRuntimeStats.hp
               ? getStateDurationMs(party, 'rest')
               : 1000,
+          restInitialTotalSteps: party.currentHp < partyRuntimeStats.hp
+            ? getRestInitialTotalSteps(party.currentHp, partyRuntimeStats.hp)
+            : undefined,
         };
         const updated = { ...runtime };
         const hpRatioAtRestStart = partyRuntimeStats.hp > 0 ? party.currentHp / partyRuntimeStats.hp : 1;
         if (updated.state === 'rest' && updated.wasLowHpAtRestStart === undefined) {
           updated.wasLowHpAtRestStart = hpRatioAtRestStart < 0.3;
+          updated.restInitialTotalSteps = getRestInitialTotalSteps(party.currentHp, partyRuntimeStats.hp);
         }
 
         // SpecRef: 5.1.2 | Side Quest | Expiration
@@ -3845,6 +3866,7 @@ export function HomeScreen({
             if (hasTrophy || hasAutoSellItem) {
               updated.state = 'sell';
               updated.durationMs = getStateDurationMs(party, 'sell');
+              updated.restInitialTotalSteps = undefined;
             } else {
               const shouldMoveToSlump = true;
               const shouldSkipSleep = updated.skipSleepThisCycle === true;
@@ -3856,6 +3878,7 @@ export function HomeScreen({
                 updated.state = 'feast';
                 updated.durationMs = getStateDurationMs(party, 'feast');
               }
+              updated.restInitialTotalSteps = undefined;
               if (shouldMoveToSlump) {
                 updated.skipFeastThisCycle = false;
               }
@@ -4020,6 +4043,7 @@ export function HomeScreen({
               }
               updated.state = 'rest';
               updated.durationMs = getStateDurationMs(party, 'rest');
+              updated.restInitialTotalSteps = getRestInitialTotalSteps(party.currentHp, partyRuntimeStats.hp);
               updated.isCurrentExpeditionGodsBattle = false;
               updated.skipFeastThisCycle = hpRatioAtRestStart < 0.3;
               updated.skipSleepThisCycle = shouldSkipSleepForLowHp;
@@ -7392,6 +7416,12 @@ function ExpeditionTab({
           if (cycle.state === 'explore') {
             return (Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, displayedEntries.length) / EXPLORING_PROGRESS_TOTAL_STEPS) * 100;
           }
+          if (cycle.state === 'rest') {
+            const totalSteps = Math.max(1, cycle.restInitialTotalSteps ?? 1);
+            const stepDurationMs = Math.max(1, cycle.durationMs);
+            const completedSteps = Math.min(totalSteps, Math.floor(cycleElapsedMs / stepDurationMs));
+            return (completedSteps / totalSteps) * 100;
+          }
           if (sellProgressState !== null) {
             return sellProgressState.percent;
           }
@@ -7405,8 +7435,10 @@ function ExpeditionTab({
           : normalizedProgressPercent;
         // SpecRef: 8.3 | UI_EXPEDITION | Sub progress bar
         const subProgressPercent = (() => {
-          if (cycle.state !== 'sell' && cycle.state !== 'explore') return null;
-          const totalStepCount = cycle.state === 'sell'
+          if (!STEP_BASED_STATES.has(cycle.state)) return null;
+          const totalStepCount = cycle.state === 'rest'
+            ? Math.max(1, cycle.restInitialTotalSteps ?? 1)
+            : cycle.state === 'sell'
             ? Math.max(1, party.lastExpeditionLog?.autoSellItems?.length || party.lastExpeditionLog?.autoSellCount || 1)
             : Math.max(1, currentLog?.entries.length ?? 1);
           const stepDurationMs = Math.max(1, cycle.durationMs / totalStepCount);
