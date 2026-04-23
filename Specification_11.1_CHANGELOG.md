@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 64 | 2026/4/23 | Update party-cycle runtime to support `state.slump` end-to-end: add slump state label/legacy mapping, route `state.sell` (and rest fallback) into slump when profit is zero or low-HP feast skip applies, then transition slump to sleep/pray, and implement slump duration as `1 + max(0, floor(-condition/20))` Step in state-duration calculation. |
 | 0.6.1 | 63 | 2026/4/23 | Implement runtime `opponent-reactive` illusion handling in LONG phase per Spec 6.1.2: apply `a.illusion` Lv1/Lv2 miss-negation once per battle, consume/disable illusion state when triggered, add `a.illusion-breaker` consumption behavior that disables opponent illusion without negating hits, and wire `log.illusion` / `log.illusion-breaker` flavor text builders into battle logs. |
 | 0.6.1 | 62 | 2026/4/23 | Update runtime `a.free` behavior for `a.pursuit` interception: when `a.free` is blocked by an opponent with `a.pursuit`, battle now continues and emits new `log.pursuit` flavor text; otherwise `a.free` still ends battle as Draw with `log.free`. |
 | 0.6.1 | 61 | 2026/4/23 | Update runtime item-drop special ability mappings for requested entries: add `1|E|Beast|i.katanaEA` as `追跡の鎌` with `a.pursuit`, add `6|E|Mech|i.arrowEA` (`鉄礫`) with `a.illusion-breaker`, and rename `5|B|Ursan|i.gauntletBD` to `破壊腕` with `a.bulwark-breaker`. |

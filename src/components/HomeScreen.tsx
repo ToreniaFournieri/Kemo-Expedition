@@ -194,7 +194,7 @@ const renderElementalResistanceInline = (
 );
 
 
-type PartyCycleState = 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray' | 'idle' | 'move' | 'explore' | 'return' | 'reactivate';
+type PartyCycleState = 'rest' | 'sell' | 'feast' | 'slump' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray' | 'idle' | 'move' | 'explore' | 'return' | 'reactivate';
 
 const PARTY_EXPEDITION_SPLIT_MIN_WIDTH = 1024;
 const TAB_PANEL_WIDTH_PX = 500;
@@ -233,6 +233,7 @@ const PARTY_CYCLE_STATE_LABELS: Record<PartyCycleState, string> = {
   rest: '休息中',
   sell: '売却中',
   feast: '宴会中',
+  slump: '不貞腐れ中',
   sound_sleep: '熟睡中',
   nap_sleep: '仮眠中',
   outfit: '身支度中',
@@ -356,6 +357,7 @@ const LEGACY_PARTY_CYCLE_STATE_MAP: Record<string, PartyCycleState> = {
   rest: 'rest',
   sell: 'sell',
   feast: 'feast',
+  slump: 'slump',
   sound_sleep: 'sound_sleep',
   nap_sleep: 'nap_sleep',
   outfit: 'outfit',
@@ -369,6 +371,7 @@ const LEGACY_PARTY_CYCLE_STATE_MAP: Record<string, PartyCycleState> = {
   '休息中': 'rest',
   '売却中': 'sell',
   '宴会中': 'feast',
+  '不貞腐れ中': 'slump',
   '睡眠中': 'sound_sleep',
   '熟睡中': 'sound_sleep',
   '仮眠中': 'nap_sleep',
@@ -3577,7 +3580,7 @@ export function HomeScreen({
                   )
                   : nextState === 'idle' || nextState === 'reactivate'
                     ? 1000
-                    : getStateDurationMs(party, nextState as 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray');
+                    : getStateDurationMs(party, nextState as 'rest' | 'sell' | 'feast' | 'slump' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray');
           const totalSteps = Math.max(1, snapshot?.totalSteps ?? getStateStepCountFromRuntime(nextState, {
             state: nextState,
             stateStartedAt: now,
@@ -3827,21 +3830,17 @@ export function HomeScreen({
               updated.state = 'sell';
               updated.durationMs = getStateDurationMs(party, 'sell');
             } else {
-              const shouldSkipFeast = updated.skipFeastThisCycle === true || (party.pendingProfit ?? 0) <= 0;
+              const shouldMoveToSlump = updated.skipFeastThisCycle === true || (party.pendingProfit ?? 0) <= 0;
               const shouldSkipSleep = updated.skipSleepThisCycle === true;
-              const sleepState = party.currentSleepiness === 1 ? 'nap_sleep' : 'sound_sleep';
-              const sleepDurationMs = getStateDurationMs(party, sleepState);
-              if (!shouldSkipFeast) {
+              if (shouldMoveToSlump) {
+                // SpecRef: 5.1.1 | Party State Machine | state.slump
+                updated.state = 'slump';
+                updated.durationMs = getStateDurationMs(party, 'slump');
+              } else {
                 updated.state = 'feast';
                 updated.durationMs = getStateDurationMs(party, 'feast');
-              } else if (shouldSkipSleep || party.currentSleepiness === 0 || sleepDurationMs <= 100) {
-                updated.state = 'pray';
-                updated.durationMs = getStateDurationMs(party, 'pray');
-              } else {
-                updated.state = sleepState;
-                updated.durationMs = sleepDurationMs;
               }
-              if (shouldSkipFeast) {
+              if (shouldMoveToSlump) {
                 updated.skipFeastThisCycle = false;
               }
               if (shouldSkipSleep) {
@@ -3859,21 +3858,30 @@ export function HomeScreen({
           stateElapsedMs -= updated.durationMs;
 
             if (updated.state === 'sell') {
-              const shouldSkipFeast = cyclePendingProfit <= 0 || updated.skipFeastThisCycle === true;
-              const sleepState = party.currentSleepiness === 1 ? 'nap_sleep' : 'sound_sleep';
-              const sleepDurationMs = getStateDurationMs(party, sleepState);
-              if (!shouldSkipFeast) {
+              const shouldMoveToSlump = cyclePendingProfit <= 0 || updated.skipFeastThisCycle === true;
+              if (shouldMoveToSlump) {
+                updated.state = 'slump';
+                updated.durationMs = getStateDurationMs(party, 'slump');
+              } else {
                 updated.state = 'feast';
                 updated.durationMs = getStateDurationMs(party, 'feast');
-              } else if (party.currentSleepiness === 0 || sleepDurationMs <= 100) {
+              }
+              if (shouldMoveToSlump) {
+                updated.skipFeastThisCycle = false;
+              }
+            } else if (updated.state === 'slump') {
+              const shouldSkipSleep = updated.skipSleepThisCycle === true;
+              const sleepState = party.currentSleepiness === 1 ? 'nap_sleep' : 'sound_sleep';
+              const sleepDurationMs = getStateDurationMs(party, sleepState);
+              if (shouldSkipSleep || party.currentSleepiness === 0 || sleepDurationMs <= 100) {
                 updated.state = 'pray';
                 updated.durationMs = getStateDurationMs(party, 'pray');
               } else {
                 updated.state = sleepState;
                 updated.durationMs = sleepDurationMs;
               }
-              if (shouldSkipFeast) {
-                updated.skipFeastThisCycle = false;
+              if (shouldSkipSleep) {
+                updated.skipSleepThisCycle = false;
               }
             } else if (updated.state === 'feast') {
               const baseSpend = Math.floor((cyclePendingProfit * rollPercentInclusive(33, 67)) / 100);
@@ -4374,7 +4382,7 @@ export function HomeScreen({
   };
 
   // SpecRef: 5.1.1 | Party State Machine | Durration modifilier
-  const getPartyStateDurationMultiplier = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray' | 'explore'): number => {
+  const getPartyStateDurationMultiplier = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'slump' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray' | 'explore'): number => {
     const deityGold = state.global.deityDonations[normalizeDeityName(party.deity.name)] ?? party.deityGold ?? 0;
     const deityMultiplier = getDeityStateDurationMultiplier(party.deity.name, deityGold, cycleState);
     if (cycleState !== 'explore') return deityMultiplier;
@@ -4383,7 +4391,7 @@ export function HomeScreen({
   };
 
   // SpecRef: 5.1 | PROGRESS | Step
-  const getStateDurationMs = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray'): number => {
+  const getStateDurationMs = (party: Party, cycleState: 'rest' | 'sell' | 'feast' | 'slump' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray'): number => {
     const durationScale = getTimeSpeedScale(debugSettings);
     const autoSellCount = Math.max(1, party.lastExpeditionLog?.autoSellCount ?? 1);
     const baseStepCount = cycleState === 'rest'
@@ -4392,6 +4400,8 @@ export function HomeScreen({
         ? autoSellCount
         : cycleState === 'feast'
           ? 6
+          : cycleState === 'slump'
+            ? 1 + Math.max(0, Math.floor(-party.condition / 20))
           : cycleState === 'sound_sleep'
             ? 8
             : cycleState === 'nap_sleep'
