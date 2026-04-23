@@ -379,7 +379,7 @@ If `a.*` with phase = START:
 **opponent-reactive**
 - If (phase is LONG) and (opponent.`a.illusion`1) and (the `a.illusion` is enable) and (actor doesn't have `a.illusion-breaker`), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. Log: `log.illusion‘
 - If (phase is LONG) and (opponent.party.character.`a.illusion`2) and (the `a.illusion` is enable) and (actor doesn't have `a.illusion-breaker`), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. Log: `log.illusion‘.
-- If (phase is LONG) and (opponent.`a.illusion`) and (the `a.illusion` is enable) and (actor doesn't have `a.illusion-breaker`), disable the `a.illusion` for this battle. Log: `log.illusion-breaker`
+- If (phase is LONG) and (opponent.`a.illusion`) and (the `a.illusion` is enable) and (actor has `a.illusion-breaker`), disable the `a.illusion` for this battle. Log: `log.illusion-breaker`
 
 ##### 6.1.3.2 Reactive ability
 - Priority: On-strike > Counter > Ally-follow-up
