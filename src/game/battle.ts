@@ -439,7 +439,9 @@ function isIllusionActive(
   hasIllusionAbility: boolean,
   illusionStateId: string,
   consumedIllusionStateIds: Set<string>,
+  actorAbilities: AbilityLike[] = [],
 ): boolean {
+  if (hasAbility(actorAbilities, 'illusion_breaker')) return false;
   return phase === 'long' && hasIllusionAbility && !consumedIllusionStateIds.has(illusionStateId);
 }
 
@@ -447,11 +449,19 @@ function isPartyIllusionActive(
   phase: BattleActionPhase,
   characterStats: ComputedCharacterStats[],
   consumedPartyIllusion: boolean,
+  actorAbilities: AbilityLike[] = [],
 ): boolean {
+  if (hasAbility(actorAbilities, 'illusion_breaker')) return false;
   return phase === 'long' && !consumedPartyIllusion && partyHasIllusionLevel(characterStats, 2);
 }
 
-function isStealthActive(charStats: ComputedCharacterStats, partyHp: number, maxPartyHp: number): boolean {
+function isStealthActive(
+  charStats: ComputedCharacterStats,
+  partyHp: number,
+  maxPartyHp: number,
+  actorAbilities: AbilityLike[] = [],
+): boolean {
+  if (hasAbility(actorAbilities, 'pursuit')) return false;
   if (!hasStealth(charStats)) return false;
   if (maxPartyHp <= 0) return false;
   const threshold = getStealthLevel(charStats) >= 2 ? 0.29 : 0.24;
@@ -466,17 +476,30 @@ function getBulwarkLevel(charStats: ComputedCharacterStats): number {
   return charStats.abilities.find(a => a.id === 'bulwark')?.level ?? 0;
 }
 
+function isEnemyStealthActive(
+  enemy: EnemyDef,
+  enemyHp: number,
+  attackerAbilities: AbilityLike[] = [],
+): boolean {
+  if (hasAbility(attackerAbilities, 'pursuit')) return false;
+  const stealthLevel = getEnemyAbilityLevel(enemy, 'stealth');
+  if (stealthLevel <= 0 || enemy.hp <= 0) return false;
+  const threshold = stealthLevel >= 2 ? 0.29 : 0.24;
+  return (enemyHp / enemy.hp) <= threshold;
+}
+
 // SpecRef: 6.1.4.2 | Function of targeting | f.targeting
 function resolveEnemyTarget(
   targetRow: number,
   characterStats: ComputedCharacterStats[],
-  phase: BattleActionPhase
+  phase: BattleActionPhase,
+  actorAbilities: AbilityLike[] = [],
 ): ComputedCharacterStats | null {
   const selectedTarget = characterStats.find(cs => cs.row === targetRow);
   if (!selectedTarget) return null;
 
   const allowsBulwarkRedirect = phase === 'long' || phase === 'close';
-  if (!allowsBulwarkRedirect) {
+  if (!allowsBulwarkRedirect || hasAbility(actorAbilities, 'bulwark_breaker')) {
     return selectedTarget;
   }
 
@@ -942,6 +965,7 @@ interface CharacterAttackResult {
   totalAttempts: number;
   hits: number;
   wasNegatedByEnemyIllusion?: boolean;
+  wasNegatedByEnemyStealth?: boolean;
   wasNegatedByMagicSeal?: boolean;
   reflectedDamage?: number;
   reflectedSourceDamage?: number;
@@ -3268,12 +3292,15 @@ export function executeBattle(
   };
 
   const triggerFreeAtTiming = (phase: BattleActionPhase, timing: number): boolean => {
+    // SpecRef: 6.1.2 | Function of battle | a.free
+    // SpecRef: 1.1 | CONSTANTS_GLOSSARY | a.pursuit
     if (forcedOutcome || partyHp <= 0 || enemyHp <= 0) {
       return false;
     }
 
     const enemyFreeLevel = getEnemyAbilityLevel(enemy, 'free');
-    if (getFreeTimingForPhase(phase, enemyFreeLevel) === timing) {
+    const partyHasPursuit = characterStats.some((stats) => getAbilityLevel(stats, 'pursuit') > 0);
+    if (!partyHasPursuit && getFreeTimingForPhase(phase, enemyFreeLevel) === timing) {
       forcedOutcome = 'draw';
       forcedOutcomePhase = phase;
       log.push({
@@ -3296,6 +3323,10 @@ export function executeBattle(
 
     const freeOwner = partyFreeEntries[0];
     if (!freeOwner) {
+      return false;
+    }
+    const enemyHasPursuit = getEnemyAbilityLevel(enemy, 'pursuit') > 0;
+    if (enemyHasPursuit) {
       return false;
     }
 
@@ -3442,13 +3473,14 @@ export function executeBattle(
       hasIllusion(targetCharStats),
       `character:${targetCharStats.characterId}`,
       consumedIllusionStateIds,
+      enemy.abilities,
     );
 
     if (avoidedByIllusion) {
       consumedIllusionStateIds.add(`character:${targetCharStats.characterId}`);
     } else {
       for (let i = 0; i < hits; i++) {
-        if (isStealthActive(targetCharStats, partyHp, partyStats.hp)) {
+        if (isStealthActive(targetCharStats, partyHp, partyStats.hp, enemy.abilities)) {
           avoidedByStealth = true;
           continue;
         }
@@ -3555,11 +3587,15 @@ export function executeBattle(
       const coveringFireResult = calculateCharacterDamage('long', coverCharStats, coverChar, enemy, enemyHp, characterStats, partyStats, partyHp, partyDeityKey, environment.terrainEffect, coveringFireNoAMultiplier, 0, 0, resolveCharacterOffenseAmplifierMultiplier(coverCharStats.characterId), coveringFireEchoDomainUsageCount);
       if (coveringFireResult.totalAttempts <= 0) continue;
 
-      if (isIllusionActive('long', getEnemyAbilityLevel(enemy, 'illusion') > 0, 'enemy', consumedIllusionStateIds)) {
+      if (isIllusionActive('long', getEnemyAbilityLevel(enemy, 'illusion') > 0, 'enemy', consumedIllusionStateIds, coverCharStats.abilities)) {
         consumedIllusionStateIds.add('enemy');
         coveringFireResult.damage = 0;
         coveringFireResult.hits = 0;
         coveringFireResult.wasNegatedByEnemyIllusion = true;
+      } else if (isEnemyStealthActive(enemy, enemyHp, coverCharStats.abilities)) {
+        coveringFireResult.damage = 0;
+        coveringFireResult.hits = 0;
+        coveringFireResult.wasNegatedByEnemyStealth = true;
       }
 
       addEnemyHitsReceived(coveringFireResult.hits);
@@ -3586,7 +3622,7 @@ export function executeBattle(
           : undefined,
         ...coverFireSwarmBonuses,
         isCounter: true,
-        wasNegated: coveringFireResult.wasNegatedByEnemyIllusion || undefined,
+        wasNegated: coveringFireResult.wasNegatedByEnemyIllusion || coveringFireResult.wasNegatedByEnemyStealth || undefined,
         elementalOffense: coverCharStats.elementalOffense,
       });
 
@@ -3595,6 +3631,13 @@ export function executeBattle(
           phase,
           actor: 'effect',
           action: `${enemy.name} への攻撃はすべて幻だった！`,
+        });
+      }
+      if (coveringFireResult.wasNegatedByEnemyStealth) {
+        log.push({
+          phase,
+          actor: 'effect',
+          action: `${enemy.name} は神隠れした。もう攻撃はこれ以上あたらない！`,
         });
       }
 
@@ -4054,7 +4097,7 @@ export function executeBattle(
       if (enemyDecomposeLevel > 0) {
         const { row, newCtx } = getTargetRow(ctx, 'close');
         ctx = newCtx;
-        const target = resolveEnemyTarget(row, characterStats, 'close');
+        const target = resolveEnemyTarget(row, characterStats, 'close', enemy.abilities);
         if (target) {
           const multiplier = getDecomposeDefenseMultiplier(enemyDecomposeLevel);
           const previousDefense = target.physicalDefense;
@@ -4224,7 +4267,7 @@ export function executeBattle(
       if (enemySelfDestructLevel > 0) {
         const { row: targetRow, newCtx } = getTargetRow(ctx, 'close');
         ctx = newCtx;
-        const target = resolveEnemyTarget(targetRow, characterStats, 'close')
+        const target = resolveEnemyTarget(targetRow, characterStats, 'close', enemy.abilities)
           ?? characterStats[Math.floor(Math.random() * characterStats.length)]
           ?? null;
 
@@ -4513,7 +4556,7 @@ export function executeBattle(
           for (let i = 0; i < attempts; i++) {
             const { row: targetRow, newCtx } = getTargetRow(ctx, phase);
             ctx = newCtx;
-            const targetCharStats = resolveEnemyTarget(targetRow, characterStats, phase);
+            const targetCharStats = resolveEnemyTarget(targetRow, characterStats, phase, enemy.abilities);
             if (!targetCharStats) {
               enemyHitIndex += 1;
               continue;
@@ -4660,12 +4703,13 @@ export function executeBattle(
             let reflectedSourceDamage = 0;
             let absorbedDamage = 0;
             let avoidedByStealth = false;
-            const avoidedByPartyIllusion = isPartyIllusionActive(phase, characterStats, consumedPartyIllusion);
+            const avoidedByPartyIllusion = isPartyIllusionActive(phase, characterStats, consumedPartyIllusion, enemy.abilities);
             const avoidedByIllusion = avoidedByPartyIllusion || isIllusionActive(
               phase,
               hasIllusion(attack.charStats),
               `character:${charId}`,
               consumedIllusionStateIds,
+              enemy.abilities,
             );
 
             const defensiveReaction = getDefensiveReaction(phase, enemy.elementalOffense, attack.charStats.abilities, enemy.abilities);
@@ -4686,7 +4730,7 @@ export function executeBattle(
               }
             } else {
               for (const hitDamage of hitDamagesToApply) {
-                if (isStealthActive(attack.charStats, partyHp, partyStats.hp)) {
+                if (isStealthActive(attack.charStats, partyHp, partyStats.hp, enemy.abilities)) {
                   avoidedByStealth = true;
                   continue;
                 }
@@ -5020,14 +5064,15 @@ export function executeBattle(
               reCounterDamage += calculateSingleEnemyAttackDamage(phase, enemy, characterStats, attack.charStats, enemyHp, partyHp, partyStats.hp, environment.terrainEffect, enemyOffenseAmplifierMultiplier, enemyReCounterEchoDomainUsageCount);
             }
 
-            const avoidedByPartyIllusionOnReCounter = isPartyIllusionActive(phase, characterStats, consumedPartyIllusion);
+            const avoidedByPartyIllusionOnReCounter = isPartyIllusionActive(phase, characterStats, consumedPartyIllusion, enemy.abilities);
             const avoidedReCounterByIllusion = avoidedByPartyIllusionOnReCounter || isIllusionActive(
               phase,
               hasIllusion(attack.charStats),
               `character:${charId}`,
               consumedIllusionStateIds,
+              enemy.abilities,
             );
-            const avoidedReCounterByStealth = !avoidedReCounterByIllusion && isStealthActive(attack.charStats, partyHp, partyStats.hp);
+            const avoidedReCounterByStealth = !avoidedReCounterByIllusion && isStealthActive(attack.charStats, partyHp, partyStats.hp, enemy.abilities);
             if (avoidedReCounterByIllusion) {
               if (avoidedByPartyIllusionOnReCounter) {
                 consumedPartyIllusion = true;
@@ -5259,7 +5304,7 @@ export function executeBattle(
           if (candidates.length === 0) return null;
           const { row: targetRow, newCtx } = getTargetRow(ctx, phase);
           ctx = newCtx;
-          const selected = resolveEnemyTarget(targetRow, candidates, phase) ?? candidates[Math.floor(Math.random() * candidates.length)];
+          const selected = resolveEnemyTarget(targetRow, candidates, phase, enemy.abilities) ?? candidates[Math.floor(Math.random() * candidates.length)];
           antagonismTarget = selected;
           antagonismTargetName = party.characters.find(c => c.id === selected.characterId)?.name ?? '???';
           ambushMultiplier = getAmbushAmplifier(
@@ -5387,12 +5432,21 @@ export function executeBattle(
 
           if (
             result.totalAttempts > 0
-            && isIllusionActive(phase, getEnemyAbilityLevel(enemy, 'illusion') > 0, 'enemy', consumedIllusionStateIds)
+            && isIllusionActive(phase, getEnemyAbilityLevel(enemy, 'illusion') > 0, 'enemy', consumedIllusionStateIds, cs.abilities)
           ) {
             consumedIllusionStateIds.add('enemy');
             result.damage = 0;
             result.hits = 0;
             result.wasNegatedByEnemyIllusion = true;
+          }
+          if (
+            result.totalAttempts > 0
+            && !result.wasNegatedByEnemyIllusion
+            && isEnemyStealthActive(enemy, enemyHp, cs.abilities)
+          ) {
+            result.damage = 0;
+            result.hits = 0;
+            result.wasNegatedByEnemyStealth = true;
           }
 
           const defensiveReaction = getDefensiveReaction(phase, cs.elementalOffense, enemy.abilities, cs.abilities);
@@ -5482,7 +5536,7 @@ export function executeBattle(
             executionMultiplier: executionMultiplier > 1.0 ? executionMultiplier : undefined,
             ...characterAttackSwarmBonuses,
             isReAttack: isReAttack || undefined,
-            wasNegated: result.wasNegatedByEnemyIllusion || undefined,
+            wasNegated: result.wasNegatedByEnemyIllusion || result.wasNegatedByEnemyStealth || undefined,
             elementalOffense: cs.elementalOffense,
           });
         } else if (absorb) {
@@ -5509,7 +5563,7 @@ export function executeBattle(
             executionMultiplier: executionMultiplier > 1.0 ? executionMultiplier : undefined,
             ...characterAttackSwarmBonuses,
             isReAttack: isReAttack || undefined,
-            wasNegated: result.wasNegatedByEnemyIllusion || undefined,
+            wasNegated: result.wasNegatedByEnemyIllusion || result.wasNegatedByEnemyStealth || undefined,
             elementalOffense: cs.elementalOffense,
           });
         } else if (nullify) {
@@ -5534,7 +5588,7 @@ export function executeBattle(
             executionMultiplier: executionMultiplier > 1.0 ? executionMultiplier : undefined,
             ...characterAttackSwarmBonuses,
             isReAttack: isReAttack || undefined,
-            wasNegated: result.wasNegatedByEnemyIllusion || undefined,
+            wasNegated: result.wasNegatedByEnemyIllusion || result.wasNegatedByEnemyStealth || undefined,
             elementalOffense: cs.elementalOffense,
           });
         } else {
@@ -5564,7 +5618,7 @@ export function executeBattle(
             executionMultiplier: executionMultiplier > 1.0 ? executionMultiplier : undefined,
             ...characterAttackSwarmBonuses,
             isReAttack: isReAttack || undefined,
-            wasNegated: result.wasNegatedByEnemyIllusion || undefined,
+            wasNegated: result.wasNegatedByEnemyIllusion || result.wasNegatedByEnemyStealth || undefined,
             elementalOffense: cs.elementalOffense,
           });
         }
@@ -5578,6 +5632,13 @@ export function executeBattle(
             phase,
             actor: 'effect',
             action: `${enemy.name} への攻撃はすべて幻だった！`,
+          });
+        }
+        if (!isAntagonism && result.wasNegatedByEnemyStealth) {
+          log.push({
+            phase,
+            actor: 'effect',
+            action: `${enemy.name} は神隠れした。もう攻撃はこれ以上あたらない！`,
           });
         }
 
