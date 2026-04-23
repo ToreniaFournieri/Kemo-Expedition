@@ -267,6 +267,9 @@ If `a.*` with phase = START:
   - Triggered by `a.free` and (opponent members don't have `a.pursuit`)
   - this battle is Draw.
   - Log: `log.free`
+  - Triggered by `a.free` and opponent member has `a.pursuit`, 
+  - this battle continues. 
+  - Log: `log.pursuit`
 
 - **Flying**
   - Triggered by `a.flying`
