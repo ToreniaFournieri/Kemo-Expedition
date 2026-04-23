@@ -4495,6 +4495,7 @@ export function executeBattle(
           if (attempts <= 0 || partyHp <= 0 || enemyHp <= 0) return;
           const enemyEchoDomainUsageCount = registerElementalOffenseUsage(enemy.elementalOffense, enemy.abilities);
           const enemyEchoDomainLogText = getEchoDomainLogText(enemy.elementalOffense, enemy.abilities);
+          let simulatedPartyHp = partyHp;
 
           const attacksByTarget = new Map<number, {
             hitDamages: number[];
@@ -4562,7 +4563,7 @@ export function executeBattle(
             const executionAmplifier = getExecutionAmplifier(
               enemy.abilities,
               targetCharStats.abilities,
-              partyHp,
+              simulatedPartyHp,
               partyStats.hp,
             );
 
@@ -4583,7 +4584,9 @@ export function executeBattle(
                 enemyOffenseAmplifierMultiplier * ambushAmplifier * overwatchAmplifier * executionAmplifier,
                 enemyEchoDomainUsageCount,
               );
-              targetAttack.hitDamages.push(Math.max(1, Math.floor(singleDamage * resonanceAmplifier)));
+              const predictedHitDamage = Math.max(1, Math.floor(singleDamage * resonanceAmplifier));
+              targetAttack.hitDamages.push(predictedHitDamage);
+              simulatedPartyHp = Math.max(0, simulatedPartyHp - predictedHitDamage);
             }
 
             targetAttack.ambushMultiplier = Math.max(targetAttack.ambushMultiplier, ambushAmplifier);
