@@ -43,6 +43,7 @@ import {
   buildNullRequiemAction,
   buildNullShockAction,
   buildNullAntagonismAction,
+  buildPursuitAction,
   buildRequiemAction,
   buildRegenerationAction,
   buildReanimateAction,
@@ -3299,8 +3300,15 @@ export function executeBattle(
     }
 
     const enemyFreeLevel = getEnemyAbilityLevel(enemy, 'free');
-    const partyHasPursuit = characterStats.some((stats) => getAbilityLevel(stats, 'pursuit') > 0);
-    if (!partyHasPursuit && getFreeTimingForPhase(phase, enemyFreeLevel) === timing) {
+    const partyPursuitOwner = characterStats
+      .map((stats) => ({
+        stats,
+        level: getAbilityLevel(stats, 'pursuit'),
+        ownerName: party.characters.find((char) => char.id === stats.characterId)?.name ?? '味方',
+      }))
+      .filter((entry) => entry.level > 0)
+      .sort((a, b) => a.stats.row - b.stats.row)[0];
+    if (!partyPursuitOwner && getFreeTimingForPhase(phase, enemyFreeLevel) === timing) {
       forcedOutcome = 'draw';
       forcedOutcomePhase = phase;
       log.push({
@@ -3310,6 +3318,16 @@ export function executeBattle(
         action: buildFreeAction(enemy.name),
       });
       return true;
+    }
+    if (partyPursuitOwner && getFreeTimingForPhase(phase, enemyFreeLevel) === timing) {
+      log.push({
+        phase,
+        initiativeRoll: timing,
+        actor: 'triggered',
+        characterId: partyPursuitOwner.stats.characterId,
+        action: buildPursuitAction(partyPursuitOwner.ownerName, enemy.name),
+      });
+      return false;
     }
 
     const partyFreeEntries = characterStats
@@ -3327,6 +3345,12 @@ export function executeBattle(
     }
     const enemyHasPursuit = getEnemyAbilityLevel(enemy, 'pursuit') > 0;
     if (enemyHasPursuit) {
+      log.push({
+        phase,
+        initiativeRoll: timing,
+        actor: 'triggered',
+        action: buildPursuitAction(enemy.name, freeOwner.ownerName),
+      });
       return false;
     }
 
