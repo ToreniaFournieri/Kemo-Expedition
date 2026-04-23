@@ -163,6 +163,20 @@ const FREE_LOGS = [
   '{actor} は追撃を振り切り、離脱した！',
 ] as const;
 
+// SpecRef: 6.2.1 | Ability flavor text | log.pursuit
+const PURSUIT_LOGS = [
+  '{target}は逃走を試みたが{actor}に阻まれた',
+  '{target}は逃げ出そうとしたが{actor}が立ちはだかった',
+  '{target}は退却を図るも{actor}に追いつかれた',
+  '{target}は背を向けたが{actor}が即座に追撃した',
+  '{target}は逃げ道を探したが{actor}に封じられた',
+  '{target}は離脱を試みたが{actor}がそれを許さない',
+  '{target}は戦場から逃れようとしたが{actor}に捕捉された',
+  '{target}は逃走を図るも{actor}の追跡から逃れられない',
+  '{target}は距離を取ろうとしたが{actor}が詰め寄った',
+  '{target}は必死に逃げようとしたが{actor}に行く手を遮られた',
+] as const;
+
 const SHOCK_LOGS = [
   '{target} は感電し、{actor} の攻撃は中断された！',
   '{target} に電撃が走り、{actor} の攻撃は止められた！',
@@ -494,6 +508,13 @@ export function buildDecomposeAction(actorName: string, targetName: string): str
 
 export function buildFreeAction(actorName: string): string {
   return pickRandomEntry(FREE_LOGS).replace(/\{actor\}/g, actorName);
+}
+
+// SpecRef: 6.2.1 | Ability flavor text | log.pursuit
+export function buildPursuitAction(actorName: string, targetName: string): string {
+  return pickRandomEntry(PURSUIT_LOGS)
+    .replace(/\{actor\}/g, actorName)
+    .replace(/\{target\}/g, targetName);
 }
 
 export function buildShockAction(actorName: string, targetName: string): string {
