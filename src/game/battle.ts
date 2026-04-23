@@ -128,6 +128,19 @@ function getEnemyRageAmplifier(enemy: EnemyDef, enemyHp: number, opponentAbiliti
   return Math.min(2.0, 1.0 + (multiplierPerDamageRate * (1.0 - hpRatio)));
 }
 
+// SpecRef: 6.1.4.1 | Function of attack | f.momentum_amplifer
+function getEnemyMomentumAmplifier(enemy: EnemyDef, enemyHp: number, opponentAbilities: AbilityLike[] = []): number {
+  const momentumLevel = getEnemyAbilityLevel(enemy, 'momentum');
+  if (momentumLevel <= 0) return 1.0;
+  if (hasAbility(opponentAbilities, 'momentum_breaker')) return 1.0;
+  if (enemy.hp <= 0) return 1.0;
+  const hpRatio = Math.max(0, Math.min(1, enemyHp / enemy.hp));
+  if (momentumLevel >= 2) {
+    return Math.max(0.01, 1.25 - ((1.0 - hpRatio) * 0.4));
+  }
+  return Math.max(0.01, 1.25 - ((1.0 - hpRatio) * 0.5));
+}
+
 function toRageBonusPercent(rageAmplifier: number): number {
   return Math.max(0, Math.round((rageAmplifier - 1.0) * 100));
 }
@@ -592,6 +605,7 @@ function calculateSingleEnemyAttackDamage(
 
   const partyDefenseAbilityAmplifier = getPartyDefenseAbilityAmplifier(phase, characterStats, targetCharStats.row, enemy.abilities);
   const rageAmplifier = getEnemyRageAmplifier(enemy, enemyHp, targetCharStats.abilities);
+  const momentumAmplifier = getEnemyMomentumAmplifier(enemy, enemyHp, targetCharStats.abilities);
   const mutualAmplifier = getMutualAmplifier(phase, enemy.abilities, targetCharStats.abilities);
   const terrainAmplifier = getTerrainAmplifier(phase, terrainEffect, false, enemy.abilities);
   const elementalOffenseAttributeAmplifier = getElementalOffenseAttributeAmplifier(terrainEffect, enemy.elementalOffense, echoDomainElementalUsageCount, enemy.abilities);
@@ -603,7 +617,7 @@ function calculateSingleEnemyAttackDamage(
     partyHp,
     maxPartyHp,
   );
-  const rawDamage = (attack - effectiveDefense) * amplifier * runtimeOffenseMultiplier * enemy.elementalOffenseValue * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier;
+  const rawDamage = (attack - effectiveDefense) * amplifier * runtimeOffenseMultiplier * enemy.elementalOffenseValue * elementalMultiplier * defenseAmplifier * partyDefenseAbilityAmplifier * rageAmplifier * momentumAmplifier * mutualAmplifier * terrainAmplifier * elementalOffenseAttributeAmplifier * swarmAmplifier;
   const totalDamage = Math.max(1, rawDamage);
 
   return applyTerrainDamageOverride(Math.floor(totalDamage), terrainEffect, maxPartyHp, enemy.abilities);
@@ -4753,6 +4767,7 @@ export function executeBattle(
             }
 
             const enemyAttackRageBonusPercent = toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp));
+            const enemyAttackMomentumBonusPercent = toMomentumBonusPercent(getEnemyMomentumAmplifier(enemy, enemyHp, attack.charStats.abilities));
             const enemyAttackSwarmBonuses = getSwarmLogBonuses(enemy.abilities, enemyHp, enemy.hp, attack.charStats.abilities, partyHp, partyStats.hp);
             const enemyAttackAmbushMultiplier = attack.ambushMultiplier;
             const enemyAttackOverwatchMultiplier = attack.overwatchMultiplier;
@@ -4773,6 +4788,7 @@ export function executeBattle(
                 totalAttempts: attack.totalAttempts,
                 wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
                 rageBonusPercent: phase === 'mid' ? undefined : (enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined),
+                momentumBonusPercent: phase === 'mid' ? undefined : (enemyAttackMomentumBonusPercent > 0 ? enemyAttackMomentumBonusPercent : undefined),
                 ambushMultiplier: enemyAttackAmbushMultiplier > 1.0 ? enemyAttackAmbushMultiplier : undefined,
                 overwatchMultiplier: enemyAttackOverwatchMultiplier > 1.0 ? enemyAttackOverwatchMultiplier : undefined,
                 executionMultiplier: enemyAttackExecutionMultiplier > 1.0 ? enemyAttackExecutionMultiplier : undefined,
@@ -4797,6 +4813,7 @@ export function executeBattle(
                 totalAttempts: attack.totalAttempts,
                 wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
                 rageBonusPercent: phase === 'mid' ? undefined : (enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined),
+                momentumBonusPercent: phase === 'mid' ? undefined : (enemyAttackMomentumBonusPercent > 0 ? enemyAttackMomentumBonusPercent : undefined),
                 ambushMultiplier: enemyAttackAmbushMultiplier > 1.0 ? enemyAttackAmbushMultiplier : undefined,
                 overwatchMultiplier: enemyAttackOverwatchMultiplier > 1.0 ? enemyAttackOverwatchMultiplier : undefined,
                 executionMultiplier: enemyAttackExecutionMultiplier > 1.0 ? enemyAttackExecutionMultiplier : undefined,
@@ -4819,6 +4836,7 @@ export function executeBattle(
                 totalAttempts: attack.totalAttempts,
                 wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
                 rageBonusPercent: phase === 'mid' ? undefined : (enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined),
+                momentumBonusPercent: phase === 'mid' ? undefined : (enemyAttackMomentumBonusPercent > 0 ? enemyAttackMomentumBonusPercent : undefined),
                 ambushMultiplier: enemyAttackAmbushMultiplier > 1.0 ? enemyAttackAmbushMultiplier : undefined,
                 overwatchMultiplier: enemyAttackOverwatchMultiplier > 1.0 ? enemyAttackOverwatchMultiplier : undefined,
                 executionMultiplier: enemyAttackExecutionMultiplier > 1.0 ? enemyAttackExecutionMultiplier : undefined,
@@ -4840,6 +4858,7 @@ export function executeBattle(
                 totalAttempts: attack.totalAttempts,
                 wasNegated: appliedHits === 0 && (avoidedByIllusion || avoidedByStealth) ? true : undefined,
                 rageBonusPercent: phase === 'mid' ? undefined : (enemyAttackRageBonusPercent > 0 ? enemyAttackRageBonusPercent : undefined),
+                momentumBonusPercent: phase === 'mid' ? undefined : (enemyAttackMomentumBonusPercent > 0 ? enemyAttackMomentumBonusPercent : undefined),
                 ambushMultiplier: enemyAttackAmbushMultiplier > 1.0 ? enemyAttackAmbushMultiplier : undefined,
                 overwatchMultiplier: enemyAttackOverwatchMultiplier > 1.0 ? enemyAttackOverwatchMultiplier : undefined,
                 executionMultiplier: enemyAttackExecutionMultiplier > 1.0 ? enemyAttackExecutionMultiplier : undefined,
@@ -5034,6 +5053,7 @@ export function executeBattle(
             );
 
             const enemyReCounterRageBonusPercent = toRageBonusPercent(getEnemyRageAmplifier(enemy, enemyHp, attack.charStats.abilities));
+            const enemyReCounterMomentumBonusPercent = toMomentumBonusPercent(getEnemyMomentumAmplifier(enemy, enemyHp, attack.charStats.abilities));
             const enemyReCounterSwarmBonuses = getSwarmLogBonuses(enemy.abilities, enemyHp, enemy.hp, attack.charStats.abilities, partyHp, partyStats.hp);
             log.push({
               phase,
@@ -5045,6 +5065,7 @@ export function executeBattle(
               totalAttempts: reCounterAttempts,
               wasNegated: reCounterHits === 0 && (avoidedReCounterByIllusion || avoidedReCounterByStealth) ? true : undefined,
               rageBonusPercent: enemyReCounterRageBonusPercent > 0 ? enemyReCounterRageBonusPercent : undefined,
+              momentumBonusPercent: enemyReCounterMomentumBonusPercent > 0 ? enemyReCounterMomentumBonusPercent : undefined,
               ...enemyReCounterSwarmBonuses,
               isCounter: true,
               elementalOffense: enemy.elementalOffense,
