@@ -139,7 +139,7 @@
 | 3 | E | `Marine` | `i.robe`EA | 潮王の外套 |
 | 3 | E | `Marine` | `i.shield`EA | 雷電の防盾 | `r.thunder_x2/3` |
 | 3 | E | `Marine` | `i.sword`EA | 小刀 | `a.null-bind` |
-| 3 | E | `Marine` | `i.armor`EA | 深海鱗の鎧 |
+| 3 | E | `Marine` | `i.armor`EA | 鮫肌の鎧 | `a.execution-null` |
 | 3 | E | `Spirit` | `i.wand`EC | 灯霊の杖 |
 | 3 | E | `Spirit` | `i.grimoire`EC | 誘いの書 |
 | 3 | E | `Spirit` | `i.gauntlet`EC | 霊波の手甲 |
@@ -157,7 +157,7 @@
 | 3 | B | `Vulpinian` | `i.grimoire`BD | 狡猾の書 |
 | 3 | B | `Vulpinian` | `i.sword`BD | 雷式 | `e.thunder+0.030`, `b.strength+1` |
 | 3 | B | `Vulpinian` | `i.shield`BD | 矢払盾 | `a.deflection`1 |
-| 3 | B | `Vulpinian` | `i.catalyst`BD | 狐核の触媒 |
+| 3 | B | `Vulpinian` | `i.catalyst`BD | 狐假虎威 | `a.rage-breaker` |
 | 3 | B | `Vulpinian` | `i.gauntlet`BD | 肉球 |
 | 4 | C | none | `i.sword`C | 骨刃の短剣 |
 | 4 | C | none | `i.gauntlet`C | 骨環の手甲 |
@@ -175,7 +175,7 @@
 | 4 | U | none | `i.gauntlet`U | 砂革の手甲 |
 | 4 | U | none | `i.shield`U | 砂紋の盾 |
 | 4 | U | none | `i.armor`U | 砂旅の外衣 |
-| 4 | U | none | `i.robe`U | 乾風衣 |
+| 4 | U | none | `i.robe`U | 乾風衣 | `a.dryproof` |
 | 4 | U | none | `i.katana`U | 砂走刀 |
 | 4 | U | none | `i.wand`U | 陽炎の杖 |
 | 4 | U | none | `i.grimoire`U | 砂塵術式書 |
@@ -185,9 +185,9 @@
 | 4 | U | none | `i.archery`U | 砂風の弓 |
 | 4 | E | `Shadowfang` | `i.armor`EA | 影牙の鎧 |
 | 4 | E | `Shadowfang` | `i.bolt`EA | 影牙のボルト |
-| 4 | E | `Shadowfang` | `i.grimoire`EA | 影牙の秘本 |
+| 4 | E | `Shadowfang` | `i.grimoire`EA | サバイバル入門書 | `a.anti-ambush` |
 | 4 | E | `Shadowfang` | `i.katana`EA | 影牙の太刀 |
-| 4 | E | `Shadowfang` | `i.robe`EA | 影衣 | `a.dryproof` |
+| 4 | E | `Shadowfang` | `i.robe`EA | 影衣 |  `a.anti-overwatch` |
 | 4 | E | `Shadowfang` | `i.shield`EA | 紅の防盾 | `r.fire_x2/3` |
 | 4 | E | `Felidian` | `i.bolt`EB | 砂猫のボルト |
 | 4 | E | `Felidian` | `i.arrow`EB | 猫牙矢 |
