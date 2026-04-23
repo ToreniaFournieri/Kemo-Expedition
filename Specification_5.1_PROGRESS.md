@@ -26,8 +26,9 @@
 | State | Logic | Move to | Durration modifilier |
 |-------|-------|----------|---------|
 | `state.rest`  | at home | sell or feast | `God of Fortification` |
-| `state.sell` | at home, Sell auto-sell items to shop owners. and officially gain items (notification of item gains at the end of sell state.). If they have no trophy nor auto-sell item, skip this state. | feast | `God of Dusk` |
-| `state.feast` | at home, skip if current_profit = 0). Skipped if the party’s total HP was below 30% of Max HP at the beginning of rest state. | sound_sleep or nap_sleep or pray | `Goddess of Fertility` |
+| `state.sell` | at home, Sell auto-sell items to shop owners. and officially gain items (notification of item gains at the end of sell state.). If they have no trophy nor auto-sell item, skip this state. | If current_profit = 0) or the party’s total HP was below 30% of Max HP at the beginning of rest state, slump. Else feast  | `God of Dusk` |
+| `state.feast` | at home, | sound_sleep or nap_sleep or pray | `Goddess of Fertility` |
+| `state.slump` | | sound_sleep or nap_sleep or pray  | |
 | sleep/ `state.sound_sleep`, `state.nap_sleep` | at home. skip if the party’s total HP was below 10% of Max HP at the beginning of rest state. (no draw a ticket from `t.sleepiness_of_party_bag`) | sound sleep:outfit, nap_sleep:pray |
 | `state.outfit` | equipping items. skip if no sound_sleep | pray |
 | `state.pray` | at home. Party members donate money to their deity. | idle or move |
