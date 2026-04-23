@@ -7443,7 +7443,9 @@ function ExpeditionTab({
             : cycle.state === 'sell'
             ? Math.max(1, party.lastExpeditionLog?.autoSellItems?.length || party.lastExpeditionLog?.autoSellCount || 1)
             : Math.max(1, currentLog?.entries.length ?? 1);
-          const stepDurationMs = Math.max(1, cycle.durationMs / totalStepCount);
+          const stepDurationMs = cycle.state === 'rest'
+            ? Math.max(1, cycle.durationMs)
+            : Math.max(1, cycle.durationMs / totalStepCount);
           const elapsedWithinStepMs = cycleElapsedMs % stepDurationMs;
           return Math.min(100, (elapsedWithinStepMs / stepDurationMs) * 100);
         })();
