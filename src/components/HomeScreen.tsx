@@ -402,6 +402,7 @@ interface PartyCycleRuntime {
   isCurrentExpeditionGodsBattle?: boolean;
   skipFeastThisCycle?: boolean;
   skipSleepThisCycle?: boolean;
+  wasLowHpAtRestStart?: boolean;
 }
 
 interface AfkRuntimeSnapshot {
@@ -412,6 +413,16 @@ interface AfkRuntimeSnapshot {
 
 function rollPercentInclusive(min: number, max: number): number {
   return min + Math.random() * (max - min + Number.EPSILON);
+}
+
+// SpecRef: 5.1.1 | Party State Machine | state.feast
+function getFeastSpendingRangeByCondition(condition: number): { min: number; max: number } {
+  if (condition <= -50) return { min: 3, max: 6 };
+  if (condition <= 50) return { min: 5, max: 10 };
+  if (condition <= 150) return { min: 10, max: 20 };
+  if (condition <= 250) return { min: 20, max: 40 };
+  if (condition <= 350) return { min: 28, max: 56 };
+  return { min: 34, max: 68 };
 }
 
 const PARTY_CYCLE_TICK_MS = 100;
@@ -3476,6 +3487,7 @@ export function HomeScreen({
             isCurrentExpeditionGodsBattle: runtime.isCurrentExpeditionGodsBattle === true,
             skipFeastThisCycle: runtime.skipFeastThisCycle === true,
             skipSleepThisCycle: runtime.skipSleepThisCycle === true,
+            wasLowHpAtRestStart: runtime.wasLowHpAtRestStart === true,
           };
         });
         setPartyCycles(restoredCycles);
@@ -3601,6 +3613,7 @@ export function HomeScreen({
             isCurrentExpeditionGodsBattle: false,
             skipFeastThisCycle: false,
             skipSleepThisCycle: false,
+            wasLowHpAtRestStart: false,
           };
         });
         return next;
@@ -3777,6 +3790,9 @@ export function HomeScreen({
         };
         const updated = { ...runtime };
         const hpRatioAtRestStart = partyRuntimeStats.hp > 0 ? party.currentHp / partyRuntimeStats.hp : 1;
+        if (updated.state === 'rest' && updated.wasLowHpAtRestStart === undefined) {
+          updated.wasLowHpAtRestStart = hpRatioAtRestStart < 0.3;
+        }
 
         // SpecRef: 5.1.2 | Side Quest | Expiration
         if (party.sideQuest && simulationNow >= getScaledSideQuestExpiresAt(party.sideQuest, timeSpeedScale)) {
@@ -3830,7 +3846,7 @@ export function HomeScreen({
               updated.state = 'sell';
               updated.durationMs = getStateDurationMs(party, 'sell');
             } else {
-              const shouldMoveToSlump = updated.skipFeastThisCycle === true || (party.pendingProfit ?? 0) <= 0;
+              const shouldMoveToSlump = true;
               const shouldSkipSleep = updated.skipSleepThisCycle === true;
               if (shouldMoveToSlump) {
                 // SpecRef: 5.1.1 | Party State Machine | state.slump
@@ -3858,7 +3874,11 @@ export function HomeScreen({
           stateElapsedMs -= updated.durationMs;
 
             if (updated.state === 'sell') {
-              const shouldMoveToSlump = cyclePendingProfit <= 0 || updated.skipFeastThisCycle === true;
+              // SpecRef: 5.1.1 | Party State Machine | state.sell
+              const shouldMoveToSlump = cyclePendingProfit <= 0
+                || updated.wasLowHpAtRestStart === true
+                || party.condition <= 50
+                || updated.skipFeastThisCycle === true;
               if (shouldMoveToSlump) {
                 updated.state = 'slump';
                 updated.durationMs = getStateDurationMs(party, 'slump');
@@ -3884,7 +3904,8 @@ export function HomeScreen({
                 updated.skipSleepThisCycle = false;
               }
             } else if (updated.state === 'feast') {
-              const baseSpend = Math.floor((cyclePendingProfit * rollPercentInclusive(33, 67)) / 100);
+              const feastSpendRange = getFeastSpendingRangeByCondition(party.condition);
+              const baseSpend = Math.floor((cyclePendingProfit * rollPercentInclusive(feastSpendRange.min, feastSpendRange.max)) / 100);
               const squanderLevel = getPartyAbilityLevel(party, 'squander');
               const squanderMultiplier = squanderLevel >= 2 ? 1.5 : squanderLevel >= 1 ? 1.3 : 1;
               const spend = Math.min(cyclePendingProfit, Math.floor(baseSpend * squanderMultiplier));
@@ -4002,6 +4023,7 @@ export function HomeScreen({
               updated.isCurrentExpeditionGodsBattle = false;
               updated.skipFeastThisCycle = hpRatioAtRestStart < 0.3;
               updated.skipSleepThisCycle = shouldSkipSleepForLowHp;
+              updated.wasLowHpAtRestStart = hpRatioAtRestStart < 0.3;
             }
 
             if (updated.state === 'rest') {
@@ -4399,7 +4421,7 @@ export function HomeScreen({
       : cycleState === 'sell'
         ? autoSellCount
         : cycleState === 'feast'
-          ? 6
+          ? 3 + Math.max(0, Math.floor(party.condition / 50))
           : cycleState === 'slump'
             ? 1 + Math.max(0, Math.floor(-party.condition / 20))
           : cycleState === 'sound_sleep'
