@@ -38,7 +38,7 @@
 | 1 | E | `Beast` | `i.sword`EA | 牙の剣 |
 | 1 | E | `Beast` | `i.gauntlet`EA | 獣革の拳当て |
 | 1 | E | `Beast` | `i.robe`EA | 毛皮のまとい |
-| 1 | E | `Beast` | `i.katana`EA | 牙研ぎの曲刀 |
+| 1 | E | `Beast` | `i.katana`EA | 追跡の鎌 | `a.pursuit` |
 | 1 | E | `Beast` | `i.shield`EA | アイギスの盾 | `c.physical-defense_x2/3` |
 | 1 | E | `Aerial` | `i.robe`EB | 風羽衣 | `a.wind-rider` |
 | 1 | E | `Aerial` | `i.shield`EB | 銀鏡の盾 | `c.magical-defense-x2/3` |
@@ -253,7 +253,7 @@
 | 5 | E | `Ursan` | `i.grimoire`EC | 大熊の秘本 |
 | 5 | B | `Ursan` | `i.katana`BD | 焔断 | `a.fire-protect-breaker` |
 | 5 | B | `Ursan` | `i.shield`BD | 灰色の石 | `a.slow` |
-| 5 | B | `Ursan` | `i.gauntlet`BD | 重手甲 |
+| 5 | B | `Ursan` | `i.gauntlet`BD | 破壊腕 | `a.bulwark-breaker` |
 | 5 | B | `Ursan` | `i.sword`BD | 三連爪 |
 | 5 | B | `Ursan` | `i.armor`BD | 熊厚鎧 |
 | 5 | B | `Ursan` | `i.wand`BD | 軍配 |
@@ -293,7 +293,7 @@
 | 6 | E | `Golem` | `i.shield`EB | 岩核の盾 |
 | 6 | E | `Golem` | `i.sword`EB | 岩核の剣 |
 | 6 | E | `Mech` | `i.archery`EA | 鉄筒 |
-| 6 | E | `Mech` | `i.arrow`EA | 鉄礫 |
+| 6 | E | `Mech` | `i.arrow`EA | 鉄礫 | `a.illusion-breaker` |
 | 6 | E | `Mech` | `i.bolt`EA | 鉄塊 |
 | 6 | E | `Mech` | `i.shield`EA | シールド |
 | 6 | E | `Mech` | `i.robe`EA | ケージ |
