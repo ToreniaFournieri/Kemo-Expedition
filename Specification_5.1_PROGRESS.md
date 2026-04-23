@@ -72,27 +72,39 @@
   - 1 Nap: `state.nap_sleep` The party enters a short sleep (light rest).
   - 2 Sound sleep: `state.sound_sleep` The party enters a full sleep state.
 
-- Profit usuage:
-  - At: `state.rest`:
-      - `current_profit` = 0
-  - At the end of `state.sell`:
-      - `current_profit` = Sum of (Auto-sell items)
-  - At the end of `state.feast`:
-      - `current_profit` -= spending feast ( spend 33–67% of `current_profit` without `a.squander`, x1.3 spending with `a.squander`1, x1.5 spending with `a.squander`2. Not exceed current_profit )
-        - Notification :
-          - Without Squander: PT1は25Gお金を使った
-          - With Squander: PT1 君主トムは贅沢に50G使った
-  - At the end of `state.pray`:
-      - `current_profit` -= donattion ( 10–33% of `current_profit` without `a.tithe`, if party has `a.tithe`2, Adds +15% , else if party has `a.tithe`1, Adds +10, if deity = none, donation is 0. )
-      - `current_profit` -= embezzlement (if `God of Cunning`, +50% of `current_profit`. if partymember.`a.momentum`, +10% of `current_profit`. Else if, 0%)
-        -  Notification:
-          - deity = none: PT1は 43Gを貯金した
-          - Without Tithe: PT1は10G神に捧げ、30Gを貯金した
-          - With Tithe: PT1 巡礼者ブラザは祈りと共に12G神に捧げて、28Gを貯金した
-          - Without Gold: (no notification).
-          - If `God of Cunning`, add (21Gを着服した).   ex:PT1は10G神に捧げ、20Gを貯金した (20Gを着服した)
-      - `savings` = `current_profit`, `current_profit` = 0
-  - If Pressing 出撃/神魔戦 button (and it is Available for sortie )
+- **Profit usuage:**
+- At: `state.rest`:
+  - `current_profit` = 0
+- At the end of `state.sell`:
+  - `current_profit` = Sum of (Auto-sell items)
+- At the end of `state.feast`:
+  - `current_profit` -= spending feast ( spend N% of `current_profit` without `a.squander`, x1.3 spending with `a.squander`1, x1.5 spending with `a.squander`2. Not exceed current_profit )
+
+| `condition` | N:percentage of spending|
+|--:|--|
+| -400 ~ -50 | 3% ~ 6% |
+| -50 ~ 50 | 5% ~ 10% |
+| 51 ~ 150 | 10% ~ 20% |
+| 151 ~ 250 | 20% ~ 40% |
+| 251 ~ 350 | 28% ~ 56% |
+| 351 ~ 400 | 34% ~ 68% |
+
+
+  - Notification :
+    - Without Squander: PT1は25Gお金を使った
+    - With Squander: PT1 君主トムは贅沢に50G使った
+- At the end of `state.pray`:
+  - `current_profit` -= donattion ( 10–33% of `current_profit` without `a.tithe`, if party has `a.tithe`2, Adds +15% , else if party has `a.tithe`1, Adds +10, if deity = none, donation is 0. )
+  - `current_profit` -= embezzlement (if `God of Cunning`, +50% of `current_profit`. if partymember.`a.momentum`, +10% of `current_profit`. Else if, 0%)
+  - Notification:
+  - deity = none: PT1は 43Gを貯金した
+  - Without Tithe: PT1は10G神に捧げ、30Gを貯金した
+  - With Tithe: PT1 巡礼者ブラザは祈りと共に12G神に捧げて、28Gを貯金した
+  - Without Gold: (no notification).
+  - If `God of Cunning`, add (21Gを着服した).   ex:PT1は10G神に捧げ、20Gを貯金した (20Gを着服した)
+
+- `savings` = `current_profit`, `current_profit` = 0
+- If Pressing 出撃/神魔戦 button (and it is Available for sortie )
       - `current_profit` -= embezzlement ( 100% of `current_profit`)
         - Notification:
           - Without embezzlement: PT1は神の緊急動員に憤りながらも出撃した
