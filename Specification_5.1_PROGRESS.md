@@ -45,7 +45,7 @@
 
 | State | Japanese label | Duration | Progress bar behavior |
 |-------|-------|-------|-------|
-| `state.rest` | 休息中 | heal max(1500, +15% MaxHP) / 1 `Step` until full. Display current Step / estimated total Steps. | Step-based |
+| `state.rest` | 休息中 | heal max(1500, +15% MaxHP) / 1 `Step` until full. | Step-based. Main progress bar is current Step / initial total Steps at state start |
 | `state.sell` | 売却中 | 1 `Step` per `auto-sell` items | Step-based |
 | `state.feast` | 宴会中 | 3 + max(0, floor( + `condition` / 50)) `Step`  | Continuous |
 | `state.slump` | 不貞腐れ中 | 1 + max(0, floor( - `condition` / 20)) `Step` | Continuous |
