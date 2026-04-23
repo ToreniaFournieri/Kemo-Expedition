@@ -7369,6 +7369,24 @@ function ExpeditionTab({
           return displayedEntries[displayedEntries.length - 1].remainingPartyHP;
         })();
         const hpPercent = Math.min(100, Math.round((displayedHp / Math.max(1, partyStats.hp)) * 100));
+        const restProgressState = (() => {
+          if (cycle.state !== 'rest') return null;
+          // SpecRef: 5.1 | PROGRESS | state.rest
+          const healPerStep = Math.max(1500, Math.ceil(partyStats.hp * 0.15));
+          const missingHp = Math.max(0, partyStats.hp - party.currentHp);
+          const estimatedTotalSteps = Math.max(1, Math.ceil(missingHp / Math.max(1, healPerStep)));
+          const stepDurationMs = Math.max(1, cycle.durationMs);
+          const elapsedSteps = Math.floor(cycleElapsedMs / stepDurationMs);
+          const completedSteps = Math.min(estimatedTotalSteps, elapsedSteps);
+          const currentStep = Math.min(estimatedTotalSteps, completedSteps + 1);
+          return {
+            percent: (completedSteps / estimatedTotalSteps) * 100,
+            completedSteps,
+            currentStep,
+            estimatedTotalSteps,
+            stepDurationMs,
+          };
+        })();
         const sellProgressState = (() => {
           if (cycle.state !== 'sell') return null;
           const autoSellItems = party.lastExpeditionLog?.autoSellItems ?? [];
@@ -7392,6 +7410,9 @@ function ExpeditionTab({
           if (cycle.state === 'explore') {
             return (Math.min(EXPLORING_PROGRESS_TOTAL_STEPS, displayedEntries.length) / EXPLORING_PROGRESS_TOTAL_STEPS) * 100;
           }
+          if (restProgressState !== null) {
+            return restProgressState.percent;
+          }
           if (sellProgressState !== null) {
             return sellProgressState.percent;
           }
@@ -7405,11 +7426,12 @@ function ExpeditionTab({
           : normalizedProgressPercent;
         // SpecRef: 8.3 | UI_EXPEDITION | Sub progress bar
         const subProgressPercent = (() => {
-          if (cycle.state !== 'sell' && cycle.state !== 'explore') return null;
-          const totalStepCount = cycle.state === 'sell'
-            ? Math.max(1, party.lastExpeditionLog?.autoSellItems?.length || party.lastExpeditionLog?.autoSellCount || 1)
-            : Math.max(1, currentLog?.entries.length ?? 1);
-          const stepDurationMs = Math.max(1, cycle.durationMs / totalStepCount);
+          if (cycle.state !== 'rest' && cycle.state !== 'sell' && cycle.state !== 'explore') return null;
+          const stepDurationMs = cycle.state === 'rest'
+            ? (restProgressState?.stepDurationMs ?? Math.max(1, cycle.durationMs))
+            : cycle.state === 'sell'
+              ? Math.max(1, cycle.durationMs / Math.max(1, party.lastExpeditionLog?.autoSellItems?.length || party.lastExpeditionLog?.autoSellCount || 1))
+              : Math.max(1, cycle.durationMs / Math.max(1, currentLog?.entries.length ?? 1));
           const elapsedWithinStepMs = cycleElapsedMs % stepDurationMs;
           return Math.min(100, (elapsedWithinStepMs / stepDurationMs) * 100);
         })();
@@ -7417,6 +7439,9 @@ function ExpeditionTab({
           if (afkRecoveryProgressPercent !== null) return getPartyCycleStateLabel('reactivate');
           const stateLabel = getPartyCycleStateLabel(cycle.state);
           if (cycle.state === 'reactivate') return stateLabel;
+          if (restProgressState !== null) {
+            return `${stateLabel} (${formatNumber(restProgressState.currentStep)}/${formatNumber(restProgressState.estimatedTotalSteps)} Step)`;
+          }
           const leader = party.characters[0];
           if (!leader) return stateLabel;
           // SpecRef: 5.2 | PROGRESS_FLAVOR_TEXT | Flavor text cycle update
