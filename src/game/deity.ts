@@ -269,7 +269,7 @@ export function applyDeityCharacterModifiers(
 
 // SpecRef: 8.6 | UI_DIVINE_BUREAU | God scaling
 // SpecRef: 5.1.1 | Party State Machine | Durration modifilier
-export function getDeityStateDurationMultiplier(name: string, totalDonatedGold = 0, state: 'rest' | 'sell' | 'feast' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray' | 'explore'): number {
+export function getDeityStateDurationMultiplier(name: string, totalDonatedGold = 0, state: 'rest' | 'sell' | 'feast' | 'slump' | 'sound_sleep' | 'nap_sleep' | 'outfit' | 'pray' | 'explore'): number {
   const deityKey = getDeityKey(name);
   void totalDonatedGold;
   if (!deityKey) return 1;
