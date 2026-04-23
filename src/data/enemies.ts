@@ -133,7 +133,7 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
   },
   Marine: {
     ability1: [{ id: 'bind', level: 1 }],
-    ability30: [{ id: 'regeneration', level: 3 }],
+    ability30: [{ id: 'execution', level: 1 }],
     bonuses: [{ type: 'thunder_defense_multiplier_xV', value: 1.3 }],
   },
   Dragon: {
