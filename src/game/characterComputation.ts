@@ -1053,6 +1053,9 @@ export function getAbilityDescription(id: AbilityId, level: number): string {
     ice_protect_breaker: () => '氷属性攻撃時に相手の氷結反射・氷結吸収効果を無視する',
     thunder_protect_breaker: () => '雷属性攻撃時に相手の雷撃反射・雷撃吸収効果を無視する',
     m_barrier_breaker: () => '相手の魔法障壁・魔法反射・魔法吸収効果を無視する',
+    pursuit: () => '相手が逃走しても追いかける(逃走・隠れ蓑アビリティを無効化)',
+    illusion_breaker: () => '相手の幻を見破る(幻化アビリティを無効化)',
+    bulwark_breaker: () => '壁を取り壊す(壁アビリティを無効化)',
     unforgettable: () => 'アビリティは消して忘れることがなくなる(忘却無効)',
     focus: (l) => `命中ボーナスの効果が${l >= 2 ? '1.3' : '1.2'}倍になる`,
     prophecy: (l) => l >= 2

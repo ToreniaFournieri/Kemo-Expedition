@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 60 | 2026/4/23 | Implement runtime support for `a.pursuit`, `a.illusion-breaker`, and `a.bulwark-breaker`: `a.free` now fails when opponent has pursuit, stealth avoidance is bypassed by pursuit (including enemy stealth log `神隠れ`), LONG illusion negation is bypassed by illusion-breaker, and LONG/CLOSE bulwark redirect is bypassed by bulwark-breaker. |
 | 0.6.1 | 59 | 2026/4/23 | Fix enemy-side momentum runtime behavior in battle: add enemy `f.momentum_amplifier` application to damage calculation (with `a.momentum-breaker` nullification) and include 「気勢+N%」 battle-log output for enemy attacks/re-counters so enemy momentum behaves consistently with party members. |
 | 0.6.1 | 58 | 2026/4/23 | Fix AFK recovery progress bar continuity after page refresh: compute recovery percentage using a normalized total (`max(saved total, pending)`) so visualization no longer freezes at 0% when legacy/missing total state is restored mid catch-up. |
 | 0.6.1 | 57 | 2026/4/23 | Update runtime enemy-type mapping for `Marine`: set `ability30` to `a.execution` Lv1 (from `a.regeneration` Lv3) while keeping `ability1` as `a.bind` Lv1 and bonus `r.thunder_x1.3`. |
