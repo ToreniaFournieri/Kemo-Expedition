@@ -7445,19 +7445,6 @@ function ExpeditionTab({
           const elapsedWithinStepMs = cycleElapsedMs % stepDurationMs;
           return Math.min(100, (elapsedWithinStepMs / stepDurationMs) * 100);
         })();
-        // SpecRef: 5.1 | PROGRESS | Step progress text
-        const mainProgressStepLabel = (() => {
-          if (!STEP_BASED_STATES.has(cycle.state)) return null;
-          const totalStepCount = cycle.state === 'rest'
-            ? Math.max(1, cycle.restInitialTotalSteps ?? 1)
-            : cycle.state === 'sell'
-            ? Math.max(1, party.lastExpeditionLog?.autoSellItems?.length || party.lastExpeditionLog?.autoSellCount || 1)
-            : Math.max(1, currentLog?.entries.length ?? EXPLORING_PROGRESS_TOTAL_STEPS);
-          const stepDurationMs = Math.max(1, cycle.durationMs / totalStepCount);
-          const completedStepCount = Math.min(totalStepCount, Math.floor(cycleElapsedMs / stepDurationMs));
-          const currentStep = Math.min(totalStepCount, completedStepCount + 1);
-          return `${formatNumber(currentStep)}/${formatNumber(totalStepCount)}`;
-        })();
         const progressLabel = (() => {
           if (afkRecoveryProgressPercent !== null) return getPartyCycleStateLabel('reactivate');
           const stateLabel = getPartyCycleStateLabel(cycle.state);
@@ -7507,10 +7494,7 @@ function ExpeditionTab({
               displayCondition: getDebugSettings().displayFlavorCondition,
             },
           });
-          const stateLabelWithStep = mainProgressStepLabel
-            ? `${stateLabel} ${mainProgressStepLabel}`
-            : stateLabel;
-          return flavorText ? `${stateLabelWithStep}: ${flavorText}` : stateLabelWithStep;
+          return flavorText ? `${stateLabel}: ${flavorText}` : stateLabel;
         })();
         const hpForSortieCheck = cycle.state === 'explore' ? displayedHp : party.currentHp;
         const isColosseumSelected = selectedDungeon?.id === 99;
