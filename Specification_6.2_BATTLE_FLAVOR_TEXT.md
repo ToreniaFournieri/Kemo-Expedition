@@ -744,4 +744,18 @@
 | {target}は{actor}の鎮魂から逃れた |
 
 
+- `log.pursuit`
+
+| flavor text |
+|-|
+| {target}は逃走を試みたが{actor}に阻まれた |
+| {target}は逃げ出そうとしたが{actor}が立ちはだかった |
+| {target}は退却を図るも{actor}に追いつかれた |
+| {target}は背を向けたが{actor}が即座に追撃した |
+| {target}は逃げ道を探したが{actor}に封じられた |
+| {target}は離脱を試みたが{actor}がそれを許さない |
+| {target}は戦場から逃れようとしたが{actor}に捕捉された |
+| {target}は逃走を図るも{actor}の追跡から逃れられない |
+| {target}は距離を取ろうとしたが{actor}が詰め寄った |
+| {target}は必死に逃げようとしたが{actor}に行く手を遮られた |
 
