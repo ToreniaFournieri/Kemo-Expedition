@@ -7418,8 +7418,10 @@ function ExpeditionTab({
           }
           if (cycle.state === 'rest') {
             const totalSteps = Math.max(1, cycle.restInitialTotalSteps ?? 1);
-            const stepDurationMs = Math.max(1, cycle.durationMs);
-            const completedSteps = Math.min(totalSteps, Math.floor(cycleElapsedMs / stepDurationMs));
+            const healPerStep = Math.max(1500, Math.ceil(partyStats.hp * 0.15));
+            const missingHp = Math.max(0, partyStats.hp - party.currentHp);
+            const remainingSteps = missingHp <= 0 ? 0 : Math.ceil(missingHp / healPerStep);
+            const completedSteps = Math.max(0, Math.min(totalSteps, totalSteps - remainingSteps));
             return (completedSteps / totalSteps) * 100;
           }
           if (sellProgressState !== null) {
