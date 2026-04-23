@@ -147,6 +147,10 @@
   - Ignore intra-`Step` (sub-progress) timing.
   - Preserve only the discrete `Step` progress ratio.
 
+- **Refresh Handling**
+  - On page refresh, AFK emulation continues/resumes automatically.
+  - `state.reactivate` main progress must be persisted and restored exactly, maintaining its pre-refresh state.
+
 **Notification**
 - Format: 踏破N回/帰還Y回/引分Z回/撤退M回/敗北X回 寄付金額: vG, 貯金額:　vG
   - Key and label:Clear(踏破) / Turned_Back(帰還) / Draw_Retreat(引分) / Wounded_Retreat(撤退) / Defeat(敗北)
@@ -210,8 +214,6 @@ PT3: 貯金額: 10G
 | 6 | 3 |
 | 7 | 4 |
 | 8 | 4 |
-
-
 
 **AFK handling**
 - Side quest progress continues during AFK (`state.reactivate`).
