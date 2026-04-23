@@ -224,7 +224,11 @@ const ITEM_ADDITIONAL_BONUS_BY_NAME: Record<string, Bonus[]> = {
   '白妙': [{ type: 'ability', value: 1, abilityId: 'ice_protect_breaker', abilityLevel: 1 }],
   '祓詞': [{ type: 'ability', value: 1, abilityId: 'm_barrier_breaker', abilityLevel: 1 }],
   '境断': [{ type: 'ability', value: 1, abilityId: 'domain_breaker', abilityLevel: 1 }],
-  '影衣': [{ type: 'ability', value: 1, abilityId: 'dryproof', abilityLevel: 1 }],
+  '鮫肌の鎧': [{ type: 'ability', value: 1, abilityId: 'execution_null', abilityLevel: 1 }],
+  '狐假虎威': [{ type: 'ability', value: 1, abilityId: 'rage_breaker', abilityLevel: 1 }],
+  '乾風衣': [{ type: 'ability', value: 1, abilityId: 'dryproof', abilityLevel: 1 }],
+  'サバイバル入門書': [{ type: 'ability', value: 1, abilityId: 'anti_ambush', abilityLevel: 1 }],
+  '影衣': [{ type: 'ability', value: 1, abilityId: 'anti_overwatch', abilityLevel: 1 }],
   '俊敏の弓': [
     { type: 'ability', value: 1, abilityId: 'boost', abilityLevel: 1 },
     { type: 'physical_defense_multiplier_xV', value: 1.1 },
