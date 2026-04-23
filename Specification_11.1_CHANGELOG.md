@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 69 | 2026/4/23 | Implement AFK refresh-resume persistence for `state.reactivate` main progress: persist/restore completed AFK milliseconds together with pending/total recovery runtime so the recovery bar resumes at the exact pre-refresh percentage while AFK emulation automatically continues. |
 | 0.6.1 | 68 | 2026/4/23 | Fix Expedition Sub progress synchronization for `state.rest`: compute mini-bar elapsed ratio using the real per-Step rest tick duration (already debug-time-scaled) instead of dividing by total rest steps, while preserving Step-based visibility/placeholders and existing `state.sell`/`state.explore` behavior. |
 | 0.6.1 | 67 | 2026/4/23 | Fix Expedition `state.rest` main progress bar to be strictly Step-based: compute completed Rest Steps from HP restoration against per-Step heal amount so main progress advances in discrete Step jumps (e.g. 40%→50%) while the Sub progress bar continues animating within the current Step. |
 | 0.6.1 | 66 | 2026/4/23 | Update Expedition runtime progress behavior for Step-based rest: `state.rest` main bar now advances by completed Step count against the initial rest total Steps captured at rest start, and the Sub progress bar now appears for all Step-based states (`state.rest`/`state.sell`/`state.explore`) while remaining a placeholder for non Step-based states. |

@@ -2600,6 +2600,7 @@ export function HomeScreen({
   const pendingAfkMsRef = useRef(0);
   const afkSimulationAnchorRef = useRef<number | null>(null);
   const afkRecoveryTotalMsRef = useRef(0);
+  const afkRecoveryCompletedMsRef = useRef(0);
   const previousPendingAfkMsRef = useRef(0);
   const justCompletedAfkRecoveryRef = useRef(false);
   const shouldRebuildPartyCyclesAfterAfkRef = useRef(false);
@@ -3453,6 +3454,7 @@ export function HomeScreen({
         partyCycles?: Record<number, PartyCycleRuntime>;
         pendingAfkMs?: number;
         afkRecoveryTotalMs?: number;
+        afkRecoveryCompletedMs?: number;
         afkSimulationAnchor?: number | null;
       };
 
@@ -3466,9 +3468,15 @@ export function HomeScreen({
         : 0;
       if (restoredPendingAfkMs > 0) {
         setPendingAfkMs(restoredPendingAfkMs);
+        // SpecRef: 5.1.1 | Party State Machine | Refresh Handling
+        // Persist and restore the exact `state.reactivate` main-progress baseline.
+        const restoredCompletedAfkMs = typeof parsed.afkRecoveryCompletedMs === 'number'
+          ? Math.max(0, Math.min(parsed.afkRecoveryCompletedMs, AFK_MAX_ELAPSED_MS))
+          : 0;
+        afkRecoveryCompletedMsRef.current = restoredCompletedAfkMs;
         afkRecoveryTotalMsRef.current = typeof parsed.afkRecoveryTotalMs === 'number'
-          ? Math.max(restoredPendingAfkMs, parsed.afkRecoveryTotalMs)
-          : restoredPendingAfkMs;
+          ? Math.max(restoredPendingAfkMs + restoredCompletedAfkMs, parsed.afkRecoveryTotalMs)
+          : restoredPendingAfkMs + restoredCompletedAfkMs;
         afkSimulationAnchorRef.current = typeof parsed.afkSimulationAnchor === 'number'
           ? parsed.afkSimulationAnchor
           : Date.now();
@@ -3518,6 +3526,9 @@ export function HomeScreen({
 
   useEffect(() => {
     pendingAfkMsRef.current = pendingAfkMs;
+    afkRecoveryCompletedMsRef.current = pendingAfkMs > 0
+      ? Math.max(0, afkRecoveryTotalMsRef.current - pendingAfkMs)
+      : 0;
   }, [pendingAfkMs]);
 
   useEffect(() => {
@@ -3641,6 +3652,7 @@ export function HomeScreen({
 
     afkSimulationAnchorRef.current = null;
     afkRecoveryTotalMsRef.current = 0;
+    afkRecoveryCompletedMsRef.current = 0;
   }, [pendingAfkMs]);
 
   useEffect(() => {
@@ -3668,13 +3680,23 @@ export function HomeScreen({
     onDismissAllNotifications();
   }, [onDismissAllNotifications, suppressNotificationsForAfkEmulation]);
 
-  const afkRecoveryTotalMs = Math.max(pendingAfkMs, afkRecoveryTotalMsRef.current);
+  // SpecRef: 5.1.1 | Party State Machine | Refresh Handling
+  // Keep `state.reactivate` main progress stable across refresh by restoring persisted completed/pending AFK ms.
+  const afkRecoveryCompletedMs = Math.max(
+    0,
+    Math.min(AFK_MAX_ELAPSED_MS, afkRecoveryCompletedMsRef.current),
+  );
+  const afkRecoveryTotalMs = Math.max(
+    pendingAfkMs + afkRecoveryCompletedMs,
+    pendingAfkMs,
+    afkRecoveryTotalMsRef.current,
+  );
   const afkRecoveryProgressPercent = pendingAfkMs > 0
     ? Math.max(
         0,
         Math.min(
           100,
-          ((afkRecoveryTotalMs - pendingAfkMs) / Math.max(1, afkRecoveryTotalMs)) * 100
+          (afkRecoveryCompletedMs / Math.max(1, afkRecoveryTotalMs)) * 100
         )
       )
     : null;
@@ -3699,6 +3721,7 @@ export function HomeScreen({
           partyCycles: partyCyclesRef.current,
           pendingAfkMs: pendingAfkMsRef.current,
           afkRecoveryTotalMs: afkRecoveryTotalMsRef.current,
+          afkRecoveryCompletedMs: afkRecoveryCompletedMsRef.current,
           afkSimulationAnchor: afkSimulationAnchorRef.current,
         })
       );
