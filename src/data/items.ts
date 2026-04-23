@@ -227,6 +227,9 @@ const ITEM_ADDITIONAL_BONUS_BY_NAME: Record<string, Bonus[]> = {
   '鮫肌の鎧': [{ type: 'ability', value: 1, abilityId: 'execution_null', abilityLevel: 1 }],
   '狐假虎威': [{ type: 'ability', value: 1, abilityId: 'rage_breaker', abilityLevel: 1 }],
   '乾風衣': [{ type: 'ability', value: 1, abilityId: 'dryproof', abilityLevel: 1 }],
+  '追跡の鎌': [{ type: 'ability', value: 1, abilityId: 'pursuit', abilityLevel: 1 }],
+  '鉄礫': [{ type: 'ability', value: 1, abilityId: 'illusion_breaker', abilityLevel: 1 }],
+  '破壊腕': [{ type: 'ability', value: 1, abilityId: 'bulwark_breaker', abilityLevel: 1 }],
   'サバイバル入門書': [{ type: 'ability', value: 1, abilityId: 'anti_ambush', abilityLevel: 1 }],
   '影衣': [{ type: 'ability', value: 1, abilityId: 'anti_overwatch', abilityLevel: 1 }],
   '俊敏の弓': [
