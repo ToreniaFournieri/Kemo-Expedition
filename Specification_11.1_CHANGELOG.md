@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 63 | 2026/4/23 | Implement runtime `opponent-reactive` illusion handling in LONG phase per Spec 6.1.2: apply `a.illusion` Lv1/Lv2 miss-negation once per battle, consume/disable illusion state when triggered, add `a.illusion-breaker` consumption behavior that disables opponent illusion without negating hits, and wire `log.illusion` / `log.illusion-breaker` flavor text builders into battle logs. |
 | 0.6.1 | 62 | 2026/4/23 | Update runtime `a.free` behavior for `a.pursuit` interception: when `a.free` is blocked by an opponent with `a.pursuit`, battle now continues and emits new `log.pursuit` flavor text; otherwise `a.free` still ends battle as Draw with `log.free`. |
 | 0.6.1 | 61 | 2026/4/23 | Update runtime item-drop special ability mappings for requested entries: add `1|E|Beast|i.katanaEA` as `追跡の鎌` with `a.pursuit`, add `6|E|Mech|i.arrowEA` (`鉄礫`) with `a.illusion-breaker`, and rename `5|B|Ursan|i.gauntletBD` to `破壊腕` with `a.bulwark-breaker`. |
 | 0.6.1 | 60 | 2026/4/23 | Implement runtime support for `a.pursuit`, `a.illusion-breaker`, and `a.bulwark-breaker`: `a.free` now fails when opponent has pursuit, stealth avoidance is bypassed by pursuit (including enemy stealth log `神隠れ`), LONG illusion negation is bypassed by illusion-breaker, and LONG/CLOSE bulwark redirect is bypassed by bulwark-breaker. |

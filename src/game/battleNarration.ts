@@ -177,6 +177,34 @@ const PURSUIT_LOGS = [
   '{target}は必死に逃げようとしたが{actor}に行く手を遮られた',
 ] as const;
 
+// SpecRef: 6.2.1 | Ability flavor text | log.illusion
+const ILLUSION_LOGS = [
+  '{target}への攻撃はすべて幻だった',
+  '{target}を捉えたはずの一撃は幻に消えた',
+  '{target}の姿は揺らぎ、攻撃は空を切った',
+  '{target}に命中したかに見えたが、それは幻影だった',
+  '{target}の実体はそこにはなく、すべて幻だった',
+  '{target}を追い詰めたと思った瞬間、幻が砕けた',
+  '{target}の影は実体を持たず、攻撃は届かなかった',
+  '{target}の姿は偽りで、攻撃は無意味に終わった',
+  '{target}に放たれた攻撃は幻にすり抜けた',
+  '{target}は幻を纏い、すべての攻撃を欺いた',
+] as const;
+
+// SpecRef: 6.2.1 | Ability flavor text | log.illusion-breaker
+const ILLUSION_BREAKER_LOGS = [
+  '{actor}は幻を見破った',
+  '{actor}は幻影を打ち破った',
+  '{actor}の一撃が幻を貫いた',
+  '{actor}は偽りの姿を暴いた',
+  '{actor}は幻を無効化した',
+  '{actor}は幻惑を打ち消した',
+  '{actor}は真の姿を捉えた',
+  '{actor}は幻を切り裂いた',
+  '{actor}の攻撃は幻を許さない',
+  '{actor}は幻の裏にある実体を見抜いた',
+] as const;
+
 const SHOCK_LOGS = [
   '{target} は感電し、{actor} の攻撃は中断された！',
   '{target} に電撃が走り、{actor} の攻撃は止められた！',
@@ -515,6 +543,16 @@ export function buildPursuitAction(actorName: string, targetName: string): strin
   return pickRandomEntry(PURSUIT_LOGS)
     .replace(/\{actor\}/g, actorName)
     .replace(/\{target\}/g, targetName);
+}
+
+// SpecRef: 6.2.1 | Ability flavor text | log.illusion
+export function buildIllusionAction(targetName: string): string {
+  return pickRandomEntry(ILLUSION_LOGS).replace(/\{target\}/g, targetName);
+}
+
+// SpecRef: 6.2.1 | Ability flavor text | log.illusion-breaker
+export function buildIllusionBreakerAction(actorName: string): string {
+  return pickRandomEntry(ILLUSION_BREAKER_LOGS).replace(/\{actor\}/g, actorName);
 }
 
 export function buildShockAction(actorName: string, targetName: string): string {
