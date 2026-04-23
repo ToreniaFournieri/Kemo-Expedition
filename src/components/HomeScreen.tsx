@@ -3635,12 +3635,13 @@ export function HomeScreen({
     onDismissAllNotifications();
   }, [onDismissAllNotifications, suppressNotificationsForAfkEmulation]);
 
+  const afkRecoveryTotalMs = Math.max(pendingAfkMs, afkRecoveryTotalMsRef.current);
   const afkRecoveryProgressPercent = pendingAfkMs > 0
     ? Math.max(
         0,
         Math.min(
           100,
-          ((afkRecoveryTotalMsRef.current - pendingAfkMs) / Math.max(1, afkRecoveryTotalMsRef.current)) * 100
+          ((afkRecoveryTotalMs - pendingAfkMs) / Math.max(1, afkRecoveryTotalMs)) * 100
         )
       )
     : null;

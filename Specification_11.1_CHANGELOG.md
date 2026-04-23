@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 58 | 2026/4/23 | Fix AFK recovery progress bar continuity after page refresh: compute recovery percentage using a normalized total (`max(saved total, pending)`) so visualization no longer freezes at 0% when legacy/missing total state is restored mid catch-up. |
 | 0.6.1 | 57 | 2026/4/23 | Update runtime enemy-type mapping for `Marine`: set `ability30` to `a.execution` Lv1 (from `a.regeneration` Lv3) while keeping `ability1` as `a.bind` Lv1 and bonus `r.thunder_x1.3`. |
 | 0.6.1 | 56 | 2026/4/23 | Update runtime item-drop master/special-bonus mappings for requested entries: set `3|E|Marine|i.armorEA` to `鮫肌の鎧` with `a.execution-null`, set `3|B|Vulpinian|i.catalystBD` to `狐假虎威` with `a.rage-breaker`, apply `a.dryproof` to `4|U|none|i.robeU` (`乾風衣`), set `4|E|Shadowfang|i.grimoireEA` to `サバイバル入門書` with `a.anti-ambush`, and set `4|E|Shadowfang|i.robeEA` (`影衣`) to `a.anti-overwatch`. |
 | 0.6.1 | 55 | 2026/4/22 | Implement runtime counter-abilities for reactive amplifiers: add `a.anti-ambush`, `a.anti-overwatch`, `a.rage-breaker`, `a.momentum-breaker`, and `a.execution-null` to ability ids/UI glossary, and enforce them in battle calculations so `f.ambush_amplifier`/`f.overwatch_amplifier`/`f.execution_amplifier`/`f.rage_amplifier`/`f.momentum_amplifier` are nullified when defender-side blockers are present. |
