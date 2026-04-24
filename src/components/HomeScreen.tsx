@@ -7757,7 +7757,7 @@ function ExpeditionTab({
                           return (
                             <span
                               key={`${party.id}-compact-progress-${index}`}
-                              className="relative min-w-0 max-w-[70%] overflow-hidden rounded px-1 py-0.5 cursor-pointer"
+                              className="relative inline-block min-w-0 max-w-[70%] overflow-hidden rounded px-1 py-0.5 cursor-pointer"
                               title={item.bubbleText}
                               aria-label={item.bubbleText}
                               onPointerDown={(event) => {
