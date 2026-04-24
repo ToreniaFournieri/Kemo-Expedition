@@ -93,7 +93,7 @@ HP 2350 / 4680
 - Detailed remaining time is shown only in the floating bubble.
 
 ```
-( ####### ) PT1 ルピニアンの断崖   踏破  好調▼
+( ####### ) PT1 ルピニアンの断崖   踏破 ▼
 ( ##   ## ) 
 ( ####### ) 🗃️2/3 神魔解放 📜660分治療を受ける 🕘 
 移動中: flavor text (background: state progress bar)
