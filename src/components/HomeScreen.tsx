@@ -11539,7 +11539,7 @@ function SettingTab({
           </div>
 
           <div>
-            <div className="text-xs text-gray-600 font-medium mb-2">ゲームモード</div>
+            <div className="text-xs text-gray-600 font-medium mb-2">テーマカラー</div>
             <div className="grid grid-cols-3 gap-2">
               <button
                 onClick={() => !modeSelectionLocked && onSetGameMode('m.kemo')}
