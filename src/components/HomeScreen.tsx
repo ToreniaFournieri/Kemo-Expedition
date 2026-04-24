@@ -10640,7 +10640,13 @@ function SettingTab({
                 </div>
                 <div className="rounded border border-gray-300 bg-gray-100 p-2 space-y-1 pane-button-shadow-soft">
                   <div className="text-xs font-semibold text-gray-700 tracking-wide">サイドクエスト</div>
+                  {/* SpecRef: 8.6 | UI_DIVINE_BUREAU | サイドクエスト */}
                   <div>サイドクエスト抽選: {formatNumber(getBagTicketTotal(partyBags.sideQuestBag))} / {formatNumber(sideQuestTotal)}</div>
+                  <div className="text-xs text-gray-500 text-right">
+                    当たり残り {formatNumber(sideQuestDefaultBag.entries.reduce((sum, entry) => (
+                      entry.id > 0 ? sum + getBagEntryTickets(partyBags.sideQuestBag, entry.id) : sum
+                    ), 0))}
+                  </div>
                   {canResetBags && <button onClick={() => confirmReset('サイドクエスト初期化', () => onResetSideQuestBag(partyIndex))} className="w-full py-1 bg-sub text-white rounded text-xs">サイドクエスト初期化</button>}
                 </div>
                 <div className="flex items-start justify-between gap-3">
