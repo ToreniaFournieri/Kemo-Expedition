@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 94 | 2026/4/24 | Fine-tune runtime header edge spacing for small screens (including Apple Watch): move title block (`冒ケモ🐾`) further right from the left edge and shift the gold display (`200G`) left from the right edge to keep both sides fully readable. |
 | 0.6.1 | 93 | 2026/4/24 | Adjust runtime header title left safe margin for small screens (including Apple Watch): add extra left padding so `冒ケモ🐾` is fully visible instead of clipping against the rounded-left edge. |
 | 0.6.1 | 92 | 2026/4/24 | Fix Diary「獲得アイテム」highlight rendering so separators (`, `) stay in normal text style while only rare/super-rare item names use accent/sub emphasis. |
 | 0.6.1 | 91 | 2026/4/24 | Partyタブの宗教選択編集中「完了」「取消」ボタンのスタイルを、キャラクター編集ペインの同ボタンと同じ見た目・サイズ感（塗り背景/余白/角丸）に統一。 |

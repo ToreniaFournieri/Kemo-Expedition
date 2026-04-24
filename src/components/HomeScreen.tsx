@@ -4803,7 +4803,7 @@ export function HomeScreen({
         <div className="absolute inset-0 bg-white" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[500px] px-3 py-2.5 bg-white">
           <div className="flex justify-between items-center gap-3 min-h-[44px]">
-            <div className="pl-1">
+            <div className="pl-3">
               {/* SpecRef: 8.1.2 | Header | Game title label */}
               <h1 className="flex items-center gap-1 text-lg font-bold">
                 <span aria-label={gameTitle}>
@@ -4814,7 +4814,7 @@ export function HomeScreen({
                 <span className="text-xs font-normal text-gray-500">{versionLabel}</span>
               </h1>
             </div>
-            <div className="flex items-center gap-2 text-right text-sm font-medium leading-none">
+            <div className="flex items-center gap-2 pr-3 text-right text-sm font-medium leading-none">
               {envDisplayLabel && <span className="text-xs font-normal text-gray-500">{envDisplayLabel}</span>}
               <span>{formatNumber(state.global.gold)}G</span>
               {!isAutoRepeatEnabled && (
