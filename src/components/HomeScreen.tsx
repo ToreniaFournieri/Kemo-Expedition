@@ -7761,7 +7761,7 @@ function ExpeditionTab({
                 setExpandedLogParty(nextExpanded);
                 setExpandedRoom(null);
               }}
-              className="w-full text-xs mb-0.5"
+              className="w-full mb-0.5"
             >
               <span className="min-w-0 flex items-start gap-2">
                 <button
@@ -7814,7 +7814,7 @@ function ExpeditionTab({
                       r="8.5"
                       fill="none"
                       stroke="rgb(var(--color-sub) / 0.18)"
-                      strokeWidth="3"
+                      strokeWidth="5"
                     />
                     <circle
                       cx="18"
@@ -7822,7 +7822,7 @@ function ExpeditionTab({
                       r="8.5"
                       fill="none"
                       stroke={isConditionPositive ? 'rgb(var(--color-sub))' : 'rgb(var(--color-accent))'}
-                      strokeWidth="3"
+                      strokeWidth="5"
                       strokeLinecap="round"
                       strokeDasharray={`${Math.max(0, Math.min(100, conditionPercent)) * 0.534} 100`}
                       transform="rotate(-90 18 18)"
@@ -7831,7 +7831,7 @@ function ExpeditionTab({
                   </svg>
                 </button>
                 <span className="min-w-0 flex-1 space-y-0 text-left">
-                  <span className="flex items-start justify-between gap-1.5">
+                  <span className="flex items-start justify-between gap-1.5 text-sm">
                     <span className={`min-w-0 truncate ${isDarkModeEnabled ? 'text-gray-50' : 'text-black'}`}>
                       <span className="font-bold shrink-0 mr-1">{party.name}</span>
                       {headlineDungeonName}
@@ -7843,7 +7843,7 @@ function ExpeditionTab({
                   </span>
                   <span className="block h-5 min-w-0">
                     {compactProgressItems.length > 0 ? (
-                      <span className={`flex h-full items-center gap-1 overflow-hidden text-[11px] ${isDarkModeEnabled ? 'text-gray-200' : 'text-gray-700'}`}>
+                      <span className={`flex h-full items-center gap-1 overflow-hidden text-sm ${isDarkModeEnabled ? 'text-gray-200' : 'text-gray-700'}`}>
                         {compactProgressItems.map((item, index) => {
                           const fillPercent = item.progressRatio === null
                             ? 0
