@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 78 | 2026/4/24 | Expedition tab progress update: enforce progress-fill calculation to Side quest only (`current/total`) while keeping Entry/Normal/God loot-gate chips as no-fill summaries, and add tap-to-open floating bubble text for compact progress chips so mobile users can read detailed objective text/remaining-time info. |
 | 0.6.1 | 77 | 2026/4/24 | Expedition tab visual feedback fixes: improve dark-mode readability for party pane progress/condition labels (loot gate + side quest + flavor text line), and deduplicate compact loot-gate objective chips so `🗺️ボス撃破せよ` is shown only once when multiple gates require boss defeat. |
 | 0.6.1 | 76 | 2026/4/24 | Expedition party pane: implement compact progress-summary chips for loot-gate and side-quest statuses with per-item background fill progress, keep text readable above fill within fixed pane height, add timed side-quest remaining clock icon (`🕘`-style) to compact text, and move detailed progress/remaining-time wording to hover bubble text. |
 | 0.6.1 | 75 | 2026/4/24 | Expedition tab: shorten the party pane bottom spacing by reducing outer container bottom padding (`pb-0` while keeping `pt-0.5`) so each pane sits tighter vertically with less dead space beneath the status area. |

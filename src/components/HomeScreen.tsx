@@ -1150,6 +1150,7 @@ function getScaledSideQuestExpiresAt(sideQuest: Party['sideQuest'], cycleDuratio
 }
 
 type ProgressItemDisplay = {
+  key: string;
   compactText: string;
   bubbleText: string;
   progressRatio: number | null;
@@ -1244,6 +1245,7 @@ function getSideQuestDisplay(party: Party, cycleDurationScale: number, emulatedN
   if (remainingLabel) progressParts.push(remainingLabel);
   const clockEmoji = hasDeadline ? ` ${getRemainingClockEmoji(remainingMs)}` : '';
   return {
+    key: `side-quest:${type}:${display.text}`,
     compactText: `📜${display.text}${clockEmoji}`,
     bubbleText: `${display.text}（${progressParts.join(', ')}）`,
     progressRatio: clampedProgress / safeTarget,
@@ -1269,9 +1271,10 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
     const unlocked = isLootGateUnlocked(party, getEliteGateKey(currentDungeon.id, floor.floorNumber)) || collected >= required;
     if (!unlocked) {
       pushUniqueProgressItem({
+        key: `elite-gate:${currentDungeon.id}:${floor.floorNumber}`,
         compactText: `🗃️${formatNumber(collected)}/${formatNumber(required)} ${floor.floorNumber}F-4解放`,
         bubbleText: `アンコモンアイテム ${formatNumber(collected)}/${formatNumber(required)}で ${floor.floorNumber}F-4解放`,
-        progressRatio: collected / Math.max(1, required),
+        progressRatio: null,
       });
       break;
     }
@@ -1285,6 +1288,7 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
       const entryUnlocked = isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id)) || previousBossDefeated >= entryRequired;
       if (!entryUnlocked) {
         pushUniqueProgressItem({
+          key: `entry-gate:${nextDungeon.id}`,
           compactText: '🗺️ボス撃破せよ',
           bubbleText: `ボス撃破 で${nextDungeon.name} 開放`,
           progressRatio: null,
@@ -1299,12 +1303,14 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
     if (!godsUnlocked && !shouldDelayNextSpecialGoal(party, cycleState)) {
       if (hasBossDefeat) {
         pushUniqueProgressItem({
+          key: `god-gate:${currentDungeon.id}`,
           compactText: `🗃️${formatNumber(bossRareCollected)}/${formatNumber(godsRequired)} 神魔解放`,
           bubbleText: `ボスレアアイテム ${formatNumber(bossRareCollected)}/${formatNumber(godsRequired)} で${getGodBattleLabel(currentDungeon)}`,
-          progressRatio: bossRareCollected / Math.max(1, godsRequired),
+          progressRatio: null,
         });
       } else {
         pushUniqueProgressItem({
+          key: `god-entry:${currentDungeon.id}`,
           compactText: '🗺️ボス撃破せよ',
           bubbleText: `ボス撃破 で${getGodBattleLabel(currentDungeon)} 開放`,
           progressRatio: null,
@@ -7352,6 +7358,13 @@ function ExpeditionTab({
     left: number;
     width: number;
   } | null>(null);
+  const [activeProgressBubble, setActiveProgressBubble] = useState<{
+    key: string;
+    text: string;
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
 
   const getEstimatedStartHp = (entry: ExpeditionLogEntry) => {
     if (typeof entry.startPartyHP === 'number') {
@@ -7396,15 +7409,60 @@ function ExpeditionTab({
     });
   };
 
+  const handleProgressBubbleToggle = (
+    bubbleKey: string,
+    bubbleText: string,
+    targetElement: HTMLElement,
+  ) => {
+    if (activeProgressBubble?.key === bubbleKey) {
+      setActiveProgressBubble(null);
+      return;
+    }
+
+    const triggerRect = targetElement.getBoundingClientRect();
+    const viewportPadding = 12;
+    const bubbleWidth = Math.min(360, window.innerWidth - viewportPadding * 2);
+    const left = Math.min(
+      Math.max(triggerRect.left, viewportPadding),
+      window.innerWidth - viewportPadding - bubbleWidth,
+    );
+
+    // SpecRef: 8.3 | UI_EXPEDITION | Progress Visual Update
+    setActiveProgressBubble({
+      key: bubbleKey,
+      text: bubbleText,
+      top: triggerRect.bottom + 8,
+      left,
+      width: bubbleWidth,
+    });
+  };
+
   return (
     <div
       className="space-y-1.5"
       onPointerDown={() => {
+        if (activeProgressBubble) {
+          setActiveProgressBubble(null);
+        }
         if (activeEnemyBestiaryBubble) {
           setActiveEnemyBestiaryBubble(null);
         }
       }}
     >
+      {activeProgressBubble ? (
+        <div
+          className="fixed z-20 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
+          style={{
+            top: activeProgressBubble.top,
+            left: activeProgressBubble.left,
+            width: activeProgressBubble.width,
+          }}
+        >
+          <div className="text-xs text-gray-700 leading-snug break-words">
+            {activeProgressBubble.text}
+          </div>
+        </div>
+      ) : null}
       {activeEnemyBestiaryBubble && <EnemyBestiaryBubble bubble={activeEnemyBestiaryBubble} />}
       {[0, 1, 2, 3, 4, 5].map((partyIndex) => {
         const party = state.parties[partyIndex];
@@ -7699,9 +7757,21 @@ function ExpeditionTab({
                           return (
                             <span
                               key={`${party.id}-compact-progress-${index}`}
-                              className="relative min-w-0 max-w-[70%] overflow-hidden rounded px-1 py-0.5"
+                              className="relative min-w-0 max-w-[70%] overflow-hidden rounded px-1 py-0.5 cursor-pointer"
                               title={item.bubbleText}
                               aria-label={item.bubbleText}
+                              onPointerDown={(event) => {
+                                event.stopPropagation();
+                              }}
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                handleProgressBubbleToggle(
+                                  `${party.id}:${item.key}`,
+                                  item.bubbleText,
+                                  event.currentTarget,
+                                );
+                              }}
                             >
                               <span
                                 aria-hidden
