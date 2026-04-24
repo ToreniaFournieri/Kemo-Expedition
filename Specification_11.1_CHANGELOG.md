@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 85 | 2026/4/24 | Update Expedition runtime pane status display: add tap/click floating bubble on HP/condition dual-ring showing `HP current / max` and `condition` label with signed value, remove inline condition label from party headline row, and stop appending flavor-condition debug condition/value text in runtime flavor output. |
 | 0.6.1 | 84 | 2026/4/24 | Fix Expedition pane inner condition donut ring rendering for negative values: keep fill origin anchored at 12 o’clock (top center) by removing horizontal mirroring so the red bar no longer starts at 9 o’clock. |
 | 0.6.1 | 83 | 2026/4/24 | Fix Expedition inner condition donut direction/origin: keep fill origin at 12 o'clock, render positive condition in sub color clockwise from top, and render negative condition in accent color counterclockwise from top (instead of starting at bottom clockwise). |
 | 0.6.1 | 82 | 2026/4/24 | Implement Expedition party-pane donut dual-ring visuals per Spec 8.3: keep the outer ring as HP donut fill in sub color, add an inner `condition` donut ring using sub color clockwise for positive values and accent color counterclockwise for negative values. |

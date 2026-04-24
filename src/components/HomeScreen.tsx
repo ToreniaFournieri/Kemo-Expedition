@@ -7365,6 +7365,13 @@ function ExpeditionTab({
     left: number;
     maxWidth: number;
   } | null>(null);
+  const [activeRingStatusBubble, setActiveRingStatusBubble] = useState<{
+    key: string;
+    text: string;
+    top: number;
+    left: number;
+    maxWidth: number;
+  } | null>(null);
 
   const getEstimatedStartHp = (entry: ExpeditionLogEntry) => {
     if (typeof entry.startPartyHP === 'number') {
@@ -7437,6 +7444,33 @@ function ExpeditionTab({
     });
   };
 
+  const handleRingStatusBubbleToggle = (
+    bubbleKey: string,
+    bubbleText: string,
+    targetElement: HTMLElement,
+  ) => {
+    if (activeRingStatusBubble?.key === bubbleKey) {
+      setActiveRingStatusBubble(null);
+      return;
+    }
+
+    const triggerRect = targetElement.getBoundingClientRect();
+    const viewportPadding = 12;
+    const bubbleMaxWidth = Math.min(360, window.innerWidth - viewportPadding * 2);
+    const left = Math.min(
+      Math.max(triggerRect.left, viewportPadding),
+      window.innerWidth - viewportPadding - bubbleMaxWidth,
+    );
+
+    setActiveRingStatusBubble({
+      key: bubbleKey,
+      text: bubbleText,
+      top: triggerRect.bottom + 8,
+      left,
+      maxWidth: bubbleMaxWidth,
+    });
+  };
+
   return (
     <div
       className="space-y-1.5"
@@ -7446,6 +7480,9 @@ function ExpeditionTab({
         }
         if (activeEnemyBestiaryBubble) {
           setActiveEnemyBestiaryBubble(null);
+        }
+        if (activeRingStatusBubble) {
+          setActiveRingStatusBubble(null);
         }
       }}
     >
@@ -7465,6 +7502,21 @@ function ExpeditionTab({
         </div>
       ) : null}
       {activeEnemyBestiaryBubble && <EnemyBestiaryBubble bubble={activeEnemyBestiaryBubble} />}
+      {activeRingStatusBubble ? (
+        <div
+          className="fixed z-20 rounded-lg border border-gray-200 bg-white p-2 shadow-lg"
+          style={{
+            top: activeRingStatusBubble.top,
+            left: activeRingStatusBubble.left,
+            width: 'max-content',
+            maxWidth: activeRingStatusBubble.maxWidth,
+          }}
+        >
+          <div className="whitespace-pre-line text-xs text-gray-700 leading-snug break-words">
+            {activeRingStatusBubble.text}
+          </div>
+        </div>
+      ) : null}
       {[0, 1, 2, 3, 4, 5].map((partyIndex) => {
         const party = state.parties[partyIndex];
         if (!party) {
@@ -7498,7 +7550,7 @@ function ExpeditionTab({
           : currentLog
             ? getExpeditionOutcomeLabel(currentLog.finalOutcome)
             : getPartyCycleStateLabel(cycle.state);
-        const conditionLabel = getConditionLabel(party.condition, debugSettings.displayCondition);
+        const conditionLabel = getConditionLabel(party.condition, true);
 
         const displayedEntries = (() => {
           if (!currentLog) return [];
@@ -7712,7 +7764,24 @@ function ExpeditionTab({
               className="w-full text-xs mb-0.5"
             >
               <span className="min-w-0 flex items-start gap-2">
-                <span className="relative h-10 w-10 shrink-0 mt-0.5">
+                <button
+                  type="button"
+                  className="relative h-10 w-10 shrink-0 mt-0.5"
+                  onPointerDown={(event) => {
+                    event.stopPropagation();
+                  }}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleRingStatusBubbleToggle(
+                      `${party.id}:ring-status`,
+                      `HP ${formatNumber(displayedHp)} / ${formatNumber(partyStats.hp)}\n${conditionLabel}`,
+                      event.currentTarget,
+                    );
+                  }}
+                  aria-label={`HP ${hpPercent}%, condition ${conditionPercent}%`}
+                  title={`HP ${formatNumber(displayedHp)} / ${formatNumber(partyStats.hp)} ${conditionLabel}`}
+                >
                   <svg
                     viewBox="0 0 36 36"
                     className="h-full w-full drop-shadow-[0_1px_1px_rgb(15_23_42/0.2)]"
@@ -7760,7 +7829,7 @@ function ExpeditionTab({
                       className="transition-[stroke-dasharray,stroke] duration-200"
                     />
                   </svg>
-                </span>
+                </button>
                 <span className="min-w-0 flex-1 space-y-0 text-left">
                   <span className="flex items-start justify-between gap-1.5">
                     <span className={`min-w-0 truncate ${isDarkModeEnabled ? 'text-gray-50' : 'text-black'}`}>
@@ -7769,7 +7838,6 @@ function ExpeditionTab({
                     </span>
                     <span className="shrink-0 flex items-center gap-1.5">
                       <span className="font-medium text-gray-700 shrink-0">{headlineState}</span>
-                      <span className="font-medium text-sub shrink-0">{conditionLabel}</span>
                       <span className={`${isLogExpanded ? 'transform transition-transform rotate-180' : ''}`}>▼</span>
                     </span>
                   </span>
