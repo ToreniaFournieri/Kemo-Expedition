@@ -8000,7 +8000,12 @@ function ExpeditionTab({
                         const isSuperRare = item.superRare > 0;
                         const rarityClass = getRarityTextClass(rarity, isSuperRare);
                         const fontWeightClass = getRewardFontWeightClass(rarity, isSuperRare);
-                        return <span key={i} className={`${rarityClass} ${fontWeightClass}`}>{i > 0 && ', '}{getItemDisplayName(item)}</span>;
+                        return (
+                          <Fragment key={i}>
+                            {i > 0 && ', '}
+                            <span className={`${rarityClass} ${fontWeightClass}`}>{getItemDisplayName(item)}</span>
+                          </Fragment>
+                        );
                       })}
                     </div>
                   )}
@@ -9468,9 +9473,10 @@ function DiaryTab({
                       const rarityClass = getRarityTextClass(rarity, isSuperRare);
                       const fontWeightClass = getRewardFontWeightClass(rarity, isSuperRare);
                       return (
-                        <span key={i} className={`${rarityClass} ${fontWeightClass}`}>
-                          {i > 0 && ', '}{getItemDisplayName(item)}
-                        </span>
+                        <Fragment key={i}>
+                          {i > 0 && ', '}
+                          <span className={`${rarityClass} ${fontWeightClass}`}>{getItemDisplayName(item)}</span>
+                        </Fragment>
                       );
                     })}
                   </div>
