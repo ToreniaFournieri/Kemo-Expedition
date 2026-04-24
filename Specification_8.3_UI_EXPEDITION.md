@@ -63,9 +63,9 @@ PT1 HP (HP bar, blue) `x.expedition`.name       outcome `condition`.label ▼
 | Type | Progress |
 |---|---|
 | Entry Loot-gate condition |  none |
-| Normal Loot-gate condition | `current_count / required_count` |
-| God battle Loot-gate condition | `current_count / required_count` |
-| Side quest | `current_time / goal_time` |
+| Normal Loot-gate condition | none |
+| God battle Loot-gate condition | none |
+| Side quest | `current / total` |
 
 **Remaining time icon:**
 
