@@ -1142,59 +1142,6 @@ function getGodBattleLabel(dungeon: Dungeon): string {
   return godShortName ? `神魔${godShortName}戦` : '神魔戦';
 }
 
-function getNextGoalText(party: Party, cycleState?: PartyCycleState): string | null {
-  const currentDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
-  if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === 99) return null;
-
-  const tier = currentDungeon.enemyPoolIds[0];
-
-  for (const floor of currentDungeon.floors) {
-    const hasEliteGate = floor.floorNumber < 6;
-    if (hasEliteGate) {
-      const required = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 3;
-      const collected = getLootCollectionCount(party, tier, 'uncommon');
-      const unlocked = isLootGateUnlocked(party, getEliteGateKey(currentDungeon.id, floor.floorNumber)) || collected >= required;
-      if (!unlocked) {
-        return `アンコモンアイテム ${collected}/${required}で ${floor.floorNumber}F-4解放`;
-      }
-    }
-  }
-
-  const bossRequired = BOSS_GATE_REQUIRED;
-  const rareCollected = getLootCollectionCount(party, tier, 'eliteRare');
-  const bossUnlocked = isLootGateUnlocked(party, getBossGateKey(currentDungeon.id)) || rareCollected >= bossRequired;
-  if (!bossUnlocked) {
-    return `エリートレアアイテム ${rareCollected}/${bossRequired}で ボス戦解放`;
-  }
-
-  const nextDungeon = DUNGEONS.find(d => d.id === currentDungeon.id + 1);
-  const entryRequired = ENTRY_GATE_REQUIRED;
-  const bossRareCollected = getDisplayedBossRareCount(party, currentDungeon.id, cycleState);
-  const previousBossDefeated = party.defeatedBossExpeditions?.[currentDungeon.id] ? 1 : 0;
-  if (nextDungeon) {
-    const entryUnlocked = isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id)) || previousBossDefeated >= entryRequired;
-    if (!entryUnlocked) {
-      const entryProgressText = entryRequired === 1 ? 'ボス撃破' : `ボス撃破 ${previousBossDefeated}/${entryRequired}`;
-      return `${entryProgressText}で${nextDungeon.name}開放`;
-    }
-  }
-
-  const godsRequired = getGodsBattleRequired();
-  const hasBossDefeat = hasDefeatedDungeonBoss(party, currentDungeon.id);
-  const godsUnlocked = bossRareCollected >= godsRequired && hasBossDefeat;
-  if (!godsUnlocked) {
-    if (shouldDelayNextSpecialGoal(party, cycleState)) {
-      return null;
-    }
-    if (hasBossDefeat) {
-      return `ボスレアアイテム ${bossRareCollected}/${godsRequired} で${getGodBattleLabel(currentDungeon)}`;
-    }
-    return 'ボスを撃破せよ';
-  }
-
-  return null;
-}
-
 function getScaledSideQuestExpiresAt(sideQuest: Party['sideQuest'], cycleDurationScale: number): number {
   if (!sideQuest) return 0;
   const safeScale = Math.max(0.001, cycleDurationScale);
@@ -1202,7 +1149,19 @@ function getScaledSideQuestExpiresAt(sideQuest: Party['sideQuest'], cycleDuratio
   return sideQuest.assignedAt + Math.floor(deadlineWindowMs * safeScale);
 }
 
-function getSideQuestText(party: Party, cycleDurationScale: number, emulatedNowMs: number): string | null {
+type ProgressItemDisplay = {
+  compactText: string;
+  bubbleText: string;
+  progressRatio: number | null;
+};
+
+function getRemainingClockEmoji(remainingMs: number): string {
+  const remainingHours = Math.max(1, Math.ceil(remainingMs / (60 * 60 * 1000)));
+  const clockFaces = ['🕛', '🕐', '🕑', '🕒', '🕓', '🕔', '🕕', '🕖', '🕗', '🕘', '🕙', '🕚'];
+  return clockFaces[remainingHours % 12] ?? '🕛';
+}
+
+function getSideQuestDisplay(party: Party, cycleDurationScale: number, emulatedNowMs: number): ProgressItemDisplay | null {
   if (!party.sideQuest) return null;
   const { type, shortText, progress, target } = party.sideQuest;
   const isTimeQuest = TIME_BASED_SIDE_QUEST_TYPES.has(type);
@@ -1283,7 +1242,77 @@ function getSideQuestText(party: Party, cycleDurationScale: number, emulatedNowM
   const progressParts = [`${percent}%`];
   if (display.current) progressParts.push(display.current);
   if (remainingLabel) progressParts.push(remainingLabel);
-  return `${display.text} (${progressParts.join(', ')})`;
+  const clockEmoji = hasDeadline ? ` ${getRemainingClockEmoji(remainingMs)}` : '';
+  return {
+    compactText: `📜${display.text}${clockEmoji}`,
+    bubbleText: `${display.text}（${progressParts.join(', ')}）`,
+    progressRatio: clampedProgress / safeTarget,
+  };
+}
+
+function getCompactProgressItems(party: Party, cycleDurationScale: number, emulatedNowMs: number, cycleState?: PartyCycleState): ProgressItemDisplay[] {
+  const currentDungeon = DUNGEONS.find((d) => d.id === party.selectedDungeonId);
+  if (!currentDungeon || !currentDungeon.floors || currentDungeon.id === 99) return [];
+
+  const tier = currentDungeon.enemyPoolIds[0];
+  const items: ProgressItemDisplay[] = [];
+
+  for (const floor of currentDungeon.floors) {
+    const hasEliteGate = floor.floorNumber < 6;
+    if (!hasEliteGate) continue;
+    const required = ELITE_GATE_REQUIREMENTS[floor.floorNumber] ?? 3;
+    const collected = getLootCollectionCount(party, tier, 'uncommon');
+    const unlocked = isLootGateUnlocked(party, getEliteGateKey(currentDungeon.id, floor.floorNumber)) || collected >= required;
+    if (!unlocked) {
+      items.push({
+        compactText: `🗃️${formatNumber(collected)}/${formatNumber(required)} ${floor.floorNumber}F-4解放`,
+        bubbleText: `アンコモンアイテム ${formatNumber(collected)}/${formatNumber(required)}で ${floor.floorNumber}F-4解放`,
+        progressRatio: collected / Math.max(1, required),
+      });
+      break;
+    }
+  }
+
+  if (items.length === 0) {
+    const nextDungeon = DUNGEONS.find((d) => d.id === currentDungeon.id + 1);
+    const previousBossDefeated = party.defeatedBossExpeditions?.[currentDungeon.id] ? 1 : 0;
+    if (nextDungeon) {
+      const entryRequired = ENTRY_GATE_REQUIRED;
+      const entryUnlocked = isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id)) || previousBossDefeated >= entryRequired;
+      if (!entryUnlocked) {
+        items.push({
+          compactText: '🗺️ボス撃破せよ',
+          bubbleText: `ボス撃破 で${nextDungeon.name} 開放`,
+          progressRatio: null,
+        });
+      }
+    }
+
+    const godsRequired = getGodsBattleRequired();
+    const bossRareCollected = getDisplayedBossRareCount(party, currentDungeon.id, cycleState);
+    const hasBossDefeat = hasDefeatedDungeonBoss(party, currentDungeon.id);
+    const godsUnlocked = bossRareCollected >= godsRequired && hasBossDefeat;
+    if (!godsUnlocked && !shouldDelayNextSpecialGoal(party, cycleState)) {
+      if (hasBossDefeat) {
+        items.push({
+          compactText: `🗃️${formatNumber(bossRareCollected)}/${formatNumber(godsRequired)} 神魔解放`,
+          bubbleText: `ボスレアアイテム ${formatNumber(bossRareCollected)}/${formatNumber(godsRequired)} で${getGodBattleLabel(currentDungeon)}`,
+          progressRatio: bossRareCollected / Math.max(1, godsRequired),
+        });
+      } else {
+        items.push({
+          compactText: '🗺️ボス撃破せよ',
+          bubbleText: `ボス撃破 で${getGodBattleLabel(currentDungeon)} 開放`,
+          progressRatio: null,
+        });
+      }
+    }
+  }
+
+  const sideQuestItem = getSideQuestDisplay(party, cycleDurationScale, emulatedNowMs);
+  if (sideQuestItem) items.push(sideQuestItem);
+
+  return items;
 }
 
 function isGodsBattleAvailable(party: Party, dungeonId: number): boolean {
@@ -7544,8 +7573,13 @@ function ExpeditionTab({
           cycle.state === 'move'
           || cycle.state === 'explore'
         ) && cycle.isCurrentExpeditionGodsBattle === true;
-        const nextGoalText = getNextGoalText(party, cycle.state);
-        const sideQuestText = getSideQuestText(party, getTimeSpeedScale(debugSettings), emulatedNowMs);
+        // SpecRef: 8.3 | UI_EXPEDITION | Progress Visual Update
+        const compactProgressItems = getCompactProgressItems(
+          party,
+          getTimeSpeedScale(debugSettings),
+          emulatedNowMs,
+          cycle.state,
+        );
         const displayedExpeditionStats = getDisplayedExpeditionStats(party, cycle.state);
         const partyPaneExpeditionId = cycle.state === 'explore'
           ? currentLog?.dungeonId
@@ -7651,24 +7685,32 @@ function ExpeditionTab({
                       <span className={`${isLogExpanded ? 'transform transition-transform rotate-180' : ''}`}>▼</span>
                     </span>
                   </span>
-                  {nextGoalText && (
-                    <span
-                      className="block text-[11px] text-gray-700 overflow-hidden break-words"
-                      style={{
-                        display: '-webkit-box',
-                        WebkitLineClamp: 1,
-                        WebkitBoxOrient: 'vertical',
-                      }}
-                    >
-                      {nextGoalText}
-                    </span>
-                  )}
-                  {sideQuestText && (
-                    <span className="block text-[11px] text-gray-700 truncate">
-                      <span className="side-quest-theme-icon" aria-hidden="true">📜</span>{' '}
-                      {sideQuestText}
-                    </span>
-                  )}
+                  <span className="block h-5 min-w-0">
+                    {compactProgressItems.length > 0 ? (
+                      <span className="flex h-full items-center gap-1 overflow-hidden text-[11px] text-gray-700">
+                        {compactProgressItems.map((item, index) => {
+                          const fillPercent = item.progressRatio === null
+                            ? 0
+                            : Math.max(0, Math.min(100, item.progressRatio * 100));
+                          return (
+                            <span
+                              key={`${party.id}-compact-progress-${index}`}
+                              className="relative min-w-0 max-w-[70%] overflow-hidden rounded px-1 py-0.5"
+                              title={item.bubbleText}
+                              aria-label={item.bubbleText}
+                            >
+                              <span
+                                aria-hidden
+                                className="absolute inset-y-0 left-0 bg-sub/24"
+                                style={{ width: `${fillPercent}%` }}
+                              />
+                              <span className="relative z-10 block truncate text-black/85">{item.compactText}</span>
+                            </span>
+                          );
+                        })}
+                      </span>
+                    ) : null}
+                  </span>
                 </span>
               </span>
               <span className={`mt-0.5 block relative h-9 min-w-0 rounded-md overflow-hidden text-[11px] shadow-[0_2px_6px_rgb(15_23_42/0.18),inset_0_1px_0_rgb(255_255_255/0.42)] ${isDarkModeEnabled ? 'bg-slate-900/28' : 'bg-white/45'}`}>
