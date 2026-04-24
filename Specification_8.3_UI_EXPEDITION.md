@@ -20,7 +20,17 @@ PT1 HP (HP bar, blue) `x.expedition`.name       outcome `condition`.label ▼
   - This option becomes available only after the party has defeated that expedition’s Boss at least once (lifetime, party-wide).
   - Scope: The offset is independently stored per party–expedition pair and does not affect other expeditions.
 
-- "###" part: HP donuts bar, sub-color
+
+- **Outer Ring (`###` area):**
+  - Display as the **HP donut bar**.
+  - Use **sub-color** for the fill.
+
+- **Inner Ring (`###` area):**
+  - Display as the **`condition` donut bar**.
+  - If `condition` is positive:
+    - Fill using **sub-color**, progressing **clockwise**.
+  - If `condition` is negative:
+    - Fill using **accent color**, progressing **counterclockwise**.
 
 
 - **Sub progress bar:**
