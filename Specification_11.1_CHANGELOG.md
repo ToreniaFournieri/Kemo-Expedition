@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 73 | 2026/4/24 | Fix runtime Step-based flavor speaker rotation: choose `{name}` from the selected flavor entry’s own condition-matched party members (instead of a global matched pool), so each step updates both flavor text and legitimate candidate character names while keeping condition priority/matching logic unchanged. |
 | 0.6.1 | 72 | 2026/4/24 | Expedition tab: further reduce internal party-pane spacing by tightening outer and inner pane padding from `px-1.5 py-1` to `px-1 py-0.5`, improving visibility so all 6 party panes fit on screen more clearly. |
 | 0.6.1 | 71 | 2026/4/24 | Fix runtime `state.slump` flavor-name rendering by replacing `{name}` placeholders with the selected member name in `getRuntimeFlavorText` normalization so UI text displays `ルドルフは…` (without braces). |
 | 0.6.1 | 70 | 2026/4/24 | Update runtime flavor-text dataset for `state.slump` to include the requested generic and race-specific lines (Lupinian/Vulpinian/Felidian/Caninian/Ursan/Procyonian/Leporian/Cervin/Murid/Kemoria/Orcinian/Avian), and wire runtime flavor-state typing/generator input so `slump` entries from Spec 5.2 are generated into `src/data/flavorTextRuntime.ts`. |
