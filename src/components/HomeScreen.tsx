@@ -7513,6 +7513,9 @@ function ExpeditionTab({
           return displayedEntries[displayedEntries.length - 1].remainingPartyHP;
         })();
         const hpPercent = Math.min(100, Math.round((displayedHp / Math.max(1, partyStats.hp)) * 100));
+        const normalizedCondition = Math.max(-400, Math.min(400, Math.floor(party.condition)));
+        const conditionPercent = Math.min(100, Math.round((Math.abs(normalizedCondition) / 400) * 100));
+        const isConditionPositive = normalizedCondition >= 0;
         const sellProgressState = (() => {
           if (cycle.state !== 'sell') return null;
           const autoSellItems = party.lastExpeditionLog?.autoSellItems ?? [];
@@ -7698,7 +7701,8 @@ function ExpeditionTab({
               <div aria-hidden className="pointer-events-none absolute inset-0" style={expeditionPaneImageLayerStyle} />
             ) : null}
             <div className={`relative z-10 rounded-md px-1 py-0.5 text-gray-900 ${isDarkModeEnabled ? 'bg-slate-900/18' : 'bg-white/74'}`}>
-            {/* SpecRef: 8.3 | UI_EXPEDITION | ### part: HP donuts bar, sub-color */}
+            {/* SpecRef: 8.3 | UI_EXPEDITION | Outer Ring (`###` area) */}
+            {/* SpecRef: 8.3 | UI_EXPEDITION | Inner Ring (`###` area) */}
             <button
               onClick={() => {
                 const nextExpanded = isLogExpanded ? null : partyIndex;
@@ -7711,9 +7715,9 @@ function ExpeditionTab({
                 <span className="relative h-10 w-10 shrink-0 mt-0.5">
                   <svg
                     viewBox="0 0 36 36"
-                    className="h-full w-full -rotate-90 drop-shadow-[0_1px_1px_rgb(15_23_42/0.2)]"
+                    className="h-full w-full drop-shadow-[0_1px_1px_rgb(15_23_42/0.2)]"
                     role="img"
-                    aria-label={`HP ${hpPercent}%`}
+                    aria-label={`HP ${hpPercent}%, condition ${conditionPercent}%`}
                   >
                     <circle
                       cx="18"
@@ -7732,7 +7736,28 @@ function ExpeditionTab({
                       strokeWidth="5"
                       strokeLinecap="round"
                       strokeDasharray={`${Math.max(0, Math.min(100, hpPercent)) * 0.88} 100`}
+                      transform="rotate(-90 18 18)"
                       className="transition-[stroke-dasharray] duration-200"
+                    />
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="8.5"
+                      fill="none"
+                      stroke="rgb(var(--color-sub) / 0.18)"
+                      strokeWidth="3"
+                    />
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="8.5"
+                      fill="none"
+                      stroke={isConditionPositive ? 'rgb(var(--color-sub))' : 'rgb(var(--color-accent))'}
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeDasharray={`${Math.max(0, Math.min(100, conditionPercent)) * 0.534} 100`}
+                      transform={isConditionPositive ? 'rotate(-90 18 18)' : 'rotate(90 18 18)'}
+                      className="transition-[stroke-dasharray,stroke] duration-200"
                     />
                   </svg>
                 </span>

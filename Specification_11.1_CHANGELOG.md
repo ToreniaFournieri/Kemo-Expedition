@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 82 | 2026/4/24 | Implement Expedition party-pane donut dual-ring visuals per Spec 8.3: keep the outer ring as HP donut fill in sub color, add an inner `condition` donut ring using sub color clockwise for positive values and accent color counterclockwise for negative values. |
 | 0.6.1 | 81 | 2026/4/24 | Expedition tab progress floating-bubble sizing tweak: loot-gate and side-quest detail bubbles now use content-fit width (`max-content`) with viewport-aware max width instead of always expanding to full chip width, so short texts render in compact bubbles. |
 | 0.6.1 | 80 | 2026/4/24 | Expedition compact side-quest progress chip rendering fix: set each chip container to `inline-block` so the behind-text fill layer uses the chip’s full box and correctly shows `current/total` width (e.g. `q.sleeping` 1/3 → 33%). |
 | 0.6.1 | 79 | 2026/4/24 | Divine Bureau side-quest bag panel regression fix: restore the 「当たり残り」 row under `サイドクエスト抽選` by summing remaining hit tickets (`id > 0`) from the runtime side-quest bag so the display matches Spec 8.6. |
