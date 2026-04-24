@@ -7532,7 +7532,7 @@ function ExpeditionTab({
             5: '(未開放)レポリアンの月宮踏破で開放',
           };
           const lockedPartyText = lockedPartyUnlockTextByIndex[partyIndex] ?? '未開放';
-          return <div key={partyIndex} className="bg-pane rounded-lg p-2"><div className="text-xs text-gray-400">PT{partyIndex + 1}: ({lockedPartyText})</div></div>;
+          return <div key={partyIndex} className="bg-pane rounded-lg p-2"><div className="text-xs text-gray-400">PT{partyIndex + 1}: {lockedPartyText}</div></div>;
         }
 
         const selectedDungeon = DUNGEONS.find(d => d.id === party.selectedDungeonId);
