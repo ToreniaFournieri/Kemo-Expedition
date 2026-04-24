@@ -5773,7 +5773,7 @@ function PartyTab({
                   onUpdatePartyDeity(selectedPartyIndex, pendingDeityName);
                   setEditingDeity(false);
                 }}
-                className="text-sm text-sub border border-sub rounded px-4 py-1.5 min-w-[4.5rem]"
+                className="text-sm text-white bg-sub px-3 py-1 rounded whitespace-nowrap"
               >
                 完了
               </button>
@@ -5782,7 +5782,7 @@ function PartyTab({
                   setPendingDeityName(party.deity.name);
                   setEditingDeity(false);
                 }}
-                className="text-sm text-gray-600 border border-gray-300 rounded px-4 py-1.5 min-w-[4.5rem]"
+                className="text-sm text-gray-600 bg-gray-200 px-3 py-1 rounded whitespace-nowrap"
               >
                 取消
               </button>

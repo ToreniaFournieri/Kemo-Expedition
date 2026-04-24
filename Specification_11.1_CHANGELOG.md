@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 91 | 2026/4/24 | Partyタブの宗教選択編集中「完了」「取消」ボタンのスタイルを、キャラクター編集ペインの同ボタンと同じ見た目・サイズ感（塗り背景/余白/角丸）に統一。 |
 | 0.6.1 | 90 | 2026/4/24 | Divine Bureau「モード切替」ペインの表示文言を更新し、「ゲームモード」を「テーマカラー」に修正。 |
 | 0.6.1 | 89 | 2026/4/24 | Remove runtime debug `x10000 MAX` time-speed mode from Divine Bureau: delete the UI option, restrict debug time-speed settings to Real time / x5 / x20 / x100, and drop `x10000` normalization + Step scaling (`×0.0001`) so runtime Debug Scaling matches Spec 5.1 and 8.6. |
 | 0.6.1 | 88 | 2026/4/24 | Fix Expedition tab locked-party unlock label formatting by removing duplicated outer parentheses so entries render as `PT2: (未開放)ヴァルンの海洋踏破で開放` (and same pattern for PT3–PT6). |
