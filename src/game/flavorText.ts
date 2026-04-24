@@ -5,6 +5,7 @@ export type FlavorCycleState =
   | 'rest'
   | 'sell'
   | 'feast'
+  | 'slump'
   | 'sound_sleep'
   | 'nap_sleep'
   | 'outfit'

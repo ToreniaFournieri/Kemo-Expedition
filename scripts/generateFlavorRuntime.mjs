@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = process.cwd();
-const inputPath = path.join(root, 'Specification_flavor_text.md');
+const inputPath = path.join(root, 'Specification_5.2_PROGRESS_FLAVOR_TEXT.md');
 const outputPath = path.join(root, 'src/data/flavorTextRuntime.ts');
 
 const spec = fs.readFileSync(inputPath, 'utf8');
