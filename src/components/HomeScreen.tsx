@@ -7363,7 +7363,7 @@ function ExpeditionTab({
     text: string;
     top: number;
     left: number;
-    width: number;
+    maxWidth: number;
   } | null>(null);
 
   const getEstimatedStartHp = (entry: ExpeditionLogEntry) => {
@@ -7421,10 +7421,10 @@ function ExpeditionTab({
 
     const triggerRect = targetElement.getBoundingClientRect();
     const viewportPadding = 12;
-    const bubbleWidth = Math.min(360, window.innerWidth - viewportPadding * 2);
+    const bubbleMaxWidth = Math.min(360, window.innerWidth - viewportPadding * 2);
     const left = Math.min(
       Math.max(triggerRect.left, viewportPadding),
-      window.innerWidth - viewportPadding - bubbleWidth,
+      window.innerWidth - viewportPadding - bubbleMaxWidth,
     );
 
     // SpecRef: 8.3 | UI_EXPEDITION | Progress Visual Update
@@ -7433,7 +7433,7 @@ function ExpeditionTab({
       text: bubbleText,
       top: triggerRect.bottom + 8,
       left,
-      width: bubbleWidth,
+      maxWidth: bubbleMaxWidth,
     });
   };
 
@@ -7455,7 +7455,8 @@ function ExpeditionTab({
           style={{
             top: activeProgressBubble.top,
             left: activeProgressBubble.left,
-            width: activeProgressBubble.width,
+            width: 'max-content',
+            maxWidth: activeProgressBubble.maxWidth,
           }}
         >
           <div className="text-xs text-gray-700 leading-snug break-words">
