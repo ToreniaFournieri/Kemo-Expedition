@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 88 | 2026/4/24 | Fix Expedition tab locked-party unlock label formatting by removing duplicated outer parentheses so entries render as `PT2: (未開放)ヴァルンの海洋踏破で開放` (and same pattern for PT3–PT6). |
 | 0.6.1 | 87 | 2026/4/24 | Update expedition party-pane compact progress visuals per Spec 8.3 Progress Visual Update: render loot-gate and side-quest progress text slightly smaller with a thin line bar under each label, keep pane height unchanged, and wire progress ratios to `current/total` for normal loot-gates and God battle loot-gates (`entry` gate remains no progress). |
 | 0.6.1 | 86 | 2026/4/24 | Expedition party-pane visual polish: make inner and outer donut rings the same thickness, and increase headline/progress text size in each party pane (e.g., `PT2 ウルサンの炎領`, `踏破▼`, `🗃️2/3 神魔解放`) for better readability. |
 | 0.6.1 | 85 | 2026/4/24 | Update Expedition runtime pane status display: add tap/click floating bubble on HP/condition dual-ring showing `HP current / max` and `condition` label with signed value, remove inline condition label from party headline row, and stop appending flavor-condition debug condition/value text in runtime flavor output. |
