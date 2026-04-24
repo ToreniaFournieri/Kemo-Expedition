@@ -7756,7 +7756,14 @@ function ExpeditionTab({
                       strokeWidth="3"
                       strokeLinecap="round"
                       strokeDasharray={`${Math.max(0, Math.min(100, conditionPercent)) * 0.534} 100`}
-                      transform={isConditionPositive ? 'rotate(-90 18 18)' : 'rotate(90 18 18)'}
+                      transform="rotate(-90 18 18)"
+                      style={isConditionPositive
+                        ? undefined
+                        : {
+                          transformBox: 'fill-box',
+                          transformOrigin: 'center',
+                          transform: 'scaleX(-1)',
+                        }}
                       className="transition-[stroke-dasharray,stroke] duration-200"
                     />
                   </svg>
