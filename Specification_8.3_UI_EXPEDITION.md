@@ -33,6 +33,8 @@ PT1 HP (HP bar, blue) `x.expedition`.name       outcome `condition`.label ▼
   - If `condition` is negative:
     - Fill using **accent color**, progressing **counterclockwise** from the top.
 
+- Floating bubble text for outer and inner ring: show HP current / max, `condition` condition text 
+
 
 - **Sub progress bar:**
   - Visibility:
