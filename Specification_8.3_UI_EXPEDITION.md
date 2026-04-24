@@ -27,10 +27,11 @@ PT1 HP (HP bar, blue) `x.expedition`.name       outcome `condition`.label ▼
 
 - **Inner Ring (`###` area):**
   - Display as the **`condition` donut bar**.
+  - The fill origin is fixed at the **12 o’clock position (top center)**.
   - If `condition` is positive:
-    - Fill using **sub-color**, progressing **clockwise**.
+    - Fill using **sub-color**, progressing **clockwise** from the top.
   - If `condition` is negative:
-    - Fill using **accent color**, progressing **counterclockwise**.
+    - Fill using **accent color**, progressing **counterclockwise** from the top.
 
 
 - **Sub progress bar:**
