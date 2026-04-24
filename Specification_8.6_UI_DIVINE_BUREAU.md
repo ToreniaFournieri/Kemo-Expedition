@@ -268,9 +268,7 @@ HP: 312                 タイプ: 神魔
 - Debug store open OFF/ON
   - If on, Ashen Route Vault work as a debug store.
   - Default: OFF
-- Display `condition` OFF/ON
-  - Default: OFF
-  - If ON, `condition`.label shows "好調(+203)" instead of "好調"
+
 
 - Display flavor condition OFF/ON
   - Default: OFF
