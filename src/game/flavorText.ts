@@ -143,8 +143,7 @@ function isRawConditionMatch(
   return false;
 }
 
-function normalizeFlavorText(text: string, context: FlavorContext): string {
-  const speakerName = pickFlavorSpeakerName(context);
+function normalizeFlavorText(text: string, context: FlavorContext, speakerName: string): string {
   return text
     .replace(/\{name\}/g, speakerName)
     .replace(/name は/g, `${speakerName}は`)
@@ -154,31 +153,6 @@ function normalizeFlavorText(text: string, context: FlavorContext): string {
     .replace(/d\.embezzlement/g, `${Math.max(0, context.embezzlementGold ?? 0)}`)
     .replace(/\s+/g, ' ')
     .trim();
-}
-
-function pickFlavorSpeakerName(context: FlavorContext): string {
-  if (!context.partyMembers || context.partyMembers.length === 0) return context.leaderName;
-
-  const stateId = stateIdByName.get(context.state);
-  if (stateId === undefined) return context.leaderName;
-
-  const matched: Array<{ memberName: string; specificity: number }> = [];
-  for (const [entryStateId, conditionId] of FLAVOR_ENTRIES) {
-    if (entryStateId !== stateId) continue;
-    const condition = FLAVOR_CONDITIONS[conditionId];
-    if (!condition || !isConditionMatch(condition, context)) continue;
-    const specificity = conditionSpecificity(condition, context);
-    if (specificity < 0) continue;
-    const memberName = pickMatchingMemberName(condition, context);
-    if (!memberName) continue;
-    matched.push({ memberName, specificity });
-  }
-
-  if (matched.length === 0) return context.leaderName;
-  const bestSpecificity = matched.reduce((max, entry) => Math.max(max, entry.specificity), 0);
-  const candidates = matched.filter((entry) => entry.specificity === bestSpecificity);
-  const normalizedSeed = Math.abs(Math.floor(context.seed));
-  return candidates[normalizedSeed % candidates.length].memberName;
 }
 
 function pickSeededMemberName(
@@ -259,7 +233,8 @@ export function getRuntimeFlavorText(context: FlavorContext): string | null {
   const candidates = matched.filter((entry) => entry.specificity === bestSpecificity);
   const normalizedSeed = Math.abs(Math.floor(context.seed));
   const picked = candidates[normalizedSeed % candidates.length];
-  const normalizedText = normalizeFlavorText(picked.text, context);
+  const speakerName = pickMatchingMemberName(picked.condition, context) ?? context.leaderName;
+  const normalizedText = normalizeFlavorText(picked.text, context, speakerName);
   if (context.debug?.displayCondition) {
     return `${normalizedText} (${formatConditionDebug(picked.condition)})`;
   }
