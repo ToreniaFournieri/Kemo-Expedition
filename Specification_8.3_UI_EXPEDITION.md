@@ -42,10 +42,42 @@ PT1 HP (HP bar, blue) `x.expedition`.name       outcome `condition`.label ▼
     - Party is in `state.explore`
     - "神魔戦" button is pressed and party is going to engage gods battle. 
 
+**Progress Visual Update**
+- Display compact progress summaries in the party pane without changing the pane height.
+
+- Examples:
+
+| Type | Compact display | Floating bubble text |
+|---|---|---|
+| Entry Loot-gate condition | 🗺️ボス撃破せよ| ボス撃破 でヴァルンの樹林帯 開放 |
+| Normal Loot-gate condition | 🗃️0/3 1F-4解放 | アンコモンアイテム 0/3で 1F-4解放 |
+| God battle Loot-gate condition | 🗃️2/3 神魔解放 | ボスレアアイテム 2/3 で神魔タヌエ戦 |
+| Side quest | 📜 660分治療を受ける 🕘 | 660分治療を受ける（9%, 63分, 残り9時間） |
+
+- The progress bar is displayed behind the text.
+- The text remains readable above the progress fill.
+- Each progress item uses `current / total` progress.
+
+**Progress calculation:**
+
+| Type | Progress |
+|---|---|
+| Entry Loot-gate condition |  none |
+| Normal Loot-gate condition | `current_count / required_count` |
+| God battle Loot-gate condition | `current_count / required_count` |
+| Side quest | `current_time / goal_time` |
+
+**Remaining time icon:**
+
+- For timed side quests, display a clock icon after the side quest text.
+- The clock icon represents the remaining limit time.
+- Example: `🕘` means approximately **9 hours remaining**.
+- Detailed remaining time is shown only in the floating bubble.
+
 ```
 ( ####### ) PT1 ルピニアンの断崖   踏破  好調▼
-( ##   ## ) ボス撃破 でヴァルンの樹林帯 開放
-( ####### ) 📜 10回アイテム獲得を空振りする(10%, 1回, 残り4時間)
+( ##   ## ) 
+( ####### ) 🗃️2/3 神魔解放 📜660分治療を受ける 🕘 
 移動中: flavor text (background: state progress bar)
 (Sub progress bar)
 
