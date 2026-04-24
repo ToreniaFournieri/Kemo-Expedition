@@ -202,15 +202,6 @@ function pickMatchingMemberName(condition: FlavorCondition, context: FlavorConte
   return pickSeededMemberName(members, context.seed, context.leaderName);
 }
 
-// SpecRef: 8.3 | UI_EXPEDITION | Flavor text
-function formatConditionDebug(condition: FlavorCondition): string {
-  if (condition.k === 'none') return 'no condition';
-  if (condition.k === 'raw') return `raw: ${condition.v}`;
-  if (condition.k === 'and') return `and: ${condition.v.map((part) => `${part.k}:${part.v}`).join('&')}`;
-  if (condition.k === 'exp_floor_is') return `exp_floor_is: exp=${condition.v.expId}, floor=${condition.v.floor}`;
-  return `${condition.k}: ${condition.v}`;
-}
-
 // SpecRef: 5.2 | PROGRESS_FLAVOR_TEXT | Priority logic
 // SpecRef: 8.3 | UI_EXPEDITION | Flavor text
 export function getRuntimeFlavorText(context: FlavorContext): string | null {
@@ -234,9 +225,5 @@ export function getRuntimeFlavorText(context: FlavorContext): string | null {
   const normalizedSeed = Math.abs(Math.floor(context.seed));
   const picked = candidates[normalizedSeed % candidates.length];
   const speakerName = pickMatchingMemberName(picked.condition, context) ?? context.leaderName;
-  const normalizedText = normalizeFlavorText(picked.text, context, speakerName);
-  if (context.debug?.displayCondition) {
-    return `${normalizedText} (${formatConditionDebug(picked.condition)})`;
-  }
-  return normalizedText;
+  return normalizeFlavorText(picked.text, context, speakerName);
 }
