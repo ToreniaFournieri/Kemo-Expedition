@@ -72,8 +72,8 @@ HP 2350 / 4680
 | God battle Loot-gate condition | 🗃️2/3 神魔解放 | ボスレアアイテム 2/3 で神魔タヌエ戦 |
 | Side quest | 📜 660分治療を受ける 🕘 | 660分治療を受ける（9%, 63分, 残り9時間） |
 
-- The progress bar is displayed behind the text.
-- The text remains readable above the progress fill.
+- The thin line progress bar is displayed under the text.
+- The hight of the party pane unchanged.
 - Each progress item uses `current / total` progress.
 
 **Progress calculation:**
