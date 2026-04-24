@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 93 | 2026/4/24 | Adjust runtime header title left safe margin for small screens (including Apple Watch): add extra left padding so `冒ケモ🐾` is fully visible instead of clipping against the rounded-left edge. |
 | 0.6.1 | 92 | 2026/4/24 | Fix Diary「獲得アイテム」highlight rendering so separators (`, `) stay in normal text style while only rare/super-rare item names use accent/sub emphasis. |
 | 0.6.1 | 91 | 2026/4/24 | Partyタブの宗教選択編集中「完了」「取消」ボタンのスタイルを、キャラクター編集ペインの同ボタンと同じ見た目・サイズ感（塗り背景/余白/角丸）に統一。 |
 | 0.6.1 | 90 | 2026/4/24 | Divine Bureau「モード切替」ペインの表示文言を更新し、「ゲームモード」を「テーマカラー」に修正。 |

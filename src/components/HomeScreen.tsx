@@ -4803,7 +4803,7 @@ export function HomeScreen({
         <div className="absolute inset-0 bg-white" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[500px] px-3 py-2.5 bg-white">
           <div className="flex justify-between items-center gap-3 min-h-[44px]">
-            <div>
+            <div className="pl-1">
               {/* SpecRef: 8.1.2 | Header | Game title label */}
               <h1 className="flex items-center gap-1 text-lg font-bold">
                 <span aria-label={gameTitle}>
