@@ -1256,6 +1256,10 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
 
   const tier = currentDungeon.enemyPoolIds[0];
   const items: ProgressItemDisplay[] = [];
+  const pushUniqueProgressItem = (item: ProgressItemDisplay) => {
+    if (items.some((existingItem) => existingItem.compactText === item.compactText)) return;
+    items.push(item);
+  };
 
   for (const floor of currentDungeon.floors) {
     const hasEliteGate = floor.floorNumber < 6;
@@ -1264,7 +1268,7 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
     const collected = getLootCollectionCount(party, tier, 'uncommon');
     const unlocked = isLootGateUnlocked(party, getEliteGateKey(currentDungeon.id, floor.floorNumber)) || collected >= required;
     if (!unlocked) {
-      items.push({
+      pushUniqueProgressItem({
         compactText: `🗃️${formatNumber(collected)}/${formatNumber(required)} ${floor.floorNumber}F-4解放`,
         bubbleText: `アンコモンアイテム ${formatNumber(collected)}/${formatNumber(required)}で ${floor.floorNumber}F-4解放`,
         progressRatio: collected / Math.max(1, required),
@@ -1280,7 +1284,7 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
       const entryRequired = ENTRY_GATE_REQUIRED;
       const entryUnlocked = isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id)) || previousBossDefeated >= entryRequired;
       if (!entryUnlocked) {
-        items.push({
+        pushUniqueProgressItem({
           compactText: '🗺️ボス撃破せよ',
           bubbleText: `ボス撃破 で${nextDungeon.name} 開放`,
           progressRatio: null,
@@ -1294,13 +1298,13 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
     const godsUnlocked = bossRareCollected >= godsRequired && hasBossDefeat;
     if (!godsUnlocked && !shouldDelayNextSpecialGoal(party, cycleState)) {
       if (hasBossDefeat) {
-        items.push({
+        pushUniqueProgressItem({
           compactText: `🗃️${formatNumber(bossRareCollected)}/${formatNumber(godsRequired)} 神魔解放`,
           bubbleText: `ボスレアアイテム ${formatNumber(bossRareCollected)}/${formatNumber(godsRequired)} で${getGodBattleLabel(currentDungeon)}`,
           progressRatio: bossRareCollected / Math.max(1, godsRequired),
         });
       } else {
-        items.push({
+        pushUniqueProgressItem({
           compactText: '🗺️ボス撃破せよ',
           bubbleText: `ボス撃破 で${getGodBattleLabel(currentDungeon)} 開放`,
           progressRatio: null,
@@ -1310,7 +1314,7 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
   }
 
   const sideQuestItem = getSideQuestDisplay(party, cycleDurationScale, emulatedNowMs);
-  if (sideQuestItem) items.push(sideQuestItem);
+  if (sideQuestItem) pushUniqueProgressItem(sideQuestItem);
 
   return items;
 }
@@ -7675,7 +7679,7 @@ function ExpeditionTab({
                 </span>
                 <span className="min-w-0 flex-1 space-y-0 text-left">
                   <span className="flex items-start justify-between gap-1.5">
-                    <span className="min-w-0 truncate text-black">
+                    <span className={`min-w-0 truncate ${isDarkModeEnabled ? 'text-gray-50' : 'text-black'}`}>
                       <span className="font-bold shrink-0 mr-1">{party.name}</span>
                       {headlineDungeonName}
                     </span>
@@ -7687,7 +7691,7 @@ function ExpeditionTab({
                   </span>
                   <span className="block h-5 min-w-0">
                     {compactProgressItems.length > 0 ? (
-                      <span className="flex h-full items-center gap-1 overflow-hidden text-[11px] text-gray-700">
+                      <span className={`flex h-full items-center gap-1 overflow-hidden text-[11px] ${isDarkModeEnabled ? 'text-gray-200' : 'text-gray-700'}`}>
                         {compactProgressItems.map((item, index) => {
                           const fillPercent = item.progressRatio === null
                             ? 0
@@ -7704,7 +7708,7 @@ function ExpeditionTab({
                                 className="absolute inset-y-0 left-0 bg-sub/24"
                                 style={{ width: `${fillPercent}%` }}
                               />
-                              <span className="relative z-10 block truncate text-black/85">{item.compactText}</span>
+                              <span className={`relative z-10 block truncate ${isDarkModeEnabled ? 'text-gray-50' : 'text-black/85'}`}>{item.compactText}</span>
                             </span>
                           );
                         })}
@@ -7718,7 +7722,7 @@ function ExpeditionTab({
                   className={`absolute inset-y-0 left-0 bg-sub/20 ${cycle.state === 'explore' ? '' : 'transition-[width] duration-200'}`}
                   style={{ width: `${visualProgressPercent}%` }}
                 />
-                <span className="relative z-10 flex h-full items-center justify-center px-1.5 text-center text-black leading-tight">
+                <span className={`relative z-10 flex h-full items-center justify-center px-1.5 text-center leading-tight ${isDarkModeEnabled ? 'text-gray-50' : 'text-black'}`}>
                   <span className="w-full overflow-hidden break-words text-pretty leading-tight"
                     style={{
                       display: '-webkit-box',
