@@ -2,6 +2,7 @@
 - Entries must be sorted in descending order by Version, then Build.
 - Always insert new entries at the top of the table.
 - Date format: YYYY/MM/DD
+- Language: English
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
