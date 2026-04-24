@@ -146,6 +146,7 @@ function isRawConditionMatch(
 function normalizeFlavorText(text: string, context: FlavorContext): string {
   const speakerName = pickFlavorSpeakerName(context);
   return text
+    .replace(/\{name\}/g, speakerName)
     .replace(/name は/g, `${speakerName}は`)
     .replace(/name/g, speakerName)
     .replace(/selling item/g, context.sellingItemName ?? 'アイテム')
