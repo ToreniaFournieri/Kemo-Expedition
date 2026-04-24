@@ -1270,11 +1270,13 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
     const collected = getLootCollectionCount(party, tier, 'uncommon');
     const unlocked = isLootGateUnlocked(party, getEliteGateKey(currentDungeon.id, floor.floorNumber)) || collected >= required;
     if (!unlocked) {
+      const safeRequired = Math.max(1, required);
+      const normalizedCollected = Math.max(0, Math.min(collected, safeRequired));
       pushUniqueProgressItem({
         key: `elite-gate:${currentDungeon.id}:${floor.floorNumber}`,
         compactText: `🗃️${formatNumber(collected)}/${formatNumber(required)} ${floor.floorNumber}F-4解放`,
         bubbleText: `アンコモンアイテム ${formatNumber(collected)}/${formatNumber(required)}で ${floor.floorNumber}F-4解放`,
-        progressRatio: null,
+        progressRatio: normalizedCollected / safeRequired,
       });
       break;
     }
@@ -1302,11 +1304,13 @@ function getCompactProgressItems(party: Party, cycleDurationScale: number, emula
     const godsUnlocked = bossRareCollected >= godsRequired && hasBossDefeat;
     if (!godsUnlocked && !shouldDelayNextSpecialGoal(party, cycleState)) {
       if (hasBossDefeat) {
+        const safeGodsRequired = Math.max(1, godsRequired);
+        const normalizedBossRareCollected = Math.max(0, Math.min(bossRareCollected, safeGodsRequired));
         pushUniqueProgressItem({
           key: `god-gate:${currentDungeon.id}`,
           compactText: `🗃️${formatNumber(bossRareCollected)}/${formatNumber(godsRequired)} 神魔解放`,
           bubbleText: `ボスレアアイテム ${formatNumber(bossRareCollected)}/${formatNumber(godsRequired)} で${getGodBattleLabel(currentDungeon)}`,
-          progressRatio: null,
+          progressRatio: normalizedBossRareCollected / safeGodsRequired,
         });
       } else {
         pushUniqueProgressItem({
@@ -7843,7 +7847,7 @@ function ExpeditionTab({
                   </span>
                   <span className="block h-5 min-w-0">
                     {compactProgressItems.length > 0 ? (
-                      <span className={`flex h-full items-center gap-1 overflow-hidden text-sm ${isDarkModeEnabled ? 'text-gray-200' : 'text-gray-700'}`}>
+                      <span className={`flex h-full items-center gap-1 overflow-hidden ${isDarkModeEnabled ? 'text-gray-200' : 'text-gray-700'}`}>
                         {compactProgressItems.map((item, index) => {
                           const fillPercent = item.progressRatio === null
                             ? 0
@@ -7851,7 +7855,7 @@ function ExpeditionTab({
                           return (
                             <span
                               key={`${party.id}-compact-progress-${index}`}
-                              className="relative inline-block min-w-0 max-w-[70%] overflow-hidden rounded px-1 py-0.5 cursor-pointer"
+                              className="relative inline-block h-full min-w-0 max-w-[70%] overflow-hidden rounded px-1 py-0.5 cursor-pointer"
                               title={item.bubbleText}
                               aria-label={item.bubbleText}
                               onPointerDown={(event) => {
@@ -7866,13 +7870,14 @@ function ExpeditionTab({
                                   event.currentTarget,
                                 );
                               }}
-                            >
+                              >
+                              <span className={`relative z-10 block truncate text-[11px] leading-tight ${isDarkModeEnabled ? 'text-gray-50' : 'text-black/85'}`}>{item.compactText}</span>
                               <span
                                 aria-hidden
-                                className="absolute inset-y-0 left-0 bg-sub/24"
-                                style={{ width: `${fillPercent}%` }}
-                              />
-                              <span className={`relative z-10 block truncate ${isDarkModeEnabled ? 'text-gray-50' : 'text-black/85'}`}>{item.compactText}</span>
+                                className={`absolute bottom-0 left-1 right-1 h-0.5 overflow-hidden rounded-full ${isDarkModeEnabled ? 'bg-white/20' : 'bg-black/15'}`}
+                              >
+                                <span className="block h-full bg-sub/70" style={{ width: `${fillPercent}%` }} />
+                              </span>
                             </span>
                           );
                         })}
