@@ -5,6 +5,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 71 | 2026/4/24 | Fix runtime `state.slump` flavor-name rendering by replacing `{name}` placeholders with the selected member name in `getRuntimeFlavorText` normalization so UI text displays `ルドルフは…` (without braces). |
 | 0.6.1 | 70 | 2026/4/24 | Update runtime flavor-text dataset for `state.slump` to include the requested generic and race-specific lines (Lupinian/Vulpinian/Felidian/Caninian/Ursan/Procyonian/Leporian/Cervin/Murid/Kemoria/Orcinian/Avian), and wire runtime flavor-state typing/generator input so `slump` entries from Spec 5.2 are generated into `src/data/flavorTextRuntime.ts`. |
 | 0.6.1 | 69 | 2026/4/23 | Implement AFK refresh-resume persistence for `state.reactivate` main progress: persist/restore completed AFK milliseconds together with pending/total recovery runtime so the recovery bar resumes at the exact pre-refresh percentage while AFK emulation automatically continues. |
 | 0.6.1 | 68 | 2026/4/23 | Fix Expedition Sub progress synchronization for `state.rest`: compute mini-bar elapsed ratio using the real per-Step rest tick duration (already debug-time-scaled) instead of dividing by total rest steps, while preserving Step-based visibility/placeholders and existing `state.sell`/`state.explore` behavior. |
