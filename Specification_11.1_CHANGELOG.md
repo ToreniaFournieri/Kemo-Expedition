@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 106 | 2026/4/25 | Update runtime glossary entry for Spec 1.1.6 `f.super-rare-scaling`: use the requested runtime key/display text and simplify description to the latest spec sentence for super-rare performance scaling. |
 | 0.6.1 | 105 | 2026/4/25 | Implement Spec 5.1.4 save-load failure safeguards: when persisted save loading fails, runtime now captures detailed error logs for a warning popup/screen, blocks automatic gameplay startup behind the warning screen, and disables all automatic state writes so existing save data is preserved without overwrite. |
 | 0.6.1 | 104 | 2026/4/25 | Align runtime PT6 initial condition (when unlocked) with Spec 2.1.4.2 under Goddess of Precision by setting ランスロット's predisposition to `Resourceful` (from `Savvy`), while keeping roster order, classes, lineages, deity, and unique flags unchanged. |
 | 0.6.1 | 103 | 2026/4/25 | Expedition tab locked-party visibility update (Spec 5.1.3.2): hide locked party panes entirely until each party's unlock-hint visibility condition is met; once met, show only the corresponding `(未開放)…踏破で開放` hint pane. |
