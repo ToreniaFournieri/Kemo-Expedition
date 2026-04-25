@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 98 | 2026/4/25 | Update character race-change default naming selection to use each party's Spec 2.2.1 PT-wide potential-name pool (instead of a global race pool), and pick the first available name in table order; for example, PT2 Ursan now defaults to `マロ`. |
 | 0.6.1 | 97 | 2026/4/25 | Update runtime PT1–PT6 initial member names to the latest requested roster while keeping each party's existing deity, class, lineage, unique flag, and initial equipment setup intact. |
 | 0.6.1 | 96 | 2026/4/25 | Update runtime `f.base_multiplier` base-stat scaling table to Spec 2.1.1.2 values for attack (`b.strength`/`b.intelligence`) and defense (`b.vitality`/`b.mind`), including clamped min/max lookup behavior for out-of-range base values. |
 | 0.6.1 | 95 | 2026/4/25 | Party character edit UI: add the same tap/click floating-bubble bonus-help behavior used in メインクラス/サブクラス to 種族・系譜・性格 bonus text, so each bonus token opens its inline detail tooltip. |
