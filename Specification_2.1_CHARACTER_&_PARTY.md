@@ -438,10 +438,10 @@ Party.`d.HP` =
 |------|------|------|------|------|------|------|------|
 | 1 | **レナード** | Vulpinian | `class.duelist`| `class.lord` | **`meddlesome_fox`** | `None` | **`true`** |
 | 2 | **オルカ** | **Orcinian** | `class.samurai` | `class.sword-saint` | **`rowdy_orca_girl`** | `None` | **`true`** |
-| 1 | シマ | Procyonian | `class.ranger` | `class.ranger` | `frozen_forest` | `Nimble` | `false` |
-| 3 | シーケルン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Inquisitive` | `false` |
-| 5 | アルテミス | Felidian | `class.alchemist` | `class.wizard` | `machina` | `Serenity` | `false` |
-| 6 | ウォッシ | Lupinian | `class.ninja` | `class.wizard`| `windcross` | `Perceptive` | `false` |
+| 1 | カイマ | Procyonian | `class.ranger` | `class.ranger` | `frozen_forest` | `Nimble` | `false` |
+| 3 | マナエル | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Inquisitive` | `false` |
+| 5 | レイナ | Felidian | `class.alchemist` | `class.wizard` | `machina` | `Serenity` | `false` |
+| 6 | タウロ | Lupinian | `class.ninja` | `class.wizard`| `windcross` | `Perceptive` | `false` |
 
 - **PT3** initial condition (when unlocked)
   - deity: `Goddess of Fertility`
