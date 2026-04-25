@@ -2293,6 +2293,35 @@ function buildInlineBonusEntry(prefix: string, classId: string | undefined, bonu
   };
 }
 
+type InlineBonusDisplayEntry = {
+  key: string;
+  label: string;
+  description: string | null;
+};
+
+const FLOATING_BONUS_BUBBLE_CLASS =
+  'inline-flex items-center rounded-full border border-gray-200 bg-white px-2 py-0.5 text-[11px] text-gray-700 shadow-sm';
+
+function toInlineBonusDisplayEntries(prefix: string, sourceId: string, bonuses: Bonus[]): InlineBonusDisplayEntry[] {
+  return bonuses
+    .map((bonus, index) => buildInlineBonusEntry(prefix, sourceId, bonus, index))
+    .filter((entry): entry is InlineBonusDisplayEntry => entry !== null)
+    .filter((entry) => entry.label.trim().length > 0)
+    .filter((entry, index, entries) => entries.findIndex((candidate) => candidate.label === entry.label) === index);
+}
+
+function splitBonusTextToBubbleEntries(prefix: string, text: string): InlineBonusDisplayEntry[] {
+  return text
+    .split(',')
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0)
+    .map((label, index) => ({
+      key: `${prefix}-${index}-${label}`,
+      label,
+      description: null,
+    }));
+}
+
 function getEnemyTypeCBonusText(enemy: EnemyDef): string {
   const cBonuses = (enemy.bonuses ?? []).filter((bonus) => isEnemyTypeCBonusType(bonus.type));
   return formatBonuses(cBonuses, { defenseMultiplierStyle: 'friendly' });
@@ -6009,7 +6038,10 @@ function PartyTab({
                 {(() => {
                   const selectedRaceId = pendingEdits?.raceId ?? char.raceId;
                   const selectedRace = RACES.find((race) => race.id === selectedRaceId) ?? RACES[0];
-                  const selectedRaceBonuses = formatBonuses(getRaceBonusesForSelection(selectedRace));
+                  const selectedRaceBonuses = splitBonusTextToBubbleEntries(
+                    `race-bonus-${selectedRace.id}`,
+                    formatBonuses(getRaceBonusesForSelection(selectedRace)),
+                  );
 
                   const renderRaceOption = (race: Race, isSelectedRace: boolean) => {
                     return (
@@ -6036,7 +6068,16 @@ function PartyTab({
                     <>
                       <div className="mb-1 text-xs text-gray-600 select-none">
                         <span className="font-bold">種族</span>: <RaceIcon race={selectedRace} className="inline-block h-4 w-4 mx-1 align-text-bottom" />
-                        {selectedRace.name} | 体{selectedRace.stats.vitality},力{selectedRace.stats.strength},知{selectedRace.stats.intelligence},精{selectedRace.stats.mind} | {selectedRaceBonuses}
+                        {selectedRace.name} | 体{selectedRace.stats.vitality},力{selectedRace.stats.strength},知{selectedRace.stats.intelligence},精{selectedRace.stats.mind} |{' '}
+                        <span className="inline-flex flex-wrap items-center gap-1 align-middle">
+                          {selectedRaceBonuses.length === 0
+                            ? '-'
+                            : selectedRaceBonuses.map((entry) => (
+                              <span key={entry.key} className={FLOATING_BONUS_BUBBLE_CLASS}>
+                                {entry.label}
+                              </span>
+                            ))}
+                        </span>
                       </div>
                       <div className="grid grid-cols-3 gap-1">
                         {raceCategoryDefinitions.map((category) => (
@@ -6069,35 +6110,40 @@ function PartyTab({
                     ? ((selectedMainClass?.masterBonuses ?? []) as Bonus[])
                     : ((selectedMainClass?.mainBonuses ?? []) as Bonus[])),
                 ];
-                const selectedMainBonusEntries = selectedMainBonusList
-                  .map((bonus, index) => buildInlineBonusEntry('main-class-bonus', selectedMainClassId, bonus, index))
-                  .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null);
+                const selectedMainBonusEntries = toInlineBonusDisplayEntries(
+                  'main-class-bonus',
+                  selectedMainClassId ?? 'none',
+                  selectedMainBonusList,
+                );
 
                 return (
                   <>
                     <div className="rounded border border-gray-200 bg-white p-2 text-xs">
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
                         <span className="font-bold">メインクラス</span>: {selectedMainClass?.name ?? '-'}{selectedMainClassIsMaster ? '(師範)' : ''} |{' '}
-                        {selectedMainBonusEntries.map((entry, index) => (
-                          <Fragment key={entry.key}>
-                            {index > 0 && ', '}
-                            {entry.description ? (
-                              <button
-                                type="button"
-                                onPointerDown={(event) => event.stopPropagation()}
-                                onClick={(event) => {
-                                  if (!entry.description) return;
-                                  handleInlineDetailHelpToggle(entry.key, entry.label, entry.description, event);
-                                }}
-                                className="text-left hover:underline"
-                              >
-                                {entry.label}
-                              </button>
-                            ) : (
-                              <span>{entry.label}</span>
-                            )}
-                          </Fragment>
-                        ))}
+                        <span className="inline-flex items-center gap-1">
+                          {selectedMainBonusEntries.length === 0
+                            ? '-'
+                            : selectedMainBonusEntries.map((entry) => (
+                              <Fragment key={entry.key}>
+                                {entry.description ? (
+                                  <button
+                                    type="button"
+                                    onPointerDown={(event) => event.stopPropagation()}
+                                    onClick={(event) => {
+                                      if (!entry.description) return;
+                                      handleInlineDetailHelpToggle(entry.key, entry.label, entry.description, event);
+                                    }}
+                                    className={`${FLOATING_BONUS_BUBBLE_CLASS} text-left hover:border-sub hover:text-sub`}
+                                  >
+                                    {entry.label}
+                                  </button>
+                                ) : (
+                                  <span className={FLOATING_BONUS_BUBBLE_CLASS}>{entry.label}</span>
+                                )}
+                              </Fragment>
+                            ))}
+                        </span>
                       </div>
                       {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Main Class selection */}
                       <div className={classCategorySelectorGridClass}>
@@ -6143,39 +6189,40 @@ function PartyTab({
                 const selectedSubBonusList = [
                   ...((selectedSubClass?.mainSubBonuses ?? []) as Bonus[]),
                 ];
-                const selectedSubBonusEntries = selectedSubBonusList
-                  .map((bonus, index) => buildInlineBonusEntry('sub-class-bonus', selectedSubClassId, bonus, index))
-                  .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null)
-                  .filter((entry) => entry.label.trim().length > 0)
-                  .filter((entry, index, entries) => entries.findIndex((candidate) => candidate.label === entry.label) === index);
+                const selectedSubBonusEntries = toInlineBonusDisplayEntries(
+                  'sub-class-bonus',
+                  selectedSubClassId ?? 'none',
+                  selectedSubBonusList,
+                );
 
                 return (
                   <>
                     <div className="rounded border border-gray-200 bg-white p-2 text-xs">
                       <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
                         <span className="font-bold">サブクラス</span>: {selectedSubClass?.name ?? '-'} |{' '}
-                        {selectedSubBonusEntries.length === 0
-                          ? '-'
-                          : selectedSubBonusEntries.map((entry, index) => (
-                            <Fragment key={entry.key}>
-                              {index > 0 && ', '}
-                              {entry.description ? (
-                                <button
-                                  type="button"
-                                  onPointerDown={(event) => event.stopPropagation()}
-                                  onClick={(event) => {
-                                    if (!entry.description) return;
-                                    handleInlineDetailHelpToggle(entry.key, entry.label, entry.description, event);
-                                  }}
-                                  className="text-left hover:underline"
-                                >
-                                  {entry.label}
-                                </button>
-                              ) : (
-                                <span>{entry.label}</span>
-                              )}
-                            </Fragment>
-                          ))}
+                        <span className="inline-flex items-center gap-1">
+                          {selectedSubBonusEntries.length === 0
+                            ? '-'
+                            : selectedSubBonusEntries.map((entry) => (
+                              <Fragment key={entry.key}>
+                                {entry.description ? (
+                                  <button
+                                    type="button"
+                                    onPointerDown={(event) => event.stopPropagation()}
+                                    onClick={(event) => {
+                                      if (!entry.description) return;
+                                      handleInlineDetailHelpToggle(entry.key, entry.label, entry.description, event);
+                                    }}
+                                    className={`${FLOATING_BONUS_BUBBLE_CLASS} text-left hover:border-sub hover:text-sub`}
+                                  >
+                                    {entry.label}
+                                  </button>
+                                ) : (
+                                  <span className={FLOATING_BONUS_BUBBLE_CLASS}>{entry.label}</span>
+                                )}
+                              </Fragment>
+                            ))}
+                        </span>
                       </div>
                       {/* SpecRef: 8.2.3 | Character Edit Mode (selected member) | Sub Class selection */}
                       <div className={classCategorySelectorGridClass}>
@@ -6219,10 +6266,23 @@ function PartyTab({
                 {(() => {
                   const selectedLineageId = pendingEdits?.lineageId ?? char.lineageId;
                   const selectedLineage = LINEAGES.find((l) => l.id === selectedLineageId) ?? LINEAGES[0];
+                  const selectedLineageBonuses = splitBonusTextToBubbleEntries(
+                    `lineage-bonus-${selectedLineage.id}`,
+                    formatBonuses(selectedLineage.bonuses as Bonus[]),
+                  );
                   return (
                     <>
                       <div className="mb-1 text-xs text-gray-600 select-none">
-                        <span className="font-bold">系譜</span>: {selectedLineage.name} | {formatBonuses(selectedLineage.bonuses as Bonus[])}
+                        <span className="font-bold">系譜</span>: {selectedLineage.name} |{' '}
+                        <span className="inline-flex flex-wrap items-center gap-1 align-middle">
+                          {selectedLineageBonuses.length === 0
+                            ? '-'
+                            : selectedLineageBonuses.map((entry) => (
+                              <span key={entry.key} className={FLOATING_BONUS_BUBBLE_CLASS}>
+                                {entry.label}
+                              </span>
+                            ))}
+                        </span>
                       </div>
                       <div className="grid grid-cols-4 gap-1">
                         {lineageCategoryDefinitions.map((category) => (
