@@ -3,6 +3,16 @@
 ### 2.2 CHARACTER_&_PARTY_MASTER_DATA
 
 
+| PT | naming style |
+|-|-|
+| PT1 | Japanese naming for pet name |
+| PT2 | Polynesian naming for pet name |
+| PT3 | Arabic naming for pet name |
+| PT4 | Slavic naming for pet name |
+| PT5 | Chinese naming for pet name |
+| PT6 | Portland naming for pet name |
+
+
 #### 2.2.1 Potential default name for player side characters
 
 | PT | race (English key) | potential name |
