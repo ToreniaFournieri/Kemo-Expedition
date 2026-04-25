@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 96 | 2026/4/25 | Update runtime `f.base_multiplier` to Spec 2.1.1.2 formula-based scaling (attack: `1.10^(value-10)`, defense: inverse), with value clamping to table bounds (6–23) and 2-decimal rounding. |
 | 0.6.1 | 95 | 2026/4/25 | Party character-edit bonus summary UI update: render Race/Main Class/Sub Class/Lineage bonus texts as consistent floating bubble chips, while keeping Main/Sub bonus help bubbles clickable with the same chip style. |
 | 0.6.1 | 94 | 2026/4/24 | Fine-tune runtime header edge spacing for small screens (including Apple Watch): move title block (`冒ケモ🐾`) further right from the left edge and shift the gold display (`200G`) left from the right edge to keep both sides fully readable. |
 | 0.6.1 | 93 | 2026/4/24 | Adjust runtime header title left safe margin for small screens (including Apple Watch): add extra left padding so `冒ケモ🐾` is fully visible instead of clipping against the rounded-left edge. |
