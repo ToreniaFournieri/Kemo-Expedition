@@ -5803,9 +5803,18 @@ function PartyTab({
       )}
       {/* Party selector - tab style */}
       <div className="liquid-glass-segmented mb-4 flex gap-1 rounded-2xl p-1">
-        {[0, 1, 2, 3, 4, 5].map((partyIndex) => {
-          const isAvailable = partyIndex < parties.length;
-          const isSelected = partyIndex === selectedPartyIndex;
+        {(() => {
+          // SpecRef: 8.2.1 | Displays | Party List
+          const allPartyIndexes = [0, 1, 2, 3, 4, 5];
+          const unlockedPartyCount = parties.length;
+          const previewLockedPartyIndex = unlockedPartyCount < allPartyIndexes.length ? unlockedPartyCount : null;
+          const visiblePartyIndexes = allPartyIndexes.filter((partyIndex) => {
+            if (partyIndex < unlockedPartyCount) return true;
+            return previewLockedPartyIndex === partyIndex;
+          });
+          return visiblePartyIndexes.map((partyIndex) => {
+            const isAvailable = partyIndex < unlockedPartyCount;
+            const isSelected = partyIndex === selectedPartyIndex;
           return (
             <button
               key={partyIndex}
@@ -5827,7 +5836,8 @@ function PartyTab({
               PT{partyIndex + 1}
             </button>
           );
-        })}
+          });
+        })()}
       </div>
 
       <div className="mb-3 text-sm flex items-start justify-between gap-2">
