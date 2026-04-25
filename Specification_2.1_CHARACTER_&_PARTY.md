@@ -485,9 +485,9 @@ Party.`d.HP` =
 | order | Name | Race | main class | sub class | lineage | predisposition | Unique |
 |------|------|------|------|------|------|------|------|
 | 1 | マーカス | Ursan | `class.pilgrim` | `class.samurai` | `fragment` | `Stubborn` | `false` |
-| 2 | カーター | Caninian | `class.samurai` | `class.sword-saint` | `abyssal_sea` | `Savvy` | `false` |
+| 2 | ランスロット | Caninian | `class.samurai` | `class.sword-saint` | `abyssal_sea` | `Savvy` | `false` |
 | 3 | **フィン** | Leporian | `class.sword-saint` | `class.ranger` | **``unexpected_prince(ss)``** | `None` | **`true`** |
-| 4 | エズラ | Procyonian | `class.alchemist`| `class.alchemist` | `adaptation` | `Inquisitive` | `false` |
+| 4 | パーシヴァル | Procyonian | `class.alchemist`| `class.alchemist` | `adaptation` | `Inquisitive` | `false` |
 | 5 | **マーレ** | Cervin | `class.sage` | `class.wizard` | **`incarnation`** | `None` | **`true`** |
 | 6 | サム | Murid | `class.wizard` | `class.alchemist` | `utopia` | `Nimble` | `false` |
   
