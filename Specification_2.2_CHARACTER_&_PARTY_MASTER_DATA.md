@@ -5,95 +5,330 @@
 
 #### 2.2.1 Potential default name for player side characters
 
-| race (English key) | potential name |
-|-------------------|----------------|
-| Caninian | タロウ |
-| Caninian | コテツ |
-| Caninian | ハヤテ |
-| Caninian | シロ |
-| Caninian | レオ |
-| Caninian | アキラ |
-| Caninian | リク |
-| Caninian | ソラ |
-| Caninian | マル |
-| Caninian | ジン |
-| Lupinian | ガルム |
-| Lupinian | フェン |
-| Lupinian | クロウ |
-| Lupinian | ハク |
-| Lupinian | レイガ |
-| Lupinian | ヴォルフ |
-| Lupinian | ギン |
-| Lupinian | ランガ |
-| Lupinian | ゼル |
-| Lupinian | バルト |
-| Vulpinian | キツネ丸 |
-| Vulpinian | アカネ |
-| Vulpinian | イズナ |
-| Vulpinian | ヨウコ |
-| Vulpinian | センリ |
-| Vulpinian | コトネ |
-| Vulpinian | クズノハ |
-| Vulpinian | ミカゲ |
-| Vulpinian | ヒナ |
-| Vulpinian | アヤ |
-| Ursan | ゴンタ |
-| Ursan | バルド |
-| Ursan | クマジロウ |
-| Ursan | ドーガ |
-| Ursan | グルン |
-| Ursan | ダン |
-| Ursan | ボルグ |
-| Ursan | ガイ |
-| Ursan | ザン |
-| Ursan | ブラム |
-| Felidian | ミミ |
-| Felidian | タマ |
-| Felidian | ルナ |
-| Felidian | ネロ |
-| Felidian | シエル |
-| Felidian | レイ |
-| Felidian | アオ |
-| Felidian | カノン |
-| Felidian | フィン |
-| Felidian | ユイ |
-| Mustelid | チョロ |
-| Mustelid | ムサシ |
-| Mustelid | コハク |
-| Mustelid | レン |
-| Mustelid | シノ |
-| Mustelid | ハク |
-| Mustelid | タケ |
-| Mustelid | ツバメ |
-| Mustelid | セン |
-| Mustelid | カイ |
-| Leporian | フブキ |
-| Leporian | ハル |
-| Leporian | トワ |
-| Leporian | ユキ |
-| Leporian | ナギ |
-| Leporian | ミナ |
-| Leporian | サラ |
-| Leporian | アオイ |
-| Leporian | レイナ |
-| Leporian | カスミ |
-| Cervin | サイカ |
-| Cervin | カナエ |
-| Cervin | リンネ |
-| Cervin | ミコト |
-| Cervin | ユズリハ |
-| Cervin | シオン |
-| Cervin | セツナ |
-| Cervin | トキ |
-| Cervin | マヒロ |
-| Cervin | ツムギ |
-| Murid | チュウタ |
-| Murid | ネズミ丸 |
-| Murid | カゲ |
-| Murid | コソネ |
-| Murid | スズ |
-| Murid | コマ |
-| Murid | ヒソカ |
-| Murid | ネム |
-| Murid | チビ |
-| Murid | クルミ |
+| PT | race (English key) | potential name |
+|---|---|---|
+| 1 | Lupinian | バトル |
+| 1 | Lupinian | テムル |
+| 1 | Lupinian | ガルダ |
+| 1 | Lupinian | ソロンゴ |
+| 1 | Lupinian | エルデネ |
+| 1 | Lupinian | ジャルガル |
+| 1 | Vulpinian | アルスラン |
+| 1 | Vulpinian | ノヤン |
+| 1 | Vulpinian | チンギス |
+| 1 | Vulpinian | ボルド |
+| 1 | Vulpinian | サイン |
+| 1 | Vulpinian | トルガ |
+| 1 | Felidian | サラン |
+| 1 | Felidian | ナラン |
+| 1 | Felidian | オユナ |
+| 1 | Felidian | アルタン |
+| 1 | Felidian | エネレル |
+| 1 | Felidian | マラル |
+| 1 | Caninian | バヤル |
+| 1 | Caninian | ムンフ |
+| 1 | Caninian | ガンバト |
+| 1 | Caninian | テムージン |
+| 1 | Caninian | エルベグ |
+| 1 | Caninian | トゥムル |
+| 1 | Ursan | ボルドー |
+| 1 | Ursan | ジャムツ |
+| 1 | Ursan | バトバヤル |
+| 1 | Ursan | サンジャ |
+| 1 | Ursan | オチル |
+| 1 | Ursan | ダシ |
+| 1 | Procyonian | チメド |
+| 1 | Procyonian | ガントルガ |
+| 1 | Procyonian | バザル |
+| 1 | Procyonian | ツェレン |
+| 1 | Procyonian | エンク |
+| 1 | Procyonian | ロブサン |
+| 1 | Leporian | ボルマ |
+| 1 | Leporian | セツェグ |
+| 1 | Leporian | トゥヤ |
+| 1 | Leporian | ノミン |
+| 1 | Leporian | デルゲル |
+| 1 | Leporian | アヌ |
+| 1 | Cervin | アリウン |
+| 1 | Cervin | ソヨル |
+| 1 | Cervin | ウルジー |
+| 1 | Cervin | エルデン |
+| 1 | Cervin | ミシェール |
+| 1 | Cervin | バヤスガラン |
+| 1 | Murid | タミル |
+| 1 | Murid | ムンゲン |
+| 1 | Murid | ジョルー |
+| 1 | Murid | アマル |
+| 1 | Murid | スフ |
+| 1 | Murid | バトエル |
+| 2 | Lupinian | タウロ |
+| 2 | Lupinian | カノア |
+| 2 | Lupinian | ラウル |
+| 2 | Lupinian | マウイ |
+| 2 | Lupinian | タネ |
+| 2 | Lupinian | ケアヌ |
+| 2 | Vulpinian | カラニ |
+| 2 | Vulpinian | カイロ |
+| 2 | Vulpinian | マコア |
+| 2 | Vulpinian | ナル |
+| 2 | Vulpinian | ラニ |
+| 2 | Vulpinian | ノアル |
+| 2 | Felidian | レイナ |
+| 2 | Felidian | レイア |
+| 2 | Felidian | モアナ |
+| 2 | Felidian | ナレア |
+| 2 | Felidian | カリア |
+| 2 | Felidian | マリエ |
+| 2 | Caninian | カイ |
+| 2 | Caninian | マナ |
+| 2 | Caninian | ノエル |
+| 2 | Caninian | ラウア |
+| 2 | Caninian | テオ |
+| 2 | Caninian | エナ |
+| 2 | Ursan | マロ |
+| 2 | Ursan | カヘア |
+| 2 | Ursan | タマ |
+| 2 | Ursan | ノルア |
+| 2 | Ursan | ハウ |
+| 2 | Ursan | カロ |
+| 2 | Procyonian | カイマ |
+| 2 | Procyonian | マコ |
+| 2 | Procyonian | ナルア |
+| 2 | Procyonian | ロノ |
+| 2 | Procyonian | タリ |
+| 2 | Procyonian | モア |
+| 2 | Leporian | レア |
+| 2 | Leporian | ナニ |
+| 2 | Leporian | ミア |
+| 2 | Leporian | アロハ |
+| 2 | Leporian | カノエ |
+| 2 | Leporian | リノ |
+| 2 | Cervin | マナエル |
+| 2 | Cervin | ケアヌ |
+| 2 | Cervin | ノアル |
+| 2 | Cervin | ラニエル |
+| 2 | Cervin | マヒナ |
+| 2 | Cervin | カレオ |
+| 2 | Murid | ピコ |
+| 2 | Murid | ミノ |
+| 2 | Murid | ナオ |
+| 2 | Murid | ティコ |
+| 2 | Murid | ロア |
+| 2 | Murid | エリオ |
+| 3 | Lupinian | ファリス |
+| 3 | Lupinian | ザヒル |
+| 3 | Lupinian | ナシル |
+| 3 | Lupinian | カリーム |
+| 3 | Lupinian | ラシード |
+| 3 | Lupinian | ハイダル |
+| 3 | Vulpinian | サーミル |
+| 3 | Vulpinian | ジャリル |
+| 3 | Vulpinian | ナビル |
+| 3 | Vulpinian | ファーディ |
+| 3 | Vulpinian | ザイード |
+| 3 | Vulpinian | アミール |
+| 3 | Felidian | ライラ |
+| 3 | Felidian | ナディア |
+| 3 | Felidian | サフィア |
+| 3 | Felidian | ヤスミン |
+| 3 | Felidian | ザーラ |
+| 3 | Felidian | マリカ |
+| 3 | Caninian | ハサン |
+| 3 | Caninian | オマル |
+| 3 | Caninian | ユースフ |
+| 3 | Caninian | ターリク |
+| 3 | Caninian | サリム |
+| 3 | Caninian | イブラヒム |
+| 3 | Ursan | バシール |
+| 3 | Ursan | マフムード |
+| 3 | Ursan | カーディル |
+| 3 | Ursan | ジャバル |
+| 3 | Ursan | ラヒム |
+| 3 | Ursan | ハムザ |
+| 3 | Procyonian | ナジーム |
+| 3 | Procyonian | ファヒム |
+| 3 | Procyonian | サーヒル |
+| 3 | Procyonian | リヤド |
+| 3 | Procyonian | ジャミル |
+| 3 | Procyonian | カミル |
+| 3 | Leporian | アミナ |
+| 3 | Leporian | サルマ |
+| 3 | Leporian | ナイラ |
+| 3 | Leporian | リーム |
+| 3 | Leporian | ハナ |
+| 3 | Leporian | ダリア |
+| 3 | Cervin | ザヒラ |
+| 3 | Cervin | スハイル |
+| 3 | Cervin | ナディーム |
+| 3 | Cervin | カリラ |
+| 3 | Cervin | マジド |
+| 3 | Cervin | サミラ |
+| 3 | Murid | ミルザ |
+| 3 | Murid | タリル |
+| 3 | Murid | ラミ |
+| 3 | Murid | サーミ |
+| 3 | Murid | ナビハ |
+| 3 | Murid | フィラス |
+| 4 | Lupinian | イヴァン |
+| 4 | Lupinian | ドミトリ |
+| 4 | Lupinian | セルゲイ |
+| 4 | Lupinian | ミハイル |
+| 4 | Lupinian | アレクセイ |
+| 4 | Lupinian | ボリス |
+| 4 | Vulpinian | ニコライ |
+| 4 | Vulpinian | ユーリ |
+| 4 | Vulpinian | ヴィクトル |
+| 4 | Vulpinian | ロマン |
+| 4 | Vulpinian | レフ |
+| 4 | Vulpinian | パーヴェル |
+| 4 | Felidian | アーニャ |
+| 4 | Felidian | ナターシャ |
+| 4 | Felidian | エカテリーナ |
+| 4 | Felidian | イリーナ |
+| 4 | Felidian | ソフィア |
+| 4 | Felidian | タチアナ |
+| 4 | Caninian | アンドレイ |
+| 4 | Caninian | コンスタンチン |
+| 4 | Caninian | フョードル |
+| 4 | Caninian | グリゴリー |
+| 4 | Caninian | ステパン |
+| 4 | Caninian | ヴァシリー |
+| 4 | Ursan | ウラジミール |
+| 4 | Ursan | ゲンナジー |
+| 4 | Ursan | イーゴリ |
+| 4 | Ursan | ロスチスラフ |
+| 4 | Ursan | ヤロスラフ |
+| 4 | Ursan | ボグダン |
+| 4 | Procyonian | ミーシャ |
+| 4 | Procyonian | サーシャ |
+| 4 | Procyonian | キリル |
+| 4 | Procyonian | マクシム |
+| 4 | Procyonian | オレグ |
+| 4 | Procyonian | ティモフェイ |
+| 4 | Leporian | アリーナ |
+| 4 | Leporian | リュドミラ |
+| 4 | Leporian | ヴェーラ |
+| 4 | Leporian | スヴェトラーナ |
+| 4 | Leporian | ゼニア |
+| 4 | Leporian | マリーナ |
+| 4 | Cervin | ミラ |
+| 4 | Cervin | ラーダ |
+| 4 | Cervin | エレナ |
+| 4 | Cervin | ダリア |
+| 4 | Cervin | ズラータ |
+| 4 | Cervin | オリガ |
+| 4 | Murid | ピョートル |
+| 4 | Murid | イリヤ |
+| 4 | Murid | ラディム |
+| 4 | Murid | ヴァレンチン |
+| 4 | Murid | デニス |
+| 4 | Murid | ルスラン |
+| 5 | Lupinian | ルシアン |
+| 5 | Lupinian | ガスパール |
+| 5 | Lupinian | テオ |
+| 5 | Lupinian | マチュー |
+| 5 | Lupinian | レミ |
+| 5 | Lupinian | バスティアン |
+| 5 | Vulpinian | ルナール |
+| 5 | Vulpinian | ジュリアン |
+| 5 | Vulpinian | エティエンヌ |
+| 5 | Vulpinian | シリル |
+| 5 | Vulpinian | ローラン |
+| 5 | Vulpinian | オリヴィエ |
+| 5 | Felidian | セリーヌ |
+| 5 | Felidian | クレール |
+| 5 | Felidian | エロイーズ |
+| 5 | Felidian | マルゴ |
+| 5 | Felidian | ジュリエット |
+| 5 | Felidian | コレット |
+| 5 | Caninian | アルノー |
+| 5 | Caninian | ティボー |
+| 5 | Caninian | ギヨーム |
+| 5 | Caninian | フロラン |
+| 5 | Caninian | アドリアン |
+| 5 | Caninian | ベルナール |
+| 5 | Ursan | レオン |
+| 5 | Ursan | ガブリエル |
+| 5 | Ursan | ユーグ |
+| 5 | Ursan | オーギュスト |
+| 5 | Ursan | マルセル |
+| 5 | Ursan | ドミニク |
+| 5 | Procyonian | パスカル |
+| 5 | Procyonian | ノエ |
+| 5 | Procyonian | ロマン |
+| 5 | Procyonian | バジル |
+| 5 | Procyonian | クロード |
+| 5 | Procyonian | シモン |
+| 5 | Leporian | アメリ |
+| 5 | Leporian | ノエミ |
+| 5 | Leporian | リゼット |
+| 5 | Leporian | カミーユ |
+| 5 | Leporian | エヴァ |
+| 5 | Leporian | マノン |
+| 5 | Cervin | エレーヌ |
+| 5 | Cervin | ヴィヴィアン |
+| 5 | Cervin | アデル |
+| 5 | Cervin | ロザリー |
+| 5 | Cervin | イザベル |
+| 5 | Cervin | シルヴィ |
+| 5 | Murid | ピエール |
+| 5 | Murid | ジャン |
+| 5 | Murid | ルネ |
+| 5 | Murid | ミシェル |
+| 5 | Murid | アラン |
+| 5 | Murid | フェリクス |
+| 6 | Lupinian | エヴァン |
+| 6 | Lupinian | コール |
+| 6 | Lupinian | ハドソン |
+| 6 | Lupinian | ワイアット |
+| 6 | Lupinian | ローガン |
+| 6 | Lupinian | ブレイク |
+| 6 | Vulpinian | アッシャー |
+| 6 | Vulpinian | オーウェン |
+| 6 | Vulpinian | グラント |
+| 6 | Vulpinian | ジャスパー |
+| 6 | Vulpinian | ノーラン |
+| 6 | Vulpinian | リード |
+| 6 | Felidian | ヘイゼル |
+| 6 | Felidian | アイリス |
+| 6 | Felidian | クレア |
+| 6 | Felidian | オードリー |
+| 6 | Felidian | サディ |
+| 6 | Felidian | ヴァイオレット |
+| 6 | Caninian | メイソン |
+| 6 | Caninian | カーター |
+| 6 | Caninian | ベネット |
+| 6 | Caninian | ライアン |
+| 6 | Caninian | エリオット |
+| 6 | Caninian | テオドア |
+| 6 | Ursan | グレイソン |
+| 6 | Ursan | ハリソン |
+| 6 | Ursan | ウェスリー |
+| 6 | Ursan | サイラス |
+| 6 | Ursan | マーカス |
+| 6 | Ursan | デクラン |
+| 6 | Procyonian | ミロ |
+| 6 | Procyonian | エズラ |
+| 6 | Procyonian | ルカ |
+| 6 | Procyonian | フェリックス |
+| 6 | Procyonian | ジュード |
+| 6 | Procyonian | ローワン |
+| 6 | Leporian | ジュニパー |
+| 6 | Leporian | ウィロー |
+| 6 | Leporian | エラ |
+| 6 | Leporian | ノラ |
+| 6 | Leporian | アイビー |
+| 6 | Leporian | ルビー |
+| 6 | Cervin | オータム |
+| 6 | Cervin | スカイラー |
+| 6 | Cervin | ハーパー |
+| 6 | Cervin | エヴリン |
+| 6 | Cervin | セージ |
+| 6 | Cervin | ブリア |
+| 6 | Murid | リアム |
+| 6 | Murid | ノア |
+| 6 | Murid | カレブ |
+| 6 | Murid | サム |
+| 6 | Murid | イアン |
+| 6 | Murid | オリバー |
+
