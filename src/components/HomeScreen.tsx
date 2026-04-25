@@ -7619,7 +7619,21 @@ function ExpeditionTab({
             4: '(未開放)プロキオン巣穴踏破で開放',
             5: '(未開放)レポリアンの月宮踏破で開放',
           };
-          const lockedPartyText = lockedPartyUnlockTextByIndex[partyIndex] ?? '未開放';
+          const lockedPartyHintVisibleRequirementByIndex: Partial<Record<number, number>> = {
+            1: 2,
+            2: 3,
+            3: 4,
+            4: 5,
+            5: 6,
+          };
+          // SpecRef: 5.1.3.2 | Unlock party | Unlock Party
+          const hintVisibleRequiredBossDungeonId = lockedPartyHintVisibleRequirementByIndex[partyIndex];
+          const isHintVisible = typeof hintVisibleRequiredBossDungeonId === 'number'
+            ? state.parties.some((existingParty) => hasDefeatedDungeonBoss(existingParty, hintVisibleRequiredBossDungeonId))
+            : false;
+          const lockedPartyText = isHintVisible
+            ? (lockedPartyUnlockTextByIndex[partyIndex] ?? '未開放')
+            : '未開放';
           return <div key={partyIndex} className="bg-pane rounded-lg p-2"><div className="text-xs text-gray-400">PT{partyIndex + 1}: {lockedPartyText}</div></div>;
         }
 
