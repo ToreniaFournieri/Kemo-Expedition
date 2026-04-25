@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 100 | 2026/4/25 | Align runtime PT6 initial condition to the requested roster under Goddess of Precision: update member names (`ランスロット`, `パーシヴァル`) and set ランスロット predisposition to `Savvy`, while keeping classes/lineages/unique flags unchanged. |
 | 0.6.1 | 99 | 2026/4/25 | Fix runtime Spec 1.2.2 loading-message text entries for the two unique characters by replacing `ランスロット`/`パーシヴァル` with `蒼牙破`/`葉隠`, keeping random per-display selection behavior unchanged. |
 | 0.6.1 | 98 | 2026/4/25 | Update character-edit race-change default naming to use the PT-wide pool defined in Spec 2.2.1, and make selection deterministic by choosing the first unused candidate in the current PT/race list (fallback to list head), so PT2→Ursan now defaults to `マロ`. |
 | 0.6.1 | 97 | 2026/4/25 | Update runtime PT1–PT6 initial member names to the latest requested roster while keeping each party's existing deity, class, lineage, unique flag, and initial equipment setup intact. |
