@@ -268,3 +268,14 @@ PT3: 貯金額: 10G
 | Defeating: `x.expedition`= 5 Boss | 4th party | (未開放)ウルサンの炎嶺踏破で開放 | Displayed for any Party after `x.expedition` = 5 is unlocked, until the 4th Party is unlocked |
 | Defeating: `x.expedition`= 6 Boss | 5th party | (未開放)プロキオン巣穴踏破で開放 | Displayed for any Party after `x.expedition` = 6 is unlocked, until the 5th Party is unlocked | 
 | Defeating: `x.expedition`= 7 Boss | 6nd party | (未開放)レポリアンの月宮踏破で開放 | Displayed for any Party after `x.expedition` = 7 is unlocked, until the 6th Party is unlocked |
+
+
+### 5.1.4 Save and load
+
+- If loading saved state fails, display a popup warning message: "ロードに失敗しました。この画面をスクリーンショットし、開発者へ報告してください"
+- Include the error log details in the popup.
+- If saved data cannot be loaded successfully:
+- Do not automatically start the game using incomplete or partially corrupted progress data.
+- Do not overwrite or save the current runtime state.
+- Preserve the existing saved data to prevent accidental data loss.
+
