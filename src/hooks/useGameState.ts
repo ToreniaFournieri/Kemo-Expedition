@@ -1,4 +1,4 @@
-import { useReducer, useCallback, useEffect, useRef, useState } from 'react';
+import { useReducer, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   GameState,
   Item,
@@ -4360,10 +4360,13 @@ export function useGameState() {
     lastSavedAtRef.current = Date.now();
   }, []);
 
+  // Keep the pending-save snapshot in sync as early as possible so refresh/unload uses the latest reducer output.
+  useLayoutEffect(() => {
+    pendingSaveStateRef.current = state;
+  }, [state]);
+
   // Save immediately for normal-paced play, while coalescing rapid update bursts (e.g. AFK recovery).
   useEffect(() => {
-    pendingSaveStateRef.current = state;
-
     const now = Date.now();
     const msSinceLastSave = now - lastSavedAtRef.current;
 
@@ -4395,6 +4398,7 @@ export function useGameState() {
     };
 
     window.addEventListener('beforeunload', flushPendingSave);
+    window.addEventListener('pagehide', flushPendingSave);
     document.addEventListener('visibilitychange', flushOnHidden);
 
     return () => {
@@ -4403,6 +4407,7 @@ export function useGameState() {
         saveTimeoutRef.current = null;
       }
       window.removeEventListener('beforeunload', flushPendingSave);
+      window.removeEventListener('pagehide', flushPendingSave);
       document.removeEventListener('visibilitychange', flushOnHidden);
       flushPendingSave();
     };
