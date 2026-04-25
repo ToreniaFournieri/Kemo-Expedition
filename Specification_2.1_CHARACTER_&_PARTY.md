@@ -218,7 +218,7 @@
 - **`f.base_multiplier`(base_type: ) table of `b.value`**
   - base_type: `b.strength` or `b.intelligence` -> attack scale
   - base_type: `b.vitality` or `b.mind` -> defense scale
-  - If `b.strength` is 12, then it applies x1.10. If `b.vitality` is 15, then it applies x0.77.
+  - If `b.strength` is 12, then it applies x1.10. If `b.vitality` is 15, then it applies x0.63.
   - If its value is lower or higher so no entry in the table, apply the lowest or highest value.
 
 ```
