@@ -261,10 +261,10 @@ PT3: 貯金額: 10G
 
 **Unlock Party**
 
-| Condition | Unlock party | text for unlock PT |
-|-----|-----|-----|
-| Defeating: `x.expedition`= 3 Boss | 2rd party | (未開放)ヴァルンの海洋踏破で開放 |
-| Defeating: `x.expedition`= 4 Boss | 3th party | (未開放)フェリディ砂漠踏破で開放 |
-| Defeating: `x.expedition`= 5 Boss | 4th party | (未開放)ウルサンの炎嶺踏破で開放 |
-| Defeating: `x.expedition`= 6 Boss | 5th party | (未開放)プロキオン巣穴踏破で開放 |
-| Defeating: `x.expedition`= 7 Boss | 6nd party | (未開放)レポリアンの月宮踏破で開放 |
+| Condition | Unlock party | text for unlock PT | when this text visible |
+|-----|-----|-----|-----|
+| Defeating: `x.expedition`= 3 Boss | 2rd party | (未開放)ヴァルンの海洋踏破で開放 | Displayed for any Party after `x.expedition` = 3 is unlocked, until the 2nd Party is unlocked |
+| Defeating: `x.expedition`= 4 Boss | 3th party | (未開放)フェリディ砂漠踏破で開放 | Displayed for any Party after `x.expedition` = 4 is unlocked, until the 2nd Party is unlocked |
+| Defeating: `x.expedition`= 5 Boss | 4th party | (未開放)ウルサンの炎嶺踏破で開放 | Displayed for any Party after `x.expedition` = 5 is unlocked, until the 2nd Party is unlocked |
+| Defeating: `x.expedition`= 6 Boss | 5th party | (未開放)プロキオン巣穴踏破で開放 | Displayed for any Party after `x.expedition` = 6 is unlocked, until the 2nd Party is unlocked | 
+| Defeating: `x.expedition`= 7 Boss | 6nd party | (未開放)レポリアンの月宮踏破で開放 | Displayed for any Party after `x.expedition` = 7 is unlocked, until the 2nd Party is unlocked |
