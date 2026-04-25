@@ -6,8 +6,8 @@ import { createEnvironmentStorageKey, getEnvironmentId } from './game/environmen
 const LOADING_MESSAGES = [
   'ケモは長い夢を見る',
   'ライカは再興の為なら何でもする',
-  'ランスロットは地位より信念を選ぶ',
-  'パーシヴァルは真実よりも果実を望む',
+  '蒼牙破は地位より信念を選ぶ',
+  '葉隠は真実よりも果実を望む',
   'レナードは人を信じない。シャチは別',
   'オルカは地上を歩きたい',
   'ルナは奇跡を信じない',
