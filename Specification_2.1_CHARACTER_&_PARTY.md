@@ -221,27 +221,31 @@
   - If `b.strength` is 12, then it applies x1.10. If `b.vitality` is 15, then it applies x0.77.
   - If its value is lower or higher so no entry in the table, apply the lowest or highest value.
 
+```
+**attack scale** = 1.10^{(value-10)}
+**defense scale** = 1 / 1.10^{(value-10)}
+```
 
 | Value | attack scale | defense scale |
-|---|---|----|
-| 6 | x0.81 | x1.22 |
-| 7 | x0.86 | x1.16 |
-| 8 | x0.90 | x1.10 |
-| 9 | x0.95 | x1.05 |
+|---|---|---|
+| 6 | x0.70 | x1.43 |
+| 7 | x0.76 | x1.32 |
+| 8 | x0.83 | x1.20 |
+| 9 | x0.91 | x1.10 |
 | 10 | x1.00 | x1.00 |
-| 11 | x1.05 | x0.95 |
-| 12 | x1.10 | x0.90 |
-| 13 | x1.16 | x0.86 |
-| 14 | x1.22 | x0.81 |
-| 15 | x1.28 | x0.77 |
-| 16 | x1.34 | x0.73 |
-| 17 | x1.41 | x0.69 |
-| 18 | x1.48 | x0.66 |
-| 19 | x1.55 | x0.63 |
-| 20 | x1.63 | x0.60 |
-| 21 | x1.71 | x0.57 |
-| 22 | x1.80 | x0.54 |
-| 23 | x1.89 | x0.51 |
+| 11 | x1.10 | x0.91 |
+| 12 | x1.20 | x0.83 |
+| 13 | x1.32 | x0.76 |
+| 14 | x1.45 | x0.69 |
+| 15 | x1.59 | x0.63 |
+| 16 | x1.75 | x0.57 |
+| 17 | x1.93 | x0.52 |
+| 18 | x2.12 | x0.47 |
+| 19 | x2.33 | x0.43 |
+| 20 | x2.56 | x0.39 |
+| 21 | x2.82 | x0.35 |
+| 22 | x3.10 | x0.32 |
+| 23 | x3.41 | x0.29 |
 
 
 - character.`f.NoA`: // NoA 0 = No Action.
