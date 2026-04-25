@@ -5679,6 +5679,33 @@ function PartyTab({
     });
   };
 
+  const renderInlineBonusEntries = (entries: { key: string; label: string; description: string | null }[]) => {
+    if (entries.length === 0) {
+      return <span>-</span>;
+    }
+
+    return entries.map((entry, index) => (
+      <Fragment key={entry.key}>
+        {index > 0 && ', '}
+        {entry.description ? (
+          <button
+            type="button"
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={(event) => {
+              if (!entry.description) return;
+              handleInlineDetailHelpToggle(entry.key, entry.label, entry.description, event);
+            }}
+            className="text-left hover:underline"
+          >
+            {entry.label}
+          </button>
+        ) : (
+          <span>{entry.label}</span>
+        )}
+      </Fragment>
+    ));
+  };
+
 
 
 
@@ -6009,7 +6036,9 @@ function PartyTab({
                 {(() => {
                   const selectedRaceId = pendingEdits?.raceId ?? char.raceId;
                   const selectedRace = RACES.find((race) => race.id === selectedRaceId) ?? RACES[0];
-                  const selectedRaceBonuses = formatBonuses(getRaceBonusesForSelection(selectedRace));
+                  const selectedRaceBonusEntries = getRaceBonusesForSelection(selectedRace)
+                    .map((bonus, index) => buildInlineBonusEntry('race-bonus', selectedRace.id, bonus, index))
+                    .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null);
 
                   const renderRaceOption = (race: Race, isSelectedRace: boolean) => {
                     return (
@@ -6036,7 +6065,7 @@ function PartyTab({
                     <>
                       <div className="mb-1 text-xs text-gray-600 select-none">
                         <span className="font-bold">種族</span>: <RaceIcon race={selectedRace} className="inline-block h-4 w-4 mx-1 align-text-bottom" />
-                        {selectedRace.name} | 体{selectedRace.stats.vitality},力{selectedRace.stats.strength},知{selectedRace.stats.intelligence},精{selectedRace.stats.mind} | {selectedRaceBonuses}
+                        {selectedRace.name} | 体{selectedRace.stats.vitality},力{selectedRace.stats.strength},知{selectedRace.stats.intelligence},精{selectedRace.stats.mind} | {renderInlineBonusEntries(selectedRaceBonusEntries)}
                       </div>
                       <div className="grid grid-cols-3 gap-1">
                         {raceCategoryDefinitions.map((category) => (
@@ -6219,10 +6248,13 @@ function PartyTab({
                 {(() => {
                   const selectedLineageId = pendingEdits?.lineageId ?? char.lineageId;
                   const selectedLineage = LINEAGES.find((l) => l.id === selectedLineageId) ?? LINEAGES[0];
+                  const selectedLineageBonusEntries = (selectedLineage.bonuses as Bonus[])
+                    .map((bonus, index) => buildInlineBonusEntry('lineage-bonus', selectedLineage.id, bonus, index))
+                    .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null);
                   return (
                     <>
-                      <div className="mb-1 text-xs text-gray-600 select-none">
-                        <span className="font-bold">系譜</span>: {selectedLineage.name} | {formatBonuses(selectedLineage.bonuses as Bonus[])}
+                      <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
+                        <span className="font-bold">系譜</span>: {selectedLineage.name} | {renderInlineBonusEntries(selectedLineageBonusEntries)}
                       </div>
                       <div className="grid grid-cols-4 gap-1">
                         {lineageCategoryDefinitions.map((category) => (
@@ -6265,10 +6297,13 @@ function PartyTab({
                 {(() => {
                   const selectedPredispositionId = pendingEdits?.predispositionId ?? char.predispositionId;
                   const selectedPredisposition = PREDISPOSITIONS.find((p) => p.id === selectedPredispositionId) ?? PREDISPOSITIONS[0];
+                  const selectedPredispositionBonusEntries = (selectedPredisposition.bonuses as Bonus[])
+                    .map((bonus, index) => buildInlineBonusEntry('predisposition-bonus', selectedPredisposition.id, bonus, index))
+                    .filter((entry): entry is { key: string; label: string; description: string | null } => entry !== null);
                   return (
                     <>
-                      <div className="mb-1 text-xs text-gray-600 select-none">
-                        <span className="font-bold">性格</span>: {selectedPredisposition.name} | {formatBonuses(selectedPredisposition.bonuses as Bonus[])}
+                      <div className="mb-1 flex items-center gap-1 overflow-x-auto whitespace-nowrap text-xs text-gray-600 select-none">
+                        <span className="font-bold">性格</span>: {selectedPredisposition.name} | {renderInlineBonusEntries(selectedPredispositionBonusEntries)}
                       </div>
                       <div className="grid grid-cols-4 gap-1">
                         {predispositionCategoryDefinitions.map((category) => (
