@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 96 | 2026/4/25 | Update runtime `f.base_multiplier` base-stat scaling table to Spec 2.1.1.2 values for attack (`b.strength`/`b.intelligence`) and defense (`b.vitality`/`b.mind`), including clamped min/max lookup behavior for out-of-range base values. |
 | 0.6.1 | 95 | 2026/4/25 | Party character edit UI: add the same tap/click floating-bubble bonus-help behavior used in メインクラス/サブクラス to 種族・系譜・性格 bonus text, so each bonus token opens its inline detail tooltip. |
 | 0.6.1 | 94 | 2026/4/24 | Fine-tune runtime header edge spacing for small screens (including Apple Watch): move title block (`冒ケモ🐾`) further right from the left edge and shift the gold display (`200G`) left from the right edge to keep both sides fully readable. |
 | 0.6.1 | 93 | 2026/4/24 | Adjust runtime header title left safe margin for small screens (including Apple Watch): add extra left padding so `冒ケモ🐾` is fully visible instead of clipping against the rounded-left edge. |
