@@ -472,25 +472,37 @@ function getCharacterCombatBonusLevels(character: Character): { melee: boolean; 
   return { melee, ranged, magic };
 }
 
+function normalizeImportedClassId(value: unknown): ClassId | null {
+  const normalized = value === 'fighter'
+    ? 'guardian'
+    : value === 'rogue'
+      ? 'ninja'
+      : value;
+  return CLASSES.some((c) => c.id === normalized) ? (normalized as ClassId) : null;
+}
+
 // SpecRef: 9 | Environment | Save Data Isolation
-function normalizeImportedCharacter(character: Character, fallbackCharacter: Character): Character {
-  const normalizedMainClassId = CLASSES.some((c) => c.id === character.mainClassId)
-    ? character.mainClassId
-    : fallbackCharacter.mainClassId;
-  const normalizedSubClassId = CLASSES.some((c) => c.id === character.subClassId)
-    ? character.subClassId
-    : normalizedMainClassId;
+function normalizeImportedCharacter(rawCharacter: unknown, fallbackCharacter: Character): Character {
+  const character = (rawCharacter && typeof rawCharacter === 'object')
+    ? (rawCharacter as Partial<Character>)
+    : {};
+
+  const normalizedMainClassId = normalizeImportedClassId(character.mainClassId) ?? fallbackCharacter.mainClassId;
+  const normalizedSubClassId = normalizeImportedClassId(character.subClassId) ?? normalizedMainClassId;
 
   return {
+    ...fallbackCharacter,
     ...character,
     isUnique: typeof character.isUnique === 'boolean' ? character.isUnique : (fallbackCharacter.isUnique ?? false),
-    raceId: RACES.some((r) => r.id === character.raceId) ? character.raceId : fallbackCharacter.raceId,
+    raceId: RACES.some((r) => r.id === character.raceId) ? (character.raceId as RaceId) : fallbackCharacter.raceId,
     mainClassId: normalizedMainClassId,
     subClassId: normalizedSubClassId,
     predispositionId: PREDISPOSITIONS.some((p) => p.id === character.predispositionId)
-      ? character.predispositionId
+      ? (character.predispositionId as PredispositionId)
       : fallbackCharacter.predispositionId,
-    lineageId: LINEAGES.some((l) => l.id === character.lineageId) ? character.lineageId : fallbackCharacter.lineageId,
+    lineageId: LINEAGES.some((l) => l.id === character.lineageId)
+      ? (character.lineageId as LineageId)
+      : fallbackCharacter.lineageId,
     autoEquipmentMode: normalizeCharacterAutoEquipmentMode(character.autoEquipmentMode),
   };
 }
