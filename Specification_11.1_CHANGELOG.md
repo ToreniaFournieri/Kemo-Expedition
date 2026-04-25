@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 102 | 2026/4/25 | Update runtime Party locked-slot hint visibility for Spec 5.1.3.2: show each `(未開放)…踏破で開放` message only after the corresponding expedition is unlocked (boss clear of previous tier), and keep generic `未開放` before that threshold. |
 | 0.6.1 | 101 | 2026/4/25 | Update runtime race-change default naming (Spec 2.2.1) to random assignment from the selected PT/race potential-name table while still avoiding duplicate names whenever possible, and only allowing duplicates when no unused candidate remains. |
 | 0.6.1 | 100 | 2026/4/25 | Align runtime PT6 initial condition to the requested roster under Goddess of Precision: update member names (`ランスロット`, `パーシヴァル`) and set ランスロット predisposition to `Savvy`, while keeping classes/lineages/unique flags unchanged. |
 | 0.6.1 | 99 | 2026/4/25 | Fix runtime Spec 1.2.2 loading-message text entries for the two unique characters by replacing `ランスロット`/`パーシヴァル` with `蒼牙破`/`葉隠`, keeping random per-display selection behavior unchanged. |
