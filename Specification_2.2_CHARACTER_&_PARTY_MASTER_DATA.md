@@ -17,10 +17,8 @@
 #### 2.2.1 Potential default name for player side characters
 
 - Trigger: when race is changed.
-- Character names are assigned from the Potential Default Name Table. 
+- Character names are assigned from the Potential Default Name Table rondomley, but duplicate name assignment should be avoided whenever possible. A duplicate name may only be assigned if no other valid candidate remains.
 - Each PT has its own unique naming table based on its designated race.
-- Duplicate name assignment should be avoided whenever possible.
-- A duplicate name may only be assigned if no other valid candidate remains.
 
 | PT | race (English key) | potential name |
 |---|---|---|
