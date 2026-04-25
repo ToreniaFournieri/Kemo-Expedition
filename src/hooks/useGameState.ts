@@ -1387,9 +1387,9 @@ function createFifthParty() {
 function createSixthParty() {
   const defaultSetup = [
     { race: 'ursan', main: 'pilgrim', sub: 'samurai', pred: 'stubborn', lineage: 'fragment', name: 'マーカス' },
-    { race: 'caninian', main: 'samurai', sub: 'sword-saint', pred: 'resourceful', lineage: 'abyssal_sea', name: 'カーター' },
+    { race: 'caninian', main: 'samurai', sub: 'sword-saint', pred: 'savvy', lineage: 'abyssal_sea', name: 'ランスロット' },
     { race: 'leporian', main: 'sword-saint', sub: 'ranger', pred: 'none', lineage: 'unexpected_prince(ss)', name: 'フィン', isUnique: true },
-    { race: 'procyonian', main: 'alchemist', sub: 'alchemist', pred: 'inquisitive', lineage: 'adaptation', name: 'エズラ' },
+    { race: 'procyonian', main: 'alchemist', sub: 'alchemist', pred: 'inquisitive', lineage: 'adaptation', name: 'パーシヴァル' },
     { race: 'cervin', main: 'sage', sub: 'wizard', pred: 'none', lineage: 'incarnation', name: 'マーレ', isUnique: true },
     { race: 'murid', main: 'wizard', sub: 'alchemist', pred: 'nimble', lineage: 'utopia', name: 'サム' },
   ];
