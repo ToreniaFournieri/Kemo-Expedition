@@ -136,7 +136,7 @@
 | Nimble | 軽快 | 軽 | 適応 | `a.boost`1, `c.evasion+0.010`, `c.katana_x1.1`, `c.thunder-defense-multiplier_x4/5` | `true` |
 | Perceptive | 看破 | 看 | 機知 | `a.true-sight`, `c.penet+0.100`, `c.bolt_x1.1`, `b.intelligence+1` | `true` |
 | Exacting | 精確 | 精 | 機知 | `a.output-stabilizer`, `c.accuracy+0.020`, `c.archery_x1.1`, `b.strength+1` | `true` |
-| Savvy | 手腕 | 腕 | 機知 | `c.equip-slot+1`, `c.gauntlet_x1.1` | `true` |
+| Resourceful | 手腕 | 腕 | 機知 | `c.equip-slot+1`, `c.gauntlet_x1.1` | `true` |
 | None | (なし) | - | - | none | `false` |
 
 - If `main_class` and  `sub_class` are same class, then it turns into master class, applies master bonus.
@@ -465,7 +465,7 @@ Party.`d.HP` =
 | 3 | ヴェーラ | Leporian | `class.ranger` | `class.guardian` | `abyssal_sea` | `Exacting` | `false` |
 | 4 | イリーナ | Felidian | `class.striker`| `class.pilgrim` | `firmament` | `Devoted` | `false` |
 | 5 | ドミトリ | Lupinian | `class.wizard` | `class.sage` | `machina` | `Introspective` | `false` |
-| 6 | ミラ | Cervin | `class.sage` | `class.wizard` | `utopia` | `Savvy` | `false` |
+| 6 | ミラ | Cervin | `class.sage` | `class.wizard` | `utopia` | `Resourceful` | `false` |
 
 - **PT5** initial condition (when unlocked)
   - deity: `God of Resonance`
@@ -485,7 +485,7 @@ Party.`d.HP` =
 | order | Name | Race | main class | sub class | lineage | predisposition | Unique |
 |------|------|------|------|------|------|------|------|
 | 1 | マーカス | Ursan | `class.pilgrim` | `class.samurai` | `fragment` | `Stubborn` | `false` |
-| 2 | ランスロット | Caninian | `class.samurai` | `class.sword-saint` | `abyssal_sea` | `Savvy` | `false` |
+| 2 | ランスロット | Caninian | `class.samurai` | `class.sword-saint` | `abyssal_sea` | `Resourceful` | `false` |
 | 3 | **フィン** | Leporian | `class.sword-saint` | `class.ranger` | **``unexpected_prince(ss)``** | `None` | **`true`** |
 | 4 | パーシヴァル | Procyonian | `class.alchemist`| `class.alchemist` | `adaptation` | `Inquisitive` | `false` |
 | 5 | **マーレ** | Cervin | `class.sage` | `class.wizard` | **`incarnation`** | `None` | **`true`** |
