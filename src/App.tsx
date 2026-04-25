@@ -43,7 +43,7 @@ function getInitialDarkModeEnabled() {
 }
 
 export default function App() {
-  const { state, actions, bags, notifications } = useGameState();
+  const { state, actions, bags, notifications, saveLoadWarning } = useGameState();
   const [isLoading, setIsLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState(() => getRandomLoadingMessage());
   const [isDarkModeEnabled, setIsDarkModeEnabled] = useState(() => getInitialDarkModeEnabled());
@@ -111,10 +111,30 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    // SpecRef: 5.1.4 | Save and load | display popup warning message
+    if (!saveLoadWarning) return;
+    window.alert(`${saveLoadWarning.message}\n\n${saveLoadWarning.errorLog}`);
+  }, [saveLoadWarning]);
+
   if (isLoading) {
     return (
       <div className={`min-h-screen bg-white text-black flex items-center justify-center px-6 text-center ${appThemeClasses}`}>
         <p className="text-lg font-medium">{loadingMessage}</p>
+      </div>
+    );
+  }
+
+  if (saveLoadWarning) {
+    return (
+      <div className={`min-h-screen bg-white text-black flex items-center justify-center px-6 ${appThemeClasses}`}>
+        <div className="w-full max-w-3xl rounded-lg border border-red-300 bg-red-50 p-5 shadow">
+          <h1 className="text-lg font-bold text-red-700">{saveLoadWarning.message}</h1>
+          <p className="mt-2 text-sm text-red-700">エラーログ:</p>
+          <pre className="mt-2 max-h-[60vh] overflow-auto whitespace-pre-wrap break-words rounded border border-red-200 bg-white p-3 text-xs text-red-900">
+            {saveLoadWarning.errorLog}
+          </pre>
+        </div>
       </div>
     );
   }
