@@ -7631,9 +7631,8 @@ function ExpeditionTab({
           const isHintVisible = typeof hintVisibleRequiredBossDungeonId === 'number'
             ? state.parties.some((existingParty) => hasDefeatedDungeonBoss(existingParty, hintVisibleRequiredBossDungeonId))
             : false;
-          const lockedPartyText = isHintVisible
-            ? (lockedPartyUnlockTextByIndex[partyIndex] ?? '未開放')
-            : '未開放';
+          if (!isHintVisible) return null;
+          const lockedPartyText = lockedPartyUnlockTextByIndex[partyIndex] ?? '未開放';
           return <div key={partyIndex} className="bg-pane rounded-lg p-2"><div className="text-xs text-gray-400">PT{partyIndex + 1}: {lockedPartyText}</div></div>;
         }
 
