@@ -5375,11 +5375,10 @@ function PartyTab({
     }
   };
 
-  // SpecRef: 2.2.1 | Potential default name for player side characters | PT wide naming pool
+  // SpecRef: 2.2.1 | Potential default name for player side characters | Trigger: when race is changed.
   const getDefaultNameForRace = (raceId: RaceId): string => {
     const ptCandidates = POTENTIAL_DEFAULT_NAMES_BY_PT[party.id]?.[raceId] ?? [];
-    const candidates = ptCandidates;
-    if (candidates.length === 0) return char.name;
+    if (ptCandidates.length === 0) return char.name;
 
     const usedNames = new Set(
       parties
@@ -5388,8 +5387,9 @@ function PartyTab({
         .map((character) => character.name)
     );
 
-    const availableCandidate = candidates.find((candidate) => !usedNames.has(candidate));
-    return availableCandidate ?? candidates[0];
+    const availableCandidates = ptCandidates.filter((candidate) => !usedNames.has(candidate));
+    const candidatePool = availableCandidates.length > 0 ? availableCandidates : ptCandidates;
+    return candidatePool[Math.floor(Math.random() * candidatePool.length)];
   };
 
   const handleRaceChange = (raceId: Character['raceId']) => {
