@@ -115,6 +115,7 @@ const ITEM_MAX_STACK = 99;
 const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.exercise', 'q.healing', 'q.AFK']);
 const BASE_STEP_DURATION_MS = 15_000;
 const APPROX_CYCLE_STEP_COUNT = 30;
+const SAVE_LOAD_WARNING_MESSAGE = 'ロードに失敗しました。この画面をスクリーンショットし、開発者へ報告してください';
 
 type SideQuestScaleByLevel = {
   1: number;
@@ -761,14 +762,43 @@ function normalizeExpeditionLog(log: ExpeditionLog | null | undefined): Expediti
   };
 }
 
-function loadSavedState(): GameState | null {
+function formatLoadErrorLog(error: unknown): string {
+  if (error instanceof Error) {
+    return `${error.name}: ${error.message}${error.stack ? `\n${error.stack}` : ''}`;
+  }
+  if (typeof error === 'string') return error;
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return String(error);
+  }
+}
+
+type LoadSavedStateResult = {
+  state: GameState | null;
+  errorLog: string | null;
+};
+
+function loadSavedState(): LoadSavedStateResult {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) {
+      return { state: null, errorLog: null };
+    }
+
+    // SpecRef: 5.1.4 | Save and load | Include the error log details in the popup.
+    const parsed = JSON.parse(decodePersistedState(saved));
+    // Validate it has required properties and migrate legacy saves.
+    const hasParties = Array.isArray(parsed?.parties);
+    const hasBags = parsed?.bags && typeof parsed.bags === 'object';
+    if (!hasParties || !hasBags) {
+      return {
+        state: null,
+        errorLog: 'Saved data validation failed: missing required properties `parties` or `bags`.',
+      };
+    }
+
     if (saved) {
-      const parsed = JSON.parse(decodePersistedState(saved));
-      // Validate it has required properties and migrate legacy saves.
-      const hasParties = Array.isArray(parsed?.parties);
-      const hasBags = parsed?.bags && typeof parsed.bags === 'object';
       if (hasParties && hasBags) {
 
         parsed.bags = normalizeGameBags({
@@ -978,13 +1008,14 @@ function loadSavedState(): GameState | null {
         parsed.selectedPartyIndex = Math.max(0, Math.min(normalizedSelectedPartyIndex, Math.max(0, parsed.parties.length - 1)));
         parsed.buildNumber = typeof parsed.buildNumber === 'number' ? parsed.buildNumber : 0;
 
-        return hydrateGameState(parsed as GameState);
+        return { state: hydrateGameState(parsed as GameState), errorLog: null };
       }
     }
   } catch (e) {
     console.error('Failed to load saved state:', e);
+    return { state: null, errorLog: formatLoadErrorLog(e) };
   }
-  return null;
+  return { state: null, errorLog: null };
 }
 
 function saveState(state: GameState): void {
@@ -1446,15 +1477,22 @@ function createDefaultParties(): Party[] {
   return [createInitialParty(), createSecondParty(), createThirdParty(), createFourthParty(), createFifthParty(), createSixthParty()];
 }
 
-function createInitialState(): GameState {
+type InitialStateResult = {
+  state: GameState;
+  loadErrorLog: string | null;
+};
+
+function createInitialState(): InitialStateResult {
   // Try to load saved state first
-  const savedState = loadSavedState();
-  if (savedState) {
+  const savedStateResult = loadSavedState();
+  if (savedStateResult.state) {
     // Update build number in case it changed
-    return { ...savedState, buildNumber: BUILD_NUMBER };
+    return { state: { ...savedStateResult.state, buildNumber: BUILD_NUMBER }, loadErrorLog: null };
   }
 
   return {
+    loadErrorLog: savedStateResult.errorLog,
+    state: {
     scene: 'home',
     global: {
       gold: 200,
@@ -1486,6 +1524,7 @@ function createInitialState(): GameState {
       sideQuestBag: createSideQuestBag(),
     },
     buildNumber: BUILD_NUMBER,
+    },
   };
 }
 
@@ -4347,21 +4386,33 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
 // SpecRef: 5.1.1 | Party State Machine | Time-Based Progress Handling (Online + AFK)
 export function useGameState() {
-  const [state, dispatch] = useReducer(gameReducer, null, createInitialState);
+  const initialStateRef = useRef<InitialStateResult | null>(null);
+  if (!initialStateRef.current) {
+    initialStateRef.current = createInitialState();
+  }
+  const [state, dispatch] = useReducer(gameReducer, initialStateRef.current.state);
   const [notifications, setNotifications] = useState<GameNotification[]>([]);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingSaveStateRef = useRef<GameState | null>(null);
   const lastSavedAtRef = useRef(0);
+  const loadErrorLog = initialStateRef.current.loadErrorLog;
+  const isSaveBlockedByLoadFailure = loadErrorLog !== null;
 
   const flushPendingSave = useCallback(() => {
+    // SpecRef: 5.1.4 | Save and load | Do not overwrite or save the current runtime state.
+    if (isSaveBlockedByLoadFailure) return;
     if (!pendingSaveStateRef.current) return;
     saveState(pendingSaveStateRef.current);
     pendingSaveStateRef.current = null;
     lastSavedAtRef.current = Date.now();
-  }, []);
+  }, [isSaveBlockedByLoadFailure]);
 
   // Save immediately for normal-paced play, while coalescing rapid update bursts (e.g. AFK recovery).
   useEffect(() => {
+    if (isSaveBlockedByLoadFailure) {
+      pendingSaveStateRef.current = null;
+      return;
+    }
     pendingSaveStateRef.current = state;
 
     const now = Date.now();
@@ -4385,7 +4436,7 @@ export function useGameState() {
       saveTimeoutRef.current = null;
       flushPendingSave();
     }, delayMs);
-  }, [state, flushPendingSave]);
+  }, [state, flushPendingSave, isSaveBlockedByLoadFailure]);
 
   useEffect(() => {
     const flushOnHidden = () => {
@@ -4638,5 +4689,16 @@ export function useGameState() {
   };
 
   const selectedParty = state.parties[state.selectedPartyIndex];
-  return { state, actions, bags: selectedParty?.bags ?? state.bags, notifications };
+  return {
+    state,
+    actions,
+    bags: selectedParty?.bags ?? state.bags,
+    notifications,
+    saveLoadWarning: loadErrorLog
+      ? {
+          message: SAVE_LOAD_WARNING_MESSAGE,
+          errorLog: loadErrorLog,
+        }
+      : null,
+  };
 }
