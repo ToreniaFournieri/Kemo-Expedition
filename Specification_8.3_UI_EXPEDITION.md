@@ -12,13 +12,22 @@
 - Togglr Mode Behavior
   - 一任 (Auto)
     - At the end of `state.rest`, automatically evaluate whether the party should move to the next expedition.
-    - Destination is automatically updated when this condition is satisfied.
+    - Destination is automatically updated when this condition is satisfied. During AFK emulated mode, check at the end of each check. 
     - Condition for automatic progression:
 
 ```text
-If {the expedition has been cleared at least once} and  {expedition.`x.enemy_level` + (Difficulty Offset level) ≤ current PT level + 9}
+(1) If {the expedition has been cleared at least once} and  {expedition.`x.enemy_level` + (Difficulty Offset level) ≤ current PT level + 9}
 and {condition ≥ 250}
 → Move to the next expedition
+
+(2) If {the expedition has been cleared at least once} and  {expedition.`x.enemy_level` + (Difficulty Offset level) ≤ current PT level + 10}
+and {condition ≥ 240}
+→ Move to the next expedition
+
+(3) If {the expedition has been cleared at least once} and  {expedition.`x.enemy_level` + (Difficulty Offset level) ≤ current PT level + 10}
+and {condition ≥ 230}
+→ Move to the next expedition
+
 ```
 
 - 固定 (Fixed)
