@@ -60,13 +60,12 @@
 | mythic rare | 神魔レア | [M] |
 
 - **1.0.3 Glossary Reveal Rule:**
-  - Each glossary entry has a `reveal_at_expedition` value.
-  - The entry becomes visible after the player has reached that expedition at least once.
-  - Entries with `reveal_at_expedition = 1` are visible from the beginning of the game.
-  - Hidden entries are not displayed in the Glossary until their reveal condition is met.
-  - Expedition progression is not required to be sequential.
-    - Some expeditions may be skipped depending on player progression.
-    - Reveal checks are based only on whether the specified expedition has been reached at least once.
+  - Each glossary entry of **ability and terrain effect** has an internal `revealed` flag.
+  - A glossary entry is revealed when its related ability, terrain is shown to the player for the first time.
+  - Once revealed, the entry is added to the Glossary.
+  - Revealed entries remain visible permanently.
+  - The `revealed` flag is internally managed and persisted in save data.
+  - Hidden entries are not displayed in the Glossary until their related content has been shown at least once.
 
  
 ### 1.1 CONSTANTS_GLOSSARY
@@ -350,7 +349,7 @@
 | `f.re-attack` | 連撃 | 攻撃後に追加攻撃を行う。同一対象へ追撃する。壁アビリティの身代わり効果を無視する。 |
 | `f.magical-counter` | 魔法反撃 | 魔法攻撃に対して即時反撃する。 |
 | `f.covering-fire` | 援護射撃 | 味方行動に連動して追撃する。遠距離攻撃可能な味方が即時射撃する。 |
-| `f.reward` | 報酬計算 | 戦闘結果に応じてアイテムの追加抽選の有無を算出する。通常1枚。解錠スキルで+1枚、神の加護により+1枚、ゲームモードルナで+1枚。 |
+| `f.reward` | 報酬計算 | 戦闘結果に応じてアイテムの追加抽選の有無を算出する。通常2枚。神の加護により+1枚。 |
 | `f.common-enhancement`| コモンアイテムの通常称号| コモンアイテムで通常称号が付与する可能性。\n| 通常称号 | 可能性 |\n|---------|------|\n| (なし) | 1390 |\n| 名工の | 350 |\n| 魔性の | 180 |\n| 宿った | 60 |\n| 伝説の | 15 |\n| 恐ろしい | 4 |\n| 究極の | 1 ||
 | `f.enhancement`| | \n| 希少アイテムの通常称号 | アンコモン、エリートレア、ボスレア、神魔レアで通常称号が付与する可能性。可能性 |\n|---------|------|\n| (なし) | 5490 |\n| 名工の | 350 |\n| 魔性の | 180 |\n| 宿った | 60 |\n| 伝説の | 15 |\n| 恐ろしい | 4 |\n| 究極の | 1 ||
 | `f.enhancement-scaling`| 通常称号の性能向上 | 通常称号の段階に応じた基礎性能補正。\n| 通常称号 | 増加倍率 |\n|-----|------|\n| (なし) | x1.00 |\n| 名工の | x1.33 |\n| 魔性の | x1.58 |\n| 宿った | x2.10 |\n| 伝説の | x2.75 |\n| 恐ろしい | x3.50 |\n| 究極の | x5.00 | |
