@@ -3576,18 +3576,9 @@ export function HomeScreen({
       if (restoredPendingAfkMs > 0) {
         setPendingAfkMs(restoredPendingAfkMs);
         // SpecRef: 5.1.1 | Party State Machine | Refresh Handling
-        // Persist and restore the exact `state.reactivate` main-progress baseline.
-        const restoredCompletedAfkMs = typeof parsed.afkRecoveryCompletedMs === 'number'
-          ? Math.max(0, Math.min(parsed.afkRecoveryCompletedMs, AFK_MAX_ELAPSED_MS))
-          : 0;
-        const restoredTotalAfkMs = typeof parsed.afkRecoveryTotalMs === 'number'
-          ? Math.max(restoredPendingAfkMs, Math.min(parsed.afkRecoveryTotalMs, AFK_MAX_ELAPSED_MS))
-          : restoredPendingAfkMs + restoredCompletedAfkMs;
-        afkRecoveryTotalMsRef.current = restoredTotalAfkMs;
-        afkRecoveryCompletedMsRef.current = Math.max(
-          restoredCompletedAfkMs,
-          Math.max(0, restoredTotalAfkMs - restoredPendingAfkMs),
-        );
+        // Reset `state.reactivate` main-progress on refresh and resume counting from 0.
+        afkRecoveryTotalMsRef.current = restoredPendingAfkMs;
+        afkRecoveryCompletedMsRef.current = 0;
         afkSimulationAnchorRef.current = typeof parsed.afkSimulationAnchor === 'number'
           ? parsed.afkSimulationAnchor
           : Date.now();
@@ -3792,7 +3783,7 @@ export function HomeScreen({
   }, [onDismissAllNotifications, suppressNotificationsForAfkEmulation]);
 
   // SpecRef: 5.1.1 | Party State Machine | Refresh Handling
-  // Keep `state.reactivate` main progress stable across refresh by restoring persisted completed/pending AFK ms.
+  // On refresh, `state.reactivate` progress is re-based to 0/x using the restored pending AFK backlog.
   const afkRecoveryTotalMs = Math.max(pendingAfkMs, afkRecoveryTotalMsRef.current);
   const afkRecoveryCompletedMs = Math.max(0, afkRecoveryTotalMs - pendingAfkMs);
   const afkRecoveryProgressPercent = pendingAfkMs > 0
