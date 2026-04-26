@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 113 | 2026/4/26 | Fix Spec 8.3 auto destination progression gating in `state.rest`: require that the currently selected expedition has been cleared at least once before auto-advancing to the next destination; keep next-entry unlock, level-threshold, and condition checks unchanged. |
 | 0.6.1 | 112 | 2026/4/26 | Adjust Expedition runtime control-row layout (Spec 8.3): narrow the 一任/固定 mode toggle button width to free more horizontal space for the adjacent Destination dropdown. |
 | 0.6.1 | 111 | 2026/4/26 | Fix Spec 8.3 auto destination progression checks in `state.rest`: evaluate the NEXT expedition's enemy level (not current), and require the next expedition entry gate to be unlocked before auto-updating Destination in 一任 mode. |
 | 0.6.1 | 110 | 2026/4/26 | Update Spec 8.3 auto-destination runtime progression condition at end of `state.rest`: in 一任 mode, auto-advance now uses `(expedition enemy level + selected difficulty offset) <= PT level + 9` and `condition >= 250` before moving Destination to the next expedition. |
