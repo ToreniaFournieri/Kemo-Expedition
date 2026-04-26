@@ -4,13 +4,11 @@
 - Party tab
 
 #### 8.2.1 Displays
-- Party List
-  - Up to 6 parties can exist.
-  - Locked parties are normally hidden.
-  - However, only the lowest-numbered locked party remains visible as a preview.
-    - This party is displayed in gray-out state.
-    - It is not selectable.
-  - All unlocked parties are displayed normally and can be selected.
+- Up to 6 parties can exist.
+- Locked parties are not displayed.
+- All unlocked parties are displayed normally and can be selected.
+- If only one Party is unlocked, the Party List is hidden.
+- The Party List becomes visible only when two or more parties are unlocked.
 
 ```
   PT1    PT2    PT3    PT4    PT5     PT6
