@@ -16,8 +16,8 @@
     - Condition for automatic progression:
 
 ```text
-If expedition.`x.enemy_level` + (Difficulty Offset level) ≤ current PT level + 9
-and condition ≥ 250
+If {the expedition has been cleared at least once} and  {expedition.`x.enemy_level` + (Difficulty Offset level) ≤ current PT level + 9}
+and {condition ≥ 250}
 → Move to the next expedition
 ```
 
