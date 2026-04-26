@@ -329,6 +329,7 @@ export interface Party {
   deity: Deity;
   characters: Character[];
   selectedDungeonId: number;
+  expeditionDestinationMode: ExpeditionDestinationMode;
   expeditionDepthLimit: ExpeditionDepthLimit;
   expeditionDifficultyOffset: number;
   expeditionDifficultyOffsetByDungeon: Record<number, number>;
@@ -360,6 +361,8 @@ export interface Party {
   condition: number;
   sideQuest: SideQuestState | null;
 }
+
+export type ExpeditionDestinationMode = 'auto' | 'fixed';
 
 export type SleepinessState = 0 | 1 | 2;
 
