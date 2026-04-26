@@ -2,7 +2,37 @@
 
 ### 8.3 UI_EXPEDITION
 
-- If 自動周回 is ON, it repeats repart to the dungeon.
+- **Auto Destination Change Logic**
+
+**Controls:**  
+- Toggle: **一任 / 固定**
+- `Destination` pull-down list
+- `Expedition Depth Limit` pull-down list
+
+- Togglr Mode Behavior
+
+  - 一任 (Auto)
+    - At the end of `state.rest`, automatically evaluate whether the party should move to the next expedition.
+    - Destination is automatically updated when this condition is satisfied.
+    - Condition for automatic progression:
+
+```text
+If expedition level ≤ current PT level + 7
+and condition ≥ 300
+→ Move to the next expedition
+```
+
+- 固定 (Fixed)
+  - The party remains at the player-selected Destination.
+ - Manual Destination Selection
+  - If the player manually selects an expedition from the Destination pull-down list:
+  - The mode is automatically changed to 固定(Fixed).
+
+- Toggle Operation
+  - Tapping the 一任 / 固定 label switches between the two modes.
+  - This functions as a manual toggle between Auto and Fixed mode.
+
+- **`Destination` pull-down list**
 
 - **Expedition Depth Limit (探索深度)**
   - Players can set a depth limit; when the party reaches the selected floor, it stops the expedition and returns home automatically.
