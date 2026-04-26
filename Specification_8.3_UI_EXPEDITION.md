@@ -5,12 +5,11 @@
 - **Auto Destination Change Logic**
 
 **Controls:**  
-- Toggle: **一任 / 固定**
+- Toggle: **一任 / 固定**  Default: 一任
 - `Destination` pull-down list
 - `Expedition Depth Limit` pull-down list
 
 - Togglr Mode Behavior
-
   - 一任 (Auto)
     - At the end of `state.rest`, automatically evaluate whether the party should move to the next expedition.
     - Destination is automatically updated when this condition is satisfied.
