@@ -4801,7 +4801,6 @@ export function HomeScreen({
           isExpeditionStatsDisplayEnabled={isExpeditionStatsDisplayEnabled}
           partyCycles={partyCycles}
           afkRecoveryProgressPercent={afkRecoveryProgressPercent}
-          afkRecoveryCompletedMs={afkRecoveryCompletedMs}
           afkRecoveryTotalMs={afkRecoveryTotalMs}
           onTriggerSortie={triggerSortie}
           expandedLogParty={expeditionExpandedLogParty}
@@ -7454,7 +7453,6 @@ function ExpeditionTab({
   isExpeditionStatsDisplayEnabled,
   partyCycles,
   afkRecoveryProgressPercent,
-  afkRecoveryCompletedMs,
   afkRecoveryTotalMs,
   onTriggerSortie,
   expandedLogParty,
@@ -7474,7 +7472,6 @@ function ExpeditionTab({
   isExpeditionStatsDisplayEnabled: boolean;
   partyCycles: Record<number, PartyCycleRuntime>;
   afkRecoveryProgressPercent: number | null;
-  afkRecoveryCompletedMs: number;
   afkRecoveryTotalMs: number;
   onTriggerSortie: (partyIndex: number, triggerGodsBattle?: boolean) => void;
   expandedLogParty: number | null;
@@ -7773,11 +7770,9 @@ function ExpeditionTab({
         const progressLabel = (() => {
           if (afkRecoveryProgressPercent !== null) {
             // SpecRef: 5.1.1 | Party State Machine | Refresh Handling
-            // Show AFK recovery progress as percent + completed/total seconds so refresh resumes with the same visible counts.
+            // Show AFK recovery progress as total-only seconds while AFK emulation is active.
             const totalSeconds = Math.max(1, Math.ceil(afkRecoveryTotalMs / 1000));
-            const completedSeconds = Math.max(0, Math.min(totalSeconds, Math.floor(afkRecoveryCompletedMs / 1000)));
-            const percentText = `${Math.round(normalizedProgressPercent)}%`;
-            return `${getPartyCycleStateLabel('reactivate')} ${percentText} (${formatNumber(completedSeconds)}/${formatNumber(totalSeconds)})`;
+            return `${getPartyCycleStateLabel('reactivate')}（${formatNumber(totalSeconds)}）`;
           }
           const stateLabel = getPartyCycleStateLabel(cycle.state);
           if (cycle.state === 'reactivate') return stateLabel;
