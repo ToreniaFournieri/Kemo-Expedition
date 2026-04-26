@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 123 | 2026/4/26 | Fix `state.reactivate` AFK progress label continuity: keep recovery total (`x/y` denominator) pinned to the maximum observed backlog during catch-up so elapsed time increases completed count/percent instead of shrinking total each tick. |
 | 0.6.1 | 122 | 2026/4/26 | Implement Spec 1.0.3 runtime glossary reveal flow: add persistent revealed flags for ability/terrain glossary entries, reveal entries when related abilities/terrain are encountered in expedition battles, and hide unrevealed ability/terrain entries in Divine Bureau > Glossary until discovered. |
 | 0.6.1 | 121 | 2026/4/26 | Update runtime glossary entry for Spec 1.1.6 `f.reward` to the latest description: base reward draw tickets are now 2 by default, with +1 additional ticket from divine protection only. |
 | 0.6.1 | 120 | 2026/4/26 | Persist `state.reactivate` AFK recovery bar display details by showing resumable percent and completed/total counts (`x/y`) in the Expedition progress label, so refreshing keeps the same visual resume position and progress context. |

@@ -3883,7 +3883,9 @@ export function HomeScreen({
       afkSimulationAnchorRef.current = now;
       setPendingAfkMs((prev) => {
         const next = Math.min(AFK_MAX_ELAPSED_MS, prev + elapsedMs);
-        afkRecoveryTotalMsRef.current = next;
+        // SpecRef: 5.1.1 | Party State Machine | Refresh Handling
+        // Keep AFK recovery total fixed to the largest observed backlog so displayed x/y does not shrink during catch-up.
+        afkRecoveryTotalMsRef.current = Math.max(afkRecoveryTotalMsRef.current, next);
         return next;
       });
       shouldRebuildPartyCyclesAfterAfkRef.current = true;
