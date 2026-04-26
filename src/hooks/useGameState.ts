@@ -362,6 +362,45 @@ function normalizeExpeditionDestinationMode(raw: unknown): ExpeditionDestination
   return raw === 'fixed' ? 'fixed' : 'auto';
 }
 
+function shouldAutoAdvanceExpeditionDestination(party: Party): { shouldAdvance: boolean; nextDungeonId: number | null } {
+  // SpecRef: 8.3 | UI_EXPEDITION | Auto Destination Change Logic
+  if (party.expeditionDestinationMode !== 'auto') {
+    return { shouldAdvance: false, nextDungeonId: null };
+  }
+
+  const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId + 1 && dungeon.id <= 8);
+  if (!nextDungeon) {
+    return { shouldAdvance: false, nextDungeonId: null };
+  }
+
+  const hasClearedSelectedExpeditionAtLeastOnce = Boolean(
+    party.defeatedBossExpeditions?.[party.selectedDungeonId],
+  );
+  if (!hasClearedSelectedExpeditionAtLeastOnce) {
+    return { shouldAdvance: false, nextDungeonId: null };
+  }
+
+  if (!isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id))) {
+    return { shouldAdvance: false, nextDungeonId: null };
+  }
+
+  const selectedDifficultyOffset = party.expeditionDifficultyOffsetByDungeon?.[party.selectedDungeonId]
+    ?? party.expeditionDifficultyOffset
+    ?? 0;
+  const condition = normalizePartyCondition(party.condition);
+  const enemyLevelWithOffset = nextDungeon.expLevel + selectedDifficultyOffset;
+  const meetsAnyAutoAdvanceRule = (
+    (enemyLevelWithOffset <= party.level + 9 && condition >= 250)
+    || (enemyLevelWithOffset <= party.level + 10 && condition >= 240)
+    || (enemyLevelWithOffset <= party.level + 10 && condition >= 230)
+  );
+
+  return {
+    shouldAdvance: meetsAnyAutoAdvanceRule,
+    nextDungeonId: meetsAnyAutoAdvanceRule ? nextDungeon.id : null,
+  };
+}
+
 type PartyConditionState =
   | 'condition.terrible'
   | 'condition.poor'
@@ -4119,6 +4158,19 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             triggerGodsBattle: shouldTriggerAfkGodsBattle,
           });
           workingState = gameReducer(workingState, { type: 'FINALIZE_DIARY_LOG', partyIndex, isAfkSimulation: true });
+
+          const postFinalizeParty = workingState.parties[partyIndex];
+          if (postFinalizeParty) {
+            const autoAdvanceDecision = shouldAutoAdvanceExpeditionDestination(postFinalizeParty);
+            if (autoAdvanceDecision.shouldAdvance && autoAdvanceDecision.nextDungeonId !== null) {
+              workingState = gameReducer(workingState, {
+                type: 'SELECT_DUNGEON',
+                partyIndex,
+                dungeonId: autoAdvanceDecision.nextDungeonId,
+                selectionMode: 'auto',
+              });
+            }
+          }
 
           const currentParty = workingState.parties[partyIndex];
           if (!currentParty) continue;
