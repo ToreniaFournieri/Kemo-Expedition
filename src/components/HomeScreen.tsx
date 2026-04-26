@@ -3995,12 +3995,25 @@ export function HomeScreen({
                 ? isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id))
                 : false;
               const nextDungeonEnemyLevel = nextDungeon?.expLevel ?? 0;
+              const normalizedCondition = Math.max(-300, Math.min(300, Math.floor(party.condition)));
               const shouldAutoAdvanceDestination = Boolean(
                 nextDungeon
                 && hasClearedSelectedExpeditionAtLeastOnce
                 && nextDungeonEntryUnlocked
-                && (nextDungeonEnemyLevel + selectedDifficultyOffset) <= party.level + 9
-                && party.condition >= 250,
+                && (
+                  (
+                    (nextDungeonEnemyLevel + selectedDifficultyOffset) <= party.level + 9
+                    && normalizedCondition >= 250
+                  )
+                  || (
+                    (nextDungeonEnemyLevel + selectedDifficultyOffset) <= party.level + 10
+                    && normalizedCondition >= 240
+                  )
+                  || (
+                    (nextDungeonEnemyLevel + selectedDifficultyOffset) <= party.level + 10
+                    && normalizedCondition >= 230
+                  )
+                ),
               );
               if (shouldAutoAdvanceDestination && nextDungeon) {
                 actions.autoSelectDungeon(partyIndex, nextDungeon.id);
