@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 121 | 2026/4/26 | Update runtime glossary entry for Spec 1.1.6 `f.reward` to the latest description: base reward draw tickets are now 2 by default, with +1 additional ticket from divine protection only. |
 | 0.6.1 | 120 | 2026/4/26 | Persist `state.reactivate` AFK recovery bar display details by showing resumable percent and completed/total counts (`x/y`) in the Expedition progress label, so refreshing keeps the same visual resume position and progress context. |
 | 0.6.1 | 119 | 2026/4/26 | Mute auto-equipment change notifications while AFK emulation/recovery is active so background catch-up does not spam equipment toast messages. |
 | 0.6.1 | 118 | 2026/4/26 | Update Party tab runtime list behavior for Spec 8.2.1: hide the Party List when only one party is unlocked, and when visible show only unlocked PT tabs as selectable (remove locked PT preview tabs). |

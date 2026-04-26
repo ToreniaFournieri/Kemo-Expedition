@@ -503,7 +503,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "f.reward",
         "label": "報酬計算",
-        "description": "戦闘結果に応じてアイテムの追加抽選の有無を算出する。通常1枚。解錠スキルで+1枚、神の加護により+1枚、ゲームモードルナで+1枚。"
+        "description": "戦闘結果に応じてアイテムの追加抽選の有無を算出する。通常2枚。神の加護により+1枚。"
       },
       {
         "key": "f.donation",
