@@ -3580,10 +3580,14 @@ export function HomeScreen({
         const restoredCompletedAfkMs = typeof parsed.afkRecoveryCompletedMs === 'number'
           ? Math.max(0, Math.min(parsed.afkRecoveryCompletedMs, AFK_MAX_ELAPSED_MS))
           : 0;
-        afkRecoveryCompletedMsRef.current = restoredCompletedAfkMs;
-        afkRecoveryTotalMsRef.current = typeof parsed.afkRecoveryTotalMs === 'number'
-          ? Math.max(restoredPendingAfkMs + restoredCompletedAfkMs, parsed.afkRecoveryTotalMs)
+        const restoredTotalAfkMs = typeof parsed.afkRecoveryTotalMs === 'number'
+          ? Math.max(restoredPendingAfkMs, Math.min(parsed.afkRecoveryTotalMs, AFK_MAX_ELAPSED_MS))
           : restoredPendingAfkMs + restoredCompletedAfkMs;
+        afkRecoveryTotalMsRef.current = restoredTotalAfkMs;
+        afkRecoveryCompletedMsRef.current = Math.max(
+          restoredCompletedAfkMs,
+          Math.max(0, restoredTotalAfkMs - restoredPendingAfkMs),
+        );
         afkSimulationAnchorRef.current = typeof parsed.afkSimulationAnchor === 'number'
           ? parsed.afkSimulationAnchor
           : Date.now();
@@ -3881,13 +3885,13 @@ export function HomeScreen({
         afkRuntimeSnapshotRef.current = runtimeSnapshots;
       }
       afkSimulationAnchorRef.current = now;
-      setPendingAfkMs((prev) => {
-        const next = Math.min(AFK_MAX_ELAPSED_MS, prev + elapsedMs);
-        // SpecRef: 5.1.1 | Party State Machine | Refresh Handling
-        // Keep AFK recovery total fixed to the largest observed backlog so displayed x/y does not shrink during catch-up.
-        afkRecoveryTotalMsRef.current = Math.max(afkRecoveryTotalMsRef.current, next);
-        return next;
-      });
+      const nextPendingAfkMs = Math.min(AFK_MAX_ELAPSED_MS, pendingAfkMsRef.current + elapsedMs);
+      // SpecRef: 5.1.1 | Party State Machine | Refresh Handling
+      // Update AFK recovery refs synchronously before persistence so refresh restores the same x/y progress baseline.
+      afkRecoveryTotalMsRef.current = Math.max(afkRecoveryTotalMsRef.current, nextPendingAfkMs);
+      afkRecoveryCompletedMsRef.current = Math.max(0, afkRecoveryTotalMsRef.current - nextPendingAfkMs);
+      pendingAfkMsRef.current = nextPendingAfkMs;
+      setPendingAfkMs(nextPendingAfkMs);
       shouldRebuildPartyCyclesAfterAfkRef.current = true;
       lastCheckpointAtRef.current = now;
       persistAfkRuntimeState(now);
