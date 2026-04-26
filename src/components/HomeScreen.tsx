@@ -5841,44 +5841,31 @@ function PartyTab({
           </div>
         </div>
       )}
-      {/* Party selector - tab style */}
-      <div className="liquid-glass-segmented mb-4 flex gap-1 rounded-2xl p-1">
-        {(() => {
-          // SpecRef: 8.2.1 | Displays | Party List
-          const allPartyIndexes = [0, 1, 2, 3, 4, 5];
-          const unlockedPartyCount = parties.length;
-          const previewLockedPartyIndex = unlockedPartyCount < allPartyIndexes.length ? unlockedPartyCount : null;
-          const visiblePartyIndexes = allPartyIndexes.filter((partyIndex) => {
-            if (partyIndex < unlockedPartyCount) return true;
-            return previewLockedPartyIndex === partyIndex;
-          });
-          return visiblePartyIndexes.map((partyIndex) => {
-            const isAvailable = partyIndex < unlockedPartyCount;
+      {parties.length >= 2 && (
+        // SpecRef: 8.2.1 | Displays | Party List
+        <div className="liquid-glass-segmented mb-4 flex gap-1 rounded-2xl p-1">
+          {parties.map((partyEntry, partyIndex) => {
             const isSelected = partyIndex === selectedPartyIndex;
-          return (
-            <button
-              key={partyIndex}
-              onClick={() => {
-                if (!isAvailable) return;
-                onSelectParty(partyIndex);
-                setEditingDeity(false);
-                setPendingDeityName(parties[partyIndex].deity.name);
-              }}
-              disabled={!isAvailable}
-              className={`${IOS_GLASS_TAB_CLASS} flex-1 px-1 py-2 text-sm font-medium transition-colors ${
-                isSelected
-                  ? 'liquid-glass-tab-active text-sub'
-                  : isAvailable
-                  ? 'text-gray-700 hover:text-gray-900'
-                  : 'text-gray-300 cursor-not-allowed opacity-60'
-              }`}
-            >
-              PT{partyIndex + 1}
-            </button>
-          );
-          });
-        })()}
-      </div>
+            return (
+              <button
+                key={partyEntry.id}
+                onClick={() => {
+                  onSelectParty(partyIndex);
+                  setEditingDeity(false);
+                  setPendingDeityName(parties[partyIndex].deity.name);
+                }}
+                className={`${IOS_GLASS_TAB_CLASS} flex-1 px-1 py-2 text-sm font-medium transition-colors ${
+                  isSelected
+                    ? 'liquid-glass-tab-active text-sub'
+                    : 'text-gray-700 hover:text-gray-900'
+                }`}
+              >
+                PT{partyIndex + 1}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       <div className="mb-3 text-sm flex items-start justify-between gap-2">
         <div className="min-w-0">
