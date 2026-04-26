@@ -3424,7 +3424,12 @@ export function HomeScreen({
       });
     });
 
-    if (options?.suppressNotifications) return;
+    const shouldSuppressAutoEquipmentNotifications = options?.suppressNotifications
+      || pendingAfkMsRef.current > 0
+      || shouldShowAfkSummaryRef.current
+      || justCompletedAfkRecoveryRef.current;
+
+    if (shouldSuppressAutoEquipmentNotifications) return;
 
     slotNotifications.forEach(({ message }) => {
       actions.addNotification(message, 'normal', 'item', true, {
