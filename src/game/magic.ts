@@ -1,8 +1,8 @@
 import { ElementalOffense } from '../types';
 
-export type MagicStyle = 'multi-hit' | 'arc-magic' | 'percentage_damage';
+type MagicStyle = 'multi-hit' | 'arc-magic' | 'percentage_damage';
 
-export interface MagicProfile {
+interface MagicProfile {
   key: string;
   style: MagicStyle;
   spellName: string;

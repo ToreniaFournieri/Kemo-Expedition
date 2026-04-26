@@ -9,7 +9,7 @@ import { buildEnemyClassMasterStats } from '../data/enemyClasses';
 // SpecRef: 9 | Environment | Save Data Isolation
 const COLOSSEUM_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.colosseum-enemy-settings');
 
-export type ColosseumTerrainEffect = 'none' | `terrain.${string}`;
+type ColosseumTerrainEffect = 'none' | `terrain.${string}`;
 
 export interface ColosseumEnemySettings {
   name: string;
@@ -21,7 +21,7 @@ export interface ColosseumEnemySettings {
   abilities: Array<{ id: AbilityId; level: number }>;
 }
 
-export const DEFAULT_COLOSSEUM_ENEMY_SETTINGS: ColosseumEnemySettings = {
+const DEFAULT_COLOSSEUM_ENEMY_SETTINGS: ColosseumEnemySettings = {
   name: 'ミーティア',
   terrainEffect: 'none',
   enemyType: 'Jinma',

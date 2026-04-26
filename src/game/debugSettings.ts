@@ -1,8 +1,8 @@
 import { createEnvironmentStorageKey, getEnvironmentId } from './environment';
 
-export type DebugTimeSpeed = 'realtime' | 'x5' | 'x20' | 'x100';
-export type DebugGodsBattleCondition = 'normal' | 'simple1';
-export type DebugGodStrength = 'normal' | 'debug';
+type DebugTimeSpeed = 'realtime' | 'x5' | 'x20' | 'x100';
+type DebugGodsBattleCondition = 'normal' | 'simple1';
+type DebugGodStrength = 'normal' | 'debug';
 
 export interface DebugSettings {
   clairvoyanceEnabled: boolean;
@@ -19,7 +19,7 @@ export interface DebugSettings {
 // SpecRef: 9 | Environment | Save Data Isolation
 const DEBUG_SETTINGS_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.debug-settings');
 
-export const DEFAULT_DEBUG_SETTINGS: DebugSettings = {
+const DEFAULT_DEBUG_SETTINGS: DebugSettings = {
   clairvoyanceEnabled: false,
   timeSpeed: 'realtime',
   godsBattleCondition: 'normal',
@@ -50,7 +50,7 @@ function canUseStorage(): boolean {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
 }
 
-export function normalizeDebugSettings(raw: unknown): DebugSettings {
+function normalizeDebugSettings(raw: unknown): DebugSettings {
   const parsed = (raw && typeof raw === 'object') ? raw as Partial<DebugSettings> & { displayMotivation?: boolean } : {};
   return enforceEnvironmentDebugPolicy({
     clairvoyanceEnabled: parsed.clairvoyanceEnabled === true,

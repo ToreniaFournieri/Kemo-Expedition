@@ -16,10 +16,10 @@ export const DEITY_OPTIONS = [
   { key: 'Goddess of Discord', name: '不和の神' },
 ] as const;
 
-export const NO_FAITH_DEITY_NAME = '信仰なし';
+const NO_FAITH_DEITY_NAME = '信仰なし';
 const NO_FAITH_DEITY_ALIASES = new Set([NO_FAITH_DEITY_NAME, 'None', 'none']);
 
-export type DeityKey = typeof DEITY_OPTIONS[number]['key'];
+type DeityKey = typeof DEITY_OPTIONS[number]['key'];
 
 const MIN_DEITY_RANK = 1;
 const MAX_DEITY_RANK = 10;
@@ -70,7 +70,7 @@ DEITY_KEY_BY_NAME['God of Evasion'] = 'God of Dusk';
 
 
 // SpecRef: 8.6 | UI_DIVINE_BUREAU | Donation Scaling (Divine Bureau)
-export function getDonationTier(totalDonatedGold: number): number {
+function getDonationTier(totalDonatedGold: number): number {
   const safeDonation = Math.max(0, totalDonatedGold);
   let tier = 0;
   for (let i = 0; i < DONATION_THRESHOLDS.length; i++) {
@@ -99,7 +99,7 @@ export function getNextRankDonationRequirement(totalDonatedGold: number): number
 }
 
 // SpecRef: 8.6 | UI_DIVINE_BUREAU | Donation Scaling (Divine Bureau)
-export function getEffectiveDeityTier(totalDonatedGold: number): number {
+function getEffectiveDeityTier(totalDonatedGold: number): number {
   return Math.min(getDonationTier(totalDonatedGold), MAX_DEITY_RANK);
 }
 

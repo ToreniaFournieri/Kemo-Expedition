@@ -1,6 +1,6 @@
 import { AbilityId, Bonus, EnemyClassId, ItemCategory } from '../types';
 
-export type GodMythicDrop = {
+type GodMythicDrop = {
   dropBy: string;
   tier: number;
   category: ItemCategory;

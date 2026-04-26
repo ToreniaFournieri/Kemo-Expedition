@@ -126,7 +126,7 @@ function getUniqueCBonusSum(
 }
 
 
-export const RACE_UNLOCK_ABILITY_IDS: Partial<Record<RaceId, AbilityId>> = {
+const RACE_UNLOCK_ABILITY_IDS: Partial<Record<RaceId, AbilityId>> = {
   caninian: 'resurrect',
   lupinian: 're_counter',
   vulpinian: 'cunning',
@@ -138,7 +138,7 @@ export const RACE_UNLOCK_ABILITY_IDS: Partial<Record<RaceId, AbilityId>> = {
   procyonian: 'resonance',
 };
 
-export const RACE_UNLOCK_BONUS_BY_RACE: Partial<Record<RaceId, BonusType>> = {
+const RACE_UNLOCK_BONUS_BY_RACE: Partial<Record<RaceId, BonusType>> = {
   caninian: 'unlock_caninian_ability',
   lupinian: 'unlock_lupinian_ability',
   vulpinian: 'unlock_vulpinian_ability',

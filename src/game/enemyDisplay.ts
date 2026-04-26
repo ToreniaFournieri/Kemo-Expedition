@@ -33,7 +33,7 @@ export const ENEMY_TYPE_SHORT_NAMES: Record<string, string> = {
   Murid: 'ミュリッド',
 };
 
-export function formatEnemyName(
+function formatEnemyName(
   name: string,
   enemyType: string,
   classId: keyof typeof CLASS_SHORT_NAMES,
