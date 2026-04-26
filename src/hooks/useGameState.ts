@@ -67,6 +67,8 @@ import { RACES } from '../data/races';
 import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
 import { LINEAGES } from '../data/lineages';
+import { BONUS_ABILITY_GLOSSARY_ENTRIES } from '../data/bonusAbilityGlossary';
+import { TERRAIN_EFFECT_GLOSSARY_SECTION } from '../data/glossary';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -117,6 +119,10 @@ const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.exercise', 'q.healing', 'q.AFK']
 const BASE_STEP_DURATION_MS = 15_000;
 const APPROX_CYCLE_STEP_COUNT = 30;
 const SAVE_LOAD_WARNING_MESSAGE = 'ロードに失敗しました。この画面をスクリーンショットし、開発者へ報告してください';
+const VALID_GLOSSARY_ABILITY_IDS = new Set(BONUS_ABILITY_GLOSSARY_ENTRIES.map((entry) => entry.abilityId));
+const VALID_GLOSSARY_TERRAIN_KEYS = new Set(
+  (TERRAIN_EFFECT_GLOSSARY_SECTION?.entries ?? []).map((entry) => entry.key as TerrainEffectKey),
+);
 
 type SideQuestScaleByLevel = {
   1: number;
@@ -167,6 +173,50 @@ function normalizeSideQuestType(type: string): string {
     'q.consecutive_wins': 'q.consecutive-wins',
   };
   return legacyToCurrentTypeMap[type] ?? type;
+}
+
+// SpecRef: 1.0.3 | Glossary Reveal Rule | revealed
+function normalizeRevealedGlossaryAbilityIds(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return Array.from(new Set(
+    value.filter((abilityId): abilityId is string => (
+      typeof abilityId === 'string' && VALID_GLOSSARY_ABILITY_IDS.has(abilityId as typeof BONUS_ABILITY_GLOSSARY_ENTRIES[number]['abilityId'])
+    )),
+  ));
+}
+
+// SpecRef: 1.0.3 | Glossary Reveal Rule | revealed
+function normalizeRevealedGlossaryTerrainKeys(value: unknown): TerrainEffectKey[] {
+  if (!Array.isArray(value)) return [];
+  return Array.from(new Set(
+    value.filter((terrainKey): terrainKey is TerrainEffectKey => (
+      typeof terrainKey === 'string' && VALID_GLOSSARY_TERRAIN_KEYS.has(terrainKey as TerrainEffectKey)
+    )),
+  ));
+}
+
+// SpecRef: 1.0.3 | Glossary Reveal Rule | reveal by encounter
+function revealGlossaryFromEncounter(
+  global: GameState['global'],
+  abilityIds: Iterable<string>,
+  terrainEffect?: TerrainEffectKey | 'none',
+): Pick<GameState['global'], 'revealedGlossaryAbilityIds' | 'revealedGlossaryTerrainKeys'> {
+  const nextAbilityIds = new Set(global.revealedGlossaryAbilityIds);
+  const nextTerrainKeys = new Set(global.revealedGlossaryTerrainKeys);
+
+  for (const abilityId of abilityIds) {
+    if (VALID_GLOSSARY_ABILITY_IDS.has(abilityId as typeof BONUS_ABILITY_GLOSSARY_ENTRIES[number]['abilityId'])) {
+      nextAbilityIds.add(abilityId);
+    }
+  }
+  if (terrainEffect && terrainEffect !== 'none' && VALID_GLOSSARY_TERRAIN_KEYS.has(terrainEffect)) {
+    nextTerrainKeys.add(terrainEffect);
+  }
+
+  return {
+    revealedGlossaryAbilityIds: Array.from(nextAbilityIds),
+    revealedGlossaryTerrainKeys: Array.from(nextTerrainKeys),
+  };
 }
 
 const PARTY_UNLOCK_BY_DUNGEON_ID: Record<number, number> = {
@@ -868,6 +918,8 @@ function loadSavedState(): LoadSavedStateResult {
             inventory: migrateOldInventory(firstParty?.inventory ?? []),
             deityDonations: {},
             unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
+            revealedGlossaryAbilityIds: [],
+            revealedGlossaryTerrainKeys: [],
             shopPurchases: {},
             jewelShopPurchases: {},
             shopRefreshCounts: {},
@@ -881,6 +933,8 @@ function loadSavedState(): LoadSavedStateResult {
         }
         parsed.global.deityDonations = getDeityDonationsWithDefaults(parsed.global.deityDonations);
         parsed.global.unlockedDeities = normalizeUnlockedDeities(parsed.global.unlockedDeities);
+        parsed.global.revealedGlossaryAbilityIds = normalizeRevealedGlossaryAbilityIds(parsed.global.revealedGlossaryAbilityIds);
+        parsed.global.revealedGlossaryTerrainKeys = normalizeRevealedGlossaryTerrainKeys(parsed.global.revealedGlossaryTerrainKeys);
         parsed.global.shopPurchases = (parsed.global.shopPurchases && typeof parsed.global.shopPurchases === 'object')
           ? Object.entries(parsed.global.shopPurchases as Record<string, unknown>).reduce<Record<string, number[]>>((acc, [hourKey, itemIds]) => {
               if (!Array.isArray(itemIds)) return acc;
@@ -1552,6 +1606,8 @@ function createInitialState(): InitialStateResult {
       jewels: createStarterJewelInventory(),
       deityDonations: {},
       unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
+      revealedGlossaryAbilityIds: [],
+      revealedGlossaryTerrainKeys: [],
       shopPurchases: {},
       jewelShopPurchases: {},
       shopRefreshCounts: {},
@@ -2698,6 +2754,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let totalAutoSellItems: { itemName: string; autoSellProfit: number }[] = [];
       let roomCounter = 0;
       let expeditionEnded = false;
+      const revealedAbilityIds = new Set<string>(state.global.revealedGlossaryAbilityIds);
+      characterStats.forEach((stats) => {
+        stats.abilities.forEach((ability) => {
+          revealedAbilityIds.add(ability.id);
+        });
+      });
+      const revealedTerrainKeys = new Set<TerrainEffectKey>(state.global.revealedGlossaryTerrainKeys);
 
       // Use new floor structure if available
       if (dungeon.floors && dungeon.floors.length > 0) {
@@ -2784,6 +2847,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 effectiveDifficultyOffset,
               );
             }
+            enemy.abilities.forEach((ability) => {
+              revealedAbilityIds.add(ability.id);
+            });
 
             // Pass currentHp to maintain HP persistence during expedition
             const roomStartHp = currentHp;
@@ -2791,6 +2857,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             const terrainEffect = colosseumTerrainEffect !== 'none'
               ? colosseumTerrainEffect
               : floor.terrainEffect;
+            if (terrainEffect) {
+              revealedTerrainKeys.add(terrainEffect);
+            }
             const battleResult = executeBattle(currentParty, enemy, bags, roomStartHp, { terrainEffect });
 
             // Update threat bags from battle result
@@ -3233,6 +3302,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...state.global,
           inventory: finalInventory,
           gold: finalGold,
+          ...revealGlossaryFromEncounter(state.global, revealedAbilityIds, undefined),
+          revealedGlossaryTerrainKeys: Array.from(revealedTerrainKeys),
         },
       };
     }
@@ -4277,6 +4348,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           jewels: createStarterJewelInventory(),
           deityDonations: {},
           unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
+          revealedGlossaryAbilityIds: [],
+          revealedGlossaryTerrainKeys: [],
           shopPurchases: {},
           jewelShopPurchases: {},
           shopRefreshCounts: {},
