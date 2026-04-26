@@ -1,10 +1,10 @@
 import { Item, Party } from '../types';
 import { getDebugSettings } from './debugSettings';
 
-export type GateRarity = 'uncommon' | 'eliteRare' | 'bossRare';
-export type GateRoomType = 'battle_Normal' | 'battle_Elite' | 'battle_Boss';
+type GateRarity = 'uncommon' | 'eliteRare' | 'bossRare';
+type GateRoomType = 'battle_Normal' | 'battle_Elite' | 'battle_Boss';
 
-export type LootGateCheckResult =
+type LootGateCheckResult =
   | { blocked: false }
   | {
       blocked: true;
@@ -23,17 +23,12 @@ export const ELITE_GATE_REQUIREMENTS: Record<number, number> = {
 
 export const ENTRY_GATE_REQUIRED = 1;
 export const BOSS_GATE_REQUIRED = 3;
-export const GODS_BATTLE_REQUIRED = 3;
+const GODS_BATTLE_REQUIRED = 3;
 
 // SpecRef: 5.1.3.1 | "Loot-Gate" progression system | getGodsBattleRequired
 export function getGodsBattleRequired(): number {
   const settings = getDebugSettings();
   return settings.godsBattleCondition === 'simple1' ? 1 : GODS_BATTLE_REQUIRED;
-}
-
-// SpecRef: 5.1.3.1 | "Loot-Gate" progression system | Gods battle gate
-export function hasDefeatedAnyDungeonBoss(party: Pick<Party, 'defeatedBossExpeditions'>): boolean {
-  return Object.values(party.defeatedBossExpeditions ?? {}).some(Boolean);
 }
 
 // SpecRef: 5.1.3.1 | "Loot-Gate" progression system | Gods battle gate

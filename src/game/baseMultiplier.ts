@@ -1,4 +1,4 @@
-export type BaseMultiplierType = 'attack' | 'defense';
+type BaseMultiplierType = 'attack' | 'defense';
 
 const ATTACK_SCALE_TABLE: Record<number, number> = {
   6: 0.70,

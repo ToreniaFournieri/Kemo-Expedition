@@ -2,7 +2,7 @@ import type { AbilityId } from '../types';
 
 export type BonusAbilityGlossarySubcategoryId = 'passive' | 'expedition' | 'reactive' | 'timed';
 
-export type BonusAbilityGlossaryEntry = {
+type BonusAbilityGlossaryEntry = {
   abilityId: AbilityId;
   label: string;
   description: string;

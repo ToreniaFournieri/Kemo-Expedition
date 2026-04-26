@@ -3,7 +3,7 @@ import type { EnemyAbility } from '../types';
 const MAX_ABILITY_LEVEL = 5;
 const MAX_UPGRADE_ALL_ABILITIES_BONUS = 4;
 
-export function getUpgradeAllAbilitiesBonus(level: number): number {
+function getUpgradeAllAbilitiesBonus(level: number): number {
   return Math.max(0, Math.min(MAX_UPGRADE_ALL_ABILITIES_BONUS, Math.floor(level)));
 }
 
@@ -34,7 +34,7 @@ export function getEnemyCyborgizationAdjustment(level: number): { accuracyBonus:
   return { accuracyBonus: 0, evasionBonus: 0 };
 }
 
-export function getEnemyMeleeConversionRate(level: number): number {
+function getEnemyMeleeConversionRate(level: number): number {
   if (level >= 2) {
     return 0.4;
   }

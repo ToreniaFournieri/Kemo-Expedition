@@ -6,6 +6,9 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 116 | 2026/4/26 | Remove runtime/public exports for validated unlikely-used symbols across data/game/types modules, delete declarations that became dead after unexporting, and keep build passing with noUnused checks. |
+| 0.6.1 | 115 | 2026/4/26 | Validate unused-export candidates against real cross-file usages and specification files: refine report to 60 very likely unused exported symbols (outside-reference count = 0), replacing the earlier broad heuristic list. |
+| 0.6.1 | 114 | 2026/4/26 | Add an unused-logic audit report: run TypeScript compile-time unused checks and list 66 heuristic candidates for potentially unused exported symbols across `src/data`, `src/game`, and `src/types`. |
 | 0.6.1 | 113 | 2026/4/26 | Fix Spec 8.3 auto destination progression gating in `state.rest`: require that the currently selected expedition has been cleared at least once before auto-advancing to the next destination; keep next-entry unlock, level-threshold, and condition checks unchanged. |
 | 0.6.1 | 112 | 2026/4/26 | Adjust Expedition runtime control-row layout (Spec 8.3): narrow the 一任/固定 mode toggle button width to free more horizontal space for the adjacent Destination dropdown. |
 | 0.6.1 | 111 | 2026/4/26 | Fix Spec 8.3 auto destination progression checks in `state.rest`: evaluate the NEXT expedition's enemy level (not current), and require the next expedition entry gate to be unlocked before auto-updating Destination in 一任 mode. |

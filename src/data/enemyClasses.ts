@@ -19,7 +19,7 @@ type EnemyClassModifier = {
   experienceModifier: number;
 };
 
-export type EnemyClassMasterStats = {
+type EnemyClassMasterStats = {
   hp: number;
   abilities: EnemyAbility[];
   accuracyBonus: number;

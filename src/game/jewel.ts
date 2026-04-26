@@ -1,6 +1,6 @@
 import { BonusType, ItemCategory, JewelAttachment, JewelInventory, JewelKey } from '../types';
 
-export interface JewelDef {
+interface JewelDef {
   key: JewelKey;
   name: string;
   displayName: string;
@@ -9,7 +9,7 @@ export interface JewelDef {
   dBaseBonuses: Array<{ stat: JewelDStat; base: number }>;
 }
 
-export type JewelDStat = 'meleeAttack' | 'rangedAttack' | 'magicalAttack' | 'physicalDefense' | 'magicalDefense' | 'partyHP';
+type JewelDStat = 'meleeAttack' | 'rangedAttack' | 'magicalAttack' | 'physicalDefense' | 'magicalDefense' | 'partyHP';
 
 export const JEWEL_DEFS: Record<JewelKey, JewelDef> = {
   might: {
@@ -38,10 +38,10 @@ export const JEWEL_DEFS: Record<JewelKey, JewelDef> = {
   },
 };
 
-export const C_ATTACK_BY_RANK = [22, 21, 19, 18, 17, 16, 15, 14] as const;
-export const C_DEFENSE_BY_RANK = [13, 12, 11, 9, 8, 7, 6, 5] as const;
-export const C_SUBTLE_BY_RANK = [8, 7, 6, 5, 4, 3, 2, 1] as const;
-export const JEWEL_TIER_NAME_BY_RANK = ['素晶', '良晶', '雅晶', '煌晶', '碧晶', '紫晶', '金晶', '王晶'] as const;
+const C_ATTACK_BY_RANK = [22, 21, 19, 18, 17, 16, 15, 14] as const;
+const C_DEFENSE_BY_RANK = [13, 12, 11, 9, 8, 7, 6, 5] as const;
+const C_SUBTLE_BY_RANK = [8, 7, 6, 5, 4, 3, 2, 1] as const;
+const JEWEL_TIER_NAME_BY_RANK = ['素晶', '良晶', '雅晶', '煌晶', '碧晶', '紫晶', '金晶', '王晶'] as const;
 
 export const JEWELS_BY_ITEM_CATEGORY: Record<ItemCategory, JewelKey[]> = {
   armor: ['fort', 'ward', 'shade'],
@@ -80,7 +80,7 @@ export function getJewelDRankBonus(attachment: JewelAttachment | null | undefine
   return d ? getJewelDRankValue(d.base, attachment.rank) : 0;
 }
 
-export function getJewelInventoryKey(key: JewelKey, rank: number): string {
+function getJewelInventoryKey(key: JewelKey, rank: number): string {
   return `${key}:${rank}`;
 }
 

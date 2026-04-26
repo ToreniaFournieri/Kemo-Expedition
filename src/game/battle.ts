@@ -2250,7 +2250,7 @@ function isEligibleEnemyForPhase(
 // Hit detection functions are available for future use when implementing
 // per-hit accuracy rolls. Currently the game uses deterministic damage calculation.
 
-export interface BattleResult extends BattleState {
+interface BattleResult extends BattleState {
   updatedBags: {
     physicalThreatBag: RandomBag;
     magicalThreatBag: RandomBag;

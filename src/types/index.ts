@@ -23,7 +23,7 @@ export interface Race {
   selectable?: boolean;
 }
 
-export interface RaceAbilityDefinition {
+interface RaceAbilityDefinition {
   id: string;
   name: string;
   description: string;
@@ -242,7 +242,7 @@ export interface Item extends ItemDef {
 }
 
 // Item Stacking System
-export type ItemVariantStatus = 'owned' | 'sold' | 'notown';
+type ItemVariantStatus = 'owned' | 'sold' | 'notown';
 
 export interface InventoryVariant {
   item: Item;
@@ -366,7 +366,7 @@ export type ExpeditionDestinationMode = 'auto' | 'fixed';
 
 export type SleepinessState = 0 | 1 | 2;
 
-export interface SideQuestState {
+interface SideQuestState {
   id: number;
   type: string;
   shortText: string;
@@ -420,7 +420,7 @@ export interface Deity {
   uniqueAbilities: string[];
 }
 
-export interface GlobalState {
+interface GlobalState {
   gold: number;
   inventory: InventoryRecord;
   deityDonations: Record<string, number>;
@@ -498,7 +498,7 @@ export interface EnemyDef {
 export type RoomType = 'battle_Normal' | 'battle_Elite' | 'battle_Boss';
 export type TerrainEffectKey = `terrain.${string}`;
 
-export interface RoomDef {
+interface RoomDef {
   type: RoomType;
   poolId?: number; // For Normal/Elite rooms
   bossId?: number; // For Boss rooms
@@ -537,7 +537,7 @@ export interface Dungeon {
 
 // Battle Types
 export type BattleActionPhase = 'long' | 'mid' | 'close';
-export type BattlePhase = 'start' | BattleActionPhase | 'end';
+type BattlePhase = 'start' | BattleActionPhase | 'end';
 export type BattleOutcome = 'victory' | 'defeat' | 'draw';
 
 export interface BattleState {
@@ -585,15 +585,6 @@ export interface BattleLogEntry {
   hideInitiativeLabel?: boolean;
   wasNegated?: boolean; // True when an attack dealt 0 hits because an avoidance effect activated
   elementalOffense?: ElementalOffense;
-}
-
-// Expedition Types
-export interface ExpeditionState {
-  dungeonId: number;
-  currentRoom: number;
-  partyHp: number;
-  rewards: Item[];
-  experienceGained: number;
 }
 
 // Bag Randomization Types
@@ -686,7 +677,7 @@ export interface ExpeditionLog {
 }
 
 // Game State
-export type GameScene = 'home';
+type GameScene = 'home';
 
 export interface GameState {
   scene: GameScene;

@@ -1,10 +1,10 @@
-export type GlossaryEntry = {
+type GlossaryEntry = {
   key: string;
   label: string;
   description: string;
 };
 
-export type GlossarySection = {
+type GlossarySection = {
   id: string;
   heading: string;
   subtitle: string;

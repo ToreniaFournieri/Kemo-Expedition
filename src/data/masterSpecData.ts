@@ -1,6 +1,6 @@
 import { EnemyClassId, EnemyType, ItemCategory } from '../types';
 
-export type MasterEnemyPackedRow = readonly [floor:number, room:string, level:number, type:EnemyType, enemyType:string, enemyClass:EnemyClassId, drops:string, name:string, enemySubClass?: EnemyClassId];
+type MasterEnemyPackedRow = readonly [floor:number, room:string, level:number, type:EnemyType, enemyType:string, enemyClass:EnemyClassId, drops:string, name:string, enemySubClass?: EnemyClassId];
 
 // SpecRef: 4.2.2 | Enemy | x.exp_id / x.floor / x.room master table
 export const MASTER_EXPEDITION_ENEMIES_PACKED: Record<number, readonly MasterEnemyPackedRow[]> = {
@@ -310,7 +310,7 @@ export const MASTER_EXPEDITION_ENEMIES_PACKED: Record<number, readonly MasterEne
   ],
 } as const;
 
-export const MASTER_ITEM_NAME_INDEX: Record<string, readonly string[]> = {
+const MASTER_ITEM_NAME_INDEX: Record<string, readonly string[]> = {
   '1|common|archery': ['つる弓'],
   '1|common|armor': ['継ぎ革の服'],
   '1|common|arrow': ['欠け矢'],

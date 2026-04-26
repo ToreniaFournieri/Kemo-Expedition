@@ -777,12 +777,6 @@ export const ITEMS: ItemDef[] = generateItems();
 // Item lookup helpers
 // ============================================================
 
-// Item lookup by tier
-export function getItemsByTier(tier: number): ItemDef[] {
-  const tierBase = tier * 1000;
-  return ITEMS.filter(i => i.id >= tierBase && i.id < tierBase + 1000);
-}
-
 // Item lookup by tier and rarity
 export function getItemsByTierAndRarity(tier: number, rarity: Rarity): ItemDef[] {
   if (rarity === 'mythicRare') {
@@ -796,12 +790,3 @@ export function getItemsByTierAndRarity(tier: number, rarity: Rarity): ItemDef[]
 
 export const getItemById = (id: number): ItemDef | undefined =>
   ITEMS.find(i => i.id === id);
-
-export const getItemsByCategory = (category: string): ItemDef[] =>
-  ITEMS.filter(i => i.category === category);
-
-// Get random item from tier (for rewards)
-export function getRandomItemFromTier(tier: number, rarity?: Rarity): ItemDef | null {
-  const pool = rarity ? getItemsByTierAndRarity(tier, rarity) : getItemsByTier(tier);
-  return pool[Math.floor(Math.random() * pool.length)];
-}
