@@ -4811,6 +4811,8 @@ export function HomeScreen({
           isExpeditionStatsDisplayEnabled={isExpeditionStatsDisplayEnabled}
           partyCycles={partyCycles}
           afkRecoveryProgressPercent={afkRecoveryProgressPercent}
+          afkRecoveryCompletedMs={afkRecoveryCompletedMs}
+          afkRecoveryTotalMs={afkRecoveryTotalMs}
           onTriggerSortie={triggerSortie}
           expandedLogParty={expeditionExpandedLogParty}
           setExpandedLogParty={setExpeditionExpandedLogParty}
@@ -7462,6 +7464,8 @@ function ExpeditionTab({
   isExpeditionStatsDisplayEnabled,
   partyCycles,
   afkRecoveryProgressPercent,
+  afkRecoveryCompletedMs,
+  afkRecoveryTotalMs,
   onTriggerSortie,
   expandedLogParty,
   setExpandedLogParty,
@@ -7480,6 +7484,8 @@ function ExpeditionTab({
   isExpeditionStatsDisplayEnabled: boolean;
   partyCycles: Record<number, PartyCycleRuntime>;
   afkRecoveryProgressPercent: number | null;
+  afkRecoveryCompletedMs: number;
+  afkRecoveryTotalMs: number;
   onTriggerSortie: (partyIndex: number, triggerGodsBattle?: boolean) => void;
   expandedLogParty: number | null;
   setExpandedLogParty: Dispatch<SetStateAction<number | null>>;
@@ -7775,7 +7781,14 @@ function ExpeditionTab({
           return Math.min(100, (elapsedWithinStepMs / stepDurationMs) * 100);
         })();
         const progressLabel = (() => {
-          if (afkRecoveryProgressPercent !== null) return getPartyCycleStateLabel('reactivate');
+          if (afkRecoveryProgressPercent !== null) {
+            // SpecRef: 5.1.1 | Party State Machine | Refresh Handling
+            // Show AFK recovery progress as percent + completed/total seconds so refresh resumes with the same visible counts.
+            const totalSeconds = Math.max(1, Math.ceil(afkRecoveryTotalMs / 1000));
+            const completedSeconds = Math.max(0, Math.min(totalSeconds, Math.floor(afkRecoveryCompletedMs / 1000)));
+            const percentText = `${Math.round(normalizedProgressPercent)}%`;
+            return `${getPartyCycleStateLabel('reactivate')} ${percentText} (${formatNumber(completedSeconds)}/${formatNumber(totalSeconds)})`;
+          }
           const stateLabel = getPartyCycleStateLabel(cycle.state);
           if (cycle.state === 'reactivate') return stateLabel;
           const leader = party.characters[0];
