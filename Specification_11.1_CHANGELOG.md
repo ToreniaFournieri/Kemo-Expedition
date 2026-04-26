@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 111 | 2026/4/26 | Fix Spec 8.3 auto destination progression checks in `state.rest`: evaluate the NEXT expedition's enemy level (not current), and require the next expedition entry gate to be unlocked before auto-updating Destination in 一任 mode. |
 | 0.6.1 | 110 | 2026/4/26 | Update Spec 8.3 auto-destination runtime progression condition at end of `state.rest`: in 一任 mode, auto-advance now uses `(expedition enemy level + selected difficulty offset) <= PT level + 9` and `condition >= 250` before moving Destination to the next expedition. |
 | 0.6.1 | 109 | 2026/4/26 | Update Expedition runtime destination-mode toggle visual style to text-only by removing the rounded border treatment from the 一任/固定 button while keeping existing behavior unchanged. |
 | 0.6.1 | 108 | 2026/4/26 | Implement Spec 8.3 auto destination runtime flow: add 一任/固定 toggle mode per party, force manual Destination selection to 固定, and auto-advance Destination to the next expedition at the end of `state.rest` when `expedition level <= PT level + 7` and `condition >= 300`. |

@@ -3984,15 +3984,19 @@ export function HomeScreen({
           if (projectedHp >= partyRuntimeStats.hp) {
             // SpecRef: 8.3 | UI_EXPEDITION | Auto Destination Change Logic
             if (party.expeditionDestinationMode === 'auto') {
-              const currentDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId);
               const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId + 1 && dungeon.id <= 8);
               const selectedDifficultyOffset = party.expeditionDifficultyOffsetByDungeon?.[party.selectedDungeonId]
                 ?? party.expeditionDifficultyOffset
                 ?? 0;
-              const expeditionEnemyLevel = currentDungeon?.expLevel ?? 0;
+              const nextDungeonEntryUnlocked = nextDungeon
+                ? isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id))
+                  || Boolean(party.defeatedBossExpeditions?.[party.selectedDungeonId])
+                : false;
+              const nextDungeonEnemyLevel = nextDungeon?.expLevel ?? 0;
               const shouldAutoAdvanceDestination = Boolean(
                 nextDungeon
-                && (expeditionEnemyLevel + selectedDifficultyOffset) <= party.level + 9
+                && nextDungeonEntryUnlocked
+                && (nextDungeonEnemyLevel + selectedDifficultyOffset) <= party.level + 9
                 && party.condition >= 250,
               );
               if (shouldAutoAdvanceDestination && nextDungeon) {
