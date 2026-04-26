@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 126 | 2026/4/26 | Fix `復帰中` progress visualization after refresh by deriving completed AFK recovery time from `(total - pending)` and persisting that derived value, preventing denominator-only countdown (`0/x`) and keeping the progress bar advancing correctly. |
 | 0.6.1 | 125 | 2026/4/26 | Fix AFK `state.reactivate` refresh persistence regression by synchronizing pending/total/completed recovery milliseconds before runtime checkpoint save and restoring completed progress with total-minus-pending fallback, preserving 復帰中 x/y and progress mapping after reload. |
 | 0.6.1 | 124 | 2026/4/26 | Update runtime `a.command` scaling to Spec 1.1.1 values (Lv1 x1.4, Lv2 x1.5, Lv3 x1.6): apply new multipliers in battle/party offense amplification and align related UI/ability glossary description text. |
 | 0.6.1 | 123 | 2026/4/26 | Fix `state.reactivate` AFK progress label continuity: keep recovery total (`x/y` denominator) pinned to the maximum observed backlog during catch-up so elapsed time increases completed count/percent instead of shrinking total each tick. |

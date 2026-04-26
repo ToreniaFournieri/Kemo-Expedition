@@ -3793,15 +3793,8 @@ export function HomeScreen({
 
   // SpecRef: 5.1.1 | Party State Machine | Refresh Handling
   // Keep `state.reactivate` main progress stable across refresh by restoring persisted completed/pending AFK ms.
-  const afkRecoveryCompletedMs = Math.max(
-    0,
-    Math.min(AFK_MAX_ELAPSED_MS, afkRecoveryCompletedMsRef.current),
-  );
-  const afkRecoveryTotalMs = Math.max(
-    pendingAfkMs + afkRecoveryCompletedMs,
-    pendingAfkMs,
-    afkRecoveryTotalMsRef.current,
-  );
+  const afkRecoveryTotalMs = Math.max(pendingAfkMs, afkRecoveryTotalMsRef.current);
+  const afkRecoveryCompletedMs = Math.max(0, afkRecoveryTotalMs - pendingAfkMs);
   const afkRecoveryProgressPercent = pendingAfkMs > 0
     ? Math.max(
         0,
@@ -3832,7 +3825,7 @@ export function HomeScreen({
           partyCycles: partyCyclesRef.current,
           pendingAfkMs: pendingAfkMsRef.current,
           afkRecoveryTotalMs: afkRecoveryTotalMsRef.current,
-          afkRecoveryCompletedMs: afkRecoveryCompletedMsRef.current,
+          afkRecoveryCompletedMs: Math.max(0, afkRecoveryTotalMsRef.current - pendingAfkMsRef.current),
           afkSimulationAnchor: afkSimulationAnchorRef.current,
         })
       );
