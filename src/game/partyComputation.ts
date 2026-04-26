@@ -282,7 +282,7 @@ export function computePartyStats(party: Party): {
 
   // Calculate offense amplifier from the highest command ability holder in party.
   const commandLevel = getBestAbilityLevel('command');
-  const offenseAmplifier = commandLevel >= 3 ? 2.43 : commandLevel === 2 ? 1.35 : commandLevel === 1 ? 1.2 : 1.0;
+  const offenseAmplifier = commandLevel >= 3 ? 1.6 : commandLevel === 2 ? 1.5 : commandLevel === 1 ? 1.4 : 1.0;
 
   // Party-wide damage reduction abilities are determined by highest ability level in party.
   const defenderLevel = getBestAbilityLevel('defender');
