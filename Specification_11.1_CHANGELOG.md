@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 118 | 2026/4/26 | Update Party tab runtime list behavior for Spec 8.2.1: hide the Party List when only one party is unlocked, and when visible show only unlocked PT tabs as selectable (remove locked PT preview tabs). |
 | 0.6.1 | 117 | 2026/4/26 | Update Spec 8.3 auto destination progression runtime logic to include all listed condition bands (`+9/250`, `+10/240`, `+10/230`) in online rest checks, and add equivalent AFK chunk-end auto destination evaluation so 一任 mode can advance Destination during AFK emulation as specified. |
 | 0.6.1 | 116 | 2026/4/26 | Remove runtime/public exports for validated unlikely-used symbols across data/game/types modules, delete declarations that became dead after unexporting, and keep build passing with noUnused checks. |
 | 0.6.1 | 115 | 2026/4/26 | Validate unused-export candidates against real cross-file usages and specification files: refine report to 60 very likely unused exported symbols (outside-reference count = 0), replacing the earlier broad heuristic list. |
