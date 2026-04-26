@@ -1,5 +1,5 @@
 import { Fragment, useState, useEffect, useRef, useCallback, useMemo, type ChangeEvent, type CSSProperties, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySideQuestThreshold, DiarySettings, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ExpeditionDestinationMode, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId, type Ability, type BattleLogEntry } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySideQuestThreshold, DiarySettings, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ExpeditionDestinationMode, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId, TerrainEffectKey, type Ability, type BattleLogEntry } from '../types';
 import { computeCharacterHpContribution, computePartyStats } from '../game/partyComputation';
 import {
   DUNGEONS,
@@ -10408,6 +10408,14 @@ function SettingTab({
     )
     .slice()
     .sort((a, b) => b.id - a.id);
+  const revealedGlossaryAbilityIds = useMemo(
+    () => new Set(gameState.global.revealedGlossaryAbilityIds ?? []),
+    [gameState.global.revealedGlossaryAbilityIds],
+  );
+  const revealedGlossaryTerrainKeys = useMemo(
+    () => new Set(gameState.global.revealedGlossaryTerrainKeys ?? []),
+    [gameState.global.revealedGlossaryTerrainKeys],
+  );
 
   const filteredGlossarySections = GLOSSARY_SECTIONS.filter((section) => {
     const sectionSubtitle = section.subtitle;
@@ -11006,8 +11014,10 @@ function SettingTab({
                       )}
                       <div className="space-y-1 max-h-72 overflow-y-auto pr-1">
                         {isBonusAbilityGlossarySection
+                          // SpecRef: 1.0.3 | Glossary Reveal Rule | ability visibility
                           ? BONUS_ABILITY_GLOSSARY_ENTRIES
                             .filter((entry) => entry.subcategory === bonusAbilityGlossarySubcategory)
+                            .filter((entry) => revealedGlossaryAbilityIds.has(entry.abilityId))
                             .map((entry, index) => {
                               const entryKey = `${section.id}-${entry.abilityId}-${index}`;
                               const displayLabel = getBonusAbilityGlossaryDisplayLabel(entry.abilityId);
@@ -11025,6 +11035,11 @@ function SettingTab({
                               );
                             })
                           : section.entries.map((entry, index) => {
+                            // SpecRef: 1.0.3 | Glossary Reveal Rule | terrain visibility
+                            const isTerrainGlossarySection = section.heading === '1.1.10 t. terrain effects';
+                            if (isTerrainGlossarySection && !revealedGlossaryTerrainKeys.has(entry.key as TerrainEffectKey)) {
+                              return null;
+                            }
                             const isSideQuestGlossarySection = section.subtitle.startsWith('求.');
                             if (isSideQuestGlossarySection && entry.key === 'q.none') {
                               return null;
