@@ -147,8 +147,10 @@
   - Preserve only the discrete `Step` progress ratio.
 
 - **Refresh Handling**
-  - On page refresh, AFK emulation continues/resumes automatically.
-  - `state.reactivate` main progress must be persisted and restored exactly, maintaining its pre-refresh state.
+  - On page refresh, AFK emulation must automatically continue and resume from the latest saved state.
+  - The main progress of `state.reactivate` is reset on refresh.
+  - After refresh, the `state.reactivate` progress bar starts again from 0 and resumes counting from the beginning.
+
 
 **Notification**
 - Format: 踏破N回/帰還Y回/引分Z回/撤退M回/敗北X回 寄付金額: vG, 貯金額:　vG
