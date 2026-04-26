@@ -8055,7 +8055,7 @@ function ExpeditionTab({
                       partyIndex,
                       party.expeditionDestinationMode === 'auto' ? 'fixed' : 'auto',
                     )}
-                    className="rounded border border-gray-300 px-2 py-1 text-xs font-medium whitespace-nowrap"
+                    className="px-2 py-1 text-xs font-medium whitespace-nowrap"
                   >
                     {party.expeditionDestinationMode === 'auto' ? '一任' : '固定'}
                   </button>
