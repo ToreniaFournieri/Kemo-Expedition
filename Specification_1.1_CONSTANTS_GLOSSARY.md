@@ -58,6 +58,16 @@
 | elite rare | エリートレア | [E] |
 | boss rare | ボスレア | [B] |　
 | mythic rare | 神魔レア | [M] |
+
+- **1.0.3 Glossary Reveal Rule:**
+  - Each glossary entry has a `reveal_at_expedition` value.
+  - The entry becomes visible after the player has reached that expedition at least once.
+  - Entries with `reveal_at_expedition = 1` are visible from the beginning of the game.
+  - Hidden entries are not displayed in the Glossary until their reveal condition is met.
+  - Expedition progression is not required to be sequential.
+    - Some expeditions may be skipped depending on player progression.
+    - Reveal checks are based only on whether the specified expedition has been reached at least once.
+
  
 ### 1.1 CONSTANTS_GLOSSARY
 
