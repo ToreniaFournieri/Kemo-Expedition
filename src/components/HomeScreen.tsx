@@ -3816,7 +3816,15 @@ export function HomeScreen({
     partyCyclesRef.current = partyCycles;
   }, [partyCycles]);
 
-  const persistAfkRuntimeState = useCallback((checkpointAt: number = lastCheckpointAtRef.current) => {
+  const persistAfkRuntimeState = useCallback((
+    checkpointAt: number = lastCheckpointAtRef.current,
+    overrides?: {
+      pendingAfkMs?: number;
+      afkRecoveryTotalMs?: number;
+      afkRecoveryCompletedMs?: number;
+      afkSimulationAnchor?: number | null;
+    },
+  ) => {
     if (pendingAfkSimulationRef.current) return;
 
     try {
@@ -3826,10 +3834,10 @@ export function HomeScreen({
           checkpointAt,
           autoRepeatEnabled: autoRepeatEnabledRef.current,
           partyCycles: partyCyclesRef.current,
-          pendingAfkMs: pendingAfkMsRef.current,
-          afkRecoveryTotalMs: afkRecoveryTotalMsRef.current,
-          afkRecoveryCompletedMs: afkRecoveryCompletedMsRef.current,
-          afkSimulationAnchor: afkSimulationAnchorRef.current,
+          pendingAfkMs: overrides?.pendingAfkMs ?? pendingAfkMsRef.current,
+          afkRecoveryTotalMs: overrides?.afkRecoveryTotalMs ?? afkRecoveryTotalMsRef.current,
+          afkRecoveryCompletedMs: overrides?.afkRecoveryCompletedMs ?? afkRecoveryCompletedMsRef.current,
+          afkSimulationAnchor: overrides?.afkSimulationAnchor ?? afkSimulationAnchorRef.current,
         })
       );
     } catch (error) {
@@ -3881,16 +3889,25 @@ export function HomeScreen({
         afkRuntimeSnapshotRef.current = runtimeSnapshots;
       }
       afkSimulationAnchorRef.current = now;
-      setPendingAfkMs((prev) => {
-        const next = Math.min(AFK_MAX_ELAPSED_MS, prev + elapsedMs);
-        // SpecRef: 5.1.1 | Party State Machine | Refresh Handling
-        // Keep AFK recovery total fixed to the largest observed backlog so displayed x/y does not shrink during catch-up.
-        afkRecoveryTotalMsRef.current = Math.max(afkRecoveryTotalMsRef.current, next);
-        return next;
-      });
+      const nextPendingAfkMs = Math.min(AFK_MAX_ELAPSED_MS, pendingAfkMsRef.current + elapsedMs);
+      // SpecRef: 5.1.1 | Party State Machine | Refresh Handling
+      // Keep AFK recovery total fixed to the largest observed backlog so displayed x/y does not shrink during catch-up.
+      const nextAfkRecoveryTotalMs = Math.max(afkRecoveryTotalMsRef.current, nextPendingAfkMs);
+      const nextAfkRecoveryCompletedMs = nextPendingAfkMs > 0
+        ? Math.max(0, nextAfkRecoveryTotalMs - nextPendingAfkMs)
+        : 0;
+      pendingAfkMsRef.current = nextPendingAfkMs;
+      afkRecoveryTotalMsRef.current = nextAfkRecoveryTotalMs;
+      afkRecoveryCompletedMsRef.current = nextAfkRecoveryCompletedMs;
+      setPendingAfkMs(nextPendingAfkMs);
       shouldRebuildPartyCyclesAfterAfkRef.current = true;
       lastCheckpointAtRef.current = now;
-      persistAfkRuntimeState(now);
+      persistAfkRuntimeState(now, {
+        pendingAfkMs: nextPendingAfkMs,
+        afkRecoveryTotalMs: nextAfkRecoveryTotalMs,
+        afkRecoveryCompletedMs: nextAfkRecoveryCompletedMs,
+        afkSimulationAnchor: now,
+      });
       return;
     }
 
