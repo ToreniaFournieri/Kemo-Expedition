@@ -1,5 +1,5 @@
 import { Fragment, useState, useEffect, useRef, useCallback, useMemo, type ChangeEvent, type CSSProperties, type Dispatch, type MouseEvent, type SetStateAction, type ReactNode } from 'react';
-import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySideQuestThreshold, DiarySettings, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId, type Ability, type BattleLogEntry } from '../types';
+import { GameState, GameBags, Item, Character, InventoryRecord, InventoryVariant, NotificationStyle, NotificationCategory, EnemyDef, Dungeon, Party, DiaryRarityThreshold, DiarySideQuestThreshold, DiarySettings, ExpeditionLog, ExpeditionLogEntry, ExpeditionDepthLimit, ExpeditionDestinationMode, ItemCategory, Bonus, BonusType, ComputedCharacterStats, ElementalOffense, RaceId, Race, GameNotification, JewelKey, getVariantKey, MAX_LEVEL, AbilityId, type Ability, type BattleLogEntry } from '../types';
 import { computeCharacterHpContribution, computePartyStats } from '../game/partyComputation';
 import {
   DUNGEONS,
@@ -68,6 +68,8 @@ interface HomeScreenProps {
   actions: {
     selectParty: (partyIndex: number) => void;
     selectDungeon: (partyIndex: number, dungeonId: number) => void;
+    autoSelectDungeon: (partyIndex: number, dungeonId: number) => void;
+    setExpeditionDestinationMode: (partyIndex: number, mode: ExpeditionDestinationMode) => void;
     setExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
     setExpeditionDifficultyOffset: (partyIndex: number, difficultyOffset: number) => void;
     resetExpeditionStats: (partyIndex: number) => void;
@@ -3980,6 +3982,20 @@ export function HomeScreen({
             updated.stateStartedAt += restTickCount * restTickDurationMs;
           }
           if (projectedHp >= partyRuntimeStats.hp) {
+            // SpecRef: 8.3 | UI_EXPEDITION | Auto Destination Change Logic
+            if (party.expeditionDestinationMode === 'auto') {
+              const currentDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId);
+              const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId + 1 && dungeon.id <= 8);
+              const expeditionLevel = currentDungeon?.expLevel ?? 0;
+              const shouldAutoAdvanceDestination = Boolean(
+                nextDungeon
+                && expeditionLevel <= party.level + 7
+                && party.condition >= 300,
+              );
+              if (shouldAutoAdvanceDestination && nextDungeon) {
+                actions.autoSelectDungeon(partyIndex, nextDungeon.id);
+              }
+            }
             if (party.sideQuest?.type === 'q.healing') {
               const restSeconds = getScaledSideQuestSeconds(simulationNow - updated.stateStartedAt);
               actions.advanceSideQuest(partyIndex, restSeconds, simulationNow);
@@ -4760,6 +4776,7 @@ export function HomeScreen({
           debugSettings={debugSettings}
           emulatedNowMs={emulatedNowMs}
           onSelectDungeon={actions.selectDungeon}
+          onToggleExpeditionDestinationMode={actions.setExpeditionDestinationMode}
           onSetExpeditionDepthLimit={actions.setExpeditionDepthLimit}
           onSetExpeditionDifficultyOffset={actions.setExpeditionDifficultyOffset}
           onResetExpeditionStats={actions.resetExpeditionStats}
@@ -7132,6 +7149,7 @@ function PartyTab({
                       {renderUiIcon(isLocked ? 'lock' : 'unlock', lockEmojiClassName)}
                     </button>
                   )}
+                  {/* SpecRef: 8.3 | UI_EXPEDITION | Toggle Operation */}
                   <button
                     onClick={() => handleSlotTap(slotIndex)}
                     className="w-full text-left leading-tight"
@@ -7422,6 +7440,7 @@ function ExpeditionTab({
   debugSettings,
   emulatedNowMs,
   onSelectDungeon,
+  onToggleExpeditionDestinationMode,
   onSetExpeditionDepthLimit,
   onSetExpeditionDifficultyOffset,
   onResetExpeditionStats,
@@ -7439,6 +7458,7 @@ function ExpeditionTab({
   debugSettings: DebugSettings;
   emulatedNowMs: number;
   onSelectDungeon: (partyIndex: number, dungeonId: number) => void;
+  onToggleExpeditionDestinationMode: (partyIndex: number, nextMode: ExpeditionDestinationMode) => void;
   onSetExpeditionDepthLimit: (partyIndex: number, depthLimit: ExpeditionDepthLimit) => void;
   onSetExpeditionDifficultyOffset: (partyIndex: number, difficultyOffset: number) => void;
   onResetExpeditionStats: (partyIndex: number) => void;
@@ -8028,7 +8048,17 @@ function ExpeditionTab({
 
             {isLogExpanded && (
               <div className="space-y-2 mb-2">
-                <div className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 text-sm text-gray-700">
+                <div className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-2 text-sm text-gray-700">
+                  <button
+                    type="button"
+                    onClick={() => onToggleExpeditionDestinationMode(
+                      partyIndex,
+                      party.expeditionDestinationMode === 'auto' ? 'fixed' : 'auto',
+                    )}
+                    className="rounded border border-gray-300 px-2 py-1 text-xs font-medium whitespace-nowrap"
+                  >
+                    {party.expeditionDestinationMode === 'auto' ? '一任' : '固定'}
+                  </button>
                   <select
                     value={party.selectedDungeonId}
                     onChange={(e) => onSelectDungeon(partyIndex, Number(e.target.value))}

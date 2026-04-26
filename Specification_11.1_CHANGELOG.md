@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 108 | 2026/4/26 | Implement Spec 8.3 auto destination runtime flow: add 一任/固定 toggle mode per party, force manual Destination selection to 固定, and auto-advance Destination to the next expedition at the end of `state.rest` when `expedition level <= PT level + 7` and `condition >= 300`. |
 | 0.6.1 | 107 | 2026/4/25 | Implement Spec 8.2.1 party-list runtime visibility: show all unlocked PT tabs as selectable, hide locked tabs by default, and keep only the lowest-numbered locked PT tab visible as a gray non-selectable preview. |
 | 0.6.1 | 106 | 2026/4/25 | Update runtime glossary entry for Spec 1.1.6 `f.super-rare-scaling`: use the requested runtime key/display text and simplify description to the latest spec sentence for super-rare performance scaling. |
 | 0.6.1 | 105 | 2026/4/25 | Implement Spec 5.1.4 save-load failure safeguards: when persisted save loading fails, runtime now captures detailed error logs for a warning popup/screen, blocks automatic gameplay startup behind the warning screen, and disables all automatic state writes so existing save data is preserved without overwrite. |

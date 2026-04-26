@@ -24,6 +24,7 @@ import {
   TerrainEffectKey,
   EnemyDef,
   ExpeditionDepthLimit,
+  ExpeditionDestinationMode,
 } from '../types';
 import { computeCharacterHpContribution, computePartyStats } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
@@ -355,6 +356,10 @@ function normalizePartyCondition(raw: unknown): number {
   if (typeof raw !== 'number' || !Number.isFinite(raw)) return 0;
   // SpecRef: 7.1.2 | AUTO progress logic | condition
   return Math.max(-400, Math.min(400, Math.floor(raw)));
+}
+
+function normalizeExpeditionDestinationMode(raw: unknown): ExpeditionDestinationMode {
+  return raw === 'fixed' ? 'fixed' : 'auto';
 }
 
 type PartyConditionState =
@@ -928,6 +933,7 @@ function loadSavedState(): LoadSavedStateResult {
             party.currentHp = computed.hp;
           }
           party.expeditionDepthLimit = getExpeditionDepthLimitWithDefault(party.expeditionDepthLimit);
+          party.expeditionDestinationMode = normalizeExpeditionDestinationMode(party.expeditionDestinationMode);
           party.expeditionDifficultyOffset = normalizeExpeditionDifficultyOffset(party.expeditionDifficultyOffset);
           party.expeditionDifficultyOffsetByDungeon = normalizeExpeditionDifficultyOffsetByDungeon(party.expeditionDifficultyOffsetByDungeon);
           if (typeof party.pendingProfit !== 'number') party.pendingProfit = 0;
@@ -1081,6 +1087,7 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
     expeditionRewardsPending: false,
     pendingUnlockState: null,
     deityGold: 0,
+    expeditionDestinationMode: normalizeExpeditionDestinationMode(party.expeditionDestinationMode),
     expeditionDifficultyOffset: normalizeExpeditionDifficultyOffset(party.expeditionDifficultyOffset),
     expeditionDifficultyOffsetByDungeon: normalizeExpeditionDifficultyOffsetByDungeon(party.expeditionDifficultyOffsetByDungeon),
     expeditionStats: getExpeditionStatsWithDefaults(party.expeditionStats),
@@ -1158,6 +1165,7 @@ function createInitialParty() {
     deity: createInitialDeity('Goddess of Restoration'),
     characters,
     selectedDungeonId: 1,
+    expeditionDestinationMode: 'auto',
     expeditionDepthLimit: 'all',
     expeditionDifficultyOffset: 0,
     expeditionDifficultyOffsetByDungeon: {},
@@ -1216,6 +1224,7 @@ function createSecondParty() {
     deity: createInitialDeity('God of Cunning'),
     characters,
     selectedDungeonId: 1,
+    expeditionDestinationMode: 'auto',
     expeditionDepthLimit: 'all',
     expeditionDifficultyOffset: 0,
     expeditionDifficultyOffsetByDungeon: {},
@@ -1274,6 +1283,7 @@ function createThirdParty() {
     deity: createInitialDeity('Goddess of Fertility'),
     characters,
     selectedDungeonId: 1,
+    expeditionDestinationMode: 'auto',
     expeditionDepthLimit: 'all',
     expeditionDifficultyOffset: 0,
     expeditionDifficultyOffsetByDungeon: {},
@@ -1332,6 +1342,7 @@ function createFourthParty() {
     deity: createInitialDeity('God of Fortification'),
     characters,
     selectedDungeonId: 1,
+    expeditionDestinationMode: 'auto',
     expeditionDepthLimit: 'all',
     expeditionDifficultyOffset: 0,
     expeditionDifficultyOffsetByDungeon: {},
@@ -1390,6 +1401,7 @@ function createFifthParty() {
     deity: createInitialDeity('God of Resonance'),
     characters,
     selectedDungeonId: 1,
+    expeditionDestinationMode: 'auto',
     expeditionDepthLimit: 'all',
     expeditionDifficultyOffset: 0,
     expeditionDifficultyOffsetByDungeon: {},
@@ -1449,6 +1461,7 @@ function createSixthParty() {
     deity: createInitialDeity('Goddess of Precision'),
     characters,
     selectedDungeonId: 1,
+    expeditionDestinationMode: 'auto',
     expeditionDepthLimit: 'all',
     expeditionDifficultyOffset: 0,
     expeditionDifficultyOffsetByDungeon: {},
@@ -1532,7 +1545,8 @@ type GameMode = 'm.kemo' | 'm.luna' | 'm.laika';
 
 type GameAction =
   | { type: 'SELECT_PARTY'; partyIndex: number }
-  | { type: 'SELECT_DUNGEON'; partyIndex: number; dungeonId: number }
+  | { type: 'SELECT_DUNGEON'; partyIndex: number; dungeonId: number; selectionMode?: 'manual' | 'auto' }
+  | { type: 'SET_EXPEDITION_DESTINATION_MODE'; partyIndex: number; mode: ExpeditionDestinationMode }
   | { type: 'SET_EXPEDITION_DEPTH_LIMIT'; partyIndex: number; depthLimit: ExpeditionDepthLimit }
   | { type: 'SET_EXPEDITION_DIFFICULTY_OFFSET'; partyIndex: number; difficultyOffset: number }
   | { type: 'RESET_EXPEDITION_STATS'; partyIndex: number }
@@ -2523,14 +2537,27 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, selectedPartyIndex: action.partyIndex };
 
     case 'SELECT_DUNGEON': {
+      // SpecRef: 8.3 | UI_EXPEDITION | Manual Destination Selection
       const updatedParties = [...state.parties];
       const targetParty = updatedParties[action.partyIndex];
+      const selectionMode = action.selectionMode ?? 'manual';
       updatedParties[action.partyIndex] = {
         ...targetParty,
         selectedDungeonId: action.dungeonId,
+        expeditionDestinationMode: selectionMode === 'manual' ? 'fixed' : targetParty.expeditionDestinationMode,
         expeditionDifficultyOffset: normalizeExpeditionDifficultyOffset(
           targetParty.expeditionDifficultyOffsetByDungeon?.[action.dungeonId] ?? 0,
         ),
+      };
+      return { ...state, parties: updatedParties };
+    }
+
+    case 'SET_EXPEDITION_DESTINATION_MODE': {
+      // SpecRef: 8.3 | UI_EXPEDITION | Toggle Operation
+      const updatedParties = [...state.parties];
+      updatedParties[action.partyIndex] = {
+        ...updatedParties[action.partyIndex],
+        expeditionDestinationMode: normalizeExpeditionDestinationMode(action.mode),
       };
       return { ...state, parties: updatedParties };
     }
@@ -4523,7 +4550,15 @@ export function useGameState() {
     }, []),
 
     selectDungeon: useCallback((partyIndex: number, dungeonId: number) => {
-      dispatch({ type: 'SELECT_DUNGEON', partyIndex, dungeonId });
+      dispatch({ type: 'SELECT_DUNGEON', partyIndex, dungeonId, selectionMode: 'manual' });
+    }, []),
+
+    autoSelectDungeon: useCallback((partyIndex: number, dungeonId: number) => {
+      dispatch({ type: 'SELECT_DUNGEON', partyIndex, dungeonId, selectionMode: 'auto' });
+    }, []),
+
+    setExpeditionDestinationMode: useCallback((partyIndex: number, mode: ExpeditionDestinationMode) => {
+      dispatch({ type: 'SET_EXPEDITION_DESTINATION_MODE', partyIndex, mode });
     }, []),
 
     setExpeditionDepthLimit: useCallback((partyIndex: number, depthLimit: ExpeditionDepthLimit) => {
