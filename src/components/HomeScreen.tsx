@@ -3988,13 +3988,16 @@ export function HomeScreen({
               const selectedDifficultyOffset = party.expeditionDifficultyOffsetByDungeon?.[party.selectedDungeonId]
                 ?? party.expeditionDifficultyOffset
                 ?? 0;
+              const hasClearedSelectedExpeditionAtLeastOnce = Boolean(
+                party.defeatedBossExpeditions?.[party.selectedDungeonId],
+              );
               const nextDungeonEntryUnlocked = nextDungeon
                 ? isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id))
-                  || Boolean(party.defeatedBossExpeditions?.[party.selectedDungeonId])
                 : false;
               const nextDungeonEnemyLevel = nextDungeon?.expLevel ?? 0;
               const shouldAutoAdvanceDestination = Boolean(
                 nextDungeon
+                && hasClearedSelectedExpeditionAtLeastOnce
                 && nextDungeonEntryUnlocked
                 && (nextDungeonEnemyLevel + selectedDifficultyOffset) <= party.level + 9
                 && party.condition >= 250,
