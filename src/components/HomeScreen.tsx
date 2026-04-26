@@ -8055,14 +8055,14 @@ function ExpeditionTab({
 
             {isLogExpanded && (
               <div className="space-y-2 mb-2">
-                <div className="grid grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-2 text-sm text-gray-700">
+                <div className="grid grid-cols-[2.75rem_minmax(0,1fr)_auto_auto] items-center gap-2 text-sm text-gray-700">
                   <button
                     type="button"
                     onClick={() => onToggleExpeditionDestinationMode(
                       partyIndex,
                       party.expeditionDestinationMode === 'auto' ? 'fixed' : 'auto',
                     )}
-                    className="px-2 py-1 text-xs font-medium whitespace-nowrap"
+                    className="w-11 px-1 py-1 text-xs font-medium whitespace-nowrap text-center"
                   >
                     {party.expeditionDestinationMode === 'auto' ? '一任' : '固定'}
                   </button>
