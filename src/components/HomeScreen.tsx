@@ -3577,7 +3577,10 @@ export function HomeScreen({
         setPendingAfkMs(restoredPendingAfkMs);
         // SpecRef: 5.1.1 | Party State Machine | Refresh Handling
         // Reset `state.reactivate` main-progress on refresh and resume counting from 0.
-        afkRecoveryTotalMsRef.current = restoredPendingAfkMs;
+        const restoredRecoveryTotalMs = typeof parsed.afkRecoveryTotalMs === 'number'
+          ? Math.max(0, Math.min(parsed.afkRecoveryTotalMs, AFK_MAX_ELAPSED_MS))
+          : 0;
+        afkRecoveryTotalMsRef.current = Math.max(restoredPendingAfkMs, restoredRecoveryTotalMs);
         afkRecoveryCompletedMsRef.current = 0;
         afkSimulationAnchorRef.current = typeof parsed.afkSimulationAnchor === 'number'
           ? parsed.afkSimulationAnchor
