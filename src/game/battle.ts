@@ -695,7 +695,7 @@ function getPartyOffenseAbilityAmplifier(
 ): number {
   if (phase !== 'long' && phase !== 'close') return 1.0;
   const commandLevel = getFrontRowAbilityLevel(characterStats, actorRow, 'command');
-  return commandLevel >= 3 ? 2.43 : commandLevel === 2 ? 1.35 : commandLevel === 1 ? 1.2 : 1.0;
+  return commandLevel >= 3 ? 1.6 : commandLevel === 2 ? 1.5 : commandLevel === 1 ? 1.4 : 1.0;
 }
 
 function getPartyDefenseAbilityAmplifier(
@@ -3429,7 +3429,7 @@ export function executeBattle(
   const mBarrierEffectEntry = createPartyEffectEntry('m_barrier', () => '魔法障壁', level => `(後列の味方への魔法ダメージ × ${level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3'})`);
   const partyEffects = [
     createPartyEffectEntry('defender', () => '守護者', level => `(後列の味方への物理ダメージ × ${level >= 3 ? '1/2' : level === 2 ? '3/5' : '2/3'})`),
-    createPartyEffectEntry('command', () => '指揮', level => `(後列の味方が与える物理ダメージ × ${level >= 3 ? '1.43' : level === 2 ? '1.35' : '1.2'})`),
+    createPartyEffectEntry('command', () => '指揮', level => `(後列の味方が与える物理ダメージ × ${level >= 3 ? '1.6' : level === 2 ? '1.5' : '1.4'})`),
     mBarrierEffectEntry && hasAbility(enemy.abilities, 'm_barrier_breaker')
       ? {
         phase: 'start',

@@ -91,7 +91,7 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'oblivion', label: '忘却', description: '無作為に選んだ相手のアビリティ1つを、この戦闘中無効化する', levelScale: [], subcategory: 'timed' },
   { abilityId: 'mimic', label: '模倣', description: '相手のアビリティ1つを無作為に指定し、その効果を発動する', levelScale: [], subcategory: 'timed' },
   { abilityId: 'defender', label: '守護者', description: '自身より後列の味方への物理ダメージをxN倍にする', levelScale: ['Lv1: x2/3', 'Lv2: x3/5', 'Lv3: x1/2'], subcategory: 'timed' },
-  { abilityId: 'command', label: '指揮', description: '自身より後列の味方が与える物理ダメージをxN倍にする', levelScale: ['Lv1: x1.2', 'Lv2: x1.35', 'Lv3: x1.43'], subcategory: 'timed' },
+  { abilityId: 'command', label: '指揮', description: '自身より後列の味方が与える物理ダメージをxN倍にする', levelScale: ['Lv1: x1.4', 'Lv2: x1.5', 'Lv3: x1.6'], subcategory: 'timed' },
   { abilityId: 'm_barrier', label: '魔法障壁', description: '自身より後列の味方への魔法ダメージをxN倍にする', levelScale: ['Lv1: x2/3', 'Lv2: x3/5', 'Lv3: x1/2'], subcategory: 'timed' },
   { abilityId: 'ice_absorb', label: '氷結吸収', description: '自身が受ける予定の通常攻撃の氷属性ダメージを無効化し、N吸収して回復する', levelScale: ['Lv1: 1/10', 'Lv2: 3/10', 'Lv3: 5/10', 'Lv4: 7/10', 'Lv5: 100%'], subcategory: 'timed' },
   { abilityId: 'fire_absorb', label: '火炎吸収', description: '自身が受ける予定の通常攻撃の火属性ダメージを無効化し、N吸収して回復する', levelScale: ['Lv1: 1/10', 'Lv2: 3/10', 'Lv3: 5/10', 'Lv4: 7/10', 'Lv5: 100%'], subcategory: 'timed' },
