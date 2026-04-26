@@ -128,7 +128,7 @@ HP 2350 / 4680
 移動中: flavor text (background: state progress bar)
 (Sub progress bar)
 
-ルピニアンの断崖(pull down list)  探索深度 全て 出撃
+一任 ルピニアンの断崖(pull down list)  探索深度 全て 出撃
 難易度: (Slider) +10
 (Left-Aligned)                           (Right-Aligned)
 踏破U/帰還V/引分W/撤退X/敗北Y 合計 Z回    リセット
