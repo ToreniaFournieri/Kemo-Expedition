@@ -100,6 +100,7 @@ interface HomeScreenProps {
     markDiaryLogSeen: (logId: string) => void;
     markAllDiaryLogsSeen: () => void;
     updateDiarySettings: (partyIndex: number, settings: Partial<DiarySettings>) => void;
+    setJewelAutoEquipPriorityParty: (partyId: number | null) => void;
     simulateAfk: (elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode?: GameMode, simulatedEndAt?: number, cycleDurationScale?: number) => void;
     resetGame: () => void;
     importGameState: (state: GameState) => void;
@@ -2595,6 +2596,21 @@ const AUTO_EQUIPMENT_HELP_LINES = [
   '※超レア装備は置き換わる事はない',
 ];
 
+const AUTO_JEWEL_KEY_BY_ITEM_CATEGORY: Partial<Record<ItemCategory, JewelKey>> = {
+  armor: 'fort',
+  robe: 'ward',
+  shield: 'shade',
+  sword: 'might',
+  katana: 'focus',
+  gauntlet: 'fort',
+  arrow: 'shade',
+  bolt: 'might',
+  archery: 'focus',
+  wand: 'arcana',
+  grimoire: 'arcana',
+  catalyst: 'ward',
+};
+
 type AutoEquipmentCombatStyle = 'ranged' | 'magic' | 'melee';
 type AutoEquipmentTargetCategory = ItemCategory | 'i.weapon' | 'i.NoA';
 
@@ -3218,11 +3234,49 @@ export function HomeScreen({
       return compareItemsByTierAndEnhancement(b, a);
     };
 
+    const getBestAutoJewelRank = (availableCountByRank: number[]): number | null => {
+      for (let rank = 8; rank >= 1; rank -= 1) {
+        if ((availableCountByRank[rank - 1] ?? 0) > 0) return rank;
+      }
+      return null;
+    };
+
     state.parties.forEach((party, partyIndex) => {
       if (targetPartyIndexSet && !targetPartyIndexSet.has(partyIndex)) return;
 
+      const isJewelPriorityParty = (state.global.jewelAutoEquipPriorityPartyId ?? 1) === party.id;
+
       party.characters.forEach((character) => {
         if (targetCharacterIdSet && !targetCharacterIdSet.has(character.id)) return;
+
+        // SpecRef: 7.1.3.1 | Auto Assignment Order | 1-4
+        if (isJewelPriorityParty) {
+          const hasArcanaTierOne = character.equipment.some((item) => item?.jewel?.key === 'arcana' && item.jewel.rank === 1);
+          if (!hasArcanaTierOne) {
+            const availableCountByJewelKey: Record<JewelKey, number[]> = {
+              might: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(state.global.jewels, 'might', i + 1)),
+              arcana: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(state.global.jewels, 'arcana', i + 1)),
+              fort: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(state.global.jewels, 'fort', i + 1)),
+              ward: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(state.global.jewels, 'ward', i + 1)),
+              shade: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(state.global.jewels, 'shade', i + 1)),
+              focus: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(state.global.jewels, 'focus', i + 1)),
+            };
+            character.equipment.forEach((item) => {
+              if (!item?.jewel) return;
+              availableCountByJewelKey[item.jewel.key][item.jewel.rank - 1] += 1;
+            });
+
+            character.equipment.forEach((item, slotIndex) => {
+              if (!item) return;
+              const targetJewelKey = AUTO_JEWEL_KEY_BY_ITEM_CATEGORY[item.category];
+              if (!targetJewelKey) return;
+              const selectedRank = getBestAutoJewelRank(availableCountByJewelKey[targetJewelKey]);
+              if (selectedRank == null) return;
+              availableCountByJewelKey[targetJewelKey][selectedRank - 1] -= 1;
+              actions.attachJewel(character.id, slotIndex, targetJewelKey, selectedRank, partyIndex);
+            });
+          }
+        }
 
         const autoEquipmentMode = normalizeAutoEquipmentMode(character.autoEquipmentMode);
         if (autoEquipmentMode === 0) return;
@@ -4818,6 +4872,7 @@ export function HomeScreen({
         <BaseTab
           inventory={state.global.inventory}
           jewels={state.global.jewels}
+          jewelAutoEquipPriorityPartyId={state.global.jewelAutoEquipPriorityPartyId ?? 1}
           parties={state.parties}
           gold={state.global.gold}
           shopPurchases={state.global.shopPurchases}
@@ -4830,6 +4885,7 @@ export function HomeScreen({
           onBuyShopItem={actions.buyShopItem}
           onBuyDebugStoreItem={actions.buyDebugStoreItem}
           onRefreshShopLineup={actions.refreshShopLineup}
+          onSetJewelAutoEquipPriorityParty={actions.setJewelAutoEquipPriorityParty}
           activeSubTab={activeBaseSubTab}
           onSetActiveSubTab={setActiveBaseSubTab}
           debugSettings={debugSettings}
@@ -8472,6 +8528,7 @@ function ExpeditionTab({
 function BaseTab({
   inventory,
   jewels,
+  jewelAutoEquipPriorityPartyId,
   parties,
   gold,
   shopPurchases,
@@ -8484,12 +8541,14 @@ function BaseTab({
   onBuyShopItem,
   onBuyDebugStoreItem,
   onRefreshShopLineup,
+  onSetJewelAutoEquipPriorityParty,
   activeSubTab,
   onSetActiveSubTab,
   debugSettings,
 }: {
   inventory: InventoryRecord;
   jewels: Record<string, number>;
+  jewelAutoEquipPriorityPartyId: number | null;
   parties: Party[];
   gold: number;
   shopPurchases: Record<string, number[]>;
@@ -8502,6 +8561,7 @@ function BaseTab({
   onBuyShopItem: (itemId: number) => void;
   onBuyDebugStoreItem: (itemId: number) => void;
   onRefreshShopLineup: () => void;
+  onSetJewelAutoEquipPriorityParty: (partyId: number | null) => void;
   activeSubTab: BaseSubTab;
   onSetActiveSubTab: (tab: BaseSubTab) => void;
   debugSettings: DebugSettings;
@@ -8542,9 +8602,11 @@ function BaseTab({
         <InventoryTab
           inventory={inventory}
           jewels={jewels}
+          jewelAutoEquipPriorityPartyId={jewelAutoEquipPriorityPartyId}
           parties={parties}
           onSellStack={onSellStack}
           onSetVariantStatus={onSetVariantStatus}
+          onSetJewelAutoEquipPriorityParty={onSetJewelAutoEquipPriorityParty}
         />
       ) : activeSubTab === 'shop' ? (
         <ShopTab
@@ -8879,15 +8941,19 @@ function DebugStoreTab({
 function InventoryTab({
   inventory,
   jewels,
+  jewelAutoEquipPriorityPartyId,
   parties,
   onSellStack,
   onSetVariantStatus,
+  onSetJewelAutoEquipPriorityParty,
 }: {
   inventory: InventoryRecord;
   jewels: Record<string, number>;
+  jewelAutoEquipPriorityPartyId: number | null;
   parties: Party[];
   onSellStack: (variantKey: string) => void;
   onSetVariantStatus: (variantKey: string, status: 'notown') => void;
+  onSetJewelAutoEquipPriorityParty: (partyId: number | null) => void;
 }) {
   const [showSold, setShowSold] = useState(false);
   const hasOwnedJewels = Object.values(jewels).some((count) => count > 0);
@@ -9050,6 +9116,14 @@ function InventoryTab({
   });
 
   const totalJewelCount = jewelEntries.reduce((sum, entry) => sum + entry.count, 0) + equippedJewels.length;
+  const jewelPriorityOptions = useMemo(
+    () => [
+      { value: 'manual', label: '手動' },
+      ...parties.map((party) => ({ value: `${party.id}`, label: party.name })),
+    ],
+    [parties],
+  );
+  const selectedJewelPriorityValue = jewelAutoEquipPriorityPartyId == null ? 'manual' : `${jewelAutoEquipPriorityPartyId}`;
 
   return (
     <div>
@@ -9123,6 +9197,28 @@ function InventoryTab({
       {isJewelCategory && (
         <div className="mb-2 text-xs text-gray-500">
           結晶はパーティタブのキャラクターの装備一覧より、装備に結晶を装着することができます
+        </div>
+      )}
+      {isJewelCategory && (
+        // SpecRef: 7.1.3 | AUTO Jewel Equipment | 自動結晶装備
+        <div className="mb-2 rounded border border-gray-200 bg-white px-2 py-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs text-gray-500">自動結晶装備</span>
+            <select
+              value={selectedJewelPriorityValue}
+              onChange={(event) => {
+                const nextValue = event.target.value;
+                onSetJewelAutoEquipPriorityParty(nextValue === 'manual' ? null : Number(nextValue));
+              }}
+              className="rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700"
+            >
+              {jewelPriorityOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       )}
       <div className="space-y-1 min-h-[364px] max-h-[26rem] overflow-y-auto mb-4">
