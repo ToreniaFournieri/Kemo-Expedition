@@ -240,7 +240,7 @@
 | 5 | E | `Beast` | `i.archery`EA | 炎獣の長弓 |
 | 5 | E | `Beast` | `i.gauntlet`EA | 焔爪の手甲 |
 | 5 | E | `Beast` | `i.catalyst`EA | 獣核の焔触媒 |
-| 5 | E | `Dragon` | `i.sword`EB | ドラグスレイブ | `e.fire+30` |
+| 5 | E | `Dragon` | `i.sword`EB | ドラグスレイブ | `e.fire+0.030` |
 | 5 | E | `Dragon` | `i.armor`EB | スケールメイル | `a.null-burn` |
 | 5 | E | `Dragon` | `i.shield`EB | 竜稜の盾 |
 | 5 | E | `Dragon` | `i.katana`EB | 破城槌 | `a.siege` |
