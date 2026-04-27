@@ -142,18 +142,28 @@ export function planAutoJewelAssignmentsForCharacter(
   character: Character,
   jewelInventory: JewelInventory,
 ): AutoJewelAssignment[] {
-  const availableCountByJewelKey: Record<JewelKey, number[]> = {
-    might: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'might', i + 1)),
-    arcana: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'arcana', i + 1)),
-    fort: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'fort', i + 1)),
-    ward: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'ward', i + 1)),
-    shade: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'shade', i + 1)),
-    focus: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'focus', i + 1)),
+  const availableByJewelKeyAndRank: Record<JewelKey, boolean[]> = {
+    might: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'might', i + 1) > 0),
+    arcana: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'arcana', i + 1) > 0),
+    fort: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'fort', i + 1) > 0),
+    ward: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'ward', i + 1) > 0),
+    shade: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'shade', i + 1) > 0),
+    focus: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'focus', i + 1) > 0),
   };
 
+  const memoryJewelSet = new Set<string>();
   character.equipment.forEach((item) => {
     if (!item?.jewel) return;
-    availableCountByJewelKey[item.jewel.key][item.jewel.rank - 1] += 1;
+    memoryJewelSet.add(`${item.jewel.key}:${item.jewel.rank}`);
+  });
+
+  memoryJewelSet.forEach((memoryJewel) => {
+    const [key, rankText] = memoryJewel.split(':');
+    const rank = Number(rankText);
+    if (!Number.isInteger(rank) || rank < 1 || rank > 8) return;
+    if (!(key in availableByJewelKeyAndRank)) return;
+    const jewelKey = key as JewelKey;
+    availableByJewelKeyAndRank[jewelKey][rank - 1] = false;
   });
 
   const assignments: AutoJewelAssignment[] = [];
@@ -164,14 +174,15 @@ export function planAutoJewelAssignmentsForCharacter(
 
     let selectedRank: number | null = null;
     for (let rank = 8; rank >= 1; rank -= 1) {
-      if ((availableCountByJewelKey[targetJewelKey][rank - 1] ?? 0) > 0) {
+      if (availableByJewelKeyAndRank[targetJewelKey][rank - 1] === true) {
         selectedRank = rank;
         break;
       }
     }
     if (selectedRank == null) return;
+    if (item.jewel && item.jewel.key === targetJewelKey && item.jewel.rank === selectedRank) return;
 
-    availableCountByJewelKey[targetJewelKey][selectedRank - 1] -= 1;
+    availableByJewelKeyAndRank[targetJewelKey][selectedRank - 1] = false;
     assignments.push({ slotIndex, key: targetJewelKey, rank: selectedRank });
   });
 
