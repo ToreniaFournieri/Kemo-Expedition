@@ -356,6 +356,7 @@
 
 3. Check all jewels currently owned by that party member.
    - Duplicate assignment is not allowed.
+   - Jewel assignment priority is from higher-grade jewels to lower-grade jewels.
 
 4. Assign valid jewels to equipment in order, until either:
    - no available jewels remain, or
