@@ -208,7 +208,7 @@ const ITEM_ADDITIONAL_BONUS_BY_NAME: Record<string, Bonus[]> = {
   '崩壊核': [{ type: 'ability', value: 1, abilityId: 'decompose', abilityLevel: 1 }],
   'スケールメイル': [{ type: 'ability', value: 1, abilityId: 'null_burn', abilityLevel: 1 }],
   '火鼠の皮衣': [{ type: 'fire_defense_multiplier_xV', value: 3 / 5 }],
-  'ドラグスレイブ': [{ type: 'fire_offense', value: 30 }],
+  'ドラグスレイブ': [{ type: 'fire_offense', value: 0.03 }],
   '演式核': [{ type: 'ability', value: 1, abilityId: 'equation_breaker', abilityLevel: 1 }],
   '絶縁体': [{ type: 'ability', value: 1, abilityId: 'null_shock', abilityLevel: 1 }],
   '大鎌': [{ type: 'ability', value: 1, abilityId: 'soul_reap', abilityLevel: 1 }, { type: 'fire_defense_multiplier_xV', value: 1.3 }],
