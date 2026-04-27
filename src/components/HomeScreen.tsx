@@ -37,7 +37,7 @@ import { ENEMY_TYPE_SHORT_NAMES, formatEnemyDefName } from '../game/enemyDisplay
 import { computeCharacterStats, getAbilityDescription, getUnlockedRaceAbilitiesFromBonuses } from '../game/characterComputation';
 import { hydrateGameState, serializeGameState } from '../game/saveCodec';
 import { createCommonSuperRareBag, createMythicRareRewardBag, createRareSuperRareBag, createSideQuestBag, createSleepinessPartyBag, getBagEntryTickets, getBagTicketTotal, normalizeSleepinessPartyBag } from '../game/bags';
-import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRankValue, getJewelNameByRank, getJewelOwnedCount } from '../game/jewel';
+import { JEWELS_BY_ITEM_CATEGORY, JEWEL_DEFS, getJewelCBonusValue, getJewelDRankValue, getJewelNameByRank, getJewelOwnedCount, planAutoJewelAssignmentsForCharacter } from '../game/jewel';
 import { replaceCharacterEquipment } from '../game/equipment';
 import { resolveMagicProfile } from '../game/magic';
 import { decodePersistedState, encodePersistedState } from '../game/storageCompression';
@@ -2596,21 +2596,6 @@ const AUTO_EQUIPMENT_HELP_LINES = [
   '※超レア装備は置き換わる事はない',
 ];
 
-const AUTO_JEWEL_KEY_BY_ITEM_CATEGORY: Partial<Record<ItemCategory, JewelKey>> = {
-  armor: 'fort',
-  robe: 'ward',
-  shield: 'shade',
-  sword: 'might',
-  katana: 'focus',
-  gauntlet: 'fort',
-  arrow: 'shade',
-  bolt: 'might',
-  archery: 'focus',
-  wand: 'arcana',
-  grimoire: 'arcana',
-  catalyst: 'ward',
-};
-
 type AutoEquipmentCombatStyle = 'ranged' | 'magic' | 'melee';
 type AutoEquipmentTargetCategory = ItemCategory | 'i.weapon' | 'i.NoA';
 
@@ -3234,13 +3219,6 @@ export function HomeScreen({
       return compareItemsByTierAndEnhancement(b, a);
     };
 
-    const getBestAutoJewelRank = (availableCountByRank: number[]): number | null => {
-      for (let rank = 8; rank >= 1; rank -= 1) {
-        if ((availableCountByRank[rank - 1] ?? 0) > 0) return rank;
-      }
-      return null;
-    };
-
     state.parties.forEach((party, partyIndex) => {
       if (targetPartyIndexSet && !targetPartyIndexSet.has(partyIndex)) return;
 
@@ -3251,31 +3229,10 @@ export function HomeScreen({
 
         // SpecRef: 7.1.3.1 | Auto Assignment Order | 1-4
         if (isJewelPriorityParty) {
-          const hasArcanaTierOne = character.equipment.some((item) => item?.jewel?.key === 'arcana' && item.jewel.rank === 1);
-          if (!hasArcanaTierOne) {
-            const availableCountByJewelKey: Record<JewelKey, number[]> = {
-              might: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(state.global.jewels, 'might', i + 1)),
-              arcana: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(state.global.jewels, 'arcana', i + 1)),
-              fort: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(state.global.jewels, 'fort', i + 1)),
-              ward: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(state.global.jewels, 'ward', i + 1)),
-              shade: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(state.global.jewels, 'shade', i + 1)),
-              focus: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(state.global.jewels, 'focus', i + 1)),
-            };
-            character.equipment.forEach((item) => {
-              if (!item?.jewel) return;
-              availableCountByJewelKey[item.jewel.key][item.jewel.rank - 1] += 1;
-            });
-
-            character.equipment.forEach((item, slotIndex) => {
-              if (!item) return;
-              const targetJewelKey = AUTO_JEWEL_KEY_BY_ITEM_CATEGORY[item.category];
-              if (!targetJewelKey) return;
-              const selectedRank = getBestAutoJewelRank(availableCountByJewelKey[targetJewelKey]);
-              if (selectedRank == null) return;
-              availableCountByJewelKey[targetJewelKey][selectedRank - 1] -= 1;
-              actions.attachJewel(character.id, slotIndex, targetJewelKey, selectedRank, partyIndex);
-            });
-          }
+          const assignments = planAutoJewelAssignmentsForCharacter(character, state.global.jewels);
+          assignments.forEach((assignment) => {
+            actions.attachJewel(character.id, assignment.slotIndex, assignment.key, assignment.rank, partyIndex);
+          });
         }
 
         const autoEquipmentMode = normalizeAutoEquipmentMode(character.autoEquipmentMode);

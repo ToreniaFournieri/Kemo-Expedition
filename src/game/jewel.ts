@@ -1,4 +1,4 @@
-import { BonusType, ItemCategory, JewelAttachment, JewelInventory, JewelKey } from '../types';
+import { BonusType, Character, ItemCategory, JewelAttachment, JewelInventory, JewelKey } from '../types';
 
 interface JewelDef {
   key: JewelKey;
@@ -58,6 +58,21 @@ export const JEWELS_BY_ITEM_CATEGORY: Record<ItemCategory, JewelKey[]> = {
   catalyst: ['fort', 'ward', 'focus'],
 };
 
+export const AUTO_JEWEL_KEY_BY_ITEM_CATEGORY: Partial<Record<ItemCategory, JewelKey>> = {
+  armor: 'fort',
+  robe: 'ward',
+  shield: 'shade',
+  sword: 'might',
+  katana: 'focus',
+  gauntlet: 'fort',
+  arrow: 'shade',
+  bolt: 'might',
+  archery: 'focus',
+  wand: 'arcana',
+  grimoire: 'arcana',
+  catalyst: 'ward',
+};
+
 // SpecRef: 3.1.7 | Jewel (結晶) | Rule
 export function getJewelDRankValue(base: number, rank: number): number {
   if (rank <= 1) return base;
@@ -114,6 +129,53 @@ export function isJewelAllowedForCategory(category: ItemCategory, key: JewelKey)
 
 export function createStarterJewelInventory(): JewelInventory {
   return {};
+}
+
+type AutoJewelAssignment = {
+  slotIndex: number;
+  key: JewelKey;
+  rank: number;
+};
+
+// SpecRef: 7.1.3.1 | Auto Assignment Order | 1-4
+export function planAutoJewelAssignmentsForCharacter(
+  character: Character,
+  jewelInventory: JewelInventory,
+): AutoJewelAssignment[] {
+  const availableCountByJewelKey: Record<JewelKey, number[]> = {
+    might: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'might', i + 1)),
+    arcana: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'arcana', i + 1)),
+    fort: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'fort', i + 1)),
+    ward: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'ward', i + 1)),
+    shade: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'shade', i + 1)),
+    focus: Array.from({ length: 8 }, (_, i) => getJewelOwnedCount(jewelInventory, 'focus', i + 1)),
+  };
+
+  character.equipment.forEach((item) => {
+    if (!item?.jewel) return;
+    availableCountByJewelKey[item.jewel.key][item.jewel.rank - 1] += 1;
+  });
+
+  const assignments: AutoJewelAssignment[] = [];
+  character.equipment.forEach((item, slotIndex) => {
+    if (!item) return;
+    const targetJewelKey = AUTO_JEWEL_KEY_BY_ITEM_CATEGORY[item.category];
+    if (!targetJewelKey) return;
+
+    let selectedRank: number | null = null;
+    for (let rank = 8; rank >= 1; rank -= 1) {
+      if ((availableCountByJewelKey[targetJewelKey][rank - 1] ?? 0) > 0) {
+        selectedRank = rank;
+        break;
+      }
+    }
+    if (selectedRank == null) return;
+
+    availableCountByJewelKey[targetJewelKey][selectedRank - 1] -= 1;
+    assignments.push({ slotIndex, key: targetJewelKey, rank: selectedRank });
+  });
+
+  return assignments;
 }
 
 // SpecRef: 3.1.7 | Jewel (結晶) | Display
