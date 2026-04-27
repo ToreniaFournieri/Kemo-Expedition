@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 128 | 2026/4/27 | Implement Spec 7.1.3 AUTO Jewel Equipment runtime flow: add Inventory > Jewel `自動結晶装備` party selector (`手動` + unlocked PT options, default PT1), persist the Jewel Priority Party setting, and execute pre-auto-equipment jewel assignment for the selected party using item→jewel mapping with row-order processing and `魔導の素晶` skip handling. |
 | 0.6.1 | 127 | 2026/4/26 | Update Spec 5.1.1 Refresh Handling runtime for AFK reactivation: continue AFK emulation from saved pending state after page refresh, but reset `state.reactivate` main progress to start again from `0/x` and count up from the beginning. |
 | 0.6.1 | 126 | 2026/4/26 | Fix `復帰中` progress visualization after refresh by deriving completed AFK recovery time from `(total - pending)` and persisting that derived value, preventing denominator-only countdown (`0/x`) and keeping the progress bar advancing correctly. |
 | 0.6.1 | 125 | 2026/4/26 | Fix AFK `state.reactivate` refresh persistence regression by synchronizing pending/total/completed recovery milliseconds before runtime checkpoint save and restoring completed progress with total-minus-pending fallback, preserving 復帰中 x/y and progress mapping after reload. |

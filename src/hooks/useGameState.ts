@@ -642,6 +642,14 @@ function normalizeExpeditionDifficultyOffsetByDungeon(value: unknown): Record<nu
   }, {});
 }
 
+function normalizeJewelAutoEquipPriorityPartyId(value: unknown, unlockedPartyCount: number): number | null {
+  if (value === null) return null;
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 1;
+  const normalizedPartyId = Math.floor(value);
+  if (normalizedPartyId < 1 || normalizedPartyId > unlockedPartyCount) return 1;
+  return normalizedPartyId;
+}
+
 function matchesDiaryThreshold(item: Item, threshold: DiarySettings['superRareThreshold']): boolean {
   if (threshold === 'none') return false;
   if (threshold === 'all') return true;
@@ -1604,6 +1612,7 @@ function createInitialState(): InitialStateResult {
       gold: 200,
       inventory: createStarterInventory(),
       jewels: createStarterJewelInventory(),
+      jewelAutoEquipPriorityPartyId: 1,
       deityDonations: {},
       unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
       revealedGlossaryAbilityIds: [],
@@ -1672,6 +1681,7 @@ type GameAction =
   | { type: 'MARK_DIARY_LOG_SEEN'; logId: string }
   | { type: 'MARK_ALL_DIARY_LOGS_SEEN' }
   | { type: 'UPDATE_DIARY_SETTINGS'; partyIndex: number; settings: Partial<DiarySettings> }
+  | { type: 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY'; partyId: number | null }
   | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: GameMode; simulatedEndAt?: number; cycleDurationScale?: number }
   | { type: 'RESET_GAME' }
   | { type: 'IMPORT_GAME_STATE'; state: GameState }
@@ -4346,6 +4356,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           gold: 200,
           inventory: createStarterInventory(),
           jewels: createStarterJewelInventory(),
+          jewelAutoEquipPriorityPartyId: 1,
           deityDonations: {},
           unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
           revealedGlossaryAbilityIds: [],
@@ -4420,11 +4431,27 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         global: {
           ...hydrated.global,
           unlockedDeities: unlockedDeities,
+          jewelAutoEquipPriorityPartyId: normalizeJewelAutoEquipPriorityPartyId(
+            hydrated.global.jewelAutoEquipPriorityPartyId,
+            trimmedParties.length,
+          ),
         },
         parties: trimmedParties,
         selectedPartyIndex: normalizedSelectedPartyIndex,
         bags: normalizeImportedBags(hydrated.bags),
         buildNumber: BUILD_NUMBER,
+      };
+    }
+
+    case 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY': {
+      const normalizedPartyId = normalizeJewelAutoEquipPriorityPartyId(action.partyId, state.parties.length);
+      if ((state.global.jewelAutoEquipPriorityPartyId ?? 1) === normalizedPartyId) return state;
+      return {
+        ...state,
+        global: {
+          ...state.global,
+          jewelAutoEquipPriorityPartyId: normalizedPartyId,
+        },
       };
     }
 
@@ -4804,6 +4831,10 @@ export function useGameState() {
 
     updateDiarySettings: useCallback((partyIndex: number, settings: Partial<DiarySettings>) => {
       dispatch({ type: 'UPDATE_DIARY_SETTINGS', partyIndex, settings });
+    }, []),
+
+    setJewelAutoEquipPriorityParty: useCallback((partyId: number | null) => {
+      dispatch({ type: 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY', partyId });
     }, []),
 
     simulateAfk: useCallback((elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode: GameMode = 'm.kemo', simulatedEndAt?: number, cycleDurationScale?: number) => {
