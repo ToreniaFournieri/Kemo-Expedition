@@ -16,6 +16,9 @@
 - The system only fills empty slots or upgrades existing equipment without replacing it with a different item category.
 - No other policy exist in this version.
 
+##### 7.1.1.0 AUTO Jewel Equipment
+- `7.1.3 AUTO Jewel Equipment`
+
 ##### 7.1.1.1 Removes all equipment
 - Record the **jewel** assignments of each equipped item category as **Memory C**.
 - Record the all of its equipment as **Memory D**.
