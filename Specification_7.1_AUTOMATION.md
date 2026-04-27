@@ -350,12 +350,19 @@
 
 ##### 7.1.3.1 Auto Assignment Order
 
-- 1. Process party members from the first row to the last row.
-- 2. Determine the jewel category for each equipped item of chosen party menber based on the table below. and internaly keep the potential jewels candidates. 
-- 3. Check all jewels currently owned by that party member.
+1. Process party members from the first row to the last row.
+
+2. For each equipped item of the selected party member, determine the corresponding jewel category based on the table below, and internally store the list of potential jewel candidates.
+
+3. Check all jewels currently owned by that party member.
    - Duplicate assignment is not allowed.
-- 4. Assign valied jewel to the equipment, until no available jewels or un jewel equipped items.
-- 5. This process is executed before **7.1.1 AUTO Equipment Logic**.
+
+4. Assign valid jewels to equipment in order, until either:
+   - no available jewels remain, or
+   - all eligible equipment slots have been assigned a jewel.
+
+5. This process is executed before **7.1.1 AUTO Equipment Logic**.
+
 
 **Jewel Category Mapping**
 
