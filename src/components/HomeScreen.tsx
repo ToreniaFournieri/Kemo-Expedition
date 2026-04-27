@@ -3227,16 +3227,17 @@ export function HomeScreen({
       party.characters.forEach((character) => {
         if (targetCharacterIdSet && !targetCharacterIdSet.has(character.id)) return;
 
-        // SpecRef: 7.1.3.1 | Auto Assignment Order | 1-4
-        if (isJewelPriorityParty) {
-          const assignments = planAutoJewelAssignmentsForCharacter(character, state.global.jewels);
-          assignments.forEach((assignment) => {
-            actions.attachJewel(character.id, assignment.slotIndex, assignment.key, assignment.rank, partyIndex);
-          });
-        }
-
         const autoEquipmentMode = normalizeAutoEquipmentMode(character.autoEquipmentMode);
-        if (autoEquipmentMode === 0) return;
+        if (autoEquipmentMode === 0) {
+          // SpecRef: 7.1.3.1 | Auto Assignment Order | 1-4
+          if (isJewelPriorityParty) {
+            const assignments = planAutoJewelAssignmentsForCharacter(character, state.global.jewels);
+            assignments.forEach((assignment) => {
+              actions.attachJewel(character.id, assignment.slotIndex, assignment.key, assignment.rank, partyIndex);
+            });
+          }
+          return;
+        }
 
         // SpecRef: 7.1.1.2 | Equipping into empty slots | Item selection from a specific item category
         const combatStyle = decideAutoEquipmentCombatStyle(character);
@@ -3400,6 +3401,24 @@ export function HomeScreen({
             actions.attachJewel(character.id, slotIndex, jewel.key, jewel.rank, partyIndex);
           });
         });
+
+        // SpecRef: 7.1.3.1 | Auto Assignment Order | 1-4
+        if (isJewelPriorityParty) {
+          const simulatedCharacterForJewel = {
+            ...character,
+            equipment: simulatedEquipmentSlots,
+          };
+          const assignments = planAutoJewelAssignmentsForCharacter(simulatedCharacterForJewel, state.global.jewels);
+          assignments.forEach((assignment) => {
+            const slotItem = simulatedEquipmentSlots[assignment.slotIndex];
+            if (!slotItem) return;
+            simulatedEquipmentSlots[assignment.slotIndex] = {
+              ...slotItem,
+              jewel: { key: assignment.key, rank: assignment.rank },
+            };
+            actions.attachJewel(character.id, assignment.slotIndex, assignment.key, assignment.rank, partyIndex);
+          });
+        }
 
         if (autoEquipmentMode === 2 && memoryDEquipmentSlots) {
           const hasSlotChange = simulatedEquipmentSlots.some((equippedItem, slotIndex) => {
