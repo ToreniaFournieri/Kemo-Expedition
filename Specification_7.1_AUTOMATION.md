@@ -351,11 +351,11 @@
 ##### 7.1.3.1 Auto Assignment Order
 
 - 1. Process party members from the first row to the last row.
-- 2. Determine the jewel category for each equipped item based on the table below.
+- 2. Determine the jewel category for each equipped item of chosen party menber based on the table below. and internaly keep the potential jewels candidates. 
 - 3. Check all jewels currently owned by that party member.
    - Duplicate assignment is not allowed.
-   - If the character has already equipped **「魔導の素晶」**, skip jewel auto-assignment for that character entirely.
-- 4. This process is executed before **7.1.1 AUTO Equipment Logic**.
+- 4. Assign valied jewel to the equipment, until no available jewels or un jewel equipped items.
+- 5. This process is executed before **7.1.1 AUTO Equipment Logic**.
 
 **Jewel Category Mapping**
 
