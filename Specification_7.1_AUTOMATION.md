@@ -363,7 +363,8 @@
    - Internally store the remaining valid jewels as the list of potential jewel candidates.
    - Only one jewel is allowed per combination of item type and rank.
 
-3. Assign valid jewels to equipment according to the Jewel Category Mapping.
+3. Assign valid jewels to equipment. 
+   - Start from `i.armor`, following the Jewel Category Mapping order. 
    - Jewel assignment priority is from higher-grade jewels to lower-grade jewels.
    - Continue until either:
      - no available jewels remain, or
