@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 134 | 2026/4/27 | Update runtime item bonus for Tier 5 Elite `Dragon` sword `ドラグスレイブ` to spec value `e.fire+0.030` (fire offense +0.03). |
 | 0.6.1 | 133 | 2026/4/27 | Fix Spec 7.1.3.1 runtime auto-jewel timing for Jewel Priority Party: when auto-equipment mode is FULL/SEMI, execute jewel auto-assignment after equipment replacement and Memory C reattachment on the simulated final loadout (instead of before slot changes), so non-robe categories can receive mapped jewels correctly; keep manual-mode auto-jewel behavior unchanged. |
 | 0.6.1 | 132 | 2026/4/27 | Update Spec 7.1.3.1 runtime auto-jewel assignment order: process equipment by Jewel Category Mapping row order starting at `i.armor`, while keeping per-category high-rank-first jewel selection and existing candidate exclusion rules. |
 | 0.6.1 | 131 | 2026/4/27 | Update Spec 7.1.3.1 runtime auto-jewel candidate handling: treat equipped jewels as Memory J exclusions, enforce one assignment candidate per jewel type+rank from inventory stock, preserve high-rank-first mapping-based assignment order, and skip no-op reattachment when the same jewel is already equipped in the target slot. |
