@@ -73,6 +73,21 @@ export const AUTO_JEWEL_KEY_BY_ITEM_CATEGORY: Partial<Record<ItemCategory, Jewel
   catalyst: 'ward',
 };
 
+const AUTO_JEWEL_ASSIGNMENT_CATEGORY_ORDER: ItemCategory[] = [
+  'armor',
+  'robe',
+  'shield',
+  'sword',
+  'katana',
+  'gauntlet',
+  'arrow',
+  'bolt',
+  'archery',
+  'wand',
+  'grimoire',
+  'catalyst',
+];
+
 // SpecRef: 3.1.7 | Jewel (結晶) | Rule
 export function getJewelDRankValue(base: number, rank: number): number {
   if (rank <= 1) return base;
@@ -167,23 +182,27 @@ export function planAutoJewelAssignmentsForCharacter(
   });
 
   const assignments: AutoJewelAssignment[] = [];
-  character.equipment.forEach((item, slotIndex) => {
-    if (!item) return;
-    const targetJewelKey = AUTO_JEWEL_KEY_BY_ITEM_CATEGORY[item.category];
+
+  AUTO_JEWEL_ASSIGNMENT_CATEGORY_ORDER.forEach((category) => {
+    const targetJewelKey = AUTO_JEWEL_KEY_BY_ITEM_CATEGORY[category];
     if (!targetJewelKey) return;
 
-    let selectedRank: number | null = null;
-    for (let rank = 8; rank >= 1; rank -= 1) {
-      if (availableByJewelKeyAndRank[targetJewelKey][rank - 1] === true) {
-        selectedRank = rank;
-        break;
-      }
-    }
-    if (selectedRank == null) return;
-    if (item.jewel && item.jewel.key === targetJewelKey && item.jewel.rank === selectedRank) return;
+    character.equipment.forEach((item, slotIndex) => {
+      if (!item || item.category !== category) return;
 
-    availableByJewelKeyAndRank[targetJewelKey][selectedRank - 1] = false;
-    assignments.push({ slotIndex, key: targetJewelKey, rank: selectedRank });
+      let selectedRank: number | null = null;
+      for (let rank = 8; rank >= 1; rank -= 1) {
+        if (availableByJewelKeyAndRank[targetJewelKey][rank - 1] === true) {
+          selectedRank = rank;
+          break;
+        }
+      }
+      if (selectedRank == null) return;
+      if (item.jewel && item.jewel.key === targetJewelKey && item.jewel.rank === selectedRank) return;
+
+      availableByJewelKeyAndRank[targetJewelKey][selectedRank - 1] = false;
+      assignments.push({ slotIndex, key: targetJewelKey, rank: selectedRank });
+    });
   });
 
   return assignments;
