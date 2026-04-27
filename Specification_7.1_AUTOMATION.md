@@ -335,3 +335,41 @@
     - If triggered, engage `God Battle` and apply the corresponding `condition` reduction.
     - This simplified handling applies only during AFK chunk processing.
 
+
+#### 7.1.3 AUTO Jewel Equipment
+
+- In the Inventory tab → Jewel subcategory, the player can select one Party as the **Jewel Priority Party**.
+- Label: **自動結晶装備**
+- Selection List:
+  - `手動`
+  - `PT1`, `PT2`, `PT3`...
+- Only unlocked Parties are displayed in the selection list.
+- Default: `PT1`
+
+- During Auto Equipment timing, if the target party is the Jewel Priority Party, its members automatically equip jewels according to the following rules.
+
+##### 7.1.3.1 Auto Assignment Order
+
+- 1. Process party members from the first row to the last row.
+- 2. Determine the jewel category for each equipped item based on the table below.
+- 3. Check all jewels currently owned by that party member.
+   - Duplicate assignment is not allowed.
+   - If the character has already equipped **「魔導の素晶」**, skip jewel auto-assignment for that character entirely.
+- 4. This process is executed before **7.1.1 AUTO Equipment Logic**.
+
+**Jewel Category Mapping**
+
+| Item type | Auto-equipped jewel |
+|---|---|
+| `i.armor` | `j.fort` |
+| `i.robe` | `j.ward` |
+| `i.shield` | `j.shade` |
+| `i.sword` | `j.might` |
+| `i.katana` | `j.focus` |
+| `i.gauntlet` | `j.fort` |
+| `i.arrow` | `j.shade` |
+| `i.bolt` | `j.might` |
+| `i.archery` | `j.focus` |
+| `i.wand` | `j.arcana` |
+| `i.grimoire` | `j.arcana` |
+| `i.catalyst` | `j.ward` |
