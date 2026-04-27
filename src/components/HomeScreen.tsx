@@ -3249,16 +3249,19 @@ export function HomeScreen({
         const memoryCJewelsByCategory: Partial<Record<ItemCategory, Array<{ key: JewelKey; rank: number }>>> = {};
 
         if (autoEquipmentMode === 2) {
+          // SpecRef: 7.1.1.1 | Removes all equipment | Record Memory C
+          simulatedEquipmentSlots.forEach((equippedItem) => {
+            if (!equippedItem?.jewel) return;
+            const currentCategoryJewels = memoryCJewelsByCategory[equippedItem.category] ?? [];
+            memoryCJewelsByCategory[equippedItem.category] = [...currentCategoryJewels, equippedItem.jewel];
+          });
+
           // SpecRef: 8.2.4 | Equipment management | Lock and Unlock Item
           // SpecRef: 7.1.1.1 | Removes all equipment | Exception
           simulatedEquipmentSlots.forEach((equippedItem, slotIndex) => {
             if (!equippedItem) return;
             if (equippedItem.isLocked === true) return;
             if (equippedItem.superRare > 0) return;
-            if (equippedItem.jewel) {
-              const currentCategoryJewels = memoryCJewelsByCategory[equippedItem.category] ?? [];
-              memoryCJewelsByCategory[equippedItem.category] = [...currentCategoryJewels, equippedItem.jewel];
-            }
             addItemToSimulatedInventory(equippedItem);
             actions.equipItem(character.id, slotIndex, null, partyIndex);
             simulatedEquipmentSlots[slotIndex] = null;
