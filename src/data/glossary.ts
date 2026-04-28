@@ -1,10 +1,10 @@
-export type GlossaryEntry = {
+type GlossaryEntry = {
   key: string;
   label: string;
   description: string;
 };
 
-export type GlossarySection = {
+type GlossarySection = {
   id: string;
   heading: string;
   subtitle: string;
@@ -503,7 +503,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "f.reward",
         "label": "報酬計算",
-        "description": "戦闘結果に応じてアイテムの追加抽選の有無を算出する。通常1枚。解錠スキルで+1枚、神の加護により+1枚、ゲームモードルナで+1枚。"
+        "description": "戦闘結果に応じてアイテムの追加抽選の有無を算出する。通常2枚。神の加護により+1枚。"
       },
       {
         "key": "f.donation",
@@ -536,9 +536,9 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
         "description": "レアリティの段階に応じた基礎性能補正。\n| レアリティ | 増加倍率 |\n|------|--------|\n| コモン | x1.0 |\n| アンコモン | x1.2 |\n| エリートレア | x1.6 |\n| ボスレア | x2.4 |\n| 神魔レア | x3.6 |"
       },
       {
-        "key": "f.super_rare_scaling",
+        "key": "f.super-rare-scaling",
         "label": "超レアの性能向上",
-        "description": "超レア称号が付くと、さらにその基礎性能が2倍される。また、それぞれ独自のボーナスが付与される。\n| 超レアID | 可能性 |\n|------|-----|\n| (なし)  | 399,920 |\n| 1 | 1 |\n| 2 | 1 |\n| ... | 1 |\n| 80 | 1 |"
+        "description": "超レア称号が付くと、さらにその基礎性能が2倍される。また、それぞれ独自のボーナスが付与される。"
       }
     ]
   },

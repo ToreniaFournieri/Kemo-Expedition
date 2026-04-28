@@ -133,7 +133,7 @@ const ENEMY_TYPE_SPECS: Record<string, EnemyTypeSpec> = {
   },
   Marine: {
     ability1: [{ id: 'bind', level: 1 }],
-    ability30: [{ id: 'regeneration', level: 3 }],
+    ability30: [{ id: 'execution', level: 1 }],
     bonuses: [{ type: 'thunder_defense_multiplier_xV', value: 1.3 }],
   },
   Dragon: {
@@ -576,9 +576,6 @@ function generateEnemies(): EnemyDef[] {
 
 export const ENEMIES: EnemyDef[] = generateEnemies();
 
-export const getEnemyById = (id: number): EnemyDef | undefined =>
-  ENEMIES.find(e => e.id === id);
-
 export const getEnemiesByPool = (poolId: number): EnemyDef[] =>
   ENEMIES.filter(e => e.poolId === poolId && e.type === 'normal');
 
@@ -838,16 +835,4 @@ export function getEnemyDropCandidates(enemy: EnemyDef): ItemDef[] {
 
   drops.push(...pickAny(common, 1, enemy.id + 4));
   return drops.slice(0, 5);
-}
-
-// Get random normal enemy from pool
-export function getRandomNormalEnemy(poolId: number): EnemyDef {
-  const pool = getEnemiesByPool(poolId);
-  return pool[Math.floor(Math.random() * pool.length)];
-}
-
-// Get random elite enemy from pool
-export function getRandomEliteEnemy(poolId: number): EnemyDef {
-  const pool = getElitesByPool(poolId);
-  return pool[Math.floor(Math.random() * pool.length)];
 }

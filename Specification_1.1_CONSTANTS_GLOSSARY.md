@@ -58,6 +58,15 @@
 | elite rare | エリートレア | [E] |
 | boss rare | ボスレア | [B] |　
 | mythic rare | 神魔レア | [M] |
+
+- **1.0.3 Glossary Reveal Rule:**
+  - Each glossary entry of **ability and terrain effect** has an internal `revealed` flag.
+  - A glossary entry is revealed when its related ability, terrain is shown to the player for the first time.
+  - Once revealed, the entry is added to the Glossary.
+  - Revealed entries remain visible permanently.
+  - The `revealed` flag is internally managed and persisted in save data.
+  - Hidden entries are not displayed in the Glossary until their related content has been shown at least once.
+
  
 ### 1.1 CONSTANTS_GLOSSARY
 
@@ -109,7 +118,18 @@
 | `a.thunder-protect-breaker` | 雷守破り | 相手の雷属性反射・吸収効果を無視する(反射ダメージやダメージ吸収は発生しない) | - |
 | `a.m-barrier-breaker` | 魔法障壁破り | 相手の魔法障壁・魔法反射・魔法吸収効果を無視する(反射ダメージやダメージ吸収は発生しない) | - |
 | `a.defender-breaker` | 守護破り | 相手の守護者の効果を無視する | - |
-
+| `a.dryproof` | 耐乾燥 | 乾燥していても平気となる(乾燥地形効果を無効化) |
+| `a.vine-cutter`| 小刀 | 蔓に絡まれても速やかに抜け出せるようになる(捕食蔓地形効果を無効化)  |
+| `a.mana-ward`| 護符 | 魔力の逆流を防ぐ(水晶域・魔力侵食の地形効果を無効化) |
+| `a.defiance` | 反発 | 抑圧に負けなくなる(抑圧地形効果を無効化)  |
+| `a.anti-ambush` | 待ち伏せ回避 | 待ち伏せを回避するようになる(待ち伏せアビリティを無効化)   |
+| `a.anti-overwatch`  | 監視回避 | 監視されなくなる(監視アビリティを無効化)  |
+| `a.rage-breaker`| 士気挫き| 相手の闘志を削ぐ(闘志アビリティを無効化)  |
+| `a.momentum-breaker`| 気勢外し | 相手の気勢を空回りさせる(気勢アビリティを無効化)  |
+| `a.execution-null` | 処罰回避 | 処罰を逃れるようになる(エクセキューションを無効化)  |
+| `a.pursuit` | 追い込み | 相手が逃げても追いかける(逃走・隠れ蓑アビリティを無効化)  |
+| `a.illusion-breaker`  | 幻術破り | 相手の幻を見破る(幻化アビリティを無効化)  |
+| `a.bulwark-breaker` | ウォールブレイカー | 壁を取り壊す(壁アビリティを無効化) |
 
 
 - Expedition ability(遠征アビリティ):
@@ -169,7 +189,7 @@
 | `a.oblivion` | 忘却 | 無作為に選んだ相手のアビリティ1つを、この戦闘中無効化する | - | START | 9 |
 | `a.mimic` | 模倣 | 相手のアビリティ1つを無作為に指定し、その効果を発動する | - | START | 8 |
 | `a.defender` | 守護者 | 自身より後列の味方への物理ダメージをxN倍にする | Lv1: x2/3, Lv2: x3/5, Lv3: x1/2 | START | 7 |
-| `a.command` | 指揮 | 自身より後列の味方が与える物理ダメージをxN倍にする | Lv1: x1.2, Lv2: x1.35, Lv3: x1.43 | START | 7 |
+| `a.command` | 指揮 | 自身より後列の味方が与える物理ダメージをxN倍にする | Lv1: x1.4, Lv2: x1.5, Lv3: x1.6 | START | 7 |
 | `a.m-barrier` | 魔法障壁 | 自身より後列の味方への魔法ダメージをxN倍にする | Lv1: x2/3, Lv2: x3/5, Lv3: x1/2 | START | 7 |
 | `a.ice-absorb` | 氷結吸収 | 自身が受ける予定の通常攻撃の氷属性ダメージを無効化し、N吸収して回復する | Lv1: 1/10, Lv2: 3/10, Lv3: 5/10, Lv4: 7/10, Lv5: 100% | START | 6 |
 | `a.fire-absorb` | 火炎吸収 | 自身が受ける予定の通常攻撃の火属性ダメージを無効化し、N吸収して回復する | Lv1: 1/10, Lv2: 3/10, Lv3: 5/10, Lv4: 7/10, Lv5: 100% | START | 6 |
@@ -329,13 +349,12 @@
 | `f.re-attack` | 連撃 | 攻撃後に追加攻撃を行う。同一対象へ追撃する。壁アビリティの身代わり効果を無視する。 |
 | `f.magical-counter` | 魔法反撃 | 魔法攻撃に対して即時反撃する。 |
 | `f.covering-fire` | 援護射撃 | 味方行動に連動して追撃する。遠距離攻撃可能な味方が即時射撃する。 |
-| `f.reward` | 報酬計算 | 戦闘結果に応じてアイテムの追加抽選の有無を算出する。通常1枚。解錠スキルで+1枚、神の加護により+1枚、ゲームモードルナで+1枚。 |
+| `f.reward` | 報酬計算 | 戦闘結果に応じてアイテムの追加抽選の有無を算出する。通常2枚。神の加護により+1枚。 |
 | `f.common-enhancement`| コモンアイテムの通常称号| コモンアイテムで通常称号が付与する可能性。\n| 通常称号 | 可能性 |\n|---------|------|\n| (なし) | 1390 |\n| 名工の | 350 |\n| 魔性の | 180 |\n| 宿った | 60 |\n| 伝説の | 15 |\n| 恐ろしい | 4 |\n| 究極の | 1 ||
 | `f.enhancement`| | \n| 希少アイテムの通常称号 | アンコモン、エリートレア、ボスレア、神魔レアで通常称号が付与する可能性。可能性 |\n|---------|------|\n| (なし) | 5490 |\n| 名工の | 350 |\n| 魔性の | 180 |\n| 宿った | 60 |\n| 伝説の | 15 |\n| 恐ろしい | 4 |\n| 究極の | 1 ||
 | `f.enhancement-scaling`| 通常称号の性能向上 | 通常称号の段階に応じた基礎性能補正。\n| 通常称号 | 増加倍率 |\n|-----|------|\n| (なし) | x1.00 |\n| 名工の | x1.33 |\n| 魔性の | x1.58 |\n| 宿った | x2.10 |\n| 伝説の | x2.75 |\n| 恐ろしい | x3.50 |\n| 究極の | x5.00 | |
 | `f.rarity-scaling`| レアリティの性能向上 | レアリティの段階に応じた基礎性能補正。\n| レアリティ | 増加倍率 |\n|------|--------|\n| コモン | x1.0 |\n| アンコモン | x1.2 |\n| エリートレア | x1.6 |\n| ボスレア | x2.4 |\n| 神魔レア | x3.6 | |
-| `f.super-rare-scaling`| 超レアの性能向上 | 超レア称号が付くと、さらにその基礎性能が2倍される。また、それぞれ独自のボーナスが付与される。\n| 超レアID | 可能性 |\n|------|-----|\n| (なし)  | 399,920 |\n| 1 | 1 |\n| 2 | 1 |\n| ... | 1 |\n| 80 | 1 |
- |
+| `f.super-rare-scaling`| 超レアの性能向上 | 超レア称号が付くと、さらにその基礎性能が2倍される。また、それぞれ独自のボーナスが付与される。 |
  | `f.donation`| 寄付金額 | 祈りフェーズの終わりに、信仰する神に売却益を寄付をすることがあります。寄付金額に応じて信仰は強化されます。 \n| ランク | 寄付金額 |\n|-------|----------|\n| 1 | 1,000 |\n| 2 | 2,800 |\n| 3 | 7,560 |\n| 4 | 19,656 |\n| 5 | 49,140 |\n| 6 | 117,936 |\n| 7 | 271,253 |\n| 8 | 596,757 |\n| 9 | 1,253,190 |\n| 10 | 2,506,380 ||
  | `f.equipment-slots` | 装備枠増加 | レベルアップに応じて装備枠が増える。
 |レベル | 装備枠 |

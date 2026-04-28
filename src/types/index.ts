@@ -23,7 +23,7 @@ export interface Race {
   selectable?: boolean;
 }
 
-export interface RaceAbilityDefinition {
+interface RaceAbilityDefinition {
   id: string;
   name: string;
   description: string;
@@ -161,10 +161,13 @@ export type AbilityId =
   | 'mutual_magic_amplify' | 'mutual_magic_restraint' | 'ranged_confusion' | 'magic_confusion' | 'melee_confusion' | 'self_destruct' | 'oblivion' | 'reanimate'
   | 'auriferous' | 'magic_seal' | 'ambush' | 'mimic' | 'shock' | 'null_shock' | 'mutual_physical_amplify' | 'mutual_physical_restraint'
   | 'unstable_core' | 'magical_reflect' | 'magical_absorb' | 'magical_null' | 'ranged_reflect' | 'ranged_null' | 'melee_reflect' | 'melee_null' | 'colossal' | 'upgrade_all_abilities'
-  | 'requiem' | 'overwatch' | 'execution' | 'null_antagonism' | 'first_aid' | 'equation_breaker' | 'unforgettable'
+  | 'requiem' | 'overwatch' | 'execution' | 'anti_ambush' | 'anti_overwatch' | 'rage_breaker' | 'momentum_breaker' | 'execution_null'
+  | 'null_antagonism' | 'first_aid' | 'equation_breaker' | 'unforgettable'
   | 'null_corrode' | 'null_life_drain' | 'null_death_touch' | 'null_burn' | 'null_bind' | 'null_requiem'
   | 'domain_breaker' | 'wind_rider' | 'siege' | 'coldproof'
-  | 'fire_protect_breaker' | 'ice_protect_breaker' | 'thunder_protect_breaker' | 'm_barrier_breaker';
+  | 'dryproof' | 'vine_cutter' | 'mana_ward' | 'defiance'
+  | 'fire_protect_breaker' | 'ice_protect_breaker' | 'thunder_protect_breaker' | 'm_barrier_breaker'
+  | 'pursuit' | 'illusion_breaker' | 'bulwark_breaker';
 
 export interface Ability {
   id: AbilityId;
@@ -239,7 +242,7 @@ export interface Item extends ItemDef {
 }
 
 // Item Stacking System
-export type ItemVariantStatus = 'owned' | 'sold' | 'notown';
+type ItemVariantStatus = 'owned' | 'sold' | 'notown';
 
 export interface InventoryVariant {
   item: Item;
@@ -326,6 +329,7 @@ export interface Party {
   deity: Deity;
   characters: Character[];
   selectedDungeonId: number;
+  expeditionDestinationMode: ExpeditionDestinationMode;
   expeditionDepthLimit: ExpeditionDepthLimit;
   expeditionDifficultyOffset: number;
   expeditionDifficultyOffsetByDungeon: Record<number, number>;
@@ -358,9 +362,11 @@ export interface Party {
   sideQuest: SideQuestState | null;
 }
 
+export type ExpeditionDestinationMode = 'auto' | 'fixed';
+
 export type SleepinessState = 0 | 1 | 2;
 
-export interface SideQuestState {
+interface SideQuestState {
   id: number;
   type: string;
   shortText: string;
@@ -414,17 +420,20 @@ export interface Deity {
   uniqueAbilities: string[];
 }
 
-export interface GlobalState {
+interface GlobalState {
   gold: number;
   inventory: InventoryRecord;
   deityDonations: Record<string, number>;
   unlockedDeities: string[];
+  revealedGlossaryAbilityIds: string[];
+  revealedGlossaryTerrainKeys: TerrainEffectKey[];
   shopPurchases: Record<string, number[]>;
   jewelShopPurchases: Record<string, number>;
   shopRefreshCounts: Record<string, number>;
   shopIntimacy: number;
   shopIntimacyLastDecayAt: number;
   jewels: JewelInventory;
+  jewelAutoEquipPriorityPartyId?: number | null;
 }
 
 // Computed party stats for battle
@@ -492,7 +501,7 @@ export interface EnemyDef {
 export type RoomType = 'battle_Normal' | 'battle_Elite' | 'battle_Boss';
 export type TerrainEffectKey = `terrain.${string}`;
 
-export interface RoomDef {
+interface RoomDef {
   type: RoomType;
   poolId?: number; // For Normal/Elite rooms
   bossId?: number; // For Boss rooms
@@ -531,7 +540,7 @@ export interface Dungeon {
 
 // Battle Types
 export type BattleActionPhase = 'long' | 'mid' | 'close';
-export type BattlePhase = 'start' | BattleActionPhase | 'end';
+type BattlePhase = 'start' | BattleActionPhase | 'end';
 export type BattleOutcome = 'victory' | 'defeat' | 'draw';
 
 export interface BattleState {
@@ -579,15 +588,6 @@ export interface BattleLogEntry {
   hideInitiativeLabel?: boolean;
   wasNegated?: boolean; // True when an attack dealt 0 hits because an avoidance effect activated
   elementalOffense?: ElementalOffense;
-}
-
-// Expedition Types
-export interface ExpeditionState {
-  dungeonId: number;
-  currentRoom: number;
-  partyHp: number;
-  rewards: Item[];
-  experienceGained: number;
 }
 
 // Bag Randomization Types
@@ -680,7 +680,7 @@ export interface ExpeditionLog {
 }
 
 // Game State
-export type GameScene = 'home';
+type GameScene = 'home';
 
 export interface GameState {
   scene: GameScene;

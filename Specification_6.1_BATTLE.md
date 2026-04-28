@@ -56,6 +56,7 @@ If `a.*` with phase = START:
   - Refer to: 1.1.1 @Specification_1.1_CONSTANTS_GLOSSARY.md.
 
 - `terrain.suppression`
+  - Applies only to targets that do not have `a.defiance`.
   - Decrease the level of all reactive and timed abilities by -1.
   - Floor at 1.
   - Refer to: 1.1.1 @Specification_1.1_CONSTANTS_GLOSSARY.md.
@@ -263,9 +264,12 @@ If `a.*` with phase = START:
   - Log: `log.self-destruct`
 
 - **free**
-  - Triggered by `a.free`
+  - Triggered by `a.free` and (opponent members don't have `a.pursuit`)
   - this battle is Draw.
   - Log: `log.free`
+  - Triggered by `a.free` and opponent member has `a.pursuit`, 
+  - this battle continues. 
+  - Log: `log.pursuit`
 
 - **Flying**
   - Triggered by `a.flying`
@@ -345,13 +349,13 @@ If `a.*` with phase = START:
    - Else `d.HP` -= `f.damage_calculation` (actor: enemy , opponent: character, phase: phase)
 
 	- **self-inflicted damage**
-      - If `terrain.vine-snare`: actor.`d.HP` -= 0.01 x actor.current_HP
+      - If `terrain.vine-snare` and (actor doesn't have `a.vine-cutter`): actor.`d.HP` -= 0.01 x actor.current_HP
         - Log: `log.terrain.vine-snare` + (N) :right-aligned 
-      - If `terrain.crystal-zone` and (phase is MID): actor.`d.HP` -= 0.05 x actor.total_damage
+      - If `terrain.crystal-zone` and (phase is MID) and (actor doesn't have `a.mana-ward`): actor.`d.HP` -= 0.05 x actor.total_damage
         - Log: `log.terrain.crystal-zone` + (N) :right-aligned 
       - If `terrain.conduction` and actor.`e.thunder`:  actor.`d.HP` -= (0.05 x actor.total_damage ) of `e.thunder`
         - Log: `log.terrain.conduction` + (⚡ N)  :right-aligned 
-      - If `terrain.mana-burn` and (phase is MID): actor.`d.HP` -= 0.02 x actor.max_HP
+      - If `terrain.mana-burn` and (phase is MID) and (actor doesn't have `a.mana-ward`): actor.`d.HP` -= 0.02 x actor.max_HP
         - Log: `log.terrain.mana-burn` + (N) :right-aligned 
       - If `terrain.sacred-judgement` and is first actor of the battle:  actor.`d.HP` -= (0.05 x (ctor.current_HP) of `e.thunder`
         - Log: `log.terrain.sacred-judgement` + (N) :right-aligned
@@ -373,8 +377,9 @@ If `a.*` with phase = START:
 
 
 **opponent-reactive**
-- If (phase is LONG) and (opponent.`a.illusion`1) and (the `a.illusion` is enable), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. log "ポンタへの攻撃はすべて幻だった！".
-- If (phase is LONG) and (opponent.party.character.`a.illusion`2) and (the `a.illusion` is enable), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. log "nameへの攻撃はすべて幻だった！".
+- If (phase is LONG) and (opponent.`a.illusion`1) and (the `a.illusion` is enable) and (actor doesn't have `a.illusion-breaker`), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. Log: `log.illusion‘
+- If (phase is LONG) and (opponent.party.character.`a.illusion`2) and (the `a.illusion` is enable) and (actor doesn't have `a.illusion-breaker`), treats all incoming attack as miss hits, disable the `a.illusion` for this battle. Log: `log.illusion‘.
+- If (phase is LONG) and (opponent.`a.illusion`) and (the `a.illusion` is enable) and (actor has `a.illusion-breaker`), disable the `a.illusion` for this battle. Log: `log.illusion-breaker`
 
 ##### 6.1.3.2 Reactive ability
 - Priority: On-strike > Counter > Ally-follow-up
@@ -497,23 +502,23 @@ If `a.*` with phase = START:
     - Exception: If actor has `a.domain-breaker`, this effect is ignored.
 
 - `f.rage_amplifier`:
-  - If actor has `a.rage`1, return min(2.0, 1.0 + 0.5 x (1 - (actor.current_HP / actor.max_HP)))
-  - If actor has `a.rage`2, return min(2.0, 1.0 + 0.6 x (1 - (actor.current_HP / actor.max_HP)))
+  - If actor has `a.rage`1 and (opponent doesn't have `a.rage-breaker`), return min(2.0, 1.0 + 0.5 x (1 - (actor.current_HP / actor.max_HP)))
+  - If actor has `a.rage`2 and (opponent doesn't have `a.rage-breaker`), return min(2.0, 1.0 + 0.6 x (1 - (actor.current_HP / actor.max_HP)))
     - Log: add "闘志+N%" to attack log.
 - `f.momentum_amplifier`:
-  - If actor has `a.momentum`1, return 1.25 - (1 - (actor.current_HP / actor.max_HP)) x 0.5
-  - If actor has `a.momentum`2, return 1.25 - (1 - (actor.current_HP / actor.max_HP)) x 0.4
+  - If actor has `a.momentum`1 and (opponent doesn't have `a.momentum-breaker`), return 1.25 - (1 - (actor.current_HP / actor.max_HP)) x 0.5
+  - If actor has `a.momentum`2 and (opponent doesn't have `a.momentum-breaker`), return 1.25 - (1 - (actor.current_HP / actor.max_HP)) x 0.4
     - Log: add "気勢+N%" to attack log
 - `f.ambush_amplifier`
-  - If actor has `a.ambush`, and opponent has not acted yet in this battle, return N.
+  - If actor has `a.ambush`, and (opponent has not acted yet in this battle) and (opponent doesn't have `a.anti-ambush`), return N.
   - Otherwise, return x1.0.
   - Log: add "待ち伏せ:xN" to the attack log.
 - `f.overwatch_amplifier`
-  - If actor has `a.overwatch`, and opponent and other party members have not acted yet in this battle, return N.
+  - If actor has `a.overwatch`, and (opponent and other party members have not acted yet in this battle) and (opponent doesn't have `a.anti-overwatch`), return N.
   - Otherwise, return x1.0.
   - Log: add "監視:xN" to the attack log.
 - `f.execution_amplifier`
-  - If actor has `a.execution`, and opponent.`d.HP` <= N, return M.
+  - If actor has `a.execution`, and (opponent.current_HP / opponent.max_HP x 100 <= N) and (opponent doesn't have `a.execution-null`), return M.
   - Otherwise, return x1.0.
   - Log: add "エクセキューション:xM" to the attack log.
     
@@ -537,7 +542,7 @@ If `a.*` with phase = START:
 
 -  `f.elemental_offense_attribute_amplifier`
   - If `terrain.thunderstorm` and actor.`e.thunder`: x 3/2
-  - If `terrain.dry` and actor.`e.ice`: x 0.5
+  - If `terrain.dry` and actor.`e.ice` and (actor doesn't have `a.dryproof`): x 0.5
   - If `terrain.echo-domain` and actor.`e.X`: 1.0 + 0.1 x (1 - (number of X in this battle from both side))
     - Exception: If actor has `a.domain-breaker`, this effect is not applied. 
     - If result is > 1.0, 
@@ -551,8 +556,8 @@ If `a.*` with phase = START:
 	- If (phase is (LONG or CLOSE) and (actor or opponent) has `a.mutual-physical-amplify`, return n
 	- If (phase is (LONG or CLOSE) and (actor or opponent) has `a.mutual-physical-restraint`, return n
 	
-	- If opponent.`a.stealth`1 and (opponent.current_HP / opponent.max_HP) <= 0.24, damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
-	- If opponent.`a.stealth`2 and (opponent.current_HP / opponent.max_HP) <= 0.29, damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
+	- If opponent.`a.stealth`1 and (opponent.current_HP / opponent.max_HP) <= 0.24 and (actor doesn't have `a.glamour-breaker`), damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
+	- If opponent.`a.stealth`2 and (opponent.current_HP / opponent.max_HP) <= 0.29 and (actor doesn't have `a.glamour-breaker`), damage is set to 0. Log:"name は物陰に隠れて攻撃をやり過ごせたのだ！"
 	- note: This is only for party member ability. enemy have this `a.stealth` ability, then Log:"enemy は神隠れした。もう攻撃はこれ以上あたらない！"
 
 ##### 6.1.4.2 Function of targeting
@@ -587,7 +592,7 @@ If `a.*` with phase = START:
   - If actor.`c.antagonism`, target is opposite. (character -> character. enemy -> enemy)
   - If phase is LONG or CLOSE, Gets one ticket from `t.physical_threat_weight_bag`.
     - `a.bulwark`1 or `a.bulwark`2 redirect 
-	  if (`a.bulwark`1 and phase is LONG) or (`a.bulwark`2 and phase is (LONG or CLOSE)):
+	  if {(`a.bulwark`1 and phase is LONG) or (`a.bulwark`2 and phase is (LONG or CLOSE))} and (enemy doesn't have `a.bulwark-breaker`):
 	      front_character = party.unit_in_front_of(t)    // the unit directly ahead of selected character (one row closer to enemy)
 	      if front_character != null and front_character.has(a.bulwark):
 	          return front_character

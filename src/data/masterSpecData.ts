@@ -1,6 +1,6 @@
 import { EnemyClassId, EnemyType, ItemCategory } from '../types';
 
-export type MasterEnemyPackedRow = readonly [floor:number, room:string, level:number, type:EnemyType, enemyType:string, enemyClass:EnemyClassId, drops:string, name:string, enemySubClass?: EnemyClassId];
+type MasterEnemyPackedRow = readonly [floor:number, room:string, level:number, type:EnemyType, enemyType:string, enemyClass:EnemyClassId, drops:string, name:string, enemySubClass?: EnemyClassId];
 
 // SpecRef: 4.2.2 | Enemy | x.exp_id / x.floor / x.room master table
 export const MASTER_EXPEDITION_ENEMIES_PACKED: Record<number, readonly MasterEnemyPackedRow[]> = {
@@ -310,7 +310,7 @@ export const MASTER_EXPEDITION_ENEMIES_PACKED: Record<number, readonly MasterEne
   ],
 } as const;
 
-export const MASTER_ITEM_NAME_INDEX: Record<string, readonly string[]> = {
+const MASTER_ITEM_NAME_INDEX: Record<string, readonly string[]> = {
   '1|common|archery': ['つる弓'],
   '1|common|armor': ['継ぎ革の服'],
   '1|common|arrow': ['欠け矢'],
@@ -340,12 +340,13 @@ export const MASTER_ITEM_NAME_INDEX: Record<string, readonly string[]> = {
   '1|eliteRare|arrow': ['角針'],
   '1|eliteRare|bolt': ['甲殻片'],
   '1|eliteRare|catalyst': ['軽羽石'],
+  '1|eliteRare|katana': ['追跡の鎌'],
   '1|eliteRare|sword': ['牙の剣', '虫牙'],
   '1|bossRare|armor': ['ライトアーマー'],
   '1|bossRare|gauntlet': ['手甲'],
   '1|bossRare|grimoire': ['戦術書'],
   '1|bossRare|robe': ['外套'],
-  '1|bossRare|sword': ['長剣'],
+  '1|bossRare|sword': ['小刀'],
   '2|common|archery': ['毛弦の狩弓'],
   '2|common|armor': ['毛皮あての服'],
   '2|common|arrow': ['毛羽矢'],
@@ -363,10 +364,12 @@ export const MASTER_ITEM_NAME_INDEX: Record<string, readonly string[]> = {
   '2|uncommon|katana': ['晶の打刀'],
   '2|uncommon|shield': ['板の盾'],
   '2|uncommon|wand': ['晶の杖'],
+  '2|eliteRare|arrow': ['氷霜の矢'],
+  '2|eliteRare|katana': ['氷霜の太刀'],
   '2|eliteRare|robe': ['アスベストの衣'],
   '2|eliteRare|sword': ['岩斬剣'],
   '2|bossRare|arrow': ['狼毛の矢'],
-  '2|bossRare|catalyst': ['蒼狼核の触媒'],
+  '2|bossRare|catalyst': ['蒼き護符'],
   '2|bossRare|wand': ['蒼狼の杖'],
   '3|common|archery': ['貝弦の弓'],
   '3|common|armor': ['貝綴じの軽鎧'],
@@ -393,7 +396,7 @@ export const MASTER_ITEM_NAME_INDEX: Record<string, readonly string[]> = {
   '3|uncommon|sword': ['潮刃の短剣'],
   '3|uncommon|wand': ['潮読の杖'],
   '3|eliteRare|archery': ['潮霊の弓', '群粘の弓'],
-  '3|eliteRare|armor': ['深海鱗の鎧', '粘膜覆'],
+  '3|eliteRare|armor': ['鮫肌の鎧', '粘膜覆'],
   '3|eliteRare|arrow': ['粘波の矢'],
   '3|eliteRare|bolt': ['硫酸刺'],
   '3|eliteRare|catalyst': ['深潮核の触媒'],
@@ -405,7 +408,7 @@ export const MASTER_ITEM_NAME_INDEX: Record<string, readonly string[]> = {
   '3|eliteRare|sword': ['小刀'],
   '3|eliteRare|wand': ['潮海の杖', '灯霊の杖'],
   '3|bossRare|bolt': ['狐尾のボルト'],
-  '3|bossRare|catalyst': ['狐核の触媒'],
+  '3|bossRare|catalyst': ['狐假虎威'],
   '3|bossRare|gauntlet': ['蒼尾王の手甲'],
   '3|bossRare|grimoire': ['狡猾の書'],
   '3|bossRare|robe': ['茶褐色の法衣'],
@@ -442,9 +445,9 @@ export const MASTER_ITEM_NAME_INDEX: Record<string, readonly string[]> = {
   '4|eliteRare|bolt': ['影牙のボルト', '砂猫のボルト', '砕岩ボルト'],
   '4|eliteRare|catalyst': ['崩壊核'],
   '4|eliteRare|gauntlet': ['破砕の巨手甲'],
-  '4|eliteRare|grimoire': ['影牙の秘本', '砂猫秘儀書'],
+  '4|eliteRare|grimoire': ['サバイバル入門書', '砂猫秘儀書'],
   '4|eliteRare|katana': ['影牙の太刀', '巨刃の太刀'],
-  '4|eliteRare|robe': ['影牙の法衣', '盗砂の猫衣'],
+  '4|eliteRare|robe': ['影衣', '盗砂の猫衣'],
   '4|eliteRare|shield': ['紅の防盾', '岩背の大盾'],
   '4|eliteRare|sword': ['曲剣'],
   '4|eliteRare|wand': ['猫呪杖', '巨神の杖'],
@@ -492,7 +495,7 @@ export const MASTER_ITEM_NAME_INDEX: Record<string, readonly string[]> = {
   '5|eliteRare|wand': ['竜脈の杖'],
   '5|bossRare|armor': ['熊厚鎧'],
   '5|bossRare|catalyst': ['溶触媒'],
-  '5|bossRare|gauntlet': ['重手甲'],
+  '5|bossRare|gauntlet': ['破壊腕'],
   '5|bossRare|katana': ['焔断'],
   '5|bossRare|shield': ['灰色の石'],
   '5|bossRare|sword': ['三連爪'],
@@ -616,7 +619,7 @@ export const MASTER_ITEM_NAME_INDEX: Record<string, readonly string[]> = {
   '8|eliteRare|bolt': ['冥霊のボルト', '勇鹿の閃ボルト'],
   '8|eliteRare|catalyst': ['虚痕の触媒', '冥霊核の触媒'],
   '8|eliteRare|gauntlet': ['虚痕の手甲', '神魔の拳甲'],
-  '8|eliteRare|grimoire': ['忘却の書', '神魔祭文書'],
+  '8|eliteRare|grimoire': ['忘却の書', '反乱の手引'],
   '8|eliteRare|katana': ['冥霊の太刀', '神魔の太刀'],
   '8|eliteRare|robe': ['虚痕の法衣', '冥霊の法衣', '神魔の法衣'],
   '8|eliteRare|shield': ['神魔の盾', '神魔護法盾'],

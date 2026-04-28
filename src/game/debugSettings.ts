@@ -1,8 +1,8 @@
 import { createEnvironmentStorageKey, getEnvironmentId } from './environment';
 
-export type DebugTimeSpeed = 'realtime' | 'x5' | 'x20' | 'x100' | 'x10000';
-export type DebugGodsBattleCondition = 'normal' | 'simple1';
-export type DebugGodStrength = 'normal' | 'debug';
+type DebugTimeSpeed = 'realtime' | 'x5' | 'x20' | 'x100';
+type DebugGodsBattleCondition = 'normal' | 'simple1';
+type DebugGodStrength = 'normal' | 'debug';
 
 export interface DebugSettings {
   clairvoyanceEnabled: boolean;
@@ -19,7 +19,7 @@ export interface DebugSettings {
 // SpecRef: 9 | Environment | Save Data Isolation
 const DEBUG_SETTINGS_STORAGE_KEY = createEnvironmentStorageKey('kemo-expedition.debug-settings');
 
-export const DEFAULT_DEBUG_SETTINGS: DebugSettings = {
+const DEFAULT_DEBUG_SETTINGS: DebugSettings = {
   clairvoyanceEnabled: false,
   timeSpeed: 'realtime',
   godsBattleCondition: 'normal',
@@ -50,11 +50,11 @@ function canUseStorage(): boolean {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
 }
 
-export function normalizeDebugSettings(raw: unknown): DebugSettings {
+function normalizeDebugSettings(raw: unknown): DebugSettings {
   const parsed = (raw && typeof raw === 'object') ? raw as Partial<DebugSettings> & { displayMotivation?: boolean } : {};
   return enforceEnvironmentDebugPolicy({
     clairvoyanceEnabled: parsed.clairvoyanceEnabled === true,
-    timeSpeed: parsed.timeSpeed === 'realtime' || parsed.timeSpeed === 'x20' || parsed.timeSpeed === 'x100' || parsed.timeSpeed === 'x10000' || parsed.timeSpeed === 'x5' ? parsed.timeSpeed : 'realtime',
+    timeSpeed: parsed.timeSpeed === 'realtime' || parsed.timeSpeed === 'x20' || parsed.timeSpeed === 'x100' || parsed.timeSpeed === 'x5' ? parsed.timeSpeed : 'realtime',
     godsBattleCondition: parsed.godsBattleCondition === 'simple1' ? 'simple1' : 'normal',
     godStrength: parsed.godStrength === 'debug' ? 'debug' : 'normal',
     jewelShopOpen: parsed.jewelShopOpen === true,
@@ -91,6 +91,5 @@ export function getTimeSpeedScale(settings: DebugSettings): number {
   if (settings.timeSpeed === 'realtime') return 1;
   if (settings.timeSpeed === 'x20') return 0.05;
   if (settings.timeSpeed === 'x100') return 0.01;
-  if (settings.timeSpeed === 'x10000') return 0.0001;
   return 0.2;
 }

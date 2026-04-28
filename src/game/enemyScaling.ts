@@ -45,7 +45,7 @@ const DEBUG_GOD_ENEMY_MULTIPLIERS: GodEnemyMultipliers = {
   magicalDefenseAmplifier: 1.0,
 };
 
-export function getGodEnemyMultipliers(): GodEnemyMultipliers {
+function getGodEnemyMultipliers(): GodEnemyMultipliers {
   return getDebugSettings().godStrength === 'debug'
     ? DEBUG_GOD_ENEMY_MULTIPLIERS
     : NORMAL_GOD_ENEMY_MULTIPLIERS;

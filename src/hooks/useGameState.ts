@@ -24,6 +24,7 @@ import {
   TerrainEffectKey,
   EnemyDef,
   ExpeditionDepthLimit,
+  ExpeditionDestinationMode,
 } from '../types';
 import { computeCharacterHpContribution, computePartyStats } from '../game/partyComputation';
 import { executeBattle, calculateEnemyAttackValues } from '../game/battle';
@@ -66,6 +67,8 @@ import { RACES } from '../data/races';
 import { CLASSES } from '../data/classes';
 import { PREDISPOSITIONS } from '../data/predispositions';
 import { LINEAGES } from '../data/lineages';
+import { BONUS_ABILITY_GLOSSARY_ENTRIES } from '../data/bonusAbilityGlossary';
+import { TERRAIN_EFFECT_GLOSSARY_SECTION } from '../data/glossary';
 import {
   ELITE_GATE_REQUIREMENTS,
   ENTRY_GATE_REQUIRED,
@@ -115,6 +118,11 @@ const ITEM_MAX_STACK = 99;
 const TIME_BASED_SIDE_QUEST_TYPES = new Set(['q.exercise', 'q.healing', 'q.AFK']);
 const BASE_STEP_DURATION_MS = 15_000;
 const APPROX_CYCLE_STEP_COUNT = 30;
+const SAVE_LOAD_WARNING_MESSAGE = 'ロードに失敗しました。この画面をスクリーンショットし、開発者へ報告してください';
+const VALID_GLOSSARY_ABILITY_IDS = new Set(BONUS_ABILITY_GLOSSARY_ENTRIES.map((entry) => entry.abilityId));
+const VALID_GLOSSARY_TERRAIN_KEYS = new Set(
+  (TERRAIN_EFFECT_GLOSSARY_SECTION?.entries ?? []).map((entry) => entry.key as TerrainEffectKey),
+);
 
 type SideQuestScaleByLevel = {
   1: number;
@@ -167,12 +175,56 @@ function normalizeSideQuestType(type: string): string {
   return legacyToCurrentTypeMap[type] ?? type;
 }
 
+// SpecRef: 1.0.3 | Glossary Reveal Rule | revealed
+function normalizeRevealedGlossaryAbilityIds(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return Array.from(new Set(
+    value.filter((abilityId): abilityId is string => (
+      typeof abilityId === 'string' && VALID_GLOSSARY_ABILITY_IDS.has(abilityId as typeof BONUS_ABILITY_GLOSSARY_ENTRIES[number]['abilityId'])
+    )),
+  ));
+}
+
+// SpecRef: 1.0.3 | Glossary Reveal Rule | revealed
+function normalizeRevealedGlossaryTerrainKeys(value: unknown): TerrainEffectKey[] {
+  if (!Array.isArray(value)) return [];
+  return Array.from(new Set(
+    value.filter((terrainKey): terrainKey is TerrainEffectKey => (
+      typeof terrainKey === 'string' && VALID_GLOSSARY_TERRAIN_KEYS.has(terrainKey as TerrainEffectKey)
+    )),
+  ));
+}
+
+// SpecRef: 1.0.3 | Glossary Reveal Rule | reveal by encounter
+function revealGlossaryFromEncounter(
+  global: GameState['global'],
+  abilityIds: Iterable<string>,
+  terrainEffect?: TerrainEffectKey | 'none',
+): Pick<GameState['global'], 'revealedGlossaryAbilityIds' | 'revealedGlossaryTerrainKeys'> {
+  const nextAbilityIds = new Set(global.revealedGlossaryAbilityIds);
+  const nextTerrainKeys = new Set(global.revealedGlossaryTerrainKeys);
+
+  for (const abilityId of abilityIds) {
+    if (VALID_GLOSSARY_ABILITY_IDS.has(abilityId as typeof BONUS_ABILITY_GLOSSARY_ENTRIES[number]['abilityId'])) {
+      nextAbilityIds.add(abilityId);
+    }
+  }
+  if (terrainEffect && terrainEffect !== 'none' && VALID_GLOSSARY_TERRAIN_KEYS.has(terrainEffect)) {
+    nextTerrainKeys.add(terrainEffect);
+  }
+
+  return {
+    revealedGlossaryAbilityIds: Array.from(nextAbilityIds),
+    revealedGlossaryTerrainKeys: Array.from(nextTerrainKeys),
+  };
+}
+
 const PARTY_UNLOCK_BY_DUNGEON_ID: Record<number, number> = {
-  2: 2,
-  3: 3,
-  4: 4,
-  5: 5,
-  6: 6,
+  3: 2,
+  4: 3,
+  5: 4,
+  6: 5,
+  7: 6,
 };
 
 function getUnlockedPartySlotFromEntry(entry: ExpeditionLogEntry, dungeonId?: number): number | null {
@@ -356,6 +408,49 @@ function normalizePartyCondition(raw: unknown): number {
   return Math.max(-400, Math.min(400, Math.floor(raw)));
 }
 
+function normalizeExpeditionDestinationMode(raw: unknown): ExpeditionDestinationMode {
+  return raw === 'fixed' ? 'fixed' : 'auto';
+}
+
+function shouldAutoAdvanceExpeditionDestination(party: Party): { shouldAdvance: boolean; nextDungeonId: number | null } {
+  // SpecRef: 8.3 | UI_EXPEDITION | Auto Destination Change Logic
+  if (party.expeditionDestinationMode !== 'auto') {
+    return { shouldAdvance: false, nextDungeonId: null };
+  }
+
+  const nextDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId + 1 && dungeon.id <= 8);
+  if (!nextDungeon) {
+    return { shouldAdvance: false, nextDungeonId: null };
+  }
+
+  const hasClearedSelectedExpeditionAtLeastOnce = Boolean(
+    party.defeatedBossExpeditions?.[party.selectedDungeonId],
+  );
+  if (!hasClearedSelectedExpeditionAtLeastOnce) {
+    return { shouldAdvance: false, nextDungeonId: null };
+  }
+
+  if (!isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id))) {
+    return { shouldAdvance: false, nextDungeonId: null };
+  }
+
+  const selectedDifficultyOffset = party.expeditionDifficultyOffsetByDungeon?.[party.selectedDungeonId]
+    ?? party.expeditionDifficultyOffset
+    ?? 0;
+  const condition = normalizePartyCondition(party.condition);
+  const enemyLevelWithOffset = nextDungeon.expLevel + selectedDifficultyOffset;
+  const meetsAnyAutoAdvanceRule = (
+    (enemyLevelWithOffset <= party.level + 9 && condition >= 250)
+    || (enemyLevelWithOffset <= party.level + 10 && condition >= 240)
+    || (enemyLevelWithOffset <= party.level + 10 && condition >= 230)
+  );
+
+  return {
+    shouldAdvance: meetsAnyAutoAdvanceRule,
+    nextDungeonId: meetsAnyAutoAdvanceRule ? nextDungeon.id : null,
+  };
+}
+
 type PartyConditionState =
   | 'condition.terrible'
   | 'condition.poor'
@@ -370,11 +465,11 @@ type PartyConditionState =
 type ConditionOutcomeKey = 'Clear' | 'Turned_Back' | 'Draw_Retreat' | 'Wounded_Retreat' | 'Defeat';
 
 const CONDITION_ADJUSTMENTS: Record<PartyConditionState, Record<ConditionOutcomeKey, number>> = {
-  'condition.terrible': { Clear: 12, Turned_Back: 6, Draw_Retreat: 2, Wounded_Retreat: 0, Defeat: -4 },
-  'condition.poor': { Clear: 10, Turned_Back: 5, Draw_Retreat: 1, Wounded_Retreat: -2, Defeat: -15 },
-  'condition.low': { Clear: 8, Turned_Back: 4, Draw_Retreat: 0, Wounded_Retreat: -4, Defeat: -26 },
-  'condition.cautious': { Clear: 6, Turned_Back: 3, Draw_Retreat: -1, Wounded_Retreat: -6, Defeat: -38 },
-  'condition.normal': { Clear: 4, Turned_Back: 2, Draw_Retreat: -2, Wounded_Retreat: -8, Defeat: -50 },
+  'condition.terrible': { Clear: 15, Turned_Back: 6, Draw_Retreat: 2, Wounded_Retreat: 1, Defeat: -4 },
+  'condition.poor': { Clear: 12, Turned_Back: 5, Draw_Retreat: 1, Wounded_Retreat: 0, Defeat: -15 },
+  'condition.low': { Clear: 9, Turned_Back: 4, Draw_Retreat: 1, Wounded_Retreat: -1, Defeat: -26 },
+  'condition.cautious': { Clear: 6, Turned_Back: 3, Draw_Retreat: 0, Wounded_Retreat: -2, Defeat: -38 },
+  'condition.normal': { Clear: 4, Turned_Back: 2, Draw_Retreat: -1, Wounded_Retreat: -8, Defeat: -50 },
   'condition.steady': { Clear: 3, Turned_Back: 1, Draw_Retreat: -3, Wounded_Retreat: -10, Defeat: -58 },
   'condition.good': { Clear: 2, Turned_Back: 1, Draw_Retreat: -4, Wounded_Retreat: -12, Defeat: -64 },
   'condition.great': { Clear: 1, Turned_Back: 0, Draw_Retreat: -5, Wounded_Retreat: -14, Defeat: -68 },
@@ -545,6 +640,14 @@ function normalizeExpeditionDifficultyOffsetByDungeon(value: unknown): Record<nu
     acc[Math.floor(dungeonId)] = normalizeExpeditionDifficultyOffset(rawOffset);
     return acc;
   }, {});
+}
+
+function normalizeJewelAutoEquipPriorityPartyId(value: unknown, unlockedPartyCount: number): number | null {
+  if (value === null) return null;
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 1;
+  const normalizedPartyId = Math.floor(value);
+  if (normalizedPartyId < 1 || normalizedPartyId > unlockedPartyCount) return 1;
+  return normalizedPartyId;
 }
 
 function matchesDiaryThreshold(item: Item, threshold: DiarySettings['superRareThreshold']): boolean {
@@ -761,14 +864,43 @@ function normalizeExpeditionLog(log: ExpeditionLog | null | undefined): Expediti
   };
 }
 
-function loadSavedState(): GameState | null {
+function formatLoadErrorLog(error: unknown): string {
+  if (error instanceof Error) {
+    return `${error.name}: ${error.message}${error.stack ? `\n${error.stack}` : ''}`;
+  }
+  if (typeof error === 'string') return error;
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return String(error);
+  }
+}
+
+type LoadSavedStateResult = {
+  state: GameState | null;
+  errorLog: string | null;
+};
+
+function loadSavedState(): LoadSavedStateResult {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) {
+      return { state: null, errorLog: null };
+    }
+
+    // SpecRef: 5.1.4 | Save and load | Include the error log details in the popup.
+    const parsed = JSON.parse(decodePersistedState(saved));
+    // Validate it has required properties and migrate legacy saves.
+    const hasParties = Array.isArray(parsed?.parties);
+    const hasBags = parsed?.bags && typeof parsed.bags === 'object';
+    if (!hasParties || !hasBags) {
+      return {
+        state: null,
+        errorLog: 'Saved data validation failed: missing required properties `parties` or `bags`.',
+      };
+    }
+
     if (saved) {
-      const parsed = JSON.parse(decodePersistedState(saved));
-      // Validate it has required properties and migrate legacy saves.
-      const hasParties = Array.isArray(parsed?.parties);
-      const hasBags = parsed?.bags && typeof parsed.bags === 'object';
       if (hasParties && hasBags) {
 
         parsed.bags = normalizeGameBags({
@@ -794,6 +926,8 @@ function loadSavedState(): GameState | null {
             inventory: migrateOldInventory(firstParty?.inventory ?? []),
             deityDonations: {},
             unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
+            revealedGlossaryAbilityIds: [],
+            revealedGlossaryTerrainKeys: [],
             shopPurchases: {},
             jewelShopPurchases: {},
             shopRefreshCounts: {},
@@ -807,6 +941,8 @@ function loadSavedState(): GameState | null {
         }
         parsed.global.deityDonations = getDeityDonationsWithDefaults(parsed.global.deityDonations);
         parsed.global.unlockedDeities = normalizeUnlockedDeities(parsed.global.unlockedDeities);
+        parsed.global.revealedGlossaryAbilityIds = normalizeRevealedGlossaryAbilityIds(parsed.global.revealedGlossaryAbilityIds);
+        parsed.global.revealedGlossaryTerrainKeys = normalizeRevealedGlossaryTerrainKeys(parsed.global.revealedGlossaryTerrainKeys);
         parsed.global.shopPurchases = (parsed.global.shopPurchases && typeof parsed.global.shopPurchases === 'object')
           ? Object.entries(parsed.global.shopPurchases as Record<string, unknown>).reduce<Record<string, number[]>>((acc, [hourKey, itemIds]) => {
               if (!Array.isArray(itemIds)) return acc;
@@ -898,6 +1034,7 @@ function loadSavedState(): GameState | null {
             party.currentHp = computed.hp;
           }
           party.expeditionDepthLimit = getExpeditionDepthLimitWithDefault(party.expeditionDepthLimit);
+          party.expeditionDestinationMode = normalizeExpeditionDestinationMode(party.expeditionDestinationMode);
           party.expeditionDifficultyOffset = normalizeExpeditionDifficultyOffset(party.expeditionDifficultyOffset);
           party.expeditionDifficultyOffsetByDungeon = normalizeExpeditionDifficultyOffsetByDungeon(party.expeditionDifficultyOffsetByDungeon);
           if (typeof party.pendingProfit !== 'number') party.pendingProfit = 0;
@@ -975,16 +1112,21 @@ function loadSavedState(): GameState | null {
         }
         parsed.parties = parsed.parties.slice(0, unlockedPartySlots);
         parsed.parties = enforceGlobalDiaryLogRetention(parsed.parties);
+        parsed.global.jewelAutoEquipPriorityPartyId = normalizeJewelAutoEquipPriorityPartyId(
+          parsed.global.jewelAutoEquipPriorityPartyId,
+          parsed.parties.length,
+        );
         parsed.selectedPartyIndex = Math.max(0, Math.min(normalizedSelectedPartyIndex, Math.max(0, parsed.parties.length - 1)));
         parsed.buildNumber = typeof parsed.buildNumber === 'number' ? parsed.buildNumber : 0;
 
-        return hydrateGameState(parsed as GameState);
+        return { state: hydrateGameState(parsed as GameState), errorLog: null };
       }
     }
   } catch (e) {
     console.error('Failed to load saved state:', e);
+    return { state: null, errorLog: formatLoadErrorLog(e) };
   }
-  return null;
+  return { state: null, errorLog: null };
 }
 
 function saveState(state: GameState): void {
@@ -1050,6 +1192,7 @@ function initializePartyRuntimeState<T extends Party>(party: T): T {
     expeditionRewardsPending: false,
     pendingUnlockState: null,
     deityGold: 0,
+    expeditionDestinationMode: normalizeExpeditionDestinationMode(party.expeditionDestinationMode),
     expeditionDifficultyOffset: normalizeExpeditionDifficultyOffset(party.expeditionDifficultyOffset),
     expeditionDifficultyOffsetByDungeon: normalizeExpeditionDifficultyOffsetByDungeon(party.expeditionDifficultyOffsetByDungeon),
     expeditionStats: getExpeditionStatsWithDefaults(party.expeditionStats),
@@ -1092,10 +1235,10 @@ function drawPartySleepiness(party: Party): { party: Party; sleepiness: Sleepine
 function createInitialParty() {
   const defaultSetup = [
     { race: 'kemoria', main: 'guardian', sub: 'samurai', pred: 'none', lineage: 'unascertained', name: 'ケモ', isUnique: true, equipmentIds: [1101, 1102, 1104, 1105, 1106, 1211] },
-    { race: 'vulpinian', main: 'duelist', sub: 'pilgrim', pred: 'aggressive', lineage: 'sandstorm', name: 'ゴン', equipmentIds: [1104, 1106] },
+    { race: 'vulpinian', main: 'duelist', sub: 'pilgrim', pred: 'aggressive', lineage: 'sandstorm', name: 'クズノハ', equipmentIds: [1104, 1106] },
     { race: 'leporian', main: 'ranger', sub: 'ninja', pred: 'inquisitive', lineage: 'abyssal_sea', name: 'ロップ', equipmentIds: [1107, 1109] },
     { race: 'procyonian', main: 'ninja', sub: 'striker', pred: 'evasive', lineage: 'firmament', name: 'ソウタ', equipmentIds: [1107, 1109] },
-    { race: 'cervin', main: 'wizard', sub: 'alchemist', pred: 'amiable', lineage: 'utopia', name: 'セルフィン', equipmentIds: [1110, 1112] },
+    { race: 'cervin', main: 'wizard', sub: 'alchemist', pred: 'introspective', lineage: 'utopia', name: 'セルフィン', equipmentIds: [1110, 1112] },
     { race: 'caninian', main: 'sage', sub: 'alchemist', pred: 'none', lineage: 'pioneer', name: 'ライカ', isUnique: true, equipmentIds: [1110, 1112] },
   ];
 
@@ -1127,6 +1270,7 @@ function createInitialParty() {
     deity: createInitialDeity('Goddess of Restoration'),
     characters,
     selectedDungeonId: 1,
+    expeditionDestinationMode: 'auto',
     expeditionDepthLimit: 'all',
     expeditionDifficultyOffset: 0,
     expeditionDifficultyOffsetByDungeon: {},
@@ -1153,12 +1297,12 @@ function createInitialParty() {
 
 function createSecondParty() {
   const defaultSetup = [
-    { race: 'procyonian', main: 'samurai', sub: 'guardian', pred: 'none', lineage: 'hidden_grail', name: 'パーシヴァル', isUnique: true },
-    { race: 'lupinian', main: 'sword-saint', sub: 'samurai', pred: 'none', lineage: 'almighty', name: 'ランスロット', isUnique: true },
-    { race: 'felidian', main: 'ranger', sub: 'striker', pred: 'amiable', lineage: 'abyssal_sea', name: 'ルドルフ' },
-    { race: 'murid', main: 'striker', sub: 'striker', pred: 'aggressive', lineage: 'firmament', name: 'コソネ' },
-    { race: 'caninian', main: 'ninja', sub: 'striker', pred: 'aggressive', lineage: 'frozen_forest', name: 'ルーファス' },
-    { race: 'vulpinian', main: 'wizard', sub: 'sage', pred: 'serene', lineage: 'utopia', name: 'アヤ' },
+    { race: 'vulpinian', main: 'duelist', sub: 'lord', pred: 'none', lineage: 'meddlesome_fox', name: 'レナード', isUnique: true },
+    { race: 'orcinian', main: 'samurai', sub: 'sword-saint', pred: 'none', lineage: 'rowdy_orca_girl', name: 'オルカ', isUnique: true },
+    { race: 'procyonian', main: 'ranger', sub: 'ranger', pred: 'nimble', lineage: 'frozen_forest', name: 'カイマ' },
+    { race: 'cervin', main: 'wizard', sub: 'alchemist', pred: 'inquisitive', lineage: 'utopia', name: 'マナエル' },
+    { race: 'felidian', main: 'alchemist', sub: 'wizard', pred: 'serene', lineage: 'machina', name: 'レイナ' },
+    { race: 'lupinian', main: 'ninja', sub: 'wizard', pred: 'perceptive', lineage: 'windcross', name: 'タウロ' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
@@ -1182,9 +1326,10 @@ function createSecondParty() {
     defeatedBossExpeditions: {},
     lootGateProgress: {},
     lootGateStatus: {},
-    deity: createInitialDeity('God of Attrition'),
+    deity: createInitialDeity('God of Cunning'),
     characters,
     selectedDungeonId: 1,
+    expeditionDestinationMode: 'auto',
     expeditionDepthLimit: 'all',
     expeditionDifficultyOffset: 0,
     expeditionDifficultyOffsetByDungeon: {},
@@ -1211,12 +1356,12 @@ function createSecondParty() {
 
 function createThirdParty() {
   const defaultSetup = [
-    { race: 'vulpinian', main: 'duelist', sub: 'lord', pred: 'none', lineage: 'meddlesome_fox', name: 'レナード', isUnique: true },
-    { race: 'orcinian', main: 'samurai', sub: 'sword-saint', pred: 'none', lineage: 'rowdy_orca_girl', name: 'オルカ', isUnique: true },
-    { race: 'procyonian', main: 'ranger', sub: 'ranger', pred: 'nimble', lineage: 'frozen_forest', name: 'シマ' },
-    { race: 'cervin', main: 'wizard', sub: 'alchemist', pred: 'amiable', lineage: 'utopia', name: 'シーケルン' },
-    { race: 'felidian', main: 'alchemist', sub: 'wizard', pred: 'serene', lineage: 'machina', name: 'アルテミス' },
-    { race: 'lupinian', main: 'ninja', sub: 'wizard', pred: 'perceptive', lineage: 'windcross', name: 'ウォッシ' },
+    { race: 'ursan', main: 'guardian', sub: 'ranger', pred: 'evasive', lineage: 'firmament', name: 'ハムザ' },
+    { race: 'caninian', main: 'lord', sub: 'ninja', pred: 'precise', lineage: 'firmament', name: 'ユースフ' },
+    { race: 'murid', main: 'ninja', sub: 'ranger', pred: 'none', lineage: 'phantom_thief', name: 'ノクス', isUnique: true },
+    { race: 'felidian', main: 'sword-saint', sub: 'ranger', pred: 'none', lineage: 'crescent_jade', name: 'ルナ', isUnique: true },
+    { race: 'lupinian', main: 'duelist', sub: 'striker', pred: 'perceptive', lineage: 'frozen_forest', name: 'カリーム' },
+    { race: 'vulpinian', main: 'sage', sub: 'wizard', pred: 'inquisitive', lineage: 'adaptation', name: 'ジャリル' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
@@ -1240,9 +1385,10 @@ function createThirdParty() {
     defeatedBossExpeditions: {},
     lootGateProgress: {},
     lootGateStatus: {},
-    deity: createInitialDeity('God of Cunning'),
+    deity: createInitialDeity('Goddess of Fertility'),
     characters,
     selectedDungeonId: 1,
+    expeditionDestinationMode: 'auto',
     expeditionDepthLimit: 'all',
     expeditionDifficultyOffset: 0,
     expeditionDifficultyOffsetByDungeon: {},
@@ -1269,12 +1415,12 @@ function createThirdParty() {
 
 function createFourthParty() {
   const defaultSetup = [
-    { race: 'ursan', main: 'guardian', sub: 'ranger', pred: 'evasive', lineage: 'firmament', name: 'グレン' },
-    { race: 'caninian', main: 'lord', sub: 'ninja', pred: 'precise', lineage: 'firmament', name: 'ロス' },
-    { race: 'murid', main: 'ninja', sub: 'ranger', pred: 'none', lineage: 'phantom_thief', name: 'ノクス', isUnique: true },
-    { race: 'felidian', main: 'sword-saint', sub: 'ranger', pred: 'none', lineage: 'crescent_jade', name: 'ルナ', isUnique: true },
-    { race: 'lupinian', main: 'duelist', sub: 'striker', pred: 'amiable', lineage: 'frozen_forest', name: 'ラビ' },
-    { race: 'vulpinian', main: 'sage', sub: 'wizard', pred: 'inquisitive', lineage: 'adaptation', name: 'フェン' },
+    { race: 'ursan', main: 'lord', sub: 'duelist', pred: 'none', lineage: 'apostate', name: 'ミシュカ', isUnique: true },
+    { race: 'avian', main: 'ninja', sub: 'sword-saint', pred: 'none', lineage: 'flamebound_grove', name: 'プチーツァ', isUnique: true },
+    { race: 'leporian', main: 'ranger', sub: 'guardian', pred: 'precise', lineage: 'abyssal_sea', name: 'ヴェーラ' },
+    { race: 'felidian', main: 'striker', sub: 'pilgrim', pred: 'devoted', lineage: 'firmament', name: 'イリーナ' },
+    { race: 'lupinian', main: 'wizard', sub: 'sage', pred: 'introspective', lineage: 'machina', name: 'ドミトリ' },
+    { race: 'cervin', main: 'sage', sub: 'wizard', pred: 'resourceful', lineage: 'utopia', name: 'ミラ' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
@@ -1298,9 +1444,10 @@ function createFourthParty() {
     defeatedBossExpeditions: {},
     lootGateProgress: {},
     lootGateStatus: {},
-    deity: createInitialDeity('Goddess of Fertility'),
+    deity: createInitialDeity('God of Fortification'),
     characters,
     selectedDungeonId: 1,
+    expeditionDestinationMode: 'auto',
     expeditionDepthLimit: 'all',
     expeditionDifficultyOffset: 0,
     expeditionDifficultyOffsetByDungeon: {},
@@ -1327,12 +1474,12 @@ function createFourthParty() {
 
 function createFifthParty() {
   const defaultSetup = [
-    { race: 'ursan', main: 'lord', sub: 'ninja', pred: 'none', lineage: 'apostate', name: 'ミシュカ', isUnique: true },
-    { race: 'avian', main: 'ninja', sub: 'ranger', pred: 'none', lineage: 'flamebound_grove', name: 'プチーツァ', isUnique: true },
-    { race: 'leporian', main: 'ranger', sub: 'guardian', pred: 'precise', lineage: 'abyssal_sea', name: 'ファー' },
-    { race: 'felidian', main: 'striker', sub: 'pilgrim', pred: 'devoted', lineage: 'firmament', name: 'ヴェリタス' },
-    { race: 'lupinian', main: 'wizard', sub: 'sage', pred: 'amiable', lineage: 'machina', name: 'グレイ' },
-    { race: 'cervin', main: 'sage', sub: 'wizard', pred: 'resourceful', lineage: 'utopia', name: 'セトラ' },
+    { race: 'procyonian', main: 'samurai', sub: 'guardian', pred: 'none', lineage: 'hidden_grail', name: '葉隠', isUnique: true },
+    { race: 'lupinian', main: 'sword-saint', sub: 'samurai', pred: 'none', lineage: 'almighty', name: '蒼牙破', isUnique: true },
+    { race: 'felidian', main: 'wizard', sub: 'ranger', pred: 'precise', lineage: 'abyssal_sea', name: '影髭' },
+    { race: 'murid', main: 'striker', sub: 'striker', pred: 'aggressive', lineage: 'firmament', name: '砕歯' },
+    { race: 'caninian', main: 'ninja', sub: 'striker', pred: 'amiable', lineage: 'frozen_forest', name: '霜踏' },
+    { race: 'vulpinian', main: 'wizard', sub: 'sage', pred: 'serene', lineage: 'utopia', name: '狐火' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
@@ -1356,9 +1503,10 @@ function createFifthParty() {
     defeatedBossExpeditions: {},
     lootGateProgress: {},
     lootGateStatus: {},
-    deity: createInitialDeity('God of Fortification'),
+    deity: createInitialDeity('God of Resonance'),
     characters,
     selectedDungeonId: 1,
+    expeditionDestinationMode: 'auto',
     expeditionDepthLimit: 'all',
     expeditionDifficultyOffset: 0,
     expeditionDifficultyOffsetByDungeon: {},
@@ -1383,14 +1531,15 @@ function createFifthParty() {
   return initializePartyRuntimeState(party);
 }
 
+// SpecRef: 2.1.4.2 | Initial setup | PT6 Party initial condition.
 function createSixthParty() {
   const defaultSetup = [
-    { race: 'ursan', main: 'pilgrim', sub: 'wizard', pred: 'introspective', lineage: 'fragment', name: 'ドンガ' },
-    { race: 'caninian', main: 'wizard', sub: 'ranger', pred: 'inquisitive', lineage: 'abyssal_sea', name: 'ミィス' },
+    { race: 'ursan', main: 'pilgrim', sub: 'samurai', pred: 'stubborn', lineage: 'fragment', name: 'マーカス' },
+    { race: 'caninian', main: 'samurai', sub: 'sword-saint', pred: 'resourceful', lineage: 'abyssal_sea', name: 'ランスロット' },
     { race: 'leporian', main: 'sword-saint', sub: 'ranger', pred: 'none', lineage: 'unexpected_prince(ss)', name: 'フィン', isUnique: true },
-    { race: 'procyonian', main: 'alchemist', sub: 'alchemist', pred: 'inquisitive', lineage: 'adaptation', name: 'ケラ' },
+    { race: 'procyonian', main: 'alchemist', sub: 'alchemist', pred: 'inquisitive', lineage: 'adaptation', name: 'パーシヴァル' },
     { race: 'cervin', main: 'sage', sub: 'wizard', pred: 'none', lineage: 'incarnation', name: 'マーレ', isUnique: true },
-    { race: 'murid', main: 'wizard', sub: 'alchemist', pred: 'nimble', lineage: 'utopia', name: 'ディル' },
+    { race: 'murid', main: 'wizard', sub: 'alchemist', pred: 'nimble', lineage: 'utopia', name: 'サム' },
   ];
 
   const characters: Character[] = defaultSetup.map((setup, i) => ({
@@ -1414,9 +1563,10 @@ function createSixthParty() {
     defeatedBossExpeditions: {},
     lootGateProgress: {},
     lootGateStatus: {},
-    deity: createInitialDeity('God of Resonance'),
+    deity: createInitialDeity('Goddess of Precision'),
     characters,
     selectedDungeonId: 1,
+    expeditionDestinationMode: 'auto',
     expeditionDepthLimit: 'all',
     expeditionDifficultyOffset: 0,
     expeditionDifficultyOffsetByDungeon: {},
@@ -1445,22 +1595,32 @@ function createDefaultParties(): Party[] {
   return [createInitialParty(), createSecondParty(), createThirdParty(), createFourthParty(), createFifthParty(), createSixthParty()];
 }
 
-function createInitialState(): GameState {
+type InitialStateResult = {
+  state: GameState;
+  loadErrorLog: string | null;
+};
+
+function createInitialState(): InitialStateResult {
   // Try to load saved state first
-  const savedState = loadSavedState();
-  if (savedState) {
+  const savedStateResult = loadSavedState();
+  if (savedStateResult.state) {
     // Update build number in case it changed
-    return { ...savedState, buildNumber: BUILD_NUMBER };
+    return { state: { ...savedStateResult.state, buildNumber: BUILD_NUMBER }, loadErrorLog: null };
   }
 
   return {
+    loadErrorLog: savedStateResult.errorLog,
+    state: {
     scene: 'home',
     global: {
       gold: 200,
       inventory: createStarterInventory(),
       jewels: createStarterJewelInventory(),
+      jewelAutoEquipPriorityPartyId: 1,
       deityDonations: {},
       unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
+      revealedGlossaryAbilityIds: [],
+      revealedGlossaryTerrainKeys: [],
       shopPurchases: {},
       jewelShopPurchases: {},
       shopRefreshCounts: {},
@@ -1485,6 +1645,7 @@ function createInitialState(): GameState {
       sideQuestBag: createSideQuestBag(),
     },
     buildNumber: BUILD_NUMBER,
+    },
   };
 }
 
@@ -1492,7 +1653,8 @@ type GameMode = 'm.kemo' | 'm.luna' | 'm.laika';
 
 type GameAction =
   | { type: 'SELECT_PARTY'; partyIndex: number }
-  | { type: 'SELECT_DUNGEON'; partyIndex: number; dungeonId: number }
+  | { type: 'SELECT_DUNGEON'; partyIndex: number; dungeonId: number; selectionMode?: 'manual' | 'auto' }
+  | { type: 'SET_EXPEDITION_DESTINATION_MODE'; partyIndex: number; mode: ExpeditionDestinationMode }
   | { type: 'SET_EXPEDITION_DEPTH_LIMIT'; partyIndex: number; depthLimit: ExpeditionDepthLimit }
   | { type: 'SET_EXPEDITION_DIFFICULTY_OFFSET'; partyIndex: number; difficultyOffset: number }
   | { type: 'RESET_EXPEDITION_STATS'; partyIndex: number }
@@ -1523,6 +1685,7 @@ type GameAction =
   | { type: 'MARK_DIARY_LOG_SEEN'; logId: string }
   | { type: 'MARK_ALL_DIARY_LOGS_SEEN' }
   | { type: 'UPDATE_DIARY_SETTINGS'; partyIndex: number; settings: Partial<DiarySettings> }
+  | { type: 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY'; partyId: number | null }
   | { type: 'SIMULATE_AFK'; elapsedMs: number; isAutoRepeatEnabled: boolean; gameMode?: GameMode; simulatedEndAt?: number; cycleDurationScale?: number }
   | { type: 'RESET_GAME' }
   | { type: 'IMPORT_GAME_STATE'; state: GameState }
@@ -2483,14 +2646,27 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, selectedPartyIndex: action.partyIndex };
 
     case 'SELECT_DUNGEON': {
+      // SpecRef: 8.3 | UI_EXPEDITION | Manual Destination Selection
       const updatedParties = [...state.parties];
       const targetParty = updatedParties[action.partyIndex];
+      const selectionMode = action.selectionMode ?? 'manual';
       updatedParties[action.partyIndex] = {
         ...targetParty,
         selectedDungeonId: action.dungeonId,
+        expeditionDestinationMode: selectionMode === 'manual' ? 'fixed' : targetParty.expeditionDestinationMode,
         expeditionDifficultyOffset: normalizeExpeditionDifficultyOffset(
           targetParty.expeditionDifficultyOffsetByDungeon?.[action.dungeonId] ?? 0,
         ),
+      };
+      return { ...state, parties: updatedParties };
+    }
+
+    case 'SET_EXPEDITION_DESTINATION_MODE': {
+      // SpecRef: 8.3 | UI_EXPEDITION | Toggle Operation
+      const updatedParties = [...state.parties];
+      updatedParties[action.partyIndex] = {
+        ...updatedParties[action.partyIndex],
+        expeditionDestinationMode: normalizeExpeditionDestinationMode(action.mode),
       };
       return { ...state, parties: updatedParties };
     }
@@ -2592,6 +2768,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let totalAutoSellItems: { itemName: string; autoSellProfit: number }[] = [];
       let roomCounter = 0;
       let expeditionEnded = false;
+      const revealedAbilityIds = new Set<string>(state.global.revealedGlossaryAbilityIds);
+      characterStats.forEach((stats) => {
+        stats.abilities.forEach((ability) => {
+          revealedAbilityIds.add(ability.id);
+        });
+      });
+      const revealedTerrainKeys = new Set<TerrainEffectKey>(state.global.revealedGlossaryTerrainKeys);
 
       // Use new floor structure if available
       if (dungeon.floors && dungeon.floors.length > 0) {
@@ -2678,6 +2861,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
                 effectiveDifficultyOffset,
               );
             }
+            enemy.abilities.forEach((ability) => {
+              revealedAbilityIds.add(ability.id);
+            });
 
             // Pass currentHp to maintain HP persistence during expedition
             const roomStartHp = currentHp;
@@ -2685,6 +2871,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             const terrainEffect = colosseumTerrainEffect !== 'none'
               ? colosseumTerrainEffect
               : floor.terrainEffect;
+            if (terrainEffect) {
+              revealedTerrainKeys.add(terrainEffect);
+            }
             const battleResult = executeBattle(currentParty, enemy, bags, roomStartHp, { terrainEffect });
 
             // Update threat bags from battle result
@@ -3127,6 +3316,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...state.global,
           inventory: finalInventory,
           gold: finalGold,
+          ...revealGlossaryFromEncounter(state.global, revealedAbilityIds, undefined),
+          revealedGlossaryTerrainKeys: Array.from(revealedTerrainKeys),
         },
       };
     }
@@ -3860,7 +4051,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
 
     case 'BUY_DEBUG_STORE_ITEM': {
-      // SpecRef: 8.4.3 | Debug store(デバッグ店) | Item purchase (debug purpose only)
+      // SpecRef: 8.4.3 | Ashen Route Vault(灰路の蔵) | Item purchase (debug purpose only)
       const DEBUG_STORE_PRICE = 1;
       const DEBUG_STORE_STOCK_LIMIT = 99;
       const baseItem = getItemById(action.itemId);
@@ -4053,6 +4244,19 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           });
           workingState = gameReducer(workingState, { type: 'FINALIZE_DIARY_LOG', partyIndex, isAfkSimulation: true });
 
+          const postFinalizeParty = workingState.parties[partyIndex];
+          if (postFinalizeParty) {
+            const autoAdvanceDecision = shouldAutoAdvanceExpeditionDestination(postFinalizeParty);
+            if (autoAdvanceDecision.shouldAdvance && autoAdvanceDecision.nextDungeonId !== null) {
+              workingState = gameReducer(workingState, {
+                type: 'SELECT_DUNGEON',
+                partyIndex,
+                dungeonId: autoAdvanceDecision.nextDungeonId,
+                selectionMode: 'auto',
+              });
+            }
+          }
+
           const currentParty = workingState.parties[partyIndex];
           if (!currentParty) continue;
           const activeParty = workingState.parties[partyIndex];
@@ -4156,8 +4360,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           gold: 200,
           inventory: createStarterInventory(),
           jewels: createStarterJewelInventory(),
+          jewelAutoEquipPriorityPartyId: 1,
           deityDonations: {},
           unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
+          revealedGlossaryAbilityIds: [],
+          revealedGlossaryTerrainKeys: [],
           shopPurchases: {},
           jewelShopPurchases: {},
           shopRefreshCounts: {},
@@ -4228,11 +4435,27 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         global: {
           ...hydrated.global,
           unlockedDeities: unlockedDeities,
+          jewelAutoEquipPriorityPartyId: normalizeJewelAutoEquipPriorityPartyId(
+            hydrated.global.jewelAutoEquipPriorityPartyId,
+            trimmedParties.length,
+          ),
         },
         parties: trimmedParties,
         selectedPartyIndex: normalizedSelectedPartyIndex,
         bags: normalizeImportedBags(hydrated.bags),
         buildNumber: BUILD_NUMBER,
+      };
+    }
+
+    case 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY': {
+      const normalizedPartyId = normalizeJewelAutoEquipPriorityPartyId(action.partyId, state.parties.length);
+      if ((state.global.jewelAutoEquipPriorityPartyId ?? 1) === normalizedPartyId) return state;
+      return {
+        ...state,
+        global: {
+          ...state.global,
+          jewelAutoEquipPriorityPartyId: normalizedPartyId,
+        },
       };
     }
 
@@ -4346,21 +4569,33 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
 // SpecRef: 5.1.1 | Party State Machine | Time-Based Progress Handling (Online + AFK)
 export function useGameState() {
-  const [state, dispatch] = useReducer(gameReducer, null, createInitialState);
+  const initialStateRef = useRef<InitialStateResult | null>(null);
+  if (!initialStateRef.current) {
+    initialStateRef.current = createInitialState();
+  }
+  const [state, dispatch] = useReducer(gameReducer, initialStateRef.current.state);
   const [notifications, setNotifications] = useState<GameNotification[]>([]);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingSaveStateRef = useRef<GameState | null>(null);
   const lastSavedAtRef = useRef(0);
+  const loadErrorLog = initialStateRef.current.loadErrorLog;
+  const isSaveBlockedByLoadFailure = loadErrorLog !== null;
 
   const flushPendingSave = useCallback(() => {
+    // SpecRef: 5.1.4 | Save and load | Do not overwrite or save the current runtime state.
+    if (isSaveBlockedByLoadFailure) return;
     if (!pendingSaveStateRef.current) return;
     saveState(pendingSaveStateRef.current);
     pendingSaveStateRef.current = null;
     lastSavedAtRef.current = Date.now();
-  }, []);
+  }, [isSaveBlockedByLoadFailure]);
 
   // Save immediately for normal-paced play, while coalescing rapid update bursts (e.g. AFK recovery).
   useEffect(() => {
+    if (isSaveBlockedByLoadFailure) {
+      pendingSaveStateRef.current = null;
+      return;
+    }
     pendingSaveStateRef.current = state;
 
     const now = Date.now();
@@ -4384,7 +4619,7 @@ export function useGameState() {
       saveTimeoutRef.current = null;
       flushPendingSave();
     }, delayMs);
-  }, [state, flushPendingSave]);
+  }, [state, flushPendingSave, isSaveBlockedByLoadFailure]);
 
   useEffect(() => {
     const flushOnHidden = () => {
@@ -4471,7 +4706,15 @@ export function useGameState() {
     }, []),
 
     selectDungeon: useCallback((partyIndex: number, dungeonId: number) => {
-      dispatch({ type: 'SELECT_DUNGEON', partyIndex, dungeonId });
+      dispatch({ type: 'SELECT_DUNGEON', partyIndex, dungeonId, selectionMode: 'manual' });
+    }, []),
+
+    autoSelectDungeon: useCallback((partyIndex: number, dungeonId: number) => {
+      dispatch({ type: 'SELECT_DUNGEON', partyIndex, dungeonId, selectionMode: 'auto' });
+    }, []),
+
+    setExpeditionDestinationMode: useCallback((partyIndex: number, mode: ExpeditionDestinationMode) => {
+      dispatch({ type: 'SET_EXPEDITION_DESTINATION_MODE', partyIndex, mode });
     }, []),
 
     setExpeditionDepthLimit: useCallback((partyIndex: number, depthLimit: ExpeditionDepthLimit) => {
@@ -4594,6 +4837,10 @@ export function useGameState() {
       dispatch({ type: 'UPDATE_DIARY_SETTINGS', partyIndex, settings });
     }, []),
 
+    setJewelAutoEquipPriorityParty: useCallback((partyId: number | null) => {
+      dispatch({ type: 'SET_JEWEL_AUTO_EQUIP_PRIORITY_PARTY', partyId });
+    }, []),
+
     simulateAfk: useCallback((elapsedMs: number, isAutoRepeatEnabled: boolean, gameMode: GameMode = 'm.kemo', simulatedEndAt?: number, cycleDurationScale?: number) => {
       dispatch({ type: 'SIMULATE_AFK', elapsedMs, isAutoRepeatEnabled, gameMode, simulatedEndAt, cycleDurationScale });
     }, []),
@@ -4637,5 +4884,16 @@ export function useGameState() {
   };
 
   const selectedParty = state.parties[state.selectedPartyIndex];
-  return { state, actions, bags: selectedParty?.bags ?? state.bags, notifications };
+  return {
+    state,
+    actions,
+    bags: selectedParty?.bags ?? state.bags,
+    notifications,
+    saveLoadWarning: loadErrorLog
+      ? {
+          message: SAVE_LOAD_WARNING_MESSAGE,
+          errorLog: loadErrorLog,
+        }
+      : null,
+  };
 }

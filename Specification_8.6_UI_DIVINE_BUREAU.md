@@ -255,7 +255,7 @@ HP: 312                 タイプ: 神魔
  
 - Clairvoyance: OFF/ON
   - if OFF, disable `Clairvoyance (未来視)` as default.
-- Speed of time: Real time / x5 boost / x20 hyper / x100 Ultra / x10000 MAX
+- Speed of time: Real time / x5 boost / x20 hyper / x100 Ultra
   - Default: Real time
   - affects side quest duration. 
 - Gods Battle condition: boss items require Normal / Simple(1)
@@ -266,10 +266,9 @@ HP: 312                 タイプ: 神魔
 - Party unlock +1 PT unlock
   - if press the button, unlock one PT.
 - Debug store open OFF/ON
+  - If on, Ashen Route Vault work as a debug store.
   - Default: OFF
-- Display `condition` OFF/ON
-  - Default: OFF
-  - If ON, `condition`.label shows "好調(+203)" instead of "好調"
+
 
 - Display flavor condition OFF/ON
   - Default: OFF

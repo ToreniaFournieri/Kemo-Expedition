@@ -43,6 +43,7 @@
   - Accent color (~5%)
     - Crimson Red `#DC2626`
       (important actions, warnings, highlights)
+  - Damage taken color: `#ffebcd`
 
 **Emoji Icon Replacement**
 - All emoji used in UI, logs, and text outputs must be replaced with their corresponding icon image assets.

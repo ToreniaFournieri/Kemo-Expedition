@@ -10,7 +10,6 @@
     - `x5 boost` → Step × **0.2** (3 seconds)  
     - `x20 boost` → Step × **0.05** (0.75 seconds)  
     - `x100 boost` → Step × **0.01** (0.15 seconds)
-    - `x10000 boost`  → Step × **0.0001** (0.0015 seconds)
   - This scaling also applies to side quest time progression.
 - **`Cycle`**: One complete sequence of state transitions.  
   - A Cycle always **begins at `state.rest`**.
@@ -26,8 +25,9 @@
 | State | Logic | Move to | Durration modifilier |
 |-------|-------|----------|---------|
 | `state.rest`  | at home | sell or feast | `God of Fortification` |
-| `state.sell` | at home, Sell auto-sell items to shop owners. and officially gain items (notification of item gains at the end of sell state.). If they have no trophy nor auto-sell item, skip this state. | feast | `God of Dusk` |
-| `state.feast` | at home, skip if current_profit = 0). Skipped if the party’s total HP was below 30% of Max HP at the beginning of rest state. | sound_sleep or nap_sleep or pray | `Goddess of Fertility` |
+| `state.sell` | at home, Sell auto-sell items to shop owners. and officially gain items (notification of item gains at the end of sell state.). If they have no trophy nor auto-sell item, skip this state. | If (`current_profit = 0`), or (if the party's total HP was below 30% of Max HP at the beginning of `state.rest`) or (`condition` <= 50), move to `state.slump`. Otherwise, move to `state.feast`. | `God of Dusk` |
+| `state.feast` | at home, | sound_sleep or nap_sleep or pray | `Goddess of Fertility` |
+| `state.slump` | | sound_sleep or nap_sleep or pray  | |
 | sleep/ `state.sound_sleep`, `state.nap_sleep` | at home. skip if the party’s total HP was below 10% of Max HP at the beginning of rest state. (no draw a ticket from `t.sleepiness_of_party_bag`) | sound sleep:outfit, nap_sleep:pray |
 | `state.outfit` | equipping items. skip if no sound_sleep | pray |
 | `state.pray` | at home. Party members donate money to their deity. | idle or move |
@@ -44,9 +44,10 @@
 
 | State | Japanese label | Duration | Progress bar behavior |
 |-------|-------|-------|-------|
-| `state.rest` | 休息中 | heal max(1500, +15% MaxHP) / 1 `Step` until full | Continuous |
+| `state.rest` | 休息中 | heal max(1500, +15% MaxHP) / 1 `Step` until full. | Step-based. Main progress bar is current Step / initial total Steps at state start |
 | `state.sell` | 売却中 | 1 `Step` per `auto-sell` items | Step-based |
-| `state.feast` | 宴会中 | 6 `Step` | Continuous |
+| `state.feast` | 宴会中 | 3 + max(0, floor( + `condition` / 50)) `Step`  | Continuous |
+| `state.slump` | 不貞腐れ中 | 1 + max(0, floor( - `condition` / 20)) `Step` | Continuous |
 | `state.sound_sleep` | 熟睡中 | 8 `Step` | Continuous |
 | `state.nap_sleep` | 仮眠中 | 2 `Step` | Continuous |
 | `state.outfit` | 身支度中 | 4 `Step` | Continuous |
@@ -70,27 +71,39 @@
   - 1 Nap: `state.nap_sleep` The party enters a short sleep (light rest).
   - 2 Sound sleep: `state.sound_sleep` The party enters a full sleep state.
 
-- Profit usuage:
-  - At: `state.rest`:
-      - `current_profit` = 0
-  - At the end of `state.sell`:
-      - `current_profit` = Sum of (Auto-sell items)
-  - At the end of `state.feast`:
-      - `current_profit` -= spending feast ( spend 33–67% of `current_profit` without `a.squander`, x1.3 spending with `a.squander`1, x1.5 spending with `a.squander`2. Not exceed current_profit )
-        - Notification :
-          - Without Squander: PT1は25Gお金を使った
-          - With Squander: PT1 君主トムは贅沢に50G使った
-  - At the end of `state.pray`:
-      - `current_profit` -= donattion ( 10–33% of `current_profit` without `a.tithe`, if party has `a.tithe`2, Adds +15% , else if party has `a.tithe`1, Adds +10, if deity = none, donation is 0. )
-      - `current_profit` -= embezzlement (if `God of Cunning`, +50% of `current_profit`. if partymember.`a.momentum`, +10% of `current_profit`. Else if, 0%)
-        -  Notification:
-          - deity = none: PT1は 43Gを貯金した
-          - Without Tithe: PT1は10G神に捧げ、30Gを貯金した
-          - With Tithe: PT1 巡礼者ブラザは祈りと共に12G神に捧げて、28Gを貯金した
-          - Without Gold: (no notification).
-          - If `God of Cunning`, add (21Gを着服した).   ex:PT1は10G神に捧げ、20Gを貯金した (20Gを着服した)
-      - `savings` = `current_profit`, `current_profit` = 0
-  - If Pressing 出撃/神魔戦 button (and it is Available for sortie )
+- **Profit usuage:**
+- At: `state.rest`:
+  - `current_profit` = 0
+- At the end of `state.sell`:
+  - `current_profit` = Sum of (Auto-sell items)
+- At the end of `state.feast`:
+  - `current_profit` -= spending feast ( spend N% of `current_profit` without `a.squander`, x1.3 spending with `a.squander`1, x1.5 spending with `a.squander`2. Not exceed current_profit )
+
+| `condition` | N:percentage of spending|
+|--:|--|
+| -400 ~ -50 | 3% ~ 6% |
+| -50 ~ 50 | 5% ~ 10% |
+| 51 ~ 150 | 10% ~ 20% |
+| 151 ~ 250 | 20% ~ 40% |
+| 251 ~ 350 | 28% ~ 56% |
+| 351 ~ 400 | 34% ~ 68% |
+
+
+  - Notification :
+    - Without Squander: PT1は25Gお金を使った
+    - With Squander: PT1 君主トムは贅沢に50G使った
+- At the end of `state.pray`:
+  - `current_profit` -= donattion ( 10–33% of `current_profit` without `a.tithe`, if party has `a.tithe`2, Adds +15% , else if party has `a.tithe`1, Adds +10, if deity = none, donation is 0. )
+  - `current_profit` -= embezzlement (if `God of Cunning`, +50% of `current_profit`. if partymember.`a.momentum`, +10% of `current_profit`. Else if, 0%)
+  - Notification:
+  - deity = none: PT1は 43Gを貯金した
+  - Without Tithe: PT1は10G神に捧げ、30Gを貯金した
+  - With Tithe: PT1 巡礼者ブラザは祈りと共に12G神に捧げて、28Gを貯金した
+  - Without Gold: (no notification).
+  - If `God of Cunning`, add (21Gを着服した).   ex:PT1は10G神に捧げ、20Gを貯金した (20Gを着服した)
+
+- `savings` = `current_profit`, `current_profit` = 0
+- If Pressing 出撃/神魔戦 button (and it is Available for sortie )
       - `current_profit` -= embezzlement ( 100% of `current_profit`)
         - Notification:
           - Without embezzlement: PT1は神の緊急動員に憤りながらも出撃した
@@ -119,6 +132,24 @@
 - If a transition completes exactly at a chunk boundary, treat it as completed in that chunk and carry remaining time (if any) into the next state/chunk.
 - Multiple state transitions within a single update tick are valid and must be applied deterministically in order.
 - Limit: maximum 1,800 minutes (30 hours) per catch-up simulation in the current version; elapsed time beyond this cap is ignored for that tick.
+
+**AFK → Online Transition Handling**
+- **State Transfer:**
+  - Upon completion of AFK emulation, transfer the **latest runtime state** to Online mode without loss or recalculation.
+  - The transition must be **deterministic and precise**.
+- **Step Continuity Rule:**
+  - If AFK emulation ends mid-`Step`, resume from the exact same `Step` progress in Online mode.
+  - Example:
+    - AFK ends at `state.return`, `Step` progress = **3/7**  
+      → Resume at `state.return`, **3/7 `Step`**.
+- **Sub-step Progress Handling:**
+  - Ignore intra-`Step` (sub-progress) timing.
+  - Preserve only the discrete `Step` progress ratio.
+
+- **Refresh Handling**
+  - On page refresh, AFK emulation must automatically continue and resume from the latest saved state.
+  - The main progress of `state.reactivate` is reset on refresh.
+  - After refresh, the `state.reactivate` progress bar starts again from 0 and resumes counting from the beginning.
 
 
 **Notification**
@@ -185,8 +216,6 @@ PT3: 貯金額: 10G
 | 7 | 4 |
 | 8 | 4 |
 
-
-
 **AFK handling**
 - Side quest progress continues during AFK (`state.reactivate`).
 - Side quest respects speed modifiers (sleep 40 minutes -> use emulated time speed)
@@ -234,10 +263,21 @@ PT3: 貯金額: 10G
 
 **Unlock Party**
 
-| Condition | Unlock party | text for unlock PT |
-|-----|-----|-----|
-| Defeating: `x.expedition`= 2 Boss | 2nd party | (未開放)ルピニアンの亜寒帯踏破で開放 |
-| Defeating: `x.expedition`= 3 Boss | 3rd party | (未開放)ヴァルンの海洋踏破で開放 |
-| Defeating: `x.expedition`= 4 Boss | 4th party | (未開放)フェリディ砂漠踏破で開放 |
-| Defeating: `x.expedition`= 5 Boss | 5th party | (未開放)ウルサンの炎嶺踏破で開放 |
-| Defeating: `x.expedition`= 6 Boss | 6th party | (未開放)プロキオン巣穴踏破で開放 |
+| Condition | Unlock party | text for unlock PT | when this text visible |
+|-----|-----|-----|-----|
+| Defeating: `x.expedition`= 3 Boss | 2rd party | (未開放)ヴァルンの海洋踏破で開放 | Displayed for any Party after `x.expedition` = 3 is unlocked, until the 2nd Party is unlocked |
+| Defeating: `x.expedition`= 4 Boss | 3th party | (未開放)フェリディ砂漠踏破で開放 | Displayed for any Party after `x.expedition` = 4 is unlocked, until the 3rd Party is unlocked |
+| Defeating: `x.expedition`= 5 Boss | 4th party | (未開放)ウルサンの炎嶺踏破で開放 | Displayed for any Party after `x.expedition` = 5 is unlocked, until the 4th Party is unlocked |
+| Defeating: `x.expedition`= 6 Boss | 5th party | (未開放)プロキオン巣穴踏破で開放 | Displayed for any Party after `x.expedition` = 6 is unlocked, until the 5th Party is unlocked | 
+| Defeating: `x.expedition`= 7 Boss | 6nd party | (未開放)レポリアンの月宮踏破で開放 | Displayed for any Party after `x.expedition` = 7 is unlocked, until the 6th Party is unlocked |
+
+
+### 5.1.4 Save and load
+
+- If loading saved state fails, display a popup warning message: "ロードに失敗しました。この画面をスクリーンショットし、開発者へ報告してください"
+- Include the error log details in the popup.
+- If saved data cannot be loaded successfully:
+- Do not automatically start the game using incomplete or partially corrupted progress data.
+- Do not overwrite or save the current runtime state.
+- Preserve the existing saved data to prevent accidental data loss.
+

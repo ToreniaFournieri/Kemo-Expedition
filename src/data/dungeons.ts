@@ -91,7 +91,7 @@ function buildExpeditionEnemyMultipliers(maxTier: number): ExpeditionEnemyMultip
 }
 
 // Expedition enemy multipliers (Specification 2.3.1)
-export const EXPEDITION_ENEMY_MULTIPLIERS: ExpeditionEnemyMultipliers[] = [
+const EXPEDITION_ENEMY_MULTIPLIERS: ExpeditionEnemyMultipliers[] = [
   ...buildExpeditionEnemyMultipliers(8),
 ];
 
@@ -313,7 +313,7 @@ export const getDungeonById = (id: number): Dungeon | undefined =>
 
 
 // Get expedition tier (1-8) from dungeon id
-export function getExpeditionTier(dungeonId: number): number {
+function getExpeditionTier(dungeonId: number): number {
   return getDungeonById(dungeonId)?.tier ?? 1;
 }
 
@@ -336,12 +336,6 @@ export function getEffectiveEnemyLevel(
 ): number {
   const roomEnemyLevel = getEnemyLevelForRoom(dungeonExpLevel, floorNumber, roomType);
   return clampEnemyLevel(roomEnemyLevel + (isLunaMode ? LUNA_MODE_ENEMY_LEVEL_BONUS : 0) + difficultyOffset);
-}
-
-// Get expedition multiplier for enemy stat scaling
-export function getExpeditionEnemyMultipliers(dungeonId: number): ExpeditionEnemyMultipliers {
-  const tier = getExpeditionTier(dungeonId);
-  return EXPEDITION_ENEMY_MULTIPLIERS[tier - 1] ?? EXPEDITION_ENEMY_MULTIPLIERS[0];
 }
 
 export function getExpeditionEnemyMultipliersForTier(tier: number): ExpeditionEnemyMultipliers {

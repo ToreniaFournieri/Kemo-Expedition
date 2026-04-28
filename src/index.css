@@ -63,10 +63,12 @@
   --color-pane: 229 231 235;
   --color-hp-bar: 8 166 69;
   --color-hp-bar-mild: 8 166 69;
-  --color-hp-taken: 252 165 165;
+  /* SpecRef: 8.1 | UI_FOUNDATIONS | Damage taken color */
+  --color-hp-taken: 255 235 205;
   --color-heal-bar: 184 237 178;
   --color-hp-bar-empty: 209 213 219;
-  --sub-theme-emoji-filter: brightness(0) saturate(100%) invert(56%) sepia(71%) saturate(445%) hue-rotate(108deg) brightness(95%) contrast(89%);
+  /* SpecRef: 8.1 | UI_FOUNDATIONS | Emoji Display Rule */
+  --sub-theme-emoji-filter: brightness(0) saturate(100%) invert(55%) sepia(54%) saturate(312%) hue-rotate(108deg) brightness(88%) contrast(88%);
   --accent-theme-emoji-filter: brightness(0) saturate(100%) invert(28%) sepia(74%) saturate(2140%) hue-rotate(356deg) brightness(90%) contrast(86%);
   --side-quest-icon-opacity: 0.9;
 }
@@ -239,7 +241,7 @@ body.app-dark {
   --color-pane: 30 41 59;
   --color-hp-bar: 8 166 69;
   --color-hp-bar-mild: 8 166 69;
-  --color-hp-taken: 185 28 28;
+  --color-hp-taken: 146 103 91;
   --color-heal-bar: 72 130 89;
   --color-hp-bar-empty: 55 65 81;
 }
@@ -411,6 +413,11 @@ body {
   background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.4), rgb(255 255 255 / 0));
 }
 
+.theme-dark .liquid-glass-sortie-button {
+  color: rgb(226 232 240 / 0.92);
+  border-color: rgb(148 163 184 / 0.58);
+}
+
 .theme-dark .liquid-glass-sortie-button--sub {
   background-color: rgb(var(--color-sub) / 0.68);
   background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.24), rgb(255 255 255 / 0));
@@ -438,6 +445,42 @@ body {
   background-image: none;
   box-shadow: none;
   cursor: not-allowed;
+}
+
+.base-stat-chip {
+  background-color: rgb(255 255 255 / 0.6);
+  border: 1px solid rgb(255 255 255 / 0.8);
+  border-radius: 0.25rem;
+  padding: 0.25rem;
+  text-align: center;
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+}
+
+.theme-dark .base-stat-chip {
+  color: rgb(226 232 240 / 0.92);
+  background-color: rgb(15 23 42 / 0.48);
+  border-color: rgb(148 163 184 / 0.8);
+}
+
+.theme-dark .diary-tab-surface .bg-pane,
+.theme-dark .divine-bureau-tab .bg-pane {
+  border: 1px solid rgb(100 116 139 / 0.72);
+}
+
+
+.theme-dark .expedition-party-pane.border-gray-200\/80 {
+  border-color: rgb(100 116 139 / 0.72);
+}
+
+.theme-dark .diary-tab-surface .border-gray-200,
+.theme-dark .divine-bureau-tab .border-gray-200 {
+  border-color: rgb(100 116 139 / 0.9);
+}
+
+.theme-dark .diary-tab-surface .border-gray-100,
+.theme-dark .divine-bureau-tab .border-gray-100 {
+  border-color: rgb(71 85 105 / 0.9);
 }
 
 .ios-glass-slider {

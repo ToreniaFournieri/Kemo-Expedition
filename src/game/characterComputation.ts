@@ -126,7 +126,7 @@ function getUniqueCBonusSum(
 }
 
 
-export const RACE_UNLOCK_ABILITY_IDS: Partial<Record<RaceId, AbilityId>> = {
+const RACE_UNLOCK_ABILITY_IDS: Partial<Record<RaceId, AbilityId>> = {
   caninian: 'resurrect',
   lupinian: 're_counter',
   vulpinian: 'cunning',
@@ -138,7 +138,7 @@ export const RACE_UNLOCK_ABILITY_IDS: Partial<Record<RaceId, AbilityId>> = {
   procyonian: 'resonance',
 };
 
-export const RACE_UNLOCK_BONUS_BY_RACE: Partial<Record<RaceId, BonusType>> = {
+const RACE_UNLOCK_BONUS_BY_RACE: Partial<Record<RaceId, BonusType>> = {
   caninian: 'unlock_caninian_ability',
   lupinian: 'unlock_lupinian_ability',
   vulpinian: 'unlock_vulpinian_ability',
@@ -1002,7 +1002,7 @@ export function getAbilityDescription(id: AbilityId, level: number): string {
     iaigiri: (l) => `物理ダメージをx${l >= 3 ? '2.0' : l === 2 ? '1.8' : '1.6'}倍する。攻撃回数を半減する`,
     heavy_strike: (l) => `物理/魔法ダメージを1.4倍する。攻撃回数を半減し(切り上げ)、減少分を貫通値に変換する(${l >= 2 ? '+1.5' : '+1.0'}%/回)`,
     resonance: (l) => `魔法攻撃1回毎に、全ヒットのダメージが+${l >= 5 ? 15 : l === 4 ? 13 : l === 3 ? 11 : l === 2 ? 8 : 5}%増加する`,
-    command: (l) => `自身より後列の味方が与える物理ダメージを ${l >= 3 ? 1.43 : l === 2 ? 1.35 : 1.2}倍`,
+    command: (l) => `自身より後列の味方が与える物理ダメージを ${l >= 3 ? 1.6 : l === 2 ? 1.5 : 1.4}倍`,
     m_barrier: (l) => `自身より後列の味方への魔法ダメージを ${l >= 3 ? '1/2' : l === 2 ? '3/5' : '2/3'}倍`,
     deflection: (l) => `敵の遠距離攻撃の命中率を${l >= 2 ? '15' : '10'}%低下させる`,
     null_counter: (l) => l >= 3
@@ -1045,10 +1045,17 @@ export function getAbilityDescription(id: AbilityId, level: number): string {
     wind_rider: () => '風の影響を強く受ける(強風下では遠距離攻撃回数が0.50倍、追い風では行動順判定に+2d3)',
     siege: () => '要塞防備による敵の有利な効果を無視できる',
     coldproof: () => '寒さにとても強い(凍傷を無効化する)',
+    dryproof: () => '乾燥していても平気となる(乾燥地形効果を無効化)',
+    vine_cutter: () => '蔓に絡まれても速やかに抜け出せるようになる(捕食蔓地形効果を無効化)',
+    mana_ward: () => '魔力の逆流を防ぐ(水晶域・魔力侵食の地形効果を無効化)',
+    defiance: () => '抑圧に負けなくなる(抑圧地形効果を無効化)',
     fire_protect_breaker: () => '火属性攻撃時に相手の火炎反射・火炎吸収効果を無視する',
     ice_protect_breaker: () => '氷属性攻撃時に相手の氷結反射・氷結吸収効果を無視する',
     thunder_protect_breaker: () => '雷属性攻撃時に相手の雷撃反射・雷撃吸収効果を無視する',
     m_barrier_breaker: () => '相手の魔法障壁・魔法反射・魔法吸収効果を無視する',
+    pursuit: () => '相手が逃走しても追いかける(逃走・隠れ蓑アビリティを無効化)',
+    illusion_breaker: () => '相手の幻を見破る(幻化アビリティを無効化)',
+    bulwark_breaker: () => '壁を取り壊す(壁アビリティを無効化)',
     unforgettable: () => 'アビリティは消して忘れることがなくなる(忘却無効)',
     focus: (l) => `命中ボーナスの効果が${l >= 2 ? '1.3' : '1.2'}倍になる`,
     prophecy: (l) => l >= 2
@@ -1101,6 +1108,11 @@ export function getAbilityDescription(id: AbilityId, level: number): string {
     ambush: (l) => `自身の通常行動時点でいずれの相手もまだこの戦闘中に行動していなかった場合、与ダメージ${l >= 5 ? '1.68' : l === 4 ? '1.65' : l === 3 ? '1.6' : l === 2 ? '1.5' : '1.3'}倍`,
     overwatch: (l) => `自身の通常行動時点で味方および相手がまだこの戦闘中に行動していなかった場合、与ダメージ${l >= 5 ? '1.68' : l === 4 ? '1.65' : l === 3 ? '1.6' : l === 2 ? '1.5' : '1.3'}倍`,
     execution: (l) => `相手の残HPが${l >= 2 ? '50' : '40'}%以下のとき、与ダメージ${l >= 2 ? '1.8' : '1.5'}倍`,
+    anti_ambush: () => '待ち伏せを回避するようになる(待ち伏せアビリティを無効化)',
+    anti_overwatch: () => '監視されなくなる(監視アビリティを無効化)',
+    rage_breaker: () => '相手の闘志を削ぐ(闘志アビリティを無効化)',
+    momentum_breaker: () => '相手の気勢を空回りさせる(気勢アビリティを無効化)',
+    execution_null: () => '処罰を逃れるようになる(エクセキューションを無効化)',
     mimic: () => '相手のアビリティ1つを無作為に指定する。指定したアビリティの効果を発動する',
     shock: () => '相手の最初の通常近接攻撃に対して発動。相手の近接攻撃が1回目ヒットした段階で攻撃をやめさせる',
     null_shock: () => '感電しなくなる',

@@ -136,7 +136,7 @@
 | Nimble | 軽快 | 軽 | 適応 | `a.boost`1, `c.evasion+0.010`, `c.katana_x1.1`, `c.thunder-defense-multiplier_x4/5` | `true` |
 | Perceptive | 看破 | 看 | 機知 | `a.true-sight`, `c.penet+0.100`, `c.bolt_x1.1`, `b.intelligence+1` | `true` |
 | Exacting | 精確 | 精 | 機知 | `a.output-stabilizer`, `c.accuracy+0.020`, `c.archery_x1.1`, `b.strength+1` | `true` |
-| Savvy | 手腕 | 腕 | 機知 | `c.equip-slot+1`, `c.gauntlet_x1.1` | `true` |
+| Resourceful | 手腕 | 腕 | 機知 | `c.equip-slot+1`, `c.gauntlet_x1.1` | `true` |
 | None | (なし) | - | - | none | `false` |
 
 - If `main_class` and  `sub_class` are same class, then it turns into master class, applies master bonus.
@@ -218,30 +218,34 @@
 - **`f.base_multiplier`(base_type: ) table of `b.value`**
   - base_type: `b.strength` or `b.intelligence` -> attack scale
   - base_type: `b.vitality` or `b.mind` -> defense scale
-  - If `b.strength` is 12, then it applies x1.10. If `b.vitality` is 15, then it applies x0.77.
+  - If `b.strength` is 12, then it applies x1.10. If `b.vitality` is 15, then it applies x0.63.
   - If its value is lower or higher so no entry in the table, apply the lowest or highest value.
 
+```
+**attack scale** = 1.10^{(value-10)}
+**defense scale** = 1 / 1.10^{(value-10)}
+```
 
 | Value | attack scale | defense scale |
-|---|---|----|
-| 6 | x0.81 | x1.22 |
-| 7 | x0.86 | x1.16 |
-| 8 | x0.90 | x1.10 |
-| 9 | x0.95 | x1.05 |
+|---|---|---|
+| 6 | x0.70 | x1.43 |
+| 7 | x0.76 | x1.32 |
+| 8 | x0.83 | x1.20 |
+| 9 | x0.91 | x1.10 |
 | 10 | x1.00 | x1.00 |
-| 11 | x1.05 | x0.95 |
-| 12 | x1.10 | x0.90 |
-| 13 | x1.16 | x0.86 |
-| 14 | x1.22 | x0.81 |
-| 15 | x1.28 | x0.77 |
-| 16 | x1.34 | x0.73 |
-| 17 | x1.41 | x0.69 |
-| 18 | x1.48 | x0.66 |
-| 19 | x1.55 | x0.63 |
-| 20 | x1.63 | x0.60 |
-| 21 | x1.71 | x0.57 |
-| 22 | x1.80 | x0.54 |
-| 23 | x1.89 | x0.51 |
+| 11 | x1.10 | x0.91 |
+| 12 | x1.20 | x0.83 |
+| 13 | x1.32 | x0.76 |
+| 14 | x1.45 | x0.69 |
+| 15 | x1.59 | x0.63 |
+| 16 | x1.75 | x0.57 |
+| 17 | x1.93 | x0.52 |
+| 18 | x2.12 | x0.47 |
+| 19 | x2.33 | x0.43 |
+| 20 | x2.56 | x0.39 |
+| 21 | x2.82 | x0.35 |
+| 22 | x3.10 | x0.32 |
+| 23 | x3.41 | x0.29 |
 
 
 - character.`f.NoA`: // NoA 0 = No Action.
@@ -421,70 +425,70 @@ Party.`d.HP` =
 | order | Name | Race | main class | sub class | lineage | predisposition | Initial equipment | Unique |
 |------|------|------|------|------|------|------|------|------|
 | 1 | **ケモ** | **Kemoria** | `class.guardian` | `class.samurai` | **`unascertained`** | `None` | 1101, 1102, 1104, 1105, 1106, 1211 | **`true`** |
-| 2 | ゴン | Vulpinian | `class.duelist` | `class.pilgrim` | `sandstorm` | `Aggressive` | `1104`, `1106` | `false` |
+| 2 | クズノハ | Vulpinian | `class.duelist` | `class.pilgrim` | `sandstorm` | `Aggressive` | `1104`, `1106` | `false` |
 | 3 | ロップ | Leporian | `class.ranger` | `class.ninja` | `abyssal_sea` | `Inquisitive` | `1107`, `1109` |  `false` |
 | 4 | ソウタ | Procyonian | `class.ninja`| `class.striker` | `firmament` | `Evasive` | `1107`, `1109` | `false` |
-| 5 | セルフィン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Amicable` | `1110`, `1112` | `false` |
+| 5 | セルフィン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Introspective` | `1110`, `1112` | `false` |
 | 6 | **ライカ** | Caninian | `class.sage` | `class.alchemist`| **`pioneer`** | `None` | `1110`, `1112`  | **`true`** |
 
 - **PT2** initial condition (when unlocked)
-  - deity: `God of Attrition`
-
-| order | Name | Race | main class | sub class | lineage | predisposition | Unique |
-|------|------|------|------|------|------|------|------|
-| 1 | **パーシヴァル** | Procyonian | `class.samurai` | `class.guardian` | **`hidden_grail`** | `None` | **`true`** |
-| 2 | **ランスロット** | Lupinian | `class.sword-saint` | `class.samurai` | **`almighty`** | `None` | **`true`** |
-| 3 | ルドルフ | Felidian | `class.ranger` | `class.striker` | `abyssal_sea` | `Amicable` | `false` |
-| 4 | コソネ | Murid | `class.striker`| `class.striker` | `firmament` | `Aggressive` | `false` |
-| 5 | ルーファス | Caninian | `class.ninja` | `class.striker` | `frozen_forest` | `Aggressive` | `false` |
-| 6 | アヤ | Vulpinian | `class.wizard` | `class.sage`| `utopia` | `Serenity` | `false` |
-
-- **PT3** initial condition (when unlocked)
   - deity: `God of Cunning`
 
 | order | Name | Race | main class | sub class | lineage | predisposition | Unique |
 |------|------|------|------|------|------|------|------|
 | 1 | **レナード** | Vulpinian | `class.duelist`| `class.lord` | **`meddlesome_fox`** | `None` | **`true`** |
 | 2 | **オルカ** | **Orcinian** | `class.samurai` | `class.sword-saint` | **`rowdy_orca_girl`** | `None` | **`true`** |
-| 1 | シマ | Procyonian | `class.ranger` | `class.ranger` | `frozen_forest` | `Nimble` | `false` |
-| 3 | シーケルン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Amicable` | `false` |
-| 5 | アルテミス | Felidian | `class.alchemist` | `class.wizard` | `machina` | `Serenity` | `false` |
-| 6 | ウォッシ | Lupinian | `class.ninja` | `class.wizard`| `windcross` | `Perceptive` | `false` |
+| 1 | カイマ | Procyonian | `class.ranger` | `class.ranger` | `frozen_forest` | `Nimble` | `false` |
+| 3 | マナエル | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Inquisitive` | `false` |
+| 5 | レイナ | Felidian | `class.alchemist` | `class.wizard` | `machina` | `Serenity` | `false` |
+| 6 | タウロ | Lupinian | `class.ninja` | `class.wizard`| `windcross` | `Perceptive` | `false` |
 
-- **PT4** initial condition (when unlocked)
+- **PT3** initial condition (when unlocked)
   - deity: `Goddess of Fertility`
 
 | order | Name | Race | main class | sub class | lineage | predisposition | Unique |
 |------|------|------|------|------|------|------|------|
-| 1 | グレン | Ursan | `class.guardian` | `class.ranger` | `firmament` | `Evasive` | `false` |
-| 2 | ロス | Caninian | `class.lord` | `class.ninja` | `firmament` | `Exacting` | `false` |
+| 1 | ハムザ | Ursan | `class.guardian` | `class.ranger` | `firmament` | `Evasive` | `false` |
+| 2 | ユースフ | Caninian | `class.lord` | `class.ninja` | `firmament` | `Exacting` | `false` |
 | 3 | **ノクス** | Murid | `class.ninja`| `class.ranger` | **`phantom_thief`** | `None` | **`true`** |
 | 4 | **ルナ** | Felidian | `class.sword-saint` | `class.ranger` | **`crescent_jade`** | `None` | **`true`** |
-| 5 | ラビ | Lupinian | `class.duelist` | `class.striker` | `frozen_forest` | `Amicable` | `false` |
-| 6 | フェン | Vulpinian | `class.sage` | `class.wizard`| `adaptation` | `Inquisitive` | `false` |
+| 5 | カリーム | Lupinian | `class.duelist` | `class.striker` | `frozen_forest` | `Perceptive` | `false` |
+| 6 | ジャリル | Vulpinian | `class.sage` | `class.wizard`| `adaptation` | `Inquisitive` | `false` |
 
-- **PT5** initial condition (when unlocked)
+- **PT4** initial condition (when unlocked)
   - deity:  `God of Fortification`
 
 | order | Name | Race | main class | sub class | lineage | predisposition | Unique |
 |------|------|------|------|------|------|------|------|
-| 1 | **ミシュカ** | Ursan | `class.lord` | `class.ninja` | **`apostate`** | `None` | **`true`** |
-| 2 | **プチーツァ** | **Avian** | `class.ninja` | `class.ranger` | **`flamebound_grove`** | `None` | **`true`** |
-| 3 | ファー | Leporian | `class.ranger` | `class.guardian` | `abyssal_sea` | `Exacting` | `false` |
-| 4 | ヴェリタス | Felidian | `class.striker`| `class.pilgrim` | `firmament` | `Devoted` | `false` |
-| 5 | グレイ | Lupinian | `class.wizard` | `class.sage` | `machina` | `Amicable` | `false` |
-| 6 | セトラ | Cervin | `class.sage` | `class.wizard` | `utopia` | `Savvy` | `false` |
+| 1 | **ミシュカ** | Ursan | `class.lord` | `class.duelist` | **`apostate`** | `None` | **`true`** |
+| 2 | **プチーツァ** | **Avian** | `class.ninja` | `class.sword-saint` | **`flamebound_grove`** | `None` | **`true`** |
+| 3 | ヴェーラ | Leporian | `class.ranger` | `class.guardian` | `abyssal_sea` | `Exacting` | `false` |
+| 4 | イリーナ | Felidian | `class.striker`| `class.pilgrim` | `firmament` | `Devoted` | `false` |
+| 5 | ドミトリ | Lupinian | `class.wizard` | `class.sage` | `machina` | `Introspective` | `false` |
+| 6 | ミラ | Cervin | `class.sage` | `class.wizard` | `utopia` | `Resourceful` | `false` |
 
-- **PT6** initial condition (when unlocked)
+- **PT5** initial condition (when unlocked)
   - deity: `God of Resonance`
 
 | order | Name | Race | main class | sub class | lineage | predisposition | Unique |
 |------|------|------|------|------|------|------|------|
-| 1 | ドンガ | Ursan | `class.pilgrim` | `class.wizard` | `fragment` | `Introspective` | `false` |
-| 2 | ミィス | Caninian | `class.wizard` | `class.ranger` | `abyssal_sea` | `Inquisitive` | `false` |
+| 1 | **葉隠** | Procyonian | `class.samurai` | `class.guardian` | **`hidden_grail`** | `None` | **`true`** |
+| 2 | **蒼牙破** | Lupinian | `class.sword-saint` | `class.samurai` | **`almighty`** | `None` | **`true`** |
+| 3 | 影髭 | Felidian | `class.wizard` | `class.ranger` | `abyssal_sea` | `Exacting` | `false` |
+| 4 | 砕歯 | Murid | `class.striker`| `class.striker` | `firmament` | `Aggressive` | `false` |
+| 5 | 霜踏 | Caninian | `class.ninja` | `class.striker` | `frozen_forest` | `Amicable` | `false` |
+| 6 | 狐火 | Vulpinian | `class.wizard` | `class.sage`| `utopia` | `Serenity` | `false` |
+
+- **PT6** initial condition (when unlocked)
+  - deity: Goddess of Precision
+
+| order | Name | Race | main class | sub class | lineage | predisposition | Unique |
+|------|------|------|------|------|------|------|------|
+| 1 | マーカス | Ursan | `class.pilgrim` | `class.samurai` | `fragment` | `Stubborn` | `false` |
+| 2 | ランスロット | Caninian | `class.samurai` | `class.sword-saint` | `abyssal_sea` | `Resourceful` | `false` |
 | 3 | **フィン** | Leporian | `class.sword-saint` | `class.ranger` | **``unexpected_prince(ss)``** | `None` | **`true`** |
-| 4 | ケラ | Procyonian | `class.alchemist`| `class.alchemist` | `adaptation` | `Inquisitive` | `false` |
+| 4 | パーシヴァル | Procyonian | `class.alchemist`| `class.alchemist` | `adaptation` | `Inquisitive` | `false` |
 | 5 | **マーレ** | Cervin | `class.sage` | `class.wizard` | **`incarnation`** | `None` | **`true`** |
-| 6 | ディル | Murid | `class.wizard` | `class.alchemist` | `utopia` | `Nimble` | `false` |
+| 6 | サム | Murid | `class.wizard` | `class.alchemist` | `utopia` | `Nimble` | `false` |
   
 

@@ -2,7 +2,45 @@
 
 ### 8.3 UI_EXPEDITION
 
-- If 自動周回 is ON, it repeats repart to the dungeon.
+- **Auto Destination Change Logic**
+
+**Controls:**  
+- Toggle: **一任 / 固定**  Default: 一任
+- `Destination` pull-down list
+- `Expedition Depth Limit` pull-down list
+
+- Togglr Mode Behavior
+  - 一任 (Auto)
+    - At the end of `state.rest`, automatically evaluate whether the party should move to the next expedition.
+    - Destination is automatically updated when this condition is satisfied. During AFK emulated mode, check at the end of each check. 
+    - Condition for automatic progression:
+
+```text
+(1) If {the expedition has been cleared at least once} and  {expedition.`x.enemy_level` + (Difficulty Offset level) ≤ current PT level + 9}
+and {condition ≥ 250}
+→ Move to the next expedition
+
+(2) If {the expedition has been cleared at least once} and  {expedition.`x.enemy_level` + (Difficulty Offset level) ≤ current PT level + 10}
+and {condition ≥ 240}
+→ Move to the next expedition
+
+(3) If {the expedition has been cleared at least once} and  {expedition.`x.enemy_level` + (Difficulty Offset level) ≤ current PT level + 10}
+and {condition ≥ 230}
+→ Move to the next expedition
+
+```
+
+- 固定 (Fixed)
+  - The party remains at the player-selected Destination.
+ - Manual Destination Selection
+  - If the player manually selects an expedition from the Destination pull-down list:
+  - The mode is automatically changed to 固定(Fixed).
+
+- Toggle Operation
+  - Tapping the 一任 / 固定 label switches between the two modes.
+  - This functions as a manual toggle between Auto and Fixed mode.
+
+- **`Destination` pull-down list**
 
 - **Expedition Depth Limit (探索深度)**
   - Players can set a depth limit; when the party reaches the selected floor, it stops the expedition and returns home automatically.
@@ -20,12 +58,30 @@ PT1 HP (HP bar, blue) `x.expedition`.name       outcome `condition`.label ▼
   - This option becomes available only after the party has defeated that expedition’s Boss at least once (lifetime, party-wide).
   - Scope: The offset is independently stored per party–expedition pair and does not affect other expeditions.
 
-- "###" part: HP donuts bar, sub-color
+
+- **Outer Ring (`###` area):**
+  - Display as the **HP donut bar**.
+  - Use **sub-color** for the fill.
+
+- **Inner Ring (`###` area):**
+  - Display as the **`condition` donut bar**.
+  - The fill origin is fixed at the **12 o’clock position (top center)**.
+  - If `condition` is positive:
+    - Fill using **sub-color**, progressing **clockwise** from the top.
+  - If `condition` is negative:
+    - Fill using **accent color**, progressing **counterclockwise** from the top.
+
+- Floating bubble text for outer and inner ring: show HP current / max, `condition`, condition.label (condition.value) 
+
+```
+HP 2350 / 4680
+好調 (+267)
+```
 
 
 - **Sub progress bar:**
   - Visibility:
-    - Displayed only when `state` is `state.sell` or `state.explore`.
+    - Displayed only when `state` is `Step-based`. (example: `state.rest`, `state.sell`, or `state.explore`)
     - For all other states, render an empty placeholder to preserve layout height.
   - Represents elapsed time within the current `Step`.
   - Fills **continuously** from 0% → 100% during a single `Step` (e.g., 15 seconds).
@@ -35,14 +91,52 @@ PT1 HP (HP bar, blue) `x.expedition`.name       outcome `condition`.label ▼
     - Progress fill: Sub color with 40% opacity (α = 0.4)
     - Background: Transparent
 
+- **"出撃" / "神魔戦" Buttons:**
+  - State: Disabled (grayed out) when the action is not available.
+  - Disable conditions:
+    - Party HP = 0
+    - Party is in `state.explore`
+    - "神魔戦" button is pressed and party is going to engage gods battle. 
+
+**Progress Visual Update**
+- Display compact progress summaries in the party pane without changing the pane height.
+
+- Examples:
+
+| Type | Compact display | Floating bubble text |
+|---|---|---|
+| Entry Loot-gate condition | 🗺️ボス撃破せよ| ボス撃破 でヴァルンの樹林帯 開放 |
+| Normal Loot-gate condition | 🗃️0/3 1F-4解放 | アンコモンアイテム 0/3で 1F-4解放 |
+| God battle Loot-gate condition | 🗃️2/3 神魔解放 | ボスレアアイテム 2/3 で神魔タヌエ戦 |
+| Side quest | 📜 660分治療を受ける 🕘 | 660分治療を受ける（9%, 63分, 残り9時間） |
+
+- The thin line progress bar is displayed under the text.
+- Each progress item uses `current / total` progress.
+
+**Progress calculation:**
+
+| Type | Progress |
+|---|---|
+| Entry Loot-gate condition |  none |
+| Normal Loot-gate condition | `current / total`|
+| God battle Loot-gate condition | `current / total`|
+| Side quest | `current / total` |
+
+**Remaining time icon:**
+
+- For timed side quests, display a clock icon after the side quest text.
+- The clock icon represents the remaining limit time.
+- Example: `🕘` means approximately **9 hours remaining**.
+- Detailed remaining time is shown only in the floating bubble.
+
 ```
-( ####### ) PT1 ルピニアンの断崖   踏破  好調▼
-( ##   ## ) ボス撃破 でヴァルンの樹林帯 開放
-( ####### ) 📜 10回アイテム獲得を空振りする(10%, 1回, 残り4時間)
+( ####### ) PT1 ルピニアンの断崖   踏破 ▼
+( ##   ## ) 
+( ####### ) 🗃️2/3 神魔解放 📜660分治療を受ける 🕘 
 移動中: flavor text (background: state progress bar)
 (Sub progress bar)
 
-ルピニアンの断崖(pull down list)  探索深度 全て 出撃
+一任 ルピニアンの断崖(pull down list)  探索深度 全て 出撃
 難易度: (Slider) +10
 (Left-Aligned)                           (Right-Aligned)
 踏破U/帰還V/引分W/撤退X/敗北Y 合計 Z回    リセット
@@ -116,7 +210,7 @@ HP: 16,035
   - 次の目標: show next Loot-Gate condition. 
 
 - **Gods Battle (神魔戦)**
-  - Loot Gate Condition: Collect 10 Boss rare items in dungeons to unlock Gods Battle. (If Gods battle condition is `Simple`, 1 Boss rare items instead)
+  - Loot Gate Condition: Collect X Boss rare items in dungeons to unlock Gods Battle. (If Gods battle condition is `Simple`, 1 Boss rare items instead)
     - "特殊目標: `x.expedition`のボスレアアイテム 0/1 で神魔`godname`戦"
   - UI / Trigger:
     - When the condition is met, the 「出撃」(Deploy) button changes to 「神魔戦」(Gods Battle).
@@ -132,7 +226,9 @@ HP: 16,035
     - **On Defeat**
       - The 「神魔戦」 button remains available.
       - The player may retry the Gods Battle without re-collecting Boss rare items.
-
+  - **Party Pane Visual State:**
+    - After pressed "神魔戦" button, during `state.move` and `state.explore` of Gods battle, the Party pane border uses the Sub color theme (emphasis state).
+    - On battle end, the border style reverts to the default (normal) style. 
 
 - Unlocked party:
 

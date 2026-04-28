@@ -2179,3 +2179,142 @@
 | return | Draw_Retreat | name は決め手を欠いた戦闘を切り上げ、慎重に帰還している |
 | return | Draw_Retreat | name は均衡が崩れぬと見て、被害拡大前に撤収した |
 | return | Draw_Retreat | name は勝敗なき離脱を受け止め、拠点での立て直しを急いでいる |
+| slump | none | {name}は不貞寝している |
+| slump | none | {name}はやる気を失っている |
+| slump | none | {name}は何もせず時間を潰している |
+| slump | none | {name}は床に転がって動こうとしない |
+| slump | none | {name}はぼんやりと過ごしている |
+| slump | none | {name}はため息ばかりついている |
+| slump | none | {name}は壁にもたれて沈んでいる |
+| slump | none | {name}は気分が乗らず動かない |
+| slump | none | {name}は不満げに黙り込んでいる |
+| slump | none | {name}はすべてが面倒になっている |
+| slump | none | {name}は不貞寝している |
+| slump | none | {name}は毛布にくるまり、現実から目を背けている |
+| slump | none | {name}は床に転がり、しばらく動く気がない |
+| slump | none | {name}は敗北を引きずり、無言でうずくまっている |
+| slump | none | {name}は虚ろな目で天井を見つめている |
+| slump | none | {name}はやる気を失い、だらけきっている |
+| slump | none | {name}は仲間の声にも反応せず、ふて寝している |
+| slump | none | {name}は装備を放り出し、その場に座り込んでいる |
+| slump | none | {name}は何もする気が起きず、ただ時間を浪費している |
+| slump | none | {name}は敗北の記憶に沈み込み、動けずにいる |
+| slump | with race.`Lupinian` | {name}は低く唸りながら、不貞寝している |
+| slump | with race.`Lupinian` | {name}は遠吠えを一つ残し、そのまま倒れ込んだ |
+| slump | with race.`Lupinian` | {name}は仲間から距離を取り、ひとりでうずくまっている |
+| slump | with race.`Lupinian` | {name}は牙を噛みしめたまま、静かに横たわっている |
+| slump | with race.`Lupinian` | {name}は敗北を恥じるように、顔を伏せている |
+| slump | with race.`Lupinian` | {name}は何度も尾を打ちつけ、不満を抑えきれない |
+| slump | with race.`Lupinian` | {name}は群れに顔向けできず、視線を逸らしている |
+| slump | with race.`Lupinian` | {name}は物音に敏感に反応するが、動こうとしない |
+| slump | with race.`Lupinian` | {name}は荒い息をつきながら、その場に伏せている |
+| slump | with race.`Lupinian` | {name}は再起の気配もなく、ただ静かに力を失っている |
+| slump | with race.`Vulpinian` | {name}は何事もなかったかのように横になっているが、尻尾だけが力なく揺れている |
+| slump | with race.`Vulpinian` | {name}は軽口も叩かず、静かに目を閉じている |
+| slump | with race.`Vulpinian` | {name}は敗北を笑い飛ばそうとしたが、すぐに口をつぐんだ |
+| slump | with race.`Vulpinian` | {name}は仲間の視線を避け、物陰に身を潜めている |
+| slump | with race.`Vulpinian` | {name}は何か策を巡らせる様子もなく、ただ寝転がっている |
+| slump | with race.`Vulpinian` | {name}は尻尾を抱え込み、静かに丸くなっている |
+| slump | with race.`Vulpinian` | {name}は普段の余裕を失い、ぼんやりと空を見ている |
+| slump | with race.`Vulpinian` | {name}は言い訳を考えているが、言葉にならない |
+| slump | with race.`Vulpinian` | {name}は耳を伏せ、気配を消すようにしている |
+| slump | with race.`Vulpinian` | {name}は再起の策も浮かばず、ただ時間をやり過ごしている |
+| slump | with race.`Felidian` | {name}は毛づくろいを続けているが、どこか雑になっている |
+| slump | with race.`Felidian` | {name}は何事もなかったかのように丸くなっている |
+| slump | with race.`Felidian` | {name}は静かに目を細め、誰とも目を合わせない |
+| slump | with race.`Felidian` | {name}は気まぐれに立ち上がるが、すぐに座り込んだ |
+| slump | with race.`Felidian` | {name}は不機嫌そうに尻尾を揺らしている |
+| slump | with race.`Felidian` | {name}は高い場所にも登らず、床に伏せたままだ |
+| slump | with race.`Felidian` | {name}は呼びかけに耳だけ動かし、応じようとしない |
+| slump | with race.`Felidian` | {name}は爪を研ぐ気力もなく、ただじっとしている |
+| slump | with race.`Felidian` | {name}は誇りを傷つけられたまま、黙り込んでいる |
+| slump | with race.`Felidian` | {name}は気配を消すように静かに丸まり、動かない |
+| slump | with race.`Caninian` | {name}は耳と尾を垂らし、しょんぼりと伏せている |
+| slump | with race.`Caninian` | {name}は仲間のそばに寄るが、すぐに力なく座り込んだ |
+| slump | with race.`Caninian` | {name}は小さく鳴き声を漏らし、そのまま動かない |
+| slump | with race.`Caninian` | {name}は何かを待つようにこちらを見るが、やがて目を伏せた |
+| slump | with race.`Caninian` | {name}は元気を出そうと尾を振るが、すぐに止まってしまう |
+| slump | with race.`Caninian` | {name}は仲間の顔色をうかがいながら、静かに伏せている |
+| slump | with race.`Caninian` | {name}は地面に顎を乗せ、ため息をついている |
+| slump | with race.`Caninian` | {name}は励ましを待つように耳を動かすが、反応は鈍い |
+| slump | with race.`Caninian` | {name}は少し立ち上がるが、すぐに座り直してしまう |
+| slump | with race.`Caninian` | {name}は仲間に寄り添いながらも、元気が出ない様子だ |
+| slump | with race.`Ursan` | {name}は大きな体を横たえ、重々しく動かない |
+| slump | with race.`Ursan` | {name}は低く唸り、そのまま黙り込んでいる |
+| slump | with race.`Ursan` | {name}は座り込んだまま、じっと地面を見つめている |
+| slump | with race.`Ursan` | {name}は深く息をつき、再び動く気配を見せない |
+| slump | with race.`Ursan` | {name}は腕を組んだまま、静かに考え込んでいる |
+| slump | with race.`Ursan` | {name}は苛立ちを抑えるように爪を地面に立てている |
+| slump | with race.`Ursan` | {name}は仲間の声にも反応せず、ただ沈黙している |
+| slump | with race.`Ursan` | {name}は一歩も動かず、その場に根を張ったようだ |
+| slump | with race.`Ursan` | {name}は力を失ったように肩を落としている |
+| slump | with race.`Ursan` | {name}は再び立ち上がる気配もなく、じっとしている |
+| slump | with race.`Procyonian` | {name}は軽口を叩くが、どこか空虚に響いている |
+| slump | with race.`Procyonian` | {name}は物陰に隠れ、そのまま出てこない |
+| slump | with race.`Procyonian` | {name}は寝転びながら、現実から目を逸らしている |
+| slump | with race.`Procyonian` | {name}は何か企んでいるふりをするが、すぐに諦めた |
+| slump | with race.`Procyonian` | {name}は尻尾を抱えて丸まり、じっとしている |
+| slump | with race.`Procyonian` | {name}は周囲を気にしつつも、動こうとしない |
+| slump | with race.`Procyonian` | {name}は冗談を言いかけて、言葉を飲み込んだ |
+| slump | with race.`Procyonian` | {name}は幻でも見ているかのようにぼんやりしている |
+| slump | with race.`Procyonian` | {name}は力なく笑い、そのまま寝転がった |
+| slump | with race.`Leporian` | {name}は耳を伏せ、小さく丸まって震えている |
+| slump | with race.`Leporian` | {name}は物音にびくつきながら、その場から動けない |
+| slump | with race.`Leporian` | {name}は周囲を警戒し続け、休むこともできない |
+| slump | with race.`Leporian` | {name}は草陰に隠れたまま、出てこようとしない |
+| slump | with race.`Leporian` | {name}は何度も立ち上がろうとするが、すぐに座り込む |
+| slump | with race.`Leporian` | {name}は目を潤ませ、じっと耐えている |
+| slump | with race.`Leporian` | {name}は逃げ場を探すように視線を彷徨わせている |
+| slump | with race.`Leporian` | {name}は耳をぴくりとも動かさず、固まっている |
+| slump | with race.`Leporian` | {name}は息を潜め、気配を消そうとしている |
+| slump | with race.`Leporian` | {name}は疲れ果て、その場にへたり込んでいる |
+| slump | with race.`Cervin` | {name}は耳を立てたまま、静かに動きを止めている |
+| slump | with race.`Cervin` | {name}は視線を落とし、気配を消すように佇んでいる |
+| slump | with race.`Cervin` | {name}は一歩踏み出そうとして、ためらい足を止めた |
+| slump | with race.`Cervin` | {name}は物音に敏感に反応するが、逃げる気力もない |
+| slump | with race.`Cervin` | {name}は誇りを保つように立っているが、足元は揺らいでいる |
+| slump | with race.`Cervin` | {name}は仲間の後ろに静かに下がり、距離を取っている |
+| slump | with race.`Cervin` | {name}は何かを警戒するように周囲を見渡している |
+| slump | with race.`Cervin` | {name}はその場に立ち尽くし、しばらく動こうとしない |
+| slump | with race.`Cervin` | {name}は肩を落とし、静かに呼吸を整えている |
+| slump | with race.`Cervin` | {name}は再び歩き出す気配もなく、ただ佇んでいる |
+| slump | with race.`Murid` | {name}は物陰に身を潜め、小さく震えている |
+| slump | with race.`Murid` | {name}は周囲を気にしながら、動けずにいる |
+| slump | with race.`Murid` | {name}は小さく丸まり、息を潜めている |
+| slump | with race.`Murid` | {name}は音に敏感に反応するが、逃げ出す気力もない |
+| slump | with race.`Murid` | {name}は何度も様子をうかがうが、踏み出せない |
+| slump | with race.`Murid` | {name}は隠れ場所から顔を出すが、すぐに引っ込めた |
+| slump | with race.`Murid` | {name}は仲間の後ろに隠れ、静かに身を縮めている |
+| slump | with race.`Murid` | {name}は小さく鳴き声を漏らし、そのまま動かない |
+| slump | with race.`Murid` | {name}はその場にへたり込み、気配を消そうとしている |
+| slump | with race.`Murid` | {name}は疲れ切り、じっと動かずにいる |
+| slump | with race.`Kemoria` | {name}は静かに目を閉じ、思考の底に沈んでいる |
+| slump | with race.`Kemoria` | {name}は敗北を反芻するように、じっとしている |
+| slump | with race.`Kemoria` | {name}は何も語らず、その場に座り込んでいる |
+| slump | with race.`Kemoria` | {name}は視線を落とし、内面に意識を向けている |
+| slump | with race.`Kemoria` | {name}は立ち上がる理由を見失い、動かない |
+| slump | with race.`Kemoria` | {name}はただ呼吸を繰り返し、時間をやり過ごしている |
+| slump | with race.`Kemoria` | {name}は感情を抑え込み、静寂の中にいる |
+| slump | with race.`Kemoria` | {name}は何かを考えているが、答えには至らない |
+| slump | with race.`Kemoria` | {name}は再起の兆しもなく、ただ沈黙している |
+| slump | with race.`Kemoria` | {name}は自分の中で何かが途切れたまま、動けずにいる |
+| slump | with race.`Orcinian` | {name}は静かに横たわり、深い海のように沈黙している |
+| slump | with race.`Orcinian` | {name}は遠くを見つめ、意識がどこかへ漂っている |
+| slump | with race.`Orcinian` | {name}は仲間の気配を感じながらも、応じようとしない |
+| slump | with race.`Orcinian` | {name}は低く息を吐き、そのまま動かない |
+| slump | with race.`Orcinian` | {name}は何かを探すように視線を巡らせるが、すぐに止まった |
+| slump | with race.`Orcinian` | {name}は声にならない呼びかけを胸の内に沈めている |
+| slump | with race.`Orcinian` | {name}は記憶の底に沈み込むように、目を閉じている |
+| slump | with race.`Orcinian` | {name}はわずかに身じろぐが、再び静止した |
+| slump | with race.`Orcinian` | {name}は外界を遮断するように、意識を閉ざしている |
+| slump | with race.`Orcinian` | {name}は再び浮かび上がる気配もなく、ただ沈んでいる |
+| slump | with race.`Avian` | {name}は翼をたたみ、その場に座り込んでいる |
+| slump | with race.`Avian` | {name}は飛び立とうとして、すぐに力なくやめた |
+| slump | with race.`Avian` | {name}は羽を乱したまま、ぼんやりと空を見ている |
+| slump | with race.`Avian` | {name}は高みを見上げるが、飛ぶ気力がない |
+| slump | with race.`Avian` | {name}は羽ばたくこともなく、静かに佇んでいる |
+| slump | with race.`Avian` | {name}は小さく羽を震わせ、そのまま動かない |
+| slump | with race.`Avian` | {name}は視線を遠くへ投げたまま、戻ってこない |
+| slump | with race.`Avian` | {name}は地に伏し、翼を広げることすらしない |
+| slump | with race.`Avian` | {name}は風を感じても、反応を示さない |
+| slump | with race.`Avian` | {name}は再び空へ向かう気配もなく、ただ静止している |

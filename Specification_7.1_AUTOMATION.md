@@ -16,6 +16,9 @@
 - The system only fills empty slots or upgrades existing equipment without replacing it with a different item category.
 - No other policy exist in this version.
 
+##### 7.1.1.0 AUTO Jewel Equipment
+- `7.1.3 AUTO Jewel Equipment`
+
 ##### 7.1.1.1 Removes all equipment
 - Record the **jewel** assignments of each equipped item category as **Memory C**.
 - Record the all of its equipment as **Memory D**.
@@ -303,10 +306,10 @@
 
 | Outcome | `condition.terrible` | `condition.poor` | `condition.low` | `condition.cautious` | `condition.normal` | `condition.steady` | `condition.good` | `condition.great` | `condition.excellent` |
 |--|--:|--:|--:|--:|--:|--:|--:|--:|--:|
-| `Clear` | +12 | +10 | +8 | +6  | +4 | +3 | +2  |  +1  |  +1 |
+| `Clear` | +15 | +12 | +9 | +6  | +4 | +3 | +2  |  +1  |  +1 |
 | `Turned_Back` | +6 | +5 | +4 | +3 | +2 | +1  | +1 | 0 | 0 |
-| `Draw_Retreat` | +2 | +1 | 0 | -1 | -2 | -3 | -4 | -5 | -6 |
-| `Wounded_Retreat` | 0  | -2 | -4 | -6 | -8 | -10 | -12 | -14 | -16 |
+| `Draw_Retreat` | +2 | +1 | +1 | 0 | -1 | -3 | -4 | -5 | -6 |
+| `Wounded_Retreat` | +1  | 0 | -1 | -2 | -8 | -10 | -12 | -14 | -16 |
 | `Defeat` | -4 | -15 | -26 | -38 | -50 | -58 | -64 | -68 | -70 |
 
 | `condition` | key | label |
@@ -335,3 +338,52 @@
     - If triggered, engage `God Battle` and apply the corresponding `condition` reduction.
     - This simplified handling applies only during AFK chunk processing.
 
+
+#### 7.1.3 AUTO Jewel Equipment
+
+- In the Inventory tab → Jewel subcategory, the player can select one Party as the **Jewel Priority Party**.
+- Label: **自動結晶装備**
+- Selection List:
+  - `手動`
+  - `PT1`, `PT2`, `PT3`...
+- Only unlocked Parties are displayed in the selection list.
+- Default: `PT1`
+
+- During Auto Equipment timing, if the target party is the Jewel Priority Party, its members automatically equip jewels according to the following rules.
+
+##### 7.1.3.1 Auto Assignment Order
+
+1. Check all jewels currently owned by that party member.
+   - Record these equipped jewels as **Memory J**.
+
+2. Determine the corresponding jewel category based on the table below.
+   - Check Inventory for available jewels.
+   - Exclude jewels with the same item type and rank.
+   - Exclude jewels already stored in **Memory J**.
+   - Internally store the remaining valid jewels as the list of potential jewel candidates.
+   - Only one jewel is allowed per combination of item type and rank.
+
+3. Assign valid jewels to equipment. 
+   - Start from `i.armor`, following the Jewel Category Mapping order. 
+   - Jewel assignment priority is from higher-grade jewels to lower-grade jewels.
+   - Continue until either:
+     - no available jewels remain, or
+     - all eligible equipment slots have been assigned a jewel.
+
+
+**Jewel Category Mapping**
+
+| Item type | Auto-equipped jewel |
+|---|---|
+| `i.armor` | `j.fort` |
+| `i.robe` | `j.ward` |
+| `i.shield` | `j.shade` |
+| `i.sword` | `j.might` |
+| `i.katana` | `j.focus` |
+| `i.gauntlet` | `j.fort` |
+| `i.arrow` | `j.shade` |
+| `i.bolt` | `j.might` |
+| `i.archery` | `j.focus` |
+| `i.wand` | `j.arcana` |
+| `i.grimoire` | `j.arcana` |
+| `i.catalyst` | `j.ward` |

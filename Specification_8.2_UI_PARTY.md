@@ -4,9 +4,12 @@
 - Party tab
 
 #### 8.2.1 Displays
+- Up to 6 parties can exist.
+- Locked parties are not displayed.
+- All unlocked parties are displayed normally and can be selected.
+- If only one Party is unlocked, the Party List is hidden.
+- The Party List becomes visible only when two or more parties are unlocked.
 
-- List of party
-  - Potentially there are 6 parties.
 ```
   PT1    PT2    PT3    PT4    PT5     PT6
 ```

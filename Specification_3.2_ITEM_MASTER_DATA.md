@@ -38,7 +38,7 @@
 | 1 | E | `Beast` | `i.sword`EA | 牙の剣 |
 | 1 | E | `Beast` | `i.gauntlet`EA | 獣革の拳当て |
 | 1 | E | `Beast` | `i.robe`EA | 毛皮のまとい |
-| 1 | E | `Beast` | `i.katana`EA | 牙研ぎの曲刀 |
+| 1 | E | `Beast` | `i.katana`EA | 追跡の鎌 | `a.pursuit` |
 | 1 | E | `Beast` | `i.shield`EA | アイギスの盾 | `c.physical-defense_x2/3` |
 | 1 | E | `Aerial` | `i.robe`EB | 風羽衣 | `a.wind-rider` |
 | 1 | E | `Aerial` | `i.shield`EB | 銀鏡の盾 | `c.magical-defense-x2/3` |
@@ -53,7 +53,7 @@
 | 1 | E | `Insect_Swarm` | `i.bolt`EC | 甲殻片 |
 | 1 | E | `Insect_Swarm` | `i.sword`EC | 虫牙 |
 | 1 | E | `Insect_Swarm` | `i.armor`EC | 甲鎧 | `a.null-death-touch` |
-| 1 | B | `Caninian` | `i.sword`BD | 長剣 |
+| 1 | B | `Caninian` | `i.sword`BD | 小刀 | `a.vine-cutter` |
 | 1 | B | `Caninian` | `i.gauntlet`BD | 手甲 |
 | 1 | B | `Caninian` | `i.shield`BD | 霧払 | `a.true-sight` |
 | 1 | B | `Caninian` | `i.armor`BD | ライトアーマー |
@@ -84,8 +84,8 @@
 | 2 | U | none | `i.arrow`U | 羽矢 |
 | 2 | U | none | `i.bolt`U | 石ボルト |
 | 2 | U | none | `i.archery`U | 霜枝の弓 |
-| 2 | E | `Frost` | `i.arrow`EA | 氷霜の矢 |
-| 2 | E | `Frost` | `i.katana`EA | 氷霜の太刀 |
+| 2 | E | `Frost` | `i.arrow`EA | 氷霜の矢 | `e.ice+0.020`
+| 2 | E | `Frost` | `i.katana`EA | 氷霜の太刀 | `e.ice+0.020` |
 | 2 | E | `Frost` | `i.sword`EA | 白霜牙の剣 | `e.ice+0.020` |
 | 2 | E | `Frost` | `i.armor`EA | 凍狼の毛鎧 |
 | 2 | E | `Frost` | `i.shield`EA | 氷牙の防盾 | `r.ice_x2/3` |
@@ -105,7 +105,7 @@
 | 2 | B | `Lupinian` | `i.armor`BD | ファーストエイド | `a.first-aid`1  |
 | 2 | B | `Lupinian` | `i.arrow`BD | 狼毛の矢 |
 | 2 | B | `Lupinian` | `i.wand`BD | 蒼狼の杖 |
-| 2 | B | `Lupinian` | `i.catalyst`BD | 蒼狼核の触媒 |
+| 2 | B | `Lupinian` | `i.catalyst`BD | 蒼き護符 | `a.mana-ward` |
 | 2 | B | `Lupinian` | `i.bolt`BD | 狼爪ボルト |
 | 2 | B | `Lupinian` | `i.archery`BD | ルピニアン毛弓 |
 | 3 | C | none | `i.sword`C | 貝刃の短剣 |
@@ -139,7 +139,7 @@
 | 3 | E | `Marine` | `i.robe`EA | 潮王の外套 |
 | 3 | E | `Marine` | `i.shield`EA | 雷電の防盾 | `r.thunder_x2/3` |
 | 3 | E | `Marine` | `i.sword`EA | 小刀 | `a.null-bind` |
-| 3 | E | `Marine` | `i.armor`EA | 深海鱗の鎧 |
+| 3 | E | `Marine` | `i.armor`EA | 鮫肌の鎧 | `a.execution-null` |
 | 3 | E | `Spirit` | `i.wand`EC | 灯霊の杖 |
 | 3 | E | `Spirit` | `i.grimoire`EC | 誘いの書 |
 | 3 | E | `Spirit` | `i.gauntlet`EC | 霊波の手甲 |
@@ -157,7 +157,7 @@
 | 3 | B | `Vulpinian` | `i.grimoire`BD | 狡猾の書 |
 | 3 | B | `Vulpinian` | `i.sword`BD | 雷式 | `e.thunder+0.030`, `b.strength+1` |
 | 3 | B | `Vulpinian` | `i.shield`BD | 矢払盾 | `a.deflection`1 |
-| 3 | B | `Vulpinian` | `i.catalyst`BD | 狐核の触媒 |
+| 3 | B | `Vulpinian` | `i.catalyst`BD | 狐假虎威 | `a.rage-breaker` |
 | 3 | B | `Vulpinian` | `i.gauntlet`BD | 肉球 |
 | 4 | C | none | `i.sword`C | 骨刃の短剣 |
 | 4 | C | none | `i.gauntlet`C | 骨環の手甲 |
@@ -175,7 +175,7 @@
 | 4 | U | none | `i.gauntlet`U | 砂革の手甲 |
 | 4 | U | none | `i.shield`U | 砂紋の盾 |
 | 4 | U | none | `i.armor`U | 砂旅の外衣 |
-| 4 | U | none | `i.robe`U | 乾風衣 |
+| 4 | U | none | `i.robe`U | 乾風衣 | `a.dryproof` |
 | 4 | U | none | `i.katana`U | 砂走刀 |
 | 4 | U | none | `i.wand`U | 陽炎の杖 |
 | 4 | U | none | `i.grimoire`U | 砂塵術式書 |
@@ -185,9 +185,9 @@
 | 4 | U | none | `i.archery`U | 砂風の弓 |
 | 4 | E | `Shadowfang` | `i.armor`EA | 影牙の鎧 |
 | 4 | E | `Shadowfang` | `i.bolt`EA | 影牙のボルト |
-| 4 | E | `Shadowfang` | `i.grimoire`EA | 影牙の秘本 |
+| 4 | E | `Shadowfang` | `i.grimoire`EA | サバイバル入門書 | `a.anti-ambush` |
 | 4 | E | `Shadowfang` | `i.katana`EA | 影牙の太刀 |
-| 4 | E | `Shadowfang` | `i.robe`EA | 影牙の法衣 |
+| 4 | E | `Shadowfang` | `i.robe`EA | 影衣 |  `a.anti-overwatch` |
 | 4 | E | `Shadowfang` | `i.shield`EA | 紅の防盾 | `r.fire_x2/3` |
 | 4 | E | `Felidian` | `i.bolt`EB | 砂猫のボルト |
 | 4 | E | `Felidian` | `i.arrow`EB | 猫牙矢 |
@@ -240,7 +240,7 @@
 | 5 | E | `Beast` | `i.archery`EA | 炎獣の長弓 |
 | 5 | E | `Beast` | `i.gauntlet`EA | 焔爪の手甲 |
 | 5 | E | `Beast` | `i.catalyst`EA | 獣核の焔触媒 |
-| 5 | E | `Dragon` | `i.sword`EB | ドラグスレイブ | `e.fire+30` |
+| 5 | E | `Dragon` | `i.sword`EB | ドラグスレイブ | `e.fire+0.030` |
 | 5 | E | `Dragon` | `i.armor`EB | スケールメイル | `a.null-burn` |
 | 5 | E | `Dragon` | `i.shield`EB | 竜稜の盾 |
 | 5 | E | `Dragon` | `i.katana`EB | 破城槌 | `a.siege` |
@@ -253,7 +253,7 @@
 | 5 | E | `Ursan` | `i.grimoire`EC | 大熊の秘本 |
 | 5 | B | `Ursan` | `i.katana`BD | 焔断 | `a.fire-protect-breaker` |
 | 5 | B | `Ursan` | `i.shield`BD | 灰色の石 | `a.slow` |
-| 5 | B | `Ursan` | `i.gauntlet`BD | 重手甲 |
+| 5 | B | `Ursan` | `i.gauntlet`BD | 破壊腕 | `a.bulwark-breaker` |
 | 5 | B | `Ursan` | `i.sword`BD | 三連爪 |
 | 5 | B | `Ursan` | `i.armor`BD | 熊厚鎧 |
 | 5 | B | `Ursan` | `i.wand`BD | 軍配 |
@@ -293,7 +293,7 @@
 | 6 | E | `Golem` | `i.shield`EB | 岩核の盾 |
 | 6 | E | `Golem` | `i.sword`EB | 岩核の剣 |
 | 6 | E | `Mech` | `i.archery`EA | 鉄筒 |
-| 6 | E | `Mech` | `i.arrow`EA | 鉄礫 |
+| 6 | E | `Mech` | `i.arrow`EA | 鉄礫 | `a.illusion-breaker` |
 | 6 | E | `Mech` | `i.bolt`EA | 鉄塊 |
 | 6 | E | `Mech` | `i.shield`EA | シールド |
 | 6 | E | `Mech` | `i.robe`EA | ケージ |
@@ -401,7 +401,7 @@
 | 8 | E | `Jinma` | `i.gauntlet`EC | 神魔の拳甲 |
 | 8 | E | `Jinma` | `i.katana`EC | 神魔の太刀 |
 | 8 | E | `Jinma` | `i.arrow`EC | 神魔の祀矢 |
-| 8 | E | `Jinma` | `i.grimoire`EC | 神魔祭文書 |
+| 8 | E | `Jinma` | `i.grimoire`EC | 反乱の手引 | `a.defiance` | 
 | 8 | E | `Jinma` | `i.shield`EC | 神魔の盾 |
 | 8 | E | `Jinma` | `i.robe`EC | 神魔の衣 |
 | 8 | E | `Cervin` | `i.sword`ED | 勇鹿の剣 |

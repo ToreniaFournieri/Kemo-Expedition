@@ -2,7 +2,7 @@ import type { AbilityId } from '../types';
 
 export type BonusAbilityGlossarySubcategoryId = 'passive' | 'expedition' | 'reactive' | 'timed';
 
-export type BonusAbilityGlossaryEntry = {
+type BonusAbilityGlossaryEntry = {
   abilityId: AbilityId;
   label: string;
   description: string;
@@ -30,12 +30,21 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'wind_rider', label: '風乗り', description: '風の影響を強く受ける(強風下では遠距離攻撃回数が0.50倍、追い風では行動順判定に+2d3)', levelScale: [], subcategory: 'passive' },
   { abilityId: 'siege', label: '攻城', description: '要塞防備による敵の有利な効果を無視できる', levelScale: [], subcategory: 'passive' },
   { abilityId: 'coldproof', label: '寒さ耐性', description: '寒さにとても強い(凍傷を無効化する)', levelScale: [], subcategory: 'passive' },
+  { abilityId: 'dryproof', label: '耐乾燥', description: '乾燥していても平気となる(乾燥地形効果を無効化)', levelScale: [], subcategory: 'passive' },
+  { abilityId: 'vine_cutter', label: '小刀', description: '蔓に絡まれても速やかに抜け出せるようになる(捕食蔓地形効果を無効化)', levelScale: [], subcategory: 'passive' },
+  { abilityId: 'mana_ward', label: '護符', description: '魔力の逆流を防ぐ(水晶域・魔力侵食の地形効果を無効化)', levelScale: [], subcategory: 'passive' },
+  { abilityId: 'defiance', label: '反発', description: '抑圧に負けなくなる(抑圧地形効果を無効化)', levelScale: [], subcategory: 'passive' },
   { abilityId: 'fire_protect_breaker', label: '火炎守破り', description: '相手の火属性反射・吸収効果を無視する(反射/吸収は発生しない)', levelScale: [], subcategory: 'passive' },
   { abilityId: 'ice_protect_breaker', label: '氷守破り', description: '相手の氷属性反射・吸収効果を無視する(反射/吸収は発生しない)', levelScale: [], subcategory: 'passive' },
   { abilityId: 'thunder_protect_breaker', label: '雷守破り', description: '相手の雷属性反射・吸収効果を無視する(反射/吸収は発生しない)', levelScale: [], subcategory: 'passive' },
   { abilityId: 'm_barrier_breaker', label: '魔法障壁破り', description: '相手の魔法障壁・魔法反射・魔法吸収効果を無視する(反射/吸収は発生しない)', levelScale: [], subcategory: 'passive' },
   { abilityId: 'unforgettable', label: '不忘', description: 'アビリティは消して忘れることがなくなる(忘却無効)', levelScale: [], subcategory: 'passive' },
   { abilityId: 'null_shock', label: '感電予防', description: '感電しなくなる', levelScale: [], subcategory: 'passive' },
+  { abilityId: 'anti_ambush', label: '待ち伏せ回避', description: '待ち伏せを回避するようになる(待ち伏せアビリティを無効化)', levelScale: [], subcategory: 'passive' },
+  { abilityId: 'anti_overwatch', label: '監視回避', description: '監視されなくなる(監視アビリティを無効化)', levelScale: [], subcategory: 'passive' },
+  { abilityId: 'rage_breaker', label: '士気挫き', description: '相手の闘志を削ぐ(闘志アビリティを無効化)', levelScale: [], subcategory: 'passive' },
+  { abilityId: 'momentum_breaker', label: '気勢外し', description: '相手の気勢を空回りさせる(気勢アビリティを無効化)', levelScale: [], subcategory: 'passive' },
+  { abilityId: 'execution_null', label: '処罰回避', description: '処罰を逃れるようになる(エクセキューションを無効化)', levelScale: [], subcategory: 'passive' },
   { abilityId: 'null_corrode', label: '防腐', description: '腐食しなくなる', levelScale: [], subcategory: 'passive' },
   { abilityId: 'null_life_drain', label: '吸血無効', description: '吸血されることがなくなる', levelScale: [], subcategory: 'passive' },
   { abilityId: 'null_death_touch', label: '即死無効', description: '接死が無効化する', levelScale: [], subcategory: 'passive' },
@@ -82,7 +91,7 @@ export const BONUS_ABILITY_GLOSSARY_ENTRIES: BonusAbilityGlossaryEntry[] = [
   { abilityId: 'oblivion', label: '忘却', description: '無作為に選んだ相手のアビリティ1つを、この戦闘中無効化する', levelScale: [], subcategory: 'timed' },
   { abilityId: 'mimic', label: '模倣', description: '相手のアビリティ1つを無作為に指定し、その効果を発動する', levelScale: [], subcategory: 'timed' },
   { abilityId: 'defender', label: '守護者', description: '自身より後列の味方への物理ダメージをxN倍にする', levelScale: ['Lv1: x2/3', 'Lv2: x3/5', 'Lv3: x1/2'], subcategory: 'timed' },
-  { abilityId: 'command', label: '指揮', description: '自身より後列の味方が与える物理ダメージをxN倍にする', levelScale: ['Lv1: x1.2', 'Lv2: x1.35', 'Lv3: x1.43'], subcategory: 'timed' },
+  { abilityId: 'command', label: '指揮', description: '自身より後列の味方が与える物理ダメージをxN倍にする', levelScale: ['Lv1: x1.4', 'Lv2: x1.5', 'Lv3: x1.6'], subcategory: 'timed' },
   { abilityId: 'm_barrier', label: '魔法障壁', description: '自身より後列の味方への魔法ダメージをxN倍にする', levelScale: ['Lv1: x2/3', 'Lv2: x3/5', 'Lv3: x1/2'], subcategory: 'timed' },
   { abilityId: 'ice_absorb', label: '氷結吸収', description: '自身が受ける予定の通常攻撃の氷属性ダメージを無効化し、N吸収して回復する', levelScale: ['Lv1: 1/10', 'Lv2: 3/10', 'Lv3: 5/10', 'Lv4: 7/10', 'Lv5: 100%'], subcategory: 'timed' },
   { abilityId: 'fire_absorb', label: '火炎吸収', description: '自身が受ける予定の通常攻撃の火属性ダメージを無効化し、N吸収して回復する', levelScale: ['Lv1: 1/10', 'Lv2: 3/10', 'Lv3: 5/10', 'Lv4: 7/10', 'Lv5: 100%'], subcategory: 'timed' },

@@ -1,4 +1,4 @@
-export type EnvironmentId = 'dev' | 'qa' | 'beta' | 'default';
+type EnvironmentId = 'dev' | 'qa' | 'beta' | 'default';
 
 function getPathname(): string {
   if (typeof window === 'undefined') return '';

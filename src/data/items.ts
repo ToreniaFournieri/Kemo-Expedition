@@ -195,17 +195,20 @@ const ITEM_ADDITIONAL_BONUS_BY_NAME: Record<string, Bonus[]> = {
   '霧払': [{ type: 'ability', value: 1, abilityId: 'true_sight', abilityLevel: 1 }],
   '甲鎧': [{ type: 'ability', value: 1, abilityId: 'null_death_touch', abilityLevel: 1 }],
   '白霜牙の剣': [{ type: 'ice_offense', value: 0.02 }],
+  '氷霜の矢': [{ type: 'ice_offense', value: 0.02 }],
+  '氷霜の太刀': [{ type: 'ice_offense', value: 0.02 }],
   'シトロネラの衣': [{ type: 'ability', value: 1, abilityId: 'null_life_drain', abilityLevel: 1 }],
   'ファーストエイド': [{ type: 'ability', value: 1, abilityId: 'first_aid', abilityLevel: 1 }],
   '粘膜覆': [{ type: 'ability', value: 1, abilityId: 'null_corrode', abilityLevel: 1 }],
   '硫酸刺': [{ type: 'ability', value: 1, abilityId: 'corrode', abilityLevel: 1 }],
-  '小刀': [{ type: 'ability', value: 1, abilityId: 'null_bind', abilityLevel: 1 }],
+  '小刀': [{ type: 'ability', value: 1, abilityId: 'vine_cutter', abilityLevel: 1 }],
+  '蒼き護符': [{ type: 'ability', value: 1, abilityId: 'mana_ward', abilityLevel: 1 }],
   '雷式': [{ type: 'thunder_offense', value: 0.03 }, { type: 'strength', value: 1 }],
   '矢払盾': [{ type: 'ability', value: 1, abilityId: 'deflection', abilityLevel: 1 }],
   '崩壊核': [{ type: 'ability', value: 1, abilityId: 'decompose', abilityLevel: 1 }],
   'スケールメイル': [{ type: 'ability', value: 1, abilityId: 'null_burn', abilityLevel: 1 }],
   '火鼠の皮衣': [{ type: 'fire_defense_multiplier_xV', value: 3 / 5 }],
-  'ドラグスレイブ': [{ type: 'fire_offense', value: 30 }],
+  'ドラグスレイブ': [{ type: 'fire_offense', value: 0.03 }],
   '演式核': [{ type: 'ability', value: 1, abilityId: 'equation_breaker', abilityLevel: 1 }],
   '絶縁体': [{ type: 'ability', value: 1, abilityId: 'null_shock', abilityLevel: 1 }],
   '大鎌': [{ type: 'ability', value: 1, abilityId: 'soul_reap', abilityLevel: 1 }, { type: 'fire_defense_multiplier_xV', value: 1.3 }],
@@ -221,6 +224,14 @@ const ITEM_ADDITIONAL_BONUS_BY_NAME: Record<string, Bonus[]> = {
   '白妙': [{ type: 'ability', value: 1, abilityId: 'ice_protect_breaker', abilityLevel: 1 }],
   '祓詞': [{ type: 'ability', value: 1, abilityId: 'm_barrier_breaker', abilityLevel: 1 }],
   '境断': [{ type: 'ability', value: 1, abilityId: 'domain_breaker', abilityLevel: 1 }],
+  '鮫肌の鎧': [{ type: 'ability', value: 1, abilityId: 'execution_null', abilityLevel: 1 }],
+  '狐假虎威': [{ type: 'ability', value: 1, abilityId: 'rage_breaker', abilityLevel: 1 }],
+  '乾風衣': [{ type: 'ability', value: 1, abilityId: 'dryproof', abilityLevel: 1 }],
+  '追跡の鎌': [{ type: 'ability', value: 1, abilityId: 'pursuit', abilityLevel: 1 }],
+  '鉄礫': [{ type: 'ability', value: 1, abilityId: 'illusion_breaker', abilityLevel: 1 }],
+  '破壊腕': [{ type: 'ability', value: 1, abilityId: 'bulwark_breaker', abilityLevel: 1 }],
+  'サバイバル入門書': [{ type: 'ability', value: 1, abilityId: 'anti_ambush', abilityLevel: 1 }],
+  '影衣': [{ type: 'ability', value: 1, abilityId: 'anti_overwatch', abilityLevel: 1 }],
   '俊敏の弓': [
     { type: 'ability', value: 1, abilityId: 'boost', abilityLevel: 1 },
     { type: 'physical_defense_multiplier_xV', value: 1.1 },
@@ -238,6 +249,7 @@ const ITEM_ADDITIONAL_BONUS_BY_NAME: Record<string, Bonus[]> = {
     { type: 'ice_defense_multiplier_xV', value: 2.0 },
     { type: 'thunder_defense_multiplier_xV', value: 2.0 },
   ],
+  '反乱の手引': [{ type: 'ability', value: 1, abilityId: 'defiance', abilityLevel: 1 }],
 };
 
 const ITEM_CORE_CONCEPT_KEYS: Record<ItemCategory, Array<keyof ItemDef>> = {
@@ -765,12 +777,6 @@ export const ITEMS: ItemDef[] = generateItems();
 // Item lookup helpers
 // ============================================================
 
-// Item lookup by tier
-export function getItemsByTier(tier: number): ItemDef[] {
-  const tierBase = tier * 1000;
-  return ITEMS.filter(i => i.id >= tierBase && i.id < tierBase + 1000);
-}
-
 // Item lookup by tier and rarity
 export function getItemsByTierAndRarity(tier: number, rarity: Rarity): ItemDef[] {
   if (rarity === 'mythicRare') {
@@ -784,12 +790,3 @@ export function getItemsByTierAndRarity(tier: number, rarity: Rarity): ItemDef[]
 
 export const getItemById = (id: number): ItemDef | undefined =>
   ITEMS.find(i => i.id === id);
-
-export const getItemsByCategory = (category: string): ItemDef[] =>
-  ITEMS.filter(i => i.category === category);
-
-// Get random item from tier (for rewards)
-export function getRandomItemFromTier(tier: number, rarity?: Rarity): ItemDef | null {
-  const pool = rarity ? getItemsByTierAndRarity(tier, rarity) : getItemsByTier(tier);
-  return pool[Math.floor(Math.random() * pool.length)];
-}

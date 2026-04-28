@@ -25,7 +25,7 @@ export function getItemDisplayName(item: Item): string {
 }
 
 // SpecRef: 3.1.3 | Item variation | getItemMultiplier
-export function getItemMultiplier(item: Item): number {
+function getItemMultiplier(item: Item): number {
   const enhMult = ENHANCEMENT_TITLES.find(t => t.value === item.enhancement)?.multiplier ?? 1;
   const srMult = SUPER_RARE_TITLES.find(t => t.value === item.superRare)?.multiplier ?? 1;
   const baseMult = item.baseMultiplier ?? 1;
@@ -38,19 +38,4 @@ export function getItemCoreConceptValue(item: Item): number {
   const rawValue = item[key];
   const baseValue = typeof rawValue === 'number' ? rawValue : 0;
   return baseValue * getItemMultiplier(item);
-}
-
-// SpecRef: 7.1.1.2 | Equipping into empty slots | Search for a candidate item
-export function getItemAutoEquipmentSelectionValue(item: Item): number {
-  const coreConceptValue = getItemCoreConceptValue(item);
-  switch (item.category) {
-    case 'gauntlet':
-      return coreConceptValue + (item.meleeNoABonus ?? 0);
-    case 'archery':
-      return coreConceptValue + (item.rangedNoABonus ?? 0);
-    case 'catalyst':
-      return coreConceptValue + (item.magicalNoABonus ?? 0);
-    default:
-      return coreConceptValue;
-  }
 }
