@@ -51,7 +51,7 @@ const ENEMY_BASE_STATUS = {
   meleeAttackAmplifier: 1,
   physicalDefense: 12,
   magicalDefense: 12,
-  experience: 5,
+  experience: 3,
 };
 
 // SpecRef: 4.1.4 | Base data structure (enemy) | Class modifier

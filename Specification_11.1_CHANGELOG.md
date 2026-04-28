@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.2 | 3 | 2026/4/28 | Align runtime enemy base status (Spec 4.1.4) so base `d.experience` is `3` (from `5`) in enemy master stat construction. |
 | 0.6.2 | 2 | 2026/4/28 | Harden save-format persistence for newly added bag fields by serializing/hydrating game/party bag collections dynamically (instead of fixed bag-name lists), and normalize loaded Jewel Priority Party id against unlocked party count to preserve auto-jewel settings on legacy saves. |
 | 0.6.2 | 1 | 2026/4/28 | Prepare for beta test: bump app version to `v0.6.2` and reset build number to `1`. |
 | 0.6.1 | 136 | 2026/4/28 | Soften Expedition tab party-pane condition inner-ring accent contrast by rendering the condition progress stroke with translucency (especially for negative/accent state) to improve visual comfort while preserving status readability. |
