@@ -465,11 +465,11 @@ type PartyConditionState =
 type ConditionOutcomeKey = 'Clear' | 'Turned_Back' | 'Draw_Retreat' | 'Wounded_Retreat' | 'Defeat';
 
 const CONDITION_ADJUSTMENTS: Record<PartyConditionState, Record<ConditionOutcomeKey, number>> = {
-  'condition.terrible': { Clear: 12, Turned_Back: 6, Draw_Retreat: 2, Wounded_Retreat: 0, Defeat: -4 },
-  'condition.poor': { Clear: 10, Turned_Back: 5, Draw_Retreat: 1, Wounded_Retreat: -2, Defeat: -15 },
-  'condition.low': { Clear: 8, Turned_Back: 4, Draw_Retreat: 0, Wounded_Retreat: -4, Defeat: -26 },
-  'condition.cautious': { Clear: 6, Turned_Back: 3, Draw_Retreat: -1, Wounded_Retreat: -6, Defeat: -38 },
-  'condition.normal': { Clear: 4, Turned_Back: 2, Draw_Retreat: -2, Wounded_Retreat: -8, Defeat: -50 },
+  'condition.terrible': { Clear: 15, Turned_Back: 6, Draw_Retreat: 2, Wounded_Retreat: 1, Defeat: -4 },
+  'condition.poor': { Clear: 12, Turned_Back: 5, Draw_Retreat: 1, Wounded_Retreat: 0, Defeat: -15 },
+  'condition.low': { Clear: 9, Turned_Back: 4, Draw_Retreat: 1, Wounded_Retreat: -1, Defeat: -26 },
+  'condition.cautious': { Clear: 6, Turned_Back: 3, Draw_Retreat: 0, Wounded_Retreat: -2, Defeat: -38 },
+  'condition.normal': { Clear: 4, Turned_Back: 2, Draw_Retreat: -1, Wounded_Retreat: -8, Defeat: -50 },
   'condition.steady': { Clear: 3, Turned_Back: 1, Draw_Retreat: -3, Wounded_Retreat: -10, Defeat: -58 },
   'condition.good': { Clear: 2, Turned_Back: 1, Draw_Retreat: -4, Wounded_Retreat: -12, Defeat: -64 },
   'condition.great': { Clear: 1, Turned_Back: 0, Draw_Retreat: -5, Wounded_Retreat: -14, Defeat: -68 },
