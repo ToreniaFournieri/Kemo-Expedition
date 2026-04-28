@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.1 | 136 | 2026/4/28 | Soften Expedition tab party-pane condition inner-ring accent contrast by rendering the condition progress stroke with translucency (especially for negative/accent state) to improve visual comfort while preserving status readability. |
 | 0.6.1 | 135 | 2026/4/28 | Update Spec 7.1.2 AUTO progress runtime condition-outcome adjustment table to the latest values for `Clear`, `Turned_Back`, `Draw_Retreat`, `Wounded_Retreat`, and `Defeat` across all condition states (`condition.terrible` to `condition.excellent`). |
 | 0.6.1 | 134 | 2026/4/27 | Update runtime item bonus for Tier 5 Elite `Dragon` sword `ドラグスレイブ` to spec value `e.fire+0.030` (fire offense +0.03). |
 | 0.6.1 | 133 | 2026/4/27 | Fix Spec 7.1.3.1 runtime auto-jewel timing for Jewel Priority Party: when auto-equipment mode is FULL/SEMI, execute jewel auto-assignment after equipment replacement and Memory C reattachment on the simulated final loadout (instead of before slot changes), so non-robe categories can receive mapped jewels correctly; keep manual-mode auto-jewel behavior unchanged. |
