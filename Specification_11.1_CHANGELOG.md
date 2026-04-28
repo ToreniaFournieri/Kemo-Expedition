@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.2 | 1 | 2026/4/28 | Prepare for beta test: bump app version to `v0.6.2` and reset build number to `1`. |
 | 0.6.1 | 136 | 2026/4/28 | Soften Expedition tab party-pane condition inner-ring accent contrast by rendering the condition progress stroke with translucency (especially for negative/accent state) to improve visual comfort while preserving status readability. |
 | 0.6.1 | 135 | 2026/4/28 | Update Spec 7.1.2 AUTO progress runtime condition-outcome adjustment table to the latest values for `Clear`, `Turned_Back`, `Draw_Retreat`, `Wounded_Retreat`, and `Defeat` across all condition states (`condition.terrible` to `condition.excellent`). |
 | 0.6.1 | 134 | 2026/4/27 | Update runtime item bonus for Tier 5 Elite `Dragon` sword `ドラグスレイブ` to spec value `e.fire+0.030` (fire offense +0.03). |
