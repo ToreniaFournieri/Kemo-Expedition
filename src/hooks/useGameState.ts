@@ -1112,6 +1112,10 @@ function loadSavedState(): LoadSavedStateResult {
         }
         parsed.parties = parsed.parties.slice(0, unlockedPartySlots);
         parsed.parties = enforceGlobalDiaryLogRetention(parsed.parties);
+        parsed.global.jewelAutoEquipPriorityPartyId = normalizeJewelAutoEquipPriorityPartyId(
+          parsed.global.jewelAutoEquipPriorityPartyId,
+          parsed.parties.length,
+        );
         parsed.selectedPartyIndex = Math.max(0, Math.min(normalizedSelectedPartyIndex, Math.max(0, parsed.parties.length - 1)));
         parsed.buildNumber = typeof parsed.buildNumber === 'number' ? parsed.buildNumber : 0;
 
