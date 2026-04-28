@@ -87,6 +87,22 @@ function hydrateBagEntries(bag: PersistedRandomBag | RandomBag | undefined): Ran
   };
 }
 
+function compactBagCollection<T extends object>(bags: T): T {
+  const compacted = {} as T;
+  for (const bagName of Object.keys(bags) as Array<keyof T>) {
+    compacted[bagName] = compactBagEntries(bags[bagName] as RandomBag) as T[keyof T];
+  }
+  return compacted;
+}
+
+function hydrateBagCollection<T extends object>(bags: T): T {
+  const hydrated = {} as T;
+  for (const bagName of Object.keys(bags) as Array<keyof T>) {
+    hydrated[bagName] = hydrateBagEntries(bags[bagName] as RandomBag) as T[keyof T];
+  }
+  return hydrated;
+}
+
 function migrateObsoleteClassId(classId: string): ClassId {
   if (classId === 'fighter') return 'guardian';
   if (classId === 'rogue') return 'ninja';
@@ -105,21 +121,7 @@ export function serializeGameState(state: GameState): GameState {
 
   return {
     ...state,
-    bags: {
-      commonRewardBag: compactBagEntries(state.bags.commonRewardBag) as RandomBag,
-      commonEnhancementBag: compactBagEntries(state.bags.commonEnhancementBag) as RandomBag,
-      uncommonRewardBag: compactBagEntries(state.bags.uncommonRewardBag) as RandomBag,
-      eliteRareRewardBag: compactBagEntries(state.bags.eliteRareRewardBag) as RandomBag,
-      bossRareRewardBag: compactBagEntries(state.bags.bossRareRewardBag) as RandomBag,
-      mythicRareRewardBag: compactBagEntries(state.bags.mythicRareRewardBag) as RandomBag,
-      enhancementBag: compactBagEntries(state.bags.enhancementBag) as RandomBag,
-      superRareBag: compactBagEntries(state.bags.superRareBag) as RandomBag,
-      commonSuperRareBag: compactBagEntries(state.bags.commonSuperRareBag) as RandomBag,
-      rareSuperRareBag: compactBagEntries(state.bags.rareSuperRareBag) as RandomBag,
-      physicalThreatBag: compactBagEntries(state.bags.physicalThreatBag) as RandomBag,
-      magicalThreatBag: compactBagEntries(state.bags.magicalThreatBag) as RandomBag,
-      sideQuestBag: compactBagEntries(state.bags.sideQuestBag) as RandomBag,
-    },
+    bags: compactBagCollection(state.bags),
     global: {
       ...state.global,
       inventory: compactInventory,
@@ -128,21 +130,7 @@ export function serializeGameState(state: GameState): GameState {
       const partyBags = party.bags ?? state.bags;
       return ({
       ...party,
-      bags: {
-        commonRewardBag: compactBagEntries(partyBags.commonRewardBag) as RandomBag,
-        commonEnhancementBag: compactBagEntries(partyBags.commonEnhancementBag) as RandomBag,
-        uncommonRewardBag: compactBagEntries(partyBags.uncommonRewardBag) as RandomBag,
-        eliteRareRewardBag: compactBagEntries(partyBags.eliteRareRewardBag) as RandomBag,
-        bossRareRewardBag: compactBagEntries(partyBags.bossRareRewardBag) as RandomBag,
-        mythicRareRewardBag: compactBagEntries(partyBags.mythicRareRewardBag) as RandomBag,
-        enhancementBag: compactBagEntries(partyBags.enhancementBag) as RandomBag,
-        superRareBag: compactBagEntries(partyBags.superRareBag) as RandomBag,
-        commonSuperRareBag: compactBagEntries(partyBags.commonSuperRareBag) as RandomBag,
-        rareSuperRareBag: compactBagEntries(partyBags.rareSuperRareBag) as RandomBag,
-        physicalThreatBag: compactBagEntries(partyBags.physicalThreatBag) as RandomBag,
-        magicalThreatBag: compactBagEntries(partyBags.magicalThreatBag) as RandomBag,
-        sideQuestBag: compactBagEntries(partyBags.sideQuestBag) as RandomBag,
-      },
+      bags: compactBagCollection(partyBags),
       sleepinessOfPartyBag: compactBagEntries(party.sleepinessOfPartyBag) as RandomBag,
       characters: party.characters.map((character) => ({
         ...character,
@@ -165,21 +153,7 @@ export function hydrateGameState(state: GameState): GameState {
 
   return {
     ...state,
-    bags: {
-      commonRewardBag: hydrateBagEntries(state.bags.commonRewardBag),
-      commonEnhancementBag: hydrateBagEntries(state.bags.commonEnhancementBag),
-      uncommonRewardBag: hydrateBagEntries(state.bags.uncommonRewardBag),
-      eliteRareRewardBag: hydrateBagEntries(state.bags.eliteRareRewardBag),
-      bossRareRewardBag: hydrateBagEntries(state.bags.bossRareRewardBag),
-      mythicRareRewardBag: hydrateBagEntries(state.bags.mythicRareRewardBag),
-      enhancementBag: hydrateBagEntries(state.bags.enhancementBag),
-      superRareBag: hydrateBagEntries(state.bags.superRareBag),
-      commonSuperRareBag: hydrateBagEntries(state.bags.commonSuperRareBag),
-      rareSuperRareBag: hydrateBagEntries(state.bags.rareSuperRareBag),
-      physicalThreatBag: hydrateBagEntries(state.bags.physicalThreatBag),
-      magicalThreatBag: hydrateBagEntries(state.bags.magicalThreatBag),
-      sideQuestBag: hydrateBagEntries(state.bags.sideQuestBag),
-    },
+    bags: hydrateBagCollection(state.bags),
     global: {
       ...state.global,
       inventory: hydratedInventory,
@@ -188,21 +162,7 @@ export function hydrateGameState(state: GameState): GameState {
       const partyBags = party.bags ?? state.bags;
       return ({
       ...party,
-      bags: {
-        commonRewardBag: hydrateBagEntries(partyBags.commonRewardBag),
-        commonEnhancementBag: hydrateBagEntries(partyBags.commonEnhancementBag),
-        uncommonRewardBag: hydrateBagEntries(partyBags.uncommonRewardBag),
-        eliteRareRewardBag: hydrateBagEntries(partyBags.eliteRareRewardBag),
-        bossRareRewardBag: hydrateBagEntries(partyBags.bossRareRewardBag),
-        mythicRareRewardBag: hydrateBagEntries(partyBags.mythicRareRewardBag),
-        enhancementBag: hydrateBagEntries(partyBags.enhancementBag),
-        superRareBag: hydrateBagEntries(partyBags.superRareBag),
-        commonSuperRareBag: hydrateBagEntries(partyBags.commonSuperRareBag),
-        rareSuperRareBag: hydrateBagEntries(partyBags.rareSuperRareBag),
-        physicalThreatBag: hydrateBagEntries(partyBags.physicalThreatBag),
-        magicalThreatBag: hydrateBagEntries(partyBags.magicalThreatBag),
-        sideQuestBag: hydrateBagEntries(partyBags.sideQuestBag),
-      },
+      bags: hydrateBagCollection(partyBags),
       sleepinessOfPartyBag: hydrateBagEntries(party.sleepinessOfPartyBag),
       characters: party.characters.map((character) => ({
         ...character,
