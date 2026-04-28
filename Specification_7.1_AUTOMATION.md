@@ -306,10 +306,10 @@
 
 | Outcome | `condition.terrible` | `condition.poor` | `condition.low` | `condition.cautious` | `condition.normal` | `condition.steady` | `condition.good` | `condition.great` | `condition.excellent` |
 |--|--:|--:|--:|--:|--:|--:|--:|--:|--:|
-| `Clear` | +12 | +10 | +8 | +6  | +4 | +3 | +2  |  +1  |  +1 |
+| `Clear` | +15 | +12 | +9 | +6  | +4 | +3 | +2  |  +1  |  +1 |
 | `Turned_Back` | +6 | +5 | +4 | +3 | +2 | +1  | +1 | 0 | 0 |
-| `Draw_Retreat` | +2 | +1 | 0 | -1 | -2 | -3 | -4 | -5 | -6 |
-| `Wounded_Retreat` | 0  | -2 | -4 | -6 | -8 | -10 | -12 | -14 | -16 |
+| `Draw_Retreat` | +2 | +1 | +1 | 0 | -1 | -3 | -4 | -5 | -6 |
+| `Wounded_Retreat` | +1  | 0 | -1 | -2 | -8 | -10 | -12 | -14 | -16 |
 | `Defeat` | -4 | -15 | -26 | -38 | -50 | -58 | -64 | -68 | -70 |
 
 | `condition` | key | label |
