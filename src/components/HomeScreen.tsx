@@ -7749,6 +7749,9 @@ function ExpeditionTab({
         const normalizedCondition = Math.max(-400, Math.min(400, Math.floor(party.condition)));
         const conditionPercent = Math.min(100, Math.round((Math.abs(normalizedCondition) / 400) * 100));
         const isConditionPositive = normalizedCondition >= 0;
+        const conditionRingStroke = isConditionPositive
+          ? 'rgb(var(--color-sub) / 0.78)'
+          : 'rgb(var(--color-accent) / 0.52)';
         const sellProgressState = (() => {
           if (cycle.state !== 'sell') return null;
           const autoSellItems = party.lastExpeditionLog?.autoSellItems ?? [];
@@ -8009,7 +8012,7 @@ function ExpeditionTab({
                       cy="18"
                       r="8.5"
                       fill="none"
-                      stroke={isConditionPositive ? 'rgb(var(--color-sub))' : 'rgb(var(--color-accent))'}
+                      stroke={conditionRingStroke}
                       strokeWidth="5"
                       strokeLinecap="round"
                       strokeDasharray={`${Math.max(0, Math.min(100, conditionPercent)) * 0.534} 100`}
