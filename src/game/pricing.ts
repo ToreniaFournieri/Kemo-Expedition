@@ -43,5 +43,6 @@ export function calculateItemSellPrice(item: Item, autoSellMultiplier = 1): numb
 // SpecRef: 3.1.6 | Item selling price | Purchesing_price
 export function getShopItemPrice(itemId: number): number {
   const tier = getItemTier(itemId);
-  return getTierBasePrice(tier) * 100;
+  const rarityMultiplier = SELLING_RARITY_MULTIPLIER[getItemPriceRarity(itemId)];
+  return (4 + (2 * tier * rarityMultiplier)) * 10;
 }
