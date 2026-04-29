@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.2 | 7 | 2026/4/29 | Update Expedition party first-row runtime text to show latest reached floor concept name (Japanese), latest outcome label, and keep expandable-row toggle behavior (`▼`). |
 | 0.6.2 | 6 | 2026/4/29 | Expand Expedition Depth Limit selector to match Spec 8.3 option set: add `1F-4/2F-4/3F-4/4F-4/5F-4` entries in the destination pane list and keep `*F-4` save values valid during load normalization. |
 | 0.6.2 | 5 | 2026/4/29 | Fix Expedition Depth Limit option labels to respect Expedition Floor Concepts per floor: 1F-3..5F-3 now display each corresponding floor's Japanese concept (instead of reusing floor 3 concept for all), while `ボス直前まで` keeps floor 6 concept. |
 | 0.6.2 | 4 | 2026/4/29 | Implement Expedition Depth Limit runtime UI/options update: destination pane now offers compact depth choices (1F-3/2F-3/3F-3/4F-3/5F-3/ボス直前/全て) with floor-concept Japanese labels per expedition, and legacy `*F-4` saves are migrated to corresponding `*F-3`. |

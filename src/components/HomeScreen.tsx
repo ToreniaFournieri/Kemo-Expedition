@@ -7737,7 +7737,14 @@ function ExpeditionTab({
         const isLogExpanded = expandedLogParty === partyIndex;
         const currentLog = party.lastExpeditionLog;
         const currentLogDungeonExpLevel = DUNGEONS.find((dungeon) => dungeon.id === currentLog?.dungeonId)?.expLevel;
-        const headlineDungeonName = currentLog?.dungeonName ?? selectedDungeon?.name;
+        // SpecRef: 8.3 | UI_EXPEDITION | First row text
+        const headlineFloorName = (() => {
+          if (!currentLog) return selectedDungeon?.name ?? '-';
+          const latestEntry = currentLog.entries[currentLog.entries.length - 1];
+          if (!latestEntry?.floor) return currentLog.dungeonName;
+          return getExpeditionFloorConcept(currentLog.dungeonId, latestEntry.floor)
+            ?? `${formatNumber(latestEntry.floor)}階層`;
+        })();
         const headlineState = cycle.state === 'explore'
           ? getPartyCycleStateLabel('explore')
           : currentLog
@@ -8037,7 +8044,7 @@ function ExpeditionTab({
                   <span className="flex items-start justify-between gap-1.5 text-sm">
                     <span className={`min-w-0 truncate ${isDarkModeEnabled ? 'text-gray-50' : 'text-black'}`}>
                       <span className="font-bold shrink-0 mr-1">{party.name}</span>
-                      {headlineDungeonName}
+                      {headlineFloorName}
                     </span>
                     <span className="shrink-0 flex items-center gap-1.5">
                       <span className="font-medium text-gray-700 shrink-0">{headlineState}</span>
