@@ -192,7 +192,7 @@ inventory = {
   - `rarity`: common = 1, uncommon = 3, elite rare = 10, boss rare = 30, mythic rare = 300. 
   - `super_rare`: If yes, 200, if no, 1.
   - Selling_price = (10 + 2 x `item_tier` ) x `rarity` x `super_rare`
-  - Purchesing_price = (10 + 2 x `item_tier` ) x 100
+  - Purchesing_price = (4 + 2 x `item_tier` x `rarity` ) x 10
 
 
 #### 3.1.7 Jewel (結晶) 
