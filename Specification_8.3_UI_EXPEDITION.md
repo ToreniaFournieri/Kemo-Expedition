@@ -134,10 +134,17 @@ HP 2350 / 4680
 
 **First row text**
 - Party name: PT1, PT2, ...
-- the latest floor name of the expedition, the Japanese name from **Expedition Floor Concepts**: 群生の巣盆地
+- **Latest Expedition Floor**
+  - Display the latest reached floor name of the current expedition.
+  - Use the Japanese floor name defined in **Expedition Floor Concepts**.
+  - Example: `ケイナイアンの廃都`
+- **Outcome**
+  - Display the latest expedition result such as `踏破`, `撤退`, `敗北`, etc.
+- **Expand / Collapse Toggle**
+  - Display `▼` at the end of the row for expandable party details.
 
 ```
-( ####### ) PT1 ルピニアンの断崖   踏破 ▼
+( ####### ) PT1 ケイナイアンの廃都   踏破 ▼
 ( ##   ## ) 
 ( ####### ) 🗃️2/3 神魔解放 📜660分治療を受ける 🕘 
 移動中: flavor text (background: state progress bar)
