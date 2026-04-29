@@ -8352,7 +8352,7 @@ function ExpeditionTab({
                           </button>
                           {isRoomExpanded && entry.details && (
                             <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)]">
-                              <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
+                              <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getExpeditionFloorConcept(currentLog.dungeonId, entry.floor) ?? `${formatNumber(entry.floor)}階層`) : '-'} 戦闘ログ:`}</div>
                               {aggregateBattleLifeDrainLogs(entry.details).map((log, j, battleLogs) => {
                                 const isResurrectLog = log.note?.startsWith('(再起') || log.note?.startsWith('(即時蘇生)');
                                 const isTriggeredLog = log.actor === 'triggered';
@@ -9857,7 +9857,7 @@ function DiaryTab({
                         </button>
                         {isRoomExpanded && entry.details && (
                           <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)]">
-                            <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
+                            <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getExpeditionFloorConcept(log.dungeonId, entry.floor) ?? `${formatNumber(entry.floor)}階層`) : '-'} 戦闘ログ:`}</div>
                             {aggregateBattleLifeDrainLogs(entry.details).map((battleLog, j, battleLogs) => {
                               const isResurrectLog = battleLog.note?.startsWith('(再起') || battleLog.note?.startsWith('(即時蘇生)');
                               const isTriggeredLog = battleLog.actor === 'triggered';

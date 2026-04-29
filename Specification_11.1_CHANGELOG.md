@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.2 | 10 | 2026/4/29 | Update runtime battle-log section headers in Expedition and Diary room details to prepend the Japanese floor name from Expedition Floor Concepts (`floor_name 戦闘ログ:`). |
 | 0.6.2 | 9 | 2026/4/29 | Align runtime gods/religions (1.1.7 g) descriptions to latest table values: update glossary/deity effect text durations to 2x where specified, set God of Attrition text baseline to 1.20+α, and normalize God of Oblivion rank-10 note formatting. |
 | 0.6.2 | 8 | 2026/4/29 | Adjust Expedition first-row runtime update timing to avoid spoilers during `state.explore`: keep floor/outcome headline frozen to non-spoiler state until exploration ends, then show latest reached floor concept name and final outcome. |
 | 0.6.2 | 7 | 2026/4/29 | Update Expedition party first-row runtime text to show latest reached floor concept name (Japanese), latest outcome label, and keep expandable-row toggle behavior (`▼`). |
@@ -214,6 +215,7 @@
 | 0.6.0 | 441 | 2026/4/17 | Update runtime lineage master data to match Spec 2.1 lineup/bonuses/selectable flags; add new non-selectable lineages and remove obsolete runtime usage of `apex_predator` / `usurper` (legacy save IDs now alias to current lineages). |
 | 0.6.0 | 440 | 2026/4/17 | Fix `a.melee-conversion` tooltip text interpolation (`N%` / `M%`) and apply melee conversion attack gain to enemy runtime scaling (including Colosseum editor opponent status). |
 | 0.6.0 | 440 | 2026/4/29 | Implement Expedition Depth Limit runtime UI/options update: destination pane now offers compact depth choices (1F-3/2F-3/3F-3/4F-3/5F-3/ボス直前/全て) with floor-concept Japanese labels per expedition, and legacy `*F-4` saves are migrated to corresponding `*F-3`. |
+| 0.6.0 | 440 | 2026/4/29 | Update runtime expedition/diary room detail headers to show Japanese floor name from Expedition Floor Concepts before 戦闘ログ (e.g., `ルピニアンの亜寒: 戦闘ログ`). |
 | 0.6.0 | 439 | 2026/4/17 | Implement passive ability `a.melee-conversion` in runtime: add new ability id/name/glossary entry and apply `d.melee_attack += round(d.ranged_attack×N%) + round(d.magical_attack×M%)` (Lv1: 30%/30%, Lv2: 40%/40%). |
 | 0.6.0 | 438 | 2026/4/17 | Add non-selectable runtime races `Kemoria` / `Orcinian` / `Avian` (with specified base stats and c-bonuses), and update `a.flying` glossary scale to `Lv1: x1/3, Lv2: x1/4, Lv3: x1/5` with `CLOSE` phase priority `9`. |
 | 0.6.0 | 437 | 2026/4/17 | Fix bonus ability tooltip wording format for `a.execution`: correctly interpolate `N` and `xM` from level scale (`50%・x1.8`) and display tooltip as `タイトル：説明`. |
