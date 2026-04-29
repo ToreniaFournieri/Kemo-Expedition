@@ -46,7 +46,7 @@ and {condition ≥ 230}
   - Players can set a depth limit; when the party reaches the selected floor, it stops the expedition and returns home automatically.
   - The selection form should remain compact:
   - Display width is small, and showing only a short label such as `1F-3` is sufficient. 
-  - Selectable Options : 1F-3 floor_nameまで/2F-3 floor_nameまで/3F-3 floor_nameまで/4F-3 floor_nameまで/5F-3 floor_nameまで/floor_nameボス直前まで/全て (default: 全て)
+  - Selectable Options : 1F-3 floor_nameまで/1F-4 floor_nameまで/2F-3 floor_nameまで/2F-4 floor_nameまで/3F-3 floor_nameまで/3F-4 floor_nameまで/4F-3 floor_nameまで/4F-4 floor_nameまで/5F-3 floor_nameまで/5F-4 floor_nameまで/floor_nameボス直前まで/全て (default: 全て)
     - `floor_name` uses the Japanese name from **Expedition Floor Concepts**.
     - Example: 2F-3 捕食者の縄張りまで, 2F-4 捕食者の縄張りまで, 3F-3 群生の巣盆地まで
 
