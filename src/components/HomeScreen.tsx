@@ -974,13 +974,18 @@ function getExpeditionDepthOptions(dungeonId: number): Array<{ value: Expedition
   };
 
   return [
-    { value: 'all', label: '全て' },
-    { value: 'beforeBoss', label: `${beforeBossConcept}ボス直前まで` },
-    { value: '5f-3', label: `5F-3 ${floorConceptByFloor[5]}まで` },
-    { value: '4f-3', label: `4F-3 ${floorConceptByFloor[4]}まで` },
-    { value: '3f-3', label: `3F-3 ${floorConceptByFloor[3]}まで` },
-    { value: '2f-3', label: `2F-3 ${floorConceptByFloor[2]}まで` },
     { value: '1f-3', label: `1F-3 ${floorConceptByFloor[1]}まで` },
+    { value: '1f-4', label: `1F-4 ${floorConceptByFloor[1]}まで` },
+    { value: '2f-3', label: `2F-3 ${floorConceptByFloor[2]}まで` },
+    { value: '2f-4', label: `2F-4 ${floorConceptByFloor[2]}まで` },
+    { value: '3f-3', label: `3F-3 ${floorConceptByFloor[3]}まで` },
+    { value: '3f-4', label: `3F-4 ${floorConceptByFloor[3]}まで` },
+    { value: '4f-3', label: `4F-3 ${floorConceptByFloor[4]}まで` },
+    { value: '4f-4', label: `4F-4 ${floorConceptByFloor[4]}まで` },
+    { value: '5f-3', label: `5F-3 ${floorConceptByFloor[5]}まで` },
+    { value: '5f-4', label: `5F-4 ${floorConceptByFloor[5]}まで` },
+    { value: 'beforeBoss', label: `${beforeBossConcept}ボス直前まで` },
+    { value: 'all', label: '全て' },
   ];
 }
 

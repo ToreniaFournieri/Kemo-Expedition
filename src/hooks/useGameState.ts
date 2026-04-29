@@ -623,17 +623,15 @@ function getExpeditionStatsWithDefaults(value: unknown) {
 }
 
 function getExpeditionDepthLimitWithDefault(value: unknown): ExpeditionDepthLimit {
-  const legacyDepthLimitMap: Record<string, ExpeditionDepthLimit> = {
-    '1f-4': '1f-3',
-    '2f-4': '2f-3',
-    '3f-4': '3f-3',
-    '4f-4': '4f-3',
-    '5f-4': '5f-3',
-  };
-  if (typeof value === 'string' && legacyDepthLimitMap[value]) {
-    return legacyDepthLimitMap[value];
-  }
-  const validDepthLimits: ExpeditionDepthLimit[] = ['1f-3', '2f-3', '3f-3', '4f-3', '5f-3', 'beforeBoss', 'all'];
+  const validDepthLimits: ExpeditionDepthLimit[] = [
+    '1f-3', '1f-4',
+    '2f-3', '2f-4',
+    '3f-3', '3f-4',
+    '4f-3', '4f-4',
+    '5f-3', '5f-4',
+    'beforeBoss',
+    'all',
+  ];
   return validDepthLimits.includes(value as ExpeditionDepthLimit) ? (value as ExpeditionDepthLimit) : 'all';
 }
 
