@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.2 | 6 | 2026/4/29 | Expand Expedition Depth Limit selector to match Spec 8.3 option set: add `1F-4/2F-4/3F-4/4F-4/5F-4` entries in the destination pane list and keep `*F-4` save values valid during load normalization. |
 | 0.6.2 | 5 | 2026/4/29 | Fix Expedition Depth Limit option labels to respect Expedition Floor Concepts per floor: 1F-3..5F-3 now display each corresponding floor's Japanese concept (instead of reusing floor 3 concept for all), while `ボス直前まで` keeps floor 6 concept. |
 | 0.6.2 | 4 | 2026/4/29 | Implement Expedition Depth Limit runtime UI/options update: destination pane now offers compact depth choices (1F-3/2F-3/3F-3/4F-3/5F-3/ボス直前/全て) with floor-concept Japanese labels per expedition, and legacy `*F-4` saves are migrated to corresponding `*F-3`. |
 | 0.6.2 | 3 | 2026/4/28 | Align runtime enemy base status (Spec 4.1.4) so base `d.experience` is `3` (from `5`) in enemy master stat construction. |
@@ -189,6 +190,7 @@
 | 0.6.0 | 461 | 2026/4/18 | Implement timed ability `a.first-aid` (応急措置) in runtime: add master ability id/name/tooltip entries and apply post-elite-battle END healing per member (`d.HP` basis, Lv1–Lv5 = 2%–6%) with new `log.first-aid` flavor text + `(HP回復+N)` notes. |
 | 0.6.0 | 460 | 2026/4/18 | Implement passive abilities `a.true-sight` / `a.output-stabilizer`: add ability master labels/descriptions, wire predisposition bonuses (`Perceptive`/`Exacting`) to grant them per Spec 2.1, and apply battle runtime effects for initiative, fog LONG-phase accuracy penalty immunity, and terrain NoA-amplifier immunity. |
 | 0.6.0 | 459 | 2026/4/18 | Align runtime predisposition master data to Spec 2.1 table: update bonus mappings (including `a.null-antagonism` for `Amicable`) and add explicit `selectable` flags with edit-mode enforcement for non-selectable predispositions. |
+| 0.6.0 | 6 | 2026/4/29 | Update Expedition Depth Limit dropdown options to Spec 8.3: add 1F-4/2F-4/3F-4/4F-4/5F-4 choices, keep floor-concept Japanese labels, and preserve `*F-4` values in save normalization (no forced migration to `*F-3`). |
 | 0.6.0 | 458 | 2026/4/18 | Implement runtime passive ability `a.null-antagonism` (敵対無効化): add ability master labels/descriptions, block `c.antagonism` from `Goddess of Discord` and `a.*-confusion` when target has immunity, and emit `log.null-antagonism` with note `(敵対無効化)`. |
 | 0.6.0 | 457 | 2026/4/18 | Update runtime selectable lineage master data bonuses to match Spec 2.1 table (add missing secondary `c.*_x1.2` bonuses and defensive multipliers across `sandstorm` to `oath`). |
 | 0.6.0 | 456 | 2026/4/18 | Refine expedition unlock gate wording in Party/Next Goal UI: when required count is 1, display `ボス撃破で…開放` (hide `0/1` progress), while keeping fraction format for other requirements. |
