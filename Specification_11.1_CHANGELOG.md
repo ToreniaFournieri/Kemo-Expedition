@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.2 | 5 | 2026/4/29 | Fix Expedition Depth Limit option labels to respect Expedition Floor Concepts per floor: 1F-3..5F-3 now display each corresponding floor's Japanese concept (instead of reusing floor 3 concept for all), while `ボス直前まで` keeps floor 6 concept. |
 | 0.6.2 | 4 | 2026/4/29 | Implement Expedition Depth Limit runtime UI/options update: destination pane now offers compact depth choices (1F-3/2F-3/3F-3/4F-3/5F-3/ボス直前/全て) with floor-concept Japanese labels per expedition, and legacy `*F-4` saves are migrated to corresponding `*F-3`. |
 | 0.6.2 | 3 | 2026/4/28 | Align runtime enemy base status (Spec 4.1.4) so base `d.experience` is `3` (from `5`) in enemy master stat construction. |
 | 0.6.2 | 2 | 2026/4/28 | Harden save-format persistence for newly added bag fields by serializing/hydrating game/party bag collections dynamically (instead of fixed bag-name lists), and normalize loaded Jewel Priority Party id against unlocked party count to preserve auto-jewel settings on legacy saves. |
