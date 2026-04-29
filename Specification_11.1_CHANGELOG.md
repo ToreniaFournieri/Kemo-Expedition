@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.2 | 12 | 2026/4/29 | Correct Spec 3.1.6 runtime junk-shop purchasing price formula to `Purchesing_price = (4 + 6 x item_tier) x rarity x 10` (was using an incorrect tier-rarity term), while keeping selling-price runtime behavior unchanged. |
 | 0.6.2 | 11 | 2026/4/29 | Implement Spec 3.1.6 runtime junk-shop purchasing price formula to include rarity multiplier by item id: `Purchesing_price = (4 + 2 x item_tier x rarity) x 10`, while preserving existing selling-price behavior. |
 | 0.6.2 | 10 | 2026/4/29 | Update runtime battle-log section headers in Expedition and Diary room details to prepend the Japanese floor name from Expedition Floor Concepts (`floor_name 戦闘ログ:`). |
 | 0.6.2 | 9 | 2026/4/29 | Align runtime gods/religions (1.1.7 g) descriptions to latest table values: update glossary/deity effect text durations to 2x where specified, set God of Attrition text baseline to 1.20+α, and normalize God of Oblivion rank-10 note formatting. |
