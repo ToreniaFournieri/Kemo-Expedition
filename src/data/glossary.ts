@@ -550,12 +550,12 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "Goddess of Restoration",
         "label": "再生の女神",
-        "description": "効果:4部屋毎に減少HPの20+α%を回復する。睡眠時間1.5倍。氷属性に弱い(1.5倍ダメージ増)\n生とは、繰り返される修正である。"
+        "description": "効果:4部屋毎に減少HPの20+α%を回復する。睡眠時間2倍。氷属性に弱い(1.5倍ダメージ増)\n生とは、繰り返される修正である。"
       },
       {
         "key": "God of Attrition",
         "label": "消耗の神",
-        "description": "効果:全員に物理攻撃倍率1.25+α倍。4部屋毎に残りHPの5%を失う。\nカジェルで戦え。カジェルが無くなれば、爪で戦え。爪が無くなれば、牙で戦え。"
+        "description": "効果:全員に物理攻撃倍率1.20+α倍。4部屋毎に残りHPの5%を失う。\nカジェルで戦え。カジェルが無くなれば、爪で戦え。爪が無くなれば、牙で戦え。"
       },
       {
         "key": "God of Cunning",
@@ -565,12 +565,12 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "God of Fortification",
         "label": "防備の神",
-        "description": "効果:全員に物理防御倍率2/3倍。休息時間1.5-α倍。雷属性に弱い(1.5倍ダメージ増)\n平和を望むならば、戦に備えよ。"
+        "description": "効果:全員に物理防御倍率2/3倍。休息時間2倍。雷属性に弱い(1.5倍ダメージ増)\n平和を望むならば、戦に備えよ。"
       },
       {
         "key": "Goddess of Fertility",
         "label": "豊穣の女神",
-        "description": "効果:全員に天速度+1(行動速度が速くなる)。宴会時間1.5-α倍。火属性に弱い(1.5倍ダメージ増)\n肥沃な土壌は、多くの穀肉を求むる。"
+        "description": "効果:全員に天速度+1(行動速度が速くなる)。宴会時間2倍。火属性に弱い(1.5倍ダメージ増)\n肥沃な土壌は、多くの穀肉を求むる。"
       },
       {
         "key": "God of Resonance",
@@ -580,17 +580,17 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "Goddess of Precision",
         "label": "精密の女神",
-        "description": "効果:全員の命中+15+α、回避-5。探索時間1.5倍。\n失敗の先には成功がある。"
+        "description": "効果:全員の命中+15+α、回避-5。探索時間2倍。\n失敗の先には成功がある。"
       },
       {
         "key": "God of Fate",
         "label": "運命の神",
-        "description": "効果:未来改変。祈り時間1.5-α倍。\n未来を知る者はそれを変えてしまう。"
+        "description": "効果:未来改変。祈り時間2倍。\n未来を知る者はそれを変えてしまう。"
       },
       {
         "key": "God of Dusk",
         "label": "黄昏の神",
-        "description": "効果:全員の回避+15+α、魔法防御倍率1.10倍。売却時間1.5倍。\n光と闇の境界で、最も多くの嘘が生まれる。"
+        "description": "効果:全員の回避+15+α、魔法防御倍率1.10倍。売却時間2倍。\n光と闇の境界で、最も多くの嘘が生まれる。"
       },
       {
         "key": "Goddess of Mirage",
@@ -600,7 +600,7 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "God of Oblivion",
         "label": "忘却されし神",
-        "description": "効果:なし。(ランク10:追加報酬抽選+1回)\n神の存在には、ただ一人の真なる信徒で足りる。"
+        "description": "効果:なし。 (ランク10:追加報酬抽選+1回)\n神の存在には、ただ一人の真なる信徒で足りる。"
       },
       {
         "key": "Goddess of Discord",
