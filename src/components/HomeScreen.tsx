@@ -964,17 +964,23 @@ const DIARY_SIDE_QUEST_THRESHOLD_OPTIONS: Array<{ value: DiarySideQuestThreshold
 
 function getExpeditionDepthOptions(dungeonId: number): Array<{ value: ExpeditionDepthLimit; label: string }> {
   // SpecRef: 8.3 | UI_EXPEDITION | Expedition Depth Limit (探索深度)
-  const floor3Concept = getExpeditionFloorConcept(dungeonId, 3) ?? '3階層';
   const beforeBossConcept = getExpeditionFloorConcept(dungeonId, 6) ?? '6階層';
+  const floorConceptByFloor: Record<number, string> = {
+    1: getExpeditionFloorConcept(dungeonId, 1) ?? '1階層',
+    2: getExpeditionFloorConcept(dungeonId, 2) ?? '2階層',
+    3: getExpeditionFloorConcept(dungeonId, 3) ?? '3階層',
+    4: getExpeditionFloorConcept(dungeonId, 4) ?? '4階層',
+    5: getExpeditionFloorConcept(dungeonId, 5) ?? '5階層',
+  };
 
   return [
     { value: 'all', label: '全て' },
     { value: 'beforeBoss', label: `${beforeBossConcept}ボス直前まで` },
-    { value: '5f-3', label: `5F-3 ${floor3Concept}まで` },
-    { value: '4f-3', label: `4F-3 ${floor3Concept}まで` },
-    { value: '3f-3', label: `3F-3 ${floor3Concept}まで` },
-    { value: '2f-3', label: `2F-3 ${floor3Concept}まで` },
-    { value: '1f-3', label: `1F-3 ${floor3Concept}まで` },
+    { value: '5f-3', label: `5F-3 ${floorConceptByFloor[5]}まで` },
+    { value: '4f-3', label: `4F-3 ${floorConceptByFloor[4]}まで` },
+    { value: '3f-3', label: `3F-3 ${floorConceptByFloor[3]}まで` },
+    { value: '2f-3', label: `2F-3 ${floorConceptByFloor[2]}まで` },
+    { value: '1f-3', label: `1F-3 ${floorConceptByFloor[1]}まで` },
   ];
 }
 
