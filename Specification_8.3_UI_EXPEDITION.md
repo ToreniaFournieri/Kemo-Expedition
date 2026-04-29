@@ -140,6 +140,8 @@ HP 2350 / 4680
   - Example: `ケイナイアンの廃都`
 - **Outcome**
   - Display the latest expedition result such as `踏破`, `撤退`, `敗北`, etc.
+- **Update Timing**
+  - Update both the Latest Expedition Floor and Outcome only at the end of `state.explore`, to prevent spoilers during exploration
 - **Expand / Collapse Toggle**
   - Display `▼` at the end of the row for expandable party details.
 
