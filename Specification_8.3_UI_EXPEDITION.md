@@ -132,6 +132,10 @@ HP 2350 / 4680
 - Example: `🕘` means approximately **9 hours remaining**.
 - Detailed remaining time is shown only in the floating bubble.
 
+**First row text**
+- Party name: PT1, PT2, ...
+- the latest floor name of the expedition, the Japanese name from **Expedition Floor Concepts**: 群生の巣盆地
+
 ```
 ( ####### ) PT1 ルピニアンの断崖   踏破 ▼
 ( ##   ## ) 
