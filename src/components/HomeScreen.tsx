@@ -962,20 +962,21 @@ const DIARY_SIDE_QUEST_THRESHOLD_OPTIONS: Array<{ value: DiarySideQuestThreshold
   { value: 'none', label: 'なし' },
 ];
 
-const EXPEDITION_DEPTH_OPTIONS: Array<{ value: ExpeditionDepthLimit; label: string }> = [
-  { value: 'all', label: '全て' },
-  { value: 'beforeBoss', label: 'ボス前' },
-  { value: '5f-4', label: '5F-4' },
-  { value: '5f-3', label: '5F-3' },
-  { value: '4f-4', label: '4F-4' },
-  { value: '4f-3', label: '4F-3' },
-  { value: '3f-4', label: '3F-4' },
-  { value: '3f-3', label: '3F-3' },
-  { value: '2f-4', label: '2F-4' },
-  { value: '2f-3', label: '2F-3' },
-  { value: '1f-4', label: '1F-4' },
-  { value: '1f-3', label: '1F-3' },
-];
+function getExpeditionDepthOptions(dungeonId: number): Array<{ value: ExpeditionDepthLimit; label: string }> {
+  // SpecRef: 8.3 | UI_EXPEDITION | Expedition Depth Limit (探索深度)
+  const floor3Concept = getExpeditionFloorConcept(dungeonId, 3) ?? '3階層';
+  const beforeBossConcept = getExpeditionFloorConcept(dungeonId, 6) ?? '6階層';
+
+  return [
+    { value: 'all', label: '全て' },
+    { value: 'beforeBoss', label: `${beforeBossConcept}ボス直前まで` },
+    { value: '5f-3', label: `5F-3 ${floor3Concept}まで` },
+    { value: '4f-3', label: `4F-3 ${floor3Concept}まで` },
+    { value: '3f-3', label: `3F-3 ${floor3Concept}まで` },
+    { value: '2f-3', label: `2F-3 ${floor3Concept}まで` },
+    { value: '1f-3', label: `1F-3 ${floor3Concept}まで` },
+  ];
+}
 
 const POTENTIAL_DEFAULT_NAMES_BY_PT: Record<number, Partial<Record<RaceId, string[]>>> = {
   1: {
@@ -8132,7 +8133,7 @@ function ExpeditionTab({
                     onChange={(e) => onSetExpeditionDepthLimit(partyIndex, e.target.value as ExpeditionDepthLimit)}
                     className="w-20 sm:w-24 border border-gray-300 rounded px-2 py-1 text-sm"
                   >
-                    {EXPEDITION_DEPTH_OPTIONS.map((option) => (
+                    {getExpeditionDepthOptions(party.selectedDungeonId).map((option) => (
                       <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </select>
