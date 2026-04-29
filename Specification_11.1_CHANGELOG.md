@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.2 | 9 | 2026/4/29 | Align runtime gods/religions (1.1.7 g) descriptions to latest table values: update glossary/deity effect text durations to 2x where specified, set God of Attrition text baseline to 1.20+α, and normalize God of Oblivion rank-10 note formatting. |
 | 0.6.2 | 8 | 2026/4/29 | Adjust Expedition first-row runtime update timing to avoid spoilers during `state.explore`: keep floor/outcome headline frozen to non-spoiler state until exploration ends, then show latest reached floor concept name and final outcome. |
 | 0.6.2 | 7 | 2026/4/29 | Update Expedition party first-row runtime text to show latest reached floor concept name (Japanese), latest outcome label, and keep expandable-row toggle behavior (`▼`). |
 | 0.6.2 | 6 | 2026/4/29 | Expand Expedition Depth Limit selector to match Spec 8.3 option set: add `1F-4/2F-4/3F-4/4F-4/5F-4` entries in the destination pane list and keep `*F-4` save values valid during load normalization. |
