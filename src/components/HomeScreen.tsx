@@ -7739,6 +7739,7 @@ function ExpeditionTab({
         const currentLogDungeonExpLevel = DUNGEONS.find((dungeon) => dungeon.id === currentLog?.dungeonId)?.expLevel;
         // SpecRef: 8.3 | UI_EXPEDITION | First row text
         const headlineFloorName = (() => {
+          if (cycle.state === 'explore') return selectedDungeon?.name ?? '-';
           if (!currentLog) return selectedDungeon?.name ?? '-';
           const latestEntry = currentLog.entries[currentLog.entries.length - 1];
           if (!latestEntry?.floor) return currentLog.dungeonName;
