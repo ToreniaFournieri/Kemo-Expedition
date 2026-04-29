@@ -26,11 +26,11 @@
 | 80–99 | 「待ってたよ。あんたには特別な品も回してるんだ。……他の客には内緒だぜ？」 |
 
 **Paid Refresh (有償洗替):**  
-  - **Cost:** `2,000G × 2 ^ (refresh_count - 1)`  
+  - **Cost:** `200G × 2 ^ (refresh_count - 1)`  
     - Example:  
-      - 1st use: 2,000G  
-      - 2nd use: 4,000G  
-      - 3rd use: 8,000G  
+      - 1st use: 200G  
+      - 2nd use: 400G  
+      - 3rd use: 800G  
 
 
 **Lineup**
