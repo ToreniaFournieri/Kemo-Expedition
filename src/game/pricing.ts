@@ -32,7 +32,7 @@ function getSellingBasePrice(tier: number): number {
 }
 
 function getPurchasingBasePrice(tier: number): number {
-  return 4 + (6 * tier);
+  return 4 + (2 * tier);
 }
 
 // SpecRef: 3.1.6 | Item selling price | Selling_price
