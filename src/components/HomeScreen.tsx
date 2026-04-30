@@ -15,6 +15,7 @@ import { LINEAGES } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS, getSuperRareBonuses } from '../data/items';
 import { GOD_ENEMY_PROFILES, GOD_MYTHIC_DROPS, getGodProfileForDungeon } from '../data/dropTables';
 import { ABILITY_BASE_NAMES } from '../data/abilityNames';
+import { getMasterItemCategoriesByRarity } from '../data/masterSpecData';
 import {
   BONUS_ABILITY_GLOSSARY_ENTRIES,
   BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID,
@@ -8706,15 +8707,24 @@ function ShopTab({
   const shopItems = rarityPool.map((rarityBase, index) => {
     const tier = seededTierForIndex(index);
     const rotatedCategories = shopCategories.map((_, offset) => shopCategories[(index + offset) % shopCategories.length]);
-    const baseItemId = rotatedCategories
-      .map((category) => {
-        const categoryIndex = ITEM_CATEGORY_ORDER.indexOf(category);
-        return tier * 1000 + rarityBase + categoryIndex + 1;
-      })
-      .find((itemId) => ITEMS.some((item) => item.id === itemId));
-    if (!baseItemId) return null;
-    const baseItem = ITEMS.find((item) => item.id === baseItemId);
+    const targetRarity = getItemRarityById(tier * 1000 + rarityBase + 1);
+    const categoriesByRarity = new Set<ItemCategory>(
+      targetRarity === 'mythicRare' ? [] : getMasterItemCategoriesByRarity(tier, targetRarity)
+    );
+    const selectedCategory = rotatedCategories.find((category) => categoriesByRarity.has(category));
+    const selectedCategoryIndex = selectedCategory ? ITEM_CATEGORY_ORDER.indexOf(selectedCategory) : -1;
+    const categoryBasedItemId = selectedCategoryIndex >= 0
+      ? tier * 1000 + rarityBase + selectedCategoryIndex + 1
+      : null;
+    const fallbackItem = ITEMS.find((item) => (
+      Math.floor(item.id / 1000) === tier &&
+      getItemRarityById(item.id) === targetRarity
+    ));
+    const baseItem = (categoryBasedItemId !== null
+      ? ITEMS.find((item) => item.id === categoryBasedItemId)
+      : null) ?? fallbackItem;
     if (!baseItem) return null;
+    const baseItemId = baseItem.id;
 
     const item: Item = { ...baseItem, enhancement: 0, superRare: 0 };
     const price = getShopItemPrice(baseItemId);

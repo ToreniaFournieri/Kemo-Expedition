@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.3 | 2 | 2026/4/30 | Fix Base Shop lineup generation to always produce up to five purchasable entries by selecting categories that exist for the rolled tier/rarity and falling back to any valid item in that rarity, preventing 4-item shelves and missing uncommon offers due to unavailable category IDs. |
 | 0.6.3 | 1 | 2026/4/30 | Prepare v0.6.3 release: bump app version to `v0.6.3` and reset build number to `1`. |
 | 0.6.2 | 18 | 2026/4/30 | Remove obsolete `/qa/` environment from runtime path detection and deploy workflow/index; keep only `/dev/` and `/beta/` with environment-specific save isolation and dev-only x20 debug speed behavior. |
 | 0.6.2 | 16 | 2026/4/30 | Implement Item Compendium runtime reveal-unlock flow: item entries are now hidden until first enemy encounter that can drop them, and reveal triggers at enemy visibility during exploration/battle regardless of actual item acquisition; add persisted revealed item-id migration/default handling. |
