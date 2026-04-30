@@ -229,52 +229,52 @@ export const GLOSSARY_SECTIONS: GlossarySection[] = [
       {
         "key": "c.unlock_caninian_ability",
         "label": "[🐶解放]",
-        "description": "🐶ケイナイアンのもう一つのアビリティ(再起)が解放されます"
+        "description": "🐶ケイナイアンのもう一つのアビリティ(再起)が解放される"
       },
       {
         "key": "c.unlock_lupinian_ability",
         "label": "[🐺解放]",
-        "description": "🐺ルピニアンのもう一つのアビリティ(再反撃)が解放されます"
+        "description": "🐺ルピニアンのもう一つのアビリティ(再反撃)が解放される"
       },
       {
         "key": "c.unlock_vulpinian_ability",
         "label": "[🦊解放]",
-        "description": "🦊ヴァルピニアンのもう一つのアビリティ(狡猾)が解放されます"
+        "description": "🦊ヴァルピニアンのもう一つのアビリティ(狡猾)が解放される"
       },
       {
         "key": "c.unlock_ursan_ability",
         "label": "[🐻解放]",
-        "description": "🐻ウルサンのもう一つのアビリティ(サイボーグ化1)が解放されます"
+        "description": "🐻ウルサンのもう一つのアビリティ(サイボーグ化1)が解放される"
       },
       {
         "key": "c.unlock_felidian_ability",
         "label": "[😺解放]",
-        "description": "😺フェリディアンのもう一つのアビリティ(援護射撃)が解放されます"
+        "description": "😺フェリディアンのもう一つのアビリティ(援護射撃)が解放される"
       },
       {
         "key": "c.unlock_mustelid_ability",
         "label": "[🦡解放]",
-        "description": "🦡マステリドのもう一つのアビリティ(行商)が解放されます"
+        "description": "🦡マステリドのもう一つのアビリティ(行商)が解放される"
       },
       {
         "key": "c.unlock_leporian_ability",
         "label": "[🐰解放]",
-        "description": "🐰レポリアンのもう一つのアビリティ(魔法反撃)が解放されます"
+        "description": "🐰レポリアンのもう一つのアビリティ(魔法反撃)が解放される"
       },
       {
         "key": "c.unlock_cervin_ability",
         "label": "[🦌解放]",
-        "description": "🦌セルヴィンのもう一つのアビリティ(予言1)が解放されます"
+        "description": "🦌セルヴィンのもう一つのアビリティ(予言1)が解放される"
       },
       {
         "key": "c.unlock_murid_ability",
         "label": "[🐭解放]",
-        "description": "🐭ミュリッドのもう一つのアビリティ(未設定)が解放されます"
+        "description": "🐭ミュリッドのもう一つのアビリティ(未設定)が解放される"
       },
       {
         "key": "c.unlock_procyonian_ability",
         "label": "[🦝解放]",
-        "description": "🦝プロキオニアンのもう一つのアビリティ(未設定)が解放されます"
+        "description": "🦝プロキオニアンのもう一つのアビリティ(未設定)が解放される"
       },
       {
         "key": "c.armor_x1.x",
