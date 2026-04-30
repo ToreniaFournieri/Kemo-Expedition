@@ -391,7 +391,7 @@ function getUnlockDiaryLog(
 
 function getCycleDurationScale(): number {
   const env = getEnvironmentId();
-  return env === 'dev' || env === 'qa' ? DEBUG_CYCLE_DURATION_SCALE : 1;
+  return env === 'dev' ? DEBUG_CYCLE_DURATION_SCALE : 1;
 }
 
 function formatSideQuestShortText(type: string, shortText: string, target: number): string {
