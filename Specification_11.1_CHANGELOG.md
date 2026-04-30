@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.2 | 18 | 2026/4/30 | Remove obsolete `/qa/` environment from runtime path detection and deploy workflow/index; keep only `/dev/` and `/beta/` with environment-specific save isolation and dev-only x20 debug speed behavior. |
 | 0.6.2 | 16 | 2026/4/30 | Implement Item Compendium runtime reveal-unlock flow: item entries are now hidden until first enemy encounter that can drop them, and reveal triggers at enemy visibility during exploration/battle regardless of actual item acquisition; add persisted revealed item-id migration/default handling. |
 | 0.6.2 | 15 | 2026/4/30 | Update runtime glossary entry text for Spec 1.1.6 `f.donation`: adjust Japanese sentence ending in donation description to the latest wording while keeping rank-amount table unchanged. |
 | 0.6.2 | 14 | 2026/4/29 | Align Spec 8.4.1 paid shop refresh runtime cost to `200G × 2 ^ (refresh_count - 1)` by setting first paid refresh to `200G` (then `400G`, `800G`, ...). |

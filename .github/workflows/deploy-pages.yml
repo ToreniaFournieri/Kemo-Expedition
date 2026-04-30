@@ -67,7 +67,6 @@ jobs:
           }
 
           build_env dev main '開発環境' '開発環境'
-          build_env qa qa 'αテスト' 'αテスト'
           build_env beta beta 'βテスト' 'βテスト'
 
           cat > site/index.html <<'HTML'
@@ -82,7 +81,6 @@ jobs:
               <h1>Kemo Expedition Environments</h1>
               <ul>
                 <li><a href="./dev/">開発環境 (dev)</a></li>
-                <li><a href="./qa/">αテスト (qa)</a></li>
                 <li><a href="./beta/">βテスト (beta)</a></li>
               </ul>
             </body>
