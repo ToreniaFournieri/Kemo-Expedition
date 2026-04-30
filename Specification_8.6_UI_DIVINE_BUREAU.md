@@ -127,7 +127,10 @@ note: 0:no sleep 寝ない, 1:nap 仮眠, 2:sound sleep 熟睡
 - UI Behavior:
   - Items are listed in a Collapsed View by default.
   - Interaction: Tap an item name to expand the detailed status panel.
-
+ 
+- Item Reveal Rule:
+  - An item entry is unlocked when the player first encounters an enemy capable of dropping that item.
+  - The reveal is triggered at the moment the enemy becomes visible to the player (e.g., during exploration or battle), regardless of whether the item is actually obtained.
 
 **Bestiary (敵キャラクター図鑑)**
 - A comprehensive record of all threats encountered (or to be encountered) during expeditions.
