@@ -10491,6 +10491,7 @@ function SettingTab({
 
   const compendiumItems = ITEMS
     .filter(item =>
+      (gameState.global.revealedItemCompendiumItemIds ?? []).includes(item.id) &&
       item.category === compendiumCategory &&
       matchesRarityFilter(item.id, compendiumRarityFilter)
     )
