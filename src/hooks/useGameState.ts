@@ -202,6 +202,33 @@ function normalizeRevealedItemCompendiumItemIds(value: unknown): number[] {
   ));
 }
 
+function collectRevealedItemIdsFromOwnedData(
+  inventory: InventoryRecord,
+  parties: Party[],
+): number[] {
+  // SpecRef: 3.1 | ITEM | Item Compendium (アイテム図鑑)
+  const revealedIds = new Set<number>();
+  Object.values(inventory).forEach((variant) => {
+    const itemId = variant?.item?.id;
+    if (Number.isInteger(itemId) && (itemId as number) > 0) {
+      revealedIds.add(itemId as number);
+    }
+  });
+
+  parties.forEach((party) => {
+    party.characters.forEach((character) => {
+      character.equipment.forEach((item) => {
+        if (!item) return;
+        if (Number.isInteger(item.id) && item.id > 0) {
+          revealedIds.add(item.id);
+        }
+      });
+    });
+  });
+
+  return Array.from(revealedIds);
+}
+
 // SpecRef: 1.0.3 | Glossary Reveal Rule | reveal by encounter
 function revealGlossaryFromEncounter(
   global: GameState['global'],
@@ -957,7 +984,10 @@ function loadSavedState(): LoadSavedStateResult {
         }
         parsed.global.deityDonations = getDeityDonationsWithDefaults(parsed.global.deityDonations);
         parsed.global.unlockedDeities = normalizeUnlockedDeities(parsed.global.unlockedDeities);
-        parsed.global.revealedItemCompendiumItemIds = normalizeRevealedItemCompendiumItemIds(parsed.global.revealedItemCompendiumItemIds);
+        parsed.global.revealedItemCompendiumItemIds = Array.from(new Set([
+          ...normalizeRevealedItemCompendiumItemIds(parsed.global.revealedItemCompendiumItemIds),
+          ...collectRevealedItemIdsFromOwnedData(parsed.global.inventory, parsed.parties),
+        ]));
         parsed.global.revealedGlossaryAbilityIds = normalizeRevealedGlossaryAbilityIds(parsed.global.revealedGlossaryAbilityIds);
         parsed.global.revealedGlossaryTerrainKeys = normalizeRevealedGlossaryTerrainKeys(parsed.global.revealedGlossaryTerrainKeys);
         parsed.global.shopPurchases = (parsed.global.shopPurchases && typeof parsed.global.shopPurchases === 'object')
