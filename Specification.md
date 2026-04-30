@@ -84,7 +84,7 @@
 ## 9. Environment
 **Branch:**
   - `main` → `/dev/`
-  - *obsolated*:`qa` → `/qa/`
+  - *obsoleted*:`qa` → `/qa/`
   - `beta` → `/beta/`
 **Environment:**
   - `/dev/` = 開発環境,
