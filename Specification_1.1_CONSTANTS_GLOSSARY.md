@@ -286,7 +286,7 @@
 | `c.wand_x1.x` | [杖x1.x] | 杖カテゴリ装備の効果が 1.x 倍  |
 | `c.grimoire_x1.x` | [書x1.x] | 魔導書カテゴリ装備の効果が 1.x 倍  |
 | `c.catalyst_x1.x` | [媒x1.x] | 触媒カテゴリ装備の効果が 1.x 倍  |
-| `c.unlock-(race)-ability` | [(race icon)解放] | (race icon, race name)のもう一つのアビリティ(unlock ability name)が解放されます　|
+| `c.unlock-(race)-ability` | [(race icon)解放] | (race icon, race name)のもう一つのアビリティ(unlock ability name)が解放される　|
 | `c.deity-physical-attack_xV` | [天物攻xV] | 遠距離攻撃・近接攻撃のダメージを V倍する |
 | `c.deity-magical-attack_xV` | [天魔攻xV] | 魔法攻撃のダメージを V倍する |
 | `c.deity-physical-defense_x2/3` | [天物防2/3] | 物理防御倍率が2/3倍(少ないほうが攻撃に強い)  |
