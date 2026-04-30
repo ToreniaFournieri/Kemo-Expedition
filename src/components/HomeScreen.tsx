@@ -962,20 +962,32 @@ const DIARY_SIDE_QUEST_THRESHOLD_OPTIONS: Array<{ value: DiarySideQuestThreshold
   { value: 'none', label: 'なし' },
 ];
 
-const EXPEDITION_DEPTH_OPTIONS: Array<{ value: ExpeditionDepthLimit; label: string }> = [
-  { value: 'all', label: '全て' },
-  { value: 'beforeBoss', label: 'ボス前' },
-  { value: '5f-4', label: '5F-4' },
-  { value: '5f-3', label: '5F-3' },
-  { value: '4f-4', label: '4F-4' },
-  { value: '4f-3', label: '4F-3' },
-  { value: '3f-4', label: '3F-4' },
-  { value: '3f-3', label: '3F-3' },
-  { value: '2f-4', label: '2F-4' },
-  { value: '2f-3', label: '2F-3' },
-  { value: '1f-4', label: '1F-4' },
-  { value: '1f-3', label: '1F-3' },
-];
+function getExpeditionDepthOptions(dungeonId: number): Array<{ value: ExpeditionDepthLimit; label: string }> {
+  // SpecRef: 8.3 | UI_EXPEDITION | Expedition Depth Limit (探索深度)
+  const beforeBossConcept = getExpeditionFloorConcept(dungeonId, 6) ?? '6階層';
+  const floorConceptByFloor: Record<number, string> = {
+    1: getExpeditionFloorConcept(dungeonId, 1) ?? '1階層',
+    2: getExpeditionFloorConcept(dungeonId, 2) ?? '2階層',
+    3: getExpeditionFloorConcept(dungeonId, 3) ?? '3階層',
+    4: getExpeditionFloorConcept(dungeonId, 4) ?? '4階層',
+    5: getExpeditionFloorConcept(dungeonId, 5) ?? '5階層',
+  };
+
+  return [
+    { value: '1f-3', label: `1F-3 ${floorConceptByFloor[1]}まで` },
+    { value: '1f-4', label: `1F-4 ${floorConceptByFloor[1]}まで` },
+    { value: '2f-3', label: `2F-3 ${floorConceptByFloor[2]}まで` },
+    { value: '2f-4', label: `2F-4 ${floorConceptByFloor[2]}まで` },
+    { value: '3f-3', label: `3F-3 ${floorConceptByFloor[3]}まで` },
+    { value: '3f-4', label: `3F-4 ${floorConceptByFloor[3]}まで` },
+    { value: '4f-3', label: `4F-3 ${floorConceptByFloor[4]}まで` },
+    { value: '4f-4', label: `4F-4 ${floorConceptByFloor[4]}まで` },
+    { value: '5f-3', label: `5F-3 ${floorConceptByFloor[5]}まで` },
+    { value: '5f-4', label: `5F-4 ${floorConceptByFloor[5]}まで` },
+    { value: 'beforeBoss', label: `${beforeBossConcept}ボス直前まで` },
+    { value: 'all', label: '全て' },
+  ];
+}
 
 const POTENTIAL_DEFAULT_NAMES_BY_PT: Record<number, Partial<Record<RaceId, string[]>>> = {
   1: {
@@ -7725,7 +7737,15 @@ function ExpeditionTab({
         const isLogExpanded = expandedLogParty === partyIndex;
         const currentLog = party.lastExpeditionLog;
         const currentLogDungeonExpLevel = DUNGEONS.find((dungeon) => dungeon.id === currentLog?.dungeonId)?.expLevel;
-        const headlineDungeonName = currentLog?.dungeonName ?? selectedDungeon?.name;
+        // SpecRef: 8.3 | UI_EXPEDITION | First row text
+        const headlineFloorName = (() => {
+          if (cycle.state === 'explore') return selectedDungeon?.name ?? '-';
+          if (!currentLog) return selectedDungeon?.name ?? '-';
+          const latestEntry = currentLog.entries[currentLog.entries.length - 1];
+          if (!latestEntry?.floor) return currentLog.dungeonName;
+          return getExpeditionFloorConcept(currentLog.dungeonId, latestEntry.floor)
+            ?? `${formatNumber(latestEntry.floor)}階層`;
+        })();
         const headlineState = cycle.state === 'explore'
           ? getPartyCycleStateLabel('explore')
           : currentLog
@@ -8025,7 +8045,7 @@ function ExpeditionTab({
                   <span className="flex items-start justify-between gap-1.5 text-sm">
                     <span className={`min-w-0 truncate ${isDarkModeEnabled ? 'text-gray-50' : 'text-black'}`}>
                       <span className="font-bold shrink-0 mr-1">{party.name}</span>
-                      {headlineDungeonName}
+                      {headlineFloorName}
                     </span>
                     <span className="shrink-0 flex items-center gap-1.5">
                       <span className="font-medium text-gray-700 shrink-0">{headlineState}</span>
@@ -8132,7 +8152,7 @@ function ExpeditionTab({
                     onChange={(e) => onSetExpeditionDepthLimit(partyIndex, e.target.value as ExpeditionDepthLimit)}
                     className="w-20 sm:w-24 border border-gray-300 rounded px-2 py-1 text-sm"
                   >
-                    {EXPEDITION_DEPTH_OPTIONS.map((option) => (
+                    {getExpeditionDepthOptions(party.selectedDungeonId).map((option) => (
                       <option key={option.value} value={option.value}>{option.label}</option>
                     ))}
                   </select>
@@ -8332,7 +8352,7 @@ function ExpeditionTab({
                           </button>
                           {isRoomExpanded && entry.details && (
                             <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)]">
-                              <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
+                              <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getExpeditionFloorConcept(currentLog.dungeonId, entry.floor) ?? `${formatNumber(entry.floor)}階層`) : '-'} 戦闘ログ:`}</div>
                               {aggregateBattleLifeDrainLogs(entry.details).map((log, j, battleLogs) => {
                                 const isResurrectLog = log.note?.startsWith('(再起') || log.note?.startsWith('(即時蘇生)');
                                 const isTriggeredLog = log.actor === 'triggered';
@@ -9837,7 +9857,7 @@ function DiaryTab({
                         </button>
                         {isRoomExpanded && entry.details && (
                           <div className="border-t border-gray-100 p-2 bg-gray-50 text-xs space-y-1 shadow-[0_8px_20px_rgba(15,23,42,0.14)]">
-                            <div className="font-medium text-gray-600 mb-1">戦闘ログ:</div>
+                            <div className="font-medium text-gray-600 mb-1">{`${typeof entry.floor === 'number' ? (getExpeditionFloorConcept(log.dungeonId, entry.floor) ?? `${formatNumber(entry.floor)}階層`) : '-'} 戦闘ログ:`}</div>
                             {aggregateBattleLifeDrainLogs(entry.details).map((battleLog, j, battleLogs) => {
                               const isResurrectLog = battleLog.note?.startsWith('(再起') || battleLog.note?.startsWith('(即時蘇生)');
                               const isTriggeredLog = battleLog.actor === 'triggered';
@@ -10471,6 +10491,7 @@ function SettingTab({
 
   const compendiumItems = ITEMS
     .filter(item =>
+      (gameState.global.revealedItemCompendiumItemIds ?? []).includes(item.id) &&
       item.category === compendiumCategory &&
       matchesRarityFilter(item.id, compendiumRarityFilter)
     )

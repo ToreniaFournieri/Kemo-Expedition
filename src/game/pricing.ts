@@ -27,8 +27,12 @@ function getItemPriceRarity(itemId: number): ItemPriceRarity {
   return 'common';
 }
 
-function getTierBasePrice(tier: number): number {
+function getSellingBasePrice(tier: number): number {
   return 10 + (2 * tier);
+}
+
+function getPurchasingBasePrice(tier: number): number {
+  return 4 + (2 * tier);
 }
 
 // SpecRef: 3.1.6 | Item selling price | Selling_price
@@ -36,12 +40,13 @@ export function calculateItemSellPrice(item: Item, autoSellMultiplier = 1): numb
   const tier = getItemTier(item.id);
   const rarityMultiplier = SELLING_RARITY_MULTIPLIER[getItemPriceRarity(item.id)];
   const superRareMultiplier = item.superRare > 0 ? 200 : 1;
-  const rawPrice = getTierBasePrice(tier) * rarityMultiplier * superRareMultiplier * autoSellMultiplier;
+  const rawPrice = getSellingBasePrice(tier) * rarityMultiplier * superRareMultiplier * autoSellMultiplier;
   return Math.floor(rawPrice);
 }
 
 // SpecRef: 3.1.6 | Item selling price | Purchesing_price
 export function getShopItemPrice(itemId: number): number {
   const tier = getItemTier(itemId);
-  return getTierBasePrice(tier) * 100;
+  const rarityMultiplier = SELLING_RARITY_MULTIPLIER[getItemPriceRarity(itemId)];
+  return getPurchasingBasePrice(tier) * rarityMultiplier * 10;
 }

@@ -152,7 +152,7 @@ export function getDeityEffectDescription(name: string, totalDonatedGold = 0): s
     }
     case 'God of Dusk': {
       const evasionBonus = 0.015 + 0.001 * effectiveTier;
-      return `全員の回避+${(evasionBonus * 1000).toFixed(0)}、魔法防御倍率1.10倍。売却時間1.5倍。`;
+      return `全員の回避+${(evasionBonus * 1000).toFixed(0)}、魔法防御倍率1.10倍。売却時間2倍。`;
     }
     case 'Goddess of Mirage': {
       const magicalAttack = 1.2 + 0.01 * effectiveTier;

@@ -44,8 +44,11 @@ and {condition ≥ 230}
 
 - **Expedition Depth Limit (探索深度)**
   - Players can set a depth limit; when the party reaches the selected floor, it stops the expedition and returns home automatically.
-  - Selectable Options : 1F-3まで/2F-3まで/3F-3まで/4F-3まで/5F-3まで/ボス直前まで/全て (default: 全て)
-
+  - The selection form should remain compact:
+  - Display width is small, and showing only a short label such as `1F-3` is sufficient. 
+  - Selectable Options : 1F-3 floor_nameまで/1F-4 floor_nameまで/2F-3 floor_nameまで/2F-4 floor_nameまで/3F-3 floor_nameまで/3F-4 floor_nameまで/4F-3 floor_nameまで/4F-4 floor_nameまで/5F-3 floor_nameまで/5F-4 floor_nameまで/floor_nameボス直前まで/全て (default: 全て)
+    - `floor_name` uses the Japanese name from **Expedition Floor Concepts**.
+    - Example: 2F-3 捕食者の縄張りまで, 2F-4 捕食者の縄張りまで, 3F-3 群生の巣盆地まで
 
 ```
 left-aligned                                    right-aligned
@@ -129,8 +132,21 @@ HP 2350 / 4680
 - Example: `🕘` means approximately **9 hours remaining**.
 - Detailed remaining time is shown only in the floating bubble.
 
+**First row text**
+- Party name: PT1, PT2, ...
+- **Latest Expedition Floor**
+  - Display the latest reached floor name of the current expedition.
+  - Use the Japanese floor name defined in **Expedition Floor Concepts**.
+  - Example: `ケイナイアンの廃都`
+- **Outcome**
+  - Display the latest expedition result such as `踏破`, `撤退`, `敗北`, etc.
+- **Update Timing**
+  - Update both the Latest Expedition Floor and Outcome only at the end of `state.explore`, to prevent spoilers during exploration
+- **Expand / Collapse Toggle**
+  - Display `▼` at the end of the row for expandable party details.
+
 ```
-( ####### ) PT1 ルピニアンの断崖   踏破 ▼
+( ####### ) PT1 ケイナイアンの廃都   踏破 ▼
 ( ##   ## ) 
 ( ####### ) 🗃️2/3 神魔解放 📜660分治療を受ける 🕘 
 移動中: flavor text (background: state progress bar)

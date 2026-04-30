@@ -1,6 +1,6 @@
 import { getShopItemPrice as getTierShopItemPrice } from './pricing';
 
-const SHOP_REFRESH_BASE_PRICE = 2000;
+const SHOP_REFRESH_BASE_PRICE = 200;
 const SHOP_REFRESH_HOURS = [2, 10, 18] as const;
 
 function getRefreshDateAt(base: Date, hour: number): Date {

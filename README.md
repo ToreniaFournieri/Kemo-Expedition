@@ -2,7 +2,6 @@
 
 Text-based deterministic fantasy RPG expedition game.
 
-- 現在はαテスト期間ではありません。 v0.5.x系統と v.0.6.x系統ではデータの互換性がありません。
+- βテスト期間中となります。
 
-- 次回はβテストを2026年4月29(水)日を予定しております。
-- αβテストに協力いただける方はこちらをご覧ください [ケモの冒険(冒ケモ) αテストのお知らせ](https://note.com/fournieri/n/n1994581de1bc?sub_rt=share_pb)
+- βテストに協力いただける方はこちらをご覧ください [冒ケモ　βテスト開始のお知らせ(4/29)](https://note.com/fournieri/n/nfe09af9df37c?sub_rt=share_pw)

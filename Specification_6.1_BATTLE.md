@@ -834,8 +834,10 @@ note: If mainClass == subClass: (race, mainClass+M) : example: (合,侍M)
 | `terrain.echo-domain` | 残響+N% |
 
 
+- floor_name: the Japanese floor name defined in **Expedition Floor Concepts**.
+
 ```
-戦闘ログ:
+floor_name 戦闘ログ:
 left-alinged                                           right-aligned
 [距離<roll result>] 敵が　対象　に行動名！(N/M回)    (icon 数値 in dark orange)
 [距離<roll result>] 味方:行動主 の行動名！(N/M回)    (icon 数値　in Blue)

@@ -1,4 +1,4 @@
-type EnvironmentId = 'dev' | 'qa' | 'beta' | 'default';
+type EnvironmentId = 'dev' | 'beta' | 'default';
 
 function getPathname(): string {
   if (typeof window === 'undefined') return '';
@@ -10,7 +10,6 @@ export function getEnvironmentId(): EnvironmentId {
   const pathname = getPathname();
   const normalizedPath = pathname.endsWith('/') ? pathname : `${pathname}/`;
   if (normalizedPath.includes('/dev/')) return 'dev';
-  if (normalizedPath.includes('/qa/')) return 'qa';
   if (normalizedPath.includes('/beta/')) return 'beta';
   return 'default';
 }
@@ -19,7 +18,6 @@ export function getEnvironmentId(): EnvironmentId {
 export function getEnvLabel(): string {
   const env = getEnvironmentId();
   if (env === 'dev') return '開発環境';
-  if (env === 'qa') return 'αテスト';
   if (env === 'beta') return 'βテスト';
   return '';
 }
