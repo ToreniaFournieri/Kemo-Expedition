@@ -195,6 +195,13 @@ function normalizeRevealedGlossaryTerrainKeys(value: unknown): TerrainEffectKey[
   ));
 }
 
+function normalizeRevealedItemCompendiumItemIds(value: unknown): number[] {
+  if (!Array.isArray(value)) return [];
+  return Array.from(new Set(
+    value.filter((itemId): itemId is number => Number.isInteger(itemId) && itemId > 0),
+  ));
+}
+
 // SpecRef: 1.0.3 | Glossary Reveal Rule | reveal by encounter
 function revealGlossaryFromEncounter(
   global: GameState['global'],
@@ -934,6 +941,7 @@ function loadSavedState(): LoadSavedStateResult {
             inventory: migrateOldInventory(firstParty?.inventory ?? []),
             deityDonations: {},
             unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
+            revealedItemCompendiumItemIds: [],
             revealedGlossaryAbilityIds: [],
             revealedGlossaryTerrainKeys: [],
             shopPurchases: {},
@@ -949,6 +957,7 @@ function loadSavedState(): LoadSavedStateResult {
         }
         parsed.global.deityDonations = getDeityDonationsWithDefaults(parsed.global.deityDonations);
         parsed.global.unlockedDeities = normalizeUnlockedDeities(parsed.global.unlockedDeities);
+        parsed.global.revealedItemCompendiumItemIds = normalizeRevealedItemCompendiumItemIds(parsed.global.revealedItemCompendiumItemIds);
         parsed.global.revealedGlossaryAbilityIds = normalizeRevealedGlossaryAbilityIds(parsed.global.revealedGlossaryAbilityIds);
         parsed.global.revealedGlossaryTerrainKeys = normalizeRevealedGlossaryTerrainKeys(parsed.global.revealedGlossaryTerrainKeys);
         parsed.global.shopPurchases = (parsed.global.shopPurchases && typeof parsed.global.shopPurchases === 'object')
@@ -1627,6 +1636,7 @@ function createInitialState(): InitialStateResult {
       jewelAutoEquipPriorityPartyId: 1,
       deityDonations: {},
       unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
+      revealedItemCompendiumItemIds: [],
       revealedGlossaryAbilityIds: [],
       revealedGlossaryTerrainKeys: [],
       shopPurchases: {},
@@ -2776,6 +2786,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let totalAutoSellItems: { itemName: string; autoSellProfit: number }[] = [];
       let roomCounter = 0;
       let expeditionEnded = false;
+      const revealedItemCompendiumItemIds = new Set<number>(state.global.revealedItemCompendiumItemIds ?? []);
       const revealedAbilityIds = new Set<string>(state.global.revealedGlossaryAbilityIds);
       characterStats.forEach((stats) => {
         stats.abilities.forEach((ability) => {
@@ -2872,6 +2883,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             enemy.abilities.forEach((ability) => {
               revealedAbilityIds.add(ability.id);
             });
+            // SpecRef: 3.1 | ITEM | Item Compendium (アイテム図鑑)
+            // SpecRef: 3.1 | ITEM | Item Reveal Rule
+            getEnemyDropCandidates(enemy).forEach((item) => {
+              revealedItemCompendiumItemIds.add(item.id);
+            });
+            if (enemy.dropItemId) {
+              revealedItemCompendiumItemIds.add(enemy.dropItemId);
+            }
 
             // Pass currentHp to maintain HP persistence during expedition
             const roomStartHp = currentHp;
@@ -3324,6 +3343,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...state.global,
           inventory: finalInventory,
           gold: finalGold,
+          revealedItemCompendiumItemIds: Array.from(revealedItemCompendiumItemIds),
           ...revealGlossaryFromEncounter(state.global, revealedAbilityIds, undefined),
           revealedGlossaryTerrainKeys: Array.from(revealedTerrainKeys),
         },
@@ -4371,6 +4391,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           jewelAutoEquipPriorityPartyId: 1,
           deityDonations: {},
           unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
+          revealedItemCompendiumItemIds: [],
           revealedGlossaryAbilityIds: [],
           revealedGlossaryTerrainKeys: [],
           shopPurchases: {},
