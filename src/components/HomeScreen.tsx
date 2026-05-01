@@ -10605,6 +10605,12 @@ function SettingTab({
     return (head ?? withoutRoleSuffix).trim();
   };
 
+  const getGodBestiaryStatEnemyId = (god: (typeof GOD_ENEMY_PROFILES)[number], runtimeEnemy?: EnemyDef | null): number => {
+    const dungeonBossId = DUNGEONS.find((dungeon) => dungeon.id === god.expId)?.bossId;
+    if (typeof dungeonBossId === 'number') return dungeonBossId;
+    return runtimeEnemy?.id ?? -1;
+  };
+
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | Bestiary (敵キャラクター図鑑)
   // Gods tab/rows are revealed only when god encounter count is at least 1 (遭遇数 > 0).
   const revealedGodBestiaryNames = new Set(
@@ -10612,7 +10618,7 @@ function SettingTab({
       .filter((god) => {
         const runtimeEnemy = buildGodRuntimeEnemy(god);
         if (!runtimeEnemy) return false;
-        const battleStats = gameState.global.enemyBattleStats?.[runtimeEnemy.id] ?? { defeats: 0, encounters: 0 };
+        const battleStats = gameState.global.enemyBattleStats?.[getGodBestiaryStatEnemyId(god, runtimeEnemy)] ?? { defeats: 0, encounters: 0 };
         return battleStats.encounters > 0;
       })
       .flatMap((god) => [god.name, normalizeBestiaryGodName(god.displayName)])
@@ -11432,7 +11438,7 @@ function SettingTab({
                 {godExpanded && (
                   <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                      <div>ID: {godRuntimeEnemy ? godRuntimeEnemy.id : god.name}</div>
+                      <div>ID: {getGodBestiaryStatEnemyId(god, godRuntimeEnemy)}</div>
                       <div></div>
                       <div>HP: {formatNumber(godRuntimeEnemy?.hp ?? 0)}</div>
                       <div>レベル: {formatNumber(god.level)}</div>
@@ -11516,7 +11522,7 @@ function SettingTab({
                     <div>待機探索地: {god.expedition}</div>
                     <div className="pt-1">ドロップ候補: {getGodDropCandidates(god.name)}</div>
                     {(() => {
-                      const battleStats = getBestiaryEnemyBattleStats(godRuntimeEnemy?.id ?? -1);
+                      const battleStats = getBestiaryEnemyBattleStats(getGodBestiaryStatEnemyId(god, godRuntimeEnemy));
                       return <div>撃破数: {formatNumber(battleStats.defeats)}　遭遇数: {formatNumber(battleStats.encounters)}</div>;
                     })()}
                   </div>
