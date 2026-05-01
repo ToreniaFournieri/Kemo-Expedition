@@ -138,6 +138,8 @@ note: 0:no sleep 寝ない, 1:nap 仮眠, 2:sound sleep 熟睡
   - Each letter represents for corresponding expedition. And tap to show the enemy list of it. 
   - Gods are listed in "神" tab.
   - Colosseum character is listed in 特 tab. (Only visible Colosseum is enabled)
+- Tab Unlock Conditions: Expedition tabs are unlocked when the player reaches the corresponding expedition for the first time.
+- Gods Tab Behavior (神): Only gods that have been challenged at least once are displayed.
 - Categorize by floor (`x.Spawn_pool`) and is reverse order of rooms (Boss first, then floor6 Normal enemies, floor 5 elite and floor 5 normal enemies…
 
 - Enemy name: List of specific enemies found within that expedition.
