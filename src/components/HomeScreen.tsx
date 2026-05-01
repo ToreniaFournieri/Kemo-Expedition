@@ -11603,6 +11603,12 @@ function SettingTab({
                             if (hasMagicCasting) {
                               offenseRows.push(`詠唱魔法: ${getEnemyBestiarySpellName(displayEnemy)}`);
                             }
+                            const penetrationPercent = Math.round(((displayEnemy.bonuses ?? []).reduce((sum, bonus) => (
+                              bonus.type === 'penet' ? sum + bonus.value : sum
+                            ), 0)) * 100);
+                            if (penetrationPercent !== 0) {
+                              offenseRows.push(`貫通: +${formatNumber(penetrationPercent)}%`);
+                            }
 
                             // Bestiary detail keeps the compact 4-line defense block.
                             const defenseRows: ReactNode[] = [

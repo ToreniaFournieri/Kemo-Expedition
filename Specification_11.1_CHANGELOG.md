@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.3 | 5 | 2026/5/1 | Divine Bureau Bestiary pane: display `貫通:+N%` in enemy offense details only when penetration total is non-zero. |
 | 0.6.3 | 4 | 2026/5/1 | Fix Auto Destination Change Logic in 一任 mode to evaluate progression thresholds using the currently selected expedition enemy level (`x.enemy_level`) during both online `state.rest` completion and AFK emulation checks. |
 | 0.6.3 | 3 | 2026/5/1 | Update runtime Togglr auto-destination progression thresholds for 一任 mode to include the +11 level / condition ≥230 rule (fix duplicated +10 check) for both online `state.rest` completion and AFK emulation checks. |
 | 0.6.3 | 2 | 2026/4/30 | Fix Base Shop lineup generation to always produce up to five purchasable entries by selecting categories that exist for the rolled tier/rarity and falling back to any valid item in that rarity, preventing 4-item shelves and missing uncommon offers due to unavailable category IDs. |
