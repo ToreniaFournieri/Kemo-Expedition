@@ -472,7 +472,12 @@ function shouldAutoAdvanceExpeditionDestination(party: Party): { shouldAdvance: 
     ?? party.expeditionDifficultyOffset
     ?? 0;
   const condition = normalizePartyCondition(party.condition);
-  const enemyLevelWithOffset = nextDungeon.expLevel + selectedDifficultyOffset;
+  const selectedDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId);
+  if (!selectedDungeon) {
+    return { shouldAdvance: false, nextDungeonId: null };
+  }
+
+  const enemyLevelWithOffset = selectedDungeon.expLevel + selectedDifficultyOffset;
   const meetsAnyAutoAdvanceRule = (
     (enemyLevelWithOffset <= party.level + 9 && condition >= 250)
     || (enemyLevelWithOffset <= party.level + 10 && condition >= 240)
