@@ -10219,6 +10219,7 @@ function SettingTab({
     }
   }, [debugSettings.colosseumEnabled, selectedBestiaryDungeonId, onSetSelectedBestiaryDungeonId]);
 
+
   const versionTag = APP_VERSION;
 
   const getDivineBureauPartyAbilityLevel = (party: Party, abilityId: string): number => {
@@ -10585,11 +10586,43 @@ function SettingTab({
   const BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM = 99;
   const isGodBestiaryTab = selectedBestiaryDungeonId === BESTIARY_SPECIAL_DUNGEON_ID_GODS;
   const isColosseumBestiaryTab = selectedBestiaryDungeonId === BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM;
+
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Bestiary (敵キャラクター図鑑)
+  const unlockedBestiaryDungeonIds = new Set(
+    DUNGEONS
+      .filter((dungeon) => dungeon.id !== 99)
+      .filter((dungeon) => gameState.parties.some((party) => (
+        party.selectedDungeonId >= dungeon.id
+        || isLootGateUnlocked(party, getEntryGateKey(dungeon.id))
+      )))
+      .map((dungeon) => dungeon.id)
+  );
+
+  const godBestiaryChallengeNames = new Set(
+    gameState.parties
+      .flatMap((party) => party.diaryLogs ?? [])
+      .flatMap((diaryLog) => diaryLog.expeditionLog ? [diaryLog.expeditionLog] : [])
+      .flatMap((log) => log.entries)
+      .filter((entry) => entry.enemyName.includes('(神魔戦)'))
+      .map((entry) => entry.enemyName.replace(/\s*\(神魔戦\)\s*$/u, '').trim())
+  );
+
   const bestiaryTabOptions = [
-    ...DUNGEONS.filter((dungeon) => dungeon.id !== 99).map((dungeon) => ({ id: dungeon.id, name: dungeon.name })),
+    ...DUNGEONS
+      .filter((dungeon) => dungeon.id !== 99 && unlockedBestiaryDungeonIds.has(dungeon.id))
+      .map((dungeon) => ({ id: dungeon.id, name: dungeon.name })),
     { id: BESTIARY_SPECIAL_DUNGEON_ID_GODS, name: '神魔' },
     ...(debugSettings.colosseumEnabled ? [{ id: BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM, name: '特' }] : []),
   ];
+
+
+  useEffect(() => {
+    if (selectedBestiaryDungeonId === BESTIARY_SPECIAL_DUNGEON_ID_GODS || selectedBestiaryDungeonId === BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM) return;
+    if (!unlockedBestiaryDungeonIds.has(selectedBestiaryDungeonId)) {
+      const fallbackDungeonId = [...unlockedBestiaryDungeonIds].sort((a, b) => a - b)[0] ?? BESTIARY_SPECIAL_DUNGEON_ID_GODS;
+      onSetSelectedBestiaryDungeonId(fallbackDungeonId);
+    }
+  }, [unlockedBestiaryDungeonIds, selectedBestiaryDungeonId, onSetSelectedBestiaryDungeonId]);
 
   const selectedBestiaryDungeon = DUNGEONS.find(d => d.id === selectedBestiaryDungeonId && d.id !== 99) ?? DUNGEONS[0];
 
@@ -10696,6 +10729,7 @@ function SettingTab({
     : [];
 
   const godBestiaryRows = GOD_ENEMY_PROFILES
+    .filter((god) => godBestiaryChallengeNames.has(god.name))
     .slice()
     .sort((a, b) => (a.tier - b.tier) || a.name.localeCompare(b.name));
 
