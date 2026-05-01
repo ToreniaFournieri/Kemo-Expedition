@@ -24,7 +24,7 @@ and {condition ≥ 250}
 and {condition ≥ 240}
 → Move to the next expedition
 
-(3) If {the expedition has been cleared at least once} and  {expedition.`x.enemy_level` + (Difficulty Offset level) ≤ current PT level + 10}
+(3) If {the expedition has been cleared at least once} and  {expedition.`x.enemy_level` + (Difficulty Offset level) ≤ current PT level + 11}
 and {condition ≥ 230}
 → Move to the next expedition
 
