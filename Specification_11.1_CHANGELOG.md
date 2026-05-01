@@ -6,6 +6,8 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.3 | 14 | 2026/5/1 | Fix Divine Bureau Gods Bestiary ability display to use runtime-built god abilities (not raw profile abilities), so merged class/Jinma abilities such as `a.heavy-strike1` and `a.upgrade-all-abilities1` are shown correctly for entries like キョウエン. |
+| 0.6.3 | 13 | 2026/5/1 | Fix Gods (神魔) runtime bonus/ability composition: include enemy-class default ability (e.g., `class.striker` → `a.heavy-strike1`) and merge `Jinma` + represented-race c-bonuses into god runtime enemy data so bestiary/combat reflect growth and race bonuses correctly. |
 | 0.6.3 | 12 | 2026/5/1 | Fix runtime Gods (神魔) bestiary/combat composition: force all God enemy types to `Jinma` and merge class abilities with both represented-race abilities (`Represent for`) and `Jinma` race abilities. |
 | 0.6.3 | 11 | 2026/5/1 | Revert Kyōen deity Japanese naming to spec-compliant text: 「狩猟の神」 → 「狡猾の神」 across Divine Bureau runtime display, glossary, and flavor text. |
 | 0.6.3 | 10 | 2026/5/1 | Refresh Divine Bureau Gods data to latest expedition/deity naming: align standby exploration area names with current dungeon names (Garv/Kyōen/Miora/Dolvar/Lira) and rename Kyōen deity text from 「狡猾の神」 to 「狩猟の神」 across runtime labels/flavor text. |

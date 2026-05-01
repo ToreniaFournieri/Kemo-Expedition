@@ -11442,7 +11442,7 @@ function SettingTab({
                     <div className="flex items-start gap-1">
                       <div>アビリティ:</div>
                       <div className="flex flex-wrap items-center gap-1">
-                        {parseAbilityTokens(god.abilities).map((token, tokenIndex) => (
+                        {parseAbilityTokens(godRuntimeEnemy?.abilities ?? god.abilities).map((token, tokenIndex) => (
                           <Fragment key={token.key}>
                             {tokenIndex > 0 && <span className="text-gray-400">,</span>}
                             {token.isMissing ? (
