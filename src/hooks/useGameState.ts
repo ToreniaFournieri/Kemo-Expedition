@@ -286,6 +286,14 @@ function normalizeUnlockedDeities(unlockedDeities: unknown): string[] {
   return normalized;
 }
 
+function normalizeChallengedGodName(rawName: string): string {
+  const withoutBattleSuffix = rawName.replace(/\s*\(神魔戦\)\s*$/u, '').trim();
+  const withoutRoleSuffix = withoutBattleSuffix.replace(/\([^)]*\)/gu, '').trim();
+  const [head] = withoutRoleSuffix.split(/\s+/u);
+  return (head ?? withoutRoleSuffix).trim();
+}
+
+
 function createUnlockedPartyWithAvailableDeity(defaultParty: Party, existingParties: Party[]): Party {
   const normalizedDeityName = normalizeDeityName(defaultParty.deity.name);
   if (isNoFaithDeity(normalizedDeityName)) return defaultParty;
@@ -973,6 +981,7 @@ function loadSavedState(): LoadSavedStateResult {
             inventory: migrateOldInventory(firstParty?.inventory ?? []),
             deityDonations: {},
             unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
+            challengedGodNames: [],
             revealedItemCompendiumItemIds: [],
             revealedGlossaryAbilityIds: [],
             revealedGlossaryTerrainKeys: [],
@@ -989,6 +998,11 @@ function loadSavedState(): LoadSavedStateResult {
         }
         parsed.global.deityDonations = getDeityDonationsWithDefaults(parsed.global.deityDonations);
         parsed.global.unlockedDeities = normalizeUnlockedDeities(parsed.global.unlockedDeities);
+        parsed.global.challengedGodNames = Array.isArray(parsed.global.challengedGodNames)
+          ? parsed.global.challengedGodNames
+              .filter((name: unknown): name is string => typeof name === 'string' && name.trim().length > 0)
+              .map((name: string) => normalizeChallengedGodName(name))
+          : [];
         parsed.global.revealedItemCompendiumItemIds = Array.from(new Set([
           ...normalizeRevealedItemCompendiumItemIds(parsed.global.revealedItemCompendiumItemIds),
           ...collectRevealedItemIdsFromOwnedData(parsed.global.inventory, parsed.parties),
@@ -1156,6 +1170,18 @@ function loadSavedState(): LoadSavedStateResult {
           party.deityGold = parsed.global.deityDonations[normalizedDeityName] ?? 0;
 
         }
+
+        const challengedGodNamesFromLogs = (parsed.parties as Party[])
+          .flatMap((party: Party) => party.diaryLogs ?? [])
+          .flatMap((diaryLog: DiaryLog) => diaryLog.expeditionLog ? [diaryLog.expeditionLog] : [])
+          .flatMap((log: ExpeditionLog) => log.entries)
+          .filter((entry: ExpeditionLogEntry) => entry.enemyName.includes('(神魔戦)'))
+          .map((entry: ExpeditionLogEntry) => normalizeChallengedGodName(entry.enemyName))
+          .filter((name: string, index: number, allNames: string[]) => allNames.indexOf(name) === index);
+        parsed.global.challengedGodNames = Array.from(new Set([
+          ...parsed.global.challengedGodNames,
+          ...challengedGodNamesFromLogs,
+        ]));
 
         parsed.global.unlockedDeities = unlockedDeities;
         while (parsed.parties.length < unlockedPartySlots) {
@@ -1671,6 +1697,7 @@ function createInitialState(): InitialStateResult {
       jewelAutoEquipPriorityPartyId: 1,
       deityDonations: {},
       unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
+      challengedGodNames: [],
       revealedItemCompendiumItemIds: [],
       revealedGlossaryAbilityIds: [],
       revealedGlossaryTerrainKeys: [],
@@ -3468,6 +3495,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         };
       }
 
+
+      const challengedGodNamesFromNewLog = (pendingDiaryLog?.expeditionLog?.entries ?? [])
+        .filter((entry) => entry.enemyName.includes('(神魔戦)'))
+        .map((entry) => normalizeChallengedGodName(entry.enemyName));
+      if (challengedGodNamesFromNewLog.length > 0) {
+        nextGlobal = {
+          ...nextGlobal,
+          challengedGodNames: Array.from(new Set([
+            ...(nextGlobal.challengedGodNames ?? []),
+            ...challengedGodNamesFromNewLog,
+          ])),
+        };
+      }
+
       const trimmedParties = enforceGlobalDiaryLogRetention(updatedParties);
 
       return {
@@ -4426,6 +4467,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           jewelAutoEquipPriorityPartyId: 1,
           deityDonations: {},
           unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
+          challengedGodNames: [],
           revealedItemCompendiumItemIds: [],
           revealedGlossaryAbilityIds: [],
           revealedGlossaryTerrainKeys: [],

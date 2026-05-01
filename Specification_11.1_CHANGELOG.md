@@ -6,6 +6,9 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.3 | 17 | 2026/5/1 | Fix Gods Bestiary challenge-name matching for Japanese battle log names (e.g., `ミオラ(神,賢M)`): normalize challenged-god names by removing parenthetical role/class metadata and matching against god display-name head tokens, so newly beaten gods appear immediately. |
+| 0.6.3 | 16 | 2026/5/1 | Fix Bestiary Gods-tab persistence: add `global.challengedGodNames` save-state tracking and update it when new 神魔戦 logs are finalized, so previously challenged gods remain visible even after diary retention trimming or reload/import. |
+| 0.6.3 | 15 | 2026/5/1 | Update runtime Bestiary behavior (8.6): expedition tabs now unlock only after reaching each expedition at least once, and Gods tab lists only gods that have been challenged at least once. |
 | 0.6.3 | 14 | 2026/5/1 | Fix Divine Bureau Gods Bestiary ability display to use runtime-built god abilities (not raw profile abilities), so merged class/Jinma abilities such as `a.heavy-strike1` and `a.upgrade-all-abilities1` are shown correctly for entries like キョウエン. |
 | 0.6.3 | 13 | 2026/5/1 | Fix Gods (神魔) runtime bonus/ability composition: include enemy-class default ability (e.g., `class.striker` → `a.heavy-strike1`) and merge `Jinma` + represented-race c-bonuses into god runtime enemy data so bestiary/combat reflect growth and race bonuses correctly. |
 | 0.6.3 | 12 | 2026/5/1 | Fix runtime Gods (神魔) bestiary/combat composition: force all God enemy types to `Jinma` and merge class abilities with both represented-race abilities (`Represent for`) and `Jinma` race abilities. |
@@ -218,6 +221,8 @@
 | 0.6.0 | 458 | 2026/4/18 | Implement runtime passive ability `a.null-antagonism` (敵対無効化): add ability master labels/descriptions, block `c.antagonism` from `Goddess of Discord` and `a.*-confusion` when target has immunity, and emit `log.null-antagonism` with note `(敵対無効化)`. |
 | 0.6.0 | 458 | 2026/5/1 | Fix runtime Auto Destination Change Logic in 一任 mode to evaluate progression thresholds against the currently selected expedition `x.enemy_level` (not next destination), with matching checks in both `state.rest` completion and AFK emulation flow. |
 | 0.6.0 | 457 | 2026/4/18 | Update runtime selectable lineage master data bonuses to match Spec 2.1 table (add missing secondary `c.*_x1.2` bonuses and defensive multipliers across `sandstorm` to `oath`). |
+| 0.6.0 | 457 | 2026/5/1 | Update runtime Bestiary behavior (8.6): expedition tabs now unlock only after reaching each expedition at least once, and Gods tab lists only gods that have been challenged at least once. |
+
 | 0.6.0 | 456 | 2026/4/18 | Refine expedition unlock gate wording in Party/Next Goal UI: when required count is 1, display `ボス撃破で…開放` (hide `0/1` progress), while keeping fraction format for other requirements. |
 | 0.6.0 | 455 | 2026/4/18 | Align runtime lineage/party initial setup to Spec 2.1.4.2: add `a.resonance` to `incarnation`, and update PT3/PT5/PT6 members (order, classes, lineages, predispositions, unique placements) to the requested initial conditions. |
 | 0.6.0 | 454 | 2026/4/18 | Align runtime PT4 initial member setup to Spec 2.1.4.2: update classes, lineages, predispositions, order, and unique flags under Goddess of Fertility. |
