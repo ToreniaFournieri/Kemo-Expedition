@@ -436,6 +436,7 @@ interface GlobalState {
   shopIntimacyLastDecayAt: number;
   jewels: JewelInventory;
   jewelAutoEquipPriorityPartyId?: number | null;
+  enemyBattleStats?: Record<number, { defeats: number; encounters: number }>;
 }
 
 // Computed party stats for battle

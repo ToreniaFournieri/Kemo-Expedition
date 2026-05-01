@@ -653,6 +653,20 @@ function getDeityDonationsWithDefaults(value: unknown): Record<string, number> {
   }, {});
 }
 
+
+function getEnemyBattleStatsWithDefaults(value: unknown): Record<number, { defeats: number; encounters: number }> {
+  if (!value || typeof value !== 'object') return {};
+  return Object.entries(value as Record<string, unknown>).reduce<Record<number, { defeats: number; encounters: number }>>((acc, [enemyIdKey, stats]) => {
+    const enemyId = Number(enemyIdKey);
+    if (!Number.isFinite(enemyId) || !stats || typeof stats !== 'object') return acc;
+    const raw = stats as Record<string, unknown>;
+    acc[Math.floor(enemyId)] = {
+      defeats: typeof raw.defeats === 'number' ? Math.max(0, Math.floor(raw.defeats)) : 0,
+      encounters: typeof raw.encounters === 'number' ? Math.max(0, Math.floor(raw.encounters)) : 0,
+    };
+    return acc;
+  }, {});
+}
 function getExpeditionStatsWithDefaults(value: unknown) {
   if (!value || typeof value !== 'object') {
     return { Clear: 0, Turned_Back: 0, Draw_Retreat: 0, Wounded_Retreat: 0, Defeat: 0, donatedGold: 0, savedGold: 0 };
@@ -991,6 +1005,7 @@ function loadSavedState(): LoadSavedStateResult {
             shopIntimacy: 0,
             shopIntimacyLastDecayAt: Date.now(),
             jewels: createStarterJewelInventory(),
+            enemyBattleStats: {},
           };
         }
         if (Array.isArray(parsed.global.inventory)) {
@@ -1003,6 +1018,7 @@ function loadSavedState(): LoadSavedStateResult {
               .filter((name: unknown): name is string => typeof name === 'string' && name.trim().length > 0)
               .map((name: string) => normalizeChallengedGodName(name))
           : [];
+        parsed.global.enemyBattleStats = getEnemyBattleStatsWithDefaults(parsed.global.enemyBattleStats);
         parsed.global.revealedItemCompendiumItemIds = Array.from(new Set([
           ...normalizeRevealedItemCompendiumItemIds(parsed.global.revealedItemCompendiumItemIds),
           ...collectRevealedItemIdsFromOwnedData(parsed.global.inventory, parsed.parties),
@@ -1706,6 +1722,7 @@ function createInitialState(): InitialStateResult {
       shopRefreshCounts: {},
       shopIntimacy: 0,
       shopIntimacyLastDecayAt: Date.now(),
+      enemyBattleStats: {},
     },
     parties: [createInitialParty()],
     selectedPartyIndex: 0,
@@ -2848,6 +2865,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let totalAutoSellItems: { itemName: string; autoSellProfit: number }[] = [];
       let roomCounter = 0;
       let expeditionEnded = false;
+      let nextEnemyBattleStats = { ...(state.global.enemyBattleStats ?? {}) };
       const revealedItemCompendiumItemIds = new Set<number>(state.global.revealedItemCompendiumItemIds ?? []);
       const revealedAbilityIds = new Set<string>(state.global.revealedGlossaryAbilityIds);
       characterStats.forEach((stats) => {
@@ -3001,6 +3019,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               remainingPartyHP: battleResult.partyHp,
               maxPartyHP: partyStats.hp,
               details: battleResult.log,
+            };
+
+            const currentEnemyStats = nextEnemyBattleStats[enemy.id] ?? { defeats: 0, encounters: 0 };
+            nextEnemyBattleStats[enemy.id] = {
+              defeats: currentEnemyStats.defeats + (battleResult.outcome === 'victory' ? 1 : 0),
+              encounters: currentEnemyStats.encounters + 1,
             };
 
             if (battleResult.outcome === 'victory') {
@@ -3408,6 +3432,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           revealedItemCompendiumItemIds: Array.from(revealedItemCompendiumItemIds),
           ...revealGlossaryFromEncounter(state.global, revealedAbilityIds, undefined),
           revealedGlossaryTerrainKeys: Array.from(revealedTerrainKeys),
+          enemyBattleStats: nextEnemyBattleStats,
         },
       };
     }

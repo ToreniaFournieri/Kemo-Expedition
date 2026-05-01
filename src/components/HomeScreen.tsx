@@ -10826,6 +10826,8 @@ function SettingTab({
     rogue: '盗賊',
   };
 
+  const getBestiaryEnemyBattleStats = (enemyId: number) => gameState.global.enemyBattleStats?.[enemyId] ?? { defeats: 0, encounters: 0 };
+
   const getBestiaryClassRows = (
     mainClassId: string,
     subClassId?: string | 'none',
@@ -11711,6 +11713,10 @@ function SettingTab({
                           </div>
                         </div>
                         <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id, item.name)}${item.name}`).join(' / ')}</div>
+                        {(() => {
+                          const battleStats = getBestiaryEnemyBattleStats(displayEnemy.id);
+                          return <div>撃破数: {formatNumber(battleStats.defeats)}　遭遇数: {formatNumber(battleStats.encounters)}</div>;
+                        })()}
                       </div>
                     )}
                   </div>
