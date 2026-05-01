@@ -10607,9 +10607,8 @@ function SettingTab({
   };
 
   const getGodBestiaryStatEnemyId = (god: (typeof GOD_ENEMY_PROFILES)[number], runtimeEnemy?: EnemyDef | null): number => {
-    const dungeonBossId = DUNGEONS.find((dungeon) => dungeon.id === god.expId)?.bossId;
-    if (typeof dungeonBossId === 'number') return dungeonBossId;
-    return runtimeEnemy?.id ?? -1;
+    if (runtimeEnemy?.isGodEnemy) return runtimeEnemy.id;
+    return 900000 + god.expId;
   };
 
   // SpecRef: 8.6 | UI_DIVINE_BUREAU | Bestiary (敵キャラクター図鑑)

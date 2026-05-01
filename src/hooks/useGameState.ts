@@ -1866,6 +1866,10 @@ function getGodMythicDropId(dropItemTier: number, categories: [ItemCategory, Ite
   return options[seed % options.length].id;
 }
 
+function getGodEnemyBattleStatsId(dungeonId: number): number {
+  return 900000 + dungeonId;
+}
+
 function createGodEnemy(
   enemy: EnemyDef,
   dungeonId: number,
@@ -1914,7 +1918,7 @@ function createGodEnemy(
   return {
     ...enemy,
     ...runtimeGodEnemy,
-    id: enemy.id,
+    id: getGodEnemyBattleStatsId(dungeonId),
     type: enemy.type,
     spawnTier: enemy.spawnTier,
     spawnPool: enemy.spawnPool,
