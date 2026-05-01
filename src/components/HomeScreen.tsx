@@ -10598,14 +10598,22 @@ function SettingTab({
       .map((dungeon) => dungeon.id)
   );
 
-  const godBestiaryChallengeNames = new Set(
-    gameState.parties
+  const normalizeBestiaryGodName = (rawName: string): string => {
+    const withoutBattleSuffix = rawName.replace(/\s*\(神魔戦\)\s*$/u, '').trim();
+    const withoutRoleSuffix = withoutBattleSuffix.replace(/\([^)]*\)/gu, '').trim();
+    const [head] = withoutRoleSuffix.split(/\s+/u);
+    return (head ?? withoutRoleSuffix).trim();
+  };
+
+  const godBestiaryChallengeNames = new Set([
+    ...(gameState.global.challengedGodNames ?? []).map((name) => normalizeBestiaryGodName(name)),
+    ...gameState.parties
       .flatMap((party) => party.diaryLogs ?? [])
       .flatMap((diaryLog) => diaryLog.expeditionLog ? [diaryLog.expeditionLog] : [])
       .flatMap((log) => log.entries)
       .filter((entry) => entry.enemyName.includes('(神魔戦)'))
-      .map((entry) => entry.enemyName.replace(/\s*\(神魔戦\)\s*$/u, '').trim())
-  );
+      .map((entry) => normalizeBestiaryGodName(entry.enemyName)),
+  ]);
 
   const bestiaryTabOptions = [
     ...DUNGEONS
@@ -10729,7 +10737,7 @@ function SettingTab({
     : [];
 
   const godBestiaryRows = GOD_ENEMY_PROFILES
-    .filter((god) => godBestiaryChallengeNames.has(god.name))
+    .filter((god) => godBestiaryChallengeNames.has(god.name) || godBestiaryChallengeNames.has(normalizeBestiaryGodName(god.displayName)))
     .slice()
     .sort((a, b) => (a.tier - b.tier) || a.name.localeCompare(b.name));
 

@@ -425,6 +425,7 @@ interface GlobalState {
   inventory: InventoryRecord;
   deityDonations: Record<string, number>;
   unlockedDeities: string[];
+  challengedGodNames: string[];
   revealedItemCompendiumItemIds: number[];
   revealedGlossaryAbilityIds: string[];
   revealedGlossaryTerrainKeys: TerrainEffectKey[];

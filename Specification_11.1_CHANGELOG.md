@@ -6,6 +6,8 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.3 | 17 | 2026/5/1 | Fix Gods Bestiary challenge-name matching for Japanese battle log names (e.g., `ミオラ(神,賢M)`): normalize challenged-god names by removing parenthetical role/class metadata and matching against god display-name head tokens, so newly beaten gods appear immediately. |
+| 0.6.3 | 16 | 2026/5/1 | Fix Bestiary Gods-tab persistence: add `global.challengedGodNames` save-state tracking and update it when new 神魔戦 logs are finalized, so previously challenged gods remain visible even after diary retention trimming or reload/import. |
 | 0.6.3 | 15 | 2026/5/1 | Update runtime Bestiary behavior (8.6): expedition tabs now unlock only after reaching each expedition at least once, and Gods tab lists only gods that have been challenged at least once. |
 | 0.6.3 | 14 | 2026/5/1 | Fix Divine Bureau Gods Bestiary ability display to use runtime-built god abilities (not raw profile abilities), so merged class/Jinma abilities such as `a.heavy-strike1` and `a.upgrade-all-abilities1` are shown correctly for entries like キョウエン. |
 | 0.6.3 | 13 | 2026/5/1 | Fix Gods (神魔) runtime bonus/ability composition: include enemy-class default ability (e.g., `class.striker` → `a.heavy-strike1`) and merge `Jinma` + represented-race c-bonuses into god runtime enemy data so bestiary/combat reflect growth and race bonuses correctly. |
