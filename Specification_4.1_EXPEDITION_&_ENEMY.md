@@ -111,6 +111,7 @@
 
 - **Gods (神魔):**
   - Status calculation: master value is `x.exp_tier`.
+  - All of Gods race type is `Jinma`.
 
 | `x.exp_id` | `x.enemy_level` | Name | Title | Display name | Class | Represent for | + ability | Drop item tier | Drop item category |
 |-|-|-|-|-|-|-|-|-|-|
@@ -124,7 +125,6 @@
 | 8 | 61 | Forne | God of Fate | フォルネ 運命の神 | Lord | Cervin | `a.focus`2 | 8 | `i.armor`, `i.robe` |
 | 9 | 62 | Skuva | God of Dusk | スクヴァ 黄昏の神 | Ninja | Murid | `a.stealth`1 | 8 | `i.sheild`,`i.catalyst` |
 | 10 | 63 | Rondel | God of Resonance | ロンデル 共鳴の神 | Wizard | Mustelid | `a.resonance`4 | 7 | `i.wand`, `i.arrow` | 6 |
-`a.illusion`1 | 8 | `i.sword`, `i.gauntlet` |
 | 11 | 70 | Noctyra | God of Oblivion | ノクティラ 忘却されし神 | Samurai | - | `a.rage`2, `a.firststrike`2 | 8 | `i.bolt`, `i.katana` |
 | 12 | 71 | Eris | Goddess of discord | エリス 不和の神 | Pilgrim | - | `a.momentum`2, `a.resonance`4, `a.stealth`1 | 8 | `i.grimoire`, `i.wand` |
 
