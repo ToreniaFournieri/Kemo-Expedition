@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.3 | 18 | 2026/5/1 | Fix Gods Bestiary unlock visibility to include current-session 神魔戦 logs (`lastExpeditionLog`/pending diary) in challenged-god detection, so a god defeated just now appears immediately in the 神 tab before diary finalization. |
 | 0.6.3 | 17 | 2026/5/1 | Fix Gods Bestiary challenge-name matching for Japanese battle log names (e.g., `ミオラ(神,賢M)`): normalize challenged-god names by removing parenthetical role/class metadata and matching against god display-name head tokens, so newly beaten gods appear immediately. |
 | 0.6.3 | 16 | 2026/5/1 | Fix Bestiary Gods-tab persistence: add `global.challengedGodNames` save-state tracking and update it when new 神魔戦 logs are finalized, so previously challenged gods remain visible even after diary retention trimming or reload/import. |
 | 0.6.3 | 15 | 2026/5/1 | Update runtime Bestiary behavior (8.6): expedition tabs now unlock only after reaching each expedition at least once, and Gods tab lists only gods that have been challenged at least once. |

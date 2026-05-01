@@ -10608,8 +10608,11 @@ function SettingTab({
   const godBestiaryChallengeNames = new Set([
     ...(gameState.global.challengedGodNames ?? []).map((name) => normalizeBestiaryGodName(name)),
     ...gameState.parties
-      .flatMap((party) => party.diaryLogs ?? [])
-      .flatMap((diaryLog) => diaryLog.expeditionLog ? [diaryLog.expeditionLog] : [])
+      .flatMap((party) => [
+        ...(party.diaryLogs ?? []).flatMap((diaryLog) => diaryLog.expeditionLog ? [diaryLog.expeditionLog] : []),
+        ...(party.pendingDiaryLog?.expeditionLog ? [party.pendingDiaryLog.expeditionLog] : []),
+        ...(party.lastExpeditionLog ? [party.lastExpeditionLog] : []),
+      ])
       .flatMap((log) => log.entries)
       .filter((entry) => entry.enemyName.includes('(神魔戦)'))
       .map((entry) => normalizeBestiaryGodName(entry.enemyName)),
