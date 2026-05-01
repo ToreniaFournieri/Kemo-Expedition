@@ -6,6 +6,9 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.3 | 11 | 2026/5/1 | Revert Kyōen deity Japanese naming to spec-compliant text: 「狩猟の神」 → 「狡猾の神」 across Divine Bureau runtime display, glossary, and flavor text. |
+| 0.6.3 | 10 | 2026/5/1 | Refresh Divine Bureau Gods data to latest expedition/deity naming: align standby exploration area names with current dungeon names (Garv/Kyōen/Miora/Dolvar/Lira) and rename Kyōen deity text from 「狡猾の神」 to 「狩猟の神」 across runtime labels/flavor text. |
+| 0.6.3 | 9 | 2026/5/1 | Update Divine Bureau Bestiary Gods standby exploration area for Garv: 「ルピニアンの断崖」 → 「ルピニアンの亜寒帯」. |
 | 0.6.3 | 7 | 2026/5/1 | Fix Divine Bureau Bestiary enemy offense display so `重撃` contributes to shown penetration (`貫通:+N%`) by including heavy-strike NoA conversion in the displayed total. |
 | 0.6.3 | 6 | 2026/5/1 | Update Divine Bureau Bestiary Gods entries: rename Kyōen display to 「キョウエン 狩猟の神」 and update the standby-location label text to 「待機探索地」. |
 | 0.6.3 | 5 | 2026/5/1 | Divine Bureau Bestiary pane: display `貫通:+N%` in enemy offense details only when penetration total is non-zero. |
