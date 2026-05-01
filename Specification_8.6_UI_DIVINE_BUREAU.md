@@ -158,11 +158,20 @@ note: 0:no sleep 寝ない, 1:nap 仮眠, 2:sound sleep 熟睡
     - If enemy has no attack values, not show the corresponding values.
     - Respect `m.luna` mode.
 
+
+- 撃破数 (Defeats):
+  - Total number of enemies successfully defeated by all parties.
+- 遭遇数 (Encounters):
+  - Total number of enemy encounters triggered, regardless of outcome (including victories, retreats, and defeats).
+- 撃破数, 遭遇数:These values are shared across all parties.
+    
+
 ```
 (column 1)              (column 2)
-ID: 5005                レベル: 12
-HP: 312                 タイプ: 神魔
+ID: 5005                
+HP: 312                 レベル: 12
 メインクラス: 剣士             サブクラス: 君主
+タイプ: 神魔
 遠距離攻撃: 33 x 2回 (x1.00) 属性: 雷 (x1.2)
 近接攻撃: 35 x 6回 (x1.00)  物理防御: 10 (83%)
 物理命中率: 100% (減衰: 90.0%) 魔法防御: 8 (80%)
@@ -172,6 +181,7 @@ HP: 312                 タイプ: 神魔
 ボーナス: 成長1.5倍
 アビリティ: 巨人1, 捕食1
 ドロップ: [1B]若牙の長剣 / [1B]秘奥真理の書 / [1E]虫刃の直剣 / [1E]渡り翼の教本 / [1C]ひび杖
+撃破数: 1,200        遭遇数: 2,127
 
 (column 1)              (column 2)
 ID: 5015                レベル: 12
