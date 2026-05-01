@@ -2,8 +2,9 @@ import { DUNGEONS, getDungeonById, getEffectiveEnemyMultipliers, getExpeditionEn
 import { getEnemiesByPool } from '../data/enemies';
 import { GodEnemyProfile } from '../data/dropTables';
 
-import { getEnemyTypeAbilities } from '../data/enemies';
-import { EnemyAbility, EnemyDef } from '../types';
+import { getEnemyTypeAbilities, getEnemyTypeBonuses } from '../data/enemies';
+import { buildEnemyClassMasterStats } from '../data/enemyClasses';
+import { Bonus, EnemyAbility, EnemyDef } from '../types';
 import { applyEnemyEncounterScaling } from './enemyScaling';
 import { resolveEnemyPassiveAbilities } from './enemyPassiveAbilities';
 
@@ -26,6 +27,15 @@ function mergeUniqueAbilities(...groups: EnemyAbility[][]): EnemyAbility[] {
   groups.flat().forEach((ability) => {
     const key = `${ability.id}:${ability.level}`;
     merged.set(key, ability);
+  });
+  return Array.from(merged.values());
+}
+
+function mergeUniqueBonuses(...groups: Bonus[][]): Bonus[] {
+  const merged = new Map<string, Bonus>();
+  groups.flat().forEach((bonus) => {
+    const key = `${bonus.type}:${bonus.value}:${bonus.abilityId ?? ''}:${bonus.abilityLevel ?? 0}`;
+    merged.set(key, bonus);
   });
   return Array.from(merged.values());
 }
@@ -71,15 +81,20 @@ export function buildGodRuntimeEnemy(
   };
 
   const representForEnemyType = REPRESENT_FOR_TO_ENEMY_TYPE[profile.representFor] ?? null;
+  const classBase = buildEnemyClassMasterStats(profile.enemyClass);
   const representForAbilities = representForEnemyType ? getEnemyTypeAbilities(representForEnemyType, profile.level) : [];
+  const representForBonuses = representForEnemyType ? getEnemyTypeBonuses(representForEnemyType) : [];
   const jinmaAbilities = getEnemyTypeAbilities('Jinma', profile.level);
+  const jinmaBonuses = getEnemyTypeBonuses('Jinma');
   const resolvedProfileAbilities = resolveEnemyPassiveAbilities(
-    mergeUniqueAbilities(baseEnemy.abilities, profile.abilities, representForAbilities, jinmaAbilities),
+    mergeUniqueAbilities(classBase.abilities, baseEnemy.abilities, profile.abilities, representForAbilities, jinmaAbilities),
   );
+  const resolvedProfileBonuses = mergeUniqueBonuses(baseEnemy.bonuses ?? [], representForBonuses, jinmaBonuses);
   const scaledEnemy = applyEnemyEncounterScaling({
     ...baseEnemy,
     enemyType: 'Jinma',
     abilities: resolvedProfileAbilities,
+    bonuses: resolvedProfileBonuses,
   }, effectiveDungeon, 6, 'battle_Boss', {
     isGodEnemy: true,
     isLunaMode: false,
@@ -92,5 +107,6 @@ export function buildGodRuntimeEnemy(
     enemyClass: profile.enemyClass,
     enemyType: 'Jinma',
     abilities: resolvedProfileAbilities,
+    bonuses: resolvedProfileBonuses,
   };
 }
