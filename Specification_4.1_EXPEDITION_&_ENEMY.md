@@ -116,9 +116,9 @@
 |-|-|-|-|-|-|-|-|-|-|
 | 1 | 18 | Seiran | Goddess of Restoration | セイラン 再生の女神 | Pilgrim | Caninian | `a.resurrect`2  | 3 | `i.grimoire`, `i.robe`|
 | 2 | 25 | Garv | God of Attrition | ガーヴ 消耗の神 | Samurai | Lupinian | `a.rage`2, `a.re-counter`2 | 4 | `i.katana`, `i.shield` |
-| 3 | 32 | Kyōen | God of Cunning | キョウエン 狡猾の神 | Rougue | Vulpinian | `a.momentum`2 | 5 |  `i.archery`, `i.bolt` |
+| 3 | 32 | Kyōen | God of Cunning | キョウエン 狡猾の神 | class.striker | Vulpinian | `a.momentum`2 | 5 |  `i.archery`, `i.bolt` |
 | 4 | 39 | Miora | Goddess of Fertility | ミオラ 豊穣の女神  | Sage | Felidian | `a.firststrike`2 | 7 | `i.sword`, `i.catalyst` |
-| 5 | 46 | Dolvar | God of Fortification | ドルヴァ 防備の神 | Fighter | Ursan | `a.cyborgization`2 | 6 | `i.armor`, `i.gauntlet` |
+| 5 | 46 | Dolvar | God of Fortification | ドルヴァ 防備の神 | class.guardian | Ursan | `a.cyborgization`2 | 6 | `i.armor`, `i.gauntlet` |
 | 6 | 53 | Tanue | Goddess of Mirage | タヌエ 幻影の女神  | Duelist | Procyonian |  | 7 |  `i.sword`, `i.gauntlet` |
 | 7 | 60 | Lira | Goddess of Precision | リラ 精密の女神 | Ranger | Leporian | `a.composure`2 | 8 | `i.arrow`, `i.archery` |
 | 8 | 61 | Forne | God of Fate | フォルネ 運命の神 | Lord | Cervin | `a.focus`2 | 8 | `i.armor`, `i.robe` |
