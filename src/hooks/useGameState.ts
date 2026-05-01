@@ -476,7 +476,7 @@ function shouldAutoAdvanceExpeditionDestination(party: Party): { shouldAdvance: 
   const meetsAnyAutoAdvanceRule = (
     (enemyLevelWithOffset <= party.level + 9 && condition >= 250)
     || (enemyLevelWithOffset <= party.level + 10 && condition >= 240)
-    || (enemyLevelWithOffset <= party.level + 10 && condition >= 230)
+    || (enemyLevelWithOffset <= party.level + 11 && condition >= 230)
   );
 
   return {
