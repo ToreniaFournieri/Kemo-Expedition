@@ -11461,7 +11461,7 @@ function SettingTab({
                         ))}
                       </div>
                     </div>
-                    <div>待機探検地: {god.expedition}</div>
+                    <div>待機探索地: {god.expedition}</div>
                     <div className="pt-1">ドロップ候補: {getGodDropCandidates(god.name)}</div>
                   </div>
                 )}
