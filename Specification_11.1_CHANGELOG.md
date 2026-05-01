@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.3 | 12 | 2026/5/1 | Fix runtime Gods (神魔) bestiary/combat composition: force all God enemy types to `Jinma` and merge class abilities with both represented-race abilities (`Represent for`) and `Jinma` race abilities. |
 | 0.6.3 | 11 | 2026/5/1 | Revert Kyōen deity Japanese naming to spec-compliant text: 「狩猟の神」 → 「狡猾の神」 across Divine Bureau runtime display, glossary, and flavor text. |
 | 0.6.3 | 10 | 2026/5/1 | Refresh Divine Bureau Gods data to latest expedition/deity naming: align standby exploration area names with current dungeon names (Garv/Kyōen/Miora/Dolvar/Lira) and rename Kyōen deity text from 「狡猾の神」 to 「狩猟の神」 across runtime labels/flavor text. |
 | 0.6.3 | 9 | 2026/5/1 | Update Divine Bureau Bestiary Gods standby exploration area for Garv: 「ルピニアンの断崖」 → 「ルピニアンの亜寒帯」. |
