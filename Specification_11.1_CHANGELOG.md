@@ -264,6 +264,8 @@
 | 0.6.3 | 22 | 2026/5/1 | Update 神タブ (Gods bestiary) runtime details to include shared 撃破数/遭遇数 display for each revealed god enemy. |
 | 0.6.3 | 20 | 2026/5/1 | Bestiary runtime now tracks and displays shared 撃破数/遭遇数 per enemy across all parties (encounters include victory/retreat/defeat). |
 
+| 0.6.3 | 24 | 2026/5/1 | Update runtime item status display ordering for Spec 3.1.2 Item list: render `e.*` bonuses before bracketed bonuses, and keep bracket order as `c.* > r.* > others`. |
+
 
 
 - Older version changelog

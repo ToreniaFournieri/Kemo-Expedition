@@ -1684,9 +1684,10 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
   }
   if (superRareUniqueBonusText) otherParts.push(`超:${superRareUniqueBonusText}`);
 
-  const mergedBracketBonuses = [...cParts, ...eParts, ...rParts, ...otherParts];
+  const eText = eParts.join(' ');
+  const mergedBracketBonuses = [...cParts, ...rParts, ...otherParts];
   const mergedBracketBonusesText = mergedBracketBonuses.length > 0 ? `[${mergedBracketBonuses.join(', ')}]` : '';
-  return [dParts.join(' '), bParts.join(' '), mergedBracketBonusesText].filter(Boolean).join(' ');
+  return [dParts.join(' '), bParts.join(' '), eText, mergedBracketBonusesText].filter(Boolean).join(' ');
 }
 
 function getJewelSlotStatusText(item: Item, jewelKey: JewelKey, rank: number, categoryMultiplier: number, hpScaleMultiplier: number): string {
