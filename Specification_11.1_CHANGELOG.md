@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.3 | 4 | 2026/5/1 | Fix Auto Destination Change Logic in 一任 mode to evaluate progression thresholds using the currently selected expedition enemy level (`x.enemy_level`) during both online `state.rest` completion and AFK emulation checks. |
 | 0.6.3 | 3 | 2026/5/1 | Update runtime Togglr auto-destination progression thresholds for 一任 mode to include the +11 level / condition ≥230 rule (fix duplicated +10 check) for both online `state.rest` completion and AFK emulation checks. |
 | 0.6.3 | 2 | 2026/4/30 | Fix Base Shop lineup generation to always produce up to five purchasable entries by selecting categories that exist for the rolled tier/rarity and falling back to any valid item in that rarity, preventing 4-item shelves and missing uncommon offers due to unavailable category IDs. |
 | 0.6.3 | 1 | 2026/4/30 | Prepare v0.6.3 release: bump app version to `v0.6.3` and reset build number to `1`. |
@@ -206,6 +207,7 @@
 | 0.6.0 | 459 | 2026/4/18 | Align runtime predisposition master data to Spec 2.1 table: update bonus mappings (including `a.null-antagonism` for `Amicable`) and add explicit `selectable` flags with edit-mode enforcement for non-selectable predispositions. |
 | 0.6.0 | 6 | 2026/4/29 | Update Expedition Depth Limit dropdown options to Spec 8.3: add 1F-4/2F-4/3F-4/4F-4/5F-4 choices, keep floor-concept Japanese labels, and preserve `*F-4` values in save normalization (no forced migration to `*F-3`). |
 | 0.6.0 | 458 | 2026/4/18 | Implement runtime passive ability `a.null-antagonism` (敵対無効化): add ability master labels/descriptions, block `c.antagonism` from `Goddess of Discord` and `a.*-confusion` when target has immunity, and emit `log.null-antagonism` with note `(敵対無効化)`. |
+| 0.6.0 | 458 | 2026/5/1 | Fix runtime Auto Destination Change Logic in 一任 mode to evaluate progression thresholds against the currently selected expedition `x.enemy_level` (not next destination), with matching checks in both `state.rest` completion and AFK emulation flow. |
 | 0.6.0 | 457 | 2026/4/18 | Update runtime selectable lineage master data bonuses to match Spec 2.1 table (add missing secondary `c.*_x1.2` bonuses and defensive multipliers across `sandstorm` to `oath`). |
 | 0.6.0 | 456 | 2026/4/18 | Refine expedition unlock gate wording in Party/Next Goal UI: when required count is 1, display `ボス撃破で…開放` (hide `0/1` progress), while keeping fraction format for other requirements. |
 | 0.6.0 | 455 | 2026/4/18 | Align runtime lineage/party initial setup to Spec 2.1.4.2: add `a.resonance` to `incarnation`, and update PT3/PT5/PT6 members (order, classes, lineages, predispositions, unique placements) to the requested initial conditions. |
