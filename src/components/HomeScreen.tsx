@@ -11515,6 +11515,10 @@ function SettingTab({
                     </div>
                     <div>待機探索地: {god.expedition}</div>
                     <div className="pt-1">ドロップ候補: {getGodDropCandidates(god.name)}</div>
+                    {(() => {
+                      const battleStats = getBestiaryEnemyBattleStats(godRuntimeEnemy?.id ?? -1);
+                      return <div>撃破数: {formatNumber(battleStats.defeats)}　遭遇数: {formatNumber(battleStats.encounters)}</div>;
+                    })()}
                   </div>
                 )}
               </div>

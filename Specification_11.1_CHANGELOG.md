@@ -260,6 +260,7 @@
 | 0.6.0 | 428 | 2026/4/16 | Enforce Unique character edit-mode immutability UI (disable/grey Name, Race, Lineage, Predisposition; keep Main/Sub Class editable). |
 | 0.6.0 | 427 | 2026/4/16 | Align runtime initial setup to Spec 2.1.4.2 (PT data corrections and Unique character immutability rules). |
 | 0.6.0 | 426 | 2026/4/16 | Update runtime condition outcome adjustments. |
+| 0.6.3 | 22 | 2026/5/1 | Update 神タブ (Gods bestiary) runtime details to include shared 撃破数/遭遇数 display for each revealed god enemy. |
 | 0.6.3 | 20 | 2026/5/1 | Bestiary runtime now tracks and displays shared 撃破数/遭遇数 per enemy across all parties (encounters include victory/retreat/defeat). |
 
 
