@@ -10622,18 +10622,23 @@ function SettingTab({
     ...DUNGEONS
       .filter((dungeon) => dungeon.id !== 99 && unlockedBestiaryDungeonIds.has(dungeon.id))
       .map((dungeon) => ({ id: dungeon.id, name: dungeon.name })),
-    { id: BESTIARY_SPECIAL_DUNGEON_ID_GODS, name: '神魔' },
+    ...(godBestiaryChallengeNames.size > 0 ? [{ id: BESTIARY_SPECIAL_DUNGEON_ID_GODS, name: '神' }] : []),
     ...(debugSettings.colosseumEnabled ? [{ id: BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM, name: '特' }] : []),
   ];
 
 
   useEffect(() => {
+    if (selectedBestiaryDungeonId === BESTIARY_SPECIAL_DUNGEON_ID_GODS && godBestiaryChallengeNames.size === 0) {
+      const fallbackDungeonId = [...unlockedBestiaryDungeonIds].sort((a, b) => a - b)[0] ?? 1;
+      onSetSelectedBestiaryDungeonId(fallbackDungeonId);
+      return;
+    }
     if (selectedBestiaryDungeonId === BESTIARY_SPECIAL_DUNGEON_ID_GODS || selectedBestiaryDungeonId === BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM) return;
     if (!unlockedBestiaryDungeonIds.has(selectedBestiaryDungeonId)) {
       const fallbackDungeonId = [...unlockedBestiaryDungeonIds].sort((a, b) => a - b)[0] ?? BESTIARY_SPECIAL_DUNGEON_ID_GODS;
       onSetSelectedBestiaryDungeonId(fallbackDungeonId);
     }
-  }, [unlockedBestiaryDungeonIds, selectedBestiaryDungeonId, onSetSelectedBestiaryDungeonId]);
+  }, [godBestiaryChallengeNames.size, unlockedBestiaryDungeonIds, selectedBestiaryDungeonId, onSetSelectedBestiaryDungeonId]);
 
   const selectedBestiaryDungeon = DUNGEONS.find(d => d.id === selectedBestiaryDungeonId && d.id !== 99) ?? DUNGEONS[0];
 
@@ -11407,7 +11412,7 @@ function SettingTab({
             onSetBestiaryScrollTop(currentScrollTop);
           }}
         >
-          <div className="text-xs text-gray-500">{isGodBestiaryTab ? '神魔' : selectedBestiaryDungeon.name}</div>
+          <div className="text-xs text-gray-500">{isGodBestiaryTab ? '神' : selectedBestiaryDungeon.name}</div>
           {isGodBestiaryTab && godBestiaryRows.map((god, index) => {
             const godBestiaryId = 900000 + index;
             const godExpanded = !!expandedBestiaryEnemies[godBestiaryId];
