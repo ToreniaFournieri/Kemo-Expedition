@@ -11603,9 +11603,17 @@ function SettingTab({
                             if (hasMagicCasting) {
                               offenseRows.push(`詠唱魔法: ${getEnemyBestiarySpellName(displayEnemy)}`);
                             }
-                            const penetrationPercent = Math.round(((displayEnemy.bonuses ?? []).reduce((sum, bonus) => (
+                            const basePenetration = (displayEnemy.bonuses ?? []).reduce((sum, bonus) => (
                               bonus.type === 'penet' ? sum + bonus.value : sum
-                            ), 0)) * 100);
+                            ), 0);
+                            const enemyHeavyStrike = displayEnemy.abilities.find((ability) => ability.id === 'heavy_strike' && ability.level > 0);
+                            const heavyStrikePenetPerNoA = enemyHeavyStrike
+                              ? (enemyHeavyStrike.level >= 2 ? 0.015 : 0.01)
+                              : 0;
+                            const heavyStrikeNoALoss = enemyHeavyStrike
+                              ? Math.max(displayEnemy.rangedNoA, displayEnemy.magicalNoA, displayEnemy.meleeNoA)
+                              : 0;
+                            const penetrationPercent = Math.round((basePenetration + (heavyStrikeNoALoss * heavyStrikePenetPerNoA)) * 100);
                             if (penetrationPercent !== 0) {
                               offenseRows.push(`貫通: +${formatNumber(penetrationPercent)}%`);
                             }
