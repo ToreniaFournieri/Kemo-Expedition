@@ -10,9 +10,15 @@ function getGodShortName(displayName: string): string {
 }
 
 function getBaseGodEnemy(profile: GodEnemyProfile): EnemyDef | null {
-  return getEnemiesByPool(profile.tier)
-    .sort((a, b) => a.id - b.id)
-    .find((candidate) => candidate.enemyClass === profile.enemyClass) ?? null;
+  const candidates = getEnemiesByPool(profile.tier).slice().sort((a, b) => a.id - b.id);
+
+  const exactClass = candidates.find((candidate) => candidate.enemyClass === profile.enemyClass);
+  if (exactClass) return exactClass;
+
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Bestiary (敵キャラクター図鑑)
+  // Some god profiles use display-only classes (e.g. rogue/fighter) that are not present
+  // in encounter pools. Fall back to representative enemy type so status remains resolvable.
+  return candidates.find((candidate) => candidate.enemyType === profile.representFor) ?? null;
 }
 
 // SpecRef: 4.1.2 | Enemy | Gods (神魔)
