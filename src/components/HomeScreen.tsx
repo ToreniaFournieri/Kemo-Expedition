@@ -4051,7 +4051,7 @@ export function HomeScreen({
                     && normalizedCondition >= 240
                   )
                   || (
-                    (nextDungeonEnemyLevel + selectedDifficultyOffset) <= party.level + 10
+                    (nextDungeonEnemyLevel + selectedDifficultyOffset) <= party.level + 11
                     && normalizedCondition >= 230
                   )
                 ),

@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.3 | 3 | 2026/5/1 | Update runtime Togglr auto-destination progression thresholds for 一任 mode to include the +11 level / condition ≥230 rule (fix duplicated +10 check) for both online `state.rest` completion and AFK emulation checks. |
 | 0.6.3 | 2 | 2026/4/30 | Fix Base Shop lineup generation to always produce up to five purchasable entries by selecting categories that exist for the rolled tier/rarity and falling back to any valid item in that rarity, preventing 4-item shelves and missing uncommon offers due to unavailable category IDs. |
 | 0.6.3 | 1 | 2026/4/30 | Prepare v0.6.3 release: bump app version to `v0.6.3` and reset build number to `1`. |
 | 0.6.2 | 18 | 2026/4/30 | Remove obsolete `/qa/` environment from runtime path detection and deploy workflow/index; keep only `/dev/` and `/beta/` with environment-specific save isolation and dev-only x20 debug speed behavior. |
@@ -224,6 +225,7 @@
 | 0.6.0 | 441 | 2026/4/17 | Update runtime lineage master data to match Spec 2.1 lineup/bonuses/selectable flags; add new non-selectable lineages and remove obsolete runtime usage of `apex_predator` / `usurper` (legacy save IDs now alias to current lineages). |
 | 0.6.0 | 440 | 2026/4/17 | Fix `a.melee-conversion` tooltip text interpolation (`N%` / `M%`) and apply melee conversion attack gain to enemy runtime scaling (including Colosseum editor opponent status). |
 | 0.6.0 | 440 | 2026/4/30 | Improve save-data migration for Item Compendium persistence: on load, backfill `revealedItemCompendiumItemIds` from owned inventory and equipped items so revealed entries remain available across legacy/incomplete saves. |
+| 0.6.0 | 440 | 2026/5/1 | Update runtime Togglr auto-destination progression thresholds for 一任 mode to include the +11 level / condition ≥230 rule (and fix duplicated +10 check) in both online `state.rest` completion and AFK emulation checks. |
 | 0.6.0 | 439 | 2026/4/17 | Implement passive ability `a.melee-conversion` in runtime: add new ability id/name/glossary entry and apply `d.melee_attack += round(d.ranged_attack×N%) + round(d.magical_attack×M%)` (Lv1: 30%/30%, Lv2: 40%/40%). |
 | 0.6.0 | 438 | 2026/4/17 | Add non-selectable runtime races `Kemoria` / `Orcinian` / `Avian` (with specified base stats and c-bonuses), and update `a.flying` glossary scale to `Lv1: x1/3, Lv2: x1/4, Lv3: x1/5` with `CLOSE` phase priority `9`. |
 | 0.6.0 | 437 | 2026/4/17 | Fix bonus ability tooltip wording format for `a.execution`: correctly interpolate `N` and `xM` from level scale (`50%・x1.8`) and display tooltip as `タイトル：説明`. |
