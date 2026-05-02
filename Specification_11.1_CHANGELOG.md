@@ -266,7 +266,7 @@
 | 0.6.3 | 20 | 2026/5/1 | Bestiary runtime now tracks and displays shared 撃破数/遭遇数 per enemy across all parties (encounters include victory/retreat/defeat). |
 
 | 0.6.3 | 24 | 2026/5/1 | Update runtime item status display ordering for Spec 3.1.2 Item list: render `e.*` bonuses before bracketed bonuses, and keep bracket order as `c.* > r.* > others`. |
-
+| 0.6.3 | 26 | 2026/5/2 | Fix Spec glossary text for `a.ranged-reflect` (矢返し) to reflect damage behavior (`反射して相手に与える(自身は残りを受ける)`). |
 
 - Older version changelog
 
