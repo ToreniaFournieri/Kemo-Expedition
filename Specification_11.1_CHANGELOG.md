@@ -271,6 +271,8 @@
 
 | 0.6.3 | 27 | 2026/5/2 | Fix expedition log runtime display: show `EXP: +...` (and reward section) whenever accumulated expedition values exist, even during ongoing explore state, so EXP display no longer disappears after clearing rooms. |
 
+| 0.6.3 | 28 | 2026/5/2 | Fix character edit auto-unequip flow: when aptitude/slot changes force equipment removal, detach equipped jewels and return them to jewel inventory while returning jewel-free equipment to inventory (prevents jewel loss). |
+
 - Older version changelog
 
 |Version  | Changes                                                                               |
