@@ -3987,7 +3987,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         newInventory = { ...state.global.inventory };
         newJewels = { ...newJewels };
         for (const item of overflowCandidates) {
-          const addResult = addItemToInventory(newInventory, item, newGold);
+          const detachedItem = item.jewel ? { ...item, jewel: null } : item;
+          const addResult = addItemToInventory(newInventory, detachedItem, newGold);
           newInventory = addResult.inventory;
           newGold = addResult.gold;
           if (item.jewel) newJewels = addJewelToInventory(newJewels, item.jewel.key, item.jewel.rank);
@@ -4012,7 +4013,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             || (lostMagicAptitude && MAGIC_CATEGORIES.has(item.category));
           if (!shouldRemove) continue;
 
-          const addResult = addItemToInventory(newInventory, item, newGold);
+          const detachedItem = item.jewel ? { ...item, jewel: null } : item;
+          const addResult = addItemToInventory(newInventory, detachedItem, newGold);
           newInventory = addResult.inventory;
           newGold = addResult.gold;
           if (item.jewel) newJewels = addJewelToInventory(newJewels, item.jewel.key, item.jewel.rank);
@@ -4032,7 +4034,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...state,
         parties: updatedParties,
-        global: { ...state.global, gold: newGold, inventory: newInventory },
+        global: { ...state.global, gold: newGold, inventory: newInventory, jewels: newJewels },
       };
     }
 
