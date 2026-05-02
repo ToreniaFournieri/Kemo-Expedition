@@ -15,6 +15,7 @@ import { LINEAGES } from '../data/lineages';
 import { ENHANCEMENT_TITLES, SUPER_RARE_TITLES, ITEMS, getSuperRareBonuses } from '../data/items';
 import { GOD_ENEMY_PROFILES, GOD_MYTHIC_DROPS, getGodProfileForDungeon } from '../data/dropTables';
 import { ABILITY_BASE_NAMES } from '../data/abilityNames';
+import { getMasterItemCategoriesByRarity } from '../data/masterSpecData';
 import {
   BONUS_ABILITY_GLOSSARY_ENTRIES,
   BONUS_ABILITY_GLOSSARY_ENTRY_BY_ABILITY_ID,
@@ -1683,9 +1684,10 @@ function getItemStats(item: Item, categoryMultiplier: number = 1, hpScaleMultipl
   }
   if (superRareUniqueBonusText) otherParts.push(`超:${superRareUniqueBonusText}`);
 
-  const mergedBracketBonuses = [...cParts, ...eParts, ...rParts, ...otherParts];
+  const eText = eParts.join(' ');
+  const mergedBracketBonuses = [...cParts, ...rParts, ...otherParts];
   const mergedBracketBonusesText = mergedBracketBonuses.length > 0 ? `[${mergedBracketBonuses.join(', ')}]` : '';
-  return [dParts.join(' '), bParts.join(' '), mergedBracketBonusesText].filter(Boolean).join(' ');
+  return [dParts.join(' '), bParts.join(' '), eText, mergedBracketBonusesText].filter(Boolean).join(' ');
 }
 
 function getJewelSlotStatusText(item: Item, jewelKey: JewelKey, rank: number, categoryMultiplier: number, hpScaleMultiplier: number): string {
@@ -4034,23 +4036,25 @@ export function HomeScreen({
               const nextDungeonEntryUnlocked = nextDungeon
                 ? isLootGateUnlocked(party, getEntryGateKey(nextDungeon.id))
                 : false;
-              const nextDungeonEnemyLevel = nextDungeon?.expLevel ?? 0;
-              const normalizedCondition = Math.max(-300, Math.min(300, Math.floor(party.condition)));
+              const selectedDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId);
+              const selectedDungeonEnemyLevel = selectedDungeon?.expLevel ?? 0;
+              const normalizedCondition = Math.max(-400, Math.min(400, Math.floor(party.condition)));
               const shouldAutoAdvanceDestination = Boolean(
                 nextDungeon
+                && selectedDungeon
                 && hasClearedSelectedExpeditionAtLeastOnce
                 && nextDungeonEntryUnlocked
                 && (
                   (
-                    (nextDungeonEnemyLevel + selectedDifficultyOffset) <= party.level + 9
+                    (selectedDungeonEnemyLevel + selectedDifficultyOffset) <= party.level + 9
                     && normalizedCondition >= 250
                   )
                   || (
-                    (nextDungeonEnemyLevel + selectedDifficultyOffset) <= party.level + 10
+                    (selectedDungeonEnemyLevel + selectedDifficultyOffset) <= party.level + 10
                     && normalizedCondition >= 240
                   )
                   || (
-                    (nextDungeonEnemyLevel + selectedDifficultyOffset) <= party.level + 10
+                    (selectedDungeonEnemyLevel + selectedDifficultyOffset) <= party.level + 11
                     && normalizedCondition >= 230
                   )
                 ),
@@ -8706,15 +8710,24 @@ function ShopTab({
   const shopItems = rarityPool.map((rarityBase, index) => {
     const tier = seededTierForIndex(index);
     const rotatedCategories = shopCategories.map((_, offset) => shopCategories[(index + offset) % shopCategories.length]);
-    const baseItemId = rotatedCategories
-      .map((category) => {
-        const categoryIndex = ITEM_CATEGORY_ORDER.indexOf(category);
-        return tier * 1000 + rarityBase + categoryIndex + 1;
-      })
-      .find((itemId) => ITEMS.some((item) => item.id === itemId));
-    if (!baseItemId) return null;
-    const baseItem = ITEMS.find((item) => item.id === baseItemId);
+    const targetRarity = getItemRarityById(tier * 1000 + rarityBase + 1);
+    const categoriesByRarity = new Set<ItemCategory>(
+      targetRarity === 'mythicRare' ? [] : getMasterItemCategoriesByRarity(tier, targetRarity)
+    );
+    const selectedCategory = rotatedCategories.find((category) => categoriesByRarity.has(category));
+    const selectedCategoryIndex = selectedCategory ? ITEM_CATEGORY_ORDER.indexOf(selectedCategory) : -1;
+    const categoryBasedItemId = selectedCategoryIndex >= 0
+      ? tier * 1000 + rarityBase + selectedCategoryIndex + 1
+      : null;
+    const fallbackItem = ITEMS.find((item) => (
+      Math.floor(item.id / 1000) === tier &&
+      getItemRarityById(item.id) === targetRarity
+    ));
+    const baseItem = (categoryBasedItemId !== null
+      ? ITEMS.find((item) => item.id === categoryBasedItemId)
+      : null) ?? fallbackItem;
     if (!baseItem) return null;
+    const baseItemId = baseItem.id;
 
     const item: Item = { ...baseItem, enhancement: 0, superRare: 0 };
     const price = getShopItemPrice(baseItemId);
@@ -10207,6 +10220,7 @@ function SettingTab({
     }
   }, [debugSettings.colosseumEnabled, selectedBestiaryDungeonId, onSetSelectedBestiaryDungeonId]);
 
+
   const versionTag = APP_VERSION;
 
   const getDivineBureauPartyAbilityLevel = (party: Party, abilityId: string): number => {
@@ -10573,11 +10587,64 @@ function SettingTab({
   const BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM = 99;
   const isGodBestiaryTab = selectedBestiaryDungeonId === BESTIARY_SPECIAL_DUNGEON_ID_GODS;
   const isColosseumBestiaryTab = selectedBestiaryDungeonId === BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM;
+
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Bestiary (敵キャラクター図鑑)
+  const unlockedBestiaryDungeonIds = new Set(
+    DUNGEONS
+      .filter((dungeon) => dungeon.id !== 99)
+      .filter((dungeon) => gameState.parties.some((party) => (
+        party.selectedDungeonId >= dungeon.id
+        || isLootGateUnlocked(party, getEntryGateKey(dungeon.id))
+      )))
+      .map((dungeon) => dungeon.id)
+  );
+
+  const normalizeBestiaryGodName = (rawName: string): string => {
+    const withoutBattleSuffix = rawName.replace(/\s*\(神魔戦\)\s*$/u, '').trim();
+    const withoutRoleSuffix = withoutBattleSuffix.replace(/\([^)]*\)/gu, '').trim();
+    const [head] = withoutRoleSuffix.split(/\s+/u);
+    return (head ?? withoutRoleSuffix).trim();
+  };
+
+  const getGodBestiaryStatEnemyId = (god: (typeof GOD_ENEMY_PROFILES)[number], runtimeEnemy?: EnemyDef | null): number => {
+    if (runtimeEnemy?.isGodEnemy) return runtimeEnemy.id;
+    return 900000 + god.expId;
+  };
+
+  // SpecRef: 8.6 | UI_DIVINE_BUREAU | Bestiary (敵キャラクター図鑑)
+  // Gods tab/rows are revealed only when god encounter count is at least 1 (遭遇数 > 0).
+  const revealedGodBestiaryNames = new Set(
+    GOD_ENEMY_PROFILES
+      .filter((god) => {
+        const runtimeEnemy = buildGodRuntimeEnemy(god);
+        if (!runtimeEnemy) return false;
+        const battleStats = gameState.global.enemyBattleStats?.[getGodBestiaryStatEnemyId(god, runtimeEnemy)] ?? { defeats: 0, encounters: 0 };
+        return battleStats.encounters > 0;
+      })
+      .flatMap((god) => [god.name, normalizeBestiaryGodName(god.displayName)])
+  );
+
   const bestiaryTabOptions = [
-    ...DUNGEONS.filter((dungeon) => dungeon.id !== 99).map((dungeon) => ({ id: dungeon.id, name: dungeon.name })),
-    { id: BESTIARY_SPECIAL_DUNGEON_ID_GODS, name: '神魔' },
+    ...DUNGEONS
+      .filter((dungeon) => dungeon.id !== 99 && unlockedBestiaryDungeonIds.has(dungeon.id))
+      .map((dungeon) => ({ id: dungeon.id, name: dungeon.name })),
+    ...(revealedGodBestiaryNames.size > 0 ? [{ id: BESTIARY_SPECIAL_DUNGEON_ID_GODS, name: '神' }] : []),
     ...(debugSettings.colosseumEnabled ? [{ id: BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM, name: '特' }] : []),
   ];
+
+
+  useEffect(() => {
+    if (selectedBestiaryDungeonId === BESTIARY_SPECIAL_DUNGEON_ID_GODS && revealedGodBestiaryNames.size === 0) {
+      const fallbackDungeonId = [...unlockedBestiaryDungeonIds].sort((a, b) => a - b)[0] ?? 1;
+      onSetSelectedBestiaryDungeonId(fallbackDungeonId);
+      return;
+    }
+    if (selectedBestiaryDungeonId === BESTIARY_SPECIAL_DUNGEON_ID_GODS || selectedBestiaryDungeonId === BESTIARY_SPECIAL_DUNGEON_ID_COLOSSEUM) return;
+    if (!unlockedBestiaryDungeonIds.has(selectedBestiaryDungeonId)) {
+      const fallbackDungeonId = [...unlockedBestiaryDungeonIds].sort((a, b) => a - b)[0] ?? BESTIARY_SPECIAL_DUNGEON_ID_GODS;
+      onSetSelectedBestiaryDungeonId(fallbackDungeonId);
+    }
+  }, [revealedGodBestiaryNames.size, unlockedBestiaryDungeonIds, selectedBestiaryDungeonId, onSetSelectedBestiaryDungeonId]);
 
   const selectedBestiaryDungeon = DUNGEONS.find(d => d.id === selectedBestiaryDungeonId && d.id !== 99) ?? DUNGEONS[0];
 
@@ -10684,6 +10751,7 @@ function SettingTab({
     : [];
 
   const godBestiaryRows = GOD_ENEMY_PROFILES
+    .filter((god) => revealedGodBestiaryNames.has(god.name) || revealedGodBestiaryNames.has(normalizeBestiaryGodName(god.displayName)))
     .slice()
     .sort((a, b) => (a.tier - b.tier) || a.name.localeCompare(b.name));
 
@@ -10763,6 +10831,8 @@ function SettingTab({
     fighter: '戦士',
     rogue: '盗賊',
   };
+
+  const getBestiaryEnemyBattleStats = (enemyId: number) => gameState.global.enemyBattleStats?.[enemyId] ?? { defeats: 0, encounters: 0 };
 
   const getBestiaryClassRows = (
     mainClassId: string,
@@ -11350,7 +11420,7 @@ function SettingTab({
             onSetBestiaryScrollTop(currentScrollTop);
           }}
         >
-          <div className="text-xs text-gray-500">{isGodBestiaryTab ? '神魔' : selectedBestiaryDungeon.name}</div>
+          <div className="text-xs text-gray-500">{isGodBestiaryTab ? '神' : selectedBestiaryDungeon.name}</div>
           {isGodBestiaryTab && godBestiaryRows.map((god, index) => {
             const godBestiaryId = 900000 + index;
             const godExpanded = !!expandedBestiaryEnemies[godBestiaryId];
@@ -11368,7 +11438,7 @@ function SettingTab({
                 {godExpanded && (
                   <div className="px-2 pb-2 text-xs text-gray-700 border-t border-gray-100 pt-2 space-y-1">
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                      <div>ID: {godRuntimeEnemy ? godRuntimeEnemy.id : god.name}</div>
+                      <div>ID: {getGodBestiaryStatEnemyId(god, godRuntimeEnemy)}</div>
                       <div></div>
                       <div>HP: {formatNumber(godRuntimeEnemy?.hp ?? 0)}</div>
                       <div>レベル: {formatNumber(god.level)}</div>
@@ -11430,7 +11500,7 @@ function SettingTab({
                     <div className="flex items-start gap-1">
                       <div>アビリティ:</div>
                       <div className="flex flex-wrap items-center gap-1">
-                        {parseAbilityTokens(god.abilities).map((token, tokenIndex) => (
+                        {parseAbilityTokens(godRuntimeEnemy?.abilities ?? god.abilities).map((token, tokenIndex) => (
                           <Fragment key={token.key}>
                             {tokenIndex > 0 && <span className="text-gray-400">,</span>}
                             {token.isMissing ? (
@@ -11449,8 +11519,12 @@ function SettingTab({
                         ))}
                       </div>
                     </div>
-                    <div>待機探検地: {god.expedition}</div>
+                    <div>待機探索地: {god.expedition}</div>
                     <div className="pt-1">ドロップ候補: {getGodDropCandidates(god.name)}</div>
+                    {(() => {
+                      const battleStats = getBestiaryEnemyBattleStats(getGodBestiaryStatEnemyId(god, godRuntimeEnemy));
+                      return <div>撃破数: {formatNumber(battleStats.defeats)}　遭遇数: {formatNumber(battleStats.encounters)}</div>;
+                    })()}
                   </div>
                 )}
               </div>
@@ -11591,6 +11665,20 @@ function SettingTab({
                             if (hasMagicCasting) {
                               offenseRows.push(`詠唱魔法: ${getEnemyBestiarySpellName(displayEnemy)}`);
                             }
+                            const basePenetration = (displayEnemy.bonuses ?? []).reduce((sum, bonus) => (
+                              bonus.type === 'penet' ? sum + bonus.value : sum
+                            ), 0);
+                            const enemyHeavyStrike = displayEnemy.abilities.find((ability) => ability.id === 'heavy_strike' && ability.level > 0);
+                            const heavyStrikePenetPerNoA = enemyHeavyStrike
+                              ? (enemyHeavyStrike.level >= 2 ? 0.015 : 0.01)
+                              : 0;
+                            const heavyStrikeNoALoss = enemyHeavyStrike
+                              ? Math.max(displayEnemy.rangedNoA, displayEnemy.magicalNoA, displayEnemy.meleeNoA)
+                              : 0;
+                            const penetrationPercent = Math.round((basePenetration + (heavyStrikeNoALoss * heavyStrikePenetPerNoA)) * 100);
+                            if (penetrationPercent !== 0) {
+                              offenseRows.push(`貫通: +${formatNumber(penetrationPercent)}%`);
+                            }
 
                             // Bestiary detail keeps the compact 4-line defense block.
                             const defenseRows: ReactNode[] = [
@@ -11635,6 +11723,10 @@ function SettingTab({
                           </div>
                         </div>
                         <div className="pt-1">ドロップ候補: {getEnemyDropCandidates(displayEnemy).map(item => `${getRarityShortLabel(item.id, item.name)}${item.name}`).join(' / ')}</div>
+                        {(() => {
+                          const battleStats = getBestiaryEnemyBattleStats(displayEnemy.id);
+                          return <div>撃破数: {formatNumber(battleStats.defeats)}　遭遇数: {formatNumber(battleStats.encounters)}</div>;
+                        })()}
                       </div>
                     )}
                   </div>

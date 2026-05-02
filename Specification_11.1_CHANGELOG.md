@@ -6,6 +6,26 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.3 | 25 | 2026/5/1 | Fix Gods bestiary encounter/defeat counters to increment only during actual 神魔戦 by assigning dedicated god battle stat IDs (no overlap with normal expedition bosses). |
+| 0.6.3 | 23 | 2026/5/1 | Fix Gods Bestiary reveal/stats key mismatch: use each god expedition's boss enemy id for encounter tracking/display so gods like セイラン unlock immediately after 神魔戦 encounters. |
+| 0.6.3 | 21 | 2026/5/1 | Bestiary Gods tab/runtime reveal now depends on god encounter counts: show 神 tab only when at least one god has 遭遇数 > 0, and list only gods with encounters. |
+| 0.6.3 | 19 | 2026/5/1 | Update runtime Bestiary Gods tab behavior (8.6): keep Gods entries limited to challenged gods and hide the 神 tab entirely until at least one god has been challenged. |
+| 0.6.3 | 18 | 2026/5/1 | Fix Gods Bestiary unlock visibility to include current-session 神魔戦 logs (`lastExpeditionLog`/pending diary) in challenged-god detection, so a god defeated just now appears immediately in the 神 tab before diary finalization. |
+| 0.6.3 | 17 | 2026/5/1 | Fix Gods Bestiary challenge-name matching for Japanese battle log names (e.g., `ミオラ(神,賢M)`): normalize challenged-god names by removing parenthetical role/class metadata and matching against god display-name head tokens, so newly beaten gods appear immediately. |
+| 0.6.3 | 16 | 2026/5/1 | Fix Bestiary Gods-tab persistence: add `global.challengedGodNames` save-state tracking and update it when new 神魔戦 logs are finalized, so previously challenged gods remain visible even after diary retention trimming or reload/import. |
+| 0.6.3 | 15 | 2026/5/1 | Update runtime Bestiary behavior (8.6): expedition tabs now unlock only after reaching each expedition at least once, and Gods tab lists only gods that have been challenged at least once. |
+| 0.6.3 | 14 | 2026/5/1 | Fix Divine Bureau Gods Bestiary ability display to use runtime-built god abilities (not raw profile abilities), so merged class/Jinma abilities such as `a.heavy-strike1` and `a.upgrade-all-abilities1` are shown correctly for entries like キョウエン. |
+| 0.6.3 | 13 | 2026/5/1 | Fix Gods (神魔) runtime bonus/ability composition: include enemy-class default ability (e.g., `class.striker` → `a.heavy-strike1`) and merge `Jinma` + represented-race c-bonuses into god runtime enemy data so bestiary/combat reflect growth and race bonuses correctly. |
+| 0.6.3 | 12 | 2026/5/1 | Fix runtime Gods (神魔) bestiary/combat composition: force all God enemy types to `Jinma` and merge class abilities with both represented-race abilities (`Represent for`) and `Jinma` race abilities. |
+| 0.6.3 | 11 | 2026/5/1 | Revert Kyōen deity Japanese naming to spec-compliant text: 「狩猟の神」 → 「狡猾の神」 across Divine Bureau runtime display, glossary, and flavor text. |
+| 0.6.3 | 10 | 2026/5/1 | Refresh Divine Bureau Gods data to latest expedition/deity naming: align standby exploration area names with current dungeon names (Garv/Kyōen/Miora/Dolvar/Lira) and rename Kyōen deity text from 「狡猾の神」 to 「狩猟の神」 across runtime labels/flavor text. |
+| 0.6.3 | 9 | 2026/5/1 | Update Divine Bureau Bestiary Gods standby exploration area for Garv: 「ルピニアンの断崖」 → 「ルピニアンの亜寒帯」. |
+| 0.6.3 | 7 | 2026/5/1 | Fix Divine Bureau Bestiary enemy offense display so `重撃` contributes to shown penetration (`貫通:+N%`) by including heavy-strike NoA conversion in the displayed total. |
+| 0.6.3 | 6 | 2026/5/1 | Update Divine Bureau Bestiary Gods entries: rename Kyōen display to 「キョウエン 狩猟の神」 and update the standby-location label text to 「待機探索地」. |
+| 0.6.3 | 5 | 2026/5/1 | Divine Bureau Bestiary pane: display `貫通:+N%` in enemy offense details only when penetration total is non-zero. |
+| 0.6.3 | 4 | 2026/5/1 | Fix Auto Destination Change Logic in 一任 mode to evaluate progression thresholds using the currently selected expedition enemy level (`x.enemy_level`) during both online `state.rest` completion and AFK emulation checks. |
+| 0.6.3 | 3 | 2026/5/1 | Update runtime Togglr auto-destination progression thresholds for 一任 mode to include the +11 level / condition ≥230 rule (fix duplicated +10 check) for both online `state.rest` completion and AFK emulation checks. |
+| 0.6.3 | 2 | 2026/4/30 | Fix Base Shop lineup generation to always produce up to five purchasable entries by selecting categories that exist for the rolled tier/rarity and falling back to any valid item in that rarity, preventing 4-item shelves and missing uncommon offers due to unavailable category IDs. |
 | 0.6.3 | 1 | 2026/4/30 | Prepare v0.6.3 release: bump app version to `v0.6.3` and reset build number to `1`. |
 | 0.6.2 | 18 | 2026/4/30 | Remove obsolete `/qa/` environment from runtime path detection and deploy workflow/index; keep only `/dev/` and `/beta/` with environment-specific save isolation and dev-only x20 debug speed behavior. |
 | 0.6.2 | 16 | 2026/4/30 | Implement Item Compendium runtime reveal-unlock flow: item entries are now hidden until first enemy encounter that can drop them, and reveal triggers at enemy visibility during exploration/battle regardless of actual item acquisition; add persisted revealed item-id migration/default handling. |
@@ -204,7 +224,10 @@
 | 0.6.0 | 459 | 2026/4/18 | Align runtime predisposition master data to Spec 2.1 table: update bonus mappings (including `a.null-antagonism` for `Amicable`) and add explicit `selectable` flags with edit-mode enforcement for non-selectable predispositions. |
 | 0.6.0 | 6 | 2026/4/29 | Update Expedition Depth Limit dropdown options to Spec 8.3: add 1F-4/2F-4/3F-4/4F-4/5F-4 choices, keep floor-concept Japanese labels, and preserve `*F-4` values in save normalization (no forced migration to `*F-3`). |
 | 0.6.0 | 458 | 2026/4/18 | Implement runtime passive ability `a.null-antagonism` (敵対無効化): add ability master labels/descriptions, block `c.antagonism` from `Goddess of Discord` and `a.*-confusion` when target has immunity, and emit `log.null-antagonism` with note `(敵対無効化)`. |
+| 0.6.0 | 458 | 2026/5/1 | Fix runtime Auto Destination Change Logic in 一任 mode to evaluate progression thresholds against the currently selected expedition `x.enemy_level` (not next destination), with matching checks in both `state.rest` completion and AFK emulation flow. |
 | 0.6.0 | 457 | 2026/4/18 | Update runtime selectable lineage master data bonuses to match Spec 2.1 table (add missing secondary `c.*_x1.2` bonuses and defensive multipliers across `sandstorm` to `oath`). |
+| 0.6.0 | 457 | 2026/5/1 | Update runtime Bestiary behavior (8.6): expedition tabs now unlock only after reaching each expedition at least once, and Gods tab lists only gods that have been challenged at least once. |
+
 | 0.6.0 | 456 | 2026/4/18 | Refine expedition unlock gate wording in Party/Next Goal UI: when required count is 1, display `ボス撃破で…開放` (hide `0/1` progress), while keeping fraction format for other requirements. |
 | 0.6.0 | 455 | 2026/4/18 | Align runtime lineage/party initial setup to Spec 2.1.4.2: add `a.resonance` to `incarnation`, and update PT3/PT5/PT6 members (order, classes, lineages, predispositions, unique placements) to the requested initial conditions. |
 | 0.6.0 | 454 | 2026/4/18 | Align runtime PT4 initial member setup to Spec 2.1.4.2: update classes, lineages, predispositions, order, and unique flags under Goddess of Fertility. |
@@ -223,6 +246,8 @@
 | 0.6.0 | 441 | 2026/4/17 | Update runtime lineage master data to match Spec 2.1 lineup/bonuses/selectable flags; add new non-selectable lineages and remove obsolete runtime usage of `apex_predator` / `usurper` (legacy save IDs now alias to current lineages). |
 | 0.6.0 | 440 | 2026/4/17 | Fix `a.melee-conversion` tooltip text interpolation (`N%` / `M%`) and apply melee conversion attack gain to enemy runtime scaling (including Colosseum editor opponent status). |
 | 0.6.0 | 440 | 2026/4/30 | Improve save-data migration for Item Compendium persistence: on load, backfill `revealedItemCompendiumItemIds` from owned inventory and equipped items so revealed entries remain available across legacy/incomplete saves. |
+| 0.6.0 | 440 | 2026/5/1 | Update runtime Togglr auto-destination progression thresholds for 一任 mode to include the +11 level / condition ≥230 rule (and fix duplicated +10 check) in both online `state.rest` completion and AFK emulation checks. |
+| 0.6.0 | 440 | 2026/5/1 | Update Gods master data for Kyōen and Dolvar per Spec 4.1.2: Kyōen display name to キョウエン 狡猾の神 and class to class.striker; Dolvar class to class.guardian (status still uses x.exp_tier). |
 | 0.6.0 | 439 | 2026/4/17 | Implement passive ability `a.melee-conversion` in runtime: add new ability id/name/glossary entry and apply `d.melee_attack += round(d.ranged_attack×N%) + round(d.magical_attack×M%)` (Lv1: 30%/30%, Lv2: 40%/40%). |
 | 0.6.0 | 438 | 2026/4/17 | Add non-selectable runtime races `Kemoria` / `Orcinian` / `Avian` (with specified base stats and c-bonuses), and update `a.flying` glossary scale to `Lv1: x1/3, Lv2: x1/4, Lv3: x1/5` with `CLOSE` phase priority `9`. |
 | 0.6.0 | 437 | 2026/4/17 | Fix bonus ability tooltip wording format for `a.execution`: correctly interpolate `N` and `xM` from level scale (`50%・x1.8`) and display tooltip as `タイトル：説明`. |
@@ -237,6 +262,10 @@
 | 0.6.0 | 428 | 2026/4/16 | Enforce Unique character edit-mode immutability UI (disable/grey Name, Race, Lineage, Predisposition; keep Main/Sub Class editable). |
 | 0.6.0 | 427 | 2026/4/16 | Align runtime initial setup to Spec 2.1.4.2 (PT data corrections and Unique character immutability rules). |
 | 0.6.0 | 426 | 2026/4/16 | Update runtime condition outcome adjustments. |
+| 0.6.3 | 22 | 2026/5/1 | Update 神タブ (Gods bestiary) runtime details to include shared 撃破数/遭遇数 display for each revealed god enemy. |
+| 0.6.3 | 20 | 2026/5/1 | Bestiary runtime now tracks and displays shared 撃破数/遭遇数 per enemy across all parties (encounters include victory/retreat/defeat). |
+
+| 0.6.3 | 24 | 2026/5/1 | Update runtime item status display ordering for Spec 3.1.2 Item list: render `e.*` bonuses before bracketed bonuses, and keep bracket order as `c.* > r.* > others`. |
 
 
 - Older version changelog

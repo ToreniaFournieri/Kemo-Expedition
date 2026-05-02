@@ -286,6 +286,14 @@ function normalizeUnlockedDeities(unlockedDeities: unknown): string[] {
   return normalized;
 }
 
+function normalizeChallengedGodName(rawName: string): string {
+  const withoutBattleSuffix = rawName.replace(/\s*\(神魔戦\)\s*$/u, '').trim();
+  const withoutRoleSuffix = withoutBattleSuffix.replace(/\([^)]*\)/gu, '').trim();
+  const [head] = withoutRoleSuffix.split(/\s+/u);
+  return (head ?? withoutRoleSuffix).trim();
+}
+
+
 function createUnlockedPartyWithAvailableDeity(defaultParty: Party, existingParties: Party[]): Party {
   const normalizedDeityName = normalizeDeityName(defaultParty.deity.name);
   if (isNoFaithDeity(normalizedDeityName)) return defaultParty;
@@ -472,11 +480,16 @@ function shouldAutoAdvanceExpeditionDestination(party: Party): { shouldAdvance: 
     ?? party.expeditionDifficultyOffset
     ?? 0;
   const condition = normalizePartyCondition(party.condition);
-  const enemyLevelWithOffset = nextDungeon.expLevel + selectedDifficultyOffset;
+  const selectedDungeon = DUNGEONS.find((dungeon) => dungeon.id === party.selectedDungeonId);
+  if (!selectedDungeon) {
+    return { shouldAdvance: false, nextDungeonId: null };
+  }
+
+  const enemyLevelWithOffset = selectedDungeon.expLevel + selectedDifficultyOffset;
   const meetsAnyAutoAdvanceRule = (
     (enemyLevelWithOffset <= party.level + 9 && condition >= 250)
     || (enemyLevelWithOffset <= party.level + 10 && condition >= 240)
-    || (enemyLevelWithOffset <= party.level + 10 && condition >= 230)
+    || (enemyLevelWithOffset <= party.level + 11 && condition >= 230)
   );
 
   return {
@@ -640,6 +653,20 @@ function getDeityDonationsWithDefaults(value: unknown): Record<string, number> {
   }, {});
 }
 
+
+function getEnemyBattleStatsWithDefaults(value: unknown): Record<number, { defeats: number; encounters: number }> {
+  if (!value || typeof value !== 'object') return {};
+  return Object.entries(value as Record<string, unknown>).reduce<Record<number, { defeats: number; encounters: number }>>((acc, [enemyIdKey, stats]) => {
+    const enemyId = Number(enemyIdKey);
+    if (!Number.isFinite(enemyId) || !stats || typeof stats !== 'object') return acc;
+    const raw = stats as Record<string, unknown>;
+    acc[Math.floor(enemyId)] = {
+      defeats: typeof raw.defeats === 'number' ? Math.max(0, Math.floor(raw.defeats)) : 0,
+      encounters: typeof raw.encounters === 'number' ? Math.max(0, Math.floor(raw.encounters)) : 0,
+    };
+    return acc;
+  }, {});
+}
 function getExpeditionStatsWithDefaults(value: unknown) {
   if (!value || typeof value !== 'object') {
     return { Clear: 0, Turned_Back: 0, Draw_Retreat: 0, Wounded_Retreat: 0, Defeat: 0, donatedGold: 0, savedGold: 0 };
@@ -968,6 +995,7 @@ function loadSavedState(): LoadSavedStateResult {
             inventory: migrateOldInventory(firstParty?.inventory ?? []),
             deityDonations: {},
             unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
+            challengedGodNames: [],
             revealedItemCompendiumItemIds: [],
             revealedGlossaryAbilityIds: [],
             revealedGlossaryTerrainKeys: [],
@@ -977,6 +1005,7 @@ function loadSavedState(): LoadSavedStateResult {
             shopIntimacy: 0,
             shopIntimacyLastDecayAt: Date.now(),
             jewels: createStarterJewelInventory(),
+            enemyBattleStats: {},
           };
         }
         if (Array.isArray(parsed.global.inventory)) {
@@ -984,6 +1013,12 @@ function loadSavedState(): LoadSavedStateResult {
         }
         parsed.global.deityDonations = getDeityDonationsWithDefaults(parsed.global.deityDonations);
         parsed.global.unlockedDeities = normalizeUnlockedDeities(parsed.global.unlockedDeities);
+        parsed.global.challengedGodNames = Array.isArray(parsed.global.challengedGodNames)
+          ? parsed.global.challengedGodNames
+              .filter((name: unknown): name is string => typeof name === 'string' && name.trim().length > 0)
+              .map((name: string) => normalizeChallengedGodName(name))
+          : [];
+        parsed.global.enemyBattleStats = getEnemyBattleStatsWithDefaults(parsed.global.enemyBattleStats);
         parsed.global.revealedItemCompendiumItemIds = Array.from(new Set([
           ...normalizeRevealedItemCompendiumItemIds(parsed.global.revealedItemCompendiumItemIds),
           ...collectRevealedItemIdsFromOwnedData(parsed.global.inventory, parsed.parties),
@@ -1151,6 +1186,18 @@ function loadSavedState(): LoadSavedStateResult {
           party.deityGold = parsed.global.deityDonations[normalizedDeityName] ?? 0;
 
         }
+
+        const challengedGodNamesFromLogs = (parsed.parties as Party[])
+          .flatMap((party: Party) => party.diaryLogs ?? [])
+          .flatMap((diaryLog: DiaryLog) => diaryLog.expeditionLog ? [diaryLog.expeditionLog] : [])
+          .flatMap((log: ExpeditionLog) => log.entries)
+          .filter((entry: ExpeditionLogEntry) => entry.enemyName.includes('(神魔戦)'))
+          .map((entry: ExpeditionLogEntry) => normalizeChallengedGodName(entry.enemyName))
+          .filter((name: string, index: number, allNames: string[]) => allNames.indexOf(name) === index);
+        parsed.global.challengedGodNames = Array.from(new Set([
+          ...parsed.global.challengedGodNames,
+          ...challengedGodNamesFromLogs,
+        ]));
 
         parsed.global.unlockedDeities = unlockedDeities;
         while (parsed.parties.length < unlockedPartySlots) {
@@ -1666,6 +1713,7 @@ function createInitialState(): InitialStateResult {
       jewelAutoEquipPriorityPartyId: 1,
       deityDonations: {},
       unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
+      challengedGodNames: [],
       revealedItemCompendiumItemIds: [],
       revealedGlossaryAbilityIds: [],
       revealedGlossaryTerrainKeys: [],
@@ -1674,6 +1722,7 @@ function createInitialState(): InitialStateResult {
       shopRefreshCounts: {},
       shopIntimacy: 0,
       shopIntimacyLastDecayAt: Date.now(),
+      enemyBattleStats: {},
     },
     parties: [createInitialParty()],
     selectedPartyIndex: 0,
@@ -1817,6 +1866,10 @@ function getGodMythicDropId(dropItemTier: number, categories: [ItemCategory, Ite
   return options[seed % options.length].id;
 }
 
+function getGodEnemyBattleStatsId(dungeonId: number): number {
+  return 900000 + dungeonId;
+}
+
 function createGodEnemy(
   enemy: EnemyDef,
   dungeonId: number,
@@ -1865,7 +1918,7 @@ function createGodEnemy(
   return {
     ...enemy,
     ...runtimeGodEnemy,
-    id: enemy.id,
+    id: getGodEnemyBattleStatsId(dungeonId),
     type: enemy.type,
     spawnTier: enemy.spawnTier,
     spawnPool: enemy.spawnPool,
@@ -2816,6 +2869,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       let totalAutoSellItems: { itemName: string; autoSellProfit: number }[] = [];
       let roomCounter = 0;
       let expeditionEnded = false;
+      let nextEnemyBattleStats = { ...(state.global.enemyBattleStats ?? {}) };
       const revealedItemCompendiumItemIds = new Set<number>(state.global.revealedItemCompendiumItemIds ?? []);
       const revealedAbilityIds = new Set<string>(state.global.revealedGlossaryAbilityIds);
       characterStats.forEach((stats) => {
@@ -2969,6 +3023,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
               remainingPartyHP: battleResult.partyHp,
               maxPartyHP: partyStats.hp,
               details: battleResult.log,
+            };
+
+            const currentEnemyStats = nextEnemyBattleStats[enemy.id] ?? { defeats: 0, encounters: 0 };
+            nextEnemyBattleStats[enemy.id] = {
+              defeats: currentEnemyStats.defeats + (battleResult.outcome === 'victory' ? 1 : 0),
+              encounters: currentEnemyStats.encounters + 1,
             };
 
             if (battleResult.outcome === 'victory') {
@@ -3376,6 +3436,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           revealedItemCompendiumItemIds: Array.from(revealedItemCompendiumItemIds),
           ...revealGlossaryFromEncounter(state.global, revealedAbilityIds, undefined),
           revealedGlossaryTerrainKeys: Array.from(revealedTerrainKeys),
+          enemyBattleStats: nextEnemyBattleStats,
         },
       };
     }
@@ -3460,6 +3521,20 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         nextGlobal = {
           ...state.global,
           unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
+        };
+      }
+
+
+      const challengedGodNamesFromNewLog = (pendingDiaryLog?.expeditionLog?.entries ?? [])
+        .filter((entry) => entry.enemyName.includes('(神魔戦)'))
+        .map((entry) => normalizeChallengedGodName(entry.enemyName));
+      if (challengedGodNamesFromNewLog.length > 0) {
+        nextGlobal = {
+          ...nextGlobal,
+          challengedGodNames: Array.from(new Set([
+            ...(nextGlobal.challengedGodNames ?? []),
+            ...challengedGodNamesFromNewLog,
+          ])),
         };
       }
 
@@ -4421,6 +4496,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           jewelAutoEquipPriorityPartyId: 1,
           deityDonations: {},
           unlockedDeities: [...DEFAULT_UNLOCKED_DEITIES],
+          challengedGodNames: [],
           revealedItemCompendiumItemIds: [],
           revealedGlossaryAbilityIds: [],
           revealedGlossaryTerrainKeys: [],
