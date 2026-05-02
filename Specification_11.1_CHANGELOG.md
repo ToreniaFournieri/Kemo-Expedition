@@ -267,6 +267,7 @@
 
 | 0.6.3 | 24 | 2026/5/1 | Update runtime item status display ordering for Spec 3.1.2 Item list: render `e.*` bonuses before bracketed bonuses, and keep bracket order as `c.* > r.* > others`. |
 
+| 0.6.3 | 26 | 2026/5/2 | Refine runtime bonus ability tooltip wording for reflect abilities (`a.*-reflect`) to avoid awkward duplication and display clear split text like `反射N・被弾M` distribution semantics in Japanese. |
 
 - Older version changelog
 
