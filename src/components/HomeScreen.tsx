@@ -332,6 +332,14 @@ function formatBonusAbilityHelpDescription(abilityId: AbilityId, level: number):
   const { timing, value } = parseBonusAbilityLevelScale(levelScale);
   let description = entry.description;
 
+  if (abilityId.endsWith('_reflect') && value && value.includes('反射') && value.includes('被弾')) {
+    return entry.description
+      .replace('のNを反射して相手に与える(自身は残りを受ける)', `を${value}に分散する(反射分を相手に与え、自身は被弾分を受ける)`)
+      .replace(/を\s+x/g, 'をx')
+      .replace(/が\s+x/g, 'がx')
+      .replace(/の\s+x/g, 'のx');
+  }
+
   if (timing) {
     description = description
       .replace('指定終了タイミング', `${timing}終了タイミング`)
