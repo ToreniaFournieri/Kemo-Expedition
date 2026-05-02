@@ -269,6 +269,8 @@
 
 | 0.6.3 | 26 | 2026/5/2 | Refine runtime bonus ability tooltip wording for reflect abilities (`a.*-reflect`) to avoid awkward duplication and display clear split text like `反射N・被弾M` distribution semantics in Japanese. |
 
+| 0.6.3 | 27 | 2026/5/2 | Fix expedition log runtime display: show `EXP: +...` (and reward section) whenever accumulated expedition values exist, even during ongoing explore state, so EXP display no longer disappears after clearing rooms. |
+
 - Older version changelog
 
 |Version  | Changes                                                                               |
