@@ -38,7 +38,7 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
 
 - **Character image (background)**
   - Render the character image as a background image of the panel.
-  - Position: top-center.
+  - Position: top-aligned, horizontally offset to 80% from the left (i.e., 20% from the right).
   - Do not stretch; preserve original aspect ratio.
   - Image size is fixed and does not scale with content.
   - Responsive sizing:
