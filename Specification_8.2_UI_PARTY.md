@@ -44,7 +44,7 @@ PTレベル: 30, HP 3,742, 経験値: 1% ( 795)        [編集]
   - The image width matches the panel width.
   - Apply mask above the image to ensure text readability.
   - The image remains static relative to the panel (does not move with internal content changes).
-  - If race == Celvin, use : /public/character/Celvin.png
+  - If race == Cervin, use : /public/character/Cervin.png
   - Else: no image
 
 - Status:
