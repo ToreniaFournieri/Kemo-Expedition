@@ -422,73 +422,73 @@ Party.`d.HP` =
 - **PT1** Party initial condition.
   - deity: `Goddess of Restoration`
 
-| order | Name | Race | main class | sub class | lineage | predisposition | Initial equipment | Unique |
-|------|------|------|------|------|------|------|------|------|
-| 1 | **ケモ** | **Kemoria** | `class.guardian` | `class.samurai` | **`unascertained`** | `None` | 1101, 1102, 1104, 1105, 1106, 1211 | **`true`** |
-| 2 | クズノハ | Vulpinian | `class.duelist` | `class.pilgrim` | `sandstorm` | `Aggressive` | `1104`, `1106` | `false` |
-| 3 | ロップ | Leporian | `class.ranger` | `class.ninja` | `abyssal_sea` | `Inquisitive` | `1107`, `1109` |  `false` |
-| 4 | ソウタ | Procyonian | `class.ninja`| `class.striker` | `firmament` | `Evasive` | `1107`, `1109` | `false` |
-| 5 | セルフィン | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Introspective` | `1110`, `1112` | `false` |
-| 6 | **ライカ** | Caninian | `class.sage` | `class.alchemist`| **`pioneer`** | `None` | `1110`, `1112`  | **`true`** |
+| order | Name | Gender | Race | main class | sub class | lineage | predisposition | Initial equipment | Unique |
+|------|------|------|------|------|------|------|------|------|------|
+| 1 | **ケモ** | Male | **Kemoria** | `class.guardian` | `class.samurai` | **`unascertained`** | `None` | 1101, 1102, 1104, 1105, 1106, 1211 | **`true`** |
+| 2 | クズノハ | Female | Vulpinian | `class.duelist` | `class.pilgrim` | `sandstorm` | `Aggressive` | `1104`, `1106` | `false` |
+| 3 | ロップ | Female | Leporian | `class.ranger` | `class.ninja` | `abyssal_sea` | `Inquisitive` | `1107`, `1109` |  `false` |
+| 4 | ソウタ | Male | Procyonian | `class.ninja`| `class.striker` | `firmament` | `Evasive` | `1107`, `1109` | `false` |
+| 5 | セルフィン | Female | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Introspective` | `1110`, `1112` | `false` |
+| 6 | **ライカ** | Female | Caninian | `class.sage` | `class.alchemist`| **`pioneer`** | `None` | `1110`, `1112`  | **`true`** |
 
 - **PT2** initial condition (when unlocked)
   - deity: `God of Cunning`
 
-| order | Name | Race | main class | sub class | lineage | predisposition | Unique |
-|------|------|------|------|------|------|------|------|
-| 1 | **レナード** | Vulpinian | `class.duelist`| `class.lord` | **`meddlesome_fox`** | `None` | **`true`** |
-| 2 | **オルカ** | **Orcinian** | `class.samurai` | `class.sword-saint` | **`rowdy_orca_girl`** | `None` | **`true`** |
-| 1 | カイマ | Procyonian | `class.ranger` | `class.ranger` | `frozen_forest` | `Nimble` | `false` |
-| 3 | マナエル | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Inquisitive` | `false` |
-| 5 | レイナ | Felidian | `class.alchemist` | `class.wizard` | `machina` | `Serenity` | `false` |
-| 6 | タウロ | Lupinian | `class.ninja` | `class.wizard`| `windcross` | `Perceptive` | `false` |
+| order | Name | Gender | Race | main class | sub class | lineage | predisposition | Unique |
+|------|------|------|------|------|------|------|------|------|
+| 1 | **レナード** | Male | Vulpinian | `class.duelist`| `class.lord` | **`meddlesome_fox`** | `None` | **`true`** |
+| 2 | **オルカ** | Female | **Orcinian** | `class.samurai` | `class.sword-saint` | **`rowdy_orca_girl`** | `None` | **`true`** |
+| 1 | カイマ | Male | Procyonian | `class.ranger` | `class.ranger` | `frozen_forest` | `Nimble` | `false` |
+| 3 | マナエル | Male | Cervin | `class.wizard` | `class.alchemist` | `utopia` | `Inquisitive` | `false` |
+| 5 | レイナ | Female | Felidian | `class.alchemist` | `class.wizard` | `machina` | `Serenity` | `false` |
+| 6 | タウロ | Male | Lupinian | `class.ninja` | `class.wizard`| `windcross` | `Perceptive` | `false` |
 
 - **PT3** initial condition (when unlocked)
   - deity: `Goddess of Fertility`
 
-| order | Name | Race | main class | sub class | lineage | predisposition | Unique |
-|------|------|------|------|------|------|------|------|
-| 1 | ハムザ | Ursan | `class.guardian` | `class.ranger` | `firmament` | `Evasive` | `false` |
-| 2 | ユースフ | Caninian | `class.lord` | `class.ninja` | `firmament` | `Exacting` | `false` |
-| 3 | **ノクス** | Murid | `class.ninja`| `class.ranger` | **`phantom_thief`** | `None` | **`true`** |
-| 4 | **ルナ** | Felidian | `class.sword-saint` | `class.ranger` | **`crescent_jade`** | `None` | **`true`** |
-| 5 | カリーム | Lupinian | `class.duelist` | `class.striker` | `frozen_forest` | `Perceptive` | `false` |
-| 6 | ジャリル | Vulpinian | `class.sage` | `class.wizard`| `adaptation` | `Inquisitive` | `false` |
+| order | Name | Gender | Race | main class | sub class | lineage | predisposition | Unique |
+|------|------|------|------|------|------|------|------|------|
+| 1 | ハムザ | Male | Ursan | `class.guardian` | `class.ranger` | `firmament` | `Evasive` | `false` |
+| 2 | ユースフ | Male | Caninian | `class.lord` | `class.ninja` | `firmament` | `Exacting` | `false` |
+| 3 | **ノクス** | Male | Murid | `class.ninja`| `class.ranger` | **`phantom_thief`** | `None` | **`true`** |
+| 4 | **ルナ** | Female | Felidian | `class.sword-saint` | `class.ranger` | **`crescent_jade`** | `None` | **`true`** |
+| 5 | カリーム | Male | Lupinian | `class.duelist` | `class.striker` | `frozen_forest` | `Perceptive` | `false` |
+| 6 | ジャリル | Male | Vulpinian | `class.sage` | `class.wizard`| `adaptation` | `Inquisitive` | `false` |
 
 - **PT4** initial condition (when unlocked)
   - deity:  `God of Fortification`
 
-| order | Name | Race | main class | sub class | lineage | predisposition | Unique |
-|------|------|------|------|------|------|------|------|
-| 1 | **ミシュカ** | Ursan | `class.lord` | `class.duelist` | **`apostate`** | `None` | **`true`** |
-| 2 | **プチーツァ** | **Avian** | `class.ninja` | `class.sword-saint` | **`flamebound_grove`** | `None` | **`true`** |
-| 3 | ヴェーラ | Leporian | `class.ranger` | `class.guardian` | `abyssal_sea` | `Exacting` | `false` |
-| 4 | イリーナ | Felidian | `class.striker`| `class.pilgrim` | `firmament` | `Devoted` | `false` |
-| 5 | ドミトリ | Lupinian | `class.wizard` | `class.sage` | `machina` | `Introspective` | `false` |
-| 6 | ミラ | Cervin | `class.sage` | `class.wizard` | `utopia` | `Resourceful` | `false` |
+| order | Name | Gender | Race | main class | sub class | lineage | predisposition | Unique |
+|------|------|------|------|------|------|------|------|------|
+| 1 | **ミシュカ** | Male | Ursan | `class.lord` | `class.duelist` | **`apostate`** | `None` | **`true`** |
+| 2 | **プチーツァ** | Male | **Avian** | `class.ninja` | `class.sword-saint` | **`flamebound_grove`** | `None` | **`true`** |
+| 3 | ヴェーラ | Female | Leporian | `class.ranger` | `class.guardian` | `abyssal_sea` | `Exacting` | `false` |
+| 4 | イリーナ | Female | Felidian | `class.striker`| `class.pilgrim` | `firmament` | `Devoted` | `false` |
+| 5 | ドミトリ | Male | Lupinian | `class.wizard` | `class.sage` | `machina` | `Introspective` | `false` |
+| 6 | ミラ | Female | Cervin | `class.sage` | `class.wizard` | `utopia` | `Resourceful` | `false` |
 
 - **PT5** initial condition (when unlocked)
   - deity: `God of Resonance`
 
-| order | Name | Race | main class | sub class | lineage | predisposition | Unique |
-|------|------|------|------|------|------|------|------|
-| 1 | **葉隠** | Procyonian | `class.samurai` | `class.guardian` | **`hidden_grail`** | `None` | **`true`** |
-| 2 | **蒼牙破** | Lupinian | `class.sword-saint` | `class.samurai` | **`almighty`** | `None` | **`true`** |
-| 3 | 影髭 | Felidian | `class.wizard` | `class.ranger` | `abyssal_sea` | `Exacting` | `false` |
-| 4 | 砕歯 | Murid | `class.striker`| `class.striker` | `firmament` | `Aggressive` | `false` |
-| 5 | 霜踏 | Caninian | `class.ninja` | `class.striker` | `frozen_forest` | `Amicable` | `false` |
-| 6 | 狐火 | Vulpinian | `class.wizard` | `class.sage`| `utopia` | `Serenity` | `false` |
+| order | Name | Gender | Race | main class | sub class | lineage | predisposition | Unique |
+|------|------|------|------|------|------|------|------|------|
+| 1 | **葉隠** | Male | Procyonian | `class.samurai` | `class.guardian` | **`hidden_grail`** | `None` | **`true`** |
+| 2 | **蒼牙破** | Male | Lupinian | `class.sword-saint` | `class.samurai` | **`almighty`** | `None` | **`true`** |
+| 3 | 影髭 | Male | Felidian | `class.wizard` | `class.ranger` | `abyssal_sea` | `Exacting` | `false` |
+| 4 | 砕歯 | Male | Murid | `class.striker`| `class.striker` | `firmament` | `Aggressive` | `false` |
+| 5 | 霜踏 | Female | Caninian | `class.ninja` | `class.striker` | `frozen_forest` | `Amicable` | `false` |
+| 6 | 狐火 | Female | Vulpinian | `class.wizard` | `class.sage`| `utopia` | `Serenity` | `false` |
 
 - **PT6** initial condition (when unlocked)
   - deity: Goddess of Precision
 
-| order | Name | Race | main class | sub class | lineage | predisposition | Unique |
-|------|------|------|------|------|------|------|------|
-| 1 | マーカス | Ursan | `class.pilgrim` | `class.samurai` | `fragment` | `Stubborn` | `false` |
-| 2 | ランスロット | Caninian | `class.samurai` | `class.sword-saint` | `abyssal_sea` | `Resourceful` | `false` |
-| 3 | **フィン** | Leporian | `class.sword-saint` | `class.ranger` | **``unexpected_prince(ss)``** | `None` | **`true`** |
-| 4 | パーシヴァル | Procyonian | `class.alchemist`| `class.alchemist` | `adaptation` | `Inquisitive` | `false` |
-| 5 | **マーレ** | Cervin | `class.sage` | `class.wizard` | **`incarnation`** | `None` | **`true`** |
-| 6 | サム | Murid | `class.wizard` | `class.alchemist` | `utopia` | `Nimble` | `false` |
+| order | Name | Gender | Race | main class | sub class | lineage | predisposition | Unique |
+|------|------|------|------|------|------|------|------|------|
+| 1 | マーカス | Male | Ursan | `class.pilgrim` | `class.samurai` | `fragment` | `Stubborn` | `false` |
+| 2 | ランスロット | Male | Caninian | `class.samurai` | `class.sword-saint` | `abyssal_sea` | `Resourceful` | `false` |
+| 3 | **フィン** | Male | Leporian | `class.sword-saint` | `class.ranger` | **``unexpected_prince(ss)``** | `None` | **`true`** |
+| 4 | パーシヴァル | Male | Procyonian | `class.alchemist`| `class.alchemist` | `adaptation` | `Inquisitive` | `false` |
+| 5 | **マーレ** | Female | Cervin | `class.sage` | `class.wizard` | **`incarnation`** | `None` | **`true`** |
+| 6 | サム | Male | Murid | `class.wizard` | `class.alchemist` | `utopia` | `Nimble` | `false` |
   
 
