@@ -125,6 +125,17 @@ Left-aligned
 
 - Name [edit]
 - Editable `name` field.
+- Toggle selection: `♂` / `♀` Exactly one must be selected (no null state)
+- **Default Name Assignment**
+  - Trigger: when `Race` is changed.
+  - Select a default name randomly from the Potential Default Name Table.
+  - The candidate pool must match all of the following:
+    - `PT`
+    - `Race`
+    - `Gender`
+  - Duplicate name assignment should be avoided whenever possible.
+  - A duplicate name may only be assigned if no unused valid candidate remains.
+
 - Race selection: "**種族**:icon.race ケイナイアン |体10,力10,知10,精10 | 盾x1.3, 手x1.2, 弓x1.1, 成長x1.1""
   - Display the selected race summary as a single-line header above the selector buttons.
   - Category tabs: single-row, no wrap, fit within one viewport width.
