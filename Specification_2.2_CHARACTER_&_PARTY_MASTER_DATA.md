@@ -20,366 +20,293 @@
 - Character names are assigned from the Potential Default Name Table rondomley, but duplicate name assignment should be avoided whenever possible. A duplicate name may only be assigned if no other valid candidate remains.
 - Each PT has its own unique naming table based on its designated race.
 
-| PT | race (English key) | potential name |
-|---|---|---|
-| 1 | Caninian | タロウ |
-| 1 | Caninian | コテツ |
-| 1 | Caninian | ハヤテ |
-| 1 | Caninian | シロ |
-| 1 | Caninian | レオ |
-| 1 | Caninian | リク |
-| 1 | Caninian | ソラ |
-| 1 | Caninian | マル |
-| 1 | Caninian | ジン |
-| 1 | Lupinian | ガルム |
-| 1 | Lupinian | クロウ |
-| 1 | Lupinian | ハク |
-| 1 | Lupinian | レイガ |
-| 1 | Lupinian | ギン |
-| 1 | Lupinian | ランガ |
-| 1 | Lupinian | ゼル |
-| 1 | Lupinian | バルト |
-| 1 | Vulpinian | アカネ |
-| 1 | Vulpinian | イズナ |
-| 1 | Vulpinian | ヨウコ |
-| 1 | Vulpinian | センリ |
-| 1 | Vulpinian | コトネ |
-| 1 | Vulpinian | クズノハ |
-| 1 | Vulpinian | ミカゲ |
-| 1 | Vulpinian | ヒナ |
-| 1 | Vulpinian | アヤ |
-| 1 | Ursan | ゴンタ |
-| 1 | Ursan | バルド |
-| 1 | Ursan | クマジロウ |
-| 1 | Ursan | ドーガ |
-| 1 | Ursan | グルン |
-| 1 | Ursan | ダン |
-| 1 | Ursan | ボルグ |
-| 1 | Ursan | ガイ |
-| 1 | Ursan | ザン |
-| 1 | Ursan | ブラム |
-| 1 | Felidian | タマ |
-| 1 | Felidian | ネロ |
-| 1 | Felidian | シエル |
-| 1 | Felidian | レイ |
-| 1 | Felidian | アオ |
-| 1 | Felidian | カノン |
-| 1 | Felidian | ユイ |
-| 1 | Leporian | フブキ |
-| 1 | Leporian | ハル |
-| 1 | Leporian | トワ |
-| 1 | Leporian | ユキ |
-| 1 | Leporian | ナギ |
-| 1 | Leporian | ミナ |
-| 1 | Leporian | サラ |
-| 1 | Leporian | アオイ |
-| 1 | Leporian | レイナ |
-| 1 | Leporian | カスミ |
-| 1 | Cervin | サイカ |
-| 1 | Cervin | カナエ |
-| 1 | Cervin | リンネ |
-| 1 | Cervin | ミコト |
-| 1 | Cervin | ユズリハ |
-| 1 | Cervin | シオン |
-| 1 | Cervin | セツナ |
-| 1 | Cervin | トキ |
-| 1 | Cervin | マヒロ |
-| 1 | Cervin | ツムギ |
-| 1 | Murid | カゲ |
-| 1 | Murid | コソネ |
-| 1 | Murid | スズ |
-| 1 | Murid | コマ |
-| 1 | Murid | ヒソカ |
-| 1 | Murid | ネム |
-| 1 | Murid | チビ |
-| 1 | Murid | クルミ |
-| 2 | Lupinian | タウロ |
-| 2 | Lupinian | カノア |
-| 2 | Lupinian | ラウル |
-| 2 | Lupinian | マウイ |
-| 2 | Lupinian | タネ |
-| 2 | Lupinian | ケアヌ |
-| 2 | Vulpinian | カラニ |
-| 2 | Vulpinian | カイロ |
-| 2 | Vulpinian | マコア |
-| 2 | Vulpinian | ナル |
-| 2 | Vulpinian | ラニ |
-| 2 | Vulpinian | ノアル |
-| 2 | Felidian | レイナ |
-| 2 | Felidian | レイア |
-| 2 | Felidian | モアナ |
-| 2 | Felidian | ナレア |
-| 2 | Felidian | カリア |
-| 2 | Felidian | マリエ |
-| 2 | Caninian | カイ |
-| 2 | Caninian | マナ |
-| 2 | Caninian | ノエル |
-| 2 | Caninian | ラウア |
-| 2 | Caninian | テオ |
-| 2 | Caninian | エナ |
-| 2 | Ursan | マロ |
-| 2 | Ursan | カヘア |
-| 2 | Ursan | タマ |
-| 2 | Ursan | ノルア |
-| 2 | Ursan | ハウ |
-| 2 | Ursan | カロ |
-| 2 | Procyonian | カイマ |
-| 2 | Procyonian | マコ |
-| 2 | Procyonian | ナルア |
-| 2 | Procyonian | ロノ |
-| 2 | Procyonian | タリ |
-| 2 | Procyonian | モア |
-| 2 | Leporian | レア |
-| 2 | Leporian | ナニ |
-| 2 | Leporian | ミア |
-| 2 | Leporian | アロハ |
-| 2 | Leporian | カノエ |
-| 2 | Leporian | リノ |
-| 2 | Cervin | マナエル |
-| 2 | Cervin | ケアヌ |
-| 2 | Cervin | ノアル |
-| 2 | Cervin | ラニエル |
-| 2 | Cervin | マヒナ |
-| 2 | Cervin | カレオ |
-| 2 | Murid | ピコ |
-| 2 | Murid | ミノ |
-| 2 | Murid | ナオ |
-| 2 | Murid | ティコ |
-| 2 | Murid | ロア |
-| 2 | Murid | エリオ |
-| 3 | Lupinian | ファリス |
-| 3 | Lupinian | ザヒル |
-| 3 | Lupinian | ナシル |
-| 3 | Lupinian | カリーム |
-| 3 | Lupinian | ラシード |
-| 3 | Lupinian | ハイダル |
-| 3 | Vulpinian | サーミル |
-| 3 | Vulpinian | ジャリル |
-| 3 | Vulpinian | ナビル |
-| 3 | Vulpinian | ファーディ |
-| 3 | Vulpinian | ザイード |
-| 3 | Vulpinian | アミール |
-| 3 | Felidian | ライラ |
-| 3 | Felidian | ナディア |
-| 3 | Felidian | サフィア |
-| 3 | Felidian | ヤスミン |
-| 3 | Felidian | ザーラ |
-| 3 | Felidian | マリカ |
-| 3 | Caninian | ハサン |
-| 3 | Caninian | オマル |
-| 3 | Caninian | ユースフ |
-| 3 | Caninian | ターリク |
-| 3 | Caninian | サリム |
-| 3 | Caninian | イブラヒム |
-| 3 | Ursan | バシール |
-| 3 | Ursan | マフムード |
-| 3 | Ursan | カーディル |
-| 3 | Ursan | ジャバル |
-| 3 | Ursan | ラヒム |
-| 3 | Ursan | ハムザ |
-| 3 | Procyonian | ナジーム |
-| 3 | Procyonian | ファヒム |
-| 3 | Procyonian | サーヒル |
-| 3 | Procyonian | リヤド |
-| 3 | Procyonian | ジャミル |
-| 3 | Procyonian | カミル |
-| 3 | Leporian | アミナ |
-| 3 | Leporian | サルマ |
-| 3 | Leporian | ナイラ |
-| 3 | Leporian | リーム |
-| 3 | Leporian | ハナ |
-| 3 | Leporian | ダリア |
-| 3 | Cervin | ザヒラ |
-| 3 | Cervin | スハイル |
-| 3 | Cervin | ナディーム |
-| 3 | Cervin | カリラ |
-| 3 | Cervin | マジド |
-| 3 | Cervin | サミラ |
-| 3 | Murid | ミルザ |
-| 3 | Murid | タリル |
-| 3 | Murid | ラミ |
-| 3 | Murid | サーミ |
-| 3 | Murid | ナビハ |
-| 3 | Murid | フィラス |
-| 4 | Lupinian | イヴァン |
-| 4 | Lupinian | ドミトリ |
-| 4 | Lupinian | セルゲイ |
-| 4 | Lupinian | ミハイル |
-| 4 | Lupinian | アレクセイ |
-| 4 | Lupinian | ボリス |
-| 4 | Vulpinian | ニコライ |
-| 4 | Vulpinian | ユーリ |
-| 4 | Vulpinian | ヴィクトル |
-| 4 | Vulpinian | ロマン |
-| 4 | Vulpinian | レフ |
-| 4 | Vulpinian | パーヴェル |
-| 4 | Felidian | アーニャ |
-| 4 | Felidian | ナターシャ |
-| 4 | Felidian | エカテリーナ |
-| 4 | Felidian | イリーナ |
-| 4 | Felidian | ソフィア |
-| 4 | Felidian | タチアナ |
-| 4 | Caninian | アンドレイ |
-| 4 | Caninian | コンスタンチン |
-| 4 | Caninian | フョードル |
-| 4 | Caninian | グリゴリー |
-| 4 | Caninian | ステパン |
-| 4 | Caninian | ヴァシリー |
-| 4 | Ursan | ウラジミール |
-| 4 | Ursan | ゲンナジー |
-| 4 | Ursan | イーゴリ |
-| 4 | Ursan | ロスチスラフ |
-| 4 | Ursan | ヤロスラフ |
-| 4 | Ursan | ボグダン |
-| 4 | Procyonian | ミーシャ |
-| 4 | Procyonian | サーシャ |
-| 4 | Procyonian | キリル |
-| 4 | Procyonian | マクシム |
-| 4 | Procyonian | オレグ |
-| 4 | Procyonian | ティモフェイ |
-| 4 | Leporian | アリーナ |
-| 4 | Leporian | リュドミラ |
-| 4 | Leporian | ヴェーラ |
-| 4 | Leporian | スヴェトラーナ |
-| 4 | Leporian | ゼニア |
-| 4 | Leporian | マリーナ |
-| 4 | Cervin | ミラ |
-| 4 | Cervin | ラーダ |
-| 4 | Cervin | エレナ |
-| 4 | Cervin | ダリア |
-| 4 | Cervin | ズラータ |
-| 4 | Cervin | オリガ |
-| 4 | Murid | ピョートル |
-| 4 | Murid | イリヤ |
-| 4 | Murid | ラディム |
-| 4 | Murid | ヴァレンチン |
-| 4 | Murid | デニス |
-| 4 | Murid | ルスラン |
-| 5 | Lupinian | 吠月 |
-| 5 | Lupinian | 銀吼 |
-| 5 | Lupinian | 狼髭 |
-| 5 | Lupinian | 鉄喉 |
-| 5 | Lupinian | 孤爪 |
-| 5 | Lupinian | 霜背 |
-| 5 | Lupinian | 夜襲 |
-| 5 | Lupinian | 咬輪 |
-| 5 | Lupinian | 雷牙 |
-| 5 | Vulpinian | 幻舌 |
-| 5 | Vulpinian | 紅毛 |
-| 5 | Vulpinian | 空耳 |
-| 5 | Vulpinian | 妖面 |
-| 5 | Vulpinian | 星瞳 |
-| 5 | Vulpinian | 舞茸 |
-| 5 | Vulpinian | 化葉 |
-| 5 | Vulpinian | 千面 |
-| 5 | Felidian | 影髭 |
-| 5 | Felidian | 夜目 |
-| 5 | Felidian | 柔骨 |
-| 5 | Felidian | 爪先 |
-| 5 | Felidian | 眠須 |
-| 5 | Felidian | 潜足 |
-| 5 | Felidian | 鈴尾 |
-| 5 | Felidian | 無聲 |
-| 5 | Felidian | 陽溜 |
-| 5 | Caninian | 霜踏 |
-| 5 | Caninian | 忠牙 |
-| 5 | Caninian | 嗅丸 |
-| 5 | Caninian | 群吠 |
-| 5 | Caninian | 追尾 |
-| 5 | Caninian | 散走 |
-| 5 | Caninian | 守庭 |
-| 5 | Caninian | 埋骨 |
-| 5 | Ursan | 冬籠 |
-| 5 | Ursan | 熊掌 |
-| 5 | Ursan | 山鳴 |
-| 5 | Ursan | 蜜喰 |
-| 5 | Ursan | 鈍爪 |
-| 5 | Ursan | 大腹 |
-| 5 | Ursan | 木倒 |
-| 5 | Ursan | 岩背 |
-| 5 | Procyonian | 酒樽 |
-| 5 | Procyonian | 眠丸 |
-| 5 | Procyonian | 変身 |
-| 5 | Procyonian | 目隠 |
-| 5 | Procyonian | 落葉 |
-| 5 | Procyonian | 騙耳 |
-| 5 | Procyonian | 楽鼓 |
-| 5 | Procyonian | 空釜 |
-| 5 | Leporian | 長耳 |
-| 5 | Leporian | 月跳 |
-| 5 | Leporian | 軟足 |
-| 5 | Leporian | 白尾 |
-| 5 | Leporian | 草噛 |
-| 5 | Leporian | 早駆 |
-| 5 | Leporian | 雪隠 |
-| 5 | Cervin | 角王 |
-| 5 | Cervin | 枝冠 |
-| 5 | Cervin | 鈴蹄 |
-| 5 | Cervin | 林鳴 |
-| 5 | Cervin | 澄目 |
-| 5 | Cervin | 茸角 |
-| 5 | Cervin | 神着 |
-| 5 | Cervin | 霜脚 |
-| 5 | Cervin | 柵越 |
-| 5 | Murid | 砕歯 |
-| 5 | Murid | 灰背 |
-| 5 | Murid | 隙眼 |
-| 5 | Murid | 細尾 |
-| 5 | Murid | 穴人 |
-| 5 | Murid | 種盗 |
-| 5 | Murid | 顫髭 |
-| 5 | Murid | 鉄門 |
-| 6 | Lupinian | エヴァン |
-| 6 | Lupinian | コール |
-| 6 | Lupinian | ハドソン |
-| 6 | Lupinian | ワイアット |
-| 6 | Lupinian | ローガン |
-| 6 | Lupinian | ブレイク |
-| 6 | Vulpinian | アッシャー |
-| 6 | Vulpinian | オーウェン |
-| 6 | Vulpinian | グラント |
-| 6 | Vulpinian | ジャスパー |
-| 6 | Vulpinian | ノーラン |
-| 6 | Vulpinian | リード |
-| 6 | Felidian | ヘイゼル |
-| 6 | Felidian | アイリス |
-| 6 | Felidian | クレア |
-| 6 | Felidian | オードリー |
-| 6 | Felidian | サディ |
-| 6 | Felidian | ヴァイオレット |
-| 6 | Caninian | メイソン |
-| 6 | Caninian | カーター |
-| 6 | Caninian | ベネット |
-| 6 | Caninian | ライアン |
-| 6 | Caninian | エリオット |
-| 6 | Caninian | テオドア |
-| 6 | Ursan | グレイソン |
-| 6 | Ursan | ハリソン |
-| 6 | Ursan | ウェスリー |
-| 6 | Ursan | サイラス |
-| 6 | Ursan | マーカス |
-| 6 | Ursan | デクラン |
-| 6 | Procyonian | ミロ |
-| 6 | Procyonian | エズラ |
-| 6 | Procyonian | ルカ |
-| 6 | Procyonian | フェリックス |
-| 6 | Procyonian | ジュード |
-| 6 | Procyonian | ローワン |
-| 6 | Leporian | ジュニパー |
-| 6 | Leporian | ウィロー |
-| 6 | Leporian | エラ |
-| 6 | Leporian | ノラ |
-| 6 | Leporian | アイビー |
-| 6 | Leporian | ルビー |
-| 6 | Cervin | オータム |
-| 6 | Cervin | スカイラー |
-| 6 | Cervin | ハーパー |
-| 6 | Cervin | エヴリン |
-| 6 | Cervin | セージ |
-| 6 | Cervin | ブリア |
-| 6 | Murid | リアム |
-| 6 | Murid | ノア |
-| 6 | Murid | カレブ |
-| 6 | Murid | サム |
-| 6 | Murid | イアン |
-| 6 | Murid | オリバー |
+| PT | race (English key) | potential name | Gender |
+|---|---|---|---|
+| 1 | Caninian | タロウ | Male |
+| 1 | Caninian | コテツ | Male |
+| 1 | Caninian | ハヤテ | Male |
+| 1 | Caninian | ソラ | Female |
+| 1 | Caninian | マル | Female |
+| 1 | Caninian | ヒナ | Female |
+| 1 | Lupinian | ガルム | Male |
+| 1 | Lupinian | クロウ | Male |
+| 1 | Lupinian | レイガ | Male |
+| 1 | Lupinian | ユキ | Female |
+| 1 | Lupinian | カエデ | Female |
+| 1 | Lupinian | リン | Female |
+| 1 | Vulpinian | シン | Male |
+| 1 | Vulpinian | トウマ | Male |
+| 1 | Vulpinian | レン | Male |
+| 1 | Vulpinian | アカネ | Female |
+| 1 | Vulpinian | イズナ | Female |
+| 1 | Vulpinian | コトネ | Female |
+| 1 | Ursan | ゴンタ | Male |
+| 1 | Ursan | バルド | Male |
+| 1 | Ursan | ダン | Male |
+| 1 | Ursan | モモ | Female |
+| 1 | Ursan | クマミ | Female |
+| 1 | Ursan | リン | Female |
+| 1 | Felidian | ネロ | Male |
+| 1 | Felidian | レイ | Male |
+| 1 | Felidian | アオ | Male |
+| 1 | Felidian | タマ | Female |
+| 1 | Felidian | ユイ | Female |
+| 1 | Felidian | カノン | Female |
+| 1 | Leporian | ハル | Male |
+| 1 | Leporian | ナギ | Male |
+| 1 | Leporian | トワ | Male |
+| 1 | Leporian | ユキ | Female |
+| 1 | Leporian | サラ | Female |
+| 1 | Leporian | レイナ | Female |
+| 1 | Cervin | トキ | Male |
+| 1 | Cervin | マヒロ | Male |
+| 1 | Cervin | シオン | Male |
+| 1 | Cervin | ミコト | Female |
+| 1 | Cervin | リンネ | Female |
+| 1 | Cervin | カナエ | Female |
+| 1 | Murid | カゲ | Male |
+| 1 | Murid | ヒソカ | Male |
+| 1 | Murid | チビ | Male |
+| 1 | Murid | スズ | Female |
+| 1 | Murid | ネム | Female |
+| 1 | Murid | クルミ | Female |
+| 2 | Caninian | カイ | Male |
+| 2 | Caninian | テオ | Male |
+| 2 | Caninian | ラウロ | Male |
+| 2 | Caninian | マナ | Female |
+| 2 | Caninian | エナ | Female |
+| 2 | Caninian | ラウア | Female |
+| 2 | Lupinian | タウロ | Male |
+| 2 | Lupinian | マウイ | Male |
+| 2 | Lupinian | タネ | Male |
+| 2 | Lupinian | ケアヌ | Female |
+| 2 | Lupinian | マヒナ | Female |
+| 2 | Lupinian | リナ | Female |
+| 2 | Vulpinian | カイロ | Male |
+| 2 | Vulpinian | マコア | Male |
+| 2 | Vulpinian | ノア | Male |
+| 2 | Vulpinian | カラニ | Female |
+| 2 | Vulpinian | ラニ | Female |
+| 2 | Vulpinian | ナル | Female |
+| 2 | Ursan | マロ | Male |
+| 2 | Ursan | ハウ | Male |
+| 2 | Ursan | カロ | Male |
+| 2 | Ursan | ノルア | Female |
+| 2 | Ursan | タマ | Female |
+| 2 | Ursan | カヘア | Female |
+| 2 | Felidian | ケオニ | Male |
+| 2 | Felidian | ロノ | Male |
+| 2 | Felidian | カレオ | Male |
+| 2 | Felidian | レイナ | Female |
+| 2 | Felidian | モアナ | Female |
+| 2 | Felidian | ナレア | Female |
+| 2 | Leporian | カノエ | Male |
+| 2 | Leporian | リノ | Male |
+| 2 | Leporian | アロハ | Male |
+| 2 | Leporian | ミア | Female |
+| 2 | Leporian | ナニ | Female |
+| 2 | Leporian | レア | Female |
+| 2 | Cervin | カイマナ | Male |
+| 2 | Cervin | ケアロ | Male |
+| 2 | Cervin | マノア | Male |
+| 2 | Cervin | マヒナエル | Female |
+| 2 | Cervin | ラニエル | Female |
+| 2 | Cervin | カレア | Female |
+| 2 | Murid | エリオ | Male |
+| 2 | Murid | ナオ | Male |
+| 2 | Murid | ティコ | Male |
+| 2 | Murid | ピコ | Female |
+| 2 | Murid | ミノ | Female |
+| 2 | Murid | ロアナ | Female |
+| 3 | Caninian | ハサン | Male |
+| 3 | Caninian | オマル | Male |
+| 3 | Caninian | ユースフ | Male |
+| 3 | Caninian | アミナ | Female |
+| 3 | Caninian | サルマ | Female |
+| 3 | Caninian | ナイラ | Female |
+| 3 | Lupinian | ファリス | Male |
+| 3 | Lupinian | ザヒル | Male |
+| 3 | Lupinian | ナシル | Male |
+| 3 | Lupinian | ライラ | Female |
+| 3 | Lupinian | サフィア | Female |
+| 3 | Lupinian | ナディア | Female |
+| 3 | Vulpinian | アミール | Male |
+| 3 | Vulpinian | ザイード | Male |
+| 3 | Vulpinian | ナビル | Male |
+| 3 | Vulpinian | ヤスミン | Female |
+| 3 | Vulpinian | ザーラ | Female |
+| 3 | Vulpinian | マリカ | Female |
+| 3 | Ursan | バシール | Male |
+| 3 | Ursan | ハムザ | Male |
+| 3 | Ursan | ラヒム | Male |
+| 3 | Ursan | サミラ | Female |
+| 3 | Ursan | ダリア | Female |
+| 3 | Ursan | リーム | Female |
+| 3 | Felidian | カリーム | Male |
+| 3 | Felidian | ラシード | Male |
+| 3 | Felidian | ハイダル | Male |
+| 3 | Felidian | ザイナ | Female |
+| 3 | Felidian | ナジワ | Female |
+| 3 | Felidian | ハディア | Female |
+| 3 | Leporian | ジャミル | Male |
+| 3 | Leporian | カミル | Male |
+| 3 | Leporian | リヤド | Male |
+| 3 | Leporian | ハナ | Female |
+| 3 | Leporian | ダリアナ | Female |
+| 3 | Leporian | アリア | Female |
+| 3 | Cervin | マジド | Male |
+| 3 | Cervin | ナディーム | Male |
+| 3 | Cervin | スハイル | Male |
+| 3 | Cervin | ザヒラ | Female |
+| 3 | Cervin | カリラ | Female |
+| 3 | Cervin | サミラナ | Female |
+| 3 | Murid | ミルザ | Male |
+| 3 | Murid | タリル | Male |
+| 3 | Murid | サーミ | Male |
+| 3 | Murid | ナビハ | Female |
+| 3 | Murid | リーマ | Female |
+| 3 | Murid | サルマナ | Female |
+| 4 | Caninian | アンドレイ | Male |
+| 4 | Caninian | フョードル | Male |
+| 4 | Caninian | ヴァシリー | Male |
+| 4 | Caninian | エレナ | Female |
+| 4 | Caninian | オリガ | Female |
+| 4 | Caninian | ダリア | Female |
+| 4 | Lupinian | イヴァン | Male |
+| 4 | Lupinian | セルゲイ | Male |
+| 4 | Lupinian | ミハイル | Male |
+| 4 | Lupinian | アリーナ | Female |
+| 4 | Lupinian | ヴェーラ | Female |
+| 4 | Lupinian | ミラ | Female |
+| 4 | Vulpinian | ニコライ | Male |
+| 4 | Vulpinian | ユーリ | Male |
+| 4 | Vulpinian | レフ | Male |
+| 4 | Vulpinian | ソフィア | Female |
+| 4 | Vulpinian | タチアナ | Female |
+| 4 | Vulpinian | ナターシャ | Female |
+| 4 | Ursan | ウラジミール | Male |
+| 4 | Ursan | イーゴリ | Male |
+| 4 | Ursan | ボグダン | Male |
+| 4 | Ursan | ラーダ | Female |
+| 4 | Ursan | ズラータ | Female |
+| 4 | Ursan | ミラーナ | Female |
+| 4 | Felidian | ロマン | Male |
+| 4 | Felidian | ヴィクトル | Male |
+| 4 | Felidian | パーヴェル | Male |
+| 4 | Felidian | アーニャ | Female |
+| 4 | Felidian | イリーナ | Female |
+| 4 | Felidian | エカテリーナ | Female |
+| 4 | Leporian | キリル | Male |
+| 4 | Leporian | マクシム | Male |
+| 4 | Leporian | オレグ | Male |
+| 4 | Leporian | スヴェトラーナ | Female |
+| 4 | Leporian | マリーナ | Female |
+| 4 | Leporian | リュボフ | Female |
+| 4 | Cervin | ロスチスラフ | Male |
+| 4 | Cervin | ヤロスラフ | Male |
+| 4 | Cervin | ボリス | Male |
+| 4 | Cervin | ミレナ | Female |
+| 4 | Cervin | ラディカ | Female |
+| 4 | Cervin | エレーナ | Female |
+| 4 | Murid | ピョートル | Male |
+| 4 | Murid | イリヤ | Male |
+| 4 | Murid | ルスラン | Male |
+| 4 | Murid | ダリアナ | Female |
+| 4 | Murid | ズラティカ | Female |
+| 4 | Murid | ヴェロニカ | Female |
+| 5 | Caninian | 霜踏 | Male |
+| 5 | Caninian | 忠牙 | Male |
+| 5 | Caninian | 群吠 | Male |
+| 5 | Caninian | 守庭 | Female |
+| 5 | Caninian | 散走 | Female |
+| 5 | Caninian | 嗅丸 | Female |
+| 5 | Lupinian | 銀吼 | Male |
+| 5 | Lupinian | 雷牙 | Male |
+| 5 | Lupinian | 孤爪 | Male |
+| 5 | Lupinian | 霜背 | Female |
+| 5 | Lupinian | 夜襲 | Female |
+| 5 | Lupinian | 咬輪 | Female |
+| 5 | Vulpinian | 千面 | Male |
+| 5 | Vulpinian | 幻舌 | Male |
+| 5 | Vulpinian | 妖面 | Male |
+| 5 | Vulpinian | 星瞳 | Female |
+| 5 | Vulpinian | 紅毛 | Female |
+| 5 | Vulpinian | 化葉 | Female |
+| 5 | Ursan | 山鳴 | Male |
+| 5 | Ursan | 熊掌 | Male |
+| 5 | Ursan | 岩背 | Male |
+| 5 | Ursan | 冬籠 | Female |
+| 5 | Ursan | 蜜喰 | Female |
+| 5 | Ursan | 大腹 | Female |
+| 5 | Felidian | 影髭 | Male |
+| 5 | Felidian | 爪先 | Male |
+| 5 | Felidian | 潜足 | Male |
+| 5 | Felidian | 夜目 | Female |
+| 5 | Felidian | 鈴尾 | Female |
+| 5 | Felidian | 陽溜 | Female |
+| 5 | Leporian | 月跳 | Male |
+| 5 | Leporian | 草噛 | Male |
+| 5 | Leporian | 早駆 | Male |
+| 5 | Leporian | 白尾 | Female |
+| 5 | Leporian | 長耳 | Female |
+| 5 | Leporian | 軟足 | Female |
+| 5 | Cervin | 角王 | Male |
+| 5 | Cervin | 林鳴 | Male |
+| 5 | Cervin | 柵越 | Male |
+| 5 | Cervin | 澄目 | Female |
+| 5 | Cervin | 枝冠 | Female |
+| 5 | Cervin | 神着 | Female |
+| 5 | Murid | 砕歯 | Male |
+| 5 | Murid | 鉄門 | Male |
+| 5 | Murid | 穴人 | Male |
+| 5 | Murid | 灰背 | Female |
+| 5 | Murid | 細尾 | Female |
+| 5 | Murid | 種盗 | Female |
+| 6 | Caninian | メイソン | Male |
+| 6 | Caninian | カーター | Male |
+| 6 | Caninian | ライアン | Male |
+| 6 | Caninian | エラ | Female |
+| 6 | Caninian | ノラ | Female |
+| 6 | Caninian | アイビー | Female |
+| 6 | Lupinian | ローガン | Male |
+| 6 | Lupinian | ワイアット | Male |
+| 6 | Lupinian | ブレイク | Male |
+| 6 | Lupinian | エヴリン | Female |
+| 6 | Lupinian | セージ | Female |
+| 6 | Lupinian | ハーパー | Female |
+| 6 | Vulpinian | ジャスパー | Male |
+| 6 | Vulpinian | ノーラン | Male |
+| 6 | Vulpinian | リード | Male |
+| 6 | Vulpinian | ヘイゼル | Female |
+| 6 | Vulpinian | アイリス | Female |
+| 6 | Vulpinian | クレア | Female |
+| 6 | Ursan | グレイソン | Male |
+| 6 | Ursan | ハリソン | Male |
+| 6 | Ursan | マーカス | Male |
+| 6 | Ursan | オードリー | Female |
+| 6 | Ursan | サディ | Female |
+| 6 | Ursan | ヴァイオレット | Female |
+| 6 | Felidian | フェリックス | Male |
+| 6 | Felidian | ルカ | Male |
+| 6 | Felidian | ジュード | Male |
+| 6 | Felidian | オリーブ | Female |
+| 6 | Felidian | クレアラ | Female |
+| 6 | Felidian | イリス | Female |
+| 6 | Leporian | ローワン | Male |
+| 6 | Leporian | エズラ | Male |
+| 6 | Leporian | ミロ | Male |
+| 6 | Leporian | ジュニパー | Female |
+| 6 | Leporian | ウィロー | Female |
+| 6 | Leporian | ルビー | Female |
+| 6 | Cervin | カレブ | Male |
+| 6 | Cervin | ノア | Male |
+| 6 | Cervin | リアム | Male |
+| 6 | Cervin | スカイラー | Female |
+| 6 | Cervin | ブリア | Female |
+| 6 | Cervin | オータム | Female |
+| 6 | Murid | サム | Male |
+| 6 | Murid | イアン | Male |
+| 6 | Murid | オリバー | Male |
+| 6 | Murid | ノラナ | Female |
+| 6 | Murid | エラナ | Female |
+| 6 | Murid | アイヴィア | Female |
