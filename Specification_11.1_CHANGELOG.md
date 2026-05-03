@@ -6,6 +6,7 @@
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.3 | 29 | 2026/5/3 | Update Party member details runtime (Spec 8.2.2): render Cervin member background image (`/public/character/Cervin.png`) in panel with top-center fixed positioning, preserved aspect ratio, full panel width, and readability mask; non-Cervin races show no background image. |
 | 0.6.3 | 25 | 2026/5/1 | Fix Gods bestiary encounter/defeat counters to increment only during actual 神魔戦 by assigning dedicated god battle stat IDs (no overlap with normal expedition bosses). |
 | 0.6.3 | 23 | 2026/5/1 | Fix Gods Bestiary reveal/stats key mismatch: use each god expedition's boss enemy id for encounter tracking/display so gods like セイラン unlock immediately after 神魔戦 encounters. |
 | 0.6.3 | 21 | 2026/5/1 | Bestiary Gods tab/runtime reveal now depends on god encounter counts: show 神 tab only when at least one god has 遭遇数 > 0, and list only gods with encounters. |
@@ -272,7 +273,6 @@
 | 0.6.3 | 27 | 2026/5/2 | Fix expedition log runtime display: show `EXP: +...` (and reward section) whenever accumulated expedition values exist, even during ongoing explore state, so EXP display no longer disappears after clearing rooms. |
 
 | 0.6.3 | 28 | 2026/5/2 | Fix character edit auto-unequip flow: when aptitude/slot changes force equipment removal, detach equipped jewels and return them to jewel inventory while returning jewel-free equipment to inventory (prevents jewel loss). |
-
 - Older version changelog
 
 |Version  | Changes                                                                               |
