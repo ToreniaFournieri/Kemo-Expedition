@@ -5513,8 +5513,9 @@ function PartyTab({
   const predisposition = PREDISPOSITIONS.find(p => p.id === char.predispositionId) ?? PREDISPOSITIONS[0];
   const lineage = LINEAGES.find(l => l.id === char.lineageId) ?? LINEAGES[0];
   // SpecRef: 8.2.2 | Party member details | Character image (background)
-  // No image (in this version)
-  const partyMemberImageSrc = null;
+  const partyMemberImageSrc = race.id === 'cervin'
+    ? `${import.meta.env.BASE_URL}character/Cervin.png`
+    : null;
   const raceCategoryDefinitions: Array<{ label: string; raceIds: Character['raceId'][] }> = [
     { label: '肉食', raceIds: ['lupinian', 'vulpinian', 'felidian'] },
     { label: '雑食', raceIds: ['caninian', 'ursan', 'procyonian'] },
@@ -6092,10 +6093,10 @@ function PartyTab({
               src={partyMemberImageSrc}
               alt=""
               aria-hidden="true"
-              className={`pointer-events-none select-none absolute left-0 top-0 w-full h-auto object-contain object-top ${isDarkModeEnabled ? 'opacity-50 invert' : 'opacity-40'}`}
+              className={`pointer-events-none select-none absolute left-1/2 top-0 w-full h-auto -translate-x-1/2 object-contain object-top ${isDarkModeEnabled ? 'opacity-45 invert' : 'opacity-35'}`}
             />
             <div
-              className={`pointer-events-none absolute inset-0 ${isDarkModeEnabled ? 'bg-slate-950/20' : 'bg-white/40'}`}
+              className={`pointer-events-none absolute inset-0 ${isDarkModeEnabled ? 'bg-slate-950/45' : 'bg-white/55'}`}
               aria-hidden="true"
             />
           </>
