@@ -1,13 +1,14 @@
-| 0.6.3 | 38 | 2026/5/3 | Add runtime character gender support: editable ♂/♀ toggle (single-select), race-change default naming filtered by PT/race/gender with duplicate avoidance, and legacy gender migration (unique characters use predefined master gender). |
+
 ## 11. CHANGELOG
 **Update rule**
 - Entries must be sorted in descending order by Version, then Build.
-- **Always insert new entries at the top line in the table**. (Latest > Older entry)
+- Overall list order must remain Latest → Older.
 - Date format: YYYY/MM/DD
 - Language: English
 
 |Version  | Build | date | Changes                                                                               |
 |---------|------|------|--------------------------------------------------------------------------------------|
+| 0.6.3 | 38 | 2026/5/3 | Add runtime character gender support: editable ♂/♀ toggle (single-select), race-change default naming filtered by PT/race/gender with duplicate avoidance, and legacy gender migration (unique characters use predefined master gender). |
 | 0.6.3 | 37 | 2026/5/3 | Update Party member details runtime character background responsive sizing (Spec 8.2.2): set width to 170% at viewport ≤400px, 130% at viewport ≥500px, with linear interpolation between 400–500px while keeping top-center non-stretched fixed-size rendering. |
 | 0.6.3 | 36 | 2026/5/3 | Implement Party member details character background image race mapping at runtime (Lupinian/Vulpinian/Felidian/Caninian/Ursan/Procyonian/Leporian/Cervin/Murid/Orcinian), with non-listed races rendering no image. |
 | 0.6.3 | 35 | 2026/5/3 | Party UI (dark mode): reduce character detail background image opacity so foreground text is easier to read over the image. |
