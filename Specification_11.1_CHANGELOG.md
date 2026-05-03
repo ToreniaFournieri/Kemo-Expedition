@@ -282,6 +282,8 @@
 | 0.6.3 | 20 | 2026/5/1 | Bestiary runtime now tracks and displays shared 撃破数/遭遇数 per enemy across all parties (encounters include victory/retreat/defeat). |
 
 
+| 0.6.3 | 39 | 2026/5/3 | Update runtime Party member details (8.2.2) to render female-only race-based character background images, keep male/other as no-image, and apply viewport-interpolated fixed background image width (400px→170%, 500px→130%) with existing readability mask. |
+
 - Older version changelog
 
 |Version  | Changes                                                                               |

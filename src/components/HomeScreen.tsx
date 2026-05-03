@@ -5543,10 +5543,13 @@ function PartyTab({
     murid: 'Murid.png',
     orcinian: 'Orcinian.png',
   };
-  const partyMemberImageFileName = PARTY_MEMBER_IMAGE_BY_RACE_ID[char.raceId];
+  const partyMemberImageFileName = char.gender === 'female'
+    ? PARTY_MEMBER_IMAGE_BY_RACE_ID[char.raceId]
+    : null;
   const partyMemberImageSrc = partyMemberImageFileName
     ? `${import.meta.env.BASE_URL}character/${partyMemberImageFileName}`
     : null;
+  const [partyMemberImageWidthPercent, setPartyMemberImageWidthPercent] = useState<number>(130);
   const raceCategoryDefinitions: Array<{ label: string; raceIds: Character['raceId'][] }> = [
     { label: '肉食', raceIds: ['lupinian', 'vulpinian', 'felidian'] },
     { label: '雑食', raceIds: ['caninian', 'ursan', 'procyonian'] },
@@ -5860,6 +5863,23 @@ function PartyTab({
     });
   };
 
+  useEffect(() => {
+    // SpecRef: 8.2.2 | Party member details | Character image (background)
+    const computePartyMemberImageWidthPercent = (viewportWidth: number): number => {
+      if (viewportWidth <= 400) return 170;
+      if (viewportWidth >= 500) return 130;
+      return 170 - ((viewportWidth - 400) * 40) / 100;
+    };
+
+    const updatePartyMemberImageWidth = () => {
+      setPartyMemberImageWidthPercent(computePartyMemberImageWidthPercent(window.innerWidth));
+    };
+
+    updatePartyMemberImageWidth();
+    window.addEventListener('resize', updatePartyMemberImageWidth);
+    return () => window.removeEventListener('resize', updatePartyMemberImageWidth);
+  }, []);
+
   const renderInlineBonusEntries = (entries: { key: string; label: string; description: string | null }[]) => {
     if (entries.length === 0) {
       return <span>-</span>;
@@ -6126,7 +6146,7 @@ function PartyTab({
               aria-hidden="true"
               className={`pointer-events-none select-none absolute left-1/2 top-0 h-auto -translate-x-1/2 object-contain object-top ${isDarkModeEnabled ? 'opacity-45' : 'opacity-65'}`}
               style={{
-                width: 'clamp(130%, calc(330% - 0.5 * 100vw), 170%)',
+                width: `${partyMemberImageWidthPercent}%`,
                 maxWidth: 'none',
               }}
             />
